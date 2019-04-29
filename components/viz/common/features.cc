@@ -66,11 +66,19 @@ bool IsSurfaceSynchronizationEnabled() {
 }
 
 bool IsVizDisplayCompositorEnabled() {
+#if defined(OS_MACOSX) || defined(OS_WIN) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+  // We can't remove the feature switch yet because OOP-D isn't enabled on all
+  // platforms but turning it off on Mac, Windows and Linux is broken. Don't
+  // check the feature switch for these platforms anymore.
+  return true;
+#else
 #if defined(OS_ANDROID)
   if (features::IsAndroidSurfaceControlEnabled())
     return true;
 #endif
   return base::FeatureList::IsEnabled(kVizDisplayCompositor);
+#endif
 }
 
 bool IsVizHitTestingDebugEnabled() {
