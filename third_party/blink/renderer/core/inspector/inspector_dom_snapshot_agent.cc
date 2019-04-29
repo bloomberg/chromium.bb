@@ -463,8 +463,7 @@ int InspectorDOMSnapshotAgent::VisitNode(Node* node,
       value->setScrollOffsetX(offset.Width());
       value->setScrollOffsetY(offset.Height());
     }
-  } else if (node->IsDocumentTypeNode()) {
-    DocumentType* doc_type = ToDocumentType(node);
+  } else if (auto* doc_type = DynamicTo<DocumentType>(node)) {
     value->setPublicId(doc_type->publicId());
     value->setSystemId(doc_type->systemId());
   }

@@ -166,7 +166,7 @@ void MarkupFormatter::AppendStartMarkup(StringBuilder& result,
     case Node::kDocumentFragmentNode:
       break;
     case Node::kDocumentTypeNode:
-      AppendDocumentType(result, ToDocumentType(node));
+      AppendDocumentType(result, To<DocumentType>(node));
       break;
     case Node::kProcessingInstructionNode:
       AppendProcessingInstruction(result,

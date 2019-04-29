@@ -1536,8 +1536,7 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::BuildObjectForNode(
     value->setDocumentURL(DocumentURLString(document));
     value->setBaseURL(DocumentBaseURLString(document));
     value->setXmlVersion(document->xmlVersion());
-  } else if (node->IsDocumentTypeNode()) {
-    DocumentType* doc_type = ToDocumentType(node);
+  } else if (auto* doc_type = DynamicTo<DocumentType>(node)) {
     value->setPublicId(doc_type->publicId());
     value->setSystemId(doc_type->systemId());
   } else if (node->IsAttributeNode()) {

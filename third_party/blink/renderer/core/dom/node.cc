@@ -1658,9 +1658,8 @@ bool Node::isEqualNode(Node* other) const {
   if (other_child)
     return false;
 
-  if (IsDocumentTypeNode()) {
-    const DocumentType* document_type_this = ToDocumentType(this);
-    const DocumentType* document_type_other = ToDocumentType(other);
+  if (const auto* document_type_this = DynamicTo<DocumentType>(this)) {
+    const auto* document_type_other = To<DocumentType>(other);
 
     if (document_type_this->publicId() != document_type_other->publicId())
       return false;
