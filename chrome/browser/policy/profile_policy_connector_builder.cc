@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
+#include "chrome/browser/policy/profile_policy_connector_builder.h"
 
 #include <utility>
 
@@ -72,8 +72,8 @@ void ProfilePolicyConnectorFactory::PushProviderForTesting(
 
 ProfilePolicyConnectorFactory::ProfilePolicyConnectorFactory()
     : BrowserContextKeyedBaseFactory(
-        "ProfilePolicyConnector",
-        BrowserContextDependencyManager::GetInstance()) {
+          "ProfilePolicyConnector",
+          BrowserContextDependencyManager::GetInstance()) {
 #if defined(OS_CHROMEOS)
   DependsOn(UserPolicyManagerFactoryChromeOS::GetInstance());
 #endif

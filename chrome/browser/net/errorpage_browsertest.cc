@@ -91,7 +91,7 @@
 #include "chromeos/tpm/stub_install_attributes.h"
 #include "components/policy/core/common/policy_types.h"
 #else
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
+#include "chrome/browser/policy/profile_policy_connector_builder.h"
 #endif
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 
