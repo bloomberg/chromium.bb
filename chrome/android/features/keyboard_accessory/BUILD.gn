@@ -4,6 +4,21 @@
 
 import("//build/config/android/rules.gni")
 
+java_group("public_java") {
+  deps = [
+    "factory:public_java",
+    "public:public_java",
+  ]
+}
+
+# Only chrome_all_java and test targets should depend on this internal target.
+java_group("internal_java") {
+  deps = [
+    "factory:internal_java",
+    "internal:internal_java",
+  ]
+}
+
 generate_jni("jni_headers") {
   sources = [
     "internal/java/src/org/chromium/chrome/browser/keyboard_accessory/AutofillKeyboardAccessoryViewBridge.java",
@@ -34,8 +49,8 @@ android_library("test_java") {
   ]
 
   deps = [
-    "internal:java",
-    "public:java",
+    "internal:internal_java",
+    "public:public_java",
     "//base:base_java",
     "//base:base_java_test_support",
     "//chrome/android:chrome_java",
@@ -69,8 +84,7 @@ junit_binary("keyboard_accessory_junit_tests") {
   ]
 
   deps = [
-    "internal:java",
-    "public:java",
+    ":internal_java",
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
     "//chrome/android:chrome_junit_test_support",

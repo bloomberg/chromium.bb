@@ -832,6 +832,7 @@ _ANDROID_SPECIFIC_PYDEPS_FILES = [
     'build/android/test_runner.pydeps',
     'build/android/test_wrapper/logdog_wrapper.pydeps',
     'build/protoc_java.pydeps',
+    'chrome/android/features/create_stripped_java_factory.pydeps',
     'net/tools/testserver/testserver.pydeps',
     'third_party/android_platform/development/scripts/stack.pydeps',
 ]

@@ -271,8 +271,7 @@ android_library("chrome_java") {
     "$google_play_services_package:google_play_services_tasks_java",
     "//base:base_java",
     "//base:jni_java",
-    "//chrome/android/features/keyboard_accessory/factory:java",
-    "//chrome/android/features/keyboard_accessory/public:java",
+    "//chrome/android/features/keyboard_accessory:public_java",
     "//chrome/android/public/lifecycle:java",
     "//chrome/android/third_party/compositor_animator:compositor_animator_java",
     "//chrome/android/webapk/libs/client:client_java",
@@ -476,7 +475,7 @@ android_library("chrome_java") {
 java_group("chrome_all_java") {
   deps = [
     ":chrome_java",
-    "//chrome/android/features/keyboard_accessory/internal:java",
+    "//chrome/android/features/keyboard_accessory:internal_java",
     "//chrome/android/features/media_router:java",
   ]
 }
@@ -623,7 +622,7 @@ junit_binary("chrome_junit_tests") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
-    "//chrome/android/features/keyboard_accessory/internal:java",
+    "//chrome/android/features/keyboard_accessory:internal_java",
     "//chrome/android/features/tab_ui:java",
     "//chrome/android/webapk/libs/client:client_java",
     "//chrome/android/webapk/libs/common:common_java",
