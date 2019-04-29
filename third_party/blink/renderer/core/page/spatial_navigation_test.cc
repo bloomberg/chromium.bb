@@ -198,7 +198,7 @@ TEST_F(SpatialNavigationTest, StartAtVisibleFocusedElement) {
 
   EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), b,
                          SpatialNavigationDirection::kDown),
-            NodeRectInRootFrame(b));
+            NodeRectInRootFrame(b, true));
 }
 
 TEST_F(SpatialNavigationTest, StartAtVisibleFocusedScroller) {
@@ -220,7 +220,7 @@ TEST_F(SpatialNavigationTest, StartAtVisibleFocusedScroller) {
   Element* scroller = GetDocument().getElementById("scroller");
   EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), scroller,
                          SpatialNavigationDirection::kDown),
-            NodeRectInRootFrame(scroller));
+            NodeRectInRootFrame(scroller, true));
 }
 
 TEST_F(SpatialNavigationTest, StartAtVisibleFocusedIframe) {
@@ -241,7 +241,7 @@ TEST_F(SpatialNavigationTest, StartAtVisibleFocusedIframe) {
   Element* iframe = GetDocument().getElementById("iframe");
   EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), iframe,
                          SpatialNavigationDirection::kDown),
-            NodeRectInRootFrame(iframe));
+            NodeRectInRootFrame(iframe, true));
 }
 
 TEST_F(SpatialNavigationTest, StartAtTopWhenGoingDownwardsWithoutFocus) {
@@ -317,7 +317,7 @@ TEST_F(SpatialNavigationTest, StartAtContainersEdge) {
 
   Element* b = GetDocument().getElementById("b");
   const Element* container = GetDocument().getElementById("container");
-  const LayoutRect container_box = NodeRectInRootFrame(container);
+  const LayoutRect container_box = NodeRectInRootFrame(container, true);
 
   // TODO(crbug.com/889840):
   // VisibleBoundsInVisualViewport does not (yet) take div-clipping into
@@ -433,7 +433,7 @@ TEST_F(SpatialNavigationTest, PartiallyVisible) {
 
   EXPECT_FALSE(IsOffscreen(b));  // <button> is not completely offscreen.
 
-  LayoutRect button_in_root_frame = NodeRectInRootFrame(b);
+  LayoutRect button_in_root_frame = NodeRectInRootFrame(b, true);
 
   EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), b,
                          SpatialNavigationDirection::kUp),
@@ -442,7 +442,7 @@ TEST_F(SpatialNavigationTest, PartiallyVisible) {
   // Do some scrolling.
   ScrollableArea* root_scroller = GetDocument().View()->GetScrollableArea();
   root_scroller->SetScrollOffset(ScrollOffset(0, 600), kProgrammaticScroll);
-  LayoutRect button_after_scroll = NodeRectInRootFrame(b);
+  LayoutRect button_after_scroll = NodeRectInRootFrame(b, true);
   ASSERT_NE(button_in_root_frame,
             button_after_scroll);  // As we scrolled, the
                                    // <button>'s position in
@@ -559,7 +559,7 @@ TEST_F(SpatialNavigationTest, PartiallyVisibleIFrame) {
   EXPECT_TRUE(IsOffscreen(child_element));         // Completely offscreen.
   EXPECT_FALSE(IsOffscreen(enclosing_container));  // Partially visible.
 
-  LayoutRect iframe = NodeRectInRootFrame(enclosing_container);
+  LayoutRect iframe = NodeRectInRootFrame(enclosing_container, true);
 
   // When searching downwards we start at activeElement's
   // container's (here: the iframe's) topmost visible edge.

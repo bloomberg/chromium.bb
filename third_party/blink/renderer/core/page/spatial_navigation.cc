@@ -66,7 +66,7 @@ FocusCandidate::FocusCandidate(Node* node, SpatialNavigationDirection direction)
       return;
 
     visible_node = node;
-    rect_in_root_frame = NodeRectInRootFrame(node);
+    rect_in_root_frame = NodeRectInRootFrame(node, true /* ignore border */);
   }
 
   focusable_node = node;
@@ -377,28 +377,13 @@ bool CanScrollInDirection(const LocalFrame* frame,
   }
 }
 
-LayoutRect NodeRectInRootFrame(const Node* node) {
+LayoutRect NodeRectInRootFrame(const Node* node, bool ignore_border) {
   DCHECK(node);
   DCHECK(node->GetLayoutObject());
   DCHECK(!node->GetDocument().View()->NeedsLayout());
 
-  LayoutObject* object = node->GetLayoutObject();
-
-  LayoutRect rect = LayoutRect(object->LocalBoundingBoxRectForAccessibility());
-
-  // Inset the bounding box by the border.
-  // TODO(bokan): As far as I can tell, this is to work around empty iframes
-  // that have a border. It's unclear if that's still useful.
-  rect.Move(node->GetLayoutObject()->Style()->BorderLeftWidth(),
-            node->GetLayoutObject()->Style()->BorderTopWidth());
-  rect.SetWidth(LayoutUnit(
-      rect.Width() - node->GetLayoutObject()->Style()->BorderLeftWidth() -
-      node->GetLayoutObject()->Style()->BorderRightWidth()));
-  rect.SetHeight(LayoutUnit(
-      rect.Height() - node->GetLayoutObject()->Style()->BorderTopWidth() -
-      node->GetLayoutObject()->Style()->BorderBottomWidth()));
-
-  object->MapToVisualRectInAncestorSpace(/*ancestor=*/nullptr, rect);
+  LayoutRect rect = node->GetDocument().GetFrame()->View()->ConvertToRootFrame(
+      node->BoundingBox());
 
   // Ensure the rect isn't empty. This can happen in some cases as the bounding
   // box is made up of the corners of multiple child elements. If the first
@@ -406,6 +391,19 @@ LayoutRect NodeRectInRootFrame(const Node* node) {
   // be empty. Ensure its not empty so intersections with the root frame don't
   // lie about being off-screen.
   rect.UniteEvenIfEmpty(LayoutRect(rect.Location(), LayoutSize(1, 1)));
+
+  // For authors that use border instead of outline in their CSS, we compensate
+  // by ignoring the border when calculating the rect of the focused element.
+  if (ignore_border) {
+    rect.Move(node->GetLayoutObject()->Style()->BorderLeftWidth(),
+              node->GetLayoutObject()->Style()->BorderTopWidth());
+    rect.SetWidth(LayoutUnit(
+        rect.Width() - node->GetLayoutObject()->Style()->BorderLeftWidth() -
+        node->GetLayoutObject()->Style()->BorderRightWidth()));
+    rect.SetHeight(LayoutUnit(
+        rect.Height() - node->GetLayoutObject()->Style()->BorderTopWidth() -
+        node->GetLayoutObject()->Style()->BorderBottomWidth()));
+  }
   return rect;
 }
 
@@ -676,7 +674,7 @@ LayoutRect SearchOrigin(const LayoutRect viewport_rect_of_root_frame,
     if (area_element)
       return StartEdgeForAreaElement(*area_element, direction);
 
-    LayoutRect box_in_root_frame = NodeRectInRootFrame(focus_node);
+    LayoutRect box_in_root_frame = NodeRectInRootFrame(focus_node, true);
     return Intersection(box_in_root_frame, viewport_rect_of_root_frame);
   }
 
@@ -684,7 +682,7 @@ LayoutRect SearchOrigin(const LayoutRect viewport_rect_of_root_frame,
   while (container) {
     if (!IsOffscreen(container)) {
       // The first scroller that encloses focus and is [partially] visible.
-      LayoutRect box_in_root_frame = NodeRectInRootFrame(container);
+      LayoutRect box_in_root_frame = NodeRectInRootFrame(container, true);
       return OppositeEdge(direction, Intersection(box_in_root_frame,
                                                   viewport_rect_of_root_frame));
     }

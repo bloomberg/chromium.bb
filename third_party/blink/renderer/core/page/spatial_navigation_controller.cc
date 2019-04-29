@@ -82,8 +82,8 @@ static void ConsiderForBestCandidate(SpatialNavigationDirection direction,
        candidate.rect_in_root_frame.IsEmpty()))
     return;
 
-  // Ignore off-screen focusables, if there's nothing in the direction we'll
-  // scroll until they come on-screen.
+  // Ignore off-screen focusables that are not exposed after one "scroll step"
+  // in the direction.
   if (candidate.is_offscreen)
     return;
 
