@@ -11,6 +11,7 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "components/download/internal/background_service/download_driver.h"
 #include "components/download/public/background_service/download_params.h"
 #include "components/download/public/common/all_download_event_notifier.h"
@@ -81,6 +82,8 @@ class DownloadDriverImpl : public DownloadDriver,
   // Coordinator for handling the actual download when |download_manager_| is
   // no longer used.
   SimpleDownloadManagerCoordinator* download_manager_coordinator_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // Only used to post tasks on the same thread.
   base::WeakPtrFactory<DownloadDriverImpl> weak_ptr_factory_;

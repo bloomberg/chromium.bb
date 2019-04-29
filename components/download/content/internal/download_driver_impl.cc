@@ -18,7 +18,6 @@
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "components/download/public/common/simple_download_manager_coordinator.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 
@@ -118,6 +117,7 @@ DownloadDriverImpl::DownloadDriverImpl(
       download_manager_coordinator_(download_manager_coordinator),
       weak_ptr_factory_(this) {
   DCHECK(download_manager_coordinator_);
+  DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 DownloadDriverImpl::~DownloadDriverImpl() {
@@ -316,7 +316,7 @@ void DownloadDriverImpl::OnDownloadCreated(
 
 void DownloadDriverImpl::OnUploadProgress(const std::string& guid,
                                           uint64_t bytes_uploaded) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   client_->OnUploadProgress(guid, bytes_uploaded);
 }
 
