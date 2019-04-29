@@ -224,7 +224,30 @@ STDMETHODIMP AXPlatformNodeTextProviderWin::RangeFromPoint(
     UiaPoint uia_point,
     ITextRangeProvider** range) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXT_RANGEFROMPOINT);
-  return E_NOTIMPL;
+  UIA_VALIDATE_TEXTPROVIDER_CALL();
+  *range = nullptr;
+
+  // Retrieve the closest accessibility node via hit testing the point. No
+  // coordinate unit conversion is needed, hit testing input is also in screen
+  // coordinates.
+  gfx::NativeViewAccessible nearest_native_view_accessible =
+      owner()->GetDelegate()->HitTestSync(uia_point.x, uia_point.y);
+  DCHECK(nearest_native_view_accessible);
+
+  AXPlatformNodeWin* nearest_node = static_cast<AXPlatformNodeWin*>(
+      AXPlatformNode::FromNativeViewAccessible(nearest_native_view_accessible));
+  DCHECK(nearest_node);
+
+  AXNodePosition::AXPositionInstance start, end;
+  start = nearest_node->GetDelegate()->CreateTextPositionAt(
+      nearest_node->NearestTextIndexToPoint(
+          gfx::Point(uia_point.x, uia_point.y)));
+  DCHECK(!start->IsNullPosition());
+  end = start->Clone();
+
+  *range = AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
+      nearest_node, std::move(start), std::move(end));
+  return S_OK;
 }
 
 STDMETHODIMP AXPlatformNodeTextProviderWin::get_DocumentRange(

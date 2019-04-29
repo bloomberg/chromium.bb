@@ -1609,4 +1609,32 @@ int AXPlatformNodeBase::FindTextBoundary(
                                  boundary, offset, direction, affinity));
 }
 
+int AXPlatformNodeBase::NearestTextIndexToPoint(gfx::Point point) {
+  // For text objects, find the text position nearest to the point.The nearest
+  // index of a non-text object is implicitly 0. Text fields such as textarea
+  // have an embedded div inside them that holds all the text,
+  // GetRangeBoundsRect will correctly handle these nodes
+  int nearest_index = 0;
+  const AXCoordinateSystem coordinate_system = AXCoordinateSystem::kScreen;
+  const AXClippingBehavior clipping_behavior = AXClippingBehavior::kUnclipped;
+
+  // Manhattan Distance  is used to provide faster distance estimates.
+  // get the distance from the point to the bounds of each character.
+  float shortest_distance = GetDelegate()
+                                ->GetInnerTextRangeBoundsRect(
+                                    0, 1, coordinate_system, clipping_behavior)
+                                .ManhattanDistanceToPoint(point);
+  for (int i = 1, text_length = GetInnerText().length(); i < text_length; ++i) {
+    float current_distance =
+        GetDelegate()
+            ->GetInnerTextRangeBoundsRect(i, i + 1, coordinate_system,
+                                          clipping_behavior)
+            .ManhattanDistanceToPoint(point);
+    if (current_distance < shortest_distance) {
+      shortest_distance = current_distance;
+      nearest_index = i;
+    }
+  }
+  return nearest_index;
+}
 }  // namespace ui

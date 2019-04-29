@@ -145,6 +145,41 @@ gfx::Rect TestAXNodeWrapper::GetBoundsRect(
   }
 }
 
+gfx::Rect TestAXNodeWrapper::GetInnerTextRangeBoundsRect(
+    const int start_offset,
+    const int end_offset,
+    const AXCoordinateSystem coordinate_system,
+    const AXClippingBehavior clipping_behavior,
+    AXOffscreenResult* offscreen_result) const {
+  switch (coordinate_system) {
+    case AXCoordinateSystem::kScreen: {
+      gfx::RectF bounds = GetData().relative_bounds.bounds;
+      bounds.Offset(g_offset);
+      if (GetData().HasIntListAttribute(
+              ax::mojom::IntListAttribute::kCharacterOffsets)) {
+        const std::vector<int32_t>& offsets = GetData().GetIntListAttribute(
+            ax::mojom::IntListAttribute::kCharacterOffsets);
+        int32_t x = bounds.x();
+        int32_t width = 0;
+        for (int i = 0; i < static_cast<int>(offsets.size()); i++) {
+          if (i < start_offset)
+            x += offsets[i];
+          else if (i < end_offset)
+            width += offsets[i];
+          else
+            break;
+        }
+        bounds = gfx::RectF(x, bounds.y(), width, bounds.height());
+      }
+      return gfx::ToEnclosingRect(bounds);
+    }
+    case AXCoordinateSystem::kRootFrame:
+    case AXCoordinateSystem::kFrame:
+      NOTIMPLEMENTED();
+      return gfx::Rect();
+  }
+}
+
 gfx::Rect TestAXNodeWrapper::GetHypertextRangeBoundsRect(
     const int start_offset,
     const int end_offset,

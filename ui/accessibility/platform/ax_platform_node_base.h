@@ -207,6 +207,13 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // Returns true if this node can be scrolled in the vertical direction.
   bool IsVerticallyScrollable() const;
 
+  // Returns true if this node has role of StaticText, LineBreak, or
+  // InlineTextBox
+  bool IsTextOnlyObject() const;
+
+  // Returns true if the node is an editable text field.
+  bool IsPlainTextField() const;
+
   bool HasFocus();
 
   // Returns the text of this node and represent the text of descendant nodes
@@ -252,6 +259,12 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   };
   bool ScrollToNode(ScrollType scroll_type);
 
+  // Return the nearest text index to a point in screen coordinates for an
+  // accessibility node. If the node is not a text only node, the implicit
+  // nearest index is zero. Note this will only find the index of text on the
+  // input node. The node's subtree will not be searched.
+  int NearestTextIndexToPoint(gfx::Point point);
+
   //
   // Delegate.  This is a weak reference which owns |this|.
   //
@@ -259,8 +272,6 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
 
  protected:
   bool IsDocument() const;
-  bool IsTextOnlyObject() const;
-  bool IsPlainTextField() const;
   // Is in a focused textfield with a related suggestion popup available,
   // such as for the Autofill feature. The suggestion popup can be either hidden
   // and available or already visible. This indicates next down arrow key will

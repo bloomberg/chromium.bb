@@ -59,6 +59,12 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   gfx::Rect GetBoundsRect(const AXCoordinateSystem coordinate_system,
                           const AXClippingBehavior clipping_behavior,
                           AXOffscreenResult* offscreen_result) const override;
+  gfx::Rect GetInnerTextRangeBoundsRect(
+      const int start_offset,
+      const int end_offset,
+      const AXCoordinateSystem coordinate_system,
+      const AXClippingBehavior clipping_behavior,
+      AXOffscreenResult* offscreen_result) const override;
   gfx::Rect GetHypertextRangeBoundsRect(
       const int start_offset,
       const int end_offset,
