@@ -26,7 +26,7 @@ class SystemIndicatorManagerFactory : public BrowserContextKeyedServiceFactory {
   SystemIndicatorManagerFactory();
   ~SystemIndicatorManagerFactory() override;
 
-  // BrowserContextKeyedBaseFactory implementation.
+  // BrowserContextKeyedServiceFactory implementation.
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
 };
