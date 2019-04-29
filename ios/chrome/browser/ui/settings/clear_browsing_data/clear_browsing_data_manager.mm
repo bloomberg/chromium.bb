@@ -497,6 +497,9 @@ static NSDictionary* _imageNamesByItemTypes = @{
         tableViewClearDataItem.detailText =
             l10n_util::GetNSString(IDS_DEL_COOKIES_COUNTER);
       } else {
+        // Having a placeholder |detailText| helps reduce the observable
+        // row-height changes induced by the counter callbacks.
+        tableViewClearDataItem.detailText = @"\u00A0";
         __weak ClearBrowsingDataManager* weakSelf = self;
         __weak TableViewClearBrowsingDataItem* weakTableClearDataItem =
             tableViewClearDataItem;
