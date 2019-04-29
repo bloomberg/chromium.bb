@@ -27,26 +27,37 @@ constexpr float kShadowOpacity = 0.12;
 constexpr CGFloat kCornerRadius = 14;
 constexpr CGFloat kAlertWidth = 270;
 constexpr CGFloat kAlertWidthAccessibilty = 402;
+constexpr CGFloat kTextFieldCornerRadius = 5;
 constexpr CGFloat kMinimumHeight = 30;
 constexpr CGFloat kMinimumMargin = 4;
 
-// Inset for the content in the alert view.
+// Insets for the content in the alert view.
 constexpr CGFloat kTitleInsetTop = 20;
 constexpr CGFloat kTitleInsetLeading = 20;
 constexpr CGFloat kTitleInsetBottom = 4;
 constexpr CGFloat kTitleInsetTrailing = 20;
+
 constexpr CGFloat kMessageInsetTop = 4;
 constexpr CGFloat kMessageInsetLeading = 20;
-constexpr CGFloat kMessageInsetBottom = 20;
+constexpr CGFloat kMessageInsetBottom = 10;
 constexpr CGFloat kMessageInsetTrailing = 20;
+
 constexpr CGFloat kButtonInsetTop = 20;
 constexpr CGFloat kButtonInsetLeading = 20;
 constexpr CGFloat kButtonInsetBottom = 20;
 constexpr CGFloat kButtonInsetTrailing = 20;
 
+constexpr CGFloat kTextfieldStackInsetTop = 10;
+constexpr CGFloat kTextfieldStackInsetLeading = 12;
+constexpr CGFloat kTextfieldStackInsetBottom = 20;
+constexpr CGFloat kTextfieldStackInsetTrailing = 12;
+
+constexpr CGFloat kTextfieldInset = 8;
+
 // Colors for the action buttons.
 constexpr int kButtonTextDefaultColor = 0x0579ff;
 constexpr int kButtonTextDestructiveColor = 0xdf322f;
+constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
 
 }  // namespace
 
@@ -115,7 +126,13 @@ constexpr int kButtonTextDestructiveColor = 0xdf322f;
 
 - (void)addTextFieldWithConfigurationHandler:
     (void (^)(UITextField* textField))configurationHandler {
-  // TODO(crbug.com/951303): Implement support.
+  UITextField* textField = [[UITextField alloc] init];
+  if (!self.textFields) {
+    self.textFields = @[ textField ];
+    return;
+  }
+  self.textFields = [self.textFields arrayByAddingObject:textField];
+  // TODO(crbug.com/951303): Implement configuration handlers support.
 }
 
 - (void)loadView {
@@ -223,6 +240,66 @@ constexpr int kButtonTextDestructiveColor = 0xdf322f;
     AddSameConstraintsWithInsets(messageLabel, messageContainer, contentInsets);
     AddSameConstraintsToSides(messageContainer, self.contentView,
                               LayoutSides::kTrailing | LayoutSides::kLeading);
+  }
+
+  if (self.textFields.count) {
+    // |container| insets |stackHolder|.
+    UIView* container = [[UIView alloc] init];
+    container.translatesAutoresizingMaskIntoConstraints = NO;
+    [stackView addArrangedSubview:container];
+    AddSameConstraintsToSides(container, self.contentView,
+                              LayoutSides::kTrailing | LayoutSides::kLeading);
+
+    // |stackHolder| has the background, border and round corners of the stacked
+    // fields.
+    UIView* stackHolder = [[UIView alloc] init];
+    stackHolder.layer.cornerRadius = kTextFieldCornerRadius;
+    stackHolder.layer.borderColor = [UIColor lightGrayColor].CGColor;
+    stackHolder.layer.borderWidth = 1.0 / [UIScreen mainScreen].scale;
+    stackHolder.clipsToBounds = YES;
+    stackHolder.backgroundColor = UIColorFromRGB(kTextfieldBackgroundColor);
+    stackHolder.translatesAutoresizingMaskIntoConstraints = NO;
+    [container addSubview:stackHolder];
+    ChromeDirectionalEdgeInsets stackHolderContentInsets =
+        ChromeDirectionalEdgeInsetsMake(
+            kTextfieldStackInsetTop, kTextfieldStackInsetLeading,
+            kTextfieldStackInsetBottom, kTextfieldStackInsetTrailing);
+    AddSameConstraintsWithInsets(stackHolder, container,
+                                 stackHolderContentInsets);
+
+    UIStackView* fieldStack = [[UIStackView alloc] init];
+    fieldStack.axis = UILayoutConstraintAxisVertical;
+    fieldStack.translatesAutoresizingMaskIntoConstraints = NO;
+    fieldStack.spacing = kTextfieldInset;
+    fieldStack.alignment = UIStackViewAlignmentCenter;
+    [stackHolder addSubview:fieldStack];
+    ChromeDirectionalEdgeInsets fieldStackContentInsets =
+        ChromeDirectionalEdgeInsetsMake(kTextfieldInset, 0.0, kTextfieldInset,
+                                        0.0);
+    AddSameConstraintsWithInsets(fieldStack, stackHolder,
+                                 fieldStackContentInsets);
+
+    for (UITextField* textField in self.textFields) {
+      if (textField != [self.textFields firstObject]) {
+        UIView* hairline = [[UIView alloc] init];
+        hairline.backgroundColor = [UIColor lightGrayColor];
+        hairline.translatesAutoresizingMaskIntoConstraints = NO;
+        [fieldStack addArrangedSubview:hairline];
+        CGFloat pixelHeight = 1.0 / [UIScreen mainScreen].scale;
+        [hairline.heightAnchor constraintEqualToConstant:pixelHeight].active =
+            YES;
+        AddSameConstraintsToSides(
+            fieldStack, hairline,
+            LayoutSides::kTrailing | LayoutSides::kLeading);
+      }
+      textField.translatesAutoresizingMaskIntoConstraints = NO;
+      [fieldStack addArrangedSubview:textField];
+      ChromeDirectionalEdgeInsets fieldInsets = ChromeDirectionalEdgeInsetsMake(
+          0.0, kTextfieldInset, 0.0, kTextfieldInset);
+      AddSameConstraintsToSidesWithInsets(
+          textField, fieldStack, LayoutSides::kTrailing | LayoutSides::kLeading,
+          fieldInsets);
+    }
   }
 
   self.buttonAlertActionsDictionary = [[NSMutableDictionary alloc] init];
