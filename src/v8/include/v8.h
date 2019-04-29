@@ -1299,6 +1299,27 @@ class V8_EXPORT ScriptCompiler {
     // Prevent copying.
     CachedData(const CachedData&) = delete;
     CachedData& operator=(const CachedData&) = delete;
+
+    //- - - - - - - - - - - - 'blpwtk2' Additions - - - - - - - - - - - - - - -
+    //
+    // 'CachedData' pointers are passed across the API in both
+    // 'CreateCodeCache()' and 'Source'.  In order to do this safely in
+    // 'bplus', we need to ensure that the data is created and destroyed in a
+    // single C++ heap.  To do so, we expose 'create' and 'dispose' methods.
+    // When multiple C++ heaps is a concern, these methods should be used over
+    // the public constructor.
+
+    static
+    CachedData *create(const uint8_t *data,
+                       int            length,
+                       BufferPolicy   buffer_policy = BufferNotOwned);
+        // Create a 'CachedData' in V8's C++ heap.
+
+    static
+    void dispose(CachedData *data);
+        // Dispose of the specified 'data' in V8's C++ heap.
+
+    //- - - - - - - - - - - End 'blpwtk2' Additions - - - - - - - - - - - - - -
   };
 
   /**
@@ -9846,7 +9867,7 @@ ScriptCompiler::Source::Source(Local<String> string,
 
 
 ScriptCompiler::Source::~Source() {
-  delete cached_data;
+  CachedData::dispose(cached_data);
 }
 
 
