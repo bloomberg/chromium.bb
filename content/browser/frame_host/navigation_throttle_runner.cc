@@ -8,6 +8,7 @@
 #include "content/browser/frame_host/ancestor_throttle.h"
 #include "content/browser/frame_host/blocked_scheme_navigation_throttle.h"
 #include "content/browser/frame_host/form_submission_throttle.h"
+#include "content/browser/frame_host/history_navigation_ablation_study_navigation_throttle.h"
 #include "content/browser/frame_host/mixed_content_navigation_throttle.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigator_delegate.h"
@@ -117,6 +118,10 @@ void NavigationThrottleRunner::RegisterNavigationThrottles() {
        devtools_instrumentation::CreateNavigationThrottles(handle)) {
     AddThrottle(std::move(throttle));
   }
+
+  // Delay navigation for an ablation study (if needed).
+  AddThrottle(HistoryNavigationAblationStudyNavigationThrottle::
+                  MaybeCreateForNavigation(handle));
 
   // Insert all testing NavigationThrottles last.
   throttles_.insert(throttles_.end(),
