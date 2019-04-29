@@ -16,6 +16,7 @@ class BrowserContext;
 
 namespace policy {
 
+class ChromeBrowserPolicyConnector;
 class CloudPolicyStore;
 class ConfigurationPolicyProvider;
 class ProfilePolicyConnector;
@@ -28,12 +29,14 @@ std::unique_ptr<ProfilePolicyConnector>
 CreateProfilePolicyConnectorForBrowserContext(
     SchemaRegistry* schema_registry,
     UserCloudPolicyManager* user_cloud_policy_manager,
+    policy::ChromeBrowserPolicyConnector* browser_policy_connector,
     bool force_immediate_load,
     content::BrowserContext* context);
 
 // Factory method that creates and initializes a ProfilePolicyConnector.
 std::unique_ptr<ProfilePolicyConnector> CreateAndInitProfilePolicyConnector(
     SchemaRegistry* schema_registry,
+    policy::ChromeBrowserPolicyConnector* browser_policy_connector,
     ConfigurationPolicyProvider* policy_provider,
     const CloudPolicyStore* policy_store,
     bool force_immediate_load,

@@ -430,6 +430,7 @@ std::unique_ptr<sync_preferences::PrefServiceSyncable> CreateProfilePrefs(
     SupervisedUserSettingsService* supervised_user_settings,
     scoped_refptr<PrefStore> extension_prefs,
     scoped_refptr<user_prefs::PrefRegistrySyncable> pref_registry,
+    policy::BrowserPolicyConnector* connector,
     bool async,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner,
     std::unique_ptr<PrefValueStore::Delegate> delegate) {
@@ -449,8 +450,7 @@ std::unique_ptr<sync_preferences::PrefServiceSyncable> CreateProfilePrefs(
               std::move(validation_delegate));
   PrepareFactory(&factory, profile_path, policy_service,
                  supervised_user_settings, std::move(user_pref_store),
-                 std::move(extension_prefs), async,
-                 g_browser_process->browser_policy_connector());
+                 std::move(extension_prefs), async, connector);
   return factory.CreateSyncable(std::move(pref_registry), std::move(delegate));
 }
 

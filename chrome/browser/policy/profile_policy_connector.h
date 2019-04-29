@@ -22,6 +22,7 @@ class CloudPolicyStore;
 class ConfigurationPolicyProvider;
 class PolicyService;
 class SchemaRegistry;
+class ChromeBrowserPolicyConnector;
 
 // The ProfilePolicyConnector creates and manages the per-Profile policy
 // components. Since the ProfilePolicyConnector instance is accessed from
@@ -41,6 +42,7 @@ class ProfilePolicyConnector final {
             SchemaRegistry* schema_registry,
             ConfigurationPolicyProvider* configuration_policy_provider,
             const CloudPolicyStore* policy_store,
+            policy::ChromeBrowserPolicyConnector* browser_policy_connector,
             bool force_immediate_load);
 
   void InitForTesting(std::unique_ptr<PolicyService> service);

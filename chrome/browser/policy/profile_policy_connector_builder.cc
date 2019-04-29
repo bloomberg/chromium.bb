@@ -39,6 +39,7 @@ std::unique_ptr<ProfilePolicyConnector>
 CreateProfilePolicyConnectorForBrowserContext(
     SchemaRegistry* schema_registry,
     UserCloudPolicyManager* user_cloud_policy_manager,
+    policy::ChromeBrowserPolicyConnector* browser_policy_connector,
     bool force_immediate_load,
     content::BrowserContext* context) {
   const user_manager::User* user = nullptr;
@@ -77,13 +78,14 @@ CreateProfilePolicyConnectorForBrowserContext(
   }
 #endif  // defined(OS_CHROMEOS)
 
-  return CreateAndInitProfilePolicyConnector(schema_registry, policy_provider,
-                                             policy_store, force_immediate_load,
-                                             user);
+  return CreateAndInitProfilePolicyConnector(
+      schema_registry, browser_policy_connector, policy_provider, policy_store,
+      force_immediate_load, user);
 }
 
 std::unique_ptr<ProfilePolicyConnector> CreateAndInitProfilePolicyConnector(
     SchemaRegistry* schema_registry,
+    policy::ChromeBrowserPolicyConnector* browser_policy_connector,
     ConfigurationPolicyProvider* policy_provider,
     const CloudPolicyStore* policy_store,
     bool force_immediate_load,
@@ -93,7 +95,7 @@ std::unique_ptr<ProfilePolicyConnector> CreateAndInitProfilePolicyConnector(
   std::list<ConfigurationPolicyProvider*>* test_providers = GetTestProviders();
   if (test_providers->empty()) {
     connector->Init(user, schema_registry, policy_provider, policy_store,
-                    force_immediate_load);
+                    browser_policy_connector, force_immediate_load);
   } else {
     PolicyServiceImpl::Providers providers;
     providers.push_back(test_providers->front());

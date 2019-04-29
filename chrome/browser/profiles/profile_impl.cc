@@ -538,6 +538,7 @@ ProfileImpl::ProfileImpl(
   profile_policy_connector_ =
       policy::CreateProfilePolicyConnectorForBrowserContext(
           schema_registry_service_->registry(), user_cloud_policy_manager_,
+          g_browser_process->browser_policy_connector(),
           force_immediate_policy_load, this);
 
   DCHECK(create_mode == CREATE_MODE_ASYNCHRONOUS ||
@@ -586,8 +587,8 @@ ProfileImpl::ProfileImpl(
     prefs_ = chrome_prefs::CreateProfilePrefs(
         path_, std::move(pref_validation_delegate),
         profile_policy_connector_->policy_service(), supervised_user_settings,
-        CreateExtensionPrefStore(this, false), pref_registry_, async_prefs,
-        GetIOTaskRunner(), std::move(delegate));
+        CreateExtensionPrefStore(this, false), pref_registry_, connector,
+        async_prefs, GetIOTaskRunner(), std::move(delegate));
     // Register on BrowserContext.
     user_prefs::UserPrefs::Set(this, prefs_.get());
   }

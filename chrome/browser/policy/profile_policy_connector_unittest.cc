@@ -87,7 +87,8 @@ class ProfilePolicyConnectorTest : public testing::Test {
 TEST_F(ProfilePolicyConnectorTest, IsManagedForManagedUsers) {
   ProfilePolicyConnector connector;
   connector.Init(nullptr /* user */, &schema_registry_,
-                 cloud_policy_manager_.get(), &cloud_policy_store_, false);
+                 cloud_policy_manager_.get(), &cloud_policy_store_,
+                 g_browser_process->browser_policy_connector(), false);
   EXPECT_FALSE(connector.IsManaged());
 
   cloud_policy_store_.policy_.reset(new enterprise_management::PolicyData());
@@ -109,7 +110,8 @@ TEST_F(ProfilePolicyConnectorTest, IsManagedForActiveDirectoryUsers) {
       AccountId::AdFromUserEmailObjGuid("user@realm.example", "obj-guid");
   std::unique_ptr<user_manager::User> user = CreateRegularUser(account_id);
   connector.Init(user.get(), &schema_registry_, cloud_policy_manager_.get(),
-                 &cloud_policy_store_, false);
+                 &cloud_policy_store_,
+                 g_browser_process->browser_policy_connector(), false);
   cloud_policy_store_.policy_.reset(new enterprise_management::PolicyData());
   cloud_policy_store_.policy_->set_state(
       enterprise_management::PolicyData::ACTIVE);
@@ -128,7 +130,8 @@ TEST_F(ProfilePolicyConnectorTest, IsManagedForActiveDirectoryUsers) {
 TEST_F(ProfilePolicyConnectorTest, IsProfilePolicy) {
   ProfilePolicyConnector connector;
   connector.Init(nullptr /* user */, &schema_registry_,
-                 cloud_policy_manager_.get(), &cloud_policy_store_, false);
+                 cloud_policy_manager_.get(), &cloud_policy_store_,
+                 g_browser_process->browser_policy_connector(), false);
 
   // No policy is set initially.
   EXPECT_FALSE(
