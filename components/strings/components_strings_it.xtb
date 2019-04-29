@@ -721,7 +721,7 @@
 <translation id="4926159001844873046"><ph name="SITE" /> dice</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">Nessun risultato</translation>
-<translation id="4945672369594656571">Controlla in che modo vengono gestiti i dati del tuo dispositivo e del tuo account. Google elabora i dati del tuo dispositivo e del tuo account esclusivamente sotto la direzione del gestore dei tuoi dispositivi e account, e unicamente per le finalità specificate da gestore dei tuoi dispositivi e account.</translation>
+<translation id="4945672369594656571">Controlla in che modo vengono gestiti i dati del tuo dispositivo e del tuo account. Google elabora i dati del tuo dispositivo e del tuo account esclusivamente sotto la direzione del gestore dei tuoi dispositivi e account, e unicamente per le finalità specificate dal gestore dei tuoi dispositivi e account.</translation>
 <translation id="4950898438188848926">Pulsante per cambiare scheda, premi INVIO per passare alla scheda aperta, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Azioni</translation>
 <translation id="4955242332710481440">A5-Extra</translation>
@@ -1086,7 +1086,7 @@
 <translation id="7062635574500127092">Verde petrolio</translation>
 <translation id="7064851114919012435">Informazioni di contatto</translation>
 <translation id="7079718277001814089">Questo sito contiene malware</translation>
-<translation id="7081564429925484109">Avviso: questo criterio non è stato unito come specificato nel criterio PolicyListMultipleSourceMergeList perché non è un elenco.</translation>
+<translation id="7081564429925484109">Avviso: questa norma non è stata unita come specificato nella norma PolicyListMultipleSourceMergeList perché non è un elenco.</translation>
 <translation id="7087282848513945231">Contea</translation>
 <translation id="7090678807593890770">Cerca <ph name="LINK" /> con Google</translation>
 <translation id="7108338896283013870">Nascondi</translation>
@@ -1163,7 +1163,7 @@ Ulteriori dettagli:
 <translation id="741007362987735528">Wide-Format</translation>
 <translation id="7416351320495623771">Gestisci password…</translation>
 <translation id="7419106976560586862">Percorso profilo</translation>
-<translation id="7424427397225027541">Controlla in che modo viene gestito il tuo account. Google elabora i dati del tuo account esclusivamente sotto la direzione del gestore del tuo account, e unicamente per le finalità specificate dal gestore del tuo account.</translation>
+<translation id="7424427397225027541">Controlla in che modo vengono gestiti i dati del tuo account. Google elabora i dati del tuo account esclusivamente sotto la direzione del gestore del tuo account e unicamente per le finalità specificate dal gestore del tuo account.</translation>
 <translation id="7437289804838430631">Aggiungi informazioni di contatto</translation>
 <translation id="7440140511386898319">Esplora offline</translation>
 <translation id="7441627299479586546">Oggetto del criterio errato</translation>

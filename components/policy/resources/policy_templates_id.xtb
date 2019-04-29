@@ -743,13 +743,13 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 
           Kontrol pengisian daya baterai secara dinamis untuk meminimalkan keausan baterai akibat ketegangan baterai dan memperpanjang masa pakai baterai.
 
-          Jika mode pengisian daya baterai kustom dipilih, maka DeviceBatteryChargeCustomStartCharging dan DeviceBatteryChargeCustomStopCharging harus ditentukan.
+          Jika mode pengisian daya baterai kustom dipilih, DeviceBatteryChargeCustomStartCharging dan DeviceBatteryChargeCustomStopCharging harus ditentukan.
 
           Jika kebijakan ini ditetapkan, mode pengisian daya baterai akan diterapkan jika didukung di perangkat.
 
           Jika kebijakan ini tidak ditetapkan dan kebijakan didukung di perangkat, mode pengisian daya baterai standar akan diterapkan dan tidak dapat diubah oleh pengguna.
 
-          Catatan: <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> mengganti kebijakan ini jika kebijakan sebelumnya ditentukan.</translation>
+          Catatan: <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> mengganti kebijakan ini jika kebijakan tersebut ditentukan.</translation>
 <translation id="237494535617297575">Memungkinkan Anda menyetel daftar pola url yang menentukan situs yang tidak diizinkan untuk menampilkan pemberitahuan. Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs, baik dari kebijakan 'DefaultNotificationsSetting', jika disetel, atau konfigurasi pribadi pengguna.</translation>
 <translation id="2386362615870139244">Izinkan penguncian layar saat bangun</translation>
 <translation id="2411817661175306360">Peringatan perlindungan sandi nonaktif</translation>
@@ -1405,7 +1405,7 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 
         Kebijakan ini digunakan oleh pendaftaran kebijakan machine scope cloud di desktop dan dapat disetel oleh Registry atau GPO di Windows, plist di Mac, dan file kebijakan JSON di Linux.</translation>
 <translation id="3660562134618097814">Transfer cookie SAML IdP saat proses masuk.</translation>
-<translation id="3668151900457104753">Meng-uninstal ekstensi yang termasuk dalam daftar hitam</translation>
+<translation id="3668151900457104753">Meng-uninstal ekstensi yang termasuk dalam daftar ekstensi yang tidak diperbolehkan</translation>
 <translation id="3701121231485832347">Mengontrol setelan khusus perangkat <ph name="PRODUCT_OS_NAME" />.yang dikelola <ph name="MS_AD_NAME" />.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Kolom 1 baris sudah tidak digunakan lagi dan akan dihapus di masa mendatang. Mulai gunakan kotak teks multibaris di bawah.)</translation>
 <translation id="3709266154059827597">Konfigurasikan daftar penginstalan ekstensi yang tidak diizinkan</translation>
@@ -1826,7 +1826,7 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 <translation id="4360826270668210664">Jika kebijakan ini ditetapkan, host akses jarak jauh akan mewajibkan autentikasi klien untuk memperoleh token autentikasi dari URL ini agar dapat tersambung. Harus digunakan bersama RemoteAccessHostTokenValidationUrl.
 
           Fitur ini saat ini dinonaktifkan pada sistem server.</translation>
-<translation id="4363057787588706121">Mengizinkan penggabungan kebijakan daftar dari sumber berbeda</translation>
+<translation id="4363057787588706121">Mengizinkan penggabungan kebijakan yang ada dalam daftar dari sumber berbeda</translation>
 <translation id="436581050240847513">Melaporkan antarmuka jaringan perangkat</translation>
 <translation id="4372704773119750918">Jangan izinkan pengguna perusahaan untuk menjadi bagian dari multiprofil (primer atau sekunder)</translation>
 <translation id="4377599627073874279">Izinkan semua situs menampilkan semua gambar</translation>
@@ -2222,7 +2222,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
       Jika kebijakan tidak disetel, atau jika disetel menjadi string kosong maupun rentang port yang tidak valid, WebRTC diizinkan untuk menggunakan port UDP lokal mana pun yang tersedia.</translation>
 <translation id="5290940294294002042">Tentukan daftar plugin yang dapat diaktifkan atau dinonaktifkan pengguna</translation>
-<translation id="5306186200045823863">Mengaktifkan kepercayaan pada Infrastruktur PKI Lama milik Symantec Corporation</translation>
+<translation id="5306186200045823863">Mengaktifkan kepercayaan pada Infrastruktur IKU Lama milik Symantec Corporation</translation>
 <translation id="5307432759655324440">Ketersediaan mode penyamaran</translation>
 <translation id="5318185076587284965">Aktifkan penggunaan server relay oleh hosting akses jarak jauh</translation>
 <translation id="5323128137188992869">Izinkan konten untuk ditransmisikan ke perangkat menggunakan <ph name="PRODUCT_NAME" />.
@@ -2741,11 +2741,11 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="6244210204546589761">URL untuk membuka saat permulaan</translation>
 <translation id="6255387031094435995">Mengizinkan penggabungan beberapa kebijakan yang dipilih jika kebijakan tersebut berasal dari sumber berbeda, tetapi dengan cakupan dan level yang sama.
 
-        Jika sebuah kebijakan tercantum dalam daftar, apabila terdapat konflik antara dua sumber, mengingat kebijakan tersebut memiliki cakupan dan level yang sama, nilainya akan digabung ke dalam sebuah daftar kebijakan baru.
+        Jika sebuah kebijakan tercantum dalam daftar dan terdapat konflik antara dua sumber, asalkan kebijakan dari kedua sumber tersebut memiliki cakupan dan level yang sama, nilainya akan digabung ke dalam sebuah daftar kebijakan baru.
 
-        Jika sebuah kebijakan tercantum dalam daftar, apabila terdapat konflik antara dua sumber dan juga antara cakupan dan/atau level yang berbeda, kebijakan dengan prioritas tertinggi akan diterapkan.
+        Jika sebuah kebijakan tercantum dalam daftar dan terdapat konflik antara dua sumber dan juga antara cakupan dan/atau level yang berbeda, kebijakan dengan prioritas tertinggi akan diterapkan.
 
-        Jika sebuah kebijakan tidak tercantum dalam daftar, apabila terdapat konflik antara sumber, cakupan, dan/atau level, kebijakan dengan prioritas tertinggi akan diterapkan.</translation>
+        Jika sebuah kebijakan tidak tercantum dalam daftar dan terdapat konflik antara sumber, cakupan, dan/atau level, kebijakan dengan prioritas tertinggi akan diterapkan.</translation>
 <translation id="6258193603492867656">Menentukan apakah SPN Kerberos yang dihasilkan harus mencakup port non-standar. Jika Anda mengaktifkan setelan ini, dan port non-standar (selain port 80 atau 443) dimasukkan, port ini akan dimasukkan ke SPN Kerberos yang dihasilkan. Jika Anda menonaktifkan setelan ini atau membiarkannya tidak disetel, SPN Kerberos yang dihasilkan tidak akan pernah mencakup port.</translation>
 <translation id="6261643884958898336">Laporkan informasi Identifikasi Mesin</translation>
 <translation id="6281043242780654992">Mengonfigurasikan kebijakan untuk Perpesanan Asli. Hosting perpesanan asli yang dimasukkan dalam daftar hitam tidak akan diizinkan kecuali telah dimasukkan dalam daftar putih.</translation>
@@ -3078,7 +3078,7 @@ Kebijakan ini hanya berlaku jika dukungan aplikasi Linux diaktifkan.</translatio
       Jika kebijakan ini ditetapkan ke True atau tidak ditetapkan, model redup smart akan diaktifkan dan diizinkan untuk memperpanjang waktu hingga layar diredupkan. Jika kebijakan ini ditetapkan ke False, model redup smart tidak akan memengaruhi peredupan layar.</translation>
 <translation id="6967394885063085697">Mengaktifkan kebijakan pengelolaan daya mode pengisian daya baterai lanjutan.
 
-          Mode Pengisian Daya Baterai Lanjutan memungkinkan pengguna memaksimalkan kesehatan baterai. Dalam Mode Pengisian Daya Lanjutan, sistem akan menggunakan algoritme pengisian daya standar dan teknik lainnya selama di luar jam kerja untuk memaksimalkan kesehatan baterai. Selama jam kerja, pengisian daya ekspres digunakan. Pengisian daya ekspres ini memungkinkan baterai untuk terisi lebih cepat, sehingga baterai akan penuh lebih cepat. Untuk setiap hari, waktu kapan sistem akan paling sering digunakan ditentukan oleh waktu mulai dan durasi.
+          Mode Pengisian Daya Baterai Lanjutan memungkinkan pengguna memaksimalkan kesehatan baterai. Dalam Mode Pengisian Daya Lanjutan, sistem akan menggunakan algoritme pengisian daya standar dan teknik lainnya selama di luar jam kerja untuk memaksimalkan kesehatan baterai. Selama jam kerja, pengisian daya ekspres digunakan. Pengisian daya ekspres ini memungkinkan baterai untuk terisi lebih cepat, sehingga baterai akan penuh lebih cepat. Waktu saat sistem akan paling banyak digunakan setiap harinya ditentukan dengan waktu mulai dan durasi.
 
           Jika kebijakan ini ditetapkan ke true, dan DeviceAdvancedBatteryChargeModeDayConfig ditetapkan, mode pengisian daya baterai lanjutan akan selalu aktif jika didukung di perangkat.
 
@@ -3928,7 +3928,7 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
       Jika tidak disetel, periode default 345600000 milidetik (empat hari) digunakan untuk perangkat <ph name="PRODUCT_OS_NAME" /> dan 604800000 milidetik (satu minggu) untuk <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8685024486845674965">Peringatan perlindungan sandi dipicu oleh penggunaan ulang sandi</translation>
 <translation id="8693243869659262736">Gunakan klien DNS di dalamnya</translation>
-<translation id="8698286761337647563">Berapa hari sebelumnya pengguna SAML akan diberi tahu saat sandi mereka akan habis masa berlakunya</translation>
+<translation id="8698286761337647563">Berapa hari sebelum habis masa berlaku sandi pengguna SAML akan menerima peringatan</translation>
 <translation id="8703488928438047864">Laporkan status board</translation>
 <translation id="8703872185032220081">Tetapkan konfigurasi hari pergeseran puncak daya.
 
@@ -4091,7 +4091,7 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
 
       Jika kebijakan ini ditetapkan ke aktif, ekstensi yang termasuk dalam daftar yang disebut sebelumnya (jika sudah terinstal di perangkat) akan dihapus dari perangkat tersebut secara keseluruhan (termasuk data pengguna lokal).
 
-      Jika kebijakan ini ditetapkan ke nonaktif atau tidak ditetapkan, ekstensi yang termasuk dalam daftar yang disebut sebelumnya (jika sudah terinstal di perangkat dan ada dalam daftar hitam <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />) akan dinonaktifkan di perangkat dan tidak di-uninstal.</translation>
+      Jika kebijakan ini ditetapkan ke nonaktif atau tidak ditetapkan, ekstensi yang termasuk dalam daftar yang disebut sebelumnya (jika sudah terinstal di perangkat dan ada dalam daftar ekstensi yang tidak diperbolehkan <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />) akan dinonaktifkan di perangkat dan tidak di-uninstal.</translation>
 <translation id="9027787254195333560">Kebijakan ini memungkinkan Anda mengonfigurasi gambar avatar yang mewakili pengguna di layar login. Kebijakan ini ditetapkan dengan menentukan URL tempat <ph name="PRODUCT_OS_NAME" /> dapat mendownload gambar avatar dan hash kriptografi yang digunakan untuk memverifikasi integritas download. Gambar harus dalam format JPEG dan ukurannya tidak boleh lebih dari 512 kB. URL harus dapat diakses tanpa autentikasi apa pun.
 
       Gambar avatar didownload dan disimpan di cache. Gambar akan didownload ulang setiap kali URL atau hash berubah.

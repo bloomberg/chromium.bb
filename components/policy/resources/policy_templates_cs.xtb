@@ -1224,7 +1224,7 @@ Pokud je tato zásada zakázána nebo není nakonfigurována, funkce WebDriver n
 <translation id="3220624000494482595">Je-li terminálová aplikace aplikace Android, nebude mít nad verzí systému <ph name="PRODUCT_OS_NAME" /> kontrolu ani v případě, že je tato zásada nastavena na hodnotu <ph name="TRUE" />.</translation>
 <translation id="3236046242843493070">Vzory adres URL, ze kterých je možné instalovat rozšíření, aplikace a uživatelské skripty</translation>
 <translation id="3240609035816615922">Zásada přístupu ke konfiguraci tiskáren.</translation>
-<translation id="3240655340884151271">Adresa MAC NIC vestavěného v doku</translation>
+<translation id="3240655340884151271">Adresa MAC rozhraní NIC vestavěného v doku</translation>
 <translation id="3243309373265599239">Udává dobu nečinnosti uživatele, po které bude při napájení ze sítě snížen jas obrazovky.
 
           Pokud je tato zásada nastavena hodnotu větší než nula, jedná se o dobu, po kterou musí uživatel zůstat v nečinnosti, než systém <ph name="PRODUCT_OS_NAME" /> sníží jas obrazovku.
@@ -2005,7 +2005,7 @@ Pokud ji ponecháte nenastavenou, velký kurzor bude ve výchozím nastavení de
 <translation id="4826326557828204741">Akce, která bude provedena, pokud bude dosaženo limitu doby nečinnosti při provozu na baterii</translation>
 <translation id="4832852360828533362">Hlášení uživatelů a zařízení</translation>
 <translation id="4834526953114077364">Bude odstraněno tolik uživatelů, od jejichž posledního použití uplynula nejdelší doba, kolik bude potřeba k uvolnění dostatečného množství volného místa. Odstraněni budou pouze uživatelé, kteří se během posledních 3 měsíců nepřihlásili.</translation>
-<translation id="4835622243021053389">Povolit ověřování PovoliNTLMv2.</translation>
+<translation id="4835622243021053389">Povolit ověřování NTLMv2.</translation>
 <translation id="4858735034935305895">Povolení režimu celé obrazovky</translation>
 <translation id="4861767323695239729">Nakonfigurovat metody zadávání povolené v uživatelské relaci</translation>
 <translation id="487460824085252184">Migrovat automaticky, nežádat uživatele o souhlas.</translation>
@@ -2250,7 +2250,7 @@ Pokud tuto zásadu nenastavíte, bude aktivován výchozí poskytovatel vyhledá
 
       Pokud tato zásada není nastavena nebo je nastavena na prázdný řetězec nebo neplatný rozsah portů, má rozhraní WebRTC povoleno používat libovolný dostupný místní port UDP.</translation>
 <translation id="5290940294294002042">Určete seznam pluginů, které uživatel může povolit nebo zakázat</translation>
-<translation id="5306186200045823863">Povolit důvěřování trust in starší infrastruktuře PKI společnosti Symantec</translation>
+<translation id="5306186200045823863">Povolit důvěřování starší infrastruktuře PKI společnosti Symantec</translation>
 <translation id="5307432759655324440">Dostupnost anonymního režimu</translation>
 <translation id="5318185076587284965">Povolit použití předávacích serverů hostitelem vzdáleného přístupu</translation>
 <translation id="5323128137188992869">Umožňuje odesílání obsahu do zařízení pomocí služby <ph name="PRODUCT_NAME" />.
@@ -2616,7 +2616,7 @@ Pokud tuto zásadu nenastavíte, bude při prvním zobrazení přihlašovací ob
 <translation id="5950205771952201658">Vzhledem k tomu, že online kontroly zamítnutých certifikátů nepřinášejí žádné efektivní bezpečnostní výhody a také snadno selhávají, jsou v prohlížeči <ph name="PRODUCT_NAME" /> verze 19 a vyšší ve výchozím nastavení deaktivovány. Nastavíte-li tuto zásadu na hodnotu True, obnoví se předchozí chování a budou prováděny online kontroly OCSP/CRL.
 
 Pokud tato zásada není nastavena nebo je nastavena na hodnotu False, <ph name="PRODUCT_NAME" /> nebude u verzí <ph name="PRODUCT_NAME" /> 19 a novějších provádět online kontroly zamítnutých certifikátů.</translation>
-<translation id="5961137303188584693">Adresa MAC NIC vestavěného v zařízení</translation>
+<translation id="5961137303188584693">Adresa MAC rozhraní NIC vestavěného v zařízení</translation>
 <translation id="5966615072639944554">Rozšíření, která mohou používat rozhraní API vzdáleného ověření identity</translation>
 <translation id="5983708779415553259">Výchozí chování pro stránky, které nejsou součástí žádného obsahového balíčku</translation>
 <translation id="5997543603646547632">Ve výchozím nastavení použít 24hodinový formát</translation>
@@ -2709,7 +2709,7 @@ Pokud tato zásada není nastavena nebo je nastavena na hodnotu False, <ph name=
 <translation id="6133088669883929098">Povolit všem webům generovat klíče</translation>
 <translation id="6136537398661737682">Tato zásada ovládá počáteční stav služeb určování polohy Google.
 
-      Když tato zásada není nakonfigurovaná nebo je nastavená na možnost <ph name="GLS_DISABLED" />, služby určování polohy Google jsou v počáteční stavu vypnuté.
+      Když tato zásada není nakonfigurovaná nebo je nastavená na možnost <ph name="GLS_DISABLED" />, služby určování polohy Google jsou v počátečním stavu vypnuté.
 
       Když je tato zásada nastavená na možnost <ph name="GLS_ENABLED" />, jsou služby určování polohy Google v počátečním stavu zapnuté.
 
@@ -2790,7 +2790,7 @@ Není-li zásada nastavena, může se uživatelům zobrazit výzva, zda chtějí
 
         Pokud je zásada v seznamu a dojde ke konfliktu mezi dvěma zdroji, ale také mezi různými rozsahy či úrovněmi, použije se zásada s nejvyšší prioritou.
 
-        Pokud zásada není v seznamu a dojde ke konfliktu mezi zdroji, rozsahy nebo úrovněmi použije se zásada s nejvyšší prioritou.</translation>
+        Pokud zásada není v seznamu a dojde ke konfliktu mezi zdroji, rozsahy nebo úrovněmi, použije se zásada s nejvyšší prioritou.</translation>
 <translation id="6258193603492867656">Určuje, zda by měl vygenerovaný hlavní název služby (SPN) protokolu Kerberos obsahovat nestandardní port. 
    
             Pokud toto nastavení aktivujete a bude zadán nestandardní port (tedy jiný port než 80 nebo 443), bude zahrnut do vygenerovaného hlavního názvu služby (SPN) protokolu Kerberos.
@@ -3567,7 +3567,7 @@ Tato zásada je určena k internímu použití prohlížečem <ph name="PRODUCT_
 
           Poznámka: Hodnota <ph name="CHARGE_START_TIME_FIELD_NAME" /> musí být menší než hodnota <ph name="CHARGE_END_TIME_FIELD_NAME" />.
 
-          Poznámka: V poli <ph name="MINUTE_FIELD_NAME" /> v polích <ph name="CHARGE_START_TIME_FIELD_NAME" /> a <ph name="CHARGE_END_TIME_FIELD_NAME" /> jsou povoleny tyto hodnoty: 0, 15, 30, 45.</translation>
+          Poznámka: V poli <ph name="MINUTE_FIELD_NAME" /> v nastaveních <ph name="CHARGE_START_TIME_FIELD_NAME" /> a <ph name="CHARGE_END_TIME_FIELD_NAME" /> jsou povoleny tyto hodnoty: 0, 15, 30, 45.</translation>
 <translation id="7717938661004793600">Konfiguruje funkce usnadnění přístupu v systému <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7724994675283793633">Tato zásada povolí protokol HTTP/0.9 na portech jiných než 80 pro HTTP a 443 pro HTTPS.
 
@@ -4156,9 +4156,9 @@ POZNÁMKA: Až do verze 45 byla tato zásada podporována pouze v režimu veře
       Hodnota zásady se zadává v sekundách.</translation>
 <translation id="9018338365267278833">Tato zásada odstraní rozšíření uvedená v zásadě <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> a rozšíření uvedená v zásadě <ph name="EXTENSION_SETTINGS_POLICY_NAME" />, která mají režim instalace nastavený na blokování. Vymaže při tom také místní data uživatele.  Informace o tom, co se může stát s daty uživatele, která nejsou uložena místně, najdete v zásadách ochrany soukromí nebo v zásadách uchovávání dat rozšíření.
 
-      Když je zásada nastavená na možnost Aktivováno a v zařízení již jsou nainstalována některá rozšíření z výše uvedených seznamů, budou z počítače zcela odstraněna (včetně místních dat uživatele).
+      Když je zásada zapnutá a v zařízení již jsou nainstalována některá rozšíření z výše uvedených seznamů, budou z počítače zcela odstraněna (včetně místních dat uživatele).
 
-      Když je tato zásada nastavená na možnost Deaktivováno nebo je ponechána nenastavená a v zařízení již jsou nainstalována některá rozšíření z výše uvedených seznamů (uvedená v seznamu zakázaných v zásadě <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />), budou na počítači zakázána, ale neodinstalují se.</translation>
+      Když je tato zásada vypnutá nebo je ponechána nenastavená a v zařízení již jsou nainstalována některá rozšíření z výše uvedených seznamů (uvedená v seznamu zakázaných v zásadě <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />), budou na počítači zakázána, ale neodinstalují se.</translation>
 <translation id="9027787254195333560">Tato zásada umožňuje nakonfigurovat obrázek avatara, který na přihlašovací obrazovce představuje uživatele. Zásadu nastavíte zadáním adresy URL, ze které systém <ph name="PRODUCT_OS_NAME" /> může obrázek avatara stáhnout, a kryptografické hodnoty hash, která slouží k ověření integrity staženého obsahu. Obrázek musí být ve formátu JPEG a jeho velikost nesmí překročit 512 kB. Adresa URL musí být přístupná bez ověření.
 
       Obrázek avatara se stáhne a uloží do mezipaměti. Při každé změně adresy URL nebo hodnoty hash se stáhne znovu.

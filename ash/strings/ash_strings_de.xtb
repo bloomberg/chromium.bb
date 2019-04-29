@@ -86,7 +86,7 @@
 <translation id="225680501294068881">Nach Geräten wird gesucht...</translation>
 <translation id="2268130516524549846">Bluetooth deaktiviert</translation>
 <translation id="2268813581635650749">Alle abmelden</translation>
-<translation id="2277103315734023688">Vorspulen</translation>
+<translation id="2277103315734023688">Vorwärts springen</translation>
 <translation id="2292698582925480719">Displaymaßstab</translation>
 <translation id="2302092602801625023">Dieses Konto wird über Family Link verwaltet</translation>
 <translation id="2303600792989757991">Fensterübersicht umschalten</translation>
@@ -207,7 +207,7 @@
 <translation id="4042660782729322247">Sie geben Ihren Bildschirm frei</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Für eine App deaktiviert}other{Für # Apps deaktiviert}}</translation>
 <translation id="4072264167173457037">Durchschnittliches Signal</translation>
-<translation id="4112140312785995938">Rückwärts suchen</translation>
+<translation id="4112140312785995938">Zurück springen</translation>
 <translation id="4129129681837227511">Wenn Sie Benachrichtigungen auf dem Sperrbildschirm sehen möchten, entsperren Sie das Gerät, um die Einstellung zu ändern</translation>
 <translation id="4146833061457621061">Musik abspielen</translation>
 <translation id="4181841719683918333">Sprachen</translation>

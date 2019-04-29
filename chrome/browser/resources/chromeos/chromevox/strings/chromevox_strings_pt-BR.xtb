@@ -623,7 +623,7 @@ Se você não quer mais ver o tutorial, use o ChromeVox para navegar até o bot�
 <translation id="5349770431644471053">Backlink</translation>
 <translation id="536031132345979795">Ir para trás durante a leitura contínua</translation>
 <translation id="5368000168321181111">Earcons desativados</translation>
-<translation id="5368505757342402527">Download de <ph name="FILE_NAME" /> <ph name="PROGRESS" />% completo. Cerca de <ph name="TIME" /> <ph name="UNITS" /> restante(s).</translation>
+<translation id="5368505757342402527">Download de <ph name="FILE_NAME" /> <ph name="PROGRESS" />% completo. Tempo restante: cerca de <ph name="TIME" /> <ph name="UNITS" />.</translation>
 <translation id="5374320867641260420">Nenhum botão a seguir.</translation>
 <translation id="5376407118396657359">Pressione Pesquisar+Ctrl+Alt com as setas para navegar por célula.</translation>
 <translation id="5382299583965267720">Nenhum cabeçalho de nível 1 a seguir.</translation>

@@ -34,7 +34,7 @@
 <translation id="1337036551624197047">চেক কীবোর্ড</translation>
 <translation id="1338950911836659113">মোছা হচ্ছে...</translation>
 <translation id="1346748346194534595">ডানে</translation>
-<translation id="1351692861129622852"><ph name="FILE_COUNT" />টি ফাইল আমদানি করা হচ্ছে...</translation>
+<translation id="1351692861129622852"><ph name="FILE_COUNT" />টি ফাইল ইমপোর্ট করা হচ্ছে...</translation>
 <translation id="1352103415082130575">থাই কীবোর্ড (পাট্টাচোটে)</translation>
 <translation id="1358032944105037487">জাপানী কীবোর্ড</translation>
 <translation id="1358735829858566124">ফাইল বা ডিরেক্টরি ব্যবহারযোগ্য নয়৷</translation>
@@ -67,10 +67,10 @@
 <translation id="174173592514158117">সমস্ত Play ফোল্ডারগুলি দেখান</translation>
 <translation id="174937106936716857">মোট ফাইল সংখ্যা</translation>
 <translation id="1775381402323441512">ভিডিওর তথ্য</translation>
-<translation id="180035236176489073">আপনার এই ফাইলগুলিতে অ্যাক্সেস পেতে অনলাইন হওয়া আবশ্যক৷</translation>
+<translation id="180035236176489073">এই ফাইলগুলিতে অ্যাক্সেস পেতে আপনাকে অনলাইন হতে হবে৷</translation>
 <translation id="1807938677607439181">সবকটি ফাইল</translation>
-<translation id="1810764548349082891">কোনো পূর্বরূপ উপলব্ধ নেই</translation>
-<translation id="1815861158988915678"><ph name="BEGIN_BOLD" />সতর্কতা:<ph name="END_BOLD" /> এই ফাইলগুলি অস্থায়ী এবং ডিস্ক স্থান মুক্ত করতে স্বয়ংক্রিয়ভাবে মুছে ফেলা হতে পারে৷ <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" /></translation>
+<translation id="1810764548349082891">কোনো প্রিভিউ উপলভ্য নেই</translation>
+<translation id="1815861158988915678"><ph name="BEGIN_BOLD" />সতর্কতা:<ph name="END_BOLD" /> এই ফাইলগুলি অস্থায়ী এবং ডিস্ক স্থান মুক্ত করতে অটোমেটিক মুছে ফেলা হতে পারে৷ <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" /></translation>
 <translation id="1829129547161959350">পেঙ্গুইন</translation>
 <translation id="183183971458492120">তথ্য লোড করা হচ্ছে…</translation>
 <translation id="1838709767668011582">Google সাইট</translation>
@@ -84,7 +84,7 @@
 <translation id="1931134289871235022">স্লোভাক</translation>
 <translation id="1933345018156373194">স্থানান্তরিত করা যায়নি, অপ্রত্যাশিত সমস্যা হয়েছে: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">ফিনিশ</translation>
-<translation id="1942765061641586207">চিত্রের রেজোলিউশন</translation>
+<translation id="1942765061641586207">ইমেজের রেজোলিউশন</translation>
 <translation id="1943097386230153518">নতুন পরিষেবা ইনস্টল করুন</translation>
 <translation id="1947424002851288782">জার্মান কীবোর্ড</translation>
 <translation id="197560921582345123">সম্পাদনা করতে পারবেন</translation>
@@ -94,7 +94,7 @@
 <translation id="2046702855113914483">রামেন</translation>
 <translation id="204914487372604757">শর্টকাট তৈরি করুন</translation>
 <translation id="2070909990982335904">ডট দিয়ে শুরু নমাগুলি সিস্টেমের জন্য সংরক্ষিত৷ দয়া করে অন্য নাম চয়ন করুন৷</translation>
-<translation id="2079545284768500474">পূর্বাবস্থায় ফিরুন</translation>
+<translation id="2079545284768500474">আগের অবস্থায় ফিরুন</translation>
 <translation id="2080010875307505892">সার্বিয় কীবোর্ড</translation>
 <translation id="2084108471225856927">ডিভাইস সেটিংস</translation>
 <translation id="2085470240340828803">"<ph name="FILENAME" />" নামের একটি ফাইল ইতিমধ্যেই বিদ্যমান৷ আপনি কী করতে চান?</translation>
@@ -113,7 +113,7 @@
 <translation id="2291538123825441971"><ph name="NUMBER_OF_FILES" />টি ফাইল খোলা হচ্ছে।</translation>
 <translation id="2303301624314357662"><ph name="FILE_NAME" /> খোলা হচ্ছে।</translation>
 <translation id="2305020378527873881"><ph name="VOLUME_NAME" /> সরিয়ে দেওয়া হয়েছে।</translation>
-<translation id="2325650632570794183">এই ফাইলের প্রকারটি সমর্থিত নয়৷ এই ধরনের ফাইল খুলতে পারে এমন অ্যাপ খুঁজে পেতে Chrome ওয়েব স্টোরে যান।</translation>
+<translation id="2325650632570794183">এই ফাইল প্রকারটি সমর্থিত নয়৷ এই ধরণের ফাইল খুলতে পারে এমন অ্যাপ খুঁজতে অনুগ্রহ করে Chrome ওয়েব স্টোর দেখুন৷</translation>
 <translation id="23434688402327542">কাজাখ কীবোর্ড</translation>
 <translation id="2352947182261340447">স্থানীয় স্টোরেজে পর্যাপ্ত জায়গা নেই।</translation>
 <translation id="2377319039870049694">তালিকা দৃশ্যে যান</translation>
@@ -137,7 +137,7 @@
 <translation id="2563185590376525700">ব্যাঙ</translation>
 <translation id="2614589611416690597"><ph name="VIDEO_TYPE" /> ভিডিও</translation>
 <translation id="2620090360073999360">এই সময়ে Google ড্রাইভে পৌঁছানো যাবে না৷</translation>
-<translation id="2638942478653899953">Google ড্রাইভে পৌঁছানো যাবে না৷ দয়া করে <ph name="BEGIN_LINK" />লগ আউট<ph name="END_LINK" /> হোন এবং আবার লগ ইন করুন৷</translation>
+<translation id="2638942478653899953">Google ড্রাইভে পৌঁছানো যাবে না৷ অনুগ্রহ করে <ph name="BEGIN_LINK" />লগ-আউট<ph name="END_LINK" /> করুন এবং আবার লগ-ইন করুন৷</translation>
 <translation id="2649120831653069427">রেনবোফিশ</translation>
 <translation id="2661146741306740526">১৬x৯</translation>
 <translation id="2672394958563893062">একটি ত্রুটি ঘটেছে৷ শুরু থেকে পুনরায় আরম্ভ করতে ক্লিক করুন৷</translation>
@@ -189,7 +189,7 @@
 <translation id="3241720467332021590">আইরিশ</translation>
 <translation id="3245321423178950146">অজানা শিল্পী</translation>
 <translation id="3252266817569339921">ফরাসী</translation>
-<translation id="3254434849914415189"><ph name="FILE_TYPE" /> ফাইলের জন্য ডিফল্ট অ্যাপ্লিকেশন বেছে নিন:</translation>
+<translation id="3254434849914415189"><ph name="FILE_TYPE" /> ফাইলের জন্য ডিফল্ট অ্যাপ বেছে নিন:</translation>
 <translation id="3264582393905923483">প্রসঙ্গ</translation>
 <translation id="3280431534455935878">প্রস্তুতি</translation>
 <translation id="3280987981688031357">ভিনাইল রেকর্ড</translation>
@@ -221,7 +221,7 @@
 <translation id="3626281679859535460">উজ্জ্বলতা</translation>
 <translation id="3644896802912593514">প্রস্থ</translation>
 <translation id="3678559383040232393">মাল্টাদেশীয় কীবোর্ড</translation>
-<translation id="3685122418104378273">মোবাইল ডেট ব্যবহার করার সময় ডিফল্টরূপে Google ড্রাইভ সিঙ্ক অক্ষম করা হয়৷</translation>
+<translation id="3685122418104378273">মোবাইল ডেটা ব্যবহার করার সময় ডিফল্টরূপে Google ড্রাইভ সিঙ্ক বন্ধ করা হয়৷</translation>
 <translation id="3726463242007121105">এই ডিভাইসটি ফাইল সিস্টেমটি সমর্থিত না হওয়ার কারণে খুলতে পারা যায়না৷</translation>
 <translation id="3741243925913727067">Google ড্রাইভে আপনার মিডিয়া ডিভাইসের ফটো এবং ভিডিওগুলির ব্যকআপ নিন৷</translation>
 <translation id="3749289110408117711">ফাইলের নাম</translation>
@@ -247,7 +247,7 @@
 <translation id="391445228316373457">নেপালি কীবোর্ড (ফোনেটিক)</translation>
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3930521966936686665">এতে প্লে করুন</translation>
-<translation id="3943857333388298514">আটকে দিন</translation>
+<translation id="3943857333388298514">পেস্ট করুন</translation>
 <translation id="3958548648197196644">কিউই</translation>
 <translation id="3966388904776714213">অডিও প্লেয়ার</translation>
 <translation id="4002066346123236978">শিরোনাম</translation>
@@ -269,7 +269,7 @@
 <translation id="4299729908419173967">ব্রাজিলীয়</translation>
 <translation id="4309915981827077375">সাধারণ তথ্য</translation>
 <translation id="4326192123064055915">কফি</translation>
-<translation id="4336032328163998280">অনুলিপি ক্রিয়াকলাপ ব্যর্থ হয়েছে৷ <ph name="ERROR_MESSAGE" /></translation>
+<translation id="4336032328163998280">কপি অপারেশন ব্যর্থ হয়েছে৷ <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4364327530094270451">ফুটি</translation>
 <translation id="4372884569765913867">১x১</translation>
 <translation id="4425149324548788773">আমার ড্রাইভ</translation>
@@ -343,10 +343,10 @@
 <translation id="5144820558584035333">হাঙ্গুল ৩ সেট (390)</translation>
 <translation id="5145331109270917438">পরিবর্তনের তারিখ</translation>
 <translation id="515594325917491223">দাবা</translation>
-<translation id="5158593464696388225">ছবি সংরক্ষণ করতে ব্যর্থ হয়েছে৷</translation>
+<translation id="5158593464696388225">ইমেজ সেভ করা যায়নি৷</translation>
 <translation id="5159383109919732130"><ph name="BEGIN_BOLD" />এই মুহূর্তে আপনার ডিভাসটি সরাবেন না!<ph name="END_BOLD" />
        <ph name="LINE_BREAKS" />
-       ব্যবহার চলাকালীন অবস্থায় আপনার ডিভাইস সরিয়ে ফেলা হলে ডেটা হারিয়ে যেতে পারে৷  দয়া করে ক্রিয়াকলাপ শেষ হয়ে যাওয়া পর্যন্ত অপেক্ষা করুন, তারপর ফাইলগুলির অ্যাপ্লিকেশান ব্যবহার করে ডিভাইসটি বের করে নিন৷</translation>
+       ব্যবহার চলাকালীন অবস্থায় আপনার ডিভাইস সরিয়ে ফেলা হলে ডেটা হারিয়ে যেতে পারে৷ অনুগ্রহ করে কাজ শেষ হওয়া পর্যন্ত অপেক্ষা করুন, তারপর ফাইলগুলির অ্যাপ ব্যবহার করে ডিভাইসটি বের করে নিন৷</translation>
 <translation id="5163869187418756376">শেয়ার করে ব্যর্থ হয়েছে৷ আপনার সংযোগটি পরীক্ষা করে পরে আবার চেষ্টা করুন৷</translation>
 <translation id="516592729076796170">মার্কিন যুক্তরাষ্ট্র প্রোগ্রামার ডিভোরাক</translation>
 <translation id="5167131699331641907">নেদারল্যান্ডস কীবোর্ড</translation>
@@ -370,7 +370,7 @@
 <translation id="5319782540886810524">লাটভিও কীবোর্ড</translation>
 <translation id="5323213332664049067">লাতিন আমেরিকান</translation>
 <translation id="5327248766486351172">নাম</translation>
-<translation id="5330145655348521461">এই ফাইলগুলি একটি আলাদা ডেস্কটপে খোলা রয়েছে৷ এটিকে দেখতে <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) এ সরান৷</translation>
+<translation id="5330145655348521461">এই ফাইলগুলি একটি আলাদা ডেস্কটপে খোলা রয়েছে৷ এটিকে দেখতে <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />)-এ সরান৷</translation>
 <translation id="5330512191124428349">তথ্য পান</translation>
 <translation id="5335458522276292100"><ph name="FILE_COUNT" /> এর <ph name="BEGIN_LINK" />Google ড্রাইভ<ph name="END_LINK" /> এ ব্যাক-আপ নেওয়া হচ্ছে</translation>
 <translation id="5358764674931277">ফ্রেম রেট</translation>
@@ -409,9 +409,9 @@
 <translation id="5817397429773072584">ঐতিহ্যবাহি চীনা</translation>
 <translation id="5818003990515275822">কোরীয়</translation>
 <translation id="5819442873484330149">হাঙ্গুল ৩ সেট (সর্বশেষ)</translation>
-<translation id="5833610766403489739">এই ফাইলটির আসার পথ কোথাও বন্ধ করা আছে৷ দয়া করে আপনার ডাউনলোড অবস্থানের সেটিংস পরীক্ষা করুন এবং আবার চেষ্টা করুন৷</translation>
+<translation id="5833610766403489739">এই ফাইলটির আসার পথ কোথাও বন্ধ করা আছে৷ অনুগ্রহ করে আপনার ডাউনলোড লোকেশনের সেটিংস পরীক্ষা করুন এবং আবার চেষ্টা করুন৷</translation>
 <translation id="5838825566232597749">মার্কিন ওয়ার্কম্যান আন্তর্জাতিক</translation>
-<translation id="5850516540536751549">এই ফাইল প্রকারটি সমর্থিত নয়৷ এই ধরনের ফাইল খুলতে পারে এমন অ্যাপ খুঁজতে অনুগ্রহ করে <ph name="BEGIN_LINK" />Chrome ওয়েব স্টোর<ph name="END_LINK" /> দেখুন৷
+<translation id="5850516540536751549">এই ধরনের ফাইল সমর্থিত নয়৷ এই ধরনের ফাইল খুলতে পারে এমন অ্যাপ খুঁজতে <ph name="BEGIN_LINK" />Chrome ওয়েব স্টোর<ph name="END_LINK" /> দেখুন৷
         <ph name="BEGIN_LINK_HELP" />আরও জানুন<ph name="END_LINK_HELP" /></translation>
 <translation id="5851063901794976166">এখানে দেখার মতো কিছু নেই...</translation>
 <translation id="5857774240076772505">Linux অ্যাপকে <ph name="FOLDER_NAME" /> ফোল্ডারের ফাইলগুলি পরিবর্তন করার অনুমতি দিন</translation>
@@ -482,12 +482,12 @@
 <translation id="6820687829547641339">Gzip কম্প্রেসযুক্ত টার আর্কাইভ</translation>
 <translation id="6825883775269213504">রাশিয়ান</translation>
 <translation id="6827236167376090743">পাশাপাশি এই ভিডিওটি দীর্ঘ সময় ধরে চলতে থাকবে৷</translation>
-<translation id="6862635236584086457">এই ফোল্ডারটিতে সংরক্ষিত সব ফাইল অনলাইনে স্বয়ংক্রিয়ভাবে ব্যাক আপ করা হয়েছে</translation>
+<translation id="6862635236584086457">এই ফোল্ডারটিতে সেভ করা সব ফাইল অনলাইনে অটোমেটিকভাবে ব্যাক আপ করা হয়েছে</translation>
 <translation id="6870130893560916279">ইউক্রেনীয় কীবোর্ড</translation>
 <translation id="6876155724392614295">সাইকেল</translation>
 <translation id="6878261347041253038">দেবনাগরী কীবোর্ড (ফোনেটিক)</translation>
 <translation id="6885780034956018177">শামুক</translation>
-<translation id="6896758677409633944">অনুলিপি</translation>
+<translation id="6896758677409633944">কপি</translation>
 <translation id="691516599546977041"><ph name="FOLDER_NAME" />-এ সেভ করা যায়নি। এডিট করা ছবি ডাউনলোড ফোল্ডারে সেভ করা হবে।</translation>
 <translation id="6915678159055240887">ক্রোমবাক্স</translation>
 <translation id="6918340160281024199">মার্কিন ওয়ার্কম্যান</translation>
@@ -503,7 +503,7 @@
 <translation id="6970230597523682626">বুলগেরীয়</translation>
 <translation id="6978611942794658017">Windows সফ্টওয়্যার ব্যবহার করে এমন একটি কম্পিউটারের জন্য এই ফাইলটি ডিজাইন করা হয়েছে৷ Chrome OS দ্বারা চালিত আপনার ডিভাইসটির সাথে এটি সামঞ্জস্যপূর্ণ নয়৷ একটি উপযুক্ত প্রতিস্থাপনযোগ্য অ্যাপের জন্য অনুগ্রহ করে Chrome ওয়েব স্টোর-এ সার্চ করুন৷</translation>
 <translation id="6979158407327259162">Google ড্রাইভ</translation>
-<translation id="6990081529015358884">আপনি জায়গা সমাপ্ত করে ফেলেছেন৷</translation>
+<translation id="6990081529015358884">আপনার ডিভাইসে স্পেশ নেই৷</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" />টি ফোল্ডার নির্বাচিত</translation>
 <translation id="7014174261166285193">ইনস্টলেশান ব্যর্থ হয়েছে৷</translation>
 <translation id="7040138676081995583">এর মাধ্যমে খুলুন...</translation>
@@ -536,7 +536,7 @@
 <translation id="7474889694310679759">কানাডিয় ইংরাজি কীবোর্ড</translation>
 <translation id="7489215562877293245"><ph name="FILE_COUNT" />টি পাওয়া গেছে
     <ph name="LINE_BREAK1" />
-    <ph name="BEGIN_LINK" />Google ড্রাইভ<ph name="END_LINK" /> এ ব্যাক-আপ করার জন্য প্রস্তুত</translation>
+    <ph name="BEGIN_LINK" />Google ড্রাইভ<ph name="END_LINK" />-এ ব্যাক-আপ করার জন্য প্রস্তুত</translation>
 <translation id="7505167922889582512">লুকানো ফাইল দেখুন</translation>
 <translation id="7508545000531937079">স্লাইডশো</translation>
 <translation id="751507702149411736">বেলারুশীয়</translation>
@@ -551,15 +551,15 @@
 <translation id="7658239707568436148">বাতিল</translation>
 <translation id="770015031906360009">গ্রীক</translation>
 <translation id="7706319470528945664">পর্তুগিজ কীবোর্ড</translation>
-<translation id="7711920809702896782">ছবির তথ্য</translation>
+<translation id="7711920809702896782">ইমেজর তথ্য</translation>
 <translation id="7724603315864178912">কাটুন</translation>
-<translation id="7730494089396812859">ক্লাউড ব্যাকআপের বিশদ বিবরণ দেখায়</translation>
-<translation id="7748626145866214022">অ্যাকশন বারেও আরও বিকল্প উপলভ্য। অ্যাকশন বারে ফোকাস করতে Alt + A প্রেস করুন।</translation>
+<translation id="7730494089396812859">ক্লাউড ব্যাক-আপের বিশদ বিবরণ দেখায়</translation>
+<translation id="7748626145866214022">অ্যাকশন বারে আরও বিকল্প উপলভ্য। অ্যাকশন বারে ফোকাস করতে Alt + A প্রেস করুন।</translation>
 <translation id="7765158879357617694">সরান</translation>
 <translation id="7774365994322694683">পাখি</translation>
-<translation id="7788080748068240085">এই <ph name="FILE_NAME" /> অফলাইনে সংরক্ষণ করতে হলে আপনাকে অবশ্যই অতিরিক্ত <ph name="TOTAL_FILE_SIZE" />স্থান খালি করতে হবে:<ph name="MARKUP_1" />
+<translation id="7788080748068240085">এই <ph name="FILE_NAME" /> অফলাইনে সেভ করতে হলে আপনাকে অবশ্যই অতিরিক্ত <ph name="TOTAL_FILE_SIZE" /> স্পেশ খালি করতে হবে:<ph name="MARKUP_1" />
        <ph name="MARKUP_2" />যে সমস্ত ফাইলের আপনার আর অফলাইনে ব্যবহার করার দরকার নেই সেগুলিকে আনপিন করুন<ph name="MARKUP_3" />
-       <ph name="MARKUP_4" />আপনার ডাউনলোড ফোলডার থেকে ফাইল মুছুন<ph name="MARKUP_5" /></translation>
+       <ph name="MARKUP_4" />আপনার ডাউনলোড ফোল্ডার থেকে ফাইল মুছুন<ph name="MARKUP_5" /></translation>
 <translation id="7794058097940213561">ডিভাইস বিন্যাস করুন</translation>
 <translation id="7799329977874311193"> HTML দস্তাবেজ</translation>
 <translation id="7805768142964895445">স্থিতি</translation>
@@ -570,9 +570,9 @@
     কিছু ফটো বেছে নেওয়ার চেষ্টা করুন।</translation>
 <translation id="7825423931463735974">তামিল কীবোর্ড (তামিল99)</translation>
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> টিবি</translation>
-<translation id="7839804798877833423">এই ফাইলগুলি আনয়ন করতে আনুমানিক মোবাইল ডেটার <ph name="FILE_SIZE" /> ব্যবহার করবে</translation>
+<translation id="7839804798877833423">এই ফাইলগুলি আনতে আনুমানিক মোবাইল ডেটা <ph name="FILE_SIZE" /> ব্যবহার হবে</translation>
 <translation id="7846076177841592234">নির্বাচন বাতিল করুন</translation>
-<translation id="7850851215703745691">এই ড্রাইভ ফাইলগুলি এখনো শেয়ার করা হয়নি</translation>
+<translation id="7850851215703745691">এই ড্রাইভ ফাইলগুলি এখনো শেয়াক করা হয়নি</translation>
 <translation id="7853966320808728790">ফরাসি BÉPO</translation>
 <translation id="7864662577698025113">নতুন পরিষেবা যোগ করুন</translation>
 <translation id="7873831373602885875"><ph name="FOLDER_NAME" />-এ সেভ করা যাচ্ছে না। সব এডিট ডাউনলোড ফোল্ডারের মধ্যে <ph name="DOWNLOADS_FOLDER" />-এ সেভ করা হবে।</translation>
@@ -614,7 +614,7 @@
 <translation id="8160015581537295331">স্প্যানীয় কীবোর্ড</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8193175696669055101">ডিভাইস মডেল</translation>
-<translation id="8223479393428528563">অফলাইনে ব্যবহারের জন্য এই ফাইলগুলি সংরক্ষণ করতে, অনলাইনে ফিরে আসুন, ফাইলগুলিতে ডান-ক্লিক করুন এবং <ph name="OFFLINE_CHECKBOX_NAME" /> বিকল্পটি নির্বাচন করুন৷</translation>
+<translation id="8223479393428528563">অফলাইনে ব্যবহারের জন্য এই ফাইলগুলি সেভ করতে অনলাইনে ফিরে আসুন, ফাইলগুলিতে ডান-ক্লিক করুন এবং <ph name="OFFLINE_CHECKBOX_NAME" /> বিকল্পটি নির্বাচন করুন৷</translation>
 <translation id="8249296373107784235">বাতিল</translation>
 <translation id="8261506727792406068">মুছুন</translation>
 <translation id="8279388322240498158">সোরানি কুর্দিশ ইংরাজি-নির্ভর কীবোর্ড</translation>
@@ -622,8 +622,8 @@
 <translation id="8294431847097064396">উৎস</translation>
 <translation id="8297012244086013755">হাঙ্গুল ৩ সেট (Shift ছাড়া)</translation>
 <translation id="8299269255470343364">জাপানী</translation>
-<translation id="8312871300878166382">ফোল্ডারের মধ্যে আটকে দিন</translation>
-<translation id="8329978297633540474">সাধারণ পাঠ</translation>
+<translation id="8312871300878166382">ফোল্ডারের মধ্যে পেস্ট করুন</translation>
+<translation id="8329978297633540474">সাধারণ টেক্সট</translation>
 <translation id="8336153091935557858">গতলাক <ph name="YESTERDAY_DAYTIME" /></translation>
 <translation id="8336579025507394412">আইসল্যান্ডিক কীবোর্ড</translation>
 <translation id="8342318071240498787">একই নাম সহ ফাইল অথবা একটি নির্দেশিকা ইতিমধ্যেই বিদ্যমান আছে৷</translation>
@@ -654,7 +654,7 @@
 <translation id="8722421161699219904">মার্কিন আন্তর্জাতিক কীবোর্ড</translation>
 <translation id="872537912056138402">ক্রোয়েশিয়</translation>
 <translation id="874420130893181774">ঐতিহ্যবাহি পিনয়িন ইনপুট পদ্ধতি</translation>
-<translation id="8775404590947523323">আপনার সম্পাদনাগুলি স্বয়ংক্রিয়ভাবে সংরক্ষিত হয়৷ আসল চিত্রের একটি কপি রাখতে <ph name="BREAKS" /> করুন , "মূল লেখা পুনর্লিখন করুন" চিহ্ন মুছে দিন</translation>
+<translation id="8775404590947523323">আপনার সম্পাদনাগুলি অটোমেটিক সেভ হয়৷ আসল ইমেজের একটি কপি রাখতে <ph name="BREAKS" /> করুন, "মূল লেখা ওভাররাইট করুন" চিহ্ন মুছে দিন</translation>
 <translation id="8803496343472038847">রুশ ফোনেটিক কীবোর্ড</translation>
 <translation id="8808686172382650546">বিড়াল</translation>
 <translation id="8810671769985673465">জিপ করা যায়নি, আইটেমটি এখনও আছে: "<ph name="FILE_NAME" />"</translation>
@@ -668,21 +668,21 @@
 <translation id="8965697826696209160">সেখানে যথেষ্ট স্থান নেই৷</translation>
 <translation id="9017798300203431059">রাশিয়ান ফনেটিক</translation>
 <translation id="9034924485347205037">Linux ফাইল</translation>
-<translation id="9035012421917565900">আইটেমগুলিকে '<ph name="DESTINATION_NAME" />' এ ফিরিয়ে নেওয়া যাবে না, তাই আপনি এই কাজটি আর পূর্বাবস্থায় ফেরাতে পারবেন না।</translation>
+<translation id="9035012421917565900">আইটেমগুলিকে '<ph name="DESTINATION_NAME" />' - ফিরিয়ে নেওয়া যাবে না, তাই আপনি এই কাজটি আর পূর্বাবস্থায় ফেরাতে পারবেন না।</translation>
 <translation id="9038620279323455325">"<ph name="FILE_NAME" />" নামের ফাইল আগে থেকেই আছে। অন্য একটি নাম লিখুন।</translation>
 <translation id="9064939804718829769">হস্তান্তর হচ্ছে...</translation>
 <translation id="9065203028668620118">সম্পাদনা</translation>
 <translation id="9099674669267916096">পৃষ্ঠার সংখ্যা</translation>
-<translation id="9110990317705400362">আমরা ক্রমাগত আপনার ব্রাউজ করা নিরাপদ করতে উপায় খুঁজছি৷ পূর্বে, যে কোনও ওয়েবসাইট আপনার ব্রাউজারে একটি এক্সটেনশন যোগ করার অনুরোধ করতে পারত৷ Google Chrome-এর লেটেস্ট ভার্সনে, আপনাকে অবশ্যই Chrome-কে স্পষ্টভাবে বলতে হবে যে আপনি এক্সটেনশন পৃষ্ঠার মাধ্যমে এক্সটেনশনগুলি যোগ করে সেগুলিকে ইনস্টল করতে চান৷ <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" /></translation>
+<translation id="9110990317705400362">আমরা ক্রমাগত আপনার ব্রাউজিং নিরাপদ করতে উপায় খুঁজছি৷ আগে, যে কোনো ওয়েবসাইট আপনার ব্রাউজারে একটি এক্সটেনশন যোগ করার অনুরোধ জানাতে পারত৷ Google Chrome-এর সাম্প্রতিক ভার্সনে, আপনাকে অবশ্যই Chrome-কে স্পষ্টভাবে বলতে হবে যে আপনি এক্সটেনশনগুলির পৃষ্ঠার মাধ্যমে তাদের যোগ করে এই এক্সটেনশনগুলি ইনস্টল করতে চান৷ <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" /></translation>
 <translation id="912419004897138677">কোডেক</translation>
 <translation id="9130775360844693113">'<ph name="DESTINATION_NAME" />' এর সদস্যরা এই আইটেমগুলির অ্যাক্সেস পাবেন।</translation>
-<translation id="9131598836763251128">এক বা একাধিক ফাইল নির্বাচন করুন৷</translation>
+<translation id="9131598836763251128">এক বা একাধিক ফাইল বেছে নিন৷</translation>
 <translation id="9133055936679483811">জিপ করা ব্যর্থ হয়েছে৷ <ph name="ERROR_MESSAGE" /></translation>
 <translation id="9134524245363717059">Macintosh সফ্টওয়্যার ব্যবহার করে এমন একটি কম্পিউটারের জন্য এই ফাইলটি ডিজাইন করা হয়েছে৷ Chrome OS দ্বারা চালিত আপনার ডিভাইসটির সাথে এটি সামঞ্জস্যপূর্ণ নয়৷ একটি উপযুক্ত প্রতিস্থাপনযোগ্য অ্যাপের জন্য অনুগ্রহ করে Chrome ওয়েব স্টোর-এ সার্চ করুন৷</translation>
 <translation id="913758436357682283">মায়ানমার মায়ানসান কীবোর্ড</translation>
 <translation id="9148058034647219655">প্রস্থান করুন</translation>
 <translation id="9153744823707037316">অ্যারে ইনপুট পদ্ধতি</translation>
-<translation id="9154418932169119429">এই ছবিটি অফলাইনে উপলব্ধ নয়৷</translation>
+<translation id="9154418932169119429">এই ইমেজটি অফলাইনে উপলভ্য নয়৷</translation>
 <translation id="9206487995878691001">কাংগজি ইনপুট পদ্ধতি</translation>
 <translation id="9213073329713032541">ইনস্টলেশন চালু হয়েছে।</translation>
 <translation id="9219103736887031265">ছবিগুলি</translation>

@@ -53,9 +53,9 @@
 
       Dacă această politică este configurată, ecranul de conectare va fi afișat întotdeauna în limba specificată de prima valoare a politicii (politica este definită ca o listă pentru postcompatibilitate). Dacă această politică nu este configurată sau este configurată la o listă necompletată, ecranul de conectare va fi afișat în limba ultimei sesiuni a utilizatorului. Dacă politica este configurată la o valoare care nu este o limbă validă, ecranul de conectare va fi afișat într-o limbă de rezervă (în prezent, en-US).</translation>
 <translation id="1052499923181221200">Politica nu are efect, cu excepția cazurilor în care politica SamlInSessionPasswordChangeEnabled este activată.
-      Dacă politica este activată și este setată cu valoarea 14 (de exemplu), înseamnă că utilizatorii SAML vor primi notificare cu 14 zile înainte că parola va expira la o anumită dată.
+      Dacă acea politică este activată și această politică este setată cu valoarea 14 (de exemplu) înseamnă că utilizatorii SAML vor fi anunțați cu 14 zile înainte că parola va expira la o anumită dată.
       Apoi ei pot acționa imediat schimbând parola în timpul sesiunii și actualizând parola înainte să expire.
-      Încă aceste notificări vor fi afișate numai dacă informațiile privind expirarea parolei sunt trimise la dispozitiv de Furnizorul de identitate SAML în timpul conectării SAML.
+      Însă aceste notificări vor fi afișate numai dacă informațiile privind expirarea parolei sunt trimise la dispozitiv de Furnizorul de identitate SAML în timpul conectării SAML.
       Dacă politica este setată la valoarea 0, utilizatorii nu vor primi notificare în avans, ci după ce parola a expirat deja.
 
       Dacă politica este setată, utilizatorul nu poate să o modifice sau să o anuleze.</translation>
@@ -310,13 +310,13 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="1507382822467487898">
           Stabilește ce adresă MAC (Media Access Control) va fi folosită când este conectat un dispozitiv de andocare.
 
-          Când un dispozitiv de andocare este conectat la unele modele ale dispozitivului, adresa MAC a dispozitivului de andocare desemnat este folosită pentru a identifica în mod prestabilit dispozitivul pe Ethernet. Politica permite administratorului să schimbe sursa adresei MAC în timpul conectării la dispozitivul de andocare.
+          Când un dispozitiv de andocare este conectat la unele modele ale dispozitivului, adresa MAC desemnată a dispozitivului de andocare este folosită în mod prestabilit pentru a identifica dispozitivul pe Ethernet. Politica permite administratorului să schimbe sursa adresei MAC în timpul conectării la dispozitivul de andocare.
 
-          Dacă este selectată politica „DeviceDockMacAddress” sau nu este activată, va fi folosită adresa MAC a dispozitivului de andocare desemnat.
+          Dacă se selectează „DeviceDockMacAddress” sau politica nu este setată, va fi folosită adresa MAC desemnată a dispozitivului de andocare.
 
-          Dacă este selectată politica „DeviceNicMacAddress”, va fi folosită adresa MAC a cardului NIC (Network Interface Controller) al dispozitivului.
+          Dacă se selectează „DeviceNicMacAddress”, va fi folosită adresa MAC a controlerului NIC (Network Interface Controller) al dispozitivului.
 
-          Dacă este selectată politica „DockNicMacAddress”, va fi folosită adresa MAC a cardului NIC a dispozitivului de andocare.
+          Dacă se selectează „DockNicMacAddress”, va fi folosită adresa MAC a controlerului NIC al dispozitivului de andocare.
 
           Setarea nu poate fi modificată de utilizator.</translation>
 <translation id="1507957856411744193">Dacă această politică este activată, <ph name="PRODUCT_NAME" /> se va conecta la dispozitivele Google Cast folosind toate adresele IP, nu numai adresele private RFC1918/RFC4913.
@@ -753,7 +753,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
           Controlează dinamic încărcarea bateriei ca să minimizezi uzarea bateriei din cauza folosirii intensive și să extinzi autonomia bateriei.
 
-          Dcă este selectat modul de încărcare personalizată a bateriei, trebuie să fie indicate politicile DeviceBatteryChargeCustomStartCharging și DeviceBatteryChargeCustomStopCharging.
+          Dacă este selectat modul de încărcare personalizată a bateriei, trebuie să fie indicate politicile DeviceBatteryChargeCustomStartCharging și DeviceBatteryChargeCustomStopCharging.
 
           Dacă politica este setată, modul de încărcare a bateriei va fi aplicat dacă este acceptat de dispozitiv.
 
@@ -1229,7 +1229,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="3220624000494482595">Dacă aplicația chioșc este o aplicație Android, aceasta nu va avea control asupra versiunii <ph name="PRODUCT_OS_NAME" />, chiar dacă această politică este setată la <ph name="TRUE" />.</translation>
 <translation id="3236046242843493070">Modele de adrese URL de la care se permite instalarea extensiilor, a aplicațiilor și a scripturilor de utilizator</translation>
 <translation id="3240609035816615922">Politica privind accesul la configurarea imprimantelor.</translation>
-<translation id="3240655340884151271">Adresa MAC a cardului NIC încorporat în dispozitivul de andocare</translation>
+<translation id="3240655340884151271">Adresa MAC a controlerului NIC încorporat în dispozitivul de andocare</translation>
 <translation id="3243309373265599239">Indică intervalul de timp fără intervenția utilizatorului după care luminozitatea ecranului este redusă atunci când dispozitivul funcționează pe c.a.
 
           Dacă politica este setată la o valoare mai mare decât zero, specifică intervalul de timp în care utilizatorul trebuie să fie inactiv înainte ca <ph name="PRODUCT_OS_NAME" /> să reducă luminozitatea ecranului.
@@ -1254,7 +1254,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="3312206664202507568">Activează o pagină la chrome://password-change care permite utilizatorilor SAML să își schimbe parolele SAML în timpul sesiunii, asigurându-se, astfel, că parola SAML și parola pentru ecranul de blocare al dispozitivului sunt sincronizate în continuare.
 
       Politica activează și notificările care anunță utilizatorii SAML că parolele SAML vor expira în curând, astfel încât să poată acționa imediat, modificând parola în timpul sesiunii.
-      Încă aceste notificări vor fi afișate numai dacă informațiile privind expirarea parolei sunt trimise la dispozitiv de Furnizorul de identitate SAML în timpul conectării SAML.
+      Însă aceste notificări vor fi afișate numai dacă informațiile privind expirarea parolei sunt trimise la dispozitiv de Furnizorul de identitate SAML în timpul conectării SAML.
 
       Dacă politica este setată, utilizatorul nu poate să o modifice sau să o anuleze.</translation>
 <translation id="3322771899429619102">Îți permite să setezi o listă de șabloane de adrese URL care specifică site-urile ce au permisiunea să folosească generarea cheilor. Dacă în „KeygenBlockedForUrls” este specificat un șablon de adresă URL, această politică va modifica aceste excepții.
@@ -1515,7 +1515,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Când politica este setată și are valoarea <ph name="BR_UNDER_USER_CONTROL" />, utilizatorului i se solicită să aleagă dacă dorește să folosească sau nu serviciul Backup și restabilire din Android. Dacă utilizatorul activează serviciul Backup și restabilire, datele din aplicațiile Android sunt încărcate pe serverele de backup Android și restabilite de acolo la reinstalarea aplicațiilor compatibile.
 
-      Reține că această politică stabilește starea serviciului Backup și restabilire din Android numai în timpul configurării inițiale. Utilizatorul poate să deschidă setările Android și să activeze sau să dezactiveze serviciul Backup și restabilire din Android.</translation>
+      Reține că această politică stabilește starea serviciului Backup și restabilire din Android numai în timpul configurării inițiale. Utilizatorul poate să deschidă ulterior setările Android și să activeze sau să dezactiveze serviciul Backup și restabilire din Android.</translation>
 <translation id="3831376478177535007">Când această setare este activată, <ph name="PRODUCT_NAME" /> permite acordarea de încredere certificatelor emise prin operațiuni PKI vechi ale Symantec Corporation, cu condiția ca acestea să valideze și să se asocieze unui certificat CA recunoscut.
 
       Reține că această politică depinde de recunoașterea certificatelor din infrastructura veche Symantec de către sistemul de operare. Dacă o actualizare a sistemului de operare modifică modul în care sistemul de operare gestionează aceste certificate, această politică nu se mai aplică. Mai mult, această politică are rolul de soluție temporară, pentru a le oferi companiilor mai mult timp să renunțe la certificatele Symantec vechi. Această politică va fi eliminată în data de 1 ianuarie 2019 sau în jurul acestei date.
@@ -1605,7 +1605,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
           Politica este folosită numai dacă valoarea DeviceBatteryChargeMode este personalizată.
 
-          Dacă această politică nu este configurată sau este activată, se va aplica modul standard de încărcare a bateriei.</translation>
+          Dacă această politică nu este configurată sau setată, se va aplica modul standard de încărcare a bateriei.</translation>
 <translation id="3925377537407648234">Setează rezoluția ecranului și factorul de scalare</translation>
 <translation id="3939893074578116847">Trimite pachete din rețea serverului de gestionare, pentru a monitoriza starea
        online, permițând astfel serverului să detecteze dacă dispozitivul este offline.
@@ -1812,7 +1812,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Reține că dacă politica conține un ID de aplicație nu înseamnă neapărat că utilizatorul va putea activa aplicația ca aplicație pentru creat note pe ecranul de blocare. De exemplu, în Chrome 61, setul de aplicații disponibile este restricționat suplimentar de platformă.
 
       Dacă politica nu este configurată, nu vor exista restricții impuse de politică privind setul de aplicații pe care utilizatorul le poate activa pe ecranul de blocare.</translation>
-<translation id="4313767483634435271">Adresa MAC a dispozitivului de andocare desemnat</translation>
+<translation id="4313767483634435271">Adresa MAC desemnată a dispozitivului de andocare</translation>
 <translation id="4322842393287974810">Permite aplicației chioșc lansate automat fără nicio întârziere să controleze versiunea <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Adăugați un buton de deconectare în bara de sistem</translation>
 <translation id="4332177773549877617">Înregistrează evenimente pentru instalările aplicației pentru Android</translation>
@@ -2129,9 +2129,9 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Spre deosebire de politica <ph name="URL_LIST_POLICY_NAME" />, regulile se aplică în ambele direcții: când suplimentul Internet Explorer este prezent și este activat, stabilește și dacă <ph name="IE_PRODUCT_NAME" /> trebuie să deschidă aceste adrese URL în <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5124368997194894978">Activează pornirea pe c.a. (curent alternativ)</translation>
-<translation id="5131211790949066746">Activează îmbinarea politicilor privind lista extensiilor instalate: <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> și <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />.
+<translation id="5131211790949066746">Activează îmbinarea politicilor din listă privind extensiile instalate: <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> și <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />.
 
-      Dacă activezi această setare, valorile pentru politica platformei, politica în cloud a dispozitivului și politica platformei utilizatorului sunt îmbinate într-o listă unică și folosite ca întreg, fără a mai folosi numai valorile dintr-o singură sursă cu cea mai mare prioritate.
+      Dacă activezi această setare, valorile pentru politica platformei dispozitivului, politica în cloud a dispozitivului și politica platformei utilizatorului sunt îmbinate într-o listă și folosite ca întreg, fără a mai folosi numai valorile din sursa cu cea mai mare prioritate.
 
       Dacă dezactivezi această setare sau nu o configurezi, sunt luate numai intrările în listă din sursa cu cea mai mare prioritate, iar toate celelalte surse sunt afișate drept conflicte, dar sunt ignorate.</translation>
 <translation id="5141670636904227950">Setați tipul prestabilit al lupei pentru ecran activate pe ecranul de conectare</translation>
@@ -2462,9 +2462,9 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="5630352020869108293">Restabiliți ultima sesiune</translation>
 <translation id="5643906875497889108">Stabilește ce tipuri de aplicație/extensie au permisiunea de a fi instalate și limitează accesul la execuție.
 
-          Setarea trece pe lista albă tipurile permise de extensii/aplicații care pot fi instalate în <ph name="PRODUCT_NAME" /> și cu care gazdele pot interacționa. Valoarea este o listă de șiruri și fiecare dintre acestea ar trebui să fie una dintre următoarele: „extensie”, „temă”, „user_script”, „hosted_app”, „legacy_packaged_app”, „platform_app”. Consultă documentația privind extensiile pentru <ph name="PRODUCT_NAME" /> pentru mai multe informații despre aceste tipuri.
+          Setarea trece pe lista albă tipurile permise de extensii/aplicații care pot fi instalate în <ph name="PRODUCT_NAME" /> și gazdele cu care pot interacționa. Valoarea este o listă de șiruri și fiecare dintre acestea ar trebui să fie una dintre următoarele: „extension”, „theme”, „user_script”, „hosted_app”, „legacy_packaged_app”, „platform_app”. Consultă documentația privind extensiile pentru <ph name="PRODUCT_NAME" /> pentru mai multe informații despre aceste tipuri.
 
-          Reține că această politică afectează și extensiile și aplicațiile care vor fi instalate forțat prin ExtensionInstallForcelist.
+          Reține că această politică se aplică și extensiilor și aplicațiilor care vor fi instalate forțat prin ExtensionInstallForcelist.
 
           Dacă setarea este configurată, extensiile/aplicațiile care au un tip ce nu se află pe listă nu vor fi instalate.
 
@@ -2510,7 +2510,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="5765780083710877561">Descriere:</translation>
 <translation id="5770738360657678870">Canalul pentru dezvoltatori (poate fi instabil)</translation>
 <translation id="5774856474228476867">Adresa URL de căutare a furnizorului prestabilit de căutare</translation>
-<translation id="5775235485119094648">Încarcă bateria cât timp se află într-o zonă fixă.</translation>
+<translation id="5775235485119094648">Încarcă bateria cât timp se află într-un interval fix.</translation>
 <translation id="5776485039795852974">Notifică-mă dacă un site vrea să afișeze notificări pe desktop</translation>
 <translation id="5781412041848781654">Specifică biblioteca GSSAPI de utilizat pentru autentificarea HTTP. Poți seta fie numai un nume de bibliotecă, fie o cale completă.
 
@@ -2709,7 +2709,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Când politica este setată și are valoarea <ph name="GLS_UNDER_USER_CONTROL" />, utilizatorului i se solicită să aleagă dacă folosește sau nu Serviciile de localizare Google. Astfel, aplicațiile Android vor putea folosi serviciile pentru a interoga locația dispozitivului și vor activa trimiterea datelor anonime privind locația la Google.
 
-      Reține că această politică stabilește starea Serviciilor de localizare Google doar în timpul configurării inițiale. Utilizatorul poate să deschidă setările Android și să activeze sau să dezactiveze Serviciile de localizare Google.
+      Reține că această politică stabilește starea Serviciilor de localizare Google doar în timpul configurării inițiale. Utilizatorul poate să deschidă ulterior setările Android și să activeze sau să dezactiveze Serviciile de localizare Google.
 
       Reține că această politică este ignorată și că Serviciile de localizare Google sunt întotdeauna dezactivate când politica <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> este setată și are valoarea <ph name="BLOCK_GEOLOCATION_SETTING" />.</translation>
 <translation id="6141402445226505817">Folosește întotdeauna detectarea aproximativă a fusului orar.</translation>
@@ -2789,13 +2789,13 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="6224304369267200483">Adresele URL/domeniile pentru care se permite automat atestarea directă a Cheilor de securitate</translation>
 <translation id="6233173491898450179">Setează directorul de descărcare</translation>
 <translation id="6244210204546589761">Adrese URL care se deschid la pornire</translation>
-<translation id="6255387031094435995">Permite politicilor selectate să fie îmbinate când provin din surse diferite, cu aceleași domenii și niveluri.
+<translation id="6255387031094435995">Permite politicilor selectate să fie îmbinate când provin din surse diferite, cu aceleași arii de acoperire și același nivel.
 
-        Dacă o politică se află în listă, în cazul în care există un conflict între cele două surse, dat fiind că au aceleași domenii și niveluri, valorile vor fi îmbinate într-o listă nouă de politici.
+        Dacă o politică se află în listă, în cazul în care există un conflict între două surse, dat fiind că au aceleași arii de acoperire și același nivel, valorile vor fi îmbinate într-o listă nouă de politici.
 
-        Dacă o politică se află în listă, în cazul în care există un conflict între cele două surse, dar și între domenii și/sau niveluri diferite, se va aplica politica cu prioritatea cea mai mare.
+        Dacă o politică se află în listă, în cazul în care există un conflict între două surse, dar și între arii de acoperire și/sau niveluri diferite, se va aplica politica cu prioritatea cea mai mare.
 
-        Dacă o politică nu se află în listă, în cazul în care există un conflict între surse, domenii și/sau nivel, se va aplica politica cu prioritatea cea mai mare.</translation>
+        Dacă o politică nu se află în listă, în cazul în care există un conflict între surse, arii de acoperire și/sau nivel, se va aplica politica cu prioritatea cea mai mare.</translation>
 <translation id="6258193603492867656">Specifică dacă în protocolul Kerberos numele SPN generate ar trebui să includă un port non-standard. Dacă activați această setare și este introdus un port non-standard (de exemplu, un alt port decât 80 sau 443), acesta va fi inclus în numele SPN generate în protocolul Kerberos. Dacă dezactivați această setare sau o lăsați nesetată, codurile SPN generate în Kerberos nu vor include un port.</translation>
 <translation id="6261643884958898336">Raportează informațiile de identificare a dispozitivului</translation>
 <translation id="6281043242780654992">Configurează politicile pentru Mesageria nativă. Gazdele de mesagerie nativă trecute în lista neagră vor fi permise doar dacă sunt trecute în lista albă.</translation>
@@ -3205,7 +3205,7 @@ Dacă politica este setată la True sau nu este setată, modelul inteligent de r
       Dacă politica nu este configurată, utilizatorul poate alege dacă vrea să i se solicite parola pentru a debloca dispozitivul.</translation>
 <translation id="7107148737865880402">Activați politica de gestionare a alimentării privind distribuirea alimentării prin USB.
 
-          Anumite dispozitive au un port USB special, marcat cu un fulger sau cu o pictogramă baterie, care poate fi folosit pentru încărcarea dispozitivelor precum telefoanele mobile folosind bateria sistemului. Politica afectează comportamentul de încărcare al acestui port în timp ce sistemul se află în modul inactiv sau este oprit. Politica nu afectează celelalte porturi USB și comportamentul de încărcare cât timp sistemul este activ.
+          Anumite dispozitive au un port USB special, marcat cu un fulger sau cu o pictogramă baterie, care poate fi folosit pentru încărcarea dispozitivelor precum telefoanele mobile folosind bateria sistemului. Politica stabilește comportamentul de încărcare al acestui port în timp ce sistemul se află în modul inactiv sau este oprit. Politica nu se aplică celorlalte porturi USB și comportamentului de încărcare cât timp sistemul este activ.
 
           Când este activ, portul USB va alimenta întotdeauna.
 
@@ -3475,7 +3475,7 @@ nu poate fi stabilit de utilizator din setările browserului.
 
           Politica este folosită numai dacă valoarea DeviceBatteryChargeMode este personalizată.
 
-          Dacă această politică nu este configurată sau este activată, se va aplica modul standard de încărcare a bateriei.</translation>
+          Dacă această politică nu este configurată sau setată, se va aplica modul standard de încărcare a bateriei.</translation>
 <translation id="759957074386651883">Setări de Navigare sigură</translation>
 <translation id="7604169113182304895">Aplicațiile Android pot alege în mod voluntar să respecte această listă. Nu le poți forța să o respecte.</translation>
 <translation id="7612157962821894603">Marcaje la nivel de sistem de aplicat când pornește <ph name="PRODUCT_NAME" /></translation>
@@ -3553,7 +3553,7 @@ nu poate fi stabilit de utilizator din setările browserului.
 
           Această politică este folosită numai dacă politica DeviceAdvancedBatteryChargeModeEnabled este activată.
 
-          Dacă politica nu este configurată sau nu este activată, modul de încărcare avansată a bateriei va fi dezactivat întotdeauna.
+          Dacă politica nu este configurată sau setată, modul de încărcare avansată a bateriei va fi dezactivat întotdeauna.
 
           Notă: <ph name="CHARGE_START_TIME_FIELD_NAME" /> trebuie să fie înainte de <ph name="CHARGE_END_TIME_FIELD_NAME" />.
 
@@ -3645,9 +3645,9 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="7937491150792971922">Îmbină politicile privind lista extensiilor instalate din mai multe surse</translation>
 <translation id="7937766917976512374">Permiteți sau refuzați preluarea conținutului video</translation>
 <translation id="7941975817681987555">Nu anticipa acțiunile în rețea pentru nicio conexiune la rețea</translation>
-<translation id="7952007677054834789">Configurează paginile care se vor încărca la pornire, pagina de pornire prestabilită și pagina Filă nouă prestabilită în <ph name="PRODUCT_NAME" /> și împiedică utilizatorii să le modifice.
+<translation id="7952007677054834789">Configurează paginile care se vor încărca la pornire, pagina principală prestabilită și pagina Filă nouă prestabilită în <ph name="PRODUCT_NAME" /> și împiedică utilizatorii să le modifice.
 
-      Dacă selectezi ca pagina de pornire să fie pagina Filă nouă sau o adresă URL (și indici o adresă URL pentru aceasta), setările pentru pagina de pornire a utilizatorului sunt în întregime blocate. Dacă nu specifici adresa URL a paginii de pornire, utilizatorul poate seta ca pagină de pornire pagina Filă nouă specificând „chrome://newtab”.
+      Dacă selectezi ca pagina principală să fie pagina Filă nouă sau o adresă URL (și indici o adresă URL pentru aceasta), setările pentru pagina principală a utilizatorului sunt în întregime blocate. Dacă nu specifici adresa URL a paginii principale, utilizatorul poate seta ca pagină principală pagina Filă nouă specificând „chrome://newtab”.
 
       Politica „Adrese URL care se deschid la pornire” este ignorată, cu excepția cazului în care selectezi „Deschide o listă cu adrese URL” în „Acțiune la pornire”.</translation>
 <translation id="7952958573604504839">Această politică este învechită în M48 în favoarea politicii <ph name="NETWORK_PREDICTION_OPTIONS_POLICY_NAME" /> și este eliminată în M54.
@@ -4152,7 +4152,7 @@ Pentru mai multe informații despre contextele sigure, accesează https://www.w3
       Politica afectează numai utilizatorii care s-au autentificat folosind SAML.
 
       Valoarea politicii trebuie specificată în milisecunde.</translation>
-<translation id="9018338365267278833">Astfel, se vor elimina extensiile care apar în <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> sau extensiile care apar în <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> care au modul de instalare setat la „blocat” și va șterge definitiv datele locale ale utilizatorului.  Consultă politica de confidențialitate privind extensiile sau politica de păstrare a datelor pentru a înțelege ce se poate întâmpla cu datele utilizatorului care nu sunt stocate local.
+<translation id="9018338365267278833">Astfel, se vor elimina extensiile care apar în <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> sau în <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> și care au modul de instalare setat la „blocat” și se vor șterge definitiv datele locale ale utilizatorului.  Consultă politica de confidențialitate privind extensiile sau politica de păstrare a datelor pentru a înțelege ce se poate întâmpla cu datele utilizatorului care nu sunt stocate local.
 
       Când politica este activată, extensiile din listele menționate anterior (dacă sunt deja instalate pe un dispozitiv) vor fi eliminate în întregime de pe acel dispozitiv (inclusiv datele locale ale utilizatorului).
 

@@ -121,6 +121,7 @@
 <translation id="1919950603503897840">పరిచయాలను ఎంచుకోండి</translation>
 <translation id="1922076542920281912">మీ స్థానాన్ని యాక్సెస్ చేయడానికి Chromeను అనుమతించేందుకు, <ph name="BEGIN_LINK" />Android సెట్టింగ్‌ల<ph name="END_LINK" />లో కూడా స్థానాన్ని ఆన్ చేయండి.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
+<translation id="1928696683969751773">నవీకరిస్తుంది</translation>
 <translation id="19288952978244135">Chromeను మళ్లీ తెరవండి.</translation>
 <translation id="1933845786846280168">ఎంచుకున్న ట్యాబ్</translation>
 <translation id="194341124344773587"><ph name="BEGIN_LINK" />Android సెట్టిం‌గ్‌లు<ph name="END_LINK" />లో Chrome కోసం అనుమతిని ఆన్ చేయండి.</translation>
@@ -414,7 +415,6 @@
 <translation id="410351446219883937">స్వీయ ప్లే</translation>
 <translation id="4116038641877404294">పేజీలను ఆఫ్‌లైన్‌లో ఉపయోగించడం కోసం వాటిని డౌన్‌లోడ్ చేసుకోండి</translation>
 <translation id="4149994727733219643">వెబ్ పేజీల కోసం సరళమైన వీక్షణ</translation>
-<translation id="4159800535322890630">మీ సెన్సార్‌లను యాక్సెస్ చేయనీయకుండా సైట్‌లను బ్లాక్ చేస్తుంది</translation>
 <translation id="4165986682804962316">సైట్ సెట్టింగ్‌లు</translation>
 <translation id="4170011742729630528">సేవ అందుబాటులో లేదు; తర్వాత మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> వినియోగించబడింది</translation>
@@ -622,7 +622,6 @@
 <translation id="5581519193887989363">మీరు ఎప్పుడైనా <ph name="BEGIN_LINK1" />సెట్టింగ్‌ల<ph name="END_LINK1" /> ద్వారా వేటిని సింక్ చేయాలో ఎంచుకోవచ్చు.</translation>
 <translation id="5595485650161345191">చిరునామాను సవరించు</translation>
 <translation id="5596627076506792578">మరిన్ని ఎంపికలు</translation>
-<translation id="5620299005957670886">మీ సెన్సార్‌లను యాక్సెస్ చేయడానికి సైట్‌లను అనుమతిస్తుంది (సిఫార్సు చేస్తున్నాము)</translation>
 <translation id="5620928963363755975">'మరిన్ని ఎంపికలు' బటన్ నొక్కి, డౌన్‌లోడ్‌లలో మీ ఫైల్‌లు మరియు పేజీలను కనుగొనండి</translation>
 <translation id="5626134646977739690">పేరు:</translation>
 <translation id="5639724618331995626">అన్ని సైట్‌లను అనుమతించండి</translation>

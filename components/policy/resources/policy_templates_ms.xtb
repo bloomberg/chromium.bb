@@ -2524,7 +2524,7 @@ Tidak seperti <ph name="URL_LIST_POLICY_NAME" />, peraturan dikenakan pada kedua
 <translation id="5630352020869108293">Pulihkan sesi terakhir</translation>
 <translation id="5643906875497889108">Mengawal jenis apl/sambungan yang boleh dipasang dan mengehadkan akses waktu jalan.
 
-          Tetapan ini menyenaraiputihkan jenis sambungan/apl yang boleh dipasang dalam <ph name="PRODUCT_NAME" /> dan hos yang boleh berinteraksi dengan sambungan/apl tersebut. Nilainya ialah beberapa rentetan yang setiap satu daripadanya haruslah salah satu pilihan berikut: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Lihat dokumentasi sambungan <ph name="PRODUCT_NAME" /> untuk mendapatkan maklumat lanjut tentang jenis ini.
+          Tetapan ini menyenaraiputihkan jenis dibenarkan bagi sambungan/apl yang boleh dipasang dalam <ph name="PRODUCT_NAME" /> dan hos yang boleh berinteraksi dengan sambungan/apl tersebut. Nilainya ialah beberapa rentetan yang setiap satu daripadanya haruslah salah satu pilihan berikut: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Lihat dokumentasi sambungan <ph name="PRODUCT_NAME" /> untuk mendapatkan maklumat lanjut tentang jenis ini.
 
           Ambil perhatian bahawa dasar ini juga mempengaruhi sambungan dan apl agar dipasang secara paksa melalui ExtensionInstallForcelist.
 
@@ -4281,7 +4281,7 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
       Dasar ini mempengaruhi pengguna yang membuat pengesahan menggunakan SAML sahaja.
 
       Nilai dasar harus dinyatakan dalam saat.</translation>
-<translation id="9018338365267278833">Ini akan mengalih keluar sambungan yang dipaparkan dalam <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> atau sambungan yang dipaparkan dalam <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> yang telah menetapkan mod pemasangan kepada disekat dan akan menyingkirkan data pengguna bersama-sama sambungan tersebut.  Rujuk dasar privasi sambungan atau dasar pengekalan data untuk memahami perkara yang mungkin berlaku kepada data pengguna yang tidak disimpan setempat.
+<translation id="9018338365267278833">Dasar ini akan mengalih keluar sambungan yang dipaparkan dalam <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> atau sambungan yang dipaparkan dalam <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> yang telah menetapkan mod pemasangan kepada disekat dan akan menyingkirkan data pengguna setempat bersama-sama sambungan tersebut.  Rujuk dasar privasi sambungan atau dasar pengekalan data untuk memahami perkara yang mungkin berlaku kepada data pengguna yang tidak disimpan setempat.
 
       Apabila dasar ini ditetapkan kepada didayakan, sambungan yang terangkum dalam senarai sebelumnya (jika sudah dipasang pada mesin) akan dialih keluar sepenuhnya daripada mesin itu (termasuk data pengguna setempat).
 

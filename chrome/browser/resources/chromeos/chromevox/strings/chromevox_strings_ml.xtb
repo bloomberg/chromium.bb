@@ -11,7 +11,7 @@
 <translation id="1025074108959230262">സ്റ്റിക്കി മോഡ് പ്രവർത്തനരഹിതമാക്കി</translation>
 <translation id="1031961866430398710">തുടർന്ന്</translation>
 <translation id="1038643060055067718">ലൈനുകൾ:</translation>
-<translation id="1038795173450935438">ഒരു പേജിലെ ഇനങ്ങളിലൂടെ മുന്നോട്ട് നീക്കാൻ, തിരയൽ + വലത് അമ്പടയാളം അമർത്തുകയോ തിരികെ മടങ്ങാൻ തിരയൽ + ഇടത് അമ്പടയാളം അമർത്തുകയോ ചെയ്യുക. അടുത്ത വരിയിലേക്ക് പോകാൻ തിരയൽ + താഴേക്കുള്ള അമ്പടയാളം അമർത്തുക. മുമ്പത്തെ വരിയിലേക്ക് പോകാൻ തിരയൽ + മുകളിലേക്കുള്ള അമ്പടയാളം ഉപയോഗിക്കുക. നിങ്ങൾക്ക് ക്ലിക്ക് ചെയ്യേണ്ട ഒരിനത്തിൽ എത്തുകയാണെങ്കിൽ, തിരയൽ + സ്‌പെയ്‌സ് അമർത്തുക.</translation>
+<translation id="1038795173450935438">ഒരു പേജിലെ ഇനങ്ങളിലൂടെ മുന്നോട്ട് നീക്കാൻ, തിരയൽ + വലത് അമ്പടയാളം അമർത്തുകയോ തിരികെ മടങ്ങാൻ തിരയൽ + ഇടത് അമ്പടയാളം അമർത്തുകയോ ചെയ്യുക. അടുത്ത വരിയിലേക്ക് പോകാൻ തിരയൽ + താഴേക്കുള്ള അമ്പടയാളം അമർത്തുക. മുമ്പത്തെ വരിയിലേക്ക് പോകാൻ തിരയൽ + മുകളിലേക്കുള്ള അമ്പടയാളം ഉപയോഗിക്കുക. നിങ്ങൾക്ക് ക്ലിക്കുചെയ്യേണ്ട ഒരിനത്തിൽ എത്തുകയാണെങ്കിൽ, തിരയൽ + സ്‌പെയ്‌സ് അമർത്തുക.</translation>
 <translation id="1044777062731150180">തലക്കെട്ടൊന്നുമില്ല</translation>
 <translation id="106222400312645156">rwhdr</translation>
 <translation id="1065552602950927991">അസാധുവായ ഇന്‍‌പുട്ട്</translation>
@@ -213,6 +213,7 @@
 <translation id="2626530649491650971">ക്ലിക്കുചെയ്യാവുന്നത്</translation>
 <translation id="2628764385451019380">മുൻ കോമ്പോ ബോക്‌സ് ഒന്നുമില്ല.</translation>
 <translation id="2637227747952042642">മാത്ത്</translation>
+<translation id="2638785836053527382"><ph name="FILE_NAME" /> ഡൗൺലോഡ് പുനരാരംഭിച്ചു</translation>
 <translation id="2639750663247012216">ChromeVox മോഡിഫയർ</translation>
 <translation id="2644542693584024604">അക്ഷരത്തെറ്റ്</translation>
 <translation id="2661530546602071611">അറിയിപ്പ്</translation>
@@ -252,6 +253,7 @@
 <translation id="287383510823843610">കടും ഓറഞ്ച്</translation>
 <translation id="2879867157561757640">മൂന്ന് വിരലുകൾ ഉപയോഗിച്ച് താഴോട്ട് സ്വൈ‌പ്പ് ചെയ്യുക</translation>
 <translation id="288178314850623291">നിർദ്ദിഷ്‌ട തരത്തിലുള്ള ഘടകങ്ങളിലേക്ക് പോകാൻ 'കമാൻഡുകളിലേക്ക് പോകുക' ഉപയോഗിക്കുക. തലക്കെട്ടുകളിലൂടെ മുന്നോട്ട് പോകാൻ തിരയൽ + H അമർത്തുകയോ പിന്നോട്ട് പോകാൻ തിരയൽ + ഷിഫ്‌റ്റ് + H അമർത്തുകയോ ചെയ്യുക.</translation>
+<translation id="2885764457467528513">{COUNT,plural, =1{മിനിറ്റ്}other{മിനിറ്റ്}}</translation>
 <translation id="2894654529758326923">വിവരം</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{ഇടത് ബ്രേസ്}other{# ഇടത് ബ്രേസുകൾ}}</translation>
 <translation id="2911433807131383493">ChromeVox ട്യൂട്ടോറിയൽ തുറക്കുക</translation>
@@ -281,11 +283,12 @@
 <translation id="3070245424257836917">മൂന്ന് വിരലുകൾ ഉപയോഗിച്ച് മുകളിലോട്ട് സ്വൈപ്പ് ചെയ്യുക</translation>
 <translation id="3078345202707391975">അടുത്ത നില 2 ശീർഷകം</translation>
 <translation id="3078740164268491126">പട്ടിക</translation>
-<translation id="3082249673510793544">പിന്നോട്ട് സ്‌ക്രോൾ ചെയ്യുക</translation>
+<translation id="3082249673510793544">പുറകിലേക്ക് സ്‌ക്രോൾ ചെയ്യുക</translation>
 <translation id="3082557070674409251">ക്ലിക്കുചെയ്‌തു</translation>
 <translation id="3084806535845658316">ടൈപ്പുചെയ്യൽ എക്കോകളൊന്നുമില്ല</translation>
 <translation id="3086746722712840547">note</translation>
 <translation id="308895241372589742">അടുത്ത മാത്ത് എക്‌സ്‌പ്രഷനുകളൊന്നുമില്ല.</translation>
+<translation id="3090227230165225418">ഡൗൺലോഡ് അറിയിപ്പുകൾ പ്രഖ്യാപിക്കുക</translation>
 <translation id="3090532668523289635">grp</translation>
 <translation id="3093176084511590672">അടുത്ത ലാൻഡ്‌മാർക്ക്</translation>
 <translation id="3096671415663099226">cbo</translation>
@@ -438,6 +441,7 @@
 <translation id="4148180433151187540">{COUNT,plural, =1{വലത് ബ്രേസ്}other{# വലത് ബ്രേസുകൾ}}</translation>
 <translation id="4158704014418536539">കേസ് സെൻസിറ്റീവ്.</translation>
 <translation id="4159784952369912983">പര്‍പ്പിള്‍</translation>
+<translation id="4161104397932142764">{COUNT,plural, =1{സെക്കൻഡ്}other{സെക്കൻഡ്}}</translation>
 <translation id="4161663686871496107">ChromeVox സംഭാഷണ ഫീഡ്‌ബാക്ക് തയ്യാറാണ്</translation>
 <translation id="4173994908659439270">എഡിറ്റുചെയ്യാൻ കഴിയുന്ന അടുത്ത വാചക ഫീൽഡ് ഒന്നുമില്ല.</translation>
 <translation id="4176463684765177261">അപ്രാപ്‌തമാക്കി</translation>
@@ -618,6 +622,7 @@
 <translation id="5349770431644471053">ബാക്ക്‌ ലിങ്ക്</translation>
 <translation id="536031132345979795">വായന തുടരുന്നതിനിടയിൽ പുറകിലേക്ക് പോകുക</translation>
 <translation id="5368000168321181111">ഇയർകോൺസ് ഓഫാണ്</translation>
+<translation id="5368505757342402527"><ph name="FILE_NAME" /> ഡൗൺലോഡ് <ph name="PROGRESS" />% പൂർത്തിയായി. ഏകദേശം <ph name="TIME" /> <ph name="UNITS" /> ശേഷിക്കുന്നു.</translation>
 <translation id="5374320867641260420">അടുത്ത ബട്ടൺ ഒന്നുമില്ല.</translation>
 <translation id="5376407118396657359">കളം പ്രകാരം നാവിഗേറ്റ് ചെയ്യാൻ തിരയൽ+Ctrl+Alt അമർത്തി അമ്പടയാള കീകൾ ഉപയോഗിക്കുക.</translation>
 <translation id="5382299583965267720">അടുത്ത നില 1 ശീർഷകം ഒന്നുമില്ല.</translation>
@@ -684,7 +689,7 @@
 <translation id="5748623122140342504">മുൻ നില 5 ശീർഷകം</translation>
 <translation id="5750633686117194034">മോഡിഫയർ ഒന്നും അമർത്തിയില്ല; ഒന്നോ അതിലധികമോ മോഡിഫയറുകൾ അമർത്തിപ്പിടിക്കുക; പൂർത്തിയാക്കിക്കഴിഞ്ഞാൽ വിരലുകൾ എടുക്കുക, തുടർന്ന് നിങ്ങൾ സജ്ജമാക്കിയ കീകൾ കേൾക്കും. പുറത്തുകടക്കാൻ ടാബ് അമർത്തുക.</translation>
 <translation id="5760594853119905566">അനുബന്ധം</translation>
-<translation id="5788275253279308023">ആൾമാറാട്ട വിൻഡോ <ph name="TITLE" /> ടാബ്</translation>
+<translation id="5788275253279308023">അദൃശ്യ വിൻഡോ <ph name="TITLE" /> ടാബ്</translation>
 <translation id="5805940204952508776">രണ്ട് വിരലുകൾ ഉപയോഗിച്ച് ടാപ്പ് ചെയ്യുക</translation>
 <translation id="5806206155699461681">നിർദ്ദിഷ്‌ട സൈറ്റുകൾ മെച്ചപ്പെടുത്തുക (Google തിരയൽ പോലെയുള്ളവ).</translation>
 <translation id="5819072574982403430">ട്രീ ഇനം</translation>
@@ -800,6 +805,7 @@
 <translation id="667999046851023355">പ്രമാണം</translation>
 <translation id="6688209025607531203">ഒരു നോൺ മോഡൽ അലേർട്ട്</translation>
 <translation id="6689672606256159458">കടും സാൽമൻ</translation>
+<translation id="669617842401078250"><ph name="FILE_NAME" /> ഡൗൺലോഡ് താൽക്കാലികമായി നിർത്തി</translation>
 <translation id="6696967141280706829">പീഠിക</translation>
 <translation id="6697092096875747123">മുൻ കോംബോ ബോക്സ്</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{ആശ്ചര്യചിഹ്നം}other{# ആശ്ചര്യചിഹ്നങ്ങൾ}}</translation>
@@ -938,6 +944,7 @@ Chrome ബ്രൗസർ മെനു തുറക്കാൻ, ആൾട്ട
 <translation id="7641134354185483015">മുൻ നില 3 ശീർഷകം ഒന്നുമില്ല.</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, വാചക ബോക്സ്</translation>
 <translation id="7663318257180412551">ശീർഷകം 2</translation>
+<translation id="7668307052366682650">{COUNT,plural, =1{മണിക്കൂർ}other{മണിക്കൂർ}}</translation>
 <translation id="7674576868851035240">അടുത്ത ലിങ്ക്</translation>
 <translation id="7674768236845044097">അടയാളപ്പെടുത്തുക</translation>
 <translation id="7684431668231950609">വാചകം എഡിറ്റ് ചെയ്യുക, URL എൻട്രി</translation>
@@ -952,6 +959,7 @@ Chrome ബ്രൗസർ മെനു തുറക്കാൻ, ആൾട്ട
         <ph name="LINE_THROUGH_STRING" />
         <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="7701196182766842984">autolst</translation>
+<translation id="7763537600611320912"><ph name="FILE_NAME" /> ഡൗൺലോഡ് ആരംഭിച്ചു</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, പാസ്‌വേഡ് വാചക ബോക്സ്</translation>
 <translation id="7776293189010177726">ChromeVox മെനുകൾ തുറക്കുക</translation>
 <translation id="7800558923657349506">ഉപസംഹാരം</translation>
@@ -1076,6 +1084,7 @@ Chrome ബ്രൗസർ മെനു തുറക്കാൻ, ആൾട്ട
 <translation id="8096975275316362544">മിൻ്റ് ക്രീം</translation>
 <translation id="8098587210054821856">സ്ലേറ്റ് ഗ്രേ</translation>
 <translation id="8110647606445335195">ARIA ലാൻഡ്‌മാർക്കുകൾ ഒന്നുമില്ല.</translation>
+<translation id="812886159861361726"><ph name="FILE_NAME" /> ഡൗൺലോഡ് നിർത്തി</translation>
 <translation id="8138880386467279117">സ്‌പർശിക്കുക</translation>
 <translation id="8153880621934657047">പട്ടികയ്‌ക്കുള്ളിലല്ല.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{അടിവര}other{# അടിവരകൾ}}</translation>
@@ -1145,6 +1154,7 @@ Chrome ബ്രൗസർ മെനു തുറക്കാൻ, ആൾട്ട
 <translation id="8743786158317878347">പട്ടികകൾ പോലുള്ള ഘടനാപരമായ ഉള്ളടക്കം നൽകുക</translation>
 <translation id="8747966237988593539">ക്രമപ്പെടുത്തിയ ലിസ്റ്റ്</translation>
 <translation id="8749988712346667988">വെള്ളി</translation>
+<translation id="875769700429317857"><ph name="FILE_NAME" /> ഡൗൺലോഡ് പൂർത്തിയായി</translation>
 <translation id="8759334257841767240">അടുത്ത ലിങ്ക് ഒന്നുമില്ല.</translation>
 <translation id="8767968232364267681">അടുത്ത നില 4 ശീർഷകം</translation>
 <translation id="8770473310765924354">പട്ടികകൾ പോലുള്ള ഘടനാപരമായ ഉള്ളടക്കത്തിൽ നിന്ന് പുറത്തുകടക്കുക</translation>

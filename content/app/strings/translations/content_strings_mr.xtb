@@ -10,7 +10,7 @@
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1206693055195146388">स्लायडर</translation>
 <translation id="1211441953136645838">तळटीप</translation>
-<translation id="1281252709823657822">संवाद</translation>
+<translation id="1281252709823657822">डायलॉग</translation>
 <translation id="1289247557029249093">चित्रात-चित्र मोडमधून बाहेर पडा</translation>
 <translation id="1335095011850992622">श्रेय</translation>
 <translation id="1342835525016946179">लेख</translation>
@@ -60,10 +60,10 @@
 <translation id="2896972712917208084">रेडिओ गट</translation>
 <translation id="2908441821576996758">कृपया ईमेल पत्त्यांची स्वल्पविरामाद्वारे विभक्त सूची एंटर करा.</translation>
 <translation id="2940813599313844715">ऑब्जेक्ट</translation>
-<translation id="2942448076852699108">हायलाइट केलेली सामग्री</translation>
+<translation id="2942448076852699108">हायलाइट केलेला आशय</translation>
 <translation id="3040011195152428237">दुवा</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
-<translation id="3075154866155599887">कृपया एक वैध मूल्य एंटर करा. भाग अपूर्ण आहे किंवा चुकीची तारीख आहे.</translation>
+<translation id="3075154866155599887">कृपया एक वैध मूल्य एंटर करा. फील्ड अपूर्ण आहे किंवा चुकीची तारीख आहे.</translation>
 <translation id="3078740164268491126">सारणी</translation>
 <translation id="3086746722712840547">टीप</translation>
 <translation id="310520048233152454">कृपया एखादी URL एंटर करा.</translation>
@@ -90,7 +90,7 @@
 <translation id="4201051445878709314">मागील महिना दर्शवा</translation>
 <translation id="421884353938374759">रंग निवडक</translation>
 <translation id="4248100235867064564">मेनू बार</translation>
-<translation id="4254339807215791271">सामग्री माहिती</translation>
+<translation id="4254339807215791271">आशय माहिती</translation>
 <translation id="4360991593054037559">कृपया एक वैध मूल्य एंटर करा. दोन जवळील वैध मूल्ये <ph name="VALID_VALUE_LOW" /> आणि <ph name="VALID_VALUE_HIGHER" /> आहेत.</translation>
 <translation id="4384583879834880242">प्रश्नोत्तरे</translation>
 <translation id="4413860115965805769">मेनू बटण</translation>
@@ -167,7 +167,7 @@
 <translation id="6709570249143506788">खराब प्लेबॅक गुणवत्ता</translation>
 <translation id="6755330956360078551">टूलटिप</translation>
 <translation id="6790428901817661496">प्ले करा</translation>
-<translation id="6820355525329141109">प्लगिन लोड करणे शक्य झाले नाही.</translation>
+<translation id="6820355525329141109">प्लग-इन लोड करणे शक्य झाले नाही.</translation>
 <translation id="6820615603175220800">ग्रंथसूची संदर्भ</translation>
 <translation id="6843725295806269523">नि:शब्द करा</translation>
 <translation id="6885760532393684712">निर्देशिका</translation>

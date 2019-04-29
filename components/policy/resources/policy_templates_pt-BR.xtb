@@ -51,7 +51,7 @@
 <translation id="1049138910114524876">Configura a localidade que é aplicada na tela de login do <ph name="PRODUCT_OS_NAME" />.
 
       Se esta política for configurada, a tela de login sempre será exibida na localidade estabelecida pelo primeiro valor da política (definida como uma lista de compatibilidade de encaminhamento). Se esta política não for definida ou for definida como uma lista vazia, a tela de login será exibida na localidade da última sessão do usuário. Se esta política for definida para um valor que não seja uma localidade válida, a tela de login será exibida em uma localidade substituta (atualmente en-US).</translation>
-<translation id="1052499923181221200">Esta política só tem efeito se SamlInSessionPasswordChangeEnabled for verdadeira.
+<translation id="1052499923181221200">Esta política só terá efeito se SamlInSessionPasswordChangeEnabled for verdadeira.
       Se a política mencionada for verdadeira e esta política for definida como, por exemplo, 14, isso significa que os usuários do SAML serão notificados com 14 dias de antecedência sobre o vencimento das senhas em uma determinada data.
       Os usuários podem tomar providências imediatamente alterando as senhas durante a sessão e atualizando-as antes que expirem.
       No entanto, essas notificações só serão mostradas se as informações de validade da senha forem enviadas para o dispositivo pelo provedor de identidade do SAML durante o fluxo de login do SAML.
@@ -313,7 +313,7 @@ Cada item da lista da política é uma string que contém um código de extensã
 <translation id="1507382822467487898">
           Configura qual endereço de controle de acesso de mídia (MAC, na sigla em inglês) será usado quando uma dock estiver conectada ao dispositivo.
 
-          Quando uma dock estiver conectada a alguns modelos de dispositivo, o endereço MAC designado da dock será usado para identificar o dispositivo em Ethernet por padrão. Esta política permite que o administrador altere a fonte do endereço MAC enquanto estiver ancorado.
+          Quando uma dock estiver conectada a alguns modelos de dispositivo, o endereço MAC designado da dock será usado para identificar o dispositivo em Ethernet por padrão. Esta política permite que o administrador altere a fonte do endereço MAC enquanto o dispositivo estiver conectado à dock.
 
           Se "DeviceDockMacAddress" for selecionada ou se a política não for definida, o endereço MAC designado da dock para o dispositivo será usado.
 
@@ -550,7 +550,7 @@ Cada item da lista da política é uma string que contém um código de extensã
       Se essa configuração estiver ativada ou não tiver um valor definido, o usuário poderá controlar o recurso Preenchimento automático para endereços na IU.</translation>
 <translation id="1962273523772270623">Permite a coleta de logs de eventos WebRTC dos serviços do Google</translation>
 <translation id="1964634611280150550">Modo de navegação anônima desativado</translation>
-<translation id="1964802606569741174">Esta política não tem nenhum efeito sobre o app do YouTube para Android. Se o modo de segurança do YouTube precisar ser aplicado, a instalação desse app será bloqueada.</translation>
+<translation id="1964802606569741174">Esta política não tem nenhum efeito sobre o app YouTube para Android. Se o modo de segurança do YouTube precisar ser aplicado, a instalação desse app será bloqueada.</translation>
 <translation id="1969212217917526199">Modifica as políticas sobre versões de depuração do host de acesso remoto.
 
           O valor é analisado como um dicionário JSON de nome de política para mapeamentos de valor de política.</translation>
@@ -753,13 +753,13 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 
           Controle dinamicamente o carregamento da bateria para minimizar o desgaste devido ao estresse e aumentar a vida útil.
 
-          Se o modo personalizado de carregamento da bateria for selecionado, DeviceBatteryChargeCustomStartCharging e DeviceBatteryChargeCustomStopCharging precisam ser especificadas.
+          Se o modo personalizado de carregamento da bateria for selecionado, DeviceBatteryChargeCustomStartCharging e DeviceBatteryChargeCustomStopCharging precisarão ser especificadas.
 
           Se esta política for definida, o modo de carregamento da bateria será aplicado, se compatível com o dispositivo.
 
           Se esta política não for definida e a política for compatível com o dispositivo, o modo padrão de carregamento da bateria será aplicado e não poderá ser alterado pelo usuário.
 
-          Observação: <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> substitui a política se a anterior for especificada.</translation>
+          Observação: Se <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> for especificada, ela substituirá esta política.</translation>
 <translation id="237494535617297575">Permite que você defina uma lista de padrões de URL que especificam sites com permissão para exibir notificações. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política "DefaultNotificationsSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
 <translation id="2386362615870139244">Permitir bloqueios de ativação da tela</translation>
 <translation id="2411817661175306360">O aviso de proteção de senha está desativado</translation>
@@ -1589,7 +1589,7 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 <translation id="3915395663995367577">URL de um arquivo proxy .pac</translation>
 <translation id="3920892052017026701">Configurar o início do carregamento personalizado da bateria, em porcentagem.
 
-          A bateria começará a ser carregada quando esgotar o valor do início personalizado de carregamento.
+          A bateria começará a ser carregada quando se esgotar até chegar ao valor do início personalizado de carregamento.
 
           DeviceBatteryChargeCustomStartCharging precisa ser menor que DeviceBatteryChargeCustomStopCharging.
 
@@ -2228,7 +2228,7 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 
       Se a política não for configurada ou for definida para a string em branco ou um alcance de porta inválido, o WebRTC terá permissão para usar qualquer porta UDP local disponível.</translation>
 <translation id="5290940294294002042">Especificar uma lista de plug-ins que podem ser ativados ou desativados pelo usuário</translation>
-<translation id="5306186200045823863">Ativar confiança na Infraestrutura PKI de legado da Symantec Corporation</translation>
+<translation id="5306186200045823863">Ativar confiança na infraestrutura PKI legada da Symantec Corporation</translation>
 <translation id="5307432759655324440">Disponibilidade do modo de navegação anônima</translation>
 <translation id="5318185076587284965">Ativar o uso de servidores relay pelo host de acesso remoto</translation>
 <translation id="5323128137188992869">Permite que o conteúdo seja transmitido usando o <ph name="PRODUCT_NAME" />.
@@ -2437,7 +2437,7 @@ Se esta política não for definida, qualquer plug-in que corresponder aos padr�
 <translation id="5630352020869108293">Restaurar a última sessão</translation>
 <translation id="5643906875497889108">Controla que tipos de apps/extensões podem ser instalados e limita o acesso no ambiente de execução.
 
-          Esta configuração coloca na lista de permissões os tipos extensões/apps que podem ser instalados no <ph name="PRODUCT_NAME" /> e com quais hosts eles podem interagir. O valor é uma lista de strings, e cada uma delas precisa ser uma das seguintes: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Consulte a documentação de extensões do <ph name="PRODUCT_NAME" /> para ver mais informações sobre esses tipos.
+          Esta configuração coloca na lista de permissões os tipos de extensões/apps que podem ser instalados no <ph name="PRODUCT_NAME" /> e com quais hosts eles podem interagir. O valor é uma lista de strings, e cada uma delas precisa ser uma das seguintes: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Consulte a documentação de extensões do <ph name="PRODUCT_NAME" /> para ver mais informações sobre esses tipos.
 
           Observe que esta política também afeta extensões e apps de instalação forçada via ExtensionInstallForcelist.
 
@@ -3103,9 +3103,9 @@ Se esta configuração estiver desativada ou se nenhum valor for definido, o Mod
       Se esta política for definida como Verdadeira ou não for definida, o modelo de escurecimento inteligente será ativado e permitirá o aumento do tempo que a tela fica ativa. Se esta política for definida como Falsa, o modelo de escurecimento inteligente não influenciará o escurecimento da tela.</translation>
 <translation id="6967394885063085697">Ativar a política de gerenciamento de energia para o modo avançado de carregamento de bateria.
 
-          O modo avançado de carregamento de bateria permite que o usuário maximize a integridade da bateria. No modo avançado, o sistema usará um algoritmo de carregamento padrão e outras técnicas fora do horário de trabalho para maximizar a integridade da bateria. Durante o horário de trabalho, um carregamento expresso será usado. Esse carregamento permite que a bateria seja carregada mais rapidamente para que atinja a carga completa logo. Para cada dia, o período em que o sistema será mais utilizado é especificado pelo horário de início e a duração.
+          Esse modo permite que o usuário maximize a integridade da bateria. No modo avançado, o sistema usará um algoritmo de carregamento padrão e outras técnicas fora do horário de trabalho para maximizar a integridade da bateria. Durante o horário de trabalho, um carregamento expresso será usado. Esse carregamento permite que a bateria seja carregada mais rapidamente para que atinja a carga completa logo. Para cada dia, o período em que o sistema será mais utilizado é especificado pelo horário de início e a duração.
 
-          Se esta política for definida como verdadeira, e DeviceAdvancedBatteryChargeModeDayConfig estiver definida, o modo avançado de carregamento da bateria sempre ficará ativado se ele for compatível com o dispositivo.
+          Se esta política for definida como verdadeira e DeviceAdvancedBatteryChargeModeDayConfig estiver definida, o modo avançado de carregamento da bateria sempre ficará ativado se ele for compatível com o dispositivo.
 
           Se esta política for definida como falsa, o modo avançado de carregamento da bateria ficará sempre desativado.
 
@@ -3408,7 +3408,7 @@ Essas políticas são ignoradas se a Área de trabalho remota do Google Chrome n
 <translation id="7519251620064708155">Permitir a geração de chaves nesses sites</translation>
 <translation id="7529100000224450960">Permite que você defina uma lista de padrões de URL que especificam sites com permissão para exibir pop-ups. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política "DefaultPopupsSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
 <translation id="7529144158022474049">Fator de dispersão de atualizações automáticas</translation>
-<translation id="7534199150025803530">Esta política não tem nenhum efeito sobre o app do Google Drive para Android. Para impedir o uso do Google Drive por conexões celulares, bloqueie a instalação do app do Google Drive para Android.</translation>
+<translation id="7534199150025803530">Esta política não tem nenhum efeito sobre o app Google Drive para Android. Para impedir o uso do Google Drive por conexões celulares, bloqueie a instalação do app Google Drive para Android.</translation>
 <translation id="7540622499178214923">Concede permissão ao controlador de telemetria e diagnósticos wilco</translation>
 <translation id="7547549430720182663">Mesclar</translation>
 <translation id="7553535237300701827">Quando esta política está definida, o fluxo de autenticação de login acontece em uma das seguintes formas, dependendo do valor da configuração:
@@ -3723,7 +3723,7 @@ Esses favoritos são colocados em uma pasta que não pode ser modificada pelo us
 <translation id="8140204717286305802">Informa ao servidor a lista de interfaces de rede com os respectivos tipos e endereços de hardware.
 
       Se a política estiver definida como "False", a lista de interfaces não será informada.</translation>
-<translation id="8141795997560411818">Esta política não impede que os usuários usem o app do Google Drive para Android. Para impedir o acesso ao Google Drive, bloqueie também a instalação do app do Google Drive para Android.</translation>
+<translation id="8141795997560411818">Esta política não impede que os usuários usem o app Google Drive para Android. Para impedir o acesso ao Google Drive, bloqueie também a instalação do app Google Drive para Android.</translation>
 <translation id="8142894094385450823">Definir as localidades recomendadas para uma sessão gerenciada</translation>
 <translation id="8146727383888924340">Permitir que os usuários resgatem ofertas pelo Registro do Chrome OS</translation>
 <translation id="8148785525797916822">Remove o aviso que é exibido quando o <ph name="PRODUCT_NAME" /> é executado em um computador ou sistema operacional com o qual não é mais compatível.</translation>
@@ -4142,7 +4142,7 @@ Se você ativar esta configuração, o <ph name="PRODUCT_NAME" /> e os apps ARC 
 
       Quando a política for definida como ativada, as extensões que constam nas listas mencionadas anteriormente, caso já tenham sido instaladas em uma máquina, serão totalmente removidas da máquina, incluindo os dados de usuário locais.
 
-      Quando a política for definida como desativada ou estiver indefinida, as extensões que constam nas listas mencionadas anteriormente, caso já tenham sido instaladas em uma máquina e estiverem na lista de proibições <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, serão desativadas na máquina, e não desinstaladas.</translation>
+      Quando a política for definida como desativada ou estiver indefinida, as extensões que constam nas listas mencionadas anteriormente, caso já tenham sido instaladas em uma máquina e estejam na lista de proibições <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, serão desativadas na máquina, e não desinstaladas.</translation>
 <translation id="9027787254195333560">Esta política permite que você configure a imagem de avatar que representa o usuário na tela de login. A política é definida pela especificação do URL do qual o <ph name="PRODUCT_OS_NAME" /> pode fazer o download da imagem de avatar e de uma hash criptográfica usada para verificar a integridade do download. A imagem precisa estar no formato JPEG. O tamanho não pode ser superior a 512 KB. É necessário que o URL possa ser acessado sem qualquer tipo de autenticação.
 
       A imagem de avatar será transferida por download e armazenada em cache. O download será refeito sempre que o URL ou a hash mudarem.

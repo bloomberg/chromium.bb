@@ -1551,7 +1551,7 @@
 
       Kai ši politika nustatyta kaip „<ph name="BR_UNDER_USER_CONTROL" />“, naudotojo prašoma pasirinkti, ar naudoti „Android“ atsarginės kopijos kūrimo ir atkūrimo funkciją. Naudotojui įgalinus atsarginės kopijos kūrimo ir atkūrimo funkciją, „Android“ programos duomenys įkeliami į „Android“ atsarginių kopijų serverius ir pakartotinai diegiant suderinamas programas yra atkuriami iš šių serverių.
 
-      Atminkite, kad ši politika valdo „Android“ atsarginės kopijos kūrimą ir atkūrimą tik pradinio nustatymo metu. Po to naudotojas gali atidaryti „Android“ nustatymus ir įjungti ir (arba) išjungti „Android“ atsarginės kopijos kūrimo ir atkūrimo funkciją.</translation>
+      Atminkite, kad ši politika valdo „Android“ atsarginės kopijos kūrimą ir atkūrimą tik per pradinį nustatymą. Po to naudotojas gali atidaryti „Android“ nustatymus ir įjungti ir (arba) išjungti „Android“ atsarginės kopijos kūrimo ir atkūrimo funkciją.</translation>
 <translation id="3831376478177535007">Įgalinus šį nustatymą, „<ph name="PRODUCT_NAME" />“ leidžia „Symantec Corporation“ išduotus pasenusių PKI operacijų sertifikatus nustatyti kaip patikimus, jei jie sėkmingai patvirtinami ir susiejami su atpažįstamu CA sertifikatu.
 
       Atminkite, kad ši politika nustatoma atsižvelgiant į operacinę sistemą, kuri vis dar atpažįsta sertifikatus iš „Symantec“ pasenusios infrastruktūros. Jei atnaujinus OS pakeičiama, kaip OS apdoroja tokius sertifikatus, ši politika nebegalioja. Be to, ši politika teikiama kaip laikina sprendimo priemonė, norint suteikti įmonėms daugiau laiko pereiti nuo pasenusių „Symantec“ sertifikatų. Ši politika bus pašalinta 2019 m. sausio 1 d. arba šiek tiek vėliau / anksčiau.
@@ -2782,7 +2782,7 @@
 
       Kai ši politika nustatyta kaip „<ph name="GLS_UNDER_USER_CONTROL" />“, naudotojo prašoma pasirinkti, ar naudoti „Google“ vietovės paslaugas. Bus leidžiama „Android“ programoms naudoti paslaugas užklausoms dėl įrenginio vietovės teikti ir bus leidžiama teikti anoniminius vietovės duomenis „Google“.
 
-      Atminkite, kad ši politika valdo „Google“ vietovės paslaugų būseną tik pradinio nustatymo metu. Po to naudotojas gali atidaryti „Android“ nustatymus ir įjungti ir (arba) išjungti „Google“ vietovės paslaugas.
+      Atminkite, kad ši politika valdo „Google“ vietovės paslaugų būseną tik per pradinį nustatymą. Po to naudotojas gali atidaryti „Android“ nustatymus ir įjungti ir (arba) išjungti „Google“ vietovės paslaugas.
 
       Atminkite, kad šios politikos nepaisoma ir „Google“ vietovės paslaugos yra visada išjungtos, kai politika „<ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" />“ nustatyta kaip „<ph name="BLOCK_GEOLOCATION_SETTING" />“.</translation>
 <translation id="6141402445226505817">Visada leisti aptikti laiko juostą</translation>

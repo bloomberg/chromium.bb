@@ -1593,7 +1593,7 @@
 <translation id="3915395663995367577">URL prema proxy .pac datoteci</translation>
 <translation id="3920892052017026701">Postavite prilagođeni početak punjenja baterije u postocima.
 
-          Baterija se počinje puniti kada se potroši vrijednost prilagođenog početka punjenja baterije.
+          Baterija se počinje puniti kada istekne vrijednost prilagođenog početka punjenja baterije.
 
           Vrijednost pravila DeviceBatteryChargeCustomStartCharging mora biti manja od one u pravilu DeviceBatteryChargeCustomStopCharging.
 
@@ -2782,7 +2782,7 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 <translation id="6244210204546589761">URL-ovi koji se otvaraju prilikom pokretanja</translation>
 <translation id="6255387031094435995">Omogućuje spajanje odabranih pravila istog opsega i razine kada potječu iz različitih izvora.
 
-        Ako za pravilo na popisu postoji sukob između dva izvora, vrijednosti će se spojiti u popis novog pravila pod uvjetom da izvori imaju iste opsege i razinu.
+        Ako za pravilo na popisu postoji sukob između dva izvora, vrijednosti će se spojiti u novi popis pravila pod uvjetom da su izvori istog opsega i razine.
 
         Ako za pravilo na popisu postoji sukob između dva izvora, ali i između njihovih opsega i/ili razine, primijenit će se pravilo najvišeg prioriteta.
 

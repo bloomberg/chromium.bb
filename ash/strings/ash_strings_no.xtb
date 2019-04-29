@@ -86,6 +86,7 @@
 <translation id="225680501294068881">Leter etter enheter ...</translation>
 <translation id="2268130516524549846">Bluetooth er deaktivert</translation>
 <translation id="2268813581635650749">Logg alle av</translation>
+<translation id="2277103315734023688">Spol fremover</translation>
 <translation id="2292698582925480719">Visningsskala</translation>
 <translation id="2302092602801625023">Denne kontoen er administrert av Family Link</translation>
 <translation id="2303600792989757991">Vis eller skjul vindusoversikten</translation>
@@ -166,6 +167,7 @@
 <translation id="3371140690572404006">USB-C-enhet (porten foran på høyre side)</translation>
 <translation id="3400357268283240774">Flere innstillinger</translation>
 <translation id="3413817803639110246">Ingenting å se ennå</translation>
+<translation id="343571671045587506">Endre påminnelsen</translation>
 <translation id="3445925074670675829">USB-C-enhet</translation>
 <translation id="3454224730401036106">Tilkoblingen din er byttet til et sikrere nettverk</translation>
 <translation id="3465223694362104965">Et annet tastatur er koblet til denne enheten siden du sist logget på. Sørg for at du stoler på dette tastaturet før du bruker det.</translation>
@@ -198,12 +200,14 @@
 <translation id="3900355044994618856">Økten din avsluttes om <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="3901991538546252627">Kobler til <ph name="NAME" /></translation>
 <translation id="394485226368336402">Lydinnstillinger</translation>
+<translation id="3962859241508114581">Forrige spor</translation>
 <translation id="397105322502079400">Beregner …</translation>
 <translation id="3995138139523574647">USB-C-enhet (porten bak på høyre side)</translation>
 <translation id="4017989525502048489">Laserpeker</translation>
 <translation id="4042660782729322247">Du deler skjermen din</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Slått av for en app}other{Slått av for # apper}}</translation>
 <translation id="4072264167173457037">Middels sterkt signal</translation>
+<translation id="4112140312785995938">Spol bakover</translation>
 <translation id="4129129681837227511">For å se varsler på låseskjermen, lås opp for å endre innstillingen</translation>
 <translation id="4146833061457621061">Spill av musikk</translation>
 <translation id="4181841719683918333">Språk</translation>
@@ -227,6 +231,7 @@
 <translation id="4421231901400348175">Deler kontroll av skjermen med <ph name="HELPER_NAME" /> via fjernhjelp.</translation>
 <translation id="4430019312045809116">Volum</translation>
 <translation id="4450893287417543264">Ikke vis igjen</translation>
+<translation id="4477350412780666475">Neste spor</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Frakoblede enheter</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: kobler til ...</translation>
@@ -392,6 +397,7 @@
 <translation id="7222902781030499995">Stopp nedtellingen</translation>
 <translation id="7256634071279256947">Mikrofon bak</translation>
 <translation id="726276584504105859">Dra hit for å bruke delt skjerm</translation>
+<translation id="7262906531272962081">Opprett en påminnelse</translation>
 <translation id="7303365578352795231">Svarer på en annen enhet</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7348093485538360975">Skjermtastatur</translation>

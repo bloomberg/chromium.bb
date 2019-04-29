@@ -51,7 +51,7 @@
 
       Ak je toto pravidlo nastavené, prihlasovacia obrazovka sa vždy zobrazí v jazyku, ktorý je určený prvou hodnotou tohto pravidla (z dôvodu kompatibility s nasledujúcimi verziami je pravidlo definované ako zoznam). Ak toto pravidlo nie je nastavené alebo je nastavené na prázdny zoznam, prihlasovacia obrazovka sa zobrazí v jazyku poslednej relácie používateľa. Ak je pravidlo nastavené na hodnotu, ktorá nie je platným jazykom, prihlasovacia obrazovka sa zobrazí v záložnom jazyku (aktuálne americká angličtina).</translation>
 <translation id="1052499923181221200">Toto pravidlo nemá žiadny vplyv, pokiaľ je pravidlo SamlInSessionPasswordChangeEnabled nastavené na hodnotu true.
-      Ak je dané pravidlo nastavené na hodnotu true a toto pravidlo je nastavené (napríklad) na hodnotu 14, znamená to, že používatelia SAML budú na vypršanie platnosti hesla v určitom dátume upozornení 14 dní vopred.
+      Ak je dané pravidlo nastavené na hodnotu true a toto pravidlo je nastavené (napríklad) na hodnotu 14, znamená to, že používatelia SAML budú na vypršanie platnosti hesla s určitým dátumom upozornení 14 dní vopred.
       Môžu to vyriešiť okamžite zmenou hesla v rámci relácie a jeho aktualizovaním pred vypršaním platnosti.
       Tieto upozornenia sa však zobrazia iba vtedy, keď informácie o vypršaní platnosti hesla odošle do zariadenia poskytovateľ identity SAML počas prihlasovacieho postupu SAML.
       Ak toto pravidlo nastavíte na nulu, používatelia nebudú upozornení vopred. Upozornenie sa im zobrazí až po vypršaní platnosti hesla.
@@ -2823,7 +2823,7 @@ Ak značku recommended nastavíte na hodnotu true, používatelia môžu zmeniť
 <translation id="6224304369267200483">Automatické povolenie priamej atestácie bezpečnostných kľúčov webovými adresami alebo doménami</translation>
 <translation id="6233173491898450179">Nastaviť adresár na sťahovanie</translation>
 <translation id="6244210204546589761">Webové adresy otvárané pri spustení</translation>
-<translation id="6255387031094435995">Umožňuje zlúčenie vybraných pravidiel, keď pochádzajú z rôznych zdrojov, s rovnakými rozsahmi a úrovňou.
+<translation id="6255387031094435995">Umožňuje zlúčenie vybraných pravidiel s rovnakými rozsahmi a úrovňou, keď pochádzajú z rôznych zdrojov.
 
         Ak sa pravidlo nachádza v zozname a nastane konflikt medzi dvoma zdrojmi, ktoré majú rovnaké rozsahy a úroveň, hodnoty budú zlúčené do nového zoznamu pravidiel.
 
@@ -3258,7 +3258,7 @@ Ak toto pravidlo nastavíte na hodnotu True, vstavaný klient DNS sa použije (p
       Ak toto nastavenie ponecháte nenastavené, používateľ si bude môcť zvoliť, či chce, aby sa mu pri pokuse o odomknutie zariadenia zobrazovala výzva na zadanie hesla.</translation>
 <translation id="7107148737865880402">Povoľte pravidlo na správu zdieľania napájania USB.
 
-          Určité zariadenia majú konkrétny port USB označený bleskom alebo ikonou batérie, pomocou ktorého sa dajú nabíjať zariadenia (napríklad mobilný telefón) z batérie systému. Toto pravidlo ovplyvňuje správanie daného portu pri nabíjaní, kým je systém v režime spánku alebo vypnutý. Toto pravidlo neovplyvňuje ostatné porty USB a správanie pri nabíjaní, kým je systém aktívny.
+          Určité zariadenia majú konkrétny port USB označený bleskom alebo ikonou batérie a pomocou neho sa dajú nabíjať zariadenia (napríklad mobilný telefón) z batérie systému. Toto pravidlo ovplyvňuje správanie daného portu pri nabíjaní, kým je systém v režime spánku alebo vypnutý. Toto pravidlo neovplyvňuje ostatné porty USB a správanie pri nabíjaní, kým je systém aktívny.
 
           Keď je systém aktívny, port USB bude vždy poskytovať napájanie.
 

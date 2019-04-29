@@ -332,9 +332,9 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
 
           Kui reegel on määramata või valitud on „DeviceDockMacAddress”, kasutatakse seadmele määratud doki MAC-aadressi.
 
-          Kui valitud on „DeviceNicMacAddress”, kasutatakse seadme NIC (võrguliidese kontroller) MAC-aadressi.
+          Kui valitud on „DeviceNicMacAddress”, kasutatakse seadme NIC-i (võrguliidese kontroller) MAC-aadressi.
 
-          Kui valitud on „DockNicMacAddress”, kasutatakse doki NIC MAC-aadressi.
+          Kui valitud on „DockNicMacAddress”, kasutatakse doki NIC-i MAC-aadressi.
 
           Kasutaja ei saa seda seadet muuta.</translation>
 <translation id="1507957856411744193">Kui reegel on seatud väärtusele Tõene, loob <ph name="PRODUCT_NAME" /> ühenduse Casti seadmetega kõigi IP-aadresside, mitte ainult RFC1918/RFC4193 privaatsete aadresside kaudu.
@@ -1226,7 +1226,7 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
 
       Kui määrate reegli väärtuseks „MinimalMigrate”, kustutatakse ecryptfs-krüpteerimisel põhinevad juurkataloogid sisselogimisel ja nende asemel luuakse uued ext4-krüpteeritud juurkataloogid. Siiski püütakse säilitada sisselogimismärgid, et kasutaja ei peaks uuesti sisse logima. Hoiatus. See eemaldab kasutaja kohalikud andmed.
 
-      Kui määrate reegli jaoks valiku, mida enam ei toetata („AskUser” või „AskForEcryptfsArcUsers”), koheldakse seda nii, nagu oleksite määranud valiku „Migrate”.
+      Kui määrate reegli jaoks valiku, mida enam ei toetata („AskUser” või „AskForEcryptfsArcUsers”), käsitletakse seda nii, nagu oleksite määranud valiku „Migrate”.
 
       Reegel ei kehti kioski kasutajatele. Kui reegel on määramata, käitub seade samamoodi kui seade „DisallowArc” valimisel.</translation>
 <translation id="3086995894968271156">Cast'i vastuvõtja seadistamine teenuses <ph name="PRODUCT_NAME" />.</translation>
@@ -1261,7 +1261,7 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
           Kui seade keelatakse, kasutab teenus <ph name="PRODUCT_NAME" /> ainult süsteemi tasemel installitud omasõnumside hoste.
 
           Kui seadet ei määrata, lubab teenus <ph name="PRODUCT_NAME" /> kasutada kasutaja tasemel omasõnumside hoste.</translation>
-<translation id="3177802893484440532">Kohalike usaldusankrute puhul veebipõhiste OCSP/CRL-i kontrollide nõudmine</translation>
+<translation id="3177802893484440532">Kohalike usaldusankrute puhul veebipõhiste OCSP-/CRL-i kontrollide nõudmine</translation>
 <translation id="3185009703220253572">alates versioonist <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Androidi rakendused ei pääse juurde ettevõttevõtmetele. See reegel neid ei mõjuta.</translation>
 <translation id="3205825995289802549">Esmasel käivitamisel esimese brauseriakna maksimeerimine</translation>
@@ -1271,7 +1271,7 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
 <translation id="3220624000494482595">Kui kioskirakendus on Androidi rakendus, ei juhi see operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> versiooni, isegi kui reegli väärtuseks on määratud <ph name="TRUE" />.</translation>
 <translation id="3236046242843493070">URL-ide mustrid, millelt on lubatud installida laiendusi, rakendusi ja kasutaja skripte</translation>
 <translation id="3240609035816615922">Printeri seadistuse juurdepääsu reegel.</translation>
-<translation id="3240655340884151271">Doki sisseehitatud NIC MAC-aadress</translation>
+<translation id="3240655340884151271">Doki sisseehitatud NIC-i MAC-aadress</translation>
 <translation id="3243309373265599239">Määrab aja, pärast mida hämardatakse võrgutoitega töötamisel ekraan, kui kasutaja pole midagi sisestanud.
 
           Kui selle reegli väärtuseks määratakse arv, mis on suurem kui null, määrab see aja, mille jooksul peab kasutaja olema tegevusetu, enne kui <ph name="PRODUCT_OS_NAME" /> ekraani hämardab.
@@ -1462,7 +1462,7 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
 
         Seda reeglit kasutatakse arvutites seadme ulatuses pilvereegli registreerimiseks ja selle saab määrata failiga Registry või GPO Windowsis, failiga plist Macis ja JSON-i reeglifailiga Linuxis.</translation>
 <translation id="3660562134618097814">SAML IdP küpsisefailide ülekandmine sisselogimisel</translation>
-<translation id="3668151900457104753">Musta nimekirja kantud laiendite desinstallimine</translation>
+<translation id="3668151900457104753">Musta nimekirja kantud laienduste desinstallimine</translation>
 <translation id="3701121231485832347">Haldab üksuse <ph name="MS_AD_NAME" /> hallatud operatsioonisüsteemiga <ph name="PRODUCT_OS_NAME" /> seadmete seadeid.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Üherealist välja enam ei toetata ja tulevikus see eemaldatakse. Hakake kasutama allolevat mitmerealist tekstivälja.)</translation>
 <translation id="3709266154059827597">Laienduste installimise musta nimekirja seadistamine</translation>
@@ -2528,7 +2528,7 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
 <translation id="5630352020869108293">Viimase seansi taastamine</translation>
 <translation id="5643906875497889108">Määrab, millist tüüpi rakendusi/laiendusi on lubatud installida, ja piirab käitusaja juurdepääsu.
 
-          See seade lisab lubatud loendisse laiendused/rakendused, mille saab rakendusse <ph name="PRODUCT_NAME" /> installida, ja määrab, millist hostidega need suhelda saavad. Väärtus on stringide loend, millest igaüks peab olema üks järgmistest. "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Vaadake nende tüüpide kohta lisateavet rakenduse <ph name="PRODUCT_NAME" /> laienduste dokumentidest.
+          See seade lisab lubatud loendisse laiendused/rakendused, mille saab rakendusse <ph name="PRODUCT_NAME" /> installida, ja määrab, milliste hostidega need suhelda saavad. Väärtus on stringide loend, millest igaüks peab olema üks järgmistest. "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Vaadake nende tüüpide kohta lisateavet rakenduse <ph name="PRODUCT_NAME" /> laienduste dokumentidest.
 
           Pange tähele, et reegel mõjutab ka laiendusi ja rakendusi, mis sundinstallitakse reegli ExtensionInstallForcelist alusel.
 
@@ -2576,7 +2576,7 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
 <translation id="5765780083710877561">Kirjeldus:</translation>
 <translation id="5770738360657678870">Arendaja kanal (võib olla ebastabiilne)</translation>
 <translation id="5774856474228476867">Vaikeotsingupakkuja otsingu URL</translation>
-<translation id="5775235485119094648">Akut laaditakse, kui see on määratud vahemikus.</translation>
+<translation id="5775235485119094648">Akut laetakse, kui see on määratud vahemikus.</translation>
 <translation id="5776485039795852974">Küsi iga kord, kui sait tahab näidata töölauateatisi</translation>
 <translation id="5781412041848781654">Määrab GSSAPI kogu, mida kasutatakse HTTP autentimiseks. Võite määrata vaid kogu nime või kogu tee.
 
@@ -2654,14 +2654,14 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli IsolateOr
       Kui reegel on seadistamata, kasutatakse sisselogimiskuval platvormi saitide isoleerimise vaikeseadeid.
       </translation>
 <translation id="5901427587865226597">Ainult dupleksprintimine</translation>
-<translation id="5905473632148429217">Luba veebipõhised OCSP/CRL-i kontrollid</translation>
+<translation id="5905473632148429217">Luba veebipõhised OCSP-/CRL-i kontrollid</translation>
 <translation id="5906199912611534122">Võimaldab lubada või keelata võrguühenduse piiramise.
       See kehtib kõigi kasutajate ja seadme kõigi liideste puhul. Pärast määramist
       on piirang aktiivne, kuni see reeglis keelatakse.
 
       Kui reegel on määratud väärtusele Väär, ei ole võrguühendus piiratud.
       Kui reegel on määratud väärtusele Tõene, on süsteem piiratud, et järgida määratud üles- ja allalaadimiskiirust (kbit/s).</translation>
-<translation id="591088232153082363">Aku kohanduv laadimine akukaustuse mustri alusel.</translation>
+<translation id="591088232153082363">Aku kohanduv laadimine akukasutuse mustri alusel.</translation>
 <translation id="5921713479449475707">Automaatsete allalaadimiste lubamine HTTP kaudu</translation>
 <translation id="5921888683953999946">Sisselogimisekraanil suure kursori hõlbustusfunktsiooni vaikeoleku määramine.
 
@@ -2683,7 +2683,7 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli IsolateOr
 <translation id="5950205771952201658">Kuna veebipõhised softfail-tühistamiskontrollid ei suurenda turvalisust, keelatakse need vaikimisi toote <ph name="PRODUCT_NAME" /> 19. versioonis ja hilisemates versioonides. Kui seate reegli olekuks Tõene, taastatakse varasem käitumine ja kasutatakse veebipõhiseid OCSP-/CRL-kontrolle.
 
       Kui jätate reegli määramata või seate selle olekuks Väär, ei tee <ph name="PRODUCT_NAME" /> 19. versioonis ja hilisemates versioonides toote <ph name="PRODUCT_NAME" /> veebipõhiseid tühistamiskontrolle.</translation>
-<translation id="5961137303188584693">Seadme sisseehitatud NIC MAC-aadress</translation>
+<translation id="5961137303188584693">Seadme sisseehitatud NIC-i MAC-aadress</translation>
 <translation id="5966615072639944554">Kaugatesteerimise API kasutamiseks lubatud laiendused</translation>
 <translation id="5983708779415553259">Mitte ühessegi sisupaketti kuuluvate saitide vaikekäitumine</translation>
 <translation id="5997543603646547632">Vaikimisi 24-tunnise kella kasutamine</translation>
@@ -2867,7 +2867,7 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli IsolateOr
 
         Kui reegel on loendis ja kahe allika vahel, millel on sama ulatus ja tase, ilmneb konflikt, liidetakse väärtused uude reegliloendisse.
 
-        Kui reegel on loendis ja kahe allika vahel, millel on erinev ulatus ja tase, ilmneb konflikt, liidetakse rakendatakse kõrgeima prioriteediga reegel.
+        Kui reegel on loendis ja kahe allika vahel, millel on erinev ulatus ja tase, ilmneb konflikt, rakendatakse kõrgeima prioriteediga reegel.
 
         Kui reegel puudub loendist ning allikate, ulatuste ja/või tasemete vahel ilmneb konflikt, rakendatakse kõrgeima prioriteediga reegel.</translation>
 <translation id="6258193603492867656">Määrab, kas Kerberose SPN peab hõlmama ebastandardset porti.
@@ -3299,7 +3299,7 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli IsolateOr
       Kui jätate reegli määramata, saavad kasutajad valida, kas nad soovivad seadme avamiseks parooli sisestada või mitte.</translation>
 <translation id="7107148737865880402">Võimaldab lubada USB toite jagamise toitehalduse reegli.
 
-          Teatud seadmetel on välgunoole või akuikooniga tähistatud USB-port, mida saab kasutada süsteemi aku abil seadmete, näiteks mobiiltelefonide laadimiseks. Reegel mõjutab pordi laadimiskäitumist ajal, mil süsteem on väljalülitatud või unerežiimis. Reegel ei mõjuta muid USB-porte ja laadimiskäitumist ajal, mil süsteem on ärkvel.
+          Teatud seadmetel on välgunoole või akuikooniga tähistatud USB-port, mida saab kasutada süsteemi aku abil seadmete, näiteks mobiiltelefonide laadimiseks. Reegel mõjutab pordi laadimiskäitumist ajal, mil süsteem on välja lülitatud või unerežiimis. Reegel ei mõjuta muid USB-porte ja laadimiskäitumist ajal, mil süsteem on ärkvel.
 
           Kui süsteem on ärkvel, on USB-pordi toide alati sisse lülitatud.
 
@@ -3748,7 +3748,7 @@ Kui jätate selle reegli määramata, ei ole kasutajate sisselogimine piiratud. 
 <translation id="7941975817681987555">Ära ennusta võrgutoiminguid ühegi võrguühenduse puhul</translation>
 <translation id="7952007677054834789">Võimaldab määrata rakenduses <ph name="PRODUCT_NAME" /> laadimisel käivitatavad lehed ning vaikimisi kasutatava avalehe ja uue vahelehe ning takistab kasutajaid neid muutmast.
 
-      Kasutaja avalehe seaded on täielikult lukustatud vaid juhul, kui valite avaleheks uue vahelehe või seate selle URL-iks ja määrate avalehel URL-i. Kui te ei määra avalehe URL-i, saab kasutaja määrata avaleheks uue vahelehe käsuga „chrome://newtab”.
+      Kasutaja avalehe seaded on täielikult lukustatud vaid juhul, kui valite avaleheks uue vahelehe või seate selle URL-iks ja määrate avalehe URL-i. Kui te ei määra avalehe URL-i, saab kasutaja määrata avaleheks uue vahelehe käsuga „chrome://newtab”.
 
       Reeglit „Käivitamisel avatavad URL-id” eiratakse, kui te ei vali jaotises „Toiming käivitamisel” käsku „Ava URL-ide loend”.</translation>
 <translation id="7952958573604504839">Reegli tugi on versioonis M48 katkestatud ja asendatud reegliga <ph name="NETWORK_PREDICTION_OPTIONS_POLICY_NAME" /> ning versioonist M54 on reegel eemaldatud.
@@ -4284,7 +4284,7 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
       See reegel mõjutab ainult neid kasutajad, kes kasutavad autentimiseks SAML-i.
 
       Reegli väärtus tuleb määrata sekundites.</translation>
-<translation id="9018338365267278833">See eemaldab loendisse <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> või reeglisse <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> lisatud laiendused, mille installimisrežiimiks on määratud Blokeeritud, ja kustutab lõplikult ka kaustajate kohalikud andmed.  Vaadake laienduste privaatsuseeskirjadest või andmete säilitamise reeglitest teavet selle kohta, mis võib juhtuda kasutajate andmetega, mis ei ole kohalikult talletatud.
+<translation id="9018338365267278833">See eemaldab loendisse <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> või reeglisse <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> lisatud laiendused, mille installimisrežiimiks on määratud Blokeeritud, ja kustutab lõplikult ka kasutajate kohalikud andmed.  Vaadake laienduste privaatsuseeskirjadest või andmete säilitamise reeglitest teavet selle kohta, mis võib juhtuda kasutajate andmetega, mis ei ole kohalikult talletatud.
 
       Kui reegel on seatud väärtusele Lubatud, eemaldatakse eelmainitud loenditesse kuuluvad laiendused (kui need on juba seadmesse installitud) täielikult (koos kasutaja kohalike andmetega).
 

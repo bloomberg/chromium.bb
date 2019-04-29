@@ -121,6 +121,7 @@
 <translation id="1919950603503897840">選取聯絡人</translation>
 <translation id="1922076542920281912">如要讓 Chrome 存取你的位置，請一併在 <ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />中開啟定位功能。</translation>
 <translation id="1923695749281512248">已下載：<ph name="BYTES_DOWNLOADED_WITH_UNITS" />，總大小：<ph name="FILE_SIZE_WITH_UNITS" /></translation>
+<translation id="1928696683969751773">更新</translation>
 <translation id="19288952978244135">重新開啟 Chrome。</translation>
 <translation id="1933845786846280168">選取的分頁</translation>
 <translation id="194341124344773587">請在 <ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />中為 Chrome 啟用這項權限。</translation>
@@ -414,7 +415,6 @@
 <translation id="410351446219883937">自動播放</translation>
 <translation id="4116038641877404294">下載網頁以便離線存取</translation>
 <translation id="4149994727733219643">使用簡易檢視模式查看網頁</translation>
-<translation id="4159800535322890630">禁止網站存取你的感應器</translation>
 <translation id="4165986682804962316">網站設定</translation>
 <translation id="4170011742729630528">服務無法使用，請稍後再試。</translation>
 <translation id="4179980317383591987">已使用 <ph name="AMOUNT" /></translation>
@@ -622,7 +622,6 @@
 <translation id="5581519193887989363">你隨時可以在<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />中選擇要同步處理的資料。</translation>
 <translation id="5595485650161345191">編輯地址</translation>
 <translation id="5596627076506792578">更多選項</translation>
-<translation id="5620299005957670886">允許網站存取你的感應器 (建議)</translation>
 <translation id="5620928963363755975">透過「更多選項」按鈕前往「下載」主畫面尋找你的檔案和網頁</translation>
 <translation id="5626134646977739690">名稱：</translation>
 <translation id="5639724618331995626">允許所有網站</translation>
@@ -903,7 +902,7 @@
 <translation id="756809126120519699">已清除 Chrome 資料</translation>
 <translation id="757524316907819857">禁止網站播放受保護的內容</translation>
 <translation id="757855969265046257">{FILES,plural, =1{已下載 <ph name="FILES_DOWNLOADED_ONE" /> 個檔案}other{已下載 <ph name="FILES_DOWNLOADED_MANY" /> 個檔案}}</translation>
-<translation id="7588219262685291874">系統會在裝置啟用節約耗電量功能後啟用深色主題</translation>
+<translation id="7588219262685291874">在裝置開啟「節約耗電量」後啟用深色主題</translation>
 <translation id="7589445247086920869">禁止目前的搜尋引擎使用此權限</translation>
 <translation id="7593557518625677601">如要啟動 Chrome 同步功能，請開啟 Android 設定並重新啟用 Android 系統同步處理設定</translation>
 <translation id="7596558890252710462">作業系統</translation>

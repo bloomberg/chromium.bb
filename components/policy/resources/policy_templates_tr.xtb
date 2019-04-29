@@ -58,7 +58,7 @@
 <translation id="1052499923181221200">SamlInSessionPasswordChangeEnabled true (doğru) değerine ayarlanmadıkça bu politikanın etkisi yoktur.
       SamlInSessionPasswordChangeEnabled politikası true (doğru) değerine, bu politika da (örneğin) 14'e ayarlanırsa, SAML kullanıcılarına şifrelerinin süresinin belirli bir tarihte biteceği 14 gün önceden bildirilir.
       Ardından oturum içi şifre değiştirme işlemini hemen uygulayarak şifrelerini süresi bitmeden güncelleyebilirler.
-      Ancak bu bildirimler sadece şifre bitiş bilgileri cihaza SAML kimlik sağlayıcısı tarafından SAML oturum açma akışı sırasında gönderilirse gösterilir.
+      Ancak bu bildirimler sadece şifre geçerliliği bitiş bilgileri cihaza SAML kimlik sağlayıcısı tarafından SAML oturum açma akışı sırasında gönderilirse gösterilir.
       Bu politika sıfıra ayarlanırsa kullanıcılara önceden bildirim yapılmaz. Sadece şifrenin süresi bittiğinde bildirim alırlar.
 
       Bu politika ayarlanırsa, kullanıcı tarafından değiştirilemez veya geçersiz kılınamaz.</translation>
@@ -313,7 +313,7 @@
 <translation id="1507382822467487898">
           Cihaza bir yerleştirme yuvası bağlandığında MAC (medya erişim denetimi) adresi kullanılır.
 
-          Bazı cihaz modellerine bir yerleştirme yuvası bağlandığında, varsayılan olarak cihazı Ethernet'te tanımlamak için cihazın atanmış yuvasına ait MAC adresi kullanılır. Bu politika, cihaz yuvaya yerleştirilmiş durumdayken MAC adresi kaynağının yönetici tarafından değiştirilmesine izin verir.
+          Bazı cihaz modellerine bir yerleştirme yuvası bağlandığında, varsayılan olarak cihazı Ethernet ağında tanımlamak için cihazın atanmış yuvasına ait MAC adresi kullanılır. Bu politika, cihaz yuvaya yerleştirilmiş durumdayken MAC adresi kaynağının yönetici tarafından değiştirilmesine izin verir.
 
           "DeviceDockMacAddress" seçiliyse veya politika ayarlanmamış olarak bırakılırsa, cihazın atanmış yuvasına ait MAC adresi kullanılır.
 
@@ -761,7 +761,7 @@
 <translation id="2327252517317514801">G Suite'e erişmesine izin verilen alan adlarını tanımla</translation>
 <translation id="2356878440219553005">Pil şarj modu güç yönetimi politikasını belirtir.
 
-          Gerilimden dolayı pilin aşınmasını en aza indirmek ve pil ömrünü uzatmak için pil şarjını dinamik olarak denetleyin.
+          Pil stresi nedeniyle pilin aşınmasını en aza indirmek ve pil ömrünü uzatmak için pil şarjını dinamik olarak denetleyin.
 
           Özel pil şarj modu seçiliyse, DeviceBatteryChargeCustomStartCharging ve DeviceBatteryChargeCustomStopCharging belirtilmelidir.
 
@@ -1199,7 +1199,7 @@
 <translation id="3077183141551274418">Sekme yaşam döngülerini etkinleştirir veya devre dışı bırakır</translation>
 <translation id="3079417254871857650">Kullanıcının ana dizini ecryptfs şifrelemesi kullanılarak oluşturulmuşsa yapılması gereken işlemi belirtir.
 
-      Bu politikayı "DisallowArc" seçeneğine ayarlarsanız, Android uygulamaları kullanıcı için devre dışı bırakılır ve ecryptfs'ten ext4 şifrelemesine herhangi bir taşıma işlemi yapılmaz. Ana dizin zaten ext4-ile şifrelenmişse Android uygulamalarının çalışması engellenmez.
+      Bu politikayı "DisallowArc" seçeneğine ayarlarsanız, Android uygulamaları kullanıcı için devre dışı bırakılır ve ecryptfs'ten ext4 şifrelemesine herhangi bir taşıma işlemi yapılmaz. Ana dizin zaten ext4 ile şifrelenmişse Android uygulamalarının çalışması engellenmez.
 
       Bu politikayı "Migrate" seçeneğine ayarlarsanız, ecryptfs ile şifrelenmiş ana dizinler otomatik olarak, kullanıcı izni istemeden oturum açma sırasında ext4 şifrelemesine taşınır.
 
@@ -1281,7 +1281,7 @@
 <translation id="3312206664202507568">chrome://password-change konumunda, SAML kullanıcılarının oturum açmış durumdayken SAML şifrelerini değiştirmelerine izin veren ve SAML şifresi ile cihaz kilitli ekran şifresinin senkronize durumda tutulmasını sağlayan bir sayfayı etkinleştirir.
 
       Bu politika ayrıca SAML kullanıcılarını SAML şifrelerinin süresinin biteceği konusunda uyaran bildirimleri etkinleştirir, böylece kullanıcılar hemen oturum içi şifre değiştirme işlemini yapabilirler.
-      Ancak bu bildirimler sadece şifre bitiş bilgileri cihaza SAML kimlik sağlayıcısı tarafından SAML oturum açma akışı sırasında gönderilirse gösterilir.
+      Ancak bu bildirimler sadece şifre geçerliliği bitiş bilgileri cihaza SAML kimlik sağlayıcısı tarafından SAML oturum açma akışı sırasında gönderilirse gösterilir.
 
       Bu politika ayarlanırsa, kullanıcı tarafından değiştirilemez veya geçersiz kılınamaz.</translation>
 <translation id="3322771899429619102">Anahtar oluşturmasına izin verilen sitelerin belirtildiği bir URL kalıpları listesi ayarlamanıza olanak tanır. Bir URL kalıbı "KeygenBlockedForUrls" içindeyse, bu istisnalar geçersiz kılınır.
@@ -2558,7 +2558,7 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
 <translation id="5765780083710877561">Açıklama:</translation>
 <translation id="5770738360657678870">Yeni geliştirilenler kanalı (kararsız olabilir)</translation>
 <translation id="5774856474228476867">Varsayılan arama sağlayıcı arama URL'si</translation>
-<translation id="5775235485119094648">Pili sabit bir aralıktayken şarj edin.</translation>
+<translation id="5775235485119094648">Pili belirlenmiş bir aralıktayken şarj edin.</translation>
 <translation id="5776485039795852974">Bir site, masaüstü bildirimlerini her göstermek istediğinde sor.</translation>
 <translation id="5781412041848781654">HTTP kimlik doğrulaması için hangi GSSAPI kitaplığının kullanılacağını belirtir. Sadece bir kitaplık adı ya da tam yol ayarlayabilirsiniz.
 
@@ -2641,7 +2641,7 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
 
       Yanlış (false) değerine ayarlanırsa daraltma olmaz.
       Doğru (true) değerine ayarlanırsa sunulan yükleme ve indirme hızlarına (kbit/sn.) ulaşmak için sistem daraltılır.</translation>
-<translation id="591088232153082363">Pil kullanım modeline göre uyarlanabilir şarj pili.</translation>
+<translation id="591088232153082363">Pil kullanım modeline göre pili uyarlanabilir şarj et.</translation>
 <translation id="5921713479449475707">HTTP aracılığıyla otomatik güncelleme indirmeye izin ver</translation>
 <translation id="5921888683953999946">Giriş ekranında büyük imleç erişilebilirlik özelliğinin varsayılan durumunu ayarla.
 
@@ -3175,17 +3175,17 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
 
       Ekran karartılmak üzereyken akıllı karartma modeli, ekranı karartmanın geciktirilmesinin gerekip gerekmediğini değerlendirir. Akıllı karartma modeli ekranın karartılmasını geciktirirse, ekranın karartılması için gereken süre etkili şekilde uzar. Bu durumda, ekran kapatma, ekran kilidi ve işlem yapılmadan geçen süre gecikmeleri, ekran karartma gecikmesinin başlangıçta yapılandırıldığı değerle aynı süreyi koruyacak şekilde ayarlanır. 
       Bu politika True (Doğru) değerine ayarlanır veya ayarlanmadan bırakılırsa akıllı karartma modeli etkinleşir ve ekranı karartma süresini uzatmasına izin verilir. Bu politika False (Yanlış) değerine ayarlanırsa akıllı karartma modeli, ekran karartmayı etkilemez.</translation>
-<translation id="6967394885063085697">Gelişmiş pil şarjı modu güç yönetim politikasını etkinleştirin.
+<translation id="6967394885063085697">Gelişmiş pil şarj modu güç yönetim politikasını etkinleştirin.
 
-          Gelişmiş Pil Şarjı Modu, kullanıcının pil sağlığını maksimuma çıkarmasına olanak verir. Gelişmiş Şarj Modu'nda, sistem pil sağlığını maksimuma çıkarmak için mesai saatleri dışında standart şarj algoritmasını ve diğer teknikleri kullanır. Mesai saatlerinde ise bir hızlı şarj yöntemi kullanılır. Bu hızlı şarj, pilin daha hızlı şarj edilmesini sağlar; dolayısıyla pil kısa sürede tam şarj kapasitesine ulaşır. Her gün için, sistemin en yoğun şekilde kullanılacağı zaman başlangıç saati ve süre ile belirtilir.
+          Gelişmiş Pil Şarj Modu, kullanıcının pil sağlığını maksimuma çıkarmasına olanak verir. Gelişmiş Şarj Modu'nda, sistem pil sağlığını maksimuma çıkarmak için mesai saatleri dışında standart şarj algoritmasını ve diğer teknikleri kullanır. Mesai saatlerinde ise bir hızlı şarj yöntemi kullanılır. Bu hızlı şarj, pilin daha hızlı şarj edilmesini sağlar; dolayısıyla pil kısa sürede tam şarj kapasitesine ulaşır. Her gün için, sistemin en yoğun şekilde kullanılacağı zaman başlangıç saati ve süre ile belirtilir.
 
-          Bu politika true (doğru) seçeneğine ayarlıyken ayrıca DeviceAdvancedBatteryChargeModeDayConfig özelliği de ayarlanmışsa, gelişmiş pil şarjı modu cihazda desteklenmesi durumunda her zaman etkin olur.
+          Bu politika true (doğru) seçeneğine ayarlıyken ayrıca DeviceAdvancedBatteryChargeModeDayConfig özelliği de ayarlanmışsa, gelişmiş pil şarj modu cihazda desteklenmesi durumunda her zaman etkin olur.
 
           Bu politika false (yanlış) seçeneğine ayarlanırsa, gelişmiş pil şarj modu her zaman devre dışı olur.
 
           Bu politikayı ayarlarsanız, kullanıcılar tarafından değiştirilemez veya geçersiz kılınamaz.
 
-          Bu politika ayarlanmadan bırakılırsa, gelişmiş pil şarjı modu devre dışı bırakılır ve kullanıcı tarafından etkinleştirilemez.</translation>
+          Bu politika ayarlanmadan bırakılırsa, gelişmiş pil şarj modu devre dışı bırakılır ve kullanıcı tarafından etkinleştirilemez.</translation>
 <translation id="6972540544240464302">Görev planlayıcı yapılandırması seç</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6994082778848658360">Yerleşik güvenli öğe donanımının bu özellikle uyumlu olması halinde iki etmenli kimlik doğrulama sunmak için nasıl kullanılabileceğini belirtir. Kullanıcının fiziksel varlığını algılamak için makinenin güç düğmesi kullanılır.
@@ -3615,7 +3615,7 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 <translation id="7712109699186360774">Bir site kamera ve/veya mikrofona erişmek istediğinde her zaman sor</translation>
 <translation id="7713608076604149344">İndirme kısıtlamaları</translation>
 <translation id="7715711044277116530">Sunum modunda ekranın kararma gecikmesinin ölçekleneceği yüzde</translation>
-<translation id="7716781462866245042">Gelişmiş pil şarjı gün yapılandırmasını ayarlayın.
+<translation id="7716781462866245042">Gelişmiş pil şarj modu gün yapılandırmasını ayarlayın.
 
           Bu politika sadece DeviceAdvancedBatteryChargeModeEnabled ayarı true (doğru) seçeneğine ayarlanmışsa kullanılır.
 
@@ -4221,7 +4221,7 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
 
       Politika etkin olarak ayarlandığında, daha önce bahsedilen listelerdeki (bir makineye yüklenmiş durumdaysa) uzantılar (yerel kullanıcı verileri dahil) makineden tümüyle kaldırılır.
 
-      Politika devre dışı olarak ayarlanır veya ayarlanmadan bırakılırsa, daha önce bahsedilen listelerdeki (bir makineye yüklenmiş durumdaysa) uzantılar ve kara listede <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> olanlar makinede devre dışı bırakılır ve yüklenmez.</translation>
+      Politika devre dışı olarak ayarlanır veya ayarlanmadan bırakılırsa, daha önce bahsedilen listelerdeki (bir makineye yüklenmiş durumdaysa ve <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> kara listesindeyse) uzantılar makinede devre dışı bırakılır ve yüklenmez.</translation>
 <translation id="9027787254195333560">Bu politika, giriş ekranında kullanıcıyı temsil eden avatar resmini yapılandırmanıza olanak tanır. Politika, avatar resminin <ph name="PRODUCT_OS_NAME" /> tarafından indirilebileceği URL'nin belirtilmesi ve indirme işleminin bütünlüğünü doğrulamak için kullanılacak şifreleme karmasının tanımlanmasıyla ayarlanır. Resim JPEG biçiminde olmalı, boyutu 512 kB'tan fazla olmamalıdır. URL'ye kimlik doğrulaması yapmadan erişilebilmelidir.
 
       Avatar resmi indirilir ve önbelleğe alınır. URL veya karma her değiştiğinde resim tekrar indirilir.

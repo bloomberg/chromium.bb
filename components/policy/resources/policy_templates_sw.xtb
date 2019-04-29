@@ -1609,7 +1609,7 @@ Sera hii isipowekwa, mtumiaji bado anaweza kusakinisha kiendelezi chochote katik
 <translation id="3915395663995367577">URL hadi proksi ya faili ya .pac</translation>
 <translation id="3920892052017026701">Weka mapendeleo ya muda wa kuanza kuchaji betri katika asilimia.
 
-          Betri huanza kuchaji wakati inafikia thamani ya maalum ya kuanza kuchaji.
+          Betri huanza kuchaji inapofikia kiwango maalum cha kuanza kuchaji.
 
           Lazima DeviceBatteryChargeCustomStartCharging iwe chini ya DeviceBatteryChargeCustomStopCharging.
 
@@ -2735,7 +2735,7 @@ Thamani ya sera inapaswa kubainishwa katika milisekunde. Thamani huwekwa pamoja 
 
       Sera hii ikiwekwa kuwa <ph name="GLS_ENABLED" />, Huduma za Mahali za Google huwashwa kwanza.
 
-      Sera hii ikiwekwa kuwa <ph name="GLS_UNDER_USER_CONTROL" />, mtumiaii huulizwa ikiwa atatumia Huduma za Mahali za Google. Hali hii itaruhusu programu za Android kutumia huduma kuhoji eneo la kifaa na pia itaruhusu hali ya kuwasilisha data ya mahali uliko kwa Google bila kufichua maelezo yanayoweza kukutambulisha.
+      Sera hii ikiwekwa kuwa <ph name="GLS_UNDER_USER_CONTROL" />, mtumiaii huulizwa ikiwa atatumia Huduma za Mahali za Google. Hali hii itaruhusu programu za Android kutumia huduma kubaini mahali kifaa kilipo na pia itaruhusu hali ya kuwasilisha data ya mahali uliko kwa Google bila kufichua maelezo yanayoweza kukutambulisha.
 
       Kumbuka kwamba sera hii hudhibiti hali ya Huduma za Mahali za Google wakati wa kuweka mipangilio ya kwanza pekee. Mtumiaji anaweza kufungua mipangilio ya Android baadaye na kuwasha au kuzima Huduma za Mahali za Google.
 
@@ -3388,7 +3388,7 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
 
           Sera hii inazingatiwa tu iwapo sera ya 'DefaultSearchProviderEnabled' imewashwa.</translation>
 <translation id="7302043767260300182">Ufungaji wa skrini unachelewa wakati nishati ya AC inapotimika</translation>
-<translation id="7305262223970835999">Huwasha ukurasa wa kubadilisha nenosiri katika kipindi kinachoendelea kwa ajili ya watumiaji wa SAML.</translation>
+<translation id="7305262223970835999">Huwasha ukurasa wa kubadilisha nenosiri katika kipindi kinachoendelea kwa watumiaji wa SAML.</translation>
 <translation id="7311458740754205918">Sera hii ikiwekwa kuwa ndivyo au isipowekwa, ukurasa wa Kichupo Kipya utaonyesha mapendekezo ya maudhui kulingana na historia ya kuvinjari, mambo yanayovutia, au mahali alipo mtumiaji.
 
       Sera hii ikiwekwa kuwa sivyo, mapendekezo ya maudhui yanayozalishwa kiotomatiki hayataonyeshwa katika ukurasa wa Kichupo Kipya.</translation>
@@ -3517,7 +3517,7 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
      Iwapo sera hii haijawekwa ukubwa chaguomsingi utatumika na mtumiaji ataweza kubatilisha na alama ya - ukubwa wa-diski ya-akiba.</translation>
 <translation id="759389052790680884">Weka mapendeleo ya muda wa kusimamisha kuchaji betri katika asilimia.
 
-          Betri huacha kuchaji wakati inafikia thamani ya mapendeleo ya kuacha kuchaji.
+          Betri huacha kuchaji inapofikia kiwango cha kuacha kuchaji ulichobainisha.
 
           Lazima DeviceBatteryChargeCustomStartCharging iwe chini ya DeviceBatteryChargeCustomStopCharging.
 
@@ -4030,7 +4030,7 @@ kiwekwe kwenye maombi yote ya HTTP na HTTPS katika vikoa vyote vya google.com, j
      Kama hujaweka kipindi, kipindi chaguomsingi cha milisekunde 345600000 (siku nne) itatumika kwa vifaa vya <ph name="PRODUCT_OS_NAME" /> na milisekunde 604800000 (wiki moja) itatumika kwa <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8685024486845674965">Ilani ya ulinzi wa nenosiri husababishwa na hatua ya kutumia tena nenosiri lile lile</translation>
 <translation id="8693243869659262736">Tumia DNS teja ya kijenzi cha ndani</translation>
-<translation id="8698286761337647563">Idadi ya siku ambapo watumiaji wa SAML huarifiwa mapema muda wa kutumia manenosiri yao unapoelekea kuisha.</translation>
+<translation id="8698286761337647563">Idadi ya siku ambazo watumiaji wa SAML huarifiwa mapema muda wa kutumia manenosiri yao unapoelekea kuisha.</translation>
 <translation id="8703488928438047864">Ripoti hali ya ubao</translation>
 <translation id="8703872185032220081">Weka mipangilio ya siku ya kipengele kinachopunguza matumizi ya betri kwa kubadilisha mfumo kuendeshwa kwenye nguvu za betri
 

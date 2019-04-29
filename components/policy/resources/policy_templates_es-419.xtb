@@ -52,7 +52,7 @@
 <translation id="1049138910114524876">Establece la configuración regional que se aplica en la pantalla de acceso de <ph name="PRODUCT_OS_NAME" />.
 
       Si se establece esta política, la pantalla de acceso mostrará siempre la configuración regional que indica su primer valor (la política se define como una lista para otras futuras configuraciones). Si no se establece esta política o se establece una lista vacía, la pantalla de acceso mostrará la configuración regional de la última sesión de usuario. Si el valor de esta política no corresponde a una configuración regional válida, la pantalla de acceso mostrará una configuración de resguardo (la actual es en-US).</translation>
-<translation id="1052499923181221200">Esta política no tendrá efecto a menos que SamlInSessionPasswordChangeEnabled sea verdadera.
+<translation id="1052499923181221200">Esta política no tendrá efecto, a menos que SamlInSessionPasswordChangeEnabled sea verdadera.
       Si esta política es verdadera y se establece como, por ejemplo, 14, los usuarios de SAML recibirán una notificación sobre el vencimiento de su contraseña 14 días antes de la fecha de caducidad.
       Los usuarios podrán ocuparse de inmediato y cambiar la contraseña en la sesión, antes de que caduque.
       Sin embargo, solo se mostrarán estas notificaciones si el proveedor de identidad de SAML envía la información de vencimiento de contraseña al dispositivo durante el proceso de acceso de SAML.
@@ -755,7 +755,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
           Si se establece esta política, se aplicará el modo de carga de la batería (cuando lo admita el dispositivo).
 
-          Si no se establece esta política (y el dispositivo no la admite), se aplicará el modo estándar de carga de la batería y el usuario no podrá cambiarlo.
+          Si no se establece esta política (y el dispositivo no la admite), se aplicará el modo estándar de carga de la batería, y el usuario no podrá cambiarlo.
 
           Nota: <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> anula esta política si se especifica la política anterior.</translation>
 <translation id="237494535617297575">Te permite configurar una lista de patrones de URL que especifican los sitios que están autorizados a mostrar notificaciones. Si esta política no se configura, se usará el valor global predeterminado para todos los sitios ya sea de la política "DefaultNotificationsSetting", si está configurada, o de otro tipo de configuración personal del usuario.</translation>
@@ -2232,7 +2232,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Si la política no se establece, se establece con un intervalo de puertos no válido o se deja como una cadena vacía, WebRTC puede usar cualquier puerto UDP local disponible.</translation>
 <translation id="5290940294294002042">Especificar una lista de complementos que el usuario puede habilitar o inhabilitar.</translation>
-<translation id="5306186200045823863">Habilitar la confianza en la infraestructura del PKI heredado de Symantec Corporation</translation>
+<translation id="5306186200045823863">Habilitar la confianza en la infraestructura de PKI heredada de Symantec Corporation</translation>
 <translation id="5307432759655324440">Disponibilidad del modo incógnito</translation>
 <translation id="5318185076587284965">Habilitar el uso de servidores de retransmisión por parte del host de acceso remoto</translation>
 <translation id="5323128137188992869">Permite que se transmita contenido al dispositivo que esté usando <ph name="PRODUCT_NAME" />.
@@ -2443,11 +2443,11 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
           Ten en cuenta que esta política también afecta las extensiones y apps que se instalan de forma automática mediante la política ExtensionInstallForcelist.
 
-          Si se establece esta configuración, no se instalarán las extensiones y apps con un tipo que no se incluya en la lista.
+          Si se establece esta configuración, no se instalarán las extensiones ni apps con un tipo que no se incluya en la lista.
 
           Si no se establece, no se aplicarán restricciones a los tipos de extensiones y apps.
 
-          Antes de la versión 75, no se admitía el uso de ID de extensiones separados con varias comas, por lo que se omitían. Se aplicará el resto de las políticas.</translation>
+          Antes de la versión 75, no se admite el uso de ID de extensiones separados con varias comas, por lo que se omitirán. Se aplicará el resto de las políticas.</translation>
 <translation id="5645779841392247734">Permitir cookies en estos sitios</translation>
 <translation id="5689430183304951538">Tamaño predeterminado de la página de impresión</translation>
 <translation id="5693469654327063861">Permitir la migración de datos</translation>
@@ -2689,7 +2689,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Ten en cuenta que esta política solo controla el estado de los Servicios de ubicación de Google durante la configuración inicial. El usuario puede abrir la configuración de Android luego y activar o desactivar estos servicios.
 
-      Se ignorará esta política y los Servicios de ubicación de Google estarán siempre inhabilitados si la política <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> se establece como <ph name="BLOCK_GEOLOCATION_SETTING" />.</translation>
+      Se ignorará esta política, y los Servicios de ubicación de Google estarán siempre inhabilitados si la política <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> se establece como <ph name="BLOCK_GEOLOCATION_SETTING" />.</translation>
 <translation id="6141402445226505817">Usar siempre la detección amplia de la zona horaria</translation>
 <translation id="6145799962557135888">Te permite configurar una lista de patrones de URL que especifican los sitios que están autorizados a ejecutar JavaScript. Si esta política no se configura, se usará el valor global predeterminado para todos los sitios ya sea de la política "DefaultJavaScriptSetting", si está configurada, o de otro tipo de configuración personal del usuario.</translation>
 <translation id="614662973812186053">Esta política también controla la recopilación de datos de diagnóstico y uso de Android.</translation>
@@ -3110,7 +3110,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
           El modo avanzado de carga permite que el usuario optimice el estado de la batería. En el modo avanzado de carga, el sistema usará un algoritmo estándar de carga y otras técnicas durante las horas en que no se utilice el dispositivo para optimizar el estado de la batería. Durante las horas de funcionamiento, se usa una carga rápida. La carga rápida permite que la batería se cargue más rápido; por lo tanto, se completará antes. Para cada día, se especifica el período en que el sistema tendrá más actividad mediante la hora de inicio y la duración.
 
-          Si se establece esta política como verdadera, y se configura DeviceAdvancedBatteryChargeModeDayConfig, el modo avanzado de carga de la batería siempre estará habilitado (cuando lo admita el dispositivo).
+          Si se establece esta política como verdadera y se configura DeviceAdvancedBatteryChargeModeDayConfig, el modo avanzado de carga de la batería siempre estará habilitado (cuando lo admita el dispositivo).
 
           Si se establece esta política como falsa, el modo avanzado de carga de la batería estará siempre inhabilitado.
 
@@ -3184,7 +3184,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Si no estableces esta política, los usuarios podrán decidir si quieren que sea necesaria una contraseña para volver a activar el dispositivo o no.</translation>
 <translation id="7107148737865880402">Habilita la política de administración de la energía para el uso compartido de energía con USB.
 
-          Ciertos dispositivos tienen un puerto USB específico marcado con un ícono de rayo o de batería que se puede usar para cargar dispositivos como teléfonos móviles con la batería del sistema. Esta política afecta el comportamiento de carga de este puerto mientras el sistema está apagado o en suspensión. Esta política no afecta los demás puertos USB ni el comportamiento de carga cuando el sistema está activado.
+          Ciertos dispositivos tienen un puerto USB específico, marcado con un ícono de rayo o de batería, que se puede usar para cargar dispositivos como teléfonos móviles con la batería del sistema. Esta política afecta el comportamiento de carga de este puerto mientras el sistema está apagado o en suspensión. Esta política no afecta los demás puertos USB ni el comportamiento de carga cuando el sistema está activado.
 
           En ese caso, el puerto USB siempre proporcionará energía.
 
@@ -3192,7 +3192,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
           Si esta política se establece como verdadera y el equipo está apagado, el puerto USB suministrará energía cuando el dispositivo esté conectado a un enchufe. De lo contrario, no se suministrará energía.
 
-          Si no se establece esta política, se habilitará y el usuario no podrá cambiarla.</translation>
+          Si no se establece esta política, se habilitará, y el usuario no podrá cambiarla.</translation>
 <translation id="7115494316187648452">Determina si se inició un proceso de <ph name="PRODUCT_NAME" /> en el SO y mantiene su ejecución cuando se cierra la última ventana del navegador, lo que permite que las aplicaciones en segundo plano y la sesión de navegación actual se mantengan activas, incluidas las cookies de la sesión. El proceso en segundo plano muestra un ícono en la bandeja del sistema y siempre se puede cerrar desde allí.
 
       Si esta política se establece en True, se habilita el modo en segundo plano, y el usuario no puede controlarlo en la configuración del navegador.
@@ -3622,7 +3622,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="7937491150792971922">Combinar políticas de listas de instalación para extensiones de diferentes fuentes</translation>
 <translation id="7937766917976512374">Permitir o rechazar la captura de video</translation>
 <translation id="7941975817681987555">No predecir acciones de la red en ninguna conexión de red</translation>
-<translation id="7952007677054834789">Configura las páginas que deben cargarse en el inicio, la página principal y la página Nueva pestaña predeterminadas en <ph name="PRODUCT_NAME" />, y envía que los usuarios las cambien.
+<translation id="7952007677054834789">Configura las páginas que deben cargarse en el inicio, la página principal y la página Nueva pestaña predeterminadas en <ph name="PRODUCT_NAME" />, y evita que los usuarios las cambien.
 
       Las opciones de configuración de la página principal del usuario solo estarán completamente bloqueadas si se selecciona la página principal como la página Nueva pestaña o si se establece como una dirección URL y se especifica la dirección URL de la página principal. Si no se establece la dirección URL de la página principal, el usuario aún podrá configurar la página principal como la página Nueva pestaña al especificar la opción "chrome://newtab".
 
@@ -4160,7 +4160,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Esta política solo afecta a los usuarios autenticados mediante SAML.
 
       El valor de la política debe especificarse en segundos.</translation>
-<translation id="9018338365267278833">Esta política quitará las extensiones que aparecen en <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> o las que aparecen en <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> que tengan el modo de instalación configurado como bloqueado, y borrará definitivamente los datos de usuario locales.  Consulta la Política de Privacidad para extensiones o la política sobre retención de datos para entender qué es lo que puede ocurrir con los datos del usuario que no se almacenan de forma local.
+<translation id="9018338365267278833">Esta política quitará las extensiones que aparecen en <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> o las que aparecen en <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> que tengan el modo de instalación configurado como bloqueado y borrará definitivamente los datos de usuario locales.  Consulta la Política de Privacidad para extensiones o la política sobre retención de datos para entender qué es lo que puede ocurrir con los datos del usuario que no se almacenan de forma local.
 
       Cuando se establece la política como habilitada, las extensiones que se incluyen en las listas mencionadas anteriormente (si ya se instalaron en una máquina) se quitarán por completo (incluidos los datos del usuario locales).
 

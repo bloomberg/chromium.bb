@@ -51,8 +51,8 @@
 <translation id="1049138910114524876">Configura o local que é aplicado no ecrã de início de sessão do <ph name="PRODUCT_OS_NAME" />.
 
       Se esta política estiver definida, o ecrã de início de sessão é sempre apresentado no local que é fornecido pelo primeiro valor desta política (a política está definida como uma lista para a compatibilidade com as versões futuras). Se esta política não estiver definida ou estiver definida como uma lista vazia, o ecrã de início de sessão é apresentado no local da última sessão do utilizador. Se esta política estiver definida como um valor que não é um local válido, o ecrã de início de sessão é apresentado num local alternativo (atualmente, en-US).</translation>
-<translation id="1052499923181221200">Esta política não tem qualquer efeito, a menos que SamlInSessionPasswordChangeEnabled esteja definida como verdadeira.
-      Se essa política estiver definida como verdadeira e esta política estiver definida como (por exemplo) 14, significa que os utilizadores SAML são notificados 14 dias antes da data de validade das respetivas palavras-passe.
+<translation id="1052499923181221200">Esta política não tem qualquer efeito, a menos que a política SamlInSessionPasswordChangeEnabled esteja definida como verdadeira.
+      Se essa política estiver definida como verdadeira e esta política estiver definida como (por exemplo) 14, isto significa que os utilizadores SAML são notificados 14 dias antes da data de validade das respetivas palavras-passe.
       Assim, estes utilizadores podem atuar imediatamente e alterar a palavra-passe com a sessão iniciada, para a atualizar antes de expirar.
       No entanto, estas notificações apenas podem ser apresentadas se as informações de validade da palavra-passe forem enviadas para o dispositivo pelo fornecedor de identidade SAML, durante o fluxo de início de sessão SAML.
       Definir esta política como zero significa que os utilizadores não vão ser notificados com antecedência, mas sim apenas depois de a palavra-passe expirar.
@@ -326,7 +326,7 @@
 
           Por predefinição, quando uma estação de ancoragem está ligada a alguns modelos de dispositivo, o endereço MAC designado da estação de ancoragem do dispositivo é utilizado para identificar o dispositivo na Ethernet. Esta política permite que o administrador altere a origem do endereço MAC quando o dispositivo está ancorado.
 
-          Se "DeviceDockMacAddress" estiver selecionado ou se a política não for definida, é utilizado o endereço MAC designado da estação de ancoragem do dispositivo.
+          Se "DeviceDockMacAddress" estiver selecionado ou se a política não for definida, será utilizado o endereço MAC designado da estação de ancoragem do dispositivo.
 
           Se "DeviceNicMacAddress" estiver selecionado, é utilizado o endereço MAC da placa NIC (controlador de interface de rede) do dispositivo.
 
@@ -764,7 +764,7 @@
 <translation id="2327252517317514801">Definir domínios com permissão para aceder ao G Suite</translation>
 <translation id="2356878440219553005">Especifica a política de gestão de energia do modo de carregamento da bateria.
 
-          Controle dinamicamente o carregamento da bateria para minimizar o desgaste da bateria provocado pelo esforço da bateria e aumente a autonomia da mesma.
+          Controle dinamicamente o carregamento da bateria para minimizar o desgaste provocado pelo esforço de utilização e aumente a respetiva autonomia.
 
           Se estiver selecionado o modo de carregamento personalizado da bateria, então tem de especificar DeviceBatteryChargeCustomStartCharging e DeviceBatteryChargeCustomStopCharging.
 
@@ -1198,7 +1198,7 @@
 
       Se definir esta política como uma opção que deixou de ser suportada ("AskUser" ou "AskForEcryptfsArcUsers"), então esta é processada como se tivesse selecionado "Migrate".
 
-      Esta politica não se aplica aos utilizadores de quiosque. Se esta política não for definida, o dispositivo apresenta um comportamento semelhante a "DisallowArc".</translation>
+      Esta politica não se aplica aos utilizadores de quiosque. Se esta política não for definida, o dispositivo apresentará um comportamento semelhante a "DisallowArc".</translation>
 <translation id="3086995894968271156">Configura o Recetor do Cast no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3088796212846734853">Permite definir uma lista de padrões de URL que especificam os sites autorizados a apresentar imagens.
 
@@ -1614,7 +1614,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Esta política só é utilizada se DeviceBatteryChargeMode estiver definida como personalizada.
 
-          Se esta política não for configurada ou não for definida, é aplicado o modo de carregamento da bateria padrão.</translation>
+          Se esta política não for configurada ou não for definida, será aplicado o modo de carregamento da bateria padrão.</translation>
 <translation id="3925377537407648234">Definir a resolução do ecrã e o fator de escala</translation>
 <translation id="3939893074578116847">Envie pacotes de rede para o servidor de gestão para monitorizar o estado online, de modo a permitir
       que o servidor detete se o dispositivo está offline.
@@ -3133,13 +3133,13 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           O modo de carregamento da bateria avançado permite que o utilizador maximize o estado da bateria. No modo de carregamento avançado o sistema utiliza um algoritmo de carregamento padrão e outras técnicas durante as horas de inatividade para maximizar o estado da bateria. Durante as horas de atividade, é utilizado o carregamento rápido. Este carregamento rápido permite carregar a bateria mais rapidamente e, consequentemente, esta fica totalmente carregada mais cedo. Em cada dia, o horário durante o qual o sistema é utilizado mais intensamente é especificado pela hora de início e pela duração.
 
-          Se esta política for definida como verdadeira e DeviceAdvancedBatteryChargeModeDayConfig estiver definido, então o modo de carregamento avançado da bateria está sempre ativado, se for suportado pelo dispositivo.
+          Se esta política for definida como verdadeira e DeviceAdvancedBatteryChargeModeDayConfig estiver definido, então o modo de carregamento avançado da bateria estará sempre ativado, se for suportado pelo dispositivo.
 
-          Se esta política for definida como falsa, o modo de carregamento avançado da bateria está sempre desativado.
+          Se esta política for definida como falsa, o modo de carregamento avançado da bateria estará sempre desativado.
 
-          Se definir esta política, os utilizadores não a podem alterar nem substituir.
+          Se definir esta política, os utilizadores não a poderão alterar nem substituir.
 
-          Se esta política não for definida, o modo de carregamento avançado da bateria está desativado e não pode ser ativado pelo utilizador.</translation>
+          Se esta política não for definida, o modo de carregamento avançado da bateria estará desativado e não poderá ser ativado pelo utilizador.</translation>
 <translation id="6972540544240464302">Selecionar configuração do programador de tarefas</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6994082778848658360">Especifica de que forma o hardware de elemento seguro integrado pode ser utilizado para fornecer uma autenticação de fator duplo, se for compatível com esta funcionalidade. O botão ligar/desligar do computador é utilizado para detetar a presença física do utilizador.
@@ -3211,11 +3211,11 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Quando o sistema está ativo, a porta USB fornece sempre energia.
 
-          Quando o sistema está suspenso, se esta política estiver definida como verdadeira, então é fornecida energia à porta USB quando o dispositivo estiver ligado à tomada ou se o nível de bateria for &gt; 50%. De outro modo, não é fornecida energia.
+          Quando o sistema está suspenso, se esta política estiver definida como verdadeira, é fornecida energia à porta USB quando o dispositivo estiver ligado à tomada ou se o nível de bateria for &gt; 50%. De outro modo, não é fornecida energia.
 
           Quando o sistema está desligado, se esta política estiver definida como verdadeira, então é fornecida energia à porta USB quando o dispositivo estiver ligado à tomada. De outro modo, não é fornecida energia.
 
-          Se esta política não for definida, então está ativa e não pode ser definida pelo utilizador.</translation>
+          Se esta política não for definida, então estará ativa e não poderá ser desativada pelo utilizador.</translation>
 <translation id="7115494316187648452">Determina se um processo do <ph name="PRODUCT_NAME" /> é iniciado ao iniciar sessão no SO e continua a ser executado quando a última janela do navegador é fechada, permitindo que as aplicações em segundo plano e a sessão de navegação atual permaneçam ativas, incluindo todos os cookies de sessão. O processo em segundo plano apresenta um ícone no tabuleiro do sistema e pode sempre ser fechado a partir daí.
 
       Se esta política estiver definida como verdadeira, o modo de segundo plano é ativado e não pode ser controlado pelo utilizador nas definições do navegador.
@@ -3470,9 +3470,9 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           O valor DeviceBatteryChargeCustomStartCharging tem de ser inferior ao valor DeviceBatteryChargeCustomStopCharging.
 
-          Esta política só é utilizada se DeviceBatteryChargeMode estiver definida como personalizada.
+          Esta política só é utilizada se a política DeviceBatteryChargeMode estiver definida como personalizada.
 
-          Se esta política não for configurada ou não for definida, é aplicado o modo de carregamento da bateria padrão.</translation>
+          Se esta política não for configurada ou não for definida, será aplicado o modo de carregamento da bateria padrão.</translation>
 <translation id="759957074386651883">Definições da Navegação segura</translation>
 <translation id="7604169113182304895">As aplicações para Android podem escolher voluntariamente aceitar esta lista. Não as pode forçar a aceitá-la.</translation>
 <translation id="7612157962821894603">Sinalizadores ao nível do sistema a aplicar ao arranque do <ph name="PRODUCT_NAME" /></translation>
@@ -3548,7 +3548,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="7715711044277116530">Percentagem que determina a escala do atraso de esbatimento do ecrã no modo de apresentação</translation>
 <translation id="7716781462866245042">Defina o modo de carregamento da bateria avançado na configuração diária.
 
-          Esta política só é utilizada se DeviceAdvancedBatteryChargeModeEnabled estiver definida como verdadeira.
+          Esta política só é utilizada se a política DeviceAdvancedBatteryChargeModeEnabled estiver definida como verdadeira.
 
           Se esta política não estiver configurada ou permanecer indefinida, o modo de carregamento avançado está sempre desativado.
 
@@ -4172,7 +4172,7 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 
       Quando a política está definida como ativada, as extensões que se enquadrarem nas listas mencionadas anteriormente (se já estiverem instaladas numa máquina) são removidas completamente dessa máquina (incluindo os dados do utilizador locais).
 
-      Quando a política está definida como desativada ou não está definida, as extensões que se enquadrarem nas listas mencionadas anteriormente (se já estiverem instaladas numa máquina e existirem na lista negra <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />) são desativadas na máquina e não são instaladas.</translation>
+      Quando a política está definida como desativada ou não está definida, as extensões que se enquadrarem nas listas mencionadas anteriormente (se já estiverem instaladas numa máquina e existirem na lista negra <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />) são desativadas na máquina e não são desinstaladas.</translation>
 <translation id="9027787254195333560">Esta política permite-lhe configurar a imagem do avatar que representa o utilizador no ecrã de início de sessão. A política é definida ao especificar o URL a partir do qual o <ph name="PRODUCT_OS_NAME" /> pode transferir a imagem do avatar e um hash criptográfico utilizado para validar a integridade da transferência. A imagem tem de estar no formato JPEG e o tamanho não pode exceder 512 kB. O URL tem de ser acessível sem qualquer autenticação.
 
       A imagem do avatar é transferida e colocada em cache. Será transferida novamente sempre que o URL ou o hash forem alterados.
