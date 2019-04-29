@@ -117,7 +117,6 @@ class CORE_EXPORT TextPaintTimingDetector final
   void RecordText(const LayoutObject& object, const PropertyTreeState&);
   void OnPaintFinished();
   void NotifyNodeRemoved(DOMNodeId);
-  void Dispose() { timer_.Stop(); }
   TextRecord* FindLargestPaintCandidate();
   base::TimeTicks LargestTextPaint() const { return largest_text_paint_; }
   uint64_t LargestTextPaintSize() const { return largest_text_paint_size_; }

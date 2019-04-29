@@ -57,7 +57,6 @@ class CORE_EXPORT PaintTimingDetector
   // PropertyTreeState.
   uint64_t CalculateVisualSize(const IntRect& visual_rect,
                                const PropertyTreeState&) const;
-  void Dispose();
 
   TextPaintTimingDetector& GetTextPaintTimingDetector() {
     return *text_paint_timing_detector_;

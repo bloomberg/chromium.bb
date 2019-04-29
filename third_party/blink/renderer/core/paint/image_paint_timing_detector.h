@@ -164,7 +164,6 @@ class CORE_EXPORT ImagePaintTimingDetector final
 
  public:
   ImagePaintTimingDetector(LocalFrameView*);
-  ImageRecord* FindLargestPaintCandidate();
   void RecordImage(const LayoutObject&,
                    const IntSize& intrinsic_size,
                    const ImageResourceContent*,
@@ -174,8 +173,6 @@ class CORE_EXPORT ImagePaintTimingDetector final
       const IntSize& intrinsic_size,
       const ImageResourceContent* cached_image,
       const PropertyTreeState& current_paint_chunk_properties);
-  static bool IsBackgroundImageContentful(const LayoutObject&, const Image&);
-  static bool HasBackgroundImage(const LayoutObject& object);
   void OnPaintFinished();
   void NotifyNodeRemoved(DOMNodeId);
   void NotifyBackgroundImageRemoved(DOMNodeId, const ImageResourceContent*);
@@ -196,6 +193,8 @@ class CORE_EXPORT ImagePaintTimingDetector final
   void Trace(blink::Visitor*);
 
  private:
+  ImageRecord* FindLargestPaintCandidate();
+
   void PopulateTraceValue(TracedValue&,
                           const ImageRecord& first_image_paint,
                           unsigned report_count) const;

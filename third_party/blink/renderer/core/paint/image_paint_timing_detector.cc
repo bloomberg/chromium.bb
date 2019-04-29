@@ -446,30 +446,6 @@ std::unique_ptr<ImageRecord> ImageRecordsManager::CreateImageRecord(
   return record;
 }
 
-// In the context of FCP++, we define contentful background image as one that
-// satisfies all of the following conditions:
-// * has image reources attached to style of the object, i.e.,
-//  { background-image: url('example.gif') }
-// * not attached to <body> or <html>
-// This function contains the above heuristics.
-//
-// static
-bool ImagePaintTimingDetector::IsBackgroundImageContentful(
-    const LayoutObject& object,
-    const Image& image) {
-  // Background images attached to <body> or <html> are likely for background
-  // purpose, so we rule them out.
-  if (object.IsLayoutView() || object.IsBody() || object.IsDocumentElement()) {
-    return false;
-  }
-  // Generated images are excluded here, as they are likely to serve for
-  // background purpose.
-  if (!image.IsBitmapImage() && !image.IsStaticBitmapImage() &&
-      !image.IsSVGImage() && !image.IsPlaceholderImage())
-    return false;
-  return true;
-}
-
 void ImagePaintTimingDetector::StopRecordEntries() {
   is_recording_ = false;
 }

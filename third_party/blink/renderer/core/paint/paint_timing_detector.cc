@@ -22,6 +22,31 @@
 
 namespace blink {
 
+namespace {
+
+// In the context of FCP++, we define contentful background image as one that
+// satisfies all of the following conditions:
+// * has image reources attached to style of the object, i.e.,
+//  { background-image: url('example.gif') }
+// * not attached to <body> or <html>
+// This function contains the above heuristics.
+bool IsBackgroundImageContentful(const LayoutObject& object,
+                                 const Image& image) {
+  // Background images attached to <body> or <html> are likely for background
+  // purpose, so we rule them out.
+  if (object.IsLayoutView() || object.IsBody() || object.IsDocumentElement()) {
+    return false;
+  }
+  // Generated images are excluded here, as they are likely to serve for
+  // background purpose.
+  if (!image.IsBitmapImage() && !image.IsStaticBitmapImage() &&
+      !image.IsSVGImage() && !image.IsPlaceholderImage())
+    return false;
+  return true;
+}
+
+}  // namespace
+
 PaintTimingDetector::PaintTimingDetector(LocalFrameView* frame_view)
     : frame_view_(frame_view),
       text_paint_timing_detector_(
@@ -47,7 +72,7 @@ void PaintTimingDetector::NotifyBackgroundImagePaint(
   LayoutObject* object = node->GetLayoutObject();
   if (!object)
     return;
-  if (!ImagePaintTimingDetector::IsBackgroundImageContentful(*object, *image))
+  if (!IsBackgroundImageContentful(*object, *image))
     return;
   LocalFrameView* frame_view = object->GetFrameView();
   if (!frame_view)
@@ -162,10 +187,6 @@ uint64_t PaintTimingDetector::CalculateVisualSize(
   return (layout_visual_rect.Size().Width() *
           layout_visual_rect.Size().Height())
       .ToUnsigned();
-}
-
-void PaintTimingDetector::Dispose() {
-  text_paint_timing_detector_->Dispose();
 }
 
 void PaintTimingDetector::Trace(Visitor* visitor) {
