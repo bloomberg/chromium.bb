@@ -20,6 +20,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.CommandLineInitUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.DiscardableReferencePool;
+import org.chromium.base.EarlyTraceEvent;
 import org.chromium.base.JNIUtils;
 import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
@@ -58,6 +59,7 @@ public class ChromeApplication extends Application {
 
     private final DiscardableReferencePool mReferencePool = new DiscardableReferencePool();
     private static ChromeApplication sInstance;
+    private static EarlyTraceEvent.Event sFirstTraceEvent;
 
     /** Lock on creation of sComponent. */
     private static final Object sLock = new Object();
@@ -66,17 +68,36 @@ public class ChromeApplication extends Application {
 
     @Override
     public void onCreate() {
+        EarlyTraceEvent.Event onCreateEvent =
+                new EarlyTraceEvent.Event("ChromeApplication.onCreate");
         super.onCreate();
+        // Cannot go in attachBaseContext() because it accesses SharedPreferences, which tests
+        // want to mock out.
+        // TODO(crbug.com/957569): Accessing SharedPreferences (via maybeEnableEarlyTracing) might
+        //     by slowing down start-up.
+        boolean isBrowserProcess = isBrowserProcess();
+        if (isBrowserProcess) {
+            TraceEvent.maybeEnableEarlyTracing();
+            EarlyTraceEvent.addEvent(sFirstTraceEvent);
+        }
+        sFirstTraceEvent = null;
+
         // These can't go in attachBaseContext because Context.getApplicationContext() (which they
         // use under-the-hood) does not work until after it returns.
         FontPreloadingWorkaround.maybeInstallWorkaround(this);
         MemoryPressureMonitor.INSTANCE.registerComponentCallbacks();
+
+        if (isBrowserProcess) {
+            onCreateEvent.end();
+            EarlyTraceEvent.addEvent(onCreateEvent);
+        }
     }
 
     // Called by the framework for ALL processes. Runs before ContentProviders are created.
     // Quirk: context.getApplicationContext() returns null during this method.
     @Override
     protected void attachBaseContext(Context context) {
+        sFirstTraceEvent = new EarlyTraceEvent.Event("ChromeApplication.attachBaseContext");
         sInstance = this;
         boolean isBrowserProcess = isBrowserProcess();
         if (isBrowserProcess) UmaUtils.recordMainEntryPointTime();
@@ -95,10 +116,6 @@ public class ChromeApplication extends Application {
                     COMMAND_LINE_FILE, ChromeApplication::shouldUseDebugFlags);
             AppHooks.get().initCommandLine(CommandLine.getInstance());
 
-            // Requires command-line flags.
-            TraceEvent.maybeEnableEarlyTracing();
-            TraceEvent.begin("ChromeApplication.attachBaseContext");
-
             // Register for activity lifecycle callbacks. Must be done before any activities are
             // created and is needed only by processes that use the ApplicationStatus api (which for
             // Chrome is just the browser process).
@@ -116,9 +133,6 @@ public class ChromeApplication extends Application {
             // Disable MemoryPressureMonitor polling when Chrome goes to the background.
             ApplicationStatus.registerApplicationStateListener(
                     ChromeApplication::updateMemoryPressurePolling);
-
-            // Not losing much to not cover the below conditional since it just has simple setters.
-            TraceEvent.end("ChromeApplication.attachBaseContext");
         }
 
         // Write installed modules to crash keys. This needs to be done as early as possible so that
@@ -136,6 +150,7 @@ public class ChromeApplication extends Application {
         }
         AsyncTask.takeOverAndroidThreadPool();
         JNIUtils.setClassLoader(getClassLoader());
+        sFirstTraceEvent.end();
     }
 
     private static Boolean shouldUseDebugFlags() {
