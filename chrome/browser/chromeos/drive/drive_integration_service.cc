@@ -54,6 +54,7 @@
 #include "components/drive/resource_metadata_storage.h"
 #include "components/drive/service/drive_api_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/version_info/version_info.h"
@@ -546,6 +547,11 @@ class DriveIntegrationService::DriveFsHolder
   std::string GetObfuscatedAccountId() override {
     return base::MD5String(GetProfileSalt() + "-" +
                            GetAccountId().GetAccountIdKey());
+  }
+
+  bool IsMetricsCollectionEnabled() override {
+    return g_browser_process->local_state()->GetBoolean(
+        metrics::prefs::kMetricsReportingEnabled);
   }
 
   DriveNotificationManager& GetDriveNotificationManager() override {

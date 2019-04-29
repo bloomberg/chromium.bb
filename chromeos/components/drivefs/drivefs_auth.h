@@ -39,6 +39,7 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsAuth {
     virtual service_manager::Connector* GetConnector() = 0;
     virtual const AccountId& GetAccountId() = 0;
     virtual std::string GetObfuscatedAccountId() = 0;
+    virtual bool IsMetricsCollectionEnabled() = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Delegate);
@@ -55,6 +56,10 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsAuth {
 
   std::string GetObfuscatedAccountId() {
     return delegate_->GetObfuscatedAccountId();
+  }
+
+  bool IsMetricsCollectionEnabled() {
+    return delegate_->IsMetricsCollectionEnabled();
   }
 
   base::Optional<std::string> GetCachedAccessToken();

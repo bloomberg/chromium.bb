@@ -72,7 +72,7 @@ class DriveFsHost::MountState : public DriveFsSession,
     auto access_token = auth_delegate->GetCachedAccessToken();
     mojom::DriveFsConfigurationPtr config = {
         base::in_place, auth_delegate->GetAccountId().GetUserEmail(),
-        std::move(access_token)};
+        std::move(access_token), auth_delegate->IsMetricsCollectionEnabled()};
     return DriveFsConnection::Create(delegate->CreateMojoListener(),
                                      std::move(config));
   }
