@@ -26,6 +26,7 @@ constexpr float kShadowOpacity = 0.12;
 // Properties of the alert view.
 constexpr CGFloat kCornerRadius = 14;
 constexpr CGFloat kAlertWidth = 270;
+constexpr CGFloat kAlertWidthAccessibilty = 402;
 constexpr CGFloat kMinimumHeight = 30;
 constexpr CGFloat kMinimumMargin = 4;
 
@@ -132,15 +133,24 @@ constexpr int kButtonTextDestructiveColor = 0xdf322f;
   self.contentView.layer.shadowOpacity = kShadowOpacity;
   self.contentView.translatesAutoresizingMaskIntoConstraints = NO;
   [self.view addSubview:self.contentView];
+
+  BOOL isAccessibilityContentSize =
+      UIContentSizeCategoryIsAccessibilityCategory(
+          [UIApplication sharedApplication].preferredContentSizeCategory);
+  const CGFloat alertWidth =
+      isAccessibilityContentSize ? kAlertWidthAccessibilty : kAlertWidth;
+  NSLayoutConstraint* widthConstraint =
+      [self.contentView.widthAnchor constraintEqualToConstant:alertWidth];
+  widthConstraint.priority = 999;
+
   [NSLayoutConstraint activateConstraints:@[
+    widthConstraint,
+
     // Centering
     [self.contentView.centerXAnchor
         constraintEqualToAnchor:self.view.centerXAnchor],
     [self.contentView.centerYAnchor
         constraintEqualToAnchor:self.view.centerYAnchor],
-
-    // Width
-    [self.contentView.widthAnchor constraintEqualToConstant:kAlertWidth],
 
     // Minimum Size
     [self.contentView.heightAnchor
