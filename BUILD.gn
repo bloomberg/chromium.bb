@@ -53,30 +53,6 @@ executable("openscreen_unittests") {
   ]
 }
 
-if (!build_with_chromium) {
-  # TODO(btolsch): This is to keep the openscreen bots happy with a `unittests`
-  # target and executable.  Remove this after the bot recipe can be updated.
-  group("unittests") {
-    testonly = true
-    deps = [
-      ":openscreen_unittests",
-    ]
-  }
-
-  copy("unittests_rename") {
-    testonly = true
-    sources = [
-      "$root_out_dir/openscreen_unittests",
-    ]
-    outputs = [
-      "$root_out_dir/unittests",
-    ]
-    deps = [
-      ":openscreen_unittests",
-    ]
-  }
-}
-
 if (use_chromium_quic && use_mdns_responder) {
   executable("demo") {
     sources = [
