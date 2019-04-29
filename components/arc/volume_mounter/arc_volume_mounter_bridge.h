@@ -13,6 +13,7 @@
 #include "components/arc/common/volume_mounter.mojom.h"
 #include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {
@@ -57,7 +58,13 @@ class ArcVolumeMounterBridge
 
   void SendMountEventForMyFiles();
 
+  bool HasAccessToRemovableMedia() const;
+  void OnPrefChanged();
+
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
+
+  PrefService* const pref_service_;
+  PrefChangeRegistrar change_registerar_;
 
   base::WeakPtrFactory<ArcVolumeMounterBridge> weak_ptr_factory_;
 

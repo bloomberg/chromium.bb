@@ -39,6 +39,9 @@ const char kArcDataRemoveRequested[] = "arc.data.remove_requested";
 // utility methods (IsArcPlayStoreEnabledForProfile() and
 // SetArcPlayStoreEnabledForProfile()) in chrome/browser/chromeos/arc/arc_util.
 const char kArcEnabled[] = "arc.enabled";
+// A preference to control if ARC can access removable media on the host side.
+const char kArcHasAccessToRemovableMedia[] =
+    "arc.has_access_to_removable_media";
 // A preference that indicates that initial settings need to be applied. Initial
 // settings are applied only once per new OptIn once mojo settings instance is
 // ready. Each OptOut resets this preference. Note, its sense is close to
@@ -177,6 +180,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(kAlwaysOnVpnPackage, std::string());
   registry->RegisterBooleanPref(kArcDataRemoveRequested, false);
   registry->RegisterBooleanPref(kArcEnabled, false);
+  registry->RegisterBooleanPref(kArcHasAccessToRemovableMedia, false);
   registry->RegisterBooleanPref(kArcInitialSettingsPending, false);
   registry->RegisterBooleanPref(kArcPaiStarted, false);
   registry->RegisterBooleanPref(kArcFastAppReinstallStarted, false);

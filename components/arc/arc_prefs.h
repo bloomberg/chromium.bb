@@ -23,6 +23,7 @@ ARC_EXPORT extern const char kArcDataRemoveRequested[];
 ARC_EXPORT extern const char kArcEnabled[];
 ARC_EXPORT extern const char kArcFastAppReinstallPackages[];
 ARC_EXPORT extern const char kArcFastAppReinstallStarted[];
+ARC_EXPORT extern const char kArcHasAccessToRemovableMedia[];
 ARC_EXPORT extern const char kArcInitialSettingsPending[];
 ARC_EXPORT extern const char kArcLocationServiceEnabled[];
 ARC_EXPORT extern const char kArcPackages[];
