@@ -42395,6 +42395,26 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Chrome on Mac"/>
 </enum>
 
+<enum name="OSXOtherInstancesCheckResult">
+  <int value="0" label="Old-style update"/>
+  <int value="1" label="No other instances at start"/>
+  <int value="2" label="User did not authorize"/>
+  <int value="3" label="Initial ExecuteAndWait failed"/>
+  <int value="4" label="Secondary ExecuteAndWait failed"/>
+  <int value="5" label="Showed no dialogs, no instances exist at exit"/>
+  <int value="6" label="Showed no dialogs, instances exist at exit"/>
+  <int value="7"
+      label="Showed the 'other user' dialog, no instances exist at exit"/>
+  <int value="8"
+      label="Showed the 'other user' dialog, instances exist at exit"/>
+  <int value="9"
+      label="Showed the 'this user' dialog, no instances exist at exit"/>
+  <int value="10"
+      label="Showed the 'this user' dialog, instances exist at exit"/>
+  <int value="11" label="Showed both dialogs, no instances exist at exit"/>
+  <int value="12" label="Showed both dialogs, instances exist at exit"/>
+</enum>
+
 <enum name="OSXScreensHaveSeparateSpaces">
   <int value="0" label="CANNOT_HAVE_SEPARATE_SPACES">
     The &quot;Screens Have Separate Spaces&quot; option is unavailable.
