@@ -56186,11 +56186,6 @@ Full version information for the fingerprint enum values:
   <int value="8" label="Clear Range of History"/>
 </enum>
 
-<enum name="UsbPrinterSetupSource">
-  <int value="0" label="Settings"/>
-  <int value="1" label="Print Preview"/>
-</enum>
-
 <enum name="UsedInDraw">
   <obsolete>
     Deprecated 02/2017 in Issue 675840.

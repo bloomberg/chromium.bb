@@ -196,23 +196,22 @@ void LocalPrinterHandlerChromeos::StartGetCapability(
                             chromeos::Printer::kProtocolMax);
 
   if (printers_manager_->IsPrinterInstalled(*printer)) {
-    // Skip setup if the printer does not need to be installed.
-    HandlePrinterSetup(*printer, std::move(cb),
-                       /*record_usb_setup_source=*/false, chromeos::kSuccess);
+    // Skip setup if the printer is already installed.
+    HandlePrinterSetup(std::move(printer), std::move(cb), chromeos::kSuccess);
     return;
   }
 
   const chromeos::Printer& printer_ref = *printer;
   printer_configurer_->SetUpPrinter(
-      *printer, base::BindOnce(&LocalPrinterHandlerChromeos::HandlePrinterSetup,
-                               weak_factory_.GetWeakPtr(), *printer,
-                               std::move(cb), printer->IsUsbProtocol()));
+      printer_ref,
+      base::BindOnce(&LocalPrinterHandlerChromeos::HandlePrinterSetup,
+                     weak_factory_.GetWeakPtr(), std::move(printer),
+                     std::move(cb)));
 }
 
 void LocalPrinterHandlerChromeos::HandlePrinterSetup(
     std::unique_ptr<chromeos::Printer> printer,
     GetCapabilityCallback cb,
-    bool record_usb_setup_source,
     chromeos::PrinterSetupResult result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -220,12 +219,7 @@ void LocalPrinterHandlerChromeos::HandlePrinterSetup(
     case chromeos::PrinterSetupResult::kSuccess: {
       VLOG(1) << "Printer setup successful for " << printer->id()
               << " fetching properties";
-      if (record_usb_setup_source) {
-        // Record UMA for USB printer setup source.
-        chromeos::PrinterConfigurer::RecordUsbPrinterSetupSource(
-            chromeos::UsbPrinterSetupSource::kPrintPreview);
-      }
-      printers_manager_->PrinterInstalled(printer, true /*is_automatic*/);
+      printers_manager_->PrinterInstalled(*printer, true /*is_automatic*/);
       // fetch settings on the blocking pool and invoke callback.
       FetchCapabilities(std::move(printer), GetNativePrinterPolicies(),
                         std::move(cb));

@@ -67,7 +67,6 @@ class LocalPrinterHandlerChromeos : public PrinterHandler {
 
   void HandlePrinterSetup(std::unique_ptr<chromeos::Printer> printer,
                           GetCapabilityCallback cb,
-                          bool record_usb_setup_source,
                           chromeos::PrinterSetupResult result);
 
   Profile* const profile_;
