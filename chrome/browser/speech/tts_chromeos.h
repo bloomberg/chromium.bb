@@ -42,6 +42,13 @@ class TtsPlatformImplChromeOs : public content::TtsPlatform {
   TtsPlatformImplChromeOs() {}
   virtual ~TtsPlatformImplChromeOs() {}
 
+  void ProcessSpeech(int utterance_id,
+                     const std::string& utterance,
+                     const std::string& lang,
+                     const content::VoiceData& voice,
+                     const content::UtteranceContinuousParameters& params,
+                     base::OnceCallback<void(bool)> on_speak_finished);
+
   friend struct base::DefaultSingletonTraits<TtsPlatformImplChromeOs>;
 
   std::string error_;

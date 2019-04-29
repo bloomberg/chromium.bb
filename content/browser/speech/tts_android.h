@@ -53,6 +53,13 @@ class TtsPlatformImplAndroid : public TtsPlatformImpl {
                          TtsEventType event_type,
                          int char_index);
 
+  void ProcessSpeech(int utterance_id,
+                     const std::string& utterance,
+                     const std::string& lang,
+                     const VoiceData& voice,
+                     const UtteranceContinuousParameters& params,
+                     base::OnceCallback<void(bool)> on_speak_finished);
+
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
   int utterance_id_;
   std::string utterance_;

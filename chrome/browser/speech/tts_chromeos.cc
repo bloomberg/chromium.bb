@@ -35,6 +35,20 @@ void TtsPlatformImplChromeOs::Speak(
     const content::UtteranceContinuousParameters& params,
     base::OnceCallback<void(bool)> on_speak_finished) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // Insert call to strip SSML.
+
+  ProcessSpeech(utterance_id, utterance, lang, voice, params,
+                std::move(on_speak_finished));
+}
+
+void TtsPlatformImplChromeOs::ProcessSpeech(
+    int utterance_id,
+    const std::string& utterance,
+    const std::string& lang,
+    const content::VoiceData& voice,
+    const content::UtteranceContinuousParameters& params,
+    base::OnceCallback<void(bool)> on_speak_finished) {
   auto* const arc_service_manager = arc::ArcServiceManager::Get();
   if (!arc_service_manager) {
     std::move(on_speak_finished).Run(false);

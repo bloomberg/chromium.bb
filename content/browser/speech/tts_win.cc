@@ -63,6 +63,13 @@ class TtsPlatformImplWin : public TtsPlatformImpl {
 
   void SetVoiceFromName(const std::string& name);
 
+  void ProcessSpeech(int utterance_id,
+                     const std::string& utterance,
+                     const std::string& lang,
+                     const VoiceData& voice,
+                     const UtteranceContinuousParameters& params,
+                     base::OnceCallback<void(bool)> on_speak_finished);
+
   Microsoft::WRL::ComPtr<ISpVoice> speech_synthesizer_;
 
   // These apply to the current utterance only.
@@ -86,6 +93,18 @@ TtsPlatformImpl* TtsPlatformImpl::GetInstance() {
 }
 
 void TtsPlatformImplWin::Speak(
+    int utterance_id,
+    const std::string& utterance,
+    const std::string& lang,
+    const VoiceData& voice,
+    const UtteranceContinuousParameters& params,
+    base::OnceCallback<void(bool)> on_speak_finished) {
+  // Insert call to ParseSSML.
+  ProcessSpeech(utterance_id, utterance, lang, voice, params,
+                std::move(on_speak_finished));
+}
+
+void TtsPlatformImplWin::ProcessSpeech(
     int utterance_id,
     const std::string& src_utterance,
     const std::string& lang,

@@ -84,6 +84,13 @@ class TtsPlatformImplMac : public content::TtsPlatformImpl {
   TtsPlatformImplMac();
   ~TtsPlatformImplMac() override;
 
+  void ProcessSpeech(int utterance_id,
+                     const std::string& utterance,
+                     const std::string& lang,
+                     const content::VoiceData& voice,
+                     const content::UtteranceContinuousParameters& params,
+                     base::OnceCallback<void(bool)> on_speak_finished);
+
   base::scoped_nsobject<SingleUseSpeechSynthesizer> speech_synthesizer_;
   base::scoped_nsobject<ChromeTtsDelegate> delegate_;
   int utterance_id_;
@@ -109,6 +116,19 @@ void TtsPlatformImplMac::Speak(
     const content::UtteranceContinuousParameters& params,
     base::OnceCallback<void(bool)> on_speak_finished) {
   // TODO: convert SSML to SAPI xml. http://crbug.com/88072
+  // Insert call to ParseSSML.
+
+  ProcessSpeech(utterance_id, utterance, lang, voice, params,
+                std::move(on_speak_finished));
+}
+
+void TtsPlatformImplMac::ProcessSpeech(
+    int utterance_id,
+    const std::string& utterance,
+    const std::string& lang,
+    const content::VoiceData& voice,
+    const content::UtteranceContinuousParameters& params,
+    base::OnceCallback<void(bool)> on_speak_finished) {
   utterance_ = utterance;
   paused_ = false;
 

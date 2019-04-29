@@ -74,6 +74,13 @@ class TtsPlatformImplLinux : public TtsPlatformImpl {
                                 SPDNotificationType state,
                                 char* index_mark);
 
+  void ProcessSpeech(int utterance_id,
+                     const std::string& utterance,
+                     const std::string& lang,
+                     const VoiceData& voice,
+                     const UtteranceContinuousParameters& params,
+                     base::OnceCallback<void(bool)> on_speak_finished);
+
   static SPDNotificationType current_notification_;
 
   base::Lock initialization_lock_;
@@ -174,6 +181,18 @@ void TtsPlatformImplLinux::Speak(
     return;
   }
 
+  // Insert call to StripSSML.
+  ProcessSpeech(utterance_id, utterance, lang, voice, params,
+                std::move(on_speak_finished));
+}
+
+void TtsPlatformImplLinux::ProcessSpeech(
+    int utterance_id,
+    const std::string& utterance,
+    const std::string& lang,
+    const VoiceData& voice,
+    const UtteranceContinuousParameters& params,
+    base::OnceCallback<void(bool)> on_speak_finished) {
   // Speech dispatcher's speech params are around 3x at either limit.
   float rate = params.rate > 3 ? 3 : params.rate;
   rate = params.rate < 0.334 ? 0.334 : rate;

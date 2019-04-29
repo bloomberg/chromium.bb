@@ -40,6 +40,18 @@ void TtsPlatformImplAndroid::Speak(
     const VoiceData& voice,
     const UtteranceContinuousParameters& params,
     base::OnceCallback<void(bool)> on_speak_finished) {
+  // Insert call to ParseSSML.
+  ProcessSpeech(utterance_id, utterance, lang, voice, params,
+                std::move(on_speak_finished));
+}
+
+void TtsPlatformImplAndroid::ProcessSpeech(
+    int utterance_id,
+    const std::string& utterance,
+    const std::string& lang,
+    const VoiceData& voice,
+    const UtteranceContinuousParameters& params,
+    base::OnceCallback<void(bool)> on_speak_finished) {
   JNIEnv* env = AttachCurrentThread();
   jboolean success = Java_TtsPlatformImpl_speak(
       env, java_ref_, utterance_id,
