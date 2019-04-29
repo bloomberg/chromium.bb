@@ -383,7 +383,7 @@ public class UpdateStatusProvider implements ActivityStateListener {
             UpdateStatus status = new UpdateStatus();
 
             if (VersionNumberGetter.isNewerVersionAvailable(context)) {
-                status.updateUrl = MarketURLGetter.getMarketUrl(context);
+                status.updateUrl = MarketURLGetter.getMarketUrl();
                 status.latestVersion =
                         VersionNumberGetter.getInstance().getLatestKnownVersion(context);
 

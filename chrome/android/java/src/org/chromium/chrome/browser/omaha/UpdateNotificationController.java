@@ -152,15 +152,13 @@ public class UpdateNotificationController implements Destroyable {
     private static boolean shouldPushNotification() {
         if (!isUpdateNotificationEnabled()) return false;
         long currentTime = System.currentTimeMillis();
-        SharedPreferences preferences =
-                OmahaBase.getSharedPreferences(ContextUtils.getApplicationContext());
+        SharedPreferences preferences = OmahaBase.getSharedPreferences();
         long lastPushedTimeStamp = preferences.getLong(PREF_LAST_TIME_UPDATE_NOTIFICATION_KEY, 0);
         return currentTime - lastPushedTimeStamp >= getUpdateNotificationInterval();
     }
 
     private static void updateLastPushedTimeStamp() {
-        SharedPreferences preferences =
-                OmahaBase.getSharedPreferences(ContextUtils.getApplicationContext());
+        SharedPreferences preferences = OmahaBase.getSharedPreferences();
         SharedPreferences.Editor editor = preferences.edit();
         editor.putLong(PREF_LAST_TIME_UPDATE_NOTIFICATION_KEY, System.currentTimeMillis());
         editor.apply();

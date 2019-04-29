@@ -88,7 +88,7 @@ public class UpdateMenuItemHelperTest {
         }
 
         @Override
-        protected String getMarketUrlInternal(Context context) {
+        protected String getMarketUrlInternal() {
             return mURL;
         }
     }

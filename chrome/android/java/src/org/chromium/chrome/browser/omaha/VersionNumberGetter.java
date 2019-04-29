@@ -53,7 +53,7 @@ public class VersionNumberGetter {
      */
     public String getLatestKnownVersion(Context context) {
         assert !ThreadUtils.runningOnUiThread();
-        SharedPreferences prefs = OmahaBase.getSharedPreferences(context);
+        SharedPreferences prefs = OmahaBase.getSharedPreferences();
         return prefs.getString(OmahaBase.PREF_LATEST_VERSION, "");
     }
 
@@ -122,7 +122,7 @@ public class VersionNumberGetter {
 
         // If the market link is bad, don't show an update to avoid frustrating users trying to
         // hit the "Update" button.
-        if ("".equals(MarketURLGetter.getMarketUrl(context))) {
+        if ("".equals(MarketURLGetter.getMarketUrl())) {
             return false;
         }
 
