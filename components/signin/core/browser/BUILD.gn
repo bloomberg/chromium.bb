@@ -134,8 +134,8 @@ static_library("browser") {
     "account_reconcilor_delegate.h",
     "chrome_connected_header_helper.cc",
     "chrome_connected_header_helper.h",
-    "consistency_cookie_manager_android.cc",
-    "consistency_cookie_manager_android.h",
+    "consistency_cookie_manager_base.cc",
+    "consistency_cookie_manager_base.h",
     "cookie_settings_util.cc",
     "cookie_settings_util.h",
     "dice_account_reconcilor_delegate.cc",
@@ -210,6 +210,14 @@ static_library("browser") {
     ]
   }
 
+  if (is_android) {
+    sources += [
+      "consistency_cookie_manager_android.cc",
+      "consistency_cookie_manager_android.h",
+    ]
+    deps += [ "android:jni_headers" ]
+  }
+
   if (!enable_dice_support) {
     sources -= [
       "dice_account_reconcilor_delegate.cc",
@@ -263,7 +271,6 @@ source_set("unit_tests") {
     "account_reconcilor_unittest.cc",
     "account_tracker_service_unittest.cc",
     "avatar_icon_util_unittest.cc",
-    "consistency_cookie_manager_android_unittest.cc",
     "device_id_helper_unittest.cc",
     "dice_account_reconcilor_delegate_unittest.cc",
     "gaia_cookie_manager_service_unittest.cc",
@@ -311,6 +318,10 @@ source_set("unit_tests") {
     ]
 
     deps += [ "//chromeos/components/account_manager" ]
+  }
+
+  if (is_android) {
+    sources += [ "consistency_cookie_manager_unittest.cc" ]
   }
 
   if (!enable_dice_support) {

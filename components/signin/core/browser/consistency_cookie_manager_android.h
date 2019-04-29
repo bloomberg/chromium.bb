@@ -5,42 +5,33 @@
 #ifndef COMPONENTS_SIGNIN_CORE_BROWSER_CONSISTENCY_COOKIE_MANAGER_ANDROID_H_
 #define COMPONENTS_SIGNIN_CORE_BROWSER_CONSISTENCY_COOKIE_MANAGER_ANDROID_H_
 
+#include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "base/scoped_observer.h"
-#include "components/signin/core/browser/account_reconcilor.h"
-#include "components/signin/core/browser/signin_metrics.h"
+#include "components/signin/core/browser/consistency_cookie_manager_base.h"
 
 class SigninClient;
 
 namespace signin {
 
-// The ConsistencyCookieManagerAndroid checks if:
-// - the account reconcilor is running
-// - the accounts on the device are updating
-// - the user has started to interact with device account settings (from Chrome)
-// If one of these conditions is true, then this object sets a cookie on Gaia
-// with a "Updating" value.
-//
-// Otherwise the value of the cookie is "Consistent" if the accounts are
-// consistent (web accounts match device accounts) or "Inconsistent".
-class ConsistencyCookieManagerAndroid : public AccountReconcilor::Observer {
+// ConsistencyCookieManagerAndroid subclasses ConsistencyCookieManagerBase to
+// watch whether there are pending updates to the account list on the Java side.
+class ConsistencyCookieManagerAndroid : public ConsistencyCookieManagerBase {
  public:
   ConsistencyCookieManagerAndroid(SigninClient* signin_client,
                                   AccountReconcilor* reconcilor);
 
   ~ConsistencyCookieManagerAndroid() override;
 
+  void OnIsUpdatePendingChanged(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& java_self);
+
+ protected:
+  std::string CalculateCookieValue() override;
+
  private:
-  // AccountReconcilor::Observer:
-  void OnStateChanged(signin_metrics::AccountReconcilorState state) override;
-
-  void UpdateCookie();
-
-  signin_metrics::AccountReconcilorState account_reconcilor_state_ =
-      signin_metrics::ACCOUNT_RECONCILOR_OK;
-  SigninClient* signin_client_ = nullptr;
-  ScopedObserver<AccountReconcilor, AccountReconcilor::Observer>
-      account_reconcilor_observer_;
+  bool is_update_pending_in_java_ = false;
+  base::android::ScopedJavaGlobalRef<jobject> java_ref_;
 
   DISALLOW_COPY_AND_ASSIGN(ConsistencyCookieManagerAndroid);
 };

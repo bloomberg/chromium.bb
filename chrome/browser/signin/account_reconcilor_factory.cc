@@ -18,6 +18,7 @@
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/account_reconcilor_delegate.h"
+#include "components/signin/core/browser/consistency_cookie_manager_base.h"
 #include "components/signin/core/browser/mirror_account_reconcilor_delegate.h"
 #include "components/signin/core/browser/signin_buildflags.h"
 
@@ -33,6 +34,7 @@
 #endif
 
 #if defined(OS_ANDROID)
+#include "components/signin/core/browser/consistency_cookie_manager_android.h"
 #include "components/signin/core/browser/mice_account_reconcilor_delegate.h"
 #endif
 
@@ -138,11 +140,14 @@ AccountReconcilorFactory* AccountReconcilorFactory::GetInstance() {
 KeyedService* AccountReconcilorFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
+  SigninClient* signin_client =
+      ChromeSigninClientFactory::GetForProfile(profile);
   AccountReconcilor* reconcilor = new AccountReconcilor(
-      IdentityManagerFactory::GetForProfile(profile),
-      ChromeSigninClientFactory::GetForProfile(profile),
+      IdentityManagerFactory::GetForProfile(profile), signin_client,
       CreateAccountReconcilorDelegate(profile));
   reconcilor->Initialize(true /* start_reconcile_if_tokens_available */);
+  reconcilor->SetConsistencyCookieManager(
+      CreateConsistencyCookieManager(signin_client, reconcilor));
   return reconcilor;
 }
 
@@ -193,5 +198,18 @@ AccountReconcilorFactory::CreateAccountReconcilorDelegate(Profile* profile) {
   }
 
   NOTREACHED();
+  return nullptr;
+}
+
+std::unique_ptr<signin::ConsistencyCookieManagerBase>
+AccountReconcilorFactory::CreateConsistencyCookieManager(
+    SigninClient* signin_client,
+    AccountReconcilor* account_reconcilor) const {
+#if defined(OS_ANDROID)
+  if (base::FeatureList::IsEnabled(signin::kMiceFeature)) {
+    return std::make_unique<signin::ConsistencyCookieManagerAndroid>(
+        signin_client, account_reconcilor);
+  }
+#endif
   return nullptr;
 }
