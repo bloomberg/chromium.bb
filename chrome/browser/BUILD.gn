@@ -2913,6 +2913,7 @@ jumbo_split_static_library("browser") {
       "media/webrtc/desktop_media_picker_factory_impl.h",
       "media/webrtc/display_media_access_handler.cc",
       "media/webrtc/display_media_access_handler.h",
+      "media/webrtc/media_authorization_wrapper_mac.h",
       "media/webrtc/system_media_capture_permissions_mac.h",
       "media/webrtc/system_media_capture_permissions_mac.mm",
       "media/webrtc/system_media_capture_permissions_stats_mac.h",

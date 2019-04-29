@@ -13,6 +13,8 @@ class TaskTraits;
 
 namespace system_media_permissions {
 
+class MediaAuthorizationWrapper;
+
 // System permission state. These are also used in stats - do not remove or
 // re-arrange the values.
 enum class SystemPermission {
@@ -41,6 +43,9 @@ void RequestSystemAudioCapturePermisson(base::OnceClosure callback,
                                         const base::TaskTraits& traits);
 void RequestSystemVideoCapturePermisson(base::OnceClosure callback,
                                         const base::TaskTraits& traits);
+
+// Sets the wrapper object for OS calls. For test mocking purposes.
+void SetMediaAuthorizationWrapperForTesting(MediaAuthorizationWrapper* wrapper);
 
 }  // namespace system_media_permissions
 
