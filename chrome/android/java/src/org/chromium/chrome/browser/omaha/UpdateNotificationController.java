@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
+import org.chromium.chrome.browser.notifications.ChromeNotification;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
@@ -126,8 +127,12 @@ public class UpdateNotificationController implements Destroyable {
                         .setContentText(getUpdateNotificationTextBody());
 
         builder.setContentIntent(createContentIntent(mUpdateStatus));
+        ChromeNotification notification = builder.buildChromeNotification();
         NotificationManagerProxy notificationManager = new NotificationManagerProxyImpl(mActivity);
-        notificationManager.notify(builder.buildChromeNotification());
+        notificationManager.notify(notification);
+        NotificationUmaTracker.getInstance().onNotificationShown(
+                NotificationUmaTracker.SystemNotificationType.UPDATES,
+                notification.getNotification());
         updateLastPushedTimeStamp();
     }
 
