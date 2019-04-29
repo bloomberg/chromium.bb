@@ -772,4 +772,55 @@ TEST_F(KeyboardControllerTest, DontClearObserverList) {
   EXPECT_TRUE(IsKeyboardDisabled());
 }
 
+class MockKeyboardControllerObserver : public KeyboardControllerObserver {
+ public:
+  MockKeyboardControllerObserver() = default;
+  ~MockKeyboardControllerObserver() override = default;
+
+  // KeyboardControllerObserver:
+  MOCK_METHOD1(OnKeyboardEnabledChanged, void(bool is_enabled));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockKeyboardControllerObserver);
+};
+
+TEST_F(KeyboardControllerTest, OnKeyboardEnabledChangedToEnabled) {
+  // Start with the keyboard disabled.
+  keyboard::SetTouchKeyboardEnabled(false);
+
+  MockKeyboardControllerObserver mock_observer;
+  controller().AddObserver(&mock_observer);
+
+  EXPECT_CALL(mock_observer, OnKeyboardEnabledChanged(true))
+      .WillOnce(testing::InvokeWithoutArgs([]() {
+        auto* controller = keyboard::KeyboardController::Get();
+        ASSERT_TRUE(controller);
+        EXPECT_TRUE(controller->IsEnabled());
+        EXPECT_TRUE(controller->GetKeyboardWindow());
+        EXPECT_TRUE(controller->GetRootWindow());
+      }));
+
+  keyboard::SetTouchKeyboardEnabled(true);
+
+  controller().RemoveObserver(&mock_observer);
+}
+
+TEST_F(KeyboardControllerTest, OnKeyboardEnabledChangedToDisabled) {
+  MockKeyboardControllerObserver mock_observer;
+  controller().AddObserver(&mock_observer);
+
+  EXPECT_CALL(mock_observer, OnKeyboardEnabledChanged(false))
+      .WillOnce(testing::InvokeWithoutArgs([]() {
+        auto* controller = keyboard::KeyboardController::Get();
+        ASSERT_TRUE(controller);
+        EXPECT_FALSE(controller->IsEnabled());
+        EXPECT_FALSE(controller->GetKeyboardWindow());
+        EXPECT_FALSE(controller->GetRootWindow());
+      }));
+
+  keyboard::SetTouchKeyboardEnabled(false);
+
+  controller().RemoveObserver(&mock_observer);
+}
+
 }  // namespace keyboard

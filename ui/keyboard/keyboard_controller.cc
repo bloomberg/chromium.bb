@@ -288,15 +288,16 @@ void KeyboardController::EnableKeyboard() {
   time_of_last_blur_ = base::Time::UnixEpoch();
   UpdateInputMethodObserver();
 
-  for (KeyboardControllerObserver& observer : observer_list_)
-    observer.OnKeyboardEnabledChanged(true);
-
   ActivateKeyboardInContainer(
       layout_delegate_->GetContainerForDefaultDisplay());
 
   // Start preloading the virtual keyboard UI in the background, so that it
   // shows up faster when needed.
   LoadKeyboardWindowInBackground();
+
+  // Notify observers after the keyboard window has a root window.
+  for (KeyboardControllerObserver& observer : observer_list_)
+    observer.OnKeyboardEnabledChanged(true);
 }
 
 void KeyboardController::DisableKeyboard() {
@@ -323,10 +324,12 @@ void KeyboardController::DisableKeyboard() {
   animation_observer_.reset();
 
   ime_observer_.RemoveAll();
-  for (KeyboardControllerObserver& observer : observer_list_)
-    observer.OnKeyboardEnabledChanged(false);
   ui_->SetController(nullptr);
   ui_.reset();
+
+  // Notify observers after |ui_| is reset so that IsEnabled() is false.
+  for (KeyboardControllerObserver& observer : observer_list_)
+    observer.OnKeyboardEnabledChanged(false);
 }
 
 void KeyboardController::ActivateKeyboardInContainer(aura::Window* parent) {
