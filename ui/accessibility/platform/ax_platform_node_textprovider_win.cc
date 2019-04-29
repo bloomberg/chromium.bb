@@ -133,7 +133,71 @@ STDMETHODIMP AXPlatformNodeTextProviderWin::GetSelection(
 STDMETHODIMP AXPlatformNodeTextProviderWin::GetVisibleRanges(
     SAFEARRAY** visible_ranges) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXT_GETVISIBLERANGES);
-  return E_NOTIMPL;
+  UIA_VALIDATE_TEXTPROVIDER_CALL();
+
+  const AXPlatformNodeDelegate* delegate = owner()->GetDelegate();
+
+  // Get the Clipped Frame Bounds of the current node, not from the root,
+  // so if this node is wrapped with overflow styles it will have the
+  // correct bounds
+  const gfx::Rect frame_rect = delegate->GetBoundsRect(
+      AXCoordinateSystem::kFrame, AXClippingBehavior::kClipped);
+
+  const auto start = delegate->CreateTextPositionAt(0);
+  const auto end = start->CreatePositionAtEndOfAnchor();
+  DCHECK(start->GetAnchor() == end->GetAnchor());
+
+  // SAFEARRAYs are not dynamic, so fill the visible ranges in a vector
+  // and then transfer to an appropriately-sized SAFEARRAY
+  std::vector<CComPtr<ITextRangeProvider>> ranges;
+
+  auto current_line_start = start->Clone();
+  while (!current_line_start->IsNullPosition() && *current_line_start < *end) {
+    auto current_line_end = current_line_start->CreateNextLineEndPosition(
+        AXBoundaryBehavior::CrossBoundary);
+    if (current_line_end->IsNullPosition() || *current_line_end > *end)
+      current_line_end = end->Clone();
+
+    gfx::Rect current_rect = delegate->GetInnerTextRangeBoundsRect(
+        current_line_start->text_offset(), current_line_end->text_offset(),
+        AXCoordinateSystem::kFrame, AXClippingBehavior::kUnclipped);
+
+    if (frame_rect.Contains(current_rect)) {
+      CComPtr<ITextRangeProvider> text_range_provider =
+          AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
+              owner_, current_line_start->Clone(), current_line_end->Clone());
+
+      ranges.emplace_back(text_range_provider);
+    }
+
+    current_line_start = current_line_start->CreateNextLineStartPosition(
+        AXBoundaryBehavior::CrossBoundary);
+  }
+
+  base::win::ScopedSafearray scoped_visible_ranges(
+      SafeArrayCreateVector(VT_UNKNOWN /* element type */, 0 /* lower bound */,
+                            ranges.size() /* number of elements */));
+
+  if (!scoped_visible_ranges.Get())
+    return E_OUTOFMEMORY;
+
+  LONG index = 0;
+  for (CComPtr<ITextRangeProvider>& current_provider : ranges) {
+    HRESULT hr = SafeArrayPutElement(scoped_visible_ranges.Get(), &index,
+                                     current_provider);
+    DCHECK(SUCCEEDED(hr));
+
+    // Since DCHECK only happens in debug builds, return immediately to ensure
+    // that we're not leaking the SAFEARRAY on release builds
+    if (FAILED(hr))
+      return E_FAIL;
+
+    ++index;
+  }
+
+  *visible_ranges = scoped_visible_ranges.Release();
+
+  return S_OK;
 }
 
 STDMETHODIMP AXPlatformNodeTextProviderWin::RangeFromChild(

@@ -1147,6 +1147,7 @@ test("content_browsertests") {
       "../browser/accessibility/accessibility_browsertest.cc",
       "../browser/accessibility/accessibility_browsertest.h",
       "../browser/accessibility/accessibility_win_browsertest.cc",
+      "../browser/accessibility/ax_platform_node_textprovider_win_browsertest.cc",
       "../browser/accessibility/ax_platform_node_textrangeprovider_win_browsertest.cc",
       "../browser/accessibility/ax_platform_node_win_browsertest.cc",
       "../browser/renderer_host/accessibility_object_lifetime_win_browsertest.cc",
