@@ -2281,7 +2281,10 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
               config_lib.HWTestConfig(
                   constants.HWTEST_MOBLAB_QUICK_SUITE,
                   timeout=90*60,
-                  pool=constants.HWTEST_QUOTA_POOL)
+                  pool=constants.HWTEST_QUOTA_POOL),
+              config_lib.HWTestConfig(
+                  constants.HWTEST_TAST_CQ_SUITE,
+                  pool=constants.HWTEST_QUOTA_POOL),
           ],
           hw_tests_override=None)
     if board in _paladin_jetstream_hwtest_boards:
