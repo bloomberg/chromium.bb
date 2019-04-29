@@ -113,13 +113,8 @@ class MessagePumpForUIStub : public base::MessagePumpForUI {
           break;
       }
 
-      more_work_is_plausible = g_state->delegate->DoWork();
-      if (g_state->should_quit)
-        break;
-
-      base::TimeTicks delayed_work_time;
-      more_work_is_plausible |=
-          g_state->delegate->DoDelayedWork(&delayed_work_time);
+      Delegate::NextWorkInfo next_work_info = g_state->delegate->DoSomeWork();
+      more_work_is_plausible = next_work_info.is_immediate();
       if (g_state->should_quit)
         break;
 
@@ -130,7 +125,7 @@ class MessagePumpForUIStub : public base::MessagePumpForUI {
       if (g_state->should_quit)
         break;
 
-      more_work_is_plausible |= !delayed_work_time.is_null();
+      more_work_is_plausible |= !next_work_info.delayed_run_time.is_max();
     }
   }
 
