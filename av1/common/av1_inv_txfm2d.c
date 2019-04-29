@@ -177,7 +177,7 @@ const int8_t inv_cos_bit_row[MAX_TXWH_IDX]      // txw_idx
   };
 /* clang-format on */
 
-const int8_t iadst4_range[7] = { 0, 1, 0, 0, 0, 0, 0 };
+static const int8_t iadst4_range[7] = { 0, 1, 0, 0, 0, 0, 0 };
 
 void av1_get_inv_txfm_cfg(TX_TYPE tx_type, TX_SIZE tx_size,
                           TXFM_2D_FLIP_CFG *cfg) {
