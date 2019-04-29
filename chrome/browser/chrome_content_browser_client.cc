@@ -4967,6 +4967,9 @@ ChromeContentBrowserClient::WillCreateURLLoaderRequestInterceptors(
   }
 #endif
 
+  ChromeNavigationUIData* chrome_navigation_ui_data =
+      static_cast<ChromeNavigationUIData*>(navigation_ui_data);
+
   // TODO(ryansturm): Once this is on the UI thread, stop passing
   // |network_loader_factory| and have interceptors create one themselves.
   // https://crbug.com/931786
@@ -4975,7 +4978,9 @@ ChromeContentBrowserClient::WillCreateURLLoaderRequestInterceptors(
           previews::features::kHTTPSServerPreviewsUsingURLLoader)) {
     interceptors.push_back(
         std::make_unique<previews::PreviewsLitePageURLLoaderInterceptor>(
-            network_loader_factory, frame_tree_node_id));
+            network_loader_factory,
+            chrome_navigation_ui_data->data_reduction_proxy_page_id(),
+            frame_tree_node_id));
   }
 
   return interceptors;

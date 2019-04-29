@@ -41,7 +41,7 @@ class PreviewsLitePageURLLoaderInterceptorTest : public testing::Test {
 
   void SetUp() override {
     interceptor_ = std::make_unique<PreviewsLitePageURLLoaderInterceptor>(
-        shared_factory_, 1);
+        shared_factory_, 1, 2);
   }
 
   void SetFakeResponse(const GURL& url,
@@ -62,7 +62,7 @@ class PreviewsLitePageURLLoaderInterceptorTest : public testing::Test {
 
   void ResetTest() {
     interceptor_ = std::make_unique<PreviewsLitePageURLLoaderInterceptor>(
-        shared_factory_, 1);
+        shared_factory_, 1, 2);
     callback_was_empty_ = base::nullopt;
   }
 

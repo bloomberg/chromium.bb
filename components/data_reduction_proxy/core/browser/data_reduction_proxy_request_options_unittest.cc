@@ -424,6 +424,7 @@ TEST_F(DataReductionProxyRequestOptionsTest, GetPageIdFromRequestHeaders) {
       {"chrome-proxy", "something=something_else, pid=, key=value", 0, false},
       {"chrome-proxy", "something=something_else, key=value", 0, false},
       {"chrome-proxy", "pid=123", 123, true},
+      {"chrome-proxy", "pid=123abc", 1194684, true},
       {"chrome-proxy", " pid = 123 ", 123, true},
       {"some_other_header", "pid=123", 0, false},
   };

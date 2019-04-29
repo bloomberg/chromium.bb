@@ -20,6 +20,7 @@
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/previews/content/previews_user_data.h"
@@ -168,11 +169,11 @@ CreateServerLitePageInfoFromNavigationHandle(
   const net::HttpRequestHeaders& headers =
       navigation_handle->GetRequestHeaders();
 
-  base::Optional<uint64_t> page_id = data_reduction_proxy::
-      DataReductionProxyRequestOptions::GetPageIdFromRequestHeaders(headers);
-  if (page_id) {
-    server_lite_page_info->page_id = page_id.value();
-  }
+  const ChromeNavigationUIData* chrome_navigation_ui_data =
+      static_cast<const ChromeNavigationUIData*>(
+          navigation_handle->GetNavigationUIData());
+  server_lite_page_info->page_id =
+      chrome_navigation_ui_data->data_reduction_proxy_page_id();
 
   base::Optional<std::string> session_key =
       data_reduction_proxy::DataReductionProxyRequestOptions::
