@@ -724,6 +724,12 @@ void Performance::AddLongTaskTiming(
   NotifyObserversOfEntry(*entry);
 }
 
+UserTiming& Performance::GetUserTiming() {
+  if (!user_timing_)
+    user_timing_ = MakeGarbageCollected<UserTiming>(*this);
+  return *user_timing_;
+}
+
 PerformanceMark* Performance::mark(ScriptState* script_state,
                                    const AtomicString& mark_name,
                                    ExceptionState& exception_state) {
@@ -734,21 +740,19 @@ PerformanceMark* Performance::mark(ScriptState* script_state,
                                    const AtomicString& mark_name,
                                    PerformanceMarkOptions* mark_options,
                                    ExceptionState& exception_state) {
-  if (!user_timing_)
-    user_timing_ = MakeGarbageCollected<UserTiming>(*this);
-  PerformanceMark* performance_mark = user_timing_->Mark(
+  PerformanceMark* performance_mark = GetUserTiming().CreatePerformanceMark(
       script_state, mark_name, mark_options, exception_state);
-  if (performance_mark)
+  if (performance_mark) {
+    GetUserTiming().AddMarkToPerformanceTimeline(*performance_mark);
     NotifyObserversOfEntry(*performance_mark);
+  }
   if (RuntimeEnabledFeatures::CustomUserTimingEnabled())
     return performance_mark;
   return nullptr;
 }
 
 void Performance::clearMarks(const AtomicString& mark_name) {
-  if (!user_timing_)
-    user_timing_ = MakeGarbageCollected<UserTiming>(*this);
-  user_timing_->ClearMarks(mark_name);
+  GetUserTiming().ClearMarks(mark_name);
 }
 
 PerformanceMeasure* Performance::measure(ScriptState* script_state,
@@ -875,20 +879,16 @@ PerformanceMeasure* Performance::MeasureWithDetail(
   StringOrDouble original_start = start;
   StringOrDouble original_end = end;
 
-  if (!user_timing_)
-    user_timing_ = MakeGarbageCollected<UserTiming>(*this);
   PerformanceMeasure* performance_measure =
-      user_timing_->Measure(script_state, measure_name, original_start,
-                            original_end, detail, exception_state);
+      GetUserTiming().Measure(script_state, measure_name, original_start,
+                              original_end, detail, exception_state);
   if (performance_measure)
     NotifyObserversOfEntry(*performance_measure);
   return performance_measure;
 }
 
 void Performance::clearMeasures(const AtomicString& measure_name) {
-  if (!user_timing_)
-    user_timing_ = MakeGarbageCollected<UserTiming>(*this);
-  user_timing_->ClearMeasures(measure_name);
+  GetUserTiming().ClearMeasures(measure_name);
 }
 
 void Performance::RegisterPerformanceObserver(PerformanceObserver& observer) {

@@ -230,6 +230,7 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
     kMaxValue = kDomLoading
   };
 
+  UserTiming& GetUserTiming();
   PerformanceMeasure* measure(ScriptState*,
                               const AtomicString& measure_name,
                               ExceptionState&);

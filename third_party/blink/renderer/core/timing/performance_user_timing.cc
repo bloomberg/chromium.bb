@@ -26,6 +26,8 @@
 #include "third_party/blink/renderer/core/timing/performance_user_timing.h"
 
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/performance.h"
 #include "third_party/blink/renderer/core/timing/performance_mark.h"
 #include "third_party/blink/renderer/core/timing/performance_mark_options.h"
@@ -100,13 +102,11 @@ static void ClearPeformanceEntries(PerformanceEntryMap& performance_entry_map,
     performance_entry_map.erase(name);
 }
 
-PerformanceMark* UserTiming::Mark(ScriptState* script_state,
-                                  const AtomicString& mark_name,
-                                  PerformanceMarkOptions* mark_options,
-                                  ExceptionState& exception_state) {
-  if (!RuntimeEnabledFeatures::CustomUserTimingEnabled())
-    DCHECK(!mark_options);
-
+PerformanceMark* UserTiming::CreatePerformanceMark(
+    ScriptState* script_state,
+    const AtomicString& mark_name,
+    PerformanceMarkOptions* mark_options,
+    ExceptionState& exception_state) {
   DOMHighResTimeStamp start = 0.0;
   if (mark_options && mark_options->hasStartTime()) {
     start = mark_options->startTime();
@@ -114,20 +114,10 @@ PerformanceMark* UserTiming::Mark(ScriptState* script_state,
     start = performance_->now();
   }
 
-  // Pass in a null ScriptValue if the mark's detail doesn't exist.
   ScriptValue detail = ScriptValue::CreateNull(script_state);
-  if (mark_options)
+  if (RuntimeEnabledFeatures::CustomUserTimingEnabled() && mark_options)
     detail = mark_options->detail();
 
-  return MarkInternal(script_state, mark_name, start, detail, exception_state);
-}
-
-PerformanceMark* UserTiming::MarkInternal(ScriptState* script_state,
-                                          const AtomicString& mark_name,
-                                          const DOMHighResTimeStamp& start_time,
-                                          const ScriptValue& detail,
-                                          ExceptionState& exception_state) {
-  DCHECK(performance_);
   bool is_worker_global_scope =
       performance_->GetExecutionContext() &&
       performance_->GetExecutionContext()->IsWorkerGlobalScope();
@@ -140,20 +130,22 @@ PerformanceMark* UserTiming::MarkInternal(ScriptState* script_state,
     return nullptr;
   }
 
+  return PerformanceMark::Create(script_state, mark_name, start, detail);
+}
+
+void UserTiming::AddMarkToPerformanceTimeline(PerformanceMark& mark) {
   if (performance_->timing()) {
-    TRACE_EVENT_COPY_MARK1("blink.user_timing", mark_name.Utf8().data(), "data",
+    TRACE_EVENT_COPY_MARK1("blink.user_timing", mark.name().Utf8().data(),
+                           "data",
                            performance_->timing()->GetNavigationTracingData());
   } else {
-    TRACE_EVENT_COPY_MARK("blink.user_timing", mark_name.Utf8().data());
+    TRACE_EVENT_COPY_MARK("blink.user_timing", mark.name().Utf8().data());
   }
-  PerformanceMark* mark =
-      PerformanceMark::Create(script_state, mark_name, start_time, detail);
-  InsertPerformanceEntry(marks_map_, *mark);
+  InsertPerformanceEntry(marks_map_, mark);
   DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram,
                                   user_timing_mark_histogram,
                                   ("PLT.UserTiming_Mark", 0, 600000, 100));
-  user_timing_mark_histogram.Count(static_cast<int>(start_time));
-  return mark;
+  user_timing_mark_histogram.Count(static_cast<int>(mark.startTime()));
 }
 
 void UserTiming::ClearMarks(const AtomicString& mark_name) {

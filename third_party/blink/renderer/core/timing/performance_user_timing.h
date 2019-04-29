@@ -44,10 +44,10 @@ class UserTiming final : public GarbageCollected<UserTiming> {
  public:
   explicit UserTiming(Performance&);
 
-  PerformanceMark* Mark(ScriptState* script_state,
-                        const AtomicString& mark_name,
-                        PerformanceMarkOptions* mark_options,
-                        ExceptionState& exception_state);
+  PerformanceMark* CreatePerformanceMark(ScriptState*,
+                                         const AtomicString& mark_name,
+                                         PerformanceMarkOptions*,
+                                         ExceptionState&);
 
   void ClearMarks(const AtomicString& mark_name);
 
@@ -61,6 +61,7 @@ class UserTiming final : public GarbageCollected<UserTiming> {
 
   PerformanceEntryVector GetMarks() const;
   PerformanceEntryVector GetMeasures() const;
+  void AddMarkToPerformanceTimeline(PerformanceMark&);
 
   PerformanceEntryVector GetMarks(const AtomicString& name) const;
   PerformanceEntryVector GetMeasures(const AtomicString& name) const;
@@ -68,11 +69,6 @@ class UserTiming final : public GarbageCollected<UserTiming> {
   void Trace(blink::Visitor*);
 
  private:
-  PerformanceMark* MarkInternal(ScriptState*,
-                                const AtomicString& mark_name,
-                                const DOMHighResTimeStamp& start_time,
-                                const ScriptValue& detail,
-                                ExceptionState&);
   double FindExistingMarkStartTime(const AtomicString& mark_name,
                                    ExceptionState&);
   double GetTimeOrFindMarkTime(const StringOrDouble& mark_or_time,

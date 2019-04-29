@@ -6,7 +6,12 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value_factory.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/performance_entry_names.h"
+#include "third_party/blink/renderer/core/timing/dom_window_performance.h"
+#include "third_party/blink/renderer/core/timing/performance.h"
+#include "third_party/blink/renderer/core/timing/performance_mark_options.h"
+#include "third_party/blink/renderer/core/timing/performance_user_timing.h"
 
 namespace blink {
 
@@ -20,6 +25,29 @@ PerformanceMark::PerformanceMark(ScriptState* script_state,
     return;
   }
   detail_.Set(detail.GetIsolate(), detail.V8Value());
+}
+
+// static
+PerformanceMark* PerformanceMark::Create(ScriptState* script_state,
+                                         const AtomicString& mark_name,
+                                         ExceptionState& exception_state) {
+  return Create(script_state, mark_name, nullptr, exception_state);
+}
+
+// static
+PerformanceMark* PerformanceMark::Create(ScriptState* script_state,
+                                         const AtomicString& mark_name,
+                                         PerformanceMarkOptions* mark_options,
+                                         ExceptionState& exception_state) {
+  LocalDOMWindow* window = LocalDOMWindow::From(script_state);
+  if (!window)
+    return nullptr;
+  Performance* performance = DOMWindowPerformance::performance(*window);
+  if (!performance)
+    return nullptr;
+
+  return performance->GetUserTiming().CreatePerformanceMark(
+      script_state, mark_name, mark_options, exception_state);
 }
 
 AtomicString PerformanceMark::entryType() const {

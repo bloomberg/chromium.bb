@@ -33,6 +33,9 @@
 
 namespace blink {
 
+class ExceptionState;
+class PerformanceMarkOptions;
+
 class CORE_EXPORT PerformanceMark final : public PerformanceEntry {
   DEFINE_WRAPPERTYPEINFO();
 
@@ -44,6 +47,17 @@ class CORE_EXPORT PerformanceMark final : public PerformanceEntry {
     return MakeGarbageCollected<PerformanceMark>(script_state, name, start_time,
                                                  detail);
   }
+
+  // This method is required by the constructor defined in performance_mark.idl.
+  static PerformanceMark* Create(ScriptState*,
+                                 const AtomicString& mark_name,
+                                 ExceptionState&);
+
+  // This method is required by the constructor defined in performance_mark.idl.
+  static PerformanceMark* Create(ScriptState*,
+                                 const AtomicString& mark_name,
+                                 PerformanceMarkOptions*,
+                                 ExceptionState&);
 
   PerformanceMark(ScriptState*,
                   const AtomicString& name,
