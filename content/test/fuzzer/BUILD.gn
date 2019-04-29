@@ -112,6 +112,33 @@ fuzzer_test("signed_exchange_envelope_fuzzer") {
   seed_corpus = "//content/test/data/sxg/"
 }
 
+fuzzer_test("devtools_protocol_encoding_cbor_fuzzer") {
+  sources = [
+    "../../browser/devtools/devtools_protocol_encoding.cc",
+    "../../browser/devtools/devtools_protocol_encoding.h",
+    "../../browser/devtools/devtools_protocol_encoding_cbor_fuzzer.cc",
+  ]
+  deps = [
+    "//base",
+    "//third_party/inspector_protocol:encoding",
+  ]
+  seed_corpus =
+      "../../browser/devtools/devtools_protocol_encoding_cbor_fuzzer_corpus/"
+}
+
+fuzzer_test("devtools_protocol_encoding_json_fuzzer") {
+  sources = [
+    "../../browser/devtools/devtools_protocol_encoding.cc",
+    "../../browser/devtools/devtools_protocol_encoding.h",
+    "../../browser/devtools/devtools_protocol_encoding_json_fuzzer.cc",
+  ]
+  deps = [
+    "//base",
+    "//third_party/inspector_protocol:encoding",
+  ]
+  seed_corpus = "//third_party/grpc/src/test/core/json/corpus/"
+}
+
 fuzzer_test("http_structured_header_fuzzer") {
   sources = [
     "http_structured_header_fuzzer.cc",
