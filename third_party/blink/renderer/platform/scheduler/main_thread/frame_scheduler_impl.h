@@ -317,7 +317,7 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   size_t subresource_loading_pause_count_;
   base::flat_map<SchedulingPolicy::Feature, int>
       back_forward_cache_opt_out_counts_;
-  std::bitset<static_cast<size_t>(SchedulingPolicy::Feature::kCount)>
+  std::bitset<static_cast<size_t>(SchedulingPolicy::Feature::kMaxValue) + 1>
       back_forward_cache_opt_outs_;
   TraceableState<bool, TracingCategoryName::kInfo>
       opted_out_from_back_forward_cache_;
