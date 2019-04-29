@@ -53,7 +53,6 @@ DarkModeSettings BuildDarkModeSettings(const Settings& frame_settings,
   dark_mode_settings.grayscale = frame_settings.GetDarkModeGrayscale();
   dark_mode_settings.contrast = frame_settings.GetDarkModeContrast();
   dark_mode_settings.image_policy = frame_settings.GetDarkModeImagePolicy();
-  dark_mode_settings.image_style = frame_settings.GetDarkModeImageStyle();
   return dark_mode_settings;
 }
 
