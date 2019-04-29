@@ -7,10 +7,12 @@
 
 from __future__ import print_function
 
+from chromite.lib import constants
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.service import dependency
 
+import os
 from os.path import join
 
 
@@ -19,13 +21,18 @@ class DependencyTests(cros_test_lib.TestCase):
 
   def testNormalizeSourcePathsCollapsingSubPaths(self):
     self.assertEquals(
-        dependency.NormalizeSourcePaths(['/foo', '/ab/cd', '/foo/bar']),
-        ['/ab/cd', '/foo'])
+        dependency.NormalizeSourcePaths(
+            ['/mnt/host/source/foo', '/mnt/host/source/ab/cd',
+             '/mnt/host/source/foo/bar']),
+        ['ab/cd', 'foo'])
 
     self.assertEquals(
-        dependency.NormalizeSourcePaths(['/foo/bar', '/ab/cd', '/foo/bar/..',
-                                         '/ab/cde']),
-        ['/ab/cd', '/ab/cde', '/foo'])
+        dependency.NormalizeSourcePaths(
+            ['/mnt/host/source/foo/bar',
+             '/mnt/host/source/ab/cd',
+             '/mnt/host/source/foo/bar/..',
+             '/mnt/host/source/ab/cde']),
+        ['ab/cd', 'ab/cde', 'foo'])
 
   def testNormalizeSourcePathsFormatingDirectoryPaths(self):
     with osutils.TempDir() as tempdir:
@@ -38,6 +45,11 @@ class DependencyTests(cros_test_lib.TestCase):
       osutils.SafeMakedirs(bar_baz_dir)
       osutils.WriteFile(ab_cd_file, 'alphabet')
 
+
+      expected_paths = [ab_cd_file, bar_baz_dir + '/', foo_dir + '/']
+      expected_paths = [os.path.relpath(p, constants.CHROOT_SOURCE_ROOT) for
+                        p in expected_paths]
+
       self.assertEquals(
           dependency.NormalizeSourcePaths([foo_dir, ab_cd_file, bar_baz_dir]),
-          [ab_cd_file, bar_baz_dir + '/', foo_dir + '/'])
+          expected_paths)
