@@ -56,8 +56,6 @@ class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
       State state,
       const gfx::Rect& rect,
       const MenuItemExtraParams& menu_item) const override;
-  bool UsesHighContrastColors() const override;
-  bool SystemDarkModeEnabled() const override;
 
   // Paints the styled button shape used for default controls on Mac. The basic
   // style is used for dialog buttons, comboboxes, and tabbed pane tabs.
@@ -69,9 +67,6 @@ class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
                                         bool round_left,
                                         bool round_right,
                                         bool focus);
-
-  // Updates cached dark mode status and notifies observers if it has changed.
-  void UpdateDarkModeStatus();
 
  protected:
   friend class NativeTheme;
@@ -90,8 +85,6 @@ class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
   base::scoped_nsobject<NativeThemeEffectiveAppearanceObserver>
       appearance_observer_;
   id high_contrast_notification_token_;
-
-  bool is_dark_mode_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(NativeThemeMac);
 };

@@ -264,11 +264,6 @@ gfx::Rect NativeThemeBase::GetNinePatchAperture(Part part) const {
   return gfx::Rect();
 }
 
-bool NativeThemeBase::UsesHighContrastColors() const {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kForceHighContrast);
-}
-
 NativeThemeBase::NativeThemeBase()
     : scrollbar_width_(kDefaultScrollbarWidth),
       scrollbar_button_length_(kDefaultScrollbarButtonLength) {

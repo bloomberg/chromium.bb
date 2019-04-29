@@ -80,7 +80,6 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
   bool SupportsNinePatch(Part part) const override;
   gfx::Size GetNinePatchCanvasSize(Part part) const override;
   gfx::Rect GetNinePatchAperture(Part part) const override;
-  bool UsesHighContrastColors() const override;
   bool SystemDarkModeEnabled() const override;
 
  protected:
@@ -263,6 +262,7 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
   HANDLE GetThemeHandle(ThemeName theme_name) const;
 
   void RegisterThemeRegkeyObserver();
+  void UpdateDarkModeStatus();
 
   typedef HRESULT (WINAPI* DrawThemeBackgroundPtr)(HANDLE theme,
                                                    HDC hdc,
@@ -327,12 +327,6 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
   // The system color change listener and the updated cache of system colors.
   gfx::ScopedSysColorChangeListener color_change_listener_;
   mutable std::map<int, SkColor> system_colors_;
-
-  // Is a high contrast theme active?
-  mutable bool is_using_high_contrast_;
-
-  // Is |is_using_high_contrast_| valid?
-  mutable bool is_using_high_contrast_valid_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeThemeWin);
 };

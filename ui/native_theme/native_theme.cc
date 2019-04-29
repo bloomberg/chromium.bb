@@ -44,14 +44,32 @@ void NativeTheme::NotifyObservers() {
 NativeTheme::NativeTheme()
     : thumb_inactive_color_(0xeaeaea),
       thumb_active_color_(0xf4f4f4),
-      track_color_(0xd3d3d3) {
-}
+      track_color_(0xd3d3d3),
+      is_dark_mode_(IsForcedDarkMode()),
+      is_high_contrast_(IsForcedHighContrast()) {}
 
 NativeTheme::~NativeTheme() {}
 
 bool NativeTheme::SystemDarkModeEnabled() const {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kForceDarkMode);
+  return is_dark_mode_;
+}
+
+bool NativeTheme::UsesHighContrastColors() const {
+  return is_high_contrast_;
+}
+
+bool NativeTheme::IsForcedDarkMode() const {
+  static bool kIsForcedDarkMode =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kForceDarkMode);
+  return kIsForcedDarkMode;
+}
+
+bool NativeTheme::IsForcedHighContrast() const {
+  static bool kIsForcedHighContrast =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kForceHighContrast);
+  return kIsForcedHighContrast;
 }
 
 CaptionStyle NativeTheme::GetSystemCaptionStyle() const {

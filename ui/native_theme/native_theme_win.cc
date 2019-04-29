@@ -238,9 +238,7 @@ NativeThemeWin::NativeThemeWin()
       open_theme_(NULL),
       close_theme_(NULL),
       theme_dll_(LoadLibrary(L"uxtheme.dll")),
-      color_change_listener_(this),
-      is_using_high_contrast_(false),
-      is_using_high_contrast_valid_(false) {
+      color_change_listener_(this) {
   if (theme_dll_) {
     draw_theme_ = reinterpret_cast<DrawThemeBackgroundPtr>(
         GetProcAddress(theme_dll_, "DrawThemeBackground"));
@@ -255,7 +253,9 @@ NativeThemeWin::NativeThemeWin()
     close_theme_ = reinterpret_cast<CloseThemeDataPtr>(
         GetProcAddress(theme_dll_, "CloseThemeData"));
   }
-  if (base::FeatureList::IsEnabled(features::kDarkMode)) {
+
+  if (!IsForcedDarkMode() && !IsForcedHighContrast() &&
+      base::FeatureList::IsEnabled(features::kDarkMode)) {
     // Dark Mode currently targets UWP apps, which means Win32 apps need to use
     // alternate, less reliable means of detecting the state. The following
     // can break in future Windows versions.
@@ -265,9 +265,13 @@ NativeThemeWin::NativeThemeWin()
             L"Software\\Microsoft\\Windows\\CurrentVersion\\"
             L"Themes\\Personalize",
             KEY_READ | KEY_NOTIFY) == ERROR_SUCCESS;
-    if (key_open_succeeded)
+    if (key_open_succeeded) {
+      UpdateDarkModeStatus();
       RegisterThemeRegkeyObserver();
+    }
   }
+  if (!IsForcedHighContrast())
+    set_high_contrast(IsUsingHighContrastThemeInternal());
   memset(theme_handles_, 0, sizeof(theme_handles_));
 
   // Initialize the cached system colors.
@@ -284,15 +288,10 @@ NativeThemeWin::~NativeThemeWin() {
 }
 
 bool NativeThemeWin::IsUsingHighContrastThemeInternal() const {
-  if (is_using_high_contrast_valid_)
-    return is_using_high_contrast_;
   HIGHCONTRAST result;
   result.cbSize = sizeof(HIGHCONTRAST);
-  is_using_high_contrast_ =
-      SystemParametersInfo(SPI_GETHIGHCONTRAST, result.cbSize, &result, 0) &&
-      (result.dwFlags & HCF_HIGHCONTRASTON) == HCF_HIGHCONTRASTON;
-  is_using_high_contrast_valid_ = true;
-  return is_using_high_contrast_;
+  return SystemParametersInfo(SPI_GETHIGHCONTRAST, result.cbSize, &result, 0) &&
+         (result.dwFlags & HCF_HIGHCONTRASTON) == HCF_HIGHCONTRASTON;
 }
 
 void NativeThemeWin::CloseHandlesInternal() {
@@ -309,7 +308,8 @@ void NativeThemeWin::CloseHandlesInternal() {
 
 void NativeThemeWin::OnSysColorChange() {
   UpdateSystemColors();
-  is_using_high_contrast_valid_ = false;
+  if (!IsForcedHighContrast())
+    set_high_contrast(IsUsingHighContrastThemeInternal());
   NotifyObservers();
 }
 
@@ -579,26 +579,13 @@ gfx::Rect NativeThemeWin::GetNinePatchAperture(Part part) const {
   return gfx::Rect();
 }
 
-bool NativeThemeWin::UsesHighContrastColors() const {
-  bool force_enabled = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kForceHighContrast);
-  return force_enabled || IsUsingHighContrastThemeInternal();
-}
-
 bool NativeThemeWin::SystemDarkModeEnabled() const {
   // Windows high contrast modes are entirely different themes,
   // so let them take priority over dark mode.
   // ...unless --force-dark-mode was specified in which case caveat emptor.
-  if (UsesHighContrastColors() && !NativeTheme::SystemDarkModeEnabled())
+  if (UsesHighContrastColors() && !IsForcedDarkMode())
     return false;
-  bool fDarkModeEnabled = false;
-  if (hkcu_themes_regkey_.Valid()) {
-    DWORD apps_use_light_theme = 1;
-    hkcu_themes_regkey_.ReadValueDW(L"AppsUseLightTheme",
-                                    &apps_use_light_theme);
-    fDarkModeEnabled = (apps_use_light_theme == 0);
-  }
-  return fDarkModeEnabled || NativeTheme::SystemDarkModeEnabled();
+  return NativeTheme::SystemDarkModeEnabled();
 }
 
 void NativeThemeWin::PaintIndirect(cc::PaintCanvas* destination_canvas,
@@ -1933,12 +1920,24 @@ void NativeThemeWin::RegisterThemeRegkeyObserver() {
   DCHECK(hkcu_themes_regkey_.Valid());
   hkcu_themes_regkey_.StartWatching(base::BindOnce(
       [](NativeThemeWin* native_theme) {
+        native_theme->UpdateDarkModeStatus();
         native_theme->NotifyObservers();
         // RegKey::StartWatching only provides one notification. Reregistration
         // is required to get future notifications.
         native_theme->RegisterThemeRegkeyObserver();
       },
       base::Unretained(this)));
+}
+
+void NativeThemeWin::UpdateDarkModeStatus() {
+  bool fDarkModeEnabled = false;
+  if (hkcu_themes_regkey_.Valid()) {
+    DWORD apps_use_light_theme = 1;
+    hkcu_themes_regkey_.ReadValueDW(L"AppsUseLightTheme",
+                                    &apps_use_light_theme);
+    fDarkModeEnabled = (apps_use_light_theme == 0);
+  }
+  set_dark_mode(fDarkModeEnabled);
 }
 
 }  // namespace ui
