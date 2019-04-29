@@ -247,9 +247,6 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   request->allow_download = true;
   request->is_main_frame = true;
 
-  if (params->render_process_host_id() >= 0)
-    request->render_frame_id = params->render_frame_host_routing_id();
-
   bool has_upload_data = false;
   if (params->post_body()) {
     request->request_body = params->post_body();
