@@ -12,13 +12,37 @@
 namespace unified_consent {
 
 TEST(UnifiedConsentFeatureTest, FeatureState) {
-#if defined(OS_LINUX) || defined(OS_WIN) || \
-    (defined(OS_MACOSX) && !defined(OS_IOS))
-  // Unified consent is enabled by default.
-  EXPECT_TRUE(IsUnifiedConsentFeatureEnabled());
-#else
+// Linux platforms
+#if defined(OS_ANDROID)
   // Unified consent is disabled by default.
   EXPECT_FALSE(IsUnifiedConsentFeatureEnabled());
+#endif
+
+#if defined(OS_CHROMEOS)
+  // Unified consent is disabled by default.
+  EXPECT_FALSE(IsUnifiedConsentFeatureEnabled());
+#endif
+
+#if defined(OS_LINUX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+  // Unified consent is enabled by default.
+  EXPECT_TRUE(IsUnifiedConsentFeatureEnabled());
+#endif
+
+// Apple platforms
+#if defined(OS_IOS)
+  // Unified consent is disabled by default.
+  EXPECT_FALSE(IsUnifiedConsentFeatureEnabled());
+#endif
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  // Unified consent is enabled by default.
+  EXPECT_TRUE(IsUnifiedConsentFeatureEnabled());
+#endif
+
+// Windows
+#if defined(OS_WIN)
+  // Unified consent is enabled by default.
+  EXPECT_TRUE(IsUnifiedConsentFeatureEnabled());
 #endif
 
   {
