@@ -2110,7 +2110,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     MaybeCopyDisableWebRtcEncryptionSwitch(command_line,
                                            browser_command_line,
                                            chrome::GetChannel());
-
     if (process) {
       PrefService* prefs = profile->GetPrefs();
       // Currently this pref is only registered if applied via a policy.
@@ -2162,9 +2161,10 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
             network::switches::kUnsafelyTreatInsecureOriginAsSecure,
             prefs->GetString(prefs::kUnsafelyTreatInsecureOriginAsSecure));
       }
-
-      if (prefs->HasPrefPath(prefs::kAllowPopupsDuringPageUnload))
+      if (prefs->HasPrefPath(prefs::kAllowPopupsDuringPageUnload) &&
+          prefs->GetBoolean(prefs::kAllowPopupsDuringPageUnload)) {
         command_line->AppendSwitch(switches::kAllowPopupsDuringPageUnload);
+      }
     }
 
     if (IsAutoReloadEnabled())
