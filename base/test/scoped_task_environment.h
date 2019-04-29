@@ -323,4 +323,4 @@ class ScopedTaskEnvironment {
 }  // namespace test
 }  // namespace base
 
-#endif  // BASE_TEST_SCOPED_ASYNC_TASK_SCHEDULER_H_
+#endif  // BASE_TEST_SCOPED_TASK_ENVIRONMENT_H_
