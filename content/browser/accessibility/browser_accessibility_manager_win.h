@@ -7,7 +7,9 @@
 
 #include <oleacc.h>
 
+#include <map>
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
@@ -65,6 +67,9 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
                                     BrowserAccessibility* node);
   void FireUiaTextContainerEvent(LONG uia_event, BrowserAccessibility* node);
 
+  // Do event post-processing
+  void FinalizeAccessibilityEvents() override;
+
   // Track this object and post a VISIBLE_DATA_CHANGED notification when
   // its container scrolls.
   // TODO(dmazzoni): remove once http://crbug.com/113483 is fixed.
@@ -93,6 +98,17 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   // TODO(dmazzoni): a better fix would be to always have an HWND.
   // http://crbug.com/521877
   bool load_complete_pending_;
+
+  // Keep track of selection changes so we can optimize UIA event firing.
+  // Pointers are only stored for the duration of |OnAccessibilityEvents|, and
+  // the map is cleared in |FinalizeAccessibilityEvents|.
+  struct SelectionEvents {
+    std::vector<BrowserAccessibility*> added;
+    std::vector<BrowserAccessibility*> removed;
+    SelectionEvents();
+    ~SelectionEvents();
+  };
+  std::map<BrowserAccessibility*, SelectionEvents> selection_events_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityManagerWin);
 };

@@ -624,17 +624,65 @@ void BrowserAccessibilityManagerWin::HandleSelectedStateChanged(
   if (multiselect) {
     if (is_selected) {
       FireWinAccessibilityEvent(EVENT_OBJECT_SELECTIONADD, node);
-      FireUiaAccessibilityEvent(
-          UIA_SelectionItem_ElementAddedToSelectionEventId, node);
+      if (::switches::IsExperimentalAccessibilityPlatformUIAEnabled())
+        selection_events_[selection_container].added.push_back(node);
     } else {
       FireWinAccessibilityEvent(EVENT_OBJECT_SELECTIONREMOVE, node);
-      FireUiaAccessibilityEvent(
-          UIA_SelectionItem_ElementRemovedFromSelectionEventId, node);
+      if (::switches::IsExperimentalAccessibilityPlatformUIAEnabled())
+        selection_events_[selection_container].removed.push_back(node);
     }
   } else if (is_selected) {
     FireWinAccessibilityEvent(EVENT_OBJECT_SELECTION, node);
     FireUiaAccessibilityEvent(UIA_SelectionItem_ElementSelectedEventId, node);
   }
 }
+
+void BrowserAccessibilityManagerWin::FinalizeAccessibilityEvents() {
+  BrowserAccessibilityManager::FinalizeAccessibilityEvents();
+
+  for (auto&& selected : selection_events_) {
+    auto* container = selected.first;
+    auto&& changes = selected.second;
+
+    // Count the number of selected items
+    size_t selected_count = 0;
+    BrowserAccessibility* first_selected_child = nullptr;
+    for (size_t i = 0; i < container->InternalChildCount(); ++i) {
+      auto* child = container->InternalGetChild(i);
+      if (child->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected)) {
+        if (!first_selected_child)
+          first_selected_child = child;
+        selected_count++;
+      }
+    }
+
+    if (selected_count == 1) {
+      // Fire 'ElementSelected' on the only selected child
+      FireUiaAccessibilityEvent(UIA_SelectionItem_ElementSelectedEventId,
+                                first_selected_child);
+    } else {
+      // Per UIA documentation, beyond the "invalidate limit" we're supposed to
+      // fire a 'SelectionInvalidated' event.  The exact value isn't specified,
+      // but System.Windows.Automation.Provider uses a value of 20.
+      static const size_t kInvalidateLimit = 20;
+      if ((changes.added.size() + changes.removed.size()) > kInvalidateLimit) {
+        FireUiaAccessibilityEvent(UIA_Selection_InvalidatedEventId, container);
+      } else {
+        for (auto* item : changes.added) {
+          FireUiaAccessibilityEvent(
+              UIA_SelectionItem_ElementAddedToSelectionEventId, item);
+        }
+        for (auto* item : changes.removed) {
+          FireUiaAccessibilityEvent(
+              UIA_SelectionItem_ElementRemovedFromSelectionEventId, item);
+        }
+      }
+    }
+  }
+  selection_events_.clear();
+}
+
+BrowserAccessibilityManagerWin::SelectionEvents::SelectionEvents() = default;
+BrowserAccessibilityManagerWin::SelectionEvents::~SelectionEvents() = default;
 
 }  // namespace content

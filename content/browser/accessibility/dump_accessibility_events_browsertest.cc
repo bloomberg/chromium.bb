@@ -687,4 +687,9 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("aria-flow-to.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsSelectAddRemove) {
+  RunEventTest(FILE_PATH_LITERAL("select-selected-add-remove.html"));
+}
+
 }  // namespace content

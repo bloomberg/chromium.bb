@@ -258,8 +258,11 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   // given find in page result.
   void ActivateFindInPageResult(int request_id, int match_index);
 
-  // Called when the renderer process has notified us of about tree changes.
+  // Called when the renderer process has notified us of tree changes.
   virtual void OnAccessibilityEvents(const AXEventNotificationDetails& details);
+
+  // Allows derived classes to do event post-processing.
+  virtual void FinalizeAccessibilityEvents();
 
   // Called when the renderer process updates the location of accessibility
   // objects. Calls SendLocationChangeEvents(), which can be overridden.

@@ -462,7 +462,12 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
 
     FireBlinkEvent(event.event_type, event_target);
   }
+
+  // Allow derived classes to do event post-processing.
+  FinalizeAccessibilityEvents();
 }
+
+void BrowserAccessibilityManager::FinalizeAccessibilityEvents() {}
 
 void BrowserAccessibilityManager::OnLocationChanges(
     const std::vector<AccessibilityHostMsg_LocationChangeParams>& params) {
