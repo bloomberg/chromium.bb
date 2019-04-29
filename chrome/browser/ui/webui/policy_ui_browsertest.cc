@@ -242,8 +242,7 @@ void PolicyUITest::SetUpInProcessBrowserTestFixture() {
   EXPECT_CALL(provider_, IsInitializationComplete(_))
       .WillRepeatedly(Return(true));
   policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
-  policy::ProfilePolicyConnectorFactory::GetInstance()->PushProviderForTesting(
-      &provider_);
+  policy::PushProfilePolicyConnectorProviderForTesting(&provider_);
 
   // Create a directory for testing exporting policies.
   ASSERT_TRUE(export_policies_test_dir.CreateUniqueTempDir());

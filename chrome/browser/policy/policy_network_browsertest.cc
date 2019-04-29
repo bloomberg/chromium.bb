@@ -312,8 +312,8 @@ class QuicAllowedPolicyDynamicTest : public QuicTestBase {
     // Set the overriden policy provider for the first Profile (profile_1_).
     EXPECT_CALL(policy_for_profile_1_, IsInitializationComplete(testing::_))
         .WillRepeatedly(testing::Return(true));
-    policy::ProfilePolicyConnectorFactory::GetInstance()
-        ->PushProviderForTesting(&policy_for_profile_1_);
+    policy::PushProfilePolicyConnectorProviderForTesting(
+        &policy_for_profile_1_);
   }
 
   void SetUpOnMainThread() override {
@@ -329,8 +329,8 @@ class QuicAllowedPolicyDynamicTest : public QuicTestBase {
     // Prepare policy provider for second profile.
     EXPECT_CALL(policy_for_profile_2_, IsInitializationComplete(testing::_))
         .WillRepeatedly(testing::Return(true));
-    policy::ProfilePolicyConnectorFactory::GetInstance()
-        ->PushProviderForTesting(&policy_for_profile_2_);
+    policy::PushProfilePolicyConnectorProviderForTesting(
+        &policy_for_profile_2_);
 
     ProfileManager* profile_manager = g_browser_process->profile_manager();
 

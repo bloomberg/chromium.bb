@@ -536,8 +536,9 @@ ProfileImpl::ProfileImpl(
   configuration_policy_provider_ = std::move(user_cloud_policy_manager);
 #endif
   profile_policy_connector_ =
-      policy::ProfilePolicyConnectorFactory::CreateForBrowserContext(
-          this, force_immediate_policy_load);
+      policy::CreateProfilePolicyConnectorForBrowserContext(
+          schema_registry_service_->registry(), user_cloud_policy_manager_,
+          force_immediate_policy_load, this);
 
   DCHECK(create_mode == CREATE_MODE_ASYNCHRONOUS ||
          create_mode == CREATE_MODE_SYNCHRONOUS);
@@ -830,6 +831,7 @@ ProfileImpl::~ProfileImpl() {
   // not have the responsibility to call Shutdown() anymore, remove this
   // condition.
 #if !defined(OS_CHROMEOS)
+  profile_policy_connector_->Shutdown();
   configuration_policy_provider_->Shutdown();
 #endif
 

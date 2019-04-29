@@ -2097,8 +2097,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
   // Make sure the first Profile has an overridden policy provider.
   EXPECT_CALL(policy_provider_, IsInitializationComplete(testing::_))
       .WillRepeatedly(testing::Return(true));
-  policy::ProfilePolicyConnectorFactory::GetInstance()->PushProviderForTesting(
-      &policy_provider_);
+  policy::PushProfilePolicyConnectorProviderForTesting(&policy_provider_);
 
   // Set up sync.
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";

@@ -29,6 +29,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/net/system_network_context_manager.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/schema_registry_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
@@ -402,6 +403,14 @@ void UserPolicyManagerFactoryChromeOS::BrowserContextShutdown(
   Profile* profile = static_cast<Profile*>(context);
   if (profile->IsOffTheRecord())
     return;
+
+  // TODO(crbug.com/937770): Move the shut down of |profile_policy_connector|
+  // to where the |cloud_manager| is shut down.
+  ProfilePolicyConnector* profile_policy_connector =
+      profile->GetProfilePolicyConnector();
+  if (profile_policy_connector)
+    profile_policy_connector->Shutdown();
+
   UserCloudPolicyManagerChromeOS* cloud_manager =
       GetCloudPolicyManager(profile);
   if (cloud_manager)

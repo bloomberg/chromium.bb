@@ -473,8 +473,7 @@ class PopupBlockerSpecialPolicyBrowserTest : public PopupBlockerBrowserTest {
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
         &policy_provider_);
 #else
-    policy::ProfilePolicyConnectorFactory::GetInstance()
-        ->PushProviderForTesting(&policy_provider_);
+    policy::PushProfilePolicyConnectorProviderForTesting(&policy_provider_);
 #endif
   }
 

@@ -562,6 +562,9 @@ TestingProfile::~TestingProfile() {
 
   SimpleKeyMap::GetInstance()->Dissociate(this);
 
+  if (profile_policy_connector_)
+    profile_policy_connector_->Shutdown();
+
   if (user_cloud_policy_manager_)
     user_cloud_policy_manager_->Shutdown();
 
