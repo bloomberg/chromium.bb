@@ -320,6 +320,18 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     # This is an OpenGL driver bug on Intel platform and it is fixed in
     # Intel Driver 25.20.100.6444.
+    # Case no-over-optimization-on-uniform-array-08 always fail if run
+    # case gl-min-uniforms first.
+    # Temporarily skip these two cases now.
+    self.Skip(
+        'conformance/limits/gl-min-uniforms.html',
+        ['win', 'intel', 'opengl', 'passthrough'], bug=953243)
+    self.Skip(
+        'conformance/uniforms/no-over-optimization-on-uniform-array-08.html',
+        ['win', 'intel', 'opengl', 'passthrough'], bug=953243)
+
+    # This is an OpenGL driver bug on Intel platform and it is fixed in
+    # Intel Driver 25.20.100.6444.
     # Case no-over-optimization-on-uniform-array-09 always fail if run
     # case biuDepthRange_001_to_002 first.
     # Temporarily skip these two cases now because this issue blocks
@@ -419,9 +431,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'passthrough', 'opengl', 'intel'], bug=602688)
     self.Fail('deqp/functional/gles3/shaderbuiltinvar.html', # ANGLE bug
         ['win', 'passthrough', 'opengl', 'intel'], bug=2880)
-    self.Skip(
-        'conformance/uniforms/no-over-optimization-on-uniform-array-08.html',
-        ['win', 'intel', 'opengl', 'passthrough'], bug=907195)
 
     # Passthrough command decoder / Linux / OpenGL / NVIDIA
     self.Fail('conformance/textures/image_bitmap_from_video/' +
