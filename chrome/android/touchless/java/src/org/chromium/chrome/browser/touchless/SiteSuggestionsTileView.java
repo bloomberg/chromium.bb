@@ -26,7 +26,7 @@ public class SiteSuggestionsTileView extends TileView {
 
     public SiteSuggestionsTileView(Context ctx, AttributeSet attrs) {
         super(ctx, attrs);
-        mIconSizePx = getResources().getDimensionPixelSize(R.dimen.tile_view_icon_size);
+        mIconSizePx = getResources().getDimensionPixelSize(R.dimen.most_likely_tile_size);
     }
 
     /**

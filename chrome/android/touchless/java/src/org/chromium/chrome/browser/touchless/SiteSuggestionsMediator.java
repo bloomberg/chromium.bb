@@ -25,6 +25,7 @@ import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyObservable;
 import org.chromium.ui.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
@@ -42,7 +43,7 @@ class SiteSuggestionsMediator implements MostVisitedSites.Observer,
     // we divide by 240 (which is 5!) before multiplying by 120.
     // TODO(chili): Maybe better formula for if this needs to be more generic.
     private static final int INITIAL_SCROLLED_POSITION = Integer.MAX_VALUE / 240 * 120;
-    private static final int MAX_DISPLAYED_TILES = 5;
+    private static final int MAX_DISPLAYED_TILES = 4;
 
     private PropertyModel mModel;
     private ImageFetcher mImageFetcher;
@@ -70,13 +71,16 @@ class SiteSuggestionsMediator implements MostVisitedSites.Observer,
             urls.add(model.get(SiteSuggestionModel.URL_KEY));
         }
 
+        // Because of the way we calculate mods, it's better to add suggestions all at once.
+        List<PropertyModel> modelList = new ArrayList<>(siteSuggestions.size());
+
         // Map each SiteSuggestion into a PropertyModel representation and fetch the icon.
         for (SiteSuggestion suggestion : siteSuggestions) {
             // Do not put duplicates.
             if (urls.contains(suggestion.url)) continue;
 
             PropertyModel siteSuggestion = SiteSuggestionModel.getSiteSuggestionModel(suggestion);
-            mModel.get(SiteSuggestionsCoordinator.SUGGESTIONS_KEY).add(siteSuggestion);
+            modelList.add(siteSuggestion);
             if (suggestion.whitelistIconPath.isEmpty()) {
                 makeIconRequest(siteSuggestion);
             } else {
@@ -93,13 +97,20 @@ class SiteSuggestionsMediator implements MostVisitedSites.Observer,
                 task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             }
         }
-        // Total item count is 1 more than number of site suggestions to account for "all apps".
-        mModel.set(SiteSuggestionsCoordinator.ITEM_COUNT_KEY, getItemCount());
 
-        // If we fetched site suggestions the first time, set initial scrolled position.
-        // We don't want to set scrolled position if we've already set position before.
+        // If everything was duplicate. don't do anything.
+        if (modelList.isEmpty()) return;
+
+        // Total item count is 1 more than number of site suggestions to account for "all apps".
+        mModel.set(SiteSuggestionsCoordinator.ITEM_COUNT_KEY,
+                getItemCount(modelList.size() + urls.size()));
+        mModel.get(SiteSuggestionsCoordinator.SUGGESTIONS_KEY).addAll(modelList);
+
+        // If we fetched site suggestions the first time, set initial and current position.
+        // We don't want to set position if we've already set position before.
         if (siteSuggestions.size() > 0
-                && mModel.get(SiteSuggestionsCoordinator.CURRENT_INDEX_KEY) == 0) {
+                && mModel.get(SiteSuggestionsCoordinator.INITIAL_INDEX_KEY) == 0) {
+            mModel.set(SiteSuggestionsCoordinator.INITIAL_INDEX_KEY, INITIAL_SCROLLED_POSITION);
             mModel.set(SiteSuggestionsCoordinator.CURRENT_INDEX_KEY, INITIAL_SCROLLED_POSITION);
         }
     }
@@ -118,17 +129,19 @@ class SiteSuggestionsMediator implements MostVisitedSites.Observer,
     public void onPropertyChanged(
             PropertyObservable<PropertyKey> source, @Nullable PropertyKey propertyKey) {
         if (propertyKey == SiteSuggestionsCoordinator.REMOVAL_KEY) {
-            String removalUrl = mModel.get(SiteSuggestionsCoordinator.REMOVAL_KEY);
-            mMostVisitedSites.addBlacklistedUrl(removalUrl);
+            PropertyModel suggestion = mModel.get(SiteSuggestionsCoordinator.REMOVAL_KEY);
+            mMostVisitedSites.addBlacklistedUrl(suggestion.get(SiteSuggestionModel.URL_KEY));
 
             Toast.makeText(ContextUtils.getApplicationContext(), R.string.most_visited_item_removed,
                          Toast.LENGTH_SHORT)
                     .show();
 
-            // When we remove an item, reset the item count key.
-            int itemCount = getItemCount();
-            // Total item count is 1 more to account for "all apps".
+            // When we remove an item, reset the item count key first
+            int itemCount =
+                    getItemCount(mModel.get(SiteSuggestionsCoordinator.SUGGESTIONS_KEY).size() - 1);
             mModel.set(SiteSuggestionsCoordinator.ITEM_COUNT_KEY, itemCount);
+            // Actually remove the suggestion.
+            mModel.get(SiteSuggestionsCoordinator.SUGGESTIONS_KEY).remove(suggestion);
             // When removal of a site causes us to have fewer sites than we want to display, fetch
             // again.
             if (itemCount < MAX_DISPLAYED_TILES) {
@@ -151,13 +164,10 @@ class SiteSuggestionsMediator implements MostVisitedSites.Observer,
         mModel.set(SiteSuggestionsCoordinator.ON_FOCUS_CALLBACK, listener);
     }
 
-    private int getItemCount() {
+    private int getItemCount(int listSize) {
         // Item count is number of site suggestions available, up to MAX_DISPLAYED_TILES, + 1 for
         // "All apps".
-        return (mModel.get(SiteSuggestionsCoordinator.SUGGESTIONS_KEY).size() > MAX_DISPLAYED_TILES
-                               ? MAX_DISPLAYED_TILES
-                               : mModel.get(SiteSuggestionsCoordinator.SUGGESTIONS_KEY).size())
-                + 1;
+        return (listSize > MAX_DISPLAYED_TILES ? MAX_DISPLAYED_TILES : listSize) + 1;
     }
 
     private void makeIconRequest(PropertyModel suggestion) {
