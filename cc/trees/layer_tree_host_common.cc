@@ -326,23 +326,17 @@ static bool SkipForInvertibility(const LayerImpl* layer,
   bool non_root_copy_request =
       effect_node->closest_ancestor_with_copy_request_id >
       EffectTree::kContentsRootNodeId;
+  gfx::Transform from_target;
   // If there is a copy request, we check the invertibility of the transform
   // between the node corresponding to the layer and the node corresponding to
   // the copy request. Otherwise, we are interested in the invertibility of
   // screen space transform which is already cached on the transform node.
-  if (non_root_copy_request) {
-    // Null check is a temporary fix for crasher: https://crbug.com/939342
-    if (effect_node == nullptr)
-      return false;
-    gfx::Transform from_target;
-    return !property_trees->GetFromTarget(
-        layer->transform_tree_index(),
-        effect_node->closest_ancestor_with_copy_request_id, &from_target);
-  }
-  // Null check is a temporary fix for crasher: https://crbug.com/939342
-  if (transform_node == nullptr)
-    return false;
-  return !transform_node->ancestors_are_invertible;
+  return non_root_copy_request
+             ? !property_trees->GetFromTarget(
+                   layer->transform_tree_index(),
+                   effect_node->closest_ancestor_with_copy_request_id,
+                   &from_target)
+             : !transform_node->ancestors_are_invertible;
 }
 
 static void ComputeInitialRenderSurfaceList(
