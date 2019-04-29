@@ -592,8 +592,8 @@
     <dimen name="download_manager_ideal_image_width">150dp</dimen>
     <dimen name="download_manager_recycler_view_min_padding_wide_screen">16dp</dimen>
     <dimen name="download_manager_max_image_item_width_wide_screen">300dp</dimen>
-    <dimen name="download_manager_image_padding">2dp</dimen>
-    <dimen name="download_manager_prefetch_horizontal_margin">16dp</dimen>
+    <dimen name="download_manager_image_padding">5dp</dimen>
+    <dimen name="download_manager_horizontal_margin">16dp</dimen>
     <dimen name="download_manager_prefetch_vertical_margin">12dp</dimen>
     <dimen name="download_manager_section_title_padding_top">16dp</dimen>
     <dimen name="download_manager_section_title_padding_bottom">0dp</dimen>
