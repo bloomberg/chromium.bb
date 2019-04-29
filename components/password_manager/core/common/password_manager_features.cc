@@ -20,19 +20,6 @@ const base::Feature kEditPasswordsInDesktopSettings = {
 const base::Feature kDeleteCorruptedPasswords = {
     "DeleteCorruptedPasswords", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls the ability to import passwords from Chrome's settings page.
-const base::Feature kPasswordImport = {"PasswordImport",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Adds password-related features to the keyboard accessory on mobile devices.
-const base::Feature kPasswordsKeyboardAccessory = {
-    "PasswordsKeyboardAccessory", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Deletes entries from local database on Mac which cannot be decrypted when
-// merging data with Sync.
-const base::Feature kRecoverPasswordsForSyncUsers = {
-    "RecoverPasswordsForSyncUsers", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables the experiment for the password manager to only fill on account
 // selection, rather than autofilling on page load, with highlighting of fields.
 const base::Feature kFillOnAccountSelect = {"fill-on-account-select",
@@ -46,6 +33,16 @@ const base::Feature kFillOnAccountSelectHttp = {
 // Integration with Google's Password Manager for signed-in and sync users.
 const base::Feature kGooglePasswordManager = {
     "google-password-manager", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether to offer manual password generation in the accessory sheet
+// on Android.
+const base::Feature kManualPasswordGenerationAndroid{
+    "ManualPasswordGenerationAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Performs a one-off migration (with retries) from a native backend into
+// logindb. Passwords are served from the new location.
+const base::Feature kMigrateLinuxToLoginDB = {"migrate-linux-to-logindb",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables new password form parsing mechanism for filling passwords, details in
 // https://goo.gl/QodPH1
@@ -62,15 +59,22 @@ const base::Feature kNewPasswordFormParsingForSaving = {
 const base::Feature kOnlyNewParser = {"only-new-password-form-parsing",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether to offer manual password generation in the accessory sheet
-// on Android.
-const base::Feature kManualPasswordGenerationAndroid{
-    "ManualPasswordGenerationAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
+// Controls the ability to import passwords from Chrome's settings page.
+const base::Feature kPasswordImport = {"PasswordImport",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Performs a one-off migration (with retries) from a native backend into
-// logindb. Passwords are served from the new location.
-const base::Feature kMigrateLinuxToLoginDB = {"migrate-linux-to-logindb",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
+// Adds password-related features to the keyboard accessory on mobile devices.
+const base::Feature kPasswordsKeyboardAccessory = {
+    "PasswordsKeyboardAccessory", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Deletes entries from local database on Mac which cannot be decrypted when
+// merging data with Sync.
+const base::Feature kRecoverPasswordsForSyncUsers = {
+    "RecoverPasswordsForSyncUsers", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables the touch to fill feature for Android.
+const base::Feature kTouchToFillAndroid = {"TouchToFillAndroid",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Field trial identifier for password generation requirements.
 const char* kGenerationRequirementsFieldTrial =

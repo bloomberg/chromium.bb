@@ -30,6 +30,7 @@ extern const base::Feature kOnlyNewParser;
 extern const base::Feature kPasswordImport;
 extern const base::Feature kPasswordsKeyboardAccessory;
 extern const base::Feature kRecoverPasswordsForSyncUsers;
+extern const base::Feature kTouchToFillAndroid;
 
 // Field trial and corresponding parameters.
 // To manually override this, start Chrome with the following parameters:
