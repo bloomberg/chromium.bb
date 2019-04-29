@@ -23,7 +23,7 @@ namespace ui {
 // (2) Buffers created using file descriptor (e.g: sent by gpu process/thread,
 // through IPC), not mapped in local memory address space.
 // WaylandShmBuffer is moveable, non-copyable, and is assumed to own both
-// wl_buffer and SharedMemory (if any) instance.
+// wl_buffer and WritableSharedMemoryMapping (if any) instance.
 class WaylandShmBuffer {
  public:
   WaylandShmBuffer(wl_shm* shm, const gfx::Size& size);
