@@ -1065,9 +1065,11 @@ void LayoutObject::MarkParentForOutOfFlowPositionedChange() {
   // inline items again to either collect or drop the OOF-positioned object.
   object->SetNeedsCollectInlines();
 
-  while (object && !object->IsLayoutBlock())
+  const LayoutBlock* containing_block = ContainingBlock();
+  while (object != containing_block) {
+    object->SetChildNeedsLayout(kMarkOnlyThis);
     object = object->Parent();
-
+  }
   // Finally mark the parent block for layout. This will mark everything which
   // has an OOF-positioned object in a NGLayoutResult as needing layout.
   if (object)
