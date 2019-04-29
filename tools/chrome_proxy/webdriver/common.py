@@ -227,6 +227,10 @@ class TestDriver:
     self._emulation_server_port = -1
     self._enable_features = set()
     self._disable_features = set()
+    # By default enable the NetworkService and DRPWithNetworkService. Individual
+    # tests may override this behavior.
+    self.EnableChromeFeature('NetworkService')
+    self.EnableChromeFeature('DataReductionProxyEnabledWithNetworkService')
 
   def __enter__(self):
     return self
