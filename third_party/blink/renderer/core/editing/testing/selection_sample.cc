@@ -296,9 +296,10 @@ class Serializer final {
       builder_.Append("-->");
       return;
     }
-    if (node.getNodeType() == Node::kProcessingInstructionNode) {
+    if (auto* processing_instruction_node =
+            DynamicTo<ProcessingInstruction>(node)) {
       builder_.Append("<?");
-      builder_.Append(ToProcessingInstruction(node).target());
+      builder_.Append(processing_instruction_node->target());
       builder_.Append(' ');
       HandleCharacterData(To<CharacterData>(node));
       builder_.Append("?>");

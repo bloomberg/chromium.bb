@@ -1064,12 +1064,12 @@ Node* Range::CheckNodeWOffset(Node* n,
       }
       return nullptr;
     case Node::kProcessingInstructionNode:
-      if (offset > ToProcessingInstruction(n)->data().length()) {
+      if (offset > To<ProcessingInstruction>(n)->data().length()) {
         exception_state.ThrowDOMException(
             DOMExceptionCode::kIndexSizeError,
             "The offset " + String::Number(offset) +
                 " is larger than the node's length (" +
-                String::Number(ToProcessingInstruction(n)->data().length()) +
+                String::Number(To<ProcessingInstruction>(n)->data().length()) +
                 ").");
       } else if (offset >
                  static_cast<unsigned>(std::numeric_limits<int>::max())) {

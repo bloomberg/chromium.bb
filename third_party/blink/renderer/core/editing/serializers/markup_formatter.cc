@@ -170,8 +170,8 @@ void MarkupFormatter::AppendStartMarkup(StringBuilder& result,
       break;
     case Node::kProcessingInstructionNode:
       AppendProcessingInstruction(result,
-                                  ToProcessingInstruction(node).target(),
-                                  ToProcessingInstruction(node).data());
+                                  To<ProcessingInstruction>(node).target(),
+                                  To<ProcessingInstruction>(node).data());
       break;
     case Node::kElementNode:
       NOTREACHED();

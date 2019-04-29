@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/dom/character_data.h"
 #include "third_party/blink/renderer/core/loader/resource/text_resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_client.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -109,12 +110,16 @@ class CORE_EXPORT ProcessingInstruction final : public CharacterData,
   Member<DetachableEventListener> listener_for_xslt_;
 };
 
-DEFINE_NODE_TYPE_CASTS(ProcessingInstruction,
-                       getNodeType() == Node::kProcessingInstructionNode);
+template <>
+struct DowncastTraits<ProcessingInstruction> {
+  static bool AllowFrom(const Node& node) {
+    return node.getNodeType() == Node::kProcessingInstructionNode;
+  }
+};
 
 inline bool IsXSLStyleSheet(const Node& node) {
   return node.getNodeType() == Node::kProcessingInstructionNode &&
-         ToProcessingInstruction(node).IsXSL();
+         To<ProcessingInstruction>(node).IsXSL();
 }
 
 }  // namespace blink

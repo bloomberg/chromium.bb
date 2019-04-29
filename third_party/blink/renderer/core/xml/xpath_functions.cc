@@ -386,7 +386,7 @@ static inline String ExpandedNameLocalPart(Node* node) {
     case Node::kAttributeNode:
       return To<Attr>(node)->localName();
     case Node::kProcessingInstructionNode:
-      return ToProcessingInstruction(node)->target();
+      return To<ProcessingInstruction>(node)->target();
     default:
       return String();
   }

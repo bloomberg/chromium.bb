@@ -213,8 +213,9 @@ void CharacterData::SetDataAndUpdate(const String& new_data,
     text_node->UpdateTextLayoutObject(offset_of_replaced_data, old_length);
 
   if (source != kUpdateFromParser) {
-    if (getNodeType() == kProcessingInstructionNode)
-      ToProcessingInstruction(this)->DidAttributeChanged();
+    if (auto* processing_instruction_node =
+            DynamicTo<ProcessingInstruction>(this))
+      processing_instruction_node->DidAttributeChanged();
 
     GetDocument().NotifyUpdateCharacterData(this, offset_of_replaced_data,
                                             old_length, new_length);

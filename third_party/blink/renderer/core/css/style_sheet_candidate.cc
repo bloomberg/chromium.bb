@@ -46,7 +46,7 @@ AtomicString StyleSheetCandidate::Title() const {
 
 bool StyleSheetCandidate::IsXSL() const {
   return !GetNode().GetDocument().IsHTMLDocument() && type_ == kPi &&
-         ToProcessingInstruction(GetNode()).IsXSL();
+         To<ProcessingInstruction>(GetNode()).IsXSL();
 }
 
 bool StyleSheetCandidate::IsImport() const {
@@ -110,7 +110,7 @@ StyleSheet* StyleSheetCandidate::Sheet() const {
     case kSVGStyle:
       return ToSVGStyleElement(GetNode()).sheet();
     case kPi:
-      return ToProcessingInstruction(GetNode()).sheet();
+      return To<ProcessingInstruction>(GetNode()).sheet();
     default:
       NOTREACHED();
       return nullptr;
