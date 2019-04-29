@@ -47,7 +47,8 @@ namespace {
 // difficult to associate the trace-events with the particular displays.
 int64_t GetStartingTraceId() {
   static int64_t client = 0;
-  return ((++client & 0xffffffff) << 32);
+  // https://crbug.com/956695
+  return ((++client & 0xffff) << 16);
 }
 
 gfx::PresentationFeedback SanitizePresentationFeedback(
