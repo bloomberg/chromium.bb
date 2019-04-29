@@ -101,6 +101,7 @@ class WebSocket::WebSocketEventHandler final
       std::unique_ptr<net::WebSocketEventInterface::SSLErrorCallbacks>
           callbacks,
       const GURL& url,
+      int net_error,
       const net::SSLInfo& ssl_info,
       bool fatal) override;
   int OnAuthRequired(
@@ -277,6 +278,7 @@ void WebSocket::WebSocketEventHandler::OnFinishOpeningHandshake(
 void WebSocket::WebSocketEventHandler::OnSSLCertificateError(
     std::unique_ptr<net::WebSocketEventInterface::SSLErrorCallbacks> callbacks,
     const GURL& url,
+    int net_error,
     const net::SSLInfo& ssl_info,
     bool fatal) {
   DVLOG(3) << "WebSocketEventHandler::OnSSLCertificateError"
@@ -284,7 +286,7 @@ void WebSocket::WebSocketEventHandler::OnSSLCertificateError(
            << " cert_status=" << ssl_info.cert_status << " fatal=" << fatal;
   impl_->delegate_->OnSSLCertificateError(std::move(callbacks), url,
                                           impl_->child_id_, impl_->frame_id_,
-                                          ssl_info, fatal);
+                                          net_error, ssl_info, fatal);
 }
 
 int WebSocket::WebSocketEventHandler::OnAuthRequired(

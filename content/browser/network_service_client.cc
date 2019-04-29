@@ -487,6 +487,7 @@ void NetworkServiceClient::OnSSLCertificateError(
     uint32_t request_id,
     int32_t resource_type,
     const GURL& url,
+    int net_error,
     const net::SSLInfo& ssl_info,
     bool fatal,
     OnSSLCertificateErrorCallback response) {
@@ -496,7 +497,7 @@ void NetworkServiceClient::OnSSLCertificateError(
       base::BindRepeating(GetWebContents, process_id, routing_id);
   SSLManager::OnSSLCertificateError(
       delegate->GetWeakPtr(), static_cast<ResourceType>(resource_type), url,
-      std::move(web_contents_getter), ssl_info, fatal);
+      std::move(web_contents_getter), net_error, ssl_info, fatal);
 }
 
 #if defined(OS_CHROMEOS)

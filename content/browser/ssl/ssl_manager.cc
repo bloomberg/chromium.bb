@@ -110,12 +110,13 @@ void HandleSSLErrorOnUI(
     BrowserThread::ID delegate_thread,
     const ResourceType resource_type,
     const GURL& url,
+    int net_error,
     const net::SSLInfo& ssl_info,
     bool fatal) {
   content::WebContents* web_contents = web_contents_getter.Run();
   std::unique_ptr<SSLErrorHandler> handler(
       new SSLErrorHandler(web_contents, delegate, delegate_thread,
-                          resource_type, url, ssl_info, fatal));
+                          resource_type, url, net_error, ssl_info, fatal));
 
   if (!web_contents) {
     // Requests can fail to dispatch because they don't have a WebContents. See
@@ -154,18 +155,18 @@ void SSLManager::OnSSLCertificateError(
     const ResourceType resource_type,
     const GURL& url,
     const base::Callback<WebContents*(void)>& web_contents_getter,
+    int net_error,
     const net::SSLInfo& ssl_info,
     bool fatal) {
   DCHECK(delegate.get());
-  DVLOG(1) << "OnSSLCertificateError() cert_error: "
-           << net::MapCertStatusToNetError(ssl_info.cert_status)
+  DVLOG(1) << "OnSSLCertificateError() cert_error: " << net_error
            << " resource_type: " << static_cast<int>(resource_type)
            << " url: " << url.spec() << " cert_status: " << std::hex
            << ssl_info.cert_status;
 
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     HandleSSLErrorOnUI(web_contents_getter, delegate, BrowserThread::UI,
-                       resource_type, url, ssl_info, fatal);
+                       resource_type, url, net_error, ssl_info, fatal);
     return;
   }
 
@@ -174,7 +175,8 @@ void SSLManager::OnSSLCertificateError(
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&HandleSSLErrorOnUI, web_contents_getter, delegate,
-                     BrowserThread::IO, resource_type, url, ssl_info, fatal));
+                     BrowserThread::IO, resource_type, url, net_error, ssl_info,
+                     fatal));
 }
 
 // static
@@ -183,12 +185,13 @@ void SSLManager::OnSSLCertificateSubresourceError(
     const GURL& url,
     int render_process_id,
     int render_frame_id,
+    int net_error,
     const net::SSLInfo& ssl_info,
     bool fatal) {
   OnSSLCertificateError(delegate, ResourceType::kSubResource, url,
                         base::Bind(&WebContentsImpl::FromRenderFrameHostID,
                                    render_process_id, render_frame_id),
-                        ssl_info, fatal);
+                        net_error, ssl_info, fatal);
 }
 
 SSLManager::SSLManager(NavigationControllerImpl* controller)

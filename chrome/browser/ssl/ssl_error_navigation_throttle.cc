@@ -56,8 +56,9 @@ SSLErrorNavigationThrottle::WillFailRequest() {
   const net::SSLInfo info = handle->GetSSLInfo().value_or(net::SSLInfo());
   int cert_status = info.cert_status;
   QueueShowInterstitial(std::move(handle_ssl_error_callback_),
-                        handle->GetWebContents(), cert_status, info,
-                        handle->GetURL(), std::move(ssl_cert_reporter_));
+                        handle->GetWebContents(), handle->GetNetErrorCode(),
+                        cert_status, info, handle->GetURL(),
+                        std::move(ssl_cert_reporter_));
   return content::NavigationThrottle::ThrottleCheckResult(
       content::NavigationThrottle::DEFER);
 }
@@ -90,9 +91,14 @@ SSLErrorNavigationThrottle::WillProcessResponse() {
       chrome::FindBrowserWithWebContents(handle->GetWebContents());
   if (browser &&
       WebAppBrowserController::IsForExperimentalWebAppBrowser(browser)) {
-    QueueShowInterstitial(std::move(handle_ssl_error_callback_),
-                          handle->GetWebContents(), cert_status, info,
-                          handle->GetURL(), std::move(ssl_cert_reporter_));
+    QueueShowInterstitial(
+        std::move(handle_ssl_error_callback_), handle->GetWebContents(),
+        // The navigation handle's net error code will be
+        // net::OK, because the net stack has allowed the
+        // response to proceed. Synthesize a net error from
+        // the cert status instead.
+        net::MapCertStatusToNetError(cert_status), cert_status, info,
+        handle->GetURL(), std::move(ssl_cert_reporter_));
     return content::NavigationThrottle::ThrottleCheckResult(
         content::NavigationThrottle::DEFER);
   }
@@ -108,6 +114,7 @@ const char* SSLErrorNavigationThrottle::GetNameForLogging() {
 void SSLErrorNavigationThrottle::QueueShowInterstitial(
     HandleSSLErrorCallback handle_ssl_error_callback,
     content::WebContents* web_contents,
+    int net_error,
     int cert_status,
     const net::SSLInfo& ssl_info,
     const GURL& request_url,
@@ -116,24 +123,21 @@ void SSLErrorNavigationThrottle::QueueShowInterstitial(
   // call ShowInterstitial asynchronously, giving the throttle time to defer the
   // navigation.
   std::move(handle_ssl_error_callback)
-      .Run(web_contents, net::MapCertStatusToNetError(cert_status), ssl_info,
-           request_url, false /* expired_previous_decision */,
-           std::move(ssl_cert_reporter),
+      .Run(web_contents, net_error, ssl_info, request_url,
+           false /* expired_previous_decision */, std::move(ssl_cert_reporter),
            base::Callback<void(content::CertificateRequestResultType)>(),
            base::BindOnce(&SSLErrorNavigationThrottle::ShowInterstitial,
-                          weak_ptr_factory_.GetWeakPtr()));
+                          weak_ptr_factory_.GetWeakPtr(), net_error));
 }
 
 void SSLErrorNavigationThrottle::ShowInterstitial(
+    int net_error,
     std::unique_ptr<security_interstitials::SecurityInterstitialPage>
         blocking_page) {
-  content::NavigationHandle* handle = navigation_handle();
-  int net_error =
-      net::MapCertStatusToNetError(handle->GetSSLInfo()->cert_status);
-
   // Get the error page content before giving up ownership of |blocking_page|.
   std::string error_page_content = blocking_page->GetHTMLContents();
 
+  content::NavigationHandle* handle = navigation_handle();
   security_interstitials::SecurityInterstitialTabHelper::AssociateBlockingPage(
       handle->GetWebContents(), handle->GetNavigationId(),
       std::move(blocking_page));

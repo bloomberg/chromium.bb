@@ -51,6 +51,7 @@ class CONTENT_EXPORT SSLManager {
       ResourceType resource_type,
       const GURL& url,
       const base::Callback<WebContents*(void)>& web_contents_getter,
+      int net_error,
       const net::SSLInfo& ssl_info,
       bool fatal);
 
@@ -62,6 +63,7 @@ class CONTENT_EXPORT SSLManager {
       const GURL& url,
       int render_process_id,
       int render_frame_id,
+      int net_error,
       const net::SSLInfo& ssl_info,
       bool fatal);
 

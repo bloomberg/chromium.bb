@@ -123,6 +123,7 @@ class NET_EXPORT WebSocketEventInterface {
   virtual void OnSSLCertificateError(
       std::unique_ptr<SSLErrorCallbacks> ssl_error_callbacks,
       const GURL& url,
+      int net_error,
       const SSLInfo& ssl_info,
       bool fatal) = 0;
 

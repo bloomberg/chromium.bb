@@ -214,8 +214,7 @@ void SSLErrorControllerClient::Proceed() {
       profile->GetSSLHostStateDelegate());
   // ChromeSSLHostStateDelegate can be null during tests.
   if (state) {
-    state->AllowCert(request_url_.host(), *ssl_info_.cert.get(),
-                     net::MapCertStatusToNetError(ssl_info_.cert_status));
+    state->AllowCert(request_url_.host(), *ssl_info_.cert.get(), cert_error_);
     Reload();
   }
 }

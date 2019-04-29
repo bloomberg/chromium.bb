@@ -197,6 +197,7 @@ class MockWebSocketEventInterface : public WebSocketEventInterface {
   void OnSSLCertificateError(
       std::unique_ptr<SSLErrorCallbacks> ssl_error_callbacks,
       const GURL& url,
+      int net_error,
       const SSLInfo& ssl_info,
       bool fatal) override {
     OnSSLCertificateErrorCalled(
@@ -247,6 +248,7 @@ class FakeWebSocketEventInterface : public WebSocketEventInterface {
   void OnSSLCertificateError(
       std::unique_ptr<SSLErrorCallbacks> ssl_error_callbacks,
       const GURL& url,
+      int net_error,
       const SSLInfo& ssl_info,
       bool fatal) override {}
   int OnAuthRequired(const AuthChallengeInfo& auth_info,

@@ -52,6 +52,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
         const GURL& url,
         int child_id,
         int frame_id,
+        int net_error,
         const net::SSLInfo& ssl_info,
         bool fatal) = 0;
     // This function may delete |impl|.

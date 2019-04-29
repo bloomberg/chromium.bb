@@ -37,6 +37,7 @@ class WebSocketFactory::Delegate final : public WebSocket::Delegate {
       const GURL& url,
       int process_id,
       int render_frame_id,
+      int net_error,
       const net::SSLInfo& ssl_info,
       bool fatal) override {
     DCHECK(!callbacks_);
@@ -52,8 +53,8 @@ class WebSocketFactory::Delegate final : public WebSocket::Delegate {
     constexpr uint32_t request_id = static_cast<uint32_t>(-1);
 
     network_service->client()->OnSSLCertificateError(
-        process_id, render_frame_id, request_id, resource_type, url, ssl_info,
-        fatal,
+        process_id, render_frame_id, request_id, resource_type, url, net_error,
+        ssl_info, fatal,
         base::BindRepeating(&Delegate::OnSSLCertificateErrorResponse,
                             weak_factory_.GetWeakPtr(), ssl_info));
   }

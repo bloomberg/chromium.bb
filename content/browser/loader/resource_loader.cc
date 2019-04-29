@@ -449,7 +449,7 @@ void ResourceLoader::OnSSLCertificateError(net::URLRequest* request,
 
   SSLManager::OnSSLCertificateError(
       weak_ptr_factory_.GetWeakPtr(), info->GetResourceType(), request_->url(),
-      info->GetWebContentsGetterForRequest(), ssl_info, fatal);
+      info->GetWebContentsGetterForRequest(), net_error, ssl_info, fatal);
 }
 
 void ResourceLoader::OnResponseStarted(net::URLRequest* unused, int net_error) {

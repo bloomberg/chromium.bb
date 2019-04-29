@@ -46,6 +46,7 @@ SSLErrorHandler::SSLErrorHandler(WebContents* web_contents,
                                  BrowserThread::ID delegate_thread,
                                  ResourceType resource_type,
                                  const GURL& url,
+                                 int net_error,
                                  const net::SSLInfo& ssl_info,
                                  bool fatal)
     : delegate_(delegate),
@@ -53,7 +54,7 @@ SSLErrorHandler::SSLErrorHandler(WebContents* web_contents,
       request_url_(url),
       resource_type_(resource_type),
       ssl_info_(ssl_info),
-      cert_error_(net::MapCertStatusToNetError(ssl_info.cert_status)),
+      cert_error_(net_error),
       fatal_(fatal),
       web_contents_(web_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

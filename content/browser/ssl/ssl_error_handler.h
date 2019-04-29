@@ -53,6 +53,7 @@ class SSLErrorHandler {
                   BrowserThread::ID delegate_thread,
                   ResourceType resource_type,
                   const GURL& url,
+                  int net_error,
                   const net::SSLInfo& ssl_info,
                   bool fatal);
 

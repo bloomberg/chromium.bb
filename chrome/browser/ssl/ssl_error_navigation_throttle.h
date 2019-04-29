@@ -58,11 +58,13 @@ class SSLErrorNavigationThrottle : public content::NavigationThrottle {
   void QueueShowInterstitial(
       HandleSSLErrorCallback handle_ssl_error_callback,
       content::WebContents* web_contents,
+      int net_error,
       int cert_status,
       const net::SSLInfo& ssl_info,
       const GURL& request_url,
       std::unique_ptr<SSLCertReporter> ssl_cert_reporter);
   void ShowInterstitial(
+      int net_error,
       std::unique_ptr<security_interstitials::SecurityInterstitialPage>
           blocking_page);
 
