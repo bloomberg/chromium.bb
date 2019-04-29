@@ -90,6 +90,11 @@ public class NotificationConstants {
     public static final int NOTIFICATION_ID_DOWNLOAD_SUMMARY = 999999;
 
     /**
+     * Unique identifier for a single update notification.
+     */
+    public static final int NOTIFICATION_ID_UPDATE = 8;
+
+    /**
      * Separator used to separate the notification origin from additional data such as the
      * developer specified tag. This and the prefix following it need to be the same as the one
      * specified in notification_id_generator.cc.

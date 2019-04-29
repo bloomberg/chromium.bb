@@ -319,6 +319,9 @@ CHAR-LIMIT guidelines:
       <message name="IDS_NOTIFICATION_CATEGORY_VR" desc="Label for notifications in VR, within a list of notification categories. [CHAR-LIMIT=32]">
         Virtual Reality
       </message>
+      <message name="IDS_NOTIFICATION_CATEGORY_UPDATES" desc="Label for update notifications, within a list of notification categories. [CHAR-LIMIT=32]">
+       Updates
+      </message>
 
       <!-- Sign-in, sync and personalization preferences -->
       <message name="IDS_PREFS_SECTION_ACCOUNT" desc="Title for the group of account-related entries in Settings. [CHAR-LIMIT=32]">
@@ -2044,11 +2047,23 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
 
       <!-- Update Notification-->
-      <message name="IDS_UPDATE_NOTIFICATION_TITLE" desc="Title of update notification to remind user to update Chrome.">
+      <message name="IDS_UPDATE_NOTIFICATION_TITLE_DEFAULT" desc="Default title of update notification to remind user to update Chrome.">
         Update Chrome
       </message>
-      <message name="IDS_UPDATE_NOTIFICATION_TEXT_BODY" desc="Text showing in the update notification body, kindly telling user to update to the latest version of Chrome.">
-        You are on an outdated version of Chrome. Open Chrome to update for a safer browsing experience.
+      <message name="IDS_UPDATE_NOTIFICATION_TEXT_BODY_DEFAULT" desc="Default text showing in the update notification body, kindly telling user to update to the latest version of Chrome.">
+        For the best browsing experience, open to update Chrome
+      </message>
+      <message name="IDS_UPDATE_NOTIFICATION_TITLE_EXPERIMENTAL_UPDATE_CHROME" desc="Experimental version A title of update notification to remind user to update Chrome.">
+        Update Chrome
+      </message>
+      <message name="IDS_UPDATE_NOTIFICATION_TEXT_BODY_EXPERIMENTAL_UPDATE_CHROME" desc="Experimental version A text showing in the update notification body, kindly telling user to update to the latest version of Chrome.">
+        To see the web in your language, get the latest version of Chrome
+      </message>
+      <message name="IDS_UPDATE_NOTIFICATION_TITLE_EXPERIMENTAL_TRANSLATE_THE_WEB" desc="Experimental version B title of update notification to remind user to update Chrome.">
+        Translate the Web
+      </message>
+      <message name="IDS_UPDATE_NOTIFICATION_TEXT_BODY_EXPERIMENTAL_TRANSLATE_THE_WEB" desc="Experimental version B text showing in the update notification body, kindly telling user to update to the latest version of Chrome.">
+        Update to get your language in the latest version of Chrome
       </message>
 
       <!-- TranslateInfoBar -->

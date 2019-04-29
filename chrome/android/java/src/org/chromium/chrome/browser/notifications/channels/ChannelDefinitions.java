@@ -53,11 +53,9 @@ public class ChannelDefinitions {
      * and add the ID to the LEGACY_CHANNELS_ID array below. See the README in this directory for
      * more detailed instructions.
      */
-    @StringDef({
-            ChannelId.BROWSER, ChannelId.DOWNLOADS, ChannelId.INCOGNITO, ChannelId.MEDIA,
+    @StringDef({ChannelId.BROWSER, ChannelId.DOWNLOADS, ChannelId.INCOGNITO, ChannelId.MEDIA,
             ChannelId.SCREEN_CAPTURE, ChannelId.CONTENT_SUGGESTIONS, ChannelId.WEBAPP_ACTIONS,
-            ChannelId.SITES, ChannelId.SHARING
-    })
+            ChannelId.SITES, ChannelId.SHARING, ChannelId.UPDATES})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ChannelId {
         String BROWSER = "browser";
@@ -71,6 +69,7 @@ public class ChannelDefinitions {
         String SITES = "sites";
         String VR = "vr";
         String SHARING = "sharing";
+        String UPDATES = "updates";
     }
 
     @StringDef({
@@ -163,6 +162,10 @@ public class ChannelDefinitions {
             // notifications to show up in VR.
             map.put(ChannelId.VR,
                     new PredefinedChannel(ChannelId.VR, R.string.notification_category_vr,
+                            NotificationManager.IMPORTANCE_HIGH, ChannelGroupId.GENERAL));
+
+            map.put(ChannelId.UPDATES,
+                    new PredefinedChannel(ChannelId.UPDATES, R.string.notification_category_updates,
                             NotificationManager.IMPORTANCE_HIGH, ChannelGroupId.GENERAL));
 
             MAP = Collections.unmodifiableMap(map);
