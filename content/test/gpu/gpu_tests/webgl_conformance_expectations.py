@@ -524,6 +524,12 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'passthrough', 'vulkan', 'amd'], bug=931016)
     self.Fail('conformance/glsl/bugs/assign-to-swizzled-twice-in-function.html',
         ['win', 'passthrough', 'vulkan', 'amd'], bug=3343) # ANGLE bug ID
+    self.Fail('conformance/glsl/samplers/glsl-function-texture2dproj.html',
+        ['win', 'passthrough', 'amd', 'vulkan'], bug=957644)
+    self.Fail('conformance/glsl/samplers/glsl-function-texture2dprojlod.html',
+        ['win', 'passthrough', 'amd', 'vulkan'], bug=957644)
+    self.Fail('conformance/textures/misc/texture-corner-case-videos.html',
+        ['win', 'passthrough', 'amd', 'vulkan'], bug=957644)
 
     # Mac failures
     self.Fail('conformance/glsl/misc/fragcolor-fragdata-invariant.html',
