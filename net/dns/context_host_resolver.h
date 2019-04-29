@@ -19,6 +19,7 @@ class TickClock;
 
 namespace net {
 
+class DnsClient;
 struct DnsConfig;
 class HostCache;
 class HostResolverManager;
@@ -51,6 +52,7 @@ class NET_EXPORT ContextHostResolver : public HostResolver {
   std::unique_ptr<MdnsListener> CreateMdnsListener(
       const HostPortPair& host,
       DnsQueryType query_type) override;
+  void SetDnsClientEnabled(bool enabled) override;
   HostCache* GetHostCache() override;
   bool HasCached(base::StringPiece hostname,
                  HostCache::Entry::Source* source_out,
@@ -73,6 +75,7 @@ class NET_EXPORT ContextHostResolver : public HostResolver {
   size_t CacheSize() const;
 
   void SetProcParamsForTesting(const ProcTaskParams& proc_params);
+  void SetDnsClientForTesting(std::unique_ptr<DnsClient> dns_client);
   void SetBaseDnsConfigForTesting(const DnsConfig& base_config);
   void SetTickClockForTesting(const base::TickClock* tick_clock);
 

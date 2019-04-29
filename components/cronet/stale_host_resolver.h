@@ -84,6 +84,7 @@ class StaleHostResolver : public net::HostResolver {
 
   // The remaining public methods pass through to the inner resolver:
 
+  void SetDnsClientEnabled(bool enabled) override;
   net::HostCache* GetHostCache() override;
   bool HasCached(base::StringPiece hostname,
                  net::HostCache::Entry::Source* source_out,

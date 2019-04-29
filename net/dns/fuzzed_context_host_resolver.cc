@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/dns/fuzzed_host_resolver_util.h"
+#include "net/dns/fuzzed_context_host_resolver.h"
 
 #include <stdint.h>
 #include <algorithm>
@@ -26,7 +26,6 @@
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
-#include "net/dns/context_host_resolver.h"
 #include "net/dns/dns_client.h"
 #include "net/dns/dns_config.h"
 #include "net/dns/dns_hosts.h"
@@ -38,7 +37,6 @@
 #include "net/log/net_log.h"
 #include "net/log/net_log_with_source.h"
 #include "net/socket/datagram_server_socket.h"
-#include "net/socket/fuzzed_socket_factory.h"
 
 namespace net {
 
@@ -309,12 +307,7 @@ class FuzzedHostResolverManager : public HostResolverManager {
       : HostResolverManager(options, net_log),
         data_provider_(data_provider),
         is_ipv6_reachable_(data_provider->ConsumeBool()),
-        socket_factory_(data_provider_),
-        net_log_(net_log),
         data_provider_weak_factory_(data_provider) {
-    // Use SetDnsClientEnabled() to ensure fuzzed client is used.
-    DCHECK(!options.dns_client_enabled);
-
     ProcTaskParams proc_task_params(
         new FuzzedHostResolverProc(data_provider_weak_factory_.GetWeakPtr()),
         // Retries are only used when the original request hangs, which this
@@ -327,15 +320,6 @@ class FuzzedHostResolverManager : public HostResolverManager {
   }
 
   ~FuzzedHostResolverManager() override = default;
-
-  // Enable / disable the async resolver. When enabled, installs a
-  // DnsClient with fuzzed UDP and TCP sockets.
-  void SetDnsClientEnabled(bool enabled) override;
-
-  void SetDnsClientForTesting(std::unique_ptr<DnsClient> dns_client) {
-    // Should only call SetDnsClientEnabled() to ensure a fuzzed client is used.
-    NOTREACHED();
-  }
 
  private:
   // HostResolverManager implementation:
@@ -353,19 +337,32 @@ class FuzzedHostResolverManager : public HostResolverManager {
   // Fixed value to be returned by IsIPv6Reachable.
   const bool is_ipv6_reachable_;
 
-  // Used for UDP and TCP sockets if the async resolver is enabled.
-  FuzzedSocketFactory socket_factory_;
-
-  NetLog* const net_log_;
-
   base::WeakPtrFactory<base::FuzzedDataProvider> data_provider_weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FuzzedHostResolverManager);
 };
 
-void FuzzedHostResolverManager::SetDnsClientEnabled(bool enabled) {
+}  // namespace
+
+FuzzedContextHostResolver::FuzzedContextHostResolver(
+    const ManagerOptions& options,
+    NetLog* net_log,
+    base::FuzzedDataProvider* data_provider,
+    bool enable_caching)
+    : ContextHostResolver(
+          std::make_unique<FuzzedHostResolverManager>(options,
+                                                      net_log,
+                                                      data_provider),
+          enable_caching ? HostCache::CreateDefaultCache() : nullptr),
+      data_provider_(data_provider),
+      socket_factory_(data_provider),
+      net_log_(net_log) {}
+
+FuzzedContextHostResolver::~FuzzedContextHostResolver() = default;
+
+void FuzzedContextHostResolver::SetDnsClientEnabled(bool enabled) {
   if (!enabled) {
-    HostResolverManager::SetDnsClientEnabled(false);
+    ContextHostResolver::SetDnsClientEnabled(false);
     return;
   }
 
@@ -427,29 +424,7 @@ void FuzzedHostResolverManager::SetDnsClientEnabled(bool enabled) {
       base::Bind(&base::FuzzedDataProvider::ConsumeIntegralInRange<int32_t>,
                  base::Unretained(data_provider_)));
   dns_client->SetConfig(config);
-  HostResolverManager::SetDnsClientForTesting(std::move(dns_client));
-}
-
-}  // namespace
-
-std::unique_ptr<ContextHostResolver> CreateFuzzedContextHostResolver(
-    const HostResolver::ManagerOptions& options,
-    NetLog* net_log,
-    base::FuzzedDataProvider* data_provider,
-    bool enable_caching) {
-  // FuzzedHostResolverManager only handles fuzzing DnsClient when enabled
-  // through SetDnsClientEnabled().
-  bool enable_dns_client = options.dns_client_enabled;
-  HostResolver::ManagerOptions filtered_options(options);
-  filtered_options.dns_client_enabled = false;
-
-  auto manager = std::make_unique<FuzzedHostResolverManager>(
-      filtered_options, net_log, data_provider);
-  manager->SetDnsClientEnabled(enable_dns_client);
-
-  return std::make_unique<ContextHostResolver>(
-      std::move(manager),
-      enable_caching ? HostCache::CreateDefaultCache() : nullptr);
+  SetDnsClientForTesting(std::move(dns_client));
 }
 
 }  // namespace net

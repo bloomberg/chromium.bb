@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "base/time/tick_clock.h"
+#include "net/dns/dns_client.h"
 #include "net/dns/dns_config.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver_manager.h"
@@ -131,6 +132,10 @@ ContextHostResolver::CreateMdnsListener(const HostPortPair& host,
   return manager_->CreateMdnsListener(host, query_type);
 }
 
+void ContextHostResolver::SetDnsClientEnabled(bool enabled) {
+  manager_->SetDnsClientEnabled(enabled);
+}
+
 HostCache* ContextHostResolver::GetHostCache() {
   return host_cache_.get();
 }
@@ -198,6 +203,11 @@ size_t ContextHostResolver::CacheSize() const {
 void ContextHostResolver::SetProcParamsForTesting(
     const ProcTaskParams& proc_params) {
   manager_->set_proc_params_for_test(proc_params);
+}
+
+void ContextHostResolver::SetDnsClientForTesting(
+    std::unique_ptr<DnsClient> dns_client) {
+  manager_->SetDnsClient(std::move(dns_client));
 }
 
 void ContextHostResolver::SetBaseDnsConfigForTesting(

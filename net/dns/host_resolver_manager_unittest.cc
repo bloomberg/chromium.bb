@@ -3385,7 +3385,7 @@ class HostResolverManagerDnsTest : public HostResolverManagerTest {
     auto dns_client =
         std::make_unique<MockDnsClient>(DnsConfig(), std::move(rules));
     dns_client_ = dns_client.get();
-    resolver_->SetDnsClientForTesting(std::move(dns_client));
+    resolver_->SetDnsClient(std::move(dns_client));
     if (!config.Equals(DnsConfig()))
       ChangeDnsConfig(config);
   }
@@ -3788,7 +3788,7 @@ TEST_F(HostResolverManagerDnsTest, FallbackOnAbortBySource_Any) {
 
   // Simulate the case when the preference or policy has disabled the DNS client
   // causing AbortDnsTasks.
-  resolver_->SetDnsClientEnabled(false);
+  resolver_->SetDnsClient(nullptr);
 
   // All requests should fallback to proc resolver.
   EXPECT_THAT(response0.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
@@ -3821,7 +3821,7 @@ TEST_F(HostResolverManagerDnsTest, FallbackOnAbortBySource_Dns) {
 
   // Simulate the case when the preference or policy has disabled the DNS client
   // causing AbortDnsTasks.
-  resolver_->SetDnsClientEnabled(false);
+  resolver_->SetDnsClient(nullptr);
 
   // No fallback expected.  All requests should fail.
   EXPECT_THAT(response0.result_error(), IsError(ERR_NETWORK_CHANGED));
@@ -4240,7 +4240,7 @@ TEST_F(HostResolverManagerDnsTest, DualFamilyLocalhost) {
   proc_->AddRuleForAllFamilies(std::string(), std::string());
 
   // Try without DnsClient.
-  resolver_->SetDnsClientEnabled(false);
+  resolver_->SetDnsClient(nullptr);
   ResolveHostResponseHelper system_response(resolver_->CreateRequest(
       HostPortPair("localhost", 80), NetLogWithSource(), base::nullopt,
       request_context_.get(), host_cache_.get()));
@@ -4922,7 +4922,7 @@ TEST_F(HostResolverManagerDnsTest,
 
   // Clear DnsClient.  The two in-progress jobs should fall back to a ProcTask,
   // and the next one should be started with a ProcTask.
-  resolver_->SetDnsClientEnabled(false);
+  resolver_->SetDnsClient(std::unique_ptr<DnsClient>());
 
   // All three in-progress requests should now be running a ProcTask.
   EXPECT_EQ(3u, num_running_dispatcher_jobs());
@@ -5758,7 +5758,7 @@ TEST_F(HostResolverManagerDnsTest, ModeForHistogram) {
   }
 
   // Test system resolver is detected.
-  resolver_->SetDnsClientEnabled(false);
+  resolver_->SetDnsClient(nullptr);
   ChangeDnsConfig(CreateValidDnsConfig());
   EXPECT_EQ(resolver_->mode_for_histogram_,
             HostResolverManager::MODE_FOR_HISTOGRAM_SYSTEM);

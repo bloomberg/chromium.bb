@@ -53,6 +53,7 @@ class NET_EXPORT MappedHostResolver : public HostResolver {
       const NetLogWithSource& net_log,
       const base::Optional<ResolveHostParameters>& optional_parameters)
       override;
+  void SetDnsClientEnabled(bool enabled) override;
   HostCache* GetHostCache() override;
   bool HasCached(base::StringPiece hostname,
                  HostCache::Entry::Source* source_out,

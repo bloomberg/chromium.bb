@@ -463,6 +463,10 @@ bool StaleHostResolver::HasCached(base::StringPiece hostname,
                                     secure_out);
 }
 
+void StaleHostResolver::SetDnsClientEnabled(bool enabled) {
+  inner_resolver_->SetDnsClientEnabled(enabled);
+}
+
 net::HostCache* StaleHostResolver::GetHostCache() {
   return inner_resolver_->GetHostCache();
 }

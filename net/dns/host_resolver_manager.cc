@@ -2376,6 +2376,27 @@ HostResolverManager::~HostResolverManager() {
   NetworkChangeNotifier::RemoveDNSObserver(this);
 }
 
+void HostResolverManager::SetDnsClient(std::unique_ptr<DnsClient> dns_client) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  // DnsClient and config must be updated before aborting DnsTasks, since doing
+  // so may start new jobs.
+  dns_client_ = std::move(dns_client);
+  if (dns_client_ && !dns_client_->GetConfig() &&
+      num_dns_failures_ < kMaximumDnsFailures) {
+    dns_client_->SetConfig(GetBaseDnsConfig(false));
+    num_dns_failures_ = 0;
+  }
+
+  AbortDnsTasks(ERR_NETWORK_CHANGED, false /* fallback_only */);
+  DnsConfig dns_config;
+  if (!HaveDnsConfig())
+    // UpdateModeForHistogram() needs to know the DnsConfig when
+    // !HaveDnsConfig()
+    dns_config = GetBaseDnsConfig(false);
+  UpdateModeForHistogram(dns_config);
+}
+
 std::unique_ptr<HostResolverManager::CancellableRequest>
 HostResolverManager::CreateRequest(
     const HostPortPair& host,
@@ -2423,13 +2444,10 @@ void HostResolverManager::SetDnsClientEnabled(bool enabled) {
 #if defined(ENABLE_BUILT_IN_DNS)
   if (enabled && !dns_client_) {
     SetDnsClient(DnsClient::CreateClient(net_log_));
-    return;
-  }
-#endif
-
-  if (!enabled && dns_client_) {
+  } else if (!enabled && dns_client_) {
     SetDnsClient(nullptr);
   }
+#endif
 }
 
 std::unique_ptr<base::Value> HostResolverManager::GetDnsConfigAsValue() const {
@@ -2523,14 +2541,6 @@ void HostResolverManager::SetBaseDnsConfigForTesting(
     const DnsConfig& base_config) {
   test_base_config_ = base_config;
   UpdateDNSConfig(true);
-}
-
-void HostResolverManager::SetDnsClientForTesting(
-    std::unique_ptr<DnsClient> dns_client) {
-  // Use SetDnsClientEnabled(false) to disable.
-  DCHECK(dns_client);
-
-  SetDnsClient(std::move(dns_client));
 }
 
 void HostResolverManager::SetTaskRunnerForTesting(
@@ -3036,28 +3046,6 @@ void HostResolverManager::AbortAllInProgressJobs() {
 
   if (self)
     dispatcher_->SetLimits(limits);
-}
-
-void HostResolverManager::SetDnsClient(std::unique_ptr<DnsClient> dns_client) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  // DnsClient and config must be updated before aborting DnsTasks, since doing
-  // so may start new jobs.
-  dns_client_ = std::move(dns_client);
-  if (dns_client_ && !dns_client_->GetConfig() &&
-      num_dns_failures_ < kMaximumDnsFailures) {
-    dns_client_->SetConfig(GetBaseDnsConfig(false));
-    num_dns_failures_ = 0;
-  }
-
-  AbortDnsTasks(ERR_NETWORK_CHANGED, false /* fallback_only */);
-  DnsConfig dns_config;
-  if (!HaveDnsConfig()) {
-    // UpdateModeForHistogram() needs to know the DnsConfig when
-    // !HaveDnsConfig()
-    dns_config = GetBaseDnsConfig(false);
-  }
-  UpdateModeForHistogram(dns_config);
 }
 
 void HostResolverManager::AbortDnsTasks(int error, bool fallback_only) {

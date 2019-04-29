@@ -17,8 +17,7 @@
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
-#include "net/dns/context_host_resolver.h"
-#include "net/dns/fuzzed_host_resolver_util.h"
+#include "net/dns/fuzzed_context_host_resolver.h"
 #include "net/dns/host_resolver.h"
 #include "net/log/net_log_with_source.h"
 #include "net/log/test_net_log.h"
@@ -205,11 +204,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     net::HostResolver::ManagerOptions options;
     options.max_concurrent_resolves =
         data_provider.ConsumeIntegralInRange(1, 8);
-    options.dns_client_enabled = data_provider.ConsumeBool();
     bool enable_caching = data_provider.ConsumeBool();
-    std::unique_ptr<net::ContextHostResolver> host_resolver =
-        net::CreateFuzzedContextHostResolver(options, &net_log, &data_provider,
-                                             enable_caching);
+    net::FuzzedContextHostResolver host_resolver(
+        options, &net_log, &data_provider, enable_caching);
+    host_resolver.SetDnsClientEnabled(data_provider.ConsumeBool());
 
     std::vector<std::unique_ptr<DnsRequest>> dns_requests;
     bool done = false;
@@ -220,14 +218,14 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
           done = true;
           break;
         case 1:
-          DnsRequest::CreateRequest(host_resolver.get(), &data_provider,
+          DnsRequest::CreateRequest(&host_resolver, &data_provider,
                                     &dns_requests);
           break;
         case 2:
           DnsRequest::WaitForRequestComplete(&data_provider, &dns_requests);
           break;
         case 3:
-          DnsRequest::CancelRequest(host_resolver.get(), &data_provider,
+          DnsRequest::CancelRequest(&host_resolver, &data_provider,
                                     &dns_requests);
           break;
       }

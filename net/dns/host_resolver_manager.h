@@ -115,6 +115,12 @@ class NET_EXPORT HostResolverManager
   // be called.
   ~HostResolverManager() override;
 
+  // Set the DnsClient to be used for resolution. In case of failure, the
+  // HostResolverProc from ProcTaskParams will be queried. If the DnsClient is
+  // not pre-configured with a valid DnsConfig, a new config is fetched from
+  // NetworkChangeNotifier.
+  void SetDnsClient(std::unique_ptr<DnsClient> dns_client);
+
   // If |host_cache| is non-null, its HostCache::Invalidator must have already
   // been added (via AddHostCacheInvalidator()).
   std::unique_ptr<CancellableRequest> CreateRequest(
@@ -125,16 +131,7 @@ class NET_EXPORT HostResolverManager
       HostCache* host_cache);
   std::unique_ptr<MdnsListener> CreateMdnsListener(const HostPortPair& host,
                                                    DnsQueryType query_type);
-
-  // Enables or disables the built-in asynchronous DnsClient. If enabled, by
-  // default (when no |ResolveHostParameters::source| is specified), the
-  // DnsClient will be used for resolves and, in case of failure, resolution
-  // will fallback to the system resolver (HostResolverProc from
-  // ProcTaskParams). If the DnsClient is not pre-configured with a valid
-  // DnsConfig, a new config is fetched from NetworkChangeNotifier.
-  //
-  // Setting to |true| has no effect if |ENABLE_BUILT_IN_DNS| not defined.
-  virtual void SetDnsClientEnabled(bool enabled);
+  void SetDnsClientEnabled(bool enabled);
 
   std::unique_ptr<base::Value> GetDnsConfigAsValue() const;
 
@@ -177,10 +174,6 @@ class NET_EXPORT HostResolverManager
   void SetMdnsClientForTesting(std::unique_ptr<MDnsClient> client);
 
   void SetBaseDnsConfigForTesting(const DnsConfig& base_config);
-
-  // Similar to SetDnsClientEnabled(true) except allows setting |dns_client|
-  // as the instance to be used.
-  void SetDnsClientForTesting(std::unique_ptr<DnsClient> dns_client);
 
   // Allows the tests to catch slots leaking out of the dispatcher.  One
   // HostResolverManager::Job could occupy multiple PrioritizedDispatcher job
@@ -337,8 +330,6 @@ class NET_EXPORT HostResolverManager
   // Aborts all in progress jobs with ERR_NETWORK_CHANGED and notifies their
   // requests. Might start new jobs.
   void AbortAllInProgressJobs();
-
-  void SetDnsClient(std::unique_ptr<DnsClient> dns_client);
 
   // Aborts all in progress DnsTasks. In-progress jobs will fall back to
   // ProcTasks if able and otherwise abort with |error|. Might start new jobs,
