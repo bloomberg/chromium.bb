@@ -4,6 +4,7 @@
 
 #include "ash/wm/overview/drop_target_view.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/wm/overview/overview_constants.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -50,11 +51,13 @@ DropTargetView::DropTargetView(bool has_plus_icon) {
   background_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
   background_view_->layer()->SetColor(kDropTargetBackgroundColor);
   background_view_->layer()->SetOpacity(kDropTargetBackgroundOpacity);
-  const std::array<uint32_t, 4> kRadii = {
-      kOverviewWindowRoundingDp, kOverviewWindowRoundingDp,
-      kOverviewWindowRoundingDp, kOverviewWindowRoundingDp};
-  background_view_->layer()->SetRoundedCornerRadius(kRadii);
-  background_view_->layer()->SetIsFastRoundedCorner(true);
+  if (ash::features::ShouldUseShaderRoundedCorner()) {
+    const std::array<uint32_t, 4> kRadii = {
+        kOverviewWindowRoundingDp, kOverviewWindowRoundingDp,
+        kOverviewWindowRoundingDp, kOverviewWindowRoundingDp};
+    background_view_->layer()->SetRoundedCornerRadius(kRadii);
+    background_view_->layer()->SetIsFastRoundedCorner(true);
+  }
   AddChildView(background_view_);
 
   if (has_plus_icon) {
