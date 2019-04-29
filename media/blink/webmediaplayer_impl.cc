@@ -2646,7 +2646,7 @@ void WebMediaPlayerImpl::StartPipeline() {
   // If possible attempt to avoid decoder spool up until playback starts.
   Pipeline::StartType start_type = Pipeline::StartType::kNormal;
   if (!chunk_demuxer_ && preload_ == MultibufferDataSource::METADATA &&
-      !client_->CouldPlayIfEnoughData()) {
+      !client_->CouldPlayIfEnoughData() && !IsStreaming()) {
     start_type =
         (has_poster_ || base::FeatureList::IsEnabled(kPreloadMetadataLazyLoad))
             ? Pipeline::StartType::kSuspendAfterMetadata

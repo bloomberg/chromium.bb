@@ -575,9 +575,17 @@ class WebMediaPlayerImplTest : public testing::Test {
     return GetVideoStatsReporter()->codec_profile_;
   }
 
-  void Load(std::string data_file) {
-    // URL doesn't matter, it's value is unknown to the underlying demuxer.
-    const GURL kTestURL("file://example.com/sample.webm");
+  enum class LoadType { kFullyBuffered, kStreaming };
+  void Load(std::string data_file,
+            LoadType load_type = LoadType::kFullyBuffered) {
+    const bool is_streaming = load_type == LoadType::kStreaming;
+
+    // The URL is used by MultibufferDataSource to determine if it should assume
+    // the resource is fully buffered locally. We can use a fake one here since
+    // we're injecting the response artificially. It's value is unknown to the
+    // underlying demuxer.
+    const GURL kTestURL(std::string(is_streaming ? "http" : "file") +
+                        "://example.com/sample.webm");
 
     // This block sets up a fetch context which ultimately provides us a pointer
     // to the WebAssociatedURLLoaderClient handed out by the DataSource after it
@@ -603,19 +611,25 @@ class WebMediaPlayerImplTest : public testing::Test {
     scoped_refptr<DecoderBuffer> data = ReadTestDataFile(data_file);
 
     // "Serve" the file to the DataSource. Note: We respond with 200 okay, which
-    // will prevent range requests or partial responses from being used.
+    // will prevent range requests or partial responses from being used. For
+    // streaming responses, we'll pretend we don't know the content length.
     blink::WebURLResponse response(kTestURL);
     response.SetHttpHeaderField(
         blink::WebString::FromUTF8("Content-Length"),
-        blink::WebString::FromUTF8(base::NumberToString(data->data_size())));
-    response.SetExpectedContentLength(data->data_size());
+        blink::WebString::FromUTF8(
+            is_streaming ? "-1" : base::NumberToString(data->data_size())));
+    response.SetExpectedContentLength(is_streaming ? -1 : data->data_size());
     response.SetHttpStatusCode(200);
     client->DidReceiveResponse(response);
 
-    // Copy over the file data and indicate that's everything.
+    // Copy over the file data.
     client->DidReceiveData(reinterpret_cast<const char*>(data->data()),
                            data->data_size());
-    client->DidFinishLoading();
+
+    // If we're pretending to be a streaming resource, don't complete the load;
+    // otherwise the DataSource will not be marked as streaming.
+    if (!is_streaming)
+      client->DidFinishLoading();
   }
 
   void LoadAndWaitForMetadata(std::string data_file) {
@@ -826,6 +840,37 @@ TEST_F(WebMediaPlayerImplTest, LoadPreloadMetadataSuspend) {
   const int64_t data_source_size = GetDataSourceMemoryUsage();
   EXPECT_GT(data_source_size, 0);
   EXPECT_EQ(reported_memory_ - data_source_size, 0);
+}
+
+// Verify that preload=metadata suspend works properly for streaming sources.
+TEST_F(WebMediaPlayerImplTest, LoadPreloadMetadataSuspendNoStreaming) {
+  InitializeWebMediaPlayerImpl();
+  EXPECT_CALL(client_, CouldPlayIfEnoughData()).WillRepeatedly(Return(false));
+  wmpi_->SetPreload(blink::WebMediaPlayer::kPreloadMetaData);
+
+  // This test needs a file which is larger than the MultiBuffer block size;
+  // otherwise we'll never complete initialization of the MultiBufferDataSource.
+  constexpr char kLargeAudioOnlyTestFile[] = "bear_192kHz.wav";
+  Load(kLargeAudioOnlyTestFile, LoadType::kStreaming);
+
+  // This runs until we reach the have current data state. Attempting to wait
+  // for states < kReadyStateHaveCurrentData is unreliable due to asynchronous
+  // execution of tasks on the base::test:ScopedTaskEnvironment.
+  while (wmpi_->GetReadyState() <
+         blink::WebMediaPlayer::kReadyStateHaveCurrentData) {
+    base::RunLoop loop;
+    EXPECT_CALL(client_, ReadyStateChanged())
+        .WillRepeatedly(RunClosure(loop.QuitClosure()));
+    loop.Run();
+
+    // Clear the mock so it doesn't have a stale QuitClosure.
+    testing::Mock::VerifyAndClearExpectations(&client_);
+  }
+
+  testing::Mock::VerifyAndClearExpectations(&client_);
+  EXPECT_CALL(client_, ReadyStateChanged()).Times(AnyNumber());
+  CycleThreads();
+  EXPECT_FALSE(IsSuspended());
 }
 
 // Verify that lazy load for preload=metadata works properly.
