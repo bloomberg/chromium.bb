@@ -53,7 +53,7 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
       UserVerificationRequirement::kDiscouraged;
   bool user_presence_required = true;
 
-  base::Optional<std::vector<PublicKeyCredentialDescriptor>> allow_list;
+  std::vector<PublicKeyCredentialDescriptor> allow_list;
   base::Optional<std::vector<uint8_t>> pin_auth;
   base::Optional<uint8_t> pin_protocol;
   base::Optional<std::vector<CableDiscoveryData>> cable_extension;

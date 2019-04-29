@@ -27,8 +27,7 @@ U2fSignOperation::U2fSignOperation(FidoDevice* device,
 U2fSignOperation::~U2fSignOperation() = default;
 
 void U2fSignOperation::Start() {
-  const auto& allow_list = request().allow_list;
-  if (allow_list && !allow_list->empty()) {
+  if (!request().allow_list.empty()) {
     if (request().alternative_application_parameter.has_value()) {
       // Try the alternative value first. This is because the U2F Zero
       // authenticator (at least) crashes if we try the wrong AppID first.
@@ -103,7 +102,7 @@ void U2fSignOperation::OnSignResponseReceived(
         // the primary value to try.
         app_param_type_ = ApplicationParameterType::kPrimary;
         TrySign();
-      } else if (++current_key_handle_index_ < request().allow_list->size()) {
+      } else if (++current_key_handle_index_ < request().allow_list.size()) {
         // Key is not for this device. Try signing with the next key.
         if (request().alternative_application_parameter.has_value()) {
           app_param_type_ = ApplicationParameterType::kAlternative;
@@ -179,8 +178,8 @@ void U2fSignOperation::OnEnrollmentResponseReceived(
 }
 
 const std::vector<uint8_t>& U2fSignOperation::key_handle() const {
-  DCHECK_LT(current_key_handle_index_, request().allow_list->size());
-  return request().allow_list->at(current_key_handle_index_).id();
+  DCHECK_LT(current_key_handle_index_, request().allow_list.size());
+  return request().allow_list.at(current_key_handle_index_).id();
 }
 
 }  // namespace device

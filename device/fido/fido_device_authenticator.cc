@@ -275,8 +275,7 @@ FidoDeviceAuthenticator::WillNeedPINToGetAssertion(
                            // The PIN is effectively unavailable if there's no
                            // UI support for collecting it.
                            observer && observer->SupportsPIN();
-  const bool resident_key_request =
-      !request.allow_list || request.allow_list->empty();
+  const bool resident_key_request = request.allow_list.empty();
 
   if (resident_key_request) {
     if (can_use_pin) {

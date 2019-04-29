@@ -30,9 +30,8 @@ bool IsConvertibleToU2fRegisterCommand(
 }
 
 bool IsConvertibleToU2fSignCommand(const CtapGetAssertionRequest& request) {
-  const auto& allow_list = request.allow_list;
   return request.user_verification != UserVerificationRequirement::kRequired &&
-         allow_list && !allow_list->empty();
+         !request.allow_list.empty();
 }
 
 base::Optional<std::vector<uint8_t>> ConvertToU2fRegisterCommand(

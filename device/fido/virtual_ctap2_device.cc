@@ -571,7 +571,14 @@ void VirtualCtap2Device::SetAuthenticatorSupportedOptions(
 CtapDeviceResponseCode VirtualCtap2Device::OnMakeCredential(
     base::span<const uint8_t> request_bytes,
     std::vector<uint8_t>* response) {
-  auto request_and_hash = ParseCtapMakeCredentialRequest(request_bytes);
+  const auto& cbor_request = cbor::Reader::Read(request_bytes);
+  if (!cbor_request || !cbor_request->is_map()) {
+    DLOG(ERROR) << "Incorrectly formatted MakeCredential request.";
+    return CtapDeviceResponseCode::kCtap2ErrOther;
+  }
+
+  auto request_and_hash =
+      ParseCtapMakeCredentialRequest(cbor_request->GetMap());
   if (!request_and_hash) {
     DLOG(ERROR) << "Incorrectly formatted MakeCredential request.";
     return CtapDeviceResponseCode::kCtap2ErrOther;
@@ -715,7 +722,14 @@ CtapDeviceResponseCode VirtualCtap2Device::OnGetAssertion(
     std::vector<uint8_t>* response) {
   // Step numbers in this function refer to
   // https://fidoalliance.org/specs/fido-v2.0-ps-20190130/fido-client-to-authenticator-protocol-v2.0-ps-20190130.html#authenticatorGetAssertion
-  auto request_and_hash = ParseCtapGetAssertionRequest(request_bytes);
+  const auto& cbor_request = cbor::Reader::Read(request_bytes);
+  if (!cbor_request || !cbor_request->is_map()) {
+    DLOG(ERROR) << "Incorrectly formatted MakeCredential request.";
+    return CtapDeviceResponseCode::kCtap2ErrOther;
+  }
+
+  const auto& request_map = cbor_request->GetMap();
+  auto request_and_hash = ParseCtapGetAssertionRequest(request_map);
   if (!request_and_hash) {
     DLOG(ERROR) << "Incorrectly formatted GetAssertion request.";
     return CtapDeviceResponseCode::kCtap2ErrOther;
@@ -736,8 +750,7 @@ CtapDeviceResponseCode VirtualCtap2Device::OnGetAssertion(
   }
 
   // Resident keys are not supported.
-  if (!config_.resident_key_support &&
-      (!request.allow_list || request.allow_list->empty())) {
+  if (!config_.resident_key_support && request.allow_list.empty()) {
     return CtapDeviceResponseCode::kCtap2ErrNoCredentials;
   }
 
@@ -751,25 +764,25 @@ CtapDeviceResponseCode VirtualCtap2Device::OnGetAssertion(
     return CtapDeviceResponseCode::kCtap2ErrUnsupportedOption;
   }
 
-  if (request.allow_list) {
-    if (config_.reject_large_allow_and_exclude_lists &&
-        request.allow_list->size() > 1) {
-      return CtapDeviceResponseCode::kCtap2ErrLimitExceeded;
-    }
+  if (config_.reject_large_allow_and_exclude_lists &&
+      request.allow_list.size() > 1) {
+    return CtapDeviceResponseCode::kCtap2ErrLimitExceeded;
+  }
 
-    // An empty allow_list could be considered to be a resident-key request, but
-    // some authenticators in practice don't take it that way. Thus this code
-    // mirrors that to better reflect reality. CTAP 2.0 leaves it as undefined
-    // behaviour.
-    for (const auto& allowed_credential : *request.allow_list) {
-      RegistrationData* found =
-          FindRegistrationData(allowed_credential.id(), rp_id_hash);
-      if (found) {
-        found_registrations.emplace_back(allowed_credential.id(), found);
-        break;
-      }
+  // An empty allow_list could be considered to be a resident-key request, but
+  // some authenticators in practice don't take it that way. Thus this code
+  // mirrors that to better reflect reality. CTAP 2.0 leaves it as undefined
+  // behaviour.
+  for (const auto& allowed_credential : request.allow_list) {
+    RegistrationData* found =
+        FindRegistrationData(allowed_credential.id(), rp_id_hash);
+    if (found) {
+      found_registrations.emplace_back(allowed_credential.id(), found);
+      break;
     }
-  } else {
+  }
+  const auto allow_list_it = request_map.find(cbor::Value(3));
+  if (allow_list_it == request_map.end()) {
     DCHECK(config_.resident_key_support);
     for (auto& registration : mutable_state()->registrations) {
       if (registration.second.is_resident &&
@@ -1343,12 +1356,7 @@ AuthenticatorData VirtualCtap2Device::ConstructAuthenticatorData(
 
 base::Optional<std::pair<CtapMakeCredentialRequest,
                          CtapMakeCredentialRequest::ClientDataHash>>
-ParseCtapMakeCredentialRequest(base::span<const uint8_t> request_bytes) {
-  const auto& cbor_request = cbor::Reader::Read(request_bytes);
-  if (!cbor_request || !cbor_request->is_map())
-    return base::nullopt;
-
-  const auto& request_map = cbor_request->GetMap();
+ParseCtapMakeCredentialRequest(const cbor::Value::MapValue& request_map) {
   if (!AreMakeCredentialRequestMapKeysCorrect(request_map))
     return base::nullopt;
 
@@ -1473,12 +1481,7 @@ ParseCtapMakeCredentialRequest(base::span<const uint8_t> request_bytes) {
 
 base::Optional<
     std::pair<CtapGetAssertionRequest, CtapGetAssertionRequest::ClientDataHash>>
-ParseCtapGetAssertionRequest(base::span<const uint8_t> request_bytes) {
-  const auto& cbor_request = cbor::Reader::Read(request_bytes);
-  if (!cbor_request || !cbor_request->is_map())
-    return base::nullopt;
-
-  const auto& request_map = cbor_request->GetMap();
+ParseCtapGetAssertionRequest(const cbor::Value::MapValue& request_map) {
   if (!AreGetAssertionRequestMapKeysCorrect(request_map))
     return base::nullopt;
 

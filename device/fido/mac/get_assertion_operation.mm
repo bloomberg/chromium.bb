@@ -67,18 +67,15 @@ void GetAssertionOperation::PromptTouchIdDone(bool success) {
   // Collect the credential ids from allowList. If allowList is absent, we will
   // pick the first available credential for the RP.
   std::set<std::vector<uint8_t>> allowed_credential_ids;
-  if (request().allow_list) {
-    for (const PublicKeyCredentialDescriptor& desc : *request().allow_list) {
-      if (desc.credential_type() != CredentialType::kPublicKey)
-        continue;
+  for (const PublicKeyCredentialDescriptor& desc : request().allow_list) {
+    if (desc.credential_type() != CredentialType::kPublicKey)
+      continue;
 
-      if (!desc.transports().empty() &&
-          !base::ContainsKey(desc.transports(),
-                             FidoTransportProtocol::kInternal))
-        continue;
+    if (!desc.transports().empty() &&
+        !base::ContainsKey(desc.transports(), FidoTransportProtocol::kInternal))
+      continue;
 
-      allowed_credential_ids.insert(desc.id());
-    }
+    allowed_credential_ids.insert(desc.id());
   }
 
   // Fetch credentials for RP from the request and current user profile.

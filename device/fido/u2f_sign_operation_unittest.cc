@@ -40,10 +40,9 @@ class U2fSignOperationTest : public ::testing::Test {
     CtapGetAssertionRequest request(test_data::kRelyingPartyId,
                                     test_data::kClientDataJson);
 
-    request.allow_list.emplace();
     for (auto& key_handle : key_handles) {
-      request.allow_list->emplace_back(CredentialType::kPublicKey,
-                                       std::move(key_handle));
+      request.allow_list.emplace_back(CredentialType::kPublicKey,
+                                      std::move(key_handle));
     }
     return request;
   }

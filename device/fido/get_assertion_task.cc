@@ -79,10 +79,9 @@ void GetAssertionTask::StartTask() {
 }
 
 CtapGetAssertionRequest GetAssertionTask::NextSilentRequest() {
-  DCHECK(request_.allow_list &&
-         current_credential_ < request_.allow_list->size());
+  DCHECK(current_credential_ < request_.allow_list.size());
   CtapGetAssertionRequest request = request_;
-  request.allow_list = {{request_.allow_list->at(current_credential_)}};
+  request.allow_list = {{request_.allow_list.at(current_credential_)}};
   request.user_presence_required = false;
   request.user_verification = UserVerificationRequirement::kDiscouraged;
   return request;
@@ -96,7 +95,7 @@ void GetAssertionTask::GetAssertion() {
   // support silent probing so don't do it with them.)
   if (device()->DeviceTransport() !=
           FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy &&
-      ((request_.allow_list && request_.allow_list->size() > 1) ||
+      (request_.allow_list.size() > 1 ||
        MayFallbackToU2fWithAppIdExtension(*device(), request_))) {
     sign_operation_ = std::make_unique<Ctap2DeviceOperation<
         CtapGetAssertionRequest, AuthenticatorGetAssertionResponse>>(
@@ -157,7 +156,7 @@ void GetAssertionTask::HandleResponse(
 void GetAssertionTask::HandleResponseToSilentRequest(
     CtapDeviceResponseCode response_code,
     base::Optional<AuthenticatorGetAssertionResponse> response_data) {
-  DCHECK(request_.allow_list && request_.allow_list->size() > 0);
+  DCHECK(request_.allow_list.size() > 0);
 
   if (canceled_) {
     return;
@@ -169,7 +168,7 @@ void GetAssertionTask::HandleResponseToSilentRequest(
   // user verification configuration.
   if (response_code == CtapDeviceResponseCode::kSuccess) {
     CtapGetAssertionRequest request = request_;
-    request.allow_list = {{request_.allow_list->at(current_credential_)}};
+    request.allow_list = {{request_.allow_list.at(current_credential_)}};
     sign_operation_ = std::make_unique<Ctap2DeviceOperation<
         CtapGetAssertionRequest, AuthenticatorGetAssertionResponse>>(
         device(), std::move(request),
@@ -183,7 +182,7 @@ void GetAssertionTask::HandleResponseToSilentRequest(
 
   // Credential was not recognized or an error occurred. Probe the next
   // credential.
-  if (++current_credential_ < request_.allow_list->size()) {
+  if (++current_credential_ < request_.allow_list.size()) {
     sign_operation_ = std::make_unique<Ctap2DeviceOperation<
         CtapGetAssertionRequest, AuthenticatorGetAssertionResponse>>(
         device(), NextSilentRequest(),

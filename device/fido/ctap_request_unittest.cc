@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/cbor/reader.h"
 #include "device/fido/ctap_empty_authenticator_request.h"
 #include "device/fido/ctap_get_assertion_request.h"
 #include "device/fido/ctap_make_credential_request.h"
@@ -86,8 +87,12 @@ TEST(CTAPRequestTest, TestConstructCtapAuthenticatorRequestParam) {
 }
 
 TEST(VirtualCtap2DeviceTest, ParseMakeCredentialRequestForVirtualCtapKey) {
-  const auto request_and_hash = ParseCtapMakeCredentialRequest(
+  const auto& cbor_request = cbor::Reader::Read(
       base::make_span(test_data::kCtapMakeCredentialRequest).subspan(1));
+  ASSERT_TRUE(cbor_request);
+  ASSERT_TRUE(cbor_request->is_map());
+  const auto request_and_hash =
+      ParseCtapMakeCredentialRequest(cbor_request->GetMap());
   ASSERT_TRUE(request_and_hash);
   auto request = std::get<0>(*request_and_hash);
   auto client_data_hash = std::get<1>(*request_and_hash);
@@ -133,9 +138,13 @@ TEST(VirtualCtap2DeviceTest, ParseGetAssertionRequestForVirtualCtapKey) {
       0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03,
       0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03};
 
-  auto request_and_hash = ParseCtapGetAssertionRequest(
+  const auto& cbor_request = cbor::Reader::Read(
       base::make_span(test_data::kTestComplexCtapGetAssertionRequest)
           .subspan(1));
+  ASSERT_TRUE(cbor_request);
+  ASSERT_TRUE(cbor_request->is_map());
+
+  auto request_and_hash = ParseCtapGetAssertionRequest(cbor_request->GetMap());
   ASSERT_TRUE(request_and_hash);
   auto request = std::get<0>(*request_and_hash);
   auto client_data_hash = std::get<1>(*request_and_hash);
@@ -144,12 +153,11 @@ TEST(VirtualCtap2DeviceTest, ParseGetAssertionRequestForVirtualCtapKey) {
   EXPECT_EQ(test_data::kRelyingPartyId, request.rp_id);
   EXPECT_EQ(UserVerificationRequirement::kRequired, request.user_verification);
   EXPECT_FALSE(request.user_presence_required);
-  ASSERT_TRUE(request.allow_list);
-  ASSERT_EQ(2u, request.allow_list->size());
+  ASSERT_EQ(2u, request.allow_list.size());
 
-  EXPECT_THAT(request.allow_list->at(0).id(),
+  EXPECT_THAT(request.allow_list.at(0).id(),
               ::testing::ElementsAreArray(kAllowedCredentialOne));
-  EXPECT_THAT(request.allow_list->at(1).id(),
+  EXPECT_THAT(request.allow_list.at(1).id(),
               ::testing::ElementsAreArray(kAllowedCredentialTwo));
 }
 }  // namespace device

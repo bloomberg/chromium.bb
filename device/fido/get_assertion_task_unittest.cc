@@ -57,10 +57,10 @@ TEST_F(FidoGetAssertionTaskTest, TestGetAssertionSuccess) {
 
   CtapGetAssertionRequest request_param(test_data::kRelyingPartyId,
                                         test_data::kClientDataJson);
-  request_param.allow_list.emplace({PublicKeyCredentialDescriptor(
+  request_param.allow_list.emplace_back(PublicKeyCredentialDescriptor(
       CredentialType::kPublicKey,
       fido_parsing_utils::Materialize(
-          test_data::kTestGetAssertionCredentialId))});
+          test_data::kTestGetAssertionCredentialId)));
 
   auto task = std::make_unique<GetAssertionTask>(
       device.get(), std::move(request_param),
@@ -80,9 +80,9 @@ TEST_F(FidoGetAssertionTaskTest, TestU2fSignSuccess) {
 
   CtapGetAssertionRequest request_param(test_data::kRelyingPartyId,
                                         test_data::kClientDataJson);
-  request_param.allow_list.emplace({PublicKeyCredentialDescriptor(
+  request_param.allow_list.emplace_back(PublicKeyCredentialDescriptor(
       CredentialType::kPublicKey,
-      fido_parsing_utils::Materialize(test_data::kU2fSignKeyHandle))});
+      fido_parsing_utils::Materialize(test_data::kU2fSignKeyHandle)));
 
   auto task = std::make_unique<GetAssertionTask>(
       device.get(), std::move(request_param),
@@ -102,8 +102,8 @@ TEST_F(FidoGetAssertionTaskTest, TestSignSuccessWithFake) {
   std::vector<uint8_t> key_handle(hash.begin(), hash.end());
   CtapGetAssertionRequest request_param(test_data::kRelyingPartyId,
                                         test_data::kClientDataJson);
-  request_param.allow_list.emplace(
-      {PublicKeyCredentialDescriptor(CredentialType::kPublicKey, key_handle)});
+  request_param.allow_list.emplace_back(
+      PublicKeyCredentialDescriptor(CredentialType::kPublicKey, key_handle));
   ;
 
   auto device = std::make_unique<VirtualCtap2Device>();

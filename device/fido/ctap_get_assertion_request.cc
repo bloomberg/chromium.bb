@@ -44,9 +44,9 @@ CtapGetAssertionRequest::EncodeAsCBOR(const CtapGetAssertionRequest& request) {
   cbor_map[cbor::Value(1)] = cbor::Value(request.rp_id);
   cbor_map[cbor::Value(2)] = cbor::Value(request.client_data_hash);
 
-  if (request.allow_list && !request.allow_list->empty()) {
+  if (!request.allow_list.empty()) {
     cbor::Value::ArrayValue allow_list_array;
-    for (const auto& descriptor : *request.allow_list) {
+    for (const auto& descriptor : request.allow_list) {
       allow_list_array.push_back(descriptor.ConvertToCBOR());
     }
     cbor_map[cbor::Value(3)] = cbor::Value(std::move(allow_list_array));

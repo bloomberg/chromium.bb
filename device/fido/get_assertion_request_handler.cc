@@ -56,7 +56,7 @@ bool ResponseValid(const FidoAuthenticator& authenticator,
     return false;
   }
 
-  if ((!request.allow_list || request.allow_list->empty()) && !user_entity) {
+  if (request.allow_list.empty() && !user_entity) {
     return false;
   }
 
@@ -72,7 +72,7 @@ bool ResponseValid(const FidoAuthenticator& authenticator,
   // TODO(hongjunchoi) : Add link to section of the CTAP spec once it is
   // published.
   const auto& allow_list = request.allow_list;
-  if (!allow_list || allow_list->empty()) {
+  if (allow_list.empty()) {
     if (authenticator.Options() &&
         !authenticator.Options()->supports_resident_key) {
       // Allow list can't be empty for authenticators w/o resident key support.
@@ -83,9 +83,9 @@ bool ResponseValid(const FidoAuthenticator& authenticator,
     // allow list has size 1. Otherwise, it needs to match an entry from the
     // allow list
     const auto opt_transport_used = authenticator.AuthenticatorTransport();
-    if ((!response.credential() && allow_list->size() != 1) ||
+    if ((!response.credential() && allow_list.size() != 1) ||
         (response.credential() &&
-         !std::any_of(allow_list->cbegin(), allow_list->cend(),
+         !std::any_of(allow_list.cbegin(), allow_list.cend(),
                       [&response, opt_transport_used](const auto& credential) {
                         return credential.id() ==
                                    response.raw_credential_id() &&
@@ -112,9 +112,8 @@ bool ResponseValid(const FidoAuthenticator& authenticator,
 void SetCredentialIdForResponseWithEmptyCredential(
     const CtapGetAssertionRequest& request,
     AuthenticatorGetAssertionResponse& response) {
-  if (request.allow_list && request.allow_list->size() == 1 &&
-      !response.credential()) {
-    response.SetCredential(request.allow_list->at(0));
+  if (request.allow_list.size() == 1 && !response.credential()) {
+    response.SetCredential(request.allow_list.at(0));
   }
 }
 
@@ -151,15 +150,13 @@ base::flat_set<FidoTransportProtocol> GetTransportsAllowedByRP(
       FidoTransportProtocol::kBluetoothLowEnergy,
       FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy};
 
-  // TODO(https://crbug.com/874479): |allowed_list| will |has_value| even if the
-  // WebAuthn request has `allowCredential` undefined.
   const auto& allowed_list = request.allow_list;
-  if (!allowed_list || allowed_list->empty()) {
+  if (allowed_list.empty()) {
     return kAllTransports;
   }
 
   base::flat_set<FidoTransportProtocol> transports;
-  for (const auto credential : *allowed_list) {
+  for (const auto credential : allowed_list) {
     if (credential.transports().empty())
       return kAllTransports;
     transports.insert(credential.transports().begin(),
@@ -368,8 +365,8 @@ void GetAssertionRequestHandler::HandleResponse(
 
   SetCredentialIdForResponseWithEmptyCredential(request_, *response);
   const size_t num_responses = response->num_credentials().value_or(1);
-  if (num_responses == 0 || (num_responses > 1 && request_.allow_list &&
-                             !request_.allow_list->empty())) {
+  if (num_responses == 0 ||
+      (num_responses > 1 && !request_.allow_list.empty())) {
     OnAuthenticatorResponse(authenticator,
                             FidoReturnCode::kAuthenticatorResponseInvalid,
                             base::nullopt);
