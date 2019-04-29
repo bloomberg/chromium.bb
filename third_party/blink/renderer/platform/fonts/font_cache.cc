@@ -127,9 +127,6 @@ FontPlatformData* FontCache::GetFontPlatformData(
   // Remove the font size from the cache key, and handle the font size
   // separately in the inner HashMap. So that different size of FontPlatformData
   // can share underlying SkTypeface.
-  if (RuntimeEnabledFeatures::FontCacheScalingEnabled())
-    key.ClearFontSize();
-
   FontPlatformData* result;
   bool found_result;
 

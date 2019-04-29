@@ -235,10 +235,6 @@ void SetIndividualRuntimeFeatures(
           features::kPassiveDocumentWheelEventListeners));
 
   WebRuntimeFeatures::EnableFeatureFromString(
-      "FontCacheScaling",
-      base::FeatureList::IsEnabled(features::kFontCacheScaling));
-
-  WebRuntimeFeatures::EnableFeatureFromString(
       "FontSrcLocalMatching",
       base::FeatureList::IsEnabled(features::kFontSrcLocalMatching));
 

@@ -612,7 +612,6 @@ extern const char kExtensionsOnChromeUrlsDescription[];
 extern const char kFeaturePolicyName[];
 extern const char kFeaturePolicyDescription[];
 
-extern const char kFontCacheScalingName[];
 extern const char kFontCacheScalingDescription[];
 
 extern const char kForceEffectiveConnectionTypeName[];

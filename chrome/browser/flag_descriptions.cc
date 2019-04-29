@@ -1018,11 +1018,6 @@ const char kFeaturePolicyDescription[] =
     "Enables granting and removing access to features through the "
     "Feature-Policy HTTP header.";
 
-const char kFontCacheScalingName[] = "FontCache scaling";
-const char kFontCacheScalingDescription[] =
-    "Reuse a cached font in the renderer to serve different sizes of font for "
-    "faster layout.";
-
 const char kForceEffectiveConnectionTypeName[] =
     "Override effective connection type";
 const char kForceEffectiveConnectionTypeDescription[] =
