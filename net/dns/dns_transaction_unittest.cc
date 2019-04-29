@@ -514,9 +514,8 @@ class URLRequestMockDohJob : public URLRequestJob, public AsyncSocket {
       raw_headers.append(base::StringPrintf("Content-Length: %1d\n",
                                             static_cast<int>(content_length_)));
     }
-    info->headers =
-        base::MakeRefCounted<HttpResponseHeaders>(HttpUtil::AssembleRawHeaders(
-            raw_headers.c_str(), static_cast<int>(raw_headers.length())));
+    info->headers = base::MakeRefCounted<HttpResponseHeaders>(
+        HttpUtil::AssembleRawHeaders(raw_headers));
     if (response_modifier_)
       response_modifier_.Run(request(), info);
   }

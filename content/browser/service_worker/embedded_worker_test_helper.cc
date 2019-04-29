@@ -41,8 +41,8 @@ class EmbeddedWorkerTestHelper::MockNetworkURLLoaderFactory final
                                 traffic_annotation) override {
     std::string headers = "HTTP/1.1 200 OK\n\n";
     net::HttpResponseInfo info;
-    info.headers = new net::HttpResponseHeaders(
-        net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.length()));
+    info.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+        net::HttpUtil::AssembleRawHeaders(headers));
     network::ResourceResponseHead response;
     response.headers = info.headers;
     response.headers->GetMimeType(&response.mime_type);

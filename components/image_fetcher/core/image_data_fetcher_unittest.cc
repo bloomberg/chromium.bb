@@ -88,8 +88,8 @@ TEST_F(ImageDataFetcherTest, FetchImageData) {
   std::string raw_header =
       "HTTP/1.1 200 OK\n"
       "Content-type: image/png\n\n";
-  head.headers = new net::HttpResponseHeaders(
-      net::HttpUtil::AssembleRawHeaders(raw_header.c_str(), raw_header.size()));
+  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(raw_header));
   head.mime_type = "image/png";
   network::URLLoaderCompletionStatus status;
   status.decoded_body_length = content.size();
@@ -121,8 +121,8 @@ TEST_F(ImageDataFetcherTest, FetchImageDataWithCookies) {
   std::string raw_header =
       "HTTP/1.1 200 OK\n"
       "Content-type: image/png\n\n";
-  head.headers = new net::HttpResponseHeaders(
-      net::HttpUtil::AssembleRawHeaders(raw_header.c_str(), raw_header.size()));
+  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(raw_header));
   head.mime_type = "image/png";
   network::URLLoaderCompletionStatus status;
   status.decoded_body_length = content.size();
@@ -152,8 +152,8 @@ TEST_F(ImageDataFetcherTest, FetchImageData_NotFound) {
   std::string raw_header =
       "HTTP/1.1 404 Not Found\n"
       "Content-type: image/png\n\n";
-  head.headers = new net::HttpResponseHeaders(
-      net::HttpUtil::AssembleRawHeaders(raw_header.c_str(), raw_header.size()));
+  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(raw_header));
   head.mime_type = "image/png";
   network::URLLoaderCompletionStatus status;
   status.decoded_body_length = content.size();
@@ -185,8 +185,8 @@ TEST_F(ImageDataFetcherTest, FetchImageData_WithContentLocation) {
       "HTTP/1.1 404 Not Found\n"
       "Content-type: image/png\n"
       "Content-location: http://test-location/image.png\n\n";
-  head.headers = new net::HttpResponseHeaders(
-      net::HttpUtil::AssembleRawHeaders(raw_header.c_str(), raw_header.size()));
+  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(raw_header));
   head.mime_type = "image/png";
   network::URLLoaderCompletionStatus status;
   status.decoded_body_length = content.size();

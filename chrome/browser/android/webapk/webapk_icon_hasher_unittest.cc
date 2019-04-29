@@ -143,8 +143,8 @@ TEST_F(WebApkIconHasherTest, HTTPError) {
   std::string icon_url = "http://www.google.com/404";
   network::ResourceResponseHead head;
   std::string headers("HTTP/1.1 404 Not Found\nContent-type: text/html\n\n");
-  head.headers = new net::HttpResponseHeaders(
-      net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
+  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(headers));
   head.mime_type = "text/html";
   network::URLLoaderCompletionStatus status;
   status.decoded_body_length = 0;

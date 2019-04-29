@@ -691,7 +691,7 @@ TEST(HttpUtilTest, AssembleRawHeaders) {
   for (size_t i = 0; i < base::size(tests); ++i) {
     std::string input = tests[i].input;
     std::replace(input.begin(), input.end(), '|', '\0');
-    std::string raw = HttpUtil::AssembleRawHeaders(input.data(), input.size());
+    std::string raw = HttpUtil::AssembleRawHeaders(input);
     std::replace(raw.begin(), raw.end(), '\0', '|');
     EXPECT_EQ(tests[i].expected_result, raw);
   }

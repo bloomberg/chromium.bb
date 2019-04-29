@@ -28,8 +28,8 @@ bool AbortOnEndInterceptor(URLLoaderInterceptor::RequestParams* params) {
       "HTTP/1.1 400 This is not OK\n"
       "Content-type: text/plain\n";
   net::HttpResponseInfo info;
-  info.headers = new net::HttpResponseHeaders(
-      net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.length()));
+  info.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(headers));
   network::ResourceResponseHead response;
   response.headers = info.headers;
   response.headers->GetMimeType(&response.mime_type);

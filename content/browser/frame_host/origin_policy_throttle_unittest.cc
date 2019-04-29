@@ -123,9 +123,8 @@ TEST_P(OriginPolicyThrottleTest, RunRequestEndToEnd) {
   // is deferred.
   const char* raw_headers =
       "HTTP/1.1 200 OK\nSec-Origin-Policy: policy=policy-1\n\n";
-  scoped_refptr<net::HttpResponseHeaders> headers =
-      new net::HttpResponseHeaders(
-          net::HttpUtil::AssembleRawHeaders(raw_headers, strlen(raw_headers)));
+  auto headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(raw_headers));
   NavigationHandleImpl* nav_handle =
       static_cast<NavigationHandleImpl*>(navigation->GetNavigationHandle());
   nav_handle->set_response_headers_for_testing(headers);
@@ -186,9 +185,8 @@ TEST_P(OriginPolicyThrottleTest, AddExceptionEndToEnd) {
   // Fake a response with a policy header.
   const char* raw_headers =
       "HTTP/1.1 200 OK\nSec-Origin-Policy: policy=policy-1\n\n";
-  scoped_refptr<net::HttpResponseHeaders> headers =
-      new net::HttpResponseHeaders(
-          net::HttpUtil::AssembleRawHeaders(raw_headers, strlen(raw_headers)));
+  auto headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(raw_headers));
   NavigationHandleImpl* nav_handle =
       static_cast<NavigationHandleImpl*>(navigation->GetNavigationHandle());
   nav_handle->set_response_headers_for_testing(headers);

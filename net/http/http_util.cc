@@ -704,22 +704,22 @@ static const char* FindFirstNonLWS(const char* begin, const char* end) {
   return end;  // Not found.
 }
 
-std::string HttpUtil::AssembleRawHeaders(const char* input_begin,
-                                         size_t input_len) {
+std::string HttpUtil::AssembleRawHeaders(base::StringPiece input) {
   std::string raw_headers;
-  raw_headers.reserve(input_len);
+  raw_headers.reserve(input.size());
 
-  const char* input_end = input_begin + input_len;
+  const char* input_end = input.data() + input.size();
 
   // Skip any leading slop, since the consumers of this output
   // (HttpResponseHeaders) don't deal with it.
-  size_t status_begin_offset = LocateStartOfStatusLine(input_begin, input_len);
+  size_t status_begin_offset =
+      LocateStartOfStatusLine(input.data(), input.size());
   if (status_begin_offset != std::string::npos)
-    input_begin += status_begin_offset;
+    input.remove_prefix(status_begin_offset);
 
   // Copy the status line.
-  const char* status_line_end = FindStatusLineEnd(input_begin, input_end);
-  raw_headers.append(input_begin, status_line_end);
+  const char* status_line_end = FindStatusLineEnd(input.data(), input_end);
+  raw_headers.append(input.data(), status_line_end);
 
   // After the status line, every subsequent line is a header line segment.
   // Should a segment start with LWS, it is a continuation of the previous

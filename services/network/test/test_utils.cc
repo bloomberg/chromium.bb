@@ -29,8 +29,8 @@ ResourceResponseHead CreateResourceResponseHead(net::HttpStatusCode http_status,
       base::StringPrintf("HTTP/1.1 %d %s", static_cast<int>(http_status),
                          net::GetHttpReasonPhrase(http_status)));
   std::string headers = status_line + "\nContent-type: text/html\n\n";
-  head.headers = new net::HttpResponseHeaders(
-      net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
+  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(headers));
   if (report_raw_headers) {
     head.raw_request_response_info =
         base::MakeRefCounted<HttpRawRequestResponseInfo>();

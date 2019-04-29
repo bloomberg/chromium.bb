@@ -767,7 +767,7 @@ TEST_F(ConfigParserTest, ParseConfig) {
   network::ResourceResponseHead head;
   std::string headers("HTTP/1.1 200 OK\nContent-type: text/xml\n\n");
   head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-      net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
+      net::HttpUtil::AssembleRawHeaders(headers));
   head.mime_type = "text/xml";
   network::URLLoaderCompletionStatus status;
   status.decoded_body_length = xml_config.size();

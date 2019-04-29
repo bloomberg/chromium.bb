@@ -134,8 +134,8 @@ class UploadInterceptor : public net::URLRequestInterceptor {
   void ExpectRequestAndReturnResponseHeaders(const char* headers) {
     MockUploadResult result;
     result.net_error = net::OK;
-    result.response_headers = new net::HttpResponseHeaders(
-        net::HttpUtil::AssembleRawHeaders(headers, strlen(headers)));
+    result.response_headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+        net::HttpUtil::AssembleRawHeaders(headers));
     results_.push_back(result);
   }
 

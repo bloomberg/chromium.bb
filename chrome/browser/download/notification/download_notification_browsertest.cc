@@ -211,8 +211,8 @@ class SlowDownloadInterceptor {
       headers += base::StringPrintf("Content-Length: %ld\n", content_length);
       head.content_length = content_length;
     }
-    head.headers = new net::HttpResponseHeaders(
-        net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.length()));
+    head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+        net::HttpUtil::AssembleRawHeaders(headers));
     head.headers->GetMimeType(&head.mime_type);
     params->client->OnReceiveResponse(head);
   }

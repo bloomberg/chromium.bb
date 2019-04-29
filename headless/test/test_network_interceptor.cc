@@ -148,8 +148,7 @@ TestNetworkInterceptor::Response::Response(const std::string data) {
   raw_headers = data.substr(0, end_of_headers);
   body = data.substr(end_of_headers + strlen(kHeaderDelimiter));
   headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-      net::HttpUtil::AssembleRawHeaders(raw_headers.c_str(),
-                                        raw_headers.size()));
+      net::HttpUtil::AssembleRawHeaders(raw_headers));
 }
 
 TestNetworkInterceptor::Response::Response(const std::string body,
@@ -157,8 +156,7 @@ TestNetworkInterceptor::Response::Response(const std::string body,
     : raw_headers("HTTP/1.1 200 OK\r\nContent-Type: " + mime_type),
       body(std::move(body)) {
   headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-      net::HttpUtil::AssembleRawHeaders(raw_headers.c_str(),
-                                        raw_headers.size()));
+      net::HttpUtil::AssembleRawHeaders(raw_headers));
 }
 
 TestNetworkInterceptor::Response::Response(const Response& r) = default;

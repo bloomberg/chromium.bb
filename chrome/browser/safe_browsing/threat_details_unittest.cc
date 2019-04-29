@@ -375,8 +375,8 @@ class ThreatDetailsTest : public ChromeRenderViewHostTestHarness {
                        const std::string& headers,
                        const std::string& content) {
     network::ResourceResponseHead head;
-    head.headers = new net::HttpResponseHeaders(
-        net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
+    head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+        net::HttpUtil::AssembleRawHeaders(headers));
     head.remote_endpoint = net::IPEndPoint(net::IPAddress(1, 2, 3, 4), 80);
     head.mime_type = "text/html";
     network::URLLoaderCompletionStatus status;

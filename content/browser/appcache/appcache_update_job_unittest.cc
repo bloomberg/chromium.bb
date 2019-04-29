@@ -618,8 +618,8 @@ class MockURLLoaderFactory : public network::mojom::URLLoaderFactory {
     }
 
     net::HttpResponseInfo info;
-    info.headers = new net::HttpResponseHeaders(
-        net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.length()));
+    info.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+        net::HttpUtil::AssembleRawHeaders(headers));
 
     network::ResourceResponseHead response;
     response.headers = info.headers;

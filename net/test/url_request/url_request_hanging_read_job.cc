@@ -81,8 +81,8 @@ void URLRequestHangingReadJob::GetResponseInfoConst(
       "Content-type: text/plain\n");
   raw_headers.append(
       base::StringPrintf("Content-Length: %1d\n", content_length_));
-  info->headers = new HttpResponseHeaders(HttpUtil::AssembleRawHeaders(
-      raw_headers.c_str(), static_cast<int>(raw_headers.length())));
+  info->headers = base::MakeRefCounted<HttpResponseHeaders>(
+      HttpUtil::AssembleRawHeaders(raw_headers));
 }
 
 void URLRequestHangingReadJob::StartAsync() {

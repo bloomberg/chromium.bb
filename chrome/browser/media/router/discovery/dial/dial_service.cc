@@ -355,11 +355,10 @@ bool DialServiceImpl::DialSocket::ParseResponse(const std::string& response,
     VLOG(1) << "Headers invalid or empty, ignoring: " << response;
     return false;
   }
-  std::string raw_headers =
-      HttpUtil::AssembleRawHeaders(response.c_str(), headers_end);
+  std::string raw_headers = HttpUtil::AssembleRawHeaders(
+      base::StringPiece(response.c_str(), headers_end));
   VLOG(3) << "raw_headers: " << raw_headers << "\n";
-  scoped_refptr<HttpResponseHeaders> headers =
-      new HttpResponseHeaders(raw_headers);
+  auto headers = base::MakeRefCounted<HttpResponseHeaders>(raw_headers);
 
   std::string device_url_str;
   if (!GetHeader(headers.get(), kSsdpLocationHeader, &device_url_str) ||

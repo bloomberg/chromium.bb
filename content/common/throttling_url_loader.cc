@@ -390,9 +390,8 @@ void ThrottlingURLLoader::StartNow() {
         "Location: %s\n",
         net::HTTP_TEMPORARY_REDIRECT,
         throttle_will_start_redirect_url_.spec().c_str());
-    response_head.headers =
-        new net::HttpResponseHeaders(net::HttpUtil::AssembleRawHeaders(
-            header_string.c_str(), header_string.length()));
+    response_head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+        net::HttpUtil::AssembleRawHeaders(header_string));
     response_head.encoded_data_length = header_string.size();
     OnReceiveRedirect(redirect_info, response_head);
     return;

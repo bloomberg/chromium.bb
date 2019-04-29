@@ -596,9 +596,8 @@ bool ParseMultipartHeadersFromBody(const char* bytes,
   std::string headers("HTTP/1.1 200 OK\r\n");
   headers.append(bytes, headers_end_pos);
 
-  scoped_refptr<net::HttpResponseHeaders> response_headers =
-      new net::HttpResponseHeaders(
-          net::HttpUtil::AssembleRawHeaders(headers.data(), headers.length()));
+  auto response_headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(headers));
 
   std::string mime_type, charset;
   response_headers->GetMimeTypeAndCharset(&mime_type, &charset);
@@ -640,9 +639,8 @@ bool ParseMultipartFormHeadersFromBody(const char* bytes,
   std::string headers("HTTP/1.1 200 OK\r\n");
   headers.append(bytes, headers_end_pos);
 
-  scoped_refptr<net::HttpResponseHeaders> responseHeaders =
-      new net::HttpResponseHeaders(
-          net::HttpUtil::AssembleRawHeaders(headers.data(), headers.length()));
+  auto responseHeaders = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(headers));
 
   // Copy selected header fields.
   const AtomicString* const headerNamePointers[] = {

@@ -678,8 +678,8 @@ TEST_F(DataReductionProxyDelegateTest, OnCompletedSizeFor200) {
     EXPECT_EQ(request->GetTotalReceivedBytes(),
               total_received_bytes() - baseline_received_bytes);
 
-    const std::string raw_headers = net::HttpUtil::AssembleRawHeaders(
-        test.DrpResponseHeaders.c_str(), test.DrpResponseHeaders.size());
+    const std::string raw_headers =
+        net::HttpUtil::AssembleRawHeaders(test.DrpResponseHeaders);
     EXPECT_EQ(
         static_cast<int64_t>(raw_headers.size() +
                              10000 /* original_response_body */),
@@ -749,8 +749,8 @@ TEST_F(DataReductionProxyDelegateTest, OnCompletedSizeFor304) {
     EXPECT_EQ(request->GetTotalReceivedBytes(),
               total_received_bytes() - baseline_received_bytes);
 
-    const std::string raw_headers = net::HttpUtil::AssembleRawHeaders(
-        test.DrpResponseHeaders.c_str(), test.DrpResponseHeaders.size());
+    const std::string raw_headers =
+        net::HttpUtil::AssembleRawHeaders(test.DrpResponseHeaders);
     EXPECT_EQ(
         static_cast<int64_t>(raw_headers.size() +
                              10000 /* original_response_body */),
@@ -908,9 +908,7 @@ TEST_F(DataReductionProxyDelegateTest, PartialRangeSavings) {
     base::RunLoop().RunUntilIdle();
 
     int64_t expected_original_size =
-        net::HttpUtil::AssembleRawHeaders(test.response_headers.data(),
-                                          test.response_headers.size())
-            .size() +
+        net::HttpUtil::AssembleRawHeaders(test.response_headers).size() +
         test.expected_original_content_length;
 
     EXPECT_EQ(request->GetTotalReceivedBytes(),

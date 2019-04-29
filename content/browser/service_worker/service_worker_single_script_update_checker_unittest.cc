@@ -102,7 +102,7 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
     auto loader_factory = std::make_unique<network::TestURLLoaderFactory>();
     network::ResourceResponseHead head;
     head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-        net::HttpUtil::AssembleRawHeaders(header.c_str(), header.size()));
+        net::HttpUtil::AssembleRawHeaders(header));
     network::URLLoaderCompletionStatus status(error);
     status.decoded_body_length = body.size();
     loader_factory->AddResponse(url, head, body, status);

@@ -16,8 +16,7 @@ CrossOriginResourcePolicy::ParsedHeader ParseHeader(
     const std::string& test_headers) {
   std::string all_headers = "HTTP/1.1 200 OK\n" + test_headers + "\n";
   auto headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-      net::HttpUtil::AssembleRawHeaders(all_headers.c_str(),
-                                        all_headers.size()));
+      net::HttpUtil::AssembleRawHeaders(all_headers));
   return CrossOriginResourcePolicy::ParseHeaderForTesting(headers.get());
 }
 

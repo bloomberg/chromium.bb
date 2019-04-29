@@ -3443,8 +3443,8 @@ TEST_F(SearchProviderTest, TestDeleteMatch) {
 
   network::ResourceResponseHead head;
   std::string headers("HTTP/1.1 500 Owiee\nContent-type: application/json\n\n");
-  head.headers = new net::HttpResponseHeaders(
-      net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
+  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(headers));
   head.mime_type = "application/json";
   test_url_loader_factory_.AddResponse(GURL(kDeleteUrl), head, "",
                                        network::URLLoaderCompletionStatus());

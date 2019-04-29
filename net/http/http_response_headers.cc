@@ -194,7 +194,7 @@ scoped_refptr<HttpResponseHeaders> HttpResponseHeaders::TryToCreate(
   }
 
   return base::MakeRefCounted<HttpResponseHeaders>(
-      HttpUtil::AssembleRawHeaders(headers.data(), headers.size()));
+      HttpUtil::AssembleRawHeaders(headers));
 }
 
 void HttpResponseHeaders::Persist(base::Pickle* pickle,

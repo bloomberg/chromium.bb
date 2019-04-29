@@ -109,8 +109,8 @@ class SignedExchangeLoader::OuterResponseInfo {
           "link: %s\r\n",
           303, "See Other", link_header_.c_str());
     }
-    response_head.headers = new net::HttpResponseHeaders(
-        net::HttpUtil::AssembleRawHeaders(buf.c_str(), buf.size()));
+    response_head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+        net::HttpUtil::AssembleRawHeaders(buf));
     response_head.encoded_data_length = 0;
     response_head.request_start = request_start_;
     response_head.response_start = response_start_;

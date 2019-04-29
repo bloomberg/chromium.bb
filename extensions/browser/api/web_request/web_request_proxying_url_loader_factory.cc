@@ -427,7 +427,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
     }
   }
   head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-      net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.length()));
+      net::HttpUtil::AssembleRawHeaders(headers));
   head.encoded_data_length = 0;
 
   current_response_ = head;

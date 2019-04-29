@@ -555,10 +555,8 @@ const char kFullRangeData[] =
 // Verifies the response headers (|response|) match a partial content
 // response for the range starting at |start| and ending at |end|.
 void Verify206Response(const std::string& response, int start, int end) {
-  std::string raw_headers(
-      HttpUtil::AssembleRawHeaders(response.data(), response.size()));
-  scoped_refptr<HttpResponseHeaders> headers(
-      new HttpResponseHeaders(raw_headers));
+  auto headers = base::MakeRefCounted<HttpResponseHeaders>(
+      HttpUtil::AssembleRawHeaders(response));
 
   ASSERT_EQ(206, headers->response_code());
 
@@ -580,13 +578,11 @@ void CreateTruncatedEntry(std::string raw_headers, MockHttpCache* cache) {
   ASSERT_TRUE(
       cache->CreateBackendEntry(kRangeGET_TransactionOK.url, &entry, nullptr));
 
-  raw_headers =
-      HttpUtil::AssembleRawHeaders(raw_headers.data(), raw_headers.size());
-
   HttpResponseInfo response;
   response.response_time = base::Time::Now();
   response.request_time = base::Time::Now();
-  response.headers = new HttpResponseHeaders(raw_headers);
+  response.headers = base::MakeRefCounted<HttpResponseHeaders>(
+      HttpUtil::AssembleRawHeaders(raw_headers));
   // Set the last argument for this to be an incomplete request.
   EXPECT_TRUE(MockHttpCache::WriteResponseInfo(entry, &response, true, true));
 
@@ -7736,11 +7732,10 @@ TEST_F(HttpCacheTest, GET_Previous206_NotSparse) {
   std::string raw_headers(kRangeGET_TransactionOK.status);
   raw_headers.append("\n");
   raw_headers.append(kRangeGET_TransactionOK.response_headers);
-  raw_headers =
-      HttpUtil::AssembleRawHeaders(raw_headers.data(), raw_headers.size());
 
   HttpResponseInfo response;
-  response.headers = new HttpResponseHeaders(raw_headers);
+  response.headers = base::MakeRefCounted<HttpResponseHeaders>(
+      HttpUtil::AssembleRawHeaders(raw_headers));
   EXPECT_TRUE(MockHttpCache::WriteResponseInfo(entry, &response, true, false));
 
   scoped_refptr<IOBuffer> buf(base::MakeRefCounted<IOBuffer>(500));
@@ -7784,11 +7779,10 @@ TEST_F(HttpCacheTest, RangeGET_Previous206_NotSparse_2) {
   std::string raw_headers(kRangeGET_TransactionOK.status);
   raw_headers.append("\n");
   raw_headers.append(kRangeGET_TransactionOK.response_headers);
-  raw_headers =
-      HttpUtil::AssembleRawHeaders(raw_headers.data(), raw_headers.size());
 
   HttpResponseInfo response;
-  response.headers = new HttpResponseHeaders(raw_headers);
+  response.headers = base::MakeRefCounted<HttpResponseHeaders>(
+      HttpUtil::AssembleRawHeaders(raw_headers));
   EXPECT_TRUE(MockHttpCache::WriteResponseInfo(entry, &response, true, false));
 
   scoped_refptr<IOBuffer> buf = base::MakeRefCounted<IOBuffer>(500);
@@ -7826,11 +7820,10 @@ TEST_F(HttpCacheTest, GET_Previous206_NotValidation) {
   std::string raw_headers(kRangeGET_TransactionOK.status);
   raw_headers.append("\n");
   raw_headers.append("Content-Length: 80\n");
-  raw_headers =
-      HttpUtil::AssembleRawHeaders(raw_headers.data(), raw_headers.size());
 
   HttpResponseInfo response;
-  response.headers = new HttpResponseHeaders(raw_headers);
+  response.headers = base::MakeRefCounted<HttpResponseHeaders>(
+      HttpUtil::AssembleRawHeaders(raw_headers));
   EXPECT_TRUE(MockHttpCache::WriteResponseInfo(entry, &response, true, false));
 
   scoped_refptr<IOBuffer> buf = base::MakeRefCounted<IOBuffer>(500);
@@ -8459,10 +8452,9 @@ TEST_F(HttpCacheTest, WriteResponseInfo_Truncated) {
   ASSERT_TRUE(
       cache.CreateBackendEntry("http://www.google.com", &entry, nullptr));
 
-  std::string headers("HTTP/1.1 200 OK");
-  headers = HttpUtil::AssembleRawHeaders(headers.data(), headers.size());
   HttpResponseInfo response;
-  response.headers = new HttpResponseHeaders(headers);
+  response.headers = base::MakeRefCounted<HttpResponseHeaders>(
+      HttpUtil::AssembleRawHeaders("HTTP/1.1 200 OK"));
 
   // Set the last argument for this to be an incomplete request.
   EXPECT_TRUE(MockHttpCache::WriteResponseInfo(entry, &response, true, true));

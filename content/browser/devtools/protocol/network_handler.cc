@@ -1984,8 +1984,8 @@ void NetworkHandler::ContinueInterceptedRequest(
       LOG(WARNING) << "Can't find headers in raw response";
       header_size = 0;
     } else {
-      raw_headers = net::HttpUtil::AssembleRawHeaders(
-          reinterpret_cast<const char*>(raw.data()), header_size);
+      raw_headers = net::HttpUtil::AssembleRawHeaders(base::StringPiece(
+          reinterpret_cast<const char*>(raw.data()), header_size));
     }
     CHECK_LE(header_size, raw.size());
     response_headers =

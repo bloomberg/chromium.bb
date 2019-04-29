@@ -171,15 +171,14 @@ class NET_EXPORT HttpUtil {
   // Assemble "raw headers" in the format required by HttpResponseHeaders.
   // This involves normalizing line terminators, converting [CR]LF to \0 and
   // handling HTTP line continuations (i.e., lines starting with LWS are
-  // continuations of the previous line).  |buf_len| indicates the position of
-  // the end-of-headers marker as defined by LocateEndOfHeaders.
-  // If a \0 appears within the headers themselves, it will be stripped. This
-  // is a workaround to avoid later code from incorrectly interpreting it as
-  // a line terminator.
+  // continuations of the previous line). |buf| should end at the
+  // end-of-headers marker as defined by LocateEndOfHeaders. If a \0 appears
+  // within the headers themselves, it will be stripped. This is a workaround to
+  // avoid later code from incorrectly interpreting it as a line terminator.
   //
   // TODO(crbug.com/671799): Should remove or internalize this to
   //                         HttpResponseHeaders.
-  static std::string AssembleRawHeaders(const char* buf, size_t buf_len);
+  static std::string AssembleRawHeaders(base::StringPiece buf);
 
   // Converts assembled "raw headers" back to the HTTP response format. That is
   // convert each \0 occurence to CRLF. This is used by DevTools.

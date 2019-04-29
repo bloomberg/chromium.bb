@@ -93,8 +93,7 @@ class MockNetworkURLLoaderFactory final
     // Pass the response header to the client.
     net::HttpResponseInfo info;
     info.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-        net::HttpUtil::AssembleRawHeaders(response.headers.c_str(),
-                                          response.headers.size()));
+        net::HttpUtil::AssembleRawHeaders(response.headers));
     network::ResourceResponseHead response_head;
     response_head.headers = info.headers;
     response_head.headers->GetMimeType(&response_head.mime_type);

@@ -433,8 +433,8 @@ IN_PROC_BROWSER_TEST_F(ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest,
         network::ResourceResponseHead head;
         std::string status_line("HTTP/1.1 904 ARC Disabled");
         std::string headers = status_line + "\nContent-type: text/html\n\n";
-        head.headers = new net::HttpResponseHeaders(
-            net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
+        head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+            net::HttpUtil::AssembleRawHeaders(headers));
         network::URLLoaderCompletionStatus status;
 
         test_url_loader_factory_.AddResponse(request.url, head, std::string(),

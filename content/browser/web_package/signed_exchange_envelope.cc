@@ -361,7 +361,7 @@ SignedExchangeEnvelope::BuildHttpResponseHeaders() const {
   }
   header_str.append("\r\n");
   return base::MakeRefCounted<net::HttpResponseHeaders>(
-      net::HttpUtil::AssembleRawHeaders(header_str.c_str(), header_str.size()));
+      net::HttpUtil::AssembleRawHeaders(header_str));
 }
 
 void SignedExchangeEnvelope::set_cbor_header(base::span<const uint8_t> data) {

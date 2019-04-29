@@ -157,8 +157,9 @@ class TestHttpClient {
     // Return true if response has data equal to or more than content length.
     int64_t body_size = static_cast<int64_t>(response.size()) - end_of_headers;
     DCHECK_LE(0, body_size);
-    scoped_refptr<HttpResponseHeaders> headers(new HttpResponseHeaders(
-        HttpUtil::AssembleRawHeaders(response.data(), end_of_headers)));
+    auto headers =
+        base::MakeRefCounted<HttpResponseHeaders>(HttpUtil::AssembleRawHeaders(
+            base::StringPiece(response.data(), end_of_headers)));
     return body_size >= headers->GetContentLength();
   }
 

@@ -1860,11 +1860,10 @@ TEST_F(DataReductionProxyNetworkDelegateClientLoFiTest, DataSavingsThroughDRP) {
 
   // Since the Data Reduction Proxy is enabled, the length of the raw headers
   // should be used in the estimated original size. The X-OCL should be ignored.
-  EXPECT_EQ(static_cast<int64_t>(net::HttpUtil::AssembleRawHeaders(
-                                     kHeaders, sizeof(kHeaders) - 1)
-                                     .size() +
-                                 10000 - request->GetTotalReceivedBytes()),
-            GetSavings());
+  EXPECT_EQ(
+      static_cast<int64_t>(net::HttpUtil::AssembleRawHeaders(kHeaders).size() +
+                           10000 - request->GetTotalReceivedBytes()),
+      GetSavings());
 }
 
 TEST_F(DataReductionProxyNetworkDelegateTest, TestAcceptTransformHistogram) {

@@ -84,9 +84,8 @@ TEST(WebRequestEventDetailsTest, SetResponseHeaders) {
       "Key1: Value1\r\n"
       "X-Chrome-ID-Consistency-Response: Value2\r\n"
       "\r\n";
-  scoped_refptr<net::HttpResponseHeaders> headers(
-      new net::HttpResponseHeaders(net::HttpUtil::AssembleRawHeaders(
-          headers_string, sizeof(headers_string))));
+  auto headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(headers_string));
 
   {
     // Non-Gaia URL.

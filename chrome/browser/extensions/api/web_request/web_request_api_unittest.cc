@@ -1709,8 +1709,7 @@ TEST(ExtensionWebRequestHelpersTest, TestCalculateOnHeadersReceivedDelta) {
       "X-Chrome-ID-Consistency-Response: Value6\r\n"
       "\r\n";
   auto base_headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-      net::HttpUtil::AssembleRawHeaders(base_headers_string.c_str(),
-                                        base_headers_string.size()));
+      net::HttpUtil::AssembleRawHeaders(base_headers_string));
 
   ResponseHeaders new_headers = {
       {"kEy1", "Value1"},  // Unchanged
@@ -1759,8 +1758,7 @@ TEST(ExtensionWebRequestHelpersTest,
       "HTTP/1.0 200 OK\r\n"
       "Key1: Value1\r\n";
   auto base_headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-      net::HttpUtil::AssembleRawHeaders(base_headers_string.c_str(),
-                                        base_headers_string.size()));
+      net::HttpUtil::AssembleRawHeaders(base_headers_string));
 
   ResponseHeaders new_headers = {
       {"Key1", "Value1"},
@@ -2338,10 +2336,8 @@ TEST(ExtensionWebRequestHelpersTest,
       "Set-Cookie: sessionCookie=removed; Max-Age=INVALID\r\n"
       "Set-Cookie: sessionCookie2=removed\r\n"
       "\r\n";
-  scoped_refptr<net::HttpResponseHeaders> base_headers(
-      new net::HttpResponseHeaders(
-          net::HttpUtil::AssembleRawHeaders(
-              base_headers_string.c_str(), base_headers_string.size())));
+  auto base_headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(base_headers_string));
 
   // Check that we can handle if not touching the response headers.
   {
@@ -2496,10 +2492,8 @@ TEST(ExtensionWebRequestHelpersTest,
     deltas.push_back(std::move(delta));
   }
   deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
-  scoped_refptr<net::HttpResponseHeaders> headers1(
-      new net::HttpResponseHeaders(
-          net::HttpUtil::AssembleRawHeaders(
-              base_headers_string.c_str(), base_headers_string.size())));
+  auto headers1 = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(base_headers_string));
   scoped_refptr<net::HttpResponseHeaders> new_headers1;
   MergeCookiesInOnHeadersReceivedResponses(GURL(), deltas, headers1.get(),
                                            &new_headers1, &logger);
@@ -2539,10 +2533,8 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnHeadersReceivedResponses) {
       "Key1: Value1\r\n"
       "Key2: Value2, Foo\r\n"
       "\r\n";
-  scoped_refptr<net::HttpResponseHeaders> base_headers(
-      new net::HttpResponseHeaders(
-        net::HttpUtil::AssembleRawHeaders(
-            base_headers_string, sizeof(base_headers_string))));
+  auto base_headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(base_headers_string));
 
   // Check that we can handle if not touching the response headers.
   {
@@ -2683,10 +2675,8 @@ TEST(ExtensionWebRequestHelpersTest,
       "Key1: Value3\r\n"
       "Key2: Value4\r\n"
       "\r\n";
-  scoped_refptr<net::HttpResponseHeaders> base_headers(
-      new net::HttpResponseHeaders(
-        net::HttpUtil::AssembleRawHeaders(
-            base_headers_string, sizeof(base_headers_string))));
+  auto base_headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(base_headers_string));
 
   {
     EventResponseDelta d1("extid1", base::Time::FromInternalValue(2000));
@@ -2737,9 +2727,8 @@ TEST(ExtensionWebRequestHelpersTest,
   char base_headers_string[] =
       "HTTP/1.0 200 OK\r\n"
       "\r\n";
-  scoped_refptr<net::HttpResponseHeaders> base_headers(
-      new net::HttpResponseHeaders(net::HttpUtil::AssembleRawHeaders(
-          base_headers_string, sizeof(base_headers_string))));
+  auto base_headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(base_headers_string));
 
   // No redirect
   {

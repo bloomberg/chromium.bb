@@ -163,8 +163,8 @@ TEST_P(SignedExchangeLoaderTest, Simple) {
 
   network::ResourceResponseHead response;
   std::string headers("HTTP/1.1 200 OK\nnContent-type: foo/bar\n\n");
-  response.headers = new net::HttpResponseHeaders(
-      net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
+  response.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(headers));
 
   MockSignedExchangeHandlerFactory factory({MockSignedExchangeHandlerParams(
       resource_request.url, SignedExchangeLoadResult::kSuccess, net::OK,

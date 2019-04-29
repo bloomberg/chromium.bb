@@ -126,16 +126,6 @@ class MockWebStatePolicyDecider : public WebStatePolicyDecider {
   MOCK_METHOD0(WebStateDestroyed, void());
 };
 
-// Creates and returns an HttpResponseHeader using the string representation.
-scoped_refptr<net::HttpResponseHeaders> HeadersFromString(const char* string) {
-  std::string raw_string(string);
-  std::string headers_string = net::HttpUtil::AssembleRawHeaders(
-      raw_string.c_str(), raw_string.length());
-  scoped_refptr<net::HttpResponseHeaders> headers(
-      new net::HttpResponseHeaders(headers_string));
-  return headers;
-}
-
 // Test callback for script commands.
 // Sets |is_called| to true if it is called, and checks that the parameters
 // match their expected values.
@@ -222,16 +212,16 @@ TEST_P(WebStateImplTest, WebUsageEnabled) {
 TEST_P(WebStateImplTest, ResponseHeaders) {
   GURL real_url("http://foo.com/bar");
   GURL frame_url("http://frames-r-us.com/");
-  scoped_refptr<net::HttpResponseHeaders> real_headers(HeadersFromString(
-      "HTTP/1.1 200 OK\r\n"
-      "Content-Type: text/html\r\n"
-      "X-Should-Be-Here: yep\r\n"
-      "\r\n"));
-  scoped_refptr<net::HttpResponseHeaders> frame_headers(HeadersFromString(
-      "HTTP/1.1 200 OK\r\n"
-      "Content-Type: application/pdf\r\n"
-      "X-Should-Not-Be-Here: oops\r\n"
-      "\r\n"));
+  auto real_headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders("HTTP/1.1 200 OK\r\n"
+                                        "Content-Type: text/html\r\n"
+                                        "X-Should-Be-Here: yep\r\n"
+                                        "\r\n"));
+  auto frame_headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders("HTTP/1.1 200 OK\r\n"
+                                        "Content-Type: application/pdf\r\n"
+                                        "X-Should-Not-Be-Here: oops\r\n"
+                                        "\r\n"));
   // Simulate a load of a page with a frame.
   web_state_->OnHttpResponseHeadersReceived(real_headers.get(), real_url);
   web_state_->OnHttpResponseHeadersReceived(frame_headers.get(), frame_url);
@@ -252,10 +242,10 @@ TEST_P(WebStateImplTest, ResponseHeaders) {
 
 TEST_P(WebStateImplTest, ResponseHeaderClearing) {
   GURL url("http://foo.com/");
-  scoped_refptr<net::HttpResponseHeaders> headers(HeadersFromString(
-      "HTTP/1.1 200 OK\r\n"
-      "Content-Type: text/html\r\n"
-      "\r\n"));
+  auto headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders("HTTP/1.1 200 OK\r\n"
+                                        "Content-Type: text/html\r\n"
+                                        "\r\n"));
   web_state_->OnHttpResponseHeadersReceived(headers.get(), url);
 
   // There should be no headers before loading.

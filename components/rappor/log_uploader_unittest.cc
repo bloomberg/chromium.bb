@@ -93,7 +93,7 @@ TEST_F(LogUploaderTest, Rejection) {
   network::ResourceResponseHead response_head;
   std::string headers("HTTP/1.1 400 Bad Request\nContent-type: text/html\n\n");
   response_head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-      net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
+      net::HttpUtil::AssembleRawHeaders(headers));
   response_head.mime_type = "text/html";
   test_url_loader_factory_.AddResponse(GURL(kTestServerURL), response_head, "",
                                        network::URLLoaderCompletionStatus());
@@ -111,7 +111,7 @@ TEST_F(LogUploaderTest, Failure) {
   std::string headers(
       "HTTP/1.1 500 Internal Server Error\nContent-type: text/html\n\n");
   response_head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-      net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
+      net::HttpUtil::AssembleRawHeaders(headers));
   response_head.mime_type = "text/html";
   test_url_loader_factory_.AddResponse(GURL(kTestServerURL), response_head, "",
                                        network::URLLoaderCompletionStatus());

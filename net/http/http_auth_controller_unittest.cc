@@ -36,12 +36,8 @@ enum SchemeState {
 };
 
 scoped_refptr<HttpResponseHeaders> HeadersFromString(const char* string) {
-  std::string raw_string(string);
-  std::string headers_string = HttpUtil::AssembleRawHeaders(
-      raw_string.c_str(), raw_string.length());
-  scoped_refptr<HttpResponseHeaders> headers(
-      new HttpResponseHeaders(headers_string));
-  return headers;
+  return base::MakeRefCounted<HttpResponseHeaders>(
+      HttpUtil::AssembleRawHeaders(string));
 }
 
 // Runs an HttpAuthController with a single round mock auth handler

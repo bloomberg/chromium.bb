@@ -56,7 +56,7 @@ class SafeSearchURLReporterTest : public testing::Test {
     network::ResourceResponseHead head;
     std::string headers("HTTP/1.1 200 OK\n\n");
     head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-        net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
+        net::HttpUtil::AssembleRawHeaders(headers));
     network::URLLoaderCompletionStatus status(error);
     test_url_loader_factory_.AddResponse(GURL(kSafeSearchReportApiUrl), head,
                                          std::string(), status);
