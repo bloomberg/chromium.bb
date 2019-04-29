@@ -26,6 +26,7 @@
 
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
@@ -33,6 +34,36 @@
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
+
+namespace {
+
+// Bucketize image compression into percentage in the following fashion:
+// if an image's compression ratio is 0.1, it will be represented as 1 percent
+// if an image's compression ratio is 5, it will be represented as 50 percents.
+int BucketizeCompressionRatio(double compression_ratio) {
+  int compression_ratio_percent = 10 * compression_ratio;
+  if (compression_ratio_percent < 0)
+    return 0;
+  return compression_ratio_percent > 100 ? 100 : compression_ratio_percent;
+}
+
+inline const char* GetImagePolicyHistogramName(
+    mojom::FeaturePolicyFeature feature) {
+  switch (feature) {
+    case mojom::FeaturePolicyFeature::kUnoptimizedLossyImages:
+      return "Blink.UseCounter.FeaturePolicy.LossyImageCompression";
+    case mojom::FeaturePolicyFeature::kUnoptimizedLosslessImages:
+      return "Blink.UseCounter.FeaturePolicy.LosslessImageCompression";
+    case mojom::FeaturePolicyFeature::kUnoptimizedLosslessImagesStrict:
+      return "Blink.UseCounter.FeaturePolicy.StrictLosslessImageCompression";
+    default:
+      NOTREACHED();
+      break;
+  }
+  return "";
+}
+
+}  // namespace
 
 // static
 std::vector<unsigned> SecurityContext::SerializeInsecureNavigationSet(
@@ -255,6 +286,29 @@ FeatureEnabledState SecurityContext::GetFeatureEnabledState(
   // properly inherit the parent policy.
   DCHECK(feature_policy_);
 
+  // Log metrics for unoptimized-*-images policies.
+  if (feature == mojom::FeaturePolicyFeature::kUnoptimizedLossyImages ||
+      feature == mojom::FeaturePolicyFeature::kUnoptimizedLosslessImages ||
+      feature ==
+          mojom::FeaturePolicyFeature::kUnoptimizedLosslessImagesStrict) {
+    // Only log metrics if an image policy is specified.
+    // If an image policy is specified, the policy value would be less than the
+    // max value, otherwise by default the policy value is set to be the max
+    // value.
+    const auto max_value =
+        PolicyValue::CreateMaxPolicyValue(mojom::PolicyValueType::kDecDouble);
+    if (!feature_policy_->IsFeatureEnabled(feature, max_value) &&
+        threshold_value < max_value) {
+      STATIC_HISTOGRAM_POINTER_GROUP(
+          GetImagePolicyHistogramName(feature), static_cast<int>(feature),
+          static_cast<int>(
+              mojom::FeaturePolicyFeature::kUnoptimizedLosslessImagesStrict) +
+              1,
+          Add(BucketizeCompressionRatio(threshold_value.DoubleValue())),
+          base::LinearHistogram::FactoryGet(
+              GetImagePolicyHistogramName(feature), 0, 100, 101, 0x1));
+    }
+  }
   if (feature_policy_->IsFeatureEnabled(feature, threshold_value)) {
     if (report_only_feature_policy_ &&
         !report_only_feature_policy_->IsFeatureEnabled(feature,
