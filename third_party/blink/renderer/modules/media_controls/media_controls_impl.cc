@@ -138,7 +138,6 @@ const char kActAsAudioControlsCSSClass[] = "audio-only";
 const char kScrubbingMessageCSSClass[] = "scrubbing-message";
 const char kTestModeCSSClass[] = "test-mode";
 const char kImmersiveModeCSSClass[] = "immersive-mode";
-const char kPipPresentedCSSClass[] = "pip-presented";
 
 // The delay between two taps to be recognized as a double tap gesture.
 constexpr WTF::TimeDelta kDoubleTapDelay = TimeDelta::FromMilliseconds(300);
@@ -1418,7 +1417,6 @@ void MediaControlsImpl::UpdateOverflowMenuWanted() const {
 
   MaybeRecordElementsDisplayed();
 
-  UpdateOverflowAndTrackListCSSClassForPip();
   UpdateOverflowMenuItemCSSClass();
 }
 
@@ -1447,21 +1445,6 @@ void MediaControlsImpl::UpdateOverflowMenuItemCSSClass() const {
 void MediaControlsImpl::UpdateScrubbingMessageFits() const {
   if (scrubbing_message_)
     scrubbing_message_->SetDoesFit(size_.Width() >= kMinScrubbingMessageWidth);
-}
-
-// We want to have wider menu when pip is enabled so that "Exit picture in
-// picture" text won't be truncated. When pip is disable (e.g. on mobile
-// device), we don't want to enlarged the menu because it would look empty
-// when "picture in picture" text is not presented.
-void MediaControlsImpl::UpdateOverflowAndTrackListCSSClassForPip() const {
-  if (picture_in_picture_button_.Get() &&
-      picture_in_picture_button_.Get()->OverflowElementIsWanted()) {
-    overflow_list_->classList().Add(kPipPresentedCSSClass);
-    text_track_list_->classList().Add(kPipPresentedCSSClass);
-  } else {
-    overflow_list_->classList().Remove(kPipPresentedCSSClass);
-    text_track_list_->classList().Remove(kPipPresentedCSSClass);
-  }
 }
 
 void MediaControlsImpl::UpdateSizingCSSClass() {

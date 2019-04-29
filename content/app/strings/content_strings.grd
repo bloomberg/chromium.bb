@@ -961,9 +961,16 @@ below:
           Picture in picture
         </message>
       </if>
-      <message name="IDS_MEDIA_OVERFLOW_MENU_EXIT_PICTURE_IN_PICTURE" desc="Media controls overflow menu item label for a button to exit Picture-in-Picture.">
-          Exit picture-in-picture mode
-      </message>
+      <if expr="is_macosx">
+        <message name="IDS_MEDIA_OVERFLOW_MENU_EXIT_PICTURE_IN_PICTURE" desc="Media controls overflow menu item label for a button to exit Picture-in-Picture.">
+          Exit Picture in Picture
+        </message>
+      </if>
+      <if expr="not is_macosx">
+        <message name="IDS_MEDIA_OVERFLOW_MENU_EXIT_PICTURE_IN_PICTURE" desc="Media controls overflow menu item label for a button to exit Picture-in-Picture.">
+          Exit picture in picture
+        </message>
+      </if>
       <message name="IDS_MEDIA_PICTURE_IN_PICTURE_INTERSTITIAL_TEXT" desc="Text message shown to user when in picture in picture mode. When a video is in picture in picture mode, an interstitial with this text appears where the video player is positioned. The video continues to play back in another window that gives the experience that the video is 'popped out'.">
         Playing in picture-in-picture mode
       </message>

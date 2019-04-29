@@ -836,13 +836,13 @@ audio::-internal-media-controls-overflow-menu-list,
 video::-internal-media-controls-overflow-menu-list {
   position: fixed;
   z-index: 2; /* Keep the menus above the loading animation at z-index 1. */
-  max-width: 50%;
+  max-width: 75%;
   max-height: 250px;
-  min-width: 180px;
+  width: 200px;
   overflow-x: hidden;
   overflow-y: auto;
   white-space: nowrap;
-  font-size: 14px;
+  font-size: 12px;
   background: #FFFFFF;
   box-shadow: 0 1px 9px 0 rgba(0,0,0,0.40);
   border-radius: 2px;
@@ -872,7 +872,7 @@ video::-internal-media-controls-overflow-menu-list-item {
   justify-content: flex-start;
 
   font-family: Roboto-Regular, Roboto, sans-serif;
-  font-size: 14px;
+  font-size: 12px;
   color: rgba(0,0,0,0.87);
   letter-spacing: 0;
 
@@ -889,12 +889,6 @@ video::-internal-media-controls-overflow-menu-list-item {
    * which allows a smoother transition.
    */
   transform: translateZ(0);
-}
-
-video::-webkit-media-controls div[pseudo="-internal-media-controls-text-track-list" i].pip-presented,
-video::-webkit-media-controls div[pseudo="-internal-media-controls-overflow-menu-list" i].pip-presented {
-  max-width: 260px;
-  width: 100%;
 }
 
 video::-webkit-media-controls.sizing-small label[pseudo="-internal-media-controls-overflow-menu-list-item" i] input,
