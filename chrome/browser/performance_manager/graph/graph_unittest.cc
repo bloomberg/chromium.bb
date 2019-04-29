@@ -75,7 +75,7 @@ TEST(GraphTest, PIDReuse) {
   process2->SetProcess(self.Duplicate(), base::Time::Now());
   EXPECT_EQ(process2.get(), graph.GetProcessNodeByPid(self.Pid()));
 
-  // The destruction of the first process CU shouldn't clear the PID
+  // The destruction of the first process node shouldn't clear the PID
   // registration.
   process1.reset();
   EXPECT_EQ(process2.get(), graph.GetProcessNodeByPid(self.Pid()));

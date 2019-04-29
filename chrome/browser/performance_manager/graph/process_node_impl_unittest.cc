@@ -28,7 +28,7 @@ TEST_F(ProcessNodeImplTest, MeasureCPUUsage) {
 TEST_F(ProcessNodeImplTest, ProcessLifeCycle) {
   auto process_node = CreateNode<ProcessNodeImpl>();
 
-  // Test the potential lifecycles of a process CU.
+  // Test the potential lifecycles of a process node.
   // First go to exited without an intervening process attached, as would happen
   // in the case the process fails to start.
   EXPECT_FALSE(process_node->process().IsValid());

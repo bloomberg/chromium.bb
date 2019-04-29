@@ -26,8 +26,8 @@ class TestProcessNodeImpl : public ProcessNodeImpl {
                          base::Time launch_time);
 };
 
-// The following coordination unit graph topology is created to emulate a
-// scenario when a single page executes in a single process:
+// The following graph topology is created to emulate a scenario when a single
+// page executes in a single process:
 //
 // Pr  Pg
 //  \ /
@@ -46,8 +46,8 @@ struct MockSinglePageInSingleProcessGraph {
   TestNodeWrapper<FrameNodeImpl> frame;
 };
 
-// The following coordination unit graph topology is created to emulate a
-// scenario where multiple pages are executing in a single process:
+// The following graph topology is created to emulate a scenario where multiple
+// pages are executing in a single process:
 //
 // Pg  Pr OPg
 //  \ / \ /
@@ -67,9 +67,9 @@ struct MockMultiplePagesInSingleProcessGraph
   TestNodeWrapper<FrameNodeImpl> other_frame;
 };
 
-// The following coordination unit graph topology is created to emulate a
-// scenario where a single page that has frames is executing in different
-// processes (e.g. out-of-process iFrames):
+// The following graph topology is created to emulate a scenario where a single
+// page that has frames is executing in different processes (e.g. out-of-process
+// iFrames):
 //
 // Pg  Pr
 // |\ /
@@ -91,9 +91,9 @@ struct MockSinglePageWithMultipleProcessesGraph
   TestNodeWrapper<FrameNodeImpl> child_frame;
 };
 
-// The following coordination unit graph topology is created to emulate a
-// scenario where multiple pages are utilizing multiple processes (e.g.
-// out-of-process iFrames and multiple pages in a process):
+// The following graph topology is created to emulate a scenario where multiple
+// pages are utilizing multiple processes (e.g. out-of-process iFrames and
+// multiple pages in a process):
 //
 // Pg  Pr OPg___
 //  \ / \ /     |

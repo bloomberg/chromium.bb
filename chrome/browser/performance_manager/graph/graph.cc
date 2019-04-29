@@ -86,7 +86,8 @@ int64_t Graph::GetNextNodeSerializationId() {
 SystemNodeImpl* Graph::FindOrCreateSystemNode() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!system_node_) {
-    // Create the singleton SystemCU instance. Ownership is taken by the graph.
+    // Create the singleton system node instance. Ownership is taken by the
+    // graph.
     system_node_ = std::make_unique<SystemNodeImpl>(this);
     AddNewNode(system_node_.get());
   }
@@ -170,9 +171,9 @@ void Graph::BeforeProcessPidChange(ProcessNodeImpl* process,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // On Windows, PIDs are aggressively reused, and because not all process
   // creation/death notifications are synchronized, it's possible for more than
-  // one CU to have the same PID. To handle this, the second and subsequent
-  // registration override earlier registrations, while unregistration will only
-  // unregister the current holder of the PID.
+  // one process node to have the same PID. To handle this, the second and
+  // subsequent registration override earlier registrations, while
+  // unregistration will only unregister the current holder of the PID.
   if (process->process_id() != base::kNullProcessId) {
     auto it = processes_by_pid_.find(process->process_id());
     if (it != processes_by_pid_.end() && it->second == process)

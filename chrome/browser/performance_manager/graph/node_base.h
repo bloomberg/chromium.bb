@@ -27,9 +27,9 @@ namespace performance_manager {
 
 class Graph;
 
-// NodeBase implements shared functionality among different types of
-// coordination units. A specific type of coordination unit will derive from
-// this class and can override shared funtionality when needed.
+// NodeBase implements shared functionality among different types of graph
+// nodes. A specific type of graph node will derive from this class and can
+// override shared functionality when needed.
 // All node classes allow construction on one sequence and subsequent use from
 // another sequence.
 // All methods not documented otherwise are single-threaded.
@@ -89,14 +89,14 @@ class TypedNodeBase : public NodeBase {
 
   explicit TypedNodeBase(Graph* graph) : NodeBase(NodeClass::Type(), graph) {}
 
-  static const NodeClass* FromNodeBase(const NodeBase* cu) {
-    DCHECK_EQ(cu->type(), NodeClass::Type());
-    return static_cast<const NodeClass*>(cu);
+  static const NodeClass* FromNodeBase(const NodeBase* node) {
+    DCHECK_EQ(node->type(), NodeClass::Type());
+    return static_cast<const NodeClass*>(node);
   }
 
-  static NodeClass* FromNodeBase(NodeBase* cu) {
-    DCHECK(cu->type() == NodeClass::Type());
-    return static_cast<NodeClass*>(cu);
+  static NodeClass* FromNodeBase(NodeBase* node) {
+    DCHECK(node->type() == NodeClass::Type());
+    return static_cast<NodeClass*>(node);
   }
 };
 

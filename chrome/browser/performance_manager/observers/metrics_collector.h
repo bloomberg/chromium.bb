@@ -28,8 +28,7 @@ extern const char
 extern const base::TimeDelta kMetricsReportDelayTimeout;
 extern const int kDefaultFrequencyUkmEQTReported;
 
-// A MetricsCollector observes changes happened inside CoordinationUnit Graph,
-// and reports UMA/UKM.
+// The MetricsCollector is a graph observer that reports UMA/UKM.
 class MetricsCollector : public GraphObserver {
  public:
   MetricsCollector();

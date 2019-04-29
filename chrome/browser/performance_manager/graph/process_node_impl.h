@@ -20,11 +20,11 @@ namespace performance_manager {
 
 class FrameNodeImpl;
 
-// A process coordination unit follows the lifetime of a RenderProcessHost.
+// A process node follows the lifetime of a RenderProcessHost.
 // It may reference zero or one processes at a time, but during its lifetime, it
 // may reference more than one process. This can happen if the associated
 // renderer crashes, and an associated frame is then reloaded or re-navigated.
-// The state of the process CU goes through:
+// The state of the process node goes through:
 // 1. Created, no PID.
 // 2. Process started, have PID - in the case where the associated render
 //    process fails to start, this state may not occur.

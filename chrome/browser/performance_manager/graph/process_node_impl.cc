@@ -60,7 +60,7 @@ void ProcessNodeImpl::SetProcess(base::Process process,
                                  base::Time launch_time) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(process.IsValid());
-  // Either this is the initial process associated with this process CU,
+  // Either this is the initial process associated with this process node,
   // or it's a subsequent process. In the latter case, there must have been
   // an exit status associated with the previous process.
   DCHECK(!process_.IsValid() || exit_status_.has_value());

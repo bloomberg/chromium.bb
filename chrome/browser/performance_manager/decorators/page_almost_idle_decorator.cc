@@ -228,12 +228,12 @@ void PageAlmostIdleDecorator::TransitionToLoadedAndIdle(
 
 // static
 bool PageAlmostIdleDecorator::IsIdling(const PageNodeImpl* page_node) {
-  // Get the Frame CU for the main frame associated with this page.
+  // Get the frame node for the main frame associated with this page.
   const FrameNodeImpl* main_frame_node = page_node->GetMainFrameNode();
   if (!main_frame_node)
     return false;
 
-  // Get the process CU associated with this main frame.
+  // Get the process node associated with this main frame.
   const auto* process_node = main_frame_node->process_node();
   if (!process_node)
     return false;

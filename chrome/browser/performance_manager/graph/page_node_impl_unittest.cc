@@ -245,8 +245,8 @@ void ExpectInitialInterventionPolicyAggregationWorks(
 TEST_F(PageNodeImplTest, InitialInterventionPolicy) {
   auto* mock_graph = graph();
 
-  // Tests all possible transitions where the frame CU has its policy values
-  // set before being attached to the page CU. This affectively tests the
+  // Tests all possible transitions where the frame node has its policy values
+  // set before being attached to the page node. This affectively tests the
   // aggregation logic in isolation.
 
   // Default x [Default, OptIn, OptOut]
@@ -355,7 +355,7 @@ TEST_F(PageNodeImplTest, IncrementalInterventionPolicy) {
   EXPECT_EQ(0u, page->GetInterventionPolicyFramesReportedForTesting());
 
   // Set the policies on the first frame. This should be observed by the page
-  // CU, but aggregation should still not be possible.
+  // node, but aggregation should still not be possible.
   f0->SetAllInterventionPoliciesForTesting(
       resource_coordinator::mojom::InterventionPolicy::kDefault);
   EXPECT_EQ(1u, page->GetInterventionPolicyFramesReportedForTesting());

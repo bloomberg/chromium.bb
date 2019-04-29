@@ -64,12 +64,12 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
 
   // Returns the time since the last visibility change, it should always have a
   // value since we set the visibility property when we create a
-  // PageCoordinationUnit.
+  // page node.
   base::TimeDelta TimeSinceLastVisibilityChange() const;
 
   std::vector<FrameNodeImpl*> GetFrameNodes() const;
 
-  // Returns the main frame CU or nullptr if this page has no main frame.
+  // Returns the main frame node or nullptr if this page has no main frame.
   FrameNodeImpl* GetMainFrameNode() const;
 
   // Accessors.

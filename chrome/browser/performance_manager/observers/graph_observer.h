@@ -17,15 +17,11 @@ class PageNodeImpl;
 class ProcessNodeImpl;
 class SystemNodeImpl;
 
-// An observer API for the coordination unit graph maintained by GRC.
+// An observer API for the graph.
 //
-// Observers are instantiated when the resource_coordinator service
-// is created and are destroyed when the resource_coordinator service
-// is destroyed. Therefore observers are guaranteed to be alive before
-// any coordination unit is created and will be alive after any
-// coordination unit is destroyed. Additionally, any
-// Coordination Unit reachable within a callback will always be
-// initialized and valid.
+// Observers are generally instantiated when the graph is empty, and outlive it,
+// though it's valid for an observer to be registered at any time. Observers
+// must unregister before they're destroyed.
 //
 // To create and install a new observer:
 //   (1) Derive from this class.
@@ -50,10 +46,10 @@ class GraphObserver {
   // invoked for, the |node|.
   virtual bool ShouldObserve(const NodeBase* node) = 0;
 
-  // Called whenever a CoordinationUnit is created.
+  // Called whenever a node has been added to the graph.
   virtual void OnNodeAdded(NodeBase* node) {}
 
-  // Called when the |node| is about to be destroyed.
+  // Called when the |node| is about to be removed from the graph.
   virtual void OnBeforeNodeRemoved(NodeBase* node) {}
 
   // FrameNodeImpl notifications.
