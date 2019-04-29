@@ -3067,6 +3067,18 @@
     ]
   },
 
+  "StickyKeysEnabled": {
+    "os": ["chromeos"],
+    "test_policy": { "StickyKeysEnabled": true },
+    "pref_mappings": [
+      { "pref": "settings.a11y.sticky_keys_enabled",
+        "indicator_tests": [
+          { "policy": { "StickyKeysEnabled": true } }
+        ]
+      }
+    ]
+  },
+
   "SpokenFeedbackEnabled": {
     "os": ["chromeos"],
     "test_policy": { "SpokenFeedbackEnabled": true },
