@@ -1488,8 +1488,10 @@ void QuotaManager::DidGetStorageCapacityForHistogram(int64_t usage,
                                                      int64_t available_space) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   UMA_HISTOGRAM_MBYTES("Quota.GlobalUsageOfTemporaryStorage", usage);
-  UMA_HISTOGRAM_PERCENTAGE("Quota.PercentUsedForTemporaryStorage2",
-                           static_cast<int>((usage * 100) / total_space));
+  if (total_space > 0) {
+    UMA_HISTOGRAM_PERCENTAGE("Quota.PercentUsedForTemporaryStorage2",
+                             static_cast<int>((usage * 100) / total_space));
+  }
 
   GetGlobalUsage(
       StorageType::kPersistent,
