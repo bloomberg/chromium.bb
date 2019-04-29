@@ -20,7 +20,8 @@ class DeadlineTaskRunnerTest : public testing::Test {
   DeadlineTaskRunnerTest()
       : task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
-            base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED) {
+            base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::
+                QUEUED) {
     // Null clock might trigger some assertions.
     task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(5));
   }

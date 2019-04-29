@@ -38,7 +38,7 @@ class IdleTimeEstimatorTest : public testing::Test {
   IdleTimeEstimatorTest()
       : task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
-            base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED),
+            base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED),
         frame_length_(base::TimeDelta::FromMilliseconds(16)) {
     // Null clock might trigger some assertions.
     task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(5));
