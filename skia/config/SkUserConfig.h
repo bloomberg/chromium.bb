@@ -153,6 +153,12 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_SUPPORT_LEGACY_DRAWLOOPER
 #endif
 
+// For now, Chrome should only attempt to reduce opList splitting when recording
+// DDLs
+#ifndef SK_DISABLE_REDUCE_OPLIST_SPLITTING
+#define SK_DISABLE_REDUCE_OPLIST_SPLITTING
+#endif
+
 #ifndef SK_IGNORE_LINEONLY_AA_CONVEX_PATH_OPTS
 #define SK_IGNORE_LINEONLY_AA_CONVEX_PATH_OPTS
 #endif
