@@ -1614,11 +1614,11 @@ static INLINE void lowbd_inv_txfm2d_add_no_identity_avx2(
   __m256i buf1[64 * 16];
   int eobx, eoby;
   get_eobx_eoby_scan_default(&eobx, &eoby, tx_size, eob);
-  const int8_t *shift = inv_txfm_shift_ls[tx_size];
+  const int8_t *shift = av1_inv_txfm_shift_ls[tx_size];
   const int txw_idx = get_txw_idx(tx_size);
   const int txh_idx = get_txh_idx(tx_size);
-  const int cos_bit_col = inv_cos_bit_col[txw_idx][txh_idx];
-  const int cos_bit_row = inv_cos_bit_row[txw_idx][txh_idx];
+  const int cos_bit_col = av1_inv_cos_bit_col[txw_idx][txh_idx];
+  const int cos_bit_row = av1_inv_cos_bit_row[txw_idx][txh_idx];
   const int txfm_size_col = tx_size_wide[tx_size];
   const int txfm_size_row = tx_size_high[tx_size];
   const int buf_size_w_div16 = txfm_size_col >> 4;
@@ -1754,7 +1754,7 @@ static INLINE void lowbd_inv_txfm2d_add_idtx_avx2(const int32_t *input,
                                                   TX_SIZE tx_size,
                                                   int32_t eob) {
   (void)eob;
-  const int8_t *shift = inv_txfm_shift_ls[tx_size];
+  const int8_t *shift = av1_inv_txfm_shift_ls[tx_size];
   const int txw_idx = get_txw_idx(tx_size);
   const int txh_idx = get_txh_idx(tx_size);
   const int txfm_size_col = tx_size_wide[tx_size];
@@ -1776,10 +1776,10 @@ static INLINE void lowbd_inv_txfm2d_add_h_identity_avx2(
     TX_SIZE tx_size, int eob) {
   int eobx, eoby;
   get_eobx_eoby_scan_h_identity(&eobx, &eoby, tx_size, eob);
-  const int8_t *shift = inv_txfm_shift_ls[tx_size];
+  const int8_t *shift = av1_inv_txfm_shift_ls[tx_size];
   const int txw_idx = get_txw_idx(tx_size);
   const int txh_idx = get_txh_idx(tx_size);
-  const int cos_bit_col = inv_cos_bit_col[txw_idx][txh_idx];
+  const int cos_bit_col = av1_inv_cos_bit_col[txw_idx][txh_idx];
   const int txfm_size_col = tx_size_wide[tx_size];
   const int txfm_size_row = tx_size_high[tx_size];
   const int txfm_size_col_notzero = AOMMIN(32, txfm_size_col);
@@ -1816,10 +1816,10 @@ static INLINE void lowbd_inv_txfm2d_add_v_identity_avx2(
   __m256i buf1[64];
   int eobx, eoby;
   get_eobx_eoby_scan_v_identity(&eobx, &eoby, tx_size, eob);
-  const int8_t *shift = inv_txfm_shift_ls[tx_size];
+  const int8_t *shift = av1_inv_txfm_shift_ls[tx_size];
   const int txw_idx = get_txw_idx(tx_size);
   const int txh_idx = get_txh_idx(tx_size);
-  const int cos_bit_row = inv_cos_bit_row[txw_idx][txh_idx];
+  const int cos_bit_row = av1_inv_cos_bit_row[txw_idx][txh_idx];
   const int txfm_size_col = tx_size_wide[tx_size];
   const int txfm_size_row = tx_size_high[tx_size];
   const int buf_size_w_div16 = txfm_size_col >> 4;

@@ -3686,11 +3686,11 @@ static INLINE void lowbd_inv_txfm2d_add_idtx_neon(const int32_t *input,
   int16x8_t b[32 * 4];
   int eobx, eoby;
   get_eobx_eoby_scan_default(&eobx, &eoby, tx_size, eob);
-  const int8_t *shift = inv_txfm_shift_ls[tx_size];
+  const int8_t *shift = av1_inv_txfm_shift_ls[tx_size];
   const int txw_idx = get_txw_idx(tx_size);
   const int txh_idx = get_txh_idx(tx_size);
-  const int cos_bit_col = inv_cos_bit_col[txw_idx][txh_idx];
-  const int cos_bit_row = inv_cos_bit_row[txw_idx][txh_idx];
+  const int cos_bit_col = av1_inv_cos_bit_col[txw_idx][txh_idx];
+  const int cos_bit_row = av1_inv_cos_bit_row[txw_idx][txh_idx];
   const int txfm_size_col = tx_size_wide[tx_size];
   const int txfm_size_row = tx_size_high[tx_size];
   lowbd_inv_txfm2d_memset_neon(&a[0], (txfm_size_col * (txfm_size_row) >> 3),
@@ -3757,11 +3757,11 @@ static INLINE void lowbd_inv_txfm2d_add_v_identity_neon(
   int16x8_t b[16 * 2];
   int eobx, eoby, ud_flip, lr_flip;
   get_eobx_eoby_scan_v_identity(&eobx, &eoby, tx_size, eob);
-  const int8_t *shift = inv_txfm_shift_ls[tx_size];
+  const int8_t *shift = av1_inv_txfm_shift_ls[tx_size];
   const int txw_idx = get_txw_idx(tx_size);
   const int txh_idx = get_txh_idx(tx_size);
-  const int cos_bit_col = inv_cos_bit_col[txw_idx][txh_idx];
-  const int cos_bit_row = inv_cos_bit_row[txw_idx][txh_idx];
+  const int cos_bit_col = av1_inv_cos_bit_col[txw_idx][txh_idx];
+  const int cos_bit_row = av1_inv_cos_bit_row[txw_idx][txh_idx];
   const int txfm_size_col = tx_size_wide[tx_size];
   const int txfm_size_row = tx_size_high[tx_size];
   lowbd_inv_txfm2d_memset_neon(&b[0], (txfm_size_col * (txfm_size_row) >> 3),
@@ -3838,11 +3838,11 @@ static INLINE void lowbd_inv_txfm2d_add_h_identity_neon(
   int16x8_t b[16 * 2];
   int eobx, eoby, ud_flip, lr_flip;
   get_eobx_eoby_scan_h_identity(&eobx, &eoby, tx_size, eob);
-  const int8_t *shift = inv_txfm_shift_ls[tx_size];
+  const int8_t *shift = av1_inv_txfm_shift_ls[tx_size];
   const int txw_idx = get_txw_idx(tx_size);
   const int txh_idx = get_txh_idx(tx_size);
-  const int cos_bit_col = inv_cos_bit_col[txw_idx][txh_idx];
-  const int cos_bit_row = inv_cos_bit_row[txw_idx][txh_idx];
+  const int cos_bit_col = av1_inv_cos_bit_col[txw_idx][txh_idx];
+  const int cos_bit_row = av1_inv_cos_bit_row[txw_idx][txh_idx];
   const int txfm_size_col = tx_size_wide[tx_size];
   const int txfm_size_row = tx_size_high[tx_size];
   lowbd_inv_txfm2d_memset_neon(&a[0], (txfm_size_col * (txfm_size_row) >> 3),
@@ -3911,11 +3911,11 @@ static INLINE void lowbd_inv_txfm2d_add_4x4_neon(const int32_t *input,
   DECLARE_ALIGNED(32, int, txfm_buf[4 * 4 + 8 + 8]);
   int32_t *temp_in = txfm_buf;
 
-  const int8_t *shift = inv_txfm_shift_ls[tx_size];
+  const int8_t *shift = av1_inv_txfm_shift_ls[tx_size];
   const int txw_idx = get_txw_idx(tx_size);
   const int txh_idx = get_txh_idx(tx_size);
-  const int cos_bit_row = inv_cos_bit_row[txw_idx][txh_idx];
-  const int cos_bit_col = inv_cos_bit_col[txw_idx][txh_idx];
+  const int cos_bit_row = av1_inv_cos_bit_row[txw_idx][txh_idx];
+  const int cos_bit_col = av1_inv_cos_bit_col[txw_idx][txh_idx];
   const int txfm_size_col = tx_size_wide[tx_size];
   const int txfm_size_row = tx_size_high[tx_size];
   const int buf_offset = AOMMAX(txfm_size_row, txfm_size_col);
@@ -3973,11 +3973,11 @@ void lowbd_inv_txfm2d_add_4x8_neon(const int32_t *input, uint8_t *output,
   DECLARE_ALIGNED(32, int, txfm_buf[4 * 8 + 8 + 8]);
   int32_t *temp_in = txfm_buf;
 
-  const int8_t *shift = inv_txfm_shift_ls[tx_size];
+  const int8_t *shift = av1_inv_txfm_shift_ls[tx_size];
   const int txw_idx = get_txw_idx(tx_size);
   const int txh_idx = get_txh_idx(tx_size);
-  const int cos_bit_row = inv_cos_bit_row[txw_idx][txh_idx];
-  const int cos_bit_col = inv_cos_bit_col[txw_idx][txh_idx];
+  const int cos_bit_row = av1_inv_cos_bit_row[txw_idx][txh_idx];
+  const int cos_bit_col = av1_inv_cos_bit_col[txw_idx][txh_idx];
   const int txfm_size_col = tx_size_wide[tx_size];
   const int txfm_size_row = tx_size_high[tx_size];
   const int buf_offset = AOMMAX(txfm_size_row, txfm_size_col);
@@ -4037,11 +4037,11 @@ void lowbd_inv_txfm2d_add_8x4_neon(const int32_t *input, uint8_t *output,
   DECLARE_ALIGNED(32, int, txfm_buf[8 * 4 + 8 + 8]);
   int32_t *temp_in = txfm_buf;
 
-  const int8_t *shift = inv_txfm_shift_ls[tx_size];
+  const int8_t *shift = av1_inv_txfm_shift_ls[tx_size];
   const int txw_idx = get_txw_idx(tx_size);
   const int txh_idx = get_txh_idx(tx_size);
-  const int cos_bit_row = inv_cos_bit_row[txw_idx][txh_idx];
-  const int cos_bit_col = inv_cos_bit_col[txw_idx][txh_idx];
+  const int cos_bit_row = av1_inv_cos_bit_row[txw_idx][txh_idx];
+  const int cos_bit_col = av1_inv_cos_bit_col[txw_idx][txh_idx];
   const int txfm_size_col = tx_size_wide[tx_size];
   const int txfm_size_row = tx_size_high[tx_size];
   const int buf_offset = AOMMAX(txfm_size_row, txfm_size_col);
@@ -4101,11 +4101,11 @@ void lowbd_inv_txfm2d_add_4x16_neon(const int32_t *input, uint8_t *output,
   DECLARE_ALIGNED(32, int, txfm_buf[4 * 16 + 16 + 16]);
   int32_t *temp_in = txfm_buf;
 
-  const int8_t *shift = inv_txfm_shift_ls[tx_size];
+  const int8_t *shift = av1_inv_txfm_shift_ls[tx_size];
   const int txw_idx = get_txw_idx(tx_size);
   const int txh_idx = get_txh_idx(tx_size);
-  const int cos_bit_row = inv_cos_bit_row[txw_idx][txh_idx];
-  const int cos_bit_col = inv_cos_bit_col[txw_idx][txh_idx];
+  const int cos_bit_row = av1_inv_cos_bit_row[txw_idx][txh_idx];
+  const int cos_bit_col = av1_inv_cos_bit_col[txw_idx][txh_idx];
   const int txfm_size_col = tx_size_wide[tx_size];
   const int txfm_size_row = tx_size_high[tx_size];
   const int buf_offset = AOMMAX(txfm_size_row, txfm_size_col);
@@ -4163,11 +4163,11 @@ void lowbd_inv_txfm2d_add_16x4_neon(const int32_t *input, uint8_t *output,
   DECLARE_ALIGNED(32, int, txfm_buf[16 * 4 + 16 + 16]);
   int32_t *temp_in = txfm_buf;
 
-  const int8_t *shift = inv_txfm_shift_ls[tx_size];
+  const int8_t *shift = av1_inv_txfm_shift_ls[tx_size];
   const int txw_idx = get_txw_idx(tx_size);
   const int txh_idx = get_txh_idx(tx_size);
-  const int cos_bit_row = inv_cos_bit_row[txw_idx][txh_idx];
-  const int cos_bit_col = inv_cos_bit_col[txw_idx][txh_idx];
+  const int cos_bit_row = av1_inv_cos_bit_row[txw_idx][txh_idx];
+  const int cos_bit_col = av1_inv_cos_bit_col[txw_idx][txh_idx];
   const int txfm_size_col = tx_size_wide[tx_size];
   const int txfm_size_row = tx_size_high[tx_size];
   const int buf_offset = AOMMAX(txfm_size_row, txfm_size_col);
@@ -4225,11 +4225,11 @@ static INLINE void lowbd_inv_txfm2d_add_no_identity_neon(
   int16x8_t b[64 * 8];
   int eobx, eoby, ud_flip, lr_flip;
   get_eobx_eoby_scan_default(&eobx, &eoby, tx_size, eob);
-  const int8_t *shift = inv_txfm_shift_ls[tx_size];
+  const int8_t *shift = av1_inv_txfm_shift_ls[tx_size];
   const int txw_idx = get_txw_idx(tx_size);
   const int txh_idx = get_txh_idx(tx_size);
-  const int cos_bit_col = inv_cos_bit_col[txw_idx][txh_idx];
-  const int cos_bit_row = inv_cos_bit_row[txw_idx][txh_idx];
+  const int cos_bit_col = av1_inv_cos_bit_col[txw_idx][txh_idx];
+  const int cos_bit_row = av1_inv_cos_bit_row[txw_idx][txh_idx];
   const int txfm_size_col = tx_size_wide[tx_size];
   const int txfm_size_row = tx_size_high[tx_size];
   const int rect_type = get_rect_tx_log_ratio(txfm_size_col, txfm_size_row);
