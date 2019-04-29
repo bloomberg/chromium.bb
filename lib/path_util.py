@@ -109,13 +109,13 @@ class ChrootPathResolver(object):
     if not path:
       return None
 
-    real_path = os.path.realpath(path)
-    link = osutils.ResolveSymlink(real_path)
+    abs_path = os.path.abspath(path)
+    link = osutils.ResolveSymlink(abs_path)
 
     # ResolveSymlink returns the passed path when the path isn't a symlink. We
     # can skip some redundant work when its falling back on the link when the
     # chroot is not a symlink.
-    if link == real_path:
+    if link == abs_path:
       return None
 
     return link

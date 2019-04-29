@@ -1441,7 +1441,6 @@ def ResolveSymlink(file_name):
     str - |file_name| if |file_name| is not a symlink. Otherwise, the ultimate
     path that |file_name| points to.
   """
-
   return os.path.realpath(ResolveSymlinkInRoot(file_name, None))
 
 
