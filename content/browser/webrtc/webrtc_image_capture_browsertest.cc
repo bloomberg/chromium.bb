@@ -23,16 +23,20 @@
 
 namespace content {
 
+// Disable FocusDistance test which fails with Logitec cameras.
+// TODO(crbug.com/957020): renable these tests when we have a way to detect
+// which device is connected and hence avoid running it if the camera is
+// Logitech.
+#define MAYBE_ManipulateFocusDistance DISABLED_ManipulateFocusDistance
+
 #if defined(OS_ANDROID)
 // TODO(crbug.com/793859): Re-enable test on Android as soon as the cause for
 // the bug is understood and fixed.
 #define MAYBE_ManipulateZoom DISABLED_ManipulateZoom
 #define MAYBE_ManipulateExposureTime DISABLED_ManipulateExposureTime
-#define MAYBE_ManipulateFocusDistance DISABLED_ManipulateFocusDistance
 #else
 #define MAYBE_ManipulateZoom ManipulateZoom
 #define MAYBE_ManipulateExposureTime ManipulateExposureTime
-#define MAYBE_ManipulateFocusDistance ManipulateFocusDistance
 #endif
 
 namespace {
@@ -157,18 +161,6 @@ class WebRtcImageCaptureSucceedsBrowserTest
       ASSERT_TRUE(base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseFakeDeviceForMediaStream));
     }
-  }
-
-  bool RunImageCaptureTestCase(const std::string& command) override {
-    // TODO(chfremer): Enable test cases using the video capture service with
-    // real cameras as soon as root cause for https://crbug.com/733582 is
-    // understood and resolved.
-    if ((std::get<0>(GetParam()) == TargetCamera::REAL_WEBCAM) &&
-        (std::get<1>(GetParam()).use_video_capture_service)) {
-      LOG(INFO) << "Skipping this test case";
-      return true;
-    }
-    return WebRtcImageCaptureBrowserTestBase::RunImageCaptureTestCase(command);
   }
 
  private:
