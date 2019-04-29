@@ -69,7 +69,7 @@ class TransportClientSocketPool::ConnectJobFactoryImpl
 
   ~ConnectJobFactoryImpl() override = default;
 
-  // ClientSocketPoolBase::ConnectJobFactory methods.
+  // TransportClientSocketPool::ConnectJobFactory methods.
   std::unique_ptr<ConnectJob> NewConnectJob(
       ClientSocketPool::GroupId group_id,
       scoped_refptr<ClientSocketPool::SocketParams> socket_params,
@@ -1394,9 +1394,9 @@ void TransportClientSocketPool::RefreshGroup(const GroupId& group_id) {
 
 TransportClientSocketPool::Group::Group(
     const GroupId& group_id,
-    TransportClientSocketPool* client_socket_pool_base_helper)
+    TransportClientSocketPool* client_socket_pool)
     : group_id_(group_id),
-      client_socket_pool_base_helper_(client_socket_pool_base_helper),
+      client_socket_pool_(client_socket_pool),
       never_assigned_job_count_(0),
       unbound_requests_(NUM_PRIORITIES),
       active_socket_count_(0),
@@ -1413,7 +1413,7 @@ TransportClientSocketPool::Group::~Group() {
 void TransportClientSocketPool::Group::OnConnectJobComplete(int result,
                                                             ConnectJob* job) {
   DCHECK_NE(ERR_IO_PENDING, result);
-  client_socket_pool_base_helper_->OnConnectJobComplete(this, result, job);
+  client_socket_pool_->OnConnectJobComplete(this, result, job);
 }
 
 void TransportClientSocketPool::Group::OnNeedsProxyAuth(
@@ -1421,9 +1421,9 @@ void TransportClientSocketPool::Group::OnNeedsProxyAuth(
     HttpAuthController* auth_controller,
     base::OnceClosure restart_with_auth_callback,
     ConnectJob* job) {
-  client_socket_pool_base_helper_->OnNeedsProxyAuth(
-      this, response, auth_controller, std::move(restart_with_auth_callback),
-      job);
+  client_socket_pool_->OnNeedsProxyAuth(this, response, auth_controller,
+                                        std::move(restart_with_auth_callback),
+                                        job);
 }
 
 void TransportClientSocketPool::Group::StartBackupJobTimer(
@@ -1434,10 +1434,10 @@ void TransportClientSocketPool::Group::StartBackupJobTimer(
 
   // Unretained here is okay because |backup_job_timer_| is
   // automatically cancelled when it's destroyed.
-  backup_job_timer_.Start(
-      FROM_HERE, client_socket_pool_base_helper_->ConnectRetryInterval(),
-      base::BindOnce(&Group::OnBackupJobTimerFired, base::Unretained(this),
-                     group_id));
+  backup_job_timer_.Start(FROM_HERE,
+                          client_socket_pool_->ConnectRetryInterval(),
+                          base::BindOnce(&Group::OnBackupJobTimerFired,
+                                         base::Unretained(this), group_id));
 }
 
 bool TransportClientSocketPool::Group::BackupJobTimerIsRunning() const {
@@ -1533,9 +1533,8 @@ void TransportClientSocketPool::Group::OnBackupJobTimerFired(
 
   // If our old job is waiting on DNS, or if we can't create any sockets
   // right now due to limits, just reset the timer.
-  if (client_socket_pool_base_helper_->ReachedMaxSocketsLimit() ||
-      !HasAvailableSocketSlot(
-          client_socket_pool_base_helper_->max_sockets_per_group_) ||
+  if (client_socket_pool_->ReachedMaxSocketsLimit() ||
+      !HasAvailableSocketSlot(client_socket_pool_->max_sockets_per_group_) ||
       (*jobs_.begin())->GetLoadState() == LOAD_STATE_RESOLVING_HOST) {
     StartBackupJobTimer(group_id);
     return;
@@ -1546,7 +1545,7 @@ void TransportClientSocketPool::Group::OnBackupJobTimerFired(
 
   Request* request = unbound_requests_.FirstMax().value().get();
   std::unique_ptr<ConnectJob> owned_backup_job =
-      client_socket_pool_base_helper_->connect_job_factory_->NewConnectJob(
+      client_socket_pool_->connect_job_factory_->NewConnectJob(
           group_id, request->socket_params(), request->proxy_annotation_tag(),
           request->priority(), request->socket_tag(), this);
   owned_backup_job->net_log().AddEvent(
@@ -1555,10 +1554,10 @@ void TransportClientSocketPool::Group::OnBackupJobTimerFired(
                           true /* backup_job */, &group_id_));
   ConnectJob* backup_job = owned_backup_job.get();
   AddJob(std::move(owned_backup_job), false);
-  client_socket_pool_base_helper_->connecting_socket_count_++;
+  client_socket_pool_->connecting_socket_count_++;
   int rv = backup_job->Connect();
   if (rv != ERR_IO_PENDING) {
-    client_socket_pool_base_helper_->OnConnectJobComplete(this, rv, backup_job);
+    client_socket_pool_->OnConnectJobComplete(this, rv, backup_job);
   }
 }
 

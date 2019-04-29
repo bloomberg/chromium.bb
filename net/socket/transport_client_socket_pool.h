@@ -98,7 +98,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
         const base::Optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
         const NetLogWithSource& net_log);
 
-    virtual ~Request();
+    ~Request();
 
     ClientSocketHandle* handle() const { return handle_; }
     CompletionOnceCallback release_callback() { return std::move(callback_); }
@@ -359,7 +359,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
     };
 
     Group(const GroupId& group_id,
-          TransportClientSocketPool* client_socket_pool_base_helper);
+          TransportClientSocketPool* client_socket_pool);
     ~Group() override;
 
     // ConnectJob::Delegate methods:
@@ -556,7 +556,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
     void SanityCheck() const;
 
     const GroupId group_id_;
-    TransportClientSocketPool* const client_socket_pool_base_helper_;
+    TransportClientSocketPool* const client_socket_pool_;
 
     // Total number of ConnectJobs that have never been assigned to a Request.
     // Since jobs use late binding to requests, which ConnectJobs have or have
