@@ -400,11 +400,15 @@ bool {{class_name}}StubDispatch::Accept(
   switch (message->header()->name) {
 {%-   for method in interface.methods %}
     case internal::k{{class_name}}_{{method.name}}_Name: {
-#if BUILDFLAG(MOJO_TRACE_ENABLED)
-  TRACE_EVENT1("mojom", "(Impl){{namespace_as_string}}::{{class_name}}::{{method.name}}",
-               "message", message->name());
-#endif
 {%-     if method.response_parameters == None %}
+#if BUILDFLAG(MOJO_TRACE_ENABLED)
+      TRACE_EVENT1(
+          "mojom",
+          "(Impl){{namespace_as_string}}::{{class_name}}::{{method.name}}",
+          "message", message->name());
+#endif
+      base::TaskAnnotator::ScopedSetIpcProgramCounter scoped_ipc_pc(
+          base::GetProgramCounter());
       mojo::internal::MessageDispatchContext context(message);
 {%-       if method|method_supports_lazy_serialization %}
       if (!message->is_serialized()) {
@@ -453,11 +457,15 @@ bool {{class_name}}StubDispatch::AcceptWithResponder(
   switch (message->header()->name) {
 {%-   for method in interface.methods %}
     case internal::k{{class_name}}_{{method.name}}_Name: {
-#if BUILDFLAG(MOJO_TRACE_ENABLED)
-  TRACE_EVENT1("mojom", "(Impl){{namespace_as_string}}::{{class_name}}::{{method.name}}",
-               "message", message->name());
-#endif
 {%-     if method.response_parameters != None %}
+#if BUILDFLAG(MOJO_TRACE_ENABLED)
+      TRACE_EVENT1(
+          "mojom",
+          "(Impl){{namespace_as_string}}::{{class_name}}::{{method.name}}",
+          "message", message->name());
+#endif
+      base::TaskAnnotator::ScopedSetIpcProgramCounter scoped_ipc_pc(
+          base::GetProgramCounter());
       mojo::internal::MessageDispatchContext context(message);
 {%-       if method|method_supports_lazy_serialization %}
       if (!message->is_serialized()) {
