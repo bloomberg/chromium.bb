@@ -627,34 +627,44 @@ gfx::Rect BrowserAccessibility::GetInnerTextRangeBoundsRect(
       start_offset > end_offset)
     return gfx::Rect();
 
+  return GetInnerTextRangeBoundsRectInSubtree(
+      start_offset, end_offset, coordinate_system, clipping_behavior,
+      offscreen_result);
+}
+
+gfx::Rect BrowserAccessibility::GetInnerTextRangeBoundsRectInSubtree(
+    const int start_offset,
+    const int end_offset,
+    const ui::AXCoordinateSystem coordinate_system,
+    const ui::AXClippingBehavior clipping_behavior,
+    ui::AXOffscreenResult* offscreen_result) const {
   if (GetRole() == ax::mojom::Role::kInlineTextBox) {
     return RelativeToAbsoluteBounds(
-        GetInlineTextRect(start_offset, end_offset, inner_text_length),
+        GetInlineTextRect(start_offset, end_offset, GetInnerText().length()),
         coordinate_system, clipping_behavior, offscreen_result);
   }
 
-  if (IsPlainTextField() && InternalChildCount() == 1) {
+  const uint32_t internal_child_count = InternalChildCount();
+  if (IsPlainTextField() && internal_child_count == 1) {
     return InternalGetChild(0)->RelativeToAbsoluteBounds(
-        GetInlineTextRect(start_offset, end_offset, inner_text_length),
+        GetInlineTextRect(start_offset, end_offset, GetInnerText().length()),
         coordinate_system, clipping_behavior, offscreen_result);
   }
 
   gfx::Rect bounds;
-  for (size_t i = 0, c = InternalChildCount(); i < c; ++i) {
+  int child_offset_in_parent = 0;
+  for (uint32_t i = 0; i < internal_child_count; ++i) {
     const BrowserAccessibility* browser_accessibility_child =
         InternalGetChild(i);
     const int child_inner_text_length =
         browser_accessibility_child->GetInnerText().length();
-    const int child_offset_in_parent =
-        browser_accessibility_child->CreateTextPositionAt(0)
-            ->CreateParentPosition()
-            ->text_offset();
     const gfx::Rect child_bounds =
-        browser_accessibility_child->GetInnerTextRangeBoundsRect(
+        browser_accessibility_child->GetInnerTextRangeBoundsRectInSubtree(
             std::max(start_offset - child_offset_in_parent, 0),
             std::min(end_offset - child_offset_in_parent,
                      child_inner_text_length),
             coordinate_system, clipping_behavior, offscreen_result);
+    child_offset_in_parent += child_inner_text_length;
     if (bounds.IsEmpty())
       bounds = child_bounds;
     else

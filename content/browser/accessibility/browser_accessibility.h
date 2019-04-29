@@ -516,6 +516,14 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
                                const int end_offset,
                                const int max_length) const;
 
+  // Recursive helper function for GetInnerTextRangeBounds.
+  gfx::Rect GetInnerTextRangeBoundsRectInSubtree(
+      const int start_offset,
+      const int end_offset,
+      const ui::AXCoordinateSystem coordinate_system,
+      const ui::AXClippingBehavior clipping_behavior,
+      ui::AXOffscreenResult* offscreen_result) const;
+
   // Given a set of node ids, return the nodes in this delegate's tree to
   // which they correspond.
   std::set<ui::AXPlatformNode*> GetNodesForNodeIdSet(
