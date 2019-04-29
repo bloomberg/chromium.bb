@@ -66,7 +66,8 @@ const base::Feature kScreenContextQuery{"ChromeOSAssistantScreenContextQuery",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kEnableMediaSessionIntegration{
-    "AssistantEnableMediaSessionIntegration", base::FEATURE_ENABLED_BY_DEFAULT};
+    "AssistantEnableMediaSessionIntegration",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsAlarmTimerManagerEnabled() {
   return base::FeatureList::IsEnabled(kEnableAssistantAlarmTimerManager);
