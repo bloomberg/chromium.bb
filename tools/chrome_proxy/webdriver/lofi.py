@@ -197,6 +197,47 @@ class LoFi(IntegrationTest):
 
       self.assertNotEqual(0, intervention_headers)
 
+  @ChromeVersionEqualOrAfterM(75)
+  def testServerLoFiWithForcingFlag(self):
+    with TestDriver() as test_driver:
+      test_driver.AddChromeArg('--enable-spdy-proxy-auth')
+      test_driver.AddChromeArg('--enable-features=' + ','.join([
+                                 'Previews',
+                                 'DataReductionProxyDecidesTransform',
+                                 'DataReductionProxyEnabledWithNetworkService',
+                               ]))
+      test_driver.AddChromeArg('--force-effective-connection-type=Slow-2G')
+      test_driver.SetExperiment('force_page_policies_empty_image')
+
+      test_driver.LoadURL('http://check.googlezip.net/static/index.html')
+
+      responses = test_driver.GetHTTPResponses()
+      self.assertNotEqual(len(responses), 0)
+      for response in responses:
+        if response.url.endswith('html'):
+          self.assertIn('empty-image',
+            response.response_headers['chrome-proxy'])
+
+  @ChromeVersionEqualOrAfterM(74)
+  def testNoServerLoFiByDefault(self):
+    with TestDriver() as test_driver:
+      test_driver.AddChromeArg('--enable-spdy-proxy-auth')
+      test_driver.AddChromeArg('--enable-features=' + ','.join([
+                                 'Previews',
+                                 'DataReductionProxyDecidesTransform',
+                                 'DataReductionProxyEnabledWithNetworkService',
+                               ]))
+      test_driver.AddChromeArg('--force-effective-connection-type=Slow-2G')
+
+      test_driver.LoadURL('http://check.googlezip.net/static/index.html')
+
+      responses = test_driver.GetHTTPResponses()
+      self.assertNotEqual(len(responses), 0)
+      for response in responses:
+        if response.url.endswith('html'):
+          self.assertNotIn('empty-image',
+            response.response_headers['chrome-proxy'])
+
   # Checks that Client LoFi range requests that go through the Data Reduction
   # Proxy are returned correctly.
   @ChromeVersionEqualOrAfterM(62)
