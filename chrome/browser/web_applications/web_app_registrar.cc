@@ -74,6 +74,11 @@ void WebAppRegistrar::OnDatabaseOpened(base::OnceClosure callback,
   std::move(callback).Run();
 }
 
+bool WebAppRegistrar::IsInstalled(const GURL& start_url) const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 bool WebAppRegistrar::IsInstalled(const AppId& app_id) const {
   return GetAppById(app_id) != nullptr;
 }

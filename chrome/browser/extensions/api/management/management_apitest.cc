@@ -16,7 +16,8 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "extensions/browser/api/management/management_api.h"
@@ -258,12 +259,13 @@ IN_PROC_BROWSER_TEST_F(InstallReplacementWebAppApiTest, InstallableWebApp) {
 
   chrome::SetAutoAcceptPWAInstallConfirmationForTesting(true);
   const GURL good_web_app_url = https_test_server_.GetURL(kGoodWebAppURL);
-  EXPECT_FALSE(extensions::BookmarkOrHostedAppInstalled(browser()->profile(),
-                                                        good_web_app_url));
+
+  auto* provider =
+      web_app::WebAppProviderBase::GetProviderBase(browser()->profile());
+  EXPECT_FALSE(provider->registrar().IsInstalled(good_web_app_url));
 
   RunTest(kGoodWebAppURL, kBackground, true /* from_webstore */);
-  EXPECT_TRUE(extensions::BookmarkOrHostedAppInstalled(browser()->profile(),
-                                                       good_web_app_url));
+  EXPECT_TRUE(provider->registrar().IsInstalled(good_web_app_url));
   chrome::SetAutoAcceptPWAInstallConfirmationForTesting(false);
 }
 

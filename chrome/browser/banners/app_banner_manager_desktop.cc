@@ -13,8 +13,10 @@
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "extensions/common/constants.h"
 
@@ -93,8 +95,10 @@ bool AppBannerManagerDesktop::IsWebAppConsideredInstalled(
     const GURL& validated_url,
     const GURL& start_url,
     const GURL& manifest_url) {
-  return extensions::BookmarkOrHostedAppInstalled(
-      web_contents->GetBrowserContext(), start_url);
+  return web_app::WebAppProvider::Get(
+             Profile::FromBrowserContext(web_contents->GetBrowserContext()))
+      ->registrar()
+      .IsInstalled(start_url);
 }
 
 void AppBannerManagerDesktop::ShowBannerUi(WebappInstallSource install_source) {

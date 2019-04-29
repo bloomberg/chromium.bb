@@ -9,10 +9,14 @@
 #include "base/one_shot_event.h"
 #include "chrome/browser/extensions/convert_web_app.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
+#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/common/extension.h"
+#include "url/gurl.h"
 
 namespace extensions {
 
@@ -23,6 +27,27 @@ BookmarkAppRegistrar::~BookmarkAppRegistrar() = default;
 
 void BookmarkAppRegistrar::Init(base::OnceClosure callback) {
   ExtensionSystem::Get(profile_)->ready().Post(FROM_HERE, std::move(callback));
+}
+
+bool BookmarkAppRegistrar::IsInstalled(const GURL& start_url) const {
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile_);
+  const ExtensionSet& extensions = registry->enabled_extensions();
+
+  // Iterate through the extensions and extract the LaunchWebUrl (bookmark apps)
+  // or check the web extent (hosted apps).
+  for (const scoped_refptr<const Extension>& extension : extensions) {
+    if (!extension->is_hosted_app())
+      continue;
+
+    if (!BookmarkAppIsLocallyInstalled(profile_, extension.get()))
+      continue;
+
+    if (extension->web_extent().MatchesURL(start_url) ||
+        AppLaunchInfo::GetLaunchWebURL(extension.get()) == start_url) {
+      return true;
+    }
+  }
+  return false;
 }
 
 bool BookmarkAppRegistrar::IsInstalled(const web_app::AppId& app_id) const {

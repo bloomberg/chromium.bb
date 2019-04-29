@@ -29,11 +29,11 @@
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
-#include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/web_application_info.h"
@@ -368,7 +368,10 @@ ChromeManagementAPIDelegate::GenerateAppForLinkFunctionDelegate(
 bool ChromeManagementAPIDelegate::IsWebAppInstalled(
     content::BrowserContext* context,
     const GURL& web_app_url) const {
-  return extensions::BookmarkOrHostedAppInstalled(context, web_app_url);
+  auto* provider = web_app::WebAppProviderBase::GetProviderBase(
+      Profile::FromBrowserContext(context));
+  DCHECK(provider);
+  return provider->registrar().IsInstalled(web_app_url);
 }
 
 bool ChromeManagementAPIDelegate::CanContextInstallWebApps(
