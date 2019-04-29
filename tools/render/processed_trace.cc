@@ -364,6 +364,15 @@ void ProcessedTrace::FillTableForPacket(Table* table,
       table->AddRow("Pacing rate",
                     FormatBandwidth(state.pacing_rate_bps(), 8000 * 1000));
     }
+    if (state.has_congestion_control_state()) {
+      // Truncate CC state strings longer than 80 characters.
+      const int kMaxLen = 80;
+      std::string ccstate = state.congestion_control_state();
+      if (ccstate.length() > kMaxLen) {
+        ccstate = ccstate.substr(0, kMaxLen) + "...";
+      }
+      table->AddRow("CC State", ccstate);
+    }
   }
 }
 
