@@ -64,9 +64,10 @@ subtle::SpinLock& GetLock() {
 static bool g_initialized = false;
 
 void (*internal::PartitionRootBase::gOomHandlingFunction)() = nullptr;
-PartitionAllocHooks::AllocationHook* PartitionAllocHooks::allocation_hook_ =
-    nullptr;
-PartitionAllocHooks::FreeHook* PartitionAllocHooks::free_hook_ = nullptr;
+PartitionAllocHooks::AllocationObserverHook*
+    PartitionAllocHooks::allocation_observer_hook_ = nullptr;
+PartitionAllocHooks::FreeObserverHook*
+    PartitionAllocHooks::free_observer_hook_ = nullptr;
 
 static void PartitionAllocBaseInit(internal::PartitionRootBase* root) {
   DCHECK(!root->initialized);
@@ -290,7 +291,8 @@ void* PartitionReallocGenericFlags(PartitionRootGeneric* root,
     // accessibility of memory pages and, if reducing the size, decommitting
     // them.
     if (PartitionReallocDirectMappedInPlace(root, page, new_size)) {
-      PartitionAllocHooks::ReallocHookIfEnabled(ptr, ptr, new_size, type_name);
+      PartitionAllocHooks::ObserverReallocHookIfEnabled(ptr, ptr, new_size,
+                                                        type_name);
       return ptr;
     }
   }

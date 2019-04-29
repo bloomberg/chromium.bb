@@ -350,8 +350,8 @@ bool PoissonAllocationSampler::InstallAllocatorHooks() {
 #endif  // BUILDFLAG(USE_ALLOCATOR_SHIM)
 
 #if BUILDFLAG(USE_PARTITION_ALLOC) && !defined(OS_NACL)
-  PartitionAllocHooks::SetAllocationHook(&PartitionAllocHook);
-  PartitionAllocHooks::SetFreeHook(&PartitionFreeHook);
+  PartitionAllocHooks::SetObserverHooks(&PartitionAllocHook,
+                                        &PartitionFreeHook);
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC) && !defined(OS_NACL)
 
   bool expected = false;
