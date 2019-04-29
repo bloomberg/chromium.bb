@@ -5665,9 +5665,7 @@ bool LayoutBox::HasUnsplittableScrollingOverflow() const {
 }
 
 LayoutBox::PaginationBreakability LayoutBox::GetPaginationBreakability() const {
-  // TODO(mstensho): It is wrong to check isAtomicInlineLevel() as we
-  // actually look for replaced elements.
-  if (IsAtomicInlineLevel() || HasUnsplittableScrollingOverflow() ||
+  if (ShouldBeConsideredAsReplaced() || HasUnsplittableScrollingOverflow() ||
       (Parent() && IsWritingModeRoot()) ||
       (IsOutOfFlowPositioned() &&
        StyleRef().GetPosition() == EPosition::kFixed) ||
