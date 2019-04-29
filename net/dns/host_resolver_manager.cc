@@ -2315,7 +2315,6 @@ HostResolverManager::HostResolverManager(
       proc_params_(nullptr, options.max_system_retry_attempts),
       net_log_(net_log),
       received_dns_config_(false),
-      dns_config_overrides_(options.dns_config_overrides),
       num_dns_failures_(0),
       assume_ipv6_failure_on_wifi_(false),
       use_local_ipv6_(false),

@@ -66,6 +66,12 @@ bool HostResolver::GetNoIPv6OnWifi() {
   return false;
 }
 
+void HostResolver::SetDnsConfigOverrides(const DnsConfigOverrides& overrides) {
+  // Should be overridden in any HostResolver implementation where this method
+  // may be called.
+  NOTREACHED();
+}
+
 void HostResolver::SetRequestContext(URLRequestContext* request_context) {
   // Should be overridden in any HostResolver implementation where this method
   // may be called.
