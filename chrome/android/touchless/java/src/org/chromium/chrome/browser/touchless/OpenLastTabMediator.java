@@ -30,7 +30,7 @@ import java.util.List;
  * Mediator used to look for history events and update the model accordingly.
  */
 // TODO(crbug.com/948858): Add unit tests for this behavior.
-class OpenLastTabMediator implements HistoryProvider.BrowsingHistoryObserver {
+class OpenLastTabMediator implements HistoryProvider.BrowsingHistoryObserver, FocusableComponent {
     private final Context mContext;
     private final Profile mProfile;
     private final NativePageHost mNativePageHost;
@@ -65,6 +65,16 @@ class OpenLastTabMediator implements HistoryProvider.BrowsingHistoryObserver {
             mHistoryBridge.destroy();
             mHistoryBridge = null;
         }
+    }
+
+    @Override
+    public void requestFocus() {
+        mModel.set(OpenLastTabProperties.SHOULD_FOCUS_VIEW, true);
+    }
+
+    @Override
+    public void setOnFocusListener(Runnable listener) {
+        mModel.set(OpenLastTabProperties.ON_FOCUS_CALLBACK, listener);
     }
 
     @Override

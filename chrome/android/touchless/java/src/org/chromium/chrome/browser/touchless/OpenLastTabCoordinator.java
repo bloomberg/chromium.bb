@@ -17,15 +17,21 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 class OpenLastTabCoordinator {
     private final OpenLastTabMediator mMediator;
 
-    OpenLastTabCoordinator(
-            Context context, Profile profile, NativePageHost nativePageHost, OpenLastTabView view) {
-        PropertyModel model = new PropertyModel.Builder(OpenLastTabProperties.ALL_KEYS).build();
+    OpenLastTabCoordinator(Context context, Profile profile, NativePageHost nativePageHost,
+            OpenLastTabView view, TouchlessLayoutManager layoutManager) {
+        PropertyModel model = new PropertyModel.Builder(OpenLastTabProperties.ALL_KEYS)
+                                      .with(OpenLastTabProperties.ASYNC_FOCUS_DELEGATE,
+                                              layoutManager.createCallbackToSetViewToFocus())
+                                      .build();
         PropertyModelChangeProcessor.create(model, view, OpenLastTabViewBinder::bind);
 
         mMediator = new OpenLastTabMediator(context, profile, nativePageHost, model, view);
     }
 
-    void destroy() {
+    public void destroy() {
         mMediator.destroy();
+    }
+    public FocusableComponent getFocusableComponent() {
+        return mMediator;
     }
 }

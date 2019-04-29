@@ -4,15 +4,19 @@
 
 package org.chromium.chrome.browser.touchless;
 
+import static org.chromium.chrome.browser.touchless.SiteSuggestionsCoordinator.ASYNC_FOCUS_DELEGATE;
 import static org.chromium.chrome.browser.touchless.SiteSuggestionsCoordinator.CURRENT_INDEX_KEY;
 import static org.chromium.chrome.browser.touchless.SiteSuggestionsCoordinator.ITEM_COUNT_KEY;
+import static org.chromium.chrome.browser.touchless.SiteSuggestionsCoordinator.ON_FOCUS_CALLBACK;
 import static org.chromium.chrome.browser.touchless.SiteSuggestionsCoordinator.REMOVAL_KEY;
+import static org.chromium.chrome.browser.touchless.SiteSuggestionsCoordinator.SHOULD_FOCUS_VIEW;
 import static org.chromium.chrome.browser.touchless.SiteSuggestionsCoordinator.SUGGESTIONS_KEY;
 
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.ContextMenu;
 import android.view.View;
 import android.widget.TextView;
@@ -33,7 +37,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * Recycler view adapter for Touchless Suggestions carousel.
+ * Recycler view adapter and view binder for Touchless Suggestions carousel.
  *
  * Allows for an almost-infinite side-scrolling carousel with snapping focus in the center if
  * there are 2 or more items; does not scroll if there is 1 or fewer items.
@@ -107,6 +111,8 @@ class SiteSuggestionsAdapter extends ForwardingListObservable<PropertyKey>
     private LinearLayoutManager mLayoutManager;
     private TextView mTitleView;
 
+    private final RecyclerView mRecyclerView;
+
     /**
      * @param model the main property model coming from {@link SiteSuggestionsCoordinator}.
      * @param iconGenerator an icon generator for creating icons.
@@ -117,13 +123,14 @@ class SiteSuggestionsAdapter extends ForwardingListObservable<PropertyKey>
      */
     SiteSuggestionsAdapter(PropertyModel model, RoundedIconGenerator iconGenerator,
             SuggestionsNavigationDelegate navigationDelegate, ContextMenuManager contextMenuManager,
-            LinearLayoutManager layoutManager, TextView titleView) {
+            LinearLayoutManager layoutManager, TextView titleView, RecyclerView recyclerView) {
         mModel = model;
         mIconGenerator = iconGenerator;
         mNavDelegate = navigationDelegate;
         mContextMenuManager = contextMenuManager;
         mLayoutManager = layoutManager;
         mTitleView = titleView;
+        mRecyclerView = recyclerView;
 
         mModel.get(SUGGESTIONS_KEY).addObserver(this);
         mModel.addObserver(this);
@@ -152,6 +159,9 @@ class SiteSuggestionsAdapter extends ForwardingListObservable<PropertyKey>
         tile.setOnFocusChangeListener((View v, boolean hasFocus) -> {
             if (hasFocus) {
                 mModel.set(CURRENT_INDEX_KEY, position);
+                if (mModel.get(ON_FOCUS_CALLBACK) != null) {
+                    mModel.get(ON_FOCUS_CALLBACK).run();
+                }
             }
         });
 
@@ -205,6 +215,10 @@ class SiteSuggestionsAdapter extends ForwardingListObservable<PropertyKey>
                                            .get(position % itemCount - 1)
                                            .get(SiteSuggestionModel.TITLE_KEY));
             }
+        } else if (propertyKey == SHOULD_FOCUS_VIEW && mModel.get(SHOULD_FOCUS_VIEW)
+                && mModel.get(ASYNC_FOCUS_DELEGATE) != null) {
+            mModel.get(ASYNC_FOCUS_DELEGATE).onResult(mRecyclerView);
+            mModel.set(SHOULD_FOCUS_VIEW, false);
         }
     }
 

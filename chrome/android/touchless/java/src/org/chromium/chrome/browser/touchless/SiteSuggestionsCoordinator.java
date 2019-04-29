@@ -11,6 +11,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewStub;
 
+import org.chromium.base.Callback;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.ImageFetcher;
@@ -36,17 +37,27 @@ class SiteSuggestionsCoordinator {
             new PropertyModel.WritableIntPropertyKey();
     static final PropertyModel.WritableObjectPropertyKey<String> REMOVAL_KEY =
             new PropertyModel.WritableObjectPropertyKey<>();
+    public static final PropertyModel.WritableObjectPropertyKey<Runnable> ON_FOCUS_CALLBACK =
+            new PropertyModel.WritableObjectPropertyKey<>();
+    public static final PropertyModel.WritableBooleanPropertyKey SHOULD_FOCUS_VIEW =
+            new PropertyModel.WritableBooleanPropertyKey();
+    public static final PropertyModel
+            .ReadableObjectPropertyKey<Callback<View>> ASYNC_FOCUS_DELEGATE =
+            new PropertyModel.ReadableObjectPropertyKey<>();
 
     private SiteSuggestionsMediator mMediator;
 
     SiteSuggestionsCoordinator(View parentView, Profile profile,
             SuggestionsNavigationDelegate navigationDelegate, ContextMenuManager contextMenuManager,
-            ImageFetcher imageFetcher) {
+            ImageFetcher imageFetcher, TouchlessLayoutManager touchlessLayoutManager) {
         PropertyModel model =
                 new PropertyModel
-                        .Builder(CURRENT_INDEX_KEY, SUGGESTIONS_KEY, ITEM_COUNT_KEY, REMOVAL_KEY)
+                        .Builder(CURRENT_INDEX_KEY, SUGGESTIONS_KEY, ITEM_COUNT_KEY, REMOVAL_KEY,
+                                ON_FOCUS_CALLBACK, SHOULD_FOCUS_VIEW, ASYNC_FOCUS_DELEGATE)
                         .with(SUGGESTIONS_KEY, new PropertyListModel<>())
                         .with(ITEM_COUNT_KEY, 1)
+                        .with(ASYNC_FOCUS_DELEGATE,
+                                touchlessLayoutManager.createCallbackToSetViewToFocus())
                         .build();
         View suggestionsView =
                 ((ViewStub) parentView.findViewById(R.id.most_likely_stub)).inflate();
@@ -62,7 +73,7 @@ class SiteSuggestionsCoordinator {
                 suggestionsView.findViewById(R.id.most_likely_launcher_recycler);
         SiteSuggestionsAdapter adapterDelegate = new SiteSuggestionsAdapter(model, iconGenerator,
                 navigationDelegate, contextMenuManager, layoutManager,
-                suggestionsView.findViewById(R.id.most_likely_web_title_text));
+                suggestionsView.findViewById(R.id.most_likely_web_title_text), recyclerView);
 
         RecyclerViewAdapter<SiteSuggestionsViewHolderFactory.SiteSuggestionsViewHolder, PropertyKey>
                 adapter = new RecyclerViewAdapter<>(
@@ -92,5 +103,9 @@ class SiteSuggestionsCoordinator {
 
     public void destroy() {
         mMediator.destroy();
+    }
+
+    public FocusableComponent getFocusableComponent() {
+        return mMediator;
     }
 }

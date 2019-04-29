@@ -25,7 +25,6 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.SuggestionsDependencyFactory;
 import org.chromium.chrome.browser.suggestions.SuggestionsEventReporter;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
-import org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
@@ -56,7 +55,7 @@ public class TouchlessNewTabPage extends BasicNativePage {
 
     private FrameLayout mView;
     private TouchlessNewTabPageTopLayout mRecyclerTopmostView;
-    private SuggestionsRecyclerView mRecyclerView;
+    private TouchlessRecyclerView mRecyclerView;
     private Tab mTab;
     private TouchlessContextMenuManager mContextMenuManager;
     private SiteSuggestionsCoordinator mSiteSuggestionsCoordinator;
@@ -89,12 +88,13 @@ public class TouchlessNewTabPage extends BasicNativePage {
 
         OpenLastTabView openLastTabButton =
                 mRecyclerTopmostView.findViewById(R.id.open_last_tab_button);
-        mOpenLastTabCoordinator =
-                new OpenLastTabCoordinator(activity, profile, nativePageHost, openLastTabButton);
+        mOpenLastTabCoordinator = new OpenLastTabCoordinator(activity, profile, nativePageHost,
+                openLastTabButton, mRecyclerView.getTouchlessLayoutManager());
 
         // TODO(dewittj): Initialize the tile suggestions coordinator here.
 
-        initializeContentSuggestions(activity, nativePageHost);
+        initializeContentSuggestions(
+                activity, nativePageHost, mRecyclerView.getTouchlessLayoutManager());
 
         NewTabPageUma.recordIsUserOnline();
         NewTabPageUma.recordLoadType(activity);
@@ -105,8 +105,8 @@ public class TouchlessNewTabPage extends BasicNativePage {
      * TODO(dewittj): This uses SuggestionsRecyclerView and NewTabPageAdapter in a legacy manner
      * that does not properly support modern MVC code architecture.
      */
-    private void initializeContentSuggestions(
-            ChromeActivity activity, NativePageHost nativePageHost) {
+    private void initializeContentSuggestions(ChromeActivity activity,
+            NativePageHost nativePageHost, TouchlessLayoutManager layoutManager) {
         long constructedTimeNs = System.nanoTime();
 
         NewTabPageUma.trackTimeToFirstDraw(mRecyclerView, constructedTimeNs);
@@ -137,12 +137,16 @@ public class TouchlessNewTabPage extends BasicNativePage {
 
         // Infinite scrolling view for site suggestions.
         mSiteSuggestionsCoordinator = new SiteSuggestionsCoordinator(mRecyclerTopmostView, profile,
-                navigationDelegate, mContextMenuManager, suggestionsUiDelegate.getImageFetcher());
+                navigationDelegate, mContextMenuManager, suggestionsUiDelegate.getImageFetcher(),
+                layoutManager);
 
         NewTabPageAdapter newTabPageAdapter = new TouchlessNewTabPageAdapter(suggestionsUiDelegate,
                 mRecyclerTopmostView, uiConfig,
                 SuggestionsDependencyFactory.getInstance().getOfflinePageBridge(profile),
-                mContextMenuManager, mMediator.getModel());
+                mContextMenuManager, mMediator.getModel(),
+                mOpenLastTabCoordinator.getFocusableComponent(),
+                mSiteSuggestionsCoordinator.getFocusableComponent(),
+                layoutManager.createCallbackToSetViewToFocus());
 
         PropertyModelChangeProcessor.create(
                 mMediator.getModel(), mRecyclerView, ContentSuggestionsViewBinder::bind);

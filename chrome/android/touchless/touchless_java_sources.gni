@@ -3,9 +3,11 @@
 # found in the LICENSE file.
 
 touchless_java_sources = [
+  "touchless/java/src/org/chromium/chrome/browser/touchless/AboveTheFoldViewHolder.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/ContentSuggestionsViewBinder.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/DinoActivity.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/NoTouchActivity.java",
+  "touchless/java/src/org/chromium/chrome/browser/touchless/FocusableComponent.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/OpenLastTabCoordinator.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/OpenLastTabMediator.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/OpenLastTabProperties.java",
@@ -21,15 +23,17 @@ touchless_java_sources = [
   "touchless/java/src/org/chromium/chrome/browser/touchless/SiteSuggestionsTileView.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/SiteSuggestionsViewHolderFactory.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessActionItemViewHolder.java",
+  "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessArticleViewHolder.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessContextMenuManager.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessDelegate.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessExploreSitesPage.java",
+  "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessLayoutManager.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessNewTabPage.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessNewTabPageAdapter.java",
-  "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessNewTabPageFocusInfo.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessNewTabPageMediator.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessNewTabPageProperties.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessNewTabPageTopLayout.java",
+  "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessRecyclerView.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessTabObserver.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessUiController.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessZoomHelper.java",
@@ -50,10 +54,7 @@ touchless_java_sources = [
 
 touchless_test_java_sources = [ "touchless/javatests/src/org/chromium/chrome/browser/touchless/NoTouchActivityTest.java" ]
 
-touchless_junit_test_java_sources = [
-  "touchless/junit/src/org/chromium/chrome/browser/touchless/ScrollPositionInfoTest.java",
-  "touchless/junit/src/org/chromium/chrome/browser/touchless/TouchlessNewTabPageFocusInfoTest.java",
-]
+touchless_junit_test_java_sources = [ "touchless/junit/src/org/chromium/chrome/browser/touchless/ScrollPositionInfoTest.java" ]
 
 touchess_fallback_java_sources = [
   "touchless/fallback/java/src/org/chromium/chrome/browser/touchless/TouchlessDelegate.java",

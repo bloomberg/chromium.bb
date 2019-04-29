@@ -7,7 +7,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView
+    <org.chromium.chrome.browser.touchless.TouchlessRecyclerView
         android:id="@+id/suggestions_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

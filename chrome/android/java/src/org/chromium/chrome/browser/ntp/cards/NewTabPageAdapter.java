@@ -42,9 +42,9 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         implements ListObservable.ListObserver<PartialBindCallback> {
     protected final SuggestionsUiDelegate mUiDelegate;
     protected final ContextMenuManager mContextMenuManager;
-    private final OfflinePageBridge mOfflinePageBridge;
+    protected final OfflinePageBridge mOfflinePageBridge;
 
-    private final @Nullable View mAboveTheFoldView;
+    protected final @Nullable View mAboveTheFoldView;
     protected final UiConfig mUiConfig;
     protected SuggestionsRecyclerView mRecyclerView;
 
