@@ -11,6 +11,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 
+import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.history.BrowsingHistoryBridge;
 import org.chromium.chrome.browser.history.HistoryItem;
@@ -22,6 +24,7 @@ import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.chrome.touchless.R;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -58,12 +61,16 @@ class OpenLastTabMediator implements HistoryProvider.BrowsingHistoryObserver, Fo
                 ViewUtils.createDefaultRoundedIconGenerator(mContext.getResources(), false);
         mIconBridge = new LargeIconBridge(mProfile);
 
-        // Check if this is a first launch of Chrome.
-        SharedPreferences prefs =
-                mNativePageHost.getActiveTab().getActivity().getPreferences(Context.MODE_PRIVATE);
-        boolean firstLaunched = prefs.getBoolean(FIRST_LAUNCHED_KEY, true);
-        prefs.edit().putBoolean(FIRST_LAUNCHED_KEY, false).apply();
-        mModel.set(OpenLastTabProperties.OPEN_LAST_TAB_FIRST_LAUNCH, firstLaunched);
+        PostTask.postTask(TaskTraits.USER_VISIBLE, () -> {
+            // Check if this is a first launch of Chrome.
+            SharedPreferences prefs = mNativePageHost.getActiveTab().getActivity().getPreferences(
+                    Context.MODE_PRIVATE);
+            boolean firstLaunched = prefs.getBoolean(FIRST_LAUNCHED_KEY, true);
+            prefs.edit().putBoolean(FIRST_LAUNCHED_KEY, false).apply();
+            PostTask.postTask(UiThreadTaskTraits.USER_VISIBLE, () -> {
+                mModel.set(OpenLastTabProperties.OPEN_LAST_TAB_FIRST_LAUNCH, firstLaunched);
+            });
+        });
 
         // TODO(wylieb):Investigate adding an item limit to the API.
         // Query the history for everything (no API exists to only query for the most recent).
