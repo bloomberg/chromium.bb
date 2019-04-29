@@ -13,8 +13,8 @@ class Fallback(IntegrationTest):
   def testSecureProxyProbeFallback(self):
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
-      test_driver.AddChromeArg(
-        '--enable-features=NetworkService,'
+      test_driver.EnableChromeFeature('NetworkService')
+      test_driver.EnableChromeFeature(
         'DataReductionProxyEnabledWithNetworkService')
 
       # Set the secure proxy check URL to the google.com favicon, which will be

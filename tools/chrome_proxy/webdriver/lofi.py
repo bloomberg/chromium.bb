@@ -17,8 +17,8 @@ class LoFi(IntegrationTest):
   def testLoFiOnSlowConnection(self):
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
-      test_driver.AddChromeArg('--enable-features='
-                               'Previews,DataReductionProxyDecidesTransform')
+      test_driver.EnableChromeFeature('Previews')
+      test_driver.EnableChromeFeature('DataReductionProxyDecidesTransform')
       # Disable server experiments such as tamper detection.
       test_driver.AddChromeArg('--data-reduction-proxy-server-experiments-'
                                'disabled')
@@ -51,8 +51,8 @@ class LoFi(IntegrationTest):
   def testLoFiFastConnection(self):
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
-      test_driver.AddChromeArg('--enable-features='
-                               'Previews,DataReductionProxyDecidesTransform')
+      test_driver.EnableChromeFeature('Previews')
+      test_driver.EnableChromeFeature('DataReductionProxyDecidesTransform')
       # Disable server experiments such as tamper detection.
       test_driver.AddChromeArg('--data-reduction-proxy-server-experiments-'
                                'disabled')
@@ -105,8 +105,8 @@ class LoFi(IntegrationTest):
       # --profile-type=default command line for the same user profile and cache
       # to be used across the two page loads.
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
-      test_driver.AddChromeArg('--enable-features='
-                               'Previews,DataReductionProxyDecidesTransform')
+      test_driver.EnableChromeFeature('Previews')
+      test_driver.EnableChromeFeature('DataReductionProxyDecidesTransform')
       test_driver.AddChromeArg('--profile-type=default')
       test_driver.AddChromeArg('--data-reduction-proxy-server-experiments-'
                                'disabled')
@@ -151,10 +151,7 @@ class LoFi(IntegrationTest):
       # Third page load with the chrome proxy on and Lo-Fi off.
       test_driver._StopDriver()
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
-      test_driver.RemoveChromeArg('--enable-features='
-                                  'DataReductionProxyDecidesTransform')
-      test_driver.AddChromeArg('--disable-features='
-                               'DataReductionProxyDecidesTransform')
+      test_driver.DisableChromeFeature('DataReductionProxyDecidesTransform')
       test_driver.LoadURL('http://check.googlezip.net/cacheable/test.html')
 
       responses = 0
@@ -176,8 +173,8 @@ class LoFi(IntegrationTest):
   def testClientLoFiInterventionHeader(self):
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
-      test_driver.AddChromeArg('--enable-features='
-                               'Previews,DataReductionProxyDecidesTransform')
+      test_driver.EnableChromeFeature('Previews')
+      test_driver.EnableChromeFeature('DataReductionProxyDecidesTransform')
       test_driver.AddChromeArg(
           '--force-fieldtrial-params=NetworkQualityEstimator.Enabled:'
           'force_effective_connection_type/2G,'
@@ -201,11 +198,10 @@ class LoFi(IntegrationTest):
   def testServerLoFiWithForcingFlag(self):
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
-      test_driver.AddChromeArg('--enable-features=' + ','.join([
-                                 'Previews',
-                                 'DataReductionProxyDecidesTransform',
-                                 'DataReductionProxyEnabledWithNetworkService',
-                               ]))
+      test_driver.EnableChromeFeature('Previews')
+      test_driver.EnableChromeFeature('DataReductionProxyDecidesTransform')
+      test_driver.EnableChromeFeature(
+        'DataReductionProxyEnabledWithNetworkService')
       test_driver.AddChromeArg('--force-effective-connection-type=Slow-2G')
       test_driver.SetExperiment('force_page_policies_empty_image')
 
@@ -222,11 +218,10 @@ class LoFi(IntegrationTest):
   def testNoServerLoFiByDefault(self):
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
-      test_driver.AddChromeArg('--enable-features=' + ','.join([
-                                 'Previews',
-                                 'DataReductionProxyDecidesTransform',
-                                 'DataReductionProxyEnabledWithNetworkService',
-                               ]))
+      test_driver.EnableChromeFeature('Previews')
+      test_driver.EnableChromeFeature('DataReductionProxyDecidesTransform')
+      test_driver.EnableChromeFeature(
+        'DataReductionProxyEnabledWithNetworkService')
       test_driver.AddChromeArg('--force-effective-connection-type=Slow-2G')
 
       test_driver.LoadURL('http://check.googlezip.net/static/index.html')
@@ -248,9 +243,9 @@ class LoFi(IntegrationTest):
       # Enable Previews and Client-side LoFi, but disable server previews in
       # order to force Chrome to use Client-side LoFi for the images on the
       # page.
-      test_driver.AddChromeArg('--enable-features=Previews,PreviewsClientLoFi')
-      test_driver.AddChromeArg(
-          '--disable-features=DataReductionProxyDecidesTransform')
+      test_driver.EnableChromeFeature('Previews')
+      test_driver.EnableChromeFeature('PreviewsClientLoFi')
+      test_driver.DisableChromeFeature('DataReductionProxyDecidesTransform')
 
       test_driver.AddChromeArg(
           '--force-fieldtrial-params=NetworkQualityEstimator.Enabled:'

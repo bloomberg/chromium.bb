@@ -59,9 +59,8 @@ class Smoke(IntegrationTest):
   def testCheckPageWithDataSaverFeatureDisabled(self):
     with TestDriver() as t:
       t.AddChromeArg('--enable-spdy-proxy-auth')
-      t.AddChromeArg('--enable-features=NetworkService')
-      t.AddChromeArg(
-        '--disable-features=DataReductionProxyEnabledWithNetworkService')
+      t.EnableChromeFeature('NetworkService')
+      t.DisableChromeFeature('DataReductionProxyEnabledWithNetworkService')
       t.LoadURL('http://check.googlezip.net/test.html')
       responses = t.GetHTTPResponses()
       self.assertNotEqual(0, len(responses))

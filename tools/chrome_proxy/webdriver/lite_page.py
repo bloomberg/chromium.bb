@@ -28,11 +28,13 @@ class LitePage(IntegrationTest):
       self.skipTest('This test cannot be run with other experiments.')
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
-      test_driver.AddChromeArg('--enable-features=NetworkQualityEstimator'
-                               '<NetworkQualityEstimator,'
-                               'Previews,DataReductionProxyDecidesTransform,'
-                               'NetworkService,'
-                               'DataReductionProxyEnabledWithNetworkService')
+      test_driver.EnableChromeFeature(
+        'NetworkQualityEstimator<NetworkQualityEstimator')
+      test_driver.EnableChromeFeature('NetworkService')
+      test_driver.EnableChromeFeature(
+        'DataReductionProxyEnabledWithNetworkService')
+      test_driver.EnableChromeFeature('Previews')
+      test_driver.EnableChromeFeature('DataReductionProxyDecidesTransform')
       test_driver.AddChromeArg(
           '--force-fieldtrial-params=NetworkQualityEstimator.Enabled:'
           'force_effective_connection_type/2G,'
@@ -86,8 +88,8 @@ class LitePage(IntegrationTest):
       self.skipTest('This test cannot be run with other experiments.')
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
-      test_driver.AddChromeArg('--enable-features='
-                               'Previews,DataReductionProxyDecidesTransform')
+      test_driver.EnableChromeFeature('Previews')
+      test_driver.EnableChromeFeature('DataReductionProxyDecidesTransform')
       # Need to force 2G speed to get lite-page response.
       test_driver.AddChromeArg('--force-effective-connection-type=2G')
       # Set exp=client_test_nano to force Nano response.
@@ -135,9 +137,9 @@ class LitePage(IntegrationTest):
       self.skipTest('This test cannot be run with other experiments.')
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
-      test_driver.AddChromeArg('--enable-features='
-                               'Previews,DataReductionProxyDecidesTransform')
-      test_driver.AddChromeArg('--disable-features=AndroidOmniboxPreviewsBadge')
+      test_driver.EnableChromeFeature('Previews')
+      test_driver.EnableChromeFeature('DataReductionProxyDecidesTransform')
+      test_driver.DisableChromeFeature('AndroidOmniboxPreviewsBadge')
       test_driver.AddChromeArg('--force-effective-connection-type=2G')
       # Set exp=client_test_nano to force Lite page response.
       test_driver.SetExperiment('client_test_nano')
@@ -173,11 +175,13 @@ class LitePage(IntegrationTest):
   def testLitePageFallbackViaPagePolicies(self):
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
-      test_driver.AddChromeArg('--enable-features=NetworkQualityEstimator'
-                               '<NetworkQualityEstimator,'
-                               'Previews,DataReductionProxyDecidesTransform,'
-                               'NetworkService,'
-                               'DataReductionProxyEnabledWithNetworkService')
+      test_driver.EnableChromeFeature(
+        'NetworkQualityEstimator<NetworkQualityEstimator')
+      test_driver.EnableChromeFeature('NetworkService')
+      test_driver.EnableChromeFeature(
+        'DataReductionProxyEnabledWithNetworkService')
+      test_driver.EnableChromeFeature('Previews')
+      test_driver.EnableChromeFeature('DataReductionProxyDecidesTransform')
       test_driver.AddChromeArg('--force-fieldtrial-params='
                                'NetworkQualityEstimator.Enabled:'
                                'force_effective_connection_type/Slow2G')
@@ -213,9 +217,11 @@ class LitePage(IntegrationTest):
   def testPreviewNotProvidedForFastConnection(self):
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
-      test_driver.AddChromeArg('--enable-features=NetworkQualityEstimator'
-                               '<NetworkQualityEstimator,'
-                               'Previews,DataReductionProxyDecidesTransform')
+      test_driver.EnableChromeFeature(
+        'NetworkQualityEstimator<NetworkQualityEstimator')
+      test_driver.EnableChromeFeature('NetworkService')
+      test_driver.EnableChromeFeature('Previews')
+      test_driver.EnableChromeFeature('DataReductionProxyDecidesTransform')
       test_driver.AddChromeArg('--force-fieldtrial-params='
                                'NetworkQualityEstimator.Enabled:'
                                'force_effective_connection_type/4G')
@@ -258,10 +264,11 @@ class LitePage(IntegrationTest):
   def testDataReductionProxyDecidesTransformDefault(self):
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
-      test_driver.AddChromeArg('--enable-features=NetworkQualityEstimator'
-                               '<NetworkQualityEstimator,'
-                               'NetworkService,'
-                               'DataReductionProxyEnabledWithNetworkService')
+      test_driver.EnableChromeFeature(
+        'NetworkQualityEstimator<NetworkQualityEstimator')
+      test_driver.EnableChromeFeature('NetworkService')
+      test_driver.EnableChromeFeature(
+        'DataReductionProxyEnabledWithNetworkService')
       test_driver.AddChromeArg('--force-fieldtrial-params='
                                'NetworkQualityEstimator.Enabled:'
                                'force_effective_connection_type/2G')
@@ -294,8 +301,8 @@ class LitePage(IntegrationTest):
   def testInteractiveCASPR(self):
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
-      test_driver.AddChromeArg('--enable-features='
-                               'Previews,DataReductionProxyDecidesTransform')
+      test_driver.EnableChromeFeature('Previews')
+      test_driver.EnableChromeFeature('DataReductionProxyDecidesTransform')
       # Need to force 2G speed to get a preview.
       test_driver.AddChromeArg('--force-effective-connection-type=2G')
       # Set exp=client_test_icaspr to force iCASPR response.

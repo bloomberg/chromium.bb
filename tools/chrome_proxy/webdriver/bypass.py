@@ -109,7 +109,7 @@ class Bypass(IntegrationTest):
   def testMissingViaHeaderNoBypassExperiment(self):
     with TestDriver() as t:
       t.AddChromeArg('--enable-spdy-proxy-auth')
-      t.AddChromeArg('--enable-features=DataReductionProxyRobustConnection'
+      t.EnableChromeFeature('DataReductionProxyRobustConnection'
         '<DataReductionProxyRobustConnection')
       t.AddChromeArg('--force-fieldtrials=DataReductionProxyRobustConnection/'
         'Enabled')

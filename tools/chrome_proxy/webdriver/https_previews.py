@@ -31,25 +31,18 @@ class HttpsPreviewsBaseClass():
     version = self.getVersion()
 
     # These feature flags are common to both versions.
-    features = [
-      "Previews",
-      "LitePageServerPreviews",
-      # Just in case NetworkService is on. Has no effect otherwise.
-      "DataReductionProxyEnabledWithNetworkService",
-    ]
+    t.EnableChromeFeature('Previews')
+    t.EnableChromeFeature('LitePageServerPreviews')
+    t.EnableChromeFeature('DataReductionProxyEnabledWithNetworkService')
 
     if version == NAV_THROTTLE_VERSION:
       # No additional flags here, but explicitly check it given the else below.
       pass
     elif version == URL_LOADER_VERSION:
-      features += [
-        "HTTPSServerPreviewsUsingURLLoader",
-        "NetworkService",
-      ]
+      t.EnableChromeFeature('HTTPSServerPreviewsUsingURLLoader')
+      t.EnableChromeFeature('NetworkService')
     else:
       raise Exception('"%s" is not a valid version' % version)
-
-    t.AddChromeArg('--enable-features=' + ','.join(features))
 
     t.AddChromeArg('--enable-spdy-proxy-auth')
     t.AddChromeArg('--dont-require-litepage-redirect-infobar')

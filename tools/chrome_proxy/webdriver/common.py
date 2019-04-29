@@ -205,6 +205,8 @@ class TestDriver:
     _emulation_server: A reference to the emulation server being used
     _emulation_server_port: If this is not set to -1, the emulation server is
       being used for the test and is available on this port
+    _enable_features: A string set of features to enable
+    _disable_features: A string set of features to disable
   """
 
   def __init__(self, control_network_connection=False):
@@ -223,6 +225,8 @@ class TestDriver:
     self._network_connection = None
     self._emulation_server = None
     self._emulation_server_port = -1
+    self._enable_features = set()
+    self._disable_features = set()
 
   def __enter__(self):
     return self
@@ -274,13 +278,7 @@ class TestDriver:
       for override_arg in shlex.split(self._flags.browser_args):
         arg_key = GetDictKey(override_arg)
         if (arg_key in original_args
-            and original_args[arg_key] in self._chrome_args):
-          if arg_key == '--enable-features':
-            new_features = override_arg[len('--enable-features='):]
-            self._chrome_args.remove(original_args[arg_key])
-            override_arg = original_args[arg_key]+','+new_features
-            self._logger.info('Appended features. %s', new_features)
-          else:
+              and original_args[arg_key] in self._chrome_args):
             self._chrome_args.remove(original_args[arg_key])
             self._logger.info('Removed Chrome flag. %s', original_args[arg_key])
         self._chrome_args.add(override_arg)
@@ -301,10 +299,12 @@ class TestDriver:
         # Forward the Android port to the host machine.
         address = 'tcp:%d' % self._emulation_server_port
         _RunAdbCmd(['reverse', address, address])
+
     capabilities = {
       'loggingPrefs': {'performance': 'INFO'},
     }
     chrome_options = Options()
+
     if self._control_network_connection:
       capabilities.update({
         'networkConnectionEnabled': True,
@@ -313,10 +313,16 @@ class TestDriver:
       if not self._flags.android:
         chrome_options.add_experimental_option('mobileEmulation',
           {'deviceName': 'Google Nexus 5'})
+
+    self._chrome_args.add(
+      '--enable-features=%s' % ','.join(self._enable_features))
+    self._chrome_args.add(
+      '--disable-features=%s' % ','.join(self._disable_features))
     for arg in self._chrome_args:
       chrome_options.add_argument(arg)
     self._logger.info('Starting Chrome with these flags: %s',
       str(self._chrome_args))
+
     if self._flags.android:
       chrome_options.add_experimental_option('androidPackage',
         self._flags.android_package)
@@ -325,8 +331,10 @@ class TestDriver:
       chrome_options.binary_location = self._flags.chrome_exec
       self._logger.info('Using the Chrome binary at this path: %s',
         self._flags.chrome_exec)
+
     self._logger.debug('ChromeOptions will be parsed into these capabilities: '
       '%s', PrettyPrintJSON(chrome_options.to_capabilities()))
+
     driver = webdriver.Chrome(executable_path=self._flags.chrome_driver,
       desired_capabilities=capabilities, chrome_options=chrome_options)
     driver.command_executor._commands.update({
@@ -335,9 +343,11 @@ class TestDriver:
       'setNetworkConditions':
         ('POST', '/session/$sessionId/chromium/network_conditions')})
     self._driver = driver
+
     if self._control_network_connection:
       # Set network connection if it was called before LoadURL()
       self.SetNetworkConnection(self._network_connection)
+
     self.SleepUntilHistogramHasEntry(
       'DataReductionProxy.ConfigService.FetchResponseCode',
       sleep_intervals=self._flags.chrome_start_time)
@@ -372,8 +382,35 @@ class TestDriver:
     Args:
       arg: a string argument to pass to Chrome at start
     """
+    if '--enable-features' in arg:
+      raise Exception('AddChromeArg("--enable-features=Foo" is not supported. '
+        'Please use EnableChromeFeature("Foo") instead.')
+    if '--disable-features' in arg:
+      raise Exception('AddChromeArg("--disable-features=Foo" is not supported. '
+        'Please use DisableChromeFeature("Foo") instead.')
+
     self._chrome_args.add(arg)
     self._logger.debug('Adding Chrome arg: %s', arg)
+
+  def EnableChromeFeature(self, feature):
+    """Adds a single feature flag to add to `--enable-features`.
+
+    Args:
+      feature: the Chrome feature to enable
+    """
+    self._enable_features.add(feature)
+    if feature in self._disable_features:
+      self._disable_features.remove(feature)
+
+  def DisableChromeFeature(self, feature):
+    """Adds a single feature flag to add to `--disable-features`.
+
+    Args:
+      feature: the Chrome feature to enable
+    """
+    self._disable_features.add(feature)
+    if feature in self._enable_features:
+      self._enable_features.remove(feature)
 
   def RemoveChromeArgs(self, args):
     """Removes multiple arguments that will no longer be passed to Chromium at
