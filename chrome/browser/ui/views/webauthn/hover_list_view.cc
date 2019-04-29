@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/webauthn/hover_list_view.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/logging.h"
@@ -245,6 +246,8 @@ void HoverListView::ButtonPressed(views::Button* sender,
 }
 
 int HoverListView::GetPreferredViewHeight() const {
+  constexpr int kMaxViewHeight = 300;
+
   // |item_container_| has one separator at the top and list items which
   // contain one separator and one hover button.
   const auto separator_height = views::Separator().GetPreferredSize().height();
@@ -264,5 +267,5 @@ int HoverListView::GetPreferredViewHeight() const {
         separator_height + dummy_hover_button->GetPreferredSize().height();
     size += list_item_height * reserved_items;
   }
-  return size;
+  return std::min(kMaxViewHeight, size);
 }
