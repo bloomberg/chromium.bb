@@ -77,21 +77,11 @@ ScreenTimeController::ScreenTimeController(content::BrowserContext* context)
       prefs::kUsageTimeLimit,
       base::BindRepeating(&ScreenTimeController::OnPolicyChanged,
                           base::Unretained(this)));
-
-  if (base::FeatureList::IsEnabled(features::kParentAccessCode)) {
-    auto config_source =
-        std::make_unique<parent_access::PolicyConfigSource>(pref_service_);
-    parent_access_service_ =
-        std::make_unique<parent_access::ParentAccessService>(
-            std::move(config_source));
-    parent_access_service_->SetDelegate(this);
-  }
 }
 
 ScreenTimeController::~ScreenTimeController() {
-  if (base::FeatureList::IsEnabled(features::kParentAccessCode)) {
+  if (parent_access_service_)
     parent_access_service_->SetDelegate(nullptr);
-  }
 
   session_manager::SessionManager::Get()->RemoveObserver(this);
   if (base::FeatureList::IsEnabled(features::kUsageTimeStateNotifier))
@@ -508,6 +498,18 @@ ScreenTimeController::ConvertPolicyType(
   }
 }
 
+void ScreenTimeController::InitializeParentAccessServiceIfNeeded() {
+  if (base::FeatureList::IsEnabled(features::kParentAccessCode) &&
+      !parent_access_service_) {
+    auto config_source =
+        std::make_unique<parent_access::PolicyConfigSource>(pref_service_);
+    parent_access_service_ =
+        std::make_unique<parent_access::ParentAccessService>(
+            std::move(config_source));
+    parent_access_service_->SetDelegate(this);
+  }
+}
+
 void ScreenTimeController::OnSessionStateChanged() {
   session_manager::SessionState session_state =
       session_manager::SessionManager::Get()->session_state();
@@ -515,6 +517,7 @@ void ScreenTimeController::OnSessionStateChanged() {
     base::Optional<usage_time_limit::State> last_state = GetLastStateFromPref();
     if (session_state == session_manager::SessionState::LOCKED && last_state &&
         last_state->is_locked) {
+      InitializeParentAccessServiceIfNeeded();
       OnScreenLockByPolicy(last_state->active_policy,
                            last_state->next_unlock_time);
     }
@@ -522,6 +525,7 @@ void ScreenTimeController::OnSessionStateChanged() {
   }
 
   if (session_state == session_manager::SessionState::LOCKED) {
+    InitializeParentAccessServiceIfNeeded();
     base::Optional<usage_time_limit::State> last_state = GetLastStateFromPref();
     if (last_state && last_state->is_locked) {
       OnScreenLockByPolicy(last_state->active_policy,
