@@ -1495,11 +1495,6 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
     EXPECT_FALSE(data->lofi_policy_received());
     EXPECT_FALSE(data->lofi_received());
     EXPECT_FALSE(data->was_cached_data_reduction_proxy_response());
-
-    // TODO(crbug.com/952523): Fix and remove this early exit.
-    if (GetParam())
-      continue;
-
     EXPECT_EQ(data->page_id().value(), expected_page_id);
     EXPECT_EQ(data->page_id().value(), got_page_id());
     EXPECT_EQ(data->session_key(), expected_session_key);

@@ -14,6 +14,8 @@
 #include "base/optional.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/previews/previews_lite_page_decider.h"
 #include "chrome/browser/previews/previews_lite_page_navigation_throttle.h"
 #include "chrome/browser/previews/previews_lite_page_navigation_throttle_manager.h"
@@ -178,14 +180,23 @@ CreateServerLitePageInfoFromNavigationHandle(
   base::Optional<std::string> session_key =
       data_reduction_proxy::DataReductionProxyRequestOptions::
           GetSessionKeyFromRequestHeaders(headers);
-  if (session_key) {
-    server_lite_page_info->drp_session_key = session_key.value();
+  if (!session_key) {
+    // This is a less-authoritative source to get the session key from since
+    // there is a very small chance that the proxy config has been updated
+    // between sending the original request and now. However, since this is only
+    // for metrics purposes, it is better than not having any session key.
+    DataReductionProxyChromeSettings* drp_settings =
+        DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+            navigation_handle->GetWebContents()->GetBrowserContext());
+    session_key = data_reduction_proxy::DataReductionProxyRequestOptions::
+        GetSessionKeyFromRequestHeaders(drp_settings->GetProxyRequestHeaders());
   }
+  if (session_key)
+    server_lite_page_info->drp_session_key = session_key.value();
+  DCHECK_NE(server_lite_page_info->drp_session_key, "");
 
   server_lite_page_info->status = ServerLitePageStatus::kSuccess;
-
   server_lite_page_info->restart_count = 0;
-
   return server_lite_page_info;
 }
 
