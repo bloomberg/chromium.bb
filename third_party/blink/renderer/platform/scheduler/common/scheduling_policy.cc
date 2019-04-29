@@ -14,6 +14,7 @@ bool SchedulingPolicy::IsFeatureSticky(SchedulingPolicy::Feature feature) {
     case Feature::kWebRTC:
     case Feature::kDedicatedWorkerOrWorklet:
     case Feature::kOutstandingNetworkRequest:
+    case Feature::kOutstandingIndexedDBTransaction:
       return false;
     case Feature::kMainResourceHasCacheControlNoStore:
     case Feature::kMainResourceHasCacheControlNoCache:
