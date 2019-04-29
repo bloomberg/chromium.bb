@@ -297,7 +297,7 @@ void ProcessedTrace::FillTableForPacket(Table* table,
   table->AddRow("Time", FormatTime(packet->time_us()));
 
   if (packet->event_type() == PACKET_SENT) {
-    table->AddRow("Size", absl::StrCat(packet->packet_size(), "bytes"));
+    table->AddRow("Size", absl::StrCat(packet->packet_size(), " bytes"));
     table->AddRow("Encryption",
                   EncryptionLevelToString(packet->encryption_level()));
 
