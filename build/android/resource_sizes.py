@@ -204,8 +204,7 @@ def _NormalizeResourcesArsc(apk_path, num_arsc_files, num_translations,
   # If there are multiple .arsc files, use the resource packaged APK instead.
   if num_arsc_files > 1:
     if not out_dir:
-      print('Skipping resources.arsc normalization (output directory required)')
-      return 0
+      return -float('inf')
     ap_name = os.path.basename(apk_path).replace('.apk', '.ap_')
     ap_path = os.path.join(out_dir, 'arsc/apks', ap_name)
     if not os.path.exists(ap_path):
@@ -231,7 +230,7 @@ def _NormalizeResourcesArsc(apk_path, num_arsc_files, num_translations,
       # other languages generally having longer strings than english.
       size += config_count * (7 + string_size * 1.5)
 
-  return size
+  return int(size)
 
 
 def _CreateResourceIdValueMap(aapt_output, lang):
@@ -511,11 +510,15 @@ def _DoApkAnalysis(apk_filename, apks_path, tool_prefix, out_dir, report_func):
         # WebView (which supports more locales), but these should mostly be
         # empty so ignore them here.
         num_arsc_translations = num_translations
-      normalized_apk_size += int(
-          _NormalizeResourcesArsc(apk_filename, arsc.GetNumEntries(),
-                                  num_arsc_translations, out_dir))
+      normalized_apk_size += _NormalizeResourcesArsc(
+          apk_filename, arsc.GetNumEntries(), num_arsc_translations, out_dir)
 
-  report_func('Specifics', 'normalized apk size', normalized_apk_size, 'bytes')
+  # It will be -Inf for .apk files with multiple .arsc files and no out_dir set.
+  if normalized_apk_size < 0:
+    print('Skipping normalized_apk_size because no output directory was set.')
+  else:
+    report_func('Specifics', 'normalized apk size', normalized_apk_size,
+                'bytes')
   # The "file count" metric cannot be grouped with any other metrics when the
   # end result is going to be uploaded to the perf dashboard in the HistogramSet
   # format due to mixed units (bytes vs. zip entries) causing malformed
@@ -527,33 +530,6 @@ def _DoApkAnalysis(apk_filename, apks_path, tool_prefix, out_dir, report_func):
   for info in unknown.AllEntries():
     sys.stderr.write(
         'Unknown entry: %s %d\n' % (info.filename, info.compress_size))
-
-
-def _AnnotatePakResources(out_dir):
-  """Returns a pair of maps: id_name_map, id_header_map."""
-  print('Looking at resources in: %s' % out_dir)
-
-  grit_headers = []
-  for root, _, files in os.walk(out_dir):
-    if root.endswith('grit'):
-      grit_headers += [os.path.join(root, f) for f in files if f.endswith('.h')]
-  assert grit_headers, 'Failed to find grit headers in %s' % out_dir
-
-  id_name_map = {}
-  id_header_map = {}
-  for header in grit_headers:
-    with open(header, 'r') as f:
-      for line in f.readlines():
-        m = _RC_HEADER_RE.match(line.strip())
-        if m:
-          i = int(m.group('id'))
-          name = m.group('name')
-          if i in id_name_map and name != id_name_map[i]:
-            print('WARNING: Resource ID conflict %s (%s vs %s)' % (
-                      i, id_name_map[i], name))
-          id_name_map[i] = name
-          id_header_map[i] = os.path.relpath(header, out_dir)
-  return id_name_map, id_header_map
 
 
 def _CalculateCompressedSize(file_path):
@@ -616,13 +592,15 @@ def _ConfigOutDirAndToolsPrefix(out_dir):
   if out_dir:
     constants.SetOutputDirectory(out_dir)
   else:
-    out_dir = constants.GetOutDirectory()
-  if out_dir:
-    build_vars = build_utils.ReadBuildVars(
-        os.path.join(out_dir, "build_vars.txt"))
-    tool_prefix = os.path.join(out_dir, build_vars['android_tool_prefix'])
-  else:
-    tool_prefix = ''
+    try:
+      # Triggers auto-detection when CWD == output directory.
+      constants.CheckOutputDirectory()
+      out_dir = constants.GetOutDirectory()
+    except Exception:  # pylint: disable=broad-except
+      return out_dir, ''
+  build_vars = build_utils.ReadBuildVars(
+      os.path.join(out_dir, "build_vars.txt"))
+  tool_prefix = os.path.join(out_dir, build_vars['android_tool_prefix'])
   return out_dir, tool_prefix
 
 
