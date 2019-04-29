@@ -3854,6 +3854,9 @@ static void setup_delta_q(AV1_COMP *const cpi, MACROBLOCK *const x,
   av1_init_plane_quantizers(cpi, x, xd->mi[0]->segment_id);
   x->rdmult = set_deltaq_rdmult(cpi, xd);
 
+  // keep track of any non-zero delta-q used
+  cpi->delta_q_used |= (xd->delta_qindex != 0);
+
   if (cpi->oxcf.deltaq_mode != NO_DELTA_Q && cpi->oxcf.deltalf_mode) {
     const int lfmask = ~(delta_q_info->delta_lf_res - 1);
     const int delta_lf_from_base =
@@ -4925,9 +4928,13 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   // Set delta_q_present_flag before it is used for the first time
   cm->delta_q_info.delta_lf_res = DEFAULT_DELTA_LF_RES;
   cm->delta_q_info.delta_q_present_flag = cpi->oxcf.deltaq_mode != NO_DELTA_Q;
+  // Reset delta_q_used flag
+  cpi->delta_q_used = 0;
+
   cm->delta_q_info.delta_lf_present_flag =
       cpi->oxcf.deltaq_mode != NO_DELTA_Q && cpi->oxcf.deltalf_mode;
   cm->delta_q_info.delta_lf_multi = DEFAULT_DELTA_LF_MULTI;
+
   // update delta_q_present_flag and delta_lf_present_flag based on
   // base_qindex
   cm->delta_q_info.delta_q_present_flag &= cm->base_qindex > 0;

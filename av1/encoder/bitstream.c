@@ -3757,6 +3757,11 @@ int av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size,
   const uint8_t obu_extension_header =
       cm->temporal_layer_id << 5 | cm->spatial_layer_id << 3 | 0;
 
+  // If no non-zero delta_q has been used, reset delta_q_present_flag
+  if (cm->delta_q_info.delta_q_present_flag && cpi->delta_q_used == 0) {
+    cm->delta_q_info.delta_q_present_flag = 0;
+  }
+
 #if CONFIG_BITSTREAM_DEBUG
   bitstream_queue_reset_write();
 #endif
