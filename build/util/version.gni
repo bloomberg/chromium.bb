@@ -124,6 +124,9 @@ if (target_os == "mac") {
     "WebviewStable: $webview_stable_version_code",
     "WebviewBeta: $webview_beta_version_code",
     "WebviewDev: $webview_dev_version_code",
+    "AndroidWebviewStable: $webview_stable_version_code",
+    "AndroidWebviewBeta: $webview_beta_version_code",
+    "AndroidWebviewDev: $webview_dev_version_code",
   ]
 
   if (target_cpu == "arm64" || target_cpu == "x64") {
