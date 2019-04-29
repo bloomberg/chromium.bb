@@ -492,7 +492,7 @@ public class DocumentModeAssassin {
 
         if (newStage == STAGE_INITIALIZED) {
             Log.d(TAG, "Migrating user into tabbed mode.");
-            int selectedTabId = DocumentUtils.getLastShownTabIdFromPrefs(getContext(), false);
+            int selectedTabId = DocumentUtils.getLastShownTabIdFromPrefs(false);
             copyTabStateFiles(selectedTabId);
         } else if (newStage == STAGE_COPY_TAB_STATES_DONE) {
             Log.d(TAG, "Writing tabbed mode metadata file.");

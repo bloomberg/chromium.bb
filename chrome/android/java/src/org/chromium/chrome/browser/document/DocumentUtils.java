@@ -124,12 +124,11 @@ public class DocumentUtils {
 
     /**
      * Returns the ID of the last shown Tab for the given DocumentTabModel type.
-     * @param context     Context to pull SharedPrefs from.
      * @param isIncognito Whether to get the ID for the regular or Incognito TabModel.
      * @return ID of the last shown Tab for the given TabModel type.
      */
-    public static int getLastShownTabIdFromPrefs(Context context, boolean isIncognito) {
-        SharedPreferences prefs = context.getSharedPreferences(
+    public static int getLastShownTabIdFromPrefs(boolean isIncognito) {
+        SharedPreferences prefs = ContextUtils.getApplicationContext().getSharedPreferences(
                 DocumentTabModelImpl.PREF_PACKAGE, Context.MODE_PRIVATE);
         String prefName = isIncognito
                 ? DocumentTabModelImpl.PREF_LAST_SHOWN_TAB_ID_INCOGNITO

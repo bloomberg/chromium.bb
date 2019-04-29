@@ -90,15 +90,14 @@ public class DocumentTabModelSelector extends TabModelSelectorBase
         mRegularTabDelegate = regularTabDelegate;
         mIncognitoTabDelegate = incognitoTabDelegate;
 
-        final Context context = ContextUtils.getApplicationContext();
         mRegularTabModel = new DocumentTabModelImpl(
-                mActivityDelegate, mStorageDelegate, this, false, sPrioritizedTabId, context, this);
+                mActivityDelegate, mStorageDelegate, this, false, sPrioritizedTabId, this);
         mIncognitoTabModel = new IncognitoDocumentTabModel(new IncognitoTabModelDelegate() {
             @Override
             public TabModel createTabModel() {
                 DocumentTabModel incognitoModel = new DocumentTabModelImpl(mActivityDelegate,
                         mStorageDelegate, DocumentTabModelSelector.this, true, sPrioritizedTabId,
-                        context, DocumentTabModelSelector.this);
+                        DocumentTabModelSelector.this);
                 return incognitoModel;
             }
 
@@ -119,7 +118,8 @@ public class DocumentTabModelSelector extends TabModelSelectorBase
         initializeTabIdCounter();
 
         // Re-select the previously selected TabModel.
-        SharedPreferences prefs = context.getSharedPreferences(PREF_PACKAGE, Context.MODE_PRIVATE);
+        SharedPreferences prefs = ContextUtils.getApplicationContext().getSharedPreferences(
+                PREF_PACKAGE, Context.MODE_PRIVATE);
         boolean startIncognito = prefs.getBoolean(PREF_IS_INCOGNITO_SELECTED, false);
         initialize(startIncognito, mRegularTabModel, mIncognitoTabModel);
     }

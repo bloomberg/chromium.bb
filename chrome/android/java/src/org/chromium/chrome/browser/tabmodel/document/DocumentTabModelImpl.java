@@ -104,9 +104,6 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
     /** Delegate for working with the filesystem. */
     private final StorageDelegate mStorageDelegate;
 
-    /** Context to use. */
-    private final Context mContext;
-
     private final TabModelDelegate mTabModelDelegate;
 
     /** Current loading status. */
@@ -131,15 +128,13 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
      * @param tabCreatorManager Used to create Tabs.
      * @param isIncognito Whether or not the TabList is managing incognito tabs.
      * @param prioritizedTabId ID of the tab to prioritize when loading.
-     * @param context Context to use for accessing SharedPreferences.
      */
     public DocumentTabModelImpl(ActivityDelegate activityDelegate, StorageDelegate storageDelegate,
             TabCreatorManager tabCreatorManager, boolean isIncognito, int prioritizedTabId,
-            Context context, TabModelDelegate tabModelDelegate) {
+            TabModelDelegate tabModelDelegate) {
         super(isIncognito, false);
         mActivityDelegate = activityDelegate;
         mStorageDelegate = storageDelegate;
-        mContext = context;
         mTabModelDelegate = tabModelDelegate;
 
         mCurrentState = STATE_UNINITIALIZED;
@@ -147,7 +142,7 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
         mEntryMap = new SparseArray<Entry>();
         mHistoricalTabs = new ArrayList<Integer>();
 
-        mLastShownTabId = DocumentUtils.getLastShownTabIdFromPrefs(mContext, isIncognito());
+        mLastShownTabId = DocumentUtils.getLastShownTabIdFromPrefs(isIncognito());
 
         // Restore the tab list.
         setCurrentState(STATE_READ_RECENT_TASKS_START);
