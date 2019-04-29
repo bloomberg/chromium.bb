@@ -10,6 +10,8 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/debug/crash_logging.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/environment.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
@@ -20,6 +22,7 @@
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "components/os_crypt/os_crypt.h"
+#include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 #include "net/base/logging_network_change_observer.h"
@@ -207,6 +210,16 @@ std::unique_ptr<net::HttpNegotiateAuthSystem> CreateAuthSystem(
 }
 #endif
 
+// Called when NetworkService received a bad IPC message (but only when
+// NetworkService is running in a separate process - otherwise the existing bad
+// message handling inside the Browser process is sufficient).
+void HandleBadMessage(const std::string& error) {
+  static auto* bad_message_reason = base::debug::AllocateCrashKeyString(
+      "bad_message_reason", base::debug::CrashKeySize::Size256);
+  base::debug::SetCrashKeyString(bad_message_reason, error);
+  base::debug::DumpWithoutCrashing();
+}
+
 }  // namespace
 
 NetworkService::NetworkService(
@@ -228,6 +241,9 @@ NetworkService::NetworkService(
   // CreateNetworkContextWithBuilder to ease the transition to using the
   // network service.
   if (registry_) {
+    mojo::core::SetDefaultProcessErrorCallback(
+        base::BindRepeating(&HandleBadMessage));
+
     DCHECK(!request.is_pending());
     registry_->AddInterface<mojom::NetworkService>(
         base::BindRepeating(&NetworkService::Bind, base::Unretained(this)));
