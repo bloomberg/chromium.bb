@@ -57,9 +57,9 @@ crostiniMount.testMountCrostiniSuccess = async (done) => {
   // Linux Files fake root is shown.
   await test.waitForElement(fakeRoot);
 
-  // Downloads folder should be shown when crostini goes away.
-  await test.waitForFiles(
-      test.TestEntryInfo.getExpectedRows(test.BASIC_LOCAL_ENTRY_SET));
+  // MyFiles folder should be shown when crostini goes away.
+  await test.waitForFiles(test.TestEntryInfo.getExpectedRows(
+      test.BASIC_MY_FILES_ENTRY_SET_WITH_LINUX_FILES));
 
   done();
 };

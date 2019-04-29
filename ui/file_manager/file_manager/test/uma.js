@@ -17,8 +17,8 @@ uma.testClickBreadcrumb = async (done) => {
   // Click breadcrumb to return to parent dir.
   assertTrue(test.fakeMouseClick(
       '#location-breadcrumbs .breadcrumb-path:nth-of-type(1)'));
-  await test.waitForFiles(
-      test.TestEntryInfo.getExpectedRows(test.BASIC_LOCAL_ENTRY_SET));
+  await test.waitForFiles(test.TestEntryInfo.getExpectedRows(
+      test.BASIC_MY_FILES_ENTRY_SET_WITH_LINUX_FILES));
 
   assertArrayEquals(
       ['FileBrowser.ClickBreadcrumbs'], chrome.metricsPrivate.userActions_);

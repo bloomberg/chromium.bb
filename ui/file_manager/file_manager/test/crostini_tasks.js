@@ -5,6 +5,8 @@
 const crostiniTasks = {};
 
 crostiniTasks.testShareBeforeOpeningDownloadsWithCrostiniApp = async (done) => {
+  const fakeRoot = '#directory-tree [root-type-icon="crostini"]';
+
   // Save old fmp.getFileTasks and replace with version that returns
   // crostini app and chrome Text app.
   let oldGetFileTasks = chrome.fileManagerPrivate.getFileTasks;
@@ -49,8 +51,8 @@ crostiniTasks.testShareBeforeOpeningDownloadsWithCrostiniApp = async (done) => {
   // Add '/A', and '/A/hello.txt', refresh, 'A' is shown.
   test.addEntries([test.ENTRIES.directoryA, test.ENTRIES.helloInA], [], []);
   assertTrue(test.fakeMouseClick('#refresh-button'), 'click refresh');
-  await test.waitForFiles(
-      test.TestEntryInfo.getExpectedRows([test.ENTRIES.directoryA]));
+  await test.waitForFiles(test.TestEntryInfo.getExpectedRows(
+      [test.ENTRIES.directoryA, test.ENTRIES.linuxFiles]));
 
   // Change to 'A' directory, hello.txt is shown.
   assertTrue(test.fakeMouseDoubleClick('[file-name="A"]'));
@@ -93,11 +95,13 @@ crostiniTasks.testShareBeforeOpeningDownloadsWithCrostiniApp = async (done) => {
   chrome.fileManagerPrivate.getFileTasks = oldGetFileTasks;
   chrome.fileManagerPrivate.sharePathsWithCrostini = oldSharePaths;
   chrome.fileManagerPrivate.executeTask = oldExecuteTask;
+  chrome.fileManagerPrivate.removeMount('crostini');
+  await test.waitForElement(fakeRoot);
   done();
 };
 
 crostiniTasks.testErrorLoadingLinuxPackageInfo = async (done) => {
-  const linuxFiles = '#directory-tree .tree-item [root-type-icon="crostini"]';
+  const fakeRoot = '#directory-tree [root-type-icon="crostini"]';
   const dialog = '#install-linux-package-dialog';
   const detailsFrame = '.install-linux-package-details-frame';
 
@@ -123,10 +127,10 @@ crostiniTasks.testErrorLoadingLinuxPackageInfo = async (done) => {
   };
 
   await test.setupAndWaitUntilReady([], [], [test.ENTRIES.debPackage]);
-  await test.waitForElement(linuxFiles);
+  await test.waitForElement(fakeRoot);
 
   // Select 'Linux files' in directory tree.
-  assertTrue(test.fakeMouseClick(linuxFiles), 'click Linux files');
+  assertTrue(test.fakeMouseClick(fakeRoot), 'click Linux files');
   await test.waitForFiles(
       test.TestEntryInfo.getExpectedRows([test.ENTRIES.debPackage]));
 
@@ -158,5 +162,7 @@ crostiniTasks.testErrorLoadingLinuxPackageInfo = async (done) => {
   // Restore fmp.getFileTasks, fmp.getLinuxPackageInfo.
   chrome.fileManagerPrivate.getFileTasks = oldGetFileTasks;
   chrome.fileManagerPrivate.getLinuxPackageInfo = oldGetLinuxPackageInfo;
+  chrome.fileManagerPrivate.removeMount('crostini');
+  await test.waitForElement(fakeRoot);
   done();
 };

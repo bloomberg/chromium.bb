@@ -36,7 +36,7 @@ shareBase.testSharePathsSuccess =
   const shareWithDirTree =
       '#directory-tree-context-menu [command="#' + share + '"]';
   const photos = '#file-list [file-name="photos"]';
-  const downloadsDirTree = '#directory-tree [volume-type-icon="downloads"]';
+  const myFilesDirTree = '#directory-tree [root-type-icon="my_files"]';
   const oldSharePaths = chrome.fileManagerPrivate.sharePathsWithCrostini;
   let sharePathsCalled = false;
   let sharePathsPersist;
@@ -116,10 +116,9 @@ shareBase.testSharePathsSuccess =
   assertTrue(test.fakeMouseRightClick(photos), 'right-click photos');
   await test.waitForElement(menuShareWith);
 
-  // Verify dialog is shown for Downloads root.
+  // Verify dialog is shown for MyFiles root.
   // Check 'Share with <VM>' is shown in menu.
-  assertTrue(
-      test.fakeMouseRightClick(downloadsDirTree), 'right-click downloads');
+  assertTrue(test.fakeMouseRightClick(myFilesDirTree), 'right-click MyFiles');
   await test.waitForElement(menuShareWithDirTree);
 
   // Click 'Share with <VM>', verify dialog.
@@ -167,7 +166,6 @@ shareBase.testSharePathShown = async (vmName, vmNameSelector, done) => {
       '[command="#' + share + '"][hidden][disabled="disabled"]';
   const menuShareWith = '#file-context-menu:not([hidden]) ' +
       '[command="#' + share + '"]:not([hidden]):not([disabled])';
-  const downloadsDirTree = '#directory-tree [volume-type-icon="downloads"]';
   const removableVolumeRoot = '#directory-tree [volume-type-icon="removable"]';
   const menuShareWithDirTree = '#directory-tree-context-menu:not([hidden]) ' +
       '[command="#' + share + '"]:not([hidden]):not([disabled])';
@@ -203,9 +201,9 @@ shareBase.testSharePathShown = async (vmName, vmNameSelector, done) => {
   assertTrue(test.fakeMouseRightClick(downloads), 'right-click downloads');
   await test.waitForElement(menuShareWith);
 
-  // Right-click 'Downloads' directory in directory tree.
+  // Right-click 'MyFiles' in directory tree.
   // Check 'Share with <VM>' is shown in menu.
-  assertTrue(test.fakeMouseRightClick(downloadsDirTree), 'downloads dirtree');
+  assertTrue(test.fakeMouseRightClick(myFiles), 'MyFiles dirtree');
   await test.waitForElement(menuShareWithDirTree);
 
   // Select removable root.

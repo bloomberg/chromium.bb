@@ -127,7 +127,7 @@ test.TestEntryInfo.prototype.getMockFileSystemPopulateRow = function(prefix) {
   var content = test.DATA[this.sourceFileName];
   var size = content && content.size || 0;
   return {
-    fullPath: prefix + this.nameText + suffix,
+    fullPath: prefix + this.targetPath + suffix,
     metadata: {
       size: size,
       modificationTime: new Date(Date.parse(this.lastModifiedTime)),
@@ -188,12 +188,12 @@ test.ENTRIES = {
       'Jan 1, 1980, 11:59 PM', 'photos', '--', 'Folder'),
 
   testDocument: new test.TestEntryInfo(
-      test.EntryType.FILE, '', 'Test Document',
+      test.EntryType.FILE, '', 'Test Document.gdoc',
       'application/vnd.google-apps.document', test.SharedOption.NONE,
       'Apr 10, 2013, 4:20 PM', 'Test Document.gdoc', '--', 'Google document'),
 
   testSharedDocument: new test.TestEntryInfo(
-      test.EntryType.FILE, '', 'Test Shared Document',
+      test.EntryType.FILE, '', 'Test Shared Document.gdoc',
       'application/vnd.google-apps.document', test.SharedOption.SHARED,
       'Mar 20, 2013, 10:40 PM', 'Test Shared Document.gdoc', '--',
       'Google document'),
@@ -206,26 +206,6 @@ test.ENTRIES = {
   directoryA: new test.TestEntryInfo(
       test.EntryType.DIRECTORY, '', 'A', '', test.SharedOption.NONE,
       'Jan 1, 2000, 1:00 AM', 'A', '--', 'Folder'),
-
-  directoryB: new test.TestEntryInfo(
-      test.EntryType.DIRECTORY, '', 'A/B', '', test.SharedOption.NONE,
-      'Jan 1, 2000, 1:00 AM', 'B', '--', 'Folder'),
-
-  directoryC: new test.TestEntryInfo(
-      test.EntryType.DIRECTORY, '', 'A/B/C', '', test.SharedOption.NONE,
-      'Jan 1, 2000, 1:00 AM', 'C', '--', 'Folder'),
-
-  directoryD: new test.TestEntryInfo(
-      test.EntryType.DIRECTORY, '', 'D', '', test.SharedOption.NONE,
-      'Jan 1, 2000, 1:00 AM', 'D', '--', 'Folder'),
-
-  directoryE: new test.TestEntryInfo(
-      test.EntryType.DIRECTORY, '', 'D/E', '', test.SharedOption.NONE,
-      'Jan 1, 2000, 1:00 AM', 'E', '--', 'Folder'),
-
-  directoryF: new test.TestEntryInfo(
-      test.EntryType.DIRECTORY, '', 'D/E/F', '', test.SharedOption.NONE,
-      'Jan 1, 2000, 1:00 AM', 'F', '--', 'Folder'),
 
   zipArchive: new test.TestEntryInfo(
       test.EntryType.FILE, 'archive.zip', 'archive.zip', 'application/x-zip',
@@ -243,23 +223,40 @@ test.ENTRIES = {
       '51 bytes', 'Plain text'),
 
   helloInA: new test.TestEntryInfo(
-      test.EntryType.FILE, 'text.txt', 'hello.txt', 'text/plain',
-      test.SharedOption.NONE, 'Sep 4, 1998, 12:34 PM', 'A/hello.txt',
-      '51 bytes', 'Plain text'),
+      test.EntryType.FILE, 'text.txt', 'A/hello.txt', 'text/plain',
+      test.SharedOption.NONE, 'Sep 4, 1998, 12:34 PM', 'hello.txt', '51 bytes',
+      'Plain text'),
+
+  downloads: new test.TestEntryInfo(
+      test.EntryType.DIRECTORY, '', 'Downloads', '', test.SharedOption.NONE,
+      'Jan 1, 2000, 1:00 AM', 'Downloads', '--', 'Folder'),
+
+  linuxFiles: new test.TestEntryInfo(
+      test.EntryType.DIRECTORY, '', 'Linux files', '', test.SharedOption.NONE,
+      '...', 'Linux files', '--', 'Folder'),
 };
 
 /**
- * Basic entry set for the local volume.
+ * Basic entry set for the MyFiles volume.
  * @type {!Array<!test.TestEntryInfo>}
  * @const
  */
-test.BASIC_LOCAL_ENTRY_SET = [
+test.BASIC_MY_FILES_ENTRY_SET = [
+  test.ENTRIES.downloads,
   test.ENTRIES.hello,
   test.ENTRIES.world,
   test.ENTRIES.desktop,
   test.ENTRIES.beautiful,
-  test.ENTRIES.photos
+  test.ENTRIES.photos,
 ];
+
+/**
+ * MyFiles plus the fake item 'Linux files'.
+ * @type {!Array<!test.TestEntryInfo>}
+ * @const
+ */
+test.BASIC_MY_FILES_ENTRY_SET_WITH_LINUX_FILES =
+    test.BASIC_MY_FILES_ENTRY_SET.concat([test.ENTRIES.linuxFiles]);
 
 /**
  * Basic entry set for the drive volume.
@@ -532,15 +529,15 @@ test.waitForFiles = function(expected, opt_options) {
  * Opens a Files app's main window and waits until it is initialized. Fills
  * the window with initial files. Should be called for the first window only.
  *
- * @param {Array<!test.TestEntryInfo>=} opt_downloads Entries for downloads.
+ * @param {Array<!test.TestEntryInfo>=} opt_myFiles Entries for MyFiles.
  * @param {Array<!test.TestEntryInfo>=} opt_drive Entries for drive.
  * @param {Array<!test.TestEntryInfo>=} opt_crostini Entries for crostini.
  * @return {Promise} Promise to be fulfilled with the result object, which
  *     contains the file list.
  */
 test.setupAndWaitUntilReady =
-    async function(opt_downloads, opt_drive, opt_crostini) {
-  const entriesDownloads = opt_downloads || test.BASIC_LOCAL_ENTRY_SET;
+    async function(opt_myFiles, opt_drive, opt_crostini) {
+  const entriesMyFiles = opt_myFiles || test.BASIC_MY_FILES_ENTRY_SET;
   const entriesDrive = opt_drive || test.BASIC_DRIVE_ENTRY_SET;
   const entriesCrostini = opt_crostini || test.BASIC_CROSTINI_ENTRY_SET;
 
@@ -556,19 +553,19 @@ test.setupAndWaitUntilReady =
   test.inputText = test.util.sync.inputText.bind(null, window);
   test.selectFile = test.util.sync.selectFile.bind(null, window);
 
-  const downloadsElement = '#directory-tree [volume-type-icon="downloads"]';
+  const myFilesElement = '#directory-tree [root-type-icon="my_files"]';
 
   await test.loadData();
-  test.addEntries(entriesDownloads, entriesDrive, entriesCrostini);
-  const downloadsIcon = await test.waitForElement(downloadsElement);
+  test.addEntries(entriesMyFiles, entriesDrive, entriesCrostini);
+  const myFiles = await test.waitForElement(myFilesElement);
 
-  // Click Downloads if not already on Downloads, then refresh button.
-  if (!downloadsIcon.parentElement.hasAttribute('selected')) {
-    assertTrue(test.fakeMouseClick(downloadsElement), 'click downloads');
+  // Click MyFiles if not already on MyFiles, then refresh button.
+  if (!myFiles.parentElement.hasAttribute('selected')) {
+    assertTrue(test.fakeMouseClick(myFilesElement), 'click MyFiles');
   }
   assertTrue(test.fakeMouseClick('#refresh-button'), 'click refresh');
-  return test.waitForFiles(
-      test.TestEntryInfo.getExpectedRows(entriesDownloads));
+  const filesShown = entriesMyFiles.concat([test.ENTRIES.linuxFiles]);
+  return test.waitForFiles(test.TestEntryInfo.getExpectedRows(filesShown));
 };
 
 /**
@@ -577,30 +574,4 @@ test.setupAndWaitUntilReady =
  */
 test.done = function(opt_failed) {
   window.endTests(!opt_failed);
-};
-
-/**
- * @return {number} Maximum listitem-? id from #file-list.
- */
-test.maxListItemId = function() {
-  var listItems = document.querySelectorAll('#file-list .table-row');
-  if (!listItems) {
-    return 0;
-  }
-  return Math.max(...Array.from(listItems).map(e => {
-    return e.id.replace('listitem-', '');
-  }));
-};
-
-/**
- * @return {number} Minium listitem-? id from #file-list.
- */
-test.minListItemId = function() {
-  var listItems = document.querySelectorAll('#file-list .table-row');
-  if (!listItems) {
-    return 0;
-  }
-  return Math.min(...Array.from(listItems).map(e => {
-    return e.id.replace('listitem-', '');
-  }));
 };

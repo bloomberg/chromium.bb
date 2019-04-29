@@ -8,7 +8,7 @@
 loadTimeData.data = $GRDP;
 
 // Extend with additional fields not found in grdp files.
-Object.setPrototypeOf(loadTimeData.data_, {
+loadTimeData.overrideValues({
   'CROSTINI_ENABLED': true,
   'DRIVE_FS_ENABLED': false,
   'GOOGLE_DRIVE_REDEEM_URL': 'http://www.google.com/intl/en/chrome/devices' +
@@ -16,6 +16,7 @@ Object.setPrototypeOf(loadTimeData.data_, {
   'GOOGLE_DRIVE_OVERVIEW_URL':
       'https://support.google.com/chromebook/?p=filemanager_drive',
   'HIDE_SPACE_INFO': false,
+  'MY_FILES_VOLUME_ENABLED': true,
   'PLUGIN_VM_ENABLED': true,
   'UI_LOCALE': 'en_US',
   'language': 'en-US',
