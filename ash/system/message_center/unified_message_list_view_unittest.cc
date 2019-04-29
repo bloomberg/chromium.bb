@@ -512,4 +512,29 @@ TEST_F(UnifiedMessageListViewTest, ClearAllWithPinnedNotifications) {
   EXPECT_EQ(1u, message_list_view()->children().size());
 }
 
+TEST_F(UnifiedMessageListViewTest, UserSwipesAwayNotification) {
+  // Show message list with two notifications.
+  AddNotification();
+  AddNotification();
+  CreateMessageListView();
+
+  // Start swiping the notification away.
+  GetMessageViewAt(1)->OnSlideStarted();
+  GetMessageViewAt(1)->OnSlideChanged(true);
+  EXPECT_EQ(2u, MessageCenter::Get()->GetVisibleNotifications().size());
+  EXPECT_EQ(2u, message_list_view()->children().size());
+
+  // Swiping away the notification should remove it both in the MessageCenter
+  // and the MessageListView.
+  GetMessageViewAt(1)->OnSlideOut();
+  EXPECT_EQ(1u, MessageCenter::Get()->GetVisibleNotifications().size());
+  EXPECT_EQ(1u, message_list_view()->children().size());
+
+  // The next and only animation should be the move down animation.
+  int previous_height = message_list_view()->GetPreferredSize().height();
+  AnimateToEnd();
+  EXPECT_GT(previous_height, message_list_view()->GetPreferredSize().height());
+  EXPECT_FALSE(message_list_view()->IsAnimating());
+}
+
 }  // namespace ash

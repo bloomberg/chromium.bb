@@ -54,6 +54,7 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::InkDropHostView,
 
     virtual void OnSlideStarted(const std::string& notification_id) {}
     virtual void OnSlideChanged(const std::string& notification_id) {}
+    virtual void OnSlideOut(const std::string& notification_id) {}
   };
 
   enum class Mode {

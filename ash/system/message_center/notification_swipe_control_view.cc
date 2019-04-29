@@ -88,6 +88,19 @@ void NotificationSwipeControlView::UpdateButtonsVisibility() {
       message_center_style::kSwipeControlButtonHorizontalMargin *
           (control_button_count + 1);
   message_view_->SetSlideButtonWidth(control_button_width);
+
+  // Update opacity based on the swipe progress. The swipe controls should
+  // gradually disappear as the user swipes the notification away.
+  float full_opacity_width =
+      message_center_style::kSwipeControlFullOpacityRatio *
+      control_button_width;
+  float fade_out_width = message_view_->width() - full_opacity_width;
+  DCHECK(fade_out_width > 0);
+  float swipe_progress = std::max(
+      0.0f, (fabs(gesture_amount) - full_opacity_width) / fade_out_width);
+  float opacity = std::max(0.0f, 1.0f - swipe_progress);
+
+  layer()->SetOpacity(opacity);
 }
 
 void NotificationSwipeControlView::UpdateCornerRadius(int top_radius,

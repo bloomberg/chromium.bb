@@ -157,6 +157,10 @@ class UnifiedMessageListView::MessageViewContainer
     control_view_->UpdateButtonsVisibility();
   }
 
+  void OnSlideOut(const std::string& notification_id) override {
+    is_slid_out_by_user_ = true;
+  }
+
   gfx::Rect start_bounds() const { return start_bounds_; }
   gfx::Rect ideal_bounds() const { return ideal_bounds_; }
   bool is_removed() const { return is_removed_; }
@@ -171,6 +175,8 @@ class UnifiedMessageListView::MessageViewContainer
 
   void set_is_removed() { is_removed_ = true; }
 
+  bool is_slid_out_by_user() { return is_slid_out_by_user_; }
+
  private:
   // The bounds that the container starts animating from. If not animating, it's
   // ignored.
@@ -183,6 +189,9 @@ class UnifiedMessageListView::MessageViewContainer
   // True when the notification is removed and during SLIDE_OUT animation.
   // Unused if |state_| is not SLIDE_OUT.
   bool is_removed_ = false;
+
+  // True if the notification is slid out completely by the user.
+  bool is_slid_out_by_user_ = false;
 
   MessageView* const message_view_;
   NotificationSwipeControlView* const control_view_;
@@ -334,9 +343,12 @@ void UnifiedMessageListView::OnNotificationRemoved(const std::string& id,
   if (child)
     child->set_is_removed();
 
-  UpdateBounds();
+  state_ = child->is_slid_out_by_user() ? State::MOVE_DOWN : State::SLIDE_OUT;
 
-  state_ = State::SLIDE_OUT;
+  if (child->is_slid_out_by_user())
+    DeleteRemovedNotifications();
+
+  UpdateBounds();
   StartAnimation();
 }
 
