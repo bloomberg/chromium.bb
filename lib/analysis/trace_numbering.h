@@ -46,6 +46,9 @@ class NumberingWithoutRetransmissions {
       if (frame.has_stream_frame_info()) {
         size += frame.stream_frame_info().length();
       }
+      if (frame.has_crypto_frame_info()) {
+        size += frame.crypto_frame_info().length();
+      }
     }
     TraceOffset offset = current_offset_;
     current_offset_ += size;

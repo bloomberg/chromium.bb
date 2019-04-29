@@ -304,6 +304,14 @@ void ProcessedTrace::FillTableForPacket(Table* table,
     table->AddHeader("Frame list");
     for (const Frame& frame : packet->frames()) {
       switch (frame.frame_type()) {
+        case CRYPTO:
+          table->AddRow(
+            "Crypto",
+            absl::StrCat(frame.crypto_frame_info().offset(), "-",
+                        frame.crypto_frame_info().offset() +
+                          frame.crypto_frame_info().length(),
+                        " (", frame.crypto_frame_info().length(), ")"));
+            break;
         case STREAM:
           table->AddRow(
               "Stream",
