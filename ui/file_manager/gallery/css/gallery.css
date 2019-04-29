@@ -173,6 +173,12 @@ paper-ripple {
 .gallery .video-container > .video {
   max-height: 100%;
   max-width: 100%;
+
+  /*
+   * Since r614513, <video> elements take focus on click which causes yellow
+   * lines to appear unless the outline is disabled. See crbug/917503.
+   */
+  outline: none;
 }
 
 /*
