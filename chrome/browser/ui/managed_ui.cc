@@ -9,7 +9,6 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 
@@ -37,8 +36,7 @@ bool ShouldDisplayManagedUi(Profile* profile) {
 #endif
 
   // This profile may have policies configured.
-  auto* profile_connector =
-      policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile);
+  auto* profile_connector = profile->GetProfilePolicyConnector();
   if (profile_connector->IsManaged())
     return true;
 
@@ -51,8 +49,7 @@ bool ShouldDisplayManagedUi(Profile* profile) {
         chromeos::ProfileHelper::Get()->GetProfileByUser(primary_user);
     if (primary_profile) {
       auto* primary_profile_connector =
-          policy::ProfilePolicyConnectorFactory::GetForBrowserContext(
-              primary_profile);
+          primary_profile->GetProfilePolicyConnector();
       if (primary_profile_connector->IsManaged())
         return true;
     }

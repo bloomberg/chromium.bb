@@ -84,7 +84,7 @@
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
@@ -229,9 +229,9 @@ bool ShouldShowRecommendAppsScreen() {
   const user_manager::UserManager* user_manager =
       user_manager::UserManager::Get();
   DCHECK(user_manager->IsUserLoggedIn());
-  bool is_managed_account =
-      policy::ProfilePolicyConnectorFactory::IsProfileManaged(
-          ProfileManager::GetActiveUserProfile());
+  bool is_managed_account = ProfileManager::GetActiveUserProfile()
+                                ->GetProfilePolicyConnector()
+                                ->IsManaged();
   bool is_child_account = user_manager->IsLoggedInAsChildUser();
   return !is_managed_account && !is_child_account &&
          base::FeatureList::IsEnabled(features::kOobeRecommendAppsScreen);

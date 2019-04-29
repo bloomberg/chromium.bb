@@ -71,7 +71,6 @@
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/ui/global_error/global_error.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
@@ -5704,8 +5703,7 @@ TEST_F(ExtensionServiceTest, DoNotInstallForEnterprise) {
   ASSERT_TRUE(base_path.IsAbsolute());
   MockProviderVisitor visitor(base_path);
   policy::ProfilePolicyConnector* const connector =
-      policy::ProfilePolicyConnectorFactory::GetForBrowserContext(
-          visitor.profile());
+      visitor.profile()->GetProfilePolicyConnector();
   connector->OverrideIsManagedForTesting(true);
   EXPECT_TRUE(connector->IsManaged());
 

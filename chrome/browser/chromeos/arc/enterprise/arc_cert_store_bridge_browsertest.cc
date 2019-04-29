@@ -22,7 +22,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/net/nss_context.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
@@ -202,8 +201,7 @@ class ArcCertStoreBridgeTest : public chromeos::MixinBasedInProcessBrowserTest {
     ASSERT_NO_FATAL_FAILURE(ImportCerts());
 
     policy::ProfilePolicyConnector* const policy_connector =
-        policy::ProfilePolicyConnectorFactory::GetForBrowserContext(
-            browser()->profile());
+        browser()->profile()->GetProfilePolicyConnector();
 
     extensions::StateStore* const state_store =
         extensions::ExtensionSystem::Get(browser()->profile())->state_store();

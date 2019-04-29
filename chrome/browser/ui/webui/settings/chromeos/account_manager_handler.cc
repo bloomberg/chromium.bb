@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/account_manager_welcome_dialog.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
@@ -192,8 +192,7 @@ void AccountManagerUIHandler::OnGetAccounts(
     const Profile* const profile = Profile::FromWebUI(web_ui());
     if (profile->IsChild()) {
       device_account.SetString("organization", kFamilyLink);
-    } else if (policy::ProfilePolicyConnectorFactory::IsProfileManaged(
-                   profile)) {
+    } else if (profile->GetProfilePolicyConnector()->IsManaged()) {
       device_account.SetString(
           "organization",
           GetEnterpriseDomainFromUsername(

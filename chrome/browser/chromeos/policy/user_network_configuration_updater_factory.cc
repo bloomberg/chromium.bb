@@ -8,7 +8,6 @@
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/network/network_handler.h"
@@ -36,9 +35,7 @@ UserNetworkConfigurationUpdaterFactory::GetInstance() {
 UserNetworkConfigurationUpdaterFactory::UserNetworkConfigurationUpdaterFactory()
     : BrowserContextKeyedServiceFactory(
           "UserNetworkConfigurationUpdater",
-          BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(ProfilePolicyConnectorFactory::GetInstance());
-}
+          BrowserContextDependencyManager::GetInstance()) {}
 
 UserNetworkConfigurationUpdaterFactory::
     ~UserNetworkConfigurationUpdaterFactory() {}
@@ -82,7 +79,7 @@ KeyedService* UserNetworkConfigurationUpdaterFactory::BuildServiceInstanceFor(
       user->GetType() != user_manager::USER_TYPE_GUEST;
 
   ProfilePolicyConnector* profile_connector =
-      ProfilePolicyConnectorFactory::GetForBrowserContext(context);
+      profile->GetProfilePolicyConnector();
 
   return UserNetworkConfigurationUpdater::CreateForUserPolicy(
              profile, allow_trusted_certs_from_policy, *user,

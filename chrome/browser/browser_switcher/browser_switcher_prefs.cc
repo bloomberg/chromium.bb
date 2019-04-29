@@ -11,7 +11,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_switcher/browser_switcher_sitelist.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
@@ -25,8 +24,7 @@ RuleSet::~RuleSet() = default;
 BrowserSwitcherPrefs::BrowserSwitcherPrefs(Profile* profile)
     : BrowserSwitcherPrefs(
           profile->GetPrefs(),
-          policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile)
-              ->policy_service()) {}
+          profile->GetProfilePolicyConnector()->policy_service()) {}
 
 BrowserSwitcherPrefs::BrowserSwitcherPrefs(
     PrefService* prefs,

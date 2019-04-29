@@ -71,7 +71,6 @@
 #include "chrome/browser/extensions/updater/local_extension_cache.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -1449,7 +1448,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExternalData) {
   // Verify that the external data reference has propagated to the device-local
   // account's ProfilePolicyConnector.
   ProfilePolicyConnector* policy_connector =
-      ProfilePolicyConnectorFactory::GetForBrowserContext(GetProfileForTest());
+      GetProfileForTest()->GetProfilePolicyConnector();
   ASSERT_TRUE(policy_connector);
   const PolicyMap& policies = policy_connector->policy_service()->GetPolicies(
       PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
@@ -2305,8 +2304,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, PolicyForExtensions) {
   EXPECT_TRUE(extension_service->GetExtensionById(kShowManagedStorageID, true));
 
   // Wait for the app policy if it hasn't been fetched yet.
-  ProfilePolicyConnector* connector =
-      ProfilePolicyConnectorFactory::GetForBrowserContext(profile);
+  ProfilePolicyConnector* connector = profile->GetProfilePolicyConnector();
   ASSERT_TRUE(connector);
   PolicyService* policy_service = connector->policy_service();
   ASSERT_TRUE(policy_service);

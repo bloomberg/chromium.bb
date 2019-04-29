@@ -21,7 +21,6 @@
 #include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_policy_test_helper.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -94,7 +93,7 @@ IN_PROC_BROWSER_TEST_F(UserCloudExternalDataManagerTest, FetchExternalData) {
           profile);
   ASSERT_TRUE(policy_manager);
   ProfilePolicyConnector* policy_connector =
-      ProfilePolicyConnectorFactory::GetForBrowserContext(profile);
+      profile->GetProfilePolicyConnector();
   ASSERT_TRUE(policy_connector);
 
   {

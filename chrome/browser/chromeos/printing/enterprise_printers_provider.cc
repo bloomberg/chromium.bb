@@ -14,7 +14,6 @@
 #include "chrome/browser/chromeos/printing/bulk_printers_calculator_factory.h"
 #include "chrome/browser/chromeos/printing/calculators_policies_binder.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/printing/printer_translator.h"
@@ -193,7 +192,7 @@ class EnterprisePrintersProviderImpl : public EnterprisePrintersProvider,
   // Checks if given policy is set and if it is a dictionary
   bool PolicyWithDataIsSet(const char* policy_name) {
     policy::ProfilePolicyConnector* policy_connector =
-        policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile_);
+        profile_->GetProfilePolicyConnector();
     if (!policy_connector) {
       // something is wrong
       return false;

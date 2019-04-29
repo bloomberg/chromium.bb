@@ -11,7 +11,6 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/managed_ui.h"
 #include "chrome/common/pref_names.h"
@@ -28,8 +27,7 @@
 namespace {
 
 policy::PolicyService* GetProfilePolicyService(Profile* profile) {
-  auto* profile_connector =
-      policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile);
+  auto* profile_connector = profile->GetProfilePolicyConnector();
   return profile_connector->policy_service();
 }
 

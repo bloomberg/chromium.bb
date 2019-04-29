@@ -116,6 +116,7 @@
 #include "components/language/core/common/locale_util.h"
 #include "components/metrics/metrics_service.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
+#include "components/policy/core/common/cloud/cloud_policy_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/signin/core/browser/signin_pref_names.h"
@@ -1118,6 +1119,15 @@ policy::SchemaRegistryService* ProfileImpl::GetPolicySchemaRegistryService() {
 
 policy::UserCloudPolicyManager* ProfileImpl::GetUserCloudPolicyManager() {
   return user_cloud_policy_manager_;
+}
+
+policy::ProfilePolicyConnector* ProfileImpl::GetProfilePolicyConnector() {
+  return profile_policy_connector_.get();
+}
+
+const policy::ProfilePolicyConnector* ProfileImpl::GetProfilePolicyConnector()
+    const {
+  return profile_policy_connector_.get();
 }
 
 content::ResourceContext* ProfileImpl::GetResourceContext() {

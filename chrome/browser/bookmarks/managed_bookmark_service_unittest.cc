@@ -14,7 +14,6 @@
 #include "chrome/browser/bookmarks/chrome_bookmark_client.h"
 #include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
@@ -315,8 +314,7 @@ TEST_F(ManagedBookmarkServiceTest, GetManagedBookmarksDomain) {
           .empty());
 
   // Managed profile
-  policy::ProfilePolicyConnectorFactory::GetForBrowserContext(&profile_)
-      ->OverrideIsManagedForTesting(true);
+  profile_.GetProfilePolicyConnector()->OverrideIsManagedForTesting(true);
   EXPECT_EQ(
       "google.com",
       ManagedBookmarkServiceFactory::GetManagedBookmarksDomain(&profile_));

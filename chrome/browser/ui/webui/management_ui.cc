@@ -8,7 +8,7 @@
 
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/dark_mode_handler.h"
 #include "chrome/browser/ui/webui/localized_string.h"
@@ -134,7 +134,7 @@ base::string16 ManagementUI::GetManagementPageSubtitle(Profile* profile) {
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   const auto device_type = ui::GetChromeOSDeviceTypeResourceId();
   if (!connector->IsEnterpriseManaged() &&
-      !policy::ProfilePolicyConnectorFactory::IsProfileManaged(profile)) {
+      !profile->GetProfilePolicyConnector()->IsManaged()) {
     return l10n_util::GetStringFUTF16(IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE,
                                       l10n_util::GetStringUTF16(device_type));
   }
@@ -155,7 +155,7 @@ base::string16 ManagementUI::GetManagementPageSubtitle(Profile* profile) {
 #else   // defined(OS_CHROMEOS)
   const auto management_domain = ManagementUIHandler::GetAccountDomain(profile);
   const auto managed =
-      policy::ProfilePolicyConnectorFactory::IsProfileManaged(profile) ||
+      profile->GetProfilePolicyConnector()->IsManaged() ||
       g_browser_process->browser_policy_connector()->HasMachineLevelPolicies();
   if (management_domain.empty()) {
     return l10n_util::GetStringUTF16(managed

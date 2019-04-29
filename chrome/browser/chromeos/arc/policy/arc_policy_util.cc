@@ -11,7 +11,6 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/policy/configuration_policy_handler_chromeos.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/arc/arc_prefs.h"
@@ -35,7 +34,7 @@ constexpr char kInstallTypeForceInstalled[] = "FORCE_INSTALLED";
 }  // namespace
 
 bool IsAccountManaged(const Profile* profile) {
-  return policy::ProfilePolicyConnectorFactory::IsProfileManaged(profile);
+  return profile->GetProfilePolicyConnector()->IsManaged();
 }
 
 bool IsArcDisabledForEnterprise() {

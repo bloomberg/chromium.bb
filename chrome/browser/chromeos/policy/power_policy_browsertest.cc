@@ -28,7 +28,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -257,8 +256,7 @@ void PowerPolicyBrowserTestBase::RunClosureAndWaitForUserPolicyUpdate(
       .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
   EXPECT_CALL(observer, OnPolicyServiceInitialized(_)).Times(AnyNumber());
   PolicyService* policy_service =
-      ProfilePolicyConnectorFactory::GetForBrowserContext(profile)
-          ->policy_service();
+      profile->GetProfilePolicyConnector()->policy_service();
   ASSERT_TRUE(policy_service);
   policy_service->AddObserver(POLICY_DOMAIN_CHROME, &observer);
   closure.Run();

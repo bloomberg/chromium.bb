@@ -15,7 +15,6 @@
 #include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
@@ -67,7 +66,7 @@ void UserPolicyTestHelper::WaitForInitialPolicy(Profile* profile) {
       std::string() /* requisition */, std::string() /* current_state_key */);
 
   policy::ProfilePolicyConnector* const profile_connector =
-      policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile);
+      profile->GetProfilePolicyConnector();
   policy::PolicyService* const policy_service =
       profile_connector->policy_service();
 
@@ -83,7 +82,7 @@ void UserPolicyTestHelper::SetPolicyAndWait(
   SetPolicy(mandatory_policy, recommended_policy);
 
   policy::ProfilePolicyConnector* const profile_connector =
-      policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile);
+      profile->GetProfilePolicyConnector();
   policy::PolicyService* const policy_service =
       profile_connector->policy_service();
 

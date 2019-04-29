@@ -50,7 +50,6 @@
 #include "chrome/browser/plugins/plugin_prefs_factory.h"
 #include "chrome/browser/policy/cloud/policy_header_service_factory.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_invalidator_factory.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/predictors/predictor_database_factory.h"
@@ -346,7 +345,6 @@ void ChromeBrowserMainExtraPartsProfiles::
   PluginPrefsFactory::GetInstance();
 #endif
   PrefsTabHelper::GetServiceInstance();
-  policy::ProfilePolicyConnectorFactory::GetInstance();
 #if defined(OS_CHROMEOS)
   chromeos::OwnerSettingsServiceChromeOSFactory::GetInstance();
   policy::PolicyCertServiceFactory::GetInstance();

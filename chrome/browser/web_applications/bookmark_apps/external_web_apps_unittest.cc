@@ -29,7 +29,6 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "components/user_manager/scoped_user_manager.h"
 #endif
 
@@ -326,8 +325,7 @@ TEST_F(ScanDirForExternalWebAppsTest, GuestUser) {
 
 TEST_F(ScanDirForExternalWebAppsTest, ManagedUser) {
   const auto profile = CreateProfileAndLogin();
-  policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile.get())
-      ->OverrideIsManagedForTesting(true);
+  profile->GetProfilePolicyConnector()->OverrideIsManagedForTesting(true);
   VerifySetOfApps(profile.get(), {GURL(kAppAllUrl), GURL(kAppManagedUrl)});
 }
 

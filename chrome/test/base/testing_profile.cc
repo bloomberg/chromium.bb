@@ -38,7 +38,6 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/policy/schema_registry_service.h"
 #include "chrome/browser/policy/schema_registry_service_profile_builder.h"
 #include "chrome/browser/prefs/browser_prefs.h"
@@ -841,10 +840,6 @@ void TestingProfile::CreateProfilePolicyConnector() {
   }
   profile_policy_connector_.reset(new policy::ProfilePolicyConnector());
   profile_policy_connector_->InitForTesting(std::move(policy_service_));
-  policy::ProfilePolicyConnectorFactory::GetInstance()->SetServiceForTesting(
-      this, profile_policy_connector_.get());
-  CHECK_EQ(profile_policy_connector_.get(),
-           policy::ProfilePolicyConnectorFactory::GetForBrowserContext(this));
 }
 
 PrefService* TestingProfile::GetPrefs() {
@@ -937,6 +932,15 @@ TestingProfile::GetPolicySchemaRegistryService() {
 
 policy::UserCloudPolicyManager* TestingProfile::GetUserCloudPolicyManager() {
   return user_cloud_policy_manager_.get();
+}
+
+policy::ProfilePolicyConnector* TestingProfile::GetProfilePolicyConnector() {
+  return profile_policy_connector_.get();
+}
+
+const policy::ProfilePolicyConnector*
+TestingProfile::GetProfilePolicyConnector() const {
+  return profile_policy_connector_.get();
 }
 
 base::FilePath TestingProfile::last_selected_directory() {

@@ -16,7 +16,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -80,8 +79,7 @@ void TryLaunchFirstRunDialog(Profile* profile) {
   if (TabletModeClient::Get() && TabletModeClient::Get()->tablet_mode_enabled())
     return;
 
-  if (policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile)
-          ->IsManaged())
+  if (profile->GetProfilePolicyConnector()->IsManaged())
     return;
 
   if (command_line->HasSwitch(::switches::kTestType))

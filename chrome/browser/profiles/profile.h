@@ -39,6 +39,7 @@ class WebUI;
 namespace policy {
 class SchemaRegistryService;
 class UserCloudPolicyManager;
+class ProfilePolicyConnector;
 }  // namespace policy
 
 namespace network {
@@ -236,6 +237,10 @@ class Profile : public content::BrowserContext {
 
   // Returns the UserCloudPolicyManager.
   virtual policy::UserCloudPolicyManager* GetUserCloudPolicyManager();
+
+  virtual policy::ProfilePolicyConnector* GetProfilePolicyConnector() = 0;
+  virtual const policy::ProfilePolicyConnector* GetProfilePolicyConnector()
+      const = 0;
 
   // Returns the last directory that was chosen for uploading or opening a file.
   virtual base::FilePath last_selected_directory() = 0;

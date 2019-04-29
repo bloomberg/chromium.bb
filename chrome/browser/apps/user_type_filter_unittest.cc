@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/values.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -94,8 +93,7 @@ TEST_F(UserTypeFilterTest, GuestUser) {
 
 TEST_F(UserTypeFilterTest, ManagedUser) {
   const auto profile = CreateProfile();
-  policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile.get())
-      ->OverrideIsManagedForTesting(true);
+  profile->GetProfilePolicyConnector()->OverrideIsManagedForTesting(true);
   EXPECT_FALSE(Match(profile, CreateJsonWithFilter({kUserTypeUnmanaged})));
   EXPECT_TRUE(Match(profile, CreateJsonWithFilter({kUserTypeManaged})));
   EXPECT_TRUE(Match(
@@ -138,8 +136,7 @@ TEST_F(UserTypeFilterTest, DefaultFilter) {
   EXPECT_FALSE(MatchDefault(profile, default_filter));
   // Managed user.
   profile = CreateProfile();
-  policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile.get())
-      ->OverrideIsManagedForTesting(true);
+  profile->GetProfilePolicyConnector()->OverrideIsManagedForTesting(true);
   EXPECT_FALSE(MatchDefault(profile, default_filter));
 }
 

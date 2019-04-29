@@ -557,6 +557,16 @@ ProfileKey* OffTheRecordProfileImpl::GetProfileKey() const {
   return key_.get();
 }
 
+policy::ProfilePolicyConnector*
+OffTheRecordProfileImpl::GetProfilePolicyConnector() {
+  return profile_->GetProfilePolicyConnector();
+}
+
+const policy::ProfilePolicyConnector*
+OffTheRecordProfileImpl::GetProfilePolicyConnector() const {
+  return profile_->GetProfilePolicyConnector();
+}
+
 void OffTheRecordProfileImpl::SetExitType(ExitType exit_type) {
 }
 

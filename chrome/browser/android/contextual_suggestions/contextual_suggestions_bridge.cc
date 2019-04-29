@@ -15,7 +15,6 @@
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/ntp_snippets/contextual_content_suggestions_service_factory.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -76,7 +75,7 @@ static jboolean JNI_ContextualSuggestionsBridge_IsDisabledByEnterprisePolicy(
     return true;
 
   policy::ProfilePolicyConnector* policy_connector =
-      policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile);
+      profile->GetProfilePolicyConnector();
 
   const policy::PolicyMap& policies =
       policy_connector->policy_service()->GetPolicies(

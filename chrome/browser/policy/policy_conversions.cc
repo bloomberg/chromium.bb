@@ -12,7 +12,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/policy/schema_registry_service.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -99,8 +98,8 @@ Value CopyAndMaybeConvert(const Value& value,
 }
 
 PolicyService* GetPolicyService(content::BrowserContext* context) {
-  return ProfilePolicyConnectorFactory::GetForBrowserContext(context)
-      ->policy_service();
+  Profile* profile = Profile::FromBrowserContext(context);
+  return profile->GetProfilePolicyConnector()->policy_service();
 }
 
 // Returns the Schema for |policy_name| if that policy is known. If the policy

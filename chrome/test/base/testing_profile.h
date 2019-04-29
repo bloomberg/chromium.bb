@@ -342,6 +342,9 @@ class TestingProfile : public Profile {
   ProfileKey* GetProfileKey() const override;
   policy::SchemaRegistryService* GetPolicySchemaRegistryService() override;
   policy::UserCloudPolicyManager* GetUserCloudPolicyManager() override;
+  policy::ProfilePolicyConnector* GetProfilePolicyConnector() override;
+  const policy::ProfilePolicyConnector* GetProfilePolicyConnector()
+      const override;
   base::FilePath last_selected_directory() override;
   void set_last_selected_directory(const base::FilePath& path) override;
   bool WasCreatedByVersionOrLater(const std::string& version) override;
@@ -415,8 +418,7 @@ class TestingProfile : public Profile {
   // |original_profile_|.
   void CreateIncognitoPrefService();
 
-  // Creates a ProfilePolicyConnector that the ProfilePolicyConnectorFactory
-  // maps to this profile.
+  // Creates a ProfilePolicyConnector.
   void CreateProfilePolicyConnector();
 
   std::unique_ptr<net::CookieStore, content::BrowserThread::DeleteOnIOThread>

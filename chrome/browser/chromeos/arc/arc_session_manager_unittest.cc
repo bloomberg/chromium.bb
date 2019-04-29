@@ -30,7 +30,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
@@ -1213,8 +1212,7 @@ class ArcSessionOobeOptInNegotiatorTest
 
     if (IsManagedUser()) {
       policy::ProfilePolicyConnector* const connector =
-          policy::ProfilePolicyConnectorFactory::GetForBrowserContext(
-              profile());
+          profile()->GetProfilePolicyConnector();
       connector->OverrideIsManagedForTesting(true);
 
       profile()->GetTestingPrefService()->SetManagedPref(
@@ -1435,8 +1433,7 @@ class ArcSessionRetryTest
     if (GetParam().negotiation ==
         ArcSessionRetryTestParam::Negotiation::SKIPPED) {
       policy::ProfilePolicyConnector* const connector =
-          policy::ProfilePolicyConnectorFactory::GetForBrowserContext(
-              profile());
+          profile()->GetProfilePolicyConnector();
       connector->OverrideIsManagedForTesting(true);
 
       profile()->GetTestingPrefService()->SetManagedPref(

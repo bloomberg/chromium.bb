@@ -17,7 +17,6 @@
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/policy/browser_signin_policy_handler.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search/search.h"
@@ -169,7 +168,7 @@ bool IsNuxOnboardingEnabled(Profile* profile) {
 
 const policy::PolicyMap& GetPoliciesFromProfile(Profile* profile) {
   policy::ProfilePolicyConnector* profile_connector =
-      policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile);
+      profile->GetProfilePolicyConnector();
   DCHECK(profile_connector);
   return profile_connector->policy_service()->GetPolicies(
       policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string()));

@@ -21,7 +21,7 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/profiles/profile_util.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 
@@ -48,8 +48,6 @@
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/common/extensions/permissions/chrome_permission_message_provider.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
@@ -128,7 +126,7 @@ const char kData[] = "data";
 namespace {
 
 bool IsProfileManaged(Profile* profile) {
-  return policy::ProfilePolicyConnectorFactory::IsProfileManaged(profile);
+  return profile->GetProfilePolicyConnector()->IsManaged();
 }
 
 #if defined(OS_CHROMEOS)
@@ -565,8 +563,8 @@ base::DictionaryValue ManagementUIHandler::GetContextualManagedData(
 }
 
 policy::PolicyService* ManagementUIHandler::GetPolicyService() const {
-  return policy::ProfilePolicyConnectorFactory::GetForBrowserContext(
-             Profile::FromWebUI(web_ui()))
+  return Profile::FromWebUI(web_ui())
+      ->GetProfilePolicyConnector()
       ->policy_service();
 }
 
@@ -891,10 +889,9 @@ void ManagementUIHandler::RemoveObservers() {
   extensions::ExtensionRegistry::Get(Profile::FromWebUI(web_ui()))
       ->RemoveObserver(this);
 
-  policy::PolicyService* policy_service =
-      policy::ProfilePolicyConnectorFactory::GetForBrowserContext(
-          Profile::FromWebUI(web_ui()))
-          ->policy_service();
+  policy::PolicyService* policy_service = Profile::FromWebUI(web_ui())
+                                              ->GetProfilePolicyConnector()
+                                              ->policy_service();
   policy_service->RemoveObserver(policy::POLICY_DOMAIN_EXTENSIONS, this);
 
   pref_registrar_.RemoveAll();

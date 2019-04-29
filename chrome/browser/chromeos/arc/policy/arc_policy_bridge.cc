@@ -21,7 +21,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/policy/developer_tools_policy_handler.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
@@ -337,9 +336,7 @@ class ArcPolicyBridgeFactory
  private:
   friend base::DefaultSingletonTraits<ArcPolicyBridgeFactory>;
 
-  ArcPolicyBridgeFactory() {
-    DependsOn(policy::ProfilePolicyConnectorFactory::GetInstance());
-  }
+  ArcPolicyBridgeFactory() {}
   ~ArcPolicyBridgeFactory() override = default;
 };
 
@@ -513,7 +510,7 @@ void ArcPolicyBridge::OnCommandReceived(
 
 void ArcPolicyBridge::InitializePolicyService() {
   auto* profile_policy_connector =
-      policy::ProfilePolicyConnectorFactory::GetForBrowserContext(context_);
+      Profile::FromBrowserContext(context_)->GetProfilePolicyConnector();
   policy_service_ = profile_policy_connector->policy_service();
   is_managed_ = profile_policy_connector->IsManaged();
 }
