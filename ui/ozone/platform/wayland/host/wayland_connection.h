@@ -17,6 +17,7 @@
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
+#include "ui/ozone/platform/wayland/host/wayland_clipboard.h"
 #include "ui/ozone/platform/wayland/host/wayland_cursor_position.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_device.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_device_manager.h"
@@ -26,7 +27,6 @@
 #include "ui/ozone/platform/wayland/host/wayland_pointer.h"
 #include "ui/ozone/platform/wayland/host/wayland_touch.h"
 #include "ui/ozone/public/interfaces/wayland/wayland_connection.mojom.h"
-#include "ui/ozone/public/platform_clipboard.h"
 
 namespace ui {
 
@@ -36,9 +36,7 @@ class WaylandOutputManager;
 class WaylandWindow;
 class WaylandZwpLinuxDmabuf;
 
-// TODO(crbug.com/942203): factor out PlatformClipboard to a separate class.
 class WaylandConnection : public PlatformEventSource,
-                          public PlatformClipboard,
                           public ozone::mojom::WaylandConnection,
                           public base::MessagePumpLibevent::FdWatcher {
  public:
@@ -134,6 +132,8 @@ class WaylandConnection : public PlatformEventSource,
   // Returns the current pointer, which may be null.
   WaylandPointer* pointer() const { return pointer_.get(); }
 
+  WaylandClipboard* clipboard() const { return clipboard_.get(); }
+
   WaylandDataSource* drag_data_source() const {
     return dragdrop_data_source_.get();
   }
@@ -150,27 +150,6 @@ class WaylandConnection : public PlatformEventSource,
   WaylandBufferManager* buffer_manager() const { return buffer_manager_.get(); }
 
   WaylandZwpLinuxDmabuf* zwp_dmabuf() const { return zwp_dmabuf_.get(); }
-
-  // Clipboard implementation.
-  PlatformClipboard* GetPlatformClipboard();
-  void DataSourceCancelled();
-  void SetClipboardData(const std::string& contents,
-                        const std::string& mime_type);
-  void UpdateClipboardSequenceNumber();
-
-  // PlatformClipboard.
-  void OfferClipboardData(
-      const PlatformClipboard::DataMap& data_map,
-      PlatformClipboard::OfferDataClosure callback) override;
-  void RequestClipboardData(
-      const std::string& mime_type,
-      PlatformClipboard::DataMap* data_map,
-      PlatformClipboard::RequestDataClosure callback) override;
-  void GetAvailableMimeTypes(
-      PlatformClipboard::GetMimeTypesClosure callback) override;
-  bool IsSelectionOwner() override;
-  void SetSequenceNumberUpdateCb(
-      PlatformClipboard::SequenceNumberUpdateCb cb) override;
 
   // Returns bound pointer to own mojo interface.
   ozone::mojom::WaylandConnectionPtr BindInterface();
@@ -265,7 +244,7 @@ class WaylandConnection : public PlatformEventSource,
 
   std::unique_ptr<WaylandDataDeviceManager> data_device_manager_;
   std::unique_ptr<WaylandDataDevice> data_device_;
-  std::unique_ptr<WaylandDataSource> clipboard_data_source_;
+  std::unique_ptr<WaylandClipboard> clipboard_;
   std::unique_ptr<WaylandDataSource> dragdrop_data_source_;
   std::unique_ptr<WaylandKeyboard> keyboard_;
   std::unique_ptr<WaylandOutputManager> wayland_output_manager_;
@@ -283,17 +262,6 @@ class WaylandConnection : public PlatformEventSource,
   base::MessagePumpLibevent::FdWatchController controller_;
 
   uint32_t serial_ = 0;
-
-  // Holds a temporary instance of the client's clipboard content
-  // so that we can asynchronously write to it.
-  PlatformClipboard::DataMap* data_map_ = nullptr;
-
-  // Notifies whenever clipboard sequence number is changed. Can be empty if not
-  // set.
-  PlatformClipboard::SequenceNumberUpdateCb update_sequence_cb_;
-
-  // Stores the callback to be invoked upon data reading from clipboard.
-  RequestDataClosure read_clipboard_closure_;
 
   ozone::mojom::WaylandConnectionClientAssociatedPtr client_associated_ptr_;
   mojo::Binding<ozone::mojom::WaylandConnection> binding_;

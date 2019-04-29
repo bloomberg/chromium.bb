@@ -35,7 +35,7 @@ class MockClipboardClient {
     DCHECK(connection);
     // See comment above for reasoning to access the WaylandConnection
     // directly from here.
-    delegate_ = connection->GetPlatformClipboard();
+    delegate_ = connection->clipboard();
 
     DCHECK(delegate_);
   }

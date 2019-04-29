@@ -126,7 +126,7 @@ class OzonePlatformWayland : public OzonePlatform {
 
   PlatformClipboard* GetPlatformClipboard() override {
     DCHECK(connection_);
-    return connection_->GetPlatformClipboard();
+    return connection_->clipboard();
   }
 
   bool IsNativePixmapConfigSupported(gfx::BufferFormat format,

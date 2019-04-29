@@ -32,6 +32,8 @@ source_set("wayland") {
     "gpu/wayland_surface_factory.h",
     "host/wayland_buffer_manager.cc",
     "host/wayland_buffer_manager.h",
+    "host/wayland_clipboard.cc",
+    "host/wayland_clipboard.h",
     "host/wayland_connection.cc",
     "host/wayland_connection.h",
     "host/wayland_connection_connector.cc",
@@ -127,7 +129,7 @@ source_set("wayland") {
   ]
 
   if (is_linux && !is_chromeos) {
-    deps += ["//ui/base/ime/linux"]
+    deps += [ "//ui/base/ime/linux" ]
   }
 
   defines = [ "OZONE_IMPLEMENTATION" ]
