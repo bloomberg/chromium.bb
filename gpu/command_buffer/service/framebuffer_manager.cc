@@ -539,7 +539,8 @@ void Framebuffer::RestoreDrawBuffers() const {
 bool Framebuffer::ValidateAndAdjustDrawBuffers(
     uint32_t fragment_output_type_mask, uint32_t fragment_output_written_mask) {
   uint32_t mask = draw_buffer_bound_mask_ & fragment_output_written_mask;
-  if ((mask & fragment_output_type_mask) != (mask & draw_buffer_type_mask_))
+  if (mask != draw_buffer_bound_mask_ ||
+      (mask & fragment_output_type_mask) != (mask & draw_buffer_type_mask_))
     return false;
 
   AdjustDrawBuffersImpl(mask);
