@@ -529,11 +529,3 @@ cr-menu-item[command='#install-new-extension'] .icon.start {
       url(../images/volumes/android_active.png) 1x,
       url(../images/volumes/2x/android_active.png) 2x);
 }
-
-[file-type-icon='plugin_vm'] {
-  background-image: url(../images/volumes/plugin_vm.svg);
-}
-
-.tree-row[selected] [file-type-icon='plugin_vm'] {
-  background-image: url(../images/volumes/plugin_vm_active.svg);
-}

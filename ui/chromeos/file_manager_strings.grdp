@@ -77,9 +77,6 @@
   <message name="IDS_FILE_BROWSER_MEDIA_VIEW_AUDIO_ROOT_LABEL" desc="A label for the 'Audio' root of media views.">
     Audio
   </message>
-  <message name="IDS_FILE_BROWSER_PLUGIN_VM_DIRECTORY_LABEL" desc="PluginVm local directory label.">
-    Plugin VM
-  </message>
   <message name="IDS_FILE_BROWSER_RECENT_ROOT_LABEL" desc="A label for the 'Recent' root which shows files recently modified by the user.">
     Recent
   </message>
