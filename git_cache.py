@@ -376,87 +376,54 @@ class Mirror(object):
     """
     if not self.bootstrap_bucket:
       return False
-    python_fallback = (
-        (sys.platform.startswith('win') and
-          not gclient_utils.FindExecutable('7z')) or
-        (not gclient_utils.FindExecutable('unzip')) or
-        ('ZIP64_SUPPORT' not in subprocess.check_output(["unzip", "-v"]))
-    )
 
-    gs_folder = 'gs://%s/%s' % (self.bootstrap_bucket, self.basedir)
     gsutil = Gsutil(self.gsutil_exe, boto_path=None)
-    # Get the most recent version of the zipfile.
-    _, ls_out, ls_err = gsutil.check_call('ls', gs_folder)
 
-    def compare_filenames(a, b):
-      # |a| and |b| look like gs://.../.../9999.zip. They both have the same
-      # gs://bootstrap_bucket/basedir/ prefix because they come from the same
-      # `gsutil ls`.
-      # This function only compares the numeral parts before .zip.
-      regex_pattern = r'/(\d+)\.zip$'
-      match_a = re.search(regex_pattern, a)
-      match_b = re.search(regex_pattern, b)
-      if (match_a is not None) and (match_b is not None):
-        num_a = int(match_a.group(1))
-        num_b = int(match_b.group(1))
-        return cmp(num_a, num_b)
-      # If it doesn't match the format, fallback to string comparison.
-      return cmp(a, b)
+    # Get the most recent version of the directory.
+    # This is determined from the most recent version of a .ready file.
+    # The .ready file is only uploaded when an entire directory has been
+    # uploaded to GS.
+    _, ls_out, ls_err = gsutil.check_call('ls', self._gs_path)
 
-    ls_out_sorted = sorted(ls_out.splitlines(), cmp=compare_filenames)
-    if not ls_out_sorted:
-      # This repo is not on Google Storage.
+    ready_file_pattern = re.compile(r'.*/(\d+).ready$')
+
+    objects = set(ls_out.strip().splitlines())
+    ready_dirs = []
+
+    for name in objects:
+      m = ready_file_pattern.match(name)
+      # Given <path>/<number>.ready,
+      # we are interested in <path>/<number> directory
+
+      if m and (name[:-len('.ready')] + '/') in objects:
+        ready_dirs.append((int(m.group(1)), name[:-len('.ready')]))
+
+    if not ready_dirs:
       self.print('No bootstrap file for %s found in %s, stderr:\n  %s' %
                  (self.mirror_path, self.bootstrap_bucket,
-                  '  '.join((ls_err or '').splitlines(True))))
+                '  '.join((ls_err or '').splitlines(True))))
       return False
-    latest_checkout = ls_out_sorted[-1]
+    latest_dir = max(ready_dirs)[1]
 
-    # Download zip file to a temporary directory.
     try:
+      # create new temporary directory locally
       tempdir = tempfile.mkdtemp(prefix='_cache_tmp', dir=self.GetCachePath())
-      self.print('Downloading %s' % latest_checkout)
+      self.RunGit(['init', '--bare'], cwd=tempdir)
+      self.print('Downloading files in %s/* into %s.' %
+                 (latest_dir, tempdir))
       with self.print_duration_of('download'):
-        code = gsutil.call('cp', latest_checkout, tempdir)
+        code = gsutil.call('-m', 'cp', '-r', latest_dir + "/*",
+                           tempdir)
       if code:
         return False
-      filename = os.path.join(tempdir, latest_checkout.split('/')[-1])
-
-      # Unpack the file with 7z on Windows, unzip on linux, or fallback.
-      with self.print_duration_of('unzip'):
-        if not python_fallback:
-          if sys.platform.startswith('win'):
-            cmd = ['7z', 'x', '-o%s' % directory, '-tzip', filename]
-          else:
-            cmd = ['unzip', filename, '-d', directory]
-          retcode = subprocess.call(cmd)
-        else:
-          try:
-            with zipfile.ZipFile(filename, 'r') as f:
-              f.printdir()
-              f.extractall(directory)
-          except Exception as e:
-            self.print('Encountered error: %s' % str(e), file=sys.stderr)
-            retcode = 1
-          else:
-            retcode = 0
-    finally:
-      # Clean up the downloaded zipfile.
-      #
-      # This is somehow racy on Windows.
-      # Catching OSError because WindowsError isn't portable and
-      # pylint complains.
-      exponential_backoff_retry(
-          lambda: gclient_utils.rm_file_or_tree(tempdir),
-          excs=(OSError,),
-          name='rmtree [%s]' % (tempdir,),
-          printerr=self.print)
-
-    if retcode:
-      self.print(
-          'Extracting bootstrap zipfile %s failed.\n'
-          'Resuming normal operations.' % filename)
+    except Exception as e:
+      self.print('Encountered error: %s' % str(e), file=sys.stderr)
+      gclient_utils.rmtree(tempdir)
       return False
+    # delete the old directory
+    if os.path.exists(directory):
+      gclient_utils.rmtree(directory)
+    self.Rename(tempdir, directory)
     return True
 
   def contains_revision(self, revision):
@@ -507,47 +474,45 @@ class Mirror(object):
                    % os.path.join(self.mirror_path, 'config'))
 
   def _ensure_bootstrapped(self, depth, bootstrap, force=False):
-    tempdir = None
     pack_dir = os.path.join(self.mirror_path, 'objects', 'pack')
     pack_files = []
-
     if os.path.isdir(pack_dir):
       pack_files = [f for f in os.listdir(pack_dir) if f.endswith('.pack')]
       self.print('%s has %d .pack files, re-bootstrapping if >%d' %
-                 (self.mirror_path, len(pack_files), GC_AUTOPACKLIMIT))
+                (self.mirror_path, len(pack_files), GC_AUTOPACKLIMIT))
 
     should_bootstrap = (force or
                         not self.exists() or
                         len(pack_files) > GC_AUTOPACKLIMIT)
-    if should_bootstrap:
-      if self.exists():
-        # Re-bootstrapping an existing mirror; preserve existing fetch spec.
-        self._preserve_fetchspec()
-      tempdir = tempfile.mkdtemp(
-          prefix='_cache_tmp', suffix=self.basedir, dir=self.GetCachePath())
-      bootstrapped = not depth and bootstrap and self.bootstrap_repo(tempdir)
-      if bootstrapped:
-        # Bootstrap succeeded; delete previous cache, if any.
-        gclient_utils.rmtree(self.mirror_path)
-      elif not self.exists() or not self.supported_project():
-        # Bootstrap failed due to either
-        # 1. No previous cache
-        # 2. Project doesn't have a bootstrap zip file
+
+    if not should_bootstrap:
+      if depth and os.path.exists(os.path.join(self.mirror_path, 'shallow')):
+        logging.warn(
+            'Shallow fetch requested, but repo cache already exists.')
+      return
+
+    if self.exists():
+      # Re-bootstrapping an existing mirror; preserve existing fetch spec.
+      self._preserve_fetchspec()
+    else:
+      os.mkdir(self.mirror_path)
+
+    bootstrapped = (not depth and bootstrap and
+                    self.bootstrap_repo(self.mirror_path))
+
+    if not bootstrapped:
+      if not self.exists() or not self.supported_project():
+        # Bootstrap failed due to:
+        # 1. No previous cache.
+        # 2. Project doesn't have a bootstrap folder.
         # Start with a bare git dir.
-        self.RunGit(['init', '--bare'], cwd=tempdir)
+        self.RunGit(['init', '--bare'], cwd=self.mirror_path)
       else:
         # Bootstrap failed, previous cache exists; warn and continue.
         logging.warn(
             'Git cache has a lot of pack files (%d). Tried to re-bootstrap '
             'but failed. Continuing with non-optimized repository.'
             % len(pack_files))
-        gclient_utils.rmtree(tempdir)
-        tempdir = None
-    else:
-      if depth and os.path.exists(os.path.join(self.mirror_path, 'shallow')):
-        logging.warn(
-            'Shallow fetch requested, but repo cache already exists.')
-    return tempdir
 
   def _fetch(self, rundir, verbose, depth, reset_fetch_config):
     self.config(rundir, reset_fetch_config)
@@ -583,23 +548,16 @@ class Mirror(object):
     if not ignore_lock:
       lockfile.lock()
 
-    tempdir = None
     try:
-      tempdir = self._ensure_bootstrapped(depth, bootstrap)
-      rundir = tempdir or self.mirror_path
-      self._fetch(rundir, verbose, depth, reset_fetch_config)
+      self._ensure_bootstrapped(depth, bootstrap)
+      self._fetch(self.mirror_path, verbose, depth, reset_fetch_config)
     except ClobberNeeded:
       # This is a major failure, we need to clean and force a bootstrap.
-      gclient_utils.rmtree(rundir)
+      gclient_utils.rmtree(self.mirror_path)
       self.print(GIT_CACHE_CORRUPT_MESSAGE)
-      tempdir = self._ensure_bootstrapped(depth, bootstrap, force=True)
-      assert tempdir
-      self._fetch(tempdir, verbose, depth, reset_fetch_config)
+      self._ensure_bootstrapped(depth, bootstrap, force=True)
+      self._fetch(self.mirror_path, verbose, depth, reset_fetch_config)
     finally:
-      if tempdir:
-        if os.path.exists(self.mirror_path):
-          gclient_utils.rmtree(self.mirror_path)
-        self.Rename(tempdir, self.mirror_path)
       if not ignore_lock:
         lockfile.unlock()
 
