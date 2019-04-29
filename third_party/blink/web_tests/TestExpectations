@@ -6054,12 +6054,6 @@ crbug.com/947383 inspector-protocol/css/reattach-after-editing-styles.js [ Pass 
 # Sheriff 2019-03-29
 crbug.com/947477 external/wpt/editing/run/removeformat.html [ Pass Crash Timeout ]
 
-# Adjusting v8 console implementation, pass failure until v8 change lands
-crbug.com/948257 external/wpt/console/console-label-conversion.any.html [ Pass Failure ]
-crbug.com/948257 external/wpt/console/console-label-conversion.any.worker.html [ Pass Failure ]
-crbug.com/948678 external/wpt/console/idlharness.any.html [ Pass Failure ]
-crbug.com/948678 external/wpt/console/idlharness.any.worker.html [ Pass Failure ]
-
 ### external/wpt/fetch/sec-metadata/
 crbug.com/947023 external/wpt/fetch/sec-metadata/font.tentative.https.sub.html [ Pass Failure ]
 crbug.com/947023 external/wpt/fetch/sec-metadata/report.tentative.https.sub.html [ Pass Timeout ]
