@@ -94,21 +94,22 @@
 #include "ui/gfx/image/image.h"
 struct AwDrawSWFunctionTable;
 
-using autofill::ContentAutofillDriverFactory;
 using autofill::AutofillManager;
+using autofill::ContentAutofillDriverFactory;
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF16;
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
+using base::android::HasException;
 using base::android::JavaParamRef;
 using base::android::JavaRef;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
-using navigation_interception::InterceptNavigationDelegate;
 using content::BrowserThread;
 using content::RenderFrameHost;
 using content::WebContents;
+using navigation_interception::InterceptNavigationDelegate;
 
 namespace android_webview {
 
@@ -1492,25 +1493,15 @@ void AwContents::RendererResponsive(
                                        aw_render_process->GetJavaObject());
 }
 
-void AwContents::OnRenderProcessGone(int child_process_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return;
-
-  Java_AwContents_onRenderProcessGone(env, obj, child_process_id);
-}
-
-bool AwContents::OnRenderProcessGoneDetail(int child_process_id, bool crashed) {
+bool AwContents::OnRenderProcessGone(int child_process_id, bool crashed) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return false;
 
-  return Java_AwContents_onRenderProcessGoneDetail(env, obj, child_process_id,
-                                                   crashed);
+  return Java_AwContents_onRenderProcessGone(env, obj, child_process_id,
+                                             crashed);
 }
 
 }  // namespace android_webview

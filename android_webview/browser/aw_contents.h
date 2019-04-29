@@ -365,8 +365,7 @@ class AwContents : public FindHelper::Listener,
       const base::android::JavaParamRef<jobject>& callback);
 
   // AwRenderProcessGoneDelegate overrides
-  void OnRenderProcessGone(int child_process_id) override;
-  bool OnRenderProcessGoneDetail(int child_process_id, bool crashed) override;
+  bool OnRenderProcessGone(int child_process_id, bool crashed) override;
 
  private:
   void InitAutofillIfNecessary(bool autocomplete_enabled);

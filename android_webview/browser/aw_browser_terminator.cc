@@ -51,22 +51,14 @@ void GetAwRenderProcessGoneDelegatesForRenderProcess(
   }
 }
 
-void OnRenderProcessGone(content::RenderProcessHost* host) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  std::vector<AwRenderProcessGoneDelegate*> delegates;
-  GetAwRenderProcessGoneDelegatesForRenderProcess(host, &delegates);
-  for (auto* delegate : delegates)
-    delegate->OnRenderProcessGone(host->GetID());
-}
-
-void OnRenderProcessGoneDetail(content::RenderProcessHost* host,
-                               base::ProcessId child_process_pid,
-                               bool crashed) {
+void OnRenderProcessGone(content::RenderProcessHost* host,
+                         base::ProcessId child_process_pid,
+                         bool crashed) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::vector<AwRenderProcessGoneDelegate*> delegates;
   GetAwRenderProcessGoneDelegatesForRenderProcess(host, &delegates);
   for (auto* delegate : delegates) {
-    if (!delegate->OnRenderProcessGoneDetail(child_process_pid, crashed)) {
+    if (!delegate->OnRenderProcessGone(child_process_pid, crashed)) {
       if (crashed) {
         // Keeps this log unchanged, CTS test uses it to detect crash.
         std::string message = base::StringPrintf(
@@ -102,7 +94,6 @@ void AwBrowserTerminator::OnChildExit(
     const crash_reporter::ChildExitObserver::TerminationInfo& info) {
   content::RenderProcessHost* rph =
       content::RenderProcessHost::FromID(info.process_host_id);
-  OnRenderProcessGone(rph);
 
   crash_reporter::CrashMetricsReporter::GetInstance()->ChildProcessExited(info);
 
@@ -113,7 +104,7 @@ void AwBrowserTerminator::OnChildExit(
   LOG(ERROR) << "Renderer process (" << info.pid << ") crash detected (code "
              << info.crash_signo << ").";
 
-  OnRenderProcessGoneDetail(rph, info.pid, info.is_crashed());
+  OnRenderProcessGone(rph, info.pid, info.is_crashed());
 }
 
 }  // namespace android_webview
