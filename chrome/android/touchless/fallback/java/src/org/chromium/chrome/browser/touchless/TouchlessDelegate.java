@@ -22,4 +22,9 @@ public class TouchlessDelegate {
     public static boolean isTouchlessNewTabPage(NativePage nativePage) {
         return false;
     }
+
+    public static NativePage createTouchlessExploreSitesPage(
+            ChromeActivity activity, NativePageHost host) {
+        return null;
+    }
 }

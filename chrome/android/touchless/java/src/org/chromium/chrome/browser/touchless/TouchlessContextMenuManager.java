@@ -64,6 +64,28 @@ public class TouchlessContextMenuManager extends ContextMenuManager {
         notifyContextMenuShown(delegate);
     }
 
+    @Override
+    protected boolean shouldShowItem(@ContextMenuItemId int itemId, Delegate delegate) {
+        // Here we filter out any item IDs that don't make sense in touchless.
+        switch (itemId) {
+            case ContextMenuItemId.REMOVE:
+                // fall through
+            case ContextMenuItemId.LEARN_MORE:
+                return super.shouldShowItem(itemId, delegate);
+            case ContextMenuItemId.SAVE_FOR_OFFLINE:
+                // fall through
+            case ContextMenuItemId.OPEN_IN_NEW_TAB:
+                // fall through
+            case ContextMenuItemId.OPEN_IN_INCOGNITO_TAB:
+                // fall through
+            case ContextMenuItemId.OPEN_IN_NEW_WINDOW:
+                return false;
+        }
+
+        assert false : "Encountered unexpected touchless context menu item type";
+        return false;
+    }
+
     /**
      * Builds PropertyModel for individual menu item. String for item's label is loaded from
      * resources by PropertyModel.Builder.

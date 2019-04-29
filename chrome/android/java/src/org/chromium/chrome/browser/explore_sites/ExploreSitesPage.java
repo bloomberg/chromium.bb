@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.explore_sites;
 
 import android.content.Context;
+import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.IntDef;
@@ -24,6 +25,7 @@ import org.chromium.chrome.browser.gesturenav.HistoryNavigationLayout;
 import org.chromium.chrome.browser.native_page.BasicNativePage;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.native_page.NativePageHost;
+import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegateImpl;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -93,6 +95,30 @@ public class ExploreSitesPage extends BasicNativePage {
         super(activity, host);
     }
 
+    /**
+     * Returns whether the given URL should render the ExploreSitesPage native page.
+     * @param url The url to check.
+     * @return Whether or not this URL corresponds to the ExploreSitesPage.
+     */
+    public static boolean isExploreSitesUrl(String url) {
+        Uri uri = Uri.parse(url);
+        if (!UrlConstants.CHROME_NATIVE_SCHEME.equals(uri.getScheme())) {
+            return false;
+        }
+
+        return isExploreSitesHost(uri.getHost());
+    }
+
+    /**
+     * Returns whether the given host is the ExploreSitesPage's host. Does not check the
+     * scheme, which is required to fully validate a URL.
+     * @param host The host to check
+     * @return Whether this host is the ExploreSitesPage host.
+     */
+    public static boolean isExploreSitesHost(String host) {
+        return UrlConstants.EXPLORE_HOST.equals(host);
+    }
+
     @Override
     protected void initialize(ChromeActivity activity, final NativePageHost host) {
         mHost = host;
@@ -124,8 +150,10 @@ public class ExploreSitesPage extends BasicNativePage {
         // Don't direct reference activity because it might change if tab is reparented.
         Runnable closeContextMenuCallback =
                 () -> host.getActiveTab().getActivity().closeContextMenu();
-        mContextMenuManager = new ContextMenuManager(navDelegate,
-                (enabled) -> {}, closeContextMenuCallback, CONTEXT_MENU_USER_ACTION_PREFIX);
+
+        mContextMenuManager = createContextMenuManager(
+                navDelegate, closeContextMenuCallback, CONTEXT_MENU_USER_ACTION_PREFIX);
+
         host.getActiveTab().getWindowAndroid().addContextMenuCloseListener(mContextMenuManager);
 
         CategoryCardAdapter adapterDelegate = new CategoryCardAdapter(
@@ -151,6 +179,12 @@ public class ExploreSitesPage extends BasicNativePage {
 
         ExploreSitesBridge.getEspCatalog(mProfile, this::translateToModel);
         RecordUserAction.record("Android.ExploreSitesPage.Open");
+    }
+
+    protected ContextMenuManager createContextMenuManager(NativePageNavigationDelegate navDelegate,
+            Runnable closeContextMenuCallback, String contextMenuUserActionPrefix) {
+        return new ContextMenuManager(navDelegate,
+                (enabled) -> {}, closeContextMenuCallback, contextMenuUserActionPrefix);
     }
 
     private void translateToModel(@Nullable List<ExploreSitesCategory> categoryList) {
