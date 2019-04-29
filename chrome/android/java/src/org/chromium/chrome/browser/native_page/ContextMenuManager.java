@@ -69,6 +69,12 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
          */
         String getUrl();
 
+        /**
+         * @return Title to be displayed in the context menu when applicable, or null if no title
+         *         should be displayed.
+         */
+        String getContextMenuTitle();
+
         /** @return whether the given menu item is supported. */
         boolean isItemSupported(@ContextMenuItemId int menuItemId);
 

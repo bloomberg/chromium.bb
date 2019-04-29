@@ -114,9 +114,15 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
             // should reset the tile indexes for views we keep.
             updateTileViews(mCategory);
         }
+
         @Override
         public String getUrl() {
             return mSiteUrl;
+        }
+
+        @Override
+        public String getContextMenuTitle() {
+            return null;
         }
 
         @Override

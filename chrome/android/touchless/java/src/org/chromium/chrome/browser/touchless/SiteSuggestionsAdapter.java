@@ -87,6 +87,11 @@ class SiteSuggestionsAdapter extends ForwardingListObservable<PropertyKey>
         }
 
         @Override
+        public String getContextMenuTitle() {
+            return mSuggestion.get(SiteSuggestionModel.TITLE_KEY);
+        }
+
+        @Override
         public boolean isItemSupported(int menuItemId) {
             return menuItemId == ContextMenuManager.ContextMenuItemId.REMOVE;
         }

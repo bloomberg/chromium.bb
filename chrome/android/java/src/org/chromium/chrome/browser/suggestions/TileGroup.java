@@ -541,6 +541,11 @@ public class TileGroup implements MostVisitedSites.Observer {
         }
 
         @Override
+        public String getContextMenuTitle() {
+            return null;
+        }
+
+        @Override
         public boolean isItemSupported(@ContextMenuItemId int menuItemId) {
             switch (menuItemId) {
                 // Personalized tiles are the only tiles that can be removed.
