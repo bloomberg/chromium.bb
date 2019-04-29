@@ -84,31 +84,6 @@ template("optimize_webui") {
   }
 }
 
-template("polymer_css_build") {
-  node(target_name) {
-    script = "//chrome/browser/resources/polymer_css_build_gn.py"
-
-    # Input and outputs files must be in the same order.
-    inputs = []
-    foreach(_input, invoker.input_files) {
-      inputs += [ "$target_gen_dir/$_input" ]
-    }
-
-    outputs = []
-    foreach(_output, invoker.output_files) {
-      outputs += [ "$target_gen_dir/$_output" ]
-    }
-
-    deps = invoker.deps
-
-    args = [
-             "--out_folder",
-             rebase_path(target_gen_dir, root_build_dir),
-             "--input_files",
-           ] + invoker.input_files + [ "--output_files" ] + invoker.output_files
-  }
-}
-
 template("unpak") {
   action(target_name) {
     script = "//chrome/browser/resources/unpack_pak.py"
