@@ -116,6 +116,7 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     scoped_refptr<const ScrollPaintPropertyNode> scroll;
     bool flattens_inherited_transform = false;
     bool affected_by_outer_viewport_bounds_delta = false;
+    bool in_subtree_of_page_scale = true;
     BackfaceVisibility backface_visibility = BackfaceVisibility::kInherited;
     unsigned rendering_context_id = 0;
     CompositingReasons direct_compositing_reasons = CompositingReason::kNone;
@@ -128,6 +129,7 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
       if (flattens_inherited_transform != other.flattens_inherited_transform ||
           affected_by_outer_viewport_bounds_delta !=
               other.affected_by_outer_viewport_bounds_delta ||
+          in_subtree_of_page_scale != other.in_subtree_of_page_scale ||
           backface_visibility != other.backface_visibility ||
           rendering_context_id != other.rendering_context_id ||
           compositor_element_id != other.compositor_element_id ||
@@ -273,6 +275,12 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
   // screen in the presence of URL bar movement.
   bool IsAffectedByOuterViewportBoundsDelta() const {
     return state_.affected_by_outer_viewport_bounds_delta;
+  }
+
+  // If true, this node is a descendant of the page scale transform. This is
+  // important for avoiding raster during pinch-zoom (see: crbug.com/951861).
+  bool IsInSubtreeOfPageScale() const {
+    return state_.in_subtree_of_page_scale;
   }
 
   const cc::LayerStickyPositionConstraint* GetStickyConstraint() const {

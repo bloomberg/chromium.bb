@@ -2594,5 +2594,36 @@ TEST_P(VisualViewportTest, DirectPinchZoomPropertyUpdate) {
   EXPECT_EQ(3.f, visual_viewport.Scale());
 }
 
+// |TransformPaintPropertyNode::in_subtree_of_page_scale| should be false for
+// the page scale transform node and all ancestors, and should be true for
+// descendants of the page scale transform node.
+TEST_P(VisualViewportTest, InSubtreeOfPageScale) {
+  InitializeWithAndroidSettings();
+  RegisterMockedHttpURLLoad("200-by-800-viewport.html");
+  NavigateTo(base_url_ + "200-by-800-viewport.html");
+
+  UpdateAllLifecyclePhases();
+
+  VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
+  const auto* page_scale = visual_viewport.GetPageScaleNode();
+  // The page scale is not in its own subtree.
+  EXPECT_FALSE(page_scale->IsInSubtreeOfPageScale());
+  // Ancestors of the page scale are not in the page scale's subtree.
+  for (const auto* ancestor = page_scale->Parent(); ancestor;
+       ancestor = ancestor->Parent()) {
+    EXPECT_FALSE(ancestor->IsInSubtreeOfPageScale());
+  }
+
+  const auto* view = GetFrame()->View()->GetLayoutView();
+  const auto& view_contents_transform =
+      view->FirstFragment().ContentsProperties().Transform();
+  // Descendants of the page scale node should have |IsInSubtreeOfPageScale|.
+  EXPECT_TRUE(view_contents_transform.IsInSubtreeOfPageScale());
+  for (const auto* ancestor = view_contents_transform.Parent();
+       ancestor != page_scale; ancestor = ancestor->Parent()) {
+    EXPECT_TRUE(ancestor->IsInSubtreeOfPageScale());
+  }
+}
+
 }  // namespace
 }  // namespace blink

@@ -3398,6 +3398,7 @@ TEST_P(PaintArtifactCompositorTest, CreatesViewportNodes) {
   TransformationMatrix matrix;
   matrix.Scale(2);
   TransformPaintPropertyNode::State transform_state{matrix};
+  transform_state.in_subtree_of_page_scale = false;
   transform_state.compositor_element_id =
       CompositorElementIdFromUniqueObjectId(1);
 
@@ -3418,6 +3419,58 @@ TEST_P(PaintArtifactCompositorTest, CreatesViewportNodes) {
             cc_transform_node->post_local);
   EXPECT_TRUE(cc_transform_node->local.IsIdentity());
   EXPECT_TRUE(cc_transform_node->pre_local.IsIdentity());
+}
+
+// Test that |cc::TransformNode::in_subtree_of_page_scale_layer| is not set on
+// the page scale transform node or ancestors, and is set on descendants.
+TEST_P(PaintArtifactCompositorTest, InSubtreeOfPageScale) {
+  TransformPaintPropertyNode::State ancestor_transform_state;
+  ancestor_transform_state.in_subtree_of_page_scale = false;
+  auto ancestor_transform = TransformPaintPropertyNode::Create(
+      TransformPaintPropertyNode::Root(), std::move(ancestor_transform_state));
+
+  TransformPaintPropertyNode::State page_scale_transform_state;
+  page_scale_transform_state.in_subtree_of_page_scale = false;
+  page_scale_transform_state.compositor_element_id =
+      CompositorElementIdFromUniqueObjectId(1);
+  auto page_scale_transform = TransformPaintPropertyNode::Create(
+      *ancestor_transform, std::move(page_scale_transform_state));
+
+  TransformPaintPropertyNode::State descendant_transform_state;
+  descendant_transform_state.compositor_element_id =
+      CompositorElementIdFromUniqueObjectId(2);
+  descendant_transform_state.in_subtree_of_page_scale = true;
+  descendant_transform_state.direct_compositing_reasons =
+      CompositingReason::kWillChangeTransform;
+  auto descendant_transform = TransformPaintPropertyNode::Create(
+      *page_scale_transform, std::move(descendant_transform_state));
+
+  TestPaintArtifact artifact;
+  artifact.Chunk(*descendant_transform, c0(), e0())
+      .RectDrawing(FloatRect(0, 0, 10, 10), Color::kBlack);
+  ViewportProperties viewport_properties;
+  viewport_properties.page_scale = page_scale_transform.get();
+  CompositorElementIdSet element_ids;
+  Update(artifact.Build(), element_ids, viewport_properties);
+
+  cc::TransformTree& transform_tree = GetPropertyTrees().transform_tree;
+  const auto* cc_page_scale_transform = transform_tree.FindNodeFromElementId(
+      page_scale_transform_state.compositor_element_id);
+  // The page scale node is not in a subtree of the page scale layer.
+  EXPECT_FALSE(cc_page_scale_transform->in_subtree_of_page_scale_layer);
+
+  // Ancestors of the page scale node are not in a page scale subtree.
+  auto cc_ancestor_id = cc_page_scale_transform->parent_id;
+  while (cc_ancestor_id != cc::TransformTree::kInvalidNodeId) {
+    const auto* ancestor = transform_tree.Node(cc_ancestor_id);
+    EXPECT_FALSE(ancestor->in_subtree_of_page_scale_layer);
+    cc_ancestor_id = ancestor->parent_id;
+  }
+
+  // Descendants of the page scale node should be in the page scale subtree.
+  const auto* cc_descendant_transform = transform_tree.FindNodeFromElementId(
+      descendant_transform_state.compositor_element_id);
+  EXPECT_TRUE(cc_descendant_transform->in_subtree_of_page_scale_layer);
 }
 
 enum {

@@ -365,6 +365,9 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
     GetTransformTree().AddNodeAffectedByOuterViewportBoundsDelta(id);
   }
 
+  compositor_node.in_subtree_of_page_scale_layer =
+      transform_node.IsInSubtreeOfPageScale();
+
   if (const auto* sticky_constraint = transform_node.GetStickyConstraint()) {
     DCHECK(sticky_constraint->is_sticky);
     cc::StickyPositionNodeData* sticky_data =
@@ -467,6 +470,7 @@ void PropertyTreeManager::SetCcTransformNodeScrollToTransformTranslation(
 
 int PropertyTreeManager::EnsureCompositorPageScaleTransformNode(
     const TransformPaintPropertyNode& node) {
+  DCHECK(!node.IsInSubtreeOfPageScale());
   int id = EnsureCompositorTransformNode(node);
   DCHECK(GetTransformTree().Node(id));
   cc::TransformNode& compositor_node = *GetTransformTree().Node(id);
