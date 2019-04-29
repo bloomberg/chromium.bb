@@ -66,8 +66,12 @@ class CONTENT_EXPORT DWriteFontLookupTableBuilder {
 
   enum class SlowDownMode { kDelayEachTask, kHangOneTask, kNoSlowdown };
 
-  // Slow down each family indexing step for testing the internal timeout.
-  void SetSlowDownIndexingForTesting(SlowDownMode slowdown_mode);
+  // Slow down each family indexing step for testing the internal timeout,
+  // either with a single hung task or by delaying each indexing step. At the
+  // same time, configure a new timeout value for testing, overriding the
+  // default timeout.
+  void SetSlowDownIndexingForTestingWithTimeout(SlowDownMode slowdown_mode,
+                                                base::TimeDelta new_timeout);
 
   // Needed to trigger rebuilding the lookup table, when testing using
   // slowed-down indexing. Otherwise, the test methods would use the already
@@ -136,7 +140,8 @@ class CONTENT_EXPORT DWriteFontLookupTableBuilder {
       uint32_t family_index,
       base::TimeTicks start_time,
       SlowDownMode slow_down_mode,
-      base::WaitableEvent* hang_event_for_testing);
+      base::WaitableEvent* hang_event_for_testing,
+      base::TimeDelta indexing_timeout);
 
   // Callback from scheduled tasks to add the retrieved font names to the
   // protobuf.
@@ -160,6 +165,8 @@ class CONTENT_EXPORT DWriteFontLookupTableBuilder {
   // and full font name, in which case we do not need to build this table.
   bool HasDWriteUniqueFontLookups();
 
+  base::TimeDelta IndexingTimeout();
+
   DWriteFontLookupTableBuilder();
   ~DWriteFontLookupTableBuilder();
 
@@ -170,6 +177,7 @@ class CONTENT_EXPORT DWriteFontLookupTableBuilder {
   base::WaitableEvent font_table_built_;
 
   bool direct_write_initialized_ = false;
+  base::TimeDelta font_indexing_timeout_;
   Microsoft::WRL::ComPtr<IDWriteFontCollection> collection_;
   Microsoft::WRL::ComPtr<IDWriteFactory2> factory2_;
   Microsoft::WRL::ComPtr<IDWriteFactory3> factory3_;

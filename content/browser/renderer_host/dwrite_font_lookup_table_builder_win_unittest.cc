@@ -32,6 +32,8 @@ constexpr FontExpectation kExpectedTestFonts[] = {{u8"CambriaMath", 1},
                                                   {u8"NSimSun", 1},
                                                   {u8"calibri-bolditalic", 0}};
 
+constexpr base::TimeDelta kTestingTimeout = base::TimeDelta::FromSeconds(10);
+
 class DWriteFontLookupTableBuilderTest : public testing::Test {
  public:
   DWriteFontLookupTableBuilderTest()
@@ -95,7 +97,8 @@ TEST_F(DWriteFontLookupTableBuilderTest, TestFindUniqueFontDirect) {
 }
 
 TEST_P(DWriteFontLookupTableBuilderTimeoutTest, TestTimeout) {
-  font_lookup_table_builder_->SetSlowDownIndexingForTesting(GetParam());
+  font_lookup_table_builder_->SetSlowDownIndexingForTestingWithTimeout(
+      GetParam(), kTestingTimeout);
   font_lookup_table_builder_->SchedulePrepareFontUniqueNameTableIfNeeded();
   font_lookup_table_builder_->EnsureFontUniqueNameTable();
   base::ReadOnlySharedMemoryRegion font_table_memory =
@@ -119,8 +122,9 @@ INSTANTIATE_TEST_SUITE_P(
         DWriteFontLookupTableBuilder::SlowDownMode::kHangOneTask));
 
 TEST_F(DWriteFontLookupTableBuilderTest, TestReadyEarly) {
-  font_lookup_table_builder_->SetSlowDownIndexingForTesting(
-      DWriteFontLookupTableBuilder::SlowDownMode::kHangOneTask);
+  font_lookup_table_builder_->SetSlowDownIndexingForTestingWithTimeout(
+      DWriteFontLookupTableBuilder::SlowDownMode::kHangOneTask,
+      kTestingTimeout);
   font_lookup_table_builder_->SchedulePrepareFontUniqueNameTableIfNeeded();
   ASSERT_FALSE(font_lookup_table_builder_->FontUniqueNameTableReady());
   font_lookup_table_builder_->ResumeFromHangForTesting();
