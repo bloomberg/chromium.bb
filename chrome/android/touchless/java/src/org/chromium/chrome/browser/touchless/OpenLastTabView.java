@@ -24,6 +24,7 @@ import org.chromium.chrome.touchless.R;
 // TODO(crbug.com/948858): Add render tests for this view.
 public class OpenLastTabView extends FrameLayout {
     private LinearLayout mPlaceholder;
+    private TextView mPlaceholderText;
 
     private LinearLayout mLastTabView;
     private ImageView mIconView;
@@ -42,6 +43,8 @@ public class OpenLastTabView extends FrameLayout {
         super.onFinishInflate();
 
         mPlaceholder = findViewById(R.id.placeholder);
+        mPlaceholderText = findViewById(R.id.placeholder_text);
+
         mLastTabView = findViewById(R.id.open_last_tab);
         mIconView = findViewById(R.id.favicon);
         mTitleText = findViewById(R.id.title);
@@ -57,6 +60,12 @@ public class OpenLastTabView extends FrameLayout {
         } else {
             mLastTabView.setVisibility(View.GONE);
             mPlaceholder.setVisibility(View.VISIBLE);
+        }
+    }
+
+    void setFirstLaunched(boolean firstLaunched) {
+        if (firstLaunched) {
+            mPlaceholderText.setText(R.string.open_last_tab_placeholder_first_launch);
         }
     }
 
