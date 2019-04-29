@@ -88,6 +88,37 @@ TEST_F(AccessibilitySelectionTest, FromCurrentSelection) {
       GetSelectionText(ax_selection));
 }
 
+TEST_F(AccessibilitySelectionTest, FromCurrentSelectionSelectAll) {
+  SetBodyInnerHTML(R"HTML(
+      <p id="paragraph1">Hello.</p>
+      <p id="paragraph2">How are you?</p>
+      )HTML");
+
+  ASSERT_FALSE(AXSelection::FromCurrentSelection(GetDocument()).IsValid());
+  Selection().SelectAll(SetSelectionBy::kUser);
+  UpdateAllLifecyclePhasesForTest();
+  ASSERT_NE(nullptr, GetAXRootObject());
+
+  const auto ax_selection = AXSelection::FromCurrentSelection(GetDocument());
+  ASSERT_TRUE(ax_selection.IsValid());
+
+  ASSERT_FALSE(ax_selection.Base().IsTextPosition());
+  EXPECT_EQ(GetAXRootObject(), ax_selection.Base().ContainerObject());
+  EXPECT_EQ(0, ax_selection.Base().ChildIndex());
+
+  ASSERT_FALSE(ax_selection.Extent().IsTextPosition());
+  EXPECT_EQ(GetAXRootObject(), ax_selection.Extent().ContainerObject());
+  EXPECT_EQ(GetAXRootObject()->ChildCount(),
+            ax_selection.Extent().ChildIndex());
+
+  EXPECT_EQ(
+      "^++<Paragraph>\n"
+      "++++<StaticText: Hello.>\n"
+      "++<Paragraph>\n"
+      "++++<StaticText: How are you?>\n|",
+      GetSelectionText(ax_selection));
+}
+
 TEST_F(AccessibilitySelectionTest, ClearCurrentSelection) {
   GetPage().GetSettings().SetScriptEnabled(true);
   SetBodyInnerHTML(R"HTML(

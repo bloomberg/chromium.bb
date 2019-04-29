@@ -241,11 +241,12 @@ const AXPosition AXPosition::FromPosition(
     } else {
       const AXObject* ax_child =
           ax_object_cache_impl->GetOrCreate(node_after_position);
-      DCHECK(ax_child);
-
-      if (ax_child->AccessibilityIsIgnored()) {
-        // Find the closest DOM sibling that is unignored in the accessibility
-        // tree.
+      // |ax_child| might be nullptr because not all DOM nodes can have AX
+      // objects. For example, the "head" element has no corresponding AX
+      // object.
+      if (!ax_child || ax_child->AccessibilityIsIgnored()) {
+        // Find the closest DOM sibling that is present and unignored in the
+        // accessibility tree.
         switch (adjustment_behavior) {
           case AXPositionAdjustmentBehavior::kMoveRight: {
             const AXObject* next_child = FindNeighboringUnignoredObject(
