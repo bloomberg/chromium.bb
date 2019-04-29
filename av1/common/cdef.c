@@ -68,8 +68,9 @@ int sb_compute_cdef_list(const AV1_COMMON *const cm, int mi_row, int mi_col,
   return count;
 }
 
-void copy_rect8_8bit_to_16bit_c(uint16_t *dst, int dstride, const uint8_t *src,
-                                int sstride, int v, int h) {
+void cdef_copy_rect8_8bit_to_16bit_c(uint16_t *dst, int dstride,
+                                     const uint8_t *src, int sstride, int v,
+                                     int h) {
   for (int i = 0; i < v; i++) {
     for (int j = 0; j < h; j++) {
       dst[i * dstride + j] = src[i * sstride + j];
@@ -77,9 +78,9 @@ void copy_rect8_8bit_to_16bit_c(uint16_t *dst, int dstride, const uint8_t *src,
   }
 }
 
-void copy_rect8_16bit_to_16bit_c(uint16_t *dst, int dstride,
-                                 const uint16_t *src, int sstride, int v,
-                                 int h) {
+void cdef_copy_rect8_16bit_to_16bit_c(uint16_t *dst, int dstride,
+                                      const uint16_t *src, int sstride, int v,
+                                      int h) {
   for (int i = 0; i < v; i++) {
     for (int j = 0; j < h; j++) {
       dst[i * dstride + j] = src[i * sstride + j];
@@ -93,10 +94,10 @@ static void copy_sb8_16(AV1_COMMON *cm, uint16_t *dst, int dstride,
   if (cm->seq_params.use_highbitdepth) {
     const uint16_t *base =
         &CONVERT_TO_SHORTPTR(src)[src_voffset * sstride + src_hoffset];
-    copy_rect8_16bit_to_16bit(dst, dstride, base, sstride, vsize, hsize);
+    cdef_copy_rect8_16bit_to_16bit(dst, dstride, base, sstride, vsize, hsize);
   } else {
     const uint8_t *base = &src[src_voffset * sstride + src_hoffset];
-    copy_rect8_8bit_to_16bit(dst, dstride, base, sstride, vsize, hsize);
+    cdef_copy_rect8_8bit_to_16bit(dst, dstride, base, sstride, vsize, hsize);
   }
 }
 
