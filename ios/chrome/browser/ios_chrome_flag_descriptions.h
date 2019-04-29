@@ -78,21 +78,6 @@ extern const char kEnableSyncUSSBookmarksDescription[];
 extern const char kEnableSyncUSSPasswordsName[];
 extern const char kEnableSyncUSSPasswordsDescription[];
 
-extern const char kSyncPseudoUSSFaviconsName[];
-extern const char kSyncPseudoUSSFaviconsDescription[];
-
-extern const char kSyncPseudoUSSHistoryDeleteDirectivesName[];
-extern const char kSyncPseudoUSSHistoryDeleteDirectivesDescription[];
-
-extern const char kSyncPseudoUSSPreferencesName[];
-extern const char kSyncPseudoUSSPreferencesDescription[];
-
-extern const char kSyncPseudoUSSPriorityPreferencesName[];
-extern const char kSyncPseudoUSSPriorityPreferencesDescription[];
-
-extern const char kSyncPseudoUSSSupervisedUsersName[];
-extern const char kSyncPseudoUSSSupervisedUsersDescription[];
-
 // Title and description for the flag to control if Chrome Sync should use the
 // sandbox servers.
 extern const char kSyncSandboxName[];

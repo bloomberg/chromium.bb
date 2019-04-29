@@ -525,45 +525,6 @@ extern const char kEnableResourceLoadingHintsDescription[];
 extern const char kEnableSensorContentSettingName[];
 extern const char kEnableSensorContentSettingDescription[];
 
-extern const char kEnableSyncPseudoUSSAppListName[];
-extern const char kEnableSyncPseudoUSSAppListDescription[];
-
-extern const char kEnableSyncPseudoUSSAppsName[];
-extern const char kEnableSyncPseudoUSSAppsDescription[];
-
-extern const char kEnableSyncPseudoUSSDictionaryName[];
-extern const char kEnableSyncPseudoUSSDictionaryDescription[];
-
-extern const char kEnableSyncPseudoUSSExtensionSettingsName[];
-extern const char kEnableSyncPseudoUSSExtensionSettingsDescription[];
-
-extern const char kEnableSyncPseudoUSSExtensionsName[];
-extern const char kEnableSyncPseudoUSSExtensionsDescription[];
-
-extern const char kEnableSyncPseudoUSSFaviconsName[];
-extern const char kEnableSyncPseudoUSSFaviconsDescription[];
-
-extern const char kEnableSyncPseudoUSSHistoryDeleteDirectivesName[];
-extern const char kEnableSyncPseudoUSSHistoryDeleteDirectivesDescription[];
-
-extern const char kEnableSyncPseudoUSSPasswordsName[];
-extern const char kEnableSyncPseudoUSSPasswordsDescription[];
-
-extern const char kEnableSyncPseudoUSSPreferencesName[];
-extern const char kEnableSyncPseudoUSSPreferencesDescription[];
-
-extern const char kEnableSyncPseudoUSSPriorityPreferencesName[];
-extern const char kEnableSyncPseudoUSSPriorityPreferencesDescription[];
-
-extern const char kEnableSyncPseudoUSSSearchEnginesName[];
-extern const char kEnableSyncPseudoUSSSearchEnginesDescription[];
-
-extern const char kEnableSyncPseudoUSSSupervisedUsersName[];
-extern const char kEnableSyncPseudoUSSSupervisedUsersDescription[];
-
-extern const char kEnableSyncPseudoUSSThemesName[];
-extern const char kEnableSyncPseudoUSSThemesDescription[];
-
 extern const char kEnableSyncUSSBookmarksName[];
 extern const char kEnableSyncUSSBookmarksDescription[];
 
