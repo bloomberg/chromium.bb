@@ -53,7 +53,11 @@ public class UpdateConfigs {
 
     private static final String UPDATE_FLOW_PARAM_NAME = "flow";
 
-    private static final long DEFAULT_UPDATE_NOTIFICATION_INTERVAL = 3 * DateUtils.WEEK_IN_MILLIS;
+    private static final String UPDATE_NOTIFICATION_INTERVAL_PARAM_NAME =
+            "update_notification_interval_days";
+    private static final String UPDATE_NOTIFICATION_STATE_PARAM_NAME = "update_notification_state";
+
+    private static final long DEFAULT_UPDATE_NOTIFICATION_INTERVAL = 21 * DateUtils.DAY_IN_MILLIS;
 
     /** Possible update flow configurations. */
     @IntDef({UpdateFlowConfiguration.NEVER_SHOW, UpdateFlowConfiguration.INTENT_ONLY,
@@ -194,23 +198,29 @@ public class UpdateConfigs {
      * @return A time interval for scheduling update notification. Unit: mills.
      */
     public static long getUpdateNotificationInterval() {
-        return DEFAULT_UPDATE_NOTIFICATION_INTERVAL;
+        String configuration = ChromeFeatureList.getFieldTrialParamByFeature(
+                ChromeFeatureList.INLINE_UPDATE_FLOW, UPDATE_NOTIFICATION_INTERVAL_PARAM_NAME);
+        try {
+            return Long.parseLong(configuration) * DateUtils.DAY_IN_MILLIS;
+        } catch (NumberFormatException e) {
+            return DEFAULT_UPDATE_NOTIFICATION_INTERVAL;
+        }
     }
 
     /**
      * @return true if update notification is enabled, false if disabled.
      */
     public static boolean isUpdateNotificationEnabled() {
-        // TODO(hesen): Add Finch Config.
-        return false;
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.INLINE_UPDATE_FLOW, UPDATE_NOTIFICATION_STATE_PARAM_NAME, false);
     }
-
     /**
-     * Gets a String VariationsAssociatedData parameter. Also checks for a command-line switch with
-     * the same name, for easy local testing.
+     * Gets a String VariationsAssociatedData parameter. Also checks for a command-line switch
+     * with the same name, for easy local testing.
      * @param paramName The name of the parameter (or command-line switch) to get a value for.
      * @return The command-line flag value if present, or the param is value if present.
      */
+
     @Nullable
     private static String getStringParamValue(String paramName) {
         String value = CommandLine.getInstance().getSwitchValue(paramName);
