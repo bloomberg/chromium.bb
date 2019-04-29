@@ -212,8 +212,13 @@ ImageDecoder::CompressionFormat ImageDecoder::GetCompressionFormat(
           WebPGetFeatures(contents, available_data, &webp_features);
       // It is possible that there is not have enough image data available to
       // make a determination.
-      if (status == VP8_STATUS_OK)
-        return static_cast<CompressionFormat>(webp_features.format);
+      if (status == VP8_STATUS_OK) {
+        DCHECK_LT(webp_features.format,
+                  CompressionFormat::kWebPAnimationFormat);
+        return webp_features.has_animation
+                   ? CompressionFormat::kWebPAnimationFormat
+                   : static_cast<CompressionFormat>(webp_features.format);
+      }
       DCHECK_EQ(status, VP8_STATUS_NOT_ENOUGH_DATA);
     } else {
       NOTREACHED();
