@@ -97,18 +97,6 @@ class CryptAuthV2EnrollmentManagerImpl
 
   ~CryptAuthV2EnrollmentManagerImpl() override;
 
-  // CryptAuthEnrollmentManager:
-  void Start() override;
-  void ForceEnrollmentNow(
-      cryptauth::InvocationReason invocation_reason) override;
-  bool IsEnrollmentValid() const override;
-  base::Time GetLastEnrollmentTime() const override;
-  base::TimeDelta GetTimeToNextAttempt() const override;
-  bool IsEnrollmentInProgress() const override;
-  bool IsRecoveringFromFailure() const override;
-  std::string GetUserPublicKey() const override;
-  std::string GetUserPrivateKey() const override;
-
  protected:
   CryptAuthV2EnrollmentManagerImpl(
       ClientAppMetadataProvider* client_app_metadata_provider,
@@ -132,6 +120,18 @@ class CryptAuthV2EnrollmentManagerImpl
   static base::Optional<base::TimeDelta> GetTimeoutForState(State state);
   static base::Optional<CryptAuthEnrollmentResult::ResultCode>
   ResultCodeErrorFromState(State state);
+
+  // CryptAuthEnrollmentManager:
+  void Start() override;
+  void ForceEnrollmentNow(
+      cryptauth::InvocationReason invocation_reason) override;
+  bool IsEnrollmentValid() const override;
+  base::Time GetLastEnrollmentTime() const override;
+  base::TimeDelta GetTimeToNextAttempt() const override;
+  bool IsEnrollmentInProgress() const override;
+  bool IsRecoveringFromFailure() const override;
+  std::string GetUserPublicKey() const override;
+  std::string GetUserPrivateKey() const override;
 
   // CryptAuthEnrollmentScheduler::Delegate:
   void OnEnrollmentRequested(const base::Optional<cryptauthv2::PolicyReference>&
