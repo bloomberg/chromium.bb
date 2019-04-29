@@ -234,6 +234,15 @@ test.ENTRIES = {
   linuxFiles: new test.TestEntryInfo(
       test.EntryType.DIRECTORY, '', 'Linux files', '', test.SharedOption.NONE,
       '...', 'Linux files', '--', 'Folder'),
+
+  pluginVm: new test.TestEntryInfo(
+      test.EntryType.DIRECTORY, '', 'PluginVm', '', test.SharedOption.NONE,
+      'Jan 1, 2000, 1:00 AM', 'Plugin VM', '--', 'Folder'),
+
+  photosInPluginVm: new test.TestEntryInfo(
+      test.EntryType.DIRECTORY, '', 'PluginVm/photos', '',
+      test.SharedOption.NONE, 'Jan 1, 1980, 11:59 PM', 'photos', '--',
+      'Folder'),
 };
 
 /**

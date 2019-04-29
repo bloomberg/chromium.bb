@@ -620,6 +620,7 @@ FileType.getIconOverrides = (entry, opt_rootType) => {
   const overrides = {
     [VolumeManagerCommon.RootType.DOWNLOADS]: {
       '/Downloads': VolumeManagerCommon.VolumeType.DOWNLOADS,
+      '/PluginVm': 'plugin_vm',
     },
   };
   const root = overrides[opt_rootType];

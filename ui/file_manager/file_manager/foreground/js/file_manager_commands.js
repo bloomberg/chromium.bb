@@ -272,12 +272,13 @@ CommandUtil.shouldShowMenuItemsForEntry = (volumeManager, entry) => {
 };
 
 /**
- * If entry is MyFiles/Downloads, we don't allow cut/delete/rename.
+ * If entry is MyFiles/Downloads or MyFiles/PluginVm, we don't allow
+ * cut/delete/rename.
  * @param {!VolumeManager} volumeManager
  * @param {(Entry|FakeEntry)} entry Entry or a fake entry.
  * @return {boolean}
  */
-CommandUtil.isDownloads = (volumeManager, entry) => {
+CommandUtil.isReadOnly = (volumeManager, entry) => {
   if (!entry) {
     return false;
   }
@@ -295,10 +296,13 @@ CommandUtil.isDownloads = (volumeManager, entry) => {
     return false;
   }
 
-  if (util.isMyFilesVolumeEnabled() &&
-      volumeInfo.volumeType === VolumeManagerCommon.RootType.DOWNLOADS &&
-      entry.fullPath === '/Downloads') {
-    return true;
+  if (volumeInfo.volumeType === VolumeManagerCommon.RootType.DOWNLOADS) {
+    if (util.isMyFilesVolumeEnabled() && entry.fullPath === '/Downloads') {
+      return true;
+    }
+    if (util.isPluginVmEnabled() && entry.fullPath === '/PluginVm') {
+      return true;
+    }
   }
   return false;
 };
@@ -1031,7 +1035,7 @@ CommandHandler.COMMANDS_['delete'] = (() => {
 
     /**
      * Returns True if any entry belongs to a read-only volume or is
-     * MyFiles>Downloads.
+     * forced to be read-only like MyFiles>Downloads.
      * @param {!Array<!Entry>} entries
      * @param {!CommandHandlerDeps} fileManager
      * @return {boolean} True if entries contain read only entry.
@@ -1040,7 +1044,7 @@ CommandHandler.COMMANDS_['delete'] = (() => {
       return entries.some(entry => {
         const locationInfo = fileManager.volumeManager.getLocationInfo(entry);
         return (locationInfo && locationInfo.isReadOnly) ||
-            CommandUtil.isDownloads(fileManager.volumeManager, entry);
+            CommandUtil.isReadOnly(fileManager.volumeManager, entry);
       });
     }
   };
@@ -1195,7 +1199,7 @@ CommandHandler.COMMANDS_['rename'] = /** @type {Command} */ ({
    */
   execute: function(event, fileManager) {
     const entry = CommandUtil.getCommandEntry(fileManager, event.target);
-    if (CommandUtil.isDownloads(fileManager.volumeManager, entry)) {
+    if (CommandUtil.isReadOnly(fileManager.volumeManager, entry)) {
       return;
     }
     if (event.target instanceof DirectoryTree ||
@@ -1270,7 +1274,7 @@ CommandHandler.COMMANDS_['rename'] = /** @type {Command} */ ({
         !CommandUtil.shouldShowMenuItemsForEntry(
             fileManager.volumeManager, entries[0]) ||
         entries.some(
-            CommandUtil.isDownloads.bind(null, fileManager.volumeManager))) {
+            CommandUtil.isReadOnly.bind(null, fileManager.volumeManager))) {
       event.canExecute = false;
       event.command.setHidden(true);
       return;

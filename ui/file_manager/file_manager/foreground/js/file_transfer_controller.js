@@ -1430,7 +1430,7 @@ FileTransferController.prototype.canCutOrCopy_ = function(isMove) {
     }
 
     // For MyFiles/Downloads we only allow copy.
-    if (isMove && this.isDownloads_(entry)) {
+    if (isMove && this.isCopyOnly_(entry)) {
       return false;
     }
 
@@ -1464,7 +1464,7 @@ FileTransferController.prototype.canCutOrCopy_ = function(isMove) {
 
   // For MyFiles/Downloads we only allow copy.
   if (isMove &&
-      this.selectionHandler_.selection.entries.some(this.isDownloads_, this)) {
+      this.selectionHandler_.selection.entries.some(this.isCopyOnly_, this)) {
     return false;
   }
 
@@ -1831,11 +1831,12 @@ FileTransferController.prototype.blinkSelection_ = function() {
 };
 
 /**
- * Returns True if entry is MyFiles>Downloads.
+ * Returns True if entry is folder which we enforce to be read-only
+ * or copy-only such as MyFiles>Downloads or MyFiles>PluginVm.
  * @param {(!Entry|!FakeEntry)} entry Entry or a fake entry.
  * @return {boolean}
  */
-FileTransferController.prototype.isDownloads_ = function(entry) {
+FileTransferController.prototype.isCopyOnly_ = function(entry) {
   if (util.isFakeEntry(entry)) {
     return false;
   }
@@ -1845,10 +1846,13 @@ FileTransferController.prototype.isDownloads_ = function(entry) {
     return false;
   }
 
-  if (util.isMyFilesVolumeEnabled() &&
-      volumeInfo.volumeType === VolumeManagerCommon.RootType.DOWNLOADS &&
-      entry.fullPath === '/Downloads') {
-    return true;
+  if (volumeInfo.volumeType === VolumeManagerCommon.RootType.DOWNLOADS) {
+    if (util.isMyFilesVolumeEnabled() && entry.fullPath === '/Downloads') {
+      return true;
+    }
+    if (util.isPluginVmEnabled() && entry.fullPath === '/PluginVm') {
+      return true;
+    }
   }
   return false;
 };
