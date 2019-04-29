@@ -44,25 +44,28 @@ class HeapCompact::MovableObjectFixups final {
   }
 
   void Add(MovableReference* slot) {
-    MovableReference reference = *slot;
-    CHECK(reference);
+    MovableReference value = *slot;
+    CHECK(value);
 
-    // All slots and references are part of Oilpan's heap.
-    CHECK(heap_->LookupPageForAddress(reinterpret_cast<Address>(slot)));
-    CHECK(heap_->LookupPageForAddress(reinterpret_cast<Address>(reference)));
+    // All slots and values are part of Oilpan's heap.
+    BasePage* const slot_page =
+        heap_->LookupPageForAddress(reinterpret_cast<Address>(slot));
+    CHECK(slot_page);
+    BasePage* const value_page =
+        heap_->LookupPageForAddress(reinterpret_cast<Address>(value));
+    CHECK(value_page);
 
-    BasePage* const reference_page = PageFromObject(reference);
     // The following cases are not compacted and do not require recording:
     // - Backings in large pages.
     // - Inline backings that are part of a non-backing arena.
-    if (reference_page->IsLargeObjectPage() ||
-        !HeapCompact::IsCompactableArena(reference_page->Arena()->ArenaIndex()))
+    if (value_page->IsLargeObjectPage() ||
+        !HeapCompact::IsCompactableArena(value_page->Arena()->ArenaIndex()))
       return;
 
     // Slots may have been recorded already but must point to the same
-    // reference. Example: Ephemeron iterations may register slots multiple
+    // value. Example: Ephemeron iterations may register slots multiple
     // times.
-    auto fixup_it = fixups_.find(reference);
+    auto fixup_it = fixups_.find(value);
     if (UNLIKELY(fixup_it != fixups_.end())) {
       CHECK_EQ(slot, fixup_it->second);
       return;
@@ -72,24 +75,27 @@ class HeapCompact::MovableObjectFixups final {
     // Slots must reside in live objects
 
     // Add regular fixup.
-    fixups_.insert({reference, slot});
+    fixups_.insert({value, slot});
 
-    BasePage* const slot_page = PageFromObject(slot);
-
-    // Slots must reside in and references must point to live objects at this
+    // Slots must reside in and values must point to live objects at this
     // point, with the exception of slots in eagerly swept arenas where objects
-    // have already been processed. |reference| usually points to a separate
+    // have already been processed. |value| usually points to a separate
     // backing store but can also point to inlined storage which is why the
     // dynamic header lookup is required.
-    CHECK(reference_page->Arena()->ArenaIndex() !=
-          BlinkGC::kEagerSweepArenaIndex);
-    CHECK(static_cast<NormalPage*>(reference_page)
-              ->FindHeaderFromAddress(reinterpret_cast<Address>(reference))
+    CHECK(value_page->Arena()->ArenaIndex() != BlinkGC::kEagerSweepArenaIndex);
+    CHECK(static_cast<NormalPage*>(value_page)
+              ->FindHeaderFromAddress(reinterpret_cast<Address>(value))
               ->IsMarked());
-    CHECK(slot_page->Arena()->ArenaIndex() == BlinkGC::kEagerSweepArenaIndex ||
-          static_cast<NormalPage*>(slot_page)
-              ->FindHeaderFromAddress(reinterpret_cast<Address>(slot))
-              ->IsMarked());
+    if (slot_page->IsLargeObjectPage()) {
+      CHECK(
+          static_cast<LargeObjectPage*>(slot_page)->ObjectHeader()->IsMarked());
+    } else {
+      CHECK(slot_page->Arena()->ArenaIndex() ==
+                BlinkGC::kEagerSweepArenaIndex ||
+            static_cast<NormalPage*>(slot_page)
+                ->FindHeaderFromAddress(reinterpret_cast<Address>(slot))
+                ->IsMarked());
+    }
 
     // Check whether the slot itself resides on a page that is compacted.
     if (LIKELY(!relocatable_pages_.Contains(slot_page)))
