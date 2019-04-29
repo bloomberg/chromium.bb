@@ -125,6 +125,8 @@ except NameError:
   basestring = str
 
 
+DEPOT_TOOLS_DIR = os.path.dirname(os.path.abspath(os.path.realpath(__file__)))
+
 # Singleton object to represent an unset cache_dir (as opposed to a disabled
 # one, e.g. if a spec explicitly says `cache_dir = None`.)
 UNSET_CACHE_DIR = object()
@@ -3100,7 +3102,8 @@ def disable_buffering():
 
 def path_contains_tilde():
   for element in os.environ['PATH'].split(os.pathsep):
-    if element.startswith('~/'):
+    if element.startswith('~') and os.path.abspath(
+        os.path.realpath(os.path.expanduser(element))) == DEPOT_TOOLS_DIR:
       return True
   return False
 
