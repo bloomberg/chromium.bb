@@ -15,6 +15,7 @@ INCS = -I $(PIEX) -I .
 WASM = -s WASM=1 -fno-exceptions -Wall
 WOPT = -Os --llvm-opts 3 \
   -s STRICT=1 \
+  -s SINGLE_FILE=1 \
   -s ALLOW_MEMORY_GROWTH=1 \
   -s ENVIRONMENT='web' \
   -s NO_DYNAMIC_EXECUTION=1 \
@@ -22,11 +23,12 @@ WOPT = -Os --llvm-opts 3 \
   -s RESERVED_FUNCTION_POINTERS=$(shell echo $$((10*2))) \
   -s TOTAL_STACK=$(shell echo $$((8*1024)))
 
-all: a.out.js
-	$(shell cp a.out.* extension)
+.PHONY: all clean release
 
-a.out.js: piex.cpp.bc piex.src.bc
-	em++ --bind --std=c++11 $(WASM) $(WOPT) $^
+all: piex.out.js release
+
+piex.out.js: piex.cpp.bc piex.src.bc
+	em++ --bind --std=c++11 $(WASM) $(WOPT) $^ -o $@
 
 piex.cpp.bc: piex.cpp Makefile
 	em++ --bind --std=c++11 $(WASM) $(WOPT) $(INCS) piex.cpp -o $@
@@ -34,8 +36,10 @@ piex.cpp.bc: piex.cpp Makefile
 piex.src.bc: $(PSRC) Makefile
 	em++ --bind --std=c++11 $(WASM) $(WOPT) $(INCS) $(PSRC) -o $@
 
-.PHONY: clean
+release:
+	$(shell cp piex.out.js piex.wasm)
+	$(shell cp piex.wasm extension)
 
 clean:
-	$(shell rm -f tests.{result*,log} package-lock* *.bc a.out.*)
-	$(shell rm -f extension/a.out.*)
+	$(shell rm -f tests.{result*,log} package-lock* *.bc piex.out*)
+	$(shell rm -f piex.wasm extension/piex.wasm)

@@ -20,5 +20,5 @@ window.onload = () => {
     },
   };
 
-  script.src = 'a.out.js';
+  script.src = '/piex.wasm';
 };

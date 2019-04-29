@@ -3,5 +3,5 @@ node_modules
 package-lock.json
 tests.result.txt
 tests.log
-a.out.*
+piex.out*
 *.bc
