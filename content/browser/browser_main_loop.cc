@@ -198,6 +198,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "base/memory/memory_pressure_monitor_chromeos.h"
+#include "base/memory/memory_pressure_monitor_notifying_chromeos.h"
 #include "chromeos/constants/chromeos_switches.h"
 #endif
 
@@ -409,6 +410,15 @@ std::unique_ptr<base::MemoryPressureMonitor> CreateMemoryPressureMonitor(
 // concrete class.
 #if defined(OS_CHROMEOS)
   if (chromeos::switches::MemoryPressureHandlingEnabled()) {
+    if (base::chromeos::MemoryPressureMonitorNotifying::
+            SupportsKernelNotifications()) {
+      // We will use the MemoryPressureNotifying instance as our kernel supports
+      // notifications on memory level changes.
+      return std::make_unique<base::chromeos::MemoryPressureMonitorNotifying>();
+    }
+
+    // Our kernel does support notifications, so use the old 1s polling
+    // implementation.
     return std::make_unique<base::chromeos::MemoryPressureMonitor>(
         chromeos::switches::GetMemoryPressureThresholds());
   }
