@@ -120,7 +120,7 @@ class UrlRequestTest : public ::testing::TestWithParam<
       Cronet_RequestFinishedInfoListener_Destroy(request_finished_listener_);
   }
 
-  void SetUp() override { cronet::TestServer::Start(); }
+  void SetUp() override { EXPECT_TRUE(cronet::TestServer::Start()); }
 
   void TearDown() override { cronet::TestServer::Shutdown(); }
 
