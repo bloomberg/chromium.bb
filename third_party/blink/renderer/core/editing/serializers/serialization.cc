@@ -359,12 +359,12 @@ static bool FindNodesSurroundingContext(DocumentFragment* fragment,
   if (!fragment->firstChild())
     return false;
   for (Node& node : NodeTraversal::StartsAt(*fragment->firstChild())) {
-    if (node.getNodeType() == Node::kCommentNode &&
-        ToComment(node).data() == kFragmentMarkerTag) {
+    auto* comment_node = DynamicTo<Comment>(node);
+    if (comment_node && comment_node->data() == kFragmentMarkerTag) {
       if (!node_before_context) {
-        node_before_context = &ToComment(node);
+        node_before_context = comment_node;
       } else {
-        node_after_context = &ToComment(node);
+        node_after_context = comment_node;
         return true;
       }
     }

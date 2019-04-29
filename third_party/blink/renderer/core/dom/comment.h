@@ -24,6 +24,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_COMMENT_H_
 
 #include "third_party/blink/renderer/core/dom/character_data.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -42,7 +43,12 @@ class CORE_EXPORT Comment final : public CharacterData {
   void DetachLayoutTree(const AttachContext&) final {}
 };
 
-DEFINE_NODE_TYPE_CASTS(Comment, getNodeType() == Node::kCommentNode);
+template <>
+struct DowncastTraits<Comment> {
+  static bool AllowFrom(const Node& node) {
+    return node.getNodeType() == Node::kCommentNode;
+  }
+};
 
 }  // namespace blink
 
