@@ -100,7 +100,7 @@ void RenderingTest::SetChildFrameHTML(const String& html) {
   auto* state_machine = ChildDocument().GetFrame()->Loader().StateMachine();
   if (state_machine->IsDisplayingInitialEmptyDocument())
     state_machine->AdvanceTo(FrameLoaderStateMachine::kCommittedFirstRealLoad);
-  // And let the frame view  exit the initial throttled state.
+  // And let the frame view exit the initial throttled state.
   ChildDocument().View()->BeginLifecycleUpdates();
 }
 

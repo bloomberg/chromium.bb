@@ -1528,6 +1528,15 @@ class CORE_EXPORT Document : public ContainerNode,
   void RemoveLockedDisplayLock();
   int LockedDisplayLockCount() const;
 
+  // Deferred compositor commits are disallowed by default, and are only allowed
+  // for same-origin navigations to an html document fetched with http.
+  bool DeferredCompositorCommitIsAllowed() {
+    return deferred_compositor_commit_is_allowed_;
+  }
+  void SetDeferredCompositorCommitIsAllowed(bool new_value) {
+    deferred_compositor_commit_is_allowed_ = new_value;
+  }
+
   // Returns whether the document is inside the scope specified in the Web App
   // Manifest. If the document doesn't run in a context of a Web App or has no
   // associated Web App Manifest, it will return false.
@@ -1956,19 +1965,17 @@ class CORE_EXPORT Document : public ContainerNode,
 
   std::unique_ptr<DocumentOutliveTimeReporter> document_outlive_time_reporter_;
 
-  // |mojo_ukm_recorder_| and |source_id_| will allow objects that are part of
-  // the |ukm_recorder_| and |source_id_| will allow objects that are part of
+  // |ukm_recorder_| and |source_id_| will allow objects that are part of
   // the document to recorde UKM.
   std::unique_ptr<ukm::UkmRecorder> ukm_recorder_;
   int64_t ukm_source_id_;
+  bool needs_to_record_ukm_outlive_time_;
 
 #if DCHECK_IS_ON()
   unsigned slot_assignment_recalc_forbidden_recursion_depth_ = 0;
 #endif
   unsigned slot_assignment_recalc_depth_ = 0;
   unsigned flat_tree_traversal_forbidden_recursion_depth_ = 0;
-
-  bool needs_to_record_ukm_outlive_time_;
 
   Member<DOMFeaturePolicy> policy_;
 
@@ -1987,6 +1994,8 @@ class CORE_EXPORT Document : public ContainerNode,
   int activation_blocking_display_lock_count_ = 0;
   // Number of locked display locks in the document.
   int locked_display_lock_count_ = 0;
+
+  bool deferred_compositor_commit_is_allowed_ = false;
 
   // A list of all the navigation_initiator bindings owned by this document.
   // Used to report CSP violations that result from CSP blocking
