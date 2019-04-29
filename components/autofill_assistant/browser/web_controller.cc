@@ -971,7 +971,7 @@ void WebController::ClickOrTapElement(
       runtime::CallFunctionOnParams::Builder()
           .SetObjectId(element_object_id)
           .SetArguments(std::move(argument))
-          .SetFunctionDeclaration(std::string(kScrollIntoViewScript))
+          .SetFunctionDeclaration(std::string(kScrollIntoViewIfNeededScript))
           .SetReturnByValue(true)
           .Build(),
       base::BindOnce(&WebController::OnScrollIntoView,
