@@ -449,6 +449,11 @@
   },
   {
     "prefix": "dark-mode",
+    "base": "paint/dark-mode/grayscale-images",
+    "args": ["--blink-settings=darkMode=3,darkModeImagePolicy=0,darkModeImageStyle=1"]
+  },
+  {
+    "prefix": "dark-mode",
     "base": "paint/dark-mode/image-filter-all",
     "args": ["--blink-settings=darkMode=3,darkModeImagePolicy=0"]
   },
