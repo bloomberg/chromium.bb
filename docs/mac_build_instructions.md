@@ -54,7 +54,6 @@ has no spaces):
 
 ```shell
 $ mkdir chromium && cd chromium
-$ git config --global core.precomposeUnicode true
 ```
 
 Run the `fetch` tool from `depot_tools` to check out the code and its
@@ -65,7 +64,8 @@ $ fetch chromium
 ```
 
 If you don't need the full repo history, you can save time by using
-`fetch --no-history chromium`.
+`fetch --no-history chromium`. You can call `git fetch --unshallow` to retrieve
+the full history later.
 
 Expect the command to take 30 minutes on even a fast connection, and many
 hours on slower ones.
