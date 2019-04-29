@@ -356,9 +356,14 @@ void Widget::Init(const InitParams& in_params) {
     SetContentsView(params.delegate->GetContentsView());
     SetInitialBoundsForFramelessWindow(params.bounds);
   }
-  // This must come after SetContentsView() or it might not be able to find
-  // the correct NativeTheme (on Linux). See http://crbug.com/384492
+  // TODO(https://crbug.com/953978): Use GetNativeTheme() for all platforms.
+#if defined(OS_MACOSX) || defined(OS_WIN)
+  ui::NativeTheme* native_theme = ui::NativeTheme::GetInstanceForNativeUi();
+  if (native_theme)
+    observer_manager_.Add(native_theme);
+#else
   observer_manager_.Add(GetNativeTheme());
+#endif
   native_widget_initialized_ = true;
   native_widget_->OnWidgetInitDone();
 }
@@ -1455,7 +1460,11 @@ View* Widget::GetFocusTraversableParentView() {
 void Widget::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
   DCHECK(observer_manager_.IsObserving(observed_theme));
 
+#if defined(OS_MACOSX) || defined(OS_WIN)
+  ui::NativeTheme* current_native_theme = observed_theme;
+#else
   ui::NativeTheme* current_native_theme = GetNativeTheme();
+#endif
   if (!observer_manager_.IsObserving(current_native_theme)) {
     observer_manager_.RemoveAll();
     observer_manager_.Add(current_native_theme);

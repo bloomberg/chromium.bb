@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "base/sequence_checker.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/common/buildflags.h"
@@ -24,6 +25,7 @@
 #include "extensions/buildflags/buildflags.h"
 #include "extensions/common/extension_id.h"
 #include "ui/base/theme_provider.h"
+#include "ui/native_theme/native_theme_observer.h"
 
 class BrowserThemePack;
 class CustomThemeSupplier;
@@ -50,7 +52,9 @@ namespace ui {
 class ResourceBundle;
 }
 
-class ThemeService : public content::NotificationObserver, public KeyedService {
+class ThemeService : public content::NotificationObserver,
+                     public KeyedService,
+                     public ui::NativeThemeObserver {
  public:
   // Public constants used in ThemeService and its subclasses:
   static const char kDefaultThemeID[];
@@ -67,6 +71,9 @@ class ThemeService : public content::NotificationObserver, public KeyedService {
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
+
+  // Overridden from ui::NativeThemeObserver:
+  void OnNativeThemeUpdated(ui::NativeTheme* observed_theme) override;
 
   // Set the current theme to the theme defined in |extension|.
   // |extension| must already be added to this profile's
@@ -326,6 +333,9 @@ class ThemeService : public content::NotificationObserver, public KeyedService {
   // We hold onto this just to be sure not to uninstall the extension view
   // RemoveUnusedThemes while it's still being built.
   std::string building_extension_id_;
+
+  ScopedObserver<ui::NativeTheme, ui::NativeThemeObserver>
+      native_theme_observer_{this};
 
   base::WeakPtrFactory<ThemeService> weak_ptr_factory_;
 

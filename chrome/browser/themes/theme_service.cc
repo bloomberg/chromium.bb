@@ -333,6 +333,11 @@ void ThemeService::Init(Profile* profile) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   profile_ = profile;
 
+  // TODO(https://crbug.com/953978): Use GetNativeTheme() for all platforms.
+  ui::NativeTheme* native_theme = ui::NativeTheme::GetInstanceForNativeUi();
+  if (native_theme)
+    native_theme_observer_.Add(native_theme);
+
   InitFromPrefs();
 
   registrar_.Add(this,
@@ -364,6 +369,7 @@ void ThemeService::Shutdown() {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   theme_observer_.reset();
 #endif
+  native_theme_observer_.RemoveAll();
 }
 
 void ThemeService::Observe(int type,
@@ -379,6 +385,21 @@ void ThemeService::Observe(int type,
       break;
     default:
       NOTREACHED();
+  }
+}
+
+void ThemeService::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
+  // If we're using the default theme, it means that we need to respond to
+  // changes in the HC state. Don't use SetCustomDefaultTheme because that
+  // kicks off theme changed events which conflict with the NativeThemeChanged
+  // events that are already processing.
+  if (UsingDefaultTheme()) {
+    scoped_refptr<CustomThemeSupplier> supplier;
+    if (observed_theme && observed_theme->UsesHighContrastColors()) {
+      supplier = base::MakeRefCounted<IncreasedContrastThemeSupplier>(
+          observed_theme->SystemDarkModeEnabled());
+    }
+    SwapThemeSupplier(supplier);
   }
 }
 
@@ -406,9 +427,15 @@ void ThemeService::UseDefaultTheme() {
     base::RecordAction(UserMetricsAction("Themes_Reset"));
 
   ui::NativeTheme* native_theme = ui::NativeTheme::GetInstanceForNativeUi();
-  if (native_theme && native_theme->UsesHighContrastColors())
+  if (native_theme && native_theme->UsesHighContrastColors()) {
     SetCustomDefaultTheme(new IncreasedContrastThemeSupplier(
         native_theme->SystemDarkModeEnabled()));
+    // Early return here because SetCustomDefaultTheme does ClearAllThemeData
+    // and NotifyThemeChanged when it needs to. Without this return, the
+    // IncreasedContrastThemeSupplier would get immediately removed if this
+    // code runs after ready_ is set to true.
+    return;
+  }
   ClearAllThemeData();
   NotifyThemeChanged();
 }

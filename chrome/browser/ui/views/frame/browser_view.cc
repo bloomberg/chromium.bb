@@ -195,6 +195,7 @@
 #include "chrome/browser/taskbar/taskbar_decorator_win.h"
 #include "chrome/browser/win/jumplist.h"
 #include "chrome/browser/win/jumplist_factory.h"
+#include "chrome/browser/win/titlebar_config.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/native_theme/native_theme_win.h"
 #include "ui/views/win/scoped_fullscreen_visibility.h"
@@ -1505,6 +1506,7 @@ void BrowserView::UserChangedTheme(BrowserThemeChangeType theme_change_type) {
   // changed is, for example, the titlebar color, or the user has switched from
   // light to dark mode.
   const bool should_use_native_frame = frame_->ShouldUseNativeFrame();
+
   bool must_regenerate_frame;
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // GTK and user theme changes can both change frame buttons, so the frame
@@ -1515,6 +1517,15 @@ void BrowserView::UserChangedTheme(BrowserThemeChangeType theme_change_type) {
       theme_change_type == BrowserThemeChangeType::kBrowserTheme ||
       using_native_frame_ != should_use_native_frame;
 #endif
+
+#if defined(OS_WIN)
+  // TODO(https://crbug.com/953982): Remove the need to regenerate the frame
+  const bool should_use_custom_titlebar = ShouldCustomDrawSystemTitlebar();
+
+  must_regenerate_frame |=
+      (using_custom_titlebar_ != should_use_custom_titlebar);
+#endif
+
   if (must_regenerate_frame) {
     // This is a heavyweight theme change that requires regenerating the frame
     // as well as repainting the browser window.
@@ -1525,6 +1536,10 @@ void BrowserView::UserChangedTheme(BrowserThemeChangeType theme_change_type) {
     GetWidget()->ThemeChanged();
   }
   using_native_frame_ = should_use_native_frame;
+
+#if defined(OS_WIN)
+  using_custom_titlebar_ = should_use_custom_titlebar;
+#endif
 }
 
 void BrowserView::ShowAppMenu() {
