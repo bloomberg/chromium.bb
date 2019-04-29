@@ -10,13 +10,13 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/scoped_observer.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/bookmark_app_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/install_manager_observer.h"
 #include "chrome/browser/web_applications/components/install_options.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
@@ -26,7 +26,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/common/extension.h"
 
 namespace extensions {
 
@@ -252,8 +251,10 @@ void OnGetWebApplicationInfo(const BookmarkAppInstallManager* install_manager,
 
 }  // namespace
 
-BookmarkAppInstallManager::BookmarkAppInstallManager(Profile* profile)
-    : InstallManager(profile) {
+BookmarkAppInstallManager::BookmarkAppInstallManager(
+    Profile* profile,
+    web_app::InstallFinalizer* finalizer)
+    : InstallManager(profile), finalizer_(finalizer) {
   bookmark_app_helper_factory_ = base::BindRepeating(
       [](Profile* profile, const WebApplicationInfo& web_app_info,
          content::WebContents* web_contents,
@@ -380,23 +381,14 @@ void BookmarkAppInstallManager::InstallOrUpdateWebAppFromSync(
       ExtensionSystem::Get(profile())->extension_service();
   DCHECK(extension_service);
 
-  const Extension* extension = extension_service->GetInstalledExtension(app_id);
-
-  // Return if there are no bookmark app details that need updating.
-  const std::string extension_sync_data_name =
-      base::UTF16ToUTF8(web_application_info->title);
-  const std::string bookmark_app_description =
-      base::UTF16ToUTF8(web_application_info->description);
-  if (extension &&
-      extension->non_localized_name() == extension_sync_data_name &&
-      extension->description() == bookmark_app_description) {
+  if (finalizer_->CanSkipAppUpdateForSync(app_id, *web_application_info))
     return;
-  }
 
 #if defined(OS_CHROMEOS)
-  const bool is_locally_installed = true;
+  bool is_locally_installed = true;
 #else
-  const bool is_locally_installed = extension != nullptr;
+  bool is_locally_installed =
+      extension_service->GetInstalledExtension(app_id) != nullptr;
 #endif
 
   CreateOrUpdateBookmarkApp(extension_service, web_application_info.get(),

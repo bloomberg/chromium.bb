@@ -130,8 +130,8 @@ void WebAppProvider::CreateBookmarkAppsSubsystems(Profile* profile) {
     install_manager_ = std::make_unique<WebAppInstallManager>(
         profile, install_finalizer_.get());
   } else {
-    install_manager_ =
-        std::make_unique<extensions::BookmarkAppInstallManager>(profile);
+    install_manager_ = std::make_unique<extensions::BookmarkAppInstallManager>(
+        profile, install_finalizer_.get());
   }
 
   pending_app_manager_ =

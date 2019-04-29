@@ -149,4 +149,11 @@ void WebAppInstallFinalizer::RevealAppShim(const AppId& app_id) {
   NOTIMPLEMENTED();
 }
 
+bool WebAppInstallFinalizer::CanSkipAppUpdateForSync(
+    const AppId& app_id,
+    const WebApplicationInfo& web_app_info) const {
+  NOTIMPLEMENTED();
+  return true;
+}
+
 }  // namespace web_app

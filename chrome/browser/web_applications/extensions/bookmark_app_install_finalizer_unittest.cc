@@ -297,4 +297,41 @@ TEST_F(BookmarkAppInstallFinalizerTest, ForceLaunchContainer) {
   run_loop.Run();
 }
 
+TEST_F(BookmarkAppInstallFinalizerTest, CanSkipAppUpdateForSync) {
+  BookmarkAppInstallFinalizer installer(profile());
+
+  auto info = std::make_unique<WebApplicationInfo>();
+  info->app_url = GURL(kWebAppUrl);
+  info->title = base::ASCIIToUTF16("Title1");
+  info->description = base::ASCIIToUTF16("Description1");
+
+  const web_app::AppId app_id = web_app::GenerateAppIdFromURL(info->app_url);
+
+  EXPECT_FALSE(installer.CanSkipAppUpdateForSync(app_id, *info));
+
+  base::RunLoop run_loop;
+  web_app::InstallFinalizer::FinalizeOptions options;
+
+  installer.FinalizeInstall(
+      *info, options,
+      base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
+                                     web_app::InstallResultCode code) {
+        EXPECT_EQ(web_app::InstallResultCode::kSuccess, code);
+        EXPECT_EQ(app_id, installed_app_id);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+
+  EXPECT_TRUE(installer.CanSkipAppUpdateForSync(app_id, *info));
+
+  WebApplicationInfo info_with_diff_title = *info;
+  info_with_diff_title.title = base::ASCIIToUTF16("Title2");
+  EXPECT_FALSE(installer.CanSkipAppUpdateForSync(app_id, info_with_diff_title));
+
+  WebApplicationInfo info_with_diff_description = *info;
+  info_with_diff_description.title = base::ASCIIToUTF16("Description2");
+  EXPECT_FALSE(
+      installer.CanSkipAppUpdateForSync(app_id, info_with_diff_description));
+}
+
 }  // namespace extensions

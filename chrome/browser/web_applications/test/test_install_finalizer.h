@@ -36,6 +36,9 @@ class TestInstallFinalizer final : public InstallFinalizer {
                    content::WebContents* web_contents) override;
   bool CanRevealAppShim() const override;
   void RevealAppShim(const AppId& app_id) override;
+  bool CanSkipAppUpdateForSync(
+      const AppId& app_id,
+      const WebApplicationInfo& web_app_info) const override;
 
   void SetNextFinalizeInstallResult(const AppId& app_id,
                                     InstallResultCode code);

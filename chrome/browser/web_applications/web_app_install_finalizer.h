@@ -41,6 +41,9 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
                    content::WebContents* web_contents) override;
   bool CanRevealAppShim() const override;
   void RevealAppShim(const AppId& app_id) override;
+  bool CanSkipAppUpdateForSync(
+      const AppId& app_id,
+      const WebApplicationInfo& web_app_info) const override;
 
  private:
   void OnDataWritten(InstallFinalizedCallback callback,

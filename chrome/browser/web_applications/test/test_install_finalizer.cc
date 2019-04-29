@@ -82,6 +82,12 @@ void TestInstallFinalizer::RevealAppShim(const AppId& app_id) {
   ++num_reveal_appshim_calls_;
 }
 
+bool TestInstallFinalizer::CanSkipAppUpdateForSync(
+    const AppId& app_id,
+    const WebApplicationInfo& web_app_info) const {
+  return false;
+}
+
 void TestInstallFinalizer::SetNextFinalizeInstallResult(
     const AppId& app_id,
     InstallResultCode code) {

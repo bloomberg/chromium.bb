@@ -9,8 +9,10 @@
 
 #include "base/bind.h"
 #include "base/optional.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/bookmark_app_extension_util.h"
 #include "chrome/browser/extensions/crx_installer.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
@@ -19,6 +21,7 @@
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/web_application_info.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/browser/install/crx_install_error.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_id.h"
@@ -163,6 +166,31 @@ bool BookmarkAppInstallFinalizer::CanRevealAppShim() const {
 void BookmarkAppInstallFinalizer::RevealAppShim(const web_app::AppId& app_id) {
   const Extension* app = GetExtensionById(profile_, app_id);
   BookmarkAppRevealAppShim(profile_, app);
+}
+
+bool BookmarkAppInstallFinalizer::CanSkipAppUpdateForSync(
+    const web_app::AppId& app_id,
+    const WebApplicationInfo& web_app_info) const {
+  ExtensionService* extension_service =
+      ExtensionSystem::Get(profile_)->extension_service();
+  DCHECK(extension_service);
+
+  const Extension* extension = extension_service->GetInstalledExtension(app_id);
+  if (!extension)
+    return false;
+
+  // We can skip if there are no bookmark app details that need updating.
+  // TODO(loyso): We need to check more data fields. crbug.com/949427.
+  const std::string extension_sync_data_name =
+      base::UTF16ToUTF8(web_app_info.title);
+  const std::string bookmark_app_description =
+      base::UTF16ToUTF8(web_app_info.description);
+  if (extension->non_localized_name() == extension_sync_data_name &&
+      extension->description() == bookmark_app_description) {
+    return true;
+  }
+
+  return false;
 }
 
 void BookmarkAppInstallFinalizer::SetCrxInstallerFactoryForTesting(

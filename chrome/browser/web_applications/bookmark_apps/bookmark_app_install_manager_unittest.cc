@@ -19,6 +19,7 @@
 #include "chrome/browser/web_applications/components/install_options.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/test/test_data_retriever.h"
+#include "chrome/browser/web_applications/test/test_install_finalizer.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -33,7 +34,9 @@ class BookmarkAppInstallManagerTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
-    install_manager_ = std::make_unique<BookmarkAppInstallManager>(profile());
+    install_finalizer_ = std::make_unique<web_app::TestInstallFinalizer>();
+    install_manager_ = std::make_unique<BookmarkAppInstallManager>(
+        profile(), install_finalizer_.get());
 
     extensions::TestExtensionSystem* test_extension_system =
         static_cast<extensions::TestExtensionSystem*>(
@@ -69,6 +72,7 @@ class BookmarkAppInstallManagerTest : public ChromeRenderViewHostTestHarness {
   }
 
  protected:
+  std::unique_ptr<web_app::TestInstallFinalizer> install_finalizer_;
   std::unique_ptr<BookmarkAppInstallManager> install_manager_;
 };
 

@@ -41,6 +41,9 @@ class BookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
                    content::WebContents* web_contents) override;
   bool CanRevealAppShim() const override;
   void RevealAppShim(const web_app::AppId& app_id) override;
+  bool CanSkipAppUpdateForSync(
+      const web_app::AppId& app_id,
+      const WebApplicationInfo& web_app_info) const override;
 
   using CrxInstallerFactory =
       base::RepeatingCallback<scoped_refptr<CrxInstaller>(Profile*)>;

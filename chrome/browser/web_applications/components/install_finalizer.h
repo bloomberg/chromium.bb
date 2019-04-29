@@ -60,6 +60,10 @@ class InstallFinalizer {
   virtual bool CanRevealAppShim() const = 0;
   virtual void RevealAppShim(const AppId& app_id) = 0;
 
+  virtual bool CanSkipAppUpdateForSync(
+      const AppId& app_id,
+      const WebApplicationInfo& web_app_info) const = 0;
+
   virtual ~InstallFinalizer() = default;
 };
 
