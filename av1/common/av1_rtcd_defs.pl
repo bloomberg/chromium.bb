@@ -408,8 +408,8 @@ add_proto qw/void av1_upsample_intra_edge_high/, "uint16_t *p, int sz, int bd";
 specialize qw/av1_upsample_intra_edge_high sse4_1/;
 
 # CFL
-add_proto qw/cfl_subtract_average_fn get_subtract_average_fn/, "TX_SIZE tx_size";
-specialize qw/get_subtract_average_fn sse2 avx2 neon vsx/;
+add_proto qw/cfl_subtract_average_fn cfl_get_subtract_average_fn/, "TX_SIZE tx_size";
+specialize qw/cfl_get_subtract_average_fn sse2 avx2 neon vsx/;
 
 add_proto qw/cfl_subsample_lbd_fn cfl_get_luma_subsampling_420_lbd/, "TX_SIZE tx_size";
 specialize qw/cfl_get_luma_subsampling_420_lbd ssse3 avx2 neon/;
@@ -429,10 +429,10 @@ specialize qw/cfl_get_luma_subsampling_422_hbd ssse3 avx2 neon/;
 add_proto qw/cfl_subsample_hbd_fn cfl_get_luma_subsampling_444_hbd/, "TX_SIZE tx_size";
 specialize qw/cfl_get_luma_subsampling_444_hbd ssse3 avx2 neon/;
 
-add_proto qw/cfl_predict_lbd_fn get_predict_lbd_fn/, "TX_SIZE tx_size";
-specialize qw/get_predict_lbd_fn ssse3 avx2 neon/;
+add_proto qw/cfl_predict_lbd_fn cfl_get_predict_lbd_fn/, "TX_SIZE tx_size";
+specialize qw/cfl_get_predict_lbd_fn ssse3 avx2 neon/;
 
-add_proto qw/cfl_predict_hbd_fn get_predict_hbd_fn/, "TX_SIZE tx_size";
-specialize qw/get_predict_hbd_fn ssse3 avx2 neon/;
+add_proto qw/cfl_predict_hbd_fn cfl_get_predict_hbd_fn/, "TX_SIZE tx_size";
+specialize qw/cfl_get_predict_hbd_fn ssse3 avx2 neon/;
 
 1;

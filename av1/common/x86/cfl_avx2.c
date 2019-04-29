@@ -273,7 +273,7 @@ CFL_PREDICT_X(avx2, 32, 8, lbd);
 CFL_PREDICT_X(avx2, 32, 16, lbd);
 CFL_PREDICT_X(avx2, 32, 32, lbd);
 
-cfl_predict_lbd_fn get_predict_lbd_fn_avx2(TX_SIZE tx_size) {
+cfl_predict_lbd_fn cfl_get_predict_lbd_fn_avx2(TX_SIZE tx_size) {
   static const cfl_predict_lbd_fn pred[TX_SIZES_ALL] = {
     predict_lbd_4x4_ssse3,   /* 4x4 */
     predict_lbd_8x8_ssse3,   /* 8x8 */
@@ -346,7 +346,7 @@ CFL_PREDICT_X(avx2, 32, 8, hbd)
 CFL_PREDICT_X(avx2, 32, 16, hbd)
 CFL_PREDICT_X(avx2, 32, 32, hbd)
 
-cfl_predict_hbd_fn get_predict_hbd_fn_avx2(TX_SIZE tx_size) {
+cfl_predict_hbd_fn cfl_get_predict_hbd_fn_avx2(TX_SIZE tx_size) {
   static const cfl_predict_hbd_fn pred[TX_SIZES_ALL] = {
     predict_hbd_4x4_ssse3,  /* 4x4 */
     predict_hbd_8x8_ssse3,  /* 8x8 */
@@ -463,7 +463,7 @@ CFL_SUB_AVG_X(avx2, 32, 32, 512, 10)
 
 // Based on the observation that for small blocks AVX2 does not outperform
 // SSE2, we call the SSE2 code for block widths 4 and 8.
-cfl_subtract_average_fn get_subtract_average_fn_avx2(TX_SIZE tx_size) {
+cfl_subtract_average_fn cfl_get_subtract_average_fn_avx2(TX_SIZE tx_size) {
   static const cfl_subtract_average_fn sub_avg[TX_SIZES_ALL] = {
     subtract_average_4x4_sse2,   /* 4x4 */
     subtract_average_8x8_sse2,   /* 8x8 */

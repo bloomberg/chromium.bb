@@ -124,7 +124,7 @@ CFL_SUB_AVG_X(vsx, 32, 32, 512, 10)
 
 // Based on observation, for small blocks VSX does not outperform C (no 64bit
 // load and store intrinsics). So we call the C code for block widths 4.
-cfl_subtract_average_fn get_subtract_average_fn_vsx(TX_SIZE tx_size) {
+cfl_subtract_average_fn cfl_get_subtract_average_fn_vsx(TX_SIZE tx_size) {
   static const cfl_subtract_average_fn sub_avg[TX_SIZES_ALL] = {
     subtract_average_4x4_c,     /* 4x4 */
     subtract_average_8x8_vsx,   /* 8x8 */
