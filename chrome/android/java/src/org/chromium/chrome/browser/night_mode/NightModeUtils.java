@@ -16,6 +16,15 @@ import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
  */
 public class NightModeUtils {
     /**
+     * Due to Lemon issues on resources access, night mode is disabled on Kitkat until the issue is
+     * resolved. See https://crbug.com/957286 for details.
+     * @return Whether night mode is supported.
+     */
+    public static boolean isNightModeSupported() {
+        return Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT;
+    }
+
+    /**
      * Updates configuration for night mode to ensure night mode settings are applied properly.
      * Should be called anytime the Activity's configuration changes (e.g. from
      * {@link Activity#onConfigurationChanged(Configuration)}) if uiMode was not overridden on

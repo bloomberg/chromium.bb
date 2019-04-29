@@ -72,6 +72,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
@@ -2311,7 +2312,8 @@ public class CustomTabActivityTest {
 
     @Test
     @SmallTest
-    public void testLaunchCustomTabWithColorSchemeDark() throws Exception {
+    @DisableIf.Build(sdk_is_greater_than = 20)
+    public void testLaunchCustomTabWithColorSchemeDark_Kitkat() throws Exception {
         FeatureUtilities.setNightModeForCustomTabsAvailableForTesting(true);
 
         Intent intent = createMinimalCustomTabIntent();
@@ -2322,7 +2324,29 @@ public class CustomTabActivityTest {
         final CustomTabActivity cctActivity = mCustomTabActivityTestRule.getActivity();
 
         Assert.assertNotNull(cctActivity.getNightModeStateProvider());
-        Assert.assertTrue(cctActivity.getNightModeStateProvider().isInNightMode());
+        Assert.assertFalse("Night mode should be disabled on K with dark color scheme set.",
+                cctActivity.getNightModeStateProvider().isInNightMode());
+
+        FeatureUtilities.setNightModeForCustomTabsAvailableForTesting(null);
+    }
+
+    @Test
+    @SmallTest
+    @DisableIf.Build(sdk_is_less_than = 21)
+    public void testLaunchCustomTabWithColorSchemeDark_PostKitkat() throws Exception {
+        FeatureUtilities.setNightModeForCustomTabsAvailableForTesting(true);
+
+        Intent intent = createMinimalCustomTabIntent();
+        addColorSchemeToIntent(intent, CustomTabsIntent.COLOR_SCHEME_DARK);
+
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+
+        final CustomTabActivity cctActivity = mCustomTabActivityTestRule.getActivity();
+
+        Assert.assertNotNull(cctActivity.getNightModeStateProvider());
+
+        Assert.assertTrue("Night mode should be enabled on K+ with dark color scheme set.",
+                cctActivity.getNightModeStateProvider().isInNightMode());
 
         FeatureUtilities.setNightModeForCustomTabsAvailableForTesting(null);
     }
