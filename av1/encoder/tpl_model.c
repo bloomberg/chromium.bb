@@ -10,17 +10,22 @@
  */
 
 #include <stdint.h>
+#include <float.h>
 
 #include "config/aom_config.h"
 #include "config/aom_dsp_rtcd.h"
 
 #include "aom/aom_codec.h"
 
+#include "av1/common/enums.h"
 #include "av1/common/onyxc_int.h"
 #include "av1/common/reconintra.h"
 
 #include "av1/encoder/encoder.h"
 #include "av1/encoder/reconinter_enc.h"
+
+#define MC_FLOW_BSIZE 16
+#define MC_FLOW_NUM_PELS (MC_FLOW_BSIZE * MC_FLOW_BSIZE)
 
 typedef struct GF_PICTURE {
   YV12_BUFFER_CONFIG *frame;
@@ -37,10 +42,20 @@ static void get_quantize_error(MACROBLOCK *x, int plane, tran_low_t *coeff,
   int pix_num = 1 << num_pels_log2_lookup[txsize_to_bsize[tx_size]];
   const int shift = tx_size == TX_32X32 ? 0 : 2;
 
-  av1_quantize_fp_32x32(coeff, pix_num, p->zbin_QTX, p->round_fp_QTX,
-                        p->quant_fp_QTX, p->quant_shift_QTX, qcoeff, dqcoeff,
-                        p->dequant_QTX, &eob, scan_order->scan,
-                        scan_order->iscan);
+  if (tx_size == TX_64X64)
+    av1_quantize_fp_64x64(coeff, pix_num, p->zbin_QTX, p->round_fp_QTX,
+                          p->quant_fp_QTX, p->quant_shift_QTX, qcoeff, dqcoeff,
+                          p->dequant_QTX, &eob, scan_order->scan,
+                          scan_order->iscan);
+  else if (tx_size == TX_32X32)
+    av1_quantize_fp_32x32(coeff, pix_num, p->zbin_QTX, p->round_fp_QTX,
+                          p->quant_fp_QTX, p->quant_shift_QTX, qcoeff, dqcoeff,
+                          p->dequant_QTX, &eob, scan_order->scan,
+                          scan_order->iscan);
+  else
+    av1_quantize_fp(coeff, pix_num, p->zbin_QTX, p->round_fp_QTX,
+                    p->quant_fp_QTX, p->quant_shift_QTX, qcoeff, dqcoeff,
+                    p->dequant_QTX, &eob, scan_order->scan, scan_order->iscan);
 
   *recon_error = av1_block_error(coeff, dqcoeff, pix_num, sse) >> shift;
   *recon_error = AOMMAX(*recon_error, 1);
@@ -126,11 +141,6 @@ static void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
   const int bw = 4 << mi_size_wide_log2[bsize];
   const int bh = 4 << mi_size_high_log2[bsize];
   const int pix_num = bw * bh;
-  int best_rf_idx = -1;
-  int_mv best_mv;
-  int64_t best_inter_cost = INT64_MAX;
-  int64_t inter_cost;
-  int rf_idx;
   const InterpFilters kernel =
       av1_make_interp_filters(EIGHTTAP_REGULAR, EIGHTTAP_REGULAR);
 
@@ -183,6 +193,15 @@ static void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
   }
 
   // Motion compensated prediction
+  int best_rf_idx = -1;
+  int_mv best_mv;
+  int64_t inter_cost;
+  int64_t best_inter_cost;
+  int64_t inter_cost_weighted;
+  int64_t best_inter_cost_weighted = INT64_MAX;
+  int rf_idx;
+  int q_current = cpi->twopass.gf_group.q_val[frame_idx];
+
   best_mv.as_int = 0;
 
   (void)mb_y_offset;
@@ -194,12 +213,14 @@ static void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
   for (rf_idx = 0; rf_idx < 7; ++rf_idx) {
     if (ref_frame[rf_idx] == NULL) continue;
 
+    int q_ref =
+        cpi->twopass.gf_group.q_val[gf_picture[frame_idx].ref_frame[rf_idx]];
+    double delta_q = (double)(q_ref - q_current);
+
     motion_compensated_prediction(cpi, td, xd->cur_buf->y_buffer + mb_y_offset,
                                   ref_frame[rf_idx]->y_buffer + mb_y_offset,
                                   xd->cur_buf->y_stride, bsize, mi_row, mi_col);
 
-    // TODO(jingning): Not yet support high bit-depth in the next three
-    // steps.
     ConvolveParams conv_params = get_conv_params(0, 0, xd->bd);
     WarpTypesAllowed warp_types;
     memset(&warp_types, 0, sizeof(WarpTypesAllowed));
@@ -221,18 +242,21 @@ static void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
     wht_fwd_txfm(src_diff, bw, coeff, tx_size);
 
     inter_cost = aom_satd(coeff, pix_num);
-    if (inter_cost < best_inter_cost) {
+    inter_cost_weighted = (int64_t)(
+        (double)inter_cost * (delta_q < 0 ? 0.5 + 0.5 * exp(delta_q / 16)
+                                          : 2.0 - 1.0 * exp(-delta_q / 16)) +
+        0.5);
+    if (inter_cost_weighted < best_inter_cost_weighted) {
       int64_t recon_error, sse;
-
       best_rf_idx = rf_idx;
-      best_inter_cost = inter_cost;
+      best_inter_cost_weighted = inter_cost_weighted;
       best_mv.as_int = x->best_mv.as_int;
       get_quantize_error(x, 0, coeff, qcoeff, dqcoeff, tx_size, &recon_error,
                          &sse);
     }
   }
   best_intra_cost = AOMMAX(best_intra_cost, 1);
-  best_inter_cost = AOMMIN(best_intra_cost, best_inter_cost);
+  best_inter_cost = AOMMIN(best_intra_cost, (int64_t)best_inter_cost_weighted);
   tpl_stats->inter_cost = best_inter_cost << TPL_DEP_COST_SCALE_LOG2;
   tpl_stats->intra_cost = best_intra_cost << TPL_DEP_COST_SCALE_LOG2;
   tpl_stats->mc_dep_cost = tpl_stats->intra_cost + tpl_stats->mc_flow;
@@ -392,16 +416,28 @@ static void mc_flow_dispenser(AV1_COMP *cpi, GF_PICTURE *gf_picture,
   MACROBLOCK *x = &td->mb;
   MACROBLOCKD *xd = &x->e_mbd;
   int mi_row, mi_col;
-
-  DECLARE_ALIGNED(32, uint16_t, predictor16[32 * 32 * 3]);
-  DECLARE_ALIGNED(32, uint8_t, predictor8[32 * 32 * 3]);
-  uint8_t *predictor;
-  DECLARE_ALIGNED(32, int16_t, src_diff[32 * 32]);
-  DECLARE_ALIGNED(32, tran_low_t, coeff[32 * 32]);
-  DECLARE_ALIGNED(32, tran_low_t, qcoeff[32 * 32]);
-  DECLARE_ALIGNED(32, tran_low_t, dqcoeff[32 * 32]);
-
+#if MC_FLOW_BSIZE == 64
+  const BLOCK_SIZE bsize = BLOCK_64X64;
+#elif MC_FLOW_BSIZE == 32
   const BLOCK_SIZE bsize = BLOCK_32X32;
+#elif MC_FLOW_BSIZE == 16
+  const BLOCK_SIZE bsize = BLOCK_16X16;
+#elif MC_FLOW_BSIZE == 8
+  const BLOCK_SIZE bsize = BLOCK_8X8;
+#elif MC_FLOW_BSIZE == 4
+  const BLOCK_SIZE bsize = BLOCK_4X4;
+#else
+#error "Invalid block size for tpl model"
+#endif  // MC_FLOW_BSIZE == 64
+
+  DECLARE_ALIGNED(32, uint16_t, predictor16[MC_FLOW_NUM_PELS * 3]);
+  DECLARE_ALIGNED(32, uint8_t, predictor8[MC_FLOW_NUM_PELS * 3]);
+  uint8_t *predictor;
+  DECLARE_ALIGNED(32, int16_t, src_diff[MC_FLOW_NUM_PELS]);
+  DECLARE_ALIGNED(32, tran_low_t, coeff[MC_FLOW_NUM_PELS]);
+  DECLARE_ALIGNED(32, tran_low_t, qcoeff[MC_FLOW_NUM_PELS]);
+  DECLARE_ALIGNED(32, tran_low_t, dqcoeff[MC_FLOW_NUM_PELS]);
+
   const TX_SIZE tx_size = max_txsize_lookup[bsize];
   const int mi_height = mi_size_high[bsize];
   const int mi_width = mi_size_wide[bsize];
