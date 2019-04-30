@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/ui/commands/infobar_commands.h"
 #import "ios/chrome/browser/ui/commands/load_query_commands.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
+#import "ios/chrome/browser/ui/infobars/badge/infobar_badge_button.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #include "ios/chrome/browser/ui/location_bar/location_bar_steady_view.h"
 #import "ios/chrome/browser/ui/orchestrator/location_bar_offset_provider.h"
@@ -248,7 +249,7 @@ typedef NS_ENUM(int, TrailingButtonState) {
 }
 
 - (void)displayInfobarButton:(BOOL)display {
-  self.locationBarSteadyView.leadingButton.hidden = !display;
+  [self.locationBarSteadyView.leadingButton displayBadge:display animated:YES];
 }
 
 #pragma mark - LocationBarAnimatee
@@ -437,14 +438,6 @@ typedef NS_ENUM(int, TrailingButtonState) {
 // being used here if/when this stops being temporary.
 - (void)updateInfobarButton {
   DCHECK(IsInfobarUIRebootEnabled());
-  [self.locationBarSteadyView.leadingButton
-      setImage:[[UIImage imageNamed:@"infobar_passwords_icon"]
-                   imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]
-      forState:UIControlStateNormal];
-  self.locationBarSteadyView.leadingButton.imageView.contentMode =
-      UIViewContentModeScaleToFill;
-  self.locationBarSteadyView.leadingButton.imageEdgeInsets =
-      UIEdgeInsetsMake(6, 6, 6, 6);
 
   [self.locationBarSteadyView.leadingButton
              addTarget:self.dispatcher
@@ -455,13 +448,11 @@ typedef NS_ENUM(int, TrailingButtonState) {
 }
 
 - (void)setInfobarButtonStyleSelected:(BOOL)selected {
-  self.locationBarSteadyView.leadingButton.backgroundColor =
-      selected ? [UIColor colorWithWhite:0.80 alpha:1.0] : [UIColor clearColor];
+  [self.locationBarSteadyView.leadingButton setSelected:selected animated:YES];
 }
 
 - (void)setInfobarButtonStyleActive:(BOOL)active {
-  self.locationBarSteadyView.leadingButton.tintColor =
-      active ? self.locationBarSteadyView.tintColor : [UIColor lightGrayColor];
+  [self.locationBarSteadyView.leadingButton setActive:active animated:YES];
 }
 
 #pragma mark - UIMenu
