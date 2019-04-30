@@ -523,6 +523,20 @@ void HistoryURLProvider::Start(const AutocompleteInput& input,
   const bool trim_http = !AutocompleteInput::HasHTTPScheme(input.text());
   AutocompleteMatch what_you_typed_match(SuggestExactInput(
       fixed_up_input, fixed_up_input.canonicalized_url(), trim_http));
+
+  // If the input fix-up above added characters, show them as an
+  // autocompletion, unless directed not to.
+  if (!input.prevent_inline_autocomplete() &&
+      fixed_up_input.text().size() > input.text().size() &&
+      base::StartsWith(fixed_up_input.text(), input.text(),
+                       base::CompareCase::SENSITIVE)) {
+    what_you_typed_match.fill_into_edit = fixed_up_input.text();
+    what_you_typed_match.inline_autocompletion =
+        fixed_up_input.text().substr(input.text().size());
+    what_you_typed_match.contents_class.push_back(
+        {input.text().length(), ACMatchClassification::URL});
+  }
+
   what_you_typed_match.relevance = CalculateRelevance(WHAT_YOU_TYPED, 0);
 
   // Add the what-you-typed match as a fallback in case we can't get the history
