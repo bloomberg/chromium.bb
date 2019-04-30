@@ -119,7 +119,6 @@ class WebElement;
 class WebLayerTreeView;
 class WebLocalFrame;
 class WebPushClient;
-class WebRelatedAppsFetcher;
 class WebSecurityOrigin;
 class WebString;
 class WebURL;
@@ -164,7 +163,6 @@ class MediaStreamDeviceObserver;
 class NavigationClient;
 class PepperPluginInstanceImpl;
 class PushMessagingClient;
-class RelatedAppsFetcher;
 class RenderAccessibilityImpl;
 class RendererPpapiHost;
 class RenderFrameObserver;
@@ -823,7 +821,6 @@ class CONTENT_EXPORT RenderFrameImpl
                                 int world_id) override;
   void DidChangeScrollOffset() override;
   blink::WebPushClient* PushClient() override;
-  blink::WebRelatedAppsFetcher* GetRelatedAppsFetcher() override;
   void WillStartUsingPeerConnectionHandler(
       blink::WebRTCPeerConnectionHandler* handler) override;
   blink::WebUserMediaClient* UserMediaClient() override;
@@ -1603,8 +1600,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // Only valid if |accessibility_mode_| has |ui::AXMode::kWebContents|
   // flag set.
   RenderAccessibilityImpl* render_accessibility_;
-
-  std::unique_ptr<RelatedAppsFetcher> related_apps_fetcher_;
 
   // The PreviewsState of this RenderFrame that indicates which Previews can
   // be used. The PreviewsState is a bitmask of potentially several Previews

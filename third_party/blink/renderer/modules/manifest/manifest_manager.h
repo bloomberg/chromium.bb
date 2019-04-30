@@ -49,6 +49,10 @@ class ManifestManager : public GarbageCollectedFinalized<ManifestManager>,
   void DidChangeManifest();
   void DidCommitLoad();
 
+  // WebManifestManager
+  void RequestManifest(WebCallback callback) override;
+  bool CanFetchManifest() override;
+
   void Trace(blink::Visitor*) override;
 
  private:
@@ -58,9 +62,6 @@ class ManifestManager : public GarbageCollectedFinalized<ManifestManager>,
       base::OnceCallback<void(const KURL&,
                               const Manifest&,
                               const mojom::blink::ManifestDebugInfo*)>;
-  // WebManifestManager
-  void RequestManifest(WebCallback callback) override;
-  bool CanFetchManifest() override;
 
   // From ContextLifecycleObserver
   void ContextDestroyed(ExecutionContext*) override;

@@ -109,7 +109,6 @@
 #include "content/renderer/input/frame_input_handler_impl.h"
 #include "content/renderer/input/input_target_client_impl.h"
 #include "content/renderer/input/widget_input_handler_manager.h"
-#include "content/renderer/installedapp/related_apps_fetcher.h"
 #include "content/renderer/internal_document_state_data.h"
 #include "content/renderer/loader/navigation_body_loader.h"
 #include "content/renderer/loader/request_extra_data.h"
@@ -5513,13 +5512,6 @@ blink::WebPushClient* RenderFrameImpl::PushClient() {
   if (!push_messaging_client_)
     push_messaging_client_ = new PushMessagingClient(this);
   return push_messaging_client_;
-}
-
-blink::WebRelatedAppsFetcher* RenderFrameImpl::GetRelatedAppsFetcher() {
-  if (!related_apps_fetcher_)
-    related_apps_fetcher_.reset(new RelatedAppsFetcher(this));
-
-  return related_apps_fetcher_.get();
 }
 
 void RenderFrameImpl::WillStartUsingPeerConnectionHandler(

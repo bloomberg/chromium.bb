@@ -11,5 +11,7 @@ blink_modules_sources("installedapp") {
     "navigator_installed_app.cc",
     "navigator_installed_app.h",
     "related_application.h",
+    "related_apps_fetcher.cc",
+    "related_apps_fetcher.h",
   ]
 }

@@ -7,6 +7,8 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/modules/installedapp/related_apps_fetcher.h"
+#include "third_party/blink/renderer/modules/manifest/manifest_manager.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 #include <utility>
@@ -35,12 +37,9 @@ void InstalledAppController::GetInstalledRelatedApps(
                 WrapWeakPersistent(this), std::move(callbacks)));
 }
 
-void InstalledAppController::ProvideTo(
-    LocalFrame& frame,
-    WebRelatedAppsFetcher* related_apps_fetcher) {
+void InstalledAppController::ProvideTo(LocalFrame& frame) {
   Supplement<LocalFrame>::ProvideTo(
-      frame, MakeGarbageCollected<InstalledAppController>(
-                 frame, related_apps_fetcher));
+      frame, MakeGarbageCollected<InstalledAppController>(frame));
 }
 
 InstalledAppController* InstalledAppController::From(LocalFrame& frame) {
@@ -52,12 +51,11 @@ InstalledAppController* InstalledAppController::From(LocalFrame& frame) {
 
 const char InstalledAppController::kSupplementName[] = "InstalledAppController";
 
-InstalledAppController::InstalledAppController(
-    LocalFrame& frame,
-    WebRelatedAppsFetcher* related_apps_fetcher)
+InstalledAppController::InstalledAppController(LocalFrame& frame)
     : Supplement<LocalFrame>(frame),
       ContextLifecycleObserver(frame.GetDocument()),
-      related_apps_fetcher_(related_apps_fetcher) {}
+      related_apps_fetcher_(MakeGarbageCollected<RelatedAppsFetcher>(
+          ManifestManager::From(frame))) {}
 
 void InstalledAppController::ContextDestroyed(ExecutionContext*) {
   provider_.reset();
@@ -106,7 +104,7 @@ void InstalledAppController::FilterByInstalledApps(
 void InstalledAppController::OnFilterInstalledApps(
     std::unique_ptr<blink::AppInstalledCallbacks> callbacks,
     WTF::Vector<mojom::blink::RelatedApplicationPtr> result) {
-  std::vector<blink::WebRelatedApplication> applications;
+  WTF::Vector<blink::WebRelatedApplication> applications;
   for (const auto& res : result) {
     blink::WebRelatedApplication app;
     app.platform = res->platform;
@@ -121,6 +119,7 @@ void InstalledAppController::OnFilterInstalledApps(
 void InstalledAppController::Trace(blink::Visitor* visitor) {
   Supplement<LocalFrame>::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
+  visitor->Trace(related_apps_fetcher_);
 }
 
 }  // namespace blink

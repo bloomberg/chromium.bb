@@ -193,10 +193,10 @@ void ModulesInitializer::InstallSupplements(LocalFrame& frame) const {
   ScreenOrientationControllerImpl::ProvideTo(frame);
   if (RuntimeEnabledFeatures::PresentationEnabled())
     PresentationController::ProvideTo(frame);
-  InstalledAppController::ProvideTo(frame, client->GetRelatedAppsFetcher());
   ::blink::ProvideSpeechRecognitionTo(frame);
   InspectorAccessibilityAgent::ProvideTo(&frame);
   ManifestManager::ProvideTo(frame);
+  InstalledAppController::ProvideTo(frame);
 }
 
 void ModulesInitializer::ProvideLocalFileSystemToWorker(
