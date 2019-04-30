@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -115,6 +116,11 @@ public class SplashActivity extends Activity {
                 metadata, WebApkMetaDataKeys.THEME_COLOR, Color.BLACK);
         WebApkUtils.setStatusBarColor(
                 getWindow(), WebApkUtils.getDarkenedColorForStatusBar(themeColor));
+
+        int orientation = WebApkUtils.computeScreenLockOrientationFromMetaData(this, metadata);
+        if (orientation != ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) {
+            setRequestedOrientation(orientation);
+        }
     }
 
     /** Called once the host browser has been selected. */
