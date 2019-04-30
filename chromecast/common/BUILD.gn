@@ -5,6 +5,17 @@
 import("//chromecast/chromecast.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
+cast_source_set("queryable_data") {
+  sources = [
+    "queryable_data.cc",
+    "queryable_data.h",
+  ]
+
+  deps = [
+    "//base",
+  ]
+}
+
 cast_source_set("common") {
   sources = [
     "cast_content_client.cc",

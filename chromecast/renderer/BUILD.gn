@@ -32,6 +32,12 @@ cast_source_set("renderer") {
     "cast_media_playback_options.h",
     "cast_url_loader_throttle_provider.cc",
     "cast_url_loader_throttle_provider.h",
+    "native_bindings_helper.cc",
+    "native_bindings_helper.h",
+    "queryable_data_bindings.cc",
+    "queryable_data_bindings.h",
+    "queryable_data_store.cc",
+    "queryable_data_store.h",
   ]
 
   public_deps = [
@@ -47,6 +53,7 @@ cast_source_set("renderer") {
     "//chromecast:chromecast_buildflags",
     "//chromecast/base",
     "//chromecast/common",
+    "//chromecast/common:queryable_data",
     "//chromecast/common/media",
     "//chromecast/common/mojom",
     "//chromecast/media",
@@ -54,10 +61,12 @@ cast_source_set("renderer") {
     "//content/public/common",
     "//content/public/renderer",
     "//crypto",
+    "//gin",
     "//ipc",
     "//media",
     "//services/network/public/cpp:cpp",
     "//services/service_manager/public/cpp",
+    "//v8",
   ]
 
   if (!is_fuchsia) {

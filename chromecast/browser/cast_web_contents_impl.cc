@@ -9,10 +9,13 @@
 #include "base/bind.h"
 #include "base/no_destructor.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/values.h"
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/devtools/remote_debugging_server.h"
 #include "chromecast/common/mojom/media_playback_options.mojom.h"
+#include "chromecast/common/mojom/queryable_data_store.mojom.h"
+#include "chromecast/common/queryable_data.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -257,6 +260,15 @@ void CastWebContentsImpl::RenderFrameCreated(
   render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
       &media_playback_options);
   media_playback_options->SetUseCmaRenderer(use_cma_renderer_);
+
+  // Send queryable values
+  chromecast::shell::mojom::QueryableDataStorePtr queryable_data_store_ptr;
+  render_frame_host->GetRemoteInterfaces()->GetInterface(
+      &queryable_data_store_ptr);
+  for (const auto& value : QueryableData::GetValues()) {
+    // base::Value is not copyable.
+    queryable_data_store_ptr->Set(value.first, value.second.Clone());
+  }
 }
 
 std::vector<chromecast::shell::mojom::FeaturePtr>

@@ -17,6 +17,7 @@
 #include "chromecast/renderer/cast_url_loader_throttle_provider.h"
 #include "chromecast/renderer/media/key_systems_cast.h"
 #include "chromecast/renderer/media/media_caps_observer_impl.h"
+#include "chromecast/renderer/queryable_data_bindings.h"
 #include "components/network_hints/renderer/prescient_networking_dispatcher.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
@@ -147,6 +148,7 @@ void CastContentRendererClient::RenderFrameCreated(
   DCHECK(render_frame);
   // Lifetime is tied to |render_frame| via content::RenderFrameObserver.
   new CastMediaPlaybackOptions(render_frame);
+  new QueryableDataBindings(render_frame);
 
   if (!app_media_capabilities_observer_binding_.is_bound()) {
     mojom::ApplicationMediaCapabilitiesObserverPtr observer;
