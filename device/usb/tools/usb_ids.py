@@ -6,13 +6,13 @@ import itertools
 import optparse
 import re
 
-VENDOR_PATTERN = re.compile("^(?P<id>[0-9a-fA-F]{4})\s+(?P<name>.+)$")
-PRODUCT_PATTERN = re.compile("^\t(?P<id>[0-9a-fA-F]{4})\s+(?P<name>.+)$")
+VENDOR_PATTERN = re.compile(r"^(?P<id>[0-9a-fA-F]{4})\s+(?P<name>.+)$")
+PRODUCT_PATTERN = re.compile(r"^\t(?P<id>[0-9a-fA-F]{4})\s+(?P<name>.+)$")
 
 def EscapeName(name):
   name = name.replace("\\", "\\\\")
-  name = name.replace("\"", "\\\"")
-  name = name.replace("?", "\?")
+  name = name.replace('"', r'\"')
+  name = name.replace("?", r"\?")
   return name
 
 def ParseTable(input_path):
