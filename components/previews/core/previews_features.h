@@ -27,6 +27,7 @@ extern const base::Feature kDataSaverLiteModeRebranding;
 extern const base::Feature kPreviewsReloadsAreSoftOptOuts;
 extern const base::Feature kOptimizationHintsFetching;
 extern const base::Feature kOfflinePreviewsFalsePositivePrevention;
+extern const base::Feature kCoinFlipHoldback;
 
 }  // namespace features
 }  // namespace previews

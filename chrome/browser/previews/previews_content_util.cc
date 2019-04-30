@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
+#include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/previews/previews_offline_helper.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
+#include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
@@ -430,6 +432,92 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
   DCHECK(previews_state == content::PREVIEWS_OFF ||
          previews_state == content::PREVIEWS_UNSPECIFIED);
   return content::PREVIEWS_OFF;
+}
+
+namespace {
+// This bit mask is all the preview types we should potentially holdback on
+// before commit.
+content::PreviewsState kPreCommitPreviews =
+    content::SERVER_LOFI_ON | content::SERVER_LITE_PAGE_ON |
+    content::OFFLINE_PAGE_ON | content::LITE_PAGE_REDIRECT_ON;
+}  // namespace
+
+content::PreviewsState MaybeCoinFlipHoldbackBeforeCommit(
+    content::PreviewsState initial_state,
+    content::NavigationHandle* navigation_handle) {
+  if (!base::FeatureList::IsEnabled(features::kCoinFlipHoldback))
+    return initial_state;
+
+  // Get PreviewsUserData to store the result of the coin flip. If it can't be
+  // gotten, return early.
+  PreviewsUITabHelper* ui_tab_helper =
+      PreviewsUITabHelper::FromWebContents(navigation_handle->GetWebContents());
+  PreviewsUserData* previews_data =
+      ui_tab_helper ? ui_tab_helper->GetPreviewsUserData(navigation_handle)
+                    : nullptr;
+  if (!previews_data)
+    return initial_state;
+
+  // It is possible that any number of at-commit-decided previews are enabled,
+  // but do not hold them back until the commit time logic runs.
+  if (!HasEnabledPreviews(initial_state & kPreCommitPreviews))
+    return initial_state;
+
+  if (previews_data->random_coin_flip_for_navigation() ||
+      params::ShouldOverrideCoinFlipHoldbackResult()) {
+    // Holdback all previews. It is possible that some number of client previews
+    // will also be held back here. However, since a before-commit preview was
+    // likely, we turn off all of them to make analysis simpler and this code
+    // more robust.
+    previews_data->set_coin_flip_holdback_result(
+        CoinFlipHoldbackResult::kHoldback);
+    return content::PREVIEWS_OFF;
+  }
+
+  previews_data->set_coin_flip_holdback_result(
+      CoinFlipHoldbackResult::kAllowed);
+  return initial_state;
+}
+
+content::PreviewsState MaybeCoinFlipHoldbackAfterCommit(
+    content::PreviewsState initial_state,
+    content::NavigationHandle* navigation_handle) {
+  if (!base::FeatureList::IsEnabled(features::kCoinFlipHoldback))
+    return initial_state;
+
+  // Get PreviewsUserData to store the result of the coin flip. If it can't be
+  // gotten, return early.
+  PreviewsUITabHelper* ui_tab_helper =
+      PreviewsUITabHelper::FromWebContents(navigation_handle->GetWebContents());
+  PreviewsUserData* previews_data =
+      ui_tab_helper ? ui_tab_helper->GetPreviewsUserData(navigation_handle)
+                    : nullptr;
+  if (!previews_data)
+    return initial_state;
+
+  if (!HasEnabledPreviews(initial_state)) {
+    return initial_state;
+  }
+
+  if (previews_data->random_coin_flip_for_navigation() ||
+      params::ShouldOverrideCoinFlipHoldbackResult()) {
+    // No pre-commit previews should be set, since such a preview would have
+    // already committed and we don't want to incorrectly clear that state. If
+    // it did, at least make everything functionally correct.
+    if (HasEnabledPreviews(initial_state & kPreCommitPreviews)) {
+      NOTREACHED();
+      previews_data->set_coin_flip_holdback_result(
+          CoinFlipHoldbackResult::kNotSet);
+      return initial_state;
+    }
+    previews_data->set_coin_flip_holdback_result(
+        CoinFlipHoldbackResult::kHoldback);
+    return content::PREVIEWS_OFF;
+  }
+
+  previews_data->set_coin_flip_holdback_result(
+      CoinFlipHoldbackResult::kAllowed);
+  return initial_state;
 }
 
 previews::PreviewsType GetMainFramePreviewsType(

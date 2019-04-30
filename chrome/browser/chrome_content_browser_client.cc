@@ -5421,6 +5421,17 @@ content::PreviewsState ChromeContentBrowserClient::DetermineAllowedPreviews(
     content::PreviewsState initial_state,
     content::NavigationHandle* navigation_handle,
     const GURL& current_navigation_url) {
+  content::PreviewsState state = DetermineAllowedPreviewsWithoutHoldback(
+      initial_state, navigation_handle, current_navigation_url);
+
+  return previews::MaybeCoinFlipHoldbackBeforeCommit(state, navigation_handle);
+}
+
+content::PreviewsState
+ChromeContentBrowserClient::DetermineAllowedPreviewsWithoutHoldback(
+    content::PreviewsState initial_state,
+    content::NavigationHandle* navigation_handle,
+    const GURL& current_navigation_url) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!navigation_handle->HasCommitted());
 
@@ -5583,6 +5594,17 @@ ChromeContentBrowserClient::DetermineCommittedPreviewsForURL(
 }
 
 content::PreviewsState ChromeContentBrowserClient::DetermineCommittedPreviews(
+    content::PreviewsState initial_state,
+    content::NavigationHandle* navigation_handle,
+    const net::HttpResponseHeaders* response_headers) {
+  content::PreviewsState state = DetermineCommittedPreviewsWithoutHoldback(
+      initial_state, navigation_handle, response_headers);
+
+  return previews::MaybeCoinFlipHoldbackAfterCommit(state, navigation_handle);
+}
+
+content::PreviewsState
+ChromeContentBrowserClient::DetermineCommittedPreviewsWithoutHoldback(
     content::PreviewsState initial_state,
     content::NavigationHandle* navigation_handle,
     const net::HttpResponseHeaders* response_headers) {

@@ -114,5 +114,9 @@ const base::Feature kOfflinePreviewsFalsePositivePrevention{
     "OfflinePreviewsFalsePositivePrevention",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables a per-page load holdback experiment using a random coin flip.
+const base::Feature kCoinFlipHoldback{"PreviewsCoinFlipHoldback_UKMOnly",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace previews

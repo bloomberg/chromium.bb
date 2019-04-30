@@ -393,6 +393,11 @@ size_t OfflinePreviewsHelperMaxPrefSize() {
       100);
 }
 
+bool ShouldOverrideCoinFlipHoldbackResult() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      features::kCoinFlipHoldback, "force_coin_flip_always_holdback", false);
+}
+
 }  // namespace params
 
 std::string GetStringNameForType(PreviewsType type) {

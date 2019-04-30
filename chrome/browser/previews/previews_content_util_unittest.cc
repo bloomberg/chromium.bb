@@ -7,14 +7,20 @@
 #include <memory>
 #include <vector>
 
+#include "base/test/gtest_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
+#include "chrome/browser/previews/previews_ui_tab_helper.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_features.h"
+#include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/test/mock_navigation_handle.h"
+#include "content/public/test/navigation_simulator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -528,6 +534,315 @@ TEST_F(PreviewsContentUtilTest, GetMainFramePreviewsType) {
       previews::GetMainFramePreviewsType(
           content::NOSCRIPT_ON | content::CLIENT_LOFI_ON |
           content::RESOURCE_LOADING_HINTS_ON | content::LITE_PAGE_REDIRECT_ON));
+}
+
+class PreviewsContentSimulatedNavigationTest
+    : public ChromeRenderViewHostTestHarness {
+ public:
+  void SetUp() override {
+    ChromeRenderViewHostTestHarness::SetUp();
+    PreviewsUITabHelper::CreateForWebContents(web_contents());
+  }
+
+  previews::PreviewsUserData* GetPreviewsUserData(
+      content::NavigationHandle* handle) {
+    PreviewsUITabHelper* tab_helper =
+        PreviewsUITabHelper::FromWebContents(web_contents());
+    return tab_helper->GetPreviewsUserData(handle);
+  }
+
+  content::NavigationHandle* StartNavigation() {
+    navigation_simulator_ =
+        content::NavigationSimulator::CreateBrowserInitiated(
+            GURL("https://test.com"), web_contents());
+    navigation_simulator_->Start();
+
+    PreviewsUITabHelper* tab_helper =
+        PreviewsUITabHelper::FromWebContents(web_contents());
+    tab_helper->CreatePreviewsUserDataForNavigationHandle(
+        navigation_simulator_->GetNavigationHandle(), 1);
+
+    return navigation_simulator_->GetNavigationHandle();
+  }
+
+  content::NavigationHandle* StartNavigationAndReadyCommit() {
+    navigation_simulator_ =
+        content::NavigationSimulator::CreateBrowserInitiated(
+            GURL("https://test.com"), web_contents());
+    navigation_simulator_->Start();
+
+    PreviewsUITabHelper* tab_helper =
+        PreviewsUITabHelper::FromWebContents(web_contents());
+    tab_helper->CreatePreviewsUserDataForNavigationHandle(
+        navigation_simulator_->GetNavigationHandle(), 1);
+
+    navigation_simulator_->ReadyToCommit();
+    return navigation_simulator_->GetNavigationHandle();
+  }
+
+ private:
+  std::unique_ptr<content::NavigationSimulator> navigation_simulator_;
+};
+
+TEST_F(PreviewsContentSimulatedNavigationTest, TestCoinFlipBeforeCommit) {
+  struct TestCase {
+    std::string msg;
+    bool enable_feature;
+    // True maps to previews::CoinFlipHoldbackResult::kHoldback.
+    bool set_random_coin_flip_for_navigation;
+    bool set_coin_flip_override;
+    previews::CoinFlipHoldbackResult want_coin_flip_result;
+    content::PreviewsState initial_state;
+    content::PreviewsState want_returned;
+  };
+  const TestCase kTestCases[]{
+      {
+          .msg = "Feature disabled, no affect, heads",
+          .enable_feature = false,
+          .set_random_coin_flip_for_navigation = true,
+          .set_coin_flip_override = false,
+          .want_coin_flip_result = previews::CoinFlipHoldbackResult::kNotSet,
+          .initial_state = content::CLIENT_LOFI_ON,
+          .want_returned = content::CLIENT_LOFI_ON,
+      },
+      {
+          .msg = "Feature disabled, no affect, tails",
+          .enable_feature = false,
+          .set_random_coin_flip_for_navigation = false,
+          .set_coin_flip_override = false,
+          .want_coin_flip_result = previews::CoinFlipHoldbackResult::kNotSet,
+          .initial_state = content::CLIENT_LOFI_ON,
+          .want_returned = content::CLIENT_LOFI_ON,
+      },
+      {
+          .msg = "Feature disabled, no affect, forced override",
+          .enable_feature = false,
+          .set_random_coin_flip_for_navigation = false,
+          .set_coin_flip_override = true,
+          .want_coin_flip_result = previews::CoinFlipHoldbackResult::kNotSet,
+          .initial_state = content::CLIENT_LOFI_ON,
+          .want_returned = content::CLIENT_LOFI_ON,
+      },
+      {
+          .msg = "After-commit decided previews are not affected before commit "
+                 "on true coin flip",
+          .enable_feature = true,
+          .set_random_coin_flip_for_navigation = true,
+          .set_coin_flip_override = false,
+          .want_coin_flip_result = previews::CoinFlipHoldbackResult::kNotSet,
+          .initial_state = content::CLIENT_LOFI_ON,
+          .want_returned = content::CLIENT_LOFI_ON,
+      },
+      {
+          .msg = "After-commit decided previews are not affected before commit "
+                 "on forced override",
+          .enable_feature = true,
+          .set_random_coin_flip_for_navigation = false,
+          .set_coin_flip_override = true,
+          .want_coin_flip_result = previews::CoinFlipHoldbackResult::kNotSet,
+          .initial_state = content::CLIENT_LOFI_ON,
+          .want_returned = content::CLIENT_LOFI_ON,
+      },
+      {
+          .msg = "After-commit decided previews are not affected before commit "
+                 "on false coin flip",
+          .enable_feature = true,
+          .set_random_coin_flip_for_navigation = false,
+          .set_coin_flip_override = false,
+          .want_coin_flip_result = previews::CoinFlipHoldbackResult::kNotSet,
+          .initial_state = content::CLIENT_LOFI_ON,
+          .want_returned = content::CLIENT_LOFI_ON,
+      },
+      {
+          .msg =
+              "Before-commit decided previews are affected on true coin flip",
+          .enable_feature = true,
+          .set_random_coin_flip_for_navigation = true,
+          .set_coin_flip_override = false,
+          .want_coin_flip_result = previews::CoinFlipHoldbackResult::kHoldback,
+          .initial_state = content::OFFLINE_PAGE_ON,
+          .want_returned = content::PREVIEWS_OFF,
+      },
+      {
+          .msg =
+              "Before-commit decided previews are affected on forced override",
+          .enable_feature = true,
+          .set_random_coin_flip_for_navigation = false,
+          .set_coin_flip_override = true,
+          .want_coin_flip_result = previews::CoinFlipHoldbackResult::kHoldback,
+          .initial_state = content::OFFLINE_PAGE_ON,
+          .want_returned = content::PREVIEWS_OFF,
+      },
+      {
+          .msg = "Before-commit decided previews are logged on false coin flip",
+          .enable_feature = true,
+          .set_random_coin_flip_for_navigation = false,
+          .set_coin_flip_override = false,
+          .want_coin_flip_result = previews::CoinFlipHoldbackResult::kAllowed,
+          .initial_state = content::OFFLINE_PAGE_ON,
+          .want_returned = content::OFFLINE_PAGE_ON,
+      },
+      {
+          .msg =
+              "True coin flip impacts both pre and post commit previews when "
+              "both exist",
+          .enable_feature = true,
+          .set_random_coin_flip_for_navigation = true,
+          .set_coin_flip_override = false,
+          .want_coin_flip_result = previews::CoinFlipHoldbackResult::kHoldback,
+          .initial_state = content::OFFLINE_PAGE_ON | content::CLIENT_LOFI_ON,
+          .want_returned = content::PREVIEWS_OFF,
+      },
+      {
+          .msg =
+              "Forced override impacts both pre and post commit previews when "
+              "both exist",
+          .enable_feature = true,
+          .set_random_coin_flip_for_navigation = false,
+          .set_coin_flip_override = true,
+          .want_coin_flip_result = previews::CoinFlipHoldbackResult::kHoldback,
+          .initial_state = content::OFFLINE_PAGE_ON | content::CLIENT_LOFI_ON,
+          .want_returned = content::PREVIEWS_OFF,
+      },
+      {
+          .msg = "False coin flip logs both pre and post commit previews when "
+                 "both exist",
+          .enable_feature = true,
+          .set_random_coin_flip_for_navigation = false,
+          .set_coin_flip_override = false,
+          .want_coin_flip_result = previews::CoinFlipHoldbackResult::kAllowed,
+          .initial_state = content::OFFLINE_PAGE_ON | content::CLIENT_LOFI_ON,
+          .want_returned = content::OFFLINE_PAGE_ON | content::CLIENT_LOFI_ON,
+      },
+  };
+
+  for (const TestCase& test_case : kTestCases) {
+    SCOPED_TRACE(test_case.msg);
+
+    // Starting the navigation will cause content to call into
+    // |MaybeCoinFlipHoldbackBeforeCommit| as part of the navigation simulation.
+    // So don't enable the feature until afterwards.
+    content::NavigationHandle* handle = StartNavigation();
+
+    GetPreviewsUserData(handle)->SetRandomCoinFlipForNavigationForTesting(
+        test_case.set_random_coin_flip_for_navigation);
+
+    base::test::ScopedFeatureList scoped_feature_list;
+    if (test_case.enable_feature) {
+      scoped_feature_list.InitAndEnableFeatureWithParameters(
+          previews::features::kCoinFlipHoldback,
+          {{"force_coin_flip_always_holdback",
+            test_case.set_coin_flip_override ? "true" : "false"}});
+    } else {
+      scoped_feature_list.InitAndDisableFeature(
+          previews::features::kCoinFlipHoldback);
+    }
+
+    content::PreviewsState returned =
+        MaybeCoinFlipHoldbackBeforeCommit(test_case.initial_state, handle);
+
+    EXPECT_EQ(test_case.want_returned, returned);
+    EXPECT_EQ(test_case.want_coin_flip_result,
+              GetPreviewsUserData(handle)->coin_flip_holdback_result());
+  }
+}
+
+TEST_F(PreviewsContentSimulatedNavigationTest, TestCoinFlipAfterCommit) {
+  struct TestCase {
+    std::string msg;
+    bool enable_feature;
+    bool set_random_coin_flip_for_navigation;
+    bool set_coin_flip_override;
+    previews::CoinFlipHoldbackResult want_coin_flip_result;
+    content::PreviewsState initial_state;
+    content::PreviewsState want_returned;
+  };
+  const TestCase kTestCases[]{
+      {
+          .msg = "Feature disabled, no affect, heads",
+          .enable_feature = false,
+          .set_random_coin_flip_for_navigation = true,
+          .set_coin_flip_override = false,
+          .want_coin_flip_result = previews::CoinFlipHoldbackResult::kNotSet,
+          .initial_state = content::CLIENT_LOFI_ON,
+          .want_returned = content::CLIENT_LOFI_ON,
+      },
+      {
+          .msg = "Feature disabled, no affect, tails",
+          .enable_feature = false,
+          .set_random_coin_flip_for_navigation = false,
+          .set_coin_flip_override = false,
+          .want_coin_flip_result = previews::CoinFlipHoldbackResult::kNotSet,
+          .initial_state = content::CLIENT_LOFI_ON,
+          .want_returned = content::CLIENT_LOFI_ON,
+      },
+      {
+          .msg = "Feature disabled, no affect, forced override",
+          .enable_feature = false,
+          .set_random_coin_flip_for_navigation = false,
+          .set_coin_flip_override = true,
+          .want_coin_flip_result = previews::CoinFlipHoldbackResult::kNotSet,
+          .initial_state = content::CLIENT_LOFI_ON,
+          .want_returned = content::CLIENT_LOFI_ON,
+      },
+      {
+          .msg = "Holdback enabled previews",
+          .enable_feature = true,
+          .set_random_coin_flip_for_navigation = true,
+          .set_coin_flip_override = false,
+          .want_coin_flip_result = previews::CoinFlipHoldbackResult::kHoldback,
+          .initial_state = content::CLIENT_LOFI_ON,
+          .want_returned = content::PREVIEWS_OFF,
+      },
+      {
+          .msg = "Holdback enabled previews via override",
+          .enable_feature = true,
+          .set_random_coin_flip_for_navigation = false,
+          .set_coin_flip_override = true,
+          .want_coin_flip_result = previews::CoinFlipHoldbackResult::kHoldback,
+          .initial_state = content::CLIENT_LOFI_ON,
+          .want_returned = content::PREVIEWS_OFF,
+      },
+      {
+          .msg = "Log enabled previews",
+          .enable_feature = true,
+          .set_random_coin_flip_for_navigation = false,
+          .set_coin_flip_override = false,
+          .want_coin_flip_result = previews::CoinFlipHoldbackResult::kAllowed,
+          .initial_state = content::CLIENT_LOFI_ON,
+          .want_returned = content::CLIENT_LOFI_ON,
+      },
+  };
+
+  for (const TestCase& test_case : kTestCases) {
+    SCOPED_TRACE(test_case.msg);
+
+    // Starting the navigation will cause content to call into
+    // |MaybeCoinFlipHoldbackBeforeCommit| as part of the navigation simulation.
+    // So don't enable the feature until afterwards.
+    content::NavigationHandle* handle = StartNavigationAndReadyCommit();
+
+    GetPreviewsUserData(handle)->SetRandomCoinFlipForNavigationForTesting(
+        test_case.set_random_coin_flip_for_navigation);
+
+    base::test::ScopedFeatureList scoped_feature_list;
+    if (test_case.enable_feature) {
+      scoped_feature_list.InitAndEnableFeatureWithParameters(
+          previews::features::kCoinFlipHoldback,
+          {{"force_coin_flip_always_holdback",
+            test_case.set_coin_flip_override ? "true" : "false"}});
+    } else {
+      scoped_feature_list.InitAndDisableFeature(
+          previews::features::kCoinFlipHoldback);
+    }
+
+    content::PreviewsState returned =
+        MaybeCoinFlipHoldbackAfterCommit(test_case.initial_state, handle);
+
+    EXPECT_EQ(test_case.want_returned, returned);
+    EXPECT_EQ(test_case.want_coin_flip_result,
+              GetPreviewsUserData(handle)->coin_flip_holdback_result());
+  }
 }
 
 }  // namespace
