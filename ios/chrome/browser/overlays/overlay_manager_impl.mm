@@ -20,8 +20,7 @@
 // static
 OverlayManager* OverlayManager::FromBrowser(Browser* browser,
                                             OverlayModality modality) {
-  OverlayManagerImpl::Container::CreateForUserData(browser,
-                                                   browser->GetWebStateList());
+  OverlayManagerImpl::Container::CreateForUserData(browser, browser);
   return OverlayManagerImpl::Container::FromUserData(browser)
       ->ManagerForModality(modality);
 }
@@ -30,8 +29,9 @@ OverlayManager* OverlayManager::FromBrowser(Browser* browser,
 
 OVERLAY_USER_DATA_SETUP_IMPL(OverlayManagerImpl::Container);
 
-OverlayManagerImpl::Container::Container(WebStateList* web_state_list)
-    : web_state_list_(web_state_list) {}
+OverlayManagerImpl::Container::Container(Browser* browser) : browser_(browser) {
+  DCHECK(browser_);
+}
 
 OverlayManagerImpl::Container::~Container() = default;
 
@@ -39,24 +39,32 @@ OverlayManagerImpl* OverlayManagerImpl::Container::ManagerForModality(
     OverlayModality modality) {
   auto& manager = managers_[modality];
   if (!manager) {
-    manager = base::WrapUnique(new OverlayManagerImpl(web_state_list_));
+    manager = base::WrapUnique(new OverlayManagerImpl(browser_, modality));
   }
   return manager.get();
 }
 
 #pragma mark - OverlayManagerImpl
 
-OverlayManagerImpl::OverlayManagerImpl(WebStateList* web_state_list)
-    : web_state_list_(web_state_list) {
-  DCHECK(web_state_list_);
+OverlayManagerImpl::OverlayManagerImpl(Browser* browser,
+                                       OverlayModality modality)
+    : presenter_(modality, browser->GetWebStateList()) {
+  browser->AddObserver(this);
 }
 
 OverlayManagerImpl::~OverlayManagerImpl() = default;
 
+#pragma mark BrowserObserver
+
+void OverlayManagerImpl::BrowserDestroyed(Browser* browser) {
+  presenter_.Disconnect();
+  browser->RemoveObserver(this);
+}
+
+#pragma mark OverlayManager
+
 void OverlayManagerImpl::SetUIDelegate(OverlayUIDelegate* ui_delegate) {
-  ui_delegate_ = ui_delegate;
-  // TODO(crbug.com/941745): Trigger the scheduling of the overlay UI
-  // presentation.
+  presenter_.SetUIDelegate(ui_delegate);
 }
 
 void OverlayManagerImpl::AddObserver(OverlayManagerObserver* observer) {

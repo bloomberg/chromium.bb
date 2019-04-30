@@ -16,6 +16,8 @@ source_set("overlays") {
   sources = [
     "overlay_manager_impl.h",
     "overlay_manager_impl.mm",
+    "overlay_presenter.h",
+    "overlay_presenter.mm",
     "overlay_request_impl.cc",
     "overlay_request_impl.h",
     "overlay_request_queue_impl.h",

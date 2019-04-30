@@ -9,13 +9,13 @@
 #include <memory>
 
 #include "base/observer_list.h"
+#import "ios/chrome/browser/main/browser_observer.h"
+#include "ios/chrome/browser/overlays/overlay_presenter.h"
 #include "ios/chrome/browser/overlays/public/overlay_manager.h"
 #include "ios/chrome/browser/overlays/public/overlay_user_data.h"
 
-class WebStateList;
-
 // Internal implementation of OverlayManager.
-class OverlayManagerImpl : public OverlayManager {
+class OverlayManagerImpl : public BrowserObserver, public OverlayManager {
  public:
   ~OverlayManagerImpl() override;
 
@@ -31,11 +31,14 @@ class OverlayManagerImpl : public OverlayManager {
 
    private:
     OVERLAY_USER_DATA_SETUP(Container);
-    explicit Container(WebStateList* web_state_list);
+    explicit Container(Browser* browser);
 
-    WebStateList* web_state_list_ = nullptr;
+    Browser* browser_ = nullptr;
     std::map<OverlayModality, std::unique_ptr<OverlayManagerImpl>> managers_;
   };
+
+  // BrowserObserver:
+  void BrowserDestroyed(Browser* browser) override;
 
   // OverlayManager:
   void SetUIDelegate(OverlayUIDelegate* ui_delegate) override;
@@ -43,15 +46,10 @@ class OverlayManagerImpl : public OverlayManager {
   void RemoveObserver(OverlayManagerObserver* observer) override;
 
  private:
-  OverlayManagerImpl(WebStateList* web_state_list);
+  OverlayManagerImpl(Browser* browser, OverlayModality modality);
 
-  // The manager's observers.
   base::ObserverList<OverlayManagerObserver>::Unchecked observers_;
-  // The Browser's WebStateList.  Used to update overlay scheduling for when
-  // WebStates are removed from the Browser.
-  WebStateList* web_state_list_ = nullptr;
-  // The UI delegate provided to the manager.
-  OverlayUIDelegate* ui_delegate_ = nullptr;
+  OverlayPresenter presenter_;
 };
 
 #endif  // IOS_CHROME_BROWSER_OVERLAYS_OVERLAY_MANAGER_IMPL_H_
