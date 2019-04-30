@@ -78,7 +78,7 @@ struct EncodedFrame {
 
   // Playout delay for this and all future frames. Used by the Adaptive
   // Playout delay extension. Non-positive values means no change.
-  std::chrono::milliseconds new_playout_delay;
+  std::chrono::milliseconds new_playout_delay{};
 
   // The encoded signal data.
   std::vector<uint8_t> data;

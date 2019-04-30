@@ -10,10 +10,10 @@
 namespace openscreen {
 namespace cast_streaming {
 
-// A Synchronization Source is a 32-bit opaque identifier for identifying the
-// source of a stream of RTP packets. A receiver groups packets (and assembled
-// frames) by the SSRC for playback. In other words, an audio stream will have
-// one SSRC and a video stream will have a different SSRC.
+// A Synchronization Source is a 32-bit opaque identifier used in RTP packets
+// for identifying the source (or recipient) of a logical sequence of encoded
+// audio/video frames. In other words, an audio stream will have one sender SSRC
+// and a video stream will have a different sender SSRC.
 using Ssrc = uint32_t;
 
 // Computes a new SSRC that will be used to uniquely identify an RTP stream. The

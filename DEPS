@@ -110,6 +110,7 @@ include_rules = [
     '+absl/strings/numbers.h',
     '+absl/strings/string_view.h',
     '+absl/types/optional.h',
+    '+absl/types/span.h',
 ]
 
 skip_child_includes = [

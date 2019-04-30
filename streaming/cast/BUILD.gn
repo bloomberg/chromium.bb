@@ -4,7 +4,7 @@
 
 import("//build_overrides/build.gni")
 
-source_set("cast") {
+source_set("common") {
   sources = [
     "clock_drift_smoother.cc",
     "clock_drift_smoother.h",
@@ -18,6 +18,10 @@ source_set("cast") {
     "frame_id.h",
     "ntp_time.cc",
     "ntp_time.h",
+    "packet_util.cc",
+    "packet_util.h",
+    "rtp_defines.cc",
+    "rtp_defines.h",
     "rtp_time.cc",
     "rtp_time.h",
     "ssrc.cc",
@@ -41,6 +45,28 @@ source_set("cast") {
   ]
 }
 
+source_set("receiver") {
+  sources = [
+    "rtp_packet_parser.cc",
+    "rtp_packet_parser.h",
+  ]
+
+  public_deps = [
+    ":common",
+  ]
+}
+
+source_set("sender") {
+  sources = [
+    "rtp_packetizer.cc",
+    "rtp_packetizer.h",
+  ]
+
+  public_deps = [
+    ":common",
+  ]
+}
+
 source_set("cast_unittests") {
   testonly = true
 
@@ -48,6 +74,9 @@ source_set("cast_unittests") {
     "expanded_value_base_unittest.cc",
     "frame_crypto_unittest.cc",
     "ntp_time_unittest.cc",
+    "packet_util_unittest.cc",
+    "rtp_packet_parser_unittest.cc",
+    "rtp_packetizer_unittest.cc",
     "rtp_time_unittest.cc",
     "ssrc_unittest.cc",
   ]
@@ -57,7 +86,53 @@ source_set("cast_unittests") {
   }
   configs += [ "../..:root_config_overrides" ]
   deps = [
-    ":cast",
+    ":receiver",
+    ":sender",
     "../../third_party/googletest:gtest",
   ]
+}
+
+if (build_with_chromium) {
+  import("//testing/libfuzzer/fuzzer_test.gni")
+
+  fuzzer_test("rtp_packet_parser_fuzzer") {
+    sources = [
+      "rtp_packet_parser_fuzzer.cc",
+    ]
+
+    deps = [
+      ":receiver",
+      "../../third_party/abseil",
+    ]
+
+    seed_corpus = "rtp_packet_parser_fuzzer_seeds"
+
+    # Note: 1500 is approx. kMaxRtpPacketSize in rtp_defines.h.
+    libfuzzer_options = [ "max_len=1500" ]
+  }
+} else {
+  # Note: The following is commented out because, as of this writing, the LLVM
+  # toolchain we pull does not include libclang_rt.fuzzer-x86_64.a, the
+  # libFuzzer library *with* a main() to drive everything. Thus, the only way to
+  # get things working is to specify an exact path to the fuzzer_no_main variant
+  # of the library that *is* avalable, and then provide our own main(). In
+  # summary, what you see below demonstrates how to get it working specifically
+  # for Clang 9.0.0 on Linux x86_64. One need only modify the "libs = [...]" for
+  # a different Clang, OS, or architecture.
+  # if (is_clang) {
+  #   executable("rtp_packet_parser_fuzzer") {
+  #     testonly = true
+  #     defines = [ "NEEDS_MAIN_TO_CALL_FUZZER_DRIVER" ]
+  #     sources = [
+  #       "rtp_packet_parser_fuzzer.cc",
+  #     ]
+  #     cflags_cc = [ "-fsanitize=address,fuzzer-no-link,undefined" ]
+  #     ldflags = [ "-fsanitize=address,undefined" ]
+  #     libs = [ "$clang_base_path/lib/clang/9.0.0/lib/linux/libclang_rt.fuzzer_no_main-x86_64.a" ]
+  #     deps = [
+  #       ":receiver",
+  #       "../../third_party/abseil",
+  #     ]
+  #   }
+  # }
 }
