@@ -107,6 +107,8 @@ class PiexReader {
     const auto undefined = emscripten::val::undefined();
 
     const auto format = static_cast<uint32_t>(image.thumbnail.format);
+    if (format > piex::Image::Format::kUncompressedRgb)
+      return undefined;
     if (!image.thumbnail.offset || !image.thumbnail.length)
       return undefined;
 
@@ -124,7 +126,7 @@ class PiexReader {
 
   static emscripten::val GetColorSpace(const piex::PreviewImageData& image) {
     const auto space = static_cast<uint32_t>(image.color_space);
-    if (space == ::piex::PreviewImageData::kAdobeRgb)
+    if (space == piex::PreviewImageData::kAdobeRgb)
       return emscripten::val("adobeRgb");
     return emscripten::val("sRgb");
   }
