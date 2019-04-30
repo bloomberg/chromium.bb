@@ -17,13 +17,15 @@
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
-class RelatedAppsFetcher;
+class WebURL;
+template <typename T>
+class WebVector;
+struct Manifest;
 
 using AppInstalledCallbacks =
     WebCallbacks<const WebVector<WebRelatedApplication>&, void>;
@@ -50,22 +52,18 @@ class MODULES_EXPORT InstalledAppController final
   void Trace(blink::Visitor*) override;
 
  private:
-  class GetRelatedAppsCallbacks;
-
-  // Inherited from ContextLifecycleObserver.
-  void ContextDestroyed(ExecutionContext*) override;
-
-  // Callback for the result of
-  // WebRelatedAppsFetcher::getManifestRelatedApplications. Calls
-  // filterByInstalledApps upon receiving the list of related applications.
-  void OnGetRelatedAppsCallback(std::unique_ptr<AppInstalledCallbacks>,
-                                const WebVector<WebRelatedApplication>&);
-
+  // Callback for the result of GetInstalledRelatedApps.
+  //
   // Takes a set of related applications and filters them by those which belong
   // to the current underlying platform, and are actually installed and related
   // to the current page's origin. Passes the filtered list to the callback.
-  void FilterByInstalledApps(const WebVector<WebRelatedApplication>&,
-                             std::unique_ptr<AppInstalledCallbacks>);
+  void OnGetManifestForRelatedApps(
+      std::unique_ptr<AppInstalledCallbacks> callbacks,
+      const WebURL& url,
+      const Manifest& manifest);
+
+  // Inherited from ContextLifecycleObserver.
+  void ContextDestroyed(ExecutionContext*) override;
 
   // Callback from the InstalledAppProvider mojo service.
   void OnFilterInstalledApps(std::unique_ptr<blink::AppInstalledCallbacks>,
@@ -74,7 +72,7 @@ class MODULES_EXPORT InstalledAppController final
   // Handle to the InstalledApp mojo service.
   mojom::blink::InstalledAppProviderPtr provider_;
 
-  Member<RelatedAppsFetcher> related_apps_fetcher_;
+  bool context_destroyed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(InstalledAppController);
 };

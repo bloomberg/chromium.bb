@@ -4,14 +4,16 @@
 
 #include "third_party/blink/renderer/modules/installedapp/installed_app_controller.h"
 
+#include <utility>
+
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/manifest/manifest.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/modules/installedapp/related_apps_fetcher.h"
 #include "third_party/blink/renderer/modules/manifest/manifest_manager.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
-
-#include <utility>
 
 namespace blink {
 
@@ -19,22 +21,20 @@ InstalledAppController::~InstalledAppController() = default;
 
 void InstalledAppController::GetInstalledRelatedApps(
     std::unique_ptr<AppInstalledCallbacks> callbacks) {
-  // When detached, the fetcher is no longer valid.
-  if (!related_apps_fetcher_) {
+  // When detached, the fetch logic is no longer valid.
+  if (context_destroyed_) {
     // TODO(mgiuca): AbortError rather than simply undefined.
     // https://crbug.com/687846
     callbacks->OnError();
     return;
   }
 
-  // Get the list of related applications from the manifest. This requires a
-  // request to the content layer (because the manifest is not a Blink concept).
+  // Get the list of related applications from the manifest.
   // Upon returning, filter the result list to those apps that are installed.
-  // TODO(mgiuca): This roundtrip to content could be eliminated if the Manifest
-  // class was moved from content into Blink.
-  related_apps_fetcher_->GetManifestRelatedApplications(
-      WTF::Bind(&InstalledAppController::OnGetRelatedAppsCallback,
-                WrapWeakPersistent(this), std::move(callbacks)));
+  ManifestManager::From(*GetSupplementable())
+      ->RequestManifest(
+          WTF::Bind(&InstalledAppController::OnGetManifestForRelatedApps,
+                    WrapPersistent(this), std::move(callbacks)));
 }
 
 void InstalledAppController::ProvideTo(LocalFrame& frame) {
@@ -53,34 +53,29 @@ const char InstalledAppController::kSupplementName[] = "InstalledAppController";
 
 InstalledAppController::InstalledAppController(LocalFrame& frame)
     : Supplement<LocalFrame>(frame),
-      ContextLifecycleObserver(frame.GetDocument()),
-      related_apps_fetcher_(MakeGarbageCollected<RelatedAppsFetcher>(
-          ManifestManager::From(frame))) {}
+      ContextLifecycleObserver(frame.GetDocument()) {}
 
 void InstalledAppController::ContextDestroyed(ExecutionContext*) {
   provider_.reset();
-  related_apps_fetcher_ = nullptr;
+  context_destroyed_ = true;
 }
 
-void InstalledAppController::OnGetRelatedAppsCallback(
+void InstalledAppController::OnGetManifestForRelatedApps(
     std::unique_ptr<AppInstalledCallbacks> callbacks,
-    const WebVector<WebRelatedApplication>& related_apps) {
-  // TODO: Fix the order of the parameters in ::FilterByInstalledApps
-  // and bound it right away as the completion callback.
-  FilterByInstalledApps(related_apps, std::move(callbacks));
-}
-
-void InstalledAppController::FilterByInstalledApps(
-    const blink::WebVector<blink::WebRelatedApplication>& related_apps,
-    std::unique_ptr<blink::AppInstalledCallbacks> callbacks) {
+    const WebURL& /*url*/,
+    const Manifest& manifest) {
   WTF::Vector<mojom::blink::RelatedApplicationPtr> mojo_related_apps;
-  for (const auto& related_application : related_apps) {
+  for (const Manifest::RelatedApplication& related_application :
+       manifest.related_applications) {
     mojom::blink::RelatedApplicationPtr converted_application(
         mojom::blink::RelatedApplication::New());
-    DCHECK(!related_application.platform.IsEmpty());
-    converted_application->platform = related_application.platform;
-    converted_application->id = related_application.id;
-    converted_application->url = related_application.url;
+    converted_application->platform =
+        WebString::FromUTF16(related_application.platform);
+    converted_application->id = WebString::FromUTF16(related_application.id);
+    if (!related_application.url.is_empty()) {
+      converted_application->url =
+          WebString::FromUTF8(related_application.url.spec());
+    }
     mojo_related_apps.push_back(std::move(converted_application));
   }
 
@@ -119,7 +114,6 @@ void InstalledAppController::OnFilterInstalledApps(
 void InstalledAppController::Trace(blink::Visitor* visitor) {
   Supplement<LocalFrame>::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
-  visitor->Trace(related_apps_fetcher_);
 }
 
 }  // namespace blink
