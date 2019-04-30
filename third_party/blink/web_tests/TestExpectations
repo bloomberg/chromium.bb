@@ -6219,7 +6219,7 @@ crbug.com/954998 [ Mac ] http/tests/devtools/tracing/timeline-js/timeline-js-lin
 crbug.com/956401 [ Win ] external/wpt/cookies/samesite/form-post-blank.html [ Pass Timeout ]
 crbug.com/956547 fast/dom/raf-throttling-out-of-view-cross-origin-page.html [ Pass Timeout ]
 crbug.com/956547 fast/dom/timer-throttling-out-of-view-cross-origin-page.html [ Pass Timeout ]
-crbug.com/956736 [ Linux Win ] virtual/gpu-rasterization/images/imagemap-focus-ring-outline-color-not-inherited-from-map.html [ Pass Failure ]
+crbug.com/956736 virtual/gpu-rasterization/images/imagemap-focus-ring-outline-color-not-inherited-from-map.html [ Pass Failure ]
 
 # Sheriff 2019-04-25
 crbug.com/956547 http/tests/dom/raf-throttling-out-of-view-cross-origin-page.html [ Pass Timeout ]
