@@ -118,6 +118,7 @@ public class AutofillUiUtils {
                     || (!monthInput.isFocused() && didFocusOnMonth)) {
                 return ErrorType.EXPIRATION_MONTH;
             }
+            // If year was focused before, proceed to check if year is valid.
             if (!didFocusOnYear) {
                 return ErrorType.NOT_ENOUGH_INFO;
             }
@@ -131,7 +132,10 @@ public class AutofillUiUtils {
             }
             return ErrorType.NOT_ENOUGH_INFO;
         }
-
+        // Year is valid but month is still being edited.
+        if (month == -1) {
+            return ErrorType.NOT_ENOUGH_INFO;
+        }
         if (year == thisYear && month < thisMonth) {
             return ErrorType.EXPIRATION_DATE;
         }
