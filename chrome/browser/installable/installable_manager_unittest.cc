@@ -213,3 +213,11 @@ TEST_F(InstallableManagerUnitTest, ManifestDisplayModes) {
   EXPECT_TRUE(IsManifestValid(manifest));
   EXPECT_EQ(NO_ERROR_DETECTED, GetErrorCode());
 }
+
+TEST_F(InstallableManagerUnitTest, PreferRelatedApplications) {
+  blink::Manifest manifest = GetValidManifest();
+
+  manifest.prefer_related_applications = true;
+  EXPECT_FALSE(IsManifestValid(manifest));
+  EXPECT_EQ(PREFER_RELATED_APPLICATIONS, GetErrorCode());
+}

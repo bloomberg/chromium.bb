@@ -1848,6 +1848,7 @@ Unknown properties are collapsed to zero. -->
   <int value="33" label="Waiting for native data"/>
   <int value="34" label="App install dialog shown"/>
   <int value="35" label="Cannot check service worker for null start URL"/>
+  <int value="36" label="prefer_related_applications set to true"/>
 </enum>
 
 <enum name="AppBannersInstallEvent">

@@ -634,7 +634,8 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
     EXPECT_FALSE(tester->has_worker());
     EXPECT_EQ(
         std::vector<InstallableStatusCode>(
-            {START_URL_NOT_VALID, MANIFEST_MISSING_NAME_OR_SHORT_NAME,
+            {PREFER_RELATED_APPLICATIONS, START_URL_NOT_VALID,
+             MANIFEST_MISSING_NAME_OR_SHORT_NAME,
              MANIFEST_DISPLAY_NOT_SUPPORTED, MANIFEST_MISSING_SUITABLE_ICON}),
         tester->errors());
   }
@@ -1628,7 +1629,8 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
   run_loop.Run();
 
   EXPECT_EQ(std::vector<InstallableStatusCode>(
-                {START_URL_NOT_VALID, MANIFEST_MISSING_NAME_OR_SHORT_NAME,
+                {PREFER_RELATED_APPLICATIONS, START_URL_NOT_VALID,
+                 MANIFEST_MISSING_NAME_OR_SHORT_NAME,
                  MANIFEST_DISPLAY_NOT_SUPPORTED, MANIFEST_MISSING_SUITABLE_ICON,
                  NO_URL_FOR_SERVICE_WORKER, NO_ACCEPTABLE_ICON}),
             tester->errors());
@@ -1650,7 +1652,8 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
 IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
                        GetAllErrorsWithPlayAppManifest) {
   EXPECT_EQ(std::vector<std::string>(
-                {GetErrorMessage(START_URL_NOT_VALID),
+                {GetErrorMessage(PREFER_RELATED_APPLICATIONS),
+                 GetErrorMessage(START_URL_NOT_VALID),
                  GetErrorMessage(MANIFEST_MISSING_NAME_OR_SHORT_NAME),
                  GetErrorMessage(MANIFEST_DISPLAY_NOT_SUPPORTED),
                  GetErrorMessage(MANIFEST_MISSING_SUITABLE_ICON),

@@ -577,6 +577,11 @@ bool InstallableManager::IsManifestValidForWebApp(
     return false;
   }
 
+  if (manifest.prefer_related_applications) {
+    is_valid = false;
+    valid_manifest_->errors.push_back(PREFER_RELATED_APPLICATIONS);
+  }
+
   if (!manifest.start_url.is_valid()) {
     valid_manifest_->errors.push_back(START_URL_NOT_VALID);
     is_valid = false;
