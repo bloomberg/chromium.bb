@@ -53,10 +53,6 @@ struct ServiceStatus {
 // running on a Windows version before Vista.
 bool GetMediumIntegrityToken(base::win::ScopedHandle* medium_integrity_token);
 
-// Convert a GUID to its textual representation. |output| receives the textual
-// representation.
-void GUIDToString(const GUID&, base::string16* output);
-
 // Set the current process to background mode.
 void SetBackgroundMode();
 

@@ -27,6 +27,7 @@
 #include "base/test/scoped_path_override.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"
+#include "base/win/win_util.h"
 #include "build/build_config.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider.h"
@@ -128,13 +129,11 @@ void GcpSetupTest::ExpectAllFilesToExist(
 void GcpSetupTest::ExpectCredentialProviderToBeRegistered(
     bool registered,
     const base::string16& product_version) {
-  wchar_t guid_in_wchar[64];
-  StringFromGUID2(CLSID_GaiaCredentialProvider, guid_in_wchar,
-                  base::size(guid_in_wchar));
+  auto guid_string = base::win::String16FromGUID(CLSID_GaiaCredentialProvider);
 
   // Make sure COM object is registered.
   base::string16 register_key_path =
-      base::StringPrintf(L"CLSID\\%ls\\InprocServer32", guid_in_wchar);
+      base::StringPrintf(L"CLSID\\%ls\\InprocServer32", guid_string.c_str());
   base::win::RegKey clsid_key(HKEY_CLASSES_ROOT, register_key_path.c_str(),
                               KEY_READ);
   EXPECT_EQ(registered, clsid_key.Valid());
@@ -150,7 +149,7 @@ void GcpSetupTest::ExpectCredentialProviderToBeRegistered(
   base::string16 cp_key_path = base::StringPrintf(
       L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\"
       L"Authentication\\Credential Providers\\%ls",
-      guid_in_wchar);
+      guid_string.c_str());
 
   // Make sure credential provider is registered.
   base::win::RegKey cp_key(HKEY_LOCAL_MACHINE, cp_key_path.c_str(), KEY_READ);

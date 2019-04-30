@@ -4,12 +4,15 @@
 
 #include "base/win/win_util.h"
 
+#include <objbase.h>
+
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/scoped_native_library.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
+#include "base/win/scoped_co_mem.h"
 #include "base/win/win_client_metrics.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -78,6 +81,23 @@ TEST(BaseWinUtilTest, TestUint32ToInvalidHandle) {
   // and back on 64-bit platforms.
   uint32_t invalid_handle = base::win::HandleToUint32(INVALID_HANDLE_VALUE);
   EXPECT_EQ(INVALID_HANDLE_VALUE, base::win::Uint32ToHandle(invalid_handle));
+}
+
+TEST(BaseWinUtilTest, String16FromGUID) {
+  const GUID kGuid = {0x7698f759,
+                      0xf5b0,
+                      0x4328,
+                      {0x92, 0x38, 0xbd, 0x70, 0x8a, 0x6d, 0xc9, 0x63}};
+  const base::StringPiece16 kGuidStr(
+      STRING16_LITERAL("{7698F759-F5B0-4328-9238-BD708A6DC963}"));
+  auto guid_string16 = String16FromGUID(kGuid);
+  EXPECT_EQ(guid_string16, kGuidStr);
+  wchar_t guid_wchar[39];
+  ::StringFromGUID2(kGuid, guid_wchar, base::size(guid_wchar));
+  EXPECT_STREQ(as_wcstr(guid_string16), guid_wchar);
+  ScopedCoMem<OLECHAR> clsid_string;
+  ::StringFromCLSID(kGuid, &clsid_string);
+  EXPECT_STREQ(as_wcstr(guid_string16), clsid_string.get());
 }
 
 }  // namespace win
