@@ -32,6 +32,7 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_list.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button.h"
@@ -66,6 +67,8 @@ constexpr int kIconToTitleDistanceDp = 28;
 constexpr int kTitleToDescriptionDistanceDp = 14;
 constexpr int kDescriptionToAccessCodeDistanceDp = 28;
 constexpr int kAccessCodeToPinKeyboardDistanceDp = 5;
+constexpr int kPinKeyboardToFooterDistanceDp = 57;
+constexpr int kPinKeyboardToFooterTabletModeDistanceDp = 17;
 constexpr int kSubmitButtonBottomMarginDp = 8;
 
 constexpr int kTitleFontSizeDeltaDp = 3;
@@ -88,6 +91,17 @@ bool IsTabletMode() {
   return Shell::Get()
       ->tablet_mode_controller()
       ->IsTabletModeWindowManagerEnabled();
+}
+
+gfx::Size GetPinKeyboardToFooterSpacerSize() {
+  return gfx::Size(0, IsTabletMode() ? kPinKeyboardToFooterTabletModeDistanceDp
+                                     : kPinKeyboardToFooterDistanceDp);
+}
+
+gfx::Size GetParentAccessViewSize() {
+  return gfx::Size(kParentAccessViewWidthDp,
+                   IsTabletMode() ? kParentAccessViewTabletModeHeightDp
+                                  : kParentAccessViewHeightDp);
 }
 
 // Accessible input field. Customizes field description and focus behavior.
@@ -395,8 +409,12 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
   views::BoxLayout* main_layout = SetLayoutManager(std::move(layout));
 
+  SetPreferredSize(GetParentAccessViewSize());
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
+
+  const int child_view_width =
+      kParentAccessViewWidthDp - 2 * kParentAccessViewHorizontalInsetDp;
 
   // Header view contains back button that is aligned to its start.
   auto header_layout = std::make_unique<views::BoxLayout>(
@@ -404,7 +422,7 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
   header_layout->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
   auto* header = new NonAccessibleView();
-  header->SetPreferredSize(gfx::Size(kParentAccessViewWidthDp, 0));
+  header->SetPreferredSize(gfx::Size(child_view_width, 0));
   header->SetLayoutManager(std::move(header_layout));
   AddChildView(header);
 
@@ -494,15 +512,16 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
 
   // Vertical spacer to consume height remaining in the view after all children
   // are accounted for.
-  auto* vertical_spacer = new NonAccessibleView();
-  AddChildView(vertical_spacer);
-  main_layout->SetFlexForView(vertical_spacer, 1);
+  pin_keyboard_to_footer_spacer_ = new NonAccessibleView();
+  pin_keyboard_to_footer_spacer_->SetPreferredSize(
+      GetPinKeyboardToFooterSpacerSize());
+  AddChildView(pin_keyboard_to_footer_spacer_);
+  main_layout->SetFlexForView(pin_keyboard_to_footer_spacer_, 1);
 
   // Footer view contains help text button aligned to its start, submit
   // button aligned to its end and spacer view in between.
   auto* footer = new NonAccessibleView();
-  footer->SetPreferredSize(
-      gfx::Size(kParentAccessViewWidthDp, kArrowButtonSizeDp));
+  footer->SetPreferredSize(gfx::Size(child_view_width, kArrowButtonSizeDp));
   auto* bottom_layout =
       footer->SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::kHorizontal, gfx::Insets(), 0));
@@ -563,15 +582,8 @@ void ParentAccessView::RequestFocus() {
   access_code_view_->RequestFocus();
 }
 
-void ParentAccessView::Layout() {
-  NonAccessibleView::Layout();
-  SizeToPreferredSize();
-}
-
 gfx::Size ParentAccessView::CalculatePreferredSize() const {
-  return gfx::Size(kParentAccessViewWidthDp,
-                   IsTabletMode() ? kParentAccessViewTabletModeHeightDp
-                                  : kParentAccessViewHeightDp);
+  return GetParentAccessViewSize();
 }
 
 void ParentAccessView::ButtonPressed(views::Button* sender,
@@ -591,7 +603,7 @@ void ParentAccessView::OnTabletModeStarted() {
   pin_keyboard_view_->SetVisible(true);
   // This will trigger ChildPreferredSizeChanged in parent view and Layout() in
   // view. As the result whole hierarchy will go through re-layout.
-  PreferredSizeChanged();
+  UpdatePreferredSize();
 }
 
 void ParentAccessView::OnTabletModeEnded() {
@@ -600,7 +612,7 @@ void ParentAccessView::OnTabletModeEnded() {
   pin_keyboard_view_->SetVisible(false);
   // This will trigger ChildPreferredSizeChanged in parent view and Layout() in
   // view. As the result whole hierarchy will go through re-layout.
-  PreferredSizeChanged();
+  UpdatePreferredSize();
 }
 
 void ParentAccessView::OnTabletControllerDestroyed() {
@@ -638,6 +650,12 @@ void ParentAccessView::UpdateState(State state) {
       return;
     }
   }
+}
+
+void ParentAccessView::UpdatePreferredSize() {
+  pin_keyboard_to_footer_spacer_->SetPreferredSize(
+      GetPinKeyboardToFooterSpacerSize());
+  SetPreferredSize(CalculatePreferredSize());
 }
 
 void ParentAccessView::OnValidationResult(base::Optional<bool> result) {
