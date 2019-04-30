@@ -482,6 +482,7 @@ struct SSLSocketDataProvider {
   uint16_t expected_ssl_version_max;
   base::Optional<bool> expected_send_client_cert;
   scoped_refptr<X509Certificate> expected_client_cert;
+  base::Optional<bool> expected_false_start_enabled;
 
   bool is_connect_data_consumed = false;
   bool is_confirm_data_consumed = false;

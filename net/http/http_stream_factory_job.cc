@@ -719,13 +719,41 @@ int HttpStreamFactory::Job::DoInitConnectionImpl() {
   }
 
   if (proxy_info_.is_https() || proxy_info_.is_quic()) {
-    InitSSLConfig(&proxy_ssl_config_, /*is_proxy=*/true);
     // Disable network fetches for HTTPS proxies, since the network requests
     // are probably going to need to go through the proxy too.
     proxy_ssl_config_.disable_cert_verification_network_fetches = true;
+
+    if (proxy_ssl_config_.send_client_cert) {
+      // When connecting through an HTTPS proxy, disable TLS False Start so that
+      // client authentication errors can be distinguished between those
+      // originating from the proxy server (ERR_PROXY_CONNECTION_FAILED) and
+      // those originating from the endpoint (ERR_SSL_PROTOCOL_ERROR /
+      // ERR_BAD_SSL_CLIENT_AUTH_CERT).
+      //
+      // We now handle this fine for SSLClientAuthCache updates, though not
+      // ReconsiderProxyAfterError() below. In case of issues there, and general
+      // False Start compatibility risk, we continue to disable False Start. (If
+      // it becomes a problem, the risk of removing this is likely low.)
+      //
+      // This assumes the proxy will only request certificates on the initial
+      // handshake; renegotiation on the proxy connection is unsupported.
+      //
+      // See https://crbug.com/828965.
+      proxy_ssl_config_.false_start_enabled = false;
+    }
   }
   if (using_ssl_) {
-    InitSSLConfig(&server_ssl_config_, /*is_proxy=*/false);
+    // Prior to HTTP/2 and SPDY, some servers use TLS renegotiation to request
+    // TLS client authentication after the HTTP request was sent. Allow
+    // renegotiation for only those connections.
+    //
+    // Note that this does NOT implement the provision in
+    // https://http2.github.io/http2-spec/#rfc.section.9.2.1 which allows the
+    // server to request a renegotiation immediately before sending the
+    // connection preface as waiting for the preface would cost the round trip
+    // that False Start otherwise saves.
+    server_ssl_config_.renego_allowed_default = true;
+    server_ssl_config_.renego_allowed_for_protos.push_back(kProtoHTTP11);
   }
 
   if (using_quic_) {
@@ -1220,42 +1248,6 @@ void HttpStreamFactory::Job::OnSpdySessionAvailable(
   // This will synchronously close |connection_|, so no need to worry about it
   // calling back into |this|.
   RunLoop(net::OK);
-}
-
-void HttpStreamFactory::Job::InitSSLConfig(SSLConfig* ssl_config,
-                                           bool is_proxy) const {
-  if (!is_proxy) {
-    // Prior to HTTP/2 and SPDY, some servers use TLS renegotiation to request
-    // TLS client authentication after the HTTP request was sent. Allow
-    // renegotiation for only those connections.
-    //
-    // Note that this does NOT implement the provision in
-    // https://http2.github.io/http2-spec/#rfc.section.9.2.1 which allows the
-    // server to request a renegotiation immediately before sending the
-    // connection preface as waiting for the preface would cost the round trip
-    // that False Start otherwise saves.
-    ssl_config->renego_allowed_default = true;
-    ssl_config->renego_allowed_for_protos.push_back(kProtoHTTP11);
-  }
-
-  if (proxy_info_.is_https() && ssl_config->send_client_cert) {
-    // When connecting through an HTTPS proxy, disable TLS False Start so that
-    // client authentication errors can be distinguished between those
-    // originating from the proxy server (ERR_PROXY_CONNECTION_FAILED) and those
-    // originating from the endpoint (ERR_SSL_PROTOCOL_ERROR /
-    // ERR_BAD_SSL_CLIENT_AUTH_CERT).
-    //
-    // We now handle this fine for SSLClientAuthCache updates, though not
-    // ReconsiderProxyAfterError() below. In case of issues there, and general
-    // False Start compatibility risk, we continue to disable False Start. (If
-    // it becomes a problem, the risk of removing this is likely low.)
-    //
-    // This assumes the proxy will only request certificates on the initial
-    // handshake; renegotiation on the proxy connection is unsupported.
-    //
-    // See https://crbug.com/828965.
-    ssl_config->false_start_enabled = false;
-  }
 }
 
 int HttpStreamFactory::Job::ReconsiderProxyAfterError(int error) {

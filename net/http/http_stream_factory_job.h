@@ -322,10 +322,6 @@ class HttpStreamFactory::Job
   // SpdySessionPool::SpdySessionRequest::Delegate implementation:
   void OnSpdySessionAvailable(base::WeakPtr<SpdySession> spdy_session) override;
 
-  // Sets several fields of |ssl_config| based on the proxy info and other
-  // factors.
-  void InitSSLConfig(SSLConfig* ssl_config, bool is_proxy) const;
-
   // Retrieve SSLInfo from our SSL Socket.
   // This must only be called when we are using an SSLSocket.
   void GetSSLInfo(SSLInfo* ssl_info);

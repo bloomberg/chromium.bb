@@ -812,6 +812,10 @@ std::unique_ptr<SSLClientSocket> MockClientSocketFactory::CreateSSLClientSocket(
       EXPECT_FALSE(ssl_config.client_cert);
     }
   }
+  if (next_ssl_data->expected_false_start_enabled) {
+    EXPECT_EQ(*next_ssl_data->expected_false_start_enabled,
+              ssl_config.false_start_enabled);
+  }
   return std::unique_ptr<SSLClientSocket>(new MockSSLClientSocket(
       std::move(stream_socket), host_and_port, ssl_config, next_ssl_data));
 }
