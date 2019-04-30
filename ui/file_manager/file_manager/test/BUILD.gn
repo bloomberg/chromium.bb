@@ -43,6 +43,7 @@ js_type_check("closure_compile") {
     ":crostini_share",
     ":crostini_tasks",
     ":menu",
+    ":plugin_vm",
     ":progress_center",
     ":uma",
   ]
@@ -96,6 +97,13 @@ js_library("crostini_tasks") {
 }
 
 js_library("menu") {
+  deps = [
+    "js:test_util",
+    "//ui/webui/resources/js:webui_resource_test",
+  ]
+}
+
+js_library("plugin_vm") {
   deps = [
     "js:test_util",
     "//ui/webui/resources/js:webui_resource_test",
