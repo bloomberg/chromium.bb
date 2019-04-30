@@ -185,6 +185,11 @@ FidoBleConnection::FidoBleConnection(
 }
 
 FidoBleConnection::~FidoBleConnection() {
+  // Workaround for crbug.com/950204, avoids re-entrancy bugs triggered by
+  // closing a GATT connection while handling changes to the GATT connection
+  // state.
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE,
+                                                  std::move(connection_));
   adapter_->RemoveObserver(this);
 }
 

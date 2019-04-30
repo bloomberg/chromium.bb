@@ -123,6 +123,12 @@ class FidoBleConnectionTest : public ::testing::Test {
     BluetoothAdapterFactory::SetAdapterForTesting(adapter_);
   }
 
+  void TearDown() override {
+    // Workaround for the workaround for crbug.com/950204 to allow the
+    // MockBluetoothGattConnection to be destroyed before the test exits.
+    scoped_task_environment_.RunUntilIdle();
+  }
+
   BluetoothAdapter* adapter() { return adapter_.get(); }
   MockBluetoothDevice* device() { return fido_device_; }
 
