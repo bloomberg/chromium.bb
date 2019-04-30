@@ -89,6 +89,10 @@
   padding-top: 4px;
 }
 
+.arc-no-mouse-events {
+  pointer-events: none;
+}
+
 .hidden.arc-events-band-title::before {
   content: '\002B';
 }
