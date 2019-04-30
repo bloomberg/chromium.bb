@@ -3178,21 +3178,6 @@
             ]
         }
     ],
-    "NoCreditCardAbort": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "NoCreditCardAbort"
-                    ]
-                }
-            ]
-        }
-    ],
     "NoSearchDomainCheck": [
         {
             "platforms": [
@@ -3726,6 +3711,21 @@
                     "disable_features": [
                         "AutomaticPasswordGeneration",
                         "PasswordsKeyboardAccessory"
+                    ]
+                }
+            ]
+        }
+    ],
+    "PaymentRequestNoCreditCardAbort": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "NoCreditCardAbort"
                     ]
                 }
             ]
