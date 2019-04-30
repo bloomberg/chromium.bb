@@ -48,15 +48,5 @@ class SafeBrowsing(IntegrationTest):
         self.assertEqual(1, unsafe_resources['count'])
         self.assertEqual(1, unsafe_resources['buckets'][0]['count'])
 
-  @NotAndroid
-  def testSafeBrowsingOff(self):
-    with TestDriver() as t:
-      t.AddChromeArg('--enable-spdy-proxy-auth')
-      t.LoadURL('http://testsafebrowsing.appspot.com/s/malware.html')
-      responses = t.GetHTTPResponses()
-      self.assertEqual(1, len(responses))
-      for response in responses:
-        self.assertHasProxyHeaders(response)
-
 if __name__ == '__main__':
   IntegrationTest.RunAllTests()
