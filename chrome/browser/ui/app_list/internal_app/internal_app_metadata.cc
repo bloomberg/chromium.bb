@@ -296,6 +296,13 @@ void OpenInternalApp(const std::string& app_id,
       VLOG(1)
           << "Camera app controller already exists, activating existing app.";
       app_controller->ActivateIndexedApp(0 /* index */);
+    } else if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+                   chromeos::switches::kForceUseChromeCamera)) {
+      const extensions::ExtensionRegistry* registry =
+          extensions::ExtensionRegistry::Get(profile);
+      const extensions::Extension* extension =
+          registry->GetInstalledExtension(extension_misc::kChromeCameraAppId);
+      OpenChromeCameraApp(profile, event_flags, extension);
     } else {
       arc::ArcFeaturesParser::GetArcFeatures(
           base::BindOnce(&OnArcFeaturesRead, profile, event_flags));

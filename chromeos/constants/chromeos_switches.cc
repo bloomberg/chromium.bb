@@ -378,6 +378,9 @@ const char kForceLoginManagerInTests[] = "force-login-manager-in-tests";
 // Force system compositor mode when set.
 const char kForceSystemCompositorMode[] = "force-system-compositor-mode";
 
+// Forces to use chrome camera app when camera icon is clicked.
+const char kForceUseChromeCamera[] = "force-use-chrome-camera";
+
 // Indicates that the browser is in "browse without sign-in" (Guest session)
 // mode. Should completely disable extensions, sync and bookmarks.
 const char kGuestSession[] = "bwsi";

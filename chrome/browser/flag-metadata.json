@@ -1986,6 +1986,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "force-use-chrome-camera",
+    "owners": [ "shenghao", "chromeos-camera-app-eng@google.com" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "fcm-invalidations",
     "owners": [ "melandory", "chrome-sync-dev@google.com" ],
     "expiry_milestone": 76
