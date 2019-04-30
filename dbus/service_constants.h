@@ -16,6 +16,7 @@
 #include "cros_healthd/dbus-constants.h"
 #include "cryptohome/dbus-constants.h"
 #include "debugd/dbus-constants.h"
+#include "diagnosticsd/dbus-constants.h"
 #include "drivefs/dbus-constants.h"
 #include "hammerd/dbus-constants.h"
 #include "login_manager/dbus-constants.h"
@@ -32,7 +33,6 @@
 #include "vm_cicerone/dbus-constants.h"
 #include "vm_concierge/dbus-constants.h"
 #include "vm_plugin_dispatcher/dbus-constants.h"
-#include "wilco_dtc_supportd/dbus-constants.h"
 
 namespace dbus {
 const char kDBusInterface[] = "org.freedesktop.DBus";
