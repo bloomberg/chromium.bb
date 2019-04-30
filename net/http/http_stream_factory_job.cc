@@ -65,33 +65,32 @@ const base::Feature kLimitEarlyPreconnectsExperiment{
 }  // namespace
 
 // Returns parameters associated with the start of a HTTP stream job.
-std::unique_ptr<base::Value> NetLogHttpStreamJobCallback(
-    const NetLogSource& source,
-    const GURL* original_url,
-    const GURL* url,
-    bool expect_spdy,
-    bool using_quic,
-    RequestPriority priority,
-    NetLogCaptureMode /* capture_mode */) {
-  auto dict = std::make_unique<base::DictionaryValue>();
+base::Value NetLogHttpStreamJobCallback(const NetLogSource& source,
+                                        const GURL* original_url,
+                                        const GURL* url,
+                                        bool expect_spdy,
+                                        bool using_quic,
+                                        RequestPriority priority,
+                                        NetLogCaptureMode /* capture_mode */) {
+  base::DictionaryValue dict;
   if (source.IsValid())
-    source.AddToEventParameters(dict.get());
-  dict->SetString("original_url", original_url->GetOrigin().spec());
-  dict->SetString("url", url->GetOrigin().spec());
-  dict->SetBoolean("expect_spdy", expect_spdy);
-  dict->SetBoolean("using_quic", using_quic);
-  dict->SetString("priority", RequestPriorityToString(priority));
+    source.AddToEventParameters(&dict);
+  dict.SetString("original_url", original_url->GetOrigin().spec());
+  dict.SetString("url", url->GetOrigin().spec());
+  dict.SetBoolean("expect_spdy", expect_spdy);
+  dict.SetBoolean("using_quic", using_quic);
+  dict.SetString("priority", RequestPriorityToString(priority));
   return std::move(dict);
 }
 
 // Returns parameters associated with the Proto (with NPN negotiation) of a HTTP
 // stream.
-std::unique_ptr<base::Value> NetLogHttpStreamProtoCallback(
+base::Value NetLogHttpStreamProtoCallback(
     NextProto negotiated_protocol,
     NetLogCaptureMode /* capture_mode */) {
-  auto dict = std::make_unique<base::DictionaryValue>();
+  base::DictionaryValue dict;
 
-  dict->SetString("proto", NextProtoToString(negotiated_protocol));
+  dict.SetString("proto", NextProtoToString(negotiated_protocol));
   return std::move(dict);
 }
 

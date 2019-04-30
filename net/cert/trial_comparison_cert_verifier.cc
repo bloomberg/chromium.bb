@@ -31,11 +31,10 @@ namespace net {
 
 namespace {
 
-std::unique_ptr<base::Value> TrialVerificationJobResultCallback(
-    bool trial_success,
-    NetLogCaptureMode capture_mode) {
-  std::unique_ptr<base::DictionaryValue> results(new base::DictionaryValue());
-  results->SetKey("trial_success", base::Value(trial_success));
+base::Value TrialVerificationJobResultCallback(bool trial_success,
+                                               NetLogCaptureMode capture_mode) {
+  base::DictionaryValue results;
+  results.SetKey("trial_success", base::Value(trial_success));
   return std::move(results);
 }
 

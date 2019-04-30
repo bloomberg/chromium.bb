@@ -63,9 +63,9 @@ void AddEntries(FileNetLogObserver* logger,
                                   base::TimeTicks::Now(), &callback);
   NetLogEntry base_entry(&base_entry_data,
                          NetLogCaptureMode::IncludeSocketBytes());
-  std::unique_ptr<base::Value> value(base_entry.ToValue());
+  base::Value value = base_entry.ToValue();
   std::string json;
-  base::JSONWriter::Write(*value, &json);
+  base::JSONWriter::Write(value, &json);
   size_t base_entry_size = json.size();
 
   // The maximum value of base::TimeTicks::Now() will be the maximum value of
@@ -105,7 +105,7 @@ struct ParsedNetLog {
 
   // Initializes the ParsedNetLog by parsing a JSON file.
   // Owner for the Value tree.
-  std::unique_ptr<base::Value> container;
+  base::Value container;
 
   // A dictionary for the entire netlog.
   const base::DictionaryValue* root = nullptr;
@@ -127,12 +127,13 @@ struct ParsedNetLog {
   }
 
   base::JSONReader reader;
-  container = reader.ReadToValueDeprecated(input);
-  if (!container) {
+  base::Optional<base::Value> container_optional = reader.Read(input);
+  if (!container_optional) {
     return ::testing::AssertionFailure() << reader.GetErrorMessage();
   }
+  container = std::move(*container_optional);
 
-  if (!container->GetAsDictionary(&root)) {
+  if (!container.GetAsDictionary(&root)) {
     return ::testing::AssertionFailure() << "Not a dictionary";
   }
 

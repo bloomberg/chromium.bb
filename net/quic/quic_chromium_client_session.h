@@ -537,8 +537,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
                                 quic::QuicErrorCode quic_error,
                                 quic::ConnectionCloseBehavior behavior);
 
-  std::unique_ptr<base::Value> GetInfoAsValue(
-      const std::set<HostPortPair>& aliases);
+  base::Value GetInfoAsValue(const std::set<HostPortPair>& aliases);
 
   const NetLogWithSource& net_log() const { return net_log_; }
 

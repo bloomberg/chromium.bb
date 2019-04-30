@@ -17,18 +17,17 @@ namespace net {
 
 namespace {
 
-std::unique_ptr<base::Value> NetLogAddressListCallback(
-    const AddressList* address_list,
-    NetLogCaptureMode capture_mode) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  std::unique_ptr<base::ListValue> list(new base::ListValue());
+base::Value NetLogAddressListCallback(const AddressList* address_list,
+                                      NetLogCaptureMode capture_mode) {
+  base::DictionaryValue dict;
+  base::ListValue list;
 
   for (auto it = address_list->begin(); it != address_list->end(); ++it) {
-    list->AppendString(it->ToString());
+    list.AppendString(it->ToString());
   }
 
-  dict->Set("address_list", std::move(list));
-  dict->SetString("canonical_name", address_list->canonical_name());
+  dict.SetKey("address_list", std::move(list));
+  dict.SetString("canonical_name", address_list->canonical_name());
   return std::move(dict);
 }
 

@@ -36,30 +36,25 @@ RequestPriority ConvertQuicPriorityToRequestPriority(
                          : static_cast<RequestPriority>(HIGHEST - priority);
 }
 
-std::unique_ptr<base::Value> QuicRequestNetLogCallback(
-    quic::QuicStreamId stream_id,
-    const spdy::SpdyHeaderBlock* headers,
-    spdy::SpdyPriority priority,
-    NetLogCaptureMode capture_mode) {
-  std::unique_ptr<base::DictionaryValue> dict(
-      static_cast<base::DictionaryValue*>(
-          SpdyHeaderBlockNetLogCallback(headers, capture_mode).release()));
-  dict->SetInteger("quic_priority", static_cast<int>(priority));
-  dict->SetInteger("quic_stream_id", static_cast<int>(stream_id));
-  return std::move(dict);
+base::Value QuicRequestNetLogCallback(quic::QuicStreamId stream_id,
+                                      const spdy::SpdyHeaderBlock* headers,
+                                      spdy::SpdyPriority priority,
+                                      NetLogCaptureMode capture_mode) {
+  base::Value dict = SpdyHeaderBlockNetLogCallback(headers, capture_mode);
+  DCHECK(dict.is_dict());
+  dict.SetIntKey("quic_priority", static_cast<int>(priority));
+  dict.SetIntKey("quic_stream_id", static_cast<int>(stream_id));
+  return dict;
 }
 
-std::unique_ptr<base::Value> QuicResponseNetLogCallback(
-    quic::QuicStreamId stream_id,
-    bool fin_received,
-    const spdy::SpdyHeaderBlock* headers,
-    NetLogCaptureMode capture_mode) {
-  std::unique_ptr<base::DictionaryValue> dict(
-      static_cast<base::DictionaryValue*>(
-          SpdyHeaderBlockNetLogCallback(headers, capture_mode).release()));
-  dict->SetInteger("quic_stream_id", static_cast<int>(stream_id));
-  dict->SetBoolean("fin", fin_received);
-  return std::move(dict);
+base::Value QuicResponseNetLogCallback(quic::QuicStreamId stream_id,
+                                       bool fin_received,
+                                       const spdy::SpdyHeaderBlock* headers,
+                                       NetLogCaptureMode capture_mode) {
+  base::Value dict = SpdyHeaderBlockNetLogCallback(headers, capture_mode);
+  dict.SetIntKey("quic_stream_id", static_cast<int>(stream_id));
+  dict.SetBoolKey("fin", fin_received);
+  return dict;
 }
 
 quic::QuicTransportVersionVector FilterSupportedAltSvcVersions(

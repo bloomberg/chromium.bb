@@ -31,14 +31,14 @@ namespace net {
 namespace {
 
 // Returns parameters associated with the proxy resolution.
-std::unique_ptr<base::Value> NetLogHttpStreamJobProxyServerResolved(
+base::Value NetLogHttpStreamJobProxyServerResolved(
     const ProxyServer& proxy_server,
     NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  base::DictionaryValue dict;
 
-  dict->SetString("proxy_server", proxy_server.is_valid()
-                                      ? proxy_server.ToPacString()
-                                      : std::string());
+  dict.SetString("proxy_server", proxy_server.is_valid()
+                                     ? proxy_server.ToPacString()
+                                     : std::string());
   return std::move(dict);
 }
 
@@ -48,23 +48,21 @@ std::unique_ptr<base::Value> NetLogHttpStreamJobProxyServerResolved(
 // the main job.
 const int kMaxDelayTimeForMainJobSecs = 3;
 
-std::unique_ptr<base::Value> NetLogJobControllerCallback(
-    const GURL* url,
-    bool is_preconnect,
-    NetLogCaptureMode /* capture_mode */) {
-  auto dict = std::make_unique<base::DictionaryValue>();
-  dict->SetString("url", url->possibly_invalid_spec());
-  dict->SetBoolean("is_preconnect", is_preconnect);
+base::Value NetLogJobControllerCallback(const GURL* url,
+                                        bool is_preconnect,
+                                        NetLogCaptureMode /* capture_mode */) {
+  base::DictionaryValue dict;
+  dict.SetString("url", url->possibly_invalid_spec());
+  dict.SetBoolean("is_preconnect", is_preconnect);
   return std::move(dict);
 }
 
-std::unique_ptr<base::Value> NetLogAltSvcCallback(
-    const AlternativeServiceInfo* alt_svc_info,
-    bool is_broken,
-    NetLogCaptureMode /* capture_mode */) {
-  auto dict = std::make_unique<base::DictionaryValue>();
-  dict->SetString("alt_svc", alt_svc_info->ToString());
-  dict->SetBoolean("is_broken", is_broken);
+base::Value NetLogAltSvcCallback(const AlternativeServiceInfo* alt_svc_info,
+                                 bool is_broken,
+                                 NetLogCaptureMode /* capture_mode */) {
+  base::DictionaryValue dict;
+  dict.SetString("alt_svc", alt_svc_info->ToString());
+  dict.SetBoolean("is_broken", is_broken);
   return std::move(dict);
 }
 

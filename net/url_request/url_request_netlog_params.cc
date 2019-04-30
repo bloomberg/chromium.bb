@@ -13,33 +13,32 @@
 
 namespace net {
 
-std::unique_ptr<base::Value> NetLogURLRequestConstructorCallback(
+base::Value NetLogURLRequestConstructorCallback(
     const GURL* url,
     RequestPriority priority,
     NetworkTrafficAnnotationTag traffic_annotation,
     NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString("url", url->possibly_invalid_spec());
-  dict->SetString("priority", RequestPriorityToString(priority));
-  dict->SetInteger("traffic_annotation",
-                   traffic_annotation.unique_id_hash_code);
+  base::DictionaryValue dict;
+  dict.SetString("url", url->possibly_invalid_spec());
+  dict.SetString("priority", RequestPriorityToString(priority));
+  dict.SetInteger("traffic_annotation", traffic_annotation.unique_id_hash_code);
   return std::move(dict);
 }
 
-std::unique_ptr<base::Value> NetLogURLRequestStartCallback(
+base::Value NetLogURLRequestStartCallback(
     const GURL* url,
     const std::string* method,
     int load_flags,
     PrivacyMode privacy_mode,
     int64_t upload_id,
     NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString("url", url->possibly_invalid_spec());
-  dict->SetString("method", *method);
-  dict->SetInteger("load_flags", load_flags);
-  dict->SetInteger("privacy_mode", privacy_mode == PRIVACY_MODE_ENABLED);
+  base::DictionaryValue dict;
+  dict.SetString("url", url->possibly_invalid_spec());
+  dict.SetString("method", *method);
+  dict.SetInteger("load_flags", load_flags);
+  dict.SetInteger("privacy_mode", privacy_mode == PRIVACY_MODE_ENABLED);
   if (upload_id > -1)
-    dict->SetString("upload_id", base::NumberToString(upload_id));
+    dict.SetString("upload_id", base::NumberToString(upload_id));
   return std::move(dict);
 }
 

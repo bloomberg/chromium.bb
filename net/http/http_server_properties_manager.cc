@@ -73,10 +73,9 @@ void AddAlternativeServiceFieldsToDictionaryValue(
                   NextProtoToString(alternative_service.protocol));
 }
 
-std::unique_ptr<base::Value> NetLogCallback(
-    const base::Value* http_server_properties_dict,
-    NetLogCaptureMode capture_mode) {
-  return http_server_properties_dict->CreateDeepCopy();
+base::Value NetLogCallback(const base::Value* http_server_properties_dict,
+                           NetLogCaptureMode capture_mode) {
+  return http_server_properties_dict->Clone();
 }
 
 // A local or temporary data structure to hold preferences for a server.

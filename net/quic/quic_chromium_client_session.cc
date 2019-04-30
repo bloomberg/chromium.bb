@@ -138,33 +138,33 @@ NetLogParametersCallback NetLogQuicConnectionMigrationTriggerCallback(
   return NetLog::StringCallback("trigger", trigger);
 }
 
-std::unique_ptr<base::Value> NetLogQuicConnectionMigrationFailureCallback(
+base::Value NetLogQuicConnectionMigrationFailureCallback(
     quic::QuicConnectionId connection_id,
     std::string reason,
     NetLogCaptureMode capture_mode) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString("connection_id", connection_id.ToString());
-  dict->SetString("reason", reason);
+  base::DictionaryValue dict;
+  dict.SetString("connection_id", connection_id.ToString());
+  dict.SetString("reason", reason);
   return std::move(dict);
 }
 
-std::unique_ptr<base::Value> NetLogQuicConnectionMigrationSuccessCallback(
+base::Value NetLogQuicConnectionMigrationSuccessCallback(
     quic::QuicConnectionId connection_id,
     NetLogCaptureMode capture_mode) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString("connection_id", connection_id.ToString());
+  base::DictionaryValue dict;
+  dict.SetString("connection_id", connection_id.ToString());
   return std::move(dict);
 }
 
-std::unique_ptr<base::Value> NetLogProbingResultCallback(
+base::Value NetLogProbingResultCallback(
     NetworkChangeNotifier::NetworkHandle network,
     const quic::QuicSocketAddress* peer_address,
     bool is_success,
     NetLogCaptureMode capture_mode) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString("network", base::NumberToString(network));
-  dict->SetString("peer address", peer_address->ToString());
-  dict->SetBoolean("is_success", is_success);
+  base::DictionaryValue dict;
+  dict.SetString("network", base::NumberToString(network));
+  dict.SetString("peer address", peer_address->ToString());
+  dict.SetBoolean("is_success", is_success);
   return std::move(dict);
 }
 
@@ -221,29 +221,29 @@ std::string ConnectionMigrationCauseToString(ConnectionMigrationCause cause) {
   return "InvalidCause";
 }
 
-std::unique_ptr<base::Value> NetLogQuicClientSessionCallback(
+base::Value NetLogQuicClientSessionCallback(
     const quic::QuicServerId* server_id,
     int cert_verify_flags,
     bool require_confirmation,
     NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString("host", server_id->host());
-  dict->SetInteger("port", server_id->port());
-  dict->SetBoolean("privacy_mode", server_id->privacy_mode_enabled());
-  dict->SetBoolean("require_confirmation", require_confirmation);
-  dict->SetInteger("cert_verify_flags", cert_verify_flags);
+  base::DictionaryValue dict;
+  dict.SetString("host", server_id->host());
+  dict.SetInteger("port", server_id->port());
+  dict.SetBoolean("privacy_mode", server_id->privacy_mode_enabled());
+  dict.SetBoolean("require_confirmation", require_confirmation);
+  dict.SetInteger("cert_verify_flags", cert_verify_flags);
   return std::move(dict);
 }
 
-std::unique_ptr<base::Value> NetLogQuicPushPromiseReceivedCallback(
+base::Value NetLogQuicPushPromiseReceivedCallback(
     const spdy::SpdyHeaderBlock* headers,
     spdy::SpdyStreamId stream_id,
     spdy::SpdyStreamId promised_stream_id,
     NetLogCaptureMode capture_mode) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->Set("headers", ElideSpdyHeaderBlockForNetLog(*headers, capture_mode));
-  dict->SetInteger("id", stream_id);
-  dict->SetInteger("promised_stream_id", promised_stream_id);
+  base::DictionaryValue dict;
+  dict.SetKey("headers", ElideSpdyHeaderBlockForNetLog(*headers, capture_mode));
+  dict.SetInteger("id", stream_id);
+  dict.SetInteger("promised_stream_id", promised_stream_id);
   return std::move(dict);
 }
 
@@ -2740,34 +2740,34 @@ void QuicChromiumClientSession::HistogramAndLogMigrationSuccess(
       base::Bind(&NetLogQuicConnectionMigrationSuccessCallback, connection_id));
 }
 
-std::unique_ptr<base::Value> QuicChromiumClientSession::GetInfoAsValue(
+base::Value QuicChromiumClientSession::GetInfoAsValue(
     const std::set<HostPortPair>& aliases) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString("version",
-                  QuicVersionToString(connection()->transport_version()));
-  dict->SetInteger("open_streams", GetNumOpenOutgoingStreams());
+  base::DictionaryValue dict;
+  dict.SetString("version",
+                 QuicVersionToString(connection()->transport_version()));
+  dict.SetInteger("open_streams", GetNumOpenOutgoingStreams());
   std::unique_ptr<base::ListValue> stream_list(new base::ListValue());
   for (DynamicStreamMap::const_iterator it = dynamic_streams().begin();
        it != dynamic_streams().end(); ++it) {
     stream_list->AppendString(base::NumberToString(it->second->id()));
   }
-  dict->Set("active_streams", std::move(stream_list));
+  dict.Set("active_streams", std::move(stream_list));
 
-  dict->SetInteger("total_streams", num_total_streams_);
-  dict->SetString("peer_address", peer_address().ToString());
-  dict->SetString("connection_id", connection_id().ToString());
-  dict->SetBoolean("connected", connection()->connected());
+  dict.SetInteger("total_streams", num_total_streams_);
+  dict.SetString("peer_address", peer_address().ToString());
+  dict.SetString("connection_id", connection_id().ToString());
+  dict.SetBoolean("connected", connection()->connected());
   const quic::QuicConnectionStats& stats = connection()->GetStats();
-  dict->SetInteger("packets_sent", stats.packets_sent);
-  dict->SetInteger("packets_received", stats.packets_received);
-  dict->SetInteger("packets_lost", stats.packets_lost);
+  dict.SetInteger("packets_sent", stats.packets_sent);
+  dict.SetInteger("packets_received", stats.packets_received);
+  dict.SetInteger("packets_lost", stats.packets_lost);
   SSLInfo ssl_info;
 
   std::unique_ptr<base::ListValue> alias_list(new base::ListValue());
   for (const auto& alias : aliases) {
     alias_list->AppendString(alias.ToString());
   }
-  dict->Set("aliases", std::move(alias_list));
+  dict.Set("aliases", std::move(alias_list));
 
   return std::move(dict);
 }

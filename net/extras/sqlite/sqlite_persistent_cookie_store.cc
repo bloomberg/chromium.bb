@@ -45,14 +45,13 @@ using base::Time;
 
 namespace {
 
-std::unique_ptr<base::Value> CookieKeyedLoadNetLogCallback(
-    const std::string& key,
-    net::NetLogCaptureMode capture_mode) {
+base::Value CookieKeyedLoadNetLogCallback(const std::string& key,
+                                          net::NetLogCaptureMode capture_mode) {
   if (!capture_mode.include_cookies_and_credentials())
-    return nullptr;
-  auto dict = std::make_unique<base::DictionaryValue>();
-  dict->SetString("key", key);
-  return dict;
+    return base::Value();
+  base::DictionaryValue dict;
+  dict.SetString("key", key);
+  return std::move(dict);
 }
 
 // Used to populate a histogram for problems when loading cookies.

@@ -122,9 +122,8 @@ class NET_EXPORT_PRIVATE PacFileDecider {
     // Returns a Value representing the PacSource.  |effective_pac_url| must
     // be non-NULL and point to the URL derived from information contained in
     // |this|, if Type is not WPAD_DHCP.
-    std::unique_ptr<base::Value> NetLogCallback(
-        const GURL* effective_pac_url,
-        NetLogCaptureMode capture_mode) const;
+    base::Value NetLogCallback(const GURL* effective_pac_url,
+                               NetLogCaptureMode capture_mode) const;
 
     Type type;
     GURL url;  // Empty unless |type == PAC_SOURCE_CUSTOM|.

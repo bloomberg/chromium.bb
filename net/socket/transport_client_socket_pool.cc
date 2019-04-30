@@ -38,13 +38,13 @@ namespace {
 // after a certain timeout has passed without receiving an ACK.
 bool g_connect_backup_jobs_enabled = true;
 
-std::unique_ptr<base::Value> NetLogCreateConnectJobCallback(
+base::Value NetLogCreateConnectJobCallback(
     bool backup_job,
     const ClientSocketPool::GroupId* group_id,
     net::NetLogCaptureMode capture_mode) {
-  auto dict = std::make_unique<base::DictionaryValue>();
-  dict->SetBoolean("backup_job", backup_job);
-  dict->SetString("group_id", group_id->ToString());
+  base::DictionaryValue dict;
+  dict.SetBoolean("backup_job", backup_job);
+  dict.SetString("group_id", group_id->ToString());
   return std::move(dict);
 }
 

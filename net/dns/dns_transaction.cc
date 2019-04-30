@@ -107,13 +107,12 @@ bool IsIPLiteral(const std::string& hostname) {
   return ip.AssignFromIPLiteral(hostname);
 }
 
-std::unique_ptr<base::Value> NetLogStartCallback(
-    const std::string* hostname,
-    uint16_t qtype,
-    NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString("hostname", *hostname);
-  dict->SetInteger("query_type", qtype);
+base::Value NetLogStartCallback(const std::string* hostname,
+                                uint16_t qtype,
+                                NetLogCaptureMode /* capture_mode */) {
+  base::DictionaryValue dict;
+  dict.SetString("hostname", *hostname);
+  dict.SetInteger("query_type", qtype);
   return std::move(dict);
 }
 
@@ -152,14 +151,13 @@ class DnsAttempt {
   // Returns a Value representing the received response, along with a reference
   // to the NetLog source source of the UDP socket used.  The request must have
   // completed before this is called.
-  std::unique_ptr<base::Value> NetLogResponseCallback(
-      NetLogCaptureMode capture_mode) const {
+  base::Value NetLogResponseCallback(NetLogCaptureMode capture_mode) const {
     DCHECK(GetResponse()->IsValid());
 
-    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-    dict->SetInteger("rcode", GetResponse()->rcode());
-    dict->SetInteger("answer_count", GetResponse()->answer_count());
-    GetSocketNetLog().source().AddToEventParameters(dict.get());
+    base::DictionaryValue dict;
+    dict.SetInteger("rcode", GetResponse()->rcode());
+    dict.SetInteger("answer_count", GetResponse()->answer_count());
+    GetSocketNetLog().source().AddToEventParameters(&dict);
     return std::move(dict);
   }
 

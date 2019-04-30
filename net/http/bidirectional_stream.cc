@@ -36,25 +36,23 @@ namespace net {
 
 namespace {
 
-std::unique_ptr<base::Value> NetLogHeadersCallback(
-    const spdy::SpdyHeaderBlock* headers,
-    NetLogCaptureMode capture_mode) {
-  auto dict = std::make_unique<base::DictionaryValue>();
-  dict->Set("headers", ElideSpdyHeaderBlockForNetLog(*headers, capture_mode));
+base::Value NetLogHeadersCallback(const spdy::SpdyHeaderBlock* headers,
+                                  NetLogCaptureMode capture_mode) {
+  base::DictionaryValue dict;
+  dict.SetKey("headers", ElideSpdyHeaderBlockForNetLog(*headers, capture_mode));
   return std::move(dict);
 }
 
-std::unique_ptr<base::Value> NetLogCallback(const GURL* url,
-                                            const std::string* method,
-                                            const HttpRequestHeaders* headers,
-                                            NetLogCaptureMode capture_mode) {
-  auto dict = std::make_unique<base::DictionaryValue>();
-  dict->SetString("url", url->possibly_invalid_spec());
-  dict->SetString("method", *method);
+base::Value NetLogCallback(const GURL* url,
+                           const std::string* method,
+                           const HttpRequestHeaders* headers,
+                           NetLogCaptureMode capture_mode) {
+  base::DictionaryValue dict;
+  dict.SetString("url", url->possibly_invalid_spec());
+  dict.SetString("method", *method);
   std::string empty;
-  std::unique_ptr<base::Value> headers_param(
-      headers->NetLogCallback(&empty, capture_mode));
-  dict->Set("headers", std::move(headers_param));
+  base::Value headers_param(headers->NetLogCallback(&empty, capture_mode));
+  dict.SetKey("headers", std::move(headers_param));
   return std::move(dict);
 }
 

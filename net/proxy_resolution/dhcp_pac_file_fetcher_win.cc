@@ -209,11 +209,10 @@ void SetInt(base::StringPiece key, int value, base::DictionaryValue* dict) {
   dict->SetKey(key, base::Value(value));
 }
 
-std::unique_ptr<base::Value> NetLogGetAdaptersDoneCallback(
+base::Value NetLogGetAdaptersDoneCallback(
     DhcpAdapterNamesLoggingInfo* info,
     NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> result =
-      std::make_unique<base::DictionaryValue>();
+  base::DictionaryValue result;
 
   // Add information on each of the adapters enumerated (including those that
   // were subsequently skipped).
@@ -235,38 +234,36 @@ std::unique_ptr<base::Value> NetLogGetAdaptersDoneCallback(
 
     adapters_value.GetList().push_back(std::move(adapter_value));
   }
-  result->SetKey("adapters", std::move(adapters_value));
+  result.SetKey("adapters", std::move(adapters_value));
 
   SetInt("origin_to_worker_thread_hop_dt",
          (info->worker_thread_start_time - info->origin_thread_start_time)
              .InMilliseconds(),
-         result.get());
+         &result);
   SetInt("worker_to_origin_thread_hop_dt",
          (info->origin_thread_end_time - info->worker_thread_end_time)
              .InMilliseconds(),
-         result.get());
+         &result);
   SetInt("worker_dt",
          (info->worker_thread_end_time - info->worker_thread_start_time)
              .InMilliseconds(),
-         result.get());
+         &result);
 
   if (info->error != ERROR_SUCCESS)
-    SetInt("error", info->error, result.get());
+    SetInt("error", info->error, &result);
 
-  return result;
+  return std::move(result);
 }
 
-std::unique_ptr<base::Value> NetLogFetcherDoneCallback(
-    int fetcher_index,
-    int net_error,
-    NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> result =
-      std::make_unique<base::DictionaryValue>();
+base::Value NetLogFetcherDoneCallback(int fetcher_index,
+                                      int net_error,
+                                      NetLogCaptureMode /* capture_mode */) {
+  base::DictionaryValue result;
 
-  result->SetKey("fetcher_index", base::Value(fetcher_index));
-  result->SetKey("net_error", base::Value(net_error));
+  result.SetKey("fetcher_index", base::Value(fetcher_index));
+  result.SetKey("net_error", base::Value(net_error));
 
-  return result;
+  return std::move(result);
 }
 
 }  // namespace

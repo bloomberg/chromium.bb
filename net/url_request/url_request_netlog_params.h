@@ -26,14 +26,14 @@ namespace net {
 class NetLogCaptureMode;
 
 // Returns a Value containing NetLog parameters for constructing a URLRequest.
-NET_EXPORT std::unique_ptr<base::Value> NetLogURLRequestConstructorCallback(
+NET_EXPORT base::Value NetLogURLRequestConstructorCallback(
     const GURL* url,
     RequestPriority priority,
     NetworkTrafficAnnotationTag traffic_annotation,
     NetLogCaptureMode /* capture_mode */);
 
 // Returns a Value containing NetLog parameters for starting a URLRequest.
-NET_EXPORT std::unique_ptr<base::Value> NetLogURLRequestStartCallback(
+NET_EXPORT base::Value NetLogURLRequestStartCallback(
     const GURL* url,
     const std::string* method,
     int load_flags,

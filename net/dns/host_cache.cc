@@ -295,10 +295,9 @@ void HostCache::Entry::GetStaleness(base::TimeTicks now,
   out->stale_hits = stale_hits_;
 }
 
-std::unique_ptr<base::Value> HostCache::Entry::NetLogCallback(
+base::Value HostCache::Entry::NetLogCallback(
     NetLogCaptureMode capture_mode) const {
-  return std::make_unique<base::Value>(
-      GetAsValue(false /* include_staleness */));
+  return GetAsValue(false /* include_staleness */);
 }
 
 base::DictionaryValue HostCache::Entry::GetAsValue(

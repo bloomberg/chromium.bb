@@ -1330,21 +1330,21 @@ bool HttpResponseHeaders::GetContentRangeFor206(
       instance_length);
 }
 
-std::unique_ptr<base::Value> HttpResponseHeaders::NetLogCallback(
+base::Value HttpResponseHeaders::NetLogCallback(
     NetLogCaptureMode capture_mode) const {
-  auto dict = std::make_unique<base::DictionaryValue>();
-  auto headers = std::make_unique<base::ListValue>();
-  headers->GetList().push_back(NetLogStringValue(GetStatusLine()));
+  base::DictionaryValue dict;
+  base::ListValue headers;
+  headers.GetList().push_back(NetLogStringValue(GetStatusLine()));
   size_t iterator = 0;
   std::string name;
   std::string value;
   while (EnumerateHeaderLines(&iterator, &name, &value)) {
     std::string log_value =
         ElideHeaderValueForNetLog(capture_mode, name, value);
-    headers->GetList().push_back(
+    headers.GetList().push_back(
         NetLogStringValue(base::StrCat({name, ": ", log_value})));
   }
-  dict->Set("headers", std::move(headers));
+  dict.SetKey("headers", std::move(headers));
   return std::move(dict);
 }
 

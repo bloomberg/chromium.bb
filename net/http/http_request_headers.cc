@@ -184,11 +184,11 @@ std::string HttpRequestHeaders::ToString() const {
   return output;
 }
 
-std::unique_ptr<base::Value> HttpRequestHeaders::NetLogCallback(
+base::Value HttpRequestHeaders::NetLogCallback(
     const std::string* request_line,
     NetLogCaptureMode capture_mode) const {
-  auto dict = std::make_unique<base::DictionaryValue>();
-  dict->SetKey("line", NetLogStringValue(*request_line));
+  base::DictionaryValue dict;
+  dict.SetKey("line", NetLogStringValue(*request_line));
   auto headers = std::make_unique<base::ListValue>();
   for (auto it = headers_.begin(); it != headers_.end(); ++it) {
     std::string log_value =
@@ -196,7 +196,7 @@ std::unique_ptr<base::Value> HttpRequestHeaders::NetLogCallback(
     headers->GetList().push_back(
         NetLogStringValue(base::StrCat({it->key, ": ", log_value})));
   }
-  dict->Set("headers", std::move(headers));
+  dict.Set("headers", std::move(headers));
   return std::move(dict);
 }
 

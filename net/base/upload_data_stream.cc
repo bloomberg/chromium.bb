@@ -15,25 +15,23 @@ namespace net {
 
 namespace {
 
-std::unique_ptr<base::Value> NetLogInitEndInfoCallback(
-    int result,
-    int total_size,
-    bool is_chunked,
-    NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+base::Value NetLogInitEndInfoCallback(int result,
+                                      int total_size,
+                                      bool is_chunked,
+                                      NetLogCaptureMode /* capture_mode */) {
+  base::DictionaryValue dict;
 
-  dict->SetInteger("net_error", result);
-  dict->SetInteger("total_size", total_size);
-  dict->SetBoolean("is_chunked", is_chunked);
+  dict.SetInteger("net_error", result);
+  dict.SetInteger("total_size", total_size);
+  dict.SetBoolean("is_chunked", is_chunked);
   return std::move(dict);
 }
 
-std::unique_ptr<base::Value> NetLogReadInfoCallback(
-    int current_position,
-    NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+base::Value NetLogReadInfoCallback(int current_position,
+                                   NetLogCaptureMode /* capture_mode */) {
+  base::DictionaryValue dict;
 
-  dict->SetInteger("current_position", current_position);
+  dict.SetInteger("current_position", current_position);
   return std::move(dict);
 }
 

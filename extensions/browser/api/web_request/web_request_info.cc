@@ -78,12 +78,11 @@ class FileUploadDataSource : public UploadDataSource {
   DISALLOW_COPY_AND_ASSIGN(FileUploadDataSource);
 };
 
-std::unique_ptr<base::Value> NetLogExtensionIdCallback(
-    const std::string& extension_id,
-    net::NetLogCaptureMode capture_mode) {
-  auto params = std::make_unique<base::DictionaryValue>();
-  params->SetString("extension_id", extension_id);
-  return params;
+base::Value NetLogExtensionIdCallback(const std::string& extension_id,
+                                      net::NetLogCaptureMode capture_mode) {
+  base::DictionaryValue params;
+  params.SetString("extension_id", extension_id);
+  return std::move(params);
 }
 
 // Implements Logger using NetLog, mirroring the logging facilities used prior

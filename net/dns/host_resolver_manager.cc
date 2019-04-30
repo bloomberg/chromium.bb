@@ -271,19 +271,18 @@ bool HaveOnlyLoopbackAddresses() {
 }
 
 // Creates NetLog parameters when the resolve failed.
-std::unique_ptr<base::Value> NetLogProcTaskFailedCallback(
-    uint32_t attempt_number,
-    int net_error,
-    int os_error,
-    NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+base::Value NetLogProcTaskFailedCallback(uint32_t attempt_number,
+                                         int net_error,
+                                         int os_error,
+                                         NetLogCaptureMode /* capture_mode */) {
+  base::DictionaryValue dict;
   if (attempt_number)
-    dict->SetInteger("attempt_number", attempt_number);
+    dict.SetInteger("attempt_number", attempt_number);
 
-  dict->SetInteger("net_error", net_error);
+  dict.SetInteger("net_error", net_error);
 
   if (os_error) {
-    dict->SetInteger("os_error", os_error);
+    dict.SetInteger("os_error", os_error);
 #if defined(OS_WIN)
     // Map the error code to a human-readable string.
     LPWSTR error_string = nullptr;
@@ -294,10 +293,10 @@ std::unique_ptr<base::Value> NetLogProcTaskFailedCallback(
                   (LPWSTR)&error_string,
                   0,         // Buffer size.
                   nullptr);  // Arguments (unused).
-    dict->SetString("os_error_string", base::WideToUTF8(error_string));
+    dict.SetString("os_error_string", base::WideToUTF8(error_string));
     LocalFree(error_string);
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
-    dict->SetString("os_error_string", gai_strerror(os_error));
+    dict.SetString("os_error_string", gai_strerror(os_error));
 #endif
   }
 
@@ -305,71 +304,66 @@ std::unique_ptr<base::Value> NetLogProcTaskFailedCallback(
 }
 
 // Creates NetLog parameters when the DnsTask failed.
-std::unique_ptr<base::Value> NetLogDnsTaskFailedCallback(
+base::Value NetLogDnsTaskFailedCallback(
     int net_error,
     int dns_error,
     NetLogParametersCallback results_callback,
     NetLogCaptureMode capture_mode) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetInteger("net_error", net_error);
+  base::DictionaryValue dict;
+  dict.SetInteger("net_error", net_error);
   if (dns_error)
-    dict->SetInteger("dns_error", dns_error);
+    dict.SetInteger("dns_error", dns_error);
   if (results_callback)
-    dict->Set("resolve_results", results_callback.Run(capture_mode));
+    dict.SetKey("resolve_results", results_callback.Run(capture_mode));
   return std::move(dict);
 }
 
 // Creates NetLog parameters containing the information of the request. Use
 // NetLogRequestInfoCallback if the request is specified via RequestInfo.
-std::unique_ptr<base::Value> NetLogRequestCallback(
-    const HostPortPair& host,
-    NetLogCaptureMode /* capture_mode */) {
-  auto dict = std::make_unique<base::DictionaryValue>();
+base::Value NetLogRequestCallback(const HostPortPair& host,
+                                  NetLogCaptureMode /* capture_mode */) {
+  base::DictionaryValue dict;
 
-  dict->SetString("host", host.ToString());
-  dict->SetInteger("address_family",
-                   static_cast<int>(ADDRESS_FAMILY_UNSPECIFIED));
-  dict->SetBoolean("allow_cached_response", true);
-  dict->SetBoolean("is_speculative", false);
+  dict.SetString("host", host.ToString());
+  dict.SetInteger("address_family",
+                  static_cast<int>(ADDRESS_FAMILY_UNSPECIFIED));
+  dict.SetBoolean("allow_cached_response", true);
+  dict.SetBoolean("is_speculative", false);
   return std::move(dict);
 }
 
 // Creates NetLog parameters for the creation of a HostResolverManager::Job.
-std::unique_ptr<base::Value> NetLogJobCreationCallback(
-    const NetLogSource& source,
-    const std::string* host,
-    NetLogCaptureMode /* capture_mode */) {
-  auto dict = std::make_unique<base::DictionaryValue>();
-  source.AddToEventParameters(dict.get());
-  dict->SetString("host", *host);
+base::Value NetLogJobCreationCallback(const NetLogSource& source,
+                                      const std::string* host,
+                                      NetLogCaptureMode /* capture_mode */) {
+  base::DictionaryValue dict;
+  source.AddToEventParameters(&dict);
+  dict.SetString("host", *host);
   return std::move(dict);
 }
 
 // Creates NetLog parameters for HOST_RESOLVER_IMPL_JOB_ATTACH/DETACH events.
-std::unique_ptr<base::Value> NetLogJobAttachCallback(
-    const NetLogSource& source,
-    RequestPriority priority,
-    NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  source.AddToEventParameters(dict.get());
-  dict->SetString("priority", RequestPriorityToString(priority));
+base::Value NetLogJobAttachCallback(const NetLogSource& source,
+                                    RequestPriority priority,
+                                    NetLogCaptureMode /* capture_mode */) {
+  base::DictionaryValue dict;
+  source.AddToEventParameters(&dict);
+  dict.SetString("priority", RequestPriorityToString(priority));
   return std::move(dict);
 }
 
 // Creates NetLog parameters for the DNS_CONFIG_CHANGED event.
-std::unique_ptr<base::Value> NetLogDnsConfigCallback(
-    const DnsConfig* config,
-    NetLogCaptureMode /* capture_mode */) {
-  return config->ToValue();
+base::Value NetLogDnsConfigCallback(const DnsConfig* config,
+                                    NetLogCaptureMode /* capture_mode */) {
+  return base::Value::FromUniquePtrValue(config->ToValue());
 }
 
-std::unique_ptr<base::Value> NetLogIPv6AvailableCallback(
-    bool ipv6_available,
-    bool cached,
-    NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetBoolean("ipv6_available", ipv6_available);
-  dict->SetBoolean("cached", cached);
+base::Value NetLogIPv6AvailableCallback(bool ipv6_available,
+                                        bool cached,
+                                        NetLogCaptureMode /* capture_mode */) {
+  base::DictionaryValue dict;
+  dict.SetBoolean("ipv6_available", ipv6_available);
+  dict.SetBoolean("cached", cached);
   return std::move(dict);
 }
 

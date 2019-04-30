@@ -130,9 +130,8 @@ bool RequestCreatedBefore(const URLRequest* request1,
 
 // Returns a Value representing the state of a pre-existing URLRequest when
 // net-internals was opened.
-std::unique_ptr<base::Value> GetRequestStateAsValue(
-    const net::URLRequest* request,
-    NetLogCaptureMode capture_mode) {
+base::Value GetRequestStateAsValue(const net::URLRequest* request,
+                                   NetLogCaptureMode capture_mode) {
   return request->GetStateAsValue();
 }
 
@@ -147,7 +146,7 @@ std::unique_ptr<base::DictionaryValue> GetNetConstants() {
 
   // Add a dictionary with information on the relationship between event type
   // enums and their symbolic names.
-  constants_dict->Set("logEventTypes", NetLog::GetEventTypesAsValue());
+  constants_dict->SetKey("logEventTypes", NetLog::GetEventTypesAsValue());
 
   // Add a dictionary with information about the relationship between CertStatus
   // flags and their symbolic names.
@@ -245,7 +244,7 @@ std::unique_ptr<base::DictionaryValue> GetNetConstants() {
 
   // Information about the relationship between source type enums and
   // their symbolic names.
-  constants_dict->Set("logSourceType", NetLog::GetSourceTypesAsValue());
+  constants_dict->SetKey("logSourceType", NetLog::GetSourceTypesAsValue());
 
   // TODO(eroman): This is here for compatibility in loading new log files with
   // older builds of Chrome. Safe to remove this once M45 is on the stable

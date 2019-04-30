@@ -50,11 +50,12 @@ class NET_EXPORT NetLogEntry {
 
   // Serializes the specified event to a Value.  The Value also includes the
   // current time.  Takes in a time to allow back-dating entries.
-  std::unique_ptr<base::Value> ToValue() const;
+  base::Value ToValue() const;
 
-  // Returns the parameters as a Value.  Returns nullptr if there are no
+  // Returns the parameters as a Value.  Returns a none value if there are no
   // parameters.
-  std::unique_ptr<base::Value> ParametersToValue() const;
+  // TODO(eroman): Make this base::Optional instead?
+  base::Value ParametersToValue() const;
 
  private:
   const NetLogEntryData* const data_;

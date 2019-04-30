@@ -165,14 +165,14 @@ class NET_EXPORT NetLog {
 
   // Returns a dictionary that maps event type symbolic names to their enum
   // values.
-  static std::unique_ptr<base::Value> GetEventTypesAsValue();
+  static base::Value GetEventTypesAsValue();
 
   // Returns a C-String symbolic name for |source_type|.
   static const char* SourceTypeToString(NetLogSourceType source_type);
 
   // Returns a dictionary that maps source type symbolic names to their enum
   // values.
-  static std::unique_ptr<base::Value> GetSourceTypesAsValue();
+  static base::Value GetSourceTypesAsValue();
 
   // Returns a C-String symbolic name for |event_phase|.
   static const char* EventPhaseToString(NetLogEventPhase event_phase);

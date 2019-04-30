@@ -498,7 +498,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
 
   // Retrieves information on the current state of the SPDY session as a
   // Value.
-  std::unique_ptr<base::Value> GetInfoAsValue() const;
+  base::Value GetInfoAsValue() const;
 
   // Indicates whether the session is being reused after having successfully
   // used to send/receive data in the past or if the underlying socket was idle

@@ -360,9 +360,8 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
                                                 const GroupId& group_id);
 
   // Utility method to log a GroupId with a NetLog event.
-  static std::unique_ptr<base::Value> NetLogGroupIdCallback(
-      const GroupId* group_id,
-      NetLogCaptureMode capture_mode);
+  static base::Value NetLogGroupIdCallback(const GroupId* group_id,
+                                           NetLogCaptureMode capture_mode);
 
   static std::unique_ptr<ConnectJob> CreateConnectJob(
       GroupId group_id,

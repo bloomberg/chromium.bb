@@ -2021,8 +2021,8 @@ class CountingObserver : public net::NetLog::ThreadSafeObserver {
 
   void OnAddEntry(const NetLogEntry& entry) override {
     ++count_;
-    std::unique_ptr<base::Value> value = entry.ParametersToValue();
-    if (value && value->is_dict())
+    base::Value value = entry.ParametersToValue();
+    if (!value.is_none() && value.is_dict())
       dict_count_++;
   }
 

@@ -83,28 +83,27 @@ class MultiThreadedCertVerifierScopedAllowBaseSyncPrimitives
 
 namespace {
 
-std::unique_ptr<base::Value> CertVerifyResultCallback(
-    const CertVerifyResult& verify_result,
-    NetLogCaptureMode capture_mode) {
-  std::unique_ptr<base::DictionaryValue> results(new base::DictionaryValue());
-  results->SetBoolean("has_md5", verify_result.has_md5);
-  results->SetBoolean("has_md2", verify_result.has_md2);
-  results->SetBoolean("has_md4", verify_result.has_md4);
-  results->SetBoolean("is_issued_by_known_root",
-                      verify_result.is_issued_by_known_root);
-  results->SetBoolean("is_issued_by_additional_trust_anchor",
-                      verify_result.is_issued_by_additional_trust_anchor);
-  results->SetInteger("cert_status", verify_result.cert_status);
-  results->Set("verified_cert",
-               NetLogX509CertificateCallback(verify_result.verified_cert.get(),
-                                             capture_mode));
+base::Value CertVerifyResultCallback(const CertVerifyResult& verify_result,
+                                     NetLogCaptureMode capture_mode) {
+  base::DictionaryValue results;
+  results.SetBoolean("has_md5", verify_result.has_md5);
+  results.SetBoolean("has_md2", verify_result.has_md2);
+  results.SetBoolean("has_md4", verify_result.has_md4);
+  results.SetBoolean("is_issued_by_known_root",
+                     verify_result.is_issued_by_known_root);
+  results.SetBoolean("is_issued_by_additional_trust_anchor",
+                     verify_result.is_issued_by_additional_trust_anchor);
+  results.SetInteger("cert_status", verify_result.cert_status);
+  results.SetKey("verified_cert",
+                 NetLogX509CertificateCallback(
+                     verify_result.verified_cert.get(), capture_mode));
 
   std::unique_ptr<base::ListValue> hashes(new base::ListValue());
   for (auto it = verify_result.public_key_hashes.begin();
        it != verify_result.public_key_hashes.end(); ++it) {
     hashes->AppendString(it->ToString());
   }
-  results->Set("public_key_hashes", std::move(hashes));
+  results.Set("public_key_hashes", std::move(hashes));
 
   return std::move(results);
 }

@@ -36,12 +36,10 @@ namespace net {
 namespace {
 
 // Callback for TYPE_URL_REQUEST_FILTERS_SET net-internals event.
-std::unique_ptr<base::Value> SourceStreamSetCallback(
-    SourceStream* source_stream,
-    NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> event_params(
-      new base::DictionaryValue());
-  event_params->SetString("filters", source_stream->Description());
+base::Value SourceStreamSetCallback(SourceStream* source_stream,
+                                    NetLogCaptureMode /* capture_mode */) {
+  base::DictionaryValue event_params;
+  event_params.SetString("filters", source_stream->Description());
   return std::move(event_params);
 }
 

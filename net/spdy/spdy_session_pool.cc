@@ -419,7 +419,7 @@ std::unique_ptr<base::Value> SpdySessionPool::SpdySessionPoolInfoToValue()
     const SpdySessionKey& key = it->first;
     const SpdySessionKey& session_key = it->second->spdy_session_key();
     if (key == session_key)
-      list->Append(it->second->GetInfoAsValue());
+      list->GetList().push_back(it->second->GetInfoAsValue());
   }
   return std::move(list);
 }

@@ -12,38 +12,33 @@
 
 namespace net {
 
-std::unique_ptr<base::Value> NetLogEntry::ToValue() const {
-  std::unique_ptr<base::DictionaryValue> entry_dict(
-      new base::DictionaryValue());
+base::Value NetLogEntry::ToValue() const {
+  base::DictionaryValue entry_dict;
 
-  entry_dict->SetString("time", NetLog::TickCountToString(data_->time));
+  entry_dict.SetString("time", NetLog::TickCountToString(data_->time));
 
   // Set the entry source.
-  std::unique_ptr<base::DictionaryValue> source_dict(
-      new base::DictionaryValue());
-  source_dict->SetInteger("id", data_->source.id);
-  source_dict->SetInteger("type", static_cast<int>(data_->source.type));
-  entry_dict->Set("source", std::move(source_dict));
+  base::DictionaryValue source_dict;
+  source_dict.SetInteger("id", data_->source.id);
+  source_dict.SetInteger("type", static_cast<int>(data_->source.type));
+  entry_dict.SetKey("source", std::move(source_dict));
 
   // Set the event info.
-  entry_dict->SetInteger("type", static_cast<int>(data_->type));
-  entry_dict->SetInteger("phase", static_cast<int>(data_->phase));
+  entry_dict.SetInteger("type", static_cast<int>(data_->type));
+  entry_dict.SetInteger("phase", static_cast<int>(data_->phase));
 
   // Set the event-specific parameters.
   if (data_->parameters_callback) {
-    std::unique_ptr<base::Value> value(
-        data_->parameters_callback->Run(capture_mode_));
-    if (value)
-      entry_dict->Set("params", std::move(value));
+    entry_dict.SetKey("params", data_->parameters_callback->Run(capture_mode_));
   }
 
   return std::move(entry_dict);
 }
 
-std::unique_ptr<base::Value> NetLogEntry::ParametersToValue() const {
+base::Value NetLogEntry::ParametersToValue() const {
   if (data_->parameters_callback)
     return data_->parameters_callback->Run(capture_mode_);
-  return nullptr;
+  return base::Value();
 }
 
 NetLogEntryData::NetLogEntryData(

@@ -219,8 +219,7 @@ class NET_EXPORT HostCache {
                       int network_changes,
                       EntryStaleness* out) const;
 
-    std::unique_ptr<base::Value> NetLogCallback(
-        NetLogCaptureMode capture_mode) const;
+    base::Value NetLogCallback(NetLogCaptureMode capture_mode) const;
     base::DictionaryValue GetAsValue(bool include_staleness) const;
 
     // The resolve results for this entry.

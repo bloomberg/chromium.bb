@@ -15,28 +15,27 @@ namespace net {
 
 namespace {
 
-std::unique_ptr<base::Value> NetLogUDPDataTranferCallback(
-    int byte_count,
-    const char* bytes,
-    const IPEndPoint* address,
-    NetLogCaptureMode capture_mode) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetInteger("byte_count", byte_count);
+base::Value NetLogUDPDataTranferCallback(int byte_count,
+                                         const char* bytes,
+                                         const IPEndPoint* address,
+                                         NetLogCaptureMode capture_mode) {
+  base::DictionaryValue dict;
+  dict.SetInteger("byte_count", byte_count);
   if (capture_mode.include_socket_bytes())
-    dict->SetKey("bytes", NetLogBinaryValue(bytes, byte_count));
+    dict.SetKey("bytes", NetLogBinaryValue(bytes, byte_count));
   if (address)
-    dict->SetString("address", address->ToString());
+    dict.SetString("address", address->ToString());
   return std::move(dict);
 }
 
-std::unique_ptr<base::Value> NetLogUDPConnectCallback(
+base::Value NetLogUDPConnectCallback(
     const IPEndPoint* address,
     NetworkChangeNotifier::NetworkHandle network,
     NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString("address", address->ToString());
+  base::DictionaryValue dict;
+  dict.SetString("address", address->ToString());
   if (network != NetworkChangeNotifier::kInvalidNetworkHandle)
-    dict->SetInteger("bound_to_network", network);
+    dict.SetInteger("bound_to_network", network);
   return std::move(dict);
 }
 

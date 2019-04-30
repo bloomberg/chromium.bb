@@ -44,15 +44,13 @@ int CaptureModeToInt(NetLogCaptureMode capture_mode) {
   return -1;
 }
 
-std::unique_ptr<base::Value> CaptureModeToValue(
-    NetLogCaptureMode capture_mode) {
-  return std::make_unique<base::Value>(CaptureModeToInt(capture_mode));
+base::Value CaptureModeToValue(NetLogCaptureMode capture_mode) {
+  return base::Value(CaptureModeToInt(capture_mode));
 }
 
-std::unique_ptr<base::Value> NetCaptureModeCallback(
-    NetLogCaptureMode capture_mode) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->Set("capture_mode", CaptureModeToValue(capture_mode));
+base::Value NetCaptureModeCallback(NetLogCaptureMode capture_mode) {
+  base::DictionaryValue dict;
+  dict.SetKey("capture_mode", CaptureModeToValue(capture_mode));
   return std::move(dict);
 }
 
@@ -137,8 +135,8 @@ class LoggingObserver : public NetLog::ThreadSafeObserver {
   }
 
   void OnAddEntry(const NetLogEntry& entry) override {
-    std::unique_ptr<base::DictionaryValue> dict =
-        base::DictionaryValue::From(entry.ToValue());
+    std::unique_ptr<base::DictionaryValue> dict = base::DictionaryValue::From(
+        base::Value::ToUniquePtrValue(entry.ToValue()));
     ASSERT_TRUE(dict);
     values_.push_back(std::move(dict));
   }

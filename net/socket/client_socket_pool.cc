@@ -109,13 +109,12 @@ void ClientSocketPool::NetLogTcpClientSocketPoolRequestedSocket(
   }
 }
 
-std::unique_ptr<base::Value> ClientSocketPool::NetLogGroupIdCallback(
+base::Value ClientSocketPool::NetLogGroupIdCallback(
     const GroupId* group_id,
     NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> event_params(
-      new base::DictionaryValue());
-  event_params->SetString("group_id", group_id->ToString());
-  return event_params;
+  base::DictionaryValue event_params;
+  event_params.SetString("group_id", group_id->ToString());
+  return std::move(event_params);
 }
 
 std::unique_ptr<ConnectJob> ClientSocketPool::CreateConnectJob(

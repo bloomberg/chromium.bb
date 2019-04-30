@@ -55,7 +55,8 @@ class TestNetLog::Observer : public NetLog::ThreadSafeObserver {
     // Using Dictionaries instead of Values makes checking values a little
     // simpler.
     std::unique_ptr<base::DictionaryValue> param_dict =
-        base::DictionaryValue::From(entry.ParametersToValue());
+        base::DictionaryValue::From(
+            base::Value::ToUniquePtrValue(entry.ParametersToValue()));
 
     // Only need to acquire the lock when accessing class variables.
     base::AutoLock lock(lock_);

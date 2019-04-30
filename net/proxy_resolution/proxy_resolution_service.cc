@@ -314,38 +314,37 @@ class ProxyResolverFactoryForPacResult : public ProxyResolverFactory {
 };
 
 // Returns NetLog parameters describing a proxy configuration change.
-std::unique_ptr<base::Value> NetLogProxyConfigChangedCallback(
+base::Value NetLogProxyConfigChangedCallback(
     const base::Optional<ProxyConfigWithAnnotation>* old_config,
     const ProxyConfigWithAnnotation* new_config,
     NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  base::DictionaryValue dict;
   // The "old_config" is optional -- the first notification will not have
   // any "previous" configuration.
   if (old_config->has_value())
-    dict->Set("old_config", (*old_config)->value().ToValue());
-  dict->Set("new_config", new_config->value().ToValue());
+    dict.Set("old_config", (*old_config)->value().ToValue());
+  dict.Set("new_config", new_config->value().ToValue());
   return std::move(dict);
 }
 
-std::unique_ptr<base::Value> NetLogBadProxyListCallback(
-    const ProxyRetryInfoMap* retry_info,
-    NetLogCaptureMode /* capture_mode */) {
-  auto dict = std::make_unique<base::DictionaryValue>();
-  auto list = std::make_unique<base::ListValue>();
+base::Value NetLogBadProxyListCallback(const ProxyRetryInfoMap* retry_info,
+                                       NetLogCaptureMode /* capture_mode */) {
+  base::DictionaryValue dict;
+  base::ListValue list;
 
   for (auto iter = retry_info->begin(); iter != retry_info->end(); ++iter) {
-    list->AppendString(iter->first);
+    list.AppendString(iter->first);
   }
-  dict->Set("bad_proxy_list", std::move(list));
+  dict.SetKey("bad_proxy_list", std::move(list));
   return std::move(dict);
 }
 
 // Returns NetLog parameters on a successfuly proxy resolution.
-std::unique_ptr<base::Value> NetLogFinishedResolvingProxyCallback(
+base::Value NetLogFinishedResolvingProxyCallback(
     const ProxyInfo* result,
     NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString("pac_string", result->ToPacString());
+  base::DictionaryValue dict;
+  dict.SetString("pac_string", result->ToPacString());
   return std::move(dict);
 }
 

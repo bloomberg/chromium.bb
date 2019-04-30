@@ -17,14 +17,13 @@ namespace net {
 
 namespace {
 
-std::unique_ptr<base::Value> SourceEventParametersCallback(
+base::Value SourceEventParametersCallback(
     const NetLogSource source,
     NetLogCaptureMode /* capture_mode */) {
   if (!source.IsValid())
-    return std::unique_ptr<base::Value>();
-  std::unique_ptr<base::DictionaryValue> event_params(
-      new base::DictionaryValue());
-  source.AddToEventParameters(event_params.get());
+    return base::Value();
+  base::DictionaryValue event_params;
+  source.AddToEventParameters(&event_params);
   return std::move(event_params);
 }
 

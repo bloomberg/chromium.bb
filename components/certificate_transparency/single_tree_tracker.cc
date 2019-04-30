@@ -138,17 +138,17 @@ bool IsSCTReadyForAudit(base::Time sth_timestamp, base::Time sct_timestamp) {
   return sct_timestamp + kMaximumMergeDelay < sth_timestamp;
 }
 
-std::unique_ptr<base::Value> NetLogEntryAuditingEventCallback(
+base::Value NetLogEntryAuditingEventCallback(
     const SHA256HashValue* log_entry,
     base::StringPiece log_id,
     bool success,
     net::NetLogCaptureMode capture_mode) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  base::DictionaryValue dict;
 
-  dict->SetString("log_entry",
-                  base::HexEncode(log_entry->data, crypto::kSHA256Length));
-  dict->SetString("log_id", base::HexEncode(log_id.data(), log_id.size()));
-  dict->SetBoolean("success", success);
+  dict.SetString("log_entry",
+                 base::HexEncode(log_entry->data, crypto::kSHA256Length));
+  dict.SetString("log_id", base::HexEncode(log_id.data(), log_id.size()));
+  dict.SetBoolean("success", success);
 
   return std::move(dict);
 }

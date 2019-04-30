@@ -22,17 +22,16 @@
 namespace net {
 namespace {
 
-std::unique_ptr<base::Value> ElideNetLogHeaderCallback(
-    base::StringPiece header_name,
-    base::StringPiece header_value,
-    base::StringPiece error_message,
-    NetLogCaptureMode capture_mode) {
-  auto dict = std::make_unique<base::DictionaryValue>();
-  dict->SetKey("header_name", NetLogStringValue(header_name));
-  dict->SetKey("header_value", NetLogStringValue(ElideHeaderValueForNetLog(
-                                   capture_mode, header_name.as_string(),
-                                   header_value.as_string())));
-  dict->SetString("error", error_message);
+base::Value ElideNetLogHeaderCallback(base::StringPiece header_name,
+                                      base::StringPiece header_value,
+                                      base::StringPiece error_message,
+                                      NetLogCaptureMode capture_mode) {
+  base::DictionaryValue dict;
+  dict.SetKey("header_name", NetLogStringValue(header_name));
+  dict.SetKey("header_value", NetLogStringValue(ElideHeaderValueForNetLog(
+                                  capture_mode, header_name.as_string(),
+                                  header_value.as_string())));
+  dict.SetString("error", error_message);
   return std::move(dict);
 }
 

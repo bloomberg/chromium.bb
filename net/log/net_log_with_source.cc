@@ -23,14 +23,13 @@ namespace {
 // Returns parameters for logging data transferred events. At a minimum includes
 // the number of bytes transferred. If the capture mode allows logging byte
 // contents and |byte_count| > 0, then will include the actual bytes.
-std::unique_ptr<base::Value> BytesTransferredCallback(
-    int byte_count,
-    const char* bytes,
-    NetLogCaptureMode capture_mode) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetInteger("byte_count", byte_count);
+base::Value BytesTransferredCallback(int byte_count,
+                                     const char* bytes,
+                                     NetLogCaptureMode capture_mode) {
+  base::DictionaryValue dict;
+  dict.SetInteger("byte_count", byte_count);
   if (capture_mode.include_socket_bytes() && byte_count > 0)
-    dict->SetKey("bytes", NetLogBinaryValue(bytes, byte_count));
+    dict.SetKey("bytes", NetLogBinaryValue(bytes, byte_count));
   return std::move(dict);
 }
 

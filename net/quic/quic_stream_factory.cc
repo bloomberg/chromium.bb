@@ -104,11 +104,11 @@ const int32_t kQuicSocketReceiveBufferSize = 1024 * 1024;  // 1MB
 // Set the maximum number of undecryptable packets the connection will store.
 const int32_t kMaxUndecryptablePackets = 100;
 
-std::unique_ptr<base::Value> NetLogQuicStreamFactoryJobCallback(
+base::Value NetLogQuicStreamFactoryJobCallback(
     const quic::QuicServerId* server_id,
     NetLogCaptureMode capture_mode) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString(
+  base::DictionaryValue dict;
+  dict.SetString(
       "server_id",
       "https://" +
           HostPortPair(server_id->host(), server_id->port()).ToString() +
@@ -1547,7 +1547,7 @@ std::unique_ptr<base::Value> QuicStreamFactory::QuicStreamFactoryInfoToValue()
         hosts.insert(HostPortPair(alias_it->server_id().host(),
                                   alias_it->server_id().port()));
       }
-      list->Append(session->GetInfoAsValue(hosts));
+      list->GetList().push_back(session->GetInfoAsValue(hosts));
     }
   }
   return std::move(list);

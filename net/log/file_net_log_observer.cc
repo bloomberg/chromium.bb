@@ -402,7 +402,7 @@ void FileNetLogObserver::StopObserving(std::unique_ptr<base::Value> polled_data,
 void FileNetLogObserver::OnAddEntry(const NetLogEntry& entry) {
   std::unique_ptr<std::string> json(new std::string);
 
-  *json = SerializeNetLogValueToJson(*entry.ToValue());
+  *json = SerializeNetLogValueToJson(entry.ToValue());
 
   size_t queue_size = write_queue_->AddEntryToQueue(std::move(json));
 

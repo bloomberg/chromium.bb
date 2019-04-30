@@ -96,17 +96,17 @@ const char* CTPolicyComplianceToString(CTPolicyCompliance status) {
   return "unknown";
 }
 
-std::unique_ptr<base::Value> NetLogCertComplianceCheckResultCallback(
+base::Value NetLogCertComplianceCheckResultCallback(
     net::X509Certificate* cert,
     bool build_timely,
     CTPolicyCompliance compliance,
     net::NetLogCaptureMode capture_mode) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->Set("certificate",
-            net::NetLogX509CertificateCallback(cert, capture_mode));
-  dict->SetBoolean("build_timely", build_timely);
-  dict->SetString("ct_compliance_status",
-                  CTPolicyComplianceToString(compliance));
+  base::DictionaryValue dict;
+  dict.SetKey("certificate",
+              net::NetLogX509CertificateCallback(cert, capture_mode));
+  dict.SetBoolean("build_timely", build_timely);
+  dict.SetString("ct_compliance_status",
+                 CTPolicyComplianceToString(compliance));
   return std::move(dict);
 }
 

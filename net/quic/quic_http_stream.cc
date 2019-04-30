@@ -34,13 +34,12 @@ namespace net {
 
 namespace {
 
-std::unique_ptr<base::Value> NetLogQuicPushStreamCallback(
-    quic::QuicStreamId stream_id,
-    const GURL* url,
-    NetLogCaptureMode capture_mode) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetInteger("stream_id", stream_id);
-  dict->SetString("url", url->spec());
+base::Value NetLogQuicPushStreamCallback(quic::QuicStreamId stream_id,
+                                         const GURL* url,
+                                         NetLogCaptureMode capture_mode) {
+  base::DictionaryValue dict;
+  dict.SetInteger("stream_id", stream_id);
+  dict.SetString("url", url->spec());
   return std::move(dict);
 }
 

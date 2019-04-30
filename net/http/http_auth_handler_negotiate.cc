@@ -32,16 +32,16 @@ using DelegationType = HttpAuth::DelegationType;
 
 namespace {
 
-std::unique_ptr<base::Value> NetLogParameterChannelBindings(
+base::Value NetLogParameterChannelBindings(
     const std::string& channel_binding_token,
     NetLogCaptureMode capture_mode) {
-  std::unique_ptr<base::DictionaryValue> dict;
+  base::DictionaryValue dict;
   if (!capture_mode.include_socket_bytes())
     return std::move(dict);
 
-  dict.reset(new base::DictionaryValue());
-  dict->SetString("token", base::HexEncode(channel_binding_token.data(),
-                                           channel_binding_token.size()));
+  dict.Clear();
+  dict.SetString("token", base::HexEncode(channel_binding_token.data(),
+                                          channel_binding_token.size()));
   return std::move(dict);
 }
 
