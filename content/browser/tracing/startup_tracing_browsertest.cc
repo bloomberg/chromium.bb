@@ -191,12 +191,12 @@ IN_PROC_BROWSER_TEST_F(BackgroundStartupTracingTest, MAYBE_TestStartupTracing) {
   ASSERT_TRUE(base::ReadFileToString(temp_file_path_, &trace));
   tracing::PrivacyFilteringCheck checker;
   checker.CheckProtoForUnexpectedFields(trace);
-  EXPECT_GT(checker.counts().track_event, 0u);
-  EXPECT_EQ(checker.counts().process_desc, 0u);
-  EXPECT_GT(checker.counts().thread_desc, 0u);
-  EXPECT_GT(checker.counts().interned_name, 0u);
-  EXPECT_GT(checker.counts().interned_category, 0u);
-  EXPECT_GT(checker.counts().interned_source_location, 0u);
+  EXPECT_GT(checker.stats().track_event, 0u);
+  EXPECT_EQ(checker.stats().process_desc, 0u);
+  EXPECT_GT(checker.stats().thread_desc, 0u);
+  EXPECT_TRUE(checker.stats().has_interned_names);
+  EXPECT_TRUE(checker.stats().has_interned_categories);
+  EXPECT_TRUE(checker.stats().has_interned_source_locations);
 }
 
 }  // namespace content

@@ -13,14 +13,14 @@ namespace tracing {
 
 class PrivacyFilteringCheck {
  public:
-  struct TypeCounts {
+  struct TraceStats {
     size_t track_event = 0;
     size_t process_desc = 0;
     size_t thread_desc = 0;
 
-    size_t interned_name = 0;
-    size_t interned_category = 0;
-    size_t interned_source_location = 0;
+    size_t has_interned_names = 0;
+    size_t has_interned_categories = 0;
+    size_t has_interned_source_locations = 0;
   };
 
   PrivacyFilteringCheck();
@@ -28,10 +28,10 @@ class PrivacyFilteringCheck {
 
   void CheckProtoForUnexpectedFields(const std::string& serialized_trace_proto);
 
-  const TypeCounts& counts() const { return counts_; }
+  const TraceStats& stats() const { return stats_; }
 
  private:
-  TypeCounts counts_;
+  TraceStats stats_;
 
   DISALLOW_COPY_AND_ASSIGN(PrivacyFilteringCheck);
 };

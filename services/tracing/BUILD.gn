@@ -68,9 +68,8 @@ source_set("privacy_check") {
 
   deps = [
     "//base",
-    "//third_party/perfetto/include/perfetto/protozero:protozero",
-    "//third_party/perfetto/protos/perfetto/common:lite",
-    "//third_party/perfetto/protos/perfetto/trace:lite",
+    "//third_party/perfetto:libperfetto",
+    "//third_party/perfetto/src/protozero:protozero",
   ]
 }
 
