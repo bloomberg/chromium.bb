@@ -19137,6 +19137,8 @@ Called by update_net_error_codes.py.-->
   <int value="1330" label="FEEDBACKPRIVATE_LOGINFEEDBACKCOMPLETE"/>
   <int value="1331" label="FILEMANAGERPRIVATE_SEARCHFILES"/>
   <int value="1332" label="MANAGEMENT_INSTALLREPLACEMENTWEBAPP"/>
+  <int value="1333" label="FILEMANAGERPRIVATE_GETANDROIDPICKERAPPS"/>
+  <int value="1334" label="FILEMANAGERPRIVATE_SELECTANDROIDPICKERAPP"/>
 </enum>
 
 <enum name="ExtensionIconState">

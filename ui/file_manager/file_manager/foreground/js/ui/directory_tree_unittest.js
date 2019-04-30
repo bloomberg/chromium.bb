@@ -441,13 +441,17 @@ function testCreateDirectoryTreeWithTeamDrivesAndComputers(callback) {
 function testUpdateSubElementsFromListSections() {
   const recentItem = null;
   const shortcutListModel = new MockFolderShortcutDataModel([]);
+  const androidAppListModel = createFakeAndroidAppListModel(['android:app1']);
   const treeModel = new NavigationListModel(
-      volumeManager, shortcutListModel, recentItem, directoryModel);
+      volumeManager, shortcutListModel, recentItem, directoryModel,
+      androidAppListModel);
   const myFilesItem = treeModel.item(0);
   const driveItem = treeModel.item(1);
+  const androidAppItem = treeModel.item(2);
 
   assertEquals(NavigationSection.MY_FILES, myFilesItem.section);
   assertEquals(NavigationSection.CLOUD, driveItem.section);
+  assertEquals(NavigationSection.ANDROID_APPS, androidAppItem.section);
 
   // Populate the directory tree with the mock filesystem.
   let directoryTree = createElements();

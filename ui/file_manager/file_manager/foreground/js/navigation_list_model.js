@@ -12,6 +12,7 @@ const NavigationModelItemType = {
   CROSTINI: 'crostini',
   ENTRY_LIST: 'entry-list',
   DRIVE: 'drive',
+  ANDROID_APP: 'android-app',
 };
 
 /**
@@ -23,6 +24,7 @@ const NavigationModelItemType = {
  *                  its children).
  *      - REMOVABLE: Archives, MTPs, Media Views and Removables.
  *      - CLOUD: Drive and FSPs.
+ *      - ANDROID_APPS: ANDROID picker apps.
  * @enum {string}
  */
 const NavigationSection = {
@@ -30,6 +32,7 @@ const NavigationSection = {
   MY_FILES: 'my_files',
   REMOVABLE: 'removable',
   CLOUD: 'cloud',
+  ANDROID_APPS: 'android_apps',
 };
 
 /**
@@ -100,6 +103,27 @@ class NavigationModelShortcutItem extends NavigationModelItem {
 }
 
 /**
+ * Item of NavigationListModel for Android apps.
+ */
+class NavigationModelAndroidAppItem extends NavigationModelItem {
+  /**
+   * @param {!chrome.fileManagerPrivate.AndroidApp} androidApp Android app.
+   *     Cannot be null.
+   */
+  constructor(androidApp) {
+    super(androidApp.name, NavigationModelItemType.ANDROID_APP);
+
+    /** @private {!chrome.fileManagerPrivate.AndroidApp} */
+    this.androidApp_ = androidApp;
+  }
+
+  /** @return {!chrome.fileManagerPrivate.AndroidApp} */
+  get androidApp() {
+    return this.androidApp_;
+  }
+}
+
+/**
  * Item of NavigationListModel for volumes.
  */
 class NavigationModelVolumeItem extends NavigationModelItem {
@@ -149,9 +173,11 @@ class NavigationListModel extends cr.EventTarget {
    *     shortcutListModel The list of folder shortcut.
    * @param {NavigationModelFakeItem} recentModelItem Recent folder.
    * @param {!DirectoryModel} directoryModel
+   * @param {!AndroidAppListModel} androidAppListModel
    */
   constructor(
-      volumeManager, shortcutListModel, recentModelItem, directoryModel) {
+      volumeManager, shortcutListModel, recentModelItem, directoryModel,
+      androidAppListModel) {
     super();
 
     /**
@@ -177,6 +203,11 @@ class NavigationListModel extends cr.EventTarget {
      * @const
      */
     this.directoryModel_ = directoryModel;
+
+    /**
+     * @private {!AndroidAppListModel}
+     */
+    this.androidAppListModel_ = androidAppListModel;
 
     /**
      * Root folder for crostini Linux files.
@@ -233,7 +264,7 @@ class NavigationListModel extends cr.EventTarget {
      * @enum {number}
      * @const
      */
-    const ListType = {VOLUME_LIST: 1, SHORTCUT_LIST: 2};
+    const ListType = {VOLUME_LIST: 1, SHORTCUT_LIST: 2, ANDROID_APP_LIST: 3};
     Object.freeze(ListType);
 
     // Generates this.volumeList_ and this.shortcutList_ from the models.
@@ -249,6 +280,11 @@ class NavigationListModel extends cr.EventTarget {
           /** @type {!Entry} */ (this.shortcutListModel_.item(i));
       const volumeInfo = this.volumeManager_.getVolumeInfo(shortcutEntry);
       this.shortcutList_.push(entryToModelItem(shortcutEntry));
+    }
+
+    this.androidAppList_ = [];
+    for (let i = 0; i < this.androidAppListModel_.length(); i++) {
+      this.androidAppList_.push(this.androidAppListModel_.item(i));
     }
 
     // Reorder volumes, shortcuts, and optional items for initial display.
@@ -287,7 +323,7 @@ class NavigationListModel extends cr.EventTarget {
         for (let i = 0; i < this.shortcutList_.length; i++) {
           permutation.push(i + this.volumeList_.length);
         }
-      } else {
+      } else if (listType == ListType.SHORTCUT_LIST) {
         // Build the shortcutList.
 
         // volumeList part has not been changed, so the permutation should be
@@ -338,6 +374,11 @@ class NavigationListModel extends cr.EventTarget {
         }
 
         this.shortcutList_ = newList;
+      } else if (listType == ListType.ANDROID_APP_LIST) {
+        this.androidAppList_ = [];
+        for (let i = 0; i < this.androidAppListModel_.length(); i++) {
+          this.androidAppList_.push(this.androidAppListModel_.item(i));
+        }
       }
 
       // Reorder items after permutation.
@@ -345,8 +386,8 @@ class NavigationListModel extends cr.EventTarget {
 
       // Dispatch permuted event.
       const permutedEvent = new Event('permuted');
-      permutedEvent.newLength =
-          this.volumeList_.length + this.shortcutList_.length;
+      permutedEvent.newLength = this.volumeList_.length +
+          this.shortcutList_.length + this.androidAppList_.length;
       permutedEvent.permutation = permutation;
       this.dispatchEvent(permutedEvent);
     };
@@ -355,6 +396,8 @@ class NavigationListModel extends cr.EventTarget {
         'permuted', permutedHandler.bind(this, ListType.VOLUME_LIST));
     this.shortcutListModel_.addEventListener(
         'permuted', permutedHandler.bind(this, ListType.SHORTCUT_LIST));
+    this.androidAppListModel_.addEventListener(
+        'permuted', permutedHandler.bind(this, ListType.ANDROID_APP_LIST));
 
     // 'change' event is just ignored, because it is not fired neither in
     // the folder shortcut list nor in the volume info list.
@@ -713,6 +756,12 @@ class NavigationListModel extends cr.EventTarget {
     for (const volume of otherVolumes) {
       this.navigationItems_.push(volume);
       volume.section = NavigationSection.REMOVABLE;
+    }
+
+    for (const androidApp of this.androidAppList_) {
+      const androidAppItem = new NavigationModelAndroidAppItem(androidApp);
+      androidAppItem.section = NavigationSection.ANDROID_APPS;
+      this.navigationItems_.push(androidAppItem);
     }
   }
 

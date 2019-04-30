@@ -1566,6 +1566,70 @@ class ShortcutItem extends cr.ui.TreeItem {
   }
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+// AndroidAppItem
+
+/**
+ * A TreeItem which represents an Android picker app.
+ * Android app items are displayed as top-level children of DirectoryTree.
+ */
+class AndroidAppItem extends cr.ui.TreeItem {
+  /**
+   * @param {!NavigationModelAndroidAppItem} modelItem NavigationModelItem of
+   *     this volume.
+   * @param {!DirectoryTree} tree Current tree, which contains this item.
+   */
+  constructor(modelItem, tree) {
+    super();
+    // Get the original label id defined by TreeItem, before overwriting
+    // prototype.
+    const labelId = this.labelElement.id;
+    this.__proto__ = AndroidAppItem.prototype;
+
+    /** @private {!DirectoryTree} */
+    this.parentTree_ = tree;
+
+    /** @private {!NavigationModelAndroidAppItem} */
+    this.modelItem_ = modelItem;
+
+    this.innerHTML = TREE_ITEM_INNER_HTML;
+    this.labelElement.id = labelId;
+
+    /** @public {string} */
+    this.label = modelItem.androidApp.name;
+
+    const icon = this.querySelector('.icon');
+    icon.classList.add('item-icon');
+    if (modelItem.androidApp.iconSet) {
+      const backgroundImage =
+          util.iconSetToCSSBackgroundImageValue(modelItem.androidApp.iconSet);
+      if (backgroundImage !== 'none') {
+        icon.setAttribute('style', 'background-image: ' + backgroundImage);
+      }
+    }
+  }
+
+  /**
+   * Invoked when the tree item is clicked.
+   *
+   * @param {Event} e Click event.
+   * @override
+   */
+  handleClick(e) {
+    chrome.fileManagerPrivate.selectAndroidPickerApp(
+        this.modelItem_.androidApp, () => {
+          if (chrome.runtime.lastError) {
+            console.error(
+                'selectAndroidPickerApp error: ',
+                chrome.runtime.lastError.message);
+          } else {
+            window.close();
+          }
+        });
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // FakeItem
 
@@ -2236,6 +2300,10 @@ DirectoryTree.createDirectoryItem = (modelItem, tree) => {
       return new EntryListItem(
           rootType,
           /** @type {!NavigationModelFakeItem} */ (modelItem), tree);
+      break;
+    case NavigationModelItemType.ANDROID_APP:
+      return new AndroidAppItem(
+          /** @type {!NavigationModelAndroidAppItem} */ (modelItem), tree);
       break;
   }
   assertNotReached(`No DirectoryItem model: "${modelItem.type}"`);

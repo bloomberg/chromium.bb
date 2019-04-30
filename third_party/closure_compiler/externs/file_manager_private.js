@@ -483,6 +483,16 @@ chrome.fileManagerPrivate.LinuxPackageInfo;
 chrome.fileManagerPrivate.CrostiniEvent;
 
 /**
+ * @typedef {{
+ *   name: string,
+ *   packageName: string,
+ *   activityName: string,
+ *   iconSet: !chrome.fileManagerPrivate.IconSet
+ * }}
+ */
+chrome.fileManagerPrivate.AndroidApp;
+
+/**
  * Logout the current user for navigating to the re-authentication screen for
  * the Google account.
  */
@@ -1043,6 +1053,19 @@ chrome.fileManagerPrivate.detectCharacterEncoding = function(bytes, callback) {
  *     available.
  */
 chrome.fileManagerPrivate.getThumbnail = function(entry, cropToSquare, callback) {};
+
+/**
+ * @param {!Array<string>} extensions
+ * @param {function(!Array<chrome.fileManagerPrivate.AndroidApp>):void} callback
+ *     Completion callback.
+ */
+chrome.fileManagerPrivate.getAndroidPickerApps = function(extensions, callback) {};
+
+/**
+ * @param {chrome.fileManagerPrivate.AndroidApp} androidApp
+ * @param {function()} callback Completion callback.
+ */
+chrome.fileManagerPrivate.selectAndroidPickerApp = function(androidApp, callback) {};
 
 /** @type {!ChromeEvent} */
 chrome.fileManagerPrivate.onMountCompleted;

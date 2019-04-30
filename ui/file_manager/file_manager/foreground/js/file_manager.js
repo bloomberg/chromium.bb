@@ -99,6 +99,12 @@ function FileManager() {
   this.folderShortcutsModel_ = null;
 
   /**
+   * Model of Android apps.
+   * @private {AndroidAppListModel}
+   */
+  this.androidAppListModel_ = null;
+
+  /**
    * Model for providers (providing extensions).
    * @type {ProvidersModel}
    * @private
@@ -1045,6 +1051,10 @@ FileManager.prototype = /** @struct */ {
     this.folderShortcutsModel_ =
         new FolderShortcutsDataModel(this.volumeManager_);
 
+    this.androidAppListModel_ = new AndroidAppListModel(
+        this.launchParams_.showAndroidPickerApps,
+        this.launchParams_.includeAllFiles, this.launchParams_.typeList);
+
     assert(this.launchParams_);
     this.selectionHandler_ = new FileSelectionHandler(
         assert(this.directoryModel_), assert(this.fileOperationManager_),
@@ -1140,7 +1150,7 @@ FileManager.prototype = /** @struct */ {
                     VolumeManagerCommon.RootType.RECENT,
                     this.getSourceRestriction_())) :
             null,
-        assert(this.directoryModel_));
+        assert(this.directoryModel_), assert(this.androidAppListModel_));
 
     this.ui_.initDirectoryTree(directoryTree);
     this.crostini_.setEnabled(

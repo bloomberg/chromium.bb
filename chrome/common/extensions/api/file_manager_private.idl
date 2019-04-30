@@ -673,6 +673,21 @@ dictionary CrostiniEvent {
   [instanceOf=Entry] object[] entries;
 };
 
+// Represents an Android app (activity).
+dictionary AndroidApp {
+  // Name of the app to be shown to the user (e.g. Photos).
+  DOMString name;
+
+  // Package name (e.g. com.google.android.apps.photos).
+  DOMString packageName;
+
+  // Activity name (e.g. .PhotosPickerActivity).
+  DOMString activityName;
+
+  // App icon.
+  IconSet? iconSet;
+};
+
 // Callback that does not take arguments.
 callback SimpleCallback = void();
 
@@ -803,6 +818,9 @@ callback DetectCharacterEncodingCallback = void(DOMString result);
 // |thumbnailDataUrl| A data URL for the thumbnail as a PNG; |thumbnailDataUrl|
 // is empty if no thumbnail was available.
 callback GetThumbnailCallback = void(DOMString thumbnailDataUrl);
+
+// |apps| List of Android picker apps.
+callback GetAndroidPickerAppsCallback = void(AndroidApp[] apps);
 
 interface Functions {
   // Logout the current user for navigating to the re-authentication screen for
@@ -1215,6 +1233,14 @@ interface Functions {
   // Returns an empty string if failed.
   static DOMString detectCharacterEncoding(DOMString bytes,
     DetectCharacterEncodingCallback callback);
+
+  // Returns a list of Android picker apps to be shown in file selector.
+  static void getAndroidPickerApps(DOMString[] extensions,
+                                   GetAndroidPickerAppsCallback callback);
+
+  // Called when the user selects an Android picker app in file selector.
+  static void selectAndroidPickerApp(AndroidApp androidApp,
+                                     SimpleCallback callback);
 };
 
 interface Events {

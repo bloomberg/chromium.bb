@@ -18,6 +18,12 @@ const recentFakeEntry =
 let directoryModel;
 
 /**
+ * AndroidAppList model.
+ * @type {!AndroidAppListModel}
+ */
+let androidAppListModel;
+
+/**
  * Drive file system.
  * @type {!MockFileSystem}
  */
@@ -54,6 +60,7 @@ function setUp() {
 
   // Create mock components.
   directoryModel = createFakeDirectoryModel();
+  androidAppListModel = createFakeAndroidAppListModel([]);
   drive = new MockFileSystem('drive');
   hoge = new MockFileSystem('removable:hoge');
 }
@@ -74,11 +81,15 @@ function testModel() {
       new FakeEntry(
           'linux-files-label', VolumeManagerCommon.RootType.CROSTINI));
 
+  const androidAppListModelWithApps =
+      createFakeAndroidAppListModel(['android:app1', 'android:app2']);
+
   const model = new NavigationListModel(
-      volumeManager, shortcutListModel, recentItem, directoryModel);
+      volumeManager, shortcutListModel, recentItem, directoryModel,
+      androidAppListModelWithApps);
   model.linuxFilesItem = crostiniFakeItem;
 
-  assertEquals(4, model.length);
+  assertEquals(6, model.length);
   assertEquals(
       'fake-entry://recent', /** @type {!NavigationModelFakeItem} */
       (model.item(0)).entry.toURL());
@@ -89,6 +100,12 @@ function testModel() {
   assertEquals(
       'drive', /** @type {!NavigationModelVolumeItem} */
       (model.item(3)).volumeInfo.volumeId);
+  assertEquals(
+      'android:app1', /** @type {!NavigationModelAndroidAppItem} */
+      (model.item(4)).label);
+  assertEquals(
+      'android:app2', /** @type {!NavigationModelAndroidAppItem} */
+      (model.item(5)).label);
 
   // Downloads and Crostini are displayed within My files.
   const myFilesItem = /** @type NavigationModelFakeItem */ (model.item(2));
@@ -109,7 +126,8 @@ function testNoRecentOrLinuxFiles() {
   const recentItem = null;
 
   const model = new NavigationListModel(
-      volumeManager, shortcutListModel, recentItem, directoryModel);
+      volumeManager, shortcutListModel, recentItem, directoryModel,
+      androidAppListModel);
 
   assertEquals(3, model.length);
   assertEquals(
@@ -132,7 +150,8 @@ function testAddAndRemoveShortcuts() {
   const recentItem = null;
 
   const model = new NavigationListModel(
-      volumeManager, shortcutListModel, recentItem, directoryModel);
+      volumeManager, shortcutListModel, recentItem, directoryModel,
+      androidAppListModel);
 
   assertEquals(3, model.length);
 
@@ -194,7 +213,8 @@ function testAddAndRemoveVolumes() {
   const recentItem = null;
 
   const model = new NavigationListModel(
-      volumeManager, shortcutListModel, recentItem, directoryModel);
+      volumeManager, shortcutListModel, recentItem, directoryModel,
+      androidAppListModel);
 
   assertEquals(3, model.length);
 
@@ -308,6 +328,9 @@ function testOrderAndNestItems() {
   volumeManager.volumeInfoList.add(MockVolumeManager.createMockVolumeInfo(
       VolumeManagerCommon.VolumeType.PROVIDED, zipVolumeId));
 
+  const androidAppListModelWithApps =
+      createFakeAndroidAppListModel(['android:app1', 'android:app2']);
+
   // Navigation items built above:
   //  1.  fake-entry://recent
   //  2.  media_view:images_root
@@ -328,14 +351,18 @@ function testOrderAndNestItems() {
   // 13.  archive:a-rar  - mounted as archive
   // 14.  mtp:a-phone
   // 15.  provided:"zip" - mounted as provided: $zipVolumeId
+  //
+  // 16.  android:app1
+  // 17.  android:app2
 
   // Constructor already calls orderAndNestItems_.
   const model = new NavigationListModel(
-      volumeManager, shortcutListModel, recentItem, directoryModel);
+      volumeManager, shortcutListModel, recentItem, directoryModel,
+      androidAppListModelWithApps);
 
   // Check items order and that MTP/Archive/Removable respect the original
   // order.
-  assertEquals(15, model.length);
+  assertEquals(17, model.length);
   assertEquals('recent-label', model.item(0).label);
 
   assertEquals('media_view:images_root', model.item(1).label);
@@ -356,6 +383,9 @@ function testOrderAndNestItems() {
   assertEquals('archive:a-rar', model.item(12).label);
   assertEquals('mtp:a-phone', model.item(13).label);
   assertEquals(zipVolumeId, model.item(14).label);
+
+  assertEquals('android:app1', model.item(15).label);
+  assertEquals('android:app2', model.item(16).label);
 
   // Check NavigationSection, which defaults to TOP.
   // recent-label.
@@ -394,6 +424,11 @@ function testOrderAndNestItems() {
   assertEquals(NavigationSection.REMOVABLE, model.item(13).section);
   // archive:"zip" - $zipVolumeId
   assertEquals(NavigationSection.REMOVABLE, model.item(14).section);
+
+  // android:app1
+  assertEquals(NavigationSection.ANDROID_APPS, model.item(15).section);
+  // android:app2
+  assertEquals(NavigationSection.ANDROID_APPS, model.item(16).section);
 
   const myFilesModel = model.item(6);
   // Re-order again: cast to allow calling this private model function.
@@ -443,7 +478,8 @@ function testMyFilesVolumeEnabled(callback) {
 
   // Constructor already calls orderAndNestItems_.
   const model = new NavigationListModel(
-      volumeManager, shortcutListModel, recentItem, directoryModel);
+      volumeManager, shortcutListModel, recentItem, directoryModel,
+      androidAppListModel);
   model.linuxFilesItem = crostiniFakeItem;
 
   assertEquals(2, model.length);
@@ -499,7 +535,8 @@ function testMultipleUsbPartitionsGrouping() {
       'partition3', 'device/path/1'));
 
   const model = new NavigationListModel(
-      volumeManager, shortcutListModel, recentItem, directoryModel);
+      volumeManager, shortcutListModel, recentItem, directoryModel,
+      androidAppListModel);
 
   // Check that the common root shows 3 partitions.
   let groupedUsbs = /** @type NavigationModelFakeItem */ (model.item(2));

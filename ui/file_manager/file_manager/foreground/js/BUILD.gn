@@ -24,6 +24,7 @@ js_type_check("closure_compile_module") {
   deps = [
     ":actions_controller",
     ":actions_model",
+    ":android_app_list_model",
     ":app_state_controller",
     ":closure_compile_externs",
     ":column_visibility_controller",
@@ -109,6 +110,7 @@ js_library("closure_compile_externs") {
 js_type_check("test_support_type_check") {
   testonly = true
   deps = [
+    ":fake_android_app_list_model",
     ":mock_actions_model",
     ":mock_directory_model",
     ":mock_folder_shortcut_data_model",
@@ -161,6 +163,13 @@ js_unittest("actions_model_unittest") {
   ]
 }
 
+js_library("fake_android_app_list_model") {
+  testonly = true
+  deps = [
+    ":android_app_list_model",
+  ]
+}
+
 js_library("mock_directory_model") {
   testonly = true
   deps = [
@@ -190,6 +199,12 @@ js_library("mock_thumbnail_loader") {
   testonly = true
   deps = [
     ":thumbnail_loader",
+  ]
+}
+
+js_library("android_app_list_model") {
+  deps = [
+    "//ui/webui/resources/js/cr:event_target",
   ]
 }
 
@@ -305,6 +320,7 @@ js_unittest("file_list_model_unittest") {
 
 js_library("file_manager") {
   deps = [
+    ":android_app_list_model",
     ":app_state_controller",
     ":column_visibility_controller",
     ":dialog_action_controller",
@@ -571,6 +587,7 @@ js_library("naming_controller") {
 
 js_library("navigation_list_model") {
   deps = [
+    ":android_app_list_model",
     ":folder_shortcuts_data_model",
     "//ui/webui/resources/js/cr:event_target",
     "//ui/webui/resources/js/cr/ui:array_data_model",
@@ -579,6 +596,7 @@ js_library("navigation_list_model") {
 
 js_unittest("navigation_list_model_unittest") {
   deps = [
+    ":fake_android_app_list_model",
     ":mock_directory_model",
     ":mock_folder_shortcut_data_model",
     ":navigation_list_model",
