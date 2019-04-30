@@ -4346,9 +4346,8 @@ bool Document::CanAcceptChild(const Node& new_child,
   }
 
   // Then, see how many doctypes and elements might be added by the new child.
-  if (new_child.IsDocumentFragment()) {
-    for (Node& child :
-         NodeTraversal::ChildrenOf(ToDocumentFragment(new_child))) {
+  if (auto* new_child_fragment = DynamicTo<DocumentFragment>(new_child)) {
+    for (Node& child : NodeTraversal::ChildrenOf(*new_child_fragment)) {
       switch (child.getNodeType()) {
         case kAttributeNode:
         case kCdataSectionNode:

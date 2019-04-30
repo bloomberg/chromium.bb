@@ -584,7 +584,7 @@ void HTMLTreeBuilder::ProcessStartTagForInBody(AtomicHTMLToken* token) {
     // a proper html element which is a quirk in Blink's implementation.
     DCHECK(!IsParsingTemplateContents());
     DCHECK(!IsParsingFragment() ||
-           ToDocumentFragment(tree_.OpenElements()->TopNode()));
+           To<DocumentFragment>(tree_.OpenElements()->TopNode()));
     DCHECK(IsParsingFragment() ||
            tree_.OpenElements()->Top() == tree_.OpenElements()->HtmlElement());
     tree_.InsertHTMLElement(token);

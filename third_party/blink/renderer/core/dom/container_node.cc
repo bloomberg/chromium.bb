@@ -141,10 +141,9 @@ static inline bool CollectChildrenAndRemoveFromOldParent(
     Node& node,
     NodeVector& nodes,
     ExceptionState& exception_state) {
-  if (node.IsDocumentFragment()) {
-    DocumentFragment& fragment = ToDocumentFragment(node);
-    GetChildNodes(fragment, nodes);
-    fragment.RemoveChildren();
+  if (auto* fragment = DynamicTo<DocumentFragment>(node)) {
+    GetChildNodes(*fragment, nodes);
+    fragment->RemoveChildren();
     return !nodes.IsEmpty();
   }
   nodes.push_back(&node);
@@ -168,10 +167,11 @@ ContainerNode::~ContainerNode() {
 
 DISABLE_CFI_PERF
 bool ContainerNode::IsChildTypeAllowed(const Node& child) const {
-  if (!child.IsDocumentFragment())
+  auto* child_fragment = DynamicTo<DocumentFragment>(child);
+  if (!child_fragment)
     return ChildTypeAllowed(child.getNodeType());
 
-  for (Node* node = ToDocumentFragment(child).firstChild(); node;
+  for (Node* node = child_fragment->firstChild(); node;
        node = node->nextSibling()) {
     if (!ChildTypeAllowed(node->getNodeType()))
       return false;
@@ -194,8 +194,8 @@ bool ContainerNode::IsHostIncludingInclusiveAncestorOfThis(
     child_contains_parent = new_child.ContainsIncludingHostElements(*this);
   } else {
     const Node& root = TreeRoot();
-    if (root.IsDocumentFragment() &&
-        ToDocumentFragment(root).IsTemplateContent()) {
+    auto* fragment = DynamicTo<DocumentFragment>(root);
+    if (fragment && fragment->IsTemplateContent()) {
       child_contains_parent = new_child.ContainsIncludingHostElements(*this);
     } else {
       child_contains_parent = new_child.contains(this);

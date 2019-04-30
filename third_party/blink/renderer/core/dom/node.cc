@@ -1350,8 +1350,8 @@ bool Node::ContainsIncludingHostElements(const Node& node) const {
   do {
     if (current == this)
       return true;
-    if (current->IsDocumentFragment() &&
-        ToDocumentFragment(current)->IsTemplateContent())
+    auto* curr_fragment = DynamicTo<DocumentFragment>(current);
+    if (curr_fragment && curr_fragment->IsTemplateContent())
       current =
           static_cast<const TemplateContentDocumentFragment*>(current)->Host();
     else
@@ -1602,7 +1602,8 @@ Element* Node::ParentOrShadowHostElement() const {
 }
 
 ContainerNode* Node::ParentOrShadowHostOrTemplateHostNode() const {
-  if (IsDocumentFragment() && ToDocumentFragment(this)->IsTemplateContent())
+  auto* this_fragment = DynamicTo<DocumentFragment>(this);
+  if (this_fragment && this_fragment->IsTemplateContent())
     return static_cast<const TemplateContentDocumentFragment*>(this)->Host();
   return ParentOrShadowHostNode();
 }
