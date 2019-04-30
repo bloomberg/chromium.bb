@@ -171,7 +171,12 @@ void ArcSelectFilesHandler::SelectFiles(
   BuildFileTypeInfo(request, &file_type_info);
   base::FilePath default_path = GetInitialFilePath(request);
 
-  dialog_holder_->SelectFile(dialog_type, default_path, &file_type_info);
+  // Android picker apps should be shown in GET_CONTENT mode.
+  bool show_android_picker_apps =
+      request->action_type == mojom::SelectFilesActionType::GET_CONTENT;
+
+  dialog_holder_->SelectFile(dialog_type, default_path, &file_type_info,
+                             show_android_picker_apps);
 }
 
 void ArcSelectFilesHandler::FileSelected(const base::FilePath& path,
@@ -274,14 +279,15 @@ SelectFileDialogHolder::~SelectFileDialogHolder() {
 void SelectFileDialogHolder::SelectFile(
     ui::SelectFileDialog::Type type,
     const base::FilePath& default_path,
-    const ui::SelectFileDialog::FileTypeInfo* file_types) {
-  select_file_dialog_->SelectFile(
+    const ui::SelectFileDialog::FileTypeInfo* file_types,
+    bool show_android_picker_apps) {
+  select_file_dialog_->SelectFileWithFileManagerParams(
       type,
       /*title=*/base::string16(), default_path, file_types,
       /*file_type_index=*/0,
       /*default_extension=*/base::FilePath::StringType(),
       /*owning_window=*/nullptr,
-      /*params=*/nullptr);
+      /*params=*/nullptr, show_android_picker_apps);
 }
 
 void SelectFileDialogHolder::ExecuteJavaScript(

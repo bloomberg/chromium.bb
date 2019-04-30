@@ -64,6 +64,18 @@ class SelectFileDialogExtension
   // For testing, so we can inject JavaScript into the contained view.
   content::RenderViewHost* GetRenderViewHost();
 
+  // Call SelectFile with params specific to Chrome OS file manager.
+  void SelectFileWithFileManagerParams(
+      Type type,
+      const base::string16& title,
+      const base::FilePath& default_path,
+      const FileTypeInfo* file_types,
+      int file_type_index,
+      const base::FilePath::StringType& default_extension,
+      gfx::NativeWindow owning_window,
+      void* params,
+      bool show_android_picker_apps);
+
  protected:
   // SelectFileDialog implementation.
   void SelectFileImpl(Type type,

@@ -69,10 +69,11 @@ class MockSelectFileDialogHolder : public SelectFileDialogHolder {
   explicit MockSelectFileDialogHolder(ui::SelectFileDialog::Listener* listener)
       : SelectFileDialogHolder(listener) {}
   ~MockSelectFileDialogHolder() override = default;
-  MOCK_METHOD3(SelectFile,
+  MOCK_METHOD4(SelectFile,
                void(ui::SelectFileDialog::Type type,
                     const base::FilePath& default_path,
-                    const ui::SelectFileDialog::FileTypeInfo* file_types));
+                    const ui::SelectFileDialog::FileTypeInfo* file_types,
+                    bool show_android_picker_apps));
   MOCK_METHOD2(ExecuteJavaScript,
                void(const std::string&, JavaScriptResultCallback));
 };
@@ -110,12 +111,15 @@ class ArcSelectFilesHandlerTest : public testing::Test {
   void CallSelectFilesAndCheckDialogType(
       SelectFilesActionType request_action_type,
       bool request_allow_multiple,
-      SelectFileDialog::Type expected_dialog_type) {
+      SelectFileDialog::Type expected_dialog_type,
+      bool expected_show_android_picker_apps) {
     SelectFilesRequestPtr request = SelectFilesRequest::New();
     request->action_type = request_action_type;
     request->allow_multiple = request_allow_multiple;
 
-    EXPECT_CALL(*mock_dialog_holder_, SelectFile(expected_dialog_type, _, _))
+    EXPECT_CALL(*mock_dialog_holder_,
+                SelectFile(expected_dialog_type, _, _,
+                           expected_show_android_picker_apps))
         .Times(1);
 
     SelectFilesCallback callback;
@@ -150,18 +154,21 @@ class ArcSelectFilesHandlerTest : public testing::Test {
 
 TEST_F(ArcSelectFilesHandlerTest, SelectFiles_DialogType) {
   CallSelectFilesAndCheckDialogType(SelectFilesActionType::GET_CONTENT, false,
-                                    SelectFileDialog::SELECT_OPEN_FILE);
+                                    SelectFileDialog::SELECT_OPEN_FILE, true);
   CallSelectFilesAndCheckDialogType(SelectFilesActionType::GET_CONTENT, true,
-                                    SelectFileDialog::SELECT_OPEN_MULTI_FILE);
+                                    SelectFileDialog::SELECT_OPEN_MULTI_FILE,
+                                    true);
   CallSelectFilesAndCheckDialogType(SelectFilesActionType::OPEN_DOCUMENT, false,
-                                    SelectFileDialog::SELECT_OPEN_FILE);
+                                    SelectFileDialog::SELECT_OPEN_FILE, false);
   CallSelectFilesAndCheckDialogType(SelectFilesActionType::OPEN_DOCUMENT, true,
-                                    SelectFileDialog::SELECT_OPEN_MULTI_FILE);
-  CallSelectFilesAndCheckDialogType(SelectFilesActionType::OPEN_DOCUMENT_TREE,
-                                    false,
-                                    SelectFileDialog::SELECT_EXISTING_FOLDER);
+                                    SelectFileDialog::SELECT_OPEN_MULTI_FILE,
+                                    false);
+  CallSelectFilesAndCheckDialogType(
+      SelectFilesActionType::OPEN_DOCUMENT_TREE, false,
+      SelectFileDialog::SELECT_EXISTING_FOLDER, false);
   CallSelectFilesAndCheckDialogType(SelectFilesActionType::CREATE_DOCUMENT,
-                                    true, SelectFileDialog::SELECT_SAVEAS_FILE);
+                                    true, SelectFileDialog::SELECT_SAVEAS_FILE,
+                                    false);
 }
 
 TEST_F(ArcSelectFilesHandlerTest, SelectFiles_FileTypeInfo) {
@@ -179,8 +186,9 @@ TEST_F(ArcSelectFilesHandlerTest, SelectFiles_FileTypeInfo) {
 
   EXPECT_CALL(
       *mock_dialog_holder_,
-      SelectFile(
-          _, _, testing::Pointee(FileTypeInfoMatcher(expected_file_type_info))))
+      SelectFile(_, _,
+                 testing::Pointee(FileTypeInfoMatcher(expected_file_type_info)),
+                 _))
       .Times(1);
 
   base::MockCallback<SelectFilesCallback> callback;
@@ -199,7 +207,7 @@ TEST_F(ArcSelectFilesHandlerTest, SelectFiles_InitialDocumentPath) {
       "/special/arc-documents-provider/testing.provider/doc:root");
 
   EXPECT_CALL(*mock_dialog_holder_,
-              SelectFile(_, FilePathMatcher(expected_file_path), _))
+              SelectFile(_, FilePathMatcher(expected_file_path), _, _))
       .Times(1);
 
   base::MockCallback<SelectFilesCallback> callback;
