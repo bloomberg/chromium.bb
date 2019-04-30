@@ -200,8 +200,6 @@ class LoFi(IntegrationTest):
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
       test_driver.EnableChromeFeature('Previews')
       test_driver.EnableChromeFeature('DataReductionProxyDecidesTransform')
-      test_driver.EnableChromeFeature(
-        'DataReductionProxyEnabledWithNetworkService')
       test_driver.AddChromeArg('--force-effective-connection-type=Slow-2G')
       test_driver.SetExperiment('force_page_policies_empty_image')
 
@@ -220,8 +218,6 @@ class LoFi(IntegrationTest):
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
       test_driver.EnableChromeFeature('Previews')
       test_driver.EnableChromeFeature('DataReductionProxyDecidesTransform')
-      test_driver.EnableChromeFeature(
-        'DataReductionProxyEnabledWithNetworkService')
       test_driver.AddChromeArg('--force-effective-connection-type=Slow-2G')
 
       test_driver.LoadURL('http://check.googlezip.net/static/index.html')

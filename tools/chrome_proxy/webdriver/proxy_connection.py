@@ -26,8 +26,6 @@ class ProxyConnection(IntegrationTest):
         '--data-reduction-proxy-http-proxies=https://127.0.0.1:%d' % port)
       t.AddChromeArg(
         '--force-fieldtrials=DataReductionProxyConfigService/Disabled')
-      t.EnableChromeFeature('NetworkService')
-      t.EnableChromeFeature('DataReductionProxyEnabledWithNetworkService')
       t.UseEmulationServer(InvalidTLSHandler, port=port)
 
       t.LoadURL('http://check.googlezip.net/test.html')
@@ -53,8 +51,6 @@ class ProxyConnection(IntegrationTest):
         '--data-reduction-proxy-http-proxies=http://127.0.0.1:%d' % port)
       t.AddChromeArg(
         '--force-fieldtrials=DataReductionProxyConfigService/Disabled')
-      t.EnableChromeFeature('NetworkService')
-      t.EnableChromeFeature('DataReductionProxyEnabledWithNetworkService')
       t.UseEmulationServer(TCPResetHandler, port=port)
 
       t.LoadURL('http://check.googlezip.net/test.html')
@@ -80,8 +76,6 @@ class ProxyConnection(IntegrationTest):
         '--data-reduction-proxy-http-proxies=https://127.0.0.1:%d' % port)
       t.AddChromeArg(
         '--force-fieldtrials=DataReductionProxyConfigService/Disabled')
-      t.EnableChromeFeature('NetworkService')
-      t.EnableChromeFeature('DataReductionProxyEnabledWithNetworkService')
       t.UseEmulationServer(TLSResetHandler, port=port)
 
       t.LoadURL('http://check.googlezip.net/test.html')

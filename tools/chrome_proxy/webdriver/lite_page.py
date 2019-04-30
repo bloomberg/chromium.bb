@@ -30,9 +30,6 @@ class LitePage(IntegrationTest):
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
       test_driver.EnableChromeFeature(
         'NetworkQualityEstimator<NetworkQualityEstimator')
-      test_driver.EnableChromeFeature('NetworkService')
-      test_driver.EnableChromeFeature(
-        'DataReductionProxyEnabledWithNetworkService')
       test_driver.EnableChromeFeature('Previews')
       test_driver.EnableChromeFeature('DataReductionProxyDecidesTransform')
       test_driver.AddChromeArg(
@@ -177,9 +174,6 @@ class LitePage(IntegrationTest):
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
       test_driver.EnableChromeFeature(
         'NetworkQualityEstimator<NetworkQualityEstimator')
-      test_driver.EnableChromeFeature('NetworkService')
-      test_driver.EnableChromeFeature(
-        'DataReductionProxyEnabledWithNetworkService')
       test_driver.EnableChromeFeature('Previews')
       test_driver.EnableChromeFeature('DataReductionProxyDecidesTransform')
       test_driver.AddChromeArg('--force-fieldtrial-params='
@@ -266,9 +260,6 @@ class LitePage(IntegrationTest):
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
       test_driver.EnableChromeFeature(
         'NetworkQualityEstimator<NetworkQualityEstimator')
-      test_driver.EnableChromeFeature('NetworkService')
-      test_driver.EnableChromeFeature(
-        'DataReductionProxyEnabledWithNetworkService')
       test_driver.AddChromeArg('--force-fieldtrial-params='
                                'NetworkQualityEstimator.Enabled:'
                                'force_effective_connection_type/2G')

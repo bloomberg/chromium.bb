@@ -33,14 +33,12 @@ class HttpsPreviewsBaseClass():
     # These feature flags are common to both versions.
     t.EnableChromeFeature('Previews')
     t.EnableChromeFeature('LitePageServerPreviews')
-    t.EnableChromeFeature('DataReductionProxyEnabledWithNetworkService')
 
     if version == NAV_THROTTLE_VERSION:
       # No additional flags here, but explicitly check it given the else below.
       pass
     elif version == URL_LOADER_VERSION:
       t.EnableChromeFeature('HTTPSServerPreviewsUsingURLLoader')
-      t.EnableChromeFeature('NetworkService')
     else:
       raise Exception('"%s" is not a valid version' % version)
 
