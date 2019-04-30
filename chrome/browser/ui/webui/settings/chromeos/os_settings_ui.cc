@@ -138,7 +138,7 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
   html_source->AddResourcePath("crisper.js", IDR_OS_SETTINGS_CRISPER_JS);
   html_source->AddResourcePath("lazy_load.crisper.js",
                                IDR_OS_SETTINGS_LAZY_LOAD_CRISPER_JS);
-  html_source->AddResourcePath("lazy_load.html",
+  html_source->AddResourcePath("chromeos/lazy_load.html",
                                IDR_OS_SETTINGS_LAZY_LOAD_VULCANIZED_HTML);
   html_source->SetDefaultResource(IDR_OS_SETTINGS_VULCANIZED_HTML);
   html_source->UseGzip(base::BindRepeating(
