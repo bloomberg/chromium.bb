@@ -234,6 +234,9 @@ void ArcGraphicsTracingHandler::OnWindowActivated(ActivationReason reason,
   // Handle ARC current active window if any.
   DiscardActiveArcWindow();
 
+  if (!gained_active)
+    return;
+
   active_task_id_ = arc::GetWindowTaskId(gained_active);
   if (active_task_id_ <= 0)
     return;
