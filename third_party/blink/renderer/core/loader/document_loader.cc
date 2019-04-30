@@ -1545,6 +1545,20 @@ void DocumentLoader::InstallNewDocument(
   document->ApplyReportOnlyFeaturePolicyFromHeader(report_only_feature_policy);
 
   GetFrameLoader().DispatchDidClearDocumentOfWindowObject();
+
+  // Determine if the load is from a document from the same origin to enable
+  // deferred commits to avoid white flash on load. We only want to delay
+  // commits on same origin loads to avoid confusing users. We also require
+  // that this be an html document served via http.
+  if (initiator_origin) {
+    const scoped_refptr<const SecurityOrigin> url_origin =
+        SecurityOrigin::Create(Url());
+    document->SetDeferredCompositorCommitIsAllowed(
+        initiator_origin->IsSameSchemeHostPort(url_origin.get()) &&
+        Url().ProtocolIsInHTTPFamily() && document->IsHTMLDocument());
+  } else {
+    document->SetDeferredCompositorCommitIsAllowed(false);
+  }
 }
 
 const AtomicString& DocumentLoader::MimeType() const {

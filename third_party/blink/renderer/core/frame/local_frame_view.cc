@@ -4173,10 +4173,9 @@ void LocalFrameView::BeginLifecycleUpdates() {
   // This is enabled only if kAvoidFlashBetweenNavigation is enabled, and
   // the document loading is a regular HTML served over HTTP/HTTPs.
   Document* document = GetFrame().GetDocument();
-  if (base::FeatureList::IsEnabled(
-          blink::features::kAvoidFlashBetweenNavigation) &&
-      document && document->Url().ProtocolIsInHTTPFamily() &&
-      document->IsHTMLDocument()) {
+  if (document && document->DeferredCompositorCommitIsAllowed() &&
+      base::FeatureList::IsEnabled(
+          blink::features::kAvoidFlashBetweenNavigation)) {
     GetFrame().GetPage()->GetChromeClient().StartDeferringCommits(
         GetCommitDelayForAvoidFlashBetweenNavigation());
   }
