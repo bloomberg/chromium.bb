@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "third_party/blink/public/platform/modules/installedapp/web_related_application.h"
 #include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -51,23 +50,6 @@ ScriptPromise NavigatorInstalledApp::getInstalledRelatedApps(
       script_state);
 }
 
-class RelatedAppArray {
-  STATIC_ONLY(RelatedAppArray);
-
- public:
-  using WebType = const Vector<WebRelatedApplication>&;
-
-  static HeapVector<Member<RelatedApplication>> Take(
-      ScriptPromiseResolver*,
-      const Vector<WebRelatedApplication>& web_info) {
-    HeapVector<Member<RelatedApplication>> applications;
-    for (const auto& web_application : web_info)
-      applications.push_back(MakeGarbageCollected<RelatedApplication>(
-          web_application.platform, web_application.url, web_application.id));
-    return applications;
-  }
-};
-
 ScriptPromise NavigatorInstalledApp::getInstalledRelatedApps(
     ScriptState* script_state) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
@@ -92,7 +74,8 @@ ScriptPromise NavigatorInstalledApp::getInstalledRelatedApps(
   }
 
   app_controller->GetInstalledRelatedApps(
-      std::make_unique<CallbackPromiseAdapter<RelatedAppArray, void>>(
+      std::make_unique<
+          CallbackPromiseAdapter<HeapVector<Member<RelatedApplication>>, void>>(
           resolver));
   return promise;
 }

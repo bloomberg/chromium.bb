@@ -80,9 +80,9 @@ void InstalledAppController::OnGetManifestForRelatedApps(
 
   if (!provider_) {
     // See https://bit.ly/2S0zRAS for task types.
-    GetSupplementable()->GetInterfaceProvider().GetInterface(
-        mojo::MakeRequest(&provider_, GetExecutionContext()->GetTaskRunner(
-                                          blink::TaskType::kMiscPlatformAPI)));
+    GetSupplementable()->GetInterfaceProvider().GetInterface(mojo::MakeRequest(
+        &provider_,
+        GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI)));
     // TODO(mgiuca): Set a connection error handler. This requires a refactor to
     // work like NavigatorShare.cpp (retain a persistent list of clients to
     // reject all of their promises).
@@ -96,20 +96,18 @@ void InstalledAppController::OnGetManifestForRelatedApps(
 }
 
 void InstalledAppController::OnFilterInstalledApps(
-    std::unique_ptr<blink::AppInstalledCallbacks> callbacks,
+    std::unique_ptr<AppInstalledCallbacks> callbacks,
     Vector<mojom::blink::RelatedApplicationPtr> result) {
-  Vector<blink::WebRelatedApplication> applications;
+  HeapVector<Member<RelatedApplication>> applications;
   for (const auto& res : result) {
-    blink::WebRelatedApplication app;
-    app.platform = res->platform;
-    app.url = res->url;
-    app.id = res->id;
+    auto* app = MakeGarbageCollected<RelatedApplication>(res->platform,
+                                                         res->url, res->id);
     applications.push_back(app);
   }
   callbacks->OnSuccess(applications);
 }
 
-void InstalledAppController::Trace(blink::Visitor* visitor) {
+void InstalledAppController::Trace(Visitor* visitor) {
   Supplement<LocalFrame>::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
 }

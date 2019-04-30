@@ -11,11 +11,13 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom-blink.h"
 #include "third_party/blink/public/mojom/installedapp/related_application.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/installedapp/web_related_application.h"
-#include "third_party/blink/public/platform/web_callbacks.h"
+#include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/modules/installedapp/related_application.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -25,7 +27,7 @@ class WebURL;
 struct Manifest;
 
 using AppInstalledCallbacks =
-    WebCallbacks<const Vector<WebRelatedApplication>&, void>;
+    CallbackPromiseAdapter<HeapVector<Member<RelatedApplication>>, void>;
 
 class MODULES_EXPORT InstalledAppController final
     : public GarbageCollectedFinalized<InstalledAppController>,
@@ -46,7 +48,7 @@ class MODULES_EXPORT InstalledAppController final
   static void ProvideTo(LocalFrame&);
   static InstalledAppController* From(LocalFrame&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   // Callback for the result of GetInstalledRelatedApps.
@@ -63,7 +65,7 @@ class MODULES_EXPORT InstalledAppController final
   void ContextDestroyed(ExecutionContext*) override;
 
   // Callback from the InstalledAppProvider mojo service.
-  void OnFilterInstalledApps(std::unique_ptr<blink::AppInstalledCallbacks>,
+  void OnFilterInstalledApps(std::unique_ptr<AppInstalledCallbacks>,
                              Vector<mojom::blink::RelatedApplicationPtr>);
 
   // Handle to the InstalledApp mojo service.

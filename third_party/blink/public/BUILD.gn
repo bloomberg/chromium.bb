@@ -129,7 +129,6 @@ source_set("blink_headers") {
     "platform/mac/web_scrollbar_theme.h",
     "platform/modules/background_fetch/web_background_fetch_registration.h",
     "platform/modules/indexeddb/web_idb_database_exception.h",
-    "platform/modules/installedapp/web_related_application.h",
     "platform/modules/media_capabilities/web_audio_configuration.h",
     "platform/modules/media_capabilities/web_media_capabilities_callbacks.h",
     "platform/modules/media_capabilities/web_media_capabilities_client.h",
