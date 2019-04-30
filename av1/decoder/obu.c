@@ -174,9 +174,9 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
       if (cm->timing_info_present &&
           (cm->timing_info.equal_picture_interval ||
            cm->op_params[i].decoder_model_param_present_flag)) {
-        cm->op_params[i].bitrate =
-            max_level_bitrate(seq_params->profile, seq_params->seq_level_idx[i],
-                              seq_params->tier[i]);
+        cm->op_params[i].bitrate = av1_max_level_bitrate(
+            seq_params->profile, seq_params->seq_level_idx[i],
+            seq_params->tier[i]);
         // Level with seq_level_idx = 31 returns a high "dummy" bitrate to pass
         // the check
         if (cm->op_params[i].bitrate == 0)

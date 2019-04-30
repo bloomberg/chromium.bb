@@ -1013,7 +1013,7 @@ static void set_bitstream_level_tier(SequenceHeader *seq, AV1_COMMON *cm,
     seq->seq_level_idx[i] = level;
     // Set the maximum parameters for bitrate and buffer size for this profile,
     // level, and tier
-    cm->op_params[i].bitrate = max_level_bitrate(
+    cm->op_params[i].bitrate = av1_max_level_bitrate(
         cm->seq_params.profile, seq->seq_level_idx[i], seq->tier[i]);
     // Level with seq_level_idx = 31 returns a high "dummy" bitrate to pass the
     // check
@@ -3970,7 +3970,7 @@ void av1_setup_frame_size(AV1_COMP *cpi) {
   const size_params_type rsz = calculate_next_size_params(cpi);
   setup_frame_size_from_params(cpi, &rsz);
 
-  assert(is_min_tile_width_satisfied(cm));
+  assert(av1_is_min_tile_width_satisfied(cm));
 }
 
 static void superres_post_encode(AV1_COMP *cpi) {
@@ -4448,7 +4448,7 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
       if (!cm->seg.update_data && cm->prev_frame) {
         segfeatures_copy(&cm->seg, &cm->prev_frame->seg);
       } else {
-        calculate_segdata(&cm->seg);
+        av1_calculate_segdata(&cm->seg);
       }
     } else {
       memset(&cm->seg, 0, sizeof(cm->seg));

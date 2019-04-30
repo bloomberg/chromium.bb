@@ -53,7 +53,7 @@ void set_dec_model_op_parameters(aom_dec_model_op_parameters_t *op_params);
 void set_resource_availability_parameters(
     aom_dec_model_op_parameters_t *op_params);
 
-int64_t max_level_bitrate(BITSTREAM_PROFILE seq_profile, int seq_level_idx,
-                          int seq_tier);
+int64_t av1_max_level_bitrate(BITSTREAM_PROFILE seq_profile, int seq_level_idx,
+                              int seq_tier);
 
 #endif  // AOM_AV1_COMMON_TIMING_H_

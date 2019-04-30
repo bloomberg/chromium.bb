@@ -38,8 +38,8 @@ static int bitrate_profile_factor[1 << PROFILE_BITS] = {
   1, 2, 3, 0, 0, 0, 0, 0
 };
 
-int64_t max_level_bitrate(BITSTREAM_PROFILE seq_profile, int seq_level_idx,
-                          int seq_tier) {
+int64_t av1_max_level_bitrate(BITSTREAM_PROFILE seq_profile, int seq_level_idx,
+                              int seq_tier) {
   int64_t bitrate;
 
   if (seq_tier) {

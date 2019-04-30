@@ -1740,7 +1740,7 @@ static void setup_segmentation(AV1_COMMON *const cm,
         av1_set_segdata(seg, i, j, data);
       }
     }
-    calculate_segdata(seg);
+    av1_calculate_segdata(seg);
   } else if (cm->prev_frame) {
     segfeatures_copy(seg, &cm->prev_frame->seg);
   }
@@ -5135,7 +5135,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   }
 
   read_tile_info(pbi, rb);
-  if (!is_min_tile_width_satisfied(cm)) {
+  if (!av1_is_min_tile_width_satisfied(cm)) {
     aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                        "Minimum tile width requirement not satisfied");
   }
