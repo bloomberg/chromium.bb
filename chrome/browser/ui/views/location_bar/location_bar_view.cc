@@ -623,8 +623,11 @@ void LocationBarView::Layout() {
 
 void LocationBarView::OnThemeChanged() {
   tint_ = GetTint();
+  SkColor icon_color = GetColor(OmniboxPart::RESULTS_ICON);
   for (PageActionIconView* icon_view : page_action_icons_)
-    icon_view->SetIconColor(GetColor(OmniboxPart::RESULTS_ICON));
+    icon_view->SetIconColor(icon_color);
+  for (ContentSettingImageView* image_view : content_setting_views_)
+    image_view->SetIconColor(icon_color);
 }
 
 void LocationBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
