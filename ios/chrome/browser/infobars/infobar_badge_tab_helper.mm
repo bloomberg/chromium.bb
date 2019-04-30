@@ -68,9 +68,9 @@ InfobarBadgeTabHelper::InfobarBadgeTabHelper(web::WebState* web_state)
 
 void InfobarBadgeTabHelper::OnInfoBarAdded(infobars::InfoBar* infobar) {
   this->UpdateBadgeForInfobar(infobar, true);
-  // Set the badgeState to selected since the InfobarBanner has to be presented
-  // on OnInfoBarAdded.
-  delegate_.badgeState = InfobarBadgeStateSelected;
+  // Set the badgeState to None to allow for selecting the infobar when the
+  // banner is being presented.
+  delegate_.badgeState = InfobarBadgeStateNone;
 }
 
 void InfobarBadgeTabHelper::OnInfoBarRemoved(infobars::InfoBar* infobar,

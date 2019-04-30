@@ -239,8 +239,7 @@ TEST_F(InfobarBadgeTabHelperTest, TestInfobarBadgeAcceptedState) {
 // Test the initial badge state once the banner has been presented.
 TEST_F(InfobarBadgeTabHelperTest, TestInfobarBadgeStateOnBannerPresentation) {
   EXPECT_TRUE(infobar_badge_tab_delegate_.displayingBadge);
-  EXPECT_TRUE(infobar_badge_tab_delegate_.badgeState &
-              InfobarBadgeStateSelected);
+  EXPECT_FALSE(infobar_badge_tab_delegate_.badgeState);
 }
 
 // Tests that once the Modal is presented the default state is
