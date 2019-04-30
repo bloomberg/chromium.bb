@@ -537,7 +537,8 @@ bool AutofillProfile::IsSubsetOfForFieldSet(
       }
     } else if (AutofillType(type).group() == PHONE_HOME) {
       // Phone numbers should be canonicalized before comparing.
-      if (type != PHONE_HOME_WHOLE_NUMBER) {
+      if (type != PHONE_HOME_WHOLE_NUMBER &&
+          type != PHONE_HOME_CITY_AND_NUMBER) {
         continue;
       } else if (!i18n::PhoneNumbersMatch(
                      value, profile.GetInfo(type, app_locale),

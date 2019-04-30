@@ -848,7 +848,7 @@ TEST(AutofillProfileTest,
   test::SetProfileInfo(&profile2, "Genevieve", "", "Fox", "", "", "", "", "",
                        "", "H3B2Y5", "CA", "");
 
-  const AutofillProfileComparator comparator("en-US");
+  const AutofillProfileComparator comparator("en-CA");
 
   EXPECT_TRUE(profile1.IsSubsetOfForFieldSet(comparator, profile2, "en-CA",
                                              {NAME_FULL, ADDRESS_HOME_ZIP}));
@@ -868,12 +868,114 @@ TEST(AutofillProfileTest,
   test::SetProfileInfo(&profile2, "Genevieve", "", "Fox", "", "", "", "", "",
                        "", "", "CA", "15144445454");
 
-  const AutofillProfileComparator comparator("en-US");
+  const AutofillProfileComparator comparator("en-CA");
 
   EXPECT_TRUE(profile1.IsSubsetOfForFieldSet(
       comparator, profile2, "en-CA", {NAME_FULL, PHONE_HOME_WHOLE_NUMBER}));
   EXPECT_TRUE(profile2.IsSubsetOfForFieldSet(
       comparator, profile1, "en-CA", {NAME_FULL, PHONE_HOME_WHOLE_NUMBER}));
+  EXPECT_TRUE(profile1.IsSubsetOfForFieldSet(
+      comparator, profile2, "en-CA", {NAME_FULL, PHONE_HOME_CITY_AND_NUMBER}));
+  EXPECT_TRUE(profile2.IsSubsetOfForFieldSet(
+      comparator, profile1, "en-CA", {NAME_FULL, PHONE_HOME_CITY_AND_NUMBER}));
+}
+
+TEST(AutofillProfileTest,
+     IsSubsetOfForFieldSet_PhoneNumbersWithAndWithoutCodes_US) {
+  // Has country and city codes.
+  AutofillProfile profile1 =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile1, "Genevieve", "", "Fox", "", "", "", "", "",
+                       "", "", "US", "+1 (508) 444-5454");
+
+  // Has a city code.
+  AutofillProfile profile2 =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile2, "Genevieve", "", "Fox", "", "", "", "", "",
+                       "", "", "US", "5084445454");
+
+  // Has neither a country nor a city code.
+  AutofillProfile profile3 =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile3, "Genevieve", "", "Fox", "", "", "", "", "",
+                       "", "", "US", "4445454");
+
+  const AutofillProfileComparator comparator("en-US");
+
+  EXPECT_TRUE(profile1.IsSubsetOfForFieldSet(
+      comparator, profile2, "en-US", {NAME_FULL, PHONE_HOME_WHOLE_NUMBER}));
+  EXPECT_TRUE(profile2.IsSubsetOfForFieldSet(
+      comparator, profile1, "en-US", {NAME_FULL, PHONE_HOME_WHOLE_NUMBER}));
+  EXPECT_FALSE(profile1.IsSubsetOfForFieldSet(
+      comparator, profile3, "en-US", {NAME_FULL, PHONE_HOME_WHOLE_NUMBER}));
+  EXPECT_FALSE(profile3.IsSubsetOfForFieldSet(
+      comparator, profile1, "en-US", {NAME_FULL, PHONE_HOME_WHOLE_NUMBER}));
+  EXPECT_FALSE(profile2.IsSubsetOfForFieldSet(
+      comparator, profile3, "en-US", {NAME_FULL, PHONE_HOME_WHOLE_NUMBER}));
+  EXPECT_FALSE(profile3.IsSubsetOfForFieldSet(
+      comparator, profile2, "en-US", {NAME_FULL, PHONE_HOME_WHOLE_NUMBER}));
+
+  EXPECT_TRUE(profile1.IsSubsetOfForFieldSet(
+      comparator, profile2, "en-US", {NAME_FULL, PHONE_HOME_CITY_AND_NUMBER}));
+  EXPECT_TRUE(profile2.IsSubsetOfForFieldSet(
+      comparator, profile1, "en-US", {NAME_FULL, PHONE_HOME_CITY_AND_NUMBER}));
+  EXPECT_FALSE(profile1.IsSubsetOfForFieldSet(
+      comparator, profile3, "en-US", {NAME_FULL, PHONE_HOME_CITY_AND_NUMBER}));
+  EXPECT_FALSE(profile3.IsSubsetOfForFieldSet(
+      comparator, profile1, "en-US", {NAME_FULL, PHONE_HOME_CITY_AND_NUMBER}));
+  EXPECT_FALSE(profile2.IsSubsetOfForFieldSet(
+      comparator, profile3, "en-US", {NAME_FULL, PHONE_HOME_CITY_AND_NUMBER}));
+  EXPECT_FALSE(profile3.IsSubsetOfForFieldSet(
+      comparator, profile2, "en-US", {NAME_FULL, PHONE_HOME_CITY_AND_NUMBER}));
+}
+
+TEST(AutofillProfileTest,
+     IsSubsetOfForFieldSet_PhoneNumbersWithAndWithoutCodes_BR) {
+  // Has country and city codes.
+  AutofillProfile profile1 =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile1, "Thiago", "", "Avila", "", "", "", "", "", "",
+                       "", "", "BR", "5521987650000");
+
+  // Has a city code.
+  AutofillProfile profile2 =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile2, "Thiago", "", "Avila", "", "", "", "", "", "",
+                       "", "", "BR", "21987650000");
+
+  // Has neither a country nor a city code.
+  AutofillProfile profile3 =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile3, "Thiago", "", "Avila", "", "", "", "", "", "",
+                       "", "", "BR", "987650000");
+
+  const AutofillProfileComparator comparator("pt-BR");
+
+  EXPECT_TRUE(profile1.IsSubsetOfForFieldSet(
+      comparator, profile2, "pt-BR", {NAME_FULL, PHONE_HOME_WHOLE_NUMBER}));
+  EXPECT_TRUE(profile2.IsSubsetOfForFieldSet(
+      comparator, profile1, "pt-BR", {NAME_FULL, PHONE_HOME_WHOLE_NUMBER}));
+  EXPECT_FALSE(profile1.IsSubsetOfForFieldSet(
+      comparator, profile3, "pt-BR", {NAME_FULL, PHONE_HOME_WHOLE_NUMBER}));
+  EXPECT_FALSE(profile3.IsSubsetOfForFieldSet(
+      comparator, profile1, "pt-BR", {NAME_FULL, PHONE_HOME_WHOLE_NUMBER}));
+  EXPECT_FALSE(profile2.IsSubsetOfForFieldSet(
+      comparator, profile3, "pt-BR", {NAME_FULL, PHONE_HOME_WHOLE_NUMBER}));
+  EXPECT_FALSE(profile3.IsSubsetOfForFieldSet(
+      comparator, profile2, "pt-BR", {NAME_FULL, PHONE_HOME_WHOLE_NUMBER}));
+
+  EXPECT_TRUE(profile1.IsSubsetOfForFieldSet(
+      comparator, profile2, "pt-BR", {NAME_FULL, PHONE_HOME_CITY_AND_NUMBER}));
+  EXPECT_TRUE(profile2.IsSubsetOfForFieldSet(
+      comparator, profile1, "pt-BR", {NAME_FULL, PHONE_HOME_CITY_AND_NUMBER}));
+  EXPECT_FALSE(profile1.IsSubsetOfForFieldSet(
+      comparator, profile3, "pt-BR", {NAME_FULL, PHONE_HOME_CITY_AND_NUMBER}));
+  EXPECT_FALSE(profile3.IsSubsetOfForFieldSet(
+      comparator, profile1, "pt-BR", {NAME_FULL, PHONE_HOME_CITY_AND_NUMBER}));
+  EXPECT_FALSE(profile2.IsSubsetOfForFieldSet(
+      comparator, profile3, "pt-BR", {NAME_FULL, PHONE_HOME_CITY_AND_NUMBER}));
+  EXPECT_FALSE(profile3.IsSubsetOfForFieldSet(
+      comparator, profile2, "pt-BR", {NAME_FULL, PHONE_HOME_CITY_AND_NUMBER}));
 }
 
 TEST(AutofillProfileTest, SetRawInfo_UpdateValidityFlag) {
