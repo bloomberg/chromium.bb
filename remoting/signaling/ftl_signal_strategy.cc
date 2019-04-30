@@ -49,7 +49,7 @@ SignalStrategy::Error GrpcStatusToSignalingError(const grpc::Status& status) {
 
 class FtlSignalStrategy::Core {
  public:
-  Core(OAuthTokenGetter* oauth_token_getter,
+  Core(std::unique_ptr<OAuthTokenGetter> oauth_token_getter,
        std::unique_ptr<FtlDeviceIdProvider> device_id_provider);
   ~Core();
 
@@ -91,7 +91,7 @@ class FtlSignalStrategy::Core {
   void OnStanza(const std::unique_ptr<jingle_xmpp::XmlElement> stanza);
   void OnParserError();
 
-  OAuthTokenGetter* oauth_token_getter_ = nullptr;
+  std::unique_ptr<OAuthTokenGetter> oauth_token_getter_;
 
   std::unique_ptr<RegistrationManager> registration_manager_;
   std::unique_ptr<FtlMessagingClient> messaging_client_;
@@ -117,22 +117,23 @@ class FtlSignalStrategy::Core {
 };
 
 FtlSignalStrategy::Core::Core(
-    OAuthTokenGetter* oauth_token_getter,
+    std::unique_ptr<OAuthTokenGetter> oauth_token_getter,
     std::unique_ptr<FtlDeviceIdProvider> device_id_provider)
     : weak_factory_(this) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK(oauth_token_getter);
   DCHECK(device_id_provider);
-  oauth_token_getter_ = oauth_token_getter;
+  oauth_token_getter_ = std::move(oauth_token_getter);
   // TODO(yuweih): Just make FtlMessagingClient own FtlRegistrationManager and
   // call SignInGaia() transparently.
   registration_manager_ = std::make_unique<FtlRegistrationManager>(
-      oauth_token_getter_, std::move(device_id_provider));
+      oauth_token_getter_.get(), std::move(device_id_provider));
   messaging_client_ = std::make_unique<FtlMessagingClient>(
-      oauth_token_getter_, registration_manager_.get());
+      oauth_token_getter_.get(), registration_manager_.get());
 }
 
 FtlSignalStrategy::Core::~Core() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   Disconnect();
 
   registration_manager_->SignOut();
@@ -145,11 +146,14 @@ FtlSignalStrategy::Core::~Core() {
       FROM_HERE,
       base::BindOnce(
           [](std::unique_ptr<RegistrationManager> registration_manager,
-             std::unique_ptr<FtlMessagingClient> messaging_client) {
+             std::unique_ptr<FtlMessagingClient> messaging_client,
+             std::unique_ptr<OAuthTokenGetter> oauth_token_getter) {
             messaging_client.reset();
             registration_manager.reset();
+            oauth_token_getter.reset();
           },
-          std::move(registration_manager_), std::move(messaging_client_)),
+          std::move(registration_manager_), std::move(messaging_client_),
+          std::move(oauth_token_getter_)),
       kDestroyMessagingClientDelay);
 }
 
@@ -456,9 +460,9 @@ void FtlSignalStrategy::Core::OnParserError() {
 }
 
 FtlSignalStrategy::FtlSignalStrategy(
-    OAuthTokenGetter* oauth_token_getter,
+    std::unique_ptr<OAuthTokenGetter> oauth_token_getter,
     std::unique_ptr<FtlDeviceIdProvider> device_id_provider)
-    : core_(std::make_unique<Core>(oauth_token_getter,
+    : core_(std::make_unique<Core>(std::move(oauth_token_getter),
                                    std::move(device_id_provider))) {}
 
 FtlSignalStrategy::~FtlSignalStrategy() {

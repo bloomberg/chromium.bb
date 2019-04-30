@@ -45,6 +45,7 @@
 #include "remoting/base/constants.h"
 #include "remoting/base/logging.h"
 #include "remoting/base/oauth_token_getter_impl.h"
+#include "remoting/base/oauth_token_getter_proxy.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/base/service_urls.h"
 #include "remoting/base/util.h"
@@ -419,7 +420,7 @@ class HostProcess : public ConfigWatcher::Delegate,
   // TODO(crbug.com/954566): Clean up GCD code
   // Must outlive |ftl_signal_strategy_|, |gcd_state_updater_| and
   // |signaling_connector_|.
-  std::unique_ptr<OAuthTokenGetter> oauth_token_getter_;
+  std::unique_ptr<OAuthTokenGetterImpl> oauth_token_getter_;
 
   bool enable_ftl_signaling_ = false;
 
@@ -1480,7 +1481,8 @@ void HostProcess::InitializeSignaling() {
 
   if (enable_ftl_signaling_) {
     ftl_signal_strategy_ = std::make_unique<FtlSignalStrategy>(
-        oauth_token_getter_.get(),
+        std::make_unique<OAuthTokenGetterProxy>(
+            oauth_token_getter_->GetWeakPtr()),
         std::make_unique<FtlHostDeviceIdProvider>(host_id_));
     ftl_signaling_connector_ = std::make_unique<FtlSignalingConnector>(
         ftl_signal_strategy_.get(),

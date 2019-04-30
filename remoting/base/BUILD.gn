@@ -95,6 +95,8 @@ source_set("authorization") {
     "oauth_token_getter.h",
     "oauth_token_getter_impl.cc",
     "oauth_token_getter_impl.h",
+    "oauth_token_getter_proxy.cc",
+    "oauth_token_getter_proxy.h",
   ]
 
   configs += [
@@ -165,6 +167,7 @@ source_set("unit_tests") {
     "buffered_socket_writer_unittest.cc",
     "capabilities_unittest.cc",
     "compound_buffer_unittest.cc",
+    "oauth_token_getter_proxy_unittest.cc",
     "rate_counter_unittest.cc",
     "result_unittest.cc",
     "rsa_key_pair_unittest.cc",

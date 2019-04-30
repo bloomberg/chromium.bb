@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/containers/queue.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -44,6 +45,8 @@ class OAuthTokenGetterImpl : public OAuthTokenGetter,
   // OAuthTokenGetter interface.
   void CallWithToken(OAuthTokenGetter::TokenCallback on_access_token) override;
   void InvalidateCache() override;
+
+  base::WeakPtr<OAuthTokenGetterImpl> GetWeakPtr();
 
  private:
   // gaia::GaiaOAuthClient::Delegate interface.
@@ -84,6 +87,8 @@ class OAuthTokenGetterImpl : public OAuthTokenGetter,
   std::unique_ptr<base::OneShotTimer> refresh_timer_;
 
   SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<OAuthTokenGetterImpl> weak_factory_;
 };
 
 }  // namespace remoting

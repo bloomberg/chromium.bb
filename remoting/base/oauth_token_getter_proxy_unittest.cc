@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/client/oauth_token_getter_proxy.h"
+#include "remoting/base/oauth_token_getter_proxy.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -198,8 +198,8 @@ void OAuthTokenGetterProxyTest::TestCallWithTokenImpl(
   expected_callback_result_->status = status;
   expected_callback_result_->user_email = user_email;
   expected_callback_result_->access_token = access_token;
-  proxy_->CallWithToken(base::Bind(&OAuthTokenGetterProxyTest::OnTokenReceived,
-                                   base::Unretained(this)));
+  proxy_->CallWithToken(base::BindOnce(
+      &OAuthTokenGetterProxyTest::OnTokenReceived, base::Unretained(this)));
   runner_thread_.task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&FakeOAuthTokenGetter::ResolveCallback,
                                 token_getter_->GetWeakPtr(), status, user_email,

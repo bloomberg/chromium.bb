@@ -57,11 +57,10 @@ static_library("client") {
       "chromoting_session.h",
       "dual_buffer_frame_consumer.cc",
       "dual_buffer_frame_consumer.h",
-      "oauth_token_getter_proxy.cc",
-      "oauth_token_getter_proxy.h",
     ]
     deps += [
       "//mojo/core/embedder",
+      "//remoting/base:authorization",
       "//remoting/client/input",
       "//remoting/client/ui",
       "//services/network:network_service",
@@ -92,7 +91,6 @@ source_set("unit_tests") {
     "client_telemetry_logger_unittest.cc",
     "dual_buffer_frame_consumer_unittest.cc",
     "empty_cursor_filter_unittest.cc",
-    "oauth_token_getter_proxy_unittest.cc",
     "queued_task_poster_unittest.cc",
     "software_video_renderer_unittest.cc",
   ]

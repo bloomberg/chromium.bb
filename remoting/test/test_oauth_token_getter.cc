@@ -140,6 +140,10 @@ void TestOAuthTokenGetter::InvalidateCache() {
   token_getter_->CallWithToken(base::DoNothing());
 }
 
+base::WeakPtr<TestOAuthTokenGetter> TestOAuthTokenGetter::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 std::unique_ptr<OAuthTokenGetter>
 TestOAuthTokenGetter::CreateFromIntermediateCredentials(
     const std::string& auth_code,

@@ -34,7 +34,8 @@ OAuthTokenGetterImpl::OAuthTokenGetterImpl(
     : intermediate_credentials_(std::move(intermediate_credentials)),
       gaia_oauth_client_(
           new gaia::GaiaOAuthClient(std::move(url_loader_factory))),
-      credentials_updated_callback_(on_credentials_update) {
+      credentials_updated_callback_(on_credentials_update),
+      weak_factory_(this) {
   if (auto_refresh) {
     refresh_timer_.reset(new base::OneShotTimer());
   }
@@ -46,7 +47,8 @@ OAuthTokenGetterImpl::OAuthTokenGetterImpl(
     bool auto_refresh)
     : authorization_credentials_(std::move(authorization_credentials)),
       gaia_oauth_client_(
-          new gaia::GaiaOAuthClient(std::move(url_loader_factory))) {
+          new gaia::GaiaOAuthClient(std::move(url_loader_factory))),
+      weak_factory_(this) {
   if (auto_refresh) {
     refresh_timer_.reset(new base::OneShotTimer());
   }
@@ -220,6 +222,10 @@ void OAuthTokenGetterImpl::CallWithToken(TokenCallback on_access_token) {
 void OAuthTokenGetterImpl::InvalidateCache() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   access_token_expiry_time_ = base::Time();
+}
+
+base::WeakPtr<OAuthTokenGetterImpl> OAuthTokenGetterImpl::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 void OAuthTokenGetterImpl::GetOauthTokensFromAuthCode() {

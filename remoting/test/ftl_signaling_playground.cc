@@ -25,6 +25,7 @@
 #include "remoting/base/grpc_support/grpc_async_unary_request.h"
 #include "remoting/base/logging.h"
 #include "remoting/base/oauth_token_getter_impl.h"
+#include "remoting/base/oauth_token_getter_proxy.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/base/service_urls.h"
 #include "remoting/base/url_request_context_getter.h"
@@ -212,7 +213,7 @@ void FtlSignalingPlayground::FetchSecret(
 
 void FtlSignalingPlayground::SetUpSignaling() {
   signal_strategy_ = std::make_unique<FtlSignalStrategy>(
-      token_getter_.get(),
+      std::make_unique<OAuthTokenGetterProxy>(token_getter_->GetWeakPtr()),
       std::make_unique<test::TestDeviceIdProvider>(storage_.get()));
   signal_strategy_->AddListener(this);
 

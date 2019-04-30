@@ -20,11 +20,9 @@ class OAuthTokenGetter;
 // (when Connect() is called).
 class FtlSignalStrategy : public SignalStrategy {
  public:
-  // |oauth_token_getter| must outlive |core_|. Ideally it should be a
-  // singleton.
-  // TODO(yuweih): Consider taking weak pointer to OAuthTokenGetter or wrapping
-  // it with OAuthTokenGetterProxy.
-  FtlSignalStrategy(OAuthTokenGetter* oauth_token_getter,
+  // We take unique_ptr<OAuthTokenGetter> here so that we still have a chance to
+  // send out pending requests after the instance is deleted.
+  FtlSignalStrategy(std::unique_ptr<OAuthTokenGetter> oauth_token_getter,
                     std::unique_ptr<FtlDeviceIdProvider> device_id_provider);
   ~FtlSignalStrategy() override;
 
