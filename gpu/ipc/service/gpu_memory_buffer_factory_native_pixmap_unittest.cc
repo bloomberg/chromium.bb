@@ -3,12 +3,23 @@
 // found in the LICENSE file.
 
 #include "gpu/ipc/service/gpu_memory_buffer_factory_native_pixmap.h"
+
+#include "build/build_config.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory_test_template.h"
 
 namespace gpu {
 namespace {
 
-INSTANTIATE_TYPED_TEST_SUITE_P(GpuMemoryBufferFactoryNativePixmap,
+// On Fuchsia NativePixmap depends on Vulkan, which is not initialized in tests.
+// See crbug.com/957700
+#if defined(OS_FUCHSIA)
+#define MAYBE_GpuMemoryBufferFactoryNativePixmap \
+  DISABLED_GpuMemoryBufferFactoryNativePixmap
+#else
+#define MAYBE_GpuMemoryBufferFactoryNativePixmap \
+  GpuMemoryBufferFactoryNativePixmap
+#endif
+INSTANTIATE_TYPED_TEST_SUITE_P(MAYBE_GpuMemoryBufferFactoryNativePixmap,
                                GpuMemoryBufferFactoryTest,
                                GpuMemoryBufferFactoryNativePixmap);
 
