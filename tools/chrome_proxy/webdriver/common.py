@@ -507,13 +507,26 @@ class TestDriver:
       url: The URL to navigate to.
       timeout: The time in seconds to load the page before timing out.
     """
+    # Reduce some flakiness by checking if we should ensure the proxy has fully
+    # initialized first.
+    if not self._driver:
+      self._StartDriver()
+
+    disabled_config_service = False
+    for arg in self._chrome_args:
+      if 'DataReductionProxyConfigService/Disabled' in arg:
+        disabled_config_service = True
+    if (not disabled_config_service and
+        '--enable-spdy-proxy-auth' in self._chrome_args and
+        'DataReductionProxyEnabledWithNetworkService' in self._enable_features):
+      self._driver.get('data:,')
+      self.SleepUntilHistogramHasEntry(
+        'DataReductionProxy.ConfigService.FetchResponseCode', sleep_intervals=5)
     self._url = url
     if (len(urlparse.urlparse(url).netloc) == 0 and
         len(urlparse.urlparse(url).scheme) == 0):
       self._logger.warn('Invalid URL: "%s". Did you forget to prepend '
         '"http://"? See RFC 1808 for more information', url)
-    if not self._driver:
-      self._StartDriver()
     self._driver.set_page_load_timeout(timeout)
     self._logger.debug('Set page load timeout to %f seconds', timeout)
     self._driver.get(self._url)
