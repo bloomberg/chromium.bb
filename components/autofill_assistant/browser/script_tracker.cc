@@ -77,7 +77,9 @@ void ScriptTracker::CheckScripts() {
   batch_element_checker_ = std::make_unique<BatchElementChecker>();
   for (const auto& entry : available_scripts_) {
     Script* script = entry.first;
-    if (script->handle.name.empty() && !script->handle.autostart)
+    if (script->handle.name.empty() &&
+        script->handle.chip_icon == ChipIcon::NO_ICON &&
+        !script->handle.autostart)
       continue;
 
     script->precondition->Check(
