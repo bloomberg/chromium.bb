@@ -3562,6 +3562,15 @@
         "test": "fidlgen_js_unittests"
       },
       {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.gfx_unittests.filter"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "gfx_unittests"
+      },
+      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -3797,6 +3806,20 @@
           ]
         },
         "test": "fidlgen_js_unittests"
+      },
+      {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.gfx_unittests.filter"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1"
+            }
+          ]
+        },
+        "test": "gfx_unittests"
       },
       {
         "swarming": {
@@ -4099,6 +4122,20 @@
           ]
         },
         "test": "fidlgen_js_unittests"
+      },
+      {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.gfx_unittests.filter"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1"
+            }
+          ]
+        },
+        "test": "gfx_unittests"
       },
       {
         "swarming": {

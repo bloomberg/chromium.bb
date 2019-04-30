@@ -42,11 +42,6 @@ bool ReturnsValidPath(int dir_type) {
   if (dir_type == DIR_USER_DESKTOP)
     check_path_exists = false;
 #endif
-#if defined(OS_IOS)
-  // Bundled unittests on iOS may not have Resources directory in the bundle.
-  if (dir_type == DIR_ASSETS)
-    check_path_exists = false;
-#endif
 #if defined(OS_MACOSX)
   if (dir_type != DIR_EXE && dir_type != DIR_MODULE && dir_type != FILE_EXE &&
       dir_type != FILE_MODULE) {

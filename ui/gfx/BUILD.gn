@@ -647,7 +647,6 @@ test("gfx_unittests") {
 
   data = [
     "test/data/",
-    "$root_out_dir/ui_test.pak",
   ]
 
   if (!is_ios) {
@@ -692,6 +691,7 @@ test("gfx_unittests") {
       "mac/coordinate_conversion_unittest.mm",
       "mojo/struct_traits_unittest.cc",
       "nine_image_painter_unittest.cc",
+      "paint_vector_icon_unittest.cc",
       "path_mac_unittest.mm",
       "platform_font_mac_unittest.mm",
       "range/range_mac_unittest.mm",
@@ -706,14 +706,11 @@ test("gfx_unittests") {
       "transform_util_unittest.cc",
       "utf16_indexing_unittest.cc",
     ]
+    data += [ "$root_out_dir/ui_test.pak" ]
   }
 
   if (is_linux || is_android || is_fuchsia) {
     sources += [ "platform_font_skia_unittest.cc" ]
-  }
-
-  if (!is_ios) {
-    sources += [ "paint_vector_icon_unittest.cc" ]
   }
 
   deps = [
@@ -744,6 +741,10 @@ test("gfx_unittests") {
   data_deps = [
     "//ui/resources:ui_test_pak",
   ]
+
+  if (is_mac || is_ios) {
+    deps += [ "//ui/resources:ui_test_pak_bundle_data" ]
+  }
 
   if (!is_mac && !is_ios) {
     sources += [
