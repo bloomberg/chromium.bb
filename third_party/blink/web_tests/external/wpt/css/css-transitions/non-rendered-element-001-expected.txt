@@ -1,0 +1,7 @@
+This is a testharness.js-based test.
+PASS Transitions do not run on an element not being rendered
+FAIL Transitions do not run for an element newly rendered assert_equals: No transition should run expected "rgb(0, 128, 0)" but got "rgb(255, 0, 0)"
+PASS Transitions do not run for an element newly made not rendered
+PASS Transitions are canceled when an element is no longer rendered
+Harness: the test ran to completion.
+

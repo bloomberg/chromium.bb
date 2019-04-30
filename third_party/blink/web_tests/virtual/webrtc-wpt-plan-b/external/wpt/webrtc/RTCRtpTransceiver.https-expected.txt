@@ -35,5 +35,6 @@ FAIL checkLocalRollback assert_equals: expected "[{currentDirection:null,directi
 FAIL checkRollbackAndSetRemoteOfferWithDifferentType promise_test: Unhandled rejection with value: object "TypeError: Failed to execute 'setLocalDescription' on 'RTCPeerConnection': The provided value 'rollback' is not a valid enum value of type RTCSdpType."
 FAIL checkRemoteRollback promise_test: Unhandled rejection with value: object "TypeError: Failed to execute 'setRemoteDescription' on 'RTCPeerConnection': The provided value 'rollback' is not a valid enum value of type RTCSdpType."
 FAIL checkMsectionReuse promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'mid' of undefined"
+FAIL checkStopAfterCreateOfferWithReusedMsection promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'stop' of undefined"
 Harness: the test ran to completion.
 

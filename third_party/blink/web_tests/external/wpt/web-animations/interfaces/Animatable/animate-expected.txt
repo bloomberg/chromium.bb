@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 133 tests; 125 PASS, 8 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 135 tests; 125 PASS, 10 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Element.animate() creates an Animation object
 PASS Element.animate() creates an Animation object in the relevant realm of the target element
 PASS Element.animate() creates an Animation object with a KeyframeEffect
@@ -132,6 +132,8 @@ PASS Element.animate() correctly sets the Animation's timeline when triggered on
 FAIL Element.animate() calls play on the Animation assert_equals: expected "running" but got "pending"
 PASS Element.animate() does NOT trigger a style change event
 PASS CSSPseudoElement.animate() creates an Animation object
+FAIL CSSPseudoElement.animate() creates an Animation object for ::marker Failed to execute 'insertRule' on 'CSSStyleSheet': Failed to parse the rule '.pseudo::marker{animation: anim 10s; content: '';}'.
 PASS CSSPseudoElement.animate() creates an Animation object targeting to the correct CSSPseudoElement object
+FAIL CSSPseudoElement.animate() creates an Animation object targeting to the correct CSSPseudoElement object for ::marker Failed to execute 'insertRule' on 'CSSStyleSheet': Failed to parse the rule '.pseudo::marker{animation: anim 10s; content: '';}'.
 Harness: the test ran to completion.
 

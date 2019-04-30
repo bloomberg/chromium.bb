@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Tests for PaymentRequestEvent.changePaymentMethod() Uncaught TypeError: Cannot set property 'click' of undefined
+Harness: the test ran to completion.
+
