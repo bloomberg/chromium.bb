@@ -7,8 +7,11 @@
 #import <XCTest/XCTest.h>
 
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
+#import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey2/chrome_earl_grey_edo.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -84,6 +87,11 @@
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsDoneButton()]
       performAction:grey_tap()];
+}
+
+// Tests that helpers from chrome_earl_grey.h are available for use in tests.
+- (void)testClearBrowsingHistory {
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBrowsingHistory]);
 }
 
 @end

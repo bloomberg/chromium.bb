@@ -10,16 +10,29 @@
 #error "This file requires ARC support."
 #endif
 
+// A custom NSError subclass that is marked as an eDO "value type", allowing
+// it to be serialized and reconstructed in the remote process, rather than
+// having all its method proxied via IPC.
+@interface ChromeRemoteError : NSError
+@end
+
+@implementation ChromeRemoteError
+- (BOOL)edo_isEDOValueType {
+  return YES;
+}
+@end
+
 namespace testing {
 
 NSError* NSErrorWithLocalizedDescription(NSString* error_description) {
+  NSString* errorDomain = @"com.google.chrome.errorDomain";
   NSDictionary* userInfo = @{
     NSLocalizedDescriptionKey : error_description,
   };
 
-  return [[NSError alloc] initWithDomain:@"com.google.chrome.errorDomain"
-                                    code:0
-                                userInfo:userInfo];
+  return [[ChromeRemoteError alloc] initWithDomain:errorDomain
+                                              code:0
+                                          userInfo:userInfo];
 }
 
 }  // namespace testing

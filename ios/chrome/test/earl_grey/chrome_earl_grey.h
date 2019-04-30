@@ -36,6 +36,14 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // Clears browsing history.
 + (NSError*)clearBrowsingHistory WARN_UNUSED_RESULT;
 
+@end
+
+// Helpers that only compile under EarlGrey 1 are included in this "EG1"
+// category.
+// TODO(crbug.com/922813): Update these helpers to compile under EG2 and move
+// them into the main class declaration as they are converted.
+@interface ChromeEarlGrey (EG1)
+
 #pragma mark - Cookie Utilities
 
 // Returns cookies as key value pairs, where key is a cookie name and value is a

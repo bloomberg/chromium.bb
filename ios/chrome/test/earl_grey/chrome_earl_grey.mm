@@ -4,30 +4,36 @@
 
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 
-#import <EarlGrey/EarlGrey.h>
 #import <Foundation/Foundation.h>
-#import <WebKit/WebKit.h>
 
 #include "base/format_macros.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#include "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/ui/static_content/static_html_view_controller.h"
-#import "ios/chrome/test/app/bookmarks_test_util.h"
-#import "ios/chrome/test/app/chrome_test_util.h"
-#import "ios/chrome/test/app/history_test_util.h"
-#include "ios/chrome/test/app/navigation_test_util.h"
-#import "ios/chrome/test/app/static_html_view_test_util.h"
-#import "ios/chrome/test/app/tab_test_util.h"
+#import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/testing/nserror_util.h"
-#import "ios/web/public/test/earl_grey/js_test_util.h"
 #include "ios/web/public/test/element_selector.h"
-#import "ios/web/public/test/web_view_content_test_util.h"
-#import "ios/web/public/test/web_view_interaction_test_util.h"
-#import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
-#import "ios/web/public/web_state/web_state.h"
-#include "ui/base/l10n/l10n_util.h"
+
+#if defined(CHROME_EARL_GREY_1)
+#import <WebKit/WebKit.h>
+
+#include "components/strings/grit/components_strings.h"  // nogncheck
+#import "ios/chrome/browser/ui/static_content/static_html_view_controller.h"  // nogncheck
+#import "ios/chrome/test/app/bookmarks_test_util.h"                // nogncheck
+#import "ios/chrome/test/app/chrome_test_util.h"                   // nogncheck
+#import "ios/chrome/test/app/history_test_util.h"                  // nogncheck
+#include "ios/chrome/test/app/navigation_test_util.h"              // nogncheck
+#import "ios/chrome/test/app/static_html_view_test_util.h"         // nogncheck
+#import "ios/chrome/test/app/tab_test_util.h"                      // nogncheck
+#import "ios/web/public/test/earl_grey/js_test_util.h"             // nogncheck
+#import "ios/web/public/test/web_view_content_test_util.h"         // nogncheck
+#import "ios/web/public/test/web_view_interaction_test_util.h"     // nogncheck
+#import "ios/web/public/web_state/js/crw_js_injection_receiver.h"  // nogncheck
+#import "ios/web/public/web_state/web_state.h"                     // nogncheck
+#include "ui/base/l10n/l10n_util.h"                                // nogncheck
+#endif
 
 using base::test::ios::kWaitForJSCompletionTimeout;
 using base::test::ios::kWaitForUIElementTimeout;
@@ -36,6 +42,30 @@ using base::test::ios::WaitUntilConditionOrTimeout;
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+#if defined(CHROME_EARL_GREY_2)
+GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
+#endif  // defined(CHROME_EARL_GREY_2)
+
+@implementation ChromeEarlGrey
+
+#pragma mark - History Utilities
+
++ (NSError*)clearBrowsingHistory {
+  NSError* error = [ChromeEarlGreyAppInterface clearBrowsingHistory];
+
+  // After clearing browsing history via code, wait for the UI to be done
+  // with any updates. This includes icons from the new tab page being removed.
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  return error;
+}
+
+@end
+
+// The helpers below only compile under EarlGrey1.
+// TODO(crbug.com/922813): Update these helpers to compile under EG2 and move
+// them into the main class declaration as they are converted.
+#if defined(CHROME_EARL_GREY_1)
 
 namespace chrome_test_util {
 
@@ -68,20 +98,7 @@ id ExecuteJavaScript(NSString* javascript,
 
 }  // namespace chrome_test_util
 
-@implementation ChromeEarlGrey
-
-#pragma mark - History Utilities
-
-+ (NSError*)clearBrowsingHistory {
-  if (!chrome_test_util::ClearBrowsingHistory()) {
-    return testing::NSErrorWithLocalizedDescription(
-        @"Clearing Browsing History timed out");
-  }
-  // After clearing browsing history via code, wait for the UI to be done
-  // with any updates. This includes icons from the new tab page being removed.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-  return nil;
-}
+@implementation ChromeEarlGrey (EG1)
 
 #pragma mark - Cookie Utilities
 
@@ -403,3 +420,5 @@ id ExecuteJavaScript(NSString* javascript,
 }
 
 @end
+
+#endif  // defined(CHROME_EARL_GREY_1)
