@@ -226,5 +226,18 @@ class Bypass(IntegrationTest):
           if client in clientType:
             self.assertNotHasChromeProxyViaHeader(response)
 
+  def testHTTPSubresourcesOnHTTPSPage(self):
+    with TestDriver() as test_driver:
+      test_driver.AddChromeArg('--enable-spdy-proxy-auth')
+      test_driver.LoadURL(
+        'https://check.googlezip.net/previews/mixed_images.html')
+      responses = test_driver.GetHTTPResponses()
+      self.assertEqual(3, len(responses))
+      for response in responses:
+        if response.url.startswith('http://'):
+          self.assertHasProxyHeaders(response)
+        elif response.url.startswith('https://'):
+          self.assertNotHasChromeProxyViaHeader(response)
+
 if __name__ == '__main__':
   IntegrationTest.RunAllTests()
