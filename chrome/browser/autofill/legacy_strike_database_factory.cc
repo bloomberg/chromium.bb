@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/autofill/core/browser/payments/legacy_strike_database.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/leveldb_proto/content/proto_database_provider_factory.h"
 
 namespace autofill {
 
@@ -27,18 +28,24 @@ LegacyStrikeDatabaseFactory* LegacyStrikeDatabaseFactory::GetInstance() {
 LegacyStrikeDatabaseFactory::LegacyStrikeDatabaseFactory()
     : BrowserContextKeyedServiceFactory(
           "AutofillLegacyStrikeDatabase",
-          BrowserContextDependencyManager::GetInstance()) {}
+          BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(leveldb_proto::ProtoDatabaseProviderFactory::GetInstance());
+}
 
 LegacyStrikeDatabaseFactory::~LegacyStrikeDatabaseFactory() {}
 
 KeyedService* LegacyStrikeDatabaseFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
+
+  leveldb_proto::ProtoDatabaseProvider* db_provider =
+      leveldb_proto::ProtoDatabaseProviderFactory::GetInstance()->GetForKey(
+          profile->GetProfileKey());
+
   // Note: This instance becomes owned by an object that never gets destroyed,
   // effectively leaking it until browser close. Only one is created per
   // profile, and closing-then-opening a profile returns the same instance.
-  return new LegacyStrikeDatabase(
-      profile->GetPath().Append(FILE_PATH_LITERAL("AutofillStrikeDatabase")));
+  return new LegacyStrikeDatabase(db_provider, profile->GetPath());
 }
 
 }  // namespace autofill

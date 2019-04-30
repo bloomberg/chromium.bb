@@ -63,6 +63,8 @@ std::string SharedProtoDatabaseClientList::ProtoDbTypeToString(
       return "NotificationSchedulerNotifications";
     case ProtoDbType::BUDGET_DATABASE:
       return "BudgetManager";
+    case ProtoDbType::STRIKE_DATABASE:
+      return "StrikeService";
     case ProtoDbType::LAST:
       NOTREACHED();
       return std::string();

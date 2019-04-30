@@ -14,6 +14,9 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/autofill/core/browser/proto/strike_data.pb.h"
+#include "components/keyed_service/core/test_simple_factory_key.h"
+#include "components/leveldb_proto/public/proto_database.h"
+#include "components/leveldb_proto/public/proto_database_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace autofill {
@@ -24,8 +27,9 @@ namespace {
 // added for easier test setup.
 class TestLegacyStrikeDatabase : public LegacyStrikeDatabase {
  public:
-  TestLegacyStrikeDatabase(const base::FilePath& database_dir)
-      : LegacyStrikeDatabase(database_dir) {}
+  TestLegacyStrikeDatabase(leveldb_proto::ProtoDatabaseProvider* db_provider,
+                           base::FilePath profile_path)
+      : LegacyStrikeDatabase(db_provider, profile_path) {}
 
   void AddEntries(
       std::vector<std::pair<std::string, StrikeData>> entries_to_add,
@@ -51,12 +55,22 @@ class TestLegacyStrikeDatabase : public LegacyStrikeDatabase {
 // ProtoDatabase.
 class LegacyStrikeDatabaseTest : public ::testing::Test {
  public:
-  LegacyStrikeDatabaseTest() : legacy_strike_database_(InitFilePath()) {}
+  LegacyStrikeDatabaseTest() {}
+
+  void SetUp() override {
+    EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
+
+    db_provider_ = std::make_unique<leveldb_proto::ProtoDatabaseProvider>(
+        temp_dir_.GetPath());
+
+    legacy_strike_database_ = std::make_unique<TestLegacyStrikeDatabase>(
+        db_provider_.get(), temp_dir_.GetPath());
+  }
 
   void AddEntries(
       std::vector<std::pair<std::string, StrikeData>> entries_to_add) {
     base::RunLoop run_loop;
-    legacy_strike_database_.AddEntries(
+    legacy_strike_database_->AddEntries(
         entries_to_add,
         base::BindRepeating(&LegacyStrikeDatabaseTest::OnAddEntries,
                             base::Unretained(this), run_loop.QuitClosure()));
@@ -74,7 +88,7 @@ class LegacyStrikeDatabaseTest : public ::testing::Test {
 
   int GetStrikes(std::string key) {
     base::RunLoop run_loop;
-    legacy_strike_database_.GetStrikes(
+    legacy_strike_database_->GetStrikes(
         key,
         base::BindRepeating(&LegacyStrikeDatabaseTest::OnGetStrikes,
                             base::Unretained(this), run_loop.QuitClosure()));
@@ -89,7 +103,7 @@ class LegacyStrikeDatabaseTest : public ::testing::Test {
 
   int AddStrike(std::string key) {
     base::RunLoop run_loop;
-    legacy_strike_database_.AddStrike(
+    legacy_strike_database_->AddStrike(
         key,
         base::BindRepeating(&LegacyStrikeDatabaseTest::OnAddStrike,
                             base::Unretained(this), run_loop.QuitClosure()));
@@ -104,7 +118,7 @@ class LegacyStrikeDatabaseTest : public ::testing::Test {
 
   void ClearAllStrikesForKey(const std::string key) {
     base::RunLoop run_loop;
-    legacy_strike_database_.ClearAllStrikesForKey(
+    legacy_strike_database_->ClearAllStrikesForKey(
         key,
         base::BindRepeating(&LegacyStrikeDatabaseTest::OnClearAllStrikesForKey,
                             base::Unretained(this), run_loop.QuitClosure()));
@@ -118,7 +132,7 @@ class LegacyStrikeDatabaseTest : public ::testing::Test {
 
   void ClearAllStrikes() {
     base::RunLoop run_loop;
-    legacy_strike_database_.ClearAllStrikes(
+    legacy_strike_database_->ClearAllStrikes(
         base::BindRepeating(&LegacyStrikeDatabaseTest::OnClearAllStrikesForKey,
                             base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
@@ -127,15 +141,17 @@ class LegacyStrikeDatabaseTest : public ::testing::Test {
  protected:
   base::HistogramTester* GetHistogramTester() { return &histogram_tester_; }
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  TestLegacyStrikeDatabase legacy_strike_database_;
+  std::unique_ptr<leveldb_proto::ProtoDatabaseProvider> db_provider_;
+  std::unique_ptr<TestLegacyStrikeDatabase> legacy_strike_database_;
+  base::ScopedTempDir temp_dir_;
 
  private:
-  static const base::FilePath InitFilePath() {
-    base::ScopedTempDir temp_dir_;
+  leveldb_proto::ProtoDatabaseProvider* GetDBProvider() {
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
-    const base::FilePath file_path =
-        temp_dir_.GetPath().AppendASCII("LegacyStrikeDatabaseTest");
-    return file_path;
+    db_provider_ = std::make_unique<leveldb_proto::ProtoDatabaseProvider>(
+        temp_dir_.GetPath());
+
+    return db_provider_.get();
   }
 
   base::HistogramTester histogram_tester_;
@@ -243,12 +259,12 @@ TEST_F(LegacyStrikeDatabaseTest, ClearAllStrikesTest) {
 TEST_F(LegacyStrikeDatabaseTest, GetKeyForCreditCardSave) {
   const std::string last_four = "1234";
   EXPECT_EQ("creditCardSave__1234",
-            legacy_strike_database_.GetKeyForCreditCardSave(last_four));
+            legacy_strike_database_->GetKeyForCreditCardSave(last_four));
 }
 
 TEST_F(LegacyStrikeDatabaseTest, GetPrefixFromKey) {
   const std::string key = "creditCardSave__1234";
-  EXPECT_EQ("creditCardSave", legacy_strike_database_.GetPrefixFromKey(key));
+  EXPECT_EQ("creditCardSave", legacy_strike_database_->GetPrefixFromKey(key));
 }
 
 TEST_F(LegacyStrikeDatabaseTest, CreditCardSaveNthStrikeAddedHistogram) {
@@ -256,11 +272,11 @@ TEST_F(LegacyStrikeDatabaseTest, CreditCardSaveNthStrikeAddedHistogram) {
   const std::string last_four2 = "9876";
   const std::string key1 = "NotACreditCard";
   // 1st strike added for |last_four1|.
-  AddStrike(legacy_strike_database_.GetKeyForCreditCardSave(last_four1));
+  AddStrike(legacy_strike_database_->GetKeyForCreditCardSave(last_four1));
   // 2nd strike added for |last_four1|.
-  AddStrike(legacy_strike_database_.GetKeyForCreditCardSave(last_four1));
+  AddStrike(legacy_strike_database_->GetKeyForCreditCardSave(last_four1));
   // 1st strike added for |last_four2|.
-  AddStrike(legacy_strike_database_.GetKeyForCreditCardSave(last_four2));
+  AddStrike(legacy_strike_database_->GetKeyForCreditCardSave(last_four2));
   // Shouldn't be counted in histogram since key doesn't have prefix for credit
   // cards.
   AddStrike(key1);

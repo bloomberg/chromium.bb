@@ -18,20 +18,26 @@
 namespace autofill {
 
 namespace {
-const char kLegacyDatabaseClientName[] = "StrikeService";
 const char kLegacyDatabaseKeyDeliminator[] = "__";
 const char kKeyPrefixForCreditCardSave[] = "creditCardSave";
 }  // namespace
 
-LegacyStrikeDatabase::LegacyStrikeDatabase(const base::FilePath& database_dir)
-    : db_(leveldb_proto::ProtoDatabaseProvider::CreateUniqueDB<StrikeData>(
-          base::CreateSequencedTaskRunnerWithTraits(
-              {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-               base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}))),
-      weak_ptr_factory_(this) {
-  db_->Init(kLegacyDatabaseClientName, database_dir,
-            leveldb_proto::CreateSimpleOptions(),
-            base::BindRepeating(&LegacyStrikeDatabase::OnDatabaseInit,
+LegacyStrikeDatabase::LegacyStrikeDatabase(
+    leveldb_proto::ProtoDatabaseProvider* db_provider,
+    base::FilePath profile_path)
+    : weak_ptr_factory_(this) {
+  auto strike_database_path =
+      profile_path.Append(FILE_PATH_LITERAL("AutofillStrikeDatabase"));
+
+  auto database_task_runner = base::CreateSequencedTaskRunnerWithTraits(
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
+
+  db_ = db_provider->GetDB<StrikeData>(
+      leveldb_proto::ProtoDbType::STRIKE_DATABASE, strike_database_path,
+      database_task_runner);
+
+  db_->Init(base::BindRepeating(&LegacyStrikeDatabase::OnDatabaseInit,
                                 weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -83,7 +89,8 @@ std::string LegacyStrikeDatabase::GetKeyForCreditCardSave(
 LegacyStrikeDatabase::LegacyStrikeDatabase()
     : db_(nullptr), weak_ptr_factory_(this) {}
 
-void LegacyStrikeDatabase::OnDatabaseInit(bool success) {}
+void LegacyStrikeDatabase::OnDatabaseInit(
+    leveldb_proto::Enums::InitStatus status) {}
 
 void LegacyStrikeDatabase::GetStrikeData(const std::string key,
                                          const GetValueCallback& callback) {

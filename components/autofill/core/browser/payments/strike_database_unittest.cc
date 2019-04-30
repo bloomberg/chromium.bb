@@ -14,6 +14,9 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/autofill/core/browser/proto/strike_data.pb.h"
+#include "components/keyed_service/core/test_simple_factory_key.h"
+#include "components/leveldb_proto/public/proto_database.h"
+#include "components/leveldb_proto/public/proto_database_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace autofill {
@@ -25,8 +28,9 @@ namespace {
 // one in test_strike_database.h.  This one is purely for this unit test class.
 class TestStrikeDatabase : public StrikeDatabase {
  public:
-  TestStrikeDatabase(const base::FilePath& database_dir)
-      : StrikeDatabase(database_dir) {
+  TestStrikeDatabase(leveldb_proto::ProtoDatabaseProvider* db_provider,
+                     base::FilePath profile_path)
+      : StrikeDatabase(db_provider, profile_path) {
     database_initialized_ = true;
   }
 
@@ -54,12 +58,22 @@ class TestStrikeDatabase : public StrikeDatabase {
 // ProtoDatabase.
 class StrikeDatabaseTest : public ::testing::Test {
  public:
-  StrikeDatabaseTest() : strike_database_(InitFilePath()) {}
+  StrikeDatabaseTest() {}
+
+  void SetUp() override {
+    EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
+
+    db_provider_ = std::make_unique<leveldb_proto::ProtoDatabaseProvider>(
+        temp_dir_.GetPath());
+
+    strike_database_ = std::make_unique<TestStrikeDatabase>(
+        db_provider_.get(), temp_dir_.GetPath());
+  }
 
   void AddProtoEntries(
       std::vector<std::pair<std::string, StrikeData>> entries_to_add) {
     base::RunLoop run_loop;
-    strike_database_.AddProtoEntries(
+    strike_database_->AddProtoEntries(
         entries_to_add,
         base::BindRepeating(&StrikeDatabaseTest::OnAddProtoEntries,
                             base::Unretained(this), run_loop.QuitClosure()));
@@ -79,7 +93,7 @@ class StrikeDatabaseTest : public ::testing::Test {
 
   int GetProtoStrikes(std::string key) {
     base::RunLoop run_loop;
-    strike_database_.GetProtoStrikes(
+    strike_database_->GetProtoStrikes(
         key,
         base::BindRepeating(&StrikeDatabaseTest::OnGetProtoStrikes,
                             base::Unretained(this), run_loop.QuitClosure()));
@@ -94,7 +108,7 @@ class StrikeDatabaseTest : public ::testing::Test {
 
   void ClearAllProtoStrikesForKey(const std::string key) {
     base::RunLoop run_loop;
-    strike_database_.ClearAllProtoStrikesForKey(
+    strike_database_->ClearAllProtoStrikesForKey(
         key,
         base::BindRepeating(&StrikeDatabaseTest::OnClearAllProtoStrikesForKey,
                             base::Unretained(this), run_loop.QuitClosure()));
@@ -108,7 +122,7 @@ class StrikeDatabaseTest : public ::testing::Test {
 
   void ClearAllProtoStrikes() {
     base::RunLoop run_loop;
-    strike_database_.ClearAllProtoStrikes(
+    strike_database_->ClearAllProtoStrikes(
         base::BindRepeating(&StrikeDatabaseTest::OnClearAllProtoStrikesForKey,
                             base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
@@ -117,17 +131,11 @@ class StrikeDatabaseTest : public ::testing::Test {
  protected:
   base::HistogramTester* GetHistogramTester() { return &histogram_tester_; }
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  TestStrikeDatabase strike_database_;
+  std::unique_ptr<leveldb_proto::ProtoDatabaseProvider> db_provider_;
+  std::unique_ptr<TestStrikeDatabase> strike_database_;
+  base::ScopedTempDir temp_dir_;
 
  private:
-  static const base::FilePath InitFilePath() {
-    base::ScopedTempDir temp_dir_;
-    EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
-    const base::FilePath file_path =
-        temp_dir_.GetPath().AppendASCII("StrikeDatabaseTest");
-    return file_path;
-  }
-
   base::HistogramTester histogram_tester_;
   int num_strikes_;
   std::unique_ptr<StrikeData> strike_data_;

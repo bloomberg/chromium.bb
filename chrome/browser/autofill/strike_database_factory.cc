@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/autofill/core/browser/payments/strike_database.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/leveldb_proto/content/proto_database_provider_factory.h"
 
 namespace autofill {
 
@@ -26,18 +27,24 @@ StrikeDatabaseFactory* StrikeDatabaseFactory::GetInstance() {
 StrikeDatabaseFactory::StrikeDatabaseFactory()
     : BrowserContextKeyedServiceFactory(
           "AutofillStrikeDatabase",
-          BrowserContextDependencyManager::GetInstance()) {}
+          BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(leveldb_proto::ProtoDatabaseProviderFactory::GetInstance());
+}
 
 StrikeDatabaseFactory::~StrikeDatabaseFactory() {}
 
 KeyedService* StrikeDatabaseFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
+
+  leveldb_proto::ProtoDatabaseProvider* db_provider =
+      leveldb_proto::ProtoDatabaseProviderFactory::GetInstance()->GetForKey(
+          profile->GetProfileKey());
+
   // Note: This instance becomes owned by an object that never gets destroyed,
   // effectively leaking it until browser close. Only one is created per
   // profile, and closing-then-opening a profile returns the same instance.
-  return new StrikeDatabase(
-      profile->GetPath().Append(FILE_PATH_LITERAL("AutofillStrikeDatabase")));
+  return new StrikeDatabase(db_provider, profile->GetPath());
 }
 
 }  // namespace autofill

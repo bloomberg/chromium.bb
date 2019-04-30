@@ -21,20 +21,25 @@
 namespace autofill {
 
 namespace {
-const char kDatabaseClientName[] = "StrikeService";
 const int kMaxInitAttempts = 3;
 }  // namespace
 
-StrikeDatabase::StrikeDatabase(const base::FilePath& database_dir)
-    : db_(leveldb_proto::ProtoDatabaseProvider::CreateUniqueDB<StrikeData>(
-          base::CreateSequencedTaskRunnerWithTraits(
-              {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-               base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}))),
-      database_dir_(database_dir),
-      weak_ptr_factory_(this) {
-  db_->Init(kDatabaseClientName, database_dir,
-            leveldb_proto::CreateSimpleOptions(),
-            base::BindRepeating(&StrikeDatabase::OnDatabaseInit,
+StrikeDatabase::StrikeDatabase(
+    leveldb_proto::ProtoDatabaseProvider* db_provider,
+    base::FilePath profile_path)
+    : weak_ptr_factory_(this) {
+  auto strike_database_path =
+      profile_path.Append(FILE_PATH_LITERAL("AutofillStrikeDatabase"));
+
+  auto database_task_runner = base::CreateSequencedTaskRunnerWithTraits(
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
+
+  db_ = db_provider->GetDB<StrikeData>(
+      leveldb_proto::ProtoDbType::STRIKE_DATABASE, strike_database_path,
+      database_task_runner);
+
+  db_->Init(base::BindRepeating(&StrikeDatabase::OnDatabaseInit,
                                 weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -87,19 +92,17 @@ void StrikeDatabase::ClearAllStrikes() {
 
 StrikeDatabase::StrikeDatabase()
     : db_(nullptr),
-      database_dir_(base::FilePath(nullptr)),
       weak_ptr_factory_(this) {}
 
-void StrikeDatabase::OnDatabaseInit(bool success) {
+void StrikeDatabase::OnDatabaseInit(leveldb_proto::Enums::InitStatus status) {
+  bool success = status == leveldb_proto::Enums::InitStatus::kOK;
   database_initialized_ = success;
   if (!success) {
     base::UmaHistogramCounts100(
         "Autofill.StrikeDatabase.StrikeDatabaseInitFailed", num_init_attempts_);
     if (num_init_attempts_ < kMaxInitAttempts) {
       num_init_attempts_++;
-      db_->Init(kDatabaseClientName, database_dir_,
-                leveldb_proto::CreateSimpleOptions(),
-                base::BindRepeating(&StrikeDatabase::OnDatabaseInit,
+      db_->Init(base::BindRepeating(&StrikeDatabase::OnDatabaseInit,
                                     weak_ptr_factory_.GetWeakPtr()));
     }
     return;

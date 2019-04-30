@@ -12,7 +12,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/leveldb_proto/public/proto_database.h"
+#include "components/leveldb_proto/public/proto_database_provider.h"
 
 namespace autofill {
 class StrikeData;
@@ -51,7 +51,9 @@ class LegacyStrikeDatabase : public KeyedService {
 
   using StrikeDataProto = leveldb_proto::ProtoDatabase<StrikeData>;
 
-  explicit LegacyStrikeDatabase(const base::FilePath& database_dir);
+  explicit LegacyStrikeDatabase(
+      leveldb_proto::ProtoDatabaseProvider* db_provider,
+      base::FilePath profile_path);
   ~LegacyStrikeDatabase() override;
 
   // Passes the number of strikes for |key| to |outer_callback|. In the case
@@ -95,7 +97,7 @@ class LegacyStrikeDatabase : public KeyedService {
   friend class LegacyStrikeDatabaseTest;
   friend class LegacyStrikeDatabaseTester;
 
-  void OnDatabaseInit(bool success);
+  void OnDatabaseInit(leveldb_proto::Enums::InitStatus status);
 
   // Passes success status and StrikeData entry for |key| to |inner_callback|.
   void GetStrikeData(const std::string key,
