@@ -6,14 +6,15 @@
 #
 # Set up everything for the roll.
 #
-# --prompt: require user input before taking any action.  Use in conjunction
-#           with (before) other options.
-# --setup:  set up the host to do a roll.  Idempotent, but probably doesn't need
-#           to be run more than once in a while.
-# --test:   configure ffmpeg for the host machine, and try running media unit
-#           tests and the ffmpeg regression tests.
-# --build:  build ffmpeg configs for all platforms, then generate gn config.
-# --all:    do everything.  Right now, this is the same as "--test --build".
+# --prompt:     require user input before taking any action.  Use in conjunction
+#               with (before) other options.
+# --setup:      set up the host to do a roll.  Idempotent, but probably doesn't
+#               need to be run more than once in a while.
+# --auto-merge: do the merge.  Requires --setup to be run first.
+# --test:       configure ffmpeg for the host machine, and try running media
+#               unit tests and the ffmpeg regression tests.
+# --build-gn:   build ffmpeg configs for all platforms, then generate gn config.
+# --patches:    generate chromium/patches/README and commit it locally.
 
 import getopt
 import os
@@ -21,6 +22,7 @@ import sys
 
 import robo_branch
 from robo_lib import log
+from robo_lib import UserInstructions
 import robo_lib
 import robo_build
 import robo_setup
@@ -70,12 +72,15 @@ steps = {
                        "do_fn": robo_setup.EnsureASANDirWorks },
   "ensure_nasm": { "desc": "Compile chromium's nasm if needed",
                    "do_fn": robo_setup.EnsureChromiumNasm },
+  "ensure_remote": { "desc": "Set git remotes if needed",
+                   "do_fn": robo_setup.EnsureUpstreamRemote },
 
   # Convenience roll-up for --setup
   "setup": { "do_fn": lambda cfg : RunSteps(cfg, ["install_prereqs",
                                 "ensure_toolchains",
                                 "ensure_asan_dir",
-                                "ensure_nasm"]) },
+                                "ensure_nasm",
+                                "ensure_remote"]) },
 
   # TODO(liberato): consider moving the "if needed" to |req_fn|.
   "create_sushi_branch":
@@ -108,6 +113,8 @@ steps = {
                                               "push_merge_to_origin",
                                               "build_gn_configs",
                                               "update_patches_file",
+  # TODO: If the tests fail, and this is a manual roll, then the right thing
+  # to do is to upload the gn config / patches for review and land it.
                                               "run_tests",
                                             ]) },
 }
@@ -141,7 +148,16 @@ def main(argv):
 
   # TODO(liberato): Add a way to skip |skip_fn|.
   parsed, remaining = getopt.getopt(argv, "",
-          ["prompt", "setup", "test", "build", "auto-merge", "step=", "list"])
+          [
+           "prompt",
+           "setup",
+           "test",
+           "build",
+           "patches",
+           "auto-merge",
+           "step=",
+           "list",
+          ])
 
   for opt, arg in parsed:
     if opt == "--prompt":
@@ -151,9 +167,15 @@ def main(argv):
     elif opt == "--test":
       robo_build.BuildAndImportFFmpegConfigForHost(robo_configuration)
       robo_build.RunTests(robo_configuration)
-    elif opt == "--build":
+    elif opt == "--build-gn":
       # Unconditionally build all the configs and import them.
       robo_build.BuildAndImportAllFFmpegConfigs(robo_configuration)
+    elif opt == "--patches":
+      # To be run after committing a local change to fix the tests.
+      if not robo_branch.IsWorkingDirectoryClean():
+        raise UserInstructions(
+                    "Working directory must be clean to generate patches file")
+      robo_branch.UpdatePatchesFileUnconditionally(robo_configuration)
     elif opt == "--auto-merge":
       # TODO: make sure that any untracked autorename files are removed, or
       # make sure that the autorename git script doesn't try to 'git rm'

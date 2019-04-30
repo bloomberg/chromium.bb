@@ -221,3 +221,17 @@ def EnsureToolchains(robo_configuration):
   FetchMacSDK(robo_configuration)
   EnsureLLVMSymlinks(robo_configuration)
   EnsureSysroots(robo_configuration)
+
+def EnsureUpstreamRemote(robo_configuration):
+  """Make sure that the upstream remote is defined."""
+  remotes = subprocess.check_output(["git", "remote", "-v"]).split()
+  if "upstream" in remotes:
+    log("Upstream remote found")
+    return
+  log("Adding upstream remote")
+  if robo_configuration.Call(["git",
+                             "remote",
+                             "add",
+                             "upstream",
+                             "git://source.ffmpeg.org/ffmpeg.git"]):
+    raise Exception("Failed to add git remote")
