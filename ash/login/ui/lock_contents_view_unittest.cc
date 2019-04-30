@@ -2372,4 +2372,51 @@ TEST_F(LockContentsViewUnitTest, OnFocusLeavingSystemTrayWithOobeDialogClosed) {
   Shell::Get()->login_screen_controller()->FlushForTesting();
 }
 
+TEST_F(LockContentsViewUnitTest, LoginNotReactingOnEventsWithOobeDialogShown) {
+  auto* contents = new LockContentsView(
+      mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLogin,
+      DataDispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
+  SetUserCount(3);
+  SetWidget(CreateWidgetWithContent(contents));
+
+  LockContentsView::TestApi lock_contents(contents);
+  ScrollableUsersListView::TestApi users_list(lock_contents.users_list());
+  const auto* const list_user_view = users_list.user_views()[0];
+  LoginBigUserView* auth_view = lock_contents.primary_big_view();
+
+  AccountId auth_view_user =
+      auth_view->GetCurrentUser()->basic_user_info->account_id;
+  AccountId list_user =
+      list_user_view->current_user()->basic_user_info->account_id;
+
+  Shell::Get()->login_screen_controller()->NotifyOobeDialogState(
+      mojom::OobeDialogState::GAIA_SIGNIN);
+
+  // Send event to swap users.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveMouseTo(list_user_view->GetBoundsInScreen().CenterPoint());
+  generator->ClickLeftButton();
+
+  // User info is not swapped.
+  EXPECT_EQ(auth_view_user,
+            auth_view->GetCurrentUser()->basic_user_info->account_id);
+  EXPECT_EQ(list_user,
+            list_user_view->current_user()->basic_user_info->account_id);
+
+  // Hide OOBE dialog.
+  Shell::Get()->login_screen_controller()->NotifyOobeDialogState(
+      mojom::OobeDialogState::HIDDEN);
+
+  // Attempt swap again.
+  generator->MoveMouseTo(list_user_view->GetBoundsInScreen().CenterPoint());
+  generator->ClickLeftButton();
+
+  // User info should be now swapped.
+  EXPECT_EQ(list_user,
+            auth_view->GetCurrentUser()->basic_user_info->account_id);
+  EXPECT_EQ(auth_view_user,
+            list_user_view->current_user()->basic_user_info->account_id);
+}
+
 }  // namespace ash
