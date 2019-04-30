@@ -20,8 +20,10 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/keyboard/container_behavior.h"
 #include "ui/keyboard/keyboard_controller.h"
+#include "ui/keyboard/test/keyboard_test_util.h"
 
 using keyboard::mojom::KeyboardConfig;
 using keyboard::mojom::KeyboardConfigPtr;
@@ -471,6 +473,23 @@ TEST_F(AshKeyboardControllerTest, ChangingSessionRebuildsKeyboard) {
       session_manager::SessionState::ACTIVE);
   test_client()->FlushMojoForTesting();
   EXPECT_EQ(2, test_observer()->destroyed_count());
+}
+
+TEST_F(AshKeyboardControllerTest, VisualBoundsInMultipleDisplays) {
+  UpdateDisplay("800x600,800x600");
+
+  test_client()->SetEnableFlag(KeyboardEnableFlag::kExtensionEnabled);
+
+  // Show the keyboard in the second display.
+  keyboard_controller()->ShowKeyboardInDisplay(
+      Shell::Get()->display_manager()->GetSecondaryDisplay());
+  ASSERT_TRUE(keyboard::WaitUntilShown());
+
+  gfx::Rect root_bounds = keyboard_controller()->visual_bounds_in_root();
+  EXPECT_EQ(0, root_bounds.x());
+
+  gfx::Rect screen_bounds = keyboard_controller()->GetVisualBoundsInScreen();
+  EXPECT_EQ(800, screen_bounds.x());
 }
 
 }  // namespace ash

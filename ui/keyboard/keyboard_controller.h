@@ -102,7 +102,7 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
 
   // Returns the root window that this keyboard controller is attached to, or
   // null if the keyboard has not been attached to any root window.
-  aura::Window* GetRootWindow();
+  aura::Window* GetRootWindow() const;
 
   // Move the keyboard window to a different parent container. |parent| must not
   // be null.
@@ -175,9 +175,15 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // lock the keyboard
   void ShowKeyboardInDisplay(const display::Display& display);
 
+  // Returns the bounds in root window for the visible portion of the keyboard.
+  // An empty rectangle will get returned when the keyboard is hidden.
+  const gfx::Rect& visual_bounds_in_root() const {
+    return visual_bounds_in_root_;
+  }
+
   // Returns the bounds in screen for the visible portion of the keyboard. An
   // empty rectangle will get returned when the keyboard is hidden.
-  const gfx::Rect& visual_bounds_in_screen() const;
+  gfx::Rect GetVisualBoundsInScreen() const;
 
   // Returns the current bounds that affect the workspace layout. If the
   // keyboard is not shown or if the keyboard mode should not affect the usable

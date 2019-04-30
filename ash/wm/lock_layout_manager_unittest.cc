@@ -235,7 +235,7 @@ TEST_F(LockLayoutManagerTest, KeyboardBounds) {
       keyboard::mojom::KeyboardOverscrollBehavior::kEnabled);
   ShowKeyboard(true);
   EXPECT_EQ(screen_bounds.ToString(), window->GetBoundsInScreen().ToString());
-  gfx::Rect keyboard_bounds = keyboard->visual_bounds_in_screen();
+  gfx::Rect keyboard_bounds = keyboard->GetVisualBoundsInScreen();
   EXPECT_NE(keyboard_bounds, gfx::Rect());
   ShowKeyboard(false);
 

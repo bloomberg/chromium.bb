@@ -46,6 +46,7 @@
 #include "ui/keyboard/shaped_window_targeter.h"
 #include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
+#include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/window_animations.h"
 
 namespace keyboard {
@@ -369,7 +370,7 @@ aura::Window* KeyboardController::GetKeyboardWindow() const {
   return ui_ ? ui_->GetKeyboardWindow() : nullptr;
 }
 
-aura::Window* KeyboardController::GetRootWindow() {
+aura::Window* KeyboardController::GetRootWindow() const {
   return parent_container_ ? parent_container_->GetRootWindow() : nullptr;
 }
 
@@ -754,9 +755,10 @@ void KeyboardController::ShowKeyboardInDisplay(
   ShowKeyboardInternal(layout_delegate_->GetContainerForDisplay(display));
 }
 
-const gfx::Rect& KeyboardController::visual_bounds_in_screen() const {
-  // TODO(https://crbug.com/943446): Convert root window bounds to screen.
-  return visual_bounds_in_root_;
+gfx::Rect KeyboardController::GetVisualBoundsInScreen() const {
+  gfx::Rect visual_bounds_in_screen = visual_bounds_in_root_;
+  ::wm::ConvertRectToScreen(GetRootWindow(), &visual_bounds_in_screen);
+  return visual_bounds_in_screen;
 }
 
 void KeyboardController::LoadKeyboardWindowInBackground() {

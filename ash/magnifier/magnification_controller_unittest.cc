@@ -991,7 +991,7 @@ TEST_F(MagnificationControllerTest, DISABLED_TextfieldFocusedWithKeyboard) {
   gfx::Rect viewport_outside_keyboard_bounds = GetViewport();
   viewport_outside_keyboard_bounds.set_height(
       viewport_outside_keyboard_bounds.height() -
-      keyboard_controller->visual_bounds_in_screen().height() /
+      keyboard_controller->GetVisualBoundsInScreen().height() /
           GetMagnificationController()->GetScale());
 
   gfx::Rect caret_bounds = text_input_helper_.GetCaretBounds();

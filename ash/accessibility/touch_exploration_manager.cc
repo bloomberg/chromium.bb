@@ -239,7 +239,7 @@ void TouchExplorationManager::UpdateTouchExplorationState() {
     auto* keyboard_controller = keyboard::KeyboardController::Get();
     if (keyboard_controller->IsEnabled()) {
       touch_exploration_controller_->SetLiftActivationBounds(
-          keyboard_controller->visual_bounds_in_screen());
+          keyboard_controller->GetVisualBoundsInScreen());
     }
   } else {
     touch_exploration_controller_.reset();

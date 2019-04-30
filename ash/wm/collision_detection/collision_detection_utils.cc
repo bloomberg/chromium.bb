@@ -108,13 +108,11 @@ std::vector<gfx::Rect> CollectCollisionRects(
       keyboard_controller->GetActiveContainerType() ==
           keyboard::mojom::ContainerType::kFloating &&
       keyboard_controller->GetRootWindow() == root_window &&
-      !keyboard_controller->visual_bounds_in_screen().IsEmpty() &&
+      !keyboard_controller->GetVisualBoundsInScreen().IsEmpty() &&
       !ShouldIgnoreWindowForCollision(keyboard_controller->GetKeyboardWindow(),
                                       priority)) {
-    // TODO(shend): visual_bounds_in_screen should return the bounds in screen
-    // coordinates. See crbug.com/943446.
     rects.push_back(ComputeCollisionRectFromBounds(
-        keyboard_controller->visual_bounds_in_screen(),
+        keyboard_controller->visual_bounds_in_root(),
         /*parent=*/root_window));
   }
 

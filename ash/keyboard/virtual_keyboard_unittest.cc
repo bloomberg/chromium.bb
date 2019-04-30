@@ -59,7 +59,7 @@ TEST_F(VirtualKeyboardTest, EventsAreHandledBasedOnHitTestBounds) {
   // event passes through the keyboard window to the background window.
   ui::test::EventGenerator generator(root_window);
   const gfx::Point origin =
-      keyboard_controller->visual_bounds_in_screen().origin();
+      keyboard_controller->GetVisualBoundsInScreen().origin();
 
   // (0, 0) is inside the first hit rect, so the event is handled by the window
   // and is not received by the background window.
