@@ -63,14 +63,27 @@ void CastActivityRecord::SetOrUpdateSession(const CastSession& session,
 
 cast_channel::Result CastActivityRecord::SendAppMessageToReceiver(
     const CastInternalMessage& cast_message) {
+  CastSessionClient* client = GetClient(cast_message.client_id);
   const CastSession* session = GetSession();
-  if (!session)
-    return cast_channel::Result::kFailed;  // TODO(jrw): Send error code
-                                           // back to SDK client.
+  if (!session) {
+    if (client && cast_message.sequence_number) {
+      client->SendErrorCodeToClient(
+          *cast_message.sequence_number,
+          CastInternalMessage::ErrorCode::kSessionError,
+          "Invalid session ID: " + session_id_.value_or("<missing>"));
+    }
+
+    return cast_channel::Result::kFailed;
+  }
   const std::string& message_namespace = cast_message.app_message_namespace();
   if (!base::ContainsKey(session->message_namespaces(), message_namespace)) {
     DLOG(ERROR) << "Disallowed message namespace: " << message_namespace;
-    // TODO(jrw): Send error code back to SDK client.
+    if (client && cast_message.sequence_number) {
+      client->SendErrorCodeToClient(
+          *cast_message.sequence_number,
+          CastInternalMessage::ErrorCode::kInvalidParameter,
+          "Invalid namespace: " + message_namespace);
+    }
     return cast_channel::Result::kFailed;
   }
   return message_handler_->SendAppMessage(

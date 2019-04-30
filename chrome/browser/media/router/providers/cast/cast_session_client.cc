@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "chrome/browser/media/router/data_decoder_util.h"
 #include "chrome/browser/media/router/providers/cast/cast_activity_record.h"
+#include "components/cast_channel/enum_table.h"
 
 using blink::mojom::PresentationConnectionCloseReason;
 using blink::mojom::PresentationConnectionMessagePtr;
@@ -107,6 +108,24 @@ bool CastSessionClient::MatchesAutoJoinPolicy(url::Origin origin,
   }
 }
 
+void CastSessionClient::SendErrorCodeToClient(
+    int sequence_number,
+    CastInternalMessage::ErrorCode error_code,
+    base::Optional<std::string> description) {
+  base::Value message(base::Value::Type::DICTIONARY);
+  message.SetKey("code", base::Value(*cast_util::EnumToString(error_code)));
+  message.SetKey("description",
+                 description ? base::Value(*description) : base::Value());
+  message.SetKey("details", base::Value());
+  SendErrorToClient(sequence_number, std::move(message));
+}
+
+void CastSessionClient::SendErrorToClient(int sequence_number,
+                                          base::Value error) {
+  SendMessageToClient(
+      CreateErrorMessage(client_id(), std::move(error), sequence_number));
+}
+
 void CastSessionClient::HandleParsedClientMessage(
     std::unique_ptr<base::Value> message) {
   std::unique_ptr<CastInternalMessage> cast_message =
@@ -199,11 +218,17 @@ void CastSessionClient::HandleV2ProtocolMessage(
 
 void CastSessionClient::SendResultResponse(int sequence_number,
                                            cast_channel::Result result) {
-  // TODO(jrw): Send error message on failure.
   if (result == cast_channel::Result::kOk) {
     // Send an empty message to let the client know the request succeeded.
     SendMessageToClient(
         CreateV2Message(client_id_, base::Value(), sequence_number));
+  } else {
+    // TODO(crbug.com/951089): Send correct error codes.  The original
+    // implementation isn't much help here because it sends incorrectly
+    // formatted error messages without a valid error code in a lot of cases.
+    SendErrorCodeToClient(sequence_number,
+                          CastInternalMessage::ErrorCode::kInternalError,
+                          "unknown error");
   }
 }
 

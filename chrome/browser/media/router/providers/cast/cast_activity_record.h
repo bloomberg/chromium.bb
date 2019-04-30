@@ -117,6 +117,11 @@ class CastActivityRecord {
   CastSession* GetSession();
   int GetCastChannelId();
 
+  CastSessionClient* GetClient(const std::string& client_id) {
+    auto it = connected_clients_.find(client_id);
+    return it == connected_clients_.end() ? nullptr : it->second.get();
+  }
+
   MediaRoute route_;
   const std::string app_id_;
   base::flat_map<std::string, std::unique_ptr<CastSessionClient>>

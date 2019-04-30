@@ -136,13 +136,11 @@ class CastMessageHandlerTest : public testing::Test {
     for (int i = 0; i < 2; i++) {
       handler_.RequestAppAvailability(&cast_socket_, "theAppId",
                                       get_app_availability_callback_.Get());
-      EXPECT_EQ(
-          Result::kOk,
-          handler_.SendSetVolumeRequest(
-              channel_id_,
-              *ParseJsonDeprecated(
-                  R"({"sessionId": "theSessionId", "type": "SET_VOLUME"})"),
-              "theSourceId", set_volume_callback_.Get()));
+      handler_.SendSetVolumeRequest(
+          channel_id_,
+          *ParseJsonDeprecated(
+              R"({"sessionId": "theSessionId", "type": "SET_VOLUME"})"),
+          "theSourceId", set_volume_callback_.Get());
     }
     handler_.StopSession(channel_id_, "theSessionId", "theSourceId",
                          stop_session_callback_.Get());
@@ -428,9 +426,8 @@ TEST_F(CastMessageHandlerTest, SendVolumeCommand) {
     "sessionId": "theSessionId",
     "type": "SET_VOLUME",
   })";
-  EXPECT_EQ(Result::kOk, handler_.SendSetVolumeRequest(
-                             channel_id_, *ParseJsonDeprecated(message_str),
-                             "theSourceId", base::DoNothing::Once<Result>()));
+  handler_.SendSetVolumeRequest(channel_id_, *ParseJsonDeprecated(message_str),
+                                "theSourceId", base::DoNothing::Once<Result>());
 }
 
 // Check that closing a socket removes pending requests, and that the pending
@@ -517,9 +514,8 @@ TEST_F(CastMessageHandlerTest, SetVolumeTimedOut) {
     "type": "SET_VOLUME",
   })";
   base::MockCallback<ResultCallback> callback;
-  EXPECT_EQ(Result::kOk, handler_.SendSetVolumeRequest(
-                             channel_id_, *ParseJsonDeprecated(message_str),
-                             "theSourceId", callback.Get()));
+  handler_.SendSetVolumeRequest(channel_id_, *ParseJsonDeprecated(message_str),
+                                "theSourceId", callback.Get());
   EXPECT_CALL(callback, Run(Result::kFailed));
   thread_bundle_.FastForwardBy(kRequestTimeout);
 }

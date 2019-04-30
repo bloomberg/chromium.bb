@@ -34,8 +34,25 @@ struct CastInternalMessage {
                       // session.
     kUpdateSession,   // Message sent by MRP to inform SDK client of updated
                       // session.
-    kOther            // All other types of messages which are not considered
-                      // part of communication with Cast SDK.
+    kError,
+    kOther  // All other types of messages which are not considered
+            // part of communication with Cast SDK.
+  };
+
+  // Errors that may be returned by the SDK.
+  enum class ErrorCode {
+    kInternalError,           // Internal error.  (Not specified by Cast API.)
+    kCancel,                  // The operation was canceled by the user.
+    kTimeout,                 // The operation timed out.
+    kApiNotInitialized,       // The API is not initialized.
+    kInvalidParameter,        // The parameters to the operation were not valid.
+    kExtensionNotCompatible,  // The API script is not compatible with
+                              // this Cast implementation.
+    kReceiverUnavailable,     // No receiver was compatible with the session
+                              // request.
+    kSessionError,  // A session could not be created, or a session was invalid.
+    kChannelError,  // A channel to the receiver is not available.
+    kLoadMediaFailed,  // Load media failed.
   };
 
   // Returns a CastInternalMessage for |message|, or nullptr is |message| is not
@@ -183,6 +200,10 @@ blink::mojom::PresentationConnectionMessagePtr CreateAppMessage(
 blink::mojom::PresentationConnectionMessagePtr CreateV2Message(
     const std::string& client_id,
     const base::Value& payload,
+    base::Optional<int> sequence_number);
+blink::mojom::PresentationConnectionMessagePtr CreateErrorMessage(
+    const std::string& client_id,
+    base::Value error,
     base::Optional<int> sequence_number);
 blink::mojom::PresentationConnectionMessagePtr CreateLeaveSessionAckMessage(
     const std::string& client_id,

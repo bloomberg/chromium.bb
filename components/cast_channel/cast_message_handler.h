@@ -206,10 +206,10 @@ class CastMessageHandler : public CastSocket::Observer {
   // Sends a set system volume command |body|. |callback| will be invoked
   // with the result of the operation. It is invalid to call this with
   // a message body that is not a volume request.
-  virtual Result SendSetVolumeRequest(int channel_id,
-                                      const base::Value& body,
-                                      const std::string& source_id,
-                                      ResultCallback callback);
+  virtual void SendSetVolumeRequest(int channel_id,
+                                    const base::Value& body,
+                                    const std::string& source_id,
+                                    ResultCallback callback);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

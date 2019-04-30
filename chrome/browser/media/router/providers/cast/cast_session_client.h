@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/values.h"
 #include "chrome/browser/media/router/providers/cast/cast_session_tracker.h"
 #include "chrome/common/media_router/mojo/media_router.mojom.h"
 #include "chrome/common/media_router/providers/cast/cast_media_source.h"
@@ -49,6 +50,9 @@ class CastSessionClient : public blink::mojom::PresentationConnection {
   mojom::RoutePresentationConnectionPtr Init();
 
   // Sends |message| to the Cast SDK client in Blink.
+  //
+  // TODO(jrw): Remove redundant "ToClient" in the name of this and other
+  // methods.
   void SendMessageToClient(
       blink::mojom::PresentationConnectionMessagePtr message);
 
@@ -87,6 +91,15 @@ class CastSessionClient : public blink::mojom::PresentationConnection {
   // whether a particular session was created by an auto-join request, in which
   // case I believe this method would no longer be needed.
   bool MatchesAutoJoinPolicy(url::Origin origin, int tab_id) const;
+
+  void SendErrorCodeToClient(int sequence_number,
+                             CastInternalMessage::ErrorCode error_code,
+                             base::Optional<std::string> description);
+
+  // NOTE: This is current only called from SendErrorCodeToClient, but based on
+  // the old code this method based on, it seems likely it will have other
+  // callers once error handling for the Cast MRP is more fleshed out.
+  void SendErrorToClient(int sequence_number, base::Value error);
 
  private:
   void HandleParsedClientMessage(std::unique_ptr<base::Value> message);

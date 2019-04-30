@@ -5,11 +5,11 @@
 #include "chrome/browser/media/router/providers/cast/cast_activity_manager.h"
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/optional.h"
-#include "base/values.h"
 #include "chrome/browser/media/router/data_decoder_util.h"
 #include "chrome/browser/media/router/providers/cast/cast_activity_record.h"
 #include "chrome/browser/media/router/providers/cast/cast_session_client.h"

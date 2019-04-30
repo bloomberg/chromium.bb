@@ -16,6 +16,7 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/values.h"
+#include "chrome/browser/media/router/providers/cast/cast_internal_message_util.h"
 #include "chrome/browser/media/router/providers/cast/cast_session_tracker.h"
 #include "chrome/common/media_router/mojo/media_router.mojom.h"
 #include "chrome/common/media_router/providers/cast/cast_media_source.h"

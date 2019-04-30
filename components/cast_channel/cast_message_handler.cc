@@ -250,16 +250,16 @@ base::Optional<int> CastMessageHandler::SendMediaRequest(
   return request_id;
 }
 
-Result CastMessageHandler::SendSetVolumeRequest(int channel_id,
-                                                const base::Value& body,
-                                                const std::string& source_id,
-                                                ResultCallback callback) {
+void CastMessageHandler::SendSetVolumeRequest(int channel_id,
+                                              const base::Value& body,
+                                              const std::string& source_id,
+                                              ResultCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   CastSocket* socket = socket_service_->GetSocket(channel_id);
   if (!socket) {
     DVLOG(2) << __func__ << ": socket not found: " << channel_id;
-    return Result::kFailed;
+    std::move(callback).Run(Result::kFailed);
   }
 
   auto* requests = GetOrCreatePendingRequests(channel_id);
@@ -268,7 +268,6 @@ Result CastMessageHandler::SendSetVolumeRequest(int channel_id,
   requests->AddVolumeRequest(std::make_unique<SetVolumeRequest>(
       request_id, std::move(callback), clock_));
   SendCastMessage(socket, CreateSetVolumeRequest(body, request_id, source_id));
-  return Result::kOk;
 }
 
 void CastMessageHandler::AddObserver(Observer* observer) {
