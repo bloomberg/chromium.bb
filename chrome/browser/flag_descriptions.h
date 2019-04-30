@@ -341,9 +341,6 @@ extern const char kEnableSaveDataDescription[];
 extern const char kEnableClientLoFiName[];
 extern const char kEnableClientLoFiDescription[];
 
-extern const char kEnableCSSFragmentIdentifiersName[];
-extern const char kEnableCSSFragmentIdentifiersDescription[];
-
 extern const char kEnableFilesystemInIncognitoName[];
 extern const char kEnableFilesystemInIncognitoDescription[];
 

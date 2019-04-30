@@ -949,11 +949,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-css-fragment-identifiers",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-custom-context-menu",
     "owners": [ "chrome-android-app" ],
     "expiry_milestone": 77

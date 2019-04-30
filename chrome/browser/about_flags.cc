@@ -3232,11 +3232,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kCCTModuleUseIntentExtras)},
 #endif
 
-    {"enable-css-fragment-identifiers",
-     flag_descriptions::kEnableCSSFragmentIdentifiersName,
-     flag_descriptions::kEnableCSSFragmentIdentifiersDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kCSSFragmentIdentifiers)},
-
 #if !defined(OS_ANDROID)
     {"session-restore-prioritizes-background-use-cases",
      flag_descriptions::kSessionRestorePrioritizesBackgroundUseCasesName,

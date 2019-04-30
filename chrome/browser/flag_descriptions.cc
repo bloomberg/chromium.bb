@@ -530,12 +530,6 @@ const char kEnableClientLoFiName[] = "Client-side Lo-Fi previews";
 const char kEnableClientLoFiDescription[] =
     "Enable showing low fidelity images on some pages on slow networks.";
 
-const char kEnableCSSFragmentIdentifiersName[] =
-    "Enable CSS Fragment Identifiers";
-const char kEnableCSSFragmentIdentifiersDescription[] =
-    "Enable support for specifying a target element using a css selector in "
-    "the fragment identifier.";
-
 const char kEnableFilesystemInIncognitoName[] = "Filesystem API in Incognito";
 const char kEnableFilesystemInIncognitoDescription[] =
     "Enable Filesystem API in incognito mode.";

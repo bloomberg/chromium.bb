@@ -174,104 +174,10 @@ TEST_F(LocalFrameViewTest, UpdateLifecyclePhasesForPrintingDetachedFrame) {
   EXPECT_TRUE(child_layout_view->FirstFragment().PaintProperties());
 }
 
-class LocalFrameViewSimTest : public SimTest {
-  void SetUp() override {
-    SimTest::SetUp();
-    RuntimeEnabledFeatures::SetCSSFragmentIdentifiersEnabled(true);
-  }
-};
-
-TEST_F(LocalFrameViewSimTest, CSSFragmentIdentifierIsParsed) {
-  SimRequest main_resource("https://example.com/#targetElement=.foobar",
-                           "text/html");
-  LoadURL("https://example.com/#targetElement=.foobar");
-  main_resource.Complete("<div class='foobar' id='target'></div>");
-
-  Element* target = GetDocument().getElementById("target");
-  EXPECT_EQ(target, GetDocument().CssTarget());
-}
-
-TEST_F(LocalFrameViewSimTest, CSSFragmentIdentifierComplexSelector) {
-  SimRequest main_resource(
-      "https://example.com/#targetElement=.outer%3Ediv%3Ep%3Anth-child%282%29",
-      "text/html");
-  LoadURL(
-      "https://example.com/#targetElement=.outer%3Ediv%3Ep%3Anth-child%282%29");
-  main_resource.Complete(R"HTML(
-    <!DOCTYPE html>
-    <html>
-      <head></head>
-      <body>
-        <div class='outer'>
-          <div>
-            <p></p>
-            <p id='target'></p>
-          </div>
-        </div>
-      </body>
-    </html>
-    )HTML");
-
-  Element* target = GetDocument().getElementById("target");
-  EXPECT_EQ(target, GetDocument().CssTarget());
-}
-
-TEST_F(LocalFrameViewSimTest, CSSFragmentIdentifierUsesFirstElementFound) {
-  SimRequest main_resource("https://example.com/#targetElement=.foobar",
-                           "text/html");
-  LoadURL("https://example.com/#targetElement=.foobar");
-  main_resource.Complete(
-      "<div class='foobar' id='target'></div><div class='foobar'></div>");
-
-  Element* target = GetDocument().getElementById("target");
-  EXPECT_EQ(target, GetDocument().CssTarget());
-}
-
-TEST_F(LocalFrameViewSimTest, CSSFragmentIdentifierIneligibleFragments) {
-  SimRequest main_resource("https://example.com/#targetEl=.foobar",
-                           "text/html");
-  LoadURL("https://example.com/#targetEl=.foobar");
-  main_resource.Complete("<div class='foobar' id='target'></div>");
-
-  EXPECT_EQ(nullptr, GetDocument().CssTarget());
-
-  SimRequest main_resource2("https://example.com/#path/fragment", "text/html");
-  LoadURL("https://example.com/#path/fragment");
-  main_resource2.Complete("<div class='foobar' id='target'></div>");
-
-  EXPECT_EQ(nullptr, GetDocument().CssTarget());
-}
-
-TEST_F(LocalFrameViewSimTest, CSSFragmentIdentifierNoMatches) {
-  SimRequest main_resource("https://example.com/#targetElement=.foobar",
-                           "text/html");
-  LoadURL("https://example.com/#targetElement=.foobar");
-  main_resource.Complete("<div class='barbaz' id='target'></div>");
-
-  EXPECT_EQ(nullptr, GetDocument().CssTarget());
-}
-
-TEST_F(LocalFrameViewSimTest, CSSFragmentIdentifierInvalidSelector) {
-  SimRequest main_resource("https://example.com/#targetElement=..foobar",
-                           "text/html");
-  LoadURL("https://example.com/#targetElement=..foobar");
-  main_resource.Complete("<div class='foobar' id='target'></div>");
-
-  EXPECT_EQ(nullptr, GetDocument().CssTarget());
-}
-
-TEST_F(LocalFrameViewSimTest, CSSFragmentIdentifierEmptySelector) {
-  SimRequest main_resource("https://example.com/#targetElement=", "text/html");
-  LoadURL("https://example.com/#targetElement=");
-  main_resource.Complete("<div class='foobar' id='target'></div>");
-
-  EXPECT_EQ(nullptr, GetDocument().CssTarget());
-}
-
 // Ensure the fragment navigation "scroll into view and focus" behavior doesn't
 // activate synchronously while rendering is blocked waiting on a stylesheet.
 // See https://crbug.com/851338.
-TEST_F(LocalFrameViewSimTest, FragmentNavChangesFocusWhileRenderingBlocked) {
+TEST_F(SimTest, FragmentNavChangesFocusWhileRenderingBlocked) {
   SimRequest main_resource("https://example.com/test.html", "text/html");
   SimSubresourceRequest css_resource("https://example.com/sheet.css",
                                      "text/css");
@@ -329,7 +235,7 @@ TEST_F(LocalFrameViewSimTest, FragmentNavChangesFocusWhileRenderingBlocked) {
       << "Scroll offset wasn't changed after load completed.";
 }
 
-TEST_F(LocalFrameViewSimTest, ForcedLayoutWithIncompleteSVGChildFrame) {
+TEST_F(SimTest, ForcedLayoutWithIncompleteSVGChildFrame) {
   SimRequest main_resource("https://example.com/test.html", "text/html");
   SimRequest svg_resource("https://example.com/file.svg", "image/svg+xml");
 
