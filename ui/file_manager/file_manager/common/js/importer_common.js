@@ -450,55 +450,56 @@ importer.listEntries_ = (directory, callback) => {
 /**
  * A Promise wrapper that provides public access to resolve and reject methods.
  *
- * @constructor
- * @struct
  * @template T
  */
-importer.Resolver = function() {
-  /** @private {boolean} */
-  this.settled_ = false;
+importer.Resolver = class {
+  constructor() {
+    /** @private {boolean} */
+    this.settled_ = false;
 
-  /** @private {function(T=)} */
-  this.resolve_;
+    /** @private {function(T=)} */
+    this.resolve_;
 
-  /** @private {function(*=)} */
-  this.reject_;
+    /** @private {function(*=)} */
+    this.reject_;
 
-  /** @private {!Promise<T>} */
-  this.promise_ = new Promise((resolve, reject) => {
-    this.resolve_ = resolve;
-    this.reject_ = reject;
-  });
+    /** @private {!Promise<T>} */
+    this.promise_ = new Promise((resolve, reject) => {
+      this.resolve_ = resolve;
+      this.reject_ = reject;
+    });
 
-  const settler = () => {
-    this.settled_ = true;
-  };
+    const settler = () => {
+      this.settled_ = true;
+    };
 
-  this.promise_.then(settler, settler);
-};
+    this.promise_.then(settler, settler);
+  }
 
-importer.Resolver.prototype = /** @struct */ {
   /**
    * @return {function(T=)}
    * @template T
    */
   get resolve() {
     return this.resolve_;
-  },
+  }
+
   /**
    * @return {function(*=)}
    * @template T
    */
   get reject() {
     return this.reject_;
-  },
+  }
+
   /**
    * @return {!Promise<T>}
    * @template T
    */
   get promise() {
     return this.promise_;
-  },
+  }
+
   /** @return {boolean} */
   get settled() {
     return this.settled_;
@@ -522,49 +523,49 @@ importer.demandChildDirectory = (parent, name) => {
 
 /**
  * A wrapper for FileEntry that provides Promises.
- *
- * @constructor
- * @struct
- *
- * @param {!FileEntry} fileEntry
  */
-importer.PromisingFileEntry = function(fileEntry) {
-  /** @private {!FileEntry} */
-  this.fileEntry_ = fileEntry;
-};
+importer.PromisingFileEntry = class {
+  /**
+   * @param {!FileEntry} fileEntry
+   */
+  constructor(fileEntry) {
+    /** @private {!FileEntry} */
+    this.fileEntry_ = fileEntry;
+  }
 
-/**
- * Convenience method for creating new instances. Can, for example,
- * be passed to Array.map.
- *
- * @param {!FileEntry} entry
- * @return {!importer.PromisingFileEntry}
- */
-importer.PromisingFileEntry.create = entry => {
-  return new importer.PromisingFileEntry(entry);
-};
+  /**
+   * Convenience method for creating new instances. Can, for example,
+   * be passed to Array.map.
+   *
+   * @param {!FileEntry} entry
+   * @return {!importer.PromisingFileEntry}
+   */
+  static create(entry) {
+    return new importer.PromisingFileEntry(entry);
+  }
 
-/**
- * A "Promisary" wrapper around entry.getWriter.
- * @return {!Promise<!FileWriter>}
- */
-importer.PromisingFileEntry.prototype.createWriter = function() {
-  return new Promise(this.fileEntry_.createWriter.bind(this.fileEntry_));
-};
+  /**
+   * A "Promisary" wrapper around entry.getWriter.
+   * @return {!Promise<!FileWriter>}
+   */
+  createWriter() {
+    return new Promise(this.fileEntry_.createWriter.bind(this.fileEntry_));
+  }
 
-/**
- * A "Promisary" wrapper around entry.file.
- * @return {!Promise<!File>}
- */
-importer.PromisingFileEntry.prototype.file = function() {
-  return new Promise(this.fileEntry_.file.bind(this.fileEntry_));
-};
+  /**
+   * A "Promisary" wrapper around entry.file.
+   * @return {!Promise<!File>}
+   */
+  file() {
+    return new Promise(this.fileEntry_.file.bind(this.fileEntry_));
+  }
 
-/**
- * @return {!Promise<!Object>}
- */
-importer.PromisingFileEntry.prototype.getMetadata = function() {
-  return new Promise(this.fileEntry_.getMetadata.bind(this.fileEntry_));
+  /**
+   * @return {!Promise<!Object>}
+   */
+  getMetadata() {
+    return new Promise(this.fileEntry_.getMetadata.bind(this.fileEntry_));
+  }
 };
 
 /**
@@ -722,89 +723,94 @@ importer.Logger.prototype.catcher;
 /**
  * A {@code importer.Logger} that persists data in a {@code FileEntry}.
  *
- * @constructor
  * @implements {importer.Logger}
- * @struct
  * @final
  *
  * @param {!Promise<!FileEntry>} fileEntryPromise
  */
-importer.RuntimeLogger = function(fileEntryPromise) {
-  /** @private {!Promise<!importer.PromisingFileEntry>} */
-  this.fileEntryPromise_ = fileEntryPromise.then(
-      /** @param {!FileEntry} fileEntry */
-      fileEntry => {
-        return new importer.PromisingFileEntry(fileEntry);
-      });
-};
+importer.RuntimeLogger = class {
+  /**
+   * @implements {importer.Logger}
+   *
+   * @param {!Promise<!FileEntry>} fileEntryPromise
+   */
+  constructor(fileEntryPromise) {
+    /** @private {!Promise<!importer.PromisingFileEntry>} */
+    this.fileEntryPromise_ = fileEntryPromise.then(
+        /** @param {!FileEntry} fileEntry */
+        fileEntry => {
+          return new importer.PromisingFileEntry(fileEntry);
+        });
+  }
 
-/** @override  */
-importer.RuntimeLogger.prototype.info = function(content) {
-  this.write_('INFO', content);
-  console.log(content);
-};
+  /** @override  */
+  info(content) {
+    this.write_('INFO', content);
+    console.log(content);
+  }
 
-/** @override  */
-importer.RuntimeLogger.prototype.error = function(content) {
-  this.write_('ERROR', content);
-  console.error(content);
-};
+  /** @override  */
+  error(content) {
+    this.write_('ERROR', content);
+    console.error(content);
+  }
 
-/** @override  */
-importer.RuntimeLogger.prototype.catcher = function(context) {
-  const prefix = '(' + context + ') ';
+  /** @override  */
+  catcher(context) {
+    const prefix = '(' + context + ') ';
 
-  return error => {
-    let message = prefix + 'Caught error in promise chain.';
-    // Append error info, if provided, then output the error.
-    if (error) {
-      message += ' Error: ' + (error.message || error);
-    }
-    this.error(message);
+    return error => {
+      let message = prefix + 'Caught error in promise chain.';
+      // Append error info, if provided, then output the error.
+      if (error) {
+        message += ' Error: ' + (error.message || error);
+      }
+      this.error(message);
 
-    // Output a stack, if provided.
-    if (error && error.stack) {
-      this.write_('STACK', prefix + error.stack);
-    }
-  };
-};
+      // Output a stack, if provided.
+      if (error && error.stack) {
+        this.write_('STACK', prefix + error.stack);
+      }
+    };
+  }
 
-/**
- * Writes a message to the logger followed by a new line.
- *
- * @param {string} type
- * @param {string} message
- */
-importer.RuntimeLogger.prototype.write_ = function(type, message) {
-  // TODO(smckay): should we make an effort to reuse a file writer?
-  return this.fileEntryPromise_
-      .then(
-          /** @param {!importer.PromisingFileEntry} fileEntry */
-          fileEntry => {
-            return fileEntry.createWriter();
-          })
-      .then(this.writeLine_.bind(this, type, message));
-};
+  /**
+   * Writes a message to the logger followed by a new line.
+   *
+   * @param {string} type
+   * @param {string} message
+   */
+  write_(type, message) {
+    // TODO(smckay): should we make an effort to reuse a file writer?
+    return this.fileEntryPromise_
+        .then(
+            /** @param {!importer.PromisingFileEntry} fileEntry */
+            fileEntry => {
+              return fileEntry.createWriter();
+            })
+        .then(this.writeLine_.bind(this, type, message));
+  }
 
-/**
- * Appends a new record to the end of the file.
- *
- * @param {string} type
- * @param {string} line
- * @param {!FileWriter} writer
- * @private
- */
-importer.RuntimeLogger.prototype.writeLine_ = function(type, line, writer) {
-  const blob = new Blob(
-      ['[' + type + ' @ ' + new Date().toString() + '] ' + line + '\n'],
-      {type: 'text/plain; charset=UTF-8'});
-  return new Promise((resolve, reject) => {
-    writer.onwriteend = resolve;
-    writer.onerror = reject;
+  /**
+   * Appends a new record to the end of the file.
+   *
+   * @param {string} type
+   * @param {string} line
+   * @param {!FileWriter} writer
+   * @private
+   */
+  writeLine_(type, line, writer) {
+    const blob = new Blob(
+        ['[' + type + ' @ ' + new Date().toString() + '] ' + line + '\n'],
+        {type: 'text/plain; charset=UTF-8'});
+    return new Promise((resolve, reject) => {
+      writer.onwriteend = resolve;
+      writer.onerror = reject;
 
-    writer.seek(writer.length);
-    writer.write(blob);
-  });
+      writer.seek(writer.length);
+      writer.write(blob);
+    });
+  }
 };
 
 /** @private {importer.Logger} */
@@ -901,58 +907,56 @@ importer.rotateLogs = (nextLogId, fileFactory) => {
  * Friendly wrapper around chrome.storage.local.
  *
  * NOTE: If you want to use this in a test, install MockChromeStorageAPI.
- *
- * @constructor
  */
-importer.ChromeLocalStorage = function() {};
-
-/**
- * @param {string} key
- * @param {string|number|boolean} value
- * @return {!Promise} Resolves when operation is complete
- */
-importer.ChromeLocalStorage.prototype.set = (key, value) => {
-  return new Promise((resolve, reject) => {
-    const values = {};
-    values[key] = value;
-    chrome.storage.local.set(values, () => {
-      if (chrome.runtime.lastError) {
-        reject(chrome.runtime.lastError);
-      } else {
-        resolve(undefined);
-      }
+importer.ChromeLocalStorage = class {
+  /**
+   * @param {string} key
+   * @param {string|number|boolean} value
+   * @return {!Promise} Resolves when operation is complete
+   */
+  set(key, value) {
+    return new Promise((resolve, reject) => {
+      const values = {};
+      values[key] = value;
+      chrome.storage.local.set(values, () => {
+        if (chrome.runtime.lastError) {
+          reject(chrome.runtime.lastError);
+        } else {
+          resolve(undefined);
+        }
+      });
     });
-  });
-};
+  }
 
-/**
- * @param {string} key
- * @param {T=} opt_default
- * @return {!Promise<T>} Resolves with the value, or {@code opt_default} when
- *     no value entry existis, or {@code undefined}.
- * @template T
- */
-importer.ChromeLocalStorage.prototype.get = (key, opt_default) => {
-  return new Promise((resolve, reject) => {
-    chrome.storage.local.get(
-        key,
-        /** @param {Object<?>} values */
-        values => {
-          if (chrome.runtime.lastError) {
-            reject(chrome.runtime.lastError);
-          } else if (key in values) {
-            resolve(values[key]);
-          } else {
-            resolve(opt_default);
-          }
-        });
-  });
+  /**
+   * @param {string} key
+   * @param {T=} opt_default
+   * @return {!Promise<T>} Resolves with the value, or {@code opt_default} when
+   *     no value entry existis, or {@code undefined}.
+   * @template T
+   */
+  get(key, opt_default) {
+    return new Promise((resolve, reject) => {
+      chrome.storage.local.get(
+          key,
+          /** @param {Object<?>} values */
+          values => {
+            if (chrome.runtime.lastError) {
+              reject(chrome.runtime.lastError);
+            } else if (key in values) {
+              resolve(values[key]);
+            } else {
+              resolve(opt_default);
+            }
+          });
+    });
+  }
+
+  /** @return {!importer.ChromeLocalStorage} */
+  static getInstance() {
+    return importer.ChromeLocalStorage.INSTANCE_;
+  }
 };
 
 /** @private @const {!importer.ChromeLocalStorage} */
 importer.ChromeLocalStorage.INSTANCE_ = new importer.ChromeLocalStorage();
-
-/** @return {!importer.ChromeLocalStorage} */
-importer.ChromeLocalStorage.getInstance = () => {
-  return importer.ChromeLocalStorage.INSTANCE_;
-};
