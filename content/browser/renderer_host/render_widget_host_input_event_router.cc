@@ -1439,7 +1439,11 @@ bool IsPinchCurrentlyAllowedInTarget(RenderWidgetHostViewBase* target) {
   }
   // This function is called on GesturePinchBegin, by which time there should
   // be an active touch action assessed for the target.
-  DCHECK(target_active_touch_action.has_value());
+  // DCHECK(target_active_touch_action.has_value());
+  // TODO(wjmaclean): Find out why we can be in the middle of a gesture
+  // sequence and not have a valid touch action assigned.
+  if (!target_active_touch_action)
+    target_active_touch_action = cc::kTouchActionNone;
   return (target_active_touch_action.value() &
           cc::TouchAction::kTouchActionPinchZoom);
 }
