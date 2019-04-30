@@ -9,6 +9,7 @@
 
 namespace omnibox {
 
+// TODO(dbeam): why is this list not sorted alphabetically?
 extern const base::Feature kHideFileUrlScheme;
 extern const base::Feature kHideSteadyStateUrlScheme;
 extern const base::Feature kHideSteadyStateUrlTrivialSubdomains;
@@ -45,6 +46,7 @@ extern const base::Feature kUIExperimentBoldUserTextOnSearchSuggestions;
 extern const base::Feature kUIExperimentWhiteBackgroundOnBlur;
 extern const base::Feature kUIExperimentUseGenericSearchEngineIcon;
 extern const base::Feature kUIExperimentUnboldSuggestionText;
+extern const base::Feature kUIExperimentShowPlaceholderWhenCaretShowing;
 extern const base::Feature kSpeculativeServiceWorkerStartOnQueryInput;
 extern const base::Feature kDocumentProvider;
 extern const base::Feature kDedupeGoogleDriveURLs;
