@@ -222,6 +222,8 @@ class BASE_EXPORT PartitionAllocHooks {
   // To unhook, call SetObserverHooks with nullptrs.
   static void SetObserverHooks(AllocationObserverHook* alloc_hook,
                                FreeObserverHook* free_hook) {
+    subtle::SpinLock::Guard guard(set_hooks_lock_);
+
     // Chained hooks are not supported. Registering a non-null hook when a
     // non-null hook is already registered indicates somebody is trying to
     // overwrite a hook.
@@ -235,22 +237,26 @@ class BASE_EXPORT PartitionAllocHooks {
   static void AllocationObserverHookIfEnabled(void* address,
                                               size_t size,
                                               const char* type_name) {
-    if (AllocationObserverHook* hook = allocation_observer_hook_)
+    if (AllocationObserverHook* hook =
+            allocation_observer_hook_.load(std::memory_order_relaxed))
       hook(address, size, type_name);
   }
 
   static void FreeObserverHookIfEnabled(void* address) {
-    if (FreeObserverHook* hook = free_observer_hook_)
+    if (FreeObserverHook* hook =
+            free_observer_hook_.load(std::memory_order_relaxed))
       hook(address);
   }
 
-  static void ObserverReallocHookIfEnabled(void* old_address,
+  static void ReallocObserverHookIfEnabled(void* old_address,
                                            void* new_address,
                                            size_t size,
                                            const char* type_name) {
     // Report a reallocation as a free followed by an allocation.
-    AllocationObserverHook* allocation_hook = allocation_observer_hook_;
-    FreeObserverHook* free_hook = free_observer_hook_;
+    AllocationObserverHook* allocation_hook =
+        allocation_observer_hook_.load(std::memory_order_relaxed);
+    FreeObserverHook* free_hook =
+        free_observer_hook_.load(std::memory_order_relaxed);
     if (allocation_hook && free_hook) {
       free_hook(old_address);
       allocation_hook(new_address, size, type_name);
@@ -258,8 +264,11 @@ class BASE_EXPORT PartitionAllocHooks {
   }
 
  private:
-  static AllocationObserverHook* allocation_observer_hook_;
-  static FreeObserverHook* free_observer_hook_;
+  // Lock used to synchronize SetObserverHooks calls.
+  static subtle::SpinLock set_hooks_lock_;
+
+  static std::atomic<AllocationObserverHook*> allocation_observer_hook_;
+  static std::atomic<FreeObserverHook*> free_observer_hook_;
 };
 
 ALWAYS_INLINE void* PartitionRoot::Alloc(size_t size, const char* type_name) {
