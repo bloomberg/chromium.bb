@@ -137,6 +137,11 @@ void WarmupURLFetcher::FetchWarmupURLNow(
   // for loading user initiated requests.
   resource_request->load_flags = net::LOAD_BYPASS_CACHE;
 
+  // TODO(957215): This is a temporary solution to mark the request to go
+  // through the data reduction proxy. Otherwise only navigation requests and
+  // renderer requests will be allowed to use the proxy.
+  resource_request->render_frame_id = MSG_ROUTING_CONTROL;
+
   url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                                  traffic_annotation);
   // |url_loader_| should not retry on 5xx errors. |url_loader_| should retry on

@@ -253,9 +253,6 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   // - https://github.com/whatwg/fetch/issues/896#issuecomment-484423278
   request->fetch_request_mode = network::mojom::FetchRequestMode::kNavigate;
 
-  if (params->render_process_host_id() >= 0)
-    request->render_frame_id = params->render_frame_host_routing_id();
-
   bool has_upload_data = false;
   if (params->post_body()) {
     request->request_body = params->post_body();
