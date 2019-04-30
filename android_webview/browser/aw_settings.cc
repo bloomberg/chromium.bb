@@ -520,6 +520,16 @@ void AwSettings::PopulateWebPreferencesLocked(JNIEnv* env,
       break;
     }
   }
+
+  // Blink's behavior is that if the preferred color scheme matches the
+  // supported color scheme, then force dark will be disabled, otherwise
+  // the preferred color scheme will be reset to no preference. Therefore
+  // when enabling force dark, we also set the preferred color scheme to
+  // dark so that dark themed content will be preferred over force darkening.
+  web_prefs->preferred_color_scheme =
+      web_prefs->force_dark_mode_enabled
+          ? blink::PreferredColorScheme::kDark
+          : blink::PreferredColorScheme::kNoPreference;
 }
 
 bool AwSettings::GetAllowFileAccess() {
