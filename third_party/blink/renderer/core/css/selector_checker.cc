@@ -1042,11 +1042,7 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
     case CSSSelector::kPseudoFullScreenAncestor:
       return element.ContainsFullScreenElement();
     case CSSSelector::kPseudoPictureInPicture:
-      return PictureInPictureController::IsElementInPictureInPicture(
-                 &element) ||
-             (IsShadowHost(element) &&
-              PictureInPictureController::IsShadowHostInPictureInPicture(
-                  element));
+      return PictureInPictureController::IsElementInPictureInPicture(&element);
     case CSSSelector::kPseudoVideoPersistent:
       DCHECK(is_ua_rule_);
       return IsHTMLVideoElement(element) &&

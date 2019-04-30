@@ -227,15 +227,6 @@ bool PictureInPictureControllerImpl::IsPictureInPictureElement(
   return element == picture_in_picture_element_;
 }
 
-bool PictureInPictureControllerImpl::IsPictureInPictureShadowHost(
-    const Element& host) const {
-  if (!picture_in_picture_element_)
-    return false;
-
-  return host.GetTreeScope().AdjustedElement(*picture_in_picture_element_) ==
-         &host;
-}
-
 void PictureInPictureControllerImpl::AddToAutoPictureInPictureElementsList(
     HTMLVideoElement* element) {
   RemoveFromAutoPictureInPictureElementsList(element);

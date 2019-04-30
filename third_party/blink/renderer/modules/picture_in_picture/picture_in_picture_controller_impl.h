@@ -76,7 +76,6 @@ class MODULES_EXPORT PictureInPictureControllerImpl
   void RemoveFromAutoPictureInPictureElementsList(HTMLVideoElement*) override;
   Status IsElementAllowed(const HTMLVideoElement&) const override;
   bool IsPictureInPictureElement(const Element*) const override;
-  bool IsPictureInPictureShadowHost(const Element&) const override;
   void OnPictureInPictureStateChange() override;
 
   // Implementation of PictureInPictureDelegate.

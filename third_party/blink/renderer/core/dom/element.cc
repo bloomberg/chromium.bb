@@ -1881,20 +1881,6 @@ void Element::ClassAttributeChanged(const AtomicString& new_class_string) {
   }
 }
 
-void Element::PictureInPicturePseudoStateChanged() {
-  if (!RuntimeEnabledFeatures::CSSPictureInPictureEnabled())
-    return;
-
-  // Recurse up author shadow trees to mark shadow hosts if it matches pseudo
-  // class ":picture-in-picture".
-  if (ShadowRoot* root = ContainingShadowRoot()) {
-    if (!root->IsUserAgent())
-      OwnerShadowHost()->PictureInPicturePseudoStateChanged();
-  }
-
-  PseudoStateChanged(CSSSelector::kPseudoPictureInPicture);
-}
-
 bool Element::ShouldInvalidateDistributionWhenAttributeChanged(
     ShadowRoot& shadow_root,
     const QualifiedName& name,

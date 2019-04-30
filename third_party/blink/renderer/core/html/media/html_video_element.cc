@@ -772,7 +772,8 @@ void HTMLVideoElement::OnEnteredPictureInPicture() {
   }
   picture_in_picture_interstitial_->Show();
 
-  PictureInPicturePseudoStateChanged();
+  if (RuntimeEnabledFeatures::CSSPictureInPictureEnabled())
+    PseudoStateChanged(CSSSelector::kPseudoPictureInPicture);
 
   DCHECK(GetWebMediaPlayer());
   GetWebMediaPlayer()->OnDisplayTypeChanged(DisplayType());
@@ -782,7 +783,8 @@ void HTMLVideoElement::OnExitedPictureInPicture() {
   if (picture_in_picture_interstitial_)
     picture_in_picture_interstitial_->Hide();
 
-  PictureInPicturePseudoStateChanged();
+  if (RuntimeEnabledFeatures::CSSPictureInPictureEnabled())
+    PseudoStateChanged(CSSSelector::kPseudoPictureInPicture);
 
   if (GetWebMediaPlayer())
     GetWebMediaPlayer()->OnDisplayTypeChanged(DisplayType());
