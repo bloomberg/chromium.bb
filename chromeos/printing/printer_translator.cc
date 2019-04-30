@@ -31,6 +31,7 @@ const char kModel[] = "model";
 const char kUri[] = "uri";
 const char kUUID[] = "uuid";
 const char kPpdResource[] = "ppd_resource";
+const char kAutoconf[] = "autoconf";
 const char kGuid[] = "guid";
 
 // Returns true if the uri was retrieved, is valid, and was set on |printer|.
@@ -148,13 +149,27 @@ std::unique_ptr<Printer> RecommendedPrinterToPrinter(
   printer->set_source(Printer::SRC_POLICY);
 
   const DictionaryValue* ppd;
-  std::string make_and_model;
-  if (pref.GetDictionary(kPpdResource, &ppd) &&
-      ppd->GetString(kEffectiveModel, &make_and_model)) {
-    printer->mutable_ppd_reference()->effective_make_and_model = make_and_model;
-  } else {
-    // Make and model is mandatory
-    LOG(WARNING) << "Missing model information for policy printer.";
+  if (pref.GetDictionary(kPpdResource, &ppd)) {
+    Printer::PpdReference* ppd_reference = printer->mutable_ppd_reference();
+    std::string make_and_model;
+    if (ppd->GetString(kEffectiveModel, &make_and_model))
+      ppd_reference->effective_make_and_model = make_and_model;
+    bool autoconf;
+    if (ppd->GetBoolean(kAutoconf, &autoconf))
+      ppd_reference->autoconf = autoconf;
+  }
+  if (!printer->ppd_reference().autoconf &&
+      printer->ppd_reference().effective_make_and_model.empty()) {
+    // Either autoconf flag or make and model is mandatory.
+    LOG(WARNING)
+        << "Missing autoconf flag and model information for policy printer.";
+    return nullptr;
+  }
+  if (printer->ppd_reference().autoconf &&
+      !printer->ppd_reference().effective_make_and_model.empty()) {
+    // PPD reference can't contain both autoconf and make and model.
+    LOG(WARNING) << "Autoconf flag is set together with model information for "
+                    "policy printer.";
     return nullptr;
   }
 
