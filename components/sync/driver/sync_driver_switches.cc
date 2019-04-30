@@ -53,35 +53,6 @@ const base::Feature kSyncAllowWalletDataInTransportModeWithCustomPassphrase{
 const base::Feature kStopSyncInPausedState{"StopSyncInPausedState",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
-// For each below, if enabled, the SyncableService implementation of the
-// corresponding datatype(s) is wrapped within the USS architecture.
-const base::Feature kSyncPseudoUSSAppList{"SyncPseudoUSSAppList",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kSyncPseudoUSSApps{"SyncPseudoUSSApps",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kSyncPseudoUSSArcPackage{"SyncPseudoUSSArcPackage",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kSyncPseudoUSSDictionary{"SyncPseudoUSSDictionary",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kSyncPseudoUSSExtensionSettings{
-    "SyncPseudoUSSExtensionSettings", base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kSyncPseudoUSSExtensions{"SyncPseudoUSSExtensions",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kSyncPseudoUSSFavicons{"SyncPseudoUSSFavicons",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kSyncPseudoUSSHistoryDeleteDirectives{
-    "SyncPseudoUSSHistoryDeleteDirectives", base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kSyncPseudoUSSPreferences{"SyncPseudoUSSPreferences",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kSyncPseudoUSSPriorityPreferences{
-    "SyncPseudoUSSPriorityPreferences", base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kSyncPseudoUSSSearchEngines{
-    "SyncPseudoUSSSearchEngines", base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kSyncPseudoUSSSupervisedUsers{
-    "SyncPseudoUSSSupervisedUsers", base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kSyncPseudoUSSThemes{"SyncPseudoUSSThemes",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls whether a user can receive tabs from their synced devices
 const base::Feature kSyncSendTabToSelf{"SyncSendTabToSelf",
                                        base::FEATURE_ENABLED_BY_DEFAULT};

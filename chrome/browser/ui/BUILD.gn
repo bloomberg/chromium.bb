@@ -3349,8 +3349,6 @@ jumbo_split_static_library("ui") {
         "app_list/arc/arc_default_app_list.h",
         "app_list/arc/arc_fast_app_reinstall_starter.cc",
         "app_list/arc/arc_fast_app_reinstall_starter.h",
-        "app_list/arc/arc_package_sync_data_type_controller.cc",
-        "app_list/arc/arc_package_sync_data_type_controller.h",
         "app_list/arc/arc_package_sync_model_type_controller.cc",
         "app_list/arc/arc_package_sync_model_type_controller.h",
         "app_list/arc/arc_package_syncable_service.cc",

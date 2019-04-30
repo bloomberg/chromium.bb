@@ -52,8 +52,6 @@ static_library("browser") {
     "page_usage_data.h",
     "sync/delete_directive_handler.cc",
     "sync/delete_directive_handler.h",
-    "sync/history_delete_directives_data_type_controller.cc",
-    "sync/history_delete_directives_data_type_controller.h",
     "sync/history_delete_directives_model_type_controller.cc",
     "sync/history_delete_directives_model_type_controller.h",
     "sync/history_model_worker.cc",

@@ -17,8 +17,6 @@ static_library("search_engines") {
     "keyword_table.h",
     "keyword_web_data_service.cc",
     "keyword_web_data_service.h",
-    "search_engine_data_type_controller.cc",
-    "search_engine_data_type_controller.h",
     "search_engines_pref_names.cc",
     "search_engines_pref_names.h",
     "search_engines_switches.cc",
@@ -122,7 +120,6 @@ source_set("unit_tests") {
   sources = [
     "default_search_manager_unittest.cc",
     "keyword_table_unittest.cc",
-    "search_engine_data_type_controller_unittest.cc",
     "search_host_to_urls_map_unittest.cc",
     "template_url_data_unittest.cc",
     "template_url_prepopulate_data_unittest.cc",

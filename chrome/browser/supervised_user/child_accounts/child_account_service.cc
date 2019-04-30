@@ -220,7 +220,7 @@ bool ChildAccountService::SetActive(bool active) {
   }
 
   // Trigger a sync reconfig to enable/disable the right SU data types.
-  // The logic to do this lives in the SupervisedUserSyncDataTypeController.
+  // The logic to do this lives in the SupervisedUserSyncModelTypeController.
   // TODO(crbug.com/946473): Get rid of this hack and instead call
   // ReadyForStartChanged from the controller.
   syncer::SyncService* sync_service =
