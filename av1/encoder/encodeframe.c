@@ -2595,7 +2595,8 @@ static void rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
   if (!(has_rows && has_cols)) {
     assert(bsize_at_least_8x8 && pl >= 0);
     const aom_cdf_prob *partition_cdf = cm->fc->partition_cdf[pl];
-    for (int i = 0; i < PARTITION_TYPES; ++i) tmp_partition_cost[i] = INT_MAX;
+    const int max_cost = av1_cost_symbol(0);
+    for (int i = 0; i < PARTITION_TYPES; ++i) tmp_partition_cost[i] = max_cost;
     if (has_cols) {
       // At the bottom, the two possibilities are HORZ and SPLIT
       aom_cdf_prob bot_cdf[2];
@@ -2614,7 +2615,6 @@ static void rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
     }
 
     partition_cost = tmp_partition_cost;
-    do_square_split &= partition_cost[PARTITION_SPLIT] != INT_MAX;
   }
 
 #ifndef NDEBUG
@@ -2758,12 +2758,10 @@ static void rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
     if (has_rows && has_cols) do_square_split = 0;
     partition_none_allowed = !do_square_split;
   }
-  do_square_split &= partition_cost[PARTITION_SPLIT] != INT_MAX;
 
 BEGIN_PARTITION_SEARCH:
   if (x->must_find_valid_partition) {
-    do_square_split =
-        bsize_at_least_8x8 && partition_cost[PARTITION_SPLIT] != INT_MAX;
+    do_square_split = bsize_at_least_8x8;
     partition_none_allowed = has_rows && has_cols;
     partition_horz_allowed = has_cols && yss <= xss && bsize_at_least_8x8 &&
                              cpi->oxcf.enable_rect_partitions;
