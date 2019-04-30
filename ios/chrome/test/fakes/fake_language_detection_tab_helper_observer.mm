@@ -45,6 +45,10 @@ FakeLanguageDetectionTabHelperObserver::GetLanguageDetectionDetails() {
   return language_detection_details_.get();
 }
 
+void FakeLanguageDetectionTabHelperObserver::ResetLanguageDetectionDetails() {
+  language_detection_details_.reset();
+}
+
 void FakeLanguageDetectionTabHelperObserver::
     StopObservingIOSLanguageDetectionTabHelper() {
   DCHECK(web_state_);

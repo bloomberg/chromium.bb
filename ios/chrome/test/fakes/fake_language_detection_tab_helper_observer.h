@@ -29,6 +29,7 @@ class FakeLanguageDetectionTabHelperObserver
       language::IOSLanguageDetectionTabHelper* tab_helper) override;
 
   translate::LanguageDetectionDetails* GetLanguageDetectionDetails();
+  void ResetLanguageDetectionDetails();
 
  private:
   web::WebState* web_state_;

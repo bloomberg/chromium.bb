@@ -582,12 +582,8 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
       @"A language has been detected");
 }
 
-// TODO:(crbug.com/946533) fix and reenable for iPads.
 // Tests that history.pushState triggers a new detection.
 - (void)testLanguageDetectionWithPushState {
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
-  }
   const GURL URL = web::test::HttpServer::MakeUrl(
       "http://scenarioLanguageDetectionPushState");
   std::map<GURL, std::string> responses;
@@ -917,13 +913,9 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
       assertWithMatcher:ElementIsSelected(NO)];
 }
 
-// TODO:(crbug.com/946533) fix and reenable for iPads.
 // Tests that translation occurs automatically on second navigation to an
 // already translated page.
 - (void)testInfobarAutoTranslate {
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
-  }
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));
@@ -1873,7 +1865,8 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   return WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, condition);
 }
 
-// Waits until a language has been detected and checks the language details.
+// Waits until language details have been detected then verifies them. Resets
+// language details in order to wait for new detection in the next call.
 - (void)assertLanguageDetails:
     (const translate::LanguageDetectionDetails&)expectedDetails {
   GREYAssert(WaitUntilConditionOrTimeout(
@@ -1906,6 +1899,8 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
                                  expectedDetails.adopted_language.c_str()];
   GREYAssert(expectedDetails.adopted_language == details->adopted_language,
              adoptedLanguageError);
+
+  language_detection_tab_helper_observer_->ResetLanguageDetectionDetails();
 }
 
 @end
