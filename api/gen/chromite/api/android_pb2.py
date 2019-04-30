@@ -22,8 +22,8 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='chromite/api/android.proto',
   package='chromite.api',
   syntax='proto3',
-  serialized_options=None,
-  serialized_pb=_b('\n\x1a\x63hromite/api/android.proto\x12\x0c\x63hromite.api\x1a\x1c\x63hromite/api/build_api.proto\x1a\x17\x63hromiumos/common.proto\x1a\x1bgoogle/protobuf/empty.proto\"\xe8\x01\n\x11MarkStableRequest\x12\x17\n\x0ftracking_branch\x18\x01 \x01(\t\x12\x14\n\x0cpackage_name\x18\x02 \x01(\t\x12\x1c\n\x14\x61ndroid_build_branch\x18\x03 \x01(\t\x12\x17\n\x0f\x61ndroid_version\x18\x04 \x01(\t\x12 \n\x18\x61ndroid_gts_build_branch\x18\x05 \x01(\t\x12\'\n\x06\x62oards\x18\x06 \x03(\x0b\x32\x17.chromiumos.BuildTarget\x12\"\n\x06\x63hroot\x18\x07 \x01(\x0b\x32\x12.chromiumos.Chroot\"w\n\x12MarkStableResponse\x12\x32\n\x06status\x18\x01 \x01(\x0e\x32\".chromite.api.MarkStableStatusType\x12-\n\x0c\x61ndroid_atom\x18\x02 \x01(\x0b\x32\x17.chromiumos.PackageInfo\"9\n\x13UnpinVersionRequest\x12\"\n\x06\x63hroot\x18\x01 \x01(\x0b\x32\x12.chromiumos.Chroot*\x9c\x01\n\x14MarkStableStatusType\x12\"\n\x1eMARK_STABLE_STATUS_UNSPECIFIED\x10\x00\x12\x1e\n\x1aMARK_STABLE_STATUS_SUCCESS\x10\x01\x12\x1d\n\x19MARK_STABLE_STATUS_PINNED\x10\x02\x12!\n\x1dMARK_STABLE_STATUS_EARLY_EXIT\x10\x03\x32\xcd\x01\n\x0e\x41ndroidService\x12W\n\nMarkStable\x12\x1f.chromite.api.MarkStableRequest\x1a .chromite.api.MarkStableResponse\"\x06\xc2\xed\x1a\x02\x10\x02\x12Q\n\x0cUnpinVersion\x12!.chromite.api.UnpinVersionRequest\x1a\x16.google.protobuf.Empty\"\x06\xc2\xed\x1a\x02\x10\x01\x1a\x0f\xc2\xed\x1a\x0b\n\x07\x61ndroid\x10\x01\x62\x06proto3')
+  serialized_options=_b('Z6go.chromium.org/chromiumos/infra/proto/go/chromite/api'),
+  serialized_pb=_b('\n\x1a\x63hromite/api/android.proto\x12\x0c\x63hromite.api\x1a\x1c\x63hromite/api/build_api.proto\x1a\x17\x63hromiumos/common.proto\x1a\x1bgoogle/protobuf/empty.proto\"\xe8\x01\n\x11MarkStableRequest\x12\x17\n\x0ftracking_branch\x18\x01 \x01(\t\x12\x14\n\x0cpackage_name\x18\x02 \x01(\t\x12\x1c\n\x14\x61ndroid_build_branch\x18\x03 \x01(\t\x12\x17\n\x0f\x61ndroid_version\x18\x04 \x01(\t\x12 \n\x18\x61ndroid_gts_build_branch\x18\x05 \x01(\t\x12\'\n\x06\x62oards\x18\x06 \x03(\x0b\x32\x17.chromiumos.BuildTarget\x12\"\n\x06\x63hroot\x18\x07 \x01(\x0b\x32\x12.chromiumos.Chroot\"w\n\x12MarkStableResponse\x12\x32\n\x06status\x18\x01 \x01(\x0e\x32\".chromite.api.MarkStableStatusType\x12-\n\x0c\x61ndroid_atom\x18\x02 \x01(\x0b\x32\x17.chromiumos.PackageInfo\"9\n\x13UnpinVersionRequest\x12\"\n\x06\x63hroot\x18\x01 \x01(\x0b\x32\x12.chromiumos.Chroot*\x9c\x01\n\x14MarkStableStatusType\x12\"\n\x1eMARK_STABLE_STATUS_UNSPECIFIED\x10\x00\x12\x1e\n\x1aMARK_STABLE_STATUS_SUCCESS\x10\x01\x12\x1d\n\x19MARK_STABLE_STATUS_PINNED\x10\x02\x12!\n\x1dMARK_STABLE_STATUS_EARLY_EXIT\x10\x03\x32\xcd\x01\n\x0e\x41ndroidService\x12W\n\nMarkStable\x12\x1f.chromite.api.MarkStableRequest\x1a .chromite.api.MarkStableResponse\"\x06\xc2\xed\x1a\x02\x10\x02\x12Q\n\x0cUnpinVersion\x12!.chromite.api.UnpinVersionRequest\x1a\x16.google.protobuf.Empty\"\x06\xc2\xed\x1a\x02\x10\x01\x1a\x0f\xc2\xed\x1a\x0b\n\x07\x61ndroid\x10\x01\x42\x38Z6go.chromium.org/chromiumos/infra/proto/go/chromite/apib\x06proto3')
   ,
   dependencies=[chromite_dot_api_dot_build__api__pb2.DESCRIPTOR,chromiumos_dot_common__pb2.DESCRIPTOR,google_dot_protobuf_dot_empty__pb2.DESCRIPTOR,])
 
@@ -239,6 +239,7 @@ UnpinVersionRequest = _reflection.GeneratedProtocolMessageType('UnpinVersionRequ
 _sym_db.RegisterMessage(UnpinVersionRequest)
 
 
+DESCRIPTOR._options = None
 
 _ANDROIDSERVICE = _descriptor.ServiceDescriptor(
   name='AndroidService',

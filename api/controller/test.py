@@ -114,3 +114,10 @@ def _BuildUnittestTarball(chroot, board, result_path):
                                         error_code_ok=True)
 
   return tarball_path if result.returncode == 0 else None
+
+
+def ChromiteUnitTest(_input_proto, _output_proto):
+  """Run the chromite unit tests."""
+  cmd = [os.path.join(constants.CHROMITE_DIR, 'scripts', 'run_tests')]
+  result = cros_build_lib.RunCommand(cmd, error_code_ok=True)
+  return result.returncode

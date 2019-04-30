@@ -284,7 +284,7 @@ class Router(object):
       if isinstance(field, common_pb2.Chroot):
         chroot_field_name = descriptor.name
         chroot = field
-        chroot_path = chroot.path
+        chroot_path = chroot.path or chroot_path
         chroot_args.extend(self._GetChrootArgs(chroot))
         break
 

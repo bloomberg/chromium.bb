@@ -199,6 +199,7 @@ class TestPathResolver(cros_test_lib.MockTestCase):
       resolver = path_util.ChrootPathResolver(
           source_path=source_path,
           source_from_path_repo=source_from_path_repo)
+      self.PatchObject(resolver, '_ReadChrootLink', return_value=None)
       source_rel_cwd = os.path.relpath(fake_cwd, actual_source_path)
 
       # Case: path inside the chroot space.
@@ -249,6 +250,15 @@ class TestPathResolver(cros_test_lib.MockTestCase):
     self.PatchObject(os, 'getcwd', return_value=self.FakeCwd(FAKE_SOURCE_PATH))
     self.SetChrootPath(constants.SOURCE_ROOT)
     resolver = path_util.ChrootPathResolver()
+    # These two patches are only necessary or have any affect on the test when
+    # the test is run inside of a symlinked chroot. The _ReadChrootLink patch
+    # ensures it runs as if it is not in a symlinked chroot. The realpath
+    # patch is necessary to make it actually behave as if that's the case.
+    # In both instances the effective return value are as if it was not in a
+    # symlinked chroot.
+    # TODO(saklein) Rewrite these tests so this isn't necessary.
+    self.PatchObject(resolver, '_ReadChrootLink', return_value=None)
+    self.PatchObject(os.path, 'realpath', side_effect=lambda x: x)
 
     # Case: source root path.
     self.assertEqual(

@@ -20,8 +20,8 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='chromite/api/depgraph.proto',
   package='chromite.api',
   syntax='proto3',
-  serialized_options=None,
-  serialized_pb=_b('\n\x1b\x63hromite/api/depgraph.proto\x12\x0c\x63hromite.api\x1a\x1c\x63hromite/api/build_api.proto\x1a\x17\x63hromiumos/common.proto\"\x91\x01\n\x08\x44\x65pGraph\x12-\n\x0c\x62uild_target\x18\x01 \x01(\x0b\x32\x17.chromiumos.BuildTarget\x12\x32\n\x0cpackage_deps\x18\x02 \x03(\x0b\x32\x1c.chromite.api.PackageDepInfo\x12\"\n\x06\x63hroot\x18\x03 \x01(\x0b\x32\x12.chromiumos.Chroot\"\xb0\x01\n\x0ePackageDepInfo\x12-\n\x0cpackage_info\x18\x01 \x01(\x0b\x32\x17.chromiumos.PackageInfo\x12\x34\n\x13\x64\x65pendency_packages\x18\x02 \x03(\x0b\x32\x17.chromiumos.PackageInfo\x12\x39\n\x17\x64\x65pendency_source_paths\x18\x03 \x03(\x0b\x32\x18.chromite.api.SourcePath\"\x1a\n\nSourcePath\x12\x0c\n\x04path\x18\x01 \x01(\t\"d\n\x1eGetBuildDependencyGraphRequest\x12-\n\x0c\x62uild_target\x18\x01 \x01(\x0b\x32\x17.chromiumos.BuildTarget\x12\x13\n\x0boutput_path\x18\x02 \x01(\t\"F\n\x1fGetBuildDependencyGraphResponse\x12#\n\x1b\x62uild_dependency_graph_file\x18\x01 \x01(\t2\xab\x01\n\x11\x44\x65pendencyService\x12v\n\x17GetBuildDependencyGraph\x12,.chromite.api.GetBuildDependencyGraphRequest\x1a-.chromite.api.GetBuildDependencyGraphResponse\x1a\x1e\xc2\xed\x1a\x1a\n\x16\x62oard_build_dependency\x10\x01\x62\x06proto3')
+  serialized_options=_b('Z6go.chromium.org/chromiumos/infra/proto/go/chromite/api'),
+  serialized_pb=_b('\n\x1b\x63hromite/api/depgraph.proto\x12\x0c\x63hromite.api\x1a\x1c\x63hromite/api/build_api.proto\x1a\x17\x63hromiumos/common.proto\"\x91\x01\n\x08\x44\x65pGraph\x12-\n\x0c\x62uild_target\x18\x01 \x01(\x0b\x32\x17.chromiumos.BuildTarget\x12\x32\n\x0cpackage_deps\x18\x02 \x03(\x0b\x32\x1c.chromite.api.PackageDepInfo\x12\"\n\x06\x63hroot\x18\x03 \x01(\x0b\x32\x12.chromiumos.Chroot\"\xb0\x01\n\x0ePackageDepInfo\x12-\n\x0cpackage_info\x18\x01 \x01(\x0b\x32\x17.chromiumos.PackageInfo\x12\x34\n\x13\x64\x65pendency_packages\x18\x02 \x03(\x0b\x32\x17.chromiumos.PackageInfo\x12\x39\n\x17\x64\x65pendency_source_paths\x18\x03 \x03(\x0b\x32\x18.chromite.api.SourcePath\"\x1a\n\nSourcePath\x12\x0c\n\x04path\x18\x01 \x01(\t\"d\n\x1eGetBuildDependencyGraphRequest\x12-\n\x0c\x62uild_target\x18\x01 \x01(\x0b\x32\x17.chromiumos.BuildTarget\x12\x13\n\x0boutput_path\x18\x02 \x01(\t\"F\n\x1fGetBuildDependencyGraphResponse\x12#\n\x1b\x62uild_dependency_graph_file\x18\x01 \x01(\t2\xab\x01\n\x11\x44\x65pendencyService\x12v\n\x17GetBuildDependencyGraph\x12,.chromite.api.GetBuildDependencyGraphRequest\x1a-.chromite.api.GetBuildDependencyGraphResponse\x1a\x1e\xc2\xed\x1a\x1a\n\x16\x62oard_build_dependency\x10\x01\x42\x38Z6go.chromium.org/chromiumos/infra/proto/go/chromite/apib\x06proto3')
   ,
   dependencies=[chromite_dot_api_dot_build__api__pb2.DESCRIPTOR,chromiumos_dot_common__pb2.DESCRIPTOR,])
 
@@ -267,6 +267,7 @@ GetBuildDependencyGraphResponse = _reflection.GeneratedProtocolMessageType('GetB
 _sym_db.RegisterMessage(GetBuildDependencyGraphResponse)
 
 
+DESCRIPTOR._options = None
 
 _DEPENDENCYSERVICE = _descriptor.ServiceDescriptor(
   name='DependencyService',

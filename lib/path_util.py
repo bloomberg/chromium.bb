@@ -227,8 +227,11 @@ class ChrootPathResolver(object):
       new_path = self._TranslatePath(path, '', self._chroot_path)
     else:
       # Check whether the resolved path happens to point back at the chroot, in
-      # which case trim the chroot path prefix and continue recursively.
+      # which case trim the chroot path or link prefix and continue recursively.
       path = self._TranslatePath(new_path, self._chroot_path, '/')
+      if path is None and self._chroot_link:
+        path = self._TranslatePath(new_path, self._chroot_link, '/')
+
       if path is not None:
         new_path = self._GetHostPath(path)
 
