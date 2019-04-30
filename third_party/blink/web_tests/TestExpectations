@@ -4199,7 +4199,7 @@ crbug.com/957457 virtual/threaded/external/wpt/css/css-paint-api/paint-function-
 crbug.com/957459 virtual/threaded/external/wpt/css/css-paint-api/paint2d-composite.https.html [ Failure ]
 crbug.com/957459 virtual/threaded/external/wpt/css/css-paint-api/paint2d-filter.https.html [ Failure ]
 crbug.com/957459 virtual/threaded/external/wpt/css/css-paint-api/paint2d-gradient.https.html [ Failure ]
-crbug.com/957457 virtual/threaded/external/wpt/css/css-paint-api/paint2d-image.https.html [ Crash ]
+crbug.com/957457 virtual/threaded/external/wpt/css/css-paint-api/paint2d-image.https.html [ Crash Timeout ]
 crbug.com/957459 virtual/threaded/external/wpt/css/css-paint-api/paint2d-paths.https.html [ Failure ]
 crbug.com/957459 virtual/threaded/external/wpt/css/css-paint-api/paint2d-rects.https.html [ Failure ]
 crbug.com/957459 virtual/threaded/external/wpt/css/css-paint-api/paint2d-shadows.https.html [ Failure ]
