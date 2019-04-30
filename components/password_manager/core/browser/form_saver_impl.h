@@ -33,23 +33,10 @@ class FormSaverImpl : public FormSaver {
                   best_matches,
               const std::vector<autofill::PasswordForm>* credentials_to_update,
               const autofill::PasswordForm* old_primary_key) override;
-  void PresaveGeneratedPassword(
-      const autofill::PasswordForm& generated) override;
-  void RemovePresavedPassword() override;
   void Remove(const autofill::PasswordForm& form) override;
   std::unique_ptr<FormSaver> Clone() override;
 
  private:
-  // Implements both Save and Update, because those methods share most of the
-  // code.
-  void SaveImpl(
-      const autofill::PasswordForm& pending,
-      bool is_new_login,
-      const std::map<base::string16, const autofill::PasswordForm*>&
-          best_matches,
-      const std::vector<autofill::PasswordForm>* credentials_to_update,
-      const autofill::PasswordForm* old_primary_key);
-
   // Marks all of |best_matches| as not preferred unless the username is
   // |preferred_username| or the credential is PSL matched.
   void UpdatePreferredLoginState(
@@ -65,11 +52,12 @@ class FormSaverImpl : public FormSaver {
       const std::map<base::string16, const autofill::PasswordForm*>&
           best_matches);
 
+  // The class is stateless. Don't introduce it. The methods are utilities for
+  // common tasks on the password store. The state should belong to either a
+  // form handler or origin handler which could embed FormSaver.
+
   // Cached pointer to the PasswordStore.
   PasswordStore* const store_;
-
-  // Stores the pre-saved credential (happens during password generation).
-  std::unique_ptr<autofill::PasswordForm> presaved_;
 
   DISALLOW_COPY_AND_ASSIGN(FormSaverImpl);
 };

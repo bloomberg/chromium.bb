@@ -127,9 +127,6 @@ class MockFormSaver : public StubFormSaver {
            const std::map<base::string16, const PasswordForm*>& best_matches,
            const std::vector<autofill::PasswordForm>* credentials_to_update,
            const autofill::PasswordForm* old_primary_key));
-  MOCK_METHOD1(PresaveGeneratedPassword,
-               void(const autofill::PasswordForm& generated));
-  MOCK_METHOD0(RemovePresavedPassword, void());
   MOCK_METHOD1(Remove, void(const autofill::PasswordForm&));
 
   std::unique_ptr<FormSaver> Clone() override {
@@ -207,6 +204,12 @@ MATCHER_P(UploadedFieldPropertiesMasksAre, expected_field_properties, "") {
   }
 
   return !conflict_found;
+}
+
+MATCHER_P(FormIgnoreDate, expected, "") {
+  PasswordForm expected_with_date = expected;
+  expected_with_date.date_created = arg.date_created;
+  return arg == expected_with_date;
 }
 
 class MockAutofillDownloadManager : public autofill::AutofillDownloadManager {
@@ -3265,27 +3268,31 @@ TEST_F(PasswordFormManagerTest, PresaveGeneratedPasswordAndRemoveIt) {
   credentials.password_value = ASCIIToUTF16("password");
 
   // Simulate the user accepted a generated password.
-  EXPECT_CALL(MockFormSaver::Get(form_manager()), PresaveGeneratedPassword(_));
+  EXPECT_CALL(MockFormSaver::Get(form_manager()),
+              Save(FormIgnoreDate(credentials), _, _));
   form_manager()->PresaveGeneratedPassword(credentials);
   EXPECT_TRUE(form_manager()->HasGeneratedPassword());
   EXPECT_FALSE(form_manager()->generated_password_changed());
 
   // Simulate the user changed the presaved username.
   credentials.username_value = ASCIIToUTF16("new_username");
-  EXPECT_CALL(MockFormSaver::Get(form_manager()), PresaveGeneratedPassword(_));
+  EXPECT_CALL(MockFormSaver::Get(form_manager()),
+              Update(FormIgnoreDate(credentials), _, _, _));
   form_manager()->PresaveGeneratedPassword(credentials);
   EXPECT_TRUE(form_manager()->HasGeneratedPassword());
   EXPECT_FALSE(form_manager()->generated_password_changed());
 
   // Simulate the user changed the presaved password.
   credentials.password_value = ASCIIToUTF16("changed_password");
-  EXPECT_CALL(MockFormSaver::Get(form_manager()), PresaveGeneratedPassword(_));
+  EXPECT_CALL(MockFormSaver::Get(form_manager()),
+              Update(FormIgnoreDate(credentials), _, _, _));
   form_manager()->PresaveGeneratedPassword(credentials);
   EXPECT_TRUE(form_manager()->HasGeneratedPassword());
   EXPECT_TRUE(form_manager()->generated_password_changed());
 
   // Simulate the user removed the presaved password.
-  EXPECT_CALL(MockFormSaver::Get(form_manager()), RemovePresavedPassword());
+  EXPECT_CALL(MockFormSaver::Get(form_manager()),
+              Remove(FormIgnoreDate(credentials)));
   form_manager()->PasswordNoLongerGenerated();
 }
 
@@ -4513,7 +4520,8 @@ TEST_F(PasswordFormManagerTest, PresaveGeneratedPassword_UnknownUsername) {
   credentials.username_value = ASCIIToUTF16("new_user");
   credentials.password_value = ASCIIToUTF16("generatated_password");
 
-  EXPECT_CALL(MockFormSaver::Get(form_manager()), PresaveGeneratedPassword(_));
+  EXPECT_CALL(MockFormSaver::Get(form_manager()),
+              Save(FormIgnoreDate(credentials), _, _));
   form_manager()->PresaveGeneratedPassword(credentials);
 }
 
@@ -4530,12 +4538,9 @@ TEST_F(PasswordFormManagerTest, PresaveGeneratedPassword_KnownUsername) {
 
   PasswordForm credentials_without_username(credentials);
   credentials_without_username.username_value.clear();
-  PasswordForm actual;
-  EXPECT_CALL(MockFormSaver::Get(form_manager()), PresaveGeneratedPassword(_))
-      .WillOnce(SaveArg<0>(&actual));
+  EXPECT_CALL(MockFormSaver::Get(form_manager()),
+              Save(FormIgnoreDate(credentials_without_username), _, _));
   form_manager()->PresaveGeneratedPassword(credentials);
-  credentials_without_username.date_created = actual.date_created;
-  EXPECT_EQ(credentials_without_username, actual);
 }
 
 TEST_F(PasswordFormManagerTest, PresaveGeneratedPassword_EmptyUsername) {
@@ -4549,7 +4554,8 @@ TEST_F(PasswordFormManagerTest, PresaveGeneratedPassword_EmptyUsername) {
   credentials.username_value.clear();
   credentials.password_value = ASCIIToUTF16("generatated_password");
 
-  EXPECT_CALL(MockFormSaver::Get(form_manager()), PresaveGeneratedPassword(_));
+  EXPECT_CALL(MockFormSaver::Get(form_manager()),
+              Save(FormIgnoreDate(credentials), _, _));
   form_manager()->PresaveGeneratedPassword(credentials);
 }
 
@@ -4563,13 +4569,12 @@ TEST_F(PasswordFormManagerTest, MetricForManuallyTypedAndGeneratedPasswords) {
     credentials.username_value = ASCIIToUTF16("test@gmail.com");
     credentials.preferred = true;
     if (is_generated_password) {
-      credentials.new_password_value = ASCIIToUTF16("12345");
+      credentials.password_value = ASCIIToUTF16("12345");
       form_manager()->PresaveGeneratedPassword(credentials);
     }
     form_manager()->ProvisionallySave(credentials);
 
     PasswordForm saved_result;
-    EXPECT_CALL(MockFormSaver::Get(form_manager()), Save(_, _, _));
     base::HistogramTester histogram_tester;
     form_manager()->Save();
     histogram_tester.ExpectUniqueSample(

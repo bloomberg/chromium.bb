@@ -66,6 +66,16 @@ MATCHER_P2(FormUsernamePasswordAre, username, password, "") {
   return arg.username_value == username && arg.password_value == password;
 }
 
+MATCHER_P(FormHasUniqueKey, key, "") {
+  return ArePasswordFormUniqueKeyEqual(arg, key);
+}
+
+MATCHER_P(FormIgnoreDate, expected, "") {
+  PasswordForm expected_with_date = expected;
+  expected_with_date.date_created = arg.date_created;
+  return arg == expected_with_date;
+}
+
 class MockStoreResultFilter : public StubCredentialsFilter {
  public:
   MOCK_CONST_METHOD1(ShouldSave, bool(const autofill::PasswordForm& form));
@@ -598,7 +608,7 @@ TEST_F(PasswordManagerTest, EditingGeneratedPasswordOnIOS) {
   EXPECT_CALL(*store_, UpdateLoginWithPrimaryKey(
                            FormUsernamePasswordAre(form.username_value,
                                                    generated_password),
-                           presaved_form))
+                           FormHasUniqueKey(presaved_form)))
       .WillOnce(SaveArg<0>(&presaved_form));
 
   manager()->UpdateGeneratedPasswordOnUserInput(
@@ -611,7 +621,7 @@ TEST_F(PasswordManagerTest, EditingGeneratedPasswordOnIOS) {
   EXPECT_CALL(*store_,
               UpdateLoginWithPrimaryKey(
                   FormUsernamePasswordAre(username, generated_password),
-                  presaved_form));
+                  FormHasUniqueKey(presaved_form)));
 
   manager()->UpdateGeneratedPasswordOnUserInput(form.form_data.name,
                                                 username_element, username);
@@ -683,7 +693,7 @@ TEST_F(PasswordManagerTest, PasswordNoLongerGeneratedOnIOS) {
                                       generated_password, generation_element);
 
   // The user is removing password. Check that it is removed from the store.
-  EXPECT_CALL(*store_, RemoveLogin(presaved_form));
+  EXPECT_CALL(*store_, RemoveLogin(FormHasUniqueKey(presaved_form)));
   manager()->OnPasswordNoLongerGenerated(&driver_);
 }
 #endif
@@ -2178,28 +2188,23 @@ TEST_F(PasswordManagerTest, PasswordGenerationPresavePassword) {
   PasswordForm sanitized_form(form);
   SanitizeFormData(&sanitized_form.form_data);
 
-  PasswordForm actual_form;
-  EXPECT_CALL(*store_, AddLogin(_)).WillOnce(SaveArg<0>(&actual_form));
+  EXPECT_CALL(*store_, AddLogin(FormIgnoreDate(sanitized_form)));
   manager()->OnPresaveGeneratedPassword(&driver_, form);
-  EXPECT_NE(actual_form.date_created, base::Time());
-  sanitized_form.date_created = actual_form.date_created;
-  EXPECT_EQ(sanitized_form, actual_form);
 
   // The user updates the generated password.
   PasswordForm updated_form(form);
   updated_form.password_value = base::ASCIIToUTF16("password_12345");
   PasswordForm sanitized_updated_form(updated_form);
   SanitizeFormData(&sanitized_updated_form.form_data);
-  EXPECT_CALL(*store_, UpdateLoginWithPrimaryKey(_, sanitized_form))
-      .WillOnce(SaveArg<0>(&actual_form));
+  EXPECT_CALL(*store_,
+              UpdateLoginWithPrimaryKey(FormIgnoreDate(sanitized_updated_form),
+                                        FormHasUniqueKey(sanitized_form)));
   manager()->OnPresaveGeneratedPassword(&driver_, updated_form);
-  sanitized_updated_form.date_created = actual_form.date_created;
-  EXPECT_EQ(sanitized_updated_form, actual_form);
   histogram_tester.ExpectUniqueSample(
       "PasswordManager.GeneratedFormHasNoFormManager", false, 2);
 
   // The user removes the generated password.
-  EXPECT_CALL(*store_, RemoveLogin(sanitized_updated_form)).WillOnce(Return());
+  EXPECT_CALL(*store_, RemoveLogin(FormHasUniqueKey(sanitized_updated_form)));
   manager()->OnPasswordNoLongerGenerated(&driver_, updated_form);
 }
 
@@ -2244,13 +2249,6 @@ TEST_F(PasswordManagerTest, PasswordGenerationPresavePasswordAndLogin) {
       EXPECT_CALL(*store_, GetLogins(_, _))
           .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
     }
-    std::unique_ptr<PasswordFormManagerForUI> form_manager;
-    if (found_matched_logins_in_store) {
-      EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_))
-          .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager)));
-    } else {
-      EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_)).Times(0);
-    }
     EXPECT_CALL(client_, AutomaticPasswordSaveIndicator())
         .Times(found_matched_logins_in_store ? 0 : 1);
     manager()->OnPasswordFormsParsed(&driver_, observed);
@@ -2261,19 +2259,23 @@ TEST_F(PasswordManagerTest, PasswordGenerationPresavePasswordAndLogin) {
     PasswordForm presaved_form(form);
     if (found_matched_logins_in_store)
       presaved_form.username_value.clear();
-    PasswordForm actual_form;
-    EXPECT_CALL(*store_, AddLogin(_)).WillOnce(SaveArg<0>(&actual_form));
+    EXPECT_CALL(*store_, AddLogin(FormIgnoreDate(presaved_form)));
     manager()->OnPresaveGeneratedPassword(&driver_, form);
-    EXPECT_NE(actual_form.date_created, base::Time());
-    presaved_form.date_created = actual_form.date_created;
-    EXPECT_EQ(presaved_form, actual_form);
     ::testing::Mock::VerifyAndClearExpectations(store_.get());
 
     EXPECT_CALL(*store_, IsAbleToSavePasswords()).WillRepeatedly(Return(true));
     if (!found_matched_logins_in_store)
-      EXPECT_CALL(*store_, UpdateLoginWithPrimaryKey(_, presaved_form));
+      EXPECT_CALL(*store_, UpdateLoginWithPrimaryKey(
+                               _, FormHasUniqueKey(presaved_form)));
     OnPasswordFormSubmitted(form);
     observed.clear();
+    std::unique_ptr<PasswordFormManagerForUI> form_manager;
+    if (found_matched_logins_in_store) {
+      EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_))
+          .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager)));
+    } else {
+      EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_)).Times(0);
+    }
     manager()->DidNavigateMainFrame(true);
     manager()->OnPasswordFormsParsed(&driver_, observed);
     manager()->OnPasswordFormsRendered(&driver_, observed, true);
@@ -2283,7 +2285,8 @@ TEST_F(PasswordManagerTest, PasswordGenerationPresavePasswordAndLogin) {
     if (found_matched_logins_in_store) {
       // Credentials should be updated only when the user explicitly chooses.
       ASSERT_TRUE(form_manager);
-      EXPECT_CALL(*store_, UpdateLoginWithPrimaryKey(_, presaved_form));
+      EXPECT_CALL(*store_, UpdateLoginWithPrimaryKey(
+                               _, FormHasUniqueKey(presaved_form)));
       form_manager->Update(form_manager->GetPendingCredentials());
       ::testing::Mock::VerifyAndClearExpectations(store_.get());
     }

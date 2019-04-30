@@ -20,6 +20,7 @@
 #include "components/password_manager/core/browser/form_fetcher_impl.h"
 #include "components/password_manager/core/browser/form_saver.h"
 #include "components/password_manager/core/browser/password_form_filling.h"
+#include "components/password_manager/core/browser/password_generation_state.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
@@ -277,13 +278,10 @@ void NewPasswordFormManager::Save() {
       DCHECK(saved_form);
       old_password = saved_form->password_value;
     }
-    form_saver_->Save(pending_credentials_, GetAllMatches(), old_password);
+    SavePendingToStore(false /*update*/, old_password);
   } else {
     ProcessUpdate();
-    std::vector<PasswordForm> credentials_to_update =
-        FindOtherCredentialsToUpdate();
-    form_saver_->Update(pending_credentials_, best_matches_,
-                        &credentials_to_update, nullptr);
+    SavePendingToStore(true /*update*/, base::string16());
   }
 
   if (pending_credentials_.times_used == 1 &&
@@ -313,10 +311,7 @@ void NewPasswordFormManager::Update(const PasswordForm& credentials_to_update) {
   pending_credentials_.preferred = true;
   is_new_login_ = false;
   ProcessUpdate();
-  std::vector<PasswordForm> more_credentials_to_update =
-      FindOtherCredentialsToUpdate();
-  form_saver_->Update(pending_credentials_, best_matches_,
-                      &more_credentials_to_update, nullptr);
+  SavePendingToStore(true /*update*/, base::string16());
 
   client_->UpdateFormManagers();
 }
@@ -430,7 +425,8 @@ void NewPasswordFormManager::PasswordNoLongerGenerated() {
   if (!HasGeneratedPassword())
     return;
 
-  form_saver_->RemovePresavedPassword();
+  generation_state_->PasswordNoLongerGenerated();
+  generation_state_.reset();
   generated_password_.clear();
   votes_uploader_.set_has_generated_password(false);
   votes_uploader_.set_generated_password_changed(false);
@@ -439,7 +435,7 @@ void NewPasswordFormManager::PasswordNoLongerGenerated() {
 }
 
 bool NewPasswordFormManager::HasGeneratedPassword() const {
-  return !generated_password_.empty();
+  return generation_state_ && generation_state_->HasGeneratedPassword();
 }
 
 void NewPasswordFormManager::SetGenerationPopupWasShown(
@@ -528,6 +524,11 @@ std::unique_ptr<NewPasswordFormManager> NewPasswordFormManager::Clone() {
   // The constructor only can take a weak pointer to the fetcher, so moving the
   // owning one needs to happen explicitly.
   result->owned_form_fetcher_ = std::move(fetcher);
+
+  if (generation_state_) {
+    result->generation_state_ =
+        generation_state_->Clone(result->form_saver_.get());
+  }
 
   // These data members all satisfy:
   //   (1) They could have been changed by |*this| between its construction and
@@ -979,8 +980,8 @@ void NewPasswordFormManager::FillHttpAuth() {
   client_->AutofillHttpAuth(best_matches_, *preferred_match_);
 }
 
-std::vector<PasswordForm>
-NewPasswordFormManager::FindOtherCredentialsToUpdate() {
+std::vector<PasswordForm> NewPasswordFormManager::FindOtherCredentialsToUpdate()
+    const {
   std::vector<autofill::PasswordForm> credentials_to_update;
   if (!pending_credentials_.federation_origin.opaque())
     return credentials_to_update;
@@ -1029,9 +1030,10 @@ void NewPasswordFormManager::PresaveGeneratedPasswordInternal(
     parsed_form->origin = form.url;
     parsed_form->signon_realm = GetSignonRealm(form.url);
   }
-  parsed_form->date_created = base::Time::Now();
 
   if (!HasGeneratedPassword()) {
+    generation_state_ =
+        std::make_unique<PasswordGenerationState>(form_saver_.get());
     votes_uploader_.set_generated_password_changed(false);
     metrics_recorder_->SetGeneratedPasswordStatus(
         PasswordFormMetricsRecorder::GeneratedPasswordStatus::
@@ -1060,7 +1062,7 @@ void NewPasswordFormManager::PresaveGeneratedPasswordInternal(
   if (base::ContainsKey(best_matches_, parsed_form->username_value))
     parsed_form->username_value.clear();
 
-  form_saver_->PresaveGeneratedPassword(*parsed_form);
+  generation_state_->PresaveGeneratedPassword(std::move(*parsed_form));
 }
 
 void NewPasswordFormManager::CalculateFillingAssistanceMetric(
@@ -1096,6 +1098,22 @@ std::vector<const PasswordForm*> NewPasswordFormManager::GetAllMatches() const {
     return form->scheme != observed_form_scheme;
   });
   return result;
+}
+
+void NewPasswordFormManager::SavePendingToStore(
+    bool update,
+    const base::string16& old_password) {
+  if (HasGeneratedPassword()) {
+    generation_state_->CommitGeneratedPassword(pending_credentials_,
+                                               best_matches_, nullptr);
+  } else if (update) {
+    std::vector<PasswordForm> credentials_to_update =
+        FindOtherCredentialsToUpdate();
+    form_saver_->Update(pending_credentials_, best_matches_,
+                        &credentials_to_update, nullptr);
+  } else {
+    form_saver_->Save(pending_credentials_, GetAllMatches(), old_password);
+  }
 }
 
 }  // namespace password_manager

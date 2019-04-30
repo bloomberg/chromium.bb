@@ -385,177 +385,6 @@ TEST_F(FormSaverImplTest, Save_AndUpdatePasswordValues_IgnoreNonMatches) {
   form_saver_.Save(pending, matches, ASCIIToUTF16(kOldPassword));
 }
 
-// Check that presaving a password for the first time results in adding it.
-TEST_F(FormSaverImplTest, PresaveGeneratedPassword_New) {
-  PasswordForm generated = CreatePending("nameofuser", "wordToP4a55");
-  PasswordForm saved;
-
-  EXPECT_CALL(*mock_store_, AddLogin(_)).WillOnce(SaveArg<0>(&saved));
-  EXPECT_CALL(*mock_store_, UpdateLogin(_)).Times(0);
-  EXPECT_CALL(*mock_store_, UpdateLoginWithPrimaryKey(_, _)).Times(0);
-  form_saver_.PresaveGeneratedPassword(generated);
-  EXPECT_EQ(ASCIIToUTF16("nameofuser"), saved.username_value);
-  EXPECT_EQ(ASCIIToUTF16("wordToP4a55"), saved.password_value);
-}
-
-// Check that presaving a password for the second time results in updating it.
-TEST_F(FormSaverImplTest, PresaveGeneratedPassword_Replace) {
-  PasswordForm generated = CreatePending("nameofuser", "wordToP4a55");
-
-  EXPECT_CALL(*mock_store_, AddLogin(_));
-  form_saver_.PresaveGeneratedPassword(generated);
-
-  generated.password_value = ASCIIToUTF16("newgenpwd");
-  PasswordForm saved_new;
-  PasswordForm saved_old;
-  EXPECT_CALL(*mock_store_, AddLogin(_)).Times(0);
-  EXPECT_CALL(*mock_store_, UpdateLogin(_)).Times(0);
-  EXPECT_CALL(*mock_store_, UpdateLoginWithPrimaryKey(_, _))
-      .WillOnce(DoAll(SaveArg<0>(&saved_new), SaveArg<1>(&saved_old)));
-  form_saver_.PresaveGeneratedPassword(generated);
-  EXPECT_EQ(ASCIIToUTF16("nameofuser"), saved_old.username_value);
-  EXPECT_EQ(ASCIIToUTF16("wordToP4a55"), saved_old.password_value);
-  EXPECT_EQ(ASCIIToUTF16("nameofuser"), saved_new.username_value);
-  EXPECT_EQ(ASCIIToUTF16("newgenpwd"), saved_new.password_value);
-}
-
-// Check that presaving a password followed by a call to save a pending
-// credential (as new) results in replacing the presaved password with the
-// pending one.
-TEST_F(FormSaverImplTest, PresaveGeneratedPassword_ThenSaveAsNew) {
-  PasswordForm generated = CreatePending("generatedU", "generatedP");
-
-  EXPECT_CALL(*mock_store_, AddLogin(_));
-  form_saver_.PresaveGeneratedPassword(generated);
-
-  PasswordForm pending = CreatePending("nameofuser", "wordToP4a55");
-  PasswordForm saved_new;
-  PasswordForm saved_old;
-  EXPECT_CALL(*mock_store_, AddLogin(_)).Times(0);
-  EXPECT_CALL(*mock_store_, UpdateLogin(_)).Times(0);
-  EXPECT_CALL(*mock_store_, UpdateLoginWithPrimaryKey(_, _))
-      .WillOnce(DoAll(SaveArg<0>(&saved_new), SaveArg<1>(&saved_old)));
-  form_saver_.Save(pending, {}, base::string16());
-  EXPECT_EQ(ASCIIToUTF16("generatedU"), saved_old.username_value);
-  EXPECT_EQ(ASCIIToUTF16("generatedP"), saved_old.password_value);
-  EXPECT_EQ(ASCIIToUTF16("nameofuser"), saved_new.username_value);
-  EXPECT_EQ(ASCIIToUTF16("wordToP4a55"), saved_new.password_value);
-}
-
-// Check that presaving a password followed by a call to save a pending
-// credential (as update) results in replacing the presaved password with the
-// pending one.
-TEST_F(FormSaverImplTest, PresaveGeneratedPassword_ThenUpdate) {
-  PasswordForm generated = CreatePending("generatedU", "generatedP");
-
-  EXPECT_CALL(*mock_store_, AddLogin(_));
-  form_saver_.PresaveGeneratedPassword(generated);
-
-  PasswordForm pending = CreatePending("nameofuser", "wordToP4a55");
-  PasswordForm saved_new;
-  PasswordForm saved_old;
-  EXPECT_CALL(*mock_store_, AddLogin(_)).Times(0);
-  EXPECT_CALL(*mock_store_, UpdateLogin(_)).Times(0);
-  EXPECT_CALL(*mock_store_, UpdateLoginWithPrimaryKey(_, _))
-      .WillOnce(DoAll(SaveArg<0>(&saved_new), SaveArg<1>(&saved_old)));
-  form_saver_.Update(pending, std::map<base::string16, const PasswordForm*>(),
-                     nullptr, nullptr);
-  EXPECT_EQ(ASCIIToUTF16("generatedU"), saved_old.username_value);
-  EXPECT_EQ(ASCIIToUTF16("generatedP"), saved_old.password_value);
-  EXPECT_EQ(ASCIIToUTF16("nameofuser"), saved_new.username_value);
-  EXPECT_EQ(ASCIIToUTF16("wordToP4a55"), saved_new.password_value);
-}
-
-// Check that presaving a password for the third time results in updating it.
-TEST_F(FormSaverImplTest, PresaveGeneratedPassword_ReplaceTwice) {
-  PasswordForm generated = CreatePending("nameofuser", "wordToP4a55");
-
-  EXPECT_CALL(*mock_store_, AddLogin(_));
-  form_saver_.PresaveGeneratedPassword(generated);
-  EXPECT_CALL(*mock_store_, UpdateLoginWithPrimaryKey(_, _));
-  form_saver_.PresaveGeneratedPassword(generated);
-
-  generated.password_value = ASCIIToUTF16("newgenpwd");
-  PasswordForm saved_new;
-  PasswordForm saved_old;
-  EXPECT_CALL(*mock_store_, AddLogin(_)).Times(0);
-  EXPECT_CALL(*mock_store_, UpdateLogin(_)).Times(0);
-  EXPECT_CALL(*mock_store_, UpdateLoginWithPrimaryKey(_, _))
-      .WillOnce(DoAll(SaveArg<0>(&saved_new), SaveArg<1>(&saved_old)));
-  form_saver_.PresaveGeneratedPassword(generated);
-  EXPECT_EQ(ASCIIToUTF16("nameofuser"), saved_old.username_value);
-  EXPECT_EQ(ASCIIToUTF16("wordToP4a55"), saved_old.password_value);
-  EXPECT_EQ(ASCIIToUTF16("nameofuser"), saved_new.username_value);
-  EXPECT_EQ(ASCIIToUTF16("newgenpwd"), saved_new.password_value);
-}
-
-// Check that removing a presaved password is a no-op if none was presaved.
-TEST_F(FormSaverImplTest, RemovePresavedPassword_NonePresaved) {
-  EXPECT_CALL(*mock_store_, RemoveLogin(_)).Times(0);
-  form_saver_.RemovePresavedPassword();
-}
-
-// Check that removing a presaved password removes the presaved password.
-TEST_F(FormSaverImplTest, RemovePresavedPassword) {
-  PasswordForm generated = CreatePending("nameofuser", "wordToP4a55");
-
-  EXPECT_CALL(*mock_store_, AddLogin(_));
-  form_saver_.PresaveGeneratedPassword(generated);
-
-  PasswordForm removed;
-  EXPECT_CALL(*mock_store_, RemoveLogin(_)).WillOnce(SaveArg<0>(&removed));
-  form_saver_.RemovePresavedPassword();
-  EXPECT_EQ(ASCIIToUTF16("nameofuser"), removed.username_value);
-  EXPECT_EQ(ASCIIToUTF16("wordToP4a55"), removed.password_value);
-}
-
-// Check that removing the presaved password and then presaving again results in
-// adding the second presaved password as new.
-TEST_F(FormSaverImplTest, RemovePresavedPassword_AndPresaveAgain) {
-  PasswordForm generated = CreatePending("nameofuser", "wordToP4a55");
-
-  EXPECT_CALL(*mock_store_, AddLogin(_));
-  form_saver_.PresaveGeneratedPassword(generated);
-
-  EXPECT_CALL(*mock_store_, RemoveLogin(_));
-  form_saver_.RemovePresavedPassword();
-
-  PasswordForm saved;
-  generated.username_value = ASCIIToUTF16("newgen");
-  generated.password_value = ASCIIToUTF16("newgenpwd");
-  EXPECT_CALL(*mock_store_, AddLogin(_)).WillOnce(SaveArg<0>(&saved));
-  EXPECT_CALL(*mock_store_, UpdateLogin(_)).Times(0);
-  EXPECT_CALL(*mock_store_, UpdateLoginWithPrimaryKey(_, _)).Times(0);
-  form_saver_.PresaveGeneratedPassword(generated);
-  EXPECT_EQ(ASCIIToUTF16("newgen"), saved.username_value);
-  EXPECT_EQ(ASCIIToUTF16("newgenpwd"), saved.password_value);
-}
-
-// Check that presaving a password once in original and then once in clone
-// results in the clone calling update, not a fresh save.
-TEST_F(FormSaverImplTest, PresaveGeneratedPassword_CloneUpdates) {
-  PasswordForm generated = CreatePending("nameofuser", "wordToP4a55");
-
-  EXPECT_CALL(*mock_store_, AddLogin(_));
-  form_saver_.PresaveGeneratedPassword(generated);
-  std::unique_ptr<FormSaver> clone = form_saver_.Clone();
-  EXPECT_CALL(*mock_store_, UpdateLoginWithPrimaryKey(_, _));
-  clone->PresaveGeneratedPassword(generated);
-}
-
-// Check that a clone can still work after the original is destroyed.
-TEST_F(FormSaverImplTest, PresaveGeneratedPassword_CloneSurvives) {
-  auto original = std::make_unique<FormSaverImpl>(mock_store_.get());
-  PasswordForm generated = CreatePending("nameofuser", "wordToP4a55");
-
-  EXPECT_CALL(*mock_store_, AddLogin(_));
-  original->PresaveGeneratedPassword(generated);
-  std::unique_ptr<FormSaver> clone = original->Clone();
-  original.reset();
-  EXPECT_CALL(*mock_store_, UpdateLoginWithPrimaryKey(_, _));
-  clone->PresaveGeneratedPassword(generated);
-}
-
 // Check that Remove() method is relayed properly.
 TEST_F(FormSaverImplTest, Remove) {
   PasswordForm form = CreatePending("nameofuser", "wordToP4a55");
@@ -578,25 +407,20 @@ TEST_F(FormSaverImplTest, FormDataSanitized) {
   field.css_classes = ASCIIToUTF16("css_classes");
   pending.form_data.fields.push_back(field);
 
-  for (bool presave : {false, true}) {
-    PasswordForm saved;
-    EXPECT_CALL(*mock_store_, AddLogin(_)).WillOnce(SaveArg<0>(&saved));
-    if (presave)
-      form_saver_.PresaveGeneratedPassword(pending);
-    else
-      form_saver_.Save(pending, {}, base::string16());
+  PasswordForm saved;
+  EXPECT_CALL(*mock_store_, AddLogin(_)).WillOnce(SaveArg<0>(&saved));
+  form_saver_.Save(pending, {}, base::string16());
 
-    ASSERT_EQ(1u, saved.form_data.fields.size());
-    const FormFieldData& saved_field = saved.form_data.fields[0];
-    EXPECT_EQ(ASCIIToUTF16("name"), saved_field.name);
-    EXPECT_EQ("password", saved_field.form_control_type);
-    EXPECT_TRUE(saved_field.value.empty());
-    EXPECT_TRUE(saved_field.label.empty());
-    EXPECT_TRUE(saved_field.placeholder.empty());
-    EXPECT_TRUE(saved_field.id_attribute.empty());
-    EXPECT_TRUE(saved_field.name_attribute.empty());
-    EXPECT_TRUE(saved_field.css_classes.empty());
-  }
+  ASSERT_EQ(1u, saved.form_data.fields.size());
+  const FormFieldData& saved_field = saved.form_data.fields[0];
+  EXPECT_EQ(ASCIIToUTF16("name"), saved_field.name);
+  EXPECT_EQ("password", saved_field.form_control_type);
+  EXPECT_TRUE(saved_field.value.empty());
+  EXPECT_TRUE(saved_field.label.empty());
+  EXPECT_TRUE(saved_field.placeholder.empty());
+  EXPECT_TRUE(saved_field.id_attribute.empty());
+  EXPECT_TRUE(saved_field.name_attribute.empty());
+  EXPECT_TRUE(saved_field.css_classes.empty());
 }
 
 }  // namespace password_manager

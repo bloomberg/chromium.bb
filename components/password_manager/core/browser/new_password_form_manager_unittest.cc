@@ -41,6 +41,7 @@ using base::TestMockTimeTaskRunner;
 using testing::_;
 using testing::AllOf;
 using testing::Contains;
+using testing::IsEmpty;
 using testing::Mock;
 using testing::NiceMock;
 using testing::Return;
@@ -199,9 +200,6 @@ class MockFormSaver : public StubFormSaver {
            const std::map<base::string16, const PasswordForm*>& best_matches,
            const std::vector<autofill::PasswordForm>* credentials_to_update,
            const autofill::PasswordForm* old_primary_key));
-  MOCK_METHOD1(PresaveGeneratedPassword,
-               void(const autofill::PasswordForm& generated));
-  MOCK_METHOD0(RemovePresavedPassword, void());
   MOCK_METHOD1(Remove, void(const autofill::PasswordForm&));
 
   std::unique_ptr<FormSaver> Clone() override {
@@ -1365,7 +1363,7 @@ TEST_F(NewPasswordFormManagerTest, PresaveGeneratedPasswordEmptyStore) {
 
   // Check that the generated password is presaved.
   PasswordForm saved_form;
-  EXPECT_CALL(form_saver, PresaveGeneratedPassword(_))
+  EXPECT_CALL(form_saver, Save(_, IsEmpty(), base::string16()))
       .WillOnce(SaveArg<0>(&saved_form));
 
   PasswordForm form_with_generated_password = parsed_submitted_form_;
@@ -1384,7 +1382,7 @@ TEST_F(NewPasswordFormManagerTest, PresaveGeneratedPasswordEmptyStore) {
   form_with_generated_password.password_value += ASCIIToUTF16("1");
   form_data.fields[kPasswordFieldIndex].value =
       form_with_generated_password.password_value;
-  EXPECT_CALL(form_saver, PresaveGeneratedPassword(_))
+  EXPECT_CALL(form_saver, Update(_, IsEmpty(), nullptr, _))
       .WillOnce(SaveArg<0>(&saved_form));
 
   form_manager_->PresaveGeneratedPassword(form_with_generated_password);
@@ -1418,7 +1416,7 @@ TEST_F(NewPasswordFormManagerTest, PresaveGenerated_ModifiedUsername) {
       true /* generation_popup_was_shown */, false /* is_manual_generation */);
 
   // Check that the generated password is presaved.
-  EXPECT_CALL(form_saver, PresaveGeneratedPassword(_));
+  EXPECT_CALL(form_saver, Save(_, _, _));
   PasswordForm form_with_generated_password = parsed_submitted_form_;
   FormData& form_data = form_with_generated_password.form_data;
   form_manager_->PresaveGeneratedPassword(form_with_generated_password);
@@ -1429,7 +1427,7 @@ TEST_F(NewPasswordFormManagerTest, PresaveGenerated_ModifiedUsername) {
   form_data.fields[kUsernameFieldIndex].value =
       form_with_generated_password.username_value;
   PasswordForm saved_form;
-  EXPECT_CALL(form_saver, PresaveGeneratedPassword(_))
+  EXPECT_CALL(form_saver, Update(_, _, nullptr, _))
       .WillOnce(SaveArg<0>(&saved_form));
 
   form_manager_->PresaveGeneratedPassword(form_with_generated_password);
@@ -1465,8 +1463,7 @@ TEST_F(NewPasswordFormManagerTest, GeneratedPasswordWhichIsNotInFormData) {
 
   // Check that the generated password is presaved.
   PasswordForm saved_form;
-  EXPECT_CALL(form_saver, PresaveGeneratedPassword(_))
-      .WillOnce(SaveArg<0>(&saved_form));
+  EXPECT_CALL(form_saver, Save(_, _, _)).WillOnce(SaveArg<0>(&saved_form));
 
   form_manager_->PresaveGeneratedPassword(form_with_generated_password);
   EXPECT_EQ(submitted_form_.fields[kUsernameFieldIndex].value,
@@ -1475,7 +1472,7 @@ TEST_F(NewPasswordFormManagerTest, GeneratedPasswordWhichIsNotInFormData) {
   EXPECT_TRUE(form_manager_->HasGeneratedPassword());
 
   // Check that the generated password is saved.
-  EXPECT_CALL(form_saver, Save(_, _, _)).WillOnce(SaveArg<0>(&saved_form));
+  EXPECT_CALL(form_saver, Update(_, _, _, _)).WillOnce(SaveArg<0>(&saved_form));
   EXPECT_CALL(client_, UpdateFormManagers());
 
   EXPECT_TRUE(form_manager_->ProvisionallySave(submitted_form_, &driver_));
@@ -1499,7 +1496,7 @@ TEST_F(NewPasswordFormManagerTest, PresaveGenerationWhenParsingFails) {
 
   // Check that nevertheless the generated password is presaved.
   PasswordForm saved_form;
-  EXPECT_CALL(form_saver, PresaveGeneratedPassword(_))
+  EXPECT_CALL(form_saver, Save(_, IsEmpty(), base::string16()))
       .WillOnce(SaveArg<0>(&saved_form));
   form_manager_->PresaveGeneratedPassword(form_with_empty_form_data);
   EXPECT_EQ(generated_password, saved_form.password_value);
@@ -1514,7 +1511,7 @@ TEST_F(NewPasswordFormManagerTest, PasswordNoLongerGenerated) {
   form_manager_->SetGenerationPopupWasShown(
       true /* generation_popup_was_shown */, true /* is_manual_generation */);
 
-  EXPECT_CALL(form_saver, PresaveGeneratedPassword(_));
+  EXPECT_CALL(form_saver, Save(_, _, _));
 
   PasswordForm form = parsed_submitted_form_;
   form_manager_->PresaveGeneratedPassword(form);
@@ -1524,7 +1521,7 @@ TEST_F(NewPasswordFormManagerTest, PasswordNoLongerGenerated) {
 
   // Check when the user removes the generated password on the page, it is
   // removed from the store.
-  EXPECT_CALL(form_saver, RemovePresavedPassword());
+  EXPECT_CALL(form_saver, Remove(_));
   form_manager_->PasswordNoLongerGenerated();
 
   EXPECT_FALSE(form_manager_->HasGeneratedPassword());
@@ -1551,8 +1548,7 @@ TEST_F(NewPasswordFormManagerTest, PresaveGeneratedPasswordExistingCredential) {
 
   // Check that the generated password is presaved.
   PasswordForm saved_form;
-  EXPECT_CALL(form_saver, PresaveGeneratedPassword(_))
-      .WillOnce(SaveArg<0>(&saved_form));
+  EXPECT_CALL(form_saver, Save(_, _, _)).WillOnce(SaveArg<0>(&saved_form));
 
   PasswordForm form_with_generated_password = parsed_submitted_form_;
   FormData& form_data = form_with_generated_password.form_data;

@@ -66,17 +66,14 @@ void FormSaverImpl::PermanentlyBlacklist(PasswordForm* observed) {
 void FormSaverImpl::Save(const PasswordForm& pending,
                          const std::vector<const PasswordForm*>& matches,
                          const base::string16& old_password) {
-  DCHECK(pending.preferred);
   DCHECK(!pending.blacklisted_by_user);
-  // TODO(crbug/936011): move all the generation stuff out of here.
-  if (presaved_)
-    return SaveImpl(pending, false, {}, nullptr, nullptr);
 
   PasswordForm sanitized_pending(pending);
   SanitizeFormData(&sanitized_pending.form_data);
   store_->AddLogin(sanitized_pending);
   // Update existing matches in the password store.
   for (const auto* match : matches) {
+    DCHECK(pending.preferred);
     if (match->IsFederatedCredential())
       continue;
     // Delete obsolete empty username credentials.
@@ -114,27 +111,24 @@ void FormSaverImpl::Update(
     const std::map<base::string16, const PasswordForm*>& best_matches,
     const std::vector<PasswordForm>* credentials_to_update,
     const PasswordForm* old_primary_key) {
-  SaveImpl(pending, false, best_matches, credentials_to_update,
-           old_primary_key);
-}
+  DCHECK(!pending.blacklisted_by_user);
 
-void FormSaverImpl::PresaveGeneratedPassword(const PasswordForm& generated) {
-  DCHECK_NE(base::string16(), generated.password_value);
-  auto form = std::make_unique<PasswordForm>(generated);
-  SanitizeFormData(&form->form_data);
-  if (presaved_)
-    store_->UpdateLoginWithPrimaryKey(*form, *presaved_);
+  if (!best_matches.empty()) {
+    DCHECK(pending.preferred);
+    UpdatePreferredLoginState(pending.username_value, best_matches);
+  }
+  PasswordForm sanitized_pending(pending);
+  SanitizeFormData(&sanitized_pending.form_data);
+  if (old_primary_key)
+    store_->UpdateLoginWithPrimaryKey(sanitized_pending, *old_primary_key);
   else
-    store_->AddLogin(*form);
-  presaved_ = std::move(form);
-}
+    store_->UpdateLogin(sanitized_pending);
 
-void FormSaverImpl::RemovePresavedPassword() {
-  if (!presaved_)
-    return;
-
-  store_->RemoveLogin(*presaved_);
-  presaved_ = nullptr;
+  if (credentials_to_update) {
+    for (const PasswordForm& credential : *credentials_to_update) {
+      store_->UpdateLogin(credential);
+    }
+  }
 }
 
 void FormSaverImpl::Remove(const PasswordForm& form) {
@@ -142,43 +136,7 @@ void FormSaverImpl::Remove(const PasswordForm& form) {
 }
 
 std::unique_ptr<FormSaver> FormSaverImpl::Clone() {
-  auto result = std::make_unique<FormSaverImpl>(store_);
-  if (presaved_)
-    result->presaved_ = std::make_unique<PasswordForm>(*presaved_);
-  return result;
-}
-
-void FormSaverImpl::SaveImpl(
-    const PasswordForm& pending,
-    bool is_new_login,
-    const std::map<base::string16, const PasswordForm*>& best_matches,
-    const std::vector<PasswordForm>* credentials_to_update,
-    const PasswordForm* old_primary_key) {
-  DCHECK(pending.preferred);
-  DCHECK(!pending.blacklisted_by_user);
-
-  UpdatePreferredLoginState(pending.username_value, best_matches);
-  PasswordForm sanitized_pending(pending);
-  SanitizeFormData(&sanitized_pending.form_data);
-  if (presaved_) {
-    store_->UpdateLoginWithPrimaryKey(sanitized_pending, *presaved_);
-    presaved_ = nullptr;
-  } else if (is_new_login) {
-    store_->AddLogin(sanitized_pending);
-    if (!sanitized_pending.username_value.empty())
-      DeleteEmptyUsernameCredentials(sanitized_pending, best_matches);
-  } else {
-    if (old_primary_key)
-      store_->UpdateLoginWithPrimaryKey(sanitized_pending, *old_primary_key);
-    else
-      store_->UpdateLogin(sanitized_pending);
-  }
-
-  if (credentials_to_update) {
-    for (const PasswordForm& credential : *credentials_to_update) {
-      store_->UpdateLogin(credential);
-    }
-  }
+  return std::make_unique<FormSaverImpl>(store_);
 }
 
 void FormSaverImpl::UpdatePreferredLoginState(

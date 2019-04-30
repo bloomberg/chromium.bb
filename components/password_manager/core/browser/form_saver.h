@@ -51,18 +51,6 @@ class FormSaver {
       const std::vector<autofill::PasswordForm>* credentials_to_update,
       const autofill::PasswordForm* old_primary_key) = 0;
 
-  // Ensures that |generated| is saved in the store. This is in ideal case
-  // either followed by a call to Save or RemovePresavedPassword. But if the
-  // user interaction does not allow to call either of those, calling
-  // PresaveGeneratedPassword alone is a legitimate thing to do to avoid data
-  // loss.
-  virtual void PresaveGeneratedPassword(
-      const autofill::PasswordForm& generated) = 0;
-
-  // Undo PresaveGeneratedPassword, e.g., when the user deletes the generated
-  // password.
-  virtual void RemovePresavedPassword() = 0;
-
   // Removes |form| from the password store.
   virtual void Remove(const autofill::PasswordForm& form) = 0;
 

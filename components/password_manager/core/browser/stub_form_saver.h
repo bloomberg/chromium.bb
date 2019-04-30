@@ -27,9 +27,6 @@ class StubFormSaver : public FormSaver {
                   best_matches,
               const std::vector<autofill::PasswordForm>* credentials_to_update,
               const autofill::PasswordForm* old_primary_key) override {}
-  void PresaveGeneratedPassword(
-      const autofill::PasswordForm& generated) override {}
-  void RemovePresavedPassword() override {}
   void Remove(const autofill::PasswordForm& form) override {}
   std::unique_ptr<FormSaver> Clone() override;
 
