@@ -847,11 +847,6 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
                        "stub_cellular_device1");
     SetInitialDeviceProperty("/device/cellular1", shill::kCarrierProperty,
                              base::Value(cellular_carrier_));
-    base::ListValue carrier_list;
-    carrier_list.AppendString(cellular_carrier_);
-    carrier_list.AppendString(shill::kCarrierGenericUMTS);
-    SetInitialDeviceProperty("/device/cellular1",
-                             shill::kSupportedCarriersProperty, carrier_list);
     if (roaming_state_ == kRoamingRequired) {
       SetInitialDeviceProperty("/device/cellular1",
                                shill::kProviderRequiresRoamingProperty,

@@ -466,8 +466,6 @@ namespace networking.onc {
     long? SignalStrength;
     // Whether the cellular network supports scanning.
     boolean? SupportNetworkScan;
-    // A list of supported carriers.
-    DOMString[]? SupportedCarriers;
   };
 
   dictionary ManagedCellularProperties {
@@ -515,8 +513,6 @@ namespace networking.onc {
     long? SignalStrength;
     // See $(ref:CellularProperties.SupportNetworkScan).
     boolean? SupportNetworkScan;
-    // See $(ref:CellularProperties.SupportedCarriers).
-    DOMString[]? SupportedCarriers;
   };
 
   dictionary CellularStateProperties {

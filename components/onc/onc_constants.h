@@ -146,7 +146,6 @@ ONC_EXPORT extern const char kServingOperator[];
 ONC_EXPORT extern const char kSignalStrength[];
 ONC_EXPORT extern const char kSIMLockStatus[];
 ONC_EXPORT extern const char kSIMPresent[];
-ONC_EXPORT extern const char kSupportedCarriers[];
 ONC_EXPORT extern const char kSupportNetworkScan[];
 ONC_EXPORT extern const char kTechnologyCdma1Xrtt[];
 ONC_EXPORT extern const char kTechnologyEdge[];

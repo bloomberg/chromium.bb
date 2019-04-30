@@ -1514,10 +1514,6 @@ ONC configuration of of **Cellular** networks is not yet supported.
     * (optional, read-only) - **boolean**
     * True if the cellular network supports scanning.
 
-* **SupportedCarriers**
-    * (optional, read-only) - **array of string**
-    * A list of supported carriers.
-
 
 ### APN type
 

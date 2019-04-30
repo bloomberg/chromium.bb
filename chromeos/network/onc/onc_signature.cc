@@ -326,7 +326,6 @@ const OncFieldSignature cellular_with_state_fields[] = {
     {::onc::cellular::kSIMLockStatus, &kSIMLockStatusSignature},
     {::onc::cellular::kSIMPresent, &kBoolSignature},
     {::onc::cellular::kSupportNetworkScan, &kBoolSignature},
-    {::onc::cellular::kSupportedCarriers, &kStringListSignature},
     {NULL}};
 
 const OncFieldSignature network_configuration_fields[] = {

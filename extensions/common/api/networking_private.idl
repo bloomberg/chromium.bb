@@ -540,7 +540,6 @@ namespace networkingPrivate {
     boolean? SIMPresent;
     long? SignalStrength;
     boolean? SupportNetworkScan;
-    DOMString[]? SupportedCarriers;
   };
 
   dictionary ManagedCellularProperties {
@@ -575,7 +574,6 @@ namespace networkingPrivate {
     boolean? SIMPresent;
     long? SignalStrength;
     boolean? SupportNetworkScan;
-    DOMString[]? SupportedCarriers;
   };
 
   dictionary CellularStateProperties {

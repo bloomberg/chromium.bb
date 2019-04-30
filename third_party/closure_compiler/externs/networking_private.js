@@ -653,7 +653,6 @@ chrome.networkingPrivate.ManagedThirdPartyVPNProperties;
  *   SIMPresent: (boolean|undefined),
  *   SignalStrength: (number|undefined),
  *   SupportNetworkScan: (boolean|undefined),
- *   SupportedCarriers: (!Array<string>|undefined)
  * }}
  */
 chrome.networkingPrivate.CellularProperties;
@@ -691,7 +690,6 @@ chrome.networkingPrivate.CellularProperties;
  *   SIMPresent: (boolean|undefined),
  *   SignalStrength: (number|undefined),
  *   SupportNetworkScan: (boolean|undefined),
- *   SupportedCarriers: (!Array<string>|undefined)
  * }}
  */
 chrome.networkingPrivate.ManagedCellularProperties;

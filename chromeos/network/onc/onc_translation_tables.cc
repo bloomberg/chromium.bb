@@ -422,7 +422,6 @@ const FieldTranslationEntry kCellularDeviceTable[] = {
     // This field is converted during translation, see onc_translator_*.
     // { ::onc::cellular::kSIMLockStatus, shill::kSIMLockStatusProperty},
     {::onc::cellular::kSIMPresent, shill::kSIMPresentProperty},
-    {::onc::cellular::kSupportedCarriers, shill::kSupportedCarriersProperty},
     {::onc::cellular::kSupportNetworkScan, shill::kSupportNetworkScanProperty},
     {nullptr}};
 
