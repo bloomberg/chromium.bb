@@ -853,10 +853,8 @@ cca.util.updateElementSize = function(
  * @return {boolean} True if maximized or fullscreen, false otherwise.
  */
 cca.util.isWindowFullSize = function() {
-  // App-window's isFullscreen state and window's outer-size may not be updated
-  // immediately during resizing. Use app-window's isMaximized state and
-  // window's inner-size here as workarounds.
-  var fullscreen = window.innerWidth >= screen.width &&
-      window.innerHeight >= screen.height;
-  return chrome.app.window.current().isMaximized() || fullscreen;
+  // App-window's isFullscreen, isMaximized state and window's outer-size may
+  // not be updated immediately during resizing. Use if app-window's outerBounds
+  // width matches screen width here as workarounds.
+  return chrome.app.window.current().outerBounds.width >= screen.width;
 };
