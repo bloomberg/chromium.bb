@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -27,14 +28,76 @@ NSString* GetOmniboxSuggestionIconTypeAssetName(
       return @"omnibox_completion_history";
     case SEARCH:
       return @"omnibox_completion_search";
+    // These icons should only be used with new omnibox design through
+    // GetOmniboxNewSuggestionIconTypeAssetName()
+    case CONVERSION:
+      NOTREACHED();
+      return @"omnibox_completion_default_favicon";
+    case DICTIONARY:
+      NOTREACHED();
+      return @"omnibox_completion_default_favicon";
+    case CURRENCY:
+      NOTREACHED();
+      return @"omnibox_completion_default_favicon";
+    case SUNRISE:
+      NOTREACHED();
+      return @"omnibox_completion_default_favicon";
+    case LOCAL_TIME:
+      NOTREACHED();
+      return @"omnibox_completion_default_favicon";
+    case WHEN_IS:
+      NOTREACHED();
+      return @"omnibox_completion_default_favicon";
+    case TRANSLATION:
+      NOTREACHED();
+      return @"omnibox_completion_default_favicon";
     case OMNIBOX_SUGGESTION_ICON_TYPE_COUNT:
       NOTREACHED();
       return @"omnibox_completion_default_favicon";
   }
 }
 
+NSString* GetOmniboxNewSuggestionIconTypeAssetName(
+    OmniboxSuggestionIconType iconType) {
+  // checking if the "New omnibox popup" flag is being enabled
+  DCHECK(base::FeatureList::IsEnabled(kNewOmniboxPopupLayout));
+
+  //(base::FeatureList::IsEnabled(kNewOmniboxPopupLayout));
+  switch (iconType) {
+    case BOOKMARK:
+      return @"omnibox_completion_bookmark";
+    case CALCULATOR:
+      return @"answer_calculator";
+    case DEFAULT_FAVICON:
+      return @"favicon_fallback";
+    case HISTORY:
+      return @"omnibox_completion_history";
+    case SEARCH:
+      return @"search";
+    case CONVERSION:
+      return @"answer_conversion";
+    case DICTIONARY:
+      return @"answer_dictionary";
+    case CURRENCY:
+      return @"answer_currency";
+    case SUNRISE:
+      return @"answer_sunrise";
+    case LOCAL_TIME:
+      return @"answer_local_time";
+    case WHEN_IS:
+      return @"answer_when_is";
+    case TRANSLATION:
+      return @"answer_translation";
+    case OMNIBOX_SUGGESTION_ICON_TYPE_COUNT:
+      NOTREACHED();
+      return @"favicon_fallback";
+  }
+}
+
 UIImage* GetOmniboxSuggestionIcon(OmniboxSuggestionIconType iconType) {
   NSString* imageName = GetOmniboxSuggestionIconTypeAssetName(iconType);
+  if (base::FeatureList::IsEnabled(kNewOmniboxPopupLayout))
+    imageName = GetOmniboxNewSuggestionIconTypeAssetName(iconType);
   return [[UIImage imageNamed:imageName]
       imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
 }

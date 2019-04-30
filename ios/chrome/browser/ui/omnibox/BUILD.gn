@@ -34,6 +34,17 @@ source_set("omnibox_util") {
     "omnibox_util.mm",
   ]
   deps = [
+    "resources:answer_calculator",
+    "resources:answer_conversion",
+    "resources:answer_currency",
+    "resources:answer_dictionary",
+    "resources:answer_local_time",
+    "resources:answer_sunrise",
+    "resources:answer_translation",
+    "resources:answer_when_is",
+    "resources:background_solid",
+    "resources:background_stroke",
+    "resources:favicon_fallback",
     "resources:omnibox_background",
     "resources:omnibox_clear_icon",
     "resources:omnibox_completion_bookmark",
@@ -41,9 +52,11 @@ source_set("omnibox_util") {
     "resources:omnibox_completion_default_favicon",
     "resources:omnibox_completion_history",
     "resources:omnibox_completion_search",
+    "resources:search",
     "//base",
     "//components/omnibox/browser",
     "//components/security_state/core",
+    "//ios/chrome/browser/ui:feature_flags",
   ]
   public_deps = [
     "//ios/chrome/app/theme",

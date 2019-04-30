@@ -26,7 +26,6 @@
 
 @end
 
-// The view controller managing the omnibox textfield and its container view.
 @interface OmniboxViewController : UIViewController<EditViewAnimatee,
                                                     LocationBarOffsetProvider,
                                                     OmniboxConsumer>

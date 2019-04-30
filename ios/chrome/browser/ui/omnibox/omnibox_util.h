@@ -19,11 +19,22 @@ enum OmniboxSuggestionIconType {
   DEFAULT_FAVICON,
   HISTORY,
   SEARCH,
+  CONVERSION,
+  DICTIONARY,
+  CURRENCY,
+  SUNRISE,
+  LOCAL_TIME,
+  WHEN_IS,
+  TRANSLATION,
   OMNIBOX_SUGGESTION_ICON_TYPE_COUNT,
 };
 
 // Returns the asset name (to be used in -[UIImage imageNamed:]).
 NSString* GetOmniboxSuggestionIconTypeAssetName(OmniboxSuggestionIconType icon);
+
+// Returns the new asset name (to be used in -[UIImage imageNamed:]).
+NSString* GetOmniboxNewSuggestionIconTypeAssetName(
+    OmniboxSuggestionIconType icon);
 
 // Returns the asset with "always template" rendering mode.
 UIImage* GetOmniboxSuggestionIcon(OmniboxSuggestionIconType icon);
