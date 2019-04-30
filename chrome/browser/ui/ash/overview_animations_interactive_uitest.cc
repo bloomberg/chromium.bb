@@ -82,14 +82,14 @@ IN_PROC_BROWSER_TEST_P(OverviewAnimationsTest, EnterExit) {
                             /*control=*/false,
                             /*shift=*/false,
                             /*alt=*/false,
-                            /* command = */ false);
+                            /*command=*/false);
   test::WaitForOverviewAnimationState(
       ash::mojom::OverviewAnimationState::kEnterAnimationComplete);
   ui_controls::SendKeyPress(browser_window, ui::VKEY_MEDIA_LAUNCH_APP1,
                             /*control=*/false,
                             /*shift=*/false,
                             /*alt=*/false,
-                            /* command = */ false);
+                            /*command=*/false);
   test::WaitForOverviewAnimationState(
       ash::mojom::OverviewAnimationState::kExitAnimationComplete);
 }
