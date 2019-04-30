@@ -574,7 +574,6 @@ const char kProviderRequiresRoamingProperty[] =
 const char kPPPoEProperty[] = "Ethernet.PPPoE";
 const char kReceiveByteCountProperty[] = "ReceiveByteCount";
 const char kSIMPresentProperty[] = "Cellular.SIMPresent";
-const char kSupportedCarriersProperty[] = "Cellular.SupportedCarriers";
 const char kTransmitByteCountProperty[] = "TransmitByteCount";
 const char kWifiSupportedFrequenciesProperty[] = "WiFi.SupportedFrequencies";
 
