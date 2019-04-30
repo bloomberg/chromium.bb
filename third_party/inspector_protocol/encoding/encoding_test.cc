@@ -445,7 +445,9 @@ TEST(EncodeDecodeString16Test, ErrorCases) {
   std::vector<TestCase> tests{
       {TestCase{{2 << 5 | 1, 'a'},
                 "length must be divisible by 2 (but it's 1)"},
-       TestCase{{2 << 5 | 29}, "additional info = 29 isn't recognized"}}};
+       TestCase{{2 << 5 | 29}, "additional info = 29 isn't recognized"},
+       TestCase{{2 << 5 | 9, 1, 2, 3, 4, 5, 6, 7, 8},
+                "length (9) points just past the end of the test case"}}};
   for (const TestCase& test : tests) {
     SCOPED_TRACE(test.msg);
     CBORTokenizer tokenizer(SpanFrom(test.data));
@@ -481,6 +483,23 @@ TEST(EncodeDecodeString8Test, RoundtripsHelloWorld) {
   EXPECT_THAT(decoded, ElementsAreArray(msg));
   tokenizer.Next();
   EXPECT_EQ(CBORTokenTag::DONE, tokenizer.TokenTag());
+}
+
+TEST(EncodeDecodeString8Test, ErrorCases) {
+  struct TestCase {
+    std::vector<uint8_t> data;
+    std::string msg;
+  };
+  std::vector<TestCase> tests{
+      {TestCase{{3 << 5 | 29}, "additional info = 29 isn't recognized"},
+       TestCase{{3 << 5 | 9, 1, 2, 3, 4, 5, 6, 7, 8},
+                "length (9) points just past the end of the test case"}}};
+  for (const TestCase& test : tests) {
+    SCOPED_TRACE(test.msg);
+    CBORTokenizer tokenizer(SpanFrom(test.data));
+    EXPECT_EQ(CBORTokenTag::ERROR_VALUE, tokenizer.TokenTag());
+    EXPECT_EQ(Error::CBOR_INVALID_STRING8, tokenizer.Status().error);
+  }
 }
 
 TEST(EncodeFromLatin1Test, ConvertsToUTF8IfNeeded) {

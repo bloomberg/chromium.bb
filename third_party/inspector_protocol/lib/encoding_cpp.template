@@ -809,27 +809,35 @@ void CBORTokenizer::ReadNextToken(bool enter_envelope) {
           SetToken(CBORTokenTag::INT32, token_start_length);
           return;
         case MajorType::STRING: {  // STRING8.
-          if (!success || remainder.size() < static_cast<int64_t>(
-                                                 token_start_internal_value_)) {
+          if (!success) {
             SetError(Error::CBOR_INVALID_STRING8);
             return;
           }
           auto length =
               static_cast<std::ptrdiff_t>(token_start_internal_value_);
+          if (remainder.size() < token_start_length + length) {
+            SetError(Error::CBOR_INVALID_STRING8);
+            return;
+          }
           SetToken(CBORTokenTag::STRING8, token_start_length + length);
           return;
         }
         case MajorType::BYTE_STRING: {  // STRING16.
-          if (!success ||
-              remainder.size() <
-                  static_cast<int64_t>(token_start_internal_value_) ||
-              // Must be divisible by 2 since UTF16 is 2 bytes per character.
-              token_start_internal_value_ & 1) {
+          if (!success) {
             SetError(Error::CBOR_INVALID_STRING16);
             return;
           }
           auto length =
               static_cast<std::ptrdiff_t>(token_start_internal_value_);
+          if (remainder.size() < token_start_length + length) {
+            SetError(Error::CBOR_INVALID_STRING16);
+            return;
+          }
+          if (length & 1) {
+            // Must be divisible by 2 since UTF16 is 2 bytes per character.
+            SetError(Error::CBOR_INVALID_STRING16);
+            return;
+          }
           SetToken(CBORTokenTag::STRING16, token_start_length + length);
           return;
         }
@@ -1484,8 +1492,10 @@ class JsonParser {
   void Parse(const Char* start, std::size_t length) {
     start_pos_ = start;
     const Char* end = start + length;
-    const Char* tokenEnd;
+    const Char* tokenEnd = nullptr;
     ParseValue(start, end, &tokenEnd, 0);
+    if (error_)
+      return;
     if (tokenEnd != end) {
       HandleError(Error::JSON_PARSER_UNPROCESSED_INPUT_REMAINS, tokenEnd);
     }
@@ -1702,7 +1712,7 @@ class JsonParser {
       if (IsSpaceOrNewLine(*start)) {
         ++start;
       } else if (*start == '/') {
-        const Char* comment_end;
+        const Char* comment_end = nullptr;
         if (!SkipComment(start, end, &comment_end))
           break;
         start = comment_end;
@@ -1914,8 +1924,8 @@ class JsonParser {
       HandleError(Error::JSON_PARSER_STACK_LIMIT_EXCEEDED, start);
       return;
     }
-    const Char* token_start;
-    const Char* token_end;
+    const Char* token_start = nullptr;
+    const Char* token_end = nullptr;
     Token token = ParseToken(start, end, &token_start, &token_end);
     switch (token) {
       case NoInput:
