@@ -10,7 +10,7 @@
     android:minHeight="@dimen/autofill_assistant_button_height"
     style="@style/AssistiveChip"
     app:chipColor="@color/default_text_color_inverse"
-    app:cornerRadius="40dp"
+    app:cornerRadius="@dimen/autofill_assistant_button_corner_radius"
     app:iconWidth="24dp"
     app:iconHeight="24dp"/>
 

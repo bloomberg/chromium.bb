@@ -95,7 +95,7 @@ public class AssistantSuggestionsCarouselCoordinator implements AssistantCarouse
 
         SpaceItemDecoration(Context context) {
             mInnerSpacePx = context.getResources().getDimensionPixelSize(
-                                    R.dimen.autofill_assistant_carousel_chips_spacing)
+                                    R.dimen.autofill_assistant_suggestions_spacing)
                     / 2;
             mOuterSpacePx = context.getResources().getDimensionPixelSize(
                     R.dimen.autofill_assistant_bottombar_horizontal_spacing);
