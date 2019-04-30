@@ -297,8 +297,7 @@ class TelemetryCommandGenerator(object):
   def _generate_reference_build_args(self):
     if self._is_reference:
       return ['--browser=reference',
-              '--max-failures=5',
-              '--output-trace-tag=_ref']
+              '--max-failures=5']
     return []
 
 
