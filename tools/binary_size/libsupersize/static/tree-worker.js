@@ -238,7 +238,9 @@ class TreeBuilder {
       // Java classes are denoted with a "#", such as "LogoView#onDraw"
       // Except for some older .ndjson files, which didn't do this for fields.
       const splitIndex = childNode.idPath.lastIndexOf('#');
-      const isClassNode = childNode.idPath.indexOf(' ') == -1;
+      // No return type / field type means it's a class node.
+      const isClassNode = childNode.idPath.indexOf(
+          ' ', childNode.shortNameIndex) == -1;
       const hasClassPrefix = isClassNode || splitIndex != -1;
 
       if (hasClassPrefix) {
