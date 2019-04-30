@@ -389,12 +389,16 @@ void PasswordPendingView::TogglePasswordVisibility() {
 }
 
 void PasswordPendingView::UpdateUsernameAndPasswordInModel() {
-  DCHECK(username_dropdown_ && password_dropdown_);
+  if (!username_dropdown_ && !password_dropdown_)
+    return;
   base::string16 new_username = model()->pending_password().username_value;
   base::string16 new_password = model()->pending_password().password_value;
-  new_username = username_dropdown_->GetText();
-  base::TrimString(new_username, base::ASCIIToUTF16(" "), &new_username);
-  new_password = password_dropdown_->GetText();
+  if (username_dropdown_) {
+    new_username = username_dropdown_->GetText();
+    base::TrimString(new_username, base::ASCIIToUTF16(" "), &new_username);
+  }
+  if (password_dropdown_)
+    new_password = password_dropdown_->GetText();
   model()->OnCredentialEdited(std::move(new_username), std::move(new_password));
 }
 
