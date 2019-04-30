@@ -147,10 +147,11 @@ void MemoryPressureMonitorWin::OnObservationWindowUpdate() {
   base::MemoryPressureListener::MemoryPressureLevel new_level =
       MemoryPressureMonitorWin::CheckObservationWindowsAndComputeLevel();
 
-  if (new_level != memory_pressure_level_) {
-    // TODO(sebmarchand): Implement
-    // MemoryPressureMonitor::OnMemoryPressureLevelChange and call it here.
-    memory_pressure_level_ = new_level;
+  if (new_level != memory_pressure_level()) {
+    // TODO(sebmarchand): Emit some metrics here that compare this signal
+    // against the legacy one and against the SwapThrashingMonitor if it's
+    // enabled.
+    OnMemoryPressureLevelChange(new_level);
   }
 }
 

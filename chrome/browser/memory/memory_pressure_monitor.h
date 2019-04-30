@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/sequence_checker.h"
+#include "base/time/time.h"
 
 namespace features {
 extern const base::Feature kNewMemoryPressureMonitor;
@@ -51,10 +52,23 @@ class MemoryPressureMonitor {
   // This needs to be called by the platform specific implementation when the
   // pressure level changes.
   void OnMemoryPressureLevelChange(
-      const base::MemoryPressureListener::MemoryPressureLevel previous_level,
       const base::MemoryPressureListener::MemoryPressureLevel new_level);
 
+  base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level()
+      const {
+    return memory_pressure_level_;
+  }
+
  private:
+  // The last observed memory pressure level. Updated by
+  // |OnMemoryPressureLevelChange|.
+  base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level_ =
+      base::MemoryPressureListener::MemoryPressureLevel::
+          MEMORY_PRESSURE_LEVEL_NONE;
+
+  // The latest pressure level change, used to record metrics.
+  base::TimeTicks latest_level_change_ = base::TimeTicks::Now();
+
   SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(MemoryPressureMonitor);

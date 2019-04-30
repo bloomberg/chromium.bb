@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_MEMORY_MEMORY_PRESSURE_MONITOR_WIN_H_
 
 #include "base/macros.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/memory/memory_pressure_monitor.h"
 #include "chrome/browser/memory/memory_pressure_monitor_utils.h"
 #include "chrome/browser/performance_monitor/system_monitor.h"
@@ -21,7 +22,7 @@ class MemoryPressureMonitorWin
 
   base::MemoryPressureListener::MemoryPressureLevel
   memory_pressure_level_for_testing() const {
-    return memory_pressure_level_;
+    return memory_pressure_level();
   }
 
   const FreeMemoryObservationWindow& free_memory_obs_window_for_testing()
@@ -63,11 +64,6 @@ class MemoryPressureMonitorWin
   // The refresh frequency of the various metrics tracked by this class.
   performance_monitor::SystemMonitor::SystemObserver::MetricRefreshFrequencies
       refresh_frequencies_;
-
-  // The last observed memory pressure level.
-  base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level_ =
-      base::MemoryPressureListener::MemoryPressureLevel::
-          MEMORY_PRESSURE_LEVEL_NONE;
 
  private:
   SEQUENCE_CHECKER(sequence_checker_);

@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
@@ -25,6 +26,36 @@ namespace {
 
 // The global instance.
 MemoryPressureMonitor* g_memory_pressure_monitor = nullptr;
+
+void RecordPressureLevelSessionDuration(
+    const base::MemoryPressureListener::MemoryPressureLevel level,
+    const base::TimeDelta& session_duration) {
+  switch (level) {
+    case base::MemoryPressureListener::MemoryPressureLevel::
+        MEMORY_PRESSURE_LEVEL_NONE:
+      // Use UMA_HISTOGRAM_LONG_TIMES_100 here as it's expected that Chrome
+      // will spend way more time under this level. It's logging values up
+      // to one hour, which is sufficient in this case (it's not necessary
+      // to have the exact length of the long sessions).
+      UMA_HISTOGRAM_LONG_TIMES_100(
+          "Memory.Experimental.NewMemoryPressureMonitor.SessionDurations."
+          "NoPressure",
+          session_duration);
+      break;
+    case base::MemoryPressureListener::MemoryPressureLevel::
+        MEMORY_PRESSURE_LEVEL_CRITICAL:
+      // The critical level sessions are expected to be short.
+      UMA_HISTOGRAM_MEDIUM_TIMES(
+          "Memory.Experimental.NewMemoryPressureMonitor.SessionDurations."
+          "CriticalPressure",
+          session_duration);
+      break;
+    // The moderate level isn't supported by this monitor for now.
+    case base::MemoryPressureListener::MemoryPressureLevel::
+        MEMORY_PRESSURE_LEVEL_MODERATE:
+      NOTREACHED();
+  }
+}
 
 }  // namespace
 
@@ -46,15 +77,22 @@ MemoryPressureMonitor::MemoryPressureMonitor() {
 MemoryPressureMonitor::~MemoryPressureMonitor() {
   DCHECK_EQ(this, g_memory_pressure_monitor);
   g_memory_pressure_monitor = nullptr;
+
+  RecordPressureLevelSessionDuration(
+      memory_pressure_level_, latest_level_change_ - base::TimeTicks::Now());
 }
 
 void MemoryPressureMonitor::OnMemoryPressureLevelChange(
-    const base::MemoryPressureListener::MemoryPressureLevel previous_level,
     const base::MemoryPressureListener::MemoryPressureLevel new_level) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // TODO(sebmarchand): Implement this function, add the logic that will record
-  // some metrics and dispatch the memory pressure level changes.
-  NOTREACHED();
+  DCHECK_NE(memory_pressure_level_, new_level);
+
+  base::TimeTicks now = base::TimeTicks::Now();
+  RecordPressureLevelSessionDuration(memory_pressure_level_,
+                                     latest_level_change_ - now);
+  latest_level_change_ = now;
+
+  memory_pressure_level_ = new_level;
 }
 
 }  // namespace memory
