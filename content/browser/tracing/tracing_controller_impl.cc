@@ -470,7 +470,7 @@ void TracingControllerImpl::FinalizeStartupTracingIfNeeded() {
   // complete. See also crbug.com/944107.
   // TODO(eseckler): Avoid the nestedRunLoop here somehow.
   base::RunLoop run_loop;
-  StopTracing(CreateFileEndpoint(
+  bool success = StopTracing(CreateFileEndpoint(
       startup_trace_file.value(),
       base::BindRepeating(
           [](base::FilePath trace_file, base::OnceClosure quit_closure) {
@@ -478,6 +478,8 @@ void TracingControllerImpl::FinalizeStartupTracingIfNeeded() {
             std::move(quit_closure).Run();
           },
           startup_trace_file.value(), run_loop.QuitClosure())));
+  if (!success)
+    return;
   run_loop.Run();
 }
 
