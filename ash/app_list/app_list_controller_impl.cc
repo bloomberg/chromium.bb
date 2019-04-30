@@ -82,6 +82,10 @@ app_list::TabletModeAnimationTransition CalculateAnimationTransitionForMetrics(
       return launcher_should_show
                  ? app_list::TabletModeAnimationTransition::kDragReleaseShow
                  : app_list::TabletModeAnimationTransition::kDragReleaseHide;
+    case HomeScreenDelegate::AnimationTrigger::kOverviewMode:
+      return launcher_should_show
+                 ? app_list::TabletModeAnimationTransition::kExitOverviewMode
+                 : app_list::TabletModeAnimationTransition::kEnterOverviewMode;
   }
 }
 

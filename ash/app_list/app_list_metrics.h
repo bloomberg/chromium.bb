@@ -239,7 +239,13 @@ enum TabletModeAnimationTransition {
   kAppListButtonShow,
 
   // Activate a window from shelf to hide the launcher in tablet mode.
-  kHideHomeLauncherForWindow
+  kHideHomeLauncherForWindow,
+
+  // Enter the overview mode in tablet
+  kEnterOverviewMode,
+
+  // Exit the overview mode in tablet
+  kExitOverviewMode
 };
 
 void RecordFolderShowHideAnimationSmoothness(int actual_frames,

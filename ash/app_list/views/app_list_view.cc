@@ -284,6 +284,16 @@ void AppListView::StateAnimationMetricsReporter::RecordMetricsInTablet(
           "HideLauncherForWindow",
           value);
       break;
+    case TabletModeAnimationTransition::kEnterOverviewMode:
+      UMA_HISTOGRAM_PERCENTAGE(
+          "Apps.HomeLauncherTransition.AnimationSmoothness.EnterOverview",
+          value);
+      break;
+    case TabletModeAnimationTransition::kExitOverviewMode:
+      UMA_HISTOGRAM_PERCENTAGE(
+          "Apps.HomeLauncherTransition.AnimationSmoothness.ExitOverview",
+          value);
+      break;
   }
 }
 

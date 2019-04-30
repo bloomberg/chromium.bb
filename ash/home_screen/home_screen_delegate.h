@@ -31,7 +31,10 @@ class HomeScreenDelegate {
     kLauncherButton,
 
     // Launcher animation is triggered by window activation.
-    kHideForWindow
+    kHideForWindow,
+
+    // Launcher animation is triggered by entering/exiting overview mode.
+    kOverviewMode
   };
 
   virtual ~HomeScreenDelegate() = default;
