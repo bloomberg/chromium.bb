@@ -136,12 +136,17 @@ LoginManagerMixin::LoginManagerMixin(
 
 LoginManagerMixin::~LoginManagerMixin() = default;
 
-void LoginManagerMixin::SetUpCommandLine(base::CommandLine* command_line) {
-  if (skip_flags_setup_)
-    return;
+void LoginManagerMixin::SetDefaultLoginSwitches(
+    const std::vector<test::SessionFlagsManager::Switch>& switches) {
+  session_flags_manager_.SetDefaultLoginSwitches(switches);
+}
 
-  command_line->AppendSwitch(chromeos::switches::kLoginManager);
-  command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
+bool LoginManagerMixin::SetUpUserDataDirectory() {
+  if (session_restore_enabled_)
+    session_flags_manager_.SetUpSessionRestore();
+  session_flags_manager_.AppendSwitchesToCommandLine(
+      base::CommandLine::ForCurrentProcess());
+  return true;
 }
 
 void LoginManagerMixin::CreatedBrowserMainParts(
@@ -156,6 +161,10 @@ void LoginManagerMixin::SetUpOnMainThread() {
       UserSessionManager::GetInstance());
   session_manager_test_api.SetShouldLaunchBrowserInTests(false);
   session_manager_test_api.SetShouldObtainTokenHandleInTests(false);
+}
+
+void LoginManagerMixin::TearDownOnMainThread() {
+  session_flags_manager_.Finalize();
 }
 
 void LoginManagerMixin::AttemptLoginUsingAuthenticator(

@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/mixin_based_in_process_browser_test.h"
+#include "chrome/browser/chromeos/login/test/session_flags_manager.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_type.h"
 
@@ -48,11 +49,22 @@ class LoginManagerMixin : public InProcessBrowserTestMixin {
 
   ~LoginManagerMixin() override;
 
+  // Enables session restore between multi-step test run (not very useful unless
+  // the browser test has PRE part).
+  // Should be called before mixin SetUp() is called to take effect.
+  void set_session_restore_enabled() { session_restore_enabled_ = true; }
+
+  // Sets the list of default policy switches to be added to command line on the
+  // login screen.
+  void SetDefaultLoginSwitches(
+      const std::vector<test::SessionFlagsManager::Switch>& swiches);
+
   // InProcessBrowserTestMixin:
-  void SetUpCommandLine(base::CommandLine* command_line) override;
+  bool SetUpUserDataDirectory() override;
   void CreatedBrowserMainParts(
       content::BrowserMainParts* browser_main_parts) override;
   void SetUpOnMainThread() override;
+  void TearDownOnMainThread() override;
 
   // Starts login attempt for a user, using the stub authenticator provided by
   // |authenticator_builder|.
@@ -75,14 +87,14 @@ class LoginManagerMixin : public InProcessBrowserTestMixin {
   // Returns whether the newly logged in user is active when the method exits.
   bool LoginAndWaitForActiveSession(const UserContext& user_context);
 
-  // Allows to skip setup of command line switches. It can be used to test
-  // session restart after test, or restart to apply per-session flags, where
-  // the session should start with a user logged in.
-  void set_skip_flags_setup(bool value) { skip_flags_setup_ = value; }
-
  private:
-  bool skip_flags_setup_ = false;
   const std::vector<TestUserInfo> initial_users_;
+
+  // If set, session_flags_manager_ will be set up with session restore logic
+  // enabled (it will restore session state between test runs for multi-step
+  // browser tests).
+  bool session_restore_enabled_ = false;
+  test::SessionFlagsManager session_flags_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginManagerMixin);
 };

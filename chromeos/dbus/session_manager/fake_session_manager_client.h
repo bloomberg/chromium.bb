@@ -240,6 +240,10 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
 
   bool session_stopped() const { return session_stopped_; }
 
+  const SessionManagerClient::ActiveSessionsMap& user_sessions() const {
+    return user_sessions_;
+  }
+
  private:
   bool supports_restart_to_apply_user_flags_ = false;
 

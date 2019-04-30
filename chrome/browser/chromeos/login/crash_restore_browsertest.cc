@@ -266,27 +266,10 @@ IN_PROC_BROWSER_TEST_F(CrashRestoreComplexTest, RestoreSessionForThreeUsers) {
 // Tests crash restore flow for child user.
 class CrashRestoreChildUserTest : public MixinBasedInProcessBrowserTest {
  protected:
-  CrashRestoreChildUserTest() {
-    if (!content::IsPreTest())
-      login_manager_.set_skip_flags_setup(true);
-  }
+  CrashRestoreChildUserTest() { login_manager_.set_session_restore_enabled(); }
   ~CrashRestoreChildUserTest() override = default;
 
   // MixinBasedInProcessBrowserTest:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    if (!content::IsPreTest()) {
-      const cryptohome::AccountIdentifier cryptohome_id =
-          cryptohome::CreateAccountIdentifierFromAccountId(
-              test_user_.account_id);
-      command_line->AppendSwitchASCII(switches::kLoginUser,
-                                      cryptohome_id.account_id());
-      command_line->AppendSwitchASCII(
-          switches::kLoginProfile,
-          CryptohomeClient::GetStubSanitizedUsername(cryptohome_id));
-    }
-    MixinBasedInProcessBrowserTest::SetUpCommandLine(command_line);
-  }
-
   void SetUpInProcessBrowserTestFixture() override {
     // SessionManagerClient has to be in-memory to support setting sessionless
     // user policy blob.
