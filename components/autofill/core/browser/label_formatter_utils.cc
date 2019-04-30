@@ -29,47 +29,6 @@ const int kStreetAddressFieldTypes[] = {
     ADDRESS_HOME_STREET_ADDRESS, ADDRESS_BILLING_STREET_ADDRESS,
     ADDRESS_HOME_LINE3,          ADDRESS_BILLING_LINE3};
 
-bool ContainsName(uint32_t groups) {
-  return groups & label_formatter_groups::kName;
-}
-
-bool ContainsAddress(uint32_t groups) {
-  return groups & label_formatter_groups::kAddress;
-}
-
-bool ContainsEmail(uint32_t groups) {
-  return groups & label_formatter_groups::kEmail;
-}
-
-bool ContainsPhone(uint32_t groups) {
-  return groups & label_formatter_groups::kPhone;
-}
-
-uint32_t DetermineGroups(const std::vector<ServerFieldType>& types) {
-  uint32_t group_bitmask = 0;
-  for (const ServerFieldType& type : types) {
-    const FieldTypeGroup group =
-        AutofillType(AutofillType(type).GetStorableType()).group();
-    switch (group) {
-      case autofill::NAME:
-        group_bitmask |= label_formatter_groups::kName;
-        break;
-      case autofill::ADDRESS_HOME:
-        group_bitmask |= label_formatter_groups::kAddress;
-        break;
-      case autofill::EMAIL:
-        group_bitmask |= label_formatter_groups::kEmail;
-        break;
-      case autofill::PHONE_HOME:
-        group_bitmask |= label_formatter_groups::kPhone;
-        break;
-      default:
-        break;
-    }
-  }
-  return group_bitmask;
-}
-
 bool IsStreetAddressPart(ServerFieldType type) {
   return std::find(std::begin(kStreetAddressFieldTypes),
                    std::end(kStreetAddressFieldTypes),

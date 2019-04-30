@@ -7,15 +7,13 @@
 
 #include <string>
 
-#include "components/autofill/core/browser/autofill_data_model.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
-#include "components/autofill/core/browser/autofill_profile.h"
-#include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/metrics/form_events.h"
 #include "components/autofill/core/browser/sync_utils.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/autofill/core/common/signatures_util.h"
 
 namespace autofill {
 
@@ -77,7 +75,14 @@ class FormEventLoggerBase {
 
   virtual void OnSuggestionsShownOnce() {}
   virtual void OnSuggestionsShownSubmittedOnce(const FormStructure& form) {}
-  virtual void OnLog(const std::string& name, FormEvent event) const {}
+
+  // Logs |event| in a histogram prefixed with |name| according to the
+  // FormEventLogger type and |form|. For example, in the address context, it
+  // may be useful to analyze metrics for forms (A) with only name and address
+  // fields and (B) with only name and phone fields separately.
+  virtual void OnLog(const std::string& name,
+                     FormEvent event,
+                     const FormStructure& form) const {}
 
   // Constructor parameters.
   std::string form_type_name_;

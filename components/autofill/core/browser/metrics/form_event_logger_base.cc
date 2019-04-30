@@ -4,22 +4,10 @@
 
 #include "components/autofill/core/browser/metrics/form_event_logger_base.h"
 
-#include <string>
-
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/time/time.h"
-#include "components/autofill/core/browser/autofill_data_model.h"
-#include "components/autofill/core/browser/autofill_field.h"
-#include "components/autofill/core/browser/autofill_metrics.h"
-#include "components/autofill/core/browser/autofill_profile.h"
-#include "components/autofill/core/browser/credit_card.h"
-#include "components/autofill/core/browser/form_structure.h"
-#include "components/autofill/core/browser/metrics/form_events.h"
-#include "components/autofill/core/browser/sync_utils.h"
-#include "components/autofill/core/common/form_field_data.h"
-#include "components/autofill/core/common/signatures_util.h"
 
 namespace autofill {
 
@@ -151,8 +139,8 @@ void FormEventLoggerBase::Log(FormEvent event,
       name + (is_in_main_frame_ ? ".IsInMainFrame" : ".IsInIFrame"), event,
       NUM_FORM_EVENTS);
 
-  // Allow specialized type of logging.
-  OnLog(name, event);
+  // Allow specialized types of logging, e.g. splitting metrics in useful ways.
+  OnLog(name, event, form);
 
   // Logging again in a different histogram for segmentation purposes.
   if (server_record_type_count_ == 0 && local_record_type_count_ == 0)

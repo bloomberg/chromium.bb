@@ -28,6 +28,7 @@
 #include "components/autofill/core/browser/address_i18n.h"
 #include "components/autofill/core/browser/autofill-inl.h"
 #include "components/autofill/core/browser/autofill_country.h"
+#include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_download_manager.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_field.h"
@@ -1199,7 +1200,7 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
   }
 
   suggestion_selection::PrepareSuggestions(
-      formatter && ContainsAddress(formatter->groups()), labels,
+      formatter && data_util::ContainsAddress(formatter->groups()), labels,
       &unique_suggestions);
   return unique_suggestions;
 }

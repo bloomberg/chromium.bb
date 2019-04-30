@@ -6,6 +6,7 @@
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_DATA_UTIL_H_
 
 #include <string>
+#include <vector>
 
 #include "base/strings/string16.h"
 #include "base/strings/string_piece_forward.h"
@@ -22,6 +23,39 @@ struct NameParts {
   base::string16 middle;
   base::string16 family;
 };
+
+namespace bit_field_type_groups {
+
+// Bits for FieldTypeGroup options.
+// The form has a field associated with the NAME_HOME or NAME_BILLING
+// FieldTypeGroups.
+constexpr uint32_t kName = 1 << 0;
+// The form has a field associated with the ADDRESS_HOME or ADDRESS_BILLING
+// FieldTypeGroups.
+constexpr uint32_t kAddress = 1 << 1;
+// The form has a field associated with the EMAIL FieldTypeGroup.
+constexpr uint32_t kEmail = 1 << 2;
+// The form has a field associated with the PHONE_HOME or PHONE_BILLING
+// FieldTypeGroups.
+constexpr uint32_t kPhone = 1 << 3;
+
+}  // namespace bit_field_type_groups
+
+// Returns true if kName is set in |groups|.
+bool ContainsName(uint32_t groups);
+
+// Returns true if kAddress is set in |groups|.
+bool ContainsAddress(uint32_t groups);
+
+// Returns true if kEmail is set in |groups|.
+bool ContainsEmail(uint32_t groups);
+
+// Returns true if kPhone is set in |groups|.
+bool ContainsPhone(uint32_t groups);
+
+// Returns a bitmask indicating whether the NAME, ADDRESS_HOME, EMAIL, and
+// PHONE_HOME FieldTypeGroups are associated with the given |field_types|.
+uint32_t DetermineGroups(const std::vector<ServerFieldType>& types);
 
 // Truncates a string to the nearest UTF-8 character that will leave
 // the string less than or equal to the specified byte size.

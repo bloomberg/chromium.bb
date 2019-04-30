@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
@@ -26,7 +27,13 @@
 namespace autofill {
 namespace data_util {
 
+using bit_field_type_groups::kAddress;
+using bit_field_type_groups::kEmail;
+using bit_field_type_groups::kName;
+using bit_field_type_groups::kPhone;
+
 namespace {
+
 // Mappings from Chrome card networks to Payment Request API basic card payment
 // spec networks and icons. Note that "generic" is not in the spec.
 // https://w3c.github.io/webpayments-methods-card/#method-id
@@ -241,6 +248,47 @@ bool SplitCJKName(const std::vector<base::StringPiece16>& name_tokens,
 }
 
 }  // namespace
+
+bool ContainsName(uint32_t groups) {
+  return groups & kName;
+}
+
+bool ContainsAddress(uint32_t groups) {
+  return groups & kAddress;
+}
+
+bool ContainsEmail(uint32_t groups) {
+  return groups & kEmail;
+}
+
+bool ContainsPhone(uint32_t groups) {
+  return groups & kPhone;
+}
+
+uint32_t DetermineGroups(const std::vector<ServerFieldType>& types) {
+  uint32_t group_bitmask = 0;
+  for (const ServerFieldType& type : types) {
+    const FieldTypeGroup group =
+        AutofillType(AutofillType(type).GetStorableType()).group();
+    switch (group) {
+      case autofill::NAME:
+        group_bitmask |= kName;
+        break;
+      case autofill::ADDRESS_HOME:
+        group_bitmask |= kAddress;
+        break;
+      case autofill::EMAIL:
+        group_bitmask |= kEmail;
+        break;
+      case autofill::PHONE_HOME:
+        group_bitmask |= kPhone;
+        break;
+      default:
+        break;
+    }
+  }
+  return group_bitmask;
+}
 
 std::string TruncateUTF8(const std::string& data) {
   std::string trimmed_value;

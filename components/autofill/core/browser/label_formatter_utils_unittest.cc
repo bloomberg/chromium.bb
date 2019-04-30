@@ -8,6 +8,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/grit/components_scaled_resources.h"
@@ -18,10 +19,10 @@
 namespace autofill {
 namespace {
 
-using label_formatter_groups::kAddress;
-using label_formatter_groups::kEmail;
-using label_formatter_groups::kName;
-using label_formatter_groups::kPhone;
+using data_util::bit_field_type_groups::kAddress;
+using data_util::bit_field_type_groups::kEmail;
+using data_util::bit_field_type_groups::kName;
+using data_util::bit_field_type_groups::kPhone;
 
 TEST(LabelFormatterUtilsTest, DetermineGroupsForHomeNameAndAddress) {
   const std::vector<ServerFieldType> field_types{
@@ -29,7 +30,7 @@ TEST(LabelFormatterUtilsTest, DetermineGroupsForHomeNameAndAddress) {
       ADDRESS_HOME_CITY, ADDRESS_HOME_STATE, ADDRESS_HOME_ZIP};
 
   const uint32_t expected_group_bitmask = kName | kAddress;
-  const uint32_t group_bitmask = DetermineGroups(field_types);
+  const uint32_t group_bitmask = data_util::DetermineGroups(field_types);
   EXPECT_EQ(expected_group_bitmask, group_bitmask);
 }
 
@@ -39,7 +40,7 @@ TEST(LabelFormatterUtilsTest, DetermineGroupsForBillingNameAndAddress) {
       ADDRESS_BILLING_STATE, ADDRESS_BILLING_ZIP};
 
   const uint32_t expected_group_bitmask = kName | kAddress;
-  const uint32_t group_bitmask = DetermineGroups(field_types);
+  const uint32_t group_bitmask = data_util::DetermineGroups(field_types);
   EXPECT_EQ(expected_group_bitmask, group_bitmask);
 }
 
@@ -48,7 +49,7 @@ TEST(LabelFormatterUtilsTest, DetermineGroupsForHomeNamePhoneAndEmail) {
       NAME_FULL, PHONE_HOME_CITY_AND_NUMBER, EMAIL_ADDRESS};
 
   const uint32_t expected_group_bitmask = kName | kPhone | kEmail;
-  const uint32_t group_bitmask = DetermineGroups(field_types);
+  const uint32_t group_bitmask = data_util::DetermineGroups(field_types);
   EXPECT_EQ(expected_group_bitmask, group_bitmask);
 }
 
@@ -57,7 +58,7 @@ TEST(LabelFormatterUtilsTest, DetermineGroupsForBillingNamePhoneAndEmail) {
       NAME_BILLING_FULL, PHONE_BILLING_WHOLE_NUMBER, EMAIL_ADDRESS};
 
   const uint32_t expected_group_bitmask = kName | kPhone | kEmail;
-  const uint32_t group_bitmask = DetermineGroups(field_types);
+  const uint32_t group_bitmask = data_util::DetermineGroups(field_types);
   EXPECT_EQ(expected_group_bitmask, group_bitmask);
 }
 
@@ -66,7 +67,7 @@ TEST(LabelFormatterUtilsTest, DetermineGroupsForUnknownServerFieldType) {
                                                  ADDRESS_HOME_ZIP};
 
   const uint32_t expected_group_bitmask = kName | kAddress;
-  const uint32_t group_bitmask = DetermineGroups(field_types);
+  const uint32_t group_bitmask = data_util::DetermineGroups(field_types);
   EXPECT_EQ(expected_group_bitmask, group_bitmask);
 }
 
@@ -74,7 +75,7 @@ TEST(LabelFormatterUtilsTest, DetermineGroupsForNoServerFieldTypes) {
   const std::vector<ServerFieldType> field_types =
       std::vector<ServerFieldType>();
   const uint32_t expected_group_bitmask = 0;
-  const uint32_t group_bitmask = DetermineGroups(field_types);
+  const uint32_t group_bitmask = data_util::DetermineGroups(field_types);
   EXPECT_EQ(expected_group_bitmask, group_bitmask);
 }
 

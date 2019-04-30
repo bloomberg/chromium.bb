@@ -4,6 +4,7 @@
 
 #include "components/autofill/core/browser/contact_form_label_formatter.h"
 
+#include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/label_formatter_utils.h"
 
 namespace autofill {
@@ -41,14 +42,16 @@ base::string16 ContactFormLabelFormatter::GetLabelForProfile(
 
 base::string16 ContactFormLabelFormatter::MaybeGetEmail(
     const AutofillProfile& profile) const {
-  return ContainsEmail(groups()) ? GetLabelEmail(profile, app_locale())
-                                 : base::string16();
+  return data_util::ContainsEmail(groups())
+             ? GetLabelEmail(profile, app_locale())
+             : base::string16();
 }
 
 base::string16 ContactFormLabelFormatter::MaybeGetPhone(
     const AutofillProfile& profile) const {
-  return ContainsPhone(groups()) ? GetLabelPhone(profile, app_locale())
-                                 : base::string16();
+  return data_util::ContainsPhone(groups())
+             ? GetLabelPhone(profile, app_locale())
+             : base::string16();
 }
 
 }  // namespace autofill
