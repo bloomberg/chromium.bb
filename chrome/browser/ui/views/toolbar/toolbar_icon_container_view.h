@@ -17,10 +17,17 @@ class ToolbarIconContainerView : public views::View {
   // Update all the icons it contains. Override by subclass.
   virtual void UpdateAllIcons();
 
+  // Adds the RHS child as well as setting its margins.
+  void AddMainView(views::View* main_view);
+
  private:
-  // views::View
+  // views::View:
   void ChildPreferredSizeChanged(views::View* child) override;
   void ChildVisibilityChanged(views::View* child) override;
+
+  // The main view is nominally always present and is last child in the view
+  // hierarchy.
+  views::View* main_view_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ToolbarIconContainerView);
 };
