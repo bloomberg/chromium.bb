@@ -9605,7 +9605,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
         Unknown account
       </message>
       <message name="IDS_WEBAUTHN_RESIDENT_KEY_PRIVACY" desc="A message included in dialogs when activating a security key (an external physical device for user authentication) may cause information about a site visit to be recorded on that security key. Since this is a privacy concern, a message is shown to the user.">
-        This will leave a record of your visit to <ph name="WEBSITE"><ex>accounts.google.com</ex>$1</ph> on your security key.
+        This will leave a record of your visit to this site on your security key.
       </message>
       <message name="IDS_WEBAUTHN_ERROR_MISSING_CAPABILITY_TITLE" desc="Title of the dialog informing the user that the security key (an external physical device for user authentication) that they selected does not support some capability that the site requested.">
         Your security key can't be used with this site
