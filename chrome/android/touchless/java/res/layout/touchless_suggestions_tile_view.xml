@@ -6,15 +6,15 @@
 <org.chromium.chrome.browser.touchless.SiteSuggestionsTileView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
+    android:layout_width="@dimen/tile_view_icon_size"
+    android:layout_height="@dimen/tile_view_icon_size"
     android:layout_gravity="center"
     android:background="@drawable/suggestion_tile">
     <!-- The icon background. -->
     <View
         android:id="@+id/tile_view_icon_background"
-        android:layout_width="@dimen/tile_view_icon_size"
-        android:layout_height="@dimen/tile_view_icon_size"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:background="@drawable/tile_view_icon_background_modern" />
 
     <!-- The main icon. -->
@@ -27,8 +27,8 @@
 
     <!-- Focus highlight. -->
     <View
-        android:layout_width="@dimen/tile_view_icon_size"
-        android:layout_height="@dimen/tile_view_icon_size"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:background="@drawable/suggestion_tile"
         android:duplicateParentState="true"/>
 

@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.touchless;
 
 import static org.chromium.chrome.browser.touchless.SiteSuggestionsCoordinator.ASYNC_FOCUS_DELEGATE;
 import static org.chromium.chrome.browser.touchless.SiteSuggestionsCoordinator.CURRENT_INDEX_KEY;
+import static org.chromium.chrome.browser.touchless.SiteSuggestionsCoordinator.INITIAL_INDEX_KEY;
 import static org.chromium.chrome.browser.touchless.SiteSuggestionsCoordinator.ITEM_COUNT_KEY;
 import static org.chromium.chrome.browser.touchless.SiteSuggestionsCoordinator.ON_FOCUS_CALLBACK;
 import static org.chromium.chrome.browser.touchless.SiteSuggestionsCoordinator.REMOVAL_KEY;
@@ -15,7 +16,6 @@ import static org.chromium.chrome.browser.touchless.SiteSuggestionsCoordinator.S
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.graphics.drawable.VectorDrawableCompat;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.ContextMenu;
 import android.view.View;
@@ -77,10 +77,8 @@ class SiteSuggestionsAdapter extends ForwardingListObservable<PropertyKey>
 
         @Override
         public void removeItem() {
-            // Remove the suggestion, which requests layout.
-            mModel.get(SUGGESTIONS_KEY).remove(mSuggestion);
             // Notify about removal.
-            mModel.set(REMOVAL_KEY, mSuggestion.get(SiteSuggestionModel.URL_KEY));
+            mModel.set(REMOVAL_KEY, mSuggestion);
             // Force-trigger rebind of current_index to update text.
             onPropertyChanged(mModel, CURRENT_INDEX_KEY);
         }
@@ -108,7 +106,7 @@ class SiteSuggestionsAdapter extends ForwardingListObservable<PropertyKey>
     private RoundedIconGenerator mIconGenerator;
     private SuggestionsNavigationDelegate mNavDelegate;
     private ContextMenuManager mContextMenuManager;
-    private LinearLayoutManager mLayoutManager;
+    private SiteSuggestionsLayoutManager mLayoutManager;
     private TextView mTitleView;
 
     private final RecyclerView mRecyclerView;
@@ -123,7 +121,8 @@ class SiteSuggestionsAdapter extends ForwardingListObservable<PropertyKey>
      */
     SiteSuggestionsAdapter(PropertyModel model, RoundedIconGenerator iconGenerator,
             SuggestionsNavigationDelegate navigationDelegate, ContextMenuManager contextMenuManager,
-            LinearLayoutManager layoutManager, TextView titleView, RecyclerView recyclerView) {
+            SiteSuggestionsLayoutManager layoutManager, TextView titleView,
+            RecyclerView recyclerView) {
         mModel = model;
         mIconGenerator = iconGenerator;
         mNavDelegate = navigationDelegate;
@@ -204,10 +203,9 @@ class SiteSuggestionsAdapter extends ForwardingListObservable<PropertyKey>
     public void onPropertyChanged(
             PropertyObservable<PropertyKey> source, @Nullable PropertyKey propertyKey) {
         if (propertyKey == CURRENT_INDEX_KEY) {
-            // When the current index changes, we want to scroll to position and update the title.
+            // When the current index changes, we want to update the title.
             int position = mModel.get(CURRENT_INDEX_KEY);
             int itemCount = mModel.get(ITEM_COUNT_KEY);
-            mLayoutManager.scrollToPosition(position);
             if (itemCount == 1 || position % itemCount == 0) {
                 mTitleView.setText(R.string.ntp_all_apps);
             } else {
@@ -219,6 +217,8 @@ class SiteSuggestionsAdapter extends ForwardingListObservable<PropertyKey>
                 && mModel.get(ASYNC_FOCUS_DELEGATE) != null) {
             mModel.get(ASYNC_FOCUS_DELEGATE).onResult(mRecyclerView);
             mModel.set(SHOULD_FOCUS_VIEW, false);
+        } else if (propertyKey == INITIAL_INDEX_KEY) {
+            mLayoutManager.scrollToPosition(mModel.get(INITIAL_INDEX_KEY));
         }
     }
 

@@ -27,8 +27,8 @@
 
     <!-- Most likely carousel dimensions. -->
     <dimen name="most_likely_tile_focus_stroke_width">2dp</dimen>
-    <dimen name="most_likely_tile_horizontal_spacer">6dp</dimen>
     <dimen name="most_likely_carousel_edge_spacer">8dp</dimen>
+    <dimen name="most_likely_tile_size">40dp</dimen>
     <!-- Desired 24dp, but the edge spacer is also in effect. 8 + 16 = 24 -->
     <dimen name="above_the_fold_bottom_margin">16dp</dimen>
 
