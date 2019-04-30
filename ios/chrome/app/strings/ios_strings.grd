@@ -1668,10 +1668,13 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
         Open Settings
       </message>
       <message name="IDS_IOS_SYNC_SETTINGS_NOT_CONFIRMED_DESCRIPTION" desc="The error message to display when sign-in was interrupted and the user didn't review the sync settings.">
-        Initial sync setup was not finished. To start Sync, enabled the Sync toggle.
+        To start sync, turn on "Sync your Chrome data".
       </message>
       <message name="IDS_IOS_SYNC_SETUP_IN_PROGRESS" desc="The message to display when the sync setup is in progress and sync isn't available yet. [Length: 60em] [iOS only]">
         Setup in progress…
+      </message>
+      <message name="IDS_IOS_SYNC_SETUP_NOT_CONFIRMED_TITLE" desc="Title of the error message shown for sync errors. [Length: 60em] [iOS only]">
+        Initial Sync Setup Not Finished
       </message>
       <message name="IDS_IOS_SYNC_SIGN_IN_AGAIN" desc="Title displayed when the signed in user needs sign in again. [Length: 20em] [iOS only]">
         Sign in again
