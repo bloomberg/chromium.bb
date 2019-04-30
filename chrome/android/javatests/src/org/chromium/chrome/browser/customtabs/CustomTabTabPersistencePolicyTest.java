@@ -24,7 +24,10 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.StreamUtil;
-import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.PostTask;
+import org.chromium.base.task.SequencedTaskRunner;
+import org.chromium.base.task.TaskRunner;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
@@ -49,7 +52,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -59,7 +61,8 @@ import java.util.concurrent.atomic.AtomicReference;
 public class CustomTabTabPersistencePolicyTest {
     private TestTabModelDirectory mMockDirectory;
     private AdvancedMockContext mAppContext;
-
+    private SequencedTaskRunner mSequencedTaskRunner =
+            PostTask.createSequencedTaskRunner(new TaskTraits());
     @Rule
     public UiThreadTestRule mRule = new UiThreadTestRule();
 
@@ -167,7 +170,7 @@ public class CustomTabTabPersistencePolicyTest {
         Assert.assertTrue(existingStateFile.createNewFile());
 
         Assert.assertTrue(existingStateFile.exists());
-        policy.performInitialization(AsyncTask.SERIAL_EXECUTOR);
+        policy.performInitialization(mSequencedTaskRunner);
         policy.waitForInitializationToFinish();
         Assert.assertFalse(existingStateFile.exists());
     }
@@ -330,7 +333,7 @@ public class CustomTabTabPersistencePolicyTest {
                 System.currentTimeMillis() - CustomTabTabPersistencePolicy.STATE_EXPIRY_THRESHOLD;
         Assert.assertTrue(metadataFile.setLastModified(previousTimestamp));
 
-        policy.performInitialization(AsyncTask.SERIAL_EXECUTOR);
+        policy.performInitialization(mSequencedTaskRunner);
         policy.waitForInitializationToFinish();
 
         Assert.assertTrue(metadataFile.lastModified() > previousTimestamp);
@@ -385,7 +388,7 @@ public class CustomTabTabPersistencePolicyTest {
             }
 
             @Override
-            public boolean performInitialization(Executor executor) {
+            public boolean performInitialization(TaskRunner taskRunner) {
                 return false;
             }
 

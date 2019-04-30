@@ -28,6 +28,9 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.BackgroundOnlyAsyncTask;
 import org.chromium.base.task.PostTask;
+import org.chromium.base.task.SequencedTaskRunner;
+import org.chromium.base.task.TaskPriority;
+import org.chromium.base.task.TaskRunner;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
@@ -35,6 +38,7 @@ import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabIdManager;
 import org.chromium.chrome.browser.tab.TabState;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
@@ -54,7 +58,6 @@ import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Executor;
 
 /**
  * This class handles saving and loading tab state from the persistent storage.
@@ -185,6 +188,7 @@ public class TabPersistentStore extends TabPersister {
     private SparseIntArray mIncognitoTabsRestored;
 
     private SharedPreferences mPreferences;
+    private SequencedTaskRunner mSequencedTaskRunner;
     private AsyncTask<DataInputStream> mPrefetchTabListTask;
     private List<Pair<AsyncTask<DataInputStream>, String>> mPrefetchTabListToMergeTasks;
     // A set of filenames which are tracked to merge.
@@ -219,30 +223,72 @@ public class TabPersistentStore extends TabPersister {
         mObservers = new ObserverList<>();
         mObservers.addObserver(observer);
         mPreferences = ContextUtils.getAppSharedPreferences();
+        TaskTraits taskTraits =
+                new TaskTraits().mayBlock(true).taskPriority(TaskPriority.USER_BLOCKING);
+        if (FeatureUtilities.isTabPersistentStoreTaskRunnerEnabled()) {
+            mSequencedTaskRunner = PostTask.createSequencedTaskRunner(taskTraits);
+        } else {
+            mSequencedTaskRunner = new SequencedTaskRunner() {
+                @Override
+                public void postTask(Runnable task) {
+                    AsyncTask.SERIAL_EXECUTOR.execute(task);
+                }
+
+                @Override
+                public void destroy() {
+                    assert false : "Should not call destroy() on SERIAL_EXECUTOR TaskRunner";
+                }
+
+                @Override
+                public void disableLifetimeCheck() {
+                    assert false
+                        : "Should not call disableLifetimeCheck() on SERIAL_EXECUTOR TaskRunner";
+                }
+
+                @Override
+                public void postDelayedTask(Runnable task, long delay) {
+                    assert false
+                        : "Should not call postDelayedTask(...) on SERIAL_EXECUTOR TaskRunner";
+                }
+
+                @Override
+                public void initNativeTaskRunner() {
+                    assert false
+                        : "Should not call initNativeTaskRunner() on SERIAL_EXECUTOR TaskRunner";
+                }
+            };
+        }
 
         mPrefetchTabListToMergeTasks = new ArrayList<>();
         mMergedFileNames = new HashSet<>();
 
         assert isStateFile(policy.getStateFileName()) : "State file name is not valid";
-        boolean needsInitialization = mPersistencePolicy.performInitialization(
-                AsyncTask.SERIAL_EXECUTOR);
+        boolean needsInitialization =
+                mPersistencePolicy.performInitialization(mSequencedTaskRunner);
+
+        mPersistencePolicy.setTaskRunner(mSequencedTaskRunner);
 
         if (mPersistencePolicy.isMergeInProgress()) return;
 
-        // TODO: create a state controller to sequence initializations rather than relying on
-        // the SERIAL_EXECUTOR. http://crbug.com/776554
-        Executor executor = needsInitialization
-                ? AsyncTask.SERIAL_EXECUTOR : AsyncTask.THREAD_POOL_EXECUTOR;
+        // TODO(smaier): We likely can move everything onto the SequencedTaskRunner when the
+        //  SERIAL_EXECUTOR path is gone. crbug.com/957735
+        TaskRunner taskRunner =
+                needsInitialization ? mSequencedTaskRunner : PostTask.createTaskRunner(taskTraits);
 
         mPrefetchTabListTask =
-                startFetchTabListTask(executor, mPersistencePolicy.getStateFileName());
-        startPrefetchActiveTabTask(executor);
+                startFetchTabListTask(taskRunner, mPersistencePolicy.getStateFileName());
+        startPrefetchActiveTabTask(taskRunner);
 
         if (mPersistencePolicy.shouldMergeOnStartup()) {
             for (String mergedFileName : mPersistencePolicy.getStateToBeMergedFileNames()) {
-                AsyncTask<DataInputStream> task = startFetchTabListTask(executor, mergedFileName);
+                AsyncTask<DataInputStream> task = startFetchTabListTask(taskRunner, mergedFileName);
                 mPrefetchTabListToMergeTasks.add(Pair.create(task, mergedFileName));
             }
+        }
+
+        if (!needsInitialization) {
+            // If a non-sequenced task runner was created above, destroy it now.
+            taskRunner.destroy();
         }
     }
 
@@ -446,7 +492,7 @@ public class TabPersistentStore extends TabPersister {
             for (String mergeFileName : mPersistencePolicy.getStateToBeMergedFileNames()) {
                 long time = SystemClock.uptimeMillis();
                 DataInputStream stream =
-                        startFetchTabListTask(AsyncTask.SERIAL_EXECUTOR, mergeFileName).get();
+                        startFetchTabListTask(mSequencedTaskRunner, mergeFileName).get();
                 if (stream == null) continue;
 
                 logExecutionTime("MergeStateInternalFetchTime", time);
@@ -675,7 +721,7 @@ public class TabPersistentStore extends TabPersister {
     public void clearState() {
         mPersistencePolicy.cancelCleanupInProgress();
 
-        AsyncTask.SERIAL_EXECUTOR.execute(new Runnable() {
+        mSequencedTaskRunner.postTask(new Runnable() {
             @Override
             public void run() {
                 File[] baseStateFiles = getOrCreateBaseStateDirectory().listFiles();
@@ -1110,7 +1156,7 @@ public class TabPersistentStore extends TabPersister {
         if (!mTabsToSave.isEmpty()) {
             Tab tab = mTabsToSave.removeFirst();
             mSaveTabTask = new SaveTabTask(tab);
-            mSaveTabTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+            mSaveTabTask.executeOnTaskRunner(mSequencedTaskRunner);
         } else {
             saveTabListAsynchronously();
         }
@@ -1122,7 +1168,7 @@ public class TabPersistentStore extends TabPersister {
     public void saveTabListAsynchronously() {
         if (mSaveListTask != null) mSaveListTask.cancel(true);
         mSaveListTask = new SaveListTask();
-        mSaveListTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        mSaveListTask.executeOnTaskRunner(mSequencedTaskRunner);
     }
 
     private class SaveTabTask extends AsyncTask<Void> {
@@ -1263,7 +1309,7 @@ public class TabPersistentStore extends TabPersister {
         } else {
             TabRestoreDetails tabToRestore = mTabsToRestore.removeFirst();
             mLoadTabTask = new LoadTabTask(tabToRestore);
-            mLoadTabTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+            mLoadTabTask.executeOnTaskRunner(mSequencedTaskRunner);
         }
     }
 
@@ -1305,9 +1351,9 @@ public class TabPersistentStore extends TabPersister {
                 }
                 return null;
             }
-        }.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
-        // TODO(twellington): delete tab files using the thread pool rather than the serial
-        // executor.
+        }.executeOnTaskRunner(mSequencedTaskRunner);
+        // TODO(twellington): delete tab files using PostTask.postTask() rather than than the
+        // sequenced task runner.
     }
 
     private class LoadTabTask extends AsyncTask<TabState> {
@@ -1389,7 +1435,7 @@ public class TabPersistentStore extends TabPersister {
     }
 
     private AsyncTask<DataInputStream> startFetchTabListTask(
-            Executor executor, final String stateFileName) {
+            TaskRunner taskRunner, final String stateFileName) {
         return new BackgroundOnlyAsyncTask<DataInputStream>() {
             @Override
             protected DataInputStream doInBackground() {
@@ -1419,10 +1465,10 @@ public class TabPersistentStore extends TabPersister {
                 Log.i(TAG, "Finished fetching tab list.");
                 return new DataInputStream(new ByteArrayInputStream(data));
             }
-        }.executeOnExecutor(executor);
+        }.executeOnTaskRunner(taskRunner);
     }
 
-    private void startPrefetchActiveTabTask(Executor executor) {
+    private void startPrefetchActiveTabTask(TaskRunner taskRunner) {
         final int activeTabId = mPreferences.getInt(PREF_ACTIVE_TAB_ID, Tab.INVALID_TAB_ID);
         if (activeTabId == Tab.INVALID_TAB_ID) return;
         mPrefetchActiveTabTask = new BackgroundOnlyAsyncTask<TabState>() {
@@ -1430,7 +1476,7 @@ public class TabPersistentStore extends TabPersister {
             protected TabState doInBackground() {
                 return TabState.restoreTabState(getStateDirectory(), activeTabId);
             }
-        }.executeOnExecutor(executor);
+        }.executeOnTaskRunner(taskRunner);
     }
 
     @VisibleForTesting

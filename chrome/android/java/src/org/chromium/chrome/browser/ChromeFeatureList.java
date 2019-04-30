@@ -314,6 +314,7 @@ public abstract class ChromeFeatureList {
     public static final String TAB_ENGAGEMENT_REPORTING_ANDROID = "TabEngagementReportingAndroid";
     public static final String TAB_GROUPS_ANDROID = "TabGroupsAndroid";
     public static final String TAB_GRID_LAYOUT_ANDROID = "TabGridLayoutAndroid";
+    public static final String TAB_PERSISTENT_STORE_TASK_RUNNER = "TabPersistentStoreTaskRunner";
     public static final String TAB_REPARENTING = "TabReparenting";
     public static final String TAB_SWITCHER_ON_RETURN = "TabSwitcherOnReturn";
     public static final String TRANSLATE_ANDROID_MANUAL_TRIGGER = "TranslateAndroidManualTrigger";
