@@ -85,8 +85,7 @@ bool AreElementsOnSameLine(const FocusCandidate& first_candidate,
 double ComputeDistanceDataForNode(SpatialNavigationDirection,
                                   const FocusCandidate& current_interest,
                                   const FocusCandidate& candidate);
-CORE_EXPORT LayoutRect NodeRectInRootFrame(const Node*,
-                                           bool ignore_border = false);
+CORE_EXPORT LayoutRect NodeRectInRootFrame(const Node*);
 CORE_EXPORT LayoutRect OppositeEdge(SpatialNavigationDirection side,
                                     const LayoutRect& box,
                                     LayoutUnit thickness = LayoutUnit());

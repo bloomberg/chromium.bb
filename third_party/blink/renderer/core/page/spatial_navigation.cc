@@ -66,7 +66,7 @@ FocusCandidate::FocusCandidate(Node* node, SpatialNavigationDirection direction)
       return;
 
     visible_node = node;
-    rect_in_root_frame = NodeRectInRootFrame(node, true /* ignore border */);
+    rect_in_root_frame = NodeRectInRootFrame(node);
   }
 
   focusable_node = node;
@@ -139,27 +139,9 @@ FloatRect RectInViewport(const Node& node) {
   if (!object)
     return FloatRect();
 
-  // Get the rect in the object's own frame. We use VisualRectInDocument for
-  // legacy reasons, it has some special cases for inlines that we'd like to
-  // preserve (or at least break layout tests). Because of that, we have to
-  // manually convert into frame coordinates and then clip to the frame.
-  LayoutRect rect_in_frame =
-      object->IsLayoutView()
-          ? object->VisualRectInDocument()
-          : frame_view->DocumentToFrame(object->VisualRectInDocument());
-  LayoutRect frame_rect =
-      LayoutRect(LayoutPoint(), LayoutSize(frame_view->Size()));
-  rect_in_frame.Intersect(frame_rect);
+  LayoutRect rect_in_root_frame = NodeRectInRootFrame(&node);
 
-  // Now convert from the local frame to the root frame's coordinate space.
-  // This will already apply clipping along the way.
-  LayoutRect rect_in_root_frame = rect_in_frame;
-  const LayoutBoxModelObject* ancestor = nullptr;
-  frame_view->GetLayoutView()->MapToVisualRectInAncestorSpace(
-      ancestor, rect_in_root_frame,
-      kUseTransforms | kTraverseDocumentBoundaries, kDefaultVisualRectFlags);
-
-  // Now convert to the visual viewport which will account for pinch zoom.
+  // Convert to the visual viewport which will account for pinch zoom.
   VisualViewport& visual_viewport =
       object->GetDocument().GetPage()->GetVisualViewport();
   FloatRect rect_in_viewport =
@@ -377,33 +359,28 @@ bool CanScrollInDirection(const LocalFrame* frame,
   }
 }
 
-LayoutRect NodeRectInRootFrame(const Node* node, bool ignore_border) {
+LayoutRect NodeRectInRootFrame(const Node* node) {
   DCHECK(node);
   DCHECK(node->GetLayoutObject());
   DCHECK(!node->GetDocument().View()->NeedsLayout());
 
-  LayoutRect rect = node->GetDocument().GetFrame()->View()->ConvertToRootFrame(
-      node->BoundingBox());
+  LayoutObject* object = node->GetLayoutObject();
 
-  // Ensure the rect isn't empty. This can happen in some cases as the bounding
-  // box is made up of the corners of multiple child elements. If the first
-  // child is to the right or bottom of the last child, the bounding box will
-  // be empty. Ensure its not empty so intersections with the root frame don't
-  // lie about being off-screen.
-  rect.UniteEvenIfEmpty(LayoutRect(rect.Location(), LayoutSize(1, 1)));
+  LayoutRect rect = LayoutRect(object->LocalBoundingBoxRectForAccessibility());
 
-  // For authors that use border instead of outline in their CSS, we compensate
-  // by ignoring the border when calculating the rect of the focused element.
-  if (ignore_border) {
-    rect.Move(node->GetLayoutObject()->Style()->BorderLeftWidth(),
-              node->GetLayoutObject()->Style()->BorderTopWidth());
-    rect.SetWidth(LayoutUnit(
-        rect.Width() - node->GetLayoutObject()->Style()->BorderLeftWidth() -
-        node->GetLayoutObject()->Style()->BorderRightWidth()));
-    rect.SetHeight(LayoutUnit(
-        rect.Height() - node->GetLayoutObject()->Style()->BorderTopWidth() -
-        node->GetLayoutObject()->Style()->BorderBottomWidth()));
-  }
+  // Inset the bounding box by the border.
+  // TODO(bokan): As far as I can tell, this is to work around empty iframes
+  // that have a border. It's unclear if that's still useful.
+  rect.Move(node->GetLayoutObject()->Style()->BorderLeftWidth(),
+            node->GetLayoutObject()->Style()->BorderTopWidth());
+  rect.SetWidth(LayoutUnit(
+      rect.Width() - node->GetLayoutObject()->Style()->BorderLeftWidth() -
+      node->GetLayoutObject()->Style()->BorderRightWidth()));
+  rect.SetHeight(LayoutUnit(
+      rect.Height() - node->GetLayoutObject()->Style()->BorderTopWidth() -
+      node->GetLayoutObject()->Style()->BorderBottomWidth()));
+
+  object->MapToVisualRectInAncestorSpace(/*ancestor=*/nullptr, rect);
   return rect;
 }
 
@@ -674,7 +651,7 @@ LayoutRect SearchOrigin(const LayoutRect viewport_rect_of_root_frame,
     if (area_element)
       return StartEdgeForAreaElement(*area_element, direction);
 
-    LayoutRect box_in_root_frame = NodeRectInRootFrame(focus_node, true);
+    LayoutRect box_in_root_frame = NodeRectInRootFrame(focus_node);
     return Intersection(box_in_root_frame, viewport_rect_of_root_frame);
   }
 
@@ -682,7 +659,7 @@ LayoutRect SearchOrigin(const LayoutRect viewport_rect_of_root_frame,
   while (container) {
     if (!IsOffscreen(container)) {
       // The first scroller that encloses focus and is [partially] visible.
-      LayoutRect box_in_root_frame = NodeRectInRootFrame(container, true);
+      LayoutRect box_in_root_frame = NodeRectInRootFrame(container);
       return OppositeEdge(direction, Intersection(box_in_root_frame,
                                                   viewport_rect_of_root_frame));
     }
