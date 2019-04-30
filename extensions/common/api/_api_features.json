@@ -77,6 +77,15 @@
     "dependencies": ["permission:audio"],
     "contexts": ["blessed_extension"]
   },
+  "automationInternal": {
+    "internal": true,
+    "dependencies": ["manifest:automation"],
+    "contexts": ["blessed_extension"]
+  },
+  "automation": {
+    "dependencies": ["manifest:automation"],
+    "contexts": ["blessed_extension"]
+  },
   "bluetooth": [{
     "dependencies": ["manifest:bluetooth"],
     "contexts": ["blessed_extension"]

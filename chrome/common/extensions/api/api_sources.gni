@@ -16,8 +16,6 @@ schema_sources_ = [
   "cast_streaming_session.idl",
   "cast_streaming_udp_transport.idl",
   "autofill_private.idl",
-  "automation.idl",
-  "automation_internal.idl",
   "autotest_private.idl",
   "bookmark_manager_private.json",
   "bookmarks.json",

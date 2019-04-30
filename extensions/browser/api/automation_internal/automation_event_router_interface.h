@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_BROWSER_EXTENSIONS_API_AUTOMATION_INTERNAL_AUTOMATION_EVENT_ROUTER_INTERFACE_H_
-#define CHROMECAST_BROWSER_EXTENSIONS_API_AUTOMATION_INTERNAL_AUTOMATION_EVENT_ROUTER_INTERFACE_H_
+#ifndef EXTENSIONS_BROWSER_API_AUTOMATION_INTERNAL_AUTOMATION_EVENT_ROUTER_INTERFACE_H_
+#define EXTENSIONS_BROWSER_API_AUTOMATION_INTERNAL_AUTOMATION_EVENT_ROUTER_INTERFACE_H_
 
 #include <set>
 #include <vector>
 
 #include "base/macros.h"
-#include "chromecast/common/extensions_api/automation_internal.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/common/api/automation_internal.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/extension_messages.h"
 
@@ -28,8 +28,9 @@ struct ExtensionMsg_AccessibilityEventBundleParams;
 struct ExtensionMsg_AccessibilityLocationChangeParams;
 
 namespace extensions {
-namespace cast {
 
+// NOTE: This interface is implemented in chromecast/internal by
+// ax_tree_source_flutter_unittest.cc
 class AutomationEventRouterInterface {
  public:
   virtual void DispatchAccessibilityEvents(
@@ -48,7 +49,7 @@ class AutomationEventRouterInterface {
   virtual void DispatchActionResult(
       const ui::AXActionData& data,
       bool result,
-      content::BrowserContext* active_profile) = 0;
+      content::BrowserContext* browser_context = nullptr) = 0;
 
   AutomationEventRouterInterface() {}
   virtual ~AutomationEventRouterInterface() {}
@@ -56,7 +57,6 @@ class AutomationEventRouterInterface {
   DISALLOW_COPY_AND_ASSIGN(AutomationEventRouterInterface);
 };
 
-}  // namespace cast
 }  // namespace extensions
 
-#endif  // CHROMECAST_BROWSER_EXTENSIONS_API_AUTOMATION_INTERNAL_AUTOMATION_EVENT_ROUTER_INTERFACE_H_
+#endif  // EXTENSIONS_BROWSER_API_AUTOMATION_INTERNAL_AUTOMATION_EVENT_ROUTER_INTERFACE_H_

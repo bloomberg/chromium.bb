@@ -2,19 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_BROWSER_EXTENSIONS_API_AUTOMATION_INTERNAL_AUTOMATION_EVENT_ROUTER_H_
-#define CHROMECAST_BROWSER_EXTENSIONS_API_AUTOMATION_INTERNAL_AUTOMATION_EVENT_ROUTER_H_
+#ifndef EXTENSIONS_BROWSER_API_AUTOMATION_INTERNAL_AUTOMATION_EVENT_ROUTER_H_
+#define EXTENSIONS_BROWSER_API_AUTOMATION_INTERNAL_AUTOMATION_EVENT_ROUTER_H_
 
 #include <set>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
-#include "chromecast/browser/extensions/api/automation_internal/automation_event_router_interface.h"
-#include "chromecast/common/extensions_api/automation_internal.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/api/automation_internal/automation_event_router_interface.h"
+#include "extensions/common/api/automation_internal.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/extension_messages.h"
 #include "ui/accessibility/ax_event_bundle_sink.h"
@@ -32,12 +33,11 @@ struct ExtensionMsg_AccessibilityEventBundleParams;
 struct ExtensionMsg_AccessibilityLocationChangeParams;
 
 namespace extensions {
-namespace cast {
 struct AutomationListener;
 
 class AutomationEventRouter : public ui::AXEventBundleSink,
-                              public AutomationEventRouterInterface,
-                              public content::NotificationObserver {
+                              public content::NotificationObserver,
+                              public AutomationEventRouterInterface {
  public:
   static AutomationEventRouter* GetInstance();
 
@@ -68,9 +68,17 @@ class AutomationEventRouter : public ui::AXEventBundleSink,
       content::BrowserContext* browser_context) override;
 
   // Notify the source extension of the action of an action result.
-  void DispatchActionResult(const ui::AXActionData& data,
-                            bool result,
-                            content::BrowserContext* active_profile) override;
+  void DispatchActionResult(
+      const ui::AXActionData& data,
+      bool result,
+      content::BrowserContext* browser_context = nullptr) override;
+
+  void SetTreeDestroyedCallbackForTest(
+      base::RepeatingCallback<void(ui::AXTreeID)> cb);
+
+  // Notify the source extension of the result to getTextLocation.
+  void DispatchGetTextLocationDataResult(const ui::AXActionData& data,
+                                         const base::Optional<gfx::Rect>& rect);
 
  private:
   struct AutomationListener {
@@ -82,6 +90,7 @@ class AutomationEventRouter : public ui::AXEventBundleSink,
     int process_id;
     bool desktop;
     std::set<ui::AXTreeID> tree_ids;
+    bool is_active_context;
   };
 
   AutomationEventRouter();
@@ -103,15 +112,30 @@ class AutomationEventRouter : public ui::AXEventBundleSink,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
+  // Called when the user switches profiles or when a listener is added
+  // or removed. The purpose is to ensure that multiple instances of the
+  // same extension running in different profiles don't interfere with one
+  // another, so in that case only the one associated with the active profile
+  // is marked as active.
+  //
+  // This is needed on Chrome OS because ChromeVox loads into the login profile
+  // in addition to the active profile.  If a similar fix is needed on other
+  // platforms, we'd need an equivalent of SessionStateObserver that works
+  // everywhere.
+  void UpdateActiveProfile();
+
   content::NotificationRegistrar registrar_;
   std::vector<AutomationListener> listeners_;
+
+  content::BrowserContext* active_context_;
+
+  base::RepeatingCallback<void(ui::AXTreeID)> tree_destroyed_callback_for_test_;
 
   friend struct base::DefaultSingletonTraits<AutomationEventRouter>;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationEventRouter);
 };
 
-}  // namespace cast
 }  // namespace extensions
 
-#endif  // CHROMECAST_BROWSER_EXTENSIONS_API_AUTOMATION_INTERNAL_AUTOMATION_EVENT_ROUTER_H_
+#endif  // EXTENSIONS_BROWSER_API_AUTOMATION_INTERNAL_AUTOMATION_EVENT_ROUTER_H_

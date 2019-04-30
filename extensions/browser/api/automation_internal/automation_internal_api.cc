@@ -1,11 +1,8 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-// TODO(crbug/837773) This file was copied from
-// chrome/browser/extensions/api/automation_internal.
-// Copied code will be de-duped later.
 
-#include "chromecast/browser/extensions/api/automation_internal/automation_internal_api.h"
+#include "extensions/browser/api/automation_internal/automation_internal_api.h"
 
 #include <stdint.h>
 
@@ -17,10 +14,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chromecast/browser/extensions/api/automation_internal/automation_event_router.h"
-#include "chromecast/common/extensions_api/automation.h"
-#include "chromecast/common/extensions_api/automation_internal.h"
-#include "chromecast/common/extensions_api/cast_extension_messages.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_context.h"
@@ -34,6 +27,11 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "extensions/browser/api/automation_internal/automation_event_router.h"
+#include "extensions/browser/api/automation_internal/automation_internal_api_delegate.h"
+#include "extensions/browser/api/extensions_api_client.h"
+#include "extensions/common/api/automation.h"
+#include "extensions/common/api/automation_internal.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_handlers/automation.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -43,24 +41,19 @@
 #include "ui/accessibility/ax_tree_id_registry.h"
 
 #if defined(USE_AURA)
-#include "chromecast/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "ui/aura/env.h"
 #endif
 
 namespace extensions {
-namespace cast {
 class AutomationWebContentsObserver;
-}  // namespace cast
 }  // namespace extensions
 
 namespace extensions {
-namespace cast {
 
 namespace {
 
 const char kCannotRequestAutomationOnPage[] =
-    "Cannot request automation tree on url \"*\". "
-    "Extension manifest must request permission to access this host.";
+    "Failed request of automation on a page";
 const char kRendererDestroyed[] = "The tab was closed.";
 const char kNoDocument[] = "No document.";
 const char kNodeDestroyed[] =
@@ -76,7 +69,8 @@ class QuerySelectorHandler : public content::WebContentsObserver {
       int request_id,
       int acc_obj_id,
       const base::string16& query,
-      const AutomationInternalQuerySelectorFunction::Callback& callback)
+      const extensions::AutomationInternalQuerySelectorFunction::Callback&
+          callback)
       : content::WebContentsObserver(web_contents),
         request_id_(request_id),
         callback_(callback) {
@@ -134,22 +128,8 @@ class QuerySelectorHandler : public content::WebContentsObserver {
   }
 
   int request_id_;
-  const AutomationInternalQuerySelectorFunction::Callback callback_;
+  const extensions::AutomationInternalQuerySelectorFunction::Callback callback_;
 };
-
-bool CanRequestAutomation(const Extension* extension,
-                          const AutomationInfo* automation_info,
-                          content::WebContents* contents) {
-  if (automation_info->desktop)
-    return true;
-
-  const GURL& url = contents->GetURL();
-  // TODO(aboxhall): check for webstore URL
-  if (automation_info->matches.MatchesURL(url))
-    return true;
-
-  return false;
-}
 
 }  // namespace
 
@@ -191,6 +171,22 @@ class AutomationWebContentsObserver
   void RenderFrameDeleted(
       content::RenderFrameHost* render_frame_host) override {
     ui::AXTreeID tree_id = render_frame_host->GetAXTreeID();
+    if (tree_id == ui::AXTreeIDUnknown())
+      return;
+
+    AutomationEventRouter::GetInstance()->DispatchTreeDestroyedEvent(
+        tree_id, browser_context_);
+  }
+
+  void RenderFrameHostChanged(content::RenderFrameHost* old_host,
+                              content::RenderFrameHost* new_host) override {
+    if (!old_host)
+      return;
+
+    ui::AXTreeID tree_id = old_host->GetAXTreeID();
+    if (tree_id == ui::AXTreeIDUnknown())
+      return;
+
     AutomationEventRouter::GetInstance()->DispatchTreeDestroyedEvent(
         tree_id, browser_context_);
   }
@@ -247,7 +243,53 @@ class AutomationWebContentsObserver
 WEB_CONTENTS_USER_DATA_KEY_IMPL(AutomationWebContentsObserver)
 
 ExtensionFunction::ResponseAction AutomationInternalEnableTabFunction::Run() {
-  return RespondNow(Error("enableTab is unsupported by this platform"));
+  const AutomationInfo* automation_info = AutomationInfo::Get(extension());
+  EXTENSION_FUNCTION_VALIDATE(automation_info);
+
+  using api::automation_internal::EnableTab::Params;
+  std::unique_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  content::WebContents* contents = NULL;
+  AutomationInternalApiDelegate* automation_api_delegate =
+      ExtensionsAPIClient::Get()->GetAutomationInternalApiDelegate();
+  int tab_id = -1;
+  if (params->args.tab_id.get()) {
+    tab_id = *params->args.tab_id;
+    std::string error_string;
+    if (!automation_api_delegate->GetTabById(tab_id, browser_context(),
+                                             include_incognito_information(),
+                                             &contents, &error_string)) {
+      return RespondNow(Error(error_string, base::NumberToString(tab_id)));
+    }
+  } else {
+    contents = automation_api_delegate->GetActiveWebContents(this);
+    if (!contents)
+      return RespondNow(Error("No active tab"));
+
+    tab_id = automation_api_delegate->GetTabId(contents);
+  }
+
+  content::RenderFrameHost* rfh = contents->GetMainFrame();
+  if (!rfh)
+    return RespondNow(Error("Could not enable accessibility for active tab"));
+
+  if (!automation_api_delegate->CanRequestAutomation(
+          extension(), automation_info, contents)) {
+    return RespondNow(Error(kCannotRequestAutomationOnPage));
+  }
+
+  AutomationWebContentsObserver::CreateForWebContents(contents);
+  contents->EnableWebContentsOnlyAccessibilityMode();
+
+  ui::AXTreeID ax_tree_id = rfh->GetAXTreeID();
+
+  // This gets removed when the extension process dies.
+  AutomationEventRouter::GetInstance()->RegisterListenerForOneTree(
+      extension_id(), source_process_id(), ax_tree_id);
+
+  return RespondNow(
+      ArgumentList(api::automation_internal::EnableTab::Results::Create(
+          ax_tree_id.ToString(), tab_id)));
 }
 
 ExtensionFunction::ResponseAction AutomationInternalEnableFrameFunction::Run() {
@@ -257,8 +299,22 @@ ExtensionFunction::ResponseAction AutomationInternalEnableFrameFunction::Run() {
   std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  content::RenderFrameHost* rfh = content::RenderFrameHost::FromAXTreeID(
-      ui::AXTreeID::FromString(params->tree_id));
+  ui::AXTreeID ax_tree_id = ui::AXTreeID::FromString(params->tree_id);
+  ui::AXTreeIDRegistry* registry = ui::AXTreeIDRegistry::GetInstance();
+  ui::AXActionHandler* action_handler = registry->GetActionHandler(ax_tree_id);
+  if (action_handler) {
+    // Explicitly invalidate the pre-existing source tree first. This ensures
+    // the source tree sends a complete tree when the next event occurs. This
+    // is required whenever the client extension is reloaded.
+    ui::AXActionData action;
+    action.target_tree_id = ax_tree_id;
+    action.source_extension_id = extension_id();
+    action.action = ax::mojom::Action::kInternalInvalidateTree;
+    action_handler->PerformAction(action);
+  }
+
+  content::RenderFrameHost* rfh =
+      content::RenderFrameHost::FromAXTreeID(ax_tree_id);
   if (!rfh)
     return RespondNow(Error("unable to load tab"));
 
@@ -427,7 +483,15 @@ AutomationInternalPerformActionFunction::ConvertToAXActionData(
       action->end_index = get_text_location_params.end_index;
       break;
     }
+    case api::automation::ACTION_TYPE_SHOWTOOLTIP:
+      action->action = ax::mojom::Action::kShowTooltip;
+      break;
+    case api::automation::ACTION_TYPE_HIDETOOLTIP:
+      action->action = ax::mojom::Action::kHideTooltip;
+      break;
+    case api::automation::ACTION_TYPE_ANNOTATEPAGEIMAGES:
     case api::automation::ACTION_TYPE_SIGNALENDOFTEST:
+    case api::automation::ACTION_TYPE_INTERNALINVALIDATETREE:
     case api::automation::ACTION_TYPE_NONE:
       break;
   }
@@ -454,9 +518,10 @@ AutomationInternalPerformActionFunction::Run() {
     if (rfh) {
       content::WebContents* contents =
           content::WebContents::FromRenderFrameHost(rfh);
-      if (!CanRequestAutomation(extension(), automation_info, contents)) {
-        return RespondNow(
-            Error(kCannotRequestAutomationOnPage, contents->GetURL().spec()));
+      if (!ExtensionsAPIClient::Get()
+               ->GetAutomationInternalApiDelegate()
+               ->CanRequestAutomation(extension(), automation_info, contents)) {
+        return RespondNow(Error(kCannotRequestAutomationOnPage));
       }
 
       // Handle internal actions.
@@ -503,8 +568,10 @@ AutomationInternalEnableDesktopFunction::Run() {
   AutomationEventRouter::GetInstance()->RegisterListenerWithDesktopPermission(
       extension_id(), source_process_id());
 
-  AutomationManagerAura::GetInstance()->Enable();
-  ui::AXTreeID ax_tree_id = AutomationManagerAura::GetInstance()->ax_tree_id();
+  AutomationInternalApiDelegate* automation_api_delegate =
+      ExtensionsAPIClient::Get()->GetAutomationInternalApiDelegate();
+  automation_api_delegate->EnableDesktop();
+  ui::AXTreeID ax_tree_id = automation_api_delegate->GetAXTreeID();
   return RespondNow(
       ArgumentList(api::automation_internal::EnableDesktop::Results::Create(
           ax_tree_id.ToString())));
@@ -557,5 +624,4 @@ void AutomationInternalQuerySelectorFunction::OnResponse(
   Respond(OneArgument(std::make_unique<base::Value>(result_acc_obj_id)));
 }
 
-}  // namespace cast
 }  // namespace extensions

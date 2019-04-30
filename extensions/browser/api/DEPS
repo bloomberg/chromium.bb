@@ -4,4 +4,6 @@ include_rules = [
   "+services/device/public",
   "+storage/browser/fileapi",
   "+storage/common/fileapi",
+  "+ui/accessibility",
+  "+ui/aura",
 ]

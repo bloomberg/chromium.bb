@@ -99,6 +99,7 @@ cast_source_set("renderer") {
       "//chromecast/renderer:extensions_resources",
       "//components/version_info:version_info",
       "//extensions/common",
+      "//extensions/common/api",
       "//extensions/renderer",
       "//gin:gin",
     ]

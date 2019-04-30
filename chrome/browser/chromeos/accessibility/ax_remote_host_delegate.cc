@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "chrome/browser/chromeos/accessibility/ax_host_service.h"
-#include "chrome/browser/extensions/api/automation_internal/automation_event_router.h"
 #include "chrome/common/extensions/chrome_extension_messages.h"
+#include "extensions/browser/api/automation_internal/automation_event_router.h"
 #include "ui/accessibility/ax_event.h"
 #include "ui/accessibility/ax_tree_update.h"
 #include "ui/aura/env.h"

@@ -110,15 +110,6 @@
       "chrome://settings/*"
     ]
   }],
-  "automationInternal": {
-    "internal": true,
-    "dependencies": ["manifest:automation"],
-    "contexts": ["blessed_extension"]
-  },
-  "automation": {
-    "dependencies": ["manifest:automation"],
-    "contexts": ["blessed_extension"]
-  },
   "autotestPrivate": {
     "dependencies": ["permission:autotestPrivate"],
     "contexts": ["blessed_extension"]

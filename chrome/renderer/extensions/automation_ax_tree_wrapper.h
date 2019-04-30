@@ -5,6 +5,7 @@
 #ifndef CHROME_RENDERER_EXTENSIONS_AUTOMATION_AX_TREE_WRAPPER_H_
 #define CHROME_RENDERER_EXTENSIONS_AUTOMATION_AX_TREE_WRAPPER_H_
 
+#include "extensions/common/api/automation.h"
 #include "ui/accessibility/ax_event_generator.h"
 #include "ui/accessibility/ax_tree.h"
 

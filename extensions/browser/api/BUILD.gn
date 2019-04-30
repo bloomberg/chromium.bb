@@ -46,6 +46,7 @@ source_set("api") {
     "//extensions/browser/api/app_runtime",
     "//extensions/browser/api/app_window",
     "//extensions/browser/api/audio",
+    "//extensions/browser/api/automation_internal",
     "//extensions/browser/api/bluetooth",
     "//extensions/browser/api/bluetooth_low_energy",
     "//extensions/browser/api/bluetooth_socket",

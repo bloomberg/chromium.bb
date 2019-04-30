@@ -5,6 +5,7 @@
 #ifndef CHROMECAST_RENDERER_EXTENSIONS_AUTOMATION_AX_TREE_WRAPPER_H_
 #define CHROMECAST_RENDERER_EXTENSIONS_AUTOMATION_AX_TREE_WRAPPER_H_
 
+#include "extensions/common/api/automation.h"
 #include "ui/accessibility/ax_event_generator.h"
 #include "ui/accessibility/ax_tree.h"
 
@@ -55,7 +56,8 @@ class AutomationAXTreeWrapper : public ui::AXTreeObserver {
   // Given an event, return true if the event is handled by
   // AXEventGenerator, and false if it's not. Temporary, this will be
   // removed with the AXEventGenerator refactoring is complete.
-  bool IsEventTypeHandledByAXEventGenerator(api::automation::EventType) const;
+  bool IsEventTypeHandledByAXEventGenerator(
+      extensions::api::automation::EventType) const;
 
   ui::AXTreeID tree_id_;
   ui::AXTree tree_;

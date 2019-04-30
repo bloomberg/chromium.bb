@@ -26,6 +26,7 @@ def _CheckExterns(input_api, output_api):
       'closure_compiler', 'externs')
 
   api_pairs = {
+    join(api_root, 'automation.idl'): join(externs_root, 'automation.js'),
     join(api_root, 'bluetooth.idl'): join(externs_root, 'bluetooth.js'),
     join(api_root, 'metrics_private.json'):
         join(externs_root, 'metrics_private.js'),

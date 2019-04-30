@@ -11,8 +11,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "chrome/common/extensions/api/automation.h"
 #include "chrome/renderer/extensions/automation_ax_tree_wrapper.h"
+#include "extensions/common/api/automation.h"
 #include "extensions/renderer/object_backed_native_handler.h"
 #include "ipc/ipc_message.h"
 #include "ui/accessibility/ax_tree.h"

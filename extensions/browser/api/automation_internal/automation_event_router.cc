@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/automation_internal/automation_event_router.h"
+#include "extensions/browser/api/automation_internal/automation_event_router.h"
 
 #include <algorithm>
 #include <memory>
@@ -12,23 +12,19 @@
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/common/extensions/api/automation_internal.h"
-#include "chrome/common/extensions/chrome_extension_messages.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
+#include "extensions/browser/api/automation_internal/automation_internal_api_delegate.h"
+#include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/common/api/automation_internal.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
-
-#if defined(USE_AURA)
-#include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
-#endif
 
 namespace extensions {
 
@@ -40,28 +36,28 @@ AutomationEventRouter* AutomationEventRouter::GetInstance() {
 }
 
 AutomationEventRouter::AutomationEventRouter()
-    : active_profile_(ProfileManager::GetActiveUserProfile()) {
+    : active_context_(ExtensionsAPIClient::Get()
+                          ->GetAutomationInternalApiDelegate()
+                          ->GetActiveUserContext()) {
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
                  content::NotificationService::AllBrowserContextsAndSources());
 #if defined(USE_AURA)
   // Not reset because |this| is leaked.
-  AutomationManagerAura::GetInstance()->set_event_bundle_sink(this);
+  ExtensionsAPIClient::Get()
+      ->GetAutomationInternalApiDelegate()
+      ->SetEventBundleSink(this);
 #endif
 }
 
-AutomationEventRouter::~AutomationEventRouter() {
-}
+AutomationEventRouter::~AutomationEventRouter() {}
 
 void AutomationEventRouter::RegisterListenerForOneTree(
     const ExtensionId& extension_id,
     int listener_process_id,
     ui::AXTreeID source_ax_tree_id) {
-  Register(extension_id,
-           listener_process_id,
-           source_ax_tree_id,
-           false);
+  Register(extension_id, listener_process_id, source_ax_tree_id, false);
 }
 
 void AutomationEventRouter::RegisterListenerWithDesktopPermission(
@@ -72,8 +68,12 @@ void AutomationEventRouter::RegisterListenerWithDesktopPermission(
 
 void AutomationEventRouter::DispatchAccessibilityEvents(
     const ExtensionMsg_AccessibilityEventBundleParams& event_bundle) {
-  if (active_profile_ != ProfileManager::GetActiveUserProfile()) {
-    active_profile_ = ProfileManager::GetActiveUserProfile();
+  content::BrowserContext* active_context =
+      ExtensionsAPIClient::Get()
+          ->GetAutomationInternalApiDelegate()
+          ->GetActiveUserContext();
+  if (active_context_ != active_context) {
+    active_context_ = active_context;
     UpdateActiveProfile();
   }
 
@@ -87,7 +87,7 @@ void AutomationEventRouter::DispatchAccessibilityEvents(
     content::RenderProcessHost* rph =
         content::RenderProcessHost::FromID(listener.process_id);
     rph->Send(new ExtensionMsg_AccessibilityEventBundle(
-        event_bundle, listener.is_active_profile));
+        event_bundle, listener.is_active_context));
   }
 }
 
@@ -112,7 +112,7 @@ void AutomationEventRouter::DispatchTreeDestroyedEvent(
   if (listeners_.empty())
     return;
 
-  browser_context = browser_context ? browser_context : active_profile_;
+  browser_context = browser_context ? browser_context : active_context_;
   std::unique_ptr<base::ListValue> args(
       api::automation_internal::OnAccessibilityTreeDestroyed::Create(
           tree_id.ToString()));
@@ -126,10 +126,13 @@ void AutomationEventRouter::DispatchTreeDestroyedEvent(
     tree_destroyed_callback_for_test_.Run(tree_id);
 }
 
-void AutomationEventRouter::DispatchActionResult(const ui::AXActionData& data,
-                                                 bool result) {
+void AutomationEventRouter::DispatchActionResult(
+    const ui::AXActionData& data,
+    bool result,
+    content::BrowserContext* browser_context) {
   CHECK(!data.source_extension_id.empty());
 
+  browser_context = browser_context ? browser_context : active_context_;
   if (listeners_.empty())
     return;
 
@@ -139,8 +142,8 @@ void AutomationEventRouter::DispatchActionResult(const ui::AXActionData& data,
   auto event = std::make_unique<Event>(
       events::AUTOMATION_INTERNAL_ON_ACTION_RESULT,
       api::automation_internal::OnActionResult::kEventName, std::move(args),
-      active_profile_);
-  EventRouter::Get(active_profile_)
+      active_context_);
+  EventRouter::Get(active_context_)
       ->DispatchEventToExtension(data.source_extension_id, std::move(event));
 }
 
@@ -174,19 +177,17 @@ void AutomationEventRouter::DispatchGetTextLocationDataResult(
   auto event = std::make_unique<Event>(
       events::AUTOMATION_INTERNAL_ON_GET_TEXT_LOCATION_RESULT,
       api::automation_internal::OnGetTextLocationResult::kEventName,
-      std::move(args), active_profile_);
-  EventRouter::Get(active_profile_)
+      std::move(args), active_context_);
+  EventRouter::Get(active_context_)
       ->DispatchEventToExtension(data.source_extension_id, std::move(event));
 }
 
-AutomationEventRouter::AutomationListener::AutomationListener() {
-}
+AutomationEventRouter::AutomationListener::AutomationListener() {}
 
 AutomationEventRouter::AutomationListener::AutomationListener(
     const AutomationListener& other) = default;
 
-AutomationEventRouter::AutomationListener::~AutomationListener() {
-}
+AutomationEventRouter::AutomationListener::~AutomationListener() {}
 
 void AutomationEventRouter::Register(const ExtensionId& extension_id,
                                      int listener_process_id,
@@ -264,15 +265,15 @@ void AutomationEventRouter::UpdateActiveProfile() {
     content::RenderProcessHost* rph =
         content::RenderProcessHost::FromID(listener.process_id);
 
-    // The purpose of is_active_profile is to ensure different instances of
+    // The purpose of is_active_context is to ensure different instances of
     // the same extension running in different profiles don't interfere with
     // one another. If an automation extension is only running in one profile,
     // always mark it as active. If it's running in two or more profiles,
     // only mark one as active.
-    listener.is_active_profile = (extension_id_count == 1 ||
-                                  rph->GetBrowserContext() == active_profile_);
+    listener.is_active_context = (extension_id_count == 1 ||
+                                  rph->GetBrowserContext() == active_context_);
 #else
-    listener.is_active_profile = true;
+    listener.is_active_context = true;
 #endif
   }
 }

@@ -11,16 +11,6 @@
     "dependencies": ["permission:accessibilityPrivate"],
     "contexts": ["blessed_extension"]
   },
-  // TODO(crbug/837773) De-dupe automation later.
-  "automationInternal": {
-    "internal": true,
-    "dependencies": ["manifest:automation"],
-    "contexts": ["blessed_extension"]
-  },
-  "automation": {
-    "dependencies": ["manifest:automation"],
-    "contexts": ["blessed_extension"]
-  },
   "brailleDisplayPrivate": {
     "dependencies": ["permission:brailleDisplayPrivate"],
     "contexts": ["blessed_extension"]

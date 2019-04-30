@@ -7,7 +7,7 @@
 import os, re, json
 
 AX_MOJOM = 'ui/accessibility/ax_enums.mojom'
-AUTOMATION_IDL = 'chrome/common/extensions/api/automation.idl'
+AUTOMATION_IDL = 'extensions/common/api/automation.idl'
 
 AX_JS_FILE = 'chrome/browser/resources/accessibility/accessibility.js'
 AX_MODE_HEADER = 'ui/accessibility/ax_mode.h'
