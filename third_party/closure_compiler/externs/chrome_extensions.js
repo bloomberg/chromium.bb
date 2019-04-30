@@ -299,7 +299,26 @@ chrome.app.runtime.LaunchItem.prototype.type;
 chrome.app.runtime.onEmbedRequested;
 
 
-/** @type {!ChromeObjectEvent} */
+/**
+ * @constructor
+ * @see https://developer.chrome.com/apps/app_runtime#event-onLaunched
+ */
+chrome.app.runtime.LaunchData = function() {};
+
+
+/** @type {!Array<{entry: !FileEntry, type: (string|undefined)}>|undefined} */
+chrome.app.runtime.LaunchData.prototype.items;
+
+
+/** @type {boolean|undefined} */
+chrome.app.runtime.LaunchData.prototype.isKioskSession;
+
+
+/** @type {string|undefined} */
+chrome.app.runtime.LaunchData.prototype.source;
+
+
+/** @type {!ChromeBaseEvent<function(!chrome.app.runtime.LaunchData)>} */
 chrome.app.runtime.onLaunched;
 
 
@@ -4144,6 +4163,11 @@ chrome.idle.queryState = function(thresholdSeconds, callback) {};
  */
 chrome.idle.setDetectionInterval = function(intervalInSeconds) {};
 
+/**
+ * @param {function(number): void} callback Callback to receive the delay
+ * @return {undefined}
+ */
+chrome.idle.getAutoLockDelay = function(callback) {};
 
 /** @type {!ChromeEvent} */
 chrome.idle.onStateChanged;
@@ -5066,7 +5090,8 @@ chrome.permissions.onRemoved;
 
 
 /**
- *  @see https://developer.chrome.com/extensions/platformKeys
+ * @const
+ * @see https://developer.chrome.com/extensions/platformKeys
  */
 chrome.platformKeys = {};
 
@@ -5147,6 +5172,7 @@ chrome.platformKeys.verifyTLSServerCertificate = function(details, callback) {};
 
 
 /**
+ * @const
  * @see http://developer.chrome.com/dev/extensions/power.html
  */
 chrome.power = {};
@@ -6694,6 +6720,9 @@ chrome.system.display.clearTouchCalibration = function(id) {};
 chrome.system.display.onDisplayChanged;
 
 
+/**
+ * @const
+ */
 chrome.types = {};
 
 
@@ -9299,9 +9328,9 @@ chrome.serial = {};
  *   persistent: (boolean|undefined),
  *   name: (string|undefined),
  *   bufferSize: (number|undefined),
- *   bitRate: (number|undefined),
+ *   bitrate: (number|undefined),
  *   dataBits: (string|undefined),
- *   parityBits: (string|undefined),
+ *   parityBit: (string|undefined),
  *   stopBits: (string|undefined),
  *   ctsFlowControl: (boolean|undefined),
  *   receiveTimeout: (number|undefined),
@@ -9321,9 +9350,9 @@ chrome.serial.ConnectionOptions;
  *   bufferSize: number,
  *   receiveTimeout: number,
  *   sendTimeout: number,
- *   bitRate: (number|undefined),
+ *   bitrate: (number|undefined),
  *   dataBits: (string|undefined),
- *   parityBits: (string|undefined),
+ *   parityBit: (string|undefined),
  *   stopBits: (string|undefined),
  *   ctsFlowControl: (boolean|undefined)
  * }}
@@ -10526,6 +10555,16 @@ chrome.bluetoothPrivate.TransportType = {
   BREDR: '',
   DUAL: '',
 };
+
+
+/**
+ * Connects to the given device. This will only throw an error if the device
+ * address is invalid or the device is already connected. Otherwise this will
+ * succeed and invoke |callback| with ConnectResultType.
+ * @param {string} deviceAddress
+ * @param {function(!chrome.bluetoothPrivate.ConnectResultType):void=} callback
+ */
+chrome.bluetoothPrivate.connect = function(deviceAddress, callback) {};
 
 
 /**

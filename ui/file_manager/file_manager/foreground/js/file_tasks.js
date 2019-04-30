@@ -1195,7 +1195,7 @@ FileTasks.prototype.updateShareMenuButton_ = function(shareMenuButton, tasks) {
 
   // Add menu items for the new tasks.
   const items = this.createItems_(tasks);
-  let menu = shareMenuButton.menu;
+  let menu = /** @type {!cr.ui.Menu} */ (shareMenuButton.menu);
   for (let i = 0; i < items.length; i++) {
     // If we have at least 10 entries, split off into a sub-menu
     if (i == NUM_TOP_LEVEL_ENTRIES && MAX_NON_SPLIT_ENTRIES <= items.length) {

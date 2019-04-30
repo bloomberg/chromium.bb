@@ -104,7 +104,8 @@ cr.define('ntp', function() {
      * @private
      */
     appendMenuItem_: function(opt_textId) {
-      const button = cr.doc.createElement('button');
+      const button =
+          /** @type {!HTMLButtonElement} */ (cr.doc.createElement('button'));
       this.menu.appendChild(button);
       cr.ui.decorate(button, cr.ui.MenuItem);
       if (opt_textId) {

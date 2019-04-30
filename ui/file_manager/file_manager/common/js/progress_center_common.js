@@ -62,10 +62,10 @@ class ProgressCenterItem {
   constructor() {
     /**
      * Item ID.
-     * @type {?string}
+     * @type {string}
      * @private
      */
-    this.id_ = null;
+    this.id_ = '';
 
     /**
      * State of the progress item.
@@ -131,7 +131,7 @@ class ProgressCenterItem {
 
   /**
    * Getter of Item ID.
-   * @return {?string} Item ID.
+   * @return {string} Item ID.
    */
   get id() {
     return this.id_;

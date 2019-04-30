@@ -99,9 +99,12 @@ class NativeControlsVideoPlayer {
    * @private
    */
   addKeyControls_() {
-    document.addEventListener('keydown', (/** KeyboardEvent */ event) => {
+    document.addEventListener('keydown', (/** !Event */ event) => {
+      const keyboardEvent = /** @type {!KeyboardEvent} */ (event);
       const key =
-          (event.ctrlKey && event.shiftKey ? 'Ctrl+Shift+' : '') + event.key;
+          (keyboardEvent.ctrlKey && keyboardEvent.shiftKey ? 'Ctrl+Shift+' :
+                                                             '') +
+          keyboardEvent.key;
       switch (key) {
           // Handle debug shortcut keys.
         case 'Ctrl+Shift+I':
@@ -143,12 +146,13 @@ class NativeControlsVideoPlayer {
     });
 
     getRequiredElement('video-container')
-        .addEventListener('click', (/** MouseEvent */ event) => {
+        .addEventListener('click', (/** !Event */ event) => {
+          const mouseEvent = /** @type {!MouseEvent} */ (event);
           // Turn on loop mode when ctrl+click while the video is playing.
           // If the video is paused, ignore ctrl and play the video.
-          if (event.ctrlKey && !this.videoElement_.paused) {
+          if (mouseEvent.ctrlKey && !this.videoElement_.paused) {
             this.setLoopedModeWithFeedback_(true);
-            event.preventDefault();
+            mouseEvent.preventDefault();
           }
         });
   }

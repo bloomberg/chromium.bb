@@ -14,8 +14,8 @@ function reportPromise(promise, callback) {
       () => {
         callback(/* error */ false);
       },
-      (/** Error */ error) => {
-        console.error(error.stack || error);
+      (error) => {
+        console.error(/** @type {!Error} */ (error).stack || error);
         callback(/* error */ true);
       });
 }

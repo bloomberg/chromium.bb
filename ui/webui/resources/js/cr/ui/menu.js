@@ -47,7 +47,7 @@ cr.define('cr.ui', function() {
     /**
      * Adds menu item at the end of the list.
      * @param {Object} item Menu item properties.
-     * @return {cr.ui.MenuItem} The created menu item.
+     * @return {!cr.ui.MenuItem} The created menu item.
      */
     addMenuItem: function(item) {
       const menuItem = this.ownerDocument.createElement('cr-menu-item');

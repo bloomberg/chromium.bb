@@ -127,11 +127,11 @@ Polymer({
   ready: function() {
     this.addWebUIListener(
         'onStorageListFetched', this.onStorageListFetched.bind(this));
-    this.addEventListener(
-        'site-entry-selected',
-        (/** @type {!CustomEvent<!{item: !SiteGroup, index: number}>} */ e) => {
-          this.selectedItem_ = e.detail;
-        });
+    this.addEventListener('site-entry-selected', e => {
+      const event =
+          /** @type {!CustomEvent<!{item: !SiteGroup, index: number}>} */ (e);
+      this.selectedItem_ = event.detail;
+    });
     this.addEventListener('site-entry-storage-updated', () => {
       this.debounce('site-entry-storage-updated', () => {
         if (this.sortMethods_ &&

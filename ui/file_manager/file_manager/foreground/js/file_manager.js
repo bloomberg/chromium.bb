@@ -1593,7 +1593,7 @@ FileManager.prototype = /** @struct */ {
    */
   FileManager.prototype.onPreferencesChanged_ = function() {
     chrome.fileManagerPrivate.getPreferences(
-        (/** chrome.fileManagerPrivate.Preferences */ prefs) => {
+        (/** chrome.fileManagerPrivate.Preferences|undefined */ prefs) => {
           if (chrome.runtime.lastError ||
               this.driveEnabled_ === prefs.driveEnabled) {
             return;

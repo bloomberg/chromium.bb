@@ -9,43 +9,6 @@
  */
 
 /**
- * @see https://drafts.fxtf.org/geometry-1/#domrectreadonly
- * TODO(dpapad): Remove this once it is added to Closure Compiler itself.
- */
-class DOMRectReadOnly {
-  /**
-   * @param {number} x
-   * @param {number} y
-   * @param {number} width
-   * @param {number} height
-   */
-  constructor(x, y, width, height) {
-    /** @type {number} */
-    this.x;
-    /** @type {number} */
-    this.y;
-    /** @type {number} */
-    this.width;
-    /** @type {number} */
-    this.height;
-    /** @type {number} */
-    this.top;
-    /** @type {number} */
-    this.right;
-    /** @type {number} */
-    this.bottom;
-    /** @type {number} */
-    this.left;
-  }
-
-  /**
-   * @param {{x: number, y: number, width: number, height: number}=} rectangle
-   * @return {DOMRectReadOnly}
-   */
-  fromRect(rectangle) {}
-}
-
-/**
  * TODO(dstockwell): Remove this once it is added to Closure Compiler itself.
  * @see https://drafts.fxtf.org/geometry/#DOMMatrix
  */
@@ -157,18 +120,6 @@ let BigInt = function(value) {};
 
 /** @const {!Clipboard} */
 Navigator.prototype.clipboard;
-
-/**
- * TODO(manukh): remove this once it is added to Closure Compiler itself.
- * @see https://tc39.github.io/proposal-flatMap/#sec-Array.prototype.flatMap
- * @param {?function(this:S, T, number, !Array<T>): R} callback
- * @param {S=} opt_this
- * @return {!Array<R>}
- * @this {IArrayLike<T>|string}
- * @template T,S,R
- * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flatMap
- */
-Array.prototype.flatMap = function(callback, opt_this) {};
 
 /**
  * TODO(katie): Remove this once length is added to the Closure
