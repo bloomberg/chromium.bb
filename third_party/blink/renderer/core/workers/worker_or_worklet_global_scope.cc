@@ -179,8 +179,7 @@ WorkerOrWorkletGlobalScope::WorkerOrWorkletGlobalScope(
       script_controller_(
           MakeGarbageCollected<WorkerOrWorkletScriptController>(this, isolate)),
       v8_cache_options_(v8_cache_options),
-      reporting_proxy_(reporting_proxy),
-      used_features_(static_cast<int>(WebFeature::kNumberOfFeatures)) {
+      reporting_proxy_(reporting_proxy) {
   if (worker_clients_)
     worker_clients_->ReattachThread();
 }
@@ -223,9 +222,9 @@ void WorkerOrWorkletGlobalScope::CountFeature(WebFeature feature) {
   DCHECK(IsContextThread());
   DCHECK_NE(WebFeature::kOBSOLETE_PageDestruction, feature);
   DCHECK_GT(WebFeature::kNumberOfFeatures, feature);
-  if (used_features_.QuickGet(static_cast<int>(feature)))
+  if (used_features_[static_cast<size_t>(feature)])
     return;
-  used_features_.QuickSet(static_cast<int>(feature));
+  used_features_.set(static_cast<size_t>(feature));
   ReportingProxy().CountFeature(feature);
 }
 
@@ -233,9 +232,9 @@ void WorkerOrWorkletGlobalScope::CountDeprecation(WebFeature feature) {
   DCHECK(IsContextThread());
   DCHECK_NE(WebFeature::kOBSOLETE_PageDestruction, feature);
   DCHECK_GT(WebFeature::kNumberOfFeatures, feature);
-  if (used_features_.QuickGet(static_cast<int>(feature)))
+  if (used_features_[static_cast<size_t>(feature)])
     return;
-  used_features_.QuickSet(static_cast<int>(feature));
+  used_features_.set(static_cast<size_t>(feature));
 
   // Adds a deprecation message to the console.
   DCHECK(!Deprecation::DeprecationMessage(feature).IsEmpty());

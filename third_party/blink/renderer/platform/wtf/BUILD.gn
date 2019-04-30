@@ -42,8 +42,6 @@ jumbo_component("wtf") {
     "allocator/partitions.h",
     "assertions.cc",
     "assertions.h",
-    "bit_vector.cc",
-    "bit_vector.h",
     "bloom_filter.h",
     "casting.h",
     "conditional_destructor.h",

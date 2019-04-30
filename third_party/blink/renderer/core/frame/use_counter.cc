@@ -1242,12 +1242,7 @@ int UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(
 }
 
 UseCounter::UseCounter(Context context, CommitState commit_state)
-    : mute_count_(0),
-      context_(context),
-      commit_state_(commit_state),
-      features_recorded_(static_cast<int>(WebFeature::kNumberOfFeatures)),
-      css_recorded_(numCSSPropertyIDs),
-      animated_css_recorded_(numCSSPropertyIDs) {}
+    : mute_count_(0), context_(context), commit_state_(commit_state) {}
 
 void UseCounter::MuteForInspector() {
   mute_count_++;
@@ -1268,12 +1263,12 @@ void UseCounter::RecordMeasurement(WebFeature feature,
   DCHECK_GE(WebFeature::kNumberOfFeatures, feature);
 
   int feature_id = static_cast<int>(feature);
-  if (features_recorded_.QuickGet(feature_id))
+  if (features_recorded_[feature_id])
     return;
   if (commit_state_ >= kCommited)
     ReportAndTraceMeasurementByFeatureId(feature_id, source_frame);
 
-  features_recorded_.QuickSet(feature_id);
+  features_recorded_.set(feature_id);
 }
 
 void UseCounter::ReportAndTraceMeasurementByFeatureId(
@@ -1301,11 +1296,11 @@ bool UseCounter::HasRecordedMeasurement(WebFeature feature) const {
   DCHECK_NE(WebFeature::kPageVisits, feature);
   DCHECK_GE(WebFeature::kNumberOfFeatures, feature);
 
-  return features_recorded_.QuickGet(static_cast<int>(feature));
+  return features_recorded_[static_cast<size_t>(feature)];
 }
 
 void UseCounter::ClearMeasurementForTesting(WebFeature feature) {
-  features_recorded_.QuickClear(static_cast<int>(feature));
+  features_recorded_.reset(static_cast<size_t>(feature));
 }
 
 // Static
@@ -1356,14 +1351,14 @@ void UseCounter::DidCommitLoad(const LocalFrame* frame) {
     // browser side.
     for (wtf_size_t feature_id = 0; feature_id < features_recorded_.size();
          ++feature_id) {
-      if (features_recorded_.QuickGet(feature_id))
+      if (features_recorded_[feature_id])
         ReportAndTraceMeasurementByFeatureId(feature_id, *frame);
     }
     for (wtf_size_t sample_id = 0; sample_id < css_recorded_.size();
          ++sample_id) {
-      if (css_recorded_.QuickGet(sample_id))
+      if (css_recorded_[sample_id])
         ReportAndTraceMeasurementByCSSSampleId(sample_id, frame, false);
-      if (animated_css_recorded_.QuickGet(sample_id))
+      if (animated_css_recorded_[sample_id])
         ReportAndTraceMeasurementByCSSSampleId(sample_id, frame, true);
     }
 
@@ -1405,8 +1400,8 @@ bool UseCounter::IsCounted(Document& document, WebFeature feature) {
 }
 
 bool UseCounter::IsCounted(CSSPropertyID unresolved_property) {
-  return css_recorded_.QuickGet(
-      MapCSSPropertyIdToCSSSampleIdForHistogram(unresolved_property));
+  return css_recorded_[MapCSSPropertyIdToCSSSampleIdForHistogram(
+      unresolved_property)];
 }
 
 void UseCounter::ClearCountForTesting(Document& document, WebFeature feature) {
@@ -1459,12 +1454,12 @@ void UseCounter::Count(CSSParserMode css_parser_mode,
     return;
 
   int sample_id = MapCSSPropertyIdToCSSSampleIdForHistogram(property);
-  if (css_recorded_.QuickGet(sample_id))
+  if (css_recorded_[sample_id])
     return;
   if (commit_state_ >= kCommited)
     ReportAndTraceMeasurementByCSSSampleId(sample_id, source_frame, false);
 
-  css_recorded_.QuickSet(sample_id);
+  css_recorded_.set(sample_id);
 }
 
 void UseCounter::Count(WebFeature feature, const LocalFrame* source_frame) {
@@ -1474,8 +1469,8 @@ void UseCounter::Count(WebFeature feature, const LocalFrame* source_frame) {
 }
 
 bool UseCounter::IsCountedAnimatedCSS(CSSPropertyID unresolved_property) {
-  return animated_css_recorded_.QuickGet(
-      MapCSSPropertyIdToCSSSampleIdForHistogram(unresolved_property));
+  return animated_css_recorded_[MapCSSPropertyIdToCSSSampleIdForHistogram(
+      unresolved_property)];
 }
 
 bool UseCounter::IsCountedAnimatedCSS(Document& document,
@@ -1505,12 +1500,12 @@ void UseCounter::CountAnimatedCSS(CSSPropertyID property,
     return;
 
   int sample_id = MapCSSPropertyIdToCSSSampleIdForHistogram(property);
-  if (animated_css_recorded_.QuickGet(sample_id))
+  if (animated_css_recorded_[sample_id])
     return;
   if (commit_state_ >= kCommited)
     ReportAndTraceMeasurementByCSSSampleId(sample_id, source_frame, true);
 
-  animated_css_recorded_.QuickSet(sample_id);
+  animated_css_recorded_.set(sample_id);
 }
 
 void UseCounter::NotifyFeatureCounted(WebFeature feature) {

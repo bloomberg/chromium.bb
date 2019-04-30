@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/core/css/rule_feature_set.h"
 
+#include <bitset>
 #include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
 #include "third_party/blink/renderer/core/css/css_function_value.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
@@ -43,7 +44,6 @@
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/wtf/bit_vector.h"
 
 namespace blink {
 

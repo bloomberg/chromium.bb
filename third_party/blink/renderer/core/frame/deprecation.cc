@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 
+#include <bitset>
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/reporting/reporting.mojom-blink.h"
@@ -628,16 +629,13 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
 namespace blink {
 
 Deprecation::Deprecation() : mute_count_(0) {
-  css_property_deprecation_bits_.EnsureSize(numCSSPropertyIDs);
-  features_deprecation_bits_.EnsureSize(
-      static_cast<int>(WebFeature::kNumberOfFeatures));
 }
 
 Deprecation::~Deprecation() = default;
 
 void Deprecation::ClearSuppression() {
-  css_property_deprecation_bits_.ClearAll();
-  features_deprecation_bits_.ClearAll();
+  css_property_deprecation_bits_.reset();
+  features_deprecation_bits_.reset();
 }
 
 void Deprecation::MuteForInspector() {
@@ -650,22 +648,21 @@ void Deprecation::UnmuteForInspector() {
 
 void Deprecation::Suppress(CSSPropertyID unresolved_property) {
   DCHECK(isCSSPropertyIDWithName(unresolved_property));
-  css_property_deprecation_bits_.QuickSet(
-      static_cast<int>(unresolved_property));
+  css_property_deprecation_bits_.set(static_cast<size_t>(unresolved_property));
 }
 
 bool Deprecation::IsSuppressed(CSSPropertyID unresolved_property) {
   DCHECK(isCSSPropertyIDWithName(unresolved_property));
-  return css_property_deprecation_bits_.QuickGet(
-      static_cast<int>(unresolved_property));
+  return css_property_deprecation_bits_[static_cast<size_t>(
+      unresolved_property)];
 }
 
 void Deprecation::SetReported(WebFeature feature) {
-  features_deprecation_bits_.QuickSet(static_cast<int>(feature));
+  features_deprecation_bits_.set(static_cast<size_t>(feature));
 }
 
 bool Deprecation::GetReported(WebFeature feature) const {
-  return features_deprecation_bits_.QuickGet(static_cast<int>(feature));
+  return features_deprecation_bits_[static_cast<size_t>(feature)];
 }
 
 void Deprecation::WarnOnDeprecatedProperties(

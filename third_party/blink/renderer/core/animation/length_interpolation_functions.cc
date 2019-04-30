@@ -93,7 +93,7 @@ InterpolationValue LengthInterpolationFunctions::MaybeConvertCSSValue(
   }
 
   bool has_percentage =
-      length_array.type_flags.Get(CSSPrimitiveValue::kUnitTypePercentage);
+      length_array.type_flags[CSSPrimitiveValue::kUnitTypePercentage];
   return InterpolationValue(
       std::move(values), CSSLengthNonInterpolableValue::Create(has_percentage));
 }

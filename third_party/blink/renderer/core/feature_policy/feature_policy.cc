@@ -7,6 +7,7 @@
 #include <map>
 #include <utility>
 
+#include <bitset>
 #include "base/metrics/histogram_macros.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -16,7 +17,6 @@
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
-#include "third_party/blink/renderer/platform/wtf/bit_vector.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "url/origin.h"
 
@@ -112,8 +112,8 @@ ParsedFeaturePolicy ParseFeaturePolicy(
     const FeatureNameMap& feature_names,
     ExecutionContext* execution_context) {
   ParsedFeaturePolicy allowlists;
-  BitVector features_specified(
-      static_cast<int>(mojom::FeaturePolicyFeature::kMaxValue) + 1);
+  std::bitset<static_cast<size_t>(mojom::FeaturePolicyFeature::kMaxValue) + 1>
+      features_specified;
 
   // RFC2616, section 4.2 specifies that headers appearing multiple times can be
   // combined with a comma. Walk the header string, and parse each comma
@@ -155,7 +155,7 @@ ParsedFeaturePolicy ParseFeaturePolicy(
           FeaturePolicy::GetDefaultFeatureList().at(feature).second;
       // If a policy has already been specified for the current feature, drop
       // the new policy.
-      if (features_specified.QuickGet(static_cast<int>(feature)))
+      if (features_specified[static_cast<size_t>(feature)])
         continue;
 
       // Count the use of this feature policy.
@@ -177,7 +177,7 @@ ParsedFeaturePolicy ParseFeaturePolicy(
       // TODO(loonybear): fallback value should be parsed from the new syntax.
       allowlist.fallback_value = GetFallbackValueForFeature(feature);
       allowlist.opaque_value = GetFallbackValueForFeature(feature);
-      features_specified.QuickSet(static_cast<int>(feature));
+      features_specified.set(static_cast<size_t>(feature));
       std::map<url::Origin, PolicyValue> values;
       PolicyValue value = PolicyValue::CreateMaxPolicyValue(feature_type);
       // If a policy entry has no listed origins (e.g. "feature_name1" in

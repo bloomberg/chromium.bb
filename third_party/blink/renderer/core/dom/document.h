@@ -30,6 +30,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_H_
 
+#include <bitset>
 #include <string>
 #include <utility>
 
@@ -69,7 +70,6 @@
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
-#include "third_party/blink/renderer/platform/wtf/bit_vector.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
@@ -1505,11 +1505,11 @@ class CORE_EXPORT Document : public ContainerNode,
       const String& message = g_empty_string) const override;
 
   bool IsParsedFeaturePolicy(mojom::FeaturePolicyFeature feature) const {
-    return parsed_feature_policies_.QuickGet(static_cast<int>(feature));
+    return parsed_feature_policies_[static_cast<size_t>(feature)];
   }
 
   void SetParsedFeaturePolicy(mojom::FeaturePolicyFeature feature) {
-    parsed_feature_policies_.QuickSet(static_cast<int>(feature));
+    parsed_feature_policies_.set(static_cast<size_t>(feature));
   }
 
   void IncrementNumberOfCanvases();
@@ -2008,10 +2008,13 @@ class CORE_EXPORT Document : public ContainerNode,
 
   // Tracks which feature policies have already been parsed, so as not to count
   // them multiple times.
-  BitVector parsed_feature_policies_;
+  std::bitset<static_cast<size_t>(mojom::FeaturePolicyFeature::kMaxValue) + 1>
+      parsed_feature_policies_;
   // Tracks which features have already been potentially violated in this
   // document. This helps to count them only once per page load.
-  mutable BitVector potentially_violated_features_;
+  mutable std::bitset<
+      static_cast<size_t>(mojom::FeaturePolicyFeature::kMaxValue) + 1>
+      potentially_violated_features_;
 
   AtomicString override_last_modified_;
 

@@ -72,6 +72,7 @@
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/fonts/font_selector.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -858,8 +859,7 @@ void StyleEngine::ClassChangedForElement(const SpaceSplitString& old_classes,
 
   // Class vectors tend to be very short. This is faster than using a hash
   // table.
-  BitVector remaining_class_bits;
-  remaining_class_bits.EnsureSize(old_classes.size());
+  WTF::Vector<bool> remaining_class_bits(old_classes.size());
 
   InvalidationLists invalidation_lists;
   const RuleFeatureSet& features = GetRuleFeatureSet();
@@ -871,7 +871,7 @@ void StyleEngine::ClassChangedForElement(const SpaceSplitString& old_classes,
         // Mark each class that is still in the newClasses so we can skip doing
         // an n^2 search below when looking for removals. We can't break from
         // this loop early since a class can appear more than once.
-        remaining_class_bits.QuickSet(j);
+        remaining_class_bits[j] = true;
         found = true;
       }
     }
@@ -883,13 +883,12 @@ void StyleEngine::ClassChangedForElement(const SpaceSplitString& old_classes,
   }
 
   for (unsigned i = 0; i < old_classes.size(); ++i) {
-    if (remaining_class_bits.QuickGet(i))
+    if (remaining_class_bits[i])
       continue;
     // Class was removed.
     features.CollectInvalidationSetsForClass(invalidation_lists, element,
                                              old_classes[i]);
   }
-
   pending_invalidations_.ScheduleInvalidationSetsForNode(invalidation_lists,
                                                          element);
 }

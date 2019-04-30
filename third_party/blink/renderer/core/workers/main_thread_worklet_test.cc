@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <bitset>
 #include "base/single_thread_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -22,25 +23,25 @@ class MainThreadWorkletReportingProxyForTest final
     : public MainThreadWorkletReportingProxy {
  public:
   explicit MainThreadWorkletReportingProxyForTest(Document* document)
-      : MainThreadWorkletReportingProxy(document),
-        reported_features_(static_cast<int>(WebFeature::kNumberOfFeatures)) {}
+      : MainThreadWorkletReportingProxy(document) {}
 
   void CountFeature(WebFeature feature) override {
     // Any feature should be reported only one time.
-    EXPECT_FALSE(reported_features_.QuickGet(static_cast<int>(feature)));
-    reported_features_.QuickSet(static_cast<int>(feature));
+    EXPECT_FALSE(reported_features_[static_cast<size_t>(feature)]);
+    reported_features_.set(static_cast<size_t>(feature));
     MainThreadWorkletReportingProxy::CountFeature(feature);
   }
 
   void CountDeprecation(WebFeature feature) override {
     // Any feature should be reported only one time.
-    EXPECT_FALSE(reported_features_.QuickGet(static_cast<int>(feature)));
-    reported_features_.QuickSet(static_cast<int>(feature));
+    EXPECT_FALSE(reported_features_[static_cast<size_t>(feature)]);
+    reported_features_.set(static_cast<size_t>(feature));
     MainThreadWorkletReportingProxy::CountDeprecation(feature);
   }
 
  private:
-  BitVector reported_features_;
+  std::bitset<static_cast<size_t>(WebFeature::kNumberOfFeatures)>
+      reported_features_;
 };
 
 class MainThreadWorkletTest : public PageTestBase {

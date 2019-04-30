@@ -5,13 +5,13 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBUSB_USB_DEVICE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBUSB_USB_DEVICE_H_
 
+#include <bitset>
 #include "device/usb/public/mojom/device.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/wtf/bit_vector.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -106,6 +106,8 @@ class USBDevice : public ScriptWrappable, public ContextLifecycleObserver {
   void Trace(blink::Visitor*) override;
 
  private:
+  static const size_t kEndpointsBitsNumber = 16;
+
   wtf_size_t FindConfigurationIndex(uint8_t configuration_value) const;
   wtf_size_t FindInterfaceIndex(uint8_t interface_number) const;
   wtf_size_t FindAlternateIndex(wtf_size_t interface_index,
@@ -174,11 +176,11 @@ class USBDevice : public ScriptWrappable, public ContextLifecycleObserver {
   bool opened_;
   bool device_state_change_in_progress_;
   wtf_size_t configuration_index_;
-  WTF::BitVector claimed_interfaces_;
-  WTF::BitVector interface_state_change_in_progress_;
+  WTF::Vector<bool> claimed_interfaces_;
+  WTF::Vector<bool> interface_state_change_in_progress_;
   WTF::Vector<wtf_size_t> selected_alternates_;
-  WTF::BitVector in_endpoints_;
-  WTF::BitVector out_endpoints_;
+  std::bitset<kEndpointsBitsNumber> in_endpoints_;
+  std::bitset<kEndpointsBitsNumber> out_endpoints_;
 };
 
 }  // namespace blink

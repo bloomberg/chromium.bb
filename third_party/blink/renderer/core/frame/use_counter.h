@@ -26,6 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_USE_COUNTER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_USE_COUNTER_H_
 
+#include <bitset>
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
@@ -33,7 +34,6 @@
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/wtf/bit_vector.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
@@ -190,9 +190,10 @@ class CORE_EXPORT UseCounter {
   CommitState commit_state_;
 
   // Track what features/properties have been recorded.
-  BitVector features_recorded_;
-  BitVector css_recorded_;
-  BitVector animated_css_recorded_;
+  std::bitset<static_cast<size_t>(WebFeature::kNumberOfFeatures)>
+      features_recorded_;
+  std::bitset<numCSSPropertyIDs> css_recorded_;
+  std::bitset<numCSSPropertyIDs> animated_css_recorded_;
 
   HeapHashSet<Member<Observer>> observers_;
 

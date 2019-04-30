@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <bitset>
 #include <memory>
 #include "base/single_thread_task_runner.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -90,25 +91,25 @@ class DedicatedWorkerObjectProxyForTest final
       DedicatedWorkerMessagingProxy* messaging_proxy,
       ParentExecutionContextTaskRunners* parent_execution_context_task_runners)
       : DedicatedWorkerObjectProxy(messaging_proxy,
-                                   parent_execution_context_task_runners),
-        reported_features_(static_cast<int>(WebFeature::kNumberOfFeatures)) {}
+                                   parent_execution_context_task_runners) {}
 
   void CountFeature(WebFeature feature) override {
     // Any feature should be reported only one time.
-    EXPECT_FALSE(reported_features_.QuickGet(static_cast<int>(feature)));
-    reported_features_.QuickSet(static_cast<int>(feature));
+    EXPECT_FALSE(reported_features_[static_cast<size_t>(feature)]);
+    reported_features_.set(static_cast<size_t>(feature));
     DedicatedWorkerObjectProxy::CountFeature(feature);
   }
 
   void CountDeprecation(WebFeature feature) override {
     // Any feature should be reported only one time.
-    EXPECT_FALSE(reported_features_.QuickGet(static_cast<int>(feature)));
-    reported_features_.QuickSet(static_cast<int>(feature));
+    EXPECT_FALSE(reported_features_[static_cast<size_t>(feature)]);
+    reported_features_.set(static_cast<size_t>(feature));
     DedicatedWorkerObjectProxy::CountDeprecation(feature);
   }
 
  private:
-  BitVector reported_features_;
+  std::bitset<static_cast<size_t>(WebFeature::kNumberOfFeatures)>
+      reported_features_;
 };
 
 class DedicatedWorkerMessagingProxyForTest

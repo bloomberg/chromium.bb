@@ -695,10 +695,6 @@ Document::Document(const DocumentInit& initializer,
       needs_to_record_ukm_outlive_time_(false),
       viewport_data_(MakeGarbageCollected<ViewportData>(*this)),
       agent_cluster_id_(base::UnguessableToken::Create()),
-      parsed_feature_policies_(
-          static_cast<int>(mojom::FeaturePolicyFeature::kMaxValue) + 1),
-      potentially_violated_features_(
-          static_cast<size_t>(mojom::FeaturePolicyFeature::kMaxValue) + 1U),
       isolated_world_csp_map_(
           MakeGarbageCollected<
               HeapHashMap<int, Member<ContentSecurityPolicy>>>()) {
@@ -7751,9 +7747,9 @@ LazyLoadImageObserver& Document::EnsureLazyLoadImageObserver() {
 void Document::CountPotentialFeaturePolicyViolation(
     mojom::FeaturePolicyFeature feature) const {
   size_t index = static_cast<size_t>(feature);
-  if (potentially_violated_features_.QuickGet(index))
+  if (potentially_violated_features_[index])
     return;
-  potentially_violated_features_.QuickSet(index);
+  potentially_violated_features_.set(index);
   UMA_HISTOGRAM_ENUMERATION("Blink.UseCounter.FeaturePolicy.PotentialViolation",
                             feature);
 }

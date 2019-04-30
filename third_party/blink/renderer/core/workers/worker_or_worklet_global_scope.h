@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_OR_WORKLET_GLOBAL_SCOPE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_OR_WORKLET_GLOBAL_SCOPE_H_
 
+#include <bitset>
 #include "base/single_thread_task_runner.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -19,7 +20,6 @@
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
 #include "third_party/blink/renderer/core/workers/worker_navigator.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_scheduler.h"
-#include "third_party/blink/renderer/platform/wtf/bit_vector.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
@@ -199,7 +199,8 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   WorkerReportingProxy& reporting_proxy_;
 
   // This is the set of features that this worker has used.
-  BitVector used_features_;
+  std::bitset<static_cast<size_t>(WebFeature::kNumberOfFeatures)>
+      used_features_;
 
   // LocalDOMWindow::modulator_ workaround equivalent.
   // TODO(kouhei): Remove this.
