@@ -92,7 +92,6 @@ class ProxyConnection(IntegrationTest):
       for response in responses:
         self.assertNotHasChromeProxyViaHeader(response)
 
-  @ChromeVersionBetweenInclusiveM(66, 71)
   def testTCPBlackhole(self):
     port = common.GetOpenPort()
     with TestDriver() as t:
