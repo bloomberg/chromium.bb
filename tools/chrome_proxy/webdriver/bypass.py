@@ -59,29 +59,129 @@ class Bypass(IntegrationTest):
 
   # Verify that CORS requests receive a block-once from the data reduction
   # proxy by checking that those requests are retried without data reduction
-  # proxy.
+  # proxy. CORS tests needs to be verified with and without OutOfBlinkCors
+  # feature, since this feature affects sending CORS blocked response headers to
+  # the renderer in different ways.
   def testCorsBypass(self):
+    self.VerifyCorsTestWithOutOfBlinkCors(True)
+
+  def testCorsBypassWithoutOutOfBlinkCors(self):
+    # Verifies CORS behavior without OutOfBlinkCors feature. This feature is
+    # currently under experimentation and once it is fully enabled this test can
+    # be removed.
+    self.VerifyCorsTestWithOutOfBlinkCors(False)
+
+  def VerifyProxyServesPageWithoutBypass(self, test_driver):
+    drp_responses = 0
+    test_driver.LoadURL('http://check.googlezip.net/test.html')
+    for response in test_driver.GetHTTPResponses():
+      self.assertHasProxyHeaders(response)
+      drp_responses += 1
+    self.assertNotEqual(0, drp_responses)
+    test_driver.SleepUntilHistogramHasEntry('PageLoad.Clients.'
+              'DataReductionProxy.ParseTiming.NavigationToFirstContentfulPaint')
+    self.assertEqual({},
+      test_driver.GetHistogram('DataReductionProxy.BlockTypePrimary'))
+    self.assertEqual({},
+      test_driver.GetHistogram('DataReductionProxy.BlockTypeFallback'))
+    self.assertEqual({},
+      test_driver.GetHistogram('DataReductionProxy.BypassTypePrimary'))
+    self.assertEqual({},
+      test_driver.GetHistogram('DataReductionProxy.BypassTypeFallback'))
+
+  def VerifyCorsTestWithOutOfBlinkCors(self, is_out_of_blink_cors_feature_on):
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
+      if is_out_of_blink_cors_feature_on:
+        test_driver.EnableChromeFeature('OutOfBlinkCors')
+      else:
+        test_driver.DisableChromeFeature('OutOfBlinkCors')
+
+      # The CORS test page makes a cross-origin XHR request to a resource for
+      # which DRP requests to bypass proxy for the current request. This 502
+      # block-once bypass will not be received by the DRP bypass logic in the
+      # renderer if proper response headers (Access-Control-Allow-Origin and
+      # Access-Control-Allow-Headers) are not present.
+      # This test verifies that the bypass logic received one block-once bypass,
+      # and the request is retried without DRP. The 502 bypass response cannot
+      # be verified to contain proper response headers set by the DRP since only
+      # the retried response will be picked up by the webdriver.
       test_driver.LoadURL('http://www.gstatic.com/chrome/googlezip/cors/')
 
-      # Navigate to a different page to verify that later requests are not
-      # blocked.
-      test_driver.LoadURL('http://check.googlezip.net/test.html')
-
+      test_driver.SleepUntilHistogramHasEntry(
+        'DataReductionProxy.BlockTypePrimary')
+      # Verify that one request received block-once(bucket=0), and no other
+      # bypasses or fallbacks are received. Explicit checks for response headers
+      # content-type=text/plain, Access-Control-Allow-Origin,
+      # Access-Control-Allow-Headers, Via, Chrome-Proxy cannot be added, since
+      # webdriver does not get the headers for 502 response. However, since
+      # BlockTypePrimary is checked for one block-once entry, we know the DRP
+      # bypass logic has picked it up.
+      blocked = test_driver.GetHistogram('DataReductionProxy.BlockTypePrimary')
+      self.assertEqual(1, blocked['count'])
+      self.assertEqual(blocked['buckets'][0]['low'], 0)
+      self.assertEqual({},
+        test_driver.GetHistogram('DataReductionProxy.BlockTypeFallback'))
+      self.assertEqual({},
+        test_driver.GetHistogram('DataReductionProxy.BypassTypePrimary'))
+      self.assertEqual({},
+        test_driver.GetHistogram('DataReductionProxy.BypassTypeFallback'))
       cors_requests = 0
       same_origin_requests = 0
       for response in test_driver.GetHTTPResponses():
-        # The origin header implies that |response| is a CORS request.
-        if ('origin' not in response.request_headers):
+        # The cross-origin XHR request is a CORS request.
+        if response.request_type == 'XHR':
+          self.assertNotHasChromeProxyViaHeader(response)
+          self.assertEqual(200, response.status)
+          cors_requests = cors_requests + 1
+        else:
           self.assertHasProxyHeaders(response)
           same_origin_requests = same_origin_requests + 1
-        else:
-          self.assertNotHasChromeProxyViaHeader(response)
-          cors_requests = cors_requests + 1
       # Verify that both CORS and same origin requests were seen.
       self.assertNotEqual(0, same_origin_requests)
       self.assertNotEqual(0, cors_requests)
+
+      # Navigate to a different page to verify that later requests are not
+      # blocked.
+      self.VerifyProxyServesPageWithoutBypass(test_driver)
+
+  # Tests that data reduction proxy bypasses are not blocked by CORB. Since the
+  # bypass/fallback handling is in the renderer process, CORB failures will skip
+  # the bypasses/fallbacks and the resource will not be retried without data
+  # reduction proxy.
+  def testBypassNotBlockedByCorb(self):
+    with TestDriver() as test_driver:
+      test_driver.AddChromeArg('--enable-spdy-proxy-auth')
+
+      # The CORB test page loads an <img> to a cross-origin resource for which
+      # DRP requests to bypass proxy for the current request. This 502
+      # block-once bypass will not be received by the DRP bypass logic in the
+      # renderer, if CORB blocks it based on mislabeled content-type or the
+      # actual type observed from sniffing the body.
+      test_driver.LoadURL('http://www.gstatic.com/chrome/googlezip/corb.html')
+      drp_responses = 0
+      for response in test_driver.GetHTTPResponses():
+          if response.ResponseHasViaHeader():
+            self.assertHasProxyHeaders(response)
+            drp_responses += 1
+      self.assertNotEqual(0, drp_responses)
+      test_driver.SleepUntilHistogramHasEntry(
+        'DataReductionProxy.BlockTypePrimary')
+      # Verify that one request received block-once (bucket=0), and no other
+      # bypasses or fallbacks are received.
+      blocked = test_driver.GetHistogram('DataReductionProxy.BlockTypePrimary')
+      self.assertEqual(1, blocked['count'])
+      self.assertEqual(blocked['buckets'][0]['low'], 0)
+      self.assertEqual({},
+        test_driver.GetHistogram('DataReductionProxy.BlockTypeFallback'))
+      self.assertEqual({},
+        test_driver.GetHistogram('DataReductionProxy.BypassTypePrimary'))
+      self.assertEqual({},
+        test_driver.GetHistogram('DataReductionProxy.BypassTypeFallback'))
+
+      # Navigate to a different page to verify that later requests are not
+      # blocked.
+      self.VerifyProxyServesPageWithoutBypass(test_driver)
 
   # Verify that when an origin times out using Data Saver, the request is
   # fetched directly and data saver is bypassed only for one request.

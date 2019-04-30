@@ -594,7 +594,7 @@ class TestDriver:
     Returns:
       A dictionary object containing information about the histogram.
     """
-    js_query = 'statsCollectionController.getBrowserHistogram("%s")' % histogram
+    js_query = 'statsCollectionController.getHistogram("%s")' % histogram
     string_response = self.ExecuteJavascriptStatement(js_query, timeout)
     self._logger.debug('Got %s histogram=%s', histogram, string_response)
     return json.loads(string_response)
