@@ -349,6 +349,12 @@ public class ChromePreferenceManager {
      */
     public static final String IMMERSIVE_UI_MODE_ENABLED = "immersive_ui_mode_enabled";
 
+    /**
+     * The total number of browsing sessions in touchless mode.
+     */
+    public static final String TOUCHLESS_BROWSING_SESSION_COUNT =
+            "touchless_browsing_session_count";
+
     private static class LazyHolder {
         static final ChromePreferenceManager INSTANCE = new ChromePreferenceManager();
     }
