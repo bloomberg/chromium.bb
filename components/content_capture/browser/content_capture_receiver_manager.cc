@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "components/content_capture/browser/content_capture_receiver.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 
@@ -86,10 +87,12 @@ void ContentCaptureReceiverManager::ReadyToCommitNavigation(
     content::NavigationHandle* navigation_handle) {
   auto* receiver =
       ContentCaptureReceiverForFrame(navigation_handle->GetRenderFrameHost());
-  if (ShouldCapture(navigation_handle->GetURL()))
-    receiver->StartCapture();
-  else
+  if (web_contents()->GetBrowserContext()->IsOffTheRecord() ||
+      !ShouldCapture(navigation_handle->GetURL())) {
     receiver->StopCapture();
+    return;
+  }
+  receiver->StartCapture();
 }
 
 void ContentCaptureReceiverManager::DidCaptureContent(
