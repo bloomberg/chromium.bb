@@ -31,6 +31,12 @@
     <dimen name="most_likely_tile_size">40dp</dimen>
     <!-- Desired 24dp, but the edge spacer is also in effect. 8 + 16 = 24 -->
     <dimen name="above_the_fold_bottom_margin">16dp</dimen>
+    <dimen name="most_likely_quantized_icon_size_large">24dp</dimen>
+    <dimen name="most_likely_quantized_icon_size_small">18dp</dimen>
+    <!-- 6dp chosen so that the icon is large in the inner 3 positions and small in
+         the outer two positions. -->
+    <dimen name="most_likely_quantized_icon_margin">6dp</dimen>
+
 
     <!-- Article specific dimensions. -->
     <dimen name="touchless_snippets_padding">12dp</dimen>
