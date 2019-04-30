@@ -229,6 +229,9 @@ class ArcAppLauncherBrowserTest : public extensions::ExtensionBrowserTest {
   void SendPackageUpdated(const std::string& package_name, bool multi_app) {
     app_host()->OnPackageAppListRefreshed(
         package_name, GetTestAppsList(package_name, multi_app));
+
+    // Ensure async callbacks from the resulting observer calls are run.
+    base::RunLoop().RunUntilIdle();
   }
 
   void SendPackageRemoved(const std::string& package_name) {
