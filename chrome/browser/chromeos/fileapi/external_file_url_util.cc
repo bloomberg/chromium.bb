@@ -28,7 +28,8 @@ bool IsExternalFileURLType(storage::FileSystemType type, bool force) {
   return type == storage::kFileSystemTypeDrive ||
          type == storage::kFileSystemTypeDeviceMediaAsFileStorage ||
          type == storage::kFileSystemTypeProvided ||
-         type == storage::kFileSystemTypeArcContent || force;
+         type == storage::kFileSystemTypeArcContent ||
+         type == storage::kFileSystemTypeArcDocumentsProvider || force;
 }
 
 GURL FileSystemURLToExternalFileURL(
