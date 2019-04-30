@@ -32,11 +32,6 @@ namespace internal {
 
 namespace {
 
-enum EventType {
-  EVENT_ENTER,
-  EVENT_EXIT
-};
-
 class MouseEnterExitEvent : public ui::MouseEvent {
  public:
   MouseEnterExitEvent(const ui::MouseEvent& event, ui::EventType type)
