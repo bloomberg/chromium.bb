@@ -282,6 +282,10 @@ typedef NS_ENUM(int, TrailingButtonState) {
   self.locationBarSteadyView.alpha = hidden ? 0 : 1;
 }
 
+- (void)setSteadyViewLeadingButtonHidden:(BOOL)hidden {
+  [self.locationBarSteadyView.leadingButton displayBadge:!hidden animated:NO];
+}
+
 - (void)setEditViewFaded:(BOOL)hidden {
   self.editView.alpha = hidden ? 0 : 1;
 }

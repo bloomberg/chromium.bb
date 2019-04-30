@@ -26,6 +26,7 @@
 - (void)resetSteadyViewOffsetAndOffsetEditViewToMatch;
 
 - (void)setSteadyViewFaded:(BOOL)hidden;
+- (void)setSteadyViewLeadingButtonHidden:(BOOL)hidden;
 - (void)setEditViewFaded:(BOOL)hidden;
 - (void)setEditViewHidden:(BOOL)hidden;
 - (void)setSteadyViewHidden:(BOOL)hidden;

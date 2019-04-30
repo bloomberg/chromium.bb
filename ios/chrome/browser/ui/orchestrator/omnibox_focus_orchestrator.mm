@@ -76,6 +76,7 @@
   // Cleans up after the animation.
   void (^cleanup)() = ^{
     [self.locationBarAnimatee setEditViewHidden:NO];
+    [self.locationBarAnimatee setSteadyViewLeadingButtonHidden:NO];
     [self.locationBarAnimatee setSteadyViewHidden:YES];
     [self.locationBarAnimatee resetTransforms];
     [self.locationBarAnimatee setSteadyViewFaded:NO];
@@ -90,6 +91,10 @@
     // Make edit view transparent, but not hidden.
     [self.locationBarAnimatee setEditViewHidden:NO];
     [self.locationBarAnimatee setEditViewFaded:YES];
+    // Hide leading button before the transform to prevent it from being visible
+    // outside of the location bar as the steadView moves outside to the leading
+    // side of the location bar.
+    [self.locationBarAnimatee setSteadyViewLeadingButtonHidden:YES];
     [self.editViewAnimatee setLeadingIconFaded:YES];
     [self.editViewAnimatee setClearButtonFaded:YES];
 
@@ -156,6 +161,7 @@
   void (^cleanup)() = ^{
     [self.locationBarAnimatee setEditViewHidden:YES];
     [self.locationBarAnimatee setSteadyViewHidden:NO];
+    [self.locationBarAnimatee setSteadyViewLeadingButtonHidden:NO];
     [self.locationBarAnimatee resetTransforms];
     [self.locationBarAnimatee setSteadyViewFaded:NO];
     [self.editViewAnimatee setLeadingIconFaded:NO];
@@ -167,6 +173,10 @@
     [self.locationBarAnimatee offsetSteadyViewToMatchEditView];
     // Make steady view transparent, but not hidden.
     [self.locationBarAnimatee setSteadyViewHidden:NO];
+    // Hide leading button until the steadyView transforms fully back into the
+    // location bar to prevent it from being visible outside of the location
+    // bar.
+    [self.locationBarAnimatee setSteadyViewLeadingButtonHidden:YES];
     [self.locationBarAnimatee setSteadyViewFaded:YES];
     [self.editViewAnimatee setLeadingIconFaded:NO];
     [self.editViewAnimatee setClearButtonFaded:NO];
