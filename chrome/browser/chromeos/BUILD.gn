@@ -1074,6 +1074,8 @@ source_set("chromeos") {
     "input_method/candidate_window_controller_impl.h",
     "input_method/component_extension_ime_manager_impl.cc",
     "input_method/component_extension_ime_manager_impl.h",
+    "input_method/ime_fallback_engine.cc",
+    "input_method/ime_fallback_engine.h",
     "input_method/input_method_configuration.cc",
     "input_method/input_method_configuration.h",
     "input_method/input_method_delegate_impl.cc",

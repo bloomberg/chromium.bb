@@ -28,6 +28,7 @@
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/input_method/candidate_window_controller.h"
 #include "chrome/browser/chromeos/input_method/component_extension_ime_manager_impl.h"
+#include "chrome/browser/chromeos/input_method/ime_fallback_engine.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -1099,6 +1100,10 @@ void InputMethodManagerImpl::ChangeInputMethodInternal(
     // it can use the fallback system virtual keyboard UI.
     state_->DisableInputView();
     ReloadKeyboard();
+    // In case of no engine, activate the no-op engine for ime mojo connection.
+    if (!ime_fallback_engine_)
+      ime_fallback_engine_ = std::make_unique<ImeFallbackEngine>();
+    ime_fallback_engine_->Activate();
   }
 
   // Change the keyboard layout to a preferred layout for the input method.

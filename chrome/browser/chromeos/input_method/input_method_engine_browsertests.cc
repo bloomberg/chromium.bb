@@ -284,6 +284,14 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
                        APIArgumentTest) {
+  // This test doesn't support Mojo-based IMF.
+  // TODO(crbug.com/956825): Makes real end to end test without mocking the
+  // input context handler. The test should mock the TextInputClient instance
+  // hooked up with InputMethodChromeOS, or even using the real TextInputClient
+  // if possible.
+  if (features::IsMojoImfEnabled())
+    return;
+
   LoadTestInputMethod();
 
   InputMethodManager::Get()->GetActiveIMEState()->ChangeInputMethod(

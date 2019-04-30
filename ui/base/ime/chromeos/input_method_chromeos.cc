@@ -107,6 +107,12 @@ class InputMethodChromeOS::MojoHelper : public ime::mojom::ImeEngineClient {
     if (ime_engine_) {
       Reset();
       Connect();
+      if (!im_->IsTextInputTypeNone()) {
+        ime_engine_->StartInput(ime::mojom::EditorInfo::New(
+            im_->GetTextInputType(), im_->GetTextInputMode(),
+            im_->GetTextInputFlags(), im_->GetClientFocusReason(),
+            im_->GetClientShouldDoLearning()));
+      }
     }
   }
 
