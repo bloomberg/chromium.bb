@@ -96,7 +96,7 @@ video::-webkit-media-controls.sizing-small div[pseudo="-webkit-media-controls-pa
   background-size: auto 92px;
 }
 
-video::-webkit-media-controls.sizing-medium div[pseudo="-webkit-media-controls-panel" i] {
+video::-webkit-media-controls.sizing-large div[pseudo="-webkit-media-controls-panel" i] {
   background-size: auto 200px;
 }
 
@@ -114,7 +114,7 @@ video::-webkit-media-controls.sizing-small div[pseudo="-webkit-media-controls-pa
   background-size: auto 120px, auto 92px;
 }
 
-video::-webkit-media-controls.sizing-medium div[pseudo="-webkit-media-controls-panel" i].scrubbing-message {
+video::-webkit-media-controls.sizing-large div[pseudo="-webkit-media-controls-panel" i].scrubbing-message {
   background-size: auto 120px, auto 200px;
 }
 
@@ -285,9 +285,9 @@ audio::-webkit-media-controls input[pseudo="-internal-media-controls-overflow-bu
   background-color: rgba(32, 33, 36, 0.06);
 }
 
-video::-webkit-media-controls.sizing-medium input[pseudo="-webkit-media-controls-play-button" i]::-internal-media-controls-button-hover-background,
-video::-webkit-media-controls.sizing-medium input[pseudo="-webkit-media-controls-fullscreen-button" i]::-internal-media-controls-button-hover-background,
-video::-webkit-media-controls.sizing-medium input[pseudo="-internal-media-controls-overflow-button" i]::-internal-media-controls-button-hover-background {
+video::-webkit-media-controls.sizing-large input[pseudo="-webkit-media-controls-play-button" i]::-internal-media-controls-button-hover-background,
+video::-webkit-media-controls.sizing-large input[pseudo="-webkit-media-controls-fullscreen-button" i]::-internal-media-controls-button-hover-background,
+video::-webkit-media-controls.sizing-large input[pseudo="-internal-media-controls-overflow-button" i]::-internal-media-controls-button-hover-background {
   background-size: 32px;
   width: 44px;
   height: 44px;
@@ -306,11 +306,11 @@ video::-webkit-media-controls.sizing-small input[pseudo="-internal-media-control
   min-width: 48px;
 }
 
-video::-webkit-media-controls.sizing-medium input[pseudo="-webkit-media-controls-play-button" i],
-video::-webkit-media-controls.sizing-medium input[pseudo="-webkit-media-controls-mute-button" i],
-video::-webkit-media-controls.sizing-medium input[pseudo="-webkit-media-controls-fullscreen-button" i],
-video::-webkit-media-controls.sizing-medium input[pseudo="-internal-media-controls-display-cutout-fullscreen-button" i],
-video::-webkit-media-controls.sizing-medium input[pseudo="-internal-media-controls-overflow-button" i] {
+video::-webkit-media-controls.sizing-large input[pseudo="-webkit-media-controls-play-button" i],
+video::-webkit-media-controls.sizing-large input[pseudo="-webkit-media-controls-mute-button" i],
+video::-webkit-media-controls.sizing-large input[pseudo="-webkit-media-controls-fullscreen-button" i],
+video::-webkit-media-controls.sizing-large input[pseudo="-internal-media-controls-display-cutout-fullscreen-button" i],
+video::-webkit-media-controls.sizing-large input[pseudo="-internal-media-controls-overflow-button" i] {
   width: 64px;
   height: 64px;
   min-width: 64px;
@@ -323,7 +323,7 @@ video::-webkit-media-controls.sizing-small div[pseudo="-internal-media-controls-
   padding: 0 0 0 16px;
 }
 
-video::-webkit-media-controls.sizing-medium div[pseudo="-internal-media-controls-button-panel" i] {
+video::-webkit-media-controls.sizing-large div[pseudo="-internal-media-controls-button-panel" i] {
   height: 64px;
   line-height: 64px;
   padding: 0 16px 0 32px;
@@ -520,16 +520,16 @@ video::-webkit-media-controls [pseudo="-webkit-media-controls-volume-control-con
   opacity: 0;
 }
 
-video::-webkit-media-controls.sizing-medium div[pseudo="-webkit-media-controls-volume-control-container" i] {
+video::-webkit-media-controls.sizing-large div[pseudo="-webkit-media-controls-volume-control-container" i] {
   height: 64px;
   min-width: 132px;
 }
 
-video::-webkit-media-controls.sizing-medium div[pseudo="-webkit-media-controls-volume-control-container" i].closed {
+video::-webkit-media-controls.sizing-large div[pseudo="-webkit-media-controls-volume-control-container" i].closed {
   min-width: 64px;
 }
 
-video::-webkit-media-controls.sizing-medium div[pseudo="-webkit-media-controls-volume-control-hover-background" i] {
+video::-webkit-media-controls.sizing-large div[pseudo="-webkit-media-controls-volume-control-hover-background" i] {
   height: 44px;
   width: 124px;
   border-radius: 22px;
@@ -626,7 +626,7 @@ video::-webkit-media-controls.sizing-small input[pseudo="-webkit-media-controls-
   padding: 0 16px 20px 16px;
 }
 
-video::-webkit-media-controls.sizing-medium input[pseudo="-webkit-media-controls-timeline" i] {
+video::-webkit-media-controls.sizing-large input[pseudo="-webkit-media-controls-timeline" i] {
   padding: 0 32px 20px 32px;
 }
 
@@ -794,7 +794,7 @@ video::-webkit-media-controls-volume-slider.closed {
   transition: width 0.3s ease, opacity 0.28s step-end;
 }
 
-video::-webkit-media-controls.sizing-medium input[pseudo="-webkit-media-controls-volume-slider" i] {
+video::-webkit-media-controls.sizing-large input[pseudo="-webkit-media-controls-volume-slider" i] {
   padding: 30px 0; /* (64px button panel height - 4px slider height) / 2  */
 }
 
@@ -892,7 +892,7 @@ video::-internal-media-controls-overflow-menu-list-item {
 }
 
 video::-webkit-media-controls.sizing-small label[pseudo="-internal-media-controls-overflow-menu-list-item" i] input,
-video::-webkit-media-controls.sizing-medium label[pseudo="-internal-media-controls-overflow-menu-list-item" i] input {
+video::-webkit-media-controls.sizing-large label[pseudo="-internal-media-controls-overflow-menu-list-item" i] input {
   margin-left: 0;
   margin-right: 16px;
   width: 24px;
