@@ -555,6 +555,12 @@ Polymer({
     this.hideSpellCheckLanguages_ = this.spellCheckLanguages_.length === 1 &&
         !!this.spellCheckLanguages_[0].spellCheckEnabled &&
         !!this.getPref('browser.enable_spellchecking').value;
+
+    if (this.spellCheckLanguages_.length === 0) {
+      // If there are no supported spell check languages, automatically turn
+      // off spell check to indicate no spell check will happen.
+      this.setPrefValue('browser.enable_spellchecking', false);
+    }
   },
 
   /** @private */
