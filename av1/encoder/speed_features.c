@@ -446,7 +446,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
   // TODO(debargha): Test, tweak and turn on either 1 or 2
   sf->inter_mode_rd_model_estimation = 0;
   sf->inter_mode_rd_model_estimation_adaptive = 0;
-  sf->prune_mode_search_simple_translation = 0;
+  sf->prune_mode_search_simple_translation = 1;
   sf->two_loop_comp_search = 0;
 
   sf->prune_ref_frame_for_rect_partitions = !boosted;
