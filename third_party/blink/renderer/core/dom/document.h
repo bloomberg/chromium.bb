@@ -605,7 +605,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   // Corresponds to "9. Abort the active document of browsingContext."
   // https://html.spec.whatwg.org/C/#navigate
-  void Abort();
+  void Abort(bool for_form_submission);
 
   void CheckCompleted();
 

@@ -3439,8 +3439,35 @@ bool Document::ShouldComplete() {
          AllDescendantsAreComplete(frame_);
 }
 
-void Document::Abort() {
-  CancelParsing();
+void Document::Abort(bool for_form_submission) {
+  // The spec says that form submissions should start navigating
+  // asynchronously, but we currently start the navigation immediately. This
+  // mostly works. However, starting a navigation entails aborting the current
+  // document (i.e., this function), and compatibility seems to require a very
+  // weird kind of abort for form submissions. In
+  // https://bugs.webkit.org/show_bug.cgi?id=45627, we concluded that form
+  // submission should synchronously cancel parsing, and added a regression test
+  // for that behavior in fast/loader/form-submit-aborts-parsing.html, However,
+  // https://crbug.com/955556 shows that a document.write() immediately after a
+  // form submission should not implicitly open() a new document, thus
+  // cancelling the form submission, as tested in
+  // fast/loader/document-write-after-form-submit.html. Firefox passes both
+  // these tests, so matching their behavior seems to make sense. It appears
+  // that, unlike other aborts, we don't want to hard-detach the parser, but
+  // want it to let it unwind slightly more gently. Therefore, call
+  // DocumentParser::StopParsing() and suppress the load event, instead of
+  // calling CancelParsing().
+  // TODO(japhet): This special case is designed to be mergeable to M75, but
+  // should be fixed before M76 branches.
+  if (for_form_submission) {
+    if (!LoadEventFinished())
+      load_event_progress_ = kLoadEventCompleted;
+    if (parser_)
+      parser_->StopParsing();
+    SetParsingState(kFinishedParsing);
+  } else {
+    CancelParsing();
+  }
   CheckCompletedInternal();
 }
 
