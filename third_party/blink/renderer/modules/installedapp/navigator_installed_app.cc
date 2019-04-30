@@ -55,11 +55,11 @@ class RelatedAppArray {
   STATIC_ONLY(RelatedAppArray);
 
  public:
-  using WebType = const WebVector<WebRelatedApplication>&;
+  using WebType = const Vector<WebRelatedApplication>&;
 
   static HeapVector<Member<RelatedApplication>> Take(
       ScriptPromiseResolver*,
-      const WebVector<WebRelatedApplication>& web_info) {
+      const Vector<WebRelatedApplication>& web_info) {
     HeapVector<Member<RelatedApplication>> applications;
     for (const auto& web_application : web_info)
       applications.push_back(MakeGarbageCollected<RelatedApplication>(

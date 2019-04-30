@@ -13,7 +13,6 @@
 #include "third_party/blink/public/mojom/installedapp/related_application.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/installedapp/web_related_application.h"
 #include "third_party/blink/public/platform/web_callbacks.h"
-#include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -23,12 +22,10 @@
 namespace blink {
 
 class WebURL;
-template <typename T>
-class WebVector;
 struct Manifest;
 
 using AppInstalledCallbacks =
-    WebCallbacks<const WebVector<WebRelatedApplication>&, void>;
+    WebCallbacks<const Vector<WebRelatedApplication>&, void>;
 
 class MODULES_EXPORT InstalledAppController final
     : public GarbageCollectedFinalized<InstalledAppController>,
@@ -67,7 +64,7 @@ class MODULES_EXPORT InstalledAppController final
 
   // Callback from the InstalledAppProvider mojo service.
   void OnFilterInstalledApps(std::unique_ptr<blink::AppInstalledCallbacks>,
-                             WTF::Vector<mojom::blink::RelatedApplicationPtr>);
+                             Vector<mojom::blink::RelatedApplicationPtr>);
 
   // Handle to the InstalledApp mojo service.
   mojom::blink::InstalledAppProviderPtr provider_;

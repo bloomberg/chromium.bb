@@ -9,7 +9,6 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/blink/public/platform/web_string.h"
-#include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/manifest/manifest_manager.h"
@@ -64,7 +63,7 @@ void InstalledAppController::OnGetManifestForRelatedApps(
     std::unique_ptr<AppInstalledCallbacks> callbacks,
     const WebURL& /*url*/,
     const Manifest& manifest) {
-  WTF::Vector<mojom::blink::RelatedApplicationPtr> mojo_related_apps;
+  Vector<mojom::blink::RelatedApplicationPtr> mojo_related_apps;
   for (const Manifest::RelatedApplication& related_application :
        manifest.related_applications) {
     mojom::blink::RelatedApplicationPtr converted_application(
@@ -98,8 +97,8 @@ void InstalledAppController::OnGetManifestForRelatedApps(
 
 void InstalledAppController::OnFilterInstalledApps(
     std::unique_ptr<blink::AppInstalledCallbacks> callbacks,
-    WTF::Vector<mojom::blink::RelatedApplicationPtr> result) {
-  WTF::Vector<blink::WebRelatedApplication> applications;
+    Vector<mojom::blink::RelatedApplicationPtr> result) {
+  Vector<blink::WebRelatedApplication> applications;
   for (const auto& res : result) {
     blink::WebRelatedApplication app;
     app.platform = res->platform;
@@ -107,8 +106,7 @@ void InstalledAppController::OnFilterInstalledApps(
     app.id = res->id;
     applications.push_back(app);
   }
-  callbacks->OnSuccess(
-      blink::WebVector<blink::WebRelatedApplication>(applications));
+  callbacks->OnSuccess(applications);
 }
 
 void InstalledAppController::Trace(blink::Visitor* visitor) {
