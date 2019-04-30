@@ -35,8 +35,6 @@ source_set("net") {
     "request_tracker_factory_impl.mm",
     "request_tracker_impl.h",
     "request_tracker_impl.mm",
-    "web_http_protocol_handler_delegate.h",
-    "web_http_protocol_handler_delegate.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]

@@ -340,7 +340,6 @@ source_set("ios_web_net_unittests") {
     "net/crw_ssl_status_updater_unittest.mm",
     "net/request_group_util_unittest.mm",
     "net/request_tracker_impl_unittest.mm",
-    "net/web_http_protocol_handler_delegate_unittest.mm",
   ]
 }
 
