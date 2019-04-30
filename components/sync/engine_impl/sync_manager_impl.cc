@@ -104,23 +104,14 @@ constexpr int GetStringConsistencyUmaBucket(
 // information identical to the Directory's value, for the fields that are
 // stored in both. We mostly care about cache GUID and store birthday.
 void RecordConsistencyBetweenDirectoryAndPrefs(
-    syncable::DirOpenResult open_result,
     const syncable::Directory* directory,
     const SyncManager::InitArgs* args) {
   DCHECK(directory);
 
-  std::string directory_cache_guid;
-  std::string directory_birthday;
-
-  // We mimic the directory being empty if it was just opened (OPENED_NEW),
-  // because that means a random cache GUID was just generated and it's not
-  // possible to match empty prefs.
-  DCHECK(open_result == syncable::OPENED_EXISTING ||
-         open_result == syncable::OPENED_NEW);
-  if (open_result == syncable::OPENED_EXISTING) {
-    directory_cache_guid = directory->legacy_cache_guid_for_uma();
-    directory_birthday = directory->legacy_store_birthday_for_uma();
-  }
+  const std::string directory_cache_guid =
+      directory->legacy_cache_guid_for_uma();
+  const std::string directory_birthday =
+      directory->legacy_store_birthday_for_uma();
 
   const StringConsistency cache_guid_consistency =
       CompareStringsForConsistency(args->cache_guid, directory_cache_guid);
@@ -468,7 +459,7 @@ bool SyncManagerImpl::OpenDirectory(const InitArgs* args) {
     return false;
   }
 
-  RecordConsistencyBetweenDirectoryAndPrefs(open_result, directory(), args);
+  RecordConsistencyBetweenDirectoryAndPrefs(directory(), args);
 
   // Unapplied datatypes (those that do not have initial sync ended set) get
   // re-downloaded during any configuration. But, it's possible for a datatype
