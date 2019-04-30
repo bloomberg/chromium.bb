@@ -86,7 +86,6 @@ class DistilledPagePrefs {
   // Notifies all Observers of new font scaling.
   void NotifyOnChangeFontScaling(float scaling);
 
-
   PrefService* pref_service_;
   base::ObserverList<Observer>::Unchecked observers_;
 

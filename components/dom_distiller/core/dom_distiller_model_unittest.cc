@@ -116,8 +116,8 @@ TEST(DomDistillerModelTest, TestUrlToMultipleEntries) {
   entry2.mutable_pages(0)->set_url("http://example.com/foo1");
   changes_to_apply.push_back(syncer::SyncChange(
       FROM_HERE, syncer::SyncChange::ACTION_UPDATE, CreateLocalData(entry2)));
-  model.ApplyChangesToModel(
-      changes_to_apply, &changes_applied, &changes_missing);
+  model.ApplyChangesToModel(changes_to_apply, &changes_applied,
+                            &changes_missing);
 
   EXPECT_TRUE(model.GetEntryById(entry1.entry_id(), &found_entry));
   ASSERT_TRUE(IsEntryValid(found_entry));

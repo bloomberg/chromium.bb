@@ -87,6 +87,6 @@ class InMemoryContentStore : public DistilledContentStore {
   UrlMap url_to_id_;
 };
 
-}  // dom_distiller
+}  // namespace dom_distiller
 
 #endif  // COMPONENTS_DOM_DISTILLER_CORE_DOM_DISTILLER_CONTENT_CACHE_H_

@@ -29,9 +29,9 @@ namespace viewer {
 // considered unsafe, so callers must ensure rendering it does not compromise
 // Chrome.
 const std::string GetUnsafeArticleTemplateHtml(
-    const std::string original_url,
-    const DistilledPagePrefs::Theme theme,
-    const DistilledPagePrefs::FontFamily font_family);
+    const std::string& original_url,
+    DistilledPagePrefs::Theme theme,
+    DistilledPagePrefs::FontFamily font_family);
 
 // Returns the JavaScript to place a full article's HTML on the page. The
 // returned HTML should be considered unsafe, so callers must ensure
@@ -45,7 +45,7 @@ const std::string GetUnsafeArticleContentJs(
 // article.
 const std::string GetUnsafeIncrementalDistilledPageJs(
     const DistilledPageProto* page_proto,
-    const bool is_last_page);
+    bool is_last_page);
 
 // Returns the JavaScript to set the title of the distilled article page.
 const std::string GetSetTitleJs(std::string title);
@@ -60,7 +60,7 @@ const std::string GetErrorPageJs();
 // Returns a JavaScript blob for controlling the "in-progress" indicator when
 // viewing a partially-distilled page. |is_last_page| indicates whether this is
 // the last page of the article (i.e. loading indicator should be removed).
-const std::string GetToggleLoadingIndicatorJs(const bool is_last_page);
+const std::string GetToggleLoadingIndicatorJs(bool is_last_page);
 
 // Returns the default CSS to be used for a viewer.
 const std::string GetCss();
@@ -93,7 +93,6 @@ const std::string GetDistilledPageThemeJs(DistilledPagePrefs::Theme theme);
 const std::string GetDistilledPageFontScalingJs(float scaling);
 
 }  // namespace viewer
-
 }  // namespace dom_distiller
 
 #endif  // COMPONENTS_DOM_DISTILLER_CORE_VIEWER_H_

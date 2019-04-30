@@ -30,6 +30,7 @@
 #include "url/gurl.h"
 
 namespace dom_distiller {
+namespace viewer {
 
 namespace {
 
@@ -92,8 +93,8 @@ const std::string GetFontCssClass(DistilledPagePrefs::FontFamily font_family) {
 void EnsureNonEmptyContent(std::string* content) {
   UMA_HISTOGRAM_BOOLEAN("DomDistiller.PageHasDistilledData", !content->empty());
   if (content->empty()) {
-    *content = l10n_util::GetStringUTF8(
-        IDS_DOM_DISTILLER_VIEWER_NO_DATA_CONTENT);
+    *content =
+        l10n_util::GetStringUTF8(IDS_DOM_DISTILLER_VIEWER_NO_DATA_CONTENT);
   }
 }
 
@@ -121,41 +122,36 @@ std::string ReplaceHtmlTemplateValues(
   substitutions.push_back(
       l10n_util::GetStringUTF8(IDS_DOM_DISTILLER_VIEWER_LOADING_TITLE));  // $1
 
-  substitutions.push_back(css.str());                                     // $2
+  substitutions.push_back(css.str());  // $2
   substitutions.push_back(GetThemeCssClass(theme) + " " +
-                          GetFontCssClass(font_family));                  // $3
+                          GetFontCssClass(font_family));  // $3
 
   substitutions.push_back(
       l10n_util::GetStringUTF8(IDS_DOM_DISTILLER_VIEWER_LOADING_TITLE));  // $4
-  substitutions.push_back(
-      l10n_util::GetStringUTF8(
-          IDS_DOM_DISTILLER_JAVASCRIPT_DISABLED_CONTENT));                // $5
+  substitutions.push_back(l10n_util::GetStringUTF8(
+      IDS_DOM_DISTILLER_JAVASCRIPT_DISABLED_CONTENT));  // $5
 
-  substitutions.push_back(svg.str());                                     // $6
+  substitutions.push_back(svg.str());  // $6
 
-  substitutions.push_back(original_url);                                  // $7
-  substitutions.push_back(
-      l10n_util::GetStringUTF8(
-          IDS_DOM_DISTILLER_VIEWER_CLOSE_READER_VIEW));                   // $8
+  substitutions.push_back(original_url);  // $7
+  substitutions.push_back(l10n_util::GetStringUTF8(
+      IDS_DOM_DISTILLER_VIEWER_CLOSE_READER_VIEW));  // $8
 
   return base::ReplaceStringPlaceholders(html_template, substitutions, nullptr);
 }
 
 }  // namespace
 
-namespace viewer {
-
 const std::string GetUnsafeIncrementalDistilledPageJs(
     const DistilledPageProto* page_proto,
-    const bool is_last_page) {
+    bool is_last_page) {
   std::string output(page_proto->html());
   EnsureNonEmptyContent(&output);
   base::Value value(output);
   base::JSONWriter::Write(value, &output);
   std::string page_update("addToPage(");
   page_update += output + ");";
-  return page_update + GetToggleLoadingIndicatorJs(
-      is_last_page);
+  return page_update + GetToggleLoadingIndicatorJs(is_last_page);
 }
 
 const std::string GetErrorPageJs() {
@@ -187,16 +183,16 @@ const std::string GetSetTextDirectionJs(const std::string& direction) {
   return "setTextDirection(" + output + ");";
 }
 
-const std::string GetToggleLoadingIndicatorJs(const bool is_last_page) {
+const std::string GetToggleLoadingIndicatorJs(bool is_last_page) {
   if (is_last_page)
     return "showLoadingIndicator(true);";
   return "showLoadingIndicator(false);";
 }
 
 const std::string GetUnsafeArticleTemplateHtml(
-    const std::string original_url,
-    const DistilledPagePrefs::Theme theme,
-    const DistilledPagePrefs::FontFamily font_family) {
+    const std::string& original_url,
+    DistilledPagePrefs::Theme theme,
+    DistilledPagePrefs::FontFamily font_family) {
   return ReplaceHtmlTemplateValues(original_url, theme, font_family);
 }
 
@@ -294,5 +290,4 @@ const std::string GetDistilledPageFontScalingJs(float scaling) {
 }
 
 }  // namespace viewer
-
 }  // namespace dom_distiller

@@ -7,13 +7,15 @@
 #include "base/logging.h"
 #include "components/sync/model/sync_change.h"
 
-using sync_pb::EntitySpecifics;
 using sync_pb::ArticlePage;
 using sync_pb::ArticleSpecifics;
+using sync_pb::EntitySpecifics;
 
 namespace dom_distiller {
 
-bool IsEntryPageValid(const ArticleEntryPage& page) { return page.has_url(); }
+bool IsEntryPageValid(const ArticleEntryPage& page) {
+  return page.has_url();
+}
 
 bool IsEntryValid(const ArticleEntry& entry) {
   if (!entry.has_entry_id())

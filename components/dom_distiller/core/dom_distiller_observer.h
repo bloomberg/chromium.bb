@@ -18,11 +18,7 @@ class DomDistillerObserver {
  public:
   // An update to an article entry.
   struct ArticleUpdate {
-    enum UpdateType {
-      ADD,
-      UPDATE,
-      REMOVE
-    };
+    enum UpdateType { ADD, UPDATE, REMOVE };
     std::string entry_id;
     UpdateType update_type;
   };

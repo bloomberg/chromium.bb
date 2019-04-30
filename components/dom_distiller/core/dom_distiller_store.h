@@ -101,7 +101,8 @@ class DomDistillerStore : public DomDistillerStoreInterface {
                    syncer::SyncChange::SyncChangeType changeType);
 
   syncer::SyncMergeResult MergeDataWithModel(
-      const syncer::SyncDataList& data, syncer::SyncChangeList* changes_applied,
+      const syncer::SyncDataList& data,
+      syncer::SyncChangeList* changes_applied,
       syncer::SyncChangeList* changes_missing);
 
   // Convert a SyncDataList to a SyncChangeList of add or update changes based

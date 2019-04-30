@@ -21,8 +21,7 @@ MockDistillerFactory::MockDistillerFactory() {}
 MockDistillerFactory::~MockDistillerFactory() {}
 
 FakeDistiller::FakeDistiller(bool execute_callback)
-    : execute_callback_(execute_callback),
-      destruction_allowed_(true) {
+    : execute_callback_(execute_callback), destruction_allowed_(true) {
   EXPECT_CALL(*this, Die()).Times(testing::AnyNumber());
 }
 

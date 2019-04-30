@@ -231,7 +231,8 @@ bool DomDistillerStore::ApplyChangesToDatabase(
 }
 
 SyncMergeResult DomDistillerStore::MergeDataWithModel(
-    const SyncDataList& data, SyncChangeList* changes_applied,
+    const SyncDataList& data,
+    SyncChangeList* changes_applied,
     SyncChangeList* changes_missing) {
   // TODO(cjhopman): This naive merge algorithm could cause flip-flopping
   // between database/sync of multiple clients.
