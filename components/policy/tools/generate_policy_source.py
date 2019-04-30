@@ -159,6 +159,32 @@ class PolicyDetails:
     return result
 
 
+class PolicyAtomicGroup:
+  """Parses a policy atomic group and caches its name and policy names"""
+
+  def __init__(self, policy_group, available_policies,
+               policies_already_in_group):
+    self.name = policy_group['name']
+    self.policies = policy_group.get('policies', None)
+    self._CheckPoliciesValidity(available_policies, policies_already_in_group)
+
+  def _CheckPoliciesValidity(self, available_policies,
+                             policies_already_in_group):
+    if self.policies == None or len(self.policies) <= 0:
+      raise RuntimeError('Atomic policy group ' + self.name +
+                         ' has to contain a list of '
+                         'policies!\n')
+    for policy in self.policies:
+      if policy in policies_already_in_group:
+        raise RuntimeError('Policy: ' + policy +
+                           ' cannot be in more than one atomic group '
+                           'in policy_templates.json)!')
+      policies_already_in_group.add(policy)
+      if not policy in available_policies:
+        raise RuntimeError('Invalid policy:' + policy + ' in atomic group ' +
+                           self.name + '.\n')
+
+
 def ParseVersionFile(version_path):
   major_version = None
   for line in open(version_path, 'r').readlines():
@@ -261,12 +287,23 @@ def main():
   risk_tags.ComputeMaxTags(policy_details)
   sorted_policy_details = sorted(policy_details, key=lambda policy: policy.name)
 
+  policy_details_set = map((lambda x: x.name), policy_details)
+  policies_already_in_group = set()
+  policy_atomic_groups = [
+      PolicyAtomicGroup(group, policy_details_set, policies_already_in_group)
+      for group in template_file_contents['policy_atomic_group_definitions']
+  ]
+  sorted_policy_atomic_groups = sorted(
+      policy_atomic_groups, key=lambda group: group.name)
+
+
   def GenerateFile(path, writer, sorted=False, xml=False):
     if path:
       with open(path, 'w') as f:
         _OutputGeneratedWarningHeader(f, template_file_name, xml)
-        writer(sorted and sorted_policy_details or policy_details, os, f,
-               risk_tags)
+        writer(sorted and sorted_policy_details or policy_details,
+               sorted and sorted_policy_atomic_groups or policy_atomic_groups,
+               os, f, risk_tags)
 
   if opts.header_path:
     GenerateFile(opts.header_path, _WritePolicyConstantHeader, sorted=True)
@@ -350,7 +387,8 @@ def _LoadJSONFile(json_file):
 #------------------ policy constants header ------------------------#
 
 
-def _WritePolicyConstantHeader(policies, os, f, risk_tags):
+def _WritePolicyConstantHeader(policies, policy_atomic_groups, os, f,
+                               risk_tags):
   f.write('#ifndef CHROME_COMMON_POLICY_CONSTANTS_H_\n'
           '#define CHROME_COMMON_POLICY_CONSTANTS_H_\n'
           '\n'
@@ -394,6 +432,19 @@ def _WritePolicyConstantHeader(policies, os, f, risk_tags):
     # http://crbug.com/223616
     f.write('extern const char k' + policy.name + '[];\n')
   f.write('\n}  // namespace key\n\n')
+
+  f.write('// Group names for the policy settings.\n' 'namespace group {\n\n')
+  for group in policy_atomic_groups:
+    f.write('extern const char k' + group.name + '[];\n')
+  f.write('\n}  // namespace group\n\n')
+
+  f.write('struct AtomicGroup {\n'
+          '  const char* policy_group;\n'
+          '  const char* const* policies;\n'
+          '};\n\n')
+
+  f.write('extern const AtomicGroup kPolicyAtomicGroupMappings[];\n\n')
+  f.write('extern const size_t kPolicyAtomicGroupMappingsLength;\n\n')
 
   f.write('enum class StringPolicyType {\n'
           '  STRING,\n'
@@ -891,7 +942,8 @@ def _GenerateDefaultValue(value):
   return [], None
 
 
-def _WritePolicyConstantSource(policies, os, f, risk_tags):
+def _WritePolicyConstantSource(policies, policy_atomic_groups, os, f,
+                               risk_tags):
   f.write('#include "components/policy/policy_constants.h"\n'
           '\n'
           '#include <algorithm>\n'
@@ -1053,6 +1105,30 @@ def _WritePolicyConstantSource(policies, os, f, risk_tags):
     f.write('const char k{name}[] = "{name}";\n'.format(name=policy.name))
   f.write('\n}  // namespace key\n\n')
 
+  f.write('namespace group {\n\n')
+  for group in policy_atomic_groups:
+    f.write('const char k{name}[] = "{name}";\n'.format(name=group.name))
+  f.write('\n')
+  f.write('namespace {\n\n')
+  for group in policy_atomic_groups:
+    f.write('const char* const %s[] = {' % (group.name))
+    for policy in group.policies:
+      f.write('key::k%s, ' % (policy))
+    f.write('nullptr};\n')
+  f.write('\n}  // namespace\n')
+  f.write('\n}  // namespace group\n\n')
+
+  atomic_groups_length = 0
+  f.write('const AtomicGroup kPolicyAtomicGroupMappings[] = {\n')
+  for group in policy_atomic_groups:
+    atomic_groups_length += 1
+    f.write('  {')
+    f.write('  group::k{name}, group::{name}'.format(name=group.name))
+    f.write('  },\n')
+  f.write('};\n\n')
+  f.write('const size_t kPolicyAtomicGroupMappingsLength = %s;\n\n' %
+          (atomic_groups_length))
+
   supported_user_policies = [
       p for p in policies if p.is_supported and not p.is_device_only
   ]
@@ -1153,7 +1229,7 @@ class RiskTags(object):
           "-", "_").upper()
 
 
-def _WritePolicyRiskTagHeader(policies, os, f, risk_tags):
+def _WritePolicyRiskTagHeader(policies, policy_atomic_groups, os, f, risk_tags):
   f.write('#ifndef CHROME_COMMON_POLICY_RISK_TAG_H_\n'
           '#define CHROME_COMMON_POLICY_RISK_TAG_H_\n'
           '\n'
@@ -1267,7 +1343,8 @@ def _WritePolicyProto(f, policy, fields):
   ]
 
 
-def _WriteChromeSettingsProtobuf(policies, os, f, risk_tags):
+def _WriteChromeSettingsProtobuf(policies, policy_atomic_groups, os, f,
+                                 risk_tags):
   f.write(CHROME_SETTINGS_PROTO_HEAD)
   fields = []
   f.write('// PBs for individual settings.\n\n')
@@ -1284,7 +1361,8 @@ def _WriteChromeSettingsProtobuf(policies, os, f, risk_tags):
   f.write('}\n\n')
 
 
-def _WriteChromeSettingsFullRuntimeProtobuf(policies, os, f, risk_tags):
+def _WriteChromeSettingsFullRuntimeProtobuf(policies, policy_atomic_groups, os,
+                                            f, risk_tags):
   # For full runtime, disable LITE_RUNTIME switch and import full runtime
   # version of cloud_policy.proto.
   f.write(
@@ -1308,7 +1386,7 @@ def _WriteChromeSettingsFullRuntimeProtobuf(policies, os, f, risk_tags):
   f.write('}\n\n')
 
 
-def _WriteCloudPolicyProtobuf(policies, os, f, risk_tags):
+def _WriteCloudPolicyProtobuf(policies, policy_atomic_groups, os, f, risk_tags):
   f.write(CLOUD_POLICY_PROTO_HEAD)
   f.write('message CloudPolicySettings {\n')
   for policy in policies:
@@ -1319,7 +1397,8 @@ def _WriteCloudPolicyProtobuf(policies, os, f, risk_tags):
   f.write('}\n\n')
 
 
-def _WriteCloudPolicyFullRuntimeProtobuf(policies, os, f, risk_tags):
+def _WriteCloudPolicyFullRuntimeProtobuf(policies, policy_atomic_groups, os, f,
+                                         risk_tags):
   # For full runtime, disable LITE_RUNTIME switch
   f.write(
       CLOUD_POLICY_PROTO_HEAD.replace("option optimize_for = LITE_RUNTIME;",
@@ -1385,7 +1464,8 @@ def _WriteChromeOSPolicyAccessHeader(f, protobuf_type):
 
 
 # Writes policy_constants.h for use in Chrome OS.
-def _WriteChromeOSPolicyConstantsHeader(policies, os, f, risk_tags):
+def _WriteChromeOSPolicyConstantsHeader(policies, policy_atomic_groups, os, f,
+                                        risk_tags):
   f.write('#ifndef __BINDINGS_POLICY_CONSTANTS_H_\n'
           '#define __BINDINGS_POLICY_CONSTANTS_H_\n\n')
 
@@ -1437,7 +1517,8 @@ def _WriteChromeOSPolicyAccessSource(policies, f, protobuf_type):
 
 
 # Writes policy_constants.cc for use in Chrome OS.
-def _WriteChromeOSPolicyConstantsSource(policies, os, f, risk_tags):
+def _WriteChromeOSPolicyConstantsSource(policies, policy_atomic_groups, os, f,
+                                        risk_tags):
   f.write('#include "bindings/cloud_policy.pb.h"\n'
           '#include "bindings/policy_constants.h"\n\n'
           'namespace em = enterprise_management;\n\n'
@@ -1469,7 +1550,7 @@ def _WriteChromeOSPolicyConstantsSource(policies, os, f, risk_tags):
 #------------------ app restrictions -------------------------------#
 
 
-def _WriteAppRestrictions(policies, os, f, risk_tags):
+def _WriteAppRestrictions(policies, policy_atomic_groups, os, f, risk_tags):
 
   def WriteRestrictionCommon(key):
     f.write('    <restriction\n' '        android:key="%s"\n' % key)

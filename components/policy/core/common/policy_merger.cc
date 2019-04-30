@@ -14,17 +14,18 @@ namespace policy {
 PolicyMerger::PolicyMerger() = default;
 PolicyMerger::~PolicyMerger() = default;
 
-void PolicyMerger::Merge(PolicyMap::PolicyMapType* result) const {
-  for (auto it = result->begin(); it != result->end(); it++) {
-    if (CanMerge(it->first, it->second))
-      (*result)[it->first] = Merge(it->second);
-  }
-}
-
 PolicyListMerger::PolicyListMerger(
     const std::set<std::string> policies_to_merge)
     : policies_to_merge_(std::move(policies_to_merge)) {}
 PolicyListMerger::~PolicyListMerger() = default;
+
+void PolicyListMerger::Merge(PolicyMap::PolicyMapType* policies) const {
+  DCHECK(policies);
+  for (auto it = policies->begin(); it != policies->end(); it++) {
+    if (CanMerge(it->first, it->second))
+      (*policies)[it->first] = DoMerge(it->second);
+  }
+}
 
 bool PolicyListMerger::CanMerge(const std::string& policy_name,
                                 PolicyMap::Entry& policy) const {
@@ -45,7 +46,8 @@ bool PolicyListMerger::CanMerge(const std::string& policy_name,
   return true;
 }
 
-PolicyMap::Entry PolicyListMerger::Merge(const PolicyMap::Entry& policy) const {
+PolicyMap::Entry PolicyListMerger::DoMerge(
+    const PolicyMap::Entry& policy) const {
   std::vector<const base::Value*> value;
   std::set<std::string> duplicates;
   bool merged = false;
@@ -65,9 +67,9 @@ PolicyMap::Entry PolicyListMerger::Merge(const PolicyMap::Entry& policy) const {
         it.scope == POLICY_SCOPE_USER &&
         (it.source == POLICY_SOURCE_CLOUD ||
          it.source == POLICY_SOURCE_PRIORITY_CLOUD);
-    if (it.IsBlocked() || it.source == POLICY_SOURCE_ENTERPRISE_DEFAULT ||
-        is_user_cloud_policy || it.level != policy.level ||
-        it.scope != policy.scope) {
+    if (it.IsBlockedOrIgnored() ||
+        it.source == POLICY_SOURCE_ENTERPRISE_DEFAULT || is_user_cloud_policy ||
+        it.level != policy.level || it.scope != policy.scope) {
       continue;
     }
 
@@ -93,6 +95,69 @@ PolicyMap::Entry PolicyListMerger::Merge(const PolicyMap::Entry& policy) const {
   }
 
   return result;
+}
+
+PolicyGroupMerger::PolicyGroupMerger() = default;
+PolicyGroupMerger::~PolicyGroupMerger() = default;
+
+void PolicyGroupMerger::Merge(PolicyMap::PolicyMapType* policies) const {
+  for (size_t i = 0; i < kPolicyAtomicGroupMappingsLength; ++i) {
+    const AtomicGroup& group = kPolicyAtomicGroupMappings[i];
+    bool use_highest_set_priority = false;
+
+    // Defaults to the lowest priority.
+    PolicyMap::Entry highest_set_priority;
+
+    // Find the policy with the highest priority that is both in |policies| and
+    // |group.policies|, an array ending with a nullptr.
+    for (const char* const* policy_name = group.policies; *policy_name;
+         ++policy_name) {
+      auto policy_it = policies->find(*policy_name);
+
+      if (policy_it == policies->end())
+        continue;
+
+      use_highest_set_priority = true;
+
+      PolicyMap::Entry& policy = policy_it->second;
+
+      if (!policy.has_higher_priority_than(highest_set_priority))
+        continue;
+
+      // Do not set POLICY_SOURCE_MERGED as the highest acceptable source
+      // because it is a computed source. In case of an already merged policy,
+      // the highest acceptable source must be the highest of the ones used to
+      // compute the merged value.
+      if (policy.source != POLICY_SOURCE_MERGED) {
+        highest_set_priority = policy.DeepCopy();
+      } else {
+        for (const auto& conflict : policy.conflicts) {
+          if (conflict.has_higher_priority_than(highest_set_priority) &&
+              conflict.source > highest_set_priority.source) {
+            highest_set_priority = conflict.DeepCopy();
+          }
+        }
+      }
+    }
+
+    if (!use_highest_set_priority)
+      continue;
+
+    // Ignore the policies from |group.policies|, an array ending with a
+    // nullptr, that do not share the same source as the one with the highest
+    // priority.
+    for (const char* const* policy_name = group.policies; *policy_name;
+         ++policy_name) {
+      auto policy_it = policies->find(*policy_name);
+      if (policy_it == policies->end())
+        continue;
+
+      PolicyMap::Entry& policy = policy_it->second;
+
+      if (policy.source < highest_set_priority.source)
+        policy.SetIgnoredByPolicyAtomicGroup();
+    }
+  }
 }
 
 }  // namespace policy

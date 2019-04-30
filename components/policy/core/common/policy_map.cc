@@ -121,13 +121,19 @@ base::string16 PolicyMap::Entry::GetLocalizedErrors(
   return error_string;
 }
 
-bool PolicyMap::Entry::IsBlocked() const {
+bool PolicyMap::Entry::IsBlockedOrIgnored() const {
   return error_message_ids_.find(IDS_POLICY_BLOCKED) !=
-         error_message_ids_.end();
+             error_message_ids_.end() ||
+         error_message_ids_.find(IDS_POLICY_IGNORED_BY_GROUP_MERGING) !=
+             error_message_ids_.end();
 }
 
 void PolicyMap::Entry::SetBlocked() {
   error_message_ids_.insert(IDS_POLICY_BLOCKED);
+}
+
+void PolicyMap::Entry::SetIgnoredByPolicyAtomicGroup() {
+  error_message_ids_.insert(IDS_POLICY_IGNORED_BY_GROUP_MERGING);
 }
 
 PolicyMap::PolicyMap() {}
@@ -138,26 +144,28 @@ PolicyMap::~PolicyMap() {
 
 const PolicyMap::Entry* PolicyMap::Get(const std::string& policy) const {
   auto entry = map_.find(policy);
-  return entry != map_.end() && !entry->second.IsBlocked() ? &entry->second
-                                                           : nullptr;
+  return entry != map_.end() && !entry->second.IsBlockedOrIgnored()
+             ? &entry->second
+             : nullptr;
 }
 
 PolicyMap::Entry* PolicyMap::GetMutable(const std::string& policy) {
   auto entry = map_.find(policy);
-  return entry != map_.end() && !entry->second.IsBlocked() ? &entry->second
-                                                           : nullptr;
+  return entry != map_.end() && !entry->second.IsBlockedOrIgnored()
+             ? &entry->second
+             : nullptr;
 }
 
 const base::Value* PolicyMap::GetValue(const std::string& policy) const {
   auto entry = map_.find(policy);
-  return entry != map_.end() && !entry->second.IsBlocked()
+  return entry != map_.end() && !entry->second.IsBlockedOrIgnored()
              ? entry->second.value.get()
              : nullptr;
 }
 
 base::Value* PolicyMap::GetMutableValue(const std::string& policy) {
   auto entry = map_.find(policy);
-  return entry != map_.end() && !entry->second.IsBlocked()
+  return entry != map_.end() && !entry->second.IsBlockedOrIgnored()
              ? entry->second.value.get()
              : nullptr;
 }

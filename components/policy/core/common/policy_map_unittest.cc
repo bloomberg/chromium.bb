@@ -307,7 +307,7 @@ TEST_F(PolicyMapTest, MergeFrom) {
   EXPECT_TRUE(a.Equals(c));
 }
 
-TEST_F(PolicyMapTest, MergeValues) {
+TEST_F(PolicyMapTest, MergeValuesList) {
   std::vector<base::Value> abcd = GetListStorage({"a", "b", "c", "d"});
   std::vector<base::Value> abc = GetListStorage({"a", "b", "c"});
   std::vector<base::Value> ab = GetListStorage({"a", "b"});
@@ -372,6 +372,10 @@ TEST_F(PolicyMapTest, MergeValues) {
   PolicyMap::Entry merged_cloud_machine_mandatory(
       POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE, POLICY_SOURCE_MERGED,
       std::make_unique<base::Value>(abcd), nullptr);
+  auto merged_cloud_machine_mandatory_blocked_by_group =
+      merged_cloud_machine_mandatory.DeepCopy();
+  merged_cloud_machine_mandatory_blocked_by_group
+      .SetIgnoredByPolicyAtomicGroup();
   merged_cloud_machine_mandatory.AddConflictingPolicy(cloud_machine_mandatory);
 
   // Case 4 - kTestPolicyName4
@@ -456,6 +460,88 @@ TEST_F(PolicyMapTest, MergeValues) {
   expected_list_merged_wildcard.Set(kTestPolicyName5, bad_stuff.DeepCopy());
   list_merged_wildcard.MergeValues({&wildcard_policy_list});
   EXPECT_TRUE(list_merged_wildcard.Equals(expected_list_merged_wildcard));
+}
+
+TEST_F(PolicyMapTest, MergeValuesGroup) {
+  std::vector<base::Value> abc = GetListStorage({"a", "b", "c"});
+  std::vector<base::Value> ab = GetListStorage({"a", "b"});
+  std::vector<base::Value> cd = GetListStorage({"c", "d"});
+  std::vector<base::Value> ef = GetListStorage({"e", "f"});
+
+  // Case 1 - kTestPolicyName1
+  // Should not be affected by the atomic groups
+  PolicyMap::Entry platform_user_mandatory(
+      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_PLATFORM,
+      std::make_unique<base::Value>(abc), nullptr);
+
+  platform_user_mandatory.AddConflictingPolicy(PolicyMap::Entry(
+      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+      std::make_unique<base::Value>(cd), nullptr));
+
+  platform_user_mandatory.AddConflictingPolicy(
+      PolicyMap::Entry(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                       POLICY_SOURCE_ENTERPRISE_DEFAULT,
+                       std::make_unique<base::Value>(ef), nullptr));
+
+  platform_user_mandatory.AddConflictingPolicy(
+      PolicyMap::Entry(POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
+                       POLICY_SOURCE_ENTERPRISE_DEFAULT,
+                       std::make_unique<base::Value>(ef), nullptr));
+
+  // Case 2 - policy::key::kExtensionInstallBlacklist
+  // This policy is part of the atomic group "Extensions" and has the highest
+  // source in its group, its value should remain the same.
+  PolicyMap::Entry cloud_machine_mandatory(
+      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+      POLICY_SOURCE_PRIORITY_CLOUD, std::make_unique<base::Value>(ab), nullptr);
+
+  cloud_machine_mandatory.AddConflictingPolicy(PolicyMap::Entry(
+      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE, POLICY_SOURCE_PLATFORM,
+      std::make_unique<base::Value>(cd), nullptr));
+
+  // Case 3 - policy::key::kExtensionInstallWhitelist
+  // This policy is part of the atomic group "Extensions" and has a lower
+  // source than policy::key::kExtensionInstallBlacklist from the same group,
+  // its value should be ignored.
+  PolicyMap::Entry ad_machine_mandatory(
+      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+      POLICY_SOURCE_ACTIVE_DIRECTORY, std::make_unique<base::Value>(ef),
+      nullptr);
+  auto ad_machine_mandatory_ignored = ad_machine_mandatory.DeepCopy();
+  ad_machine_mandatory_ignored.SetIgnoredByPolicyAtomicGroup();
+
+  // Case 4 - policy::key::kExtensionInstallBlacklist
+  // This policy is part of the atomic group "Extensions" and has the highest
+  // source in its group, its value should remain the same.
+  PolicyMap::Entry cloud_machine_recommended(
+      POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE,
+      POLICY_SOURCE_PRIORITY_CLOUD, std::make_unique<base::Value>(ab), nullptr);
+
+  PolicyMap policy_not_merged;
+  policy_not_merged.Set(kTestPolicyName1, platform_user_mandatory.DeepCopy());
+  policy_not_merged.Set(policy::key::kExtensionInstallBlacklist,
+                        cloud_machine_mandatory.DeepCopy());
+  policy_not_merged.Set(policy::key::kExtensionInstallWhitelist,
+                        ad_machine_mandatory.DeepCopy());
+  policy_not_merged.Set(policy::key::kExtensionInstallForcelist,
+                        cloud_machine_recommended.DeepCopy());
+
+  PolicyMap group_merged;
+  group_merged.CopyFrom(policy_not_merged);
+  PolicyGroupMerger group_merger;
+  group_merged.MergeValues({&group_merger});
+
+  PolicyMap expected_group_merged;
+  expected_group_merged.Set(kTestPolicyName1,
+                            platform_user_mandatory.DeepCopy());
+  expected_group_merged.Set(policy::key::kExtensionInstallBlacklist,
+                            cloud_machine_mandatory.DeepCopy());
+  expected_group_merged.Set(policy::key::kExtensionInstallWhitelist,
+                            ad_machine_mandatory_ignored.DeepCopy());
+  expected_group_merged.Set(policy::key::kExtensionInstallForcelist,
+                            cloud_machine_recommended.DeepCopy());
+
+  EXPECT_TRUE(group_merged.Equals(expected_group_merged));
 }
 
 TEST_F(PolicyMapTest, GetDifferingKeys) {

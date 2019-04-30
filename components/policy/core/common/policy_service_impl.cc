@@ -216,9 +216,10 @@ void PolicyServiceImpl::MergeAndTriggerUpdates() {
   }
 
   PolicyListMerger policy_list_merger(std::move(policy_lists_to_merge));
+  PolicyGroupMerger policy_group_merger;
 
   for (auto it = bundle.begin(); it != bundle.end(); ++it)
-    it->second->MergeValues({&policy_list_merger});
+    it->second->MergeValues({&policy_list_merger, &policy_group_merger});
 
   // Swap first, so that observers that call GetPolicies() see the current
   // values.

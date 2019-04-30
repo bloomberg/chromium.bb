@@ -239,6 +239,14 @@
 #   document a differing default value for devices enrolled into enterprise
 #   management. This is for documentation only - the enrollment-dependent
 #   handling must be manually implemented.
+#
+# Atomic Policy Group:
+#   An atomic policy group is a group of policies that logically belong together and influence
+#   a certain aspect of the browser only when considered together and should be treated as a single policy
+#   when merging policies from multiple sources. They all have to be set in the same
+#   source to take effect. In case members of a policy group are set at different sources,
+#   only the policies from the source with the highest priority will be used.
+#
 
   'risk_tag_definitions' : [
     # All following tags are ordered by severity of their impact.
@@ -16211,6 +16219,367 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceBatteryChargeCustomStopCharging': 'device_battery_charge_mode.custom_charge_stop',
     'DeviceScheduledUpdateCheck': 'device_scheduled_update_check.device_scheduled_update_check_settings'
   },
+  'policy_atomic_group_definitions': [
+    {
+      'name': 'Homepage',
+      'policies': [
+        'HomepageLocation',
+        'HomepageIsNewTabPage',
+        'NewTabPageLocation',
+        'ShowHomeButton',
+      ],
+    },
+    {
+      'name': 'RemoteAccess',
+      'policies': [
+        'RemoteAccessClientFirewallTraversal',
+        'RemoteAccessHostClientDomain',
+        'RemoteAccessHostClientDomainList',
+        'RemoteAccessHostFirewallTraversal',
+        'RemoteAccessHostDomain',
+        'RemoteAccessHostDomainList',
+        'RemoteAccessHostRequireTwoFactor',
+        'RemoteAccessHostTalkGadgetPrefix',
+        'RemoteAccessHostRequireCurtain',
+        'RemoteAccessHostAllowClientPairing',
+        'RemoteAccessHostAllowGnubbyAuth',
+        'RemoteAccessHostAllowRelayedConnection',
+        'RemoteAccessHostUdpPortRange',
+        'RemoteAccessHostMatchUsername',
+        'RemoteAccessHostTokenUrl',
+        'RemoteAccessHostTokenValidationUrl',
+        'RemoteAccessHostTokenValidationCertificateIssuer',
+        'RemoteAccessHostDebugOverridePolicies',
+        'RemoteAccessHostAllowUiAccessForRemoteAssistance',
+        'RemoteAccessHostAllowFileTransfer',
+      ],
+    },
+    {
+      'name': 'PasswordManager',
+      'policies': [
+        'PasswordManagerEnabled',
+        'PasswordManagerAllowShowPasswords',
+      ],
+    },
+    {
+      'name': 'Proxy',
+      'policies': [
+        'ProxyMode',
+        'ProxyServerMode',
+        'ProxyServer',
+        'ProxyPacUrl',
+        'ProxyBypassList',
+        'ProxySettings',
+      ],
+    },
+    {
+      'name': 'Extensions',
+      'policies': [
+        'ExtensionInstallBlacklist',
+        'ExtensionInstallWhitelist',
+        'ExtensionInstallForcelist',
+        'ExtensionInstallSources',
+        'ExtensionAllowedTypes',
+        'ExtensionAllowInsecureUpdates',
+        'ExtensionSettings',
+      ],
+    },
+    {
+      'name': 'RestoreOnStartupGroup',
+      'policies': [
+        'RestoreOnStartup',
+        'RestoreOnStartupURLs',
+      ],
+    },
+    {
+      'name': 'DefaultSearchProvider',
+      'policies': [
+        'DefaultSearchProviderEnabled',
+        'DefaultSearchProviderName',
+        'DefaultSearchProviderKeyword',
+        'DefaultSearchProviderSearchURL',
+        'DefaultSearchProviderSuggestURL',
+        'DefaultSearchProviderInstantURL',
+        'DefaultSearchProviderIconURL',
+        'DefaultSearchProviderEncodings',
+        'DefaultSearchProviderAlternateURLs',
+        'DefaultSearchProviderSearchTermsReplacementKey',
+        'DefaultSearchProviderImageURL',
+        'DefaultSearchProviderNewTabURL',
+        'DefaultSearchProviderSearchURLPostParams',
+        'DefaultSearchProviderSuggestURLPostParams',
+        'DefaultSearchProviderInstantURLPostParams',
+        'DefaultSearchProviderImageURLPostParams',
+      ],
+    },
+    {
+      'name': 'ImageSettings',
+      'policies': [
+        'DefaultImagesSetting',
+        'ImagesAllowedForUrls',
+        'ImagesBlockedForUrls',
+      ],
+    },
+    {
+      'name': 'CookiesSettings',
+      'policies': [
+        'DefaultCookiesSetting',
+        'CookiesAllowedForUrls',
+        'CookiesBlockedForUrls',
+        'CookiesSessionOnlyForUrls',
+      ],
+    },
+    {
+      'name': 'JavascriptSettings',
+      'policies': [
+        'DefaultJavaScriptSetting',
+        'JavaScriptAllowedForUrls',
+        'JavaScriptBlockedForUrls',
+      ],
+    },
+    {
+      'name': 'PluginsSettings',
+      'policies': [
+        'DefaultPluginsSetting',
+        'PluginsAllowedForUrls',
+        'PluginsBlockedForUrls',
+      ],
+    },
+    {
+      'name': 'PopupsSettings',
+      'policies': [
+        'DefaultPopupsSetting',
+        'PopupsAllowedForUrls',
+        'PopupsBlockedForUrls',
+      ],
+    },
+    {
+      'name': 'KeygenSettings',
+      'policies': [
+        'DefaultKeygenSetting',
+        'KeygenAllowedForUrls',
+        'KeygenBlockedForUrls',
+      ],
+    },
+    {
+      'name': 'NotificationsSettings',
+      'policies': [
+        'DefaultNotificationsSetting',
+        'NotificationsAllowedForUrls',
+        'NotificationsBlockedForUrls',
+      ],
+    },
+    {
+      'name': 'WebUsbSettings',
+      'policies': [
+        'DefaultWebUsbGuardSetting',
+        'WebUsbAllowDevicesForUrls',
+        'WebUsbAskForUrls',
+        'WebUsbBlockedForUrls',
+      ],
+    },
+    {
+      'name': 'NativeMessaging',
+      'policies': [
+        'NativeMessagingBlacklist',
+        'NativeMessagingWhitelist',
+        'NativeMessagingUserLevelHosts',
+      ],
+    },
+    {
+      'name': 'Drive',
+      'policies': [
+        'DriveDisabled',
+        'DriveDisabledOverCellular',
+      ],
+    },
+    {
+      'name': 'Attestation',
+      'policies': [
+        'AttestationEnabledForDevice',
+        'AttestationEnabledForUser',
+        'AttestationExtensionWhitelist',
+        'AttestationForContentProtectionEnabled',
+      ],
+    },
+    {
+      'name': 'ContentPack',
+      'policies': [
+        'ContentPackDefaultFilteringBehavior',
+        'ContentPackManualBehaviorHosts',
+        'ContentPackManualBehaviorURLs',
+      ],
+    },
+    {
+      'name': 'SupervisedUsers',
+      'policies': [
+        'SupervisedUsersEnabled',
+        'SupervisedUserCreationEnabled',
+        'SupervisedUserContentProviderEnabled',
+      ],
+    },
+    {
+      'name': 'GoogleCast',
+      'policies': [
+        'CastReceiverEnabled',
+        'CastReceiverName',
+      ],
+    },
+    {
+      'name': 'QuickUnlock',
+      'policies': [
+        'QuickUnlockModeWhitelist',
+        'QuickUnlockTimeout',
+      ],
+    },
+    {
+      'name': 'PinUnlock',
+      'policies': [
+        'PinUnlockMinimumLength',
+        'PinUnlockMaximumLength',
+        'PinUnlockWeakPinsAllowed',
+      ],
+    },
+    {
+      'name': 'SafeBrowsing',
+      'policies': [
+        'SafeBrowsingEnabled',
+        'SafeBrowsingExtendedReportingEnabled',
+        'SafeBrowsingExtendedReportingOptInAllowed',
+        'SafeBrowsingWhitelistDomains',
+      ],
+    },
+    {
+      'name': 'PasswordProtection',
+      'policies': [
+        'PasswordProtectionWarningTrigger',
+        'PasswordProtectionLoginURLs',
+        'PasswordProtectionChangePasswordURL',
+      ],
+    },
+    {
+      'name': 'NetworkFileShares',
+      'policies': [
+        'NetworkFileSharesAllowed',
+        'NetBiosShareDiscoveryEnabled',
+        'NTLMShareAuthenticationEnabled',
+        'NetworkFileSharesPreconfiguredShares',
+      ],
+    },
+    {
+      'name': 'ChromeReportingExtension',
+      'policies': [
+        'ReportVersionData',
+        'ReportPolicyData',
+        'ReportMachineIDData',
+        'ReportUserIDData',
+        'ReportExtensionsAndPluginsData',
+        'ReportSafeBrowsingData',
+        'CloudReportingEnabled',
+      ],
+    },
+    {
+      'name': 'BrowserSwitcher',
+      'policies': [
+        'AlternativeBrowserPath',
+        'AlternativeBrowserParameters',
+        'BrowserSwitcherChromePath',
+        'BrowserSwitcherChromeParameters',
+        'BrowserSwitcherDelay',
+        'BrowserSwitcherEnabled',
+        'BrowserSwitcherExternalSitelistUrl',
+        'BrowserSwitcherKeepLastChromeTab',
+        'BrowserSwitcherUrlList',
+        'BrowserSwitcherUrlGreylist',
+        'BrowserSwitcherUseIeSitelist',
+      ],
+    },
+    {
+      'name': 'PluginVm',
+      'policies': [
+        'PluginVmAllowed',
+        'PluginVmLicenseKey',
+        'PluginVmImage',
+      ],
+    },
+    {
+      'name': 'DeviceSAML',
+      'policies': [
+        'DeviceSamlLoginAuthenticationType',
+        'DeviceTransferSAMLCookies',
+      ],
+    },
+    {
+      'name': 'DeviceLoginScreenOrigins',
+      'policies': [
+        'DeviceLoginScreenIsolateOrigins',
+        'DeviceLoginScreenSitePerProcess',
+      ],
+    },
+    {
+      'name': 'UserAndDeviceReporting',
+      'policies': [
+        'ReportDeviceVersionInfo',
+        'ReportDeviceBootMode',
+        'ReportDeviceUsers',
+        'ReportDeviceActivityTimes',
+        'ReportDeviceLocation',
+        'ReportDeviceNetworkInterfaces',
+        'ReportDeviceHardwareStatus',
+        'ReportDeviceSessionStatus',
+        'ReportDeviceBoardStatus',
+        'ReportDevicePowerStatus',
+        'ReportDeviceStorageStatus',
+        'ReportUploadFrequency',
+        'ReportArcStatusEnabled',
+        'HeartbeatEnabled',
+        'HeartbeatFrequency',
+        'LogUploadEnabled',
+        'DeviceMetricsReportingEnabled',
+      ],
+    },
+    {
+      'name': 'DeviceWiFi',
+      'policies': [
+        'DeviceWiFiFastTransitionEnabled',
+        'DeviceWiFiAllowed'
+      ],
+    },
+    {
+      'name': 'Kiosk',
+      'policies': [
+        'DeviceLocalAccounts',
+        'DeviceLocalAccountAutoLoginId',
+        'DeviceLocalAccountAutoLoginDelay',
+        'DeviceLocalAccountAutoLoginBailoutEnabled',
+        'DeviceLocalAccountPromptForNetworkWhenOffline',
+      ],
+    },
+    {
+      'name': 'DateAndTime',
+      'policies': [
+        'SystemTimezone',
+        'SystemTimezoneAutomaticDetection',
+      ]
+    },
+    {
+      'name': 'Display',
+      'policies': [
+        'DeviceDisplayResolution',
+        'DisplayRotationDefault',
+      ]
+    },
+    {
+      'name': 'ActiveDirectoryManagement',
+      'policies': [
+        'DeviceMachinePasswordChangeRate',
+        'DeviceUserPolicyLoopbackProcessingMode',
+        'DeviceKerberosEncryptionTypes',
+        'DeviceGpoCacheLifetime',
+        'DeviceAuthDataCacheLifetime',
+      ]
+    },
+  ],
   'placeholders': [],
   'deleted_policy_ids': [412],
   'highest_id_currently_used':  561

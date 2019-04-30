@@ -769,8 +769,17 @@ class PolicyTemplateChecker(object):
         parent_element=None,
         container_name='The root element',
         offending=None)
+    policy_atomic_group_definitions = self._CheckContains(
+        data,
+        'policy_atomic_group_definitions',
+        list,
+        parent_element=None,
+        container_name='The root element',
+        offending=None)
+
     self._CheckDevicePolicyProtoMappingUniqueness(
         device_policy_proto_map, legacy_device_policy_proto_map)
+
     if policy_definitions is not None:
       policy_ids = set()
       for policy in policy_definitions:
@@ -802,6 +811,20 @@ class PolicyTemplateChecker(object):
           self._Error('Policy %s defined in several groups.' % (policy_name))
         else:
           policy_in_groups.add(policy_name)
+
+    policy_in_atomic_groups = set()
+    for group in policy_atomic_group_definitions:
+      for policy_name in group['policies']:
+        self._CheckContains(
+            policy_names,
+            policy_name,
+            bool,
+            parent_element='policy_definitions')
+        if policy_name in policy_in_atomic_groups:
+          self._Error('Policy %s defined in several atomic policy groups.' %
+                      (policy_name))
+        else:
+          policy_in_atomic_groups.add(policy_name)
 
     # Second part: check formatting.
     self._CheckFormat(filename)

@@ -75,9 +75,16 @@ class POLICY_EXPORT PolicyMap {
     // Removes all the conflicts.
     void ClearConflicts();
 
-    bool IsBlocked() const;
+    // Returns true if the policy is either blocked or ignored.
+    bool IsBlockedOrIgnored() const;
 
+    // Marks the policy as blocked because it is not supported in the current
+    // environment.
     void SetBlocked();
+
+    // Marks the policy as ignored because it does not share the priority of
+    // its policy atomic group.
+    void SetIgnoredByPolicyAtomicGroup();
 
     // Callback used to look up a localized string given its l10n message ID. It
     // should return a UTF-16 string.
