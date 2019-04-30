@@ -620,7 +620,7 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
     // Location of OOF with inline container, and anonymous containing block
     // is wrt container.
     LogicalOffset container_offset =
-        container_builder_->GetChildOffset(container->Parent());
+        container_builder_->GetChildOffset(container->ContainingBlock());
     offset -= container_offset;
   }
 
