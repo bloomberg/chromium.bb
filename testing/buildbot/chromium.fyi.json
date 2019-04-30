@@ -2985,9 +2985,6 @@
     ],
     "gtest_tests": [
       {
-        "args": [
-          "--use-host-tast-bin"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3004,9 +3001,6 @@
         "test": "chrome_all_tast_tests"
       },
       {
-        "args": [
-          "--use-host-tast-bin"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
