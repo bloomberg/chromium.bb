@@ -923,6 +923,28 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['android', 'opengles'], bug=906724)
     self.Skip('conformance/textures/video/*',
         ['android', 'opengles'], bug=906724)
+    # Failures with accelerated canvases on nexus5x
+    self.Fail('conformance/extensions/oes-texture-float-with-image.html',
+        ['android', 'opengles'], bug=957199)
+    self.Fail('conformance/extensions/oes-texture-half-float-with-image.html',
+        ['android', 'opengles'], bug=957199)
+    self.Fail('conformance/textures/image/' +
+        'tex-2d-luminance-luminance-unsigned_byte.html',
+        ['android', 'opengles'], bug=957199)
+    self.Fail('conformance/textures/image/' +
+        'tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html',
+        ['android', 'opengles'], bug=957199)
+    self.Fail('conformance/textures/image/' +
+        'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
+        ['android', 'opengles'], bug=957199)
+    self.Fail('conformance/textures/image/tex-2d-rgba-rgba-unsigned_byte.html',
+        ['android', 'opengles'], bug=957199)
+    self.Fail('conformance/textures/image/' +
+        'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
+        ['android', 'opengles'], bug=957199)
+    self.Fail('conformance/textures/image/' +
+        'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
+        ['android', 'opengles'], bug=957199)
 
     # Canvas tests fail with missing fonts
     self.Fail('conformance/extensions/oes-texture-float-with-canvas.html',
