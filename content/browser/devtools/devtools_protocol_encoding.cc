@@ -11,6 +11,7 @@ namespace {
 using ::inspector_protocol_encoding::span;
 using ::inspector_protocol_encoding::json::ConvertCBORToJSON;
 using ::inspector_protocol_encoding::json::ConvertJSONToCBOR;
+using IPEStatus = ::inspector_protocol_encoding::Status;
 
 // Platform allows us to inject the string<->double conversion
 // routines from base:: into the inspector_protocol JSON parser / serializer.
@@ -30,21 +31,17 @@ class Platform : public ::inspector_protocol_encoding::json::Platform {
 };
 }  // namespace
 
-::inspector_protocol_encoding::Status ConvertCBORToJSON(span<uint8_t> cbor,
-                                                        std::string* json) {
+IPEStatus ConvertCBORToJSON(span<uint8_t> cbor, std::string* json) {
   Platform platform;
   return ConvertCBORToJSON(platform, cbor, json);
 }
 
-::inspector_protocol_encoding::Status ConvertJSONToCBOR(span<uint8_t> json,
-                                                        std::string* cbor) {
+IPEStatus ConvertJSONToCBOR(span<uint8_t> json, std::string* cbor) {
   Platform platform;
   return ConvertJSONToCBOR(platform, json, cbor);
 }
 
-::inspector_protocol_encoding::Status ConvertJSONToCBOR(
-    span<uint8_t> json,
-    std::vector<uint8_t>* cbor) {
+IPEStatus ConvertJSONToCBOR(span<uint8_t> json, std::vector<uint8_t>* cbor) {
   Platform platform;
   return ConvertJSONToCBOR(platform, json, cbor);
 }
