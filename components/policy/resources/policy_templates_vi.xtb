@@ -813,7 +813,7 @@
 
       Nếu chính sách này được đặt thành False thì không thể bỏ qua tự động đăng nhập không trễ (nếu được định cấu hình).</translation>
 <translation id="2454228136871844693">Tối ưu hóa cho độ ổn định.</translation>
-<translation id="2463034609187171371">Bật bộ mã hóa DHE trong TLS</translation>
+<translation id="2463034609187171371">Bật bộ thuật toán mật mã DHE trong TLS</translation>
 <translation id="2463365186486772703">Ngôn ngữ của ứng dụng</translation>
 <translation id="2466131534462628618">Xác thực cổng cố định bỏ qua proxy</translation>
 <translation id="2482676533225429905">Nhắn tin gốc</translation>
@@ -935,13 +935,6 @@
 
       Nếu không đặt chính sách này, chế độ mặc định sẽ là không được phép đối với người dùng được quản lý và được phép đối với người dùng không được quản lý.</translation>
 <translation id="2660846099862559570">Không bao giờ sử dụng proxy</translation>
-<translation id="2663739737868438950">
-      Chính sách này áp dụng cho màn hình đăng nhập. Vui lòng xem thêm chính sách <ph name="SITE_PER_PROCESS_POLICY_NAME" /> áp dụng cho phiên người dùng. Bạn nên đặt cả hai chính sách về cùng một giá trị. Nếu các giá trị không trùng khớp nhau, thì có thể sẽ bị chậm trễ khi vào một phiên người dùng mặc dù đang áp dụng giá trị do chính sách người dùng chỉ định.
-      Có lẽ bạn nên xem xét tùy chọn cài đặt chính sách IsolateOrigins để khai thác tối đa lợi ích của cả hai chính sách (cách ly và tác động có giới hạn đối với người dùng) bằng cách sử dụng IsolateOrigins với danh sách trang web mà bạn muốn cách ly. Tùy chọn cài đặt SitePerProcess này sẽ cách ly tất cả trang web.
-      Nếu bạn bật chính sách này thì mỗi trang web sẽ chạy quy trình riêng.
-      Nếu bạn tắt chính sách này thì cả hai tính năng IsolateOrigins và SitePerProcess đều bị tắt. Người dùng sẽ vẫn có thể bật SitePerProcess theo cách thủ công qua cờ dòng lệnh.
-      Nếu bạn chưa định cấu hình chính sách thì người dùng sẽ có thể thay đổi tùy chọn cài đặt này.
-      </translation>
 <translation id="2672012807430078509">Kiểm soát việc bật NTLM làm giao thức xác thực cho các điểm kết nối SMB</translation>
 <translation id="267596348720209223">Chỉ định các mã hóa ký tự được nhà cung cấp dịch vụ tìm kiếm hỗ trợ. Mã hóa là các tên trang mã như UTF-8, GB2312  và ISO-8859-1. Các mã này được thử theo thứ tự cung cấp.
 
@@ -1431,15 +1424,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Mỗi mục trong danh sách của chính sách này là một đối tượng có hai thành phần: "share_url" và "mode". "share_url" phải là URL của mục chia sẻ và "mode" phải là "drop_down" hoặc "pre_mount". Chế độ "drop_down" cho biết rằng "share_url" sẽ được thêm vào danh sách thả xuống của vị trí chia sẻ. Chế độ "pre_mount" cho biết rằng "share_url" sẽ được kết nối.</translation>
 <translation id="3591527072193107424">Bật tính năng Hỗ trợ trình duyệt cũ.</translation>
 <translation id="3591584750136265240">Định cấu hình hành vi xác thực thông tin đăng nhập</translation>
-<translation id="3624171042292187668">
-      Có lẽ bạn nên xem xét tùy chọn cài đặt chính sách IsolateOrigins để khai thác tối đa cả hai chính sách (cách ly và tác động có giới hạn đối với người dùng) bằng cách sử dụng IsolateOrigins với danh sách trang web mà bạn muốn cách ly. Tùy chọn cài đặt SitePerProcess này sẽ cách ly tất cả các trang web.
-      Nếu bạn bật chính sách này thì mỗi trang web sẽ chạy quy trình riêng.
-      Nếu bạn tắt chính sách này thì cả hai tính năng IsolateOrigins và SitePerProcess đều bị tắt. Người dùng sẽ vẫn có thể bật SitePerProcess theo cách thủ công qua cờ dòng lệnh.
-      Nếu bạn chưa định cấu hình chính sách này, thì người dùng sẽ có thể thay đổi tùy chọn cài đặt này.
-      Trên <ph name="PRODUCT_OS_NAME" />, bạn cũng nên đặt chính sách thiết bị <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> về cùng một giá trị. Nếu các giá trị mà hai chính sách này chỉ định không trùng khớp, thì có thể sẽ bị chậm trễ khi vào một phiên người dùng mặc dù đang áp dụng giá trị do chính sách người dùng chỉ định.
-
-      LƯU Ý: Chính sách này không áp dụng trên Android. Để bật SitePerProcess trên Android, hãy sử dụng tùy chọn cài đặt chính sách SitePerProcessAndroid.
-      </translation>
 <translation id="3627678165642179114">Bật hoặc tắt dịch vụ web kiểm tra lỗi chính tả</translation>
 <translation id="3628480121685794414">Bật chế độ in một mặt</translation>
 <translation id="3631099945620529777">Nếu bạn đặt chính sách này thành false thì nút 'Kết thúc quá trình' sẽ bị tắt trong Trình quản lý tác vụ.
@@ -2175,7 +2159,7 @@ Không giống như <ph name="URL_LIST_POLICY_NAME" />, các quy tắc áp dụn
 <translation id="5124368997194894978">Bật tính năng khởi động trên AC (dòng điện xoay chiều)</translation>
 <translation id="5131211790949066746">Cho phép hợp nhất các chính sách trong danh sách cài đặt tiện ích <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> và <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />.
 
-      Nếu bạn bật tùy chọn cài đặt này, thì các giá trị từ chính sách nền tảng của máy, chính sách đám mây của máy cũng như chính sách nền tảng của người dùng sẽ được hợp nhất thành một danh sách và sử dụng toàn bộ thay vì chỉ sử dụng các giá trị từ một nguồn có mức ưu tiên cao nhất.
+      Nếu bạn bật tùy chọn cài đặt này, thì các giá trị từ chính sách nền tảng của máy, chính sách đám mây của máy cũng như chính sách nền tảng của người dùng sẽ được hợp nhất thành một danh sách và được sử dụng toàn bộ thay vì chỉ sử dụng các giá trị từ một nguồn có mức ưu tiên cao nhất.
 
       Nếu bạn tắt hoặc không đặt tùy chọn cài đặt này, thì chỉ các mục danh sách từ nguồn có mức ưu tiên cao nhất mới được sử dụng, còn tất cả các nguồn khác sẽ hiển thị dưới dạng nguồn xung đột nhưng bị bỏ qua.</translation>
 <translation id="5141670636904227950">Đặt loại kính lúp màn hình mặc định được bật trên màn hình đăng nhập</translation>
@@ -2637,12 +2621,6 @@ Không giống như <ph name="URL_LIST_POLICY_NAME" />, các quy tắc áp dụn
           Nếu cài đặt này bị tắt hoặc không được định cấu hình, yêu cầu xác thực gnubby sẽ không được proxy.</translation>
 <translation id="5897913798715600338">Sạc pin bằng công nghệ sạc nhanh.</translation>
 <translation id="5898486742390981550">Khi có nhiều người dùng đăng nhập thì chỉ người dùng chính mới có thể sử dụng các ứng dụng Android.</translation>
-<translation id="5900196529149231477">
-      Chính sách này áp dụng cho màn hình đăng nhập. Vui lòng xem thêm chính sách <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> áp dụng cho phiên người dùng. Bạn nên đặt cả hai chính sách về cùng một giá trị. Nếu các giá trị không trùng khớp nhau, thì có thể sẽ bị chậm trễ khi vào một phiên người dùng mặc dù đang áp dụng giá trị mà chính sách người dùng chỉ định.
-      Nếu bạn bật chính sách này thì mỗi nguồn gốc có tên trong danh sách phân tách bằng dấu phẩy sẽ chạy theo quy trình riêng. Việc này cũng sẽ cách ly các nguồn gốc được đặt tên theo miền phụ; chẳng hạn như việc chỉ định https://example.com/ cũng sẽ khiến cho https://foo.example.com/ bị cách ly dưới dạng một phần của trang web https://example.com/.
-      Nếu bạn tắt chính sách này thì cả hai tính năng IsolateOrigins và SitePerProcess đều bị tắt. Người dùng vẫn có thể bật IsolateOrigins theo cách thủ công qua cờ dòng lệnh.
-      Nếu bạn không định cấu hình chính sách này, thì tùy chọn cài đặt cách ly trang web mặc định của nền tảng sẽ được sử dụng cho màn hình đăng nhập.
-      </translation>
 <translation id="5901427587865226597">Chỉ in hai mặt</translation>
 <translation id="5905473632148429217">Bật kiểm tra OCSP/CRL trực tuyến</translation>
 <translation id="5906199912611534122">Cho phép bật hoặc tắt điều chỉnh mạng.
@@ -3920,6 +3898,7 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       Khi DeviceIdleLogoutTimeout được chỉ định, chính sách này sẽ xác định thời lượng của hộp cảnh báo với bộ tính giờ đếm ngược được hiển thị cho người dùng trước khi tác vụ đăng xuất được thực thi.
 
       Giá trị của chính sách phải được chỉ định theo mili giây.</translation>
+<translation id="8331479227794770304">Bật phím cố định</translation>
 <translation id="8339420913453596618">Đã tắt hai yếu tố</translation>
 <translation id="8344454543174932833">Nhập dấu trang từ trình duyệt mặc định trong lần chạy đầu tiên</translation>
 <translation id="8357681633047935212">Giới hạn thời lượng của một phiên người dùng</translation>
@@ -4308,18 +4287,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       Nếu bạn đặt giá trị của chính sách thành một mã thông báo tương ứng với Bản dựng Quick Fix, thì thiết bị sẽ được cập nhật lên Bản dựng Quick Fix tương ứng nếu không có chính sách nào khác chặn quá trình cập nhật này.
 
       Nếu bạn không đặt chính sách này hoặc giá trị của chính sách không tương ứng với Bản dựng Quick Fix, thì thiết bị sẽ không được cập nhật lên Bản dựng Quick Fix. Nếu thiết bị đang chạy Bản dựng Quick Fix và bạn không đặt chính sách này nữa hoặc giá trị của chính sách không còn tương ứng với Bản dựng Quick Fix, thì thiết bị sẽ được cập nhật lên bản dựng thông thường nếu không có chính sách nào khác chặn quá trình cập nhật này.</translation>
-<translation id="906631898352326790">
-      Nếu bạn bật chính sách này thì mỗi nguồn gốc có tên trong danh sách
-      phân tách bằng dấu phẩy sẽ chạy quy trình riêng. Điều này cũng sẽ cách ly
-      các nguồn gốc được đặt tên theo miền phụ; ví dụ: việc chỉ định https://example.com/ cũng sẽ
-      khiến https://foo.example.com/ bị cách ly dưới dạng một phần của trang web
-      https://example.com/.
-      Nếu bạn tắt chính sách này thì cả hai tính năng IsolateOrigins và SitePerProcess đều bị tắt. Người dùng vẫn có thể bật IsolateOrigins theo cách thủ công qua cờ dòng lệnh.
-      Nếu bạn chưa định cấu hình chính sách này, thì người dùng sẽ có thể thay đổi tùy chọn cài đặt này.
-      Trên <ph name="PRODUCT_OS_NAME" />, bạn cũng nên đặt chính sách thiết bị <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> thành cùng một giá trị. Nếu các giá trị mà hai chính sách này chỉ định không trùng khớp nhau, thì có thể sẽ bị chậm trễ khi vào một phiên người dùng mặc dù đang áp dụng giá trị mà chính sách người dùng chỉ định.
-
-      LƯU Ý: Chính sách này không áp dụng trên Android. Để bật IsolateOrigins trên Android, hãy sử dụng tùy chọn cài đặt chính sách IsolateOriginsAndroid.
-      </translation>
 <translation id="9072600218500597787">Định cấu hình tên miền của máy chủ bắt buộc sẽ được áp dụng trên các máy chủ truy cập từ xa và ngăn người dùng thay đổi tên miền này.
 
           Nếu bạn bật tùy chọn cài đặt này thì các máy chủ chỉ có thể được chia sẻ bằng các tài khoản đã đăng ký trên một trong những tên miền được chỉ định.

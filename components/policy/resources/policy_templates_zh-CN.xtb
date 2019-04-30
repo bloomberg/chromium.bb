@@ -297,7 +297,7 @@
 <translation id="1507382822467487898">
           配置当基座连接到设备时使用哪个 MAC（媒体访问控制）地址。
 
-          当基座连接到某些型号的设备时，系统会默认使用设备的指定基座 MAC 地址在以太网上识别相应设备。此政策允许管理员在设备插入基座时更改 MAC 地址的来源。
+          当基座连接到某些型号的设备时，系统会默认使用设备的指定基座 MAC 地址在以太网上标识相应设备。此政策允许管理员在设备插入基座时更改 MAC 地址的来源。
 
           如果选择了“DeviceDockMacAddress”或未设置此政策，则系统会使用设备的指定基座 MAC 地址。
 
@@ -872,13 +872,6 @@
 
       如果此政策未设置，默认情况下，受管理用户将不能使用短信同步功能，不受管理的用户则可以。</translation>
 <translation id="2660846099862559570">从不使用代理</translation>
-<translation id="2663739737868438950">
-      此政策适用于登录屏幕。另请参阅适用于用户会话的 <ph name="SITE_PER_PROCESS_POLICY_NAME" /> 政策。建议将这两项政策设为相同的值。如果这两项政策的值不一致，则在进入用户会话时，若系统正在应用由用户政策指定的值，便可能会出现延迟。
-      要想做到两全其美，既能实现隔离，又能减少给用户带来的影响，不妨查看一下 IsolateOrigins 政策设置，您可以使用 IsolateOrigins 政策来指定想要隔离的一系列网站。SitePerProcess 这项设置会隔离所有网站。
-      如果此政策处于启用状态，每个网站都将在自己的进程中运行。
-      如果此政策处于停用状态，IsolateOrigins 和 SitePerProcess 功能都将停用。用户仍能够通过命令行标记手动启用 SitePerProcess。
-      如果此政策未配置，用户将能够更改该设置。
-      </translation>
 <translation id="2672012807430078509">控制是否允许将 NTLM 作为 SMB 装载功能的身份验证协议</translation>
 <translation id="267596348720209223">指定搜索服务提供商支持的字符编码。编码是指类似于 UTF-8、GB2312 和 ISO-8859-1 的代码页名称，并按此顺序进行尝试。此政策是可选的，如果未设置，将使用默认值 UTF-8。要实施此政策，必须先启用“DefaultSearchProviderEnabled”政策。</translation>
 <translation id="268577405881275241">启用数据压缩代理功能</translation>
@@ -1351,15 +1344,6 @@
       此政策的每个列表项都是一个包含以下两个成员的对象，“share_url”和“mode”。“share_url”应该是共享文件的网址，“mode”应设为“drop_down”或“pre_mount”。“drop_down”模式表示“share_url”将会添加到共享文件发现下拉菜单中。“pre_mount”模式表示“share_url”将会提前装载。</translation>
 <translation id="3591527072193107424">启用“旧版浏览器支持”功能。</translation>
 <translation id="3591584750136265240">配置登录身份验证行为</translation>
-<translation id="3624171042292187668">
-      要想做到两全其美，既能实现隔离，又能减少给用户带来的影响，不妨查看一下 IsolateOrigins 政策设置，您可以使用 IsolateOrigins 政策来指定想要隔离的一系列网站。SitePerProcess 这项设置会隔离所有网站。
-      如果此政策处于启用状态，每个网站都将在自己的进程中运行。
-      如果此政策处于停用状态，则 IsolateOrigins 和 SitePerProcess 功能都将停用。用户仍能够通过命令行标记手动启用 SitePerProcess。
-      如果此政策未配置，用户将能够更改该设置。
-      在 <ph name="PRODUCT_OS_NAME" /> 上，建议将设备政策 <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> 也设为相同的值。如果这两项政策指定的值不一致，则在进入用户会话时，若系统正在应用由用户政策指定的值，便可能会出现延迟。
-
-      注意：此政策不适用于 Android 设备。要在 Android 设备上启用 SitePerProcess，请改用 SitePerProcessAndroid 政策设置。
-      </translation>
 <translation id="3627678165642179114">启用或停用拼写检查网络服务</translation>
 <translation id="3628480121685794414">启用单面打印</translation>
 <translation id="3631099945620529777">如果设为 false，则任务管理器中的“结束进程”按钮会处于停用状态。
@@ -2502,12 +2486,6 @@
           如果您已停用或未配置此设置，那么系统将不会经由代理处理gnubby身份验证请求。</translation>
 <translation id="5897913798715600338">使用快速充电技术为电池充电。</translation>
 <translation id="5898486742390981550">如果有多个用户同时登录，则只有主要用户可以使用 Android 应用。</translation>
-<translation id="5900196529149231477">
-      此政策适用于登录屏幕。另请参阅适用于用户会话的 <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> 政策。建议将这两项政策设为相同的值。如果这两项政策的值不一致，则在进入用户会话时，若系统正在应用由用户政策指定的值，便可能会出现延迟。
-      如果此政策处于启用状态，则以英文逗号分隔的列表中指定的每个来源都将在自己的进程中运行。这还会隔离以子网域指定的来源；例如，指定 https://example.com/ 还会导致 https://foo.example.com/ 被隔离（作为 https://example.com/ 网站的一部分）。
-      如果此政策处于停用状态，IsolateOrigins 和 SitePerProcess 功能都将停用。用户仍能够通过命令行标记手动启用 IsolateOrigins。
-      如果此政策未配置，系统将为登录屏幕使用平台默认的网站隔离设置。
-      </translation>
 <translation id="5901427587865226597">仅限双面打印</translation>
 <translation id="5905473632148429217">启用在线 OCSP/CRL 检查</translation>
 <translation id="5906199912611534122">允许启用或停用网络节流功能。
@@ -2699,7 +2677,7 @@
       如果您停用了此政策，系统将不会导入自动填充表单数据。
 
       如果此政策未设置，系统可能会询问用户是否导入，也可能会自动执行导入操作。</translation>
-<translation id="6221175752766085998">允许使用由本地信任锚颁发的缺少 subjectAlternativeName 扩展程序的证书</translation>
+<translation id="6221175752766085998">允许使用由本地信任锚颁发的缺少 subjectAlternativeName 扩展项的证书</translation>
 <translation id="6224304369267200483">自动允许直接安全密钥认证的网址/网域</translation>
 <translation id="6233173491898450179">设置下载目录</translation>
 <translation id="6244210204546589761">启动时打开的网址</translation>
@@ -3040,7 +3018,7 @@
       如果此政策设为 True 或未设置，则系统将启用智能调暗模式，并允许其最大限度地推迟屏幕变暗时间。如果此政策设为 False，则智能调暗模式将不会影响屏幕变暗时间。</translation>
 <translation id="6967394885063085697">启用高级电池充电模式电源管理政策。
 
-          高级电池充电模式让用户能够最大限度地改善电池运行状况。在高级充电模式下，系统会在非工作时间使用标准充电算法和其他技术来最大限度地改善电池运行状况。在工作时间，系统会使用快速充电。快速充电可更快地为电池充电，因此只需较短的时间即可将电池充满。每天系统使用频率最高的时段由开始时间和持续时间指定。
+          高级电池充电模式让用户能够最大限度地改善电池健康。在高级充电模式下，系统会在非工作时间使用标准充电算法和其他技术来最大限度地改善电池健康。在工作时间，系统会使用快速充电。快速充电可更快地为电池充电，因此只需较短的时间即可将电池充满。每天系统使用量最大的时段由开始时间和持续时间指定。
 
           如果此政策设为 true，并且设置了 DeviceAdvancedBatteryChargeModeDayConfig，则高级电池充电模式会始终处于启用状态（如果相应设备支持的话）。
 
@@ -3116,7 +3094,7 @@
       如果此政策未设置，用户可以选择是否需要输入密码来解锁设备。</translation>
 <translation id="7107148737865880402">启用 USB 电源共享电源管理政策。
 
-          某些设备具备标有闪电/电池图标的特定 USB 端口，这种端口可用于利用系统电池为手机等设备充电。当系统处于休眠和关机模式时，此政策会影响该端口的充电行为。当系统处于唤醒状态时，此政策不会影响其他 USB 端口和充电行为。
+          某些设备具备标有闪电/电池图标的特定 USB 端口，这种端口可用于利用系统电池为手机等设备充电。当系统处于休眠和关机模式时，此政策会影响该端口的充电行为。此政策不会影响其他 USB 端口，也不会影响系统处于唤醒状态时的充电行为。
 
           当系统处于唤醒状态时，USB 端口会一直供电。
 
@@ -3736,6 +3714,7 @@
       如果 DeviceIdleLogoutTimeout 已指定，此政策就用于定义警告框的持续时间，系统会在执行退出操作前向用户显示一个倒计时器。
 
       应以毫秒为单位指定此政策的值。</translation>
+<translation id="8331479227794770304">启用粘滞键</translation>
 <translation id="8339420913453596618">已停用第二重因素</translation>
 <translation id="8344454543174932833">首次运行时，从默认浏览器导入书签</translation>
 <translation id="8357681633047935212">限制用户会话的长度</translation>
@@ -3879,7 +3858,7 @@
       如果此政策未设置，对于 <ph name="PRODUCT_OS_NAME" />设备，系统会使用 345600000 毫秒（4 天）的默认通知时间段，对于 <ph name="PRODUCT_NAME" />，则会使用 604800000 毫秒（1 周）的默认通知时间段。</translation>
 <translation id="8685024486845674965">重复使用密码可触发密码保护服务警告功能</translation>
 <translation id="8693243869659262736">使用内置 DNS 客户端</translation>
-<translation id="8698286761337647563">用于指定比密码到期日提前多少天通知 SAML 用户</translation>
+<translation id="8698286761337647563">用于指定提前多少天通知密码快要到期的 SAML 用户</translation>
 <translation id="8703488928438047864">报告主板状态</translation>
 <translation id="8703872185032220081">用于设定日间用电高峰转移配置。
 
@@ -4080,14 +4059,6 @@
       如果此政策的值设为与 Quick Fix Build 对应的令牌，那么只要更新未被其他政策阻止，该设备就会更新至相应的 Quick Fix Build。
 
       如果未设置此政策，或者此政策的值不与 Quick Fix Build 对应，该设备便不会更新至 Quick Fix Build。如果该设备已在运行 Quick Fix Build，并且您已不再设置此政策或者此政策的值已不再与 Quick Fix Build 对应，那么只要更新未被其他政策阻止，该设备就会更新至常规版本。</translation>
-<translation id="906631898352326790">
-      如果此政策处于启用状态，则以英文逗号分隔的列表中指定的每个来源都将在自己的进程中运行。这还会隔离以子网域指定的来源；例如，指定 https://example.com/ 还会导致 https://foo.example.com/ 被隔离（作为 https://example.com/ 网站的一部分）。
-      如果此政策处于停用状态，IsolateOrigins 和 SitePerProcess 功能都将停用。用户仍能够通过命令行标记手动启用 IsolateOrigins。
-      如果此政策未配置，用户将能够更改该设置。
-      在 <ph name="PRODUCT_OS_NAME" /> 上，建议将设备政策 <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> 也设为相同的值。如果这两项政策指定的值不一致，则在进入用户会话时，若系统正在应用由用户政策指定的值，便可能会出现延迟。
-
-      注意：此政策不适用于 Android 设备。要在 Android 设备上启用 IsolateOrigins，请改用 IsolateOriginsAndroid 政策设置。
-      </translation>
 <translation id="9072600218500597787">配置强制远程访问主机使用的必要主机域名，并禁止用户进行更改。
 
           启用这项设置后，必须使用在其中一个指定域名上注册的帐号才能共享主机。

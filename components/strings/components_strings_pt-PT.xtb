@@ -914,7 +914,7 @@
 <translation id="5975083100439434680">Reduzir</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">Não é possível abrir a aplicação de pagamento</translation>
-<translation id="5988826871883769516">O seu dispositivo é gerido pelo <ph name="ENROLLMENT_DOMAIN" />.</translation>
+<translation id="5988826871883769516">O seu dispositivo é gerido por <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="5989320800837274978">Não foram especificados servidores proxy fixos nem um URL de script .pac.</translation>
 <translation id="5990559369517809815">Os pedidos para o servidor foram bloqueados por uma extensão.</translation>
 <translation id="6008256403891681546">JCB</translation>

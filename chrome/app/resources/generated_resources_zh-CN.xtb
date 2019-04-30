@@ -474,7 +474,6 @@
 <translation id="1733383495376208985">使用您自己的<ph name="BEGIN_LINK" />同步密码<ph name="END_LINK" />加密已同步的数据。这并不包括 Google Pay 中的付款方式和地址。</translation>
 <translation id="1734824808160898225">“<ph name="PRODUCT_NAME" />”可能无法自动更新</translation>
 <translation id="1736419249208073774">探索</translation>
-<translation id="1736827427463982819">关闭 Linux（测试版）</translation>
 <translation id="1737968601308870607">提交错误</translation>
 <translation id="1741314857973421784">继续</translation>
 <translation id="1743570585616704562">无法识别</translation>
@@ -2004,6 +2003,7 @@
 <translation id="409579654357498729">添加到云打印</translation>
 <translation id="4096508467498758490">请停用以开发者模式运行的扩展程序</translation>
 <translation id="4096824249111507322">正在准备安全模块，请稍候（这可能需要几分钟的时间）…</translation>
+<translation id="4097560579602855702">在 Google 中搜索</translation>
 <translation id="4099060993766194518">要恢复默认搜索引擎吗？</translation>
 <translation id="4099874310852108874">发生了网络错误。</translation>
 <translation id="4100733287846229632">设备存储空间严重不足</translation>

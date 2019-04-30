@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="mr">
-<translation id="1001534784610492198">इन्स्टॉलर संग्रहण भ्रष्ट किंवा चुकीचे आहे. कृपया Google Chrome पुन्हा डाउनलोड करा.</translation>
+<translation id="1001534784610492198">इन्स्टॉलर संग्रहण भ्रष्ट किंवा चुकीचा आहे. कृपया Google Chrome पुन्हा डाउनलोड करा.</translation>
 <translation id="102763973188675173">Google Chrome कस्टमाइझ करा आणि नियंत्रित करा. अपडेट उपलब्ध आहे.</translation>
 <translation id="1035334672863811645">Chrome मध्ये साइन इन करा</translation>
 <translation id="1051826050538111504">तुमच्या काँप्युटरवर हानिकारक सॉफ्टवेअर आहे. Chrome ते काढून टाकून तुमचा ब्राउझर पुन्हा नीट चालावा यासाठी तुमच्या सेटिंग्ज रिस्टोअर आणि एक्स्टेंशन बंद करू शकते.</translation>
@@ -10,15 +10,15 @@
 <translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> पूर्वी Chrome वापरत होते</translation>
 <translation id="1104959162601287462">&amp;Chrome OS विषयी</translation>
 <translation id="110877069173485804">हा तुमचा Chrome आहे</translation>
-<translation id="1142745911746664600">Chrome अपडेट करता आले नाही</translation>
+<translation id="1142745911746664600">Chrome अपडेट करू शकत नाही</translation>
 <translation id="1154147086299354128">Chrome मध्‍ये &amp;उघडा</translation>
 <translation id="123620459398936149">Chrome OS तुमचा डेटा सिंक करू शकले नाही. कृपया तुमचा सिंक सांकेतिक पासफ्रेझ अपडेट करा.</translation>
-<translation id="127345590676626841">Chrome स्वयंचलितपणे अपडेट होते जेणेकरून आपल्याकडे नेहमी सर्वात नवीन आवृत्ती असते. जेव्हा हे डाउनलोड पूर्ण होते, तेव्हा Chrome रीस्टार्ट होईल आणि तुम्ही आपल्या मार्गावर असाल.</translation>
+<translation id="127345590676626841">Chrome आपोआप अपडेट होते जेणेकरून तुमच्याकडे नेहमी सर्वात नवीन आवृत्ती असते. जेव्हा हे डाउनलोड पूर्ण होते, तेव्हा Chrome रीस्टार्ट होईल आणि तुम्ही तुमच्या मार्गावर असाल.</translation>
 <translation id="1302523850133262269">कृपया Chrome नवीनतम सिस्टम अपडेट इंस्टॉल करताना प्रतीक्षा करा.</translation>
 <translation id="1312676208694947750">{0,plural, =0{Chrome OS अपडेट उपलब्ध आहे}=1{Chrome OS अपडेट उपलब्ध आहे}one{Chrome OS अपडेट # दिवसासाठी उपलब्ध आहे}other{Chrome अपडेट # दिवसांसाठी उपलब्ध आहे}}</translation>
 <translation id="137466361146087520">Google Chrome बीटा</translation>
 <translation id="1393853151966637042">Chrome वापरून मदत मिळवा</translation>
-<translation id="1399397803214730675">या संगणकात आधीपासून Google Chrome ची अगदी अलिकडील आवृत्ती आहे. सॉफ्टवेअर कार्य करत नसल्यास, कृपया Google Chrome अनइंस्टॉल करा आणि पुन्हा प्रयत्न करा.</translation>
+<translation id="1399397803214730675">या कॉंप्युटरत आधीपासून Google Chrome ची अगदी अलिकडील आवृत्ती आहे. सॉफ्टवेअर काम करत नसल्यास, कृपया Google Chrome अनइंस्टॉल करा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="1434626383986940139">Chrome Canary Apps</translation>
 <translation id="1457721931618994305">Google Chrome अपडेट करीत आहे...</translation>
 <translation id="1469002951682717133">Chrome App लाँचर</translation>
@@ -26,23 +26,23 @@
 <translation id="1585657529869845941">ते दिसल्यास <ph name="BEGIN_BOLD" />कसेही स्विच करा<ph name="END_BOLD" /> वर क्लिक करा</translation>
 <translation id="1587223624401073077">Google Chrome तुमचा कॅमेरा वापरत आहे.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> धोकादायक आहे, त्यामुळे Chrom ने ते अवरोधित केले आहे.</translation>
-<translation id="1619887657840448962">Chrome अधिक सुरक्षित करण्यासाठी, आम्ही <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> मध्ये सूचीबद्ध नसलेला आणि आपल्या माहितीशिवाय कदाचित जोडला गेलेला खालील विस्तार अक्षम केला आहे.</translation>
+<translation id="1619887657840448962">Chrome अधिक सुरक्षित करण्यासाठी, आम्ही <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> मध्ये सूचीबद्ध नसलेला आणि तुमच्या माहितीशिवाय कदाचित जोडले गेलेले खालील एक्स्टेंशन बंद केले आहे.</translation>
 <translation id="1628000112320670027">Chrome सह मदत मिळवा</translation>
 <translation id="1662639173275167396"><ph name="BEGIN_LINK_LINUX_OSS" />Linux (बीटा)<ph name="END_LINK_LINUX_OSS" /> सारखेच, अतिरिक्त <ph name="BEGIN_LINK_CROS_OSS" />मुक्त स्रोत सॉफ्टवेअर<ph name="END_LINK_CROS_OSS" /> मुळे Chrome OS शक्य झाले आहे.</translation>
 <translation id="1674870198290878346">लिंक Chrome गु&amp;प्त विंडोमध्ये उघडा</translation>
 <translation id="1682634494516646069">Google Chrome त्याची डेटा निर्देशिका वाचू किंवा लिहू शकत नाही:  
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
-<translation id="1698376642261615901">Google Chrome एक वेब ब्राउझर आहे जो वेब पेज आणि ॲप्लिकेशन विजेच्या गतीने चालवितो. तो जलद, स्थिर आणि वापरण्यास सोपा आहे. Google Chrome मध्ये तयार केलेल्या मालवेयर आणि फिशिंग संरक्षणासह वेब अधिक सुरक्षितपणे ब्राउझ करा.</translation>
+<translation id="1698376642261615901">Google Chrome एक वेब ब्राउझर आहे जे वेब पेज आणि अॅप्स विजेच्या गतीने चालविते. ते जलद, स्थिर आणि वापरण्यास सोपे आहे. Google Chrome मध्ये तयार केलेल्या मालवेअर आणि फिशिंग संरक्षणासह वेब अधिक सुरक्षितपणे ब्राउझ करा.</translation>
 <translation id="1718131156967340976"><ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /> निवडा</translation>
 <translation id="1734234790201236882">Chrome हा पासवर्ड तुमच्या Google खात्यामध्ये सेव्ह करेल. तुम्हाला लक्षात ठेवावा लागणार नाही.</translation>
-<translation id="174539241580958092">साइन इन करण्यात एरर आल्यामुळे Google Chrome तुमचा डेटा संकालित करू शकले नाही.</translation>
+<translation id="174539241580958092">साइन इन करण्यात एरर आल्यामुळे Google Chrome तुमचा डेटा सिंक करू शकले नाही.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Chrome OS वापरून मदत मिळवा </translation>
 <translation id="1795405610103747296">Chrome तुमच्या फोनवर इंस्टॉल करा. आम्ही तुमच्या या फोनवर एक SMS पाठवू: <ph name="PHONE_NUMBER" /></translation>
 <translation id="1812689907177901597">हे बंद करून, तुम्ही Chrome वर साइन इन न करता Gmail सारख्या Google सायटींवर साइन इन करू शकता</translation>
 <translation id="1815759068706561639"><ph name="FILE_NAME" /> धोकादायक आहे, त्यामुळे Chrome ने ती ब्लॉक केली आहे. तुम्ही प्रगत संरक्षणाद्वारे संरक्षित आहात.</translation>
-<translation id="1860536484129686729">या साइटसाठी Chrome ला तुमचा कॅमेरा ॲक्सेस करण्याची परवानगी हवी आहे</translation>
+<translation id="1860536484129686729">या साइटसाठी Chrome ला तुमचा कॅमेरा अॅक्सेस करण्याची परवानगी हवी आहे</translation>
 <translation id="1873233029667955273">Google Chrome तुमचा डीफॉल्ट ब्राउझर नाही</translation>
 <translation id="1874309113135274312">Google Chrome बीटा (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome कालबाह्य आहे</translation>
@@ -60,24 +60,24 @@
 <translation id="2290014774651636340">Google API की गहाळ आहेत. Google Chrome ची काही कार्यक्षमता अक्षम केली जाईल.</translation>
 <translation id="2290095356545025170">तुमची खात्री आहे की तुम्ही Google Chrome अनइंस्टॉल करू इच्छिता?</translation>
 <translation id="2309047409763057870">ही Google Chrome ची दुय्यम स्थापना असून त्यास तुमचा डीफॉल्ट ब्राउझर बनवू शकत नाही.</translation>
-<translation id="2346876346033403680">कोणीतरी यापूर्वी या संगणकावरील Chrome मध्ये <ph name="ACCOUNT_EMAIL_LAST" /> या रुपात साइन इन केले होते. ते तुमचे खाते नसल्यास, तुमची माहिती स्वतंत्र ठेवण्यासाठी एक नवीन Chrome वापरकर्ता तयार करा.
+<translation id="2346876346033403680">कोणीतरी यापूर्वी या कॉंप्युटरवरील Chrome मध्ये <ph name="ACCOUNT_EMAIL_LAST" /> या रुपात साइन इन केले होते. ते तुमचे खाते नसल्यास, तुमची माहिती स्वतंत्र ठेवण्यासाठी एक नवीन Chrome वापरकर्ता तयार करा.
 
 तरीही साइन इन करण्यामुळे <ph name="ACCOUNT_EMAIL_NEW" /> मध्ये बुकमार्क, इतिहास यासारखी Chrome माहिती आणि अन्य सेटिंग्ज विलीन होतील.</translation>
-<translation id="2348335408836342058">या साइटसाठी Chrome ला तुमचा कॅमेरा आणि मायक्रोफोन ॲक्सेस करण्याची परवानगी हवी आहे</translation>
+<translation id="2348335408836342058">या साइटसाठी Chrome ला तुमचा कॅमेरा आणि मायक्रोफोन अॅक्सेस करण्याची परवानगी हवी आहे</translation>
 <translation id="2429317896000329049">आपल्या डोमेनसाठी संकालन उपलब्ध नसल्यामुळे Google Chrome तुमचा डेटा संकालित करू शकले नाही.</translation>
-<translation id="2467438592969358367">Google Chrome ला तुमचे पासवर्ड एक्सपोर्ट करायचे आहेत. हे करू देण्यासाठी तुमचा Windows पासवर्ड टाइप करा.</translation>
-<translation id="2485422356828889247">अनइन्स्टॉल करणे</translation>
+<translation id="2467438592969358367">Google Chrome ला तुमचे पासवर्ड निर्यात करायचे आहेत. हे करू देण्यासाठी तुमचा Windows पासवर्ड टाइप करा.</translation>
+<translation id="2485422356828889247">अनइंस्टॉल करा</translation>
 <translation id="2521856951867783208">ही फाईल कदाचित धोकादायक असू शकते, त्यामुळे Chrome ने ती ब्लॉक केली आहे. तुम्ही प्रगत संरक्षणाद्वारे संरक्षित आहात.</translation>
 <translation id="2534507159460261402">Google Pay (Chrome वर कॉपी केले)</translation>
-<translation id="2535429035253759792">हे अपडेट लागू करण्यासाठी तुमच्या ॲडमिनिस्ट्रेटरने तुम्हाला Chrome पुन्हा लाँच करण्यास सांगितले आहे</translation>
+<translation id="2535429035253759792">हे अपडेट लागू करण्यासाठी तुमच्या अॅडमिनिस्ट्रेटरने तुम्हाला Chrome पुन्हा लाँच करण्यास सांगितले आहे</translation>
 <translation id="2580411288591421699">सध्या चालत असलेली Google Chrome ची समान आवृत्ती इंस्टॉल करू शकत नाही. कृपया Google Chrome बंद करा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="2586406160782125153">हे या डिव्‍हाइस मधून तुमचा ब्राउझिंग डेटा हटवेल. नंतर तुमचा डेटा पुनर्प्राप्त करण्‍यासाठी, Chrome मध्ये <ph name="USER_EMAIL" /> म्हणून साइन इन करा.</translation>
 <translation id="2588322182880276190">Chrome लोगो</translation>
 <translation id="2644798301485385923">Chrome OS सिस्टम</translation>
 <translation id="2652691236519827073">लिंक नवीन Chrome &amp;टॅबमध्ये उघडा</translation>
 <translation id="2665296953892887393">Google कडे क्रॅश अहवाल आणि <ph name="UMA_LINK" /> पाठवून Google Chrome ला अधिक चांगले बनवण्यात मदत करा</translation>
-<translation id="2689103672227170538">तुम्ही Chrome सुरू करता तेव्हा कोणते पृष्ठ दर्शविले जाते हे या विस्ताराने बदलले आहे.</translation>
-<translation id="2765403129283291972">या साइटसाठी Chrome ला तुमचा मायक्रोफोन ॲक्सेस करण्याची परवानगी हवी आहे</translation>
+<translation id="2689103672227170538">तुम्ही Chrome सुरू करता तेव्हा कोणते पेज दर्शविले जाते हे या एक्स्टेंशनने बदलले आहे.</translation>
+<translation id="2765403129283291972">या साइटसाठी Chrome ला तुमचा मायक्रोफोन अॅक्सेस करण्याची परवानगी हवी आहे</translation>
 <translation id="2770231113462710648">डीफॉल्ट ब्राउझर यावर बदला:</translation>
 <translation id="2799223571221894425">पुन्हा लाँच करा</translation>
 <translation id="2847461019998147611">Google Chrome या भाषेत डिस्प्ले करा</translation>
@@ -121,10 +121,10 @@
 <translation id="3898493977366060150">Google smarts सह वेब ब्राउझिंग</translation>
 <translation id="4028693306634653894">Chrome वर अधिक जलद या</translation>
 <translation id="4050175100176540509">नवीनतम आवृत्तीमध्‍ये महत्त्वाच्या सुरक्षितता सुधारणा आणि नवीन वैशिष्ट्ये उपलब्‍ध आहेत.</translation>
-<translation id="4053720452172726777">Google Chrome सानुकूल करा आणि नियंत्रित करा</translation>
+<translation id="4053720452172726777">Google Chrome कस्टमाइझ करा आणि नियंत्रित करा</translation>
 <translation id="4143243756087420366">Chrome नाव आणि फोटो</translation>
-<translation id="4147555960264124640">तुम्ही एका व्यवस्थापित खात्यासह साइन इन करत आहात आणि आपल्या Google Chrome प्रोफाईलवर त्याच्या प्रशासकास नियंत्रण देत आहात. तुमचा Chrome डेटा, जसे की तुमचे ॲप्स, बुकमार्क, इतिहास, पासवर्ड आणि अन्य सेटिंग्ज <ph name="USER_NAME" /> वर कायमच्या बद्ध होतील. तुम्ही Google खाती डॅशबोर्ड द्वारे हा डेटा हटविण्यात सक्षम व्हाल, परंतु तुम्ही दुसर्‍या खात्यासह हा डेटा संबद्ध करण्यात सक्षम होणार नाही. <ph name="LEARN_MORE" /></translation>
-<translation id="4149882025268051530">संग्रहणाचा असंक्षिप्त करण्यास इन्स्टॉलर अयशस्वी. कृपया Google Chrome पुन्हा डाउनलोड करा.</translation>
+<translation id="4147555960264124640">तुम्ही एका व्यवस्थापित खात्यासह साइन इन करत आहात आणि तुमच्या Google Chrome प्रोफाइलवर त्याच्या अॅडमिनिस्ट्रेटरला नियंत्रण देत आहात. तुमचा Chrome डेटा, जसे की तुमचे अॅप्स, बुकमार्क, इतिहास, पासवर्ड आणि अन्य सेटिंग्ज <ph name="USER_NAME" /> वर कायमच्या बद्ध होतील. तुम्ही Google खाती डॅशबोर्ड द्वारे हा डेटा हटवण्यात सक्षम व्हाल, परंतु तुम्ही दुसर्‍या खात्यासह हा डेटा संबद्ध करण्यात सक्षम असणार नाही. <ph name="LEARN_MORE" /></translation>
+<translation id="4149882025268051530">संग्रहण संक्षिप्त करण्यास इन्स्टॉलर अयशस्वी. कृपया Google Chrome पुन्हा डाउनलोड करा.</translation>
 <translation id="424864128008805179">Chrome मधून साइन आउट करायचे?</translation>
 <translation id="4251615635259297716">या खात्यावर आपल्या Chrome डेटा चा दुवा साधायचा?</translation>
 <translation id="4251625577313994583">Chrome तुमच्या iPhone वर मिळवा</translation>
@@ -134,16 +134,16 @@
 <translation id="4343195214584226067"><ph name="EXTENSION_NAME" /> हे Chrome मध्‍ये जोडले गेले आहे</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458462641685292929">Google Chrome वर दुसरे ऑपरेशन प्रगतीपथावर आहे. कृपया नंतर पुन्हा प्रयत्न करा.</translation>
-<translation id="4480040274068703980">साइन इन करण्यात त्रुटीमुळे Chrome OS तुमचा डेटा संकालित करू शकले नाही.</translation>
+<translation id="4480040274068703980">साइन इन करण्यात एररमुळे Chrome OS तुमचा डेटा सिंक करू शकले नाही.</translation>
 <translation id="4561051373932531560">Google Chrome तुम्हाला वेबवरील फोन नंबर क्लिक करू देते आणि त्या नंबरवर Skype द्वारा कॉल करू देते!</translation>
-<translation id="4567424176335768812">तुम्ही <ph name="USER_EMAIL_ADDRESS" /> म्हणून साइन इन केले आहे. आता तुम्ही आपल्या सर्व साइन इन केलेल्या डिव्हाइसेसवरील आपल्या बुकमार्क, इतिहास आणि अन्य सेटिंग्जवर प्रवेश करू शकता.</translation>
+<translation id="4567424176335768812">तुम्ही <ph name="USER_EMAIL_ADDRESS" /> म्हणून साइन इन केले आहे. आता तुम्ही तुमच्या सर्व साइन इन केलेल्या डिव्हाइसवरील तुमच्या बुकमार्क, इतिहास आणि अन्य सेटिंग्ज अॅक्सेस करू शकता.</translation>
 <translation id="4571503333518166079">Chrome सूचना सेटिंग्जवर जा</translation>
 <translation id="459622048091363950">एकदा का Chrome ला ॲक्सेस मिळाला की, वेबसाइट तुम्हाला ॲक्सेससाठी विचारतील.</translation>
-<translation id="4600710005438004015">Chrome नवीनतम आवृत्तीवर अपडेट होऊ शकले नाही, त्यामुळे तुम्ही नवीन वैशिष्ट्ये आणि सीक्युरिटी निराकरणे गमावत आहात.</translation>
+<translation id="4600710005438004015">Chrome नवीनतम आवृत्तीवर अपडेट होऊ शकले नाही, त्यामुळे तुम्ही नवीन वैशिष्ट्ये आणि सुरक्षितता निराकरणे गमावत आहात.</translation>
 <translation id="4631713731678262610">Chrome मेनूमध्‍ये लपवा</translation>
 <translation id="4633000520311261472">Chrome ला अधिक सुरक्षित करण्यासाठी, आम्ही <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> मध्ये सूचीबद्ध नसलेले काही विस्तार अक्षम केले आणि ते कदाचित आपल्या माहिती शिवाय जोडले गेले असावेत.</translation>
-<translation id="4728575227883772061">अनिर्दिष्ट त्रुटीमुळे स्थापना अयशस्वी. जर Google Chrome सध्या चालू असेल तर, कृपया त्यास बंद करा आणि पुन्हा प्रयत्न करा.</translation>
-<translation id="4750550185319565338"><ph name="PLUGIN_NAME" /> सक्षम करण्‍यासाठी Chrome रीस्टार्ट करा</translation>
+<translation id="4728575227883772061">नमूद न केलेल्या एररमुळे स्थापना अयशस्वी. जर Google Chrome सध्या चालू असेल तर, कृपया त्यास बंद करा आणि पुन्हा प्रयत्न करा.</translation>
+<translation id="4750550185319565338"><ph name="PLUGIN_NAME" /> सुरू करण्‍यासाठी Chrome रीस्टार्ट करा</translation>
 <translation id="4754614261631455953">Google Chrome कॅनरी (mDNS-मध्ये)</translation>
 <translation id="4771048833395599659">ही फाईल कदाचित धोकादायक असू शकते, त्यामुळे Chrome ने ती अवरोधित केली आहे.</translation>
 <translation id="4794050651896644714">Chrome मध्ये तपशील सेव्ह करा</translation>
@@ -154,7 +154,7 @@
 <translation id="4953650215774548573">तुमचा डीफॉल्ट ब्राउझर म्हणून Google Chrome सेट करा</translation>
 <translation id="495931528404527476">Chrome मध्ये</translation>
 <translation id="4990567037958725628">Google Chrome कॅनरी</translation>
-<translation id="5028489144783860647">Google Chrome तुमचा डेटा सिंक करू शकले नाही. कृपया तुमची सिंक पासफ्रेझ अपडेट करा.</translation>
+<translation id="5028489144783860647">Google Chrome तुमचा डेटा सिंक करू शकले नाही. कृपया तुमचा सिंक पासफ्रेझ अपडेट करा.</translation>
 <translation id="5062123544085870375">Chrome OS रीस्टार्ट करा</translation>
 <translation id="5090044601776247154">Google Chrome 70 सह सुरू झालेले व्यवस्थापित वापरकर्ता प्रोफाइल यापुढे उपलब्ध होणार नाहीत.</translation>
 <translation id="5132929315877954718">Google Chrome साठी उत्कृष्ट ॲप, खेळ, विस्तार आणि थीम शोधा.</translation>
@@ -183,7 +183,7 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="5906655207909574370">अद्ययावत करणे जवळजवळ पूर्ण झाले! अपडेट करणे समाप्त करण्यासाठी तुमचे डिव्हाइस रीस्टार्ट करा.</translation>
 <translation id="5940385492829620908">तुमचे वेब, बुकमार्क आणि अन्य Chrome सामग्री येथे थेट आहे.</translation>
 <translation id="5941830788786076944">Google Chromeला डीफॉल्ट ब्राउझर बनवा</translation>
-<translation id="6014844626092547096">तुम्ही आता Chrome वर साइन इन आहात! आपल्या प्रशासकाद्वारे संकालन अक्षम केले गेले आहे.</translation>
+<translation id="6014844626092547096">तुम्ही आता Chrome वर साइन इन आहात! तुमच्या अॅडमिनिस्ट्रेटरद्वारे सिंक अक्षम केले गेले आहे.</translation>
 <translation id="6040143037577758943">बंद करा</translation>
 <translation id="6070348360322141662">अतिरिक्त सुरक्षिततेसाठी, Google Chrome तुमचा डेटा एंक्रिप्ट करेल</translation>
 <translation id="6113794647360055231">Chrome आता उत्कृष्ट झाले आहे</translation>
@@ -192,16 +192,16 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="61852838583753520">&amp;Chrome OS अपडेट करा</translation>
 <translation id="6235018212288296708">mDNS रहदारीस अनुमती देण्यासाठी Google Chrome साठी अंतर्गामी नियम.</translation>
 <translation id="6291089322031436445">Chrome विकासक ॲप</translation>
-<translation id="6291549208091401781">आपल्या संगणकावरील सर्व वापरकर्त्यांसाठी Google Chrome आधीच इंस्टॉल केला आहे.</translation>
+<translation id="6291549208091401781">तुमच्या कॉंप्युटरवरील सर्व वापरकर्त्यांसाठी Google Chrome आधीच इंस्टॉल केला आहे.</translation>
 <translation id="6338556085225130112">Google Chrome अपडेट होत आहे</translation>
 <translation id="6368958679917195344"> Chrome OS अतिरिक्त <ph name="BEGIN_LINK_CROS_OSS" />मुक्त स्रोत सॉफ्टवेअर<ph name="END_LINK_CROS_OSS" /> द्वारे शक्य झाले आहे.</translation>
 <translation id="6468844726266617801">{0,plural, =1{एका दिवसामध्ये Chrome पुन्हा लाँच करा}one{# दिवसामध्ये Chrome पुन्हा लाँच करा}other{# दिवसांमध्ये Chrome पुन्हा लाँच करा}}</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome डेव्हलपर</translation>
 <translation id="6566149418543181476">Google Chrome अपडेट करीत आहे (<ph name="PROGRESS_PERCENT" />)</translation>
-<translation id="6598387184982954187">तुम्ही तुमची Chrome आशय सिंक करण्यासाठी <ph name="PROFILE_EMAIL" /> वापरत आहात. तुमचे सिंक प्राधान्य अपडेट करण्यासाठी किंवा Google खात्याशिवाय Chrome वापरण्यासाठी, <ph name="SETTINGS_LINK" /> ला भेट द्या.</translation>
+<translation id="6598387184982954187">तुम्ही तुमची Chrome सामग्री सिंक करण्यासाठी <ph name="PROFILE_EMAIL" /> वापरत आहात. तुमचे सिंक प्राधान्य अपडेट करण्यासाठी किंवा Google खात्याशिवाय Chrome वापरण्यासाठी, <ph name="SETTINGS_LINK" /> ला भेट द्या.</translation>
 <translation id="6600954340915313787">Chrome वर कॉपी केले</translation>
 <translation id="6634887557811630702">Google Chrome अद्ययावत आहे.</translation>
-<translation id="6676384891291319759">इंटरनेटमध्ये प्रवेश करा</translation>
+<translation id="6676384891291319759">इंटरनेट अॅक्सेस करा</translation>
 <translation id="6679975945624592337">Google Chrome बॅकग्राउंडमध्ये चालू द्या</translation>
 <translation id="677276454032249905">तरीही Chrome बंद करायचे?</translation>
 <translation id="683440813066116847">mDNS रहदारीस अनुमती देण्यासाठी Google Chrome कॅनरी साठी अंतर्गामी नियम.</translation>
@@ -215,17 +215,17 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="6989339256997917931">Google Chrome अपडेट केला गेला, परंतु तुम्ही तो किमान 30 दिवसांपासून वापरलेला नाही.</translation>
 <translation id="7023651421574588884">अपडेट लागू करण्यासाठी तुम्ही Chrome OS रीस्टार्ट करणे तुमच्या ॲडमिनिस्ट्रेटरसाठी आवश्यक आहे.</translation>
 <translation id="7098166902387133879">Google Chrome तुमचा मायक्रोफोन वापरत आहे.</translation>
-<translation id="7106741999175697885">कार्य व्यवस्थापक – Google Chrome</translation>
+<translation id="7106741999175697885">टास्क मॅनेजर – Google Chrome</translation>
 <translation id="7164397146364144019">तुम्ही Google कडे संभाव्य सुरक्षितता घटनांच्या तपशीलांचा स्वयंचलितपणे अहवाल देऊन Chrome वापरणे अधिक सुरक्षित आणि सुलभ बनविण्यात मदत करू शकता.</translation>
-<translation id="7242029209006116544">तुम्ही एका व्यवस्थापित खात्यासह साइन इन करत आहात आणि आपल्या Google Chrome प्रोफाईलवर त्याच्या प्रशासकास नियंत्रण देत आहात. तुमचा Chrome डेटा, जसे की तुमचे ॲप्स, बुकमार्क, इतिहास, पासवर्ड आणि अन्य सेटिंग्ज <ph name="USER_NAME" /> वर कायमच्या बद्ध होतील. तुम्ही Google खाती डॅशबोर्डद्वारे हा डेटा हटविण्यात सक्षम व्हाल, परंतु तुम्ही दुसर्‍या खात्यासह हा डेटा संबद्ध करण्यात सक्षम होणार नाही. तुम्ही तुमचा विद्यमान Chrome डेटा विभक्त ठेवण्यासाठी एक नवीन प्रोफाईल वैकल्पिकपणे तयार करू शकता. <ph name="LEARN_MORE" /></translation>
+<translation id="7242029209006116544">तुम्ही एका व्यवस्थापित खात्यासह साइन इन करत आहात आणि तुमच्या Google Chrome प्रोफाइलवर त्याच्या अॅडमिनिस्ट्रेटरला नियंत्रण देत आहात. तुमचा Chrome डेटा, जसे की तुमचे अॅप्स, बुकमार्क, इतिहास, पासवर्ड आणि अन्य सेटिंग्ज <ph name="USER_NAME" /> वर कायमच्या बद्ध होतील. तुम्ही Google खाती डॅशबोर्डद्वारे हा डेटा हटवण्यात सक्षम व्हाल, परंतु तुम्ही दुसर्‍या खात्यासह हा डेटा संबद्ध करण्यात सक्षम असणार नाही. तुम्ही तुमचा विद्यमान Chrome डेटा वेगळा ठेवण्यासाठी एक नवीन प्रोफाइल वैकल्पिकपणे तयार करू शकता. <ph name="LEARN_MORE" /></translation>
 <translation id="7295052994004373688">ही भाषा Google Chrome UI दाखवण्यासाठी वापरली जाते</translation>
 <translation id="7296210096911315575">महत्त्वाचा वापर आणि सुरक्षा माहिती</translation>
-<translation id="7308322188646931570">फायली डाउनलोड करण्यासाठी Chrome ला स्टोरेजचा ॲक्सेस हवा आहे</translation>
+<translation id="7308322188646931570">फायली डाउनलोड करण्यासाठी Chrome ला स्टोरेजचा अॅक्सेस हवा आहे</translation>
 <translation id="7339898014177206373">नवीन विंडो</translation>
 <translation id="7398801000654795464">तुम्ही <ph name="USER_EMAIL_ADDRESS" /> या रुपात Chrome मध्ये साइन इन केले होते. कृपया पुन्हा साइन इन करण्यासाठी समान खाते वापरा.</translation>
 <translation id="7408085963519505752">Chrome OS अटी</translation>
 <translation id="7419046106786626209">आपल्या डोमेनसाठी संकालन उपलब्ध नसल्यामुळे Chrome OS तुमचा डेटा संकालित करू शकले नाही.</translation>
-<translation id="7459554271817304652">तुमची पर्सनलाइझ केलेली ब्राउझर वैशिष्ट्ये सेव्ह करण्यासाठी सिंक सेट करा आणि कोणत्याही कॉंप्युटरवरील Google Chrome वरून ते ॲक्सेस करा.</translation>
+<translation id="7459554271817304652">तुमची पर्सनलाइझ केलेली ब्राउझर वैशिष्ट्ये सेव्ह करण्यासाठी सिंक सेट करा आणि कोणत्याही कॉंप्युटरवरील Google Chrome वरून ते अॅक्सेस करा.</translation>
 <translation id="7473136999113284234">Chrome स्वयंचलितपणे अपडेट होते जेणेकरून आपल्याकडे नेहमी सर्वात नवीन आवृत्ती असते.</translation>
 <translation id="7486227612705979895">ॲड्रेस बारमध्ये सूचना देण्यासाठी Chrome तुमची ड्राइव्ह ॲक्सेस करेल</translation>
 <translation id="748945194546522577">ही फाईल धोकादायक आहे, त्यामुळे Chrome ने ती ब्लॉक केली आहे. तुम्ही प्रगत संरक्षणाद्वारे संरक्षित आहात.</translation>
@@ -242,9 +242,9 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="7761834446675418963">Chrome उघडण्यासाठी तुमचे नाव क्लिक करा आणि ब्राउझिंग प्रारंभ करा.</translation>
 <translation id="7777080907402804672">इमेजचे उपयोगी वर्णन नसल्यास, Chrome तुमच्यासाठी ते देण्याचा प्रयत्न करेल. वर्णने तयार करण्यासाठी, इमेज Google ला पाठवल्या जातात. तुम्ही हे सेटिंग्जमध्ये कधीही बंद करू शकता.</translation>
 <translation id="7781002470561365167">Google Chrome ची नवी आवृत्ती उपलब्ध आहे. </translation>
-<translation id="7787950393032327779">प्रोफाईल दुसर्‍या संगणकावरील (<ph name="HOST_NAME" />) दुसर्‍या Google Chrome प्रक्रियेद्वारे (<ph name="PROCESS_ID" />) वापरले जात असल्याचे दिसते. Chrome ने प्रोफाईल लॉक केले आहे जेणेकरून ते दूषित होत नाही. कोणत्याही इतर प्रक्रिया हे प्रोफाईल वापरत नसल्याची तुम्हाला खात्री असल्यास, तुम्ही प्रोफाईल अनलॉक करू शकता आणि Chrome रीलाँच करू शकता.</translation>
+<translation id="7787950393032327779">प्रोफाइल दुसर्‍या कॉंप्युटरवरील (<ph name="HOST_NAME" />) दुसर्‍या Google Chrome प्रक्रियेद्वारे (<ph name="PROCESS_ID" />) वापरले जात असल्याचे दिसते. Chrome ने प्रोफाइल लॉक केले आहे जेणेकरून ते दूषित होत नाही. कोणत्याही इतर प्रक्रिया हे प्रोफाइल वापरत नसल्याची तुम्हाला खात्री असल्यास, तुम्ही प्रोफाइल अनलॉक करू शकता आणि Chrome पुन्हा एकदा लॉंच करू शकता.</translation>
 <translation id="7808348361785373670">Chrome मधून काढून टाका...</translation>
-<translation id="7825851276765848807">अनिर्दिष्ट त्रुटीमुळे स्थापना अयशस्वी. कृपया Google Chrome पुन्हा डाउनलोड करा.</translation>
+<translation id="7825851276765848807">नमूद न केलेल्या एररमुळे स्थापना अयशस्वी. कृपया Google Chrome पुन्हा डाउनलोड करा.</translation>
 <translation id="7855730255114109580">Google Chrome अपडेट झाले आहे</translation>
 <translation id="7888186132678118370">Chrome ला आपल्या टास्कबार वर पिन करा</translation>
 <translation id="7890208801193284374">तुम्ही कॉंप्युटर शेअर केल्यास, मित्र आणि कुटुंब स्वतंत्रपणे ब्राउझ करू शकतात आणि त्यांना पाहिजे तसे Chrome सेट अप करू शकतात.</translation>
@@ -263,7 +263,7 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="8226081633851087288">{0,plural, =0{Chrome OS आता रीस्टार्ट होईल}=1{Chrome OS एका सेकंदात रीस्टार्ट होईल}one{Chrome OS # सेकंदात रीस्टार्ट होईल}other{Chrome OS # सेकंदामध्ये रीस्टार्ट होईल}}</translation>
 <translation id="825412236959742607">हे पेज खूप जास्त मेमरी वापरत असल्यामुळे, Chrome ने काही आशय काढून टाकला आहे.</translation>
 <translation id="8255190535488645436">Google Chrome तुमचा कॅमेरा आणि मायक्रोफोन वापरत आहे.</translation>
-<translation id="8286862437124483331">Google Chrome संकेतशब्‍द दर्शविण्‍याचा प्रयत्‍न करत आहे. यास अनुमती देण्‍यासाठी तुमचा Windows संकेतशब्‍द टाइप करा.</translation>
+<translation id="8286862437124483331">Google Chrome पासवर्ड दर्शविण्‍याचा प्रयत्‍न करत आहे. यास अनुमती देण्‍यासाठी तुमचा Windows पासवर्ड टाइप करा.</translation>
 <translation id="8290100596633877290">अरेरे! Google Chrome क्रॅश झाला. त्वरित पुन्हा लाँच करायचा?</translation>
 <translation id="8342675569599923794">ही फाईल धोकादायक आहे, त्यामुळे Chrome ने ती अवरोधित केली आहे.</translation>
 <translation id="8370517070665726704">कॉपीराइट <ph name="YEAR" /> Google LLC. सर्व हक्क राखीव.</translation>
@@ -287,12 +287,12 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="870251953148363156">&amp;Google Chrome अपडेट करा</translation>
 <translation id="8704255848199359374">Google शोध मध्ये वापरत असेलेले स्पेल चेकर वापरा. तुम्ही ब्राउझरमध्ये टाइप करत असलेला मजकूर Google कडे पाठवला जातो. तुम्ही हे वर्तन कधीही सेटिंग्ज मध्ये बदलू शकता.</translation>
 <translation id="873133009373065397">Google Chrome डीफॉल्ट ब्राउझर निर्धारित करू शकत नाही किंवा सेट करू शकत नाही</translation>
-<translation id="8736674169840206667">तुमच्या ॲडमिनिस्ट्रेटरला अपडेट लागू करता यावी यासाठी तुम्ही Chrome पुन्हा लाँच करण्याची आवश्यकता आहे</translation>
+<translation id="8736674169840206667">तुमच्या अॅडमिनिस्ट्रेटरला अपडेट लागू करता यावी यासाठी तुम्ही Chrome पुन्हा लाँच करण्याची आवश्यकता आहे</translation>
 <translation id="8788264404293392165">ही भाषा Chrome OS UI दाखवण्यासाठी वापरली जाते</translation>
 <translation id="8791470158600044404">{0,plural, =1{ Chrome OS एका मिनिटामध्ये रीस्टार्ट होईल}one{ Chrome OS # मिनिटामध्ये रीस्टार्ट होईल}other{ Chrome OS # मिनिटांमध्ये रीस्टार्ट होईल}}</translation>
 <translation id="8823341990149967727">Chrome कालबाह्य आहे</translation>
-<translation id="884296878221830158">तुम्ही Chrome सुरू करता किंवा होम बटण क्लिक करता तेव्हा कोणते पृष्ठ दर्शविले जाते हे देखील हे नियंत्रित करते.</translation>
-<translation id="8862326446509486874">आपल्‍याकडे सिस्टम-स्तर स्थापनेसाठी उचित अधिकार नाहीत. प्रशासक म्हणून पुन्हा इन्स्टॉलर चालविण्याचा प्रयत्न करा.</translation>
+<translation id="884296878221830158">तुम्ही Chrome सुरू करता किंवा होम बटण क्लिक करता तेव्हा कोणते पेज दर्शविले जाते ते देखील हे नियंत्रित करते.</translation>
+<translation id="8862326446509486874">तुमच्याकडे सिस्टम स्तरावरील इंस्टॉलसाठी योग्य अधिकार नाहीत. अॅडमिनिस्ट्रेटर म्हणून पुन्हा इंस्टॉलर चालविण्याचा प्रयत्न करा.</translation>
 <translation id="8914504000324227558">Chrome रीलाँच करा</translation>
 <translation id="9026991721384951619">तुमचे खाते साइन इन तपशील कालबाह्य झाल्यामुळे Chrome OS तुमचा डेटा संकालित करू शकले नाही.</translation>
 <translation id="9067395829937117663">Google Chrome साठी Windows 7 किंवा त्यानंतरची आवृत्ती आवश्यक आहे.</translation>

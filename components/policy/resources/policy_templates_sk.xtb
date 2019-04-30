@@ -51,7 +51,7 @@
 
       Ak je toto pravidlo nastavené, prihlasovacia obrazovka sa vždy zobrazí v jazyku, ktorý je určený prvou hodnotou tohto pravidla (z dôvodu kompatibility s nasledujúcimi verziami je pravidlo definované ako zoznam). Ak toto pravidlo nie je nastavené alebo je nastavené na prázdny zoznam, prihlasovacia obrazovka sa zobrazí v jazyku poslednej relácie používateľa. Ak je pravidlo nastavené na hodnotu, ktorá nie je platným jazykom, prihlasovacia obrazovka sa zobrazí v záložnom jazyku (aktuálne americká angličtina).</translation>
 <translation id="1052499923181221200">Toto pravidlo nemá žiadny vplyv, pokiaľ je pravidlo SamlInSessionPasswordChangeEnabled nastavené na hodnotu true.
-      Ak je dané pravidlo nastavené na hodnotu true a toto pravidlo je nastavené (napríklad) na hodnotu 14, znamená to, že používatelia SAML budú na vypršanie platnosti hesla v určitom dátume upozornení 14 dní vopred.
+      Ak je dané pravidlo nastavené na hodnotu true a toto pravidlo je nastavené (napríklad) na hodnotu 14, znamená to, že používatelia SAML budú na vypršanie platnosti hesla s určitým dátumom upozornení 14 dní vopred.
       Môžu to vyriešiť okamžite zmenou hesla v rámci relácie a jeho aktualizovaním pred vypršaním platnosti.
       Tieto upozornenia sa však zobrazia iba vtedy, keď informácie o vypršaní platnosti hesla odošle do zariadenia poskytovateľ identity SAML počas prihlasovacieho postupu SAML.
       Ak toto pravidlo nastavíte na nulu, používatelia nebudú upozornení vopred. Upozornenie sa im zobrazí až po vypršaní platnosti hesla.
@@ -916,13 +916,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
       Ak ho nenastavíte, predvolene bude táto funkcia zakázaná pre spravovaných používateľov a povolená pre nespravovaných používateľov.</translation>
 <translation id="2660846099862559570">Nikdy nepoužívať server proxy</translation>
-<translation id="2663739737868438950">
-      Toto pravidlo platí pre prihlasovaciu obrazovku. Pozrite si aj pravidlo <ph name="SITE_PER_PROCESS_POLICY_NAME" />, ktoré platí pre reláciu používateľa. Obe pravidlá odporúčame nastaviť na rovnakú hodnotu. Ak sa hodnoty nebudú zhodovať, môže dôjsť pri vstupe do relácie používateľa k oneskoreniu, zatiaľ čo sa uplatňuje hodnota určená v pravidle používateľa.
-      Ak chcete vyťažiť z oboch možností, t. j. izolovať s obmedzeným vplyvom na používateľov, pozrite si nastavenie pravidla IsolateOrigins. Pravidlo IsolateOrigins použite so zoznamom webov, ktoré chcete izolovať. Toto nastavenie, SitePerProcess, izoluje všetky weby.
-      Ak toto pravidlo povolíte, jednotlivé weby sa budú spúšťať vo vlastných procesoch.
-      Ak ho zakážete, funkcie IsolateOrigins a SitePerProcess budú zakázané. Používatelia budú môcť naďalej povoliť pravidlo SitePerProcess ručne pomocou príznakov v príkazovom riadku.
-      Ak toto pravidlo nenakonfigurujete, používateľ bude môcť toto nastavenie meniť.
-      </translation>
 <translation id="2672012807430078509">Ovláda povolenie protokolu NTLM na overenie totožnosti v prípade prepojených súborov malých a stredných firiem</translation>
 <translation id="267596348720209223">Určuje kódovanie znakov podporovaných poskytovateľom vyhľadávania. Kódovania sú kódové stránky, napríklad UTF-8, GB2312 alebo ISO-8859-1. Budú vyskúšané v uvedenom poradí.
 
@@ -1412,18 +1405,6 @@ Vzory webových adries v tomto pravidle by nemali byť v konflikte s tými, k
       Jednotlivé položky zoznamu v danom pravidle sú objekty pozostávajúce z dvoch častí: „share_url“ a „mode“. „share_url“ by mala byť webová adresa zdieľaného úložiska a „mode“ by malo byť „drop_down“ alebo „pre_mount“. „drop_down“ označuje, že „share_url“ sa pridá do rozbaľovacieho zoznamu na objavovanie zdieľaných úložísk. Režim „pre_mount“ označuje, že „share_url“ sa pripojí.</translation>
 <translation id="3591527072193107424">Zapnúť funkciu Podpora starších prehliadačov</translation>
 <translation id="3591584750136265240">Konfigurácia správania pri overovaní prihlasovacích údajov</translation>
-<translation id="3624171042292187668">
-      Ak chcete vyťažiť z oboch možností, t. j. izolovať s obmedzeným vplyvom na používateľov, pozrite si nastavenie pravidla IsolateOrigins. Pravidlo IsolateOrigins použite so zoznamom webov, ktoré chcete izolovať. Toto nastavenie, SitePerProcess, izoluje všetky weby.
-      Ak toto pravidlo povolíte, jednotlivé weby sa budú spúšťať vo vlastných procesoch.
-      Ak ho zakážete, funkcie IsolateOrigins a SitePerProcess budú zakázané. Používatelia budú môcť naďalej povoliť pravidlo SitePerProcess ručne pomocou príznakov v príkazovom riadku.
-      Ak toto pravidlo nenakonfigurujete, používateľ bude môcť toto nastavenie meniť.
-      V systéme <ph name="PRODUCT_OS_NAME" /> odporúčame nastaviť na rovnakú hodnotu aj pravidlo zariadenia <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Ak sa hodnoty týchto dvoch pravidiel nezhodujú, môže dôjsť pri vstupe do relácie používateľa k oneskoreniu, zatiaľ čo sa uplatňuje hodnota určená v pravidle používateľa.
-
-
-
-
-      POZNÁMKA: Toto pravidlo neplatí pre Android. Ak chcete povoliť pravidlo SitePerProcess v Androide, použite nastavenie pravidla SitePerProcessAndroid.
-      </translation>
 <translation id="3627678165642179114">Povoliť alebo zakázať webovú službu kontroly pravopisu</translation>
 <translation id="3628480121685794414">Povoliť tlač na jednu stranu</translation>
 <translation id="3631099945620529777">Ak toto pravidlo nastavíte na hodnotu false, tlačidlo Ukončiť proces bude v správcovi úloh zakázané.
@@ -2612,12 +2593,6 @@ Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť 
           Ak je toto nastavenie zakázané alebo nie je nakonfigurované, žiadosti o overenie gnubby nebudú sprostredkované.</translation>
 <translation id="5897913798715600338">Nabíjajte batériu pomocou technológie rýchleho nabíjania.</translation>
 <translation id="5898486742390981550">Keď je v Androide prihlásených viacero používateľov, môže aplikácie používať iba hlavný používateľ.</translation>
-<translation id="5900196529149231477">
-      Toto pravidlo platí pre prihlasovaciu obrazovku. Pozrite si aj pravidlo <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, ktoré platí pre reláciu používateľa. Obe pravidlá odporúčame nastaviť na rovnakú hodnotu. Ak sa hodnoty nebudú zhodovať, môže dôjsť pri vstupe do relácie používateľa k oneskoreniu, zatiaľ čo sa uplatňuje hodnota určená v pravidle používateľa.
-      Ak toto pravidlo povolíte, jednotlivé uvedené zdroje v zozname oddelené čiarkami sa spustia vo vlastných procesoch. Zároveň sa tým izolujú zdroje označené subdoménami, napr. ak uvediete adresu https://example.com/, izolovaná bude aj adresa https://foo.example.com/ ako súčasť webu https://example.com/.
-      Ak ho zakážete, funkcie IsolateOrigins a SitePerProcess budú zakázané. Používatelia budú môcť naďalej povoliť pravidlo SitePerProcess ručne pomocou príznakov v príkazovom riadku.
-      Ak toto pravidlo nenakonfigurujete, predvolené nastavenia izolácie webov v platforme sa použijú pre prihlasovaciu obrazovku.
-      </translation>
 <translation id="5901427587865226597">Iba obojstranná tlač</translation>
 <translation id="5905473632148429217">Povoliť online kontroly OCSP/CRL</translation>
 <translation id="5906199912611534122">Umožňuje aktivovať alebo deaktivovať obmedzenie rýchlosti siete.
@@ -2823,7 +2798,7 @@ Ak značku recommended nastavíte na hodnotu true, používatelia môžu zmeniť
 <translation id="6224304369267200483">Automatické povolenie priamej atestácie bezpečnostných kľúčov webovými adresami alebo doménami</translation>
 <translation id="6233173491898450179">Nastaviť adresár na sťahovanie</translation>
 <translation id="6244210204546589761">Webové adresy otvárané pri spustení</translation>
-<translation id="6255387031094435995">Umožňuje zlúčenie vybraných pravidiel, keď pochádzajú z rôznych zdrojov, s rovnakými rozsahmi a úrovňou.
+<translation id="6255387031094435995">Umožňuje zlúčenie vybraných pravidiel s rovnakými rozsahmi a úrovňou, keď pochádzajú z rôznych zdrojov.
 
         Ak sa pravidlo nachádza v zozname a nastane konflikt medzi dvoma zdrojmi, ktoré majú rovnaké rozsahy a úroveň, hodnoty budú zlúčené do nového zoznamu pravidiel.
 
@@ -3258,7 +3233,7 @@ Ak toto pravidlo nastavíte na hodnotu True, vstavaný klient DNS sa použije (p
       Ak toto nastavenie ponecháte nenastavené, používateľ si bude môcť zvoliť, či chce, aby sa mu pri pokuse o odomknutie zariadenia zobrazovala výzva na zadanie hesla.</translation>
 <translation id="7107148737865880402">Povoľte pravidlo na správu zdieľania napájania USB.
 
-          Určité zariadenia majú konkrétny port USB označený bleskom alebo ikonou batérie, pomocou ktorého sa dajú nabíjať zariadenia (napríklad mobilný telefón) z batérie systému. Toto pravidlo ovplyvňuje správanie daného portu pri nabíjaní, kým je systém v režime spánku alebo vypnutý. Toto pravidlo neovplyvňuje ostatné porty USB a správanie pri nabíjaní, kým je systém aktívny.
+          Určité zariadenia majú konkrétny port USB označený bleskom alebo ikonou batérie a pomocou neho sa dajú nabíjať zariadenia (napríklad mobilný telefón) z batérie systému. Toto pravidlo ovplyvňuje správanie daného portu pri nabíjaní, kým je systém v režime spánku alebo vypnutý. Toto pravidlo neovplyvňuje ostatné porty USB a správanie pri nabíjaní, kým je systém aktívny.
 
           Keď je systém aktívny, port USB bude vždy poskytovať napájanie.
 
@@ -3899,6 +3874,7 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
       Ak je zadané pravidlo DeviceIdleLogoutTimeout, určuje toto pravidlo dobu zobrazenia poľa s upozornením a odpočítavaním, ktoré sa používateľovi zobrazí predtým, než dôjde k odhláseniu.
 
       Hodnota pre toto pravidlo by mala byť zadaná v milisekundách.</translation>
+<translation id="8331479227794770304">Povoliť funkciu sticky keys</translation>
 <translation id="8339420913453596618">Druhý faktor je zakázaný</translation>
 <translation id="8344454543174932833">Importovanie záložiek z predvoleného prehliadača pri prvom spustení</translation>
 <translation id="8357681633047935212">Obmedziť dĺžku relácie používateľa</translation>
@@ -4270,14 +4246,6 @@ Podpora tohto pravidla bola ukončená vo verzii M69 a používa sa namiesto n
       Ak nastavíte hodnotu pravidla na token, ktorý mapuje na zostavu s rýchlou opravou, zariadenie bude aktualizované na zodpovedajúcu zostavu s rýchlou opravou (ak danú aktualizáciu neblokuje iné pravidlo).
 
       Ak toto pravidlo nenastavíte alebo jeho hodnota nemapuje na zostavu s rýchlou opravou, zariadenie sa na túto zostavu neaktualizuje. Ak zariadenie už používa zostavu s rýchlou opravou a pravidlo už nie je nastavené alebo jeho hodnota nemapuje na zostavu s rýchlou opravou, zariadenie sa aktualizuje na bežnú zostavu (ak danú aktualizáciu neblokuje iné pravidlo).</translation>
-<translation id="906631898352326790">
-      Ak toto pravidlo povolíte, jednotlivé uvedené zdroje v zozname oddelené čiarkami sa spustia vo vlastných procesoch. Zároveň sa tým izolujú zdroje označené subdoménami, napr. ak uvediete adresu https://example.com/, izolovaná bude aj adresa https://foo.example.com/ ako súčasť webu https://example.com/.
-      Ak ho zakážete, funkcie IsolateOrigins a SitePerProcess budú zakázané. Používatelia budú môcť naďalej povoliť pravidlo SitePerProcess ručne pomocou príznakov v príkazovom riadku.
-      Ak toto pravidlo nenakonfigurujete, používateľ bude môcť toto nastavenie meniť.
-      V systéme <ph name="PRODUCT_OS_NAME" /> odporúčame nastaviť na rovnakú hodnotu aj pravidlo zariadenia <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Ak sa hodnoty týchto dvoch pravidiel nezhodujú, môže dôjsť pri vstupe do relácie používateľa k oneskoreniu, zatiaľ čo sa uplatňuje hodnota určená v pravidle používateľa.
-
-      POZNÁMKA: Toto pravidlo neplatí pre Android. Ak chcete povoliť pravidlo SitePerProcess v Androide, použite nastavenie pravidla SitePerProcessAndroid.
-      </translation>
 <translation id="9072600218500597787">Nakonfiguruje požadované názvy domén hostiteľa, ktoré budú použité pre hostiteľov vzdialeného prístupu, a zabráni používateľom ich zmeniť.
 
           Ak je toto nastavenie povolené, hostitelia sa dajú zdieľať iba s účtami, zaregistrovanými v niektorej zo zadaných domén.

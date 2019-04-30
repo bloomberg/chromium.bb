@@ -936,13 +936,6 @@
 
       If this policy is left not set, the default is not allowed for managed users and allowed for non-managed users.</translation>
 <translation id="2660846099862559570">Never use a proxy</translation>
-<translation id="2663739737868438950">
-      This policy applies to the sign-in screen. Please see also the <ph name="SITE_PER_PROCESS_POLICY_NAME" /> policy which applies to the user session. It is recommended to set both policies to the same value. If the values don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
-      You might want to look at the IsolateOrigins policy setting to get the best of both worlds, isolation and limited impact for users, by using IsolateOrigins with a list of the sites that you want to isolate. This setting, SitePerProcess, isolates all sites.
-      If the policy is enabled, each site will run in its own process.
-      If the policy is disabled, both IsolateOrigins and SitePerProcess features will be disabled. Users will still be able to enable SitePerProcess manually, via command line flags.
-      If the policy is not configured, the user will be able to change this setting.
-      </translation>
 <translation id="2672012807430078509">Controls enabling NTLM as an authentication protocol for SMB mounts</translation>
 <translation id="267596348720209223">Specifies the character encodings supported by the search provider. Encodings are code page names like UTF-8, GB2312, and ISO-8859-1. They are tried in the order provided.
 
@@ -1430,15 +1423,6 @@
       Each list item of the policy is an object with two members: "share_url" and "mode". "share_url" should be the URL of the share and "mode" should be either "drop_down" or "pre_mount". "drop_down" mode indicates that "share_url" will be added to the share discovery drop-down. "pre_mount" mode indicates that "share_url" will be mounted.</translation>
 <translation id="3591527072193107424">Enable the Legacy Browser Support feature.</translation>
 <translation id="3591584750136265240">Configure the login authentication behaviour</translation>
-<translation id="3624171042292187668">
-      You might want to look at the IsolateOrigins policy setting to get the best of both worlds, isolation and limited impact for users, by using IsolateOrigins with a list of the sites that you want to isolate. This setting, SitePerProcess, isolates all sites.
-      If the policy is enabled, each site will run in its own process.
-      If the policy is disabled, then both IsolateOrigins and SitePerProcess features will be disabled. Users will still be able to enable SitePerProcess manually, via command line flags.
-      If the policy is not configured, the user will be able to change this setting.
-      On <ph name="PRODUCT_OS_NAME" />, it is recommended to also set the <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> device policy to the same value. If the values specified by the two policies don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
-
-      NOTE: This policy does not apply on Android. To enable SitePerProcess on Android, use the SitePerProcessAndroid policy setting.
-      </translation>
 <translation id="3627678165642179114">Enable or disable spell checking web service</translation>
 <translation id="3628480121685794414">Enable simplex printing</translation>
 <translation id="3631099945620529777">If set to false, the 'End process' button is disabled in the Task Manager.
@@ -2636,12 +2620,6 @@
           If this setting is disabled or not configured, gnubby authentication requests will not be proxied.</translation>
 <translation id="5897913798715600338">Charge battery using fast charging technology.</translation>
 <translation id="5898486742390981550">When multiple users are logged in, only the primary user can use Android apps.</translation>
-<translation id="5900196529149231477">
-      This policy applies to the sign-in screen. Please see also the <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> policy which applies to the user session. It is recommended to set both policies to the same value. If the values don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
-      If the policy is enabled, each of the named origins in a comma-separated list will run in its own process. This will also isolate origins named by subdomains; e.g. specifying https://example.com/ will also cause https://foo.example.com/ to be isolated as part of the https://example.com/ site.
-      If the policy is disabled, both IsolateOrigins and SitePerProcess features will be disabled. Users will still be able to enable IsolateOrigins manually, via command line flags.
-      If the policy is not configured, the platform default site isolation settings will be used for the sign-in screen.
-      </translation>
 <translation id="5901427587865226597">Duplex printing only</translation>
 <translation id="5905473632148429217">Enable online OCSP/CRL checks</translation>
 <translation id="5906199912611534122">Allows enabling or disabling network throttling.
@@ -3925,6 +3903,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       When DeviceIdleLogoutTimeout is specified, this policy defines the duration of the warning box with a count down timer that is shown to the user before the logout is executed.
 
       The policy value should be specified in milliseconds.</translation>
+<translation id="8331479227794770304">Enable sticky keys</translation>
 <translation id="8339420913453596618">Second factor disabled</translation>
 <translation id="8344454543174932833">Import bookmarks from default browser on first run</translation>
 <translation id="8357681633047935212">Limit the length of a user session</translation>
@@ -4313,18 +4292,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       If policy value is set to a token that maps to a Quick Fix Build, the device will be updated to the corresponding Quick Fix Build if the update is not blocked by another policy.
 
       If this policy is not set, or if its value does not map to a Quick Fix Build, then the device won't be updated to a Quick Fix Build. If the device is already running a Quick Fix Build and the policy is not set anymore or its value does not map to a Quick Fix Build anymore, then the device will be updated to a regular build if the update is not blocked by another policy.</translation>
-<translation id="906631898352326790">
-      If the policy is enabled, each of the named origins in a
-      comma-separated list will run in its own process. This will also isolate
-      origins named by subdomains; e.g. specifying https://example.com/ will
-      also cause https://foo.example.com/ to be isolated as part of the
-      https://example.com/ site.
-      If the policy is disabled, then both IsolateOrigins and SitePerProcess features will be disabled. Users will still be able to enable IsolateOrigins manually, via command line flags.
-      If the policy is not configured, the user will be able to change this setting.
-      On <ph name="PRODUCT_OS_NAME" />, it is recommended to also set the <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> device policy to the same value. If the values specified by the two policies don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
-
-      NOTE: This policy does not apply on Android. To enable IsolateOrigins on Android, use the IsolateOriginsAndroid policy setting.
-      </translation>
 <translation id="9072600218500597787">Configures the required host domain names that will be imposed on remote access hosts and prevents users from changing it.
 
           If this setting is enabled, then hosts can be shared only using accounts registered on one of the specified domain names.

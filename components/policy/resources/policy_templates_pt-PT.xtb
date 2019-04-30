@@ -51,8 +51,8 @@
 <translation id="1049138910114524876">Configura o local que é aplicado no ecrã de início de sessão do <ph name="PRODUCT_OS_NAME" />.
 
       Se esta política estiver definida, o ecrã de início de sessão é sempre apresentado no local que é fornecido pelo primeiro valor desta política (a política está definida como uma lista para a compatibilidade com as versões futuras). Se esta política não estiver definida ou estiver definida como uma lista vazia, o ecrã de início de sessão é apresentado no local da última sessão do utilizador. Se esta política estiver definida como um valor que não é um local válido, o ecrã de início de sessão é apresentado num local alternativo (atualmente, en-US).</translation>
-<translation id="1052499923181221200">Esta política não tem qualquer efeito, a menos que SamlInSessionPasswordChangeEnabled esteja definida como verdadeira.
-      Se essa política estiver definida como verdadeira e esta política estiver definida como (por exemplo) 14, significa que os utilizadores SAML são notificados 14 dias antes da data de validade das respetivas palavras-passe.
+<translation id="1052499923181221200">Esta política não tem qualquer efeito, a menos que a política SamlInSessionPasswordChangeEnabled esteja definida como verdadeira.
+      Se essa política estiver definida como verdadeira e esta política estiver definida como (por exemplo) 14, isto significa que os utilizadores SAML são notificados 14 dias antes da data de validade das respetivas palavras-passe.
       Assim, estes utilizadores podem atuar imediatamente e alterar a palavra-passe com a sessão iniciada, para a atualizar antes de expirar.
       No entanto, estas notificações apenas podem ser apresentadas se as informações de validade da palavra-passe forem enviadas para o dispositivo pelo fornecedor de identidade SAML, durante o fluxo de início de sessão SAML.
       Definir esta política como zero significa que os utilizadores não vão ser notificados com antecedência, mas sim apenas depois de a palavra-passe expirar.
@@ -326,7 +326,7 @@
 
           Por predefinição, quando uma estação de ancoragem está ligada a alguns modelos de dispositivo, o endereço MAC designado da estação de ancoragem do dispositivo é utilizado para identificar o dispositivo na Ethernet. Esta política permite que o administrador altere a origem do endereço MAC quando o dispositivo está ancorado.
 
-          Se "DeviceDockMacAddress" estiver selecionado ou se a política não for definida, é utilizado o endereço MAC designado da estação de ancoragem do dispositivo.
+          Se "DeviceDockMacAddress" estiver selecionado ou se a política não for definida, será utilizado o endereço MAC designado da estação de ancoragem do dispositivo.
 
           Se "DeviceNicMacAddress" estiver selecionado, é utilizado o endereço MAC da placa NIC (controlador de interface de rede) do dispositivo.
 
@@ -764,7 +764,7 @@
 <translation id="2327252517317514801">Definir domínios com permissão para aceder ao G Suite</translation>
 <translation id="2356878440219553005">Especifica a política de gestão de energia do modo de carregamento da bateria.
 
-          Controle dinamicamente o carregamento da bateria para minimizar o desgaste da bateria provocado pelo esforço da bateria e aumente a autonomia da mesma.
+          Controle dinamicamente o carregamento da bateria para minimizar o desgaste provocado pelo esforço de utilização e aumente a respetiva autonomia.
 
           Se estiver selecionado o modo de carregamento personalizado da bateria, então tem de especificar DeviceBatteryChargeCustomStartCharging e DeviceBatteryChargeCustomStopCharging.
 
@@ -924,13 +924,6 @@
 
       Se esta política for deixada por definir, a predefinição não é autorizada para utilizadores geridos e autorizada para utilizadores não geridos.</translation>
 <translation id="2660846099862559570">Nunca utilizar proxy</translation>
-<translation id="2663739737868438950">
-      Esta política aplica-se ao ecrã de início de sessão. Consulte também a política <ph name="SITE_PER_PROCESS_POLICY_NAME" /> que se aplica à sessão do utilizador. É recomendável definir ambas as políticas com o mesmo valor. Se os valores não coincidirem, pode ocorrer um atraso ao entrar numa sessão de utilizador enquanto o valor especificado pela Política do Utilizador é aplicado.
-      Recomendamos que consulte a definição da política IsolateOrigins para obter o melhor de dois mundos: isolamento e impacto limitado para os utilizadores, ao utilizar a IsolateOrigins com uma lista dos sites que pretende isolar. Esta definição, SitePerProcess, isola todos os sites.
-      Se a política estiver ativada, cada site é executado no seu próprio processo.
-      Se a política estiver desativada, as funcionalidades IsolateOrigins e SitePerProcess serão desativadas. Os utilizadores ainda conseguem ativar SitePerProcess manualmente, através dos sinalizadores da linha de comandos.
-      Se a política não estiver configurada, o utilizador pode alterar esta definição.
-      </translation>
 <translation id="2672012807430078509">Controla a ativação de NTLM como protocolo de autenticação para montagens SMB</translation>
 <translation id="267596348720209223">Especifica as codificações de caracteres suportadas pelo fornecedor de pesquisas. As codificações são nomes de páginas de códigos, como UTF-8, GB2312 e ISO-8859-1, e são selecionadas por esta ordem. Esta política é opcional. Se não for definida, a codificação predefinida será UTF-8. Esta política aplica-se apenas se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
 <translation id="268577405881275241">Ativar a funcionalidade proxy de compressão de dados</translation>
@@ -1198,7 +1191,7 @@
 
       Se definir esta política como uma opção que deixou de ser suportada ("AskUser" ou "AskForEcryptfsArcUsers"), então esta é processada como se tivesse selecionado "Migrate".
 
-      Esta politica não se aplica aos utilizadores de quiosque. Se esta política não for definida, o dispositivo apresenta um comportamento semelhante a "DisallowArc".</translation>
+      Esta politica não se aplica aos utilizadores de quiosque. Se esta política não for definida, o dispositivo apresentará um comportamento semelhante a "DisallowArc".</translation>
 <translation id="3086995894968271156">Configura o Recetor do Cast no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3088796212846734853">Permite definir uma lista de padrões de URL que especificam os sites autorizados a apresentar imagens.
 
@@ -1410,15 +1403,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Cada item de lista da política é um objeto com dois membros: "share_url" e "mode". "share_url" deve ser o URL da partilha e "mode" deve ser "drop_down" ou "pre_mount". O modo "drop_down" indica que "share_url" será adicionado à lista pendente da deteção de partilhas. O modo "pre_mount" indica que "share_url" será montado.</translation>
 <translation id="3591527072193107424">Ativar a funcionalidade Compatibilidade com o navegador antigo</translation>
 <translation id="3591584750136265240">Configurar o comportamento de autenticação de início de sessão</translation>
-<translation id="3624171042292187668">
-      Recomendamos que consulte a definição da política IsolateOrigins para obter o melhor de dois mundos: isolamento e impacto limitado para os utilizadores, ao utilizar a IsolateOrigins com uma lista dos sites que pretende isolar. Esta definição, SitePerProcess, isola todos os sites.
-      Se a política estiver ativada, cada site é executado no seu próprio processo.
-      Se a política estiver desativada, as funcionalidades IsolateOrigins e SitePerProcess serão desativadas. Os utilizadores ainda conseguem ativar SitePerProcess manualmente através dos sinalizadores da linha de comandos.
-      Se a política não estiver configurada, o utilizador pode alterar esta definição.
-      No <ph name="PRODUCT_OS_NAME" />, recomenda-se que defina a política do dispositivo <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> para o mesmo valor. Se os valores especificados pelas duas políticas não coincidirem, pode ocorrer um atraso ao entrar numa sessão de utilizador enquanto o valor especificado pela Política do Utilizador é aplicado.
-
-      NOTA: esta política não é aplicável no Android. Para ativar SitePerProcess no Android, utilize a definição da política SitePerProcessAndroid.
-      </translation>
 <translation id="3627678165642179114">Ativar ou desativar o serviço Web de verificação ortográfica</translation>
 <translation id="3628480121685794414">Ativar impressão simples</translation>
 <translation id="3631099945620529777">Se estiver definida como falso, o botão "Terminar processo" está desativado no Gestor de tarefas.
@@ -1614,7 +1598,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Esta política só é utilizada se DeviceBatteryChargeMode estiver definida como personalizada.
 
-          Se esta política não for configurada ou não for definida, é aplicado o modo de carregamento da bateria padrão.</translation>
+          Se esta política não for configurada ou não for definida, será aplicado o modo de carregamento da bateria padrão.</translation>
 <translation id="3925377537407648234">Definir a resolução do ecrã e o fator de escala</translation>
 <translation id="3939893074578116847">Envie pacotes de rede para o servidor de gestão para monitorizar o estado online, de modo a permitir
       que o servidor detete se o dispositivo está offline.
@@ -2575,12 +2559,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
           Se esta definição estiver desativada ou não estiver configurada, os pedidos de autenticação não serão utilizados com proxy.</translation>
 <translation id="5897913798715600338">Carregue a bateria com a tecnologia de Carregamento rápido.</translation>
 <translation id="5898486742390981550">Quando vários utilizadores têm sessão iniciada, apenas o utilizador principal pode utilizar aplicações para Android.</translation>
-<translation id="5900196529149231477">
-      Esta política aplica-se ao ecrã de início de sessão. Consulte também a política <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> que se aplica à sessão do utilizador. É recomendável definir ambas as políticas com o mesmo valor. Se os valores não coincidirem, pode ocorrer um atraso ao entrar numa sessão de utilizador enquanto o valor especificado pela Política do Utilizador é aplicado.
-      Se a política estiver ativada, cada uma das origens nomeadas numa lista separada por vírgulas é executada no seu próprio processo. Deste modo, são também isoladas as origens nomeadas por subdomínios. Por exemplo, ao especificar https://example.com/, https://foo.example.com/ também é isolado como parte do site https://example.com/.
-      Se a política estiver desativada, as funcionalidades IsolateOrigins e SitePerProcess serão desativadas. Os utilizadores ainda conseguem ativar IsolateOrigins manualmente através dos sinalizadores da linha de comandos.
-      Se a política não estiver configurada, são utilizadas as predefinições de isolamento de site da plataforma para o ecrã de início de sessão.
-      </translation>
 <translation id="5901427587865226597">Apenas impressão duplex</translation>
 <translation id="5905473632148429217">Ative as verificações OCSP/CRL online</translation>
 <translation id="5906199912611534122">Permite a ativação ou a desativação do controlo de rede.
@@ -3133,13 +3111,13 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           O modo de carregamento da bateria avançado permite que o utilizador maximize o estado da bateria. No modo de carregamento avançado o sistema utiliza um algoritmo de carregamento padrão e outras técnicas durante as horas de inatividade para maximizar o estado da bateria. Durante as horas de atividade, é utilizado o carregamento rápido. Este carregamento rápido permite carregar a bateria mais rapidamente e, consequentemente, esta fica totalmente carregada mais cedo. Em cada dia, o horário durante o qual o sistema é utilizado mais intensamente é especificado pela hora de início e pela duração.
 
-          Se esta política for definida como verdadeira e DeviceAdvancedBatteryChargeModeDayConfig estiver definido, então o modo de carregamento avançado da bateria está sempre ativado, se for suportado pelo dispositivo.
+          Se esta política for definida como verdadeira e DeviceAdvancedBatteryChargeModeDayConfig estiver definido, então o modo de carregamento avançado da bateria estará sempre ativado, se for suportado pelo dispositivo.
 
-          Se esta política for definida como falsa, o modo de carregamento avançado da bateria está sempre desativado.
+          Se esta política for definida como falsa, o modo de carregamento avançado da bateria estará sempre desativado.
 
-          Se definir esta política, os utilizadores não a podem alterar nem substituir.
+          Se definir esta política, os utilizadores não a poderão alterar nem substituir.
 
-          Se esta política não for definida, o modo de carregamento avançado da bateria está desativado e não pode ser ativado pelo utilizador.</translation>
+          Se esta política não for definida, o modo de carregamento avançado da bateria estará desativado e não poderá ser ativado pelo utilizador.</translation>
 <translation id="6972540544240464302">Selecionar configuração do programador de tarefas</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6994082778848658360">Especifica de que forma o hardware de elemento seguro integrado pode ser utilizado para fornecer uma autenticação de fator duplo, se for compatível com esta funcionalidade. O botão ligar/desligar do computador é utilizado para detetar a presença física do utilizador.
@@ -3211,11 +3189,11 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Quando o sistema está ativo, a porta USB fornece sempre energia.
 
-          Quando o sistema está suspenso, se esta política estiver definida como verdadeira, então é fornecida energia à porta USB quando o dispositivo estiver ligado à tomada ou se o nível de bateria for &gt; 50%. De outro modo, não é fornecida energia.
+          Quando o sistema está suspenso, se esta política estiver definida como verdadeira, é fornecida energia à porta USB quando o dispositivo estiver ligado à tomada ou se o nível de bateria for &gt; 50%. De outro modo, não é fornecida energia.
 
           Quando o sistema está desligado, se esta política estiver definida como verdadeira, então é fornecida energia à porta USB quando o dispositivo estiver ligado à tomada. De outro modo, não é fornecida energia.
 
-          Se esta política não for definida, então está ativa e não pode ser definida pelo utilizador.</translation>
+          Se esta política não for definida, então estará ativa e não poderá ser desativada pelo utilizador.</translation>
 <translation id="7115494316187648452">Determina se um processo do <ph name="PRODUCT_NAME" /> é iniciado ao iniciar sessão no SO e continua a ser executado quando a última janela do navegador é fechada, permitindo que as aplicações em segundo plano e a sessão de navegação atual permaneçam ativas, incluindo todos os cookies de sessão. O processo em segundo plano apresenta um ícone no tabuleiro do sistema e pode sempre ser fechado a partir daí.
 
       Se esta política estiver definida como verdadeira, o modo de segundo plano é ativado e não pode ser controlado pelo utilizador nas definições do navegador.
@@ -3469,9 +3447,9 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           O valor DeviceBatteryChargeCustomStartCharging tem de ser inferior ao valor DeviceBatteryChargeCustomStopCharging.
 
-          Esta política só é utilizada se DeviceBatteryChargeMode estiver definida como personalizada.
+          Esta política só é utilizada se a política DeviceBatteryChargeMode estiver definida como personalizada.
 
-          Se esta política não for configurada ou não for definida, é aplicado o modo de carregamento da bateria padrão.</translation>
+          Se esta política não for configurada ou não for definida, será aplicado o modo de carregamento da bateria padrão.</translation>
 <translation id="759957074386651883">Definições da Navegação segura</translation>
 <translation id="7604169113182304895">As aplicações para Android podem escolher voluntariamente aceitar esta lista. Não as pode forçar a aceitá-la.</translation>
 <translation id="7612157962821894603">Sinalizadores ao nível do sistema a aplicar ao arranque do <ph name="PRODUCT_NAME" /></translation>
@@ -3547,7 +3525,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="7715711044277116530">Percentagem que determina a escala do atraso de esbatimento do ecrã no modo de apresentação</translation>
 <translation id="7716781462866245042">Defina o modo de carregamento da bateria avançado na configuração diária.
 
-          Esta política só é utilizada se DeviceAdvancedBatteryChargeModeEnabled estiver definida como verdadeira.
+          Esta política só é utilizada se a política DeviceAdvancedBatteryChargeModeEnabled estiver definida como verdadeira.
 
           Se esta política não estiver configurada ou permanecer indefinida, o modo de carregamento avançado está sempre desativado.
 
@@ -3830,6 +3808,7 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
       Quando a política DeviceIdleLogoutTimeout é especificada, define a duração da caixa de aviso com uma contagem decrescente que é mostrada ao utilizador antes do encerramento da sessão.
 
       O valor da política deve ser especificado em milissegundos.</translation>
+<translation id="8331479227794770304">Ativar teclas aderentes</translation>
 <translation id="8339420913453596618">Fator duplo desativado</translation>
 <translation id="8344454543174932833">Importar marcadores a partir do navegador predefinido na primeira execução</translation>
 <translation id="8357681633047935212">Limitar a duração de uma sessão de utilizador</translation>
@@ -4170,7 +4149,7 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 
       Quando a política está definida como ativada, as extensões que se enquadrarem nas listas mencionadas anteriormente (se já estiverem instaladas numa máquina) são removidas completamente dessa máquina (incluindo os dados do utilizador locais).
 
-      Quando a política está definida como desativada ou não está definida, as extensões que se enquadrarem nas listas mencionadas anteriormente (se já estiverem instaladas numa máquina e existirem na lista negra <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />) são desativadas na máquina e não são instaladas.</translation>
+      Quando a política está definida como desativada ou não está definida, as extensões que se enquadrarem nas listas mencionadas anteriormente (se já estiverem instaladas numa máquina e existirem na lista negra <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />) são desativadas na máquina e não são desinstaladas.</translation>
 <translation id="9027787254195333560">Esta política permite-lhe configurar a imagem do avatar que representa o utilizador no ecrã de início de sessão. A política é definida ao especificar o URL a partir do qual o <ph name="PRODUCT_OS_NAME" /> pode transferir a imagem do avatar e um hash criptográfico utilizado para validar a integridade da transferência. A imagem tem de estar no formato JPEG e o tamanho não pode exceder 512 kB. O URL tem de ser acessível sem qualquer autenticação.
 
       A imagem do avatar é transferida e colocada em cache. Será transferida novamente sempre que o URL ou o hash forem alterados.
@@ -4213,14 +4192,6 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
       Se o valor da política for definido como um token que mapeia para uma Compilação de correção rápida, o dispositivo será atualizado para a Compilação de correção rápida correspondente, caso a atualização não seja bloqueada por nenhuma outra política.
 
       Se esta política não for definida ou se o respetivo valor não mapear para uma Compilação de correção rápida, o dispositivo não será atualizado para uma Compilação de correção rápida. Se o dispositivo já estiver a executar uma Compilação de correção rápida e a política já não estiver definida ou o respetivo valor já não mapear para uma Compilação de correção rápida, o dispositivo será atualizado para uma compilação normal, caso a atualização não seja bloqueada por nenhuma outra política.</translation>
-<translation id="906631898352326790">
-      Se a política estiver ativada, cada uma das origens nomeadas numa lista separada por vírgulas é executada no seu próprio processo. Deste modo, são também isoladas as origens nomeadas por subdomínios. Por exemplo, ao especificar https://example.com/, https://foo.example.com/ também é isolado como parte do site https://example.com/.
-      Se a política estiver desativada, as funcionalidades IsolateOrigins e SitePerProcess serão desativadas. Os utilizadores ainda conseguem ativar SitePerProcess manualmente através dos sinalizadores da linha de comandos.
-      Se a política não estiver configurada, o utilizador pode alterar esta definição.
-      No <ph name="PRODUCT_OS_NAME" />, recomenda-se que defina a política do dispositivo <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> com o mesmo valor. Se os valores especificados pelas duas políticas não coincidirem, pode ocorrer um atraso ao entrar numa sessão de utilizador enquanto o valor especificado pela Política do Utilizador é aplicado.
-
-      NOTA: esta política não é aplicável no Android. Para ativar IsolateOrigins no Android, utilize a definição da política IsolateOriginsAndroid.
-      </translation>
 <translation id="9072600218500597787">Configura os nomes de domínio do anfitrião obrigatórios que são impostos aos anfitriões de acesso remoto e impede os utilizadores de os alterarem.
 
           Se esta definição estiver ativada, os anfitriões apenas podem ser partilhados através de contas registadas num dos nomes de domínio especificados.

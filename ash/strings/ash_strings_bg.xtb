@@ -198,7 +198,7 @@
 <translation id="3900355044994618856">Сесията ви ще приключи след <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="3901991538546252627">Установява се връзка със: <ph name="NAME" /></translation>
 <translation id="394485226368336402">Настройки за звука</translation>
-<translation id="3962859241508114581">Предишният запис</translation>
+<translation id="3962859241508114581">Предишен запис</translation>
 <translation id="397105322502079400">Изчислява се...</translation>
 <translation id="3995138139523574647">устройство с USB-C (задният десен порт)</translation>
 <translation id="4017989525502048489">Лазерна показалка</translation>
@@ -229,7 +229,7 @@
 <translation id="4421231901400348175">Споделяте с/ъс <ph name="HELPER_NAME" /> контрола върху екрана си чрез отдалечено съдействие.</translation>
 <translation id="4430019312045809116">Звук</translation>
 <translation id="4450893287417543264">Да не се показва отново</translation>
-<translation id="4477350412780666475">Следващият запис</translation>
+<translation id="4477350412780666475">Следващ запис</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Несдвоени устройства</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: Установява се връзка...</translation>

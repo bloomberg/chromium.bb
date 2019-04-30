@@ -931,13 +931,6 @@
 
       Ja šī politika netiks iestatīta, funkcijas izmantošana pēc noklusējuma nav atļauta pārvaldītiem lietotājiem, bet ir atļauta nepārvaldītiem lietotājiem.</translation>
 <translation id="2660846099862559570">Nekad nelietot starpniekserveri</translation>
-<translation id="2663739737868438950">
-      Šī politika attiecas uz pierakstīšanās ekrānu. Lūdzu, skatiet arī politiku “<ph name="SITE_PER_PROCESS_POLICY_NAME" />”, kas attiecas uz lietotāja sesiju. Ieteicams abām politikām iestatīt vienādu vērtību. Ja tiks iestatītas atšķirīgas vērtības, atverot lietotāja sesiju, var rasties aizkave, kamēr tiek piemērota lietotāja politikā norādītā vērtība.
-      Lai gūtu vislabākos rezultātus, izolētu tikai vietnes, kuras vēlaties izolēt, un ierobežotu ietekmi uz lietotājiem, ieteicams izmantot politikas “IsolateOrigins” iestatījumu. Izmantojot politiku “SitePerProcess”, tiek izolētas visas vietnes.
-      Ja politika ir iespējota, katrai vietnei tiks izpildīts atsevišķs process.
-      Ja politika ir atspējota, politiku “IsolateOrigins” un “SitePerProcess” funkcijas tiks atspējotas. Lietotāji joprojām varēs manuāli iespējot politiku “SitePerProcess”, izmantojot komandrindas atzīmes.
-      Ja politika nav konfigurēta, lietotājs varēs mainīt šo iestatījumu.
-      </translation>
 <translation id="2672012807430078509">Vadīklas, kas iespējo NTLM kā autentifikācijas protokolu SMB failu kopīgošanai</translation>
 <translation id="267596348720209223">Norāda meklētājprogrammas atbalstītos rakstzīmju kodējumus. Kodējumi ir kodu lapu nosaukumi, piemēram, UTF-8, GB2312 un ISO-8859-1. Tie tiek izmēģināti ievadītajā secībā.
 
@@ -1369,7 +1362,7 @@ Ja šim iestatījumam ir izvēlēta vērtība “Izslēgts” vai vērtība nav 
 
           Ja politika nav iestatīta vai iestatījums ir “False” (aplams), jaudas pārvaldības aizkaves un sesijas ilguma ierobežojuma uzskaite tiek sākta nekavējoties pēc sesijas sākuma.</translation>
 <translation id="3478024346823118645">Notīrīt lietotāja datus izrakstīšanās brīdī</translation>
-<translation id="3480961938508521469">Pilnībā uzlādēt akumulatoru ar standarta ātrumu.</translation>
+<translation id="3480961938508521469">Pilnībā uzlādēt akumulatoru standarta ātrumā.</translation>
 <translation id="348495353354674884">Iespējot virtuālo tastatūru</translation>
 <translation id="3487623755010328395">
         Ja šī politika ir iestatīta, <ph name="PRODUCT_NAME" /> mēģinās reģistrēties un lietot saistīto mākoņa politiku visiem profiliem.
@@ -1426,15 +1419,6 @@ Ja šim iestatījumam ir izvēlēta vērtība “Izslēgts” vai vērtība nav 
       Katrs politikas saraksta vienums ir objekts ar diviem elementiem: “share_url” un “mode”. Elementam “share_url” ir jābūt kopīgošanas vietrādim URL, un elementam “mode” ir jābūt “drop_down” vai “pre_mount”. Režīms “drop_down” (nolaižams) norāda, ka elements “share_url” tiks pievienots kopīgoto failu meklēšanas nolaižamajai izvēlnei. Režīms “pre_mount” (iepriekš iekļauts) norāda, ka elements “share_url” tiks iekļauts.</translation>
 <translation id="3591527072193107424">Iespējot funkciju Mantoto pārlūku atbalsts.</translation>
 <translation id="3591584750136265240">Pieteikšanās autentifikācijas darbības konfigurēšana</translation>
-<translation id="3624171042292187668">
-      Lai gūtu vislabākos rezultātus, izolētu tikai vietnes, kuras vēlaties izolēt, un ierobežotu ietekmi uz lietotājiem, ieteicams izmantot “IsolateOrigins” politikas iestatījumu. Izmantojot politiku “SitePerProcess”, tiek izolētas visas vietnes.
-      Ja politika ir iespējota, katrai vietnei tiks izpildīts atsevišķs process.
-      Ja politika ir atspējota, politiku “IsolateOrigins” un “SitePerProcess” funkcijas tiks atspējotas. Lietotāji joprojām varēs manuāli iespējot politiku “SitePerProcess”, izmantojot komandrindas atzīmes.
-      Ja politika nav konfigurēta, lietotājs varēs mainīt šo iestatījumu.
-      Pārlūkprogrammā <ph name="PRODUCT_OS_NAME" /> ieteicams iestatīt to pašu vērtību arī ierīces politikai “<ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />”. Ja abās politikās norādītās vērtības nesakritīs, atverot lietotāja sesiju, var rasties aizkave, kamēr tiek piemērota lietotāja politikā norādītā vērtība.
-
-      Piezīme. Šī politika neattiecas uz operētājsistēmu Android. Lai iespējotu politiku “SitePerProcess” operētājsistēmā Android, izmantojiet politikas “SitePerProcessAndroid” iestatījumu.
-      </translation>
 <translation id="3627678165642179114">Pareizrakstības pārbaudes tīmekļa pakalpojuma iespējošana vai atspējošana</translation>
 <translation id="3628480121685794414">Iespējot vienpusējo drukāšanu</translation>
 <translation id="3631099945620529777">Ja ir iestatīta vērtība “False”, uzdevumu pārvaldniekā ir atspējota poga Beigt procesu.
@@ -1534,13 +1518,13 @@ Ja šim iestatījumam ir izvēlēta vērtība “Izslēgts” vai vērtība nav 
 <translation id="3826475866868158882">Iespējoti Google atrašanās vietu pakalpojumi</translation>
 <translation id="3831054243924627613">Šī politika kontrolē Android dublēšanas un atjaunošanas sākotnējo stāvokli.
 
-      Ja šī politika nav konfigurēta vai tai ir iestatīta vērtība “<ph name="BR_DISABLED" />”, Android dublēšana un atjaunošana sākotnēji ir atspējota.
+      Ja šī politika nav konfigurēta vai tai ir iestatīta vērtība “<ph name="BR_DISABLED" />”, Android dublēšana un atjaunošana ir sākotnēji atspējota.
 
-      Ja šai politikai ir iestatīta vērtība “<ph name="BR_ENABLED" />”, Android dublēšana un atjaunošana sākotnēji ir iespējota.
+      Ja šai politikai ir iestatīta vērtība “<ph name="BR_ENABLED" />”, Android dublēšana un atjaunošana ir sākotnēji iespējota.
 
       Ja šai politikai ir iestatīta vērtība “<ph name="BR_UNDER_USER_CONTROL" />”, lietotājam tiek prasīts, vai lietot Android dublēšanu un atjaunošanu. Ja lietotājs iespējo dublēšanu un atjaunošanu, Android lietotņu dati tiek augšupielādēti Android dublējuma serveros un ar šo serveru starpniecību tiek atjaunoti, kad atkārtoti tiek instalētas saderīgas lietotnes.
 
-      Ņemiet vērā, ka šī politika kontrolē Android dublēšanas un atjaunošanas stāvokli tikai sākotnējās iestatīšanas laikā. Lietotājs pēc tam var atvērt Android iestatījumus un ieslēgt/izslēgt Android dublēšanu un atjaunošanu.</translation>
+      Ņemiet vērā, ka šī politika kontrolē Android dublēšanas un atjaunošanas stāvokli tikai sākotnējās iestatīšanas laikā. Pēc tam lietotājs var atvērt Android iestatījumus un ieslēgt/izslēgt Android dublēšanu un atjaunošanu.</translation>
 <translation id="3831376478177535007">Šim iestatījumam esot iespējotam, pārlūkā <ph name="PRODUCT_NAME" /> ir atļauti sertifikāti, kas izdoti ar Symantec Corporation mantotā PKI darbībām, ja tie ir veiksmīgi apstiprināti un saistīti ar atzītu CA sertifikātu.
 
       Ņemiet vērā, ka šī politika ir atkarīga no tā, vai operētājsistēma joprojām atzīst Symantec mantotās infrastruktūras sertifikātus. Ja operētājsistēmas atjauninājuma dēļ ir mainīta šādu sertifikātu apstrādes kārtība operētājsistēmā, šī politika vairs nav spēkā. Turklāt šī politika ir paredzēta kā pagaidu risinājums, lai uzņēmumiem būtu vairāk laika pāriet no Symantec mantotās infrastruktūras sertifikātiem. Šī politika tiks noņemta 2019. gada 1. janvārī vai ap to laiku.
@@ -1869,7 +1853,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="4360826270668210664">Ja šī politika ir iestatīta, attālās piekļuves saimniekdatorā klientiem, kas autentificējas, tiek prasīts iegūt autentifikācijas pilnvaru no šī vietrāža URL, lai izveidotu savienojumu. Jāizmanto kopā ar politiku RemoteAccessHostTokenValidationUrl.
 
           Pašlaik šī funkcija ir atspējota servera pusē.</translation>
-<translation id="4363057787588706121">Ļaut apvienot sarakstā esošas politikas, kas ir no dažādiem avotiem</translation>
+<translation id="4363057787588706121">Ļaut apvienot sarakstā esošās politikas, kas ir no dažādiem avotiem</translation>
 <translation id="436581050240847513">Ziņot par ierīču tīkla saskarnēm</translation>
 <translation id="4372704773119750918">Neatļaut korporatīvajam lietotājam piedalīties vairākprofilu sesijā (ne kā primārajam, ne sekundārajam lietotājam)</translation>
 <translation id="4377599627073874279">Atļauj visām vietnēm rādīt visus attēlus</translation>
@@ -2170,7 +2154,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
       Ja iespējosiet šo iestatījumu, vērtības no ierīces platformas politikas, ierīces mākoņa politikas un lietotāja platformas politikas tiks apvienotas vienā sarakstā un izmantotas kā viena politika (tā vietā, lai izmantotu vērtības no viena avota ar visaugstāko prioritāti).
 
-      Ja atspējosiet šo iestatījumu vai atstāsiet to neiestatītu, tiks izmantoti tikai saraksta ieraksti no avota ar visaugstāko prioritāti un visi pārējie avoti tiks rādīti kā konfliktējoši un tiks ignorēti.</translation>
+      Ja atspējosiet šo iestatījumu vai atstāsiet to neiestatītu, tiks izmantoti tikai saraksta ieraksti no avota ar visaugstāko prioritāti un visi pārējie avoti tiks rādīti kā konfliktējoši, un tiks ignorēti.</translation>
 <translation id="5141670636904227950">Pieteikšanās ekrānā iespējotā ekrāna lupas noklusējuma veida iestatīšana</translation>
 <translation id="5142301680741828703">Norādītās URL struktūras vienmēr tiek renderētas produktā <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="5148753489738115745">Ļauj noteikt papildu parametrus, kas tiek lietoti, kad spraudnis <ph name="PRODUCT_FRAME_NAME" /> palaiž pārlūkprogrammu <ph name="PRODUCT_NAME" />.
@@ -2525,7 +2509,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
           Ja šis iestatījums nav konfigurēts, netiek piemēroti ierobežojumi pieņemamajiem paplašinājumu/lietotņu veidiem.
 
-          75. versijā un jaunākās versijās netiek atbalstīti un tiek izlaisti ar komatu atdalīti paplašinājumu ID. Pārējā politika joprojām tiek piemērota.</translation>
+          75. versijā un jaunākajās versijās netiek atbalstīti un tiek izlaisti ar komatu atdalīti paplašinājumu ID. Pārējā politika joprojām tiek piemērota.</translation>
 <translation id="5645779841392247734">Atļauj sīkfailus šajās vietnēs</translation>
 <translation id="5689430183304951538">Noklusējuma drukāšanas lapas izmērs</translation>
 <translation id="5693469654327063861">Atļaut datu migrēšanu</translation>
@@ -2635,12 +2619,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
           Ja šis iestatījums ir atspējots vai nav konfigurēts, Gnubby autentifikācijas pieprasījumiem netiks izmantoti starpniekserveri.</translation>
 <translation id="5897913798715600338">Uzlādēt akumulatoru, izmantojot ātrās uzlādes tehnoloģiju.</translation>
 <translation id="5898486742390981550">Ja ir pieteikušies vairāki lietotāji, Android lietotnes var izmantot tikai primārais lietotājs.</translation>
-<translation id="5900196529149231477">
-      Šī politika attiecas uz pierakstīšanās ekrānu. Lūdzu, skatiet arī politiku “<ph name="ISOLATE_ORIGINS_POLICY_NAME" />”, kas attiecas uz lietotāja sesiju. Ieteicams abām politikām iestatīt vienādu vērtību. Ja vērtības neatbilst, atverot lietotāja sesiju, var rasties aizkave, kamēr tiek piemērota lietotāja politikas vērtība.
-      Ja politika ir iespējota, katrai komatatdalītā sarakstā norādītajai vietnei tiks izpildīts atsevišķs process. Vietnes tiks arī izolētas pēc apakšdomēniem, piemēram, norādot https://example.com/, tiks izolēta arī vietne https://foo.example.com/ kā daļa no vietnes https://example.com/.
-      Ja politika ir atspējota, politiku “IsolateOrigins” un “SitePerProcess” funkcijas tiks atspējotas. Lietotāji joprojām varēs manuāli iespējot politiku “IsolateOrigins”, izmantojot komandrindas atzīmes.
-      Ja politika nav konfigurēta, pierakstīšanās ekrānam tiks izmantoti platformas noklusējuma vietnes izolācijas iestatījumi.
-      </translation>
 <translation id="5901427587865226597">Tikai divpusēja drukāšana</translation>
 <translation id="5905473632148429217">Iespējot tiešsaistes OCSP/CRL pārbaudes</translation>
 <translation id="5906199912611534122">Paredzēta, lai iespējotu vai atspējotu tīkla ierobežošanu.
@@ -2764,9 +2742,9 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="6133088669883929098">Atļaut izmantot atslēgu ģenerēšanu visās vietnēs</translation>
 <translation id="6136537398661737682">Šī politika kontrolē Google atrašanās vietu pakalpojumu sākotnējo stāvokli.
 
-      Ja šī politika nav konfigurēta vai tai ir iestatīta vērtība “<ph name="GLS_DISABLED" />”, Google atrašanās vietu pakalpojumi sākotnēji ir atspējoti.
+      Ja šī politika nav konfigurēta vai tai ir iestatīta vērtība “<ph name="GLS_DISABLED" />”, Google atrašanās vietu pakalpojumi ir sākotnēji atspējoti.
 
-      Ja šai politikai ir iestatīta vērtība “<ph name="GLS_ENABLED" />”, Google atrašanās vietu pakalpojumi sākotnēji ir iespējoti.
+      Ja šai politikai ir iestatīta vērtība “<ph name="GLS_ENABLED" />”, Google atrašanās vietu pakalpojumi ir sākotnēji iespējoti.
 
       Ja šai politikai ir iestatīta vērtība “<ph name="GLS_UNDER_USER_CONTROL" />”, lietotājam tiek vaicāts, vai izmantot Google atrašanās vietu pakalpojumus. Tādējādi Android lietotnes varēs izmantot šos pakalpojumus vaicājumiem par ierīces atrašanās vietu, kā arī tiks iespējota anonīmu atrašanās vietas datu sūtīšana Google serveriem.
 
@@ -2839,13 +2817,13 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="6224304369267200483">Vietrāži URL/domēni automātiski atļāva tiešu drošības atslēgas apstiprināšanu</translation>
 <translation id="6233173491898450179">Iestata lejupielāžu direktoriju</translation>
 <translation id="6244210204546589761">URL, kas jāatver startēšanas brīdī</translation>
-<translation id="6255387031094435995">Ļauj atlasītajām politikām tikt apvienotām, ja tās ir no dažādiem avotiem, bet ar vienādiem tvērumiem un līmeni.
+<translation id="6255387031094435995">Ļauj apvienot atlasītās politikas, ja tās ir no dažādiem avotiem, bet ar vienādiem tvērumiem un līmeni.
 
-        Ja politika ir sarakstā, gadījumā, kad rodas konflikts starp diviem avotiem, ņemot vērā to, ka politikām ir vienādi tvērumi un līmenis, vērtības tiks apvienotas jaunā politiku sarakstā.
+        Ja politika ir sarakstā un ja rodas konflikts starp diviem avotiem, ņemot vērā to, ka politikām ir vienādi tvērumi un līmenis, vērtības tiks apvienotas jaunā politiku sarakstā.
 
-        Ja politika ir sarakstā, gadījumā, kad rodas konflikts starp diviem avotiem un politikām ir dažādi tvērumi un/vai līmenis, tiks piemērota politika, kurai ir augstākā prioritāte.
+        Ja politika ir sarakstā un ja rodas konflikts starp diviem avotiem, bet politikām ir dažādi tvērumi un/vai līmenis, tiks piemērota politika ar augstāko prioritāti.
 
-        Ja politika nav sarakstā, gadījumā, kad rodas konflikts starp diviem avotiem, tvērumiem un/vai līmeni, tiks piemērota politika, kurai ir augstākā prioritāte.</translation>
+        Ja politika nav sarakstā un ja rodas konflikts starp diviem avotiem, tvērumiem un/vai līmeni, tiks piemērota politika, kurai ir augstākā prioritāte.</translation>
 <translation id="6258193603492867656">Norāda, vai ģenerētajam Kerberos SPN jāietver nestandarta ports. Ja šis iestatījums ir iespējots un tiek ievadīts nestandarta ports (piem., ports, kas nav 80 vai 443), tas tiks ietverts ģenerētajā Kerberos SPN. Ja šis iestatījums ir atspējots vai nav iestatīts, ģenerētais Kerberos SPN nekādā gadījumā neietvers portu.</translation>
 <translation id="6261643884958898336">Ziņot par iekārtas identifikācijas informāciju</translation>
 <translation id="6281043242780654992">Konfigurējiet vietējās ziņojumapmaiņas politikas. Melnajā sarakstā iekļauto vietējās ziņojumapmaiņas saimniekdatoru darbība netiks atļauta, ja vien tie nebūs iekļauti baltajā sarakstā.</translation>
@@ -3269,15 +3247,15 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
       Ja šis iestatījums ir iespējots vai atspējots, lietotāji to nevar mainīt vai ignorēt.
 
       Ja šī politika nav iestatīta, lietotājs var izvēlēties, vai ierīces atbloķēšanai tiek prasīta parole.</translation>
-<translation id="7107148737865880402">Iespējot USB jaudas kopīgošanas pārvaldības politiku.
+<translation id="7107148737865880402">Iespējot USB barošanas kopīgošanas pārvaldības politiku.
 
           Noteiktām ierīcēm ir īpaša USB pieslēgvieta, kas apzīmēta ar zibens vai akumulatora ikonu un ko var izmantot, lai uzlādētu ierīces, piemēram, mobilo tālruni, izmantojot sistēmas akumulatoru. Šī politika ietekmē šīs pieslēgvietas uzlādes darbību, kamēr sistēma atrodas miega un izslēgšanas režīmā. Šī politika neietekmē citas USB pieslēgvietas un uzlādes darbības, kamēr sistēma ir nomodā.
 
           Kad sistēma ir aktīva, USB pieslēgvieta vienmēr nodrošina jaudu.
 
-          Ja šai politikai ir iestatīta vērtība “true”, miega režīmā jauda USB pieslēgvietai tiks piegādāta, kad ierīce būs savienota ar sienas uzlādes ierīci vai ja akumulatora uzlādes līmenis būs &gt;50 %. Citādi jauda netiek nodrošināta.
+          Ja šai politikai ir iestatīta vērtība “true”, miega režīmā barošana tiks piegādāta USB pieslēgvietai, kad ierīce būs savienota ar sienas uzlādes ierīci vai ja akumulatora uzlādes līmenis būs &gt;50 %. Citādi barošana netiek nodrošināta.
 
-          Ja ierīce ir izslēgta un politikai ir iestatīta vērtība “true”, jauda USB pieslēgvietai tiks nodrošināta, kad ierīce būs savienota ar sienas uzlādes ierīci. Citādi jauda netiek nodrošināta.
+          Ja ierīce ir izslēgta un politikai ir iestatīta vērtība “true”, barošana tiks nodrošināta USB pieslēgvietai, kad ierīce būs savienota ar sienas uzlādes ierīci. Citādi barošana netiek nodrošināta.
 
           Ja šī politika nav iestatīta, tā tiek iespējota un lietotājs to nevar atspējot.</translation>
 <translation id="7115494316187648452">Šī politika tiek izmantota, lai noteiktu, vai <ph name="PRODUCT_NAME" /> process tiek sākts līdz ar pieteikšanos operētājsistēmā un vai tas tiek turpināts, līdz tiek aizvērts pēdējais pārlūka logs, ļaujot fona lietotnēm un pašreizējai pārlūkošanas sesijai un jebkādiem sesijas sīkfailiem palikt aktīviem. Fona process tiek rādīts kā ikona sistēmas teknē, kur to jebkurā brīdī var pārtraukt.
@@ -3395,7 +3373,7 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 <translation id="7273823081800296768">Ja šis iestatījums ir iespējots vai nav konfigurēts, lietotāji var izvēlēties savienot klientus un saimniekdatorus pārī savienojuma izveides laikā, tādējādi izvairoties no atkārtotas PIN koda ievadīšanas.
 
           Ja šis iestatījums ir atspējots, šī funkcija nebūs pieejama.</translation>
-<translation id="7274077256421167535">Iespējot USB jaudas kopīgošanu</translation>
+<translation id="7274077256421167535">Iespējot USB barošanas kopīgošanu</translation>
 <translation id="7275334191706090484">Pārvaldītās grāmatzīmes</translation>
 <translation id="7291084543582732020">Ja šis iestatījums ir iespējots un ja ir izpildītas funkcijai Smart Lock nepieciešamās prasības, lietotājiem ir atļauts izmantot šo funkciju.
 
@@ -3912,6 +3890,7 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
       Ja politika DeviceIdleLogoutTimeout ir norādīta, tā definē brīdinājuma lodziņa ilgumu ar atpakaļskaitīšanas taimeri, kas tiek rādīts lietotājam pirms atteikšanās izpildes.
 
       Politikas vērtība ir jānorāda milisekundēs.</translation>
+<translation id="8331479227794770304">Iespējot taustiņu ķēdi</translation>
 <translation id="8339420913453596618">Otrais faktors atspējots</translation>
 <translation id="8344454543174932833">Grāmatzīmju importēšana no noklusējuma pārlūka pirmajā palaišanas reizē</translation>
 <translation id="8357681633047935212">Ierobežot lietotāja sesijas garumu</translation>
@@ -4286,18 +4265,6 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
       Ja kā politikas vērtība ir iestatīts marķieris, kas novirza uz ātrā risinājuma būvējumu, ierīce tiks atjaunināta, izmantojot attiecīgo ātrā risinājuma būvējumu; izņēmums ir gadījumi, kad atjaunināšanu bloķē cita politika.
 
       Ja šī politika nav iestatīta vai tās vērtība nenovirza uz ātrā risinājuma būvējumu, ierīce netiks atjaunināta, izmantojot ātrā risinājuma būvējumu. Ja ierīcē jau darbojas ātrā risinājuma būvējums un politika vairs nav iestatīta vai tās vērtība vairs nenovirza uz ātrā risinājuma būvējumu, ierīce tiks atjaunināta, izmantojot parasto būvējumu; izņēmums ir gadījumi, kad atjaunināšanu bloķē cita politika.</translation>
-<translation id="906631898352326790">
-      Ja politika ir iespējota, katram komatatdalītā
-      sarakstā norādītajam sākumpunktam tiks izpildīts atsevišķs process. Šādi tiks arī izolēti
-      sākumpunkti, kas nosaukti pēc apakšdomēniem. Piemēram, norādot https://example.com/, arī
-      adrese https://foo.example.com/ tiks izolēta kā daļa no vietnes
-      https://example.com/.
-      Ja šī politika ir atspējota, politiku “IsolateOrigins” un “SitePerProcess” funkcijas tiks atspējotas. Lietotāji joprojām varēs manuāli iespējot politiku “IsolateOrigins”, izmantojot komandrindas atzīmes.
-      Ja politika nav konfigurēta, lietotājs varēs mainīt šo iestatījumu.
-      Pārlūkprogrammā <ph name="PRODUCT_OS_NAME" /> ieteicams iestatīt to pašu vērtību arī ierīces politikai “<ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />”. Ja abās politikās norādītās vērtības neatbildīs, atverot lietotāja sesiju, var rasties aizkave, kamēr tiek piemērota lietotāja politikā norādītā vērtība.
-
-      Piezīme. Šī politika neattiecas uz operētājsistēmu Android. Lai iespējotu politiku “IsolateOrigins” operētājsistēmā Android, izmantojiet politikas “IsolateOriginsAndroid” iestatījumu.
-      </translation>
 <translation id="9072600218500597787">Konfigurē mitinātā domēna nepieciešamos nosaukumus, kas tiks uzlikti uz attālās piekļuves saimniekdatoriem, un neļauj lietotājiem to mainīt.
 
           Ja šis iestatījums ir iespējots, saimniekdatori var tikt kopīgoti, tikai izmantojot kontus, kas reģistrēti vienā no norādītajiem domēna nosaukumiem.

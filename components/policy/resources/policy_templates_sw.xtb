@@ -913,13 +913,6 @@ Ikiwa sera imewekwa kuwa sivyo au haijawekwa, matukio hayatarekodiwa.</translati
 
       Ikiwa sera hii haitawekwa, hali chaguomsingi haitaruhusiwa kwa watumiaji wanaosimamiwa lakini itaruhusiwa kwa watumiaji wasiosimamiwa.</translation>
 <translation id="2660846099862559570">Usitumie proksi kamwe</translation>
-<translation id="2663739737868438950">
-      Sera hii inatumika kwenye skrini ya kuingia katika akaunti. Tafadhali angalia pia sera ya <ph name="SITE_PER_PROCESS_POLICY_NAME" /> ambayo inatumika katika kipindi cha mtumiaji. Tunapendekeza uweke sera zote mbili ziwe katika thamani sawa. Ikiwa thamani hazitalingana, huenda ikachelewesha shughuli ya kuweka kipindi cha mtumiaji wakati thamani iliyobainishwa na sera ya mtumiaji inatumika.
-      Huenda utataka kuangalia mipangilio ya sera ya IsolateOrigins ili upate hali bora kati ya hizi mbili, utengaji na athari ndogo kwa watumiaji kwa kutumia IsolateOrigins kwenye orodha ya tovuti ambazo ungependa kutenga. Mipangilio hii, SitePerProcess, inatenga tovuti zote.
-      Iwapo umewasha sera hii, kila tovuti itatumia mchakato wake.
-      Iwapo umezima sera hii, vipengele vya IsolateOrigins na SitePerProcess vitazimwa. Bado watumiaji wataweza kuwasha SitePerProcess wenyewe, kupitia ripoti za mstari wa amri.
-      Iwapo hujaweka mipangilio ya sera, mtumiaji ataweza kubadilisha mipangilio hii.
-      </translation>
 <translation id="2672012807430078509">Hudhibiti kuwashwa kwa NTLM kuwa itifaki ya kuthibitisha katika vipengee vya kupachika SMB</translation>
 <translation id="267596348720209223">Inabainisha usimbaji wa vibambo unaohimiliwa na kitoaji cha utafutaji. Usimbaji ni majini ya ukurasa msimbo kama UTF-8, GB2312, na ISO-8859-1. Yanajaribiwa katika mpangilio uliotolewa.
 
@@ -1408,15 +1401,6 @@ Sera hii inatumika tu kama sera ya 'DefaultSearchProviderEnabled' imewashwa.</tr
       Kila kipengee cha sera kwenye orodha huwa na sehemu mbili: "share_url" na "mode". "share_url" inapaswa kuwa URL ya kipengee cha kushiriki na "mode" inapaswa kuwa "drop_down" au "pre_mount". Hali ya "drop_down" inaashiria kuwa "share_url" itaongezwa kwenye menyu kunjuzi ya kutambua kipengee cha kushiriki. Hali ya "pre_mount" inaashiria kuwa "share_url" itawekwa.</translation>
 <translation id="3591527072193107424">Washa kipengele cha Uwezo wa Kutumia Kivinjari Kilichopitwa na Wakati.</translation>
 <translation id="3591584750136265240">Weka mipangilio ya tabia ya kithibitishaji cha kuingia katika akaunti</translation>
-<translation id="3624171042292187668">
-      Huenda utataka kuangalia mipangilio ya sera ya IsolateOrigins ili upate hali bora kati ya hizi mbili, utengaji na athari ndogo kwa watumiaji, kwa kutumia IsolateOrigins katika orodha ya tovuti unazotaka kutenga. Mipangilio hii, SitePerProcess, inatenga tovuti zote.
-      Iwapo sera imewashwa, kila tovuti itatumia mchakato wake.
-      Ukizima mipangilio hii, vipengele vyote viwili vya IsolateOrigins na SitePerProcess vitazimwa. Bado watumiaji wataweza kuwasha SitePerProcess wenyewe, kupitia ripoti za mstari wa amri.
-      Iwapo hujaweka mipangilio ya sera, mtumiaji ataweza kubadilisha mipangilio hii.
-      Kwenye <ph name="PRODUCT_OS_NAME" />, tunapendekeza uweke pia sera ya kifaa ya <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> iwe katika thamani ile ile. Ikiwa thamani hazitalingana, huenda ikachelewesha shughuli ya kuweka kipindi cha mtumiaji wakati thamani iliyobainishwa na sera ya mtumiaji inatumika.
-
-      KUMBUKA: Sera hii haitumiki kwenye Android. Ili uwashe SitePerProcess kwenye Android, tumia mipangilio ya sera ya SitePerProcessAndroid.
-      </translation>
 <translation id="3627678165642179114">Wezesha au lemaza huduma ya wavuti ya ukaguzi tahajia</translation>
 <translation id="3628480121685794414">Ruhusu uchapishaji kwenye upande mmoja</translation>
 <translation id="3631099945620529777">Ikiwekwa kuwa sivyo, kitufe cha 'Tamatisha mchakato' kitazimwa katika Kidhibiti cha Shughuli kwenye Chrome.
@@ -1609,7 +1593,7 @@ Sera hii isipowekwa, mtumiaji bado anaweza kusakinisha kiendelezi chochote katik
 <translation id="3915395663995367577">URL hadi proksi ya faili ya .pac</translation>
 <translation id="3920892052017026701">Weka mapendeleo ya muda wa kuanza kuchaji betri katika asilimia.
 
-          Betri huanza kuchaji wakati inafikia thamani ya maalum ya kuanza kuchaji.
+          Betri huanza kuchaji inapofikia kiwango maalum cha kuanza kuchaji.
 
           Lazima DeviceBatteryChargeCustomStartCharging iwe chini ya DeviceBatteryChargeCustomStopCharging.
 
@@ -2603,12 +2587,6 @@ Sera hii ikiwekwa kuwa ndivyo au isipowekwa, kipindi cha mgeni kinachodhibitiwa 
        Mpangilio huu ukizimwa au usisanidiwe, maombi ya uthibitisho ya gnubby hayatawekwa kama proksi.</translation>
 <translation id="5897913798715600338">Chaji betri ukitumia teknolojia ya kuchaji kwa kasi.</translation>
 <translation id="5898486742390981550">Watumiaji wengi wanapoingia katika akaunti, ni mtumiaji wa kwanza pekee anayeweza kutumia programu za Android.</translation>
-<translation id="5900196529149231477">
-      Sera hii inatumika kwenye skrini ya kuingia katika akaunti. Tafadhali angalia pia sera ya <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> ambayo inatumika kwenye kipindi cha mtumiaji. Tunapendekeza uweke sera zote mbili ziwe katika thamani sawa. Iwapo thamani hazilingani,  huenda ikachelewesha kufungua kipindi cha mtumiaji wakati inatumia thamani iliyobainishwa na sera ya mtumiaji.
-      Iwapo umewasha sera hii, kila chanzo ulichotaja katika orodha inayotenganishwa kwa koma kitatumia mchakato wake. Hatua hii pia itatenga vyanzo vinavyotajwa kwa vijikoa; k.m. hatua ya kubainisha https://example.com/ itasababisha pia https://foo.example.com/ itengwe ili isiwe sehemu ya tovuti ya https://example.com/.
-      Iwapo sera imezimwa, vipengele vyote viwili vya IsolateOrigins na SitePerProcess vitazimwa. Bado watumiaji wataweza kuwasha IsolateOrigins wenyewe, kupitia ripoti za mstari wa amri.
-      Iwapo hujaweka mipangilio ya sera hii, mipangilio ya mfumo chaguomsingi wa utengaji wa tovuti itatumika kwenye skrini ya kuingia katika akaunti.
-      </translation>
 <translation id="5901427587865226597">Uchapishaji kwenye pande mbili pekee</translation>
 <translation id="5905473632148429217">Washa ukaguzi wa OCSP/CRL mtandaoni</translation>
 <translation id="5906199912611534122">Huruhusu kuwashwa na kuzimwa kwa kipengele cha kudhibiti mtandao.
@@ -2735,7 +2713,7 @@ Thamani ya sera inapaswa kubainishwa katika milisekunde. Thamani huwekwa pamoja 
 
       Sera hii ikiwekwa kuwa <ph name="GLS_ENABLED" />, Huduma za Mahali za Google huwashwa kwanza.
 
-      Sera hii ikiwekwa kuwa <ph name="GLS_UNDER_USER_CONTROL" />, mtumiaii huulizwa ikiwa atatumia Huduma za Mahali za Google. Hali hii itaruhusu programu za Android kutumia huduma kuhoji eneo la kifaa na pia itaruhusu hali ya kuwasilisha data ya mahali uliko kwa Google bila kufichua maelezo yanayoweza kukutambulisha.
+      Sera hii ikiwekwa kuwa <ph name="GLS_UNDER_USER_CONTROL" />, mtumiaii huulizwa ikiwa atatumia Huduma za Mahali za Google. Hali hii itaruhusu programu za Android kutumia huduma kubaini mahali kifaa kilipo na pia itaruhusu hali ya kuwasilisha data ya mahali uliko kwa Google bila kufichua maelezo yanayoweza kukutambulisha.
 
       Kumbuka kwamba sera hii hudhibiti hali ya Huduma za Mahali za Google wakati wa kuweka mipangilio ya kwanza pekee. Mtumiaji anaweza kufungua mipangilio ya Android baadaye na kuwasha au kuzima Huduma za Mahali za Google.
 
@@ -3516,7 +3494,7 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
      Iwapo sera hii haijawekwa ukubwa chaguomsingi utatumika na mtumiaji ataweza kubatilisha na alama ya - ukubwa wa-diski ya-akiba.</translation>
 <translation id="759389052790680884">Weka mapendeleo ya muda wa kusimamisha kuchaji betri katika asilimia.
 
-          Betri huacha kuchaji wakati inafikia thamani ya mapendeleo ya kuacha kuchaji.
+          Betri huacha kuchaji inapofikia kiwango cha kuacha kuchaji ulichobainisha.
 
           Lazima DeviceBatteryChargeCustomStartCharging iwe chini ya DeviceBatteryChargeCustomStopCharging.
 
@@ -3881,6 +3859,7 @@ Njia inayopendekezwa ya kuweka mipangilio ya sera kwenye Windows ni kupitia GPO,
       Wakati DeviceIdleLogoutTimeout inapobainishwa sera hii inafafanua muda wa kikasha cha onyo kwa kipima muda kinachoonyeshwa kwa mtumiaji kabla ya kuondoka kutekelezwa.
 
       Thamani ya sera inastahili kubainishwa katika milisekunde.</translation>
+<translation id="8331479227794770304">Washa vitufe vya kunata</translation>
 <translation id="8339420913453596618">Uthibitishaji wa hatua mbili umezimwa</translation>
 <translation id="8344454543174932833">Ingiza alamisho kutoka kivinjari chaguomsingi wakati wa uendeshaji wa kwanza</translation>
 <translation id="8357681633047935212">Dhibiti muda wa kipindi cha mtumiaji</translation>
@@ -4029,7 +4008,7 @@ kiwekwe kwenye maombi yote ya HTTP na HTTPS katika vikoa vyote vya google.com, j
      Kama hujaweka kipindi, kipindi chaguomsingi cha milisekunde 345600000 (siku nne) itatumika kwa vifaa vya <ph name="PRODUCT_OS_NAME" /> na milisekunde 604800000 (wiki moja) itatumika kwa <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8685024486845674965">Ilani ya ulinzi wa nenosiri husababishwa na hatua ya kutumia tena nenosiri lile lile</translation>
 <translation id="8693243869659262736">Tumia DNS teja ya kijenzi cha ndani</translation>
-<translation id="8698286761337647563">Idadi ya siku ambapo watumiaji wa SAML huarifiwa mapema muda wa kutumia manenosiri yao unapoelekea kuisha.</translation>
+<translation id="8698286761337647563">Idadi ya siku ambazo watumiaji wa SAML huarifiwa mapema muda wa kutumia manenosiri yao unapoelekea kuisha.</translation>
 <translation id="8703488928438047864">Ripoti hali ya ubao</translation>
 <translation id="8703872185032220081">Weka mipangilio ya siku ya kipengele kinachopunguza matumizi ya betri kwa kubadilisha mfumo kuendeshwa kwenye nguvu za betri
 
@@ -4245,14 +4224,6 @@ kiwekwe kwenye maombi yote ya HTTP na HTTPS katika vikoa vyote vya google.com, j
       Thamani ikiwekwa kuwa tokeni inayoambatishwa kwenye Muundo wa Urekebishaji wa Haraka, kifaa kitasasishwa kwenye Muundo wa Urekebishaji wa Haraka unaohusika, ikiwa sasisho halijazuiwa na sera nyingine.
 
       Ikiwa sera hii haijawekwa, au ikiwa thamani yake haijaambatishwa kwenye Muundo wa Urekebishaji wa Haraka, basi kifaa hakitasasishwa kwenye Muundo wa Urekebishaji wa Haraka. Ikiwa kifaa tayari kinatumia Muundo wa Urekebishaji wa Haraka na sera haijawekwa tena au thamani yake haijaambatishwa tena kwenye Muundo wa Urekebishaji, basi kifaa kitasasishwa kwenye muundo wa kawaida ikiwa sasisho halijazuiwa na sera nyingine.</translation>
-<translation id="906631898352326790">
-      Iwapo sera imewashwa, kila chanzo ulichotaja katika orodha inayotenganishwa kwa koma kitatumia mchakato wake. Hatua hii pia itatenga vyanzo vinavyotajwa kwa vikoa; k.m. hatua ya kubainisha https://example.com/ itasababisha pia https://foo.example.com/ itengwe ili isiwe sehemu ya tovuti ya https://example.com/.
-      Ukizima sera hii, vipengele vyote viwili vya IsolateOrigins na SitePerProcess vitazimwa. Bado watumiaji wataweza kuwasha IsolateOrigins wenyewe kupitia ripoti za mstari wa amri.
-      Usipoweka mipangilio ya sera hii, mtumiaji ataweza kubadilisha mipangilio hii.
-      Kwenye <ph name="PRODUCT_OS_NAME" />, tunapendekeza uweke pia sera ya kifaa cha <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> iwe katika thamani ile ile. Iwapo thamani zilizobainishwa na sera zote mbili hazilingani, huenda ikachelewesha kufungua kipindi cha mtumiaji wakati inatumia thamani iliyobainishwa na sera ya mtumiaji.
-
-      KUMBUKA: Sera hii haitumiki kwenye Android. Ili uwashe IsolateOrigins kwenye Android, tumia mipangilio ya sera ya IsolateOriginsAndroid.
-      </translation>
 <translation id="9072600218500597787">Huweka mipangilio ya majina yanayotakikana ya vikoa vya seva pangishi, ambayo yatatumika kwenye seva pangishi zinazofikiwa kwa mbali na kuzuia watumiaji wasiyabadilishe.
 
           Mipangilio hii ikiwashwa, inamaanisha kuwa seva pangishi zinaweza kushirikiwa tu kwa kutumia akaunti zilizosajiliwa kwenye mojawapo ya majina ya vikoa yaliyobainishwa.

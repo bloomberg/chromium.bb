@@ -188,13 +188,13 @@
 <translation id="2417569100218200841">உள்ளடக்கத் தகவல்</translation>
 <translation id="2417948780551741035">முடிவுக்குறிப்புகள்</translation>
 <translation id="2421113964388408478">நீக்கும்</translation>
-<translation id="2422937916923936891">மெனு உருப்படி செக் பாக்ஸ்</translation>
+<translation id="2422937916923936891">மெனு ஐட்டம் செக்பாக்ஸ்</translation>
 <translation id="2428534162001909979">கட்டளை மெனுக்கள்</translation>
 <translation id="2429669115401274487">PM</translation>
 <translation id="242998846562331953">வசனம்</translation>
 <translation id="2435413342408885429"><ph name="KEY" /> என்பதே இப்போது புதிய ChromeVox மாற்றியாகும்.</translation>
 <translation id="2435422727584637732">டோட்ஜ்ர் புளூ</translation>
-<translation id="2450814015951372393">செக் பாக்ஸ்</translation>
+<translation id="2450814015951372393">செக்பாக்ஸ்</translation>
 <translation id="2462626033734746142">ரேடியோ பட்டன் குழு</translation>
 <translation id="2471138580042810658">தலைப்பு 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{உடுக்குறி}other{# உடுக்குறிகள்}}</translation>
@@ -336,7 +336,7 @@
 <translation id="3359142382821736686">seprtr</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{கூட்டல் குறி}other{# கூட்டல் குறிகள்}}</translation>
 <translation id="338583716107319301">பிரிப்பான்</translation>
-<translation id="3389259863310851658">முந்தைய படிவப் புலம்</translation>
+<translation id="3389259863310851658">முந்தைய வடிவப் புலம்</translation>
 <translation id="3390225400784126843">வேறுபட்ட அடுத்த உறுப்பு.</translation>
 <translation id="3392045790598181549"><ph name="NAME" />, மெனு உருப்படி</translation>
 <translation id="3393605254399152980">நீங்கள் தொடுவதைப் பேச்சுவடிவில் கேட்க, ஒரு விரலை இழுக்கவும்</translation>
@@ -440,7 +440,7 @@
 <translation id="4158704014418536539">எழுத்து உணர்வு கொண்டது.</translation>
 <translation id="4159784952369912983">பர்பிள்</translation>
 <translation id="4161663686871496107">ChromeVox இன் பேச்சுவடிவக் கருத்து தயாராக உள்ளது</translation>
-<translation id="4173994908659439270">அடுத்த திருத்தக்கூடிய உரை புலம் இல்லை.</translation>
+<translation id="4173994908659439270">அடுத்து திருத்தக்கூடிய உரைப் புலம் இல்லை.</translation>
 <translation id="4176463684765177261">முடக்கப்பட்டது</translation>
 <translation id="4187322598335821254">ஒவ்வொரு வரியாகச் செல்ல, மேலே அல்லது கீழே ஸ்வைப் செய்யவும்</translation>
 <translation id="4188530942454211480">முந்தைய வாக்கியம்</translation>
@@ -587,7 +587,7 @@
 <translation id="5102981729317424850">கருவிப் பட்டி</translation>
 <translation id="5105050547967751155">rq</translation>
 <translation id="5106547198195128110">இந்தப் புதிய வெளியீட்டில் சில அற்புதமான மாற்றங்களைச் செய்துள்ளோம்; அந்தப் புதிய அம்சங்களை இங்கே பார்க்கவும்:</translation>
-<translation id="5110983769041734144">முந்தைய படிவப் புலம் இல்லை.</translation>
+<translation id="5110983769041734144">முந்தைய வடிவப் புலம் இல்லை.</translation>
 <translation id="5111640677200759579">நெடுவரிசை மேற்தலைப்பு</translation>
 <translation id="5115892389597951922">ChromeVox பதிவு</translation>
 <translation id="5119330972669454698">பர்லி வுட்</translation>
@@ -598,7 +598,7 @@
 <translation id="5158275234811857234">அட்டை</translation>
 <translation id="517143700877085897">, தேர்வுநீக்கப்பட்டது</translation>
 <translation id="5183440668879371625">பிரெய்ல் முந்தைய வரி</translation>
-<translation id="5184944171021383281">அடுத்த படிவப் புலம் இல்லை.</translation>
+<translation id="5184944171021383281">அடுத்த வடிவப் புலம் இல்லை.</translation>
 <translation id="5189244881767082992">வரி</translation>
 <translation id="5203930734796605961">ஏற்கனவே ஒரு கட்டளைக்கு <ph name="KEY" /> ஒதுக்கப்பட்டுள்ளது.</translation>
 <translation id="5205493599117157272"><ph name="TYPE" /> பட்டியல்.</translation>
@@ -1095,7 +1095,7 @@ Chrome உலாவி மெனுவைத் திறக்க, Alt+F வி
 <translation id="827422111966801947">இண்டிகோ</translation>
 <translation id="8276439074553447000">முன்பு கவனிக்கப்பட்ட உருப்படிக்குத் தாவு</translation>
 <translation id="8278417001922463147">முந்தைய உறுப்பு இல்லை.</translation>
-<translation id="8283603667300770666">அடுத்தப் படிவப் புலம்</translation>
+<translation id="8283603667300770666">அடுத்த வடிவப் புலம்</translation>
 <translation id="831207808878314375">விளக்கம்</translation>
 <translation id="8313653172105209786">dir</translation>
 <translation id="8316881042119029234">ஓல்டு லேஸ்</translation>

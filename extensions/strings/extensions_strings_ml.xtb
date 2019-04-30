@@ -13,13 +13,13 @@
 <translation id="2350172092385603347">ലോക്കലൈസേഷന്‍ ഉപയോഗിച്ചു, എന്നാല്‍ default_locale മാനിഫെസ്റ്റില്‍ വ്യക്തമാക്കിയില്ല.</translation>
 <translation id="2576842806987913196">ഇതേ പേരിൽ ഇതിനകം ഒരു CRX ഫയൽ നിലവിലുണ്ട്.</translation>
 <translation id="2753617847762399167">നിയമവിരുദ്ധമായ പാത്ത് (കേവലം അല്ലെങ്കിൽ '..' എന്നതുമായി ബന്ധപ്പെട്ടത്): '<ph name="IMAGE_PATH" />'</translation>
-<translation id="2785530881066938471">ഉള്ളടക്ക സ്ക്രിപ്റ്റിനായി '<ph name="RELATIVE_PATH" />' ഫയല്‍‌ ലോഡുചെയ്യാന്‍‌ കഴിഞ്ഞില്ല. ഇത് UTF-8 എന്‍‌കോഡുചെയ്‌തതല്ല.</translation>
+<translation id="2785530881066938471">ഉള്ളടക്ക സ്ക്രി‌പ്റ്റിന് '<ph name="RELATIVE_PATH" />' ഫയൽ ലോഡ് ചെയ്യാനായില്ല. അത് UTF-8 എൻകോഡ് ചെയ്‌‌തതല്ല.</translation>
 <translation id="2903070246402204397"><ph name="EXTENSION_NAME" /> (വിപുലീകരണ ഐഡി "<ph name="EXTENSION_ID" />") അഡ്‌മിനിസ്‌ട്രേറ്റർ ബ്ലോക്ക് ചെയ്‌തു. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">പാക്കേജ് ഇന്‍സ്റ്റാള്‍ ചെയ്യാന്‍ കഴിഞ്ഞില്ല: '<ph name="ERROR_CODE" />'</translation>
 <translation id="3115238746683532089"><ph name="VENDOR_ID" /> വെൻഡറിൽ നിന്നുള്ള അജ്ഞാത ഉൽപ്പന്നം <ph name="PRODUCT_ID" /> (സീരിയൽ നമ്പർ <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3144135466825225871">crx ഫയലിന് പകരം ചേർക്കുന്നത് പരാജയപ്പെട്ടു. ഈ ഫയൽ ഉപയോഗത്തിലാണോ എന്ന് പരിശോധിക്കുക.</translation>
 <translation id="3163201441334626963"><ph name="VENDOR_ID" /> വെൻഡറിൽ നിന്നുള്ള അജ്ഞാത ഉൽപ്പന്നം <ph name="PRODUCT_ID" /></translation>
-<translation id="3302709122321372472">ഉള്ളടക്ക സ്ക്രിപ്റ്റിനായി css '<ph name="RELATIVE_PATH" />' ലോഡുചെയ്യാനായില്ല.</translation>
+<translation id="3302709122321372472">ഉള്ളടക്ക സ്ക്രിപ്‌റ്റിന് css '<ph name="RELATIVE_PATH" />' ലോഡ് ചെയ്യാനായില്ല.</translation>
 <translation id="3369521687965833290">വിപുലീകരണം അണ്‍പാക്ക് ചെയ്യാന്‍ കഴിയുന്നില്ല.  ഒരു വിപുലീകരണം സുരക്ഷിതമായി അണ്‍പാക്ക് ചെയ്യുന്നതിന്, ഡ്രൈവ് പ്രതീകം ഉപയോഗിച്ച് ആരംഭിക്കുന്ന നിങ്ങളുടെ പ്രൊഫൈൽ ഡയറക്ടറിയിലേക്കുള്ള പാത്ത് ഉണ്ടായിരിക്കണം മാത്രമല്ല ജംഗ്ഷന്‍, മൌണ്ട് പോയിന്‍റ് അല്ലെങ്കില്‍ സിം‌ലിങ്ക് എന്നിവ അടങ്ങിയിരിക്കരുത്.  നിങ്ങളുടെ പ്രൊഫൈലിനായി അത്തരം പാത്തൊന്നും നിലവിലുണ്ടായിരിക്കരുത്.</translation>
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME" /> (സീരിയൽ നമ്പർ <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3466070586188012397"><ph name="VENDOR_ID" /> വെൻഡറിൽ നിന്നുള്ള <ph name="PRODUCT_NAME" /> (സീരിയൽ നമ്പർ <ph name="SERIAL_NUMBER" />)</translation>
@@ -49,7 +49,7 @@
 <translation id="641087317769093025">വിപുലീകരണം അൺസിപ്പ് ചെയ്യാൻ കഴിഞ്ഞില്ല</translation>
 <translation id="6413453408918378296">ഐക്കൺ '<ph name="ICON" />' വേണ്ടത്ര ദൃശ്യമല്ല.</translation>
 <translation id="6542618148162044354">"<ph name="APP_NAME" />" നിങ്ങളുടെ ഒന്നോ അതിലധികമോ ഉപകരണങ്ങളിലേക്ക് ആക്‌സസ് അഭ്യർത്ഥിക്കുന്നു:</translation>
-<translation id="657064425229075395">പശ്ചാത്തല സ്‌ക്രിപ്റ്റ് '<ph name="BACKGROUND_SCRIPT" />' ലോഡുചെയ്യാൻ കഴിഞ്ഞില്ല.</translation>
+<translation id="657064425229075395">പശ്ചാത്തല സ്‌ക്രിപ്റ്റ് '<ph name="BACKGROUND_SCRIPT" />' ലോഡ് ചെയ്യാൻ കഴിഞ്ഞില്ല.</translation>
 <translation id="6580950983454333167"><ph name="VENDOR_NAME" /> എന്നതിൽ നിന്നുള്ള <ph name="PRODUCT_NAME" /> (സീരിയൽ നമ്പർ <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">അൺസിപ്പ് ചെയ്യാനായി ഡയറക്‌ടറി സൃഷ്‌ടിക്കാൻ കഴിഞ്ഞില്ല: '<ph name="DIRECTORY_PATH" />'</translation>
 <translation id="677806580227005219">മൈംഹാൻഡ്‌ലർ: <ph name="MIMEHANDLERVIEW_TAG_NAME" /></translation>

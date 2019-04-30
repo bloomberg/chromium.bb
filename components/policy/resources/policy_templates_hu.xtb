@@ -921,13 +921,6 @@
 
       Ha a házirend nincs beállítva, alapértelmezés szerint nincs engedélyezve a felügyelt felhasználók számára, és engedélyezve van a nem felügyelt felhasználók számára.</translation>
 <translation id="2660846099862559570">Soha ne használjon proxyt</translation>
-<translation id="2663739737868438950">
-      Ez a házirend a bejelentkezési képernyőre vonatkozik. A felhasználói munkamenetre a <ph name="SITE_PER_PROCESS_POLICY_NAME" /> házirend érvényes. Azt javasoljuk, hogy mindkét házirendet ugyanarra az értékre állítsa. Ha az értékek nem egyeznek, az késést okozhat a felhasználói munkamenetbe való belépés során, miközben a böngésző éppen alkalmazni próbálja a felhasználói házirend által meghatározott értéket.
-      Nézze át az IsolateOrigins házirend beállításait, és annak érdekében, hogy az izoláció is megvalósuljon, és a felhasználók számára is korlátozottan legyen érzékelhető a hatás, alkalmazza az IsolateOrigins házirendet az izolálni kívánt webhelyek listáján. Ez a SitePerProcess beállítás minden webhelyet izolál.
-      Ha engedélyezi a házirendet, minden webhely önálló folyamatként fut majd.
-      Ha letiltja a házirendet, az IsolateOrigins és a SitePerProcess funkciót is letiltja a rendszer. A felhasználók parancssori jelzőkkel továbbra is engedélyezhetik manuálisan a SitePerProcess beállítást.
-      Ha a házirend nincs beállítva, a felhasználó módosíthatja ezt a beállítást.
-      </translation>
 <translation id="2672012807430078509">Vezérlők, melyek engedélyezik az NTLM hitelesítési protokollként való használatát a csatolt SMB-megosztások esetében</translation>
 <translation id="267596348720209223">Meghatározza a keresési szolgáltató által támogatott karakterkódolásokat. A kódolások kódtáblanevek, például UTF-8, GB2312 vagy ISO-8859-1. A szolgáltató a megadott sorrendben próbálja őket használni. A házirend nem kötelező. Ha nincs beállítva, akkor a rendszer az alapértelmezés szerinti UTF-8-at használja. A házirend csak akkor teljesül, ha a "DefaultSearchProviderEnabled" házirend engedélyezve van.</translation>
 <translation id="268577405881275241">Az adattömörítő proxyfunkció engedélyezése</translation>
@@ -1261,7 +1254,7 @@
       Ha ez a beállítás be van kapcsolva vagy nincs megadva, a felhasználók Google Fiókjuk érvényesítésével bekapcsolhatják a cloud print proxyt.
 
       Ha a beállítás ki van kapcsolva, a felhasználók nem kapcsolhatják be a proxyt, és a számítógép számára nem lesz engedélyezett a nyomtatók megosztása a(z) <ph name="CLOUD_PRINT_NAME" /> szolgáltatással.</translation>
-<translation id="3312206664202507568">A chrome://password-change beállításai között engedélyez egy adott oldalt, ahol az SAML-felhasználók munkamenet közben is módosíthatják SAML-jelszavukat, így biztosítva, hogy az SAML-jelszó és az eszköz lezárási képernyőjének jelszava szinkronizálva vannak.
+<translation id="3312206664202507568">A chrome://password-change beállításai között engedélyez egy adott oldalt, ahol az SAML-felhasználók munkamenet közben is módosíthatják SAML-jelszavukat, így biztosítva, hogy az SAML-jelszó és az eszköz lezárási képernyőjének jelszava szinkronizálva legyenek.
 
       A házirend ezenkívül engedélyezi az értesítéseket is, amelyek figyelmeztetik az SAML-felhasználókat, ha SAML-jelszavuk hamarosan lejár. A felhasználók így azonnal, a munkamenet közben meg tudják változtatni jelszavukat.
       Ezek az értesítések azonban csak akkor jelennek meg, ha az SAML-identitásszolgáltató elküldi az eszköznek a jelszó lejáratával kapcsolatos információkat az SAML-bejelentkezési folyamat során.
@@ -1406,15 +1399,6 @@
       A házirend minden listaeleme kéttagú objektum: „share_url” és „mode”. A „share_url” a megosztás URL-je, a „mode” pedig „drop_down” vagy „pre_mount”. A „drop_down” módszerrel a „share_url” a megosztásfelfedező legördülő menüben jelenik meg. A „pre_mount” módszerrel a rendszer felcsatolja a „share_url” útvonalon található megosztást.</translation>
 <translation id="3591527072193107424">A Régi böngészők támogatása funkció engedélyezése</translation>
 <translation id="3591584750136265240">Bejelentkezési hitelesítési viselkedés konfigurálása</translation>
-<translation id="3624171042292187668">
-      Tekintse át az IsolateOrigins házirend beállításait, és annak érdekében, hogy az izoláció is megvalósuljon, és a felhasználók számára is korlátozottan legyen érzékelhető a hatás, alkalmazza az IsolateOrigins házirendet az izolálni kívánt webhelyek listáján. Ez a SitePerProcess beállítás minden webhelyet izolál.
-      Ha engedélyezi a házirendet, minden webhely önálló folyamatként fut majd.
-      Ha letiltja a házirendet, az IsolateOrigins és a SitePerProcess funkciót is letiltja a rendszer. A felhasználók parancssori jelzőkkel továbbra is engedélyezhetik manuálisan a SitePerProcess beállítást.
-      Ha a házirend nincs beállítva, a felhasználó módosíthatja ezt a beállítást.
-      <ph name="PRODUCT_OS_NAME" /> rendszeren javasolt a <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> eszközházirend beállítása azonos értékre. Ha az értékek nem egyeznek, az késést okozhat a felhasználói munkamenetbe való belépés során, miközben a böngésző éppen alkalmazni próbálja a felhasználói házirend által meghatározott értéket.
-
-      MEGJEGYZÉS: A házirend nem vonatkozik az Android rendszerre. Ha engedélyezni kívánja a SitePerProcess házirendet Android rendszeren, használja a SitePerProcessAndroid házirend-beállítást.
-      </translation>
 <translation id="3627678165642179114">Engedélyezi vagy letiltja az internetes helyesírás-ellenőrző szolgáltatást</translation>
 <translation id="3628480121685794414">Egyoldalas nyomtatás engedélyezése</translation>
 <translation id="3631099945620529777">Hamis érték esetén a „Folyamat leállítása” gomb le van tiltva a Feladatkezelőben.
@@ -2458,7 +2442,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
           Ha bekapcsolja, vagy nem állítja be ezt a beállítást, a felhasználók megtekinthetik egyszerű szövegként a tárolt jelszavakat a jelszókezelőben.</translation>
 <translation id="5620392548325769024">Az üdvözlőoldal megjelenítésének engedélyezése az operációs rendszer frissítését követő első böngészőindításkor</translation>
 <translation id="5630352020869108293">Utolsó munkamenet visszaállítása</translation>
-<translation id="5643906875497889108">Azt szabályozza, mely alkalmazás- vagy bővítménytípusokat lehet telepíteni, valamint korlátozza a futásidőben történő hozzáférést.
+<translation id="5643906875497889108">Azt szabályozza, hogy mely alkalmazás- vagy bővítménytípusokat lehet telepíteni, valamint korlátozza a futásidőben történő hozzáférést.
 
           Ez a beállítás engedélyezőlistára teszi azokat a bővítmény- vagy alkalmazástípusokat, amelyek telepíthetők a <ph name="PRODUCT_NAME" /> alatt, és amelyekkel a gazdagépek interakcióba léphetnek. Az érték karakterláncok listája, melyek mindegyikének a következők egyikének kell lennie: „extension”, „theme”, „user_script”, „hosted_app”, „legacy_packaged_app”, „platform_app”. A <ph name="PRODUCT_NAME" /> bővítményekre vonatkozó dokumentációjából többet is megtudhat ezekről a típusokról.
 
@@ -2508,7 +2492,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="5765780083710877561">Leírás:</translation>
 <translation id="5770738360657678870">Fejlesztői csatorna (instabil lehet)</translation>
 <translation id="5774856474228476867">Az alapértelmezett keresési szolgáltató kereső URL-je</translation>
-<translation id="5775235485119094648">Akkumulátor töltése, ha a rögzített intervallumon belül van.</translation>
+<translation id="5775235485119094648">Akkumulátor töltése, ha az egy rögzített intervallumban van.</translation>
 <translation id="5776485039795852974">Kérdezzen rá minden alkalommal, amikor egy webhely asztali értesítéseket akar mutatni</translation>
 <translation id="5781412041848781654">Megadja, hogy a rendszer melyik GSSAPI könyvtárat használja a HTTP-hitelesítéshez. Megadhat csak könyvtárnevet, illetve teljes elérési utat is.
 
@@ -2572,12 +2556,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
           Ha a beállítás tiltva van, vagy nincs konfigurálva, akkor a rendszer nem proxyzza a gnubby hitelesítési kéréseket.</translation>
 <translation id="5897913798715600338">Akkumulátor töltése a gyors töltési technológiával.</translation>
 <translation id="5898486742390981550">Ha több felhasználó van bejelentkezve, csak az elsődleges felhasználó használhat Android-alkalmazásokat.</translation>
-<translation id="5900196529149231477">
-      Ez a házirend a bejelentkezési képernyőre vonatkozik. A felhasználói munkamenetre az <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> házirend érvényes. Azt javasoljuk, hogy mindkét házirendet ugyanarra az értékre állítsa. Ha az értékek nem egyeznek, az késést okozhat a felhasználói munkamenetbe való belépés során, miközben a böngésző éppen alkalmazni próbálja a felhasználói házirend által meghatározott értéket.
-      Ha a házirend engedélyezve van, a vesszővel tagolt listában szereplő összes megnevezett eredet önálló folyamatként fut majd. Ez aldomainek szerint is letiltja a megnevezett eredeteket; pl. a https://example.com/ megadása a https://foo.example.com/ webhely izolálását is eredményezi, mert ez a https://example.com/ webhely része.
-      Ha letiltja a házirendet, nem történik kifejezett webhely-izoláció, az IsolateOrigins és SitePerProcess házirendek próbaverziói pedig le lesznek tiltva. A felhasználók parancssori jelzőkkel továbbra is engedélyezhetik manuálisan az IsolateOrigins házirendet.
-      Ha nem állítja be a házirendet, a platform alapértelmezett webhely-elszigetelési beállításai lépnek érvénybe a bejelentkezési képernyőnél.
-      </translation>
 <translation id="5901427587865226597">Csak kétoldalas nyomtatás</translation>
 <translation id="5905473632148429217">Online OCSP/CRL-ellenőrzések engedélyezése</translation>
 <translation id="5906199912611534122">Lehetővé teszi a hálózatszabályozás engedélyezését és letiltását.
@@ -2587,7 +2565,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha a házirend értéke hamis, akkor nincs szabályozás.
       Ha a házirend értéke igaz, akkor szabályozza a rendszert a megadott
       feltöltési és letöltési sebességének eléréséhez (kbit/s értékben megadva).</translation>
-<translation id="591088232153082363">Alkalmazkodó akkumulátortöltés az akkumulátorhasználati minta alapján.</translation>
+<translation id="591088232153082363">Alkalmazkodó akkumulátortöltés az akkumulátorhasználati mintázat alapján.</translation>
 <translation id="5921713479449475707">Automatikus frissítési letöltések engedélyezése HTTP-n keresztül</translation>
 <translation id="5921888683953999946">A nagy egérmutató kisegítő lehetőség alapértelmezett állapotának megadása a bejelentkezési képernyőn.
 
@@ -2706,7 +2684,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
       Ha a házirend beállítása <ph name="GLS_ENABLED" />, akkor a Google helyszolgáltatásai kezdetben engedélyezve vannak.
 
-      Ha a házirend beállítása <ph name="GLS_UNDER_USER_CONTROL" />, akkor a rendszer megkérdezi a felhasználót, hogy szeretné-e használni a Google helyszolgáltatásait. Ez lehetővé teszi az Android-alkalmazások számára a szolgáltatások használatát az eszköz tartózkodási helyének lekérdezésére, valamint engedélyezi a névtelen helyadatok elküldését a Google-nak.
+      Ha a házirend beállítása <ph name="GLS_UNDER_USER_CONTROL" />, akkor a rendszer megkérdezi a felhasználót, hogy szeretné-e használni a Google helyszolgáltatásait. Ez lehetővé teszi az Android-alkalmazások számára a szolgáltatások használatát az eszköz tartózkodási helyének lekérdezésére céljából, valamint engedélyezi a névtelen helyadatok elküldését a Google-nak.
 
       Ez a házirend csak a kezdeti beállításra vonatkozóan szabályozza a Google helyszolgáltatásainak állapotát. Később a felhasználó az Android beállításai között be- vagy kikapcsolhatja a Google helyszolgáltatásait.
 
@@ -2784,7 +2762,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Letiltása esetén az automatikus kitöltés űrlapadatainak importálása nem történik meg.
 
       Ha nincs beállítva, akkor a böngésző vagy megkérdezi a felhasználótól, hogy legyen-e importálás, vagy automatikusan végrehajtja azt.</translation>
-<translation id="6221175752766085998">A helyi bizalmi horgonyok kibocsátott, de a subjectAlternativeName bővítménnyel nem rendelkező tanúsítványok engedélyezése</translation>
+<translation id="6221175752766085998">A helyi bizalmi horgonyok által kibocsátott, de a subjectAlternativeName bővítménnyel nem rendelkező tanúsítványok engedélyezése</translation>
 <translation id="6224304369267200483">Biztonsági hardverkulccsal történő közvetlen hitelesítésre automatikusan jogosult URL-ek, illetve domainek</translation>
 <translation id="6233173491898450179">Letöltési könyvtár megadása</translation>
 <translation id="6244210204546589761">Indításkor megnyitandó URL-ek</translation>
@@ -3130,7 +3108,7 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
       Ha a házirend értéke Igaz, vagy ha nincs beállítva, akkor az intelligens elsötétítési modell aktiválódik, és lehetővé teszi a képernyő elsötétítéséig hátralévő idő növelését. Ha a házirend értéke Hamis, akkor az intelligens elsötétítési modell nem befolyásolja a képernyő elsötétítését.</translation>
 <translation id="6967394885063085697">A speciális akkumulátortöltési üzemmódra vonatkozó energiagazdálkodási házirend engedélyezése.
 
-          A speciális akkumulátortöltési üzemmód lehetővé teszi a felhasználó számára az akkumulátor élettartamának maximalizálását. Speciális töltési üzemmódban a rendszer hagyományos töltési algoritmusokat és más módszereket használ a munkaidőn kívül az akkumulátor élettartamának maximalizálása érdekében. Munkaidőben a gyors töltési módot használja. Ez a gyors töltési mód lehetővé teszi az akkumulátor gyorsabb feltöltését, így az akkumulátor hamarabb eléri a teljes töltöttséget. A kezdési idő és az időtartam minden napra vonatkozóan meghatározza, hogy mikor használják legtöbbet a rendszert.
+          A speciális akkumulátortöltési üzemmód lehetővé teszi a felhasználó számára az akkumulátor élettartamának maximalizálását. Speciális töltési üzemmódban a rendszer normál töltési algoritmusokat és más módszereket használ a munkaidőn kívül az akkumulátor élettartamának maximalizálása érdekében. Munkaidőben a gyors töltési módot használja. Ez a gyors töltési mód lehetővé teszi az akkumulátor gyorsabb feltöltését, így az akkumulátor hamarabb eléri a teljes töltöttséget. A kezdési idő és az időtartam határozza meg, hogy mikor használják legtöbbet a rendszert az egyes napokon.
 
           Ha a házirend beállítása igaz, és ha a DeviceAdvancedBatteryChargeModeDayConfig házirend be van állítva, akkor a speciális akkumulátortöltési üzemmód mindig engedélyezve lesz az ezt támogató eszközökön.
 
@@ -3206,13 +3184,13 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
       Ha nem állítja be ezt a házirendet, a felhasználó döntheti el, hogy kívánja-e az eszköz feloldását jelszóhoz kötni.</translation>
 <translation id="7107148737865880402">Az USB-s energiaellátásra vonatkozó energiagazdálkodási házirend engedélyezése.
 
-          Egyes eszközök USB-csatlakozója villámot vagy akkumulátort ábrázoló képpel van megjelölve, amely azt jelzi, hogy a rendszer akkumulátora használható eszközök (például mobiltelefonok) töltésére. Ez a házirend a csatlakozó viselkedését befolyásolja abban az esetben, ha a rendszer alvó vagy kikapcsolt állapotban van. Nincs hatással a többi USB-csatlakozóra, illetve a rendszer ébrenléti állapotában történő töltési viselkedésre.
+          Egyes eszközök USB-portja villámot vagy akkumulátort ábrázoló képpel van megjelölve, amely azt jelzi, hogy a rendszer akkumulátora használható eszközök (például mobiltelefonok) töltésére. Ez a házirend a töltőport viselkedését befolyásolja abban az esetben, ha a rendszer alvó vagy kikapcsolt állapotban van. Nincs hatással a többi USB-portra, illetve a rendszer ébrenléti állapotában történő töltési viselkedésre.
 
-          Ha a rendszer ébren van, az USB-csatlakozó mindig biztosít energiát.
+          Ha a rendszer ébren van, az USB-port mindig biztosít energiát.
 
-          Ha a házirend beállítása igaz, akkor alvó állapotban az USB-csatlakozó mindig kap energiát, amennyiben az eszköz csatlakoztatva van hálózati áramforrásra, vagy az akkumulátor töltöttségi szintje 50%-nál nagyobb. Máskülönben nem kap energiát.
+          Ha a házirend beállítása igaz, akkor alvó állapotban az USB-port mindig kap energiát, amennyiben az eszköz csatlakoztatva van hálózati áramforrásra, vagy az akkumulátor töltöttségi szintje 50%-nál nagyobb. Máskülönben nem kap energiát.
 
-          Ha a házirend beállítása igaz, akkor kikapcsolt állapotban az USB-csatlakozó mindig kap energiát, amennyiben az eszköz csatlakoztatva van hálózati áramforrásra. Máskülönben nem kap energiát.
+          Ha a házirend beállítása igaz, akkor kikapcsolt állapotban az USB-port mindig kap energiát, amennyiben az eszköz csatlakoztatva van hálózati áramforrásra. Máskülönben nem kap energiát.
 
           Ha nincs beállítva ez a házirend, akkor mindig engedélyezve van, és a felhasználó nem tilthatja le.</translation>
 <translation id="7115494316187648452">Meghatározza, hogy elinduljon-e a <ph name="PRODUCT_NAME" /> folyamata az operációs rendszerbe való bejelentkezéskor, és az utolsó böngészőablak bezárásakor is futásban hagyja, lehetővé téve a háttéralkalmazások és az aktuális böngészési munkamenet számára, hogy aktívak maradjanak, a munkamenetek esetleges cookie-jaival együtt. A háttérfolyamat egy ikont jelenít meg a tálcán, ahonnan mindig bezárható.
@@ -3557,7 +3535,7 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
 
           Megjegyzés: A <ph name="CHARGE_START_TIME_FIELD_NAME" /> értékének kisebbnek kell lennie, mint a <ph name="CHARGE_END_TIME_FIELD_NAME" /> értékének.
 
-          Megjegyzés: A <ph name="MINUTE_FIELD_NAME" /> mező lehetséges értékei a <ph name="CHARGE_START_TIME_FIELD_NAME" /> és <ph name="CHARGE_END_TIME_FIELD_NAME" /> beállításokban a következők: 0, 15, 30, 45.</translation>
+          Megjegyzés: A <ph name="MINUTE_FIELD_NAME" /> mező megengedett értékei a <ph name="CHARGE_START_TIME_FIELD_NAME" /> és <ph name="CHARGE_END_TIME_FIELD_NAME" /> beállításokban a következők: 0, 15, 30, 45.</translation>
 <translation id="7717938661004793600">A <ph name="PRODUCT_OS_NAME" /> kisegítő funkcióinak konfigurálása.</translation>
 <translation id="7724994675283793633">Ez a házirend a HTTP/0.9 protokoll használatát más portokon is engedélyezi a HTTP 80-as és a HTTPS 443-as portja mellett.
 
@@ -3647,7 +3625,7 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
 <translation id="7941975817681987555">A hálózati műveletek előrejelzése semmilyen hálózaton ne történjen meg</translation>
 <translation id="7952007677054834789">Az indításkor betöltődő oldalakat, az alapértelmezett kezdőoldalt és az alapértelmezett új lap oldalt konfigurálja a <ph name="PRODUCT_NAME" /> böngészőben, és megakadályozza, hogy a felhasználók módosítsák őket.
 
-      A felhasználó kezdőoldalának beállításai csak akkor lesznek teljesen lezárva, ha a kezdőoldalt választja az új lap oldalnak, vagy ha URL-re állítja be, és megadja a kezdőoldal-URL-t. Ha nem ad meg kezdőoldal-URL-t, akkor a felhasználó továbbra is be tudja állítani kezdőoldalnak az új lap oldalt a „chrome://newtab” meghatározásával.
+      A felhasználó kezdőoldalának beállításai csak akkor lesznek teljesen lezárva, ha a kezdőoldalt választja az új lap oldalnak, vagy ha egy URL-re állítja be, és megadja a kezdőoldal-URL-t. Ha nem ad meg kezdőoldal-URL-t, akkor a felhasználó továbbra is be tudja állítani kezdőoldalnak az új lap oldalt a „chrome://newtab” megadásával.
 
       Az „Indításkor megnyitandó URL-ek” házirendet figyelmen kívül hagyja a böngésző, kivéve akkor, ha a „Teendő indításkor” részben a „Nyisson meg egy URL-listát” lehetőség lett kiválasztva.</translation>
 <translation id="7952958573604504839">Ez a házirend az M48-as verzióban megszűnt, helyét a <ph name="NETWORK_PREDICTION_OPTIONS_POLICY_NAME" /> vette át; az M54-es verzióból pedig teljesen eltávolítottuk.
@@ -3835,6 +3813,7 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
       Ha meg van határozva a DeviceIdleLogoutTimeout, akkor ez a házirend adja meg, hogy mennyi ideig legyen látható a figyelmeztető mező a visszaszámlálóval, mielőtt megtörténne a felhasználó kijelentkeztetése.
 
       A házirend értékét ezredmásodpercben kell megadni.</translation>
+<translation id="8331479227794770304">Beragadó billentyűk engedélyezése</translation>
 <translation id="8339420913453596618">Kétlépcsős azonosítás letiltva</translation>
 <translation id="8344454543174932833">Könyvjelzők importálása az alapértelmezett böngészőből az első indításkor</translation>
 <translation id="8357681633047935212">A felhasználói munkamenet hosszának korlátozása</translation>
@@ -4216,18 +4195,6 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
       Ha a házirend értéke olyan tokenre van állítva, amely megfeleltethető egy Quick Fix Buildnek, akkor az eszköz frissül a kapcsolódó Quick Fix Buildre, feltéve, hogy a frissítést nem akadályozza másik házirend.
 
       Ha a házirend nincs beállítva, vagy az értéke nem feleltethető meg Quick Fix Buildnek, akkor az eszköz nem frissül Quick Fix Buildre. Ha az eszközön már fut Quick Fix Build, és a házirend már nincs beállítva, vagy értéke már nem feleltethető meg Quick Fix Buildnek, akkor az eszköz szokásos buildre frissül, feltéve, hogy a frissítést nem akadályozza másik házirend.</translation>
-<translation id="906631898352326790">
-      Ha a házirend engedélyezve van, a vesszővel tagolt listában szereplő összes
-      megnevezett eredet önálló folyamatként fut majd. Ez aldomainek szerint is
-      letiltja a megnevezett eredeteket; pl. a https://example.com/ megadása
-      a https://foo.example.com/ webhely izolálását is eredményezi, mert ez a
-      https://example.com/ webhely része.
-      Ha letiltja a házirendet, az IsolateOrigins és a SitePerProcess funkciót is letiltja a rendszer. A felhasználók parancssori jelzőkkel továbbra is engedélyezhetik manuálisan az IsolateOrigins beállítást.
-      Ha a házirend nincs beállítva, a felhasználó módosíthatja ezt a beállítást.
-      <ph name="PRODUCT_OS_NAME" /> rendszeren javasolt a <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> eszközházirend beállítása azonos értékre. Ha az értékek nem egyeznek, az késést okozhat a felhasználói munkamenetbe való belépés során, miközben a böngésző éppen alkalmazni próbálja a felhasználói házirend által meghatározott értéket.
-
-      MEGJEGYZÉS: A házirend nem vonatkozik az Android rendszerre. Ha engedélyezni kívánja az IsolateOrigins házirendet Android rendszeren, használja az IsolateOriginsAndroid házirend-beállítást.
-      </translation>
 <translation id="9072600218500597787">Beállítja a távoli hozzáférésű gazdagépek kötelező domainneveit, és megakadályozza, hogy a felhasználók módosítsák őket.
 
           Ha a beállítás aktiválva van, a gazdagépeket kizárólag a megadott domainnevek valamelyikén regisztrált fiókok használatával lehet megosztani.

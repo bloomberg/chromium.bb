@@ -942,13 +942,6 @@
 
       Jei ši politika nenustatyta, valdomų naudotojų numatytasis nustatymas bus „neleidžiama“, o nevaldomų naudotojų – „leidžiama“.</translation>
 <translation id="2660846099862559570">Niekada nenaudoti tarpinio serverio</translation>
-<translation id="2663739737868438950">
-      Ši politika taikoma prisijungimo ekranui. Taip pat žr. politiką „<ph name="SITE_PER_PROCESS_POLICY_NAME" />“, kuri taikoma naudotojo sesijai. Rekomenduojama abiejų tipų politikai nustatyti tą pačią vertę. Jei vertės neatitiks, pradedant naudotojo sesiją gali būti uždelsta, kol taikoma naudotojo politikos nurodyta vertė.
-      Gali būti naudinga peržiūrėti politikos nustatymą „IsolateOrigins“, kad galėtumėte efektyviai naudoti atskyrimą darydami ribotą įtaką naudotojams, pasitelkdami „IsolateOrigins“ su svetainių, kurias norite atskirti, sąrašu. Nustatymu „SitePerProcess“ atskiriamos visos svetainės.
-      Įgalinus politiką kiekviena svetainė vykdys atskirą procesą.
-      Išjungus politiką, abi funkcijos: „IsolateOrigins“ ir „SitePerProcess“ bus išjungtos. Naudotojai vis tiek galės neautomatiškai įgalinti „SitePerProcess“, naudodami komandos eilutės žymas.
-      Nesukonfigūravus politikos naudotojas galės pakeisti šį nustatymą.
-      </translation>
 <translation id="2672012807430078509">NTLM kaip mažų ir vidutinio dydžio įmonių įrengimo elementų tapatybės nustatymo protokolo įgalinimo valdymas</translation>
 <translation id="267596348720209223">Nurodomos paieškos teikėjo palaikomos simbolių koduotės. Koduotės – tai kodų puslapių pavadinimai, pvz., UTF-8, GB2312 ir ISO-8859-1. Jie išbandomi nurodyta tvarka.
 
@@ -1437,15 +1430,6 @@
       Kiekvienas politikos sąrašo elementas yra objektas iš dviejų narių: „share_url“ ir „mode“. „share_url“ turėtų būti bendrinimo įrenginio URL, o „mode“ turėtų būti „drop_down“ arba „pre_mount“. Režimas „drop_down“ nurodo, kad „share_url“ bus pridėtas prie bendrinimo įrenginio aptikimo išskleidžiamojo meniu. Režimas „pre_mount“ nurodo, kad bus įdėtas „share_url“.</translation>
 <translation id="3591527072193107424">„Pasenusių naršyklių palaikymo“ funkcijos įgalinimas.</translation>
 <translation id="3591584750136265240">Konfigūruoti prisijungimo autentifikavimo elgseną</translation>
-<translation id="3624171042292187668">
-      Gali būti naudinga peržiūrėti politikos nustatymą „IsolateOrigins“, kad galėtumėte efektyviai naudoti atskyrimą darydami ribotą įtaką naudotojams, pasitelkdami „IsolateOrigins“ su svetainių, kurias norite atskirti, sąrašu. Nustatymu „SitePerProcess“ atskiriamos visos svetainės.
-      Įgalinus politiką kiekviena svetainė vykdys atskirą procesą.
-      Išjungus politiką, abi funkcijos: „IsolateOrigins“ ir „SitePerProcess“ bus išjungtos. Naudotojai vis tiek galės neautomatiškai įgalinti „SitePerProcess“, naudodami komandos eilutės žymas.
-      Nesukonfigūravus politikos naudotojas galės pakeisti šį nustatymą.
-      Naudojant „<ph name="PRODUCT_OS_NAME" />“ taip pat rekomenduojama nustatyti tą pačią įrenginio politikos „<ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />“ vertę. Jei abiejų tipų politikos vertės neatitinka, pradedant naudotojo sesiją gali būti uždelsta, kol taikoma naudotojo politikos nurodyta vertė.
-
-      PASTABA: ši politika netaikoma sistemoje „Android“. Kad įgalintumėte „SitePerProcess“ sistemoje „Android“, naudokite politikos nustatymą „SitePerProcessAndroid“.
-      </translation>
 <translation id="3627678165642179114">Įgalinti rašybos tikrinimo žiniatinklio paslaugą arba jos neleisti</translation>
 <translation id="3628480121685794414">Įgalinti vienpusį spausdinimą</translation>
 <translation id="3631099945620529777">Jei nustatyta kaip „Netiesa“, nebus galima naudoti užduočių tvarkytuvės mygtuko „Užbaigti procesą“.
@@ -1551,7 +1535,7 @@
 
       Kai ši politika nustatyta kaip „<ph name="BR_UNDER_USER_CONTROL" />“, naudotojo prašoma pasirinkti, ar naudoti „Android“ atsarginės kopijos kūrimo ir atkūrimo funkciją. Naudotojui įgalinus atsarginės kopijos kūrimo ir atkūrimo funkciją, „Android“ programos duomenys įkeliami į „Android“ atsarginių kopijų serverius ir pakartotinai diegiant suderinamas programas yra atkuriami iš šių serverių.
 
-      Atminkite, kad ši politika valdo „Android“ atsarginės kopijos kūrimą ir atkūrimą tik pradinio nustatymo metu. Po to naudotojas gali atidaryti „Android“ nustatymus ir įjungti ir (arba) išjungti „Android“ atsarginės kopijos kūrimo ir atkūrimo funkciją.</translation>
+      Atminkite, kad ši politika valdo „Android“ atsarginės kopijos kūrimą ir atkūrimą tik per pradinį nustatymą. Po to naudotojas gali atidaryti „Android“ nustatymus ir įjungti ir (arba) išjungti „Android“ atsarginės kopijos kūrimo ir atkūrimo funkciją.</translation>
 <translation id="3831376478177535007">Įgalinus šį nustatymą, „<ph name="PRODUCT_NAME" />“ leidžia „Symantec Corporation“ išduotus pasenusių PKI operacijų sertifikatus nustatyti kaip patikimus, jei jie sėkmingai patvirtinami ir susiejami su atpažįstamu CA sertifikatu.
 
       Atminkite, kad ši politika nustatoma atsižvelgiant į operacinę sistemą, kuri vis dar atpažįsta sertifikatus iš „Symantec“ pasenusios infrastruktūros. Jei atnaujinus OS pakeičiama, kaip OS apdoroja tokius sertifikatus, ši politika nebegalioja. Be to, ši politika teikiama kaip laikina sprendimo priemonė, norint suteikti įmonėms daugiau laiko pereiti nuo pasenusių „Symantec“ sertifikatų. Ši politika bus pašalinta 2019 m. sausio 1 d. arba šiek tiek vėliau / anksčiau.
@@ -2648,12 +2632,6 @@
           Jei šis nustatymas išjungtas arba nesukonfigūruotas, „Gnubby“ autentifikavimo užklausos nebus perduotos įgaliotajam serveriui.</translation>
 <translation id="5897913798715600338">Akumuliatoriaus įkrovimas naudojant greitojo įkrovimo technologijas.</translation>
 <translation id="5898486742390981550">Kai keli naudotojai yra prisijungę, tik pagrindinis naudotojas gali naudoti „Android“ programas.</translation>
-<translation id="5900196529149231477">
-      Ši politika taikoma prisijungimo ekranui. Taip pat žr. politiką „<ph name="ISOLATE_ORIGINS_POLICY_NAME" />“, kuri taikoma naudotojo sesijai. Rekomenduojama abiejų tipų politikai nustatyti tą pačią vertę. Jei vertės neatitiks, pradedant naudotojo sesiją gali būti uždelsta, kol taikoma naudotojo politikos nurodyta vertė.
-      Įgalinus politiką kiekvienas pavadinimą turintis šaltinis, įtrauktas į kableliais atskirtų verčių sąrašą, vykdys atskirą procesą. Taip pat bus atskiriami šaltiniai, pavadinti pagal padomenius, pvz., nurodžius https://example.com/ taip pat bus atskiriamas https://foo.example.com/ kaip svetainės https://example.com/ dalis.
-      Išjungus politiką, abi funkcijos: „IsolateOrigins“ ir „SitePerProcess“ bus išjungtos. Naudotojai vis tiek galės neautomatiškai įgalinti „IsolateOrigins“, naudodami komandos eilutės žymas.
-      Nesukonfigūravus politikos prisijungimo ekrane bus naudojami numatytieji platformos svetainių atskyrimo nustatymai.
-      </translation>
 <translation id="5901427587865226597">Tik dvipusis spausdinimas</translation>
 <translation id="5905473632148429217">Internetinių OCSP / CRL patikrų įgalinimas</translation>
 <translation id="5906199912611534122">Leidžiama įgalinti arba išjungti tinklo reguliavimą.
@@ -2782,7 +2760,7 @@
 
       Kai ši politika nustatyta kaip „<ph name="GLS_UNDER_USER_CONTROL" />“, naudotojo prašoma pasirinkti, ar naudoti „Google“ vietovės paslaugas. Bus leidžiama „Android“ programoms naudoti paslaugas užklausoms dėl įrenginio vietovės teikti ir bus leidžiama teikti anoniminius vietovės duomenis „Google“.
 
-      Atminkite, kad ši politika valdo „Google“ vietovės paslaugų būseną tik pradinio nustatymo metu. Po to naudotojas gali atidaryti „Android“ nustatymus ir įjungti ir (arba) išjungti „Google“ vietovės paslaugas.
+      Atminkite, kad ši politika valdo „Google“ vietovės paslaugų būseną tik per pradinį nustatymą. Po to naudotojas gali atidaryti „Android“ nustatymus ir įjungti ir (arba) išjungti „Google“ vietovės paslaugas.
 
       Atminkite, kad šios politikos nepaisoma ir „Google“ vietovės paslaugos yra visada išjungtos, kai politika „<ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" />“ nustatyta kaip „<ph name="BLOCK_GEOLOCATION_SETTING" />“.</translation>
 <translation id="6141402445226505817">Visada leisti aptikti laiko juostą</translation>
@@ -3939,6 +3917,7 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
       Kai nurodyta „Įrenginio neveikos būsenos atjungimo skirtasis laikas“, pagal šią politiką apibrėžiama įspėjimo laukelio su laiko skaičiavimo atgal laikmačiu, kuris rodomas naudotojui prieš atjungiant, trukmė.
 
       Politikos vertė turėtų būti nurodyta milisekundėmis.</translation>
+<translation id="8331479227794770304">Įgalinti pritraukiančius klavišus</translation>
 <translation id="8339420913453596618">Antras veiksnys išjungtas</translation>
 <translation id="8344454543174932833">Importuoti žymes iš numatytosios naršyklės paleidžiant pirmą kartą</translation>
 <translation id="8357681633047935212">Naudotojo sesijos trukmės ribojimas</translation>
@@ -4327,18 +4306,6 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
       Jei politikos reikšmė yra prieigos raktas, susiejantis su „Quick Fix Build“, įrenginys bus atnaujintas į atitinkamą „Quick Fix Build“, jei naujinio neblokuos kita politika.
 
       Jei ši politika nenustatyta arba jos reikšmė nesusieja su „Quick Fix Build“, įrenginys nebus atnaujintas į „Quick Fix Build“. Jei įrenginyje jau veikia „Quick Fix Build“ ir politika nebenustatyta arba jos reikšmė nebesusieja su „Quick Fix Build“, įrenginys bus atnaujintas į įprastinę versiją, jei naujinio neblokuos kita politika.</translation>
-<translation id="906631898352326790">
-      Įgalinus politiką kiekvienas pavadinimą turintis šaltinis, įtrauktas į
-      kableliais atskirtų verčių sąrašą, vykdys atskirą procesą. Taip pat bus atskiriami
-      šaltiniai, pavadinti pagal padomenius, pvz., nurodžius https://example.com/
-      taip pat bus atskiriamas https://foo.example.com/ kaip svetainės
-      https://example.com/ dalis.
-      Išjungus politiką, abi funkcijos: „IsolateOrigins“ ir „SitePerProcess“ bus išjungtos. Naudotojai vis tiek galės neautomatiškai įgalinti „IsolateOrigins“, naudodami komandos eilutės žymas.
-      Nesukonfigūravus politikos naudotojas galės pakeisti šį nustatymą.
-      Naudojant „<ph name="PRODUCT_OS_NAME" />“ taip pat rekomenduojama nustatyti tą pačią įrenginio politikos „<ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />“ vertę. Jei abiejų tipų politikos vertės neatitinka, pradedant naudotojo sesiją gali būti uždelsta, kol taikoma naudotojo politikos nurodyta vertė.
-
-      PASTABA: ši politika netaikoma sistemoje „Android“. Kad įgalintumėte „IsolateOrigins“ sistemoje „Android“, naudokite politikos nustatymą „IsolateOriginsAndroid“.
-      </translation>
 <translation id="9072600218500597787">Konfigūruojami būtini prieglobos domenų pavadinimai, kurie bus nustatyti nuotolinės prieigos priegloboms, ir neleidžiama naudotojams jų keisti.
 
           Jei šis nustatymas įgalintas, prieglobas galima bendrinti tik naudojant nurodytais domenų pavadinimais užregistruotas paskyras.

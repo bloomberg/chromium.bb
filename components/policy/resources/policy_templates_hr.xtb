@@ -911,13 +911,6 @@
 
       Ako se pravilo ne postavi, zadana postavka nije dopuštena korisnicima kojima se upravlja, a dopuštena je neupravljanim korisnicima.</translation>
 <translation id="2660846099862559570">Nikad ne upotrebljavaj proxy</translation>
-<translation id="2663739737868438950">
-      To se pravilo primjenjuje na zaslon za prijavu. Pogledajte i pravilo <ph name="SITE_PER_PROCESS_POLICY_NAME" /> koje se primjenjuje na korisničku sesiju. Preporučujemo da oba pravila postavite na istu vrijednost. Ako se vrijednosti ne podudaraju, možda će prilikom otvaranja korisničke sesije biti potrebno pričekati da se primijeni vrijednost koja je određena korisničkim pravilom.
-      Razmislite i o postavljanju pravila IsolateOrigins da biste iskoristili prednosti obiju značajki, izolacije i ograničenog utjecaja za korisnike, koristeći IsolateOrigins s popisom web-lokacija koje želite izolirati. Ova postavka, SitePerProcess, izolira sve web-lokacije.
-      Ako se pravilo omogući, svaka će se web-lokacija izvoditi u svojem procesu.
-      Ako se pravilo onemogući, onemogućit će se i značajka IsolateOrigins i značajka SitePerProcess. Korisnici će i dalje moći ručno omogućiti SitePerProcess putem oznaka naredbenog retka.
-      Ako se pravilo ne konfigurira, korisnik će moći promijeniti tu postavku.
-      </translation>
 <translation id="2672012807430078509">Upravlja omogućivanjem NTLM-a kao autentifikacijskog protokola za SMB učitavanja</translation>
 <translation id="267596348720209223">Određuje kodiranje znakova koje podržava davatelj usluga pretraživanja. Kodiranja su nazivi kodnih stranica poput UTF-8, GB2312 i ISO-8859-1. Isprobavaju se navedenim redoslijedom. Ovo je pravilo izborno. Ako nije postavljeno, upotrebljavat će se zadana stranica UTF-8. Ovo će se pravilo poštovati samo ako je omogućeno pravilo "DefaultSearchProviderEnabled".</translation>
 <translation id="268577405881275241">Omogući značajku proxyja za kompresiju podataka</translation>
@@ -1395,15 +1388,6 @@
       Svaka stavka na popisu pravila objekt je s dva člana: "share_url" i "mode". "share_url" treba biti URL dijeljenja, a "mode" treba biti "drop_down" ili "pre_mount". "drop_down" naznačuje da će se "share_url" dodati na padajući izbornik otkrivenih dijeljenja. "pre_mount" naznačuje da će se "share_url" učitati.</translation>
 <translation id="3591527072193107424">Omogući značajku Podrška za stare preglednike.</translation>
 <translation id="3591584750136265240">Konfiguriraj ponašanje autentifikacije tijekom prijave</translation>
-<translation id="3624171042292187668">
-      Razmislite i o postavljanju pravila IsolateOrigins da biste iskoristili prednosti obiju značajki, izolacije i ograničenog utjecaja za korisnike, koristeći IsolateOrigins s popisom web-lokacija koje želite izolirati. Ova postavka, SitePerProcess, izolira sve web-lokacije.
-      Ako se pravilo omogući, svaka web-lokacija izvodit će se u svojem procesu.
-      Ako se pravilo onemogući, onemogućit će se i značajka IsolateOrigins i značajka SitePerProcess. Korisnici će i dalje moći ručno omogućiti SitePerProcess putem oznaka naredbenog retka.
-      Ako se pravilo ne konfigurira, korisnik će moći promijeniti tu postavku.
-      Za <ph name="PRODUCT_OS_NAME" /> preporučujemo da pravilo za uređaje <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> postavite na istu vrijednost. Ako se vrijednosti ne podudaraju, možda će prilikom otvaranja korisničke sesije biti potrebno pričekati da se primijeni vrijednost koja je određena korisničkim pravilom.
-
-      NAPOMENA: to se pravilo ne primjenjuje na Android. Da biste omogućili SitePerProcess na Androidu, postavite pravilo SitePerProcessAndroid.
-      </translation>
 <translation id="3627678165642179114">Omogući ili onemogući web-uslugu provjere pravopisa</translation>
 <translation id="3628480121685794414">Omogući jednostrani ispis</translation>
 <translation id="3631099945620529777">Ako se postavi na false, onemogućuje se gumb "Završi proces" u Upravitelju zadataka.
@@ -1593,7 +1577,7 @@
 <translation id="3915395663995367577">URL prema proxy .pac datoteci</translation>
 <translation id="3920892052017026701">Postavite prilagođeni početak punjenja baterije u postocima.
 
-          Baterija se počinje puniti kada se potroši vrijednost prilagođenog početka punjenja baterije.
+          Baterija se počinje puniti kada istekne vrijednost prilagođenog početka punjenja baterije.
 
           Vrijednost pravila DeviceBatteryChargeCustomStartCharging mora biti manja od one u pravilu DeviceBatteryChargeCustomStopCharging.
 
@@ -2565,12 +2549,6 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
           Ako je ta postavka onemogućena ili nije konfigurirana, zahtjevi autentifikacije "gnubby" neće se prosljeđivati putem proxyja.</translation>
 <translation id="5897913798715600338">Napuni bateriju pomoću tehnologije brzog punjenja.</translation>
 <translation id="5898486742390981550">Kada je prijavljeno više korisnika, samo primarni korisnik može upotrebljavati Android aplikacije.</translation>
-<translation id="5900196529149231477">
-      To se pravilo primjenjuje na zaslon za prijavu. Pogledajte i pravilo <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> koje se odnosi na korisničku sesiju. Preporučujemo da oba pravila postavite na istu vrijednost. Ako se vrijednosti ne podudaraju, možda će prilikom otvaranja korisničke sesije biti potrebno pričekati da se primijeni vrijednost koja je određena korisničkim pravilom.
-      Ako je pravilo omogućeno, svaki od navedenih izvora na popisu odijeljenom zarezima izvodit će se u vlastitom procesu. Time će se također izolirati izvori navedeni prema poddomenama. Na primjer, ako se navede https://example.com/, izolirat će se i https://foo.example.com/ kao dio web-lokacije https://example.com/.
-      Ako se pravilo onemogući, neće doći do izričite izolacije web-lokacije i radne verzije IsolateOriginsAndroid i SitePerProcessAndroid bit će onemogućene. Korisnici će i dalje moći ručno omogućiti IsolateOrigins putem oznake naredbenog retka.
-      Ako se pravilo ne konfigurira, za zaslon za prijavu koristit će se zadane postavke platforme za izolaciju web-lokacija.
-      </translation>
 <translation id="5901427587865226597">Samo dvostrani ispis</translation>
 <translation id="5905473632148429217">Omogući online OCSP/CRL provjere</translation>
 <translation id="5906199912611534122">Dopušta omogućivanje ili onemogućivanje usporavanja mreže.
@@ -2782,7 +2760,7 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 <translation id="6244210204546589761">URL-ovi koji se otvaraju prilikom pokretanja</translation>
 <translation id="6255387031094435995">Omogućuje spajanje odabranih pravila istog opsega i razine kada potječu iz različitih izvora.
 
-        Ako za pravilo na popisu postoji sukob između dva izvora, vrijednosti će se spojiti u popis novog pravila pod uvjetom da izvori imaju iste opsege i razinu.
+        Ako za pravilo na popisu postoji sukob između dva izvora, vrijednosti će se spojiti u novi popis pravila pod uvjetom da su izvori istog opsega i razine.
 
         Ako za pravilo na popisu postoji sukob između dva izvora, ali i između njihovih opsega i/ili razine, primijenit će se pravilo najvišeg prioriteta.
 
@@ -3821,6 +3799,7 @@ Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pr
       Kada je pravilo "DeviceIdleLogoutTimeout" navedeno, to pravilo određuje trajanje okvira za upozorenje s odbrojavanjem koji se prikazuje korisniku prije nego što se izvrši odjava.
 
       Vrijednost pravila trebala bi biti navedena u milisekundama.</translation>
+<translation id="8331479227794770304">Omogući ljepljive tipke</translation>
 <translation id="8339420913453596618">Dvostruka autentifikacija onemogućena</translation>
 <translation id="8344454543174932833">Uvoz oznaka iz zadanog preglednika pri prvom pokretanju</translation>
 <translation id="8357681633047935212">Ograniči duljinu korisničke sesije</translation>
@@ -4188,14 +4167,6 @@ za preglednike imaju isti raspored.
       Ako se vrijednost pravila postavi na token koji mapira na međuverziju za brzi popravak, uređaj će se ažurirati na odgovarajuću međuverziju ako ažuriranje nije blokirano drugim pravilom.
 
       Ako se pravilo ne postavi ili njegova vrijednost ne mapira na međuverziju za brzi popravak, uređaj se neće ažurirati na međuverziju za brzi popravak. Ako je na uređaju već instalirana međuverzija za brzi popravak i pravilo više nije postavljeno ili njegova vrijednost više ne mapira na međuverziju za brzi popravak, uređaj će se ažurirati na regularnu međuverziju ako ažuriranje nije blokirano drugim pravilom.</translation>
-<translation id="906631898352326790">
-      Ako je pravilo omogućeno, svaki od navedenih izvora na popisu odijeljenom zarezima izvodit će se u vlastitom procesu. Time će se također izolirati izvori navedeni prema poddomenama. Na primjer, ako se navede https://example.com/, izolirat će se i https://foo.example.com/ kao dio web-lokacije https://example.com/.
-      Ako se pravilo onemogući, onemogućit će se i značajka IsolateOrigins i značajka SitePerProcess. Korisnici će i dalje moći ručno omogućiti SitePerProcess putem oznaka naredbenog retka.
-      Ako se pravilo ne konfigurira, korisnik će moći promijeniti tu postavku.
-      Za <ph name="PRODUCT_OS_NAME" /> preporučujemo da pravilo za uređaje <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> postavite na istu vrijednost. Ako se vrijednosti ne podudaraju, možda će prilikom otvaranja korisničke sesije biti potrebno pričekati da se primijeni vrijednost koja je određena korisničkim pravilom.
-
-      NAPOMENA: to se pravilo ne primjenjuje na Android. Da biste omogućili IsolateOrigins na Androidu, postavite pravilo IsolateOriginsAndroid.
-      </translation>
 <translation id="9072600218500597787">Konfigurira tražene nazive domena hosta koji će se nametnuti za hostove daljinskog pristupa i onemogućuje korisnicima da to promijene.
 
           Ako se ta postavka omogući, hostovi se mogu dijeliti samo putem računa registriranih na navedenom nazivu domene.

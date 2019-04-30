@@ -58,7 +58,7 @@
 <translation id="1052499923181221200">SamlInSessionPasswordChangeEnabled true (doğru) değerine ayarlanmadıkça bu politikanın etkisi yoktur.
       SamlInSessionPasswordChangeEnabled politikası true (doğru) değerine, bu politika da (örneğin) 14'e ayarlanırsa, SAML kullanıcılarına şifrelerinin süresinin belirli bir tarihte biteceği 14 gün önceden bildirilir.
       Ardından oturum içi şifre değiştirme işlemini hemen uygulayarak şifrelerini süresi bitmeden güncelleyebilirler.
-      Ancak bu bildirimler sadece şifre bitiş bilgileri cihaza SAML kimlik sağlayıcısı tarafından SAML oturum açma akışı sırasında gönderilirse gösterilir.
+      Ancak bu bildirimler sadece şifre geçerliliği bitiş bilgileri cihaza SAML kimlik sağlayıcısı tarafından SAML oturum açma akışı sırasında gönderilirse gösterilir.
       Bu politika sıfıra ayarlanırsa kullanıcılara önceden bildirim yapılmaz. Sadece şifrenin süresi bittiğinde bildirim alırlar.
 
       Bu politika ayarlanırsa, kullanıcı tarafından değiştirilemez veya geçersiz kılınamaz.</translation>
@@ -313,7 +313,7 @@
 <translation id="1507382822467487898">
           Cihaza bir yerleştirme yuvası bağlandığında MAC (medya erişim denetimi) adresi kullanılır.
 
-          Bazı cihaz modellerine bir yerleştirme yuvası bağlandığında, varsayılan olarak cihazı Ethernet'te tanımlamak için cihazın atanmış yuvasına ait MAC adresi kullanılır. Bu politika, cihaz yuvaya yerleştirilmiş durumdayken MAC adresi kaynağının yönetici tarafından değiştirilmesine izin verir.
+          Bazı cihaz modellerine bir yerleştirme yuvası bağlandığında, varsayılan olarak cihazı Ethernet ağında tanımlamak için cihazın atanmış yuvasına ait MAC adresi kullanılır. Bu politika, cihaz yuvaya yerleştirilmiş durumdayken MAC adresi kaynağının yönetici tarafından değiştirilmesine izin verir.
 
           "DeviceDockMacAddress" seçiliyse veya politika ayarlanmamış olarak bırakılırsa, cihazın atanmış yuvasına ait MAC adresi kullanılır.
 
@@ -761,7 +761,7 @@
 <translation id="2327252517317514801">G Suite'e erişmesine izin verilen alan adlarını tanımla</translation>
 <translation id="2356878440219553005">Pil şarj modu güç yönetimi politikasını belirtir.
 
-          Gerilimden dolayı pilin aşınmasını en aza indirmek ve pil ömrünü uzatmak için pil şarjını dinamik olarak denetleyin.
+          Pil stresi nedeniyle pilin aşınmasını en aza indirmek ve pil ömrünü uzatmak için pil şarjını dinamik olarak denetleyin.
 
           Özel pil şarj modu seçiliyse, DeviceBatteryChargeCustomStartCharging ve DeviceBatteryChargeCustomStopCharging belirtilmelidir.
 
@@ -929,13 +929,6 @@
 
       Bu politika ayarlanmadan bırakılırsa varsayılan değer, yönetilen kullanıcılara izin verilmemesi ve yönetilmeyen kullanıcılara izin verilmesi şeklindedir.</translation>
 <translation id="2660846099862559570">Hiçbir zaman proxy kullanma</translation>
-<translation id="2663739737868438950">
-      Bu politika, oturum açma ekranı için geçerlidir. Lütfen kullanıcı oturumu için geçerli olan <ph name="SITE_PER_PROCESS_POLICY_NAME" /> politikasına da bakın. Her iki politikanın da aynı değere ayarlanması önerilir. Değerler eşleşmezse kullanıcı oturumuna giriş sırasında kullanıcı politikası tarafından belirtilen değer uygulanırken gecikme olabilir.
-      Hem izolasyondan hem de kullanıcılar için sınırlı etkiden en iyi şekilde yararlanmak üzere IsolateOrigins politika ayarına bakmak isteyebilirsiniz. Bunun için, izole etmek istediğiniz sitelerin listesiyle IsolateOrigins'i kullanabilirsiniz. Bu ayar (SitePerProcess) tüm siteleri izole eder.
-      Bu politika etkinleştirilirse her site kendi işleminde çalışır.
-      Bu politika devre dışı bırakılırsa hem IsolateOrigins hem de SitePerProcess özellikleri devre dışı bırakılır. Ancak kullanıcılar komut satırı işareti kullanarak SitePerProcess’i manuel olarak etkinleştirmeye devam edebilirler.
-      Politika yapılandırılmazsa kullanıcı bu ayarı değiştirebilir.
-      </translation>
 <translation id="2672012807430078509">NTLM'nin SMB ekleme için kimlik doğrulama protokolü olarak etkinleştirilmesini kontrol eder</translation>
 <translation id="267596348720209223">Arama sağlayıcısı tarafından desteklenen karakter kodlamalarını belirtir. Kodlamalar, UTF-8, GB2312 ve ISO-8859-1 gibi kod sayfası adlarıdır. Bunlar, sağlandıkları sırada denenirler.
 
@@ -1199,7 +1192,7 @@
 <translation id="3077183141551274418">Sekme yaşam döngülerini etkinleştirir veya devre dışı bırakır</translation>
 <translation id="3079417254871857650">Kullanıcının ana dizini ecryptfs şifrelemesi kullanılarak oluşturulmuşsa yapılması gereken işlemi belirtir.
 
-      Bu politikayı "DisallowArc" seçeneğine ayarlarsanız, Android uygulamaları kullanıcı için devre dışı bırakılır ve ecryptfs'ten ext4 şifrelemesine herhangi bir taşıma işlemi yapılmaz. Ana dizin zaten ext4-ile şifrelenmişse Android uygulamalarının çalışması engellenmez.
+      Bu politikayı "DisallowArc" seçeneğine ayarlarsanız, Android uygulamaları kullanıcı için devre dışı bırakılır ve ecryptfs'ten ext4 şifrelemesine herhangi bir taşıma işlemi yapılmaz. Ana dizin zaten ext4 ile şifrelenmişse Android uygulamalarının çalışması engellenmez.
 
       Bu politikayı "Migrate" seçeneğine ayarlarsanız, ecryptfs ile şifrelenmiş ana dizinler otomatik olarak, kullanıcı izni istemeden oturum açma sırasında ext4 şifrelemesine taşınır.
 
@@ -1281,7 +1274,7 @@
 <translation id="3312206664202507568">chrome://password-change konumunda, SAML kullanıcılarının oturum açmış durumdayken SAML şifrelerini değiştirmelerine izin veren ve SAML şifresi ile cihaz kilitli ekran şifresinin senkronize durumda tutulmasını sağlayan bir sayfayı etkinleştirir.
 
       Bu politika ayrıca SAML kullanıcılarını SAML şifrelerinin süresinin biteceği konusunda uyaran bildirimleri etkinleştirir, böylece kullanıcılar hemen oturum içi şifre değiştirme işlemini yapabilirler.
-      Ancak bu bildirimler sadece şifre bitiş bilgileri cihaza SAML kimlik sağlayıcısı tarafından SAML oturum açma akışı sırasında gönderilirse gösterilir.
+      Ancak bu bildirimler sadece şifre geçerliliği bitiş bilgileri cihaza SAML kimlik sağlayıcısı tarafından SAML oturum açma akışı sırasında gönderilirse gösterilir.
 
       Bu politika ayarlanırsa, kullanıcı tarafından değiştirilemez veya geçersiz kılınamaz.</translation>
 <translation id="3322771899429619102">Anahtar oluşturmasına izin verilen sitelerin belirtildiği bir URL kalıpları listesi ayarlamanıza olanak tanır. Bir URL kalıbı "KeygenBlockedForUrls" içindeyse, bu istisnalar geçersiz kılınır.
@@ -1423,15 +1416,6 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
       Politikanın her liste öğesi, iki üyeli bir nesnedir: "share_url" ve "mode". "share_url", paylaşılacak web sayfasının URL'si olmalı, "mode" ise "drop_down" veya "pre_mount" olmalıdır. "drop_down" modu, "share_url"nin paylaşım keşfi açılır menüsüne ekleneceğini gösterir. "pre_mount" modu, "share_url"nin ekleneceğini gösterir.</translation>
 <translation id="3591527072193107424">Eski Tarayıcı Desteği özelliğini etkinleştir.</translation>
 <translation id="3591584750136265240">Giriş için kimlik doğrulama yöntemini yapılandır</translation>
-<translation id="3624171042292187668">
-      Hem izolasyondan hem de kullanıcılar için sınırlı etkiden en iyi şekilde yararlanmak üzere IsolateOrigins politika ayarına bakmak isteyebilirsiniz. Bunun için, izole etmek istediğiniz sitelerin listesiyle IsolateOrigins'i kullanabilirsiniz. Bu ayar (SitePerProcess) tüm siteleri izole eder.
-      Bu politika etkinleştirilirse her site kendi işleminde çalışır.
-      Bu politika devre dışı bırakılırsa hem IsolateOrigins hem de SitePerProcess özellikleri devre dışı bırakılır. Ancak kullanıcılar komut satırı işareti kullanarak SitePerProcess’i manuel olarak etkinleştirmeye devam edebilirler.
-      Bu politika yapılandırılmazsa kullanıcı bu ayarı değiştirebilir.
-      <ph name="PRODUCT_OS_NAME" /> işletim sisteminde <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> cihaz politikasının da aynı değere ayarlanması önerilir. İki politikanın belirttiği değerler eşleşmezse kullanıcı oturumuna giriş sırasında kullanıcı politikası tarafından belirtilen değer uygulanırken gecikme olabilir.
-
-      NOT: Bu politika Android için geçerli değildir. SitePerProcess politikasını Android'de etkinleştirmek için SitePerProcessAndroid politika ayarını kullanın.
-      </translation>
 <translation id="3627678165642179114">Yazım denetimi Web hizmetini etkinleştir veya devre dışı bırak</translation>
 <translation id="3628480121685794414">Tek yönlü yazdırmayı etkinleştir</translation>
 <translation id="3631099945620529777">False (yanlış) değerine ayarlanırsa Görev Yöneticisi'nde "İşlemi sonlandır" düğmesi devre dışı bırakılır.
@@ -2558,7 +2542,7 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
 <translation id="5765780083710877561">Açıklama:</translation>
 <translation id="5770738360657678870">Yeni geliştirilenler kanalı (kararsız olabilir)</translation>
 <translation id="5774856474228476867">Varsayılan arama sağlayıcı arama URL'si</translation>
-<translation id="5775235485119094648">Pili sabit bir aralıktayken şarj edin.</translation>
+<translation id="5775235485119094648">Pili belirlenmiş bir aralıktayken şarj edin.</translation>
 <translation id="5776485039795852974">Bir site, masaüstü bildirimlerini her göstermek istediğinde sor.</translation>
 <translation id="5781412041848781654">HTTP kimlik doğrulaması için hangi GSSAPI kitaplığının kullanılacağını belirtir. Sadece bir kitaplık adı ya da tam yol ayarlayabilirsiniz.
 
@@ -2628,12 +2612,6 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
           Bu ayar devre dışı bırakılır veya yapılandırılmazsa gnubby kimlik doğrulama isteklerinde proxy kullanılmaz.</translation>
 <translation id="5897913798715600338">Pili hızlı şarj teknolojisiyle şarj edin.</translation>
 <translation id="5898486742390981550">Birden fazla kullanıcı giriş yaptığında, yalnızca birincil kullanıcı Android uygulamalarını kullanabilir.</translation>
-<translation id="5900196529149231477">
-      Bu politika, oturum açma ekranı için geçerlidir. Lütfen kullanıcı oturumu için geçerli olan <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> politikasına da bakın. Her iki politikanın da aynı değere ayarlanması önerilir. Değerler eşleşmezse kullanıcı oturumuna giriş sırasında kullanıcı politikası tarafından belirtilen değer uygulanırken gecikme olabilir.
-      Bu politika etkinleştirilirse virgülle ayrılmış listede ad verilmiş her kaynak kendi işleminde çalışır. Bu politika ayrıca alt alan adlarıyla adlandırılan kaynakları da izole eder; örneğin, https://example.com/ adresinin belirtilmesi, https://example.com/ sitesinin bir parçası olarak https://foo.example.com/ sitesinin de izole edilmesine neden olur.
-      Bu politika devre dışı bırakılırsa hem IsolateOrigins hem de SitePerProcess özellikleri devre dışı bırakılır. Ancak kullanıcılar komut satırı işareti kullanarak IsolateOrigins'i manuel olarak etkinleştirmeye devam edebilirler.
-      Bu politika yapılandırılmazsa oturum açma ekranı için platformun varsayılan site izolasyonu ayarları kullanılır.
-      </translation>
 <translation id="5901427587865226597">Yalnızca dupleks yazdır</translation>
 <translation id="5905473632148429217">Online OCSP/CRL denetimlerini etkinleştir</translation>
 <translation id="5906199912611534122">Ağ daraltma işlemini etkinleştirmeye veya devre dışı bırakmaya izin verir.
@@ -2641,7 +2619,7 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
 
       Yanlış (false) değerine ayarlanırsa daraltma olmaz.
       Doğru (true) değerine ayarlanırsa sunulan yükleme ve indirme hızlarına (kbit/sn.) ulaşmak için sistem daraltılır.</translation>
-<translation id="591088232153082363">Pil kullanım modeline göre uyarlanabilir şarj pili.</translation>
+<translation id="591088232153082363">Pil kullanım modeline göre pili uyarlanabilir şarj et.</translation>
 <translation id="5921713479449475707">HTTP aracılığıyla otomatik güncelleme indirmeye izin ver</translation>
 <translation id="5921888683953999946">Giriş ekranında büyük imleç erişilebilirlik özelliğinin varsayılan durumunu ayarla.
 
@@ -3175,17 +3153,17 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
 
       Ekran karartılmak üzereyken akıllı karartma modeli, ekranı karartmanın geciktirilmesinin gerekip gerekmediğini değerlendirir. Akıllı karartma modeli ekranın karartılmasını geciktirirse, ekranın karartılması için gereken süre etkili şekilde uzar. Bu durumda, ekran kapatma, ekran kilidi ve işlem yapılmadan geçen süre gecikmeleri, ekran karartma gecikmesinin başlangıçta yapılandırıldığı değerle aynı süreyi koruyacak şekilde ayarlanır. 
       Bu politika True (Doğru) değerine ayarlanır veya ayarlanmadan bırakılırsa akıllı karartma modeli etkinleşir ve ekranı karartma süresini uzatmasına izin verilir. Bu politika False (Yanlış) değerine ayarlanırsa akıllı karartma modeli, ekran karartmayı etkilemez.</translation>
-<translation id="6967394885063085697">Gelişmiş pil şarjı modu güç yönetim politikasını etkinleştirin.
+<translation id="6967394885063085697">Gelişmiş pil şarj modu güç yönetim politikasını etkinleştirin.
 
-          Gelişmiş Pil Şarjı Modu, kullanıcının pil sağlığını maksimuma çıkarmasına olanak verir. Gelişmiş Şarj Modu'nda, sistem pil sağlığını maksimuma çıkarmak için mesai saatleri dışında standart şarj algoritmasını ve diğer teknikleri kullanır. Mesai saatlerinde ise bir hızlı şarj yöntemi kullanılır. Bu hızlı şarj, pilin daha hızlı şarj edilmesini sağlar; dolayısıyla pil kısa sürede tam şarj kapasitesine ulaşır. Her gün için, sistemin en yoğun şekilde kullanılacağı zaman başlangıç saati ve süre ile belirtilir.
+          Gelişmiş Pil Şarj Modu, kullanıcının pil sağlığını maksimuma çıkarmasına olanak verir. Gelişmiş Şarj Modu'nda, sistem pil sağlığını maksimuma çıkarmak için mesai saatleri dışında standart şarj algoritmasını ve diğer teknikleri kullanır. Mesai saatlerinde ise bir hızlı şarj yöntemi kullanılır. Bu hızlı şarj, pilin daha hızlı şarj edilmesini sağlar; dolayısıyla pil kısa sürede tam şarj kapasitesine ulaşır. Her gün için, sistemin en yoğun şekilde kullanılacağı zaman başlangıç saati ve süre ile belirtilir.
 
-          Bu politika true (doğru) seçeneğine ayarlıyken ayrıca DeviceAdvancedBatteryChargeModeDayConfig özelliği de ayarlanmışsa, gelişmiş pil şarjı modu cihazda desteklenmesi durumunda her zaman etkin olur.
+          Bu politika true (doğru) seçeneğine ayarlıyken ayrıca DeviceAdvancedBatteryChargeModeDayConfig özelliği de ayarlanmışsa, gelişmiş pil şarj modu cihazda desteklenmesi durumunda her zaman etkin olur.
 
           Bu politika false (yanlış) seçeneğine ayarlanırsa, gelişmiş pil şarj modu her zaman devre dışı olur.
 
           Bu politikayı ayarlarsanız, kullanıcılar tarafından değiştirilemez veya geçersiz kılınamaz.
 
-          Bu politika ayarlanmadan bırakılırsa, gelişmiş pil şarjı modu devre dışı bırakılır ve kullanıcı tarafından etkinleştirilemez.</translation>
+          Bu politika ayarlanmadan bırakılırsa, gelişmiş pil şarj modu devre dışı bırakılır ve kullanıcı tarafından etkinleştirilemez.</translation>
 <translation id="6972540544240464302">Görev planlayıcı yapılandırması seç</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6994082778848658360">Yerleşik güvenli öğe donanımının bu özellikle uyumlu olması halinde iki etmenli kimlik doğrulama sunmak için nasıl kullanılabileceğini belirtir. Kullanıcının fiziksel varlığını algılamak için makinenin güç düğmesi kullanılır.
@@ -3614,7 +3592,7 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 <translation id="7712109699186360774">Bir site kamera ve/veya mikrofona erişmek istediğinde her zaman sor</translation>
 <translation id="7713608076604149344">İndirme kısıtlamaları</translation>
 <translation id="7715711044277116530">Sunum modunda ekranın kararma gecikmesinin ölçekleneceği yüzde</translation>
-<translation id="7716781462866245042">Gelişmiş pil şarjı gün yapılandırmasını ayarlayın.
+<translation id="7716781462866245042">Gelişmiş pil şarj modu gün yapılandırmasını ayarlayın.
 
           Bu politika sadece DeviceAdvancedBatteryChargeModeEnabled ayarı true (doğru) seçeneğine ayarlanmışsa kullanılır.
 
@@ -3905,6 +3883,7 @@ Windows'da politika yapılandırmak için önerilen yol GPO kullanmaktır. Ancak
       DeviceIdleLogoutTimeout belirtildiğinde, bu politika uyarı kutusunun süresini tanımlar ve çıkış yapılmadan önce kullanıcıya bir geri sayım saati gösterir.
 
       Politika değeri mili saniye olarak belirtilmelidir.</translation>
+<translation id="8331479227794770304">Yapışkan tuşları etkinleştir</translation>
 <translation id="8339420913453596618">İkinci faktör devre dışı</translation>
 <translation id="8344454543174932833">İlk çalıştırmada yer işaretlerini varsayılan tarayıcıdan içe aktar</translation>
 <translation id="8357681633047935212">Kullanıcı oturumunun süresini sınırla</translation>
@@ -4219,7 +4198,7 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
 
       Politika etkin olarak ayarlandığında, daha önce bahsedilen listelerdeki (bir makineye yüklenmiş durumdaysa) uzantılar (yerel kullanıcı verileri dahil) makineden tümüyle kaldırılır.
 
-      Politika devre dışı olarak ayarlanır veya ayarlanmadan bırakılırsa, daha önce bahsedilen listelerdeki (bir makineye yüklenmiş durumdaysa) uzantılar ve kara listede <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> olanlar makinede devre dışı bırakılır ve yüklenmez.</translation>
+      Politika devre dışı olarak ayarlanır veya ayarlanmadan bırakılırsa, daha önce bahsedilen listelerdeki (bir makineye yüklenmiş durumdaysa ve <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> kara listesindeyse) uzantılar makinede devre dışı bırakılır ve yüklenmez.</translation>
 <translation id="9027787254195333560">Bu politika, giriş ekranında kullanıcıyı temsil eden avatar resmini yapılandırmanıza olanak tanır. Politika, avatar resminin <ph name="PRODUCT_OS_NAME" /> tarafından indirilebileceği URL'nin belirtilmesi ve indirme işleminin bütünlüğünü doğrulamak için kullanılacak şifreleme karmasının tanımlanmasıyla ayarlanır. Resim JPEG biçiminde olmalı, boyutu 512 kB'tan fazla olmamalıdır. URL'ye kimlik doğrulaması yapmadan erişilebilmelidir.
 
       Avatar resmi indirilir ve önbelleğe alınır. URL veya karma her değiştiğinde resim tekrar indirilir.
@@ -4262,18 +4241,6 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
       Politika değeri bir Hızlı Düzeltme Derlemesi'ne eşlenen bir belirtece ayarlanırsa ve güncelleme başka bir politika tarafından engellenmemişse cihaz, ilgili Hızlı Düzeltme Derlemesi'ne güncellenir.
 
       Bu politika ayarlanmazsa veya değeri bir Hızlı Düzeltme Derlemesi ile eşlenmezse cihaz, bir Hızlı Düzeltme Derlemesi'ne güncellenmez. Cihaz zaten bir Hızlı Düzeltme Derlemesi çalıştırıyorsa ve politika artık ayarlı değilse veya değeri, artık bir Hızlı Düzeltme Derlemesi ile eşlenmiyorsa cihaz, güncellemenin başka bir politika tarafından engellenmemesi durumunda normal bir derlemeye güncellenir.</translation>
-<translation id="906631898352326790">
-      Bu politika etkinleştirilirse, virgülle ayrılmış listede adı verilen
-      her kaynak kendi işleminde çalışır. Bu politika ayrıca alt alan adlarıyla
-      adlandırılan kaynakları da izole eder; ör. https://example.com/ adresinin
-      belirtilmesi, https://example.com/ sitesinin bir parçası olarak
-      https://foo.example.com/ sitesinin de izole edilmesine neden olur.
-      Bu politika devre dışı bırakılırsa hem IsolateOrigins hem de SitePerProcess özellikleri devre dışı bırakılır. Ancak kullanıcılar komut satırı işareti kullanarak IsolateOrigins'i manuel olarak etkinleştirmeye devam edebilirler.
-      Bu politika yapılandırılmazsa kullanıcı bu ayarı değiştirebilir.
-      <ph name="PRODUCT_OS_NAME" /> işletim sisteminde <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> cihaz politikasının da aynı değere ayarlanması önerilir. İki politikanın belirttiği değerler eşleşmezse kullanıcı oturumuna giriş sırasında kullanıcı politikası tarafından belirtilen değer uygulanırken gecikme olabilir.
-
-      NOT: Bu politika Android için geçerli değildir. IsolateOrigins'i Android'de etkinleştirmek için IsolateOriginsAndroid politika ayarını kullanın.
-      </translation>
 <translation id="9072600218500597787">Uzaktan erişim ana makinelerinde uygulanacak gerekli ana makine alan adlarını yapılandırır ve kullanıcıların bunu değiştirmesini önler.
 
           Bu ayar etkinleştirilirse, ana makineler yalnızca belirtilen alan adlarından birinde kayıtlı hesaplar kullanılarak paylaşılabilir.

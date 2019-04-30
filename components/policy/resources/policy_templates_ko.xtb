@@ -941,13 +941,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
       이 정책을 설정하지 않고 그대로 두면 기본적으로 관리되는 사용자에게는 허용되지 않고 관리되지 않는 사용자에게는 허용됩니다.</translation>
 <translation id="2660846099862559570">프록시 사용하지 않음</translation>
-<translation id="2663739737868438950">
-      로그인 화면에 적용되는 정책입니다. 사용자 세션에 적용되는 <ph name="SITE_PER_PROCESS_POLICY_NAME" /> 정책도 확인하세요. 두 정책에 같은 값을 설정하시기 바랍니다. 설정한 값이 다르면 사용자 세션을 시작할 때 지연이 발생할 수 있으며 사용자 정책으로 지정된 값이 적용됩니다.
-      IsolateOrigins 정책 설정을 확인하고, 격리하려는 사이트 목록이 포함된 IsolateOrigins를 사용하여 사이트를 격리하는 동시에 사용자에게 미치는 영향을 제한하는 것이 좋습니다. SitePerProcess 설정을 사용하면 모든 사이트가 격리됩니다.
-      이 정책이 사용 설정되어 있으면 각 사이트는 자체 프로세스로 작동합니다.
-      이 정책이 사용 중지되어 있으면 IsolateOrigins 및 SitePerProcess 기능이 사용 중지됩니다. 사용자는 여전히 명령줄 플래그를 통해 직접 SitePerProcess를 사용 설정할 수 있습니다.
-      이 정책을 설정하지 않으면 사용자가 이 설정을 변경할 수 있습니다.
-      </translation>
 <translation id="2672012807430078509">SMB 마운트용 인증 프로토콜로 NTLM을 사용할지 여부를 제어합니다.</translation>
 <translation id="267596348720209223">검색 공급자가 지원하는 문자 인코딩을 지정합니다. 인코딩은 UTF-8, GB2312 및 ISO-8859-1과 같은 코드 페이지 이름입니다. 인코딩은 제공된 순서대로 시도됩니다.
 
@@ -1439,15 +1432,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       정책 목록에 있는 각 항목은 'share_url' 및 'mode'의 두 가지 구성 요소가 있는 객체입니다. 'share_url'은 공유할 URL이어야 하며 'mode'는 'drop_down' 또는 'pre_mount'여야 합니다. 'drop_down' 모드는 'share_url'이 공유 검색 드롭다운에 추가된다는 것을 나타냅니다. 'pre_mount' 모드는 'share_url'이 마운트된다는 것을 나타냅니다.</translation>
 <translation id="3591527072193107424">이전 브라우저 지원 기능을 사용 설정합니다.</translation>
 <translation id="3591584750136265240">로그인 인증 동작 설정</translation>
-<translation id="3624171042292187668">
-      IsolateOrigins 정책 설정을 확인하고, 격리하려는 사이트 목록이 포함된 IsolateOrigins를 사용하여 사이트를 격리하는 동시에 사용자에게 미치는 영향을 제한하는 것이 좋습니다. SitePerProcess 설정을 사용하면 모든 사이트가 격리됩니다.
-      이 정책이 사용 설정되어 있으면 각 사이트는 자체 프로세스로 작동합니다.
-      이 정책이 사용 중지되어 있으면 IsolateOrigins 및 SitePerProcess 기능이 사용 중지됩니다. 사용자는 여전히 명령줄 플래그를 통해 직접 SitePerProcess를 사용 설정할 수 있습니다. 이 정책을 설정하지 않으면 사용자가 이 설정을 변경할 수 있습니다.
-      이 정책을 구성하지 않으면 사용자가 이 설정을 변경할 수 있습니다.
-      <ph name="PRODUCT_OS_NAME" />에서 <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> 기기 정책을 동일한 값으로 설정하는 것이 좋습니다. 두 정책을 다른 값으로 설정하면 사용자 세션을 시작할 때 지연이 발생할 수 있으며 사용자 정책으로 지정된 값이 적용됩니다.
-
-      참고: 이 정책은 Android에서 적용되지 않습니다. Android에서 SitePerProcess를 사용 설정하려면 SitePerProcessAndroid 정책 설정을 사용하세요.
-      </translation>
 <translation id="3627678165642179114">맞춤법 검사 웹 서비스 사용 또는 사용 중지</translation>
 <translation id="3628480121685794414">단면 인쇄 사용 설정</translation>
 <translation id="3631099945620529777">false로 설정되면 '프로세스 종료' 버튼이 작업 관리자에서 사용 중지됩니다.
@@ -2647,12 +2631,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
           이 설정을 사용 중지하거나 구성하지 않으면 gnubby 인증 요청이 프록시되지 않습니다.</translation>
 <translation id="5897913798715600338">급속 충전 기술을 사용하여 배터리를 충전합니다.</translation>
 <translation id="5898486742390981550">여러 사용자가 로그인한 경우 기본 사용자만 Android 앱을 사용할 수 있습니다.</translation>
-<translation id="5900196529149231477">
-      로그인 화면에 적용되는 정책입니다. 사용자 세션에 적용되는 <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> 정책도 확인하세요. 두 정책을 모두 같은 값으로 설정하는 것이 좋습니다. 설정한 값이 다르면 사용자 세션을 시작할 때 지연이 발생할 수 있으며 사용자 정책으로 지정된 값이 적용됩니다.
-      이 정책이 사용 설정되어 있으면 쉼표로 구분된 목록에서 이름이 지정된 각 출처는 자체 프로세스로 작동합니다. 또한 하위 도메인에 이름이 지정된 출처도 격리됩니다. 예를 들어 https://example.com/을 지정하면 https://foo.example.com/도 https://example.com/ 사이트의 일부로 격리됩니다.
-      이 정책이 사용 중지되어 있으면 IsolateOrigins 및 SitePerProcess 기능이 사용 중지됩니다. 사용자는 여전히 명령줄 플래그를 통해 직접 SitePerProcess를 사용 설정할 수 있습니다.
-      정책을 구성하지 않으면 플랫폼 기본 사이트 격리 설정이 로그인 화면에 사용됩니다.
-      </translation>
 <translation id="5901427587865226597">양면 인쇄만</translation>
 <translation id="5905473632148429217">온라인 OCSP/CRL 확인을 사용합니다.</translation>
 <translation id="5906199912611534122">네트워크 조절을 사용 또는 사용 중지하도록 허용합니다.
@@ -3941,6 +3919,7 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
       DeviceIdleLogoutTimeout을 지정하면 이 정책은 로그아웃이 실행되기 전에 사용자에게 표시되는 카운트다운 타이머가 포함된 경고 메시지 상자가 지속되는 시간을 정의합니다.
 
       이 정책 값은 밀리초 단위로 지정되어야 합니다.</translation>
+<translation id="8331479227794770304">고정키 사용</translation>
 <translation id="8339420913453596618">2단계 인증 사용 안함</translation>
 <translation id="8344454543174932833">처음 실행 시 기본 브라우저에서 북마크 가져오기</translation>
 <translation id="8357681633047935212">사용자 세션의 길이를 제한합니다.</translation>
@@ -4329,18 +4308,6 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
       정책 값이 빠른 픽스 빌드로 매핑되는 토큰으로 설정된 경우 업데이트가 다른 정책에 의해 차단되지 않으면 기기가 빠른 픽스 빌드로 업데이트됩니다.
 
       이 정책이 설정되지 않았거나 값이 빠른 픽스 빌드로 매핑되지 않는 경우 기기가 빠른 픽스 빌드로 업데이트되지 않습니다. 기기에서 이미 빠른 픽스 빌드가 실행되고 있고 정책이 더 이상 설정되지 않거나 정책 값이 더 이상 빠른 픽스 빌드로 매핑되지 않는 경우 업데이트가 다른 정책에 의해 차단되지 않으면 기기가 일반 빌드로 업데이트됩니다.</translation>
-<translation id="906631898352326790">
-      이 정책이 사용 설정되어 있으면 쉼표로 구분된
-      목록에서 이름이 지정된 각 출처는 자체 프로세스로 작동합니다. 또한 하위
-      도메인에 이름이 지정된 출처도 격리됩니다. 예를 들어 https://example.com/을
-      지정하면 https://foo.example.com/도 https://example.com/ 사이트의 일부로
-      격리됩니다.
-      이 정책이 사용 중지되어 있으면 IsolateOrigins 및 SitePerProcess 기능이 사용 중지됩니다. 사용자는 여전히 명령줄 플래그를 통해 직접 IsolateOrigins를 사용 설정할 수 있습니다.
-      이 정책이 설정되지 않으면 사용자가 이 설정을 변경할 수 있습니다.
-      <ph name="PRODUCT_OS_NAME" />에서 <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> 기기 정책을 동일한 값으로 설정하는 것이 좋습니다. 두 정책을 다른 값으로 설정하면 사용자 세션을 시작할 때 지연이 발생할 수 있으며 사용자 정책으로 지정된 값이 적용됩니다.
-
-      참고: 이 정책은 Android에서 적용되지 않습니다. Android에서 IsolateOrigins를 사용 설정하려면 IsolateOriginsAndroid 정책 설정을 사용하세요.
-      </translation>
 <translation id="9072600218500597787">원격 액세스 호스트에 제공되는 필수 호스트 도메인 이름을 구성하여 사용자가 변경하지 못하게 합니다.
 
           이 설정을 사용하는 경우, 지정된 도메인 이름에 등록된 계정을 사용할 때만 호스트를 공유할 수 있습니다.

@@ -623,7 +623,7 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="5349770431644471053">Backlink</translation>
 <translation id="536031132345979795">Treceți înapoi în timpul lecturii continue</translation>
 <translation id="5368000168321181111">Semnalele audio sunt dezactivate</translation>
-<translation id="5368505757342402527">Descărcarea este <ph name="PROGRESS" />% finalizată <ph name="FILE_NAME" />. Au mai rămas aproximativ <ph name="TIME" /> <ph name="UNITS" />.</translation>
+<translation id="5368505757342402527">S-a descărcat <ph name="PROGRESS" />% din fișierul <ph name="FILE_NAME" />. Au mai rămas aproximativ <ph name="TIME" /> <ph name="UNITS" />.</translation>
 <translation id="5374320867641260420">Nu există un buton următor.</translation>
 <translation id="5376407118396657359">Apasă pe tasta de căutare + Ctrl + Alt și pe săgeți pentru a naviga celulă cu celulă.</translation>
 <translation id="5382299583965267720">Nu există un titlu de nivel 1 următor.</translation>

@@ -1085,7 +1085,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="8096975275316362544">Mintkrem</translation>
 <translation id="8098587210054821856">Skifergrå</translation>
 <translation id="8110647606445335195">Det finnes ingen ARIA-landmerker.</translation>
-<translation id="812886159861361726">Nedlasting av <ph name="FILE_NAME" /> er stanset</translation>
+<translation id="812886159861361726">Nedlastingen av <ph name="FILE_NAME" /> er stanset</translation>
 <translation id="8138880386467279117">Berøring</translation>
 <translation id="8153880621934657047">Ikke inne i tabellen.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{understrek}other{# understreker}}</translation>

@@ -943,13 +943,6 @@ Si cette règle n'est pas configurée, le paramètre "AskGeolocation" est utilis
 
       Si vous ne configurez pas cette règle, le paramètre sera désactivé par défaut pour les utilisateurs gérés et activé par défaut pour les utilisateurs non gérés.</translation>
 <translation id="2660846099862559570">Ne jamais utiliser de proxy</translation>
-<translation id="2663739737868438950">
-      Cette règle s'applique à l'écran de connexion. Veuillez vous reporter également à la règle <ph name="SITE_PER_PROCESS_POLICY_NAME" />, qui s'applique à la session utilisateur. Il est recommandé de définir les deux règles sur la même valeur. Si les valeurs sont différentes, un retard peut être constaté lors de l'accès à une session utilisateur du fait de l'application de la valeur spécifiée par la règle relative aux utilisateurs.
-      Nous vous conseillons d'examiner le paramètre de la règle IsolateOrigins pour obtenir le meilleur résultat, c'est-à-dire l'isolation avec un impact limité sur les utilisateurs, et d'utiliser IsolateOrigins avec une liste des sites que vous souhaitez isoler. Le paramètre SitePerProcess isole tous les sites.
-      Si cette règle est activée, chaque site exécute son propre processus.
-      Si cette règle est désactivée, IsolateOrigins et SitePerProcess sont désactivés. Les utilisateurs peuvent toujours activer SitePerProcess manuellement avec des indicateurs de ligne de commande.
-      Si cette règle n'est pas configurée, l'utilisateur peut modifier ce paramètre.
-      </translation>
 <translation id="2672012807430078509">Contrôle l'activation du protocole d'authentification NTLM pour les installations SMB</translation>
 <translation id="267596348720209223">Spécifie les encodages de caractères compatibles avec le moteur de recherche. Les encodages sont des noms de page de code, comme UTF-8, GB2312 et ISO-8859-1. Ils sont testés dans l'ordre indiqué. 
 
@@ -1437,15 +1430,6 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
       Dans cette règle, chaque élément de la liste est un objet avec deux membres : "share_url" et "mode". "share_url" devrait correspondre à l'URL du partage et "mode" devrait correspondre à "drop_down" ou "pre_mount". Le mode "drop_down" indique que cette "share_url" sera ajoutée à la liste déroulante de découverte des partages. Le mode "pre_mount" indique que cette "share_url" sera installée.</translation>
 <translation id="3591527072193107424">Activer la fonctionnalité Legacy Browser Support.</translation>
 <translation id="3591584750136265240">Configurer le mode d'authentification lors de la connexion</translation>
-<translation id="3624171042292187668">
-      Nous vous conseillons d'examiner le paramètre de la règle IsolateOrigins pour obtenir le meilleur résultat, c'est-à-dire l'isolation avec un impact limité sur les utilisateurs, et d'utiliser IsolateOrigins avec une liste des sites que vous souhaitez isoler. Le paramètre SitePerProcess isole tous les sites.
-      Si cette règle est activée, chaque site exécute son propre processus.
-      Si cette règle est désactivée, IsolateOrigins et SitePerProcess sont désactivés. Les utilisateurs peuvent toujours activer SitePerProcess manuellement avec des indicateurs de ligne de commande.
-      Si cette règle n'est pas configurée, l'utilisateur peut modifier ce paramètre.
-      Pour <ph name="PRODUCT_OS_NAME" />, nous vous recommandons de définir également la règle relative aux appareils <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> sur la même valeur. Si les valeurs sont différentes, un retard peut être constaté lors de l'accès à une session utilisateur du fait de l'application de la valeur spécifiée par la règle relative aux utilisateurs.
-
-      REMARQUE : Cette règle ne s'applique pas à Android. Pour activer SitePerProcess sur Android, utilisez le paramètre de la règle SitePerProcessAndroid.
-      </translation>
 <translation id="3627678165642179114">Activer ou désactiver le service Web de correction orthographique</translation>
 <translation id="3628480121685794414">Activer l'impression recto</translation>
 <translation id="3631099945620529777">Si cette règle est définie sur "false", le bouton "Arrêter le processus" est désactivé dans le gestionnaire de tâches.
@@ -2644,12 +2628,6 @@ Si l'option "Forcé" est sélectionnée, les pages peuvent être ouvertes UNIQUE
           S'il est désactivé ou n'est pas configuré, ces demandes ne seront pas envoyées par un proxy.</translation>
 <translation id="5897913798715600338">Recharge de la batterie à l'aide d'une technologie de recharge rapide.</translation>
 <translation id="5898486742390981550">Lorsque plusieurs personnes sont connectées, l'utilisateur principal est le seul à pouvoir se servir des applications Android.</translation>
-<translation id="5900196529149231477">
-      Cette règle s'applique à l'écran de connexion. Veuillez également consulter la règle <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> qui s'applique à la session utilisateur. Nous vous recommandons de définir les deux règles sur les mêmes valeurs. Si les valeurs sont différentes, un retard peut être constaté lors de l'accès à une session utilisateur du fait de l'application de la valeur spécifiée par la règle relative aux utilisateurs.
-      Si cette règle est activée, chacune des origines définies et répertoriées dans une liste d'éléments séparés par une virgule exécute son propre processus. Elle isole également les origines par sous-domaines. Par exemple, si vous indiquez https://example.com/, https://foo.example.com/ est également isolé en tant que partie du site https://example.com/.
-      Si cette règle est désactivée, IsolateOrigins et SitePerProcess sont désactivés. Les utilisateurs peuvent toujours activer IsolateOrigins manuellement avec des indicateurs de ligne de commande.
-      Si cette règle n'est pas configurée, les paramètres d'isolation de site par défaut de la plate-forme sont utilisés pour l'écran de connexion.
-      </translation>
 <translation id="5901427587865226597">Impression recto verso seulement</translation>
 <translation id="5905473632148429217">Activer les contrôles OCSP/CRL en ligne</translation>
 <translation id="5906199912611534122">Permet d'activer ou de désactiver la limitation du débit réseau.
@@ -3935,6 +3913,7 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
        Lorsque la valeur "DeviceIdleLogoutTimeout" est spécifiée, cette règle définit la durée de la boîte d'avertissement avec un compte à rebours qui s'affiche avant l'exécution de la déconnexion.
 
        La valeur de cette règle est définie en millisecondes.</translation>
+<translation id="8331479227794770304">Activer les touches persistantes</translation>
 <translation id="8339420913453596618">Deuxième facteur désactivé</translation>
 <translation id="8344454543174932833">Importer les favoris du navigateur par défaut à la première exécution</translation>
 <translation id="8357681633047935212">Limiter la durée des sessions utilisateur</translation>
@@ -4312,18 +4291,6 @@ indique uniquement les imprimantes qui peuvent être choisies.
       Si la règle est définie sur un jeton qui correspond à un build Quick Fix, l'appareil sera mis à jour avec le build Quick Fix correspondant à condition que la mise à jour ne soit pas bloquée par une autre règle.
 
       Si la règle n'est pas définie ou si la valeur ne correspond à aucun build Quick Fix, l'appareil ne sera pas mis à jour avec un tel build. Si l'appareil exécute déjà un build Quick Fix, mais que la règle n'est plus définie ou que sa valeur ne correspond plus à aucun build de ce type, il est mis à jour avec un build normal à condition que la mise à jour ne soit pas bloquée par une autre règle.</translation>
-<translation id="906631898352326790">
-      Si cette règle est activée, chacune des origines définies et répertoriées
-      dans une liste d'éléments séparés par des virgules exécute son propre
-      processus. Elle isole également les origines par sous-domaines. Par exemple,
-      si vous indiquez https://example.com/, https://foo.example.com/ est également
-      isolé en tant que partie du site https://example.com/.
-      Si cette règle est désactivée, les fonctionnalités IsolateOrigins et SitePerProcess sont désactivées. Les utilisateurs peuvent toujours activer IsolateOrigins manuellement avec des indicateurs de ligne de commande.
-      Si cette règle n'est pas configurée, l'utilisateur peut toujours modifier ce paramètre.
-      Pour <ph name="PRODUCT_OS_NAME" />, nous vous recommandons de définir également la règle relative aux appareils <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> sur la même valeur. Si les valeurs sont différentes, un retard peut être constaté lors de l'accès à une session utilisateur du fait de l'application de la valeur spécifiée par la règle relative aux utilisateurs.
-
-      REMARQUE : Cette règle ne s'applique pas à Android. Pour activer IsolateOrigins sur Android, utilisez le paramètre de la règle IsolateOriginsAndroid
-      </translation>
 <translation id="9072600218500597787">Configure les noms de domaines obligatoires de l'hôte qui seront imposés aux hôtes d'accès à distance et ne pourront pas être modifiés par les utilisateurs.
 
           Si ce paramètre est activé, les hôtes ne peuvent être partagés qu'à l'aide des comptes enregistrés sur les noms de domaine spécifiés.

@@ -897,7 +897,7 @@
 <translation id="756809126120519699">已清除 Chrome 資料</translation>
 <translation id="757524316907819857">禁止網站播放受保護的內容</translation>
 <translation id="757855969265046257">{FILES,plural, =1{已下載 <ph name="FILES_DOWNLOADED_ONE" /> 個檔案}other{已下載 <ph name="FILES_DOWNLOADED_MANY" /> 個檔案}}</translation>
-<translation id="7588219262685291874">系統會在裝置啟用節約耗電量功能後啟用深色主題</translation>
+<translation id="7588219262685291874">在裝置開啟「節約耗電量」後啟用深色主題</translation>
 <translation id="7589445247086920869">禁止目前的搜尋引擎使用此權限</translation>
 <translation id="7593557518625677601">如要啟動 Chrome 同步功能，請開啟 Android 設定並重新啟用 Android 系統同步處理設定</translation>
 <translation id="7596558890252710462">作業系統</translation>

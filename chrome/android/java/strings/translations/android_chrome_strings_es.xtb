@@ -520,7 +520,7 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="4883854917563148705">No se pueden restablecer los ajustes gestionados</translation>
 <translation id="4885273946141277891">Número de instancias de Chrome no admitido.</translation>
 <translation id="4910889077668685004">Aplicaciones para pagar</translation>
-<translation id="4913161338056004800">Restablecer estadísticas</translation>
+<translation id="4913161338056004800">Borrar estadísticas</translation>
 <translation id="4913169188695071480">Dejar de actualizar</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Obtener ayuda<ph name="END_LINK" /> mientras se buscan dispositivos…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# página}other{# páginas}}</translation>
@@ -684,7 +684,7 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="60923314841986378">Quedan <ph name="HOURS" /> horas</translation>
 <translation id="6099151465289169210">Se ha cambiado a pestañas privadas</translation>
 <translation id="6108923351542677676">Configuración en curso…</translation>
-<translation id="6111020039983847643">datos utilizados</translation>
+<translation id="6111020039983847643">de datos utilizados</translation>
 <translation id="6112702117600201073">Actualizando página</translation>
 <translation id="6127379762771434464">Elemento quitado</translation>
 <translation id="6140912465461743537">País/región</translation>

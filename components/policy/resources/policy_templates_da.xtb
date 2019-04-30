@@ -313,7 +313,7 @@ Hvis denne politik ikke er angivet, benyttes standardreglen, hvor ingen HTTP/2-f
 
           Hvis "DeviceNicMacAddress" er valgt, anvendes enhedens NIC MAC-adresse (Network Interface Controller).
 
-          Hvis "DockNicMacAddress" er valgt, anvendes NIC MAC-adresse ved tilslutning til en dockingstation.
+          Hvis "DockNicMacAddress" er valgt, anvendes dockingstationens NIC MAC-adresse.
 
           Denne indstilling kan ikke ændres af brugeren.</translation>
 <translation id="1507957856411744193">Hvis politikken er angivet som Sand, opretter <ph name="PRODUCT_NAME" /> forbindelse til Cast-enheder på alle IP-adresser og ikke kun på private adresser af typen RFC1918/RFC4193.
@@ -905,13 +905,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 
       Hvis politikken ikke konfigureres, tillades den som standard ikke for administrerede brugere, mens den som standard tillades for ikke-administrerede brugere.</translation>
 <translation id="2660846099862559570">Brug aldrig en proxy</translation>
-<translation id="2663739737868438950">
-      Politikken gælder for loginskærmen. Se også politikken <ph name="SITE_PER_PROCESS_POLICY_NAME" />, som gælder for brugersessionen. Det anbefales, at der angives den samme værdi for begge politikker. Hvis politikkerne har forskellige værdier, kan der ske forsinkelser ved opstart af en brugersession, mens den værdi, der er angivet af brugerpolitikken, anvendes.
-      Det er en god idé at kigge på politikindstillingen IsolateOrigins for at få det bedste fra begge verdener (isolering og begrænset indvirkning på brugerne) ved at bruge IsolateOrigins sammen med en liste over de websites, du vil isolere. Denne indstilling, SitePerProcess, isolerer alle websites.
-      Hvis politikken er aktiveret, kører hvert website sin egen proces.
-      Hvis politikken er deaktiveret, deaktiveres begge funktionerne IsolateOrigins og SitePerProcess. Brugere kan stadig aktivere SitePerProcess manuelt via kommandolinjerapportering.
-      Hvis politikken ikke konfigureres, kan brugerne ændre denne indstilling.
-      </translation>
 <translation id="2672012807430078509">Styrer aktivering af NTLM som en godkendelsesprotokol for anvendelse af SMB</translation>
 <translation id="267596348720209223">Angiver tegnkodninger, der understøttes af søgemaskinen. Kodninger er tegntabelnavne såsom UTF-8, GB2312, og ISO-8859-1. De afprøves i den angivne rækkefølge. Denne politik er valgfri. Hvis den ikke er angivet, anvendes standarden, UTF-8. Denne politik respekteres kun, hvis politikken "DefaultSearchProviderEnabled" er aktiveret.</translation>
 <translation id="268577405881275241">Aktivér proxyfunktionen for datakomprimering</translation>
@@ -1389,16 +1382,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hvert listepunkt i politikken er et objekt med to medlemmer: "share_url" og "mode". "share_url" skal være webadressen for delingen, og "mode" skal være enten "drop_down" eller "pre_mount". Tilstanden "drop_down" indikerer, at "share_url" føjes til rullelisten for fildeling. Tilstanden "pre_mount" indikerer, at "share_url" anvendes.</translation>
 <translation id="3591527072193107424">Aktivér funktionen Emulator til ældre websites.</translation>
 <translation id="3591584750136265240">Konfigurer adfærden for logingodkendelse</translation>
-<translation id="3624171042292187668">
-      Det er en god idé at kigge på politikindstillingen IsolateOrigins for at få det bedste fra begge verdener (isolering og begrænset indvirkning på brugerne) ved at bruge IsolateOrigins sammen med en liste over de websites, du vil isolere. Denne indstilling, SitePerProcess, isolerer alle websites.
-      Hvis politikken er aktiveret, kører hvert website sin egen proces.
-      Hvis politikken er deaktiveret, deaktiveres begge funktionerne IsolateOrigins og SitePerProcess. Brugere kan stadig aktivere SitePerProcess manuelt via kommandolinjerapportering.
-      Hvis politikken ikke konfigureres, kan brugerne ændre denne indstilling.
-      I <ph name="PRODUCT_OS_NAME" /> anbefales det, at der også angives den samme værdi for enhedspolitikken <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. 
-Hvis de to politikker har forskellige værdier, kan der ske forsinkelser ved opstart af en brugersession, mens den værdi, der er angivet af brugerpolitikken, anvendes.
-
-      BEMÆRK! Politikken anvendes ikke på Android-enheder. Hvis du vil aktivere SitePerProcess på en Android-enhed, skal du bruge politikindstillingen SitePerProcessAndroid.
-      </translation>
 <translation id="3627678165642179114">Aktivér eller deaktiver webtjenesten stavekontrol</translation>
 <translation id="3628480121685794414">Aktivér simplex-udskrivning</translation>
 <translation id="3631099945620529777">Hvis den er angivet som falsk, er knappen "Afslut proces" deaktiveret i Jobliste.
@@ -1588,7 +1571,7 @@ Hvis de to politikker har forskellige værdier, kan der ske forsinkelser ved ops
 <translation id="3915395663995367577">Webadresse til en proxyfil af typen .pac</translation>
 <translation id="3920892052017026701">Angiv et brugerdefineret niveau i procent, hvor batteriopladningen skal stoppe.
 
-          Opladningen af batteriet starter, når den brugerdefinerede værdi for, hvornår opladningen af batteriet skal påbegyndes, er nået.
+          Opladningen af batteriet starter, når det når den brugerdefinerede værdi for, hvornår opladningen af batteriet skal påbegyndes.
 
           DeviceBatteryChargeCustomStartCharging skal være mindre end DeviceBatteryChargeCustomStopCharging.
 
@@ -2115,7 +2098,7 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 
       I modsætning til <ph name="URL_LIST_POLICY_NAME" /> gælder reglerne i begge retninger. Det vil sige, at når Internet Explorer-tilføjelsen er til stede og aktiveret, styrer den også, om <ph name="IE_PRODUCT_NAME" /> skal åbne disse webadresser i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5124368997194894978">Aktivér start med vekselstrøm</translation>
-<translation id="5131211790949066746">Gør det muligt at flette politikkerne <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> og <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" /> for lister over installation af udvidelser.
+<translation id="5131211790949066746">Gør det muligt at flette listepolitikkerne <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> og <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" /> for installation af udvidelser.
 
       Hvis du aktiverer denne indstilling, flettes værdierne fra computerens platformspolitik, cloudpolitik og politikken for brugerplatformen til én liste, og de bruges samlet, så det ikke kun er værdierne fra kilden med højest prioritet, der anvendes.
 
@@ -2551,12 +2534,6 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
           Hvis denne indstilling er deaktiveret eller ikke er konfigureret, oprettes der ingen proxyforbindelse for anmodninger om gnubby-godkendelse.</translation>
 <translation id="5897913798715600338">Oplad batteriet ved hjælp af lynopladningsteknologi.</translation>
 <translation id="5898486742390981550">Når flere brugere er logget ind, er det kun den primære bruger, der kan bruge Android-apps.</translation>
-<translation id="5900196529149231477">
-      Politikken gælder for loginskærmen. Se også politikken <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, som gælder for brugersessionen. Det anbefales, at der angives den samme værdi for begge politikker. Hvis politikkerne har forskellige værdier, kan der ske forsinkelser ved opstart af en brugersession, mens den værdi, der er angivet af brugerpolitikken, anvendes.
-      Hvis politikken er aktiveret, kører hvert af de angivne websites på en kommasepareret liste sin egen proces. Dette isolerer også websites, der er angivet af underdomæner. Hvis f.eks. https://eksempel.dk/ angives, isoleres https://foo.eksempel.dk/ også som en del af websitet https://eksempel.dk/.
-      Hvis politikken er deaktiveret, deaktiveres begge funktionerne IsolateOrigins og SitePerProcess. Brugere kan stadig aktivere IsolateOrigins manuelt via kommandolinjerapportering.
-      Hvis politikken ikke konfigureres, anvendes platformens standardindstillinger for isolering af websites på loginskærmen.
-      </translation>
 <translation id="5901427587865226597">Kun duplex-udskrivning</translation>
 <translation id="5905473632148429217">Aktivér online OCSP/CRL-kontrol</translation>
 <translation id="5906199912611534122">Gør det muligt at aktivere eller deaktivere netværksbegrænsning.
@@ -2565,7 +2542,7 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 
       Hvis den er angivet som falsk, er der ingen begrænsning.
       Hvis den er angivet som sand, er systemet begrænset for at opnå de angivne upload- og downloadhastigheder (i kbits/s).</translation>
-<translation id="591088232153082363">Opladning af selvjusterende batteri baseret på batteriforbrugsmønsteret.</translation>
+<translation id="591088232153082363">Adaptiv opladning af batteri baseret på batteriforbrugsmønster.</translation>
 <translation id="5921713479449475707">Tillad download af automatiske opdateringer via HTTP</translation>
 <translation id="5921888683953999946">Indstil standardtilstanden for hjælpefunktionen med den store markør på loginskærmen.
 
@@ -2684,7 +2661,7 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 
       Når denne politik er konfigureret til <ph name="GLS_ENABLED" />, er Google Placeringstjenester som udgangspunkt aktiveret.
 
-      Når denne politik er konfigureret til <ph name="GLS_UNDER_USER_CONTROL" />, bliver brugeren bedt om at vælge, om Google Placeringstjenester skal anvendes. Dette gør det muligt for Android-apps at bruge tjenesterne til at anmode om enhedens placering, og indsendelse af anonyme steddata til Google aktiveres ligeledes.
+      Når denne politik er konfigureret til <ph name="GLS_UNDER_USER_CONTROL" />, bliver brugeren bedt om at vælge, om Google Placeringstjenester skal anvendes. Dette gør det muligt for Android-apps at bruge tjenesterne til at anmode om enhedens placering. Samtidig aktiveres indsendelse af anonyme steddata til Google.
 
       Bemærk, at denne politik kun styrer tilstanden for Google Placeringstjenester under den indledende konfiguration. Brugeren kan derefter åbne Android-indstillingerne og slå Google Placeringstjenester til/fra.
 
@@ -2768,7 +2745,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="6244210204546589761">Webadresser, der skal åbnes ved opstart</translation>
 <translation id="6255387031094435995">Tillader, at de valgte politikker sammenflettes, når de stammer fra forskellige kilder, med samme omfang og niveau.
 
-        Hvis der er en politik på listen, og der er uoverensstemmelser mellem to kilder, fordi de har samme omfang og niveau, sammenflettes værdierne i en ny liste over politikker.
+        Hvis der er en politik på listen, og der er uoverensstemmelser mellem to kilder, sammenflettes værdierne i en ny liste over politikker, hvis de har samme omfang og niveau.
 
         Hvis der er en politik på listen, og der er uoverensstemmelser mellem to kilder, men også mellem forskellige omfang og/eller niveauer, anvendes politikken med den højeste prioritet.
 
@@ -3621,7 +3598,7 @@ BEMÆRK! Op til version 45 var denne funktion kun understøttet i terminaltilsta
 <translation id="7937491150792971922">Flet politikker for lister over installation af udvidelser fra flere kilder</translation>
 <translation id="7937766917976512374">Tillad eller afvis videooptagelse</translation>
 <translation id="7941975817681987555">Forudse ikke netværkshandlinger på nogen netværksforbindelse</translation>
-<translation id="7952007677054834789">Konfigurerer siderne til at blive indlæst på opstartssiden, startsiden og siden Ny fane i <ph name="PRODUCT_NAME" /> og forhindrer brugerne i at ændre dem.
+<translation id="7952007677054834789">Konfigurerer siderne, der indlæses på opstartssiden, startsiden og siden Ny fane i <ph name="PRODUCT_NAME" />, og forhindrer brugerne i at ændre dem.
 
       Brugerens startsideindstillinger låses kun helt, hvis du enten vælger, at startsiden skal være siden Ny fane eller indstiller den til at være en webadresse og angiver en webadresse for startsiden. Hvis du ikke angiver webadressen for startsiden, kan brugeren stadig angive siden Ny fane som startside ved at angive "chrome://newtab".
 
@@ -3811,6 +3788,7 @@ Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via G
       Når DeviceIdleLogoutTimeout er angivet, definerer denne politik varigheden af advarselsfeltet med en nedtælling, der vises, inden brugeren logges ud.
 
       Politikværdien skal angives i millisekunder.</translation>
+<translation id="8331479227794770304">Aktivér træge taster</translation>
 <translation id="8339420913453596618">Sekundær faktor er deaktiveret</translation>
 <translation id="8344454543174932833">Importer bogmærker fra standardbrowser ved første visning</translation>
 <translation id="8357681633047935212">Begræns længden af en brugersession</translation>
@@ -4129,7 +4107,7 @@ Du kan få flere oplysninger om sikre kontekster på https://www.w3.org/TR/secur
       Denne politik berører kun brugere, som er godkendt ved hjælp af SAML.
 
       Politikkens værdi skal angives i sekunder.</translation>
-<translation id="9018338365267278833">Dette fjerner udvidelser, der vises i <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, eller udvidelser, der vises i<ph name="EXTENSION_SETTINGS_POLICY_NAME" />, hvor installationstilstanden er konfigureret til blokeret, og lokale data ryddes samtidig.  Se privatlivspolitikken for udvidelser eller politikken for dataopbevaring for at forstå, hvad der kan ske med de brugerdata, der ikke gemmes lokalt.
+<translation id="9018338365267278833">Dette fjerner udvidelser, der vises i <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, og udvidelser, der vises i<ph name="EXTENSION_SETTINGS_POLICY_NAME" />, hvor installationstilstanden er konfigureret til blokeret. Samtidig ryddes lokale brugerdata.  Se privatlivspolitikken for udvidelser eller politikken for dataopbevaring for at forstå, hvad der kan ske med de brugerdata, der ikke gemmes lokalt.
 
       Når politikken er angivet som aktiveret, fjernes de udvidelser, der hører under de førnævnte lister (hvis de allerede er installeret på en computer), helt fra den pågældende computer (herunder lokale brugerdata).
 
@@ -4176,18 +4154,6 @@ Du kan få flere oplysninger om sikre kontekster på https://www.w3.org/TR/secur
       Hvis værdien for politikken er angivet som et token, der er tilknyttet en Quick Fix Build, opdateres enheden til den tilsvarende Quick Fix Build, hvis opdateringen ikke blokeres af en anden politik.
 
       Hvis denne politik ikke er konfigureret, eller hvis værdien ikke er tilknyttet en Quick Fix Build, opdateres enheden ikke til en Quick Fix Build. Hvis enheden allerede kører en Quick Fix Build, og politikken ikke længere er konfigureret, eller dens værdi ikke længere er tilknyttet en Quick Fix Build, opdateres enheden til en almindelig build, hvis opdateringen ikke blokeres af en anden politik.</translation>
-<translation id="906631898352326790">
-      Hvis politikken er aktiveret, kører hvert af de angivne websites
-      på en kommasepareret liste sin egen proces. Dette isolerer også websites,
-      der er angivet af underdomæner. Hvis f.eks. https://eksempel.dk/ angives,
-      isoleres https://foo.eksempel.dk/ også som en del af
-      websitet https://eksempel.dk/.
-      Hvis politikken er deaktiveret, deaktiveres begge funktionerne IsolateOrigins og SitePerProcess. Brugere kan stadig aktivere IsolateOrigins manuelt via kommandolinjerapportering.
-      Hvis politikken ikke konfigureres, kan brugerne ændre denne indstilling.
-      I <ph name="PRODUCT_OS_NAME" /> anbefales det, at der også angives den samme værdi for enhedspolitikken <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Hvis de to politikker har forskellige værdier, kan der ske forsinkelser ved opstart af en brugersession, mens den værdi, der er angivet af brugerpolitikken, anvendes.
-
-      BEMÆRK! Denne politik anvendes ikke på Android-enheder. Hvis du vil aktivere IsolateOrigins på en Android-enhed, skal du bruge politikindstillingen IsolateOriginsAndroid.
-      </translation>
 <translation id="9072600218500597787">Konfigurerer de påkrævede hostdomænenavne, der pålægges hosts for fjernadgang, og forhindrer brugerne i at ændre det.
 
           Hvis denne indstilling er aktiveret, kan hosts kun deles ved hjælp af konti, der er registreret på et af de angivne domænenavne.

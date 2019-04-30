@@ -940,13 +940,6 @@
 
       Kung hahayaang hindi nakatakda ang patakarang ito, ang default ay hindi pinapayagan para sa mga pinapamahalaang user at pinapayagan para sa mga hindi pinapamahalaang user.</translation>
 <translation id="2660846099862559570">Huwag kailanman gumamit ng proxy</translation>
-<translation id="2663739737868438950">
-      Nalalapat ang patakarang ito sa screen ng pag-sign in. Pakitingnan din ang patakarang <ph name="SITE_PER_PROCESS_POLICY_NAME" /> na nalalapat sa session ng user. Inirerekomendang itakda ang parehong patakaran sa iisang value. Kung hindi magtutugma ang mga value, maaaring magkaroon ng pagkaantala kapag pumapasok sa session ng user habang inilalapat ang value na tinukoy ng patakaran ng user.
-      Maaari mong tingnan ang setting ng patakarang IsolateOrigins para masulit ang pag-isolate at limitadong epekto para sa mga user, sa pamamagitan ng paggamit sa IsolateOrigins kasama ng listahan ng mga site na gusto mong i-isolate. Ina-isolate ng setting na SitePerProcess ang lahat ng site.
-      Kung ie-enable ang patakaran, tatakbo ang bawat site sa sarili nitong proseso.
-      Kung idi-disable ang patakaran, madi-disable ang mga feature ng IsolateOrigins at SitePerProcess. Mae-enable pa rin nang manual ng mga user ang SitePerProcess, sa pamamagitan ng mga command line flag.
-      Kung hindi iko-configure ang patakaran, mababago ng user ang setting na ito.
-      </translation>
 <translation id="2672012807430078509">Kinokontrol ang pag-enable ng NTLM bilang protocol ng pag-authenticate para sa mga pag-mount ng SMB</translation>
 <translation id="267596348720209223">Tinutukoy ang mga pag-encode ng character na sinusuportahan ng provider ng paghahanap. Ang mga pag-encode ay mga pangalan ng pahina ng code tulad ng UTF-8, GB2312, at ISO-8859-1. Sinusubukan ang mga ito sa pagkakasunud-sunod na ibinigay.
 
@@ -1437,15 +1430,6 @@
       Ang bawat item sa listahan ng patakaran ay isang bagay na may dalawang miyembro: "share_url" at "mode." Ang "share_url" ay ang URL dapat ng pagbabahagi at ang "mode" ay ang "drop_down" o "pre_mount" dapat. Isinasaad ng mode na "drop_down" na idaragdag ang "share_url" sa drop down ng pagtuklas ng pagbabahagi. Isinasaad ng mode na "pre_mount" na ima-mount ang "share_url."</translation>
 <translation id="3591527072193107424">I-enable ang feature na Suporta sa Legacy Browser.</translation>
 <translation id="3591584750136265240">I-configure ang gawi sa pagpapatotoo sa pag-log in</translation>
-<translation id="3624171042292187668">
-      Maaari mong tingnan ang setting ng patakarang IsolateOrigins para masulit ang pag-isolate at limitadong epekto para sa mga user, sa pamamagitan ng paggamit sa IsolateOrigins kasama ng listahan ng mga site na gusto mong i-isolate. Ina-isolate ng setting na SitePerProcess ang lahat ng site.
-      Kung ie-enable ang patakaran, tatakbo ang bawat site sa sarili nitong proseso.
-      Kung idi-disable ang patakaran, madi-disable ang mga feature ng IsolateOrigins at SitePerProcess. Mae-enable pa rin nang manual ng mga user ang SitePerProcess, sa pamamagitan ng mga command line flag.
-      Kung hindi iko-configure ang patakaran, mababago ng user ang setting na ito.
-      Sa <ph name="PRODUCT_OS_NAME" />, inirerekomendang itakda rin ang patakaran ng device na <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> sa parehong value. Kung hindi magtutugma ang mga value na tinukoy ng dalawang patakaran, maaaring magkaroon ng pagkaantala kapag pumapasok sa session ng user habang inilalapat ang value na tinukoy ng patakaran ng user.
-
-      TANDAAN: Hindi nalalapat ang patakarang ito sa Android. Para i-enable ang SitePerProcess sa Android, gamitin ang setting ng patakarang SitePerProcessAndroid.
-      </translation>
 <translation id="3627678165642179114">Paganahin o huwag paganahin ang spell checking na serbisyo sa web</translation>
 <translation id="3628480121685794414">I-enable ang simplex na pag-print</translation>
 <translation id="3631099945620529777">Kung itatakda ito sa false, madi-disable ang button na 'Tapusin ang proseso' sa Task Manager.
@@ -2645,12 +2629,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Kung naka-disable o hindi naka-configure ang setting na ito, hindi ipo-proxy ang mga kahilingan sa pagpapatunay ng gnubby.</translation>
 <translation id="5897913798715600338">I-charge ang baterya gamit ang teknolohiyang mabilis na pag-charge.</translation>
 <translation id="5898486742390981550">Kapag maraming user ang naka-log in, ang pangunahing user lang ang maaaring gumamit ng mga Android app.</translation>
-<translation id="5900196529149231477">
-      Nalalapat ang patakarang ito sa screen ng pag-sign in. Pakitingnan din ang patakarang <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> na nalalapat sa session ng user. Inirerekomendang itakda ang parehong patakatan sa iisang value. Kung hindi magtutugma ang mga value, maaaring magkaroon ng pagkaantala kapag pumapasok sa session ng user habang inilalapat ang value na tinukoy ng patakaran ng user.
-      Kung ie-enable ang patakaran, tatakbo ang bawat pinangalanang pinagmulan sa comma-separated list sa sarili nitong proseso. Ia-isolate din nito ang mga pinagmulang pinangalanan ng mga subdomain; hal., kapag tinukoy ang https://example.com/, maa-isolate din ang https://foo.example.com/ bilang bahagi ng site na https://example.com/.
-      Kung idi-disable ang patakaran, madi-disable ang mga feature ng IsolateOrigins at SitePerProcess. Mae-enable pa rin nang manual ng mga user ang IsolateOrigins, sa pamamagitan ng mga command line flag.
-      Kung hindi iko-configure ang patakaran, gagamitin ang mga default na setting ng pag-isolate ng site ng platform para sa screen ng pag-sign in.
-      </translation>
 <translation id="5901427587865226597">Duplex na pag-print lang</translation>
 <translation id="5905473632148429217">I-enable ang mga online na pagsusuri sa OCSP/CRL</translation>
 <translation id="5906199912611534122">Pinapayagan ang pag-enable o pag-disable ng pag-throttle ng network.
@@ -3940,6 +3918,7 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
       Kapag nakatukoy ang DeviceIdleLogoutTimeout, tinutukoy ng patakarang ito ang tagal ng kahon ng babala gamit ang count down timer na ipinapakita sa user bago isagawa ang pag-logout.
 
       Dapat na tinukoy sa milliseconds ang halaga ng patakaran.</translation>
+<translation id="8331479227794770304">I-enable ang mga sticky key</translation>
 <translation id="8339420913453596618">Naka-disable ang pangalawang factor</translation>
 <translation id="8344454543174932833">Mag-import ng mga bookmark mula sa default na browser sa unang pagtakbo</translation>
 <translation id="8357681633047935212">Nililimitahan ang haba ng session ng user</translation>
@@ -4328,18 +4307,6 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
       Kung ang value ng patakaran ay naitakda sa token na nagmamapa sa isang Quick Fix Build, ia-update ang device sa kaukulang Quick Fix Build kung ang update ay hindi na-block ng isa pang patakaran.
 
       Kung hindi naitakda ang patakarang ito, o kung ang value nito ay hindi nagmamapa sa isang Quick Fix Build, hindi maa-update ang device sa isang Quick Fix Build. Kung nagpapatakbo na ang device ng Quick Fix Build at hindi na naitakda ang patakaran o ang value nito ay hindi na nagmamapa sa isang Quick Fix Build, ia-update ang device sa isang regular na build kung ang update ay hindi na-block ng isa pang patakaran.</translation>
-<translation id="906631898352326790">
-      Kung ie-enable ang patakaran, ang bawat pinangalanang pinagmulan sa
-      comma-separated list ay tatakbo sa sarili nitong proseso. Ia-isolate din nito ang
-      mga pinagmulang pinangalanan ng mga subdomain; hal., kapag tinukoy ang https://example.com/,
-      maa-isolate din ang https://foo.example.com/ bilang bahagi ng
-      site na https://example.com/.
-      Kung idi-disable ang patakaran, madi-disable ang mga feature ng IsolateOrigins at SitePerProcess. Mae-enable pa rin nang manual ng mga user ang IsolateOrigins, sa pamamagitan ng mga command line flag.
-      Kung hindi iko-configure ang patakaran, mababago ng user ang setting na ito.
-      Sa <ph name="PRODUCT_OS_NAME" />, inirerekomendang itakda rin ang patakaran ng device na <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> sa iisang value. Kung hindi magtutugma ang mga value na tinukoy ng dalawang patakaran, maaaring magkaroon ng pagkaantala kapag pumapasok sa session ng user habang inilalapat ang value na tinukoy ng patakaran ng user.
-
-      TANDAAN: Hindi nalalapat ang patakarang ito sa Android. Para i-enable ang IsolateOrigins sa Android, gamitin ang setting ng patakarang IsolateOriginsAndroid.
-      </translation>
 <translation id="9072600218500597787">Kino-configure ang mga kinakailangang domain name sa host na ipapatupad sa mga host na may remote na access at pinipigilan ang mga user na baguhin ito.
 
           Kung naka-enable ang setting na ito, puwede lang ibahagi ang mga host gamit ang mga account na nakarehistro sa isa sa mga nakasaad na domain name.

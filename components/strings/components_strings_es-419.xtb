@@ -431,7 +431,7 @@
 <translation id="3287510313208355388">Descargar cuando haya conexión</translation>
 <translation id="3293642807462928945">Más información sobre la política <ph name="POLICY_NAME" /></translation>
 <translation id="3303855915957856445">No se encontraron resultados en la búsqueda</translation>
-<translation id="3311730110465560799">Puedes cambiar la configuración de tu dispositivo de forma remota.</translation>
+<translation id="3311730110465560799">Puede cambiar la configuración de tu dispositivo de forma remota.</translation>
 <translation id="3320021301628644560">Agregar dirección de facturación</translation>
 <translation id="3324983252691184275">Carmesí</translation>
 <translation id="3338095232262050444">Seguro</translation>
@@ -697,7 +697,7 @@
 <translation id="4758311279753947758">Agregar información de contacto</translation>
 <translation id="4764776831041365478">Es posible que la página web en <ph name="URL" /> no funcione temporalmente o se haya trasladado de manera permanente a una nueva dirección web.</translation>
 <translation id="4771973620359291008">Se ha producido un error desconocido.</translation>
-<translation id="4780900888022378816">Tu dispositivo y tu cuenta se administran mediante el dominio <ph name="ENROLLMENT_DOMAIN" /> y <ph name="ACCOUNT_DOMAIN" /> respectivamente.</translation>
+<translation id="4780900888022378816">Tu dispositivo y tu cuenta se administran mediante el dominio <ph name="ENROLLMENT_DOMAIN" /> y <ph name="ACCOUNT_DOMAIN" />, respectivamente.</translation>
 <translation id="4785689107224900852">Cambiar a esta pestaña</translation>
 <translation id="4798078619018708837">Ingresa la fecha de vencimiento y el CVC de la tarjeta <ph name="CREDIT_CARD" /> para actualizar los datos. Después de confirmar esta acción, esos datos en tu Cuenta de Google se compartirán con este sitio.</translation>
 <translation id="4800132727771399293">Verifica la fecha de vencimiento y el CVC, y vuelve a intentarlo.</translation>
@@ -723,7 +723,7 @@
 <translation id="4926159001844873046"><ph name="SITE" /> dice</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">Sin resultados</translation>
-<translation id="4945672369594656571">Controla la forma en que se administran los datos de tu cuenta y dispositivo. Google procesa estos datos exclusivamente según las indicaciones del administrador de tu cuenta y dispositivo y solo para los fines que se indiquen.</translation>
+<translation id="4945672369594656571">Controla la forma en que se administran los datos de tu cuenta y dispositivo. Google procesa estos datos exclusivamente según las indicaciones del administrador de tu cuenta y dispositivo, y solo para los fines que se indiquen.</translation>
 <translation id="4950898438188848926">Botón para cambiar de pestaña; presiona Intro para cambiar a la pestaña abierta <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Acciones</translation>
 <translation id="4955242332710481440">A5-Extra</translation>

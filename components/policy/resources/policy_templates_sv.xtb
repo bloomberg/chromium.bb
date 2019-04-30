@@ -942,13 +942,6 @@
 
       Om principen inte anges tillåts som standard inte hanterade användare att använda funktionen medan användare som inte hanteras får göra det.</translation>
 <translation id="2660846099862559570">Använd aldrig en proxy</translation>
-<translation id="2663739737868438950">
-      Den här principen gäller inloggningsskärmen. Se även principen <ph name="SITE_PER_PROCESS_POLICY_NAME" /> som gäller för användarsessionen. Vi rekommenderar att samma värde anges för båda principerna. Om värdena inte stämmer överens kan det uppstå en fördröjning när en användarsession startas medan användarprincipen tillämpas.
-      Ta gärna en titt på inställningarna för principen IsolateOrigins också: du kan få det bästa av två världar, isolering och begränsad inverkan på användarna, genom att ange en lista över webbplatser som ska isoleras med IsolateOrigins. Med den här inställningen, SitePerProcess, isoleras alla webbplatser.
-      Om principen aktiveras körs varje webbplats som en egen process.
-      Om principen är inaktiverad så inaktiveras både IsolateOrigins och SitePerProcess. Användarna kan fortfarande aktivera SitePerProcess manuellt via kommandoradsflaggor.
-      Om principen inte konfigureras kan användaren ändra inställningen.
-      </translation>
 <translation id="2672012807430078509">Styr om NTLM ska aktiveras som autentiseringsprotokoll för monterade SMB-resurser</translation>
 <translation id="267596348720209223">Policyn anger vilka teckenkodningar som stöds av sökleverantören. Kodningar är kodsidenamn som UTF-8, GB2312 och ISO-8859-1. De testas i den ordning som de anges.
 
@@ -1439,15 +1432,6 @@
       Varje post i principens lista är ett objekt med två medlemmar: share_url och mode. share_url ska vara filresursens webbadress och mode ska vara antingen drop_down eller pre_mount. Läget drop_down anger att share_url ska läggas till på rullgardinsmenyn för filresurser att söka efter. Läget pre_mount anger att share_url ska monteras.</translation>
 <translation id="3591527072193107424">Aktivera funktionen Stöd för äldre webbläsare.</translation>
 <translation id="3591584750136265240">Konfigurera vad som ska göras vid inloggningsautentisering</translation>
-<translation id="3624171042292187668">
-      Ta gärna en titt på principen IsolateOrigins också: du kan få det bästa av två världar, isolering och begränsad inverkan på användarna, genom att ange en lista med webbplatser som ska isoleras med IsolateOrigins. Med den här inställningen, SitePerProcess, isoleras alla webbplatser.
-      Om principen aktiveras körs varje webbplats som en egen process.
-      Om principen inaktiveras så inaktiveras både IsolateOrigins och SitePerProcess. Användarna kan fortfarande aktivera SitePerProcess manuellt via kommandoradsflaggor.
-      Om principen inte konfigureras kan användaren ändra inställningen.
-      Om du kör <ph name="PRODUCT_OS_NAME" /> rekommenderar vi att samma värde används även för enhetsprincipen <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Om de båda principerna ställs in på olika värden kan det uppstå en fördröjning när en användarsession startas medan värdet för användarprincipen tillämpas.
-
-      OBS! Den här principen gäller inte Android. Om du vill aktivera SitePerProcess på Android använder du principen SitePerProcessAndroid.
-      </translation>
 <translation id="3627678165642179114">Aktivera eller inaktivera webbtjänsten för stavningskontroll</translation>
 <translation id="3628480121685794414">Aktivera enkelsidig utskrift</translation>
 <translation id="3631099945620529777">När principen ställs in på falskt är knappen Avsluta aktivitet inaktiverad i Aktivitetshanteraren.
@@ -2650,12 +2634,6 @@
           Om inställningen är inaktiverad eller inte konfigurerad kommer gnubby-autentiseringsbegäranden inte att skickas via proxy.</translation>
 <translation id="5897913798715600338">Ladda batteriet med snabbladdningsteknik.</translation>
 <translation id="5898486742390981550">När flera användare är inloggade är det bara den primära användaren som kan använda Android-appar.</translation>
-<translation id="5900196529149231477">
-      Den här principen gäller inloggningsskärmen. Se även principen <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> som gäller för användarsessionen. Vi rekommenderar att samma värde anges för båda principerna. Om värdena inte stämmer överens kan det uppstå en fördröjning när en användarsession startas medan användarprincipen tillämpas.
-      Om principen aktiveras körs alla namngivna ursprung, som anges i en kommaavgränsad lista, som egna processer. Även ursprung som anges i underdomäner isoleras. Om du exempelvis anger https://example.com/ isoleras även https://foo.example.com/ som en del av webbplatsen https://example.com/.
-      Om principen är inaktiverad så inaktiveras både IsolateOrigins och SitePerProcess. Användarna kan fortfarande aktivera SitePerProcess manuellt via kommandoradsflaggor.
-      Om principen inte konfigureras används plattformens standardinställningar för webbplatsisolering på inloggningsskärmen.
-      </translation>
 <translation id="5901427587865226597">Endast dubbelsidig utskrift</translation>
 <translation id="5905473632148429217">Aktivera OCSP/CRL-onlinekontroller</translation>
 <translation id="5906199912611534122">Gör det möjligt att aktivera eller inaktivera begränsad överföringshastighet i nätverket.
@@ -3944,6 +3922,7 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
       När DeviceIdleLogoutTimeout har angetts definierar den här policyn hur länge en varningsruta med nedräkning ska visas för användaren innan utloggningen genomförs.
 
       Policyns värde anges i millisekunder.</translation>
+<translation id="8331479227794770304">Aktivera tröga tangenter</translation>
 <translation id="8339420913453596618">Tvåfaktorsautentisering har inaktiverats</translation>
 <translation id="8344454543174932833">Importera bokmärken från standardwebbläsaren första gången den körs</translation>
 <translation id="8357681633047935212">Begränsa längden på användarsessioner</translation>
@@ -4332,18 +4311,6 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
       Om principens värde är inställt på en token som är mappad till en Quick Fix Build uppdateras enheten till motsvarande Quick Fix Build så länge uppdateringen inte blockeras av en annan princip.
 
       Om princip inte anges eller om värdet inte är mappat till en Quick Fix Build uppdateras inte enheten till en Quick Fix Build. Om enheten redan kör en Quick Fix Build och principen inte längre är inställd eller värdet inte längre är mappat till en Quick Fix Build, uppdateras enheten till en vanlig version så länge uppdateringen inte blockeras av en annan princip.</translation>
-<translation id="906631898352326790">
-      Om principen aktiveras körs alla namngivna ursprung,
-      som anges i en kommaavgränsad lista, som egna processer. Även ursprung som anges
-      i underdomäner isoleras. Om du exempelvis anger https://example.com/
-      isoleras även https://foo.example.com/ som en del av webbplatsen
-      https://example.com/.
-      Om principen inaktiveras så inaktiveras både IsolateOrigins SitePerProcess. Användarna kan fortfarande aktivera IsolateOrigins manuellt via kommandoradsflaggor.
-      Om principen inte konfigureras kan användaren ändra inställningen.
-      Om du kör <ph name="PRODUCT_OS_NAME" /> rekommenderar vi att samma värde används även för enhetsprincipen <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Om de båda principerna ställs in på olika värden kan det uppstå en fördröjning när en användarsession startas medan värdet för användarprincipen tillämpas.
-
-      OBS! Den här principen gäller inte Android. Om du vill aktivera SitePerProcess på Android använder du principen SitePerProcessAndroid.
-      </translation>
 <translation id="9072600218500597787">Konfigurerar vilket värddomännamn som fjärråtkomstvärdar måste använda och hindrar användare från att ändra det.
 
           Om inställningen är aktiverad kan värdar endast delas via konton som är registrerade på det angivna domännamnet.

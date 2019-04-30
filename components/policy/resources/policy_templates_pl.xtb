@@ -763,7 +763,7 @@ Jeśli pozostanie ona nieskonfigurowana, użytkownik może sam zdecydować, czy 
 
           Jeśli zasada nie została skonfigurowana, a urządzenie ją obsługuje, stosowany jest standardowy tryb ładowania baterii, a użytkownik nie może go zmienić.
 
-          Uwaga: Jeśli ustawiono zasadę <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" />, zastąpi ona tę zasadę.</translation>
+          Uwaga: jeśli ustawiono zasadę <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" />, zastąpi ona tę zasadę.</translation>
 <translation id="237494535617297575">Umożliwia skonfigurowanie listy wzorców URL-i określających witryny, w których mogą być wyświetlane powiadomienia. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultNotificationsSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="2386362615870139244">Zezwalaj na blokowanie wybudzania ekranu</translation>
 <translation id="2411817661175306360">Ostrzeżenie dotyczące ochrony hasłem jest wyłączone</translation>
@@ -915,13 +915,6 @@ Jeśli pozostanie ona nieskonfigurowana, użytkownik może sam zdecydować, czy 
 
       Jeśli ta zasada pozostanie nieskonfigurowana, synchronizacja SMS-ów będzie domyślnie niedozwolona dla użytkowników zarządzanych i dozwolona dla niezarządzanych.</translation>
 <translation id="2660846099862559570">Nigdy nie używaj serwera proxy</translation>
-<translation id="2663739737868438950">
-      Ta zasada ma wpływ na ekran logowania. Zapoznaj się też z informacjami o zasadzie <ph name="SITE_PER_PROCESS_POLICY_NAME" />, która ma wpływ na sesję użytkownika. Zaleca się skonfigurowanie obu tych zasad w jednakowy sposób. Jeśli wartości tych zasad są różne, przy uruchamianiu sesji użytkownika może nastąpić opóźnienie, gdy stosowana jest wartość określona przez zasadę dotyczącą użytkowników.
-      Możesz dostosować ustawienie zasady IsolateOrigins, by uzyskać optymalne efekty – izolację witryn i ograniczony wpływ na użytkowników. W tym celu dodaj do zasady IsolateOrigins listę witryn, które chcesz izolować. To ustawienie, SitePerProcess, izoluje wszystkie witryny.
-      Jeśli ta zasada jest włączona, każda witryna będzie działać w obrębie własnego procesu.
-      Jeśli zasada jest wyłączona, funkcje IsolateOrigins i SitePerProcess będą wyłączone. Użytkownicy mogą włączyć SitePerProcess ręcznie za pomocą flag wiersza poleceń.
-      Jeśli zasada nie jest skonfigurowana, użytkownik może zmienić to ustawienie.
-      </translation>
 <translation id="2672012807430078509">Określa, czy można używać protokołu uwierzytelniania NTLM dla udziałów SMB</translation>
 <translation id="267596348720209223">Pozwala określić kodowania znaków obsługiwane przez dostawcę wyszukiwania. Kodowania są określane za pomocą nazw stron kodowych, np. UTF-8, GB2312 czy ISO-8859-1. Są stosowane w podanej kolejności. Ta zasada jest opcjonalna. Jeśli nie zostanie skonfigurowana, będzie używana wartość domyślna, czyli UTF-8. Zasada ta jest stosowana tylko przy włączonej zasadzie „DefaultSearchProviderEnabled”.</translation>
 <translation id="268577405881275241">Włącz serwer proxy kompresowania danych</translation>
@@ -1398,15 +1391,6 @@ Jeśli nie podasz wartości albo wybierzesz ustawienie „Wyłącz”, stosowani
       Wartością tej zasady jest lista, której pozycje są obiektami o dwóch składowych: „share_url” i „mode”. „share_url” to URL udziału, a „mode” musi mieć wartość „drop_down” albo „pre_mount”. Tryb „drop_down” wskazuje, że udział „share_url” zostanie dodany do menu wykrywania udziałów. Tryb „pre_mount” wskazuje, że udział „share_url” zostanie podłączony.</translation>
 <translation id="3591527072193107424">Włącz funkcję Obsługa starszych przeglądarek.</translation>
 <translation id="3591584750136265240">Skonfiguruj sposób uwierzytelniania logowania</translation>
-<translation id="3624171042292187668">
-      Możesz dostosować ustawienie zasady IsolateOrigins, by uzyskać optymalne efekty – izolację witryn i ograniczony wpływ na użytkowników. W tym celu dodaj do zasady IsolateOrigins listę witryn, które chcesz izolować. Ustawienie SitePerProcess izoluje wszystkie witryny.
-      Jeśli ta zasada jest włączona, każda witryna będzie działać w obrębie własnego procesu.
-      Jeśli zasada jest wyłączona, funkcje IsolateOrigins i SitePerProcess są wyłączone. Użytkownicy mogą włączyć SitePerProcess ręcznie za pomocą flag wiersza poleceń.
-      Jeśli zasada nie jest skonfigurowana, użytkownik może zmienić to ustawienie.
-      W <ph name="PRODUCT_OS_NAME" /> zaleca się ustawić zasadę <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> dotyczącą urządzeń na tę samą wartość. Jeśli wartości zasad są różne, przy uruchamianiu sesji użytkownika może nastąpić opóźnienie, gdy stosowana jest wartość określona przez zasadę dotyczącą użytkowników.
-
-      UWAGA: ta zasada nie jest stosowana na urządzeniach z Androidem. Aby włączyć funkcję SitePerProcess na Androidzie, skonfiguruj zasadę SitePerProcessAndroid.
-      </translation>
 <translation id="3627678165642179114">Włącz lub wyłącz internetową usługę sprawdzania pisowni</translation>
 <translation id="3628480121685794414">Włącz drukowanie jednostronne</translation>
 <translation id="3631099945620529777">Jeśli ta zasada ma wartość Fałsz, przycisk „Zakończ proces” w Menedżerze zadań jest nieaktywny.
@@ -2499,7 +2483,7 @@ Do odwzorowania sekwencji dowolnych znaków można używać symboli wieloznaczny
 <translation id="5765780083710877561">Opis:</translation>
 <translation id="5770738360657678870">Wersja deweloperska (może być niestabilna)</translation>
 <translation id="5774856474228476867">Adres URL wyszukiwarki od domyślnego dostawcy wyszukiwania</translation>
-<translation id="5775235485119094648">Ładuj baterię, gdy jej poziom mieści w określonym przedziale.</translation>
+<translation id="5775235485119094648">Ładuj baterię, gdy jej poziom mieści się w określonym przedziale.</translation>
 <translation id="5776485039795852974">Pytaj za każdym razem, gdy witryna chce pokazywać powiadomienia na pulpicie</translation>
 <translation id="5781412041848781654">Pozwala określić bibliotekę GSSAPI, która ma być używana do uwierzytelniania HTTP. Możesz określić samą nazwę biblioteki lub pełną ścieżkę.
 
@@ -2563,12 +2547,6 @@ Do odwzorowania sekwencji dowolnych znaków można używać symboli wieloznaczny
           Jeśli wyłączysz to ustawienie lub go nie skonfigurujesz, żądania uwierzytelniania Gnubby nie będą przesyłane przez serwer proxy.</translation>
 <translation id="5897913798715600338">Ładuj baterię przy użyciu technologii szybkiego ładowania.</translation>
 <translation id="5898486742390981550">Gdy zalogowanych jest wielu użytkowników, tylko główny użytkownik może używać aplikacji na Androida.</translation>
-<translation id="5900196529149231477">
-      Ta zasada ma wpływ na ekran logowania. Zapoznaj się też z informacjami o zasadzie <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, która ma wpływ na sesję użytkownika. Zaleca się skonfigurowanie obu tych zasad w jednakowy sposób. Jeśli wartości tych zasad są różne, przy uruchamianiu sesji użytkownika może nastąpić opóźnienie, gdy stosowana jest wartość określona przez zasadę dotyczącą użytkowników.
-      Jeśli ta zasada jest włączona, każde nazwane źródło na liście rozdzielanej przecinkami będzie działać w obrębie własnego procesu. Powoduje to też izolację źródeł w subdomenach, np. ustawienie https://example.com/ spowoduje, że witryna https://foo.example.com/ będzie również izolowana jako część https://example.com/.
-      Jeśli zasada jest wyłączona, funkcje IsolateOrigins i SitePerProcess są wyłączone. Użytkownicy nadal mogą włączyć zasadę IsolateOrigins ręcznie za pomocą flag wiersza poleceń.
-      Jeśli zasada nie jest skonfigurowana, na ekranie logowania będą stosowane domyślne ustawienia platformy dotyczące izolacji witryn.
-      </translation>
 <translation id="5901427587865226597">Tylko drukowanie dwustronne</translation>
 <translation id="5905473632148429217">Włącz sprawdzanie OCSP/CRL online</translation>
 <translation id="5906199912611534122">Umożliwia włączenie lub wyłączenie ograniczenia przepustowości sieci.
@@ -3533,7 +3511,7 @@ Jeśli zasada nie jest skonfigurowana, na wszystkich stronach używany jest domy
 
           Jeśli ta zasada jest nieskonfigurowana, zaawansowany tryb ładowania baterii będzie zawsze wyłączony.
 
-          Uwaga: Wartość <ph name="CHARGE_START_TIME_FIELD_NAME" /> musi być mniejsza niż <ph name="CHARGE_END_TIME_FIELD_NAME" />.
+          Uwaga: wartość <ph name="CHARGE_START_TIME_FIELD_NAME" /> musi być mniejsza niż <ph name="CHARGE_END_TIME_FIELD_NAME" />.
 
           Uwaga: dozwolone wartości w polu <ph name="MINUTE_FIELD_NAME" /> w opcjach <ph name="CHARGE_START_TIME_FIELD_NAME" /> i <ph name="CHARGE_END_TIME_FIELD_NAME" /> to 0, 15, 30, 45.</translation>
 <translation id="7717938661004793600">Skonfiguruj ułatwienia dostępu w <ph name="PRODUCT_OS_NAME" />.</translation>
@@ -3813,6 +3791,7 @@ Zalecamy skonfigurowanie zasady w systemie Windows przy użyciu obiektu zasad gr
       W przypadku określenia zasady DeviceIdleLogoutTimeout ta zasada określa czas wyświetlania okna ostrzegawczego z licznikiem czasu, które jest wyświetlane przed wylogowaniem użytkownika.
 
       Wartość zasady należy podać w milisekundach.</translation>
+<translation id="8331479227794770304">Włącz klawisze trwałe</translation>
 <translation id="8339420913453596618">Uwierzytelnianie dwuskładnikowe wyłączone</translation>
 <translation id="8344454543174932833">Importuj zakładki z przeglądarki domyślnej przy pierwszym uruchomieniu</translation>
 <translation id="8357681633047935212">Ogranicz długość sesji użytkownika</translation>
@@ -4193,18 +4172,6 @@ Po skonfigurowaniu tej zasady <ph name="PRODUCT_OS_NAME" /> pobiera obraz awatar
       Jeśli jako wartość zasady zostanie ustawiony token mapujący kompilację Quick Fix, urządzenie zostanie zaktualizowane pod kątem odpowiedniej kompilacji Quick Fix, chyba że inna zasada zablokuje aktualizację.
 
       Jeśli zasada nie zostanie ustawiona lub jej wartość nie będzie mapować kompilacji Quick Fix, urządzenie nie zostanie zaktualizowane pod kątem kompilacji Quick Fix. Jeśli urządzenie ma już kompilację Quick Fix, a zasada nie będzie dłużej ustawiona lub jej wartość nie będzie już mapować kompilacji Quick Fix, urządzenie zostanie zaktualizowane pod kątem standardowej kompilacji, chyba że inna zasada zablokuje aktualizację.</translation>
-<translation id="906631898352326790">
-      Jeśli ta zasada jest włączona, każde nazwane źródło na liście rozdzielanej
-      przecinkami będzie działać w obrębie własnego procesu. Powoduje to też
-      izolację źródeł w subdomenach, np. ustawienie https://example.com/
-      spowoduje, że witryna https://foo.example.com/ będzie również izolowana
-      jako część https://example.com/.
-      Jeśli zasada jest wyłączona, funkcje IsolateOrigins i SitePerProcess są wyłączone. Użytkownicy nadal mogą włączyć zasadę IsolateOrigins ręcznie za pomocą flag wiersza poleceń.
-      Jeśli zasada nie jest skonfigurowana, użytkownik może zmienić to ustawienie.
-      W <ph name="PRODUCT_OS_NAME" /> zaleca się ustawić zasadę <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> dotyczącą urządzeń na tę samą wartość. Jeśli wartości zasad są różne, przy uruchamianiu sesji użytkownika może nastąpić opóźnienie, gdy stosowana jest wartość określona przez zasadę dotyczącą użytkowników.
-
-      UWAGA: ta zasada nie jest stosowana na urządzeniach z Androidem. Aby włączyć funkcję IsolateOrigins na Androidzie, użyj ustawienia zasady IsolateOriginsAndroid.
-      </translation>
 <translation id="9072600218500597787">Służy do skonfigurowania wymaganej nazwy domeny hosta, która będzie stosowana do hostów zdalnego dostępu, oraz blokuje użytkownikom jej zmianę.
 
           Jeśli to ustawienie jest włączone, udostępnianie hostów jest możliwe tylko za pomocą kont zarejestrowanych w jednej ze wskazanych domen.

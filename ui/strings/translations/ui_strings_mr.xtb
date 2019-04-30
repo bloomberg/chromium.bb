@@ -26,7 +26,7 @@
 <translation id="1801827354178857021">पूर्णविराम</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 महिना}one{# महिना}other{# महिने}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
-<translation id="1812519734428420144"><ph name="RATING_SCORE" /> तारे रेटिंग</translation>
+<translation id="1812519734428420144"><ph name="RATING_SCORE" /> तारा रेटिंग</translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 तास आणि }one{# तास आणि }other{# तास आणि }}</translation>
 <translation id="1842960171412779397">निवडा</translation>
 <translation id="1859234291848436338">लिहिण्याची दिशा</translation>
@@ -46,7 +46,7 @@
 <translation id="2289052229480071835">आपल्या स्क्रीनवरील लक्ष्यांना स्पर्श करा टॅप करा.</translation>
 <translation id="2295140143284145483">सर्वेक्षण</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
-<translation id="24452542372838207">सूचना विस्तृत करा</translation>
+<translation id="24452542372838207">सूचना विस्तार करा</translation>
 <translation id="2445449901874883781">उच्च घनता वापरा</translation>
 <translation id="2482878487686419369">सूचना</translation>
 <translation id="2497284189126895209">सर्व फाइल</translation>
@@ -133,7 +133,7 @@
 <translation id="6129953537138746214">जागा</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
-<translation id="6156262341071374681">सर्व अ‍ॅप्सवर विस्तृत करा</translation>
+<translation id="6156262341071374681">सर्व अ‍ॅप्सवर विस्तार करा</translation>
 <translation id="6264365405983206840">&amp;सर्व निवडा</translation>
 <translation id="6351032674660237738">ॲप सूचना</translation>
 <translation id="6364916375976753737">डावीकडे स्क्रोल करा</translation>
@@ -154,7 +154,7 @@
 <translation id="6845383723252244143">फोल्डर निवडा</translation>
 <translation id="6845533974506654842">दाबा</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{1 तास शिल्लक}one{# तास शिल्लक}other{# तास शिल्लक}}</translation>
-<translation id="688711909580084195">अशीर्षकांकीत वेबपृष्‍ठ</translation>
+<translation id="688711909580084195">शीर्षकरहित वेबपेज</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/s</translation>
 <translation id="6917971086528278418">{YEARS,plural, =1{1 वर्ष राहिले}one{# वर्ष राहिले}other{# वर्षे राहिली}}</translation>
 <translation id="6945221475159498467">निवडा</translation>
@@ -212,10 +212,10 @@
 <translation id="9002566407876343676">उघडा</translation>
 <translation id="9039076430527029379">पेज <ph name="PAGE_NUMBER" />, पंक्ती <ph name="ROW_NUMBER" />, स्तंभ <ph name="COLUMN_NUMBER" /> वर हलवा.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 से}one{# से}other{# से}}</translation>
-<translation id="9059834730836941392">सूचना संकुचित करा</translation>
+<translation id="9059834730836941392">सूचना कोलॅप्स</translation>
 <translation id="9150735707954472829">टॅब</translation>
 <translation id="9161053988251441839">सुचवलेले अ‍ॅप्स</translation>
 <translation id="9170848237812810038">&amp;पूर्ववत करा</translation>
-<translation id="932327136139879170">घर</translation>
+<translation id="932327136139879170">होम</translation>
 <translation id="944069440740578670">न वाचलेल्या सूचना</translation>
 </translationbundle>

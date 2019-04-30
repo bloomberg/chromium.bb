@@ -565,7 +565,7 @@
 <translation id="4072486802667267160">Đã xảy ra lỗi khi xử lý đơn đặt hàng của bạn. Vui lòng thử lại.</translation>
 <translation id="4075732493274867456">Ứng dụng và máy chủ không hỗ trợ bộ mã hóa hoặc phiên bản giao thức SSL thông thường.</translation>
 <translation id="4079302484614802869">Cấu hình proxy được đặt để sử dụng URL tập lệnh .pac chứ không phải máy chủ proxy cố định.</translation>
-<translation id="4082393374666368382">Cài đặt - Quản lý</translation>
+<translation id="4082393374666368382">Cài đặt – Quản lý</translation>
 <translation id="4092411512356034591">Tiếp tục truy cập vào <ph name="DOMAIN" />?</translation>
 <translation id="4098354747657067197">Bạn sắp truy cập trang web lừa đảo</translation>
 <translation id="4103249731201008433">Số sê-ri thiết bị không hợp lệ</translation>
@@ -1249,7 +1249,7 @@ Thông tin chi tiết bổ sung:
 <translation id="780301667611848630">Không, cảm ơn</translation>
 <translation id="7805768142964895445">Trạng thái</translation>
 <translation id="7806344367022510803">Thay đổi tùy chọn cài đặt công cụ tìm kiếm trong Chrome</translation>
-<translation id="7810209002420871817">Với tư cách là người quản lý tài khoản <ph name="ACCOUNT_DOMAIN" /> của bạn:</translation>
+<translation id="7810209002420871817">Với tư cách là người quản lý tài khoản của bạn, <ph name="ACCOUNT_DOMAIN" />:</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Xóa đề xuất biểu mẫu khỏi Chrome?</translation>
 <translation id="7815407501681723534">Đã tìm thấy <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> cho '<ph name="SEARCH_STRING" />'</translation>

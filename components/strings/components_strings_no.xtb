@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="no">
-<translation id="1001338328714563407"><ph name="ENROLLMENT_DOMAIN" />, som administrator for enheten og kontoen din:</translation>
+<translation id="1001338328714563407">Som administrator for enheten og kontoen din kan <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="1008557486741366299">Ikke nå</translation>
 <translation id="1010200102790553230">Last inn siden senere</translation>
 <translation id="1015730422737071372">Oppgi flere detaljer</translation>
@@ -372,7 +372,7 @@
 <translation id="2948083400971632585">På innstillingssiden kan du deaktivere eventuelle mellomtjenere for tilkoblinger.</translation>
 <translation id="2955913368246107853">Lukk søkefelt</translation>
 <translation id="2969319727213777354">Klokken må være riktig stilt før du kan opprette sikre tilkoblinger. Grunnen til dette er at sertifikatene nettsteder identifiserer seg med, bare er gyldige i visse tidsperioder. Ettersom klokken på enheten din er feil, kan ikke Google Chrome bekrefte disse sertifikatene.</translation>
-<translation id="2970515157925768593">kan endre enhets- og kontooppsettet eksternt</translation>
+<translation id="2970515157925768593">endre enhets- og kontooppsettet eksternt</translation>
 <translation id="2972581237482394796">Gjø&amp;r om</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" />, for øyeblikket valgt. <ph name="ROW_CONTENT" /></translation>
 <translation id="2982481275546140226">Fjern data</translation>
@@ -384,7 +384,7 @@
 <translation id="3005723025932146533">Vis lagret kopi</translation>
 <translation id="3008447029300691911">Skriv inn verifiseringskoden for <ph name="CREDIT_CARD" />. Når du bekrefter, deles kortinformasjonen din med dette nettstedet.</translation>
 <translation id="3010559122411665027">Listeoppføring «<ph name="ENTRY_INDEX" />»: <ph name="ERROR" /></translation>
-<translation id="3014389611820813634"><ph name="ENROLLMENT_DOMAIN" />, som administrator for denne enheten:</translation>
+<translation id="3014389611820813634">Som administrator for denne enheten kan <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="301521992641321250">Automatisk blokkert</translation>
 <translation id="3023071826883856138">You4 (konvolutt)</translation>
 <translation id="3024663005179499861">Feil type enhetsinnstillinger</translation>
@@ -430,7 +430,7 @@
 <translation id="3287510313208355388">Last ned når du er koblet til Internett</translation>
 <translation id="3293642807462928945">Finn ut mer om regelen <ph name="POLICY_NAME" /></translation>
 <translation id="3303855915957856445">Søket ga ingen treff</translation>
-<translation id="3311730110465560799">kan endre enhetsoppsettet eksternt</translation>
+<translation id="3311730110465560799">endre enhetsoppsettet eksternt</translation>
 <translation id="3320021301628644560">Legg til faktureringsadresse</translation>
 <translation id="3324983252691184275">Karmosinrød</translation>
 <translation id="3338095232262050444">Sikker</translation>
@@ -525,7 +525,7 @@
 <translation id="3761718714832595332">Skjul statusen</translation>
 <translation id="3765032636089507299">Safe Browsing-siden er under utvikling.</translation>
 <translation id="3778403066972421603">Vil du lagre dette kortet i Google-kontoen din og på denne enheten?</translation>
-<translation id="3779973883630527594">Selskapet, skolen eller organisasjonen som administrerer denne kontoen:</translation>
+<translation id="3779973883630527594">Selskapet, skolen eller organisasjonen som administrerer denne kontoen, kan</translation>
 <translation id="3781428340399460090">Knallrosa</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Utløper <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -722,7 +722,7 @@
 <translation id="4926159001844873046">På <ph name="SITE" /> står det</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">Ingen resultater</translation>
-<translation id="4945672369594656571">styrer hvordan enhets- og kontodataene dine håndteres. Google behandler enhets- og kontodataene dine utelukkende etter anvisning fra enhets- og kontoadministratoren og kun for de formålene som enhets- og kontoadministratoren har angitt.</translation>
+<translation id="4945672369594656571">styre hvordan enhets- og kontodataene dine håndteres Google behandler enhets- og kontodataene dine utelukkende etter anvisning fra enhets- og kontoadministratoren og kun for de formålene som enhets- og kontoadministratoren har angitt.</translation>
 <translation id="4950898438188848926">Knappen for å bytte fane – trykk på Enter for å bytte til den åpne fanen, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Handlinger</translation>
 <translation id="4955242332710481440">A5-Extra</translation>
@@ -736,7 +736,7 @@
 <translation id="5017554619425969104">Teksten du kopierte</translation>
 <translation id="5018422839182700155">Kan ikke åpne denne siden</translation>
 <translation id="5019198164206649151">Ugyldig funksjonalitet for sikkerhetskopiering</translation>
-<translation id="5020154601324912079">styrer hvordan enhetsdataene dine håndteres. Google behandler enhetsdataene dine utelukkende etter anvisning fra enhetsadministratoren og kun for de formålene som enhetsadministratoren har angitt.</translation>
+<translation id="5020154601324912079">styre hvordan enhetsdataene dine håndteres Google behandler enhetsdataene dine utelukkende etter anvisning fra enhetsadministratoren og kun for de formålene som enhetsadministratoren har angitt.</translation>
 <translation id="5023310440958281426">Kontrollér retningslinjene til administratoren din</translation>
 <translation id="5029568752722684782">Slett kopi</translation>
 <translation id="503069730517007720">Et rotsertifikat for «<ph name="SOFTWARE_NAME" />» kreves, men er ikke installert. IT-administratoren din bør se på konfigurasjonsveiledningen for «<ph name="SOFTWARE_NAME" />» for å løse dette problemet. <ph name="FURTHER_EXPLANATION" /></translation>
@@ -894,7 +894,7 @@
 <translation id="5838278095973806738">Du bør ikke oppgi sensitiv informasjon på dette nettstedet (for eksempel passord eller kredittkort) fordi den kan bli stjålet av angripere.</translation>
 <translation id="5860033963881614850">Av</translation>
 <translation id="5863847714970149516">Den neste siden kan prøve å belaste deg for penger</translation>
-<translation id="5865951947699094510">kan endre kontooppsettet eksternt</translation>
+<translation id="5865951947699094510">endre kontooppsettet eksternt</translation>
 <translation id="5866257070973731571">Legg til telefonnummer</translation>
 <translation id="5869405914158311789">Dette nettstedet er ikke tilgjengelig</translation>
 <translation id="5869522115854928033">Lagrede passord</translation>
@@ -1161,7 +1161,7 @@
 <translation id="741007362987735528">Wide-Format</translation>
 <translation id="7416351320495623771">Administrer passord…</translation>
 <translation id="7419106976560586862">Profilbane</translation>
-<translation id="7424427397225027541">styrer hvordan kontodataene dine håndteres. Google behandler kontodataene dine utelukkende etter anvisning fra kontoadministratoren og kun for de formålene som kontoadministratoren har angitt.</translation>
+<translation id="7424427397225027541">styre hvordan kontodataene dine håndteres Google behandler kontodataene dine utelukkende etter anvisning fra kontoadministratoren og kun for de formålene som kontoadministratoren har angitt.</translation>
 <translation id="7437289804838430631">Legg til kontaktinformasjon</translation>
 <translation id="7440140511386898319">Utforsk uten nett</translation>
 <translation id="7441627299479586546">Feil emne for innstillinger</translation>
@@ -1248,7 +1248,7 @@
 <translation id="780301667611848630">Nei takk</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="7806344367022510803">Endre innstillingene for søkemotor i Chrome</translation>
-<translation id="7810209002420871817"><ph name="ACCOUNT_DOMAIN" />, som administrator for kontoen din:</translation>
+<translation id="7810209002420871817">Som administrator for kontoen din kan <ph name="ACCOUNT_DOMAIN" /></translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Vil du fjerne skjemaforslaget fra Chrome?</translation>
 <translation id="7815407501681723534">Fant <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> for «<ph name="SEARCH_STRING" />»</translation>

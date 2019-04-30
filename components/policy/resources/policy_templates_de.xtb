@@ -52,10 +52,10 @@ Wenn die Richtlinie nicht festgelegt ist, gilt die Standardeinstellung: Vom Unte
 
       Ist diese Richtlinie festgelegt, wird die Anmeldeseite immer in der Sprache angezeigt, die durch den ersten Wert der Richtlinie bestimmt wird. Sie ist als eine Liste für Aufwärtskompatibilität definiert. Ist sie nicht festgelegt oder verweist auf eine leere Liste, wird die Anmeldeseite in der Sprache der letzten Nutzersitzung dargestellt. Ist für diese Richtlinie eine ungültige Sprache festgelegt, wird die Anmeldeseite in einer Ersatzsprache angezeigt, derzeit en-US.</translation>
 <translation id="1052499923181221200">Diese Richtlinie zeigt nur Wirkung, wenn "SamlInSessionPasswordChangeEnabled" auf "true" festgelegt ist.
-      Wenn diese Richtlinie auf "true" festgelegt ist und für sie zum Beispiel der Wert 14 konfiguriert wurde, bedeutet dies, dass SAML-Nutzer, deren Passwort zu einem bestimmten Datum abläuft, 14 Tage vor diesem Datum benachrichtigt werden.
-      Die Nutzer können die notwendigen Schritte dann sofort ausführen und bei laufender Sitzung ihr Passwort vor dessen Ablauf ändern.
+      Wenn die besagte Richtlinie auf "true" festgelegt ist und für diese Richtlinie zum Beispiel der Wert 14 konfiguriert wurde, bedeutet dies, dass SAML-Nutzer, deren Passwort zu einem bestimmten Datum abläuft, 14 Tage vor diesem Datum benachrichtigt werden.
+      Die Nutzer können die notwendigen Schritte dann sofort ausführen und bei laufender Sitzung ihr Passwort ändern, bevor es abläuft.
       Allerdings werden diese Benachrichtigungen nur angezeigt, wenn vom SAML-Identitätsanbieter während des SAML-Anmeldeablaufs Informationen zum Ablauf des Passworts an das Gerät gesendet werden.
-      Wenn Sie für diese Richtlinie 0 konfigurieren, bedeutet dies, dass sie Nutzer nicht vorab informiert werden. Sie erhalten erst eine Benachrichtigung, wenn das Passwort bereits abgelaufen ist.
+      Wenn Sie für diese Richtlinie 0 konfigurieren, bedeutet dies, dass die Nutzer nicht vorab informiert werden. Sie erhalten erst eine Benachrichtigung, wenn das Passwort bereits abgelaufen ist.
 
       Ist diese Richtlinie eingestellt, dann kann der Nutzer sie weder ändern noch überschreiben.</translation>
 <translation id="1062011392452772310">Remote-Bescheinigung (Remote Attestation) für das Gerät aktivieren</translation>
@@ -762,7 +762,7 @@ Diese Richtlinie gilt auch für Komponentenerweiterungen, zum Beispiel die Hango
 <translation id="2327252517317514801">Domains definieren, die auf die G Suite zugreifen dürfen</translation>
 <translation id="2356878440219553005">Hiermit können Sie die Energieverwaltungsrichtlinie für den Akkulademodus aktivieren.
 
-          Hiermit können Sie das Aufladen des Akkus dynamisch steuern und auf diese Weise den durch unnötige Belastung entstehenden Akkuverschleiß verringern und die Lebensdauer des Akkus verlängern.
+          Mit dieser Richtlinie können Sie das Aufladen des Akkus dynamisch steuern und auf diese Weise den durch unnötige Belastung entstehenden Akkuverschleiß verringern und die Lebensdauer des Akkus verlängern.
 
           Wenn der benutzerdefinierte Akkulademodus ausgewählt wird, müssen "DeviceBatteryChargeCustomStartCharging" und "DeviceBatteryChargeCustomStopCharging" konfiguriert sein.
 
@@ -922,13 +922,6 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
 
       Falls die Richtlinie nicht konfiguriert ist, kommt die Standardeinstellung zum Einsatz, bei der die Funktion von verwalteten Nutzern nicht verwendet und von nicht verwalteten Nutzern verwendet werden kann.</translation>
 <translation id="2660846099862559570">Nie Proxy verwenden</translation>
-<translation id="2663739737868438950">
-      Diese Richtlinie gilt für die Anmeldeseite. Sehen Sie sich auch die Richtlinie "<ph name="SITE_PER_PROCESS_POLICY_NAME" />" für die eigentliche Nutzersitzung an. Es wird empfohlen, für beide Richtlinien denselben Wert festzulegen. Wenn die Werte nicht übereinstimmen, kann es beim Beginn einer Nutzersitzung zu einer Verzögerung kommen, weil der von der Nutzerrichtlinie angegebene Wert erst angewendet werden muss.
-      Sie sollten sich außerdem die Richtlinieneinstellung "IsolateOrigins" ansehen, um die Auswirkungen auf die Nutzer bei der Isolierung von Websites gering zu halten. Verwenden Sie dazu "IsolateOrigins" mit einer Liste von Websites, die Sie isolieren möchten. Mit der Einstellung "SitePerProcess" werden alle Websites isoliert.
-      Wenn die Richtlinie aktiviert ist, wird für jede Website ein eigener Prozess ausgeführt.
-      Wenn die Richtlinie deaktiviert ist, sind die Funktionen "IsolateOrigins" und "SitePerProcess" ebenfalls deaktiviert. Nutzer können "SitePerProcess" aber weiterhin manuell anhand von Befehlszeilenparametern aktivieren.
-      Wenn die Richtlinie nicht konfiguriert ist, kann der Nutzer diese Einstellung ändern.
-      </translation>
 <translation id="2672012807430078509">Steuerung, durch die NTLM als Authentifizierungsprotokoll für SMB-Bereitstellungen aktiviert wird</translation>
 <translation id="267596348720209223">Gibt die vom Suchanbieter unterstützten Zeichencodierungen an. Codierungen sind Codepage-Namen wie UTF-8, GB2312 und ISO-8859-1. Sie werden in der Reihenfolge durchprobiert, in der sie angegeben werden. Diese Richtlinie ist optional. Ist sie nicht konfiguriert, so kommt der Standardwert UTF-8 zum Einsatz. Diese Richtlinie wird nur umgesetzt, wenn die Richtlinie "DefaultSearchProviderEnabled" aktiviert ist.</translation>
 <translation id="268577405881275241">Funktion für Datenkomprimierungs-Proxy aktivieren</translation>
@@ -978,7 +971,7 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
 <translation id="2769952903507981510">Erforderlichen Domain-Namen für Remotezugriff-Hosts konfigurieren</translation>
 <translation id="2787173078141616821">Informationen zum Status von Android senden</translation>
 <translation id="2799297758492717491">Autoplay von Medien für eine weiße Liste mit URL-Mustern erlauben</translation>
-<translation id="2801155097555584385">Legt den Akkuladestand (%) für benutzerdefiniertes Starten des Ladevorgangs fest</translation>
+<translation id="2801155097555584385">Den Akkuladestand (%) für benutzerdefiniertes Starten des Ladevorgangs festlegen</translation>
 <translation id="2801230735743888564">Nutzern erlauben, das Easter Egg-Dinosaurierspiel zu spielen, wenn das Gerät offline ist.
 
       Wenn diese Richtlinie auf "false" eingestellt ist, können Nutzer das Easter Egg-Dinosaurierspiel nicht spielen, wenn das Gerät offline ist. Ist es auf "true" eingestellt, können Nutzer das Dinosaurierspiel spielen. Falls die Richtlinie nicht konfiguriert ist, können Nutzer das Easter Egg-Dinosaurierspiel nicht unter einer registrierten Version von Chrome OS spielen, unter anderen Umständen jedoch schon.</translation>
@@ -1228,7 +1221,7 @@ Ist die Richtlinie deaktiviert oder nicht konfiguriert, kann WebDriver nicht kom
           Wenn die Einstellung deaktiviert ist, werden in <ph name="PRODUCT_NAME" /> nur auf Systemebene installierte Hosts für natives Messaging verwendet.
 
           Wenn die Einstellung nicht festgelegt wird, können in <ph name="PRODUCT_NAME" /> Hosts für natives Messaging auf Nutzerebene verwendet werden.</translation>
-<translation id="3177802893484440532">OCSP/CRLS-Online-Prüfungen für lokale Vertrauensanker erforderlich</translation>
+<translation id="3177802893484440532">OCSP/CRL-Online-Prüfungen für lokale Vertrauensanker als erforderlich festlegen</translation>
 <translation id="3185009703220253572">Ab Version <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Android-Apps können keinen Zugriff auf Schlüssel für die geschäftliche Nutzung erhalten. Sie sind von dieser Richtlinie nicht betroffen.</translation>
 <translation id="3205825995289802549">Erstes Browserfenster bei der ersten Ausführung maximieren</translation>
@@ -1262,7 +1255,7 @@ Ist die Richtlinie deaktiviert oder nicht konfiguriert, kann WebDriver nicht kom
        Ist diese Einstellung deaktiviert, können Nutzer den Proxy nicht aktivieren und der Computer darf seine Drucker nicht für <ph name="CLOUD_PRINT_NAME" /> freigeben.</translation>
 <translation id="3312206664202507568">Aktiviert eine Seite auf "chrome://password-change", auf der SAML-Nutzer ihre SAML-Passwörter bei laufender Sitzung ändern können. Hierdurch wird dafür gesorgt, dass das SAML-Passwort und das Passwort für den Sperrbildschirm des Geräts synchronisiert bleiben.
 
-      Außerdem ermöglicht diese Richtlinie Benachrichtigungen, mit denen SAML-Nutzer gewarnt werden, wenn ihre SAML-Passwörter bald ablaufen. Auf diese Weise können sie das Problem sofort dadurch beheben, dass sie bei laufender Sitzung Ihr Passwort ändern.
+      Außerdem ermöglicht diese Richtlinie Benachrichtigungen, mit denen SAML-Nutzer gewarnt werden, wenn ihre SAML-Passwörter bald ablaufen. Auf diese Weise können sie das Problem sofort dadurch beheben, dass sie bei laufender Sitzung ihr Passwort ändern.
       Allerdings werden diese Benachrichtigungen nur angezeigt, wenn vom SAML-Identitätsanbieter während des SAML-Anmeldeablaufs Informationen zum Ablauf des Passworts an das Gerät gesendet werden.
 
       Ist diese Richtlinie eingestellt, dann kann der Nutzer sie weder ändern noch überschreiben.</translation>
@@ -1404,15 +1397,6 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
       Jedes Listenelement der Richtlinie ist ein Objekt mit zwei Teilen: "share_url" und "mode". Bei "share_url" handelt es sich um die URL der Freigabe. "mode" sollte entweder "drop_down" oder "pre_mount" sein. Der "drop_down"-Modus gibt an, dass "share_url" dem Drop-Down der Freigabeerkennung hinzugefügt wird. Der "pre_mount"-Modus gibt an, dass "share_url" verwendet wird.</translation>
 <translation id="3591527072193107424">Funktion für die Unterstützung älterer Browser aktivieren.</translation>
 <translation id="3591584750136265240">Verhalten der Log-in-Authentifizierung konfigurieren</translation>
-<translation id="3624171042292187668">
-      Sie sollten sich die Richtlinieneinstellung "IsolateOrigins" ansehen, um die Auswirkungen auf die Nutzer bei der Isolierung von Websites gering zu halten. Verwenden Sie dazu "IsolateOrigins" mit einer Liste von Websites, die Sie isolieren möchten. Mit der Einstellung "SitePerProcess" werden alle Websites isoliert.
-      Wenn die Richtlinie aktiviert ist, wird für jede Website ein eigener Prozess ausgeführt.
-      Wenn die Richtlinie deaktiviert ist, sind "IsolateOrigins" und "SitePerProcess" ebenfalls deaktiviert. Nutzer können aber "SitePerProcess" weiterhin manuell anhand von Befehlszeilenparametern aktivieren.
-      Wenn die Richtlinie nicht konfiguriert ist, kann der Nutzer diese Einstellung ändern.
-      Es wird empfohlen, unter <ph name="PRODUCT_OS_NAME" /> für die Geräterichtlinie "<ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />" denselben Wert festzulegen. Wenn die Werte nicht übereinstimmen, kann es beim Beginn einer Nutzersitzung zu einer Verzögerung kommen, weil der von der Nutzerrichtlinie angegebene Wert erst angewendet werden muss.
-
-      HINWEIS: Diese Richtlinie funktioniert nicht unter Android. Wenn "SitePerProcess" unter Android aktiviert werden soll, muss die Richtlinieneinstellung "SitePerProcessAndroid" verwendet werden.
-      </translation>
 <translation id="3627678165642179114">Webdienst für die Rechtschreibprüfung aktivieren oder deaktivieren</translation>
 <translation id="3628480121685794414">Simplexdruck aktivieren</translation>
 <translation id="3631099945620529777">Wenn diese Richtlinie auf "false" gesetzt ist, ist die Schaltfläche "Prozess beenden" im Task-Manager deaktiviert.
@@ -1427,7 +1411,7 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
 
         Diese Richtlinie wird im Rahmen der Registrierung von Cloud-Richtlinien auf Computern verwendet und kann unter Windows über die Registrierung oder per GPO, auf einem Mac per plist und unter Linux über eine JSON-Richtliniendatei festgelegt werden.</translation>
 <translation id="3660562134618097814">SAML-IdP-Cookies bei der Anmeldung übertragen</translation>
-<translation id="3668151900457104753">Deinstalliert Geräte, die auf der schwarzen Liste stehen</translation>
+<translation id="3668151900457104753">Deinstalliert Erweiterungen, die auf der schwarzen Liste stehen</translation>
 <translation id="3701121231485832347">Legt die Einstellungen für mit <ph name="MS_AD_NAME" /> verwaltete <ph name="PRODUCT_OS_NAME" />-Geräte fest.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> – Das einzeilige Feld ist veraltet und wird in Zukunft entfernt. Bitte nutzen Sie das mehrzeilige Textfeld unten.</translation>
 <translation id="3709266154059827597">Schwarze Liste für Installation von Erweiterungen konfigurieren</translation>
@@ -1508,15 +1492,15 @@ Wenn diese Richtlinie nicht festgelegt ist, gilt die Standardeinstellung: Vom Un
 <translation id="382476126209906314">TalkGadget-Präfix für Remotezugriff-Hosts konfigurieren</translation>
 <translation id="3824972131618513497">Legt die Einstellungen für das Energiesparen und Neustarten fest.</translation>
 <translation id="3826475866868158882">Standortdienste von Google aktiviert</translation>
-<translation id="3831054243924627613">Mit dieser Richtlinie wird der Ausgangszustand der Android-Funktion "Sicherung und Wiederherstellung" festgelegt.
+<translation id="3831054243924627613">Mit dieser Richtlinie wird der Ausgangszustand der Android-Funktion "Sichern und wiederherstellen" festgelegt.
 
-      Wenn die Richtlinie nicht konfiguriert oder auf "<ph name="BR_DISABLED" />" festgelegt ist, ist die Android-Funktion "Sicherung und Wiederherstellung" anfangs deaktiviert.
+      Wenn die Richtlinie nicht konfiguriert oder auf "<ph name="BR_DISABLED" />" festgelegt ist, ist die Android-Funktion "Sichern und wiederherstellen" anfangs deaktiviert.
 
-      Wenn diese Richtlinie auf "<ph name="BR_ENABLED" />" festgelegt ist, ist die Android-Funktion "Sicherung und Wiederherstellung" anfangs aktiviert.
+      Wenn diese Richtlinie auf "<ph name="BR_ENABLED" />" festgelegt ist, ist die Android-Funktion "Sichern und wiederherstellen" anfangs aktiviert.
 
-      Ist die Richtlinie auf "<ph name="BR_UNDER_USER_CONTROL" />" festgelegt, dann wird der Nutzer aufgefordert anzugeben, ob er die Android-Funktion "Sicherung und Wiederherstellung" verwenden möchte. Aktiviert er die Funktion, werden App-Daten von Android auf die Android-Sicherungsserver hochgeladen und bei der Neuinstallation von kompatiblen Apps wiederhergestellt.
+      Ist die Richtlinie auf "<ph name="BR_UNDER_USER_CONTROL" />" festgelegt, dann wird der Nutzer aufgefordert anzugeben, ob er die Android-Funktion "Sichern und wiederherstellen" verwenden möchte. Aktiviert er die Funktion, werden App-Daten von Android auf die Android-Sicherungsserver hochgeladen und bei der Neuinstallation von kompatiblen Apps wiederhergestellt.
 
-      Beachten Sie, dass mit dieser Richtlinie lediglich der Status der Android-Funktion "Sicherung und Wiederherstellung" bei der erstmaligen Einrichtung festgelegt wird. Danach kann der Nutzer die Android-Einstellungen öffnen und die Funktion "Sicherung und Wiederherstellung" aktivieren oder deaktivieren.</translation>
+      Beachten Sie, dass mit dieser Richtlinie lediglich der Status der Android-Funktion "Sichern und wiederherstellen" bei der erstmaligen Einrichtung festgelegt wird. Danach kann der Nutzer die Android-Einstellungen öffnen und die Funktion "Sichern und wiederherstellen" aktivieren oder deaktivieren.</translation>
 <translation id="3831376478177535007">Wenn diese Einstellung aktiviert ist, werden von <ph name="PRODUCT_NAME" /> Zertifikate genehmigt, die von der veralteten Symantec-PKI herausgegeben werden – vorausgesetzt sie werden erfolgreich überprüft und bilden eine Kette zu einem anerkannten CA-Zertifikat.
 
       Diese Richtlinie setzt voraus, dass das Betriebssystem die Zertifikate der veralteten Symantec-Infrastruktur noch erkennt. Wenn sich durch ein Update des Betriebssystems die Handhabung solcher Zertifikate ändert, ist diese Richtlinie nicht mehr wirksam. Sie dient zur vorübergehenden Problemumgehung, um Unternehmen mehr Zeit zu geben, veraltete Symantec-Zertifikate zu ersetzen. Diese Richtlinie wird ab dem 1. Januar 2019 entfernt.
@@ -2131,7 +2115,7 @@ Sollte die Richtlinie nicht konfiguriert sein, so wird der Standardsuchanbieter 
 <translation id="5124368997194894978">Starten bei anliegender Netzspannung aktivieren</translation>
 <translation id="5131211790949066746">Ermöglicht das Zusammenführen der folgenden Listen zur Installation von Erweiterungen: <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> und <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />.
 
-      Wenn Sie diese Einstellung aktivieren, werden die Werte aus den Computer-Plattformrichtlinien, den Computer-Cloud-Richtlinien und den Nutzer-Plattformrichtlinien in einer einzigen Liste zusammengeführt und gesamtheitlich genutzt. Es werden also nicht nur die Werte aus der einzelnen Quelle mit der höchsten Priorität verwendet.
+      Wenn Sie diese Einstellung aktivieren, werden die Werte aus der Computer-Plattformrichtlinie, der Computer-Cloud-Richtlinie und der Nutzer-Plattformrichtlinie in einer einzigen Liste zusammengeführt und gesamtheitlich genutzt. Es werden also nicht nur die Werte aus der einzelnen Quelle mit der höchsten Priorität verwendet.
 
       Wenn Sie diese Einstellung deaktivieren oder nicht konfigurieren, werden nur Listeneinträge aus der Quelle mit der höchsten Priorität herangezogen. Alle anderen Quellen werden als Konflikte angezeigt, die jedoch ignoriert werden.</translation>
 <translation id="5141670636904227950">Standardtyp für die Lupe festlegen, die auf der Anmeldeseite aktiviert ist</translation>
@@ -2340,7 +2324,7 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
       Falls sich Regeln widersprechen, verwendet <ph name="PRODUCT_NAME" /> die Regel, die am spezifischsten ist.</translation>
 <translation id="5475361623548884387">Drucken aktivieren</translation>
 <translation id="547601067149622666">Werbung auf Websites mit aufdringlichen Werbeanzeigen nicht zulassen</translation>
-<translation id="5483065054530244863">Lässt SHA-1-signierte Zertifikate zu, die von lokalen Vertrauensankern ausgestellt werden</translation>
+<translation id="5483065054530244863">SHA-1-signierte Zertifikate zulassen, die von lokalen Vertrauensankern ausgestellt werden</translation>
 <translation id="5483777239978559943">Diese Richtlinie wurde eingestellt. Sie können mit "<ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" />" die Verfügbarkeit des Flash-Plug-ins definieren und über "<ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" />" steuern, ob der integrierte PDF-Viewer zum Öffnen von PDF-Dateien verwendet werden soll.
 
       Gibt eine Liste von Plug-ins an, die der Nutzer in <ph name="PRODUCT_NAME" /> aktivieren oder deaktivieren kann.
@@ -2456,7 +2440,7 @@ Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSIO
 <translation id="5630352020869108293">Letzte Sitzung wiederherstellen</translation>
 <translation id="5643906875497889108">Legt fest, was für Apps und Erweiterungen installiert werden dürfen, und schränkt den Laufzeitzugriff ein.
 
-          Dieser Einstellung erstellt eine weiße Liste mit den zulässigen Erweiterungs- und App-Typen, die in <ph name="PRODUCT_NAME" /> installiert werden dürfen, und den Hosts, mit denen sie interagieren dürfen. Der Wert ist eine Liste mit Strings, die jeweils eines der Folgenden sind: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app" oder "platform_app". Weitere Informationen zu diesen Typen entnehmen Sie der Dokumentation zu den <ph name="PRODUCT_NAME" />-Erweiterungen.
+          Mit dieser Einstellung wird eine weiße Liste mit den zulässigen Erweiterungs- und App-Typen erstellt, die in <ph name="PRODUCT_NAME" /> installiert werden dürfen, und den Hosts, mit denen sie interagieren dürfen. Der Wert ist eine Liste mit Strings, die jeweils eines der Folgenden sind: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app" oder "platform_app". Weitere Informationen zu diesen Typen entnehmen Sie der Dokumentation zu den <ph name="PRODUCT_NAME" />-Erweiterungen.
 
           Beachten Sie, dass diese Richtlinie auch solche Erweiterungen und Apps betrifft, die über die Richtlinie "ExtensionInstallForcelist" zwangsweise installiert werden.
 
@@ -2568,12 +2552,6 @@ Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSIO
 Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy für Anfragen zur Gnubby-Authentifizierung verwendet.</translation>
 <translation id="5897913798715600338">Lädt den Akku mit Schnellladetechnologie auf.</translation>
 <translation id="5898486742390981550">Wenn mehrere Nutzer angemeldet sind, kann nur der Hauptnutzer Android-Apps verwenden.</translation>
-<translation id="5900196529149231477">
-      Diese Richtlinie gilt für die Anmeldeseite. Sehen Sie sich auch die Richtlinie "<ph name="ISOLATE_ORIGINS_POLICY_NAME" />" für die eigentliche Nutzersitzung an. Es wird empfohlen, für beide Richtlinien denselben Wert festzulegen. Wenn die Werte nicht übereinstimmen, kann es beim Beginn einer Nutzersitzung zu einer Verzögerung kommen, weil der von der Nutzerrichtlinie angegebene Wert erst angewendet werden muss.
-      Wenn die Richtlinie aktiviert ist, wird für jeden der benannten Ursprünge in einer durch Kommas getrennten Liste ein eigener Prozess ausgeführt. Dabei werden auch durch Subdomains benannte Ursprünge isoliert. Wenn Sie z. B. https://example.com/ angeben, wird auch https://foo.example.com/ als Teil der Website https://example.com/ isoliert.
-      Wenn die Richtlinie deaktiviert ist, sind "IsolateOrigins" und "SitePerProcess" ebenfalls deaktiviert. Nutzer können aber "IsolateOrigins" weiterhin manuell anhand von Befehlszeilenparametern aktivieren.
-      Wenn die Richtlinie nicht konfiguriert ist, werden für die Anmeldeseite die standardmäßigen Plattformeinstellungen für die Isolierung von Websites verwendet.
-      </translation>
 <translation id="5901427587865226597">Nur Duplexdruck</translation>
 <translation id="5905473632148429217">OCSP/CRL-Online-Prüfungen aktivieren</translation>
 <translation id="5906199912611534122">Ermöglicht die Aktivierung oder Deaktivierung der Netzwerkbegrenzung.
@@ -2701,7 +2679,7 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
 
       Ist die Richtlinie auf "<ph name="GLS_ENABLED" />" festgelegt, sind die Standortdienste anfangs aktiviert.
 
-      Ist die Richtlinie auf "<ph name="GLS_UNDER_USER_CONTROL" />" festgelegt, dann wird der Nutzer aufgefordert anzugeben, ob die Standortdienste von Google verwendet werden sollen. Hiermit kann Android-Apps die Nutzung der Dienste zum Abfragen des Gerätestandorts erlaubt werden. Außerdem kann hierdurch die Übermittlung anonymer Standortdaten an Google gestattet werden.
+      Ist die Richtlinie auf "<ph name="GLS_UNDER_USER_CONTROL" />" festgelegt, dann wird der Nutzer aufgefordert anzugeben, ob die Standortdienste von Google verwendet werden sollen. Hiermit wird Android-Apps die Nutzung der Dienste zum Abfragen des Gerätestandorts erlaubt und die Übermittlung anonymer Standortdaten an Google gestattet.
 
       Beachten Sie, dass mit dieser Richtlinie lediglich der Status der Standortdienste von Google bei der erstmaligen Einrichtung festgelegt wird. Danach kann der Nutzer die Android-Einstellungen öffnen und die Standortdienste aktivieren oder deaktivieren.
 
@@ -2774,7 +2752,7 @@ Für diese Richtlinie wird die Installation von <ph name="CHROME_REPORTING_EXTEN
 
         Wenn sich eine Richtlinie auf der Liste befindet und dadurch ein Konflikt zwischen zwei Quellen entsteht, werden, sofern Bereich und Ebene identisch sind, die Werte zu einer neuen Richtlinienliste zusammengeführt.
 
-        Wenn sich eine Richtlinie auf der Liste befindet und dadurch ein Konflikt zwischen zwei Quellen entsteht, wird, sofern Bereich und Ebene unterschiedlich sind, die Richtlinie mit der höchsten Priorität angewendet.
+        Wenn sich eine Richtlinie auf der Liste befindet und dadurch ein Konflikt zwischen zwei Quellen entsteht, wird, sofern Bereich und/oder Ebene unterschiedlich sind, die Richtlinie mit der höchsten Priorität angewendet.
 
         Befindet sich eine Richtlinie nicht auf der Liste und liegt ein Konflikt zwischen Quellen, Bereichen und/oder Ebenen vor, dann wird die Richtlinie mit der höchsten Priorität verwendet.</translation>
 <translation id="6258193603492867656">Gibt an, ob der generierte Kerberos-SPN einen Nicht-Standard-Port umfassen soll. Falls Sie diese Einstellung aktivieren und ein Nicht-Standard-Port (ein anderer Port als 80 oder 443) eingegeben wird, wird dieser in den generierten Kerberos-SPN aufgenommen. Wenn Sie diese Einstellung deaktivieren oder nicht konfigurieren, umfasst der generierte Kerberos-SPN in keinem Fall einen Port.</translation>
@@ -2975,7 +2953,7 @@ Wenn diese Richtlinie nicht konfiguriert ist, können die Nutzer selbst wählen,
 <translation id="6757438632136860443">Ermöglicht die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen die Ausführung des Plug-ins "<ph name="FLASH_PLUGIN_NAME" />" gestattet ist.
 
           Ist diese Richtlinie nicht festgelegt, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultPluginsSetting", sofern konfiguriert, oder die persönliche Konfiguration des Nutzers zum Einsatz.</translation>
-<translation id="6757613329154374267">"Sicherung und Wiederherstellung" aktiviert</translation>
+<translation id="6757613329154374267">"Sichern und wiederherstellen" aktiviert</translation>
 <translation id="6762235610019366960">Mit dieser Richtlinie wird festgelegt, ob in <ph name="PRODUCT_NAME" /> Werbung und/oder Bildungsinhalte auf einem ganzen Tab angezeigt werden dürfen.
 
       Falls sie nicht konfiguriert oder aktiviert (auf "true" gesetzt) ist, dürfen Nutzern in <ph name="PRODUCT_NAME" /> Inhalte auf einem ganzen Tab angezeigt werden, um ihnen Produktinformationen zu geben.
@@ -3111,7 +3089,7 @@ Speicherinformationen werden unabhängig von der gewählten Option an die Seite 
       Ist die Richtlinie auf "true" festgelegt oder nicht konfiguriert, wird das intelligente Dimmmodell aktiviert und der Zeitraum bis zum Dimmen des Bildschirms kann durch das Modell verlängert werden. Wenn die Richtlinie auf "false" festgelegt ist, wird das Dimmen des Bildschirms durch das intelligente Dimmmodell nicht beeinflusst.</translation>
 <translation id="6967394885063085697">Hiermit können Sie die Energieverwaltungsrichtlinie für den intelligenten Akkulademodus aktivieren.
 
-          Der intelligenten Akkulademodus erlaubt eine Maximierung der Akkulebensdauer. Im intelligenten Akkulademodus verwendet das System außerhalb der Arbeitszeit den Standardladealgorithmus und weitere Verfahren, um die Lebensdauer des Akkus zu maximieren. Während der Arbeitszeit wird dagegen das Schnellladen verwendet. Beim Schnellladen wird der Akku in kürzerer Zeit aufgeladen und steht mit der gesamten Ladekapazität schneller wieder zur Verfügung. Für jeden Tag wird die Zeit, in der das System am intensivsten genutzt wird, durch einen Startzeitpunkt und eine Dauer angegeben.
+          Der intelligente Akkulademodus erlaubt eine Maximierung der Akkulebensdauer. Im intelligenten Akkulademodus verwendet das System außerhalb der Arbeitszeit den Standardladealgorithmus und weitere Verfahren, um die Lebensdauer des Akkus zu maximieren. Während der Arbeitszeit wird dagegen das Schnellladen verwendet. Beim Schnellladen wird der Akku in kürzerer Zeit aufgeladen und steht mit der gesamten Ladekapazität schneller wieder zur Verfügung. Für jeden Tag wird die Zeit, in der das System am intensivsten genutzt wird, durch einen Startzeitpunkt und eine Dauer angegeben.
 
           Wenn die Richtlinie auf "true" festgelegt ist und "DeviceAdvancedBatteryChargeModeDayConfig" ebenfalls eingestellt ist, ist der intelligente Akkulademodus immer aktiviert, sofern die Funktion vom Gerät unterstützt wird.
 
@@ -3185,7 +3163,7 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
       Sobald diese Einstellung aktiviert oder deaktiviert ist, können Nutzer sie nicht ändern oder außer Kraft setzen.
 
       Ist die Richtlinie nicht konfiguriert, kann der Nutzer bestimmen, ob eine Passwortabfrage zum Reaktivieren des Geräts notwendig sein soll.</translation>
-<translation id="7107148737865880402">Hiermit können Sie die Energieverwaltungsrichtlinie zur gemeinsamen Stromversorgung aktivieren.
+<translation id="7107148737865880402">Hiermit können Sie die Energieverwaltungsrichtlinie zur gemeinsamen Stromversorgung per USB aktivieren.
 
           Bestimmte Geräte haben einen speziellen USB-Port, der mit einem Blitz- oder Batteriesymbol gekennzeichnet ist und zum Aufladen von Geräten wie etwa einem Mobiltelefon mithilfe des Systemakkus verwendet werden kann. Diese Richtlinie betrifft das Ladeverhalten dieses Ports, wenn sich das System im Ruhemodus befindet oder heruntergefahren wurde. Diese Richtlinie hat keine Auswirkungen auf die übrigen USB-Ports und das Ladeverhalten, solange das System aktiv ist.
 
@@ -3193,7 +3171,7 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 
           Im Ruhemodus dagegen wird, wenn diese Richtlinie auf "true" gesetzt ist, am USB-Port Ladestrom bereitgestellt, wenn das Gerät mit einer Netzsteckdose verbunden oder der Ladestand des Akkus höher als 50 % ist. Andernfalls liegt kein Ladestrom an.
 
-          Ist das Gerät heruntergefahren, dann wird, wenn diese Richtlinie auf "true" gesetzt ist, Ladestrom am USB-Port bereitgestellt, wenn das Gerät an einen Netzsteckdose angeschlossen ist. Andernfalls liegt kein Ladestrom an.
+          Ist das Gerät heruntergefahren, dann wird, wenn diese Richtlinie auf "true" gesetzt ist, Ladestrom am USB-Port bereitgestellt, wenn das Gerät an eine Netzsteckdose angeschlossen ist. Andernfalls liegt kein Ladestrom an.
 
           Ist diese Richtlinie nicht eingestellt, dann wird sie aktiviert und kann vom Nutzer nicht geändert werden.</translation>
 <translation id="7115494316187648452">Legt fest, ob ein <ph name="PRODUCT_NAME" />-Prozess bei der Anmeldung im Betriebssystem gestartet und nach dem Schließen des letzten Browserfensters weiter ausgeführt wird, sodass Hintergrund-Apps und die aktuelle Browsersitzung einschließlich aller Sitzungscookies aktiv bleiben. Der Hintergrundprozess kann jederzeit über ein entsprechendes Symbol in der Taskleiste geschlossen werden.
@@ -3531,7 +3509,7 @@ Auf <ph name="PRODUCT_OS_NAME" />-Version 70 und höher unterstützt. Bei älte
 
           Ist diese Richtlinie nicht konfiguriert oder nicht eingestellt, dann bleibt der erweiterte Akkulademodus deaktiviert.
 
-          Hinweis: <ph name="CHARGE_START_TIME_FIELD_NAME" /> muss kleiner als <ph name="CHARGE_END_TIME_FIELD_NAME" /> sein.
+          Hinweis: "<ph name="CHARGE_START_TIME_FIELD_NAME" />" muss kleiner als "<ph name="CHARGE_END_TIME_FIELD_NAME" />" sein.
 
           Hinweis: Zulässige Werte für das Feld "<ph name="MINUTE_FIELD_NAME" />" in "<ph name="CHARGE_START_TIME_FIELD_NAME" />" und "<ph name="CHARGE_END_TIME_FIELD_NAME" />" sind 0, 15, 30 und 45.</translation>
 <translation id="7717938661004793600">Hiermit konfigurieren Sie die Zugänglichkeitsfunktionen für <ph name="PRODUCT_OS_NAME" />.</translation>
@@ -3811,6 +3789,7 @@ Unter Windows ist es empfehlenswert, Richtlinien über Gruppenrichtlinienobjekte
       Falls die Richtlinie "DeviceIdleLogoutTimeout" konfiguriert ist, wird mithilfe der vorliegenden Richtlinie festgelegt, wie lange das Warnfenster mit Countdown für Nutzer zu sehen sein soll, bevor sie abgemeldet werden.
 
       Der Wert für die Richtlinie sollte in Millisekunden angegeben werden.</translation>
+<translation id="8331479227794770304">Sticky Keys aktivieren</translation>
 <translation id="8339420913453596618">Zweiter Authentifizierungsfaktor deaktiviert</translation>
 <translation id="8344454543174932833">Lesezeichen bei erster Ausführung aus Standardbrowser importieren</translation>
 <translation id="8357681633047935212">Dauer einer Nutzersitzung beschränken</translation>
@@ -4174,18 +4153,6 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
       Wenn als Richtlinienwert ein Token festgelegt ist, das mit einem Quick-Fix-Build verknüpft ist, wird das Gerät auf den entsprechenden Build aktualisiert, sofern eine solche Aktualisierung nicht durch eine andere Richtlinie blockiert wird.
 
       Falls die Richtlinie nicht konfiguriert oder der Wert nicht mit einem Quick-Fix-Build verknüpft ist, wird das Gerät nicht auf einen Quick-Fix-Build aktualisiert. Wenn auf dem Gerät bereits ein Quick-Fix-Build installiert ist und die Richtlinie nicht mehr konfiguriert oder der Wert nicht mehr mit einem Quick-Fix-Build verknüpft ist, wird das Gerät auf einen regulären Build aktualisiert, sofern die Aktualisierung nicht durch eine andere Richtlinie blockiert wird.</translation>
-<translation id="906631898352326790">
-      Wenn die Richtlinie aktiviert ist, wird für jeden der benannten Ursprünge
-      in einer durch Kommas getrennten Liste ein eigener Prozess ausgeführt.
-      Dabei werden auch durch Subdomains benannte Ursprünge isoliert.
-      Wenn Sie z. B. https://example.com/ angeben, wird auch https://foo.example.com/
-      als Teil der Website https://example.com/ isoliert.
-      Wenn die Richtlinie deaktiviert ist, sind die Funktionen "IsolateOrigins" und "SitePerProcess" ebenfalls deaktiviert. Nutzer können aber weiterhin Befehlszeilenparameter verwenden, um "IsolateOrigins" manuell zu aktivieren.
-      Wenn die Richtlinie nicht konfiguriert ist, kann der Nutzer diese Einstellung ändern.
-      Es wird empfohlen, unter <ph name="PRODUCT_OS_NAME" /> für die Geräterichtlinie "<ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />" denselben Wert festzulegen. Wenn die Werte nicht übereinstimmen, kann es beim Beginn einer Nutzersitzung zu einer Verzögerung kommen, weil der von der Nutzerrichtlinie angegebene Wert erst angewendet werden muss.
-
-      HINWEIS: Diese Richtlinie funktioniert nicht unter Android. Wenn "IsolateOrigins" unter Android aktiviert werden soll, muss die Richtlinieneinstellung "IsolateOriginsAndroid" verwendet werden.
-      </translation>
 <translation id="9072600218500597787">Konfiguriert die erforderlichen Domainnamen der Hosts für den Remotezugriff und verhindert, dass diese von Nutzern geändert werden können.
 
           Wenn diese Einstellung aktiviert ist, können Hosts nur über solche Konten gemeinsam genutzt werden, die unter einem der angegebenen Domainnamen registriert sind.
