@@ -10,8 +10,8 @@
 #include "base/base_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/task/common/checked_lock.h"
 #include "base/task/common/intrusive_heap.h"
-#include "base/task/thread_pool/scheduler_lock.h"
 #include "base/task/thread_pool/sequence_sort_key.h"
 #include "base/task/thread_pool/task_source.h"
 

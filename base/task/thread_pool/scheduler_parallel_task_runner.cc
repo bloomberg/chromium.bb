@@ -29,7 +29,7 @@ bool SchedulerParallelTaskRunner::PostDelayedTask(const Location& from_here,
       traits_, this, TaskSourceExecutionMode::kParallel);
 
   {
-    AutoSchedulerLock auto_lock(lock_);
+    CheckedAutoLock auto_lock(lock_);
     sequences_.insert(sequence.get());
   }
 
@@ -44,7 +44,7 @@ bool SchedulerParallelTaskRunner::RunsTasksInCurrentSequence() const {
 void SchedulerParallelTaskRunner::UnregisterSequence(Sequence* sequence) {
   DCHECK(sequence);
 
-  AutoSchedulerLock auto_lock(lock_);
+  CheckedAutoLock auto_lock(lock_);
   sequences_.erase(sequence);
 }
 

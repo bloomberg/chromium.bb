@@ -26,19 +26,19 @@ MockSchedulerWorkerObserver::~MockSchedulerWorkerObserver() {
 }
 
 void MockSchedulerWorkerObserver::AllowCallsOnMainExit(int num_calls) {
-  AutoSchedulerLock auto_lock(lock_);
+  CheckedAutoLock auto_lock(lock_);
   EXPECT_EQ(0, allowed_calls_on_main_exit_);
   allowed_calls_on_main_exit_ = num_calls;
 }
 
 void MockSchedulerWorkerObserver::WaitCallsOnMainExit() {
-  AutoSchedulerLock auto_lock(lock_);
+  CheckedAutoLock auto_lock(lock_);
   while (allowed_calls_on_main_exit_ != 0)
     on_main_exit_cv_->Wait();
 }
 
 void MockSchedulerWorkerObserver::OnSchedulerWorkerMainExit() {
-  AutoSchedulerLock auto_lock(lock_);
+  CheckedAutoLock auto_lock(lock_);
   EXPECT_GE(allowed_calls_on_main_exit_, 0);
   --allowed_calls_on_main_exit_;
   if (allowed_calls_on_main_exit_ == 0)

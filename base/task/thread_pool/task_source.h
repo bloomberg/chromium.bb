@@ -12,9 +12,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/sequence_token.h"
+#include "base/task/common/checked_lock.h"
 #include "base/task/common/intrusive_heap.h"
 #include "base/task/task_traits.h"
-#include "base/task/thread_pool/scheduler_lock.h"
 #include "base/task/thread_pool/sequence_sort_key.h"
 #include "base/task/thread_pool/task.h"
 #include "base/threading/sequence_local_storage_map.h"
@@ -173,7 +173,7 @@ class BASE_EXPORT TaskSource : public RefCountedThreadSafe<TaskSource> {
   friend class RefCountedThreadSafe<TaskSource>;
 
   // Synchronizes access to all members.
-  mutable SchedulerLock lock_{UniversalPredecessor()};
+  mutable CheckedLock lock_{UniversalPredecessor()};
 
   // The TaskSource's position in its current PriorityQueue. Access is protected
   // by the PriorityQueue's lock.

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_TASK_THREAD_POOL_SCHEDULER_LOCK_H_
-#define BASE_TASK_THREAD_POOL_SCHEDULER_LOCK_H_
+#ifndef BASE_TASK_COMMON_CHECKED_LOCK_H_
+#define BASE_TASK_COMMON_CHECKED_LOCK_H_
 
 #include <memory>
 
@@ -11,24 +11,24 @@
 #include "base/macros.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
-#include "base/task/thread_pool/scheduler_lock_impl.h"
+#include "base/task/common/checked_lock_impl.h"
 #include "base/thread_annotations.h"
 
 namespace base {
 namespace internal {
 
-// SchedulerLock should be used anywhere a lock would be used in the scheduler.
-// When DCHECK_IS_ON(), lock checking occurs. Otherwise, SchedulerLock is
+// CheckedLock should be used anywhere a Lock would be used in the base/task
+// impl. When DCHECK_IS_ON(), lock checking occurs. Otherwise, CheckedLock is
 // equivalent to base::Lock.
 //
-// The shape of SchedulerLock is as follows:
-// SchedulerLock()
+// The shape of CheckedLock is as follows:
+// CheckedLock()
 //     Default constructor, no predecessor lock.
 //     DCHECKs
-//         On Acquisition if any scheduler lock is acquired on this thread.
+//         On Acquisition if any CheckedLock is acquired on this thread.
 //             Okay if a universal predecessor is acquired.
 //
-// SchedulerLock(const SchedulerLock* predecessor)
+// CheckedLock(const CheckedLock* predecessor)
 //     Constructor that specifies an allowed predecessor for that lock.
 //     DCHECKs
 //         On Construction if |predecessor| forms a predecessor lock cycle.
@@ -36,12 +36,12 @@ namespace internal {
 //             either |predecessor| or a universal predecessor. Okay if there
 //             was no previous lock acquired.
 //
-// SchedulerLock(UniversalPredecessor universal_predecessor)
+// CheckedLock(UniversalPredecessor universal_predecessor)
 //     Constructor for a lock that will allow the acquisition of any lock after
 //     it, without needing to explicitly be named a predecessor. Can only be
 //     acquired if no locks are currently held by this thread.
 //     DCHECKs
-//         On Acquisition if any scheduler lock is acquired on this thread.
+//         On Acquisition if any CheckedLock is acquired on this thread.
 //
 // void Acquire()
 //     Acquires the lock.
@@ -56,20 +56,20 @@ namespace internal {
 //     Creates a condition variable using this as a lock.
 
 #if DCHECK_IS_ON()
-class LOCKABLE SchedulerLock : public SchedulerLockImpl {
+class LOCKABLE CheckedLock : public CheckedLockImpl {
  public:
-  SchedulerLock() = default;
-  explicit SchedulerLock(const SchedulerLock* predecessor)
-      : SchedulerLockImpl(predecessor) {}
-  explicit SchedulerLock(UniversalPredecessor universal_predecessor)
-      : SchedulerLockImpl(universal_predecessor) {}
+  CheckedLock() = default;
+  explicit CheckedLock(const CheckedLock* predecessor)
+      : CheckedLockImpl(predecessor) {}
+  explicit CheckedLock(UniversalPredecessor universal_predecessor)
+      : CheckedLockImpl(universal_predecessor) {}
 };
 #else   // DCHECK_IS_ON()
-class LOCKABLE SchedulerLock : public Lock {
+class LOCKABLE CheckedLock : public Lock {
  public:
-  SchedulerLock() = default;
-  explicit SchedulerLock(const SchedulerLock*) {}
-  explicit SchedulerLock(UniversalPredecessor) {}
+  CheckedLock() = default;
+  explicit CheckedLock(const CheckedLock*) {}
+  explicit CheckedLock(UniversalPredecessor) {}
   static void AssertNoLockHeldOnCurrentThread() {}
 
   std::unique_ptr<ConditionVariable> CreateConditionVariable() {
@@ -78,14 +78,14 @@ class LOCKABLE SchedulerLock : public Lock {
 };
 #endif  // DCHECK_IS_ON()
 
-// Provides the same functionality as base::AutoLock for SchedulerLock.
-using AutoSchedulerLock = internal::BasicAutoLock<SchedulerLock>;
+// Provides the same functionality as base::AutoLock for CheckedLock.
+using CheckedAutoLock = internal::BasicAutoLock<CheckedLock>;
 
-// Provides the same functionality as base::AutoUnlock for SchedulerLock.
-using AutoSchedulerUnlock = internal::BasicAutoUnlock<SchedulerLock>;
+// Provides the same functionality as base::AutoUnlock for CheckedLock.
+using CheckedAutoUnlock = internal::BasicAutoUnlock<CheckedLock>;
 
-// Provides the same functionality as base::AutoLockMaybe for SchedulerLock.
-using AutoSchedulerLockMaybe = internal::BasicAutoLockMaybe<SchedulerLock>;
+// Provides the same functionality as base::AutoLockMaybe for CheckedLock.
+using CheckedAutoLockMaybe = internal::BasicAutoLockMaybe<CheckedLock>;
 
 // Informs the clang thread safety analysis that an aliased lock is acquired.
 // Because the clang thread safety analysis doesn't understand aliased locks
@@ -93,13 +93,13 @@ using AutoSchedulerLockMaybe = internal::BasicAutoLockMaybe<SchedulerLock>;
 //
 // class Example {
 //  public:
-//    SchedulerLock lock_;
+//    CheckedLock lock_;
 //    int value = 0 GUARDED_BY(lock_);
 // };
 //
 // Example example;
-// SchedulerLock* acquired = &example.lock_;
-// AutoSchedulerLock auto_lock(*acquired);
+// CheckedLock* acquired = &example.lock_;
+// CheckedAutoLock auto_lock(*acquired);
 // AnnotateAcquiredLockAlias annotate(*acquired, example.lock_);
 // example.value = 42;  // Doesn't compile without |annotate|.
 //
@@ -108,8 +108,8 @@ class SCOPED_LOCKABLE AnnotateAcquiredLockAlias {
  public:
   // |acquired_lock| is an acquired lock. |lock_alias| is an alias of
   // |acquired_lock|.
-  AnnotateAcquiredLockAlias(const SchedulerLock& acquired_lock,
-                            const SchedulerLock& lock_alias)
+  AnnotateAcquiredLockAlias(const CheckedLock& acquired_lock,
+                            const CheckedLock& lock_alias)
       EXCLUSIVE_LOCK_FUNCTION(lock_alias)
       : acquired_lock_(acquired_lock) {
     DCHECK_EQ(&acquired_lock, &lock_alias);
@@ -120,7 +120,7 @@ class SCOPED_LOCKABLE AnnotateAcquiredLockAlias {
   }
 
  private:
-  const SchedulerLock& acquired_lock_;
+  const CheckedLock& acquired_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(AnnotateAcquiredLockAlias);
 };
@@ -128,4 +128,4 @@ class SCOPED_LOCKABLE AnnotateAcquiredLockAlias {
 }  // namespace internal
 }  // namespace base
 
-#endif  // BASE_TASK_THREAD_POOL_SCHEDULER_LOCK_H_
+#endif  // BASE_TASK_COMMON_CHECKED_LOCK_H_

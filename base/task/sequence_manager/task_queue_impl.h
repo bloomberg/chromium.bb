@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/pending_task.h"
+#include "base/task/common/checked_lock.h"
 #include "base/task/common/intrusive_heap.h"
 #include "base/task/common/operations_controller.h"
 #include "base/task/sequence_manager/associated_thread_id.h"
@@ -23,7 +24,6 @@
 #include "base/task/sequence_manager/lazily_deallocated_deque.h"
 #include "base/task/sequence_manager/sequenced_task_source.h"
 #include "base/task/sequence_manager/task_queue.h"
-#include "base/task/thread_pool/scheduler_lock.h"
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
@@ -412,7 +412,7 @@ class BASE_EXPORT TaskQueueImpl {
 
   const scoped_refptr<GuardedTaskPoster> task_poster_;
 
-  mutable base::internal::SchedulerLock any_thread_lock_;
+  mutable base::internal::CheckedLock any_thread_lock_;
 
   struct AnyThread {
     explicit AnyThread(TimeDomain* time_domain);

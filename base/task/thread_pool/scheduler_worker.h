@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task/thread_pool/scheduler_lock.h"
+#include "base/task/common/checked_lock.h"
 #include "base/task/thread_pool/scheduler_worker_params.h"
 #include "base/task/thread_pool/task_source.h"
 #include "base/task/thread_pool/tracked_ref.h"
@@ -111,7 +111,7 @@ class BASE_EXPORT SchedulerWorker
   SchedulerWorker(ThreadPriority priority_hint,
                   std::unique_ptr<Delegate> delegate,
                   TrackedRef<TaskTracker> task_tracker,
-                  const SchedulerLock* predecessor_lock = nullptr,
+                  const CheckedLock* predecessor_lock = nullptr,
                   SchedulerBackwardCompatibility backward_compatibility =
                       SchedulerBackwardCompatibility::DISABLED);
 
@@ -208,7 +208,7 @@ class BASE_EXPORT SchedulerWorker
   // thread is created and the second access occurs on the thread.
   scoped_refptr<SchedulerWorker> self_;
 
-  mutable SchedulerLock thread_lock_;
+  mutable CheckedLock thread_lock_;
 
   // Handle for the thread managed by |this|.
   PlatformThreadHandle thread_handle_ GUARDED_BY(thread_lock_);

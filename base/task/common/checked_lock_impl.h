@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_TASK_THREAD_POOL_SCHEDULER_LOCK_IMPL_H_
-#define BASE_TASK_THREAD_POOL_SCHEDULER_LOCK_IMPL_H_
+#ifndef BASE_TASK_COMMON_CHECKED_LOCK_IMPL_H_
+#define BASE_TASK_COMMON_CHECKED_LOCK_IMPL_H_
 
 #include <memory>
 
@@ -23,12 +23,12 @@ struct UniversalPredecessor {};
 // This lock tracks all of the available locks to make sure that any locks are
 // acquired in an expected order.
 // See scheduler_lock.h for details.
-class BASE_EXPORT SchedulerLockImpl {
+class BASE_EXPORT CheckedLockImpl {
  public:
-  SchedulerLockImpl();
-  explicit SchedulerLockImpl(const SchedulerLockImpl* predecessor);
-  explicit SchedulerLockImpl(UniversalPredecessor);
-  ~SchedulerLockImpl();
+  CheckedLockImpl();
+  explicit CheckedLockImpl(const CheckedLockImpl* predecessor);
+  explicit CheckedLockImpl(UniversalPredecessor);
+  ~CheckedLockImpl();
 
   static void AssertNoLockHeldOnCurrentThread();
 
@@ -45,10 +45,10 @@ class BASE_EXPORT SchedulerLockImpl {
   Lock lock_;
   const bool is_universal_predecessor_;
 
-  DISALLOW_COPY_AND_ASSIGN(SchedulerLockImpl);
+  DISALLOW_COPY_AND_ASSIGN(CheckedLockImpl);
 };
 
 }  // namespace internal
 }  // namespace base
 
-#endif  // BASE_TASK_THREAD_POOL_SCHEDULER_LOCK_IMPL_H_
+#endif  // BASE_TASK_COMMON_CHECKED_LOCK_IMPL_H_

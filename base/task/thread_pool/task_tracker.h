@@ -20,9 +20,9 @@
 #include "base/sequence_checker.h"
 #include "base/strings/string_piece.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/common/checked_lock.h"
 #include "base/task/common/task_annotator.h"
 #include "base/task/task_traits.h"
-#include "base/task/thread_pool/scheduler_lock.h"
 #include "base/task/thread_pool/task.h"
 #include "base/task/thread_pool/task_source.h"
 #include "base/task/thread_pool/tracked_ref.h"
@@ -232,7 +232,7 @@ class BASE_EXPORT TaskTracker {
   // because it's atomic, but synchronization is needed to coordinate waking and
   // sleeping at the right time. Fully synchronizes access to
   // |flush_callback_for_testing_|.
-  mutable SchedulerLock flush_lock_;
+  mutable CheckedLock flush_lock_;
 
   // Signaled when |num_incomplete_undelayed_tasks_| is or reaches zero or when
   // shutdown completes.
@@ -243,7 +243,7 @@ class BASE_EXPORT TaskTracker {
   OnceClosure flush_callback_for_testing_;
 
   // Synchronizes access to shutdown related members below.
-  mutable SchedulerLock shutdown_lock_;
+  mutable CheckedLock shutdown_lock_;
 
   // Event instantiated when shutdown starts and signaled when shutdown
   // completes.

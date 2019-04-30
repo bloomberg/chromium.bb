@@ -12,9 +12,9 @@
 #include "base/base_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/task/common/checked_lock.h"
 #include "base/task/single_thread_task_runner_thread_mode.h"
 #include "base/task/thread_pool/environment_config.h"
-#include "base/task/thread_pool/scheduler_lock.h"
 #include "base/task/thread_pool/tracked_ref.h"
 #include "base/thread_annotations.h"
 #include "base/threading/platform_thread.h"
@@ -130,7 +130,7 @@ class BASE_EXPORT SchedulerSingleThreadTaskRunnerManager final {
   // function. Set in Start() and never modified afterwards.
   SchedulerWorkerObserver* scheduler_worker_observer_ = nullptr;
 
-  SchedulerLock lock_;
+  CheckedLock lock_;
   std::vector<scoped_refptr<SchedulerWorker>> workers_ GUARDED_BY(lock_);
   int next_worker_id_ GUARDED_BY(lock_) = 0;
 

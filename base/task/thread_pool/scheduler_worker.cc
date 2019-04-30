@@ -42,7 +42,7 @@ SchedulerWorker::SchedulerWorker(
     ThreadPriority priority_hint,
     std::unique_ptr<Delegate> delegate,
     TrackedRef<TaskTracker> task_tracker,
-    const SchedulerLock* predecessor_lock,
+    const CheckedLock* predecessor_lock,
     SchedulerBackwardCompatibility backward_compatibility)
     : thread_lock_(predecessor_lock),
       delegate_(std::move(delegate)),
@@ -63,8 +63,8 @@ SchedulerWorker::SchedulerWorker(
 
 bool SchedulerWorker::Start(
     SchedulerWorkerObserver* scheduler_worker_observer) {
-  SchedulerLock::AssertNoLockHeldOnCurrentThread();
-  AutoSchedulerLock auto_lock(thread_lock_);
+  CheckedLock::AssertNoLockHeldOnCurrentThread();
+  CheckedAutoLock auto_lock(thread_lock_);
   DCHECK(thread_handle_.is_null());
 
   if (should_exit_.IsSet() || join_called_for_testing_.IsSet())
@@ -91,7 +91,7 @@ void SchedulerWorker::WakeUp() {
   // Signalling an event can deschedule the current thread. Since being
   // descheduled while holding a lock is undesirable (https://crbug.com/890978),
   // assert that no lock is held by the current thread.
-  SchedulerLock::AssertNoLockHeldOnCurrentThread();
+  CheckedLock::AssertNoLockHeldOnCurrentThread();
   // Calling WakeUp() after Cleanup() or Join() is wrong because the
   // SchedulerWorker cannot run more tasks.
   DCHECK(!join_called_for_testing_.IsSet());
@@ -107,7 +107,7 @@ void SchedulerWorker::JoinForTesting() {
   PlatformThreadHandle thread_handle;
 
   {
-    AutoSchedulerLock auto_lock(thread_lock_);
+    CheckedAutoLock auto_lock(thread_lock_);
 
     if (thread_handle_.is_null())
       return;
@@ -121,12 +121,12 @@ void SchedulerWorker::JoinForTesting() {
 }
 
 bool SchedulerWorker::ThreadAliveForTesting() const {
-  AutoSchedulerLock auto_lock(thread_lock_);
+  CheckedAutoLock auto_lock(thread_lock_);
   return !thread_handle_.is_null();
 }
 
 SchedulerWorker::~SchedulerWorker() {
-  AutoSchedulerLock auto_lock(thread_lock_);
+  CheckedAutoLock auto_lock(thread_lock_);
 
   // If |thread_handle_| wasn't joined, detach it.
   if (!thread_handle_.is_null()) {
@@ -142,19 +142,19 @@ void SchedulerWorker::Cleanup() {
 }
 
 void SchedulerWorker::BeginUnusedPeriod() {
-  AutoSchedulerLock auto_lock(thread_lock_);
+  CheckedAutoLock auto_lock(thread_lock_);
   DCHECK(last_used_time_.is_null());
   last_used_time_ = TimeTicks::Now();
 }
 
 void SchedulerWorker::EndUnusedPeriod() {
-  AutoSchedulerLock auto_lock(thread_lock_);
+  CheckedAutoLock auto_lock(thread_lock_);
   DCHECK(!last_used_time_.is_null());
   last_used_time_ = TimeTicks();
 }
 
 TimeTicks SchedulerWorker::GetLastUsedTime() const {
-  AutoSchedulerLock auto_lock(thread_lock_);
+  CheckedAutoLock auto_lock(thread_lock_);
   return last_used_time_;
 }
 

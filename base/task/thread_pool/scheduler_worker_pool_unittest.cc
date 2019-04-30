@@ -382,7 +382,7 @@ TEST_P(ThreadPoolWorkerPoolTest, CanRunPolicyLoad) {
 TEST_P(ThreadPoolWorkerPoolTest, UpdatePriorityBestEffortToUserBlocking) {
   StartWorkerPool();
 
-  SchedulerLock num_tasks_running_lock;
+  CheckedLock num_tasks_running_lock;
   std::unique_ptr<ConditionVariable> num_tasks_running_cv =
       num_tasks_running_lock.CreateConditionVariable();
   size_t num_tasks_running = 0;
@@ -398,13 +398,13 @@ TEST_P(ThreadPoolWorkerPoolTest, UpdatePriorityBestEffortToUserBlocking) {
         FROM_HERE, BindLambdaForTesting([&]() {
           // Increment the number of tasks running.
           {
-            AutoSchedulerLock auto_lock(num_tasks_running_lock);
+            CheckedAutoLock auto_lock(num_tasks_running_lock);
             ++num_tasks_running;
           }
           num_tasks_running_cv->Broadcast();
 
           // Wait until all posted tasks are running.
-          AutoSchedulerLock auto_lock(num_tasks_running_lock);
+          CheckedAutoLock auto_lock(num_tasks_running_lock);
           while (num_tasks_running < kMaxTasks) {
             ScopedClearBlockingObserverForTesting clear_blocking_observer;
             ScopedAllowBaseSyncPrimitivesForTesting allow_base_sync_primitives;
@@ -415,7 +415,7 @@ TEST_P(ThreadPoolWorkerPoolTest, UpdatePriorityBestEffortToUserBlocking) {
 
   // Wait until |kMaxBestEffort| tasks start running.
   {
-    AutoSchedulerLock auto_lock(num_tasks_running_lock);
+    CheckedAutoLock auto_lock(num_tasks_running_lock);
     while (num_tasks_running < kMaxBestEffortTasks)
       num_tasks_running_cv->Wait();
   }
@@ -429,7 +429,7 @@ TEST_P(ThreadPoolWorkerPoolTest, UpdatePriorityBestEffortToUserBlocking) {
   // tasks lower than |kMaxTasks|.
   static_assert(kMaxBestEffortTasks < kMaxTasks, "");
   {
-    AutoSchedulerLock auto_lock(num_tasks_running_lock);
+    CheckedAutoLock auto_lock(num_tasks_running_lock);
     while (num_tasks_running < kMaxTasks)
       num_tasks_running_cv->Wait();
   }

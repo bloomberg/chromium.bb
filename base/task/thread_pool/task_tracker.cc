@@ -300,7 +300,7 @@ TaskTracker::TaskTracker(StringPiece histogram_label)
 TaskTracker::~TaskTracker() = default;
 
 void TaskTracker::StartShutdown() {
-  AutoSchedulerLock auto_lock(shutdown_lock_);
+  CheckedAutoLock auto_lock(shutdown_lock_);
 
   // This method can only be called once.
   DCHECK(!shutdown_event_);
@@ -337,14 +337,14 @@ void TaskTracker::CompleteShutdown() {
   // Unblock FlushForTesting() and perform the FlushAsyncForTesting callback
   // when shutdown completes.
   {
-    AutoSchedulerLock auto_lock(flush_lock_);
+    CheckedAutoLock auto_lock(flush_lock_);
     flush_cv_->Signal();
   }
   CallFlushCallbackForTesting();
 }
 
 void TaskTracker::FlushForTesting() {
-  AutoSchedulerLock auto_lock(flush_lock_);
+  CheckedAutoLock auto_lock(flush_lock_);
   while (subtle::Acquire_Load(&num_incomplete_undelayed_tasks_) != 0 &&
          !IsShutdownComplete()) {
     flush_cv_->Wait();
@@ -354,7 +354,7 @@ void TaskTracker::FlushForTesting() {
 void TaskTracker::FlushAsyncForTesting(OnceClosure flush_callback) {
   DCHECK(flush_callback);
   {
-    AutoSchedulerLock auto_lock(flush_lock_);
+    CheckedAutoLock auto_lock(flush_lock_);
     DCHECK(!flush_callback_for_testing_)
         << "Only one FlushAsyncForTesting() may be pending at any time.";
     flush_callback_for_testing_ = std::move(flush_callback);
@@ -449,7 +449,7 @@ bool TaskTracker::HasShutdownStarted() const {
 }
 
 bool TaskTracker::IsShutdownComplete() const {
-  AutoSchedulerLock auto_lock(shutdown_lock_);
+  CheckedAutoLock auto_lock(shutdown_lock_);
   return shutdown_event_ && shutdown_event_->IsSignaled();
 }
 
@@ -587,7 +587,7 @@ bool TaskTracker::BeforePostTask(
     const bool shutdown_started = state_->IncrementNumTasksBlockingShutdown();
 
     if (shutdown_started) {
-      AutoSchedulerLock auto_lock(shutdown_lock_);
+      CheckedAutoLock auto_lock(shutdown_lock_);
 
       // A BLOCK_SHUTDOWN task posted after shutdown has completed is an
       // ordering bug. This aims to catch those early.
@@ -668,7 +668,7 @@ void TaskTracker::AfterRunTask(
 }
 
 void TaskTracker::OnBlockingShutdownTasksComplete() {
-  AutoSchedulerLock auto_lock(shutdown_lock_);
+  CheckedAutoLock auto_lock(shutdown_lock_);
 
   // This method can only be called after shutdown has started.
   DCHECK(state_->HasShutdownStarted());
@@ -683,7 +683,7 @@ void TaskTracker::DecrementNumIncompleteUndelayedTasks() {
   DCHECK_GE(new_num_incomplete_undelayed_tasks, 0);
   if (new_num_incomplete_undelayed_tasks == 0) {
     {
-      AutoSchedulerLock auto_lock(flush_lock_);
+      CheckedAutoLock auto_lock(flush_lock_);
       flush_cv_->Signal();
     }
     CallFlushCallbackForTesting();
@@ -693,7 +693,7 @@ void TaskTracker::DecrementNumIncompleteUndelayedTasks() {
 void TaskTracker::CallFlushCallbackForTesting() {
   OnceClosure flush_callback;
   {
-    AutoSchedulerLock auto_lock(flush_lock_);
+    CheckedAutoLock auto_lock(flush_lock_);
     flush_callback = std::move(flush_callback_for_testing_);
   }
   if (flush_callback)

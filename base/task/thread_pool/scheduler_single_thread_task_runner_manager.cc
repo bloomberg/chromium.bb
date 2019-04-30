@@ -101,7 +101,7 @@ class SchedulerWorkerDelegate : public SchedulerWorker::Delegate {
   }
 
   scoped_refptr<TaskSource> GetWork(SchedulerWorker* worker) override {
-    AutoSchedulerLock auto_lock(lock_);
+    CheckedAutoLock auto_lock(lock_);
     DCHECK(worker_awake_);
     auto task_source = GetWorkLockRequired(worker);
     if (task_source == nullptr) {
@@ -143,7 +143,7 @@ class SchedulerWorkerDelegate : public SchedulerWorker::Delegate {
   void DidUpdateCanRunPolicy() {
     bool should_wakeup = false;
     {
-      AutoSchedulerLock auto_lock(lock_);
+      CheckedAutoLock auto_lock(lock_);
       if (!worker_awake_ && CanRunNextTaskSource()) {
         should_wakeup = true;
         worker_awake_ = true;
@@ -154,7 +154,7 @@ class SchedulerWorkerDelegate : public SchedulerWorker::Delegate {
   }
 
   void EnableFlushPriorityQueueTaskSourcesOnDestroyForTesting() {
-    AutoSchedulerLock auto_lock(lock_);
+    CheckedAutoLock auto_lock(lock_);
     priority_queue_.EnableFlushTaskSourcesOnDestroyForTesting();
   }
 
@@ -169,7 +169,7 @@ class SchedulerWorkerDelegate : public SchedulerWorker::Delegate {
 
   const TrackedRef<TaskTracker>& task_tracker() { return task_tracker_; }
 
-  SchedulerLock lock_;
+  CheckedLock lock_;
   bool worker_awake_ GUARDED_BY(lock_) = false;
 
  private:
@@ -177,7 +177,7 @@ class SchedulerWorkerDelegate : public SchedulerWorker::Delegate {
   // Returns true iff the worker must wakeup, i.e. task source is allowed to run
   // and the worker was not awake.
   bool EnqueueTaskSource(TaskSourceAndTransaction task_source_and_transaction) {
-    AutoSchedulerLock auto_lock(lock_);
+    CheckedAutoLock auto_lock(lock_);
     priority_queue_.Push(std::move(task_source_and_transaction.task_source),
                          task_source_and_transaction.transaction.GetSortKey());
     if (!worker_awake_ && CanRunNextTaskSource()) {
@@ -239,7 +239,7 @@ class SchedulerWorkerCOMDelegate : public SchedulerWorkerDelegate {
     // * Both SchedulerWorkerDelegate::GetWork() and the Windows Message Queue
     //   have work:
     //   Process task sources from each source round-robin style.
-    AutoSchedulerLock auto_lock(lock_);
+    CheckedAutoLock auto_lock(lock_);
     DCHECK(worker_awake_);
     scoped_refptr<TaskSource> task_source;
     if (get_work_first_) {
@@ -249,7 +249,7 @@ class SchedulerWorkerCOMDelegate : public SchedulerWorkerDelegate {
     }
 
     if (!task_source) {
-      AutoSchedulerUnlock auto_unlock(lock_);
+      CheckedAutoUnlock auto_unlock(lock_);
       task_source = GetWorkFromWindowsMessageQueue();
       if (task_source)
         get_work_first_ = true;
@@ -282,7 +282,7 @@ class SchedulerWorkerCOMDelegate : public SchedulerWorkerDelegate {
     DWORD reason = MsgWaitForMultipleObjectsEx(
         1, &wake_up_event_handle, milliseconds_wait, QS_ALLINPUT, 0);
     if (reason != WAIT_OBJECT_0) {
-      AutoSchedulerLock auto_lock(lock_);
+      CheckedAutoLock auto_lock(lock_);
       worker_awake_ = true;
     }
   }
@@ -462,7 +462,7 @@ void SchedulerSingleThreadTaskRunnerManager::Start(
 
   decltype(workers_) workers_to_start;
   {
-    AutoSchedulerLock auto_lock(lock_);
+    CheckedAutoLock auto_lock(lock_);
     started_ = true;
     workers_to_start = workers_;
   }
@@ -481,7 +481,7 @@ void SchedulerSingleThreadTaskRunnerManager::DidUpdateCanRunPolicy() {
   decltype(workers_) workers_to_update;
 
   {
-    AutoSchedulerLock auto_lock(lock_);
+    CheckedAutoLock auto_lock(lock_);
     if (!started_)
       return;
     workers_to_update = workers_;
@@ -547,7 +547,7 @@ SchedulerSingleThreadTaskRunnerManager::CreateTaskRunnerWithTraitsImpl(
   bool new_worker = false;
   bool started;
   {
-    AutoSchedulerLock auto_lock(lock_);
+    CheckedAutoLock auto_lock(lock_);
     if (!worker) {
       const auto& environment_params =
           kEnvironmentParams[GetEnvironmentIndexForTraits(traits)];
@@ -575,7 +575,7 @@ SchedulerSingleThreadTaskRunnerManager::CreateTaskRunnerWithTraitsImpl(
 void SchedulerSingleThreadTaskRunnerManager::JoinForTesting() {
   decltype(workers_) local_workers;
   {
-    AutoSchedulerLock auto_lock(lock_);
+    CheckedAutoLock auto_lock(lock_);
     local_workers = std::move(workers_);
   }
 
@@ -586,7 +586,7 @@ void SchedulerSingleThreadTaskRunnerManager::JoinForTesting() {
   }
 
   {
-    AutoSchedulerLock auto_lock(lock_);
+    CheckedAutoLock auto_lock(lock_);
     DCHECK(workers_.empty())
         << "New worker(s) unexpectedly registered during join.";
     workers_ = std::move(local_workers);
@@ -665,10 +665,10 @@ SchedulerSingleThreadTaskRunnerManager::GetSharedSchedulerWorkerForTraits<
 
 void SchedulerSingleThreadTaskRunnerManager::UnregisterSchedulerWorker(
     SchedulerWorker* worker) {
-  // Cleanup uses a SchedulerLock, so call Cleanup() after releasing |lock_|.
+  // Cleanup uses a CheckedLock, so call Cleanup() after releasing |lock_|.
   scoped_refptr<SchedulerWorker> worker_to_destroy;
   {
-    AutoSchedulerLock auto_lock(lock_);
+    CheckedAutoLock auto_lock(lock_);
 
     // Skip when joining (the join logic takes care of the rest).
     if (workers_.empty())
@@ -688,7 +688,7 @@ void SchedulerSingleThreadTaskRunnerManager::ReleaseSharedSchedulerWorkers() {
   decltype(shared_com_scheduler_workers_) local_shared_com_scheduler_workers;
 #endif
   {
-    AutoSchedulerLock auto_lock(lock_);
+    CheckedAutoLock auto_lock(lock_);
     for (size_t i = 0; i < base::size(shared_scheduler_workers_); ++i) {
       for (size_t j = 0; j < base::size(shared_scheduler_workers_[i]); ++j) {
         local_shared_scheduler_workers[i][j] = shared_scheduler_workers_[i][j];

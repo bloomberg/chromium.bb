@@ -25,8 +25,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/common/checked_lock.h"
 #include "base/task/task_traits.h"
-#include "base/task/thread_pool/scheduler_lock.h"
 #include "base/task/thread_pool/task.h"
 #include "base/task/thread_pool/test_utils.h"
 #include "base/test/gtest_util.h"
@@ -216,7 +216,7 @@ class ThreadPoolTaskTrackerTest
   }
 
   size_t NumTasksExecuted() {
-    AutoSchedulerLock auto_lock(lock_);
+    CheckedAutoLock auto_lock(lock_);
     return num_tasks_executed_;
   }
 
@@ -224,7 +224,7 @@ class ThreadPoolTaskTrackerTest
 
  private:
   void RunTaskCallback() {
-    AutoSchedulerLock auto_lock(lock_);
+    CheckedAutoLock auto_lock(lock_);
     ++num_tasks_executed_;
   }
 
@@ -232,7 +232,7 @@ class ThreadPoolTaskTrackerTest
   std::unique_ptr<CallbackThread> thread_calling_flush_;
 
   // Synchronizes accesses to |num_tasks_executed_|.
-  SchedulerLock lock_;
+  CheckedLock lock_;
 
   size_t num_tasks_executed_ = 0;
 

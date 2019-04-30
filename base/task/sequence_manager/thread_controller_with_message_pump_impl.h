@@ -10,13 +10,13 @@
 #include "base/message_loop/message_pump.h"
 #include "base/message_loop/work_id_provider.h"
 #include "base/run_loop.h"
+#include "base/task/common/checked_lock.h"
 #include "base/task/common/task_annotator.h"
 #include "base/task/sequence_manager/associated_thread_id.h"
 #include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/task/sequence_manager/sequenced_task_source.h"
 #include "base/task/sequence_manager/thread_controller.h"
 #include "base/task/sequence_manager/work_deduplicator.h"
-#include "base/task/thread_pool/scheduler_lock.h"
 #include "base/thread_annotations.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequence_local_storage_map.h"
@@ -144,7 +144,7 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
   scoped_refptr<AssociatedThreadId> associated_thread_;
   MainThreadOnly main_thread_only_;
 
-  mutable base::internal::SchedulerLock task_runner_lock_;
+  mutable base::internal::CheckedLock task_runner_lock_;
   scoped_refptr<SingleThreadTaskRunner> task_runner_
       GUARDED_BY(task_runner_lock_);
 

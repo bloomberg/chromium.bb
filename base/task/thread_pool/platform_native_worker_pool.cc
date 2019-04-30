@@ -18,7 +18,7 @@ class PlatformNativeWorkerPool::ScopedWorkersExecutor
  public:
   ScopedWorkersExecutor(PlatformNativeWorkerPool* outer) : outer_(outer) {}
   ~ScopedWorkersExecutor() {
-    SchedulerLock::AssertNoLockHeldOnCurrentThread();
+    CheckedLock::AssertNoLockHeldOnCurrentThread();
 
     for (size_t i = 0; i < num_threadpool_work_to_submit_; ++i)
       outer_->SubmitWork();
@@ -60,7 +60,7 @@ void PlatformNativeWorkerPool::Start(WorkerEnvironment worker_environment) {
   StartImpl();
 
   ScopedWorkersExecutor executor(this);
-  AutoSchedulerLock auto_lock(lock_);
+  CheckedAutoLock auto_lock(lock_);
   DCHECK(!started_);
   started_ = true;
   EnsureEnoughWorkersLockRequired(&executor);
@@ -87,7 +87,7 @@ void PlatformNativeWorkerPool::RunNextTaskSourceImpl() {
       ScopedReenqueueExecutor reenqueue_executor;
       auto task_source_and_transaction =
           TaskSourceAndTransaction::FromTaskSource(std::move(task_source));
-      AutoSchedulerLock auto_lock(lock_);
+      CheckedAutoLock auto_lock(lock_);
       ReEnqueueTaskSourceLockRequired(&workers_executor, &reenqueue_executor,
                                       std::move(task_source_and_transaction));
     }
@@ -95,7 +95,7 @@ void PlatformNativeWorkerPool::RunNextTaskSourceImpl() {
 }
 
 scoped_refptr<TaskSource> PlatformNativeWorkerPool::GetWork() {
-  AutoSchedulerLock auto_lock(lock_);
+  CheckedAutoLock auto_lock(lock_);
   DCHECK_GT(num_pending_threadpool_work_, 0U);
   --num_pending_threadpool_work_;
   // There can be more pending threadpool work than TaskSources in the
@@ -158,7 +158,7 @@ void PlatformNativeWorkerPool::ReportHeartbeatMetrics() const {
 
 void PlatformNativeWorkerPool::DidUpdateCanRunPolicy() {
   ScopedWorkersExecutor executor(this);
-  AutoSchedulerLock auto_lock(lock_);
+  CheckedAutoLock auto_lock(lock_);
   EnsureEnoughWorkersLockRequired(&executor);
 }
 

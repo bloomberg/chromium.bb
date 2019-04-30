@@ -107,14 +107,14 @@ ScopedLazyTaskRunnerListForTesting::ScopedLazyTaskRunnerListForTesting() {
 }
 
 ScopedLazyTaskRunnerListForTesting::~ScopedLazyTaskRunnerListForTesting() {
-  internal::AutoSchedulerLock auto_lock(lock_);
+  internal::CheckedAutoLock auto_lock(lock_);
   for (auto& callback : callbacks_)
     std::move(callback).Run();
   g_scoped_lazy_task_runner_list_for_testing = nullptr;
 }
 
 void ScopedLazyTaskRunnerListForTesting::AddCallback(OnceClosure callback) {
-  internal::AutoSchedulerLock auto_lock(lock_);
+  internal::CheckedAutoLock auto_lock(lock_);
   callbacks_.push_back(std::move(callback));
 }
 

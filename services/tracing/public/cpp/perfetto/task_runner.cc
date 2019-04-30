@@ -9,8 +9,8 @@
 
 #include "base/bind.h"
 #include "base/no_destructor.h"
+#include "base/task/common/checked_lock_impl.h"
 #include "base/task/post_task.h"
-#include "base/task/thread_pool/scheduler_lock_impl.h"
 #include "base/task/thread_pool/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_local.h"
@@ -33,7 +33,7 @@ ScopedPerfettoPostTaskBlocker::ScopedPerfettoPostTaskBlocker(bool enable)
   if (enabled_) {
     PerfettoTaskRunner::BlockPostTaskForThread();
   } else {
-    base::internal::SchedulerLockImpl::AssertNoLockHeldOnCurrentThread();
+    base::internal::CheckedLockImpl::AssertNoLockHeldOnCurrentThread();
   }
 }
 

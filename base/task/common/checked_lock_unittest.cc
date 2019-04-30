@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/task/thread_pool/scheduler_lock.h"
+#include "base/task/common/checked_lock.h"
 
 #include <stdlib.h>
 
@@ -23,7 +23,7 @@ namespace {
 // Acquire()/Release() don't crash.
 class BasicLockTestThread : public SimpleThread {
  public:
-  explicit BasicLockTestThread(SchedulerLock* lock)
+  explicit BasicLockTestThread(CheckedLock* lock)
       : SimpleThread("BasicLockTestThread"), lock_(lock), acquired_(0) {}
 
   int acquired() const { return acquired_; }
@@ -43,7 +43,7 @@ class BasicLockTestThread : public SimpleThread {
     }
   }
 
-  SchedulerLock* const lock_;
+  CheckedLock* const lock_;
   int acquired_;
 
   DISALLOW_COPY_AND_ASSIGN(BasicLockTestThread);
@@ -51,7 +51,7 @@ class BasicLockTestThread : public SimpleThread {
 
 class BasicLockAcquireAndWaitThread : public SimpleThread {
  public:
-  explicit BasicLockAcquireAndWaitThread(SchedulerLock* lock)
+  explicit BasicLockAcquireAndWaitThread(CheckedLock* lock)
       : SimpleThread("BasicLockAcquireAndWaitThread"),
         lock_(lock),
         lock_acquire_event_(WaitableEvent::ResetPolicy::AUTOMATIC,
@@ -72,7 +72,7 @@ class BasicLockAcquireAndWaitThread : public SimpleThread {
     lock_->Release();
   }
 
-  SchedulerLock* const lock_;
+  CheckedLock* const lock_;
   WaitableEvent lock_acquire_event_;
   WaitableEvent main_thread_continue_event_;
 
@@ -81,8 +81,8 @@ class BasicLockAcquireAndWaitThread : public SimpleThread {
 
 }  // namespace
 
-TEST(ThreadPoolLock, Basic) {
-  SchedulerLock lock;
+TEST(CheckedLockTest, Basic) {
+  CheckedLock lock;
   BasicLockTestThread thread(&lock);
 
   thread.Start();
@@ -112,37 +112,37 @@ TEST(ThreadPoolLock, Basic) {
   EXPECT_EQ(thread.acquired(), 20);
 }
 
-TEST(ThreadPoolLock, AcquirePredecessor) {
-  SchedulerLock predecessor;
-  SchedulerLock lock(&predecessor);
+TEST(CheckedLockTest, AcquirePredecessor) {
+  CheckedLock predecessor;
+  CheckedLock lock(&predecessor);
   predecessor.Acquire();
   lock.Acquire();
   lock.Release();
   predecessor.Release();
 }
 
-TEST(ThreadPoolLock, AcquirePredecessorWrongOrder) {
-  SchedulerLock predecessor;
-  SchedulerLock lock(&predecessor);
+TEST(CheckedLockTest, AcquirePredecessorWrongOrder) {
+  CheckedLock predecessor;
+  CheckedLock lock(&predecessor);
   EXPECT_DCHECK_DEATH({
     lock.Acquire();
     predecessor.Acquire();
   });
 }
 
-TEST(ThreadPoolLock, AcquireNonPredecessor) {
-  SchedulerLock lock1;
-  SchedulerLock lock2;
+TEST(CheckedLockTest, AcquireNonPredecessor) {
+  CheckedLock lock1;
+  CheckedLock lock2;
   EXPECT_DCHECK_DEATH({
     lock1.Acquire();
     lock2.Acquire();
   });
 }
 
-TEST(ThreadPoolLock, AcquireMultipleLocksInOrder) {
-  SchedulerLock lock1;
-  SchedulerLock lock2(&lock1);
-  SchedulerLock lock3(&lock2);
+TEST(CheckedLockTest, AcquireMultipleLocksInOrder) {
+  CheckedLock lock1;
+  CheckedLock lock2(&lock1);
+  CheckedLock lock3(&lock2);
   lock1.Acquire();
   lock2.Acquire();
   lock3.Acquire();
@@ -151,29 +151,29 @@ TEST(ThreadPoolLock, AcquireMultipleLocksInOrder) {
   lock1.Release();
 }
 
-TEST(ThreadPoolLock, AcquireMultipleLocksInTheMiddleOfAChain) {
-  SchedulerLock lock1;
-  SchedulerLock lock2(&lock1);
-  SchedulerLock lock3(&lock2);
+TEST(CheckedLockTest, AcquireMultipleLocksInTheMiddleOfAChain) {
+  CheckedLock lock1;
+  CheckedLock lock2(&lock1);
+  CheckedLock lock3(&lock2);
   lock2.Acquire();
   lock3.Acquire();
   lock3.Release();
   lock2.Release();
 }
 
-TEST(ThreadPoolLock, AcquireMultipleLocksNoTransitivity) {
-  SchedulerLock lock1;
-  SchedulerLock lock2(&lock1);
-  SchedulerLock lock3(&lock2);
+TEST(CheckedLockTest, AcquireMultipleLocksNoTransitivity) {
+  CheckedLock lock1;
+  CheckedLock lock2(&lock1);
+  CheckedLock lock3(&lock2);
   EXPECT_DCHECK_DEATH({
     lock1.Acquire();
     lock3.Acquire();
   });
 }
 
-TEST(ThreadPoolLock, AcquireLocksDifferentThreadsSafely) {
-  SchedulerLock lock1;
-  SchedulerLock lock2;
+TEST(CheckedLockTest, AcquireLocksDifferentThreadsSafely) {
+  CheckedLock lock1;
+  CheckedLock lock2;
   BasicLockAcquireAndWaitThread thread(&lock1);
   thread.Start();
 
@@ -184,7 +184,7 @@ TEST(ThreadPoolLock, AcquireLocksDifferentThreadsSafely) {
   lock2.Release();
 }
 
-TEST(ThreadPoolLock,
+TEST(CheckedLockTest,
      AcquireLocksWithPredecessorDifferentThreadsSafelyPredecessorFirst) {
   // A lock and its predecessor may be safely acquired on different threads.
   // This Thread                Other Thread
@@ -192,8 +192,8 @@ TEST(ThreadPoolLock,
   //                            lock.Acquire()
   // predecessor.Release()
   //                            lock.Release()
-  SchedulerLock predecessor;
-  SchedulerLock lock(&predecessor);
+  CheckedLock predecessor;
+  CheckedLock lock(&predecessor);
   predecessor.Acquire();
   BasicLockAcquireAndWaitThread thread(&lock);
   thread.Start();
@@ -203,7 +203,7 @@ TEST(ThreadPoolLock,
   thread.Join();
 }
 
-TEST(ThreadPoolLock,
+TEST(CheckedLockTest,
      AcquireLocksWithPredecessorDifferentThreadsSafelyPredecessorLast) {
   // A lock and its predecessor may be safely acquired on different threads.
   // This Thread                Other Thread
@@ -211,8 +211,8 @@ TEST(ThreadPoolLock,
   //                            predecessor.Acquire()
   // lock.Release()
   //                            predecessor.Release()
-  SchedulerLock predecessor;
-  SchedulerLock lock(&predecessor);
+  CheckedLock predecessor;
+  CheckedLock lock(&predecessor);
   lock.Acquire();
   BasicLockAcquireAndWaitThread thread(&predecessor);
   thread.Start();
@@ -222,7 +222,7 @@ TEST(ThreadPoolLock,
   thread.Join();
 }
 
-TEST(ThreadPoolLock,
+TEST(CheckedLockTest,
      AcquireLocksWithPredecessorDifferentThreadsSafelyNoInterference) {
   // Acquisition of an unrelated lock on another thread should not affect a
   // legal lock acquisition with a predecessor on this thread.
@@ -233,10 +233,10 @@ TEST(ThreadPoolLock,
   //                            unrelated.Release()
   // lock.Release()
   // predecessor.Release();
-  SchedulerLock predecessor;
-  SchedulerLock lock(&predecessor);
+  CheckedLock predecessor;
+  CheckedLock lock(&predecessor);
   predecessor.Acquire();
-  SchedulerLock unrelated;
+  CheckedLock unrelated;
   BasicLockAcquireAndWaitThread thread(&unrelated);
   thread.Start();
   thread.WaitForLockAcquisition();
@@ -247,28 +247,28 @@ TEST(ThreadPoolLock,
   predecessor.Release();
 }
 
-TEST(ThreadPoolLock, SelfReferentialLock) {
+TEST(CheckedLockTest, SelfReferentialLock) {
   struct SelfReferentialLock {
     SelfReferentialLock() : lock(&lock) {}
 
-    SchedulerLock lock;
+    CheckedLock lock;
   };
 
   EXPECT_DCHECK_DEATH({ SelfReferentialLock lock; });
 }
 
-TEST(ThreadPoolLock, PredecessorCycle) {
+TEST(CheckedLockTest, PredecessorCycle) {
   struct LockCycle {
     LockCycle() : lock1(&lock2), lock2(&lock1) {}
 
-    SchedulerLock lock1;
-    SchedulerLock lock2;
+    CheckedLock lock1;
+    CheckedLock lock2;
   };
 
   EXPECT_DCHECK_DEATH({ LockCycle cycle; });
 }
 
-TEST(ThreadPoolLock, PredecessorLongerCycle) {
+TEST(CheckedLockTest, PredecessorLongerCycle) {
   struct LockCycle {
     LockCycle()
         : lock1(&lock5),
@@ -277,21 +277,21 @@ TEST(ThreadPoolLock, PredecessorLongerCycle) {
           lock4(&lock3),
           lock5(&lock4) {}
 
-    SchedulerLock lock1;
-    SchedulerLock lock2;
-    SchedulerLock lock3;
-    SchedulerLock lock4;
-    SchedulerLock lock5;
+    CheckedLock lock1;
+    CheckedLock lock2;
+    CheckedLock lock3;
+    CheckedLock lock4;
+    CheckedLock lock5;
   };
 
   EXPECT_DCHECK_DEATH({ LockCycle cycle; });
 }
 
-TEST(ThreadPoolLock, AcquireLockAfterUniversalPredecessor) {
+TEST(CheckedLockTest, AcquireLockAfterUniversalPredecessor) {
   // Acquisition of a universal-predecessor lock should not prevent acquisition
-  // of a SchedulerLock after it.
-  SchedulerLock universal_predecessor((UniversalPredecessor()));
-  SchedulerLock lock;
+  // of a CheckedLock after it.
+  CheckedLock universal_predecessor((UniversalPredecessor()));
+  CheckedLock lock;
 
   universal_predecessor.Acquire();
   lock.Acquire();
@@ -299,13 +299,13 @@ TEST(ThreadPoolLock, AcquireLockAfterUniversalPredecessor) {
   universal_predecessor.Release();
 }
 
-TEST(ThreadPoolLock, AcquireMultipleLocksAfterUniversalPredecessor) {
+TEST(CheckedLockTest, AcquireMultipleLocksAfterUniversalPredecessor) {
   // Acquisition of a universal-predecessor lock does not affect acquisition
   // rules for locks beyond the one acquired directly after it.
-  SchedulerLock universal_predecessor((UniversalPredecessor()));
-  SchedulerLock lock;
-  SchedulerLock lock2(&lock);
-  SchedulerLock lock3;
+  CheckedLock universal_predecessor((UniversalPredecessor()));
+  CheckedLock lock;
+  CheckedLock lock2(&lock);
+  CheckedLock lock3;
 
   universal_predecessor.Acquire();
   lock.Acquire();
@@ -321,10 +321,10 @@ TEST(ThreadPoolLock, AcquireMultipleLocksAfterUniversalPredecessor) {
   });
 }
 
-TEST(ThreadPoolLock, AcquireUniversalPredecessorAfterLock) {
+TEST(CheckedLockTest, AcquireUniversalPredecessorAfterLock) {
   // A universal-predecessor lock may not be acquired after any other lock.
-  SchedulerLock universal_predecessor((UniversalPredecessor()));
-  SchedulerLock lock;
+  CheckedLock universal_predecessor((UniversalPredecessor()));
+  CheckedLock lock;
 
   EXPECT_DCHECK_DEATH({
     lock.Acquire();
@@ -332,11 +332,11 @@ TEST(ThreadPoolLock, AcquireUniversalPredecessorAfterLock) {
   });
 }
 
-TEST(ThreadPoolLock, AcquireUniversalPredecessorAfterUniversalPredecessor) {
+TEST(CheckedLockTest, AcquireUniversalPredecessorAfterUniversalPredecessor) {
   // A universal-predecessor lock may not be acquired after any other lock, not
   // even another universal predecessor.
-  SchedulerLock universal_predecessor((UniversalPredecessor()));
-  SchedulerLock universal_predecessor2((UniversalPredecessor()));
+  CheckedLock universal_predecessor((UniversalPredecessor()));
+  CheckedLock universal_predecessor2((UniversalPredecessor()));
 
   EXPECT_DCHECK_DEATH({
     universal_predecessor.Acquire();
@@ -344,15 +344,15 @@ TEST(ThreadPoolLock, AcquireUniversalPredecessorAfterUniversalPredecessor) {
   });
 }
 
-TEST(ThreadPoolLock, AssertNoLockHeldOnCurrentThread) {
+TEST(CheckedLockTest, AssertNoLockHeldOnCurrentThread) {
   // AssertNoLockHeldOnCurrentThread() shouldn't fail when no lock is acquired.
-  SchedulerLock::AssertNoLockHeldOnCurrentThread();
+  CheckedLock::AssertNoLockHeldOnCurrentThread();
 
   // AssertNoLockHeldOnCurrentThread() should fail when a lock is acquired.
-  SchedulerLock lock;
+  CheckedLock lock;
   {
-    AutoSchedulerLock auto_lock(lock);
-    EXPECT_DCHECK_DEATH({ SchedulerLock::AssertNoLockHeldOnCurrentThread(); });
+    CheckedAutoLock auto_lock(lock);
+    EXPECT_DCHECK_DEATH({ CheckedLock::AssertNoLockHeldOnCurrentThread(); });
   }
 }
 
@@ -360,16 +360,16 @@ namespace {
 
 class MemberGuardedByLock {
  public:
-  SchedulerLock lock_;
+  CheckedLock lock_;
   int value GUARDED_BY(lock_) = 0;
 };
 
 }  // namespace
 
-TEST(ThreadPoolLock, AnnotateAcquiredLockAlias) {
+TEST(CheckedLockTest, AnnotateAcquiredLockAlias) {
   MemberGuardedByLock member_guarded_by_lock;
-  SchedulerLock* acquired = &member_guarded_by_lock.lock_;
-  AutoSchedulerLock auto_lock(*acquired);
+  CheckedLock* acquired = &member_guarded_by_lock.lock_;
+  CheckedAutoLock auto_lock(*acquired);
   AnnotateAcquiredLockAlias annotate(*acquired, member_guarded_by_lock.lock_);
   member_guarded_by_lock.value = 42;  // Doesn't compile without |annotate|.
 }

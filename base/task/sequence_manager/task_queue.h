@@ -12,10 +12,10 @@
 #include "base/message_loop/message_loop.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/common/checked_lock.h"
 #include "base/task/sequence_manager/lazy_now.h"
 #include "base/task/sequence_manager/tasks.h"
 #include "base/task/task_observer.h"
-#include "base/task/thread_pool/scheduler_lock.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 
@@ -354,7 +354,7 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
   // |impl_lock_| must be acquired when writing to |impl_| or when accessing
   // it from non-main thread. Reading from the main thread does not require
   // a lock.
-  mutable base::internal::SchedulerLock impl_lock_{
+  mutable base::internal::CheckedLock impl_lock_{
       base::internal::UniversalPredecessor{}};
   std::unique_ptr<internal::TaskQueueImpl> impl_;
 

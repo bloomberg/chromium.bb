@@ -16,8 +16,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/common/checked_lock.h"
 #include "base/task/thread_pool/environment_config.h"
-#include "base/task/thread_pool/scheduler_lock.h"
 #include "base/task/thread_pool/scheduler_worker_observer.h"
 #include "base/task/thread_pool/sequence.h"
 #include "base/task/thread_pool/task.h"
@@ -96,34 +96,34 @@ class ThreadPoolWorkerTest : public testing::TestWithParam<int> {
 
   // Wait until GetWork() has been called |num_get_work| times.
   void WaitForNumGetWork(size_t num_get_work) {
-    AutoSchedulerLock auto_lock(lock_);
+    CheckedAutoLock auto_lock(lock_);
     while (num_get_work_ < num_get_work)
       num_get_work_cv_->Wait();
   }
 
   void SetMaxGetWork(size_t max_get_work) {
-    AutoSchedulerLock auto_lock(lock_);
+    CheckedAutoLock auto_lock(lock_);
     max_get_work_ = max_get_work;
   }
 
   void SetNumSequencesToCreate(size_t num_sequences_to_create) {
-    AutoSchedulerLock auto_lock(lock_);
+    CheckedAutoLock auto_lock(lock_);
     EXPECT_EQ(0U, num_sequences_to_create_);
     num_sequences_to_create_ = num_sequences_to_create;
   }
 
   size_t NumRunTasks() {
-    AutoSchedulerLock auto_lock(lock_);
+    CheckedAutoLock auto_lock(lock_);
     return num_run_tasks_;
   }
 
   std::vector<scoped_refptr<TaskSource>> CreatedTaskSources() {
-    AutoSchedulerLock auto_lock(lock_);
+    CheckedAutoLock auto_lock(lock_);
     return created_sequences_;
   }
 
   std::vector<scoped_refptr<TaskSource>> DidRunTaskSequences() {
-    AutoSchedulerLock auto_lock(lock_);
+    CheckedAutoLock auto_lock(lock_);
     return did_run_task_sequences_;
   }
 
@@ -146,7 +146,7 @@ class ThreadPoolWorkerTest : public testing::TestWithParam<int> {
 
       // Without synchronization, OnMainEntry() could be called twice without
       // generating an error.
-      AutoSchedulerLock auto_lock(outer_->lock_);
+      CheckedAutoLock auto_lock(outer_->lock_);
       EXPECT_FALSE(outer_->main_entry_called_.IsSignaled());
       outer_->main_entry_called_.Signal();
     }
@@ -156,7 +156,7 @@ class ThreadPoolWorkerTest : public testing::TestWithParam<int> {
       EXPECT_EQ(outer_->worker_.get(), worker);
 
       {
-        AutoSchedulerLock auto_lock(outer_->lock_);
+        CheckedAutoLock auto_lock(outer_->lock_);
 
         // Increment the number of times that this method has been called.
         ++outer_->num_get_work_;
@@ -189,7 +189,7 @@ class ThreadPoolWorkerTest : public testing::TestWithParam<int> {
 
       {
         // Add the Sequence to the vector of created Sequences.
-        AutoSchedulerLock auto_lock(outer_->lock_);
+        CheckedAutoLock auto_lock(outer_->lock_);
         outer_->created_sequences_.push_back(sequence);
       }
 
@@ -202,7 +202,7 @@ class ThreadPoolWorkerTest : public testing::TestWithParam<int> {
     // execution.
     void DidRunTask(scoped_refptr<TaskSource> sequence) override {
       {
-        AutoSchedulerLock auto_lock(expect_did_run_task_lock_);
+        CheckedAutoLock auto_lock(expect_did_run_task_lock_);
         EXPECT_TRUE(expect_did_run_task_);
         expect_did_run_task_ = false;
       }
@@ -223,7 +223,7 @@ class ThreadPoolWorkerTest : public testing::TestWithParam<int> {
         }
 
         // Add |sequence| to |did_run_task_sequences_|.
-        AutoSchedulerLock auto_lock(outer_->lock_);
+        CheckedAutoLock auto_lock(outer_->lock_);
         outer_->did_run_task_sequences_.push_back(std::move(sequence));
         EXPECT_LE(outer_->did_run_task_sequences_.size(),
                   outer_->created_sequences_.size());
@@ -234,19 +234,19 @@ class ThreadPoolWorkerTest : public testing::TestWithParam<int> {
     // Expect a call to DidRunTask() before the next call to any other method of
     // this delegate.
     void ExpectCallToDidRunTask() {
-      AutoSchedulerLock auto_lock(expect_did_run_task_lock_);
+      CheckedAutoLock auto_lock(expect_did_run_task_lock_);
       expect_did_run_task_ = true;
     }
 
     bool IsCallToDidRunTaskExpected() const {
-      AutoSchedulerLock auto_lock(expect_did_run_task_lock_);
+      CheckedAutoLock auto_lock(expect_did_run_task_lock_);
       return expect_did_run_task_;
     }
 
     ThreadPoolWorkerTest* outer_;
 
     // Synchronizes access to |expect_did_run_task_|.
-    mutable SchedulerLock expect_did_run_task_lock_;
+    mutable CheckedLock expect_did_run_task_lock_;
 
     // Whether the next method called on this delegate should be DidRunTask().
     bool expect_did_run_task_ = false;
@@ -255,7 +255,7 @@ class ThreadPoolWorkerTest : public testing::TestWithParam<int> {
   };
 
   void RunTaskCallback() {
-    AutoSchedulerLock auto_lock(lock_);
+    CheckedAutoLock auto_lock(lock_);
     ++num_run_tasks_;
     EXPECT_LE(num_run_tasks_, created_sequences_.size());
   }
@@ -263,7 +263,7 @@ class ThreadPoolWorkerTest : public testing::TestWithParam<int> {
   TaskTracker task_tracker_ = {"Test"};
 
   // Synchronizes access to all members below.
-  mutable SchedulerLock lock_;
+  mutable CheckedLock lock_;
 
   // Signaled once OnMainEntry() has been called.
   WaitableEvent main_entry_called_;
@@ -710,7 +710,7 @@ class ExpectThreadPriorityDelegate : public SchedulerWorkerDefaultDelegate {
 
  private:
   void VerifyThreadPriority() {
-    AutoSchedulerLock auto_lock(expected_thread_priority_lock_);
+    CheckedAutoLock auto_lock(expected_thread_priority_lock_);
     EXPECT_EQ(expected_thread_priority_,
               PlatformThread::GetCurrentThreadPriority());
   }
@@ -719,7 +719,7 @@ class ExpectThreadPriorityDelegate : public SchedulerWorkerDefaultDelegate {
   WaitableEvent priority_verified_in_get_work_event_;
 
   // Synchronizes access to |expected_thread_priority_|.
-  SchedulerLock expected_thread_priority_lock_;
+  CheckedLock expected_thread_priority_lock_;
 
   // Expected thread priority for the next call to OnMainEntry() or GetWork().
   ThreadPriority expected_thread_priority_;

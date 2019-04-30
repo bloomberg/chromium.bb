@@ -5,9 +5,9 @@
 #ifndef BASE_TASK_THREAD_POOL_TEST_UTILS_H_
 #define BASE_TASK_THREAD_POOL_TEST_UTILS_H_
 
+#include "base/task/common/checked_lock.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool/delayed_task_manager.h"
-#include "base/task/thread_pool/scheduler_lock.h"
 #include "base/task/thread_pool/scheduler_task_runner_delegate.h"
 #include "base/task/thread_pool/scheduler_worker_observer.h"
 #include "base/task/thread_pool/scheduler_worker_pool.h"
@@ -40,7 +40,7 @@ class MockSchedulerWorkerObserver : public SchedulerWorkerObserver {
   void OnSchedulerWorkerMainExit() override;
 
  private:
-  SchedulerLock lock_;
+  CheckedLock lock_;
   std::unique_ptr<ConditionVariable> on_main_exit_cv_ GUARDED_BY(lock_);
   int allowed_calls_on_main_exit_ GUARDED_BY(lock_) = 0;
 

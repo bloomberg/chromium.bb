@@ -87,7 +87,7 @@ void ThreadControllerWithMessagePumpImpl::BindToCurrentThread(
       base::internal::ScopedSetSequenceLocalStorageMapForCurrentThread>(
       &sequence_local_storage_map_);
   {
-    base::internal::AutoSchedulerLock task_runner_lock(task_runner_lock_);
+    base::internal::CheckedAutoLock task_runner_lock(task_runner_lock_);
     if (task_runner_)
       InitializeThreadTaskRunnerHandle();
   }
@@ -117,7 +117,7 @@ void ThreadControllerWithMessagePumpImpl::WillQueueTask(
 }
 
 void ThreadControllerWithMessagePumpImpl::ScheduleWork() {
-  base::internal::SchedulerLock::AssertNoLockHeldOnCurrentThread();
+  base::internal::CheckedLock::AssertNoLockHeldOnCurrentThread();
   if (work_deduplicator_.OnWorkRequested() ==
       ShouldScheduleWork::kScheduleImmediate) {
     pump_->ScheduleWork();
@@ -158,7 +158,7 @@ bool ThreadControllerWithMessagePumpImpl::RunsTasksInCurrentSequence() {
 
 void ThreadControllerWithMessagePumpImpl::SetDefaultTaskRunner(
     scoped_refptr<SingleThreadTaskRunner> task_runner) {
-  base::internal::AutoSchedulerLock lock(task_runner_lock_);
+  base::internal::CheckedAutoLock lock(task_runner_lock_);
   task_runner_ = task_runner;
   if (associated_thread_->IsBound()) {
     DCHECK(associated_thread_->IsBoundToCurrentThread());
@@ -177,7 +177,7 @@ void ThreadControllerWithMessagePumpImpl::InitializeThreadTaskRunnerHandle() {
 
 scoped_refptr<SingleThreadTaskRunner>
 ThreadControllerWithMessagePumpImpl::GetDefaultTaskRunner() {
-  base::internal::AutoSchedulerLock lock(task_runner_lock_);
+  base::internal::CheckedAutoLock lock(task_runner_lock_);
   return task_runner_;
 }
 

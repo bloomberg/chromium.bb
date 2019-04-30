@@ -7,8 +7,8 @@
 
 #include "base/base_export.h"
 #include "base/memory/ref_counted.h"
+#include "base/task/common/checked_lock.h"
 #include "base/task/thread_pool/priority_queue.h"
-#include "base/task/thread_pool/scheduler_lock.h"
 #include "base/task/thread_pool/sequence.h"
 #include "base/task/thread_pool/task.h"
 #include "base/task/thread_pool/task_source.h"
@@ -192,7 +192,7 @@ class BASE_EXPORT SchedulerWorkerPool {
   // atomic, nor immutable after start. Since this lock is a bottleneck to post
   // and schedule work, only simple data structure manipulations are allowed
   // within its scope (no thread creation or wake up).
-  mutable SchedulerLock lock_;
+  mutable CheckedLock lock_;
 
   // PriorityQueue from which all threads of this worker pool get work.
   PriorityQueue priority_queue_ GUARDED_BY(lock_);

@@ -9,8 +9,8 @@
 #include "base/callback_forward.h"
 #include "base/containers/flat_set.h"
 #include "base/location.h"
+#include "base/task/common/checked_lock.h"
 #include "base/task/task_traits.h"
-#include "base/task/thread_pool/scheduler_lock.h"
 #include "base/task_runner.h"
 #include "base/thread_annotations.h"
 #include "base/time/time.h"
@@ -45,7 +45,7 @@ class BASE_EXPORT SchedulerParallelTaskRunner : public TaskRunner {
   const TaskTraits traits_;
   SchedulerTaskRunnerDelegate* const scheduler_task_runner_delegate_;
 
-  SchedulerLock lock_;
+  CheckedLock lock_;
 
   // List of alive Sequences instantiated by this SchedulerParallelTaskRunner.
   // Sequences are added when they are instantiated, and removed when they are

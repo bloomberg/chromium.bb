@@ -6,7 +6,6 @@
 
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"
-#include "base/task/thread_pool/scheduler_lock_impl.h"
 #include "services/tracing/public/cpp/perfetto/producer_client.h"
 
 namespace tracing {

@@ -115,7 +115,7 @@ size_t SchedulerWorkerPool::GetNumQueuedCanRunForegroundTaskSources() const {
 
 bool SchedulerWorkerPool::RemoveTaskSource(
     scoped_refptr<TaskSource> task_source) {
-  AutoSchedulerLock auto_lock(lock_);
+  CheckedAutoLock auto_lock(lock_);
   return priority_queue_.RemoveTaskSource(std::move(task_source));
 }
 
@@ -143,7 +143,7 @@ void SchedulerWorkerPool::ReEnqueueTaskSourceLockRequired(
 void SchedulerWorkerPool::UpdateSortKeyImpl(
     BaseScopedWorkersExecutor* executor,
     TaskSourceAndTransaction task_source_and_transaction) {
-  AutoSchedulerLock auto_lock(lock_);
+  CheckedAutoLock auto_lock(lock_);
   priority_queue_.UpdateSortKey(std::move(task_source_and_transaction));
   EnsureEnoughWorkersLockRequired(executor);
 }
@@ -151,7 +151,7 @@ void SchedulerWorkerPool::UpdateSortKeyImpl(
 void SchedulerWorkerPool::PushTaskSourceAndWakeUpWorkersImpl(
     BaseScopedWorkersExecutor* executor,
     TaskSourceAndTransaction task_source_and_transaction) {
-  AutoSchedulerLock auto_lock(lock_);
+  CheckedAutoLock auto_lock(lock_);
   DCHECK(!replacement_pool_);
   priority_queue_.Push(std::move(task_source_and_transaction.task_source),
                        task_source_and_transaction.transaction.GetSortKey());
@@ -160,8 +160,8 @@ void SchedulerWorkerPool::PushTaskSourceAndWakeUpWorkersImpl(
 
 void SchedulerWorkerPool::InvalidateAndHandoffAllTaskSourcesToOtherPool(
     SchedulerWorkerPool* destination_pool) {
-  AutoSchedulerLock current_pool_lock(lock_);
-  AutoSchedulerLock destination_pool_lock(destination_pool->lock_);
+  CheckedAutoLock current_pool_lock(lock_);
+  CheckedAutoLock destination_pool_lock(destination_pool->lock_);
   destination_pool->priority_queue_ = std::move(priority_queue_);
   replacement_pool_ = destination_pool;
 }
