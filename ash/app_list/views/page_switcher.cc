@@ -183,8 +183,13 @@ PageSwitcherButton* GetButtonByIndex(views::View* buttons, size_t index) {
 
 }  // namespace
 
-PageSwitcher::PageSwitcher(ash::PaginationModel* model, bool vertical)
-    : model_(model), buttons_(new views::View), vertical_(vertical) {
+PageSwitcher::PageSwitcher(ash::PaginationModel* model,
+                           bool vertical,
+                           bool is_tablet_mode)
+    : model_(model),
+      buttons_(new views::View),
+      vertical_(vertical),
+      is_tablet_mode_(is_tablet_mode) {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
@@ -240,10 +245,9 @@ void PageSwitcher::ButtonPressed(views::Button* sender,
   const int page = std::distance(children.begin(), it);
   if (page == model_->selected_page())
     return;
-  UMA_HISTOGRAM_ENUMERATION(
-      kAppListPageSwitcherSourceHistogram,
+  RecordPageSwitcherSource(
       event.IsGestureEvent() ? kTouchPageIndicator : kClickPageIndicator,
-      kMaxAppListPageSwitcherSource);
+      is_tablet_mode_);
   model_->SelectPage(page, true /* animate */);
 }
 

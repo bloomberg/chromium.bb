@@ -463,7 +463,8 @@ AppListFolderView::AppListFolderView(AppsContainerView* container_view,
 
   page_switcher_ =
       contents_container_->AddChildView(std::make_unique<PageSwitcher>(
-          items_grid_view_->pagination_model(), false /* vertical */));
+          items_grid_view_->pagination_model(), false /* vertical */,
+          contents_view_->app_list_view()->is_tablet_mode()));
   view_model_->Add(page_switcher_, kIndexPageSwitcher);
 
   model_->AddObserver(this);
@@ -654,6 +655,11 @@ void AppListFolderView::UpdateBackgroundMask(int corner_radius,
   background_mask_->layer()->SetFillsBoundsOpaquely(false);
   background_mask_->layer()->SetBounds(background_view_->GetLocalBounds());
   background_view_->layer()->SetMaskLayer(background_mask_->layer());
+}
+
+void AppListFolderView::OnTabletModeChanged(bool started) {
+  folder_header_view()->set_tablet_mode(started);
+  page_switcher_->set_is_tablet_mode(started);
 }
 
 void AppListFolderView::NotifyAccessibilityLocationChanges() {

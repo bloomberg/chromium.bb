@@ -127,7 +127,8 @@ void RecordPaginationAnimationSmoothness(int actual_frames,
   }
 }
 
-void RecordPageSwitcherSourceMetrics(ui::EventType type) {
+void RecordPageSwitcherSourceByEventType(ui::EventType type,
+                                         bool is_tablet_mode) {
   AppListPageSwitcherSource source;
 
   switch (type) {
@@ -147,9 +148,20 @@ void RecordPageSwitcherSourceMetrics(ui::EventType type) {
       NOTREACHED();
       return;
   }
+  RecordPageSwitcherSource(source, is_tablet_mode);
+}
 
+void RecordPageSwitcherSource(AppListPageSwitcherSource source,
+                              bool is_tablet_mode) {
   UMA_HISTOGRAM_ENUMERATION(kAppListPageSwitcherSourceHistogram, source,
                             kMaxAppListPageSwitcherSource);
+  if (is_tablet_mode) {
+    UMA_HISTOGRAM_ENUMERATION(kAppListPageSwitcherSourceHistogramInTablet,
+                              source, kMaxAppListPageSwitcherSource);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION(kAppListPageSwitcherSourceHistogramInClamshell,
+                              source, kMaxAppListPageSwitcherSource);
+  }
 }
 
 APP_LIST_EXPORT void RecordSearchResultOpenSource(

@@ -340,7 +340,8 @@ AppsGridView::AppsGridView(ContentsView* contents_view,
       &pagination_model_,
       folder_delegate_ ? ash::PaginationController::SCROLL_AXIS_HORIZONTAL
                        : ash::PaginationController::SCROLL_AXIS_VERTICAL,
-      base::BindRepeating(&RecordPageSwitcherSourceMetrics));
+      base::BindRepeating(&RecordPageSwitcherSourceByEventType),
+      IsTabletMode());
 }
 
 AppsGridView::~AppsGridView() {
@@ -435,6 +436,8 @@ void AppsGridView::DisableFocusForShowingActiveFolder(bool disabled) {
 }
 
 void AppsGridView::OnTabletModeChanged(bool started) {
+  pagination_controller_->set_is_tablet_mode(started);
+
   // Enable/Disable folder icons's background blur based on tablet mode.
   for (int i = 0; i < view_model_.view_size(); ++i) {
     auto* item_view = view_model_.view_at(i);
@@ -2069,8 +2072,7 @@ void AppsGridView::OnPageFlipTimer() {
   }
 
   pagination_model_.SelectPage(page_flip_target_, true);
-  UMA_HISTOGRAM_ENUMERATION(kAppListPageSwitcherSourceHistogram,
-                            kDragAppToBorder, kMaxAppListPageSwitcherSource);
+  RecordPageSwitcherSource(kDragAppToBorder, IsTabletMode());
 
   BeginHideCurrentGhostImageView();
 }
@@ -2909,11 +2911,8 @@ void AppsGridView::HandleKeyboardMove(ui::KeyboardCode key_code) {
   Layout();
   AnnounceReorder(target_index);
 
-  if (target_index.page != original_selected_view_index.page) {
-    UMA_HISTOGRAM_ENUMERATION(kAppListPageSwitcherSourceHistogram,
-                              kMoveAppWithKeyboard,
-                              kMaxAppListPageSwitcherSource);
-  }
+  if (target_index.page != original_selected_view_index.page)
+    RecordPageSwitcherSource(kMoveAppWithKeyboard, IsTabletMode());
 }
 
 size_t AppsGridView::GetTargetItemIndexForMove(AppListItemView* moved_view,

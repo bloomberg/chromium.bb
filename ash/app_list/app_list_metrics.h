@@ -38,10 +38,20 @@ constexpr char kAppListCreationTimeHistogram[] = "Apps.AppListCreationTime";
 constexpr char kAppListStateTransitionSourceHistogram[] =
     "Apps.AppListStateTransitionSource";
 
-// The UMA histogram that logs the source of vertical page switcher usage in the
-// app list.
+// The UMA histogram that logs the source of root app grid page switcher usage
+// in the app list.
 constexpr char kAppListPageSwitcherSourceHistogram[] =
     "Apps.AppListPageSwitcherSource";
+
+// The UMA histogram that logs the source of root app grid page switcher usage
+// in the app list in tablet mode.
+constexpr char kAppListPageSwitcherSourceHistogramInTablet[] =
+    "Apps.AppListPageSwitcherSource.TabletMode";
+
+// The UMA histogram that logs the source of root app grid page switcher usage
+// in the app list in clamshell mode.
+constexpr char kAppListPageSwitcherSourceHistogramInClamshell[] =
+    "Apps.AppListPageSwitcherSource.ClamshellMode";
 
 // The UMA histogram that logs usage of the original and redesigned folders.
 constexpr char kAppListFolderOpenedHistogram[] = "Apps.AppListFolderOpened";
@@ -236,7 +246,11 @@ void RecordFolderShowHideAnimationSmoothness(int actual_frames,
                                              int ideal_duration_ms,
                                              float refresh_rate);
 
-void RecordPageSwitcherSourceMetrics(ui::EventType type);
+void RecordPageSwitcherSourceByEventType(ui::EventType type,
+                                         bool is_tablet_mode);
+
+void RecordPageSwitcherSource(AppListPageSwitcherSource source,
+                              bool is_tablet_mode);
 
 void RecordPaginationAnimationSmoothness(int actual_frames,
                                          int ideal_duration_ms,

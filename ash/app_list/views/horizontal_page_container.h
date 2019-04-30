@@ -51,6 +51,8 @@ class APP_LIST_EXPORT HorizontalPageContainer
 
   AppsContainerView* apps_container_view() { return apps_container_view_; }
 
+  void OnTabletModeChanged(bool started);
+
  private:
   // PaginationModelObserver:
   void TotalPagesChanged() override;

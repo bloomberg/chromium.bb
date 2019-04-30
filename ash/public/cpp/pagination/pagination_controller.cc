@@ -22,10 +22,12 @@ const double kFinishTransitionThreshold = 0.33;
 
 PaginationController::PaginationController(PaginationModel* model,
                                            ScrollAxis scroll_axis,
-                                           const RecordMetrics& record_metrics)
+                                           const RecordMetrics& record_metrics,
+                                           bool is_tablet_mode)
     : pagination_model_(model),
       scroll_axis_(scroll_axis),
-      record_metrics_(record_metrics) {
+      record_metrics_(record_metrics),
+      is_tablet_mode_(is_tablet_mode) {
   DCHECK(record_metrics_);
 }
 
@@ -51,7 +53,7 @@ bool PaginationController::OnScroll(const gfx::Vector2d& offset,
       !pagination_model_->has_transition()) {
     const int delta = offset_magnitude > 0 ? -1 : 1;
     if (pagination_model_->IsValidPageRelative(delta)) {
-      record_metrics_.Run(type);
+      record_metrics_.Run(type, is_tablet_mode_);
     }
     pagination_model_->SelectPageRelative(delta, true);
     return true;
@@ -94,7 +96,7 @@ bool PaginationController::OnGestureEvent(const ui::GestureEvent& event,
           pagination_model_->transition().progress < kFinishTransitionThreshold;
       pagination_model_->EndScroll(cancel_transition);
       if (!cancel_transition) {
-        record_metrics_.Run(event.type());
+        record_metrics_.Run(event.type(), is_tablet_mode_);
       }
       return true;
     }
@@ -107,7 +109,7 @@ bool PaginationController::OnGestureEvent(const ui::GestureEvent& event,
       if (fabs(velocity) > kMinHorizVelocityToSwitchPage) {
         const int delta = velocity < 0 ? 1 : -1;
         if (pagination_model_->IsValidPageRelative(delta)) {
-          record_metrics_.Run(event.type());
+          record_metrics_.Run(event.type(), is_tablet_mode_);
         }
         pagination_model_->SelectPageRelative(delta, true);
       }

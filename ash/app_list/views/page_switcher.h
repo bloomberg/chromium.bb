@@ -22,7 +22,7 @@ class PageSwitcher : public views::View,
                      public views::ButtonListener,
                      public ash::PaginationModelObserver {
  public:
-  PageSwitcher(ash::PaginationModel* model, bool vertical);
+  PageSwitcher(ash::PaginationModel* model, bool vertical, bool is_tablet_mode);
   ~PageSwitcher() override;
 
   // Overridden from views::View:
@@ -30,6 +30,7 @@ class PageSwitcher : public views::View,
   void Layout() override;
 
   void set_ignore_button_press(bool ignore) { ignore_button_press_ = ignore; }
+  void set_is_tablet_mode(bool started) { is_tablet_mode_ = started; }
 
  private:
   // Overridden from views::ButtonListener:
@@ -50,6 +51,9 @@ class PageSwitcher : public views::View,
 
   // True if button press should be ignored.
   bool ignore_button_press_ = false;
+
+  // Whether tablet mode is enabled.
+  bool is_tablet_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(PageSwitcher);
 };

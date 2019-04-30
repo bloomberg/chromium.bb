@@ -27,7 +27,8 @@ HorizontalPageContainer::HorizontalPageContainer(ContentsView* contents_view,
   pagination_model_.AddObserver(this);
   pagination_controller_ = std::make_unique<ash::PaginationController>(
       &pagination_model_, ash::PaginationController::SCROLL_AXIS_HORIZONTAL,
-      base::BindRepeating(&RecordPageSwitcherSourceMetrics));
+      base::BindRepeating(&RecordPageSwitcherSourceByEventType),
+      contents_view_->app_list_view()->is_tablet_mode());
 
   // Add horizontal pages.
   apps_container_view_ = new AppsContainerView(contents_view_, model);
@@ -124,6 +125,10 @@ views::View* HorizontalPageContainer::GetLastFocusableView() {
 
 bool HorizontalPageContainer::ShouldShowSearchBox() const {
   return GetSelectedPage()->ShouldShowSearchBox();
+}
+
+void HorizontalPageContainer::OnTabletModeChanged(bool started) {
+  pagination_controller_->set_is_tablet_mode(started);
 }
 
 void HorizontalPageContainer::TotalPagesChanged() {}

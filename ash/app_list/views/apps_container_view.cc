@@ -71,8 +71,9 @@ AppsContainerView::AppsContainerView(ContentsView* contents_view,
   AddChildView(apps_grid_view_);
 
   // Page switcher should be initialized after AppsGridView.
-  page_switcher_ = new PageSwitcher(apps_grid_view_->pagination_model(),
-                                    true /* vertical */);
+  page_switcher_ =
+      new PageSwitcher(apps_grid_view_->pagination_model(), true /* vertical */,
+                       contents_view_->app_list_view()->is_tablet_mode());
   AddChildView(page_switcher_);
 
   app_list_folder_view_ = new AppListFolderView(this, model, contents_view_);
@@ -223,6 +224,7 @@ void AppsContainerView::OnTabletModeChanged(bool started) {
   suggestion_chip_container_view_->OnTabletModeChanged(started);
   apps_grid_view_->OnTabletModeChanged(started);
   app_list_folder_view_->OnTabletModeChanged(started);
+  page_switcher_->set_is_tablet_mode(started);
 }
 
 void AppsContainerView::Layout() {
