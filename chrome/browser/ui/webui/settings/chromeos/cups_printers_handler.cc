@@ -611,9 +611,9 @@ void CupsPrintersHandler::AddOrReconfigurePrinter(const base::ListValue* args,
   if (!profile_->GetPrefs()->GetBoolean(prefs::kUserNativePrintersAllowed)) {
     PRINTER_LOG(DEBUG) << "AddOrReconfigurePrinter() called when "
                           "kUserNativePrintersAllowed is set to false";
-    // Used to log UMA metrics.
-    OnAddedOrEditedPrinterCommon(
-        *printer, PrinterSetupResult::kNativePrintersNotAllowed, false);
+    OnAddedOrEditedPrinterCommon(*printer,
+                                 PrinterSetupResult::kNativePrintersNotAllowed,
+                                 false /* is_automatic */);
     // Used to fire the web UI listener.
     OnAddOrEditPrinterError(PrinterSetupResult::kNativePrintersNotAllowed);
     return;
@@ -723,6 +723,11 @@ void CupsPrintersHandler::OnAddedOrEditedPrinterCommon(
                                 printer.GetProtocol(), Printer::kProtocolMax);
       PRINTER_LOG(USER) << "Performing printer setup";
       printers_manager_->PrinterInstalled(printer, is_automatic);
+      if (printer.IsUsbProtocol()) {
+        // Record UMA for USB printer setup source.
+        PrinterConfigurer::RecordUsbPrinterSetupSource(
+            UsbPrinterSetupSource::kSettings);
+      }
       return;
     case PrinterSetupResult::kEditSuccess:
       PRINTER_LOG(USER) << "Printer updated";
@@ -776,7 +781,7 @@ void CupsPrintersHandler::OnAddedOrEditedPrinterCommon(
 void CupsPrintersHandler::OnAddedDiscoveredPrinter(
     const Printer& printer,
     PrinterSetupResult result_code) {
-  OnAddedOrEditedPrinterCommon(printer, result_code, true);
+  OnAddedOrEditedPrinterCommon(printer, result_code, /*is_automatic=*/true);
   if (result_code == PrinterSetupResult::kSuccess) {
     FireWebUIListener("on-add-or-edit-cups-printer", base::Value(result_code),
                       base::Value(printer.display_name()));
@@ -796,7 +801,7 @@ void CupsPrintersHandler::OnAddedOrEditedSpecifiedPrinter(
     result_code = PrinterSetupResult::kEditSuccess;
   }
   PRINTER_LOG(EVENT) << "Add/Update manual printer: " << result_code;
-  OnAddedOrEditedPrinterCommon(printer, result_code, false);
+  OnAddedOrEditedPrinterCommon(printer, result_code, /*is_automatic=*/false);
   FireWebUIListener("on-add-or-edit-cups-printer", base::Value(result_code),
                     base::Value(printer.display_name()));
 }

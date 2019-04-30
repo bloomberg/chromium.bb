@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "chromeos/printing/printer_configuration.h"
 
 class Profile;
@@ -42,6 +43,15 @@ enum PrinterSetupResult {
   kMaxValue           // Maximum value for histograms
 };
 
+// These values are written to logs.  New enum values can be added, but existing
+// enums must never be renumbered or deleted and reused.
+// Records the source of a successful USB printer setup.
+enum class UsbPrinterSetupSource {
+  kSettings = 0,      // USB printer installed via Settings.
+  kPrintPreview = 1,  // USB printer installed via Print Preview.
+  kMaxValue = kPrintPreview,
+};
+
 using PrinterSetupCallback = base::OnceCallback<void(PrinterSetupResult)>;
 
 // Configures printers by retrieving PPDs and registering the printer with CUPS.
@@ -49,9 +59,6 @@ using PrinterSetupCallback = base::OnceCallback<void(PrinterSetupResult)>;
 class PrinterConfigurer {
  public:
   static std::unique_ptr<PrinterConfigurer> Create(Profile* profile);
-
-  PrinterConfigurer(const PrinterConfigurer&) = delete;
-  PrinterConfigurer& operator=(const PrinterConfigurer&) = delete;
 
   virtual ~PrinterConfigurer() = default;
 
@@ -68,8 +75,13 @@ class PrinterConfigurer {
   // across reboots.
   static std::string SetupFingerprint(const Printer& printer);
 
+  // Records UMA metrics for USB printer setup.
+  static void RecordUsbPrinterSetupSource(UsbPrinterSetupSource source);
+
  protected:
   PrinterConfigurer() = default;
+
+  DISALLOW_COPY_AND_ASSIGN(PrinterConfigurer);
 };
 
 // Stream operator for ease of logging |result|.
