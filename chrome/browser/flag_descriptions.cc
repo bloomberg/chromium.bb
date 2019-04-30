@@ -1112,6 +1112,12 @@ const char kHostedAppShimCreationName[] =
 const char kHostedAppShimCreationDescription[] =
     "Create app shims on Mac when creating a hosted app.";
 
+const char kHTTPAuthCommittedInterstitialsName[] =
+    "Enable Committed Interstitials for HTTP Auth";
+const char kHTTPAuthCommittedInterstitialsDescription[] =
+    "Use committed error pages instead of transient navigation entries "
+    "for HTTP auth interstitial pages.";
+
 const char kIconNtpName[] = "Large icons on the New Tab page";
 const char kIconNtpDescription[] =
     "Enable the experimental New Tab page using large icons.";

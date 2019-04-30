@@ -678,6 +678,9 @@ extern const char kHostedAppQuitNotificationDescription[];
 extern const char kHostedAppShimCreationName[];
 extern const char kHostedAppShimCreationDescription[];
 
+extern const char kHTTPAuthCommittedInterstitialsName[];
+extern const char kHTTPAuthCommittedInterstitialsDescription[];
+
 extern const char kIconNtpName[];
 extern const char kIconNtpDescription[];
 

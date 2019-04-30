@@ -339,6 +339,11 @@ const base::Feature kHappinessTrackingSurveysForDesktop{
     "HappinessTrackingSurveysForDesktop", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // !defined(OS_ANDROID)
 
+// Enables committed error pages instead of transient navigation entries for
+// HTTP auth interstitial pages (i.e. HTTP auth prompts initiated cross-origin).
+const base::Feature kHTTPAuthCommittedInterstitials{
+    "HTTPAuthCommittedInterstitials", base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if !defined(OS_ANDROID)
 // Replaces the WebUI Cast dialog with a Views toolkit one.
 const base::Feature kViewsCastDialog{"ViewsCastDialog",

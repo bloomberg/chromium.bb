@@ -1622,6 +1622,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSSLCommittedInterstitialsName,
      flag_descriptions::kSSLCommittedInterstitialsDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kSSLCommittedInterstitials)},
+    {"http-auth-committed-interstitials",
+     flag_descriptions::kHTTPAuthCommittedInterstitialsName,
+     flag_descriptions::kHTTPAuthCommittedInterstitialsDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kHTTPAuthCommittedInterstitials)},
 #if defined(OS_ANDROID)
     {"enable-site-isolation-for-password-sites",
      flag_descriptions::kSiteIsolationForPasswordSitesName,
