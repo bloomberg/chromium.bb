@@ -84,7 +84,9 @@ var CLASSES = {
   FAKEBOX_FOCUS: 'fakebox-focused',  // Applies focus styles to the fakebox
   // Shows a search icon in the fakebox.
   SHOW_FAKEBOX_ICON: 'show-fakebox-icon',
-  SHOW_EDIT_DIALOG: 'show',      // Displays the edit custom link dialog.
+  SHOW_EDIT_DIALOG: 'show',  // Displays the edit custom link dialog.
+  // Applied when the fakebox placeholder text should not be hidden on focus.
+  SHOW_PLACEHOLDER: 'show-placeholder',
   HIDE_BODY_OVERFLOW: 'hidden',  // Prevents scrolling while the edit custom
                                  // link dialog is open.
   // Applies float animations to the Most Visited notification
@@ -1176,6 +1178,9 @@ function init() {
     }
     if (configData.fakeboxSearchIconColor) {
       $(IDS.FAKEBOX_ICON).classList.add(CLASSES.FAKEBOX_ICON_COLOR);
+    }
+    if (configData.showFakeboxPlaceholderOnFocus) {
+      $(IDS.FAKEBOX_TEXT).classList.add(CLASSES.SHOW_PLACEHOLDER);
     }
 
     if (configData.removeFakebox) {
