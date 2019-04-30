@@ -68,6 +68,24 @@ import watchlists
 
 __version__ = '2.0'
 
+# Traces for git push will be stored in a traces directory inside the
+# depot_tools checkout.
+DEPOT_TOOLS = os.path.dirname(os.path.abspath(__file__))
+TRACES_DIR = os.path.join(DEPOT_TOOLS, 'traces')
+
+# When collecting traces, Git hashes will be reduced to 6 characters to reduce
+# the size after compression.
+GIT_HASH_RE = re.compile(r'\b([a-f0-9]{6})[a-f0-9]{34}\b', flags=re.I)
+# Used to redact the cookies from the gitcookies file.
+GITCOOKIES_REDACT_RE = re.compile(r'1/.*')
+
+TRACES_MESSAGE = (
+'When filing a bug, be sure to include the traces found at:\n'
+'  %s.zip\n'
+'Consider including the git config and gitcookies,\n'
+'which we have packed for you at:\n'
+'  %s.zip\n')
+
 COMMIT_BOT_EMAIL = 'commit-bot@chromium.org'
 POSTUPSTREAM_HOOK = '.git/hooks/post-cl-land'
 DESCRIPTION_BACKUP_FILE = '~/.git_cl_description_backup'
@@ -2478,6 +2496,83 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       else:
         print('OK, will keep Gerrit commit-msg hook in place.')
 
+  def _RunGitPushWithTraces(self, change_desc, refspec, refspec_opts):
+    gclient_utils.safe_makedirs(TRACES_DIR)
+
+    # Create a temporary directory to store traces in. Traces will be compressed
+    # and stored in a 'traces' dir inside depot_tools.
+    traces_dir = tempfile.mkdtemp()
+    trace_name = os.path.basename(traces_dir)
+    traces_zip = os.path.join(TRACES_DIR, trace_name + '-traces')
+    # Create a temporary dir to store git config and gitcookies in. It will be
+    # compressed and stored next to the traces.
+    git_info_dir = tempfile.mkdtemp()
+    git_info_zip = os.path.join(TRACES_DIR, trace_name + '-git-info')
+
+    env = os.environ.copy()
+    env['GIT_REDACT_COOKIES'] = 'o,SSO,GSSO_Uberproxy'
+    env['GIT_TR2_EVENT'] = os.path.join(traces_dir, 'tr2-event')
+    env['GIT_TRACE_CURL'] = os.path.join(traces_dir, 'trace-curl')
+    env['GIT_TRACE_CURL_NO_DATA'] = '1'
+    env['GIT_TRACE_PACKET'] = os.path.join(traces_dir, 'trace-packet')
+
+    try:
+      push_returncode = 0
+      before_push = time_time()
+      push_stdout = gclient_utils.CheckCallAndFilter(
+          ['git', 'push', self.GetRemoteUrl(), refspec],
+          env=env,
+          print_stdout=True,
+          # Flush after every line: useful for seeing progress when running as
+          # recipe.
+          filter_fn=lambda _: sys.stdout.flush())
+    except subprocess2.CalledProcessError as e:
+      push_returncode = e.returncode
+      DieWithError('Failed to create a change. Please examine output above '
+                   'for the reason of the failure.\n'
+                   'Hint: run command below to diagnose common Git/Gerrit '
+                   'credential problems:\n'
+                   '  git cl creds-check\n' +
+                   TRACES_MESSAGE % (traces_zip, git_info_zip),
+                   change_desc)
+    finally:
+      execution_time = time_time() - before_push
+      metrics.collector.add_repeated('sub_commands', {
+        'command': 'git push',
+        'execution_time': execution_time,
+        'exit_code': push_returncode,
+        'arguments': metrics_utils.extract_known_subcommand_args(refspec_opts),
+      })
+
+      if push_returncode != 0:
+        # Keep only the first 6 characters of the git hashes on the packet
+        # trace. This greatly decreases size after compression.
+        packet_traces = os.path.join(traces_dir, 'trace-packet')
+        contents = gclient_utils.FileRead(packet_traces)
+        gclient_utils.FileWrite(
+            packet_traces, GIT_HASH_RE.sub(r'\1', contents))
+        shutil.make_archive(traces_zip, 'zip', traces_dir)
+
+        # Collect and compress the git config and gitcookies.
+        git_config = RunGit(['config', '-l'])
+        gclient_utils.FileWrite(
+            os.path.join(git_info_dir, 'git-config'),
+            git_config)
+
+        cookie_auth = gerrit_util.Authenticator.get()
+        if isinstance(cookie_auth, gerrit_util.CookiesAuthenticator):
+          gitcookies_path = cookie_auth.get_gitcookies_path()
+          gitcookies = gclient_utils.FileRead(gitcookies_path)
+          gclient_utils.FileWrite(
+              os.path.join(git_info_dir, 'gitcookies'),
+              GITCOOKIES_REDACT_RE.sub('REDACTED', gitcookies))
+        shutil.make_archive(git_info_zip, 'zip', git_info_dir)
+
+      gclient_utils.rmtree(git_info_dir)
+      gclient_utils.rmtree(traces_dir)
+
+    return push_stdout
+
   def CMDUploadChange(self, options, git_diff_args, custom_cl_base, change):
     """Upload the current branch to Gerrit."""
     if options.squash and options.no_squash:
@@ -2727,30 +2822,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
           'spaces not allowed in refspec: "%s"' % refspec_suffix)
     refspec = '%s:refs/for/%s%s' % (ref_to_push, branch, refspec_suffix)
 
-    try:
-      push_returncode = 0
-      before_push = time_time()
-      push_stdout = gclient_utils.CheckCallAndFilter(
-          ['git', 'push', self.GetRemoteUrl(), refspec],
-          print_stdout=True,
-          # Flush after every line: useful for seeing progress when running as
-          # recipe.
-          filter_fn=lambda _: sys.stdout.flush())
-    except subprocess2.CalledProcessError as e:
-      push_returncode = e.returncode
-      DieWithError('Failed to create a change. Please examine output above '
-                   'for the reason of the failure.\n'
-                   'Hint: run command below to diagnose common Git/Gerrit '
-                   'credential problems:\n'
-                   '  git cl creds-check\n',
-                   change_desc)
-    finally:
-      metrics.collector.add_repeated('sub_commands', {
-        'command': 'git push',
-        'execution_time': time_time() - before_push,
-        'exit_code': push_returncode,
-        'arguments': metrics_utils.extract_known_subcommand_args(refspec_opts),
-      })
+    push_stdout = self._RunGitPushWithTraces(change_desc, refspec, refspec_opts)
 
     if options.squash:
       regex = re.compile(r'remote:\s+https?://[\w\-\.\+\/#]*/(\d+)\s.*')

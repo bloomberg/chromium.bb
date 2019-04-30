@@ -85,3 +85,6 @@ testing_support/google_appengine
 
 # Ignore the ninjalog upload config.
 /ninjalog.cfg
+
+# Ignore git traces produced by git push on git-cl upload.
+/traces
