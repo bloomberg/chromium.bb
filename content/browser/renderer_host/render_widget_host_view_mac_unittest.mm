@@ -2262,12 +2262,19 @@ TEST_F(RenderWidgetHostViewMacTest, TransformToRootWithParentLayer) {
 // https://crbug.com/921109.
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 TEST_F(RenderWidgetHostViewMacTest, AccessibilityParentTest) {
   NSView* view = rwhv_mac_->cocoa_view();
 
   // NSBox so it participates in the a11y hierarchy.
   base::scoped_nsobject<NSView> parent_view([[NSBox alloc] init]);
   base::scoped_nsobject<NSView> accessibility_parent([[NSView alloc] init]);
+  base::scoped_nsobject<NSWindow> window([[NSWindow alloc]
+      initWithContentRect:NSMakeRect(0, 0, 512, 512)
+                styleMask:NSWindowStyleMaskResizable | NSWindowStyleMaskTitled
+                  backing:NSBackingStoreBuffered
+                    defer:NO]);
+  [[window contentView] addSubview:accessibility_parent];
 
   [parent_view addSubview:view];
   EXPECT_NSEQ([view accessibilityAttributeValue:NSAccessibilityParentAttribute],
@@ -2275,7 +2282,9 @@ TEST_F(RenderWidgetHostViewMacTest, AccessibilityParentTest) {
 
   rwhv_mac_->SetParentAccessibilityElement(accessibility_parent);
   EXPECT_NSEQ([view accessibilityAttributeValue:NSAccessibilityParentAttribute],
-              accessibility_parent);
+              NSAccessibilityUnignoredAncestor(accessibility_parent));
+  EXPECT_NE([view accessibilityAttributeValue:NSAccessibilityParentAttribute],
+            nil);
 
   rwhv_mac_->SetParentAccessibilityElement(nil);
   EXPECT_NSEQ([view accessibilityAttributeValue:NSAccessibilityParentAttribute],
