@@ -144,6 +144,17 @@
         padding: 0;
         width: 20px;
       }
+
+      #menuButton {
+        -webkit-mask-image: url(../../images/icon_toolbar_menu.svg);
+        -webkit-mask-position: center;
+        -webkit-mask-repeat: no-repeat;
+        background: currentColor;
+      }
+
+      :host-context([dark]) #menuButton {
+        -webkit-mask-image: url(../../images/dark/icon_toolbar_menu.svg);
+      }
     </style>
     <div id="leftContent">
       <div id="leftSpacer">

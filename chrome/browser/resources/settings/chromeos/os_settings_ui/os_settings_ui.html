@@ -35,12 +35,11 @@
 
       cr-toolbar {
         @apply --layout-center;
+        /* TODO(hsuregan): update for dark mode when needed. */
+        background-color: white;
+        color: var(--cr-secondary-text-color);
         min-height: 56px;
         z-index: 2;
-      }
-
-      :host-context(html:not([dark])) cr-toolbar {
-        --iron-icon-fill-color: white;
       }
 
       #container {
