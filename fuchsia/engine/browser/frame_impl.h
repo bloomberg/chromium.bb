@@ -22,6 +22,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "fuchsia/engine/browser/discarding_event_filter.h"
 #include "fuchsia/engine/on_load_script_injector.mojom.h"
+#include "fuchsia/engine/web_engine_export.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/wm/core/focus_controller.h"
 #include "url/gurl.h"
@@ -183,7 +184,8 @@ class FrameImpl : public fuchsia::web::Frame,
 // Computes the observable differences between |old_entry| and |new_entry|.
 // Returns true if they are different, |false| if their observable fields are
 // identical.
-bool DiffNavigationEntries(const fuchsia::web::NavigationState& old_entry,
-                           const fuchsia::web::NavigationState& new_entry,
-                           fuchsia::web::NavigationState* difference);
+WEB_ENGINE_EXPORT bool DiffNavigationEntries(
+    const fuchsia::web::NavigationState& old_entry,
+    const fuchsia::web::NavigationState& new_entry,
+    fuchsia::web::NavigationState* difference);
 #endif  // FUCHSIA_ENGINE_BROWSER_FRAME_IMPL_H_
