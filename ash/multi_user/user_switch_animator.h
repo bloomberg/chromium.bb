@@ -19,7 +19,7 @@
 
 namespace ash {
 
-class MultiUserWindowManager;
+class MultiUserWindowManagerImpl;
 
 // A class which performs transitions animations between users. Upon creation,
 // the animation gets started and upon destruction the animation gets finished
@@ -38,7 +38,7 @@ class ASH_EXPORT UserSwitchAnimator {
 
   // Creates a UserSwitchAnimator to animate between the current user and
   // |user_info|.
-  UserSwitchAnimator(MultiUserWindowManager* owner,
+  UserSwitchAnimator(MultiUserWindowManagerImpl* owner,
                      mojom::WallpaperUserInfoPtr user_info,
                      base::TimeDelta animation_speed);
   ~UserSwitchAnimator();
@@ -99,7 +99,7 @@ class ASH_EXPORT UserSwitchAnimator {
   void BuildUserToWindowsListMap();
 
   // The owning window manager.
-  MultiUserWindowManager* owner_;
+  MultiUserWindowManagerImpl* owner_;
 
   // Contains the wallpaper configuration for the user switching to. This is
   // passed to the WallpaperController at the right time.

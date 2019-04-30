@@ -12,7 +12,7 @@
 #include "ash/assistant/util/assistant_util.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/assistant/util/histogram_util.h"
-#include "ash/multi_user/multi_user_window_manager.h"
+#include "ash/multi_user/multi_user_window_manager_impl.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -324,7 +324,7 @@ void AssistantUiController::OnUiVisibilityChanged(
 
       // We also want to associate the window for Assistant UI with the active
       // user so that we don't leak across user sessions.
-      auto* window_manager = MultiUserWindowManager::Get();
+      auto* window_manager = MultiUserWindowManagerImpl::Get();
       if (window_manager) {
         const mojom::UserSession* user_session =
             Shell::Get()->session_controller()->GetUserSession(0);

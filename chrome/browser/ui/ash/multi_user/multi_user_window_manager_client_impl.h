@@ -25,7 +25,7 @@ class AppObserver;
 class Browser;
 
 namespace ash {
-class MultiUserWindowManager;
+class MultiUserWindowManagerImpl;
 class MultiUserWindowManagerClientImplTest;
 }  // namespace ash
 
@@ -172,7 +172,8 @@ class MultiUserWindowManagerClientImpl
 
   // This is *only* created in classic and single-process mash cases. In
   // multi-process mash Ash creates the MultiUserWindowManager.
-  std::unique_ptr<ash::MultiUserWindowManager> ash_multi_user_window_manager_;
+  std::unique_ptr<ash::MultiUserWindowManagerImpl>
+      ash_multi_user_window_manager_;
 
   // Only used for windows created for the window-service. For example,
   // Browser windows when running in mash.

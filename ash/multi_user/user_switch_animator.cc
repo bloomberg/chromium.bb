@@ -4,7 +4,7 @@
 
 #include "ash/multi_user/user_switch_animator.h"
 
-#include "ash/multi_user/multi_user_window_manager.h"
+#include "ash/multi_user/multi_user_window_manager_impl.h"
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -80,7 +80,7 @@ void PutMruWindowLast(std::vector<aura::Window*>* window_list) {
 }  // namespace
 
 UserSwitchAnimator::UserSwitchAnimator(
-    MultiUserWindowManager* owner,
+    MultiUserWindowManagerImpl* owner,
     mojom::WallpaperUserInfoPtr wallpaper_user_info,
     base::TimeDelta animation_speed)
     : owner_(owner),
@@ -231,7 +231,7 @@ void UserSwitchAnimator::TransitionWindows(AnimationStep animation_step) {
           // different than that of the for_show_account_id) should retrun to
           // their
           // original owners' desktops.
-          MultiUserWindowManager::WindowToEntryMap::const_iterator itr =
+          MultiUserWindowManagerImpl::WindowToEntryMap::const_iterator itr =
               owner_->window_to_entry().find(window);
           DCHECK(itr != owner_->window_to_entry().end());
           if (show_for_account_id != itr->second->owner() &&

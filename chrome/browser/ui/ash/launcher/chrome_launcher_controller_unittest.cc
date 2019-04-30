@@ -15,7 +15,7 @@
 #include <vector>
 
 #include "ash/display/display_configuration_controller.h"
-#include "ash/multi_user/multi_user_window_manager.h"
+#include "ash/multi_user/multi_user_window_manager_impl.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
@@ -1306,9 +1306,10 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
   // Switch to another user.
   void SwitchActiveUser(const AccountId& account_id) {
     GetFakeUserManager()->SwitchActiveUser(account_id);
-    ash::MultiUserWindowManager::Get()->SetAnimationSpeedForTest(
-        ash::MultiUserWindowManager::ANIMATION_SPEED_DISABLED);
-    ash::MultiUserWindowManager::Get()->OnActiveUserSessionChanged(account_id);
+    ash::MultiUserWindowManagerImpl::Get()->SetAnimationSpeedForTest(
+        ash::MultiUserWindowManagerImpl::ANIMATION_SPEED_DISABLED);
+    ash::MultiUserWindowManagerImpl::Get()->OnActiveUserSessionChanged(
+        account_id);
     // Call FlushBindings() to ensure ash has completed processing of the
     // switch.
     FlushBindings();

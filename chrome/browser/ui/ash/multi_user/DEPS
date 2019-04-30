@@ -1,7 +1,7 @@
 specific_include_rules = {
   # https://crbug.com/875111
   "multi_user_window_manager_client_impl\.*": [
-    "+ash/multi_user/multi_user_window_manager.h",
+    "+ash/multi_user/multi_user_window_manager_impl.h",
     "+ash/multi_user/multi_user_window_manager_delegate_classic.h",
   ],
   # https://crbug.com/875111

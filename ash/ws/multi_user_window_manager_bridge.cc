@@ -4,7 +4,7 @@
 
 #include "ash/ws/multi_user_window_manager_bridge.h"
 
-#include "ash/multi_user/multi_user_window_manager.h"
+#include "ash/multi_user/multi_user_window_manager_impl.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "services/ws/window_tree.h"
@@ -23,8 +23,8 @@ MultiUserWindowManagerBridge::MultiUserWindowManagerBridge(
 
 MultiUserWindowManagerBridge::~MultiUserWindowManagerBridge() {
   // We may get here after MultiUserWindowManager has been destroyed.
-  if (ash::MultiUserWindowManager::Get())
-    ash::MultiUserWindowManager::Get()->SetClient(nullptr);
+  if (ash::MultiUserWindowManagerImpl::Get())
+    ash::MultiUserWindowManagerImpl::Get()->SetClient(nullptr);
 }
 
 void MultiUserWindowManagerBridge::SetClient(
@@ -36,11 +36,12 @@ void MultiUserWindowManagerBridge::SetClient(
     // from being created (because multiple clients ask for
     // ash::mojom::MultiUserWindowManager). This code is assuming only a single
     // client is used at a time.
-    multi_user_window_manager_ = std::make_unique<ash::MultiUserWindowManager>(
-        client_.get(), nullptr,
-        Shell::Get()->session_controller()->GetActiveAccountId());
-  } else if (ash::MultiUserWindowManager::Get()) {
-    ash::MultiUserWindowManager::Get()->SetClient(client_.get());
+    multi_user_window_manager_ =
+        std::make_unique<ash::MultiUserWindowManagerImpl>(
+            client_.get(), nullptr,
+            Shell::Get()->session_controller()->GetActiveAccountId());
+  } else if (ash::MultiUserWindowManagerImpl::Get()) {
+    ash::MultiUserWindowManagerImpl::Get()->SetClient(client_.get());
   }
 }
 
@@ -51,12 +52,12 @@ void MultiUserWindowManagerBridge::SetWindowOwner(ws::Id window_id,
   // here with no ash::MultiUserWindowManager. This should only be possible in
   // tests. None-the-less this needs to be fixed for the multi-process case.
   // http://crbug.com/875111.
-  if (!ash::MultiUserWindowManager::Get())
+  if (!ash::MultiUserWindowManagerImpl::Get())
     return;
 
   aura::Window* window = window_tree_->GetWindowByTransportId(window_id);
   if (window && window_tree_->IsTopLevel(window)) {
-    ash::MultiUserWindowManager::Get()->SetWindowOwner(
+    ash::MultiUserWindowManagerImpl::Get()->SetWindowOwner(
         window, account_id, show_for_current_user, {window_id});
   } else {
     DVLOG(1) << "SetWindowOwner passed invalid window, id=" << window_id;
@@ -70,14 +71,16 @@ void MultiUserWindowManagerBridge::ShowWindowForUser(
   // here with no ash::MultiUserWindowManager. This should only be possible in
   // tests. None-the-less this needs to be fixed for the multi-process case.
   // http://crbug.com/875111.
-  if (!ash::MultiUserWindowManager::Get())
+  if (!ash::MultiUserWindowManagerImpl::Get())
     return;
 
   aura::Window* window = window_tree_->GetWindowByTransportId(window_id);
-  if (window && window_tree_->IsTopLevel(window))
-    ash::MultiUserWindowManager::Get()->ShowWindowForUser(window, account_id);
-  else
+  if (window && window_tree_->IsTopLevel(window)) {
+    ash::MultiUserWindowManagerImpl::Get()->ShowWindowForUser(window,
+                                                              account_id);
+  } else {
     DVLOG(1) << "ShowWindowForUser passed invalid window, id=" << window_id;
+  }
 }
 
 }  // namespace ash

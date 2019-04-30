@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_MULTI_USER_MULTI_USER_WINDOW_MANAGER_H_
-#define ASH_MULTI_USER_MULTI_USER_WINDOW_MANAGER_H_
+#ifndef ASH_MULTI_USER_MULTI_USER_WINDOW_MANAGER_IMPL_H_
+#define ASH_MULTI_USER_MULTI_USER_WINDOW_MANAGER_IMPL_H_
 
 #include <map>
 #include <memory>
@@ -51,10 +51,11 @@ class UserSwitchAnimator;
 //   visibility changes from the owning user. This way the visibility can be
 //   changed back to its requested state upon showing by us - or when the window
 //   gets detached from its current owning parent.
-class ASH_EXPORT MultiUserWindowManager : public SessionObserver,
-                                          public aura::WindowObserver,
-                                          public ::wm::TransientWindowObserver,
-                                          public TabletModeObserver {
+class ASH_EXPORT MultiUserWindowManagerImpl
+    : public SessionObserver,
+      public aura::WindowObserver,
+      public ::wm::TransientWindowObserver,
+      public TabletModeObserver {
  public:
   // The speed which should be used to perform animations.
   enum AnimationSpeed {
@@ -63,13 +64,13 @@ class ASH_EXPORT MultiUserWindowManager : public SessionObserver,
     ANIMATION_SPEED_DISABLED  // Unit tests which do not require animations.
   };
 
-  MultiUserWindowManager(
+  MultiUserWindowManagerImpl(
       mojom::MultiUserWindowManagerClient* client,
       MultiUserWindowManagerDelegateClassic* classic_delegate,
       const AccountId& account_id);
-  ~MultiUserWindowManager() override;
+  ~MultiUserWindowManagerImpl() override;
 
-  static MultiUserWindowManager* Get();
+  static MultiUserWindowManagerImpl* Get();
 
   // Resets the client. This is called when running in mash. In single-process
   // mash, the browser creates this class (with no client) and
@@ -267,9 +268,9 @@ class ASH_EXPORT MultiUserWindowManager : public SessionObserver,
   // The animation between users.
   std::unique_ptr<UserSwitchAnimator> animation_;
 
-  DISALLOW_COPY_AND_ASSIGN(MultiUserWindowManager);
+  DISALLOW_COPY_AND_ASSIGN(MultiUserWindowManagerImpl);
 };
 
 }  // namespace ash
 
-#endif  // ASH_MULTI_USER_MULTI_USER_WINDOW_MANAGER_H_
+#endif  // ASH_MULTI_USER_MULTI_USER_WINDOW_MANAGER_IMPL_H_

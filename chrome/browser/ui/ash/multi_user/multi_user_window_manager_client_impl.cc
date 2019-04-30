@@ -7,7 +7,7 @@
 #include <set>
 #include <vector>
 
-#include "ash/multi_user/multi_user_window_manager.h"
+#include "ash/multi_user/multi_user_window_manager_impl.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
@@ -165,8 +165,8 @@ MultiUserWindowManagerClientImpl::MultiUserWindowManagerClientImpl(
   }
   if (!features::IsMultiProcessMash()) {
     ash_multi_user_window_manager_ =
-        std::make_unique<ash::MultiUserWindowManager>(client, this,
-                                                      current_account_id);
+        std::make_unique<ash::MultiUserWindowManagerImpl>(client, this,
+                                                          current_account_id);
   }
 }
 

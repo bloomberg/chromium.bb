@@ -9,7 +9,7 @@ specific_include_rules = {
   ],
   # https://crbug.com/875111
   "chrome_launcher_controller_unittest\.cc": [
-    "+ash/multi_user/multi_user_window_manager.h",
+    "+ash/multi_user/multi_user_window_manager_impl.h",
   ],
   # https://crbug.com/887156
   "crostini_app_window_shelf_controller\.cc": [
