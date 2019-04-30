@@ -215,7 +215,7 @@ MediaStreamVideoTrack::FrameDeliverer::GetBlackFrame(
   // Wrap |black_frame_| so we get a fresh timestamp we can modify. Frames
   // returned from this function may still be in use.
   scoped_refptr<media::VideoFrame> wrapped_black_frame =
-      media::VideoFrame::WrapVideoFrame(black_frame_, black_frame_->format(),
+      media::VideoFrame::WrapVideoFrame(*black_frame_, black_frame_->format(),
                                         black_frame_->visible_rect(),
                                         black_frame_->natural_size());
   if (!wrapped_black_frame)

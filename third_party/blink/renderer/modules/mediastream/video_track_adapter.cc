@@ -324,7 +324,7 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::DeliverFrame(
         media::ComputeLetterboxRegion(frame->visible_rect(), desired_size);
 
     video_frame = media::VideoFrame::WrapVideoFrame(
-        frame, frame->format(), region_in_frame, desired_size);
+        *frame, frame->format(), region_in_frame, desired_size);
     if (!video_frame) {
       PostFrameDroppedToMainTaskRunner(
           media::VideoCaptureFrameDropReason::

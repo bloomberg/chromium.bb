@@ -271,7 +271,7 @@ void TestVDAVideoDecoder::PictureReady(const Picture& picture) {
                        picture.picture_buffer_id()));
 
     scoped_refptr<VideoFrame> wrapped_video_frame = VideoFrame::WrapVideoFrame(
-        video_frame, video_frame->format(), video_frame->visible_rect(),
+        *video_frame, video_frame->format(), video_frame->visible_rect(),
         video_frame->visible_rect().size());
     wrapped_video_frame->AddDestructionObserver(std::move(reuse_cb));
 

@@ -383,7 +383,7 @@ void V4L2VideoEncodeAccelerator::Encode(const scoped_refptr<VideoFrame>& frame,
           ImageProcessor::OutputMode::IMPORT) {
         const auto& buf = image_processor_output_buffers_[output_buffer_index];
         auto output_frame = VideoFrame::WrapVideoFrame(
-            buf, buf->format(), buf->visible_rect(), buf->natural_size());
+            *buf, buf->format(), buf->visible_rect(), buf->natural_size());
 
         // We have to bind |weak_this| for FrameProcessed, because child
         // thread is outlive this V4L2VideoEncodeAccelerator.

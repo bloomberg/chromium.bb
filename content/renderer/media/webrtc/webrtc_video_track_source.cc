@@ -159,7 +159,7 @@ void WebRtcVideoTrackSource::OnFrameCaptured(
                                frame_adaptation_params.scale_to_height);
   // Soft-apply the new (combined) cropping and scaling.
   scoped_refptr<media::VideoFrame> video_frame =
-      media::VideoFrame::WrapVideoFrame(frame, frame->format(),
+      media::VideoFrame::WrapVideoFrame(*frame, frame->format(),
                                         cropped_visible_rect, adapted_size);
   if (!video_frame)
     return;

@@ -428,7 +428,7 @@ scoped_refptr<VideoFrame> WrapAsI420VideoFrame(
   DCHECK_EQ(PIXEL_FORMAT_I420A, frame->format());
 
   scoped_refptr<media::VideoFrame> wrapped_frame =
-      media::VideoFrame::WrapVideoFrame(frame, PIXEL_FORMAT_I420,
+      media::VideoFrame::WrapVideoFrame(*frame, PIXEL_FORMAT_I420,
                                         frame->visible_rect(),
                                         frame->natural_size());
   if (!wrapped_frame)

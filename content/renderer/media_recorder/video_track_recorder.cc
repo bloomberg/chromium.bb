@@ -244,7 +244,7 @@ void VideoTrackRecorder::Encoder::StartFrameEncode(
     wrapped_frame = media::WrapAsI420VideoFrame(video_frame);
   } else {
     wrapped_frame = media::VideoFrame::WrapVideoFrame(
-        video_frame, video_frame->format(), video_frame->visible_rect(),
+        *video_frame, video_frame->format(), video_frame->visible_rect(),
         video_frame->natural_size());
   }
   wrapped_frame->AddDestructionObserver(media::BindToCurrentLoop(

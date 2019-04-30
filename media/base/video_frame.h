@@ -302,7 +302,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // Wraps |frame|. |visible_rect| must be a sub rect within
   // frame->visible_rect().
   static scoped_refptr<VideoFrame> WrapVideoFrame(
-      const scoped_refptr<VideoFrame>& frame,
+      const VideoFrame& frame,
       VideoPixelFormat format,
       const gfx::Rect& visible_rect,
       const gfx::Size& natural_size);
