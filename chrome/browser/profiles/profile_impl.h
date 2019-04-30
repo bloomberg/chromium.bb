@@ -142,7 +142,9 @@ class ProfileImpl : public Profile {
   PrefService* GetOffTheRecordPrefs() override;
   PrefService* GetReadOnlyOffTheRecordPrefs() override;
   policy::SchemaRegistryService* GetPolicySchemaRegistryService() override;
+#if !defined(OS_CHROMEOS)
   policy::UserCloudPolicyManager* GetUserCloudPolicyManager() override;
+#endif
   policy::ProfilePolicyConnector* GetProfilePolicyConnector() override;
   const policy::ProfilePolicyConnector* GetProfilePolicyConnector()
       const override;

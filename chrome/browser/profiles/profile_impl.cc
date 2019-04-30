@@ -1118,9 +1118,11 @@ policy::SchemaRegistryService* ProfileImpl::GetPolicySchemaRegistryService() {
   return schema_registry_service_.get();
 }
 
+#if !defined(OS_CHROMEOS)
 policy::UserCloudPolicyManager* ProfileImpl::GetUserCloudPolicyManager() {
   return user_cloud_policy_manager_;
 }
+#endif
 
 policy::ProfilePolicyConnector* ProfileImpl::GetProfilePolicyConnector() {
   return profile_policy_connector_.get();

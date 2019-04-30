@@ -405,10 +405,12 @@ OffTheRecordProfileImpl::GetPolicySchemaRegistryService() {
   return nullptr;
 }
 
+#if !defined(OS_CHROMEOS)
 policy::UserCloudPolicyManager*
 OffTheRecordProfileImpl::GetUserCloudPolicyManager() {
   return GetOriginalProfile()->GetUserCloudPolicyManager();
 }
+#endif
 
 net::URLRequestContextGetter* OffTheRecordProfileImpl::GetRequestContext() {
   return GetDefaultStoragePartition(this)->GetURLRequestContext();

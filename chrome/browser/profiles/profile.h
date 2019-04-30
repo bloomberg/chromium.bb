@@ -235,8 +235,12 @@ class Profile : public content::BrowserContext {
   // Returns the SchemaRegistryService.
   virtual policy::SchemaRegistryService* GetPolicySchemaRegistryService() = 0;
 
+// In Chrome OS, use UserPolicyManagerFactoryChromeOS::GetCloudPolicyManager()
+// instead.
+#if !defined(OS_CHROMEOS)
   // Returns the UserCloudPolicyManager.
   virtual policy::UserCloudPolicyManager* GetUserCloudPolicyManager() = 0;
+#endif
 
   virtual policy::ProfilePolicyConnector* GetProfilePolicyConnector() = 0;
   virtual const policy::ProfilePolicyConnector* GetProfilePolicyConnector()

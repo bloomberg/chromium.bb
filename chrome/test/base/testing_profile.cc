@@ -933,9 +933,11 @@ TestingProfile::GetPolicySchemaRegistryService() {
   return schema_registry_service_.get();
 }
 
+#if !defined(OS_CHROMEOS)
 policy::UserCloudPolicyManager* TestingProfile::GetUserCloudPolicyManager() {
   return user_cloud_policy_manager_.get();
 }
+#endif
 
 policy::ProfilePolicyConnector* TestingProfile::GetProfilePolicyConnector() {
   return profile_policy_connector_.get();
