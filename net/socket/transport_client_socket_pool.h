@@ -312,6 +312,31 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
    public:
     using JobList = std::list<std::unique_ptr<ConnectJob>>;
 
+    struct BoundRequest {
+      BoundRequest();
+      BoundRequest(std::unique_ptr<ConnectJob> connect_job,
+                   std::unique_ptr<Request> request,
+                   int64_t generation);
+      BoundRequest(BoundRequest&& other);
+      BoundRequest& operator=(BoundRequest&& other);
+      ~BoundRequest();
+
+      std::unique_ptr<ConnectJob> connect_job;
+      std::unique_ptr<Request> request;
+
+      // Generation of |connect_job|. If it doesn't match the current
+      // generation, ConnectJob will be destroyed, and a new one created on
+      // completion.
+      int64_t generation;
+
+      // It's not safe to fail a request in a |CancelAllRequestsWithError| call
+      // while it's waiting on user input, as the request may have raw pointers
+      // to objects owned by |connect_job| that it could racily write to after
+      // |connect_job| is destroyed. Instead, just track an error in that case,
+      // and fail the request once the ConnectJob completes.
+      int pending_error;
+    };
+
     Group(const GroupId& group_id,
           TransportClientSocketPool* client_socket_pool_base_helper);
     ~Group() override;
@@ -413,15 +438,10 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
     // callback, returns nullptr.
     const Request* BindRequestToConnectJob(ConnectJob* connect_job);
 
-    // Finds the request, if any, bound to |connect_job|, and returns it.
-    // Destroys the ConnectJob bound to the request, if there was one.
-    // |generation| is set to the group generation that ConnectJob belongs to.
-    // The pending error is written to |pending_error|, if
-    // SetPendingErrorForAllBoundRequests() was called, or OK, otherwise.
-    std::unique_ptr<Request> FindAndRemoveBoundRequestForConnectJob(
-        ConnectJob* connect_job,
-        int64_t* generation,
-        int* pending_error);
+    // Finds the request, if any, bound to |connect_job|, and returns the
+    // BoundRequest or base::nullopt if there was none.
+    base::Optional<BoundRequest> FindAndRemoveBoundRequestForConnectJob(
+        ConnectJob* connect_job);
 
     // Finds the bound request, if any, corresponding to |client_socket_handle|
     // and returns it. Destroys the ConnectJob bound to the request, if there
@@ -455,31 +475,6 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
     int64_t generation() const { return generation_; }
 
    private:
-    struct BoundRequest {
-      BoundRequest();
-      BoundRequest(std::unique_ptr<ConnectJob> connect_job,
-                   std::unique_ptr<Request> request,
-                   int64_t generation);
-      BoundRequest(BoundRequest&& other);
-      BoundRequest& operator=(BoundRequest&& other);
-      ~BoundRequest();
-
-      std::unique_ptr<ConnectJob> connect_job;
-      std::unique_ptr<Request> request;
-
-      // Generation of |connect_job|. If it doesn't match the current
-      // generation, ConnectJob will be destroyed, and a new one created on
-      // completion.
-      int64_t generation;
-
-      // It's not safe to fail a request in a |CancelAllRequestsWithError| call
-      // while it's waiting on user input, as the request may have raw pointers
-      // to objects owned by |connect_job| that it could racily write to after
-      // |connect_job| is destroyed. Instead, just track an error in that case,
-      // and fail the request once the ConnectJob completes.
-      int pending_error;
-    };
-
     // Returns the iterator's unbound request after removing it from
     // the queue. Expects the Group to pass SanityCheck() when called.
     std::unique_ptr<Request> RemoveUnboundRequest(

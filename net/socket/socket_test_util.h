@@ -56,6 +56,7 @@ namespace net {
 
 struct CommonConnectJobParams;
 class NetLog;
+class X509Certificate;
 
 const NetworkChangeNotifier::NetworkHandle kDefaultNetworkForTests = 1;
 const NetworkChangeNotifier::NetworkHandle kNewNetworkForTests = 2;
@@ -479,6 +480,8 @@ struct SSLSocketDataProvider {
 
   uint16_t expected_ssl_version_min;
   uint16_t expected_ssl_version_max;
+  base::Optional<bool> expected_send_client_cert;
+  scoped_refptr<X509Certificate> expected_client_cert;
 
   bool is_connect_data_consumed = false;
   bool is_confirm_data_consumed = false;

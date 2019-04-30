@@ -798,6 +798,18 @@ std::unique_ptr<SSLClientSocket> MockClientSocketFactory::CreateSSLClientSocket(
   }
   EXPECT_EQ(next_ssl_data->expected_ssl_version_min, ssl_config.version_min);
   EXPECT_EQ(next_ssl_data->expected_ssl_version_max, ssl_config.version_max);
+  if (next_ssl_data->expected_send_client_cert) {
+    EXPECT_EQ(*next_ssl_data->expected_send_client_cert,
+              ssl_config.send_client_cert);
+    DCHECK_EQ(*next_ssl_data->expected_send_client_cert,
+              next_ssl_data->expected_client_cert != nullptr);
+    if (next_ssl_data->expected_client_cert) {
+      EXPECT_TRUE(next_ssl_data->expected_client_cert->EqualsIncludingChain(
+          ssl_config.client_cert.get()));
+    } else {
+      EXPECT_FALSE(ssl_config.client_cert);
+    }
+  }
   return std::unique_ptr<SSLClientSocket>(new MockSSLClientSocket(
       std::move(stream_socket), host_and_port, ssl_config, next_ssl_data));
 }
