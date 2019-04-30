@@ -1432,7 +1432,6 @@ bool UnownedFormElementsAndFieldSetsToFormData(
     form->main_frame_origin = document.GetFrame()->Top()->GetSecurityOrigin();
   } else {
     form->main_frame_origin = url::Origin();
-    NOTREACHED();
   }
 
   form->is_form_tag = false;
