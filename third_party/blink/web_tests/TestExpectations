@@ -2959,6 +2959,7 @@ crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-006
 crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-007.html [ Failure ]
 crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-008.html [ Failure ]
 crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-00B.html [ Failure ]
+crbug.com/893490 external/wpt/css/css-text/white-space/control-chars-00C.html [ Failure ]
 crbug.com/893490 external/wpt/css/css-text/white-space/control-chars-00D.html [ Failure ]
 crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-00E.html [ Failure ]
 crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-00F.html [ Failure ]
@@ -3033,7 +3034,6 @@ crbug.com/939181 virtual/not-site-per-process/external/wpt/html/browsers/origin/
 
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 external/wpt/css/css-text/white-space/break-spaces-008.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/white-space/control-chars-00C.html [ Failure ]
 crbug.com/626703 [ Win7 ] external/wpt/upgrade-insecure-requests/image-redirect-upgrade.https.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-text/line-breaking/line-breaking-atomic-005.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/line-breaking/line-breaking-atomic-008.html [ Failure ]
