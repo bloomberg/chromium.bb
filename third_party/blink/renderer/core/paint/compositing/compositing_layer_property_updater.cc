@@ -53,9 +53,12 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
   // visible subtree can be non-composited despite we expected it to, this
   // resulted in the paint offset used by CompositedLayerMapping to mismatch.
   bool subpixel_accumulation_may_be_bogus = paint_layer->SubtreeIsInvisible();
-  if (!subpixel_accumulation_may_be_bogus) {
-    DCHECK_EQ(layout_snapped_paint_offset, snapped_paint_offset)
-        << object.DebugName();
+  if (!subpixel_accumulation_may_be_bogus &&
+      layout_snapped_paint_offset != snapped_paint_offset) {
+    // TODO(crbug.com/925377): Fix the root cause.
+    DLOG(ERROR) << "Paint offset pixel snapping error for " << object
+                << " expected: " << snapped_paint_offset
+                << " actual: " << layout_snapped_paint_offset;
   }
 #endif
 
