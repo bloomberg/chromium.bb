@@ -359,22 +359,22 @@ static int determine_disflow_correspondence(int *frm_corners,
   return num_correspondences;
 }
 
-double getCubicValue(double p[4], double x) {
+static double getCubicValue(double p[4], double x) {
   return p[1] + 0.5 * x *
                     (p[2] - p[0] +
                      x * (2.0 * p[0] - 5.0 * p[1] + 4.0 * p[2] - p[3] +
                           x * (3.0 * (p[1] - p[2]) + p[3] - p[0])));
 }
 
-void get_subcolumn(unsigned char *ref, double col[4], int stride, int x,
-                   int y_start) {
+static void get_subcolumn(unsigned char *ref, double col[4], int stride, int x,
+                          int y_start) {
   int i;
   for (i = 0; i < 4; ++i) {
     col[i] = ref[(i + y_start) * stride + x];
   }
 }
 
-double bicubic(unsigned char *ref, double x, double y, int stride) {
+static double bicubic(unsigned char *ref, double x, double y, int stride) {
   double arr[4];
   int k;
   int i = (int)x;
@@ -388,8 +388,8 @@ double bicubic(unsigned char *ref, double x, double y, int stride) {
 }
 
 // Interpolate a warped block using bicubic interpolation when possible
-unsigned char interpolate(unsigned char *ref, double x, double y, int width,
-                          int height, int stride) {
+static unsigned char interpolate(unsigned char *ref, double x, double y,
+                                 int width, int height, int stride) {
   if (x < 0 && y < 0)
     return ref[0];
   else if (x < 0 && y > height - 1)
@@ -460,9 +460,9 @@ unsigned char interpolate(unsigned char *ref, double x, double y, int width,
 }
 
 // Warps a block using flow vector [u, v] and computes the mse
-double compute_warp_and_error(unsigned char *ref, unsigned char *frm, int width,
-                              int height, int stride, int x, int y, double u,
-                              double v, int16_t *dt) {
+static double compute_warp_and_error(unsigned char *ref, unsigned char *frm,
+                                     int width, int height, int stride, int x,
+                                     int y, double u, double v, int16_t *dt) {
   int i, j;
   unsigned char warped;
   double x_w, y_w;
