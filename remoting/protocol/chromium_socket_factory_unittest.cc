@@ -8,7 +8,9 @@
 #include <stdint.h>
 
 #include <memory>
+#include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -119,14 +121,42 @@ TEST_F(ChromiumSocketFactoryTest, SetOptions) {
 }
 
 TEST_F(ChromiumSocketFactoryTest, PortRange) {
-  const uint16_t kMinPort = 12400;
-  const uint16_t kMaxPort = 12410;
+  constexpr uint16_t kMinPort = 12400;
+  constexpr uint16_t kMaxPort = 12410;
   socket_.reset(socket_factory_->CreateUdpSocket(
-      rtc::SocketAddress("127.0.0.1", 0), kMaxPort, kMaxPort));
+      rtc::SocketAddress("127.0.0.1", 0), kMinPort, kMaxPort));
   ASSERT_TRUE(socket_.get() != nullptr);
   EXPECT_EQ(socket_->GetState(), rtc::AsyncPacketSocket::STATE_BOUND);
   EXPECT_GE(socket_->GetLocalAddress().port(), kMinPort);
   EXPECT_LE(socket_->GetLocalAddress().port(), kMaxPort);
+}
+
+TEST_F(ChromiumSocketFactoryTest, CreateMultiplePortsFromPortRange) {
+  constexpr uint16_t kPortCount = 5;
+  constexpr uint16_t kMinPort = 12400;
+  constexpr uint16_t kMaxPort = kMinPort + kPortCount - 1;
+  std::vector<std::unique_ptr<rtc::AsyncPacketSocket>> sockets;
+  for (int i = 0; i < kPortCount; i++) {
+    sockets.push_back(std::unique_ptr<rtc::AsyncPacketSocket>(
+        socket_factory_->CreateUdpSocket(rtc::SocketAddress("127.0.0.1", 0),
+                                         kMinPort, kMaxPort)));
+  }
+  base::flat_set<uint16_t> assigned_ports;
+  for (auto& socket : sockets) {
+    ASSERT_TRUE(socket.get() != nullptr);
+    EXPECT_EQ(socket->GetState(), rtc::AsyncPacketSocket::STATE_BOUND);
+    uint16_t port = socket->GetLocalAddress().port();
+    EXPECT_GE(port, kMinPort);
+    EXPECT_LE(port, kMaxPort);
+    ASSERT_EQ(assigned_ports.end(), assigned_ports.find(port));
+    assigned_ports.insert(port);
+  }
+
+  // Try to create another socket, which should fail because no more port is
+  // available.
+  auto* extra_socket = socket_factory_->CreateUdpSocket(
+      rtc::SocketAddress("127.0.0.1", 0), kMinPort, kMaxPort);
+  ASSERT_EQ(nullptr, extra_socket);
 }
 
 TEST_F(ChromiumSocketFactoryTest, TransientError) {
