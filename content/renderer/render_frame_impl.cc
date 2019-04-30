@@ -3626,8 +3626,16 @@ void RenderFrameImpl::CommitFailedNavigationInternal(
 
   // On load failure, a frame can ask its owner to render fallback content.
   // When that happens, don't load an error page.
+  base::WeakPtr<RenderFrameImpl> weak_this = weak_factory_.GetWeakPtr();
   blink::WebNavigationControl::FallbackContentResult fallback_result =
       frame_->MaybeRenderFallbackContent(error);
+
+  // The rendering fallback content can result in this frame being removed.
+  // Use a WeakPtr as an easy way to detect whether this has occurred. If so,
+  // this method should return immediately and not touch any part of the object,
+  // otherwise it will result in a use-after-free bug.
+  if (!weak_this)
+    return;
 
   if (commit_params.nav_entry_id == 0) {
     // For renderer initiated navigations, we send out a
@@ -3719,10 +3727,9 @@ void RenderFrameImpl::CommitFailedNavigationInternal(
       false /* was_initiated_in_this_frame */);
 
   // The load of the error page can result in this frame being removed.
-  // Use a WeakPtr as an easy way to detect whether this has occured. If so,
+  // Use a WeakPtr as an easy way to detect whether this has occurred. If so,
   // this method should return immediately and not touch any part of the object,
   // otherwise it will result in a use-after-free bug.
-  base::WeakPtr<RenderFrameImpl> weak_this = weak_factory_.GetWeakPtr();
   frame_->CommitNavigation(std::move(navigation_params),
                            std::move(document_state));
   if (!weak_this)

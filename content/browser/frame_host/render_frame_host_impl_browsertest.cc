@@ -8,6 +8,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/files/file_path.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
@@ -2351,6 +2353,35 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   observer.Wait();
   EXPECT_EQ(rfh->GetLastCommittedOrigin().Serialize(),
             EvalJs(shell()->web_contents(), "window.origin"));
+}
+
+// Regression test for crbug.com/953934. It shouldn't crash if we quickly remove
+// an object element in the middle of its failing navigation.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       NoCrashOnRemoveObjectElementWithInvalidData) {
+  base::FilePath test_data_dir;
+  CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
+  base::FilePath file_repro_path =
+      test_data_dir.Append(GetTestDataFilePath())
+          .Append(FILE_PATH_LITERAL(
+              "remove_object_element_with_invalid_data.html"));
+  GURL url(file_repro_path.value());
+
+  RenderProcessHostWatcher crash_observer(
+      shell()->web_contents(),
+      RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+
+  // This navigates to a page with an object element that will fail to load.
+  // When document load event hits, it'll attempt to remove that object element.
+  // This might happen while the object element's failed commit is underway.
+  // To make sure we hit these conditions and that we don't exit the test too
+  // soon, let's wait until the document.readyState finalizes. We don't really
+  // care if that succeeds since, in the failing case, the renderer is crashing.
+  NavigateToURL(shell(), url);
+  ignore_result(
+      WaitForRenderFrameReady(shell()->web_contents()->GetMainFrame()));
+
+  EXPECT_TRUE(crash_observer.did_exit_normally());
 }
 
 }  // namespace content
