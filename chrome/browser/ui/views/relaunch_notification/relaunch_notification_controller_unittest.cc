@@ -139,7 +139,7 @@ class RelaunchNotificationControllerTest : public ::testing::Test {
   RelaunchNotificationControllerTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
-            base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED),
+            base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED),
         scoped_local_state_(TestingBrowserProcess::GetGlobal()),
         upgrade_detector_(scoped_task_environment_.GetMockClock(),
                           scoped_task_environment_.GetMockTickClock()) {
