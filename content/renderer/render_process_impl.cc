@@ -165,11 +165,17 @@ RenderProcessImpl::RenderProcessImpl(
                         "--no-wasm-trap-handler");
 #if defined(OS_LINUX) && defined(ARCH_CPU_X86_64)
   if (base::FeatureList::IsEnabled(features::kWebAssemblyTrapHandler)) {
-    bool use_v8_signal_handler = false;
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     if (!command_line->HasSwitch(
             service_manager::switches::kDisableInProcessStackTraces)) {
-      base::debug::SetStackDumpFirstChanceCallback(v8::V8::TryHandleSignal);
+      // Only enable WebAssembly trap handler if we can set the callback.
+      if (base::debug::SetStackDumpFirstChanceCallback(
+              v8::V8::TryHandleSignal)) {
+        // We registered the WebAssembly trap handler callback with the stack
+        // dump signal handler successfully. We can tell V8 that it can enable
+        // WebAssembly trap handler without using the V8 signal handler.
+        v8::V8::EnableWebAssemblyTrapHandler(/*use_v8_signal_handler=*/false);
+      }
     } else if (!command_line->HasSwitch(switches::kEnableCrashReporter) &&
                !command_line->HasSwitch(
                    switches::kEnableCrashReporterForTesting)) {
@@ -177,10 +183,8 @@ RenderProcessImpl::RenderProcessImpl(
       // in-process stack traces are disabled then there will be no signal
       // handler. In this case, we fall back on V8's default handler
       // (https://crbug.com/798150).
-      use_v8_signal_handler = true;
+      v8::V8::EnableWebAssemblyTrapHandler(/*use_v8_signal_handler=*/true);
     }
-    // TODO(eholk): report UMA stat for how often this succeeds
-    v8::V8::EnableWebAssemblyTrapHandler(use_v8_signal_handler);
   }
 #endif
 #if defined(OS_WIN) && defined(ARCH_CPU_X86_64)

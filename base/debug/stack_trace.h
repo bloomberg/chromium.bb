@@ -39,7 +39,14 @@ namespace debug {
 BASE_EXPORT bool EnableInProcessStackDumping();
 
 #if defined(OS_POSIX)
-BASE_EXPORT void SetStackDumpFirstChanceCallback(bool (*handler)(int,
+// Sets a first-chance callback for the stack dump signal handler. This callback
+// is called at the beginning of the signal handler to handle special kinds of
+// signals, like out-of-bounds memory accesses in WebAssembly (WebAssembly Trap
+// Handler).
+// {SetStackDumpFirstChanceCallback} returns {true} if the callback
+// has been set correctly. It returns {false} if the stack dump signal handler
+// has not been registered with the OS, e.g. because of ASAN.
+BASE_EXPORT bool SetStackDumpFirstChanceCallback(bool (*handler)(int,
                                                                  void*,
                                                                  void*));
 #endif
