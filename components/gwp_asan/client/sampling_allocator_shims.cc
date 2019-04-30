@@ -14,9 +14,10 @@
 #include "base/process/process_metrics.h"
 #include "base/rand_util.h"
 #include "build/build_config.h"
-#include "components/gwp_asan/client/crash_key.h"
+#include "components/crash/core/common/crash_key.h"
 #include "components/gwp_asan/client/export.h"
 #include "components/gwp_asan/client/guarded_page_allocator.h"
+#include "components/gwp_asan/common/crash_key_name.h"
 
 #if defined(OS_MACOSX)
 #include <pthread.h>
@@ -325,9 +326,10 @@ void InstallAllocatorHooks(size_t max_allocated_pages,
                            size_t num_metadata,
                            size_t total_pages,
                            size_t sampling_frequency) {
+  static crash_reporter::CrashKeyString<24> malloc_crash_key(kGpaCrashKey);
   gpa = new GuardedPageAllocator();
   gpa->Init(max_allocated_pages, num_metadata, total_pages);
-  RegisterAllocatorAddress(gpa->GetCrashKeyAddress());
+  malloc_crash_key.Set(gpa->GetCrashKey());
   sampling_state.Init(sampling_frequency);
   base::allocator::InsertAllocatorDispatch(&g_allocator_dispatch);
 }

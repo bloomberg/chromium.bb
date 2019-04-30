@@ -295,8 +295,8 @@ void GuardedPageAllocator::RecordDeallocationMetadata(
   metadata_[metadata_idx].dealloc.trace_collected = true;
 }
 
-uintptr_t GuardedPageAllocator::GetCrashKeyAddress() const {
-  return reinterpret_cast<uintptr_t>(&state_);
+std::string GuardedPageAllocator::GetCrashKey() const {
+  return base::StringPrintf("%zx", reinterpret_cast<uintptr_t>(&state_));
 }
 
 }  // namespace internal

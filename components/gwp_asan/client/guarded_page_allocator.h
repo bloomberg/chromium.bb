@@ -7,6 +7,7 @@
 
 #include <atomic>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -62,9 +63,9 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   // previously returned by a call to Allocate, and not have been deallocated.
   size_t GetRequestedSize(const void* ptr) const;
 
-  // Get the address of the GuardedPageAllocator crash key (the address of the
-  // the shared allocator state with the crash handler.)
-  uintptr_t GetCrashKeyAddress() const;
+  // Retrieves the textual address of the shared allocator state required by the
+  // crash handler.
+  std::string GetCrashKey() const;
 
   // Returns true if ptr points to memory managed by this class.
   inline bool PointerIsMine(const void* ptr) const {

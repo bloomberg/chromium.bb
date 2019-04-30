@@ -85,12 +85,11 @@ MULTIPROCESS_TEST_MAIN(CrashingProcess) {
   std::string test_name = cmd_line->GetSwitchValueASCII("test-name");
   CHECK(!test_name.empty());
 
-  static char gpa_addr_buf[32];
-  snprintf(gpa_addr_buf, sizeof(gpa_addr_buf), "%zx",
-           gpa->GetCrashKeyAddress());
+  std::string gpa_addr = gpa->GetCrashKey();
   static crashpad::Annotation gpa_annotation(
-      crashpad::Annotation::Type::kString, kGpaCrashKey, gpa_addr_buf);
-  gpa_annotation.SetSize(strlen(gpa_addr_buf));
+      crashpad::Annotation::Type::kString, kGpaCrashKey,
+      const_cast<char*>(gpa_addr.c_str()));
+  gpa_annotation.SetSize(gpa_addr.size());
 
   base::FilePath metrics_dir(FILE_PATH_LITERAL(""));
   std::map<std::string, std::string> annotations;

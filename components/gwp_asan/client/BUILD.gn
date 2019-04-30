@@ -7,8 +7,6 @@ import("//build/config/allocator.gni")
 component("client") {
   output_name = "gwp_asan_client"
   sources = [
-    "crash_key.cc",
-    "crash_key.h",
     "export.h",
     "guarded_page_allocator.cc",
     "guarded_page_allocator.h",

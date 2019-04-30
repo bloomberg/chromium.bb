@@ -229,14 +229,10 @@ TEST_F(SamplingAllocatorShimsTest, Calloc) {
 MULTIPROCESS_TEST_MAIN_WITH_SETUP(
     CrashKey,
     SamplingAllocatorShimsTest::multiprocessTestSetup) {
-  std::string crash_key = crash_reporter::GetCrashKeyValue(kGpaCrashKey);
-
-  uint64_t value;
-  if (!base::HexStringToUInt64(crash_key, &value))
+  if (crash_reporter::GetCrashKeyValue(kGpaCrashKey) !=
+      GetGpaForTesting().GetCrashKey()) {
     return kFailure;
-
-  if (value != GetGpaForTesting().GetCrashKeyAddress())
-    return kFailure;
+  }
 
   return kSuccess;
 }
