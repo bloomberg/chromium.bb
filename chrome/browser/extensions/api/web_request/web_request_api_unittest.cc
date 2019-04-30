@@ -2219,6 +2219,53 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeSendHeadersResponses) {
   EXPECT_TRUE(request_headers_modified4);
 }
 
+// Ensure conflicts between different extensions are handled correctly with
+// header names being interpreted in a case insensitive manner. Regression test
+// for crbug.com/956795.
+TEST(ExtensionWebRequestHelpersTest,
+     TestMergeOnBeforeSendHeadersResponses_Conflicts) {
+  // Have two extensions which both modify header "key1".
+  EventResponseDeltas deltas;
+  {
+    EventResponseDelta d1("extid1", base::Time::FromInternalValue(2000));
+    d1.modified_request_headers.SetHeader("key1", "ext1");
+    deltas.push_back(std::move(d1));
+  }
+
+  {
+    EventResponseDelta d2("extid2", base::Time::FromInternalValue(1000));
+    d2.modified_request_headers.SetHeader("KEY1", "ext2");
+    deltas.push_back(std::move(d2));
+  }
+
+  deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
+
+  WebRequestInfo info;
+  info.logger = std::make_unique<TestLogger>();
+  helpers::IgnoredActions ignored_actions;
+  std::set<std::string> removed_headers, set_headers;
+  bool request_headers_modified = false;
+
+  net::HttpRequestHeaders headers;
+  headers.SetHeader("key1", "value 1");
+
+  // Take a reference to TestLogger to simplify accessing TestLogger methods.
+  TestLogger& logger = static_cast<TestLogger&>(*info.logger);
+
+  MergeOnBeforeSendHeadersResponses(info, deltas, &headers, &ignored_actions,
+                                    &removed_headers, &set_headers,
+                                    &request_headers_modified);
+
+  std::string header_value;
+  ASSERT_TRUE(headers.GetHeader("key1", &header_value));
+  EXPECT_EQ("ext1", header_value);
+  EXPECT_EQ(1u, ignored_actions.size());
+  EXPECT_EQ(2u, logger.log_size());
+  EXPECT_TRUE(request_headers_modified);
+  EXPECT_THAT(removed_headers, ::testing::IsEmpty());
+  EXPECT_THAT(set_headers, ElementsAre("key1"));
+}
+
 TEST(ExtensionWebRequestHelpersTest,
      TestMergeOnBeforeSendHeadersResponses_Cookies) {
   net::HttpRequestHeaders base_headers;

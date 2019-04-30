@@ -96,6 +96,10 @@ void RecordSpecialRequestHeadersChanged(
       "Extensions.WebRequest.SpecialRequestHeadersChanged", type);
 }
 
+bool IsStringLowerCaseASCII(const std::string& s) {
+  return std::none_of(s.begin(), s.end(), base::IsAsciiUpper<char>);
+}
+
 }  // namespace
 
 IgnoredAction::IgnoredAction(extensions::ExtensionId extension_id,
@@ -724,12 +728,11 @@ void MergeOnBeforeSendHeadersResponses(
           delta.modified_request_headers);
       while (modification.GetNext() && !extension_conflicts) {
         // This modification sets |key| to |value|.
-        const std::string& key = modification.name();
+        const std::string key = base::ToLowerASCII(modification.name());
         const std::string& value = modification.value();
 
         // We must not modify anything that has been deleted before.
-        if (removed_headers->find(key) != removed_headers->end() &&
-            !extension_conflicts) {
+        if (base::ContainsKey(*removed_headers, key)) {
           extension_conflicts = true;
           break;
         }
@@ -748,12 +751,12 @@ void MergeOnBeforeSendHeadersResponses(
 
         // We must not modify anything that has been set to a *different*
         // value before.
-        if (set_headers->find(key) != set_headers->end() &&
-            !extension_conflicts) {
+        if (base::ContainsKey(*set_headers, key)) {
           std::string current_value;
           if (!request_headers->GetHeader(key, &current_value) ||
               current_value != value) {
             extension_conflicts = true;
+            break;
           }
         }
       }
@@ -762,11 +765,11 @@ void MergeOnBeforeSendHeadersResponses(
     // Check whether any deletion affects a request header that has been
     // modified before.
     {
-      for (auto key = delta.deleted_request_headers.begin();
-           key != delta.deleted_request_headers.end() && !extension_conflicts;
-           ++key) {
-        if (set_headers->find(*key) != set_headers->end())
+      for (const std::string& key : delta.deleted_request_headers) {
+        if (base::ContainsKey(*set_headers, base::ToLowerASCII(key))) {
           extension_conflicts = true;
+          break;
+        }
       }
     }
 
@@ -779,14 +782,14 @@ void MergeOnBeforeSendHeadersResponses(
         net::HttpRequestHeaders::Iterator modification(
             delta.modified_request_headers);
         while (modification.GetNext())
-          set_headers->insert(modification.name());
+          set_headers->insert(base::ToLowerASCII(modification.name()));
       }
 
       // Perform all deletions and record which keys were deleted.
       {
         for (const auto& header : delta.deleted_request_headers) {
           request_headers->RemoveHeader(header);
-          removed_headers->insert(header);
+          removed_headers->insert(base::ToLowerASCII(header));
         }
       }
       request.logger->LogEvent(
@@ -802,6 +805,11 @@ void MergeOnBeforeSendHeadersResponses(
     }
   }
 
+  DCHECK(std::all_of(removed_headers->begin(), removed_headers->end(),
+                     IsStringLowerCaseASCII));
+  DCHECK(std::all_of(set_headers->begin(), set_headers->end(),
+                     IsStringLowerCaseASCII));
+
   // TODO(https://crbug.com/827582): Remove once data is gathered.
   static const std::map<std::string, WebRequestSpecialRequestHeaderModification>
       kHeaderMap{
@@ -816,7 +824,7 @@ void MergeOnBeforeSendHeadersResponses(
       };
   int special_headers_removed = 0;
   for (const auto& header : *removed_headers) {
-    auto it = kHeaderMap.find(base::ToLowerASCII(header));
+    auto it = kHeaderMap.find(header);
     if (it != kHeaderMap.end()) {
       special_headers_removed++;
       RecordSpecialRequestHeadersRemoved(it->second);
@@ -832,7 +840,7 @@ void MergeOnBeforeSendHeadersResponses(
 
   int special_headers_changed = 0;
   for (const auto& header : *set_headers) {
-    auto it = kHeaderMap.find(base::ToLowerASCII(header));
+    auto it = kHeaderMap.find(header);
     if (it != kHeaderMap.end()) {
       special_headers_changed++;
       RecordSpecialRequestHeadersChanged(it->second);
