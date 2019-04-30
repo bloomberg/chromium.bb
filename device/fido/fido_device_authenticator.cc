@@ -89,18 +89,23 @@ void FidoDeviceAuthenticator::GetTouch(base::OnceCallback<void()> callback) {
   MakeCredential(
       MakeCredentialTask::GetTouchRequest(device()),
       base::BindOnce(
-          [](base::OnceCallback<void()> callback, CtapDeviceResponseCode status,
+          [](std::string authenticator_id, base::OnceCallback<void()> callback,
+             CtapDeviceResponseCode status,
              base::Optional<AuthenticatorMakeCredentialResponse>) {
             // If the device didn't understand/process the request it may
             // fail immediately. Rather than count that as a touch, ignore
             // those cases completely.
             if (status == CtapDeviceResponseCode::kSuccess ||
                 status == CtapDeviceResponseCode::kCtap2ErrPinNotSet ||
-                status == CtapDeviceResponseCode::kCtap2ErrPinInvalid) {
+                status == CtapDeviceResponseCode::kCtap2ErrPinInvalid ||
+                status == CtapDeviceResponseCode::kCtap2ErrPinAuthInvalid) {
               std::move(callback).Run();
+              return;
             }
+            FIDO_LOG(DEBUG) << "Ignoring status " << static_cast<int>(status)
+                            << " from " << authenticator_id;
           },
-          std::move(callback)));
+          GetId(), std::move(callback)));
 }
 
 void FidoDeviceAuthenticator::GetRetries(GetRetriesCallback callback) {
