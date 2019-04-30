@@ -84,7 +84,6 @@ class ASH_EXPORT ParentAccessView : public NonAccessibleView,
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
   void RequestFocus() override;
-  void Layout() override;
   gfx::Size CalculatePreferredSize() const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
@@ -104,6 +103,9 @@ class ASH_EXPORT ParentAccessView : public NonAccessibleView,
 
   // Updates state of the view.
   void UpdateState(State state);
+
+  // Updates view's preferred size.
+  void UpdatePreferredSize();
 
   // Called when access code input changes. |complete| brings information
   // whether current input code is complete.
@@ -128,6 +130,7 @@ class ASH_EXPORT ParentAccessView : public NonAccessibleView,
   LoginButton* back_button_ = nullptr;
   views::LabelButton* help_button_ = nullptr;
   ArrowButtonView* submit_button_ = nullptr;
+  NonAccessibleView* pin_keyboard_to_footer_spacer_ = nullptr;
 
   ScopedObserver<TabletModeController, TabletModeObserver>
       tablet_mode_observer_{this};
