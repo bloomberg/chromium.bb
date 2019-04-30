@@ -69,7 +69,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeWebServicesShowSuggestions,
   ItemTypeWebServicesFooter,
   ItemTypeClearBrowsingDataClear,
+  // Footer to suggest the user to open Sync and Google services settings.
+  ItemTypeClearBrowsingDataFooter,
 };
+
+// Only used in this class to openn the Sync and Google services settings.
+// This link should not be dispatched.
+GURL kGoogleServicesSettingsURL("settings://open_google_services");
 
 }  // namespace
 
@@ -185,6 +191,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addSectionWithIdentifier:SectionIdentifierClearBrowsingData];
   [model addItem:[self clearBrowsingDetailItem]
       toSectionWithIdentifier:SectionIdentifierClearBrowsingData];
+  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
+    [model setFooter:[self showClearBrowsingDataFooterItem]
+        forSectionWithIdentifier:SectionIdentifierClearBrowsingData];
+  }
 }
 
 #pragma mark - Model Objects
@@ -223,6 +233,19 @@ typedef NS_ENUM(NSInteger, ItemType) {
       GetApplicationContext()->GetApplicationLocale());
 
   return showSuggestionsFooterItem;
+}
+
+// Creates TableViewHeaderFooterItem instance to show a link to open the Sync
+// and Google services settings.
+- (TableViewHeaderFooterItem*)showClearBrowsingDataFooterItem {
+  TableViewLinkHeaderFooterItem* showClearBrowsingDataFooterItem =
+      [[TableViewLinkHeaderFooterItem alloc]
+          initWithType:ItemTypeClearBrowsingDataFooter];
+  showClearBrowsingDataFooterItem.text =
+      l10n_util::GetNSString(IDS_IOS_OPTIONS_PRIVACY_GOOGLE_SERVICES_FOOTER);
+  showClearBrowsingDataFooterItem.linkURL = kGoogleServicesSettingsURL;
+
+  return showClearBrowsingDataFooterItem;
 }
 
 - (TableViewItem*)clearBrowsingDetailItem {
@@ -326,12 +349,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
     viewForFooterInSection:(NSInteger)section {
   UIView* footerView =
       [super tableView:tableView viewForFooterInSection:section];
-  if (SectionIdentifierWebServices ==
-          [self.tableViewModel sectionIdentifierForSection:section] &&
-      !unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    // The footer view is only shown when Unified consent flag is off.
-    TableViewLinkHeaderFooterView* footer =
-        base::mac::ObjCCastStrict<TableViewLinkHeaderFooterView>(footerView);
+  TableViewLinkHeaderFooterView* footer =
+      base::mac::ObjCCast<TableViewLinkHeaderFooterView>(footerView);
+  if (footer) {
     footer.delegate = self;
   }
   return footerView;
@@ -504,6 +524,18 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [self reconfigureCellsForItems:@[ _sendUsageDetailItem ]];
       return;
     }
+  }
+}
+
+#pragma mark - TableViewLinkHeaderFooterItemDelegate
+
+- (void)view:(TableViewLinkHeaderFooterView*)view didTapLinkURL:(GURL)URL {
+  if (URL == kGoogleServicesSettingsURL) {
+    // kGoogleServicesSettingsURL is not a realy link. It should be handled
+    // with a special case.
+    [self.dispatcher showGoogleServicesSettingsFromViewController:self];
+  } else {
+    [super view:view didTapLinkURL:URL];
   }
 }
 
