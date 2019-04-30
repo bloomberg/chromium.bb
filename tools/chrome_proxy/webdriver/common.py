@@ -316,7 +316,7 @@ class TestDriver:
       })
       if not self._flags.android:
         chrome_options.add_experimental_option('mobileEmulation',
-          {'deviceName': 'Google Nexus 5'})
+          {'deviceName': 'Pixel 2'})
 
     self._chrome_args.add(
       '--enable-features=%s' % ','.join(self._enable_features))

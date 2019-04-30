@@ -8,6 +8,7 @@ import common
 from common import TestDriver
 from common import IntegrationTest
 from common import ParseFlags
+from decorators import AndroidOnly
 from decorators import Slow
 from decorators import ChromeVersionEqualOrAfterM
 
@@ -168,6 +169,7 @@ class Video(IntegrationTest):
   # Check that the compressed video can be seeked. Use a slow network to ensure
   # the entire video isn't downloaded before we have a chance to seek.
   @Slow
+  @AndroidOnly
   def testVideoSeeking(self):
     with TestDriver(control_network_connection=True) as t:
       t.SetNetworkConnection("2G")
