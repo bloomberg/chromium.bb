@@ -64,6 +64,8 @@ class WebContentsObserverProxy : public WebContentsObserver {
   void SetToBaseURLForDataURLIfNeeded(std::string* url);
   void ViewportFitChanged(blink::mojom::ViewportFit value) override;
   void DidReloadLoFiImages() override;
+  void OnWebContentsFocused(RenderWidgetHost*) override;
+  void OnWebContentsLostFocus(RenderWidgetHost*) override;
 
   base::android::ScopedJavaGlobalRef<jobject> java_observer_;
   GURL base_url_of_last_started_data_url_;
