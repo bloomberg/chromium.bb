@@ -330,6 +330,7 @@ class EventBands {
     this.bands = [];
     this.charts = [];
     this.globalEvents = [];
+    this.vsyncEvents = null;
     this.resolution = resolution;
     this.minTimestamp = minTimestamp;
     this.maxTimestamp = maxTimestamp;
@@ -562,6 +563,16 @@ class EventBands {
     this.globalEvents.push(events);
   }
 
+  /**
+   * Sets VSYNC events and adds them as a global events.
+   *
+   * @param {Events} VSYNC events to set.
+   */
+  setVSync(events) {
+    this.addGlobal(events);
+    this.vsyncEvents = events;
+  }
+
   /** Initializes tooltip support by observing mouse events */
   setTooltip_() {
     this.tooltip = $('arc-event-band-tooltip');
@@ -644,6 +655,23 @@ class EventBands {
   }
 
   /**
+   * Returns timestamp of the last VSYNC event happened before or on given
+   * |eventTimestamp|.
+   *
+   * @param {number} eventTimestamp.
+   */
+  getVSyncTimestamp_(eventTimestamp) {
+    if (!this.vsyncEvents) {
+      return null;
+    }
+    var vsyncEventIndex = this.vsyncEvents.getLastBefore(eventTimestamp);
+    if (vsyncEventIndex < 0) {
+      return null;
+    }
+    return this.vsyncEvents.events[vsyncEventIndex][1];
+  }
+
+  /**
    * Creates and shows tooltip for event band for the position under |event|.
    *
    * @param {Object} mouse event.
@@ -651,9 +679,9 @@ class EventBands {
    */
   updateToolTipForBand_(event, eventBand) {
     var horizontalGap = 10;
-    var eventIconOffset = 70;
+    var eventIconOffset = 24;
     var eventIconRadius = 4;
-    var eventNameOffset = 78;
+    var eventNameOffset = 32;
     var verticalGap = 5;
     var intentOffset = 12;
     var lineHeight = 16;
@@ -668,10 +696,6 @@ class EventBands {
     this.tooltip.appendChild(svg);
     var yOffset = verticalGap + lineHeight;
     var eventTimestamp = this.offsetToTime(offsetX);
-    SVG.addText(
-        svg, horizontalGap, yOffset, fontSize,
-        timestempToMsText(eventTimestamp) + ' ms');
-    yOffset += lineHeight;
 
     // Find the event under the cursor. |index| points to the current event
     // and |nextIndex| points to the next event.
@@ -689,16 +713,33 @@ class EventBands {
     var globalEvent = this.findGlobalEvent_(eventTimestamp, 200 /* distance */);
     if (globalEvent) {
       // Show the global event info.
-      var attributes = eventAttributes[globalEvent[0]];
-      SVG.addText(
-          svg, horizontalGap, yOffset, fontSize,
-          attributes.name + ' ' + timestempToMsText(globalEvent[1]) + ' ms.');
+      var globalEventType = globalEvent[0];
+      var globalEventTimestamp = globalEvent[1];
+      // -1 to prevent VSYNC detects itself. In last case, previous VSYNC would
+      // be chosen.
+      var vsyncTimestamp = this.getVSyncTimestamp_(globalEventTimestamp - 1);
+
+
+      var attributes = eventAttributes[globalEventType];
+      SVG.addText(svg, horizontalGap, yOffset, fontSize, attributes.name);
       yOffset += lineHeight;
       // Render content if exists.
       if (globalEvent.length > 2) {
         SVG.addText(
             svg, horizontalGap + intentOffset, yOffset, fontSize,
             globalEvent[2]);
+        yOffset += lineHeight;
+      }
+
+      SVG.addText(
+          svg, horizontalGap, yOffset, fontSize,
+          timestempToMsText(globalEventTimestamp) + ' chart time ms');
+      yOffset += lineHeight;
+      if (vsyncTimestamp) {
+        SVG.addText(
+            svg, horizontalGap, yOffset, fontSize,
+            '+' + timestempToMsText(globalEventTimestamp - vsyncTimestamp) +
+                ' since last vsync ms');
         yOffset += lineHeight;
       }
     } else if (index < 0 || eventBand.isEndOfSequence(index)) {
@@ -709,7 +750,7 @@ class EventBands {
       SVG.addText(
           svg, horizontalGap, yOffset, fontSize,
           'Idle ' + timestempToMsText(startIdle) + '...' +
-              timestempToMsText(endIdle) + ' ms.');
+              timestempToMsText(endIdle) + ' chart time ms.');
       yOffset += lineHeight;
     } else {
       // Show the sequence of non-idle events.
@@ -723,23 +764,27 @@ class EventBands {
       }
 
       var sequenceTimestamp = eventBand.events[index][1];
+      var vsyncTimestamp = this.getVSyncTimestamp_(sequenceTimestamp);
+
+      SVG.addText(
+          svg, horizontalGap, yOffset, fontSize,
+          timestempToMsText(sequenceTimestamp) + ' chart time ms');
+      yOffset += lineHeight;
+      if (vsyncTimestamp) {
+        SVG.addText(
+            svg, horizontalGap, yOffset, fontSize,
+            '+' + timestempToMsText(sequenceTimestamp - vsyncTimestamp) +
+                ' since last vsync ms');
+        yOffset += lineHeight;
+      }
+
       var lastTimestamp = sequenceTimestamp;
-      var firstEvent = true;
       // Scan for the entries to show.
       var entriesToShow = [];
       while (index >= 0) {
         var attributes = eventBand.getEventAttributes(index);
         var eventTimestamp = eventBand.events[index][1];
         var entryToShow = {};
-        if (firstEvent) {
-          // Show the global timestamp.
-          entryToShow.prefix = timestempToMsText(sequenceTimestamp) + ' ms';
-          firstEvent = false;
-        } else {
-          // Show the offset relative to the start of sequence of events.
-          entryToShow.prefix = '+' +
-              timestempToMsText(eventTimestamp - sequenceTimestamp) + ' ms';
-        }
         entryToShow.color = attributes.color;
         entryToShow.text = attributes.name;
         if (entriesToShow.length > 0) {
@@ -760,7 +805,6 @@ class EventBands {
       }
       for (var i = 0; i < entriesToShow.length; ++i) {
         var entryToShow = entriesToShow[i];
-        SVG.addText(svg, horizontalGap, yOffset, fontSize, entryToShow.prefix);
         SVG.addCircle(
             svg, eventIconOffset, yOffset - eventIconRadius, eventIconRadius, 1,
             entryToShow.color, 'black');
@@ -1243,6 +1287,22 @@ class Events {
     }
     return this.getNextEvent(closest, 1 /* direction */);
   }
+
+  /**
+   * Returns the index of the last event before or on requested |timestamp|.
+   *
+   * @param {number} timestamp to search.
+   */
+  getLastBefore(timestamp) {
+    var closest = this.getClosest(timestamp);
+    if (closest < 0) {
+      return -1;
+    }
+    if (this.events[closest][1] <= timestamp) {
+      return closest;
+    }
+    return this.getNextEvent(closest, -1 /* direction */);
+  }
 }
 
 /**
@@ -1313,7 +1373,7 @@ function setGraphicBuffersModel(model) {
       new Events(model.android.buffers[0], 400, 499), topBandHeight,
       topBandPadding);
   // Add vsync events
-  androidBands.addGlobal(vsyncEvents);
+  androidBands.setVSync(vsyncEvents);
   androidBands.addGlobal(new Events(
       model.android.global_events, 405 /* kSurfaceFlingerCompositionJank */,
       405 /* kSurfaceFlingerCompositionJank */));
@@ -1348,7 +1408,7 @@ function setGraphicBuffersModel(model) {
       // Chrome buffer events are not displayed at this time.
     }
     // Add vsync events
-    activityBands.addGlobal(vsyncEvents);
+    activityBands.setVSync(vsyncEvents);
     activityBands.addGlobal(new Events(
         view.global_events, 106 /* kBufferFillJank */,
         106 /* kBufferFillJank */));
