@@ -6223,3 +6223,6 @@ crbug.com/956736 virtual/gpu-rasterization/images/imagemap-focus-ring-outline-co
 
 # Sheriff 2019-04-25
 crbug.com/956547 http/tests/dom/raf-throttling-out-of-view-cross-origin-page.html [ Pass Timeout ]
+
+# Sheriff 2019-04-30
+crbug.com/946534 [ Mac10.10 Mac10.11 ] external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-root-scroller.https.html [ Pass Failure ]
