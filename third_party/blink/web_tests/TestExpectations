@@ -2838,6 +2838,11 @@ crbug.com/704259 external/wpt/content-security-policy/reporting/reporting-api-se
 # Remove these from virtual tests when Network Error Logging is turned on by default
 crbug.com/748549 external/wpt/network-error-logging [ Skip ]
 
+# Remove from virtual tests when FreezeUserAgent is turned on by default.
+crbug.com/955620 http/tests/navigation/frozen-useragent.html [ Skip ]
+crbug.com/955620 virtual/outofblink-cors/http/tests/navigation/frozen-useragent.html [ Skip ]
+crbug.com/955620 virtual/stable/http/tests/navigation/frozen-useragent.html [ Skip ]
+
 crbug.com/863896 http/tests/permissions/test-query.html [ Timeout ]
 
 crbug.com/876485 fast/performance/performance-measure-null-exception.html [ Failure ]

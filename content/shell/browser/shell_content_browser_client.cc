@@ -10,6 +10,7 @@
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/no_destructor.h"
@@ -26,6 +27,7 @@
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
@@ -60,6 +62,7 @@
 #include "services/test/echo/public/cpp/manifest.h"
 #include "services/test/echo/public/mojom/echo.mojom.h"
 #include "storage/browser/quota/quota_settings.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "ui/base/ui_base_features.h"
 #include "url/gurl.h"
@@ -230,6 +233,11 @@ const service_manager::Manifest& GetContentUtilityOverlayManifest() {
 std::string GetShellUserAgent() {
   std::string product = "Chrome/" CONTENT_SHELL_VERSION;
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (base::FeatureList::IsEnabled(blink::features::kFreezeUserAgent)) {
+    return content::GetFrozenUserAgent(
+               command_line->HasSwitch(switches::kUseMobileUserAgent))
+        .as_string();
+  }
   if (command_line->HasSwitch(switches::kUseMobileUserAgent))
     product += " Mobile";
   return BuildUserAgentFromProduct(product);

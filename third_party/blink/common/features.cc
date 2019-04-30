@@ -48,6 +48,10 @@ const base::Feature kFirstContentfulPaintPlusPlus{
 const base::Feature kFreezePurgeMemoryAllPagesFrozen{
     "FreezePurgeMemoryAllPagesFrozen", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Freezes the user-agent as part of https://github.com/WICG/ua-client-hints.
+const base::Feature kFreezeUserAgent{"FreezeUserAgent",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables the experimental sweep-line algorithm for tracking "jank" from
 // layout objects changing their visual location between animation frames.
 const base::Feature kJankTrackingSweepLine{"JankTrackingSweepLine",

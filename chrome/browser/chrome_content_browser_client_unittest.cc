@@ -16,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_command_line.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
@@ -34,10 +35,12 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/user_agent.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "media/media_buildflags.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "url/gurl.h"
 
@@ -429,6 +432,45 @@ TEST(ChromeContentBrowserClientTest, GetMetricSuffixForURL) {
   // Not a Search result page (no query).
   EXPECT_EQ("", client.GetMetricSuffixForURL(
                     GURL("https://www.google.com/search?notaquery=nope")));
+}
+
+TEST(ChromeContentBrowserClient, UserAgentStringFrozen) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(blink::features::kFreezeUserAgent);
+
+#if defined(OS_ANDROID)
+  // Verify the correct user agent is returned when the UseMobileUserAgent
+  // command line flag is present.
+  const char* const kArguments[] = {"chrome"};
+  base::test::ScopedCommandLine scoped_command_line;
+  base::CommandLine* command_line = scoped_command_line.GetProcessCommandLine();
+  command_line->InitFromArgv(1, kArguments);
+
+  // Verify the mobile user agent string is not returned when not using a mobile
+  // user agent.
+  ASSERT_FALSE(command_line->HasSwitch(switches::kUseMobileUserAgent));
+  {
+    ChromeContentBrowserClient content_browser_client;
+    std::string buffer = content_browser_client.GetUserAgent();
+    EXPECT_EQ(buffer, content::frozen_user_agent_strings::kAndroid);
+  }
+
+  // Verify the mobile user agent string is returned when using a mobile user
+  // agent.
+  command_line->AppendSwitch(switches::kUseMobileUserAgent);
+  ASSERT_TRUE(command_line->HasSwitch(switches::kUseMobileUserAgent));
+  {
+    ChromeContentBrowserClient content_browser_client;
+    std::string buffer = content_browser_client.GetUserAgent();
+    EXPECT_EQ(buffer, content::frozen_user_agent_strings::kAndroidMobile);
+  }
+#else
+  {
+    ChromeContentBrowserClient content_browser_client;
+    std::string buffer = content_browser_client.GetUserAgent();
+    EXPECT_EQ(buffer, content::frozen_user_agent_strings::kDesktop);
+  }
+#endif
 }
 
 TEST(ChromeContentBrowserClient, UserAgentStringOrdering) {

@@ -1059,6 +1059,16 @@
     "args": ["--enable-blink-features=BidiCaretAffinity,EditingNG"]
   },
   {
+    "prefix": "passive-fingerprinting",
+    "base": "http/tests/navigation/useragent.php",
+    "args": ["--enable-features=FreezeUserAgent"]
+  },
+  {
+    "prefix": "passive-fingerprinting",
+    "base": "http/tests/navigation/frozen-useragent.html",
+    "args": ["--enable-features=FreezeUserAgent"]
+  },
+  {
     "prefix": "insecure-device-sensor-events",
     "base": "http/tests/security/powerfulFeatureRestrictions/",
     "args": ["--disable-features=RestrictDeviceSensorEventsToSecureContexts"]

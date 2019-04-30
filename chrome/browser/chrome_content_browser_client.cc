@@ -344,6 +344,7 @@
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/viz/public/interfaces/constants.mojom.h"
 #include "storage/browser/fileapi/external_mount_points.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/mojom/user_agent/user_agent_metadata.mojom.h"
@@ -1078,6 +1079,12 @@ std::string GetUserAgent() {
     LOG(WARNING) << "Ignored invalid value for flag --" << switches::kUserAgent;
   }
 
+  if (base::FeatureList::IsEnabled(blink::features::kFreezeUserAgent)) {
+    return content::GetFrozenUserAgent(
+               command_line->HasSwitch(switches::kUseMobileUserAgent))
+        .as_string();
+  }
+
   std::string product = GetProduct();
 #if defined(OS_ANDROID)
   if (command_line->HasSwitch(switches::kUseMobileUserAgent))
@@ -1088,7 +1095,6 @@ std::string GetUserAgent() {
 
 blink::UserAgentMetadata GetUserAgentMetadata() {
   blink::UserAgentMetadata metadata;
-
   metadata.brand = version_info::GetProductName();
   metadata.full_version = version_info::GetVersionNumber();
   metadata.major_version = version_info::GetMajorVersionNumber();
