@@ -41,6 +41,8 @@ class UpdateRequiredView {
 class UpdateRequiredScreenHandler : public UpdateRequiredView,
                                     public BaseScreenHandler {
  public:
+  using TView = UpdateRequiredView;
+
   explicit UpdateRequiredScreenHandler(JSCallsContainer* js_calls_container);
   ~UpdateRequiredScreenHandler() override;
 

@@ -584,7 +584,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
     // Set up the mocks for all screens.
     mock_welcome_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockWelcomeScreen>(
-            GetOobeUI()->GetWelcomeView(),
+            GetOobeUI()->GetView<WelcomeScreenHandler>(),
             base::BindRepeating(&WizardController::OnWelcomeScreenExit,
                                 base::Unretained(wizard_controller))));
 

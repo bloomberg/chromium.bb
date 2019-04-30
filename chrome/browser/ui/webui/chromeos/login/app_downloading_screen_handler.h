@@ -32,6 +32,8 @@ class AppDownloadingScreenView {
 class AppDownloadingScreenHandler : public BaseScreenHandler,
                                     public AppDownloadingScreenView {
  public:
+  using TView = AppDownloadingScreenView;
+
   explicit AppDownloadingScreenHandler(JSCallsContainer* js_calls_container);
   ~AppDownloadingScreenHandler() override;
 

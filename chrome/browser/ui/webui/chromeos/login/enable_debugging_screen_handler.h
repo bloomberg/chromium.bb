@@ -36,6 +36,8 @@ class EnableDebuggingScreenView {
 class EnableDebuggingScreenHandler : public EnableDebuggingScreenView,
                                      public BaseScreenHandler {
  public:
+  using TView = EnableDebuggingScreenView;
+
   explicit EnableDebuggingScreenHandler(JSCallsContainer* js_calls_container);
   ~EnableDebuggingScreenHandler() override;
 

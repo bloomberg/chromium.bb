@@ -23,6 +23,7 @@ class ArcOptInPreferenceHandler;
 namespace chromeos {
 
 class ArcTermsOfServiceScreen;
+class ArcTermsOfServiceScreenView;
 
 class ArcTermsOfServiceScreenViewObserver {
  public:
@@ -81,6 +82,8 @@ class ArcTermsOfServiceScreenHandler
       public system::TimezoneSettings::Observer,
       public chromeos::NetworkStateHandlerObserver {
  public:
+  using TView = ArcTermsOfServiceScreenView;
+
   explicit ArcTermsOfServiceScreenHandler(JSCallsContainer* js_calls_container);
   ~ArcTermsOfServiceScreenHandler() override;
 

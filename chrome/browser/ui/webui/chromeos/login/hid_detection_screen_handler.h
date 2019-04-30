@@ -53,6 +53,8 @@ class HIDDetectionScreenHandler
     : public HIDDetectionView,
       public BaseScreenHandler {
  public:
+  using TView = HIDDetectionView;
+
   HIDDetectionScreenHandler(JSCallsContainer* js_calls_container,
                             CoreOobeView* core_oobe_view);
   ~HIDDetectionScreenHandler() override;

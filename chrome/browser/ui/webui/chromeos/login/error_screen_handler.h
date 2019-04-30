@@ -58,6 +58,8 @@ class ErrorScreenView {
 // A class that handles the WebUI hooks in error screen.
 class ErrorScreenHandler : public BaseScreenHandler, public ErrorScreenView {
  public:
+  using TView = ErrorScreenView;
+
   explicit ErrorScreenHandler(JSCallsContainer* js_calls_container);
   ~ErrorScreenHandler() override;
 

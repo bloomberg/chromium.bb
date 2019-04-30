@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
+#include "chrome/browser/ui/webui/chromeos/login/fingerprint_setup_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chromeos/dbus/biod/fake_biod_client.h"
 
@@ -36,7 +37,7 @@ class FingerprintSetupTest : public InProcessBrowserTest {
     ShowLoginWizard(OobeScreen::SCREEN_TEST_NO_WINDOW);
 
     fingerprint_setup_screen_ = std::make_unique<FingerprintSetupScreen>(
-        GetOobeUI()->GetFingerprintSetupScreenView(),
+        GetOobeUI()->GetView<FingerprintSetupScreenHandler>(),
         base::BindRepeating(&FingerprintSetupTest::OnFingerprintSetupScreenExit,
                             base::Unretained(this)));
 

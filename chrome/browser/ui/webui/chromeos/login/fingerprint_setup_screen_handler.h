@@ -38,6 +38,8 @@ class FingerprintSetupScreenHandler
       public FingerprintSetupScreenView,
       public device::mojom::FingerprintObserver {
  public:
+  using TView = FingerprintSetupScreenView;
+
   explicit FingerprintSetupScreenHandler(JSCallsContainer* js_calls_container);
   ~FingerprintSetupScreenHandler() override;
 

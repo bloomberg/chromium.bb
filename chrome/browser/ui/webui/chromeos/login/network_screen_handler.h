@@ -52,6 +52,8 @@ class NetworkScreenView {
 class NetworkScreenHandler : public NetworkScreenView,
                              public BaseScreenHandler {
  public:
+  using TView = NetworkScreenView;
+
   NetworkScreenHandler(JSCallsContainer* js_calls_container,
                        CoreOobeView* core_oobe_view);
   ~NetworkScreenHandler() override;

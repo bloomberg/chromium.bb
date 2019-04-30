@@ -78,8 +78,7 @@ class EncryptionMigrationTest : public MixinBasedInProcessBrowserTest {
     // Initialize OOBE UI, and configure encryption migration screen handler for
     // test.
     ShowLoginWizard(OobeScreen::SCREEN_TEST_NO_WINDOW);
-    auto* handler = static_cast<EncryptionMigrationScreenHandler*>(
-        GetOobeUI()->GetEncryptionMigrationScreenView());
+    auto* handler = GetOobeUI()->GetHandler<EncryptionMigrationScreenHandler>();
     handler->SetFreeDiskSpaceFetcherForTesting(base::BindRepeating(
         &EncryptionMigrationTest::GetFreeSpace, base::Unretained(this)));
     handler->SetTickClockForTesting(&tick_clock_);

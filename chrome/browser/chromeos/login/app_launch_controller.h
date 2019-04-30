@@ -23,6 +23,7 @@ class Profile;
 
 namespace chromeos {
 
+class AppLaunchSplashScreenView;
 class LoginDisplayHost;
 class OobeUI;
 

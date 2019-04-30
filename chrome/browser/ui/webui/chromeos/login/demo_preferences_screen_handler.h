@@ -38,6 +38,8 @@ class DemoPreferencesScreenView {
 class DemoPreferencesScreenHandler : public BaseScreenHandler,
                                      public DemoPreferencesScreenView {
  public:
+  using TView = DemoPreferencesScreenView;
+
   explicit DemoPreferencesScreenHandler(JSCallsContainer* js_calls_container);
   ~DemoPreferencesScreenHandler() override;
 

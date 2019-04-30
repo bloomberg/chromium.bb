@@ -48,6 +48,8 @@ class UpdateView {
 
 class UpdateScreenHandler : public UpdateView, public BaseScreenHandler {
  public:
+  using TView = UpdateView;
+
   explicit UpdateScreenHandler(JSCallsContainer* js_calls_container);
   ~UpdateScreenHandler() override;
 

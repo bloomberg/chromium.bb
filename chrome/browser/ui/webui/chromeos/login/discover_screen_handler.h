@@ -35,6 +35,8 @@ class DiscoverScreenView {
 class DiscoverScreenHandler : public BaseScreenHandler,
                               public DiscoverScreenView {
  public:
+  using TView = DiscoverScreenView;
+
   explicit DiscoverScreenHandler(JSCallsContainer* js_calls_container);
   ~DiscoverScreenHandler() override;
 

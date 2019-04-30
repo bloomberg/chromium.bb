@@ -31,7 +31,8 @@ constexpr base::TimeDelta kArcKioskSplashScreenMinTime =
 
 ArcKioskController::ArcKioskController(LoginDisplayHost* host, OobeUI* oobe_ui)
     : host_(host),
-      arc_kiosk_splash_screen_view_(oobe_ui->GetArcKioskSplashScreenView()),
+      arc_kiosk_splash_screen_view_(
+          oobe_ui->GetView<ArcKioskSplashScreenHandler>()),
       weak_ptr_factory_(this) {}
 
 ArcKioskController::~ArcKioskController() {

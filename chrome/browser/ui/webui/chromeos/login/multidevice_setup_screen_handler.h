@@ -29,6 +29,8 @@ class MultiDeviceSetupScreenView {
 class MultiDeviceSetupScreenHandler : public BaseScreenHandler,
                                       public MultiDeviceSetupScreenView {
  public:
+  using TView = MultiDeviceSetupScreenView;
+
   explicit MultiDeviceSetupScreenHandler(JSCallsContainer* js_calls_container);
   ~MultiDeviceSetupScreenHandler() override;
 

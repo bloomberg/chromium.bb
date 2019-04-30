@@ -153,8 +153,8 @@ AppLaunchController::AppLaunchController(const std::string& app_id,
       diagnostic_mode_(diagnostic_mode),
       host_(host),
       oobe_ui_(oobe_ui),
-      app_launch_splash_screen_view_(oobe_ui_->GetAppLaunchSplashScreenView()) {
-}
+      app_launch_splash_screen_view_(
+          oobe_ui_->GetView<AppLaunchSplashScreenHandler>()) {}
 
 AppLaunchController::~AppLaunchController() {
   if (app_launch_splash_screen_view_)

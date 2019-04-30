@@ -29,45 +29,14 @@ class Connector;
 }  // namespace service_manager
 
 namespace chromeos {
-class AppDownloadingScreenView;
-class AppLaunchSplashScreenView;
-class ArcKioskSplashScreenView;
-class ArcTermsOfServiceScreenView;
-class AssistantOptInFlowScreenView;
-class AutoEnrollmentCheckScreenView;
-class BaseScreenHandler;
-class CoreOobeView;
-class DemoPreferencesScreenView;
-class DemoSetupScreenView;
-class DeviceDisabledScreenView;
-class EnableDebuggingScreenView;
-class EncryptionMigrationScreenView;
-class EnrollmentScreenView;
-class EulaView;
+
 class ErrorScreen;
-class DiscoverScreenView;
-class FingerprintSetupScreenView;
-class HIDDetectionView;
-class KioskAutolaunchScreenView;
-class KioskEnableScreenView;
 class LoginScreenContext;
-class MarketingOptInScreenView;
-class MultiDeviceSetupScreenView;
 class NativeWindowDelegate;
-class NetworkScreenView;
 class NetworkStateInformer;
 class OobeDisplayChooser;
-class RecommendAppsScreenView;
-class ResetView;
 class SigninScreenHandler;
 class SigninScreenHandlerDelegate;
-class SyncConsentScreenView;
-class TermsOfServiceScreenView;
-class UpdateView;
-class UpdateRequiredView;
-class SupervisionTransitionScreenView;
-class WelcomeView;
-class WrongHWIDScreenView;
 
 // A custom WebUI that defines datasource for out-of-box-experience (OOBE) UI:
 // - welcome screen (setup language/keyboard/network).
@@ -103,37 +72,7 @@ class OobeUI : public ui::MojoWebUIController {
   ~OobeUI() override;
 
   CoreOobeView* GetCoreOobeView();
-  WelcomeView* GetWelcomeView();
-  EulaView* GetEulaView();
-  UpdateView* GetUpdateView();
-  EnableDebuggingScreenView* GetEnableDebuggingScreenView();
-  EnrollmentScreenView* GetEnrollmentScreenView();
-  ResetView* GetResetView();
-  DemoSetupScreenView* GetDemoSetupScreenView();
-  DemoPreferencesScreenView* GetDemoPreferencesScreenView();
-  FingerprintSetupScreenView* GetFingerprintSetupScreenView();
-  KioskAutolaunchScreenView* GetKioskAutolaunchScreenView();
-  KioskEnableScreenView* GetKioskEnableScreenView();
-  TermsOfServiceScreenView* GetTermsOfServiceScreenView();
-  SyncConsentScreenView* GetSyncConsentScreenView();
-  ArcTermsOfServiceScreenView* GetArcTermsOfServiceScreenView();
-  RecommendAppsScreenView* GetRecommendAppsScreenView();
-  AppDownloadingScreenView* GetAppDownloadingScreenView();
   ErrorScreen* GetErrorScreen();
-  WrongHWIDScreenView* GetWrongHWIDScreenView();
-  AutoEnrollmentCheckScreenView* GetAutoEnrollmentCheckScreenView();
-  AppLaunchSplashScreenView* GetAppLaunchSplashScreenView();
-  ArcKioskSplashScreenView* GetArcKioskSplashScreenView();
-  HIDDetectionView* GetHIDDetectionView();
-  DeviceDisabledScreenView* GetDeviceDisabledScreenView();
-  EncryptionMigrationScreenView* GetEncryptionMigrationScreenView();
-  SupervisionTransitionScreenView* GetSupervisionTransitionScreenView();
-  UpdateRequiredView* GetUpdateRequiredScreenView();
-  AssistantOptInFlowScreenView* GetAssistantOptInFlowScreenView();
-  MultiDeviceSetupScreenView* GetMultiDeviceSetupScreenView();
-  DiscoverScreenView* GetDiscoverScreenView();
-  NetworkScreenView* GetNetworkScreenView();
-  MarketingOptInScreenView* GetMarketingOptInScreenView();
 
   // Collects localized strings from the owned handlers.
   void GetLocalizedStrings(base::DictionaryValue* localized_strings);
@@ -195,7 +134,6 @@ class OobeUI : public ui::MojoWebUIController {
     return GetHandler<THandler>();
   }
 
- private:
   // Find a handler instance.
   template <typename THandler>
   THandler* GetHandler() {
@@ -210,6 +148,7 @@ class OobeUI : public ui::MojoWebUIController {
     return nullptr;
   }
 
+ private:
   void AddWebUIHandler(std::unique_ptr<BaseWebUIHandler> handler);
   void AddScreenHandler(std::unique_ptr<BaseScreenHandler> handler);
 

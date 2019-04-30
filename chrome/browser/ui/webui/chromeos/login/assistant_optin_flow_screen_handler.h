@@ -47,6 +47,8 @@ class AssistantOptInFlowScreenHandler
       public arc::VoiceInteractionControllerClient::Observer,
       assistant::mojom::SpeakerIdEnrollmentClient {
  public:
+  using TView = AssistantOptInFlowScreenView;
+
   explicit AssistantOptInFlowScreenHandler(
       JSCallsContainer* js_calls_container);
   ~AssistantOptInFlowScreenHandler() override;

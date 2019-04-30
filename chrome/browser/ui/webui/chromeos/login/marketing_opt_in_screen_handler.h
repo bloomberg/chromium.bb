@@ -34,6 +34,8 @@ class MarketingOptInScreenView {
 class MarketingOptInScreenHandler : public BaseScreenHandler,
                                     public MarketingOptInScreenView {
  public:
+  using TView = MarketingOptInScreenView;
+
   explicit MarketingOptInScreenHandler(JSCallsContainer* js_calls_container);
   ~MarketingOptInScreenHandler() override;
 

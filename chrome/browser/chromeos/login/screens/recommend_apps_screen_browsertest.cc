@@ -24,6 +24,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/browser/ui/webui/chromeos/login/recommend_apps_screen_handler.h"
 #include "components/arc/arc_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_test_utils.h"
@@ -120,7 +121,7 @@ class RecommendAppsScreenTest : public InProcessBrowserTest {
         ->screen_manager()
         ->DeleteScreenForTesting(OobeScreen::SCREEN_RECOMMEND_APPS);
     auto recommend_apps_screen = std::make_unique<RecommendAppsScreen>(
-        GetOobeUI()->GetRecommendAppsScreenView(),
+        GetOobeUI()->GetView<RecommendAppsScreenHandler>(),
         base::BindRepeating(&RecommendAppsScreenTest::HandleScreenExit,
                             base::Unretained(this)));
     recommend_apps_screen_ = recommend_apps_screen.get();

@@ -56,6 +56,8 @@ class ResetView {
 class ResetScreenHandler : public ResetView,
                            public BaseScreenHandler {
  public:
+  using TView = ResetView;
+
   explicit ResetScreenHandler(JSCallsContainer* js_calls_container);
   ~ResetScreenHandler() override;
 

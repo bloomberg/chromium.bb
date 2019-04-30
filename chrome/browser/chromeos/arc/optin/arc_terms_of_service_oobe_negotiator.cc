@@ -23,7 +23,7 @@ chromeos::ArcTermsOfServiceScreenView* GetScreenView() {
   chromeos::LoginDisplayHost* host = chromeos::LoginDisplayHost::default_host();
   DCHECK(host);
   DCHECK(host->GetOobeUI());
-  return host->GetOobeUI()->GetArcTermsOfServiceScreenView();
+  return host->GetOobeUI()->GetView<chromeos::ArcTermsOfServiceScreenHandler>();
 }
 
 }  // namespace

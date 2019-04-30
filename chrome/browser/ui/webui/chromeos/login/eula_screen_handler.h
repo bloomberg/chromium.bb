@@ -42,6 +42,8 @@ class EulaView {
 // with the eula part of the JS page.
 class EulaScreenHandler : public EulaView, public BaseScreenHandler {
  public:
+  using TView = EulaView;
+
   EulaScreenHandler(JSCallsContainer* js_calls_container,
                     CoreOobeView* core_oobe_view);
   ~EulaScreenHandler() override;

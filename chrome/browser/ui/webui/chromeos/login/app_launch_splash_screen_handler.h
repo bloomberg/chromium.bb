@@ -60,6 +60,8 @@ class AppLaunchSplashScreenHandler
       public AppLaunchSplashScreenView,
       public NetworkStateInformer::NetworkStateInformerObserver {
  public:
+  using TView = AppLaunchSplashScreenView;
+
   AppLaunchSplashScreenHandler(
       JSCallsContainer* js_calls_container,
       const scoped_refptr<NetworkStateInformer>& network_state_informer,

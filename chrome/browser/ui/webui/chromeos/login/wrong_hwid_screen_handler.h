@@ -31,6 +31,8 @@ class WrongHWIDScreenView {
 class WrongHWIDScreenHandler : public WrongHWIDScreenView,
                                public BaseScreenHandler {
  public:
+  using TView = WrongHWIDScreenView;
+
   explicit WrongHWIDScreenHandler(JSCallsContainer* js_calls_container);
   ~WrongHWIDScreenHandler() override;
 

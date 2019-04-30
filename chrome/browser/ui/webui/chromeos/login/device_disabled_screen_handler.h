@@ -29,6 +29,8 @@ class DeviceDisabledScreenView {
 class DeviceDisabledScreenHandler : public DeviceDisabledScreenView,
                                     public BaseScreenHandler {
  public:
+  using TView = DeviceDisabledScreenView;
+
   explicit DeviceDisabledScreenHandler(JSCallsContainer* js_calls_container);
   ~DeviceDisabledScreenHandler() override;
 

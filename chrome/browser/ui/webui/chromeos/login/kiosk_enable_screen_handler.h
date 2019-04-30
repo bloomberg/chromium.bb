@@ -31,6 +31,8 @@ class KioskEnableScreenView {
 class KioskEnableScreenHandler : public KioskEnableScreenView,
                                  public BaseScreenHandler {
  public:
+  using TView = KioskEnableScreenView;
+
   explicit KioskEnableScreenHandler(JSCallsContainer* js_calls_container);
   ~KioskEnableScreenHandler() override;
 

@@ -50,6 +50,8 @@ class ArcKioskSplashScreenView {
 class ArcKioskSplashScreenHandler : public BaseScreenHandler,
                                     public ArcKioskSplashScreenView {
  public:
+  using TView = ArcKioskSplashScreenView;
+
   explicit ArcKioskSplashScreenHandler(JSCallsContainer* js_calls_container);
   ~ArcKioskSplashScreenHandler() override;
 

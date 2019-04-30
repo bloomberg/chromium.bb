@@ -50,6 +50,8 @@ class TermsOfServiceScreenView {
 class TermsOfServiceScreenHandler : public BaseScreenHandler,
                                     public TermsOfServiceScreenView {
  public:
+  using TView = TermsOfServiceScreenView;
+
   TermsOfServiceScreenHandler(JSCallsContainer* js_calls_container,
                               CoreOobeView* core_oobe_view);
   ~TermsOfServiceScreenHandler() override;

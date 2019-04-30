@@ -89,10 +89,36 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
+#include "chrome/browser/ui/webui/chromeos/login/app_downloading_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/arc_terms_of_service_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/assistant_optin_flow_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/auto_enrollment_check_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/demo_preferences_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/demo_setup_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/device_disabled_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/discover_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/enable_debugging_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/encryption_migration_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/enrollment_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/fingerprint_setup_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/hid_detection_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/kiosk_autolaunch_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/kiosk_enable_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/marketing_opt_in_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/multidevice_setup_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/browser/ui/webui/chromeos/login/recommend_apps_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/supervision_transition_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/sync_consent_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/update_required_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/update_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/wrong_hwid_screen_handler.h"
 #include "chrome/browser/ui/webui/help/help_utils_chromeos.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
@@ -397,111 +423,112 @@ std::vector<std::unique_ptr<BaseScreen>> WizardController::CreateScreens() {
 
   if (oobe_ui->display_type() == OobeUI::kOobeDisplay) {
     append(std::make_unique<WelcomeScreen>(
-        oobe_ui->GetWelcomeView(),
+        oobe_ui->GetView<WelcomeScreenHandler>(),
         base::BindRepeating(&WizardController::OnWelcomeScreenExit,
                             weak_factory_.GetWeakPtr())));
   }
 
   append(std::make_unique<NetworkScreen>(
-      oobe_ui->GetNetworkScreenView(),
+      oobe_ui->GetView<NetworkScreenHandler>(),
       base::BindRepeating(&WizardController::OnNetworkScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<UpdateScreen>(
-      this, oobe_ui->GetUpdateView(), oobe_ui->GetErrorScreen(),
+      this, oobe_ui->GetView<UpdateScreenHandler>(), oobe_ui->GetErrorScreen(),
       base::BindRepeating(&WizardController::OnUpdateScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<EulaScreen>(
-      oobe_ui->GetEulaView(),
+      oobe_ui->GetView<EulaScreenHandler>(),
       base::BindRepeating(&WizardController::OnEulaScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<EnrollmentScreen>(
-      oobe_ui->GetEnrollmentScreenView(),
+      oobe_ui->GetView<EnrollmentScreenHandler>(),
       base::BindRepeating(&WizardController::OnEnrollmentScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<chromeos::ResetScreen>(
-      oobe_ui->GetResetView(), oobe_ui->GetErrorScreen(),
+      oobe_ui->GetView<ResetScreenHandler>(), oobe_ui->GetErrorScreen(),
       base::BindRepeating(&WizardController::OnResetScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<chromeos::DemoSetupScreen>(
-      oobe_ui->GetDemoSetupScreenView(),
+      oobe_ui->GetView<DemoSetupScreenHandler>(),
       base::BindRepeating(&WizardController::OnDemoSetupScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<chromeos::DemoPreferencesScreen>(
-      oobe_ui->GetDemoPreferencesScreenView(),
+      oobe_ui->GetView<DemoPreferencesScreenHandler>(),
       base::BindRepeating(&WizardController::OnDemoPreferencesScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<EnableDebuggingScreen>(
-      oobe_ui->GetEnableDebuggingScreenView(),
+      oobe_ui->GetView<EnableDebuggingScreenHandler>(),
       base::BindRepeating(&WizardController::OnEnableDebuggingScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<KioskEnableScreen>(
-      oobe_ui->GetKioskEnableScreenView(),
+      oobe_ui->GetView<KioskEnableScreenHandler>(),
       base::BindRepeating(&WizardController::OnKioskEnableScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<KioskAutolaunchScreen>(
-      oobe_ui->GetKioskAutolaunchScreenView(),
+      oobe_ui->GetView<KioskAutolaunchScreenHandler>(),
       base::BindRepeating(&WizardController::OnKioskAutolaunchScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<TermsOfServiceScreen>(
-      oobe_ui->GetTermsOfServiceScreenView(),
+      oobe_ui->GetView<TermsOfServiceScreenHandler>(),
       base::BindRepeating(&WizardController::OnTermsOfServiceScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<SyncConsentScreen>(
-      oobe_ui->GetSyncConsentScreenView(),
+      oobe_ui->GetView<SyncConsentScreenHandler>(),
       base::BindRepeating(&WizardController::OnSyncConsentScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<ArcTermsOfServiceScreen>(
-      oobe_ui->GetArcTermsOfServiceScreenView(),
+      oobe_ui->GetView<ArcTermsOfServiceScreenHandler>(),
       base::BindRepeating(&WizardController::OnArcTermsOfServiceScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<RecommendAppsScreen>(
-      oobe_ui->GetRecommendAppsScreenView(),
+      oobe_ui->GetView<RecommendAppsScreenHandler>(),
       base::BindRepeating(&WizardController::OnRecommendAppsScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<AppDownloadingScreen>(
-      oobe_ui->GetAppDownloadingScreenView(),
+      oobe_ui->GetView<AppDownloadingScreenHandler>(),
       base::BindRepeating(&WizardController::OnAppDownloadingScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<WrongHWIDScreen>(
-      oobe_ui->GetWrongHWIDScreenView(),
+      oobe_ui->GetView<WrongHWIDScreenHandler>(),
       base::BindRepeating(&WizardController::OnWrongHWIDScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<chromeos::HIDDetectionScreen>(
-      oobe_ui->GetHIDDetectionView(),
+      oobe_ui->GetView<HIDDetectionScreenHandler>(),
       base::BindRepeating(&WizardController::OnHidDetectionScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<AutoEnrollmentCheckScreen>(
-      oobe_ui->GetAutoEnrollmentCheckScreenView(), oobe_ui->GetErrorScreen(),
+      oobe_ui->GetView<AutoEnrollmentCheckScreenHandler>(),
+      oobe_ui->GetErrorScreen(),
       base::BindRepeating(&WizardController::OnAutoEnrollmentCheckScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<DeviceDisabledScreen>(
-      oobe_ui->GetDeviceDisabledScreenView()));
+      oobe_ui->GetView<DeviceDisabledScreenHandler>()));
   append(std::make_unique<EncryptionMigrationScreen>(
-      oobe_ui->GetEncryptionMigrationScreenView()));
+      oobe_ui->GetView<EncryptionMigrationScreenHandler>()));
   append(std::make_unique<SupervisionTransitionScreen>(
-      oobe_ui->GetSupervisionTransitionScreenView(),
+      oobe_ui->GetView<SupervisionTransitionScreenHandler>(),
       base::BindRepeating(&WizardController::OnSupervisionTransitionScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<UpdateRequiredScreen>(
-      oobe_ui->GetUpdateRequiredScreenView()));
+      oobe_ui->GetView<UpdateRequiredScreenHandler>()));
   append(std::make_unique<AssistantOptInFlowScreen>(
-      oobe_ui->GetAssistantOptInFlowScreenView(),
+      oobe_ui->GetView<AssistantOptInFlowScreenHandler>(),
       base::BindRepeating(&WizardController::OnAssistantOptInFlowScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<MultiDeviceSetupScreen>(
-      oobe_ui->GetMultiDeviceSetupScreenView(),
+      oobe_ui->GetView<MultiDeviceSetupScreenHandler>(),
       base::BindRepeating(&WizardController::OnMultiDeviceSetupScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<DiscoverScreen>(
-      oobe_ui->GetDiscoverScreenView(),
+      oobe_ui->GetView<DiscoverScreenHandler>(),
       base::BindRepeating(&WizardController::OnDiscoverScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<FingerprintSetupScreen>(
-      oobe_ui->GetFingerprintSetupScreenView(),
+      oobe_ui->GetView<FingerprintSetupScreenHandler>(),
       base::BindRepeating(&WizardController::OnFingerprintSetupScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<MarketingOptInScreen>(
-      oobe_ui->GetMarketingOptInScreenView(),
+      oobe_ui->GetView<MarketingOptInScreenHandler>(),
       base::BindRepeating(&WizardController::OnMarketingOptInScreenExit,
                           weak_factory_.GetWeakPtr())));
 
@@ -1437,7 +1464,9 @@ void WizardController::AdvanceToScreen(OobeScreen screen) {
         base::Callback<void(bool)> on_check =
             base::Bind(&WizardController::OnHIDScreenNecessityCheck,
                        weak_factory_.GetWeakPtr());
-        GetOobeUI()->GetHIDDetectionView()->CheckIsScreenRequired(on_check);
+        GetOobeUI()
+            ->GetView<HIDDetectionScreenHandler>()
+            ->CheckIsScreenRequired(on_check);
       } else {
         ShowWelcomeScreen();
       }

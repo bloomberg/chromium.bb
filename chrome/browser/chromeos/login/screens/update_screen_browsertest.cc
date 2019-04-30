@@ -24,6 +24,7 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/browser/ui/webui/chromeos/login/update_screen_handler.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -91,7 +92,8 @@ class UpdateScreenTest : public MixinBasedInProcessBrowserTest {
     error_screen_ = GetOobeUI()->GetErrorScreen();
     error_delegate_ = std::make_unique<TestErrorScreenDelegate>();
     update_screen_ = std::make_unique<UpdateScreen>(
-        error_delegate_.get(), GetOobeUI()->GetUpdateView(), error_screen_,
+        error_delegate_.get(), GetOobeUI()->GetView<UpdateScreenHandler>(),
+        error_screen_,
         base::BindRepeating(&UpdateScreenTest::HandleScreenExit,
                             base::Unretained(this)));
     update_screen_->set_tick_clock_for_testing(&tick_clock_);
@@ -174,7 +176,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateCheckDoneBeforeShow) {
   ASSERT_NE(GetOobeUI()->current_screen(), OobeScreen::SCREEN_OOBE_UPDATE);
 
   // Show another screen, and verify the Update screen in not shown before it.
-  GetOobeUI()->GetNetworkScreenView()->Show();
+  GetOobeUI()->GetView<NetworkScreenHandler>()->Show();
   OobeScreenWaiter network_screen_waiter(OobeScreen::SCREEN_OOBE_NETWORK);
   network_screen_waiter.set_assert_next_screen();
   network_screen_waiter.Wait();

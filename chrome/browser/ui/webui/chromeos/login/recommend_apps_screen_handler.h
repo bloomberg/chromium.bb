@@ -48,6 +48,8 @@ class RecommendAppsScreenView {
 class RecommendAppsScreenHandler : public BaseScreenHandler,
                                    public RecommendAppsScreenView {
  public:
+  using TView = RecommendAppsScreenView;
+
   explicit RecommendAppsScreenHandler(JSCallsContainer* js_calls_container);
   ~RecommendAppsScreenHandler() override;
 

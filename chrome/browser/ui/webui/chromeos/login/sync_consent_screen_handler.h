@@ -40,6 +40,8 @@ class SyncConsentScreenView {
 class SyncConsentScreenHandler : public BaseScreenHandler,
                                  public SyncConsentScreenView {
  public:
+  using TView = SyncConsentScreenView;
+
   explicit SyncConsentScreenHandler(JSCallsContainer* js_calls_container);
   ~SyncConsentScreenHandler() override;
 
