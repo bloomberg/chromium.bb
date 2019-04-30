@@ -242,6 +242,7 @@
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
 #include "third_party/blink/renderer/core/page/scrolling/snap_coordinator.h"
 #include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
+#include "third_party/blink/renderer/core/page/spatial_navigation_controller.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -2782,9 +2783,7 @@ void Document::Shutdown() {
   if (focused_element_.Get()) {
     Element* old_focused_element = focused_element_;
     focused_element_ = nullptr;
-    if (GetPage())
-      GetPage()->GetChromeClient().FocusedNodeChanged(old_focused_element,
-                                                      nullptr);
+    NotifyFocusedElementChanged(old_focused_element, nullptr);
   }
   sequential_focus_navigation_starting_point_ = nullptr;
 
@@ -4742,19 +4741,8 @@ bool Document::SetFocusedElement(Element* new_focused_element,
     }
   }
 
-  if (!focus_change_blocked && focused_element_) {
-    // Create the AXObject cache in a focus change because Chromium relies on
-    // it.
-    if (AXObjectCache* cache = ExistingAXObjectCache()) {
-      cache->HandleFocusedUIElementChanged(old_focused_element,
-                                           new_focused_element);
-    }
-  }
-
-  if (!focus_change_blocked && GetPage()) {
-    GetPage()->GetChromeClient().FocusedNodeChanged(old_focused_element,
-                                                    focused_element_.Get());
-  }
+  if (!focus_change_blocked)
+    NotifyFocusedElementChanged(old_focused_element, focused_element_.Get());
 
   UpdateStyleAndLayoutTree();
   if (LocalFrame* frame = GetFrame())
@@ -4765,6 +4753,21 @@ bool Document::SetFocusedElement(Element* new_focused_element,
 void Document::ClearFocusedElement() {
   SetFocusedElement(nullptr, FocusParams(SelectionBehaviorOnFocus::kNone,
                                          kWebFocusTypeNone, nullptr));
+}
+
+void Document::NotifyFocusedElementChanged(Node* old_focused_element,
+                                           Node* new_focused_element) {
+  if (new_focused_element) {
+    if (AXObjectCache* cache = ExistingAXObjectCache()) {
+      cache->HandleFocusedUIElementChanged(old_focused_element,
+                                           new_focused_element);
+    }
+  }
+
+  if (GetPage()) {
+    GetPage()->GetChromeClient().FocusedNodeChanged(old_focused_element,
+                                                    new_focused_element);
+  }
 }
 
 void Document::SetSequentialFocusNavigationStartingPoint(Node* node) {
