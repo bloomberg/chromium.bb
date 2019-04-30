@@ -1233,12 +1233,6 @@ static void decode_token_recon_block(AV1Decoder *const pbi,
                     set_color_index_map_offset);
 }
 
-#if LOOP_FILTER_BITMASK
-static void store_bitmask_vartx(AV1_COMMON *cm, int mi_row, int mi_col,
-                                BLOCK_SIZE bsize, TX_SIZE tx_size,
-                                MB_MODE_INFO *mbmi);
-#endif
-
 static void set_inter_tx_size(MB_MODE_INFO *mbmi, int stride_log2,
                               int tx_w_log2, int tx_h_log2, int min_txs,
                               int split_size, int txs, int blk_row,
@@ -1303,16 +1297,16 @@ static void read_tx_size_vartx(MACROBLOCKD *xd, MB_MODE_INFO *mbmi,
                             xd->left_txfm_context + blk_row, sub_txs, tx_size);
 #if LOOP_FILTER_BITMASK
       if (store_bitmask) {
-        store_bitmask_vartx(cm, mi_row + blk_row, mi_col + blk_col,
-                            txsize_to_bsize[tx_size], TX_4X4, mbmi);
+        av1_store_bitmask_vartx(cm, mi_row + blk_row, mi_col + blk_col,
+                                txsize_to_bsize[tx_size], TX_4X4, mbmi);
       }
 #endif
       return;
     }
 #if LOOP_FILTER_BITMASK
     if (depth + 1 == MAX_VARTX_DEPTH && store_bitmask) {
-      store_bitmask_vartx(cm, mi_row + blk_row, mi_col + blk_col,
-                          txsize_to_bsize[tx_size], sub_txs, mbmi);
+      av1_store_bitmask_vartx(cm, mi_row + blk_row, mi_col + blk_col,
+                              txsize_to_bsize[tx_size], sub_txs, mbmi);
       store_bitmask = 0;
     }
 #endif
@@ -1337,8 +1331,8 @@ static void read_tx_size_vartx(MACROBLOCKD *xd, MB_MODE_INFO *mbmi,
                           xd->left_txfm_context + blk_row, tx_size, tx_size);
 #if LOOP_FILTER_BITMASK
     if (store_bitmask) {
-      store_bitmask_vartx(cm, mi_row + blk_row, mi_col + blk_col,
-                          txsize_to_bsize[tx_size], tx_size, mbmi);
+      av1_store_bitmask_vartx(cm, mi_row + blk_row, mi_col + blk_col,
+                              txsize_to_bsize[tx_size], tx_size, mbmi);
     }
 #endif
   }
@@ -1378,209 +1372,6 @@ static TX_SIZE read_tx_size(AV1_COMMON *cm, MACROBLOCKD *xd, int is_inter,
   }
 }
 
-#if LOOP_FILTER_BITMASK
-static void store_bitmask_vartx(AV1_COMMON *cm, int mi_row, int mi_col,
-                                BLOCK_SIZE bsize, TX_SIZE tx_size,
-                                MB_MODE_INFO *mbmi) {
-  LoopFilterMask *lfm = get_loop_filter_mask(cm, mi_row, mi_col);
-  const TX_SIZE tx_size_y_vert = txsize_vert_map[tx_size];
-  const TX_SIZE tx_size_y_horz = txsize_horz_map[tx_size];
-  const TX_SIZE tx_size_uv_vert = txsize_vert_map[av1_get_max_uv_txsize(
-      mbmi->sb_type, cm->seq_params.subsampling_x,
-      cm->seq_params.subsampling_y)];
-  const TX_SIZE tx_size_uv_horz = txsize_horz_map[av1_get_max_uv_txsize(
-      mbmi->sb_type, cm->seq_params.subsampling_x,
-      cm->seq_params.subsampling_y)];
-  const int is_square_transform_size = tx_size <= TX_64X64;
-  int mask_id = 0;
-  int offset = 0;
-  const int half_ratio_tx_size_max32 =
-      (tx_size > TX_64X64) & (tx_size <= TX_32X16);
-  if (is_square_transform_size) {
-    switch (tx_size) {
-      case TX_4X4: mask_id = mask_id_table_tx_4x4[bsize]; break;
-      case TX_8X8:
-        mask_id = mask_id_table_tx_8x8[bsize];
-        offset = 19;
-        break;
-      case TX_16X16:
-        mask_id = mask_id_table_tx_16x16[bsize];
-        offset = 33;
-        break;
-      case TX_32X32:
-        mask_id = mask_id_table_tx_32x32[bsize];
-        offset = 42;
-        break;
-      case TX_64X64: mask_id = 46; break;
-      default: assert(!is_square_transform_size); return;
-    }
-    mask_id += offset;
-  } else if (half_ratio_tx_size_max32) {
-    int tx_size_equal_block_size = bsize == txsize_to_bsize[tx_size];
-    mask_id = 47 + 2 * (tx_size - TX_4X8) + (tx_size_equal_block_size ? 0 : 1);
-  } else if (tx_size == TX_32X64) {
-    mask_id = 59;
-  } else if (tx_size == TX_64X32) {
-    mask_id = 60;
-  } else {  // quarter ratio tx size
-    mask_id = 61 + (tx_size - TX_4X16);
-  }
-  int index = 0;
-  const int row = mi_row % MI_SIZE_64X64;
-  const int col = mi_col % MI_SIZE_64X64;
-  const int shift = get_index_shift(col, row, &index);
-  const int vert_shift = tx_size_y_vert <= TX_8X8 ? shift : col;
-  for (int i = 0; i + index < 4; ++i) {
-    // y vertical.
-    lfm->tx_size_ver[0][tx_size_y_horz].bits[i + index] |=
-        (left_mask_univariant_reordered[mask_id].bits[i] << vert_shift);
-    // y horizontal.
-    lfm->tx_size_hor[0][tx_size_y_vert].bits[i + index] |=
-        (above_mask_univariant_reordered[mask_id].bits[i] << shift);
-    // u/v vertical.
-    lfm->tx_size_ver[1][tx_size_uv_horz].bits[i + index] |=
-        (left_mask_univariant_reordered[mask_id].bits[i] << vert_shift);
-    // u/v horizontal.
-    lfm->tx_size_hor[1][tx_size_uv_vert].bits[i + index] |=
-        (above_mask_univariant_reordered[mask_id].bits[i] << shift);
-  }
-}
-
-static void store_bitmask_univariant_tx(AV1_COMMON *cm, int mi_row, int mi_col,
-                                        BLOCK_SIZE bsize, MB_MODE_INFO *mbmi) {
-  // Use a lookup table that provides one bitmask for a given block size and
-  // a univariant transform size.
-  int index;
-  int shift;
-  int row;
-  int col;
-  LoopFilterMask *lfm = get_loop_filter_mask(cm, mi_row, mi_col);
-  const TX_SIZE tx_size_y_vert = txsize_vert_map[mbmi->tx_size];
-  const TX_SIZE tx_size_y_horz = txsize_horz_map[mbmi->tx_size];
-  const TX_SIZE tx_size_uv_vert = txsize_vert_map[av1_get_max_uv_txsize(
-      mbmi->sb_type, cm->seq_params.subsampling_x,
-      cm->seq_params.subsampling_y)];
-  const TX_SIZE tx_size_uv_horz = txsize_horz_map[av1_get_max_uv_txsize(
-      mbmi->sb_type, cm->seq_params.subsampling_x,
-      cm->seq_params.subsampling_y)];
-  const int is_square_transform_size = mbmi->tx_size <= TX_64X64;
-  int mask_id = 0;
-  int offset = 0;
-  const int half_ratio_tx_size_max32 =
-      (mbmi->tx_size > TX_64X64) & (mbmi->tx_size <= TX_32X16);
-  if (is_square_transform_size) {
-    switch (mbmi->tx_size) {
-      case TX_4X4: mask_id = mask_id_table_tx_4x4[bsize]; break;
-      case TX_8X8:
-        mask_id = mask_id_table_tx_8x8[bsize];
-        offset = 19;
-        break;
-      case TX_16X16:
-        mask_id = mask_id_table_tx_16x16[bsize];
-        offset = 33;
-        break;
-      case TX_32X32:
-        mask_id = mask_id_table_tx_32x32[bsize];
-        offset = 42;
-        break;
-      case TX_64X64: mask_id = 46; break;
-      default: assert(!is_square_transform_size); return;
-    }
-    mask_id += offset;
-  } else if (half_ratio_tx_size_max32) {
-    int tx_size_equal_block_size = bsize == txsize_to_bsize[mbmi->tx_size];
-    mask_id =
-        47 + 2 * (mbmi->tx_size - TX_4X8) + (tx_size_equal_block_size ? 0 : 1);
-  } else if (mbmi->tx_size == TX_32X64) {
-    mask_id = 59;
-  } else if (mbmi->tx_size == TX_64X32) {
-    mask_id = 60;
-  } else {  // quarter ratio tx size
-    mask_id = 61 + (mbmi->tx_size - TX_4X16);
-  }
-  row = mi_row % MI_SIZE_64X64;
-  col = mi_col % MI_SIZE_64X64;
-  shift = get_index_shift(col, row, &index);
-  const int vert_shift = tx_size_y_vert <= TX_8X8 ? shift : col;
-  for (int i = 0; i + index < 4; ++i) {
-    // y vertical.
-    lfm->tx_size_ver[0][tx_size_y_horz].bits[i + index] |=
-        (left_mask_univariant_reordered[mask_id].bits[i] << vert_shift);
-    // y horizontal.
-    lfm->tx_size_hor[0][tx_size_y_vert].bits[i + index] |=
-        (above_mask_univariant_reordered[mask_id].bits[i] << shift);
-    // u/v vertical.
-    lfm->tx_size_ver[1][tx_size_uv_horz].bits[i + index] |=
-        (left_mask_univariant_reordered[mask_id].bits[i] << vert_shift);
-    // u/v horizontal.
-    lfm->tx_size_hor[1][tx_size_uv_vert].bits[i + index] |=
-        (above_mask_univariant_reordered[mask_id].bits[i] << shift);
-  }
-}
-
-static void store_bitmask_other_info(AV1_COMMON *cm, int mi_row, int mi_col,
-                                     BLOCK_SIZE bsize, MB_MODE_INFO *mbmi,
-                                     int is_horz_coding_block_border,
-                                     int is_vert_coding_block_border) {
-  int index;
-  int shift;
-  int row;
-  LoopFilterMask *lfm = get_loop_filter_mask(cm, mi_row, mi_col);
-  const int row_start = mi_row % MI_SIZE_64X64;
-  const int col_start = mi_col % MI_SIZE_64X64;
-  shift = get_index_shift(col_start, row_start, &index);
-  if (is_horz_coding_block_border) {
-    const int block_shift = shift + mi_size_wide[bsize];
-    assert(block_shift <= 64);
-    const uint64_t right_edge_shift =
-        (block_shift == 64) ? 0xffffffffffffffff : ((uint64_t)1 << block_shift);
-    const uint64_t left_edge_shift = (block_shift == 64)
-                                         ? (((uint64_t)1 << shift) - 1)
-                                         : ((uint64_t)1 << shift);
-    assert(right_edge_shift > left_edge_shift);
-    const uint64_t top_edge_mask = right_edge_shift - left_edge_shift;
-    lfm->is_horz_border.bits[index] |= top_edge_mask;
-  }
-  if (is_vert_coding_block_border) {
-    const int is_vert_border = mask_id_table_vert_border[bsize];
-    const int vert_shift = block_size_high[bsize] <= 8 ? shift : col_start;
-    for (int i = 0; i + index < 4; ++i) {
-      lfm->is_vert_border.bits[i + index] |=
-          (left_mask_univariant_reordered[is_vert_border].bits[i]
-           << vert_shift);
-    }
-  }
-  const int is_skip = mbmi->skip && is_inter_block(mbmi);
-  if (is_skip) {
-    const int is_skip_mask = mask_id_table_tx_4x4[bsize];
-    for (int i = 0; i + index < 4; ++i) {
-      lfm->skip.bits[i + index] |=
-          (above_mask_univariant_reordered[is_skip_mask].bits[i] << shift);
-    }
-  }
-  const uint8_t level_vert_y = get_filter_level(cm, &cm->lf_info, 0, 0, mbmi);
-  const uint8_t level_horz_y = get_filter_level(cm, &cm->lf_info, 1, 0, mbmi);
-  const uint8_t level_u = get_filter_level(cm, &cm->lf_info, 0, 1, mbmi);
-  const uint8_t level_v = get_filter_level(cm, &cm->lf_info, 0, 2, mbmi);
-  for (int r = mi_row; r < mi_row + mi_size_high[bsize]; r++) {
-    index = 0;
-    row = r % MI_SIZE_64X64;
-    memset(&lfm->lfl_y_ver[row][col_start], level_vert_y,
-           sizeof(uint8_t) * mi_size_wide[bsize]);
-    memset(&lfm->lfl_y_hor[row][col_start], level_horz_y,
-           sizeof(uint8_t) * mi_size_wide[bsize]);
-    memset(&lfm->lfl_u_ver[row][col_start], level_u,
-           sizeof(uint8_t) * mi_size_wide[bsize]);
-    memset(&lfm->lfl_u_hor[row][col_start], level_u,
-           sizeof(uint8_t) * mi_size_wide[bsize]);
-    memset(&lfm->lfl_v_ver[row][col_start], level_v,
-           sizeof(uint8_t) * mi_size_wide[bsize]);
-    memset(&lfm->lfl_v_hor[row][col_start], level_v,
-           sizeof(uint8_t) * mi_size_wide[bsize]);
-  }
-}
-#endif
-
 static void parse_decode_block(AV1Decoder *const pbi, ThreadData *const td,
                                int mi_row, int mi_col, aom_reader *r,
                                PARTITION_TYPE partition, BLOCK_SIZE bsize) {
@@ -1619,12 +1410,12 @@ static void parse_decode_block(AV1Decoder *const pbi, ThreadData *const td,
     const int w = mi_size_wide[bsize];
     const int h = mi_size_high[bsize];
     if (w <= mi_size_wide[BLOCK_64X64] && h <= mi_size_high[BLOCK_64X64]) {
-      store_bitmask_univariant_tx(cm, mi_row, mi_col, bsize, mbmi);
+      av1_store_bitmask_univariant_tx(cm, mi_row, mi_col, bsize, mbmi);
     } else {
       for (int row = 0; row < h; row += mi_size_high[BLOCK_64X64]) {
         for (int col = 0; col < w; col += mi_size_wide[BLOCK_64X64]) {
-          store_bitmask_univariant_tx(cm, mi_row + row, mi_col + col,
-                                      BLOCK_64X64, mbmi);
+          av1_store_bitmask_univariant_tx(cm, mi_row + row, mi_col + col,
+                                          BLOCK_64X64, mbmi);
         }
       }
     }
@@ -1634,12 +1425,12 @@ static void parse_decode_block(AV1Decoder *const pbi, ThreadData *const td,
   const int w = mi_size_wide[bsize];
   const int h = mi_size_high[bsize];
   if (w <= mi_size_wide[BLOCK_64X64] && h <= mi_size_high[BLOCK_64X64]) {
-    store_bitmask_other_info(cm, mi_row, mi_col, bsize, mbmi, 1, 1);
+    av1_store_bitmask_other_info(cm, mi_row, mi_col, bsize, mbmi, 1, 1);
   } else {
     for (int row = 0; row < h; row += mi_size_high[BLOCK_64X64]) {
       for (int col = 0; col < w; col += mi_size_wide[BLOCK_64X64]) {
-        store_bitmask_other_info(cm, mi_row + row, mi_col + col, BLOCK_64X64,
-                                 mbmi, row == 0, col == 0);
+        av1_store_bitmask_other_info(cm, mi_row + row, mi_col + col,
+                                     BLOCK_64X64, mbmi, row == 0, col == 0);
       }
     }
   }

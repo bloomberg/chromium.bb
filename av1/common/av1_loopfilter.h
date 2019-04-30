@@ -33,6 +33,7 @@ enum lf_path {
   LF_PATH_SLOW,
 };
 
+enum { VERT_EDGE = 0, HORZ_EDGE = 1, NUM_EDGE_DIRS } UENUM1BYTE(EDGE_DIR);
 typedef struct {
   uint64_t bits[4];
 } FilterMask;
@@ -156,9 +157,9 @@ typedef struct LoopFilterWorkerData {
   MACROBLOCKD *xd;
 } LFWorkerData;
 
-uint8_t get_filter_level(const struct AV1Common *cm,
-                         const loop_filter_info_n *lfi_n, const int dir_idx,
-                         int plane, const MB_MODE_INFO *mbmi);
+uint8_t av1_get_filter_level(const struct AV1Common *cm,
+                             const loop_filter_info_n *lfi_n, const int dir_idx,
+                             int plane, const MB_MODE_INFO *mbmi);
 #if LOOP_FILTER_BITMASK
 void av1_filter_block_plane_ver(struct AV1Common *const cm,
                                 struct macroblockd_plane *const plane_ptr,
@@ -167,8 +168,7 @@ void av1_filter_block_plane_ver(struct AV1Common *const cm,
 void av1_filter_block_plane_hor(struct AV1Common *const cm,
                                 struct macroblockd_plane *const plane, int pl,
                                 int mi_row, int mi_col);
-LoopFilterMask *get_loop_filter_mask(const struct AV1Common *const cm,
-                                     int mi_row, int mi_col);
+
 int get_index_shift(int mi_col, int mi_row, int *index);
 
 void av1_build_bitmask_vert_info(
@@ -187,23 +187,19 @@ void av1_filter_block_plane_bitmask_horz(
     struct AV1Common *const cm, struct macroblockd_plane *const plane_ptr,
     int pl, int mi_row, int mi_col);
 
+void av1_store_bitmask_univariant_tx(struct AV1Common *cm, int mi_row,
+                                     int mi_col, BLOCK_SIZE bsize,
+                                     MB_MODE_INFO *mbmi);
+
+void av1_store_bitmask_other_info(struct AV1Common *cm, int mi_row, int mi_col,
+                                  BLOCK_SIZE bsize, MB_MODE_INFO *mbmi,
+                                  int is_horz_coding_block_border,
+                                  int is_vert_coding_block_border);
+
+void av1_store_bitmask_vartx(struct AV1Common *cm, int mi_row, int mi_col,
+                             BLOCK_SIZE bsize, TX_SIZE tx_size,
+                             MB_MODE_INFO *mbmi);
 #endif  // LOOP_FILTER_BITMASK
-
-extern const int mask_id_table_tx_4x4[BLOCK_SIZES_ALL];
-
-extern const int mask_id_table_tx_8x8[BLOCK_SIZES_ALL];
-
-extern const int mask_id_table_tx_16x16[BLOCK_SIZES_ALL];
-
-extern const int mask_id_table_tx_32x32[BLOCK_SIZES_ALL];
-
-// corresponds to entry id in table left_mask_univariant_reordered,
-// of block size mxn and TX_mxn.
-extern const int mask_id_table_vert_border[BLOCK_SIZES_ALL];
-
-extern const FilterMask left_mask_univariant_reordered[67];
-
-extern const FilterMask above_mask_univariant_reordered[67];
 
 #ifdef __cplusplus
 }  // extern "C"
