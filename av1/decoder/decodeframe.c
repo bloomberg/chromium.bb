@@ -1865,7 +1865,7 @@ static void read_wiener_filter(int wiener_win, WienerInfo *wiener_info,
 static void read_sgrproj_filter(SgrprojInfo *sgrproj_info,
                                 SgrprojInfo *ref_sgrproj_info, aom_reader *rb) {
   sgrproj_info->ep = aom_read_literal(rb, SGRPROJ_PARAMS_BITS, ACCT_STR);
-  const sgr_params_type *params = &sgr_params[sgrproj_info->ep];
+  const sgr_params_type *params = &av1_sgr_params[sgrproj_info->ep];
 
   if (params->r[0] == 0) {
     sgrproj_info->xqd[0] = 0;

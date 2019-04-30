@@ -332,7 +332,7 @@ static int64_t get_pixel_proj_error(const uint8_t *src8, int width, int height,
                                     int32_t *flt1, int flt1_stride, int *xqd,
                                     const sgr_params_type *params) {
   int xq[2];
-  decode_xq(xqd, xq, params);
+  av1_decode_xq(xqd, xq, params);
   if (!use_highbitdepth) {
     return av1_lowbd_pixel_proj_error(src8, width, height, src_stride, dat8,
                                       dat_stride, flt0, flt0_stride, flt1,
@@ -569,7 +569,7 @@ static SgrprojInfo search_selfguided_restoration(
     apply_sgr(ep, dat8, width, height, dat_stride, use_highbitdepth, bit_depth,
               pu_width, pu_height, flt0, flt1, flt_stride);
     aom_clear_system_state();
-    const sgr_params_type *const params = &sgr_params[ep];
+    const sgr_params_type *const params = &av1_sgr_params[ep];
     get_proj_subspace(src8, width, height, src_stride, dat8, dat_stride,
                       use_highbitdepth, flt0, flt_stride, flt1, flt_stride, exq,
                       params);
@@ -596,7 +596,7 @@ static SgrprojInfo search_selfguided_restoration(
 static int count_sgrproj_bits(SgrprojInfo *sgrproj_info,
                               SgrprojInfo *ref_sgrproj_info) {
   int bits = SGRPROJ_PARAMS_BITS;
-  const sgr_params_type *params = &sgr_params[sgrproj_info->ep];
+  const sgr_params_type *params = &av1_sgr_params[sgrproj_info->ep];
   if (params->r[0] > 0)
     bits += aom_count_primitive_refsubexpfin(
         SGRPROJ_PRJ_MAX0 - SGRPROJ_PRJ_MIN0 + 1, SGRPROJ_PRJ_SUBEXP_K,
@@ -1420,9 +1420,9 @@ void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi) {
 
     const int highbd = rsc.cm->seq_params.use_highbitdepth;
     if (!cpi->sf.disable_loop_restoration_chroma || !plane) {
-      extend_frame(rsc.dgd_buffer, rsc.plane_width, rsc.plane_height,
-                   rsc.dgd_stride, RESTORATION_BORDER, RESTORATION_BORDER,
-                   highbd);
+      av1_extend_frame(rsc.dgd_buffer, rsc.plane_width, rsc.plane_height,
+                       rsc.dgd_stride, RESTORATION_BORDER, RESTORATION_BORDER,
+                       highbd);
 
       for (RestorationType r = 0; r < num_rtypes; ++r) {
         if ((force_restore_type != RESTORE_TYPES) && (r != RESTORE_NONE) &&

@@ -1817,7 +1817,7 @@ static void write_sgrproj_filter(const SgrprojInfo *sgrproj_info,
                                  SgrprojInfo *ref_sgrproj_info,
                                  aom_writer *wb) {
   aom_write_literal(wb, sgrproj_info->ep, SGRPROJ_PARAMS_BITS);
-  const sgr_params_type *params = &sgr_params[sgrproj_info->ep];
+  const sgr_params_type *params = &av1_sgr_params[sgrproj_info->ep];
 
   if (params->r[0] == 0) {
     assert(sgrproj_info->xqd[0] == 0);
