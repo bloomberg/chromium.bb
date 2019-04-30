@@ -20551,4 +20551,87 @@ TEST_F(HttpNetworkTransactionTest, ProxyHTTPAndServerTLSAuth) {
   EXPECT_EQ(200, trans->GetResponseInfo()->headers->response_code());
 }
 
+// Test that socket reuse works with client certificates.
+TEST_F(HttpNetworkTransactionTest, ClientCertSocketReuse) {
+  auto cert_request_info = base::MakeRefCounted<SSLCertRequestInfo>();
+  cert_request_info->host_and_port = HostPortPair("www.example.org", 443);
+
+  std::unique_ptr<FakeClientCertIdentity> identity =
+      FakeClientCertIdentity::CreateFromCertAndKeyFiles(
+          GetTestCertsDirectory(), "client_1.pem", "client_1.pk8");
+  ASSERT_TRUE(identity);
+
+  HttpRequestInfo request1;
+  request1.method = "GET";
+  request1.url = GURL("https://www.example.org/a");
+  request1.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  HttpRequestInfo request2;
+  request2.method = "GET";
+  request2.url = GURL("https://www.example.org/b");
+  request2.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  // The first connection results in a client certificate request.
+  StaticSocketDataProvider data1;
+  session_deps_.socket_factory->AddSocketDataProvider(&data1);
+  SSLSocketDataProvider ssl1(ASYNC, ERR_SSL_CLIENT_AUTH_CERT_NEEDED);
+  ssl1.cert_request_info = cert_request_info.get();
+  ssl1.expected_send_client_cert = false;
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl1);
+
+  // The second connection succeeds and is usable for both requests.
+  MockWrite mock_writes[] = {
+      MockWrite("GET /a HTTP/1.1\r\n"
+                "Host: www.example.org\r\n"
+                "Connection: keep-alive\r\n\r\n"),
+      MockWrite("GET /b HTTP/1.1\r\n"
+                "Host: www.example.org\r\n"
+                "Connection: keep-alive\r\n\r\n"),
+  };
+  MockRead mock_reads[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"
+               "Content-Length: 0\r\n\r\n"),
+      MockRead("HTTP/1.1 200 OK\r\n"
+               "Content-Length: 0\r\n\r\n"),
+  };
+  StaticSocketDataProvider data2(mock_reads, mock_writes);
+  session_deps_.socket_factory->AddSocketDataProvider(&data2);
+  SSLSocketDataProvider ssl2(ASYNC, OK);
+  ssl2.expected_send_client_cert = true;
+  ssl2.expected_client_cert = identity->certificate();
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl2);
+
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+
+  // Start the first request. It succeeds after providing client certificates.
+  TestCompletionCallback callback;
+  auto trans =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+  ASSERT_THAT(callback.GetResult(trans->Start(&request1, callback.callback(),
+                                              NetLogWithSource())),
+              IsError(ERR_SSL_CLIENT_AUTH_CERT_NEEDED));
+
+  SSLCertRequestInfo* info = trans->GetResponseInfo()->cert_request_info.get();
+  ASSERT_TRUE(info);
+  EXPECT_FALSE(info->is_proxy);
+  EXPECT_EQ(info->host_and_port, cert_request_info->host_and_port);
+
+  ASSERT_THAT(callback.GetResult(trans->RestartWithCertificate(
+                  identity->certificate(), identity->ssl_private_key(),
+                  callback.callback())),
+              IsOk());
+  EXPECT_EQ(200, trans->GetResponseInfo()->headers->response_code());
+
+  // Make the second request. It completes without requesting client
+  // certificates.
+  trans =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+  ASSERT_THAT(callback.GetResult(trans->Start(&request2, callback.callback(),
+                                              NetLogWithSource())),
+              IsOk());
+  EXPECT_EQ(200, trans->GetResponseInfo()->headers->response_code());
+}
+
 }  // namespace net
