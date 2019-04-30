@@ -322,7 +322,8 @@ class CONTENT_EXPORT AppCacheStorage {
   int64_t last_group_id_;
   int64_t last_response_id_;
 
-  UsageMap usage_map_;  // maps origin to usage
+  // Maps origin to usage (includes padding, unless padding feature is disabled)
+  UsageMap usage_map_;
   AppCacheWorkingSet working_set_;
   AppCacheServiceImpl* service_;
   DelegateReferenceMap delegate_references_;

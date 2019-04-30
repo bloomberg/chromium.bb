@@ -42,7 +42,9 @@ FORWARD_DECLARE_TEST(AppCacheDatabaseTest, ExperimentalFlags);
 FORWARD_DECLARE_TEST(AppCacheDatabaseTest, OnlineWhiteListRecords);
 FORWARD_DECLARE_TEST(AppCacheDatabaseTest, ReCreate);
 FORWARD_DECLARE_TEST(AppCacheDatabaseTest, DeletableResponseIds);
-FORWARD_DECLARE_TEST(AppCacheDatabaseTest, OriginUsage);
+FORWARD_DECLARE_TEST(AppCacheDatabaseTest, OriginUsageWithPaddingDisabled);
+FORWARD_DECLARE_TEST(AppCacheDatabaseTest, OriginUsageWithPaddingEnabled);
+FORWARD_DECLARE_TEST(AppCacheDatabaseTest, FindCachesForOrigin);
 FORWARD_DECLARE_TEST(AppCacheDatabaseTest,
                      UpgradeSchemaForVersionsWithoutSupportedMigrations);
 FORWARD_DECLARE_TEST(AppCacheDatabaseTest, UpgradeSchemaFrom7to8);
@@ -271,7 +273,11 @@ class CONTENT_EXPORT AppCacheDatabase {
                            OnlineWhiteListRecords);
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest, ReCreate);
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest, DeletableResponseIds);
-  FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest, OriginUsage);
+  FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest,
+                           OriginUsageWithPaddingDisabled);
+  FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest,
+                           OriginUsageWithPaddingEnabled);
+  FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest, FindCachesForOrigin);
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest,
                            UpgradeSchemaForVersionsWithoutSupportedMigrations);
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest,
