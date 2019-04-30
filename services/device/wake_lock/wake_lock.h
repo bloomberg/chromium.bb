@@ -63,7 +63,7 @@ class WakeLock : public mojom::WakeLock {
            Observer* observer);
   ~WakeLock() override;
 
-  // WakeLockSevice implementation.
+  // mojom::WakeLock implementation.
   void RequestWakeLock() override;
   void CancelWakeLock() override;
   void AddClient(mojom::WakeLockRequest request) override;
