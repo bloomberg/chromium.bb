@@ -18,6 +18,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsEnabledStateUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
+import org.chromium.chrome.browser.night_mode.NightModeUtils;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.password_manager.ManagePasswordsReferrer;
 import org.chromium.chrome.browser.preferences.autofill_assistant.AutofillAssistantPreferences;
@@ -227,7 +228,7 @@ public class MainPreferences extends PreferenceFragment
             removePreferenceIfPresent(PREF_CONTEXTUAL_SUGGESTIONS);
         }
 
-        if (FeatureUtilities.isNightModeAvailable()) {
+        if (NightModeUtils.isNightModeSupported() && FeatureUtilities.isNightModeAvailable()) {
             addPreferenceIfAbsent(PREF_UI_THEME);
         } else {
             removePreferenceIfPresent(PREF_UI_THEME);

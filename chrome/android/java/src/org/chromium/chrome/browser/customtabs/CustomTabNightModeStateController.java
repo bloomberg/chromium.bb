@@ -13,6 +13,7 @@ import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.init.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
+import org.chromium.chrome.browser.night_mode.NightModeUtils;
 import org.chromium.chrome.browser.night_mode.SystemNightModeMonitor;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -47,8 +48,10 @@ class CustomTabNightModeStateController
      * @param intent  The {@link Intent} to retrieve information about the initial state.
      */
     void initialize(AppCompatDelegate delegate, Intent intent) {
-        if (!FeatureUtilities.isNightModeForCustomTabsAvailable()) {
-            mRequestedColorScheme = CustomTabsIntent.COLOR_SCHEME_SYSTEM;
+        if (!NightModeUtils.isNightModeSupported()
+                || !FeatureUtilities.isNightModeForCustomTabsAvailable()) {
+            // Always stay in light mode if night mode is not available.
+            mRequestedColorScheme = CustomTabsIntent.COLOR_SCHEME_LIGHT;
             return;
         }
 

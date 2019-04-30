@@ -66,7 +66,7 @@ public class GlobalNightModeStateController implements NightModeStateProvider,
     }
 
     private GlobalNightModeStateController() {
-        if (!FeatureUtilities.isNightModeAvailable()) {
+        if (!NightModeUtils.isNightModeSupported() || !FeatureUtilities.isNightModeAvailable()) {
             // Always stay in light mode if night mode is not available.
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
             return;
