@@ -143,12 +143,8 @@ class BotUpdateApi(recipe_api.RecipeApi):
     if patch:
       repo_url = self.m.tryserver.gerrit_change_repo_url
       fetch_ref = self.m.tryserver.gerrit_change_fetch_ref
-      target_ref = self.m.tryserver.gerrit_change_target_ref
       if repo_url and fetch_ref:
-        flags.append([
-            '--patch_ref',
-            '%s@%s:%s' % (repo_url, target_ref, fetch_ref),
-        ])
+        flags.append(['--patch_ref', '%s@%s' % (repo_url, fetch_ref)])
       if patch_refs:
         flags.extend(
             ['--patch_ref', patch_ref]
@@ -199,8 +195,8 @@ class BotUpdateApi(recipe_api.RecipeApi):
       if fixed_revision:
         fixed_revisions[name] = fixed_revision
         if fixed_revision.upper() == 'HEAD':
-          # Sync to correct destination ref if HEAD was specified.
-          fixed_revision = self._destination_ref(cfg, name)
+          # Sync to correct destination branch if HEAD was specified.
+          fixed_revision = self._destination_branch(cfg, name)
         # If we're syncing to a ref, we want to make sure it exists before
         # trying to check it out.
         if (fixed_revision.startswith('refs/') and
@@ -372,13 +368,13 @@ class BotUpdateApi(recipe_api.RecipeApi):
 
     return step_result
 
-  def _destination_ref(self, cfg, path):
-    """Returns the ref branch of a CL for the matching project if available or
-    HEAD otherwise.
+  def _destination_branch(self, cfg, path):
+    """Returns the destination branch of a CL for the matching project
+    if available or HEAD otherwise.
 
     If there's no Gerrit CL associated with the run, returns 'HEAD'.
-    Otherwise this queries Gerrit for the correct destination ref, which
-    might differ from refs/heads/master.
+    Otherwise this queries Gerrit for the correct destination branch, which
+    might differ from master.
 
     Args:
       cfg: The used gclient config.
@@ -386,13 +382,11 @@ class BotUpdateApi(recipe_api.RecipeApi):
           'src/v8'. The query will only be made for the project that matches
           the CL's project.
     Returns:
-        A destination ref as understood by bot_update.py if available
-        and if different from refs/heads/master, returns 'HEAD' otherwise.
+        A destination branch as understood by bot_update.py if available
+        and if different from master, returns 'HEAD' otherwise.
     """
     # Ignore project paths other than the one belonging to the current CL.
     patch_path = self.m.gclient.get_gerrit_patch_root(gclient_config=cfg)
-    if patch_path:
-      patch_path = patch_path.replace(self.m.path.sep, '/')
     if not patch_path or path != patch_path:
       return 'HEAD'
 
@@ -400,7 +394,13 @@ class BotUpdateApi(recipe_api.RecipeApi):
     if target_ref == 'refs/heads/master':
       return 'HEAD'
 
-    return target_ref
+    # TODO: Remove. Return ref, not branch.
+    ret = target_ref
+    prefix = 'refs/heads/'
+    if ret.startswith(prefix):
+      ret = ret[len(prefix):]
+
+    return ret
 
   def _resolve_fixed_revisions(self, bot_update_json):
     """Set all fixed revisions from the first sync to their respective
