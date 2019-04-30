@@ -115,6 +115,13 @@ python_library("resource_sizes_py") {
   ]
 }
 
+python_library("bundle_wrapper_script_py") {
+  pydeps_file = "gyp/create_bundle_wrapper_script.pydeps"
+  data = [
+    "//third_party/android_build_tools/bundletool/bundletool-all-0.9.0.jar",
+  ]
+}
+
 # Create wrapper scripts in out/bin that takes care of setting the
 # --output-directory.
 _scripts_to_wrap = [

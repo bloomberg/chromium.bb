@@ -4617,6 +4617,11 @@ if (enable_java_templates) {
       # Telemetry for bundles uses the wrapper script for installation.
       data = [
         _bundle_wrapper_script_path,
+        _android_aapt2_path,
+        _keystore_path,
+      ]
+      data_deps = [
+        "//build/android:bundle_wrapper_script_py",
       ]
 
       deps = [
