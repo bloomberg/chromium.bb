@@ -67,16 +67,16 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothGattCharacteristicClient
   void StartNotify(
       const dbus::ObjectPath& object_path,
       device::BluetoothGattCharacteristic::NotificationType notification_type,
-      const base::Closure& callback,
+      base::OnceClosure callback,
       ErrorCallback error_callback) override;
 #else
   void StartNotify(const dbus::ObjectPath& object_path,
-                   const base::Closure& callback,
+                   base::OnceClosure callback,
                    ErrorCallback error_callback) override;
 #endif
 
   void StopNotify(const dbus::ObjectPath& object_path,
-                  const base::Closure& callback,
+                  base::OnceClosure callback,
                   ErrorCallback error_callback) override;
 
   // Makes the group of characteristics belonging to a particular GATT based

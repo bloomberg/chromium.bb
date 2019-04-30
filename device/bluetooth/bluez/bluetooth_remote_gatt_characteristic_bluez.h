@@ -70,17 +70,17 @@ class BluetoothRemoteGattCharacteristicBlueZ
   void SubscribeToNotifications(
       device::BluetoothRemoteGattDescriptor* ccc_descriptor,
       NotificationType notification_type,
-      const base::Closure& callback,
+      base::OnceClosure callback,
       ErrorCallback error_callback) override;
 #else
   void SubscribeToNotifications(
       device::BluetoothRemoteGattDescriptor* ccc_descriptor,
-      const base::Closure& callback,
+      base::OnceClosure callback,
       ErrorCallback error_callback) override;
 #endif
   void UnsubscribeFromNotifications(
       device::BluetoothRemoteGattDescriptor* ccc_descriptor,
-      const base::Closure& callback,
+      base::OnceClosure callback,
       ErrorCallback error_callback) override;
 
  private:
@@ -98,7 +98,7 @@ class BluetoothRemoteGattCharacteristicBlueZ
 
   // Called by dbus:: on successful completion of a request to start
   // notifications.
-  void OnStartNotifySuccess(const base::Closure& callback);
+  void OnStartNotifySuccess(base::OnceClosure callback);
 
   // Called by dbus:: on unsuccessful completion of a request to start
   // notifications.
@@ -108,11 +108,11 @@ class BluetoothRemoteGattCharacteristicBlueZ
 
   // Called by dbus:: on successful completion of a request to stop
   // notifications.
-  void OnStopNotifySuccess(const base::Closure& callback);
+  void OnStopNotifySuccess(base::OnceClosure callback);
 
   // Called by dbus:: on unsuccessful completion of a request to stop
   // notifications.
-  void OnStopNotifyError(const base::Closure& callback,
+  void OnStopNotifyError(base::OnceClosure callback,
                          const std::string& error_name,
                          const std::string& error_message);
 

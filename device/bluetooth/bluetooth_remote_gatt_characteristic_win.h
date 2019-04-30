@@ -55,11 +55,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicWin
 
  protected:
   void SubscribeToNotifications(BluetoothRemoteGattDescriptor* ccc_descriptor,
-                                const base::Closure& callback,
+                                base::OnceClosure callback,
                                 ErrorCallback error_callback) override;
   void UnsubscribeFromNotifications(
       BluetoothRemoteGattDescriptor* ccc_descriptor,
-      const base::Closure& callback,
+      base::OnceClosure callback,
       ErrorCallback error_callback) override;
 
  private:
@@ -88,7 +88,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicWin
   BluetoothRemoteGattService::GattErrorCode HRESULTToGattErrorCode(HRESULT hr);
   void OnGattCharacteristicValueChanged(
       std::unique_ptr<std::vector<uint8_t>> new_value);
-  void GattEventRegistrationCallback(const base::Closure& callback,
+  void GattEventRegistrationCallback(base::OnceClosure callback,
                                      ErrorCallback error_callback,
                                      PVOID event_handle,
                                      HRESULT hr);

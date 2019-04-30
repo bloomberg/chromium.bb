@@ -35,6 +35,7 @@
 
 using testing::_;
 using testing::AtLeast;
+using testing::DoAll;
 using testing::NiceMock;
 using testing::Return;
 using testing::SaveArg;
@@ -470,7 +471,7 @@ class SecureChannelBluetoothLowEnergyWeaveClientConnectionTest
   void CharacteristicsFound(
       TestBluetoothLowEnergyWeaveClientConnection* connection) {
     EXPECT_CALL(*rx_characteristic_, StartNotifySession_(_, _))
-        .WillOnce(DoAll(SaveArg<0>(&notify_session_success_callback_),
+        .WillOnce(DoAll(MoveArg<0>(&notify_session_success_callback_),
                         MoveArg<1>(&notify_session_error_callback_)));
     EXPECT_FALSE(characteristics_finder_error_callback_.is_null());
     ASSERT_FALSE(characteristics_finder_success_callback_.is_null());
@@ -501,7 +502,7 @@ class SecureChannelBluetoothLowEnergyWeaveClientConnectionTest
         new NiceMock<device::MockBluetoothGattNotifySession>(
             tx_characteristic_->GetWeakPtr()));
 
-    notify_session_success_callback_.Run(std::move(notify_session));
+    std::move(notify_session_success_callback_).Run(std::move(notify_session));
     task_runner_->RunUntilIdle();
 
     VerifyGattNotifySessionResult(true);

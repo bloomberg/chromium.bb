@@ -363,7 +363,7 @@ BluetoothRemoteGattCharacteristicWinrt::GetCharacteristicForTesting() {
 
 void BluetoothRemoteGattCharacteristicWinrt::SubscribeToNotifications(
     BluetoothRemoteGattDescriptor* ccc_descriptor,
-    const base::Closure& callback,
+    base::OnceClosure callback,
     ErrorCallback error_callback) {
   value_changed_token_ = AddTypedEventHandler(
       characteristic_.Get(), &IGattCharacteristic::add_ValueChanged,
@@ -384,12 +384,12 @@ void BluetoothRemoteGattCharacteristicWinrt::SubscribeToNotifications(
       (GetProperties() & PROPERTY_NOTIFY)
           ? GattClientCharacteristicConfigurationDescriptorValue_Notify
           : GattClientCharacteristicConfigurationDescriptorValue_Indicate,
-      callback, std::move(error_callback));
+      std::move(callback), std::move(error_callback));
 }
 
 void BluetoothRemoteGattCharacteristicWinrt::UnsubscribeFromNotifications(
     BluetoothRemoteGattDescriptor* ccc_descriptor,
-    const base::Closure& callback,
+    base::OnceClosure callback,
     ErrorCallback error_callback) {
   auto repeating_error_callback =
       base::AdaptCallbackForRepeating(std::move(error_callback));
@@ -404,7 +404,8 @@ void BluetoothRemoteGattCharacteristicWinrt::UnsubscribeFromNotifications(
 
         std::move(callback).Run();
       },
-      weak_ptr_factory_.GetWeakPtr(), callback, repeating_error_callback);
+      weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+      repeating_error_callback);
   WriteCccDescriptor(
       GattClientCharacteristicConfigurationDescriptorValue_None,
       // Wrap the success and error callbacks in a lambda, so that we can

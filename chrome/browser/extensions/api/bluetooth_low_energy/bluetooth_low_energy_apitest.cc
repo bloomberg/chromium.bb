@@ -1273,7 +1273,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, StartStopNotifications) {
       new testing::NiceMock<MockBluetoothGattNotifySession>(
           chrc1_->GetWeakPtr());
 
-  EXPECT_CALL(*session1, Stop(_))
+  EXPECT_CALL(*session1, Stop_(_))
       .Times(1)
       .WillOnce(InvokeCallbackArgument<0>());
 

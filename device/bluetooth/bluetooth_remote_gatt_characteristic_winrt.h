@@ -61,11 +61,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicWinrt
  protected:
   // BluetoothRemoteGattCharacteristic:
   void SubscribeToNotifications(BluetoothRemoteGattDescriptor* ccc_descriptor,
-                                const base::Closure& callback,
+                                base::OnceClosure callback,
                                 ErrorCallback error_callback) override;
   void UnsubscribeFromNotifications(
       BluetoothRemoteGattDescriptor* ccc_descriptor,
-      const base::Closure& callback,
+      base::OnceClosure callback,
       ErrorCallback error_callback) override;
 
  private:

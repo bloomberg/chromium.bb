@@ -48,8 +48,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristic
 
   // The NotifySessionCallback is used to return sessions after they have
   // been successfully started.
-  typedef base::Callback<void(std::unique_ptr<BluetoothGattNotifySession>)>
-      NotifySessionCallback;
+  using NotifySessionCallback =
+      base::OnceCallback<void(std::unique_ptr<BluetoothGattNotifySession>)>;
 
   ~BluetoothRemoteGattCharacteristic() override;
 
@@ -116,7 +116,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristic
   //
   // To stop the flow of notifications, simply call the Stop method on the
   // BluetoothGattNotifySession object that you received in |callback|.
-  virtual void StartNotifySession(const NotifySessionCallback& callback,
+  virtual void StartNotifySession(NotifySessionCallback callback,
                                   ErrorCallback error_callback);
 #if defined(OS_CHROMEOS)
   // TODO(https://crbug.com/849359): This method should also be implemented on
@@ -126,7 +126,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristic
   // notifications will be enabled.
   // https://developer.apple.com/documentation/corebluetooth/cbperipheral/1518949-setnotifyvalue?language=objc#discussion
   virtual void StartNotifySession(NotificationType notification_type,
-                                  const NotifySessionCallback& callback,
+                                  NotifySessionCallback callback,
                                   ErrorCallback error_callback);
 #endif
 
@@ -185,12 +185,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristic
   virtual void SubscribeToNotifications(
       BluetoothRemoteGattDescriptor* ccc_descriptor,
       NotificationType notification_type,
-      const base::Closure& callback,
+      base::OnceClosure callback,
       ErrorCallback error_callback) = 0;
 #else
   virtual void SubscribeToNotifications(
       BluetoothRemoteGattDescriptor* ccc_descriptor,
-      const base::Closure& callback,
+      base::OnceClosure callback,
       ErrorCallback error_callback) = 0;
 #endif
 
@@ -200,7 +200,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristic
   // listening to characteristic notifications on a particular platform.
   virtual void UnsubscribeFromNotifications(
       BluetoothRemoteGattDescriptor* ccc_descriptor,
-      const base::Closure& callback,
+      base::OnceClosure callback,
       ErrorCallback error_callback) = 0;
 
   // Utility function to add a |descriptor| to the map of |descriptors_|.
@@ -227,22 +227,21 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristic
   // Section 3.3.1.1. Characteristic Properties] requires this descriptor to be
   // present when notifications/indications are supported.
   virtual void StopNotifySession(BluetoothGattNotifySession* session,
-                                 const base::Closure& callback);
+                                 base::OnceClosure callback);
 
   class NotifySessionCommand {
    public:
     enum Type { COMMAND_NONE, COMMAND_START, COMMAND_STOP };
     enum Result { RESULT_SUCCESS, RESULT_ERROR };
 
-    typedef base::Callback<
-        void(Type, Result, BluetoothRemoteGattService::GattErrorCode)>
-        ExecuteCallback;
+    using ExecuteCallback = base::OnceCallback<
+        void(Type, Result, BluetoothRemoteGattService::GattErrorCode)>;
 
     ExecuteCallback execute_callback_;
-    base::Closure cancel_callback_;
+    base::OnceClosure cancel_callback_;
 
-    NotifySessionCommand(const ExecuteCallback& execute_callback,
-                         const base::Closure& cancel_callback);
+    NotifySessionCommand(ExecuteCallback execute_callback,
+                         base::OnceClosure cancel_callback);
     ~NotifySessionCommand();
 
     void Execute();
@@ -255,7 +254,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristic
 
   void StartNotifySessionInternal(
       const base::Optional<NotificationType>& notification_type,
-      const NotifySessionCallback& callback,
+      NotifySessionCallback callback,
       ErrorCallback error_callback);
   void ExecuteStartNotifySession(
       const base::Optional<NotificationType>& notification_type,
@@ -264,7 +263,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristic
       NotifySessionCommand::Type previous_command_type,
       NotifySessionCommand::Result previous_command_result,
       BluetoothRemoteGattService::GattErrorCode previous_command_error_code);
-  void CancelStartNotifySession(base::Closure callback);
+  void CancelStartNotifySession(base::OnceClosure callback);
   void OnStartNotifySessionSuccess(NotifySessionCallback callback);
   void OnStartNotifySessionError(
       ErrorCallback error_callback,
@@ -272,16 +271,16 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristic
 
   void ExecuteStopNotifySession(
       BluetoothGattNotifySession* session,
-      base::Closure callback,
+      base::OnceClosure callback,
       NotifySessionCommand::Type previous_command_type,
       NotifySessionCommand::Result previous_command_result,
       BluetoothRemoteGattService::GattErrorCode previous_command_error_code);
-  void CancelStopNotifySession(base::Closure callback);
+  void CancelStopNotifySession(base::OnceClosure callback);
   void OnStopNotifySessionSuccess(BluetoothGattNotifySession* session,
-                                  base::Closure callback);
+                                  base::OnceClosure callback);
   void OnStopNotifySessionError(
       BluetoothGattNotifySession* session,
-      base::Closure callback,
+      base::OnceClosure callback,
       BluetoothRemoteGattService::GattErrorCode error);
   bool IsNotificationTypeSupported(
       const base::Optional<NotificationType>& notification_type);

@@ -328,7 +328,7 @@ void FakeBluetoothGattCharacteristicClient::StartNotify(
 #if defined(OS_CHROMEOS)
     device::BluetoothGattCharacteristic::NotificationType notification_type,
 #endif
-    const base::Closure& callback,
+    base::OnceClosure callback,
     ErrorCallback error_callback) {
   if (!IsHeartRateVisible()) {
     std::move(error_callback).Run(kUnknownCharacteristicError, "");
@@ -354,13 +354,13 @@ void FakeBluetoothGattCharacteristicClient::StartNotify(
 
   // Respond asynchronously.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, callback,
+      FROM_HERE, std::move(callback),
       base::TimeDelta::FromMilliseconds(kStartNotifyResponseIntervalMs));
 }
 
 void FakeBluetoothGattCharacteristicClient::StopNotify(
     const dbus::ObjectPath& object_path,
-    const base::Closure& callback,
+    base::OnceClosure callback,
     ErrorCallback error_callback) {
   if (!IsHeartRateVisible()) {
     std::move(error_callback).Run(kUnknownCharacteristicError, "");
@@ -382,7 +382,7 @@ void FakeBluetoothGattCharacteristicClient::StopNotify(
 
   heart_rate_measurement_properties_->notifying.ReplaceValue(false);
 
-  callback.Run();
+  std::move(callback).Run();
 }
 
 void FakeBluetoothGattCharacteristicClient::ExposeHeartRateCharacteristics(

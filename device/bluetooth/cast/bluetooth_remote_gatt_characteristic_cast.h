@@ -58,11 +58,11 @@ class BluetoothRemoteGattCharacteristicCast
  private:
   // BluetoothRemoteGattCharacteristic implementation:
   void SubscribeToNotifications(BluetoothRemoteGattDescriptor* ccc_descriptor,
-                                const base::Closure& callback,
+                                base::OnceClosure callback,
                                 ErrorCallback error_callback) override;
   void UnsubscribeFromNotifications(
       BluetoothRemoteGattDescriptor* ccc_descriptor,
-      const base::Closure& callback,
+      base::OnceClosure callback,
       ErrorCallback error_callback) override;
 
   // Called when the remote characteristic has been read or the operation has

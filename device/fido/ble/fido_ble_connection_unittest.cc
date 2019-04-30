@@ -181,13 +181,14 @@ class FidoBleConnectionTest : public ::testing::Test {
             }));
 
     ON_CALL(*fido_status_, StartNotifySession_(_, _))
-        .WillByDefault(Invoke([this](
-                                  const auto& callback,
-                                  BluetoothGattCharacteristic::ErrorCallback&) {
-          notify_session_ = new NiceMockBluetoothGattNotifySession(
-              fido_status_->GetWeakPtr());
-          callback.Run(base::WrapUnique(notify_session_));
-        }));
+        .WillByDefault(Invoke(
+            [this](BluetoothRemoteGattCharacteristic::NotifySessionCallback&
+                       callback,
+                   BluetoothRemoteGattCharacteristic::ErrorCallback&) {
+              notify_session_ = new NiceMockBluetoothGattNotifySession(
+                  fido_status_->GetWeakPtr());
+              std::move(callback).Run(base::WrapUnique(notify_session_));
+            }));
   }
 
   void SimulateGattDiscoveryComplete(bool complete) {

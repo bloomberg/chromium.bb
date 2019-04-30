@@ -76,11 +76,11 @@ BluetoothGattCharacteristic::Properties ConvertProperties(
 // Called back when subscribing or unsubscribing to a remote characteristic.
 // If |success| is true, run |callback|. Otherwise run |error_callback|.
 void OnSubscribeOrUnsubscribe(
-    const base::Closure& callback,
+    base::OnceClosure callback,
     BluetoothGattCharacteristic::ErrorCallback error_callback,
     bool success) {
   if (success)
-    callback.Run();
+    std::move(callback).Run();
   else
     std::move(error_callback).Run(BluetoothGattService::GATT_ERROR_FAILED);
 }
@@ -155,7 +155,7 @@ void BluetoothRemoteGattCharacteristicCast::WriteRemoteCharacteristic(
 
 void BluetoothRemoteGattCharacteristicCast::SubscribeToNotifications(
     BluetoothRemoteGattDescriptor* ccc_descriptor,
-    const base::Closure& callback,
+    base::OnceClosure callback,
     ErrorCallback error_callback) {
   DVLOG(2) << __func__ << " " << GetIdentifier();
 
@@ -165,13 +165,13 @@ void BluetoothRemoteGattCharacteristicCast::SubscribeToNotifications(
   (void)ccc_descriptor;
 
   remote_characteristic_->SetRegisterNotification(
-      true, base::BindOnce(&OnSubscribeOrUnsubscribe, callback,
+      true, base::BindOnce(&OnSubscribeOrUnsubscribe, std::move(callback),
                            std::move(error_callback)));
 }
 
 void BluetoothRemoteGattCharacteristicCast::UnsubscribeFromNotifications(
     BluetoothRemoteGattDescriptor* ccc_descriptor,
-    const base::Closure& callback,
+    base::OnceClosure callback,
     ErrorCallback error_callback) {
   DVLOG(2) << __func__ << " " << GetIdentifier();
 
@@ -181,7 +181,7 @@ void BluetoothRemoteGattCharacteristicCast::UnsubscribeFromNotifications(
   (void)ccc_descriptor;
 
   remote_characteristic_->SetRegisterNotification(
-      false, base::BindOnce(&OnSubscribeOrUnsubscribe, callback,
+      false, base::BindOnce(&OnSubscribeOrUnsubscribe, std::move(callback),
                             std::move(error_callback)));
 }
 

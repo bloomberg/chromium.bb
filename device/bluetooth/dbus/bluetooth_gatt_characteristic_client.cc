@@ -177,7 +177,7 @@ class BluetoothGattCharacteristicClientImpl
 #if defined(OS_CHROMEOS)
       device::BluetoothGattCharacteristic::NotificationType notification_type,
 #endif
-      const base::Closure& callback,
+      base::OnceClosure callback,
       ErrorCallback error_callback) override {
     dbus::ObjectProxy* object_proxy =
         object_manager_->GetObjectProxy(object_path);
@@ -197,7 +197,7 @@ class BluetoothGattCharacteristicClientImpl
     object_proxy->CallMethodWithErrorCallback(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&BluetoothGattCharacteristicClientImpl::OnSuccess,
-                       weak_ptr_factory_.GetWeakPtr(), callback),
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
         base::BindOnce(&BluetoothGattCharacteristicClientImpl::OnError,
                        weak_ptr_factory_.GetWeakPtr(),
                        std::move(error_callback)));
@@ -205,7 +205,7 @@ class BluetoothGattCharacteristicClientImpl
 
   // BluetoothGattCharacteristicClient override.
   void StopNotify(const dbus::ObjectPath& object_path,
-                  const base::Closure& callback,
+                  base::OnceClosure callback,
                   ErrorCallback error_callback) override {
     dbus::ObjectProxy* object_proxy =
         object_manager_->GetObjectProxy(object_path);
@@ -221,7 +221,7 @@ class BluetoothGattCharacteristicClientImpl
     object_proxy->CallMethodWithErrorCallback(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&BluetoothGattCharacteristicClientImpl::OnSuccess,
-                       weak_ptr_factory_.GetWeakPtr(), callback),
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
         base::BindOnce(&BluetoothGattCharacteristicClientImpl::OnError,
                        weak_ptr_factory_.GetWeakPtr(),
                        std::move(error_callback)));

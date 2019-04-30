@@ -127,11 +127,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattCharacteristicClient
   virtual void StartNotify(
       const dbus::ObjectPath& object_path,
       device::BluetoothGattCharacteristic::NotificationType notification_type,
-      const base::Closure& callback,
+      base::OnceClosure callback,
       ErrorCallback error_callback) = 0;
 #else
   virtual void StartNotify(const dbus::ObjectPath& object_path,
-                           const base::Closure& callback,
+                           base::OnceClosure callback,
                            ErrorCallback error_callback) = 0;
 #endif
 
@@ -139,7 +139,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattCharacteristicClient
   // object path |object_path|. Invokes |callback| on success and
   // |error_callback| on failure.
   virtual void StopNotify(const dbus::ObjectPath& object_path,
-                          const base::Closure& callback,
+                          base::OnceClosure callback,
                           ErrorCallback error_callback) = 0;
 
   // Creates the instance.

@@ -184,24 +184,25 @@ void FakeRemoteGattCharacteristic::SubscribeToNotifications(
 #if defined(OS_CHROMEOS)
     NotificationType notification_type,
 #endif
-    const base::Closure& callback,
+    base::OnceClosure callback,
     ErrorCallback error_callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&FakeRemoteGattCharacteristic::
-                                    DispatchSubscribeToNotificationsResponse,
-                                weak_ptr_factory_.GetWeakPtr(), callback,
-                                std::move(error_callback)));
+      FROM_HERE,
+      base::BindOnce(&FakeRemoteGattCharacteristic::
+                         DispatchSubscribeToNotificationsResponse,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                     std::move(error_callback)));
 }
 
 void FakeRemoteGattCharacteristic::UnsubscribeFromNotifications(
     device::BluetoothRemoteGattDescriptor* ccc_descriptor,
-    const base::Closure& callback,
+    base::OnceClosure callback,
     ErrorCallback error_callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&FakeRemoteGattCharacteristic::
                          DispatchUnsubscribeFromNotificationsResponse,
-                     weak_ptr_factory_.GetWeakPtr(), callback,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
                      std::move(error_callback)));
 }
 
@@ -252,7 +253,7 @@ void FakeRemoteGattCharacteristic::DispatchWriteResponse(
 }
 
 void FakeRemoteGattCharacteristic::DispatchSubscribeToNotificationsResponse(
-    const base::Closure& callback,
+    base::OnceClosure callback,
     ErrorCallback error_callback) {
   DCHECK(next_subscribe_to_notifications_response_);
   uint16_t gatt_code = next_subscribe_to_notifications_response_.value();
@@ -260,7 +261,7 @@ void FakeRemoteGattCharacteristic::DispatchSubscribeToNotificationsResponse(
 
   switch (gatt_code) {
     case mojom::kGATTSuccess:
-      callback.Run();
+      std::move(callback).Run();
       break;
     case mojom::kGATTInvalidHandle:
       std::move(error_callback)
@@ -272,7 +273,7 @@ void FakeRemoteGattCharacteristic::DispatchSubscribeToNotificationsResponse(
 }
 
 void FakeRemoteGattCharacteristic::DispatchUnsubscribeFromNotificationsResponse(
-    const base::Closure& callback,
+    base::OnceClosure callback,
     ErrorCallback error_callback) {
   DCHECK(next_unsubscribe_from_notifications_response_);
   uint16_t gatt_code = next_unsubscribe_from_notifications_response_.value();
@@ -280,7 +281,7 @@ void FakeRemoteGattCharacteristic::DispatchUnsubscribeFromNotificationsResponse(
 
   switch (gatt_code) {
     case mojom::kGATTSuccess:
-      callback.Run();
+      std::move(callback).Run();
       break;
     case mojom::kGATTInvalidHandle:
       std::move(error_callback)

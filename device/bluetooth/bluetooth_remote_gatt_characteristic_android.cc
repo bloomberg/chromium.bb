@@ -244,7 +244,7 @@ void BluetoothRemoteGattCharacteristicAndroid::CreateGattRemoteDescriptor(
 
 void BluetoothRemoteGattCharacteristicAndroid::SubscribeToNotifications(
     BluetoothRemoteGattDescriptor* ccc_descriptor,
-    const base::Closure& callback,
+    base::OnceClosure callback,
     ErrorCallback error_callback) {
   if (!Java_ChromeBluetoothRemoteGattCharacteristic_setCharacteristicNotification(
           AttachCurrentThread(), j_characteristic_, true)) {
@@ -260,13 +260,13 @@ void BluetoothRemoteGattCharacteristicAndroid::SubscribeToNotifications(
   std::vector<uint8_t> value(2);
   value[0] = hasNotify ? 1 : 2;
 
-  ccc_descriptor->WriteRemoteDescriptor(value, callback,
+  ccc_descriptor->WriteRemoteDescriptor(value, std::move(callback),
                                         std::move(error_callback));
 }
 
 void BluetoothRemoteGattCharacteristicAndroid::UnsubscribeFromNotifications(
     BluetoothRemoteGattDescriptor* ccc_descriptor,
-    const base::Closure& callback,
+    base::OnceClosure callback,
     ErrorCallback error_callback) {
   if (!Java_ChromeBluetoothRemoteGattCharacteristic_setCharacteristicNotification(
           AttachCurrentThread(), j_characteristic_, false)) {
@@ -281,7 +281,7 @@ void BluetoothRemoteGattCharacteristicAndroid::UnsubscribeFromNotifications(
   std::vector<uint8_t> value(2);
   value[0] = 0;
 
-  ccc_descriptor->WriteRemoteDescriptor(value, callback,
+  ccc_descriptor->WriteRemoteDescriptor(value, std::move(callback),
                                         std::move(error_callback));
 }
 

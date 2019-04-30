@@ -211,7 +211,7 @@ bool BluetoothRemoteGattCharacteristicMac::WriteWithoutResponse(
 
 void BluetoothRemoteGattCharacteristicMac::SubscribeToNotifications(
     BluetoothRemoteGattDescriptor* ccc_descriptor,
-    const base::Closure& callback,
+    base::OnceClosure callback,
     ErrorCallback error_callback) {
   VLOG(1) << *this << ": Subscribe to characteristic.";
   DCHECK(subscribe_to_notification_callbacks_.first.is_null());
@@ -219,13 +219,13 @@ void BluetoothRemoteGattCharacteristicMac::SubscribeToNotifications(
   DCHECK(unsubscribe_from_notification_callbacks_.first.is_null());
   DCHECK(unsubscribe_from_notification_callbacks_.second.is_null());
   subscribe_to_notification_callbacks_ =
-      std::make_pair(callback, std::move(error_callback));
+      std::make_pair(std::move(callback), std::move(error_callback));
   [GetCBPeripheral() setNotifyValue:YES forCharacteristic:cb_characteristic_];
 }
 
 void BluetoothRemoteGattCharacteristicMac::UnsubscribeFromNotifications(
     BluetoothRemoteGattDescriptor* ccc_descriptor,
-    const base::Closure& callback,
+    base::OnceClosure callback,
     ErrorCallback error_callback) {
   VLOG(1) << *this << ": Unsubscribe from characteristic.";
   DCHECK(subscribe_to_notification_callbacks_.first.is_null());
@@ -233,7 +233,7 @@ void BluetoothRemoteGattCharacteristicMac::UnsubscribeFromNotifications(
   DCHECK(unsubscribe_from_notification_callbacks_.first.is_null());
   DCHECK(unsubscribe_from_notification_callbacks_.second.is_null());
   unsubscribe_from_notification_callbacks_ =
-      std::make_pair(callback, std::move(error_callback));
+      std::make_pair(std::move(callback), std::move(error_callback));
   [GetCBPeripheral() setNotifyValue:NO forCharacteristic:cb_characteristic_];
 }
 
@@ -351,7 +351,7 @@ void BluetoothRemoteGattCharacteristicMac::DidUpdateNotificationState(
     std::move(reentrant_safe_callbacks.second).Run(error_code);
     return;
   }
-  reentrant_safe_callbacks.first.Run();
+  std::move(reentrant_safe_callbacks.first).Run();
 }
 
 void BluetoothRemoteGattCharacteristicMac::DidDiscoverDescriptors() {

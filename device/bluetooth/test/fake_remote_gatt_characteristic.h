@@ -101,18 +101,18 @@ class FakeRemoteGattCharacteristic
   void SubscribeToNotifications(
       device::BluetoothRemoteGattDescriptor* ccc_descriptor,
       NotificationType notification_type,
-      const base::Closure& callback,
+      base::OnceClosure callback,
       ErrorCallback error_callback) override;
 #else
   // device::BluetoothRemoteGattCharacteristic overrides:
   void SubscribeToNotifications(
       device::BluetoothRemoteGattDescriptor* ccc_descriptor,
-      const base::Closure& callback,
+      base::OnceClosure callback,
       ErrorCallback error_callback) override;
 #endif
   void UnsubscribeFromNotifications(
       device::BluetoothRemoteGattDescriptor* ccc_descriptor,
-      const base::Closure& callback,
+      base::OnceClosure callback,
       ErrorCallback error_callback) override;
 
  private:
@@ -121,10 +121,10 @@ class FakeRemoteGattCharacteristic
   void DispatchWriteResponse(base::OnceClosure callback,
                              ErrorCallback error_callback,
                              const std::vector<uint8_t>& value);
-  void DispatchSubscribeToNotificationsResponse(const base::Closure& callback,
+  void DispatchSubscribeToNotificationsResponse(base::OnceClosure callback,
                                                 ErrorCallback error_callback);
   void DispatchUnsubscribeFromNotificationsResponse(
-      const base::Closure& callback,
+      base::OnceClosure callback,
       ErrorCallback error_callback);
 
   const std::string characteristic_id_;

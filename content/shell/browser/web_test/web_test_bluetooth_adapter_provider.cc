@@ -1009,14 +1009,14 @@ scoped_refptr<NiceMockBluetoothAdapter> WebTestBluetoothAdapterProvider::
   ON_CALL(*measurement_interval, StartNotifySession_(_, _))
       .WillByDefault(Invoke(
           [adapter_ptr, device_ptr, measurement_ptr, disconnect, succeeds](
-              const BluetoothRemoteGattCharacteristic::NotifySessionCallback&
+              BluetoothRemoteGattCharacteristic::NotifySessionCallback&
                   callback,
               BluetoothRemoteGattCharacteristic::ErrorCallback&
                   error_callback) {
             base::OnceClosure pending;
             if (succeeds) {
-              pending =
-                  base::Bind(callback, base::Passed(GetBaseGATTNotifySession(
+              pending = base::BindOnce(std::move(callback),
+                                       base::Passed(GetBaseGATTNotifySession(
                                            measurement_ptr->GetWeakPtr())));
             } else {
               pending =
@@ -1136,10 +1136,10 @@ scoped_refptr<NiceMockBluetoothAdapter> WebTestBluetoothAdapterProvider::
                 std::make_unique<NiceMockBluetoothGattNotifySession>(
                     measurement_ptr->GetWeakPtr());
 
-            ON_CALL(*notify_session, Stop(_))
+            ON_CALL(*notify_session, Stop_(_))
                 .WillByDefault(Invoke([adapter_ptr, device_ptr, disconnect](
-                                          const base::Closure& callback) {
-                  device_ptr->PushPendingCallback(callback);
+                                          base::OnceClosure& callback) {
+                  device_ptr->PushPendingCallback(std::move(callback));
 
                   if (disconnect) {
                     device_ptr->SetConnected(false);
@@ -1663,7 +1663,7 @@ WebTestBluetoothAdapterProvider::GetBaseGATTNotifySession(
   auto session =
       std::make_unique<NiceMockBluetoothGattNotifySession>(characteristic);
 
-  ON_CALL(*session, Stop(_))
+  ON_CALL(*session, Stop_(_))
       .WillByDefault(testing::DoAll(
           InvokeWithoutArgs(
               session.get(),

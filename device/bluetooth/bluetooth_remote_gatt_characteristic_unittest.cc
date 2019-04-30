@@ -2851,14 +2851,14 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 
   // Start notify session
   characteristic1_->StartNotifySession(
-      base::Bind(
+      base::BindOnce(
           [](BluetoothRemoteGattCharacteristic::NotifySessionCallback
-                 notifyCallback,
-             base::Closure stopNotifyCallback,
+                 notify_callback,
+             base::OnceClosure stop_notify_callback,
              std::unique_ptr<BluetoothGattNotifySession> session) {
             BluetoothGattNotifySession* s = session.get();
-            notifyCallback.Run(std::move(session));
-            s->Stop(stopNotifyCallback);
+            std::move(notify_callback).Run(std::move(session));
+            s->Stop(std::move(stop_notify_callback));
           },
           GetNotifyCallback(Call::EXPECTED),
           GetStopNotifyCallback(Call::EXPECTED)),
@@ -2905,12 +2905,12 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   EXPECT_EQ(characteristic1_, notify_sessions_[0]->GetCharacteristic());
   EXPECT_TRUE(characteristic1_->IsNotifying());
 
-  notify_sessions_[0]->Stop(base::Bind(
+  notify_sessions_[0]->Stop(base::BindOnce(
       [](BluetoothRemoteGattCharacteristic* characteristic,
          BluetoothRemoteGattCharacteristic::NotifySessionCallback
              notify_callback,
          BluetoothRemoteGattCharacteristic::ErrorCallback error_callback) {
-        characteristic->StartNotifySession(notify_callback,
+        characteristic->StartNotifySession(std::move(notify_callback),
                                            std::move(error_callback));
       },
       characteristic1_, GetNotifyCallback(Call::EXPECTED),
@@ -2961,12 +2961,12 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   EXPECT_EQ(characteristic1_, notify_sessions_[0]->GetCharacteristic());
   EXPECT_TRUE(characteristic1_->IsNotifying());
 
-  notify_sessions_[0]->Stop(base::Bind(
+  notify_sessions_[0]->Stop(base::BindOnce(
       [](BluetoothRemoteGattCharacteristic* characteristic,
          BluetoothRemoteGattCharacteristic::NotifySessionCallback
              notify_callback,
          BluetoothRemoteGattCharacteristic::ErrorCallback error_callback) {
-        characteristic->StartNotifySession(notify_callback,
+        characteristic->StartNotifySession(std::move(notify_callback),
                                            std::move(error_callback));
       },
       characteristic1_, GetNotifyCallback(Call::NOT_EXPECTED),

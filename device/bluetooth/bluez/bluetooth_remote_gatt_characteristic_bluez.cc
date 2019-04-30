@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
@@ -213,7 +214,7 @@ void BluetoothRemoteGattCharacteristicBlueZ::SubscribeToNotifications(
 #if defined(OS_CHROMEOS)
     NotificationType notification_type,
 #endif
-    const base::Closure& callback,
+    base::OnceClosure callback,
     ErrorCallback error_callback) {
   bluez::BluezDBusManager::Get()
       ->GetBluetoothGattCharacteristicClient()
@@ -222,9 +223,9 @@ void BluetoothRemoteGattCharacteristicBlueZ::SubscribeToNotifications(
 #if defined(OS_CHROMEOS)
           notification_type,
 #endif
-          base::Bind(
+          base::BindOnce(
               &BluetoothRemoteGattCharacteristicBlueZ::OnStartNotifySuccess,
-              weak_ptr_factory_.GetWeakPtr(), callback),
+              weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
           base::BindOnce(
               &BluetoothRemoteGattCharacteristicBlueZ::OnStartNotifyError,
               weak_ptr_factory_.GetWeakPtr(), std::move(error_callback)));
@@ -232,17 +233,20 @@ void BluetoothRemoteGattCharacteristicBlueZ::SubscribeToNotifications(
 
 void BluetoothRemoteGattCharacteristicBlueZ::UnsubscribeFromNotifications(
     device::BluetoothRemoteGattDescriptor* ccc_descriptor,
-    const base::Closure& callback,
+    base::OnceClosure callback,
     ErrorCallback error_callback) {
+  auto repeating_callback =
+      base::AdaptCallbackForRepeating(std::move(callback));
   bluez::BluezDBusManager::Get()
       ->GetBluetoothGattCharacteristicClient()
       ->StopNotify(
           object_path(),
-          base::Bind(
+          base::BindOnce(
               &BluetoothRemoteGattCharacteristicBlueZ::OnStopNotifySuccess,
-              weak_ptr_factory_.GetWeakPtr(), callback),
-          base::Bind(&BluetoothRemoteGattCharacteristicBlueZ::OnStopNotifyError,
-                     weak_ptr_factory_.GetWeakPtr(), callback));
+              weak_ptr_factory_.GetWeakPtr(), repeating_callback),
+          base::BindOnce(
+              &BluetoothRemoteGattCharacteristicBlueZ::OnStopNotifyError,
+              weak_ptr_factory_.GetWeakPtr(), repeating_callback));
 }
 
 void BluetoothRemoteGattCharacteristicBlueZ::GattDescriptorAdded(
@@ -329,11 +333,11 @@ void BluetoothRemoteGattCharacteristicBlueZ::GattDescriptorPropertyChanged(
 }
 
 void BluetoothRemoteGattCharacteristicBlueZ::OnStartNotifySuccess(
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   VLOG(1) << "Started notifications from characteristic: "
           << object_path().value();
   has_notify_session_ = true;
-  callback.Run();
+  std::move(callback).Run();
 }
 
 void BluetoothRemoteGattCharacteristicBlueZ::OnStartNotifyError(
@@ -349,13 +353,13 @@ void BluetoothRemoteGattCharacteristicBlueZ::OnStartNotifyError(
 }
 
 void BluetoothRemoteGattCharacteristicBlueZ::OnStopNotifySuccess(
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   has_notify_session_ = false;
-  callback.Run();
+  std::move(callback).Run();
 }
 
 void BluetoothRemoteGattCharacteristicBlueZ::OnStopNotifyError(
-    const base::Closure& callback,
+    base::OnceClosure callback,
     const std::string& error_name,
     const std::string& error_message) {
   VLOG(1) << "Call to stop notifications failed for characteristic: "
@@ -363,7 +367,7 @@ void BluetoothRemoteGattCharacteristicBlueZ::OnStopNotifyError(
           << error_message;
 
   // Since this is a best effort operation, treat this as success.
-  OnStopNotifySuccess(callback);
+  OnStopNotifySuccess(std::move(callback));
 }
 
 void BluetoothRemoteGattCharacteristicBlueZ::OnReadError(

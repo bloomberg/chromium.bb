@@ -204,7 +204,7 @@ uint16_t BluetoothRemoteGattCharacteristicWin::GetAttributeHandle() const {
 
 void BluetoothRemoteGattCharacteristicWin::SubscribeToNotifications(
     BluetoothRemoteGattDescriptor* ccc_descriptor,
-    const base::Closure& callback,
+    base::OnceClosure callback,
     ErrorCallback error_callback) {
   task_manager_->PostRegisterGattCharacteristicValueChangedEvent(
       parent_service_->GetServicePath(), characteristic_info_.get(),
@@ -212,7 +212,8 @@ void BluetoothRemoteGattCharacteristicWin::SubscribeToNotifications(
           ->GetWinDescriptorInfo(),
       base::BindOnce(
           &BluetoothRemoteGattCharacteristicWin::GattEventRegistrationCallback,
-          weak_ptr_factory_.GetWeakPtr(), callback, std::move(error_callback)),
+          weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+          std::move(error_callback)),
       base::Bind(&BluetoothRemoteGattCharacteristicWin::
                      OnGattCharacteristicValueChanged,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -220,10 +221,10 @@ void BluetoothRemoteGattCharacteristicWin::SubscribeToNotifications(
 
 void BluetoothRemoteGattCharacteristicWin::UnsubscribeFromNotifications(
     BluetoothRemoteGattDescriptor* ccc_descriptor,
-    const base::Closure& callback,
+    base::OnceClosure callback,
     ErrorCallback error_callback) {
   // TODO(crbug.com/735828): Implement this method.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
 }
 
 void BluetoothRemoteGattCharacteristicWin::OnGetIncludedDescriptorsCallback(
@@ -380,14 +381,14 @@ void BluetoothRemoteGattCharacteristicWin::OnGattCharacteristicValueChanged(
 }
 
 void BluetoothRemoteGattCharacteristicWin::GattEventRegistrationCallback(
-    const base::Closure& callback,
+    base::OnceClosure callback,
     ErrorCallback error_callback,
     BLUETOOTH_GATT_EVENT_HANDLE event_handle,
     HRESULT hr) {
   DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
   if (SUCCEEDED(hr)) {
     gatt_event_handle_ = event_handle;
-    callback.Run();
+    std::move(callback).Run();
   } else {
     std::move(error_callback).Run(HRESULTToGattErrorCode(hr));
   }

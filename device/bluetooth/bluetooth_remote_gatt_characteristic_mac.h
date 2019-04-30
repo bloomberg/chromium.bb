@@ -50,11 +50,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicMac
 
  protected:
   void SubscribeToNotifications(BluetoothRemoteGattDescriptor* ccc_descriptor,
-                                const base::Closure& callback,
+                                base::OnceClosure callback,
                                 ErrorCallback error_callback) override;
   void UnsubscribeFromNotifications(
       BluetoothRemoteGattDescriptor* ccc_descriptor,
-      const base::Closure& callback,
+      base::OnceClosure callback,
       ErrorCallback error_callback) override;
 
  private:
@@ -128,7 +128,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicMac
       write_characteristic_value_callbacks_;
   // Stores callbacks for SubscribeToNotifications and
   // UnsubscribeFromNotifications requests.
-  typedef std::pair<base::Closure, ErrorCallback> PendingNotifyCallbacks;
+  typedef std::pair<base::OnceClosure, ErrorCallback> PendingNotifyCallbacks;
   // Stores SubscribeToNotifications request callbacks.
   PendingNotifyCallbacks subscribe_to_notification_callbacks_;
   // Stores UnsubscribeFromNotifications request callbacks.
