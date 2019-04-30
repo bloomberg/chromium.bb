@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.omnibox.geo;
 
 import android.Manifest;
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -13,8 +12,6 @@ import android.content.pm.PackageManager;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-import android.os.Build;
-import android.os.Build.VERSION_CODES;
 import android.os.Process;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
@@ -129,34 +126,16 @@ class PlatformNetworksManager {
             ScanResult scanResult = scanResults.get(i);
             String bssid = scanResult.BSSID;
             if (bssid == null) continue;
-            Long scanResultTimestamp = scanResultTimestamp(scanResult);
-            Long wifiTimestamp = null;
-            if (scanResultTimestamp != null) {
-                long ageMs = elapsedTime - TimeUnit.MICROSECONDS.toMillis(scanResultTimestamp);
-                wifiTimestamp = currentTime - ageMs;
-            }
+            long ageMs = elapsedTime - TimeUnit.MICROSECONDS.toMillis(scanResult.timestamp);
+            long wifiTimestamp = currentTime - ageMs;
             visibleWifis.add(
                     VisibleWifi.create(scanResult.SSID, bssid, scanResult.level, wifiTimestamp));
         }
         return visibleWifis;
     }
 
-    @TargetApi(VERSION_CODES.JELLY_BEAN_MR1)
-    @Nullable
-    private static Long scanResultTimestamp(ScanResult scanResult) {
-        if (Build.VERSION.SDK_INT < VERSION_CODES.JELLY_BEAN_MR1) {
-            return null;
-        }
-        return scanResult.timestamp;
-    }
-
     static void getAllVisibleCells(Context context, TelephonyManager telephonyManager,
             Callback<Set<VisibleCell>> callback) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            // CellInfo is only available JB MR1 upwards.
-            callback.onResult(Collections.emptySet());
-            return;
-        }
         if (!hasLocationPermission(context)) {
             callback.onResult(Collections.emptySet());
             return;
@@ -178,8 +157,7 @@ class PlatformNetworksManager {
         long currentTime = sTimeProvider.getCurrentTime();
         for (int i = 0; i < cellInfos.size(); i++) {
             CellInfo cellInfo = cellInfos.get(i);
-            VisibleCell visibleCell =
-                    getVisibleCellPostJellyBeanMr1(cellInfo, elapsedTime, currentTime);
+            VisibleCell visibleCell = getVisibleCell(cellInfo, elapsedTime, currentTime);
             if (visibleCell.radioType() != VisibleCell.RadioType.UNKNOWN) {
                 visibleCells.add(visibleCell);
             }
@@ -207,24 +185,15 @@ class PlatformNetworksManager {
     }
 
     static VisibleCell getConnectedCell(Context context, TelephonyManager telephonyManager) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            // CellInfo is only available JB MR1 upwards.
-            return VisibleCell.UNKNOWN_VISIBLE_CELL;
-        }
-        return getConnectedCellPostJellyBeanMr1(context, telephonyManager);
-    }
-
-    private static VisibleCell getConnectedCellPostJellyBeanMr1(
-            Context context, TelephonyManager telephonyManager) {
         if (!hasLocationPermission(context)) {
             return VisibleCell.UNKNOWN_MISSING_LOCATION_PERMISSION_VISIBLE_CELL;
         }
         CellInfo cellInfo = getActiveCellInfo(telephonyManager);
-        return getVisibleCellPostJellyBeanMr1(
+        return getVisibleCell(
                 cellInfo, sTimeProvider.getElapsedRealtime(), sTimeProvider.getCurrentTime());
     }
 
-    private static VisibleCell getVisibleCellPostJellyBeanMr1(
+    private static VisibleCell getVisibleCell(
             @Nullable CellInfo cellInfo, long elapsedTime, long currentTime) {
         if (cellInfo == null) {
             return VisibleCell.UNKNOWN_VISIBLE_CELL;
@@ -261,9 +230,7 @@ class PlatformNetworksManager {
                     .setTimestamp(cellTimestamp)
                     .build();
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2
-                && cellInfo instanceof CellInfoWcdma) {
-            // CellInfoWcdma is only usable JB MR2 upwards.
+        if (cellInfo instanceof CellInfoWcdma) {
             CellIdentityWcdma cellIdentityWcdma = ((CellInfoWcdma) cellInfo).getCellIdentity();
             return VisibleCell.builder(VisibleCell.RadioType.WCDMA)
                     .setCellId(cellIdentityWcdma.getCid())

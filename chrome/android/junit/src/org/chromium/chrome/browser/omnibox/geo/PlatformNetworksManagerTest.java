@@ -257,16 +257,6 @@ public class PlatformNetworksManagerTest {
     }
 
     @Test
-    public void testGetConnectedCell_preJBMR1() {
-        ReflectionHelpers.setStaticField(
-                Build.VERSION.class, "SDK_INT", Build.VERSION_CODES.JELLY_BEAN);
-        VisibleCell visibleCell =
-                PlatformNetworksManager.getConnectedCell(mContext, mTelephonyManager);
-        assertEquals(UNKNOWN_VISIBLE_CELL, visibleCell);
-        assertNull(visibleCell.timestampMs());
-    }
-
-    @Test
     public void testGetConnectedCell_allPermissionsDenied() {
         ReflectionHelpers.setStaticField(Build.VERSION.class, "SDK_INT", Build.VERSION_CODES.M);
         allPermissionsDenied();
@@ -319,39 +309,6 @@ public class PlatformNetworksManagerTest {
     }
 
     @Test
-    public void testGetAllVisibleCells_JBMR1() {
-        ReflectionHelpers.setStaticField(
-                Build.VERSION.class, "SDK_INT", Build.VERSION_CODES.JELLY_BEAN_MR1);
-        PlatformNetworksManager.getAllVisibleCells(
-                mContext, mTelephonyManager, mVisibleCellCallback);
-        verify(mVisibleCellCallback).onResult(mVisibleCellsArgument.capture());
-
-        // WCDMA should be ignored for pre-JBMR1
-        assertEquals(mVisibleCellsArgument.getValue().size(), 3);
-        for (VisibleCell visibleCell : mVisibleCellsArgument.getValue()) {
-            switch (visibleCell.radioType()) {
-                case RadioType.LTE:
-                    assertEquals(LTE_CELL, visibleCell);
-                    assertEquals(Long.valueOf(CURRENT_TIME_MS - LTE_CELL_AGE),
-                            visibleCell.timestampMs());
-                    break;
-                case RadioType.GSM:
-                    assertEquals(visibleCell, GSM_CELL);
-                    assertEquals(Long.valueOf(CURRENT_TIME_MS - GSM_CELL_AGE),
-                            visibleCell.timestampMs());
-                    break;
-                case RadioType.CDMA:
-                    assertEquals(visibleCell, CDMA_CELL);
-                    assertEquals(Long.valueOf(CURRENT_TIME_MS - CDMA_CELL_AGE),
-                            visibleCell.timestampMs());
-                    break;
-                default:
-                    break;
-            }
-        }
-    }
-
-    @Test
     public void testGetAllVisibleCells_JBMR1_nullResult() {
         ReflectionHelpers.setStaticField(
                 Build.VERSION.class, "SDK_INT", Build.VERSION_CODES.JELLY_BEAN_MR1);
@@ -361,18 +318,6 @@ public class PlatformNetworksManagerTest {
                 mContext, mTelephonyManager, mVisibleCellCallback);
         verify(mVisibleCellCallback).onResult(mVisibleCellsArgument.capture());
 
-        assertEquals(0, mVisibleCellsArgument.getValue().size());
-    }
-
-    @Test
-    public void testGetAllVisibleCells_preJBMR1() {
-        ReflectionHelpers.setStaticField(
-                Build.VERSION.class, "SDK_INT", Build.VERSION_CODES.JELLY_BEAN);
-        PlatformNetworksManager.getAllVisibleCells(
-                mContext, mTelephonyManager, mVisibleCellCallback);
-        verify(mVisibleCellCallback).onResult(mVisibleCellsArgument.capture());
-
-        // Empty set expected
         assertEquals(0, mVisibleCellsArgument.getValue().size());
     }
 
@@ -454,24 +399,6 @@ public class PlatformNetworksManagerTest {
                 assertEquals(Long.valueOf(CURRENT_TIME_MS - NOT_CONNECTED_WIFI_AGE),
                         visibleWifi.timestampMs());
             }
-        }
-    }
-
-    @Test
-    public void testGetAllVisibleWifis_preJBMR1() {
-        ReflectionHelpers.setStaticField(
-                Build.VERSION.class, "SDK_INT", Build.VERSION_CODES.JELLY_BEAN);
-        Set<VisibleWifi> visibleWifis =
-                PlatformNetworksManager.getAllVisibleWifis(mContext, mWifiManager);
-        assertEquals(2, visibleWifis.size());
-        for (VisibleWifi visibleWifi : visibleWifis) {
-            if (visibleWifi.bssid().equals(CONNECTED_WIFI.bssid())) {
-                assertEquals(CONNECTED_WIFI, visibleWifi);
-            } else {
-                assertEquals(NOT_CONNECTED_WIFI, visibleWifi);
-            }
-            // We should get null timestamp in Pre-JBMR1.
-            assertNull(visibleWifi.timestampMs());
         }
     }
 
