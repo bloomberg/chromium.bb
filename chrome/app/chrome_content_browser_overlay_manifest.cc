@@ -95,6 +95,10 @@
 #include "third_party/blink/public/mojom/media_controls/touchless/media_controls.mojom.h"
 #endif
 
+#if defined(ENABLE_SPATIAL_NAVIGATION_HOST)
+#include "third_party/blink/public/mojom/page/spatial_navigation.mojom.h"
+#endif
+
 namespace {
 
 service_manager::Manifest MaybeAddTestInterfaces(
@@ -211,11 +215,14 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
                     autofill::mojom::PasswordManagerDriver,
                     blink::mojom::BadgeService,
                     blink::mojom::InstalledAppProvider,
-                    blink::mojom::ShareService,
-                    blink::mojom::TextSuggestionHost,
 #if defined(BROWSER_MEDIA_CONTROLS_MENU)
                     blink::mojom::MediaControlsMenuHost,
 #endif
+                    blink::mojom::ShareService,
+#if defined(ENABLE_SPATIAL_NAVIGATION_HOST)
+                    blink::mojom::SpatialNavigationHost,
+#endif
+                    blink::mojom::TextSuggestionHost,
                     chrome::mojom::OfflinePageAutoFetcher,
                     chrome::mojom::PrerenderCanceler,
 #if defined(OS_CHROMEOS)

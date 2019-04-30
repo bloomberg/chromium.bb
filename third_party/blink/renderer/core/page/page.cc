@@ -299,6 +299,8 @@ void Page::DocumentDetached(Document* document) {
   if (validation_message_client_)
     validation_message_client_->DocumentDetached(*document);
   hosts_using_features_.DocumentDetached(*document);
+  if (spatial_navigation_controller_ && document->GetFrame()->IsMainFrame())
+    spatial_navigation_controller_->ResetMojoBindings();
 }
 
 bool Page::OpenedByDOM() const {
@@ -310,7 +312,6 @@ void Page::SetOpenedByDOM() {
 }
 
 SpatialNavigationController& Page::GetSpatialNavigationController() {
-  DCHECK(GetSettings().GetSpatialNavigationEnabled());
   if (!spatial_navigation_controller_) {
     spatial_navigation_controller_ =
         MakeGarbageCollected<SpatialNavigationController>(*this);
@@ -710,6 +711,12 @@ void Page::SettingsChanged(SettingsDelegate::ChangeType change_type) {
            frame = frame->Tree().TraverseNext()) {
         if (auto* local_frame = DynamicTo<LocalFrame>(frame))
           local_frame->GetDocument()->GetStyleEngine().ColorSchemeChanged();
+      }
+      break;
+    case SettingsDelegate::kSpatialNavigationChange:
+      if (spatial_navigation_controller_ ||
+          GetSettings().GetSpatialNavigationEnabled()) {
+        GetSpatialNavigationController().OnSpatialNavigationSettingChanged();
       }
       break;
   }

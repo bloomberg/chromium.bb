@@ -70,6 +70,7 @@ class CORE_EXPORT SettingsDelegate {
     kPaintChange,
     kScrollbarLayoutChange,
     kColorSchemeChange,
+    kSpatialNavigationChange,
   };
 
   virtual void SettingsChanged(ChangeType) = 0;

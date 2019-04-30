@@ -1,7 +1,10 @@
 <!DOCTYPE html>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
-<script src="resources/snav-testharness.js"></script>
+<script src="../../../../../resources/testharness.js"></script>
+<script src="../../../../../resources/testharnessreport.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/third_party/blink/public/mojom/page/spatial_navigation.mojom.js"></script>
+<script src="../../../../../fast/spatial-navigation/resources/mock-snav-service.js"></script>
+<script src="../../../../../fast/spatial-navigation/resources/snav-testharness.js"></script>
 
 <style>
   div {
@@ -27,8 +30,6 @@
   // with the enter key and exiting it with the escape key.
   const outside = document.getElementById("outside");
   const inside = document.getElementById("inside");
-
-  snav.assertSnavEnabledAndTestable(true /* focuslessSpatNav */ );
 
   outside.addEventListener('click', () => {
     inside.focus();

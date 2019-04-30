@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/page/spatial_navigation_controller.h"
 
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -134,7 +135,10 @@ static void ConsiderForBestCandidate(SpatialNavigationDirection direction,
 }  // namespace
 
 SpatialNavigationController::SpatialNavigationController(Page& page)
-    : page_(&page) {}
+    : page_(&page),
+      spatial_navigation_state_(mojom::blink::SpatialNavigationState::New()) {
+  DCHECK(page_->GetSettings().GetSpatialNavigationEnabled());
+}
 
 bool SpatialNavigationController::HandleArrowKeyboardEvent(
     KeyboardEvent* event) {
@@ -187,15 +191,15 @@ bool SpatialNavigationController::HandleEscapeKeyboardEvent(
     KeyboardEvent* event) {
   DCHECK(page_->GetSettings().GetSpatialNavigationEnabled());
 
-  if (!interest_element_)
+  if (!spatial_navigation_state_->can_exit_focus)
     return false;
 
-  if (Element* focused = GetFocusedElement())
+  if (Element* focused = GetFocusedElement()) {
     focused->blur();
-  else
-    MoveInterestTo(nullptr);
+    return true;
+  }
 
-  return true;
+  return false;
 }
 
 Element* SpatialNavigationController::GetInterestedElement() const {
@@ -300,7 +304,7 @@ FocusCandidate SpatialNavigationController::FindNextCandidateInContainer(
     if (HasRemoteFrame(element))
       continue;
 
-    if (!IsValidCandidate(*element))
+    if (!IsValidCandidate(element))
       continue;
 
     FocusCandidate candidate = FocusCandidate(element, direction);
@@ -390,6 +394,8 @@ void SpatialNavigationController::MoveInterestTo(Node* next_node) {
 
     interest_element_ = element;
 
+    UpdateSpatialNavigationState(interest_element_);
+
     if (interest_element_) {
       interest_element_->SetNeedsStyleRecalc(
           kLocalStyleChange, StyleChangeReasonForTracing::Create(
@@ -445,8 +451,8 @@ void SpatialNavigationController::DispatchMouseMoveAt(Element* element) {
 }
 
 bool SpatialNavigationController::IsValidCandidate(
-    const Element& element) const {
-  return element.IsKeyboardFocusable();
+    const Element* element) const {
+  return element && element->IsKeyboardFocusable();
 }
 
 Element* SpatialNavigationController::GetFocusedElement() const {
@@ -455,6 +461,107 @@ Element* SpatialNavigationController::GetFocusedElement() const {
     return nullptr;
 
   return frame->GetDocument()->FocusedElement();
+}
+
+void SpatialNavigationController::OnSpatialNavigationSettingChanged() {
+  if (!RuntimeEnabledFeatures::FocuslessSpatialNavigationEnabled())
+    return;
+  if (!page_->GetSettings().GetSpatialNavigationEnabled()) {
+    MoveInterestTo(nullptr);
+    ResetMojoBindings();
+    return;
+  }
+  // FocusedController::FocusedOrMainFrame will crash if called before the
+  // MainFrame is set.
+  if (!page_->MainFrame())
+    return;
+  LocalFrame* frame =
+      DynamicTo<LocalFrame>(page_->GetFocusController().FocusedOrMainFrame());
+  if (frame && frame->GetDocument() &&
+      IsValidCandidate(frame->GetDocument()->FocusedElement())) {
+    MoveInterestTo(frame->GetDocument()->FocusedElement());
+  }
+}
+
+void SpatialNavigationController::FocusedNodeChanged(Document* document) {
+  if (!RuntimeEnabledFeatures::FocuslessSpatialNavigationEnabled())
+    return;
+  if (page_->GetFocusController().FocusedOrMainFrame() != document->GetFrame())
+    return;
+
+  if (document->FocusedElement() &&
+      interest_element_ != document->FocusedElement()) {
+    MoveInterestTo(document->FocusedElement());
+  } else {
+    UpdateSpatialNavigationState(interest_element_);
+  }
+}
+
+void SpatialNavigationController::UpdateSpatialNavigationState(
+    Element* element) {
+  bool change = false;
+  change |= UpdateCanExitFocus(element);
+  change |= UpdateCanSelectInterestedElement(element);
+  change |= UpdateHasNextFormElement(element);
+  if (change)
+    OnSpatialNavigationStateChanged();
+}
+
+void SpatialNavigationController::OnSpatialNavigationStateChanged() {
+  if (!GetSpatialNavigationHost().is_bound())
+    return;
+  GetSpatialNavigationHost()->SpatialNavigationStateChanged(
+      spatial_navigation_state_.Clone());
+}
+
+bool SpatialNavigationController::UpdateCanExitFocus(Element* element) {
+  bool can_exit_focus = element && element->IsFocused();
+  if (can_exit_focus == spatial_navigation_state_->can_exit_focus)
+    return false;
+  spatial_navigation_state_->can_exit_focus = can_exit_focus;
+  return true;
+}
+
+bool SpatialNavigationController::UpdateCanSelectInterestedElement(
+    Element* element) {
+  bool can_select_interested_element = element;
+  if (can_select_interested_element ==
+      spatial_navigation_state_->can_select_element) {
+    return false;
+  }
+  spatial_navigation_state_->can_select_element = can_select_interested_element;
+  return true;
+}
+
+bool SpatialNavigationController::UpdateHasNextFormElement(Element* element) {
+  bool has_next_form_element =
+      element && element->IsFocused() &&
+      page_->GetFocusController().NextFocusableElementInForm(
+          element, kWebFocusTypeForward);
+  if (has_next_form_element == spatial_navigation_state_->has_next_form_element)
+    return false;
+
+  spatial_navigation_state_->has_next_form_element = has_next_form_element;
+  return true;
+}
+
+const mojom::blink::SpatialNavigationHostPtr&
+SpatialNavigationController::GetSpatialNavigationHost() {
+  if (!spatial_navigation_host_.is_bound()) {
+    LocalFrame* frame = DynamicTo<LocalFrame>(page_->MainFrame());
+    if (!frame)
+      return spatial_navigation_host_;
+
+    frame->GetInterfaceProvider().GetInterface(
+        mojo::MakeRequest(&spatial_navigation_host_,
+                          frame->GetTaskRunner(TaskType::kMiscPlatformAPI)));
+  }
+  return spatial_navigation_host_;
+}
+
+void SpatialNavigationController::ResetMojoBindings() {
+  spatial_navigation_host_.reset();
+  spatial_navigation_state_ = mojom::blink::SpatialNavigationState::New();
 }
 
 }  // namespace blink

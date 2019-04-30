@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SPATIAL_NAVIGATION_CONTROLLER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SPATIAL_NAVIGATION_CONTROLLER_H_
 
+#include "third_party/blink/public/mojom/page/spatial_navigation.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/page/spatial_navigation.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -22,7 +23,7 @@ class Page;
 // way, e.g. keyboard arrows. We use the term "interest" to specify which
 // element the user is currently on.
 class CORE_EXPORT SpatialNavigationController
-    : public GarbageCollected<SpatialNavigationController> {
+    : public GarbageCollectedFinalized<SpatialNavigationController> {
  public:
   explicit SpatialNavigationController(Page& page);
 
@@ -35,6 +36,11 @@ class CORE_EXPORT SpatialNavigationController
   Element* GetInterestedElement() const;
 
   void DidDetachFrameView();
+
+  void OnSpatialNavigationSettingChanged();
+  void FocusedNodeChanged(Document*);
+
+  void ResetMojoBindings();
 
   void Trace(blink::Visitor*);
 
@@ -82,14 +88,25 @@ class CORE_EXPORT SpatialNavigationController
   void DispatchMouseMoveAt(Element* element);
 
   // Returns true if the element should be considered for navigation.
-  bool IsValidCandidate(const Element& element) const;
+  bool IsValidCandidate(const Element* element) const;
 
   Element* GetFocusedElement() const;
+
+  void UpdateSpatialNavigationState(Element* element);
+  void OnSpatialNavigationStateChanged();
+  bool UpdateCanExitFocus(Element* element);
+  bool UpdateCanSelectInterestedElement(Element* element);
+  bool UpdateHasNextFormElement(Element* element);
+
+  const mojom::blink::SpatialNavigationHostPtr& GetSpatialNavigationHost();
 
   // The currently indicated element or nullptr if no node is indicated by
   // spatial navigation.
   WeakMember<Element> interest_element_;
   Member<Page> page_;
+
+  mojom::blink::SpatialNavigationStatePtr spatial_navigation_state_;
+  mojom::blink::SpatialNavigationHostPtr spatial_navigation_host_;
 };
 
 }  // namespace blink

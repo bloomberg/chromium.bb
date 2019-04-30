@@ -4767,6 +4767,8 @@ void Document::NotifyFocusedElementChanged(Node* old_focused_element,
   if (GetPage()) {
     GetPage()->GetChromeClient().FocusedNodeChanged(old_focused_element,
                                                     new_focused_element);
+    if (GetSettings()->GetSpatialNavigationEnabled())
+      GetPage()->GetSpatialNavigationController().FocusedNodeChanged(this);
   }
 }
 

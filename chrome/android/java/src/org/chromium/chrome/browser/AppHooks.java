@@ -64,6 +64,7 @@ import org.chromium.components.signin.AccountManagerDelegate;
 import org.chromium.components.signin.SystemAccountManagerDelegate;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.policy.AppRestrictionsProvider;
 import org.chromium.policy.CombinedPolicyProvider;
 import org.chromium.services.service_manager.InterfaceRegistry;
@@ -442,9 +443,14 @@ public abstract class AppHooks {
      * @param renderFrameHost The RenderFrameHost the Interface Registry is for.
      */
     public void registerChromeRenderFrameHostInterfaces(
-            InterfaceRegistry registry, RenderFrameHost renderFrameHost) {
-        return;
-    }
+            InterfaceRegistry registry, RenderFrameHost renderFrameHost) {}
+
+    /**
+     * @param registry The Chrome interface registry for the WebContents.
+     * @param webContents The WebContents the Interface Registry is for.
+     */
+    public void registerChromeWebContentsInterfaces(
+            InterfaceRegistry registry, WebContents webContents) {}
 
     /**
      * @param contentView The root content view for the containing activity.

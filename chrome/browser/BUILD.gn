@@ -4949,6 +4949,7 @@ jumbo_split_static_library("browser") {
 config("notouch_config") {
   defines = [
     "BROWSER_MEDIA_CONTROLS_MENU",
+    "ENABLE_SPATIAL_NAVIGATION_HOST",
     "INCOGNITO_DEFAULT_DISABLED",
   ]
 }

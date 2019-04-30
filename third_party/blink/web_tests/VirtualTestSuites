@@ -1046,6 +1046,12 @@
     "args": ["--enable-blink-features=StreamsNative", "--enable-features=BlinkHeapUnifiedGarbageCollection"]
   },
   {
+    "prefix": "focusless-spat-nav",
+    "base": "fast/spatial-navigation/focusless",
+    "args": ["--enable-blink-features=FocuslessSpatialNavigation",
+             "--enable-spatial-navigation"]
+  },
+  {
     "prefix": "bidi-caret-affinity",
     "base": "editing/selection/modify_move",
     "args": ["--enable-blink-features=BidiCaretAffinity,EditingNG"]
