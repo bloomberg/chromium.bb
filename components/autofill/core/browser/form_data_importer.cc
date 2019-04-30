@@ -134,6 +134,11 @@ void FormDataImporter::ImportFormData(const FormStructure& submitted_form,
       ImportedCreditCardRecordType::NO_CARD) {
     return;
   }
+  // Do not offer upload save for google domain.
+  if (net::HasGoogleHost(submitted_form.main_frame_origin().GetURL()) &&
+      is_credit_card_upstream_enabled) {
+    return;
+  }
   // A credit card was successfully imported, but it's possible it is already a
   // local or server card. First, check to see if we should offer local card
   // migration in this case, as local cards could go either way.

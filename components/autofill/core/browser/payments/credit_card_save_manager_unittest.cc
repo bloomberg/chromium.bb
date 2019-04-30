@@ -185,19 +185,21 @@ class CreditCardSaveManagerTest : public testing::Test {
                                     bool is_https,
                                     bool use_month_type,
                                     bool split_names = false,
-                                    bool is_from_non_focusable_form = false) {
+                                    bool is_from_non_focusable_form = false,
+                                    bool is_google_host = false) {
     form->name = ASCIIToUTF16("MyForm");
-    if (is_https) {
-      form->url = GURL("https://myform.com/form.html");
-      form->action = GURL("https://myform.com/submit.html");
-      form->main_frame_origin =
-          url::Origin::Create(GURL("https://myform_root.com/form.html"));
-    } else {
-      form->url = GURL("http://myform.com/form.html");
-      form->action = GURL("http://myform.com/submit.html");
-      form->main_frame_origin =
-          url::Origin::Create(GURL("http://myform_root.com/form.html"));
-    }
+    base::string16 scheme =
+        is_https ? ASCIIToUTF16("https://") : ASCIIToUTF16("http://");
+    base::string16 host = is_google_host ? ASCIIToUTF16("pay.google.com")
+                                         : ASCIIToUTF16("myform.com");
+    base::string16 root_host = is_google_host ? ASCIIToUTF16("pay.google.com")
+                                              : ASCIIToUTF16("myform.root.com");
+    base::string16 form_path = ASCIIToUTF16("/form.html");
+    base::string16 submit_path = ASCIIToUTF16("/submit.html");
+    form->url = GURL(scheme + host + form_path);
+    form->action = GURL(scheme + host + submit_path);
+    form->main_frame_origin =
+        url::Origin::Create(GURL(scheme + root_host + form_path));
 
     FormFieldData field;
     if (split_names) {
@@ -2254,6 +2256,75 @@ TEST_F(
       AutofillMetrics::USER_REQUESTED_TO_PROVIDE_CARDHOLDER_NAME);
   EXPECT_TRUE(payments_client_->detected_values_in_upload_details() &
               CreditCardSaveManager::DetectedValue::USER_PROVIDED_NAME);
+}
+
+TEST_F(CreditCardSaveManagerTest,
+       GoogleHostSite_ShouldNotOfferSaveIfUploadEnabled) {
+  // Create, fill and submit an address form in order to establish a recent
+  // profile which can be selected for the upload request.
+  FormData address_form;
+  test::CreateTestAddressFormData(&address_form);
+  FormsSeen(std::vector<FormData>(1, address_form));
+  ManuallyFillAddressForm("Flo", "Master", "77401", "US", &address_form);
+  FormSubmitted(address_form);
+  // Set up our credit card form data.
+  FormData credit_card_form;
+  CreateTestCreditCardFormData(&credit_card_form, /*is_https=*/true,
+                               /*split_names=*/false, /*split_names=*/false,
+                               /*is_from_non_focusable_form*/ false,
+                               /*is_google_host*/ true);
+  FormsSeen(std::vector<FormData>(1, credit_card_form));
+
+  // Edit the data, and submit.
+  credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
+  credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
+  credit_card_form.fields[2].value = ASCIIToUTF16(NextMonth());
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
+  credit_card_form.fields[4].value = ASCIIToUTF16("123");
+
+  base::HistogramTester histogram_tester;
+
+  // The credit card should neither be saved locally or uploaded.
+  FormSubmitted(credit_card_form);
+  EXPECT_FALSE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
+  EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
+
+  // Verify that no histogram entry was logged.
+  histogram_tester.ExpectTotalCount("Autofill.CardUploadDecisionMetric", 0);
+}
+
+TEST_F(CreditCardSaveManagerTest,
+       GoogleHostSite_ShouldOfferSaveIfUploadDisabled) {
+  credit_card_save_manager_->SetCreditCardUploadEnabled(false);
+
+  // Create, fill and submit an address form in order to establish a recent
+  // profile which can be selected for the upload request.
+  FormData address_form;
+  test::CreateTestAddressFormData(&address_form);
+  FormsSeen(std::vector<FormData>(1, address_form));
+  ManuallyFillAddressForm("Flo", "Master", "77401", "US", &address_form);
+  FormSubmitted(address_form);
+  // Set up our credit card form data.
+  FormData credit_card_form;
+  CreateTestCreditCardFormData(&credit_card_form, /*is_https=*/true,
+                               /*split_names=*/false, /*split_names=*/false,
+                               /*is_from_non_focusable_form*/ false,
+                               /*is_google_host*/ true);
+  FormsSeen(std::vector<FormData>(1, credit_card_form));
+
+  // Edit the data, and submit.
+  credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
+  credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
+  credit_card_form.fields[2].value = ASCIIToUTF16(NextMonth());
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
+  credit_card_form.fields[4].value = ASCIIToUTF16("123");
+
+  base::HistogramTester histogram_tester;
+
+  // The credit card should be saved locally.
+  FormSubmitted(credit_card_form);
+  EXPECT_TRUE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
+  EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
 }
 
 TEST_F(
