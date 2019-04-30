@@ -65,8 +65,6 @@ namespace base {
 #endif
 
 using SamplingParams = StackSamplingProfiler::SamplingParams;
-using Frames = std::vector<Frame>;
-using FrameSets = std::vector<std::vector<Frame>>;
 
 namespace {
 
@@ -277,9 +275,9 @@ CallThroughOtherLibrary(NativeLibrary library, const Closure& wait_for_sample) {
 }
 
 // Formats a sample into a string that can be output for test diagnostics.
-std::string FormatSampleForDiagnosticOutput(const Frames& frames) {
+std::string FormatSampleForDiagnosticOutput(const std::vector<Frame>& sample) {
   std::string output;
-  for (const auto& frame : frames) {
+  for (const auto& frame : sample) {
     output += StringPrintf(
         "0x%p %s\n", reinterpret_cast<const void*>(frame.instruction_pointer),
         frame.module ? frame.module->GetDebugBasename().AsUTF8Unsafe().c_str()
@@ -290,7 +288,7 @@ std::string FormatSampleForDiagnosticOutput(const Frames& frames) {
 
 // Expects that the stack contains the functions with the specified address
 // ranges, in the specified order.
-void ExpectStackContains(const Frames& stack,
+void ExpectStackContains(const std::vector<Frame>& stack,
                          const std::vector<FunctionAddressRange>& functions) {
   auto frame_it = stack.begin();
   auto function_it = functions.begin();
@@ -314,7 +312,7 @@ void ExpectStackContains(const Frames& stack,
 // Expects that the stack does not contain the functions with the specified
 // address ranges.
 void ExpectStackDoesNotContain(
-    const Frames& stack,
+    const std::vector<Frame>& stack,
     const std::vector<FunctionAddressRange>& functions) {
   struct FunctionAddressRangeCompare {
     bool operator()(const FunctionAddressRange& a,
@@ -342,11 +340,11 @@ void ExpectStackDoesNotContain(
   }
 }
 
-// Profile consists of a set of frame sets and other sampling information.
+// Profile consists of a set of samples and other sampling information.
 struct Profile {
   Profile() = default;
   Profile(Profile&& other) = default;
-  Profile(const FrameSets& frame_sets,
+  Profile(const std::vector<std::vector<Frame>>& samples,
           int metadata_count,
           TimeDelta profile_duration,
           TimeDelta sampling_period);
@@ -355,8 +353,8 @@ struct Profile {
 
   Profile& operator=(Profile&& other) = default;
 
-  // The collected frame sets.
-  FrameSets frame_sets;
+  // The collected samples.
+  std::vector<std::vector<Frame>> samples;
 
   // The number of invocations of RecordMetadata().
   int metadata_count;
@@ -368,11 +366,11 @@ struct Profile {
   TimeDelta sampling_period;
 };
 
-Profile::Profile(const FrameSets& frame_sets,
+Profile::Profile(const std::vector<std::vector<Frame>>& samples,
                  int metadata_count,
                  TimeDelta profile_duration,
                  TimeDelta sampling_period)
-    : frame_sets(frame_sets),
+    : samples(samples),
       metadata_count(metadata_count),
       profile_duration(profile_duration),
       sampling_period(sampling_period) {}
@@ -382,7 +380,7 @@ Profile::Profile(const FrameSets& frame_sets,
 // this should run as quickly as possible.
 using ProfileCompletedCallback = Callback<void(Profile)>;
 
-// TestProfileBuilder collects frames produced by the profiler.
+// TestProfileBuilder collects samples produced by the profiler.
 class TestProfileBuilder : public ProfileBuilder {
  public:
   TestProfileBuilder(ModuleCache* module_cache,
@@ -393,15 +391,15 @@ class TestProfileBuilder : public ProfileBuilder {
   // ProfileBuilder:
   ModuleCache* GetModuleCache() override;
   void RecordMetadata() override;
-  void OnSampleCompleted(Frames frames) override;
+  void OnSampleCompleted(std::vector<Frame> sample) override;
   void OnProfileCompleted(TimeDelta profile_duration,
                           TimeDelta sampling_period) override;
 
  private:
   ModuleCache* module_cache_;
 
-  // The sets of frames recorded.
-  std::vector<Frames> frame_sets_;
+  // The set of recorded samples.
+  std::vector<std::vector<Frame>> samples_;
 
   // The number of invocations of RecordMetadata().
   int metadata_count_ = 0;
@@ -426,14 +424,14 @@ void TestProfileBuilder::RecordMetadata() {
   ++metadata_count_;
 }
 
-void TestProfileBuilder::OnSampleCompleted(Frames frames) {
-  frame_sets_.push_back(std::move(frames));
+void TestProfileBuilder::OnSampleCompleted(std::vector<Frame> sample) {
+  samples_.push_back(std::move(sample));
 }
 
 void TestProfileBuilder::OnProfileCompleted(TimeDelta profile_duration,
                                             TimeDelta sampling_period) {
   callback_.Run(
-      Profile(frame_sets_, metadata_count_, profile_duration, sampling_period));
+      Profile(samples_, metadata_count_, profile_duration, sampling_period));
 }
 
 // Loads the other library, which defines a function to be called in the
@@ -511,8 +509,9 @@ void WithTargetThread(ProfileCallback profile_callback) {
   WithTargetThread(&scenario, std::move(profile_callback));
 }
 
-// Returns the frames seen when taking one sample of |scenario|.
-Frames SampleScenario(UnwindScenario* scenario, ModuleCache* module_cache) {
+// Returns the sample seen when taking one sample of |scenario|.
+std::vector<Frame> SampleScenario(UnwindScenario* scenario,
+                                  ModuleCache* module_cache) {
   SamplingParams params;
   params.sampling_interval = TimeDelta::FromMilliseconds(0);
   params.samples_per_profile = 1;
@@ -536,8 +535,8 @@ Frames SampleScenario(UnwindScenario* scenario, ModuleCache* module_cache) {
         sampling_thread_completed.Wait();
       }));
 
-  CHECK_EQ(1u, profile.frame_sets.size());
-  return profile.frame_sets[0];
+  CHECK_EQ(1u, profile.samples.size());
+  return profile.samples[0];
 }
 
 struct TestProfilerInfo {
@@ -583,22 +582,22 @@ std::vector<std::unique_ptr<TestProfilerInfo>> CreateProfilers(
   return profilers;
 }
 
-// Captures frames as specified by |params| on the TargetThread, and returns
+// Captures samples as specified by |params| on the TargetThread, and returns
 // them. Waits up to |profiler_wait_time| for the profiler to complete.
-FrameSets CaptureFrameSets(const SamplingParams& params,
-                           TimeDelta profiler_wait_time,
-                           ModuleCache* module_cache) {
-  FrameSets frame_sets;
+std::vector<std::vector<Frame>> CaptureSamples(const SamplingParams& params,
+                                               TimeDelta profiler_wait_time,
+                                               ModuleCache* module_cache) {
+  std::vector<std::vector<Frame>> samples;
   WithTargetThread(BindLambdaForTesting([&](PlatformThreadId target_thread_id) {
     TestProfilerInfo info(target_thread_id, params, module_cache);
     info.profiler.Start();
     info.completed.TimedWait(profiler_wait_time);
     info.profiler.Stop();
     info.completed.Wait();
-    frame_sets = std::move(info.profile.frame_sets);
+    samples = std::move(info.profile.samples);
   }));
 
-  return frame_sets;
+  return samples;
 }
 
 // Waits for one of multiple samplings to complete.
@@ -712,9 +711,9 @@ void TestLibraryUnload(bool wait_until_unloaded, ModuleCache* module_cache) {
   // Wait for the sampling thread to complete and fill out |profile|.
   sampling_thread_completed.Wait();
 
-  // Look up the frames.
-  ASSERT_EQ(1u, profile.frame_sets.size());
-  const Frames& frames = profile.frame_sets[0];
+  // Look up the sample.
+  ASSERT_EQ(1u, profile.samples.size());
+  const std::vector<Frame>& sample = profile.samples[0];
 
   if (wait_until_unloaded) {
     // We expect the stack to look something like this, with the frame in the
@@ -724,12 +723,12 @@ void TestLibraryUnload(bool wait_until_unloaded, ModuleCache* module_cache) {
     // WaitForSample()
     // TargetThread::OtherLibraryCallback
     // <frame in unloaded library>
-    EXPECT_EQ(nullptr, frames.back().module)
+    EXPECT_EQ(nullptr, sample.back().module)
         << "Stack:\n"
-        << FormatSampleForDiagnosticOutput(frames);
+        << FormatSampleForDiagnosticOutput(sample);
 
-    ExpectStackContains(frames, {scenario.GetWaitForSampleAddressRange()});
-    ExpectStackDoesNotContain(frames,
+    ExpectStackContains(sample, {scenario.GetWaitForSampleAddressRange()});
+    ExpectStackDoesNotContain(sample,
                               {scenario.GetSetupFunctionAddressRange(),
                                scenario.GetOuterFunctionAddressRange()});
   } else {
@@ -738,16 +737,16 @@ void TestLibraryUnload(bool wait_until_unloaded, ModuleCache* module_cache) {
     // the same stack as |wait_until_unloaded|, if not we should have the full
     // stack. The important thing is that we should not crash.
 
-    if (!frames.back().module) {
+    if (!sample.back().module) {
       // This is the same case as |wait_until_unloaded|.
-      ExpectStackContains(frames, {scenario.GetWaitForSampleAddressRange()});
-      ExpectStackDoesNotContain(frames,
+      ExpectStackContains(sample, {scenario.GetWaitForSampleAddressRange()});
+      ExpectStackDoesNotContain(sample,
                                 {scenario.GetSetupFunctionAddressRange(),
                                  scenario.GetOuterFunctionAddressRange()});
       return;
     }
 
-    ExpectStackContains(frames, {scenario.GetWaitForSampleAddressRange(),
+    ExpectStackContains(sample, {scenario.GetWaitForSampleAddressRange(),
                                  scenario.GetSetupFunctionAddressRange(),
                                  scenario.GetOuterFunctionAddressRange()});
   }
@@ -790,14 +789,14 @@ class StackSamplingProfilerTest : public testing::Test {
 #endif
 PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_Basic) {
   UnwindScenario scenario(BindRepeating(&CallWithPlainFunction));
-  const Frames& frames = SampleScenario(&scenario, module_cache());
+  const std::vector<Frame>& sample = SampleScenario(&scenario, module_cache());
 
   // Check that all the modules are valid.
-  for (const auto& frame : frames)
+  for (const auto& frame : sample)
     EXPECT_NE(nullptr, frame.module);
 
   // The stack should contain a full unwind.
-  ExpectStackContains(frames, {scenario.GetWaitForSampleAddressRange(),
+  ExpectStackContains(sample, {scenario.GetWaitForSampleAddressRange(),
                                scenario.GetSetupFunctionAddressRange(),
                                scenario.GetOuterFunctionAddressRange()});
 }
@@ -835,10 +834,10 @@ class TestAuxUnwinder : public Unwinder {
 #endif
 PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_Alloca) {
   UnwindScenario scenario(BindRepeating(&CallWithAlloca));
-  const Frames& frames = SampleScenario(&scenario, module_cache());
+  const std::vector<Frame>& sample = SampleScenario(&scenario, module_cache());
 
   // The stack should contain a full unwind.
-  ExpectStackContains(frames, {scenario.GetWaitForSampleAddressRange(),
+  ExpectStackContains(sample, {scenario.GetWaitForSampleAddressRange(),
                                scenario.GetSetupFunctionAddressRange(),
                                scenario.GetOuterFunctionAddressRange()});
 }
@@ -855,10 +854,10 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_OtherLibrary) {
   ScopedNativeLibrary other_library(LoadOtherLibrary());
   UnwindScenario scenario(
       BindRepeating(&CallThroughOtherLibrary, Unretained(other_library.get())));
-  const Frames& frames = SampleScenario(&scenario, module_cache());
+  const std::vector<Frame>& sample = SampleScenario(&scenario, module_cache());
 
   // The stack should contain a full unwind.
-  ExpectStackContains(frames, {scenario.GetWaitForSampleAddressRange(),
+  ExpectStackContains(sample, {scenario.GetWaitForSampleAddressRange(),
                                scenario.GetSetupFunctionAddressRange(),
                                scenario.GetOuterFunctionAddressRange()});
 }
@@ -990,19 +989,19 @@ PROFILER_TEST_F(StackSamplingProfilerTest, StopSafely) {
   }));
 }
 
-// Checks that no frames are captured if the profiling is stopped during the
+// Checks that no sample are captured if the profiling is stopped during the
 // initial delay.
 PROFILER_TEST_F(StackSamplingProfilerTest, StopDuringInitialDelay) {
   SamplingParams params;
   params.initial_delay = TimeDelta::FromSeconds(60);
 
-  FrameSets frame_sets =
-      CaptureFrameSets(params, TimeDelta::FromMilliseconds(0), module_cache());
+  std::vector<std::vector<Frame>> samples =
+      CaptureSamples(params, TimeDelta::FromMilliseconds(0), module_cache());
 
-  EXPECT_TRUE(frame_sets.empty());
+  EXPECT_TRUE(samples.empty());
 }
 
-// Checks that tasks can be stopped before completion and incomplete frames are
+// Checks that tasks can be stopped before completion and incomplete samples are
 // captured.
 PROFILER_TEST_F(StackSamplingProfilerTest, StopDuringInterSampleInterval) {
   // Test delegate that counts samples.
@@ -1040,7 +1039,7 @@ PROFILER_TEST_F(StackSamplingProfilerTest, StopDuringInterSampleInterval) {
     profiler_info.profiler.Stop();
     profiler_info.completed.Wait();
 
-    EXPECT_EQ(1u, profiler_info.profile.frame_sets.size());
+    EXPECT_EQ(1u, profiler_info.profile.samples.size());
   }));
 }
 
@@ -1075,12 +1074,12 @@ PROFILER_TEST_F(StackSamplingProfilerTest, CanRunMultipleProfilers) {
   params.sampling_interval = TimeDelta::FromMilliseconds(0);
   params.samples_per_profile = 1;
 
-  FrameSets frame_sets =
-      CaptureFrameSets(params, AVeryLongTimeDelta(), module_cache());
-  ASSERT_EQ(1u, frame_sets.size());
+  std::vector<std::vector<Frame>> samples =
+      CaptureSamples(params, AVeryLongTimeDelta(), module_cache());
+  ASSERT_EQ(1u, samples.size());
 
-  frame_sets = CaptureFrameSets(params, AVeryLongTimeDelta(), module_cache());
-  ASSERT_EQ(1u, frame_sets.size());
+  samples = CaptureSamples(params, AVeryLongTimeDelta(), module_cache());
+  ASSERT_EQ(1u, samples.size());
 }
 
 // Checks that a sampler can be started while another is running.
@@ -1101,7 +1100,7 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MultipleStart) {
         profiler_infos[0]->profiler.Start();
         profiler_infos[1]->profiler.Start();
         profiler_infos[1]->completed.Wait();
-        EXPECT_EQ(1u, profiler_infos[1]->profile.frame_sets.size());
+        EXPECT_EQ(1u, profiler_infos[1]->profile.samples.size());
       }));
 }
 
@@ -1119,7 +1118,7 @@ PROFILER_TEST_F(StackSamplingProfilerTest, ProfileGeneralInfo) {
 
     profiler_info.profiler.Start();
     profiler_info.completed.Wait();
-    EXPECT_EQ(3u, profiler_info.profile.frame_sets.size());
+    EXPECT_EQ(3u, profiler_info.profile.samples.size());
 
     // The profile duration should be greater than the total sampling intervals.
     EXPECT_GT(profiler_info.profile.profile_duration,
@@ -1140,9 +1139,9 @@ PROFILER_TEST_F(StackSamplingProfilerTest, SamplerIdleShutdown) {
   params.sampling_interval = TimeDelta::FromMilliseconds(0);
   params.samples_per_profile = 1;
 
-  FrameSets frame_sets =
-      CaptureFrameSets(params, AVeryLongTimeDelta(), module_cache());
-  ASSERT_EQ(1u, frame_sets.size());
+  std::vector<std::vector<Frame>> samples =
+      CaptureSamples(params, AVeryLongTimeDelta(), module_cache());
+  ASSERT_EQ(1u, samples.size());
 
   // Capture thread should still be running at this point.
   ASSERT_TRUE(StackSamplingProfiler::TestPeer::IsSamplingThreadRunning());
@@ -1166,9 +1165,9 @@ PROFILER_TEST_F(StackSamplingProfilerTest,
   params.sampling_interval = TimeDelta::FromMilliseconds(0);
   params.samples_per_profile = 1;
 
-  FrameSets frame_sets =
-      CaptureFrameSets(params, AVeryLongTimeDelta(), module_cache());
-  ASSERT_EQ(1u, frame_sets.size());
+  std::vector<std::vector<Frame>> samples =
+      CaptureSamples(params, AVeryLongTimeDelta(), module_cache());
+  ASSERT_EQ(1u, samples.size());
 
   // Capture thread should still be running at this point.
   ASSERT_TRUE(StackSamplingProfiler::TestPeer::IsSamplingThreadRunning());
@@ -1178,8 +1177,8 @@ PROFILER_TEST_F(StackSamplingProfilerTest,
   StackSamplingProfiler::TestPeer::PerformSamplingThreadIdleShutdown(false);
 
   // Ensure another capture will start the sampling thread and run.
-  frame_sets = CaptureFrameSets(params, AVeryLongTimeDelta(), module_cache());
-  ASSERT_EQ(1u, frame_sets.size());
+  samples = CaptureSamples(params, AVeryLongTimeDelta(), module_cache());
+  ASSERT_EQ(1u, samples.size());
   EXPECT_TRUE(StackSamplingProfiler::TestPeer::IsSamplingThreadRunning());
 }
 
@@ -1256,7 +1255,7 @@ PROFILER_TEST_F(StackSamplingProfilerTest, IdleShutdownAbort) {
 
     profiler_info.profiler.Start();
     profiler_info.completed.Wait();
-    EXPECT_EQ(1u, profiler_info.profile.frame_sets.size());
+    EXPECT_EQ(1u, profiler_info.profile.samples.size());
 
     // Perform an idle shutdown but simulate that a new capture is started
     // before it can actually run.
@@ -1274,7 +1273,7 @@ PROFILER_TEST_F(StackSamplingProfilerTest, IdleShutdownAbort) {
     TestProfilerInfo another_info(target_thread_id, params, module_cache());
     another_info.profiler.Start();
     another_info.completed.Wait();
-    EXPECT_EQ(1u, another_info.profile.frame_sets.size());
+    EXPECT_EQ(1u, another_info.profile.samples.size());
   }));
 }
 
@@ -1311,9 +1310,9 @@ PROFILER_TEST_F(StackSamplingProfilerTest, ConcurrentProfiling_InSync) {
         // Wait for the other profiler to finish.
         profiler_infos[other_profiler]->completed.Wait();
 
-        // Ensure each got the correct number of frame sets.
-        EXPECT_EQ(9u, profiler_infos[0]->profile.frame_sets.size());
-        EXPECT_EQ(8u, profiler_infos[1]->profile.frame_sets.size());
+        // Ensure each got the correct number of samples.
+        EXPECT_EQ(9u, profiler_infos[0]->profile.samples.size());
+        EXPECT_EQ(8u, profiler_infos[1]->profile.samples.size());
       }));
 }
 
@@ -1343,8 +1342,7 @@ PROFILER_TEST_F(StackSamplingProfilerTest, ConcurrentProfiling_Mixed) {
 
     // Wait for one profiler to finish.
     size_t completed_profiler = WaitForSamplingComplete(profiler_infos);
-    EXPECT_EQ(10u,
-              profiler_infos[completed_profiler]->profile.frame_sets.size());
+    EXPECT_EQ(10u, profiler_infos[completed_profiler]->profile.samples.size());
     // Stop and destroy all profilers, always in the same order. Don't crash.
     for (auto& i : profiler_infos)
       i->profiler.Stop();
@@ -1419,8 +1417,8 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MultipleSampledThreads) {
   profiler2.Start();
   sampling_thread_completed1.Wait();
   sampling_thread_completed2.Wait();
-  EXPECT_EQ(9u, profile1.frame_sets.size());
-  EXPECT_EQ(8u, profile2.frame_sets.size());
+  EXPECT_EQ(9u, profile1.samples.size());
+  EXPECT_EQ(8u, profile2.samples.size());
 
   events1.sample_finished.Signal();
   events2.sample_finished.Signal();
@@ -1501,8 +1499,8 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MultipleProfilerThreads) {
     // Wait for them both to finish and validate collection.
     profiler_thread1.Wait();
     profiler_thread2.Wait();
-    EXPECT_EQ(9u, profiler_thread1.profile().frame_sets.size());
-    EXPECT_EQ(8u, profiler_thread2.profile().frame_sets.size());
+    EXPECT_EQ(9u, profiler_thread1.profile().samples.size());
+    EXPECT_EQ(8u, profiler_thread2.profile().samples.size());
 
     profiler_thread1.Join();
     profiler_thread2.Join();
@@ -1539,8 +1537,8 @@ PROFILER_TEST_F(StackSamplingProfilerTest, AddAuxUnwinder_BeforeStart) {
 
   // The sample should have one frame from the context values and one from the
   // TestAuxUnwinder.
-  ASSERT_EQ(1u, profile.frame_sets.size());
-  const Frames& frames = profile.frame_sets[0];
+  ASSERT_EQ(1u, profile.samples.size());
+  const std::vector<Frame>& frames = profile.samples[0];
 
   ASSERT_EQ(2u, frames.size());
   EXPECT_EQ(23u, frames[1].instruction_pointer);
@@ -1577,8 +1575,8 @@ PROFILER_TEST_F(StackSamplingProfilerTest, AddAuxUnwinder_AfterStart) {
 
   // The sample should have one frame from the context values and one from the
   // TestAuxUnwinder.
-  ASSERT_EQ(1u, profile.frame_sets.size());
-  const Frames& frames = profile.frame_sets[0];
+  ASSERT_EQ(1u, profile.samples.size());
+  const std::vector<Frame>& frames = profile.samples[0];
 
   ASSERT_EQ(2u, frames.size());
   EXPECT_EQ(23u, frames[1].instruction_pointer);
