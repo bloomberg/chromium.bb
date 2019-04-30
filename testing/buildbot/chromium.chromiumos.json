@@ -540,21 +540,6 @@
         "test": "ash_unittests"
       },
       {
-        "args": [
-          "--disable-features=SingleProcessMash"
-        ],
-        "name": "non_single_process_mash_ash_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-14.04"
-            }
-          ]
-        },
-        "test": "ash_unittests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -668,25 +653,6 @@
       },
       {
         "args": [
-          "--enable-features=Mash",
-          "--disable-features=SingleProcessMash",
-          "--override-use-software-gl-for-tests",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.mash.browser_tests.filter"
-        ],
-        "name": "mash_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-14.04"
-            }
-          ],
-          "hard_timeout": 1800
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
           "--disable-features=NetworkService"
         ],
         "name": "non_network_service_browser_tests",
@@ -698,23 +664,6 @@
             }
           ],
           "shards": 21
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
-          "--disable-features=SingleProcessMash",
-          "--override-use-software-gl-for-tests"
-        ],
-        "name": "non_single_process_mash_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-14.04"
-            }
-          ],
-          "shards": 20
         },
         "test": "browser_tests"
       },
@@ -918,23 +867,6 @@
       },
       {
         "args": [
-          "--disable-features=SingleProcessMash",
-          "--override-use-software-gl-for-tests"
-        ],
-        "name": "non_single_process_mash_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-14.04"
-            }
-          ],
-          "shards": 5
-        },
-        "test": "content_browsertests"
-      },
-      {
-        "args": [
           "--disable-perfetto",
           "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*"
         ],
@@ -966,21 +898,6 @@
         "test": "content_browsertests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-14.04"
-            }
-          ]
-        },
-        "test": "content_unittests"
-      },
-      {
-        "args": [
-          "--disable-features=SingleProcessMash"
-        ],
-        "name": "non_single_process_mash_content_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1062,21 +979,6 @@
         "test": "events_unittests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-14.04"
-            }
-          ]
-        },
-        "test": "exo_unittests"
-      },
-      {
-        "args": [
-          "--disable-features=SingleProcessMash"
-        ],
-        "name": "non_single_process_mash_exo_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1218,22 +1120,6 @@
           "--disable-features=NetworkService"
         ],
         "name": "non_network_service_interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-14.04"
-            }
-          ],
-          "shards": 3
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--disable-features=SingleProcessMash"
-        ],
-        "name": "non_single_process_mash_interactive_ui_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1694,21 +1580,6 @@
         "test": "unit_tests"
       },
       {
-        "args": [
-          "--disable-features=SingleProcessMash"
-        ],
-        "name": "non_single_process_mash_unit_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-14.04"
-            }
-          ]
-        },
-        "test": "unit_tests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1838,21 +1709,6 @@
         "test": "ash_unittests"
       },
       {
-        "args": [
-          "--disable-features=SingleProcessMash"
-        ],
-        "name": "non_single_process_mash_ash_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-14.04"
-            }
-          ]
-        },
-        "test": "ash_unittests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1953,42 +1809,6 @@
         "test": "boringssl_ssl_tests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-14.04"
-            }
-          ],
-          "shards": 10
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
-          "--enable-features=Mash",
-          "--disable-features=SingleProcessMash",
-          "--override-use-software-gl-for-tests",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.mash.browser_tests.filter"
-        ],
-        "name": "mash_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-14.04"
-            }
-          ],
-          "hard_timeout": 1800
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
-          "--disable-features=SingleProcessMash",
-          "--override-use-software-gl-for-tests"
-        ],
-        "name": "non_single_process_mash_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2170,23 +1990,6 @@
       },
       {
         "args": [
-          "--disable-features=SingleProcessMash",
-          "--override-use-software-gl-for-tests"
-        ],
-        "name": "non_single_process_mash_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-14.04"
-            }
-          ],
-          "shards": 5
-        },
-        "test": "content_browsertests"
-      },
-      {
-        "args": [
           "--disable-perfetto",
           "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*"
         ],
@@ -2218,21 +2021,6 @@
         "test": "content_browsertests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-14.04"
-            }
-          ]
-        },
-        "test": "content_unittests"
-      },
-      {
-        "args": [
-          "--disable-features=SingleProcessMash"
-        ],
-        "name": "non_single_process_mash_content_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2314,21 +2102,6 @@
         "test": "events_unittests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-14.04"
-            }
-          ]
-        },
-        "test": "exo_unittests"
-      },
-      {
-        "args": [
-          "--disable-features=SingleProcessMash"
-        ],
-        "name": "non_single_process_mash_exo_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2439,22 +2212,6 @@
         "test": "gpu_unittests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-14.04"
-            }
-          ],
-          "shards": 3
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--disable-features=SingleProcessMash"
-        ],
-        "name": "non_single_process_mash_interactive_ui_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2888,21 +2645,6 @@
         "test": "ui_touch_selection_unittests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-14.04"
-            }
-          ]
-        },
-        "test": "unit_tests"
-      },
-      {
-        "args": [
-          "--disable-features=SingleProcessMash"
-        ],
-        "name": "non_single_process_mash_unit_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [

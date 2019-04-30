@@ -5152,7 +5152,6 @@ if (!is_android) {
     # Runtime dependencies
     data_deps = [
       "//ppapi:ppapi_tests",
-      "//testing/buildbot/filters:interactive_ui_tests_filters",
       "//third_party/mesa_headers",
     ]
 

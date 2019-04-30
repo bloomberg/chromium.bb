@@ -125,13 +125,8 @@ const base::Feature kMash = {"Mash", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kMashOopViz = {"MashOopViz",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Runs the window service in-process. Launch bug https://crbug.com/909816
 const base::Feature kSingleProcessMash = {"SingleProcessMash",
-#if defined(OS_CHROMEOS)
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
-#else
                                           base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
 
 #if defined(OS_CHROMEOS)
 // Connecting the client and IME engine via Mojo. https://crbug.com/937167

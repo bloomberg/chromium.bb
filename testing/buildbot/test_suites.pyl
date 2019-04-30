@@ -3617,19 +3617,6 @@
       'exo_unittests': {},
       'gl_unittests_ozone': {},
       'keyboard_unittests': {},
-      'mash_browser_tests': {
-        'test': 'browser_tests',
-        'args': [
-          '--enable-features=Mash',
-          '--disable-features=SingleProcessMash',
-          '--override-use-software-gl-for-tests',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.mash.browser_tests.filter',
-        ],
-        'swarming': {
-          'hard_timeout': 1800,
-          'shards': 1,
-        },
-      },
       'ozone_gl_unittests': {
         'args': [
           '--ozone-platform=headless',
@@ -3637,59 +3624,6 @@
       },
       'ozone_unittests': {},
       'ozone_x11_unittests': {},
-      'non_single_process_mash_ash_unittests': {
-        'test': 'ash_unittests',
-        'args': [
-          '--disable-features=SingleProcessMash',
-        ],
-      },
-      'non_single_process_mash_browser_tests': {
-        'test': 'browser_tests',
-        'args': [
-          '--disable-features=SingleProcessMash',
-          '--override-use-software-gl-for-tests'
-        ],
-        'swarming': {
-          'shards': 10,
-        },
-      },
-      'non_single_process_mash_content_unittests': {
-        'test': 'content_unittests',
-        'args': [
-          '--disable-features=SingleProcessMash',
-        ],
-      },
-      'non_single_process_mash_content_browsertests': {
-        'test': 'content_browsertests',
-        'args': [
-          '--disable-features=SingleProcessMash',
-          '--override-use-software-gl-for-tests'
-        ],
-        'swarming': {
-          'shards': 5,
-        },
-      },
-      'non_single_process_mash_exo_unittests': {
-        'test': 'exo_unittests',
-        'args': [
-          '--disable-features=SingleProcessMash',
-        ],
-      },
-      'non_single_process_mash_interactive_ui_tests': {
-        'test': 'interactive_ui_tests',
-        'args': [
-          '--disable-features=SingleProcessMash'
-        ],
-        'swarming': {
-          'shards': 3,
-        },
-      },
-      'non_single_process_mash_unit_tests': {
-        'test': 'unit_tests',
-        'args': [
-          '--disable-features=SingleProcessMash'
-        ],
-      },
       'ui_chromeos_unittests': {},
       'usage_time_limit_unittests': {
         'experiment_percentage': 100,
@@ -3758,40 +3692,6 @@
       'sandbox_mac_unittests': {},
     },
 
-
-    'mash_fyi_chromium_gtests': {
-      'mash_fyi_browser_tests': {
-        'test': 'browser_tests',
-        'args': [
-          '--enable-features=Mash',
-          '--disable-features=SingleProcessMash',
-          '--override-use-software-gl-for-tests',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.mash.fyi.browser_tests.filter',
-        ],
-        'swarming': {
-          'hard_timeout': 1800,
-          'shards': 10,
-        },
-      },
-      'mash_fyi_content_unittests': {
-        'test': 'content_unittests',
-        'args': [
-          '--enable-features=Mash',
-          '--disable-features=SingleProcessMash',
-        ],
-      },
-      'mash_fyi_interactive_ui_tests': {
-        'test': 'interactive_ui_tests',
-        'args': [
-          '--enable-features=Mash',
-          '--disable-features=SingleProcessMash',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.mash.fyi.interactive_ui_tests.filter',
-        ],
-        'swarming': {
-          'shards': 3,
-        },
-      }
-    },
 
     'memory_infra_isolated_scripts': {
       'heap_profiling.mobile': {
@@ -5085,7 +4985,6 @@
 
     'mojo_chromiumos_fyi_gtests': [
       'aura_gtests',
-      'mash_fyi_chromium_gtests',
       'mojo_chromiumos_specific_gtests',
       'network_service_gtests',
       'viz_chromeos_fyi_gtests',
