@@ -435,25 +435,76 @@ TEST(Enroll, EnrollToGoogleMdmIfNeeded_NotEnabled) {
   base::Value properties(base::Value::Type::DICTIONARY);
   properties.SetStringKey(kKeyEmail, "foo@gmail.com");
   properties.SetStringKey(kKeyMdmIdToken, "token");
+  properties.SetStringKey(kKeyAccessToken, "access_token");
+  properties.SetStringKey(kKeySID, "sid");
+  properties.SetStringKey(kKeyUsername, "username");
+  properties.SetStringKey(kKeyDomain, "domain");
   ASSERT_EQ(S_OK, EnrollToGoogleMdmIfNeeded(properties));
 }
 
-TEST(Enroll, EnrollToGoogleMdmIfNeeded_MissingArgs) {
+// Tests all possible data combinations sent to EnrollToGoogleMdmIfNeeded to
+// ensure correct error reporting is performed.
+// Parameters are:
+// 1. Email.
+// 2. Id token.
+// 3. Access token.
+// 4. User SID.
+// 5. Username.
+// 6. Domain.
+class GcpEnrollmentArgsTest
+    : public ::testing::TestWithParam<std::tuple<const char*,
+                                                 const char*,
+                                                 const char*,
+                                                 const char*,
+                                                 const char*,
+                                                 const char*>> {};
+
+TEST_P(GcpEnrollmentArgsTest, EnrollToGoogleMdmIfNeeded_MissingArgs) {
   // Does not matter whether MDM is enforced or not.
   registry_util::RegistryOverrideManager registry_override;
   InitializeRegistryOverrideForTesting(&registry_override);
 
-  // EnrollToGoogleMdmIfNeeded() should fail if email and/or id token are
-  // not provided.
+  const char* email = std::get<0>(GetParam());
+  const char* id_token = std::get<1>(GetParam());
+  const char* access_token = std::get<2>(GetParam());
+  const char* sid = std::get<3>(GetParam());
+  const char* username = std::get<4>(GetParam());
+  const char* domain = std::get<5>(GetParam());
+
+  bool should_succeed = (email && email[0]) && (id_token && id_token[0]) &&
+                        (access_token && access_token[0]) && (sid && sid[0]) &&
+                        (username && username[0]) && (domain && domain[0]);
+
   base::Value properties(base::Value::Type::DICTIONARY);
-  ASSERT_NE(S_OK, EnrollToGoogleMdmIfNeeded(properties));
+  if (email)
+    properties.SetStringKey(kKeyEmail, email);
+  if (id_token)
+    properties.SetStringKey(kKeyMdmIdToken, id_token);
+  if (access_token)
+    properties.SetStringKey(kKeyAccessToken, access_token);
+  if (sid)
+    properties.SetStringKey(kKeySID, sid);
+  if (username)
+    properties.SetStringKey(kKeyUsername, username);
+  if (domain)
+    properties.SetStringKey(kKeyDomain, domain);
 
-  properties.SetStringKey(kKeyEmail, "foo@gmail.com");
-  ASSERT_NE(S_OK, EnrollToGoogleMdmIfNeeded(properties));
-
-  properties.RemoveKey(kKeyEmail);
-  properties.SetStringKey(kKeyMdmIdToken, "token");
-  ASSERT_NE(S_OK, EnrollToGoogleMdmIfNeeded(properties));
+  // EnrollToGoogleMdmIfNeeded() should fail if any field is missing.
+  if (should_succeed) {
+    ASSERT_EQ(S_OK, EnrollToGoogleMdmIfNeeded(properties));
+  } else {
+    ASSERT_NE(S_OK, EnrollToGoogleMdmIfNeeded(properties));
+  }
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    GcpEnrollmentArgsTest,
+    ::testing::Combine(::testing::Values("foo@gmail.com", "", nullptr),
+                       ::testing::Values("id_token", "", nullptr),
+                       ::testing::Values("access_token", "", nullptr),
+                       ::testing::Values("sid", "", nullptr),
+                       ::testing::Values("username", "", nullptr),
+                       ::testing::Values("domain", "", nullptr)));
 
 }  // namespace credential_provider
