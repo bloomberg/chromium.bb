@@ -164,7 +164,12 @@ void SwapChainPresenter::PresentationHistory::AddSample(
   }
 }
 
-bool SwapChainPresenter::PresentationHistory::valid() const {
+void SwapChainPresenter::PresentationHistory::Clear() {
+  presents_.clear();
+  composed_count_ = 0;
+}
+
+bool SwapChainPresenter::PresentationHistory::Valid() const {
   return presents_.size() >= kPresentsToStore;
 }
 
@@ -203,8 +208,9 @@ bool SwapChainPresenter::ShouldUseYUVSwapChain(
     return false;
 
   // Start out as YUV.
-  if (!presentation_history_.valid())
+  if (!presentation_history_.Valid())
     return true;
+
   int composition_count = presentation_history_.composed_count();
 
   // It's more efficient to use a BGRA backbuffer instead of YUV if overlays
@@ -724,6 +730,10 @@ bool SwapChainPresenter::PresentToSwapChain(
   }
 
   bool swap_chain_resized = swap_chain_size_ != swap_chain_size;
+  // Give it another chance to try YUV again when the size changes.
+  if (swap_chain_resized) {
+    presentation_history_.Clear();
+  }
   bool use_yuv_swap_chain = ShouldUseYUVSwapChain(params.protected_video_type);
   bool toggle_yuv_swapchain = use_yuv_swap_chain != is_yuv_swapchain_;
   bool toggle_protected_video =

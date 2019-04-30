@@ -78,7 +78,8 @@ class SwapChainPresenter {
 
     void AddSample(DXGI_FRAME_PRESENTATION_MODE mode);
 
-    bool valid() const;
+    void Clear();
+    bool Valid() const;
     int composed_count() const;
 
    private:
