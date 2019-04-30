@@ -158,6 +158,10 @@ class DeviceStatusCollector : public StatusCollector,
       const base::circular_deque<std::unique_ptr<SampledData>>&)>;
   // Gets the ProbeResult/sampled data and passes it to ProbeDataReceiver.
   using ProbeDataFetcher = base::RepeatingCallback<void(ProbeDataReceiver)>;
+  // Reads EMMC usage lifetime from /var/log/storage_info.txt
+  using EMMCLifetimeFetcher =
+      base::RepeatingCallback<enterprise_management::DiskLifetimeEstimation(
+          void)>;
 
   // Constructor. Callers can inject their own *Fetcher callbacks, e.g. for unit
   // testing. A null callback can be passed for any *Fetcher parameter, to use
@@ -174,6 +178,7 @@ class DeviceStatusCollector : public StatusCollector,
                         const CPUTempFetcher& cpu_temp_fetcher,
                         const AndroidStatusFetcher& android_status_fetcher,
                         const TpmStatusFetcher& tpm_status_fetcher,
+                        const EMMCLifetimeFetcher& emmc_lifetime_fetcher,
                         base::TimeDelta activity_day_start,
                         bool is_enterprise_reporting);
   ~DeviceStatusCollector() override;
@@ -422,6 +427,8 @@ class DeviceStatusCollector : public StatusCollector,
   TpmStatusFetcher tpm_status_fetcher_;
 
   ProbeDataFetcher probe_data_fetcher_;
+
+  EMMCLifetimeFetcher emmc_lifetime_fetcher_;
 
   PowerStatusCallback power_status_callback_;
 
