@@ -237,7 +237,7 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
   layout->SetCollapseMargins(true);
 
   constexpr int kOuterMargin = 12;
-  constexpr int kLineSpacing = 8;
+  constexpr int kLineSpacing = 0;
   title_label_->SetProperty(
       views::kMarginsKey,
       new gfx::Insets(kOuterMargin, kOuterMargin, kLineSpacing, kOuterMargin));
