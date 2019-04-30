@@ -400,6 +400,11 @@ OffTheRecordProfileImpl::HandleServiceRequest(
   return nullptr;
 }
 
+policy::SchemaRegistryService*
+OffTheRecordProfileImpl::GetPolicySchemaRegistryService() {
+  return nullptr;
+}
+
 policy::UserCloudPolicyManager*
 OffTheRecordProfileImpl::GetUserCloudPolicyManager() {
   return GetOriginalProfile()->GetUserCloudPolicyManager();

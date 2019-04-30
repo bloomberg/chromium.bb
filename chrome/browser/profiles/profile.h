@@ -233,10 +233,10 @@ class Profile : public content::BrowserContext {
   virtual ProfileKey* GetProfileKey() const = 0;
 
   // Returns the SchemaRegistryService.
-  virtual policy::SchemaRegistryService* GetPolicySchemaRegistryService();
+  virtual policy::SchemaRegistryService* GetPolicySchemaRegistryService() = 0;
 
   // Returns the UserCloudPolicyManager.
-  virtual policy::UserCloudPolicyManager* GetUserCloudPolicyManager();
+  virtual policy::UserCloudPolicyManager* GetUserCloudPolicyManager() = 0;
 
   virtual policy::ProfilePolicyConnector* GetProfilePolicyConnector() = 0;
   virtual const policy::ProfilePolicyConnector* GetProfilePolicyConnector()

@@ -129,14 +129,6 @@ PrefService* Profile::GetReadOnlyOffTheRecordPrefs() {
   return GetOffTheRecordPrefs();
 }
 
-policy::SchemaRegistryService* Profile::GetPolicySchemaRegistryService() {
-  return nullptr;
-}
-
-policy::UserCloudPolicyManager* Profile::GetUserCloudPolicyManager() {
-  return nullptr;
-}
-
 Profile::Delegate::~Delegate() {
 }
 
