@@ -33,7 +33,7 @@ class OverlayRequestQueueImpl : public OverlayRequestQueue {
    private:
     friend class web::WebStateUserData<Container>;
     WEB_STATE_USER_DATA_KEY_DECL();
-    explicit Container(web::WebState* web_state);
+    Container(web::WebState* web_state);
 
     std::map<OverlayModality, std::unique_ptr<OverlayRequestQueueImpl>> queues_;
   };
@@ -46,9 +46,13 @@ class OverlayRequestQueueImpl : public OverlayRequestQueue {
     observers_.RemoveObserver(observer);
   }
 
-  // Removes the front-most request from the queue and returns it.  Must be
-  // called on a non-empty queue.
-  void PopRequest();
+  // The number of requests in the queue.
+  size_t size() const { return requests_.size(); }
+
+  // Removes the front or back request from the queue.  Must be called on a non-
+  // empty queue.
+  void PopFrontRequest();
+  void PopBackRequest();
 
   // OverlayRequestQueue:
   void AddRequest(std::unique_ptr<OverlayRequest> request) override;
@@ -57,6 +61,10 @@ class OverlayRequestQueueImpl : public OverlayRequestQueue {
  private:
   // Private constructor called by container.
   OverlayRequestQueueImpl();
+
+  // Notifies the observers of |request|'s removal, with |frontmost| indicating
+  // whether the removed requests was at the front of the queue.
+  void NotifyRequestRemoved(OverlayRequest* request, bool frontmost);
 
   base::ObserverList<OverlayRequestQueueImplObserver>::Unchecked observers_;
   // The queue used to hold the received requests.  Stored as a circular dequeue

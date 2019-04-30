@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "ios/chrome/browser/overlays/public/overlay_request.h"
 
@@ -43,14 +44,23 @@ OverlayRequestQueueImpl* OverlayRequestQueueImpl::Container::QueueForModality(
 OverlayRequestQueueImpl::OverlayRequestQueueImpl() = default;
 OverlayRequestQueueImpl::~OverlayRequestQueueImpl() = default;
 
-void OverlayRequestQueueImpl::PopRequest() {
+#pragma mark Public
+
+void OverlayRequestQueueImpl::PopFrontRequest() {
   DCHECK(!requests_.empty());
   std::unique_ptr<OverlayRequest> popped_request = std::move(requests_.front());
   requests_.pop_front();
-  for (auto& observer : observers_) {
-    observer.OnRequestRemoved(this, popped_request.get());
-  }
+  NotifyRequestRemoved(popped_request.get(), true);
 }
+
+void OverlayRequestQueueImpl::PopBackRequest() {
+  DCHECK(!requests_.empty());
+  std::unique_ptr<OverlayRequest> popped_request = std::move(requests_.back());
+  requests_.pop_back();
+  NotifyRequestRemoved(popped_request.get(), requests_.empty());
+}
+
+#pragma mark OverlayRequestQueue
 
 void OverlayRequestQueueImpl::AddRequest(
     std::unique_ptr<OverlayRequest> request) {
@@ -62,4 +72,13 @@ void OverlayRequestQueueImpl::AddRequest(
 
 OverlayRequest* OverlayRequestQueueImpl::front_request() const {
   return requests_.empty() ? nullptr : requests_.front().get();
+}
+
+#pragma mark Private
+
+void OverlayRequestQueueImpl::NotifyRequestRemoved(OverlayRequest* request,
+                                                   bool frontmost) {
+  for (auto& observer : observers_) {
+    observer.OnRequestRemoved(this, request, frontmost);
+  }
 }

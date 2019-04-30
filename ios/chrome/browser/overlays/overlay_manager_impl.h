@@ -31,7 +31,7 @@ class OverlayManagerImpl : public OverlayManager {
 
    private:
     OVERLAY_USER_DATA_SETUP(Container);
-    Container(WebStateList* web_state_list);
+    explicit Container(WebStateList* web_state_list);
 
     WebStateList* web_state_list_ = nullptr;
     std::map<OverlayModality, std::unique_ptr<OverlayManagerImpl>> managers_;

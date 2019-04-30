@@ -23,8 +23,9 @@ class MockOverlayRequestQueueImplObserver
   MockOverlayRequestQueueImplObserver() {}
   ~MockOverlayRequestQueueImplObserver() {}
 
-  MOCK_METHOD2(OnRequestAdded, void(OverlayRequestQueue*, OverlayRequest*));
-  MOCK_METHOD2(OnRequestRemoved, void(OverlayRequestQueue*, OverlayRequest*));
+  MOCK_METHOD2(OnRequestAdded, void(OverlayRequestQueueImpl*, OverlayRequest*));
+  MOCK_METHOD3(OnRequestRemoved,
+               void(OverlayRequestQueueImpl*, OverlayRequest*, bool));
 };
 }  // namespace
 
@@ -51,20 +52,74 @@ class OverlayRequestQueueImplTest : public PlatformTest {
   MockOverlayRequestQueueImplObserver observer_;
 };
 
-// Tests that Requests can be added and popped from the queue.
-TEST_F(OverlayRequestQueueImplTest, AddAndPopRequest) {
-  ASSERT_FALSE(queue()->front_request());
-  std::unique_ptr<OverlayRequest> request =
+// Tests that state is updated correctly and observer callbacks are received
+// when adding requests to the back of the queue.
+TEST_F(OverlayRequestQueueImplTest, AddRequest) {
+  std::unique_ptr<OverlayRequest> first_request =
       OverlayRequest::CreateWithConfig<FakeOverlayUserData>(nullptr);
-  OverlayRequest* request_ptr = request.get();
-  // Add the request and verify that it's exposed by the queue and received by
-  // the observer.
-  EXPECT_CALL(observer(), OnRequestAdded(queue(), request_ptr));
-  queue()->AddRequest(std::move(request));
-  EXPECT_EQ(queue()->front_request(), request_ptr);
-  // Remove the request and verify that it's no longer in the queue and the
-  // observer callback has been executed.
-  EXPECT_CALL(observer(), OnRequestRemoved(queue(), request_ptr));
-  queue()->PopRequest();
-  ASSERT_FALSE(queue()->front_request());
+  OverlayRequest* first_request_ptr = first_request.get();
+  std::unique_ptr<OverlayRequest> second_request =
+      OverlayRequest::CreateWithConfig<FakeOverlayUserData>(nullptr);
+  OverlayRequest* second_request_ptr = second_request.get();
+
+  // Add two requests and pop the first, verifying that the size and front
+  // requests are updated.
+  EXPECT_CALL(observer(), OnRequestAdded(queue(), first_request_ptr));
+  queue()->AddRequest(std::move(first_request));
+
+  EXPECT_CALL(observer(), OnRequestAdded(queue(), second_request_ptr));
+  queue()->AddRequest(std::move(second_request));
+
+  EXPECT_EQ(first_request_ptr, queue()->front_request());
+  EXPECT_EQ(2U, queue()->size());
+}
+
+// Tests that state is updated correctly and observer callbacks are received
+// when popping the frontmost request.
+TEST_F(OverlayRequestQueueImplTest, PopFrontRequest) {
+  std::unique_ptr<OverlayRequest> first_request =
+      OverlayRequest::CreateWithConfig<FakeOverlayUserData>(nullptr);
+  OverlayRequest* first_request_ptr = first_request.get();
+  std::unique_ptr<OverlayRequest> second_request =
+      OverlayRequest::CreateWithConfig<FakeOverlayUserData>(nullptr);
+  OverlayRequest* second_request_ptr = second_request.get();
+
+  // Add two requests and pop the first.
+  EXPECT_CALL(observer(), OnRequestAdded(queue(), first_request_ptr));
+  queue()->AddRequest(std::move(first_request));
+
+  EXPECT_CALL(observer(), OnRequestAdded(queue(), second_request_ptr));
+  queue()->AddRequest(std::move(second_request));
+
+  EXPECT_CALL(observer(), OnRequestRemoved(queue(), first_request_ptr, true));
+  queue()->PopFrontRequest();
+
+  // Verify that the size and front request have been updated.
+  EXPECT_EQ(second_request_ptr, queue()->front_request());
+  EXPECT_EQ(1U, queue()->size());
+}
+
+// Tests that state is updated correctly and observer callbacks are received
+// when popping the back request.
+TEST_F(OverlayRequestQueueImplTest, PopBackRequest) {
+  std::unique_ptr<OverlayRequest> first_request =
+      OverlayRequest::CreateWithConfig<FakeOverlayUserData>(nullptr);
+  OverlayRequest* first_request_ptr = first_request.get();
+  std::unique_ptr<OverlayRequest> second_request =
+      OverlayRequest::CreateWithConfig<FakeOverlayUserData>(nullptr);
+  OverlayRequest* second_request_ptr = second_request.get();
+
+  // Add two requests and pop the second.
+  EXPECT_CALL(observer(), OnRequestAdded(queue(), first_request_ptr));
+  queue()->AddRequest(std::move(first_request));
+
+  EXPECT_CALL(observer(), OnRequestAdded(queue(), second_request_ptr));
+  queue()->AddRequest(std::move(second_request));
+
+  EXPECT_CALL(observer(), OnRequestRemoved(queue(), second_request_ptr, false));
+  queue()->PopBackRequest();
+
+  // Verify that the size and front request have been updated.
+  EXPECT_EQ(first_request_ptr, queue()->front_request());
+  EXPECT_EQ(1U, queue()->size());
 }
