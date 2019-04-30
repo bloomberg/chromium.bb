@@ -3,6 +3,7 @@
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
 
+import ctypes
 import json
 import logging
 import os
@@ -401,7 +402,7 @@ class RunIsolatedTest(unittest.TestCase):
       # The reason for 0100666 on Windows is that the file node had to be
       # modified to delete the hardlinked node. The read only bit is reset on
       # load.
-      unicode(file1_hash): (0100400, 0100400, 0100666),
+      unicode(file1_hash): (0100400, 0100400, 0100444),
       unicode(isolated_hash): (0100400, 0100400, 0100444),
     }
     self.assertTreeModes(self._isolated_cache_dir, expected)
@@ -422,7 +423,7 @@ class RunIsolatedTest(unittest.TestCase):
     expected = {
       u'.': (040707, 040707, 040777),
       u'state.json': (0100606, 0100606, 0100666),
-      unicode(file1_hash): (0100400, 0100400, 0100666),
+      unicode(file1_hash): (0100400, 0100400, 0100444),
       unicode(isolated_hash): (0100400, 0100400, 0100444),
     }
     self.assertTreeModes(self._isolated_cache_dir, expected)
@@ -443,6 +444,25 @@ class RunIsolatedTest(unittest.TestCase):
     # TODO(maruel): This corruption is NOT detected.
     # This needs to be fixed.
     self.assertNotEqual(CONTENTS['file1.txt'], read_content(cached_file_path))
+
+  def test_minimal_lower_priority(self):
+    cmd = ['--lower-priority', '--raw-cmd', '--', sys.executable, '-c']
+    if sys.platform == 'win32':
+      cmd.append(
+          'import ctypes,sys; v=ctypes.windll.kernel32.GetPriorityClass(-1);'
+          'sys.stdout.write(hex(v))')
+    else:
+      cmd.append('import os,sys; sys.stdout.write(str(os.nice(0)))')
+    out, err, returncode = self._run(cmd)
+    self.assertEqual('', err)
+    if sys.platform == 'win32':
+      # See
+      # https://docs.microsoft.com/en-us/windows/desktop/api/processthreadsapi/nf-processthreadsapi-getpriorityclass
+      BELOW_NORMAL_PRIORITY_CLASS = 0x4000
+      self.assertEqual(hex(BELOW_NORMAL_PRIORITY_CLASS), out)
+    else:
+      self.assertEqual(str(os.nice(0)+1), out)
+    self.assertEqual(0, returncode)
 
   def test_named_cache(self):
     # Runs a task that drops a file in the named cache, and assert that it's

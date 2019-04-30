@@ -254,8 +254,15 @@ class RunIsolatedTest(RunIsolatedTestBase):
     self.assertEqual(0, ret)
     self.assertEqual(
         [
-          ([self.ir_dir(u'foo.exe'), u'cmd with space'],
-            {'cwd': self.ir_dir(), 'detached': True, 'close_fds': True}),
+          (
+            [self.ir_dir(u'foo.exe'), u'cmd with space'],
+            {
+              'cwd': self.ir_dir(),
+              'detached': True,
+              'close_fds': True,
+              'lower_priority': False,
+            },
+          ),
         ],
         self.popen_calls)
 
@@ -283,12 +290,21 @@ class RunIsolatedTest(RunIsolatedTestBase):
     self.assertEqual(0, ret)
     self.assertEqual(
         [
-          ([self.ir_dir(u'foo.exe'), u'cmd w/ space', '--extraargs', 'bar'],
-            {'cwd': self.ir_dir(), 'detached': True, 'close_fds': True}),
+          (
+            [self.ir_dir(u'foo.exe'), u'cmd w/ space', '--extraargs', 'bar'],
+            {
+              'cwd': self.ir_dir(),
+              'detached': True,
+              'close_fds': True,
+              'lower_priority': False,
+            },
+          ),
         ],
         self.popen_calls)
 
-  def _run_tha_test(self, isolated_hash=None, files=None, command=None):
+  def _run_tha_test(
+      self, isolated_hash=None, files=None, command=None,
+      lower_priority=False):
     files = files or {}
     make_tree_call = []
     def add(i, _):
@@ -316,7 +332,8 @@ class RunIsolatedTest(RunIsolatedTestBase):
         install_packages_fn=run_isolated.noop_install_packages,
         use_symlinks=False,
         env={},
-        env_prefix={})
+        env_prefix={},
+        lower_priority=lower_priority)
     ret = run_isolated.run_tha_test(data, None)
     self.assertEqual(0, ret)
     return make_tree_call
@@ -334,8 +351,15 @@ class RunIsolatedTest(RunIsolatedTestBase):
         make_tree_call)
     self.assertEqual(
         [
-          ([self.ir_dir(u'invalid'), u'command'],
-            {'cwd': self.ir_dir(), 'detached': True, 'close_fds': True}),
+          (
+            [self.ir_dir(u'invalid'), u'command'],
+            {
+              'cwd': self.ir_dir(),
+              'detached': True,
+              'close_fds': True,
+              'lower_priority': False,
+            },
+          ),
         ],
         self.popen_calls)
 
@@ -356,8 +380,15 @@ class RunIsolatedTest(RunIsolatedTestBase):
         make_tree_call)
     self.assertEqual(
         [
-          ([self.ir_dir(u'invalid'), u'command'],
-            {'cwd': self.ir_dir(), 'detached': True, 'close_fds': True}),
+          (
+            [self.ir_dir(u'invalid'), u'command'],
+            {
+              'cwd': self.ir_dir(),
+              'detached': True,
+              'close_fds': True,
+              'lower_priority': False,
+            },
+          ),
         ],
         self.popen_calls)
 
@@ -380,7 +411,13 @@ class RunIsolatedTest(RunIsolatedTestBase):
         [
           (
             [self.ir_dir(u'invalid'), u'command'],
-            {'cwd': self.ir_dir(), 'detached': True, 'close_fds': True}),
+            {
+              'cwd': self.ir_dir(),
+              'detached': True,
+              'close_fds': True,
+              'lower_priority': False,
+            },
+          ),
         ],
         self.popen_calls)
 
@@ -401,8 +438,15 @@ class RunIsolatedTest(RunIsolatedTestBase):
         make_tree_call)
     self.assertEqual(
         [
-          ([self.ir_dir(u'invalid'), u'command'],
-            {'cwd': self.ir_dir(), 'detached': True, 'close_fds': True}),
+          (
+            [self.ir_dir(u'invalid'), u'command'],
+            {
+              'cwd': self.ir_dir(),
+              'detached': True,
+              'close_fds': True,
+              'lower_priority': False,
+            },
+          ),
         ],
         self.popen_calls)
 
@@ -438,7 +482,13 @@ class RunIsolatedTest(RunIsolatedTestBase):
         [
           (
             [self.ir_dir(u'invalid'), u'command'],
-            {'cwd': self.ir_dir(), 'detached': True, 'close_fds': True}),
+            {
+              'cwd': self.ir_dir(),
+              'detached': True,
+              'close_fds': True,
+              'lower_priority': False,
+            },
+          ),
         ],
         self.popen_calls)
 
@@ -460,7 +510,13 @@ class RunIsolatedTest(RunIsolatedTestBase):
         [
           (
             [u'/bin/echo', u'hello', u'world'],
-            {'cwd': self.ir_dir(), 'detached': True, 'close_fds': True}),
+            {
+              'cwd': self.ir_dir(),
+              'detached': True,
+              'close_fds': True,
+              'lower_priority': False,
+            },
+          ),
         ],
         self.popen_calls)
 
@@ -659,8 +715,15 @@ class RunIsolatedTest(RunIsolatedTestBase):
     env = self.popen_calls[0][1].pop('env')
     self.assertEqual(
         [
-          ([self.ir_dir(u'a', 'bin', 'echo'), u'hello', u'world'],
-            {'cwd': self.ir_dir('a'), 'detached': True, 'close_fds': True}),
+          (
+            [self.ir_dir(u'a', 'bin', 'echo'), u'hello', u'world'],
+            {
+              'cwd': self.ir_dir('a'),
+              'detached': True,
+              'close_fds': True,
+              'lower_priority': False,
+            },
+          ),
         ],
         self.popen_calls)
 
@@ -738,24 +801,36 @@ class RunIsolatedTest(RunIsolatedTestBase):
         [
           (
             [self.ir_dir(u'out', u'some.exe'), 'arg'],
-            {'cwd': self.ir_dir('some'), 'detached': True, 'close_fds': True}),
+            {
+              'cwd': self.ir_dir('some'),
+              'detached': True,
+              'close_fds': True,
+              'lower_priority': False,
+            },
+          ),
         ],
         self.popen_calls)
 
-  def test_python_cmd(self):
+  def test_python_cmd_lower_priority(self):
     isolated = json_dumps({
         'command': ['../out/cmd.py', 'arg'],
         'relative_cwd': 'some',
     })
     isolated_hash = isolateserver_fake.hash_content(isolated)
     files = {isolated_hash:isolated}
-    _ = self._run_tha_test(isolated_hash, files)
+    _ = self._run_tha_test(isolated_hash, files, lower_priority=True)
     # Injects sys.executable but on macOS, the path may be different than
     # sys.executable due to symlinks.
     self.assertEqual(1, len(self.popen_calls))
     cmd, args = self.popen_calls[0]
     self.assertEqual(
-        {'cwd': self.ir_dir('some'), 'detached': True, 'close_fds': True}, args)
+        {
+          'cwd': self.ir_dir('some'),
+          'detached': True,
+          'close_fds': True,
+          'lower_priority': True,
+        },
+        args)
     self.assertIn('python', cmd[0])
     self.assertEqual([os.path.join(u'..', 'out', 'cmd.py'), u'arg'], cmd[1:])
 
@@ -763,8 +838,15 @@ class RunIsolatedTest(RunIsolatedTestBase):
     _ = self._run_tha_test(command=['/bin/echo', 'hello', 'world'])
     self.assertEqual(
         [
-          ([u'/bin/echo', u'hello', u'world'],
-            {'cwd': self.ir_dir(), 'detached': True, 'close_fds': True}),
+          (
+            [u'/bin/echo', u'hello', u'world'],
+            {
+              'cwd': self.ir_dir(),
+              'detached': True,
+              'close_fds': True,
+              'lower_priority': False,
+            },
+          ),
         ],
         self.popen_calls)
 
@@ -820,7 +902,8 @@ class RunIsolatedTestRun(RunIsolatedTestBase):
           install_packages_fn=run_isolated.noop_install_packages,
           use_symlinks=False,
           env={},
-          env_prefix={})
+          env_prefix={},
+          lower_priority=False)
       ret = run_isolated.run_tha_test(data, None)
       self.assertEqual(0, ret)
 
@@ -1182,7 +1265,8 @@ class RunIsolatedTestOutputFiles(RunIsolatedTestBase):
           install_packages_fn=run_isolated.noop_install_packages,
           use_symlinks=False,
           env={},
-          env_prefix={})
+          env_prefix={},
+          lower_priority=False)
       ret = run_isolated.run_tha_test(data, None)
       self.assertEqual(0, ret)
 
@@ -1322,7 +1406,15 @@ class RunIsolatedJsonTest(RunIsolatedTestBase):
     self.assertNotIn('ISOLATED_OUTDIR', sub_cmd[2])
     self.assertEqual(
         [
-          (sub_cmd, {'cwd': self.ir_dir(), 'detached': True, 'close_fds': True})
+          (
+            sub_cmd,
+            {
+              'cwd': self.ir_dir(),
+              'detached': True,
+              'close_fds': True,
+              'lower_priority': False,
+            },
+          ),
         ],
         self.popen_calls)
     isolated_out = {

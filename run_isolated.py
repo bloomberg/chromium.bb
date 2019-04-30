@@ -150,7 +150,8 @@ MAX_AGE_SECS = 21*24*60*60
 
 
 TaskData = collections.namedtuple(
-    'TaskData', [
+    'TaskData',
+    [
       # List of strings; the command line to use, independent of what was
       # specified in the isolated file.
       'command',
@@ -200,7 +201,10 @@ TaskData = collections.namedtuple(
       'env',
       # Environment variables to mutate with relative directories.
       # Example: {"ENV_KEY": ['relative', 'paths', 'to', 'prepend']}
-      'env_prefix'])
+      'env_prefix',
+      # Lowers the task process priority.
+      'lower_priority',
+    ])
 
 
 def _to_str(s):
@@ -416,13 +420,15 @@ def get_command_env(tmp_dir, cipd_info, run_dir, env, env_prefixes, out_dir,
   return out
 
 
-def run_command(command, cwd, env, hard_timeout, grace_period):
+def run_command(command, cwd, env, hard_timeout, grace_period, lower_priority):
   """Runs the command.
 
   Returns:
     tuple(process exit code, bool if had a hard timeout)
   """
-  logging.info('run_command(%s, %s)' % (command, cwd))
+  logging.info(
+      'run_command(%s, %s, %s, %s, %s)',
+      command, cwd, hard_timeout, grace_period, lower_priority)
 
   exit_code = None
   had_hard_timeout = False
@@ -440,7 +446,8 @@ def run_command(command, cwd, env, hard_timeout, grace_period):
           raise subprocess42.TimeoutExpired(command, None)
 
       proc = subprocess42.Popen(
-          command, cwd=cwd, env=env, detached=True, close_fds=True)
+          command, cwd=cwd, env=env, detached=True, close_fds=True,
+          lower_priority=lower_priority)
       with subprocess42.set_signal_handler(subprocess42.STOP_SIGNALS, handler):
         try:
           exit_code = proc.wait(hard_timeout or None)
@@ -749,7 +756,8 @@ def map_and_run(data, constant_run_path):
             file_path.ensure_command_has_abs_path(command, cwd)
 
             result['exit_code'], result['had_hard_timeout'] = run_command(
-                command, cwd, env, data.hard_timeout, data.grace_period)
+                command, cwd, env, data.hard_timeout, data.grace_period,
+                data.lower_priority)
         finally:
           result['duration'] = max(time.time() - start, 0)
 
@@ -1069,6 +1077,9 @@ def create_option_parser():
            '$VAR using the OS\'s path separator. Multiple items for the same '
            '$VAR will be prepended in order.')
   parser.add_option(
+      '--lower-priority', action='store_true',
+      help='Lowers the child process priority')
+  parser.add_option(
       '--bot-file',
       help='Path to a file describing the state of the host. The content is '
            'defined by on_before_task() in bot_config.')
@@ -1377,9 +1388,10 @@ def main(args):
       bot_file=options.bot_file,
       switch_to_account=options.switch_to_account,
       install_packages_fn=install_packages_fn,
-      use_symlinks=options.use_symlinks,
+      use_symlinks=bool(options.use_symlinks),
       env=options.env,
-      env_prefix=options.env_prefix)
+      env_prefix=options.env_prefix,
+      lower_priority=bool(options.lower_priority))
   try:
     if options.isolate_server:
       server_ref = isolate_storage.ServerRef(

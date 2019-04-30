@@ -3,6 +3,7 @@
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
 
+import ctypes
 import itertools
 import os
 import sys
@@ -322,6 +323,43 @@ class Subprocess42Test(unittest.TestCase):
       self.assertTrue(proc.kill())
       proc.wait()
       self.assertLessEqual(0.5, proc.duration())
+
+  def _test_lower_priority(self, lower_priority):
+    if sys.platform == 'win32':
+      cmd = [
+        sys.executable, '-u', '-c',
+        'import ctypes,sys; v=ctypes.windll.kernel32.GetPriorityClass(-1);'
+        'sys.stdout.write(hex(v))'
+      ]
+    else:
+      cmd = [
+        sys.executable, '-u', '-c',
+        'import os,sys;sys.stdout.write(str(os.nice(0)))',
+      ]
+    proc = subprocess42.Popen(
+        cmd, stdout=subprocess42.PIPE, lower_priority=lower_priority)
+    out, err = proc.communicate()
+    self.assertEqual(None, err)
+    return out
+
+  def test_lower_priority(self):
+    out = self._test_lower_priority(True)
+    if sys.platform == 'win32':
+      # See
+      # https://docs.microsoft.com/en-us/windows/desktop/api/processthreadsapi/nf-processthreadsapi-getpriorityclass
+      BELOW_NORMAL_PRIORITY_CLASS = 0x4000
+      self.assertEqual(hex(BELOW_NORMAL_PRIORITY_CLASS), out)
+    else:
+      self.assertEqual(str(os.nice(0)+1), out)
+
+  def test_lower_priority_False(self):
+    out = self._test_lower_priority(False)
+    if sys.platform == 'win32':
+      # Should be NORMAL_PRIORITY_CLASS.
+      p = ctypes.windll.kernel32.GetPriorityClass(-1)
+      self.assertEqual(hex(p), out)
+    else:
+      self.assertEqual(str(os.nice(0)), out)
 
   def test_call(self):
     cmd = [sys.executable, '-u', '-c', 'import sys; sys.exit(0)']
