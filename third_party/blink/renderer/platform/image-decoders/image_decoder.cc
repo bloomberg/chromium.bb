@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/platform/image-decoders/png/png_image_decoder.h"
 #include "third_party/blink/renderer/platform/image-decoders/webp/webp_image_decoder.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 
 namespace blink {
 
@@ -161,6 +162,71 @@ String ImageDecoder::SniffImageType(scoped_refptr<SharedBuffer> image_data) {
   if (MatchesBMPSignature(contents))
     return "image/bmp";
   return String();
+}
+
+// static
+ImageDecoder::CompressionFormat ImageDecoder::GetCompressionFormat(
+    scoped_refptr<SharedBuffer> image_data,
+    String mime_type) {
+  // Attempt to sniff the image content to determine the true MIME type of the
+  // image, and fall back on the provided MIME type if this is not possible.
+  //
+  // Note that if the type cannot be sniffed AND the provided type is incorrect
+  // (for example, due to a misconfigured web server), then it is possible that
+  // the wrong compression format will be returned. However, this case should be
+  // exceedingly rare.
+  if (image_data &&
+      ImageDecoder::HasSufficientDataToSniffImageType(*image_data.get())) {
+    mime_type = SniffImageType(image_data);
+  }
+  if (!mime_type)
+    return kUndefinedFormat;
+
+  // Attempt to sniff whether a WebP image is using a lossy or lossless
+  // compression algorithm.
+  size_t available_data = image_data ? image_data->size() : 0;
+  if (EqualIgnoringASCIICase(mime_type, "image/webp") && available_data >= 16) {
+    // Attempt to sniff only 8 bytes (the second half of the first 16). This
+    // will be sufficient to determine lossy vs. lossless in most WebP images
+    // (all but the extended format).
+    const FastSharedBufferReader fast_reader(
+        SegmentReader::CreateFromSharedBuffer(image_data));
+    char buffer[8];
+    const unsigned char* contents = reinterpret_cast<const unsigned char*>(
+        fast_reader.GetConsecutiveData(8, 8, buffer));
+    if (!memcmp(contents, "WEBPVP8 ", 8)) {
+      // Simple lossy WebP format.
+      return kLossyFormat;
+    }
+    if (!memcmp(contents, "WEBPVP8L", 8)) {
+      // Simple Lossless WebP format.
+      return kLosslessFormat;
+    }
+    if (!memcmp(contents, "WEBPVP8X", 8)) {
+      // Extended WebP format; more content will need to be sniffed to make a
+      // determination.
+      std::unique_ptr<char[]> long_buffer(new char[available_data]);
+      contents = reinterpret_cast<const unsigned char*>(
+          fast_reader.GetConsecutiveData(0, available_data, long_buffer.get()));
+      WebPBitstreamFeatures webp_features{};
+      VP8StatusCode status =
+          WebPGetFeatures(contents, available_data, &webp_features);
+      // It is possible that there is not have enough image data available to
+      // make a determination.
+      if (status == VP8_STATUS_OK)
+        return static_cast<CompressionFormat>(webp_features.format);
+      DCHECK_EQ(status, VP8_STATUS_NOT_ENOUGH_DATA);
+    } else {
+      NOTREACHED();
+    }
+  }
+
+  if (MIMETypeRegistry::IsLossyImageMIMEType(mime_type))
+    return kLossyFormat;
+  if (MIMETypeRegistry::IsLosslessImageMIMEType(mime_type))
+    return kLosslessFormat;
+
+  return kUndefinedFormat;
 }
 
 size_t ImageDecoder::FrameCount() {

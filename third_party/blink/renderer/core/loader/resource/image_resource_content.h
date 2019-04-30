@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/graphics/image_observer.h"
 #include "third_party/blink/renderer/platform/graphics/image_orientation.h"
+#include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_status.h"
@@ -175,9 +176,12 @@ class CORE_EXPORT ImageResourceContent final
     return is_refetchable_data_from_disk_cache_;
   }
 
-  // Optimized image policies: This method is used to determine whether the
-  // image resource violates any of the image policies in effect on the current
-  // page.
+  ImageDecoder::CompressionFormat GetCompressionFormat() const;
+
+  // Returns true if the image content is well-compressed (and not full of
+  // extraneous metadata). "well-compressed" is determined by comparing the
+  // image's compression ratio against a specific value that is defined by an
+  // unoptimized image feature policy on |context|.
   bool IsAcceptableCompressionRatio(const SecurityContext& context);
 
   void LoadDeferredImage(ResourceFetcher* fetcher);

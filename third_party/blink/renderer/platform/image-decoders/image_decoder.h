@@ -128,6 +128,13 @@ class PLATFORM_EXPORT ImageDecoder {
     kHighBitDepthToHalfFloat
   };
 
+  // As defined in webp/decode.h.
+  enum CompressionFormat {
+    kUndefinedFormat = 0,
+    kLossyFormat = 1,
+    kLosslessFormat = 2
+  };
+
   virtual ~ImageDecoder() = default;
 
   // Returns a caller-owned decoder of the appropriate type.  Returns nullptr if
@@ -170,6 +177,11 @@ class PLATFORM_EXPORT ImageDecoder {
 
   // Looks at the image data to determine and return the image MIME type.
   static String SniffImageType(scoped_refptr<SharedBuffer> image_data);
+
+  // Returns the image data's compression format.
+  static CompressionFormat GetCompressionFormat(
+      scoped_refptr<SharedBuffer> image_data,
+      String mime_type);
 
   void SetData(scoped_refptr<SegmentReader> data, bool all_data_received) {
     if (failed_)
