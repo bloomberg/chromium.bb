@@ -4,13 +4,18 @@
 
 #include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container_manager.h"
 
-#include <memory>
+#include <algorithm>
 #include <utility>
 
 #include "base/containers/flat_map.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
+#include "base/stl_util.h"
 #include "content/public/common/mime_handler_view_mode.h"
+#include "content/public/common/webplugininfo.h"
 #include "content/public/renderer/render_frame.h"
+#include "extensions/common/mojo/guest_view.mojom.h"
+#include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container_base.h"
 #include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_frame_container.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_frame.h"
@@ -20,6 +25,8 @@
 namespace extensions {
 
 namespace {
+
+using UMAType = MimeHandlerViewUMATypes::Type;
 
 using RenderFrameMap =
     base::flat_map<int32_t, std::unique_ptr<MimeHandlerViewContainerManager>>;
@@ -59,6 +66,50 @@ MimeHandlerViewContainerManager* MimeHandlerViewContainerManager::Get(
   return nullptr;
 }
 
+bool MimeHandlerViewContainerManager::CreateFrameContainer(
+    const blink::WebElement& plugin_element,
+    const GURL& resource_url,
+    const std::string& mime_type,
+    const content::WebPluginInfo& plugin_info) {
+  if (plugin_info.type != content::WebPluginInfo::PLUGIN_TYPE_BROWSER_PLUGIN) {
+    // TODO(ekaramad): Rename this plugin type once https://crbug.com/659750 is
+    // fixed. We only create a MHVFC for the plugin types of BrowserPlugin
+    // (which used to create a MimeHandlerViewContainer).
+    return false;
+  }
+  // If there is already a MHVFC for this |plugin_element|, destroy it.
+  auto* manager = Get(content::RenderFrame::FromWebFrame(
+                          plugin_element.GetDocument().GetFrame()),
+                      true /* create_if_does_not_exist */);
+  if (auto* old_frame_container = GetFrameContainer(plugin_element)) {
+    if (old_frame_container->resource_url().EqualsIgnoringRef(resource_url) &&
+        old_frame_container->mime_type() == mime_type) {
+      RecordInteraction(UMAType::kReuseFrameContaienr);
+      // TODO(ekaramad): Fix page transitions using the 'ref' in GURL (see
+      // https://crbug.com/318458 for context).
+      // This should translate into a same document navigation.
+      return true;
+    }
+    manager->RemoveFrameContainerForReason(
+        old_frame_container, UMAType::kRemoveFrameContainerUpdatePlugin);
+  }
+  RecordInteraction(UMAType::kCreateFrameContainer);
+  auto frame_container = std::make_unique<MimeHandlerViewFrameContainer>(
+      this, plugin_element, resource_url, mime_type);
+  manager->frame_containers_.push_back(std::move(frame_container));
+  return true;
+}
+
+v8::Local<v8::Object> MimeHandlerViewContainerManager::GetScriptableObject(
+    const blink::WebElement& plugin_element,
+    v8::Isolate* isolate) {
+  if (auto* frame_container = GetFrameContainer(plugin_element)) {
+    return frame_container->post_message_support()->GetScriptableObject(
+        isolate);
+  }
+  return v8::Local<v8::Object>();
+}
+
 MimeHandlerViewContainerManager::MimeHandlerViewContainerManager(
     content::RenderFrame* render_frame)
     : content::RenderFrameObserver(render_frame),
@@ -83,30 +134,82 @@ void MimeHandlerViewContainerManager::CreateBeforeUnloadControl(
 void MimeHandlerViewContainerManager::DestroyFrameContainer(
     int32_t element_instance_id) {
   if (auto* frame_container = GetFrameContainer(element_instance_id))
-    frame_container->DestroyFrameContainer();
+    RemoveFrameContainer(frame_container);
 }
 
-void MimeHandlerViewContainerManager::RetryCreatingMimeHandlerViewGuest(
-    int32_t element_instance_id) {
-  if (auto* frame_container = GetFrameContainer(element_instance_id))
-    frame_container->RetryCreatingMimeHandlerViewGuest();
-}
+void MimeHandlerViewContainerManager::DidLoad(int32_t element_instance_id,
+                                              const GURL& resource_url) {
+  RecordInteraction(UMAType::kDidLoadExtension);
+  for (auto& frame_container : frame_containers_) {
+    if (frame_container->resource_url() != resource_url)
+      continue;
+    // To ensure the postMessages will be sent to the right target frame, we
+    // double check with the browser if the target frame's Routing ID makes
+    // sense.
+    if (!frame_container->AreFramesAlive()) {
+      // At this point we expect a content frame inside the |plugin_element|
+      // as well as a first child corresponding to the <iframe> used to attach
+      // MimeHandlerViewGuest.
+      return;
+    }
+    frame_container->set_element_instance_id(element_instance_id);
+    auto* content_frame = frame_container->GetContentFrame();
+    int32_t content_frame_routing_id =
+        content::RenderFrame::GetRoutingIdForWebFrame(content_frame);
+    int32_t guest_frame_routing_id =
+        content::RenderFrame::GetRoutingIdForWebFrame(
+            content_frame->FirstChild());
+    // TODO(ekaramad); The routing IDs heere might have changed since the plugin
+    // has been navigated to load MimeHandlerView. We should double check these
+    // with the browser first (https://crbug.com/957373).
+    // This will end up activating the post_message_support(). The routing IDs
+    // are double checked in every upcoming call to GetTargetFrame() to ensure
+    // postMessages are sent to the intended WebFrame only.
+    frame_container->SetRoutingIds(content_frame_routing_id,
+                                   guest_frame_routing_id);
 
-void MimeHandlerViewContainerManager::DidLoad(int32_t element_instance_id) {
-  if (auto* frame_container = GetFrameContainer(element_instance_id))
-    frame_container->DidLoad();
+    return;
+  }
 }
 
 MimeHandlerViewFrameContainer*
-MimeHandlerViewContainerManager::GetFrameContainer(int32_t instance_id) {
-  for (auto* container_base :
-       MimeHandlerViewContainerBase::FromRenderFrame(render_frame())) {
-    auto* frame_container =
-        static_cast<MimeHandlerViewFrameContainer*>(container_base);
-    if (frame_container->element_instance_id() == instance_id)
-      return frame_container;
+MimeHandlerViewContainerManager::GetFrameContainer(
+    int32_t mime_handler_view_instance_id) {
+  for (auto& frame_container : frame_containers_) {
+    if (frame_container->element_instance_id() == mime_handler_view_instance_id)
+      return frame_container.get();
   }
   return nullptr;
+}
+
+MimeHandlerViewFrameContainer*
+MimeHandlerViewContainerManager::GetFrameContainer(
+    const blink::WebElement& plugin_element) {
+  for (auto& frame_container : frame_containers_) {
+    if (frame_container->plugin_element() == plugin_element)
+      return frame_container.get();
+  }
+  return nullptr;
+}
+
+void MimeHandlerViewContainerManager::RemoveFrameContainerForReason(
+    MimeHandlerViewFrameContainer* frame_container,
+    MimeHandlerViewUMATypes::Type event) {
+  if (!RemoveFrameContainer(frame_container))
+    return;
+  RecordInteraction(event);
+}
+
+bool MimeHandlerViewContainerManager::RemoveFrameContainer(
+    MimeHandlerViewFrameContainer* frame_container) {
+  auto it = std::find_if(frame_containers_.cbegin(), frame_containers_.cend(),
+                         [&frame_container](const auto& iter) {
+                           return iter.get() == frame_container;
+                         });
+  if (it == frame_containers_.cend())
+    return false;
+  frame_containers_.erase(it);
+  return true;
 }
 
 void MimeHandlerViewContainerManager::SetShowBeforeUnloadDialog(
@@ -115,6 +218,10 @@ void MimeHandlerViewContainerManager::SetShowBeforeUnloadDialog(
   render_frame()->GetWebFrame()->GetDocument().SetShowBeforeUnloadDialog(
       show_dialog);
   std::move(callback).Run();
+}
+
+void MimeHandlerViewContainerManager::RecordInteraction(UMAType type) {
+  base::UmaHistogramEnumeration(MimeHandlerViewUMATypes::kUMAName, type);
 }
 
 }  // namespace extensions

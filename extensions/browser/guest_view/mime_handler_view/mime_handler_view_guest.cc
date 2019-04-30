@@ -109,9 +109,12 @@ MimeHandlerViewGuest::~MimeHandlerViewGuest() {
   // Before attaching is complete, the instance ID is not valid.
   if (content::MimeHandlerViewMode::UsesCrossProcessFrame() &&
       element_instance_id() != guest_view::kInstanceIDNone) {
-    if (auto* embedder_frame = GetEmbedderFrame()) {
+    if (GetEmbedderFrame() && GetEmbedderFrame()->GetParent()) {
+      // TODO(ekaramad): This should only be needed if the embedder frame is in
+      // a plugin element (https://crbug.com/957373).
       mojom::MimeHandlerViewContainerManagerPtr container_manager;
-      embedder_frame->GetRemoteInterfaces()->GetInterface(&container_manager);
+      GetEmbedderFrame()->GetParent()->GetRemoteInterfaces()->GetInterface(
+          &container_manager);
       container_manager->DestroyFrameContainer(element_instance_id());
     }
   }
@@ -427,10 +430,18 @@ void MimeHandlerViewGuest::DocumentOnLoadCompletedInMainFrame() {
   // removed before the guest is properly loaded, then owner RenderWidgetHost
   // will be nullptr.
   if (CanUseCrossProcessFrames()) {
-    mojom::MimeHandlerViewContainerManagerPtr container_manager;
-    GetEmbedderFrame()->GetRemoteInterfaces()->GetInterface(&container_manager);
-    container_manager->DidLoad(element_instance_id());
-    return;
+    // TODO(ekaramad): Verify if the container manager corresponding to the
+    // embedder frame itself needs to be notified; possibly for postMessage
+    // support from print helpers (https://crbug.com/659750).
+    if (auto* ancestor = GetEmbedderFrame()->GetParent()) {
+      // TODO(ekaramad): We should only send this IPC when the FrameOwner of the
+      // embedder frame is a plugin element (https://crbug.com/957373).
+      // For plugin elements, the embedder should be notified so that the queued
+      // messages (postMessage) are forwarded to the guest page.
+      mojom::MimeHandlerViewContainerManagerPtr container_manager;
+      ancestor->GetRemoteInterfaces()->GetInterface(&container_manager);
+      container_manager->DidLoad(element_instance_id(), original_resource_url_);
+    }
   }
   if (auto* rwh = GetOwnerRenderWidgetHost()) {
     rwh->Send(new ExtensionsGuestViewMsg_MimeHandlerViewGuestOnLoadCompleted(

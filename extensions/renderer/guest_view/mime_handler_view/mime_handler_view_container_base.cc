@@ -16,7 +16,6 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "extensions/common/guest_view/extensions_guest_view_messages.h"
-#include "extensions/common/mojo/guest_view.mojom.h"
 #include "extensions/renderer/extension_frame_helper.h"
 #include "ipc/ipc_sync_channel.h"
 #include "services/network/public/cpp/features.h"
@@ -213,7 +212,7 @@ void MimeHandlerViewContainerBase::CreateMimeHandlerViewGuestIfNecessary() {
     guest_view->CreateEmbeddedMimeHandlerViewGuest(
         embedder_render_frame->GetRoutingID(), extension_frame_helper->tab_id(),
         original_url_, GetInstanceId(), GetElementSize(),
-        std::move(transferrable_url_loader_), plugin_frame_routing_id_);
+        std::move(transferrable_url_loader_));
     guest_created_ = true;
     return;
   }
@@ -236,8 +235,7 @@ void MimeHandlerViewContainerBase::CreateMimeHandlerViewGuestIfNecessary() {
   }
   guest_view->CreateMimeHandlerViewGuest(
       embedder_render_frame->GetRoutingID(), view_id_, GetInstanceId(),
-      GetElementSize(), std::move(before_unload_control),
-      plugin_frame_routing_id_);
+      GetElementSize(), std::move(before_unload_control));
 
   guest_created_ = true;
 }

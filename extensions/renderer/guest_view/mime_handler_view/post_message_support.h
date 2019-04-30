@@ -21,7 +21,8 @@ namespace extensions {
 
 // Helper class the implements postMessage support using gin/ to enable an
 // embedder of MimeHandlerView (in an HTMLPlugInElement) to send messages to
-// the extension loaded inside the MimeHandlerViewGuest process.
+// the extension loaded inside the MimeHandlerViewGuest process. This class is
+// owned by its Delegate.
 class PostMessageSupport {
  public:
   // Provides source and target messages used for posting messages. It is
@@ -34,6 +35,7 @@ class PostMessageSupport {
 
     Delegate();
     virtual ~Delegate();
+
     // The source frame which is sending the message. This is the embedder frame
     // for a MimeHandlerViewGuest. Must not return nullptr.
     virtual blink::WebLocalFrame* GetSourceFrame() = 0;
@@ -61,6 +63,7 @@ class PostMessageSupport {
   static PostMessageSupport* FromWebLocalFrame(
       blink::WebLocalFrame* web_local_frame);
 
+  // |delegate| will take ownership of this class.
   explicit PostMessageSupport(Delegate* delegate);
   ~PostMessageSupport();
 
@@ -78,6 +81,7 @@ class PostMessageSupport {
   // Activates the PostMessageSupport. After calling this method all the
   // messages in |message_queue_| are forwarded to the target frame.
   void SetActive();
+  bool is_active() const { return is_active_; }
 
  private:
   PostMessageSupport(const PostMessageSupport&) = delete;

@@ -13,34 +13,23 @@ interface GuestView {
   // Tells the browser to create a mime handler guest view for a plugin.
   // This method is only called when the network service is enabled, and only
   // for plugins added using the embedded/object tag.
-  // |plugin_frame_id| is the routing ID corresponding to the frame owned by the
-  // plugin element.
-  // TODO(ekaramad): For cross-process-frame-based MimeHandlerView sending both
-  // |plugin_frame_id| and |render_frame_id| seems redundant. See if
-  // |render_frame_id| can be removed once https://crbug.com/659750 is fixed.
   CreateEmbeddedMimeHandlerViewGuest(
       int32 render_frame_id,
       int32 tab_id,
       url.mojom.Url original_url,
       int32 element_instance_id,
       gfx.mojom.Size element_size,
-      content.mojom.TransferrableURLLoader transferrable_url_loader,
-      int32 plugin_frame_id);
+      content.mojom.TransferrableURLLoader transferrable_url_loader);
 
   // Tells the browser to create a mime handler guest view for a plugin.
   // This method is called for full-frame plugins or for all plugins when the
   // network service is disabled.
-  // |plugin_frame_id| is the routing ID corresponding to the frame owned by the
-  // plugin element.
-  // TODO(ekaramad): See if |render_frame_id| can be removed once
-  // https://crbug.com/659750 is fixed.
   CreateMimeHandlerViewGuest(
       int32 render_frame_id,
       string view_id,
       int32 element_instance_id,
       gfx.mojom.Size element_size,
-      extensions.mime_handler.BeforeUnloadControl? before_unload_control,
-      int32 plugin_frame_id);
+      extensions.mime_handler.BeforeUnloadControl? before_unload_control);
 };
 
 // An interface implemented by the renderer which is used for creating a
@@ -57,15 +46,15 @@ interface MimeHandlerViewContainerManager {
       => (extensions.mime_handler.BeforeUnloadControl before_unload_control);
 
   // Asks the renderer to destroy the MimeHandlerViewFrameContainer associated
-  // with |element_instance_id|.
+  // with MimeHandlerViewGuest with |element_instance_id|.
   DestroyFrameContainer(int32 element_instance_id);
 
-  // Asks the renderer to restart MimeHandlerViewGuest creation process. This
-  // happens when an initial request fails because the browser cannot find the
-  // corresponding frame/proxy that was to be used for attaching a GuestView.
-  RetryCreatingMimeHandlerViewGuest(int32 element_instance_id);
-
-  // Notifies the renderer that the contents of MimeHandlerViewGuest has
-  // finished loading.
-  DidLoad(int32 element_instance_id);
+  // This is a signal to renderer that the the contents of MimeHandlerViewGuest
+  // finished loading and therefore the renderer can forward the postMessages
+  // to the GuestView (if any). |element_instance_id| is the instance ID for
+  // MimeHandlerViewGuest and the |resource_url| is the original request's URL
+  // that ended up creating the MimeHandlerViewGuest.
+  DidLoad(
+      int32 mime_handler_view_guest_element_instance_id,
+      url.mojom.Url resource_url);
 };

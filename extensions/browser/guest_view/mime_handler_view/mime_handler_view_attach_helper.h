@@ -61,7 +61,7 @@ class MimeHandlerViewAttachHelper : content::RenderProcessHostObserver {
   // outer WebContents (embedder WebContents) on the UI thread.
   void AttachToOuterWebContents(MimeHandlerViewGuest* guest_view,
                                 int32_t embedder_render_process_id,
-                                int32_t plugin_frame_routing_id,
+                                content::RenderFrameHost* outer_contents_frame,
                                 int32_t element_instance_id,
                                 bool is_full_page_plugin);
 

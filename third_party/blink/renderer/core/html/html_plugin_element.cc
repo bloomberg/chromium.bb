@@ -166,12 +166,6 @@ void HTMLPlugInElement::SetFocused(bool focused, WebFocusType focus_type) {
 
 bool HTMLPlugInElement::RequestObjectInternal(
     const PluginParameters& plugin_params) {
-  if (handled_externally_) {
-    // TODO(ekaramad): Fix this once we know what to do with frames inside
-    // plugins (https://crbug.com/776510).
-    return true;
-  }
-
   if (url_.IsEmpty() && service_type_.IsEmpty())
     return false;
 
@@ -184,26 +178,16 @@ bool HTMLPlugInElement::RequestObjectInternal(
     return false;
 
   ObjectContentType object_type = GetObjectContentType();
-  if (object_type == ObjectContentType::kMimeHandlerViewPlugin) {
-    // The plugin might be handled externally using MimeHandlerView. If so, and
-    // there is no ContentFrame(), LoadOrRedirectSubframe call will create one.
-    handled_externally_ =
-        GetDocument().GetFrame()->Client()->MaybeCreateMimeHandlerView(
-            *this, completed_url,
-            service_type_.IsEmpty() ? GetMIMETypeFromURL(completed_url)
-                                    : service_type_);
-  }
-
-  if (handled_externally_) {
+  handled_externally_ =
+      object_type == ObjectContentType::kMimeHandlerViewPlugin &&
+      GetDocument().GetFrame()->Client()->MaybeCreateMimeHandlerView(
+          *this, completed_url,
+          service_type_.IsEmpty() ? GetMIMETypeFromURL(completed_url)
+                                  : service_type_);
+  if (handled_externally_)
     ResetInstance();
-    // This is a temporary placeholder and the logic around
-    // |handled_externally_| might change as MimeHandlerView is moving towards
-    // depending on OOPIFs instead of WebPlugin (https://crbug.com/659750).
-    completed_url = BlankURL();
-  }
   if (object_type == ObjectContentType::kFrame ||
-      object_type == ObjectContentType::kImage ||
-      object_type == ObjectContentType::kMimeHandlerViewPlugin) {
+      object_type == ObjectContentType::kImage || handled_externally_) {
     if (ContentFrame() && ContentFrame()->IsRemoteFrame()) {
       // During lazy reattaching, the plugin element loses EmbeddedContentView.
       // Since the ContentFrame() is not torn down the options here are to

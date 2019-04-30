@@ -121,33 +121,12 @@ void MimeHandlerViewAttachHelper::RenderProcessHostDestroyed(
 void MimeHandlerViewAttachHelper::AttachToOuterWebContents(
     MimeHandlerViewGuest* guest_view,
     int32_t embedder_render_process_id,
-    int32_t plugin_frame_routing_id,
+    content::RenderFrameHost* outer_contents_frame,
     int32_t element_instance_id,
     bool is_full_page_plugin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto* plugin_rfh = RenderFrameHost::FromID(embedder_render_process_id,
-                                             plugin_frame_routing_id);
-  if (!plugin_rfh) {
-    // The plugin element has a proxy instead.
-    plugin_rfh = RenderFrameHost::FromPlaceholderId(embedder_render_process_id,
-                                                    plugin_frame_routing_id);
-  }
-  if (!plugin_rfh) {
-    // This should only happen if the original plugin frame was cross-process
-    // and a concurrent navigation in its process won the race and ended up
-    // destroying the proxy whose routing ID was sent here by the
-    // MimeHandlerViewFrameContainer. We should ask the embedder to retry
-    // creating the guest.
-    mojom::MimeHandlerViewContainerManagerPtr container_manager;
-    guest_view->GetEmbedderFrame()->GetRemoteInterfaces()->GetInterface(
-        &container_manager);
-    container_manager->RetryCreatingMimeHandlerViewGuest(element_instance_id);
-    guest_view->Destroy(true);
-    return;
-  }
-
   pending_guests_[element_instance_id] = guest_view;
-  plugin_rfh->PrepareForInnerWebContentsAttach(base::BindOnce(
+  outer_contents_frame->PrepareForInnerWebContentsAttach(base::BindOnce(
       &MimeHandlerViewAttachHelper::ResumeAttachOrDestroy,
       weak_factory_.GetWeakPtr(), element_instance_id, is_full_page_plugin));
 }

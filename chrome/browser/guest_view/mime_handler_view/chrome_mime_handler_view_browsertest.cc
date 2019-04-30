@@ -568,13 +568,16 @@ IN_PROC_BROWSER_TEST_P(ChromeMimeHandlerViewCrossProcessTest,
   InitializeTestPage(page_url);
   EXPECT_TRUE(ExecJs(embedder_web_contents(), "sendMessages();"));
   const std::vector<std::pair<extensions::MimeHandlerViewUMATypes::Type, int>>
-      kTestCases = {{UMAType::kDidCreateMimeHandlerViewContainerBase, 1},
-                    {UMAType::kDidLoadExtension, 1},
-                    {UMAType::kAccessibleInvalid, 1},
-                    {UMAType::kAccessibleSelectAll, 1},
-                    {UMAType::kAccessibleGetSelectedText, 1},
-                    {UMAType::kAccessiblePrint, 2},
-                    {UMAType::kPostMessageToEmbeddedMimeHandlerView, 5}};
+      kTestCases = {
+          {(GetParam() ? UMAType::kCreateFrameContainer
+                       : UMAType::kDidCreateMimeHandlerViewContainerBase),
+           1},
+          {UMAType::kDidLoadExtension, 1},
+          {UMAType::kAccessibleInvalid, 1},
+          {UMAType::kAccessibleSelectAll, 1},
+          {UMAType::kAccessibleGetSelectedText, 1},
+          {UMAType::kAccessiblePrint, 2},
+          {UMAType::kPostMessageToEmbeddedMimeHandlerView, 5}};
   base::HistogramTester histogram_tester;
   SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
   for (const auto& pair : kTestCases) {
@@ -598,13 +601,16 @@ IN_PROC_BROWSER_TEST_P(ChromeMimeHandlerViewCrossProcessTest,
   InitializeTestPage(page_url);
   EXPECT_TRUE(ExecJs(embedder_web_contents(), "sendMessages();"));
   const std::vector<std::pair<extensions::MimeHandlerViewUMATypes::Type, int>>
-      kTestCases = {{UMAType::kDidCreateMimeHandlerViewContainerBase, 1},
-                    {UMAType::kDidLoadExtension, 1},
-                    {UMAType::kInaccessibleInvalid, 1},
-                    {UMAType::kInaccessibleSelectAll, 1},
-                    {UMAType::kInaccessibleGetSelectedText, 1},
-                    {UMAType::kInaccessiblePrint, 2},
-                    {UMAType::kPostMessageToEmbeddedMimeHandlerView, 5}};
+      kTestCases = {
+          {(GetParam() ? UMAType::kCreateFrameContainer
+                       : UMAType::kDidCreateMimeHandlerViewContainerBase),
+           1},
+          {UMAType::kDidLoadExtension, 1},
+          {UMAType::kInaccessibleInvalid, 1},
+          {UMAType::kInaccessibleSelectAll, 1},
+          {UMAType::kInaccessibleGetSelectedText, 1},
+          {UMAType::kInaccessiblePrint, 2},
+          {UMAType::kPostMessageToEmbeddedMimeHandlerView, 5}};
   base::HistogramTester histogram_tester;
   SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
   for (const auto& pair : kTestCases) {

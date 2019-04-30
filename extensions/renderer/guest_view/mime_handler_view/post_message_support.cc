@@ -130,8 +130,10 @@ void PostMessageSupport::PostJavaScriptMessage(v8::Isolate* isolate,
   }
 
   auto* target_frame = delegate_->GetTargetFrame();
-  if (!target_frame)
+  if (!target_frame) {
+    // |this| might be deleted at this point.
     return;
+  }
 
   v8::Context::Scope context_scope(
       delegate_->GetSourceFrame()->MainWorldScriptContext());
@@ -150,6 +152,7 @@ void PostMessageSupport::PostJavaScriptMessage(v8::Isolate* isolate,
       post_message.As<v8::Function>(), target_window_proxy, base::size(args),
       args);
 }
+
 void PostMessageSupport::PostMessageFromValue(const base::Value& message) {
   base::UmaHistogramEnumeration(MimeHandlerViewUMATypes::kUMAName,
                                 UMAType::kPostMessageInternal);

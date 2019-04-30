@@ -39,7 +39,12 @@ class MimeHandlerViewUMATypes {
     // For recording postMessage from internal APIs (includes 'print' messages
     // full page MimeHandlerView).
     kPostMessageInternal = 11,
-    kMaxValue = kPostMessageInternal,
+    // The following track lifetime events for a frame-based MimeHandlerView.
+    kCreateFrameContainer = 12,
+    kReuseFrameContaienr = 13,
+    kRemoveFrameContainerUpdatePlugin = 14,
+    kRemoveFrameContainerUnexpectedFrames = 15,
+    kMaxValue = kRemoveFrameContainerUnexpectedFrames,
   };
 
  private:

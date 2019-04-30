@@ -37598,12 +37598,11 @@ Called by update_use_counter_css.py.-->
     resource based on CORB (e.g., same vs cross origin postMessage).
   </summary>
   <int value="0" label="DidCreateMimeHandlerViewContainerBase">
-    A new MimeHandlerViewContainerBase is created; this is in response to
-    attaching a plugin element whose resource is handled by MimeHandlerView.
+    Emitted once a new BrowserPlugin-based MimeHandlerView is created.
   </int>
   <int value="1" label="DidLoadExtension">
-    Recorded when a MimeHandlerViewContainer is created and notified that the
-    extension handling the resource is loaded in guest process.
+    Emitted once the embedder process is notified that the extension's document
+    has loaded.
   </int>
   <int value="2" label="AccessibleInvalid">
     Invalid message string/object posted to an accessible resource.
@@ -37637,6 +37636,23 @@ Called by update_use_counter_css.py.-->
   </int>
   <int value="11" label="PostMessageInternal">
     Emitted when an internal postMesasge to 'print' is issued from C++ code.
+  </int>
+  <int value="12" label="CreateFrameContainer">
+    Emitted when a MimeHandlerViewFrameContainer is instantiated to support post
+    messaging to a MimeHandlerViewGuest in plugin's content frame.
+  </int>
+  <int value="13" label="ReuseFrameContainer">
+    Emitted when a plugin update results in reusing a
+    MimeHandlerViewFrameContainer.
+  </int>
+  <int value="14" label="RemoveFrameContainerUpdatePlugin">
+    Emitted once a MimeHandlerViewFrameContainer is removed in UpdatePlugin
+    phase.
+  </int>
+  <int value="15" label="RemoveFrameContainerUnexpectedFrames">
+    Emitted once a MimeHandlerViewFrameContainer is removed as a result of
+    observing mismatch between routing IDs of frames inside and those that are
+    expected.
   </int>
 </enum>
 

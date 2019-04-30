@@ -143,6 +143,10 @@ void MimeHandlerViewEmbedder::DidCreateMimeHandlerViewGuest(
       outer_contents_rfh->GetParent()->GetProcess()->GetID();
   guest_view->SetEmbedderFrame(embedder_frame_process_id,
                                outer_contents_rfh->GetParent()->GetRoutingID());
+  // TODO(ekaramad): This URL is used to communicate with
+  // MimeHandlerViewFrameContainer which is only the case if the embedder frame
+  // is the content frame of a plugin element (https://crbug.com/957373).
+  guest_view->set_original_resource_url(resource_url_);
   guest_view::GuestViewManager::FromBrowserContext(
       web_contents()->GetBrowserContext())
       ->AttachGuest(embedder_frame_process_id, element_instance_id_,
@@ -150,8 +154,7 @@ void MimeHandlerViewEmbedder::DidCreateMimeHandlerViewGuest(
                     base::DictionaryValue() /* unused attach_params */);
   MimeHandlerViewAttachHelper::Get(embedder_frame_process_id)
       ->AttachToOuterWebContents(guest_view, embedder_frame_process_id,
-                                 outer_contents_rfh->GetRoutingID(),
-                                 element_instance_id_,
+                                 outer_contents_rfh, element_instance_id_,
                                  true /* is_full_page_plugin */);
   // MHVE is no longer required.
   GetMimeHandlerViewEmbeddersMap()->erase(frame_tree_node_id_);

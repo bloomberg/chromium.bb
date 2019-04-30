@@ -100,6 +100,10 @@ class MimeHandlerViewGuest
   // Asks the plugin to do save.
   bool PluginDoSave();
 
+  void set_original_resource_url(const GURL& url) {
+    original_resource_url_ = url;
+  }
+
  protected:
   explicit MimeHandlerViewGuest(content::WebContents* owner_web_contents);
   ~MimeHandlerViewGuest() override;
@@ -182,7 +186,7 @@ class MimeHandlerViewGuest
   bool is_guest_fullscreen_ = false;
   bool is_embedder_fullscreen_ = false;
   bool plugin_can_save_ = false;
-
+  GURL original_resource_url_;
   mime_handler::BeforeUnloadControlPtrInfo pending_before_unload_control_;
 
   DISALLOW_COPY_AND_ASSIGN(MimeHandlerViewGuest);

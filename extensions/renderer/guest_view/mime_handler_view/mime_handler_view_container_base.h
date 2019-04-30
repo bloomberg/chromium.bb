@@ -11,6 +11,7 @@
 #include "content/public/common/transferrable_url_loader.mojom.h"
 #include "extensions/common/api/mime_handler.mojom.h"
 #include "extensions/common/guest_view/mime_handler_view_uma_types.h"
+#include "extensions/common/mojo/guest_view.mojom.h"
 #include "extensions/renderer/guest_view/mime_handler_view/post_message_support.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -32,8 +33,8 @@ struct WebPluginInfo;
 
 
 namespace extensions {
-// A base class for MimeHandlerViewContainer which provides a way of reusing the
-// common logic between the BrowserPlugin-based and frame-based container.
+// TODO(ekaramad): This class is no longer needed and should be merged into
+// its subclass, MimeHandlerViewContainer (https://crbug.com/659750).
 class MimeHandlerViewContainerBase : public blink::WebAssociatedURLLoaderClient,
                                      public mime_handler::BeforeUnloadControl,
                                      public PostMessageSupport::Delegate {
@@ -89,11 +90,6 @@ class MimeHandlerViewContainerBase : public blink::WebAssociatedURLLoaderClient,
 
   // The original URL of the plugin.
   const GURL original_url_;
-
-  // Only valid for the cross-process-frame-based implementation. This holds the
-  // routing ID of the frame or proxy whose corresponding WebFrame is the
-  // ContentFrame() of the plugin element.
-  int32_t plugin_frame_routing_id_ = MSG_ROUTING_NONE;
 
  private:
   class PluginResourceThrottle;

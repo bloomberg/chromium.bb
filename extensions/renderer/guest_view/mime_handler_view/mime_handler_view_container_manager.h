@@ -5,26 +5,35 @@
 #ifndef EXTENSIONS_RENDERER_GUEST_VIEW_MIME_HANDLER_VIEW_MIME_HANDLER_VIEW_CONTAINER_MANAGER_H_
 #define EXTENSIONS_RENDERER_GUEST_VIEW_MIME_HANDLER_VIEW_MIME_HANDLER_VIEW_CONTAINER_MANAGER_H_
 
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "content/public/renderer/render_frame_observer.h"
 #include "extensions/common/api/mime_handler.mojom.h"
+#include "extensions/common/guest_view/mime_handler_view_uma_types.h"
 #include "extensions/common/mojo/guest_view.mojom.h"
+#include "extensions/renderer/guest_view/mime_handler_view/post_message_support.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "url/gurl.h"
 
 namespace content {
 class RenderFrame;
+struct WebPluginInfo;
 }
 
 namespace extensions {
 
 class MimeHandlerViewFrameContainer;
 
-// The entry point for browser issued commands related to MimeHandlerView. This
-// class essentially helps tasks such as frame navigations to MimeHandlerView
-// mime-types (e.g., PDF) and in general creating and destroying the renderer
-// state.
+// TODO(ekaramad): Verify if we have to make this class a
+// PostMessageSupport::Delegate (for full page MHV). Currently we do postMessage
+// internally from ChromePrintRenderFrameHelperDelegate.
+// This class is the entry point for browser issued commands related to
+// MimeHandlerViews. A MHVCM helps with
+// 1- Setting up beforeunload support for full page MHV
+// 2- Provide postMessage support for embedded MHV.
+// 3- Managing lifetime of classes and MHV state on the renderer side.
 class MimeHandlerViewContainerManager
     : public content::RenderFrameObserver,
       public mojom::MimeHandlerViewContainerManager,
@@ -43,6 +52,26 @@ class MimeHandlerViewContainerManager
   explicit MimeHandlerViewContainerManager(content::RenderFrame* render_frame);
   ~MimeHandlerViewContainerManager() override;
 
+  // Called to create a MimeHandlerViewFrameContainer for an <embed> or <object>
+  // element.
+  bool CreateFrameContainer(const blink::WebElement& plugin_element,
+                            const GURL& resource_url,
+                            const std::string& mime_type,
+                            const content::WebPluginInfo& plugin_info);
+  // A wrapper for custom postMessage scripts. There should already be a
+  // MimeHandlerViewFrameContainer for |plugin_element|.
+  v8::Local<v8::Object> GetScriptableObject(
+      const blink::WebElement& plugin_element,
+      v8::Isolate* isolate);
+  // Removes the |frame_container| from |frame_containers_| and destroys it. The
+  // |reason| is emitted for UMA.
+  void RemoveFrameContainerForReason(
+      MimeHandlerViewFrameContainer* frame_container,
+      MimeHandlerViewUMATypes::Type reason);
+  MimeHandlerViewFrameContainer* GetFrameContainer(
+      const blink::WebElement& plugin_element);
+  MimeHandlerViewFrameContainer* GetFrameContainer(int32_t element_instance_id);
+
   // content::RenderFrameObserver.
   void OnDestruct() override;
 
@@ -50,16 +79,20 @@ class MimeHandlerViewContainerManager
   void CreateBeforeUnloadControl(
       CreateBeforeUnloadControlCallback callback) override;
   void DestroyFrameContainer(int32_t element_instance_id) override;
-  void RetryCreatingMimeHandlerViewGuest(int32_t element_instance_id) override;
-  void DidLoad(int32_t element_instance_id) override;
+  void DidLoad(int32_t mime_handler_view_guest_element_instance_id,
+               const GURL& resource_url) override;
 
  private:
-  MimeHandlerViewFrameContainer* GetFrameContainer(int32_t instance_id);
-
+  bool RemoveFrameContainer(MimeHandlerViewFrameContainer* frame_container);
   // mime_handler::BeforeUnloadControl implementation.
   void SetShowBeforeUnloadDialog(
       bool show_dialog,
       SetShowBeforeUnloadDialogCallback callback) override;
+
+  void RecordInteraction(MimeHandlerViewUMATypes::Type type);
+
+  // Contains all the MimeHandlerViewFrameContainers under |render-frame()|.
+  std::vector<std::unique_ptr<MimeHandlerViewFrameContainer>> frame_containers_;
 
   mojo::BindingSet<mojom::MimeHandlerViewContainerManager> bindings_;
   mojo::Binding<mime_handler::BeforeUnloadControl>

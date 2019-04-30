@@ -37,7 +37,7 @@
 #include "extensions/renderer/guest_view/extensions_guest_view_container.h"
 #include "extensions/renderer/guest_view/extensions_guest_view_container_dispatcher.h"
 #include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container.h"
-#include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_frame_container.h"
+#include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container_manager.h"
 #include "extensions/renderer/script_context.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/web_document.h"
@@ -317,16 +317,28 @@ bool ChromeExtensionsRendererClient::MaybeCreateMimeHandlerView(
     const std::string& mime_type,
     const content::WebPluginInfo& plugin_info) {
   CHECK(content::MimeHandlerViewMode::UsesCrossProcessFrame());
-  return extensions::MimeHandlerViewFrameContainer::Create(
-      plugin_element, resource_url, mime_type, plugin_info);
+  return extensions::MimeHandlerViewContainerManager::Get(
+             content::RenderFrame::FromWebFrame(
+                 plugin_element.GetDocument().GetFrame()),
+             true /* create_if_does_not_exist */)
+      ->CreateFrameContainer(plugin_element, resource_url, mime_type,
+                             plugin_info);
 }
 
 v8::Local<v8::Object> ChromeExtensionsRendererClient::GetScriptableObject(
     const blink::WebElement& plugin_element,
     v8::Isolate* isolate) {
   CHECK(content::MimeHandlerViewMode::UsesCrossProcessFrame());
-  return extensions::MimeHandlerViewFrameContainer::GetScriptableObject(
-      plugin_element, isolate);
+  // If there is a MimeHandlerView that can provide the scriptable object then
+  // MaybeCreateMimeHandlerView must have been called before and a container
+  // manager should exist.
+  auto* container_manager = extensions::MimeHandlerViewContainerManager::Get(
+      content::RenderFrame::FromWebFrame(
+          plugin_element.GetDocument().GetFrame()),
+      false /* create_if_does_not_exist */);
+  if (container_manager)
+    return container_manager->GetScriptableObject(plugin_element, isolate);
+  return v8::Local<v8::Object>();
 }
 
 // static
