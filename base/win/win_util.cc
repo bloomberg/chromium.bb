@@ -22,7 +22,6 @@
 #include <signal.h>
 #include <stddef.h>
 #include <stdlib.h>
-#include <strsafe.h>
 #include <tchar.h>  // Must be before tpcshrd.h or for any use of _T macro
 #include <tpcshrd.h>
 #include <uiviewsettingsinterop.h>
@@ -72,12 +71,13 @@ bool SetPropVariantValueForPropertyStore(
   if (SUCCEEDED(result))
     return true;
 #if DCHECK_IS_ON()
+  ScopedCoMem<OLECHAR> guidString;
+  ::StringFromCLSID(property_key.fmtid, &guidString);
   if (HRESULT_FACILITY(result) == FACILITY_WIN32)
     ::SetLastError(HRESULT_CODE(result));
   // See third_party/perl/c/i686-w64-mingw32/include/propkey.h for GUID and
   // PID definitions.
-  DPLOG(ERROR) << "Failed to set property with GUID "
-               << String16FromGUID(property_key.fmtid) << " PID "
+  DPLOG(ERROR) << "Failed to set property with GUID " << guidString << " PID "
                << property_key.pid;
 #endif
   return false;
@@ -719,21 +719,6 @@ void EnableHighDPISupport() {
     BOOL result = ::SetProcessDPIAware();
     DCHECK(result) << "SetProcessDPIAware failed.";
   }
-}
-
-string16 String16FromGUID(REFGUID rguid) {
-  // This constant counts the number of characters in the formatted string,
-  // including the null termination character.
-  constexpr int kGuidStringCharacters =
-      1 + 8 + 1 + 4 + 1 + 4 + 1 + 4 + 1 + 12 + 1 + 1;
-  wchar_t guid_string[kGuidStringCharacters];
-  CHECK(SUCCEEDED(StringCchPrintfW(
-      guid_string, kGuidStringCharacters,
-      L"{%08lX-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X}", rguid.Data1,
-      rguid.Data2, rguid.Data3, rguid.Data4[0], rguid.Data4[1], rguid.Data4[2],
-      rguid.Data4[3], rguid.Data4[4], rguid.Data4[5], rguid.Data4[6],
-      rguid.Data4[7])));
-  return string16(as_u16cstr(guid_string), kGuidStringCharacters - 1);
 }
 
 ScopedDomainStateForTesting::ScopedDomainStateForTesting(bool state)

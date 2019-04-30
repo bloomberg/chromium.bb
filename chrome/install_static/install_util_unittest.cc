@@ -9,9 +9,7 @@
 #include <tuple>
 
 #include "base/stl_util.h"
-#include "base/strings/string_util.h"
 #include "base/test/test_reg_util_win.h"
-#include "base/win/win_util.h"
 #include "chrome/install_static/install_details.h"
 #include "chrome/install_static/install_modes.h"
 #include "chrome/install_static/test/scoped_install_details.h"
@@ -521,8 +519,11 @@ TEST_P(InstallStaticUtilTest, GetToastActivatorClsid) {
   EXPECT_EQ(GetToastActivatorClsid(),
             kToastActivatorClsids[std::get<0>(GetParam())]);
 
-  auto clsid_str = base::win::String16FromGUID(GetToastActivatorClsid());
-  EXPECT_THAT(base::as_wcstr(clsid_str.c_str()),
+  const int kCLSIDSize = 39;
+  wchar_t clsid_str[kCLSIDSize];
+  ASSERT_EQ(::StringFromGUID2(GetToastActivatorClsid(), clsid_str, kCLSIDSize),
+            kCLSIDSize);
+  EXPECT_THAT(clsid_str,
               StrCaseEq(kToastActivatorClsidsString[std::get<0>(GetParam())]));
 }
 
@@ -575,8 +576,11 @@ TEST_P(InstallStaticUtilTest, GetElevatorClsid) {
 
   EXPECT_EQ(GetElevatorClsid(), kElevatorClsids[std::get<0>(GetParam())]);
 
-  auto clsid_str = base::win::String16FromGUID(GetElevatorClsid());
-  EXPECT_THAT(base::as_wcstr(clsid_str.c_str()),
+  constexpr int kCLSIDSize = 39;
+  wchar_t clsid_str[kCLSIDSize] = {};
+  ASSERT_EQ(::StringFromGUID2(GetElevatorClsid(), clsid_str, kCLSIDSize),
+            kCLSIDSize);
+  EXPECT_THAT(clsid_str,
               StrCaseEq(kElevatorClsidsString[std::get<0>(GetParam())]));
 }
 
@@ -641,9 +645,10 @@ TEST_P(InstallStaticUtilTest, GetElevatorIid) {
 
   EXPECT_EQ(GetElevatorIid(), kElevatorIids[std::get<0>(GetParam())]);
 
-  auto iid_str = base::win::String16FromGUID(GetElevatorIid());
-  EXPECT_THAT(base::as_wcstr(iid_str.c_str()),
-              StrCaseEq(kElevatorIidsString[std::get<0>(GetParam())]));
+  constexpr int kIIDSize = 39;
+  wchar_t iid_str[kIIDSize] = {};
+  ASSERT_EQ(::StringFromGUID2(GetElevatorIid(), iid_str, kIIDSize), kIIDSize);
+  EXPECT_THAT(iid_str, StrCaseEq(kElevatorIidsString[std::get<0>(GetParam())]));
 }
 
 TEST_P(InstallStaticUtilTest, UsageStatsAbsent) {

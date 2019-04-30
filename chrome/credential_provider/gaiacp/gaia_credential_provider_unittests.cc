@@ -11,7 +11,6 @@
 
 #include "base/synchronization/waitable_event.h"
 #include "base/win/registry.h"
-#include "base/win/win_util.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/associated_user_validator.h"
 #include "chrome/credential_provider/gaiacp/auth_utils.h"
@@ -932,14 +931,15 @@ TEST_P(GcpCredentialProviderAvailableCredentialsTest, AvailableCredentials) {
 
     // In the case that a real CReauthCredential is created, we expect that this
     // credential will set the default credential provider for the user tile.
-    auto guid_string =
-        base::win::String16FromGUID(CLSID_GaiaCredentialProvider);
+    wchar_t guid_in_wchar[64];
+    ::StringFromGUID2(CLSID_GaiaCredentialProvider, guid_in_wchar,
+                      base::size(guid_in_wchar));
 
     wchar_t guid_in_registry[64];
     ULONG length = base::size(guid_in_registry);
     EXPECT_EQ(S_OK, GetMachineRegString(kLogonUiUserTileRegKey, sid,
                                         guid_in_registry, &length));
-    EXPECT_EQ(guid_string, base::string16(guid_in_registry));
+    EXPECT_EQ(base::string16(guid_in_wchar), base::string16(guid_in_registry));
     ::CoTaskMemFree(sid);
   }
 

@@ -81,6 +81,9 @@ class InstallUtil {
   // CLSID registered.
   static bool IsStartMenuShortcutWithActivatorGuidInstalled();
 
+  // Returns a string representation of |guid|.
+  static base::string16 String16FromGUID(const GUID& guid);
+
   // Returns the toast activator registry path.
   static base::string16 GetToastActivatorRegistryPath();
 

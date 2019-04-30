@@ -737,28 +737,6 @@ _BANNED_CPP_FUNCTIONS = (
       (),
     ),
     (
-      'StringFromGUID2',
-      (
-        'StringFromGUID2 introduces an unnecessary dependency on ole32.dll.',
-        'Use base::win::String16FromGUID instead.'
-      ),
-      True,
-      (
-        r'/base/win/win_util_unittest.cc'
-      ),
-    ),
-    (
-      'StringFromCLSID',
-      (
-        'StringFromCLSID introduces an unnecessary dependency on ole32.dll.',
-        'Use base::win::String16FromGUID instead.'
-      ),
-      True,
-      (
-        r'/base/win/win_util_unittest.cc'
-      ),
-    ),
-    (
       'kCFAllocatorNull',
       (
         'The use of kCFAllocatorNull with the NoCopy creation of ',

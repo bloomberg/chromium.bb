@@ -68,11 +68,6 @@ typedef LONG_PTR SSIZE_T, *PSSIZE_T;
 typedef DWORD ACCESS_MASK;
 typedef ACCESS_MASK REGSAM;
 
-// As defined in guiddef.h.
-#ifndef _REFGUID_DEFINED
-#define _REFGUID_DEFINED
-#define REFGUID const GUID&
-#endif
 
 // Forward declare Windows compatible handles.
 

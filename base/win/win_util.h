@@ -184,9 +184,6 @@ BASE_EXPORT bool IsProcessPerMonitorDpiAware();
 // Enable high-DPI support for the current process.
 BASE_EXPORT void EnableHighDPISupport();
 
-// Returns a string representation of |rguid|.
-BASE_EXPORT string16 String16FromGUID(REFGUID rguid);
-
 // Allows changing the domain enrolled state for the life time of the object.
 // The original state is restored upon destruction.
 class BASE_EXPORT ScopedDomainStateForTesting {

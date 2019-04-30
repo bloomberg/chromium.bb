@@ -72,6 +72,14 @@ bool GetMediumIntegrityToken(base::win::ScopedHandle* medium_integrity_token) {
   return true;
 }
 
+void GUIDToString(const GUID& guid, base::string16* output) {
+  DCHECK(output);
+  static const size_t kGUIDStringSize = 39;
+  int result = ::StringFromGUID2(guid, base::WriteInto(output, kGUIDStringSize),
+                                 kGUIDStringSize);
+  DCHECK(result == kGUIDStringSize);
+}
+
 void SetBackgroundMode() {
   // Get the process working set size and flags, so that we can reset them
   // after setting the process to background mode. For some reason Windows sets

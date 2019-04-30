@@ -11,7 +11,6 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/win/registry.h"
-#include "base/win/win_util.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 
 namespace credential_provider {
@@ -318,8 +317,10 @@ HRESULT SetUserWinlogonUserListEntry(const base::string16& username,
 }
 
 HRESULT SetLogonUiUserTileEntry(const base::string16& sid, CLSID cp_guid) {
-  return SetMachineRegString(kLogonUiUserTileRegKey, sid,
-                             base::win::String16FromGUID(cp_guid));
+  wchar_t guid_in_wchar[64];
+  ::StringFromGUID2(cp_guid, guid_in_wchar, base::size(guid_in_wchar));
+  return SetMachineRegString(kLogonUiUserTileRegKey, sid.c_str(),
+                             guid_in_wchar);
 }
 
 }  // namespace credential_provider

@@ -17,7 +17,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_variant.h"
-#include "base/win/win_util.h"
 #include "media/base/media_switches.h"
 #include "media/base/timestamp_constants.h"
 #include "media/capture/mojom/image_capture_types.h"
@@ -339,8 +338,11 @@ VideoPixelFormat VideoCaptureDeviceWin::TranslateMediaSubtypeToPixelFormat(
     if (sub_type == pixel_format.sub_type)
       return pixel_format.format;
   }
-  DVLOG(2) << "Device (also) supports an unknown media type "
-           << base::win::String16FromGUID(sub_type);
+#ifndef NDEBUG
+  WCHAR guid_str[128];
+  StringFromGUID2(sub_type, guid_str, base::size(guid_str));
+  DVLOG(2) << "Device (also) supports an unknown media type " << guid_str;
+#endif
   return PIXEL_FORMAT_UNKNOWN;
 }
 

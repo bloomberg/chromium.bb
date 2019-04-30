@@ -13,7 +13,6 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "base/win/win_util.h"
 #include "media/base/timestamp_constants.h"
 
 namespace media {
@@ -112,8 +111,11 @@ bool SinkInputPin::IsMediaTypeValid(const AM_MEDIA_TYPE* media_type) {
     return true;
   }
 
-  DVLOG(2) << __func__ << " unsupported media type: "
-           << base::win::String16FromGUID(sub_type);
+#ifndef NDEBUG
+  WCHAR guid_str[128];
+  StringFromGUID2(sub_type, guid_str, base::size(guid_str));
+  DVLOG(2) << __func__ << " unsupported media type: " << guid_str;
+#endif
   return false;
 }
 

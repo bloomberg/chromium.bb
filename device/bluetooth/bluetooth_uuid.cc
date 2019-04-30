@@ -15,7 +15,6 @@
 #include <objbase.h>
 
 #include "base/strings/string16.h"
-#include "base/win/win_util.h"
 #endif  // defined(OS_WIN)
 
 namespace device {
@@ -80,12 +79,16 @@ BluetoothUUID::BluetoothUUID(const std::string& uuid) {
 
 #if defined(OS_WIN)
 BluetoothUUID::BluetoothUUID(GUID uuid) {
-  auto buffer = base::win::String16FromGUID(uuid);
+  // 36 chars for UUID + 2 chars for braces + 1 char for null-terminator.
+  constexpr int kBufferSize = 39;
+  wchar_t buffer[kBufferSize];
+  int result = ::StringFromGUID2(uuid, buffer, kBufferSize);
+  DCHECK_EQ(kBufferSize, result);
   DCHECK_EQ('{', buffer[0]);
   DCHECK_EQ('}', buffer[37]);
 
-  GetCanonicalUuid(base::WideToUTF8(buffer.substr(1, 36)), &value_,
-                   &canonical_value_, &format_);
+  GetCanonicalUuid(base::WideToUTF8(base::WStringPiece(buffer).substr(1, 36)),
+                   &value_, &canonical_value_, &format_);
   DCHECK_EQ(kFormat128Bit, format_);
 }
 #endif  // defined(OS_WIN)
