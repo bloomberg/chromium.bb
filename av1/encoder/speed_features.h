@@ -151,10 +151,6 @@ enum {
 
 enum {
   NO_PRUNE = 0,
-  // eliminates one tx type in vertical and horizontal direction
-  PRUNE_ONE = 1,
-  // eliminates two tx types in each direction
-  PRUNE_TWO = 2,
   // adaptively prunes the least perspective tx types out of all 16
   // (tuned to provide negligible quality loss)
   PRUNE_2D_ACCURATE = 3,

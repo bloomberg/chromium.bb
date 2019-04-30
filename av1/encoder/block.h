@@ -416,10 +416,7 @@ struct macroblock {
 #endif  // CONFIG_DIST_8X8
   int comp_idx_cost[COMP_INDEX_CONTEXTS][2];
   int comp_group_idx_cost[COMP_GROUP_IDX_CONTEXTS][2];
-  // Bit flags for pruning tx type search, tx split, etc.
-  int tx_search_prune[EXT_TX_SET_TYPES];
   int must_find_valid_partition;
-  int tx_split_prune_flag;  // Flag to skip tx split RD search.
   int recalc_luma_mc_data;  // Flag to indicate recalculation of MC data during
                             // interpolation filter search
   // The likelihood of an edge existing in the block (using partial Canny edge
