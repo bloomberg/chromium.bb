@@ -188,6 +188,10 @@ void FakeCrasAudioClient::SetActiveInputNode(uint64_t node_id) {
     observer.ActiveInputNodeChanged(node_id);
 }
 
+void FakeCrasAudioClient::SetHotwordModel(uint64_t node_id,
+                                          const std::string& hotword_model,
+                                          VoidDBusMethodCallback callback) {}
+
 void FakeCrasAudioClient::AddActiveInputNode(uint64_t node_id) {
   for (size_t i = 0; i < node_list_.size(); ++i) {
     if (node_list_[i].id == node_id)

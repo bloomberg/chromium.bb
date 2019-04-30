@@ -39,6 +39,11 @@ namespace chromeos {
 
 class AudioDevicesPrefHandler;
 
+// Callback to handle response of methods without result.
+// |result| is true if the method call is successfully completed, otherwise
+// false.
+using VoidCrasAudioHandlerCallback = base::OnceCallback<void(bool result)>;
+
 // This class is not thread safe. The public functions should be called on
 // browser main thread.
 class COMPONENT_EXPORT(CHROMEOS_AUDIO) CrasAudioHandler
@@ -244,6 +249,15 @@ class COMPONENT_EXPORT(CHROMEOS_AUDIO) CrasAudioHandler
   // method will fail if this is not the case.
   // Returns whether the acive nodes were successfully set.
   bool SetActiveOutputNodes(const NodeIdList& node_ids);
+
+  // Sets |hotword_model| to the given |node_id|.
+  // |hotword_model| is expected to be in format <language>_<region> with lower
+  // cases. E.g., "en_us".
+  // The callback will receive a boolean which indicates if the hotword model is
+  // successfully set.
+  void SetHotwordModel(uint64_t node_id,
+                       const std::string& hotword_model,
+                       VoidCrasAudioHandlerCallback callback);
 
   // Swaps the left and right channel of the internal speaker.
   // Swap the left and right channel if |swap| is true; otherwise, swap the left

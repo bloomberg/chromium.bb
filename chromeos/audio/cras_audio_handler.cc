@@ -452,6 +452,13 @@ void CrasAudioHandler::SetActiveDevices(const AudioDeviceList& devices,
     NotifyActiveNodeChanged(is_input);
 }
 
+void CrasAudioHandler::SetHotwordModel(uint64_t node_id,
+                                       const std::string& hotword_model,
+                                       VoidCrasAudioHandlerCallback callback) {
+  CrasAudioClient::Get()->SetHotwordModel(node_id, hotword_model,
+                                          std::move(callback));
+}
+
 void CrasAudioHandler::SwapInternalSpeakerLeftRightChannel(bool swap) {
   for (const auto& item : audio_devices_) {
     const AudioDevice& device = item.second;
