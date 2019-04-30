@@ -63,9 +63,15 @@ class ConfigSkewTest(cros_test_lib.TestCase):
         return config
     return None
 
-  def _get_new_config_children(self, name):
+  def _get_new_config_children(self, name, exclude=None):
+    """Returns the children for a builder config in new config.
+
+    Args:
+      name: string, name of builder to return the children of.
+      exclude: optional list, names of children to exclude.
+    """
     config = self._get_new_config(name)
-    return config.orchestrator.children
+    return [c for c in config.orchestrator.children if c not in exclude]
 
   def _get_old_config(self, name):
     return self.old_configs[name]
@@ -81,15 +87,20 @@ class ConfigSkewTest(cros_test_lib.TestCase):
   def testPostsubmitBuildTargets(self):
     master_postsubmit_children = self._to_utf8(
         self._get_old_config_slaves("master-postsubmit"))
-    postsubmit_orchestrator_children = (
-        self._get_new_config_children("postsubmit-orchestrator"))
+    # Old config is not expected to havea "chromite-postsubmit" builder,
+    # so we exclude it.
+    postsubmit_orchestrator_children = self._get_new_config_children(
+        "postsubmit-orchestrator", ["chromite-postsubmit"])
 
     self.assertItemsEqual(postsubmit_orchestrator_children,
                           master_postsubmit_children)
 
   @cros_test_lib.ConfigSkewTest()
   def testPostsubmitBuildTargetsCriticality(self):
-    for child_name in self._get_new_config_children("postsubmit-orchestrator"):
+    # Old config is not expected to havea "chromite-postsubmit" builder,
+    # so we exclude it.
+    for child_name in self._get_new_config_children("postsubmit-orchestrator",
+                                                    ["chromite-postsubmit"]):
       new_config = self._get_new_config(child_name)
       old_config = self._get_old_config(child_name)
       # old_config doesn't exist is caught in another test, don't report here.
