@@ -29,6 +29,7 @@
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/chrome_device_id_helper.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -822,6 +823,30 @@ IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest,
   EXPECT_TRUE(auth_instance().account_info()->account_name.value().empty());
   EXPECT_TRUE(auth_instance().account_info()->auth_code.value().empty());
   EXPECT_EQ(mojom::ChromeAccountType::OFFLINE_DEMO_ACCOUNT,
+            auth_instance().account_info()->account_type);
+  EXPECT_FALSE(auth_instance().account_info()->enrollment_token);
+  EXPECT_TRUE(auth_instance().account_info()->is_managed);
+}
+
+IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest,
+                       RequestPublicAccountInfo) {
+  SetAccountAndProfile(user_manager::USER_TYPE_PUBLIC_ACCOUNT);
+  profile()->GetProfilePolicyConnector()->OverrideIsManagedForTesting(true);
+
+  test_url_loader_factory()->SetInterceptor(
+      base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
+        ResponseJob(request, test_url_loader_factory());
+      }));
+
+  base::RunLoop run_loop;
+  auth_instance().RequestAccountInfo(kFakeUserName, run_loop.QuitClosure());
+  run_loop.Run();
+
+  ASSERT_TRUE(auth_instance().account_info());
+  EXPECT_EQ(kFakeUserName,
+            auth_instance().account_info()->account_name.value());
+  EXPECT_EQ(kFakeAuthCode, auth_instance().account_info()->auth_code.value());
+  EXPECT_EQ(mojom::ChromeAccountType::ROBOT_ACCOUNT,
             auth_instance().account_info()->account_type);
   EXPECT_FALSE(auth_instance().account_info()->enrollment_token);
   EXPECT_TRUE(auth_instance().account_info()->is_managed);
