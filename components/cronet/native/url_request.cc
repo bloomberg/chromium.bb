@@ -755,7 +755,7 @@ void Cronet_UrlRequestImpl::NetworkTasks::OnMetricsCollected(
     int64_t received_bytes_count) {
   DCHECK_CALLED_ON_VALID_THREAD(network_thread_checker_);
   base::AutoLock lock(url_request_->lock_);
-  DCHECK_EQ(url_request_->metrics_, nullptr)
+  DCHECK_EQ(url_request_->metrics_.get(), nullptr)
       << "Metrics collection should only happen once.";
   auto metrics = std::make_unique<Cronet_Metrics>();
   using native_metrics_util::ConvertTime;
