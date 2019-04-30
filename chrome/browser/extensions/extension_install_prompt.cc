@@ -690,6 +690,9 @@ void ExtensionInstallPrompt::ShowConfirmation() {
 
   if (show_dialog_callback_.is_null())
     show_dialog_callback_ = GetDefaultShowDialogCallback();
+  // TODO(https://crbug.com/957713): Use OnceCallback and eliminate the need for
+  // a callback on the stack.
+  auto cb = std::move(done_callback_);
   std::move(show_dialog_callback_)
-      .Run(show_params_.get(), std::move(done_callback_), std::move(prompt_));
+      .Run(show_params_.get(), cb, std::move(prompt_));
 }

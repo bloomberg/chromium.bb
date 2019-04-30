@@ -266,9 +266,11 @@ bool DownloadRequestCore::OnResponseStarted(
   std::unique_ptr<download::DownloadCreateInfo> create_info =
       CreateDownloadCreateInfo(result);
   if (result != download::DOWNLOAD_INTERRUPT_REASON_NONE) {
+    auto cb = std::move(on_started_callback_);
+    // TODO(https://crbug.com/957713): Use OnceCallback and eliminate the need
+    // for a callback on the stack.
     delegate_->OnStart(std::move(create_info),
-                       std::unique_ptr<ByteStreamReader>(),
-                       std::move(on_started_callback_));
+                       std::unique_ptr<ByteStreamReader>(), cb);
     return false;
   }
 
@@ -320,8 +322,10 @@ bool DownloadRequestCore::OnResponseStarted(
   download::RecordDownloadSourcePageTransitionType(
       create_info->transition_type);
 
-  delegate_->OnStart(std::move(create_info), std::move(stream_reader),
-                     std::move(on_started_callback_));
+  auto cb = std::move(on_started_callback_);
+  // TODO(https://crbug.com/957713): Use OnceCallback and eliminate the need for
+  // a callback on the stack.
+  delegate_->OnStart(std::move(create_info), std::move(stream_reader), cb);
   return true;
 }
 
@@ -440,8 +444,10 @@ void DownloadRequestCore::OnResponseCompleted(
   std::unique_ptr<download::DownloadCreateInfo> create_info =
       CreateDownloadCreateInfo(reason);
   std::unique_ptr<ByteStreamReader> empty_byte_stream;
-  delegate_->OnStart(std::move(create_info), std::move(empty_byte_stream),
-                     std::move(on_started_callback_));
+  auto cb = std::move(on_started_callback_);
+  // TODO(https://crbug.com/957713): Use OnceCallback and eliminate the need for
+  // a callback on the stack.
+  delegate_->OnStart(std::move(create_info), std::move(empty_byte_stream), cb);
 }
 
 void DownloadRequestCore::PauseRequest() {
