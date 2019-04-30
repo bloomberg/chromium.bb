@@ -648,4 +648,41 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest, TestScrollTo) {
 }
 #endif  //  defined(ATK_230)
 
+IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest, TestSetSelection) {
+  AtkText* atk_text = SetUpSampleParagraph();
+
+  int start_offset, end_offset;
+  gchar* selected_text =
+      atk_text_get_selection(atk_text, 0, &start_offset, &end_offset);
+  EXPECT_EQ(selected_text, nullptr);
+  ASSERT_EQ(start_offset, end_offset);
+
+  AccessibilityNotificationWaiter waiter(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ax::mojom::Event::kTextSelectionChanged);
+  int contents_string_length = int{InputContentsString().size()};
+  start_offset = 0;
+  end_offset = contents_string_length;
+
+  EXPECT_TRUE(atk_text_set_selection(atk_text, 0, start_offset, end_offset));
+  waiter.WaitForNotification();
+  selected_text =
+      atk_text_get_selection(atk_text, 0, &start_offset, &end_offset);
+  EXPECT_NE(selected_text, nullptr);
+  EXPECT_EQ(0, start_offset);
+  EXPECT_EQ(contents_string_length, end_offset);
+  g_free(selected_text);
+
+  start_offset = contents_string_length;
+  end_offset = 1;
+  EXPECT_TRUE(atk_text_set_selection(atk_text, 0, start_offset, end_offset));
+  waiter.WaitForNotification();
+  selected_text =
+      atk_text_get_selection(atk_text, 0, &start_offset, &end_offset);
+  EXPECT_NE(selected_text, nullptr);
+  EXPECT_EQ(1, start_offset);
+  EXPECT_EQ(contents_string_length, end_offset);
+  g_free(selected_text);
+}
+
 }  // namespace content

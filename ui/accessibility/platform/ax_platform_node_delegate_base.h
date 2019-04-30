@@ -53,6 +53,7 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
   gfx::NativeViewAccessible ChildAtIndex(int index) override;
 
   base::string16 GetHypertext() const override;
+  bool SetHypertextSelection(int start_offset, int end_offset) override;
 
   base::string16 GetInnerText() const override;
 

@@ -1638,4 +1638,12 @@ int32_t BrowserAccessibility::GetSetSize() const {
   return node()->GetSetSize();
 }
 
+bool BrowserAccessibility::SetHypertextSelection(int start_offset,
+                                                 int end_offset) {
+  manager()->SetSelection(
+      AXPlatformRange(CreatePositionForSelectionAt(start_offset),
+                      CreatePositionForSelectionAt(end_offset)));
+  return true;
+}
+
 }  // namespace content

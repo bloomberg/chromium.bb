@@ -87,6 +87,10 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // the concept of text in ATK and IA2 APIs.
   virtual base::string16 GetHypertext() const = 0;
 
+  // Set the selection in the hypertext of this node. Depending on the
+  // implementation, this may mean the new selection will span multiple nodes.
+  virtual bool SetHypertextSelection(int start_offset, int end_offset) = 0;
+
   // Returns the text of this node and all descendant nodes; including text
   // found in embedded objects.
   virtual base::string16 GetInnerText() const = 0;

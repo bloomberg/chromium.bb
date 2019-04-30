@@ -2141,12 +2141,7 @@ void BrowserAccessibilityComWin::SetIA2HypertextSelection(LONG start_offset,
                                                           LONG end_offset) {
   HandleSpecialTextOffset(&start_offset);
   HandleSpecialTextOffset(&end_offset);
-  BrowserAccessibilityPositionInstance start_position =
-      owner()->CreatePositionForSelectionAt(static_cast<int>(start_offset));
-  BrowserAccessibilityPositionInstance end_position =
-      owner()->CreatePositionForSelectionAt(static_cast<int>(end_offset));
-  Manager()->SetSelection(
-      AXPlatformRange(std::move(start_position), std::move(end_position)));
+  SetHypertextSelection(start_offset, end_offset);
 }
 
 LONG BrowserAccessibilityComWin::FindIA2Boundary(

@@ -393,16 +393,11 @@ AXPlatformNodeBase* AXPlatformNodeBase::FromNativeViewAccessible(
       AXPlatformNode::FromNativeViewAccessible(accessible));
 }
 
-bool AXPlatformNodeBase::SetTextSelection(int start_offset, int end_offset) {
+bool AXPlatformNodeBase::SetHypertextSelection(int start_offset,
+                                               int end_offset) {
   if (!delegate_)
     return false;
-
-  AXActionData action_data;
-  action_data.action = ax::mojom::Action::kSetSelection;
-  action_data.anchor_node_id = action_data.focus_node_id = GetData().id;
-  action_data.anchor_offset = start_offset;
-  action_data.focus_offset = end_offset;
-  return delegate_->AccessibilityPerformAction(action_data);
+  return delegate_->SetHypertextSelection(start_offset, end_offset);
 }
 
 bool AXPlatformNodeBase::IsDocument() const {

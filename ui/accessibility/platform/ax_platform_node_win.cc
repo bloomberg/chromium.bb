@@ -3413,8 +3413,7 @@ IFACEMETHODIMP AXPlatformNodeWin::setSelection(LONG selection_index,
     return E_INVALIDARG;
   }
 
-  if (SetTextSelection(static_cast<int>(start_offset),
-                       static_cast<int>(end_offset))) {
+  if (SetHypertextSelection(int{start_offset}, int{end_offset})) {
     return S_OK;
   }
   return E_FAIL;

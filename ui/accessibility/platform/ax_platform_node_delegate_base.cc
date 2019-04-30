@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/no_destructor.h"
+#include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_constants.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_role_properties.h"
@@ -53,6 +54,16 @@ gfx::NativeViewAccessible AXPlatformNodeDelegateBase::ChildAtIndex(int index) {
 
 base::string16 AXPlatformNodeDelegateBase::GetHypertext() const {
   return base::string16();
+}
+
+bool AXPlatformNodeDelegateBase::SetHypertextSelection(int start_offset,
+                                                       int end_offset) {
+  AXActionData action_data;
+  action_data.action = ax::mojom::Action::kSetSelection;
+  action_data.anchor_node_id = action_data.focus_node_id = GetData().id;
+  action_data.anchor_offset = start_offset;
+  action_data.focus_offset = end_offset;
+  return AccessibilityPerformAction(action_data);
 }
 
 base::string16 AXPlatformNodeDelegateBase::GetInnerText() const {

@@ -3654,7 +3654,7 @@ bool AXPlatformNodeAuraLinux::SetCaretOffset(int offset) {
     offset = character_count;
 
   offset = UnicodeToUTF16OffsetInText(offset);
-  if (!SetTextSelection(offset, offset))
+  if (!SetHypertextSelection(offset, offset))
     return false;
 
   OnTextSelectionChanged();
@@ -3672,7 +3672,7 @@ bool AXPlatformNodeAuraLinux::SetTextSelectionForAtkText(int start_offset,
   if (end_offset < 0 || end_offset > int{text.length()})
     return false;
 
-  bool result = SetTextSelection(start_offset, end_offset);
+  bool result = SetHypertextSelection(start_offset, end_offset);
   if (result)
     OnTextSelectionChanged();
   return result;

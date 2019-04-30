@@ -296,8 +296,8 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
 
   virtual void Dispose();
 
-  // Sets the text selection in this object if possible.
-  bool SetTextSelection(int start_offset, int end_offset);
+  // Sets the hypertext selection in this object if possible.
+  bool SetHypertextSelection(int start_offset, int end_offset);
 
 #if BUILDFLAG(USE_ATK)
   using PlatformAttributeList = AtkAttributeSet*;

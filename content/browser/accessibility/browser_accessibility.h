@@ -383,6 +383,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   int GetChildCount() override;
   gfx::NativeViewAccessible ChildAtIndex(int index) override;
   base::string16 GetHypertext() const override;
+  bool SetHypertextSelection(int start_offset, int end_offset) override;
   base::string16 GetInnerText() const override;
   gfx::Rect GetBoundsRect(
       const ui::AXCoordinateSystem coordinate_system,
