@@ -19,6 +19,7 @@ class GURL;
 namespace net {
 class IPEndPoint;
 class HttpResponseHeaders;
+class SSLInfo;
 }  // namespace net
 
 namespace content {
@@ -283,6 +284,10 @@ class NavigationSimulator {
   // If the test sets this to false, it should follow up any calls that result
   // in throttles deferring the navigation with a call to Wait().
   virtual void SetAutoAdvance(bool auto_advance) = 0;
+
+  // Sets the SSLInfo to be set on the response. This should be called before
+  // Commit().
+  virtual void SetSSLInfo(const net::SSLInfo& ssl_info) = 0;
 
   // --------------------------------------------------------------------------
 

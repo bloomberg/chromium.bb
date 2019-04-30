@@ -444,7 +444,7 @@ TEST_F(NavigationHandleImplTest, WillFailRequestSetsSSLInfo) {
   const GURL kUrl = GURL("https://chromium.org");
   auto navigation =
       NavigationSimulatorImpl::CreateRendererInitiated(kUrl, main_rfh());
-  navigation->set_ssl_info(ssl_info);
+  navigation->SetSSLInfo(ssl_info);
   navigation->Fail(net::ERR_CERT_DATE_INVALID);
 
   EXPECT_EQ(net::CERT_STATUS_AUTHORITY_INVALID,

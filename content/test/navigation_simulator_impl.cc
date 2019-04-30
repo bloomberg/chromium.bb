@@ -884,6 +884,10 @@ void NavigationSimulatorImpl::SetAutoAdvance(bool auto_advance) {
   auto_advance_ = auto_advance;
 }
 
+void NavigationSimulatorImpl::SetSSLInfo(const net::SSLInfo& ssl_info) {
+  ssl_info_ = ssl_info;
+}
+
 NavigationThrottle::ThrottleCheckResult
 NavigationSimulatorImpl::GetLastThrottleCheckResult() {
   return last_throttle_check_result_.value();

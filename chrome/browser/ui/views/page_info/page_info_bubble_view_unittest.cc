@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/hover_button.h"
@@ -21,10 +22,15 @@
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/ssl_status.h"
+#include "content/public/test/browser_side_navigation_test_utils.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_web_contents_factory.h"
 #include "device/usb/public/cpp/fake_usb_device_manager.h"
 #include "device/usb/public/mojom/device.mojom.h"
+#include "net/ssl/ssl_connection_status_flags.h"
+#include "net/test/cert_test_util.h"
+#include "net/test/test_data_directory.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -41,6 +47,7 @@
 #endif
 
 const char* kUrl = "http://www.example.com/index.html";
+const char* kSecureUrl = "https://www.example.com/index.html";
 
 namespace test {
 
@@ -69,6 +76,8 @@ class PageInfoBubbleViewTestApi {
 
   PageInfoBubbleView* view() { return view_; }
   views::View* permissions_view() { return view_->permissions_view_; }
+
+  base::string16 GetWindowTitle() { return view_->GetWindowTitle(); }
 
   PermissionSelectorRow* GetPermissionSelectorAt(int index) {
     return view_->selector_rows_[index].get();
@@ -586,3 +595,37 @@ TEST_F(PageInfoBubbleViewTest, ChangingFlashSettingForSiteIsRemembered) {
   EXPECT_EQ(base::ASCIIToUTF16("Flash"), label->text());
 }
 #endif
+
+// Tests opening the bubble between navigation start and finish. The bubble
+// should be updated to reflect the secure state after the navigation commits.
+TEST_F(PageInfoBubbleViewTest, OpenPageInfoBubbleAfterNavigationStart) {
+  content::BrowserSideNavigationSetUp();
+  SecurityStateTabHelper::CreateForWebContents(
+      web_contents_helper_.web_contents());
+  std::unique_ptr<content::NavigationSimulator> navigation =
+      content::NavigationSimulator::CreateRendererInitiated(
+          GURL(kSecureUrl),
+          web_contents_helper_.web_contents()->GetMainFrame());
+  navigation->Start();
+  api_->CreateView();
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PAGE_INFO_NOT_SECURE_SUMMARY),
+            api_->GetWindowTitle());
+
+  // Set up a test SSLInfo so that Page Info sees the connection as secure.
+  uint16_t cipher_suite = 0xc02f;  // TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+  int connection_status = 0;
+  net::SSLConnectionStatusSetCipherSuite(cipher_suite, &connection_status);
+  net::SSLConnectionStatusSetVersion(net::SSL_CONNECTION_VERSION_TLS1_2,
+                                     &connection_status);
+  net::SSLInfo ssl_info;
+  ssl_info.connection_status = connection_status;
+  ssl_info.cert =
+      net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
+  ASSERT_TRUE(ssl_info.cert);
+
+  navigation->SetSSLInfo(ssl_info);
+
+  navigation->Commit();
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURE_SUMMARY),
+            api_->GetWindowTitle());
+}

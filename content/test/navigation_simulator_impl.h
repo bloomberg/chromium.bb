@@ -88,6 +88,7 @@ class NavigationSimulatorImpl : public NavigationSimulator,
       service_manager::mojom::InterfaceProviderRequest request) override;
   void SetContentsMimeType(const std::string& contents_mime_type) override;
   void SetAutoAdvance(bool auto_advance) override;
+  void SetSSLInfo(const net::SSLInfo& ssl_info) override;
 
   NavigationThrottle::ThrottleCheckResult GetLastThrottleCheckResult() override;
   NavigationHandleImpl* GetNavigationHandle() const override;
@@ -130,8 +131,6 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   void set_http_connection_info(net::HttpResponseInfo::ConnectionInfo info) {
     http_connection_info_ = info;
   }
-
-  void set_ssl_info(net::SSLInfo ssl_info) { ssl_info_ = ssl_info; }
 
   // Whether to drop the swap out ack of the previous RenderFrameHost during
   // cross-process navigations. By default this is false, set to true if you
