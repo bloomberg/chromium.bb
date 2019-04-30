@@ -15,22 +15,7 @@ const double kDefaultEmulationHeight = 1.6;
 
 XRStationaryReferenceSpace::XRStationaryReferenceSpace(XRSession* session,
                                                        Subtype subtype)
-    : XRReferenceSpace(session), subtype_(subtype) {
-  switch (subtype_) {
-    case kSubtypeEyeLevel:
-      subtype_string_ = "eye-level";
-      break;
-    case kSubtypeFloorLevel:
-      subtype_string_ = "floor-level";
-      UpdateFloorLevelTransform();
-      break;
-    case kSubtypePositionDisabled:
-      subtype_string_ = "position-disabled";
-      break;
-    default:
-      NOTREACHED() << "Unknown stationary reference space subtype: " << subtype;
-  }
-}
+    : XRReferenceSpace(session), subtype_(subtype) {}
 
 XRStationaryReferenceSpace::~XRStationaryReferenceSpace() = default;
 

@@ -62,18 +62,14 @@ class XRSession final : public EventTargetWithInlineData,
     kBlendModeAlphaBlend
   };
 
-  // TODO(ddorwin): If https://github.com/immersive-web/webxr/issues/513 is
-  // resolved in favor of removing `mode`, remove |mode_string|.
   XRSession(XR*,
             device::mojom::blink::XRSessionClientRequest client_request,
             SessionMode mode,
-            const String& mode_string,
             EnvironmentBlendMode environment_blend_mode,
             bool sensorless_session);
   ~XRSession() override = default;
 
   XR* xr() const { return xr_; }
-  const String& mode() const { return mode_string_; }
   bool environmentIntegration() const { return environment_integration_; }
   const String& environmentBlendMode() const { return blend_mode_string_; }
   XRRenderState* renderState() const { return render_state_; }
@@ -218,7 +214,6 @@ class XRSession final : public EventTargetWithInlineData,
 
   const Member<XR> xr_;
   const SessionMode mode_;
-  const String mode_string_;
   const bool environment_integration_;
   String blend_mode_string_;
   Member<XRRenderState> render_state_;

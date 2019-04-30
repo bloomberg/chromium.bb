@@ -55,9 +55,6 @@ class XRWebGLLayer final : public XRLayer {
   }
 
   bool antialias() const { return drawing_buffer_->antialias(); }
-  bool depth() const { return drawing_buffer_->depth(); }
-  bool stencil() const { return drawing_buffer_->stencil(); }
-  bool alpha() const { return drawing_buffer_->alpha(); }
   bool ignoreDepthValues() const { return ignore_depth_values_; }
 
   XRViewport* getViewport(XRView*);

@@ -30,8 +30,6 @@ class XRStationaryReferenceSpace final : public XRReferenceSpace {
       const TransformationMatrix& base_input_pose,
       const TransformationMatrix& base_pose) override;
 
-  const String& subtype() const { return subtype_string_; }
-
   void Trace(blink::Visitor*) override;
 
   void OnReset() override;
@@ -41,7 +39,6 @@ class XRStationaryReferenceSpace final : public XRReferenceSpace {
 
   unsigned int display_info_id_ = 0;
   Subtype subtype_;
-  String subtype_string_;
   std::unique_ptr<TransformationMatrix> floor_level_transform_;
 };
 

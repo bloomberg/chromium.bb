@@ -2,7 +2,7 @@
 // performs tests. If func returns a promise, test will only pass if the promise
 // resolves.
 function xr_session_promise_test(
-    func, deviceOptions, sessionOptions, name, properties) {
+    func, deviceOptions, sessionModes, name, properties) {
   if (document.getElementById('webgl-canvas') ||
       document.getElementById('webgl2-canvas')) {
     webglCanvasSetup();
@@ -21,13 +21,13 @@ function xr_session_promise_test(
           }
         })
         .then(() => new Promise((resolve, reject) => {
-          // Run the test with each set of sessionOptions from the array one
+          // Run the test with each of sessionModes from the array one
           // at a time.
           function nextSessionTest(i) {
             // Check if it's time to break the loop.
-            if (i == sessionOptions.length) {
-              if (sessionOptions.length == 0) {
-                reject('No option for the session. Test Did not run.');
+            if (i == sessionModes.length) {
+              if (sessionModes.length == 0) {
+                reject('No modes specified. Test did not run.');
               } else {
                 resolve();
               }
@@ -36,11 +36,12 @@ function xr_session_promise_test(
 
             // Perform the session request in a user gesture.
             runWithUserGesture(() => {
-              let nextOptions = sessionOptions[i];
+              let nextMode = sessionModes[i];
               let testSession = null;
-              navigator.xr.requestSession(nextOptions)
+              navigator.xr.requestSession(nextMode)
                   .then((session) => {
                     testSession = session;
+                    testSession.mode = nextMode;
                     return func(session, t, fakeDeviceController);
                   })
                   .then(() => {
@@ -54,19 +55,9 @@ function xr_session_promise_test(
                   })
                   .then(() => nextSessionTest(++i))
                   .catch((err) => {
-                    let optionsString = '{';
-                    let firstOption = true;
-                    for (let option in nextOptions) {
-                      if (!firstOption) {
-                        optionsString += ',';
-                      }
-                      optionsString += ` ${option}: ${nextOptions[option]}`;
-                      firstOption = false;
-                    }
-                    optionsString += ' }';
                     reject(
-                        `Test failed while running with the following options:
-                        ${optionsString} ${err}`);
+                        `Test failed while running with the following XRSessionMode:
+                        ${nextMode} ${err}`);
                   });
             });
           }

@@ -74,22 +74,6 @@ XRSession::SessionMode stringToSessionMode(const String& mode_string) {
   return XRSession::kModeInline;
 }
 
-String sessionModeToString(XRSession::SessionMode mode) {
-  switch (mode) {
-    case XRSession::kModeInline:
-      return "inline";
-    case XRSession::kModeInlineAR:
-      return "legacy-inline-ar";
-    case XRSession::kModeImmersiveVR:
-      return "immersive-vr";
-    case XRSession::kModeImmersiveAR:
-      return "immersive-ar";
-  }
-
-  NOTREACHED();
-  return "";
-}
-
 }  // namespace
 
 XR::PendingSessionQuery::PendingSessionQuery(
@@ -513,7 +497,7 @@ XRSession* XR::CreateSession(
     bool sensorless_session) {
   XRSession* session = MakeGarbageCollected<XRSession>(
       this, client_request ? std::move(client_request) : nullptr, mode,
-      sessionModeToString(mode), blend_mode, sensorless_session);
+      blend_mode, sensorless_session);
   if (display_info)
     session->SetXRDisplayInfo(std::move(display_info));
   sessions_.insert(session);

@@ -111,12 +111,10 @@ XRSession::XRSession(
     XR* xr,
     device::mojom::blink::XRSessionClientRequest client_request,
     XRSession::SessionMode mode,
-    const String& mode_string,
     EnvironmentBlendMode environment_blend_mode,
     bool sensorless_session)
     : xr_(xr),
       mode_(mode),
-      mode_string_(mode_string),
       environment_integration_(mode == kModeInlineAR ||
                                mode == kModeImmersiveAR),
       client_binding_(this, std::move(client_request)),

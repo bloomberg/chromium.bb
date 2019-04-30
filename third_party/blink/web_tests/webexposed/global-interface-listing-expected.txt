@@ -10626,7 +10626,6 @@ interface XRRigidTransform
 interface XRSession : EventTarget
     attribute @@toStringTag
     getter environmentBlendMode
-    getter mode
     getter onblur
     getter onend
     getter onfocus
@@ -10660,7 +10659,6 @@ interface XRSpace : EventTarget
     method constructor
 interface XRStationaryReferenceSpace : XRReferenceSpace
     attribute @@toStringTag
-    getter subtype
     method constructor
 interface XRUnboundedReferenceSpace : XRReferenceSpace
     attribute @@toStringTag
@@ -10685,15 +10683,12 @@ interface XRViewport
 interface XRWebGLLayer : XRLayer
     static method getNativeFramebufferScaleFactor
     attribute @@toStringTag
-    getter alpha
     getter antialias
     getter context
-    getter depth
     getter framebuffer
     getter framebufferHeight
     getter framebufferWidth
     getter ignoreDepthValues
-    getter stencil
     method constructor
     method getViewport
     method requestViewportScaling

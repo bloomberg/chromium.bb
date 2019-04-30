@@ -86,6 +86,7 @@ function onRequestSession() {
     case sessionTypes.IMMERSIVE:
       console.info('Requesting immersive VR session');
       navigator.xr.requestSession('immersive-vr').then( (session) => {
+        session.mode = 'immersive-vr';
         console.info('Immersive VR session request succeeded');
         sessionInfos[sessionTypes.IMMERSIVE].currentSession = session;
         onSessionStarted(session);
@@ -96,6 +97,7 @@ function onRequestSession() {
     case sessionTypes.AR:
       console.info('Requesting Immersive AR session');
       navigator.xr.requestSession('immersive-ar').then((session) => {
+        session.mode = 'immersive-ar';
         console.info('Immersive AR session request succeeded');
         sessionInfos[sessionTypes.AR].currentSession = session;
         onSessionStarted(session);
@@ -104,6 +106,7 @@ function onRequestSession() {
         console.info('Attempting to fall back to legacy AR mode');
         navigator.xr.requestSession('legacy-inline-ar').then(
             (session) => {
+          session.mode = 'legacy-inline-ar';
           session.updateRenderState({
               outputContext: webglCanvas.getContext('xrpresent')
           });
@@ -197,6 +200,7 @@ function requestMagicWindowSession() {
   let ctx = webglCanvas.getContext('xrpresent');
   navigator.xr.requestSession('inline')
   .then((session) => {
+    session.mode = 'inline';
     session.updateRenderState({
       outputContext: ctx
     });

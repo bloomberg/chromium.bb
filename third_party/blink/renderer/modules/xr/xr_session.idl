@@ -22,7 +22,6 @@ enum XREnvironmentBlendMode {
     Exposed=Window,
     RuntimeEnabled=WebXR
 ] interface XRSession : EventTarget {
-  readonly attribute XRSessionMode mode;
   readonly attribute XREnvironmentBlendMode environmentBlendMode;
   readonly attribute XRRenderState renderState;
   readonly attribute XRSpace viewerSpace;
