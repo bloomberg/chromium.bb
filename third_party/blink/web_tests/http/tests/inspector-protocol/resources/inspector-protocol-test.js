@@ -135,6 +135,11 @@ var TestRunner = class {
     return eval(`${source}\n//# sourceURL=${url}`);
   };
 
+  async loadScriptAbsolute(url) {
+    var source = await this._fetch(url);
+    return eval(`${source}\n//# sourceURL=${url}`);
+  };
+
   browserP() {
     return this._browserSession.protocol;
   }

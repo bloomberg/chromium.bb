@@ -1,3 +1,7 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 (function() {
 
 class FetchHandler {
@@ -56,12 +60,13 @@ class FetchHandler {
 };
 
 class FetchHelper {
-  constructor(testRunner, targetProtocol, logPrefix) {
+  constructor(testRunner, targetProtocol) {
     this._handlers = [];
     this._onceHandlers = [];
     this._testRunner = testRunner;
     this._protocol = targetProtocol;
-    this._logPrefix = logPrefix || '';
+    this._logPrefix = '';
+    this._enableLogging = true;
     this._protocol.Fetch.onRequestPaused(event => {
       this._logRequest(event);
       const handler = this._findHandler(event);
@@ -86,7 +91,46 @@ class FetchHelper {
     return handler;
   }
 
+  setLogPrefix(logPrefix) {
+    this._logPrefix = logPrefix || '';
+  }
+
+  setEnableLogging(enableLogging) {
+    this._enableLogging = typeof enableLogging === 'undefined' ? true : enableLogging;
+  }
+
+  static makeHeaders(headers) {
+    const result = [];
+    for (const header of headers) {
+      const kv = header.split(":");
+      result.push({ name: kv[0].trim(), value: kv[1].trim()});
+    }
+    return result;
+  }
+
+  static makeResponse(body, headers, code) {
+    const response = {
+      responseCode: code || 200,
+      responseHeaders: this.makeHeaders(headers || ["Content-type: text/html"]),
+    }
+
+    if (body)
+      response["body"] = btoa(body);
+
+    return response;
+  }
+
+  static makeContentResponse(body, contentType) {
+    return this.makeResponse(body,
+        contentType ? ["Content-type: " + contentType] : contentType);
+  }
+
+  static makeRedirectResponse(location) {
+    return this.makeResponse(undefined, ["Location: " + location], 302);
+  }
+
   _logRequest(event) {
+    if (!this._enableLogging) return;
     const params = event.params;
     const response = event.responseErrorReason || event.responseStatusCode;
     const response_text = response ? 'Response' : 'Request';
@@ -110,8 +154,16 @@ class FetchHelper {
   }
 
   static _findHandlerIndex(arr, url) {
-    return arr.findIndex(item => !item.pattern || item.pattern.test(url));
+    return arr.findIndex(item => {
+      if (!item.pattern)
+        return true;
+      if (typeof item.pattern === 'string' || item.pattern instanceof String) {
+        return url === item.pattern;
+      }
+      return item.pattern.test(url);
+    });
   }
+
 };
 
 return FetchHelper;

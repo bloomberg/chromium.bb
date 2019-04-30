@@ -3,7 +3,8 @@
       `Tests that service worker requests are intercepted.`);
 
   const FetchHelper = await testRunner.loadScript('resources/fetch-test.js');
-  const globalFetcher = new FetchHelper(testRunner, testRunner.browserP(), "[browser] ");
+  const globalFetcher = new FetchHelper(testRunner, testRunner.browserP());
+  globalFetcher.setLogPrefix("[browser] ");
   await globalFetcher.enable();
 
   globalFetcher.onRequest().continueRequest({});
@@ -11,7 +12,8 @@
   await dp.Target.setAutoAttach({autoAttach: true, waitForDebuggerOnStart: true, flatten: true});
   dp.Target.onAttachedToTarget(async event => {
     const dp1 = session.createChild(event.params.sessionId).protocol;
-    const swFetcher = new FetchHelper(testRunner, dp1, "[renderer] ");
+    const swFetcher = new FetchHelper(testRunner, dp1);
+    swFetcher.setLogPrefix("[renderer] ");
     await swFetcher.enable();
     swFetcher.onRequest().continueRequest({});
     dp1.Runtime.runIfWaitingForDebugger();

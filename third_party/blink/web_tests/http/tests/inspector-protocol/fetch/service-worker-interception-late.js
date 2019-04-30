@@ -37,8 +37,8 @@
   let content = await session.evaluateAsync(`fetch("${url}").then(r => r.text())`);
   testRunner.log(`Response before interception enabled: ${content}`);
 
-  const swFetcher = new FetchHelper(
-      testRunner, serviceWorkerSession.protocol, "[renderer] ");
+  const swFetcher = new FetchHelper(testRunner, serviceWorkerSession.protocol);
+  swFetcher.setLogPrefix("[renderer] ");
   await swFetcher.enable();
   swFetcher.onRequest().fulfill({
     responseCode: 200,
