@@ -373,7 +373,6 @@ class SharedImageRepresentationSkiaGLAHB
 
   void EndAccess(bool readonly) {
     CheckContext();
-    DCHECK_EQ(RepresentationAccessMode::kWrite, mode_);
 
     // Insert a gl fence to signal the write completion.
     base::ScopedFD sync_fd = CreateEglFenceAndExportFd();
