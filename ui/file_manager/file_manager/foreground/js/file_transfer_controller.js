@@ -32,15 +32,13 @@ let FileAsyncData;
  * @param {!DirectoryModel} directoryModel Directory model instance.
  * @param {!VolumeManager} volumeManager Volume manager instance.
  * @param {!FileSelectionHandler} selectionHandler Selection handler.
- * @param {function((!Entry|!FakeEntry)): boolean} shouldShowCommandFor
  * @struct
  * @constructor
  */
 function FileTransferController(
     doc, listContainer, directoryTree, multiProfileShareDialog,
     confirmationCallback, progressCenter, fileOperationManager, metadataModel,
-    thumbnailModel, directoryModel, volumeManager, selectionHandler,
-    shouldShowCommandFor) {
+    thumbnailModel, directoryModel, volumeManager, selectionHandler) {
   /**
    * @private {!Document}
    * @const
@@ -107,12 +105,6 @@ function FileTransferController(
    * @const
    */
   this.progressCenter_ = progressCenter;
-
-  /**
-   * @private {function((!Entry|!FakeEntry)): boolean}
-   * @const
-   */
-  this.shouldShowCommandFor_ = shouldShowCommandFor;
 
   /**
    * The array of pending task ID.
@@ -1051,8 +1043,8 @@ FileTransferController.prototype.onDragStart_ = function(list, event) {
   }
 
   const dt = event.dataTransfer;
-  const canCopy = this.canCopyOrDrag_();
-  const canCut = this.canCutOrDrag_();
+  const canCopy = this.canCopyOrDrag();
+  const canCut = this.canCutOrDrag();
   if (canCopy || canCut) {
     if (canCopy && canCut) {
       this.cutOrCopy_(dt, 'all');
@@ -1321,19 +1313,6 @@ FileTransferController.prototype.isDocumentWideEvent_ = function() {
 };
 
 /**
- * @return {boolean} Returns true if there is a dialog showing that we should
- * treat as modal, false otherwise.
- * @private
- */
-FileTransferController.prototype.isModalDialogBeingDisplayed_ = () => {
-  // Do not allow Cut or Copy if a modal dialog is being displayed.
-  if (document.querySelector('.cr-dialog-container.shown') !== null) {
-    return true;
-  }
-  return false;
-};
-
-/**
  * @param {boolean} isMove True for move operation.
  * @param {!Event} event
  * @private
@@ -1415,68 +1394,16 @@ FileTransferController.prototype.onBeforeCutOrCopy_ = function(isMove, event) {
  */
 FileTransferController.prototype.canCutOrCopy_ = function(isMove) {
   const command = isMove ? this.cutCommand_ : this.copyCommand_;
-  command.setHidden(false);
-
-  if (document.activeElement instanceof DirectoryTree) {
-    const selectedItem = document.activeElement.selectedItem;
-    if (!selectedItem) {
-      return false;
-    }
-    const entry = selectedItem.entry;
-
-    if (!this.shouldShowCommandFor_(entry)) {
-      command.setHidden(true);
-      return false;
-    }
-
-    // For MyFiles/Downloads we only allow copy.
-    if (isMove && this.isDownloads_(entry)) {
-      return false;
-    }
-
-    // Cut is unavailable on Shared Drive roots.
-    if (util.isTeamDriveRoot(entry)) {
-      return false;
-    }
-
-    const metadata =
-        this.metadataModel_.getCache([entry], ['canCopy', 'canDelete']);
-    assert(metadata.length === 1);
-
-    if (!isMove) {
-      return metadata[0].canCopy !== false;
-    }
-
-    // We need to check source volume is writable for move operation.
-    const volumeInfo = this.volumeManager_.getVolumeInfo(entry);
-    return !volumeInfo.isReadOnly && metadata[0].canCopy !== false &&
-        metadata[0].canDelete !== false;
-  }
-
-  if (this.isModalDialogBeingDisplayed_()) {
-    return false;
-  }
-  if (!this.selectionHandler_.selection.entries.every(
-          this.shouldShowCommandFor_)) {
-    command.setHidden(true);
-    return false;
-  }
-
-  // For MyFiles/Downloads we only allow copy.
-  if (isMove &&
-      this.selectionHandler_.selection.entries.some(this.isDownloads_, this)) {
-    return false;
-  }
-
-  return isMove ? this.canCutOrDrag_() : this.canCopyOrDrag_();
+  command.canExecuteChange(this.document_.activeElement);
+  return !command.disabled;
 };
 
 /**
  * @return {boolean} Returns true if some files are selected and all the file
  *     on drive is available to be copied. Otherwise, returns false.
- * @private
+ * @public
  */
-FileTransferController.prototype.canCopyOrDrag_ = function() {
+FileTransferController.prototype.canCopyOrDrag = function() {
   if (!this.selectionHandler_.isAvailable()) {
     return false;
   }
@@ -1502,9 +1429,9 @@ FileTransferController.prototype.canCopyOrDrag_ = function() {
 
 /**
  * @return {boolean} Returns true if the current directory is not read only.
- * @private
+ * @public
  */
-FileTransferController.prototype.canCutOrDrag_ = function() {
+FileTransferController.prototype.canCutOrDrag = function() {
   if (this.directoryModel_.isReadOnly() ||
       !this.selectionHandler_.isAvailable() ||
       this.selectionHandler_.selection.entries.length <= 0) {
@@ -1828,27 +1755,4 @@ FileTransferController.prototype.blinkSelection_ = function() {
       listItems[i].classList.remove('blink');
     }
   }, 100);
-};
-
-/**
- * Returns True if entry is MyFiles>Downloads.
- * @param {(!Entry|!FakeEntry)} entry Entry or a fake entry.
- * @return {boolean}
- */
-FileTransferController.prototype.isDownloads_ = function(entry) {
-  if (util.isFakeEntry(entry)) {
-    return false;
-  }
-
-  const volumeInfo = this.volumeManager_.getVolumeInfo(entry);
-  if (!volumeInfo) {
-    return false;
-  }
-
-  if (util.isMyFilesVolumeEnabled() &&
-      volumeInfo.volumeType === VolumeManagerCommon.RootType.DOWNLOADS &&
-      entry.fullPath === '/Downloads') {
-    return true;
-  }
-  return false;
 };

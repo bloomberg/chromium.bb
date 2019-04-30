@@ -326,6 +326,24 @@ CommandUtil.hasCapability = (entries, capability) => {
 };
 
 /**
+ * Checks if the handler should ignore the current event, eg. since there is
+ * a popup dialog currently opened.
+ *
+ * @param {!Document} doc
+ * @return {boolean} True if the event should be ignored, false otherwise.
+ */
+CommandUtil.shouldIgnoreEvents = function(doc) {
+  // Do not handle commands, when a dialog is shown. Do not use querySelector
+  // as it's much slower, and this method is executed often.
+  const dialogs = doc.getElementsByClassName('cr-dialog-container');
+  if (dialogs.length !== 0 && dialogs[0].classList.contains('shown')) {
+    return true;
+  }
+
+  return false;  // Do not ignore.
+};
+
+/**
  * Handle of the command events.
  * @param {!CommandHandlerDeps} fileManager Classes |CommandHalder| depends.
  * @param {!FileSelectionHandler} selectionHandler
@@ -477,31 +495,12 @@ CommandHandler.prototype.updateAvailability = function() {
 };
 
 /**
- * Checks if the handler should ignore the current event, eg. since there is
- * a popup dialog currently opened.
- *
- * @return {boolean} True if the event should be ignored, false otherwise.
- * @private
- */
-CommandHandler.prototype.shouldIgnoreEvents_ = function() {
-  // Do not handle commands, when a dialog is shown. Do not use querySelector
-  // as it's much slower, and this method is executed often.
-  const dialogs =
-      this.fileManager_.document.getElementsByClassName('cr-dialog-container');
-  if (dialogs.length !== 0 && dialogs[0].classList.contains('shown')) {
-    return true;
-  }
-
-  return false;  // Do not ignore.
-};
-
-/**
  * Handles command events.
  * @param {!Event} event Command event.
  * @private
  */
 CommandHandler.prototype.onCommand_ = function(event) {
-  if (this.shouldIgnoreEvents_()) {
+  if (CommandUtil.shouldIgnoreEvents(assert(this.fileManager_.document))) {
     return;
   }
   const handler = CommandHandler.COMMANDS_[event.command.id];
@@ -515,7 +514,7 @@ CommandHandler.prototype.onCommand_ = function(event) {
  * @private
  */
 CommandHandler.prototype.onCanExecute_ = function(event) {
-  if (this.shouldIgnoreEvents_()) {
+  if (CommandUtil.shouldIgnoreEvents(assert(this.fileManager_.document))) {
     return;
   }
   const handler = CommandHandler.COMMANDS_[event.command.id];
@@ -1176,8 +1175,82 @@ CommandHandler.cutCopyCommand_ = /** @type {Command} */ ({
    * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
    */
   canExecute: function(event, fileManager) {
-    event.canExecute =
-        fileManager.document.queryCommandEnabled(event.command.id);
+    const command = event.command;
+    const target = event.target;
+    const isMove = command.id === 'cut';
+    const volumeManager = fileManager.volumeManager;
+    command.setHidden(false);
+
+    /** @returns {boolean} If the operation is allowed in the Directory Tree. */
+    function canDoDirectoryTree() {
+      let entry;
+      if (target.entry) {
+        entry = target.entry;
+      } else if (target.selectedItem && target.selectedItem.entry) {
+        entry = target.selectedItem.entry;
+      } else {
+        return false;
+      }
+
+      if (!CommandUtil.shouldShowMenuItemsForEntry(volumeManager, entry)) {
+        command.setHidden(true);
+        return false;
+      }
+
+      // For MyFiles/Downloads we only allow copy.
+      if (isMove && CommandUtil.isDownloads(volumeManager, entry)) {
+        return false;
+      }
+
+      // Cut is unavailable on Shared Drive roots.
+      if (util.isTeamDriveRoot(entry)) {
+        return false;
+      }
+
+      const metadata =
+          fileManager.metadataModel.getCache([entry], ['canCopy', 'canDelete']);
+      assert(metadata.length === 1);
+
+      if (!isMove) {
+        return metadata[0].canCopy !== false;
+      }
+
+      // We need to check source volume is writable for move operation.
+      const volumeInfo = volumeManager.getVolumeInfo(entry);
+      return !volumeInfo.isReadOnly && metadata[0].canCopy !== false &&
+          metadata[0].canDelete !== false;
+    }
+
+    /** @returns {boolean} If the operation is allowed in the File List. */
+    function canDoFileList() {
+      if (CommandUtil.shouldIgnoreEvents(assert(fileManager.document))) {
+        return false;
+      }
+      if (!fileManager.getSelection().entries.every(
+              CommandUtil.shouldShowMenuItemsForEntry.bind(
+                  null, volumeManager))) {
+        command.setHidden(true);
+        return false;
+      }
+
+      // For MyFiles/Downloads we only allow copy.
+      if (isMove &&
+          fileManager.getSelection().entries.some(
+              CommandUtil.isDownloads.bind(null, volumeManager))) {
+        return false;
+      }
+
+      const fileTransferController = fileManager.fileTransferController;
+      return isMove ? fileTransferController.canCutOrDrag() :
+                      fileTransferController.canCopyOrDrag();
+    }
+
+    const canDo =
+        fileManager.ui.directoryTree.contains(/** @type {Node} */ (target)) ?
+        canDoDirectoryTree() :
+        canDoFileList();
+    event.canExecute = canDo;
+    command.disabled = !canDo;
   }
 });
 
