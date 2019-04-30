@@ -186,36 +186,7 @@ void Adapter::OnUserBrightnessChanged(double old_brightness_percent,
   if (!metrics_reporter_)
     return;
 
-  DCHECK(als_init_status_);
-
-  switch (*als_init_status_) {
-    case AlsReader::AlsInitStatus::kSuccess:
-      DCHECK(!params_.metrics_key.empty());
-      if (params_.metrics_key == "eve") {
-        metrics_reporter_->OnUserBrightnessChangeRequested(
-            MetricsReporter::UserAdjustment::kEve);
-        return;
-      }
-      if (params_.metrics_key == "atlas") {
-        metrics_reporter_->OnUserBrightnessChangeRequested(
-            MetricsReporter::UserAdjustment::kAtlas);
-        return;
-      }
-      metrics_reporter_->OnUserBrightnessChangeRequested(
-          MetricsReporter::UserAdjustment::kSupportedAls);
-      return;
-    case AlsReader::AlsInitStatus::kDisabled:
-    case AlsReader::AlsInitStatus::kMissingPath:
-      metrics_reporter_->OnUserBrightnessChangeRequested(
-          MetricsReporter::UserAdjustment::kNoAls);
-      return;
-    case AlsReader::AlsInitStatus::kIncorrectConfig:
-      metrics_reporter_->OnUserBrightnessChangeRequested(
-          MetricsReporter::UserAdjustment::kUnsupportedAls);
-      return;
-    case AlsReader::AlsInitStatus::kInProgress:
-      NOTREACHED() << "ALS should have been initialized with a valid value.";
-  }
+  metrics_reporter_->OnUserBrightnessChangeRequested();
 }
 
 void Adapter::OnUserBrightnessChangeRequested() {
@@ -444,6 +415,7 @@ void Adapter::UpdateStatus() {
       *als_init_status_ == AlsReader::AlsInitStatus::kSuccess;
   if (!als_success) {
     adapter_status_ = Status::kDisabled;
+    SetMetricsReporterDeviceClass();
     return;
   }
 
@@ -452,6 +424,7 @@ void Adapter::UpdateStatus() {
 
   if (!*brightness_monitor_success_) {
     adapter_status_ = Status::kDisabled;
+    SetMetricsReporterDeviceClass();
     return;
   }
 
@@ -460,6 +433,7 @@ void Adapter::UpdateStatus() {
 
   if (!global_curve_) {
     adapter_status_ = Status::kDisabled;
+    SetMetricsReporterDeviceClass();
     return;
   }
 
@@ -468,6 +442,7 @@ void Adapter::UpdateStatus() {
 
   if (!*power_manager_service_available_) {
     adapter_status_ = Status::kDisabled;
+    SetMetricsReporterDeviceClass();
     return;
   }
 
@@ -476,10 +451,45 @@ void Adapter::UpdateStatus() {
 
   if (!model_config_exists_.value()) {
     adapter_status_ = Status::kDisabled;
+    SetMetricsReporterDeviceClass();
     return;
   }
 
   adapter_status_ = Status::kSuccess;
+  SetMetricsReporterDeviceClass();
+}
+
+void Adapter::SetMetricsReporterDeviceClass() {
+  if (!metrics_reporter_)
+    return;
+
+  DCHECK_NE(adapter_status_, Status::kInitializing);
+  DCHECK(als_init_status_);
+
+  switch (*als_init_status_) {
+    case AlsReader::AlsInitStatus::kSuccess:
+      if (params_.metrics_key == "eve") {
+        metrics_reporter_->SetDeviceClass(MetricsReporter::DeviceClass::kEve);
+        return;
+      }
+      if (params_.metrics_key == "atlas") {
+        metrics_reporter_->SetDeviceClass(MetricsReporter::DeviceClass::kAtlas);
+        return;
+      }
+      metrics_reporter_->SetDeviceClass(
+          MetricsReporter::DeviceClass::kSupportedAls);
+      return;
+    case AlsReader::AlsInitStatus::kDisabled:
+    case AlsReader::AlsInitStatus::kMissingPath:
+      metrics_reporter_->SetDeviceClass(MetricsReporter::DeviceClass::kNoAls);
+      return;
+    case AlsReader::AlsInitStatus::kIncorrectConfig:
+      metrics_reporter_->SetDeviceClass(
+          MetricsReporter::DeviceClass::kUnsupportedAls);
+      return;
+    case AlsReader::AlsInitStatus::kInProgress:
+      NOTREACHED() << "ALS should have been initialized with a valid value.";
+  }
 }
 
 Adapter::AdapterDecision Adapter::CanAdjustBrightness(base::TimeTicks now) {

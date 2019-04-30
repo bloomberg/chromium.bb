@@ -241,6 +241,10 @@ class Adapter : public AlsReader::Observer,
   // |InitParams|.
   void UpdateStatus();
 
+  // Called after adapter is initialized. It sets metrics reporter's device
+  // class if metrics reporter is set up.
+  void SetMetricsReporterDeviceClass();
+
   // Checks whether brightness should be changed.
   // This is generally the case when the brightness hasn't been manually
   // set, we've received enough initial ambient light readings, and
