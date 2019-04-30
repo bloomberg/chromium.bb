@@ -105,10 +105,8 @@ struct CC_EXPORT TransformNode {
 
   bool should_be_snapped : 1;
 
-  // These are used to position nodes wrt the right or bottom of the inner or
-  // outer viewport.
-  bool moved_by_inner_viewport_bounds_delta_x : 1;
-  bool moved_by_inner_viewport_bounds_delta_y : 1;
+  // These are used by the cc property tree builder to position nodes w.r.t. the
+  // right and/or bottom of the outer viewport.
   bool moved_by_outer_viewport_bounds_delta_x : 1;
   bool moved_by_outer_viewport_bounds_delta_y : 1;
 

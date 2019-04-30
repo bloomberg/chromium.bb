@@ -30,8 +30,6 @@ TransformNode::TransformNode()
       node_and_ancestors_have_only_integer_translation(true),
       scrolls(false),
       should_be_snapped(false),
-      moved_by_inner_viewport_bounds_delta_x(false),
-      moved_by_inner_viewport_bounds_delta_y(false),
       moved_by_outer_viewport_bounds_delta_x(false),
       moved_by_outer_viewport_bounds_delta_y(false),
       in_subtree_of_page_scale_layer(false),
@@ -64,10 +62,6 @@ bool TransformNode::operator==(const TransformNode& other) const {
              other.node_and_ancestors_have_only_integer_translation &&
          scrolls == other.scrolls &&
          should_be_snapped == other.should_be_snapped &&
-         moved_by_inner_viewport_bounds_delta_x ==
-             other.moved_by_inner_viewport_bounds_delta_x &&
-         moved_by_inner_viewport_bounds_delta_y ==
-             other.moved_by_inner_viewport_bounds_delta_y &&
          moved_by_outer_viewport_bounds_delta_x ==
              other.moved_by_outer_viewport_bounds_delta_x &&
          moved_by_outer_viewport_bounds_delta_y ==
