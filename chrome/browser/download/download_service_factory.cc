@@ -16,6 +16,7 @@
 #include "base/task/task_traits.h"
 #include "chrome/browser/background_fetch/background_fetch_download_client.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_image_download_client.h"
+#include "chrome/browser/download/deferred_client_wrapper.h"
 #include "chrome/browser/download/download_task_scheduler_impl.h"
 #include "chrome/browser/download/simple_download_manager_coordinator_factory.h"
 #include "chrome/browser/net/system_network_context_manager.h"
@@ -46,6 +47,22 @@
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
 #include "chrome/browser/offline_pages/prefetch/offline_prefetch_download_client.h"
 #endif
+
+namespace {
+
+std::unique_ptr<download::Client> CreateBackgroundFetchDownloadClient(
+    Profile* profile) {
+  return std::make_unique<BackgroundFetchDownloadClient>(profile);
+}
+
+#if defined(CHROMEOS)
+std::unique_ptr<download::Client> CreatePluginVmImageDownloadClient(
+    Profile* profile) {
+  return std::make_unique<plugin_vm::PluginVmImageDownloadClient>(profile);
+}
+#endif
+
+}  // namespace
 
 // static
 DownloadServiceFactory* DownloadServiceFactory::GetInstance() {
@@ -88,13 +105,17 @@ KeyedService* DownloadServiceFactory::BuildServiceInstanceFor(
 
   clients->insert(
       std::make_pair(download::DownloadClient::BACKGROUND_FETCH,
-                     std::make_unique<BackgroundFetchDownloadClient>(context)));
+                     std::make_unique<download::DeferredClientWrapper>(
+                         base::BindOnce(&CreateBackgroundFetchDownloadClient),
+                         profile->GetProfileKey())));
 
 #if defined(CHROMEOS)
   if (!context->IsOffTheRecord()) {
-    clients->insert(std::make_pair(
-        download::DownloadClient::PLUGIN_VM_IMAGE,
-        std::make_unique<plugin_vm::PluginVmImageDownloadClient>(profile)));
+    clients->insert(
+        std::make_pair(download::DownloadClient::PLUGIN_VM_IMAGE,
+                       std::make_unique<download::DeferredClientWrapper>(
+                           base::BindOnce(&CreatePluginVmImageDownloadClient),
+                           profile->GetProfileKey())));
   }
 #endif
 

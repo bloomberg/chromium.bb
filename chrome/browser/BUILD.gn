@@ -415,6 +415,8 @@ jumbo_split_static_library("browser") {
     "domain_reliability/service_factory.h",
     "download/chrome_download_manager_delegate.cc",
     "download/chrome_download_manager_delegate.h",
+    "download/deferred_client_wrapper.cc",
+    "download/deferred_client_wrapper.h",
     "download/download_confirmation_reason.h",
     "download/download_confirmation_result.h",
     "download/download_core_service.cc",
