@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/vr/test/mock_xr_device_hook_base.h"
 #include "chrome/browser/vr/test/webvr_browser_test.h"
 #include "chrome/browser/vr/test/webxr_vr_browser_test.h"
@@ -152,6 +153,63 @@ IN_PROC_BROWSER_TEST_F(WebVrBrowserTestStandard,
   my_mock.ToggleTrigger(controller_index, controller_data);
   this->WaitOnJavaScriptStep();
   this->EndTest();
+}
+
+class WebXrHeadPoseMock : public MockXRDeviceHookBase {
+ public:
+  void WaitGetPresentingPose(
+      device_test::mojom::XRTestHook::WaitGetPresentingPoseCallback callback)
+      final;
+
+  void SetHeadPose(const gfx::Transform& pose) { pose_ = pose; }
+
+ private:
+  gfx::Transform pose_;
+};
+
+void WebXrHeadPoseMock::WaitGetPresentingPose(
+    device_test::mojom::XRTestHook::WaitGetPresentingPoseCallback callback) {
+  auto pose = device_test::mojom::PoseFrameData::New();
+  pose->device_to_origin = pose_;
+  std::move(callback).Run(std::move(pose));
+}
+
+std::string TransformToColMajorString(gfx::Transform& t) {
+  float array[16];
+  t.matrix().asColMajorf(array);
+  std::string array_string = "[";
+  for (int i = 0; i < 16; i++) {
+    array_string += base::NumberToString(array[i]) + ",";
+  }
+  array_string.pop_back();
+  array_string.push_back(']');
+  return array_string;
+}
+
+// Test that head pose changes in OpenVR are properly reflected in the viewer
+// pose provided by WebXR.
+IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestHeadPosesUpdate) {
+  WebXrHeadPoseMock my_mock;
+
+  this->LoadUrlAndAwaitInitialization(
+      this->GetFileUrlForHtmlTestFile("webxr_test_head_poses"));
+  this->EnterSessionWithUserGestureOrFail();
+
+  auto pose = gfx::Transform();
+  my_mock.SetHeadPose(pose);
+  this->RunJavaScriptOrFail("stepWaitForMatchingPose(" +
+                            TransformToColMajorString(pose) + ")");
+  this->WaitOnJavaScriptStep();
+
+  // No significance to this new transform other than that it's easy to tell
+  // whether the correct pose got piped through to WebXR or not.
+  pose.RotateAboutXAxis(90);
+  pose.Translate3d(2, 3, 4);
+  my_mock.SetHeadPose(pose);
+  this->RunJavaScriptOrFail("stepWaitForMatchingPose(" +
+                            TransformToColMajorString(pose) + ")");
+  this->WaitOnJavaScriptStep();
+  this->AssertNoJavaScriptErrors();
 }
 
 }  // namespace vr
