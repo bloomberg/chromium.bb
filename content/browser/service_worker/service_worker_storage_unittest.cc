@@ -1465,7 +1465,6 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_WaitingVersion) {
 TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
   // Promote the worker to active and add a controllee.
   registration_->SetActiveVersion(registration_->waiting_version());
-  registration_->active_version()->SetStatus(ServiceWorkerVersion::ACTIVATED);
   storage()->UpdateToActiveState(registration_.get(), base::DoNothing());
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
   base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
@@ -1513,7 +1512,6 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
 TEST_F(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
   // Promote the worker to active and add a controllee.
   registration_->SetActiveVersion(registration_->waiting_version());
-  registration_->active_version()->SetStatus(ServiceWorkerVersion::ACTIVATED);
   registration_->SetWaitingVersion(nullptr);
   storage()->UpdateToActiveState(registration_.get(), base::DoNothing());
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
@@ -1674,7 +1672,6 @@ TEST_F(ServiceWorkerResourceStorageDiskTest,
 TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
   // Promote the worker to active worker and add a controllee.
   registration_->SetActiveVersion(registration_->waiting_version());
-  registration_->active_version()->SetStatus(ServiceWorkerVersion::ACTIVATED);
   storage()->UpdateToActiveState(registration_.get(), base::DoNothing());
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
   base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(

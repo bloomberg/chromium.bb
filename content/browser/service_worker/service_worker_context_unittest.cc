@@ -375,9 +375,6 @@ TEST_F(ServiceWorkerContextTest, NoControlleesObserver) {
   auto version = base::MakeRefCounted<ServiceWorkerVersion>(
       registration.get(), script_url, blink::mojom::ScriptType::kClassic,
       2l /* dummy version id */, context()->AsWeakPtr());
-  version->set_fetch_handler_existence(
-      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
-  version->SetStatus(ServiceWorkerVersion::ACTIVATED);
 
   ServiceWorkerRemoteProviderEndpoint endpoint;
   base::WeakPtr<ServiceWorkerProviderHost> host =

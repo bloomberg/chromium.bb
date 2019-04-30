@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/debug/alias.h"
 #include "base/guid.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
@@ -310,11 +309,6 @@ bool ServiceWorkerProviderHost::IsContextSecureForServiceWorker() const {
   return schemes.find(url_.scheme()) != schemes.end();
 }
 
-ServiceWorkerVersion* ServiceWorkerProviderHost::controller() const {
-  CheckControllerConsistency();
-  return controller_.get();
-}
-
 blink::mojom::ControllerServiceWorkerMode
 ServiceWorkerProviderHost::GetControllerMode() const {
   if (!controller_)
@@ -363,10 +357,10 @@ void ServiceWorkerProviderHost::OnSkippedWaiting(
   if (controller_registration_ != registration)
     return;
 
-  DCHECK(controller_);
+  DCHECK(controller());
   ServiceWorkerVersion* active = controller_registration_->active_version();
   DCHECK(active);
-  DCHECK_NE(active, controller_.get());
+  DCHECK_NE(active, controller());
   DCHECK_EQ(active->status(), ServiceWorkerVersion::ACTIVATING);
   UpdateController(true /* notify_controllerchange */);
 }
@@ -849,6 +843,7 @@ bool ServiceWorkerProviderHost::IsControllerDecided() const {
   return true;
 }
 
+#if DCHECK_IS_ON()
 void ServiceWorkerProviderHost::CheckControllerConsistency() const {
   if (!controller_) {
     DCHECK(!controller_registration_);
@@ -857,23 +852,8 @@ void ServiceWorkerProviderHost::CheckControllerConsistency() const {
   DCHECK(IsProviderForClient());
   DCHECK(controller_registration_);
   DCHECK_EQ(controller_->registration_id(), controller_registration_->id());
-  switch (controller_->status()) {
-    case ServiceWorkerVersion::NEW:
-    case ServiceWorkerVersion::INSTALLING:
-    case ServiceWorkerVersion::INSTALLED:
-    case ServiceWorkerVersion::REDUNDANT: {
-      ServiceWorkerVersion::Status status = controller_->status();
-      base::debug::Alias(&status);
-      CHECK(false) << "Controller service worker has a bad status: "
-                   << ServiceWorkerVersion::VersionStatusToString(status);
-      break;
-    }
-    case ServiceWorkerVersion::ACTIVATING:
-    case ServiceWorkerVersion::ACTIVATED:
-      // Valid status, controller is being activated.
-      break;
-  }
 }
+#endif
 
 void ServiceWorkerProviderHost::Register(
     const GURL& script_url,

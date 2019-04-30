@@ -1078,11 +1078,8 @@ TEST_F(ServiceWorkerRegistrationObjectHostTest,
   const GURL kScriptUrl("https://www.example.com/sw.js");
   scoped_refptr<ServiceWorkerRegistration> registration =
       CreateRegistration(kScope);
-
   scoped_refptr<ServiceWorkerVersion> version =
       CreateVersion(registration.get(), kScriptUrl);
-  version->SetStatus(ServiceWorkerVersion::ACTIVATED);
-
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
   base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
       helper_->mock_render_process_id(), true /* is_parent_frame_secure */,

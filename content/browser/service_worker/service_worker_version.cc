@@ -702,9 +702,6 @@ void ServiceWorkerVersion::AddControllee(
   const std::string& uuid = provider_host->client_uuid();
   CHECK(!provider_host->client_uuid().empty());
   DCHECK(!base::ContainsKey(controllee_map_, uuid));
-  // TODO(crbug.com/951571): Change to DCHECK once we figured out the cause of
-  // invalid controller status.
-  CHECK(status_ == ACTIVATING || status_ == ACTIVATED);
 
   controllee_map_[uuid] = provider_host;
   embedded_worker_->UpdateForegroundPriority();
