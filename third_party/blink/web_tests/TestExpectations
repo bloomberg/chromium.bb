@@ -6223,8 +6223,3 @@ crbug.com/956736 virtual/gpu-rasterization/images/imagemap-focus-ring-outline-co
 
 # Sheriff 2019-04-25
 crbug.com/956547 http/tests/dom/raf-throttling-out-of-view-cross-origin-page.html [ Pass Timeout ]
-
-# Sheriff 2019-04-29
-crbug.com/957783 [ Mac ] images/rendering-broken-block-flow-images.html [ Failure ]
-crbug.com/957783 [ Mac ] virtual/exotic-color-space/images/rendering-broken-block-flow-images.html [ Failure ]
-crbug.com/957783 [ Mac ] virtual/gpu-rasterization/images/rendering-broken-block-flow-images.html [ Failure ]
