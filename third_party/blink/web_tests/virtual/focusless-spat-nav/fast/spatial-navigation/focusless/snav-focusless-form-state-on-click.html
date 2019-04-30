@@ -12,46 +12,58 @@
 </form>
 
 <script>
-  function notCalled() {
-    assert_false(true, "Should not be called");
-  };
-  mockSnavService.callback = notCalled;
-
-  promise_test(async () => {
+  async_test((t) => {
     let first = document.getElementById("first");
     let second = document.getElementById("second");
 
-    await snav.rAF();
+    mockSnavService.callback = notCalled;
 
-    snav.triggerMove('Down');
+    async function runTest() {
+      console.error('0');
+      await snav.rAF();
 
-    await snavCallback();
-    assert_equals(window.internals.interestedElement,
-                  first,
-                  "'first' should be interested.");
-    assert_not_equals(document.activeElement,
-                      first,
-                      "'first' should not yet be focused.");
-    assert_false(mockSnavService.canExitFocus,
-                "Should be able to exit focus.");
-    assert_true(mockSnavService.canSelectElement,
-                "Should be able to select element.");
-    assert_false(mockSnavService.hasNextFormElement,
-                 "Should be able to move to next form element.");
+      snav.triggerMove('Down');
+      await snavCallback();
+      assert_equals(window.internals.interestedElement,
+                    first,
+                    "'first' should be interested.");
+      assert_not_equals(document.activeElement,
+                        first,
+                        "'first' should not yet be focused.");
+      assert_false(mockSnavService.canExitFocus,
+                  "Should be able to exit focus.");
+      assert_true(mockSnavService.canSelectElement,
+                  "Should be able to select element.");
+      assert_false(mockSnavService.hasNextFormElement,
+                   "Should be able to move to next form element.");
 
-    eventSender.keyDown('Enter');
-    await snavCallback();
-    assert_true(mockSnavService.canExitFocus,
-                "Should be able to exit focus.");
-    assert_true(mockSnavService.canSelectElement,
-                "Should be able to select element.");
-    assert_true(mockSnavService.hasNextFormElement,
-                "Should be able to move to next form element.");
-    assert_equals(window.internals.interestedElement,
-                  first,
-                  "'first' should be interested.");
-    assert_equals(document.activeElement,
-                  first,
-                  "'first' should be focused.");
+      eventSender.keyDown('Enter');
+      await snavCallback();
+      assert_true(mockSnavService.canExitFocus,
+                  "Should be able to exit focus.");
+      assert_true(mockSnavService.canSelectElement,
+                  "Should be able to select element.");
+      assert_true(mockSnavService.hasNextFormElement,
+                  "Should be able to move to next form element.");
+      assert_equals(window.internals.interestedElement,
+                    first,
+                    "'first' should be interested.");
+      assert_equals(document.activeElement,
+                    first,
+                    "'first' should be focused.");
+
+      t.done();
+    };
+
+    t.step_timeout(() => {
+      runTest();
+    }, 0);
+
+    function notCalled() {
+      t.step_timeout(() => {
+        assert_false(true, "Should not be called");
+      }, 0);
+    };
+
   }, 'Spat Nav state updates correctly when clicking on form elements.');
 </script>

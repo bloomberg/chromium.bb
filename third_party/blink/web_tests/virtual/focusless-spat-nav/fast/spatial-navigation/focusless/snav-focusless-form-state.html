@@ -13,64 +13,72 @@
 </form>
 
 <script>
-  function notCalled() {
-    assert_false(true, "Should not be called");
-  };
-
-  let initialState = snavCallback();
-  promise_test(async () => {
-
+  async_test((t) => {
     let first = document.getElementById("first");
     let second = document.getElementById("second");
     let third = document.getElementById("third");
 
-    await snav.rAF();
+    let initialState = snavCallback();
 
-    assert_equals(document.activeElement,
-                  first,
-                  "'first' should start focused.");
-    assert_equals(window.internals.interestedElement,
-                  first,
-                  "'first' should start interested.");
+    async function runTest() {
+      assert_equals(document.activeElement,
+                    first,
+                    "'first' should start focused.");
+      assert_equals(window.internals.interestedElement,
+                    first,
+                    "'first' should start interested.");
 
-    await initialState;
-    assert_true(mockSnavService.canExitFocus,
-                "Should be able to exit focus.");
-    assert_true(mockSnavService.canSelectElement,
-                "Should be able to select element.");
-    assert_true(mockSnavService.hasNextFormElement,
-                "Should be able to move to next form element.");
+      await initialState;
+      assert_true(mockSnavService.canExitFocus,
+                  "Should be able to exit focus.");
+      assert_true(mockSnavService.canSelectElement,
+                  "Should be able to select element.");
+      assert_true(mockSnavService.hasNextFormElement,
+                  "Should be able to move to next form element.");
 
-    mockSnavService.callback = notCalled;
-    eventSender.keyDown('Tab');
-    assert_equals(document.activeElement,
-                  second,
-                  "'second' should be focused.");
+      mockSnavService.callback = notCalled;
+      eventSender.keyDown('Tab');
+      assert_equals(document.activeElement,
+                    second,
+                    "'second' should be focused.");
 
-    await snav.rAF();
+      await snav.rAF();
 
-    eventSender.keyDown('Tab');
-    assert_equals(document.activeElement,
-                  third,
-                  "'third' should be focused.");
+      eventSender.keyDown('Tab');
+      assert_equals(document.activeElement,
+                    third,
+                    "'third' should be focused.");
 
-    await snavCallback();
-    assert_true(mockSnavService.canExitFocus,
-                "Should be able to exit focus.");
-    assert_true(mockSnavService.canSelectElement,
-                "Should be able to select element.");
-    assert_false(mockSnavService.hasNextFormElement,
-                 "Should be able to move to next form element.");
+      await snavCallback();
+      assert_true(mockSnavService.canExitFocus,
+                  "Should be able to exit focus.");
+      assert_true(mockSnavService.canSelectElement,
+                  "Should be able to select element.");
+      assert_false(mockSnavService.hasNextFormElement,
+                   "Should be able to move to next form element.");
 
-    eventSender.keyDown('Escape');
+      eventSender.keyDown('Escape');
 
-    await snavCallback();
-    assert_false(mockSnavService.canExitFocus,
-                 "Should be able to exit focus.");
-    assert_true(mockSnavService.canSelectElement,
-                "Should be able to select element.");
-    assert_false(mockSnavService.hasNextFormElement,
-                 "Should be able to move to next form element.");
+      await snavCallback();
+      assert_false(mockSnavService.canExitFocus,
+                   "Should be able to exit focus.");
+      assert_true(mockSnavService.canSelectElement,
+                  "Should be able to select element.");
+      assert_false(mockSnavService.hasNextFormElement,
+                   "Should be able to move to next form element.");
+
+      t.done();
+    };
+
+    t.step_timeout(() => {
+      runTest();
+    }, 0);
+
+    function notCalled() {
+      t.step_timeout(() => {
+        assert_false(true, "Should not be called");
+      }, 0);
+    };
 
   }, 'Spat Nav state updates correctly for form elements.');
 </script>
