@@ -172,6 +172,7 @@ Polymer({
       return;
     }
 
+    this.$['loading'].hidden = true;
     screen.hidden = false;
     screen.addEventListener('loading', this.boundShowLoadingScreen);
     screen.addEventListener('error', this.boundOnScreenLoadingError);
