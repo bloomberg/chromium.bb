@@ -34,28 +34,27 @@ const std::vector<InteractionsStats>& FakeFormFetcher::GetInteractionsStats()
   return stats_;
 }
 
-const std::vector<const autofill::PasswordForm*>&
-FakeFormFetcher::GetNonFederatedMatches() const {
+std::vector<const PasswordForm*> FakeFormFetcher::GetNonFederatedMatches()
+    const {
   return non_federated_;
 }
 
-const std::vector<const autofill::PasswordForm*>&
-FakeFormFetcher::GetFederatedMatches() const {
+std::vector<const PasswordForm*> FakeFormFetcher::GetFederatedMatches() const {
   return federated_;
 }
 
-const std::vector<const autofill::PasswordForm*>&
-FakeFormFetcher::GetBlacklistedMatches() const {
+std::vector<const PasswordForm*> FakeFormFetcher::GetBlacklistedMatches()
+    const {
   return blacklisted_;
 }
 
 void FakeFormFetcher::SetNonFederated(
-    const std::vector<const autofill::PasswordForm*>& non_federated) {
+    const std::vector<const PasswordForm*>& non_federated) {
   non_federated_ = non_federated;
 }
 
 void FakeFormFetcher::SetBlacklisted(
-    const std::vector<const autofill::PasswordForm*>& blacklisted) {
+    const std::vector<const PasswordForm*>& blacklisted) {
   blacklisted_ = blacklisted;
 }
 

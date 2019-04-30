@@ -117,19 +117,18 @@ const std::vector<InteractionsStats>& FormFetcherImpl::GetInteractionsStats()
   return interactions_stats_;
 }
 
-const std::vector<const PasswordForm*>&
-FormFetcherImpl::GetNonFederatedMatches() const {
-  return weak_non_federated_;
+std::vector<const PasswordForm*> FormFetcherImpl::GetNonFederatedMatches()
+    const {
+  return MakeWeakCopies(non_federated_);
 }
 
-const std::vector<const PasswordForm*>& FormFetcherImpl::GetFederatedMatches()
-    const {
-  return weak_federated_;
+std::vector<const PasswordForm*> FormFetcherImpl::GetFederatedMatches() const {
+  return MakeWeakCopies(federated_);
 }
 
-const std::vector<const PasswordForm*>& FormFetcherImpl::GetBlacklistedMatches()
+std::vector<const PasswordForm*> FormFetcherImpl::GetBlacklistedMatches()
     const {
-  return weak_blacklisted_;
+  return MakeWeakCopies(blacklisted_);
 }
 
 void FormFetcherImpl::OnGetPasswordStoreResults(
@@ -170,7 +169,7 @@ void FormFetcherImpl::OnGetSiteStatistics(
 }
 
 void FormFetcherImpl::ProcessMigratedForms(
-    std::vector<std::unique_ptr<autofill::PasswordForm>> forms) {
+    std::vector<std::unique_ptr<PasswordForm>> forms) {
   ProcessPasswordStoreResults(std::move(forms));
 }
 
@@ -220,15 +219,10 @@ std::unique_ptr<FormFetcher> FormFetcherImpl::Clone() {
     return std::move(result);
   }
 
-  result->non_federated_ = MakeCopies(this->non_federated_);
-  result->federated_ = MakeCopies(this->federated_);
-  result->blacklisted_ = MakeCopies(this->blacklisted_);
+  result->non_federated_ = MakeCopies(non_federated_);
+  result->federated_ = MakeCopies(federated_);
+  result->blacklisted_ = MakeCopies(blacklisted_);
   result->interactions_stats_ = this->interactions_stats_;
-
-  result->weak_non_federated_ = MakeWeakCopies(result->non_federated_);
-  result->weak_federated_ = MakeWeakCopies(result->federated_);
-  result->weak_blacklisted_ = MakeWeakCopies(result->blacklisted_);
-
   result->state_ = this->state_;
   result->need_to_refetch_ = this->need_to_refetch_;
 
@@ -236,17 +230,13 @@ std::unique_ptr<FormFetcher> FormFetcherImpl::Clone() {
 }
 
 void FormFetcherImpl::ProcessPasswordStoreResults(
-    std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
+    std::vector<std::unique_ptr<PasswordForm>> results) {
   DCHECK_EQ(State::WAITING, state_);
   state_ = State::NOT_WAITING;
   SplitMatches matches = SplitResults(std::move(results));
   federated_ = std::move(matches.federated);
   non_federated_ = std::move(matches.non_federated);
   blacklisted_ = std::move(matches.blacklisted);
-
-  weak_non_federated_ = MakeWeakCopies(non_federated_);
-  weak_federated_ = MakeWeakCopies(federated_);
-  weak_blacklisted_ = MakeWeakCopies(blacklisted_);
 
   for (auto* consumer : consumers_)
     consumer->OnFetchCompleted();

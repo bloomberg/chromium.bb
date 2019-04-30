@@ -48,13 +48,13 @@ class FakeFormFetcher : public FormFetcher {
     stats_ = stats;
   }
 
-  const std::vector<const autofill::PasswordForm*>& GetNonFederatedMatches()
+  std::vector<const autofill::PasswordForm*> GetNonFederatedMatches()
       const override;
 
-  const std::vector<const autofill::PasswordForm*>& GetFederatedMatches()
+  std::vector<const autofill::PasswordForm*> GetFederatedMatches()
       const override;
 
-  const std::vector<const autofill::PasswordForm*>& GetBlacklistedMatches()
+  std::vector<const autofill::PasswordForm*> GetBlacklistedMatches()
       const override;
 
   void set_federated(

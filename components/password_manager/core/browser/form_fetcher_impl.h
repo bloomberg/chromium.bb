@@ -38,12 +38,14 @@ class FormFetcherImpl : public FormFetcher,
   void RemoveConsumer(FormFetcher::Consumer* consumer) override;
   State GetState() const override;
   const std::vector<InteractionsStats>& GetInteractionsStats() const override;
-  const std::vector<const autofill::PasswordForm*>& GetNonFederatedMatches()
+
+  std::vector<const autofill::PasswordForm*> GetNonFederatedMatches()
       const override;
-  const std::vector<const autofill::PasswordForm*>& GetFederatedMatches()
+  std::vector<const autofill::PasswordForm*> GetFederatedMatches()
       const override;
-  const std::vector<const autofill::PasswordForm*>& GetBlacklistedMatches()
+  std::vector<const autofill::PasswordForm*> GetBlacklistedMatches()
       const override;
+
   void Fetch() override;
   std::unique_ptr<FormFetcher> Clone() override;
 
@@ -77,12 +79,6 @@ class FormFetcherImpl : public FormFetcher,
 
   // Statistics for the current domain.
   std::vector<InteractionsStats> interactions_stats_;
-
-  // Non-owning copies of the vectors above.
-  // TODO(https://crbug.com/945864): Clean this up.
-  std::vector<const autofill::PasswordForm*> weak_non_federated_;
-  std::vector<const autofill::PasswordForm*> weak_federated_;
-  std::vector<const autofill::PasswordForm*> weak_blacklisted_;
 
   // Consumers of the fetcher, all are assumed to outlive |this|.
   std::set<FormFetcher::Consumer*> consumers_;
