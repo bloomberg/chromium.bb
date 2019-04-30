@@ -31,6 +31,7 @@ pluginVm.testLabelIconContextMenu = async (done) => {
   ];
 
   const pluginVmFolder = '#file-list [file-name="PluginVm"]';
+  const photosSubfolder = '#file-list [file-name="photos"]';
   const iconFolder =
       '#file-list [file-name="PluginVm"] [file-type-icon="plugin_vm"]';
   const fileMenuShown = '#file-context-menu:not([hidden])';
@@ -39,11 +40,19 @@ pluginVm.testLabelIconContextMenu = async (done) => {
   const dirTreeMenuShown = '#directory-tree-context-menu:not([hidden])';
   const itemsShown = ' cr-menu-item:not([hidden])';
 
-  async function menuItems(menuTypeShown) {
-    await test.waitForElement(menuTypeShown);
-    const list = document.querySelectorAll(menuTypeShown + itemsShown);
-    return Array.from(document.querySelectorAll(menuTypeShown + itemsShown))
-        .map(e => [e.attributes['command'].value, !e.disabled]);
+  async function waitForMenuItems(rightClick, menuTypeShown, expectedItems) {
+    const expected = JSON.stringify(expectedItems);
+    return test.repeatUntil(() => {
+      assertTrue(test.fakeMouseRightClick(rightClick));
+      const items =
+          Array.from(document.querySelectorAll(menuTypeShown + itemsShown))
+              .map(e => [e.attributes['command'].value, !e.disabled]);
+      const actual = JSON.stringify(items);
+      return expected === actual ||
+          test.pending(
+              'Waiting for context menu, expected: %s, actual: %s', expected,
+              actual);
+    });
   }
 
   // Verify that /PluginVm has label 'Plugin VM'.
@@ -65,9 +74,7 @@ pluginVm.testLabelIconContextMenu = async (done) => {
   await test.waitForElement(iconFolder);
 
   // Verify /PluginVm folder context menu.
-  assertTrue(test.fakeMouseRightClick(pluginVmFolder));
-  let items = await menuItems(fileMenuShown);
-  assertEquals(JSON.stringify(fileMenu), JSON.stringify(items));
+  await waitForMenuItems(pluginVmFolder, fileMenuShown, fileMenu);
 
   // Change to 'PluginVm' directory, photos folder is shown.
   assertTrue(test.fakeMouseDoubleClick(pluginVmFolder));
@@ -75,9 +82,7 @@ pluginVm.testLabelIconContextMenu = async (done) => {
       test.TestEntryInfo.getExpectedRows([test.ENTRIES.photos]));
 
   // Verify /PluginVm/photos folder context menu.
-  assertTrue(test.fakeMouseRightClick('#file-list [file-name="photos"]'));
-  items = await menuItems(fileMenuShown);
-  assertEquals(JSON.stringify(fileMenuSubfolder), JSON.stringify(items));
+  await waitForMenuItems(photosSubfolder, fileMenuShown, fileMenuSubfolder);
 
   done();
 };
