@@ -1012,6 +1012,16 @@
       'mac-dummy-rel',
     ],
     'modifications': {
+      'Linux Tests Code Coverage': {
+        "args": [
+          "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%8m.profraw",
+        ],
+      },
+      'Linux Release Code Coverage (NVIDIA)': {
+        "args": [
+          "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%8m.profraw",
+        ],
+      },
       'Linux Tests (dbg)(1)': {
         'args': [
           '--debug',
@@ -1065,6 +1075,18 @@
       # chromium.mac. TODO(https://crbug.com/944117): Remove this.
       'mac-dummy-rel',
     ],
+    'modifications': {
+      'Linux Tests Code Coverage': {
+        "args": [
+          "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%8m.profraw",
+        ],
+      },
+      'Linux Release Code Coverage (NVIDIA)': {
+        "args": [
+          "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%8m.profraw",
+        ],
+      },
+    },
   },
   'notification_helper_unittests': {
     'remove_from': [
@@ -1306,6 +1328,13 @@
           '--jobs=1',
         ],
       },
+      # Mirrors 'Linux Tests'
+      'Linux Tests Code Coverage': {
+        'args': [
+          '--xvfb',
+          '--jobs=1',
+        ],
+      },
       'Linux Tests (dbg)(1)': {
         'args': [
           '--xvfb',
@@ -1520,6 +1549,8 @@
   'webdriver_tests_suite': {
     'remove_from': [
       'Linux Tests',  # https://crbug.com/929689, https://crbug.com/936557
+      # Mirrors 'Linux Tests'
+      'Linux Tests Code Coverage',  # https://crbug.com/929689, https://crbug.com/936557
     ],
   },
   'webgl2_conformance_gl_passthrough_tests': {
@@ -1713,6 +1744,20 @@
         'swarming': {
           'shards': 6,
         },
+      },
+      # Mirrors 'Linux Tests'
+      'Linux Tests Code Coverage': {
+        "args": [
+          "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%8m.profraw",
+        ],
+        'swarming': {
+          'shards': 6,
+        },
+      },
+      'Linux Release Code Coverage (NVIDIA)': {
+        "args": [
+          "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%8m.profraw",
+        ],
       },
       'Linux Tests (dbg)(1)': {
         'args': [

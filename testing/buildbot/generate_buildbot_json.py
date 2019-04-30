@@ -981,6 +981,11 @@ class BBJSONGenerator(object):
       'mac-archive-rel',
       'win-archive-rel',
       'win32-archive-rel',
+      # code coverage, see see https://crbug.com/930364
+      'Linux Builder Code Coverage',
+      'Linux Tests Code Coverage',
+      'GPU Linux Builder Code Coverage',
+      'Linux Release Code Coverage (NVIDIA)',
     ]
 
   def check_input_file_consistency(self, verbose=False):
