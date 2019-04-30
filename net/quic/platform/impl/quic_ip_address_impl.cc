@@ -140,4 +140,14 @@ bool QuicIpAddressImpl::InSameSubnet(const QuicIpAddressImpl& other,
                                      subnet_length);
 }
 
+in_addr QuicIpAddressImpl::GetIPv4() const {
+  DCHECK_EQ(sizeof(in_addr), ip_address_.bytes().size());
+  return *(reinterpret_cast<const in_addr*>(ip_address_.bytes().data()));
+}
+
+in6_addr QuicIpAddressImpl::GetIPv6() const {
+  DCHECK_EQ(sizeof(in6_addr), ip_address_.bytes().size());
+  return *(reinterpret_cast<const in6_addr*>(ip_address_.bytes().data()));
+}
+
 }  // namespace quic
