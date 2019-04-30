@@ -83,6 +83,22 @@ scoped_refptr<SiteInstanceImpl> SiteInstanceImpl::CreateForURL(
 }
 
 // static
+scoped_refptr<SiteInstanceImpl> SiteInstanceImpl::CreateForServiceWorker(
+    BrowserContext* browser_context,
+    const GURL& url) {
+  // This will create a new SiteInstance and BrowsingInstance.
+  scoped_refptr<BrowsingInstance> instance(
+      new BrowsingInstance(browser_context));
+
+  // We do NOT want to allow the default site instance here because workers
+  // need to be kept separate from other sites.
+  scoped_refptr<SiteInstanceImpl> site_instance =
+      instance->GetSiteInstanceForURL(url, /* allow_default_instance */ false);
+  site_instance->is_for_service_worker_ = true;
+  return site_instance;
+}
+
+// static
 bool SiteInstanceImpl::ShouldAssignSiteForURL(const GURL& url) {
   // about:blank should not "use up" a new SiteInstance.  The SiteInstance can
   // still be used for a normal web site.

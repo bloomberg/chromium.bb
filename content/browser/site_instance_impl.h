@@ -40,6 +40,9 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   static scoped_refptr<SiteInstanceImpl> CreateForURL(
       BrowserContext* browser_context,
       const GURL& url);
+  static scoped_refptr<SiteInstanceImpl> CreateForServiceWorker(
+      BrowserContext* browser_context,
+      const GURL& url);
   static bool ShouldAssignSiteForURL(const GURL& url);
 
   // Returns whether |lock_url| is at least at the granularity of a site (i.e.,
@@ -114,7 +117,6 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // chosen existing process is reused because of the process limit, the process
   // will be tracked as having an unmatched service worker until reused by
   // another SiteInstance from the same site.
-  void set_is_for_service_worker() { is_for_service_worker_ = true; }
   bool is_for_service_worker() const { return is_for_service_worker_; }
 
   // Returns the URL which was used to set the |site_| for this SiteInstance.

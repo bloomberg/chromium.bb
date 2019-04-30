@@ -114,11 +114,10 @@ ServiceWorkerProcessManager::AllocateWorkerProcess(
       storage_partition_ &&
       !storage_partition_->site_for_service_worker().is_empty();
   scoped_refptr<SiteInstanceImpl> site_instance =
-      SiteInstanceImpl::CreateForURL(
+      SiteInstanceImpl::CreateForServiceWorker(
           browser_context_, use_url_from_storage_partition
                                 ? storage_partition_->site_for_service_worker()
                                 : script_url);
-  site_instance->set_is_for_service_worker();
 
   // Attempt to reuse a renderer process if possible. Note that in the
   // <webview> case, process reuse isn't currently supported and a new
