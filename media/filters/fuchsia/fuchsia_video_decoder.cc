@@ -606,7 +606,8 @@ void FuchsiaVideoDecoder::OnOutputPacket(fuchsia::media::Packet output_packet,
                                          bool error_detected_during) {
   if (!output_packet.has_header() ||
       !output_packet.header().has_buffer_lifetime_ordinal() ||
-      !output_packet.header().has_packet_index()) {
+      !output_packet.header().has_packet_index() ||
+      !output_packet.has_buffer_index()) {
     DLOG(ERROR) << "Received OnOutputPacket() with missing required fields.";
     OnError();
     return;
@@ -667,8 +668,11 @@ void FuchsiaVideoDecoder::OnOutputPacket(fuchsia::media::Packet output_packet,
   }
 
   auto packet_index = output_packet.header().packet_index();
-  auto& buffer = output_buffers_[packet_index];
+  auto buffer_index = output_packet.buffer_index();
+  auto& buffer = output_buffers_[buffer_index];
 
+  // We're not using single buffer mode, so packet count will be equal to buffer
+  // count.
   DCHECK_LT(num_used_output_buffers_, static_cast<int>(output_buffers_.size()));
   num_used_output_buffers_++;
 
