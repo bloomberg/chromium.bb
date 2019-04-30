@@ -15,6 +15,8 @@ DEPS = [
   'recipe_engine/runtime',
 ]
 
+from recipe_engine import types
+
 from PB.go.chromium.org.luci.buildbucket.proto.build import Build
 
 def RunSteps(api):
@@ -55,8 +57,12 @@ def RunSteps(api):
       api.properties.get('gerrit_no_rebase_patch_ref'))
   manifest_name = api.properties.get('manifest_name')
   patch_refs = api.properties.get('patch_refs')
-  set_output_commit = api.properties.get('set_output_commit', False)
+  set_output_commit = api.properties.get('set_output_commit', True)
 
+  step_test_data = None
+  bot_update_output = types.thaw(api.properties.get('bot_update_output'))
+  if bot_update_output:
+    step_test_data = lambda: api.json.test_api.output(bot_update_output)
   bot_update_step = api.bot_update.ensure_checkout(
       patch=patch,
       with_branch_heads=with_branch_heads,
@@ -71,6 +77,7 @@ def RunSteps(api):
       manifest_name=manifest_name,
       patch_refs=patch_refs,
       set_output_commit=set_output_commit,
+      step_test_data=step_test_data,
     )
   if patch:
     api.bot_update.deapply_patch(bot_update_step)
@@ -118,7 +125,10 @@ def GenTests(api):
   yield (
       api.test('with_manifest_name') +
       ci_build() +
-      api.properties(manifest_name='checkout', set_output_commit=True) +
+      api.properties(
+          manifest_name='checkout',
+          set_output_commit=False,
+      ) +
       api.step_data('bot_update (without patch)', api.json.output({
         'source_manifest': {
           'directories': {
@@ -148,7 +158,10 @@ def GenTests(api):
   yield (
       api.test('deprecated_got_revision_mapping') +
       try_build() +
-      api.properties(deprecated_got_revision_mapping=True)
+      api.properties(
+          deprecated_got_revision_mapping=True,
+          set_output_commit=False,
+      )
   )
   yield (
       api.test('refs') +
@@ -231,5 +244,81 @@ def GenTests(api):
                'refs/changes/12/34/5'),
               'https://chromium.googlesource.com/v8/v8@refs/changes/124/45/6',
           ],
+      )
+  )
+
+  yield (
+      api.test('no_cp_checkout_a_specific_commit') +
+      ci_build(revision='a' * 40) +
+      api.properties(
+          revisions={'got_revision': 'src'},
+          bot_update_output={
+            'properties': {
+              'got_revision': 'a' * 40,
+            },
+            'manifest': {
+              'src': {
+                'revision': 'a' * 40,
+                'repository': 'https://chromium.googlesource.com/chromium/src',
+              }
+            }
+          }
+      )
+  )
+
+  yield (
+      api.test('no_cp_checkout_master') +
+      ci_build(revision='') +
+      api.properties(
+          revisions={'got_revision': 'src'},
+          bot_update_output={
+            'properties': {
+              'got_revision': 'a' * 40,
+            },
+            'manifest': {
+              'src': {
+                'revision': 'a' * 40,
+                'repository': 'https://chromium.googlesource.com/chromium/src',
+              }
+            }
+          }
+      )
+  )
+
+  yield (
+      api.test('no_cp_checkout_a_branch_head') +
+      ci_build(revision='', git_ref='refs/branch-heads/x') +
+      api.properties(
+          revisions={'got_revision': 'src'},
+          bot_update_output={
+            'properties': {
+              'got_revision': 'a' * 40,
+            },
+            'manifest': {
+              'src': {
+                'revision': 'a' * 40,
+                'repository': 'https://chromium.googlesource.com/chromium/src',
+              }
+            }
+          }
+      )
+  )
+
+  yield (
+      api.test('no_cp_checkout_HEAD') +
+      ci_build(revision='HEAD') +
+      api.properties(
+          revisions={'got_revision': 'src'},
+          bot_update_output={
+            'properties': {
+              'got_revision': 'a' * 40,
+            },
+            'manifest': {
+              'src': {
+                'revision': 'a' * 40,
+                'repository': 'https://chromium.googlesource.com/chromium/src',
+              }
+            }
+          }
       )
   )

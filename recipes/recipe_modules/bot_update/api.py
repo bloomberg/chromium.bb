@@ -76,7 +76,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
                       gerrit_no_rebase_patch_ref=False,
                       disable_syntax_validation=False, manifest_name=None,
                       patch_refs=None, ignore_input_commit=False,
-                      set_output_commit=False,
+                      set_output_commit=False, step_test_data=None,
                       **kwargs):
     """
     Args:
@@ -96,6 +96,8 @@ class BotUpdateApi(recipe_api.RecipeApi):
         api.buildbucket.gitiles_commit or the first configured solution.
         When sorting builds by commit position, this commit will be used.
         Requires falsy ignore_input_commit.
+      step_test_data: a null function that returns test bot_update.py output.
+        Use test_api.output_json to generate test data.
     """
     assert use_site_config_creds is None, "use_site_config_creds is deprecated"
     assert rietveld is None, "rietveld is deprecated"
@@ -156,19 +158,16 @@ class BotUpdateApi(recipe_api.RecipeApi):
 
     # HACK: ensure_checkout API must be redesigned so that we don't pass such
     # parameters. Existing semantics is too opiniated.
-    main_repo_path = None
-    input_commit = self.m.buildbucket.gitiles_commit
-    input_commit_rev = input_commit.id or input_commit.ref
-    if not ignore_input_commit:
-      main_repo_path = self._get_commit_repo_path(input_commit, cfg)
+    in_commit = self.m.buildbucket.gitiles_commit
+    in_commit_rev = in_commit.id or in_commit.ref
+    if not ignore_input_commit and in_commit_rev:
       # Note: this is not entirely correct. build.input.gitiles_commit
       # definition says "The Gitiles commit to run against.".
       # However, here we ignore it if the config specified a revision.
       # This is necessary because existing builders rely on this behavior,
       # e.g. they want to force refs/heads/master at the config level.
-      if input_commit_rev:
-        revisions[main_repo_path] = (
-            revisions.get(main_repo_path) or input_commit_rev)
+      main_repo_path = self._get_commit_repo_path(in_commit, cfg)
+      revisions[main_repo_path] = revisions.get(main_repo_path) or in_commit_rev
 
     # Guarantee that first solution has a revision.
     # TODO(machenbach): We should explicitly pass HEAD for ALL solutions
@@ -242,9 +241,9 @@ class BotUpdateApi(recipe_api.RecipeApi):
 
     # Inject Json output for testing.
     first_sln = cfg.solutions[0].name
-    step_test_data = lambda: self.test_api.output_json(
+    step_test_data = step_test_data or (lambda: self.test_api.output_json(
         patch_root, first_sln, reverse_rev_map, self._fail_patch,
-        fixed_revisions=fixed_revisions)
+        fixed_revisions=fixed_revisions))
 
     name = 'bot_update'
     if not patch:
@@ -291,30 +290,47 @@ class BotUpdateApi(recipe_api.RecipeApi):
               manifest_name, source_manifest)
 
         # Set output commit of the build.
-        git_checkout = (
-            source_manifest
-            .get('directories', {})
-            .get(main_repo_path, {})
-            .get('git_checkout', {}))
-        if set_output_commit and git_checkout:
-          output_commit = common_pb2.GitilesCommit(
-              ref=revisions.get(main_repo_path) or '',
-              id=git_checkout['revision'],
+        if set_output_commit:
+          # As of April 2019, got_revision describes the output commit,
+          # the same commit that Build.output.gitiles_commit describes.
+          # In particular, users tend to set got_revision to make Milo display
+          # it. Derive output commit from got_revision.
+          out_commit = common_pb2.GitilesCommit(
+              id=self._last_returned_properties['got_revision'],
           )
-          if not output_commit.ref.startswith('refs/'):
-            # Require that what was checked out is what was requested on
-            # input commit.
-            # If this assertion fails, this setup is unusual/unsupported.
-            # The caller should not pass set_output_commit=True and should call
-            # api.buildbucket.set_output_gitiles_commit themselves.
-            assert (
-                input_commit.ref and
-                # Revision was not overridden.
-                revisions[main_repo_path] == input_commit_rev)
-            output_commit.ref = input_commit.ref
-          output_commit.host, output_commit.project = (
-              self.m.gitiles.parse_repo_url(git_checkout['repo_url']))
-          self.m.buildbucket.set_output_gitiles_commit(output_commit)
+
+          out_solution = reverse_rev_map['got_revision']
+          out_manifest = result['manifest'][out_solution]
+          assert out_manifest['revision'] == out_commit.id, (
+              out_manifest, out_commit.id)
+
+          out_commit.host, out_commit.project = (
+              self.m.gitiles.parse_repo_url(out_manifest['repository'])
+          )
+
+          # Determine the output ref.
+          got_revision_cp = self._last_returned_properties.get('got_revision_cp')
+          in_rev = revisions.get(out_solution)
+          if got_revision_cp:
+            # If commit position string is available, read the ref from there.
+            out_commit.ref, out_commit.position = (
+                self.m.commit_position.parse(got_revision_cp))
+          elif in_rev.startswith('refs/'):
+            # If we were asked to check out a specific ref, use it as output
+            # ref.
+            out_commit.ref = in_rev
+          elif in_rev == 'HEAD':
+            # bot_update.py interprets HEAD as refs/heads/master
+            out_commit.ref = 'refs/heads/master'
+          elif out_commit.id == in_commit.id and in_commit.ref:
+            # Derive output ref from the input ref.
+            out_commit.ref = in_commit.ref
+          else: # pragma: no cover
+            assert False, (
+                'Unsupposed case. '
+                'Call buildbucket.set_output_gitiles_commit directly.'
+            )
+          self.m.buildbucket.set_output_gitiles_commit(out_commit)
 
         # Set the "checkout" path for the main solution.
         # This is used by the Chromium module to figure out where to look for
