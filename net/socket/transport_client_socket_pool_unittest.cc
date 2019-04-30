@@ -1836,12 +1836,6 @@ TEST_F(TransportClientSocketPoolTest, TagSSLDirect) {
   test_server.AddDefaultHandlers(base::FilePath());
   ASSERT_TRUE(test_server.Start());
 
-  // TLS 1.3 sockets aren't reused until the read side has been pumped.
-  // TODO(crbug.com/906668): Support pumping the read side and setting the
-  // socket to be reusable.
-  std::unique_ptr<SSLConfig> ssl_config = GetSSLConfig();
-  ssl_config->version_max = SSL_PROTOCOL_VERSION_TLS1_2;
-
   TestCompletionCallback callback;
   ClientSocketHandle handle;
   int32_t tag_val1 = 0x12345678;
@@ -1854,7 +1848,7 @@ TEST_F(TransportClientSocketPoolTest, TagSSLDirect) {
 
   scoped_refptr<ClientSocketPool::SocketParams> socket_params =
       base::MakeRefCounted<ClientSocketPool::SocketParams>(
-          std::move(ssl_config) /* ssl_config_for_origin */,
+          std::make_unique<SSLConfig>() /* ssl_config_for_origin */,
           nullptr /* ssl_config_for_proxy */, OnHostResolutionCallback());
 
   // Test socket is tagged before connected.
