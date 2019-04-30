@@ -14,7 +14,7 @@
 #include "content/common/push_messaging.mojom.h"
 #include "content/public/common/push_messaging_status.mojom.h"
 #include "content/public/common/service_names.mojom.h"
-#include "content/renderer/push_messaging/push_provider.h"
+#include "content/renderer/push_messaging/push_messaging_utils.h"
 #include "content/renderer/render_frame_impl.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/platform/modules/push_messaging/web_push_error.h"

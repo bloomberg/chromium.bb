@@ -430,6 +430,8 @@ target(link_target_type, "renderer") {
     "peripheral_content_heuristic.h",
     "push_messaging/push_messaging_client.cc",
     "push_messaging/push_messaging_client.h",
+    "push_messaging/push_messaging_utils.cc",
+    "push_messaging/push_messaging_utils.h",
     "push_messaging/push_provider.cc",
     "push_messaging/push_provider.h",
     "queue_message_swap_promise.cc",
