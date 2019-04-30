@@ -68,6 +68,13 @@ static const struct planar_layout triplanar_yuv_420_layout = {
 	.bytes_per_pixel = { 1, 1, 1 }
 };
 
+static const struct planar_layout biplanar_yuv_p010_layout = {
+	.num_planes = 2,
+	.horizontal_subsampling = { 1, 2 },
+	.vertical_subsampling = { 1, 2 },
+	.bytes_per_pixel = { 2, 4 }
+};
+
 // clang-format on
 
 static const struct planar_layout *layout_from_format(uint32_t format)
@@ -86,6 +93,9 @@ static const struct planar_layout *layout_from_format(uint32_t format)
 	case DRM_FORMAT_NV12:
 	case DRM_FORMAT_NV21:
 		return &biplanar_yuv_420_layout;
+
+	case DRM_FORMAT_P010:
+		return &biplanar_yuv_p010_layout;
 
 	case DRM_FORMAT_ABGR1555:
 	case DRM_FORMAT_ABGR4444:

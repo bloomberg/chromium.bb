@@ -56,6 +56,11 @@ extern "C" {
 #define DRM_FORMAT_FLEX_IMPLEMENTATION_DEFINED	fourcc_code('9', '9', '9', '8')
 #define DRM_FORMAT_FLEX_YCbCr_420_888		fourcc_code('9', '9', '9', '9')
 
+// TODO(crbug.com/958181): remove this definition once drm_fourcc.h contains it.
+#ifndef DRM_FORMAT_P010
+#define DRM_FORMAT_P010 fourcc_code('P', '0', '1', '0')
+#endif
+
 // clang-format on
 struct driver;
 struct bo;
