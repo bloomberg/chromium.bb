@@ -44,6 +44,7 @@
 #include "chrome/browser/conflicts/module_database_win.h"
 #include "chrome/browser/conflicts/module_event_sink_impl_win.h"
 #include "chrome/browser/first_run/first_run.h"
+#include "chrome/browser/memory/memory_pressure_monitor.h"
 #include "chrome/browser/memory/swap_thrashing_monitor.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
@@ -613,6 +614,9 @@ void ChromeBrowserMainPartsWin::PostBrowserStart() {
   // it easier to experiment with this monitor.
   if (base::FeatureList::IsEnabled(features::kSwapThrashingMonitor))
     memory::SwapThrashingMonitor::Initialize();
+
+  if (base::FeatureList::IsEnabled(features::kNewMemoryPressureMonitor))
+    memory_pressure_monitor_ = memory::MemoryPressureMonitor::Create();
 }
 
 // static

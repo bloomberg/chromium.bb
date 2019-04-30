@@ -14,6 +14,9 @@
 namespace memory {
 
 // Windows implementation of the memory pressure monitor.
+//
+// The global performance_monitor::SystemMonitor instance should be initialized
+// before the creation of this object.
 class MemoryPressureMonitorWin
     : public MemoryPressureMonitor,
       public performance_monitor::SystemMonitor::SystemObserver {

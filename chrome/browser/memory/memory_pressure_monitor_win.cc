@@ -15,6 +15,8 @@ namespace memory {
 namespace {
 
 using SamplingFrequency = performance_monitor::SystemMonitor::SamplingFrequency;
+using MetricsRefreshFrequencies = performance_monitor::SystemMonitor::
+    SystemObserver::MetricRefreshFrequencies;
 
 const DWORDLONG kMBBytes = 1024 * 1024;
 
@@ -118,10 +120,12 @@ MemoryPressureMonitorWin::MemoryPressureMonitorWin()
       disk_idle_time_obs_window_(
           base::TimeDelta::FromSeconds(kDiskIdleTimeWindowLengthSeconds.Get()),
           kDiskIdleTimeLowThreshold.Get()) {
+  DCHECK(performance_monitor::SystemMonitor::Get());
   // The amount of free memory is always tracked.
-  refresh_frequencies_ = {
-      .free_phys_memory_mb_frequency = SamplingFrequency::kDefaultFrequency,
-  };
+  refresh_frequencies_ =
+      MetricsRefreshFrequencies::Builder()
+          .SetFreePhysMemoryMbFrequency(SamplingFrequency::kDefaultFrequency)
+          .Build();
   performance_monitor::SystemMonitor::Get()->AddOrUpdateObserver(
       this, refresh_frequencies_);
 }
