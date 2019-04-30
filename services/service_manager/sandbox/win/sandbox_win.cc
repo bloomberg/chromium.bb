@@ -575,8 +575,8 @@ sandbox::ResultCode SetJobMemoryLimit(const base::CommandLine& cmd_line,
   if (sandbox_type == service_manager::SANDBOX_TYPE_GPU ||
       sandbox_type == service_manager::SANDBOX_TYPE_RENDERER) {
     int64_t GB = 1024 * 1024 * 1024;
-    // Allow the GPU process's sandbox to access more physical memory if
-    // it's available on the system.
+    // Allow the GPU/RENDERER process's sandbox to access more physical memory
+    // if it's available on the system.
     int64_t physical_memory = base::SysInfo::AmountOfPhysicalMemory();
     if (physical_memory > 16 * GB) {
       memory_limit = 16 * GB;
@@ -608,7 +608,7 @@ base::string16 GetAppContainerProfileName(
   // CreateAppContainerProfile requires that the profile name is at most 64
   // characters.  The size of sha1 is a constant 40, so validate that the base
   // names are sufficiently short that the total length is valid.
-  DCHECK(profile_name.length() <= 64);
+  DCHECK_LE(profile_name.length(), 64U);
   return base::UTF8ToWide(profile_name);
 }
 
