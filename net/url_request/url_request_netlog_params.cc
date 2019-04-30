@@ -16,10 +16,13 @@ namespace net {
 std::unique_ptr<base::Value> NetLogURLRequestConstructorCallback(
     const GURL* url,
     RequestPriority priority,
+    NetworkTrafficAnnotationTag traffic_annotation,
     NetLogCaptureMode /* capture_mode */) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("url", url->possibly_invalid_spec());
   dict->SetString("priority", RequestPriorityToString(priority));
+  dict->SetInteger("traffic_annotation",
+                   traffic_annotation.unique_id_hash_code);
   return std::move(dict);
 }
 

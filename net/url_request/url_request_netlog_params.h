@@ -13,6 +13,7 @@
 #include "net/base/net_export.h"
 #include "net/base/privacy_mode.h"
 #include "net/base/request_priority.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 class GURL;
 
@@ -28,6 +29,7 @@ class NetLogCaptureMode;
 NET_EXPORT std::unique_ptr<base::Value> NetLogURLRequestConstructorCallback(
     const GURL* url,
     RequestPriority priority,
+    NetworkTrafficAnnotationTag traffic_annotation,
     NetLogCaptureMode /* capture_mode */);
 
 // Returns a Value containing NetLog parameters for starting a URLRequest.

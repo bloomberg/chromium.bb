@@ -305,6 +305,9 @@ std::unique_ptr<base::Value> URLRequest::GetStateAsValue() const {
   dict->SetBoolean("has_upload", has_upload());
   dict->SetBoolean("is_pending", is_pending_);
 
+  dict->SetInteger("traffic_annotation",
+                   traffic_annotation_.unique_id_hash_code);
+
   // Add the status of the request.  The status should always be IO_PENDING, and
   // the error should always be OK, unless something is holding onto a request
   // that has finished or a request was leaked.  Neither of these should happen.
@@ -609,7 +612,8 @@ URLRequest::URLRequest(const GURL& url,
   context->url_requests()->insert(this);
   net_log_.BeginEvent(
       NetLogEventType::REQUEST_ALIVE,
-      base::Bind(&NetLogURLRequestConstructorCallback, &url, priority_));
+      base::BindRepeating(&NetLogURLRequestConstructorCallback, &url, priority_,
+                          traffic_annotation_));
 }
 
 void URLRequest::BeforeRequestComplete(int error) {
