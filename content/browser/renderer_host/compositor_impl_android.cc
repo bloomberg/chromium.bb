@@ -72,6 +72,7 @@
 #include "content/public/browser/android/compositor_client.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/gpu_stream_constants.h"
 #include "gpu/command_buffer/client/context_support.h"

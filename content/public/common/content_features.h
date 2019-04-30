@@ -107,11 +107,6 @@ CONTENT_EXPORT extern const base::Feature
 CONTENT_EXPORT extern const base::Feature kSignedExchangeSubresourcePrefetch;
 CONTENT_EXPORT extern const base::Feature kSignedHTTPExchange;
 CONTENT_EXPORT extern const base::Feature kSignedHTTPExchangePingValidity;
-CONTENT_EXPORT extern const base::Feature kSkipBrowserTouchFilter;
-CONTENT_EXPORT extern const char kSkipBrowserTouchFilterTypeParamName[];
-CONTENT_EXPORT extern const char
-    kSkipBrowserTouchFilterTypeParamValueDiscrete[];
-CONTENT_EXPORT extern const char kSkipBrowserTouchFilterTypeParamValueAll[];
 CONTENT_EXPORT extern const base::Feature kSpareRendererForSitePerProcess;
 CONTENT_EXPORT extern const base::Feature kSyntheticPointerActions;
 CONTENT_EXPORT extern const base::Feature kTimerThrottlingForHiddenFrames;
