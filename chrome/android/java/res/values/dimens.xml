@@ -402,6 +402,7 @@
     <dimen name="explore_sites_tile_view_title_margin_top_condensed">51dp</dimen>
     <dimen name="explore_sites_tile_view_width_condensed">72dp</dimen>
     <dimen name="explore_sites_tile_view_icon_padding_horizontal_condensed">4dp</dimen>
+    <dimen name="explore_sites_tile_view_text_margin_bottom_condensed">4dp</dimen>
 
     <!-- Recent tabs page -->
     <dimen name="recent_tabs_visible_separator_padding">8dp</dimen>
