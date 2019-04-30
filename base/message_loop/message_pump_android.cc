@@ -165,8 +165,8 @@ void MessagePumpForUI::OnNonDelayedLooperCallback() {
     return;
 
   // A bit added to the |non_delayed_fd_| to keep it signaled when we yield to
-  // java tasks below.
-  constexpr uint64_t kTryJavaTasksBeforeIdleBit = uint64_t(1) << 32;
+  // native tasks below.
+  constexpr uint64_t kTryNativeTasksBeforeIdleBit = uint64_t(1) << 32;
 
   // We're about to process all the work requested by ScheduleWork().
   // MessagePump users are expected to do their best not to invoke
@@ -181,9 +181,9 @@ void MessagePumpForUI::OnNonDelayedLooperCallback() {
   DCHECK_GT(pre_work_value, 0U);
 
   // Note: We can't skip DoSomeWork() even if
-  // |pre_work_value == kTryJavaTasksBeforeIdleBit| here (i.e. no additional
-  // ScheduleWork() since yielding to java) as delayed tasks might have come in
-  // and we need to re-sample |next_work_info|.
+  // |pre_work_value == kTryNativeTasksBeforeIdleBit| here (i.e. no additional
+  // ScheduleWork() since yielding to native) as delayed tasks might have come
+  // in and we need to re-sample |next_work_info|.
 
   // Runs all application tasks scheduled to run.
   Delegate::NextWorkInfo next_work_info;
@@ -200,25 +200,30 @@ void MessagePumpForUI::OnNonDelayedLooperCallback() {
   if (ShouldQuit())
     return;
 
-  // Before declaring this loop idle, yield to java tasks and arrange to be
+  // Before declaring this loop idle, yield to native tasks and arrange to be
   // called again (unless we're already in that second call).
-  if (pre_work_value != kTryJavaTasksBeforeIdleBit) {
+  if (pre_work_value != kTryNativeTasksBeforeIdleBit) {
     // Note: This write() is racing with potential ScheduleWork() calls. This is
     // fine as write() is adding this bit, not overwriting the existing value,
     // and as such racing ScheduleWork() calls would merely add 1 to the lower
-    // bits and we would find |pre_work_value != kTryJavaTasksBeforeIdleBit| in
-    // the next cycle again, retrying this.
-    ret = write(non_delayed_fd_, &kTryJavaTasksBeforeIdleBit,
-                sizeof(kTryJavaTasksBeforeIdleBit));
+    // bits and we would find |pre_work_value != kTryNativeTasksBeforeIdleBit|
+    // in the next cycle again, retrying this.
+    ret = write(non_delayed_fd_, &kTryNativeTasksBeforeIdleBit,
+                sizeof(kTryNativeTasksBeforeIdleBit));
     DPCHECK(ret >= 0);
     return;
   }
 
-  // We yielded to java tasks already and they didn't generate a ScheduleWork()
-  // request so we can declare idleness. It's possible for a ScheduleWork()
-  // request to come in racily while this method unwinds, this is fine and will
-  // merely result in it being re-invoked shortly after it returns.
-  DCHECK_EQ(pre_work_value, kTryJavaTasksBeforeIdleBit);
+  // We yielded to native tasks already and they didn't generate a
+  // ScheduleWork() request so we can declare idleness. It's possible for a
+  // ScheduleWork() request to come in racily while this method unwinds, this is
+  // fine and will merely result in it being re-invoked shortly after it
+  // returns.
+  // TODO(scheduler-dev): this doesn't account for tasks that don't ever call
+  // SchedulerWork() but still keep the system non-idle (e.g., the Java Handler
+  // API). It would be better to add an API to query the presence of native
+  // tasks instead of relying on yielding once + kTryNativeTasksBeforeIdleBit.
+  DCHECK_EQ(pre_work_value, kTryNativeTasksBeforeIdleBit);
 
   if (ShouldQuit())
     return;
