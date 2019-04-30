@@ -377,14 +377,14 @@ const base::Feature kMediaDrmPersistentLicense{
 // MediaDrmBridge. If disabled, MediaDrmBridge will get unprovisioned origin IDs
 // which will trigger provisioning process after MediaDrmBridge is created.
 const base::Feature kMediaDrmPreprovisioning{"MediaDrmPreprovisioning",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Determines if MediaDrmOriginIdManager should attempt to pre-provision origin
 // IDs at startup (whenever a profile is loaded). Also used by tests that
 // disable it so that the tests can setup before pre-provisioning is done.
-// Note: Have no effect if kMediaDrmPreprovisioning feature is disabled.
+// Note: Has no effect if kMediaDrmPreprovisioning feature is disabled.
 const base::Feature kMediaDrmPreprovisioningAtStartup{
-    "MediaDrmPreprovisioningAtStartup", base::FEATURE_DISABLED_BY_DEFAULT};
+    "MediaDrmPreprovisioningAtStartup", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the Android Image Reader path for Video decoding(for AVDA and MCVD)
 const base::Feature kAImageReaderVideoOutput{"AImageReaderVideoOutput",
