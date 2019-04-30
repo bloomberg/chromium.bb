@@ -155,6 +155,9 @@ def main(argv):
       # Unconditionally build all the configs and import them.
       robo_build.BuildAndImportAllFFmpegConfigs(robo_configuration)
     elif opt == "--auto-merge":
+      # TODO: make sure that any untracked autorename files are removed, or
+      # make sure that the autorename git script doesn't try to 'git rm'
+      # untracked files, else the script fails.
       RunSteps(robo_configuration, ["auto-merge"])
 
       # TODO: Start a fake deps roll.  To do this, we would:

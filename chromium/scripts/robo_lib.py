@@ -185,11 +185,11 @@ class RoboConfiguration:
   def set_prompt_on_call(self, value):
     self._prompt_on_call = value
 
-  def Call(self, args):
+  def Call(self, args, shell=False):
     """Run the command specified by |args| (see subprocess.call), optionally
     prompting the user."""
     if self.prompt_on_call():
       print("[%s] About to run: %s " % (os.getcwd(), args))
       raw_input("Press ENTER to continue, or interrupt the script: ")
-    return call(args)
+    return call(args, shell=shell)
 
