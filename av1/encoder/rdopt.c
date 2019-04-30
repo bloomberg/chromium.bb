@@ -3039,14 +3039,11 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     assert(plane == 0);
     allowed_tx_mask = ext_tx_used_flag;
     // !fast_tx_search && txk_end != txk_start && plane == 0
-    const int do_prune = cpi->sf.tx_type_search.prune_mode > NO_PRUNE;
-    if (do_prune && is_inter) {
-      if (cpi->sf.tx_type_search.prune_mode >= PRUNE_2D_ACCURATE) {
-        const uint16_t prune =
-            prune_tx_2D(x, plane_bsize, tx_size, blk_row, blk_col, tx_set_type,
-                        cpi->sf.tx_type_search.prune_mode);
-        allowed_tx_mask &= (~prune);
-      }
+    if (cpi->sf.tx_type_search.prune_mode >= PRUNE_2D_ACCURATE && is_inter) {
+      const uint16_t prune =
+          prune_tx_2D(x, plane_bsize, tx_size, blk_row, blk_col, tx_set_type,
+                      cpi->sf.tx_type_search.prune_mode);
+      allowed_tx_mask &= (~prune);
     }
   }
 
