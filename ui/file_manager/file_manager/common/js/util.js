@@ -1151,11 +1151,15 @@ util.getEntryLabel = (locationInfo, entry) => {
     return util.getRootTypeLabel(locationInfo);
   }
 
-  // Special case for MyFiles/Downloads.
-  if (locationInfo && util.isMyFilesVolumeEnabled() &&
-      locationInfo.rootType == VolumeManagerCommon.RootType.DOWNLOADS &&
-      entry.fullPath == '/Downloads') {
-    return str('DOWNLOADS_DIRECTORY_LABEL');
+  // Special case for MyFiles/Downloads and MyFiles/PluginVm.
+  if (locationInfo &&
+      locationInfo.rootType == VolumeManagerCommon.RootType.DOWNLOADS) {
+    if (util.isMyFilesVolumeEnabled() && entry.fullPath == '/Downloads') {
+      return str('DOWNLOADS_DIRECTORY_LABEL');
+    }
+    if (util.isPluginVmEnabled() && entry.fullPath == '/PluginVm') {
+      return str('PLUGIN_VM_DIRECTORY_LABEL');
+    }
   }
 
   return entry.name;
@@ -1508,6 +1512,12 @@ util.unwrapEntry = entry => {
 util.isMyFilesVolumeEnabled = () => {
   return loadTimeData.valueExists('MY_FILES_VOLUME_ENABLED') &&
       loadTimeData.getBoolean('MY_FILES_VOLUME_ENABLED');
+};
+
+/** @return {boolean} */
+util.isPluginVmEnabled = () => {
+  return loadTimeData.valueExists('PLUGIN_VM_ENABLED') &&
+      loadTimeData.getBoolean('PLUGIN_VM_ENABLED');
 };
 
 /**
