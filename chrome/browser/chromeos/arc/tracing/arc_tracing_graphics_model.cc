@@ -293,42 +293,97 @@ std::string GetActivityFromBufferName(const std::string& android_buffer_name) {
 
 // Processes surface flinger events. It selects events using |query| from the
 // model. Buffer id is extracted for the each returned event and new events are
-// grouped by its buffer id.
-void ProcessSurfaceFlingerEvents(const ArcTracingModel& common_model,
-                                 const std::string& query,
-                                 BufferToEvents* buffer_to_events) {
+// grouped by its buffer id. If |surface_flinger_pid| is set to the positive
+// value than this activates filtering events by process id to avoid the case
+// when android:queueBuffer/dequeueBuffer events may appear in context of child
+// process and could be processed as surface flinger event. Returns positive
+// process id in case surface flinger events are found and belong to the same
+// process. In case of error -1 is returned.
+int ProcessSurfaceFlingerEvents(const ArcTracingModel& common_model,
+                                const std::string& query,
+                                BufferToEvents* buffer_to_events,
+                                int surface_flinger_pid) {
+  int detected_pid = -1;
   const ArcTracingModel::TracingEventPtrs surface_flinger_events =
       common_model.Select(query);
   std::string buffer_id;
   for (const ArcTracingEvent* event : surface_flinger_events) {
+    if (surface_flinger_pid > 0 && event->GetPid() != surface_flinger_pid)
+      continue;
     if (!ExtractBufferIdFromSurfaceFlingerEvent(*event, &buffer_id)) {
       LOG(ERROR) << "Failed to get buffer id from surface flinger event";
       continue;
+    }
+    if (detected_pid < 0) {
+      DCHECK_GE(event->GetPid(), 0);
+      detected_pid = event->GetPid();
+    } else if (detected_pid != event->GetPid()) {
+      LOG(ERROR) << "Found multiple surface flinger process ids "
+                 << detected_pid << "/" << event->GetPid();
+      return -1;
     }
     ArcTracingGraphicsModel::BufferEvents& graphics_events =
         (*buffer_to_events)[buffer_id];
     GetEventMapper().Produce(*event, &graphics_events);
   }
+  return detected_pid;
 }
 
 // Processes Android events acquireBuffer, releaseBuffer, dequeueBuffer and
 // queueBuffer. It returns map buffer id to the list of sorted by timestamp
 // events.
-BufferToEvents GetSurfaceFlingerEvents(const ArcTracingModel& common_model) {
-  BufferToEvents per_buffer_surface_flinger_events;
-  ProcessSurfaceFlingerEvents(common_model, kAcquireBufferQuery,
-                              &per_buffer_surface_flinger_events);
-  ProcessSurfaceFlingerEvents(common_model, kReleaseBufferQueryP,
-                              &per_buffer_surface_flinger_events);
-  ProcessSurfaceFlingerEvents(common_model, kReleaseBufferQueryN,
-                              &per_buffer_surface_flinger_events);
-  ProcessSurfaceFlingerEvents(common_model, kQueueBufferQuery,
-                              &per_buffer_surface_flinger_events);
-  ProcessSurfaceFlingerEvents(common_model, kDequeueBufferQuery,
-                              &per_buffer_surface_flinger_events);
-  for (auto& buffer : per_buffer_surface_flinger_events)
+bool GetSurfaceFlingerEvents(const ArcTracingModel& common_model,
+                             BufferToEvents* out_events) {
+  // Detect surface_flinger_pid using |kAcquireBufferQuery| that has unique
+  // hierarchy.
+  const int surface_flinger_pid =
+      ProcessSurfaceFlingerEvents(common_model, kAcquireBufferQuery, out_events,
+                                  -1 /* surface_flinger_pid */);
+  if (surface_flinger_pid <= 0) {
+    LOG(ERROR) << "Failed to detect acquireBuffer events.";
+    return false;
+  }
+
+  const int surface_flinger_pid_p =
+      ProcessSurfaceFlingerEvents(common_model, kReleaseBufferQueryP,
+                                  out_events, -1 /* surface_flinger_pid */);
+  const int surface_flinger_pid_n =
+      ProcessSurfaceFlingerEvents(common_model, kReleaseBufferQueryN,
+                                  out_events, -1 /* surface_flinger_pid */);
+  if (surface_flinger_pid_p <= 0 && surface_flinger_pid_n <= 0) {
+    LOG(ERROR) << "Failed to detect releaseBuffer events.";
+    return false;
+  }
+
+  if (surface_flinger_pid_p > 0 && surface_flinger_pid_n > 0) {
+    LOG(ERROR) << "Detected releaseBuffer events from both NYC and PI.";
+    return false;
+  }
+
+  if (surface_flinger_pid_p != surface_flinger_pid &&
+      surface_flinger_pid_n != surface_flinger_pid) {
+    LOG(ERROR) << "Detected acquireBuffer and releaseBuffer from"
+                  " different processes.";
+    return false;
+  }
+
+  // queueBuffer and dequeueBuffer may appear in context of client task.
+  // Use detected |surface_flinger_pid| to filter out such events.
+  if (ProcessSurfaceFlingerEvents(common_model, kQueueBufferQuery, out_events,
+                                  surface_flinger_pid) < 0) {
+    LOG(ERROR) << "Failed to detect queueBuffer events.";
+    return false;
+  }
+
+  if (ProcessSurfaceFlingerEvents(common_model, kDequeueBufferQuery, out_events,
+                                  surface_flinger_pid) < 0) {
+    LOG(ERROR) << "Failed to detect dequeueBuffer events.";
+    return false;
+  }
+
+  for (auto& buffer : *out_events)
     SortBufferEventsByTimestamp(&buffer.second);
-  return per_buffer_surface_flinger_events;
+  return true;
 }
 
 // Processes exo events Surface::Attach and Buffer::ReleaseContents. Each event
@@ -945,8 +1000,11 @@ ArcTracingGraphicsModel::~ArcTracingGraphicsModel() = default;
 bool ArcTracingGraphicsModel::Build(const ArcTracingModel& common_model) {
   Reset();
 
-  BufferToEvents per_buffer_surface_flinger_events =
-      GetSurfaceFlingerEvents(common_model);
+  BufferToEvents per_buffer_surface_flinger_events;
+  if (!GetSurfaceFlingerEvents(common_model,
+                               &per_buffer_surface_flinger_events)) {
+    return false;
+  }
   BufferToEvents per_buffer_chrome_events =
       GetChromeEvents(common_model, &chrome_buffer_id_to_task_id_);
 
