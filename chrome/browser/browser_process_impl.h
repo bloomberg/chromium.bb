@@ -181,6 +181,8 @@ class BrowserProcessImpl : public BrowserProcess,
   optimization_guide::OptimizationGuideService* optimization_guide_service()
       override;
 
+  StartupData* startup_data() override;
+
 #if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   void StartAutoupdateTimer() override;
 #endif
@@ -351,6 +353,8 @@ class BrowserProcessImpl : public BrowserProcess,
   // If non-null, this object holds a pref store that will be taken by
   // BrowserProcessImpl to create the |local_state_|.
   ChromeFeatureListCreator* chrome_feature_list_creator_;
+
+  StartupData* startup_data_;
 
   // Ensures that the observers of plugin/print disable/enable state
   // notifications are properly added and removed.

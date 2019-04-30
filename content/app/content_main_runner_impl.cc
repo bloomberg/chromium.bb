@@ -924,6 +924,8 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
 
     BrowserTaskExecutor::PostFeatureListSetup();
 
+    delegate_->PostTaskSchedulerStart();
+
     if (!base::FeatureList::IsEnabled(
             features::kAllowStartingServiceManagerOnly)) {
       should_start_service_manager_only = false;

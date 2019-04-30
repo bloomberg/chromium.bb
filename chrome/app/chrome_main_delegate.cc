@@ -543,6 +543,12 @@ bool ChromeMainDelegate::ShouldCreateFeatureList() {
   return false;
 }
 
+#if defined(OS_ANDROID)
+void ChromeMainDelegate::PostTaskSchedulerStart() {
+  startup_data_->CreateProfilePrefService();
+}
+#endif
+
 #endif
 
 void ChromeMainDelegate::PostFieldTrialInitialization() {

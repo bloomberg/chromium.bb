@@ -201,6 +201,10 @@ variations::VariationsService* TestingBrowserProcess::variations_service() {
   return nullptr;
 }
 
+StartupData* TestingBrowserProcess::startup_data() {
+  return nullptr;
+}
+
 policy::ChromeBrowserPolicyConnector*
 TestingBrowserProcess::browser_policy_connector() {
   if (!browser_policy_connector_) {

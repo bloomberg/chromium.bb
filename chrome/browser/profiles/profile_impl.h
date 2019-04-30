@@ -186,6 +186,15 @@ class ProfileImpl : public Profile {
               CreateMode create_mode,
               scoped_refptr<base::SequencedTaskRunner> io_task_runner);
 
+#if defined(OS_ANDROID)
+  // Takes the ownership of the pre-created PrefService and other objects if
+  // they have been created.
+  void TakePrefsFromStartupData();
+#endif
+
+  // Creates |prefs| from scratch in normal startup.
+  void LoadPrefsForNormalStartup(bool async_prefs);
+
   // Does final initialization. Should be called after prefs were loaded.
   void DoFinalInit();
 

@@ -1212,10 +1212,16 @@ content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
   main_parts = new ChromeBrowserMainParts(parameters, startup_data_);
 #endif
 
-  chrome::AddProfilesExtraParts(main_parts);
+  bool add_profiles_extra_parts = true;
+#if defined(OS_ANDROID)
+  if (startup_data_->HasBuiltProfilePrefService())
+    add_profiles_extra_parts = false;
+#endif
+  if (add_profiles_extra_parts)
+    chrome::AddProfilesExtraParts(main_parts);
 
-  // Construct additional browser parts. Stages are called in the order in
-  // which they are added.
+    // Construct additional browser parts. Stages are called in the order in
+    // which they are added.
 #if defined(TOOLKIT_VIEWS)
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(USE_OZONE)
   main_parts->AddParts(new ChromeBrowserMainExtraPartsViewsLinux());

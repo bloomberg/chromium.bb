@@ -232,6 +232,7 @@ BrowserProcessImpl::BrowserProcessImpl(StartupData* startup_data) {
   g_browser_process = this;
 
   DCHECK(startup_data);
+  startup_data_ = startup_data;
 
   chrome_feature_list_creator_ = startup_data->chrome_feature_list_creator();
   browser_policy_connector_ =
@@ -1038,6 +1039,10 @@ BrowserProcessImpl::optimization_guide_service() {
   if (!created_optimization_guide_service_)
     CreateOptimizationGuideService();
   return optimization_guide_service_.get();
+}
+
+StartupData* BrowserProcessImpl::startup_data() {
+  return startup_data_;
 }
 
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)

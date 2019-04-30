@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/policy/schema_registry_service_profile_builder.h"
+#include "chrome/browser/policy/schema_registry_service_builder.h"
 
 #include <utility>
 
@@ -103,9 +103,16 @@ std::unique_ptr<SchemaRegistryService> BuildSchemaRegistryServiceForProfile(
   }
 #endif
 
-  std::unique_ptr<SchemaRegistryService> service(new SchemaRegistryService(
-      std::move(registry), chrome_schema, global_registry));
-  return service;
+  return BuildSchemaRegistryService(std::move(registry), chrome_schema,
+                                    global_registry);
+}
+
+std::unique_ptr<SchemaRegistryService> BuildSchemaRegistryService(
+    std::unique_ptr<SchemaRegistry> registry,
+    const Schema& chrome_schema,
+    CombinedSchemaRegistry* global_registry) {
+  return std::make_unique<SchemaRegistryService>(
+      std::move(registry), chrome_schema, global_registry);
 }
 
 }  // namespace policy
