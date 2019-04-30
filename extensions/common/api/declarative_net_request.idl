@@ -46,8 +46,8 @@ namespace declarativeNetRequest {
     block,
     // Redirect the network request.
     redirect,
-    // Allow the network request. The request won't be blocked even if there
-    // is a blocking rule which matches it.
+    // Allow the network request. The request won't be blocked or redirected
+    // even if there is a block or redirect rule which matches it.
     allow,
     // Remove request/response headers from the network request.
     removeHeaders
@@ -125,7 +125,9 @@ namespace declarativeNetRequest {
     // The type of action to perform.
     RuleActionType type;
 
-    // The redirect url. Only valid if RuleActionType is "redirect".
+    // The redirect url. Only valid if RuleActionType is "redirect". Can be
+    // specified as an absolute url or a relative url (starting with '/'), which
+    // is relative to the extension which specified the rule.
     DOMString? redirectUrl;
 
     // The headers to remove from the request. Only valid if RuleActionType is
@@ -154,34 +156,11 @@ namespace declarativeNetRequest {
 
   interface Functions {
 
-    // Adds <code>rules</code> to the current set of dynamic rules for the
-    // extension. These rules are persisted across browser sessions.
-    // Note: <a href="#property-MAX_NUMBER_OF_DYNAMIC_RULES">
-    // MAX_NUMBER_OF_DYNAMIC_RULES</a> is the maximum number of dynamic rules an
-    // extension can add.
-    // |rules|: The rules to add.
-    // |callback|: Called once the given <code>rules</code> are added. In case
-    // of an error, $(ref:runtime.lastError) will be set to denote the error
-    // message and no rules will be added. This can happen for multiple reasons,
-    // such as invalid rule format, duplicate rule ID, rule count limit
-    // exceeded, internal errors, and others.
-    static void addDynamicRules(Rule[] rules, optional EmptyCallback callback);
-
-    // Removes rules corresponding to <code>rule_ids</code> from the current set
-    // of dynamic rules for the extension. Any <code>rule_ids</code> not already
-    // present are ignored. Note that static rules specified as part of the
-    // extension package can not be removed using this function.
-    // |rule_ids|: The IDs of dynamic rules to remove.
-    // |callback|: Called once the rules are removed. In case of an error,
-    // $(ref:runtime.lastError) will be set to denote the error message and no
-    // rules will be removed. This may happen due to internal errors.
-    static void removeDynamicRules(long[] rule_ids,
-        optional EmptyCallback callback);
-
-    // Returns the current set of dynamic rules for the extension.
-    // |callback|: Called with the set of dynamic rules. An error might be
-    // raised in case of transient internal errors.
-    static void getDynamicRules(GetRulesCallback callback);
+    // TODO(crbug.com/930961): Enable documentation for these functions once
+    // they are implemented.
+    [nodoc] static void addDynamicRules(Rule[] rules, optional EmptyCallback callback);
+    [nodoc] static void removeDynamicRules(long[] rule_ids, optional EmptyCallback callback);
+    [nodoc] static void getDynamicRules(GetRulesCallback callback);
 
     // Adds <code>page_patterns</code> to the set of allowed pages. Requests
     // from these pages are not intercepted by the extension. These are
@@ -194,11 +173,11 @@ namespace declarativeNetRequest {
     // <a href="/extensions/match_patterns">match patterns</a> which are to be
     // allowed.
     // |callback|: Called after the <code>page_patterns</code> have been added.
-    // $(ref:runtime.lastError) will be set in case of an error, for example if
+    // chrome.runtime.lastError will be set in case of an error, for example if
     // an invalid page pattern is specified or the extension exceeded the
     // maximum page patterns limit.
-    static void addAllowedPages(DOMString[] page_patterns,
-        optional EmptyCallback callback);
+
+    static void addAllowedPages(DOMString[] page_patterns, optional EmptyCallback callback);
 
     // Removes <code>page_patterns</code> from the set of allowed pages.
     // Note: Removing page patterns is atomic. In case of an error, no page
@@ -207,9 +186,8 @@ namespace declarativeNetRequest {
     // <a href="/extensions/match_patterns">match patterns</a> which are to be
     // removed.
     // |callback|: Called after the <code>page_patterns</code> have been
-    // removed. $(ref:runtime.lastError) will be set in case of an error.
-    static void removeAllowedPages(DOMString[] page_patterns,
-        optional EmptyCallback callback);
+    // removed. chrome.runtime.lastError will be set in case of an error.
+    static void removeAllowedPages(DOMString[] page_patterns, optional EmptyCallback callback);
 
     // Returns the current set of allowed pages.
     // |callback|: Called with the set of currently allowed pages.

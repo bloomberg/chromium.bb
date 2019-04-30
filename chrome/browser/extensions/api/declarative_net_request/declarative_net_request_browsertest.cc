@@ -1105,6 +1105,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, BlockAndRedirect) {
       {"def.com", 4, "block", base::nullopt},
       {"def.com", 5, "redirect", get_url_for_host("xyz.com")},
       {"ghi*", 6, "redirect", get_url_for_host("ghijk.com")},
+      {"ijk*", 7, "redirect", "/manifest.json"},
   };
 
   // Load the extension.
@@ -1125,13 +1126,13 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, BlockAndRedirect) {
   struct {
     std::string hostname;
     bool expected_main_frame_loaded;
-    base::Optional<std::string> expected_final_hostname;
+    base::Optional<GURL> expected_final_url;
     base::Optional<size_t> expected_redirect_chain_length;
   } test_cases[] = {
       // example.com -> yahoo.com -> google.com.
-      {"example.com", true, std::string("google.com"), 3},
+      {"example.com", true, GURL(get_url_for_host("google.com")), 3},
       // yahoo.com -> google.com.
-      {"yahoo.com", true, std::string("google.com"), 2},
+      {"yahoo.com", true, GURL(get_url_for_host("google.com")), 2},
       // abc.com -> def.com (blocked).
       // Note def.com won't be redirected since blocking rules are given
       // priority over redirect rules.
@@ -1141,25 +1142,30 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, BlockAndRedirect) {
       // ghi.com -> ghijk.com.
       // Though ghijk.com still matches the redirect rule for |ghi*|, it will
       // not redirect to itself.
-      {"ghi.com", true, std::string("ghijk.com"), 2},
-  };
+      {"ghi.com", true, GURL(get_url_for_host("ghijk.com")), 2},
+      // ijklm.com -> chrome-extension://<extension_id>/manifest.json.
+      // Since this redirects to a manifest.json, don't expect the frame with
+      // script to load.
+      {"ijklm.com", false,
+       GURL("chrome-extension://" + last_loaded_extension_id() +
+            "/manifest.json"),
+       2}};
 
   for (const auto& test_case : test_cases) {
     std::string url = get_url_for_host(test_case.hostname);
     SCOPED_TRACE(base::StringPrintf("Testing %s", url.c_str()));
 
     ui_test_utils::NavigateToURL(browser(), GURL(url));
+    EXPECT_EQ(test_case.expected_main_frame_loaded,
+              WasFrameWithScriptLoaded(GetMainFrame()));
 
-    if (!test_case.expected_main_frame_loaded) {
-      EXPECT_FALSE(WasFrameWithScriptLoaded(GetMainFrame()));
+    if (!test_case.expected_final_url) {
       EXPECT_EQ(content::PAGE_TYPE_ERROR, GetPageType());
     } else {
-      EXPECT_TRUE(WasFrameWithScriptLoaded(GetMainFrame()));
       EXPECT_EQ(content::PAGE_TYPE_NORMAL, GetPageType());
 
       GURL final_url = web_contents()->GetLastCommittedURL();
-      EXPECT_EQ(GURL(get_url_for_host(*test_case.expected_final_hostname)),
-                final_url);
+      EXPECT_EQ(*test_case.expected_final_url, final_url);
 
       EXPECT_EQ(*test_case.expected_redirect_chain_length,
                 web_contents()

@@ -13,6 +13,8 @@
 #include "components/url_pattern_index/flat/url_pattern_index_generated.h"
 #include "extensions/common/api/declarative_net_request.h"
 
+class GURL;
+
 namespace extensions {
 namespace declarative_net_request {
 
@@ -29,6 +31,7 @@ struct IndexedRule {
 
   static ParseResult CreateIndexedRule(
       extensions::api::declarative_net_request::Rule parsed_rule,
+      const GURL& base_url,
       IndexedRule* indexed_rule);
 
   api::declarative_net_request::RuleActionType action_type =

@@ -38,6 +38,7 @@
 #include "services/data_decoder/public/cpp/safe_json_parser.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "tools/json_schema_compiler/util.h"
+#include "url/gurl.h"
 
 namespace extensions {
 namespace declarative_net_request {
@@ -241,7 +242,7 @@ RulesetSource RulesetSource::CreateStatic(const Extension& extension) {
   return RulesetSource(
       declarative_net_request::DNRManifestData::GetRulesetPath(extension),
       file_util::GetIndexedRulesetPath(extension.path()), kStaticRulesetID,
-      kStaticRulesetPriority, dnr_api::MAX_NUMBER_OF_RULES);
+      kStaticRulesetPriority, dnr_api::MAX_NUMBER_OF_RULES, extension.id());
 }
 
 // static
@@ -256,14 +257,15 @@ RulesetSource RulesetSource::CreateDynamic(
       dynamic_ruleset_directory.AppendASCII(kDynamicRulesJSONFilename),
       dynamic_ruleset_directory.AppendASCII(kDynamicIndexedRulesFilename),
       kDynamicRulesetID, kDynamicRulesetPriority,
-      dnr_api::MAX_NUMBER_OF_DYNAMIC_RULES);
+      dnr_api::MAX_NUMBER_OF_DYNAMIC_RULES, extension.id());
 }
 
 // static
 std::unique_ptr<RulesetSource> RulesetSource::CreateTemporarySource(
     size_t id,
     size_t priority,
-    size_t rule_count_limit) {
+    size_t rule_count_limit,
+    ExtensionId extension_id) {
   base::FilePath temporary_file_indexed;
   base::FilePath temporary_file_json;
   if (!base::CreateTemporaryFile(&temporary_file_indexed) ||
@@ -271,21 +273,23 @@ std::unique_ptr<RulesetSource> RulesetSource::CreateTemporarySource(
     return nullptr;
   }
 
-  return std::make_unique<RulesetSource>(std::move(temporary_file_json),
-                                         std::move(temporary_file_indexed), id,
-                                         priority, rule_count_limit);
+  return std::make_unique<RulesetSource>(
+      std::move(temporary_file_json), std::move(temporary_file_indexed), id,
+      priority, rule_count_limit, std::move(extension_id));
 }
 
 RulesetSource::RulesetSource(base::FilePath json_path,
                              base::FilePath indexed_path,
                              size_t id,
                              size_t priority,
-                             size_t rule_count_limit)
+                             size_t rule_count_limit,
+                             ExtensionId extension_id)
     : json_path_(std::move(json_path)),
       indexed_path_(std::move(indexed_path)),
       id_(id),
       priority_(priority),
-      rule_count_limit_(rule_count_limit) {}
+      rule_count_limit_(rule_count_limit),
+      extension_id_(std::move(extension_id)) {}
 
 RulesetSource::~RulesetSource() = default;
 RulesetSource::RulesetSource(RulesetSource&&) = default;
@@ -293,7 +297,7 @@ RulesetSource& RulesetSource::operator=(RulesetSource&&) = default;
 
 RulesetSource RulesetSource::Clone() const {
   return RulesetSource(json_path_, indexed_path_, id_, priority_,
-                       rule_count_limit_);
+                       rule_count_limit_, extension_id_);
 }
 
 IndexAndPersistJSONRulesetResult
@@ -370,7 +374,7 @@ ParseInfo RulesetSource::IndexAndPersistRules(std::vector<dnr_api::Rule> rules,
 
   {
     std::set<int> id_set;  // Ensure all ids are distinct.
-
+    const GURL base_url = Extension::GetBaseURLFromExtensionId(extension_id_);
     for (auto& rule : rules) {
       int rule_id = rule.id;
       bool inserted = id_set.insert(rule_id).second;
@@ -378,8 +382,8 @@ ParseInfo RulesetSource::IndexAndPersistRules(std::vector<dnr_api::Rule> rules,
         return ParseInfo(ParseResult::ERROR_DUPLICATE_IDS, rule_id);
 
       IndexedRule indexed_rule;
-      ParseResult parse_result =
-          IndexedRule::CreateIndexedRule(std::move(rule), &indexed_rule);
+      ParseResult parse_result = IndexedRule::CreateIndexedRule(
+          std::move(rule), base_url, &indexed_rule);
       if (parse_result != ParseResult::SUCCESS)
         return ParseInfo(parse_result, rule_id);
 
