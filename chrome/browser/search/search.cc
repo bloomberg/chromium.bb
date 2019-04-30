@@ -32,10 +32,6 @@
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/signin/merge_session_throttling_utils.h"
-#endif  // defined(OS_CHROMEOS)
-
 #if !defined(OS_ANDROID)
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
@@ -167,19 +163,6 @@ bool ShouldShowLocalNewTab(Profile* profile) {
   return false;
 }
 
-bool ShouldDelayRemoteNTP(const GURL& search_provider_url, Profile* profile) {
-#if defined(OS_CHROMEOS)
-  // On Chrome OS, if the session hasn't merged yet, we need to avoid loading
-  // the remote NTP because that will trigger showing the merge session throttle
-  // interstitial page, which can show for 5+ seconds. crbug.com/591530.
-  if (merge_session_throttling_utils::ShouldDelayUrl(search_provider_url) &&
-      merge_session_throttling_utils::IsSessionRestorePending(profile)) {
-    return true;
-  }
-#endif  // defined(OS_CHROMEOS)
-  return false;
-}
-
 // Used to look up the URL to use for the New Tab page. Also tracks how we
 // arrived at that URL so it can be logged with UMA.
 struct NewTabURLDetails {
@@ -204,9 +187,6 @@ struct NewTabURLDetails {
     GURL search_provider_url(template_url->new_tab_url_ref().ReplaceSearchTerms(
         TemplateURLRef::SearchTermsArgs(base::string16()),
         UIThreadSearchTermsData(profile)));
-
-    if (ShouldDelayRemoteNTP(search_provider_url, profile))
-      return NewTabURLDetails(local_url, NEW_TAB_URL_VALID);
 
     if (!search_provider_url.is_valid())
       return NewTabURLDetails(local_url, NEW_TAB_URL_NOT_SET);
