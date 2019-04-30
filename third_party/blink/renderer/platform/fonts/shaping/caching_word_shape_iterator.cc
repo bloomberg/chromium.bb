@@ -11,13 +11,10 @@ namespace blink {
 
 scoped_refptr<const ShapeResult>
 CachingWordShapeIterator::ShapeWordWithoutSpacing(const TextRun& word_run,
-                                                  const Font* font,
-                                                  FloatRect* ink_bounds_out) {
+                                                  const Font* font) {
   ShapeCacheEntry* cache_entry = shape_cache_->Add(word_run, ShapeCacheEntry());
-  if (cache_entry && cache_entry->shape_result_) {
-    *ink_bounds_out = cache_entry->ink_bounds_;
+  if (cache_entry && cache_entry->shape_result_)
     return cache_entry->shape_result_;
-  }
 
   const String word_text = word_run.NormalizedUTF16();
   HarfBuzzShaper shaper(word_text);
@@ -26,22 +23,18 @@ CachingWordShapeIterator::ShapeWordWithoutSpacing(const TextRun& word_run,
   if (!shape_result)
     return nullptr;
 
-  FloatRect text_ink_bounds = shape_result->ComputeInkBounds();
-  if (cache_entry) {
+  shape_result->SetDeprecatedInkBounds(shape_result->ComputeInkBounds());
+  if (cache_entry)
     cache_entry->shape_result_ = shape_result;
-    cache_entry->ink_bounds_ = text_ink_bounds;
-  }
 
-  *ink_bounds_out = text_ink_bounds;
   return shape_result;
 }
 
 scoped_refptr<const ShapeResult> CachingWordShapeIterator::ShapeWord(
     const TextRun& word_run,
-    const Font* font,
-    FloatRect* ink_bounds_out) {
+    const Font* font) {
   scoped_refptr<const ShapeResult> result =
-      ShapeWordWithoutSpacing(word_run, font, ink_bounds_out);
+      ShapeWordWithoutSpacing(word_run, font);
   if (LIKELY(!spacing_.HasSpacing()))
     return result;
 
@@ -51,7 +44,7 @@ scoped_refptr<const ShapeResult> CachingWordShapeIterator::ShapeWord(
 
   // Return bounds as is because glyph bounding box is in logical space.
   if (spacing_result->Width() >= 0 && ink_bounds.Width() >= 0) {
-    *ink_bounds_out = ink_bounds;
+    spacing_result->SetDeprecatedInkBounds(ink_bounds);
     return spacing_result;
   }
 
@@ -71,7 +64,7 @@ scoped_refptr<const ShapeResult> CachingWordShapeIterator::ShapeWord(
     ink_bounds.SetWidth(ink_bounds.Width());
   }
 
-  *ink_bounds_out = ink_bounds;
+  spacing_result->SetDeprecatedInkBounds(ink_bounds);
   return spacing_result;
 }
 

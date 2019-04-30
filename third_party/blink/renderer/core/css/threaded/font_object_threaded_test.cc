@@ -127,22 +127,21 @@ TSAN_TEST(FontObjectThreadedTest, WordShaperTest) {
     TextRun text_run(reinterpret_cast<const LChar*>("ABC DEF."), 8);
 
     scoped_refptr<const ShapeResult> result;
-    FloatRect ink_bounds;
     CachingWordShapeIterator iter(&cache, text_run, &font);
 
-    ASSERT_TRUE(iter.Next(&result, &ink_bounds));
+    ASSERT_TRUE(iter.Next(&result));
     EXPECT_EQ(0u, result->StartIndex());
     EXPECT_EQ(3u, result->EndIndex());
 
-    ASSERT_TRUE(iter.Next(&result, &ink_bounds));
+    ASSERT_TRUE(iter.Next(&result));
     EXPECT_EQ(0u, result->StartIndex());
     EXPECT_EQ(1u, result->EndIndex());
 
-    ASSERT_TRUE(iter.Next(&result, &ink_bounds));
+    ASSERT_TRUE(iter.Next(&result));
     EXPECT_EQ(0u, result->StartIndex());
     EXPECT_EQ(4u, result->EndIndex());
 
-    ASSERT_FALSE(iter.Next(&result, &ink_bounds));
+    ASSERT_FALSE(iter.Next(&result));
   });
 }
 

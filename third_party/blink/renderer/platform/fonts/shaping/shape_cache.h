@@ -41,7 +41,6 @@ struct ShapeCacheEntry {
   DISALLOW_NEW();
   ShapeCacheEntry() { shape_result_ = nullptr; }
   scoped_refptr<const ShapeResult> shape_result_;
-  FloatRect ink_bounds_;
 };
 
 class ShapeCache {

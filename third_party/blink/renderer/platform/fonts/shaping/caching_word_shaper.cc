@@ -48,8 +48,7 @@ float CachingWordShaper::Width(const TextRun& run,
   float width = 0;
   scoped_refptr<const ShapeResult> word_result;
   CachingWordShapeIterator iterator(GetShapeCache(), run, &font_);
-  FloatRect word_ink_bounds;
-  while (iterator.Next(&word_result, &word_ink_bounds)) {
+  while (iterator.Next(&word_result)) {
     if (word_result) {
       // For every word_result we need to accumulate its width to adjust the
       // glyph_bounds. When the word_result is in RTL we accumulate in the
@@ -57,7 +56,7 @@ float CachingWordShaper::Width(const TextRun& run,
       if (run.Rtl())
         width -= word_result->Width();
       if (glyph_bounds) {
-        FloatRect adjusted_bounds = word_ink_bounds;
+        FloatRect adjusted_bounds = word_result->DeprecatedInkBounds();
         // Translate glyph bounds to the current glyph position which
         // is the total width before this glyph.
         adjusted_bounds.SetX(adjusted_bounds.X() + width);
@@ -88,11 +87,10 @@ static inline float ShapeResultsForRun(ShapeCache* shape_cache,
   CachingWordShapeIterator iterator(shape_cache, run, font);
   scoped_refptr<const ShapeResult> word_result;
   float total_width = 0;
-  FloatRect word_ink_bounds;
-  while (iterator.Next(&word_result, &word_ink_bounds)) {
+  while (iterator.Next(&word_result)) {
     if (word_result) {
       total_width += word_result->Width();
-      results_buffer->AppendResult(std::move(word_result), word_ink_bounds);
+      results_buffer->AppendResult(std::move(word_result));
     }
   }
   return total_width;

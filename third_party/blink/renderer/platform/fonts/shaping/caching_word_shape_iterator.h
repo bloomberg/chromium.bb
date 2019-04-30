@@ -61,33 +61,30 @@ class PLATFORM_EXPORT CachingWordShapeIterator final {
       spacing_.SetSpacingAndExpansion(font->GetFontDescription());
   }
 
-  bool Next(scoped_refptr<const ShapeResult>* word_result,
-            FloatRect* ink_bounds) {
+  bool Next(scoped_refptr<const ShapeResult>* word_result) {
     if (UNLIKELY(text_run_.AllowTabs()))
-      return NextForAllowTabs(word_result, ink_bounds);
+      return NextForAllowTabs(word_result);
 
     if (!shape_by_word_) {
       if (start_index_)
         return false;
-      *word_result = ShapeWord(text_run_, font_, ink_bounds);
+      *word_result = ShapeWord(text_run_, font_);
       start_index_ = 1;
       return word_result->get();
     }
 
-    return NextWord(word_result, ink_bounds);
+    return NextWord(word_result);
   }
 
  private:
   scoped_refptr<const ShapeResult>
-  ShapeWordWithoutSpacing(const TextRun&, const Font*, FloatRect* ink_bounds);
+  ShapeWordWithoutSpacing(const TextRun&, const Font*);
 
   scoped_refptr<const ShapeResult> ShapeWord(const TextRun&,
-                                             const Font*,
-                                             FloatRect* ink_bounds);
+                                             const Font*);
 
-  bool NextWord(scoped_refptr<const ShapeResult>* word_result,
-                FloatRect* ink_bounds) {
-    return ShapeToEndIndex(word_result, NextWordEndIndex(), ink_bounds);
+  bool NextWord(scoped_refptr<const ShapeResult>* word_result) {
+    return ShapeToEndIndex(word_result, NextWordEndIndex());
   }
 
   static bool IsWordDelimiter(UChar ch) {
@@ -149,19 +146,18 @@ class PLATFORM_EXPORT CachingWordShapeIterator final {
   }
 
   bool ShapeToEndIndex(scoped_refptr<const ShapeResult>* result,
-                       unsigned end_index,
-                       FloatRect* ink_bounds) {
+                       unsigned end_index) {
     if (!end_index || end_index <= start_index_)
       return false;
 
     const unsigned length = text_run_.length();
     if (!start_index_ && end_index == length) {
-      *result = ShapeWord(text_run_, font_, ink_bounds);
+      *result = ShapeWord(text_run_, font_);
     } else {
       DCHECK_LE(end_index, length);
       TextRun sub_run =
           text_run_.SubRun(start_index_, end_index - start_index_);
-      *result = ShapeWord(sub_run, font_, ink_bounds);
+      *result = ShapeWord(sub_run, font_);
     }
     start_index_ = end_index;
     return result->get();
@@ -176,8 +172,7 @@ class PLATFORM_EXPORT CachingWordShapeIterator final {
     }
   }
 
-  bool NextForAllowTabs(scoped_refptr<const ShapeResult>* word_result,
-                        FloatRect* ink_bounds) {
+  bool NextForAllowTabs(scoped_refptr<const ShapeResult>* word_result) {
     unsigned length = text_run_.length();
     if (start_index_ >= length)
       return false;
@@ -192,11 +187,10 @@ class PLATFORM_EXPORT CachingWordShapeIterator final {
         }
       }
     } else if (!shape_by_word_) {
-      if (!ShapeToEndIndex(word_result, EndIndexUntil(kTabulationCharacter),
-                           ink_bounds))
+      if (!ShapeToEndIndex(word_result, EndIndexUntil(kTabulationCharacter)))
         return false;
     } else {
-      if (!NextWord(word_result, ink_bounds))
+      if (!NextWord(word_result))
         return false;
     }
     DCHECK(*word_result);

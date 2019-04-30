@@ -320,6 +320,11 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   // quite expensive and involves measuring each glyph accumulating the bounds.
   FloatRect ComputeInkBounds() const;
 
+  // Only used by CachingWordShapeIterator
+  // TODO(eae): Remove once LayoutNG lands. https://crbug.com/591099
+  void SetDeprecatedInkBounds(FloatRect r) const { deprecated_ink_bounds_ = r; }
+  FloatRect DeprecatedInkBounds() const { return deprecated_ink_bounds_; }
+
   String ToString() const;
   void ToString(StringBuilder*) const;
 
@@ -452,6 +457,12 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   unsigned StartIndexOffsetForRun() const { return 0; }
 
   float width_;
+
+  // Only used by CachingWordShapeIterator and stored here for memory reduction
+  // reasons. See https://crbug.com/955776
+  // TODO(eae): Remove once LayoutNG lands. https://crbug.com/591099
+  mutable FloatRect deprecated_ink_bounds_;
+
   Vector<scoped_refptr<RunInfo>> runs_;
   scoped_refptr<const SimpleFontData> primary_font_;
   mutable std::unique_ptr<CharacterPositionData> character_position_;
