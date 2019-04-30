@@ -433,12 +433,6 @@ TEST(Enroll, EnrollToGoogleMdmIfNeeded_NotEnabled) {
 
   // EnrollToGoogleMdmIfNeeded() should be a noop.
   base::Value properties(base::Value::Type::DICTIONARY);
-  properties.SetStringKey(kKeyEmail, "foo@gmail.com");
-  properties.SetStringKey(kKeyMdmIdToken, "token");
-  properties.SetStringKey(kKeyAccessToken, "access_token");
-  properties.SetStringKey(kKeySID, "sid");
-  properties.SetStringKey(kKeyUsername, "username");
-  properties.SetStringKey(kKeyDomain, "domain");
   ASSERT_EQ(S_OK, EnrollToGoogleMdmIfNeeded(properties));
 }
 
@@ -460,9 +454,13 @@ class GcpEnrollmentArgsTest
                                                  const char*>> {};
 
 TEST_P(GcpEnrollmentArgsTest, EnrollToGoogleMdmIfNeeded_MissingArgs) {
-  // Does not matter whether MDM is enforced or not.
+  // Enforce successful MDM enrollment. We just want to verify that correct
+  // verification of the dictionary is being performed in the function.
   registry_util::RegistryOverrideManager registry_override;
   InitializeRegistryOverrideForTesting(&registry_override);
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
+  GoogleMdmEnrollmentStatusForTesting forced_enrollment_status(true);
+  GoogleMdmEnrolledStatusForTesting forced_enrolled_status(false);
 
   const char* email = std::get<0>(GetParam());
   const char* id_token = std::get<1>(GetParam());
