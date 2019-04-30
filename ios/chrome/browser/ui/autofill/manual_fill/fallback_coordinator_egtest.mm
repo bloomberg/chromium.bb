@@ -569,6 +569,10 @@ void DockKeyboard() {
 
 // Tests that the manual fallback view is present in incognito.
 - (void)testIncognitoManualFallbackMenu {
+  // TODO(crbug.com/958015): reenable test.
+  if (UIScreen.mainScreen.bounds.size.height == 568) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPhone 5S.");
+  }
   // Add the profile to use for verification.
   AddAutofillProfile(_personalDataManager);
 
