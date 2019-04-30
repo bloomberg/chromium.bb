@@ -223,16 +223,11 @@ class TreeBuilder {
    * @param {TreeNode} node
    */
   _joinDexMethodClasses(node) {
+    const isFileNode = node.type[0] === _CONTAINER_TYPES.FILE;
     const hasDex = node.childStats[_DEX_SYMBOL_TYPE] ||
         node.childStats[_DEX_METHOD_SYMBOL_TYPE];
-    if (!hasDex || !node.children) return node;
+    if (!isFileNode || !hasDex || !node.children) return node;
 
-    if (node.type[0] !== _CONTAINER_TYPES.FILE) {
-      for (const child of node.children) {
-        this._joinDexMethodClasses(child);
-      }
-      return node;
-    }
     /** @type {Map<string, TreeNode>} */
     const javaClassContainers = new Map();
     /** @type {TreeNode[]} */
