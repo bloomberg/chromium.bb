@@ -929,10 +929,6 @@ size_t AutocompleteMatch::EstimateMemoryUsage() const {
   return res;
 }
 
-bool AutocompleteMatch::IsExceptedFromLineReversal() const {
-  return !!answer && answer->type() == SuggestionAnswer::ANSWER_TYPE_DICTIONARY;
-}
-
 bool AutocompleteMatch::ShouldShowTabMatch() const {
   return has_tab_match && !associated_keyword;
 }

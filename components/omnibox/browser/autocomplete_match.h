@@ -375,10 +375,6 @@ struct AutocompleteMatch {
   // See base/trace_event/memory_usage_estimator.h for more info.
   size_t EstimateMemoryUsage() const;
 
-  // Some types of matches (answers for dictionary definitions, e.g.) do not
-  // follow the common rules for reversing lines.
-  bool IsExceptedFromLineReversal() const;
-
   // Not to be confused with |has_tab_match|, this returns true if the match
   // has a matching tab and will use a switch-to-tab button. It returns false,
   // for example, when the switch button is not shown because a keyword match

@@ -244,6 +244,10 @@ class SuggestionAnswer {
   // For new answers, replace old answer text types with appropriate new types.
   void InterpretTextTypes();
 
+  // Some types of matches (answers for dictionary definitions, e.g.) do not
+  // follow the common rules for reversing lines.
+  bool IsExceptedFromLineReversal() const;
+
   // Logs which answer type was used (if any) at the time a user used the
   // omnibox to go somewhere.
   static void LogAnswerUsed(const base::Optional<SuggestionAnswer>& answer);

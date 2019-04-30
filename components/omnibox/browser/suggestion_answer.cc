@@ -336,15 +336,6 @@ void SuggestionAnswer::InterpretTextTypes() {
                                  TextStyle::POSITIVE);
       second_line_.SetTextStyles(SuggestionAnswer::DESCRIPTION_NEGATIVE,
                                  TextStyle::NEGATIVE);
-      second_line_.SetTextStyles(SuggestionAnswer::ANSWER_TEXT_LARGE,
-                                 TextStyle::BOLD);
-      break;
-    }
-    case SuggestionAnswer::ANSWER_TYPE_DICTIONARY: {
-      // Because dictionary answers are excepted from line reversal, they
-      // get the expected normal first line and dim second line.
-      first_line_.SetTextStyles(0, TextStyle::NORMAL);
-      second_line_.SetTextStyles(0, TextStyle::NORMAL_DIM);
       break;
     }
     default:
@@ -353,8 +344,17 @@ void SuggestionAnswer::InterpretTextTypes() {
 
   // Most answers uniformly apply different styling for each answer line.
   // Any old styles not replaced above will get these by default.
-  first_line_.SetTextStyles(0, TextStyle::NORMAL_DIM);
-  second_line_.SetTextStyles(0, TextStyle::NORMAL);
+  if (IsExceptedFromLineReversal()) {
+    first_line_.SetTextStyles(0, TextStyle::NORMAL);
+    second_line_.SetTextStyles(0, TextStyle::NORMAL_DIM);
+  } else {
+    first_line_.SetTextStyles(0, TextStyle::NORMAL_DIM);
+    second_line_.SetTextStyles(0, TextStyle::NORMAL);
+  }
+}
+
+bool SuggestionAnswer::IsExceptedFromLineReversal() const {
+  return type() == SuggestionAnswer::ANSWER_TYPE_DICTIONARY;
 }
 
 // static

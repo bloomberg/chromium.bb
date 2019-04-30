@@ -169,7 +169,7 @@ void OmniboxResultView::Invalidate() {
       omnibox::kUIExperimentBlueSearchLoopAndSearchQuery);
   if (match_.answer) {
     const bool reverse = OmniboxFieldTrial::IsReverseAnswersEnabled() &&
-                         !match_.IsExceptedFromLineReversal();
+                         !match_.answer->IsExceptedFromLineReversal();
     if (reverse) {
       suggestion_view_->content()->SetText(match_.answer->second_line());
       suggestion_view_->description()->SetText(match_.contents,
