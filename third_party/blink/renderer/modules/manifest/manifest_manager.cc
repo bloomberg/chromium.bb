@@ -40,9 +40,6 @@ ManifestManager* ManifestManager::From(LocalFrame& frame) {
 
 // static
 void ManifestManager::ProvideTo(LocalFrame& frame) {
-  if (!frame.IsMainFrame())
-    return;
-
   if (ManifestManager::From(frame))
     return;
   Supplement<LocalFrame>::ProvideTo(
@@ -53,8 +50,10 @@ ManifestManager::ManifestManager(LocalFrame& frame)
     : Supplement<LocalFrame>(frame),
       may_have_manifest_(false),
       manifest_dirty_(true) {
-  frame.GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
-      &ManifestManager::BindToRequest, WrapWeakPersistent(this)));
+  if (frame.IsMainFrame()) {
+    frame.GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
+        &ManifestManager::BindToRequest, WrapWeakPersistent(this)));
+  }
 }
 
 ManifestManager::~ManifestManager() = default;
