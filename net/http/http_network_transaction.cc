@@ -1062,7 +1062,6 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
                << " during SSL renegotiation";
     result = ERR_CERT_ERROR_IN_SSL_RENEGOTIATION;
   } else if (result == ERR_SSL_CLIENT_AUTH_CERT_NEEDED) {
-    // TODO(wtc): Need a test case for this code path!
     DCHECK(stream_.get());
     DCHECK(IsSecureRequest());
     response_.cert_request_info = new SSLCertRequestInfo;
