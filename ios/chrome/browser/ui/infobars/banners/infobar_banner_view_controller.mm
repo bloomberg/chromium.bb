@@ -17,7 +17,12 @@ namespace {
 const CGFloat kBannerViewCornerRadius = 13.0;
 const CGFloat kBannerViewYShadowOffset = 3.0;
 const CGFloat kBannerViewShadowRadius = 9.0;
-const CGFloat kBannerViewShadowOpactiy = 0.23;
+const CGFloat kBannerViewShadowOpacity = 0.23;
+
+// Banner View selected constants.
+const CGFloat kSelectedBannerViewScale = 1.02;
+const CGFloat kSelectBannerAnimationDurationInSeconds = 0.2;
+const CGFloat kSelectedBannerViewYShadowOffset = 8.0;
 
 // Bottom Grip constants.
 const CGFloat kBottomGripCornerRadius = 0.2;
@@ -42,8 +47,10 @@ const CGFloat kContainerStackVerticalPadding = 18.0;
 // Icon constants.
 const CGFloat kIconWidth = 25.0;
 
-// PanGesture constants.
+// Gesture constants.
 const CGFloat kChangeInPositionForTransition = 100.0;
+const CGFloat kChangeInPositionForDismissal = -15.0;
+const CGFloat kLongPressTimeDurationInSeconds = 0.4;
 }  // namespace
 
 @interface InfobarBannerViewController ()
@@ -51,6 +58,9 @@ const CGFloat kChangeInPositionForTransition = 100.0;
 // The original position of this InfobarVC view in the parent's view coordinate
 // system.
 @property(nonatomic, assign) CGPoint originalCenter;
+// The starting point of the LongPressGesture, used to calculate the gesture
+// translation.
+@property(nonatomic, assign) CGPoint startingTouch;
 // Delegate to handle this InfobarVC actions.
 @property(nonatomic, weak) id<InfobarBannerDelegate> delegate;
 // YES if the user is interacting with the view via a touch gesture.
@@ -87,7 +97,7 @@ const CGFloat kChangeInPositionForTransition = 100.0;
   [self.view.layer setShadowColor:[UIColor blackColor].CGColor];
   [self.view.layer setShadowOffset:CGSizeMake(0.0, kBannerViewYShadowOffset)];
   [self.view.layer setShadowRadius:kBannerViewShadowRadius];
-  [self.view.layer setShadowOpacity:kBannerViewShadowOpactiy];
+  [self.view.layer setShadowOpacity:kBannerViewShadowOpacity];
   self.view.accessibilityIdentifier = kInfobarBannerViewIdentifier;
 
   // Bottom Grip setup.
@@ -191,9 +201,16 @@ const CGFloat kChangeInPositionForTransition = 100.0;
   // Gestures setup.
   UIPanGestureRecognizer* panGestureRecognizer =
       [[UIPanGestureRecognizer alloc] init];
-  [panGestureRecognizer addTarget:self action:@selector(handlePanGesture:)];
+  [panGestureRecognizer addTarget:self action:@selector(handleGestures:)];
   [panGestureRecognizer setMaximumNumberOfTouches:1];
   [self.view addGestureRecognizer:panGestureRecognizer];
+
+  UILongPressGestureRecognizer* longPressGestureRecognizer =
+      [[UILongPressGestureRecognizer alloc] init];
+  [longPressGestureRecognizer addTarget:self action:@selector(handleGestures:)];
+  longPressGestureRecognizer.minimumPressDuration =
+      kLongPressTimeDurationInSeconds;
+  [self.view addGestureRecognizer:longPressGestureRecognizer];
 }
 
 #pragma mark - Public Methods
@@ -207,20 +224,24 @@ const CGFloat kChangeInPositionForTransition = 100.0;
 
 #pragma mark - Private Methods
 
-// TODO(crbug.com/911864): PLACEHOLDER Gesture handling for the new InfobarUI.
-- (void)handlePanGesture:(UIPanGestureRecognizer*)gesture {
-  CGPoint translation = [gesture translationInView:self.view];
+- (void)handleGestures:(UILongPressGestureRecognizer*)gesture {
+  CGPoint touchLocation = [gesture locationInView:self.view];
 
   if (gesture.state == UIGestureRecognizerStateBegan) {
     self.originalCenter = self.view.center;
     self.touchInProgress = YES;
+    self.startingTouch = touchLocation;
+    [self animateBannerToScaleUpState];
   } else if (gesture.state == UIGestureRecognizerStateChanged) {
     self.view.center =
-        CGPointMake(self.view.center.x, self.view.center.y + translation.y);
-    // If the translation in the positive Y axis is larger than
-    // kChangeInPositionForTransition then present the InfobarModal.
-    if (self.view.center.y - self.originalCenter.y >
-        kChangeInPositionForTransition) {
+        CGPointMake(self.view.center.x, self.view.center.y + touchLocation.y -
+                                            self.startingTouch.y);
+    // If dragged down by more than kChangeInPositionForTransition, present
+    // the InfobarModal.
+    BOOL dragDownExceededThreshold =
+        (self.view.center.y - self.originalCenter.y >
+         kChangeInPositionForTransition);
+    if (dragDownExceededThreshold) {
       [self.delegate presentInfobarModalFromBanner];
       // Since the modal has now been presented prevent any external dismissal.
       self.shouldDismissAfterTouchesEnded = NO;
@@ -231,18 +252,59 @@ const CGFloat kChangeInPositionForTransition = 100.0;
   }
 
   if (gesture.state == UIGestureRecognizerStateEnded) {
-    // If there's more than a 1px translation in the negative Y axis when the
-    // gesture ended or |self.shouldDismissAfterInteraction| is YES, dismiss the
-    // banner.
-    if ((self.view.center.y - self.originalCenter.y < 0) ||
-        self.shouldDismissAfterTouchesEnded) {
+    [self animateBannerToOriginalState];
+    // If dragged up by more than kChangeInPositionForDismissal at the time
+    // the gesture ended, OR |self.shouldDismissAfterTouchesEnded| is YES.
+    // Dismiss the banner.
+    BOOL dragUpExceededThreshold = (self.view.center.y - self.originalCenter.y -
+                                        kChangeInPositionForDismissal <
+                                    0);
+    if (dragUpExceededThreshold || self.shouldDismissAfterTouchesEnded) {
       [self.delegate dismissInfobarBanner:self animated:YES completion:nil];
-      return;
+    } else {
+      [self animateBannerToOriginalPosition];
     }
-    self.view.center = self.originalCenter;
   }
 
-  [gesture setTranslation:CGPointZero inView:self.view];
+  if (gesture.state == UIGestureRecognizerStateCancelled) {
+    // Reset the superview transform so its frame is valid again.
+    self.view.superview.transform = CGAffineTransformIdentity;
+  }
+}
+
+// Animate the Banner being selected by scaling it up.
+- (void)animateBannerToScaleUpState {
+  [UIView animateWithDuration:kSelectBannerAnimationDurationInSeconds
+                   animations:^{
+                     self.view.superview.transform = CGAffineTransformMakeScale(
+                         kSelectedBannerViewScale, kSelectedBannerViewScale);
+                     [self.view.layer
+                         setShadowOffset:CGSizeMake(
+                                             0.0,
+                                             kSelectedBannerViewYShadowOffset)];
+                   }
+                   completion:nil];
+}
+
+// Animate the Banner back to its original size and styling.
+- (void)animateBannerToOriginalState {
+  [UIView
+      animateWithDuration:kSelectBannerAnimationDurationInSeconds
+               animations:^{
+                 self.view.superview.transform = CGAffineTransformIdentity;
+                 [self.view.layer
+                     setShadowOffset:CGSizeMake(0.0, kBannerViewYShadowOffset)];
+               }
+               completion:nil];
+}
+
+// Animate the banner back to its original position.
+- (void)animateBannerToOriginalPosition {
+  [UIView animateWithDuration:kSelectBannerAnimationDurationInSeconds
+                   animations:^{
+                     self.view.center = self.originalCenter;
+                   }
+                   completion:nil];
 }
 
 @end
