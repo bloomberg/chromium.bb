@@ -319,7 +319,7 @@ void RenderViewTest::SetUp() {
   // Setting flags and really doing anything with WebKit is fairly fragile and
   // hacky, but this is the world we live in...
   std::string flags("--expose-gc");
-  v8::V8::SetFlagsFromString(flags.c_str(), static_cast<int>(flags.size()));
+  v8::V8::SetFlagsFromString(flags.c_str(), flags.size());
 
   // Ensure that we register any necessary schemes when initializing WebKit,
   // since we are using a MockRenderThread.

@@ -210,7 +210,7 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport(
 
   // Test shell always exposes the GC.
   std::string flags("--expose-gc");
-  v8::V8::SetFlagsFromString(flags.c_str(), static_cast<int>(flags.size()));
+  v8::V8::SetFlagsFromString(flags.c_str(), flags.size());
 }
 
 TestBlinkWebUnitTestSupport::~TestBlinkWebUnitTestSupport() {
