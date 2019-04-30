@@ -69,6 +69,12 @@ Polymer({
      */
     detailLanguage_: Object,
 
+    /** @private */
+    hideSpellCheckLanguages_: {
+      type: Boolean,
+      value: false,
+    },
+
     /**
      * Whether the language settings list is opened.
      * @private
@@ -545,6 +551,10 @@ Polymer({
       this.notifyPath(
           `spellCheckLanguages_.${i}.downloadDictionaryFailureCount`);
     }
+
+    this.hideSpellCheckLanguages_ = this.spellCheckLanguages_.length === 1 &&
+        !!this.spellCheckLanguages_[0].spellCheckEnabled &&
+        !!this.getPref('browser.enable_spellchecking').value;
   },
 
   /** @private */

@@ -626,6 +626,23 @@ cr.define('languages_page_tests', function() {
             spellCheckLanguagesCount);
       });
 
+      test('only 1 supported language does not show list', () => {
+        if (cr.isMac) {
+          return;
+        }
+
+        const list = languagesPage.$.spellCheckLanguagesList;
+        assertFalse(list.hidden);
+
+        // Update supported languages to just 1
+        languageHelper.setPrefValue('intl.accept_languages', 'en-US');
+        if (cr.isChromeOS) {
+          languageHelper.setPrefValue(
+              'settings.language.preferred_languages', 'en-US');
+        }
+        assertTrue(list.hidden);
+      });
+
       test('error handling', function() {
         if (cr.isMac) {
           return;

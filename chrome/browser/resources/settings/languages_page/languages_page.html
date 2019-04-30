@@ -323,61 +323,64 @@
           </div>
 </if> <!-- _google_chrome -->
 <if expr="not is_macosx">
-          <div class="settings-box continuation">
-            $i18n{spellCheckLanguagesListTitle}
-          </div>
-          <div class="list-frame vertical-list spell-check-languages">
-            <div class="settings-box-text"
-                hidden="[[spellCheckLanguages_.length]]">
-              $i18n{spellCheckLanguagesListEmpty}
+          <div id="spellCheckLanguagesList"
+              hidden="[[hideSpellCheckLanguages_]]">
+            <div class="settings-box continuation">
+              $i18n{spellCheckLanguagesListTitle}
             </div>
-            <template is="dom-repeat" items="[[spellCheckLanguages_]]">
-              <div class="list-item">
-                <div class="start name-with-error-list"
-                    on-click="onSpellCheckNameClick_" actionable
-                    disabled$="[[isSpellCheckNameClickDisabled_(item,
-                        item.*)]]">
-                  [[item.language.displayName]]
-                  <div hidden="[[!errorsGreaterThan_(
-                      item.downloadDictionaryFailureCount, 0)]]">
-                    <iron-icon icon="cr:error"></iron-icon>
-                    $i18n{languagesDictionaryDownloadError}
-                  </div>
-                  <div hidden="[[!errorsGreaterThan_(
-                      item.downloadDictionaryFailureCount, 1)]]">
-                    $i18n{languagesDictionaryDownloadErrorHelp}
-                  </div>
-                </div>
-                <paper-button on-click="onRetryDictionaryDownloadClick_"
-                    hidden="[[!errorsGreaterThan_(
-                        item.downloadDictionaryFailureCount, 0)]]">
-                  $i18n{retry}
-                </paper-button>
-                <template is="dom-if" if="[[!item.isManaged]]">
-                  <cr-toggle on-change="onSpellCheckLanguageChange_"
-                      disabled="[[!item.language.supportsSpellcheck]]"
-                      checked="[[item.spellCheckEnabled]]"
-                      aria-label$="[[item.language.displayName]]"
-                      hidden="[[errorsGreaterThan_(
-                          item.downloadDictionaryFailureCount, 0)]]">
-                  </cr-toggle>
-                </template>
-                <template is="dom-if" if="[[item.isManaged]]">
-                  <cr-policy-pref-indicator
-                      pref="[[getIndicatorPrefForManagedSpellcheckLanguage_(
-                          item.spellCheckEnabled)]]"
-                      hidden="[[errorsGreaterThan_(
-                          item.downloadDictionaryFailureCount, 0)]]">
-                  </cr-policy-pref-indicator>
-                  <cr-toggle disabled="true"
-                      checked="[[item.spellCheckEnabled]]"
-                      aria-label$="[[item.language.displayName]]"
-                      hidden="[[errorsGreaterThan_(
-                          item.downloadDictionaryFailureCount, 0)]]">
-                  </cr-toggle>
-                </template>
+            <div class="list-frame vertical-list spell-check-languages">
+              <div class="settings-box-text"
+                  hidden="[[spellCheckLanguages_.length]]">
+                $i18n{spellCheckLanguagesListEmpty}
               </div>
-            </template>
+              <template is="dom-repeat" items="[[spellCheckLanguages_]]">
+                <div class="list-item">
+                  <div class="start name-with-error-list"
+                      on-click="onSpellCheckNameClick_" actionable
+                      disabled$="[[isSpellCheckNameClickDisabled_(item,
+                          item.*)]]">
+                    [[item.language.displayName]]
+                    <div hidden="[[!errorsGreaterThan_(
+                        item.downloadDictionaryFailureCount, 0)]]">
+                      <iron-icon icon="cr:error"></iron-icon>
+                      $i18n{languagesDictionaryDownloadError}
+                    </div>
+                    <div hidden="[[!errorsGreaterThan_(
+                        item.downloadDictionaryFailureCount, 1)]]">
+                      $i18n{languagesDictionaryDownloadErrorHelp}
+                    </div>
+                  </div>
+                  <paper-button on-click="onRetryDictionaryDownloadClick_"
+                      hidden="[[!errorsGreaterThan_(
+                          item.downloadDictionaryFailureCount, 0)]]">
+                    $i18n{retry}
+                  </paper-button>
+                  <template is="dom-if" if="[[!item.isManaged]]">
+                    <cr-toggle on-change="onSpellCheckLanguageChange_"
+                        disabled="[[!item.language.supportsSpellcheck]]"
+                        checked="[[item.spellCheckEnabled]]"
+                        aria-label$="[[item.language.displayName]]"
+                        hidden="[[errorsGreaterThan_(
+                            item.downloadDictionaryFailureCount, 0)]]">
+                    </cr-toggle>
+                  </template>
+                  <template is="dom-if" if="[[item.isManaged]]">
+                    <cr-policy-pref-indicator
+                        pref="[[getIndicatorPrefForManagedSpellcheckLanguage_(
+                            item.spellCheckEnabled)]]"
+                        hidden="[[errorsGreaterThan_(
+                            item.downloadDictionaryFailureCount, 0)]]">
+                    </cr-policy-pref-indicator>
+                    <cr-toggle disabled="true"
+                        checked="[[item.spellCheckEnabled]]"
+                        aria-label$="[[item.language.displayName]]"
+                        hidden="[[errorsGreaterThan_(
+                            item.downloadDictionaryFailureCount, 0)]]">
+                    </cr-toggle>
+                  </template>
+                </div>
+              </template>
+            </div>
           </div>
           <cr-link-row on-click="onEditDictionaryTap_"
               id="spellCheckSubpageTrigger" label="$i18n{manageSpellCheck}">
