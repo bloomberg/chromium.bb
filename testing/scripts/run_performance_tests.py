@@ -114,6 +114,16 @@ class OutputFilePaths(object):
   def logs(self):
     return os.path.join(self.benchmark_path, 'benchmark_log.txt')
 
+  @property
+  def csv_perf_results(self):
+    """Path for csv perf results.
+
+    Note that the chrome.perf waterfall uses the json histogram perf results
+    exclusively. csv_perf_results are implemented here in case a user script
+    passes --output-format=csv.
+    """
+    return os.path.join(self.benchmark_path, 'perf_results.csv')
+
 
 def print_duration(step, start):
   print 'Duration of %s: %d seconds' % (step, time.time() - start)
@@ -326,6 +336,10 @@ def execute_telemetry_benchmark(
     shutil.move(expected_perf_filename, output_paths.perf_results)
     expected_results_filename = os.path.join(temp_dir, 'test-results.json')
     shutil.move(expected_results_filename, output_paths.test_results)
+
+    csv_file_path = os.path.join(temp_dir, 'results.csv')
+    if os.path.isfile(csv_file_path):
+      shutil.move(csv_file_path, output_paths.csv_perf_results)
   except Exception:
     print ('The following exception may have prevented the code from '
            'outputing structured test results and perf results output:')
@@ -393,8 +407,8 @@ def parse_arguments(args):
   return options
 
 
-def main():
-  args = sys.argv[1:]  # Skip program name.
+def main(sys_args):
+  args = sys_args[1:]  # Skip program name.
   options = parse_arguments(args)
   isolated_out_dir = os.path.dirname(options.isolated_script_test_output)
   overall_return_code = 0
@@ -513,4 +527,4 @@ if __name__ == '__main__':
       'compile_targets': main_compile_targets,
     }
     sys.exit(common.run_script(sys.argv[1:], funcs))
-  sys.exit(main())
+  sys.exit(main(sys.argv))
