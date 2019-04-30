@@ -202,8 +202,11 @@ OmniboxMatchCellView::OmniboxMatchCellView(OmniboxResultView* result_view) {
   answer_image_view_->SetHorizontalAlignment(views::ImageView::CENTER);
   answer_image_view_->SetVerticalAlignment(views::ImageView::CENTER);
 
-  const base::string16& separator =
-      l10n_util::GetStringUTF16(IDS_AUTOCOMPLETE_MATCH_DESCRIPTION_SEPARATOR);
+  const base::string16 separator = l10n_util::GetStringUTF16(
+      base::FeatureList::IsEnabled(
+          omnibox::kOmniboxAlternateMatchDescriptionSeparator)
+          ? IDS_AUTOCOMPLETE_MATCH_DESCRIPTION_SEPARATOR_ALTERNATE
+          : IDS_AUTOCOMPLETE_MATCH_DESCRIPTION_SEPARATOR);
   separator_view_->SetText(separator);
 }
 
