@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_throttle_runner.h"
 #include "content/browser/initiator_csp_context.h"
@@ -26,6 +27,11 @@
 #include "content/public/browser/navigation_type.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/common/previews_state.h"
+
+#if defined(OS_ANDROID)
+#include "base/android/scoped_java_ref.h"
+#include "content/browser/android/navigation_handle_proxy.h"
+#endif
 
 namespace network {
 class ResourceRequestBody;
@@ -408,6 +414,20 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // default value if |timeout| is zero.
   static void SetCommitTimeoutForTesting(const base::TimeDelta& timeout);
 
+#if defined(OS_ANDROID)
+  // Returns a reference to |navigation_handle_| Java counterpart. It is used
+  // by Java WebContentsObservers.
+  base::android::ScopedJavaGlobalRef<jobject> java_navigation_handle() {
+    return navigation_handle_proxy_->java_navigation_handle();
+  }
+#endif
+
+  bool was_redirected() { return was_redirected_; }
+
+  std::vector<GURL>& redirect_chain() { return redirect_chain_; }
+
+  Referrer& sanitized_referrer() { return sanitized_referrer_; }
+
  private:
   // TODO(clamy): Transform NavigationHandleImplTest into NavigationRequestTest
   // once NavigationHandleImpl has become a wrapper around NavigationRequest.
@@ -656,6 +676,11 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // Note: |site_url_| should only be updated with the result of this function.
   GURL GetSiteForCommonParamsURL() const;
 
+  // Updates the state of the navigation handle after encountering a server
+  // redirect.
+  void UpdateStateFollowingRedirect(const GURL& new_referrer_url,
+                                    ThrottleChecksFinishedCallback callback);
+
   FrameTreeNode* frame_tree_node_;
 
   RenderFrameHostImpl* render_frame_host_ = nullptr;
@@ -691,6 +716,12 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // the handle before the loader.
   std::unique_ptr<NavigationHandleImpl> navigation_handle_;
   std::unique_ptr<NavigationURLLoader> loader_;
+
+#if defined(OS_ANDROID)
+  // For each C++ NavigationHandle, there is a Java counterpart. It is the JNI
+  // bridge in between the two.
+  std::unique_ptr<NavigationHandleProxy> navigation_handle_proxy_;
+#endif
 
   // These next items are used in browser-initiated navigations to store
   // information from the NavigationEntryImpl that is required after request
@@ -829,6 +860,16 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // process's blocked state.
   std::unique_ptr<base::CallbackList<void(bool)>::Subscription>
       render_process_blocked_state_changed_subscription_;
+
+  // The chain of redirects, including client-side redirect and the current URL.
+  // TODO(zetamoo): Try to improve redirect tracking during navigation.
+  std::vector<GURL> redirect_chain_;
+
+  // TODO(zetamoo): Try to remove this by always sanitizing the referrer in
+  // common_params_.
+  Referrer sanitized_referrer_;
+
+  bool was_redirected_ = false;
 
   base::WeakPtrFactory<NavigationRequest> weak_factory_;
 

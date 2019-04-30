@@ -45,17 +45,13 @@ int64_t CreateUniqueHandleID() {
 
 NavigationHandleImpl::NavigationHandleImpl(
     NavigationRequest* navigation_request,
-    const std::vector<GURL>& redirect_chain,
     int pending_nav_entry_id,
-    net::HttpRequestHeaders request_headers,
-    const Referrer& sanitized_referrer)
+    net::HttpRequestHeaders request_headers)
     : navigation_request_(navigation_request),
       net_error_code_(net::OK),
-      was_redirected_(false),
       request_headers_(std::move(request_headers)),
       pending_nav_entry_id_(pending_nav_entry_id),
       navigation_id_(CreateUniqueHandleID()),
-      redirect_chain_(redirect_chain),
       reload_type_(ReloadType::NONE),
       restore_type_(RestoreType::NONE),
       weak_factory_(this) {
@@ -66,20 +62,6 @@ NavigationHandleImpl::NavigationHandleImpl(
                            url.possibly_invalid_spec());
   DCHECK(!navigation_request_->common_params().navigation_start.is_null());
   DCHECK(!IsRendererDebugURL(url));
-
-  if (redirect_chain_.empty())
-    redirect_chain_.push_back(url);
-
-  // Mirrors the logic in RenderFrameImpl::SendDidCommitProvisionalLoad.
-  if (navigation_request_->common_params().transition &
-      ui::PAGE_TRANSITION_CLIENT_REDIRECT) {
-    // If the page contained a client redirect (meta refresh,
-    // document.location), set the referrer appropriately.
-    sanitized_referrer_ =
-        Referrer(redirect_chain_[0], sanitized_referrer.policy);
-  } else {
-    sanitized_referrer_ = sanitized_referrer;
-  }
 
   // Try to match this with a pending NavigationEntry if possible.  Note that
   // the NavigationController itself may be gone if this is a navigation inside
@@ -104,10 +86,6 @@ NavigationHandleImpl::NavigationHandleImpl(
     }
   }
 
-#if defined(OS_ANDROID)
-  navigation_handle_proxy_ = std::make_unique<NavigationHandleProxy>(this);
-#endif
-
   if (IsInMainFrame()) {
     TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP1(
         "navigation", "Navigation StartToCommit", this,
@@ -122,9 +100,6 @@ NavigationHandleImpl::NavigationHandleImpl(
 }
 
 NavigationHandleImpl::~NavigationHandleImpl() {
-#if defined(OS_ANDROID)
-  navigation_handle_proxy_->DidFinish();
-#endif
 
   GetDelegate()->DidFinishNavigation(this);
 
@@ -169,11 +144,11 @@ bool NavigationHandleImpl::IsRendererInitiated() {
 }
 
 bool NavigationHandleImpl::WasServerRedirect() {
-  return was_redirected_;
+  return navigation_request_->was_redirected();
 }
 
 const std::vector<GURL>& NavigationHandleImpl::GetRedirectChain() {
-  return redirect_chain_;
+  return navigation_request_->redirect_chain();
 }
 
 int NavigationHandleImpl::GetFrameTreeNodeId() {
@@ -205,7 +180,7 @@ NavigationHandleImpl::GetResourceRequestBody() {
 }
 
 const Referrer& NavigationHandleImpl::GetReferrer() {
-  return sanitized_referrer_;
+  return navigation_request_->sanitized_referrer();
 }
 
 bool NavigationHandleImpl::HasUserGesture() {
@@ -320,13 +295,6 @@ void NavigationHandleImpl::RegisterThrottleForTesting(
       std::move(navigation_throttle));
 }
 
-#if defined(OS_ANDROID)
-base::android::ScopedJavaGlobalRef<jobject>
-NavigationHandleImpl::java_navigation_handle() {
-  return navigation_handle_proxy_->java_navigation_handle();
-}
-#endif
-
 bool NavigationHandleImpl::IsDeferredForTesting() {
   return navigation_request_->IsDeferredForTesting();
 }
@@ -422,36 +390,6 @@ void NavigationHandleImpl::InitServiceWorkerHandle(
     ServiceWorkerContextWrapper* service_worker_context) {
   service_worker_handle_.reset(
       new ServiceWorkerNavigationHandle(service_worker_context));
-}
-
-void NavigationHandleImpl::UpdateStateFollowingRedirect(
-    const GURL& new_referrer_url,
-    ThrottleChecksFinishedCallback callback) {
-  // The navigation should not redirect to a "renderer debug" url. It should be
-  // blocked in NavigationRequest::OnRequestRedirected or in
-  // ResourceLoader::OnReceivedRedirect.
-  // Note: the call to GetURL below returns the post-redirect URL.
-  // See https://crbug.com/728398.
-  CHECK(!IsRendererDebugURL(GetURL()));
-
-  // Update the navigation parameters.
-  if (!(GetPageTransition() & ui::PAGE_TRANSITION_CLIENT_REDIRECT)) {
-    sanitized_referrer_.url = new_referrer_url;
-    sanitized_referrer_ =
-        Referrer::SanitizeForRequest(GetURL(), sanitized_referrer_);
-  }
-
-  was_redirected_ = true;
-  redirect_chain_.push_back(GetURL());
-
-  navigation_request_->set_handle_state(
-      NavigationRequest::PROCESSING_WILL_REDIRECT_REQUEST);
-
-#if defined(OS_ANDROID)
-  navigation_handle_proxy_->DidRedirect();
-#endif
-
-  complete_callback_ = std::move(callback);
 }
 
 void NavigationHandleImpl::RunCompleteCallback(

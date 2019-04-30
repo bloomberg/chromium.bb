@@ -815,6 +815,12 @@ NavigationRequest::~NavigationRequest() {
     devtools_instrumentation::OnNavigationRequestFailed(
         *this, network::URLLoaderCompletionStatus(net::ERR_ABORTED));
   }
+
+#if defined(OS_ANDROID)
+  if (navigation_handle_proxy_)
+    navigation_handle_proxy_->DidFinish();
+#endif
+
   // This is done manually here because the NavigationHandle destructor
   // calls into WebContentsObserver::DidFinishNavigation, some of which need to
   // then access navigation_request(). This is only possible if the handle is
@@ -977,11 +983,11 @@ void NavigationRequest::CreateNavigationHandle(bool is_for_commit) {
   // Compute the redirect chain.
   // TODO(clamy): Try to simplify this and have the redirects be part of
   // CommonNavigationParams.
-  std::vector<GURL> redirect_chain;
+  redirect_chain_.clear();
   if (!begin_params_->client_side_redirect_url.is_empty()) {
     // |begin_params_->client_side_redirect_url| will be set when the navigation
     // was triggered by a client-side redirect.
-    redirect_chain.push_back(begin_params_->client_side_redirect_url);
+    redirect_chain_.push_back(begin_params_->client_side_redirect_url);
   } else if (!commit_params_.redirects.empty()) {
     // Redirects that were specified at NavigationRequest creation time should
     // be added to the list of redirects. In particular, if the
@@ -989,24 +995,35 @@ void NavigationRequest::CreateNavigationHandle(bool is_for_commit) {
     // during the navigation have been added to |commit_params_.redirects| and
     // should be passed to the NavigationHandle.
     for (const auto& url : commit_params_.redirects)
-      redirect_chain.push_back(url);
+      redirect_chain_.push_back(url);
   }
 
   // Finally, add the current URL to the vector of redirects.
   // Note: for NavigationRequests created at commit time, the current URL has
   // been added to |commit_params_.redirects|, so don't add it a second time.
   if (!is_for_commit)
-    redirect_chain.push_back(common_params_.url);
+    redirect_chain_.push_back(common_params_.url);
 
   net::HttpRequestHeaders headers;
   headers.AddHeadersFromString(begin_params_->headers);
 
+  // Mirrors the logic in RenderFrameImpl::SendDidCommitProvisionalLoad.
+  if (common_params_.transition & ui::PAGE_TRANSITION_CLIENT_REDIRECT) {
+    // If the page contained a client redirect (meta refresh,
+    // document.location), set the referrer appropriately.
+    sanitized_referrer_ = Referrer(
+        redirect_chain_[0], Referrer::SanitizeForRequest(
+                                common_params_.url, common_params_.referrer)
+                                .policy);
+  } else {
+    sanitized_referrer_ = Referrer::SanitizeForRequest(common_params_.url,
+                                                       common_params_.referrer);
+  }
+
   handle_state_ = NavigationRequest::INITIAL;
-  std::unique_ptr<NavigationHandleImpl> navigation_handle =
-      base::WrapUnique(new NavigationHandleImpl(
-          this, redirect_chain, nav_entry_id_, std::move(headers),
-          Referrer::SanitizeForRequest(common_params_.url,
-                                       common_params_.referrer)));
+
+  std::unique_ptr<NavigationHandleImpl> navigation_handle = base::WrapUnique(
+      new NavigationHandleImpl(this, nav_entry_id_, std::move(headers)));
 
   if (!frame_tree_node->navigation_request() && !is_for_commit) {
     // A callback could have cancelled this request synchronously in which case
@@ -1019,6 +1036,11 @@ void NavigationRequest::CreateNavigationHandle(bool is_for_commit) {
   throttle_runner_ = base::WrapUnique(
       new NavigationThrottleRunner(this, navigation_handle_.get()));
 
+#if defined(OS_ANDROID)
+  navigation_handle_proxy_ =
+      std::make_unique<NavigationHandleProxy>(navigation_handle_.get());
+#endif
+
   GetDelegate()->DidStartNavigation(navigation_handle_.get());
 }
 
@@ -1029,6 +1051,14 @@ void NavigationRequest::ResetForCrossDocumentRestart() {
   // same-document. Ensure |loader_| does not exist as it can hold raw pointers
   // to objects owned by the handle (see the comment in the header).
   DCHECK(!loader_);
+
+#if defined(OS_ANDROID)
+  if (navigation_handle_proxy_) {
+    navigation_handle_proxy_->DidFinish();
+    navigation_handle_proxy_.reset();
+  }
+#endif
+
   navigation_handle_.reset();
 
   // Reset the previously selected RenderFrameHost. This is expected to be null
@@ -1111,7 +1141,7 @@ void NavigationRequest::OnRequestRedirected(
     // Update the navigation handle to point to the new url to ensure
     // AwWebContents sees the new URL and thus passes that URL to onPageFinished
     // (rather than passing the old URL).
-    navigation_handle_->UpdateStateFollowingRedirect(
+    UpdateStateFollowingRedirect(
         GURL(redirect_info.new_referrer),
         base::Bind(&NavigationRequest::OnRedirectChecksComplete,
                    base::Unretained(this)));
@@ -2631,8 +2661,7 @@ void NavigationRequest::WillRedirectRequest(
   TRACE_EVENT_ASYNC_STEP_INTO1("navigation", "NavigationRequest", this,
                                "WillRedirectRequest", "url",
                                common_params_.url.possibly_invalid_spec());
-  navigation_handle_->UpdateStateFollowingRedirect(new_referrer_url,
-                                                   std::move(callback));
+  UpdateStateFollowingRedirect(new_referrer_url, std::move(callback));
   UpdateSiteURL(post_redirect_process);
 
   if (IsSelfReferentialURL()) {
@@ -2862,6 +2891,36 @@ GURL NavigationRequest::GetSiteForCommonParamsURL() const {
   // be correct for cross-BrowsingInstance redirects.
   return SiteInstanceImpl::GetSiteForURL(
       starting_site_instance_->GetIsolationContext(), common_params_.url);
+}
+
+// TODO(zetamoo): Try to merge this function inside its callers.
+void NavigationRequest::UpdateStateFollowingRedirect(
+    const GURL& new_referrer_url,
+    ThrottleChecksFinishedCallback callback) {
+  // The navigation should not redirect to a "renderer debug" url. It should be
+  // blocked in NavigationRequest::OnRequestRedirected or in
+  // ResourceLoader::OnReceivedRedirect.
+  // Note: the |common_params_.url| below is the post-redirect URL.
+  // See https://crbug.com/728398.
+  CHECK(!IsRendererDebugURL(common_params_.url));
+
+  // Update the navigation parameters.
+  if (!(common_params_.transition & ui::PAGE_TRANSITION_CLIENT_REDIRECT)) {
+    sanitized_referrer_.url = new_referrer_url;
+    sanitized_referrer_ =
+        Referrer::SanitizeForRequest(common_params_.url, sanitized_referrer_);
+  }
+
+  was_redirected_ = true;
+  redirect_chain_.push_back(common_params_.url);
+
+  handle_state_ = PROCESSING_WILL_REDIRECT_REQUEST;
+
+#if defined(OS_ANDROID)
+  navigation_handle_proxy_->DidRedirect();
+#endif
+
+  navigation_handle_->SetCompleteCallback(std::move(callback));
 }
 
 }  // namespace content

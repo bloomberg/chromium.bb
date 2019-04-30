@@ -20,7 +20,6 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "build/build_config.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigation_throttle_runner.h"
@@ -35,11 +34,6 @@
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/platform/web_mixed_content_context_type.h"
 #include "url/gurl.h"
-
-#if defined(OS_ANDROID)
-#include "base/android/scoped_java_ref.h"
-#include "content/browser/android/navigation_handle_proxy.h"
-#endif
 
 namespace content {
 
@@ -130,12 +124,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   void RegisterSubresourceOverride(
       mojom::TransferrableURLLoaderPtr transferrable_loader) override;
 
-#if defined(OS_ANDROID)
-  // Returns a reference to this NavigationHandle Java counterpart. It is used
-  // by Java WebContentsObservers.
-  base::android::ScopedJavaGlobalRef<jobject> java_navigation_handle();
-#endif
-
   // Used in tests.
   NavigationRequest::NavigationHandleState state_for_testing() const {
     return state();
@@ -180,12 +168,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   typedef base::OnceCallback<void(NavigationThrottle::ThrottleCheckResult)>
       ThrottleChecksFinishedCallback;
-
-  // Updates the state of the navigation handle after encountering a server
-  // redirect.
-  void UpdateStateFollowingRedirect(
-      const GURL& new_referrer_url,
-      ThrottleChecksFinishedCallback callback);
 
   // Returns the FrameTreeNode this navigation is happening in.
   FrameTreeNode* frame_tree_node() const {
@@ -261,10 +243,8 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // |navigation_start| comes from the CommonNavigationParams associated with
   // this navigation.
   NavigationHandleImpl(NavigationRequest* navigation_request,
-                       const std::vector<GURL>& redirect_chain,
                        int pending_nav_entry_id,
-                       net::HttpRequestHeaders request_headers,
-                       const Referrer& sanitized_referrer);
+                       net::HttpRequestHeaders request_headers);
 
   // Helper function to run and reset the |complete_callback_|. This marks the
   // end of a round of NavigationThrottleChecks.
@@ -282,9 +262,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   NavigationRequest* navigation_request_;
 
   // See NavigationHandle for a description of those member variables.
-  Referrer sanitized_referrer_;
   net::Error net_error_code_;
-  bool was_redirected_;
 
   // The headers used for the request.
   net::HttpRequestHeaders request_headers_;
@@ -319,9 +297,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // The unique id to identify this to navigation with.
   int64_t navigation_id_;
 
-  // The chain of redirects.
-  std::vector<GURL> redirect_chain_;
-
   // Stores the reload type, or NONE if it's not a reload.
   ReloadType reload_type_;
 
@@ -334,12 +309,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // Allows to override response_headers_ in tests.
   // TODO(clamy): Clean this up once the architecture of unit tests is better.
   scoped_refptr<net::HttpResponseHeaders> response_headers_for_testing_;
-
-#if defined(OS_ANDROID)
-  // For each C++ NavigationHandle, there is a Java counterpart. It is the JNI
-  // bridge in between the two.
-  std::unique_ptr<NavigationHandleProxy> navigation_handle_proxy_;
-#endif
 
   base::WeakPtrFactory<NavigationHandleImpl> weak_factory_;
 
