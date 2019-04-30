@@ -50,7 +50,6 @@
 #if defined(USE_AURA)
 #include "ui/aura/test/aura_test_helper.h"
 #include "ui/aura/test/aura_test_utils.h"
-#include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/wm/core/default_activation_client.h"
 #endif
 
@@ -272,7 +271,6 @@ void RenderViewHostTestHarness::TearDown() {
   DeleteContents();
 #if defined(USE_AURA)
   aura_test_helper_->TearDown();
-  ui::TerminateContextFactoryForTests();
 #endif
   // Make sure that we flush any messages related to WebContentsImpl destruction
   // before we destroy the browser context.

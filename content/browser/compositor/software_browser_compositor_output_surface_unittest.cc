@@ -16,7 +16,7 @@
 #include "components/viz/service/display/output_surface_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/compositor.h"
-#include "ui/compositor/test/context_factories_for_test.h"
+#include "ui/compositor/test/test_context_factories.h"
 #include "ui/gfx/vsync_provider.h"
 
 namespace {
@@ -95,6 +95,7 @@ class SoftwareBrowserCompositorOutputSurfaceTest : public testing::Test {
   // OutputSurface should be using the TaskRunner given to the compositor.
   base::TestMessageLoop message_loop_;
   viz::DelayBasedBeginFrameSource begin_frame_source_;
+  std::unique_ptr<ui::TestContextFactories> context_factories_;
   std::unique_ptr<ui::Compositor> compositor_;
   int update_vsync_parameters_call_count_ = 0;
 
@@ -103,24 +104,22 @@ class SoftwareBrowserCompositorOutputSurfaceTest : public testing::Test {
 };
 
 void SoftwareBrowserCompositorOutputSurfaceTest::SetUp() {
-  bool enable_pixel_output = false;
-  ui::ContextFactory* context_factory = nullptr;
-  ui::ContextFactoryPrivate* context_factory_private = nullptr;
+  const bool enable_pixel_output = false;
+  context_factories_ =
+      std::make_unique<ui::TestContextFactories>(enable_pixel_output);
 
-  ui::InitializeContextFactoryForTests(enable_pixel_output, &context_factory,
-                                       &context_factory_private);
-
-  compositor_.reset(new ui::Compositor(
-      context_factory_private->AllocateFrameSinkId(), context_factory,
-      context_factory_private, message_loop_.task_runner().get(),
-      false /* enable_pixel_canvas */));
+  compositor_ = std::make_unique<ui::Compositor>(
+      context_factories_->GetContextFactoryPrivate()->AllocateFrameSinkId(),
+      context_factories_->GetContextFactory(),
+      context_factories_->GetContextFactoryPrivate(),
+      message_loop_.task_runner().get(), false /* enable_pixel_canvas */);
   compositor_->SetAcceleratedWidget(gfx::kNullAcceleratedWidget);
 }
 
 void SoftwareBrowserCompositorOutputSurfaceTest::TearDown() {
   output_surface_.reset();
   compositor_.reset();
-  ui::TerminateContextFactoryForTests();
+  context_factories_.reset();
 }
 
 std::unique_ptr<content::BrowserCompositorOutputSurface>

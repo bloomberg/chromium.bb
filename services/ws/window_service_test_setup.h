@@ -13,8 +13,11 @@
 #include "services/ws/test_window_tree_client.h"
 #include "services/ws/window_tree_test_helper.h"
 #include "ui/aura/test/aura_test_helper.h"
-#include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/wm/core/focus_controller.h"
+
+namespace ui {
+class TestContextFactories;
+}
 
 namespace wm {
 class ScopedCaptureClient;
@@ -66,6 +69,7 @@ class WindowServiceTestSetup {
   base::test::ScopedTaskEnvironment task_environment_{
       base::test::ScopedTaskEnvironment::MainThreadType::UI};
   wm::FocusController focus_controller_;
+  std::unique_ptr<ui::TestContextFactories> context_factories_;
   aura::test::AuraTestHelper aura_test_helper_;
   std::unique_ptr<wm::ScopedCaptureClient> scoped_capture_client_;
   TestWindowServiceDelegate delegate_;

@@ -49,10 +49,10 @@
 #include "ui/compositor/paint_recorder.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
-#include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/compositor/test/draw_waiter_for_test.h"
 #include "ui/compositor/test/layer_animator_test_controller.h"
 #include "ui/compositor/test/test_compositor_host.h"
+#include "ui/compositor/test/test_context_factories.h"
 #include "ui/compositor/test/test_layers.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
@@ -152,21 +152,20 @@ class LayerWithRealCompositorTest : public testing::Test {
                          .Append(FILE_PATH_LITERAL("compositor"));
     ASSERT_TRUE(base::PathExists(test_data_dir_));
 
-    bool enable_pixel_output = true;
-    ui::ContextFactory* context_factory = nullptr;
-    ui::ContextFactoryPrivate* context_factory_private = nullptr;
-    InitializeContextFactoryForTests(enable_pixel_output, &context_factory,
-                                     &context_factory_private);
+    const bool enable_pixel_output = true;
+    context_factories_ =
+        std::make_unique<TestContextFactories>(enable_pixel_output);
 
     const gfx::Rect host_bounds(10, 10, 500, 500);
     compositor_host_.reset(TestCompositorHost::Create(
-        host_bounds, context_factory, context_factory_private));
+        host_bounds, context_factories_->GetContextFactory(),
+        context_factories_->GetContextFactoryPrivate()));
     compositor_host_->Show();
   }
 
   void TearDown() override {
     ResetCompositor();
-    TerminateContextFactoryForTests();
+    context_factories_.reset();
   }
 
   Compositor* GetCompositor() { return compositor_host_->GetCompositor(); }
@@ -281,6 +280,7 @@ class LayerWithRealCompositorTest : public testing::Test {
   };
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  std::unique_ptr<TestContextFactories> context_factories_;
   std::unique_ptr<TestCompositorHost> compositor_host_;
 
   // The root directory for test files.
@@ -502,22 +502,20 @@ class LayerWithDelegateTest : public testing::Test {
 
   // Overridden from testing::Test:
   void SetUp() override {
-    bool enable_pixel_output = false;
-    ui::ContextFactory* context_factory = nullptr;
-    ui::ContextFactoryPrivate* context_factory_private = nullptr;
-
-    InitializeContextFactoryForTests(enable_pixel_output, &context_factory,
-                                     &context_factory_private);
+    const bool enable_pixel_output = false;
+    context_factories_ =
+        std::make_unique<TestContextFactories>(enable_pixel_output);
 
     const gfx::Rect host_bounds(1000, 1000);
     compositor_host_.reset(TestCompositorHost::Create(
-        host_bounds, context_factory, context_factory_private));
+        host_bounds, context_factories_->GetContextFactory(),
+        context_factories_->GetContextFactoryPrivate()));
     compositor_host_->Show();
   }
 
   void TearDown() override {
     compositor_host_.reset();
-    TerminateContextFactoryForTests();
+    context_factories_.reset();
   }
 
   Compositor* compositor() { return compositor_host_->GetCompositor(); }
@@ -565,6 +563,7 @@ class LayerWithDelegateTest : public testing::Test {
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  std::unique_ptr<TestContextFactories> context_factories_;
   std::unique_ptr<TestCompositorHost> compositor_host_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerWithDelegateTest);

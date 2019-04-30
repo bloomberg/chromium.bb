@@ -27,7 +27,6 @@
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer_type.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
-#include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/compositor/test/layer_animator_test_controller.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/rect.h"

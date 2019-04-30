@@ -25,8 +25,8 @@
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/paint_recorder.h"
-#include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/compositor/test/draw_waiter_for_test.h"
+#include "ui/compositor/test/test_context_factories.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -104,15 +104,13 @@ class SnapshotAuraTest : public testing::Test {
 
     // The ContextFactory must exist before any Compositors are created.
     // Snapshot test tests real drawing and readback, so needs pixel output.
-    bool enable_pixel_output = true;
-    ui::ContextFactory* context_factory = nullptr;
-    ui::ContextFactoryPrivate* context_factory_private = nullptr;
+    const bool enable_pixel_output = true;
+    context_factories_ =
+        std::make_unique<ui::TestContextFactories>(enable_pixel_output);
 
-    ui::InitializeContextFactoryForTests(enable_pixel_output, &context_factory,
-                                         &context_factory_private);
-
-    helper_.reset(new aura::test::AuraTestHelper());
-    helper_->SetUp(context_factory, context_factory_private);
+    helper_ = std::make_unique<aura::test::AuraTestHelper>();
+    helper_->SetUp(context_factories_->GetContextFactory(),
+                   context_factories_->GetContextFactoryPrivate());
     new ::wm::DefaultActivationClient(helper_->root_window());
   }
 
@@ -121,7 +119,7 @@ class SnapshotAuraTest : public testing::Test {
     delegate_.reset();
     helper_->RunAllPendingInMessageLoop();
     helper_->TearDown();
-    ui::TerminateContextFactoryForTests();
+    context_factories_.reset();
     scoped_task_environment_.reset();
     testing::Test::TearDown();
   }
@@ -184,6 +182,7 @@ class SnapshotAuraTest : public testing::Test {
   };
 
   std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
+  std::unique_ptr<ui::TestContextFactories> context_factories_;
   std::unique_ptr<aura::test::AuraTestHelper> helper_;
   std::unique_ptr<aura::Window> test_window_;
   std::unique_ptr<TestPaintingWindowDelegate> delegate_;

@@ -29,6 +29,7 @@
 namespace ui {
 class ContextFactory;
 class ContextFactoryPrivate;
+class TestContextFactories;
 }  // namespace ui
 
 namespace ws {
@@ -111,6 +112,7 @@ class TestWindowService : public service_manager::Service,
 
   std::unique_ptr<WindowService> window_service_;
 
+  std::unique_ptr<ui::TestContextFactories> context_factories_;
   std::unique_ptr<aura::test::AuraTestHelper> aura_test_helper_;
 
   std::unique_ptr<discardable_memory::DiscardableSharedMemoryManager>

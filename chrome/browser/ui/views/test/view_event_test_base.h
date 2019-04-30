@@ -32,6 +32,10 @@ namespace gfx {
 class Size;
 }
 
+namespace ui {
+class TestContextFactories;
+}
+
 class ViewEventTestPlatformPart;
 
 // Base class for Views based tests that dispatch events.
@@ -137,6 +141,8 @@ class ViewEventTestBase : public views::WidgetDelegate, public testing::Test {
 #if defined(OS_WIN)
   ui::ScopedOleInitializer ole_initializer_;
 #endif
+
+  std::unique_ptr<ui::TestContextFactories> context_factories_;
 
   std::unique_ptr<ViewEventTestPlatformPart> platform_part_;
 

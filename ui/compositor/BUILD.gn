@@ -114,8 +114,6 @@ jumbo_component("compositor") {
 jumbo_static_library("test_support") {
   testonly = true
   sources = [
-    "test/context_factories_for_test.cc",
-    "test/context_factories_for_test.h",
     "test/draw_waiter_for_test.cc",
     "test/draw_waiter_for_test.h",
     "test/fake_context_factory.cc",
@@ -135,6 +133,8 @@ jumbo_static_library("test_support") {
     "test/test_compositor_host_android.cc",
     "test/test_compositor_host_mac.mm",
     "test/test_compositor_host_win.cc",
+    "test/test_context_factories.cc",
+    "test/test_context_factories.h",
     "test/test_layer_animation_delegate.cc",
     "test/test_layer_animation_delegate.h",
     "test/test_layer_animation_observer.cc",

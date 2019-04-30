@@ -14,6 +14,7 @@
 #include "services/ws/window_tree_binding.h"
 #include "ui/aura/test/event_generator_delegate_aura.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/compositor/test/test_context_factories.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_target_iterator.h"
 #include "ui/gl/test/gl_surface_test_support.h"
@@ -134,12 +135,11 @@ WindowServiceTestSetup::WindowServiceTestSetup()
   DCHECK_EQ(gl::kGLImplementationNone, gl::GetGLImplementation());
   gl::GLSurfaceTestSupport::InitializeOneOff();
 
-  ui::ContextFactory* context_factory = nullptr;
-  ui::ContextFactoryPrivate* context_factory_private = nullptr;
   const bool enable_pixel_output = false;
-  ui::InitializeContextFactoryForTests(enable_pixel_output, &context_factory,
-                                       &context_factory_private);
-  aura_test_helper_.SetUp(context_factory, context_factory_private);
+  context_factories_ =
+      std::make_unique<ui::TestContextFactories>(enable_pixel_output);
+  aura_test_helper_.SetUp(context_factories_->GetContextFactory(),
+                          context_factories_->GetContextFactoryPrivate());
   // The resize throttle may interfere with tests, so disable it. If specific
   // tests want the throttle, they can enable it.
   aura::Env::GetInstance()->set_throttle_input_on_resize_for_testing(false);
@@ -167,7 +167,7 @@ WindowServiceTestSetup::~WindowServiceTestSetup() {
   scoped_capture_client_.reset();
   aura::client::SetFocusClient(root(), nullptr);
   aura_test_helper_.TearDown();
-  ui::TerminateContextFactoryForTests();
+  context_factories_.reset();
   gl::GLSurfaceTestSupport::ShutdownGL();
   ui::test::EventGeneratorDelegate::SetFactoryFunction(
       ui::test::EventGeneratorDelegate::FactoryFunction());

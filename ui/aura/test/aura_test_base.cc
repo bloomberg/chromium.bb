@@ -18,7 +18,7 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_switches_util.h"
-#include "ui/compositor/test/context_factories_for_test.h"
+#include "ui/compositor/test/test_context_factories.h"
 #include "ui/events/event_dispatcher.h"
 #include "ui/events/event_sink.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
@@ -83,8 +83,10 @@ void AuraTestBase::SetUp() {
     context_factory = mus_context_factory_.get();
   } else {
     const bool enable_pixel_output = false;
-    ui::InitializeContextFactoryForTests(enable_pixel_output, &context_factory,
-                                         &context_factory_private);
+    context_factories_ =
+        std::make_unique<ui::TestContextFactories>(enable_pixel_output);
+    context_factory = context_factories_->GetContextFactory();
+    context_factory_private = context_factories_->GetContextFactoryPrivate();
   }
 
   helper_ = std::make_unique<AuraTestHelper>();
@@ -101,7 +103,7 @@ void AuraTestBase::TearDown() {
   RunAllPendingInMessageLoop();
 
   helper_->TearDown();
-  ui::TerminateContextFactoryForTests();
+  context_factories_.reset();
   ui::ShutdownInputMethodForTesting();
   testing::Test::TearDown();
 }

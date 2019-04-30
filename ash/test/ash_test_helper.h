@@ -40,6 +40,7 @@ class Connector;
 
 namespace ui {
 class ScopedAnimationDurationScaleMode;
+class TestContextFactories;
 }
 
 namespace views {
@@ -143,6 +144,8 @@ class AshTestHelper {
   bool power_policy_controller_initialized_ = false;
 
   std::unique_ptr<TestSessionControllerClient> session_controller_client_;
+
+  std::unique_ptr<ui::TestContextFactories> context_factories_;
 
   std::unique_ptr<base::test::ScopedCommandLine> command_line_;
 

@@ -15,7 +15,7 @@
 #include "mojo/core/embedder/embedder.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/ime/init/input_method_initializer.h"
-#include "ui/compositor/test/context_factories_for_test.h"
+#include "ui/compositor/test/test_context_factories.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -79,18 +79,18 @@ void ViewEventTestBase::SetUp() {
   ui::InitializeInputMethodForTesting();
 
   // The ContextFactory must exist before any Compositors are created.
-  bool enable_pixel_output = false;
-  ui::ContextFactory* context_factory = nullptr;
-  ui::ContextFactoryPrivate* context_factory_private = nullptr;
+  const bool enable_pixel_output = false;
+  context_factories_ =
+      std::make_unique<ui::TestContextFactories>(enable_pixel_output);
 
-  ui::InitializeContextFactoryForTests(enable_pixel_output, &context_factory,
-                                       &context_factory_private);
-  views_delegate_.set_context_factory(context_factory);
-  views_delegate_.set_context_factory_private(context_factory_private);
+  views_delegate_.set_context_factory(context_factories_->GetContextFactory());
+  views_delegate_.set_context_factory_private(
+      context_factories_->GetContextFactoryPrivate());
   views_delegate_.set_use_desktop_native_widgets(true);
 
   platform_part_.reset(ViewEventTestPlatformPart::Create(
-      context_factory, context_factory_private));
+      context_factories_->GetContextFactory(),
+      context_factories_->GetContextFactoryPrivate()));
   gfx::NativeWindow context = platform_part_->GetContext();
   window_ = views::Widget::CreateWindowWithContext(this, context);
   window_->Show();
@@ -113,7 +113,7 @@ void ViewEventTestBase::TearDown() {
   ui::Clipboard::DestroyClipboardForCurrentThread();
   platform_part_.reset();
 
-  ui::TerminateContextFactoryForTests();
+  context_factories_.reset();
 
   ui::ShutdownInputMethodForTesting();
 }

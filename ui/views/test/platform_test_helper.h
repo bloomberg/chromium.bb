@@ -13,6 +13,7 @@
 namespace ui {
 class ContextFactory;
 class ContextFactoryPrivate;
+class TestContextFactories;
 }
 
 namespace views {
@@ -25,7 +26,7 @@ class PlatformTestHelper {
   using Factory =
       base::RepeatingCallback<std::unique_ptr<PlatformTestHelper>(void)>;
 
-  PlatformTestHelper() = default;
+  PlatformTestHelper();
   virtual ~PlatformTestHelper();
 
   static void set_factory(Factory factory);
@@ -43,6 +44,8 @@ class PlatformTestHelper {
       ui::ContextFactoryPrivate** factory_private);
 
  private:
+  std::unique_ptr<ui::TestContextFactories> context_factories_;
+
   DISALLOW_COPY_AND_ASSIGN(PlatformTestHelper);
 };
 

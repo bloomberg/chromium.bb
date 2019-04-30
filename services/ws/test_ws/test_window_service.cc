@@ -17,7 +17,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/mus/property_utils.h"
 #include "ui/aura/window_tracker.h"
-#include "ui/compositor/test/context_factories_for_test.h"
+#include "ui/compositor/test/test_context_factories.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/event_sink.h"
@@ -219,7 +219,7 @@ void TestWindowService::Shutdown(
     aura_test_helper_.reset();
   }
 
-  ui::TerminateContextFactoryForTests();
+  context_factories_.reset();
 
   if (callback)
     std::move(callback).Run();
@@ -246,13 +246,12 @@ void TestWindowService::CreateGpuHost() {
 void TestWindowService::CreateAuraTestHelper() {
   DCHECK(!aura_test_helper_);
 
-  ui::ContextFactory* context_factory = nullptr;
-  ui::ContextFactoryPrivate* context_factory_private = nullptr;
-  ui::InitializeContextFactoryForTests(false /* enable_pixel_output */,
-                                       &context_factory,
-                                       &context_factory_private);
+  const bool enable_pixel_output = false;
+  context_factories_ =
+      std::make_unique<ui::TestContextFactories>(enable_pixel_output);
   aura_test_helper_ = std::make_unique<aura::test::AuraTestHelper>();
-  SetupAuraTestHelper(context_factory, context_factory_private);
+  SetupAuraTestHelper(context_factories_->GetContextFactory(),
+                      context_factories_->GetContextFactoryPrivate());
 }
 
 void TestWindowService::SetupAuraTestHelper(

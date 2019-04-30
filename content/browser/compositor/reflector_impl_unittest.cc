@@ -22,7 +22,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
-#include "ui/compositor/test/context_factories_for_test.h"
+#include "ui/compositor/test/test_context_factories.h"
 
 #if defined(USE_OZONE)
 #include "components/viz/service/display/overlay_candidate.h"
@@ -125,12 +125,10 @@ const gfx::Size kSurfaceSize(256, 256);
 class ReflectorImplTest : public testing::Test {
  public:
   void SetUp() override {
-    bool enable_pixel_output = false;
-    ui::ContextFactory* context_factory = nullptr;
-    ui::ContextFactoryPrivate* context_factory_private = nullptr;
+    const bool enable_pixel_output = false;
+    context_factories_ =
+        std::make_unique<ui::TestContextFactories>(enable_pixel_output);
 
-    ui::InitializeContextFactoryForTests(enable_pixel_output, &context_factory,
-                                         &context_factory_private);
     ImageTransportFactory::SetFactory(
         std::make_unique<TestImageTransportFactory>());
     task_runner_ = base::ThreadTaskRunnerHandle::Get();
@@ -139,10 +137,11 @@ class ReflectorImplTest : public testing::Test {
         std::make_unique<viz::DelayBasedTimeSource>(
             compositor_task_runner_.get()),
         viz::BeginFrameSource::kNotRestartableId);
-    compositor_.reset(new ui::Compositor(
-        context_factory_private->AllocateFrameSinkId(), context_factory,
-        context_factory_private, compositor_task_runner_.get(),
-        false /* enable_pixel_canvas */));
+    compositor_ = std::make_unique<ui::Compositor>(
+        context_factories_->GetContextFactoryPrivate()->AllocateFrameSinkId(),
+        context_factories_->GetContextFactory(),
+        context_factories_->GetContextFactoryPrivate(),
+        compositor_task_runner_.get(), false /* enable_pixel_canvas */);
     compositor_->SetAcceleratedWidget(gfx::kNullAcceleratedWidget);
 
     auto context_provider = viz::TestContextProvider::Create();
@@ -175,7 +174,7 @@ class ReflectorImplTest : public testing::Test {
       release->Run(gpu::SyncToken(), false);
     }
     compositor_.reset();
-    ui::TerminateContextFactoryForTests();
+    context_factories_.reset();
     ImageTransportFactory::Terminate();
   }
 
@@ -184,6 +183,7 @@ class ReflectorImplTest : public testing::Test {
   }
 
  protected:
+  std::unique_ptr<ui::TestContextFactories> context_factories_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
   std::unique_ptr<viz::SyntheticBeginFrameSource> begin_frame_source_;
   base::test::ScopedTaskEnvironment task_environment_;

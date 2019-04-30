@@ -7,7 +7,6 @@
 #include "components/exo/vsync_timing_manager.h"
 #include "components/exo/wm_helper.h"
 #include "ui/base/ime/init/input_method_factory.h"
-#include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/wm/core/default_activation_client.h"
 #include "ui/wm/core/wm_core_switches.h"

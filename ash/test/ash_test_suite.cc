@@ -14,7 +14,6 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
-#include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 

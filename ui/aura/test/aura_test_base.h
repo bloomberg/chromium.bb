@@ -21,6 +21,10 @@
 #include "base/win/scoped_com_initializer.h"
 #endif
 
+namespace ui {
+class TestContextFactories;
+}
+
 namespace ws {
 namespace mojom {
 class WindowTreeClient;
@@ -114,6 +118,7 @@ class AuraTestBase : public testing::Test, public WindowTreeClientDelegate {
   bool setup_called_ = false;
   bool teardown_called_ = false;
   PropertyConverter property_converter_;
+  std::unique_ptr<ui::TestContextFactories> context_factories_;
   std::unique_ptr<AuraTestHelper> helper_;
   std::unique_ptr<AuraTestContextFactory> mus_context_factory_;
 

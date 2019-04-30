@@ -50,8 +50,8 @@ ScopedViewsTestHelper::~ScopedViewsTestHelper() {
 
   test_views_delegate_.reset();
 
-  // The Mus PlatformTestHelper has state that is deleted by
-  // ui::TerminateContextFactoryForTests().
+  // The Mus PlatformTestHelper has state that is deleted by destruction of
+  // ui::TestContextFactories.
   platform_test_helper_.reset();
 }
 

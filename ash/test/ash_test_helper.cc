@@ -61,7 +61,7 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
-#include "ui/compositor/test/context_factories_for_test.h"
+#include "ui/compositor/test/test_context_factories.h"
 #include "ui/display/display.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/manager/display_manager.h"
@@ -269,12 +269,12 @@ void AshTestHelper::TearDown() {
     bluez_dbus_manager_initialized_ = false;
   }
 
-  ui::TerminateContextFactoryForTests();
+  context_factories_.reset();
 
-  // ui::TerminateContextFactoryForTests() destroyed the context factory (and
-  // context factory private) referenced by Env. Reset Env's members in case
-  // some other test tries to use it. This matters if someone else created Env
-  // (such as the test suite) and is long lived.
+  // Context factory (and context factory private) referenced by Env are now
+  // destroyed. Reset Env's members in case some other test tries to use it.
+  // This matters if someone else created Env (such as the test suite) and is
+  // long lived.
   if (aura::Env::HasInstance()) {
     aura::Env::GetInstance()->set_context_factory(nullptr);
     aura::Env::GetInstance()->set_context_factory_private(nullptr);
@@ -361,15 +361,14 @@ void AshTestHelper::CreateWindowService() {
 }
 
 void AshTestHelper::CreateShell() {
-  ui::ContextFactory* context_factory = nullptr;
-  ui::ContextFactoryPrivate* context_factory_private = nullptr;
-  bool enable_pixel_output = false;
-  ui::InitializeContextFactoryForTests(enable_pixel_output, &context_factory,
-                                       &context_factory_private);
+  const bool enable_pixel_output = false;
+  context_factories_ =
+      std::make_unique<ui::TestContextFactories>(enable_pixel_output);
   ShellInitParams init_params;
   init_params.delegate.reset(test_shell_delegate_);
-  init_params.context_factory = context_factory;
-  init_params.context_factory_private = context_factory_private;
+  init_params.context_factory = context_factories_->GetContextFactory();
+  init_params.context_factory_private =
+      context_factories_->GetContextFactoryPrivate();
   init_params.gpu_interface_provider =
       std::make_unique<TestGpuInterfaceProvider>();
   init_params.keyboard_ui_factory = std::make_unique<TestKeyboardUIFactory>();
