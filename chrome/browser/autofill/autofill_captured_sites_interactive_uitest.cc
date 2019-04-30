@@ -250,8 +250,10 @@ class AutofillCapturedSitesInteractiveTest
     // feature forces input elements on a form to display their autofill type
     // prediction. Test will check this attribute on all the relevant input
     // elements in a form to determine if the form is ready for interaction.
-    feature_list_.InitWithFeatures({features::kAutofillShowTypePredictions},
-                                   {features::kAutofillCacheQueryResponses});
+    feature_list_.InitWithFeatures(
+        /*enabled_features=*/{features::kAutofillShowTypePredictions},
+        /*disabled_features=*/{features::kAutofillCacheQueryResponses,
+                               features::kAutofillUseApi});
     command_line->AppendSwitch(switches::kShowAutofillTypePredictions);
     command_line->AppendSwitchASCII(::switches::kForceFieldTrials,
                                     "AutofillFieldMetadata/Enabled/");
