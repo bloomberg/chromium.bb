@@ -55,7 +55,7 @@ OmniboxTabSwitchButton::OmniboxTabSwitchButton(
     SetText(hint_);
   }
   SetTooltipText(hint_);
-  set_corner_radius(CalculatePreferredSize().height() / 2.f);
+  set_corner_radius(kButtonHeight / 2.f);
   animation_->SetSlideDuration(500);
   SetElideBehavior(gfx::FADE_TAIL);
 
@@ -134,7 +134,7 @@ void OmniboxTabSwitchButton::ProvideWidthHint(size_t parent_width) {
   size_t preferred_width = CalculateGoalWidth(parent_width, &goal_text_);
   if (!initialized_) {
     initialized_ = true;
-    goal_width_ = preferred_width;
+    goal_width_ = start_width_ = preferred_width;
     animation_->Reset(1);
     SetText(goal_text_);
     return;
