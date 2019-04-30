@@ -1713,9 +1713,11 @@ void RemoteSuggestionsProviderImpl::RestoreCategoriesFromPrefs() {
     // serialization / deserialization should not be done inside this
     // class. We should move that into a central place that also knows how to
     // parse data we received from remote backends.
+    // We don't want to use the restored title for BuildArticleCategoryInfo to
+    // avoid using a title that was calculated for a stale locale.
     CategoryInfo info =
         category == articles_category_
-            ? BuildArticleCategoryInfo(title)
+            ? BuildArticleCategoryInfo(base::nullopt)
             : BuildRemoteCategoryInfo(title, allow_fetching_more_results);
     CategoryContent* content = UpdateCategoryInfo(category, info);
     content->included_in_last_server_response =

@@ -13,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/i18n/rtl.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -58,11 +59,13 @@
 #include "components/ntp_snippets/time_serialization.h"
 #include "components/ntp_snippets/user_classifier.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/variations/variations_params_manager.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_unittest_util.h"
@@ -972,6 +975,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, PersistCategoryInfos) {
   CategoryInfo info_unknown_before = provider()->GetCategoryInfo(
       Category::FromRemoteCategory(kUnknownRemoteCategoryId));
 
+  base::i18n::SetICUDefaultLocale("de");
   // Recreate the provider to simulate a Chrome restart.
   ResetSuggestionsProvider(
       /*use_mock_prefetched_pages_tracker=*/false,
@@ -995,7 +999,12 @@ TEST_F(RemoteSuggestionsProviderImplTest, PersistCategoryInfos) {
   CategoryInfo info_unknown_after = provider()->GetCategoryInfo(
       Category::FromRemoteCategory(kUnknownRemoteCategoryId));
 
-  EXPECT_EQ(info_articles_before.title(), info_articles_after.title());
+  // The new articles section title should reflect the current locale, not what
+  // we persisted earlier.
+  EXPECT_NE(info_articles_before.title(), info_articles_after.title());
+  EXPECT_EQ(
+      info_articles_after.title(),
+      l10n_util::GetStringUTF16(IDS_NTP_ARTICLE_SUGGESTIONS_SECTION_HEADER));
   EXPECT_EQ(info_unknown_before.title(), info_unknown_after.title());
 }
 
