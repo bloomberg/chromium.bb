@@ -82,6 +82,10 @@
 #define GOOGLE_API_KEY_REMOTING_FTL DUMMY_API_TOKEN
 #endif
 
+#if !defined(GOOGLE_API_KEY_REMOTING_FTL_MOBILE)
+#define GOOGLE_API_KEY_REMOTING_FTL_MOBILE DUMMY_API_TOKEN
+#endif
+
 // These are used as shortcuts for developers and users providing
 // OAuth credentials via preprocessor defines or environment
 // variables.  If set, they will be used to replace any of the client
@@ -123,6 +127,11 @@ class APIKeyCache {
     api_key_remoting_ftl_ = CalculateKeyValue(
         GOOGLE_API_KEY_REMOTING_FTL,
         STRINGIZE_NO_EXPANSION(GOOGLE_API_KEY_REMOTING_FTL), nullptr,
+        std::string(), environment.get(), command_line);
+
+    api_key_remoting_ftl_mobile_ = CalculateKeyValue(
+        GOOGLE_API_KEY_REMOTING_FTL_MOBILE,
+        STRINGIZE_NO_EXPANSION(GOOGLE_API_KEY_REMOTING_FTL_MOBILE), nullptr,
         std::string(), environment.get(), command_line);
 
     metrics_key_ = CalculateKeyValue(
@@ -194,6 +203,9 @@ class APIKeyCache {
 #endif
   std::string api_key_non_stable() const { return api_key_non_stable_; }
   std::string api_key_remoting_ftl() const { return api_key_remoting_ftl_; }
+  std::string api_key_remoting_ftl_mobile() const {
+    return api_key_remoting_ftl_mobile_;
+  }
 
   std::string metrics_key() const { return metrics_key_; }
 
@@ -292,6 +304,7 @@ class APIKeyCache {
   std::string api_key_;
   std::string api_key_non_stable_;
   std::string api_key_remoting_ftl_;
+  std::string api_key_remoting_ftl_mobile_;
   std::string metrics_key_;
   std::string client_ids_[CLIENT_NUM_ITEMS];
   std::string client_secrets_[CLIENT_NUM_ITEMS];
@@ -314,6 +327,10 @@ std::string GetNonStableAPIKey() {
 
 std::string GetRemotingFtlAPIKey() {
   return g_api_key_cache.Get().api_key_remoting_ftl();
+}
+
+std::string GetRemotingFtlMobileAPIKey() {
+  return g_api_key_cache.Get().api_key_remoting_ftl_mobile();
 }
 
 #if defined(OS_IOS)

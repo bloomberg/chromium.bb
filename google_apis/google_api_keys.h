@@ -76,6 +76,7 @@ std::string GetNonStableAPIKey();
 // Retrieves the Chrome Remote Desktop FTL API key to be used during the
 // signaling process.
 std::string GetRemotingFtlAPIKey();
+std::string GetRemotingFtlMobileAPIKey();
 
 #if defined(OS_IOS)
 // Sets the API key. This should be called as early as possible before this
