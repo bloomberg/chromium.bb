@@ -3342,7 +3342,7 @@ def _CheckForTooLargeFiles(input_api, output_api):
   for f in input_api.AffectedFiles():
     # Check both added and modified files (but not deleted files).
     if f.Action() in ('A', 'M'):
-      size = input_api.os_path.getsize(f.LocalPath())
+      size = input_api.os_path.getsize(f.AbsoluteLocalPath())
       if size > TOO_LARGE_FILE_SIZE_LIMIT:
         too_large_files.append("%s: %d bytes" % (f.LocalPath(), size))
 
