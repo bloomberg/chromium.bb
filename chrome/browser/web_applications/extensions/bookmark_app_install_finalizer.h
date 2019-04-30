@@ -31,6 +31,7 @@ class BookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
                        InstallFinalizedCallback callback) override;
   bool CanCreateOsShortcuts() const override;
   void CreateOsShortcuts(const web_app::AppId& app_id,
+                         bool add_to_desktop,
                          CreateOsShortcutsCallback callback) override;
   bool CanPinAppToShelf() const override;
   void PinAppToShelf(const web_app::AppId& app_id) override;

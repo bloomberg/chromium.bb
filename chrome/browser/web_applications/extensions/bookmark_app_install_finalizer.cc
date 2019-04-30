@@ -113,9 +113,10 @@ bool BookmarkAppInstallFinalizer::CanCreateOsShortcuts() const {
 
 void BookmarkAppInstallFinalizer::CreateOsShortcuts(
     const web_app::AppId& app_id,
+    bool add_to_desktop,
     CreateOsShortcutsCallback callback) {
   const Extension* app = GetExtensionById(profile_, app_id);
-  BookmarkAppCreateOsShortcuts(profile_, app, true /* add_to_desktop */,
+  BookmarkAppCreateOsShortcuts(profile_, app, add_to_desktop,
                                std::move(callback));
 }
 

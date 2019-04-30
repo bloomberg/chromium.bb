@@ -105,6 +105,7 @@ bool WebAppInstallFinalizer::CanCreateOsShortcuts() const {
 
 void WebAppInstallFinalizer::CreateOsShortcuts(
     const AppId& app_id,
+    bool add_to_desktop,
     CreateOsShortcutsCallback callback) {
   // TODO(loyso): Implement it.
   NOTIMPLEMENTED();

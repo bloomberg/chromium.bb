@@ -42,6 +42,7 @@ class InstallFinalizer {
 
   virtual bool CanCreateOsShortcuts() const = 0;
   virtual void CreateOsShortcuts(const AppId& app_id,
+                                 bool add_to_desktop,
                                  CreateOsShortcutsCallback callback) = 0;
 
   virtual bool CanPinAppToShelf() const = 0;

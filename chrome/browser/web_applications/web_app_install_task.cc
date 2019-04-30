@@ -240,7 +240,7 @@ void WebAppInstallTask::OnInstallFinalized(
       &WebAppInstallTask::OnShortcutsCreated, weak_ptr_factory_.GetWeakPtr(),
       std::move(web_app_info), app_id);
   if (install_finalizer_->CanCreateOsShortcuts()) {
-    install_finalizer_->CreateOsShortcuts(app_id,
+    install_finalizer_->CreateOsShortcuts(app_id, /*add_to_dekstop=*/true,
                                           std::move(create_shortcuts_callback));
   } else {
     std::move(create_shortcuts_callback).Run(false /* created_shortcuts */);
