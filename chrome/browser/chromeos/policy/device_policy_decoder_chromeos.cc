@@ -1311,6 +1311,17 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
           nullptr);
     }
   }
+
+  if (policy.has_device_usb_power_share()) {
+    const em::DeviceUsbPowerShareProto& container(
+        policy.device_usb_power_share());
+    if (container.has_enabled()) {
+      policies->Set(key::kDeviceUsbPowerShareEnabled, POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                    std::make_unique<base::Value>(container.enabled()),
+                    nullptr);
+    }
+  }
 }
 
 }  // namespace
