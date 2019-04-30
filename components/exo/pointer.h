@@ -97,8 +97,12 @@ class Pointer : public SurfaceTreeHost,
   // Overridden from ash::WindowTreeHostManager::Observer:
   void OnDisplayConfigurationChanged() override;
 
+  // Relative motion registration.
+  void RegisterRelativePointerDelegate(RelativePointerDelegate* delegate);
+  void UnregisterRelativePointerDelegate(RelativePointerDelegate* delegate);
+
   // Pointer capture toggles:
-  void EnablePointerCapture(RelativePointerDelegate* delegate);
+  void EnablePointerCapture();
   void DisablePointerCapture();
 
  private:
@@ -147,7 +151,6 @@ class Pointer : public SurfaceTreeHost,
   PointerGesturePinchDelegate* pinch_delegate_ = nullptr;
 
   // The delegate instance that relative movement events are dispatched to.
-  // Pointer capture is enabled if and only if this is not nullptr.
   RelativePointerDelegate* relative_pointer_delegate_ = nullptr;
 
   // The current focus surface for the pointer.
@@ -163,7 +166,8 @@ class Pointer : public SurfaceTreeHost,
   // location of a generated move that was sent which should not be forwarded.
   base::Optional<gfx::Point> location_synthetic_move_;
 
-  // The window with input capture.
+  // The window with input capture. Pointer capture is enabled if and only if
+  // this is not null.
   aura::Window* capture_window_ = nullptr;
 
   // The position of the pointer surface relative to the pointer location.

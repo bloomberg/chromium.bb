@@ -186,18 +186,27 @@ void Pointer::SetGesturePinchDelegate(PointerGesturePinchDelegate* delegate) {
   pinch_delegate_ = delegate;
 }
 
-void Pointer::EnablePointerCapture(RelativePointerDelegate* delegate) {
+void Pointer::RegisterRelativePointerDelegate(
+    RelativePointerDelegate* delegate) {
+  // It does not seem that wayland forbids multiple relative pointer interfaces
+  // being registered against the same pointer, though that is not really
+  // reasonable behaviour.
+  DCHECK(!relative_pointer_delegate_);
+  relative_pointer_delegate_ = delegate;
+}
+
+void Pointer::UnregisterRelativePointerDelegate(
+    RelativePointerDelegate* delegate) {
+  DCHECK(relative_pointer_delegate_ == delegate);
+  relative_pointer_delegate_ = nullptr;
+}
+
+void Pointer::EnablePointerCapture() {
   if (!base::FeatureList::IsEnabled(kPointerCapture))
     return;
 
-  if (!delegate) {
-    DLOG(ERROR) << "Failed to enable pointer capture: "
-                   "relative pointer delegate is null";
-    return;
-  }
-
   // If pointer capture is already enabled, disable it first.
-  if (relative_pointer_delegate_)
+  if (capture_window_)
     DisablePointerCapture();
 
   // TODO(b/124059008): Find the correct window to set capture.
@@ -233,7 +242,6 @@ void Pointer::EnablePointerCapture(RelativePointerDelegate* delegate) {
   cursor_client->HideCursor();
   cursor_client->LockCursor();
 
-  relative_pointer_delegate_ = delegate;
   location_when_pointer_capture_enabled_ = gfx::ToRoundedPoint(location_);
 
   if (ShouldMoveToCenter())
@@ -242,7 +250,7 @@ void Pointer::EnablePointerCapture(RelativePointerDelegate* delegate) {
 
 void Pointer::DisablePointerCapture() {
   // Early out if pointer capture is not enabled.
-  if (!relative_pointer_delegate_)
+  if (!capture_window_)
     return;
 
   auto* capture_client = WMHelper::GetInstance()->GetCaptureClient();
@@ -265,8 +273,6 @@ void Pointer::DisablePointerCapture() {
   focus_surface_ = nullptr;
   location_when_pointer_capture_enabled_.reset();
   UpdateCursor();
-
-  relative_pointer_delegate_ = nullptr;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -333,8 +339,12 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
     if (!same_location) {
       if (relative_pointer_delegate_)
         HandleRelativePointerMotion(event->time_stamp(), location_in_root);
-      else
+      if (capture_window_) {
+        if (ShouldMoveToCenter())
+          MoveCursorToCenterOfActiveDisplay();
+      } else {
         delegate_->OnPointerMotion(event->time_stamp(), location_in_target);
+      }
       location_ = location_in_root;
       delegate_->OnPointerFrame();
     }
@@ -447,7 +457,7 @@ void Pointer::OnGestureEvent(ui::GestureEvent* event) {
 void Pointer::OnCaptureChanged(aura::Window* lost_capture,
                                aura::Window* gained_capture) {
   // Note: This observer is only set when pointer capture in enabled.
-  if (relative_pointer_delegate_ && gained_capture != capture_window_)
+  if (capture_window_ && gained_capture != capture_window_)
     DisablePointerCapture();
 }
 
@@ -482,7 +492,7 @@ void Pointer::OnCursorDisplayChanged(const display::Display& display) {
 
 void Pointer::OnWindowFocused(aura::Window* gained_focus,
                               aura::Window* lost_focus) {
-  if (relative_pointer_delegate_)
+  if (capture_window_)
     DisablePointerCapture();
 }
 
@@ -707,8 +717,6 @@ void Pointer::HandleRelativePointerMotion(base::TimeTicks time_stamp,
   gfx::PointF delta(location_in_root.x() - location_.x(),
                     location_in_root.y() - location_.y());
   relative_pointer_delegate_->OnPointerRelativeMotion(time_stamp, delta);
-  if (ShouldMoveToCenter())
-    MoveCursorToCenterOfActiveDisplay();
 }
 
 }  // namespace exo
