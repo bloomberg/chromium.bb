@@ -11,7 +11,6 @@ import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_SHORT_
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE;
 
 import android.graphics.PointF;
-import android.os.Build;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
 import android.support.v7.widget.RecyclerView;
@@ -208,13 +207,9 @@ public class VrBrowserControllerInputTest {
             return coord.getScrollXPixInt();
         };
 
-        // Scrolling can be inconsistent on older/slower devices. So, try each direction up to
-        // 3 times to try to work around flakiness. Only enable this on problematic devices (
-        // currently first generation Pixel devices).
-        int numAttempts = 1;
-        if (Build.DEVICE.equals("marlin") || Build.DEVICE.equals("sailfish")) {
-            numAttempts = 3;
-        }
+        // Scrolling can be inconsistent. So, try each direction up to 3 times to try to work around
+        // flakiness.
+        int numAttempts = 3;
         final int diffMultiplier = 2;
 
         int startPoint;
