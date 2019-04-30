@@ -10250,9 +10250,6 @@ static int64_t handle_inter_mode(
       // MV did not perform well in simple translation search. Skip it.
       continue;
     }
-    if (ref_mv_idx_early_breakout(x, &cpi->sf, args, ref_best_rd, ref_mv_idx)) {
-      continue;
-    }
     av1_init_rd_stats(rd_stats);
 
     mbmi->interinter_comp.type = COMPOUND_AVERAGE;
