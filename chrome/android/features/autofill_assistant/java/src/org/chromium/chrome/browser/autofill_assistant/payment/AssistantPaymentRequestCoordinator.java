@@ -85,8 +85,12 @@ public class AssistantPaymentRequestCoordinator implements AssistantPaymentReque
                                           model.get(AssistantPaymentRequestModel.DELEGATE)));
     }
 
-    public ScrollView getView() {
+    public View getView() {
         return mPaymentRequestUI.getView();
+    }
+
+    public ScrollView getScrollView() {
+        return mPaymentRequestUI.getScrollView();
     }
 
     private void setVisible(boolean visible) {

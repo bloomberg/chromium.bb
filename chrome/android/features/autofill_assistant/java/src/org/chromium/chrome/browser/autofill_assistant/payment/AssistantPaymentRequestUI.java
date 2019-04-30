@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.autofill_assistant.payment;
 
+import static android.widget.LinearLayout.VERTICAL;
+
 import static org.chromium.chrome.browser.payments.ui.PaymentRequestSection.EDIT_BUTTON_GONE;
 
 import android.app.Activity;
@@ -117,7 +119,8 @@ public class AssistantPaymentRequestUI
     private final EditorDialog mEditorDialog;
     private final EditorDialog mCardEditorDialog;
 
-    private FadingEdgeScrollView mRequestViewContainer;
+    private LinearLayout mRequestViewContainer;
+    private FadingEdgeScrollView mRequestViewSrollView;
     private ViewGroup mRequestView;
     private LinearLayout mPaymentContainerLayout;
 
@@ -146,10 +149,16 @@ public class AssistantPaymentRequestUI
         mActivity = activity;
         mClient = client;
 
-        mRequestViewContainer = new FadingEdgeScrollView(activity, null);
+        mRequestViewContainer = new LinearLayout(activity, null);
+        mRequestViewContainer.setOrientation(VERTICAL);
         mRequestViewContainer.setLayoutParams(
                 new LinearLayout.LayoutParams(/* width= */ ViewGroup.LayoutParams.MATCH_PARENT,
                         /* height= */ 0, /* weight= */ 1));
+
+        mRequestViewSrollView = new FadingEdgeScrollView(activity, null);
+        mRequestViewContainer.addView(mRequestViewSrollView,
+                new LinearLayout.LayoutParams(
+                        /*width=*/LayoutParams.MATCH_PARENT, /*height=*/LayoutParams.WRAP_CONTENT));
 
         mEditorDialog = new EditorDialog(mActivity, null,
                 /*deleteRunnable =*/null);
@@ -165,8 +174,15 @@ public class AssistantPaymentRequestUI
     /**
      * Gets the root view of AssistantPaymentRequestUI.
      */
-    public ScrollView getView() {
+    public View getView() {
         return mRequestViewContainer;
+    }
+
+    /**
+     * Returns the scroll view of AssistantPaymentRequestUI.
+     */
+    public ScrollView getScrollView() {
+        return mRequestViewSrollView;
     }
 
     /*
@@ -191,7 +207,7 @@ public class AssistantPaymentRequestUI
         assert mRequestView == null;
         mRequestView = (ViewGroup) LayoutInflater.from(mActivity).inflate(
                 R.layout.autofill_assistant_payment_request, null);
-        mRequestViewContainer.addView(mRequestView);
+        mRequestViewSrollView.addView(mRequestView);
         prepareRequestView(origin);
     }
 
@@ -302,7 +318,7 @@ public class AssistantPaymentRequestUI
     public void close() {
         if (mEditorDialog.isShowing()) mEditorDialog.dismiss();
         if (mCardEditorDialog.isShowing()) mCardEditorDialog.dismiss();
-        if (mRequestViewContainer != null) mRequestViewContainer.removeAllViews();
+        if (mRequestViewSrollView != null) mRequestViewSrollView.removeAllViews();
         if (mRequestView != null) mRequestView.removeAllViews();
         mRequestView = null;
         mShippingAddressSection = null;

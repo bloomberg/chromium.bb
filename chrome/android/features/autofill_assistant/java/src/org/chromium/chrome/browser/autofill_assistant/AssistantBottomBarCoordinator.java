@@ -325,8 +325,8 @@ class AssistantBottomBarCoordinator
                 return mOnboardingScrollView.getScrollY();
             }
 
-            if (mPaymentRequestCoordinator.getView().isShown()) {
-                return mPaymentRequestCoordinator.getView().getScrollY();
+            if (mPaymentRequestCoordinator.getScrollView().isShown()) {
+                return mPaymentRequestCoordinator.getScrollView().getScrollY();
             }
 
             return 0;
