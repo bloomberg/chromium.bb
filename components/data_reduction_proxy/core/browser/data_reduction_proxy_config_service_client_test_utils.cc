@@ -54,6 +54,30 @@ ClientConfig CreateConfig(const std::string& session_key,
   return config;
 }
 
+// Creates a new ClientConfig with no proxies from the given parameters.
+ClientConfig CreateEmptyProxyConfig(const std::string& session_key,
+                                    int64_t expire_duration_seconds,
+                                    int64_t expire_duration_nanoseconds,
+                                    float reporting_fraction,
+                                    bool ignore_long_term_black_list_rules) {
+  ClientConfig config;
+
+  config.set_session_key(session_key);
+  config.mutable_refresh_duration()->set_seconds(expire_duration_seconds);
+  config.mutable_refresh_duration()->set_nanos(expire_duration_nanoseconds);
+
+  // Leave the pageload_metrics_config empty when |reporting_fraction| is not
+  // inclusively between zero and one.
+  if (reporting_fraction >= 0.0f && reporting_fraction <= 1.0f) {
+    config.mutable_pageload_metrics_config()->set_reporting_fraction(
+        reporting_fraction);
+  }
+  config.set_ignore_long_term_black_list_rules(
+      ignore_long_term_black_list_rules);
+  config.mutable_proxy_config()->clear_http_proxy_servers();
+  return config;
+}
+
 // Takes |config| and returns the base64 encoding of its serialized byte stream.
 std::string EncodeConfig(const ClientConfig& config) {
   std::string config_data;

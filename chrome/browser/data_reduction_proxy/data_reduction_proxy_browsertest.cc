@@ -129,6 +129,10 @@ ClientConfig CreateConfigForServer(const net::EmbeddedTestServer& server) {
                       false);
 }
 
+ClientConfig CreateEmptyConfig() {
+  return CreateEmptyProxyConfig(kSessionKey, 1000, 0, 0.5f, false);
+}
+
 }  // namespace
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
@@ -177,8 +181,15 @@ class DataReductionProxyBrowsertestBase : public InProcessBrowserTest {
     host_resolver()->AddRule(kMockHost, "127.0.0.1");
 
     EnableDataSaver(true);
-    // Make sure initial config has been loaded.
-    WaitForConfig();
+    // Make sure initial config has been loaded. Config is fetched only if
+    // network service is not enabled, or if both network service and
+    // kDataReductionProxyEnabledWithNetworkService are enabled.
+    if (!IsNetworkServiceEnabled() ||
+        base::FeatureList::IsEnabled(
+            data_reduction_proxy::features::
+                kDataReductionProxyEnabledWithNetworkService)) {
+      WaitForConfig();
+    }
   }
 
   bool IsNetworkServiceEnabled() const {
@@ -260,7 +271,9 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, UpdateConfig) {
   SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_3G);
   WaitForConfig();
 
-  ui_test_utils::NavigateToURL(browser(), GURL("http://does.not.resolve/foo"));
+  ui_test_utils::NavigateToURL(
+      browser(),
+      GetURLWithMockHost(original_server, "/echoheader?Chrome-Proxy"));
 
   EXPECT_EQ(GetBody(), kPrimaryResponse);
 
@@ -274,9 +287,56 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, UpdateConfig) {
   SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_2G);
   WaitForConfig();
 
-  ui_test_utils::NavigateToURL(browser(), GURL("http://does.not.resolve/foo"));
+  ui_test_utils::NavigateToURL(
+      browser(),
+      GetURLWithMockHost(original_server, "/echoheader?Chrome-Proxy"));
 
   EXPECT_EQ(GetBody(), kSecondaryResponse);
+}
+
+// Verify that when a client config with no proxies is provided to Chrome,
+// then usage of proxy is disabled. Later, when the client config with valid
+// proxies is fetched, then the specified proxies are used.
+IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, EmptyConfig) {
+  net::EmbeddedTestServer origin_server;
+  origin_server.RegisterRequestHandler(
+      base::BindRepeating(&BasicResponse, kDummyBody));
+  ASSERT_TRUE(origin_server.Start());
+
+  // Set config to empty, and verify that the response comes from the
+  // |origin_server|.
+  SetConfig(CreateEmptyConfig());
+  // A network change forces the config to be fetched.
+  SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_2G);
+  WaitForConfig();
+  ui_test_utils::NavigateToURL(
+      browser(), GetURLWithMockHost(origin_server, "/echoheader?Chrome-Proxy"));
+  ASSERT_EQ(GetBody(), kDummyBody);
+
+  net::EmbeddedTestServer proxy_server;
+  proxy_server.RegisterRequestHandler(
+      base::BindRepeating(&BasicResponse, kPrimaryResponse));
+  ASSERT_TRUE(proxy_server.Start());
+
+  // Set config to |proxy_server|, and verify that the response comes from
+  // |proxy_server|.
+  SetConfig(CreateConfigForServer(proxy_server));
+  // A network change forces the config to be fetched.
+  SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_3G);
+  WaitForConfig();
+  ui_test_utils::NavigateToURL(
+      browser(), GetURLWithMockHost(origin_server, "/echoheader?Chrome-Proxy"));
+  EXPECT_EQ(GetBody(), kPrimaryResponse);
+
+  // Set config to empty again, and verify that the response comes from the
+  // |origin_server|.
+  SetConfig(CreateEmptyConfig());
+  // A network change forces the config to be fetched.
+  SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_2G);
+  WaitForConfig();
+  ui_test_utils::NavigateToURL(
+      browser(), GetURLWithMockHost(origin_server, "/echoheader?Chrome-Proxy"));
+  ASSERT_EQ(GetBody(), kDummyBody);
 }
 
 IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, ChromeProxyHeaderSet) {
@@ -1388,5 +1448,78 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, NestedWebWorker) {
       browser()->tab_strip_model()->GetActiveWebContents(), kExpectedTitle);
   EXPECT_EQ(title_watcher.WaitAndGetTitle(), kExpectedTitle);
 }
+
+// Test that disabling the kDataReductionProxyEnabledWithNetworkService disables
+// the proxy.
+class DataReductionProxyEnabledWithNetworkServiceHoldbackBrowserTest
+    : public ::testing::WithParamInterface<bool>,
+      public DataReductionProxyBrowsertest {
+ public:
+  void SetUp() override {
+    if (GetParam()) {
+      // Enable NetworkService, and disable
+      // kDataReductionProxyEnabledWithNetworkService.
+      scoped_feature_list_.InitWithFeatures(
+          {network::features::kNetworkService},
+          {data_reduction_proxy::features::
+               kDataReductionProxyEnabledWithNetworkService});
+    } else {
+      // Enable both NetworkService and
+      // kDataReductionProxyEnabledWithNetworkService.
+      scoped_feature_list_.InitWithFeatures(
+          {network::features::kNetworkService,
+           data_reduction_proxy::features::
+               kDataReductionProxyEnabledWithNetworkService},
+          {});
+    }
+
+    InProcessBrowserTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_P(
+    DataReductionProxyEnabledWithNetworkServiceHoldbackBrowserTest,
+    ProxyUsed) {
+  const bool holdback_enabled = GetParam();
+
+  net::EmbeddedTestServer origin_server;
+  origin_server.RegisterRequestHandler(
+      base::BindRepeating(&BasicResponse, kDummyBody));
+  ASSERT_TRUE(origin_server.Start());
+
+  net::EmbeddedTestServer proxy_server;
+  proxy_server.RegisterRequestHandler(
+      base::BindRepeating(&BasicResponse, kPrimaryResponse));
+  ASSERT_TRUE(proxy_server.Start());
+
+  SetConfig(CreateConfigForServer(proxy_server));
+  // A network change forces the config to be fetched.
+  SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_3G);
+  if (!holdback_enabled) {
+    WaitForConfig();
+  }
+
+  ui_test_utils::NavigateToURL(
+      browser(), GetURLWithMockHost(origin_server, "/echoheader?Chrome-Proxy"));
+
+  if (holdback_enabled) {
+    // Proxy should not be used.
+    EXPECT_EQ(GetBody(), kDummyBody);
+  } else {
+    // Proxy should be used.
+    EXPECT_EQ(GetBody(), kPrimaryResponse);
+  }
+}
+
+// Parameter is true if kDataReductionProxyEnabledWithNetworkService is
+// disabled. Disabling kDataReductionProxyEnabledWithNetworkService should
+// disable data reduction proxy when network servicification is enabled.
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    DataReductionProxyEnabledWithNetworkServiceHoldbackBrowserTest,
+    ::testing::Bool());
 
 }  // namespace data_reduction_proxy
