@@ -237,9 +237,7 @@ DeclarativeNetRequestAddDynamicRulesFunction::
 
 ExtensionFunction::ResponseAction
 DeclarativeNetRequestAddDynamicRulesFunction::Run() {
-  // TODO(crbug.com/930961): Throttle calls to extension function?
-  // TODO(crbug.com/930961): Restrict extensions from adding dynamic redirect
-  // rules?
+  // Note: If need be, we should throttle calls to these extension functions.
   using Params = dnr_api::AddDynamicRules::Params;
 
   base::string16 error;

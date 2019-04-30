@@ -586,7 +586,7 @@ class ExtensionPrefs : public KeyedService {
 
   // Returns false if there is no dynamic ruleset corresponding to
   // |extension_id|. On success, returns true and populates the checksum.
-  // TODO(crbug.com/930961): Use a single dictionary to store checksums for
+  // TODO(crbug.com/696822): Use a single dictionary to store checksums for
   // static and dynamic rulesets. This will be more relevant if and when we do
   // support multiple static rulesets.
   bool GetDNRDynamicRulesetChecksum(const ExtensionId& extension_id,

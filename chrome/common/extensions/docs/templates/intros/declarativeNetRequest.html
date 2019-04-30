@@ -145,12 +145,37 @@ pattern which is matched against the request URL. Some examples of URL filters:
 <p>
 To disable the extension ruleset on a particular page, extensions can use the
 <a href="#method-addAllowedPages">
-chrome.declarativeNetRequest.addAllowedPages</a> API. This allows
+chrome.declarativeNetRequest.addAllowedPages</a> API method. This allows
 extensions to specify <a href="/extensions/match_patterns">match patterns</a>
 that are compared against the tab URL. Any requests originating from these pages
 are not evaluated against the extension ruleset. The number of such patterns an
 extension can add is bound by the
 <a href="#property-MAX_NUMBER_OF_ALLOWED_PAGES">chrome.declarativeNetRequest.MAX_NUMBER_OF_ALLOWED_PAGES</a> constant.
+</p>
+
+<h2 id="dynamic-rules">Dynamic rules</h2>
+
+<p>
+To add rules dynamically, extensions can use the
+<a href="#method-addDynamicRules">
+chrome.declarativeNetRequest.addDynamicRules</a> API method.
+
+<ul>
+<li>
+  The number of dynamic rules that an an extension can add is bounded by the
+  <a href="#property-MAX_NUMBER_OF_DYNAMIC_RULES">chrome.declarativeNetRequest.MAX_NUMBER_OF_DYNAMIC_RULES</a>
+  constant.
+</li>
+<li>
+  An extension's dynamic ruleset is maintained separately from its static
+  ruleset (the ruleset specified as part of the extension package). For example,
+  it's possible to have the same rule ID across static and dynamic rulesets.
+</li>
+<li>
+  For conflicting actions, dynamic rules are given priority over static rules.
+</li>
+</ul>
+
 </p>
 
 <h2 id="implementation-details">Implementation details</h2>
@@ -178,8 +203,10 @@ extension can add is bound by the
 
 [1] An extension wants to block a request, if all the following are true:
 <ul>
-  <li>The extension has a matching <code>block</code> rule.</li>
-  <li>The extension has no matching <code>allow</code> rule.</li>
+  <li>
+      The extension has a matching block rule. Note the priority order between
+      the different block/allow actions: <br/>dynamic allow > dynamic block > static allow > static block.
+  </li>
   <li>
     The page from which the request originated is not allow-listed by the
     extension using <a href="#method-addAllowedPages">
