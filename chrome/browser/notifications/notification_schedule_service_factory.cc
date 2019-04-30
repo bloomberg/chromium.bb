@@ -4,12 +4,16 @@
 
 #include "chrome/browser/notifications/notification_schedule_service_factory.h"
 
+#include <memory>
+#include <utility>
+
 #include "chrome/browser/notifications/notification_background_task_scheduler_impl.h"
 #include "chrome/browser/notifications/scheduler/notification_schedule_service.h"
 #include "chrome/browser/notifications/scheduler/notification_scheduler_context.h"
 #include "chrome/browser/notifications/scheduler/schedule_service_factory_helper.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_constants.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/leveldb_proto/content/proto_database_provider_factory.h"
 
@@ -40,14 +44,15 @@ NotificationScheduleServiceFactory::~NotificationScheduleServiceFactory() =
 
 KeyedService* NotificationScheduleServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  // Pass all dependencies to notification scheduler and build the service
-  // instance.
+  auto* profile = Profile::FromBrowserContext(context);
+  base::FilePath storage_dir =
+      profile->GetPath().Append(chrome::kNotificationSchedulerStorageDirname);
   auto background_task_scheduler =
       std::make_unique<NotificationBackgroundTaskSchedulerImpl>();
   auto* db_provider = leveldb_proto::ProtoDatabaseProviderFactory::GetForKey(
-      Profile::FromBrowserContext(context)->GetProfileKey());
+      profile->GetProfileKey());
   return notifications::CreateNotificationScheduleService(
-      std::move(background_task_scheduler), db_provider);
+      std::move(background_task_scheduler), db_provider, storage_dir);
 }
 
 content::BrowserContext*

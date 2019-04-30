@@ -27,6 +27,7 @@ class NotificationBackgroundTaskScheduler {
     virtual void OnStopTask() = 0;
 
    protected:
+    Handler() = default;
     virtual ~Handler() = default;
 
    private:

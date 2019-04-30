@@ -45,10 +45,12 @@ source_set("factory") {
     "schedule_service_factory_helper.h",
   ]
 
+  # This target should not depend on anything in //chrome/* except the proto library.
   deps = [
     ":lib",
     ":public",
     "//base",
+    "//chrome/browser/notifications/proto",
     "//components/keyed_service/core",
     "//components/leveldb_proto",
   ]

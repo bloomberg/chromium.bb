@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
 
@@ -24,7 +25,8 @@ class NotificationBackgroundTaskScheduler;
 KeyedService* CreateNotificationScheduleService(
     std::unique_ptr<NotificationBackgroundTaskScheduler>
         background_task_scheduler,
-    leveldb_proto::ProtoDatabaseProvider* db_provider);
+    leveldb_proto::ProtoDatabaseProvider* db_provider,
+    const base::FilePath& storage_dir);
 
 }  // namespace notifications
 
