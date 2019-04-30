@@ -75,15 +75,16 @@ bool NullTerminatedUtf16BufferToString16(const std::vector<BYTE>& buffer,
                                          DWORD* current_byte,
                                          base::string16* parsed_string) {
   const DWORD string_start = *current_byte;
-  const int kMaxCharactersToRead = buffer.size() - *current_byte;
+  const int kMaxWideCharactersToRead =
+      (buffer.size() - *current_byte) / sizeof(wchar_t);
   int string_size =
       wcsnlen_s(reinterpret_cast<const wchar_t*>(buffer.data() + string_start),
-                kMaxCharactersToRead);
+                kMaxWideCharactersToRead);
 
   // If the null character was not found, strnlen_s will return the
   // value of kMaxCharactersToRead. This is an indicator of a bad format, since
   // the strings we read will never be at the end of the buffer.
-  if (string_size == kMaxCharactersToRead)
+  if (string_size == kMaxWideCharactersToRead)
     return false;
 
   // Consider the null terminated byte at the end of the string.
