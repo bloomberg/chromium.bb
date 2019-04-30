@@ -16,8 +16,6 @@ namespace content {
 FakeBluetoothChooser::~FakeBluetoothChooser() {
   SetTestBluetoothScanDuration(
       BluetoothTestScanDurationSetting::kImmediateTimeout);
-  // TODO(https://crbug.com/719826): Send a
-  // mojom::ChooserEventType::CHOOSER_CLOSED event to the client.
 }
 
 // static
@@ -43,35 +41,34 @@ void FakeBluetoothChooser::WaitForEvents(uint32_t num_of_events,
 }
 
 void FakeBluetoothChooser::SelectPeripheral(
-    const std::string& peripheral_address) {
-  event_handler_.Run(BluetoothChooser::Event::SELECTED, peripheral_address);
-}
-
-void FakeBluetoothChooser::Cancel() {
-  // TODO(https://crbug.com/719826): Send a BluetoothChooser::CANCELLED event to
-  // |event_handler_| and a mojom::ChooserEventType::CHOOSER_CLOSED to the
-  // client.
+    const std::string& peripheral_address,
+    SelectPeripheralCallback callback) {
+  // TODO(https://crbug.com/719826): Record the event and send a
+  // BluetoothChooser::SELECTED event to |event_handler_|.
   NOTREACHED();
 }
 
-void FakeBluetoothChooser::Rescan() {
-  // TODO(https://crbug.com/719826): Send a BluetoothChooser::RESCAN event to
-  // |event_handler_| and the appropriate mojom::ChooserEventType to describe
-  // the discovery session.
+void FakeBluetoothChooser::Cancel(CancelCallback callback) {
+  // TODO(https://crbug.com/719826): Record the event and send a
+  // BluetoothChooser::CANCELLED event to |event_handler_|.
+  NOTREACHED();
+}
+
+void FakeBluetoothChooser::Rescan(RescanCallback callback) {
+  // TODO(https://crbug.com/719826): Record the event and send a
+  // BluetoothChooser::RESCAN event to |event_handler_|.
   NOTREACHED();
 }
 
 // BluetoothChooser overrides
 
 void FakeBluetoothChooser::SetAdapterPresence(AdapterPresence presence) {
-  // TODO(https://crbug.com/719826): Send the appropriate
-  // mojom::ChooserEventType to the client.
+  // TODO(https://crbug.com/719826): Record the event.
   NOTREACHED();
 }
 
 void FakeBluetoothChooser::ShowDiscoveryState(DiscoveryState state) {
-  // TODO(https://crbug.com/719826): Send the appropriate
-  // mojom::ChooserEventType to the client.
+  // TODO(https://crbug.com/719826): Record the event.
   NOTREACHED();
 }
 
@@ -81,8 +78,7 @@ void FakeBluetoothChooser::AddOrUpdateDevice(const std::string& device_id,
                                              bool is_gatt_connected,
                                              bool is_paired,
                                              int signal_strength_level) {
-  // TODO(https://crbug.com/719826): Send a
-  // mojom::ChooserEventType::ADD_OR_UPDATE_DEVICE to the client.
+  // TODO(https://crbug.com/719826): Record the event.
   NOTREACHED();
 }
 
