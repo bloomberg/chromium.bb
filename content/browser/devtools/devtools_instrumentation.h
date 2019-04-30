@@ -116,6 +116,10 @@ bool HandleCertificateError(WebContents* web_contents,
                             const GURL& request_url,
                             CertErrorCallback callback);
 
+void PortalAttached(RenderFrameHostImpl* render_frame_host_impl);
+void PortalDetached(RenderFrameHostImpl* render_frame_host_impl);
+void PortalActivated(RenderFrameHostImpl* render_frame_host_impl);
+
 }  // namespace devtools_instrumentation
 
 }  // namespace content

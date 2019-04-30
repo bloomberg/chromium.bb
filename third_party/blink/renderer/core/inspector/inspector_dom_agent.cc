@@ -62,6 +62,8 @@
 #include "third_party/blink/renderer/core/html/html_template_element.h"
 #include "third_party/blink/renderer/core/html/imports/html_import_child.h"
 #include "third_party/blink/renderer/core/html/imports/html_import_loader.h"
+#include "third_party/blink/renderer/core/html/portal/document_portals.h"
+#include "third_party/blink/renderer/core/html/portal/html_portal_element.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/inspector/dom_editor.h"
 #include "third_party/blink/renderer/core/inspector/dom_patch_support.h"
@@ -2230,6 +2232,15 @@ protocol::Response InspectorDOMAgent::getFrameOwner(
   for (; frame; frame = frame->Tree().TraverseNext(inspected_frames_->Root())) {
     if (IdentifiersFactory::FrameId(frame) == frame_id)
       break;
+  }
+  if (!frame) {
+    for (HTMLPortalElement* portal :
+         DocumentPortals::From(*inspected_frames_->Root()->GetDocument())
+             .GetPortals()) {
+      frame = portal->ContentFrame();
+      if (IdentifiersFactory::FrameId(frame) == frame_id)
+        break;
+    }
   }
   if (!frame)
     return Response::Error("Frame with the given id was not found.");

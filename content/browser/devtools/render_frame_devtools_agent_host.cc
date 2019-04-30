@@ -631,6 +631,10 @@ std::string RenderFrameDevToolsAgentHost::GetOpenerId() {
 
 std::string RenderFrameDevToolsAgentHost::GetType() {
   if (web_contents() &&
+      static_cast<WebContentsImpl*>(web_contents())->IsPortal()) {
+    return kTypePage;
+  }
+  if (web_contents() &&
       static_cast<WebContentsImpl*>(web_contents())->GetOuterWebContents()) {
     return kTypeGuest;
   }

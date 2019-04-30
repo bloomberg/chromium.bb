@@ -62,7 +62,6 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   static void SignalSynchronousSwapCompositorFrame(
       RenderFrameHost* frame_host,
       const DevToolsFrameMetadata& frame_metadata);
-
   FrameTreeNode* frame_tree_node() { return frame_tree_node_; }
 
   // DevToolsAgentHost overrides.

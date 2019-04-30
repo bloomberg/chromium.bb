@@ -13,6 +13,7 @@
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 
 namespace content {
 namespace protocol {
@@ -135,7 +136,32 @@ void TargetAutoAttacher::SetRenderFrameHost(
     RenderFrameHostImpl* render_frame_host) {
   render_frame_host_ = render_frame_host;
   UpdateFrames();
+  UpdatePortals();
   ReattachServiceWorkers(false);
+}
+
+void TargetAutoAttacher::UpdatePortals() {
+  if (!auto_attach_)
+    return;
+
+  Hosts new_hosts;
+  if (render_frame_host_ &&
+      render_frame_host_->frame_tree_node()->IsMainFrame()) {
+    WebContentsImpl* outer_web_contents = static_cast<WebContentsImpl*>(
+        WebContents::FromRenderFrameHost(render_frame_host_));
+    for (WebContents* web_contents :
+         outer_web_contents->GetInnerWebContents()) {
+      WebContentsImpl* web_contents_impl =
+          static_cast<WebContentsImpl*>(web_contents);
+      scoped_refptr<DevToolsAgentHost> new_host =
+          RenderFrameDevToolsAgentHost::GetOrCreateFor(
+              web_contents_impl->GetFrameTree()->root());
+      new_hosts.insert(new_host);
+    }
+  }
+
+  // TODO(dgozman): support wait_for_debugger_on_start_.
+  ReattachTargetsOfType(new_hosts, DevToolsAgentHost::kTypePage, false);
 }
 
 void TargetAutoAttacher::UpdateServiceWorkers() {
@@ -189,7 +215,12 @@ DevToolsAgentHost* TargetAutoAttacher::AutoAttachToFrame(
       RenderFrameDevToolsAgentHost::FindForDangling(frame_tree_node);
 
   bool old_cross_process = !!agent_host;
-  bool new_cross_process = new_host && new_host->IsCrossProcessSubframe();
+  bool is_portal_main_frame =
+      frame_tree_node->IsMainFrame() && new_host &&
+      static_cast<WebContentsImpl*>(WebContents::FromRenderFrameHost(new_host))
+          ->IsPortal();
+  bool new_cross_process =
+      (new_host && new_host->IsCrossProcessSubframe()) || is_portal_main_frame;
 
   if (old_cross_process == new_cross_process)
     return nullptr;
@@ -262,10 +293,12 @@ void TargetAutoAttacher::SetAutoAttach(bool auto_attach,
       ReattachServiceWorkers(false);
     }
     UpdateFrames();
+    UpdatePortals();
   } else if (!auto_attach && auto_attach_) {
     auto_attach_ = false;
     Hosts empty;
     ReattachTargetsOfType(empty, DevToolsAgentHost::kTypeFrame, false);
+    ReattachTargetsOfType(empty, DevToolsAgentHost::kTypePage, false);
     if (auto_attaching_service_workers_) {
       ServiceWorkerDevToolsManager::GetInstance()->RemoveObserver(this);
       ReattachTargetsOfType(empty, DevToolsAgentHost::kTypeServiceWorker,

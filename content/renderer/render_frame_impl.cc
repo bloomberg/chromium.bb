@@ -4258,20 +4258,23 @@ std::pair<blink::WebRemoteFrame*, base::UnguessableToken>
 RenderFrameImpl::CreatePortal(mojo::ScopedInterfaceEndpointHandle pipe) {
   int proxy_routing_id = MSG_ROUTING_NONE;
   base::UnguessableToken portal_token;
+  base::UnguessableToken devtools_frame_token;
   GetFrameHost()->CreatePortal(
       blink::mojom::PortalAssociatedRequest(std::move(pipe)), &proxy_routing_id,
-      &portal_token);
-  RenderFrameProxy* proxy =
-      RenderFrameProxy::CreateProxyForPortal(this, proxy_routing_id);
+      &portal_token, &devtools_frame_token);
+  RenderFrameProxy* proxy = RenderFrameProxy::CreateProxyForPortal(
+      this, proxy_routing_id, devtools_frame_token);
   return std::make_pair(proxy->web_frame(), portal_token);
 }
 
 blink::WebRemoteFrame* RenderFrameImpl::AdoptPortal(
     const base::UnguessableToken& portal_token) {
   int proxy_routing_id = MSG_ROUTING_NONE;
-  GetFrameHost()->AdoptPortal(portal_token, &proxy_routing_id);
-  RenderFrameProxy* proxy =
-      RenderFrameProxy::CreateProxyForPortal(this, proxy_routing_id);
+  base::UnguessableToken devtools_frame_token;
+  GetFrameHost()->AdoptPortal(portal_token, &proxy_routing_id,
+                              &devtools_frame_token);
+  RenderFrameProxy* proxy = RenderFrameProxy::CreateProxyForPortal(
+      this, proxy_routing_id, devtools_frame_token);
   return proxy->web_frame();
 }
 

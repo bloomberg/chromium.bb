@@ -3832,7 +3832,8 @@ void RenderFrameHostImpl::CreatePortal(
   }
   Portal* portal = Portal::Create(this, std::move(request));
   RenderFrameProxyHost* proxy_host = portal->CreateProxyAndAttachPortal();
-  std::move(callback).Run(proxy_host->GetRoutingID(), portal->portal_token());
+  std::move(callback).Run(proxy_host->GetRoutingID(), portal->portal_token(),
+                          portal->GetDevToolsFrameToken());
 }
 
 void RenderFrameHostImpl::AdoptPortal(
@@ -3848,7 +3849,8 @@ void RenderFrameHostImpl::AdoptPortal(
     return;
   }
   RenderFrameProxyHost* proxy_host = portal->CreateProxyAndAttachPortal();
-  std::move(callback).Run(proxy_host->GetRoutingID());
+  std::move(callback).Run(proxy_host->GetRoutingID(),
+                          portal->GetDevToolsFrameToken());
 }
 
 void RenderFrameHostImpl::IssueKeepAliveHandle(

@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
@@ -40,6 +41,10 @@ Portal::Portal(RenderFrameHostImpl* owner_render_frame_host)
 }
 
 Portal::~Portal() {
+  WebContentsImpl* outer_contents_impl = static_cast<WebContentsImpl*>(
+      WebContents::FromRenderFrameHost(owner_render_frame_host_));
+  devtools_instrumentation::PortalDetached(outer_contents_impl->GetMainFrame());
+
   g_portal_token_map.Get().erase(portal_token_);
 }
 
@@ -122,6 +127,8 @@ RenderFrameProxyHost* Portal::CreateProxyAndAttachPortal() {
   if (web_contents_created)
     PortalWebContentsCreated(portal_contents_impl_);
 
+  devtools_instrumentation::PortalAttached(outer_contents_impl->GetMainFrame());
+
   return proxy_host;
 }
 
@@ -165,6 +172,8 @@ void Portal::Activate(blink::TransferableMessage data,
   portal_contents_impl_->GetMainFrame()->OnPortalActivated(
       portal->portal_token_, portal_ptr.PassInterface(), std::move(data),
       std::move(callback));
+
+  devtools_instrumentation::PortalActivated(outer_contents->GetMainFrame());
 }
 
 void Portal::PostMessage(blink::TransferableMessage message,
@@ -188,6 +197,10 @@ void Portal::PortalWebContentsCreated(WebContents* portal_web_contents) {
       WebContents::FromRenderFrameHost(owner_render_frame_host_));
   DCHECK(outer_contents->GetDelegate());
   outer_contents->GetDelegate()->PortalWebContentsCreated(portal_web_contents);
+}
+
+base::UnguessableToken Portal::GetDevToolsFrameToken() const {
+  return portal_contents_impl_->GetMainFrame()->GetDevToolsFrameToken();
 }
 
 WebContentsImpl* Portal::GetPortalContents() {

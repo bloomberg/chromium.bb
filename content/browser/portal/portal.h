@@ -70,6 +70,9 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
   // Returns the token which uniquely identifies this Portal.
   const base::UnguessableToken& portal_token() const { return portal_token_; }
 
+  // Returns the devtools frame token for the portal's main frame.
+  base::UnguessableToken GetDevToolsFrameToken() const;
+
   // Returns the Portal's WebContents.
   WebContentsImpl* GetPortalContents();
 

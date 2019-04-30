@@ -492,6 +492,10 @@ std::unique_ptr<NavigationThrottle> TargetHandler::CreateThrottleForNavigation(
                                     navigation_handle);
 }
 
+void TargetHandler::UpdatePortals() {
+  auto_attacher_.UpdatePortals();
+}
+
 void TargetHandler::ClearThrottles() {
   base::flat_set<Throttle*> copy(throttles_);
   for (Throttle* throttle : copy)

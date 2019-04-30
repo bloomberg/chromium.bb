@@ -56,6 +56,7 @@ class TargetHandler : public DevToolsDomainHandler,
   void DidFinishNavigation();
   std::unique_ptr<NavigationThrottle> CreateThrottleForNavigation(
       NavigationHandle* navigation_handle);
+  void UpdatePortals();
 
   // Domain implementation.
   Response SetDiscoverTargets(bool discover) override;

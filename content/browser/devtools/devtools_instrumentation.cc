@@ -15,6 +15,7 @@
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_package/signed_exchange_envelope.h"
 #include "content/common/navigation_params.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -159,9 +160,18 @@ std::vector<std::unique_ptr<NavigationThrottle>> CreateNavigationThrottles(
         result.push_back(std::move(throttle));
     }
   }
-  if (!frame_tree_node->parent())
-    return result;
-  agent_host = RenderFrameDevToolsAgentHost::GetFor(frame_tree_node->parent());
+  FrameTreeNode* parent = frame_tree_node->parent();
+  if (!parent) {
+    if (WebContentsImpl::FromFrameTreeNode(frame_tree_node)->IsPortal()) {
+      parent = WebContentsImpl::FromFrameTreeNode(frame_tree_node)
+                   ->GetOuterWebContents()
+                   ->GetFrameTree()
+                   ->root();
+    } else {
+      return result;
+    }
+  }
+  agent_host = RenderFrameDevToolsAgentHost::GetFor(parent);
   if (agent_host) {
     for (auto* target_handler :
          protocol::TargetHandler::ForAgentHost(agent_host)) {
@@ -356,6 +366,21 @@ bool HandleCertificateError(WebContents* web_contents,
     }
   }
   return !callback;
+}
+
+void PortalAttached(RenderFrameHostImpl* render_frame_host_impl) {
+  DispatchToAgents(render_frame_host_impl->frame_tree_node(),
+                   &protocol::TargetHandler::UpdatePortals);
+}
+
+void PortalDetached(RenderFrameHostImpl* render_frame_host_impl) {
+  DispatchToAgents(render_frame_host_impl->frame_tree_node(),
+                   &protocol::TargetHandler::UpdatePortals);
+}
+
+void PortalActivated(RenderFrameHostImpl* render_frame_host_impl) {
+  DispatchToAgents(render_frame_host_impl->frame_tree_node(),
+                   &protocol::TargetHandler::UpdatePortals);
 }
 
 }  // namespace devtools_instrumentation

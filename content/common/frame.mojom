@@ -345,13 +345,15 @@ interface FrameHost {
   // |portal_token|, which is the unique identifier for the portal.
   [Sync] CreatePortal(associated blink.mojom.Portal& portal)
       => (int32 proxy_routing_id,
-          mojo_base.mojom.UnguessableToken portal_token);
+          mojo_base.mojom.UnguessableToken portal_token,
+          mojo_base.mojom.UnguessableToken devtools_frame_token);
 
   // Requests that this frame adopts the portal identified by |portal_token|.
   // Returns |proxy_routing_id|, which is the routing id of the portal's
   // RenderFrameProxy.
   [Sync] AdoptPortal(mojo_base.mojom.UnguessableToken portal_token)
-      => (int32 proxy_routing_id);
+      => (int32 proxy_routing_id,
+          mojo_base.mojom.UnguessableToken devtools_frame_token);
 
   // Creates and returns a KeepAliveHandle.
   IssueKeepAliveHandle(KeepAliveHandle& keep_alive_handle);

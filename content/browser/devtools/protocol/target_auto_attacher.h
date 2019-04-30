@@ -35,6 +35,7 @@ class TargetAutoAttacher : public ServiceWorkerDevToolsManager::Observer {
                      bool wait_for_debugger_on_start,
                      base::OnceClosure callback);
 
+  void UpdatePortals();
   void UpdateServiceWorkers();
   void AgentHostClosed(DevToolsAgentHost* host);
 
