@@ -42,6 +42,11 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantContainerViewAnimatorLegacyImpl
   void Init() override;
   void OnBoundsChanged() override;
   void OnPreferredSizeChanged() override;
+  void OnUiVisibilityChanged(
+      AssistantVisibility new_visibility,
+      AssistantVisibility old_visibility,
+      base::Optional<AssistantEntryPoint> entry_point,
+      base::Optional<AssistantExitPoint> exit_point) override;
 
   // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;

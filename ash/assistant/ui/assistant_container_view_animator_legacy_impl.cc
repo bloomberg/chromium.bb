@@ -9,6 +9,8 @@
 #include "ash/assistant/ui/assistant_container_view.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
+#include "ash/assistant/util/animation_util.h"
+#include "ash/assistant/util/assistant_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/views/animation/ink_drop_painted_layer_delegates.h"
@@ -20,6 +22,7 @@ namespace {
 
 // Animation.
 constexpr int kAnimationDurationMs = 250;
+constexpr int kFadeInAnimationDelayMs = 17;
 
 // Helpers ---------------------------------------------------------------------
 
@@ -100,6 +103,41 @@ void AssistantContainerViewAnimatorLegacyImpl::OnPreferredSizeChanged() {
   // Update corner radius and resize without animation.
   assistant_container_view_->SetCornerRadius(end_radius_);
   assistant_container_view_->SizeToContents();
+}
+
+void AssistantContainerViewAnimatorLegacyImpl::OnUiVisibilityChanged(
+    AssistantVisibility new_visibility,
+    AssistantVisibility old_visibility,
+    base::Optional<AssistantEntryPoint> entry_point,
+    base::Optional<AssistantExitPoint> exit_point) {
+  if (!assistant::util::IsStartingSession(new_visibility, old_visibility))
+    return;
+
+  // Start the container open animation on height growth and fade-in when
+  // Assistant starts a new session.
+  using assistant::util::CreateLayerAnimationSequence;
+  using assistant::util::CreateOpacityElement;
+  animation_.reset();
+
+  // Animate the fade in with a delay.
+  assistant_container_view_->GetNonClientViewLayer()->SetOpacity(0.f);
+  assistant_container_view_->GetNonClientViewLayer()
+      ->GetAnimator()
+      ->StartAnimation(CreateLayerAnimationSequence(
+          ui::LayerAnimationElement::CreatePauseElement(
+              ui::LayerAnimationElement::AnimatableProperty::OPACITY,
+              base::TimeDelta::FromMilliseconds(kFadeInAnimationDelayMs)),
+          CreateOpacityElement(
+              1.f, base::TimeDelta::FromMilliseconds(kAnimationDurationMs),
+              gfx::Tween::Type::FAST_OUT_SLOW_IN_2)));
+
+  // Set the initial animation value of bound with height equals to 0.
+  gfx::Rect current_bounds = assistant_container_view_->bounds();
+  assistant_container_view_->SetBounds(
+      current_bounds.x(), current_bounds.y() + current_bounds.height(),
+      current_bounds.width(), 0);
+  // Animate the height growth.
+  OnPreferredSizeChanged();
 }
 
 void AssistantContainerViewAnimatorLegacyImpl::AnimationProgressed(
