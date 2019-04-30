@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/fileapi/file.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/modules/webshare/share_data.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
@@ -107,6 +108,10 @@ void NavigatorShare::ShareClientImpl::Callback(mojom::blink::ShareError error) {
   if (error == mojom::blink::ShareError::OK) {
     resolver_->Resolve();
   } else {
+    if (error == mojom::blink::ShareError::CANCELED) {
+      UseCounter::Count(ExecutionContext::From(resolver_->GetScriptState()),
+                        WebFeature::kWebShareCancelled);
+    }
     resolver_->Reject(DOMException::Create(
         (error == mojom::blink::ShareError::PERMISSION_DENIED)
             ? DOMExceptionCode::kNotAllowedError
@@ -199,7 +204,7 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
 
   WTF::Vector<mojom::blink::SharedFilePtr> files;
   uint64_t total_bytes = 0;
-  if (share_data->hasFiles()) {
+  if (HasFiles(*share_data)) {
     files.ReserveInitialCapacity(share_data->files().size());
     for (const blink::Member<blink::File>& file : share_data->files()) {
       total_bytes += file->size();
@@ -213,6 +218,9 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
           DOMExceptionCode::kNotAllowedError, "Permission denied");
       return ScriptPromise::RejectWithDOMException(script_state, error);
     }
+    UseCounter::Count(*doc, WebFeature::kWebShareContainingFiles);
+  } else {
+    UseCounter::Count(*doc, WebFeature::kWebShareWithoutFiles);
   }
 
   service_->Share(
