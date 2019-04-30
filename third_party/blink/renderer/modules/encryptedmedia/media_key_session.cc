@@ -76,9 +76,11 @@ static bool IsValidSessionId(const String& session_id) {
   if (!session_id.ContainsOnlyASCIIOrEmpty())
     return false;
 
-  // Check that the sessionId only contains alphanumeric characters.
+  // Check that |session_id| only contains non-space printable characters for
+  // easier logging. Note that checking alphanumeric is too strict because there
+  // are key systems using Base64 session IDs. See https://crbug.com/902828.
   for (unsigned i = 0; i < session_id.length(); ++i) {
-    if (!IsASCIIAlphanumeric(session_id[i]))
+    if (!IsASCIIPrintable(session_id[i]) || session_id[i] == ' ')
       return false;
   }
 

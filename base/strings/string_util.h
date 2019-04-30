@@ -383,6 +383,10 @@ template <typename Char>
 inline bool IsAsciiDigit(Char c) {
   return c >= '0' && c <= '9';
 }
+template <typename Char>
+inline bool IsAsciiPrintable(Char c) {
+  return c >= ' ' && c <= '~';
+}
 
 template <typename Char>
 inline bool IsHexDigit(Char c) {
