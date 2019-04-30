@@ -653,9 +653,13 @@ audio::-webkit-media-controls input[pseudo="-webkit-media-controls-volume-slider
 }
 
 video::-webkit-media-controls input[pseudo="-webkit-media-controls-timeline" i]:hover::-webkit-slider-thumb,
+video::-webkit-media-controls input[pseudo="-webkit-media-controls-timeline" i]:focus::-webkit-slider-thumb,
 audio::-webkit-media-controls input[pseudo="-webkit-media-controls-timeline" i]:hover::-webkit-slider-thumb,
+audio::-webkit-media-controls input[pseudo="-webkit-media-controls-timeline" i]:focus::-webkit-slider-thumb,
 video::-webkit-media-controls input[pseudo="-webkit-media-controls-volume-slider" i]:hover::-webkit-slider-thumb,
-audio::-webkit-media-controls input[pseudo="-webkit-media-controls-volume-slider" i]:hover::-webkit-slider-thumb {
+video::-webkit-media-controls input[pseudo="-webkit-media-controls-volume-slider" i]:focus::-webkit-slider-thumb,
+audio::-webkit-media-controls input[pseudo="-webkit-media-controls-volume-slider" i]:hover::-webkit-slider-thumb,
+audio::-webkit-media-controls input[pseudo="-webkit-media-controls-volume-slider" i]:focus::-webkit-slider-thumb {
   opacity: 1;
 }
 
