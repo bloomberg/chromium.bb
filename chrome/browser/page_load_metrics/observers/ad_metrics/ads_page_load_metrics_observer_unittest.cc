@@ -749,7 +749,8 @@ TEST_F(AdsPageLoadMetricsObserverTest, MainFrameAdBytesRecorded) {
 // UKM metrics for ad page load are recorded correctly.
 TEST_F(AdsPageLoadMetricsObserverTest, AdPageLoadUKM) {
   ukm::TestAutoSetUkmRecorder ukm_recorder;
-  NavigateMainFrame(kNonAdUrl);
+  RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
+  RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
 
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
@@ -767,6 +768,10 @@ TEST_F(AdsPageLoadMetricsObserverTest, AdPageLoadUKM) {
   ResourceDataUpdate(main_rfh(), ResourceCached::NOT_CACHED,
                      10 /* resource_size_in_kbyte */,
                      "video/webm" /* mime_type */, true /* is_ad_resource */);
+
+  // Update cpu timings.
+  OnCpuTimingUpdate(ad_frame, base::TimeDelta::FromMilliseconds(500));
+  OnCpuTimingUpdate(main_rfh(), base::TimeDelta::FromMilliseconds(500));
   NavigateMainFrame(kNonAdUrl);
 
   auto entries =
@@ -795,6 +800,9 @@ TEST_F(AdsPageLoadMetricsObserverTest, AdPageLoadUKM) {
           entries.front(),
           ukm::builders::AdPageLoad::kAdBytesPerSecondAfterInteractiveName),
       0);
+  EXPECT_EQ(*ukm_recorder.GetEntryMetric(
+                entries.front(), ukm::builders::AdPageLoad::kAdCpuTimeName),
+            500);
 }
 
 TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetrics) {

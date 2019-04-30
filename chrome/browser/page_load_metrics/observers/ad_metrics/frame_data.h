@@ -122,6 +122,9 @@ class FrameData {
   // Get the cpu usage for the appropriate activation period.
   base::TimeDelta GetActivationCpuUsage(UserActivationStatus status) const;
 
+  // Get total cpu usage for the frame.
+  base::TimeDelta GetTotalCpuUsage() const;
+
   // Records that the sticky user activation bit has been set on the frame.
   // Cannot be unset.  Also records the page foreground duration at that time.
   void SetReceivedUserActivation(base::TimeDelta foreground_duration);

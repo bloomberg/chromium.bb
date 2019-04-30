@@ -491,6 +491,13 @@ void AdsPageLoadMetricsObserver::RecordPageResourceTotalHistograms(
       .SetAdVideoBytes(aggregate_frame_data_->GetAdNetworkBytesForMime(
                            FrameData::ResourceMimeType::kVideo) >>
                        10);
+
+  // Record cpu metrics for the page.
+  base::TimeDelta total_ad_cpu_time;
+  for (auto const& ad_frame : ad_frames_data_storage_)
+    total_ad_cpu_time += ad_frame.GetTotalCpuUsage();
+  builder.SetAdCpuTime(total_ad_cpu_time.InMilliseconds());
+
   base::TimeTicks current_time = clock_->NowTicks();
   if (!time_commit_.is_null()) {
     int time_since_commit = (current_time - time_commit_).InMicroseconds();

@@ -105,6 +105,12 @@ be describing additional metrics about the same event.
       page was interactive.
     </summary>
   </metric>
+  <metric name="AdCpuTime">
+    <summary>
+      Amount of CPU wall time inside of ad iframes over the duration of a page
+      load, while the page is in the foreground. Measured in milliseconds.
+    </summary>
+  </metric>
   <metric name="AdJavascriptBytes">
     <summary>
       Amount of bytes used to load ad resources with a supported javascript mime
@@ -4390,6 +4396,12 @@ be describing additional metrics about the same event.
   <summary>
     Core metrics associated with web page loads.
   </summary>
+  <metric name="CpuTime">
+    <summary>
+      Amount of CPU wall time over the duration of a page load, while the page
+      is in the foreground. Measured in milliseconds.
+    </summary>
+  </metric>
   <metric name="DocumentTiming.NavigationToDOMContentLoadedEventFired">
     <summary>
       Measures the time in milliseconds from navigation timing's navigation

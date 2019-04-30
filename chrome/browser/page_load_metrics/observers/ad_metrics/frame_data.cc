@@ -150,6 +150,13 @@ base::TimeDelta FrameData::GetActivationCpuUsage(
   return cpu_by_activation_period_[static_cast<int>(status)];
 }
 
+base::TimeDelta FrameData::GetTotalCpuUsage() const {
+  base::TimeDelta total_cpu_time;
+  for (base::TimeDelta cpu_time : cpu_by_interactive_period_)
+    total_cpu_time += cpu_time;
+  return total_cpu_time;
+}
+
 void FrameData::SetReceivedUserActivation(base::TimeDelta foreground_duration) {
   user_activation_status_ = UserActivationStatus::kReceivedActivation;
   pre_activation_foreground_duration_ = foreground_duration;

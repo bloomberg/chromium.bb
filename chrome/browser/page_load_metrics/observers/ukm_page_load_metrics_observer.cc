@@ -373,6 +373,8 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
         longest_input_timestamp.InMilliseconds());
   }
 
+  builder.SetCpuTime(total_foreground_cpu_time_.InMilliseconds());
+
   // Use a bucket spacing factor of 1.3 for bytes.
   builder.SetNet_CacheBytes(ukm::GetExponentialBucketMin(cache_bytes_, 1.3));
   builder.SetNet_NetworkBytes2(
@@ -576,6 +578,13 @@ void UkmPageLoadMetricsObserver::OnTimingUpdate(
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
   largest_contentful_paint_handler_.RecordTiming(timing.paint_timing,
                                                  subframe_rfh);
+}
+
+void UkmPageLoadMetricsObserver::OnCpuTimingUpdate(
+    content::RenderFrameHost* subframe_rfh,
+    const page_load_metrics::mojom::CpuTiming& timing) {
+  if (GetDelegate()->GetVisibilityTracker().currently_in_foreground())
+    total_foreground_cpu_time_ += timing.task_time;
 }
 
 void UkmPageLoadMetricsObserver::RecordNoStatePrefetchMetrics(

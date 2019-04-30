@@ -952,6 +952,29 @@ TEST_F(UkmPageLoadMetricsObserverTest, PageSizeMetrics) {
   }
 }
 
+TEST_F(UkmPageLoadMetricsObserverTest, CpuTimeMetrics) {
+  NavigateAndCommit(GURL(kTestUrl1));
+
+  // Simulate some CPU usage.
+  page_load_metrics::mojom::CpuTiming cpu_timing(
+      base::TimeDelta::FromMilliseconds(500));
+  SimulateCpuTimingUpdate(cpu_timing);
+
+  // Simulate closing the tab.
+  DeleteContents();
+
+  std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> merged_entries =
+      test_ukm_recorder().GetMergedEntriesByName(PageLoad::kEntryName);
+  EXPECT_EQ(1ul, merged_entries.size());
+
+  for (const auto& kv : merged_entries) {
+    test_ukm_recorder().ExpectEntrySourceHasUrl(kv.second.get(),
+                                                GURL(kTestUrl1));
+    test_ukm_recorder().ExpectEntryMetric(kv.second.get(),
+                                          PageLoad::kCpuTimeName, 500);
+  }
+}
+
 TEST_F(UkmPageLoadMetricsObserverTest, LayoutStability) {
   NavigateAndCommit(GURL(kTestUrl1));
 

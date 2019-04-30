@@ -65,6 +65,11 @@ void PageLoadMetricsObserverTestHarness::SimulateTimingAndMetadataUpdate(
   tester_->SimulateTimingAndMetadataUpdate(timing, metadata);
 }
 
+void PageLoadMetricsObserverTestHarness::SimulateCpuTimingUpdate(
+    const mojom::CpuTiming& cpu_timing) {
+  tester_->SimulateCpuTimingUpdate(cpu_timing);
+}
+
 void PageLoadMetricsObserverTestHarness::SimulateMetadataUpdate(
     const mojom::PageLoadMetadata& metadata,
     content::RenderFrameHost* rfh) {
