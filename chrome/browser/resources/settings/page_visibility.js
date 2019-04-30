@@ -46,8 +46,10 @@ let DownloadsPageVisibility;
 
 /**
  * @typedef {{
+ *   contentProtectionAttestation: boolean,
  *   networkPrediction: boolean,
  *   searchPrediction: boolean,
+ *   wakeOnWifi: boolean,
  * }}
  */
 let PrivacyPageVisibility;
@@ -96,8 +98,10 @@ cr.define('settings', function() {
       advancedSettings: true,
       dateTime: showOSSettings,
       privacy: {
+        contentProtectionAttestation: showOSSettings,
         searchPrediction: false,
         networkPrediction: false,
+        wakeOnWifi: showOSSettings,
       },
       downloads: {
         googleDrive: false,
@@ -128,8 +132,10 @@ cr.define('settings', function() {
       advancedSettings: true,
       dateTime: showOSSettings,
       privacy: {
+        contentProtectionAttestation: showOSSettings,
         searchPrediction: true,
         networkPrediction: true,
+        wakeOnWifi: showOSSettings,
       },
       downloads: {
         googleDrive: true,
