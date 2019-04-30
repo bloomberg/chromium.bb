@@ -744,8 +744,9 @@ class TestDriver:
         'request_type': params['type'] if 'type' in params else '',
         'redirect_chain': [],
       }
-      for request in all_requests[params['requestId']][:-1]:
-        http_response_dict['redirect_chain'].append(request['request']['url'])
+      if params['requestId'] in all_requests:
+        for request in all_requests[params['requestId']][:-1]:
+          http_response_dict['redirect_chain'].append(request['request']['url'])
       return HTTPResponse(**http_response_dict)
 
     for message in self.GetPerformanceLogs():
