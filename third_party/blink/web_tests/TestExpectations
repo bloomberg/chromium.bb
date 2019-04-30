@@ -6188,8 +6188,8 @@ crbug.com/952708 external/wpt/css/css-paint-api/parse-input-arguments-018.https.
 crbug.com/952717 [ Mac10.13 ] virtual/outofblink-cors/http/tests/xmlhttprequest/redirect-cross-origin-post.html [ Pass Timeout ]
 
 # Sheriff 2019-04-16
-crbug.com/953153 virtual/speech-with-unified-autoplay/external/wpt/speech-api/idlharness.window.html [ Pass Failure ]
-crbug.com/953153 external/wpt/speech-api/idlharness.window.html [ Pass Failure ]
+crbug.com/953153 virtual/speech-with-unified-autoplay/external/wpt/speech-api/idlharness.window.html [ Pass Failure Timeout ]
+crbug.com/953153 external/wpt/speech-api/idlharness.window.html [ Pass Failure Timeout ]
 
 # portals-adopt-predecessor occasionally times out.
 crbug.com/952584 external/wpt/portals/portals-adopt-predecessor.html [ Pass Timeout ]
