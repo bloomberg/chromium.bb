@@ -78,15 +78,22 @@ class ArcTracingGraphicsModel {
     kChromeOSPresentationDone,  // 503
     kChromeOSSwapDone,          // 504
     kChromeOSJank,              // 505,
+
+    // Custom event.
+    kCustomEvent = 600,
   };
 
   struct BufferEvent {
     BufferEvent(BufferEventType type, int64_t timestamp);
+    BufferEvent(BufferEventType type,
+                int64_t timestamp,
+                const std::string& content);
 
     bool operator==(const BufferEvent& other) const;
 
     BufferEventType type;
     int64_t timestamp;
+    std::string content;
   };
 
   struct ViewId {
