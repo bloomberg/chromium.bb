@@ -119,7 +119,7 @@
   }
 }
 
-- (void)infobarModalWasDismissed {
+- (void)infobarModalWillDismiss {
   if (IsInfobarUIRebootEnabled()) {
     web::WebState* webState = self.webStateList->GetActiveWebState();
     DCHECK(webState);

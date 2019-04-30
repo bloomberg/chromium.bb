@@ -54,7 +54,7 @@
 - (void)infobarModalWasPresented {
   self.infobarBadgeTabHelper->UpdateBadgeForInfobarModalPresented();
 }
-- (void)infobarModalWasDismissed {
+- (void)infobarModalWillDismiss {
   self.infobarBadgeTabHelper->UpdateBadgeForInfobarModalDismissed();
 }
 - (void)infobarWasAccepted {

@@ -204,11 +204,12 @@ const CGFloat kBannerOverlapWithOmnibox = 5.0;
                  completion:(ProceduralBlock)completion {
   DCHECK(self.baseViewController);
   if (self.baseViewController.presentedViewController) {
+    // Deselect infobar badge in parallel with modal dismissal.
+    [self.badgeDelegate infobarModalWillDismiss];
     __weak __typeof(self) weakSelf = self;
     [self.baseViewController
         dismissViewControllerAnimated:animated
                            completion:^{
-                             [weakSelf.badgeDelegate infobarModalWasDismissed];
                              weakSelf.modalTransitionDriver = nil;
                              [weakSelf infobarWasDismissed];
                              if (completion)
