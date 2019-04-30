@@ -93,16 +93,19 @@ LINK_RESOURCE_ID(IDR_AUTOFILL_CC_MASTERCARD, R.drawable.mc_card)
 LINK_RESOURCE_ID(IDR_AUTOFILL_CC_MIR, R.drawable.mir_card)
 LINK_RESOURCE_ID(IDR_AUTOFILL_CC_UNIONPAY, R.drawable.unionpay_card)
 LINK_RESOURCE_ID(IDR_AUTOFILL_CC_VISA, R.drawable.visa_card)
-LINK_RESOURCE_ID(IDR_AUTOFILL_CC_SCAN_NEW, R.drawable.ic_photo_camera_black)
-// Use DECLARE_RESOURCE_ID here as this resource id is used for android only.
+// Use DECLARE_RESOURCE_ID here as these resources are used for android only.
+DECLARE_RESOURCE_ID(IDR_ANDROID_AUTOFILL_CC_SCAN_NEW,
+                    R.drawable.ic_photo_camera_black)
 DECLARE_RESOURCE_ID(IDR_ANDROID_AUTOFILL_GOOGLE_PAY, R.drawable.google_pay)
-LINK_RESOURCE_ID(IDR_AUTOFILL_HTTP_WARNING, R.drawable.ic_info_outline_grey)
-LINK_RESOURCE_ID(IDR_AUTOFILL_HTTPS_INVALID_WARNING, R.drawable.ic_warning_red)
+DECLARE_RESOURCE_ID(IDR_ANDROID_AUTOFILL_HTTP_WARNING,
+                    R.drawable.ic_info_outline_grey)
+DECLARE_RESOURCE_ID(IDR_ANDROID_AUTOFILL_HTTPS_INVALID_WARNING,
+                    R.drawable.ic_warning_red)
 
 // We display settings and edit icon for keyboard accessory using Android's
 // |VectorDrawableCompat|. We do not display these icons for autofill popup.
-LINK_RESOURCE_ID(IDR_AUTOFILL_SETTINGS, R.drawable.ic_settings_black)
-LINK_RESOURCE_ID(IDR_AUTOFILL_CREATE, R.drawable.ic_edit_24dp)
+DECLARE_RESOURCE_ID(IDR_ANDROID_AUTOFILL_SETTINGS, R.drawable.ic_settings_black)
+DECLARE_RESOURCE_ID(IDR_ANDROID_AUTOFILL_CREATE, R.drawable.ic_edit_24dp)
 
 // We use PNG files for the following images.
 LINK_RESOURCE_ID(IDR_CREDIT_CARD_CVC_HINT, R.drawable.cvc_icon)

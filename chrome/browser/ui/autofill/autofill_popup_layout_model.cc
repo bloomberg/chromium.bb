@@ -72,11 +72,13 @@ const struct {
     {autofill::kUnionPay, IDR_AUTOFILL_CC_UNIONPAY, IDS_AUTOFILL_CC_UNION_PAY},
     {autofill::kVisaCard, IDR_AUTOFILL_CC_VISA, IDS_AUTOFILL_CC_VISA},
 #if defined(OS_ANDROID)
-    {"httpWarning", IDR_AUTOFILL_HTTP_WARNING, kResourceNotFoundId},
-    {"httpsInvalid", IDR_AUTOFILL_HTTPS_INVALID_WARNING, kResourceNotFoundId},
-    {"scanCreditCardIcon", IDR_AUTOFILL_CC_SCAN_NEW, kResourceNotFoundId},
-    {"settings", IDR_AUTOFILL_SETTINGS, kResourceNotFoundId},
-    {"create", IDR_AUTOFILL_CREATE, kResourceNotFoundId},
+    {"httpWarning", IDR_ANDROID_AUTOFILL_HTTP_WARNING, kResourceNotFoundId},
+    {"httpsInvalid", IDR_ANDROID_AUTOFILL_HTTPS_INVALID_WARNING,
+     kResourceNotFoundId},
+    {"scanCreditCardIcon", IDR_ANDROID_AUTOFILL_CC_SCAN_NEW,
+     kResourceNotFoundId},
+    {"settings", IDR_ANDROID_AUTOFILL_SETTINGS, kResourceNotFoundId},
+    {"create", IDR_ANDROID_AUTOFILL_CREATE, kResourceNotFoundId},
 #if defined(GOOGLE_CHROME_BUILD)
     {"googlePay", IDR_ANDROID_AUTOFILL_GOOGLE_PAY, kResourceNotFoundId},
 #endif  // GOOGLE_CHROME_BUILD

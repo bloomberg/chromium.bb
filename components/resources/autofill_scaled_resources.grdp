@@ -13,16 +13,7 @@
   <if expr="_google_chrome">
     <structure type="chrome_scaled_image" name="IDR_AUTOFILL_GOOGLE_PAY" file="google_chrome/autofill/googlepay.png" />
   </if>
-  <!-- These are not used on desktop, only Android, so use a placeholder file.
-       TODO(rouslan): Remove non-keyboard-accessory icon when keyboard
-       accessory becomes default on Android. -->
   <if expr="is_android">
-    <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_SCAN_NEW" file="autofill/cc-generic.png" />
-    <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_SCAN_NEW_KEYBOARD_ACCESSORY" file="autofill/cc-generic.png" />
-    <structure type="chrome_scaled_image" name="IDR_AUTOFILL_SETTINGS" file="autofill/cc-generic.png" />
-    <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CREATE" file="autofill/cc-generic.png" />
-    <structure type="chrome_scaled_image" name="IDR_AUTOFILL_HTTP_WARNING" file="autofill/cc-generic.png" />
-    <structure type="chrome_scaled_image" name="IDR_AUTOFILL_HTTPS_INVALID_WARNING" file="autofill/cc-generic.png" />
     <structure type="chrome_scaled_image" name="IDR_AUTOFILL_GOOGLE_PAY_WITH_DIVIDER" file="autofill/cc-generic.png" />
   </if>
 
