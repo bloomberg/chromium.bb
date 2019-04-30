@@ -4,11 +4,11 @@
 
 package org.chromium.chrome.browser.partnerbookmarks;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.text.format.DateUtils;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 
@@ -29,13 +29,13 @@ public class PartnerBookmarksFaviconThrottle {
     private Map<String, Long> mCurrentEntries;
     private Map<String, Long> mNewEntries;
 
-    public PartnerBookmarksFaviconThrottle(Context context) {
-        this(context, PREFERENCES_NAME);
+    public PartnerBookmarksFaviconThrottle() {
+        this(PREFERENCES_NAME);
     }
 
     @VisibleForTesting
-    PartnerBookmarksFaviconThrottle(Context context, String name) {
-        mSharedPreferences = context.getSharedPreferences(name, 0);
+    PartnerBookmarksFaviconThrottle(String name) {
+        mSharedPreferences = ContextUtils.getApplicationContext().getSharedPreferences(name, 0);
         init();
     }
 
