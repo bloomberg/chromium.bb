@@ -20056,118 +20056,6 @@ TEST_F(HttpNetworkTransactionTest, ZeroRTTConfirmErrorAsync) {
   session->CloseAllConnections();
 }
 
-// Test the proxy requesting HTTP auth and the server requesting TLS client
-// certificates. This is a regression test for https://crbug.com/946406.
-TEST_F(HttpNetworkTransactionTest, ProxyHTTPAndServerTLSAuth) {
-  // Note these hosts must match the CheckBasic*Auth() functions.
-  session_deps_.proxy_resolution_service = ProxyResolutionService::CreateFixed(
-      "https://myproxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
-
-  auto cert_request_info_origin = base::MakeRefCounted<SSLCertRequestInfo>();
-  cert_request_info_origin->host_and_port =
-      HostPortPair("www.example.org", 443);
-
-  std::unique_ptr<FakeClientCertIdentity> identity_origin =
-      FakeClientCertIdentity::CreateFromCertAndKeyFiles(
-          GetTestCertsDirectory(), "client_2.pem", "client_2.pk8");
-  ASSERT_TRUE(identity_origin);
-
-  HttpRequestInfo request;
-  request.method = "GET";
-  request.url = GURL("https://www.example.org/");
-  request.traffic_annotation =
-      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
-
-  // We connect to the proxy. The handshake succeeds.
-  SSLSocketDataProvider ssl_proxy1(ASYNC, OK);
-  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_proxy1);
-  // We attempt a connect. The proxy requests basic auth.
-  std::vector<MockWrite> mock_writes1;
-  std::vector<MockRead> mock_reads1;
-  mock_writes1.emplace_back(
-      "CONNECT www.example.org:443 HTTP/1.1\r\n"
-      "Host: www.example.org:443\r\n"
-      "Proxy-Connection: keep-alive\r\n\r\n");
-  mock_reads1.emplace_back(
-      "HTTP/1.1 407 Proxy Authentication Required\r\n"
-      "Content-Length: 0\r\n"
-      "Proxy-Authenticate: Basic realm=\"MyRealm1\"\r\n\r\n");
-  // We respond.
-  mock_writes1.emplace_back(
-      "CONNECT www.example.org:443 HTTP/1.1\r\n"
-      "Host: www.example.org:443\r\n"
-      "Proxy-Connection: keep-alive\r\n"
-      // proxyuser:proxypass
-      "Proxy-Authorization: Basic cHJveHl1c2VyOnByb3h5cGFzcw==\r\n\r\n");
-  mock_reads1.emplace_back("HTTP/1.1 200 Connection Established\r\n\r\n");
-  // The origin requests client certificates.
-  SSLSocketDataProvider ssl_origin1(ASYNC, ERR_SSL_CLIENT_AUTH_CERT_NEEDED);
-  ssl_origin1.cert_request_info = cert_request_info_origin.get();
-  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_origin1);
-  StaticSocketDataProvider data2(mock_reads1, mock_writes1);
-  session_deps_.socket_factory->AddSocketDataProvider(&data2);
-
-  // We respond to the origin client certificate request on a new connection.
-  SSLSocketDataProvider ssl_proxy2(ASYNC, OK);
-  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_proxy2);
-  std::vector<MockWrite> mock_writes2;
-  std::vector<MockRead> mock_reads2;
-  mock_writes2.emplace_back(
-      "CONNECT www.example.org:443 HTTP/1.1\r\n"
-      "Host: www.example.org:443\r\n"
-      "Proxy-Connection: keep-alive\r\n"
-      // proxyuser:proxypass
-      "Proxy-Authorization: Basic cHJveHl1c2VyOnByb3h5cGFzcw==\r\n\r\n");
-  mock_reads2.emplace_back("HTTP/1.1 200 Connection Established\r\n\r\n");
-  SSLSocketDataProvider ssl_origin2(ASYNC, OK);
-  ssl_origin2.expected_send_client_cert = true;
-  ssl_origin2.expected_client_cert = identity_origin->certificate();
-  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_origin2);
-  // We send the origin HTTP request, which succeeds.
-  mock_writes2.emplace_back(
-      "GET / HTTP/1.1\r\n"
-      "Host: www.example.org\r\n"
-      "Connection: keep-alive\r\n\r\n");
-  mock_reads2.emplace_back(
-      "HTTP/1.1 200 OK\r\n"
-      "Content-Length: 0\r\n\r\n");
-  StaticSocketDataProvider data3(mock_reads2, mock_writes2);
-  session_deps_.socket_factory->AddSocketDataProvider(&data3);
-
-  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-
-  // Start the request.
-  TestCompletionCallback callback;
-  auto trans =
-      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
-  int rv = callback.GetResult(
-      trans->Start(&request, callback.callback(), NetLogWithSource()));
-
-  // Handle the proxy HTTP auth challenge.
-  ASSERT_THAT(rv, IsOk());
-  EXPECT_EQ(407, trans->GetResponseInfo()->headers->response_code());
-  EXPECT_TRUE(
-      CheckBasicSecureProxyAuth(trans->GetResponseInfo()->auth_challenge));
-  rv = callback.GetResult(trans->RestartWithAuth(
-      AuthCredentials(ASCIIToUTF16("proxyuser"), ASCIIToUTF16("proxypass")),
-      callback.callback()));
-
-  // Handle the origin client certificate challenge.
-  ASSERT_THAT(rv, IsError(ERR_SSL_CLIENT_AUTH_CERT_NEEDED));
-  SSLCertRequestInfo* cert_request_info =
-      trans->GetResponseInfo()->cert_request_info.get();
-  ASSERT_TRUE(cert_request_info);
-  EXPECT_FALSE(cert_request_info->is_proxy);
-  EXPECT_EQ(cert_request_info->host_and_port,
-            cert_request_info_origin->host_and_port);
-  rv = callback.GetResult(trans->RestartWithCertificate(
-      identity_origin->certificate(), identity_origin->ssl_private_key(),
-      callback.callback()));
-
-  // The request completes.
-  ASSERT_THAT(rv, IsOk());
-}
-
 // Test the proxy and origin server each requesting both TLS client certificates
 // and HTTP auth. This is a regression test for https://crbug.com/946406.
 TEST_F(HttpNetworkTransactionTest, AuthEverything) {
@@ -20198,20 +20086,21 @@ TEST_F(HttpNetworkTransactionTest, AuthEverything) {
   request.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
-  // First, we connect and the proxy requests client certificates.
+  // First, the client connects to the proxy, which requests a client
+  // certificate.
   SSLSocketDataProvider ssl_proxy1(ASYNC, ERR_SSL_CLIENT_AUTH_CERT_NEEDED);
   ssl_proxy1.cert_request_info = cert_request_info_proxy.get();
   ssl_proxy1.expected_send_client_cert = false;
-  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_proxy1);
   StaticSocketDataProvider data1;
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_proxy1);
 
-  // We respond with a certificate on a new connection. The handshake succeeds.
+  // The client responds with a certificate on a new connection. The handshake
+  // succeeds.
   SSLSocketDataProvider ssl_proxy2(ASYNC, OK);
   ssl_proxy2.expected_send_client_cert = true;
   ssl_proxy2.expected_client_cert = identity_proxy->certificate();
-  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_proxy2);
-  // We attempt a connect. The proxy requests basic auth.
+  // The client attempts an HTTP CONNECT, but the proxy requests basic auth.
   std::vector<MockWrite> mock_writes2;
   std::vector<MockRead> mock_reads2;
   mock_writes2.emplace_back(
@@ -20222,41 +20111,41 @@ TEST_F(HttpNetworkTransactionTest, AuthEverything) {
       "HTTP/1.1 407 Proxy Authentication Required\r\n"
       "Content-Length: 0\r\n"
       "Proxy-Authenticate: Basic realm=\"MyRealm1\"\r\n\r\n");
-  // We respond.
+  // The client retries with credentials.
   mock_writes2.emplace_back(
       "CONNECT www.example.org:443 HTTP/1.1\r\n"
       "Host: www.example.org:443\r\n"
       "Proxy-Connection: keep-alive\r\n"
-      // proxyuser:proxypass
+      // Authenticate as proxyuser:proxypass.
       "Proxy-Authorization: Basic cHJveHl1c2VyOnByb3h5cGFzcw==\r\n\r\n");
   mock_reads2.emplace_back("HTTP/1.1 200 Connection Established\r\n\r\n");
   // The origin requests client certificates.
   SSLSocketDataProvider ssl_origin2(ASYNC, ERR_SSL_CLIENT_AUTH_CERT_NEEDED);
   ssl_origin2.cert_request_info = cert_request_info_origin.get();
-  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_origin2);
   StaticSocketDataProvider data2(mock_reads2, mock_writes2);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_proxy2);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_origin2);
 
-  // We respond to the origin client certificate request on a new connection.
+  // The client responds to the origin client certificate request on a new
+  // connection.
   SSLSocketDataProvider ssl_proxy3(ASYNC, OK);
   ssl_proxy3.expected_send_client_cert = true;
   ssl_proxy3.expected_client_cert = identity_proxy->certificate();
-  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_proxy3);
   std::vector<MockWrite> mock_writes3;
   std::vector<MockRead> mock_reads3;
   mock_writes3.emplace_back(
       "CONNECT www.example.org:443 HTTP/1.1\r\n"
       "Host: www.example.org:443\r\n"
       "Proxy-Connection: keep-alive\r\n"
-      // proxyuser:proxypass
+      // Authenticate as proxyuser:proxypass.
       "Proxy-Authorization: Basic cHJveHl1c2VyOnByb3h5cGFzcw==\r\n\r\n");
   mock_reads3.emplace_back("HTTP/1.1 200 Connection Established\r\n\r\n");
   SSLSocketDataProvider ssl_origin3(ASYNC, OK);
   ssl_origin3.expected_send_client_cert = true;
   ssl_origin3.expected_client_cert = identity_origin->certificate();
-  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_origin3);
-  // We send the origin HTTP request, which results in another HTTP auth
-  // request.
+  // The client sends the origin HTTP request, which results in another HTTP
+  // auth request.
   mock_writes3.emplace_back(
       "GET / HTTP/1.1\r\n"
       "Host: www.example.org\r\n"
@@ -20265,18 +20154,20 @@ TEST_F(HttpNetworkTransactionTest, AuthEverything) {
       "HTTP/1.1 401 Unauthorized\r\n"
       "WWW-Authenticate: Basic realm=\"MyRealm1\"\r\n"
       "Content-Length: 0\r\n\r\n");
-  // We respond, and the request finally succeeds.
+  // The client retries with credentials, and the request finally succeeds.
   mock_writes3.emplace_back(
       "GET / HTTP/1.1\r\n"
       "Host: www.example.org\r\n"
       "Connection: keep-alive\r\n"
-      // user:pass
+      // Authenticate as user:pass.
       "Authorization: Basic dXNlcjpwYXNz\r\n\r\n");
   mock_reads3.emplace_back(
       "HTTP/1.1 200 OK\r\n"
       "Content-Length: 0\r\n\r\n");
   StaticSocketDataProvider data3(mock_reads3, mock_writes3);
   session_deps_.socket_factory->AddSocketDataProvider(&data3);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_proxy3);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_origin3);
 
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
@@ -20330,6 +20221,7 @@ TEST_F(HttpNetworkTransactionTest, AuthEverything) {
 
   // The request completes.
   ASSERT_THAT(rv, IsOk());
+  EXPECT_EQ(200, trans->GetResponseInfo()->headers->response_code());
 }
 
 // Test the proxy and origin server each requesting both TLS client certificates
@@ -20363,21 +20255,21 @@ TEST_F(HttpNetworkTransactionTest, AuthEverythingWithConnectClose) {
   request.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
-  // First, we connect and the proxy requests client certificates.
+  // First, the client connects to the proxy, which requests a client
+  // certificate.
   SSLSocketDataProvider ssl_proxy1(ASYNC, ERR_SSL_CLIENT_AUTH_CERT_NEEDED);
   ssl_proxy1.cert_request_info = cert_request_info_proxy.get();
   ssl_proxy1.expected_send_client_cert = false;
-  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_proxy1);
   StaticSocketDataProvider data1;
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_proxy1);
 
-  // We respond with a certificate on a new connection. The handshake succeeds.
+  // The client responds with a certificate on a new connection. The handshake
+  // succeeds.
   SSLSocketDataProvider ssl_proxy2(ASYNC, OK);
   ssl_proxy2.expected_send_client_cert = true;
   ssl_proxy2.expected_client_cert = identity_proxy->certificate();
-  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_proxy2);
-  // We attempt a connnect. The proxy requests basic auth and closes the
-  // connection.
+  // The client attempts an HTTP CONNECT, but the proxy requests basic auth.
   std::vector<MockWrite> mock_writes2;
   std::vector<MockRead> mock_reads2;
   mock_writes2.emplace_back(
@@ -20391,48 +20283,48 @@ TEST_F(HttpNetworkTransactionTest, AuthEverythingWithConnectClose) {
       "Proxy-Authenticate: Basic realm=\"MyRealm1\"\r\n\r\n");
   StaticSocketDataProvider data2(mock_reads2, mock_writes2);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_proxy2);
 
-  // We respond on a new connection.
+  // The client retries with credentials on a new connection.
   SSLSocketDataProvider ssl_proxy3(ASYNC, OK);
   ssl_proxy3.expected_send_client_cert = true;
   ssl_proxy3.expected_client_cert = identity_proxy->certificate();
-  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_proxy3);
   std::vector<MockWrite> mock_writes3;
   std::vector<MockRead> mock_reads3;
   mock_writes3.emplace_back(
       "CONNECT www.example.org:443 HTTP/1.1\r\n"
       "Host: www.example.org:443\r\n"
       "Proxy-Connection: keep-alive\r\n"
-      // proxyuser:proxypass
+      // Authenticate as proxyuser:proxypass.
       "Proxy-Authorization: Basic cHJveHl1c2VyOnByb3h5cGFzcw==\r\n\r\n");
   mock_reads3.emplace_back("HTTP/1.1 200 Connection Established\r\n\r\n");
   // The origin requests client certificates.
   SSLSocketDataProvider ssl_origin3(ASYNC, ERR_SSL_CLIENT_AUTH_CERT_NEEDED);
   ssl_origin3.cert_request_info = cert_request_info_origin.get();
-  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_origin3);
   StaticSocketDataProvider data3(mock_reads3, mock_writes3);
   session_deps_.socket_factory->AddSocketDataProvider(&data3);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_proxy3);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_origin3);
 
-  // We respond to the origin client certificate request on a new connection.
+  // The client responds to the origin client certificate request on a new
+  // connection.
   SSLSocketDataProvider ssl_proxy4(ASYNC, OK);
   ssl_proxy4.expected_send_client_cert = true;
   ssl_proxy4.expected_client_cert = identity_proxy->certificate();
-  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_proxy4);
   std::vector<MockWrite> mock_writes4;
   std::vector<MockRead> mock_reads4;
   mock_writes4.emplace_back(
       "CONNECT www.example.org:443 HTTP/1.1\r\n"
       "Host: www.example.org:443\r\n"
       "Proxy-Connection: keep-alive\r\n"
-      // proxyuser:proxypass
+      // Authenticate as proxyuser:proxypass.
       "Proxy-Authorization: Basic cHJveHl1c2VyOnByb3h5cGFzcw==\r\n\r\n");
   mock_reads4.emplace_back("HTTP/1.1 200 Connection Established\r\n\r\n");
   SSLSocketDataProvider ssl_origin4(ASYNC, OK);
   ssl_origin4.expected_send_client_cert = true;
   ssl_origin4.expected_client_cert = identity_origin->certificate();
-  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_origin4);
-  // We send the origin HTTP request, which results in another HTTP auth
-  // request and closed connection.
+  // The client sends the origin HTTP request, which results in another HTTP
+  // auth request and closed connection.
   mock_writes4.emplace_back(
       "GET / HTTP/1.1\r\n"
       "Host: www.example.org\r\n"
@@ -20444,30 +20336,31 @@ TEST_F(HttpNetworkTransactionTest, AuthEverythingWithConnectClose) {
       "Content-Length: 0\r\n\r\n");
   StaticSocketDataProvider data4(mock_reads4, mock_writes4);
   session_deps_.socket_factory->AddSocketDataProvider(&data4);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_proxy4);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_origin4);
 
-  // We respond on a new connection, and the request finally succeeds.
+  // The client retries with credentials on a new connection, and the request
+  // finally succeeds.
   SSLSocketDataProvider ssl_proxy5(ASYNC, OK);
   ssl_proxy5.expected_send_client_cert = true;
   ssl_proxy5.expected_client_cert = identity_proxy->certificate();
-  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_proxy5);
   std::vector<MockWrite> mock_writes5;
   std::vector<MockRead> mock_reads5;
   mock_writes5.emplace_back(
       "CONNECT www.example.org:443 HTTP/1.1\r\n"
       "Host: www.example.org:443\r\n"
       "Proxy-Connection: keep-alive\r\n"
-      // proxyuser:proxypass
+      // Authenticate as proxyuser:proxypass.
       "Proxy-Authorization: Basic cHJveHl1c2VyOnByb3h5cGFzcw==\r\n\r\n");
   mock_reads5.emplace_back("HTTP/1.1 200 Connection Established\r\n\r\n");
   SSLSocketDataProvider ssl_origin5(ASYNC, OK);
   ssl_origin5.expected_send_client_cert = true;
   ssl_origin5.expected_client_cert = identity_origin->certificate();
-  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_origin5);
   mock_writes5.emplace_back(
       "GET / HTTP/1.1\r\n"
       "Host: www.example.org\r\n"
       "Connection: keep-alive\r\n"
-      // user:pass
+      // Authenticate as user:pass.
       "Authorization: Basic dXNlcjpwYXNz\r\n\r\n");
   mock_reads5.emplace_back(
       "HTTP/1.1 200 OK\r\n"
@@ -20475,6 +20368,8 @@ TEST_F(HttpNetworkTransactionTest, AuthEverythingWithConnectClose) {
       "Content-Length: 0\r\n\r\n");
   StaticSocketDataProvider data5(mock_reads5, mock_writes5);
   session_deps_.socket_factory->AddSocketDataProvider(&data5);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_proxy5);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_origin5);
 
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
@@ -20528,6 +20423,121 @@ TEST_F(HttpNetworkTransactionTest, AuthEverythingWithConnectClose) {
 
   // The request completes.
   ASSERT_THAT(rv, IsOk());
+  EXPECT_EQ(200, trans->GetResponseInfo()->headers->response_code());
+}
+
+// Test the proxy requesting HTTP auth and the server requesting TLS client
+// certificates. This is a regression test for https://crbug.com/946406.
+TEST_F(HttpNetworkTransactionTest, ProxyHTTPAndServerTLSAuth) {
+  // Note these hosts must match the CheckBasic*Auth() functions.
+  session_deps_.proxy_resolution_service = ProxyResolutionService::CreateFixed(
+      "https://myproxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  auto cert_request_info_origin = base::MakeRefCounted<SSLCertRequestInfo>();
+  cert_request_info_origin->host_and_port =
+      HostPortPair("www.example.org", 443);
+
+  std::unique_ptr<FakeClientCertIdentity> identity_origin =
+      FakeClientCertIdentity::CreateFromCertAndKeyFiles(
+          GetTestCertsDirectory(), "client_2.pem", "client_2.pk8");
+  ASSERT_TRUE(identity_origin);
+
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("https://www.example.org/");
+  request.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  // The client connects to the proxy. The handshake succeeds.
+  SSLSocketDataProvider ssl_proxy1(ASYNC, OK);
+  // The client attempts an HTTP CONNECT, but the proxy requests basic auth.
+  std::vector<MockWrite> mock_writes1;
+  std::vector<MockRead> mock_reads1;
+  mock_writes1.emplace_back(
+      "CONNECT www.example.org:443 HTTP/1.1\r\n"
+      "Host: www.example.org:443\r\n"
+      "Proxy-Connection: keep-alive\r\n\r\n");
+  mock_reads1.emplace_back(
+      "HTTP/1.1 407 Proxy Authentication Required\r\n"
+      "Content-Length: 0\r\n"
+      "Proxy-Authenticate: Basic realm=\"MyRealm1\"\r\n\r\n");
+  // The client retries with credentials, and the request finally succeeds.
+  mock_writes1.emplace_back(
+      "CONNECT www.example.org:443 HTTP/1.1\r\n"
+      "Host: www.example.org:443\r\n"
+      "Proxy-Connection: keep-alive\r\n"
+      // Authenticate as proxyuser:proxypass.
+      "Proxy-Authorization: Basic cHJveHl1c2VyOnByb3h5cGFzcw==\r\n\r\n");
+  mock_reads1.emplace_back("HTTP/1.1 200 Connection Established\r\n\r\n");
+  // The origin requests client certificates.
+  SSLSocketDataProvider ssl_origin1(ASYNC, ERR_SSL_CLIENT_AUTH_CERT_NEEDED);
+  ssl_origin1.cert_request_info = cert_request_info_origin.get();
+  StaticSocketDataProvider data1(mock_reads1, mock_writes1);
+  session_deps_.socket_factory->AddSocketDataProvider(&data1);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_proxy1);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_origin1);
+
+  // The client responds to the origin client certificate request on a new
+  // connection.
+  SSLSocketDataProvider ssl_proxy2(ASYNC, OK);
+  std::vector<MockWrite> mock_writes2;
+  std::vector<MockRead> mock_reads2;
+  mock_writes2.emplace_back(
+      "CONNECT www.example.org:443 HTTP/1.1\r\n"
+      "Host: www.example.org:443\r\n"
+      "Proxy-Connection: keep-alive\r\n"
+      // Authenticate as proxyuser:proxypass.
+      "Proxy-Authorization: Basic cHJveHl1c2VyOnByb3h5cGFzcw==\r\n\r\n");
+  mock_reads2.emplace_back("HTTP/1.1 200 Connection Established\r\n\r\n");
+  SSLSocketDataProvider ssl_origin2(ASYNC, OK);
+  ssl_origin2.expected_send_client_cert = true;
+  ssl_origin2.expected_client_cert = identity_origin->certificate();
+  // The client sends the origin HTTP request, which succeeds.
+  mock_writes2.emplace_back(
+      "GET / HTTP/1.1\r\n"
+      "Host: www.example.org\r\n"
+      "Connection: keep-alive\r\n\r\n");
+  mock_reads2.emplace_back(
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Length: 0\r\n\r\n");
+  StaticSocketDataProvider data2(mock_reads2, mock_writes2);
+  session_deps_.socket_factory->AddSocketDataProvider(&data2);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_proxy2);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_origin2);
+
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+
+  // Start the request.
+  TestCompletionCallback callback;
+  auto trans =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+  int rv = callback.GetResult(
+      trans->Start(&request, callback.callback(), NetLogWithSource()));
+
+  // Handle the proxy HTTP auth challenge.
+  ASSERT_THAT(rv, IsOk());
+  EXPECT_EQ(407, trans->GetResponseInfo()->headers->response_code());
+  EXPECT_TRUE(
+      CheckBasicSecureProxyAuth(trans->GetResponseInfo()->auth_challenge));
+  rv = callback.GetResult(trans->RestartWithAuth(
+      AuthCredentials(ASCIIToUTF16("proxyuser"), ASCIIToUTF16("proxypass")),
+      callback.callback()));
+
+  // Handle the origin client certificate challenge.
+  ASSERT_THAT(rv, IsError(ERR_SSL_CLIENT_AUTH_CERT_NEEDED));
+  SSLCertRequestInfo* cert_request_info =
+      trans->GetResponseInfo()->cert_request_info.get();
+  ASSERT_TRUE(cert_request_info);
+  EXPECT_FALSE(cert_request_info->is_proxy);
+  EXPECT_EQ(cert_request_info->host_and_port,
+            cert_request_info_origin->host_and_port);
+  rv = callback.GetResult(trans->RestartWithCertificate(
+      identity_origin->certificate(), identity_origin->ssl_private_key(),
+      callback.callback()));
+
+  // The request completes.
+  ASSERT_THAT(rv, IsOk());
+  EXPECT_EQ(200, trans->GetResponseInfo()->headers->response_code());
 }
 
 }  // namespace net
