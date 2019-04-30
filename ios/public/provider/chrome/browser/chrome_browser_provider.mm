@@ -118,6 +118,10 @@ ChromeBrowserProvider::GetBrowserURLRewriterProvider() const {
   return nullptr;
 }
 
+OverridesProvider* ChromeBrowserProvider::GetOverridesProvider() const {
+  return nullptr;
+}
+
 MailtoHandlerProvider* ChromeBrowserProvider::GetMailtoHandlerProvider() const {
   return mailto_handler_provider_.get();
 }
