@@ -590,6 +590,13 @@ void OverviewGrid::AddItem(aura::Window* window,
     PositionWindows(animate, ignored_items);
 }
 
+void OverviewGrid::AppendItem(aura::Window* window,
+                              bool reposition,
+                              bool animate) {
+  AddItem(window, reposition, animate, /*ignored_items=*/{},
+          window_list_.size());
+}
+
 void OverviewGrid::RemoveItem(OverviewItem* overview_item) {
   auto* window = overview_item->GetWindow();
   // Use reverse iterator to be efficiently when removing all.

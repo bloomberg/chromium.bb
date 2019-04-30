@@ -11,12 +11,15 @@
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/metrics/user_metrics_recorder.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/wm/desks/desk.h"
+#include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_delegate.h"
@@ -465,6 +468,23 @@ void OverviewSession::AddItem(
   ::wm::ActivateWindow(GetOverviewFocusWindow());
 }
 
+void OverviewSession::AppendItem(aura::Window* window,
+                                 bool reposition,
+                                 bool animate) {
+  // Early exit if a grid already contains |window|.
+  OverviewGrid* grid = GetGridWithRootWindow(window->GetRootWindow());
+  if (!grid || grid->GetOverviewItemContaining(window))
+    return;
+
+  grid->AppendItem(window, reposition, animate);
+  ++num_items_;
+
+  // Transfer focus from |window| to |overview_focus_widget_| to match the
+  // behavior of entering overview mode in the beginning.
+  DCHECK(overview_focus_widget_);
+  ::wm::ActivateWindow(GetOverviewFocusWindow());
+}
+
 void OverviewSession::RemoveItem(OverviewItem* overview_item) {
   if (overview_item->GetWindow()->HasObserver(this)) {
     overview_item->GetWindow()->RemoveObserver(this);
@@ -602,7 +622,7 @@ OverviewItem* OverviewSession::GetOverviewItemForWindow(
     if (item)
       return item;
   }
-  NOTREACHED();
+
   return nullptr;
 }
 
@@ -668,6 +688,15 @@ void OverviewSession::OnWindowActivating(
     aura::Window* lost_active) {
   if (ignore_activations_ || gained_active == GetOverviewFocusWindow())
     return;
+
+  if (features::IsVirtualDesksEnabled() &&
+      DesksController::Get()->are_desks_being_modified()) {
+    // Activating a desk from its mini view will activate its most-recently used
+    // window, but this should not result in ending overview mode now.
+    // DesksBarView will end it explicitly. This will become significant when
+    // the desk activation animation is added.
+    return;
+  }
 
   if (!gained_active) {
     // Cancel overview session and do not restore focus when active window is
@@ -757,6 +786,14 @@ void OverviewSession::OnWindowHierarchyChanged(
   // Only care about newly added children of |observed_windows_|.
   if (!observed_windows_.count(params.receiver) ||
       !observed_windows_.count(params.new_parent)) {
+    return;
+  }
+
+  // Removing a desk while in overview mode results in reparenting the windows
+  // of that desk to the associated container of another desk. This is a window
+  // hierarchy change that shouldn't result in exiting overview mode.
+  if (features::IsVirtualDesksEnabled() &&
+      DesksController::Get()->are_desks_being_modified()) {
     return;
   }
 
@@ -929,6 +966,12 @@ OverviewGrid* OverviewSession::GetGridWithOverviewItem(OverviewItem* item) {
 void OverviewSession::ResetFocusRestoreWindow(bool focus) {
   if (!restore_focus_window_)
     return;
+
+  if (features::IsVirtualDesksEnabled()) {
+    // Do not restore focus to a window that exists on an inactive desk.
+    focus &= DesksController::Get()->active_desk()->windows().contains(
+        restore_focus_window_);
+  }
 
   // Ensure the window is still in the window hierarchy and not in the middle
   // of teardown.

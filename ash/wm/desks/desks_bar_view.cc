@@ -9,10 +9,12 @@
 #include <utility>
 
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desk_mini_view_animations.h"
 #include "ash/wm/desks/new_desk_button.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "base/stl_util.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/window.h"
@@ -139,13 +141,21 @@ void DesksBarView::Layout() {
 void DesksBarView::ButtonPressed(views::Button* sender,
                                  const ui::Event& event) {
   auto* controller = DesksController::Get();
-  if (sender == new_desk_button_ && controller->CanCreateDesks()) {
-    controller->NewDesk();
-  } else {
-    // TODO(afakhry): Handle mini_view presses.
+  if (sender == new_desk_button_) {
+    if (controller->CanCreateDesks()) {
+      controller->NewDesk();
+      UpdateNewDeskButtonState();
+    }
+    return;
   }
 
-  UpdateNewDeskButtonState();
+  for (auto& mini_view : mini_views_) {
+    if (mini_view.get() == sender) {
+      controller->ActivateDesk(mini_view->desk());
+      Shell::Get()->overview_controller()->OnSelectionEnded();
+      return;
+    }
+  }
 }
 
 void DesksBarView::OnDeskAdded(const Desk* desk) {
@@ -184,6 +194,15 @@ void DesksBarView::OnDeskRemoved(const Desk* desk) {
   PerformRemoveDeskMiniViewAnimation(std::move(removed_mini_view),
                                      mini_views_before, mini_views_after,
                                      begin_x - GetFirstMiniViewXOffset());
+}
+
+void DesksBarView::OnDeskActivationChanged(const Desk* activated,
+                                           const Desk* deactivated) {
+  for (auto& mini_view : mini_views_) {
+    const Desk* desk = mini_view->desk();
+    if (desk == activated || desk == deactivated)
+      mini_view->UpdateActivationState();
+  }
 }
 
 void DesksBarView::UpdateNewDeskButtonState() {

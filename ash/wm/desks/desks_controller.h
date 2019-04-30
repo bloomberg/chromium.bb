@@ -36,6 +36,11 @@ class ASH_EXPORT DesksController {
     // observers have been notified with this.
     virtual void OnDeskRemoved(const Desk* desk) = 0;
 
+    // Called when the |activated| desk gains activation from the |deactivated|
+    // desk.
+    virtual void OnDeskActivationChanged(const Desk* activated,
+                                         const Desk* deactivated) = 0;
+
    protected:
     virtual ~Observer() = default;
   };
@@ -50,6 +55,8 @@ class ASH_EXPORT DesksController {
   const std::vector<std::unique_ptr<Desk>>& desks() const { return desks_; }
 
   const Desk* active_desk() const { return active_desk_; }
+
+  bool are_desks_being_modified() const { return are_desks_being_modified_; }
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -69,7 +76,9 @@ class ASH_EXPORT DesksController {
   void RemoveDesk(const Desk* desk);
 
   // Activates the given |desk| and deactivates the currently active one. |desk|
-  // has to be an existing desk.
+  // has to be an existing desk. The active window on the currently active desk
+  // will be deactivated, and the most-recently used window from the
+  // newly-activated desk will be activated.
   void ActivateDesk(const Desk* desk);
 
   // Called explicitly by the RootWindowController when a root window has been
@@ -80,9 +89,25 @@ class ASH_EXPORT DesksController {
  private:
   bool HasDesk(const Desk* desk) const;
 
+  // Activates the given |desk| and deactivates the currently active one. |desk|
+  // has to be an existing desk. If |update_window_activation| is true,
+  // the active desk on the deactivated desk will be deactivated, and the most-
+  // recently used window on the newly-activated desk will be deactivated. This
+  // parameter is almost always true except when the active desk is being
+  // removed while in overview mode. In that case, windows from the active desk
+  // will move to another desk and remain in the overview grid, and no
+  // activation or deactivation should be done in order to keep overview mode
+  // active.
+  void ActivateDeskInternal(const Desk* desk, bool update_window_activation);
+
   std::vector<std::unique_ptr<Desk>> desks_;
 
   Desk* active_desk_ = nullptr;
+
+  // True when desks addition, removal, or activation change are in progress.
+  // This can be checked when overview mode is active to avoid exiting overview
+  // mode as a result of desks modifications.
+  bool are_desks_being_modified_ = false;
 
   // A free list of desk container IDs to be used for newly-created desks. New
   // desks pops from this queue and removed desks's associated container IDs are

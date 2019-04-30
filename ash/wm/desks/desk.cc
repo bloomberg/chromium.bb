@@ -27,7 +27,8 @@ class DeskContainerObserver : public aura::WindowObserver {
   void OnWindowAdded(aura::Window* new_window) override {
     // TODO(afakhry): Overview mode creates a new widget for each window under
     // the same parent for the CaptionContainerView. We will be notified with
-    // this window addition here. Ignore this window.
+    // this window addition here. Consider ignoring these windows if they cause
+    // problems.
     owner_->AddWindowToDesk(new_window);
   }
 
@@ -88,14 +89,14 @@ void Desk::AddWindowToDesk(aura::Window* window) {
   }
 }
 
-void Desk::Activate() {
-  is_active_ = true;
-
+void Desk::Activate(bool update_window_activation) {
   // Show the associated containers on all roots.
   for (aura::Window* root : Shell::GetAllRootWindows())
     root->GetChildById(container_id_)->Show();
 
-  if (windows_.empty())
+  is_active_ = true;
+
+  if (!update_window_activation || windows_.empty())
     return;
 
   // Activate the window on this desk that was most recently used right before
@@ -109,23 +110,26 @@ void Desk::Activate() {
   }
 }
 
-void Desk::Deactivate() {
+void Desk::Deactivate(bool update_window_activation) {
   auto* active_window = wm::GetActiveWindow();
 
   // Hide the associated containers on all roots.
   for (aura::Window* root : Shell::GetAllRootWindows())
     root->GetChildById(container_id_)->Hide();
 
-  // Deactivate the active window (if any) after this desk's associated
+  is_active_ = false;
+
+  if (!update_window_activation)
+    return;
+
+  // Deactivate the active window (if it belongs to this desk; active window may
+  // be on a different container, or one of the widgets created by overview mode
+  // which are not considered desk windows) after this desk's associated
   // containers have been hidden. This is to prevent the focus controller from
   // activating another window on the same desk when the active window loses
   // focus.
-  if (active_window) {
-    DCHECK(windows_.contains(active_window));
+  if (active_window && windows_.contains(active_window))
     wm::DeactivateWindow(active_window);
-  }
-
-  is_active_ = false;
 }
 
 void Desk::MoveWindowsToDesk(Desk* target_desk) {
@@ -162,7 +166,7 @@ aura::Window* Desk::GetDeskContainerForRoot(aura::Window* root) const {
   return root->GetChildById(container_id_);
 }
 
-void Desk::OnWindowDestroyed(aura::Window* window) {
+void Desk::OnWindowDestroying(aura::Window* window) {
   const size_t count = windows_.erase(window);
   DCHECK(count);
 }

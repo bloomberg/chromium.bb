@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/wm/desks/close_desk_button.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desks_controller.h"
@@ -23,6 +24,12 @@ constexpr int kLabelPreviewSpacing = 8;
 constexpr int kCloseButtonMargin = 2;
 
 constexpr gfx::Size kCloseButtonSize{24, 24};
+
+constexpr int kPreviewCornerRadius = 2;
+
+constexpr SkColor kActiveColor = SkColorSetARGB(0xEE, 0xFF, 0xFF, 0xFF);
+
+constexpr SkColor kInactiveColor = SkColorSetARGB(0x50, 0xFF, 0xFF, 0xFF);
 
 // The desk preview bounds are proportional to the bounds of the display on
 // which it resides, but always has a fixed height `kDeskPreviewHeight`.
@@ -42,11 +49,13 @@ class DeskPreviewView : public views::View {
   explicit DeskPreviewView(DeskMiniView* mini_view) : mini_view_(mini_view) {
     // For now use a solid color layer.
     SetPaintToLayer(ui::LAYER_SOLID_COLOR);
-    layer()->SetColor(SK_ColorDKGRAY);
+    if (features::ShouldUseShaderRoundedCorner()) {
+      layer()->SetRoundedCornerRadius(
+          {kPreviewCornerRadius, kPreviewCornerRadius, kPreviewCornerRadius,
+           kPreviewCornerRadius});
+    }
 
-    // TODO(afakhry):
-    // - Ability to mark this preview as active.
-    // - Actually mirror the contents of the corresponding desk.
+    // TODO(afakhry): Mirror the contents of the corresponding desk.
   }
 
   ~DeskPreviewView() override = default;
@@ -66,6 +75,7 @@ class DeskPreviewView : public views::View {
       default:
         break;
     }
+    views::View::OnMouseEvent(event);
   }
 
  private:
@@ -105,6 +115,8 @@ DeskMiniView::DeskMiniView(const Desk* desk,
   SetFocusPainter(nullptr);
   SetInkDropMode(InkDropMode::OFF);
 
+  UpdateActivationState();
+
   SchedulePaint();
 }
 
@@ -116,9 +128,15 @@ void DeskMiniView::SetTitle(const base::string16& title) {
 
 void DeskMiniView::OnHoverStateMayHaveChanged() {
   // TODO(afakhry): In tablet mode, discuss showing the close button on long
-  // press.
+  // press. Also, don't show the close button when hovered while window drag is
+  // in progress.
   close_desk_button_->SetVisible(DesksController::Get()->CanRemoveDesks() &&
                                  IsMouseHovered());
+}
+
+void DeskMiniView::UpdateActivationState() {
+  desk_preview_->layer()->SetColor(desk_->is_active() ? kActiveColor
+                                                      : kInactiveColor);
 }
 
 const char* DeskMiniView::GetClassName() const {
@@ -165,6 +183,9 @@ void DeskMiniView::ButtonPressed(views::Button* sender,
   if (sender != close_desk_button_)
     return;
 
+  // Hide the close button so it can no longer be pressed.
+  close_desk_button_->SetVisible(false);
+
   // This mini_view can no longer be pressed.
   listener_ = nullptr;
 
@@ -187,6 +208,7 @@ void DeskMiniView::OnMouseEvent(ui::MouseEvent* event) {
     default:
       break;
   }
+  views::Button::OnMouseEvent(event);
 }
 
 }  // namespace ash

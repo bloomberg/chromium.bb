@@ -107,6 +107,9 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
                const base::flat_set<OverviewItem*>& ignored_items,
                size_t index);
 
+  // Similar to the above function, but adds the window to the end of the grid.
+  void AppendItem(aura::Window* window, bool reposition, bool animate);
+
   // Removes |overview_item| from the grid. |overview_item| cannot already be
   // absent from the grid. No items are repositioned.
   //

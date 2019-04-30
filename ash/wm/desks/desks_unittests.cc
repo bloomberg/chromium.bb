@@ -31,6 +31,30 @@ bool DoesActiveDeskContainWindow(aura::Window* window) {
   return DesksController::Get()->active_desk()->windows().contains(window);
 }
 
+OverviewGrid* GetOverviewGridForRoot(aura::Window* root) {
+  DCHECK(root->IsRootWindow());
+
+  auto* overview_controller = Shell::Get()->overview_controller();
+  DCHECK(overview_controller->IsSelecting());
+
+  return overview_controller->overview_session()->GetGridWithRootWindow(root);
+}
+
+void CloseDeskFromMiniView(const DeskMiniView* desk_mini_view,
+                           ui::test::EventGenerator* event_generator) {
+  DCHECK(desk_mini_view);
+
+  // Move to the center of the mini view so that the close button shows up.
+  const gfx::Point mini_view_center =
+      desk_mini_view->GetBoundsInScreen().CenterPoint();
+  event_generator->MoveMouseTo(mini_view_center);
+  EXPECT_TRUE(desk_mini_view->close_desk_button()->visible());
+  // Move to the center of the close button and click.
+  event_generator->MoveMouseTo(
+      desk_mini_view->close_desk_button()->GetBoundsInScreen().CenterPoint());
+  event_generator->ClickLeftButton();
+}
+
 // Defines an observer to test DesksController notifications.
 class TestObserver : public DesksController::Observer {
  public:
@@ -40,8 +64,18 @@ class TestObserver : public DesksController::Observer {
   const std::vector<const Desk*>& desks() const { return desks_; }
 
   // DesksController::Observer:
-  void OnDeskAdded(const Desk* desk) override { desks_.emplace_back(desk); }
-  void OnDeskRemoved(const Desk* desk) override { base::Erase(desks_, desk); }
+  void OnDeskAdded(const Desk* desk) override {
+    desks_.emplace_back(desk);
+    EXPECT_TRUE(DesksController::Get()->are_desks_being_modified());
+  }
+  void OnDeskRemoved(const Desk* desk) override {
+    base::Erase(desks_, desk);
+    EXPECT_TRUE(DesksController::Get()->are_desks_being_modified());
+  }
+  void OnDeskActivationChanged(const Desk* activated,
+                               const Desk* deactivated) override {
+    EXPECT_TRUE(DesksController::Get()->are_desks_being_modified());
+  }
 
  private:
   std::vector<const Desk*> desks_;
@@ -109,8 +143,7 @@ TEST_F(DesksTest, DesksBarViewDeskCreation) {
   EXPECT_TRUE(overview_controller->IsSelecting());
 
   const auto* overview_grid =
-      overview_controller->overview_session()->GetGridWithRootWindow(
-          Shell::GetPrimaryRootWindow());
+      GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
 
   // Initially the grid is not offset down when there are no desk mini_views
   // once animations are added.
@@ -201,7 +234,9 @@ TEST_F(DesksTest, DeskActivation) {
   const Desk* desk_2 = controller->desks()[1].get();
   const Desk* desk_3 = controller->desks()[2].get();
   const Desk* desk_4 = controller->desks()[3].get();
+  EXPECT_FALSE(controller->are_desks_being_modified());
   controller->ActivateDesk(desk_2);
+  EXPECT_FALSE(controller->are_desks_being_modified());
   EXPECT_EQ(desk_2, controller->active_desk());
   EXPECT_FALSE(desk_1->is_active());
   EXPECT_TRUE(desk_2->is_active());
@@ -214,7 +249,9 @@ TEST_F(DesksTest, DeskActivation) {
 
   // Remove the active desk, which is in the middle, activation should move to
   // the left, so desk 1 should be activated.
+  EXPECT_FALSE(controller->are_desks_being_modified());
   controller->RemoveDesk(desk_2);
+  EXPECT_FALSE(controller->are_desks_being_modified());
   ASSERT_EQ(3u, controller->desks().size());
   EXPECT_EQ(desk_1, controller->active_desk());
   EXPECT_TRUE(desk_1->is_active());
@@ -226,7 +263,9 @@ TEST_F(DesksTest, DeskActivation) {
 
   // Remove the active desk, it's the first one on the left, so desk_3 (on the
   // right) will be activated.
+  EXPECT_FALSE(controller->are_desks_being_modified());
   controller->RemoveDesk(desk_1);
+  EXPECT_FALSE(controller->are_desks_being_modified());
   ASSERT_EQ(2u, controller->desks().size());
   EXPECT_EQ(desk_3, controller->active_desk());
   EXPECT_TRUE(desk_3->is_active());
@@ -361,6 +400,186 @@ TEST_F(DesksTest, WindowActivation) {
   // Moved windows can now be activated.
   EXPECT_TRUE(wm::CanActivateWindow(win3.get()));
   EXPECT_TRUE(wm::CanActivateWindow(win4.get()));
+}
+
+TEST_F(DesksTest, ActivateDeskFromOverview) {
+  auto* controller = DesksController::Get();
+
+  // Create three desks other than the default initial desk.
+  controller->NewDesk();
+  controller->NewDesk();
+  controller->NewDesk();
+  ASSERT_EQ(4u, controller->desks().size());
+
+  // Create two windows on desk_1.
+  auto win0 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  auto win1 = CreateTestWindow(gfx::Rect(50, 50, 200, 200));
+  wm::ActivateWindow(win1.get());
+  EXPECT_EQ(win1.get(), wm::GetActiveWindow());
+
+  // Enter overview mode, and expect the desk bar is shown with exactly four
+  // desks mini views, and there are exactly two windows in the overview mode
+  // grid.
+  auto* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->ToggleOverview();
+  EXPECT_TRUE(overview_controller->IsSelecting());
+  const auto* overview_grid =
+      GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
+  const auto* desks_bar_view = overview_grid->GetDesksBarViewForTesting();
+  ASSERT_TRUE(desks_bar_view);
+  ASSERT_EQ(4u, desks_bar_view->mini_views().size());
+  EXPECT_EQ(2u, overview_grid->window_list().size());
+
+  // Activate desk_4 (last one on the right) by clicking on its mini view.
+  const Desk* desk_4 = controller->desks()[3].get();
+  EXPECT_FALSE(desk_4->is_active());
+  const auto* mini_view = desks_bar_view->mini_views().back().get();
+  EXPECT_EQ(desk_4, mini_view->desk());
+  EXPECT_FALSE(mini_view->close_desk_button()->visible());
+  const gfx::Point mini_view_center =
+      mini_view->GetBoundsInScreen().CenterPoint();
+  auto* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(mini_view_center);
+  event_generator->ClickLeftButton();
+
+  // Expect that desk_4 is now active, and overview mode exited.
+  EXPECT_TRUE(desk_4->is_active());
+  EXPECT_FALSE(overview_controller->IsSelecting());
+  // Exiting overview mode should not restore focus to a window on a
+  // now-inactive desk. Run a loop since the overview session is destroyed async
+  // and until that happens, focus will be on the dummy
+  // "OverviewModeFocusedWidget".
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(nullptr, wm::GetActiveWindow());
+
+  // Create one window in desk_4 and enter overview mode. Expect the grid is
+  // showing exactly one window.
+  auto win2 = CreateTestWindow(gfx::Rect(50, 50, 200, 200));
+  wm::ActivateWindow(win2.get());
+  overview_controller->ToggleOverview();
+  EXPECT_TRUE(overview_controller->IsSelecting());
+  overview_grid = GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
+  EXPECT_EQ(1u, overview_grid->window_list().size());
+
+  // When exiting overview mode without changing desks, the focus should be
+  // restored to the same window.
+  overview_controller->ToggleOverview();
+  EXPECT_FALSE(overview_controller->IsSelecting());
+  // Run a loop since the overview session is destroyed async and until that
+  // happens, focus will be on the dummy "OverviewModeFocusedWidget".
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(win2.get(), wm::GetActiveWindow());
+}
+
+TEST_F(DesksTest, RemoveInactiveDeskFromOverview) {
+  auto* controller = DesksController::Get();
+
+  // Create three desks other than the default initial desk.
+  controller->NewDesk();
+  controller->NewDesk();
+  controller->NewDesk();
+  ASSERT_EQ(4u, controller->desks().size());
+
+  // Create two windows on desk_1.
+  auto win0 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  auto win1 = CreateTestWindow(gfx::Rect(50, 50, 200, 200));
+  wm::ActivateWindow(win0.get());
+  EXPECT_EQ(win0.get(), wm::GetActiveWindow());
+
+  // Active desk_4 and enter overview mode. Expect that the grid is currently
+  // empty.
+  const Desk* desk_4 = controller->desks()[3].get();
+  controller->ActivateDesk(desk_4);
+  auto* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->ToggleOverview();
+  EXPECT_TRUE(overview_controller->IsSelecting());
+  const auto* overview_grid =
+      GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
+  EXPECT_TRUE(overview_grid->window_list().empty());
+
+  // Remove desk_1 using the close button on its mini view. desk_1 is currently
+  // inactive. Its windows should be moved to desk_4 and added to the overview
+  // grid in the MRU order (win0, and win1).
+  const auto* desks_bar_view = overview_grid->GetDesksBarViewForTesting();
+  ASSERT_TRUE(desks_bar_view);
+  ASSERT_EQ(4u, desks_bar_view->mini_views().size());
+  const Desk* desk_1 = controller->desks()[0].get();
+  const auto* mini_view = desks_bar_view->mini_views().front().get();
+  EXPECT_EQ(desk_1, mini_view->desk());
+  CloseDeskFromMiniView(mini_view, GetEventGenerator());
+
+  ASSERT_EQ(3u, desks_bar_view->mini_views().size());
+  EXPECT_TRUE(overview_controller->IsSelecting());
+  ASSERT_EQ(2u, overview_grid->window_list().size());
+  EXPECT_TRUE(overview_grid->GetOverviewItemContaining(win0.get()));
+  EXPECT_TRUE(overview_grid->GetOverviewItemContaining(win1.get()));
+  EXPECT_EQ(overview_grid->GetOverviewItemContaining(win0.get()),
+            overview_grid->window_list()[0].get());
+  EXPECT_EQ(overview_grid->GetOverviewItemContaining(win1.get()),
+            overview_grid->window_list()[1].get());
+
+  // Make sure overview mode remains active.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(overview_controller->IsSelecting());
+}
+
+TEST_F(DesksTest, RemoveActiveDeskFromOverview) {
+  auto* controller = DesksController::Get();
+
+  // Create one desk other than the default initial desk.
+  controller->NewDesk();
+  ASSERT_EQ(2u, controller->desks().size());
+
+  // Create two windows on desk_1.
+  auto win0 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  auto win1 = CreateTestWindow(gfx::Rect(50, 50, 200, 200));
+  wm::ActivateWindow(win0.get());
+  EXPECT_EQ(win0.get(), wm::GetActiveWindow());
+
+  // Activate desk_2 and create one more window.
+  const Desk* desk_2 = controller->desks()[1].get();
+  controller->ActivateDesk(desk_2);
+  auto win2 = CreateTestWindow(gfx::Rect(50, 50, 200, 200));
+  wm::ActivateWindow(win2.get());
+  EXPECT_EQ(win2.get(), wm::GetActiveWindow());
+
+  // Enter overview mode, and remove desk_2 from its mini-view close button.
+  auto* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->ToggleOverview();
+  EXPECT_TRUE(overview_controller->IsSelecting());
+  const auto* overview_grid =
+      GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
+  EXPECT_EQ(1u, overview_grid->window_list().size());
+  const auto* desks_bar_view = overview_grid->GetDesksBarViewForTesting();
+  ASSERT_TRUE(desks_bar_view);
+  ASSERT_EQ(2u, desks_bar_view->mini_views().size());
+  const auto* mini_view = desks_bar_view->mini_views().back().get();
+  EXPECT_EQ(desk_2, mini_view->desk());
+  CloseDeskFromMiniView(mini_view, GetEventGenerator());
+
+  // desk_1 will become active, and windows from desk_2 and desk_1 will merge
+  // and added in the overview grid in the order of MRU.
+  ASSERT_EQ(1u, controller->desks().size());
+  ASSERT_EQ(1u, desks_bar_view->mini_views().size());
+  const Desk* desk_1 = controller->desks()[0].get();
+  EXPECT_TRUE(desk_1->is_active());
+  EXPECT_TRUE(overview_controller->IsSelecting());
+  EXPECT_EQ(3u, overview_grid->window_list().size());
+  EXPECT_TRUE(overview_grid->GetOverviewItemContaining(win0.get()));
+  EXPECT_TRUE(overview_grid->GetOverviewItemContaining(win1.get()));
+  EXPECT_TRUE(overview_grid->GetOverviewItemContaining(win2.get()));
+
+  // The MRU order is {win2, win0, win1}.
+  EXPECT_EQ(overview_grid->GetOverviewItemContaining(win2.get()),
+            overview_grid->window_list()[0].get());
+  EXPECT_EQ(overview_grid->GetOverviewItemContaining(win0.get()),
+            overview_grid->window_list()[1].get());
+  EXPECT_EQ(overview_grid->GetOverviewItemContaining(win1.get()),
+            overview_grid->window_list()[2].get());
+
+  // Make sure overview mode remains active.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(overview_controller->IsSelecting());
 }
 
 // TODO(afakhry): Add more tests:

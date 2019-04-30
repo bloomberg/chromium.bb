@@ -148,7 +148,10 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
                bool reposition,
                bool animate,
                const base::flat_set<OverviewItem*>& ignored_items = {},
-               size_t index = 0u);
+               size_t index = 0);
+
+  // Similar to the above function, but adds the window at the end of the grid.
+  void AppendItem(aura::Window* window, bool reposition, bool animate);
 
   // Removes |overview_item| from the corresponding grid. No items are
   // repositioned.
@@ -191,7 +194,8 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // Returns true if |window| is currently showing in overview.
   bool IsWindowInOverview(const aura::Window* window);
 
-  // Returns the overview item for |window|.
+  // Returns the overview item for |window|, or nullptr if |window| doesn't have
+  // a corresponding item in overview mode.
   OverviewItem* GetOverviewItemForWindow(const aura::Window* window);
 
   // Set the window grid that's displaying in |root_window| not animate when

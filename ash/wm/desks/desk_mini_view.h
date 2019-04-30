@@ -42,6 +42,10 @@ class ASH_EXPORT DeskMiniView : public views::Button,
   // view is mouse hovered.
   void OnHoverStateMayHaveChanged();
 
+  // Updates the border color of the DeskPreviewView based on the activation
+  // state of the corresponding desk.
+  void UpdateActivationState();
+
   // views::Button:
   const char* GetClassName() const override;
   void Layout() override;

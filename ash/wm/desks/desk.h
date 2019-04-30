@@ -44,13 +44,15 @@ class ASH_EXPORT Desk : public aura::WindowObserver {
 
   // Activates this desk. All windows on this desk (if any) will become visible
   // (by means of showing this desk's associated containers on all root
-  // windows), and the most recently used one of them will be activated.
-  void Activate();
+  // windows). If |update_window_activation| is true, the most recently
+  // used one of them will be activated.
+  void Activate(bool update_window_activation);
 
   // Deactivates this desk. All windows on this desk (if any) will become hidden
   // (by means of hiding this desk's associated containers on all root windows),
-  // and the currently active window on this desk will be deactivated.
-  void Deactivate();
+  // If |update_window_activation| is true, the currently active window
+  // on this desk will be deactivated.
+  void Deactivate(bool update_window_activation);
 
   // Moves the windows on this desk to |target_desk|.
   void MoveWindowsToDesk(Desk* target_desk);
@@ -58,7 +60,7 @@ class ASH_EXPORT Desk : public aura::WindowObserver {
   aura::Window* GetDeskContainerForRoot(aura::Window* root) const;
 
   // aura::WindowObserver:
-  void OnWindowDestroyed(aura::Window* window) override;
+  void OnWindowDestroying(aura::Window* window) override;
 
  private:
   // The associated container ID with this desk.
