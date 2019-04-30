@@ -371,15 +371,6 @@ bool HeapCompact::ShouldCompact(ThreadHeap* heap,
     return force_compaction_gc_;
   }
 
-  if (!RuntimeEnabledFeatures::HeapCompactionWhenIncrementalMarkingEnabled()) {
-    if (reason != BlinkGC::GCReason::kPreciseGC)
-      return false;
-
-    // TODO(keishi): crbug.com/918064 Heap compaction for incremental marking
-    // needs to be disabled until this crash is fixed.
-    CHECK_NE(marking_type, BlinkGC::kIncrementalMarking);
-  }
-
   // Compaction enable rules:
   //  - It's been a while since the last time.
   //  - "Considerable" amount of heap memory is bound up in freelist

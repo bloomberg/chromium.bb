@@ -627,11 +627,6 @@
       name: "HeapCompaction",
       status: "stable",
     },
-    // Only enabled for testing to flush out bugs. See https://crbug.com/918064.
-    {
-      name: "HeapCompactionWhenIncrementalMarking",
-      status: "test",
-    },
     {
       name: "HeapConcurrentMarking",
     },
