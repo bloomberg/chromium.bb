@@ -6276,7 +6276,6 @@ crbug.com/954319 [ Linux ] http/tests/devtools/sources/debugger-breakpoints/brea
 crbug.com/954998 [ Mac ] http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile-end-to-end.js [ Pass Timeout ]
 
 # Sheriff 2019-04-25
-crbug.com/956401 [ Win ] external/wpt/cookies/samesite/form-post-blank.html [ Pass Timeout ]
 crbug.com/956547 fast/dom/raf-throttling-out-of-view-cross-origin-page.html [ Pass Timeout ]
 crbug.com/956547 fast/dom/timer-throttling-out-of-view-cross-origin-page.html [ Pass Timeout ]
 crbug.com/956736 virtual/gpu-rasterization/images/imagemap-focus-ring-outline-color-not-inherited-from-map.html [ Pass Failure ]
