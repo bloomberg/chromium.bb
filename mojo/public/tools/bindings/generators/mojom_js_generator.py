@@ -253,10 +253,12 @@ class Generator(generator.Generator):
   def _GetParameters(self, for_compile=False):
     return {
       "enums": self.module.enums,
+      "html_imports": self._GenerateHtmlImports(),
       "imports": self.module.imports,
       "interfaces": self.module.interfaces,
       "kinds": self.module.kinds,
       "module": self.module,
+      "mojom_filename": os.path.basename(self.module.path),
       "mojom_namespace": self.module.mojom_namespace,
       "structs": self.module.structs + self._GetStructsFromMethods(),
       "unions": self.module.unions,
@@ -341,6 +343,10 @@ class Generator(generator.Generator):
   def _GenerateLiteBindings(self):
     return self._GetParameters()
 
+  @UseJinja("lite/mojom.html.tmpl")
+  def _GenerateLiteHtml(self):
+    return self._GetParameters()
+
   @UseJinja("lite/mojom-lite.js.tmpl")
   def _GenerateLiteBindingsForCompile(self):
     return self._GetParameters(for_compile=True)
@@ -359,6 +365,7 @@ class Generator(generator.Generator):
     self.Write(self._GenerateAMDModule(), "%s.js" % self.module.path)
     self.Write(self._GenerateExterns(), "%s.externs.js" % self.module.path)
     if self.js_bindings_mode == "new":
+      self.Write(self._GenerateLiteHtml(), "%s.html" % self.module.path)
       self.Write(self._GenerateLiteBindings(), "%s-lite.js" % self.module.path)
       self.Write(self._GenerateLiteBindingsForCompile(),
           "%s-lite-for-compile.js" % self.module.path)
@@ -802,6 +809,13 @@ class Generator(generator.Generator):
       return ".".join(name)
 
     return self._ExpressionToText(token)
+
+  def _GenerateHtmlImports(self):
+    result = []
+    for full_import in self.module.imports:
+      result.append(os.path.relpath(full_import.path,
+                                    os.path.dirname(self.module.path)))
+    return result
 
   def _GetStructsFromMethods(self):
     result = []

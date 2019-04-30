@@ -18,7 +18,6 @@ import("//build/config/nacl/config.gni")
 import("//components/nacl/features.gni")
 import("//third_party/jinja2/jinja2.gni")
 import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
-
 declare_args() {
   # Indicates whether typemapping should be supported in this build
   # configuration. This may be disabled when building external projects which
@@ -1245,6 +1244,7 @@ template("mojom") {
             "$target_gen_dir/$source.js",
             "$target_gen_dir/$source.externs.js",
             "$target_gen_dir/$source-lite.js",
+            "$target_gen_dir/$source.html",
             "$target_gen_dir/$source-lite-for-compile.js",
           ]
         }
