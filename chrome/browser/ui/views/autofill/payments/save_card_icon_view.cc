@@ -57,9 +57,8 @@ bool SaveCardIconView::Update() {
   enabled &= SetCommandEnabled(enabled);
   SetVisible(enabled);
 
-  if (enabled && controller->CanAnimate()) {
+  if (enabled && controller->ShouldShowCardSavedAnimation())
     AnimateIn(IDS_AUTOFILL_CARD_SAVED);
-  }
 
   return was_visible != visible();
 }

@@ -61,8 +61,8 @@ class SaveCardBubbleController {
   // Returns whether or not a sign in / sync promo needs to be shown.
   virtual bool ShouldShowSignInPromo() const = 0;
 
-  // Returns true iff the card saved animation can be shown.
-  virtual bool CanAnimate() const = 0;
+  // Returns true iff the card saved animation should be shown.
+  virtual bool ShouldShowCardSavedAnimation() const = 0;
 
   // Interaction.
   // OnSyncPromoAccepted is called when the Dice Sign-in promo is clicked.

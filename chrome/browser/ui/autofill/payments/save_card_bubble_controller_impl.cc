@@ -283,8 +283,8 @@ bool SaveCardBubbleControllerImpl::ShouldShowSignInPromo() const {
              syncer::SyncService::DISABLE_REASON_USER_CHOICE);
 }
 
-bool SaveCardBubbleControllerImpl::CanAnimate() const {
-  return can_animate_;
+bool SaveCardBubbleControllerImpl::ShouldShowCardSavedAnimation() const {
+  return should_show_card_saved_animation_;
 }
 
 void SaveCardBubbleControllerImpl::OnSyncPromoAccepted(
@@ -327,7 +327,7 @@ void SaveCardBubbleControllerImpl::OnSaveButton(
       DCHECK(!local_save_card_prompt_callback_.is_null());
       // Show an animated card saved confirmation message next time
       // UpdateSaveCardIcon() is called.
-      can_animate_ = true;
+      should_show_card_saved_animation_ = true;
 
       std::move(local_save_card_prompt_callback_).Run(AutofillClient::ACCEPTED);
       break;
@@ -427,7 +427,7 @@ void SaveCardBubbleControllerImpl::OnBubbleClosed() {
 void SaveCardBubbleControllerImpl::OnAnimationEnded() {
   // Do not repeat the animation next time UpdateSaveCardIcon() is called,
   // unless explicitly set somewhere else.
-  can_animate_ = false;
+  should_show_card_saved_animation_ = false;
 
   // We do not want to show the promo if the user clicked on the icon and the
   // manage cards bubble started to show.
