@@ -44,6 +44,10 @@ TEST_F(AccessibilityObjectModelTest, DOMElementsHaveAnAccessibleNode) {
   EXPECT_TRUE(button->accessibleNode()->label().IsNull());
 }
 
+// AccessibleNode is being refactored to remove it's ability to modify the
+// underlying accessibility tree. This test has been modified to assert that no
+// changes in corresponding AXObjects are observed, but will likely be removed
+// in the future.
 TEST_F(AccessibilityObjectModelTest, SetAccessibleNodeRole) {
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
@@ -64,7 +68,9 @@ TEST_F(AccessibilityObjectModelTest, SetAccessibleNodeRole) {
 
   GetDocument().View()->UpdateLifecycleToLayoutClean();
   axButton = cache->GetOrCreate(button);
-  EXPECT_EQ(ax::mojom::Role::kSlider, axButton->RoleValue());
+
+  // No change in the AXObject role should be observed.
+  EXPECT_EQ(ax::mojom::Role::kButton, axButton->RoleValue());
 }
 
 TEST_F(AccessibilityObjectModelTest, AOMDoesNotReflectARIA) {
@@ -128,12 +134,10 @@ TEST_F(AccessibilityObjectModelTest, AOMPropertiesCanBeCleared) {
   button->accessibleNode()->setDisabled(false, false);
   GetDocument().View()->UpdateLifecycleToLayoutClean();
 
-  // Assert that AOM properties affect the AXObject, barring boolean properties
-  // which are among the first to be decoupled.
-  // TODO(meredithl): remove reflection of string properties for AOM.
+  // Assert that AOM does not affect the AXObject.
   axButton = cache->GetOrCreate(button);
-  EXPECT_EQ(ax::mojom::Role::kRadioButton, axButton->RoleValue());
-  EXPECT_EQ("Radio", axButton->GetName(name_from, &name_objects));
+  EXPECT_EQ(ax::mojom::Role::kCheckBox, axButton->RoleValue());
+  EXPECT_EQ("Check", axButton->GetName(name_from, &name_objects));
   EXPECT_EQ(axButton->Restriction(), kRestrictionDisabled);
 
   // Null the AOM properties.

@@ -75,6 +75,7 @@ test(function(t) {
 <button id="button5">Click Me</button>
 
 <script>
+// String properties set via AOM are no longer reflected in the accessibility tree.
 test(function(t) {
     var button = document.getElementById("button5");
     var aomButton = button.accessibleNode;
@@ -84,7 +85,7 @@ test(function(t) {
     assert_equals(aomButton.role, "slider");
 
     axButton = accessibilityController.accessibleElementById("button5");
-    assert_equals(axButton.role, "AXRole: AXSlider");
+    assert_equals(axButton.role, "AXRole: AXButton");
 }, "Test setting AccessibleNode.role");
 </script>
 
@@ -125,13 +126,13 @@ test(function(t) {
     axButton = accessibilityController.accessibleElementById("button7");
 
     assert_equals(aomButton.role, "switch checkbox");
-    assert_equals(axButton.role, "AXRole: AXSwitch");
+    assert_equals(axButton.role, "AXRole: AXButton");
 
     aomButton.role = "tickbox checkbox";
 
     axButton = accessibilityController.accessibleElementById("button7");
     assert_equals(aomButton.role, "tickbox checkbox");
-    assert_equals(axButton.role, "AXRole: AXCheckBox");
+    assert_equals(axButton.role, "AXRole: AXButton");
 }, "Fallback roles are supported.");
 </script>
 
@@ -147,7 +148,7 @@ test(function(t) {
     aomButton.label = "New Label";
 
     assert_equals(aomButton.label, "New Label");
-    assert_equals(axButton.name, "New Label");
+    assert_equals(axButton.name, "Click Me");
 }, "Test setting AccessibleNode.label");
 
 </script>
@@ -163,17 +164,12 @@ test(function(t) {
     button.setAttribute("role", "textbox");
     button.setAttribute("aria-label", "ARIA");
 
-    axButton = accessibilityController.accessibleElementById("button9");
-    //assert_equals(axButton.role, "AXRole: AXTextField");
-    assert_equals(axButton.name, "ARIA");
-
     aomButton.role = "radio";
     aomButton.label = "AOM";
 
     axButton = accessibilityController.accessibleElementById("button9");
-    //assert_equals(axButton.role, "AXRole: AXRadioButton");
-    assert_equals(axButton.name, "AOM");
-}, "Test that AOM properties override ARIA attributes");
+    assert_equals(axButton.name, "ARIA");
+}, "Test that AOM properties do not override ARIA attributes");
 </script>
 
 <button id="button10">Click Me</button>
@@ -189,16 +185,12 @@ test(function(t) {
     button.setAttribute("role", "textbox");
     button.setAttribute("aria-label", "ARIA");
 
-    axButton = accessibilityController.accessibleElementById("button10");
-    assert_equals(axButton.role, "AXRole: AXTextField");
-    assert_equals(axButton.name, "ARIA");
-
     aomButton.role = "radio";
     aomButton.label = "AOM";
 
     axButton = accessibilityController.accessibleElementById("button10");
-    assert_equals(axButton.role, "AXRole: AXRadioButton");
-    assert_equals(axButton.name, "AOM");
+    assert_equals(axButton.role, "AXRole: AXTextField");
+    assert_equals(axButton.name, "ARIA");
 
     aomButton.role = null;
     aomButton.label = null;

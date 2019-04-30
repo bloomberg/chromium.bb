@@ -25,7 +25,7 @@ test(function(t) {
     var axNode = accessibilityController.accessibleElementById("autocomplete");
     assert_equals(axNode.autocomplete, "");
     node.accessibleNode.autocomplete = "inline";
-    assert_equals(axNode.autocomplete, "inline");
+    assert_equals(axNode.autocomplete, "");
 }, "AccessibleNode.autocomplete");
 </script>
 
@@ -37,14 +37,12 @@ test(function(t) {
     var axNode = accessibilityController.accessibleElementById("checked");
     assert_equals(axNode.checked, "false");
     node.accessibleNode.checked = "true";
-    assert_equals(axNode.checked, "true");
+    assert_equals(axNode.checked, "false");
     node.accessibleNode.checked = "mixed";
-    assert_equals(axNode.checked, "mixed");
+    assert_equals(axNode.checked, "false");
 
     // It also works to set it to just true or false (no quotes).
     node.accessibleNode.checked = true;
-    assert_equals(axNode.checked, "true");
-    node.accessibleNode.checked = false;
     assert_equals(axNode.checked, "false");
 }, "AccessibleNode.checked");
 </script>
@@ -57,7 +55,7 @@ test(function(t) {
     var axNode = accessibilityController.accessibleElementById("current");
     assert_equals(axNode.current, "");
     node.accessibleNode.current = "page";
-    assert_equals(axNode.current, "page");
+    assert_equals(axNode.current, "");
 }, "AccessibleNode.current");
 </script>
 
@@ -72,7 +70,7 @@ test(function(t) {
     // Refresh the axNode as aria-haspopup changes can invalidate it for
     // purposes of allowing the role change.
     axNode = accessibilityController.accessibleElementById("hasPopUp");
-    assert_equals(axNode.hasPopup, "dialog");
+    assert_equals(axNode.hasPopup, "");
 }, "AccessibleNode.hasPopUp");
 </script>
 
@@ -84,13 +82,16 @@ test(function(t) {
     var axNode = accessibilityController.accessibleElementById("invalid");
     assert_equals(axNode.invalid, "");
     node.accessibleNode.invalid = "spelling";
-    assert_equals(axNode.invalid, "spelling");
+    assert_equals(axNode.invalid, "");
 }, "AccessibleNode.invalid");
 </script>
 
 <div role="button" id="keyShortcuts"></div>
 
 <script>
+// The keyShortcuts property is part of the sparse attributes set, so still allows
+// modification of the accessibility tree. This will be fixed in a later CL.
+// TODO(meredithl): Remove AOM reflection for sparse attributes.
 test(function(t) {
     var node = document.getElementById("keyShortcuts");
     var axNode = accessibilityController.accessibleElementById("keyShortcuts");
@@ -108,7 +109,7 @@ test(function(t) {
     var axNode = accessibilityController.accessibleElementById("label");
     assert_equals(axNode.name, "Inner text");
     node.accessibleNode.label = "Label";
-    assert_equals(axNode.name, "Label");
+    assert_equals(axNode.name, "Inner text");
 }, "AccessibleNode.label");
 </script>
 
@@ -120,7 +121,7 @@ test(function(t) {
     var axNode = accessibilityController.accessibleElementById("live");
     assert_equals(axNode.live, "");
     node.accessibleNode.live = "polite";
-    assert_equals(axNode.live, "polite");
+    assert_equals(axNode.live, "");
 }, "AccessibleNode.live");
 </script>
 
@@ -132,7 +133,7 @@ test(function(t) {
     var axNode = accessibilityController.accessibleElementById("orientation");
     assert_equals(axNode.orientation, "AXOrientation: AXHorizontalOrientation");
     node.accessibleNode.orientation = "vertical";
-    assert_equals(axNode.orientation, "AXOrientation: AXVerticalOrientation");
+    assert_equals(axNode.orientation, "AXOrientation: AXHorizontalOrientation");
 }, "AccessibleNode.orientation");
 </script>
 
@@ -144,8 +145,8 @@ test(function(t) {
     var axNode = accessibilityController.accessibleElementById("placeholder");
     assert_equals(axNode.name, "");
     node.accessibleNode.placeholder = "Placeholder";
-    assert_equals(axNode.name, "Placeholder");
-    assert_equals(axNode.nameFrom, "placeholder");
+    assert_equals(axNode.name, "");
+    assert_equals(axNode.nameFrom, "");
 }, "AccessibleNode.placeholder");
 </script>
 
@@ -157,7 +158,7 @@ test(function(t) {
     var axNode = accessibilityController.accessibleElementById("relevant");
     assert_equals(axNode.relevant, "additions text");
     node.accessibleNode.relevant = "additions";
-    assert_equals(axNode.relevant, "additions");
+    assert_equals(axNode.relevant, "additions text");
 }, "AccessibleNode.relevant");
 </script>
 
@@ -171,7 +172,7 @@ test(function(t) {
     node.accessibleNode.role = "combobox";
 
     axNode = accessibilityController.accessibleElementById("role");
-    assert_equals(axNode.role, "AXRole: AXComboBoxGrouping");
+    assert_equals(axNode.role, "AXRole: AXButton");
     node.accessibleNode.role = "banana button";
 
     axNode = accessibilityController.accessibleElementById("role");
@@ -199,7 +200,7 @@ test(function(t) {
     var axNode = accessibilityController.accessibleElementById("sort");
     assert_equals(axNode.sort, "");
     node.accessibleNode.sort = "ascending";
-    assert_equals(axNode.sort, "ascending");
+    assert_equals(axNode.sort, "");
 }, "AccessibleNode.sort");
 </script>
 
@@ -211,6 +212,6 @@ test(function(t) {
     var axNode = accessibilityController.accessibleElementById("valueText");
     assert_equals(axNode.valueDescription, "AXValueDescription: 5");
     node.accessibleNode.valueText = "Five";
-    assert_equals(axNode.valueDescription, "AXValueDescription: Five");
+    assert_equals(axNode.valueDescription, "AXValueDescription: 5");
 }, "AccessibleNode.valueText");
 </script>
