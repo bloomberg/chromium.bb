@@ -560,7 +560,10 @@ void BlinkTestController::SetTempPath(const base::FilePath& temp_path) {
 
 void BlinkTestController::RendererUnresponsive() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  LOG(WARNING) << "renderer unresponsive";
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableHangMonitor)) {
+    LOG(WARNING) << "renderer unresponsive";
+  }
 }
 
 void BlinkTestController::OverrideWebkitPrefs(WebPreferences* prefs) {
