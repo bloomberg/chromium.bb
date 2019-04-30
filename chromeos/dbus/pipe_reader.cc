@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/task_runner.h"
 #include "net/base/file_stream.h"
@@ -76,7 +75,7 @@ void PipeReader::OnRead(int byte_count) {
     // Clear members before calling the |callback|.
     data_.clear();
     data_stream_.reset();
-    base::ResetAndReturn(&callback_).Run(std::move(result));
+    std::move(callback_).Run(std::move(result));
     return;
   }
 

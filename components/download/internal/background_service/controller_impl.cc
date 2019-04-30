@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/optional.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -388,8 +387,7 @@ void ControllerImpl::HandleTaskFinished(DownloadTaskType task_type,
     return;
 
   if (status != stats::ScheduledTaskStatus::CANCELLED_ON_STOP) {
-    base::ResetAndReturn(&task_finished_callbacks_[task_type])
-        .Run(needs_reschedule);
+    std::move(task_finished_callbacks_[task_type]).Run(needs_reschedule);
   }
   // TODO(dtrainor): It might be useful to log how many downloads we have
   // running when we're asked to stop processing.
@@ -1093,8 +1091,8 @@ void ControllerImpl::NotifyServiceOfStartup() {
   if (init_callback_.is_null())
     return;
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::ResetAndReturn(&init_callback_));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                std::move(init_callback_));
 }
 
 void ControllerImpl::HandleStartDownloadResponse(

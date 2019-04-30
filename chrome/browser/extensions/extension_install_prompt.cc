@@ -68,33 +68,6 @@ SkBitmap GetDefaultIconBitmapForMaxScaleFactor(bool is_app) {
       .GetBitmap();
 }
 
-// If auto confirm is enabled then posts a task to proceed with or cancel the
-// install and returns true. Otherwise returns false.
-bool AutoConfirmPrompt(ExtensionInstallPrompt::DoneCallback* callback) {
-  switch (extensions::ScopedTestDialogAutoConfirm::GetAutoConfirmValue()) {
-    case extensions::ScopedTestDialogAutoConfirm::NONE:
-      return false;
-    // We use PostTask instead of calling the callback directly here, because in
-    // the real implementations it's highly likely the message loop will be
-    // pumping a few times before the user clicks accept or cancel.
-    case extensions::ScopedTestDialogAutoConfirm::ACCEPT:
-    case extensions::ScopedTestDialogAutoConfirm::ACCEPT_AND_OPTION:
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(base::ResetAndReturn(callback),
-                                    ExtensionInstallPrompt::Result::ACCEPTED));
-      return true;
-    case extensions::ScopedTestDialogAutoConfirm::CANCEL:
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(base::ResetAndReturn(callback),
-                         ExtensionInstallPrompt::Result::USER_CANCELED));
-      return true;
-  }
-
-  NOTREACHED();
-  return false;
-}
-
 }  // namespace
 
 ExtensionInstallPrompt::Prompt::InstallPromptPermissions::
@@ -685,7 +658,8 @@ void ExtensionInstallPrompt::ShowConfirmation() {
   g_last_prompt_type_for_tests = prompt_->type();
   did_call_show_dialog_ = true;
 
-  if (AutoConfirmPrompt(&done_callback_))
+  // If true, auto confirm is enabled and already handled the result.
+  if (AutoConfirmPromptIfEnabled())
     return;
 
   if (show_dialog_callback_.is_null())
@@ -695,4 +669,29 @@ void ExtensionInstallPrompt::ShowConfirmation() {
   auto cb = std::move(done_callback_);
   std::move(show_dialog_callback_)
       .Run(show_params_.get(), cb, std::move(prompt_));
+}
+
+bool ExtensionInstallPrompt::AutoConfirmPromptIfEnabled() {
+  switch (extensions::ScopedTestDialogAutoConfirm::GetAutoConfirmValue()) {
+    case extensions::ScopedTestDialogAutoConfirm::NONE:
+      return false;
+    // We use PostTask instead of calling the callback directly here, because in
+    // the real implementations it's highly likely the message loop will be
+    // pumping a few times before the user clicks accept or cancel.
+    case extensions::ScopedTestDialogAutoConfirm::ACCEPT:
+    case extensions::ScopedTestDialogAutoConfirm::ACCEPT_AND_OPTION:
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(done_callback_),
+                                    ExtensionInstallPrompt::Result::ACCEPTED));
+      return true;
+    case extensions::ScopedTestDialogAutoConfirm::CANCEL:
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::BindOnce(std::move(done_callback_),
+                         ExtensionInstallPrompt::Result::USER_CANCELED));
+      return true;
+  }
+
+  NOTREACHED();
+  return false;
 }

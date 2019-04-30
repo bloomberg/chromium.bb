@@ -13,7 +13,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -569,7 +568,7 @@ void BlobStorageContext::RequestTransport(
     std::vector<BlobMemoryController::FileCreationInfo> files) {
   BlobEntry::BuildingState* building_state = entry->building_state_.get();
   if (building_state->transport_allowed_callback) {
-    base::ResetAndReturn(&building_state->transport_allowed_callback)
+    std::move(building_state->transport_allowed_callback)
         .Run(BlobStatus::PENDING_TRANSPORT, std::move(files));
     return;
   }

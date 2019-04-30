@@ -84,7 +84,7 @@ class PerfettoTracingCoordinator::TracingSession : public perfetto::Consumer {
 
   ~TracingSession() override {
     if (!stop_and_flush_callback_.is_null()) {
-      base::ResetAndReturn(&stop_and_flush_callback_)
+      std::move(stop_and_flush_callback_)
           .Run(base::Value(base::Value::Type::DICTIONARY));
     }
 
@@ -133,7 +133,7 @@ class PerfettoTracingCoordinator::TracingSession : public perfetto::Consumer {
 
     if (!has_more) {
       DCHECK(!stop_and_flush_callback_.is_null());
-      base::ResetAndReturn(&stop_and_flush_callback_)
+      std::move(stop_and_flush_callback_)
           .Run(/*metadata=*/std::move(*metadata));
 
       std::move(tracing_over_callback_).Run();

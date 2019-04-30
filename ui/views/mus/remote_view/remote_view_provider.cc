@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/scoped_observer.h"
 #include "ui/aura/mus/embed_root.h"
@@ -40,7 +39,7 @@ class RemoteViewProvider::EmbeddedWindowObserver : public aura::WindowObserver {
     DCHECK(!on_destroyed_.is_null());
 
     window_observer_.RemoveAll();
-    base::ResetAndReturn(&on_destroyed_).Run();
+    std::move(on_destroyed_).Run();
   }
 
  private:

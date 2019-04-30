@@ -31,7 +31,7 @@ void MockArcNotificationItem::Close(bool by_user) {
   count_close_++;
 
   if (close_callback_)
-    base::ResetAndReturn(&close_callback_).Run();
+    std::move(close_callback_).Run();
 }
 
 const gfx::ImageSkia& MockArcNotificationItem::GetSnapshot() const {

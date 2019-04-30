@@ -5,7 +5,6 @@
 #include "components/login/secure_module_util_chromeos.h"
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
@@ -35,7 +34,7 @@ SecureModuleUsed GetSecureModuleInfoFromFilesAndCacheIt() {
 
 void GetSecureModuleUsed(GetSecureModuleUsedCallback callback) {
   if (g_secure_module_used != SecureModuleUsed::UNQUERIED) {
-    base::ResetAndReturn(&callback).Run(g_secure_module_used);
+    std::move(callback).Run(g_secure_module_used);
     return;
   }
 

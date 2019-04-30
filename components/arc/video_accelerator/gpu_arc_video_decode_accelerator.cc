@@ -4,8 +4,9 @@
 
 #include "components/arc/video_accelerator/gpu_arc_video_decode_accelerator.h"
 
+#include <utility>
+
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "components/arc/video_accelerator/arc_video_accelerator_util.h"
@@ -245,7 +246,7 @@ void GpuArcVideoDecodeAccelerator::NotifyResetDone() {
     pending_flush_callbacks_.pop();
   }
 
-  base::ResetAndReturn(&pending_reset_callback_)
+  std::move(pending_reset_callback_)
       .Run(mojom::VideoDecodeAccelerator::Result::SUCCESS);
   RunPendingRequests();
 }
@@ -263,7 +264,7 @@ void GpuArcVideoDecodeAccelerator::NotifyError(
     pending_flush_callbacks_.pop();
   }
   if (pending_reset_callback_) {
-    base::ResetAndReturn(&pending_reset_callback_)
+    std::move(pending_reset_callback_)
         .Run(mojom::VideoDecodeAccelerator::Result::PLATFORM_FAILURE);
   }
 

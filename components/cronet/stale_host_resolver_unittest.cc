@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -316,7 +315,7 @@ class StaleHostResolverTest : public testing::Test {
     resolve_complete_ = true;
 
     if (!resolve_closure_.is_null())
-      base::ResetAndReturn(&resolve_closure_).Run();
+      std::move(resolve_closure_).Run();
   }
 
   void AdvanceTickClock(base::TimeDelta delta) { tick_clock_.Advance(delta); }

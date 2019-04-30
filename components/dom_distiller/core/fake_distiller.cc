@@ -8,7 +8,6 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -48,7 +47,7 @@ void FakeDistiller::DistillPage(
   article_callback_ = article_callback;
   page_callback_ = page_callback;
   if (!distillation_initiated_callback_.is_null()) {
-    base::ResetAndReturn(&distillation_initiated_callback_).Run();
+    std::move(distillation_initiated_callback_).Run();
   }
   if (execute_callback_) {
     std::unique_ptr<DistilledArticleProto> proto(new DistilledArticleProto);

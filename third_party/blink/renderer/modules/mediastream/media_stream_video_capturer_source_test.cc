@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/run_loop.h"
 #include "media/base/bind_to_current_loop.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -99,7 +98,7 @@ class FakeMediaStreamVideoSink : public MediaStreamVideoSink {
     *capture_time_ = capture_time;
     metadata_->Clear();
     metadata_->MergeMetadataFrom(frame->metadata());
-    base::ResetAndReturn(&got_frame_cb_).Run();
+    std::move(got_frame_cb_).Run();
   }
 
  private:

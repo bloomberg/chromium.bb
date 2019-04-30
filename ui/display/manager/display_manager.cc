@@ -2156,7 +2156,7 @@ void DisplayManager::UpdateNonPrimaryDisplayBoundsForLayout(
 void DisplayManager::CreateMirrorWindowIfAny() {
   if (software_mirroring_display_list_.empty() || !delegate_) {
     if (!created_mirror_window_.is_null())
-      base::ResetAndReturn(&created_mirror_window_).Run();
+      std::move(created_mirror_window_).Run();
     return;
   }
   DisplayInfoList list;
@@ -2164,7 +2164,7 @@ void DisplayManager::CreateMirrorWindowIfAny() {
     list.push_back(GetDisplayInfo(display.id()));
   delegate_->CreateOrUpdateMirroringDisplay(list);
   if (!created_mirror_window_.is_null())
-    base::ResetAndReturn(&created_mirror_window_).Run();
+    std::move(created_mirror_window_).Run();
 }
 
 void DisplayManager::ApplyDisplayLayout(DisplayLayout* layout,

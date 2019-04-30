@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -235,7 +237,7 @@ void WindowEventDispatcher::ReleasePointerMoves() {
               held_event_factory_.GetWeakPtr()));
     } else {
       if (did_dispatch_held_move_event_callback_)
-        base::ResetAndReturn(&did_dispatch_held_move_event_callback_).Run();
+        std::move(did_dispatch_held_move_event_callback_).Run();
     }
   }
   TRACE_EVENT_ASYNC_END0("ui", "WindowEventDispatcher::HoldPointerMoves", this);
@@ -821,7 +823,7 @@ void WindowEventDispatcher::OnWindowInitialized(Window* window) {
 ui::EventDispatchDetails WindowEventDispatcher::DispatchHeldEvents() {
   if (!held_repostable_event_ && !held_move_event_) {
     if (did_dispatch_held_move_event_callback_)
-      base::ResetAndReturn(&did_dispatch_held_move_event_callback_).Run();
+      std::move(did_dispatch_held_move_event_callback_).Run();
     return DispatchDetails();
   }
 
@@ -866,7 +868,7 @@ ui::EventDispatchDetails WindowEventDispatcher::DispatchHeldEvents() {
       observer.OnWindowEventDispatcherDispatchedHeldEvents(this);
     }
     if (did_dispatch_held_move_event_callback_)
-      base::ResetAndReturn(&did_dispatch_held_move_event_callback_).Run();
+      std::move(did_dispatch_held_move_event_callback_).Run();
   }
 
   return dispatch_details;

@@ -23,8 +23,6 @@
 #include "media/base/video_frame.h"
 #include "ui/gfx/geometry/size.h"
 
-using base::ResetAndReturn;
-
 namespace media {
 
 typedef base::Callback<void(int)> BytesDecodedCB;
