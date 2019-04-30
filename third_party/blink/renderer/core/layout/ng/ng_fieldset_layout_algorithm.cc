@@ -19,14 +19,13 @@
 namespace blink {
 
 NGFieldsetLayoutAlgorithm::NGFieldsetLayoutAlgorithm(
-    NGBlockNode node,
-    const NGFragmentGeometry& fragment_geometry,
-    const NGConstraintSpace& space,
-    const NGBreakToken* break_token)
-    : NGLayoutAlgorithm(node, space, To<NGBlockBreakToken>(break_token)),
-      border_padding_(fragment_geometry.border + fragment_geometry.padding) {
-  container_builder_.SetIsNewFormattingContext(space.IsNewFormattingContext());
-  container_builder_.SetInitialFragmentGeometry(fragment_geometry);
+    const NGLayoutAlgorithmParams& params)
+    : NGLayoutAlgorithm(params),
+      border_padding_(params.fragment_geometry.border +
+                      params.fragment_geometry.padding) {
+  container_builder_.SetIsNewFormattingContext(
+      params.space.IsNewFormattingContext());
+  container_builder_.SetInitialFragmentGeometry(params.fragment_geometry);
 }
 
 scoped_refptr<const NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {

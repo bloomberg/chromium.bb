@@ -57,34 +57,13 @@ inline LayoutMultiColumnFlowThread* GetFlowThread(const LayoutBox& box) {
   return GetFlowThread(DynamicTo<LayoutBlockFlow>(box));
 }
 
-// Parameters to pass when creating a layout algorithm for a block node.
-struct NGLayoutAlgorithmParams {
-  STACK_ALLOCATED();
-
- public:
-  NGLayoutAlgorithmParams(NGBlockNode node,
-                          const NGFragmentGeometry& fragment_geometry,
-                          const NGConstraintSpace& space,
-                          const NGBlockBreakToken* break_token = nullptr)
-      : node(node),
-        fragment_geometry(fragment_geometry),
-        space(space),
-        break_token(break_token) {}
-
-  NGBlockNode node;
-  const NGFragmentGeometry& fragment_geometry;
-  const NGConstraintSpace& space;
-  const NGBlockBreakToken* break_token;
-};
-
 // The entire purpose of this function is to avoid allocating space on the stack
 // for all layout algorithms for each node we lay out. Therefore it must not be
 // inline.
 template <typename Algorithm, typename Callback>
 NOINLINE void CreateAlgorithmAndRun(const NGLayoutAlgorithmParams& params,
                                     const Callback& callback) {
-  Algorithm algorithm(params.node, params.fragment_geometry, params.space,
-                      params.break_token);
+  Algorithm algorithm(params);
   callback(&algorithm);
 }
 

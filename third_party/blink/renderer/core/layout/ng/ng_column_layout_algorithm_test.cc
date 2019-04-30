@@ -29,23 +29,12 @@ class NGColumnLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
   }
 
   scoped_refptr<const NGPhysicalBoxFragment> RunBlockLayoutAlgorithm(
-      const NGConstraintSpace& space,
-      NGBlockNode node) {
-    NGFragmentGeometry fragment_geometry =
-        CalculateInitialFragmentGeometry(space, node);
-    scoped_refptr<const NGLayoutResult> result =
-        NGBlockLayoutAlgorithm(node, fragment_geometry, space).Layout();
-
-    return To<NGPhysicalBoxFragment>(result->PhysicalFragment());
-  }
-
-  scoped_refptr<const NGPhysicalBoxFragment> RunBlockLayoutAlgorithm(
       Element* element) {
     NGBlockNode container(ToLayoutBox(element->GetLayoutObject()));
     NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
         WritingMode::kHorizontalTb, TextDirection::kLtr,
         LogicalSize(LayoutUnit(1000), kIndefiniteSize));
-    return RunBlockLayoutAlgorithm(space, container);
+    return NGBaseLayoutAlgorithmTest::RunBlockLayoutAlgorithm(container, space);
   }
 
   String DumpFragmentTree(const NGPhysicalBoxFragment* fragment) {
@@ -87,7 +76,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, EmptyMulticol) {
       WritingMode::kHorizontalTb, TextDirection::kLtr,
       LogicalSize(LayoutUnit(1000), kIndefiniteSize));
   scoped_refptr<const NGPhysicalBoxFragment> parent_fragment =
-      RunBlockLayoutAlgorithm(space, container);
+      NGBaseLayoutAlgorithmTest::RunBlockLayoutAlgorithm(container, space);
   FragmentChildIterator iterator(parent_fragment.get());
   const auto* fragment = iterator.NextChild();
   ASSERT_TRUE(fragment);
@@ -128,7 +117,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, EmptyBlock) {
       WritingMode::kHorizontalTb, TextDirection::kLtr,
       LogicalSize(LayoutUnit(1000), kIndefiniteSize));
   scoped_refptr<const NGPhysicalBoxFragment> parent_fragment =
-      RunBlockLayoutAlgorithm(space, container);
+      NGBaseLayoutAlgorithmTest::RunBlockLayoutAlgorithm(container, space);
   FragmentChildIterator iterator(parent_fragment.get());
   const auto* fragment = iterator.NextChild();
   EXPECT_EQ(PhysicalSize(LayoutUnit(210), LayoutUnit(100)), fragment->Size());
@@ -177,7 +166,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, BlockInOneColumn) {
       WritingMode::kHorizontalTb, TextDirection::kLtr,
       LogicalSize(LayoutUnit(1000), kIndefiniteSize));
   scoped_refptr<const NGPhysicalBoxFragment> parent_fragment =
-      RunBlockLayoutAlgorithm(space, container);
+      NGBaseLayoutAlgorithmTest::RunBlockLayoutAlgorithm(container, space);
 
   FragmentChildIterator iterator(parent_fragment.get());
   const auto* fragment = iterator.NextChild();
@@ -1991,7 +1980,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, MinMax) {
       LogicalSize(LayoutUnit(1000), kIndefiniteSize));
   NGFragmentGeometry fragment_geometry =
       CalculateInitialFragmentGeometry(space, node);
-  NGColumnLayoutAlgorithm algorithm(node, fragment_geometry, space);
+  NGColumnLayoutAlgorithm algorithm({node, fragment_geometry, space});
   base::Optional<MinMaxSize> size;
   MinMaxSizeInput zero_input(
       /* percentage_resolution_block_size */ (LayoutUnit()));

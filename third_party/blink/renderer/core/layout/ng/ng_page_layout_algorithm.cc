@@ -17,15 +17,15 @@
 namespace blink {
 
 NGPageLayoutAlgorithm::NGPageLayoutAlgorithm(
-    NGBlockNode node,
-    const NGFragmentGeometry& fragment_geometry,
-    const NGConstraintSpace& space,
-    const NGBreakToken* break_token)
-    : NGLayoutAlgorithm(node, space, To<NGBlockBreakToken>(break_token)),
-      border_padding_(fragment_geometry.border + fragment_geometry.padding),
-      border_scrollbar_padding_(border_padding_ + fragment_geometry.scrollbar) {
-  container_builder_.SetIsNewFormattingContext(space.IsNewFormattingContext());
-  container_builder_.SetInitialFragmentGeometry(fragment_geometry);
+    const NGLayoutAlgorithmParams& params)
+    : NGLayoutAlgorithm(params),
+      border_padding_(params.fragment_geometry.border +
+                      params.fragment_geometry.padding),
+      border_scrollbar_padding_(border_padding_ +
+                                params.fragment_geometry.scrollbar) {
+  container_builder_.SetIsNewFormattingContext(
+      params.space.IsNewFormattingContext());
+  container_builder_.SetInitialFragmentGeometry(params.fragment_geometry);
 }
 
 scoped_refptr<const NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
@@ -47,8 +47,8 @@ scoped_refptr<const NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
     // Lay out one page. Each page will become a fragment.
     NGFragmentGeometry fragment_geometry =
         CalculateInitialFragmentGeometry(child_space, Node());
-    NGBlockLayoutAlgorithm child_algorithm(Node(), fragment_geometry,
-                                           child_space, break_token.get());
+    NGBlockLayoutAlgorithm child_algorithm(
+        {Node(), fragment_geometry, child_space, break_token.get()});
     scoped_refptr<const NGLayoutResult> result = child_algorithm.Layout();
     const auto* page = To<NGPhysicalBoxFragment>(result->PhysicalFragment());
 
@@ -85,8 +85,8 @@ base::Optional<MinMaxSize> NGPageLayoutAlgorithm::ComputeMinMaxSize(
     const MinMaxSizeInput& input) const {
   NGFragmentGeometry fragment_geometry =
       CalculateInitialMinMaxFragmentGeometry(ConstraintSpace(), Node());
-  NGBlockLayoutAlgorithm algorithm(Node(), fragment_geometry,
-                                   ConstraintSpace());
+  NGBlockLayoutAlgorithm algorithm(
+      {Node(), fragment_geometry, ConstraintSpace()});
   return algorithm.ComputeMinMaxSize(input);
 }
 

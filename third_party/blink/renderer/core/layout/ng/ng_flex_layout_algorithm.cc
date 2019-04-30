@@ -20,16 +20,16 @@
 namespace blink {
 
 NGFlexLayoutAlgorithm::NGFlexLayoutAlgorithm(
-    NGBlockNode node,
-    const NGFragmentGeometry& fragment_geometry,
-    const NGConstraintSpace& space,
-    const NGBreakToken* break_token)
-    : NGLayoutAlgorithm(node, space, To<NGBlockBreakToken>(break_token)),
-      border_padding_(fragment_geometry.border + fragment_geometry.padding),
-      border_scrollbar_padding_(border_padding_ + fragment_geometry.scrollbar),
+    const NGLayoutAlgorithmParams& params)
+    : NGLayoutAlgorithm(params),
+      border_padding_(params.fragment_geometry.border +
+                      params.fragment_geometry.padding),
+      border_scrollbar_padding_(border_padding_ +
+                                params.fragment_geometry.scrollbar),
       is_column_(Style().IsColumnFlexDirection()) {
-  container_builder_.SetIsNewFormattingContext(space.IsNewFormattingContext());
-  container_builder_.SetInitialFragmentGeometry(fragment_geometry);
+  container_builder_.SetIsNewFormattingContext(
+      params.space.IsNewFormattingContext());
+  container_builder_.SetInitialFragmentGeometry(params.fragment_geometry);
 }
 
 bool NGFlexLayoutAlgorithm::MainAxisIsInlineAxis(NGBlockNode child) {

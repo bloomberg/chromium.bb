@@ -51,14 +51,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
                                NGBlockBreakToken> {
  public:
   // Default constructor.
-  // @param node The input node to perform layout upon.
-  // @param space The constraint space which the algorithm should generate a
-  //              fragment within.
-  // @param break_token The break token from which the layout should start.
-  NGBlockLayoutAlgorithm(NGBlockNode node,
-                         const NGFragmentGeometry&,
-                         const NGConstraintSpace& space,
-                         const NGBlockBreakToken* break_token = nullptr);
+  NGBlockLayoutAlgorithm(const NGLayoutAlgorithmParams& params);
 
   ~NGBlockLayoutAlgorithm() override;
 

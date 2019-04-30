@@ -8,6 +8,7 @@
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/min_max_size.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
@@ -37,6 +38,26 @@ class NGLayoutAlgorithmOperations {
   }
 };
 
+// Parameters to pass when creating a layout algorithm for a block node.
+struct NGLayoutAlgorithmParams {
+  STACK_ALLOCATED();
+
+ public:
+  NGLayoutAlgorithmParams(NGBlockNode node,
+                          const NGFragmentGeometry& fragment_geometry,
+                          const NGConstraintSpace& space,
+                          const NGBlockBreakToken* break_token = nullptr)
+      : node(node),
+        fragment_geometry(fragment_geometry),
+        space(space),
+        break_token(break_token) {}
+
+  NGBlockNode node;
+  const NGFragmentGeometry& fragment_geometry;
+  const NGConstraintSpace& space;
+  const NGBlockBreakToken* break_token;
+};
+
 // Base class for all LayoutNG algorithms.
 template <typename NGInputNodeType,
           typename NGBoxFragmentBuilderType,
@@ -57,14 +78,12 @@ class CORE_EXPORT NGLayoutAlgorithm : public NGLayoutAlgorithmOperations {
                            space.GetWritingMode(),
                            direction) {}
 
-  NGLayoutAlgorithm(NGInputNodeType node,
-                    const NGConstraintSpace& space,
-                    const NGBreakTokenType* break_token)
-      : NGLayoutAlgorithm(node,
-                          &node.Style(),
-                          space,
-                          space.Direction(),
-                          break_token) {}
+  NGLayoutAlgorithm(const NGLayoutAlgorithmParams& params)
+      : NGLayoutAlgorithm(params.node,
+                          &params.node.Style(),
+                          params.space,
+                          params.space.Direction(),
+                          params.break_token) {}
 
   virtual ~NGLayoutAlgorithm() = default;
 

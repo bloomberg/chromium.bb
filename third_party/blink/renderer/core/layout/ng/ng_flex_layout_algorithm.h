@@ -14,18 +14,13 @@ namespace blink {
 
 class NGBlockNode;
 class NGBlockBreakToken;
-class NGBreakToken;
-class NGConstraintSpace;
 
 class CORE_EXPORT NGFlexLayoutAlgorithm
     : public NGLayoutAlgorithm<NGBlockNode,
                                NGBoxFragmentBuilder,
                                NGBlockBreakToken> {
  public:
-  NGFlexLayoutAlgorithm(NGBlockNode,
-                        const NGFragmentGeometry&,
-                        const NGConstraintSpace&,
-                        const NGBreakToken*);
+  NGFlexLayoutAlgorithm(const NGLayoutAlgorithmParams& params);
 
   scoped_refptr<const NGLayoutResult> Layout() override;
 

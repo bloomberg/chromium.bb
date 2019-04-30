@@ -13,7 +13,6 @@
 namespace blink {
 
 class NGBlockBreakToken;
-class NGBreakToken;
 class NGConstraintSpace;
 
 class CORE_EXPORT NGFieldsetLayoutAlgorithm
@@ -21,10 +20,7 @@ class CORE_EXPORT NGFieldsetLayoutAlgorithm
                                NGBoxFragmentBuilder,
                                NGBlockBreakToken> {
  public:
-  NGFieldsetLayoutAlgorithm(NGBlockNode,
-                            const NGFragmentGeometry& fragment_geometry,
-                            const NGConstraintSpace&,
-                            const NGBreakToken* break_token = nullptr);
+  NGFieldsetLayoutAlgorithm(const NGLayoutAlgorithmParams& params);
 
   scoped_refptr<const NGLayoutResult> Layout() override;
 

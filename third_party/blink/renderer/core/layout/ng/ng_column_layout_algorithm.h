@@ -12,7 +12,6 @@ namespace blink {
 
 class NGBlockNode;
 class NGBlockBreakToken;
-class NGBreakToken;
 class NGConstraintSpace;
 struct LogicalSize;
 
@@ -21,10 +20,7 @@ class CORE_EXPORT NGColumnLayoutAlgorithm
                                NGBoxFragmentBuilder,
                                NGBlockBreakToken> {
  public:
-  NGColumnLayoutAlgorithm(NGBlockNode node,
-                          const NGFragmentGeometry&,
-                          const NGConstraintSpace& space,
-                          const NGBreakToken* break_token = nullptr);
+  NGColumnLayoutAlgorithm(const NGLayoutAlgorithmParams& params);
 
   scoped_refptr<const NGLayoutResult> Layout() override;
 

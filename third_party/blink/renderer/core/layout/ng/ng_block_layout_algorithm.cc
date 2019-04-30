@@ -164,17 +164,17 @@ void StopMarginCollapsing(EMarginCollapse collapse_value,
 }  // namespace
 
 NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
-    NGBlockNode node,
-    const NGFragmentGeometry& fragment_geometry,
-    const NGConstraintSpace& space,
-    const NGBlockBreakToken* break_token)
-    : NGLayoutAlgorithm(node, space, break_token),
-      border_padding_(fragment_geometry.border + fragment_geometry.padding),
-      border_scrollbar_padding_(border_padding_ + fragment_geometry.scrollbar),
-      is_resuming_(IsResumingLayout(break_token)),
-      exclusion_space_(space.ExclusionSpace()) {
-  container_builder_.SetIsNewFormattingContext(space.IsNewFormattingContext());
-  container_builder_.SetInitialFragmentGeometry(fragment_geometry);
+    const NGLayoutAlgorithmParams& params)
+    : NGLayoutAlgorithm(params),
+      border_padding_(params.fragment_geometry.border +
+                      params.fragment_geometry.padding),
+      border_scrollbar_padding_(border_padding_ +
+                                params.fragment_geometry.scrollbar),
+      is_resuming_(IsResumingLayout(params.break_token)),
+      exclusion_space_(params.space.ExclusionSpace()) {
+  container_builder_.SetIsNewFormattingContext(
+      params.space.IsNewFormattingContext());
+  container_builder_.SetInitialFragmentGeometry(params.fragment_geometry);
 }
 
 // Define the destructor here, so that we can forward-declare more in the

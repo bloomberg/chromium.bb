@@ -31,23 +31,12 @@ class NGFieldsetLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
   }
 
   scoped_refptr<const NGPhysicalBoxFragment> RunBlockLayoutAlgorithm(
-      const NGConstraintSpace& space,
-      NGBlockNode node) {
-    NGFragmentGeometry fragment_geometry =
-        CalculateInitialFragmentGeometry(space, node);
-    scoped_refptr<const NGLayoutResult> result =
-        NGBlockLayoutAlgorithm(node, fragment_geometry, space).Layout();
-
-    return To<NGPhysicalBoxFragment>(result->PhysicalFragment());
-  }
-
-  scoped_refptr<const NGPhysicalBoxFragment> RunBlockLayoutAlgorithm(
       Element* element) {
     NGBlockNode container(ToLayoutBox(element->GetLayoutObject()));
     NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
         WritingMode::kHorizontalTb, TextDirection::kLtr,
         LogicalSize(LayoutUnit(1000), kIndefiniteSize));
-    return RunBlockLayoutAlgorithm(space, container);
+    return NGBaseLayoutAlgorithmTest::RunBlockLayoutAlgorithm(container, space);
   }
 
   MinMaxSize RunComputeMinAndMax(NGBlockNode node) {
@@ -57,7 +46,7 @@ class NGFieldsetLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
     NGFragmentGeometry fragment_geometry =
         CalculateInitialMinMaxFragmentGeometry(space, node);
 
-    NGFieldsetLayoutAlgorithm algorithm(node, fragment_geometry, space);
+    NGFieldsetLayoutAlgorithm algorithm({node, fragment_geometry, space});
     MinMaxSizeInput input(
         /* percentage_resolution_block_size */ (LayoutUnit()));
     auto min_max = algorithm.ComputeMinMaxSize(input);

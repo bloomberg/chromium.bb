@@ -30,15 +30,15 @@ inline bool NeedsColumnBalancing(LayoutUnit block_size,
 }  // namespace
 
 NGColumnLayoutAlgorithm::NGColumnLayoutAlgorithm(
-    NGBlockNode node,
-    const NGFragmentGeometry& fragment_geometry,
-    const NGConstraintSpace& space,
-    const NGBreakToken* break_token)
-    : NGLayoutAlgorithm(node, space, To<NGBlockBreakToken>(break_token)),
-      border_padding_(fragment_geometry.border + fragment_geometry.padding),
-      border_scrollbar_padding_(border_padding_ + fragment_geometry.scrollbar) {
-  container_builder_.SetIsNewFormattingContext(space.IsNewFormattingContext());
-  container_builder_.SetInitialFragmentGeometry(fragment_geometry);
+    const NGLayoutAlgorithmParams& params)
+    : NGLayoutAlgorithm(params),
+      border_padding_(params.fragment_geometry.border +
+                      params.fragment_geometry.padding),
+      border_scrollbar_padding_(border_padding_ +
+                                params.fragment_geometry.scrollbar) {
+  container_builder_.SetIsNewFormattingContext(
+      params.space.IsNewFormattingContext());
+  container_builder_.SetInitialFragmentGeometry(params.fragment_geometry);
 }
 
 scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
@@ -127,8 +127,8 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
       NGFragmentGeometry fragment_geometry =
           CalculateInitialFragmentGeometry(child_space, Node());
 
-      NGBlockLayoutAlgorithm child_algorithm(Node(), fragment_geometry,
-                                             child_space, break_token.get());
+      NGBlockLayoutAlgorithm child_algorithm(
+          {Node(), fragment_geometry, child_space, break_token.get()});
       child_algorithm.SetBoxType(NGPhysicalFragment::kColumnBox);
       scoped_refptr<const NGLayoutResult> result = child_algorithm.Layout();
       const auto* column =
@@ -259,7 +259,7 @@ base::Optional<MinMaxSize> NGColumnLayoutAlgorithm::ComputeMinMaxSize(
   NGConstraintSpace space = CreateConstraintSpaceForMinMax();
   NGFragmentGeometry fragment_geometry =
       CalculateInitialMinMaxFragmentGeometry(space, Node());
-  NGBlockLayoutAlgorithm algorithm(Node(), fragment_geometry, space);
+  NGBlockLayoutAlgorithm algorithm({Node(), fragment_geometry, space});
   MinMaxSizeInput child_input(input);
   child_input.size_type = NGMinMaxSizeType::kContentBoxSize;
   base::Optional<MinMaxSize> min_max_sizes =
@@ -320,7 +320,8 @@ LayoutUnit NGColumnLayoutAlgorithm::CalculateBalancedColumnBlockSize(
   NGConstraintSpace space = CreateConstraintSpaceForBalancing(column_size);
   NGFragmentGeometry fragment_geometry =
       CalculateInitialFragmentGeometry(space, Node());
-  NGBlockLayoutAlgorithm balancing_algorithm(Node(), fragment_geometry, space);
+  NGBlockLayoutAlgorithm balancing_algorithm(
+      {Node(), fragment_geometry, space});
   scoped_refptr<const NGLayoutResult> result = balancing_algorithm.Layout();
 
   // TODO(mstensho): This is where the fun begins. We need to examine the entire

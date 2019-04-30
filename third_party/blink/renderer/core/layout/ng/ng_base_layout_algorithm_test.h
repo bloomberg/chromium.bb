@@ -18,6 +18,7 @@ namespace blink {
 
 class Element;
 class LayoutNGBlockFlow;
+class NGBlockNode;
 class NGPhysicalBoxFragment;
 
 // Base class for all LayoutNG Algorithms unit test classes.
@@ -31,6 +32,11 @@ class NGBaseLayoutAlgorithmTest
   // Should be called before calling Layout(), if you're not using
   // RunBlockLayoutAlgorithmForElement.
   void AdvanceToLayoutPhase();
+
+  scoped_refptr<const NGPhysicalBoxFragment> RunBlockLayoutAlgorithm(
+      NGBlockNode node,
+      const NGConstraintSpace& space,
+      const NGBreakToken* break_token = nullptr);
 
   std::pair<scoped_refptr<const NGPhysicalBoxFragment>, NGConstraintSpace>
   RunBlockLayoutAlgorithmForElement(Element* element);
