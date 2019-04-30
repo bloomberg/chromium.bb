@@ -2745,7 +2745,7 @@ void DXVAVideoDecodeAccelerator::BindPictureBufferToSample(
                      base::Unretained(this)));
 }
 
-void DXVAVideoDecodeAccelerator::CopyTexture(
+bool DXVAVideoDecodeAccelerator::CopyTexture(
     ID3D11Texture2D* src_texture,
     ID3D11Texture2D* dest_texture,
     Microsoft::WRL::ComPtr<IDXGIKeyedMutex> dest_keyed_mutex,
@@ -2770,7 +2770,7 @@ void DXVAVideoDecodeAccelerator::CopyTexture(
                                       color_space)) {
     RETURN_AND_NOTIFY_ON_FAILURE(false,
                                  "Failed to initialize D3D11 video processor.",
-                                 PLATFORM_FAILURE, );
+                                 PLATFORM_FAILURE, false);
   }
 
   OutputBuffers::iterator it = output_picture_buffers_.find(picture_buffer_id);
@@ -2793,6 +2793,7 @@ void DXVAVideoDecodeAccelerator::CopyTexture(
                      dest_keyed_mutex, keyed_mutex_value,
                      input_sample_for_conversion, picture_buffer_id,
                      input_buffer_id));
+  return true;
 }
 
 void DXVAVideoDecodeAccelerator::CopyTextureOnDecoderThread(

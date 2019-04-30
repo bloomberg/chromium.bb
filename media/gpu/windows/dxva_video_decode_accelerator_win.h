@@ -300,8 +300,8 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
                                  int input_buffer_id);
 
   // Copies the source texture |src_texture| to the destination |dest_texture|.
-  // The copying is done on the decoder thread.
-  void CopyTexture(ID3D11Texture2D* src_texture,
+  // The copying is done on the decoder thread.  Returns true on success.
+  bool CopyTexture(ID3D11Texture2D* src_texture,
                    ID3D11Texture2D* dest_texture,
                    Microsoft::WRL::ComPtr<IDXGIKeyedMutex> dest_keyed_mutex,
                    uint64_t keyed_mutex_value,
