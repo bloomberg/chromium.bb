@@ -837,6 +837,7 @@ typedef enum SpvCapability_ {
     SpvCapabilitySubgroupBufferBlockIOINTEL = 5569,
     SpvCapabilitySubgroupImageBlockIOINTEL = 5570,
     SpvCapabilitySubgroupImageMediaBlockIOINTEL = 5579,
+    SpvCapabilityIntegerFunctions2INTEL = 5584,
     SpvCapabilitySubgroupAvcMotionEstimationINTEL = 5696,
     SpvCapabilitySubgroupAvcMotionEstimationIntraINTEL = 5697,
     SpvCapabilitySubgroupAvcMotionEstimationChromaINTEL = 5698,
@@ -1228,6 +1229,20 @@ typedef enum SpvOp_ {
     SpvOpSubgroupImageBlockWriteINTEL = 5578,
     SpvOpSubgroupImageMediaBlockReadINTEL = 5580,
     SpvOpSubgroupImageMediaBlockWriteINTEL = 5581,
+    SpvOpUCountLeadingZerosINTEL = 5585,
+    SpvOpUCountTrailingZerosINTEL = 5586,
+    SpvOpAbsISubINTEL = 5587,
+    SpvOpAbsUSubINTEL = 5588,
+    SpvOpIAddSatINTEL = 5589,
+    SpvOpUAddSatINTEL = 5590,
+    SpvOpIAverageINTEL = 5591,
+    SpvOpUAverageINTEL = 5592,
+    SpvOpIAverageRoundedINTEL = 5593,
+    SpvOpUAverageRoundedINTEL = 5594,
+    SpvOpISubSatINTEL = 5595,
+    SpvOpUSubSatINTEL = 5596,
+    SpvOpIMul32x16INTEL = 5597,
+    SpvOpUMul32x16INTEL = 5598,
     SpvOpDecorateString = 5632,
     SpvOpDecorateStringGOOGLE = 5632,
     SpvOpMemberDecorateString = 5633,
@@ -1742,6 +1757,20 @@ inline void SpvHasResultAndType(SpvOp opcode, bool *hasResult, bool *hasResultTy
     case SpvOpSubgroupImageBlockWriteINTEL: *hasResult = false; *hasResultType = false; break;
     case SpvOpSubgroupImageMediaBlockReadINTEL: *hasResult = true; *hasResultType = true; break;
     case SpvOpSubgroupImageMediaBlockWriteINTEL: *hasResult = false; *hasResultType = false; break;
+    case SpvOpUCountLeadingZerosINTEL: *hasResult = true; *hasResultType = true; break;
+    case SpvOpUCountTrailingZerosINTEL: *hasResult = true; *hasResultType = true; break;
+    case SpvOpAbsISubINTEL: *hasResult = true; *hasResultType = true; break;
+    case SpvOpAbsUSubINTEL: *hasResult = true; *hasResultType = true; break;
+    case SpvOpIAddSatINTEL: *hasResult = true; *hasResultType = true; break;
+    case SpvOpUAddSatINTEL: *hasResult = true; *hasResultType = true; break;
+    case SpvOpIAverageINTEL: *hasResult = true; *hasResultType = true; break;
+    case SpvOpUAverageINTEL: *hasResult = true; *hasResultType = true; break;
+    case SpvOpIAverageRoundedINTEL: *hasResult = true; *hasResultType = true; break;
+    case SpvOpUAverageRoundedINTEL: *hasResult = true; *hasResultType = true; break;
+    case SpvOpISubSatINTEL: *hasResult = true; *hasResultType = true; break;
+    case SpvOpUSubSatINTEL: *hasResult = true; *hasResultType = true; break;
+    case SpvOpIMul32x16INTEL: *hasResult = true; *hasResultType = true; break;
+    case SpvOpUMul32x16INTEL: *hasResult = true; *hasResultType = true; break;
     case SpvOpDecorateString: *hasResult = false; *hasResultType = false; break;
     case SpvOpDecorateStringGOOGLE: *hasResult = false; *hasResultType = false; break;
     case SpvOpMemberDecorateString: *hasResult = false; *hasResultType = false; break;

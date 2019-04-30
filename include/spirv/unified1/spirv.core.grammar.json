@@ -4166,6 +4166,172 @@
       "version" : "None"
     },
     {
+      "opname" : "OpUCountLeadingZerosINTEL",
+      "opcode" : 5585,
+      "operands" : [
+        { "kind" : "IdResultType" },
+        { "kind" : "IdResult" },
+        { "kind" : "IdRef",        "name" : "'Operand'" }
+      ],
+      "capabilities" : [ "IntegerFunctions2INTEL" ],
+      "version" : "None"
+    },
+    {
+      "opname" : "OpUCountTrailingZerosINTEL",
+      "opcode" : 5586,
+      "operands" : [
+        { "kind" : "IdResultType" },
+        { "kind" : "IdResult" },
+        { "kind" : "IdRef",        "name" : "'Operand'" }
+      ],
+      "capabilities" : [ "IntegerFunctions2INTEL" ],
+      "version" : "None"
+    },
+    {
+      "opname" : "OpAbsISubINTEL",
+      "opcode" : 5587,
+      "operands" : [
+        { "kind" : "IdResultType" },
+        { "kind" : "IdResult" },
+        { "kind" : "IdRef",        "name" : "'Operand 1'" },
+        { "kind" : "IdRef",        "name" : "'Operand 2'" }
+      ],
+      "capabilities" : [ "IntegerFunctions2INTEL" ],
+      "version" : "None"
+    },
+    {
+      "opname" : "OpAbsUSubINTEL",
+      "opcode" : 5588,
+      "operands" : [
+        { "kind" : "IdResultType" },
+        { "kind" : "IdResult" },
+        { "kind" : "IdRef",        "name" : "'Operand 1'" },
+        { "kind" : "IdRef",        "name" : "'Operand 2'" }
+      ],
+      "capabilities" : [ "IntegerFunctions2INTEL" ],
+      "version" : "None"
+    },
+    {
+      "opname" : "OpIAddSatINTEL",
+      "opcode" : 5589,
+      "operands" : [
+        { "kind" : "IdResultType" },
+        { "kind" : "IdResult" },
+        { "kind" : "IdRef",        "name" : "'Operand 1'" },
+        { "kind" : "IdRef",        "name" : "'Operand 2'" }
+      ],
+      "capabilities" : [ "IntegerFunctions2INTEL" ],
+      "version" : "None"
+    },
+    {
+      "opname" : "OpUAddSatINTEL",
+      "opcode" : 5590,
+      "operands" : [
+        { "kind" : "IdResultType" },
+        { "kind" : "IdResult" },
+        { "kind" : "IdRef",        "name" : "'Operand 1'" },
+        { "kind" : "IdRef",        "name" : "'Operand 2'" }
+      ],
+      "capabilities" : [ "IntegerFunctions2INTEL" ],
+      "version" : "None"
+    },
+    {
+      "opname" : "OpIAverageINTEL",
+      "opcode" : 5591,
+      "operands" : [
+        { "kind" : "IdResultType" },
+        { "kind" : "IdResult" },
+        { "kind" : "IdRef",        "name" : "'Operand 1'" },
+        { "kind" : "IdRef",        "name" : "'Operand 2'" }
+      ],
+      "capabilities" : [ "IntegerFunctions2INTEL" ],
+      "version" : "None"
+    },
+    {
+      "opname" : "OpUAverageINTEL",
+      "opcode" : 5592,
+      "operands" : [
+        { "kind" : "IdResultType" },
+        { "kind" : "IdResult" },
+        { "kind" : "IdRef",        "name" : "'Operand 1'" },
+        { "kind" : "IdRef",        "name" : "'Operand 2'" }
+      ],
+      "capabilities" : [ "IntegerFunctions2INTEL" ],
+      "version" : "None"
+    },
+    {
+      "opname" : "OpIAverageRoundedINTEL",
+      "opcode" : 5593,
+      "operands" : [
+        { "kind" : "IdResultType" },
+        { "kind" : "IdResult" },
+        { "kind" : "IdRef",        "name" : "'Operand 1'" },
+        { "kind" : "IdRef",        "name" : "'Operand 2'" }
+      ],
+      "capabilities" : [ "IntegerFunctions2INTEL" ],
+      "version" : "None"
+    },
+    {
+      "opname" : "OpUAverageRoundedINTEL",
+      "opcode" : 5594,
+      "operands" : [
+        { "kind" : "IdResultType" },
+        { "kind" : "IdResult" },
+        { "kind" : "IdRef",        "name" : "'Operand 1'" },
+        { "kind" : "IdRef",        "name" : "'Operand 2'" }
+      ],
+      "capabilities" : [ "IntegerFunctions2INTEL" ],
+      "version" : "None"
+    },
+    {
+      "opname" : "OpISubSatINTEL",
+      "opcode" : 5595,
+      "operands" : [
+        { "kind" : "IdResultType" },
+        { "kind" : "IdResult" },
+        { "kind" : "IdRef",        "name" : "'Operand 1'" },
+        { "kind" : "IdRef",        "name" : "'Operand 2'" }
+      ],
+      "capabilities" : [ "IntegerFunctions2INTEL" ],
+      "version" : "None"
+    },
+    {
+      "opname" : "OpUSubSatINTEL",
+      "opcode" : 5596,
+      "operands" : [
+        { "kind" : "IdResultType" },
+        { "kind" : "IdResult" },
+        { "kind" : "IdRef",        "name" : "'Operand 1'" },
+        { "kind" : "IdRef",        "name" : "'Operand 2'" }
+      ],
+      "capabilities" : [ "IntegerFunctions2INTEL" ],
+      "version" : "None"
+    },
+    {
+      "opname" : "OpIMul32x16INTEL",
+      "opcode" : 5597,
+      "operands" : [
+        { "kind" : "IdResultType" },
+        { "kind" : "IdResult" },
+        { "kind" : "IdRef",        "name" : "'Operand 1'" },
+        { "kind" : "IdRef",        "name" : "'Operand 2'" }
+      ],
+      "capabilities" : [ "IntegerFunctions2INTEL" ],
+      "version" : "None"
+    },
+    {
+      "opname" : "OpUMul32x16INTEL",
+      "opcode" : 5598,
+      "operands" : [
+        { "kind" : "IdResultType" },
+        { "kind" : "IdResult" },
+        { "kind" : "IdRef",        "name" : "'Operand 1'" },
+        { "kind" : "IdRef",        "name" : "'Operand 2'" }
+      ],
+      "capabilities" : [ "IntegerFunctions2INTEL" ],
+      "version" : "None"
+    },
+    {
       "opname" : "OpDecorateString",
       "opcode" : 5632,
       "operands" : [
@@ -9019,6 +9185,13 @@
           "enumerant" : "SubgroupImageMediaBlockIOINTEL",
           "value" : 5579,
           "extensions" : [ "SPV_INTEL_media_block_io" ],
+          "version" : "None"
+        },
+        {
+          "enumerant" : "IntegerFunctions2INTEL",
+          "value" : 5584,
+          "capabilities" : [ "Shader" ],
+          "extensions" : [ "SPV_INTEL_shader_integer_functions2" ],
           "version" : "None"
         },
         {

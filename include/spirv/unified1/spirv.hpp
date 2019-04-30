@@ -833,6 +833,7 @@ enum Capability {
     CapabilitySubgroupBufferBlockIOINTEL = 5569,
     CapabilitySubgroupImageBlockIOINTEL = 5570,
     CapabilitySubgroupImageMediaBlockIOINTEL = 5579,
+    CapabilityIntegerFunctions2INTEL = 5584,
     CapabilitySubgroupAvcMotionEstimationINTEL = 5696,
     CapabilitySubgroupAvcMotionEstimationIntraINTEL = 5697,
     CapabilitySubgroupAvcMotionEstimationChromaINTEL = 5698,
@@ -1224,6 +1225,20 @@ enum Op {
     OpSubgroupImageBlockWriteINTEL = 5578,
     OpSubgroupImageMediaBlockReadINTEL = 5580,
     OpSubgroupImageMediaBlockWriteINTEL = 5581,
+    OpUCountLeadingZerosINTEL = 5585,
+    OpUCountTrailingZerosINTEL = 5586,
+    OpAbsISubINTEL = 5587,
+    OpAbsUSubINTEL = 5588,
+    OpIAddSatINTEL = 5589,
+    OpUAddSatINTEL = 5590,
+    OpIAverageINTEL = 5591,
+    OpUAverageINTEL = 5592,
+    OpIAverageRoundedINTEL = 5593,
+    OpUAverageRoundedINTEL = 5594,
+    OpISubSatINTEL = 5595,
+    OpUSubSatINTEL = 5596,
+    OpIMul32x16INTEL = 5597,
+    OpUMul32x16INTEL = 5598,
     OpDecorateString = 5632,
     OpDecorateStringGOOGLE = 5632,
     OpMemberDecorateString = 5633,
@@ -1738,6 +1753,20 @@ inline void HasResultAndType(Op opcode, bool *hasResult, bool *hasResultType) {
     case OpSubgroupImageBlockWriteINTEL: *hasResult = false; *hasResultType = false; break;
     case OpSubgroupImageMediaBlockReadINTEL: *hasResult = true; *hasResultType = true; break;
     case OpSubgroupImageMediaBlockWriteINTEL: *hasResult = false; *hasResultType = false; break;
+    case OpUCountLeadingZerosINTEL: *hasResult = true; *hasResultType = true; break;
+    case OpUCountTrailingZerosINTEL: *hasResult = true; *hasResultType = true; break;
+    case OpAbsISubINTEL: *hasResult = true; *hasResultType = true; break;
+    case OpAbsUSubINTEL: *hasResult = true; *hasResultType = true; break;
+    case OpIAddSatINTEL: *hasResult = true; *hasResultType = true; break;
+    case OpUAddSatINTEL: *hasResult = true; *hasResultType = true; break;
+    case OpIAverageINTEL: *hasResult = true; *hasResultType = true; break;
+    case OpUAverageINTEL: *hasResult = true; *hasResultType = true; break;
+    case OpIAverageRoundedINTEL: *hasResult = true; *hasResultType = true; break;
+    case OpUAverageRoundedINTEL: *hasResult = true; *hasResultType = true; break;
+    case OpISubSatINTEL: *hasResult = true; *hasResultType = true; break;
+    case OpUSubSatINTEL: *hasResult = true; *hasResultType = true; break;
+    case OpIMul32x16INTEL: *hasResult = true; *hasResultType = true; break;
+    case OpUMul32x16INTEL: *hasResult = true; *hasResultType = true; break;
     case OpDecorateString: *hasResult = false; *hasResultType = false; break;
     case OpDecorateStringGOOGLE: *hasResult = false; *hasResultType = false; break;
     case OpMemberDecorateString: *hasResult = false; *hasResultType = false; break;
