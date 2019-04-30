@@ -70,6 +70,10 @@ void LogPasswordSyncState(PasswordSyncState state) {
                             NUM_SYNC_STATES);
 }
 
+void LogApplySyncChangesState(ApplySyncChangesState state) {
+  UMA_HISTOGRAM_ENUMERATION("PasswordManager.ApplySyncChangesState", state);
+}
+
 void LogPasswordGenerationSubmissionEvent(PasswordSubmissionEvent event) {
   UMA_HISTOGRAM_ENUMERATION("PasswordGeneration.SubmissionEvent", event,
                             SUBMISSION_EVENT_ENUM_COUNT);

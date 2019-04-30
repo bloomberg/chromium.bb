@@ -43008,6 +43008,14 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="DocumentLevelTouchPreventDefaultCalled"/>
 </enum>
 
+<enum name="PasswordApplySyncChangesState">
+  <int value="0" label="Apply OK"/>
+  <int value="1" label="Apply ADD failed"/>
+  <int value="2" label="Apply UPDATE failed"/>
+  <int value="3" label="Apply Delete failed"/>
+  <int value="4" label="Apply metadata changed failed"/>
+</enum>
+
 <enum name="PasswordBubbleDisplayDisposition">
   <int value="0" label="Opened automatically / Offering a password to save"/>
   <int value="1" label="Opened manually / Offering a password to save"/>
