@@ -42,6 +42,8 @@ public class WebShareTest {
     public final NativeLibraryTestRule mNativeLibraryTestRule = new NativeLibraryTestRule();
 
     private static final String TEST_FILE = "/content/test/data/android/webshare.html";
+    private static final String TEST_FILE_APK = "/content/test/data/android/webshare-apk.html";
+    private static final String TEST_FILE_DEX = "/content/test/data/android/webshare-dex.html";
 
     private EmbeddedTestServer mTestServer;
 
@@ -151,6 +153,36 @@ public class WebShareTest {
         // Click (instead of directly calling the JavaScript function) to simulate a user gesture.
         TouchCommon.singleClickView(mTab.getView());
         Assert.assertEquals("Fail: AbortError: Share canceled", mUpdateWaiter.waitForUpdate());
+    }
+
+    /**
+     * Verify WebShare fails if share of .apk is called from a user gesture.
+     * @throws Exception
+     */
+    @Test
+    @MediumTest
+    @Feature({"WebShare"})
+    public void testWebShareApk() throws Exception {
+        mActivityTestRule.loadUrl(mTestServer.getURL(TEST_FILE_APK));
+        // Click (instead of directly calling the JavaScript function) to simulate a user gesture.
+        TouchCommon.singleClickView(mTab.getView());
+        Assert.assertEquals(
+                "Fail: NotAllowedError: Permission denied", mUpdateWaiter.waitForUpdate());
+    }
+
+    /**
+     * Verify WebShare fails if share of .dex is called from a user gesture.
+     * @throws Exception
+     */
+    @Test
+    @MediumTest
+    @Feature({"WebShare"})
+    public void testWebShareDex() throws Exception {
+        mActivityTestRule.loadUrl(mTestServer.getURL(TEST_FILE_DEX));
+        // Click (instead of directly calling the JavaScript function) to simulate a user gesture.
+        TouchCommon.singleClickView(mTab.getView());
+        Assert.assertEquals(
+                "Fail: NotAllowedError: Permission denied", mUpdateWaiter.waitForUpdate());
     }
 
     /**
