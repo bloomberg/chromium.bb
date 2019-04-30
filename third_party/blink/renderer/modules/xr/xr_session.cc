@@ -305,6 +305,8 @@ ScriptPromise XRSession::requestReferenceSpace(
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(DOMExceptionCode::kNotSupportedError,
                                            kUnknownReferenceSpace));
+  } else {
+    reference_spaces_.push_back(reference_space);
   }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
@@ -864,7 +866,9 @@ void XRSession::OnSelect(XRInputSource* input_source) {
 }
 
 void XRSession::OnPoseReset() {
-  DispatchEvent(*XRSessionEvent::Create(event_type_names::kResetpose, this));
+  for (const auto& reference_space : reference_spaces_) {
+    reference_space->OnReset();
+  }
 }
 
 void XRSession::UpdateInputSourceState(
@@ -1040,6 +1044,7 @@ void XRSession::Trace(blink::Visitor* visitor) {
   visitor->Trace(canvas_input_provider_);
   visitor->Trace(callback_collection_);
   visitor->Trace(hit_test_promises_);
+  visitor->Trace(reference_spaces_);
   EventTargetWithInlineData::Trace(visitor);
 }
 

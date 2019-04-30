@@ -28,6 +28,8 @@ class XRBoundedReferenceSpace final : public XRReferenceSpace {
 
   void Trace(blink::Visitor*) override;
 
+  void OnReset() override;
+
  private:
   void EnsureUpdated();
 

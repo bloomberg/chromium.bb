@@ -33,6 +33,7 @@ class XRSpace;
 class XRInputSourceEvent;
 class XRPresentationContext;
 class XRRay;
+class XRReferenceSpace;
 class XRReferenceSpaceOptions;
 class XRRenderState;
 class XRRenderStateInit;
@@ -83,12 +84,11 @@ class XRSession final : public EventTargetWithInlineData,
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(blur, kBlur)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(focus, kFocus)
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(resetpose, kResetpose)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(end, kEnd)
-
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(select, kSelect)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(inputsourceschange, kInputsourceschange)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(selectstart, kSelectstart)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(selectend, kSelectend)
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(select, kSelect)
 
   void updateRenderState(XRRenderStateInit*, ExceptionState&);
   void updateWorldTrackingState(XRWorldTrackingStateInit*) {}
@@ -230,6 +230,7 @@ class XRSession final : public EventTargetWithInlineData,
   Member<XRCanvasInputProvider> canvas_input_provider_;
   bool environment_error_handler_subscribed_ = false;
   HeapHashSet<Member<ScriptPromiseResolver>> hit_test_promises_;
+  HeapVector<Member<XRReferenceSpace>> reference_spaces_;
 
   bool has_xr_focus_ = true;
   bool is_external_ = false;

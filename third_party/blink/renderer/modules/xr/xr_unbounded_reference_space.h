@@ -23,6 +23,8 @@ class XRUnboundedReferenceSpace final : public XRReferenceSpace {
 
   void Trace(blink::Visitor*) override;
 
+  void OnReset() override;
+
  private:
   std::unique_ptr<TransformationMatrix> pose_transform_;
 };

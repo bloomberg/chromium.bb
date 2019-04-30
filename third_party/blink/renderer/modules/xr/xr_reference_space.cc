@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/xr/xr_reference_space.h"
 
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
+#include "third_party/blink/renderer/modules/xr/xr_reference_space_event.h"
 #include "third_party/blink/renderer/modules/xr/xr_rigid_transform.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
 
@@ -74,5 +75,7 @@ void XRReferenceSpace::Trace(blink::Visitor* visitor) {
   visitor->Trace(origin_offset_);
   XRSpace::Trace(visitor);
 }
+
+void XRReferenceSpace::OnReset() {}
 
 }  // namespace blink

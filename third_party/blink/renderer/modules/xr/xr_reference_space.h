@@ -38,6 +38,8 @@ class XRReferenceSpace : public XRSpace {
 
   void Trace(blink::Visitor*) override;
 
+  virtual void OnReset();
+
  private:
   Member<XRRigidTransform> origin_offset_;
 };

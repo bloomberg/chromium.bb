@@ -10630,7 +10630,10 @@ interface XRSession : EventTarget
     getter onblur
     getter onend
     getter onfocus
-    getter onresetpose
+    getter oninputsourceschange
+    getter onselect
+    getter onselectend
+    getter onselectstart
     getter renderState
     getter viewerSpace
     method cancelAnimationFrame
@@ -10644,7 +10647,10 @@ interface XRSession : EventTarget
     setter onblur
     setter onend
     setter onfocus
-    setter onresetpose
+    setter oninputsourceschange
+    setter onselect
+    setter onselectend
+    setter onselectstart
 interface XRSessionEvent : Event
     attribute @@toStringTag
     getter session

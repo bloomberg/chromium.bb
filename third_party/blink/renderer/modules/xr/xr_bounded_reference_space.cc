@@ -88,7 +88,7 @@ void XRBoundedReferenceSpace::EnsureUpdated() {
     bounds_geometry_.clear();
   }
 
-  DispatchEvent(*XRReferenceSpaceEvent::Create(event_type_names::kReset, this));
+  OnReset();
 }
 
 // Transforms a given pose from a "base" reference space used by the XR
@@ -120,6 +120,10 @@ HeapVector<Member<DOMPointReadOnly>> XRBoundedReferenceSpace::boundsGeometry() {
 void XRBoundedReferenceSpace::Trace(blink::Visitor* visitor) {
   visitor->Trace(bounds_geometry_);
   XRReferenceSpace::Trace(visitor);
+}
+
+void XRBoundedReferenceSpace::OnReset() {
+  DispatchEvent(*XRReferenceSpaceEvent::Create(event_type_names::kReset, this));
 }
 
 }  // namespace blink

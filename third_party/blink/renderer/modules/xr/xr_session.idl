@@ -29,8 +29,11 @@ enum XREnvironmentBlendMode {
 
   attribute EventHandler onblur;
   attribute EventHandler onfocus;
-  attribute EventHandler onresetpose;
   attribute EventHandler onend;
+  attribute EventHandler onselect;
+  attribute EventHandler oninputsourceschange;
+  attribute EventHandler onselectstart;
+  attribute EventHandler onselectend;
 
   [RaisesException] void updateRenderState(XRRenderStateInit init);
 

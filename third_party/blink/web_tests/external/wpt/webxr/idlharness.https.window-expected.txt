@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 214 tests; 205 PASS, 9 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 214 tests; 209 PASS, 5 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Navigator: original interface defined
 PASS Partial dictionary WebGLContextAttributes: original dictionary defined
@@ -38,10 +38,10 @@ PASS XRSession interface: operation end()
 PASS XRSession interface: attribute onblur
 PASS XRSession interface: attribute onfocus
 PASS XRSession interface: attribute onend
-FAIL XRSession interface: attribute onselect assert_true: The prototype object must have a property "onselect" expected true got false
-FAIL XRSession interface: attribute oninputsourceschange assert_true: The prototype object must have a property "oninputsourceschange" expected true got false
-FAIL XRSession interface: attribute onselectstart assert_true: The prototype object must have a property "onselectstart" expected true got false
-FAIL XRSession interface: attribute onselectend assert_true: The prototype object must have a property "onselectend" expected true got false
+PASS XRSession interface: attribute onselect
+PASS XRSession interface: attribute oninputsourceschange
+PASS XRSession interface: attribute onselectstart
+PASS XRSession interface: attribute onselectend
 PASS XRRenderState interface: existence and properties of interface object
 PASS XRRenderState interface object length
 PASS XRRenderState interface object name

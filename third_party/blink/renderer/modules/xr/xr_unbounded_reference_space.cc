@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/xr/xr_unbounded_reference_space.h"
 
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
+#include "third_party/blink/renderer/modules/xr/xr_reference_space_event.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
 
 namespace blink {
@@ -29,6 +30,10 @@ XRUnboundedReferenceSpace::TransformBasePose(
 
 void XRUnboundedReferenceSpace::Trace(blink::Visitor* visitor) {
   XRReferenceSpace::Trace(visitor);
+}
+
+void XRUnboundedReferenceSpace::OnReset() {
+  DispatchEvent(*XRReferenceSpaceEvent::Create(event_type_names::kReset, this));
 }
 
 }  // namespace blink

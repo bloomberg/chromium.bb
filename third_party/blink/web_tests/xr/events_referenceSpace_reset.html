@@ -29,9 +29,17 @@ let testFunction = function(session, t, fakeDeviceController) {
     outputContext: getOutputContext()
   });
 
-  let eventWatcher = new EventWatcher(
-    t, session, ["resetpose", "watcherdone"]);
-  let eventPromise = eventWatcher.wait_for(["resetpose", "watcherdone"]);
+  let resetPromise = session.requestReferenceSpace(
+      {type: "stationary", subtype: "eye-level"})
+  .then((refSpace) => {
+    let eventWatcher = new EventWatcher(
+        t, refSpace, ["reset", "watcherdone"]);
+    refSpace.addEventListener("reset", (event) => {
+      assert_equals(event.referenceSpace, refSpace);
+      refSpace.dispatchEvent(watcherDone);
+    }, false);
+    return eventWatcher.wait_for(["reset", "watcherdone"]);
+  });
 
   // Need to have a valid pose or input events don't process.
   fakeDeviceController.setXRPresentationFrameData(VALID_POSE_MATRIX, [{
@@ -45,21 +53,12 @@ let testFunction = function(session, t, fakeDeviceController) {
     }]);
   fakeDeviceController.setResetPose(true);
 
-  function onPoseReset(event) {
-    t.step( () => {
-      assert_equals(event.session, session);
-      session.dispatchEvent(watcherDone);
-    });
-  }
-
-  session.addEventListener("resetpose", onPoseReset, false);
-
   // Trigger the reset pose.
   session.requestAnimationFrame(() => {
     session.requestAnimationFrame(() => {});
   });
 
-  return eventPromise;
+  return resetPromise;
 };
 
 xr_session_promise_test(
