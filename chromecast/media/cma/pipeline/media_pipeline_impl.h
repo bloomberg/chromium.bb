@@ -123,6 +123,8 @@ class MediaPipelineImpl {
   base::TimeTicks playback_stalled_time_;
   bool playback_stalled_notification_sent_;
 
+  bool waiting_for_first_have_enough_data_ = true;
+
   base::WeakPtr<MediaPipelineImpl> weak_this_;
   base::WeakPtrFactory<MediaPipelineImpl> weak_factory_;
 

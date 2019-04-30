@@ -246,6 +246,8 @@ void MediaPipelineImpl::StartPlayingFrom(base::TimeDelta time) {
         base::BindOnce(&MediaPipelineImpl::UpdateMediaTime, weak_this_));
   }
 
+  waiting_for_first_have_enough_data_ = true;
+
   // Setup the audio and video pipeline for the new timeline.
   if (audio_pipeline_) {
     scoped_refptr<BufferingState> buffering_state;
@@ -384,10 +386,18 @@ void MediaPipelineImpl::OnBufferingNotification(bool is_buffering) {
   DCHECK(buffering_controller_);
   DCHECK_EQ(is_buffering, buffering_controller_->IsBuffering());
 
-  if (!client_.buffering_state_cb.is_null()) {
+  if (waiting_for_first_have_enough_data_) {
+    waiting_for_first_have_enough_data_ = is_buffering;
+  }
+
+  if (!waiting_for_first_have_enough_data_ && client_.buffering_state_cb) {
     ::media::BufferingState state = is_buffering
                                         ? ::media::BUFFERING_HAVE_NOTHING
                                         : ::media::BUFFERING_HAVE_ENOUGH;
+    // Reports buffering state to WMPI. WMPI will change HTMLMediaElement ready
+    // state:
+    // HAVE_NOTHING -> HAVE_CURRENT_DATA
+    // HAVE_ENOUGH -> HAVE_FUTURE_DATA or HAVE_ENOUGH_DATA
     client_.buffering_state_cb.Run(state);
   }
 
