@@ -732,9 +732,8 @@
                   '|chrome/browser/ui/webui/chromeos/bluetooth*'\
                   '|chrome/browser/resources/settings/bluetooth_page/'\
                   '|chrome/browser/resources/chromeos/bluetooth_pairing_dialog/'\
-                  '|device/bluetooth'\
-                  '|services/device/bluetooth/'\
-                  '|services/device/public/cpp/bluetooth/'\
+                  '|device/bluetooth/bluez/'\
+                  '|device/bluetooth/chromeos/'\
                   '|ui/webui/resources/cr_components/chromeos/bluetooth*'
     },
     'chromeos_calculator': {
