@@ -1104,6 +1104,17 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method formData
 [Worker]     method json
 [Worker]     method text
+[Worker] interface SMS
+[Worker]     attribute @@toStringTag
+[Worker]     getter content
+[Worker]     method constructor
+[Worker] interface SMSReceiver : EventTarget
+[Worker]     attribute @@toStringTag
+[Worker]     getter onchange
+[Worker]     getter sms
+[Worker]     method constructor
+[Worker]     method start
+[Worker]     setter onchange
 [Worker] interface Serial : EventTarget
 [Worker]     attribute @@toStringTag
 [Worker]     getter onconnect

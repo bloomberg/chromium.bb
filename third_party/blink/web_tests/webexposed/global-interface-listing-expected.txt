@@ -6079,6 +6079,17 @@ interface Response
     method formData
     method json
     method text
+interface SMS
+    attribute @@toStringTag
+    getter content
+    method constructor
+interface SMSReceiver : EventTarget
+    attribute @@toStringTag
+    getter onchange
+    getter sms
+    method constructor
+    method start
+    setter onchange
 interface SVGAElement : SVGGraphicsElement
     attribute @@toStringTag
     getter href

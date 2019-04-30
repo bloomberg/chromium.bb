@@ -1697,6 +1697,7 @@ test("content_unittests") {
     "../browser/service_worker/service_worker_version_unittest.cc",
     "../browser/shareable_file_reference_unittest.cc",
     "../browser/site_instance_impl_unittest.cc",
+    "../browser/sms/sms_manager_unittest.cc",
     "../browser/speech/tts_controller_unittest.cc",
     "../browser/startup_task_runner_unittest.cc",
     "../browser/storage_partition_impl_map_unittest.cc",

@@ -1355,6 +1355,10 @@
       status: "stable",
     },
     {
+      name: "SmsRetrieval",
+      status: "experimental",
+    },
+    {
       name: "SpeechSynthesisEventCharLength",
       status: "experimental",
     },

@@ -57,6 +57,7 @@
     "ServiceWorkerContainer",
     "ServiceWorkerGlobalScope",
     "ServiceWorkerRegistration",
+    "SMSReceiver",
     "SpeechRecognition",
     "SpeechSynthesis",
     "SpeechSynthesisUtterance",

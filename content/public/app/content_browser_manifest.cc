@@ -176,7 +176,8 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.PermissionService",
                   "blink.mojom.QuotaDispatcherHost",
                   "blink.mojom.SerialService", "blink.mojom.WebUsbService",
-                  "network.mojom.WebSocket", "payments.mojom.PaymentManager",
+                  "blink.mojom.SmsManager", "network.mojom.WebSocket",
+                  "payments.mojom.PaymentManager",
                   "shape_detection.mojom.BarcodeDetectionProvider",
                   "shape_detection.mojom.FaceDetectionProvider",
                   "shape_detection.mojom.TextDetection"})
@@ -226,6 +227,7 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.QuotaDispatcherHost",
                   "blink.mojom.SerialService",
                   "blink.mojom.SharedWorkerConnector",
+                  "blink.mojom.SmsManager",
                   "blink.mojom.SpeechRecognizer",
                   "blink.mojom.TextSuggestionHost",
                   "blink.mojom.UnhandledTapNotifier",
