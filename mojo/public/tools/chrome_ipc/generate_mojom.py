@@ -429,7 +429,7 @@ def main():
   if args.count:
     count = generator.count()
     if count:
-      print '%d %s' % (generator.count(), args.input)
+      print('%d %s' % (generator.count(), args.input))
     return
   mojom = '\n'.join(generator.generate_mojom()).strip()
   if not mojom:
@@ -440,13 +440,13 @@ def main():
     with open(args.output_mojom, 'w') as f:
       f.write(mojom)
   else:
-    print mojom
+    print(mojom)
   if typemap:
     if args.output_typemap:
       with open(args.output_typemap, 'w') as f:
         f.write(typemap)
     else:
-      print typemap
+      print(typemap)
 
 
 if __name__ == '__main__':

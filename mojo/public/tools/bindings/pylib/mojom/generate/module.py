@@ -153,7 +153,7 @@ class ReferenceKind(Kind):
          a = Struct('test_struct_1')
          b = a.MakeNullableKind()
          a.name = 'test_struct_2'
-         print b.name  # Outputs 'test_struct_2'.
+         print(b.name)  # Outputs 'test_struct_2'.
     """
     def Get(self):
       return self.shared_definition[name]
