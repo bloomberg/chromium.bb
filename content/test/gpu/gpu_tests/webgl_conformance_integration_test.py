@@ -89,7 +89,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         default='false')
     parser.add_option('--is-asan',
         help='Indicates whether currently running an ASAN build',
-        action='store_true')
+        action='store_true', default=False)
 
   @classmethod
   def GenerateGpuTests(cls, options):
