@@ -700,8 +700,8 @@ void RequestManager::SubmitCaptureResult(
         processing_buffer_ids_.erase(*pending_result.input_buffer_id);
 
         // If all reprocess tasks are done for this buffer, release the buffer.
-        if (base::ContainsKey(buffer_id_reprocess_tasks_map_,
-                              *pending_result.input_buffer_id)) {
+        if (!base::ContainsKey(buffer_id_reprocess_tasks_map_,
+                               *pending_result.input_buffer_id)) {
           stream_buffer_manager_->ReleaseBuffer(
               StreamType::kYUVOutput, *pending_result.input_buffer_id);
         }
