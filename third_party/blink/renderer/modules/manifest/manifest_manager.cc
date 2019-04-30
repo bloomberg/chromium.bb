@@ -48,6 +48,7 @@ void ManifestManager::ProvideTo(LocalFrame& frame) {
 
 ManifestManager::ManifestManager(LocalFrame& frame)
     : Supplement<LocalFrame>(frame),
+      ContextLifecycleObserver(frame.GetDocument()),
       may_have_manifest_(false),
       manifest_dirty_(true) {
   if (frame.IsMainFrame()) {
@@ -232,6 +233,10 @@ void ManifestManager::BindToRequest(
   bindings_.AddBinding(this, std::move(request));
 }
 
+void ManifestManager::ContextDestroyed(ExecutionContext*) {
+  Dispose();
+}
+
 void ManifestManager::Dispose() {
   if (fetcher_)
     fetcher_->Cancel();
@@ -245,6 +250,7 @@ void ManifestManager::Dispose() {
 void ManifestManager::Trace(blink::Visitor* visitor) {
   visitor->Trace(fetcher_);
   Supplement<LocalFrame>::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

@@ -5,19 +5,15 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MANIFEST_MANIFEST_MANAGER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MANIFEST_MANIFEST_MANAGER_H_
 
-#include <memory>
-#include <string>
-#include <vector>
-
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom-blink.h"
 #include "third_party/blink/public/mojom/manifest/manifest_manager.mojom-blink.h"
 #include "third_party/blink/public/web/web_manifest_manager.h"
-#include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
@@ -34,9 +30,9 @@ class ResourceResponse;
 class ManifestManager : public GarbageCollectedFinalized<ManifestManager>,
                         public WebManifestManager,
                         public Supplement<LocalFrame>,
-                        public mojom::blink::ManifestManager {
+                        public mojom::blink::ManifestManager,
+                        public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(ManifestManager);
-  USING_PRE_FINALIZER(ManifestManager, Dispose);
 
  public:
   static const char kSupplementName[];
@@ -65,6 +61,9 @@ class ManifestManager : public GarbageCollectedFinalized<ManifestManager>,
   // WebManifestManager
   void RequestManifest(WebCallback callback) override;
   bool CanFetchManifest() override;
+
+  // From ContextLifecycleObserver
+  void ContextDestroyed(ExecutionContext*) override;
 
   // mojom::blink::ManifestManager implementation.
   void RequestManifest(RequestManifestCallback callback) override;
