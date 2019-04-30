@@ -1413,6 +1413,8 @@ HRESULT CGaiaCredentialBase::ForkSaveAccountInfoStub(const base::Value& dict,
       HRESULT hrWrite = HRESULT_FROM_WIN32(::GetLastError());
       LOGFN(ERROR) << "WriteFile hr=" << putHR(hrWrite);
     }
+
+    ::RtlSecureZeroMemory(const_cast<char*>(json.data()), json.size());
   } else {
     LOGFN(ERROR) << "base::JSONWriter::Write failed";
   }
