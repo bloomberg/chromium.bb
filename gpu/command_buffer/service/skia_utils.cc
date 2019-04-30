@@ -21,7 +21,8 @@ bool GetGrBackendTexture(const gl::GLVersionInfo* version_info,
                          GLuint service_id,
                          viz::ResourceFormat resource_format,
                          GrBackendTexture* gr_texture) {
-  if (target != GL_TEXTURE_2D && target != GL_TEXTURE_RECTANGLE_ARB) {
+  if (target != GL_TEXTURE_2D && target != GL_TEXTURE_RECTANGLE_ARB &&
+      target != GL_TEXTURE_EXTERNAL_OES) {
     LOG(ERROR) << "GetGrBackendTexture: invalid texture target.";
     return false;
   }

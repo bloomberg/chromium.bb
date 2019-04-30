@@ -68,6 +68,7 @@ class MEDIA_GPU_EXPORT SharedImageVideo
 
  private:
   friend class SharedImageRepresentationGLTextureVideo;
+  friend class SharedImageRepresentationVideoSkiaGL;
 
   scoped_refptr<CodecImage> codec_image_;
 

@@ -12,9 +12,14 @@
 #include "gpu/command_buffer/service/abstract_texture.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
+#include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
+#include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "media/gpu/android/codec_image.h"
+#include "third_party/skia/include/core/SkPromiseImageTexture.h"
+#include "third_party/skia/include/gpu/GrBackendSemaphore.h"
+#include "third_party/skia/include/gpu/GrBackendSurface.h"
 
 namespace media {
 
@@ -101,61 +106,125 @@ class SharedImageRepresentationGLTextureVideo
   bool BeginAccess(GLenum mode) override {
     auto* video_backing = static_cast<SharedImageVideo*>(backing());
     DCHECK(video_backing);
-
-    // For (old) overlays, we don't have a texture owner, but overlay promotion
-    // might not happen for some reasons. In that case, it will try to draw
-    // which should results in no image.
-    if (!texture_owner())
-      return true;
+    auto* codec_image = video_backing->codec_image_.get();
+    auto* texture_owner = codec_image->texture_owner().get();
 
     // Render the codec image.
-    codec_image()->RenderToFrontBuffer();
+    codec_image->RenderToFrontBuffer();
 
-    // Bind the tex image if its not already bound.
-    if (!texture_owner()->binds_texture_on_update())
-      texture_owner()->EnsureTexImageBound();
+    // Bind the tex image if it's not already bound.
+    if (!texture_owner->binds_texture_on_update())
+      texture_owner->EnsureTexImageBound();
     return true;
   }
 
   void EndAccess() override {}
 
  private:
-  SharedImageVideo* video_backing() {
-    auto* video_backing = static_cast<SharedImageVideo*>(backing());
-    return video_backing;
-  }
-
-  CodecImage* codec_image() {
-    DCHECK(video_backing());
-    return video_backing()->codec_image_.get();
-  }
-
-  TextureOwner* texture_owner() { return codec_image()->texture_owner().get(); }
-
   gpu::gles2::Texture* texture_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedImageRepresentationGLTextureVideo);
 };
 
+// GL backed Skia representation of SharedImageVideo.
+class SharedImageRepresentationVideoSkiaGL
+    : public gpu::SharedImageRepresentationSkia {
+ public:
+  SharedImageRepresentationVideoSkiaGL(gpu::SharedImageManager* manager,
+                                       gpu::SharedImageBacking* backing,
+                                       gpu::MemoryTypeTracker* tracker)
+      : gpu::SharedImageRepresentationSkia(manager, backing, tracker) {}
+
+  ~SharedImageRepresentationVideoSkiaGL() override = default;
+
+  sk_sp<SkSurface> BeginWriteAccess(
+      int final_msaa_count,
+      const SkSurfaceProps& surface_props,
+      std::vector<GrBackendSemaphore>* begin_semaphores,
+      std::vector<GrBackendSemaphore>* end_semaphores) override {
+    // Writes are not intended to used for video backed representations.
+    NOTIMPLEMENTED();
+    return nullptr;
+  }
+
+  void EndWriteAccess(sk_sp<SkSurface> surface) override { NOTIMPLEMENTED(); }
+
+  sk_sp<SkPromiseImageTexture> BeginReadAccess(
+      std::vector<GrBackendSemaphore>* begin_semaphores,
+      std::vector<GrBackendSemaphore>* end_semaphores) override {
+    if (!promise_texture_) {
+      auto* video_backing = static_cast<SharedImageVideo*>(backing());
+      DCHECK(video_backing);
+      auto* codec_image = video_backing->codec_image_.get();
+      auto* texture_owner = codec_image->texture_owner().get();
+
+      // Render the codec image.
+      codec_image->RenderToFrontBuffer();
+
+      // Bind the tex image if it's not already bound.
+      if (!texture_owner->binds_texture_on_update())
+        texture_owner->EnsureTexImageBound();
+      GrBackendTexture backend_texture;
+      if (!gpu::GetGrBackendTexture(
+              gl::GLContext::GetCurrent()->GetVersionInfo(),
+              GL_TEXTURE_EXTERNAL_OES, size(), texture_owner->GetTextureId(),
+              format(), &backend_texture)) {
+        return nullptr;
+      }
+      promise_texture_ = SkPromiseImageTexture::Make(backend_texture);
+    }
+    return promise_texture_;
+  }
+
+  void EndReadAccess() override {}
+
+ private:
+  sk_sp<SkPromiseImageTexture> promise_texture_;
+};
+
+// TODO(vikassoni): Currently GLRenderer doesn't support overlays with shared
+// image. Add support for overlays in GLRenderer as well as overlay
+// representations of shared image.
 std::unique_ptr<gpu::SharedImageRepresentationGLTexture>
 SharedImageVideo::ProduceGLTexture(gpu::SharedImageManager* manager,
                                    gpu::MemoryTypeTracker* tracker) {
-  // TODO(vikassoni): Also fix how overlays work with shared images to enable
-  // this representation. To make overlays work, we need to add a new overlay
-  // representation which can notify promotion hints and schedule overlay
-  // planes via |codec_image_|.
-  NOTIMPLEMENTED();
-  return nullptr;
+  // For (old) overlays, we don't have a texture owner, but overlay promotion
+  // might not happen for some reasons. In that case, it will try to draw
+  // which should result in no image.
+  if (!codec_image_->texture_owner())
+    return nullptr;
+  auto* texture = gpu::gles2::Texture::CheckedCast(
+      codec_image_->texture_owner()->GetTextureBase());
+  DCHECK(texture);
+
+  return std::make_unique<SharedImageRepresentationGLTextureVideo>(
+      manager, this, tracker, texture);
 }
 
+// Currently SkiaRenderer doesn't support overlays.
 std::unique_ptr<gpu::SharedImageRepresentationSkia>
 SharedImageVideo::ProduceSkia(
     gpu::SharedImageManager* manager,
     gpu::MemoryTypeTracker* tracker,
     scoped_refptr<gpu::SharedContextState> context_state) {
-  // TODO(vikassoni): Implement in follow up patch.
-  NOTIMPLEMENTED();
-  return nullptr;
+  DCHECK(context_state);
+
+  // Right now we only support GL mode.
+  // TODO(vikassoni): Land follow up patches to enable vulkan mode.
+  if (!context_state->GrContextIsGL()) {
+    DLOG(ERROR) << "SharedImage video path not yet supported in Vulkan.";
+    return nullptr;
+  }
+
+  // For (old) overlays, we don't have a texture owner, but overlay promotion
+  // might not happen for some reasons. In that case, it will try to draw
+  // which should result in no image.
+  if (!codec_image_->texture_owner())
+    return nullptr;
+
+  // In GL mode, use the texture id of the TextureOwner.
+  return std::make_unique<SharedImageRepresentationVideoSkiaGL>(manager, this,
+                                                                tracker);
 }
 
 }  // namespace media
