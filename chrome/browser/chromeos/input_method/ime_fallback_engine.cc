@@ -15,8 +15,9 @@ ImeFallbackEngine::ImeFallbackEngine()
 ImeFallbackEngine::~ImeFallbackEngine() = default;
 
 void ImeFallbackEngine::Activate() {
+  if (factory_binding_.is_bound())
+    return;
   ime::mojom::ImeEngineFactoryPtr factory_ptr;
-  factory_binding_.Close();
   factory_binding_.Bind(mojo::MakeRequest(&factory_ptr));
   factory_binding_.set_connection_error_handler(base::BindOnce(
       &ImeFallbackEngine::OnFactoryConnectionLost, base::Unretained(this)));
@@ -41,6 +42,7 @@ void ImeFallbackEngine::ProcessKeyEvent(
 }
 
 void ImeFallbackEngine::OnFactoryConnectionLost() {
+  factory_binding_.Close();
   if (engine_client_)
     engine_client_->Reconnect();
 }

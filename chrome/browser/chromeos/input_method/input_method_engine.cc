@@ -69,8 +69,9 @@ class MojoHelper : public ime::mojom::ImeEngine,
   ~MojoHelper() override = default;
 
   void Activate(ime::mojom::ImeEngineFactoryRegistryPtr registry) {
+    if (factory_binding_.is_bound())
+      return;
     ime::mojom::ImeEngineFactoryPtr factory_ptr;
-    factory_binding_.Close();
     factory_binding_.Bind(mojo::MakeRequest(&factory_ptr));
     factory_binding_.set_connection_error_handler(base::BindOnce(
         &MojoHelper::OnFactoryConnectionLost, base::Unretained(this)));
@@ -146,6 +147,7 @@ class MojoHelper : public ime::mojom::ImeEngine,
 
  private:
   void OnFactoryConnectionLost() {
+    factory_binding_.Close();
     // After the connection to |ImeEngineFactoryRegistry| is broken, notifies
     // the client to reconnect through Window Service.
     if (engine_client_)
