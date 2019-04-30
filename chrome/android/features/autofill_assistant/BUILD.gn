@@ -103,12 +103,17 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/autofill_assistant/overlay/AssistantOverlayDrawable.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/overlay/AssistantOverlayEventFilter.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantChoiceList.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantPaymentRequestContactDetailsSection.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantPaymentRequestCoordinator.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantPaymentRequestDelegate.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantPaymentRequestModel.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantPaymentRequestOptions.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantPaymentRequestPaymentMethodSection.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantPaymentRequestSection.java",
-    "java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantPaymentRequestUI.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantPaymentRequestShippingAddressSection.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantPaymentRequestTermsSection.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantVerticalExpander.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantVerticalExpanderAccordion.java",
   ]
 }
 

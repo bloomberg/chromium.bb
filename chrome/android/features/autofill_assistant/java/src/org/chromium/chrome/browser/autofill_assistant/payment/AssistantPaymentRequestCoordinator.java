@@ -5,37 +5,32 @@
 package org.chromium.chrome.browser.autofill_assistant.payment;
 
 import android.app.Activity;
-import android.content.Context;
 import android.support.annotation.Nullable;
-import android.support.v4.util.ArrayMap;
 import android.text.TextUtils;
+import android.util.ArrayMap;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.ScrollView;
 
-import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.Callback;
-import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.autofill_assistant.R;
+import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
+import org.chromium.chrome.browser.autofill.PersonalDataManager.PersonalDataManagerObserver;
 import org.chromium.chrome.browser.payments.AddressEditor;
-import org.chromium.chrome.browser.payments.AutofillAddress;
-import org.chromium.chrome.browser.payments.AutofillContact;
 import org.chromium.chrome.browser.payments.AutofillPaymentApp;
-import org.chromium.chrome.browser.payments.AutofillPaymentInstrument;
 import org.chromium.chrome.browser.payments.BasicCardUtils;
 import org.chromium.chrome.browser.payments.CardEditor;
 import org.chromium.chrome.browser.payments.ContactEditor;
-import org.chromium.chrome.browser.payments.ShippingStrings;
-import org.chromium.chrome.browser.payments.ui.ContactDetailsSection;
-import org.chromium.chrome.browser.payments.ui.PaymentRequestUI.DataType;
-import org.chromium.chrome.browser.payments.ui.PaymentRequestUI.SelectionResult;
-import org.chromium.chrome.browser.payments.ui.SectionInformation;
+import org.chromium.chrome.browser.payments.PaymentInstrument;
+import org.chromium.chrome.browser.widget.FadingEdgeScrollView;
 import org.chromium.chrome.browser.widget.prefeditor.Completable;
-import org.chromium.chrome.browser.widget.prefeditor.EditableOption;
+import org.chromium.chrome.browser.widget.prefeditor.EditorDialog;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentMethodData;
-import org.chromium.payments.mojom.PaymentShippingType;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -44,53 +39,74 @@ import java.util.List;
 import java.util.Map;
 
 // TODO(crbug.com/806868): Use mCarouselCoordinator to show chips.
-// TODO(crbug.com/806868): Refact each payment request section into a MVC component.
 
 /**
  * Coordinator for the Payment Request.
  */
-public class AssistantPaymentRequestCoordinator implements AssistantPaymentRequestUI.Client {
+public class AssistantPaymentRequestCoordinator {
     private static final Comparator<Completable> COMPLETENESS_COMPARATOR =
             (a, b) -> (b.isComplete() ? 1 : 0) - (a.isComplete() ? 1 : 0);
 
-    private final Context mContext;
-    private final AssistantPaymentRequestModel mModel;
-    private final AssistantPaymentRequestUI mPaymentRequestUI;
+    private static final String DIVIDER_TAG = "divider";
+    private static final String SECTION_TAG = "section";
+    private final Activity mActivity;
+    private final LinearLayout mPaymentRequestUI;
+    private final FadingEdgeScrollView mPaymentRequestScrollView;
+    private final AssistantVerticalExpanderAccordion mPaymentRequestExpanderAccordion;
+    private final int mPaymentRequestSectionPadding;
 
-    private CardEditor mCardEditor;
-    private AddressEditor mAddressEditor;
-    private ContactEditor mContactEditor;
-    private SectionInformation mPaymentMethodsSection;
-    private SectionInformation mShippingAddressesSection;
-    private ContactDetailsSection mContactSection;
-
+    private AssistantPaymentRequestContactDetailsSection mContactDetailsSection;
+    private AssistantPaymentRequestPaymentMethodSection mPaymentMethodSection;
+    private AssistantPaymentRequestShippingAddressSection mShippingAddressSection;
+    private PersonalDataManagerObserver mPersonalDataManagerObserver;
+    private Map<String, PaymentMethodData> mPaymentMethodsData;
     private boolean mVisible;
     private boolean mForceInvisible;
 
-    public AssistantPaymentRequestCoordinator(Context context, AssistantPaymentRequestModel model) {
-        mContext = context;
-        mModel = model;
+    public AssistantPaymentRequestCoordinator(
+            Activity activity, AssistantPaymentRequestModel model) {
+        mActivity = activity;
+        mPaymentRequestSectionPadding = activity.getResources().getDimensionPixelSize(
+                R.dimen.autofill_assistant_payment_request_section_padding);
 
-        // TODO(crbug.com/806868): Pass in activity explicitly.
-        mPaymentRequestUI = new AssistantPaymentRequestUI((Activity) context, this);
+        mPaymentRequestUI = new LinearLayout(mActivity);
+        mPaymentRequestUI.setOrientation(LinearLayout.VERTICAL);
+        mPaymentRequestUI.setLayoutParams(
+                new LinearLayout.LayoutParams(/* width= */ ViewGroup.LayoutParams.MATCH_PARENT,
+                        /* height= */ 0, /* weight= */ 1));
+
+        mPaymentRequestExpanderAccordion = new AssistantVerticalExpanderAccordion(mActivity, null);
+        mPaymentRequestExpanderAccordion.setOrientation(LinearLayout.VERTICAL);
+        mPaymentRequestExpanderAccordion.setLayoutParams(
+                new LinearLayout.LayoutParams(/* width= */ ViewGroup.LayoutParams.MATCH_PARENT,
+                        /* height= */ 0, /* weight= */ 1));
+        mPaymentRequestExpanderAccordion.setOnExpandedViewChangedListener(
+                expander -> updateSectionPaddings());
+
+        mPaymentRequestScrollView = new FadingEdgeScrollView(mActivity, null);
+        mPaymentRequestScrollView.addView(mPaymentRequestExpanderAccordion,
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        mPaymentRequestUI.addView(mPaymentRequestScrollView,
+                new LinearLayout.LayoutParams(/* width= */ ViewGroup.LayoutParams.MATCH_PARENT,
+                        /* height= */ 0, /* weight= */ 1));
 
         // Payment request is initially hidden.
         setVisible(false);
 
         // Listen for model changes.
         model.addObserver((source, propertyKey)
-                                  -> resetPaymentRequestUI(
-                                          model.get(AssistantPaymentRequestModel.WEB_CONTENTS),
+                                  -> resetUI(model.get(AssistantPaymentRequestModel.WEB_CONTENTS),
                                           model.get(AssistantPaymentRequestModel.OPTIONS),
                                           model.get(AssistantPaymentRequestModel.DELEGATE)));
     }
 
     public View getView() {
-        return mPaymentRequestUI.getView();
+        return mPaymentRequestUI;
     }
 
     public ScrollView getScrollView() {
-        return mPaymentRequestUI.getScrollView();
+        return mPaymentRequestScrollView;
     }
 
     private void setVisible(boolean visible) {
@@ -113,39 +129,163 @@ public class AssistantPaymentRequestCoordinator implements AssistantPaymentReque
         updateVisibility();
     }
 
-    private void resetPaymentRequestUI(@Nullable WebContents webContents,
+    private void resetUI(@Nullable WebContents webContents,
             @Nullable AssistantPaymentRequestOptions options,
             @Nullable AssistantPaymentRequestDelegate delegate) {
-        mPaymentRequestUI.close();
+        if (mPersonalDataManagerObserver != null) {
+            PersonalDataManager.getInstance().unregisterDataObserver(mPersonalDataManagerObserver);
+            mPersonalDataManagerObserver = null;
+        }
         if (options == null || webContents == null || delegate == null) {
             setVisible(false);
             return;
         }
+        // Remove dynamically created UI elements.
+        mPaymentRequestExpanderAccordion.removeAllViews();
 
-        buildPaymentRequestUI(webContents, options);
-        mPaymentRequestUI.show(UrlFormatter.formatUrlForSecurityDisplayOmitScheme(
-                                       webContents.getLastCommittedUrl()),
-                options.mRequestShipping, options.mRequestPaymentMethod,
-                options.mRequestPayerName || options.mRequestPayerPhone
-                        || options.mRequestPayerEmail,
-                new ShippingStrings(PaymentShippingType.SHIPPING));
+        boolean showContactDetailsSection = options.mRequestPayerName || options.mRequestPayerPhone
+                || options.mRequestPayerEmail;
+        if (showContactDetailsSection || options.mRequestShipping) {
+            // Listen to changes to profile data and update sections when necessary.
+            mPersonalDataManagerObserver = ()
+                    -> AssistantPaymentRequestCoordinator.this.updateSections(webContents, options);
+            PersonalDataManager.getInstance().registerDataObserver(mPersonalDataManagerObserver);
+        }
+
+        mContactDetailsSection = null;
+        if (showContactDetailsSection) {
+            mContactDetailsSection = createContactDetailsSection(webContents, options, delegate);
+            createSeparator();
+        }
+
+        mPaymentMethodSection = null;
+        mPaymentMethodsData = null;
+        if (options.mRequestPaymentMethod) {
+            mPaymentMethodSection = createPaymentMethodsSection(webContents, options, delegate);
+            createSeparator();
+        }
+
+        mShippingAddressSection = null;
+        if (options.mRequestShipping) {
+            mShippingAddressSection = createShippingAddressSection(webContents, options, delegate);
+            createSeparator();
+        }
+        createTermsAndConditionsSection(webContents, options, delegate);
+        updateSections(webContents, options);
         setVisible(true);
-
-        // Notify initial selections.
-        if (mShippingAddressesSection != null) notifySelectedShippingAddressChanged();
-        if (mContactSection != null) notifySelectedContactInfoChanged();
-        notifyCreditCardChanged();
     }
 
-    private void buildPaymentRequestUI(
-            WebContents webContents, AssistantPaymentRequestOptions options) {
-        assert !webContents.isIncognito();
-        mAddressEditor = new AddressEditor(AddressEditor.Purpose.AUTOFILL_ASSISTANT,
-                /* saveToDisk= */ !webContents.isIncognito());
-        mCardEditor = new CardEditor(webContents, mAddressEditor, /* includeOrgLabel= */
-                ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ENABLE_COMPANY_NAME),
-                /* observerForTest= */ null);
+    /**
+     * Adjusts the paddings between sections and dividers.
+     */
+    private void updateSectionPaddings() {
+        boolean prevChildWasDivider = false;
+        boolean prevChildWasSection = false;
+        for (int i = 0; i < mPaymentRequestExpanderAccordion.getChildCount(); i++) {
+            View child = mPaymentRequestExpanderAccordion.getChildAt(i);
+            if (child.getTag() == null) {
+                continue;
+            }
+            boolean isDivider = child.getTag().equals(DIVIDER_TAG);
+            boolean isSection = child.getTag().equals(SECTION_TAG);
+            if (isSection && prevChildWasDivider) {
+                child.setPadding(child.getPaddingLeft(), mPaymentRequestSectionPadding,
+                        child.getPaddingRight(), child.getPaddingBottom());
+            } else if (isDivider && prevChildWasSection) {
+                View prevChild = mPaymentRequestExpanderAccordion.getChildAt(i - 1);
+                if (prevChild instanceof AssistantVerticalExpander) {
+                    // For expanders, the padding must be set for all views separately to
+                    // effectively enlarge their background (if any).
+                    AssistantVerticalExpander expander = (AssistantVerticalExpander) prevChild;
+                    View titleView = expander.getTitleView();
+                    View collapsedView = expander.getCollapsedView();
+                    View expandedView = expander.getExpandedView();
+                    expander.setPadding(expander.getPaddingLeft(), expander.getPaddingTop(),
+                            expander.getPaddingRight(), 0);
+                    collapsedView.setPadding(collapsedView.getPaddingLeft(),
+                            collapsedView.getPaddingTop(), collapsedView.getPaddingRight(),
+                            mPaymentRequestSectionPadding);
+                    expandedView.setPadding(expandedView.getPaddingLeft(),
+                            expandedView.getPaddingTop(), expandedView.getPaddingRight(),
+                            mPaymentRequestSectionPadding);
 
+                    // Dividers need additional margin to fixed expanders.
+                    ViewGroup.MarginLayoutParams lp =
+                            (ViewGroup.MarginLayoutParams) child.getLayoutParams();
+                    lp.topMargin = expander.isFixed() ? mPaymentRequestSectionPadding : 0;
+                    child.setLayoutParams(lp);
+
+                    // Hide divider if corresponding section is expanded.
+                    child.setVisibility(expander.isExpanded() ? View.GONE : View.VISIBLE);
+                } else {
+                    prevChild.setPadding(prevChild.getPaddingLeft(), prevChild.getPaddingTop(),
+                            prevChild.getPaddingRight(), mPaymentRequestSectionPadding);
+                }
+            }
+
+            prevChildWasDivider = isDivider;
+            prevChildWasSection = isSection;
+        }
+    }
+
+    private void createSeparator() {
+        View divider = LayoutInflater.from(mActivity).inflate(
+                R.layout.autofill_assistant_payment_request_section_divider,
+                mPaymentRequestExpanderAccordion, false);
+        divider.setTag(DIVIDER_TAG);
+        mPaymentRequestExpanderAccordion.addView(divider);
+    }
+
+    private void createTermsAndConditionsSection(WebContents webContents,
+            AssistantPaymentRequestOptions options, AssistantPaymentRequestDelegate delegate) {
+        AssistantPaymentRequestTermsSection termsSection =
+                new AssistantPaymentRequestTermsSection(mActivity, mPaymentRequestExpanderAccordion,
+                        UrlFormatter.formatUrlForSecurityDisplayOmitScheme(
+                                webContents.getLastCommittedUrl()),
+                        delegate::onTermsAndConditionsChanged);
+        termsSection.getView().setTag(SECTION_TAG);
+    }
+
+    private AssistantPaymentRequestShippingAddressSection createShippingAddressSection(
+            WebContents webContents, AssistantPaymentRequestOptions options,
+            AssistantPaymentRequestDelegate delegate) {
+        AddressEditor editor = new AddressEditor(AddressEditor.Purpose.PAYMENT_REQUEST,
+                /* saveToDisk= */ !webContents.isIncognito());
+        editor.setEditorDialog(new EditorDialog(mActivity, null,
+                /*deleteRunnable =*/null));
+
+        AssistantPaymentRequestShippingAddressSection shippingAddressSection =
+                new AssistantPaymentRequestShippingAddressSection(
+                        mActivity, mPaymentRequestExpanderAccordion);
+        shippingAddressSection.setListener(address
+                -> delegate.onShippingAddressChanged(
+                        address != null ? address.getProfile() : null));
+        shippingAddressSection.setEditor(editor);
+        shippingAddressSection.getView().setTag(SECTION_TAG);
+        return shippingAddressSection;
+    }
+
+    private AssistantPaymentRequestContactDetailsSection createContactDetailsSection(
+            WebContents webContents, AssistantPaymentRequestOptions options,
+            AssistantPaymentRequestDelegate delegate) {
+        ContactEditor editor = new ContactEditor(options.mRequestPayerName,
+                options.mRequestPayerPhone, options.mRequestPayerEmail, !webContents.isIncognito());
+        editor.setEditorDialog(new EditorDialog(mActivity, null,
+                /*deleteRunnable =*/null));
+
+        AssistantPaymentRequestContactDetailsSection contactDetailsSection =
+                new AssistantPaymentRequestContactDetailsSection(
+                        mActivity, mPaymentRequestExpanderAccordion);
+
+        contactDetailsSection.setListener(delegate::onContactInfoChanged);
+        contactDetailsSection.setEditor(editor);
+        contactDetailsSection.getView().setTag(SECTION_TAG);
+        return contactDetailsSection;
+    }
+
+    private AssistantPaymentRequestPaymentMethodSection createPaymentMethodsSection(
+            WebContents webContents, AssistantPaymentRequestOptions options,
+            AssistantPaymentRequestDelegate delegate) {
         // Only enable 'basic-card' payment method.
         PaymentMethodData methodData = new PaymentMethodData();
         methodData.supportedMethod = BasicCardUtils.BASIC_CARD_METHOD_NAME;
@@ -166,344 +306,87 @@ public class AssistantPaymentRequestCoordinator implements AssistantPaymentReque
             }
         }
 
-        buildPaymentRequestUISectionInformation(webContents, options, methodData);
+        mPaymentMethodsData = new ArrayMap<>();
+        mPaymentMethodsData.put(BasicCardUtils.BASIC_CARD_METHOD_NAME, methodData);
+        AssistantPaymentRequestPaymentMethodSection paymentMethodsSection =
+                new AssistantPaymentRequestPaymentMethodSection(
+                        mActivity, mPaymentRequestExpanderAccordion);
+        paymentMethodsSection.setListener(
+                method -> delegate.onCreditCardChanged(method != null ? method.getCard() : null));
 
-        mAddressEditor.setEditorDialog(mPaymentRequestUI.getEditorDialog());
-        mCardEditor.addAcceptedPaymentMethodIfRecognized(methodData);
-        mCardEditor.setEditorDialog(mPaymentRequestUI.getCardEditorDialog());
-        if (mContactEditor != null)
-            mContactEditor.setEditorDialog(mPaymentRequestUI.getEditorDialog());
+        paymentMethodsSection.getView().setTag(SECTION_TAG);
+        return paymentMethodsSection;
     }
 
-    private void buildPaymentRequestUISectionInformation(WebContents webContents,
-            AssistantPaymentRequestOptions options, PaymentMethodData methodData) {
-        Map<String, PaymentMethodData> methodsData = new ArrayMap<>();
-        methodsData.put(BasicCardUtils.BASIC_CARD_METHOD_NAME, methodData);
-        mPaymentMethodsSection =
-                new SectionInformation(DataType.PAYMENT_METHODS, SectionInformation.NO_SELECTION,
-                        (new AutofillPaymentApp(webContents))
-                                .getInstruments(methodsData, /*forceReturnServerCards=*/true));
-        if (!mPaymentMethodsSection.isEmpty() && mPaymentMethodsSection.getItem(0).isComplete()) {
-            mPaymentMethodsSection.setSelectedItemIndex(0);
+    private int countCompleteFields(
+            AssistantPaymentRequestOptions options, AutofillProfile profile) {
+        int completeFields = 0;
+        if (options.mRequestShipping && !TextUtils.isEmpty(profile.getStreetAddress())) {
+            completeFields++;
         }
 
-        List<AutofillProfile> profiles = null;
-        if (options.mRequestShipping || options.mRequestPayerName || options.mRequestPayerPhone
-                || options.mRequestPayerEmail) {
-            profiles = PersonalDataManager.getInstance().getProfilesToSuggest(
-                    /* includeNameInLabel= */ false);
-            String defaultEmail = options.mDefaultEmail;
-            if (defaultEmail != null && profiles != null) {
-                // The profile with default email should be shown as first. Following profiles are
-                // sorted in an alphabetic order.
-                Collections.sort(profiles, (a, b) -> {
-                    int compareResult = ApiCompatibilityUtils.compareBoolean(
-                            defaultEmail.equals(b.getEmailAddress()),
-                            defaultEmail.equals(a.getEmailAddress()));
-                    if (compareResult != 0) return compareResult;
-                    return b.getEmailAddress().compareTo(a.getEmailAddress());
-                });
+        if (options.mRequestPayerEmail && !TextUtils.isEmpty(profile.getEmailAddress())) {
+            completeFields++;
+        }
+
+        if (options.mRequestPayerName && !TextUtils.isEmpty((profile.getFullName()))) {
+            completeFields++;
+        }
+
+        if (options.mRequestPayerPhone && !TextUtils.isEmpty(profile.getPhoneNumber())) {
+            completeFields++;
+        }
+
+        return completeFields;
+    }
+
+    /**
+     * Populates or updates items in all sections that are currently displayed.
+     */
+    private void updateSections(WebContents webContents, AssistantPaymentRequestOptions options) {
+        List<AutofillProfile> autofillProfiles =
+                PersonalDataManager.getInstance().getProfilesToSuggest(
+                        /* includeNameInLabel= */ false);
+
+        // Suggest complete profiles first.
+        Collections.sort(autofillProfiles,
+                (a, b) -> countCompleteFields(options, a) - countCompleteFields(options, b));
+
+        if (mContactDetailsSection != null) {
+            mContactDetailsSection.onProfilesChanged(autofillProfiles);
+        }
+        if (mShippingAddressSection != null) {
+            mShippingAddressSection.onProfilesChanged(autofillProfiles);
+        }
+        if (mPaymentMethodSection != null) {
+            // TODO(crbug.com/806868): It is currently not possible to clear the billing address
+            // dropdown of |CardEditor|. As a workaround, we create a new instance here.
+            AddressEditor addressEditor = new AddressEditor(AddressEditor.Purpose.PAYMENT_REQUEST,
+                    /* saveToDisk= */ !webContents.isIncognito());
+            CardEditor cardEditor = new CardEditor(webContents, addressEditor,
+                    /* includeOrgLabel= */ false, /* observerForTest= */ null);
+            for (Map.Entry<String, PaymentMethodData> entry : mPaymentMethodsData.entrySet()) {
+                cardEditor.addAcceptedPaymentMethodIfRecognized(entry.getValue());
             }
-        }
 
-        if (options.mRequestShipping) {
-            createShippingSection(mContext, Collections.unmodifiableList(profiles));
-        }
-
-        if (options.mRequestPayerName || options.mRequestPayerPhone || options.mRequestPayerEmail) {
-            mContactEditor =
-                    new ContactEditor(options.mRequestPayerName, options.mRequestPayerPhone,
-                            options.mRequestPayerEmail, !webContents.isIncognito());
-            mContactSection = new ContactDetailsSection(mContext,
-                    Collections.unmodifiableList(profiles), mContactEditor,
-                    /* journeyLogger= */ null);
-        }
-    }
-
-    private void createShippingSection(
-            Context context, List<AutofillProfile> unmodifiableProfiles) {
-        List<AutofillAddress> addresses = new ArrayList<>();
-
-        for (int i = 0; i < unmodifiableProfiles.size(); i++) {
-            AutofillProfile profile = unmodifiableProfiles.get(i);
-            mAddressEditor.addPhoneNumberIfValid(profile.getPhoneNumber());
-
-            // Only suggest addresses that have a street address.
-            if (!TextUtils.isEmpty(profile.getStreetAddress())) {
-                addresses.add(new AutofillAddress(context, profile));
+            addressEditor.setEditorDialog(new EditorDialog(mActivity, null,
+                    /*deleteRunnable =*/null));
+            EditorDialog cardEditorDialog = new EditorDialog(mActivity, null,
+                    /*deleteRunnable =*/null);
+            if (ChromeVersionInfo.isBetaBuild() || ChromeVersionInfo.isStableBuild()) {
+                cardEditorDialog.disableScreenshots();
             }
+            cardEditor.setEditorDialog(cardEditorDialog);
+            mPaymentMethodSection.setEditor(cardEditor);
+            mPaymentMethodSection.onProfilesChanged(autofillProfiles);
+
+            // TODO(crbug.com/806868): Change to asynchronous |getInstruments|.
+            // TODO(crbug.com/806868): Sort payment methods, those matching autofillProfiles first.
+            AutofillPaymentApp autofillPaymentApp = new AutofillPaymentApp(webContents);
+            List<PaymentInstrument> paymentMethods = autofillPaymentApp.getInstruments(
+                    mPaymentMethodsData, /*forceReturnServerCards=*/true);
+            mPaymentMethodSection.onPaymentMethodsChanged(paymentMethods);
         }
-
-        // Suggest complete addresses first.
-        Collections.sort(addresses, COMPLETENESS_COMPARATOR);
-
-        // Automatically select the first address if one is complete.
-        int firstCompleteAddressIndex = SectionInformation.NO_SELECTION;
-        if (!addresses.isEmpty() && addresses.get(0).isComplete()) {
-            firstCompleteAddressIndex = 0;
-
-            // The initial label for the selected shipping address should not include the
-            // country.
-            addresses.get(firstCompleteAddressIndex).setShippingAddressLabelWithoutCountry();
-        }
-
-        mShippingAddressesSection = new SectionInformation(
-                DataType.SHIPPING_ADDRESSES, firstCompleteAddressIndex, addresses);
-    }
-
-    @Override
-    @Nullable
-    public SectionInformation getSectionInformation(@DataType int optionType) {
-        if (optionType == DataType.SHIPPING_ADDRESSES) {
-            return mShippingAddressesSection;
-        }
-
-        if (optionType == DataType.CONTACT_DETAILS) {
-            return mContactSection;
-        }
-
-        if (optionType == DataType.PAYMENT_METHODS) {
-            return mPaymentMethodsSection;
-        }
-
-        // Only support the above sections.
-        assert false : "Unsupported section type.";
-        return null;
-    }
-
-    @Override
-    @SelectionResult
-    public int onSectionOptionSelected(@DataType int optionType, EditableOption option) {
-        if (optionType == DataType.SHIPPING_ADDRESSES) {
-            AutofillAddress address = (AutofillAddress) option;
-            if (address.isComplete()) {
-                mShippingAddressesSection.setSelectedItem(option);
-                notifySelectedShippingAddressChanged();
-            } else {
-                editAddress(address);
-                return SelectionResult.EDITOR_LAUNCH;
-            }
-        } else if (optionType == DataType.CONTACT_DETAILS) {
-            AutofillContact contact = (AutofillContact) option;
-            if (contact.isComplete()) {
-                mContactSection.setSelectedItem(option);
-                notifySelectedContactInfoChanged();
-            } else {
-                editContact(contact);
-                return SelectionResult.EDITOR_LAUNCH;
-            }
-        } else if (optionType == DataType.PAYMENT_METHODS) {
-            AutofillPaymentInstrument card = (AutofillPaymentInstrument) option;
-            if (card.isComplete()) {
-                mPaymentMethodsSection.setSelectedItem(option);
-                notifyCreditCardChanged();
-            } else {
-                editCard(card);
-                return SelectionResult.EDITOR_LAUNCH;
-            }
-        } else {
-            // Only support the above sections.
-            assert false : "Unsupported section type.";
-        }
-
-        return SelectionResult.NONE;
-    }
-
-    @Override
-    @SelectionResult
-    public int onSectionEditOption(@DataType int optionType, EditableOption option) {
-        if (optionType == DataType.SHIPPING_ADDRESSES) {
-            editAddress((AutofillAddress) option);
-            return SelectionResult.EDITOR_LAUNCH;
-        }
-
-        if (optionType == DataType.CONTACT_DETAILS) {
-            editContact((AutofillContact) option);
-            return SelectionResult.EDITOR_LAUNCH;
-        }
-
-        if (optionType == DataType.PAYMENT_METHODS) {
-            editCard((AutofillPaymentInstrument) option);
-            return SelectionResult.EDITOR_LAUNCH;
-        }
-
-        // Only support the above sections.
-        assert false : "Unsupported section type.";
-        return SelectionResult.NONE;
-    }
-
-    @Override
-    @SelectionResult
-    public int onSectionAddOption(@DataType int optionType) {
-        if (optionType == DataType.SHIPPING_ADDRESSES) {
-            editAddress(null);
-            return SelectionResult.EDITOR_LAUNCH;
-        }
-
-        if (optionType == DataType.CONTACT_DETAILS) {
-            editContact(null);
-            return SelectionResult.EDITOR_LAUNCH;
-        }
-
-        if (optionType == DataType.PAYMENT_METHODS) {
-            editCard(null);
-            return SelectionResult.EDITOR_LAUNCH;
-        }
-
-        // Only support the above sections.
-        assert false : "Unsupported section type.";
-        return SelectionResult.NONE;
-    }
-
-    private void editAddress(final AutofillAddress toEdit) {
-        mAddressEditor.edit(toEdit, new Callback<AutofillAddress>() {
-            @Override
-            public void onResult(AutofillAddress editedAddress) {
-                if (mPaymentRequestUI.isClosed()) return;
-
-                if (editedAddress != null) {
-                    // Sets or updates the shipping address label.
-                    editedAddress.setShippingAddressLabelWithCountry();
-
-                    mCardEditor.updateBillingAddressIfComplete(editedAddress);
-
-                    // A partial or complete address came back from the editor (could have been from
-                    // adding/editing or cancelling out of the edit flow).
-                    if (!editedAddress.isComplete()) {
-                        // If the address is not complete, deselect it (editor can return incomplete
-                        // information when cancelled).
-                        mShippingAddressesSection.setSelectedItemIndex(
-                                SectionInformation.NO_SELECTION);
-                    } else {
-                        if (toEdit == null) {
-                            // Address is complete and user was in the "Add flow": add an item to
-                            // the list.
-                            mShippingAddressesSection.addAndSelectItem(editedAddress);
-                        }
-
-                        if (mContactSection != null) {
-                            // Update |mContactSection| with the new/edited address, which will
-                            // update an existing item or add a new one to the end of the list.
-                            mContactSection.addOrUpdateWithAutofillAddress(editedAddress);
-                            notifySelectedContactInfoChanged();
-                            mPaymentRequestUI.updateSection(
-                                    DataType.CONTACT_DETAILS, mContactSection);
-                        }
-                    }
-                }
-
-                notifySelectedShippingAddressChanged();
-                mPaymentRequestUI.updateSection(
-                        DataType.SHIPPING_ADDRESSES, mShippingAddressesSection);
-            }
-        });
-    }
-
-    private void editContact(final AutofillContact toEdit) {
-        mContactEditor.edit(toEdit, new Callback<AutofillContact>() {
-            @Override
-            public void onResult(AutofillContact editedContact) {
-                if (mPaymentRequestUI.isClosed()) return;
-
-                if (editedContact != null) {
-                    // A partial or complete contact came back from the editor (could have been from
-                    // adding/editing or cancelling out of the edit flow).
-                    if (!editedContact.isComplete()) {
-                        // If the contact is not complete according to the requirements of the flow,
-                        // deselect it (editor can return incomplete information when cancelled).
-                        mContactSection.setSelectedItemIndex(SectionInformation.NO_SELECTION);
-                    } else if (toEdit == null) {
-                        // Contact is complete and we were in the "Add flow": add an item to the
-                        // list.
-                        mContactSection.addAndSelectItem(editedContact);
-                    }
-                    // If contact is complete and (toEdit != null), no action needed: the contact
-                    // was already selected in the UI.
-                }
-                // If |editedContact| is null, the user has cancelled out of the "Add flow". No
-                // action to take (if a contact was selected in the UI, it will stay selected).
-
-                notifySelectedContactInfoChanged();
-                mPaymentRequestUI.updateSection(DataType.CONTACT_DETAILS, mContactSection);
-            }
-        });
-    }
-
-    private void editCard(final AutofillPaymentInstrument toEdit) {
-        mCardEditor.edit(toEdit, new Callback<AutofillPaymentInstrument>() {
-            @Override
-            public void onResult(AutofillPaymentInstrument editedCard) {
-                if (mPaymentRequestUI.isClosed()) return;
-
-                if (editedCard != null) {
-                    // A partial or complete card came back from the editor (could have been from
-                    // adding/editing or cancelling out of the edit flow).
-                    if (!editedCard.isComplete()) {
-                        // If the card is not complete, deselect it (editor can return incomplete
-                        // information when cancelled).
-                        mPaymentMethodsSection.setSelectedItemIndex(
-                                SectionInformation.NO_SELECTION);
-                    } else if (toEdit == null) {
-                        // Card is complete and we were in the "Add flow": add an item to the list.
-                        mPaymentMethodsSection.addAndSelectItem(editedCard);
-                    }
-                    // If card is complete and (toEdit != null), no action needed: the card was
-                    // already selected in the UI.
-                }
-                // If |editedCard| is null, the user has cancelled out of the "Add flow". No action
-                // to take (if another card was selected prior to the add flow, it will stay
-                // selected).
-
-                notifyCreditCardChanged();
-                mPaymentRequestUI.updateSection(DataType.PAYMENT_METHODS, mPaymentMethodsSection);
-            }
-        });
-    }
-
-    private void notifySelectedShippingAddressChanged() {
-        AssistantPaymentRequestDelegate delegate =
-                mModel.get(AssistantPaymentRequestModel.DELEGATE);
-        assert delegate != null;
-
-        AutofillAddress address = (AutofillAddress) mShippingAddressesSection.getSelectedItem();
-        delegate.onShippingAddressChanged(address == null ? null : address.getProfile());
-    }
-
-    private void notifySelectedContactInfoChanged() {
-        AssistantPaymentRequestDelegate delegate =
-                mModel.get(AssistantPaymentRequestModel.DELEGATE);
-        assert delegate != null;
-
-        delegate.onContactInfoChanged((AutofillContact) mContactSection.getSelectedItem());
-    }
-
-    private void notifyCreditCardChanged() {
-        AssistantPaymentRequestDelegate delegate =
-                mModel.get(AssistantPaymentRequestModel.DELEGATE);
-        assert delegate != null;
-
-        AutofillPaymentInstrument cardInstrument =
-                (AutofillPaymentInstrument) mPaymentMethodsSection.getSelectedItem();
-        delegate.onCreditCardChanged(cardInstrument == null ? null : cardInstrument.getCard());
-    }
-
-    @Override
-    public void onCheckAcceptTermsAndConditions(boolean checked) {
-        assert checked;
-
-        AssistantPaymentRequestDelegate delegate =
-                mModel.get(AssistantPaymentRequestModel.DELEGATE);
-        assert delegate != null;
-        delegate.onTermsAndConditionsChanged(AssistantTermsAndConditionsState.ACCEPTED);
-    }
-
-    @Override
-    public void onCheckReviewTermsAndConditions(boolean checked) {
-        assert checked;
-
-        AssistantPaymentRequestDelegate delegate =
-                mModel.get(AssistantPaymentRequestModel.DELEGATE);
-        assert delegate != null;
-        delegate.onTermsAndConditionsChanged(AssistantTermsAndConditionsState.REQUIRES_REVIEW);
+        updateSectionPaddings();
     }
 }
