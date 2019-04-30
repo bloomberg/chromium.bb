@@ -197,9 +197,11 @@ bool SearchForExactlyOneInnerImage(WebAXObject obj,
     return false;
 
   // If we found something else with a name, fail.
-  blink::WebString web_name = obj.GetName();
-  if (!base::ContainsOnlyChars(web_name.Utf8(), base::kWhitespaceASCII))
-    return false;
+  if (obj.Role() != ax::mojom::Role::kRootWebArea) {
+    blink::WebString web_name = obj.GetName();
+    if (!base::ContainsOnlyChars(web_name.Utf8(), base::kWhitespaceASCII))
+      return false;
+  }
 
   // Recurse.
   for (unsigned int i = 0; i < obj.ChildCount(); i++) {
@@ -1168,27 +1170,43 @@ void BlinkAXTreeSource::AddImageAnnotations(blink::WebAXObject src,
   blink::WebVector<WebAXObject> name_objects;
   blink::WebString web_name = src.GetName(name_from, name_objects);
 
-  // When visual debugging is enabled, the "title" attribute is set to a
-  // string beginning with a "%". We need to ignore such strings when
-  // subsequently deciding whether an image should be annotated or not.
-  bool has_debug_title =
-      image_annotation_debugging_ &&
-      base::StartsWith(web_name.Utf8(), "%", base::CompareCase::SENSITIVE);
+  // Normally we don't assign an annotation to an image if it already
+  // has a name. There are a few exceptions where we ignore the name.
+  bool treat_name_as_empty = false;
 
+  // When visual debugging is enabled, the "title" attribute is set to a
+  // string beginning with a "%". If the name comes from that string we
+  // can ignore it, and treat the name as empty.
+  if (image_annotation_debugging_ &&
+      base::StartsWith(web_name.Utf8(), "%", base::CompareCase::SENSITIVE))
+    treat_name_as_empty = true;
+
+  // If the image's name is explicitly empty, or if it has a name (and
+  // we're not treating the name as empty), then it's ineligible for
+  // an annotation.
   if ((name_from == ax::mojom::NameFrom::kAttributeExplicitlyEmpty ||
        !web_name.IsEmpty()) &&
-      !has_debug_title) {
+      !treat_name_as_empty) {
     dst->SetImageAnnotationStatus(
         ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation);
     return;
   }
 
+  // If the name of a document (root web area) starts with the filename,
+  // it probably means the user opened an image in a new tab.
+  // If so, we can treat the name as empty and give it an annotation.
+  std::string dst_name =
+      dst->GetStringAttribute(ax::mojom::StringAttribute::kName);
+  if (dst->role == ax::mojom::Role::kRootWebArea) {
+    std::string filename = GURL(document().Url()).ExtractFileName();
+    if (base::StartsWith(dst_name, filename, base::CompareCase::SENSITIVE))
+      treat_name_as_empty = true;
+  }
+
   // |dst| may be a document or link containing an image. Skip annotating
   // it if it already has text other than whitespace.
-  if (!base::ContainsOnlyChars(
-          dst->GetStringAttribute(ax::mojom::StringAttribute::kName),
-          base::kWhitespaceASCII) &&
-      !has_debug_title) {
+  if (!base::ContainsOnlyChars(dst_name, base::kWhitespaceASCII) &&
+      !treat_name_as_empty) {
     dst->SetImageAnnotationStatus(
         ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation);
     return;
