@@ -113,15 +113,6 @@ class _ArticleBrowsingStory(_BrowsingStory):
 ##############################################################################
 
 
-class CnnStory(_ArticleBrowsingStory):
-  """The second top website in http://www.alexa.com/topsites/category/News"""
-  NAME = 'browse:news:cnn'
-  URL = 'http://edition.cnn.com/'
-  ITEM_SELECTOR = '.cd__content > h3 > a'
-  ITEMS_TO_VISIT = 2
-  TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.HEALTH_CHECK,
-          story_tags.YEAR_2016]
-
 class CnnStory2018(_ArticleBrowsingStory):
   """The second top website in http://www.alexa.com/topsites/category/News"""
   NAME = 'browse:news:cnn:2018'
@@ -170,15 +161,6 @@ class InstagramMobileStory(_ArticleBrowsingStory):
     action_runner.NavigateBack()
 
 
-class FlipboardDesktopStory(_ArticleBrowsingStory):
-  NAME = 'browse:news:flipboard'
-  URL = 'https://flipboard.com/explore'
-  IS_SINGLE_PAGE_APP = True
-  ITEM_SELECTOR = '.cover-image'
-  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
-  TAGS = [story_tags.YEAR_2016]
-
-
 class FlipboardDesktopStory2018(_ArticleBrowsingStory):
   NAME = 'browse:news:flipboard:2018'
   URL = 'https://flipboard.com/explore'
@@ -188,30 +170,12 @@ class FlipboardDesktopStory2018(_ArticleBrowsingStory):
   TAGS = [story_tags.YEAR_2018]
 
 
-class HackerNewsDesktopStory(_ArticleBrowsingStory):
-  NAME = 'browse:news:hackernews'
-  URL = 'https://news.ycombinator.com'
-  ITEM_SELECTOR = '.athing .title > a'
-  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
-  TAGS = [story_tags.YEAR_2016]
-
-
 class HackerNewsDesktopStory2018(_ArticleBrowsingStory):
   NAME = 'browse:news:hackernews:2018'
   URL = 'https://news.ycombinator.com'
   ITEM_SELECTOR = '.athing .title > a'
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
   TAGS = [story_tags.YEAR_2018]
-
-
-class NytimesDesktopStory(_ArticleBrowsingStory):
-  """The third top website in http://www.alexa.com/topsites/category/News"""
-  NAME = 'browse:news:nytimes'
-  URL = 'http://www.nytimes.com'
-  ITEM_SELECTOR = '.story-heading > a'
-  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
-  COMPLETE_STATE_WAIT_TIMEOUT = 150  # crbug.com/865247
-  TAGS = [story_tags.YEAR_2016]
 
 
 class NytimesDesktopStory2018(_ArticleBrowsingStory):
@@ -237,15 +201,6 @@ class QqMobileStory(_ArticleBrowsingStory):
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
   TAGS = [story_tags.INTERNATIONAL, story_tags.HEALTH_CHECK,
           story_tags.YEAR_2016]
-
-
-class RedditDesktopStory(_ArticleBrowsingStory):
-  """The top website in http://www.alexa.com/topsites/category/News"""
-  NAME = 'browse:news:reddit'
-  URL = 'https://www.reddit.com/r/news/top/?sort=top&t=week'
-  ITEM_SELECTOR = '.thing .title > a'
-  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
-  TAGS = [story_tags.YEAR_2016]
 
 
 class RedditDesktopStory2018(_ArticleBrowsingStory):
@@ -274,15 +229,6 @@ class TwitterMobileStory(_ArticleBrowsingStory):
   ITEM_SELECTOR = '.Tweet-text'
   CONTAINER_SELECTOR = '.NavigationSheet'
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
-  TAGS = [story_tags.YEAR_2016]
-
-
-class TwitterDesktopStory(_ArticleBrowsingStory):
-  NAME = 'browse:social:twitter'
-  URL = 'https://www.twitter.com/nasa'
-  IS_SINGLE_PAGE_APP = True
-  ITEM_SELECTOR = '.tweet-text'
-  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
   TAGS = [story_tags.YEAR_2016]
 
 
@@ -478,51 +424,6 @@ class GoogleDesktopStory2018(_ArticleBrowsingStory):
     action_runner.ScrollPage()
 
 
-class GoogleIndiaDesktopStory(_ArticleBrowsingStory):
-  """
-  A typical google search story in India:
-    1. Start at https://www.google.co.in/search?q=%E0%A4%AB%E0%A5%82%E0%A4%B2`
-    2. Scroll down the page.
-    3. Refine the query & click search box, which navigates to
-    https://www.google.co.in/search?q=%E0%A4%AB%E0%A5%82%E0%A4%B2&rct=j#q=%E0%A4%AB%E0%A5%82%E0%A4%B2+%E0%A4%B5%E0%A4%BF%E0%A4%A4%E0%A4%B0%E0%A4%A3
-    4. Scroll down the page.
-    5. Click the next page result
-    6. Scroll the search result page.
-
-  """
-  NAME = 'browse:search:google_india'
-  URL = 'https://www.google.co.in/search?q=%E0%A4%AB%E0%A5%82%E0%A4%B2'
-  _SEARCH_BOX_SELECTOR = 'input[aria-label="Search"]'
-  _SEARCH_BUTTON_SELECTOR = 'button[aria-label="Google Search"]'
-  _SEARCH_PAGE_2_SELECTOR = 'a[aria-label="Page 2"]'
-  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
-  TAGS = [story_tags.INTERNATIONAL, story_tags.YEAR_2016]
-
-  def _DidLoadDocument(self, action_runner):
-    action_runner.Wait(2)
-    action_runner.ScrollPage()
-    action_runner.Wait(2)
-
-    action_runner.ScrollPage(direction='up')
-
-    # Refine search query in the search box.
-    # TODO(nednguyen): replace this with input text gesture to make it more
-    # realistic.
-    action_runner.ExecuteJavaScript(
-        'document.querySelector({{ selector }}).value += "वितरण";',
-        selector=self._SEARCH_BOX_SELECTOR)
-    action_runner.Wait(2)
-    action_runner.ClickElement(selector=self._SEARCH_BUTTON_SELECTOR)
-
-    # Scroll down & click next search result page.
-    action_runner.Wait(2)
-    action_runner.ScrollPageToElement(selector=self._SEARCH_PAGE_2_SELECTOR)
-    action_runner.Wait(2)
-    action_runner.ClickElement(selector=self._SEARCH_PAGE_2_SELECTOR)
-    action_runner.Wait(2)
-    action_runner.ScrollPage()
-
-
 class GoogleIndiaDesktopStory2018(_ArticleBrowsingStory):
   """
   A typical google search story in India:
@@ -627,23 +528,6 @@ class YouTubeMobileStory(_MediaBrowsingStory):
   ITEM_SELECTOR_INDEX = 3
   TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.EMERGING_MARKET,
           story_tags.HEALTH_CHECK, story_tags.YEAR_2016]
-
-
-class YouTubeDesktopStory(_MediaBrowsingStory):
-  """Load a typical YouTube video then navigate to a next few videos. Stop and
-  watch each video for a few seconds.
-  """
-  NAME = 'browse:media:youtube'
-  URL = 'https://www.youtube.com/watch?v=QGfhS1hfTWw&autoplay=false'
-  ITEM_SELECTOR = '.yt-uix-simple-thumb-related'
-  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
-  IS_SINGLE_PAGE_APP = True
-  # A longer view time allows videos to load and play.
-  ITEM_VIEW_TIME_IN_SECONDS = 5
-  ITEMS_TO_VISIT = 8
-  ITEM_SELECTOR_INDEX = 3
-  PLATFORM_SPECIFIC = True
-  TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.YEAR_2016]
 
 
 class YouTubeDesktopStory2018(_MediaBrowsingStory):
@@ -779,23 +663,6 @@ class FacebookPhotosDesktopStory(_MediaBrowsingStory):
   TAGS = [story_tags.YEAR_2016]
 
 
-class TumblrDesktopStory(_MediaBrowsingStory):
-  NAME = 'browse:media:tumblr'
-  URL = 'https://tumblr.com/search/gifs'
-  ITEM_SELECTOR = '.photo'
-  IS_SINGLE_PAGE_APP = True
-  ITEMS_TO_VISIT = 8
-  INCREMENT_INDEX_AFTER_EACH_ITEM = True
-  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
-  TAGS = [story_tags.YEAR_2016]
-
-  def _ViewMediaItem(self, action_runner, index):
-    super(TumblrDesktopStory, self)._ViewMediaItem(action_runner, index)
-    action_runner.Wait(5)  # Give the lightbox time to appear
-    action_runner.MouseClick(selector='#tumblr_lightbox_center_image')
-    action_runner.Wait(1)  # To make browsing more realistic.
-
-
 class TumblrDesktopStory2018(_MediaBrowsingStory):
   NAME = 'browse:media:tumblr:2018'
   URL = 'https://tumblr.com/search/gifs'
@@ -816,44 +683,6 @@ class TumblrDesktopStory2018(_MediaBrowsingStory):
     action_runner.MouseClick(selector='#tumblr_lightbox')
     action_runner.Wait(1)  # To make browsing more realistic.
 
-
-
-class PinterestDesktopStory(_MediaBrowsingStory):
-  NAME = 'browse:media:pinterest'
-  URL = 'https://pinterest.com'
-  ITEM_SELECTOR = '.pinImageDim'
-  IS_SINGLE_PAGE_APP = True
-  ITEMS_TO_VISIT = 8
-  INCREMENT_INDEX_AFTER_EACH_ITEM = True
-  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
-  TAGS = [story_tags.YEAR_2016]
-
-  def _Login(self, action_runner):
-    pinterest_login.LoginDesktopAccount(action_runner, 'googletest')
-
-  def _ViewMediaItem(self, action_runner, index):
-    super(PinterestDesktopStory, self)._ViewMediaItem(action_runner, index)
-    # To imitate real user interaction, we do not want to pin every post.
-    # We will only pin every other post.
-    if index % 2 == 0:
-      # Pin the selection.
-      save_function = ('document.querySelector('
-                       '".Button.Module.ShowModalButton.btn.hasIcon.hasText.'
-                       'isBrioFlat.medium.primary.primaryOnHover.repin.'
-                       'pinActionBarButton.isBrioFlat.rounded")')
-      action_runner.ClickElement(element_function=save_function)
-      action_runner.Wait(1)  # Wait to make navigation realistic.
-      # Select which board to pin to.
-      inner_save_function = 'document.querySelector(".nameAndIcons")'
-      action_runner.WaitForElement(element_function=inner_save_function)
-      action_runner.ClickElement(element_function=inner_save_function)
-      action_runner.Wait(1)  # Wait to make navigation realistic.
-
-    # Close selection.
-    x_element_function = ('document.querySelector('
-                          '".Button.borderless.close.visible")')
-    action_runner.ClickElement(element_function=x_element_function)
-    action_runner.Wait(1)  # Wait to make navigation realistic.
 
 
 class PinterestDesktopStory2018(_MediaBrowsingStory):
@@ -1323,13 +1152,6 @@ class _InfiniteScrollStory(system_health_story.SystemHealthStory):
     return 'Load %s then make a very long scroll.' % cls.URL
 
 
-class DiscourseDesktopStory(_InfiniteScrollStory):
-  NAME = 'browse:tech:discourse_infinite_scroll'
-  URL = ('https://meta.discourse.org/t/the-official-discourse-tags-plugin-discourse-tagging/26482')
-  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
-  TAGS = [story_tags.INFINITE_SCROLL, story_tags.YEAR_2016]
-
-
 class DiscourseDesktopStory2018(_InfiniteScrollStory):
   NAME = 'browse:tech:discourse_infinite_scroll:2018'
   URL = 'https://meta.discourse.org/t/topic-list-previews/41630/28'
@@ -1350,13 +1172,6 @@ class DiscourseMobileStory2018(_InfiniteScrollStory):
   URL = 'https://meta.discourse.org/t/topic-list-previews/41630/28'
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
   TAGS = [story_tags.INFINITE_SCROLL, story_tags.YEAR_2018]
-
-
-class FacebookScrollDesktopStory(_InfiniteScrollStory):
-  NAME = 'browse:social:facebook_infinite_scroll'
-  URL = 'https://www.facebook.com/shakira'
-  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
-  TAGS = [story_tags.INFINITE_SCROLL, story_tags.YEAR_2016]
 
 
 class FacebookScrollDesktopStory2018(_InfiniteScrollStory):
@@ -1410,12 +1225,6 @@ class PinterestMobileStory(_InfiniteScrollStory):
   TAGS = [story_tags.INFINITE_SCROLL, story_tags.YEAR_2016]
 
 
-class TumblrStory(_InfiniteScrollStory):
-  NAME = 'browse:social:tumblr_infinite_scroll'
-  URL = 'http://techcrunch.tumblr.com/'  # This page doesn't support HTTPS.
-  TAGS = [story_tags.INFINITE_SCROLL, story_tags.JAVASCRIPT_HEAVY,
-          story_tags.YEAR_2016]
-
 class TumblrStory2018(_InfiniteScrollStory):
   NAME = 'browse:social:tumblr_infinite_scroll:2018'
   URL = 'https://techcrunch.tumblr.com/'
@@ -1429,13 +1238,6 @@ class TumblrStory2018(_InfiniteScrollStory):
     # Without this page reload the mobile version does not correctly
     # go to the https://techcrunch.tumblr.com
     action_runner.ReloadPage()
-
-class TwitterScrollDesktopStory(_InfiniteScrollStory):
-  NAME = 'browse:social:twitter_infinite_scroll'
-  URL = 'https://twitter.com/taylorswift13'
-  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
-  TAGS = [story_tags.INFINITE_SCROLL, story_tags.YEAR_2016]
-
 
 class TwitterScrollDesktopStory2018(_InfiniteScrollStory):
   NAME = 'browse:social:twitter_infinite_scroll:2018'
