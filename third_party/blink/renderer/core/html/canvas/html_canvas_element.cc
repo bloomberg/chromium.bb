@@ -693,7 +693,11 @@ SkFilterQuality HTMLCanvasElement::FilterQuality() const {
              : kLow_SkFilterQuality;
 }
 
-void HTMLCanvasElement::Paint(GraphicsContext& context, const LayoutRect& r) {
+// In some instances we don't actually want to paint to the parent layer
+// We still might want to set filter quality and MarkFirstContentfulPaint though
+void HTMLCanvasElement::Paint(GraphicsContext& context,
+                              const LayoutRect& r,
+                              bool flatten_composited_layers) {
   if (context_creation_was_blocked_ ||
       (context_ && context_->isContextLost())) {
     float device_scale_factor =
@@ -727,8 +731,12 @@ void HTMLCanvasElement::Paint(GraphicsContext& context, const LayoutRect& r) {
   if (HasResourceProvider() && !canvas_is_clear_)
     PaintTiming::From(GetDocument()).MarkFirstContentfulPaint();
 
-  if (!PaintsIntoCanvasBuffer() && !GetDocument().Printing())
-    return;
+  // If the canvas is gpu composited, it has another way of getting to screen
+  if (!PaintsIntoCanvasBuffer()) {
+    // For click-and-drag or printing we still want to draw
+    if (!(flatten_composited_layers || GetDocument().Printing()))
+      return;
+  }
 
   if (PlaceholderFrame()) {
     DCHECK(GetDocument().Printing());
@@ -739,6 +747,11 @@ void HTMLCanvasElement::Paint(GraphicsContext& context, const LayoutRect& r) {
     return;
   }
 
+  PaintInternal(context, r);
+}
+
+void HTMLCanvasElement::PaintInternal(GraphicsContext& context,
+                                      const LayoutRect& r) {
   context_->PaintRenderingResultsToCanvas(kFrontBuffer);
   if (HasResourceProvider()) {
     if (!context.ContextDisabled()) {
