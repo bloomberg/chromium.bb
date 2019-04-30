@@ -559,7 +559,8 @@ public class SuggestionsSectionTest {
 
         // Tap the button
         verifyAction(section, ContentSuggestionsAdditionalAction.FETCH);
-        assertEquals(ActionItem.State.LOADING, section.getActionItemForTesting().getState());
+        assertEquals(
+                ActionItem.State.MORE_BUTTON_LOADING, section.getActionItemForTesting().getState());
 
         // Simulate receiving suggestions.
         section.setStatus(CategoryStatus.AVAILABLE);
@@ -643,7 +644,8 @@ public class SuggestionsSectionTest {
                 eq(REMOTE_TEST_CATEGORY), any(), any(), sourceOnFailureRunnable.capture());
 
         // Ensure the progress spinner is shown.
-        assertEquals(ActionItem.State.LOADING, section.getActionItemForTesting().getState());
+        assertEquals(
+                ActionItem.State.MORE_BUTTON_LOADING, section.getActionItemForTesting().getState());
 
         // Simulate a failure.
         sourceOnFailureRunnable.getValue().run();

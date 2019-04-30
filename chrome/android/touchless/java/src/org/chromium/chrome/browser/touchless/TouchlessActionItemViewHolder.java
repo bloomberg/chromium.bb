@@ -50,7 +50,8 @@ class TouchlessActionItemViewHolder extends ActionItem.ViewHolder {
         // indicator that's not supported for touchless devices.
         if (state == ActionItem.State.BUTTON) {
             mButton.setVisibility(View.VISIBLE);
-        } else if (state == ActionItem.State.LOADING) {
+        } else if (state == ActionItem.State.INITIAL_LOADING
+                || state == ActionItem.State.MORE_BUTTON_LOADING) {
             mButton.setVisibility(View.INVISIBLE);
         } else {
             // Not even HIDDEN is supported as the item should not be able to receive updates.

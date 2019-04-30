@@ -31,18 +31,19 @@ import java.util.Locale;
  * show a progress indicator over the same space. See {@link State}.
  */
 public class ActionItem extends OptionalLeaf {
-    @IntDef({State.HIDDEN, State.BUTTON, State.LOADING})
+    @IntDef({State.HIDDEN, State.BUTTON, State.INITIAL_LOADING, State.MORE_BUTTON_LOADING})
     @Retention(RetentionPolicy.SOURCE)
     public @interface State {
         int HIDDEN = 0;
         int BUTTON = 1;
-        int LOADING = 2;
+        int INITIAL_LOADING = 2;
+        int MORE_BUTTON_LOADING = 3;
     }
 
     private final SuggestionsCategoryInfo mCategoryInfo;
     private final SuggestionsSection mParentSection;
     private final SuggestionsRanker mSuggestionsRanker;
-    private final SuggestionsMetrics.DurationTracker mSpinnerDurationTracker =
+    private final SuggestionsMetrics.SpinnerDurationTracker mSpinnerDurationTracker =
             SuggestionsMetrics.getSpinnerVisibilityReporter();
 
     private boolean mImpressionTracked;
@@ -72,7 +73,8 @@ public class ActionItem extends OptionalLeaf {
         switch (mState) {
             case State.BUTTON:
                 return String.format(Locale.US, "ACTION(%d)", mCategoryInfo.getAdditionalAction());
-            case State.LOADING:
+            case State.INITIAL_LOADING:
+            case State.MORE_BUTTON_LOADING:
                 return "PROGRESS";
             case State.HIDDEN:
                 // If state is HIDDEN, itemCount should be 0 and this method should not be called.
@@ -103,10 +105,10 @@ public class ActionItem extends OptionalLeaf {
         if (mState == newState) return;
         mState = newState;
 
-        if (mState == State.LOADING) {
-            mSpinnerDurationTracker.startTracking();
+        if (mState == State.INITIAL_LOADING || mState == State.MORE_BUTTON_LOADING) {
+            mSpinnerDurationTracker.startTracking(mState);
         } else {
-            mSpinnerDurationTracker.endTracking();
+            mSpinnerDurationTracker.endCompleteTracking();
         }
 
         boolean newVisibility = (newState != State.HIDDEN);
@@ -125,6 +127,10 @@ public class ActionItem extends OptionalLeaf {
         if (isVisible()) {
             notifyItemChanged(0, NewTabPageRecyclerView::resetForDismissCallback);
         }
+    }
+
+    public void destroy() {
+        mSpinnerDurationTracker.endIncompleteTracking();
     }
 
     /**
@@ -220,7 +226,7 @@ public class ActionItem extends OptionalLeaf {
             if (state == State.BUTTON) {
                 mButton.setVisibility(View.VISIBLE);
                 mProgressIndicator.hide(/* keepSpace = */ true);
-            } else if (state == State.LOADING) {
+            } else if (state == State.INITIAL_LOADING || state == State.MORE_BUTTON_LOADING) {
                 mButton.setVisibility(View.INVISIBLE);
                 mProgressIndicator.show();
             } else {

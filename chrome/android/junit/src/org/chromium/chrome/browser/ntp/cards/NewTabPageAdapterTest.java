@@ -395,13 +395,13 @@ public class NewTabPageAdapterTest {
         ActionItem item = section.getActionItemForTesting();
 
         mSource.setStatusForCategory(TEST_CATEGORY, CategoryStatus.INITIALIZING);
-        assertEquals(ActionItem.State.LOADING, item.getState());
+        assertEquals(ActionItem.State.INITIAL_LOADING, item.getState());
 
         mSource.setStatusForCategory(TEST_CATEGORY, CategoryStatus.AVAILABLE);
         assertEquals(ActionItem.State.HIDDEN, item.getState());
 
         mSource.setStatusForCategory(TEST_CATEGORY, CategoryStatus.AVAILABLE_LOADING);
-        assertEquals(ActionItem.State.LOADING, item.getState());
+        assertEquals(ActionItem.State.INITIAL_LOADING, item.getState());
 
         // After the section gets disabled, it should gone completely, so checking the progress
         // indicator doesn't make sense anymore.
