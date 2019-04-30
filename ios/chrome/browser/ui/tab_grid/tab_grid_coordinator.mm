@@ -228,6 +228,10 @@
       stopDispatchingForProtocol:@protocol(ApplicationSettingsCommands)];
   [self.dispatcher stopDispatchingForProtocol:@protocol(BrowsingDataCommands)];
 
+  // Disconnect UI from models they observe.
+  self.regularTabsMediator.tabModel = nil;
+  self.incognitoTabsMediator.tabModel = nil;
+
   // TODO(crbug.com/845192) : RecentTabsTableViewController behaves like a
   // coordinator and that should be factored out.
   [self.baseViewController.remoteTabsViewController dismissModals];

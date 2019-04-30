@@ -963,6 +963,9 @@ enum class EnterTabSwitcherSnapshotResult {
 }
 
 - (void)stopChromeMain {
+  // The UI should be stopped before the models they observe are stopped.
+  [_mainCoordinator stop];
+
   [_spotlightManager shutdown];
   _spotlightManager = nil;
 
@@ -973,8 +976,6 @@ enum class EnterTabSwitcherSnapshotResult {
 
   [_historyCoordinator stop];
   _historyCoordinator = nil;
-
-  [_mainCoordinator stop];
 
   ios::GetChromeBrowserProvider()
       ->GetMailtoHandlerProvider()
