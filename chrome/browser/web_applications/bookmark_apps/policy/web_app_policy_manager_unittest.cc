@@ -36,20 +36,20 @@ namespace web_app {
 
 namespace {
 
-const char kWindowedUrl[] = "https://windowed.example/";
-const char kTabbedUrl[] = "https://tabbed.example/";
-const char kNoContainerUrl[] = "https://no-container.example/";
+const GURL kWindowedUrl("https://windowed.example/");
+const GURL kTabbedUrl("https://tabbed.example/");
+const GURL kNoContainerUrl("https://no-container.example/");
 
 base::Value GetWindowedItem() {
   base::Value item(base::Value::Type::DICTIONARY);
-  item.SetKey(kUrlKey, base::Value(kWindowedUrl));
+  item.SetKey(kUrlKey, base::Value(kWindowedUrl.spec()));
   item.SetKey(kDefaultLaunchContainerKey,
               base::Value(kDefaultLaunchContainerWindowValue));
   return item;
 }
 
 InstallOptions GetWindowedInstallOptions() {
-  InstallOptions options(GURL(kWindowedUrl), LaunchContainer::kWindow,
+  InstallOptions options(kWindowedUrl, LaunchContainer::kWindow,
                          InstallSource::kExternalPolicy);
   options.add_to_applications_menu = true;
   options.add_to_desktop = false;
@@ -62,14 +62,14 @@ InstallOptions GetWindowedInstallOptions() {
 
 base::Value GetTabbedItem() {
   base::Value item(base::Value::Type::DICTIONARY);
-  item.SetKey(kUrlKey, base::Value(kTabbedUrl));
+  item.SetKey(kUrlKey, base::Value(kTabbedUrl.spec()));
   item.SetKey(kDefaultLaunchContainerKey,
               base::Value(kDefaultLaunchContainerTabValue));
   return item;
 }
 
 InstallOptions GetTabbedInstallOptions() {
-  InstallOptions options(GURL(kTabbedUrl), LaunchContainer::kTab,
+  InstallOptions options(kTabbedUrl, LaunchContainer::kTab,
                          InstallSource::kExternalPolicy);
   options.add_to_applications_menu = true;
   options.add_to_desktop = false;
@@ -82,12 +82,12 @@ InstallOptions GetTabbedInstallOptions() {
 
 base::Value GetNoContainerItem() {
   base::Value item(base::Value::Type::DICTIONARY);
-  item.SetKey(kUrlKey, base::Value(kNoContainerUrl));
+  item.SetKey(kUrlKey, base::Value(kNoContainerUrl.spec()));
   return item;
 }
 
 InstallOptions GetNoContainerInstallOptions() {
-  InstallOptions options(GURL(kNoContainerUrl), LaunchContainer::kTab,
+  InstallOptions options(kNoContainerUrl, LaunchContainer::kTab,
                          InstallSource::kExternalPolicy);
   options.add_to_applications_menu = true;
   options.add_to_desktop = false;
@@ -100,12 +100,12 @@ InstallOptions GetNoContainerInstallOptions() {
 
 base::Value GetCreateDesktopShorcutDefaultItem() {
   base::Value item(base::Value::Type::DICTIONARY);
-  item.SetKey(kUrlKey, base::Value(kNoContainerUrl));
+  item.SetKey(kUrlKey, base::Value(kNoContainerUrl.spec()));
   return item;
 }
 
 InstallOptions GetCreateDesktopShorcutDefaultInstallOptions() {
-  InstallOptions options(GURL(kNoContainerUrl), LaunchContainer::kTab,
+  InstallOptions options(kNoContainerUrl, LaunchContainer::kTab,
                          InstallSource::kExternalPolicy);
   options.add_to_applications_menu = true;
   options.add_to_desktop = false;
@@ -118,13 +118,13 @@ InstallOptions GetCreateDesktopShorcutDefaultInstallOptions() {
 
 base::Value GetCreateDesktopShorcutFalseItem() {
   base::Value item(base::Value::Type::DICTIONARY);
-  item.SetKey(kUrlKey, base::Value(kNoContainerUrl));
+  item.SetKey(kUrlKey, base::Value(kNoContainerUrl.spec()));
   item.SetKey(kCreateDesktopShorcutKey, base::Value(false));
   return item;
 }
 
 InstallOptions GetCreateDesktopShorcutFalseInstallOptions() {
-  InstallOptions options(GURL(kNoContainerUrl), LaunchContainer::kTab,
+  InstallOptions options(kNoContainerUrl, LaunchContainer::kTab,
                          InstallSource::kExternalPolicy);
   options.add_to_applications_menu = true;
   options.add_to_desktop = false;
@@ -137,13 +137,13 @@ InstallOptions GetCreateDesktopShorcutFalseInstallOptions() {
 
 base::Value GetCreateDesktopShorcutTrueItem() {
   base::Value item(base::Value::Type::DICTIONARY);
-  item.SetKey(kUrlKey, base::Value(kNoContainerUrl));
+  item.SetKey(kUrlKey, base::Value(kNoContainerUrl.spec()));
   item.SetKey(kCreateDesktopShorcutKey, base::Value(true));
   return item;
 }
 
 InstallOptions GetCreateDesktopShorcutTrueInstallOptions() {
-  InstallOptions options(GURL(kNoContainerUrl), LaunchContainer::kTab,
+  InstallOptions options(kNoContainerUrl, LaunchContainer::kTab,
                          InstallSource::kExternalPolicy);
   options.add_to_applications_menu = true;
   options.add_to_desktop = true;
@@ -336,12 +336,9 @@ TEST_F(WebAppPolicyManagerTest, DynamicRefresh) {
 TEST_F(WebAppPolicyManagerTest, UninstallAppInstalledInPreviousSession) {
   // Simulate two policy apps and a regular app that were installed in the
   // previous session.
-  SimulatePreviouslyInstalledApp(GURL(kWindowedUrl),
-                                 InstallSource::kExternalPolicy);
-  SimulatePreviouslyInstalledApp(GURL(kTabbedUrl),
-                                 InstallSource::kExternalPolicy);
-  SimulatePreviouslyInstalledApp(GURL(kNoContainerUrl),
-                                 InstallSource::kInternal);
+  SimulatePreviouslyInstalledApp(kWindowedUrl, InstallSource::kExternalPolicy);
+  SimulatePreviouslyInstalledApp(kTabbedUrl, InstallSource::kExternalPolicy);
+  SimulatePreviouslyInstalledApp(kNoContainerUrl, InstallSource::kInternal);
 
   // Push a policy with only one of the apps.
   base::Value first_list(base::Value::Type::LIST);
@@ -359,7 +356,7 @@ TEST_F(WebAppPolicyManagerTest, UninstallAppInstalledInPreviousSession) {
             expected_install_options_list);
 
   // We should try to uninstall the app that is no longer in the policy.
-  EXPECT_EQ(std::vector<GURL>({GURL(kTabbedUrl)}),
+  EXPECT_EQ(std::vector<GURL>({kTabbedUrl}),
             pending_app_manager()->uninstall_requests());
 }
 
@@ -398,7 +395,7 @@ TEST_F(WebAppPolicyManagerTest, UninstallAppInstalledInCurrentSession) {
 
   EXPECT_EQ(install_requests, expected_install_options_list);
 
-  EXPECT_EQ(std::vector<GURL>({GURL(kTabbedUrl)}),
+  EXPECT_EQ(std::vector<GURL>({kTabbedUrl}),
             pending_app_manager()->uninstall_requests());
 }
 
@@ -417,7 +414,7 @@ TEST_F(WebAppPolicyManagerTest, ReinstallPlaceholderApp) {
   const auto& install_options_list = pending_app_manager()->install_requests();
   EXPECT_EQ(expected_options_list, install_options_list);
 
-  policy_manager()->ReinstallPlaceholderAppIfNecessary(GURL(kWindowedUrl));
+  policy_manager()->ReinstallPlaceholderAppIfNecessary(kWindowedUrl);
   base::RunLoop().RunUntilIdle();
 
   auto reinstall_options = GetWindowedInstallOptions();
@@ -444,7 +441,7 @@ TEST_F(WebAppPolicyManagerTest, TryToInexistentPlaceholderApp) {
   EXPECT_EQ(expected_options_list, install_options_list);
 
   // Try to reinstall for app not installed by policy.
-  policy_manager()->ReinstallPlaceholderAppIfNecessary(GURL(kTabbedUrl));
+  policy_manager()->ReinstallPlaceholderAppIfNecessary(kTabbedUrl);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(expected_options_list, install_options_list);
@@ -474,13 +471,13 @@ TEST_F(WebAppPolicyManagerTest, SayRefreshTwoTimesQuickly) {
 
   const auto& install_options_list = pending_app_manager()->install_requests();
   EXPECT_EQ(expected_options_list, install_options_list);
-  EXPECT_EQ(std::vector<GURL>({GURL(kWindowedUrl)}),
+  EXPECT_EQ(std::vector<GURL>({kWindowedUrl}),
             pending_app_manager()->uninstall_requests());
 
   // There should be exactly 1 app remaining.
   EXPECT_EQ(1u, pending_app_manager()->installed_apps().size());
   EXPECT_EQ(InstallSource::kExternalPolicy,
-            pending_app_manager()->installed_apps().at(GURL(kTabbedUrl)));
+            pending_app_manager()->installed_apps().at(kTabbedUrl));
 }
 
 }  // namespace web_app

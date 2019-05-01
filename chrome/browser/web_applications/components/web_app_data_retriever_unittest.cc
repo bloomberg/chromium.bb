@@ -32,10 +32,10 @@ namespace web_app {
 
 namespace {
 
-const char kFooUrl[] = "https://foo.example";
-const char kFooUrl2[] = "https://foo.example/bar";
+const GURL kFooUrl("https://foo.example");
+const GURL kFooUrl2("https://foo.example/bar");
 const char kFooTitle[] = "Foo Title";
-const char kBarUrl[] = "https://bar.example";
+const GURL kBarUrl("https://bar.example");
 
 }  // namespace
 
@@ -147,7 +147,7 @@ TEST_F(WebAppDataRetrieverTest, GetWebApplicationInfo_NoEntry) {
 }
 
 TEST_F(WebAppDataRetrieverTest, GetWebApplicationInfo_AppUrlAbsent) {
-  web_contents_tester()->NavigateAndCommit(GURL(kFooUrl));
+  web_contents_tester()->NavigateAndCommit(kFooUrl);
 
   WebApplicationInfo original_web_app_info;
   original_web_app_info.app_url = GURL();
@@ -165,14 +165,14 @@ TEST_F(WebAppDataRetrieverTest, GetWebApplicationInfo_AppUrlAbsent) {
 
   // If the WebApplicationInfo has no URL, we fallback to the last committed
   // URL.
-  EXPECT_EQ(GURL(kFooUrl), web_app_info()->app_url);
+  EXPECT_EQ(kFooUrl, web_app_info()->app_url);
 }
 
 TEST_F(WebAppDataRetrieverTest, GetWebApplicationInfo_AppUrlPresent) {
-  web_contents_tester()->NavigateAndCommit(GURL(kFooUrl));
+  web_contents_tester()->NavigateAndCommit(kFooUrl);
 
   WebApplicationInfo original_web_app_info;
-  original_web_app_info.app_url = GURL(kBarUrl);
+  original_web_app_info.app_url = kBarUrl;
 
   FakeChromeRenderFrame fake_chrome_render_frame(original_web_app_info);
   SetFakeChromeRenderFrame(&fake_chrome_render_frame);
@@ -189,7 +189,7 @@ TEST_F(WebAppDataRetrieverTest, GetWebApplicationInfo_AppUrlPresent) {
 }
 
 TEST_F(WebAppDataRetrieverTest, GetWebApplicationInfo_TitleAbsentFromRenderer) {
-  web_contents_tester()->NavigateAndCommit(GURL(kFooUrl));
+  web_contents_tester()->NavigateAndCommit(kFooUrl);
 
   const auto web_contents_title = base::UTF8ToUTF16(kFooTitle);
   web_contents_tester()->SetTitle(web_contents_title);
@@ -215,7 +215,7 @@ TEST_F(WebAppDataRetrieverTest, GetWebApplicationInfo_TitleAbsentFromRenderer) {
 
 TEST_F(WebAppDataRetrieverTest,
        GetWebApplicationInfo_TitleAbsentFromWebContents) {
-  web_contents_tester()->NavigateAndCommit(GURL(kFooUrl));
+  web_contents_tester()->NavigateAndCommit(kFooUrl);
 
   web_contents_tester()->SetTitle(base::UTF8ToUTF16(""));
 
@@ -240,7 +240,7 @@ TEST_F(WebAppDataRetrieverTest,
 }
 
 TEST_F(WebAppDataRetrieverTest, GetWebApplicationInfo_WebContentsDestroyed) {
-  web_contents_tester()->NavigateAndCommit(GURL(kFooUrl));
+  web_contents_tester()->NavigateAndCommit(kFooUrl);
 
   FakeChromeRenderFrame fake_chrome_render_frame{WebApplicationInfo()};
   SetFakeChromeRenderFrame(&fake_chrome_render_frame);
@@ -258,7 +258,7 @@ TEST_F(WebAppDataRetrieverTest, GetWebApplicationInfo_WebContentsDestroyed) {
 }
 
 TEST_F(WebAppDataRetrieverTest, GetWebApplicationInfo_FrameNavigated) {
-  web_contents_tester()->NavigateAndCommit(GURL(kFooUrl));
+  web_contents_tester()->NavigateAndCommit(kFooUrl);
 
   FakeChromeRenderFrame fake_chrome_render_frame{WebApplicationInfo()};
   SetFakeChromeRenderFrame(&fake_chrome_render_frame);
@@ -269,7 +269,7 @@ TEST_F(WebAppDataRetrieverTest, GetWebApplicationInfo_FrameNavigated) {
       web_contents(),
       base::BindOnce(&WebAppDataRetrieverTest::GetWebApplicationInfoCallback,
                      base::Unretained(this), run_loop.QuitClosure()));
-  web_contents_tester()->NavigateAndCommit(GURL(kFooUrl2));
+  web_contents_tester()->NavigateAndCommit(kFooUrl2);
   run_loop.Run();
 
   EXPECT_EQ(nullptr, web_app_info());

@@ -27,8 +27,8 @@ namespace extensions {
 
 namespace {
 
-const char kFooWebAppUrl[] = "https://foo.example";
-const char kBarWebAppUrl[] = "https://bar.example";
+const GURL kFooWebAppUrl("https://foo.example");
+const GURL kBarWebAppUrl("https://bar.example");
 
 class TestExtensionRegistryObserver : public ExtensionRegistryObserver {
  public:
@@ -141,10 +141,10 @@ class BookmarkAppUninstallerTest : public ChromeRenderViewHostTestHarness {
 };
 
 TEST_F(BookmarkAppUninstallerTest, Uninstall_Successful) {
-  SimulateInstalledApp(GURL(kFooWebAppUrl));
+  SimulateInstalledApp(kFooWebAppUrl);
   ASSERT_EQ(1u, enabled_extensions().size());
 
-  EXPECT_TRUE(uninstaller().UninstallApp(GURL(kFooWebAppUrl)));
+  EXPECT_TRUE(uninstaller().UninstallApp(kFooWebAppUrl));
   content::RunAllTasksUntilIdle();
 
   EXPECT_EQ(1u, uninstalled_extension_ids().size());
@@ -152,11 +152,11 @@ TEST_F(BookmarkAppUninstallerTest, Uninstall_Successful) {
 }
 
 TEST_F(BookmarkAppUninstallerTest, Uninstall_Multiple) {
-  auto foo_app_id = SimulateInstalledApp(GURL(kFooWebAppUrl));
-  auto bar_app_id = SimulateInstalledApp(GURL(kBarWebAppUrl));
+  auto foo_app_id = SimulateInstalledApp(kFooWebAppUrl);
+  auto bar_app_id = SimulateInstalledApp(kBarWebAppUrl);
   ASSERT_EQ(2u, enabled_extensions().size());
 
-  EXPECT_TRUE(uninstaller().UninstallApp(GURL(kBarWebAppUrl)));
+  EXPECT_TRUE(uninstaller().UninstallApp(kBarWebAppUrl));
   content::RunAllTasksUntilIdle();
 
   EXPECT_EQ(1u, uninstalled_extension_ids().size());
@@ -166,7 +166,7 @@ TEST_F(BookmarkAppUninstallerTest, Uninstall_Multiple) {
 
   ResetResults();
 
-  EXPECT_TRUE(uninstaller().UninstallApp(GURL(kFooWebAppUrl)));
+  EXPECT_TRUE(uninstaller().UninstallApp(kFooWebAppUrl));
   content::RunAllTasksUntilIdle();
 
   EXPECT_EQ(1u, uninstalled_extension_ids().size());
@@ -174,22 +174,22 @@ TEST_F(BookmarkAppUninstallerTest, Uninstall_Multiple) {
 }
 
 TEST_F(BookmarkAppUninstallerTest, Uninstall_UninstalledExternalApp) {
-  SimulateInstalledApp(GURL(kFooWebAppUrl));
-  SimulateExternalAppUninstalledByUser(GURL(kFooWebAppUrl));
+  SimulateInstalledApp(kFooWebAppUrl);
+  SimulateExternalAppUninstalledByUser(kFooWebAppUrl);
 
-  EXPECT_FALSE(uninstaller().UninstallApp(GURL(kFooWebAppUrl)));
+  EXPECT_FALSE(uninstaller().UninstallApp(kFooWebAppUrl));
 }
 
 // Tests trying to uninstall an app that was never installed.
 TEST_F(BookmarkAppUninstallerTest, Uninstall_FailsNeverInstalled) {
-  EXPECT_FALSE(uninstaller().UninstallApp(GURL(kFooWebAppUrl)));
+  EXPECT_FALSE(uninstaller().UninstallApp(kFooWebAppUrl));
 }
 
 // Tests trying to uninstall an app that was previously uninstalled.
 TEST_F(BookmarkAppUninstallerTest, Uninstall_FailsAlreadyUninstalled) {
-  SimulateInstalledApp(GURL(kFooWebAppUrl));
+  SimulateInstalledApp(kFooWebAppUrl);
 
-  EXPECT_TRUE(uninstaller().UninstallApp(GURL(kFooWebAppUrl)));
+  EXPECT_TRUE(uninstaller().UninstallApp(kFooWebAppUrl));
   content::RunAllTasksUntilIdle();
 
   EXPECT_EQ(1u, uninstalled_extension_ids().size());
@@ -197,7 +197,7 @@ TEST_F(BookmarkAppUninstallerTest, Uninstall_FailsAlreadyUninstalled) {
 
   ResetResults();
 
-  EXPECT_FALSE(uninstaller().UninstallApp(GURL(kFooWebAppUrl)));
+  EXPECT_FALSE(uninstaller().UninstallApp(kFooWebAppUrl));
   content::RunAllTasksUntilIdle();
 
   EXPECT_EQ(0u, uninstalled_extension_ids().size());

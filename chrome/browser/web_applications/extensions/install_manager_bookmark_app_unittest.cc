@@ -38,10 +38,10 @@ namespace extensions {
 
 namespace {
 
-const char kAppUrl[] = "https://www.chromium.org/index.html";
+const GURL kAppUrl("https://www.chromium.org/index.html");
 const char kAppTitle[] = "Test title";
 const char kAppDescription[] = "Test description";
-const char kAppScope[] = "https://www.chromium.org/";
+const GURL kAppScope("https://www.chromium.org/");
 
 const int kIconSizeTiny = extension_misc::EXTENSION_ICON_BITTY;
 const int kIconSizeSmall = extension_misc::EXTENSION_ICON_SMALL;
@@ -105,10 +105,10 @@ class InstallManagerBookmarkAppTest : public ExtensionServiceTestBase {
 
 TEST_F(InstallManagerBookmarkAppTest, CreateWebAppFromInfo) {
   auto web_app_info = std::make_unique<WebApplicationInfo>();
-  web_app_info->app_url = GURL(kAppUrl);
+  web_app_info->app_url = kAppUrl;
   web_app_info->title = base::UTF8ToUTF16(kAppTitle);
   web_app_info->description = base::UTF8ToUTF16(kAppDescription);
-  web_app_info->scope = GURL(kAppScope);
+  web_app_info->scope = kAppScope;
   web_app_info->icons.push_back(
       CreateIconInfoWithBitmap(kIconSizeTiny, SK_ColorRED));
 
@@ -136,8 +136,8 @@ TEST_F(InstallManagerBookmarkAppTest, CreateWebAppFromInfo) {
   EXPECT_TRUE(extension->from_bookmark());
   EXPECT_EQ(kAppTitle, extension->name());
   EXPECT_EQ(kAppDescription, extension->description());
-  EXPECT_EQ(GURL(kAppUrl), AppLaunchInfo::GetLaunchWebURL(extension));
-  EXPECT_EQ(GURL(kAppScope), GetScopeURLFromBookmarkApp(extension));
+  EXPECT_EQ(kAppUrl, AppLaunchInfo::GetLaunchWebURL(extension));
+  EXPECT_EQ(kAppScope, GetScopeURLFromBookmarkApp(extension));
   EXPECT_FALSE(IconsInfo::GetIconResource(extension, kIconSizeTiny,
                                           ExtensionIconSet::MATCH_EXACTLY)
                    .empty());

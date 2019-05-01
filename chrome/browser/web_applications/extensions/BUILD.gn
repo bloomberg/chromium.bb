@@ -58,7 +58,7 @@ source_set("unit_tests") {
   deps = [
     ":extensions",
     "//chrome/browser",
-    "//chrome/browser/web_applications:web_app_group",
+    "//chrome/browser/web_applications:web_app_test_group",
     "//chrome/browser/web_applications:web_applications_on_extensions",
     "//chrome/browser/web_applications:web_applications_test_support",
     "//chrome/browser/web_applications/bookmark_apps",
@@ -90,7 +90,7 @@ source_set("browser_tests") {
     "//base/test:test_support",
     "//chrome/browser",
     "//chrome/browser/ui",
-    "//chrome/browser/web_applications:web_app_group",
+    "//chrome/browser/web_applications:web_app_test_group",
     "//chrome/browser/web_applications:web_applications_on_extensions",
     "//chrome/browser/web_applications/components",
     "//chrome/test:test_support",

@@ -32,7 +32,7 @@ namespace extensions {
 
 namespace {
 
-const char kWebAppUrl[] = "https://foo.example";
+const GURL kWebAppUrl("https://foo.example");
 const char kWebAppTitle[] = "Foo Title";
 
 }  // namespace
@@ -98,7 +98,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, BasicInstallSucceeds) {
   BookmarkAppInstallFinalizer installer(profile());
 
   auto info = std::make_unique<WebApplicationInfo>();
-  info->app_url = GURL(kWebAppUrl);
+  info->app_url = kWebAppUrl;
   info->title = base::ASCIIToUTF16(kWebAppTitle);
 
   base::RunLoop run_loop;
@@ -134,7 +134,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, BasicInstallFails) {
       }));
 
   auto info = std::make_unique<WebApplicationInfo>();
-  info->app_url = GURL(kWebAppUrl);
+  info->app_url = kWebAppUrl;
   info->title = base::ASCIIToUTF16(kWebAppTitle);
 
   base::RunLoop run_loop;
@@ -214,7 +214,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, PolicyInstallSucceeds) {
   BookmarkAppInstallFinalizer installer(profile());
 
   auto info = std::make_unique<WebApplicationInfo>();
-  info->app_url = GURL(kWebAppUrl);
+  info->app_url = kWebAppUrl;
   info->title = base::ASCIIToUTF16(kWebAppTitle);
 
   web_app::InstallFinalizer::FinalizeOptions options;
@@ -241,7 +241,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, NoNetworkInstallSucceeds) {
   BookmarkAppInstallFinalizer installer(profile());
 
   auto info = std::make_unique<WebApplicationInfo>();
-  info->app_url = GURL(kWebAppUrl);
+  info->app_url = kWebAppUrl;
 
   web_app::InstallFinalizer::FinalizeOptions options;
   options.no_network_install = true;
@@ -268,7 +268,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, ForceLaunchContainer) {
   BookmarkAppInstallFinalizer installer(profile());
 
   auto info = std::make_unique<WebApplicationInfo>();
-  info->app_url = GURL(kWebAppUrl);
+  info->app_url = kWebAppUrl;
   // The info says extensions::LAUNCH_TYPE_WINDOW needed.
   info->open_as_window = true;
 
@@ -301,7 +301,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, CanSkipAppUpdateForSync) {
   BookmarkAppInstallFinalizer installer(profile());
 
   auto info = std::make_unique<WebApplicationInfo>();
-  info->app_url = GURL(kWebAppUrl);
+  info->app_url = kWebAppUrl;
   info->title = base::ASCIIToUTF16("Title1");
   info->description = base::ASCIIToUTF16("Description1");
 

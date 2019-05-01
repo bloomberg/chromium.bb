@@ -122,7 +122,7 @@ source_set("unit_tests") {
     ":test_support",
     "//base/test:test_support",
     "//chrome/app/theme:theme_resources",
-    "//chrome/browser/web_applications:web_app_group",
+    "//chrome/browser/web_applications:web_app_test_group",
     "//chrome/test:test_support",
     "//content/public/browser",
     "//skia",
