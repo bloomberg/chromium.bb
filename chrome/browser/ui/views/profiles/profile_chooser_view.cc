@@ -806,7 +806,6 @@ void ProfileChooserView::AddAutofillHomeView() {
 
 #if defined(GOOGLE_CHROME_BUILD)
 void ProfileChooserView::AddManageGoogleAccountButton() {
-  AddMenuGroup(false /* add_separator */);
   manage_google_account_button_ = CreateAndAddButton(
       GetGoogleIconForUserMenu(GetDefaultIconSize()),
       l10n_util::GetStringUTF16(IDS_SETTINGS_MANAGE_GOOGLE_ACCOUNT));

@@ -381,7 +381,15 @@ void ProfileMenuViewBase::RepopulateViewFromMenuItems() {
         bottom_margin = kLarge;
       }
 
-      child_spacing = group.different_item_types ? kLarge : kNone;
+      if (!group.different_item_types) {
+        child_spacing = kNone;
+      } else if (group.items.size() == 2 &&
+                 group.first_item_type == MenuItems::kTitleCard &&
+                 group.last_item_type == MenuItems::kButton) {
+        child_spacing = kNone;
+      } else {
+        child_spacing = kLarge;
+      }
 
       sub_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::kVertical,
