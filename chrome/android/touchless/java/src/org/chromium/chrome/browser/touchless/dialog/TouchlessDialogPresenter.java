@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.touchless.dialog;
 
-import android.app.Activity;
 import android.app.Dialog;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
@@ -39,7 +38,7 @@ import java.util.ArrayList;
 /** A modal dialog presenter that is specific to touchless dialogs. */
 public class TouchlessDialogPresenter extends Presenter {
     /** An activity to attach dialogs to. */
-    private final Activity mActivity;
+    private final ChromeActivity mActivity;
 
     /** The dialog this class abstracts. */
     private Dialog mDialog;
@@ -48,7 +47,7 @@ public class TouchlessDialogPresenter extends Presenter {
     private PropertyModelChangeProcessor<PropertyModel, Pair<ViewGroup, ModelListAdapter>,
             PropertyKey> mModelChangeProcessor;
 
-    public TouchlessDialogPresenter(Activity activity) {
+    public TouchlessDialogPresenter(ChromeActivity activity) {
         mActivity = activity;
     }
 
@@ -76,17 +75,19 @@ public class TouchlessDialogPresenter extends Presenter {
         mDialog.setOnCancelListener(dialogInterface
                 -> dismissCurrentDialog(DialogDismissalCause.NAVIGATE_BACK_OR_TOUCH_OUTSIDE));
         mDialog.setOnShowListener(dialog
-                -> AppHooks.get().getTouchlessUiControllerForActivity((ChromeActivity) mActivity)
-                .addModelToQueue(model));
+                -> AppHooks.get().getTouchlessUiControllerForActivity(mActivity).addModelToQueue(
+                        model));
         mDialog.setOnDismissListener(dialog
-                -> AppHooks.get().getTouchlessUiControllerForActivity((ChromeActivity) mActivity)
-                .removeModelFromQueue(model));
+                -> AppHooks.get()
+                           .getTouchlessUiControllerForActivity(mActivity)
+                           .removeModelFromQueue(model));
         // Cancel on touch outside should be disabled by default. The ModelChangeProcessor wouldn't
         // notify change if the property is not set during initialization.
         mDialog.setCanceledOnTouchOutside(false);
-        mDialog.setOnKeyListener((dialog, keyCode, event) ->
-                AppHooks.get().getTouchlessUiControllerForActivity((ChromeActivity) mActivity)
-                .onKeyEvent(event));
+        mDialog.setOnKeyListener(
+                (dialog, keyCode, event)
+                        -> AppHooks.get().getTouchlessUiControllerForActivity(mActivity).onKeyEvent(
+                                event));
         ViewGroup dialogView = (ViewGroup) LayoutInflater.from(mDialog.getContext())
                 .inflate(R.layout.touchless_dialog_view, null);
         ModelListAdapter adapter = new ModelListAdapter(mActivity);
