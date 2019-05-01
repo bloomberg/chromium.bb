@@ -8,7 +8,7 @@
 #include <vulkan/vulkan.h>
 
 #include "base/callback.h"
-#include "base/containers/queue.h"
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "gpu/vulkan/vulkan_export.h"
 
@@ -115,7 +115,7 @@ class VULKAN_EXPORT VulkanFenceHelper {
     FenceHandle handle;
     std::vector<CleanupTask> tasks;
   };
-  base::queue<TasksForFence> cleanup_tasks_;
+  base::circular_deque<TasksForFence> cleanup_tasks_;
 
   DISALLOW_COPY_AND_ASSIGN(VulkanFenceHelper);
 };

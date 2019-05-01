@@ -43,7 +43,7 @@ VkResult VulkanFenceHelper::GetFence(VkFence* fence) {
 
 VulkanFenceHelper::FenceHandle VulkanFenceHelper::EnqueueFence(VkFence fence) {
   FenceHandle handle(fence, next_generation_++);
-  cleanup_tasks_.emplace(handle, std::move(tasks_pending_fence_));
+  cleanup_tasks_.emplace_back(handle, std::move(tasks_pending_fence_));
   tasks_pending_fence_ = std::vector<CleanupTask>();
 
   return handle;
@@ -82,12 +82,7 @@ void VulkanFenceHelper::ProcessCleanupTasks() {
   // |current_generation_| as far as possible. This assumes that fences pass in
   // order, which isn't a hard API guarantee, but should be close enough /
   // efficient enough for the purpose or processing cleanup tasks.
-  //
-  // Also runs any cleanup tasks for generations that have passed. Create a
-  // temporary vector of tasks to run to avoid reentrancy issues.
-  std::vector<CleanupTask> tasks_to_run;
-  while (!cleanup_tasks_.empty()) {
-    TasksForFence& tasks_for_fence = cleanup_tasks_.front();
+  for (const auto& tasks_for_fence : cleanup_tasks_) {
     VkResult result = vkGetFenceStatus(device, tasks_for_fence.handle.fence_);
     if (result == VK_NOT_READY)
       break;
@@ -96,12 +91,22 @@ void VulkanFenceHelper::ProcessCleanupTasks() {
       return;
     }
     current_generation_ = tasks_for_fence.handle.generation_id_;
-    vkDestroyFence(device, tasks_for_fence.handle.fence_, nullptr);
+  }
 
+  // Runs any cleanup tasks for generations that have passed. Create a temporary
+  // vector of tasks to run to avoid reentrancy issues.
+  std::vector<CleanupTask> tasks_to_run;
+  while (!cleanup_tasks_.empty()) {
+    TasksForFence& tasks_for_fence = cleanup_tasks_.front();
+    if (tasks_for_fence.handle.generation_id_ > current_generation_)
+      break;
+    DCHECK_EQ(vkGetFenceStatus(device, tasks_for_fence.handle.fence_),
+              VK_SUCCESS);
+    vkDestroyFence(device, tasks_for_fence.handle.fence_, nullptr);
     tasks_to_run.insert(tasks_to_run.end(),
                         std::make_move_iterator(tasks_for_fence.tasks.begin()),
                         std::make_move_iterator(tasks_for_fence.tasks.end()));
-    cleanup_tasks_.pop();
+    cleanup_tasks_.pop_front();
   }
 
   for (auto& task : tasks_to_run)
@@ -190,7 +195,7 @@ void VulkanFenceHelper::PerformImmediateCleanup() {
     tasks_to_run.insert(tasks_to_run.end(),
                         std::make_move_iterator(tasks_for_fence.tasks.begin()),
                         std::make_move_iterator(tasks_for_fence.tasks.end()));
-    cleanup_tasks_.pop();
+    cleanup_tasks_.pop_front();
   }
   tasks_to_run.insert(tasks_to_run.end(),
                       std::make_move_iterator(tasks_pending_fence_.begin()),
