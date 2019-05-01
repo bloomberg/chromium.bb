@@ -40,7 +40,8 @@ source_set("browser") {
     "//components/prefs:prefs",
     "//components/prefs/ios",
     "//google_apis",
-    "//ios/web",
+    "//ios/web/common",
+    "//ios/web/public",
     "//services/network/public/cpp",
     "//ui/gfx/geometry",
   ]

@@ -43,8 +43,6 @@ source_set("public") {
     "navigation_item_list.h",
     "navigation_item_list.mm",
     "navigation_manager.h",
-    "origin_util.h",
-    "origin_util.mm",
     "reload_type.h",
     "security_style.h",
     "serializable_user_data_manager.h",

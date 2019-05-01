@@ -41,6 +41,7 @@ include_rules = [
   "+google_apis",
   "+ios/components/io_thread",
   "+ios/net",
+  "+ios/web/common",
   "+ios/web/public",
   "+ios/web_view",
   "+net",

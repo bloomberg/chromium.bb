@@ -6,7 +6,7 @@
 
 #include "components/security_state/core/security_state.h"
 #include "ios/chrome/browser/ssl/ios_security_state_tab_helper.h"
-#import "ios/web/public/origin_util.h"
+#import "ios/web/common/origin_util.h"
 #include "url/origin.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

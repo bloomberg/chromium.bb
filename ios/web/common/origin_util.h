@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_ORIGIN_UTIL_H_
-#define IOS_WEB_PUBLIC_ORIGIN_UTIL_H_
+#ifndef IOS_WEB_COMMON_ORIGIN_UTIL_H_
+#define IOS_WEB_COMMON_ORIGIN_UTIL_H_
 
 class GURL;
 
@@ -18,4 +18,4 @@ bool IsOriginSecure(const GURL& url);
 
 }  // namespace web
 
-#endif  // IOS_WEB_PUBLIC_ORIGIN_UTIL_H_
+#endif  // IOS_WEB_COMMON_ORIGIN_UTIL_H_
