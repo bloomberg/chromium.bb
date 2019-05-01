@@ -211,7 +211,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         document.querySelector('header').appendChild(xrButton.domElement);
 
         if (navigator.xr) {
-          navigator.xr.requestSession('inline').then(onSessionStarted);
+          const mode = 'inline';
+          navigator.xr.requestSession(mode).then((session) => {
+            session.mode = mode;
+            onSessionStarted(session);
+          });
         } else {
           initFallback();
         }
@@ -282,7 +286,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
 
       function onRequestSession() {
-        navigator.xr.requestSession('immersive-vr').then((session) => {
+        const mode = 'immersive-vr';
+        navigator.xr.requestSession(mode).then((session) => {
+          session.mode = mode;
           xrButton.setSession(session);
           onSessionStarted(session);
         });
