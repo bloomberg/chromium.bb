@@ -65,7 +65,8 @@ class COMPONENT_EXPORT(NETWORK_CPP) NetworkConnectionTracker
   // will contain the current connection type, and |callback| will not be
   // called; Otherwise, returns false and does not modify |type|, in which
   // case, |callback| will be called on the calling thread when connection type
-  // is ready. This method is thread safe. Please also refer to
+  // is ready. The connection type being available does not imply it is not
+  // CONNECTION_UNKNKOWN. This method is thread safe. Please also refer to
   // net::NetworkChangeNotifier::GetConnectionType() for documentation.
   virtual bool GetConnectionType(network::mojom::ConnectionType* type,
                                  ConnectionTypeCallback callback);
