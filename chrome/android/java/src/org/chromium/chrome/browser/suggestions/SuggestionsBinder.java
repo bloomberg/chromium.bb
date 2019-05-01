@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.suggestions;
 
-import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
@@ -28,8 +27,6 @@ import org.chromium.base.Callback;
 import org.chromium.base.SysUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimationHandler;
-import org.chromium.chrome.browser.download.DownloadUtils;
-import org.chromium.chrome.browser.download.ui.DownloadFilter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.util.ViewUtils;
@@ -220,7 +217,6 @@ public class SuggestionsBinder {
 
             mThumbnailView.setImageDrawable(colorDrawable);
         }
-        if (!mIsContextual) ApiCompatibilityUtils.setImageTintList(mThumbnailView, null);
 
         // Fetch thumbnail for the current article.
         mImageFetcher.makeArticleThumbnailRequest(
@@ -233,21 +229,6 @@ public class SuggestionsBinder {
         mThumbnailView.setScaleType(ImageView.ScaleType.CENTER_CROP);
         mThumbnailView.setBackground(null);
         mThumbnailView.setImageDrawable(thumbnail);
-        if (!mIsContextual) ApiCompatibilityUtils.setImageTintList(mThumbnailView, null);
-    }
-
-    private void setThumbnailFromFileType(@DownloadFilter.Type int fileType) {
-        int iconBackgroundColor = DownloadUtils.getIconBackgroundColor(mThumbnailView.getContext());
-        ColorStateList iconForegroundColorList =
-                DownloadUtils.getIconForegroundColorList(mThumbnailView.getContext());
-
-        mThumbnailView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-        mThumbnailView.setBackgroundColor(iconBackgroundColor);
-        mThumbnailView.setImageResource(
-                DownloadUtils.getIconResId(fileType, DownloadUtils.IconSize.DP_36));
-        if (!mIsContextual) {
-            ApiCompatibilityUtils.setImageTintList(mThumbnailView, iconForegroundColorList);
-        }
     }
 
     private void setDefaultFaviconOnView(int faviconSizePx) {
@@ -268,7 +249,6 @@ public class SuggestionsBinder {
 
         mThumbnailView.setScaleType(ImageView.ScaleType.CENTER_CROP);
         mThumbnailView.setBackground(null);
-        if (!mIsContextual) ApiCompatibilityUtils.setImageTintList(mThumbnailView, null);
         int duration = FADE_IN_ANIMATION_TIME_MS;
         if (CompositorAnimationHandler.isInTestingMode()) {
             mThumbnailView.setImageDrawable(thumbnail);
