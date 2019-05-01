@@ -235,6 +235,11 @@ class ExternalMojoBroker::ConnectorImpl : public mojom::ExternalConnector {
       }
       pending_bind_requests_.erase(p);
     }
+
+    auto& info_entry = services_info_[service_name];
+    info_entry.name = service_name;
+    info_entry.connect_time = base::TimeTicks::Now();
+    info_entry.disconnect_time = base::TimeTicks();
   }
 
   void BindInterface(const std::string& service_name,
@@ -276,6 +281,14 @@ class ExternalMojoBroker::ConnectorImpl : public mojom::ExternalConnector {
         service_manager::mojom::ConnectorRequest(std::move(interface_pipe)));
   }
 
+  void QueryServiceList(QueryServiceListCallback callback) override {
+    std::vector<chromecast::external_mojo::mojom::ExternalServiceInfoPtr> infos;
+    for (const auto& it : services_info_) {
+      infos.emplace_back(it.second.Clone());
+    }
+    std::move(callback).Run(std::move(infos));
+  }
+
   void OnQueryResult(const std::string& service_name,
                      const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe,
@@ -305,6 +318,7 @@ class ExternalMojoBroker::ConnectorImpl : public mojom::ExternalConnector {
   void OnServiceLost(const std::string& service_name) {
     LOG(INFO) << service_name << " disconnected";
     services_.erase(service_name);
+    services_info_[service_name].disconnect_time = base::TimeTicks::Now();
   }
 
   ServiceManagerConnectorFacade connector_facade_;
@@ -316,6 +330,7 @@ class ExternalMojoBroker::ConnectorImpl : public mojom::ExternalConnector {
 
   std::map<std::string, mojom::ExternalServicePtr> services_;
   std::map<std::string, std::vector<PendingBindRequest>> pending_bind_requests_;
+  std::map<std::string, mojom::ExternalServiceInfo> services_info_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectorImpl);
 };
