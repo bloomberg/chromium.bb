@@ -5170,7 +5170,8 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
     }
   }
 
-  if (x->e_mbd.bd == 8 && !x->cb_partition_scan && try_split) {
+  if (x->e_mbd.bd == 8 && !x->cb_partition_scan && try_split &&
+      !(ref_best_rd == INT64_MAX && no_split.rd == INT64_MAX)) {
     const int threshold = cpi->sf.tx_type_search.ml_tx_split_thresh;
     if (threshold >= 0) {
       const int split_score =
