@@ -258,15 +258,8 @@ const base::Feature kMimeHandlerViewInCrossProcessFrame{
     "MimeHandlerViewInCrossProcessFrame", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables/disables the video capture service.
-const base::Feature kMojoVideoCapture {
-  "MojoVideoCapture",
-#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_CHROMEOS) || \
-    defined(OS_ANDROID)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
+const base::Feature kMojoVideoCapture{"MojoVideoCapture",
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 // A secondary switch used in combination with kMojoVideoCapture.
 // This is intended as a kill switch to allow disabling the service on
