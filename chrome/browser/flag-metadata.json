@@ -827,11 +827,6 @@
     "expiry_milestone": 78
   },
   {
-    "name": "enable-autofill-save-card-dialog-unlabeled-expiration-date",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-autofill-save-card-improved-user-consent",
     "owners": [ "chrome-autofill@google.com" ],
     "expiry_milestone": 73

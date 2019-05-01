@@ -2325,14 +2325,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillLocalCardMigrationUsesStrikeSystemV2)},
-    {"enable-autofill-save-card-dialog-unlabeled-expiration-date",
-     flag_descriptions::
-         kEnableAutofillSaveCardDialogUnlabeledExpirationDateName,
-     flag_descriptions::
-         kEnableAutofillSaveCardDialogUnlabeledExpirationDateDescription,
-     kOsDesktop,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillSaveCardDialogUnlabeledExpirationDate)},
     {"enable-autofill-save-card-improved-user-consent",
      flag_descriptions::kEnableAutofillSaveCardImprovedUserConsentName,
      flag_descriptions::kEnableAutofillSaveCardImprovedUserConsentDescription,

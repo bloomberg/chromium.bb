@@ -196,9 +196,7 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
     box_layout->SetFlexForView(spacer, /*flex=*/1);
 
     auto* expiration_date_label = new views::Label(
-        card.AbbreviatedExpirationDateForDisplay(
-            !features::
-                IsAutofillSaveCardDialogUnlabeledExpirationDateEnabled()),
+        card.AbbreviatedExpirationDateForDisplay(false),
         CONTEXT_BODY_TEXT_LARGE, ChromeTextStyle::STYLE_SECONDARY);
     expiration_date_label->set_id(DialogViewId::EXPIRATION_DATE_LABEL);
     description_view->AddChildView(expiration_date_label);

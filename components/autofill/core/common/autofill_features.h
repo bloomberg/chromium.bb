@@ -48,7 +48,6 @@ extern const base::Feature kAutofillPreferServerNamePredictions;
 extern const base::Feature kAutofillProfileServerValidation;
 extern const base::Feature kAutofillRestrictUnownedFieldsToFormlessCheckout;
 extern const base::Feature kAutofillRichMetadataQueries;
-extern const base::Feature kAutofillSaveCardDialogUnlabeledExpirationDate;
 extern const base::Feature kAutofillSaveOnProbablySubmitted;
 extern const base::Feature kAutofillServerCommunication;
 extern const base::Feature kAutofillSettingsCardTypeSplit;
@@ -83,10 +82,6 @@ bool IsPasswordManualFallbackEnabled();
 // Returns whether the UI for addresses and credit cards in manual fallback is
 // enabled.
 bool IsAutofillManualFallbackEnabled();
-
-// Returns true if expiration dates on the save card dialog should be
-// unlabeled, i.e. not preceded by "Exp."
-bool IsAutofillSaveCardDialogUnlabeledExpirationDateEnabled();
 
 }  // namespace features
 }  // namespace autofill

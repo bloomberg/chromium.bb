@@ -29,9 +29,7 @@ AutofillCreditCardFillingInfoBarDelegateMobile::
 #else
       card_label_(base::string16(kMidlineEllipsis) + card.LastFourDigits()),
 #endif
-      card_sub_label_(card.AbbreviatedExpirationDateForDisplay(
-          !features::
-              IsAutofillSaveCardDialogUnlabeledExpirationDateEnabled())) {
+      card_sub_label_(card.AbbreviatedExpirationDateForDisplay(false)) {
 }
 
 AutofillCreditCardFillingInfoBarDelegateMobile::

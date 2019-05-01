@@ -147,10 +147,6 @@ const base::Feature kAutofillRichMetadataQueries{
 const base::Feature kAutofillSaveOnProbablySubmitted{
     "AutofillSaveOnProbablySubmitted", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kAutofillSaveCardDialogUnlabeledExpirationDate{
-    "AutofillSaveCardDialogUnlabeledExpirationDate",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables or Disables (mostly for hermetic testing) autofill server
 // communication. The URL of the autofill server can further be controlled via
 // the autofill-server-url param. The given URL should specify the complete
@@ -238,11 +234,6 @@ bool IsPasswordManualFallbackEnabled() {
 
 bool IsAutofillManualFallbackEnabled() {
   return base::FeatureList::IsEnabled(kAutofillManualFallbackPhaseTwo);
-}
-
-bool IsAutofillSaveCardDialogUnlabeledExpirationDateEnabled() {
-  return base::FeatureList::IsEnabled(
-      kAutofillSaveCardDialogUnlabeledExpirationDate);
 }
 
 }  // namespace features
