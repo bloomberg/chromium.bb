@@ -476,11 +476,11 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, Histograms) {
   EXPECT_EQ(FinishedReason::kSuccess, sender->last_finished_reason());
 
   // The histogram should be recorded when reading the script.
-  // The count should be four: reading the response body of a main script and an
-  // imported script, and the end of reading bodies for the two scripts.
+  // The count should be two: reading the response body of a main script and an
+  // imported script.
   histogram_tester.ExpectBucketCount(
       "ServiceWorker.DiskCache.ReadResponseResult",
-      ServiceWorkerMetrics::ReadResponseResult::READ_OK, 4);
+      ServiceWorkerMetrics::ReadResponseResult::READ_OK, 2);
 }
 
 TEST_F(ServiceWorkerInstalledScriptsSenderTest, RequestScriptBeforeStreaming) {
