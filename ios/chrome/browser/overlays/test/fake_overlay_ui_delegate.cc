@@ -15,10 +15,21 @@ FakeOverlayUIDelegate::GetPresentationState(web::WebState* web_state) {
 }
 
 void FakeOverlayUIDelegate::SimulateDismissalForWebState(
-    web::WebState* web_state) {
+    web::WebState* web_state,
+    OverlayDismissalReason reason) {
   DCHECK_EQ(PresentationState::kPresented, presentation_states_[web_state]);
-  std::move(overlay_callbacks_[web_state]).Run();
-  presentation_states_[web_state] = PresentationState::kNotPresented;
+  switch (reason) {
+    case OverlayDismissalReason::kUserInteraction:
+      presentation_states_[web_state] = PresentationState::kUserDismissed;
+      break;
+    case OverlayDismissalReason::kHiding:
+      presentation_states_[web_state] = PresentationState::kHidden;
+      break;
+    case OverlayDismissalReason::kCancellation:
+      presentation_states_[web_state] = PresentationState::kCancelled;
+      break;
+  }
+  std::move(overlay_callbacks_[web_state]).Run(reason);
 }
 
 void FakeOverlayUIDelegate::ShowOverlayUIForWebState(
@@ -31,7 +42,7 @@ void FakeOverlayUIDelegate::ShowOverlayUIForWebState(
 
 void FakeOverlayUIDelegate::HideOverlayUIForWebState(web::WebState* web_state,
                                                      OverlayModality modality) {
-  presentation_states_[web_state] = PresentationState::kHidden;
+  SimulateDismissalForWebState(web_state, OverlayDismissalReason::kHiding);
 }
 
 void FakeOverlayUIDelegate::CancelOverlayUIForWebState(
@@ -39,7 +50,8 @@ void FakeOverlayUIDelegate::CancelOverlayUIForWebState(
     OverlayModality modality) {
   PresentationState& state = presentation_states_[web_state];
   if (state == PresentationState::kPresented) {
-    SimulateDismissalForWebState(web_state);
+    SimulateDismissalForWebState(web_state,
+                                 OverlayDismissalReason::kCancellation);
   } else {
     state = PresentationState::kNotPresented;
   }

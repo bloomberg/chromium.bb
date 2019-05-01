@@ -17,15 +17,23 @@ class FakeOverlayUIDelegate : public OverlayUIDelegate {
 
   // Enum describing the state of the overlay UI.
   enum class PresentationState {
+    // Default state.  No overlays have been presented.
     kNotPresented,
+    // An overlay is currently being presented.
     kPresented,
+    // A presented overlay was dismissed by user interaction.
+    kUserDismissed,
+    // A presented overlay was hidden.
     kHidden,
+    // A presented overlay was cancelled.
+    kCancelled,
   };
   // Returns the presentation state for the overlay UI.
   PresentationState GetPresentationState(web::WebState* web_state);
 
-  // Simulates the dismissal of overlay UI for user interaction.
-  void SimulateDismissalForWebState(web::WebState* web_state);
+  // Simulates the dismissal of overlay UI for |reason|.
+  void SimulateDismissalForWebState(web::WebState* web_state,
+                                    OverlayDismissalReason reason);
 
   // OverlayUIDelegate:
   void ShowOverlayUIForWebState(web::WebState* web_state,
