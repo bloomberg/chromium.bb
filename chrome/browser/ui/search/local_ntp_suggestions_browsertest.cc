@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/optional.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_service.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_service_factory.h"
@@ -27,8 +28,7 @@ class MockSearchSuggestService : public SearchSuggestService {
   MOCK_METHOD0(Refresh, void());
 
   void RefreshImpl() {
-    SearchSuggestDataLoaded(SearchSuggestLoader::Status::OK,
-                            search_suggest_data_);
+    SearchSuggestDataLoaded(search_suggest_status_, search_suggest_data_);
   }
 
   explicit MockSearchSuggestService(Profile* profile)
@@ -38,18 +38,28 @@ class MockSearchSuggestService : public SearchSuggestService {
     search_suggest_data_ = search_suggest_data;
   }
 
-  const base::Optional<SearchSuggestData>& search_suggest_data()
-      const override {
-    return search_suggest_data_;
+  void set_search_suggest_status(
+      const SearchSuggestLoader::Status search_suggest_status) {
+    search_suggest_status_ = search_suggest_status;
   }
 
   void SuggestionsDisplayed() override { impression_count_++; }
 
   int impression_count() { return impression_count_; }
 
+  const base::Optional<SearchSuggestData>& search_suggest_data()
+      const override {
+    return search_suggest_data_;
+  }
+
+  const SearchSuggestLoader::Status& search_suggest_status() const override {
+    return search_suggest_status_;
+  }
+
  private:
   int impression_count_ = 0;
   base::Optional<SearchSuggestData> search_suggest_data_;
+  SearchSuggestLoader::Status search_suggest_status_;
 };
 
 class LocalNTPSearchSuggestTest : public InProcessBrowserTest {
@@ -94,10 +104,14 @@ IN_PROC_BROWSER_TEST_F(LocalNTPSearchSuggestTest,
       OneGoogleBarServiceFactory::GetForProfile(browser()->profile());
   one_google_bar_service->SetLanguageCodeForTesting("en-US");
 
+  base::HistogramTester histograms;
+
   SearchSuggestData data;
   data.suggestions_html = "<div>suggestions</div>";
   data.end_of_body_script = "console.log('suggestions-done')";
   search_suggest_service()->set_search_suggest_data(data);
+  search_suggest_service()->set_search_suggest_status(
+      SearchSuggestLoader::Status::OK_WITH_SUGGESTIONS);
 
   EXPECT_CALL(*search_suggest_service(), Refresh())
       .WillOnce(Invoke(search_suggest_service(),
@@ -120,11 +134,69 @@ IN_PROC_BROWSER_TEST_F(LocalNTPSearchSuggestTest,
       &result));
   EXPECT_TRUE(result);
   EXPECT_EQ(1, search_suggest_service()->impression_count());
+
+  histograms.ExpectTotalCount(
+      "NewTabPage.SearchSuggestions.RequestLatencyV2.SuccessWithSuggestions",
+      1);
+  histograms.ExpectTotalCount(
+      "NewTabPage.SearchSuggestions.RequestLatencyV2.SuccessWithoutSuggestions",
+      0);
+  histograms.ExpectTotalCount(
+      "NewTabPage.SearchSuggestions.RequestLatencyV2.Failure", 0);
+  histograms.ExpectTotalCount("NewTabPage.SearchSuggestions.RequestStatusV2",
+                              1);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    LocalNTPSearchSuggestTest,
+    NoSuggestionsjectedIntoPageOnResponseWithoutSuggestions) {
+  EXPECT_EQ(base::nullopt, search_suggest_service()->search_suggest_data());
+
+  base::HistogramTester histograms;
+  SearchSuggestData data;
+  search_suggest_service()->set_search_suggest_data(data);
+  search_suggest_service()->set_search_suggest_status(
+      SearchSuggestLoader::Status::OK_WITHOUT_SUGGESTIONS);
+
+  OneGoogleBarService* one_google_bar_service =
+      OneGoogleBarServiceFactory::GetForProfile(browser()->profile());
+  one_google_bar_service->SetLanguageCodeForTesting("en-US");
+
+  EXPECT_CALL(*search_suggest_service(), Refresh())
+      .WillOnce(Invoke(search_suggest_service(),
+                       &MockSearchSuggestService::RefreshImpl));
+
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser(),
+                                                        /*delay=*/1000);
+
+  bool result;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      active_tab, "$('suggestions') === null", &result));
+  EXPECT_TRUE(result);
+  EXPECT_EQ(0, search_suggest_service()->impression_count());
+
+  histograms.ExpectTotalCount(
+      "NewTabPage.SearchSuggestions.RequestLatencyV2.SuccessWithSuggestions",
+      0);
+  histograms.ExpectTotalCount(
+      "NewTabPage.SearchSuggestions.RequestLatencyV2.SuccessWithoutSuggestions",
+      1);
+  histograms.ExpectTotalCount(
+      "NewTabPage.SearchSuggestions.RequestLatencyV2.Failure", 0);
+  histograms.ExpectTotalCount("NewTabPage.SearchSuggestions.RequestStatusV2",
+                              1);
 }
 
 IN_PROC_BROWSER_TEST_F(LocalNTPSearchSuggestTest,
                        SuggestionsNotInjectedIntoPageNonEnUS) {
   EXPECT_EQ(base::nullopt, search_suggest_service()->search_suggest_data());
+  search_suggest_service()->set_search_suggest_status(
+      SearchSuggestLoader::Status::FATAL_ERROR);
+  search_suggest_service()->Refresh();
+
+  base::HistogramTester histograms;
 
   OneGoogleBarService* one_google_bar_service =
       OneGoogleBarServiceFactory::GetForProfile(browser()->profile());
@@ -152,11 +224,16 @@ IN_PROC_BROWSER_TEST_F(LocalNTPSearchSuggestTest,
                        EmptySuggestionsNotInjectedIntoPage) {
   EXPECT_EQ(base::nullopt, search_suggest_service()->search_suggest_data());
 
+  base::HistogramTester histograms;
+
   OneGoogleBarService* one_google_bar_service =
       OneGoogleBarServiceFactory::GetForProfile(browser()->profile());
   one_google_bar_service->SetLanguageCodeForTesting("en-US");
 
   SearchSuggestData data;
+  search_suggest_service()->set_search_suggest_data(data);
+  search_suggest_service()->set_search_suggest_status(
+      SearchSuggestLoader::Status::OK_WITHOUT_SUGGESTIONS);
   EXPECT_CALL(*search_suggest_service(), Refresh())
       .WillOnce(Invoke(search_suggest_service(),
                        &MockSearchSuggestService::RefreshImpl));
@@ -171,4 +248,15 @@ IN_PROC_BROWSER_TEST_F(LocalNTPSearchSuggestTest,
       active_tab, "$('suggestions') === null", &result));
   EXPECT_TRUE(result);
   EXPECT_EQ(0, search_suggest_service()->impression_count());
+
+  histograms.ExpectTotalCount(
+      "NewTabPage.SearchSuggestions.RequestLatencyV2.SuccessWithSuggestions",
+      0);
+  histograms.ExpectTotalCount(
+      "NewTabPage.SearchSuggestions.RequestLatencyV2.SuccessWithoutSuggestions",
+      1);
+  histograms.ExpectTotalCount(
+      "NewTabPage.SearchSuggestions.RequestLatencyV2.Failure", 0);
+  histograms.ExpectTotalCount("NewTabPage.SearchSuggestions.RequestStatusV2",
+                              1);
 }

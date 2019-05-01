@@ -74,6 +74,10 @@ class MockSearchIPCRouterDelegate : public SearchIPCRouter::Delegate {
   MOCK_METHOD0(OnResetCustomLinks, void());
   MOCK_METHOD2(OnLogEvent, void(NTPLoggingEventType event,
                                 base::TimeDelta time));
+  MOCK_METHOD3(OnLogSuggestionEventWithValue,
+               void(NTPSuggestionsLoggingEventType event,
+                    int data,
+                    base::TimeDelta time));
   MOCK_METHOD1(OnLogMostVisitedImpression,
                void(const ntp_tiles::NTPTileImpression& impression));
   MOCK_METHOD1(OnLogMostVisitedNavigation,
@@ -111,6 +115,7 @@ class MockSearchIPCRouterPolicy : public SearchIPCRouter::Policy {
   MOCK_METHOD0(ShouldProcessUndoCustomLinkAction, bool());
   MOCK_METHOD0(ShouldProcessResetCustomLinks, bool());
   MOCK_METHOD0(ShouldProcessLogEvent, bool());
+  MOCK_METHOD0(ShouldProcessLogSuggestionEventWithValue, bool());
   MOCK_METHOD1(ShouldProcessPasteIntoOmnibox, bool(bool));
   MOCK_METHOD0(ShouldProcessSetCustomBackgroundURL, bool());
   MOCK_METHOD0(ShouldProcessSetCustomBackgroundURLWithAttributions, bool());
@@ -302,6 +307,42 @@ TEST_F(SearchIPCRouterTest, IgnoreLogEventMsg) {
 
   GetSearchIPCRouter().LogEvent(GetSearchIPCRouterSeqNo(), NTP_ALL_TILES_LOADED,
                                 delta);
+}
+
+TEST_F(SearchIPCRouterTest, ProcessLogSuggestionEventWithValueMsg) {
+  base::TimeDelta delta = base::TimeDelta::FromMilliseconds(123);
+  NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
+  SetupMockDelegateAndPolicy();
+  MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
+  EXPECT_CALL(*mock_delegate(),
+              OnLogSuggestionEventWithValue(
+                  NTPSuggestionsLoggingEventType::kShownCount, 1, delta))
+      .Times(1);
+  EXPECT_CALL(*policy, ShouldProcessLogSuggestionEventWithValue())
+      .Times(1)
+      .WillOnce(Return(true));
+
+  GetSearchIPCRouter().LogSuggestionEventWithValue(
+      GetSearchIPCRouterSeqNo(), NTPSuggestionsLoggingEventType::kShownCount, 1,
+      delta);
+}
+
+TEST_F(SearchIPCRouterTest, IgnoreLogSuggestionEventWithValueMsg) {
+  base::TimeDelta delta = base::TimeDelta::FromMilliseconds(123);
+  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
+  SetupMockDelegateAndPolicy();
+  MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
+  EXPECT_CALL(*mock_delegate(),
+              OnLogSuggestionEventWithValue(
+                  NTPSuggestionsLoggingEventType::kShownCount, 1, delta))
+      .Times(0);
+  EXPECT_CALL(*policy, ShouldProcessLogSuggestionEventWithValue())
+      .Times(1)
+      .WillOnce(Return(false));
+
+  GetSearchIPCRouter().LogSuggestionEventWithValue(
+      GetSearchIPCRouterSeqNo(), NTPSuggestionsLoggingEventType::kShownCount, 1,
+      delta);
 }
 
 TEST_F(SearchIPCRouterTest, ProcessLogMostVisitedImpressionMsg) {

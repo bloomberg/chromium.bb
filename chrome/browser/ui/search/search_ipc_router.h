@@ -85,6 +85,13 @@ class SearchIPCRouter : public content::WebContentsObserver,
     virtual void OnLogEvent(NTPLoggingEventType event,
                             base::TimeDelta time) = 0;
 
+    // Called to signal that an event has occurred on the New Tab Page at a
+    // particular time since navigation start, and provide an int value.
+    virtual void OnLogSuggestionEventWithValue(
+        NTPSuggestionsLoggingEventType event,
+        int data,
+        base::TimeDelta time) = 0;
+
     // Called to log an impression from a given provider on the New Tab Page.
     virtual void OnLogMostVisitedImpression(
         const ntp_tiles::NTPTileImpression& impression) = 0;
@@ -156,6 +163,7 @@ class SearchIPCRouter : public content::WebContentsObserver,
     virtual bool ShouldProcessUndoCustomLinkAction() = 0;
     virtual bool ShouldProcessResetCustomLinks() = 0;
     virtual bool ShouldProcessLogEvent() = 0;
+    virtual bool ShouldProcessLogSuggestionEventWithValue() = 0;
     virtual bool ShouldProcessPasteIntoOmnibox(bool is_active_tab) = 0;
     virtual bool ShouldSendSetInputInProgress(bool is_active_tab) = 0;
     virtual bool ShouldSendOmniboxFocusChanged() = 0;
@@ -237,6 +245,10 @@ class SearchIPCRouter : public content::WebContentsObserver,
   void LogEvent(int page_seq_no,
                 NTPLoggingEventType event,
                 base::TimeDelta time) override;
+  void LogSuggestionEventWithValue(int page_seq_no,
+                                   NTPSuggestionsLoggingEventType event,
+                                   int data,
+                                   base::TimeDelta time) override;
   void LogMostVisitedImpression(
       int page_seq_no,
       const ntp_tiles::NTPTileImpression& impression) override;

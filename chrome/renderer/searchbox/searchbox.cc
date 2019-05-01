@@ -221,6 +221,17 @@ void SearchBox::LogEvent(NTPLoggingEventType event) {
   embedded_search_service_->LogEvent(page_seq_no_, event, delta);
 }
 
+void SearchBox::LogSuggestionEventWithValue(
+    NTPSuggestionsLoggingEventType event,
+    int data) {
+  base::Time navigation_start = base::Time::FromDoubleT(
+      render_frame()->GetWebFrame()->Performance().NavigationStart());
+  base::Time now = base::Time::Now();
+  base::TimeDelta delta = now - navigation_start;
+  embedded_search_service_->LogSuggestionEventWithValue(page_seq_no_, event,
+                                                        data, delta);
+}
+
 void SearchBox::LogMostVisitedImpression(
     const ntp_tiles::NTPTileImpression& impression) {
   embedded_search_service_->LogMostVisitedImpression(page_seq_no_, impression);

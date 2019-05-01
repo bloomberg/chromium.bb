@@ -12,6 +12,9 @@ import "url/mojom/url.mojom";
 enum NTPLoggingEventType;
 
 [Native]
+enum NTPSuggestionsLoggingEventType;
+
+[Native]
 enum OmniboxFocusState;
 
 [Native]
@@ -75,6 +78,14 @@ interface EmbeddedSearch {
   // Logs events from InstantExtended New Tab Pages.
   LogEvent(int32 page_seq_no,
            NTPLoggingEventType event,
+           mojo_base.mojom.TimeDelta time);
+
+  // Logs events related to search suggestions from InstantExtended New Tab
+  // Pages along with an integer value. These events currently include number
+  // of suggestion chips shown and the index of chips that were clicked.
+  LogSuggestionEventWithValue(int32 page_seq_no,
+           NTPSuggestionsLoggingEventType event,
+           int32 data,
            mojo_base.mojom.TimeDelta time);
 
   // Logs an impression on one of the Most Visited tile on the InstantExtended
