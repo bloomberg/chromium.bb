@@ -106,6 +106,13 @@ bool HeapAllocator::BackingShrink(void* address,
     return false;
 
   HeapObjectHeader* header = HeapObjectHeader::FromPayload(address);
+
+  // Compaction may register slots for compaction in slots of vector backings.
+  // E.g., when vectors are embedded in each other. To avoid dereferincing a
+  // broken slot, bail out on already marked backings.
+  if (header->IsMarked())
+    return false;
+
   NormalPageArena* arena = static_cast<NormalPage*>(page)->ArenaForNormalPage();
   // We shrink the object only if the shrinking will make a non-small
   // prompt-free block.
