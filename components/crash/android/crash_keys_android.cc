@@ -24,7 +24,7 @@ JavaCrashKey& GetCrashKey(int index) {
       {"dynamic_module_dex_name", JavaCrashKey::Tag::kArray},
   };
   static_assert(
-      base::size(crash_keys) == static_cast<size_t>(CrashKeyIndex::NUM_KEYS),
+      base::size(crash_keys) == static_cast<size_t>(CrashKeyIndex::NUM_ENTRIES),
       "crash_keys out of sync with index enum");
 
   return crash_keys[index];
