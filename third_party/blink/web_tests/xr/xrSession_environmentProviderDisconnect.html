@@ -13,10 +13,10 @@
 
 let testName = "Outstanding promises get rejected if environmentProvider disconencts";
 
-let fakeDeviceInitParams = { supportsImmersive: false,
+let fakeDeviceInitParams = { supportsImmersive: true,
                              supportsEnvironmentIntegration: true };
 
-let requestSessionOptions = ['legacy-inline-ar'];
+let requestSessionOptions = ['immersive-ar'];
 let refSpace = undefined;
 
 let ray = new XRRay({x : 0.0, y : 0.0, z : 0.0}, {x : 1.0, y : 0.0, z: 0.0});

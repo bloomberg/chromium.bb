@@ -172,8 +172,8 @@ BrowserXRRuntime* XRRuntimeManager::GetRuntimeForOptions(
 
   // AR requested.
   if (options->environment_integration) {
-    if (options->immersive) {
-      // No support for immersive AR.
+    if (!options->immersive) {
+      DVLOG(1) << __func__ << ": non-immersive AR mode is unsupported";
       return nullptr;
     }
     // Return the ARCore device.
@@ -227,6 +227,7 @@ BrowserXRRuntime* XRRuntimeManager::GetImmersiveRuntime() {
 
 device::mojom::VRDisplayInfoPtr XRRuntimeManager::GetCurrentVRDisplayInfo(
     XRDeviceImpl* device) {
+  DVLOG(1) << __func__;
   // Get an immersive_runtime device if there is one.
   auto* immersive_runtime = GetImmersiveRuntime();
   if (immersive_runtime) {

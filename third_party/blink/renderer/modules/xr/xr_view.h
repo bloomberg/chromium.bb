@@ -39,11 +39,6 @@ class MODULES_EXPORT XRView final : public ScriptWrappable {
   DOMFloat32Array* projectionMatrix() const { return projection_matrix_; }
   XRRigidTransform* transform() const;
 
-  void UpdateProjectionMatrixFromRawValues(
-      const WTF::Vector<float>& projection_matrix,
-      float near_depth,
-      float far_depth);
-
   void UpdateProjectionMatrixFromFoV(float up_rad,
                                      float down_rad,
                                      float left_rad,

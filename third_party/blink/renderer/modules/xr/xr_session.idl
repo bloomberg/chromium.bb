@@ -5,7 +5,6 @@
 // https://immersive-web.github.io/webxr/#xrsession-interface
 enum XRSessionMode {
   "inline",
-  "legacy-inline-ar",
   "immersive-vr",
   "immersive-ar",
 };

@@ -25,8 +25,7 @@ Local Modifications:
 - Added missing license file and README.chromium for dat.gui
 
 - Removed the version shim, the samples are intended to work specifically
-  with the ToT Chrome version. The AR samples fall back to legacy-inline-ar
-  mode for now.
+  with the ToT Chrome version.
 
 Instructions:
 

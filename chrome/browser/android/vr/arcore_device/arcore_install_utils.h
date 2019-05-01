@@ -7,8 +7,33 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/weak_ptr.h"
+#include "ui/display/display.h"
+#include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace vr {
+
+// Immersive AR sessions use callbacks in the following sequence:
+//
+// RequestArSession
+// [show consent prompt]
+// if consent declined, or if camera permission refused after consent:
+//   DestroyedCallback
+//
+// if accepted:
+//   SurfaceReadyCallback
+//   SurfaceTouchCallback (repeated for each touch)
+//   [exit session via "back" button, or via JS session exit]
+//   DestroyedCallback
+//
+using SurfaceReadyCallback =
+    base::RepeatingCallback<void(gfx::AcceleratedWidget window,
+                                 display::Display::Rotation rotation,
+                                 const gfx::Size& size)>;
+using SurfaceTouchCallback =
+    base::RepeatingCallback<void(bool touching, const gfx::PointF& location)>;
+using SurfaceDestroyedCallback = base::OnceClosure;
 
 class ArCoreInstallUtils {
  public:
@@ -25,6 +50,13 @@ class ArCoreInstallUtils {
   virtual bool EnsureLoaded() = 0;
   virtual base::android::ScopedJavaLocalRef<jobject>
   GetApplicationContext() = 0;
+  virtual void RequestArSession(
+      int render_process_id,
+      int render_frame_id,
+      SurfaceReadyCallback ready_callback,
+      SurfaceTouchCallback touch_callback,
+      SurfaceDestroyedCallback destroyed_callback) = 0;
+  virtual void DestroyDrawingSurface() = 0;
 };
 
 }  // namespace vr

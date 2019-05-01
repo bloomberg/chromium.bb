@@ -43,9 +43,6 @@ class PLATFORM_EXPORT XRWebGLDrawingBuffer
 
   void Resize(const IntSize&);
 
-  void OverwriteColorBufferFromMailboxTexture(const gpu::MailboxHolder&,
-                                              const IntSize& size);
-
   scoped_refptr<StaticBitmapImage> TransferToStaticBitmapImage(
       std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback);
 

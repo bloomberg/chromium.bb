@@ -64,30 +64,6 @@ XRSession* XRView::session() const {
   return session_;
 }
 
-// TODO(http://crbug.com/836496): This method only supports
-// straight-ahead projection matrices. In order to support
-// multiple sessions embedded with projection matrices that act
-// like views into the shared camera space, this math needs to
-// be updated.
-void XRView::UpdateProjectionMatrixFromRawValues(
-    const WTF::Vector<float>& projection_matrix,
-    float near_depth,
-    float far_depth) {
-  DCHECK_EQ(projection_matrix.size(), 16lu);
-  float* out = projection_matrix_->Data();
-  for (int i = 0; i < 16; i++) {
-    out[i] = projection_matrix[i];
-  }
-
-  // Recalculate elements that depend on near/far depth. The input matrix used
-  // arbitrary values, need to adjust to what the client uses.
-  float inverse_near_far = 1.0f / (near_depth - far_depth);
-  out[10] = (near_depth + far_depth) * inverse_near_far;
-  out[14] = (2.0f * far_depth * near_depth) * inverse_near_far;
-
-  inv_projection_dirty_ = true;
-}
-
 void XRView::UpdateProjectionMatrixFromFoV(float up_rad,
                                            float down_rad,
                                            float left_rad,

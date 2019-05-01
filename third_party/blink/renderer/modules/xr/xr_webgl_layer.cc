@@ -214,13 +214,24 @@ void XRWebGLLayer::UpdateViewports() {
   viewports_dirty_ = false;
 
   if (session()->immersive()) {
-    left_viewport_ = MakeGarbageCollected<XRViewport>(
-        0, 0, framebuffer_width * 0.5 * viewport_scale_,
-        framebuffer_height * viewport_scale_);
-    right_viewport_ = MakeGarbageCollected<XRViewport>(
-        framebuffer_width * 0.5 * viewport_scale_, 0,
-        framebuffer_width * 0.5 * viewport_scale_,
-        framebuffer_height * viewport_scale_);
+    if (session()->StereoscopicViews()) {
+      left_viewport_ = MakeGarbageCollected<XRViewport>(
+          0, 0, framebuffer_width * 0.5 * viewport_scale_,
+          framebuffer_height * viewport_scale_);
+      right_viewport_ = MakeGarbageCollected<XRViewport>(
+          framebuffer_width * 0.5 * viewport_scale_, 0,
+          framebuffer_width * 0.5 * viewport_scale_,
+          framebuffer_height * viewport_scale_);
+    } else {
+      // Phone immersive AR only uses one viewport, but the second viewport is
+      // needed for the UpdateLayerBounds mojo call which currently expects
+      // exactly two views. This should be revisited as part of a refactor to
+      // handle a more general list of viewports, cf. https://crbug.com/928433.
+      left_viewport_ = MakeGarbageCollected<XRViewport>(
+          0, 0, framebuffer_width * viewport_scale_,
+          framebuffer_height * viewport_scale_);
+      right_viewport_ = nullptr;
+    }
 
     session()->xr()->frameProvider()->UpdateWebGLLayerViewports(this);
 
@@ -272,13 +283,6 @@ void XRWebGLLayer::UpdateViewports() {
         0, 0, framebuffer_width * viewport_scale_,
         framebuffer_height * viewport_scale_);
   }
-}
-
-void XRWebGLLayer::OverwriteColorBufferFromMailboxTexture(
-    const gpu::MailboxHolder& mailbox_holder,
-    const IntSize& size) {
-  drawing_buffer_->OverwriteColorBufferFromMailboxTexture(mailbox_holder, size);
-  framebuffer_->SetContentsChanged(true);
 }
 
 void XRWebGLLayer::OnFrameStart(
@@ -335,12 +339,6 @@ void XRWebGLLayer::OnResize() {
   // With both immersive and non-immersive session the viewports should be
   // recomputed when the output canvas resizes.
   viewports_dirty_ = true;
-}
-
-void XRWebGLLayer::HandleBackgroundImage(
-    const gpu::MailboxHolder& mailbox_holder,
-    const IntSize& size) {
-  OverwriteColorBufferFromMailboxTexture(mailbox_holder, size);
 }
 
 scoped_refptr<StaticBitmapImage> XRWebGLLayer::TransferToStaticBitmapImage(

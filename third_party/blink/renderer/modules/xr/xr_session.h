@@ -49,12 +49,7 @@ class XRSession final : public EventTargetWithInlineData,
   USING_GARBAGE_COLLECTED_MIXIN(XRSession);
 
  public:
-  enum SessionMode {
-    kModeInline = 0,
-    kModeImmersiveVR,
-    kModeImmersiveAR,
-    kModeInlineAR
-  };
+  enum SessionMode { kModeInline = 0, kModeImmersiveVR, kModeImmersiveAR };
 
   enum EnvironmentBlendMode {
     kBlendModeOpaque = 0,
@@ -70,7 +65,6 @@ class XRSession final : public EventTargetWithInlineData,
   ~XRSession() override = default;
 
   XR* xr() const { return xr_; }
-  bool environmentIntegration() const { return environment_integration_; }
   const String& environmentBlendMode() const { return blend_mode_string_; }
   XRRenderState* renderState() const { return render_state_; }
   XRWorldTrackingState* worldTrackingState() { return nullptr; }
@@ -134,9 +128,7 @@ class XRSession final : public EventTargetWithInlineData,
   void OnFocusChanged();
   void OnFrame(double timestamp,
                std::unique_ptr<TransformationMatrix>,
-               const base::Optional<gpu::MailboxHolder>& output_mailbox_holder,
-               const base::Optional<gpu::MailboxHolder>& bg_mailbox_holder,
-               const base::Optional<IntSize>& background_size);
+               const base::Optional<gpu::MailboxHolder>& output_mailbox_holder);
   void OnInputStateChange(
       int16_t frame_id,
       const WTF::Vector<device::mojom::blink::XRInputSourceStatePtr>&);
@@ -164,6 +156,11 @@ class XRSession final : public EventTargetWithInlineData,
     return true;
   }
 
+  // Immersive sessions currently use two views for VR, and only a single view
+  // for smartphone immersive AR mode. Convention is that we use the left eye
+  // if there's only a single view.
+  bool StereoscopicViews() { return display_info_ && display_info_->rightEye; }
+
   void UpdateEyeParameters(
       const device::mojom::blink::VREyeParametersPtr& left_eye,
       const device::mojom::blink::VREyeParametersPtr& right_eye);
@@ -175,7 +172,6 @@ class XRSession final : public EventTargetWithInlineData,
   unsigned int DisplayInfoPtrId() const { return display_info_id_; }
   unsigned int StageParametersId() const { return stage_parameters_id_; }
 
-  void SetNonImmersiveProjectionMatrix(const WTF::Vector<float>&);
   void SetXRDisplayInfo(device::mojom::blink::VRDisplayInfoPtr display_info);
 
   void Trace(blink::Visitor*) override;
@@ -237,8 +233,6 @@ class XRSession final : public EventTargetWithInlineData,
 
   Member<XRFrameRequestCallbackCollection> callback_collection_;
   std::unique_ptr<TransformationMatrix> base_pose_matrix_;
-
-  WTF::Vector<float> non_immersive_projection_matrix_;
 
   bool blurred_;
   bool ended_ = false;

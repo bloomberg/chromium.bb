@@ -267,42 +267,6 @@ IntSize XRWebGLDrawingBuffer::AdjustSize(const IntSize& new_size) {
   return IntSize(width, height);
 }
 
-void XRWebGLDrawingBuffer::OverwriteColorBufferFromMailboxTexture(
-    const gpu::MailboxHolder& mailbox_holder,
-    const IntSize& size_in) {
-  TRACE_EVENT0("gpu", __FUNCTION__);
-  gpu::gles2::GLES2Interface* gl = drawing_buffer_->ContextGL();
-
-  gl->WaitSyncTokenCHROMIUM(mailbox_holder.sync_token.GetConstData());
-
-  GLuint source_texture =
-      gl->CreateAndConsumeTextureCHROMIUM(mailbox_holder.mailbox.name);
-
-  GLuint dest_texture = back_color_buffer_->texture_id;
-
-  // TODO(836496): clean this up and move some of the math to call site.
-  int dest_width = size_.Width();
-  int dest_height = size_.Height();
-  int source_width = size_in.Width();
-  int source_height = size_in.Height();
-
-  int copy_width = std::min(source_width, dest_width);
-  int copy_height = std::min(source_height, dest_height);
-
-  // If the source is too small, center the image.
-  int dest_x0 = source_width < dest_width ? (dest_width - source_width) / 2 : 0;
-  int dest_y0 =
-      source_height < dest_height ? (dest_height - source_height) / 2 : 0;
-  int src_x0 = source_width > dest_width ? (source_width - dest_width) / 2 : 0;
-  int src_y0 =
-      source_height > dest_height ? (source_height - dest_height) / 2 : 0;
-
-  gl->CopySubTextureCHROMIUM(
-      source_texture, 0, GL_TEXTURE_2D, dest_texture, 0, dest_x0, dest_y0,
-      src_x0, src_y0, copy_width, copy_height, false /* flipY */,
-      false /* premultiplyAlpha */, false /* unmultiplyAlpha */);
-}
-
 void XRWebGLDrawingBuffer::UseSharedBuffer(
     const gpu::MailboxHolder& buffer_mailbox_holder) {
   DVLOG(3) << __FUNCTION__;

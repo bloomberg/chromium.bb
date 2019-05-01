@@ -82,8 +82,6 @@ static_library("vr_android") {
       "arcore_device/arcore_install_utils.h",
       "arcore_device/arcore_java_utils.cc",
       "arcore_device/arcore_java_utils.h",
-      "arcore_device/arcore_permission_helper.cc",
-      "arcore_device/arcore_permission_helper.h",
       "arcore_device/arcore_shim.cc",
       "arcore_device/arcore_shim.h",
     ]

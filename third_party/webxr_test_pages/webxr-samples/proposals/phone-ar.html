@@ -88,23 +88,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           textEnterXRTitle: "START AR",
           textXRNotFoundTitle: "AR NOT FOUND",
           textExitXRTitle: "EXIT  AR",
-          supportedSessionTypes: ['immersive-ar', 'legacy-inline-ar']
+          supportedSessionTypes: ['immersive-ar']
         });
         document.querySelector('header').appendChild(xrButton.domElement);
-      }
-
-      function makeCanvas() {
-          // Create a fullscreen canvas element for use with legacy AR mode.
-          let canvas = document.createElement('canvas');
-          canvas.style.width = '100%';
-          canvas.style.height = '100%';
-          canvas.style.left = 0;
-          canvas.style.top = 0;
-          canvas.style.right = 0;
-          canvas.style.bottom = 0;
-          canvas.style.margin = 0;
-          canvas.id = 'legacy-canvas';
-          return canvas;
       }
 
       function onRequestSession() {
@@ -119,12 +105,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         navigator.xr.requestSession('immersive-ar').then((session) => {
             xrButton.setSession(session);
             onSessionStarted(session);
-        }).catch(() => {
-            navigator.xr.requestSession('legacy-inline-ar')
-              .then((session) => {
-                xrButton.setSession(session);
-                onSessionStarted(session);
-            });
         });
       }
 
@@ -141,11 +121,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           scene.setRenderer(renderer);
         }
 
-        let outputCanvas = makeCanvas();
-        document.body.appendChild(outputCanvas);
-
-        session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl),
-          outputContext: outputCanvas.getContext('xrpresent')});
+        session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
 
         session.requestReferenceSpace({ type: 'stationary', subtype: 'eye-level' }).then((refSpace) => {
           xrRefSpace = refSpace;
@@ -159,9 +135,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       function onSessionEnded(event) {
         xrButton.setSession(null);
-        if (event.session.renderState.outputContext) {
-          document.body.removeChild(event.session.renderState.outputContext.canvas);
-        }
       }
 
       // Called every time a XRSession requests that a new frame be drawn.

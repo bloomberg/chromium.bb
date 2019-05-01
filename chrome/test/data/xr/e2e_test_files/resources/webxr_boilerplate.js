@@ -41,6 +41,7 @@ class SessionInfo {
   constructor() {
     this.session = null;
     this.frameOfRef = null;
+    this.error = null;
   }
 
   get currentSession() {
@@ -62,6 +63,7 @@ class SessionInfo {
   clearSession() {
     this.session = null;
     this.frameOfRef = null;
+    this.error = null;
   }
 }
 
@@ -73,8 +75,7 @@ sessionInfos[sessionTypes.MAGIC_WINDOW] = new SessionInfo();
 function getSessionType(session) {
   if (session.mode == 'immersive-vr') {
     return sessionTypes.IMMERSIVE;
-  } else if (session.mode == 'immersive-ar' ||
-             session.mode == 'legacy-inline-ar') {
+  } else if (session.mode == 'immersive-ar') {
     return sessionTypes.AR;
   } else {
     return sessionTypes.MAGIC_WINDOW;
@@ -91,6 +92,7 @@ function onRequestSession() {
         sessionInfos[sessionTypes.IMMERSIVE].currentSession = session;
         onSessionStarted(session);
       }, (error) => {
+        sessionInfos[sessionTypes.IMMERSIVE].error = error;
         console.info('Immersive VR session request rejected with: ' + error);
       });
       break;
@@ -102,21 +104,9 @@ function onRequestSession() {
         sessionInfos[sessionTypes.AR].currentSession = session;
         onSessionStarted(session);
       }, (error) => {
+        sessionInfos[sessionTypes.AR].error = error;
         console.info('Immersive AR session request rejected with: ' + error);
-        console.info('Attempting to fall back to legacy AR mode');
-        navigator.xr.requestSession('legacy-inline-ar').then(
-            (session) => {
-          session.mode = 'legacy-inline-ar';
-          session.updateRenderState({
-              outputContext: webglCanvas.getContext('xrpresent')
-          });
-          console.info('Legacy AR session request succeeded');
-          sessionInfos[sessionTypes.AR].currentSession = session;
-          onSessionStarted(session);
-        }, (error) => {
-          console.info('Legacy AR session request rejected with: ' + error);
-        });
-      });
+     });
       break;
     default:
       throw 'Given unsupported WebXR session type enum ' + sessionTypeToRequest;

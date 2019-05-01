@@ -3880,6 +3880,19 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         <message name="IDS_AR_MODULE_TITLE" desc="Text shown when the AR module is referenced in install start, success, failure UI (e.g. in IDS_MODULE_INSTALL_START_TEXT, which will expand to 'Installing Augmented Reality for Chrome…').">
           Augmented Reality
         </message>
+        <message name="IDS_AR_IMMERSIVE_MODE_CONSENT_TITLE" desc="Title for dialog shown when a site requests consent for starting an augmented reality session.">
+          Start Augmented Reality session?
+        </message>
+        <message name="IDS_AR_IMMERSIVE_MODE_CONSENT_MESSAGE" desc="Message for dialog shown when a site requests consent for starting an augmented reality session.">
+          For the duration of this session, the site will be able to:
+• create a 3D map of your environment
+• track camera motion
+
+The site does NOT gain access to the camera. The camera images are only visible to you.
+        </message>
+        <message name="IDS_AR_IMMERSIVE_MODE_CONSENT_BUTTON" desc="Confirm button for dialog shown when a site requests consent for starting an augmented reality session.">
+          Enter AR
+        </message>
       </if>
 
       <!-- Dynamic feature modules -->

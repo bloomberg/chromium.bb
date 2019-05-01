@@ -13,10 +13,10 @@
 
 let testName = "Ensures hit-test returns expected mock results";
 
-let fakeDeviceInitParams = { supportsImmersive: false,
+let fakeDeviceInitParams = { supportsImmersive: true,
                              supportsEnvironmentIntegration: true };
 
-let requestSessionOptions = [ 'legacy-inline-ar' ];
+let requestSessionOptions = [ 'immersive-ar' ];
 
 let expectedHitMatrix = [1, 0, 0, 1,
                          0, 1, 0, 2,
@@ -24,7 +24,7 @@ let expectedHitMatrix = [1, 0, 0, 1,
                          0, 0, 0, 1];
 
 let testFunction = function(session, t, fakeDeviceController) {
-  assert_equals(session.mode, 'legacy-inline-ar');
+  assert_equals(session.mode, 'immersive-ar');
   assert_not_equals(session.environmentBlendMode, 'opaque');
   return session.requestReferenceSpace({ type: "stationary", subtype: "eye-level" }).then((referenceSpace) => {
     let ray = new XRRay({x : 0.0, y : 0.0, z : 0.0}, {x : 1.0, y : 0.0, z: 0.0});

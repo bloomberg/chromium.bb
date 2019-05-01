@@ -46,10 +46,6 @@ struct XRSessionOptions {
   bool immersive;
   bool environment_integration;
 
-  // A flag to indicate if there has been a user activation when the request
-  // session is made.
-  bool has_user_activation;
-
   // This flag ensures that render paths that are only supported in WebXR are
   // not used for WebVR 1.1.
   bool use_legacy_webvr_render_path;
@@ -126,6 +122,8 @@ struct XRInputSourceState {
 //
 
 // A field of view, given by 4 degrees describing the view from a center point.
+// For a typical field of view that contains the center point, all angles are
+// positive.
 struct VRFieldOfView {
   float upDegrees;
   float downDegrees;
@@ -266,10 +264,6 @@ struct XRFrameData {
   // imply no mapping.
   int16 frame_id;
 
-  // Pass through camera values
-  gfx.mojom.Size? buffer_size;
-  array<float, 16>? projection_matrix;
-
   // Eye parameters may be provided per-frame for some runtimes.  If both of
   // these are null, it indicates that there was no change since the previous
   // frame.  If either are non-null, it indicates that data has changed. If only
@@ -348,14 +342,6 @@ interface XRDevice {
 // XRSession. For example, some AR sessions would implement hit test to allow
 // developers to get the information about the world that its sensors supply.
 interface XREnvironmentIntegrationProvider {
-  // Different devices can have different native orientations - 0 is the native
-  // orientation, and then increments of 90 degrees from there. Session geometry
-  // is needed by the device when integrating environment image data, i.e.
-  // camera feeds, into a session.
-  UpdateSessionGeometry(
-      gfx.mojom.Size frame_size,
-      display.mojom.Rotation display_rotation);
-
   // Performs a raycast into the scene and returns a list of XRHitResults sorted
   // from closest to furthest hit from the ray. Each hit result contains a
   // hit_matrix containing the transform of the hit where the rotation

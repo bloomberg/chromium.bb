@@ -51,7 +51,7 @@ device::mojom::blink::XRSessionOptionsPtr convertModeToMojo(
   session_options->immersive = (mode == XRSession::kModeImmersiveVR ||
                                 mode == XRSession::kModeImmersiveAR);
   session_options->environment_integration =
-      (mode == XRSession::kModeInlineAR || mode == XRSession::kModeImmersiveAR);
+      mode == XRSession::kModeImmersiveAR;
 
   return session_options;
 }
@@ -59,9 +59,6 @@ device::mojom::blink::XRSessionOptionsPtr convertModeToMojo(
 XRSession::SessionMode stringToSessionMode(const String& mode_string) {
   if (mode_string == "inline") {
     return XRSession::kModeInline;
-  }
-  if (mode_string == "legacy-inline-ar") {
-    return XRSession::kModeInlineAR;
   }
   if (mode_string == "immersive-vr") {
     return XRSession::kModeImmersiveVR;
@@ -250,20 +247,12 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
                                            kActiveImmersiveSession));
   }
 
-  // All immersive and AR sessions require a user gesture.
+  // All immersive sessions require a user gesture.
   bool has_user_activation = LocalFrame::HasTransientUserActivation(frame);
-  if ((is_immersive || session_mode == XRSession::kModeInlineAR) &&
-      !has_user_activation) {
+  if (is_immersive && !has_user_activation) {
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
                                            kRequestRequiresUserActivation));
-  }
-
-  if (session_mode == XRSession::kModeInlineAR) {
-    doc->AddConsoleMessage(ConsoleMessage::Create(
-        mojom::ConsoleMessageSource::kOther,
-        mojom::ConsoleMessageLevel::kWarning,
-        "Inline AR is deprecated and will be removed soon."));
   }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
@@ -271,7 +260,6 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
 
   PendingSessionQuery* query =
       MakeGarbageCollected<PendingSessionQuery>(resolver, session_mode);
-  query->has_user_activation = has_user_activation;
 
   if (!device_) {
     pending_session_requests_.push_back(query);
@@ -304,7 +292,6 @@ void XR::DispatchRequestSession(PendingSessionQuery* query) {
 
   device::mojom::blink::XRSessionOptionsPtr session_options =
       convertModeToMojo(query->mode);
-  session_options->has_user_activation = query->has_user_activation;
 
   // TODO(http://crbug.com/826899) Once device activation is sorted out for
   // WebXR, either pass in the correct value for metrics to know whether
@@ -413,8 +400,7 @@ void XR::OnRequestSessionReturned(
     return;
   }
 
-  bool environment_integration = query->mode == XRSession::kModeInlineAR ||
-                                 query->mode == XRSession::kModeImmersiveAR;
+  bool environment_integration = query->mode == XRSession::kModeImmersiveAR;
 
   // immersive sessions must supply display info.
   DCHECK(session_ptr->display_info);
@@ -422,6 +408,11 @@ void XR::OnRequestSessionReturned(
   // as well.
   DCHECK(!environment_integration || session_ptr->display_info->capabilities
                                          ->canProvideEnvironmentIntegration);
+  DVLOG(2) << __func__
+           << ": environment_integration=" << environment_integration
+           << "canProvideEnvironmentIntegration="
+           << session_ptr->display_info->capabilities
+                  ->canProvideEnvironmentIntegration;
 
   // TODO(https://crbug.com/944936): The blend mode could be "additive".
   XRSession::EnvironmentBlendMode blend_mode = XRSession::kBlendModeOpaque;
@@ -435,6 +426,14 @@ void XR::OnRequestSessionReturned(
   if (query->mode == XRSession::kModeImmersiveVR ||
       query->mode == XRSession::kModeImmersiveAR) {
     frameProvider()->BeginImmersiveSession(session, std::move(session_ptr));
+    if (environment_integration) {
+      frameProvider()->GetDataProvider()->GetEnvironmentIntegrationProvider(
+          mojo::MakeRequest(&environment_provider_,
+                            GetExecutionContext()->GetTaskRunner(
+                                TaskType::kMiscPlatformAPI)));
+      environment_provider_.set_connection_error_handler(WTF::Bind(
+          &XR::OnEnvironmentProviderDisconnect, WrapWeakPersistent(this)));
+    }
   } else {
     magic_window_provider_.Bind(std::move(session_ptr->data_provider));
     if (environment_integration) {

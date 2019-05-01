@@ -43,6 +43,10 @@ class XRFrameProvider final
   void Dispose();
   void OnFocusChanged();
 
+  device::mojom::blink::XRFrameDataProvider* GetDataProvider() {
+    return immersive_data_provider_.get();
+  }
+
   virtual void Trace(blink::Visitor*);
 
  private:
@@ -55,8 +59,6 @@ class XRFrameProvider final
   void OnPresentationProviderConnectionError();
   void ProcessScheduledFrame(device::mojom::blink::XRFrameDataPtr frame_data,
                              double high_res_now_ms);
-
-  bool HasARSession();
 
   const Member<XR> xr_;
   Member<XRSession> immersive_session_;

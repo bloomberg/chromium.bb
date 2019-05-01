@@ -69,11 +69,6 @@ class XRWebGLLayer final : public XRLayer {
   void OnFrameStart(const base::Optional<gpu::MailboxHolder>&) override;
   void OnFrameEnd() override;
   void OnResize() override;
-  void HandleBackgroundImage(const gpu::MailboxHolder&,
-                             const IntSize&) override;
-
-  void OverwriteColorBufferFromMailboxTexture(const gpu::MailboxHolder&,
-                                              const IntSize& size);
 
   void UpdateWebXRMirror();
 

@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.vr;
 
 import android.app.Activity;
 import android.content.Context;
+import android.view.Surface;
 
 import dalvik.system.BaseDexClassLoader;
 
@@ -17,6 +18,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.chrome.browser.infobar.SimpleConfirmInfoBarBuilder;
 import org.chromium.chrome.browser.modules.ModuleInstallUi;
@@ -29,10 +31,13 @@ import org.chromium.components.module_installer.ModuleInstaller;
 @JNINamespace("vr")
 public class ArCoreJavaUtils implements ModuleInstallUi.FailureUiListener {
     private static final String TAG = "ArCoreJavaUtils";
+    private static final boolean DEBUG_LOGS = false;
 
     private long mNativeArCoreJavaUtils;
     private boolean mAppInfoInitialized;
     private Tab mTab;
+
+    private ArImmersiveOverlay mArImmersiveOverlay;
 
     // Instance that requested installation of ARCore.
     // Should be non-null only if there is a pending request to install ARCore.
@@ -102,8 +107,50 @@ public class ArCoreJavaUtils implements ModuleInstallUi.FailureUiListener {
     }
 
     private ArCoreJavaUtils(long nativeArCoreJavaUtils) {
+        if (DEBUG_LOGS) Log.i(TAG, "constructor, nativeArCoreJavaUtils=" + nativeArCoreJavaUtils);
         mNativeArCoreJavaUtils = nativeArCoreJavaUtils;
         initializeAppInfo();
+    }
+
+    @CalledByNative
+    private void launchArConsentDialog(final Tab tab) {
+        if (DEBUG_LOGS) Log.i(TAG, "launchArConsentDialog");
+        final ChromeActivity activity = tab.getActivity();
+        ArConsentDialog.showDialog(activity, this);
+    }
+
+    @CalledByNative
+    private void destroyArImmersiveOverlay() {
+        if (DEBUG_LOGS) Log.i(TAG, "destroyArImmersiveOverlay");
+        if (mArImmersiveOverlay != null) {
+            mArImmersiveOverlay.destroyDialog();
+            mArImmersiveOverlay = null;
+        }
+    }
+
+    public void onStartSession(ChromeActivity activity) {
+        if (DEBUG_LOGS) Log.i(TAG, "onSessionStarted");
+        mArImmersiveOverlay = new ArImmersiveOverlay();
+        mArImmersiveOverlay.show(activity, this);
+    }
+
+    public void onDrawingSurfaceReady(Surface surface, int rotation, int width, int height) {
+        if (DEBUG_LOGS) Log.i(TAG, "onDrawingSurfaceReady");
+        if (mNativeArCoreJavaUtils == 0) return;
+        nativeOnDrawingSurfaceReady(mNativeArCoreJavaUtils, surface, rotation, width, height);
+    }
+
+    public void onDrawingSurfaceTouch(boolean isTouching, float x, float y) {
+        if (DEBUG_LOGS) Log.i(TAG, "onDrawingSurfaceTouch");
+        if (mNativeArCoreJavaUtils == 0) return;
+        nativeOnDrawingSurfaceTouch(mNativeArCoreJavaUtils, isTouching, x, y);
+    }
+
+    public void onDrawingSurfaceDestroyed() {
+        if (DEBUG_LOGS) Log.i(TAG, "onDrawingSurfaceDestroyed");
+        if (mNativeArCoreJavaUtils == 0) return;
+        mArImmersiveOverlay = null;
+        nativeOnDrawingSurfaceDestroyed(mNativeArCoreJavaUtils);
     }
 
     @CalledByNative
@@ -298,4 +345,10 @@ public class ArCoreJavaUtils implements ModuleInstallUi.FailureUiListener {
             long nativeArCoreJavaUtils, boolean success);
     private native void nativeOnRequestInstallSupportedArCoreResult(
             long nativeArCoreJavaUtils, boolean success);
+
+    private native void nativeOnDrawingSurfaceReady(
+            long nativeArCoreJavaUtils, Surface surface, int rotation, int width, int height);
+    private native void nativeOnDrawingSurfaceTouch(
+            long nativeArCoreJavaUtils, boolean touching, float x, float y);
+    private native void nativeOnDrawingSurfaceDestroyed(long nativeArCoreJavaUtils);
 }

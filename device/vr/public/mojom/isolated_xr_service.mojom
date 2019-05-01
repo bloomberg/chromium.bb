@@ -50,10 +50,6 @@ struct XRRuntimeSessionOptions {
   int32 render_process_id;
   int32 render_frame_id;
 
-  // A flag to indicate if there has been a user activation when the request
-  // session is made.
-  bool has_user_activation;
-
   // This flag ensures that render path's that are only supported in WebXR are
   // not used for WebVR 1.1.
   bool use_legacy_webvr_render_path;

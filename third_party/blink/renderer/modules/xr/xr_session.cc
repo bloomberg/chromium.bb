@@ -115,8 +115,7 @@ XRSession::XRSession(
     bool sensorless_session)
     : xr_(xr),
       mode_(mode),
-      environment_integration_(mode == kModeInlineAR ||
-                               mode == kModeImmersiveAR),
+      environment_integration_(mode == kModeImmersiveAR),
       client_binding_(this, std::move(client_request)),
       callback_collection_(
           MakeGarbageCollected<XRFrameRequestCallbackCollection>(
@@ -148,16 +147,6 @@ XRSpace* XRSession::viewerSpace() const {
 
 bool XRSession::immersive() const {
   return mode_ == kModeImmersiveVR || mode_ == kModeImmersiveAR;
-}
-
-void XRSession::SetNonImmersiveProjectionMatrix(
-    const WTF::Vector<float>& projection_matrix) {
-  DCHECK_EQ(projection_matrix.size(), 16lu);
-
-  non_immersive_projection_matrix_ = projection_matrix;
-  // It is about as expensive to check equality as to just
-  // update the views, so just update.
-  update_views_next_frame_ = true;
 }
 
 ExecutionContext* XRSession::GetExecutionContext() const {
@@ -511,12 +500,16 @@ DoubleSize XRSession::DefaultFramebufferSize() const {
     return OutputCanvasSize();
   }
 
-  double width = (display_info_->leftEye->renderWidth +
-                  display_info_->rightEye->renderWidth);
-  double height = std::max(display_info_->leftEye->renderHeight,
-                           display_info_->rightEye->renderHeight);
-
   double scale = display_info_->webxr_default_framebuffer_scale;
+  double width = display_info_->leftEye->renderWidth;
+  double height = display_info_->leftEye->renderHeight;
+
+  if (display_info_->rightEye) {
+    width += display_info_->rightEye->renderWidth;
+    height = std::max(display_info_->leftEye->renderHeight,
+                      display_info_->rightEye->renderHeight);
+  }
+
   return DoubleSize(width * scale, height * scale);
 }
 
@@ -639,9 +632,7 @@ void XRSession::ApplyPendingRenderState() {
 void XRSession::OnFrame(
     double timestamp,
     std::unique_ptr<TransformationMatrix> base_pose_matrix,
-    const base::Optional<gpu::MailboxHolder>& output_mailbox_holder,
-    const base::Optional<gpu::MailboxHolder>& background_mailbox_holder,
-    const base::Optional<IntSize>& background_size) {
+    const base::Optional<gpu::MailboxHolder>& output_mailbox_holder) {
   TRACE_EVENT0("gpu", __FUNCTION__);
   DVLOG(2) << __FUNCTION__;
   // Don't process any outstanding frames once the session is ended.
@@ -677,15 +668,6 @@ void XRSession::OnFrame(
     }
 
     frame_base_layer->OnFrameStart(output_mailbox_holder);
-
-    // TODO(836349): revisit sending background image data to blink at all.
-    if (background_mailbox_holder) {
-      // If using a background image, the caller must provide its pixel size
-      // also. The source size can differ from the current drawing buffer size.
-      DCHECK(background_size);
-      frame_base_layer->HandleBackgroundImage(background_mailbox_holder.value(),
-                                              background_size.value());
-    }
 
     // Resolve the queued requestAnimationFrame callbacks. All XR rendering will
     // happen within these calls. resolving_frame_ will be true for the duration
@@ -744,12 +726,6 @@ void XRSession::UpdateCanvasDimensions(Element* element) {
   if (orientation) {
     output_angle = orientation->angle();
     DVLOG(2) << __FUNCTION__ << ": got angle=" << output_angle;
-  }
-
-  if (xr_->xrEnvironmentProviderPtr()) {
-    xr_->xrEnvironmentProviderPtr()->UpdateSessionGeometry(
-        IntSize(output_width_, output_height_),
-        display::Display::DegreesToRotation(output_angle));
   }
 
   if (render_state_->baseLayer()) {
@@ -975,16 +951,21 @@ const HeapVector<Member<XRView>>& XRSession::views() {
       // If we don't already have the views allocated, do so now.
       if (views_.IsEmpty()) {
         views_.push_back(MakeGarbageCollected<XRView>(this, XRView::kEyeLeft));
-        views_.push_back(MakeGarbageCollected<XRView>(this, XRView::kEyeRight));
+        if (display_info_->rightEye) {
+          views_.push_back(
+              MakeGarbageCollected<XRView>(this, XRView::kEyeRight));
+        }
       }
       // In immersive mode the projection and view matrices must be aligned with
       // the device's physical optics.
       UpdateViewFromEyeParameters(
           views_[XRView::kEyeLeft], display_info_->leftEye,
           render_state_->depthNear(), render_state_->depthFar());
-      UpdateViewFromEyeParameters(
-          views_[XRView::kEyeRight], display_info_->rightEye,
-          render_state_->depthNear(), render_state_->depthFar());
+      if (display_info_->rightEye) {
+        UpdateViewFromEyeParameters(
+            views_[XRView::kEyeRight], display_info_->rightEye,
+            render_state_->depthNear(), render_state_->depthFar());
+      }
     } else {
       if (views_.IsEmpty()) {
         views_.push_back(MakeGarbageCollected<XRView>(this, XRView::kEyeLeft));
@@ -997,31 +978,15 @@ const HeapVector<Member<XRView>>& XRSession::views() {
                  static_cast<float>(output_height_);
       }
 
-      if (non_immersive_projection_matrix_.size() > 0) {
-        views_[XRView::kEyeLeft]->UpdateProjectionMatrixFromRawValues(
-            non_immersive_projection_matrix_, render_state_->depthNear(),
-            render_state_->depthFar());
-      } else {
-        // In non-immersive mode, if there is no explicit projection matrix
-        // provided, the projection matrix must be aligned with the
-        // output canvas dimensions.
-        views_[XRView::kEyeLeft]->UpdateProjectionMatrixFromAspect(
-            kMagicWindowVerticalFieldOfView, aspect, render_state_->depthNear(),
-            render_state_->depthFar());
-      }
+      // In non-immersive mode, if there is no explicit projection matrix
+      // provided, the projection matrix must be aligned with the
+      // output canvas dimensions.
+      views_[XRView::kEyeLeft]->UpdateProjectionMatrixFromAspect(
+          kMagicWindowVerticalFieldOfView, aspect, render_state_->depthNear(),
+          render_state_->depthFar());
     }
 
     views_dirty_ = false;
-  } else {
-    // TODO(https://crbug.com/836926): views_dirty_ is not working right for
-    // AR mode, we're not picking up the change on the right frame. Remove this
-    // fallback once that's sorted out.
-    DVLOG(2) << __FUNCTION__ << ": FIXME, fallback proj matrix update";
-    if (non_immersive_projection_matrix_.size() > 0) {
-      views_[XRView::kEyeLeft]->UpdateProjectionMatrixFromRawValues(
-          non_immersive_projection_matrix_, render_state_->depthNear(),
-          render_state_->depthFar());
-    }
   }
 
   return views_;
