@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "google_apis/google_api_keys.h"
 #include "remoting/base/logging.h"
+#include "remoting/base/oauth_token_exchanger.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace remoting {
@@ -32,9 +33,9 @@ OAuthTokenGetterImpl::OAuthTokenGetterImpl(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     bool auto_refresh)
     : intermediate_credentials_(std::move(intermediate_credentials)),
-      gaia_oauth_client_(
-          new gaia::GaiaOAuthClient(std::move(url_loader_factory))),
+      gaia_oauth_client_(new gaia::GaiaOAuthClient(url_loader_factory)),
       credentials_updated_callback_(on_credentials_update),
+      token_exchanger_(url_loader_factory),
       weak_factory_(this) {
   if (auto_refresh) {
     refresh_timer_.reset(new base::OneShotTimer());
@@ -46,8 +47,8 @@ OAuthTokenGetterImpl::OAuthTokenGetterImpl(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     bool auto_refresh)
     : authorization_credentials_(std::move(authorization_credentials)),
-      gaia_oauth_client_(
-          new gaia::GaiaOAuthClient(std::move(url_loader_factory))),
+      gaia_oauth_client_(new gaia::GaiaOAuthClient(url_loader_factory)),
+      token_exchanger_(url_loader_factory),
       weak_factory_(this) {
   if (auto_refresh) {
     refresh_timer_.reset(new base::OneShotTimer());
@@ -281,10 +282,32 @@ void OAuthTokenGetterImpl::RefreshAccessToken() {
 }
 
 void OAuthTokenGetterImpl::ExchangeAccessToken() {
-  // Not yet implemented - return the current access token immediately.
-  // TODO(lambroslambrou): Fetch scopes and exchange the token.
-  NotifyTokenCallbacks(OAuthTokenGetterImpl::SUCCESS,
-                       authorization_credentials_->login, oauth_access_token_);
+  // Unretained() is safe because |this| owns its token-exchanger, which
+  // owns its GaiaOAuthClient, which cancels callbacks on destruction.
+  token_exchanger_.ExchangeToken(
+      oauth_access_token_,
+      base::BindOnce(&OAuthTokenGetterImpl::OnExchangeTokenResponse,
+                     base::Unretained(this)));
+}
+
+void OAuthTokenGetterImpl::OnExchangeTokenResponse(
+    Status status,
+    const std::string& access_token) {
+  oauth_access_token_ = access_token;
+  switch (status) {
+    case AUTH_ERROR:
+      OnOAuthError();
+      break;
+    case NETWORK_ERROR:
+      NotifyTokenCallbacks(status, std::string(), std::string());
+      break;
+    case SUCCESS:
+      NotifyTokenCallbacks(status, authorization_credentials_->login,
+                           oauth_access_token_);
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 }  // namespace remoting

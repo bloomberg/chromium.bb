@@ -91,6 +91,8 @@ source_set("authorization") {
     "gaia_oauth_client.cc",
     "gaia_oauth_client.h",
     "oauth_client.h",
+    "oauth_token_exchanger.cc",
+    "oauth_token_exchanger.h",
     "oauth_token_getter.cc",
     "oauth_token_getter.h",
     "oauth_token_getter_impl.cc",

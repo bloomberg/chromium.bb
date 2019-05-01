@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
+#include "remoting/base/oauth_token_exchanger.h"
 #include "remoting/base/oauth_token_getter.h"
 
 namespace network {
@@ -67,6 +68,7 @@ class OAuthTokenGetterImpl : public OAuthTokenGetter,
                               const std::string& refresh_token);
   void GetOauthTokensFromAuthCode();
   void RefreshAccessToken();
+  void OnExchangeTokenResponse(Status status, const std::string& access_token);
 
   // Fetches the OAuth scopes for |oauth_access_token_|. If it is missing the
   // new scopes required by FTL signaling, it exchanges it for a new access
@@ -85,6 +87,8 @@ class OAuthTokenGetterImpl : public OAuthTokenGetter,
   base::Time access_token_expiry_time_;
   base::queue<OAuthTokenGetter::TokenCallback> pending_callbacks_;
   std::unique_ptr<base::OneShotTimer> refresh_timer_;
+
+  OAuthTokenExchanger token_exchanger_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
