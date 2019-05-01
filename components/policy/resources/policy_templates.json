@@ -11944,9 +11944,9 @@
           'caption': '''Password entry is required every twelve hours''',
         },
         {
-          'name': 'Day',
+          'name': 'TwoDays',
           'value': 2,
-          'caption': '''Password entry is required every day (24 hours)''',
+          'caption': '''Password entry is required every two days (48 hours)''',
         },
         {
           'name': 'Week',

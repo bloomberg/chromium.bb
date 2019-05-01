@@ -63,8 +63,8 @@ base::TimeDelta PasswordConfirmationFrequencyToTimeDelta(
       return base::TimeDelta::FromHours(6);
     case PasswordConfirmationFrequency::TWELVE_HOURS:
       return base::TimeDelta::FromHours(12);
-    case PasswordConfirmationFrequency::DAY:
-      return base::TimeDelta::FromDays(1);
+    case PasswordConfirmationFrequency::TWO_DAYS:
+      return base::TimeDelta::FromDays(2);
     case PasswordConfirmationFrequency::WEEK:
       return base::TimeDelta::FromDays(7);
   }
@@ -80,7 +80,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
       base::Value(std::move(quick_unlock_whitelist_default)));
   registry->RegisterIntegerPref(
       prefs::kQuickUnlockTimeout,
-      static_cast<int>(PasswordConfirmationFrequency::DAY));
+      static_cast<int>(PasswordConfirmationFrequency::TWO_DAYS));
 
   // Preferences related the lock screen pin unlock.
   registry->RegisterIntegerPref(prefs::kPinUnlockMinimumLength,
