@@ -228,6 +228,7 @@ ServerFieldType NormalizeTypeForValidityCheck(ServerFieldType type) {
 AutofillProfile::AutofillProfile(const std::string& guid,
                                  const std::string& origin)
     : AutofillDataModel(guid, origin),
+      company_(this),
       phone_number_(this),
       record_type_(LOCAL_PROFILE),
       has_converted_(false),
@@ -235,6 +236,7 @@ AutofillProfile::AutofillProfile(const std::string& guid,
 
 AutofillProfile::AutofillProfile(RecordType type, const std::string& server_id)
     : AutofillDataModel(base::GenerateGUID(), std::string()),
+      company_(this),
       phone_number_(this),
       server_id_(server_id),
       record_type_(type),
@@ -245,6 +247,7 @@ AutofillProfile::AutofillProfile(RecordType type, const std::string& server_id)
 
 AutofillProfile::AutofillProfile()
     : AutofillDataModel(base::GenerateGUID(), std::string()),
+      company_(this),
       phone_number_(this),
       record_type_(LOCAL_PROFILE),
       has_converted_(false),
@@ -252,6 +255,7 @@ AutofillProfile::AutofillProfile()
 
 AutofillProfile::AutofillProfile(const AutofillProfile& profile)
     : AutofillDataModel(std::string(), std::string()),
+      company_(this),
       phone_number_(this),
       weak_ptr_factory_(this) {
   operator=(profile);
@@ -277,6 +281,7 @@ AutofillProfile& AutofillProfile::operator=(const AutofillProfile& profile) {
   name_ = profile.name_;
   email_ = profile.email_;
   company_ = profile.company_;
+  company_.set_profile(this);
   phone_number_ = profile.phone_number_;
   phone_number_.set_profile(this);
 
@@ -559,7 +564,7 @@ bool AutofillProfile::MergeDataFrom(const AutofillProfile& profile,
 
   NameInfo name;
   EmailInfo email;
-  CompanyInfo company;
+  CompanyInfo company(this);
   PhoneNumber phone_number(this);
   Address address;
 
