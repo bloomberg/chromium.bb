@@ -458,8 +458,6 @@ void ParameterizedShowActionDeclarativeContentApiTest::TestShowAction(
       case ActionInfo::TYPE_PAGE:
         action_key = R"("page_action": {},)";
         break;
-      case ActionInfo::TYPE_SYSTEM_INDICATOR:
-        NOTREACHED();
     }
   }
 

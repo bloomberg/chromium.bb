@@ -209,10 +209,6 @@ void ExtensionActionAPI::DispatchExtensionActionClicked(
       histogram_value = events::PAGE_ACTION_ON_CLICKED;
       event_name = "pageAction.onClicked";
       break;
-    case ActionInfo::TYPE_SYSTEM_INDICATOR:
-      // The System Indicator handles its own clicks.
-      NOTREACHED();
-      break;
   }
 
   if (event_name) {
@@ -295,15 +291,7 @@ ExtensionActionFunction::~ExtensionActionFunction() {
 ExtensionFunction::ResponseAction ExtensionActionFunction::Run() {
   ExtensionActionManager* manager =
       ExtensionActionManager::Get(browser_context());
-  if (base::StartsWith(name(), "systemIndicator.",
-                       base::CompareCase::INSENSITIVE_ASCII)) {
-    extension_action_ = manager->GetSystemIndicator(*extension());
-  } else {
-    extension_action_ = manager->GetBrowserAction(*extension());
-    if (!extension_action_) {
-      extension_action_ = manager->GetPageAction(*extension());
-    }
-  }
+  extension_action_ = manager->GetExtensionAction(*extension());
   if (!extension_action_) {
     // TODO(kalman): ideally the browserAction/pageAction APIs wouldn't event
     // exist for extensions that don't have one declared. This should come as
@@ -322,11 +310,9 @@ ExtensionFunction::ResponseAction ExtensionActionFunction::Run() {
     if (!contents_)
       return RespondNow(Error(kNoTabError, base::NumberToString(tab_id_)));
   } else {
-    // Only browser actions and system indicators have a default tabId.
-    ActionInfo::Type action_type = extension_action_->action_type();
-    EXTENSION_FUNCTION_VALIDATE(
-        action_type == ActionInfo::TYPE_BROWSER ||
-        action_type == ActionInfo::TYPE_SYSTEM_INDICATOR);
+    // Only browser actions have a default tabId.
+    EXTENSION_FUNCTION_VALIDATE(extension_action_->action_type() ==
+                                ActionInfo::TYPE_BROWSER);
   }
   return RunExtensionAction();
 }

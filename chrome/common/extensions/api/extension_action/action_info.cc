@@ -24,8 +24,8 @@ namespace {
 constexpr char kEnabled[] = "enabled";
 constexpr char kDisabled[] = "disabled";
 
-// The manifest data container for the ActionInfos for BrowserActions,
-// PageActions and SystemIndicators.
+// The manifest data container for the ActionInfos for BrowserActions and
+// PageActions.
 struct ActionInfoData : public Extension::ManifestData {
   explicit ActionInfoData(std::unique_ptr<ActionInfo> action_info);
   ~ActionInfoData() override;
@@ -164,12 +164,6 @@ const ActionInfo* ActionInfo::GetPageActionInfo(const Extension* extension) {
 }
 
 // static
-const ActionInfo* ActionInfo::GetSystemIndicatorInfo(
-    const Extension* extension) {
-  return GetActionInfo(extension, keys::kSystemIndicator);
-}
-
-// static
 void ActionInfo::SetExtensionActionInfo(Extension* extension,
                                         std::unique_ptr<ActionInfo> info) {
   extension->SetManifestData(keys::kAction,
@@ -187,13 +181,6 @@ void ActionInfo::SetBrowserActionInfo(Extension* extension,
 void ActionInfo::SetPageActionInfo(Extension* extension,
                                    std::unique_ptr<ActionInfo> info) {
   extension->SetManifestData(keys::kPageAction,
-                             std::make_unique<ActionInfoData>(std::move(info)));
-}
-
-// static
-void ActionInfo::SetSystemIndicatorInfo(Extension* extension,
-                                        std::unique_ptr<ActionInfo> info) {
-  extension->SetManifestData(keys::kSystemIndicator,
                              std::make_unique<ActionInfoData>(std::move(info)));
 }
 

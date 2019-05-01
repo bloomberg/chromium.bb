@@ -40,13 +40,10 @@ class ExtensionActionManager : public KeyedService,
   // unloaded.
   ExtensionAction* GetPageAction(const Extension& extension) const;
   ExtensionAction* GetBrowserAction(const Extension& extension) const;
-  ExtensionAction* GetSystemIndicator(const Extension& extension) const;
 
   // Returns either the PageAction or BrowserAction for |extension|, or NULL if
   // none exists. Since an extension can only declare one of Browser|PageAction,
   // this is okay to use anywhere you need a generic "ExtensionAction".
-  // Since SystemIndicators are used differently and don't follow this
-  // rule of mutual exclusion, they are not checked or returned.
   ExtensionAction* GetExtensionAction(const Extension& extension) const;
 
  private:
@@ -69,7 +66,6 @@ class ExtensionActionManager : public KeyedService,
       std::map<std::string, std::unique_ptr<ExtensionAction>>;
   mutable ExtIdToActionMap page_actions_;
   mutable ExtIdToActionMap browser_actions_;
-  mutable ExtIdToActionMap system_indicators_;
 };
 
 }  // namespace extensions

@@ -364,6 +364,7 @@ jumbo_static_library("extensions") {
     "api/storage/syncable_settings_storage.h",
     "api/streams_private/streams_private_api.cc",
     "api/streams_private/streams_private_api.h",
+    "api/system_indicator/system_indicator_api.cc",
     "api/system_indicator/system_indicator_api.h",
     "api/system_indicator/system_indicator_manager.cc",
     "api/system_indicator/system_indicator_manager.h",

@@ -4,10 +4,11 @@
 
 #include "chrome/browser/extensions/extension_action_manager.h"
 
-#include "chrome/browser/extensions/api/system_indicator/system_indicator_manager_factory.h"
+#include "base/memory/singleton.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "extensions/browser/extension_icon_image.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -81,7 +82,6 @@ void ExtensionActionManager::OnExtensionUnloaded(
     UnloadedExtensionReason reason) {
   page_actions_.erase(extension->id());
   browser_actions_.erase(extension->id());
-  system_indicators_.erase(extension->id());
 }
 
 namespace {
@@ -139,21 +139,6 @@ ExtensionAction* ExtensionActionManager::GetBrowserAction(
   return GetOrCreateOrNull(&browser_actions_, extension,
                            ActionInfo::TYPE_BROWSER,
                            ActionInfo::GetBrowserActionInfo(&extension),
-                           profile_);
-}
-
-ExtensionAction* ExtensionActionManager::GetSystemIndicator(
-    const Extension& extension) const {
-  // If it does not already exist, create the SystemIndicatorManager for the
-  // given profile.  This could return NULL if the system indicator area is
-  // unavailable on the current system.  If so, return NULL to signal that
-  // the system indicator area is unusable.
-  if (!SystemIndicatorManagerFactory::GetForProfile(profile_))
-    return nullptr;
-
-  return GetOrCreateOrNull(&system_indicators_, extension,
-                           ActionInfo::TYPE_SYSTEM_INDICATOR,
-                           ActionInfo::GetSystemIndicatorInfo(&extension),
                            profile_);
 }
 
