@@ -169,6 +169,19 @@ TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_OneText) {
   EXPECT_EQ(TextRecordOfLargestTextPaint()->node_id, NodeIdOfText(only_text));
 }
 
+TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_OpacityZero) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    div {
+      opacity: 0;
+    }
+    </style>
+  )HTML");
+  AppendDivElementToBody("The only text");
+  UpdateAllLifecyclePhasesAndSimulateSwapTime();
+  EXPECT_EQ(CountVisibleTexts(), 0u);
+}
+
 TEST_F(TextPaintTimingDetectorTest, NodeRemovedBeforeAssigningSwapTime) {
   SetBodyInnerHTML(R"HTML(
     <div id="parent">

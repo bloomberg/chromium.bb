@@ -79,6 +79,8 @@ void PaintTimingDetector::NotifyBackgroundImagePaint(
     return;
   if (!cached_image)
     return;
+  if (!object->HasNonZeroEffectiveOpacity())
+    return;
   PaintTimingDetector& detector = frame_view->GetPaintTimingDetector();
   detector.GetImagePaintTimingDetector().RecordBackgroundImage(
       *object, image->Size(), cached_image, current_paint_chunk_properties);
@@ -95,6 +97,8 @@ void PaintTimingDetector::NotifyImagePaint(
     return;
   if (!cached_image)
     return;
+  if (!object.HasNonZeroEffectiveOpacity())
+    return;
   PaintTimingDetector& detector = frame_view->GetPaintTimingDetector();
   detector.GetImagePaintTimingDetector().RecordImage(
       object, intrinsic_size, cached_image, current_paint_chunk_properties);
@@ -106,6 +110,8 @@ void PaintTimingDetector::NotifyTextPaint(
     const PropertyTreeState& current_paint_chunk_properties) {
   LocalFrameView* frame_view = object.GetFrameView();
   if (!frame_view)
+    return;
+  if (!object.HasNonZeroEffectiveOpacity())
     return;
   PaintTimingDetector& detector = frame_view->GetPaintTimingDetector();
   detector.GetTextPaintTimingDetector().RecordText(
