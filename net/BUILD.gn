@@ -1464,6 +1464,10 @@ component("net") {
       "third_party/quiche/src/quic/core/http/quic_header_list.h",
       "third_party/quiche/src/quic/core/http/quic_headers_stream.cc",
       "third_party/quiche/src/quic/core/http/quic_headers_stream.h",
+      "third_party/quiche/src/quic/core/http/quic_receive_control_stream.cc",
+      "third_party/quiche/src/quic/core/http/quic_receive_control_stream.h",
+      "third_party/quiche/src/quic/core/http/quic_send_control_stream.cc",
+      "third_party/quiche/src/quic/core/http/quic_send_control_stream.h",
       "third_party/quiche/src/quic/core/http/quic_server_session_base.cc",
       "third_party/quiche/src/quic/core/http/quic_server_session_base.h",
       "third_party/quiche/src/quic/core/http/quic_spdy_client_session_base.cc",
@@ -1612,6 +1616,7 @@ component("net") {
       "third_party/quiche/src/quic/core/quic_versions.h",
       "third_party/quiche/src/quic/core/quic_write_blocked_list.cc",
       "third_party/quiche/src/quic/core/quic_write_blocked_list.h",
+      "third_party/quiche/src/quic/core/session_notifier_interface.h",
       "third_party/quiche/src/quic/core/tls_client_handshaker.cc",
       "third_party/quiche/src/quic/core/tls_client_handshaker.h",
       "third_party/quiche/src/quic/core/tls_handshaker.cc",
@@ -1665,7 +1670,10 @@ component("net") {
       "third_party/quiche/src/quic/platform/api/quic_stack_trace.h",
       "third_party/quiche/src/quic/platform/api/quic_str_cat.h",
       "third_party/quiche/src/quic/platform/api/quic_string_piece.h",
+      "third_party/quiche/src/quic/platform/api/quic_string_utils.h",
       "third_party/quiche/src/quic/platform/api/quic_text_utils.h",
+      "third_party/quiche/src/quic/platform/api/quic_thread.h",
+      "third_party/quiche/src/quic/platform/api/quic_uint128.h",
       "third_party/quiche/src/spdy/core/hpack/hpack_constants.cc",
       "third_party/quiche/src/spdy/core/hpack/hpack_constants.h",
       "third_party/quiche/src/spdy/core/hpack/hpack_decoder_adapter.cc",
@@ -3121,6 +3129,7 @@ if (is_linux) {
       "third_party/quiche/src/quic/core/quic_packet_reader.cc",
       "third_party/quiche/src/quic/core/quic_packet_reader.h",
       "third_party/quiche/src/quic/platform/api/quic_default_proof_providers.h",
+      "third_party/quiche/src/quic/platform/api/quic_epoll.h",
       "third_party/quiche/src/quic/platform/api/quic_stream_buffer_allocator.h",
       "third_party/quiche/src/quic/platform/api/quic_system_event_loop.h",
       "third_party/quiche/src/quic/tools/quic_client.cc",
@@ -3464,6 +3473,7 @@ source_set("simple_quic_tools") {
     "third_party/quiche/src/quic/tools/quic_simple_crypto_server_stream_helper.h",
     "third_party/quiche/src/quic/tools/quic_simple_dispatcher.cc",
     "third_party/quiche/src/quic/tools/quic_simple_dispatcher.h",
+    "third_party/quiche/src/quic/tools/quic_simple_server_backend.h",
     "third_party/quiche/src/quic/tools/quic_simple_server_session.cc",
     "third_party/quiche/src/quic/tools/quic_simple_server_session.h",
     "third_party/quiche/src/quic/tools/quic_simple_server_stream.cc",
@@ -3527,6 +3537,19 @@ if (!is_ios) {
   executable("quic_packet_printer") {
     sources = [
       "third_party/quiche/src/quic/tools/quic_packet_printer_bin.cc",
+    ]
+    deps = [
+      ":net",
+      ":simple_quic_tools",
+      "//base",
+      "//build/win:default_exe_manifest",
+      "//third_party/boringssl",
+      "//third_party/protobuf:protobuf_lite",
+    ]
+  }
+  executable("quic_crypto_message_printer") {
+    sources = [
+      "third_party/quiche/src/quic/core/crypto/crypto_message_printer_bin.cc",
     ]
     deps = [
       ":net",
@@ -5265,6 +5288,7 @@ test("net_unittests") {
     "third_party/quiche/src/quic/core/congestion_control/prr_sender_test.cc",
     "third_party/quiche/src/quic/core/congestion_control/rtt_stats_test.cc",
     "third_party/quiche/src/quic/core/congestion_control/send_algorithm_test.cc",
+    "third_party/quiche/src/quic/core/congestion_control/tcp_cubic_sender_bytes_test.cc",
     "third_party/quiche/src/quic/core/congestion_control/uber_loss_algorithm_test.cc",
     "third_party/quiche/src/quic/core/congestion_control/windowed_filter_test.cc",
     "third_party/quiche/src/quic/core/crypto/aes_128_gcm_12_decrypter_test.cc",
@@ -5302,6 +5326,8 @@ test("net_unittests") {
     "third_party/quiche/src/quic/core/http/quic_client_push_promise_index_test.cc",
     "third_party/quiche/src/quic/core/http/quic_header_list_test.cc",
     "third_party/quiche/src/quic/core/http/quic_headers_stream_test.cc",
+    "third_party/quiche/src/quic/core/http/quic_receive_control_stream_test.cc",
+    "third_party/quiche/src/quic/core/http/quic_send_control_stream_test.cc",
     "third_party/quiche/src/quic/core/http/quic_server_session_base_test.cc",
     "third_party/quiche/src/quic/core/http/quic_spdy_session_test.cc",
     "third_party/quiche/src/quic/core/http/quic_spdy_stream_body_buffer_test.cc",
@@ -5371,6 +5397,7 @@ test("net_unittests") {
     "third_party/quiche/src/quic/core/quic_write_blocked_list_test.cc",
     "third_party/quiche/src/quic/core/tls_handshaker_test.cc",
     "third_party/quiche/src/quic/core/uber_quic_stream_id_manager_test.cc",
+    "third_party/quiche/src/quic/core/uber_received_packet_manager_test.cc",
     "third_party/quiche/src/quic/platform/api/quic_containers_test.cc",
     "third_party/quiche/src/quic/platform/api/quic_endian_test.cc",
     "third_party/quiche/src/quic/platform/api/quic_hostname_utils_test.cc",
@@ -5380,6 +5407,7 @@ test("net_unittests") {
     "third_party/quiche/src/quic/platform/api/quic_mem_slice_test.cc",
     "third_party/quiche/src/quic/platform/api/quic_reference_counted_test.cc",
     "third_party/quiche/src/quic/platform/api/quic_str_cat_test.cc",
+    "third_party/quiche/src/quic/platform/api/quic_string_utils_test.cc",
     "third_party/quiche/src/quic/platform/api/quic_text_utils_test.cc",
     "third_party/quiche/src/quic/test_tools/crypto_test_utils_test.cc",
     "third_party/quiche/src/quic/test_tools/mock_quic_time_wait_list_manager.cc",
@@ -5388,6 +5416,7 @@ test("net_unittests") {
     "third_party/quiche/src/quic/test_tools/simple_session_notifier_test.cc",
     "third_party/quiche/src/quic/test_tools/simulator/quic_endpoint_test.cc",
     "third_party/quiche/src/quic/test_tools/simulator/simulator_test.cc",
+    "third_party/quiche/src/quic/tools/quic_simple_crypto_server_stream_helper_test.cc",
     "third_party/quiche/src/spdy/core/array_output_buffer.cc",
     "third_party/quiche/src/spdy/core/array_output_buffer.h",
     "third_party/quiche/src/spdy/core/array_output_buffer_test.cc",
@@ -5484,6 +5513,19 @@ test("net_unittests") {
       "third_party/quiche/src/quic/quartc/simulated_packet_transport.cc",
       "third_party/quiche/src/quic/quartc/simulated_packet_transport.h",
       "third_party/quiche/src/quic/quartc/simulated_packet_transport_test.cc",
+      "third_party/quiche/src/quic/quartc/test/bidi_test_runner.cc",
+      "third_party/quiche/src/quic/quartc/test/bidi_test_runner.h",
+      "third_party/quiche/src/quic/quartc/test/quartc_bidi_test.cc",
+      "third_party/quiche/src/quic/quartc/test/quartc_data_source.cc",
+      "third_party/quiche/src/quic/quartc/test/quartc_data_source.h",
+      "third_party/quiche/src/quic/quartc/test/quartc_data_source_test.cc",
+      "third_party/quiche/src/quic/quartc/test/quartc_peer.cc",
+      "third_party/quiche/src/quic/quartc/test/quartc_peer.h",
+      "third_party/quiche/src/quic/quartc/test/quartc_peer_test.cc",
+      "third_party/quiche/src/quic/quartc/test/random_delay_link.cc",
+      "third_party/quiche/src/quic/quartc/test/random_delay_link.h",
+      "third_party/quiche/src/quic/quartc/test/random_packet_filter.cc",
+      "third_party/quiche/src/quic/quartc/test/random_packet_filter.h",
     ]
   }
 
@@ -5611,7 +5653,6 @@ test("net_unittests") {
       "third_party/quiche/src/quic/tools/quic_url_test.cc",
       "tools/quic/quic_http_proxy_backend_stream_test.cc",
       "tools/quic/quic_http_proxy_backend_test.cc",
-      "tools/quic/quic_simple_server_session_helper_test.cc",
       "tools/quic/quic_simple_server_test.cc",
     ]
     deps += [
@@ -5959,6 +6000,7 @@ source_set("net_fuzzer_test_support") {
     "socket/fuzzed_socket.h",
     "socket/fuzzed_socket_factory.cc",
     "socket/fuzzed_socket_factory.h",
+    "third_party/quiche/src/quic/platform/api/quic_fuzzed_data_provider.h",
   ]
   public_deps = [
     "//base/test:test_support",
@@ -6553,6 +6595,20 @@ fuzzer_test("net_reporting_header_parser_fuzzer") {
 fuzzer_test("net_quic_stream_factory_fuzzer") {
   sources = [
     "quic/quic_stream_factory_fuzzer.cc",
+  ]
+
+  deps = [
+    ":net_fuzzer_test_support",
+    ":quic_test_tools",
+    ":test_support",
+    "//net",
+    "//net/data/ssl/certificates:generate_fuzzer_cert_includes",
+  ]
+}
+
+fuzzer_test("net_quic_framer_fuzzer") {
+  sources = [
+    "third_party/quiche/src/quic/test_tools/fuzzing/quic_framer_fuzzer.cc",
   ]
 
   deps = [
