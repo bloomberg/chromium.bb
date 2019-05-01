@@ -571,6 +571,9 @@ bool OverlayWindowViews::IsActive() const {
 
 void OverlayWindowViews::Close() {
   views::Widget::Close();
+
+  if (auto* frame_sink_id = GetCurrentFrameSinkId())
+    GetCompositor()->RemoveChildFrameSink(*frame_sink_id);
 }
 
 void OverlayWindowViews::ShowInactive() {
@@ -599,10 +602,6 @@ bool OverlayWindowViews::IsVisible() const {
 
 bool OverlayWindowViews::IsAlwaysOnTop() const {
   return true;
-}
-
-ui::Layer* OverlayWindowViews::GetLayer() {
-  return GetRootView()->layer();
 }
 
 gfx::Rect OverlayWindowViews::GetBounds() const {
@@ -656,6 +655,15 @@ void OverlayWindowViews::SetPreviousTrackButtonVisibility(bool is_visible) {
 }
 
 void OverlayWindowViews::SetSurfaceId(const viz::SurfaceId& surface_id) {
+  // TODO(https://crbug.com/925346): We also want to unregister the page that
+  // used to embed the video as its parent.
+  if (!GetCurrentFrameSinkId()) {
+    GetCompositor()->AddChildFrameSink(surface_id.frame_sink_id());
+  } else if (*GetCurrentFrameSinkId() != surface_id.frame_sink_id()) {
+    GetCompositor()->RemoveChildFrameSink(*GetCurrentFrameSinkId());
+    GetCompositor()->AddChildFrameSink(surface_id.frame_sink_id());
+  }
+
   video_view_->layer()->SetShowSurface(
       surface_id, GetBounds().size(), SK_ColorBLACK,
       cc::DeadlinePolicy::UseDefaultDeadline(),
@@ -1021,4 +1029,15 @@ OverlayWindowViews::MutedState OverlayWindowViews::muted_state_for_testing()
 
 ui::Layer* OverlayWindowViews::video_layer_for_testing() const {
   return video_view_->layer();
+}
+
+cc::Layer* OverlayWindowViews::GetLayerForTesting() {
+  return GetRootView()->layer()->cc_layer_for_testing();
+}
+
+const viz::FrameSinkId* OverlayWindowViews::GetCurrentFrameSinkId() const {
+  if (auto* surface = video_view_->layer()->GetSurfaceId())
+    return &surface->frame_sink_id();
+
+  return nullptr;
 }

@@ -45,7 +45,6 @@ class OverlayWindowViews : public content::OverlayWindow,
   void Hide() override;
   bool IsVisible() const override;
   bool IsAlwaysOnTop() const override;
-  ui::Layer* GetLayer() override;
   gfx::Rect GetBounds() const override;
   void UpdateVideoSize(const gfx::Size& natural_size) override;
   void SetPlaybackState(PlaybackState playback_state) override;
@@ -101,6 +100,7 @@ class OverlayWindowViews : public content::OverlayWindow,
   OverlayWindowViews::PlaybackState playback_state_for_testing() const;
   OverlayWindowViews::MutedState muted_state_for_testing() const;
   ui::Layer* video_layer_for_testing() const;
+  cc::Layer* GetLayerForTesting() override;
 
  private:
   // Determine the intended bounds of |this|. This should be called when there
@@ -160,6 +160,11 @@ class OverlayWindowViews : public content::OverlayWindow,
   // |mute_controls_view_| toggled state to reflect the current muted
   // state.
   void ToggleMute();
+
+  // Returns the current frame sink id for the surface displayed in the
+  // |video_view_]. If |video_view_| is not currently displaying a surface then
+  // returns nullptr.
+  const viz::FrameSinkId* GetCurrentFrameSinkId() const;
 
   // Not owned; |controller_| owns |this|.
   content::PictureInPictureWindowController* controller_;

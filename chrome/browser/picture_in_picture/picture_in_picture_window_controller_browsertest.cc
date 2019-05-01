@@ -265,7 +265,8 @@ class PictureInPicturePixelComparisonBrowserTest
             base::BindOnce(
                 &PictureInPicturePixelComparisonBrowserTest::ReadbackResult,
                 base::Unretained(this), run_loop.QuitClosure()));
-    overlay_window_views->GetLayer()->RequestCopyOfOutput(std::move(request));
+    overlay_window_views->GetLayerForTesting()->RequestCopyOfOutput(
+        std::move(request));
     run_loop.Run();
   }
 

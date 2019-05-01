@@ -68,7 +68,6 @@ class TestOverlayWindow : public OverlayWindow {
   void Hide() override {}
   bool IsVisible() const override { return false; }
   bool IsAlwaysOnTop() const override { return false; }
-  ui::Layer* GetLayer() override { return nullptr; }
   gfx::Rect GetBounds() const override { return gfx::Rect(); }
   void UpdateVideoSize(const gfx::Size& natural_size) override {}
   void SetPlaybackState(PlaybackState playback_state) override {}
@@ -78,6 +77,7 @@ class TestOverlayWindow : public OverlayWindow {
   void SetNextTrackButtonVisibility(bool is_visible) override {}
   void SetPreviousTrackButtonVisibility(bool is_visible) override {}
   void SetSurfaceId(const viz::SurfaceId& surface_id) override {}
+  cc::Layer* GetLayerForTesting() override { return nullptr; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestOverlayWindow);
