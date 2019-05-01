@@ -266,6 +266,7 @@ NativeThemeWin::NativeThemeWin()
             L"Themes\\Personalize",
             KEY_READ | KEY_NOTIFY) == ERROR_SUCCESS;
     if (key_open_succeeded) {
+      NativeTheme::GetInstanceForWeb()->SetDarkModeParent(this);
       UpdateDarkModeStatus();
       RegisterThemeRegkeyObserver();
     }
@@ -1921,7 +1922,6 @@ void NativeThemeWin::RegisterThemeRegkeyObserver() {
   hkcu_themes_regkey_.StartWatching(base::BindOnce(
       [](NativeThemeWin* native_theme) {
         native_theme->UpdateDarkModeStatus();
-        native_theme->NotifyObservers();
         // RegKey::StartWatching only provides one notification. Reregistration
         // is required to get future notifications.
         native_theme->RegisterThemeRegkeyObserver();
@@ -1938,6 +1938,7 @@ void NativeThemeWin::UpdateDarkModeStatus() {
     fDarkModeEnabled = (apps_use_light_theme == 0);
   }
   set_dark_mode(fDarkModeEnabled);
+  NotifyObservers();
 }
 
 }  // namespace ui

@@ -23,7 +23,7 @@ class Size;
 }
 
 namespace ui {
-
+class DarkModeObserver;
 class NativeThemeObserver;
 
 // This class supports drawing UI controls (like buttons, text fields, lists,
@@ -423,6 +423,10 @@ class NATIVE_THEME_EXPORT NativeTheme {
   // Returns the system's caption style.
   virtual CaptionStyle GetSystemCaptionStyle() const;
 
+  // Observes |dark_mode_parent| for dark mode changes and propagates them to
+  // self.
+  void SetDarkModeParent(NativeTheme* dark_mode_parent);
+
  protected:
   NativeTheme();
   virtual ~NativeTheme();
@@ -442,8 +446,12 @@ class NATIVE_THEME_EXPORT NativeTheme {
   unsigned int track_color_;
 
  private:
+  // DarkModeObserver callback.
+  void OnParentDarkModeChanged(bool is_dark_mode);
   // Observers to notify when the native theme changes.
   base::ObserverList<NativeThemeObserver>::Unchecked native_theme_observers_;
+
+  std::unique_ptr<DarkModeObserver> dark_mode_parent_observer_;
 
   bool is_dark_mode_ = false;
   bool is_high_contrast_ = false;
