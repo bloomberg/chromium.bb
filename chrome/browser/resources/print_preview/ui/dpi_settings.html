@@ -10,6 +10,9 @@
 <dom-module id="print-preview-dpi-settings">
   <template>
     <style include="print-preview-shared">
+      :host print-preview-settings-select {
+        margin: 0 calc(var(--print-preview-sidebar-margin) - 2px);
+      }
     </style>
     <print-preview-settings-section>
       <span id="dpi-label" slot="title">$i18n{dpiLabel}</span>

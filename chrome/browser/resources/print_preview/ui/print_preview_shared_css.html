@@ -9,7 +9,8 @@
     <style include="cr-shared-style">
       /* Default state ********************************************************/
       select.md-select {
-        margin: 2px;
+        margin-bottom: 2px;
+        margin-top: 2px;
         min-height: 32px;
         padding-bottom: 1px;
       <if expr="is_win or is_macosx">
@@ -21,6 +22,7 @@
         padding-inline-end: 32px;
         padding-top: 1px;
         user-select: none;
+        --md-select-width: calc(100% - 2 * var(--print-preview-sidebar-margin));
       }
 
       .checkbox cr-checkbox {
@@ -47,7 +49,7 @@
       }
 
       print-preview-settings-section [slot=controls] > * {
-        margin-inline-start: var(--print-preview-sidebar-margin);
+        margin: 0 var(--print-preview-sidebar-margin);
       }
 
       /* Default print preview dialog styles. */

@@ -10,6 +10,7 @@
   <template>
     <style include="cr-hidden-style print-preview-shared">
       :host {
+        border-top: var(--print-preview-settings-border);
         display: block;
       }
 
@@ -19,16 +20,14 @@
 
       div {
         align-items: center;
-        border-top: var(--print-preview-settings-border);
         display: flex;
         font: inherit;
-        margin: 0 auto;
+        margin: 0 var(--print-preview-sidebar-margin);
         min-height: 48px;
-        padding: 0 var(--print-preview-sidebar-padding);
       }
 
       :host cr-expand-button {
-        margin-inline-end: 4px;
+        margin-inline-end: 6px;
         --cr-expand-button-size: 28px;
       }
 

@@ -8,6 +8,9 @@
 <dom-module id="print-preview-media-size-settings">
   <template>
     <style include="print-preview-shared">
+      :host print-preview-settings-select {
+        margin: 0 calc(var(--print-preview-sidebar-margin) - 2px);
+      }
     </style>
     <print-preview-settings-section>
       <span id="media-size-label" slot="title">$i18n{mediaSizeLabel}</span>
