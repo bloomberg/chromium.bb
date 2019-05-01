@@ -10,8 +10,7 @@ FAIL WakeLock interface: operation requestPermission(WakeLockType) assert_own_pr
 PASS WakeLock interface: attribute type
 PASS WakeLock interface: attribute active
 PASS WakeLock interface: attribute onactivechange
-FAIL WakeLock interface: operation request() assert_own_property: interface prototype object missing non-static operation expected property "request" missing
-FAIL WakeLock interface: operation abort() assert_own_property: interface prototype object missing non-static operation expected property "abort" missing
+FAIL WakeLock interface: operation request(WakeLockRequestOptions) assert_own_property: interface prototype object missing non-static operation expected property "request" missing
 FAIL WakeLock interface: operation query(WakeLockQueryFilter) assert_own_property: interface object missing static operation expected property "query" missing
 FAIL WakeLock must be primary interface of new WakeLock("screen") assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
 FAIL Stringification of new WakeLock("screen") assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
@@ -20,8 +19,8 @@ FAIL WakeLock interface: calling requestPermission(WakeLockType) on new WakeLock
 FAIL WakeLock interface: new WakeLock("screen") must inherit property "type" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
 FAIL WakeLock interface: new WakeLock("screen") must inherit property "active" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
 FAIL WakeLock interface: new WakeLock("screen") must inherit property "onactivechange" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL WakeLock interface: new WakeLock("screen") must inherit property "request()" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL WakeLock interface: new WakeLock("screen") must inherit property "abort()" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
+FAIL WakeLock interface: new WakeLock("screen") must inherit property "request(WakeLockRequestOptions)" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
+FAIL WakeLock interface: calling request(WakeLockRequestOptions) on new WakeLock("screen") with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
 FAIL WakeLock interface: new WakeLock("screen") must inherit property "query(WakeLockQueryFilter)" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
 FAIL WakeLock interface: calling query(WakeLockQueryFilter) on new WakeLock("screen") with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
 Harness: the test ran to completion.

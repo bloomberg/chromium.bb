@@ -10,8 +10,7 @@ FAIL WakeLock interface: member requestPermission Cannot use 'in' operator to se
 FAIL WakeLock interface: attribute type assert_own_property: self does not have own property "WakeLock" expected property "WakeLock" missing
 FAIL WakeLock interface: attribute active assert_own_property: self does not have own property "WakeLock" expected property "WakeLock" missing
 FAIL WakeLock interface: attribute onactivechange assert_own_property: self does not have own property "WakeLock" expected property "WakeLock" missing
-FAIL WakeLock interface: operation request() assert_own_property: self does not have own property "WakeLock" expected property "WakeLock" missing
-FAIL WakeLock interface: operation abort() assert_own_property: self does not have own property "WakeLock" expected property "WakeLock" missing
+FAIL WakeLock interface: operation request(WakeLockRequestOptions) assert_own_property: self does not have own property "WakeLock" expected property "WakeLock" missing
 FAIL WakeLock interface: operation query(WakeLockQueryFilter) assert_own_property: self does not have own property "WakeLock" expected property "WakeLock" missing
 FAIL WakeLock must be primary interface of new WakeLock("screen") assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: WakeLock is not defined"
 FAIL Stringification of new WakeLock("screen") assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: WakeLock is not defined"
@@ -19,8 +18,8 @@ FAIL WakeLock interface: new WakeLock("screen") must not have property "requestP
 FAIL WakeLock interface: new WakeLock("screen") must inherit property "type" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: WakeLock is not defined"
 FAIL WakeLock interface: new WakeLock("screen") must inherit property "active" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: WakeLock is not defined"
 FAIL WakeLock interface: new WakeLock("screen") must inherit property "onactivechange" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: WakeLock is not defined"
-FAIL WakeLock interface: new WakeLock("screen") must inherit property "request()" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: WakeLock is not defined"
-FAIL WakeLock interface: new WakeLock("screen") must inherit property "abort()" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: WakeLock is not defined"
+FAIL WakeLock interface: new WakeLock("screen") must inherit property "request(WakeLockRequestOptions)" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: WakeLock is not defined"
+FAIL WakeLock interface: calling request(WakeLockRequestOptions) on new WakeLock("screen") with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: WakeLock is not defined"
 FAIL WakeLock interface: new WakeLock("screen") must inherit property "query(WakeLockQueryFilter)" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: WakeLock is not defined"
 FAIL WakeLock interface: calling query(WakeLockQueryFilter) on new WakeLock("screen") with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: WakeLock is not defined"
 Harness: the test ran to completion.
