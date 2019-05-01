@@ -1,0 +1,94 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package remoting.apis.v1;
+
+import "host_info.proto";
+
+// Requests the deletion of a specific host from the Directory.
+message DeleteHostRequest {
+  // The ID of the host to delete.
+  optional string host_id = 1;
+}
+
+// The response to a DeleteHostRequest.
+message DeleteHostResponse {}
+
+// Request host info for a single Me2Me host.  This is typically used when the
+// client already has the host list and wants updated host info or if a deeplink
+// is used to connect to a specific host.
+message GetHostRequest {
+  // The ID of the host to request info for.
+  optional string host_id = 1;
+}
+
+// The response to a GetHostRequest.
+message GetHostResponse {
+  // The info for the host_id in the request.
+  optional HostInfo host_info = 1;
+}
+
+// Requests a list of hosts owned by the user making the request.
+message GetHostListRequest {}
+
+// Response to a GetHostListRequest.
+message GetHostListResponse {
+  // The list of users owned by the user.
+  repeated remoting.apis.v1.HostInfo hosts = 1;
+}
+
+// Sent from a Me2Me host to update it's info and online presence.
+message HeartbeatRequest {
+  // An encypted token used to validate the request's origin.
+  optional string signature = 1;
+  // Host identity. Normally a UUID.
+  optional string host_id = 2;
+  // Current ID for the GoogleTalk service, if applicable.
+  optional string jabber_id = 3;
+  // Current ID for the Tachyon service, if applicable.
+  optional string tachyon_id = 4;
+  // Monotonically increasing value which is used to prevent replay attacks.
+  optional int32 sequence_id = 5;
+  // Version of the Me2Me host software installed.
+  optional string host_version = 6;
+  // A reason for the host reporting itself as offline.
+  optional string host_offline_reason = 7;
+  // Operating system type the host is running on.
+  optional string host_os_name = 8;
+  // Operating system version the host is running on.
+  optional string host_os_version = 9;
+}
+
+// Sent in response to a HeartbeatRequest.
+message HeartbeatResponse {
+  // The result of the request.
+  optional HeartbeatResult result = 1;
+  // The amount of time to wait before the host should send its next update.
+  optional int32 set_interval_seconds = 2;
+}
+
+// TODO(joedow): Translate XMPP stanza errors into proto format.
+// The result of a HeartBeatRequest.
+enum HeartbeatResult {
+  // Field was not set.
+  HEARTBEATRESULT_UNSET = 0;
+  // The heartbeat was handled successfully.
+  SUCCESS = 1;
+  // There was an error processing the heartbeat request.
+  ERROR = 2;
+}
+
+// Requests an auth_code with updated OAuth scopes.  Should only be called by
+// robot accounts assigned to a Me2me host.
+message UpdateRobotTokenRequest {}
+
+// Response to a UpdateRobotTokenRequest.
+message UpdateRobotTokenResponse {
+  // An auth code nonce which can be exchanged for a new token from Gaia.
+  optional string auth_code = 1;
+}

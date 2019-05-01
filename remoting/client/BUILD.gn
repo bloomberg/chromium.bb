@@ -63,6 +63,7 @@ static_library("client") {
       "//remoting/base:authorization",
       "//remoting/client/input",
       "//remoting/client/ui",
+      "//remoting/proto/remoting/v1:directory_grpc_library",
       "//services/network:network_service",
       "//services/network/public/mojom",
     ]
