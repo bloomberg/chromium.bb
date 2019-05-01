@@ -965,10 +965,13 @@ enum class EnterTabSwitcherSnapshotResult {
 - (void)stopChromeMain {
   // The UI should be stopped before the models they observe are stopped.
   [_mainCoordinator stop];
+  _mainCoordinator = nil;
 
   [_spotlightManager shutdown];
   _spotlightManager = nil;
 
+  // Invariant: The UI is stopped before the model is shutdown.
+  DCHECK(!_mainCoordinator);
   [_browserViewWrangler shutdown];
   _browserViewWrangler = nil;
 
