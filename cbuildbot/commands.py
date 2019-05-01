@@ -1114,14 +1114,7 @@ def _GetSkylabCreateSuiteArgs(
     A list of args for the `skylab create-suite` subcommand (not including)
     the subcommand itself.
   """
-  # TODO(crbug.com/958037): Figure out a way to remove this board-replacement
-  # hack.
-  board = board.replace('-arcnext', '')
-  board = board.replace('-arcvm', '')
-  board = board.replace('-kernelnext', '')
-
   args = ['-image', build, '-board', board]
-
   if model:
     args += ['-model', model]
 
@@ -1399,11 +1392,6 @@ def _GetRunSuiteArgs(
   Returns:
     A list of args for run_suite
   """
-
-  # HACK(pwang): Delete this once better solution is out.
-  board = board.replace('-arcnext', '')
-  board = board.replace('-arcvm', '')
-  board = board.replace('-kernelnext', '')
   args = ['--build', build, '--board', board]
 
   if model:

@@ -11,6 +11,7 @@ import copy
 import itertools
 import json
 import os
+import re
 
 from chromite.lib import constants
 from chromite.lib import memoize
@@ -1837,6 +1838,15 @@ def GroupBoardsByBuilder(board_list):
 
   return builder_to_boards_dict
 
+def GetNonUniBuildLabBoardName(board):
+  """Return the board name labeled in the lab for non-unibuild."""
+  # Those special string represent special configuration used in the image,
+  # and should run on DUT without those string.
+  # We strip those string from the board so that lab can handle it correctly.
+  SPECIAL_SUFFIX = ['-arcnext$', '-arcvm$', '-kernelnext$']
+  for suffix in SPECIAL_SUFFIX:
+    board = re.sub(suffix, '', board)
+  return board
 
 def GetArchBoardDict(ge_build_config):
   """Get a dict mapping arch types to board names.
