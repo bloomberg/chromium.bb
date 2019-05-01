@@ -425,6 +425,11 @@ void View::SetVisible(bool visible) {
   }
 
   if (visible_ != visible) {
+    // If the View is currently visible, schedule paint to refresh parent.
+    // TODO(beng): not sure we should be doing this if we have a layer.
+    if (visible_)
+      SchedulePaint();
+
     visible_ = visible;
     AdvanceFocusIfNecessary();
 
