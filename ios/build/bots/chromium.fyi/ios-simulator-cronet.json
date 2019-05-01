@@ -27,11 +27,11 @@
       "app": "cronet_unittests_ios",
       "device type": "iPhone 5s",
       "os": "9.3",
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.13.6",
       "pool":"Chrome",
       "optional_dimensions": {
           "60": [{
-            "host os": "Mac-10.13.6"
+            "host os": "Mac-10.14.4"
           }],
           "120": [{
             "host os": "Mac-10.14.3"
@@ -42,11 +42,11 @@
       "app": "cronet_test",
       "device type": "iPhone 5s",
       "os": "9.3",
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.13.6",
       "pool":"Chrome",
       "optional_dimensions": {
           "60": [{
-            "host os": "Mac-10.13.6"
+            "host os": "Mac-10.14.4"
           }],
           "120": [{
             "host os": "Mac-10.14.3"
@@ -57,11 +57,11 @@
       "app": "cronet_test",
       "device type": "iPad Retina",
       "os": "9.3",
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.13.6",
       "pool":"Chrome",
       "optional_dimensions": {
           "60": [{
-            "host os": "Mac-10.13.6"
+            "host os": "Mac-10.14.4"
           }],
           "120": [{
             "host os": "Mac-10.14.3"
@@ -72,11 +72,11 @@
       "app": "cronet_test",
       "device type": "iPhone 5s",
       "os": "11.4",
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.13.6",
       "pool":"Chrome",
       "optional_dimensions": {
           "60": [{
-            "host os": "Mac-10.13.6"
+            "host os": "Mac-10.14.4"
           }],
           "120": [{
             "host os": "Mac-10.14.3"
@@ -87,11 +87,11 @@
       "app": "cronet_test",
       "device type": "iPad Air 2",
       "os": "11.4",
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.13.6",
       "pool":"Chrome",
       "optional_dimensions": {
           "60": [{
-            "host os": "Mac-10.13.6"
+            "host os": "Mac-10.14.4"
           }],
           "120": [{
             "host os": "Mac-10.14.3"
@@ -102,11 +102,11 @@
       "app": "cronet_test",
       "device type": "iPhone X",
       "os": "11.4",
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.13.6",
       "pool":"Chrome",
       "optional_dimensions": {
           "60": [{
-            "host os": "Mac-10.13.6"
+            "host os": "Mac-10.14.4"
           }],
           "120": [{
             "host os": "Mac-10.14.3"
@@ -117,11 +117,11 @@
       "app": "cronet_test",
       "device type": "iPhone X",
       "os": "12.1",
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.13.6",
       "pool":"Chrome",
       "optional_dimensions": {
           "60": [{
-            "host os": "Mac-10.13.6"
+            "host os": "Mac-10.14.4"
           }],
           "120": [{
             "host os": "Mac-10.14.3"
