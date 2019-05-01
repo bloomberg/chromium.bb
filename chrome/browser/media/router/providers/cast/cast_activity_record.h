@@ -19,9 +19,11 @@
 namespace media_router {
 
 class CastActivityManagerBase;
+class CastActivityRecord;
+class CastSessionClientFactory;
 class CastInternalMessage;
 class CastSession;
-class CastSessionClient;
+class CastSessionClientBase;
 class CastSessionTracker;
 class DataDecoder;
 class MediaSinkServiceBase;
@@ -38,7 +40,7 @@ class CastActivityRecord {
 
   const MediaRoute& route() const { return route_; }
   const std::string& app_id() const { return app_id_; }
-  const base::flat_map<std::string, std::unique_ptr<CastSessionClient>>&
+  const base::flat_map<std::string, std::unique_ptr<CastSessionClientBase>>&
   connected_clients() const {
     return connected_clients_;
   }
@@ -101,6 +103,10 @@ class CastActivityRecord {
       blink::mojom::PresentationConnectionCloseReason close_reason);
   void TerminatePresentationConnections();
 
+  static void SetClientFactoryForTest(CastSessionClientFactory* factory) {
+    client_factory_ = factory;
+  }
+
  private:
   friend class CastSessionClient;
   friend class CastActivityManager;
@@ -118,14 +124,16 @@ class CastActivityRecord {
   CastSession* GetSession();
   int GetCastChannelId();
 
-  CastSessionClient* GetClient(const std::string& client_id) {
+  CastSessionClientBase* GetClient(const std::string& client_id) {
     auto it = connected_clients_.find(client_id);
     return it == connected_clients_.end() ? nullptr : it->second.get();
   }
 
+  static CastSessionClientFactory* client_factory_;
+
   MediaRoute route_;
   const std::string app_id_;
-  base::flat_map<std::string, std::unique_ptr<CastSessionClient>>
+  base::flat_map<std::string, std::unique_ptr<CastSessionClientBase>>
       connected_clients_;
 
   // Set by CastActivityManager after the session is launched successfully.

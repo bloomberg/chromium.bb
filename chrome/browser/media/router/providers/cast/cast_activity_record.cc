@@ -25,9 +25,15 @@ mojom::RoutePresentationConnectionPtr CastActivityRecord::AddClient(
     const url::Origin& origin,
     int tab_id) {
   const std::string& client_id = source.client_id();
-  auto client = std::make_unique<CastSessionClient>(client_id, origin, tab_id,
-                                                    source.auto_join_policy(),
-                                                    data_decoder_, this);
+  DCHECK(!base::ContainsKey(connected_clients_, client_id));
+  std::unique_ptr<CastSessionClientBase> client;
+  if (client_factory_) {
+    client = client_factory_->MakeClient(client_id, origin, tab_id);
+  } else {
+    client = std::make_unique<CastSessionClient>(client_id, origin, tab_id,
+                                                 source.auto_join_policy(),
+                                                 data_decoder_, this);
+  }
   auto presentation_connection = client->Init();
   connected_clients_.emplace(client_id, std::move(client));
 
@@ -63,7 +69,7 @@ void CastActivityRecord::SetOrUpdateSession(const CastSession& session,
 
 cast_channel::Result CastActivityRecord::SendAppMessageToReceiver(
     const CastInternalMessage& cast_message) {
-  CastSessionClient* client = GetClient(cast_message.client_id());
+  CastSessionClientBase* client = GetClient(cast_message.client_id());
   const CastSession* session = GetSession();
   if (!session) {
     if (client && cast_message.sequence_number()) {
@@ -128,7 +134,7 @@ void CastActivityRecord::SendStopSessionMessageToReceiver(
 void CastActivityRecord::HandleLeaveSession(const std::string& client_id) {
   auto client_it = connected_clients_.find(client_id);
   CHECK(client_it != connected_clients_.end());
-  CastSessionClient& client = *client_it->second;
+  auto& client = *client_it->second;
   std::vector<std::string> leaving_client_ids;
   for (const auto& pair : connected_clients_) {
     if (pair.second->MatchesAutoJoinPolicy(client.origin(), client.tab_id()))
@@ -204,5 +210,7 @@ int CastActivityRecord::GetCastChannelId() {
   }
   return sink->cast_data().cast_channel_id;
 }
+
+CastSessionClientFactory* CastActivityRecord::client_factory_ = nullptr;
 
 }  // namespace media_router

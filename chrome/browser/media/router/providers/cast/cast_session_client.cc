@@ -29,15 +29,20 @@ void ReportClientMessageParseError(const MediaRoute::Id& route_id,
 
 }  // namespace
 
+CastSessionClientBase::CastSessionClientBase(const std::string& client_id,
+                                             const url::Origin& origin,
+                                             int tab_id)
+    : client_id_(client_id), origin_(origin), tab_id_(tab_id) {}
+
+CastSessionClientBase::~CastSessionClientBase() = default;
+
 CastSessionClient::CastSessionClient(const std::string& client_id,
                                      const url::Origin& origin,
                                      int tab_id,
                                      AutoJoinPolicy auto_join_policy,
                                      DataDecoder* data_decoder,
                                      CastActivityRecord* activity)
-    : client_id_(client_id),
-      origin_(origin),
-      tab_id_(tab_id),
+    : CastSessionClientBase(client_id, origin, tab_id),
       auto_join_policy_(auto_join_policy),
       data_decoder_(data_decoder),
       activity_(activity),
@@ -78,7 +83,19 @@ void CastSessionClient::SendMediaStatusToClient(
   }
 
   SendMessageToClient(
-      CreateV2Message(client_id_, media_status, sequence_number));
+      CreateV2Message(client_id(), media_status, sequence_number));
+}
+
+bool CastSessionClient::MatchesAutoJoinPolicy(url::Origin other_origin,
+                                              int other_tab_id) const {
+  switch (auto_join_policy_) {
+    case AutoJoinPolicy::kPageScoped:
+      return false;
+    case AutoJoinPolicy::kTabAndOriginScoped:
+      return other_origin == origin() && other_tab_id == tab_id();
+    case AutoJoinPolicy::kOriginScoped:
+      return other_origin == origin();
+  }
 }
 
 void CastSessionClient::OnMessage(PresentationConnectionMessagePtr message) {
@@ -97,17 +114,6 @@ void CastSessionClient::DidClose(PresentationConnectionCloseReason reason) {
   // TODO(https://crbug.com/809249): Implement close connection with this
   // method once we make sure Blink calls this on navigation and on
   // PresentationConnection::close().
-}
-bool CastSessionClient::MatchesAutoJoinPolicy(url::Origin origin,
-                                              int tab_id) const {
-  switch (auto_join_policy_) {
-    case AutoJoinPolicy::kTabAndOriginScoped:
-      return origin == origin_ && tab_id == tab_id_;
-    case AutoJoinPolicy::kOriginScoped:
-      return origin == origin_;
-    default:
-      return false;
-  }
 }
 
 void CastSessionClient::SendErrorCodeToClient(
@@ -139,8 +145,8 @@ void CastSessionClient::HandleParsedClientMessage(
     return;
   }
 
-  if (cast_message->client_id() != client_id_) {
-    DLOG(ERROR) << "Client ID mismatch: expected: " << client_id_
+  if (cast_message->client_id() != client_id()) {
+    DLOG(ERROR) << "Client ID mismatch: expected: " << client_id()
                 << ", got: " << cast_message->client_id();
     return;
   }
@@ -170,8 +176,8 @@ void CastSessionClient::HandleParsedClientMessage(
 
     case CastInternalMessage::Type::kLeaveSession:
       SendMessageToClient(CreateLeaveSessionAckMessage(
-          client_id_, cast_message->sequence_number()));
-      activity_->HandleLeaveSession(client_id_);
+          client_id(), cast_message->sequence_number()));
+      activity_->HandleLeaveSession(client_id());
       break;
 
     default:
@@ -224,7 +230,7 @@ void CastSessionClient::SendResultResponse(int sequence_number,
   if (result == cast_channel::Result::kOk) {
     // Send an empty message to let the client know the request succeeded.
     SendMessageToClient(
-        CreateV2Message(client_id_, base::Value(), sequence_number));
+        CreateV2Message(client_id(), base::Value(), sequence_number));
   } else {
     // TODO(crbug.com/951089): Send correct error codes.  The original
     // implementation isn't much help here because it sends incorrectly

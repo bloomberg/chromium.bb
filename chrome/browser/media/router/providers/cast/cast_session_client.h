@@ -26,59 +26,43 @@ namespace media_router {
 class CastActivityRecord;
 class DataDecoder;
 
-// Represents a Cast SDK client connection to a Cast session. This class
-// contains PresentationConnection Mojo pipes to send and receive messages
-// from/to the corresponding SDK client hosted in a presentation controlling
-// frame in Blink.
-class CastSessionClient : public blink::mojom::PresentationConnection {
+// TODO(jrw): Rename
+//   CastSessionClientBase -> CastSessionClient
+//   CastSessionClient -> CastSessionClientImpl
+// and likewise for CastActivity{Manager,Record}.
+class CastSessionClientBase : public blink::mojom::PresentationConnection {
  public:
-  CastSessionClient(const std::string& client_id,
-                    const url::Origin& origin,
-                    int tab_id,
-                    AutoJoinPolicy auto_join_policy,
-                    DataDecoder* data_decoder,
-                    CastActivityRecord* activity);
-  ~CastSessionClient() override;
+  CastSessionClientBase(const std::string& client_id,
+                        const url::Origin& origin,
+                        int tab_id);
+  ~CastSessionClientBase() override;
 
   const std::string& client_id() const { return client_id_; }
   const base::Optional<std::string>& session_id() const { return session_id_; }
   const url::Origin& origin() const { return origin_; }
-  int tab_id() { return tab_id_; }
+  int tab_id() const { return tab_id_; }
 
   // Initializes the PresentationConnection Mojo message pipes and returns the
   // handles of the two pipes to be held by Blink. Also transitions the
   // connection state to CONNECTED. This method can only be called once, and
   // must be called before |SendMessageToClient()|.
-  mojom::RoutePresentationConnectionPtr Init();
+  virtual mojom::RoutePresentationConnectionPtr Init() = 0;
 
   // Sends |message| to the Cast SDK client in Blink.
-  //
-  // TODO(jrw): Remove redundant "ToClient" in the name of this and other
-  // methods.
-  void SendMessageToClient(
-      blink::mojom::PresentationConnectionMessagePtr message);
+  virtual void SendMessageToClient(
+      blink::mojom::PresentationConnectionMessagePtr message) = 0;
 
   // Sends a media status message to the client.  If |request_id| is given, it
   // is used to look up the sequence number of a previous request, which is
   // included in the outgoing message.
-  void SendMediaStatusToClient(const base::Value& media_status,
-                               base::Optional<int> request_id);
+  virtual void SendMediaStatusToClient(const base::Value& media_status,
+                                       base::Optional<int> request_id) = 0;
 
   // Changes the PresentationConnection state to CLOSED/TERMINATED and resets
   // PresentationConnection message pipes.
-  void CloseConnection(
-      blink::mojom::PresentationConnectionCloseReason close_reason);
-  void TerminateConnection();
-
-  // blink::mojom::PresentationConnection implementation
-  void OnMessage(
-      blink::mojom::PresentationConnectionMessagePtr message) override;
-  // Blink does not initiate state change or close using PresentationConnection.
-  // Instead, |PresentationService::Close/TerminateConnection| is used.
-  void DidChangeState(
-      blink::mojom::PresentationConnectionState state) override {}
-  void DidClose(
-      blink::mojom::PresentationConnectionCloseReason reason) override;
+  virtual void CloseConnection(
+      blink::mojom::PresentationConnectionCloseReason close_reason) = 0;
+  virtual void TerminateConnection() = 0;
 
   // Tests whether the specified origin and tab ID match this session's origin
   // and tab ID to the extent required by this sesssion's auto-join policy.
@@ -92,16 +76,76 @@ class CastSessionClient : public blink::mojom::PresentationConnection {
   // Alternatively, it might make more sense to record at session creation time
   // whether a particular session was created by an auto-join request, in which
   // case I believe this method would no longer be needed.
-  bool MatchesAutoJoinPolicy(url::Origin origin, int tab_id) const;
+  virtual bool MatchesAutoJoinPolicy(url::Origin origin, int tab_id) const = 0;
 
-  void SendErrorCodeToClient(int sequence_number,
-                             CastInternalMessage::ErrorCode error_code,
-                             base::Optional<std::string> description);
+  virtual void SendErrorCodeToClient(
+      int sequence_number,
+      CastInternalMessage::ErrorCode error_code,
+      base::Optional<std::string> description) = 0;
 
   // NOTE: This is current only called from SendErrorCodeToClient, but based on
   // the old code this method based on, it seems likely it will have other
   // callers once error handling for the Cast MRP is more fleshed out.
-  void SendErrorToClient(int sequence_number, base::Value error);
+  virtual void SendErrorToClient(int sequence_number, base::Value error) = 0;
+
+ private:
+  std::string client_id_;
+  base::Optional<std::string> session_id_;
+
+  // The origin and tab ID parameters originally passed to the CreateRoute
+  // method of the MediaRouteProvider Mojo interface.
+  url::Origin origin_;
+  int tab_id_;
+};
+
+class CastSessionClientFactory {
+ public:
+  virtual std::unique_ptr<CastSessionClientBase> MakeClient(
+      const std::string& client_id,
+      const url::Origin& origin,
+      int tab_id) = 0;
+};
+
+// Represents a Cast SDK client connection to a Cast session. This class
+// contains PresentationConnection Mojo pipes to send and receive messages
+// from/to the corresponding SDK client hosted in a presentation controlling
+// frame in Blink.
+class CastSessionClient : public CastSessionClientBase {
+ public:
+  CastSessionClient(const std::string& client_id,
+                    const url::Origin& origin,
+                    int tab_id,
+                    AutoJoinPolicy auto_join_policy,
+                    DataDecoder* data_decoder,
+                    CastActivityRecord* activity);
+  ~CastSessionClient() override;
+
+  // CastSessionClientBase implementation
+  mojom::RoutePresentationConnectionPtr Init() override;
+  // TODO(jrw): Remove redundant "ToClient" in the name of this and other
+  // methods.
+  void SendMessageToClient(
+      blink::mojom::PresentationConnectionMessagePtr message) override;
+  void SendMediaStatusToClient(const base::Value& media_status,
+                               base::Optional<int> request_id) override;
+  void CloseConnection(
+      blink::mojom::PresentationConnectionCloseReason close_reason) override;
+  void TerminateConnection() override;
+  bool MatchesAutoJoinPolicy(url::Origin origin, int tab_id) const override;
+  void SendErrorCodeToClient(int sequence_number,
+                             CastInternalMessage::ErrorCode error_code,
+                             base::Optional<std::string> description) override;
+  void SendErrorToClient(int sequence_number, base::Value error) override;
+
+  // blink::mojom::PresentationConnection implementation
+  void OnMessage(
+      blink::mojom::PresentationConnectionMessagePtr message) override;
+  // Blink does not initiate state change or close using PresentationConnection.
+  // Instead, |PresentationService::Close/TerminateConnection| is used.
+  void DidChangeState(
+      blink::mojom::PresentationConnectionState state) override {}
+  void DidClose(
+      blink::mojom::PresentationConnectionCloseReason reason) override;
 
  private:
   void HandleParsedClientMessage(std::unique_ptr<base::Value> message);
@@ -113,14 +157,6 @@ class CastSessionClient : public blink::mojom::PresentationConnection {
   // Sends a response to the client indicating that a particular request
   // succeeded or failed.
   void SendResultResponse(int sequence_number, cast_channel::Result result);
-
-  std::string client_id_;
-  base::Optional<std::string> session_id_;
-
-  // The origin and tab ID parameters originally passed to the CreateRoute
-  // method of the MediaRouteProvider Mojo interface.
-  url::Origin origin_;
-  int tab_id_;
 
   const AutoJoinPolicy auto_join_policy_;
 

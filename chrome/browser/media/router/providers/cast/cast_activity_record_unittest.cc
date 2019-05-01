@@ -15,11 +15,13 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/mock_callback.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "chrome/browser/media/router/data_decoder_util.h"
 #include "chrome/browser/media/router/providers/cast/cast_activity_manager.h"
+#include "chrome/browser/media/router/providers/cast/cast_session_client.h"
 #include "chrome/browser/media/router/test/test_helper.h"
 #include "chrome/common/media_router/test/test_helper.h"
 #include "components/cast_channel/cast_test_util.h"
@@ -39,6 +41,7 @@ using testing::Pair;
 using testing::Return;
 using testing::UnorderedElementsAre;
 using testing::WithArg;
+using testing::WithArgs;
 
 namespace media_router {
 
@@ -49,16 +52,36 @@ constexpr char kAppId[] = "theAppId";
 constexpr char kRouteId[] = "theRouteId";
 constexpr char kSinkId[] = "cast:<id42>";
 
-CastMediaSource MakeSourceWithClientId(
-    const std::string& client_id,
-    AutoJoinPolicy auto_join_policy = AutoJoinPolicy::kPageScoped) {
-  CastMediaSource source("dummySourceId", std::vector<CastAppInfo>(),
-                         auto_join_policy);
-  source.set_client_id(client_id);
-  return source;
-}
+class MockCastSessionClient : public CastSessionClientBase {
+ public:
+  using CastSessionClientBase::CastSessionClientBase;
 
-}  // namespace
+  MOCK_METHOD0(Init, mojom::RoutePresentationConnectionPtr());
+  MOCK_METHOD1(SendMessageToClient,
+               void(blink::mojom::PresentationConnectionMessagePtr message));
+  MOCK_METHOD2(SendMediaStatusToClient,
+               void(const base::Value& media_status,
+                    base::Optional<int> request_id));
+  MOCK_METHOD1(
+      CloseConnection,
+      void(blink::mojom::PresentationConnectionCloseReason close_reason));
+  MOCK_METHOD0(TerminateConnection, void());
+  MOCK_CONST_METHOD2(MatchesAutoJoinPolicy,
+                     bool(url::Origin origin, int tab_id));
+  MOCK_METHOD3(SendErrorCodeToClient,
+               void(int sequence_number,
+                    CastInternalMessage::ErrorCode error_code,
+                    base::Optional<std::string> description));
+  MOCK_METHOD2(SendErrorToClient, void(int sequence_number, base::Value error));
+  MOCK_METHOD1(OnMessage,
+               void(blink::mojom::PresentationConnectionMessagePtr message));
+  MOCK_METHOD1(DidChangeState,
+               void(blink::mojom::PresentationConnectionState state));
+  MOCK_METHOD1(DidClose,
+               void(blink::mojom::PresentationConnectionCloseReason reason));
+};
+
+using NewClientCallback = base::RepeatingCallback<void(MockCastSessionClient&)>;
 
 class MockCastActivityManager : public CastActivityManagerBase {
  public:
@@ -68,7 +91,9 @@ class MockCastActivityManager : public CastActivityManagerBase {
                    mojom::MediaRouteProvider::TerminateRouteCallback callback));
 };
 
-class CastActivityRecordTest : public testing::Test {
+}  // namespace
+
+class CastActivityRecordTest : public testing::Test, CastSessionClientFactory {
  public:
   CastActivityRecordTest() {}
 
@@ -77,6 +102,8 @@ class CastActivityRecordTest : public testing::Test {
   void SetUp() override {
     media_sink_service_.AddOrUpdateSink(sink_);
     ASSERT_EQ(kSinkId, sink_.id());
+
+    CastActivityRecord::SetClientFactoryForTest(this);
 
     session_tracker_.reset(
         new CastSessionTracker(&media_sink_service_, &message_handler_,
@@ -108,7 +135,20 @@ class CastActivityRecordTest : public testing::Test {
     session_tracker_->SetSessionForTest(kSinkId, std::move(session));
   }
 
-  void TearDown() override { RunUntilIdle(); }
+  void TearDown() override {
+    RunUntilIdle();
+    CastActivityRecord::SetClientFactoryForTest(nullptr);
+  }
+
+  std::unique_ptr<CastSessionClientBase> MakeClient(
+      const std::string& client_id,
+      const url::Origin& origin,
+      int tab_id) override {
+    auto client =
+        std::make_unique<MockCastSessionClient>(client_id, origin, tab_id);
+    clients_.push_back(client.get());
+    return std::move(client);
+  }
 
  protected:
   void SetUpSession() { record_->SetOrUpdateSession(*session_, sink_, ""); }
@@ -123,10 +163,15 @@ class CastActivityRecordTest : public testing::Test {
 
   MediaRoute& route() { return record_->route_; }
 
-  // Gets an arbitrary tab ID.
-  int NewTabId() { return tab_id_counter++; }
+  MockCastSessionClient* AddMockClient(const std::string& client_id) {
+    CastMediaSource source("dummySourceId", std::vector<CastAppInfo>());
+    source.set_client_id(client_id);
+    record_->AddClient(source, url::Origin(), tab_id_counter_++);
+    return clients_.back();
+  }
 
-  int tab_id_counter = 239;  // Arbitrary number.
+  int tab_id_counter_ = 239;  // Arbitrary number.
+  std::vector<MockCastSessionClient*> clients_;
 
   // TODO(crbug.com/954797): Factor out members also present in
   // CastActivityManagerTest.
@@ -276,49 +321,37 @@ TEST_F(CastActivityRecordTest, SendStopSessionMessageToReceiver) {
 }
 
 TEST_F(CastActivityRecordTest, HandleLeaveSession) {
-  const url::Origin origin;
-  const int tab_id = NewTabId();
-
   SetUpSession();
-  record_->AddClient(
-      MakeSourceWithClientId("theClientId", AutoJoinPolicy::kPageScoped),
-      origin, tab_id);
-  record_->AddClient(
-      MakeSourceWithClientId("leaving1", AutoJoinPolicy::kOriginScoped), origin,
-      NewTabId());
-  record_->AddClient(
-      MakeSourceWithClientId("leaving2", AutoJoinPolicy::kTabAndOriginScoped),
-      origin, tab_id);
-  record_->AddClient(
-      MakeSourceWithClientId("not_leaving1", AutoJoinPolicy::kPageScoped),
-      origin, tab_id);
-  record_->AddClient(
-      MakeSourceWithClientId("not_leaving2", AutoJoinPolicy::kOriginScoped),
-      url::Origin(), tab_id);
-  record_->AddClient(MakeSourceWithClientId(
-                         "not_leaving3", AutoJoinPolicy::kTabAndOriginScoped),
-                     origin, NewTabId());
-  record_->AddClient(MakeSourceWithClientId(
-                         "not_leaving4", AutoJoinPolicy::kTabAndOriginScoped),
-                     url::Origin(), tab_id);
+  AddMockClient("theClientId");
+  AddMockClient("leaving");
+  AddMockClient("keeping");
+  for (auto* client : clients_) {
+    const bool is_leaving = client->client_id() == "leaving";
+    EXPECT_CALL(*client,
+                CloseConnection(PresentationConnectionCloseReason::CLOSED))
+        .Times(is_leaving ? 1 : 0);
+    EXPECT_CALL(*client, MatchesAutoJoinPolicy)
+        .WillRepeatedly(Return(is_leaving));
+  }
   record_->HandleLeaveSession("theClientId");
-  // TODO(crbug.com/954797): Test that CloseConnection() is called on each
-  // client that is leaving.
-  EXPECT_THAT(
-      record_->connected_clients(),
-      UnorderedElementsAre(Pair("theClientId", _), Pair("not_leaving1", _),
-                           Pair("not_leaving2", _), Pair("not_leaving3", _),
-                           Pair("not_leaving4", _)));
+  EXPECT_THAT(record_->connected_clients(),
+              UnorderedElementsAre(Pair("theClientId", _), Pair("keeping", _)));
 }
 
 TEST_F(CastActivityRecordTest, SendMessageToClient) {
   SetUpSession();
-  record_->AddClient(MakeSourceWithClientId("theClientId"), url::Origin(),
-                     NewTabId());
+
+  // An invalid client ID is ignored.
+  record_->SendMessageToClient("theClientId", nullptr);
+
   PresentationConnectionMessagePtr message =
       PresentationConnectionMessage::NewMessage("\"theMessage\"");
+  auto* message_ptr = message.get();
+  auto* client = AddMockClient("theClientId");
+  EXPECT_CALL(*client, SendMessageToClient).WillOnce([=](auto arg) {
+    EXPECT_EQ(message_ptr, arg.get());
+  });
   record_->SendMessageToClient("theClientId", std::move(message));
-  // TODO(crbug.com/954797): Test that the message is sent to the client.
 }
 
 TEST_F(CastActivityRecordTest, AddRemoveClient) {
@@ -327,14 +360,12 @@ TEST_F(CastActivityRecordTest, AddRemoveClient) {
   // Adding clients works as expected.
   ASSERT_TRUE(record_->connected_clients().empty());
   ASSERT_FALSE(route().is_local());
-  record_->AddClient(MakeSourceWithClientId("theClientId1"), url::Origin(),
-                     NewTabId());
+  AddMockClient("theClientId1");
   // Check that adding a client causes the route to become local.
   EXPECT_TRUE(route().is_local());
   EXPECT_THAT(record_->connected_clients(),
               UnorderedElementsAre(Pair("theClientId1", _)));
-  record_->AddClient(MakeSourceWithClientId("theClientId2"), url::Origin(),
-                     NewTabId());
+  AddMockClient("theClientId2");
   EXPECT_TRUE(route().is_local());
   EXPECT_THAT(
       record_->connected_clients(),
@@ -355,46 +386,46 @@ TEST_F(CastActivityRecordTest, AddRemoveClient) {
 }
 
 TEST_F(CastActivityRecordTest, SetOrUpdateSession) {
-  record_->AddClient(MakeSourceWithClientId("theClientId1"), url::Origin(),
-                     NewTabId());
-  record_->AddClient(MakeSourceWithClientId("theClientId2"), url::Origin(),
-                     NewTabId());
+  AddMockClient("theClientId1");
+  AddMockClient("theClientId2");
 
-  EXPECT_EQ(base::nullopt, record_->session_id());
+  ASSERT_EQ(base::nullopt, record_->session_id());
   route().set_description("");
+  for (auto* client : clients_) {
+    EXPECT_CALL(*client, SendMessageToClient).Times(0);
+  }
   record_->SetOrUpdateSession(*session_, sink_, "");
   EXPECT_EQ("theStatusText", route().description());
   EXPECT_EQ("theSessionId", record_->session_id());
-  // TODO(crbug.com/954797): Check that SendMessageToClient() is not called on
-  // any client.
 
   route().set_description("");
+  for (auto* client : clients_) {
+    // TODO(jrw): Check argument of SendMessageToClient.
+    EXPECT_CALL(*client, SendMessageToClient).Times(1);
+  }
   record_->SetOrUpdateSession(*session_, sink_, "theHashToken");
   EXPECT_EQ("theStatusText", route().description());
   EXPECT_EQ("theSessionId", record_->session_id());
-  // TODO(crbug.com/954797): Check that SendMessageToClient() is called on every
-  // client.
 }
 
 TEST_F(CastActivityRecordTest, ClosePresentationConnections) {
-  record_->AddClient(MakeSourceWithClientId("theClientId1"), url::Origin(),
-                     NewTabId());
-  record_->AddClient(MakeSourceWithClientId("theClientId2"), url::Origin(),
-                     NewTabId());
-  record_->ClosePresentationConnections(
-      PresentationConnectionCloseReason::CONNECTION_ERROR);
-  // TODO(crbug.com/954797): Test that CloseConnection() is called on every
-  // client.
+  constexpr auto reason = PresentationConnectionCloseReason::CONNECTION_ERROR;
+
+  AddMockClient("theClientId1");
+  AddMockClient("theClientId2");
+  for (auto* client : clients_) {
+    EXPECT_CALL(*client, CloseConnection(reason));
+  }
+  record_->ClosePresentationConnections(reason);
 }
 
 TEST_F(CastActivityRecordTest, TerminatePresentationConnections) {
-  record_->AddClient(MakeSourceWithClientId("theClientId1"), url::Origin(),
-                     NewTabId());
-  record_->AddClient(MakeSourceWithClientId("theClientId2"), url::Origin(),
-                     NewTabId());
+  AddMockClient("theClientId1");
+  AddMockClient("theClientId2");
+  for (auto* client : clients_) {
+    EXPECT_CALL(*client, TerminateConnection());
+  }
   record_->TerminatePresentationConnections();
-  // TODO(crbug.com/954797): Test that TerminateConnection() is called on every
-  // client.
 }
 
 }  // namespace media_router
