@@ -549,7 +549,7 @@
       Available USB devices will appear here.
     </message>
     <message name="IDS_SETTINGS_CROSTINI_SHARED_USB_DEVICES_DESCRIPTION" desc="Description for managing shared USB devices.">
-      Give Linux permission to access USB devices. Linux won't remember a USB device after it's removed.
+      Give Linux apps permission to access USB devices. Linux won't remember a USB device after it's removed.
     </message>
     <message name="IDS_SETTINGS_CROSTINI_SHARED_USB_DEVICES_EXTRA_DESCRIPTION" desc="Extra description for managing shared USB devices.">
        Only Android devices are currently supported.
