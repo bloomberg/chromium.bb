@@ -16,7 +16,7 @@
 
 #include "av1/common/warped_motion.h"
 
-/* This is a modified version of 'warped_filter' from warped_motion.c:
+/* This is a modified version of 'av1_warped_filter' from warped_motion.c:
    * Each coefficient is stored in 8 bits instead of 16 bits
    * The coefficients are rearranged in the column order 0, 2, 4, 6, 1, 3, 5, 7
 
@@ -469,14 +469,18 @@ static INLINE void unpack_weights_and_set_round_const(
 
 static INLINE void prepare_vertical_filter_coeffs(int gamma, int sy,
                                                   __m128i *coeffs) {
-  const __m128i tmp_0 = _mm_loadu_si128(
-      (__m128i *)(warped_filter + ((sy + 0 * gamma) >> WARPEDDIFF_PREC_BITS)));
-  const __m128i tmp_2 = _mm_loadu_si128(
-      (__m128i *)(warped_filter + ((sy + 2 * gamma) >> WARPEDDIFF_PREC_BITS)));
-  const __m128i tmp_4 = _mm_loadu_si128(
-      (__m128i *)(warped_filter + ((sy + 4 * gamma) >> WARPEDDIFF_PREC_BITS)));
-  const __m128i tmp_6 = _mm_loadu_si128(
-      (__m128i *)(warped_filter + ((sy + 6 * gamma) >> WARPEDDIFF_PREC_BITS)));
+  const __m128i tmp_0 =
+      _mm_loadu_si128((__m128i *)(av1_warped_filter +
+                                  ((sy + 0 * gamma) >> WARPEDDIFF_PREC_BITS)));
+  const __m128i tmp_2 =
+      _mm_loadu_si128((__m128i *)(av1_warped_filter +
+                                  ((sy + 2 * gamma) >> WARPEDDIFF_PREC_BITS)));
+  const __m128i tmp_4 =
+      _mm_loadu_si128((__m128i *)(av1_warped_filter +
+                                  ((sy + 4 * gamma) >> WARPEDDIFF_PREC_BITS)));
+  const __m128i tmp_6 =
+      _mm_loadu_si128((__m128i *)(av1_warped_filter +
+                                  ((sy + 6 * gamma) >> WARPEDDIFF_PREC_BITS)));
 
   const __m128i tmp_8 = _mm_unpacklo_epi32(tmp_0, tmp_2);
   const __m128i tmp_10 = _mm_unpacklo_epi32(tmp_4, tmp_6);
@@ -489,14 +493,18 @@ static INLINE void prepare_vertical_filter_coeffs(int gamma, int sy,
   coeffs[2] = _mm_unpacklo_epi64(tmp_12, tmp_14);
   coeffs[3] = _mm_unpackhi_epi64(tmp_12, tmp_14);
 
-  const __m128i tmp_1 = _mm_loadu_si128(
-      (__m128i *)(warped_filter + ((sy + 1 * gamma) >> WARPEDDIFF_PREC_BITS)));
-  const __m128i tmp_3 = _mm_loadu_si128(
-      (__m128i *)(warped_filter + ((sy + 3 * gamma) >> WARPEDDIFF_PREC_BITS)));
-  const __m128i tmp_5 = _mm_loadu_si128(
-      (__m128i *)(warped_filter + ((sy + 5 * gamma) >> WARPEDDIFF_PREC_BITS)));
-  const __m128i tmp_7 = _mm_loadu_si128(
-      (__m128i *)(warped_filter + ((sy + 7 * gamma) >> WARPEDDIFF_PREC_BITS)));
+  const __m128i tmp_1 =
+      _mm_loadu_si128((__m128i *)(av1_warped_filter +
+                                  ((sy + 1 * gamma) >> WARPEDDIFF_PREC_BITS)));
+  const __m128i tmp_3 =
+      _mm_loadu_si128((__m128i *)(av1_warped_filter +
+                                  ((sy + 3 * gamma) >> WARPEDDIFF_PREC_BITS)));
+  const __m128i tmp_5 =
+      _mm_loadu_si128((__m128i *)(av1_warped_filter +
+                                  ((sy + 5 * gamma) >> WARPEDDIFF_PREC_BITS)));
+  const __m128i tmp_7 =
+      _mm_loadu_si128((__m128i *)(av1_warped_filter +
+                                  ((sy + 7 * gamma) >> WARPEDDIFF_PREC_BITS)));
 
   const __m128i tmp_9 = _mm_unpacklo_epi32(tmp_1, tmp_3);
   const __m128i tmp_11 = _mm_unpacklo_epi32(tmp_5, tmp_7);
@@ -513,7 +521,7 @@ static INLINE void prepare_vertical_filter_coeffs(int gamma, int sy,
 static INLINE void prepare_vertical_filter_coeffs_gamma0(int sy,
                                                          __m128i *coeffs) {
   const __m128i tmp_0 = _mm_loadu_si128(
-      (__m128i *)(warped_filter + (sy >> WARPEDDIFF_PREC_BITS)));
+      (__m128i *)(av1_warped_filter + (sy >> WARPEDDIFF_PREC_BITS)));
 
   // even coeffs
   coeffs[0] =

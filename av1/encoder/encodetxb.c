@@ -140,7 +140,7 @@ static INLINE int get_eob_pos_token(const int eob, int *const extra) {
     t = eob_to_pos_large[e];
   }
 
-  *extra = eob - k_eob_group_start[t];
+  *extra = eob - av1_eob_group_start[t];
 
   return t;
 }
@@ -223,9 +223,9 @@ void av1_update_eob_context(int eob, TX_SIZE tx_size, TX_CLASS tx_class,
       break;
   }
 
-  if (k_eob_offset_bits[eob_pt] > 0) {
+  if (av1_eob_offset_bits[eob_pt] > 0) {
     int eob_ctx = eob_pt - 3;
-    int eob_shift = k_eob_offset_bits[eob_pt] - 1;
+    int eob_shift = av1_eob_offset_bits[eob_pt] - 1;
     int bit = (eob_extra & (1 << eob_shift)) ? 1 : 0;
 #if CONFIG_ENTROPY_STATS
     counts->eob_extra[cdf_idx][txs_ctx][plane][eob_pt][bit]++;
@@ -243,12 +243,12 @@ static int get_eob_cost(int eob, const LV_MAP_EOB_COST *txb_eob_costs,
   const int eob_multi_ctx = (tx_class == TX_CLASS_2D) ? 0 : 1;
   eob_cost = txb_eob_costs->eob_cost[eob_multi_ctx][eob_pt - 1];
 
-  if (k_eob_offset_bits[eob_pt] > 0) {
+  if (av1_eob_offset_bits[eob_pt] > 0) {
     const int eob_ctx = eob_pt - 3;
-    const int eob_shift = k_eob_offset_bits[eob_pt] - 1;
+    const int eob_shift = av1_eob_offset_bits[eob_pt] - 1;
     const int bit = (eob_extra & (1 << eob_shift)) ? 1 : 0;
     eob_cost += txb_costs->eob_extra_cost[eob_ctx][bit];
-    const int offset_bits = k_eob_offset_bits[eob_pt];
+    const int offset_bits = av1_eob_offset_bits[eob_pt];
     if (offset_bits > 1) eob_cost += av1_cost_literal(offset_bits - 1);
   }
   return eob_cost;
@@ -553,7 +553,7 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
       break;
   }
 
-  const int eob_offset_bits = k_eob_offset_bits[eob_pt];
+  const int eob_offset_bits = av1_eob_offset_bits[eob_pt];
   if (eob_offset_bits > 0) {
     const int eob_ctx = eob_pt - 3;
     int eob_shift = eob_offset_bits - 1;

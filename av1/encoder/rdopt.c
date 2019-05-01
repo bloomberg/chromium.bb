@@ -9314,9 +9314,9 @@ static int64_t motion_mode_rd(
             &mbmi->mv[0].as_mv, pts, pts_inref, mbmi->num_proj_ref, bsize);
       }
 
-      if (!find_projection(mbmi->num_proj_ref, pts, pts_inref, bsize,
-                           mbmi->mv[0].as_mv.row, mbmi->mv[0].as_mv.col,
-                           &mbmi->wm_params, mi_row, mi_col)) {
+      if (!av1_find_projection(mbmi->num_proj_ref, pts, pts_inref, bsize,
+                               mbmi->mv[0].as_mv.row, mbmi->mv[0].as_mv.col,
+                               &mbmi->wm_params, mi_row, mi_col)) {
         // Refine MV for NEWMV mode
         assert(!is_comp_pred);
         if (have_newmv_in_inter_mode(this_mode)) {

@@ -98,7 +98,7 @@ static const int error_measure_lut[512] = {
 // [-1, 2) * WARPEDPIXEL_PREC_SHIFTS.
 // We need an extra 2 taps to fit this in, for a total of 8 taps.
 /* clang-format off */
-const int16_t warped_filter[WARPEDPIXEL_PREC_SHIFTS * 3 + 1][8] = {
+const int16_t av1_warped_filter[WARPEDPIXEL_PREC_SHIFTS * 3 + 1][8] = {
 #if WARPEDPIXEL_PREC_BITS == 6
   // [-1, 0)
   { 0,   0, 127,   1,   0, 0, 0, 0 }, { 0, - 1, 127,   2,   0, 0, 0, 0 },
@@ -345,7 +345,7 @@ static int is_affine_shear_allowed(int16_t alpha, int16_t beta, int16_t gamma,
 }
 
 // Returns 1 on success or 0 on an invalid affine set
-int get_shear_params(WarpedMotionParams *wm) {
+int av1_get_shear_params(WarpedMotionParams *wm) {
   const int32_t *mat = wm->wmmat;
   if (!is_affine_valid(wm)) return 0;
   wm->alpha =
@@ -447,7 +447,7 @@ void av1_highbd_warp_affine_c(const int32_t *mat, const uint16_t *ref,
           const int offs = ROUND_POWER_OF_TWO(sx, WARPEDDIFF_PREC_BITS) +
                            WARPEDPIXEL_PREC_SHIFTS;
           assert(offs >= 0 && offs <= WARPEDPIXEL_PREC_SHIFTS * 3);
-          const int16_t *coeffs = warped_filter[offs];
+          const int16_t *coeffs = av1_warped_filter[offs];
 
           int32_t sum = 1 << offset_bits_horiz;
           for (int m = 0; m < 8; ++m) {
@@ -468,7 +468,7 @@ void av1_highbd_warp_affine_c(const int32_t *mat, const uint16_t *ref,
           const int offs = ROUND_POWER_OF_TWO(sy, WARPEDDIFF_PREC_BITS) +
                            WARPEDPIXEL_PREC_SHIFTS;
           assert(offs >= 0 && offs <= WARPEDPIXEL_PREC_SHIFTS * 3);
-          const int16_t *coeffs = warped_filter[offs];
+          const int16_t *coeffs = av1_warped_filter[offs];
 
           int32_t sum = 1 << offset_bits_vert;
           for (int m = 0; m < 8; ++m) {
@@ -731,7 +731,7 @@ void av1_warp_affine_c(const int32_t *mat, const uint8_t *ref, int width,
           const int offs = ROUND_POWER_OF_TWO(sx, WARPEDDIFF_PREC_BITS) +
                            WARPEDPIXEL_PREC_SHIFTS;
           assert(offs >= 0 && offs <= WARPEDPIXEL_PREC_SHIFTS * 3);
-          const int16_t *coeffs = warped_filter[offs];
+          const int16_t *coeffs = av1_warped_filter[offs];
 
           int32_t sum = 1 << offset_bits_horiz;
           for (int m = 0; m < 8; ++m) {
@@ -755,7 +755,7 @@ void av1_warp_affine_c(const int32_t *mat, const uint8_t *ref, int width,
           const int offs = ROUND_POWER_OF_TWO(sy, WARPEDDIFF_PREC_BITS) +
                            WARPEDPIXEL_PREC_SHIFTS;
           assert(offs >= 0 && offs <= WARPEDPIXEL_PREC_SHIFTS * 3);
-          const int16_t *coeffs = warped_filter[offs];
+          const int16_t *coeffs = av1_warped_filter[offs];
 
           int32_t sum = 1 << offset_bits_vert;
           for (int m = 0; m < 8; ++m) {
@@ -880,7 +880,7 @@ int64_t av1_warp_error(WarpedMotionParams *wm, int use_hbd, int bd,
                        int p_height, int p_stride, int subsampling_x,
                        int subsampling_y, int64_t best_error) {
   if (wm->wmtype <= AFFINE)
-    if (!get_shear_params(wm)) return 1;
+    if (!av1_get_shear_params(wm)) return 1;
   if (use_hbd)
     return highbd_warp_error(wm, ref, width, height, stride, dst, p_col, p_row,
                              p_width, p_height, p_stride, subsampling_x,
@@ -1131,9 +1131,9 @@ static int find_affine_int(int np, const int *pts1, const int *pts2,
   return 0;
 }
 
-int find_projection(int np, int *pts1, int *pts2, BLOCK_SIZE bsize, int mvy,
-                    int mvx, WarpedMotionParams *wm_params, int mi_row,
-                    int mi_col) {
+int av1_find_projection(int np, int *pts1, int *pts2, BLOCK_SIZE bsize, int mvy,
+                        int mvx, WarpedMotionParams *wm_params, int mi_row,
+                        int mi_col) {
   assert(wm_params->wmtype == AFFINE);
 
   if (find_affine_int(np, pts1, pts2, bsize, mvy, mvx, wm_params, mi_row,
@@ -1141,7 +1141,7 @@ int find_projection(int np, int *pts1, int *pts2, BLOCK_SIZE bsize, int mvy,
     return 1;
 
   // check compatibility with the fast warp filter
-  if (!get_shear_params(wm_params)) return 1;
+  if (!av1_get_shear_params(wm_params)) return 1;
 
   return 0;
 }

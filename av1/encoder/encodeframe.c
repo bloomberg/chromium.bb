@@ -5043,7 +5043,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
                  !(cpi->sf.selective_ref_gm && skip_gm_frame(cm, frame))) {
         if (num_frm_corners < 0) {
           // compute interest points using FAST features
-          num_frm_corners = fast_corner_detect(
+          num_frm_corners = av1_fast_corner_detect(
               frm_buffer, cpi->source->y_width, cpi->source->y_height,
               cpi->source->y_stride, frm_corners, MAX_CORNERS);
         }
@@ -5108,7 +5108,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
             }
           }
           if (cm->global_motion[frame].wmtype <= AFFINE)
-            if (!get_shear_params(&cm->global_motion[frame]))
+            if (!av1_get_shear_params(&cm->global_motion[frame]))
               cm->global_motion[frame] = default_warp_params;
 
           if (cm->global_motion[frame].wmtype == TRANSLATION) {

@@ -281,13 +281,14 @@ static int compute_global_motion_feature_based(
     ref_buffer = av1_downconvert_frame(ref, bit_depth);
   }
 
-  num_ref_corners = fast_corner_detect(ref_buffer, ref->y_width, ref->y_height,
-                                       ref->y_stride, ref_corners, MAX_CORNERS);
+  num_ref_corners =
+      av1_fast_corner_detect(ref_buffer, ref->y_width, ref->y_height,
+                             ref->y_stride, ref_corners, MAX_CORNERS);
 
   // find correspondences between the two images
   correspondences =
       (int *)malloc(num_frm_corners * 4 * sizeof(*correspondences));
-  num_correspondences = determine_correspondence(
+  num_correspondences = av1_determine_correspondence(
       frm_buffer, (int *)frm_corners, num_frm_corners, ref_buffer,
       (int *)ref_corners, num_ref_corners, frm_width, frm_height, frm_stride,
       ref->y_stride, correspondences);
