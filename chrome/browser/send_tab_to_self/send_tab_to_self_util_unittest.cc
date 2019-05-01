@@ -185,6 +185,14 @@ TEST_F(SendTabToSelfUtilTest, IsOnlySendingEnabled_False) {
   EXPECT_FALSE(IsReceivingEnabled());
 }
 
+TEST_F(SendTabToSelfUtilTest, IsSyncPaused) {
+  EXPECT_FALSE(IsSyncPaused(profile()));
+
+  test_sync_service_->SetDisableReasons(
+      syncer::SyncService::DISABLE_REASON_PAUSED);
+  EXPECT_TRUE(IsSyncPaused(profile()));
+}
+
 TEST_F(SendTabToSelfUtilTest, IsSyncingOnMultipleDevices_True) {
   mock_device_sync_service_->SetTrackerActiveDevices(2);
 
