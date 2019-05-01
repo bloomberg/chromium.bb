@@ -2316,3 +2316,8 @@ external/wpt/html/editing/focus/sequential-focus-navigation-and-the-tabindex-att
 external/wpt/payment-request/payment-response/retry-method-warnings-manual.https.html [ WontFix ]
 external/wpt/payment-request/payment-response/payerdetailschange-updateWith-manual.https.html [ WontFix ]
 [ Retina ] external/wpt/pointerevents/pointerevent_touch-action-span-test_touch-manual.html [ WontFix ]
+external/wpt/pointerevents/pointerevent_touch-action-inherit_child-pan-x-child-pan-x_touch-manual.html [ WontFix ]
+external/wpt/pointerevents/pointerevent_touch-action-inherit_child-pan-x-child-pan-y_touch-manual.html [ WontFix ]
+external/wpt/pointerevents/pointerevent_touch-action-inherit_child-none_touch-manual.html [ WontFix ]
+external/wpt/pointerevents/pointerevent_touch-action-inherit_parent-none_touch-manual.html [ WontFix ]
+external/wpt/pointerevents/pointerevent_touch-action-inherit_child-auto-child-none_touch-manual.html [ WontFix ]
