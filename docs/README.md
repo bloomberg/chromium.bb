@@ -165,9 +165,11 @@ used when committed.
     browser vendors
 *   [Using Crashpad with `content_shell`](testing/using_crashpad_with_content_shell.md) -
     Capture stack traces on layout test crashes without an attached debugger
-*   [Test Descriptions](test_descriptions.md) - Unit test targets that can be
+*   [Test Descriptions](testing/test_descriptions.md) - Unit test targets that can be
     built, with associated desciptions.
-*   [IPC Fuzzer](ipc_fuzzer.md) - Fuzz testing of Chromium IPC interfaces.
+*   [IPC Fuzzer](testing/ipc_fuzzer.md) - Fuzz testing of Chromium IPC interfaces.
+*   [Running Chrome tests with AddressSanitizer (asan) and LeakSanitizer (lsan)](testing/linux_running_asan_tests.md) -
+    Run Chrome tests with ASAN and LSAN builds to detect addressability issues and memory leaks.
 
 ### GPU-related docs
 *   [GPU Pixel Wrangling](gpu/pixel_wrangling.md) - Instructions for GPU
@@ -219,7 +221,7 @@ used when committed.
     isolate browser components with different privileges.
 *   [Zygote Process](linux_zygote.md) - How the Linux Zygote process, used to
     spawn new processes, works.
-*   [Running Web Tests on Linux](web_tests_linux.md) - Linux-specific
+*   [Running Web Tests on Linux](testing/web_tests_linux.md) - Linux-specific
     instructions for running web tests.
 *   [Linux Sysroot Images](linux_sysroot.md) - How builds use libraries on Linux
 *   [Linux Hardware Video Decoding](linux_hw_video_decode.md) - Enabling
@@ -247,7 +249,7 @@ used when committed.
     Setting up profiling for `content_shell` on Android
 *   [Working Remotely with Android](working_remotely_with_android.md) - Building
     on a remote machine for an Android device connected to your local machine
-*   [Android Test Instructions](android_test_instructions.md) - Running a build
+*   [Android Test Instructions](testing/android_test_instructions.md) - Running a build
     on an Android device or emulator.
 *   [Android Debugging](android_debugging_instructions.md) - Tools and tips for
     how to debug Java and/or C/C++ code running on Android.
