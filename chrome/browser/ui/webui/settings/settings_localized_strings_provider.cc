@@ -1397,8 +1397,6 @@ void AddLanguagesStrings(content::WebUIDataSource* html_source) {
 #if !defined(OS_MACOSX)
     {"spellCheckLanguagesListTitle",
      IDS_SETTINGS_LANGUAGES_SPELL_CHECK_LANGUAGES_LIST_TITLE},
-    {"spellCheckLanguagesListEmpty",
-     IDS_SETTINGS_LANGUAGES_SPELL_CHECK_LANGUAGES_LIST_EMPTY},
     {"manageSpellCheck", IDS_SETTINGS_LANGUAGES_SPELL_CHECK_MANAGE},
     {"editDictionaryPageTitle", IDS_SETTINGS_LANGUAGES_EDIT_DICTIONARY_TITLE},
     {"addDictionaryWordLabel", IDS_SETTINGS_LANGUAGES_ADD_DICTIONARY_WORD},

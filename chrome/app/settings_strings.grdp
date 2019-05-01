@@ -2495,9 +2495,6 @@
     <message name="IDS_SETTINGS_LANGUAGES_SPELL_CHECK_LANGUAGES_LIST_TITLE" desc="Title for the list of languages that support spell check, from which users can enable or disable spell check for.">
       Use spell check for
     </message>
-    <message name="IDS_SETTINGS_LANGUAGES_SPELL_CHECK_LANGUAGES_LIST_EMPTY" desc="Description for when there the list of languages that support spell check is empty.">
-      None available
-    </message>
     <message name="IDS_SETTINGS_LANGUAGES_SPELL_CHECK_MANAGE" desc="Button under the dropdown of spell check languages which opens a sub-page that lets the user add or remove words to the custom list of words whitelisted for spell checking.">
       Customize spell check
     </message>
