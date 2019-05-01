@@ -4,25 +4,63 @@
 
 #include "skia/ext/test_fonts.h"
 
+#include <fuchsia/fonts/cpp/fidl.h>
+#include <fuchsia/io/cpp/fidl.h>
+#include <fuchsia/sys/cpp/fidl.h>
+#include <lib/fidl/cpp/interface_handle.h>
+
+#include "base/fuchsia/file_utils.h"
+#include "base/fuchsia/service_directory_client.h"
+#include "base/no_destructor.h"
+#include "base/path_service.h"
 #include "skia/ext/fontmgr_default.h"
 #include "third_party/skia/include/core/SkFontMgr.h"
-#include "third_party/skia/include/ports/SkFontMgr_android.h"
+#include "third_party/skia/include/ports/SkFontMgr_fuchsia.h"
 
 namespace skia {
 
 void ConfigureTestFont() {
-  // TODO(https://crbugs.com/927980): Use SkFontMgr_Fuchsia instead of
-  // SkFontMgr_Android. We just need to start a fonts::Provider instance with
-  // a custom manifest files and connect to it instead of the default
-  // fonts::Provider instance..
-  SkFontMgr_Android_CustomFonts custom;
-  custom.fSystemFontUse = SkFontMgr_Android_CustomFonts::kOnlyCustom;
-  custom.fBasePath = "/pkg/test_fonts/";
-  custom.fFontsXml = "/pkg/test_fonts/android_main_fonts.xml";
-  custom.fFallbackFontsXml = "/pkg/test_fonts/android_fallback_fonts.xml";
-  custom.fIsolated = false;
+  // ComponentController for the font provider service started below. It's a
+  // static field to keep the service running until the test process is
+  // destroyed.
+  static base::NoDestructor<
+      fidl::InterfaceHandle<fuchsia::sys::ComponentController>>
+      test_font_provider_controller;
+  DCHECK(!*test_font_provider_controller);
 
-  skia::OverrideDefaultSkFontMgr(SkFontMgr_New_Android(&custom));
+  // Start a fuchsia.fonts.Provider instance and configure it to load the test
+  // fonts, which must be bundled in the calling process' package.
+  fuchsia::sys::LaunchInfo launch_info;
+  launch_info.url = "fuchsia-pkg://fuchsia.com/fonts#meta/fonts.cmx";
+  launch_info.arguments.reset(
+      {"--no-default-fonts",
+       "--font-manifest=/test_fonts/fuchsia_test_fonts_manifest.json"});
+  launch_info.flat_namespace = fuchsia::sys::FlatNamespace::New();
+  launch_info.flat_namespace->paths.push_back("/test_fonts");
+
+  base::FilePath assets_path;
+  if (!base::PathService::Get(base::DIR_ASSETS, &assets_path))
+    LOG(FATAL) << "Can't get DIR_ASSETS";
+  launch_info.flat_namespace->directories.push_back(
+      base::fuchsia::OpenDirectory(assets_path.AppendASCII("test_fonts"))
+          .TakeChannel());
+
+  fidl::InterfaceHandle<fuchsia::io::Directory> font_provider_services_dir;
+  launch_info.directory_request =
+      font_provider_services_dir.NewRequest().TakeChannel();
+
+  fuchsia::sys::LauncherSyncPtr launcher =
+      base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
+          ->ConnectToServiceSync<fuchsia::sys::Launcher>();
+  launcher->CreateComponent(std::move(launch_info),
+                            test_font_provider_controller->NewRequest());
+
+  base::fuchsia::ServiceDirectoryClient font_provider_services_client(
+      std::move(font_provider_services_dir));
+
+  skia::OverrideDefaultSkFontMgr(SkFontMgr_New_Fuchsia(
+      font_provider_services_client
+          .ConnectToServiceSync<fuchsia::fonts::Provider>()));
 }
 
 }  // namespace skia
