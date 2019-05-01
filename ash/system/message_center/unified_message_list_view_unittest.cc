@@ -4,6 +4,7 @@
 
 #include "ash/system/message_center/unified_message_list_view.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "ash/test/ash_test_base.h"
@@ -86,6 +87,8 @@ class UnifiedMessageListViewTest : public AshTestBase,
   void SetUp() override {
     AshTestBase::SetUp();
     model_ = std::make_unique<UnifiedSystemTrayModel>();
+    scoped_feature_list_.InitAndDisableFeature(
+        features::kNotificationStackingBarRedesign);
   }
 
   void TearDown() override {
@@ -161,6 +164,7 @@ class UnifiedMessageListViewTest : public AshTestBase,
   int size_changed_count() const { return size_changed_count_; }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   int id_ = 0;
   int size_changed_count_ = 0;
 

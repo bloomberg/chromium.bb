@@ -73,7 +73,7 @@ const base::Feature kUseShaderRoundedCorner{"UseShaderRoundedCorner",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kNotificationStackingBarRedesign{
-    "NotificationStackingBarRedesign", base::FEATURE_DISABLED_BY_DEFAULT};
+    "NotificationStackingBarRedesign", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kSystemTrayFeaturePodsPagination{
     "SystemTrayFeaturePodsPagination", base::FEATURE_DISABLED_BY_DEFAULT};
