@@ -35,6 +35,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_file_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "net/base/auth.h"
 #include "net/base/chunked_upload_data_stream.h"
 #include "net/base/completion_once_callback.h"
@@ -5906,9 +5907,9 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyConnectFailure) {
 }
 
 // Test the case where a proxied H2 session doesn't exist when an auth challenge
-// is observed, but does exist by the time auth credentials are provided.
-// Proxy-Connection: Close is used so that there's a second DNS lookup, which is
-// what causes the existing H2 session to be noticed and reused.
+// is observed, but does exist by the time auth credentials are provided. In
+// this case, auth and SSL are fully negotated on the second request, but then
+// the socket is discarded to use the shared session.
 TEST_F(HttpNetworkTransactionTest, ProxiedH2SessionAppearsDuringAuth) {
   ProxyConfig proxy_config;
   proxy_config.set_auto_detect(true);
@@ -5945,6 +5946,10 @@ TEST_F(HttpNetworkTransactionTest, ProxiedH2SessionAppearsDuringAuth) {
                 "CONNECT www.example.org:443 HTTP/1.1\r\n"
                 "Host: www.example.org:443\r\n"
                 "Proxy-Connection: keep-alive\r\n\r\n"),
+      MockWrite(ASYNC, 2,
+                "CONNECT www.example.org:443 HTTP/1.1\r\n"
+                "Host: www.example.org:443\r\n"
+                "Proxy-Connection: keep-alive\r\n\r\n"),
   };
 
   MockRead auth_challenge_reads[] = {
@@ -5975,6 +5980,18 @@ TEST_F(HttpNetworkTransactionTest, ProxiedH2SessionAppearsDuringAuth) {
       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 8),
   };
 
+  MockWrite auth_response_writes_discarded_socket[] = {
+      MockWrite(ASYNC, 0,
+                "CONNECT www.example.org:443 HTTP/1.1\r\n"
+                "Host: www.example.org:443\r\n"
+                "Proxy-Connection: keep-alive\r\n"
+                "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n\r\n"),
+  };
+
+  MockRead auth_response_reads_discarded_socket[] = {
+      MockRead(ASYNC, 1, "HTTP/1.1 200 OK\r\n\r\n"),
+  };
+
   SequencedSocketData auth_challenge1(auth_challenge_reads,
                                       auth_challenge_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&auth_challenge1);
@@ -5986,9 +6003,19 @@ TEST_F(HttpNetworkTransactionTest, ProxiedH2SessionAppearsDuringAuth) {
   SequencedSocketData spdy_data(spdy_reads, spdy_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
 
+  SequencedSocketData auth_response_discarded_socket(
+      auth_response_reads_discarded_socket,
+      auth_response_writes_discarded_socket);
+  session_deps_.socket_factory->AddSocketDataProvider(
+      &auth_response_discarded_socket);
+
   SSLSocketDataProvider ssl(ASYNC, OK);
   ssl.next_proto = kProtoHTTP2;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  SSLSocketDataProvider ssl2(ASYNC, OK);
+  ssl2.next_proto = kProtoHTTP2;
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl2);
 
   TestCompletionCallback callback;
   std::string response_data;

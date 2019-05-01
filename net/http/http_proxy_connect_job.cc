@@ -448,12 +448,6 @@ int HttpProxyConnectJob::DoTransportConnectComplete(int result) {
   if (result != OK) {
     UMA_HISTOGRAM_MEDIUM_TIMES("Net.HttpProxy.ConnectLatency.Insecure.Error",
                                base::TimeTicks::Now() - connect_start_time_);
-    // This is a special error code meaning to reuse an existing SPDY session
-    // rather than use a fresh socket. Overriding it with a proxy error message
-    // would cause the request to fail, instead of switching to using the SPDY
-    // session.
-    if (result == ERR_SPDY_SESSION_ALREADY_EXISTS)
-      return result;
     return ERR_PROXY_CONNECTION_FAILED;
   }
 
@@ -502,13 +496,6 @@ int HttpProxyConnectJob::DoSSLConnectComplete(int result) {
     // TODO(rch): allow the user to deal with proxy cert errors in the
     // same way as server cert errors.
     return ERR_PROXY_CERTIFICATE_INVALID;
-  }
-  // A SPDY session to the proxy completed prior to resolving the proxy
-  // hostname. Surface this error, and allow the delegate to retry.
-  // See crbug.com/334413.
-  if (result == ERR_SPDY_SESSION_ALREADY_EXISTS) {
-    DCHECK(!nested_connect_job_->socket());
-    return ERR_SPDY_SESSION_ALREADY_EXISTS;
   }
   if (result < 0) {
     UMA_HISTOGRAM_MEDIUM_TIMES("Net.HttpProxy.ConnectLatency.Secure.Error",

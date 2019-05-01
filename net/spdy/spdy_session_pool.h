@@ -28,6 +28,7 @@
 #include "net/cert/cert_database.h"
 #include "net/log/net_log_source.h"
 #include "net/proxy_resolution/proxy_config.h"
+#include "net/socket/connect_job.h"
 #include "net/spdy/http2_push_promise_index.h"
 #include "net/spdy/server_push_delegate.h"
 #include "net/spdy/spdy_session_key.h"
@@ -230,6 +231,14 @@ class NET_EXPORT SpdySessionPool
       SpdySessionRequest::Delegate* delegate,
       std::unique_ptr<SpdySessionRequest>* spdy_session_request,
       bool* is_blocking_request_for_session);
+
+  // Invoked when a host resolution completes. Returns
+  // OnHostResolutionCallbackResult::kMayBeDeletedAsync if there's a SPDY
+  // session that's a suitable alias for |key|, setting up the alias if needed.
+  OnHostResolutionCallbackResult OnHostResolutionComplete(
+      const SpdySessionKey& key,
+      bool is_websocket,
+      const AddressList& addresses);
 
   // Remove all mappings and aliases for the given session, which must
   // still be available. Except for in tests, this must be called by

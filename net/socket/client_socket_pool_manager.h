@@ -16,6 +16,7 @@
 #include "net/base/request_priority.h"
 #include "net/http/http_network_session.h"
 #include "net/socket/client_socket_pool.h"
+#include "net/socket/connect_job.h"
 
 namespace base {
 class Value;
@@ -25,9 +26,6 @@ class ProcessMemoryDump;
 }
 
 namespace net {
-
-typedef base::Callback<int(const AddressList&, const NetLogWithSource& net_log)>
-    OnHostResolutionCallback;
 
 class ClientSocketHandle;
 class HostPortPair;

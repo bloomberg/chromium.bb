@@ -359,17 +359,6 @@ class HttpStreamFactory::Job
 
   void MaybeCopyConnectionAttemptsFromSocketOrHandle();
 
-  // Invoked by the transport socket pool after host resolution is complete
-  // to allow the connection to be aborted, if a matching SPDY session can
-  // be found.  Will return ERR_SPDY_SESSION_ALREADY_EXISTS if such a
-  // session is found, and OK otherwise.
-  static int OnHostResolution(SpdySessionPool* spdy_session_pool,
-                              const SpdySessionKey& spdy_session_key,
-                              bool enable_ip_based_pooling,
-                              bool is_websocket,
-                              const AddressList& addresses,
-                              const NetLogWithSource& net_log);
-
   // Returns true if the request should be throttled to allow for only one
   // connection attempt to be made to an H2 server at a time.
   bool ShouldThrottleConnectForSpdy() const;

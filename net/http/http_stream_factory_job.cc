@@ -43,6 +43,7 @@
 #include "net/quic/quic_http_stream.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/client_socket_pool_manager.h"
+#include "net/socket/connect_job.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/stream_socket.h"
 #include "net/spdy/bidirectional_stream_spdy_impl.h"
@@ -56,6 +57,37 @@
 namespace net {
 
 namespace {
+
+// Invoked by the transport socket pool after host resolution is complete
+// to allow the connection to be aborted, if a matching SPDY session can
+// be found. Returns OnHostResolutionCallbackResult::kMayBeDeletedAsync if such
+// a session is found, as it will post a task that may delete the calling
+// ConnectJob. Also returns kMayBeDeletedAsync if there may already be such
+// a task posted.
+OnHostResolutionCallbackResult OnHostResolution(
+    SpdySessionPool* spdy_session_pool,
+    const SpdySessionKey& spdy_session_key,
+    bool is_for_websockets,
+    const HostPortPair& host_port_pair,
+    const AddressList& addresses) {
+  // Don't call OnHostResolutionComplete() when the host that just had its name
+  // resolved is not the host identified in the H2 session key. There's not
+  // enough information to find any connections that could be pooled in that
+  // case, and calling into the session pool with the wrong address could
+  // confuse it. This can happen in either the H2 over proxy case, and in the
+  // alternative service case.
+  //
+  // TODO(mmenke): Set the key to point to the proxy's session when this happens
+  // for HTTPS sessions, and don't set a callback at all for other proxy types.
+  if (!host_port_pair.Equals(spdy_session_key.host_port_pair()))
+    return OnHostResolutionCallbackResult::kContinue;
+
+  // It is OK to dereference spdy_session_pool, because the
+  // ClientSocketPoolManager will be destroyed in the same callback that
+  // destroys the SpdySessionPool.
+  return spdy_session_pool->OnHostResolutionComplete(
+      spdy_session_key, is_for_websockets, addresses);
+}
 
 // Experiment to preconnect only one connection if HttpServerProperties is
 // not supported or initialized.
@@ -486,23 +518,6 @@ void HttpStreamFactory::Job::OnPreconnectsComplete() {
   // |this| may be deleted after this call.
 }
 
-// static
-int HttpStreamFactory::Job::OnHostResolution(
-    SpdySessionPool* spdy_session_pool,
-    const SpdySessionKey& spdy_session_key,
-    bool enable_ip_based_pooling,
-    bool is_websocket,
-    const AddressList& addresses,
-    const NetLogWithSource& net_log) {
-  // It is OK to dereference spdy_session_pool, because the
-  // ClientSocketPoolManager will be destroyed in the same callback that
-  // destroys the SpdySessionPool.
-  return spdy_session_pool->FindAvailableSession(
-             spdy_session_key, enable_ip_based_pooling, is_websocket, net_log)
-             ? ERR_SPDY_SESSION_ALREADY_EXISTS
-             : OK;
-}
-
 void HttpStreamFactory::Job::OnIOComplete(int result) {
   TRACE_EVENT0(NetTracingCategory(), "HttpStreamFactory::Job::OnIOComplete");
   RunLoop(result);
@@ -693,8 +708,7 @@ void HttpStreamFactory::Job::ResumeInitConnection() {
 int HttpStreamFactory::Job::DoInitConnection() {
   net_log_.BeginEvent(NetLogEventType::HTTP_STREAM_JOB_INIT_CONNECTION);
   int result = DoInitConnectionImpl();
-  if (result != ERR_SPDY_SESSION_ALREADY_EXISTS &&
-      !expect_on_quic_host_resolution_) {
+  if (!expect_on_quic_host_resolution_) {
     delegate_->OnConnectionInitialized(this, result);
   }
   return result;
@@ -892,9 +906,9 @@ int HttpStreamFactory::Job::DoInitConnectionImpl() {
   // the hostname is resolved.
   OnHostResolutionCallback resolution_callback =
       CanUseExistingSpdySession()
-          ? base::Bind(&Job::OnHostResolution, session_->spdy_session_pool(),
-                       spdy_session_key_, enable_ip_based_pooling_,
-                       try_websocket_over_http2_)
+          ? base::BindRepeating(&OnHostResolution,
+                                session_->spdy_session_pool(),
+                                spdy_session_key_, is_websocket_)
           : OnHostResolutionCallback();
 
   ClientSocketPool::ProxyAuthCallback proxy_auth_callback =
@@ -942,23 +956,6 @@ int HttpStreamFactory::Job::DoInitConnectionComplete(int result) {
     if (using_quic_)
       return result;
     DCHECK_EQ(OK, result);
-    return OK;
-  }
-
-  if (result == ERR_SPDY_SESSION_ALREADY_EXISTS) {
-    // We found a HTTP/2 connection after resolving the host. This is
-    // probably an IP pooled connection.
-    existing_spdy_session_ =
-        session_->spdy_session_pool()->FindAvailableSession(
-            spdy_session_key_, enable_ip_based_pooling_,
-            try_websocket_over_http2_, net_log_);
-    if (existing_spdy_session_) {
-      using_spdy_ = true;
-      next_state_ = STATE_CREATE_STREAM;
-    } else {
-      // It is possible that the HTTP/2 session no longer exists.
-      ReturnToStateInitConnection(true /* close connection */);
-    }
     return OK;
   }
 
@@ -1224,6 +1221,12 @@ void HttpStreamFactory::Job::ReturnToStateInitConnection(
 void HttpStreamFactory::Job::OnSpdySessionAvailable(
     base::WeakPtr<SpdySession> spdy_session) {
   DCHECK(spdy_session);
+
+  // No need for the connection any more, since |spdy_session| can be used
+  // instead, and there's no benefit from keeping the old ConnectJob in the
+  // socket pool.
+  if (connection_)
+    connection_->ResetAndCloseSocket();
 
   // Once a connection is initialized, or if there's any out-of-band callback,
   // like proxy auth challenge, the SpdySessionRequest is cancelled.

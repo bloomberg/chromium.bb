@@ -17,6 +17,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_file_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "net/base/auth.h"
 #include "net/base/chunked_upload_data_stream.h"
 #include "net/base/completion_once_callback.h"
@@ -2547,6 +2548,8 @@ TEST_F(SpdyNetworkTransactionTest,
 
 TEST_F(SpdyNetworkTransactionTest, RedirectGetRequest) {
   SpdyURLRequestContext spdy_url_request_context;
+  // Use a different port to avoid trying to reuse the initial H2 session.
+  const char kRedirectUrl[] = "https://www.foo.com:8080/index.php";
 
   SSLSocketDataProvider ssl_provider0(ASYNC, OK);
   ssl_provider0.next_proto = kProtoHTTP2;
@@ -2564,8 +2567,7 @@ TEST_F(SpdyNetworkTransactionTest, RedirectGetRequest) {
       spdy_util_.ConstructSpdyRstStream(1, spdy::ERROR_CODE_CANCEL));
   MockWrite writes0[] = {CreateMockWrite(req0, 0), CreateMockWrite(rst, 2)};
 
-  const char* const kExtraHeaders[] = {"location",
-                                       "https://www.foo.com/index.php"};
+  const char* const kExtraHeaders[] = {"location", kRedirectUrl};
   spdy::SpdySerializedFrame resp0(spdy_util_.ConstructSpdyReplyError(
       "301", kExtraHeaders, base::size(kExtraHeaders) / 2, 1));
   MockRead reads0[] = {CreateMockRead(resp0, 1), MockRead(ASYNC, 0, 3)};
@@ -2580,7 +2582,7 @@ TEST_F(SpdyNetworkTransactionTest, RedirectGetRequest) {
 
   SpdyTestUtil spdy_util1;
   spdy::SpdyHeaderBlock headers1(
-      spdy_util1.ConstructGetHeaderBlock("https://www.foo.com/index.php"));
+      spdy_util1.ConstructGetHeaderBlock(kRedirectUrl));
   headers1["user-agent"] = "";
   headers1["accept-encoding"] = "gzip, deflate";
   spdy::SpdySerializedFrame req1(
@@ -3836,6 +3838,394 @@ TEST_F(SpdyNetworkTransactionTest, ServerCancelsCrossOriginPush) {
 
   helper.VerifyDataConsumed();
 }
+
+TEST_F(SpdyNetworkTransactionTest, NoConnectionPoolingOverTunnel) {
+  // Use port 443 for two reasons:  This makes the endpoint is port 443 check in
+  // NormalSpdyTransactionHelper pass, and this means that the tunnel uses the
+  // same port as the servers, to further confuse things.
+  const char kPacString[] = "PROXY myproxy:443";
+
+  auto session_deps = std::make_unique<SpdySessionDependencies>(
+      ProxyResolutionService::CreateFixedFromPacResult(
+          kPacString, TRAFFIC_ANNOTATION_FOR_TESTS));
+  NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_,
+                                     std::move(session_deps));
+
+  // Only one request uses the first connection.
+  spdy::SpdySerializedFrame req1(
+      spdy_util_.ConstructSpdyGet("https://www.example.org", 1, LOWEST));
+  MockWrite writes1[] = {
+      MockWrite(ASYNC, 0,
+                "CONNECT www.example.org:443 HTTP/1.1\r\n"
+                "Host: www.example.org:443\r\n"
+                "Proxy-Connection: keep-alive\r\n\r\n"),
+      CreateMockWrite(req1, 2),
+  };
+
+  spdy::SpdySerializedFrame resp1(
+      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
+  spdy::SpdySerializedFrame body1(spdy_util_.ConstructSpdyDataFrame(1, true));
+  MockRead reads1[] = {MockRead(ASYNC, 1, "HTTP/1.1 200 OK\r\n\r\n"),
+                       CreateMockRead(resp1, 3), CreateMockRead(body1, 4),
+                       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 5)};
+
+  MockConnect connect1(ASYNC, OK);
+  SequencedSocketData data1(connect1, reads1, writes1);
+
+  // Run a transaction to completion to set up a SPDY session.
+  helper.RunToCompletion(&data1);
+  TransactionHelperResult out = helper.output();
+  EXPECT_THAT(out.rv, IsOk());
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
+  EXPECT_EQ("hello!", out.response_data);
+
+  // A new SPDY session should have been created.
+  SpdySessionKey key1(HostPortPair("www.example.org", 443),
+                      ProxyServer::FromPacString(kPacString),
+                      PRIVACY_MODE_DISABLED,
+                      SpdySessionKey::IsProxySession::kFalse, SocketTag());
+  base::WeakPtr<SpdySession> session1 =
+      helper.session()->spdy_session_pool()->FindAvailableSession(
+          key1, true /* enable_up_base_pooling */, false /* is_websocket */,
+          NetLogWithSource());
+  ASSERT_TRUE(session1);
+
+  // The second request uses a second connection.
+  SpdyTestUtil spdy_util2;
+  spdy::SpdySerializedFrame req2(
+      spdy_util2.ConstructSpdyGet("https://example.test", 1, LOWEST));
+  MockWrite writes2[] = {
+      MockWrite(ASYNC, 0,
+                "CONNECT example.test:443 HTTP/1.1\r\n"
+                "Host: example.test:443\r\n"
+                "Proxy-Connection: keep-alive\r\n\r\n"),
+      CreateMockWrite(req2, 2),
+  };
+
+  spdy::SpdySerializedFrame resp2(
+      spdy_util2.ConstructSpdyGetReply(nullptr, 0, 1));
+  spdy::SpdySerializedFrame body2(spdy_util2.ConstructSpdyDataFrame(1, true));
+  MockRead reads2[] = {MockRead(ASYNC, 1, "HTTP/1.1 200 OK\r\n\r\n"),
+                       CreateMockRead(resp2, 3), CreateMockRead(body2, 4),
+                       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 5)};
+
+  MockConnect connect2(ASYNC, OK);
+  SequencedSocketData data2(connect2, reads2, writes2);
+  helper.AddData(&data2);
+
+  HttpRequestInfo request2;
+  request2.method = "GET";
+  request2.url = GURL("https://example.test/");
+  request2.load_flags = 0;
+  request2.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  auto trans2 = std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY,
+                                                         helper.session());
+
+  TestCompletionCallback callback;
+  EXPECT_THAT(trans2->Start(&request2, callback.callback(), NetLogWithSource()),
+              IsError(ERR_IO_PENDING));
+
+  // Wait for the second request to get headers.  It should create a new H2
+  // session to do so.
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
+
+  const HttpResponseInfo* response = trans2->GetResponseInfo();
+  ASSERT_TRUE(response);
+  ASSERT_TRUE(response->headers);
+  EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
+  EXPECT_TRUE(response->was_fetched_via_spdy);
+  EXPECT_TRUE(response->was_alpn_negotiated);
+  std::string response_data;
+  ASSERT_THAT(ReadTransaction(trans2.get(), &response_data), IsOk());
+  EXPECT_EQ("hello!", response_data);
+
+  // Inspect the new session.
+  SpdySessionKey key2(HostPortPair("example.test", 443),
+                      ProxyServer::FromPacString(kPacString),
+                      PRIVACY_MODE_DISABLED,
+                      SpdySessionKey::IsProxySession::kFalse, SocketTag());
+  base::WeakPtr<SpdySession> session2 =
+      helper.session()->spdy_session_pool()->FindAvailableSession(
+          key2, true /* enable_up_base_pooling */, false /* is_websocket */,
+          NetLogWithSource());
+  ASSERT_TRUE(session2);
+  ASSERT_TRUE(session1);
+  EXPECT_NE(session1.get(), session2.get());
+}
+
+// Check that if a session is found after host resolution, but is closed before
+// the task to try to use it executes, the request will continue to create a new
+// socket and use it.
+TEST_F(SpdyNetworkTransactionTest, ConnectionPoolingSessionClosedBeforeUse) {
+  NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_, nullptr);
+
+  // Only one request uses the first connection.
+  spdy::SpdySerializedFrame req1(
+      spdy_util_.ConstructSpdyGet("https://www.example.org", 1, LOWEST));
+  MockWrite writes1[] = {
+      CreateMockWrite(req1, 0),
+  };
+
+  spdy::SpdySerializedFrame resp1(
+      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
+  spdy::SpdySerializedFrame body1(spdy_util_.ConstructSpdyDataFrame(1, true));
+  MockRead reads1[] = {CreateMockRead(resp1, 1), CreateMockRead(body1, 2),
+                       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 3)};
+
+  MockConnect connect1(ASYNC, OK);
+  SequencedSocketData data1(connect1, reads1, writes1);
+
+  // Run a transaction to completion to set up a SPDY session.
+  helper.RunToCompletion(&data1);
+  TransactionHelperResult out = helper.output();
+  EXPECT_THAT(out.rv, IsOk());
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
+  EXPECT_EQ("hello!", out.response_data);
+
+  // A new SPDY session should have been created.
+  SpdySessionKey key1(HostPortPair("www.example.org", 443),
+                      ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
+                      SpdySessionKey::IsProxySession::kFalse, SocketTag());
+  EXPECT_TRUE(helper.session()->spdy_session_pool()->FindAvailableSession(
+      key1, true /* enable_up_base_pooling */, false /* is_websocket */,
+      NetLogWithSource()));
+
+  // The second request uses a second connection.
+  SpdyTestUtil spdy_util2;
+  spdy::SpdySerializedFrame req2(
+      spdy_util2.ConstructSpdyGet("https://example.test", 1, LOWEST));
+  MockWrite writes2[] = {
+      CreateMockWrite(req2, 0),
+  };
+
+  spdy::SpdySerializedFrame resp2(
+      spdy_util2.ConstructSpdyGetReply(nullptr, 0, 1));
+  spdy::SpdySerializedFrame body2(spdy_util2.ConstructSpdyDataFrame(1, true));
+  MockRead reads2[] = {CreateMockRead(resp2, 1), CreateMockRead(body2, 2),
+                       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 3)};
+
+  MockConnect connect2(ASYNC, OK);
+  SequencedSocketData data2(connect2, reads2, writes2);
+  helper.AddData(&data2);
+
+  HttpRequestInfo request2;
+  request2.method = "GET";
+  request2.url = GURL("https://example.test/");
+  request2.load_flags = 0;
+  request2.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  auto trans2 = std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY,
+                                                         helper.session());
+
+  // Set on-demand mode and run the second request to the DNS lookup.
+  helper.session_deps()->host_resolver->set_ondemand_mode(true);
+  TestCompletionCallback callback;
+  EXPECT_THAT(trans2->Start(&request2, callback.callback(), NetLogWithSource()),
+              IsError(ERR_IO_PENDING));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(helper.session_deps()->host_resolver->has_pending_requests());
+
+  // Resolve the request now, which should create an alias for the SpdySession
+  // immediately, but the task to use the session for the second request should
+  // run asynchronously, so it hasn't run yet.
+  helper.session_deps()->host_resolver->ResolveOnlyRequestNow();
+  SpdySessionKey key2(HostPortPair("example.test", 443), ProxyServer::Direct(),
+                      PRIVACY_MODE_DISABLED,
+                      SpdySessionKey::IsProxySession::kFalse, SocketTag());
+  base::WeakPtr<SpdySession> session1 =
+      helper.session()->spdy_session_pool()->FindAvailableSession(
+          key2, true /* enable_up_base_pooling */, false /* is_websocket */,
+          NetLogWithSource());
+  ASSERT_TRUE(session1);
+  EXPECT_EQ(key1, session1->spdy_session_key());
+  // Remove the session before the second request can try to use it.
+  helper.session()->spdy_session_pool()->CloseAllSessions();
+
+  // Wait for the second request to get headers.  It should create a new H2
+  // session to do so.
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
+
+  const HttpResponseInfo* response = trans2->GetResponseInfo();
+  ASSERT_TRUE(response);
+  ASSERT_TRUE(response->headers);
+  EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
+  EXPECT_TRUE(response->was_fetched_via_spdy);
+  EXPECT_TRUE(response->was_alpn_negotiated);
+  std::string response_data;
+  ASSERT_THAT(ReadTransaction(trans2.get(), &response_data), IsOk());
+  EXPECT_EQ("hello!", response_data);
+
+  // Inspect the new session.
+  base::WeakPtr<SpdySession> session2 =
+      helper.session()->spdy_session_pool()->FindAvailableSession(
+          key2, true /* enable_up_base_pooling */, false /* is_websocket */,
+          NetLogWithSource());
+  ASSERT_TRUE(session2);
+  EXPECT_EQ(key2, session2->spdy_session_key());
+  helper.VerifyDataConsumed();
+}
+
+#if defined(OS_ANDROID)
+
+// Test this if two HttpNetworkTransactions try to repurpose the same
+// SpdySession with two different SocketTags, only one request gets the session,
+// while the other makes a new SPDY session.
+TEST_F(SpdyNetworkTransactionTest, ConnectionPoolingMultipleSocketTags) {
+  const SocketTag kSocketTag1(SocketTag::UNSET_UID, 1);
+  const SocketTag kSocketTag2(SocketTag::UNSET_UID, 2);
+  const SocketTag kSocketTag3(SocketTag::UNSET_UID, 3);
+
+  NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_, nullptr);
+
+  // The first and third requests use the first connection.
+  spdy::SpdySerializedFrame req1(
+      spdy_util_.ConstructSpdyGet("https://www.example.org", 1, LOWEST));
+  spdy_util_.UpdateWithStreamDestruction(1);
+  spdy::SpdySerializedFrame req3(
+      spdy_util_.ConstructSpdyGet("https://example.test/request3", 3, LOWEST));
+  MockWrite writes1[] = {
+      CreateMockWrite(req1, 0),
+      CreateMockWrite(req3, 3),
+  };
+
+  spdy::SpdySerializedFrame resp1(
+      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
+  spdy::SpdySerializedFrame body1(spdy_util_.ConstructSpdyDataFrame(1, true));
+  spdy::SpdySerializedFrame resp3(
+      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 3));
+  spdy::SpdySerializedFrame body3(spdy_util_.ConstructSpdyDataFrame(3, true));
+  MockRead reads1[] = {CreateMockRead(resp1, 1), CreateMockRead(body1, 2),
+                       CreateMockRead(resp3, 4), CreateMockRead(body3, 5),
+                       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 6)};
+
+  SequencedSocketData data1(MockConnect(ASYNC, OK), reads1, writes1);
+  helper.AddData(&data1);
+
+  // Due to the vagaries of how the socket pools work, in this particular case,
+  // the second ConnectJob will be cancelled, but only after it tries to start
+  // connecting. This does not happen in the general case of a bunch of requests
+  // using the same socket tag.
+  SequencedSocketData data2(MockConnect(SYNCHRONOUS, ERR_IO_PENDING),
+                            base::span<const MockRead>(),
+                            base::span<const MockWrite>());
+  helper.AddData(&data2);
+
+  // The second request uses a second connection.
+  SpdyTestUtil spdy_util2;
+  spdy::SpdySerializedFrame req2(
+      spdy_util2.ConstructSpdyGet("https://example.test/request2", 1, LOWEST));
+  MockWrite writes2[] = {
+      CreateMockWrite(req2, 0),
+  };
+
+  spdy::SpdySerializedFrame resp2(
+      spdy_util2.ConstructSpdyGetReply(nullptr, 0, 1));
+  spdy::SpdySerializedFrame body2(spdy_util2.ConstructSpdyDataFrame(1, true));
+  MockRead reads2[] = {CreateMockRead(resp2, 1), CreateMockRead(body2, 2),
+                       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 3)};
+
+  SequencedSocketData data3(MockConnect(ASYNC, OK), reads2, writes2);
+  helper.AddData(&data3);
+
+  // Run a transaction to completion to set up a SPDY session. This can't use
+  // RunToCompletion(), since it can't call VerifyDataConsumed() yet.
+  helper.RunPreTestSetup();
+  helper.RunDefaultTest();
+  TransactionHelperResult out = helper.output();
+  EXPECT_THAT(out.rv, IsOk());
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
+  EXPECT_EQ("hello!", out.response_data);
+
+  // A new SPDY session should have been created.
+  SpdySessionKey key1(HostPortPair("www.example.org", 443),
+                      ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
+                      SpdySessionKey::IsProxySession::kFalse, SocketTag());
+  EXPECT_TRUE(helper.session()->spdy_session_pool()->FindAvailableSession(
+      key1, true /* enable_up_base_pooling */, false /* is_websocket */,
+      NetLogWithSource()));
+
+  // Set on-demand mode for the next two requests.
+  helper.session_deps()->host_resolver->set_ondemand_mode(true);
+
+  HttpRequestInfo request2;
+  request2.socket_tag = kSocketTag2;
+  request2.method = "GET";
+  request2.url = GURL("https://example.test/request2");
+  request2.load_flags = 0;
+  request2.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  auto trans2 = std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY,
+                                                         helper.session());
+  TestCompletionCallback callback2;
+  EXPECT_THAT(
+      trans2->Start(&request2, callback2.callback(), NetLogWithSource()),
+      IsError(ERR_IO_PENDING));
+
+  HttpRequestInfo request3;
+  request3.socket_tag = kSocketTag3;
+  request3.method = "GET";
+  request3.url = GURL("https://example.test/request3");
+  request3.load_flags = 0;
+  request3.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  auto trans3 = std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY,
+                                                         helper.session());
+  TestCompletionCallback callback3;
+  EXPECT_THAT(
+      trans3->Start(&request3, callback3.callback(), NetLogWithSource()),
+      IsError(ERR_IO_PENDING));
+
+  // Run the message loop until both requests are waiting on the host resolver.
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(helper.session_deps()->host_resolver->has_pending_requests());
+
+  // Complete the second requests's DNS lookup now, which should create an alias
+  // for the SpdySession immediately, but the task to use the session for the
+  // second request should run asynchronously, so it hasn't run yet.
+  helper.session_deps()->host_resolver->ResolveNow(2);
+  SpdySessionKey key2(HostPortPair("example.test", 443), ProxyServer::Direct(),
+                      PRIVACY_MODE_DISABLED,
+                      SpdySessionKey::IsProxySession::kFalse, kSocketTag2);
+
+  // Complete the third requests's DNS lookup now, which should hijack the
+  // SpdySession from the second request.
+  helper.session_deps()->host_resolver->ResolveNow(3);
+  SpdySessionKey key3(HostPortPair("example.test", 443), ProxyServer::Direct(),
+                      PRIVACY_MODE_DISABLED,
+                      SpdySessionKey::IsProxySession::kFalse, kSocketTag3);
+
+  // Wait for the second request to get headers.  It should create a new H2
+  // session to do so.
+  EXPECT_THAT(callback2.WaitForResult(), IsOk());
+
+  const HttpResponseInfo* response = trans2->GetResponseInfo();
+  ASSERT_TRUE(response);
+  ASSERT_TRUE(response->headers);
+  EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
+  EXPECT_TRUE(response->was_fetched_via_spdy);
+  EXPECT_TRUE(response->was_alpn_negotiated);
+  std::string response_data;
+  ASSERT_THAT(ReadTransaction(trans2.get(), &response_data), IsOk());
+  EXPECT_EQ("hello!", response_data);
+
+  // Wait for the third request to get headers.  It should have reused the first
+  // session.
+  EXPECT_THAT(callback3.WaitForResult(), IsOk());
+
+  response = trans3->GetResponseInfo();
+  ASSERT_TRUE(response);
+  ASSERT_TRUE(response->headers);
+  EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
+  EXPECT_TRUE(response->was_fetched_via_spdy);
+  EXPECT_TRUE(response->was_alpn_negotiated);
+  ASSERT_THAT(ReadTransaction(trans3.get(), &response_data), IsOk());
+  EXPECT_EQ("hello!", response_data);
+
+  helper.VerifyDataConsumed();
+}
+
+#endif  // defined(OS_ANDROID)
 
 // Regression test for https://crbug.com/727653.
 TEST_F(SpdyNetworkTransactionTest, RejectServerPushWithNoMethod) {
@@ -8063,6 +8453,285 @@ TEST_F(SpdyNetworkTransactionTest, WebSocketOverHTTP2) {
   histogram_tester.ExpectUniqueSample("Net.SpdySession.ServerSupportsWebSocket",
                                       /* support_websocket = true */ 1,
                                       /* expected_count = */ 1);
+}
+
+// Same as above, but checks that a WebSocket connection avoids creating a new
+// socket if it detects an H2 session when host resolution completes, and
+// requests also use different hostnames.
+TEST_F(SpdyNetworkTransactionTest,
+       WebSocketOverHTTP2DetectsNewSessionWithAliasing) {
+  base::HistogramTester histogram_tester;
+  auto session_deps = std::make_unique<SpdySessionDependencies>();
+  session_deps->enable_websocket_over_http2 = true;
+  session_deps->host_resolver->set_ondemand_mode(true);
+  NormalSpdyTransactionHelper helper(request_, HIGHEST, log_,
+                                     std::move(session_deps));
+  helper.RunPreTestSetup();
+
+  spdy::SpdySerializedFrame req(
+      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, HIGHEST));
+  spdy::SpdySerializedFrame settings_ack(spdy_util_.ConstructSpdySettingsAck());
+
+  spdy::SpdyHeaderBlock websocket_request_headers;
+  websocket_request_headers[spdy::kHttp2MethodHeader] = "CONNECT";
+  websocket_request_headers[spdy::kHttp2AuthorityHeader] = "example.test";
+  websocket_request_headers[spdy::kHttp2SchemeHeader] = "https";
+  websocket_request_headers[spdy::kHttp2PathHeader] = "/";
+  websocket_request_headers[spdy::kHttp2ProtocolHeader] = "websocket";
+  websocket_request_headers["origin"] = "http://example.test";
+  websocket_request_headers["sec-websocket-version"] = "13";
+  websocket_request_headers["sec-websocket-extensions"] =
+      "permessage-deflate; client_max_window_bits";
+  spdy::SpdySerializedFrame websocket_request(spdy_util_.ConstructSpdyHeaders(
+      3, std::move(websocket_request_headers), MEDIUM, false));
+
+  spdy::SpdySerializedFrame priority1(
+      spdy_util_.ConstructSpdyPriority(3, 0, MEDIUM, true));
+  spdy::SpdySerializedFrame priority2(
+      spdy_util_.ConstructSpdyPriority(1, 3, LOWEST, true));
+
+  MockWrite writes[] = {
+      CreateMockWrite(req, 0), CreateMockWrite(settings_ack, 2),
+      CreateMockWrite(websocket_request, 4), CreateMockWrite(priority1, 5),
+      CreateMockWrite(priority2, 6)};
+
+  spdy::SettingsMap settings;
+  settings[spdy::SETTINGS_ENABLE_CONNECT_PROTOCOL] = 1;
+  spdy::SpdySerializedFrame settings_frame(
+      spdy_util_.ConstructSpdySettings(settings));
+  spdy::SpdySerializedFrame resp1(
+      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
+  spdy::SpdySerializedFrame body1(spdy_util_.ConstructSpdyDataFrame(1, true));
+  spdy::SpdySerializedFrame websocket_response(
+      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 3));
+  MockRead reads[] = {CreateMockRead(settings_frame, 1),
+                      CreateMockRead(resp1, 3), CreateMockRead(body1, 7),
+                      CreateMockRead(websocket_response, 8),
+                      MockRead(SYNCHRONOUS, ERR_IO_PENDING, 9)};
+
+  SequencedSocketData data(reads, writes);
+  helper.AddData(&data);
+
+  TestCompletionCallback callback1;
+  int rv = helper.trans()->Start(&request_, callback1.callback(), log_);
+  ASSERT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  HttpRequestInfo request2;
+  request2.method = "GET";
+  request2.url = GURL("wss://example.test/");
+  request2.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  request2.extra_headers.SetHeader("Origin", "http://example.test");
+  request2.extra_headers.SetHeader("Sec-WebSocket-Version", "13");
+  // The following two headers must be removed by WebSocketHttp2HandshakeStream.
+  request2.extra_headers.SetHeader("Connection", "Upgrade");
+  request2.extra_headers.SetHeader("Upgrade", "websocket");
+
+  TestWebSocketHandshakeStreamCreateHelper websocket_stream_create_helper;
+
+  HttpNetworkTransaction trans2(MEDIUM, helper.session());
+  trans2.SetWebSocketHandshakeStreamCreateHelper(
+      &websocket_stream_create_helper);
+
+  TestCompletionCallback callback2;
+  rv = trans2.Start(&request2, callback2.callback(), log_);
+  ASSERT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  // Make sure both requests are blocked on host resolution.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(helper.session_deps()->host_resolver->has_pending_requests());
+  // Complete the first DNS lookup, which should result in the first transaction
+  // creating an H2 session (And completing successfully).
+  helper.session_deps()->host_resolver->ResolveNow(1);
+  base::RunLoop().RunUntilIdle();
+
+  SpdySessionKey key1(HostPortPair::FromURL(request_.url),
+                      ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
+                      SpdySessionKey::IsProxySession::kFalse, SocketTag());
+  base::WeakPtr<SpdySession> spdy_session1 =
+      helper.session()->spdy_session_pool()->FindAvailableSession(
+          key1, /* enable_ip_based_pooling = */ true,
+          /* is_websocket = */ false, log_);
+  ASSERT_TRUE(spdy_session1);
+  EXPECT_TRUE(spdy_session1->support_websocket());
+
+  // Second DNS lookup completes, which results in creating a WebSocket stream.
+  helper.session_deps()->host_resolver->ResolveNow(2);
+  ASSERT_TRUE(spdy_session1);
+
+  SpdySessionKey key2(HostPortPair::FromURL(request2.url),
+                      ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
+                      SpdySessionKey::IsProxySession::kFalse, SocketTag());
+  base::WeakPtr<SpdySession> spdy_session2 =
+      helper.session()->spdy_session_pool()->FindAvailableSession(
+          key1, /* enable_ip_based_pooling = */ true,
+          /* is_websocket = */ true, log_);
+  ASSERT_TRUE(spdy_session2);
+  EXPECT_EQ(spdy_session1.get(), spdy_session2.get());
+
+  base::RunLoop().RunUntilIdle();
+
+  // First request has HIGHEST priority, WebSocket request has MEDIUM priority.
+  // Changing the priority of the first request to LOWEST changes their order,
+  // and therefore triggers sending PRIORITY frames.
+  helper.trans()->SetPriority(LOWEST);
+
+  rv = callback1.WaitForResult();
+  ASSERT_THAT(rv, IsOk());
+
+  const HttpResponseInfo* response = helper.trans()->GetResponseInfo();
+  ASSERT_TRUE(response->headers);
+  EXPECT_TRUE(response->was_fetched_via_spdy);
+  EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
+
+  std::string response_data;
+  rv = ReadTransaction(helper.trans(), &response_data);
+  EXPECT_THAT(rv, IsOk());
+  EXPECT_EQ("hello!", response_data);
+
+  rv = callback2.WaitForResult();
+  ASSERT_THAT(rv, IsOk());
+
+  helper.VerifyDataConsumed();
+}
+
+// Same as above, but the SpdySession is closed just before use, so the
+// WebSocket is sent over a new HTTP/1.x connection instead.
+TEST_F(SpdyNetworkTransactionTest,
+       WebSocketOverDetectsNewSessionWithAliasingButClosedBeforeUse) {
+  base::HistogramTester histogram_tester;
+  auto session_deps = std::make_unique<SpdySessionDependencies>();
+  session_deps->enable_websocket_over_http2 = true;
+  session_deps->host_resolver->set_ondemand_mode(true);
+  NormalSpdyTransactionHelper helper(request_, HIGHEST, log_,
+                                     std::move(session_deps));
+  helper.RunPreTestSetup();
+
+  spdy::SpdySerializedFrame req(
+      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, HIGHEST));
+  spdy::SpdySerializedFrame settings_ack(spdy_util_.ConstructSpdySettingsAck());
+
+  MockWrite writes[] = {CreateMockWrite(req, 0),
+                        CreateMockWrite(settings_ack, 2)};
+
+  spdy::SettingsMap settings;
+  settings[spdy::SETTINGS_ENABLE_CONNECT_PROTOCOL] = 1;
+  spdy::SpdySerializedFrame settings_frame(
+      spdy_util_.ConstructSpdySettings(settings));
+  spdy::SpdySerializedFrame resp1(
+      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
+  spdy::SpdySerializedFrame body1(spdy_util_.ConstructSpdyDataFrame(1, true));
+  MockRead reads[] = {CreateMockRead(settings_frame, 1),
+                      CreateMockRead(resp1, 3), CreateMockRead(body1, 4),
+                      MockRead(SYNCHRONOUS, ERR_IO_PENDING, 5)};
+
+  SequencedSocketData data(reads, writes);
+  helper.AddData(&data);
+
+  MockWrite writes2[] = {
+      MockWrite("GET / HTTP/1.1\r\n"
+                "Host: example.test\r\n"
+                "Connection: Upgrade\r\n"
+                "Upgrade: websocket\r\n"
+                "Origin: http://example.test\r\n"
+                "Sec-WebSocket-Version: 13\r\n"
+                "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n"
+                "Sec-WebSocket-Extensions: permessage-deflate; "
+                "client_max_window_bits\r\n\r\n")};
+  MockRead reads2[] = {
+      MockRead("HTTP/1.1 101 Switching Protocols\r\n"
+               "Upgrade: websocket\r\n"
+               "Connection: Upgrade\r\n"
+               "Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n\r\n")};
+  StaticSocketDataProvider data2(reads2, writes2);
+  auto ssl_provider2 = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
+  // Test that request has empty |alpn_protos|, that is, HTTP/2 is disabled.
+  ssl_provider2->next_protos_expected_in_ssl_config = NextProtoVector{};
+  // Force socket to use HTTP/1.1, the default protocol without ALPN.
+  ssl_provider2->next_proto = kProtoHTTP11;
+  ssl_provider2->ssl_info.cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
+  helper.AddDataWithSSLSocketDataProvider(&data2, std::move(ssl_provider2));
+
+  TestCompletionCallback callback1;
+  int rv = helper.trans()->Start(&request_, callback1.callback(), log_);
+  ASSERT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  HttpRequestInfo request2;
+  request2.method = "GET";
+  request2.url = GURL("wss://example.test/");
+  request2.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  request2.extra_headers.SetHeader("Connection", "Upgrade");
+  request2.extra_headers.SetHeader("Upgrade", "websocket");
+  request2.extra_headers.SetHeader("Origin", "http://example.test");
+  request2.extra_headers.SetHeader("Sec-WebSocket-Version", "13");
+
+  TestWebSocketHandshakeStreamCreateHelper websocket_stream_create_helper;
+
+  HttpNetworkTransaction trans2(MEDIUM, helper.session());
+  trans2.SetWebSocketHandshakeStreamCreateHelper(
+      &websocket_stream_create_helper);
+
+  TestCompletionCallback callback2;
+  rv = trans2.Start(&request2, callback2.callback(), log_);
+  ASSERT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  // Make sure both requests are blocked on host resolution.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(helper.session_deps()->host_resolver->has_pending_requests());
+  // Complete the first DNS lookup, which should result in the first transaction
+  // creating an H2 session (And completing successfully).
+  helper.session_deps()->host_resolver->ResolveNow(1);
+
+  // Complete first request.
+  rv = callback1.WaitForResult();
+  ASSERT_THAT(rv, IsOk());
+  const HttpResponseInfo* response = helper.trans()->GetResponseInfo();
+  ASSERT_TRUE(response->headers);
+  EXPECT_TRUE(response->was_fetched_via_spdy);
+  EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
+  std::string response_data;
+  rv = ReadTransaction(helper.trans(), &response_data);
+  EXPECT_THAT(rv, IsOk());
+  EXPECT_EQ("hello!", response_data);
+
+  SpdySessionKey key1(HostPortPair::FromURL(request_.url),
+                      ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
+                      SpdySessionKey::IsProxySession::kFalse, SocketTag());
+  base::WeakPtr<SpdySession> spdy_session1 =
+      helper.session()->spdy_session_pool()->FindAvailableSession(
+          key1, /* enable_ip_based_pooling = */ true,
+          /* is_websocket = */ false, log_);
+  ASSERT_TRUE(spdy_session1);
+  EXPECT_TRUE(spdy_session1->support_websocket());
+
+  // Second DNS lookup completes, which results in creating an alias for the
+  // SpdySession immediately, and a task is posted asynchronously to use the
+  // alias..
+  helper.session_deps()->host_resolver->ResolveNow(2);
+
+  SpdySessionKey key2(HostPortPair::FromURL(request2.url),
+                      ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
+                      SpdySessionKey::IsProxySession::kFalse, SocketTag());
+  base::WeakPtr<SpdySession> spdy_session2 =
+      helper.session()->spdy_session_pool()->FindAvailableSession(
+          key1, /* enable_ip_based_pooling = */ true,
+          /* is_websocket = */ true, log_);
+  ASSERT_TRUE(spdy_session2);
+  EXPECT_EQ(spdy_session1.get(), spdy_session2.get());
+
+  // But the session is closed before it can be used.
+  helper.session()->spdy_session_pool()->CloseAllSessions();
+
+  // The second request establishes another connection (without even doing
+  // another DNS lookup) instead, and uses HTTP/1.x.
+  rv = callback2.WaitForResult();
+  ASSERT_THAT(rv, IsOk());
+
+  helper.VerifyDataConsumed();
 }
 
 TEST_F(SpdyNetworkTransactionTest, WebSocketNegotiatesHttp2) {

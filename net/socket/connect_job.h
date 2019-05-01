@@ -97,9 +97,27 @@ struct NET_EXPORT_PRIVATE CommonConnectJobParams {
   WebSocketEndpointLockManager* websocket_endpoint_lock_manager;
 };
 
+// When a host resolution completes, OnHostResolutionCallback() is invoked. If
+// it returns |kContinue|, the ConnectJob can continue immediately. If it
+// returns |kMayBeDeletedAsync|, the ConnectJob may be slated for asychronous
+// destruction, so should post a task before continuing, in case it will be
+// deleted. The purpose of kMayBeDeletedAsync is to avoid needlessly creating
+// and connecting a socket when it might not be needed.
+enum class OnHostResolutionCallbackResult {
+  kContinue,
+  kMayBeDeletedAsync,
+};
+
+// If non-null, invoked when host resolution completes. May not destroy the
+// ConnectJob synchronously, but may signal the ConnectJob may be destroyed
+// asynchronously. See OnHostResolutionCallbackResult above.
+//
+// |address_list| is the list of addresses the host being connected to was
+// resolved to, with the port fields populated to the port being connected to.
 using OnHostResolutionCallback =
-    base::RepeatingCallback<int(const AddressList&,
-                                const NetLogWithSource& net_log)>;
+    base::RepeatingCallback<OnHostResolutionCallbackResult(
+        const HostPortPair& host_port_pair,
+        const AddressList& address_list)>;
 
 // ConnectJob provides an abstract interface for "connecting" a socket.
 // The connection may involve host resolution, tcp connection, ssl connection,
