@@ -323,7 +323,9 @@ public abstract class InfoBar implements InfoBarView {
 
     @Override
     public void onCloseButtonClicked() {
-        if (mNativeInfoBarPtr != 0) nativeOnCloseButtonClicked(mNativeInfoBarPtr);
+        if (mNativeInfoBarPtr != 0 && !mIsDismissed) {
+            nativeOnCloseButtonClicked(mNativeInfoBarPtr);
+        }
     }
 
     @Override
