@@ -294,9 +294,6 @@ message DestroyDiskImageRequest {
 
   // The path to the disk image. This must be a relative path.
   string disk_path = 2;
-
-  // The storage location for the disk image.
-  StorageLocation storage_location = 3;
 }
 
 // Response to a DestroyDiskImageRequest.
@@ -318,9 +315,6 @@ message ExportDiskImageRequest {
 
   // The path to the disk image. This must be a relative path.
   string disk_path = 2;
-
-  // The storage location where the disk image resides.
-  StorageLocation storage_location = 3;
 }
 
 // Response to a ExportDiskImageRequest.
