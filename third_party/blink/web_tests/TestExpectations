@@ -6333,3 +6333,4 @@ crbug.com/948785 [ Debug ] virtual/mouseevent_fractional/fast/events/pointereven
 # Sheriff 2019-05-01
 crbug.com/958347 [ Linux ] external/wpt/editing/run/removeformat.html [ Pass Crash ]
 crbug.com/941931 [ Linux Win ] virtual/outofblink-cors/http/tests/security/contentSecurityPolicy/1.1/plugintypes-affects-cross-site-child-disallowed.html [ Pass Failure ]
+crbug.com/958426 [ Mac10.13 ] fast/text/line-break-ascii.html [ Timeout Pass ]
