@@ -13,6 +13,7 @@ component("client") {
     "guarded_page_allocator_win.cc",
     "gwp_asan.cc",
     "gwp_asan.h",
+    "sampling_state.h",
   ]
 
   if (is_posix) {

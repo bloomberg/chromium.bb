@@ -17,6 +17,7 @@
 #include "components/crash/core/common/crash_key.h"
 #include "components/gwp_asan/client/export.h"
 #include "components/gwp_asan/client/guarded_page_allocator.h"
+#include "components/gwp_asan/client/sampling_state.h"
 #include "components/gwp_asan/common/crash_key_name.h"
 
 #if defined(OS_MACOSX)
@@ -30,88 +31,13 @@ namespace {
 
 using base::allocator::AllocatorDispatch;
 
-// Class that encapsulates the current sampling state. Sampling is performed
-// using a counter stored in thread-local storage.
-class SamplingState {
- public:
-  constexpr SamplingState() {}
-
-  void Init(size_t sampling_frequency) {
-    DCHECK_GT(sampling_frequency, 0U);
-    sampling_frequency_ = sampling_frequency;
-
-#if defined(OS_MACOSX)
-    pthread_key_create(&tls_key_, nullptr);
-#endif
-  }
-
-  // Return true if this allocation should be sampled.
-  ALWAYS_INLINE bool Sample() {
-    // For a new thread the initial TLS value will be zero, we do not want to
-    // sample on zero as it will always sample the first allocation on thread
-    // creation and heavily bias allocations towards that particular call site.
-    //
-    // Instead, use zero to mean 'get a new counter value' and one to mean
-    // that this allocation should be sampled.
-    size_t samples_left = GetCounter();
-    if (UNLIKELY(!samples_left))
-      samples_left = NextSample();
-
-    SetCounter(samples_left - 1);
-    return (samples_left == 1);
-  }
-
- private:
-  // Sample a single allocations in every chunk of |sampling_frequency_|
-  // allocations.
-  //
-  // TODO(https://crbug.com/919207): Replace with std::geometric_distribution
-  // once the LLVM floating point codegen issue in the linked bug is fixed.
-  size_t NextSample() {
-    size_t random = base::RandInt(1, sampling_frequency_ + 1);
-    size_t next_sample = increment_ + random;
-    increment_ = sampling_frequency_ + 1 - random;
-    return next_sample;
-  }
-
-#if !defined(OS_MACOSX)
-  ALWAYS_INLINE size_t GetCounter() { return tls_counter_; }
-  ALWAYS_INLINE void SetCounter(size_t value) { tls_counter_ = value; }
-
-  static thread_local size_t tls_counter_;
-#else
-  // On macOS, the first use of a thread_local variable on a new thread will
-  // cause a malloc(), causing infinite recursion. Instead, use pthread TLS to
-  // store the counter.
-  ALWAYS_INLINE size_t GetCounter() {
-    return reinterpret_cast<size_t>(pthread_getspecific(tls_key_));
-  }
-
-  ALWAYS_INLINE void SetCounter(size_t value) {
-    pthread_setspecific(tls_key_, reinterpret_cast<void*>(value));
-  }
-
-  pthread_key_t tls_key_ = 0;
-#endif
-
-  size_t sampling_frequency_ = 0;
-
-  // Stores the number of allocations we need to skip to reach the end of the
-  // current chunk of |sampling_frequency_| allocations.
-  size_t increment_ = 0;
-};
-
-#if !defined(OS_MACOSX)
-thread_local size_t SamplingState::tls_counter_ = 0;
-#endif
-
 // By being implemented as a global with inline method definitions, method calls
 // and member acceses are inlined and as efficient as possible in the
 // performance-sensitive allocation hot-path.
 //
 // Note that this optimization has not been benchmarked. However since it is
 // easy to do there is no reason to pay the extra cost.
-SamplingState sampling_state;
+SamplingState<MALLOC> sampling_state;
 
 // The global allocator singleton used by the shims. Implemented as a global
 // pointer instead of a function-local static to avoid initialization checks
