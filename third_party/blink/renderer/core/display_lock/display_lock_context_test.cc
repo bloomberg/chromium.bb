@@ -142,7 +142,7 @@ TEST_F(DisplayLockContextTest, LockAfterAppendStyleDirtyBits) {
     div {
       width: 100px;
       height: 100px;
-      contain: content;
+      contain: style layout paint;
     }
     </style>
     <body><div id="container"><div id="child"></div></div></body>
@@ -246,7 +246,7 @@ TEST_F(DisplayLockContextTest, LockedElementIsNotSearchableViaTextFinder) {
     #container {
       width: 100px;
       height: 100px;
-      contain: content;
+      contain: style layout paint;
     }
     </style>
     <body><div id="container">testing</div></body>
@@ -314,7 +314,7 @@ TEST_F(DisplayLockContextTest, LockedElementIsNotSearchableViaFindInPage) {
     #container {
       width: 100px;
       height: 100px;
-      contain: content;
+      contain: style layout paint;
     }
     </style>
     <body><div id="container">testing</div></body>
@@ -402,7 +402,7 @@ TEST_F(DisplayLockContextTest,
     #container {
       width: 100px;
       height: 100px;
-      contain: content;
+      contain: style layout paint;
     }
     </style>
     <body><div id="container">testing</div></body>
@@ -570,7 +570,7 @@ TEST_F(DisplayLockContextTest, FindInPageNavigateLockedMatches) {
     div {
       width: 100px;
       height: 100px;
-      contain: content;
+      contain: style layout paint;
     }
     </style>
     <body>
@@ -725,7 +725,7 @@ TEST_F(DisplayLockContextTest, CallUpdateStyleAndLayoutAfterChange) {
     #container {
       width: 100px;
       height: 100px;
-      contain: content;
+      contain: style layout paint;
     }
     </style>
     <body><div id="container"><b>t</b>esting</div></body>
@@ -809,7 +809,7 @@ TEST_F(DisplayLockContextTest, LockedElementAndDescendantsAreNotFocusable) {
     #container {
       width: 100px;
       height: 100px;
-      contain: content;
+      contain: style layout paint;
     }
     </style>
     <body>
@@ -898,7 +898,8 @@ TEST_F(DisplayLockContextTest, DisplayLockPreventsActivation) {
   ShadowRoot& shadow_root =
       host->AttachShadowRootInternal(ShadowRootType::kOpen);
   shadow_root.SetInnerHTMLFromString(
-      "<div id='container' style='contain:content;'><slot></slot></div>");
+      "<div id='container' style='contain:style layout "
+      "paint;'><slot></slot></div>");
   UpdateAllLifecyclePhasesForTest();
 
   auto* container = shadow_root.getElementById("container");
@@ -958,7 +959,8 @@ TEST_F(DisplayLockContextTest,
   ShadowRoot& shadow_root =
       host->AttachShadowRootInternal(ShadowRootType::kOpen);
   shadow_root.SetInnerHTMLFromString(
-      "<div id='container' style='contain:content;'><slot></slot></div>");
+      "<div id='container' style='contain:style layout "
+      "paint;'><slot></slot></div>");
 
   UpdateAllLifecyclePhasesForTest();
   ASSERT_TRUE(text_field->IsKeyboardFocusable());
@@ -999,7 +1001,7 @@ TEST_F(DisplayLockContextTest, LockedCountsWithMultipleLocks) {
     .container {
       width: 100px;
       height: 100px;
-      contain: content;
+      contain: style layout paint;
     }
     </style>
     <body>
@@ -1091,7 +1093,7 @@ TEST_F(DisplayLockContextTest, ActivatableNotCountedAsBlocking) {
     .container {
       width: 100px;
       height: 100px;
-      contain: content;
+      contain: style layout paint;
     }
     </style>
     <body>
@@ -1180,7 +1182,7 @@ TEST_F(DisplayLockContextTest, ElementInTemplate) {
     #child {
       width: 100px;
       height: 100px;
-      contain: content;
+      contain: style layout paint;
     }
     #grandchild {
       color: blue;
@@ -1284,7 +1286,7 @@ TEST_F(DisplayLockContextTest, AncestorAllowedTouchAction) {
     #locked {
       width: 100px;
       height: 100px;
-      contain: content;
+      contain: style layout paint;
     }
     </style>
     <div id="ancestor">
@@ -1430,7 +1432,7 @@ TEST_F(DisplayLockContextTest, DescendantAllowedTouchAction) {
     #locked {
       width: 100px;
       height: 100px;
-      contain: content;
+      contain: style layout paint;
     }
     </style>
     <div id="ancestor">

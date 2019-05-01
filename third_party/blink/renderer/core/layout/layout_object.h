@@ -512,12 +512,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return StyleRef().ContainsStyle();
   }
   inline bool ShouldApplyContentContainment() const {
-    return ShouldApplyPaintContainment() && ShouldApplyLayoutContainment() &&
-           ShouldApplyStyleContainment();
+    return ShouldApplyPaintContainment() && ShouldApplyLayoutContainment();
   }
   inline bool ShouldApplyStrictContainment() const {
     return ShouldApplyPaintContainment() && ShouldApplyLayoutContainment() &&
-           ShouldApplyStyleContainment() && ShouldApplySizeContainment();
+           ShouldApplySizeContainment();
   }
 
  private:

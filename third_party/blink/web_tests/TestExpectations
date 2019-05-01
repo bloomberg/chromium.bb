@@ -542,7 +542,6 @@ crbug.com/613753 external/wpt/css/css-tables/border-spacing-included-in-sizes-00
 
 # [css-contain]
 
-crbug.com/947730 external/wpt/css/css-contain/contain-content-011.html [ Failure ]
 crbug.com/880802 external/wpt/css/css-contain/contain-layout-017.html [ Failure ]
 crbug.com/671132 external/wpt/css/css-contain/contain-layout-baseline-005.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-contain/contain-layout-breaks-002.html [ Failure ]
@@ -552,7 +551,6 @@ crbug.com/880802 external/wpt/css/css-contain/contain-paint-021.html [ Failure ]
 crbug.com/882367 external/wpt/css/css-contain/contain-paint-clip-015.html [ Failure ]
 crbug.com/882367 external/wpt/css/css-contain/contain-paint-clip-016.html [ Failure ]
 crbug.com/855261 external/wpt/css/css-contain/contain-size-grid-002.html [ Failure ]
-crbug.com/947730 external/wpt/css/css-contain/contain-strict-011.html [ Failure ]
 crbug.com/869296 external/wpt/css/css-contain/contain-style-counters-004.html [ Failure ]
 crbug.com/882383 external/wpt/css/css-contain/counter-scoping-001.html [ Failure ]
 crbug.com/882383 external/wpt/css/css-contain/counter-scoping-002.html [ Failure ]
