@@ -8,7 +8,6 @@ import android.content.Context;
 import android.support.annotation.Nullable;
 import android.view.View;
 
-import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
@@ -163,7 +162,6 @@ public class TabGridDialogMediator {
 
     private View.OnClickListener getCollapseButtonClickListener() {
         return view -> {
-            RecordUserAction.record("TabGroup.DialogMinimizedFromGrid");
             mModel.set(TabGridSheetProperties.IS_DIALOG_VISIBLE, false);
         };
     }
@@ -179,8 +177,6 @@ public class TabGridDialogMediator {
             mTabCreatorManager.getTabCreator(currentTab.isIncognito())
                     .createNewTab(new LoadUrlParams(UrlConstants.NTP_URL),
                             TabLaunchType.FROM_CHROME_UI, parentTabToAttach);
-            RecordUserAction.record(
-                    "MobileNewTabOpened." + TabGridDialogCoordinator.COMPONENT_NAME);
         };
     }
 
