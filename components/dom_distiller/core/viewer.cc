@@ -10,6 +10,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
@@ -53,6 +54,23 @@ const char kMonospaceJsFontFamily[] = "monospace";
 const char kSerifCssClass[] = "serif";
 const char kSansSerifCssClass[] = "sans-serif";
 const char kMonospaceCssClass[] = "monospace";
+
+std::string GetCssFromResourceId(int id) {
+  return ui::ResourceBundle::GetSharedInstance()
+      .GetRawDataResource(id)
+      .as_string();
+}
+
+std::string GetPlatformSpecificCss() {
+#if defined(OS_IOS)
+  return base::StrCat({GetCssFromResourceId(IDR_DISTILLER_MOBILE_CSS),
+                       GetCssFromResourceId(IDR_DISTILLER_IOS_CSS)});
+#elif defined(OS_ANDROID)
+  return GetCssFromResourceId(IDR_DISTILLER_MOBILE_CSS);
+#else  // Desktop
+  return GetCssFromResourceId(IDR_DISTILLER_DESKTOP_CSS);
+#endif
+}
 
 // Maps themes to JS themes.
 const std::string GetJsTheme(DistilledPagePrefs::Theme theme) {
@@ -112,7 +130,7 @@ std::string ReplaceHtmlTemplateValues(
 #if defined(OS_IOS)
   // On iOS the content is inlined as there is no API to detect those requests
   // and return the local data once a page is loaded.
-  css << "<style>" << viewer::GetCss() << viewer::GetIOSCss() << "</style>";
+  css << "<style>" << viewer::GetCss() << "</style>";
   svg << viewer::GetLoadingImage();
 #else
   css << "<link rel=\"stylesheet\" href=\"/" << kViewerCssPath << "\">";
@@ -215,20 +233,13 @@ const std::string GetUnsafeArticleContentJs(
 }
 
 const std::string GetCss() {
-  return ui::ResourceBundle::GetSharedInstance()
-      .GetRawDataResource(IDR_DISTILLER_CSS)
-      .as_string();
+  return base::StrCat(
+      {GetCssFromResourceId(IDR_DISTILLER_CSS), GetPlatformSpecificCss()});
 }
 
 const std::string GetLoadingImage() {
   return ui::ResourceBundle::GetSharedInstance()
       .GetRawDataResource(IDR_DISTILLER_LOADING_IMAGE)
-      .as_string();
-}
-
-const std::string GetIOSCss() {
-  return ui::ResourceBundle::GetSharedInstance()
-      .GetRawDataResource(IDR_DISTILLER_IOS_CSS)
       .as_string();
 }
 
