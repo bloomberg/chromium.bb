@@ -10291,10 +10291,6 @@ static int64_t simple_translation_pred_rd(
 // it is included.
 static INLINE void mask_set_bit(int *mask, int index) { *mask |= (1 << index); }
 
-static INLINE void mask_clear_bit(int *mask, int index) {
-  *mask &= ~(1 << index);
-}
-
 static INLINE bool mask_check_bit(int mask, int index) {
   return (mask >> index) & 0x1;
 }
