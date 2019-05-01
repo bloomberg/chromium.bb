@@ -107,6 +107,9 @@ _CONFIG = [
             # //base/metrics/histogram_functions.h
             'base::UmaHistogram.+',
 
+            # //base/metrics/histogram.h
+            'base::LinearHistogram',
+
             # //base/metrics/field_trial_params.h.
             'base::GetFieldTrialParamValueByFeature',
             'base::GetFieldTrialParamByFeatureAsBool',
