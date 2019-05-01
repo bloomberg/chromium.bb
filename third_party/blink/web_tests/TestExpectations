@@ -6329,3 +6329,6 @@ crbug.com/956547 http/tests/dom/raf-throttling-out-of-view-cross-origin-page.htm
 crbug.com/946534 [ Mac10.10 Mac10.11 ] external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-root-scroller.https.html [ Pass Failure ]
 crbug.com/948785 [ Debug ] fast/events/pointerevents/pointer-event-consumed-touchstart-in-slop-region.html [ Pass Failure ]
 crbug.com/948785 [ Debug ] virtual/mouseevent_fractional/fast/events/pointerevents/pointer-event-consumed-touchstart-in-slop-region.html [ Pass Failure ]
+
+# Sheriff 2019-05-01
+crbug.com/958347 [ Linux ] external/wpt/editing/run/removeformat.html [ Pass Crash ]
