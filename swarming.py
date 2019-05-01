@@ -103,6 +103,13 @@ StringListPair = collections.namedtuple(
   ]
 )
 
+# See ../appengine/swarming/swarming_rpcs.py.
+Containment = collections.namedtuple(
+    'Containment',
+    [
+      'lower_priority',
+    ])
+
 
 # See ../appengine/swarming/swarming_rpcs.py.
 TaskProperties = collections.namedtuple(
@@ -111,6 +118,7 @@ TaskProperties = collections.namedtuple(
       'caches',
       'cipd_input',
       'command',
+      'containment',
       'relative_cwd',
       'dimensions',
       'env',
@@ -970,6 +978,9 @@ def add_trigger_options(parser):
   group.add_option(
       '--io-timeout', type='int', default=20*60, metavar='SECS',
       help='Seconds to allow the task to be silent.')
+  parser.add_option(
+      '--lower-priority', action='store_true',
+      help='Lowers the child process priority')
   group.add_option(
       '--raw-cmd', action='store_true', default=False,
       help='When set, the command after -- is used as-is without run_isolated. '
@@ -1138,6 +1149,9 @@ def process_trigger_options(parser, options, args):
       caches=caches,
       cipd_input=cipd_input,
       command=command,
+      containment=Containment(
+        lower_priority=bool(options.lower_priority),
+      ),
       relative_cwd=options.relative_cwd,
       dimensions=orig_dims,
       env=options.env,
