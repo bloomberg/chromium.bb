@@ -37,14 +37,14 @@ namespace blink {
 
 namespace {
 
-// Bucketize image compression into percentage in the following fashion:
-// if an image's compression ratio is 0.1, it will be represented as 1 percent
-// if an image's compression ratio is 5, it will be represented as 50 percents.
-int BucketizeCompressionRatio(double compression_ratio) {
-  int compression_ratio_percent = 10 * compression_ratio;
-  if (compression_ratio_percent < 0)
+// Bucketize image metrics into percentage in the following fashion:
+// if an image's metrics is 0.1, it will be represented as 1 percent
+// if an image's metrics is 5, it will be represented as 50 percents.
+int BucketizeImageMetrics(double ratio) {
+  int ratio_percent = 10 * ratio;
+  if (ratio_percent < 0)
     return 0;
-  return compression_ratio_percent > 100 ? 100 : compression_ratio_percent;
+  return ratio_percent > 100 ? 100 : ratio_percent;
 }
 
 inline const char* GetImagePolicyHistogramName(
@@ -56,6 +56,8 @@ inline const char* GetImagePolicyHistogramName(
       return "Blink.UseCounter.FeaturePolicy.LosslessImageCompression";
     case mojom::FeaturePolicyFeature::kUnoptimizedLosslessImagesStrict:
       return "Blink.UseCounter.FeaturePolicy.StrictLosslessImageCompression";
+    case mojom::FeaturePolicyFeature::kOversizedImages:
+      return "Blink.UseCounter.FeaturePolicy.ImageDownscalingRatio";
     default:
       NOTREACHED();
       break;
@@ -286,11 +288,11 @@ FeatureEnabledState SecurityContext::GetFeatureEnabledState(
   // properly inherit the parent policy.
   DCHECK(feature_policy_);
 
-  // Log metrics for unoptimized-*-images policies.
-  if (feature == mojom::FeaturePolicyFeature::kUnoptimizedLossyImages ||
-      feature == mojom::FeaturePolicyFeature::kUnoptimizedLosslessImages ||
-      feature ==
-          mojom::FeaturePolicyFeature::kUnoptimizedLosslessImagesStrict) {
+  // Log metrics for unoptimized-*-images and oversized-images policies.
+  if ((feature >= mojom::FeaturePolicyFeature::kUnoptimizedLossyImages &&
+       feature <=
+           mojom::FeaturePolicyFeature::kUnoptimizedLosslessImagesStrict) ||
+      feature == mojom::FeaturePolicyFeature::kOversizedImages) {
     // Only log metrics if an image policy is specified.
     // If an image policy is specified, the policy value would be less than the
     // max value, otherwise by default the policy value is set to be the max
@@ -304,7 +306,7 @@ FeatureEnabledState SecurityContext::GetFeatureEnabledState(
           static_cast<int>(
               mojom::FeaturePolicyFeature::kUnoptimizedLosslessImagesStrict) +
               1,
-          Add(BucketizeCompressionRatio(threshold_value.DoubleValue())),
+          Add(BucketizeImageMetrics(threshold_value.DoubleValue())),
           base::LinearHistogram::FactoryGet(
               GetImagePolicyHistogramName(feature), 0, 100, 101, 0x1));
     }
