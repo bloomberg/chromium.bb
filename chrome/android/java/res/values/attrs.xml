@@ -39,8 +39,8 @@
         <attr name="floatLabelHint" format="reference|string" />
     </declare-styleable>
 
-    <declare-styleable name="EmptyAlertEditText">
-        <attr name="alertMessage" format="string" />
+    <declare-styleable name="BookmarkTextInputLayout">
+        <attr name="emptyErrorMessage" format="string" />
     </declare-styleable>
 
     <declare-styleable name="PaddedFrameLayout">

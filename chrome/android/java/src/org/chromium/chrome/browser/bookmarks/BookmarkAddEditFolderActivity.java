@@ -12,13 +12,13 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.SynchronousInitializationActivity;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserver;
-import org.chromium.chrome.browser.widget.EmptyAlertEditText;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.components.bookmarks.BookmarkId;
 
@@ -42,7 +42,7 @@ public class BookmarkAddEditFolderActivity extends SynchronousInitializationActi
     private BookmarkId mParentId;
     private BookmarkModel mModel;
     private TextView mParentTextView;
-    private EmptyAlertEditText mFolderTitle;
+    private BookmarkTextInputLayout mFolderTitle;
 
     // Add mode member variable
     private List<BookmarkId> mBookmarksToMove;
@@ -133,8 +133,8 @@ public class BookmarkAddEditFolderActivity extends SynchronousInitializationActi
         }
         setContentView(R.layout.bookmark_add_edit_folder_activity);
 
-        mParentTextView = (TextView) findViewById(R.id.parent_folder);
-        mFolderTitle = (EmptyAlertEditText) findViewById(R.id.folder_title);
+        mParentTextView = findViewById(R.id.parent_folder);
+        mFolderTitle = findViewById(R.id.folder_title);
 
         mParentTextView.setOnClickListener(this);
 
@@ -150,8 +150,9 @@ public class BookmarkAddEditFolderActivity extends SynchronousInitializationActi
             getSupportActionBar().setTitle(R.string.edit_folder);
             BookmarkItem bookmarkItem = mModel.getBookmarkById(mFolderId);
             updateParent(bookmarkItem.getParentId());
-            mFolderTitle.setText(bookmarkItem.getTitle());
-            mFolderTitle.setSelection(mFolderTitle.getText().length());
+            final EditText editText = mFolderTitle.getEditText();
+            editText.setText(bookmarkItem.getTitle());
+            editText.setSelection(editText.getText().length());
             mParentTextView.setEnabled(bookmarkItem.isMovable());
         }
 
