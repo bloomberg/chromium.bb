@@ -166,7 +166,7 @@
 #include "chrome/child/pdf_child_init.h"
 #endif
 
-#if BUILDFLAG(ENABLE_GWP_ASAN)
+#if BUILDFLAG(ENABLE_GWP_ASAN_MALLOC)
 #include "components/gwp_asan/client/gwp_asan.h"  // nogncheck
 #endif
 
@@ -552,7 +552,7 @@ void ChromeMainDelegate::PostTaskSchedulerStart() {
 #endif
 
 void ChromeMainDelegate::PostFieldTrialInitialization() {
-#if BUILDFLAG(ENABLE_GWP_ASAN)
+#if BUILDFLAG(ENABLE_GWP_ASAN_MALLOC)
   version_info::Channel channel = chrome::GetChannel();
   bool is_canary_dev = (channel == version_info::Channel::CANARY ||
                         channel == version_info::Channel::DEV);

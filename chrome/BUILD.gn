@@ -1434,7 +1434,7 @@ group("browser_dependencies") {
     }
   }
 
-  if (enable_gwp_asan) {
+  if (enable_gwp_asan_malloc) {
     public_deps += [ "//components/gwp_asan/client" ]
   }
 
@@ -1478,7 +1478,7 @@ group("child_dependencies") {
     public_deps += [ "//components/nacl/renderer/plugin:nacl_trusted_plugin" ]
   }
 
-  if (enable_gwp_asan) {
+  if (enable_gwp_asan_malloc) {
     public_deps += [ "//components/gwp_asan/client" ]
   }
 }
@@ -1824,7 +1824,7 @@ if (is_android) {
       deps += [ "//third_party/gvr-android-sdk:gvr_shim" ]
     }
 
-    if (enable_gwp_asan) {
+    if (enable_gwp_asan_malloc) {
       deps += [ "//components/gwp_asan/client" ]
     }
   }

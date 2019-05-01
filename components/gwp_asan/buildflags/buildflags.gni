@@ -5,6 +5,6 @@
 import("//build/config/allocator.gni")
 
 declare_args() {
-  # Is the GWP-ASan client enabled for chrome/ on a given platform.
-  enable_gwp_asan = (is_win || is_mac) && use_allocator_shim
+  # Is GWP-ASan malloc() hooking enabled for chrome/ on a given platform.
+  enable_gwp_asan_malloc = (is_win || is_mac) && use_allocator_shim
 }

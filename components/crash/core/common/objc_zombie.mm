@@ -21,7 +21,7 @@
 #include "components/crash/core/common/crash_key.h"
 #include "components/gwp_asan/buildflags/buildflags.h"
 
-#if BUILDFLAG(ENABLE_GWP_ASAN)
+#if BUILDFLAG(ENABLE_GWP_ASAN_MALLOC)
 #include "components/gwp_asan/client/sampling_allocator_shims.h"  // nogncheck
 #endif
 
@@ -98,7 +98,7 @@ void ZombieDealloc(id self, SEL _cmd) {
 
   // Use the original |-dealloc| if the object doesn't wish to be
   // zombied or GWP-ASan is the backing allocator.
-#if BUILDFLAG(ENABLE_GWP_ASAN)
+#if BUILDFLAG(ENABLE_GWP_ASAN_MALLOC)
   bool gwp_asan_allocation = gwp_asan::IsGwpAsanAllocation(self);
 #else
   bool gwp_asan_allocation = false;

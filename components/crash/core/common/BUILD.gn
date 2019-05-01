@@ -128,7 +128,7 @@ if (is_mac || is_ios) {
       "//components/gwp_asan/buildflags",
     ]
 
-    if (enable_gwp_asan) {
+    if (enable_gwp_asan_malloc) {
       deps += [ "//components/gwp_asan/client" ]
     }
 
