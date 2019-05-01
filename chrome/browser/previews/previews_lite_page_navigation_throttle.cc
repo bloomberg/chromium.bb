@@ -318,8 +318,11 @@ bool PreviewsLitePageNavigationThrottle::IsEligibleForPreview() const {
       tab_helper ? (tab_helper->GetPreviewsUserData(navigation_handle()))
                  : nullptr;
 
-  if (!previews_data || !(previews_data->allowed_previews_state() &
-                          content::LITE_PAGE_REDIRECT_ON)) {
+  if (!previews_data ||
+      !(previews_data->allowed_previews_state() &
+        content::LITE_PAGE_REDIRECT_ON) ||
+      previews_data->coin_flip_holdback_result() ==
+          previews::CoinFlipHoldbackResult::kHoldback) {
     return false;
   }
 
