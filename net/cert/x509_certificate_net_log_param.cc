@@ -17,14 +17,14 @@ namespace net {
 
 base::Value NetLogX509CertificateCallback(const X509Certificate* certificate,
                                           NetLogCaptureMode capture_mode) {
-  base::DictionaryValue dict;
-  base::ListValue certs;
+  base::Value dict(base::Value::Type::DICTIONARY);
+  base::Value certs(base::Value::Type::LIST);
   std::vector<std::string> encoded_chain;
   certificate->GetPEMEncodedChain(&encoded_chain);
-  for (size_t i = 0; i < encoded_chain.size(); ++i)
-    certs.AppendString(encoded_chain[i]);
+  for (auto& pem : encoded_chain)
+    certs.GetList().emplace_back(std::move(pem));
   dict.SetKey("certificates", std::move(certs));
-  return std::move(dict);
+  return dict;
 }
 
 }  // namespace net

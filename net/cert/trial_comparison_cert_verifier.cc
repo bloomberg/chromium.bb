@@ -33,9 +33,9 @@ namespace {
 
 base::Value TrialVerificationJobResultCallback(bool trial_success,
                                                NetLogCaptureMode capture_mode) {
-  base::DictionaryValue results;
-  results.SetKey("trial_success", base::Value(trial_success));
-  return std::move(results);
+  base::Value results(base::Value::Type::DICTIONARY);
+  results.SetBoolKey("trial_success", trial_success);
+  return results;
 }
 
 bool CertVerifyResultEqual(const CertVerifyResult& a,
