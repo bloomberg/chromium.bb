@@ -31,25 +31,30 @@ constexpr CGFloat kTextFieldCornerRadius = 5;
 constexpr CGFloat kMinimumHeight = 30;
 constexpr CGFloat kMinimumMargin = 4;
 
+// Inset at the top of the alert. Is always present.
+constexpr CGFloat kAlertMarginTop = 22;
+// Space before the actions and everything else.
+constexpr CGFloat kAlertActionsSpacing = 12;
+
 // Insets for the content in the alert view.
-constexpr CGFloat kTitleInsetTop = 20;
+constexpr CGFloat kTitleInsetTop = 0;
 constexpr CGFloat kTitleInsetLeading = 20;
-constexpr CGFloat kTitleInsetBottom = 4;
+constexpr CGFloat kTitleInsetBottom = 9;
 constexpr CGFloat kTitleInsetTrailing = 20;
 
-constexpr CGFloat kMessageInsetTop = 4;
+constexpr CGFloat kMessageInsetTop = 0;
 constexpr CGFloat kMessageInsetLeading = 20;
-constexpr CGFloat kMessageInsetBottom = 10;
+constexpr CGFloat kMessageInsetBottom = 6;
 constexpr CGFloat kMessageInsetTrailing = 20;
 
-constexpr CGFloat kButtonInsetTop = 20;
+constexpr CGFloat kButtonInsetTop = 13;
 constexpr CGFloat kButtonInsetLeading = 20;
-constexpr CGFloat kButtonInsetBottom = 20;
+constexpr CGFloat kButtonInsetBottom = 13;
 constexpr CGFloat kButtonInsetTrailing = 20;
 
-constexpr CGFloat kTextfieldStackInsetTop = 10;
+constexpr CGFloat kTextfieldStackInsetTop = 12;
 constexpr CGFloat kTextfieldStackInsetLeading = 12;
-constexpr CGFloat kTextfieldStackInsetBottom = 20;
+constexpr CGFloat kTextfieldStackInsetBottom = 0;
 constexpr CGFloat kTextfieldStackInsetTrailing = 12;
 
 constexpr CGFloat kTextfieldInset = 8;
@@ -197,7 +202,10 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
   stackView.axis = UILayoutConstraintAxisVertical;
   stackView.translatesAutoresizingMaskIntoConstraints = NO;
   [self.contentView addSubview:stackView];
-  AddSameConstraints(stackView, self.contentView);
+
+  ChromeDirectionalEdgeInsets stackViewInsets =
+      ChromeDirectionalEdgeInsetsMake(kAlertMarginTop, 0, 0, 0);
+  AddSameConstraintsWithInsets(stackView, self.contentView, stackViewInsets);
 
   if (self.title.length) {
     UILabel* titleLabel = [[UILabel alloc] init];
@@ -300,6 +308,12 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
           textField, fieldStack, LayoutSides::kTrailing | LayoutSides::kLeading,
           fieldInsets);
     }
+  }
+
+  UIView* lastArrangedView = stackView.arrangedSubviews.lastObject;
+  if (lastArrangedView) {
+    [stackView setCustomSpacing:kAlertActionsSpacing
+                      afterView:lastArrangedView];
   }
 
   self.buttonAlertActionsDictionary = [[NSMutableDictionary alloc] init];
