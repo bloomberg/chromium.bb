@@ -12,7 +12,6 @@
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_truncating_label.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
-#import "ios/chrome/test/app/history_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_error_util.h"
@@ -62,9 +61,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
         @"Disabled for iPad due to alternate letters educational screen.");
   }
 
-  GREYAssertTrue(chrome_test_util::ClearBrowsingHistory(),
-                 @"Clearing Browsing History timed out");
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBrowsingHistory]);
   // Set server up.
   self.testServer->RegisterRequestHandler(
       base::BindRepeating(&StandardResponse));

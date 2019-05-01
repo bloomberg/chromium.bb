@@ -38,7 +38,6 @@
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
-#import "ios/chrome/test/app/history_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
 #include "ios/chrome/test/base/scoped_block_swizzler.h"
 #include "ios/chrome/test/earl_grey/accessibility_util.h"
@@ -723,9 +722,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   const GURL pageURL = self.testServer->GetURL(kPageURL);
 
   // Clear history to ensure the tile will be shown.
-  GREYAssertTrue(chrome_test_util::ClearBrowsingHistory(),
-                 @"Clearing Browsing History timed out");
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBrowsingHistory]);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:pageURL]);
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey waitForWebViewContainingText:kPageLoadedString]);

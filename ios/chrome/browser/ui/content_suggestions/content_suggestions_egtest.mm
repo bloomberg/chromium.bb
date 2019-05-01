@@ -34,7 +34,6 @@
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
-#import "ios/chrome/test/app/history_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -185,9 +184,7 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 - (void)tearDown {
   self.provider->FireCategoryStatusChanged(
       self.category, CategoryStatus::ALL_SUGGESTIONS_EXPLICITLY_DISABLED);
-  GREYAssertTrue(chrome_test_util::ClearBrowsingHistory(),
-                 @"Clearing Browsing History timed out");
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBrowsingHistory]);
   [super tearDown];
 }
 
@@ -493,9 +490,7 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
   NSString* pageTitle = base::SysUTF8ToNSString(kPageTitle);
 
   // Clear history and verify that the tile does not exist.
-  GREYAssertTrue(chrome_test_util::ClearBrowsingHistory(),
-                 @"Clearing Browsing History timed out");
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBrowsingHistory]);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:pageURL]);
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey waitForWebViewContainingText:kPageLoadedString]);

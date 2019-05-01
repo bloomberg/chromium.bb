@@ -10,7 +10,6 @@
 #include "base/strings/stringprintf.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
-#include "ios/chrome/test/app/history_test_util.h"
 #include "ios/chrome/test/app/navigation_test_util.h"
 #import "ios/chrome/test/app/web_view_interaction_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -210,8 +209,7 @@ class CacheTestResponseProvider : public web::DataResponseProvider {
   web::test::SetUpHttpServer(std::make_unique<CacheTestResponseProvider>());
 
   // Clear the history to ensure expected omnibox autocomplete results.
-  GREYAssertTrue(chrome_test_util::ClearBrowsingHistory(),
-                 @"Clearing Browsing History timed out");
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBrowsingHistory]);
 
   const GURL cacheTestFirstPageURL =
       HttpServer::MakeUrl(kCacheTestFirstPageURL);

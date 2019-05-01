@@ -21,7 +21,6 @@
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
-#import "ios/chrome/test/app/history_test_util.h"
 #import "ios/chrome/test/app/sync_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -387,12 +386,9 @@ void AssertNumberOfEntitiesWithName(int entity_count,
 - (void)testSyncTypedURLUpload {
   const GURL mockURL("http://not-a-real-site/");
 
-  GREYAssertTrue(chrome_test_util::ClearBrowsingHistory(),
-                 @"Clearing Browsing History timed out");
-
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBrowsingHistory]);
   [self setTearDownHandler:^{
-    GREYAssertTrue(chrome_test_util::ClearBrowsingHistory(),
-                   @"Clearing Browsing History timed out");
+    CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBrowsingHistory]);
   }];
   chrome_test_util::AddTypedURLOnClient(mockURL);
 
@@ -426,11 +422,9 @@ void AssertNumberOfEntitiesWithName(int entity_count,
 - (void)testSyncTypedUrlDownload {
   const GURL mockURL("http://not-a-real-site/");
 
-  GREYAssertTrue(chrome_test_util::ClearBrowsingHistory(),
-                 @"Clearing Browsing History timed out");
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBrowsingHistory]);
   [self setTearDownHandler:^{
-    GREYAssertTrue(chrome_test_util::ClearBrowsingHistory(),
-                   @"Clearing Browsing History timed out");
+    CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBrowsingHistory]);
   }];
 
   // Inject typed url on server.
@@ -463,12 +457,9 @@ void AssertNumberOfEntitiesWithName(int entity_count,
 - (void)testSyncTypedURLDeleteFromClient {
   const GURL mockURL("http://not-a-real-site/");
 
-  GREYAssertTrue(chrome_test_util::ClearBrowsingHistory(),
-                 @"Clearing Browsing History timed out");
-
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBrowsingHistory]);
   [self setTearDownHandler:^{
-    GREYAssertTrue(chrome_test_util::ClearBrowsingHistory(),
-                   @"Clearing Browsing History timed out");
+    CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBrowsingHistory]);
   }];
 
   // Inject typed url on server.
@@ -511,12 +502,9 @@ void AssertNumberOfEntitiesWithName(int entity_count,
 - (void)testSyncTypedURLDeleteFromServer {
   const GURL mockURL("http://not-a-real-site/");
 
-  GREYAssertTrue(chrome_test_util::ClearBrowsingHistory(),
-                 @"Clearing Browsing History timed out");
-
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBrowsingHistory]);
   [self setTearDownHandler:^{
-    GREYAssertTrue(chrome_test_util::ClearBrowsingHistory(),
-                   @"Clearing Browsing History timed out");
+    CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBrowsingHistory]);
   }];
   chrome_test_util::AddTypedURLOnClient(mockURL);
 

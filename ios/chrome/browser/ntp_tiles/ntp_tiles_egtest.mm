@@ -5,7 +5,6 @@
 #import <EarlGrey/EarlGrey.h>
 
 #import "ios/chrome/test/app/chrome_test_util.h"
-#import "ios/chrome/test/app/history_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -36,9 +35,7 @@ using web::test::HttpServer;
 @implementation NTPTilesTest
 
 - (void)tearDown {
-  GREYAssertTrue(chrome_test_util::ClearBrowsingHistory(),
-                 @"Clearing Browsing History timed out");
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBrowsingHistory]);
   [super tearDown];
 }
 
@@ -52,9 +49,7 @@ using web::test::HttpServer;
   web::test::SetUpSimpleHttpServer(responses);
 
   // Clear history and verify that the tile does not exist.
-  GREYAssertTrue(chrome_test_util::ClearBrowsingHistory(),
-                 @"Clearing Browsing History timed out");
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBrowsingHistory]);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
 
   [[EarlGrey selectElementWithMatcher:
@@ -98,9 +93,7 @@ using web::test::HttpServer;
   web::test::SetUpHttpServer(std::move(provider));
 
   // Clear history and verify that the tile does not exist.
-  GREYAssertTrue(chrome_test_util::ClearBrowsingHistory(),
-                 @"Clearing Browsing History timed out");
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBrowsingHistory]);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
   [[EarlGrey selectElementWithMatcher:
                  chrome_test_util::StaticTextWithAccessibilityLabel(@"title2")]
