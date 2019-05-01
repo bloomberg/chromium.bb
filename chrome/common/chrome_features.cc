@@ -189,9 +189,9 @@ const base::Feature kCrostiniAppSearch{"CrostiniAppSearch",
 
 // Enables an uninstall option in the right-click menu of Crostini (Linux)
 // applications.
-// TODO(iby): Remove once remaining bugs fixed.
+// TODO(crbug.com/955797): Remove this flag entirely.
 const base::Feature kCrostiniAppUninstallGui{"CrostiniAppUninstallGui",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable support for "Plugin VMs" on Chrome OS.
 const base::Feature kPluginVm{"PluginVm", base::FEATURE_DISABLED_BY_DEFAULT};
