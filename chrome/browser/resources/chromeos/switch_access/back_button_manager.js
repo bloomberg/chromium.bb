@@ -30,14 +30,14 @@ class BackButtonManager {
   /**
    * Shows the menu as just a back button in the upper right corner of the
    * node.
-   * @param {!chrome.automation.AutomationNode} node
+   * @param {chrome.accessibilityPrivate.ScreenRect=} nodeLocation
    */
-  show(node) {
-    if (!node.location)
+  show(nodeLocation) {
+    if (!nodeLocation)
       return;
     this.backButtonOpen_ = true;
     chrome.accessibilityPrivate.setSwitchAccessMenuState(
-        true, node.location, 0 /* num_actions */);
+        true, nodeLocation, 0 /* num_actions */);
     this.menuPanel_.setFocusRing(SAConstants.BACK_ID, true);
   }
 

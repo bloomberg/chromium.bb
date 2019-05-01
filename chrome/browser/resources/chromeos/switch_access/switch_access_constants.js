@@ -46,6 +46,13 @@ SAConstants.Focus.PRIMARY_ID = 'primary';
 SAConstants.Focus.SCOPE_ID = 'scope';
 
 /**
+ * The buffer (in dip) between the primary focus ring and the scope focus ring.
+ * @type {number}
+ * @const
+ */
+SAConstants.Focus.SCOPE_BUFFER = 2;
+
+/**
  * The ID used for the focus ring around the active text input.
  * @type {string}
  * @const
@@ -57,14 +64,14 @@ SAConstants.Focus.TEXT_ID = 'text';
  * @type {string}
  * @const
  */
-SAConstants.Focus.PRIMARY_COLOR = '#8ab4f8b8';
+SAConstants.Focus.PRIMARY_COLOR = '#1A73E8FF';
 
 /**
  * The outer color of the focus rings.
  * @type {string}
  * @const
  */
-SAConstants.Focus.SECONDARY_COLOR = '#0003';
+SAConstants.Focus.SECONDARY_COLOR = '#0006';
 
 /**
  * The amount of space (in px) needed to fit a focus ring around an element.

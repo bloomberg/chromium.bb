@@ -59,6 +59,7 @@ run_jsbundler("switch_access_copied_files") {
     "options.html",
     "options.js",
     "preferences.js",
+    "rect_helper.js",
     "switch_access.js",
     "switch_access_constants.js",
     "switch_access_predicate.js",
@@ -168,6 +169,7 @@ js_type_check("closure_compile") {
     ":navigation_manager",
     ":options",
     ":preferences",
+    ":rect_helper",
     ":switch_access",
     ":switch_access_constants",
     ":switch_access_interface",
@@ -190,6 +192,7 @@ js_library("navigation_manager") {
     ":back_button_manager",
     ":menu_manager",
     ":menu_panel_interface",
+    ":rect_helper",
     ":switch_access_constants",
     ":switch_access_predicate",
     ":text_input_manager",
@@ -261,6 +264,10 @@ js_library("preferences") {
     ":switch_access_interface",
   ]
   externs_list = [ "$externs_path/chrome_extensions.js" ]
+}
+
+js_library("rect_helper") {
+  externs_list = [ "$externs_path/accessibility_private.js" ]
 }
 
 js_library("switch_access") {

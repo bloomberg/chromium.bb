@@ -88,6 +88,12 @@ class NavigationManager {
       secondaryColor: SAConstants.Focus.SECONDARY_COLOR
     };
 
+    /**
+     * The currently highlighted scope object. Tracked for comparison purposes.
+     * @private {chrome.automation.AutomationNode}
+     */
+    this.focusedScope_;
+
     this.init_();
   }
 
@@ -524,16 +530,23 @@ class NavigationManager {
 
   /**
    * Set the focus ring for the current node and scope.
-   * @param {chrome.accessibilityPrivate.ScreenRect=} opt_focusRect Optionally
-   *     set where the focus should be. Prevents back button from being shown.
    * @private
    */
-  updateFocusRings_(opt_focusRect) {
+  updateFocusRings_() {
+    const focusRect = this.node_.location;
+    // If the scope element has not changed, we want to use the previously
+    // calculated rect as the current scope rect.
+    let scopeRect = this.scope_ === this.focusedScope_ ?
+        this.scopeFocusRing_.rects[0] :
+        this.scope_.location;
+    this.focusedScope_ = this.scope_;
+
     if (this.node_ === this.backButtonManager_.buttonNode()) {
-      this.backButtonManager_.show(this.scope_);
+      this.backButtonManager_.show(scopeRect);
 
       this.primaryFocusRing_.rects = [];
-      this.scopeFocusRing_.rects = [this.scope_.location];
+      this.scopeFocusRing_.rects = [scopeRect];
+
       chrome.accessibilityPrivate.setFocusRings(
           [this.primaryFocusRing_, this.scopeFocusRing_]);
 
@@ -541,11 +554,10 @@ class NavigationManager {
     }
     this.backButtonManager_.hide();
 
-    const focusRect = opt_focusRect || this.node_.location;
-    const scopeRect = this.scope_.location;
-
-    // TODO(anastasi): Make adjustments to scope rect so it draws entirely
-    // outside the focus rect.
+    // If the current element is not the back button, the scope rect should
+    // expand to contain the focus rect.
+    scopeRect = RectHelper.expandToFitWithPadding(
+        SAConstants.Focus.SCOPE_BUFFER, scopeRect, focusRect);
 
     this.primaryFocusRing_.rects = [focusRect];
     this.scopeFocusRing_.rects = [scopeRect];
