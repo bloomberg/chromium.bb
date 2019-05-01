@@ -194,6 +194,16 @@ std::pair<base::Value, std::string> BuildGraphicsModel(
   return std::make_pair(std::move(*model), "Tracing model is ready");
 }
 
+std::pair<base::Value, std::string> LoadGraphicsModel(
+    const std::string& json_text) {
+  arc::ArcTracingGraphicsModel graphics_model;
+  if (!graphics_model.LoadFromJson(json_text))
+    return std::make_pair(base::Value(), "Failed to load tracing model");
+
+  std::unique_ptr<base::DictionaryValue> model = graphics_model.Serialize();
+  return std::make_pair(std::move(*model), "Tracing model is loaded");
+}
+
 }  // namespace
 
 ArcGraphicsTracingHandler::ArcGraphicsTracingHandler()
@@ -225,6 +235,10 @@ void ArcGraphicsTracingHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "setStopOnJank",
       base::BindRepeating(&ArcGraphicsTracingHandler::HandleSetStopOnJank,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "loadFromText",
+      base::BindRepeating(&ArcGraphicsTracingHandler::HandleLoadFromText,
                           base::Unretained(this)));
 }
 
@@ -431,6 +445,22 @@ void ArcGraphicsTracingHandler::HandleSetStopOnJank(
     return;
   }
   stop_on_jank_ = args->GetList()[0].GetBool();
+}
+
+void ArcGraphicsTracingHandler::HandleLoadFromText(
+    const base::ListValue* args) {
+  DCHECK_EQ(1U, args->GetSize());
+  if (!args->GetList()[0].is_string()) {
+    LOG(ERROR) << "Invalid input";
+    return;
+  }
+
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(&LoadGraphicsModel,
+                     std::move(args->GetList()[0].GetString())),
+      base::BindOnce(&ArcGraphicsTracingHandler::OnGraphicsModelReady,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 }  // namespace chromeos
