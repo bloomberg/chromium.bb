@@ -60,6 +60,9 @@ public class UsageStatsService {
         mTokenTracker = new TokenTracker(mBridge);
         mPageViewObservers = new ArrayList<>();
 
+        mSuspensionTracker.getAllSuspendedWebsites().then(
+                (suspendedSites) -> { notifyObserversOfSuspensions(suspendedSites, true); });
+
         mOptInState = getOptInState();
         mClient = AppHooks.get().createDigitalWellbeingClient();
     }
@@ -146,14 +149,7 @@ public class UsageStatsService {
      */
     public Promise<Void> setWebsitesSuspendedAsync(List<String> fqdns, boolean suspended) {
         ThreadUtils.assertOnUiThread();
-        for (WeakReference<PageViewObserver> observerRef : mPageViewObservers) {
-            PageViewObserver observer = observerRef.get();
-            if (observer != null) {
-                for (String fqdn : fqdns) {
-                    observer.notifySiteSuspensionChanged(fqdn, suspended);
-                }
-            }
-        }
+        notifyObserversOfSuspensions(fqdns, suspended);
 
         return mSuspensionTracker.setWebsitesSuspended(fqdns, suspended);
     }
@@ -217,5 +213,16 @@ public class UsageStatsService {
 
     public List<String> getAllSuspendedWebsites() {
         return new ArrayList<>();
+    }
+
+    private void notifyObserversOfSuspensions(List<String> fqdns, boolean suspended) {
+        for (WeakReference<PageViewObserver> observerRef : mPageViewObservers) {
+            PageViewObserver observer = observerRef.get();
+            if (observer != null) {
+                for (String fqdn : fqdns) {
+                    observer.notifySiteSuspensionChanged(fqdn, suspended);
+                }
+            }
+        }
     }
 }
