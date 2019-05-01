@@ -5758,11 +5758,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
     EXPECT_FALSE(instance1->HasWrongProcessForURL(url1));
   }
 
-  // TODO(creis): Enable the rest of the test when https://crbug.com/793127 is
-  // fixed, since this currently fails with a DCHECK in SiteProcessCountTracker.
-#if 0
-  // Go back to the chrome-native:// URL's entry, which should swap to a new
-  // SiteInstance with an unused site URL.
+  // Go back to url1's entry, which should swap to a new SiteInstance with an
+  // unused site URL.
   TestNavigationObserver observer(web_contents);
   web_contents->GetController().GoToOffset(-2);
   observer.Wait();
@@ -5785,7 +5782,6 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
       policy->CanAccessDataForOrigin(new_process->GetID(), url1));
   EXPECT_TRUE(
       policy->CanAccessDataForOrigin(new_process->GetID(), url2));
-#endif
 
   SetBrowserClientForTesting(old_client);
 }
