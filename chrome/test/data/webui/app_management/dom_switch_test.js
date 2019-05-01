@@ -13,7 +13,7 @@ suite('<app-management-dom-switch>', function() {
 
     const template = `
         <dom-bind>
-          <template is="dom-bind">
+          <template>
             <app-management-dom-switch id="switch">
               <template>
                 <div id='child1' route-id='1'>[[property.x]]</div>
@@ -26,9 +26,7 @@ suite('<app-management-dom-switch>', function() {
     document.body.innerHTML = template;
 
     domSwitch = document.getElementById('switch');
-    // TODO(dpapad): Remove conditional when Polymer 2 migration has completed.
-    domBind = document.querySelector(
-        Polymer.DomBind ? 'dom-bind' : 'template[is=\'dom-bind\']');
+    domBind = document.querySelector('dom-bind');
   });
 
   test('children are attached/detached when the route changes', function() {
