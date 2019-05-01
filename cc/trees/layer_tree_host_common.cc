@@ -489,6 +489,38 @@ static void CalculateRenderSurfaceLayerList(
                                 render_surface_list);
 }
 
+static void RecordRenderSurfaceReasonsForTracing(
+    const PropertyTrees* property_trees,
+    const RenderSurfaceList* render_surface_list) {
+  static const auto* tracing_enabled =
+      TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED("cc");
+  if (!*tracing_enabled ||
+      // Don't output single root render surface.
+      render_surface_list->size() <= 1)
+    return;
+
+  TRACE_EVENT_INSTANT1("cc", "RenderSurfaceReasonCount",
+                       TRACE_EVENT_SCOPE_THREAD, "total",
+                       render_surface_list->size());
+
+  // kTest is the last value which is not included for tracing.
+  constexpr auto kNumReasons = static_cast<size_t>(RenderSurfaceReason::kTest);
+  int reason_counts[kNumReasons] = {0};
+  for (const auto* render_surface : *render_surface_list) {
+    const auto* effect_node =
+        property_trees->effect_tree.Node(render_surface->EffectTreeIndex());
+    reason_counts[static_cast<size_t>(effect_node->render_surface_reason)]++;
+  }
+  for (size_t i = 0; i < kNumReasons; i++) {
+    if (!reason_counts[i])
+      continue;
+    TRACE_EVENT_INSTANT1(
+        "cc", "RenderSurfaceReasonCount", TRACE_EVENT_SCOPE_THREAD,
+        RenderSurfaceReasonToString(static_cast<RenderSurfaceReason>(i)),
+        reason_counts[i]);
+  }
+}
+
 void CalculateDrawPropertiesInternal(
     LayerTreeHostCommon::CalcDrawPropsImplInputs* inputs,
     PropertyTreeOption property_tree_option) {
@@ -604,6 +636,8 @@ void CalculateDrawPropertiesInternal(
         inputs->root_layer->layer_tree_impl(), inputs->property_trees,
         inputs->render_surface_list, inputs->max_texture_size);
   }
+  RecordRenderSurfaceReasonsForTracing(inputs->property_trees,
+                                       inputs->render_surface_list);
 
   // A root layer render_surface should always exist after
   // CalculateDrawProperties.

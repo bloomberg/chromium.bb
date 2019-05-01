@@ -109,7 +109,7 @@ TEST_P(LayerTreeHostLayerListPixelTest, MaskWithEffect) {
   EffectNode isolation_effect;
   isolation_effect.clip_id = 1;
   isolation_effect.stable_id = 2;
-  isolation_effect.has_render_surface = true;
+  isolation_effect.render_surface_reason = RenderSurfaceReason::kTest;
   isolation_effect.transform_id = 1;
   property_trees.effect_tree.Insert(isolation_effect, 1);
 
@@ -167,7 +167,7 @@ TEST_P(LayerTreeHostLayerListPixelTest, SolidColorLayerEmptyMaskWithEffect) {
   EffectNode isolation_effect;
   isolation_effect.clip_id = 1;
   isolation_effect.stable_id = 2;
-  isolation_effect.has_render_surface = true;
+  isolation_effect.render_surface_reason = RenderSurfaceReason::kTest;
   isolation_effect.transform_id = 1;
   property_trees.effect_tree.Insert(isolation_effect, 1);
 
@@ -250,7 +250,7 @@ TEST_P(LayerTreeHostLayerListPixelTest, SolidColorEmptyMaskWithEffect) {
   EffectNode isolation_effect;
   isolation_effect.clip_id = 1;
   isolation_effect.stable_id = 2;
-  isolation_effect.has_render_surface = true;
+  isolation_effect.render_surface_reason = RenderSurfaceReason::kTest;
   isolation_effect.transform_id = 1;
   property_trees.effect_tree.Insert(isolation_effect, 1);
 
@@ -313,7 +313,7 @@ TEST_P(LayerTreeHostLayerListPixelTest,
   EffectNode isolation_effect;
   isolation_effect.clip_id = 1;
   isolation_effect.stable_id = 2;
-  isolation_effect.has_render_surface = true;
+  isolation_effect.render_surface_reason = RenderSurfaceReason::kTest;
   isolation_effect.transform_id = 1;
   property_trees.effect_tree.Insert(isolation_effect, 1);
 
@@ -322,7 +322,7 @@ TEST_P(LayerTreeHostLayerListPixelTest,
   mask_effect.stable_id = 3;
   mask_effect.transform_id = 1;
   mask_effect.blend_mode = SkBlendMode::kDstIn;
-  mask_effect.has_render_surface = true;
+  mask_effect.render_surface_reason = RenderSurfaceReason::kTest;
   property_trees.effect_tree.Insert(mask_effect, 2);
 
   scoped_refptr<SolidColorLayer> background =
@@ -378,7 +378,7 @@ TEST_P(LayerTreeHostLayerListPixelTest, MaskWithEffectNoContentToMask) {
   EffectNode isolation_effect;
   isolation_effect.clip_id = 1;
   isolation_effect.stable_id = 2;
-  isolation_effect.has_render_surface = true;
+  isolation_effect.render_surface_reason = RenderSurfaceReason::kTest;
   isolation_effect.transform_id = 1;
   property_trees.effect_tree.Insert(isolation_effect, 1);
 
@@ -426,7 +426,7 @@ TEST_P(LayerTreeHostLayerListPixelTest, ScaledMaskWithEffect) {
   EffectNode isolation_effect;
   isolation_effect.clip_id = 1;
   isolation_effect.stable_id = 2;
-  isolation_effect.has_render_surface = true;
+  isolation_effect.render_surface_reason = RenderSurfaceReason::kTest;
   isolation_effect.transform_id = 1;
   property_trees.effect_tree.Insert(isolation_effect, 1);
 
@@ -502,7 +502,7 @@ TEST_P(LayerTreeHostLayerListPixelTest, MaskWithEffectDifferentSize) {
   EffectNode isolation_effect;
   isolation_effect.clip_id = 1;
   isolation_effect.stable_id = 2;
-  isolation_effect.has_render_surface = true;
+  isolation_effect.render_surface_reason = RenderSurfaceReason::kTest;
   isolation_effect.transform_id = 1;
   property_trees.effect_tree.Insert(isolation_effect, 1);
 
@@ -562,7 +562,7 @@ TEST_P(LayerTreeHostLayerListPixelTest, ImageMaskWithEffect) {
   EffectNode isolation_effect;
   isolation_effect.clip_id = 1;
   isolation_effect.stable_id = 2;
-  isolation_effect.has_render_surface = true;
+  isolation_effect.render_surface_reason = RenderSurfaceReason::kTest;
   isolation_effect.transform_id = 1;
   property_trees.effect_tree.Insert(isolation_effect, 1);
 

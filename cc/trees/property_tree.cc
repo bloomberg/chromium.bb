@@ -831,13 +831,13 @@ void EffectTree::UpdateHasMaskingChild(EffectNode* node,
   // when we actually encounter a masking child.
   node->has_masking_child = false;
   if (node->blend_mode == SkBlendMode::kDstIn) {
-    DCHECK(parent_node->has_render_surface);
+    DCHECK(parent_node->HasRenderSurface());
     parent_node->has_masking_child = true;
   }
 }
 
 void EffectTree::UpdateSurfaceContentsScale(EffectNode* effect_node) {
-  if (!effect_node->has_render_surface) {
+  if (!effect_node->HasRenderSurface()) {
     effect_node->surface_contents_scale = gfx::Vector2dF(1.0f, 1.0f);
     return;
   }
@@ -951,7 +951,7 @@ void EffectTree::TakeCopyRequestsAndTransformToSurface(
     int node_id,
     std::vector<std::unique_ptr<viz::CopyOutputRequest>>* requests) {
   EffectNode* effect_node = Node(node_id);
-  DCHECK(effect_node->has_render_surface);
+  DCHECK(effect_node->HasRenderSurface());
   DCHECK(effect_node->has_copy_request);
 
   // The area needs to be transformed from the space of content that draws to
@@ -1071,7 +1071,7 @@ void EffectTree::UpdateRenderSurfaces(LayerTreeImpl* layer_tree_impl) {
   for (int id = kContentsRootNodeId; id < static_cast<int>(size()); ++id) {
     EffectNode* effect_node = Node(id);
     bool needs_render_surface =
-        id == kContentsRootNodeId || effect_node->has_render_surface;
+        id == kContentsRootNodeId || effect_node->HasRenderSurface();
     if (needs_render_surface == !!render_surfaces_[id])
       continue;
 
@@ -1120,7 +1120,7 @@ bool EffectTree::CreateOrReuseRenderSurfaces(
   std::vector<std::pair<uint64_t, int>> stable_id_node_id_list;
   for (int id = kContentsRootNodeId; id < static_cast<int>(size()); ++id) {
     EffectNode* node = Node(id);
-    if (node->has_render_surface) {
+    if (node->HasRenderSurface()) {
       stable_id_node_id_list.push_back(
           std::make_pair(node->stable_id, node->id));
     }

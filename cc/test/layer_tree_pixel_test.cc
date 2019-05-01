@@ -264,7 +264,7 @@ void LayerTreePixelTest::InitializeForLayerListMode(
   root_effect.clip_id = 1;
   root_effect.stable_id = 1;
   root_effect.transform_id = 1;
-  root_effect.has_render_surface = true;
+  root_effect.render_surface_reason = RenderSurfaceReason::kTest;
   property_trees->effect_tree.Insert(root_effect, 0);
 
   ScrollNode scroll_node;

@@ -1329,7 +1329,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceForNonAxisAlignedClipping) {
   EffectTree& effect_tree =
       root->layer_tree_impl()->property_trees()->effect_tree;
   EffectNode* node = effect_tree.Node(clips_subtree->effect_tree_index());
-  EXPECT_TRUE(node->has_render_surface);
+  EXPECT_TRUE(node->HasRenderSurface());
 }
 
 TEST_F(LayerTreeHostCommonTest, EffectNodesForNonAxisAlignedClips) {
@@ -3852,7 +3852,7 @@ TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithPreserves3d) {
   EXPECT_EQ(GetRenderSurface(front_facing_child), GetRenderSurface(root));
   EXPECT_EQ(GetRenderSurface(back_facing_child), GetRenderSurface(root));
   EXPECT_NE(GetRenderSurface(front_facing_surface), GetRenderSurface(root));
-  // We expect that a has_render_surface was created but not used.
+  // We expect that a render surface was created but not used.
   EXPECT_NE(GetRenderSurface(back_facing_surface), GetRenderSurface(root));
   EXPECT_NE(GetRenderSurface(back_facing_surface),
             GetRenderSurface(front_facing_surface));
@@ -10696,7 +10696,7 @@ TEST_F(LayerTreeHostCommonTest, RoundedCornerBounds) {
   const EffectNode* effect_node =
       effect_tree.Node(rounded_corner_layer_1->effect_tree_index());
   gfx::RRectF rounded_corner_bounds_1 = effect_node->rounded_corner_bounds;
-  EXPECT_FALSE(effect_node->has_render_surface);
+  EXPECT_FALSE(effect_node->HasRenderSurface());
   EXPECT_FLOAT_EQ(rounded_corner_bounds_1.GetSimpleRadius(),
                   kRoundedCorner1Radius);
   EXPECT_EQ(rounded_corner_bounds_1.rect(),
@@ -10706,7 +10706,7 @@ TEST_F(LayerTreeHostCommonTest, RoundedCornerBounds) {
   // surface. It also has 2 descendants that draw.
   effect_node = effect_tree.Node(rounded_corner_layer_2->effect_tree_index());
   gfx::RRectF rounded_corner_bounds_2 = effect_node->rounded_corner_bounds;
-  EXPECT_TRUE(effect_node->has_render_surface);
+  EXPECT_TRUE(effect_node->HasRenderSurface());
   EXPECT_FLOAT_EQ(rounded_corner_bounds_2.GetSimpleRadius(),
                   kRoundedCorner2Radius);
   EXPECT_EQ(rounded_corner_bounds_2.rect(),
@@ -10716,7 +10716,7 @@ TEST_F(LayerTreeHostCommonTest, RoundedCornerBounds) {
   // the creation of a render surface.
   effect_node = effect_tree.Node(rounded_corner_layer_3->effect_tree_index());
   gfx::RRectF rounded_corner_bounds_3 = effect_node->rounded_corner_bounds;
-  EXPECT_TRUE(effect_node->has_render_surface);
+  EXPECT_TRUE(effect_node->HasRenderSurface());
   EXPECT_FLOAT_EQ(rounded_corner_bounds_3.GetSimpleRadius(),
                   kRoundedCorner3Radius);
   EXPECT_EQ(rounded_corner_bounds_3.rect(),
@@ -10726,7 +10726,7 @@ TEST_F(LayerTreeHostCommonTest, RoundedCornerBounds) {
   // rounded corner, it does not need a render surface.
   effect_node = effect_tree.Node(rounded_corner_layer_4->effect_tree_index());
   gfx::RRectF rounded_corner_bounds_4 = effect_node->rounded_corner_bounds;
-  EXPECT_FALSE(effect_node->has_render_surface);
+  EXPECT_FALSE(effect_node->HasRenderSurface());
   EXPECT_FLOAT_EQ(rounded_corner_bounds_4.GetSimpleRadius(),
                   kRoundedCorner4Radius);
   EXPECT_EQ(rounded_corner_bounds_4.rect(),
@@ -10891,7 +10891,7 @@ TEST_F(LayerTreeHostCommonTest, RoundedCornerBoundsInterveningRenderTarget) {
   const EffectNode* effect_node =
       effect_tree.Node(rounded_corner_layer_1->effect_tree_index());
   gfx::RRectF rounded_corner_bounds_1 = effect_node->rounded_corner_bounds;
-  EXPECT_FALSE(effect_node->has_render_surface);
+  EXPECT_FALSE(effect_node->HasRenderSurface());
   EXPECT_FLOAT_EQ(rounded_corner_bounds_1.GetSimpleRadius(),
                   kRoundedCorner1Radius);
   EXPECT_EQ(rounded_corner_bounds_1.rect(),
@@ -10901,7 +10901,7 @@ TEST_F(LayerTreeHostCommonTest, RoundedCornerBoundsInterveningRenderTarget) {
   // has a rounded corner, it does not need a render surface.
   effect_node = effect_tree.Node(rounded_corner_layer_2->effect_tree_index());
   gfx::RRectF rounded_corner_bounds_2 = effect_node->rounded_corner_bounds;
-  EXPECT_FALSE(effect_node->has_render_surface);
+  EXPECT_FALSE(effect_node->HasRenderSurface());
   EXPECT_FLOAT_EQ(rounded_corner_bounds_2.GetSimpleRadius(),
                   kRoundedCorner2Radius);
   EXPECT_EQ(rounded_corner_bounds_2.rect(),
@@ -11018,7 +11018,7 @@ TEST_F(LayerTreeHostCommonTest, RoundedCornerBoundsSiblingRenderTarget) {
   const EffectNode* effect_node =
       effect_tree.Node(rounded_corner_layer_1->effect_tree_index());
   gfx::RRectF rounded_corner_bounds_1 = effect_node->rounded_corner_bounds;
-  EXPECT_TRUE(effect_node->has_render_surface);
+  EXPECT_TRUE(effect_node->HasRenderSurface());
   EXPECT_FLOAT_EQ(rounded_corner_bounds_1.GetSimpleRadius(),
                   kRoundedCorner1Radius);
   EXPECT_EQ(rounded_corner_bounds_1.rect(),
@@ -11028,7 +11028,7 @@ TEST_F(LayerTreeHostCommonTest, RoundedCornerBoundsSiblingRenderTarget) {
   // has a rounded corner, it does not need a render surface.
   effect_node = effect_tree.Node(rounded_corner_layer_2->effect_tree_index());
   gfx::RRectF rounded_corner_bounds_2 = effect_node->rounded_corner_bounds;
-  EXPECT_FALSE(effect_node->has_render_surface);
+  EXPECT_FALSE(effect_node->HasRenderSurface());
   EXPECT_FLOAT_EQ(rounded_corner_bounds_2.GetSimpleRadius(),
                   kRoundedCorner2Radius);
   EXPECT_EQ(rounded_corner_bounds_2.rect(),
@@ -11169,7 +11169,7 @@ TEST_F(LayerTreeHostCommonTest, FastRoundedCornerDoesNotTriggerRenderSurface) {
   const EffectNode* effect_node =
       effect_tree.Node(fast_rounded_corner_layer->effect_tree_index());
   gfx::RRectF rounded_corner_bounds_1 = effect_node->rounded_corner_bounds;
-  EXPECT_FALSE(effect_node->has_render_surface);
+  EXPECT_FALSE(effect_node->HasRenderSurface());
   EXPECT_TRUE(effect_node->is_fast_rounded_corner);
   EXPECT_FLOAT_EQ(rounded_corner_bounds_1.GetSimpleRadius(),
                   kRoundedCorner1Radius);
@@ -11179,7 +11179,7 @@ TEST_F(LayerTreeHostCommonTest, FastRoundedCornerDoesNotTriggerRenderSurface) {
   // Since this node has 2 descendants that draw, it will have a rounded corner.
   effect_node = effect_tree.Node(rounded_corner_layer->effect_tree_index());
   gfx::RRectF rounded_corner_bounds_2 = effect_node->rounded_corner_bounds;
-  EXPECT_TRUE(effect_node->has_render_surface);
+  EXPECT_TRUE(effect_node->HasRenderSurface());
   EXPECT_FALSE(effect_node->is_fast_rounded_corner);
   EXPECT_FLOAT_EQ(rounded_corner_bounds_2.GetSimpleRadius(),
                   kRoundedCorner2Radius);
@@ -11346,7 +11346,7 @@ TEST_F(LayerTreeHostCommonTest,
   const EffectNode* effect_node =
       effect_tree.Node(rounded_corner_layer_1->effect_tree_index());
   gfx::RRectF rounded_corner_bounds_1 = effect_node->rounded_corner_bounds;
-  EXPECT_TRUE(effect_node->has_render_surface);
+  EXPECT_TRUE(effect_node->HasRenderSurface());
   EXPECT_FALSE(effect_node->is_fast_rounded_corner);
   EXPECT_FLOAT_EQ(rounded_corner_bounds_1.GetSimpleRadius(),
                   kRoundedCorner1Radius);
@@ -11358,7 +11358,7 @@ TEST_F(LayerTreeHostCommonTest,
   effect_node =
       effect_tree.Node(fast_rounded_corner_layer_2->effect_tree_index());
   gfx::RRectF rounded_corner_bounds_2 = effect_node->rounded_corner_bounds;
-  EXPECT_FALSE(effect_node->has_render_surface);
+  EXPECT_FALSE(effect_node->HasRenderSurface());
   EXPECT_TRUE(effect_node->is_fast_rounded_corner);
   EXPECT_FLOAT_EQ(rounded_corner_bounds_2.GetSimpleRadius(),
                   kRoundedCorner2Radius);
@@ -11369,7 +11369,7 @@ TEST_F(LayerTreeHostCommonTest,
   // render surface.
   effect_node = effect_tree.Node(rounded_corner_layer_3->effect_tree_index());
   gfx::RRectF rounded_corner_bounds_3 = effect_node->rounded_corner_bounds;
-  EXPECT_TRUE(effect_node->has_render_surface);
+  EXPECT_TRUE(effect_node->HasRenderSurface());
   EXPECT_FALSE(effect_node->is_fast_rounded_corner);
   EXPECT_FLOAT_EQ(rounded_corner_bounds_3.GetSimpleRadius(),
                   kRoundedCorner3Radius);
@@ -11379,7 +11379,7 @@ TEST_F(LayerTreeHostCommonTest,
   // Since this layer no descendants, it would no thave a render pass.
   effect_node = effect_tree.Node(rounded_corner_layer_4->effect_tree_index());
   gfx::RRectF rounded_corner_bounds_4 = effect_node->rounded_corner_bounds;
-  EXPECT_FALSE(effect_node->has_render_surface);
+  EXPECT_FALSE(effect_node->HasRenderSurface());
   EXPECT_FALSE(effect_node->is_fast_rounded_corner);
   EXPECT_FLOAT_EQ(rounded_corner_bounds_4.GetSimpleRadius(),
                   kRoundedCorner4Radius);
@@ -11554,7 +11554,7 @@ TEST_F(LayerTreeHostCommonTest,
   const EffectNode* effect_node =
       effect_tree.Node(fast_rounded_corner_layer_1->effect_tree_index());
   gfx::RRectF rounded_corner_bounds_1 = effect_node->rounded_corner_bounds;
-  EXPECT_TRUE(effect_node->has_render_surface);
+  EXPECT_TRUE(effect_node->HasRenderSurface());
   EXPECT_TRUE(effect_node->is_fast_rounded_corner);
   EXPECT_FLOAT_EQ(rounded_corner_bounds_1.GetSimpleRadius(),
                   kRoundedCorner1Radius);
@@ -11565,7 +11565,7 @@ TEST_F(LayerTreeHostCommonTest,
   // not have a render surface.
   effect_node = effect_tree.Node(rounded_corner_layer_1->effect_tree_index());
   gfx::RRectF rounded_corner_bounds_2 = effect_node->rounded_corner_bounds;
-  EXPECT_FALSE(effect_node->has_render_surface);
+  EXPECT_FALSE(effect_node->HasRenderSurface());
   EXPECT_FALSE(effect_node->is_fast_rounded_corner);
   EXPECT_FLOAT_EQ(rounded_corner_bounds_2.GetSimpleRadius(),
                   kRoundedCorner2Radius);
@@ -11576,7 +11576,7 @@ TEST_F(LayerTreeHostCommonTest,
   // render surface.
   effect_node = effect_tree.Node(rounded_corner_layer_2->effect_tree_index());
   gfx::RRectF rounded_corner_bounds_3 = effect_node->rounded_corner_bounds;
-  EXPECT_TRUE(effect_node->has_render_surface);
+  EXPECT_TRUE(effect_node->HasRenderSurface());
   EXPECT_FALSE(effect_node->is_fast_rounded_corner);
   EXPECT_FLOAT_EQ(rounded_corner_bounds_3.GetSimpleRadius(),
                   kRoundedCorner3Radius);
@@ -11586,7 +11586,7 @@ TEST_F(LayerTreeHostCommonTest,
   // Since this layer has no descendant, it does not need a render surface.
   effect_node = effect_tree.Node(rounded_corner_layer_3->effect_tree_index());
   gfx::RRectF rounded_corner_bounds_4 = effect_node->rounded_corner_bounds;
-  EXPECT_FALSE(effect_node->has_render_surface);
+  EXPECT_FALSE(effect_node->HasRenderSurface());
   EXPECT_FALSE(effect_node->is_fast_rounded_corner);
   EXPECT_FLOAT_EQ(rounded_corner_bounds_4.GetSimpleRadius(),
                   kRoundedCorner4Radius);

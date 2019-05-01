@@ -904,7 +904,7 @@ TEST_P(WebLayerListSimTest, NonDrawableLayersIgnoredForRenderSurfaces) {
   auto effect_tree_index = outer_element_layer->effect_tree_index();
   auto* effect_node = GetPropertyTrees()->effect_tree.Node(effect_tree_index);
   EXPECT_EQ(effect_node->opacity, 0.5f);
-  EXPECT_FALSE(effect_node->has_render_surface);
+  EXPECT_FALSE(effect_node->HasRenderSurface());
 }
 
 }  // namespace blink

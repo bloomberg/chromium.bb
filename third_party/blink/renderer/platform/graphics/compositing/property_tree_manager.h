@@ -22,6 +22,7 @@ class ScrollTree;
 class TransformTree;
 struct EffectNode;
 struct TransformNode;
+enum class RenderSurfaceReason : uint8_t;
 }
 
 namespace blink {
@@ -198,7 +199,7 @@ class PropertyTreeManager {
                              CcEffectType,
                              const EffectPaintPropertyNode&,
                              const ClipPaintPropertyNode&);
-  void SetCurrentEffectHasRenderSurface();
+  void SetCurrentEffectRenderSurfaceReason(cc::RenderSurfaceReason);
 
   cc::TransformTree& GetTransformTree();
   cc::ClipTree& GetClipTree();

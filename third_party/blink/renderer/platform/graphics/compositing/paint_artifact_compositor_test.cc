@@ -2033,7 +2033,7 @@ TEST_P(PaintArtifactCompositorTest, CompositedLuminanceMask) {
   EXPECT_EQ(gfx::Size(200, 200), masked_layer->bounds());
   const cc::EffectNode* masked_group =
       GetPropertyTrees().effect_tree.Node(masked_layer->effect_tree_index());
-  EXPECT_TRUE(masked_group->has_render_surface);
+  EXPECT_TRUE(masked_group->HasRenderSurface());
 
   const cc::Layer* masking_layer = ContentLayerAt(1);
   EXPECT_THAT(
@@ -2043,7 +2043,7 @@ TEST_P(PaintArtifactCompositorTest, CompositedLuminanceMask) {
   EXPECT_EQ(gfx::Size(100, 100), masking_layer->bounds());
   const cc::EffectNode* masking_group =
       GetPropertyTrees().effect_tree.Node(masking_layer->effect_tree_index());
-  EXPECT_FALSE(masking_group->has_render_surface);
+  EXPECT_FALSE(masking_group->HasRenderSurface());
   EXPECT_EQ(masked_group->id, masking_group->parent_id);
   ASSERT_EQ(1u, masking_group->filters.size());
   EXPECT_EQ(cc::FilterOperation::REFERENCE,
@@ -2081,7 +2081,7 @@ TEST_P(PaintArtifactCompositorTest, CompositedLuminanceMaskTwoChildren) {
       GetPropertyTrees().effect_tree.Node(masking_layer->effect_tree_index());
 
   // There is a render surface because there are two children.
-  EXPECT_TRUE(masking_group->has_render_surface);
+  EXPECT_TRUE(masking_group->HasRenderSurface());
   ASSERT_EQ(1u, masking_group->filters.size());
   EXPECT_EQ(cc::FilterOperation::REFERENCE,
             masking_group->filters.at(0).type());
@@ -2112,7 +2112,7 @@ TEST_P(PaintArtifactCompositorTest, CompositedExoticBlendMode) {
       GetPropertyTrees().effect_tree.Node(masking_layer->effect_tree_index());
 
   /// This requires a render surface.
-  EXPECT_TRUE(masking_group->has_render_surface);
+  EXPECT_TRUE(masking_group->HasRenderSurface());
 }
 
 TEST_P(PaintArtifactCompositorTest, UpdateProducesNewSequenceNumber) {
@@ -3483,7 +3483,7 @@ enum {
     const auto* effect = GetPropertyTrees().effect_tree.Node(effect_id); \
     EXPECT_EQ(expected_opacity, effect->opacity);                        \
     EXPECT_EQ(!!((expected_flags)&kHasRenderSurface),                    \
-              effect->has_render_surface);                               \
+              effect->HasRenderSurface());                               \
   } while (false)
 
 TEST_P(PaintArtifactCompositorTest, OpacityRenderSurfaces) {
@@ -3680,7 +3680,7 @@ TEST_P(PaintArtifactCompositorTest,
 
   const auto* effect = GetPropertyTrees().effect_tree.Node(
       ContentLayerAt(1)->effect_tree_index());
-  EXPECT_TRUE(effect->has_render_surface);
+  EXPECT_TRUE(effect->HasRenderSurface());
 }
 
 TEST_P(PaintArtifactCompositorTest,
@@ -3701,7 +3701,7 @@ TEST_P(PaintArtifactCompositorTest,
 
   const auto* effect = GetPropertyTrees().effect_tree.Node(
       ContentLayerAt(1)->effect_tree_index());
-  EXPECT_TRUE(effect->has_render_surface);
+  EXPECT_TRUE(effect->HasRenderSurface());
 }
 
 TEST_P(PaintArtifactCompositorTest, OpacityIndirectlyAffectingTwoLayers) {

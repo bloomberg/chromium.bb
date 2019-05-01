@@ -1119,22 +1119,22 @@ bool PaintArtifactCompositor::DirectlyUpdatePageScaleTransform(
   return false;
 }
 
-static bool IsRenderSurfaceCandidate(
+static cc::RenderSurfaceReason GetRenderSurfaceCandidateReason(
     const cc::EffectNode& effect,
     const Vector<const EffectPaintPropertyNode*>& blink_effects) {
-  if (effect.has_render_surface)
-    return false;
+  if (effect.HasRenderSurface())
+    return cc::RenderSurfaceReason::kNone;
   if (effect.blend_mode != SkBlendMode::kSrcOver)
-    return true;
+    return cc::RenderSurfaceReason::kBlendModeDstIn;
   if (effect.opacity != 1.f)
-    return true;
+    return cc::RenderSurfaceReason::kOpacity;
   if (static_cast<size_t>(effect.id) < blink_effects.size() &&
       blink_effects[effect.id] &&
       blink_effects[effect.id]->HasActiveOpacityAnimation())
-    return true;
+    return cc::RenderSurfaceReason::kOpacityAnimation;
   if (effect.is_fast_rounded_corner)
-    return true;
-  return false;
+    return cc::RenderSurfaceReason::kRoundedCorner;
+  return cc::RenderSurfaceReason::kNone;
 }
 
 // Every effect is supposed to have render surface enabled for grouping, but we
@@ -1163,16 +1163,18 @@ void PaintArtifactCompositor::UpdateRenderSurfaceForEffects(
   for (auto id = effect_tree.size() - 1;
        id > cc::EffectTree::kSecondaryRootNodeId; id--) {
     auto* effect = effect_tree.Node(id);
-    if (effect_layer_counts[id] > 1 &&
-        IsRenderSurfaceCandidate(*effect, blink_effects)) {
-      // The render surface candidate needs a render surface because it
-      // controls more than 1 layer.
-      effect->has_render_surface = true;
+    if (effect_layer_counts[id] > 1) {
+      auto reason = GetRenderSurfaceCandidateReason(*effect, blink_effects);
+      if (reason != cc::RenderSurfaceReason::kNone) {
+        // The render surface candidate needs a render surface because it
+        // controls more than 1 layer.
+        effect->render_surface_reason = reason;
+      }
     }
 
     // We should not have visited the parent.
     DCHECK_NE(-1, effect_layer_counts[effect->parent_id]);
-    if (effect->has_render_surface) {
+    if (effect->HasRenderSurface()) {
       // A sub-render-surface counts as one controlled layer of the parent.
       effect_layer_counts[effect->parent_id]++;
     } else {

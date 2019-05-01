@@ -143,7 +143,7 @@ void LayerImpl::PopulateSharedQuadState(viz::SharedQuadState* state,
                 draw_properties_.rounded_corner_bounds,
                 draw_properties_.clip_rect, draw_properties_.is_clipped,
                 contents_opaque, draw_properties_.opacity,
-                effect_node->has_render_surface ? SkBlendMode::kSrcOver
+                effect_node->HasRenderSurface() ? SkBlendMode::kSrcOver
                                                 : effect_node->blend_mode,
                 GetSortingContextId());
   state->is_fast_rounded_corner = draw_properties_.is_fast_rounded_corner;
@@ -169,7 +169,7 @@ void LayerImpl::PopulateScaledSharedQuadState(viz::SharedQuadState* state,
                 draw_properties().rounded_corner_bounds,
                 draw_properties().clip_rect, draw_properties().is_clipped,
                 contents_opaque, draw_properties().opacity,
-                effect_node->has_render_surface ? SkBlendMode::kSrcOver
+                effect_node->HasRenderSurface() ? SkBlendMode::kSrcOver
                                                 : effect_node->blend_mode,
                 GetSortingContextId());
   state->is_fast_rounded_corner = draw_properties().is_fast_rounded_corner;

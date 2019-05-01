@@ -20,6 +20,33 @@ class TracedValue;
 
 namespace cc {
 
+enum class RenderSurfaceReason : uint8_t {
+  kNone,
+  kRoot,
+  k3dTransformFlattening,
+  kBlendMode,
+  kBlendModeDstIn,
+  kOpacity,
+  kOpacityAnimation,
+  kFilter,
+  kFilterAnimation,
+  kBackdropFilter,
+  kBackdropFilterAnimation,
+  kRoundedCorner,
+  kClipPath,
+  kClipAxisAlignment,
+  kMask,
+  kRootOrIsolatedGroup,
+  kTrilinearFiltering,
+  kCache,
+  kCopyRequest,
+  // This must be the last value because it's used in tracing code to know the
+  // number of reasons.
+  kTest,
+};
+
+CC_EXPORT const char* RenderSurfaceReasonToString(RenderSurfaceReason);
+
 struct CC_EXPORT EffectNode {
   EffectNode();
   EffectNode(const EffectNode& other);
@@ -55,7 +82,6 @@ struct CC_EXPORT EffectNode {
 
   gfx::Size unscaled_mask_target_size;
 
-  bool has_render_surface : 1;
   bool cache_render_surface : 1;
   bool has_copy_request : 1;
   bool hidden_by_backface_visibility : 1;
@@ -85,7 +111,10 @@ struct CC_EXPORT EffectNode {
   bool subtree_has_copy_request : 1;
   // If set, the effect node tries to not trigger a render surface due to it
   // having a rounded corner.
-  bool is_fast_rounded_corner;
+  bool is_fast_rounded_corner : 1;
+  // RenderSurfaceReason::kNone if this effect node should not create a render
+  // surface, or the reason that this effect node should create one.
+  RenderSurfaceReason render_surface_reason;
   // The transform node index of the transform to apply to this effect
   // node's content when rendering to a surface.
   int transform_id;
@@ -101,6 +130,10 @@ struct CC_EXPORT EffectNode {
   int mask_layer_id;
   int closest_ancestor_with_cached_render_surface_id;
   int closest_ancestor_with_copy_request_id;
+
+  bool HasRenderSurface() const {
+    return render_surface_reason != RenderSurfaceReason::kNone;
+  }
 
   bool operator==(const EffectNode& other) const;
 

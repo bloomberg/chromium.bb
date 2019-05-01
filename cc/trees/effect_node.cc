@@ -17,7 +17,6 @@ EffectNode::EffectNode()
       screen_space_opacity(1.f),
       backdrop_filter_quality(1.f),
       blend_mode(SkBlendMode::kSrcOver),
-      has_render_surface(false),
       cache_render_surface(false),
       has_copy_request(false),
       hidden_by_backface_visibility(false),
@@ -34,6 +33,7 @@ EffectNode::EffectNode()
       effect_changed(false),
       subtree_has_copy_request(false),
       is_fast_rounded_corner(false),
+      render_surface_reason(RenderSurfaceReason::kNone),
       transform_id(0),
       clip_id(0),
       target_id(1),
@@ -48,7 +48,6 @@ bool EffectNode::operator==(const EffectNode& other) const {
          stable_id == other.stable_id && opacity == other.opacity &&
          screen_space_opacity == other.screen_space_opacity &&
          backdrop_filter_quality == other.backdrop_filter_quality &&
-         has_render_surface == other.has_render_surface &&
          cache_render_surface == other.cache_render_surface &&
          has_copy_request == other.has_copy_request &&
          filters == other.filters &&
@@ -57,6 +56,9 @@ bool EffectNode::operator==(const EffectNode& other) const {
          filters_origin == other.filters_origin &&
          rounded_corner_bounds == other.rounded_corner_bounds &&
          is_fast_rounded_corner == other.is_fast_rounded_corner &&
+         // The specific reason is just for tracing/testing/debugging, so just
+         // check whether a render surface is needed.
+         HasRenderSurface() == other.HasRenderSurface() &&
          blend_mode == other.blend_mode &&
          surface_contents_scale == other.surface_contents_scale &&
          unscaled_mask_target_size == other.unscaled_mask_target_size &&
@@ -83,6 +85,54 @@ bool EffectNode::operator==(const EffectNode& other) const {
              other.closest_ancestor_with_copy_request_id;
 }
 
+const char* RenderSurfaceReasonToString(RenderSurfaceReason reason) {
+  switch (reason) {
+    case RenderSurfaceReason::kNone:
+      return "none";
+    case RenderSurfaceReason::kRoot:
+      return "root";
+    case RenderSurfaceReason::k3dTransformFlattening:
+      return "3d transform flattening";
+    case RenderSurfaceReason::kBlendMode:
+      return "blend mode";
+    case RenderSurfaceReason::kBlendModeDstIn:
+      return "blend mode kDstIn";
+    case RenderSurfaceReason::kOpacity:
+      return "opacity";
+    case RenderSurfaceReason::kOpacityAnimation:
+      return "opacity animation";
+    case RenderSurfaceReason::kFilter:
+      return "filter";
+    case RenderSurfaceReason::kFilterAnimation:
+      return "filter animation";
+    case RenderSurfaceReason::kBackdropFilter:
+      return "backdrop filter";
+    case RenderSurfaceReason::kBackdropFilterAnimation:
+      return "backdrop filter animation";
+    case RenderSurfaceReason::kRoundedCorner:
+      return "rounded corner";
+    case RenderSurfaceReason::kClipPath:
+      return "clip path";
+    case RenderSurfaceReason::kClipAxisAlignment:
+      return "clip axis alignment";
+    case RenderSurfaceReason::kMask:
+      return "mask";
+    case RenderSurfaceReason::kRootOrIsolatedGroup:
+      return "root or isolated group";
+    case RenderSurfaceReason::kTrilinearFiltering:
+      return "trilinear filtering";
+    case RenderSurfaceReason::kCache:
+      return "cache";
+    case RenderSurfaceReason::kCopyRequest:
+      return "copy request";
+    case RenderSurfaceReason::kTest:
+      return "test";
+    default:
+      NOTREACHED() << static_cast<int>(reason);
+      return "";
+  }
+}
+
 void EffectNode::AsValueInto(base::trace_event::TracedValue* value) const {
   value->SetInteger("id", id);
   value->SetInteger("parent_id", parent_id);
@@ -91,7 +141,6 @@ void EffectNode::AsValueInto(base::trace_event::TracedValue* value) const {
   value->SetDouble("backdrop_filter_quality", backdrop_filter_quality);
   value->SetBoolean("is_fast_rounded_corner", is_fast_rounded_corner);
   value->SetString("blend_mode", SkBlendMode_Name(blend_mode));
-  value->SetBoolean("has_render_surface", has_render_surface);
   value->SetBoolean("cache_render_surface", cache_render_surface);
   value->SetBoolean("has_copy_request", has_copy_request);
   value->SetBoolean("double_sided", double_sided);
@@ -104,7 +153,10 @@ void EffectNode::AsValueInto(base::trace_event::TracedValue* value) const {
   value->SetBoolean("has_masking_child", has_masking_child);
   value->SetBoolean("is_masked", is_masked);
   value->SetBoolean("effect_changed", effect_changed);
-  value->SetInteger("subtree_has_copy_request", subtree_has_copy_request);
+  value->SetBoolean("subtree_has_copy_request", subtree_has_copy_request);
+  value->SetBoolean("is_fast_rounded_corner", is_fast_rounded_corner);
+  value->SetString("render_surface_reason",
+                   RenderSurfaceReasonToString(render_surface_reason));
   value->SetInteger("transform_id", transform_id);
   value->SetInteger("clip_id", clip_id);
   value->SetInteger("target_id", target_id);

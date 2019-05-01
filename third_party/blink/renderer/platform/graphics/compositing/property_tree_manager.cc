@@ -261,7 +261,7 @@ void PropertyTreeManager::SetupRootEffectNode() {
       CompositorElementIdFromUniqueObjectId(unique_id).GetInternalValue();
   effect_node.transform_id = kRealRootNodeId;
   effect_node.clip_id = kSecondaryRootNodeId;
-  effect_node.has_render_surface = true;
+  effect_node.render_surface_reason = cc::RenderSurfaceReason::kRoot;
   root_layer_->SetEffectTreeIndex(effect_node.id);
 
   SetCurrentEffectState(effect_node, CcEffectType::kEffect,
@@ -294,9 +294,8 @@ static bool TransformsToAncestorHaveActiveAnimation(
   return false;
 }
 
-static bool TransformsMayBe2dAxisMisaligned(
-    const TransformPaintPropertyNode& a,
-    const TransformPaintPropertyNode& b) {
+bool TransformsMayBe2dAxisMisaligned(const TransformPaintPropertyNode& a,
+                                     const TransformPaintPropertyNode& b) {
   if (&a == &b)
     return false;
   const auto& translation_2d_or_matrix =
@@ -306,8 +305,10 @@ static bool TransformsMayBe2dAxisMisaligned(
     return true;
   // Assume any animation can cause 2d axis misalignment.
   const auto& lca = LowestCommonAncestor(a, b);
-  return TransformsToAncestorHaveActiveAnimation(a, lca) ||
-         TransformsToAncestorHaveActiveAnimation(b, lca);
+  if (TransformsToAncestorHaveActiveAnimation(a, lca) ||
+      TransformsToAncestorHaveActiveAnimation(b, lca))
+    return true;
+  return false;
 }
 
 void PropertyTreeManager::SetCurrentEffectState(
@@ -324,11 +325,11 @@ void PropertyTreeManager::SetCurrentEffectState(
   DCHECK(!clip.IsParentAlias() || !clip.Parent());
   current_.clip = &clip;
 
-  if (cc_effect_node.has_render_surface) {
-    current_.may_be_2d_axis_misaligned_to_render_surface = false;
+  if (cc_effect_node.HasRenderSurface()) {
+    current_.may_be_2d_axis_misaligned_to_render_surface = 0;
   } else if (previous_transform &&
              !current_.may_be_2d_axis_misaligned_to_render_surface) {
-    current_.may_be_2d_axis_misaligned_to_render_surface =
+    current_.may_be_2d_axis_misaligned_to_render_surface |=
         TransformsMayBe2dAxisMisaligned(*previous_transform,
                                         current_.Transform());
   }
@@ -336,8 +337,10 @@ void PropertyTreeManager::SetCurrentEffectState(
 
 // TODO(crbug.com/504464): Remove this when move render surface decision logic
 // into cc compositor thread.
-void PropertyTreeManager::SetCurrentEffectHasRenderSurface() {
-  GetEffectTree().Node(current_.effect_id)->has_render_surface = true;
+void PropertyTreeManager::SetCurrentEffectRenderSurfaceReason(
+    cc::RenderSurfaceReason reason) {
+  auto* effect = GetEffectTree().Node(current_.effect_id);
+  effect->render_surface_reason = reason;
 }
 
 int PropertyTreeManager::EnsureCompositorTransformNode(
@@ -420,12 +423,14 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
   // context of an ancestor, cc needs a render surface for correct flattening.
   // TODO(crbug.com/504464): Move the logic into cc compositor thread.
   auto* current_cc_effect = GetEffectTree().Node(current_.effect_id);
-  if (current_cc_effect && !current_cc_effect->has_render_surface &&
+  if (current_cc_effect && !current_cc_effect->HasRenderSurface() &&
       current_cc_effect->transform_id == parent_id &&
       transform_node.FlattensInheritedTransform() && transform_node.Parent() &&
       transform_node.Parent()->RenderingContextId() &&
-      !transform_node.Parent()->FlattensInheritedTransform())
-    SetCurrentEffectHasRenderSurface();
+      !transform_node.Parent()->FlattensInheritedTransform()) {
+    SetCurrentEffectRenderSurfaceReason(
+        cc::RenderSurfaceReason::k3dTransformFlattening);
+  }
 
   auto result = transform_node_map_.Set(&transform_node, id);
   DCHECK(result.is_new_entry);
@@ -745,7 +750,7 @@ PropertyTreeManager::NeedsSyntheticEffect(
 
   // Cc requires that a rectangluar clip is 2d-axis-aligned with the render
   // surface to correctly apply the clip.
-  if (current_.may_be_2d_axis_misaligned_to_render_surface ||
+  if (current_.may_be_2d_axis_misaligned_to_render_surface |
       TransformsMayBe2dAxisMisaligned(clip.LocalTransformSpace(),
                                       current_.Transform()))
     return CcEffectType::kSyntheticFor2dAxisAlignment;
@@ -766,7 +771,7 @@ SkBlendMode PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
     // An effect node can't omit render surface if it has child with exotic
     // blending mode. See comments below for more detail.
     // TODO(crbug.com/504464): Remove premature optimization here.
-    SetCurrentEffectHasRenderSurface();
+    SetCurrentEffectRenderSurfaceReason(cc::RenderSurfaceReason::kBlendMode);
   } else {
     // Exit synthetic effects until there are no more synthesized clips below
     // our lowest common ancestor.
@@ -826,7 +831,6 @@ SkBlendMode PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
       // when the effect is closed. For now the default value INVALID_STABLE_ID
       // is used. See PropertyTreeManager::EmitClipMaskLayer().
     } else {
-      DCHECK_EQ(pending_clip.type, CcEffectType::kSyntheticFor2dAxisAlignment);
       synthetic_effect.stable_id =
           CompositorElementIdFromUniqueObjectId(NewUniqueObjectId())
               .GetInternalValue();
@@ -845,7 +849,16 @@ SkBlendMode PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
           gfx::RRectF(pending_clip.clip->ClipRect());
       synthetic_effect.is_fast_rounded_corner = true;
     } else {
-      synthetic_effect.has_render_surface = true;
+      if (pending_clip.type == CcEffectType::kSyntheticForNonTrivialClip) {
+        synthetic_effect.render_surface_reason =
+            pending_clip.clip->ClipRect().IsRounded()
+                ? cc::RenderSurfaceReason::kRoundedCorner
+                : cc::RenderSurfaceReason::kClipPath;
+      } else {
+        synthetic_effect.render_surface_reason =
+            cc::RenderSurfaceReason::kClipAxisAlignment;
+      }
+
       pending_synthetic_mask_layers_.insert(synthetic_effect.id);
     }
 
@@ -934,7 +947,7 @@ PropertyTreeManager::GetBlendModeAndOutputClipForEffect(
     // blending mode.
     // TODO(crbug.com/504464): Remove premature optimization here.
     if (effect.BlendMode() != SkBlendMode::kSrcOver)
-      SetCurrentEffectHasRenderSurface();
+      SetCurrentEffectRenderSurfaceReason(cc::RenderSurfaceReason::kBlendMode);
 
     blend_mode = effect.BlendMode();
     output_clip = current_.clip;
@@ -957,12 +970,20 @@ void PropertyTreeManager::PopulateCcEffectNode(
   // Also, kDstIn and kSrcOver blend modes have fast paths if only one layer
   // is under the blend mode. This value is adjusted in PaintArtifactCompositor
   // ::UpdateRenderSurfaceForEffects() to account for more than one layer.
-  if (!effect.Filter().IsEmpty() || effect.HasActiveFilterAnimation() ||
-      !effect.BackdropFilter().IsEmpty() ||
-      effect.HasActiveBackdropFilterAnimation() ||
-      (blend_mode != SkBlendMode::kSrcOver &&
-       blend_mode != SkBlendMode::kDstIn)) {
-    effect_node.has_render_surface = true;
+  if (!effect.Filter().IsEmpty()) {
+    effect_node.render_surface_reason = cc::RenderSurfaceReason::kFilter;
+  } else if (effect.HasActiveFilterAnimation()) {
+    effect_node.render_surface_reason =
+        cc::RenderSurfaceReason::kFilterAnimation;
+  } else if (!effect.BackdropFilter().IsEmpty()) {
+    effect_node.render_surface_reason =
+        cc::RenderSurfaceReason::kBackdropFilter;
+  } else if (effect.HasActiveBackdropFilterAnimation()) {
+    effect_node.render_surface_reason =
+        cc::RenderSurfaceReason::kBackdropFilterAnimation;
+  } else if (blend_mode != SkBlendMode::kSrcOver &&
+             blend_mode != SkBlendMode::kDstIn) {
+    effect_node.render_surface_reason = cc::RenderSurfaceReason::kBlendMode;
   }
 
   effect_node.opacity = effect.Opacity();

@@ -195,7 +195,8 @@ TEST(PropertyTreeTest, TransformsWithFlattening) {
 
   int grand_parent = tree.Insert(TransformNode(), 0);
   int effect_grand_parent = effect_tree.Insert(EffectNode(), 0);
-  effect_tree.Node(effect_grand_parent)->has_render_surface = true;
+  effect_tree.Node(effect_grand_parent)->render_surface_reason =
+      RenderSurfaceReason::kTest;
   effect_tree.Node(effect_grand_parent)->transform_id = grand_parent;
   effect_tree.Node(effect_grand_parent)->surface_contents_scale =
       gfx::Vector2dF(1.f, 1.f);
@@ -207,7 +208,8 @@ TEST(PropertyTreeTest, TransformsWithFlattening) {
   int parent = tree.Insert(TransformNode(), grand_parent);
   int effect_parent = effect_tree.Insert(EffectNode(), effect_grand_parent);
   effect_tree.Node(effect_parent)->transform_id = parent;
-  effect_tree.Node(effect_parent)->has_render_surface = true;
+  effect_tree.Node(effect_parent)->render_surface_reason =
+      RenderSurfaceReason::kTest;
   effect_tree.Node(effect_parent)->surface_contents_scale =
       gfx::Vector2dF(1.f, 1.f);
   tree.Node(parent)->source_node_id = grand_parent;
@@ -493,7 +495,8 @@ TEST(PropertyTreeTest, SingularTransformSnapTest) {
 
   int parent = tree.Insert(TransformNode(), 0);
   int effect_parent = effect_tree.Insert(EffectNode(), 0);
-  effect_tree.Node(effect_parent)->has_render_surface = true;
+  effect_tree.Node(effect_parent)->render_surface_reason =
+      RenderSurfaceReason::kTest;
   effect_tree.Node(effect_parent)->surface_contents_scale =
       gfx::Vector2dF(1.f, 1.f);
   tree.Node(parent)->scrolls = true;
@@ -547,7 +550,7 @@ TEST(EffectTreeTest, CopyOutputRequestsAreTransformed) {
 
   EffectTree& effect_tree = property_trees.effect_tree;
   EffectNode effect_node;
-  effect_node.has_render_surface = true;
+  effect_node.render_surface_reason = RenderSurfaceReason::kTest;
   effect_node.has_copy_request = true;
   effect_node.transform_id = contents_root.id;
   effect_node.id = effect_tree.Insert(effect_node, 0);
@@ -646,7 +649,7 @@ TEST(EffectTreeTest, CopyOutputRequestsThatBecomeIllegalAreDropped) {
 
   EffectTree& effect_tree = property_trees.effect_tree;
   EffectNode effect_node;
-  effect_node.has_render_surface = true;
+  effect_node.render_surface_reason = RenderSurfaceReason::kTest;
   effect_node.has_copy_request = true;
   effect_node.transform_id = contents_root.id;
   effect_node.id = effect_tree.Insert(effect_node, 0);
