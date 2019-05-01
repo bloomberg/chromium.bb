@@ -6,6 +6,7 @@
 import ctypes
 import itertools
 import os
+import signal
 import sys
 import tempfile
 import unittest
@@ -360,6 +361,104 @@ class Subprocess42Test(unittest.TestCase):
       self.assertEqual(hex(p), out)
     else:
       self.assertEqual(str(os.nice(0)), out)
+
+  @staticmethod
+  def _cmd_print_good():
+    # Used in test_containment_auto and test_containment_auto_limit_process.
+    return [
+        sys.executable, '-u', '-c',
+        'import subprocess,sys; '
+        'subprocess.call([sys.executable, "-c", "print(\\"good\\")"])',
+    ]
+
+  def test_containment_auto(self):
+    # Minimal test case. Starts two processes.
+    cmd = self._cmd_print_good()
+    containment = subprocess42.Containment(
+        containment_type=subprocess42.Containment.AUTO,
+        limit_processes=2,
+        limit_total_committed_memory=1024*1024*1024)
+    self.assertEqual(0, subprocess42.check_call(cmd, containment=containment))
+
+  def test_containment_auto_limit_process(self):
+    # Process creates a children process. It should fail, throwing not enough
+    # quota.
+    cmd = self._cmd_print_good()
+    containment = subprocess42.Containment(
+        containment_type=subprocess42.Containment.JOB_OBJECT,
+        limit_processes=1)
+    start = lambda: subprocess42.Popen(
+        cmd, stdout=subprocess42.PIPE, stderr=subprocess42.PIPE,
+        containment=containment)
+
+    if sys.platform == 'win32':
+      p = start()
+      out, err = p.communicate()
+      self.assertEqual(1, p.returncode)
+      self.assertEqual('', out)
+      self.assertIn('WindowsError', err)
+      # Value for ERROR_NOT_ENOUGH_QUOTA. See
+      # https://docs.microsoft.com/windows/desktop/debug/system-error-codes--1700-3999-
+      self.assertIn('1816', err)
+    else:
+      # JOB_OBJECT is not usable on non-Windows.
+      with self.assertRaises(NotImplementedError):
+        start()
+
+  def test_containment_auto_kill(self):
+    # Test process killing.
+    cmd = [
+      sys.executable, '-u', '-c',
+      'import sys,time; print("hi");time.sleep(60)',
+    ]
+    containment = subprocess42.Containment(
+        containment_type=subprocess42.Containment.AUTO,
+        limit_processes=1,
+        limit_total_committed_memory=1024*1024*1024)
+    p = subprocess42.Popen(
+        cmd, stdout=subprocess42.PIPE, containment=containment)
+    itr = p.yield_any_line()
+    self.assertEqual(('stdout', 'hi'), next(itr))
+    p.kill()
+    p.wait()
+    if sys.platform != 'win32':
+      # signal.SIGKILL is not defined on Windows. Validate our assumption here.
+      self.assertEqual(9, signal.SIGKILL)
+    self.assertEqual(-9, p.returncode)
+
+  @staticmethod
+  def _cmd_large_memory():
+    # Used in test_large_memory and test_containment_auto_limit_memory.
+    return [
+      sys.executable, '-u', '-c', 'range(50*1024*1024); print("hi")',
+    ]
+
+  def test_large_memory(self):
+    # Just assert the process works normally.
+    cmd = self._cmd_large_memory()
+    self.assertEqual('hi', subprocess42.check_output(cmd).strip())
+
+  def test_containment_auto_limit_memory(self):
+    # Process allocates a lot of memory. It should fail due to quota.
+    cmd = self._cmd_large_memory()
+    containment = subprocess42.Containment(
+        containment_type=subprocess42.Containment.JOB_OBJECT,
+        # 20 MiB.
+        limit_total_committed_memory=20*1024*1024)
+    start = lambda: subprocess42.Popen(
+        cmd, stdout=subprocess42.PIPE, stderr=subprocess42.PIPE,
+        containment=containment)
+
+    if sys.platform == 'win32':
+      p = start()
+      out, err = p.communicate()
+      self.assertEqual(1, p.returncode)
+      self.assertEqual('', out)
+      self.assertIn('MemoryError', err)
+    else:
+      # JOB_OBJECT is not usable on non-Windows.
+      with self.assertRaises(NotImplementedError):
+        start()
 
   def test_call(self):
     cmd = [sys.executable, '-u', '-c', 'import sys; sys.exit(0)']
