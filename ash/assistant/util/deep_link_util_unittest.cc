@@ -65,9 +65,9 @@ TEST_F(DeepLinkUnitTest, CreateAssistantQueryDeepLink) {
       {"query", "googleassistant://send-query?q=query"},
 
       // OK: Query containing spaces and special characters.
-      {"query with spaces & special characters?",
+      {"query with / and spaces & special characters?",
        "googleassistant://"
-       "send-query?q=query+with+spaces+%26+special+characters%3F"},
+       "send-query?q=query+with+%2F+and+spaces+%26+special+characters%3F"},
   };
 
   for (const auto& test_case : test_cases) {
@@ -137,8 +137,8 @@ TEST_F(DeepLinkUnitTest, GetDeepLinkParam) {
   AssertDeepLinkParamEq("true", DeepLinkParam::kRelaunch);
 
   // Case: Deep link parameter present, URL encoded.
-  params["q"] = "query+with+spaces+%26+special+characters%3F";
-  AssertDeepLinkParamEq("query with spaces & special characters?",
+  params["q"] = "query+with+%2F+and+spaces+%26+special+characters%3F";
+  AssertDeepLinkParamEq("query with / and spaces & special characters?",
                         DeepLinkParam::kQuery);
 
   // Case: Deep link parameters absent.
