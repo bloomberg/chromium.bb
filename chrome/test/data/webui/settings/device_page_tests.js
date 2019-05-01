@@ -844,7 +844,7 @@ cr.define('device_page_tests', function() {
             // Ensure that the zoom value remains unchanged while draggging.
             function pointerEvent(eventType, ratio) {
               const crSlider = displayPage.$.displaySizeSlider.$.slider;
-              const rect = crSlider.$.barContainer.getBoundingClientRect();
+              const rect = crSlider.$.container.getBoundingClientRect();
               crSlider.dispatchEvent(new PointerEvent(eventType, {
                 buttons: 1,
                 pointerId: 1,

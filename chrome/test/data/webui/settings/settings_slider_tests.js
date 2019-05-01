@@ -60,7 +60,7 @@ suite('SettingsSlider', function() {
   }
 
   function pointerEvent(eventType, ratio) {
-    const rect = crSlider.$.barContainer.getBoundingClientRect();
+    const rect = crSlider.$.container.getBoundingClientRect();
     crSlider.dispatchEvent(new PointerEvent(eventType, {
       buttons: 1,
       pointerId: 1,
