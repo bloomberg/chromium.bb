@@ -79,17 +79,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
   ~BluetoothAdapterWinrt() override;
 
   void Init(InitCallback init_cb);
-  // Allow tests to provide their own implementations of statics.
-  void InitForTests(
-      InitCallback init_cb,
-      Microsoft::WRL::ComPtr<
-          ABI::Windows::Devices::Bluetooth::IBluetoothAdapterStatics>
-          bluetooth_adapter_statics,
-      Microsoft::WRL::ComPtr<
-          ABI::Windows::Devices::Enumeration::IDeviceInformationStatics>
-          device_information_statics,
-      Microsoft::WRL::ComPtr<ABI::Windows::Devices::Radios::IRadioStatics>
-          radio_statics);
 
   // BluetoothAdapter:
   bool SetPoweredImpl(bool powered) override;
@@ -108,7 +97,18 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
   void RemovePairingDelegateInternal(
       BluetoothDevice::PairingDelegate* pairing_delegate) override;
 
-  // Declared virtual so that it can be overridden by tests.
+  // These are declared virtual so that they can be overridden by tests.
+  virtual HRESULT GetBluetoothAdapterStaticsActivationFactory(
+      ABI::Windows::Devices::Bluetooth::IBluetoothAdapterStatics** statics)
+      const;
+
+  virtual HRESULT GetDeviceInformationStaticsActivationFactory(
+      ABI::Windows::Devices::Enumeration::IDeviceInformationStatics** statics)
+      const;
+
+  virtual HRESULT GetRadioStaticsActivationFactory(
+      ABI::Windows::Devices::Radios::IRadioStatics** statics) const;
+
   virtual HRESULT ActivateBluetoothAdvertisementLEWatcherInstance(
       ABI::Windows::Devices::Bluetooth::Advertisement::
           IBluetoothLEAdvertisementWatcher** instance) const;
@@ -120,24 +120,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
       uint64_t raw_address);
 
  private:
-  struct StaticsInterfaces {
-    StaticsInterfaces(
-        Microsoft::WRL::ComPtr<IAgileReference>,   // IBluetoothStatics
-        Microsoft::WRL::ComPtr<IAgileReference>,   // IDeviceInformationStatics
-        Microsoft::WRL::ComPtr<IAgileReference>);  // IRadioStatics
-    StaticsInterfaces();
-    StaticsInterfaces(const StaticsInterfaces&);
-    ~StaticsInterfaces();
-
-    Microsoft::WRL::ComPtr<IAgileReference> adapter_statics;
-    Microsoft::WRL::ComPtr<IAgileReference> device_information_statics;
-    Microsoft::WRL::ComPtr<IAgileReference> radio_statics;
-  };
-
-  static StaticsInterfaces PerformSlowInitTasks();
-
-  void CompleteInit(InitCallback init_cb, StaticsInterfaces statics);
-
   void OnGetDefaultAdapter(
       base::ScopedClosureRunner on_init,
       Microsoft::WRL::ComPtr<
@@ -220,15 +202,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
   Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::Advertisement::
                              IBluetoothLEAdvertisementWatcher>
       ble_advertisement_watcher_;
-
-  Microsoft::WRL::ComPtr<
-      ABI::Windows::Devices::Bluetooth::IBluetoothAdapterStatics>
-      bluetooth_adapter_statics_;
-  Microsoft::WRL::ComPtr<
-      ABI::Windows::Devices::Enumeration::IDeviceInformationStatics>
-      device_information_statics_;
-  Microsoft::WRL::ComPtr<ABI::Windows::Devices::Radios::IRadioStatics>
-      radio_statics_;
 
   THREAD_CHECKER(thread_checker_);
 

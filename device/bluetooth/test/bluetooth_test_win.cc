@@ -149,14 +149,7 @@ class TestBluetoothAdapterWinrt : public BluetoothAdapterWinrt {
         device_information_(std::move(device_information)),
         watcher_(Make<FakeBluetoothLEAdvertisementWatcherWinrt>()),
         bluetooth_test_winrt_(bluetooth_test_winrt) {
-    ComPtr<IBluetoothAdapterStatics> bluetooth_adapter_statics;
-    Make<FakeBluetoothAdapterStaticsWinrt>(adapter_).CopyTo(
-        (IBluetoothAdapterStatics**)&bluetooth_adapter_statics);
-    ComPtr<IDeviceInformationStatics> device_information_statics;
-    Make<FakeDeviceInformationStaticsWinrt>(device_information_)
-        .CopyTo((IDeviceInformationStatics**)&device_information_statics);
-    InitForTests(std::move(init_cb), bluetooth_adapter_statics,
-                 device_information_statics, nullptr);
+    Init(std::move(init_cb));
   }
 
   FakeBluetoothLEAdvertisementWatcherWinrt* watcher() { return watcher_.Get(); }
@@ -164,15 +157,15 @@ class TestBluetoothAdapterWinrt : public BluetoothAdapterWinrt {
  protected:
   ~TestBluetoothAdapterWinrt() override = default;
 
-  HRESULT GetTestBluetoothAdapterStaticsActivationFactory(
-      IBluetoothAdapterStatics** statics) const {
+  HRESULT GetBluetoothAdapterStaticsActivationFactory(
+      IBluetoothAdapterStatics** statics) const override {
     auto adapter_statics = Make<FakeBluetoothAdapterStaticsWinrt>(adapter_);
     return adapter_statics.CopyTo(statics);
   }
 
   HRESULT
-  GetTestDeviceInformationStaticsActivationFactory(
-      IDeviceInformationStatics** statics) const {
+  GetDeviceInformationStaticsActivationFactory(
+      IDeviceInformationStatics** statics) const override {
     auto device_information_statics =
         Make<FakeDeviceInformationStaticsWinrt>(device_information_);
     return device_information_statics.CopyTo(statics);
