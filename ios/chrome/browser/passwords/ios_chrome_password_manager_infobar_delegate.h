@@ -24,9 +24,6 @@ class IOSChromePasswordManagerInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   ~IOSChromePasswordManagerInfoBarDelegate() override;
 
-  // Updates the credentials being saved with |username| and |password|.
-  void UpdateCredentials(NSString* username, NSString* password);
-
   // Getter for the message displayed in addition to the title. If no message
   // was set, this returns an empty string.
   NSString* GetDetailsMessageText() const;
@@ -39,9 +36,6 @@ class IOSChromePasswordManagerInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // The URL host for which the credentials are being saved for.
   NSString* GetURLHostText() const;
-
-  // The title for the InfobarModal being presented.
-  virtual NSString* GetInfobarModalTitleText() const;
 
   // Sets the dispatcher for this delegate.
   void set_dispatcher(id<ApplicationCommands> dispatcher);
@@ -67,12 +61,12 @@ class IOSChromePasswordManagerInfoBarDelegate : public ConfirmInfoBarDelegate {
   }
 
  private:
-  // ConfirmInfoBarDelegate implementation.
-  int GetIconId() const override;
-
   // The password_manager::PasswordFormManager managing the form we're asking
   // the user about, and should save as per their decision.
   std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save_;
+
+  // ConfirmInfoBarDelegate implementation.
+  int GetIconId() const override;
 
   // Used to track the results we get from the info bar.
   password_manager::metrics_util::UIDismissalReason infobar_response_;

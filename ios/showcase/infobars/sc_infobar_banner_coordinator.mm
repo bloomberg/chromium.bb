@@ -130,7 +130,7 @@ NSString* const kInfobarBannerPresentedModalLabel = @"Modal Infobar";
 
 #pragma mark InfobarModalDelegate
 
-- (void)modalInfobarButtonWasPressed:(UIButton*)sender {
+- (void)modalInfobarButtonWasAccepted:(id)sender {
   [self dismissInfobarModal:sender animated:YES completion:nil];
 }
 

@@ -6,7 +6,7 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/infobars/infobar_controller_delegate.h"
-#import "ios/chrome/browser/passwords/ios_chrome_password_manager_infobar_delegate.h"
+#import "ios/chrome/browser/passwords/ios_chrome_save_password_infobar_delegate.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_view_controller.h"
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinator_implementation.h"
@@ -23,7 +23,7 @@
 
 // Delegate that holds the Infobar information and actions.
 @property(nonatomic, readonly)
-    IOSChromePasswordManagerInfoBarDelegate* passwordInfoBarDelegate;
+    IOSChromeSavePasswordInfoBarDelegate* passwordInfoBarDelegate;
 // InfobarBannerViewController owned by this Coordinator.
 @property(nonatomic, strong) InfobarBannerViewController* bannerViewController;
 // InfobarPasswordTableViewController owned by this Coordinator.
@@ -39,7 +39,7 @@
 @synthesize modalViewController = _modalViewController;
 
 - (instancetype)initWithInfoBarDelegate:
-    (IOSChromePasswordManagerInfoBarDelegate*)passwordInfoBarDelegate {
+    (IOSChromeSavePasswordInfoBarDelegate*)passwordInfoBarDelegate {
   self = [super initWithInfoBarDelegate:passwordInfoBarDelegate];
   if (self) {
     _passwordInfoBarDelegate = passwordInfoBarDelegate;
@@ -132,13 +132,14 @@
 - (void)updateCredentialsWithUsername:(NSString*)username
                              password:(NSString*)password {
   self.passwordInfoBarDelegate->UpdateCredentials(username, password);
-  [self.badgeDelegate infobarWasAccepted];
-  [self dismissInfobarModal:self animated:YES completion:nil];
+  [self modalInfobarButtonWasAccepted:self];
 }
 
 - (void)neverSaveCredentialsForCurrentSite {
   self.passwordInfoBarDelegate->Cancel();
-  [self dismissInfobarModal:self animated:YES completion:nil];
+  // Completely remove the Infobar along with its badge after blacklisting the
+  // Website.
+  [self detachView];
 }
 
 - (void)presentPasswordSettings {

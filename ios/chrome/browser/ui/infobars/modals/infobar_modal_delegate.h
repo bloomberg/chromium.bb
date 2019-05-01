@@ -17,8 +17,9 @@
                    animated:(BOOL)animated
                  completion:(ProceduralBlock)completion;
 
-// Called when the InfobarModal "Accept" button was pressed.
-- (void)modalInfobarButtonWasPressed:(UIButton*)sender;
+// Called when the InfobarModal was Accepted. Meaning it will perform the main
+// action.
+- (void)modalInfobarButtonWasAccepted:(id)sender;
 
 @end
 

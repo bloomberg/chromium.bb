@@ -9,7 +9,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
-#include "components/password_manager/core/browser/password_ui_utils.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -31,16 +30,6 @@ IOSChromePasswordManagerInfoBarDelegate::
       infobar_response_(password_manager::metrics_util::NO_DIRECT_INTERACTION),
       is_sync_user_(is_sync_user) {}
 
-void IOSChromePasswordManagerInfoBarDelegate::UpdateCredentials(
-    NSString* username,
-    NSString* password) {
-  const base::string16 username_string = base::SysNSStringToUTF16(username);
-  const base::string16 password_string = base::SysNSStringToUTF16(password);
-  UpdatePasswordFormUsernameAndPassword(username_string, password_string,
-                                        form_to_save_.get());
-  form_to_save()->Save();
-}
-
 NSString* IOSChromePasswordManagerInfoBarDelegate::GetDetailsMessageText()
     const {
   return is_sync_user_ ? l10n_util::GetNSString(IDS_SAVE_PASSWORD_FOOTER) : @"";
@@ -58,12 +47,6 @@ NSString* IOSChromePasswordManagerInfoBarDelegate::GetPasswordText() const {
 
 NSString* IOSChromePasswordManagerInfoBarDelegate::GetURLHostText() const {
   return base::SysUTF8ToNSString(form_to_save_->GetOrigin().host());
-}
-
-NSString* IOSChromePasswordManagerInfoBarDelegate::GetInfobarModalTitleText()
-    const {
-  NOTREACHED() << "Subclass must implement.";
-  return @"";
 }
 
 void IOSChromePasswordManagerInfoBarDelegate::set_dispatcher(

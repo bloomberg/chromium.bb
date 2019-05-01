@@ -17,8 +17,6 @@
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/infobars/infobar.h"
 #import "ios/chrome/browser/passwords/update_password_infobar_controller.h"
-#import "ios/chrome/browser/ui/infobars/coordinators/infobar_password_coordinator.h"
-#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -41,20 +39,12 @@ void IOSChromeUpdatePasswordInfoBarDelegate::Create(
       is_sync_user, std::move(form_manager)));
   delegate->set_dispatcher(dispatcher);
 
-  if (IsInfobarUIRebootEnabled()) {
-    InfobarPasswordCoordinator* coordinator =
-        [[InfobarPasswordCoordinator alloc]
-            initWithInfoBarDelegate:delegate.get()];
-    infobar_manager->AddInfoBar(
-        std::make_unique<InfoBarIOS>(coordinator, std::move(delegate)));
-  } else {
-    UpdatePasswordInfoBarController* controller =
-        [[UpdatePasswordInfoBarController alloc]
-            initWithBaseViewController:baseViewController
-                       infoBarDelegate:delegate.get()];
-    infobar_manager->AddInfoBar(
-        std::make_unique<InfoBarIOS>(controller, std::move(delegate)));
-  }
+  UpdatePasswordInfoBarController* controller =
+      [[UpdatePasswordInfoBarController alloc]
+          initWithBaseViewController:baseViewController
+                     infoBarDelegate:delegate.get()];
+  infobar_manager->AddInfoBar(
+      std::make_unique<InfoBarIOS>(controller, std::move(delegate)));
 }
 
 IOSChromeUpdatePasswordInfoBarDelegate::
@@ -102,26 +92,14 @@ base::string16 IOSChromeUpdatePasswordInfoBarDelegate::GetMessageText() const {
                    IDS_IOS_PASSWORD_MANAGER_UPDATE_PASSWORD);
 }
 
-NSString* IOSChromeUpdatePasswordInfoBarDelegate::GetInfobarModalTitleText()
-    const {
-  DCHECK(IsInfobarUIRebootEnabled());
-  return l10n_util::GetNSString(IDS_IOS_PASSWORD_MANAGER_UPDATE_PASSWORD_TITLE);
-}
-
 int IOSChromeUpdatePasswordInfoBarDelegate::GetButtons() const {
   return BUTTON_OK;
 }
 
 base::string16 IOSChromeUpdatePasswordInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
-  if (IsInfobarUIRebootEnabled()) {
-    return (button == BUTTON_OK) ? l10n_util::GetStringUTF16(
-                                       IDS_IOS_PASSWORD_MANAGER_UPDATE_BUTTON)
-                                 : base::string16();
-  } else {
-    DCHECK_EQ(BUTTON_OK, button);
-    return l10n_util::GetStringUTF16(IDS_IOS_PASSWORD_MANAGER_UPDATE_BUTTON);
-  }
+  DCHECK_EQ(BUTTON_OK, button);
+  return l10n_util::GetStringUTF16(IDS_IOS_PASSWORD_MANAGER_UPDATE_BUTTON);
 }
 
 bool IOSChromeUpdatePasswordInfoBarDelegate::Accept() {

@@ -205,7 +205,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)saveCredentialsButtonWasPressed:(UIButton*)sender {
   [self.infobarModalDelegate
       updateCredentialsWithUsername:self.usernameItem.textFieldValue
-                           password:self.passwordItem.textFieldValue];
+                           password:self.unmaskedPassword];
 }
 
 @end

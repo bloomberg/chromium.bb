@@ -680,7 +680,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
   switch (type) {
     case PasswordInfoBarType::SAVE: {
       auto delegate = std::make_unique<IOSChromeSavePasswordInfoBarDelegate>(
-          isSyncUser, std::move(form));
+          isSyncUser, /*password_update*/ false, std::move(form));
       delegate->set_dispatcher(self.dispatcher);
 
       if (IsInfobarUIRebootEnabled()) {
@@ -698,11 +698,24 @@ void LogSuggestionShown(PasswordSuggestionType type) {
       }
       break;
     }
-    case PasswordInfoBarType::UPDATE:
-      IOSChromeUpdatePasswordInfoBarDelegate::Create(
-          isSyncUser, infoBarManager, std::move(form), self.baseViewController,
-          self.dispatcher);
+    case PasswordInfoBarType::UPDATE: {
+      if (IsInfobarUIRebootEnabled()) {
+        auto delegate = std::make_unique<IOSChromeSavePasswordInfoBarDelegate>(
+            isSyncUser, /*password_update*/ true, std::move(form));
+        delegate->set_dispatcher(self.dispatcher);
+        InfobarPasswordCoordinator* coordinator =
+            [[InfobarPasswordCoordinator alloc]
+                initWithInfoBarDelegate:delegate.get()];
+        infoBarManager->AddInfoBar(
+            std::make_unique<InfoBarIOS>(coordinator, std::move(delegate)));
+
+      } else {
+        IOSChromeUpdatePasswordInfoBarDelegate::Create(
+            isSyncUser, infoBarManager, std::move(form),
+            self.baseViewController, self.dispatcher);
+      }
       break;
+    }
   }
 }
 

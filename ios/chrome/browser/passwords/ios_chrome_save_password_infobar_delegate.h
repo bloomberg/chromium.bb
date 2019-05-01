@@ -20,27 +20,44 @@ class PasswordFormManagerForUI;
 // password_manager::PasswordFormManager and move it to a
 // IOSChromeSavePasswordInfoBarDelegate while the user makes up their mind
 // with the "save password" infobar.
+// If |password_update| is true the delegate will use "Update" related strings,
+// and should Update the credentials instead of Saving new ones.
 class IOSChromeSavePasswordInfoBarDelegate
     : public IOSChromePasswordManagerInfoBarDelegate {
  public:
   IOSChromeSavePasswordInfoBarDelegate(
       bool is_sync_user,
+      bool password_update,
       std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save);
 
   ~IOSChromeSavePasswordInfoBarDelegate() override;
 
+  // InfoBarDelegate implementation
   bool ShouldExpire(const NavigationDetails& details) const override;
 
- private:
   // ConfirmInfoBarDelegate implementation.
-  infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   base::string16 GetMessageText() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
   bool Accept() override;
   bool Cancel() override;
 
-  // IOSChromePasswordManagerInfoBarDelegate implementation.
-  NSString* GetInfobarModalTitleText() const override;
+  // Updates the credentials being saved with |username| and |password|.
+  void UpdateCredentials(NSString* username, NSString* password);
+
+  // true if password is being updated at the moment the InfobarModal is
+  // created.
+  bool IsPasswordUpdate() const;
+
+  // The title for the InfobarModal being presented.
+  NSString* GetInfobarModalTitleText() const;
+
+ private:
+  // ConfirmInfoBarDelegate implementation.
+  infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
+
+  // true if password is being updated at the moment the InfobarModal is
+  // created.
+  bool password_update_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(IOSChromeSavePasswordInfoBarDelegate);
 };

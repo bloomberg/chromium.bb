@@ -7,13 +7,13 @@
 
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinator.h"
 
-class IOSChromePasswordManagerInfoBarDelegate;
+class IOSChromeSavePasswordInfoBarDelegate;
 
 // Coordinator that creates and manages the PasswordInfobar.
 @interface InfobarPasswordCoordinator : InfobarCoordinator
 
 - (instancetype)initWithInfoBarDelegate:
-    (IOSChromePasswordManagerInfoBarDelegate*)passwordInfoBarDelegate
+    (IOSChromeSavePasswordInfoBarDelegate*)passwordInfoBarDelegate
     NS_DESIGNATED_INITIALIZER;
 
 @end
