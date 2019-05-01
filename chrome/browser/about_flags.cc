@@ -3888,10 +3888,18 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillDoNotMigrateUnsupportedLocalCards)},
-
     {"enable-unsafe-webgpu", flag_descriptions::kUnsafeWebGPUName,
      flag_descriptions::kUnsafeWebGPUDescription, kOsMac,
      SINGLE_VALUE_TYPE(switches::kEnableUnsafeWebGPU)},
+
+#if defined(OS_ANDROID)
+    {"autofill-use-mobile-label-disambiguation",
+     flag_descriptions::kAutofillUseMobileLabelDisambiguationName,
+     flag_descriptions::kAutofillUseMobileLabelDisambiguationDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillUseMobileLabelDisambiguation)},
+#endif  // defined(OS_ANDROID)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

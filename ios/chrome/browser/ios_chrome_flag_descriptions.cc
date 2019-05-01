@@ -42,6 +42,12 @@ const char kAutofillDownstreamUseGooglePayBrandingOniOSDescription[] =
     "When enabled, shows the Google Pay logo animation when showing payments"
     "credit card suggestions in downstream keyboard accessory";
 
+const char kAutofillUseMobileLabelDisambiguationName[] =
+    "Autofill Uses Mobile Label Disambiguation";
+const char kAutofillUseMobileLabelDisambiguationDescription[] =
+    "When enabled, Autofill suggestions' labels are displayed using a "
+    "mobile-friendly format.";
+
 extern const char kBreakpadNoDelayInitialUploadName[] =
     "Remove delay on initial crash upload";
 extern const char kBreakpadNoDelayInitialUploadDescription[] =

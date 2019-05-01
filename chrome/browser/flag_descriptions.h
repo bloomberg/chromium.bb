@@ -94,9 +94,6 @@ extern const char kAutofillCacheQueryResponsesDescription[];
 extern const char kAutofillEnableCompanyNameName[];
 extern const char kAutofillEnableCompanyNameDescription[];
 
-extern const char kAutofillRejectCompanyBirthyearName[];
-extern const char kAutofillRejectCompanyBirthyearDescription[];
-
 extern const char kAutofillEnableLocalCardMigrationForNonSyncUserName[];
 extern const char kAutofillEnableLocalCardMigrationForNonSyncUserDescription[];
 
@@ -126,8 +123,8 @@ extern const char kAutofillProfileClientValidationDescription[];
 extern const char kAutofillProfileServerValidationName[];
 extern const char kAutofillProfileServerValidationDescription[];
 
-extern const char kAutofillUseImprovedLabelDisambiguationName[];
-extern const char kAutofillUseImprovedLabelDisambiguationDescription[];
+extern const char kAutofillRejectCompanyBirthyearName[];
+extern const char kAutofillRejectCompanyBirthyearDescription[];
 
 extern const char kAutofillRestrictUnownedFieldsToFormlessCheckoutName[];
 extern const char kAutofillRestrictUnownedFieldsToFormlessCheckoutDescription[];
@@ -137,6 +134,9 @@ extern const char kAutofillRichMetadataQueriesDescription[];
 
 extern const char kAutofillSettingsSplitByCardTypeName[];
 extern const char kAutofillSettingsSplitByCardTypeDescription[];
+
+extern const char kAutofillUseImprovedLabelDisambiguationName[];
+extern const char kAutofillUseImprovedLabelDisambiguationDescription[];
 
 extern const char kAutoplayPolicyName[];
 extern const char kAutoplayPolicyDescription[];
@@ -1274,6 +1274,9 @@ extern const char kAutoFetchOnNetErrorPageDescription[];
 
 extern const char kAutofillAccessoryViewName[];
 extern const char kAutofillAccessoryViewDescription[];
+
+extern const char kAutofillUseMobileLabelDisambiguationName[];
+extern const char kAutofillUseMobileLabelDisambiguationDescription[];
 
 extern const char kBackgroundTaskComponentUpdateName[];
 extern const char kBackgroundTaskComponentUpdateDescription[];

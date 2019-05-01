@@ -21,10 +21,9 @@ namespace autofill {
 namespace features {
 
 // All features in alphabetical order.
-extern const base::Feature kAutofillProfileServerValidation;
 extern const base::Feature kAutocompleteRetentionPolicyEnabled;
-extern const base::Feature kAutofillAllowNonHttpActivation;
 extern const base::Feature kAutofillAddressNormalizer;
+extern const base::Feature kAutofillAllowNonHttpActivation;
 extern const base::Feature kAutofillAlwaysFillAddresses;
 extern const base::Feature kAutofillAlwaysShowServerCardsInSyncTransport;
 extern const base::Feature kAutofillCacheQueryResponses;
@@ -33,7 +32,6 @@ extern const base::Feature kAutofillCreditCardAssist;
 extern const base::Feature kAutofillEnableAccountWalletStorage;
 extern const base::Feature kAutofillEnableAccountWalletStorageUpload;
 extern const base::Feature kAutofillEnableCompanyName;
-extern const base::Feature kAutofillRejectCompanyBirthyear;
 extern const base::Feature kAutofillEnforceMinRequiredFieldsForHeuristics;
 extern const base::Feature kAutofillEnforceMinRequiredFieldsForQuery;
 extern const base::Feature kAutofillEnforceMinRequiredFieldsForUpload;
@@ -45,7 +43,9 @@ extern const base::Feature kAutofillMetadataUploads;
 extern const base::Feature kAutofillOffNoServerData;
 extern const base::Feature kAutofillOverrideWithRaterConsensus;
 extern const base::Feature kAutofillPreferServerNamePredictions;
+extern const base::Feature kAutofillProfileClientValidation;
 extern const base::Feature kAutofillProfileServerValidation;
+extern const base::Feature kAutofillRejectCompanyBirthyear;
 extern const base::Feature kAutofillRestrictUnownedFieldsToFormlessCheckout;
 extern const base::Feature kAutofillRichMetadataQueries;
 extern const base::Feature kAutofillSaveOnProbablySubmitted;
@@ -53,19 +53,22 @@ extern const base::Feature kAutofillServerCommunication;
 extern const base::Feature kAutofillSettingsCardTypeSplit;
 extern const base::Feature kAutofillShowAllSuggestionsOnPrefilledForms;
 extern const base::Feature kAutofillShowAutocompleteConsoleWarnings;
-extern const base::Feature kAutofillUseImprovedLabelDisambiguation;
 extern const base::Feature kAutofillShowTypePredictions;
 extern const base::Feature kAutofillSkipComparingInferredLabels;
 extern const base::Feature kAutofillTokenPrefixMatching;
 extern const base::Feature kAutofillUploadThrottling;
 extern const base::Feature kAutofillUseApi;
-extern const base::Feature kAutofillProfileClientValidation;
+extern const base::Feature kAutofillUseImprovedLabelDisambiguation;
 extern const base::Feature kAutomaticPasswordGeneration;
 
 #if defined(OS_ANDROID)
 extern const base::Feature kAutofillManualFallbackAndroid;
 extern const base::Feature kAutofillRefreshStyleAndroid;
 #endif  // OS_ANDROID
+
+#if defined(OS_ANDROID) || defined(OS_IOS)
+extern const base::Feature kAutofillUseMobileLabelDisambiguation;
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 // Returns whether the Autofill credit card assist infobar should be shown.
 bool IsAutofillCreditCardAssistEnabled();

@@ -29,6 +29,11 @@ extern const char kAutofillCreditCardUploadDescription[];
 extern const char kAutofillDownstreamUseGooglePayBrandingOniOSName[];
 extern const char kAutofillDownstreamUseGooglePayBrandingOniOSDescription[];
 
+// Title and description for the flag that controls whether Autofill's
+// suggestions' labels are formatting with a mobile-friendly approach.
+extern const char kAutofillUseMobileLabelDisambiguationName[];
+extern const char kAutofillUseMobileLabelDisambiguationDescription[];
+
 // Title and description for the flag to control if initial uploading of crash
 // reports is delayed.
 extern const char kBreakpadNoDelayInitialUploadName[];
