@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -472,6 +473,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
 
     @Test
     @LargeTest
+    @DisabledTest(message = "crbug.com/958558")
     public void testSimpleItemSelection() {
         Dialog dialog = mChooserDialog.getDialogForTesting();
         Assert.assertTrue(dialog.isShowing());
