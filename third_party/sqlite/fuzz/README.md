@@ -1,0 +1,57 @@
+"[Clusterfuzz](https://google.github.io/clusterfuzz/) is a scalable fuzzing
+infrastructure which finds security and stabilty issues in software". Chromium
+uses Clusterfuzz to find bugs in sqlite, among others.
+
+Given access to a clusterfuzz test case, this README will describe how one can
+reproduce and help diagnose sqlite bugs found by clusterfuzz.
+
+Example bug: https://crbug.com/956851
+
+# Simple automated repro
+TODO: Move to [here](https://google.github.io/clusterfuzz/using-clusterfuzz/)?
+If just trying to verify that the bug still repros on the current trunk:
+1. Open the relevant bug (ex. https://crbug.com/956851).
+2. Open the clusterfuzz "Detailed report" (ex. https://clusterfuzz.com/testcase?key=5756437473656832).
+3. Click on the "REDO TASK" button.
+4. Check on "Check if bug still reproduces", and click "Commit".
+5. The bottom of the clusterfuzz "Detailed report" from (2) should reflect that
+the "Redo task(s): progression" task has started.
+6. Wait for a few hours to a day, and this link should update to reflect that
+the "Progression task finished.". If the bug has been fixed in master, then it
+will automatically be closed. Otherwise, the bug still repro's, and the updated
+stack trace will be displayed in the "Detailed report".
+
+# Local repro context
+1. Run from your Chromium source directory.
+
+# Local repro using clusterfuzz testcase id
+If the fuzzer that identified this bug is public (ex. dbfuzz2), reproduce
+locally.
+1. Set ${TESTCASE_ID}, where TESTCASE_ID is the ID at the end of the clusterfuzz
+link (ex. `export TESTCASE_ID=5756437473656832`).
+2. `/google/data/ro/teams/clusterfuzz-tools/releases/clusterfuzz reproduce --current --skip-deps ${TESTCASE_ID}`,
+For more information, see the [Reproduce Tool on Github](https://github.com/google/clusterfuzz-tools).
+
+# Local repro using clusterfuzz testcase
+If the fuzzer is not public (ex. LPM-based fuzzers, including fts_lpm), or if
+more data is needed, reproduce a bit more manually by first building the target.
+To build the target, first set .gn args to match those in the clusterfuzz link,
+then build and run the fuzzer.
+
+1. `export FUZZER_NAME=sqlite3_fts3_lpm_fuzzer  # FUZZER_NAME is listed in the crbug as the Fuzz target binary`
+2. Download the clusterfuzz minimized testcase and set it's path to CLUSTERFUZZ_TESTCASE using `export CLUSTERFUZZ_TESTCASE=./clusterfuzz-testcase-minimized-sqlite3_fts3_lpm_fuzzer-5756437473656832`
+3. `gn gen args out/Fuzzer  # Set arguments to matches those in the clusterfuzz"Detailed report"'s "GN CONFIG (ARGS.GN)" section`
+4. `autoninja -C out/Fuzzer/ ${FUZZER_NAME}  # Build the fuzzer target`
+5. `./out/Fuzzer/${FUZZER_NAME} ${CLUSTERFUZZ_TESTCASE}  # Verify repro by running fuzzer`
+6. `LPM_DUMP_NATIVE_INPUT=1 SQL_SKIP_QUERIES=AlterTable ./out/Fuzzer/${FUZZER_NAME} ${CLUSTERFUZZ_TESTCASE}  # Try using different args to get SQL statements that will repro the bug`
+7. Optionally, take output from (6) into a repro.sql file for further testing.
+To do so, either copy the SQL query in the output from (6) into a .sql file, or
+run the final command in (6) with a `> repro.sql` at the end, and filter out
+non-sql content afterwards. Either way, ensure that the case continues to repro
+given filters placed in (6).
+
+# Local repro using SQL commands
+Please have a SQL query ready, preferably in .sql format. For this context,
+we'll refer to this query as repro.sql.
+1. `autoninja -C out/Fuzzer/ sqlite_shell  # Build the sqlite_shell`
+2. `out/Fuzzer/sqlite_shell < repro.sql  # Try running this sql query in sqlite`
