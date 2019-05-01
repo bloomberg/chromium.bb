@@ -3142,9 +3142,13 @@ LayoutUnit LayoutBox::ComputeLogicalWidthUsing(
     // Reset width so that any percent margins on inline children do not
     // use it when calculating min/max preferred width.
     // TODO(crbug.com/710026): Remove const_cast
+    LayoutUnit w = LogicalWidth();
     const_cast<LayoutBox*>(this)->SetLogicalWidth(LayoutUnit());
-    return std::max(MinPreferredLogicalWidth(),
-                    std::min(MaxPreferredLogicalWidth(), logical_width_result));
+    LayoutUnit result =
+        std::max(MinPreferredLogicalWidth(),
+                 std::min(MaxPreferredLogicalWidth(), logical_width_result));
+    const_cast<LayoutBox*>(this)->SetLogicalWidth(w);
+    return result;
   }
   return logical_width_result;
 }

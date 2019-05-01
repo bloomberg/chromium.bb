@@ -533,11 +533,7 @@ LayoutUnit LayoutFlexibleBox::ChildUnstretchedLogicalWidth(
   // and can just return the already-set logical width.
   if (!CrossAxisLengthIsDefinite(child, child.StyleRef().LogicalWidth())) {
     LogicalExtentComputedValues values;
-    // ComputeLogicalWidth has the side-effect of setting LogicalWidth to 0;
-    // so we store and re-set it.
-    LayoutUnit w = child.LogicalWidth();
     child.ComputeLogicalWidth(values);
-    const_cast<LayoutBox&>(child).SetLogicalWidth(w);
     return values.extent_;
   }
 
