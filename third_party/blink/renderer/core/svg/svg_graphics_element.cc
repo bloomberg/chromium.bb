@@ -124,7 +124,7 @@ void SVGGraphicsElement::SvgAttributeChanged(const QualifiedName& attr_name) {
   // creation.
   if (SVGTests::IsKnownAttribute(attr_name)) {
     SVGElement::InvalidationGuard invalidation_guard(this);
-    LazyReattachIfAttached();
+    SetForceReattachLayoutTree();
     return;
   }
 
