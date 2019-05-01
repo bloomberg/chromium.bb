@@ -41,6 +41,7 @@ touchless_java_sources = [
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessZoomHelper.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/dialog/TouchlessDialogPresenter.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/dialog/TouchlessDialogProperties.java",
+  "touchless/java/src/org/chromium/chrome/browser/touchless/snackbar/BlackHoleSnackbarManager.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/ui/iph/KeyFunctionsIPHCoordinator.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/ui/iph/KeyFunctionsIPHMediator.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/ui/iph/KeyFunctionsIPHProperties.java",
