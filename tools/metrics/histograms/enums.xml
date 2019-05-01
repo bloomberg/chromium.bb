@@ -22962,6 +22962,13 @@ Called by update_net_error_codes.py.-->
   <int value="49" label="DownloadsWithoutUserActivation"/>
 </enum>
 
+<enum name="FeaturePolicyImageCompressionFormat">
+  <int value="0" label="IgnoredFormat"/>
+  <int value="1" label="LossyFormat"/>
+  <int value="2" label="LosslessFormat"/>
+  <int value="3" label="WebPAnimationFormat"/>
+</enum>
+
 <enum name="FeedbackSource">
   <int value="0" label="Arc App"/>
   <int value="1" label="Ash"/>

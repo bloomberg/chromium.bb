@@ -128,11 +128,14 @@ class PLATFORM_EXPORT ImageDecoder {
     kHighBitDepthToHalfFloat
   };
 
-  // As defined in webp/decode.h.
+  // The first three values are as defined in webp/decode.h, the last value
+  // specifies WebP animation formats.
   enum CompressionFormat {
     kUndefinedFormat = 0,
     kLossyFormat = 1,
-    kLosslessFormat = 2
+    kLosslessFormat = 2,
+    kWebPAnimationFormat = 3,
+    kMaxValue = kWebPAnimationFormat,
   };
 
   virtual ~ImageDecoder() = default;
