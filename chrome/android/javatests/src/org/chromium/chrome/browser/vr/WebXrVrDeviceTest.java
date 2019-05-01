@@ -25,6 +25,7 @@ import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -176,6 +177,7 @@ public class WebXrVrDeviceTest {
             .Remove({"enable-webvr"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+            @DisabledTest(message = "crbug.com/958432")
             public void testForNullPosesInInlineVrFromNfc() throws InterruptedException {
         mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
                 WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_inline_vr_poses"),
