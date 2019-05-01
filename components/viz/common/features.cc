@@ -59,8 +59,10 @@ const base::Feature kRecordSkPicture{"RecordSkPicture",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsSurfaceSynchronizationEnabled() {
+  auto* command_line = base::CommandLine::ForCurrentProcess();
   return IsVizDisplayCompositorEnabled() ||
-         base::FeatureList::IsEnabled(kEnableSurfaceSynchronization);
+         base::FeatureList::IsEnabled(kEnableSurfaceSynchronization) ||
+         command_line->HasSwitch(switches::kEnableSurfaceSynchronization);
 }
 
 bool IsVizDisplayCompositorEnabled() {

@@ -15,15 +15,16 @@ namespace switches {
 const char kDeadlineToSynchronizeSurfaces[] =
     "deadline-to-synchronize-surfaces";
 
-// Disables begin frame limiting in both cc scheduler and display scheduler.
-// Also implies --disable-gpu-vsync (see //ui/gl/gl_switches.h).
-const char kDisableFrameRateLimit[] = "disable-frame-rate-limit";
-
 // Enable compositing individual elements via hardware overlays when
 // permitted by device.
 // Setting the flag to "single-fullscreen" will try to promote a single
 // fullscreen overlay and use it as main framebuffer where possible.
 const char kEnableHardwareOverlays[] = "enable-hardware-overlays";
+
+// Enables multi-client Surface synchronization. In practice, this indicates
+// that LayerTreeHost expects to be given a valid viz::LocalSurfaceId provided
+// by the parent compositor.
+const char kEnableSurfaceSynchronization[] = "enable-surface-synchronization";
 
 // Enables inspecting Viz Display Compositor objects. Default port is 9229.
 // For local inspection use chrome://inspect#other
@@ -40,6 +41,10 @@ const char kRunAllCompositorStagesBeforeDraw[] =
 // Enables the viz hit-test logic (HitTestAggregator and HitTestQuery), with
 // hit-test data coming from surface layer.
 const char kUseVizHitTestSurfaceLayer[] = "use-viz-hit-test-surface-layer";
+
+// Disables begin frame limiting in both cc scheduler and display scheduler.
+// Also implies --disable-gpu-vsync (see //ui/gl/gl_switches.h).
+const char kDisableFrameRateLimit[] = "disable-frame-rate-limit";
 
 base::Optional<uint32_t> GetDeadlineToSynchronizeSurfaces() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();

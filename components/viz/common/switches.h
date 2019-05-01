@@ -15,12 +15,13 @@ namespace switches {
 
 // Keep list in alphabetical order.
 VIZ_COMMON_EXPORT extern const char kDeadlineToSynchronizeSurfaces[];
-VIZ_COMMON_EXPORT extern const char kDisableFrameRateLimit[];
 VIZ_COMMON_EXPORT extern const char kEnableHardwareOverlays[];
+VIZ_COMMON_EXPORT extern const char kEnableSurfaceSynchronization[];
 VIZ_COMMON_EXPORT extern const char kEnableVizDevTools[];
 VIZ_COMMON_EXPORT extern const char kEnableVizHitTestDebug[];
 VIZ_COMMON_EXPORT extern const char kRunAllCompositorStagesBeforeDraw[];
 VIZ_COMMON_EXPORT extern const char kUseVizHitTestSurfaceLayer[];
+VIZ_COMMON_EXPORT extern const char kDisableFrameRateLimit[];
 
 VIZ_COMMON_EXPORT base::Optional<uint32_t> GetDeadlineToSynchronizeSurfaces();
 
