@@ -1339,14 +1339,20 @@ struct Metrics {
 
   /**
    * Time when sending HTTP request headers started.
+   *
+   * Will equal null if the request failed or was canceled before sending
+   * started.
    */
-  DateTime sending_start;
+  DateTime? sending_start;
 
   /**
    * Time when sending HTTP request body finished. (Sending request body
    * happens after sending request headers.)
+   *
+   * Will equal null if the request failed or was canceled before sending
+   * ended.
    */
-  DateTime sending_end;
+  DateTime? sending_end;
 
   /**
    * Time when first byte of HTTP/2 server push was received.  Will equal
@@ -1362,8 +1368,11 @@ struct Metrics {
 
   /**
    * Time when the end of the response headers was received.
+   *
+   * Will equal null if the request failed or was canceled before the response
+   * started.
    */
-  DateTime response_start;
+  DateTime? response_start;
 
   /**
    * Time when the request finished.
