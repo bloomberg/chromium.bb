@@ -4858,13 +4858,14 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     }
 
     if (!IsWKInternalUrl(currentWKItemURL) && currentWKItemURL == webViewURL &&
-        currentWKItemURL != context->GetUrl()) {
+        currentWKItemURL != context->GetUrl() &&
+        item == self.navigationManagerImpl->GetLastCommittedItem()) {
       // WKWebView sometimes changes URL on the same navigation, likely due to
-      // location.replace() in onload handler that only changes page fragment.
-      // It's safe to update |item| and |context| URL because they are both
-      // associated to WKNavigation*, which is a stable ID for the navigation.
-      // See https://crbug.com/869540 for a real-world case.
-      DCHECK(item->GetURL().EqualsIgnoringRef(currentWKItemURL));
+      // location.replace() or history.replaceState in onload handler that does
+      // not change the origin. It's safe to update |item| and |context| URL
+      // because they are both associated to WKNavigation*, which is a stable ID
+      // for the navigation. See https://crbug.com/869540 for a real-world case.
+      DCHECK_EQ(item->GetURL().GetOrigin(), currentWKItemURL.GetOrigin());
       item->SetURL(currentWKItemURL);
       context->SetUrl(currentWKItemURL);
     }

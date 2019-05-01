@@ -477,10 +477,6 @@ TEST_P(HistoryStateOperationsTest, ReplaceStateNoHashChangeEvent) {
 
 // Regression test for crbug.com/788464.
 TEST_P(HistoryStateOperationsTest, ReplaceStateThenReload) {
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-    // TODO(crbug.com/950263): Investigate culprit and reenable.
-    return;
-  }
   GURL url = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/"
       "onload_replacestate_reload.html");
