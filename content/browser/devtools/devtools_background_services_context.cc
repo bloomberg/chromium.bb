@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/guid.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
@@ -31,12 +32,12 @@ std::string CreateEntryKey(devtools::proto::BackgroundService service) {
 
 void DidLogServiceEvent(blink::ServiceWorkerStatusCode status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  // TODO(rayankans): Log errors to UMA.
+  UMA_HISTOGRAM_ENUMERATION("DevTools.BackgroundService.LogEvent", status);
 }
 
 void DidClearServiceEvents(blink::ServiceWorkerStatusCode status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  // TODO(rayankans): Log errors to UMA.
+  UMA_HISTOGRAM_ENUMERATION("DevTools.BackgroundService.ClearEvents", status);
 }
 
 }  // namespace
@@ -148,10 +149,11 @@ void DevToolsBackgroundServicesContext::DidGetUserData(
     blink::ServiceWorkerStatusCode status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+  UMA_HISTOGRAM_ENUMERATION("DevTools.BackgroundService.GetEvents", status);
+
   std::vector<devtools::proto::BackgroundServiceEvent> events;
 
   if (status != blink::ServiceWorkerStatusCode::kOk) {
-    // TODO(rayankans): Log errors to UMA.
     std::move(callback).Run(events);
     return;
   }
