@@ -3753,10 +3753,17 @@ static int get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
   return dr;
 }
 
+// analysis_type 0: Use mc_dep_cost and intra_cost
+// analysis_type 1: Use count of best inter predictor chosen
+// analysis_type 2: Use cost reduction from intra to inter for best inter
+//                  predictor chosen
 static int get_q_for_deltaq_objective(AV1_COMP *const cpi, BLOCK_SIZE bsize,
-                                      int mi_row, int mi_col) {
+                                      int analysis_type, int mi_row,
+                                      int mi_col) {
   AV1_COMMON *const cm = &cpi->common;
-  TplDepFrame *tpl_frame = &cpi->tpl_stats[cpi->twopass.gf_group.index];
+  const int tpl_idx =
+      cpi->twopass.gf_group.frame_disp_idx[cpi->twopass.gf_group.index];
+  TplDepFrame *tpl_frame = &cpi->tpl_stats[tpl_idx];
   TplDepStats *tpl_stats = tpl_frame->tpl_stats_ptr;
   int tpl_stride = tpl_frame->stride;
   int64_t intra_cost = 0;
@@ -3773,26 +3780,47 @@ static int get_q_for_deltaq_objective(AV1_COMP *const cpi, BLOCK_SIZE bsize,
 
   if (cpi->twopass.gf_group.index >= MAX_LAG_BUFFERS) return cm->base_qindex;
 
+  int64_t mc_count = 0, mc_saved = 0;
+  int mi_count = 0;
   for (row = mi_row; row < mi_row + mi_high; ++row) {
     for (col = mi_col; col < mi_col + mi_wide; ++col) {
       TplDepStats *this_stats = &tpl_stats[row * tpl_stride + col];
-
       if (row >= cm->mi_rows || col >= cm->mi_cols) continue;
-
       intra_cost += this_stats->intra_cost;
       mc_dep_cost += this_stats->mc_dep_cost;
+      mc_count += this_stats->mc_count;
+      mc_saved += this_stats->mc_saved;
+      mi_count++;
     }
+  }
+
+  int offset = 0;
+  if (analysis_type == 0) {
+    r0 = cpi->rd.r0;
+    rk = (double)intra_cost / mc_dep_cost;
+    beta = r0 / rk;
+    offset = -(int)(log(beta) * 8.0);
+  } else if (analysis_type == 1) {
+    const double mc_count_base = (mi_count * cpi->rd.mc_count_base);
+    const double mc_count_beta =
+        mc_count_base != 0.0
+            ? ((double)mc_count - mc_count_base) / mc_count_base
+            : 0.0;
+    offset = -(int)rint(mc_count_beta * 8.0);
+    // printf("mc_count_beta %g, offset %d\n", mc_count_beta, offset);
+  } else if (analysis_type == 2) {
+    const double mc_saved_base = (mi_count * cpi->rd.mc_saved_base);
+    const double mc_saved_beta =
+        mc_saved_base != 0.0
+            ? ((double)mc_saved - mc_saved_base) / mc_saved_base
+            : 0.0;
+    offset = -(int)rint(mc_saved_beta * 4.0);
   }
 
   aom_clear_system_state();
 
-  r0 = cpi->rd.r0;
-  rk = (double)intra_cost / mc_dep_cost;
-  beta = r0 / rk;
-
-  int offset = -(int)(log(beta) * 8.0);
-  offset = AOMMIN(offset, 16);
-  offset = AOMMAX(offset, -16);
+  offset = AOMMIN(offset, DEFAULT_DELTA_Q_RES_OBJECTIVE * 2);
+  offset = AOMMAX(offset, -DEFAULT_DELTA_Q_RES_OBJECTIVE * 2);
   int qindex = cm->base_qindex + offset;
   qindex = AOMMIN(qindex, MAXQ);
   qindex = AOMMAX(qindex, MINQ);
@@ -3829,7 +3857,8 @@ static void setup_delta_q(AV1_COMP *const cpi, MACROBLOCK *const x,
   } else if (cpi->oxcf.deltaq_mode == DELTA_Q_OBJECTIVE) {
     assert(cpi->oxcf.enable_tpl_model);
     // Setup deltaq based on tpl stats
-    current_qindex = get_q_for_deltaq_objective(cpi, sb_size, mi_row, mi_col);
+    current_qindex =
+        get_q_for_deltaq_objective(cpi, sb_size, 1, mi_row, mi_col);
   }
 
   const int qmask = ~(delta_q_info->delta_q_res - 1);
@@ -4941,12 +4970,16 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   if (cpi->twopass.gf_group.index &&
       cpi->twopass.gf_group.index < MAX_LAG_BUFFERS &&
       cpi->oxcf.enable_tpl_model) {
-    TplDepFrame *tpl_frame = &cpi->tpl_stats[cpi->twopass.gf_group.index];
+    const int tpl_idx =
+        cpi->twopass.gf_group.frame_disp_idx[cpi->twopass.gf_group.index];
+    TplDepFrame *tpl_frame = &cpi->tpl_stats[tpl_idx];
     TplDepStats *tpl_stats = tpl_frame->tpl_stats_ptr;
 
     int tpl_stride = tpl_frame->stride;
     int64_t intra_cost_base = 0;
     int64_t mc_dep_cost_base = 0;
+    int64_t mc_saved_base = 0;
+    int64_t mc_count_base = 0;
     int row, col;
 
     for (row = 0; row < cm->mi_rows; ++row) {
@@ -4954,13 +4987,20 @@ static void encode_frame_internal(AV1_COMP *cpi) {
         TplDepStats *this_stats = &tpl_stats[row * tpl_stride + col];
         intra_cost_base += this_stats->intra_cost;
         mc_dep_cost_base += this_stats->mc_dep_cost;
+        mc_count_base += this_stats->mc_count;
+        mc_saved_base += this_stats->mc_saved;
       }
     }
 
     aom_clear_system_state();
 
-    if (tpl_frame->is_valid)
+    if (tpl_frame->is_valid) {
       cpi->rd.r0 = (double)intra_cost_base / mc_dep_cost_base;
+      cpi->rd.mc_count_base =
+          (double)mc_count_base / (cm->mi_rows * cm->mi_cols);
+      cpi->rd.mc_saved_base =
+          (double)mc_saved_base / (cm->mi_rows * cm->mi_cols);
+    }
   }
 
   av1_frame_init_quantizer(cpi);
