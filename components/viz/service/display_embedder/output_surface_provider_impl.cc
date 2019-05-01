@@ -2,18 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/viz/service/display_embedder/gpu_display_provider.h"
+#include "components/viz/service/display_embedder/output_surface_provider_impl.h"
 
 #include <utility>
 
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/base/switches.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
-#include "components/viz/service/display/display.h"
-#include "components/viz/service/display/display_scheduler.h"
 #include "components/viz/service/display_embedder/gl_output_surface.h"
 #include "components/viz/service/display_embedder/gl_output_surface_offscreen.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
@@ -66,54 +65,37 @@
 
 namespace viz {
 
-GpuDisplayProvider::GpuDisplayProvider(
-    uint32_t restart_id,
+OutputSurfaceProviderImpl::OutputSurfaceProviderImpl(
     GpuServiceImpl* gpu_service_impl,
     gpu::CommandBufferTaskExecutor* task_executor,
     gpu::GpuChannelManagerDelegate* gpu_channel_manager_delegate,
     std::unique_ptr<gpu::GpuMemoryBufferManager> gpu_memory_buffer_manager,
     gpu::ImageFactory* image_factory,
-    ServerSharedBitmapManager* server_shared_bitmap_manager,
-    bool headless,
-    bool wait_for_all_pipeline_stages_before_draw)
-    : restart_id_(restart_id),
-      gpu_service_impl_(gpu_service_impl),
+    bool headless)
+    : gpu_service_impl_(gpu_service_impl),
       task_executor_(task_executor),
       gpu_channel_manager_delegate_(gpu_channel_manager_delegate),
       gpu_memory_buffer_manager_(std::move(gpu_memory_buffer_manager)),
       image_factory_(image_factory),
-      server_shared_bitmap_manager_(server_shared_bitmap_manager),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      headless_(headless),
-      wait_for_all_pipeline_stages_before_draw_(
-          wait_for_all_pipeline_stages_before_draw) {}
+      headless_(headless) {}
 
-GpuDisplayProvider::GpuDisplayProvider(
-    uint32_t restart_id,
-    ServerSharedBitmapManager* server_shared_bitmap_manager,
-    bool headless,
-    bool wait_for_all_pipeline_stages_before_draw)
-    : GpuDisplayProvider(restart_id,
-                         /*gpu_service_impl=*/nullptr,
-                         /*task_executor=*/nullptr,
-                         /*gpu_channel_manager_delegate=*/nullptr,
-                         /*gpu_memory_buffer_manager=*/nullptr,
-                         /*image_factory=*/nullptr,
-                         server_shared_bitmap_manager,
-                         headless,
-                         wait_for_all_pipeline_stages_before_draw) {}
+OutputSurfaceProviderImpl::OutputSurfaceProviderImpl(bool headless)
+    : OutputSurfaceProviderImpl(
+          /*gpu_service_impl=*/nullptr,
+          /*task_executor=*/nullptr,
+          /*gpu_channel_manager_delegate=*/nullptr,
+          /*gpu_memory_buffer_manager=*/nullptr,
+          /*image_factory=*/nullptr,
+          headless) {}
 
-GpuDisplayProvider::~GpuDisplayProvider() = default;
+OutputSurfaceProviderImpl::~OutputSurfaceProviderImpl() = default;
 
-std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
-    const FrameSinkId& frame_sink_id,
+std::unique_ptr<OutputSurface> OutputSurfaceProviderImpl::CreateOutputSurface(
     gpu::SurfaceHandle surface_handle,
     bool gpu_compositing,
     mojom::DisplayClient* display_client,
-    BeginFrameSource* begin_frame_source,
-    UpdateVSyncParametersCallback update_vsync_callback,
-    const RendererSettings& renderer_settings,
-    bool send_swap_size_notifications) {
+    const RendererSettings& renderer_settings) {
   // TODO(penghuang): Merge two output surfaces into one when GLRenderer and
   // software compositor is removed.
   std::unique_ptr<OutputSurface> output_surface;
@@ -248,30 +230,11 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
     }
   }
 
-  // If we need swap size notifications tell the output surface now.
-  output_surface->SetNeedsSwapSizeNotifications(send_swap_size_notifications);
-
-  output_surface->SetUpdateVSyncParametersCallback(
-      std::move(update_vsync_callback));
-
-  int max_frames_pending = output_surface->capabilities().max_frames_pending;
-  DCHECK_GT(max_frames_pending, 0);
-
-  auto scheduler = std::make_unique<DisplayScheduler>(
-      begin_frame_source, task_runner_.get(), max_frames_pending,
-      wait_for_all_pipeline_stages_before_draw_);
-
-  return std::make_unique<Display>(
-      server_shared_bitmap_manager_, renderer_settings, frame_sink_id,
-      std::move(output_surface), std::move(scheduler), task_runner_);
-}
-
-uint32_t GpuDisplayProvider::GetRestartId() const {
-  return restart_id_;
+  return output_surface;
 }
 
 std::unique_ptr<SoftwareOutputDevice>
-GpuDisplayProvider::CreateSoftwareOutputDeviceForPlatform(
+OutputSurfaceProviderImpl::CreateSoftwareOutputDeviceForPlatform(
     gpu::SurfaceHandle surface_handle,
     mojom::DisplayClient* display_client) {
   if (headless_)

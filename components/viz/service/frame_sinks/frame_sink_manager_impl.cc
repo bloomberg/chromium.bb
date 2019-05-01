@@ -11,13 +11,24 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "components/viz/service/display/shared_bitmap_manager.h"
-#include "components/viz/service/display_embedder/display_provider.h"
+#include "components/viz/service/display_embedder/output_surface_provider.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/primary_begin_frame_source.h"
 #include "components/viz/service/frame_sinks/video_capture/capturable_frame_sink.h"
 #include "components/viz/service/frame_sinks/video_capture/frame_sink_video_capturer_impl.h"
 
 namespace viz {
+
+FrameSinkManagerImpl::InitParams::InitParams() = default;
+FrameSinkManagerImpl::InitParams::InitParams(
+    SharedBitmapManager* shared_bitmap_manager,
+    OutputSurfaceProvider* output_surface_provider)
+    : shared_bitmap_manager(shared_bitmap_manager),
+      output_surface_provider(output_surface_provider) {}
+FrameSinkManagerImpl::InitParams::InitParams(InitParams&& other) = default;
+FrameSinkManagerImpl::InitParams::~InitParams() = default;
+FrameSinkManagerImpl::InitParams& FrameSinkManagerImpl::InitParams::operator=(
+    InitParams&& other) = default;
 
 FrameSinkManagerImpl::FrameSinkSourceMapping::FrameSinkSourceMapping() =
     default;
@@ -41,18 +52,24 @@ FrameSinkManagerImpl::FrameSinkData::~FrameSinkData() = default;
 FrameSinkManagerImpl::FrameSinkData& FrameSinkManagerImpl::FrameSinkData::
 operator=(FrameSinkData&& other) = default;
 
-FrameSinkManagerImpl::FrameSinkManagerImpl(
-    SharedBitmapManager* shared_bitmap_manager,
-    base::Optional<uint32_t> activation_deadline_in_frames,
-    DisplayProvider* display_provider)
-    : shared_bitmap_manager_(shared_bitmap_manager),
-      display_provider_(display_provider),
-      surface_manager_(this, activation_deadline_in_frames),
+FrameSinkManagerImpl::FrameSinkManagerImpl(const InitParams& params)
+    : shared_bitmap_manager_(params.shared_bitmap_manager),
+      output_surface_provider_(params.output_surface_provider),
+      surface_manager_(this, params.activation_deadline_in_frames),
       hit_test_manager_(surface_manager()),
+      restart_id_(params.restart_id),
+      run_all_compositor_stages_before_draw_(
+          params.run_all_compositor_stages_before_draw),
       binding_(this) {
   surface_manager_.AddObserver(&hit_test_manager_);
   surface_manager_.AddObserver(this);
 }
+
+FrameSinkManagerImpl::FrameSinkManagerImpl(
+    SharedBitmapManager* shared_bitmap_manager,
+    OutputSurfaceProvider* output_surface_provider)
+    : FrameSinkManagerImpl(
+          InitParams(shared_bitmap_manager, output_surface_provider)) {}
 
 FrameSinkManagerImpl::~FrameSinkManagerImpl() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -148,14 +165,15 @@ void FrameSinkManagerImpl::CreateRootCompositorFrameSink(
     mojom::RootCompositorFrameSinkParamsPtr params) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!base::ContainsKey(root_sink_map_, params->frame_sink_id));
-  DCHECK(display_provider_);
+  DCHECK(output_surface_provider_);
 
   // We are transfering ownership of |params| so remember FrameSinkId here.
   FrameSinkId frame_sink_id = params->frame_sink_id;
 
   // Creating RootCompositorFrameSinkImpl can fail and return null.
   auto root_compositor_frame_sink = RootCompositorFrameSinkImpl::Create(
-      std::move(params), this, display_provider_);
+      std::move(params), this, output_surface_provider_, restart_id_,
+      run_all_compositor_stages_before_draw_);
   if (root_compositor_frame_sink)
     root_sink_map_[frame_sink_id] = std::move(root_compositor_frame_sink);
 }

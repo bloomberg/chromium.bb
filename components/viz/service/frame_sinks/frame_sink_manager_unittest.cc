@@ -19,7 +19,7 @@
 #include "components/viz/test/fake_external_begin_frame_source.h"
 #include "components/viz/test/mock_compositor_frame_sink_client.h"
 #include "components/viz/test/mock_display_client.h"
-#include "components/viz/test/test_display_provider.h"
+#include "components/viz/test/test_output_surface_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace viz {
@@ -56,9 +56,7 @@ struct RootCompositorFrameSinkData {
 class FrameSinkManagerTest : public testing::Test {
  public:
   FrameSinkManagerTest()
-      : manager_(&shared_bitmap_manager_,
-                 kDefaultActivationDeadlineInFrames,
-                 &display_provider_) {}
+      : manager_(&shared_bitmap_manager_, &output_surface_provider_) {}
   ~FrameSinkManagerTest() override = default;
 
   std::unique_ptr<CompositorFrameSinkSupport> CreateCompositorFrameSinkSupport(
@@ -98,7 +96,7 @@ class FrameSinkManagerTest : public testing::Test {
 
  protected:
   ServerSharedBitmapManager shared_bitmap_manager_;
-  TestDisplayProvider display_provider_;
+  TestOutputSurfaceProvider output_surface_provider_;
   FrameSinkManagerImpl manager_;
 };
 

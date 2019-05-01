@@ -50,11 +50,6 @@ specific_include_rules = {
     "+cc/test",
     "+third_party/khronos/GLES2",
   ],
-  # TODO(kylechar): Break these dependencies.
-  "gpu_display_provider.cc": [
-    "+components/viz/service/display/display.h",
-    "+components/viz/service/display/display_scheduler.h",
-  ],
   "software_output_device_ozone_unittest.cc": [
     "+ui/compositor",
     "+ui/gl",

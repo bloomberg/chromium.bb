@@ -30,10 +30,8 @@ constexpr FrameSinkId kRootFrameSinkId(1, 1);
 FuzzerBrowserProcess::FuzzerBrowserProcess(
     base::Optional<base::FilePath> png_dir_path)
     : root_local_surface_id_(1, 1, base::UnguessableToken::Create()),
-      display_provider_(&shared_bitmap_manager_, std::move(png_dir_path)),
-      frame_sink_manager_(&shared_bitmap_manager_,
-                          base::nullopt,
-                          &display_provider_) {
+      output_surface_provider_(std::move(png_dir_path)),
+      frame_sink_manager_(&shared_bitmap_manager_, &output_surface_provider_) {
   frame_sink_manager_.RegisterFrameSinkId(kEmbeddedFrameSinkId,
                                           /*report_activation=*/false);
   frame_sink_manager_.RegisterFrameSinkId(kRootFrameSinkId,
@@ -107,14 +105,12 @@ FuzzerBrowserProcess::BuildRootCompositorFrameSinkParams() {
   params->display_private =
       MakeRequestAssociatedWithDedicatedPipe(&display_private_);
   params->display_client = display_client_.BindInterfacePtr().PassInterface();
-
-  // Since the RootCompositorFrameSink doesn't get replaced on each fuzzer
-  // iteration, ensure that only one frame is pending at a time and that begin
-  // frames are decoupled from frame rate (otherwise bugs can occur when the
-  // frame rate is slower than the length of the fuzzer iterations).
-  // TODO(kylechar): Stop sending begin frames back to clients.
-  params->disable_frame_rate_limit = true;
-
+  params->external_begin_frame_controller =
+      MakeRequestAssociatedWithDedicatedPipe(
+          &external_begin_frame_controller_ptr_);
+  params->external_begin_frame_controller_client =
+      external_begin_frame_controller_client_.BindInterfacePtr()
+          .PassInterface();
   return params;
 }
 

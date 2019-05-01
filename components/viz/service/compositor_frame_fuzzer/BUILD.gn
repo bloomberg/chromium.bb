@@ -64,8 +64,8 @@ fuzzer_test("compositor_frame_fuzzer") {
     "compositor_frame_fuzzer_util.h",
     "fuzzer_browser_process.cc",
     "fuzzer_browser_process.h",
-    "fuzzer_software_display_provider.cc",
-    "fuzzer_software_display_provider.h",
+    "fuzzer_software_output_surface_provider.cc",
+    "fuzzer_software_output_surface_provider.h",
   ]
 
   deps = [

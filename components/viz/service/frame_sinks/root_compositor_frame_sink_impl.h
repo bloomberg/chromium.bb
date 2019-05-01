@@ -21,7 +21,7 @@
 namespace viz {
 
 class Display;
-class DisplayProvider;
+class OutputSurfaceProvider;
 class ExternalBeginFrameSource;
 class FrameSinkManagerImpl;
 class SyntheticBeginFrameSource;
@@ -37,7 +37,9 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
   static std::unique_ptr<RootCompositorFrameSinkImpl> Create(
       mojom::RootCompositorFrameSinkParamsPtr params,
       FrameSinkManagerImpl* frame_sink_manager,
-      DisplayProvider* display_provider);
+      OutputSurfaceProvider* output_surface_provider,
+      uint32_t restart_id,
+      bool run_all_compositor_stages_before_draw);
 
   ~RootCompositorFrameSinkImpl() override;
 
@@ -89,10 +91,8 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
       mojom::DisplayPrivateAssociatedRequest display_request,
       mojom::DisplayClientPtr display_client,
       std::unique_ptr<SyntheticBeginFrameSource> synthetic_begin_frame_source,
-      std::unique_ptr<ExternalBeginFrameSource> external_begin_frame_source);
-
-  // Initializes this object so it will start producing frames with |display|.
-  void Initialize(std::unique_ptr<Display> display);
+      std::unique_ptr<ExternalBeginFrameSource> external_begin_frame_source,
+      std::unique_ptr<Display> display);
 
   // DisplayClient:
   void DisplayOutputSurfaceLost() override;
@@ -121,11 +121,14 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
   // change for the lifetime of RootCompositorFrameSinkImpl.
   const std::unique_ptr<CompositorFrameSinkSupport> support_;
 
-  // RootCompositorFrameSinkImpl holds a Display and its BeginFrameSource if
-  // it was created with a non-null gpu::SurfaceHandle.
+  // RootCompositorFrameSinkImpl holds a Display and a BeginFrameSource if it
+  // was created with a non-null gpu::SurfaceHandle. The source can either be a
+  // |synthetic_begin_frame_source_| or an |external_begin_frame_source_|.
   std::unique_ptr<SyntheticBeginFrameSource> synthetic_begin_frame_source_;
   // If non-null, |synthetic_begin_frame_source_| will not exist.
   std::unique_ptr<ExternalBeginFrameSource> external_begin_frame_source_;
+  // Should be destroyed before begin frame sources since it can issue callbacks
+  // to the BFS.
   std::unique_ptr<Display> display_;
 
   DISALLOW_COPY_AND_ASSIGN(RootCompositorFrameSinkImpl);

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/viz/service/compositor_frame_fuzzer/fuzzer_software_display_provider.h"
+#include "components/viz/service/compositor_frame_fuzzer/fuzzer_software_output_surface_provider.h"
 
 #include <string>
 #include <utility>
@@ -79,45 +79,24 @@ class PNGSoftwareOutputDevice : public SoftwareOutputDevice {
 
 }  // namespace
 
-FuzzerSoftwareDisplayProvider::FuzzerSoftwareDisplayProvider(
-    ServerSharedBitmapManager* server_shared_bitmap_manager,
+FuzzerSoftwareOutputSurfaceProvider::FuzzerSoftwareOutputSurfaceProvider(
     base::Optional<base::FilePath> png_dir_path)
-    : shared_bitmap_manager_(server_shared_bitmap_manager),
-      png_dir_path_(png_dir_path),
-      begin_frame_source_(std::make_unique<StubBeginFrameSource>()) {}
+    : png_dir_path_(png_dir_path) {}
 
-FuzzerSoftwareDisplayProvider::~FuzzerSoftwareDisplayProvider() = default;
+FuzzerSoftwareOutputSurfaceProvider::~FuzzerSoftwareOutputSurfaceProvider() =
+    default;
 
-std::unique_ptr<Display> FuzzerSoftwareDisplayProvider::CreateDisplay(
-    const FrameSinkId& frame_sink_id,
+std::unique_ptr<OutputSurface>
+FuzzerSoftwareOutputSurfaceProvider::CreateOutputSurface(
     gpu::SurfaceHandle surface_handle,
     bool gpu_compositing,
     mojom::DisplayClient* display_client,
-    BeginFrameSource* begin_frame_source,
-    UpdateVSyncParametersCallback update_vsync_callback,
-    const RendererSettings& renderer_settings,
-    bool send_swap_size_notifications) {
-  auto task_runner = base::ThreadTaskRunnerHandle::Get();
-  DCHECK(task_runner);
-
+    const RendererSettings& renderer_settings) {
   std::unique_ptr<SoftwareOutputDevice> software_output_device =
       png_dir_path_ ? std::make_unique<PNGSoftwareOutputDevice>(*png_dir_path_)
                     : std::make_unique<SoftwareOutputDevice>();
-
-  auto output_surface = std::make_unique<SoftwareOutputSurface>(
+  return std::make_unique<SoftwareOutputSurface>(
       std::move(software_output_device));
-
-  auto scheduler = std::make_unique<DisplayScheduler>(
-      begin_frame_source_.get(), task_runner.get(),
-      output_surface->capabilities().max_frames_pending);
-
-  return std::make_unique<Display>(shared_bitmap_manager_, renderer_settings,
-                                   frame_sink_id, std::move(output_surface),
-                                   std::move(scheduler), task_runner);
-}
-
-uint32_t FuzzerSoftwareDisplayProvider::GetRestartId() const {
-  return BeginFrameSource::kNotRestartableId;
 }
 
 }  // namespace viz

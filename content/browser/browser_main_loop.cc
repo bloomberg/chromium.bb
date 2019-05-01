@@ -1296,9 +1296,12 @@ int BrowserMainLoop::BrowserThreadsStarted() {
     } else {
       server_shared_bitmap_manager_ =
           std::make_unique<viz::ServerSharedBitmapManager>();
-      frame_sink_manager_impl_ = std::make_unique<viz::FrameSinkManagerImpl>(
-          server_shared_bitmap_manager_.get(),
-          switches::GetDeadlineToSynchronizeSurfaces());
+      viz::FrameSinkManagerImpl::InitParams params;
+      params.shared_bitmap_manager = server_shared_bitmap_manager_.get();
+      params.activation_deadline_in_frames =
+          switches::GetDeadlineToSynchronizeSurfaces();
+      frame_sink_manager_impl_ =
+          std::make_unique<viz::FrameSinkManagerImpl>(params);
 
       surface_utils::ConnectWithLocalFrameSinkManager(
           host_frame_sink_manager_.get(), frame_sink_manager_impl_.get(),
