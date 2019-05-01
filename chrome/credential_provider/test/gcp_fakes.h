@@ -101,6 +101,11 @@ class FakeOSUserManager : public OSUserManager {
   HRESULT ModifyUserAccessWithLogonHours(const wchar_t* domain,
                                          const wchar_t* username,
                                          bool allow) override;
+
+  void SetShouldFailUserCreation(bool should_fail) {
+    should_fail_user_creation_ = should_fail;
+  }
+
   struct UserInfo {
     UserInfo(const wchar_t* domain,
              const wchar_t* password,
@@ -144,6 +149,7 @@ class FakeOSUserManager : public OSUserManager {
   OSUserManager* original_manager_;
   DWORD next_rid_ = 0;
   std::map<base::string16, UserInfo> username_to_info_;
+  bool should_fail_user_creation_ = false;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

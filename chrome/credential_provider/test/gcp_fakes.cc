@@ -143,6 +143,9 @@ HRESULT FakeOSUserManager::AddUser(const wchar_t* username,
   if (error)
     *error = 0;
 
+  if (should_fail_user_creation_)
+    return E_FAIL;
+
   bool user_found = username_to_info_.count(username) > 0;
 
   if (user_found) {

@@ -383,6 +383,21 @@ TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_Cancel) {
   ASSERT_EQ(S_OK, FinishLogonProcess(false, false, 0));
 }
 
+TEST_F(GcpGaiaCredentialBaseTest, FailedUserCreation) {
+  // Create provider and start logon.
+  CComPtr<ICredentialProviderCredential> cred;
+
+  ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
+
+  // Fail user creation.
+  fake_os_user_manager()->SetShouldFailUserCreation(true);
+
+  ASSERT_EQ(S_OK, StartLogonProcessAndWait());
+
+  // Logon process should fail with an internal error.
+  ASSERT_EQ(S_OK, FinishLogonProcess(false, false, IDS_INTERNAL_ERROR_BASE));
+}
+
 TEST_F(GcpGaiaCredentialBaseTest, StripEmailTLD) {
   USES_CONVERSION;
   // Create provider and start logon.

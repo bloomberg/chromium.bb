@@ -234,6 +234,18 @@ HRESULT OSUserManager::AddUser(const wchar_t* username,
                                DWORD* error) {
   DCHECK(sid);
 
+  base::string16 local_users_group_name;
+  // If adding to the local users group, make sure we can get the localized
+  // name for the group before proceeding.
+  if (add_to_users_group) {
+    HRESULT hr = LookupLocalizedNameForWellKnownSid(WinBuiltinUsersSid,
+                                                    &local_users_group_name);
+    if (FAILED(hr)) {
+      LOGFN(ERROR) << "LookupLocalizedNameForWellKnownSid hr=" << putHR(hr);
+      return hr;
+    }
+  }
+
   USER_INFO_1 info;
   memset(&info, 0, sizeof(info));
   info.usri1_comment = _wcsdup(comment);
@@ -279,12 +291,14 @@ HRESULT OSUserManager::AddUser(const wchar_t* username,
     }
 
     if (nsts == NERR_Success && add_to_users_group) {
-      // Add to the "Users" group so that it appears on login screen.
+      // Add to the well known local users group so that it appears on login
+      // screen.
       LOCALGROUP_MEMBERS_INFO_0 member_info;
       memset(&member_info, 0, sizeof(member_info));
       member_info.lgrmi0_sid = user_info->usri4_user_sid;
-      nsts = ::NetLocalGroupAddMembers(
-          nullptr, L"Users", 0, reinterpret_cast<LPBYTE>(&member_info), 1);
+      nsts =
+          ::NetLocalGroupAddMembers(nullptr, local_users_group_name.c_str(), 0,
+                                    reinterpret_cast<LPBYTE>(&member_info), 1);
       if (nsts != NERR_Success && nsts != ERROR_MEMBER_IN_ALIAS) {
         LOGFN(ERROR) << "NetLocalGroupAddMembers nsts=" << nsts;
       } else {

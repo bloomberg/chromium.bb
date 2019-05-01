@@ -1692,6 +1692,11 @@ HRESULT CGaiaCredentialBase::ValidateOrCreateUser(const base::Value& result,
                  << "'. Maximum attempts reached.";
     *error_text = AllocErrorString(IDS_INTERNAL_ERROR_BASE);
     return hr;
+  } else if (FAILED(hr)) {
+    LOGFN(ERROR) << "Failed to create user '" << found_domain << "\\"
+                 << found_username << "'. hr=" << putHR(hr);
+    *error_text = AllocErrorString(IDS_INTERNAL_ERROR_BASE);
+    return hr;
   }
 
   *domain = ::SysAllocString(found_domain);
