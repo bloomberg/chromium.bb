@@ -15,10 +15,12 @@
 namespace ui {
 
 class ScenicSurfaceFactory;
+class SysmemBufferManager;
 
 class VulkanImplementationScenic : public gpu::VulkanImplementation {
  public:
-  VulkanImplementationScenic(ScenicSurfaceFactory* scenic_surface_factory);
+  VulkanImplementationScenic(ScenicSurfaceFactory* scenic_surface_factory,
+                             SysmemBufferManager* sysmem_buffer_manager);
   ~VulkanImplementationScenic() override;
 
   // VulkanImplementation:
@@ -41,9 +43,21 @@ class VulkanImplementationScenic : public gpu::VulkanImplementation {
   gpu::SemaphoreHandle GetSemaphoreHandle(VkDevice vk_device,
                                           VkSemaphore vk_semaphore) override;
   VkExternalMemoryHandleTypeFlagBits GetExternalImageHandleType() override;
+  bool CanImportGpuMemoryBuffer(
+      gfx::GpuMemoryBufferType memory_buffer_type) override;
+  bool CreateImageFromGpuMemoryHandle(
+      VkDevice vk_device,
+      gfx::GpuMemoryBufferHandle gmb_handle,
+      gfx::Size size,
+      VkImage* vk_image,
+      VkImageCreateInfo* vk_image_info,
+      VkDeviceMemory* vk_device_memory,
+      VkDeviceSize* mem_allocation_size) override;
 
  private:
   ScenicSurfaceFactory* const scenic_surface_factory_;
+  SysmemBufferManager* const sysmem_buffer_manager_;
+
   gpu::VulkanInstance vulkan_instance_;
 
   PFN_vkCreateImagePipeSurfaceFUCHSIA vkCreateImagePipeSurfaceFUCHSIA_ =

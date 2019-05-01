@@ -1026,6 +1026,11 @@ SharedImageBackingFactoryAHB::CreateSharedImage(
   return nullptr;
 }
 
+bool SharedImageBackingFactoryAHB::CanImportGpuMemoryBuffer(
+    gfx::GpuMemoryBufferType memory_buffer_type) {
+  return false;
+}
+
 SharedImageBackingFactoryAHB::FormatInfo::FormatInfo() = default;
 SharedImageBackingFactoryAHB::FormatInfo::~FormatInfo() = default;
 

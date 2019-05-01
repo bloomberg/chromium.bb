@@ -137,7 +137,8 @@ ScenicSurfaceFactory::CreateVulkanImplementation() {
   if (!gpu_host_)
     LOG(FATAL) << "Vulkan implementation requires InitializeForGPU";
 
-  return std::make_unique<ui::VulkanImplementationScenic>(this);
+  return std::make_unique<ui::VulkanImplementationScenic>(
+      this, &sysmem_buffer_manager_);
 }
 #endif
 

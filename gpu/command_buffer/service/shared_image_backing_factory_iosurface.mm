@@ -652,4 +652,9 @@ SharedImageBackingFactoryIOSurface::CreateSharedImage(
   return nullptr;
 }
 
+bool SharedImageBackingFactoryIOSurface::CanImportGpuMemoryBuffer(
+    gfx::GpuMemoryBufferType memory_buffer_type) {
+  return false;
+}
+
 }  // namespace gpu

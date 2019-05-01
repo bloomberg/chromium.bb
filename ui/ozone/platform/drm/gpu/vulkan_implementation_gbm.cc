@@ -14,6 +14,7 @@
 #include "gpu/vulkan/vulkan_surface.h"
 #include "gpu/vulkan/vulkan_util.h"
 #include "ui/gfx/gpu_fence.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 
 namespace ui {
 
@@ -152,6 +153,23 @@ gpu::SemaphoreHandle VulkanImplementationGbm::GetSemaphoreHandle(
 VkExternalMemoryHandleTypeFlagBits
 VulkanImplementationGbm::GetExternalImageHandleType() {
   return VK_EXTERNAL_MEMORY_HANDLE_TYPE_DMA_BUF_BIT_EXT;
+}
+
+bool VulkanImplementationGbm::CanImportGpuMemoryBuffer(
+    gfx::GpuMemoryBufferType memory_buffer_type) {
+  return false;
+}
+
+bool VulkanImplementationGbm::CreateImageFromGpuMemoryHandle(
+    VkDevice vk_device,
+    gfx::GpuMemoryBufferHandle gmb_handle,
+    gfx::Size size,
+    VkImage* vk_image,
+    VkImageCreateInfo* vk_image_info,
+    VkDeviceMemory* vk_device_memory,
+    VkDeviceSize* mem_allocation_size) {
+  NOTIMPLEMENTED();
+  return false;
 }
 
 }  // namespace ui

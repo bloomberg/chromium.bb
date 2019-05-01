@@ -37,6 +37,16 @@ class VulkanImplementationGbm : public gpu::VulkanImplementation {
   gpu::SemaphoreHandle GetSemaphoreHandle(VkDevice vk_device,
                                           VkSemaphore vk_semaphore) override;
   VkExternalMemoryHandleTypeFlagBits GetExternalImageHandleType() override;
+  bool CanImportGpuMemoryBuffer(
+      gfx::GpuMemoryBufferType memory_buffer_type) override;
+  bool CreateImageFromGpuMemoryHandle(
+      VkDevice vk_device,
+      gfx::GpuMemoryBufferHandle gmb_handle,
+      gfx::Size size,
+      VkImage* vk_image,
+      VkImageCreateInfo* vk_image_info,
+      VkDeviceMemory* vk_device_memory,
+      VkDeviceSize* mem_allocation_size) override;
 
  private:
   gpu::VulkanInstance vulkan_instance_;

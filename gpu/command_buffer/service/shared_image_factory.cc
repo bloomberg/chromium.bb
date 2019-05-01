@@ -176,15 +176,7 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
   // TODO(piman): depending on handle.type, choose platform-specific backing
   // factory, e.g. SharedImageBackingFactoryAHB.
   bool allow_legacy_mailbox = false;
-  SharedImageBackingFactory* factory = nullptr;
-  if (!using_vulkan_) {
-    // GMB is only supported by gl backing factory when gl is being used.
-    allow_legacy_mailbox = true;
-    factory = gl_backing_factory_.get();
-  } else {
-    // TODO(penghuang): support GMB for vulkan.
-    NOTIMPLEMENTED() << "GMB is not supported for vulkan.";
-  }
+  auto* factory = GetFactoryByUsage(usage, &allow_legacy_mailbox, handle.type);
   if (!factory)
     return false;
   auto backing =
@@ -273,7 +265,8 @@ bool SharedImageFactory::IsSharedBetweenThreads(uint32_t usage) {
 
 SharedImageBackingFactory* SharedImageFactory::GetFactoryByUsage(
     uint32_t usage,
-    bool* allow_legacy_mailbox) {
+    bool* allow_legacy_mailbox,
+    gfx::GpuMemoryBufferType gmb_type) {
   bool using_dawn = usage & SHARED_IMAGE_USAGE_WEBGPU;
   bool vulkan_usage = using_vulkan_ && (usage & SHARED_IMAGE_USAGE_DISPLAY);
   bool gl_usage = usage & SHARED_IMAGE_USAGE_GLES2;
@@ -291,6 +284,23 @@ SharedImageBackingFactory* SharedImageFactory::GetFactoryByUsage(
                                 (usage == kWrappedSkImageUsage) &&
                                 !using_interop_factory;
   using_interop_factory |= vulkan_usage && !using_wrapped_sk_image;
+
+  if (gmb_type != gfx::EMPTY_BUFFER) {
+    bool interop_factory_supports_gmb =
+        interop_backing_factory_ &&
+        interop_backing_factory_->CanImportGpuMemoryBuffer(gmb_type);
+
+    if (using_wrapped_sk_image ||
+        (using_interop_factory && !interop_backing_factory_)) {
+      LOG(ERROR) << "Unable to screate SharedImage backing: no support for the "
+                    "requested GpuMemoryBufferType.";
+      return nullptr;
+    }
+
+    // If |interop_backing_factory_| supports supplied GMB type then use it
+    // instead of |gl_backing_factory_|.
+    using_interop_factory |= interop_factory_supports_gmb;
+  }
 
   *allow_legacy_mailbox =
       !using_wrapped_sk_image && !using_interop_factory && !using_vulkan_;

@@ -1045,6 +1045,14 @@ scoped_refptr<gl::GLImage> SharedImageBackingFactoryGLTexture::MakeGLImage(
       std::move(handle), size, format, client_id, surface_handle);
 }
 
+bool SharedImageBackingFactoryGLTexture::CanImportGpuMemoryBuffer(
+    gfx::GpuMemoryBufferType memory_buffer_type) {
+  // SharedImageFactory may call CanImportGpuMemoryBuffer() in all other
+  // SharedImageBackingFactory implementations except this one.
+  NOTREACHED();
+  return true;
+}
+
 std::unique_ptr<SharedImageBacking>
 SharedImageBackingFactoryGLTexture::MakeBacking(
     bool passthrough,

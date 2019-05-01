@@ -15,6 +15,7 @@
 #include "gpu/vulkan/vulkan_surface.h"
 #include "gpu/vulkan/vulkan_util.h"
 #include "ui/gfx/gpu_fence.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 
 namespace gpu {
 
@@ -132,6 +133,25 @@ SemaphoreHandle VulkanImplementationAndroid::GetSemaphoreHandle(
 VkExternalMemoryHandleTypeFlagBits
 VulkanImplementationAndroid::GetExternalImageHandleType() {
   return VK_EXTERNAL_MEMORY_HANDLE_TYPE_ANDROID_HARDWARE_BUFFER_BIT_ANDROID;
+}
+
+bool VulkanImplementationAndroid::CanImportGpuMemoryBuffer(
+    gfx::GpuMemoryBufferType memory_buffer_type) {
+  return false;
+}
+
+bool VulkanImplementationAndroid::CreateImageFromGpuMemoryHandle(
+    VkDevice vk_device,
+    gfx::GpuMemoryBufferHandle gmb_handle,
+    gfx::Size size,
+    VkImage* vk_image,
+    VkImageCreateInfo* vk_image_info,
+    VkDeviceMemory* vk_device_memory,
+    VkDeviceSize* mem_allocation_size) {
+  // TODO(sergeyu): Move code from CreateVkImageAndImportAHB() here and remove
+  // CreateVkImageAndImportAHB().
+  NOTIMPLEMENTED();
+  return false;
 }
 
 bool VulkanImplementationAndroid::CreateVkImageAndImportAHB(

@@ -44,9 +44,8 @@ std::unique_ptr<SharedImageBacking> ExternalVkImageFactory::CreateSharedImage(
                         ->GetVulkanDevice();
 
   VkFormat vk_format = ToVkFormat(format);
-  VkResult result;
   VkImage image;
-  result = CreateExternalVkImage(vk_format, size, &image);
+  VkResult result = CreateExternalVkImage(vk_format, size, &image);
   if (result != VK_SUCCESS) {
     LOG(ERROR) << "Failed to create external VkImage: " << result;
     return nullptr;
@@ -218,14 +217,52 @@ std::unique_ptr<SharedImageBacking> ExternalVkImageFactory::CreateSharedImage(
     const Mailbox& mailbox,
     int client_id,
     gfx::GpuMemoryBufferHandle handle,
-    gfx::BufferFormat format,
+    gfx::BufferFormat buffer_format,
     SurfaceHandle surface_handle,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     uint32_t usage) {
-  // GpuMemoryBuffers supported is not implemented yet.
-  NOTIMPLEMENTED();
-  return nullptr;
+  DCHECK(CanImportGpuMemoryBuffer(handle.type));
+
+  if (!gpu::IsImageSizeValidForGpuMemoryBufferFormat(size, buffer_format)) {
+    LOG(ERROR) << "Invalid image size for format.";
+    return nullptr;
+  }
+
+  auto* vk_context_provider = context_state_->vk_context_provider();
+  VkDevice vk_device = vk_context_provider->GetDeviceQueue()->GetVulkanDevice();
+  VkImage vk_image = VK_NULL_HANDLE;
+  VkImageCreateInfo vk_image_info{};
+  VkDeviceMemory vk_device_memory = VK_NULL_HANDLE;
+  VkDeviceSize memory_size = 0;
+  if (!vk_context_provider->GetVulkanImplementation()
+           ->CreateImageFromGpuMemoryHandle(vk_device, std::move(handle), size,
+                                            &vk_image, &vk_image_info,
+                                            &vk_device_memory, &memory_size)) {
+    return nullptr;
+  }
+
+  VkFormat expected_format = ToVkFormat(viz::GetResourceFormat(buffer_format));
+  if (expected_format != vk_image_info.format) {
+    DLOG(ERROR) << "BufferFormat doesn't match the buffer";
+    vkFreeMemory(vk_device, vk_device_memory, nullptr);
+    vkDestroyImage(vk_device, vk_image, nullptr);
+    return nullptr;
+  }
+
+  TransitionToColorAttachment(vk_image);
+
+  return std::make_unique<ExternalVkImageBacking>(
+      mailbox, viz::GetResourceFormat(buffer_format), size, color_space, usage,
+      context_state_, vk_image, vk_device_memory, memory_size,
+      vk_image_info.format);
+}
+
+bool ExternalVkImageFactory::CanImportGpuMemoryBuffer(
+    gfx::GpuMemoryBufferType memory_buffer_type) {
+  return context_state_->vk_context_provider()
+      ->GetVulkanImplementation()
+      ->CanImportGpuMemoryBuffer(memory_buffer_type);
 }
 
 VkResult ExternalVkImageFactory::CreateExternalVkImage(VkFormat format,

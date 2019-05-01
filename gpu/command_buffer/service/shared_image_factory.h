@@ -98,8 +98,10 @@ class GPU_GLES2_EXPORT SharedImageFactory {
 
  private:
   bool IsSharedBetweenThreads(uint32_t usage);
-  SharedImageBackingFactory* GetFactoryByUsage(uint32_t usage,
-                                               bool* allow_legacy_mailbox);
+  SharedImageBackingFactory* GetFactoryByUsage(
+      uint32_t usage,
+      bool* allow_legacy_mailbox,
+      gfx::GpuMemoryBufferType gmb_type = gfx::EMPTY_BUFFER);
   MailboxManager* mailbox_manager_;
   SharedImageManager* shared_image_manager_;
   std::unique_ptr<MemoryTypeTracker> memory_tracker_;
