@@ -888,10 +888,8 @@ void WebLocalFrameImpl::StartReload(WebFrameLoadType frame_load_type) {
   if (GetTextFinder())
     GetTextFinder()->ClearActiveFindMatch();
 
-  GetFrame()->Loader().StartNavigation(
-      FrameLoadRequest(nullptr, request, /*frame_name=*/AtomicString(),
-                       kCheckContentSecurityPolicy),
-      frame_load_type);
+  GetFrame()->Loader().StartNavigation(FrameLoadRequest(nullptr, request),
+                                       frame_load_type);
 }
 
 void WebLocalFrameImpl::ReloadImage(const WebNode& web_node) {
@@ -918,9 +916,7 @@ void WebLocalFrameImpl::StartNavigation(const WebURLRequest& request) {
     GetTextFinder()->ClearActiveFindMatch();
 
   GetFrame()->Loader().StartNavigation(
-      FrameLoadRequest(nullptr, request.ToResourceRequest(),
-                       /*frame_name=*/AtomicString(),
-                       kCheckContentSecurityPolicy),
+      FrameLoadRequest(nullptr, request.ToResourceRequest()),
       WebFrameLoadType::kStandard);
 }
 

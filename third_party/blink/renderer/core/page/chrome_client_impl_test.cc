@@ -90,7 +90,7 @@ class CreateWindowTest : public testing::Test {
 TEST_F(CreateWindowTest, CreateWindowFromPausedPage) {
   ScopedPagePauser pauser;
   LocalFrame* frame = To<WebLocalFrameImpl>(main_frame_)->GetFrame();
-  FrameLoadRequest request(frame->GetDocument());
+  FrameLoadRequest request(frame->GetDocument(), ResourceRequest());
   request.SetNavigationPolicy(kNavigationPolicyNewForegroundTab);
   WebWindowFeatures features;
   EXPECT_EQ(nullptr, chrome_client_impl_->CreateWindow(

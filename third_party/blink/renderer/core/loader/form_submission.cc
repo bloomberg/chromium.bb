@@ -284,33 +284,28 @@ KURL FormSubmission::RequestURL() const {
 
 FrameLoadRequest FormSubmission::CreateFrameLoadRequest(
     Document* origin_document) {
-  FrameLoadRequest frame_request(origin_document);
-
-  if (!target_.IsEmpty())
-    frame_request.SetFrameName(target_);
-
+  ResourceRequest resource_request(RequestURL());
   ClientNavigationReason reason = ClientNavigationReason::kFormSubmissionGet;
   if (method_ == FormSubmission::kPostMethod) {
     reason = ClientNavigationReason::kFormSubmissionPost;
-    frame_request.GetResourceRequest().SetHttpMethod(http_names::kPOST);
-    frame_request.GetResourceRequest().SetHttpBody(form_data_);
+    resource_request.SetHttpMethod(http_names::kPOST);
+    resource_request.SetHttpBody(form_data_);
 
     // construct some user headers if necessary
     if (boundary_.IsEmpty()) {
-      frame_request.GetResourceRequest().SetHTTPContentType(content_type_);
+      resource_request.SetHTTPContentType(content_type_);
     } else {
-      frame_request.GetResourceRequest().SetHTTPContentType(
-          content_type_ + "; boundary=" + boundary_);
+      resource_request.SetHTTPContentType(content_type_ +
+                                          "; boundary=" + boundary_);
     }
   }
+
+  FrameLoadRequest frame_request(origin_document, resource_request);
+  if (!target_.IsEmpty())
+    frame_request.SetFrameName(target_);
   frame_request.SetClientRedirectReason(reason);
-
-  frame_request.GetResourceRequest().SetUrl(RequestURL());
-
   frame_request.SetForm(form_);
-
   frame_request.SetTriggeringEventInfo(triggering_event_info_);
-
   return frame_request;
 }
 

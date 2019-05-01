@@ -14,9 +14,6 @@
 
 namespace blink {
 
-FrameLoadRequest::FrameLoadRequest(Document* origin_document)
-    : FrameLoadRequest(origin_document, ResourceRequest()) {}
-
 FrameLoadRequest::FrameLoadRequest(Document* origin_document,
                                    const ResourceRequest& resource_request)
     : FrameLoadRequest(origin_document, resource_request, AtomicString()) {}
@@ -24,24 +21,11 @@ FrameLoadRequest::FrameLoadRequest(Document* origin_document,
 FrameLoadRequest::FrameLoadRequest(Document* origin_document,
                                    const ResourceRequest& resource_request,
                                    const AtomicString& frame_name)
-    : FrameLoadRequest(origin_document,
-                       resource_request,
-                       frame_name,
-                       kCheckContentSecurityPolicy) {}
-
-FrameLoadRequest::FrameLoadRequest(
-    Document* origin_document,
-    const ResourceRequest& resource_request,
-    const AtomicString& frame_name,
-    ContentSecurityPolicyDisposition
-        should_check_main_world_content_security_policy)
     : origin_document_(origin_document),
       resource_request_(resource_request),
       frame_name_(frame_name),
       client_redirect_(ClientRedirectPolicy::kNotClientRedirect),
-      should_send_referrer_(kMaybeSendReferrer),
-      should_check_main_world_content_security_policy_(
-          should_check_main_world_content_security_policy) {
+      should_send_referrer_(kMaybeSendReferrer) {
   // These flags are passed to a service worker which controls the page.
   resource_request_.SetFetchRequestMode(
       network::mojom::FetchRequestMode::kNavigate);
@@ -53,6 +37,12 @@ FrameLoadRequest::FrameLoadRequest(
   if (const WebInputEvent* input_event = CurrentInputEvent::Get())
     SetInputStartTime(input_event->TimeStamp());
 
+  should_check_main_world_content_security_policy_ =
+      origin_document &&
+              ContentSecurityPolicy::ShouldBypassMainWorld(origin_document)
+          ? kDoNotCheckContentSecurityPolicy
+          : kCheckContentSecurityPolicy;
+
   if (origin_document) {
     DCHECK(!resource_request_.RequestorOrigin());
     resource_request_.SetRequestorOrigin(origin_document->GetSecurityOrigin());
@@ -63,11 +53,6 @@ FrameLoadRequest::FrameLoadRequest(
           base::RefCountedData<mojom::blink::BlobURLTokenPtr>>();
       origin_document->GetPublicURLManager().Resolve(
           resource_request.Url(), MakeRequest(&blob_url_token_->data));
-    }
-
-    if (ContentSecurityPolicy::ShouldBypassMainWorld(origin_document)) {
-      should_check_main_world_content_security_policy_ =
-          kDoNotCheckContentSecurityPolicy;
     }
   }
 }

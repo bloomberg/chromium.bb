@@ -478,14 +478,8 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
     }
   }
 
-  ContentSecurityPolicyDisposition content_security_policy_disposition =
-      ContentSecurityPolicy::ShouldBypassMainWorld(&GetDocument())
-          ? kDoNotCheckContentSecurityPolicy
-          : kCheckContentSecurityPolicy;
   child_frame->Loader().StartNavigation(
-      FrameLoadRequest(&GetDocument(), request, AtomicString(),
-                       content_security_policy_disposition),
-      child_load_type);
+      FrameLoadRequest(&GetDocument(), request), child_load_type);
 
   return true;
 }

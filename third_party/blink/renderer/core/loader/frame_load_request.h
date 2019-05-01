@@ -45,15 +45,10 @@ struct CORE_EXPORT FrameLoadRequest {
   STACK_ALLOCATED();
 
  public:
-  explicit FrameLoadRequest(Document* origin_document);
   FrameLoadRequest(Document* origin_document, const ResourceRequest&);
   FrameLoadRequest(Document* origin_document,
                    const ResourceRequest&,
                    const AtomicString& frame_name);
-  FrameLoadRequest(Document* origin_document,
-                   const ResourceRequest&,
-                   const AtomicString& frame_name,
-                   ContentSecurityPolicyDisposition);
 
   Document* OriginDocument() const { return origin_document_.Get(); }
 
