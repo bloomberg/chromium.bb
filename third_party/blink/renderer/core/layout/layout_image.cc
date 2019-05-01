@@ -348,7 +348,7 @@ bool LayoutImage::OverrideIntrinsicSizingInfo(
 
 void LayoutImage::ComputeIntrinsicSizingInfo(
     IntrinsicSizingInfo& intrinsic_sizing_info) const {
-  DCHECK(!ShouldApplySizeContainment());
+  DCHECK(!ShouldApplySizeContainment() && !DisplayLockInducesSizeContainment());
   if (!OverrideIntrinsicSizingInfo(intrinsic_sizing_info)) {
     if (SVGImage* svg_image = EmbeddedSVGImage()) {
       svg_image->GetIntrinsicSizingInfo(intrinsic_sizing_info);

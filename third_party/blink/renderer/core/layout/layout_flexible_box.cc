@@ -68,6 +68,12 @@ void LayoutFlexibleBox::ComputeIntrinsicLogicalWidths(
     LayoutUnit& min_logical_width,
     LayoutUnit& max_logical_width) const {
   LayoutUnit scrollbar_width(ScrollbarLogicalWidth());
+  if (DisplayLockInducesSizeContainment()) {
+    min_logical_width = max_logical_width =
+        scrollbar_width +
+        GetDisplayLockContext()->GetLockedContentLogicalWidth();
+    return;
+  }
   if (ShouldApplySizeContainment()) {
     max_logical_width = scrollbar_width;
     min_logical_width = scrollbar_width;
@@ -498,10 +504,14 @@ LayoutUnit LayoutFlexibleBox::ChildUnstretchedLogicalHeight(
   DCHECK(MainAxisIsInlineAxis(child));
   if (NeedToStretchChildLogicalHeight(child)) {
     LayoutUnit child_intrinsic_content_logical_height;
-    if (!child.ShouldApplySizeContainment()) {
+    if (child.DisplayLockInducesSizeContainment()) {
+      child_intrinsic_content_logical_height =
+          child.GetDisplayLockContext()->GetLockedContentLogicalHeight();
+    } else if (!child.ShouldApplySizeContainment()) {
       child_intrinsic_content_logical_height =
           child.IntrinsicContentLogicalHeight();
     }
+
     LayoutUnit child_intrinsic_logical_height =
         child_intrinsic_content_logical_height +
         child.ScrollbarLogicalHeight() + child.BorderAndPaddingLogicalHeight();
@@ -769,7 +779,9 @@ bool LayoutFlexibleBox::CrossAxisLengthIsDefinite(const LayoutBox& child,
 }
 
 void LayoutFlexibleBox::CacheChildMainSize(const LayoutBox& child) {
-  DCHECK(!child.NeedsLayout());
+  DCHECK(!child.SelfNeedsLayout());
+  DCHECK(!child.NeedsLayout() ||
+         child.LayoutBlockedByDisplayLock(DisplayLockContext::kChildren));
   LayoutUnit main_size;
   if (MainAxisIsInlineAxis(child)) {
     main_size = child.MaxPreferredLogicalWidth();
@@ -848,6 +860,11 @@ LayoutUnit LayoutFlexibleBox::ComputeInnerFlexBaseSizeForChild(
   } else {
     if (child.ShouldApplySizeContainment())
       return LayoutUnit();
+    // The needed value here is the logical height. This value does not include
+    // the border/scrollbar/padding size, so we can just return the locked value
+    // directly.
+    if (child.DisplayLockInducesSizeContainment())
+      return child.GetDisplayLockContext()->GetLockedContentLogicalHeight();
 
     if (child_layout_type == kNeverLayout)
       return LayoutUnit();

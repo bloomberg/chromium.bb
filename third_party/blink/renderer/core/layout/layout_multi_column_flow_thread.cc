@@ -1343,6 +1343,7 @@ void LayoutMultiColumnFlowThread::ComputePreferredLogicalWidths() {
   LayoutUnit gap_extra((column_count - 1) *
                        ColumnGap(*multicol_style, LayoutUnit()));
 
+  DCHECK(!MultiColumnBlockFlow()->DisplayLockInducesSizeContainment());
   if (MultiColumnBlockFlow()->ShouldApplySizeContainment()) {
     min_preferred_logical_width_ = max_preferred_logical_width_ = LayoutUnit();
     ClearPreferredLogicalWidthsDirty();

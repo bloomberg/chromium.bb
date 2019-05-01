@@ -67,22 +67,6 @@ class CORE_EXPORT DisplayLockContext final
     kStyleUpdateDescendants
   };
 
-  // See GetScopedPendingFrameRect() for description.
-  class ScopedPendingFrameRect {
-    STACK_ALLOCATED();
-
-   public:
-    ScopedPendingFrameRect(ScopedPendingFrameRect&&);
-    ~ScopedPendingFrameRect();
-
-   private:
-    friend class DisplayLockContext;
-
-    ScopedPendingFrameRect(DisplayLockContext*);
-
-    UntracedMember<DisplayLockContext> context_ = nullptr;
-  };
-
   // See GetScopedForcedUpdate() for description.
   class CORE_EXPORT ScopedForcedUpdate {
     DISALLOW_NEW();
@@ -124,8 +108,8 @@ class CORE_EXPORT DisplayLockContext final
   // Lifecycle observation / state functions.
   bool ShouldStyle(LifecycleTarget) const;
   void DidStyle(LifecycleTarget);
-  bool ShouldLayout() const;
-  void DidLayout();
+  bool ShouldLayout(LifecycleTarget) const;
+  void DidLayout(LifecycleTarget);
   bool ShouldPrePaint() const;
   void DidPrePaint();
   bool ShouldPaint() const;
@@ -142,19 +126,12 @@ class CORE_EXPORT DisplayLockContext final
   bool ShouldCommitForActivation() const;
 
   // Returns true if this lock is locked. Note from the outside perspective, the
-  // lock is locked any time the state is not kUnlocked.
-  bool IsLocked() const { return state_ != kUnlocked; }
+  // lock is locked any time the state is not kUnlocked or kCommitting.
+  bool IsLocked() const { return state_ != kUnlocked && state_ != kCommitting; }
 
   // Called when the layout tree is attached. This is used to verify
   // containment.
   void DidAttachLayoutTree();
-
-  // Returns a ScopedPendingFrameRect object which exposes the pending layout
-  // frame rect to LayoutBox. This is used to ensure that children of the locked
-  // element use the pending layout frame to update the size of the element.
-  // After the scoped object is destroyed, the previous frame rect is restored
-  // and the pending one is stored in the context until it is needed.
-  ScopedPendingFrameRect GetScopedPendingFrameRect();
 
   // Returns a ScopedForcedUpdate object which for the duration of its lifetime
   // will allow updates to happen on this element's subtree. For the element
@@ -191,9 +168,13 @@ class CORE_EXPORT DisplayLockContext final
     needs_prepaint_subtree_walk_ = true;
   }
 
-  const LayoutRect& GetLockedFrameRect() const {
-    DCHECK(locked_frame_rect_);
-    return *locked_frame_rect_;
+  LayoutUnit GetLockedContentLogicalWidth() const {
+    return is_horizontal_writing_mode_ ? locked_content_logical_size_->Width()
+                                       : locked_content_logical_size_->Height();
+  }
+  LayoutUnit GetLockedContentLogicalHeight() const {
+    return is_horizontal_writing_mode_ ? locked_content_logical_size_->Height()
+                                       : locked_content_logical_size_->Width();
   }
 
  private:
@@ -239,10 +220,6 @@ class CORE_EXPORT DisplayLockContext final
   bool IsElementDirtyForStyleRecalc() const;
   bool IsElementDirtyForLayout() const;
   bool IsElementDirtyForPrePaint() const;
-
-  // When ScopedPendingFrameRect is destroyed, it calls this function. See
-  // GetScopedPendingFrameRect() for more information.
-  void NotifyPendingFrameRectScopeEnded();
 
   // When ScopedForcedUpdate is destroyed, it calls this function. See
   // GetScopedForcedUpdate() for more information.
@@ -306,8 +283,7 @@ class CORE_EXPORT DisplayLockContext final
   HeapHashSet<Member<Element>> whitespace_reattach_set_;
 
   StateChangeHelper state_;
-  LayoutRect pending_frame_rect_;
-  base::Optional<LayoutRect> locked_frame_rect_;
+  base::Optional<LayoutSize> locked_content_logical_size_;
 
   bool update_forced_ = false;
   bool activatable_ = false;
@@ -317,6 +293,7 @@ class CORE_EXPORT DisplayLockContext final
 
   bool needs_effective_allowed_touch_action_update_ = false;
   bool needs_prepaint_subtree_walk_ = false;
+  bool is_horizontal_writing_mode_ = true;
 
   TaskHandle timeout_task_handle_;
 };

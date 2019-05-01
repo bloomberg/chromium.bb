@@ -501,6 +501,7 @@ void LayoutGrid::ComputeIntrinsicLogicalWidths(
   min_logical_width = scrollbar_width;
   max_logical_width = scrollbar_width;
 
+  // TODO(crbug.com/953915): Handle display-locked grid sizing.
   if (ShouldApplySizeContainment())
     return;
 

@@ -1,0 +1,41 @@
+<!doctype HTML>
+
+<style>
+#border {
+  width: max-content;
+  border: 1px solid green;
+}
+#container {
+  contain: style layout;
+  background: lightblue;
+  width: max-content;
+}
+#child {
+  width: 500px;
+  height: 500px;
+  background: red;
+}
+</style>
+
+<div id="border">
+  <div id="container">
+    <div id="child"></div>
+  </div>
+</div>
+
+<script>
+if (window.testRunner)
+  window.testRunner.waitUntilDone();
+
+function finishTest() {
+  if (window.testRunner)
+    window.testRunner.notifyDone();
+}
+
+function runTest() {
+  let container = document.getElementById("container");
+  container.displayLock.acquire({ timeout: Infinity, size: [123, 456] }).then(finishTest);
+}
+
+window.onload = runTest;
+</script>

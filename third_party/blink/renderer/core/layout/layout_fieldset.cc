@@ -35,7 +35,7 @@ LayoutFieldset::LayoutFieldset(Element* element) : LayoutBlockFlow(element) {}
 void LayoutFieldset::ComputePreferredLogicalWidths() {
   LayoutBlockFlow::ComputePreferredLogicalWidths();
   // Size-contained elements don't consider their contents for preferred sizing.
-  if (ShouldApplySizeContainment())
+  if (ShouldApplySizeContainment() || DisplayLockInducesSizeContainment())
     return;
 
   if (LayoutBox* legend = FindInFlowLegend()) {

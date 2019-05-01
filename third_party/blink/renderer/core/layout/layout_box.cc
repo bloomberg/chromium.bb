@@ -508,7 +508,7 @@ void LayoutBox::UpdateLayout() {
   DCHECK(NeedsLayout());
   LayoutAnalyzer::Scope analyzer(*this);
 
-  if (LayoutBlockedByDisplayLock())
+  if (LayoutBlockedByDisplayLock(DisplayLockContext::kChildren))
     return;
 
   LayoutObject* child = SlowFirstChild();
@@ -525,7 +525,7 @@ void LayoutBox::UpdateLayout() {
   }
   UpdateAfterLayout();
   ClearNeedsLayout();
-  NotifyDisplayLockDidLayout();
+  NotifyDisplayLockDidLayout(DisplayLockContext::kChildren);
 }
 
 // ClientWidth and ClientHeight represent the interior of an object excluding
@@ -2907,10 +2907,16 @@ static float GetMaxWidthListMarker(const LayoutBox* layout_object) {
 DISABLE_CFI_PERF
 void LayoutBox::ComputeLogicalWidth(
     LogicalExtentComputedValues& computed_values) const {
-  computed_values.extent_ =
-      ShouldApplySizeContainment()
-          ? BorderAndPaddingLogicalWidth() + ScrollbarLogicalWidth()
-          : LogicalWidth();
+  if (DisplayLockInducesSizeContainment()) {
+    computed_values.extent_ =
+        BorderAndPaddingLogicalWidth() + ScrollbarLogicalWidth() +
+        GetDisplayLockContext()->GetLockedContentLogicalWidth();
+  } else if (ShouldApplySizeContainment()) {
+    computed_values.extent_ =
+        BorderAndPaddingLogicalWidth() + ScrollbarLogicalWidth();
+  } else {
+    computed_values.extent_ = LogicalWidth();
+  }
   computed_values.position_ = LogicalLeft();
   computed_values.margins_.start_ = MarginStart();
   computed_values.margins_.end_ = MarginEnd();
@@ -3399,10 +3405,15 @@ static inline const Length& HeightForDocumentElement(const Document& document) {
 
 void LayoutBox::ComputeLogicalHeight(
     LogicalExtentComputedValues& computed_values) const {
-  LayoutUnit height =
-      ShouldApplySizeContainment()
-          ? BorderAndPaddingLogicalHeight() + ScrollbarLogicalHeight()
-          : LogicalHeight();
+  LayoutUnit height;
+  if (DisplayLockInducesSizeContainment()) {
+    height = BorderAndPaddingLogicalHeight() + ScrollbarLogicalHeight() +
+             GetDisplayLockContext()->GetLockedContentLogicalHeight();
+  } else if (ShouldApplySizeContainment()) {
+    height = BorderAndPaddingLogicalHeight() + ScrollbarLogicalHeight();
+  } else {
+    height = LogicalHeight();
+  }
   ComputeLogicalHeight(height, LogicalTop(), computed_values);
 }
 
@@ -3535,12 +3546,20 @@ void LayoutBox::ComputeLogicalHeight(
 }
 
 LayoutUnit LayoutBox::ComputeLogicalHeightWithoutLayout() const {
-  // TODO(cbiesinger): We should probably return something other than just
-  // border + padding, but for now we have no good way to do anything else
-  // without layout, so we just use that.
   LogicalExtentComputedValues computed_values;
-  ComputeLogicalHeight(BorderAndPaddingLogicalHeight(), LayoutUnit(),
-                       computed_values);
+
+  if (!SelfNeedsLayout() && DisplayLockInducesSizeContainment()) {
+    ComputeLogicalHeight(
+        BorderAndPaddingLogicalHeight() +
+            GetDisplayLockContext()->GetLockedContentLogicalHeight(),
+        LayoutUnit(), computed_values);
+  } else {
+    // TODO(cbiesinger): We should probably return something other than just
+    // border + padding, but for now we have no good way to do anything else
+    // without layout, so we just use that.
+    ComputeLogicalHeight(BorderAndPaddingLogicalHeight(), LayoutUnit(),
+                         computed_values);
+  }
   return computed_values.extent_;
 }
 
@@ -5384,7 +5403,8 @@ bool LayoutBox::ChildNeedsRelayoutForPagination(const LayoutBox& child) const {
 void LayoutBox::MarkChildForPaginationRelayoutIfNeeded(
     LayoutBox& child,
     SubtreeLayoutScope& layout_scope) {
-  DCHECK(!child.NeedsLayout());
+  DCHECK(!child.NeedsLayout() ||
+         child.LayoutBlockedByDisplayLock(DisplayLockContext::kChildren));
   LayoutState* layout_state = View()->GetLayoutState();
 
   if (layout_state->PaginationStateChanged() ||
@@ -5669,7 +5689,7 @@ LayoutBox::PaginationBreakability LayoutBox::GetPaginationBreakability() const {
       (Parent() && IsWritingModeRoot()) ||
       (IsOutOfFlowPositioned() &&
        StyleRef().GetPosition() == EPosition::kFixed) ||
-      ShouldApplySizeContainment())
+      ShouldApplySizeContainment() || DisplayLockInducesSizeContainment())
     return kForbidBreaks;
 
   EBreakInside break_value = BreakInside();

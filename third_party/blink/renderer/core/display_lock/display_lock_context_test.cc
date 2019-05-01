@@ -162,7 +162,8 @@ TEST_F(DisplayLockContextTest, LockAfterAppendStyleDirtyBits) {
       element->GetDisplayLockContext()->ShouldStyle(DisplayLockContext::kSelf));
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldStyle(
       DisplayLockContext::kChildren));
-  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldLayout());
+  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldLayout(
+      DisplayLockContext::kChildren));
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint());
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
 
@@ -276,7 +277,8 @@ TEST_F(DisplayLockContextTest, LockedElementIsNotSearchableViaTextFinder) {
   // Sanity checks to ensure the element is locked.
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldStyle(
       DisplayLockContext::kChildren));
-  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldLayout());
+  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldLayout(
+      DisplayLockContext::kChildren));
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint());
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
   EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
@@ -295,7 +297,8 @@ TEST_F(DisplayLockContextTest, LockedElementIsNotSearchableViaTextFinder) {
 
   EXPECT_TRUE(element->GetDisplayLockContext()->ShouldStyle(
       DisplayLockContext::kChildren));
-  EXPECT_TRUE(element->GetDisplayLockContext()->ShouldLayout());
+  EXPECT_TRUE(element->GetDisplayLockContext()->ShouldLayout(
+      DisplayLockContext::kChildren));
   EXPECT_TRUE(element->GetDisplayLockContext()->ShouldPaint());
 
   UpdateAllLifecyclePhasesForTest();
@@ -355,7 +358,8 @@ TEST_F(DisplayLockContextTest, LockedElementIsNotSearchableViaFindInPage) {
   // Sanity checks to ensure the element is locked.
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldStyle(
       DisplayLockContext::kChildren));
-  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldLayout());
+  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldLayout(
+      DisplayLockContext::kChildren));
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint());
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
   EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
@@ -378,7 +382,8 @@ TEST_F(DisplayLockContextTest, LockedElementIsNotSearchableViaFindInPage) {
 
   EXPECT_TRUE(element->GetDisplayLockContext()->ShouldStyle(
       DisplayLockContext::kChildren));
-  EXPECT_TRUE(element->GetDisplayLockContext()->ShouldLayout());
+  EXPECT_TRUE(element->GetDisplayLockContext()->ShouldLayout(
+      DisplayLockContext::kChildren));
   EXPECT_TRUE(element->GetDisplayLockContext()->ShouldPaint());
 
   UpdateAllLifecyclePhasesForTest();
@@ -445,7 +450,8 @@ TEST_F(DisplayLockContextTest,
   // Sanity checks to ensure the element is locked.
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldStyle(
       DisplayLockContext::kChildren));
-  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldLayout());
+  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldLayout(
+      DisplayLockContext::kChildren));
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint());
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
   EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
@@ -741,7 +747,8 @@ TEST_F(DisplayLockContextTest, CallUpdateStyleAndLayoutAfterChange) {
   // Sanity checks to ensure the element is locked.
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldStyle(
       DisplayLockContext::kChildren));
-  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldLayout());
+  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldLayout(
+      DisplayLockContext::kChildren));
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint());
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
   EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
@@ -838,7 +845,8 @@ TEST_F(DisplayLockContextTest, LockedElementAndDescendantsAreNotFocusable) {
   // Sanity checks to ensure the element is locked.
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldStyle(
       DisplayLockContext::kChildren));
-  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldLayout());
+  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldLayout(
+      DisplayLockContext::kChildren));
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint());
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
   EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
@@ -862,7 +870,8 @@ TEST_F(DisplayLockContextTest, LockedElementAndDescendantsAreNotFocusable) {
 
   EXPECT_TRUE(element->GetDisplayLockContext()->ShouldStyle(
       DisplayLockContext::kChildren));
-  EXPECT_TRUE(element->GetDisplayLockContext()->ShouldLayout());
+  EXPECT_TRUE(element->GetDisplayLockContext()->ShouldLayout(
+      DisplayLockContext::kChildren));
   EXPECT_TRUE(element->GetDisplayLockContext()->ShouldPaint());
 
   UpdateAllLifecyclePhasesForTest();
@@ -928,11 +937,11 @@ TEST_F(DisplayLockContextTest, DisplayLockPreventsActivation) {
     container->getDisplayLockForBindings()->commit(script_state);
   }
 
-  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
   EXPECT_FALSE(host->DisplayLockPreventsActivation());
-  EXPECT_TRUE(container->DisplayLockPreventsActivation());
-  EXPECT_TRUE(slotted->DisplayLockPreventsActivation());
+  EXPECT_FALSE(container->DisplayLockPreventsActivation());
+  EXPECT_FALSE(slotted->DisplayLockPreventsActivation());
 
   UpdateAllLifecyclePhasesForTest();
 
@@ -979,7 +988,8 @@ TEST_F(DisplayLockContextTest,
   // Sanity checks to ensure the element is locked.
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldStyle(
       DisplayLockContext::kChildren));
-  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldLayout());
+  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldLayout(
+      DisplayLockContext::kChildren));
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint());
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
   EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);

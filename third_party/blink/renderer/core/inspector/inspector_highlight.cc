@@ -293,11 +293,13 @@ std::unique_ptr<protocol::DictionaryValue> BuildElementInfo(Element* element) {
   if (auto* context = element->GetDisplayLockContext()) {
     if (context->IsLocked()) {
       // If it's a locked element, use the values from the locked frame rect.
-      const LayoutRect& locked_rect = context->GetLockedFrameRect();
-      element_info->setString("nodeWidth",
-                              String::Number((double)locked_rect.Width()));
-      element_info->setString("nodeHeight",
-                              String::Number((double)locked_rect.Height()));
+      // TODO(vmpstr): Verify that these values are correct here.
+      element_info->setString(
+          "nodeWidth",
+          String::Number(context->GetLockedContentLogicalWidth().ToDouble()));
+      element_info->setString(
+          "nodeHeight",
+          String::Number(context->GetLockedContentLogicalHeight().ToDouble()));
     }
     return element_info;
   }

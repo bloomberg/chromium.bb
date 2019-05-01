@@ -9,9 +9,11 @@ post-final-layout values.
 <style>
 #container {
   contain: style layout;
+  background: lightgreen;
+}
+#sizer {
   width: 100px;
   height: 100px;
-  background: lightgreen;
 }
 .child {
   width: 20px;
@@ -41,9 +43,12 @@ async_test((t) => {
   }
 
   function construct(container) {
-    container.appendChild(createChild("0"));
-    container.appendChild(createChild("1"));
-    container.appendChild(createChild("2"));
+    let sizer = document.createElement("div");
+    sizer.id = "sizer";
+    container.appendChild(sizer);
+    sizer.appendChild(createChild("0"));
+    sizer.appendChild(createChild("1"));
+    sizer.appendChild(createChild("2"));
   }
 
   function measureInUpdate() {

@@ -160,6 +160,7 @@ void LayoutReplaced::RecalcVisualOverflow() {
 
 void LayoutReplaced::ComputeIntrinsicSizingInfoForReplacedContent(
     IntrinsicSizingInfo& intrinsic_sizing_info) const {
+  // TODO(crbug.com/953925): How should we size display-locked replaced content?
   if (ShouldApplySizeContainment()) {
     intrinsic_sizing_info.size = FloatSize();
     return;
@@ -658,7 +659,7 @@ LayoutRect LayoutReplaced::PreSnappedRectForPersistentSizing(LayoutRect rect) {
 
 void LayoutReplaced::ComputeIntrinsicSizingInfo(
     IntrinsicSizingInfo& intrinsic_sizing_info) const {
-  DCHECK(!ShouldApplySizeContainment());
+  DCHECK(!ShouldApplySizeContainment() && !DisplayLockInducesSizeContainment());
   intrinsic_sizing_info.size = FloatSize(IntrinsicLogicalWidth().ToFloat(),
                                          IntrinsicLogicalHeight().ToFloat());
 

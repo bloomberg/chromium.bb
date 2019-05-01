@@ -5,8 +5,6 @@
   contain: style layout;
   background: lightgreen;
 }
-#small {
-}
 #large {
   width: 200px;
   height: 200px;
@@ -23,7 +21,7 @@
 }
 </style>
 
-<div id="parent"><div class="contained" id="small"></div></div>
+<div id="parent"><div class="contained" id="small"><div id="large"></div></div></div>
 <div id="spacer"></div>
 
 <script src="../../resources/testharness.js"></script>
@@ -39,7 +37,6 @@ async_test((t) => {
   }
 
   function construct(container) {
-    container.id = "large";
     container.appendChild(createChild("0"));
     container.appendChild(createChild("1"));
     container.appendChild(createChild("2"));
@@ -73,7 +70,7 @@ async_test((t) => {
     let container = document.getElementById("small");
     await container.displayLock.acquire({ timeout: Infinity, size: [100, 100] });
 
-    construct(container);
+    construct(document.getElementById("large"));
 
     container.displayLock.update().then(() => {
       measureInUpdate();

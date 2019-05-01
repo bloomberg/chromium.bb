@@ -419,26 +419,6 @@ void LayoutBlock::UpdateLayout() {
 
   LayoutAnalyzer::Scope analyzer(*this);
 
-  base::Optional<DisplayLockContext::ScopedPendingFrameRect>
-      scoped_pending_frame_rect;
-  if (auto* context = GetDisplayLockContext()) {
-    // In a display locked element, we might be prevented from doing layout in
-    // which case we should abort.
-    if (LayoutBlockedByDisplayLock()) {
-      // TODO(vmpstr): This is probably wrong, we need to do full self-layout
-      // here, but for now just update our frame rect.
-      SetFrameRect(context->GetLockedFrameRect());
-      return;
-    }
-    // If we're display locked, then our layout should go into a pending frame
-    // rect without updating the frame rect visible to the ancestors. The
-    // following scoped object provides this functionality: it puts in place the
-    // (previously updated) pending frame rect. When the object is destroyed, it
-    // saves the pending frame rect in the DisplayLockContext and restores the
-    // frame rect that was in place at the time the lock was acquired.
-    scoped_pending_frame_rect.emplace(context->GetScopedPendingFrameRect());
-  }
-
   bool needs_scroll_anchoring =
       HasOverflowClip() && GetScrollableArea()->ShouldPerformScrollAnchoring();
   if (needs_scroll_anchoring)
@@ -456,7 +436,6 @@ void LayoutBlock::UpdateLayout() {
     ClearLayoutOverflow();
 
   height_available_to_children_changed_ = false;
-  NotifyDisplayLockDidLayout();
 }
 
 bool LayoutBlock::WidthAvailableToChildrenHasChanged() {
@@ -500,6 +479,9 @@ void LayoutBlock::AddVisualOverflowFromChildren() {
 }
 
 void LayoutBlock::AddLayoutOverflowFromChildren() {
+  if (DisplayLockInducesSizeContainment())
+    return;
+
   if (ChildrenInline())
     To<LayoutBlockFlow>(this)->AddLayoutOverflowFromInlineChildren();
   else
@@ -696,6 +678,9 @@ bool LayoutBlock::SimplifiedLayout() {
         return false;
     }
 
+    if (LayoutBlockedByDisplayLock(DisplayLockContext::kChildren))
+      return false;
+
     TextAutosizer::LayoutScope text_autosizer_layout_scope(this);
 
     // Lay out positioned descendants or objects that just need to recompute
@@ -829,6 +814,9 @@ static bool NeedsLayoutDueToStaticPosition(LayoutBox* child) {
 
 void LayoutBlock::LayoutPositionedObjects(bool relayout_children,
                                           PositionedLayoutBehavior info) {
+  if (LayoutBlockedByDisplayLock(DisplayLockContext::kChildren))
+    return;
+
   TrackedLayoutBoxListHashSet* positioned_descendants = PositionedObjects();
   if (!positioned_descendants)
     return;
@@ -1456,6 +1444,13 @@ void LayoutBlock::ComputeIntrinsicLogicalWidths(
     LayoutUnit& min_logical_width,
     LayoutUnit& max_logical_width) const {
   int scrollbar_width = ScrollbarLogicalWidth();
+
+  if (DisplayLockInducesSizeContainment()) {
+    min_logical_width = max_logical_width =
+        LayoutUnit(scrollbar_width) +
+        GetDisplayLockContext()->GetLockedContentLogicalWidth();
+    return;
+  }
 
   // Size-contained elements don't consider their contents for preferred sizing.
   if (ShouldApplySizeContainment()) {

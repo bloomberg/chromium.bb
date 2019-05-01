@@ -493,6 +493,7 @@ bool FlexLayoutAlgorithm::ShouldApplyMinSizeAutoForChild(
     return false;
 
   return !child.ShouldApplySizeContainment() &&
+         !child.DisplayLockInducesSizeContainment() &&
          MainAxisOverflowForChild(child) == EOverflow::kVisible;
 }
 

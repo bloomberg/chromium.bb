@@ -392,14 +392,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     SetLocation(rect.Location());
     SetSize(rect.Size());
   }
-  // Similar to SetFrameRect(), except it avoids notifying other code about size
-  // and location changes. This should only be used from a DisplayLockContext to
-  // temporarily put in place a pending frame rect which is restored at the end
-  // of layout. Code outside of layout should not observe location or size
-  // changes.
-  void SetFrameRectForDisplayLock(const LayoutRect& rect) {
-    frame_rect_ = rect;
-  }
 
   // Note that those functions have their origin at this box's CSS border box.
   // As such their location doesn't account for 'top'/'left'. About its

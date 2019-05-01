@@ -33,7 +33,7 @@ async_test((t) => {
     t.step(() => assert_true(container.displayLock.locked, "context after update is locked"));
 
     let commit_promise = container.displayLock.commit();
-    t.step(() => assert_true(container.displayLock.locked, "context during commit is locked"));
+    t.step(() => assert_false(container.displayLock.locked, "context during commit is unlocked"));
 
     await commit_promise;
     t.step(() => assert_false(container.displayLock.locked, "context after commit is unlocked"));

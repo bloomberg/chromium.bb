@@ -395,15 +395,18 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   void AssertLaidOut() const {
 #ifndef NDEBUG
-    if (NeedsLayout() && !LayoutBlockedByDisplayLock())
+    if (NeedsLayout() &&
+        !LayoutBlockedByDisplayLock(DisplayLockContext::kChildren))
       ShowLayoutTreeForThis();
 #endif
-    SECURITY_DCHECK(!NeedsLayout() || LayoutBlockedByDisplayLock());
+    SECURITY_DCHECK(!NeedsLayout() ||
+                    LayoutBlockedByDisplayLock(DisplayLockContext::kChildren));
   }
 
   void AssertSubtreeIsLaidOut() const {
     for (const LayoutObject* layout_object = this; layout_object;
-         layout_object = layout_object->LayoutBlockedByDisplayLock()
+         layout_object = layout_object->LayoutBlockedByDisplayLock(
+                             DisplayLockContext::kChildren)
                              ? layout_object->NextInPreOrderAfterChildren()
                              : layout_object->NextInPreOrder()) {
       layout_object->AssertLaidOut();
@@ -1231,10 +1234,12 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       MarkingBehavior = kMarkContainerChain,
       SubtreeLayoutScope* = nullptr);
 
-  void ClearNeedsLayoutWithoutPaintInvalidation();
+  void ClearNeedsLayoutWithoutPaintInvalidation(
+      bool clear_child_dirty_bits = true);
   // |ClearNeedsLayout()| calls |SetShouldCheckForPaintInvalidation()|.
-  void ClearNeedsLayout();
-  void ClearNeedsLayoutWithFullPaintInvalidation();
+  void ClearNeedsLayout(bool clear_child_dirty_bits = true);
+  void ClearNeedsLayoutWithFullPaintInvalidation(
+      bool clear_child_dirty_bits = true);
 
   void SetChildNeedsLayout(MarkingBehavior = kMarkContainerChain,
                            SubtreeLayoutScope* = nullptr);
@@ -2249,9 +2254,15 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     bitfields_.SetOutlineMayBeAffectedByDescendants(b);
   }
 
-  bool LayoutBlockedByDisplayLock() const {
+  bool LayoutBlockedByDisplayLock(
+      DisplayLockContext::LifecycleTarget target) const {
     auto* context = GetDisplayLockContext();
-    return context && !context->ShouldLayout();
+    return context && !context->ShouldLayout(target);
+  }
+
+  bool DisplayLockInducesSizeContainment() const {
+    auto* context = GetDisplayLockContext();
+    return context && context->IsLocked();
   }
 
   bool PrePaintBlockedByDisplayLock() const {
@@ -2455,9 +2466,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   LayoutSize OffsetFromScrollableContainer(const LayoutObject*,
                                            bool ignore_scroll_offset) const;
 
-  void NotifyDisplayLockDidLayout() {
+  void NotifyDisplayLockDidLayout(DisplayLockContext::LifecycleTarget target) {
     if (auto* context = GetDisplayLockContext())
-      context->DidLayout();
+      context->DidLayout(target);
   }
 
   bool BackgroundIsKnownToBeObscured() const {
@@ -3112,18 +3123,22 @@ inline void LayoutObject::SetNeedsLayoutAndFullPaintInvalidation(
   SetShouldDoFullPaintInvalidation();
 }
 
-inline void LayoutObject::ClearNeedsLayoutWithoutPaintInvalidation() {
+inline void LayoutObject::ClearNeedsLayoutWithoutPaintInvalidation(
+    bool clear_child_dirty_bits) {
   // Set flags for later stages/cycles.
   SetEverHadLayout();
 
   // Clear needsLayout flags.
   SetSelfNeedsLayoutForStyle(false);
   SetSelfNeedsLayoutForAvailableSpace(false);
-  SetPosChildNeedsLayout(false);
-  SetNeedsSimplifiedNormalFlowLayout(false);
-  SetNormalChildNeedsLayout(false);
   SetNeedsPositionedMovementLayout(false);
   SetAncestorLineBoxDirty(false);
+
+  if (clear_child_dirty_bits) {
+    SetPosChildNeedsLayout(false);
+    SetNormalChildNeedsLayout(false);
+    SetNeedsSimplifiedNormalFlowLayout(false);
+  }
 
 #if DCHECK_IS_ON()
   CheckBlockPositionedObjectsNeedLayout();
@@ -3132,13 +3147,14 @@ inline void LayoutObject::ClearNeedsLayoutWithoutPaintInvalidation() {
   SetScrollAnchorDisablingStyleChanged(false);
 }
 
-inline void LayoutObject::ClearNeedsLayout() {
-  ClearNeedsLayoutWithoutPaintInvalidation();
+inline void LayoutObject::ClearNeedsLayout(bool clear_child_dirty_bits) {
+  ClearNeedsLayoutWithoutPaintInvalidation(clear_child_dirty_bits);
   SetShouldCheckForPaintInvalidation();
 }
 
-inline void LayoutObject::ClearNeedsLayoutWithFullPaintInvalidation() {
-  ClearNeedsLayoutWithoutPaintInvalidation();
+inline void LayoutObject::ClearNeedsLayoutWithFullPaintInvalidation(
+    bool clear_child_dirty_bits) {
+  ClearNeedsLayoutWithoutPaintInvalidation(clear_child_dirty_bits);
   SetShouldDoFullPaintInvalidation();
 }
 

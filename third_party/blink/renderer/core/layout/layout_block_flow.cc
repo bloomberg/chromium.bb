@@ -444,6 +444,9 @@ void LayoutBlockFlow::UpdateBlockLayout(bool relayout_children) {
   DCHECK(NeedsLayout());
   DCHECK(IsInlineBlockOrInlineTable() || !IsInline());
 
+  if (LayoutBlockedByDisplayLock(DisplayLockContext::kSelf))
+    return;
+
   if (RuntimeEnabledFeatures::TrackLayoutPassesPerBlockEnabled())
     IncrementLayoutPassCount();
 
@@ -537,8 +540,10 @@ void LayoutBlockFlow::UpdateBlockLayout(bool relayout_children) {
   if (IsHTMLDialogElement(GetNode()) && IsOutOfFlowPositioned())
     PositionDialog();
 
-  ClearNeedsLayout();
+  // Only clear child dirty bits, if we allowed child layout.
+  ClearNeedsLayout(!LayoutBlockedByDisplayLock(DisplayLockContext::kChildren));
   UpdateIsSelfCollapsing();
+  NotifyDisplayLockDidLayout(DisplayLockContext::kSelf);
 }
 
 DISABLE_CFI_PERF
@@ -599,6 +604,9 @@ void LayoutBlockFlow::LayoutChildren(bool relayout_children,
                                      SubtreeLayoutScope& layout_scope) {
   ResetLayout();
 
+  if (LayoutBlockedByDisplayLock(DisplayLockContext::kChildren))
+    return;
+
   LayoutUnit before_edge = BorderBefore() + PaddingBefore();
   LayoutUnit after_edge = BorderAfter() + PaddingAfter();
 
@@ -619,6 +627,8 @@ void LayoutBlockFlow::LayoutChildren(bool relayout_children,
   if (LowestFloatLogicalBottom() > (LogicalHeight() - after_edge) &&
       CreatesNewFormattingContext())
     SetLogicalHeight(LowestFloatLogicalBottom() + after_edge);
+
+  NotifyDisplayLockDidLayout(DisplayLockContext::kChildren);
 }
 
 void LayoutBlockFlow::AddOverhangingFloatsFromChildren(
@@ -2377,7 +2387,8 @@ bool LayoutBlockFlow::MustDiscardMarginAfter() const {
 
 bool LayoutBlockFlow::MustDiscardMarginBeforeForChild(
     const LayoutBox& child) const {
-  DCHECK(!child.SelfNeedsLayout() || child.LayoutBlockedByDisplayLock());
+  DCHECK(!child.SelfNeedsLayout() ||
+         child.LayoutBlockedByDisplayLock(DisplayLockContext::kSelf));
   if (!child.IsWritingModeRoot()) {
     auto* child_layout_block = DynamicTo<LayoutBlockFlow>(&child);
     return child_layout_block ? child_layout_block->MustDiscardMarginBefore()
@@ -2400,7 +2411,8 @@ bool LayoutBlockFlow::MustDiscardMarginBeforeForChild(
 
 bool LayoutBlockFlow::MustDiscardMarginAfterForChild(
     const LayoutBox& child) const {
-  DCHECK(!child.SelfNeedsLayout() || child.LayoutBlockedByDisplayLock());
+  DCHECK(!child.SelfNeedsLayout() ||
+         child.LayoutBlockedByDisplayLock(DisplayLockContext::kSelf));
   if (!child.IsWritingModeRoot()) {
     auto* child_layout_block = DynamicTo<LayoutBlockFlow>(&child);
     return child_layout_block ? child_layout_block->MustDiscardMarginAfter()
@@ -2442,7 +2454,8 @@ void LayoutBlockFlow::SetMaxMarginAfterValues(LayoutUnit pos, LayoutUnit neg) {
 
 bool LayoutBlockFlow::MustSeparateMarginBeforeForChild(
     const LayoutBox& child) const {
-  DCHECK(!child.SelfNeedsLayout() || child.LayoutBlockedByDisplayLock());
+  DCHECK(!child.SelfNeedsLayout() ||
+         child.LayoutBlockedByDisplayLock(DisplayLockContext::kSelf));
   const ComputedStyle& child_style = child.StyleRef();
   if (!child.IsWritingModeRoot())
     return child_style.MarginBeforeCollapse() == EMarginCollapse::kSeparate;
@@ -2455,7 +2468,8 @@ bool LayoutBlockFlow::MustSeparateMarginBeforeForChild(
 
 bool LayoutBlockFlow::MustSeparateMarginAfterForChild(
     const LayoutBox& child) const {
-  DCHECK(!child.SelfNeedsLayout() || child.LayoutBlockedByDisplayLock());
+  DCHECK(!child.SelfNeedsLayout() ||
+         child.LayoutBlockedByDisplayLock(DisplayLockContext::kSelf));
   const ComputedStyle& child_style = child.StyleRef();
   if (!child.IsWritingModeRoot())
     return child_style.MarginAfterCollapse() == EMarginCollapse::kSeparate;
@@ -4902,7 +4916,9 @@ void LayoutBlockFlow::ClearOffsetMappingIfNeeded() {
 
 const NGOffsetMapping* LayoutBlockFlow::GetOffsetMapping() const {
   DCHECK(!IsLayoutNGObject());
-  CHECK(!NeedsLayout());
+  CHECK(!SelfNeedsLayout());
+  CHECK(!NeedsLayout() ||
+        LayoutBlockedByDisplayLock(DisplayLockContext::kChildren));
   return rare_data_ ? rare_data_->offset_mapping_.get() : nullptr;
 }
 

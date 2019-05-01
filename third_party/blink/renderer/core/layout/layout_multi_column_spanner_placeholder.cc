@@ -109,6 +109,7 @@ LayoutUnit LayoutMultiColumnSpannerPlaceholder::MinPreferredLogicalWidth()
   // the flow thread to calculate the correct preferred width (to honor
   // column-count, column-width and column-gap). Since spanner placeholders are
   // siblings of the flow thread, we need this check.
+  // TODO(crbug.com/953919): What should we return for display-locked content?
   if (MultiColumnBlockFlow()->ShouldApplySizeContainment())
     return LayoutUnit();
   return layout_object_in_flow_thread_->MinPreferredLogicalWidth();
@@ -117,6 +118,7 @@ LayoutUnit LayoutMultiColumnSpannerPlaceholder::MinPreferredLogicalWidth()
 LayoutUnit LayoutMultiColumnSpannerPlaceholder::MaxPreferredLogicalWidth()
     const {
   // See above.
+  // TODO(crbug.com/953919): What should we return for display-locked content?
   if (MultiColumnBlockFlow()->ShouldApplySizeContainment())
     return LayoutUnit();
   return layout_object_in_flow_thread_->MaxPreferredLogicalWidth();
