@@ -132,7 +132,7 @@ public class DownloadProgressInfoBar extends InfoBar {
             return;
         }
 
-        mAnimatedDrawable = AnimatedVectorDrawableCompat.create(getContext(), mInfo.icon);
+        mAnimatedDrawable = AnimatedVectorDrawableCompat.create(layout.getContext(), mInfo.icon);
         mAnimatedDrawable.registerAnimationCallback(new Animatable2Compat.AnimationCallback() {
             @Override
             public void onAnimationEnd(Drawable drawable) {
