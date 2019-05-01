@@ -107,15 +107,14 @@ std::string BrowserDesktopWindowTreeHostWin::GetWorkspace() const {
     GUID workspace_guid;
     HRESULT hr = virtual_desktop_manager_->GetWindowDesktopId(GetHWND(),
                                                               &workspace_guid);
-    if (SUCCEEDED(hr)) {
-      LPOLESTR workspace_widestr;
-      StringFromCLSID(workspace_guid, &workspace_widestr);
-      workspace_id = base::WideToUTF8(workspace_widestr);
-      workspace_ = workspace_id;
-      CoTaskMemFree(workspace_widestr);
-    } else {
+    if (FAILED(hr) || workspace_guid == GUID_NULL)
       return workspace_.value_or("");
-    }
+
+    LPOLESTR workspace_widestr;
+    StringFromCLSID(workspace_guid, &workspace_widestr);
+    workspace_id = base::WideToUTF8(workspace_widestr);
+    workspace_ = workspace_id;
+    CoTaskMemFree(workspace_widestr);
   }
   return workspace_id;
 }
