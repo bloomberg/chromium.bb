@@ -18,6 +18,7 @@
 #include "components/cronet/cronet_url_request_context.h"
 #include "components/cronet/native/generated/cronet.idl_impl_struct.h"
 #include "components/cronet/native/include/cronet_c.h"
+#include "components/cronet/native/runnables.h"
 #include "components/cronet/url_request_context_config.h"
 #include "components/cronet/version.h"
 #include "components/grpc_support/include/bidirectional_stream_c.h"
@@ -285,6 +286,35 @@ void Cronet_EngineImpl::RemoveRequestFinishedListener(
   if (request_finished_registrations_.erase(listener) != 1) {
     LOG(DFATAL) << "Asked to erase non-existent RequestFinishedInfoListener "
                 << listener << ".";
+  }
+}
+
+using RequestInfo = base::RefCountedData<Cronet_RequestFinishedInfo>;
+
+void Cronet_EngineImpl::ReportRequestFinished(
+    scoped_refptr<RequestInfo> request_info) {
+  base::flat_map<Cronet_RequestFinishedInfoListenerPtr, Cronet_ExecutorPtr>
+      registrations;
+  {
+    base::AutoLock lock(lock_);
+    // We copy under to avoid calling callbacks (which may run on direct
+    // executors and call Engine methods) with the lock held.
+    //
+    // The map holds only pointers and shouldn't be very large.
+    registrations = request_finished_registrations_;
+  }
+  for (auto& pair : registrations) {
+    auto* request_finished_listener = pair.first;
+    auto* request_finished_executor = pair.second;
+
+    request_finished_executor->Execute(
+        new cronet::OnceClosureRunnable(base::BindOnce(
+            [](scoped_refptr<RequestInfo> request_info,
+               Cronet_RequestFinishedInfoListenerPtr
+                   request_finished_listener) {
+              request_finished_listener->OnRequestFinished(&request_info->data);
+            },
+            request_info, request_finished_listener)));
   }
 }
 

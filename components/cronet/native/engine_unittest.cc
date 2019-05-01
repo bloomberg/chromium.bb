@@ -13,6 +13,9 @@ namespace cronet {
 
 namespace {
 
+// Fake sent byte count for metrics testing.
+constexpr int64_t kSentByteCount = 12345;
+
 // App implementation of Cronet_Executor methods.
 void TestExecutor_Execute(Cronet_ExecutorPtr self, Cronet_RunnablePtr command) {
   CHECK(self);
@@ -20,11 +23,24 @@ void TestExecutor_Execute(Cronet_ExecutorPtr self, Cronet_RunnablePtr command) {
   Cronet_Runnable_Destroy(command);
 }
 
+// Context for TestRequestInfoListener_OnRequestFinished().
+using TestOnRequestFinishedClientContext = int;
+
 // App implementation of Cronet_RequestFinishedInfoListener methods.
+//
+// Expects a client context of type TestOnRequestFinishedClientContext -- will
+// increment this value.
 void TestRequestInfoListener_OnRequestFinished(
     Cronet_RequestFinishedInfoListenerPtr self,
     Cronet_RequestFinishedInfoPtr request_info) {
   CHECK(self);
+  Cronet_ClientContext context =
+      Cronet_RequestFinishedInfoListener_GetClientContext(self);
+  auto* listener_run_count =
+      static_cast<TestOnRequestFinishedClientContext*>(context);
+  ++(*listener_run_count);
+  auto* metrics = Cronet_RequestFinishedInfo_metrics_get(request_info);
+  EXPECT_EQ(kSentByteCount, Cronet_Metrics_sent_byte_count_get(metrics));
 }
 
 TEST(EngineUnitTest, HasNoRequestFinishedInfoListener) {
@@ -54,6 +70,43 @@ TEST(EngineUnitTest, HasRequestFinishedInfoListener) {
   Cronet_Executor_Destroy(executor);
   Cronet_RequestFinishedInfoListener_Destroy(listener);
   Cronet_Engine_Destroy(engine);
+}
+
+TEST(EngineUnitTest, RequestFinishedInfoListeners) {
+  using RequestInfo = base::RefCountedData<Cronet_RequestFinishedInfo>;
+  constexpr int kNumListeners = 5;
+  TestOnRequestFinishedClientContext listener_run_count = 0;
+
+  Cronet_EnginePtr engine = Cronet_Engine_Create();
+  Cronet_EngineParamsPtr engine_params = Cronet_EngineParams_Create();
+
+  Cronet_RequestFinishedInfoListenerPtr listeners[kNumListeners];
+  Cronet_ExecutorPtr executor =
+      Cronet_Executor_CreateWith(TestExecutor_Execute);
+  for (int i = 0; i < kNumListeners; ++i) {
+    listeners[i] = Cronet_RequestFinishedInfoListener_CreateWith(
+        TestRequestInfoListener_OnRequestFinished);
+    Cronet_RequestFinishedInfoListener_SetClientContext(listeners[i],
+                                                        &listener_run_count);
+    Cronet_Engine_AddRequestFinishedListener(engine, listeners[i], executor);
+  }
+
+  // Simulate the UrlRequest reporting metrics to the engine.
+  auto* engine_impl = static_cast<Cronet_EngineImpl*>(engine);
+  auto request_info = base::MakeRefCounted<RequestInfo>();
+  auto metrics = std::make_unique<Cronet_Metrics>();
+  metrics->sent_byte_count = kSentByteCount;
+  request_info->data.metrics.emplace(*metrics);
+  engine_impl->ReportRequestFinished(request_info);
+  EXPECT_EQ(kNumListeners, listener_run_count);
+
+  for (auto* listener : listeners) {
+    Cronet_RequestFinishedInfoListener_Destroy(listener);
+    Cronet_Engine_RemoveRequestFinishedListener(engine, listener);
+  }
+  Cronet_Executor_Destroy(executor);
+  Cronet_Engine_Destroy(engine);
+  Cronet_EngineParams_Destroy(engine_params);
 }
 
 // EXPECT_DEBUG_DEATH(), used by the tests below, isn't available on iOS.
