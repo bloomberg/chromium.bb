@@ -32,7 +32,7 @@
 #include "components/dom_distiller/core/proto/distilled_article.pb.h"
 #include "components/dom_distiller/core/proto/distilled_page.pb.h"
 #include "components/dom_distiller/core/task_tracker.h"
-#include "components/keyed_service/core/test_simple_factory_key.h"
+#include "components/keyed_service/core/simple_key_map.h"
 #include "components/leveldb_proto/content/proto_database_provider_factory.h"
 #include "components/leveldb_proto/public/proto_database.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
@@ -128,7 +128,6 @@ const int kMaxExtractorTasks = 8;
 
 std::unique_ptr<DomDistillerService> CreateDomDistillerService(
     content::BrowserContext* context,
-    SimpleFactoryKey* key,
     sync_preferences::TestingPrefServiceSyncable* pref_service,
     const base::FilePath& db_path,
     const FileToUrlMap& file_to_url_map) {
@@ -138,6 +137,8 @@ std::unique_ptr<DomDistillerService> CreateDomDistillerService(
   // Setting up PrefService for DistilledPagePrefs.
   DistilledPagePrefs::RegisterProfilePrefs(pref_service->registry());
 
+  SimpleFactoryKey* key =
+      SimpleKeyMap::GetInstance()->GetForBrowserContext(context);
   auto* db_provider =
       leveldb_proto::ProtoDatabaseProviderFactory::GetForKey(key);
 
@@ -357,14 +358,11 @@ class ContentExtractor : public ContentBrowserTest {
         command_line, &file_to_url_map);
     content::BrowserContext* context =
         shell()->web_contents()->GetBrowserContext();
-    key_ = std::make_unique<TestSimpleFactoryKey>(context->GetPath(),
-                                                  context->IsOffTheRecord());
     pref_service_ =
         std::make_unique<sync_preferences::TestingPrefServiceSyncable>();
 
-    service_ =
-        CreateDomDistillerService(context, key_.get(), pref_service_.get(),
-                                  db_dir_.GetPath(), file_to_url_map);
+    service_ = CreateDomDistillerService(context, pref_service_.get(),
+                                         db_dir_.GetPath(), file_to_url_map);
     PumpQueue();
   }
 
@@ -439,8 +437,6 @@ class ContentExtractor : public ContentBrowserTest {
   size_t pending_tasks_;
   size_t max_tasks_;
   size_t next_request_;
-
-  std::unique_ptr<SimpleFactoryKey> key_;
 
   base::ScopedTempDir db_dir_;
   std::unique_ptr<net::ScopedDefaultHostResolverProc>
