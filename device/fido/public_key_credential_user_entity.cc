@@ -61,7 +61,8 @@ cbor::Value PublicKeyCredentialUserEntity::ConvertToCBOR(
   user_map.emplace(kEntityIdMapKey, user.id);
   if (user.name)
     user_map.emplace(kEntityNameMapKey, *user.name);
-  if (user.icon_url)
+  // Empty icon URLs result in CTAP1_ERR_INVALID_LENGTH on some security keys.
+  if (user.icon_url && !user.icon_url->is_empty())
     user_map.emplace(kIconUrlMapKey, user.icon_url->spec());
   if (user.display_name)
     user_map.emplace(kDisplayNameMapKey, *user.display_name);
