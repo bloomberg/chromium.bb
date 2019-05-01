@@ -89,7 +89,6 @@ void AddOnboardingStrings(content::WebUIDataSource* html_source) {
       {"bookmarksAdded", IDS_ONBOARDING_WELCOME_BOOKMARKS_ADDED},
       {"bookmarkRemoved", IDS_ONBOARDING_WELCOME_BOOKMARK_REMOVED},
       {"bookmarksRemoved", IDS_ONBOARDING_WELCOME_BOOKMARKS_REMOVED},
-      {"bookmarkReplaced", IDS_ONBOARDING_WELCOME_BOOKMARK_REPLACED},
       {"defaultBrowserChanged", IDS_ONBOARDING_DEFAULT_BROWSER_CHANGED},
       {"getStarted", IDS_ONBOARDING_WELCOME_GET_STARTED},
       {"headerText", IDS_WELCOME_HEADER},

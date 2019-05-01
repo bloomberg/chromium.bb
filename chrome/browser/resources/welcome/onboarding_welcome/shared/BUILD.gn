@@ -12,18 +12,6 @@ js_type_check("closure_compile") {
   ]
 }
 
-js_library("app_chooser") {
-  deps = [
-    ":bookmark_proxy",
-    ":module_metrics_proxy",
-    ":step_indicator",
-    "//third_party/polymer/v1_0/components-chromium/iron-a11y-announcer:iron-a11y-announcer-extracted",
-    "//ui/webui/resources/js:cr",
-    "//ui/webui/resources/js:i18n_behavior",
-    "//ui/webui/resources/js:util",
-  ]
-}
-
 js_library("bookmark_proxy") {
   deps = [
     "//ui/webui/resources/js:cr",

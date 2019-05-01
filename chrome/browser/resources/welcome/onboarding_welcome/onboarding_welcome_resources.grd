@@ -151,14 +151,6 @@
                  type="chrome_html"
                  compress="gzip"
                  preprocess="true"/>
-      <structure name="IDR_NUX_SHARED_APP_CHOOSER_HTML"
-                 file="shared/app_chooser.html"
-                 compress="gzip"
-                 type="chrome_html" />
-      <structure name="IDR_NUX_SHARED_APP_CHOOSER_JS"
-                 file="shared/app_chooser.js"
-                 compress="gzip"
-                 type="chrome_html" />
       <structure name="IDR_WELCOME_ONBOARDING_WELCOME_SHARED_ACTION_LINK_STYLE_JS"
                  file="shared/action_link_style.js"
                  compress="gzip"

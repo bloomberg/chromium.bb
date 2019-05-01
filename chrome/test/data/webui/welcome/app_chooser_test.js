@@ -53,19 +53,17 @@ cr.define('onboarding_welcome_app_chooser', function() {
       testAppBrowserProxy = new TestNuxAppProxy();
       testAppMetricsProxy = new TestMetricsProxy();
       testBookmarkBrowserProxy = new TestBookmarkProxy();
+
+      nux.GoogleAppProxyImpl.instance_ = testAppBrowserProxy;
+      nux.GoogleAppsMetricsProxyImpl.instance_ = testAppMetricsProxy;
       nux.BookmarkProxyImpl.instance_ = testBookmarkBrowserProxy;
-      // Reset w/ new proxy for test.
       nux.BookmarkBarManager.instance_ = new nux.BookmarkBarManager();
 
       testAppBrowserProxy.setAppList(apps);
 
       PolymerTest.clearBody();
-      testElement = document.createElement('app-chooser');
+      testElement = document.createElement('nux-google-apps');
       document.body.appendChild(testElement);
-      testElement.singleSelect = false;  // All apps can be selected.
-      testElement.appProxy = testAppBrowserProxy;
-      testElement.metricsManager =
-          new nux.ModuleMetricsManager(testAppMetricsProxy);
       // Simulate nux-app's onRouteEnter call.
       testElement.onRouteEnter();
       await testAppMetricsProxy.whenCalled('recordPageShown');

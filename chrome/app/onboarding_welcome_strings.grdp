@@ -22,9 +22,6 @@
   <message name="IDS_ONBOARDING_WELCOME_BOOKMARKS_REMOVED" desc="String read for accessibility to inform the user that several bookmarks were removed.">
     Bookmarks removed
   </message>
-  <message name="IDS_ONBOARDING_WELCOME_BOOKMARK_REPLACED" desc="String read for accessibility to inform the user a bookmark was replaced.">
-    Bookmark replaced
-  </message>
   <message name="IDS_ONBOARDING_DEFAULT_BROWSER_CHANGED" desc="text notifying users that their default browser is successfully changed to Chrome">
     Chrome is your default browser
   </message>

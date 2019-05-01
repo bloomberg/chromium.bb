@@ -33,7 +33,7 @@ const OnboardingWelcomeBrowserTest = class extends PolymerTest {
 OnboardingWelcomeAppChooserTest = class extends OnboardingWelcomeBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://welcome/shared/app_chooser.html';
+    return 'chrome://welcome/google_apps/nux_google_apps.html';
   }
 
   /** @override */
