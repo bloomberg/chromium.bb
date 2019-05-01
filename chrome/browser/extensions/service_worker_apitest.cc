@@ -15,6 +15,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/lazy_background_page_test_util.h"
@@ -58,6 +59,7 @@
 #include "extensions/browser/service_worker_task_queue.h"
 #include "extensions/common/api/test.h"
 #include "extensions/common/value_builder.h"
+#include "extensions/common/verifier_formats.h"
 #include "extensions/test/background_page_watcher.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
@@ -1133,6 +1135,76 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, TabsCreate) {
   // Check extension shutdown path.
   UnloadExtension(extension->id());
   EXPECT_EQ(starting_tab_count, browser()->tab_strip_model()->count());
+}
+
+// Tests that updating a packed extension with modified scripts works
+// properly -- we expect that the new script will execute, rather than the
+// previous one.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, UpdatePackedExtension) {
+  // Extensions APIs from SW are only enabled on trunk.
+  ScopedCurrentChannel current_channel_override(version_info::Channel::UNKNOWN);
+  constexpr char kManifest1[] =
+      R"({
+           "name": "Test Extension",
+           "manifest_version": 2,
+           "version": "0.1",
+           "background": {"service_worker": "script.js"}
+         })";
+  // This script installs an event listener for updates to the extension with
+  // a callback that forces itself to reload.
+  constexpr char kScript[] =
+      R"(
+         chrome.runtime.onUpdateAvailable.addListener(function(details) {
+           chrome.runtime.reload();
+         });
+         chrome.test.sendMessage('ready1');
+        )";
+
+  std::string id;
+  TestExtensionDir test_dir;
+
+  // Write the manifest and script files and load the extension.
+  test_dir.WriteManifest(kManifest1);
+  test_dir.WriteFile(FILE_PATH_LITERAL("script.js"), kScript);
+
+  {
+    ExtensionTestMessageListener ready_listener("ready1", false);
+    base::FilePath path = test_dir.Pack();
+    const Extension* extension = LoadExtension(path);
+    ASSERT_TRUE(extension);
+
+    EXPECT_TRUE(ready_listener.WaitUntilSatisfied());
+    id = extension->id();
+  }
+
+  constexpr char kManifest2[] =
+      R"({
+           "name": "Test Extension",
+           "manifest_version": 2,
+           "version": "0.2",
+           "background": {"service_worker": "script.js"}
+         })";
+  // Rewrite the manifest and script files with a version change in the manifest
+  // file. After reloading the extension, the old version of the extension
+  // should detect the update, force the reload, and the new script should
+  // execute.
+  test_dir.WriteManifest(kManifest2);
+  test_dir.WriteFile(FILE_PATH_LITERAL("script.js"),
+                     "chrome.test.sendMessage('ready2');");
+  {
+    ExtensionTestMessageListener ready_listener("ready2", false);
+    base::FilePath path = test_dir.Pack();
+    ExtensionService* const extension_service =
+        ExtensionSystem::Get(profile())->extension_service();
+    EXPECT_TRUE(extension_service->UpdateExtension(
+        CRXFileInfo(id, GetTestVerifierFormat(), path), true, nullptr));
+    EXPECT_TRUE(ready_listener.WaitUntilSatisfied());
+    EXPECT_EQ("0.2", ExtensionRegistry::Get(profile())
+                         ->enabled_extensions()
+                         .GetByID(id)
+                         ->version()
+                         .GetString());
+  }
 }
 
 // Tests that updating an unpacked extension with modified scripts works
