@@ -166,6 +166,12 @@ ArcApps::ArcApps(Profile* profile)
     return;
   }
 
+  apps::mojom::AppServicePtr& app_service =
+      apps::AppServiceProxyFactory::GetForProfile(profile)->AppService();
+  if (!app_service.is_bound()) {
+    return;
+  }
+
   prefs_ = ArcAppListPrefs::Get(profile);
   if (!prefs_) {
     return;
@@ -175,9 +181,8 @@ ArcApps::ArcApps(Profile* profile)
 
   apps::mojom::PublisherPtr publisher;
   binding_.Bind(mojo::MakeRequest(&publisher));
-  apps::AppServiceProxyFactory::GetForProfile(profile)
-      ->AppService()
-      ->RegisterPublisher(std::move(publisher), apps::mojom::AppType::kArc);
+  app_service->RegisterPublisher(std::move(publisher),
+                                 apps::mojom::AppType::kArc);
 }
 
 ArcApps::~ArcApps() {
