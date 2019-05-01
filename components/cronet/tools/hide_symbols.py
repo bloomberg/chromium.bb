@@ -120,11 +120,6 @@ def main():
   ]
   subprocess.check_call(command)
 
-  ret = os.system('xcrun nm -u "' + options.output_obj + '" | grep ___cxa_pure_virtual')
-  if ret == 0:
-    print "ERROR: Found undefined libc++ symbols, is libc++ indcluded in dependencies?"
-    exit(2)
-
 
 if __name__ == "__main__":
   main()
