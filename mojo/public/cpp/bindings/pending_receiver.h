@@ -73,6 +73,12 @@ class PendingReceiver {
   // effectively be dropped.
   void reset() { pipe_.reset(); }
 
+  // Like above but provides a reason for the disconnection.
+  void ResetWithReason(uint32_t reason, const std::string& description) {
+    InterfaceRequest<Interface>(PassPipe())
+        .ResetWithReason(reason, description);
+  }
+
   // Passes ownership of this PendingReceiver's message pipe handle. After this
   // call, the PendingReceiver is no longer in a valid state and can no longer
   // be used to bind a Receiver.

@@ -121,6 +121,17 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) NullRemote {
   }
 };
 
+// Fuses a PendingReceiver<T> endpoint with a PendingRemote<T> endpoint. The
+// endpoints must belong to two different message pipes, and this effectively
+// fuses two pipes into a single pipe. Returns |true| on success or |false| on
+// failure.
+template <typename Interface>
+bool FusePipes(PendingReceiver<Interface> receiver,
+               PendingRemote<Interface> remote) {
+  MojoResult result = FuseMessagePipes(receiver.PassPipe(), remote.PassPipe());
+  return result == MOJO_RESULT_OK;
+}
+
 }  // namespace mojo
 
 #endif  // MOJO_PUBLIC_CPP_BINDINGS_PENDING_REMOTE_H_

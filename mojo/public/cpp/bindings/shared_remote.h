@@ -190,6 +190,11 @@ class SharedRemote {
   Interface* operator->() const { return get(); }
   Interface& operator*() const { return *get(); }
 
+  // Clears this SharedRemote. Note that this does *not* necessarily close the
+  // remote's endpoint as other SharedRemote instances may reference the same
+  // underlying endpoint.
+  void reset() { remote_.reset(); }
+
  private:
   scoped_refptr<SharedRemoteBase<Remote<Interface>>> remote_;
 };

@@ -2,20 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Note: This file tests both binding.h (mojo::Binding) and strong_binding.h
-// (mojo::StrongBinding).
-
-#include "mojo/public/cpp/bindings/binding.h"
-
 #include <stdint.h>
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "mojo/core/embedder/embedder.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/bindings/tests/bindings_test_base.h"
 #include "mojo/public/interfaces/bindings/tests/ping_service.mojom.h"
@@ -39,69 +40,60 @@ class ServiceImpl : public sample::Service {
   // sample::Service implementation
   void Frobinate(sample::FooPtr foo,
                  BazOptions options,
-                 sample::PortPtr port,
+                 PendingRemote<sample::Port> port,
                  FrobinateCallback callback) override {
     std::move(callback).Run(1);
   }
-  void GetPort(InterfaceRequest<sample::Port> port) override {}
+  void GetPort(PendingReceiver<sample::Port> port) override {}
 
   bool* const was_deleted_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceImpl);
 };
 
-template <typename... Args>
-void DoSetFlagAndRunClosure(bool* flag,
-                            const base::Closure& closure,
-                            Args... args) {
-  *flag = true;
-  if (!closure.is_null())
-    closure.Run();
-}
+using ReceiverTest = BindingsTestBase;
 
-template <typename... Args>
-base::Callback<void(Args...)> SetFlagAndRunClosure(
-    bool* flag,
-    const base::Closure& callback = base::Closure()) {
-  return base::Bind(&DoSetFlagAndRunClosure<Args...>, flag, callback);
-}
-
-// BindingTest -----------------------------------------------------------------
-
-using BindingTest = BindingsTestBase;
-
-TEST_P(BindingTest, Close) {
+TEST_P(ReceiverTest, Reset) {
   bool called = false;
-  sample::ServicePtr ptr;
-  auto request = MakeRequest(&ptr);
-  base::RunLoop run_loop;
-  ptr.set_connection_error_handler(
-      SetFlagAndRunClosure(&called, run_loop.QuitClosure()));
-  ServiceImpl impl;
-  Binding<sample::Service> binding(&impl, std::move(request));
+  Remote<sample::Service> remote;
 
-  binding.Close();
+  ServiceImpl impl;
+  Receiver<sample::Service> receiver(&impl,
+                                     remote.BindNewPipeAndPassReceiver());
+
+  base::RunLoop run_loop;
+  remote.set_disconnect_handler(base::BindLambdaForTesting([&] {
+    run_loop.Quit();
+    called = true;
+  }));
+
+  receiver.reset();
   EXPECT_FALSE(called);
   run_loop.Run();
   EXPECT_TRUE(called);
 }
 
 // Tests that destroying a mojo::Binding closes the bound message pipe handle.
-TEST_P(BindingTest, DestroyClosesMessagePipe) {
+TEST_P(ReceiverTest, DestroyClosesMessagePipe) {
   bool encountered_error = false;
   ServiceImpl impl;
-  sample::ServicePtr ptr;
-  auto request = MakeRequest(&ptr);
+  Remote<sample::Service> remote;
+  auto pending_receiver = remote.BindNewPipeAndPassReceiver();
   base::RunLoop run_loop;
-  ptr.set_connection_error_handler(
-      SetFlagAndRunClosure(&encountered_error, run_loop.QuitClosure()));
+  remote.set_disconnect_handler(base::BindLambdaForTesting([&] {
+    run_loop.Quit();
+    encountered_error = true;
+  }));
+
   bool called = false;
   base::RunLoop run_loop2;
   {
-    Binding<sample::Service> binding(&impl, std::move(request));
-    ptr->Frobinate(nullptr, sample::Service::BazOptions::REGULAR, nullptr,
-                   SetFlagAndRunClosure<int32_t>(&called,
-                                                 run_loop2.QuitClosure()));
+    Receiver<sample::Service> binding(&impl, std::move(pending_receiver));
+    remote->Frobinate(nullptr, sample::Service::BazOptions::REGULAR,
+                      NullRemote(), base::BindLambdaForTesting([&](int32_t) {
+                        run_loop2.Quit();
+                        called = true;
+                      }));
     run_loop2.Run();
     EXPECT_TRUE(called);
     EXPECT_FALSE(encountered_error);
@@ -113,25 +105,28 @@ TEST_P(BindingTest, DestroyClosesMessagePipe) {
 
   // And calls should fail.
   called = false;
-  ptr->Frobinate(nullptr, sample::Service::BazOptions::REGULAR, nullptr,
-                 SetFlagAndRunClosure<int32_t>(&called,
-                                               run_loop2.QuitClosure()));
+  remote->Frobinate(
+      nullptr, sample::Service::BazOptions::REGULAR, NullRemote(),
+      base::BindLambdaForTesting([&](int32_t) { called = true; }));
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(called);
 }
 
 // Tests that the binding's connection error handler gets called when the other
 // end is closed.
-TEST_P(BindingTest, ConnectionError) {
+TEST_P(ReceiverTest, Disconnect) {
   bool called = false;
   {
     ServiceImpl impl;
-    sample::ServicePtr ptr;
-    Binding<sample::Service> binding(&impl, MakeRequest(&ptr));
+    Remote<sample::Service> remote;
+    Receiver<sample::Service> receiver(&impl,
+                                       remote.BindNewPipeAndPassReceiver());
     base::RunLoop run_loop;
-    binding.set_connection_error_handler(
-        SetFlagAndRunClosure(&called, run_loop.QuitClosure()));
-    ptr.reset();
+    receiver.set_disconnect_handler(base::BindLambdaForTesting([&] {
+      called = true;
+      run_loop.Quit();
+    }));
+    remote.reset();
     EXPECT_FALSE(called);
     run_loop.Run();
     EXPECT_TRUE(called);
@@ -143,103 +138,114 @@ TEST_P(BindingTest, ConnectionError) {
 
 // Tests that calling Close doesn't result in the connection error handler being
 // called.
-TEST_P(BindingTest, CloseDoesntCallConnectionErrorHandler) {
+TEST_P(ReceiverTest, ResetDoesntCallDisconnectHandler) {
   ServiceImpl impl;
-  sample::ServicePtr ptr;
-  Binding<sample::Service> binding(&impl, MakeRequest(&ptr));
+  Remote<sample::Service> remote;
+  Receiver<sample::Service> receiver(&impl,
+                                     remote.BindNewPipeAndPassReceiver());
   bool called = false;
-  binding.set_connection_error_handler(SetFlagAndRunClosure(&called));
-  binding.Close();
+  receiver.set_disconnect_handler(
+      base::BindLambdaForTesting([&] { called = true; }));
+  receiver.reset();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(called);
 
   // We can also close the other end, and the error handler still won't be
   // called.
-  ptr.reset();
+  remote.reset();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(called);
 }
 
-class ServiceImplWithBinding : public ServiceImpl {
+class ServiceImplWithReceiver : public ServiceImpl {
  public:
-  ServiceImplWithBinding(bool* was_deleted,
-                         const base::Closure& closure,
-                         InterfaceRequest<sample::Service> request)
+  ServiceImplWithReceiver(bool* was_deleted,
+                          base::OnceClosure closure,
+                          PendingReceiver<sample::Service> receiver)
       : ServiceImpl(was_deleted),
-        binding_(this, std::move(request)),
-        closure_(closure) {
-    binding_.set_connection_error_handler(
-        base::Bind(&ServiceImplWithBinding::OnConnectionError,
-                   base::Unretained(this)));
+        receiver_(this, std::move(receiver)),
+        closure_(std::move(closure)) {
+    receiver_.set_disconnect_handler(base::BindOnce(
+        &ServiceImplWithReceiver::OnDisconnect, base::Unretained(this)));
   }
 
  private:
-  ~ServiceImplWithBinding() override{
-    closure_.Run();
-  }
+  ~ServiceImplWithReceiver() override { std::move(closure_).Run(); }
 
-  void OnConnectionError() { delete this; }
+  void OnDisconnect() { delete this; }
 
-  Binding<sample::Service> binding_;
-  base::Closure closure_;
+  Receiver<sample::Service> receiver_;
+  base::OnceClosure closure_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServiceImplWithBinding);
+  DISALLOW_COPY_AND_ASSIGN(ServiceImplWithReceiver);
 };
 
-// Tests that the binding may be deleted in the connection error handler.
-TEST_P(BindingTest, SelfDeleteOnConnectionError) {
+// Tests that the receiver may be deleted in its disconnect handler.
+TEST_P(ReceiverTest, SelfDeleteOnDisconnect) {
   bool was_deleted = false;
-  sample::ServicePtr ptr;
-  // This should delete itself on connection error.
+  Remote<sample::Service> remote;
   base::RunLoop run_loop;
-  new ServiceImplWithBinding(&was_deleted, run_loop.QuitClosure(),
-                             MakeRequest(&ptr));
-  ptr.reset();
+  // This will delete itself on disconnect.
+  new ServiceImplWithReceiver(&was_deleted, run_loop.QuitClosure(),
+                              remote.BindNewPipeAndPassReceiver());
+  remote.reset();
   EXPECT_FALSE(was_deleted);
   run_loop.Run();
   EXPECT_TRUE(was_deleted);
 }
 
 // Tests that explicitly calling Unbind followed by rebinding works.
-TEST_P(BindingTest, Unbind) {
+TEST_P(ReceiverTest, Unbind) {
   ServiceImpl impl;
-  sample::ServicePtr ptr;
-  Binding<sample::Service> binding(&impl, MakeRequest(&ptr));
+  Remote<sample::Service> remote;
+  Receiver<sample::Service> receiver(&impl,
+                                     remote.BindNewPipeAndPassReceiver());
 
   bool called = false;
   base::RunLoop run_loop;
-  ptr->Frobinate(nullptr, sample::Service::BazOptions::REGULAR, nullptr,
-                 SetFlagAndRunClosure<int32_t>(&called,
-                                               run_loop.QuitClosure()));
+  remote->Frobinate(nullptr, sample::Service::BazOptions::REGULAR, NullRemote(),
+                    base::BindLambdaForTesting([&](int32_t) {
+                      called = true;
+                      run_loop.Quit();
+                    }));
   run_loop.Run();
   EXPECT_TRUE(called);
 
   called = false;
-  auto request = binding.Unbind();
-  EXPECT_FALSE(binding.is_bound());
-  // All calls should fail when not bound...
-  ptr->Frobinate(nullptr, sample::Service::BazOptions::REGULAR, nullptr,
-                 SetFlagAndRunClosure<int32_t>(&called,
-                                               run_loop.QuitClosure()));
+  auto pending_receiver = receiver.Unbind();
+  EXPECT_FALSE(receiver.is_bound());
+  EXPECT_TRUE(pending_receiver);
+
+  // All calls should be withheld when the receiver is not bound...
+  remote->Frobinate(nullptr, sample::Service::BazOptions::REGULAR, NullRemote(),
+                    base::BindLambdaForTesting([&](int32_t) {
+                      called = true;
+                      run_loop.Quit();
+                    }));
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(called);
 
   called = false;
-  binding.Bind(std::move(request));
-  EXPECT_TRUE(binding.is_bound());
-  // ...and should succeed again when the rebound.
+  receiver.Bind(std::move(pending_receiver));
+  EXPECT_TRUE(receiver.is_bound());
+  EXPECT_FALSE(pending_receiver);
+
+  // ...and calls should resume again when the receiver is
+  // rebound.
   base::RunLoop run_loop2;
-  ptr->Frobinate(nullptr, sample::Service::BazOptions::REGULAR, nullptr,
-                 SetFlagAndRunClosure<int32_t>(&called,
-                                               run_loop2.QuitClosure()));
+  remote->Frobinate(nullptr, sample::Service::BazOptions::REGULAR, NullRemote(),
+                    base::BindLambdaForTesting([&](int32_t) {
+                      called = true;
+                      run_loop2.Quit();
+                    }));
   run_loop2.Run();
   EXPECT_TRUE(called);
 }
 
 class IntegerAccessorImpl : public sample::IntegerAccessor {
  public:
-  IntegerAccessorImpl() {}
-  ~IntegerAccessorImpl() override {}
+  IntegerAccessorImpl() = default;
+  ~IntegerAccessorImpl() override = default;
 
  private:
   // sample::IntegerAccessor implementation.
@@ -251,80 +257,86 @@ class IntegerAccessorImpl : public sample::IntegerAccessor {
   DISALLOW_COPY_AND_ASSIGN(IntegerAccessorImpl);
 };
 
-TEST_P(BindingTest, PauseResume) {
+TEST_P(ReceiverTest, PauseResume) {
   bool called = false;
   base::RunLoop run_loop;
-  sample::ServicePtr ptr;
-  auto request = MakeRequest(&ptr);
+  Remote<sample::Service> remote;
   ServiceImpl impl;
-  Binding<sample::Service> binding(&impl, std::move(request));
-  binding.PauseIncomingMethodCallProcessing();
-  ptr->Frobinate(nullptr, sample::Service::BazOptions::REGULAR, nullptr,
-                 SetFlagAndRunClosure<int32_t>(&called,
-                                               run_loop.QuitClosure()));
+  Receiver<sample::Service> receiver(&impl,
+                                     remote.BindNewPipeAndPassReceiver());
+  receiver.Pause();
+  remote->Frobinate(nullptr, sample::Service::BazOptions::REGULAR, NullRemote(),
+                    base::BindLambdaForTesting([&](int32_t) {
+                      called = true;
+                      run_loop.Quit();
+                    }));
+
   EXPECT_FALSE(called);
   base::RunLoop().RunUntilIdle();
-  // Frobinate() should not be called as the binding is paused.
+  // Frobinate() should not be called as the receiver is paused.
   EXPECT_FALSE(called);
 
-  // Resume the binding, which should trigger processing.
-  binding.ResumeIncomingMethodCallProcessing();
+  // Resume the receiver, which should trigger processing.
+  receiver.Resume();
   run_loop.Run();
   EXPECT_TRUE(called);
 }
 
-// Verifies the connection error handler is not run while a binding is paused.
-TEST_P(BindingTest, ErrorHandleNotRunWhilePaused) {
+// Verifies the disconnect handler is not run while a receiver is paused.
+TEST_P(ReceiverTest, ErrorHandleNotRunWhilePaused) {
   bool called = false;
   base::RunLoop run_loop;
-  sample::ServicePtr ptr;
-  auto request = MakeRequest(&ptr);
+  Remote<sample::Service> remote;
   ServiceImpl impl;
-  Binding<sample::Service> binding(&impl, std::move(request));
-  binding.set_connection_error_handler(
-      SetFlagAndRunClosure(&called, run_loop.QuitClosure()));
-  binding.PauseIncomingMethodCallProcessing();
+  Receiver<sample::Service> receiver(&impl,
+                                     remote.BindNewPipeAndPassReceiver());
+  receiver.set_disconnect_handler(base::BindLambdaForTesting([&] {
+    called = true;
+    run_loop.Quit();
+  }));
+  receiver.Pause();
 
-  ptr.reset();
+  remote.reset();
   base::RunLoop().RunUntilIdle();
-  // The connection error handle should not be called as the binding is paused.
+  // The disconnect handler should not be called as the receiver is paused.
   EXPECT_FALSE(called);
 
-  // Resume the binding, which should trigger the error handler.
-  binding.ResumeIncomingMethodCallProcessing();
+  // Resume the receiver, which should trigger the disconnect handler.
+  receiver.Resume();
   run_loop.Run();
   EXPECT_TRUE(called);
 }
 
 class PingServiceImpl : public test::PingService {
  public:
-  PingServiceImpl() {}
-  ~PingServiceImpl() override {}
+  PingServiceImpl() = default;
+  ~PingServiceImpl() override = default;
 
   // test::PingService:
   void Ping(PingCallback callback) override {
-    if (!ping_handler_.is_null())
+    if (ping_handler_)
       ping_handler_.Run();
     std::move(callback).Run();
   }
 
-  void set_ping_handler(const base::Closure& handler) {
-    ping_handler_ = handler;
+  void set_ping_handler(base::RepeatingClosure handler) {
+    ping_handler_ = std::move(handler);
   }
 
  private:
-  base::Closure ping_handler_;
+  base::RepeatingClosure ping_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(PingServiceImpl);
 };
 
 class CallbackFilter : public MessageReceiver {
  public:
-  explicit CallbackFilter(const base::Closure& callback)
+  explicit CallbackFilter(const base::RepeatingClosure& callback)
       : callback_(callback) {}
   ~CallbackFilter() override {}
 
-  static std::unique_ptr<CallbackFilter> Wrap(const base::Closure& callback) {
+  static std::unique_ptr<CallbackFilter> Wrap(
+      const base::RepeatingClosure& callback) {
     return std::make_unique<CallbackFilter>(callback);
   }
 
@@ -335,33 +347,37 @@ class CallbackFilter : public MessageReceiver {
   }
 
  private:
-  const base::Closure callback_;
+  const base::RepeatingClosure callback_;
 };
 
 // Verifies that message filters are notified in the order they were added and
 // are always notified before a message is dispatched.
-TEST_P(BindingTest, MessageFilter) {
-  test::PingServicePtr ptr;
+TEST_P(ReceiverTest, MessageFilter) {
+  Remote<test::PingService> remote;
   PingServiceImpl impl;
-  mojo::Binding<test::PingService> binding(&impl, MakeRequest(&ptr));
+  Receiver<test::PingService> receiver(&impl,
+                                       remote.BindNewPipeAndPassReceiver());
 
   int status = 0;
-  auto handler_helper = [] (int* status, int expected_status, int new_status) {
-    EXPECT_EQ(expected_status, *status);
-    *status = new_status;
-  };
-  auto create_handler = [&] (int expected_status, int new_status) {
-    return base::Bind(handler_helper, &status, expected_status, new_status);
-  };
+  receiver.AddFilter(CallbackFilter::Wrap(base::BindLambdaForTesting([&] {
+    EXPECT_EQ(0, status);
+    status = 1;
+  })));
 
-  binding.AddFilter(CallbackFilter::Wrap(create_handler(0, 1)));
-  binding.AddFilter(CallbackFilter::Wrap(create_handler(1, 2)));
-  impl.set_ping_handler(create_handler(2, 3));
+  receiver.AddFilter(CallbackFilter::Wrap(base::BindLambdaForTesting([&] {
+    EXPECT_EQ(1, status);
+    status = 2;
+  })));
+
+  impl.set_ping_handler(base::BindLambdaForTesting([&] {
+    EXPECT_EQ(2, status);
+    status = 3;
+  }));
 
   for (int i = 0; i < 10; ++i) {
     status = 0;
     base::RunLoop loop;
-    ptr->Ping(loop.QuitClosure());
+    remote->Ping(loop.QuitClosure());
     loop.Run();
     EXPECT_EQ(3, status);
   }
@@ -371,58 +387,57 @@ void Fail() {
   FAIL() << "Unexpected connection error";
 }
 
-TEST_P(BindingTest, FlushForTesting) {
+TEST_P(ReceiverTest, FlushForTesting) {
   bool called = false;
-  sample::ServicePtr ptr;
-  auto request = MakeRequest(&ptr);
+  Remote<sample::Service> remote;
   ServiceImpl impl;
-  Binding<sample::Service> binding(&impl, std::move(request));
-  binding.set_connection_error_handler(base::Bind(&Fail));
+  Receiver<sample::Service> receiver(&impl,
+                                     remote.BindNewPipeAndPassReceiver());
+  receiver.set_disconnect_handler(base::BindOnce(&Fail));
 
-  ptr->Frobinate(nullptr, sample::Service::BazOptions::REGULAR, nullptr,
-                 SetFlagAndRunClosure<int32_t>(&called));
+  remote->Frobinate(
+      nullptr, sample::Service::BazOptions::REGULAR, NullRemote(),
+      base::BindLambdaForTesting([&](int32_t) { called = true; }));
   EXPECT_FALSE(called);
-  // Because the flush is sent from the binding, it only guarantees that the
-  // request has been received, not the response. The second flush waits for the
-  // response to be received.
-  binding.FlushForTesting();
-  binding.FlushForTesting();
+  // Because the flush is sent from the receiver, it only guarantees that the
+  // request has been received, not the response. The second flush waits for
+  // the response to be received.
+  receiver.FlushForTesting();
+  receiver.FlushForTesting();
   EXPECT_TRUE(called);
 }
 
-TEST_P(BindingTest, FlushForTestingWithClosedPeer) {
+TEST_P(ReceiverTest, FlushForTestingWithClosedPeer) {
   bool called = false;
-  sample::ServicePtr ptr;
-  auto request = MakeRequest(&ptr);
+  Remote<sample::Service> remote;
   ServiceImpl impl;
-  Binding<sample::Service> binding(&impl, std::move(request));
-  binding.set_connection_error_handler(SetFlagAndRunClosure(&called));
-  ptr.reset();
+  Receiver<sample::Service> receiver(&impl,
+                                     remote.BindNewPipeAndPassReceiver());
+  receiver.set_disconnect_handler(
+      base::BindLambdaForTesting([&] { called = true; }));
+  remote.reset();
 
   EXPECT_FALSE(called);
-  binding.FlushForTesting();
+  receiver.FlushForTesting();
   EXPECT_TRUE(called);
-  binding.FlushForTesting();
+  receiver.FlushForTesting();
 }
 
-TEST_P(BindingTest, ConnectionErrorWithReason) {
-  sample::ServicePtr ptr;
-  auto request = MakeRequest(&ptr);
+TEST_P(ReceiverTest, DisconnectWithReason) {
+  Remote<sample::Service> remote;
   ServiceImpl impl;
-  Binding<sample::Service> binding(&impl, std::move(request));
+  Receiver<sample::Service> receiver(&impl,
+                                     remote.BindNewPipeAndPassReceiver());
 
   base::RunLoop run_loop;
-  binding.set_connection_error_with_reason_handler(base::Bind(
-      [](const base::Closure& quit_closure, uint32_t custom_reason,
-         const std::string& description) {
+  receiver.set_disconnect_with_reason_handler(base::BindLambdaForTesting(
+      [&](uint32_t custom_reason, const std::string& description) {
         EXPECT_EQ(1234u, custom_reason);
         EXPECT_EQ("hello", description);
-        quit_closure.Run();
-      },
-      run_loop.QuitClosure()));
+        run_loop.Quit();
+      }));
 
-  ptr.ResetWithReason(1234u, "hello");
-
+  remote.ResetWithReason(1234u, "hello");
   run_loop.Run();
 }
 
@@ -435,90 +450,80 @@ struct WeakPtrImplRefTraits {
 };
 
 template <typename T>
-using WeakBinding = Binding<T, WeakPtrImplRefTraits<T>>;
+using WeakReceiver = Receiver<T, WeakPtrImplRefTraits<T>>;
 
-TEST_P(BindingTest, CustomImplPointerType) {
+TEST_P(ReceiverTest, CustomImplPointerType) {
   PingServiceImpl impl;
   base::WeakPtrFactory<test::PingService> weak_factory(&impl);
 
-  test::PingServicePtr proxy;
-  WeakBinding<test::PingService> binding(weak_factory.GetWeakPtr(),
-                                         MakeRequest(&proxy));
+  Remote<test::PingService> remote;
+  WeakReceiver<test::PingService> receiver(weak_factory.GetWeakPtr(),
+                                           remote.BindNewPipeAndPassReceiver());
 
   {
-    // Ensure the binding is functioning.
+    // Ensure the receiver is functioning.
     base::RunLoop run_loop;
-    proxy->Ping(run_loop.QuitClosure());
+    remote->Ping(run_loop.QuitClosure());
     run_loop.Run();
   }
 
   {
     // Attempt to dispatch another message after the WeakPtr is invalidated.
-    base::Closure assert_not_reached = base::Bind([] { NOTREACHED(); });
-    impl.set_ping_handler(assert_not_reached);
-    proxy->Ping(assert_not_reached);
+    impl.set_ping_handler(base::BindRepeating([] { NOTREACHED(); }));
+    remote->Ping(base::BindOnce([] { NOTREACHED(); }));
 
-    // The binding will close its end of the pipe which will trigger a
-    // connection error on |proxy|.
+    // The receiver will close its end of the pipe which will trigger a
+    // disconnect on |remote|.
     base::RunLoop run_loop;
-    proxy.set_connection_error_handler(run_loop.QuitClosure());
+    remote.set_disconnect_handler(run_loop.QuitClosure());
     weak_factory.InvalidateWeakPtrs();
     run_loop.Run();
   }
 }
 
-TEST_P(BindingTest, ReportBadMessage) {
+TEST_P(ReceiverTest, ReportBadMessage) {
   bool called = false;
-  test::PingServicePtr ptr;
-  auto request = MakeRequest(&ptr);
+  Remote<test::PingService> remote;
+  auto pending_receiver = remote.BindNewPipeAndPassReceiver();
   base::RunLoop run_loop;
-  ptr.set_connection_error_handler(
-      SetFlagAndRunClosure(&called, run_loop.QuitClosure()));
+  remote.set_disconnect_handler(base::BindLambdaForTesting([&] {
+    called = true;
+    run_loop.Quit();
+  }));
   PingServiceImpl impl;
-  Binding<test::PingService> binding(&impl, std::move(request));
-  impl.set_ping_handler(base::Bind(
-      [](Binding<test::PingService>* binding) {
-        binding->ReportBadMessage("received bad message");
-      },
-      &binding));
+  Receiver<test::PingService> receiver(&impl, std::move(pending_receiver));
+  impl.set_ping_handler(base::BindLambdaForTesting(
+      [&] { receiver.ReportBadMessage("received bad message"); }));
 
   std::string received_error;
-  core::SetDefaultProcessErrorCallback(
-      base::Bind([](std::string* out_error,
-                    const std::string& error) { *out_error = error; },
-                 &received_error));
+  core::SetDefaultProcessErrorCallback(base::BindLambdaForTesting(
+      [&](const std::string& error) { received_error = error; }));
 
-  ptr->Ping(base::Bind([] {}));
+  remote->Ping(base::DoNothing());
   EXPECT_FALSE(called);
   run_loop.Run();
   EXPECT_TRUE(called);
   EXPECT_EQ("received bad message", received_error);
 
-  core::SetDefaultProcessErrorCallback(mojo::core::ProcessErrorCallback());
+  core::SetDefaultProcessErrorCallback(base::NullCallback());
 }
 
-TEST_P(BindingTest, GetBadMessageCallback) {
-  test::PingServicePtr ptr;
-  auto request = MakeRequest(&ptr);
+TEST_P(ReceiverTest, GetBadMessageCallback) {
+  Remote<test::PingService> remote;
   base::RunLoop run_loop;
   PingServiceImpl impl;
   ReportBadMessageCallback bad_message_callback;
 
   std::string received_error;
-  core::SetDefaultProcessErrorCallback(
-      base::Bind([](std::string* out_error,
-                    const std::string& error) { *out_error = error; },
-                 &received_error));
+  core::SetDefaultProcessErrorCallback(base::BindLambdaForTesting(
+      [&](const std::string& error) { received_error = error; }));
 
   {
-    Binding<test::PingService> binding(&impl, std::move(request));
-    impl.set_ping_handler(base::Bind(
-        [](Binding<test::PingService>* binding,
-           ReportBadMessageCallback* out_callback) {
-          *out_callback = binding->GetBadMessageCallback();
-        },
-        &binding, &bad_message_callback));
-    ptr->Ping(run_loop.QuitClosure());
+    Receiver<test::PingService> receiver(&impl,
+                                         remote.BindNewPipeAndPassReceiver());
+    impl.set_ping_handler(base::BindLambdaForTesting(
+        [&] { bad_message_callback = receiver.GetBadMessageCallback(); }));
+    remote->Ping(run_loop.QuitClosure());
     run_loop.Run();
     EXPECT_TRUE(received_error.empty());
     EXPECT_TRUE(bad_message_callback);
@@ -527,133 +532,64 @@ TEST_P(BindingTest, GetBadMessageCallback) {
   std::move(bad_message_callback).Run("delayed bad message");
   EXPECT_EQ("delayed bad message", received_error);
 
-  core::SetDefaultProcessErrorCallback(mojo::core::ProcessErrorCallback());
+  core::SetDefaultProcessErrorCallback(base::NullCallback());
 }
-
-// StrongBindingTest -----------------------------------------------------------
 
 using StrongBindingTest = BindingsTestBase;
 
-// Tests that destroying a mojo::StrongBinding closes the bound message pipe
-// handle but does *not* destroy the implementation object.
-TEST_P(StrongBindingTest, DestroyClosesMessagePipe) {
+TEST_P(StrongBindingTest, CloseDestroysImplAndPipe) {
   base::RunLoop run_loop;
-  bool encountered_error = false;
+  bool disconnected = false;
   bool was_deleted = false;
-  sample::ServicePtr ptr;
-  auto request = MakeRequest(&ptr);
-  ptr.set_connection_error_handler(
-      SetFlagAndRunClosure(&encountered_error, run_loop.QuitClosure()));
+  Remote<sample::Service> remote;
+  auto receiver = remote.BindNewPipeAndPassReceiver();
+  remote.set_disconnect_handler(base::BindLambdaForTesting([&] {
+    disconnected = true;
+    run_loop.Quit();
+  }));
   bool called = false;
   base::RunLoop run_loop2;
 
-  auto binding = MakeStrongBinding(std::make_unique<ServiceImpl>(&was_deleted),
-                                   std::move(request));
-  ptr->Frobinate(
-      nullptr, sample::Service::BazOptions::REGULAR, nullptr,
-      SetFlagAndRunClosure<int32_t>(&called, run_loop2.QuitClosure()));
+  auto binding = MakeStrongBinding<sample::Service>(
+      std::make_unique<ServiceImpl>(&was_deleted), std::move(receiver));
+  remote->Frobinate(nullptr, sample::Service::BazOptions::REGULAR, NullRemote(),
+                    base::BindLambdaForTesting([&](int32_t) {
+                      called = true;
+                      run_loop2.Quit();
+                    }));
   run_loop2.Run();
   EXPECT_TRUE(called);
-  EXPECT_FALSE(encountered_error);
+  EXPECT_FALSE(disconnected);
   binding->Close();
 
   // Now that the StrongBinding is closed we should detect an error on the other
   // end of the pipe.
   run_loop.Run();
-  EXPECT_TRUE(encountered_error);
+  EXPECT_TRUE(disconnected);
 
   // Destroying the StrongBinding also destroys the impl.
   ASSERT_TRUE(was_deleted);
 }
 
-// Tests the typical case, where the implementation object owns the
-// StrongBinding (and should be destroyed on connection error).
-TEST_P(StrongBindingTest, ConnectionErrorDestroysImpl) {
-  sample::ServicePtr ptr;
+TEST_P(StrongBindingTest, DisconnectDestroysImplAndPipe) {
+  Remote<sample::Service> remote;
   bool was_deleted = false;
-  // Will delete itself.
   base::RunLoop run_loop;
-  new ServiceImplWithBinding(&was_deleted, run_loop.QuitClosure(),
-                             MakeRequest(&ptr));
+  // Will delete itself.
+  new ServiceImplWithReceiver(&was_deleted, run_loop.QuitClosure(),
+                              remote.BindNewPipeAndPassReceiver());
 
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(was_deleted);
 
-  ptr.reset();
+  remote.reset();
   EXPECT_FALSE(was_deleted);
   run_loop.Run();
   EXPECT_TRUE(was_deleted);
 }
 
-TEST_P(StrongBindingTest, FlushForTesting) {
-  bool called = false;
-  bool was_deleted = false;
-  sample::ServicePtr ptr;
-  auto request = MakeRequest(&ptr);
-  auto binding = MakeStrongBinding(std::make_unique<ServiceImpl>(&was_deleted),
-                                   std::move(request));
-  binding->set_connection_error_handler(base::Bind(&Fail));
-
-  ptr->Frobinate(nullptr, sample::Service::BazOptions::REGULAR, nullptr,
-                 SetFlagAndRunClosure<int32_t>(&called));
-  EXPECT_FALSE(called);
-  // Because the flush is sent from the binding, it only guarantees that the
-  // request has been received, not the response. The second flush waits for the
-  // response to be received.
-  ASSERT_TRUE(binding);
-  binding->FlushForTesting();
-  ASSERT_TRUE(binding);
-  binding->FlushForTesting();
-  EXPECT_TRUE(called);
-  EXPECT_FALSE(was_deleted);
-  ptr.reset();
-  ASSERT_TRUE(binding);
-  binding->set_connection_error_handler(base::Closure());
-  binding->FlushForTesting();
-  EXPECT_TRUE(was_deleted);
-}
-
-TEST_P(StrongBindingTest, FlushForTestingWithClosedPeer) {
-  bool called = false;
-  bool was_deleted = false;
-  sample::ServicePtr ptr;
-  auto request = MakeRequest(&ptr);
-  auto binding = MakeStrongBinding(std::make_unique<ServiceImpl>(&was_deleted),
-                                   std::move(request));
-  binding->set_connection_error_handler(SetFlagAndRunClosure(&called));
-  ptr.reset();
-
-  EXPECT_FALSE(called);
-  EXPECT_FALSE(was_deleted);
-  ASSERT_TRUE(binding);
-  binding->FlushForTesting();
-  EXPECT_TRUE(called);
-  EXPECT_TRUE(was_deleted);
-  ASSERT_FALSE(binding);
-}
-
-TEST_P(StrongBindingTest, ConnectionErrorWithReason) {
-  sample::ServicePtr ptr;
-  auto request = MakeRequest(&ptr);
-  auto binding =
-      MakeStrongBinding(std::make_unique<ServiceImpl>(), std::move(request));
-  base::RunLoop run_loop;
-  binding->set_connection_error_with_reason_handler(base::Bind(
-      [](const base::Closure& quit_closure, uint32_t custom_reason,
-         const std::string& description) {
-        EXPECT_EQ(5678u, custom_reason);
-        EXPECT_EQ("hello", description);
-        quit_closure.Run();
-      },
-      run_loop.QuitClosure()));
-
-  ptr.ResetWithReason(5678u, "hello");
-
-  run_loop.Run();
-}
-
-INSTANTIATE_MOJO_BINDINGS_TEST_SUITE_P(BindingTest);
+INSTANTIATE_MOJO_BINDINGS_TEST_SUITE_P(ReceiverTest);
 INSTANTIATE_MOJO_BINDINGS_TEST_SUITE_P(StrongBindingTest);
 
 }  // namespace
-}  // mojo
+}  // namespace mojo

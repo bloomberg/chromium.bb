@@ -143,6 +143,14 @@ class Remote {
       internal_state_.set_connection_error_handler(std::move(handler));
   }
 
+  // Like above but also receives extra user-defined metadata about why the
+  // receiving endpoint was closed.
+  void set_disconnect_with_reason_handler(
+      ConnectionErrorWithReasonCallback handler) {
+    internal_state_.set_connection_error_with_reason_handler(
+        std::move(handler));
+  }
+
   // Resets this Remote to an unbound state. To reset the Remote and recover an
   // PendingRemote that can be bound again later, use |Unbind()| instead.
   void reset() {
@@ -156,6 +164,11 @@ class Remote {
       internal_state_.CloseWithReason(custom_reason, description);
     reset();
   }
+
+  // Returns the version of Interface used by this Remote. Defaults to 0 but can
+  // be adjusted either at binding time, or by invoking either |QueryVersion()|
+  // or |RequireVersion()|.
+  uint32_t version() const { return internal_state_.version(); }
 
   // Binds this Remote, connecting it to a new PendingReceiver which is
   // returned for transmission to some Receiver which can bind it. The Remote
@@ -231,11 +244,31 @@ class Remote {
     return PendingRemote<Interface>(info.PassHandle(), info.version());
   }
 
+  // Queries the max version that the receiving endpoint supports. Once a
+  // response is received, |callback| will be invoked with the version number
+  // and the version number of this Remote object will also be updated.
+  void QueryVersion(base::OnceCallback<void(uint32_t)> callback) {
+    internal_state_.QueryVersion(std::move(callback));
+  }
+
+  // Requires the receiving endpoint to support at least the specified
+  // |version|. If it does not, it will close its end of the connection
+  // immediately.
+  void RequireVersion(uint32_t version) {
+    internal_state_.RequireVersion(version);
+  }
+
   // Sends a no-op message on the underlying message pipe and runs the current
   // message loop until its response is received. This can be used in tests to
   // verify that no message was sent on a message pipe in response to some
   // stimulus.
   void FlushForTesting() { internal_state_.FlushForTesting(); }
+
+  // Same as |FlushForTesting()| but will call |callback| when the flush is
+  // complete.
+  void FlushAsyncForTesting(base::OnceClosure callback) {
+    internal_state_.FlushAsyncForTesting(std::move(callback));
+  }
 
   // DO NOT USE. Exposed only for internal use and for testing.
   internal::InterfacePtrState<Interface>* internal_state() {

@@ -1,4 +1,3 @@
-
 // Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -14,14 +13,17 @@
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/shared_remote.h"
 #include "mojo/public/cpp/bindings/tests/bindings_test_base.h"
-#include "mojo/public/cpp/bindings/thread_safe_interface_ptr.h"
+#include "mojo/public/cpp/bindings/unique_receiver_set.h"
+#include "mojo/public/cpp/system/wait.h"
 #include "mojo/public/interfaces/bindings/tests/math_calculator.mojom.h"
 #include "mojo/public/interfaces/bindings/tests/sample_interfaces.mojom.h"
 #include "mojo/public/interfaces/bindings/tests/sample_service.mojom.h"
@@ -34,9 +36,9 @@ namespace {
 
 class MathCalculatorImpl : public math::Calculator {
  public:
-  explicit MathCalculatorImpl(InterfaceRequest<math::Calculator> request)
-      : total_(0.0), binding_(this, std::move(request)) {}
-  ~MathCalculatorImpl() override {}
+  explicit MathCalculatorImpl(PendingReceiver<math::Calculator> receiver)
+      : total_(0.0), receiver_(this, std::move(receiver)) {}
+  ~MathCalculatorImpl() override = default;
 
   void Clear(ClearCallback callback) override {
     total_ = 0.0;
@@ -53,78 +55,75 @@ class MathCalculatorImpl : public math::Calculator {
     std::move(callback).Run(total_);
   }
 
-  Binding<math::Calculator>* binding() { return &binding_; }
+  Receiver<math::Calculator>& receiver() { return receiver_; }
 
  private:
   double total_;
-  Binding<math::Calculator> binding_;
+  Receiver<math::Calculator> receiver_;
 };
 
 class MathCalculatorUI {
  public:
-  explicit MathCalculatorUI(math::CalculatorPtr calculator)
-      : calculator_(std::move(calculator)),
-        output_(0.0) {}
+  explicit MathCalculatorUI(PendingRemote<math::Calculator> calculator)
+      : calculator_(std::move(calculator)), output_(0.0) {}
 
-  bool encountered_error() const { return calculator_.encountered_error(); }
-  void set_connection_error_handler(const base::Closure& closure) {
-    calculator_.set_connection_error_handler(closure);
+  bool is_connected() const { return calculator_.is_connected(); }
+  void set_disconnect_handler(base::OnceClosure closure) {
+    calculator_.set_disconnect_handler(std::move(closure));
   }
 
-  void Add(double value, const base::Closure& closure) {
+  void Add(double value, base::OnceClosure closure) {
     calculator_->Add(
-        value,
-        base::Bind(&MathCalculatorUI::Output, base::Unretained(this), closure));
+        value, base::BindOnce(&MathCalculatorUI::Output, base::Unretained(this),
+                              std::move(closure)));
   }
 
-  void Multiply(double value, const base::Closure& closure) {
+  void Multiply(double value, base::OnceClosure closure) {
     calculator_->Multiply(
-        value,
-        base::Bind(&MathCalculatorUI::Output, base::Unretained(this), closure));
+        value, base::BindOnce(&MathCalculatorUI::Output, base::Unretained(this),
+                              std::move(closure)));
   }
 
   double GetOutput() const { return output_; }
 
-  math::CalculatorPtr& GetInterfacePtr() { return calculator_; }
+  Remote<math::Calculator>& remote() { return calculator_; }
 
  private:
-  void Output(const base::Closure& closure, double output) {
+  void Output(base::OnceClosure closure, double output) {
     output_ = output;
-    if (!closure.is_null())
-      closure.Run();
+    if (closure)
+      std::move(closure).Run();
   }
 
-  math::CalculatorPtr calculator_;
+  Remote<math::Calculator> calculator_;
   double output_;
-  base::Closure closure_;
 };
 
 class SelfDestructingMathCalculatorUI {
  public:
-  explicit SelfDestructingMathCalculatorUI(math::CalculatorPtr calculator)
+  explicit SelfDestructingMathCalculatorUI(
+      PendingRemote<math::Calculator> calculator)
       : calculator_(std::move(calculator)), nesting_level_(0) {
     ++num_instances_;
   }
 
-  void BeginTest(bool nested, const base::Closure& closure) {
+  void BeginTest(bool nested, base::OnceClosure closure) {
     nesting_level_ = nested ? 2 : 1;
     calculator_->Add(
-        1.0,
-        base::Bind(&SelfDestructingMathCalculatorUI::Output,
-                   base::Unretained(this), closure));
+        1.0, base::BindOnce(&SelfDestructingMathCalculatorUI::Output,
+                            base::Unretained(this), std::move(closure)));
   }
 
   static int num_instances() { return num_instances_; }
 
-  void Output(const base::Closure& closure, double value) {
+  void Output(base::OnceClosure closure, double value) {
     if (--nesting_level_ > 0) {
       // Add some more and wait for re-entrant call to Output!
       calculator_->Add(
-          1.0,
-          base::Bind(&SelfDestructingMathCalculatorUI::Output,
-                     base::Unretained(this), closure));
+          1.0, base::BindOnce(&SelfDestructingMathCalculatorUI::Output,
+                              base::Unretained(this), std::move(closure)));
     } else {
-      closure.Run();
+      std::move(closure).Run();
       delete this;
     }
   }
@@ -132,7 +131,7 @@ class SelfDestructingMathCalculatorUI {
  private:
   ~SelfDestructingMathCalculatorUI() { --num_instances_; }
 
-  math::CalculatorPtr calculator_;
+  Remote<math::Calculator> calculator_;
   int nesting_level_;
   static int num_instances_;
 };
@@ -142,43 +141,43 @@ int SelfDestructingMathCalculatorUI::num_instances_ = 0;
 
 class ReentrantServiceImpl : public sample::Service {
  public:
-  ~ReentrantServiceImpl() override {}
+  ~ReentrantServiceImpl() override = default;
 
-  explicit ReentrantServiceImpl(InterfaceRequest<sample::Service> request)
+  explicit ReentrantServiceImpl(PendingReceiver<sample::Service> receiver)
       : call_depth_(0),
         max_call_depth_(0),
-        binding_(this, std::move(request)) {}
+        receiver_(this, std::move(receiver)) {}
 
   int max_call_depth() { return max_call_depth_; }
 
   void Frobinate(sample::FooPtr foo,
                  sample::Service::BazOptions baz,
-                 sample::PortPtr port,
+                 PendingRemote<sample::Port> port,
                  sample::Service::FrobinateCallback callback) override {
     max_call_depth_ = std::max(++call_depth_, max_call_depth_);
     if (call_depth_ == 1) {
-      EXPECT_TRUE(binding_.WaitForIncomingMethodCall());
+      EXPECT_TRUE(receiver_.WaitForIncomingCall());
     }
     call_depth_--;
     std::move(callback).Run(5);
   }
 
-  void GetPort(mojo::InterfaceRequest<sample::Port> port) override {}
+  void GetPort(PendingReceiver<sample::Port> receiver) override {}
 
  private:
   int call_depth_;
   int max_call_depth_;
-  Binding<sample::Service> binding_;
+  Receiver<sample::Service> receiver_;
 };
 
 class IntegerAccessorImpl : public sample::IntegerAccessor {
  public:
   IntegerAccessorImpl() : integer_(0) {}
-  ~IntegerAccessorImpl() override {}
+  ~IntegerAccessorImpl() override = default;
 
   int64_t integer() const { return integer_; }
 
-  void set_closure(const base::Closure& closure) { closure_ = closure; }
+  void set_closure(base::OnceClosure closure) { closure_ = std::move(closure); }
 
  private:
   // sample::IntegerAccessor implementation.
@@ -187,69 +186,51 @@ class IntegerAccessorImpl : public sample::IntegerAccessor {
   }
   void SetInteger(int64_t data, sample::Enum type) override {
     integer_ = data;
-    if (!closure_.is_null()) {
-      closure_.Run();
-      closure_.Reset();
-    }
+    if (closure_)
+      std::move(closure_).Run();
   }
 
   int64_t integer_;
-  base::Closure closure_;
+  base::OnceClosure closure_;
 };
 
-class InterfacePtrTest : public BindingsTestBase {
+class RemoteTest : public BindingsTestBase {
  public:
-  InterfacePtrTest() {}
-  ~InterfacePtrTest() override { base::RunLoop().RunUntilIdle(); }
+  RemoteTest() = default;
+  ~RemoteTest() override { base::RunLoop().RunUntilIdle(); }
 
   void PumpMessages() { base::RunLoop().RunUntilIdle(); }
 };
 
-void SetFlagAndRunClosure(bool* flag, const base::Closure& closure) {
-  *flag = true;
-  closure.Run();
+TEST_P(RemoteTest, IsBound) {
+  Remote<math::Calculator> calc;
+  EXPECT_FALSE(calc);
+  MathCalculatorImpl calc_impl(calc.BindNewPipeAndPassReceiver());
+  EXPECT_TRUE(calc);
 }
 
-void IgnoreValueAndRunClosure(const base::Closure& closure, int32_t value) {
-  closure.Run();
-}
-
-void ExpectValueAndRunClosure(uint32_t expected_value,
-                              const base::Closure& closure,
-                              uint32_t value) {
-  EXPECT_EQ(expected_value, value);
-  closure.Run();
-}
-
-TEST_P(InterfacePtrTest, IsBound) {
-  math::CalculatorPtr calc;
-  EXPECT_FALSE(calc.is_bound());
-  MathCalculatorImpl calc_impl(MakeRequest(&calc));
-  EXPECT_TRUE(calc.is_bound());
-}
-
-class EndToEndInterfacePtrTest : public InterfacePtrTest {
+class EndToEndRemoteTest : public RemoteTest {
  public:
   void RunTest(const scoped_refptr<base::SequencedTaskRunner> runner) {
     base::RunLoop run_loop;
     done_closure_ = run_loop.QuitClosure();
     done_runner_ = base::ThreadTaskRunnerHandle::Get();
-    runner->PostTask(FROM_HERE,
-                     base::BindOnce(&EndToEndInterfacePtrTest::RunTestImpl,
-                                    base::Unretained(this)));
+    runner->PostTask(FROM_HERE, base::BindOnce(&EndToEndRemoteTest::RunTestImpl,
+                                               base::Unretained(this)));
     run_loop.Run();
   }
 
  private:
   void RunTestImpl() {
-    math::CalculatorPtr calc;
-    calc_impl_ = std::make_unique<MathCalculatorImpl>(MakeRequest(&calc));
+    PendingRemote<math::Calculator> calc;
+    calc_impl_ = std::make_unique<MathCalculatorImpl>(
+        calc.InitWithNewPipeAndPassReceiver());
     calculator_ui_ = std::make_unique<MathCalculatorUI>(std::move(calc));
-    calculator_ui_->Add(2.0, base::Bind(&EndToEndInterfacePtrTest::AddDone,
-                                        base::Unretained(this)));
+    calculator_ui_->Add(2.0, base::BindOnce(&EndToEndRemoteTest::AddDone,
+                                            base::Unretained(this)));
     calculator_ui_->Multiply(5.0,
-                             base::Bind(&EndToEndInterfacePtrTest::MultiplyDone,
-                                        base::Unretained(this)));
+                             base::BindOnce(&EndToEndRemoteTest::MultiplyDone,
+                                            base::Unretained(this)));
     EXPECT_EQ(0.0, calculator_ui_->GetOutput());
   }
 
@@ -262,24 +243,24 @@ class EndToEndInterfacePtrTest : public InterfacePtrTest {
     done_runner_->PostTask(FROM_HERE, std::move(done_closure_));
   }
 
-  base::Closure done_closure_;
+  base::OnceClosure done_closure_;
   scoped_refptr<base::SequencedTaskRunner> done_runner_;
   std::unique_ptr<MathCalculatorUI> calculator_ui_;
   std::unique_ptr<MathCalculatorImpl> calc_impl_;
 };
 
-TEST_P(EndToEndInterfacePtrTest, EndToEnd) {
+TEST_P(EndToEndRemoteTest, EndToEnd) {
   RunTest(base::ThreadTaskRunnerHandle::Get());
 }
 
-TEST_P(EndToEndInterfacePtrTest, EndToEndOnSequence) {
+TEST_P(EndToEndRemoteTest, EndToEndOnSequence) {
   RunTest(base::CreateSequencedTaskRunnerWithTraits({}));
 }
 
-TEST_P(InterfacePtrTest, Movable) {
-  math::CalculatorPtr a;
-  math::CalculatorPtr b;
-  MathCalculatorImpl calc_impl(MakeRequest(&b));
+TEST_P(RemoteTest, Movable) {
+  Remote<math::Calculator> a;
+  Remote<math::Calculator> b;
+  MathCalculatorImpl calc_impl(b.BindNewPipeAndPassReceiver());
 
   EXPECT_TRUE(!a);
   EXPECT_FALSE(!b);
@@ -290,114 +271,107 @@ TEST_P(InterfacePtrTest, Movable) {
   EXPECT_TRUE(!b);
 }
 
-TEST_P(InterfacePtrTest, Resettable) {
-  math::CalculatorPtr a;
+TEST_P(RemoteTest, Resettable) {
+  Remote<math::Calculator> a;
 
-  EXPECT_TRUE(!a);
+  EXPECT_FALSE(a);
 
   MessagePipe pipe;
 
   // Save this so we can test it later.
   Handle handle = pipe.handle0.get();
 
-  a = MakeProxy(
-      InterfacePtrInfo<math::Calculator>(std::move(pipe.handle0), 0u));
+  a.Bind(PendingRemote<math::Calculator>(std::move(pipe.handle0), 0u));
 
-  EXPECT_FALSE(!a);
+  EXPECT_TRUE(a);
 
   a.reset();
 
-  EXPECT_TRUE(!a);
-  EXPECT_FALSE(a.internal_state()->is_bound());
+  EXPECT_FALSE(a);
 
-  // Test that handle was closed.
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, CloseRaw(handle));
+  // Test that handle was closed by waiting for its peer to signal.
+  Wait(pipe.handle1.get(), MOJO_HANDLE_SIGNAL_PEER_CLOSED);
 }
 
-TEST_P(InterfacePtrTest, BindInvalidHandle) {
-  math::CalculatorPtr ptr;
-  EXPECT_FALSE(ptr.get());
-  EXPECT_FALSE(ptr);
-
-  ptr.Bind(InterfacePtrInfo<math::Calculator>());
-  EXPECT_FALSE(ptr.get());
-  EXPECT_FALSE(ptr);
+TEST_P(RemoteTest, InvalidPendingRemote) {
+  PendingRemote<math::Calculator> invalid_remote;
+  EXPECT_FALSE(invalid_remote);
 }
 
-TEST_P(InterfacePtrTest, EncounteredError) {
-  math::CalculatorPtr proxy;
-  MathCalculatorImpl calc_impl(MakeRequest(&proxy));
+TEST_P(RemoteTest, IsConnected) {
+  PendingRemote<math::Calculator> remote;
+  MathCalculatorImpl calc_impl(remote.InitWithNewPipeAndPassReceiver());
 
-  MathCalculatorUI calculator_ui(std::move(proxy));
+  MathCalculatorUI calculator_ui(std::move(remote));
 
   base::RunLoop run_loop;
   calculator_ui.Add(2.0, run_loop.QuitClosure());
   run_loop.Run();
   EXPECT_EQ(2.0, calculator_ui.GetOutput());
-  EXPECT_FALSE(calculator_ui.encountered_error());
+  EXPECT_TRUE(calculator_ui.is_connected());
 
   calculator_ui.Multiply(5.0, base::Closure());
-  EXPECT_FALSE(calculator_ui.encountered_error());
+  EXPECT_TRUE(calculator_ui.is_connected());
 
-  // Close the server.
-  calc_impl.binding()->Close();
+  calc_impl.receiver().reset();
+
+  base::RunLoop run_loop2;
+  calculator_ui.set_disconnect_handler(run_loop2.QuitClosure());
 
   // The state change isn't picked up locally yet.
-  base::RunLoop run_loop2;
-  calculator_ui.set_connection_error_handler(run_loop2.QuitClosure());
-  EXPECT_FALSE(calculator_ui.encountered_error());
+  EXPECT_TRUE(calculator_ui.is_connected());
 
   run_loop2.Run();
 
-  // OK, now we see the error.
-  EXPECT_TRUE(calculator_ui.encountered_error());
+  // OK, now we see the disconnection.
+  EXPECT_FALSE(calculator_ui.is_connected());
 }
 
-TEST_P(InterfacePtrTest, EncounteredErrorCallback) {
-  math::CalculatorPtr proxy;
-  MathCalculatorImpl calc_impl(MakeRequest(&proxy));
+TEST_P(RemoteTest, DisconnectCallback) {
+  PendingRemote<math::Calculator> remote;
+  MathCalculatorImpl calc_impl(remote.InitWithNewPipeAndPassReceiver());
 
-  bool encountered_error = false;
+  MathCalculatorUI calculator_ui(std::move(remote));
+
+  bool connected = true;
   base::RunLoop run_loop;
-  proxy.set_connection_error_handler(
-      base::Bind(&SetFlagAndRunClosure, &encountered_error,
-                 run_loop.QuitClosure()));
-
-  MathCalculatorUI calculator_ui(std::move(proxy));
+  calculator_ui.remote().set_disconnect_handler(base::BindLambdaForTesting([&] {
+    connected = false;
+    run_loop.Quit();
+  }));
 
   base::RunLoop run_loop2;
   calculator_ui.Add(2.0, run_loop2.QuitClosure());
   run_loop2.Run();
   EXPECT_EQ(2.0, calculator_ui.GetOutput());
-  EXPECT_FALSE(calculator_ui.encountered_error());
+  EXPECT_TRUE(calculator_ui.is_connected());
 
   calculator_ui.Multiply(5.0, base::Closure());
-  EXPECT_FALSE(calculator_ui.encountered_error());
+  EXPECT_TRUE(calculator_ui.is_connected());
 
-  // Close the server.
-  calc_impl.binding()->Close();
+  calc_impl.receiver().reset();
 
   // The state change isn't picked up locally yet.
-  EXPECT_FALSE(calculator_ui.encountered_error());
+  EXPECT_TRUE(calculator_ui.is_connected());
 
   run_loop.Run();
 
-  // OK, now we see the error.
-  EXPECT_TRUE(calculator_ui.encountered_error());
+  // OK, now we see the disconnection.
+  EXPECT_FALSE(calculator_ui.is_connected());
 
   // We should have also been able to observe the error through the error
   // handler.
-  EXPECT_TRUE(encountered_error);
+  EXPECT_FALSE(connected);
 }
 
-TEST_P(InterfacePtrTest, DestroyInterfacePtrOnMethodResponse) {
-  math::CalculatorPtr proxy;
-  MathCalculatorImpl calc_impl(MakeRequest(&proxy));
+TEST_P(RemoteTest, DestroyRemoteOnMethodResponse) {
+  PendingRemote<math::Calculator> remote;
+  MathCalculatorImpl calc_impl(remote.InitWithNewPipeAndPassReceiver());
 
   EXPECT_EQ(0, SelfDestructingMathCalculatorUI::num_instances());
 
   SelfDestructingMathCalculatorUI* impl =
-      new SelfDestructingMathCalculatorUI(std::move(proxy));
+      new SelfDestructingMathCalculatorUI(std::move(remote));
   base::RunLoop run_loop;
   impl->BeginTest(false, run_loop.QuitClosure());
   run_loop.Run();
@@ -405,14 +379,14 @@ TEST_P(InterfacePtrTest, DestroyInterfacePtrOnMethodResponse) {
   EXPECT_EQ(0, SelfDestructingMathCalculatorUI::num_instances());
 }
 
-TEST_P(InterfacePtrTest, NestedDestroyInterfacePtrOnMethodResponse) {
-  math::CalculatorPtr proxy;
-  MathCalculatorImpl calc_impl(MakeRequest(&proxy));
+TEST_P(RemoteTest, NestedDestroyRemoteOnMethodResponse) {
+  PendingRemote<math::Calculator> remote;
+  MathCalculatorImpl calc_impl(remote.InitWithNewPipeAndPassReceiver());
 
   EXPECT_EQ(0, SelfDestructingMathCalculatorUI::num_instances());
 
   SelfDestructingMathCalculatorUI* impl =
-      new SelfDestructingMathCalculatorUI(std::move(proxy));
+      new SelfDestructingMathCalculatorUI(std::move(remote));
   base::RunLoop run_loop;
   impl->BeginTest(true, run_loop.QuitClosure());
   run_loop.Run();
@@ -420,17 +394,15 @@ TEST_P(InterfacePtrTest, NestedDestroyInterfacePtrOnMethodResponse) {
   EXPECT_EQ(0, SelfDestructingMathCalculatorUI::num_instances());
 }
 
-TEST_P(InterfacePtrTest, ReentrantWaitForIncomingMethodCall) {
-  sample::ServicePtr proxy;
-  ReentrantServiceImpl impl(MakeRequest(&proxy));
+TEST_P(RemoteTest, ReentrantWaitForIncomingCall) {
+  Remote<sample::Service> remote;
+  ReentrantServiceImpl impl(remote.BindNewPipeAndPassReceiver());
 
   base::RunLoop run_loop, run_loop2;
-  proxy->Frobinate(nullptr, sample::Service::BazOptions::REGULAR, nullptr,
-                   base::Bind(&IgnoreValueAndRunClosure,
-                              run_loop.QuitClosure()));
-  proxy->Frobinate(nullptr, sample::Service::BazOptions::REGULAR, nullptr,
-                   base::Bind(&IgnoreValueAndRunClosure,
-                              run_loop2.QuitClosure()));
+  remote->Frobinate(nullptr, sample::Service::BazOptions::REGULAR, NullRemote(),
+                    base::BindLambdaForTesting([&](int) { run_loop.Quit(); }));
+  remote->Frobinate(nullptr, sample::Service::BazOptions::REGULAR, NullRemote(),
+                    base::BindLambdaForTesting([&](int) { run_loop2.Quit(); }));
 
   run_loop.Run();
   run_loop2.Run();
@@ -438,55 +410,59 @@ TEST_P(InterfacePtrTest, ReentrantWaitForIncomingMethodCall) {
   EXPECT_EQ(2, impl.max_call_depth());
 }
 
-TEST_P(InterfacePtrTest, QueryVersion) {
+TEST_P(RemoteTest, QueryVersion) {
   IntegerAccessorImpl impl;
-  sample::IntegerAccessorPtr ptr;
-  Binding<sample::IntegerAccessor> binding(&impl, MakeRequest(&ptr));
+  Remote<sample::IntegerAccessor> remote;
+  Receiver<sample::IntegerAccessor> receiver(
+      &impl, remote.BindNewPipeAndPassReceiver());
 
-  EXPECT_EQ(0u, ptr.version());
+  EXPECT_EQ(0u, remote.version());
 
   base::RunLoop run_loop;
-  ptr.QueryVersion(base::Bind(&ExpectValueAndRunClosure, 3u,
-                              run_loop.QuitClosure()));
+  remote.QueryVersion(base::BindLambdaForTesting([&](uint32_t version) {
+    EXPECT_EQ(3u, version);
+    run_loop.Quit();
+  }));
   run_loop.Run();
 
-  EXPECT_EQ(3u, ptr.version());
+  EXPECT_EQ(3u, remote.version());
 }
 
-TEST_P(InterfacePtrTest, RequireVersion) {
+TEST_P(RemoteTest, RequireVersion) {
   IntegerAccessorImpl impl;
-  sample::IntegerAccessorPtr ptr;
-  Binding<sample::IntegerAccessor> binding(&impl, MakeRequest(&ptr));
+  Remote<sample::IntegerAccessor> remote;
+  Receiver<sample::IntegerAccessor> receiver(
+      &impl, remote.BindNewPipeAndPassReceiver());
 
-  EXPECT_EQ(0u, ptr.version());
+  EXPECT_EQ(0u, remote.version());
 
-  ptr.RequireVersion(1u);
-  EXPECT_EQ(1u, ptr.version());
+  remote.RequireVersion(1u);
+  EXPECT_EQ(1u, remote.version());
   base::RunLoop run_loop;
   impl.set_closure(run_loop.QuitClosure());
-  ptr->SetInteger(123, sample::Enum::VALUE);
+  remote->SetInteger(123, sample::Enum::VALUE);
   run_loop.Run();
-  EXPECT_FALSE(ptr.encountered_error());
+  EXPECT_TRUE(remote.is_connected());
   EXPECT_EQ(123, impl.integer());
 
-  ptr.RequireVersion(3u);
-  EXPECT_EQ(3u, ptr.version());
+  remote.RequireVersion(3u);
+  EXPECT_EQ(3u, remote.version());
   base::RunLoop run_loop2;
   impl.set_closure(run_loop2.QuitClosure());
-  ptr->SetInteger(456, sample::Enum::VALUE);
+  remote->SetInteger(456, sample::Enum::VALUE);
   run_loop2.Run();
-  EXPECT_FALSE(ptr.encountered_error());
+  EXPECT_TRUE(remote.is_connected());
   EXPECT_EQ(456, impl.integer());
 
   // Require a version that is not supported by the impl side.
-  ptr.RequireVersion(4u);
+  remote.RequireVersion(4u);
   // This value is set to the input of RequireVersion() synchronously.
-  EXPECT_EQ(4u, ptr.version());
+  EXPECT_EQ(4u, remote.version());
   base::RunLoop run_loop3;
-  ptr.set_connection_error_handler(run_loop3.QuitClosure());
-  ptr->SetInteger(789, sample::Enum::VALUE);
+  remote.set_disconnect_handler(run_loop3.QuitClosure());
+  remote->SetInteger(789, sample::Enum::VALUE);
   run_loop3.Run();
-  EXPECT_TRUE(ptr.encountered_error());
+  EXPECT_FALSE(remote.is_connected());
   // The call to SetInteger() after RequireVersion(4u) is ignored.
   EXPECT_EQ(456, impl.integer());
 }
@@ -519,20 +495,20 @@ class StrongMathCalculatorImpl : public math::Calculator {
 TEST(StrongConnectorTest, Math) {
   base::MessageLoop loop;
 
-  bool error_received = false;
+  bool disconnected = false;
   bool destroyed = false;
-  math::CalculatorPtr calc;
+  PendingRemote<math::Calculator> calc;
   base::RunLoop run_loop;
 
-  auto binding =
-      MakeStrongBinding(std::make_unique<StrongMathCalculatorImpl>(&destroyed),
-                        MakeRequest(&calc));
-  binding->set_connection_error_handler(base::Bind(
-      &SetFlagAndRunClosure, &error_received, run_loop.QuitClosure()));
+  UniqueReceiverSet<math::Calculator> receivers;
+  receivers.Add(std::make_unique<StrongMathCalculatorImpl>(&destroyed),
+                calc.InitWithNewPipeAndPassReceiver());
+  receivers.set_disconnect_handler(base::BindLambdaForTesting([&] {
+    disconnected = true;
+    run_loop.Quit();
+  }));
 
   {
-    // Suppose this is instantiated in a process that has the other end of the
-    // message pipe.
     MathCalculatorUI calculator_ui(std::move(calc));
 
     base::RunLoop run_loop, run_loop2;
@@ -542,30 +518,31 @@ TEST(StrongConnectorTest, Math) {
     run_loop2.Run();
 
     EXPECT_EQ(10.0, calculator_ui.GetOutput());
-    EXPECT_FALSE(error_received);
+    EXPECT_FALSE(disconnected);
     EXPECT_FALSE(destroyed);
   }
-  // Destroying calculator_ui should close the pipe and generate an error on the
-  // other
-  // end which will destroy the instance since it is strongly bound.
 
+  // Destroying calculator_ui should close the pipe and signal disconnection on
+  // the receiving end, which will in turn destroy the impl since it's in a
+  // UniqueReceiverSet.
   run_loop.Run();
-  EXPECT_TRUE(error_received);
+  EXPECT_TRUE(disconnected);
   EXPECT_TRUE(destroyed);
 }
 
 class WeakMathCalculatorImpl : public math::Calculator {
  public:
-  WeakMathCalculatorImpl(math::CalculatorRequest request,
-                         bool* error_received,
+  WeakMathCalculatorImpl(PendingReceiver<math::Calculator> receiver,
+                         bool* disconnected,
                          bool* destroyed,
-                         const base::Closure& closure)
-      : error_received_(error_received),
-        destroyed_(destroyed),
-        closure_(closure),
-        binding_(this, std::move(request)) {
-    binding_.set_connection_error_handler(
-        base::Bind(&SetFlagAndRunClosure, error_received_, closure_));
+                         base::OnceClosure closure)
+      : destroyed_(destroyed), receiver_(this, std::move(receiver)) {
+    receiver_.set_disconnect_handler(base::BindOnce(
+        [](bool* disconnected, base::OnceClosure closure) {
+          *disconnected = true;
+          std::move(closure).Run();
+        },
+        disconnected, std::move(closure)));
   }
   ~WeakMathCalculatorImpl() override { *destroyed_ = true; }
 
@@ -585,31 +562,26 @@ class WeakMathCalculatorImpl : public math::Calculator {
 
  private:
   double total_ = 0.0;
-  bool* error_received_;
   bool* destroyed_;
-  base::Closure closure_;
+  base::OnceClosure closure_;
 
-  Binding<math::Calculator> binding_;
+  Receiver<math::Calculator> receiver_;
 };
 
 TEST(WeakConnectorTest, Math) {
   base::MessageLoop loop;
 
-  bool error_received = false;
+  bool disconnected = false;
   bool destroyed = false;
   MessagePipe pipe;
   base::RunLoop run_loop;
-  WeakMathCalculatorImpl impl(math::CalculatorRequest(std::move(pipe.handle0)),
-                              &error_received, &destroyed,
-                              run_loop.QuitClosure());
-
-  math::CalculatorPtr calc;
-  calc.Bind(InterfacePtrInfo<math::Calculator>(std::move(pipe.handle1), 0u));
+  WeakMathCalculatorImpl impl(
+      PendingReceiver<math::Calculator>(std::move(pipe.handle0)), &disconnected,
+      &destroyed, run_loop.QuitClosure());
 
   {
-    // Suppose this is instantiated in a process that has the other end of the
-    // message pipe.
-    MathCalculatorUI calculator_ui(std::move(calc));
+    MathCalculatorUI calculator_ui(
+        PendingRemote<math::Calculator>(std::move(pipe.handle1), 0u));
 
     base::RunLoop run_loop, run_loop2;
     calculator_ui.Add(2.0, run_loop.QuitClosure());
@@ -618,87 +590,92 @@ TEST(WeakConnectorTest, Math) {
     run_loop2.Run();
 
     EXPECT_EQ(10.0, calculator_ui.GetOutput());
-    EXPECT_FALSE(error_received);
+    EXPECT_FALSE(disconnected);
     EXPECT_FALSE(destroyed);
-    // Destroying calculator_ui should close the pipe and generate an error on
-    // the other
-    // end which will destroy the instance since it is strongly bound.
   }
 
   run_loop.Run();
-  EXPECT_TRUE(error_received);
+  EXPECT_TRUE(disconnected);
   EXPECT_FALSE(destroyed);
 }
 
 class CImpl : public C {
  public:
-  CImpl(bool* d_called, const base::Closure& closure)
-      : d_called_(d_called), closure_(closure) {}
-  ~CImpl() override {}
+  CImpl(bool* d_called, base::OnceClosure closure)
+      : d_called_(d_called), closure_(std::move(closure)) {}
+  ~CImpl() override = default;
+
+  void Bind(PendingReceiver<C> receiver) {
+    receiver_.Bind(std::move(receiver));
+  }
 
  private:
   void D() override {
     *d_called_ = true;
-    closure_.Run();
+    std::move(closure_).Run();
   }
 
+  Receiver<C> receiver_{this};
   bool* d_called_;
-  base::Closure closure_;
+  base::OnceClosure closure_;
 };
 
 class BImpl : public B {
  public:
-  BImpl(bool* d_called, const base::Closure& closure)
-      : d_called_(d_called), closure_(closure) {}
-  ~BImpl() override {}
+  BImpl(bool* d_called, base::OnceClosure closure)
+      : c_(d_called, std::move(closure)) {}
+  ~BImpl() override = default;
 
- private:
-  void GetC(InterfaceRequest<C> c) override {
-    MakeStrongBinding(std::make_unique<CImpl>(d_called_, closure_),
-                      std::move(c));
+  void Bind(PendingReceiver<B> receiver) {
+    receiver_.Bind(std::move(receiver));
   }
 
-  bool* d_called_;
-  base::Closure closure_;
+ private:
+  void GetC(PendingReceiver<C> receiver) override {
+    c_.Bind(std::move(receiver));
+  }
+
+  Receiver<B> receiver_{this};
+  CImpl c_;
 };
 
 class AImpl : public A {
  public:
-  AImpl(InterfaceRequest<A> request, const base::Closure& closure)
-      : d_called_(false), binding_(this, std::move(request)),
-        closure_(closure) {}
-  ~AImpl() override {}
+  AImpl(PendingReceiver<A> receiver, base::OnceClosure closure)
+      : d_called_(false),
+        receiver_(this, std::move(receiver)),
+        b_(&d_called_, std::move(closure)) {}
+  ~AImpl() override = default;
 
   bool d_called() const { return d_called_; }
 
  private:
-  void GetB(InterfaceRequest<B> b) override {
-    MakeStrongBinding(std::make_unique<BImpl>(&d_called_, closure_),
-                      std::move(b));
+  void GetB(PendingReceiver<B> receiver) override {
+    b_.Bind(std::move(receiver));
   }
 
   bool d_called_;
-  Binding<A> binding_;
-  base::Closure closure_;
+  Receiver<A> receiver_;
+  BImpl b_;
 };
 
-TEST_P(InterfacePtrTest, Scoping) {
-  APtr a;
+TEST_P(RemoteTest, Scoping) {
+  Remote<A> a;
   base::RunLoop run_loop;
-  AImpl a_impl(MakeRequest(&a), run_loop.QuitClosure());
+  AImpl a_impl(a.BindNewPipeAndPassReceiver(), run_loop.QuitClosure());
 
   EXPECT_FALSE(a_impl.d_called());
 
   {
-    BPtr b;
-    a->GetB(MakeRequest(&b));
-    CPtr c;
-    b->GetC(MakeRequest(&c));
+    Remote<B> b;
+    a->GetB(b.BindNewPipeAndPassReceiver());
+    Remote<C> c;
+    b->GetC(c.BindNewPipeAndPassReceiver());
     c->D();
   }
 
-  // While B & C have fallen out of scope, the pipes will remain until they are
-  // flushed.
+  // While B & C have fallen out of scope, the receiving endpoints will continue
+  // to operate, and any messages sent prior to destruction will be delivered.
   EXPECT_FALSE(a_impl.d_called());
   run_loop.Run();
   EXPECT_TRUE(a_impl.d_called());
@@ -706,30 +683,34 @@ TEST_P(InterfacePtrTest, Scoping) {
 
 class PingTestImpl : public sample::PingTest {
  public:
-  explicit PingTestImpl(InterfaceRequest<sample::PingTest> request)
-      : binding_(this, std::move(request)) {}
-  ~PingTestImpl() override {}
+  explicit PingTestImpl(PendingReceiver<sample::PingTest> receiver)
+      : receiver_(this, std::move(receiver)) {}
+  ~PingTestImpl() override = default;
 
  private:
   // sample::PingTest:
   void Ping(PingCallback callback) override { std::move(callback).Run(); }
 
-  Binding<sample::PingTest> binding_;
+  Receiver<sample::PingTest> receiver_;
 };
 
 // Tests that FuseProxy does what it's supposed to do.
-TEST_P(InterfacePtrTest, Fusion) {
-  sample::PingTestPtrInfo proxy_info;
-  PingTestImpl impl(MakeRequest(&proxy_info));
+TEST_P(RemoteTest, Fusion) {
+  PendingRemote<sample::PingTest> pending_remote;
+  PingTestImpl impl(pending_remote.InitWithNewPipeAndPassReceiver());
 
   // Create another PingTest pipe and fuse it to the one hanging off |impl|.
-  sample::PingTestPtr ptr;
-  EXPECT_TRUE(FuseInterface(mojo::MakeRequest(&ptr), std::move(proxy_info)));
+  Remote<sample::PingTest> remote;
+  EXPECT_TRUE(FusePipes(remote.BindNewPipeAndPassReceiver(),
+                        std::move(pending_remote)));
 
   // Ping!
   bool called = false;
   base::RunLoop loop;
-  ptr->Ping(base::Bind(&SetFlagAndRunClosure, &called, loop.QuitClosure()));
+  remote->Ping(base::BindLambdaForTesting([&] {
+    called = true;
+    loop.Quit();
+  }));
   loop.Run();
   EXPECT_TRUE(called);
 }
@@ -738,63 +719,61 @@ void Fail() {
   FAIL() << "Unexpected connection error";
 }
 
-TEST_P(InterfacePtrTest, FlushForTesting) {
-  math::CalculatorPtr calc;
-  MathCalculatorImpl calc_impl(MakeRequest(&calc));
-  calc.set_connection_error_handler(base::Bind(&Fail));
+TEST_P(RemoteTest, FlushForTesting) {
+  PendingRemote<math::Calculator> remote;
+  MathCalculatorImpl calc_impl(remote.InitWithNewPipeAndPassReceiver());
 
-  MathCalculatorUI calculator_ui(std::move(calc));
+  MathCalculatorUI calculator_ui(std::move(remote));
+  calculator_ui.remote().set_disconnect_handler(base::BindOnce(&Fail));
 
   calculator_ui.Add(2.0, base::DoNothing());
-  calculator_ui.GetInterfacePtr().FlushForTesting();
+  calculator_ui.remote().FlushForTesting();
   EXPECT_EQ(2.0, calculator_ui.GetOutput());
 
   calculator_ui.Multiply(5.0, base::DoNothing());
-  calculator_ui.GetInterfacePtr().FlushForTesting();
+  calculator_ui.remote().FlushForTesting();
 
   EXPECT_EQ(10.0, calculator_ui.GetOutput());
 }
 
-TEST_P(InterfacePtrTest, FlushAsyncForTesting) {
-  math::CalculatorPtr calc;
-  MathCalculatorImpl calc_impl(MakeRequest(&calc));
-  calc.set_connection_error_handler(base::BindOnce(&Fail));
+TEST_P(RemoteTest, FlushAsyncForTesting) {
+  PendingRemote<math::Calculator> remote;
+  MathCalculatorImpl calc_impl(remote.InitWithNewPipeAndPassReceiver());
 
-  MathCalculatorUI calculator_ui(std::move(calc));
+  MathCalculatorUI calculator_ui(std::move(remote));
+  calculator_ui.remote().set_disconnect_handler(base::BindOnce(&Fail));
 
   calculator_ui.Add(2.0, base::DoNothing());
   base::RunLoop run_loop;
-  calculator_ui.GetInterfacePtr().FlushAsyncForTesting(run_loop.QuitClosure());
+  calculator_ui.remote().FlushAsyncForTesting(run_loop.QuitClosure());
   run_loop.Run();
   EXPECT_EQ(2.0, calculator_ui.GetOutput());
 
   calculator_ui.Multiply(5.0, base::DoNothing());
   base::RunLoop run_loop2;
-  calculator_ui.GetInterfacePtr().FlushAsyncForTesting(run_loop2.QuitClosure());
+  calculator_ui.remote().FlushAsyncForTesting(run_loop2.QuitClosure());
   run_loop2.Run();
 
   EXPECT_EQ(10.0, calculator_ui.GetOutput());
 }
 
-void SetBool(bool* value) {
-  *value = true;
-}
-
-TEST_P(InterfacePtrTest, FlushForTestingWithClosedPeer) {
-  math::CalculatorPtr calc;
-  MakeRequest(&calc);
+TEST_P(RemoteTest, FlushForTestingWithClosedPeer) {
+  Remote<math::Calculator> calc;
+  ignore_result(calc.BindNewPipeAndPassReceiver());
   bool called = false;
-  calc.set_connection_error_handler(base::Bind(&SetBool, &called));
+  calc.set_disconnect_handler(
+      base::BindLambdaForTesting([&] { called = true; }));
   calc.FlushForTesting();
   EXPECT_TRUE(called);
   calc.FlushForTesting();
 }
 
-TEST_P(InterfacePtrTest, FlushAsyncForTestingWithClosedPeer) {
-  math::CalculatorPtr calc;
-  MakeRequest(&calc);
+TEST_P(RemoteTest, FlushAsyncForTestingWithClosedPeer) {
+  Remote<math::Calculator> calc;
+  ignore_result(calc.BindNewPipeAndPassReceiver());
   bool called = false;
-  calc.set_connection_error_handler(base::BindOnce(&SetBool, &called));
+  calc.set_disconnect_handler(
+      base::BindLambdaForTesting([&] { called = true; }));
   base::RunLoop run_loop;
   calc.FlushAsyncForTesting(run_loop.QuitClosure());
   run_loop.Run();
@@ -805,178 +784,147 @@ TEST_P(InterfacePtrTest, FlushAsyncForTestingWithClosedPeer) {
   run_loop2.Run();
 }
 
-TEST_P(InterfacePtrTest, ConnectionErrorWithReason) {
-  math::CalculatorPtr calc;
-  MathCalculatorImpl calc_impl(MakeRequest(&calc));
+TEST_P(RemoteTest, DisconnectWithReason) {
+  Remote<math::Calculator> calc;
+  MathCalculatorImpl calc_impl(calc.BindNewPipeAndPassReceiver());
 
   base::RunLoop run_loop;
-  calc.set_connection_error_with_reason_handler(base::Bind(
-      [](const base::Closure& quit_closure, uint32_t custom_reason,
-         const std::string& description) {
+  calc.set_disconnect_with_reason_handler(base::BindLambdaForTesting(
+      [&](uint32_t custom_reason, const std::string& description) {
         EXPECT_EQ(42u, custom_reason);
         EXPECT_EQ("hey", description);
-        quit_closure.Run();
-      },
-      run_loop.QuitClosure()));
+        run_loop.Quit();
+      }));
 
-  calc_impl.binding()->CloseWithReason(42u, "hey");
+  calc_impl.receiver().ResetWithReason(42u, "hey");
 
   run_loop.Run();
 }
 
-TEST_P(InterfacePtrTest, InterfaceRequestResetWithReason) {
-  math::CalculatorPtr calc;
-  auto request = MakeRequest(&calc);
+TEST_P(RemoteTest, PendingReceiverResetWithReason) {
+  Remote<math::Calculator> calc;
+  auto pending_receiver = calc.BindNewPipeAndPassReceiver();
 
   base::RunLoop run_loop;
-  calc.set_connection_error_with_reason_handler(base::Bind(
-      [](const base::Closure& quit_closure, uint32_t custom_reason,
-         const std::string& description) {
+  calc.set_disconnect_with_reason_handler(base::BindLambdaForTesting(
+      [&](uint32_t custom_reason, const std::string& description) {
         EXPECT_EQ(88u, custom_reason);
         EXPECT_EQ("greetings", description);
-        quit_closure.Run();
-      },
-      run_loop.QuitClosure()));
+        run_loop.Quit();
+      }));
 
-  request.ResetWithReason(88u, "greetings");
+  pending_receiver.ResetWithReason(88u, "greetings");
 
   run_loop.Run();
 }
 
-TEST_P(InterfacePtrTest, CallbackIsPassedInterfacePtr) {
-  sample::PingTestPtr ptr;
-  auto request = mojo::MakeRequest(&ptr);
+TEST_P(RemoteTest, CallbackIsPassedRemote) {
+  Remote<sample::PingTest> remote;
+  auto pending_receiver = remote.BindNewPipeAndPassReceiver();
 
   base::RunLoop run_loop;
 
   // Make a call with the proxy's lifetime bound to the response callback.
-  sample::PingTest* raw_proxy = ptr.get();
-  ptr.set_connection_error_handler(run_loop.QuitClosure());
-  raw_proxy->Ping(base::Bind(base::DoNothing::Repeatedly<sample::PingTestPtr>(),
-                             base::Passed(&ptr)));
+  sample::PingTest* raw_proxy = remote.get();
+  remote.set_disconnect_handler(run_loop.QuitClosure());
+  raw_proxy->Ping(
+      base::BindOnce([](Remote<sample::PingTest>) {}, std::move(remote)));
 
-  // Trigger an error on |ptr|. This will ultimately lead to the proxy's
+  // Signal disconnection on |remote|. This will ultimately lead to the proxy's
   // response callbacks being destroyed, which will in turn lead to the proxy
   // being destroyed. This should not crash.
-  request.PassMessagePipe();
+  pending_receiver.reset();
   run_loop.Run();
 }
 
-TEST_P(InterfacePtrTest, ConnectionErrorHandlerOwnsInterfacePtr) {
-  sample::PingTestPtr* ptr = new sample::PingTestPtr;
-  auto request = mojo::MakeRequest(ptr);
+TEST_P(RemoteTest, DisconnectHandlerOwnsRemote) {
+  Remote<sample::PingTest>* remote = new Remote<sample::PingTest>;
+  auto pending_receiver = remote->BindNewPipeAndPassReceiver();
 
   base::RunLoop run_loop;
 
-  // Make a call with |ptr|'s lifetime bound to the connection error handler
-  // callback.
-  ptr->set_connection_error_handler(base::Bind(
-      [](const base::Closure& quit, sample::PingTestPtr* ptr) {
-        ptr->reset();
-        quit.Run();
+  // Make a call with |remote|'s lifetime bound to the disconnect handler.
+  remote->set_disconnect_handler(base::BindOnce(
+      [](base::OnceClosure quit, Remote<sample::PingTest>* owned_remote) {
+        owned_remote->reset();
+        std::move(quit).Run();
       },
-      run_loop.QuitClosure(), base::Owned(ptr)));
+      run_loop.QuitClosure(), base::Owned(remote)));
 
-  // Trigger an error on |ptr|. In the error handler |ptr| is reset. This
-  // shouldn't immediately destroy the callback (and |ptr| that it owns), before
-  // the callback is completed.
-  request.PassMessagePipe();
+  // Signal disconnection on |remote|. In the disconnect handler |remote| is
+  // reset. This shouldn't immediately destroy the callback (and |remote| that
+  // it owns), before the callback is completed.
+  pending_receiver.reset();
   run_loop.Run();
 }
 
-TEST_P(InterfacePtrTest, ThreadSafeInterfacePointer) {
-  math::CalculatorPtr ptr;
-  MathCalculatorImpl calc_impl(MakeRequest(&ptr));
-  scoped_refptr<math::ThreadSafeCalculatorPtr> thread_safe_ptr =
-      math::ThreadSafeCalculatorPtr::Create(std::move(ptr));
+TEST_P(RemoteTest, SharedRemote) {
+  PendingRemote<math::Calculator> pending_remote;
+  MathCalculatorImpl calc_impl(pending_remote.InitWithNewPipeAndPassReceiver());
+  SharedRemote<math::Calculator> shared_remote(std::move(pending_remote));
 
   base::RunLoop run_loop;
+  base::OnceClosure quit_closure = run_loop.QuitClosure();
 
-  auto run_method = base::Bind(
-      [](const scoped_refptr<base::TaskRunner>& main_task_runner,
-         const base::Closure& quit_closure,
-         const scoped_refptr<math::ThreadSafeCalculatorPtr>& thread_safe_ptr) {
-        auto calc_callback = base::Bind(
-            [](const scoped_refptr<base::TaskRunner>& main_task_runner,
-               const base::Closure& quit_closure,
-               scoped_refptr<base::SequencedTaskRunner> sender_sequence_runner,
-               double result) {
+  // Send a message on |thread_safe_remote| from a different sequence.
+  auto main_task_runner = base::SequencedTaskRunnerHandle::Get();
+  auto sender_task_runner = base::CreateSequencedTaskRunnerWithTraits({});
+  sender_task_runner->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([&] {
+        shared_remote->Add(
+            123, base::BindLambdaForTesting([&](double result) {
               EXPECT_EQ(123, result);
               // Validate the callback is invoked on the calling sequence.
-              EXPECT_TRUE(sender_sequence_runner->RunsTasksInCurrentSequence());
-              // Notify the run_loop to quit.
-              main_task_runner->PostTask(FROM_HERE, quit_closure);
-            });
-        scoped_refptr<base::SequencedTaskRunner> current_sequence_runner =
-            base::SequencedTaskRunnerHandle::Get();
-        (*thread_safe_ptr)
-            ->Add(123, base::Bind(calc_callback, main_task_runner, quit_closure,
-                                  current_sequence_runner));
-      },
-      base::SequencedTaskRunnerHandle::Get(), run_loop.QuitClosure(),
-      thread_safe_ptr);
-  base::CreateSequencedTaskRunnerWithTraits({})->PostTask(FROM_HERE,
-                                                          run_method);
+              EXPECT_TRUE(sender_task_runner->RunsTasksInCurrentSequence());
+              main_task_runner->PostTask(FROM_HERE, std::move(quit_closure));
+            }));
+      }));
 
-  // Block until the method callback is called on the background thread.
   run_loop.Run();
 }
 
-TEST_P(InterfacePtrTest, ThreadSafeInterfacePointerWithTaskRunner) {
+TEST_P(RemoteTest, SharedRemoteWithTaskRunner) {
   const scoped_refptr<base::SequencedTaskRunner> other_thread_task_runner =
       base::CreateSequencedTaskRunnerWithTraits({});
 
-  math::CalculatorPtr ptr;
-  auto request = mojo::MakeRequest(&ptr);
+  PendingRemote<math::Calculator> remote;
+  auto receiver = remote.InitWithNewPipeAndPassReceiver();
 
-  // Create a ThreadSafeInterfacePtr that we'll bind from a different thread.
-  scoped_refptr<math::ThreadSafeCalculatorPtr> thread_safe_ptr =
-      math::ThreadSafeCalculatorPtr::Create(ptr.PassInterface(),
-                                            other_thread_task_runner);
-  ASSERT_TRUE(thread_safe_ptr);
+  // Create a ThreadSafeRemote that we'll bind from a different thread.
+  SharedRemote<math::Calculator> shared_remote(std::move(remote),
+                                               other_thread_task_runner);
+  ASSERT_TRUE(shared_remote);
 
   MathCalculatorImpl* math_calc_impl = nullptr;
   {
     base::RunLoop run_loop;
-    auto run_method = base::Bind(
-        [](const scoped_refptr<base::TaskRunner>& main_task_runner,
-           const base::Closure& quit_closure,
-           const scoped_refptr<math::ThreadSafeCalculatorPtr>& thread_safe_ptr,
-           math::CalculatorRequest request,
-           MathCalculatorImpl** math_calc_impl) {
-          math::CalculatorPtr ptr;
-          // In real life, the implementation would have a legitimate owner.
-          *math_calc_impl = new MathCalculatorImpl(std::move(request));
-          main_task_runner->PostTask(FROM_HERE, quit_closure);
-        },
-        base::SequencedTaskRunnerHandle::Get(), run_loop.QuitClosure(),
-        thread_safe_ptr, base::Passed(&request), &math_calc_impl);
-    other_thread_task_runner->PostTask(FROM_HERE, run_method);
+    auto quit_closure = run_loop.QuitClosure();
+    other_thread_task_runner->PostTask(
+        FROM_HERE, base::BindLambdaForTesting([&] {
+          math_calc_impl = new MathCalculatorImpl(std::move(receiver));
+          std::move(quit_closure).Run();
+        }));
     run_loop.Run();
   }
 
   {
-    // The interface ptr is bound, we can call methods on it.
-    auto calc_callback =
-        base::Bind([](const base::Closure& quit_closure, double result) {
-          EXPECT_EQ(123, result);
-          quit_closure.Run();
-        });
     base::RunLoop run_loop;
-    (*thread_safe_ptr)
-        ->Add(123, base::Bind(calc_callback, run_loop.QuitClosure()));
-    // Block until the method callback is called.
+    shared_remote->Add(123, base::BindLambdaForTesting([&](double result) {
+                         EXPECT_EQ(123, result);
+                         run_loop.Quit();
+                       }));
     run_loop.Run();
   }
 
   other_thread_task_runner->DeleteSoon(FROM_HERE, math_calc_impl);
 
-  // Reset the pointer now so the InterfacePtr associated resources can be
-  // deleted before the background thread's message loop is invalidated.
-  thread_safe_ptr = nullptr;
+  // Reset the SharedRemote now so the background thread state tied to its
+  // internal Remote can be deleted before the background thread itself is
+  // cleaned up.
+  shared_remote.reset();
 }
 
-INSTANTIATE_MOJO_BINDINGS_TEST_SUITE_P(InterfacePtrTest);
+INSTANTIATE_MOJO_BINDINGS_TEST_SUITE_P(RemoteTest);
 
 }  // namespace
 }  // namespace test

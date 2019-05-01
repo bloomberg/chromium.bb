@@ -107,7 +107,7 @@ class InterfacePtr {
   // result will be returned as the input of |callback|. The version number of
   // this interface pointer will also be updated.
   void QueryVersion(const base::Callback<void(uint32_t)>& callback) {
-    internal_state_.QueryVersion(callback);
+    internal_state_.QueryVersionDeprecated(callback);
   }
 
   // If the remote side doesn't support the specified version, it will close its

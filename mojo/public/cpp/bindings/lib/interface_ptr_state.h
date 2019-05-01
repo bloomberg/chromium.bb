@@ -72,7 +72,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) InterfacePtrStateBase {
   }
   MultiplexRouter* router() const { return router_.get(); }
 
-  void QueryVersion(const base::Callback<void(uint32_t)>& callback);
+  void QueryVersion(base::OnceCallback<void(uint32_t)> callback);
   void RequireVersion(uint32_t version);
   void Swap(InterfacePtrStateBase* other);
   void Bind(ScopedMessagePipeHandle handle,
@@ -91,7 +91,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) InterfacePtrStateBase {
       const char* interface_name);
 
  private:
-  void OnQueryVersion(const base::Callback<void(uint32_t)>& callback,
+  void OnQueryVersion(base::OnceCallback<void(uint32_t)> callback,
                       uint32_t version);
 
   scoped_refptr<MultiplexRouter> router_;
@@ -131,9 +131,13 @@ class InterfacePtrState : public InterfacePtrStateBase {
 #endif
   }
 
-  void QueryVersion(const base::Callback<void(uint32_t)>& callback) {
+  void QueryVersionDeprecated(const base::Callback<void(uint32_t)>& callback) {
+    QueryVersion(base::BindOnce(callback));
+  }
+
+  void QueryVersion(base::OnceCallback<void(uint32_t)> callback) {
     ConfigureProxyIfNecessary();
-    InterfacePtrStateBase::QueryVersion(callback);
+    InterfacePtrStateBase::QueryVersion(std::move(callback));
   }
 
   void RequireVersion(uint32_t version) {

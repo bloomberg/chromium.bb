@@ -7,11 +7,12 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "mojo/core/embedder/embedder.h"
-#include "mojo/public/cpp/bindings/associated_binding_set.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/strong_binding_set.h"
+#include "mojo/public/cpp/bindings/associated_receiver_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/tests/bindings_test_base.h"
+#include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "mojo/public/interfaces/bindings/tests/ping_service.mojom.h"
 #include "mojo/public/interfaces/bindings/tests/test_associated_interfaces.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,74 +21,75 @@ namespace mojo {
 namespace test {
 namespace {
 
-using BindingSetTest = BindingsTestBase;
+using ReceiverSetTest = BindingsTestBase;
 
-template <typename BindingSetType, typename ContextType>
-void ExpectContextHelper(BindingSetType* binding_set,
+template <typename ReceiverSetType, typename ContextType>
+void ExpectContextHelper(ReceiverSetType* receiver_set,
                          ContextType expected_context) {
-  EXPECT_EQ(expected_context, binding_set->dispatch_context());
+  EXPECT_EQ(expected_context, receiver_set->current_context());
 }
 
-template <typename BindingSetType, typename ContextType>
-base::Closure ExpectContext(BindingSetType* binding_set,
-                            ContextType expected_context) {
-  return base::Bind(
-      &ExpectContextHelper<BindingSetType, ContextType>, binding_set,
-      expected_context);
+template <typename ReceiverSetType, typename ContextType>
+base::RepeatingClosure ExpectContext(ReceiverSetType* receiver_set,
+                                     ContextType expected_context) {
+  return base::BindRepeating(&ExpectContextHelper<ReceiverSetType, ContextType>,
+                             receiver_set, expected_context);
 }
 
-template <typename BindingSetType>
-void ExpectBindingIdHelper(BindingSetType* binding_set,
-                           BindingId expected_binding_id) {
-  EXPECT_EQ(expected_binding_id, binding_set->dispatch_binding());
+template <typename ReceiverSetType>
+void ExpectReceiverIdHelper(ReceiverSetType* receiver_set,
+                            ReceiverId expected_receiver_id) {
+  EXPECT_EQ(expected_receiver_id, receiver_set->current_receiver());
 }
 
-template <typename BindingSetType>
-base::Closure ExpectBindingId(BindingSetType* binding_set,
-                              BindingId expected_binding_id) {
-  return base::Bind(&ExpectBindingIdHelper<BindingSetType>, binding_set,
-                    expected_binding_id);
+template <typename ReceiverSetType>
+base::RepeatingClosure ExpectReceiverId(ReceiverSetType* receiver_set,
+                                        ReceiverId expected_receiver_id) {
+  return base::BindRepeating(&ExpectReceiverIdHelper<ReceiverSetType>,
+                             receiver_set, expected_receiver_id);
 }
 
-template <typename BindingSetType>
-void ReportBadMessageHelper(BindingSetType* binding_set,
+template <typename ReceiverSetType>
+void ReportBadMessageHelper(ReceiverSetType* receiver_set,
                             const std::string& error) {
-  binding_set->ReportBadMessage(error);
+  receiver_set->ReportBadMessage(error);
 }
 
-template <typename BindingSetType>
-base::Closure ReportBadMessage(BindingSetType* binding_set,
-                               const std::string& error) {
-  return base::Bind(&ReportBadMessageHelper<BindingSetType>, binding_set,
-                    error);
+template <typename ReceiverSetType>
+base::RepeatingClosure ReportBadMessage(ReceiverSetType* receiver_set,
+                                        const std::string& error) {
+  return base::BindRepeating(&ReportBadMessageHelper<ReceiverSetType>,
+                             receiver_set, error);
 }
 
-template <typename BindingSetType>
-void SaveBadMessageCallbackHelper(BindingSetType* binding_set,
+template <typename ReceiverSetType>
+void SaveBadMessageCallbackHelper(ReceiverSetType* receiver_set,
                                   ReportBadMessageCallback* callback) {
-  *callback = binding_set->GetBadMessageCallback();
+  *callback = receiver_set->GetBadMessageCallback();
 }
 
-template <typename BindingSetType>
-base::Closure SaveBadMessageCallback(BindingSetType* binding_set,
-                                     ReportBadMessageCallback* callback) {
-  return base::Bind(&SaveBadMessageCallbackHelper<BindingSetType>, binding_set,
-                    callback);
+template <typename ReceiverSetType>
+base::RepeatingClosure SaveBadMessageCallback(
+    ReceiverSetType* receiver_set,
+    ReportBadMessageCallback* callback) {
+  return base::BindRepeating(&SaveBadMessageCallbackHelper<ReceiverSetType>,
+                             receiver_set, callback);
 }
 
-base::Closure Sequence(const base::Closure& first,
-                       const base::Closure& second) {
-  return base::Bind(
-      [] (const base::Closure& first, const base::Closure& second) {
+base::RepeatingClosure Sequence(base::RepeatingClosure first,
+                                base::RepeatingClosure second) {
+  return base::BindRepeating(
+      [](base::RepeatingClosure first, base::RepeatingClosure second) {
         first.Run();
         second.Run();
-      }, first, second);
+      },
+      first, second);
 }
 
 class PingImpl : public PingService {
  public:
-  PingImpl() {}
-  ~PingImpl() override {}
+  PingImpl() = default;
+  ~PingImpl() override = default;
 
   void set_ping_handler(const base::RepeatingClosure& handler) {
     ping_handler_ = handler;
@@ -104,23 +106,23 @@ class PingImpl : public PingService {
   base::RepeatingClosure ping_handler_;
 };
 
-TEST_P(BindingSetTest, BindingSetContext) {
+TEST_P(ReceiverSetTest, ReceiverSetContext) {
   PingImpl impl;
 
-  BindingSet<PingService, int> bindings;
-  PingServicePtr ping_a, ping_b;
-  bindings.AddBinding(&impl, MakeRequest(&ping_a), 1);
-  bindings.AddBinding(&impl, MakeRequest(&ping_b), 2);
+  ReceiverSet<PingService, int> receivers;
+  Remote<PingService> ping_a, ping_b;
+  receivers.Add(&impl, ping_a.BindNewPipeAndPassReceiver(), 1);
+  receivers.Add(&impl, ping_b.BindNewPipeAndPassReceiver(), 2);
 
   {
-    impl.set_ping_handler(ExpectContext(&bindings, 1));
+    impl.set_ping_handler(ExpectContext(&receivers, 1));
     base::RunLoop loop;
     ping_a->Ping(loop.QuitClosure());
     loop.Run();
   }
 
   {
-    impl.set_ping_handler(ExpectContext(&bindings, 2));
+    impl.set_ping_handler(ExpectContext(&receivers, 2));
     base::RunLoop loop;
     ping_b->Ping(loop.QuitClosure());
     loop.Run();
@@ -128,40 +130,42 @@ TEST_P(BindingSetTest, BindingSetContext) {
 
   {
     base::RunLoop loop;
-    bindings.set_connection_error_handler(
-        Sequence(ExpectContext(&bindings, 1), loop.QuitClosure()));
+    receivers.set_disconnect_handler(
+        Sequence(ExpectContext(&receivers, 1), loop.QuitClosure()));
     ping_a.reset();
     loop.Run();
   }
 
   {
     base::RunLoop loop;
-    bindings.set_connection_error_handler(
-        Sequence(ExpectContext(&bindings, 2), loop.QuitClosure()));
+    receivers.set_disconnect_handler(
+        Sequence(ExpectContext(&receivers, 2), loop.QuitClosure()));
     ping_b.reset();
     loop.Run();
   }
 
-  EXPECT_TRUE(bindings.empty());
+  EXPECT_TRUE(receivers.empty());
 }
 
-TEST_P(BindingSetTest, BindingSetDispatchBinding) {
+TEST_P(ReceiverSetTest, ReceiverSetDispatchReceiver) {
   PingImpl impl;
 
-  BindingSet<PingService, int> bindings;
-  PingServicePtr ping_a, ping_b;
-  BindingId id_a = bindings.AddBinding(&impl, MakeRequest(&ping_a), 1);
-  BindingId id_b = bindings.AddBinding(&impl, MakeRequest(&ping_b), 2);
+  ReceiverSet<PingService, int> receivers;
+  Remote<PingService> ping_a, ping_b;
+  ReceiverId id_a =
+      receivers.Add(&impl, ping_a.BindNewPipeAndPassReceiver(), 1);
+  ReceiverId id_b =
+      receivers.Add(&impl, ping_b.BindNewPipeAndPassReceiver(), 2);
 
   {
-    impl.set_ping_handler(ExpectBindingId(&bindings, id_a));
+    impl.set_ping_handler(ExpectReceiverId(&receivers, id_a));
     base::RunLoop loop;
     ping_a->Ping(loop.QuitClosure());
     loop.Run();
   }
 
   {
-    impl.set_ping_handler(ExpectBindingId(&bindings, id_b));
+    impl.set_ping_handler(ExpectReceiverId(&receivers, id_b));
     base::RunLoop loop;
     ping_b->Ping(loop.QuitClosure());
     loop.Run();
@@ -169,43 +173,41 @@ TEST_P(BindingSetTest, BindingSetDispatchBinding) {
 
   {
     base::RunLoop loop;
-    bindings.set_connection_error_handler(
-        Sequence(ExpectBindingId(&bindings, id_a), loop.QuitClosure()));
+    receivers.set_disconnect_handler(
+        Sequence(ExpectReceiverId(&receivers, id_a), loop.QuitClosure()));
     ping_a.reset();
     loop.Run();
   }
 
   {
     base::RunLoop loop;
-    bindings.set_connection_error_handler(
-        Sequence(ExpectBindingId(&bindings, id_b), loop.QuitClosure()));
+    receivers.set_disconnect_handler(
+        Sequence(ExpectReceiverId(&receivers, id_b), loop.QuitClosure()));
     ping_b.reset();
     loop.Run();
   }
 
-  EXPECT_TRUE(bindings.empty());
+  EXPECT_TRUE(receivers.empty());
 }
 
-TEST_P(BindingSetTest, BindingSetConnectionErrorWithReason) {
+TEST_P(ReceiverSetTest, ReceiverSetConnectionErrorWithReason) {
   PingImpl impl;
-  PingServicePtr ptr;
-  BindingSet<PingService> bindings;
-  bindings.AddBinding(&impl, MakeRequest(&ptr));
+  Remote<PingService> remote;
+  ReceiverSet<PingService> receivers;
+  receivers.Add(&impl, remote.BindNewPipeAndPassReceiver());
 
   base::RunLoop run_loop;
-  bindings.set_connection_error_with_reason_handler(base::Bind(
-      [](const base::Closure& quit_closure, uint32_t custom_reason,
-         const std::string& description) {
+  receivers.set_disconnect_with_reason_handler(base::BindLambdaForTesting(
+      [&](uint32_t custom_reason, const std::string& description) {
         EXPECT_EQ(1024u, custom_reason);
         EXPECT_EQ("bye", description);
-        quit_closure.Run();
-      },
-      run_loop.QuitClosure()));
+        run_loop.Quit();
+      }));
 
-  ptr.ResetWithReason(1024u, "bye");
+  remote.ResetWithReason(1024u, "bye");
 }
 
-TEST_P(BindingSetTest, BindingSetReportBadMessage) {
+TEST_P(ReceiverSetTest, ReceiverSetReportBadMessage) {
   PingImpl impl;
 
   std::string last_received_error;
@@ -214,35 +216,35 @@ TEST_P(BindingSetTest, BindingSetReportBadMessage) {
                     const std::string& error) { *out_error = error; },
                  &last_received_error));
 
-  BindingSet<PingService, int> bindings;
-  PingServicePtr ping_a, ping_b;
-  bindings.AddBinding(&impl, MakeRequest(&ping_a), 1);
-  bindings.AddBinding(&impl, MakeRequest(&ping_b), 2);
+  ReceiverSet<PingService, int> receivers;
+  Remote<PingService> ping_a, ping_b;
+  receivers.Add(&impl, ping_a.BindNewPipeAndPassReceiver(), 1);
+  receivers.Add(&impl, ping_b.BindNewPipeAndPassReceiver(), 2);
 
   {
-    impl.set_ping_handler(ReportBadMessage(&bindings, "message 1"));
+    impl.set_ping_handler(ReportBadMessage(&receivers, "message 1"));
     base::RunLoop loop;
-    ping_a.set_connection_error_handler(loop.QuitClosure());
+    ping_a.set_disconnect_handler(loop.QuitClosure());
     ping_a->Ping(base::Bind([] {}));
     loop.Run();
     EXPECT_EQ("message 1", last_received_error);
   }
 
   {
-    impl.set_ping_handler(ReportBadMessage(&bindings, "message 2"));
+    impl.set_ping_handler(ReportBadMessage(&receivers, "message 2"));
     base::RunLoop loop;
-    ping_b.set_connection_error_handler(loop.QuitClosure());
+    ping_b.set_disconnect_handler(loop.QuitClosure());
     ping_b->Ping(base::Bind([] {}));
     loop.Run();
     EXPECT_EQ("message 2", last_received_error);
   }
 
-  EXPECT_TRUE(bindings.empty());
+  EXPECT_TRUE(receivers.empty());
 
   core::SetDefaultProcessErrorCallback(mojo::core::ProcessErrorCallback());
 }
 
-TEST_P(BindingSetTest, BindingSetGetBadMessageCallback) {
+TEST_P(ReceiverSetTest, ReceiverSetGetBadMessageCallback) {
   PingImpl impl;
 
   std::string last_received_error;
@@ -251,17 +253,17 @@ TEST_P(BindingSetTest, BindingSetGetBadMessageCallback) {
                     const std::string& error) { *out_error = error; },
                  &last_received_error));
 
-  BindingSet<PingService, int> bindings;
-  PingServicePtr ping_a, ping_b;
-  bindings.AddBinding(&impl, MakeRequest(&ping_a), 1);
-  bindings.AddBinding(&impl, MakeRequest(&ping_b), 2);
+  ReceiverSet<PingService, int> receivers;
+  Remote<PingService> ping_a, ping_b;
+  receivers.Add(&impl, ping_a.BindNewPipeAndPassReceiver(), 1);
+  receivers.Add(&impl, ping_b.BindNewPipeAndPassReceiver(), 2);
 
   ReportBadMessageCallback bad_message_callback_a;
   ReportBadMessageCallback bad_message_callback_b;
 
   {
     impl.set_ping_handler(
-        SaveBadMessageCallback(&bindings, &bad_message_callback_a));
+        SaveBadMessageCallback(&receivers, &bad_message_callback_a));
     base::RunLoop loop;
     ping_a->Ping(loop.QuitClosure());
     loop.Run();
@@ -270,7 +272,7 @@ TEST_P(BindingSetTest, BindingSetGetBadMessageCallback) {
 
   {
     impl.set_ping_handler(
-        SaveBadMessageCallback(&bindings, &bad_message_callback_b));
+        SaveBadMessageCallback(&receivers, &bad_message_callback_b));
     base::RunLoop loop;
     ping_b->Ping(loop.QuitClosure());
     loop.Run();
@@ -281,18 +283,18 @@ TEST_P(BindingSetTest, BindingSetGetBadMessageCallback) {
 
   {
     base::RunLoop loop;
-    ping_b.set_connection_error_handler(loop.QuitClosure());
+    ping_b.set_disconnect_handler(loop.QuitClosure());
     std::move(bad_message_callback_b).Run("message 2");
     EXPECT_EQ("message 2", last_received_error);
     loop.Run();
   }
 
-  EXPECT_TRUE(bindings.empty());
+  EXPECT_TRUE(receivers.empty());
 
   core::SetDefaultProcessErrorCallback(mojo::core::ProcessErrorCallback());
 }
 
-TEST_P(BindingSetTest, BindingSetGetBadMessageCallbackOutlivesBindingSet) {
+TEST_P(ReceiverSetTest, ReceiverSetGetBadMessageCallbackOutlivesReceiverSet) {
   PingImpl impl;
 
   std::string last_received_error;
@@ -303,12 +305,12 @@ TEST_P(BindingSetTest, BindingSetGetBadMessageCallbackOutlivesBindingSet) {
 
   ReportBadMessageCallback bad_message_callback;
   {
-    BindingSet<PingService, int> bindings;
-    PingServicePtr ping_a;
-    bindings.AddBinding(&impl, MakeRequest(&ping_a), 1);
+    ReceiverSet<PingService, int> receivers;
+    Remote<PingService> ping_a;
+    receivers.Add(&impl, ping_a.BindNewPipeAndPassReceiver(), 1);
 
     impl.set_ping_handler(
-        SaveBadMessageCallback(&bindings, &bad_message_callback));
+        SaveBadMessageCallback(&receivers, &bad_message_callback));
     base::RunLoop loop;
     ping_a->Ping(loop.QuitClosure());
     loop.Run();
@@ -322,27 +324,27 @@ TEST_P(BindingSetTest, BindingSetGetBadMessageCallbackOutlivesBindingSet) {
 
 class PingProviderImpl : public AssociatedPingProvider, public PingService {
  public:
-  PingProviderImpl() {}
-  ~PingProviderImpl() override {}
+  PingProviderImpl() = default;
+  ~PingProviderImpl() override = default;
 
   void set_new_ping_context(int context) { new_ping_context_ = context; }
 
-  void set_new_ping_handler(const base::Closure& handler) {
+  void set_new_ping_handler(const base::RepeatingClosure& handler) {
     new_ping_handler_ = handler;
   }
 
-  void set_ping_handler(const base::Closure& handler) {
+  void set_ping_handler(const base::RepeatingClosure& handler) {
     ping_handler_ = handler;
   }
 
-  AssociatedBindingSet<PingService, int>& ping_bindings() {
-    return ping_bindings_;
+  AssociatedReceiverSet<PingService, int>& ping_receivers() {
+    return ping_receivers_;
   }
 
  private:
   // AssociatedPingProvider:
-  void GetPing(PingServiceAssociatedRequest request) override {
-    ping_bindings_.AddBinding(this, std::move(request), new_ping_context_);
+  void GetPing(AssociatedInterfaceRequest<PingService> receiver) override {
+    ping_receivers_.Add(this, std::move(receiver), new_ping_context_);
     if (!new_ping_handler_.is_null())
       new_ping_handler_.Run();
   }
@@ -354,44 +356,45 @@ class PingProviderImpl : public AssociatedPingProvider, public PingService {
     std::move(callback).Run();
   }
 
-  AssociatedBindingSet<PingService, int> ping_bindings_;
+  AssociatedReceiverSet<PingService, int> ping_receivers_;
   int new_ping_context_ = -1;
   base::Closure ping_handler_;
   base::Closure new_ping_handler_;
 };
 
-TEST_P(BindingSetTest, AssociatedBindingSetContext) {
-  AssociatedPingProviderPtr provider;
+TEST_P(ReceiverSetTest, AssociatedReceiverSetContext) {
+  Remote<AssociatedPingProvider> provider;
   PingProviderImpl impl;
-  Binding<AssociatedPingProvider> binding(&impl, MakeRequest(&provider));
+  Receiver<AssociatedPingProvider> receiver(
+      &impl, provider.BindNewPipeAndPassReceiver());
 
-  PingServiceAssociatedPtr ping_a;
+  AssociatedRemote<PingService> ping_a;
   {
     base::RunLoop loop;
     impl.set_new_ping_context(1);
     impl.set_new_ping_handler(loop.QuitClosure());
-    provider->GetPing(MakeRequest(&ping_a));
+    provider->GetPing(ping_a.BindNewEndpointAndPassReceiver());
     loop.Run();
   }
 
-  PingServiceAssociatedPtr ping_b;
+  AssociatedRemote<PingService> ping_b;
   {
     base::RunLoop loop;
     impl.set_new_ping_context(2);
     impl.set_new_ping_handler(loop.QuitClosure());
-    provider->GetPing(MakeRequest(&ping_b));
+    provider->GetPing(ping_b.BindNewEndpointAndPassReceiver());
     loop.Run();
   }
 
   {
-    impl.set_ping_handler(ExpectContext(&impl.ping_bindings(), 1));
+    impl.set_ping_handler(ExpectContext(&impl.ping_receivers(), 1));
     base::RunLoop loop;
     ping_a->Ping(loop.QuitClosure());
     loop.Run();
   }
 
   {
-    impl.set_ping_handler(ExpectContext(&impl.ping_bindings(), 2));
+    impl.set_ping_handler(ExpectContext(&impl.ping_receivers(), 2));
     base::RunLoop loop;
     ping_b->Ping(loop.QuitClosure());
     loop.Run();
@@ -399,134 +402,134 @@ TEST_P(BindingSetTest, AssociatedBindingSetContext) {
 
   {
     base::RunLoop loop;
-    impl.ping_bindings().set_connection_error_handler(
-        Sequence(ExpectContext(&impl.ping_bindings(), 1), loop.QuitClosure()));
+    impl.ping_receivers().set_disconnect_handler(
+        Sequence(ExpectContext(&impl.ping_receivers(), 1), loop.QuitClosure()));
     ping_a.reset();
     loop.Run();
   }
 
   {
     base::RunLoop loop;
-    impl.ping_bindings().set_connection_error_handler(
-        Sequence(ExpectContext(&impl.ping_bindings(), 2), loop.QuitClosure()));
+    impl.ping_receivers().set_disconnect_handler(
+        Sequence(ExpectContext(&impl.ping_receivers(), 2), loop.QuitClosure()));
     ping_b.reset();
     loop.Run();
   }
 
-  EXPECT_TRUE(impl.ping_bindings().empty());
+  EXPECT_TRUE(impl.ping_receivers().empty());
 }
 
-TEST_P(BindingSetTest, MasterInterfaceBindingSetContext) {
-  AssociatedPingProviderPtr provider_a, provider_b;
+TEST_P(ReceiverSetTest, MasterInterfaceReceiverSetContext) {
+  Remote<AssociatedPingProvider> provider_a, provider_b;
   PingProviderImpl impl;
-  BindingSet<AssociatedPingProvider, int> bindings;
+  ReceiverSet<AssociatedPingProvider, int> receivers;
 
-  bindings.AddBinding(&impl, MakeRequest(&provider_a), 1);
-  bindings.AddBinding(&impl, MakeRequest(&provider_b), 2);
+  receivers.Add(&impl, provider_a.BindNewPipeAndPassReceiver(), 1);
+  receivers.Add(&impl, provider_b.BindNewPipeAndPassReceiver(), 2);
 
   {
-    PingServiceAssociatedPtr ping;
+    AssociatedRemote<PingService> ping;
     base::RunLoop loop;
     impl.set_new_ping_handler(
-        Sequence(ExpectContext(&bindings, 1), loop.QuitClosure()));
-    provider_a->GetPing(MakeRequest(&ping));
+        Sequence(ExpectContext(&receivers, 1), loop.QuitClosure()));
+    provider_a->GetPing(ping.BindNewEndpointAndPassReceiver());
     loop.Run();
   }
 
   {
-    PingServiceAssociatedPtr ping;
+    AssociatedRemote<PingService> ping;
     base::RunLoop loop;
     impl.set_new_ping_handler(
-        Sequence(ExpectContext(&bindings, 2), loop.QuitClosure()));
-    provider_b->GetPing(MakeRequest(&ping));
+        Sequence(ExpectContext(&receivers, 2), loop.QuitClosure()));
+    provider_b->GetPing(ping.BindNewEndpointAndPassReceiver());
     loop.Run();
   }
 
   {
     base::RunLoop loop;
-    bindings.set_connection_error_handler(
-        Sequence(ExpectContext(&bindings, 1), loop.QuitClosure()));
+    receivers.set_disconnect_handler(
+        Sequence(ExpectContext(&receivers, 1), loop.QuitClosure()));
     provider_a.reset();
     loop.Run();
   }
 
   {
     base::RunLoop loop;
-    bindings.set_connection_error_handler(
-        Sequence(ExpectContext(&bindings, 2), loop.QuitClosure()));
+    receivers.set_disconnect_handler(
+        Sequence(ExpectContext(&receivers, 2), loop.QuitClosure()));
     provider_b.reset();
     loop.Run();
   }
 
-  EXPECT_TRUE(bindings.empty());
+  EXPECT_TRUE(receivers.empty());
 }
 
-TEST_P(BindingSetTest, MasterInterfaceBindingSetDispatchBinding) {
-  AssociatedPingProviderPtr provider_a, provider_b;
+TEST_P(ReceiverSetTest, MasterInterfaceReceiverSetDispatchReceiver) {
+  Remote<AssociatedPingProvider> provider_a, provider_b;
   PingProviderImpl impl;
-  BindingSet<AssociatedPingProvider, int> bindings;
+  ReceiverSet<AssociatedPingProvider, int> receivers;
 
-  BindingId id_a = bindings.AddBinding(&impl, MakeRequest(&provider_a), 1);
-  BindingId id_b = bindings.AddBinding(&impl, MakeRequest(&provider_b), 2);
+  ReceiverId id_a =
+      receivers.Add(&impl, provider_a.BindNewPipeAndPassReceiver(), 1);
+  ReceiverId id_b =
+      receivers.Add(&impl, provider_b.BindNewPipeAndPassReceiver(), 2);
 
   {
-    PingServiceAssociatedPtr ping;
+    AssociatedRemote<PingService> ping;
     base::RunLoop loop;
     impl.set_new_ping_handler(
-        Sequence(ExpectBindingId(&bindings, id_a), loop.QuitClosure()));
-    provider_a->GetPing(MakeRequest(&ping));
+        Sequence(ExpectReceiverId(&receivers, id_a), loop.QuitClosure()));
+    provider_a->GetPing(ping.BindNewEndpointAndPassReceiver());
     loop.Run();
   }
 
   {
-    PingServiceAssociatedPtr ping;
+    AssociatedRemote<PingService> ping;
     base::RunLoop loop;
     impl.set_new_ping_handler(
-        Sequence(ExpectBindingId(&bindings, id_b), loop.QuitClosure()));
-    provider_b->GetPing(MakeRequest(&ping));
+        Sequence(ExpectReceiverId(&receivers, id_b), loop.QuitClosure()));
+    provider_b->GetPing(ping.BindNewEndpointAndPassReceiver());
     loop.Run();
   }
 
   {
     base::RunLoop loop;
-    bindings.set_connection_error_handler(
-        Sequence(ExpectBindingId(&bindings, id_a), loop.QuitClosure()));
+    receivers.set_disconnect_handler(
+        Sequence(ExpectReceiverId(&receivers, id_a), loop.QuitClosure()));
     provider_a.reset();
     loop.Run();
   }
 
   {
     base::RunLoop loop;
-    bindings.set_connection_error_handler(
-        Sequence(ExpectBindingId(&bindings, id_b), loop.QuitClosure()));
+    receivers.set_disconnect_handler(
+        Sequence(ExpectReceiverId(&receivers, id_b), loop.QuitClosure()));
     provider_b.reset();
     loop.Run();
   }
 
-  EXPECT_TRUE(bindings.empty());
+  EXPECT_TRUE(receivers.empty());
 }
 
-TEST_P(BindingSetTest, AssociatedBindingSetConnectionErrorWithReason) {
-  AssociatedPingProviderPtr master_ptr;
+TEST_P(ReceiverSetTest, AssociatedReceiverSetConnectionErrorWithReason) {
+  Remote<AssociatedPingProvider> remote_master;
   PingProviderImpl master_impl;
-  Binding<AssociatedPingProvider> master_binding(&master_impl,
-                                                 MakeRequest(&master_ptr));
+  Receiver<AssociatedPingProvider> master_receiver(
+      &master_impl, remote_master.BindNewPipeAndPassReceiver());
 
   base::RunLoop run_loop;
-  master_impl.ping_bindings().set_connection_error_with_reason_handler(
-      base::Bind(
-          [](const base::Closure& quit_closure, uint32_t custom_reason,
-             const std::string& description) {
+  master_impl.ping_receivers().set_disconnect_with_reason_handler(
+      base::BindLambdaForTesting(
+          [&](uint32_t custom_reason, const std::string& description) {
             EXPECT_EQ(2048u, custom_reason);
             EXPECT_EQ("bye", description);
-            quit_closure.Run();
-          },
-          run_loop.QuitClosure()));
+            run_loop.Quit();
+          }));
 
-  PingServiceAssociatedPtr ptr;
-  master_ptr->GetPing(MakeRequest(&ptr));
+  AssociatedRemote<PingService> remote_ping;
+  remote_master->GetPing(remote_ping.BindNewEndpointAndPassReceiver());
 
-  ptr.ResetWithReason(2048u, "bye");
+  remote_ping.ResetWithReason(2048u, "bye");
 
   run_loop.Run();
 }
@@ -542,29 +545,29 @@ class PingInstanceCounter : public PingService {
 };
 int PingInstanceCounter::instance_count = 0;
 
-TEST_P(BindingSetTest, StrongBinding_Destructor) {
-  PingServicePtr ping_a, ping_b;
-  auto bindings = std::make_unique<StrongBindingSet<PingService>>();
+TEST_P(ReceiverSetTest, UniqueReceiverSetDestruction) {
+  Remote<PingService> ping_a, ping_b;
+  auto receivers = std::make_unique<UniqueReceiverSet<PingService>>();
 
-  bindings->AddBinding(std::make_unique<PingInstanceCounter>(),
-                       mojo::MakeRequest(&ping_a));
+  receivers->Add(std::make_unique<PingInstanceCounter>(),
+                 ping_a.BindNewPipeAndPassReceiver());
   EXPECT_EQ(1, PingInstanceCounter::instance_count);
 
-  bindings->AddBinding(std::make_unique<PingInstanceCounter>(),
-                       mojo::MakeRequest(&ping_b));
+  receivers->Add(std::make_unique<PingInstanceCounter>(),
+                 ping_b.BindNewPipeAndPassReceiver());
   EXPECT_EQ(2, PingInstanceCounter::instance_count);
 
-  bindings.reset();
+  receivers.reset();
   EXPECT_EQ(0, PingInstanceCounter::instance_count);
 }
 
-TEST_P(BindingSetTest, StrongBinding_ConnectionError) {
-  PingServicePtr ping_a, ping_b;
-  StrongBindingSet<PingService> bindings;
-  bindings.AddBinding(std::make_unique<PingInstanceCounter>(),
-                      mojo::MakeRequest(&ping_a));
-  bindings.AddBinding(std::make_unique<PingInstanceCounter>(),
-                      mojo::MakeRequest(&ping_b));
+TEST_P(ReceiverSetTest, UniqueReceiverSetDisconnect) {
+  Remote<PingService> ping_a, ping_b;
+  UniqueReceiverSet<PingService> receivers;
+  receivers.Add(std::make_unique<PingInstanceCounter>(),
+                ping_a.BindNewPipeAndPassReceiver());
+  receivers.Add(std::make_unique<PingInstanceCounter>(),
+                ping_b.BindNewPipeAndPassReceiver());
   EXPECT_EQ(2, PingInstanceCounter::instance_count);
 
   ping_a.reset();
@@ -576,23 +579,25 @@ TEST_P(BindingSetTest, StrongBinding_ConnectionError) {
   EXPECT_EQ(0, PingInstanceCounter::instance_count);
 }
 
-TEST_P(BindingSetTest, StrongBinding_RemoveBinding) {
-  PingServicePtr ping_a, ping_b;
-  StrongBindingSet<PingService> bindings;
-  BindingId binding_id_a = bindings.AddBinding(
-      std::make_unique<PingInstanceCounter>(), mojo::MakeRequest(&ping_a));
-  BindingId binding_id_b = bindings.AddBinding(
-      std::make_unique<PingInstanceCounter>(), mojo::MakeRequest(&ping_b));
+TEST_P(ReceiverSetTest, UniqueReceiverSetRemoveEntry) {
+  Remote<PingService> ping_a, ping_b;
+  UniqueReceiverSet<PingService> receivers;
+  ReceiverId receiver_id_a =
+      receivers.Add(std::make_unique<PingInstanceCounter>(),
+                    ping_a.BindNewPipeAndPassReceiver());
+  ReceiverId receiver_id_b =
+      receivers.Add(std::make_unique<PingInstanceCounter>(),
+                    ping_b.BindNewPipeAndPassReceiver());
   EXPECT_EQ(2, PingInstanceCounter::instance_count);
 
-  EXPECT_TRUE(bindings.RemoveBinding(binding_id_a));
+  EXPECT_TRUE(receivers.Remove(receiver_id_a));
   EXPECT_EQ(1, PingInstanceCounter::instance_count);
 
-  EXPECT_TRUE(bindings.RemoveBinding(binding_id_b));
+  EXPECT_TRUE(receivers.Remove(receiver_id_b));
   EXPECT_EQ(0, PingInstanceCounter::instance_count);
 }
 
-INSTANTIATE_MOJO_BINDINGS_TEST_SUITE_P(BindingSetTest);
+INSTANTIATE_MOJO_BINDINGS_TEST_SUITE_P(ReceiverSetTest);
 
 }  // namespace
 }  // namespace test

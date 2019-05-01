@@ -187,6 +187,7 @@ component("bindings") {
     "sync_handle_watcher.h",
     "thread_safe_interface_ptr.h",
     "unique_ptr_impl_ref_traits.h",
+    "unique_receiver_set.h",
   ]
 
   if (enable_random_mojo_delays) {

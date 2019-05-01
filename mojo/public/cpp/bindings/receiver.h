@@ -107,6 +107,12 @@ class Receiver {
   // which were scheduled prior to unbinding are effectively cancelled.
   void reset() { internal_state_.Close(); }
 
+  // Similar to the method above, but also specifies a disconnect reason.
+  void ResetWithReason(uint32_t custom_reason_code,
+                       const std::string& description) {
+    internal_state_.CloseWithReason(custom_reason_code, description);
+  }
+
   // Binds this Receiver, connecting it to a new PendingRemote which is
   // returned for transmission elsewhere (typically to a Remote who will consume
   // it to start making calls).
@@ -180,6 +186,44 @@ class Receiver {
   void AddFilter(std::unique_ptr<MessageReceiver> filter) {
     DCHECK(is_bound());
     internal_state_.AddFilter(std::move(filter));
+  }
+
+  // Pause and resume message dispatch.
+  void Pause() {
+    CHECK(!internal_state_.HasAssociatedInterfaces());
+    internal_state_.PauseIncomingMethodCallProcessing();
+  }
+
+  void Resume() { internal_state_.ResumeIncomingMethodCallProcessing(); }
+
+  // Blocks the calling thread until a new message arrives and is dispatched
+  // to the bound implementation.
+  bool WaitForIncomingCall() {
+    return internal_state_.WaitForIncomingMethodCall(MOJO_DEADLINE_INDEFINITE);
+  }
+
+  // Flushes any replies previously sent by the Receiver, only unblocking once
+  // acknowledgement from the Remote is received.
+  void FlushForTesting() { internal_state_.FlushForTesting(); }
+
+  // Reports the currently dispatching message as bad and resets this receiver.
+  // Note that this is only legal to call from within the stack frame of a
+  // message dispatch. If you need to do asynchronous work before determining
+  // the legitimacy of a message, use GetBadMessageCallback() and retain its
+  // result until ready to invoke or discard it.
+  void ReportBadMessage(const std::string& error) {
+    GetBadMessageCallback().Run(error);
+  }
+
+  // Acquires a callback which may be run to report the currently dispatching
+  // message as bad and reset this receiver. Note that this is only legal to
+  // call from directly within stack frame of a message dispatch, but the
+  // returned callback may be called exactly once any time thereafter to report
+  // the message as bad. |GetBadMessageCallback()| may only be called once per
+  // message, and the returned callback must be run on the same sequence to
+  // which this Receiver is bound.
+  ReportBadMessageCallback GetBadMessageCallback() {
+    return internal_state_.GetBadMessageCallback();
   }
 
  private:

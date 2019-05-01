@@ -9,10 +9,11 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
 #include "build/build_config.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "mojo/public/cpp/test_support/test_support.h"
 #include "mojo/public/interfaces/bindings/tests/sample_interfaces.mojom.h"
@@ -21,28 +22,17 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
 // The tests in this file are designed to test the interaction between a
-// Callback and its associated Binding. If a Callback is deleted before
-// being used we DCHECK fail--unless the associated Binding has already
+// Callback and its associated Receiver. If a Callback is deleted before
+// being used we DCHECK fail--unless the associated Receiver has already
 // been closed or deleted. This contract must be explained to the Mojo
 // application developer. For example it is the developer's responsibility to
-// ensure that the Binding is destroyed before an unused Callback is destroyed.
+// ensure that the Receiver is destroyed before an unused Callback is destroyed.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace mojo {
 namespace test {
 namespace {
-
-void SaveValue(int32_t* storage, const base::Closure& closure, int32_t value) {
-  *storage = value;
-  if (!closure.is_null())
-    closure.Run();
-}
-
-base::Callback<void(int32_t)> BindValueSaver(int32_t* last_value_seen,
-                                             const base::Closure& closure) {
-  return base::Bind(&SaveValue, last_value_seen, closure);
-}
 
 // An implementation of sample::Provider used on the server side.
 // It only implements one of the methods: EchoInt().
@@ -72,10 +62,8 @@ class InterfaceImpl : public sample::Provider {
   void EchoInt(int32_t x, EchoIntCallback callback) override {
     last_server_value_seen_ = x;
     callback_saved_ = std::move(callback);
-    if (!closure_.is_null()) {
-      closure_.Run();
-      closure_.Reset();
-    }
+    if (closure_)
+      std::move(closure_).Run();
   }
 
   void EchoString(const std::string& a, EchoStringCallback callback) override {
@@ -97,26 +85,26 @@ class InterfaceImpl : public sample::Provider {
     CHECK(false) << "Not implemented.";
   }
 
-  void resetLastServerValueSeen() { last_server_value_seen_ = 0; }
+  void ResetLastServerValueSeen() { last_server_value_seen_ = 0; }
 
   int32_t last_server_value_seen() const { return last_server_value_seen_; }
 
-  void set_closure(const base::Closure& closure) { closure_ = closure; }
+  void set_closure(base::OnceClosure closure) { closure_ = std::move(closure); }
 
  private:
   int32_t last_server_value_seen_;
   EchoIntCallback callback_saved_;
-  base::Closure closure_;
+  base::OnceClosure closure_;
 };
 
-class BindingCallbackTest : public testing::Test {
+class ReceiverCallbackTest : public testing::Test {
  public:
-  BindingCallbackTest() {}
-  ~BindingCallbackTest() override {}
+  ReceiverCallbackTest() {}
+  ~ReceiverCallbackTest() override {}
 
  protected:
   int32_t last_client_callback_value_seen_;
-  sample::ProviderPtr interface_ptr_;
+  Remote<sample::Provider> remote_;
 
   void PumpMessages() { base::RunLoop().RunUntilIdle(); }
 
@@ -124,24 +112,25 @@ class BindingCallbackTest : public testing::Test {
   base::MessageLoop loop_;
 };
 
-// Tests that the InterfacePtr and the Binding can communicate with each
-// other normally.
-TEST_F(BindingCallbackTest, Basic) {
-  // Create the ServerImpl and the Binding.
+// Tests that the Remote and the Receiver can communicate with each other
+// normally.
+TEST_F(ReceiverCallbackTest, Basic) {
+  // Create the ServerImpl and the Receiver.
   InterfaceImpl server_impl;
-  Binding<sample::Provider> binding(&server_impl, MakeRequest(&interface_ptr_));
+  Receiver<sample::Provider> receiver(&server_impl,
+                                      remote_.BindNewPipeAndPassReceiver());
 
   // Initialize the test values.
-  server_impl.resetLastServerValueSeen();
+  server_impl.ResetLastServerValueSeen();
   last_client_callback_value_seen_ = 0;
 
   // Invoke the Echo method.
   base::RunLoop run_loop, run_loop2;
   server_impl.set_closure(run_loop.QuitClosure());
-  interface_ptr_->EchoInt(
-      7,
-      BindValueSaver(&last_client_callback_value_seen_,
-                     run_loop2.QuitClosure()));
+  remote_->EchoInt(7, base::BindLambdaForTesting([&](int32_t value) {
+                     last_client_callback_value_seen_ = value;
+                     run_loop2.Quit();
+                   }));
   run_loop.Run();
 
   // Check that server saw the correct value, but the client has not yet.
@@ -156,16 +145,16 @@ TEST_F(BindingCallbackTest, Basic) {
   EXPECT_EQ(7, last_client_callback_value_seen_);
 
   // Initialize the test values again.
-  server_impl.resetLastServerValueSeen();
+  server_impl.ResetLastServerValueSeen();
   last_client_callback_value_seen_ = 0;
 
   // Invoke the Echo method again.
   base::RunLoop run_loop3, run_loop4;
   server_impl.set_closure(run_loop3.QuitClosure());
-  interface_ptr_->EchoInt(
-      13,
-      BindValueSaver(&last_client_callback_value_seen_,
-                     run_loop4.QuitClosure()));
+  remote_->EchoInt(13, base::BindLambdaForTesting([&](int32_t value) {
+                     last_client_callback_value_seen_ = value;
+                     run_loop4.Quit();
+                   }));
   run_loop3.Run();
 
   // Check that server saw the correct value, but the client has not yet.
@@ -180,31 +169,31 @@ TEST_F(BindingCallbackTest, Basic) {
   EXPECT_EQ(13, last_client_callback_value_seen_);
 }
 
-// Tests that running the Callback after the Binding has been deleted
+// Tests that running the Callback after the Receiver has been deleted
 // results in a clean failure.
-TEST_F(BindingCallbackTest, DeleteBindingThenRunCallback) {
+TEST_F(ReceiverCallbackTest, DeleteReceiverThenRunCallback) {
   // Create the ServerImpl.
   InterfaceImpl server_impl;
   base::RunLoop run_loop;
   {
-    // Create the binding in an inner scope so it can be deleted first.
-    Binding<sample::Provider> binding(&server_impl,
-                                      MakeRequest(&interface_ptr_));
-    interface_ptr_.set_connection_error_handler(run_loop.QuitClosure());
+    // Create the receiver in an inner scope so it can be deleted first.
+    Receiver<sample::Provider> receiver(&server_impl,
+                                        remote_.BindNewPipeAndPassReceiver());
+    remote_.set_disconnect_handler(run_loop.QuitClosure());
 
     // Initialize the test values.
-    server_impl.resetLastServerValueSeen();
+    server_impl.ResetLastServerValueSeen();
     last_client_callback_value_seen_ = 0;
 
     // Invoke the Echo method.
     base::RunLoop run_loop2;
     server_impl.set_closure(run_loop2.QuitClosure());
-    interface_ptr_->EchoInt(
-        7,
-        BindValueSaver(&last_client_callback_value_seen_, base::Closure()));
+    remote_->EchoInt(7, base::BindLambdaForTesting([&](int32_t value) {
+                       last_client_callback_value_seen_ = value;
+                     }));
     run_loop2.Run();
   }
-  // The binding has now been destroyed and the pipe is closed.
+  // The receiver has now been destroyed and its pipe endpoint is closed.
 
   // Check that server saw the correct value, but the client has not yet.
   EXPECT_EQ(7, server_impl.last_server_value_seen());
@@ -220,76 +209,78 @@ TEST_F(BindingCallbackTest, DeleteBindingThenRunCallback) {
 
   // Attempt to invoke the method again and confirm that an error was
   // encountered.
-  interface_ptr_->EchoInt(
-      13,
-      BindValueSaver(&last_client_callback_value_seen_, base::Closure()));
+  remote_->EchoInt(13, base::BindLambdaForTesting([&](int32_t value) {
+                     last_client_callback_value_seen_ = value;
+                     run_loop.Quit();
+                   }));
   run_loop.Run();
-  EXPECT_TRUE(interface_ptr_.encountered_error());
+  EXPECT_FALSE(remote_.is_connected());
 }
 
 // Tests that deleting a Callback without running it after the corresponding
-// binding has already been deleted does not result in a crash.
-TEST_F(BindingCallbackTest, DeleteBindingThenDeleteCallback) {
+// Receiver has already been deleted does not result in a crash.
+TEST_F(ReceiverCallbackTest, DeleteReceiverThenDeleteCallback) {
   // Create the ServerImpl.
   InterfaceImpl server_impl;
   {
-    // Create the binding in an inner scope so it can be deleted first.
-    Binding<sample::Provider> binding(&server_impl,
-                                      MakeRequest(&interface_ptr_));
+    // Create the receiver in an inner scope so it can be deleted first.
+    Receiver<sample::Provider> receiver(&server_impl,
+                                        remote_.BindNewPipeAndPassReceiver());
 
     // Initialize the test values.
-    server_impl.resetLastServerValueSeen();
+    server_impl.ResetLastServerValueSeen();
     last_client_callback_value_seen_ = 0;
 
     // Invoke the Echo method.
     base::RunLoop run_loop;
     server_impl.set_closure(run_loop.QuitClosure());
-    interface_ptr_->EchoInt(
-        7,
-        BindValueSaver(&last_client_callback_value_seen_, base::Closure()));
+    remote_->EchoInt(7, base::BindLambdaForTesting([&](int32_t value) {
+                       last_client_callback_value_seen_ = value;
+                     }));
     run_loop.Run();
   }
-  // The binding has now been destroyed and the pipe is closed.
+  // The receiver has now been destroyed and its pipe endpoint is closed.
 
   // Check that server saw the correct value, but the client has not yet.
   EXPECT_EQ(7, server_impl.last_server_value_seen());
   EXPECT_EQ(0, last_client_callback_value_seen_);
 
   // Delete the callback without running it. This should not
-  // cause a problem because the insfrastructure can detect that the
-  // binding has already been destroyed and the pipe is closed.
+  // cause a problem because the infrastructure can detect that the
+  // receiver has already been destroyed.
   server_impl.DeleteCallback();
 }
 
-// Tests that closing a Binding allows us to delete a callback
+// Tests that closing a Receiver allows us to delete a callback
 // without running it without encountering a crash.
-TEST_F(BindingCallbackTest, CloseBindingBeforeDeletingCallback) {
-  // Create the ServerImpl and the Binding.
+TEST_F(ReceiverCallbackTest, ResetReceiverBeforeDeletingCallback) {
+  // Create the ServerImpl and the Receiver.
   InterfaceImpl server_impl;
-  Binding<sample::Provider> binding(&server_impl, MakeRequest(&interface_ptr_));
+  Receiver<sample::Provider> receiver(&server_impl,
+                                      remote_.BindNewPipeAndPassReceiver());
 
   // Initialize the test values.
-  server_impl.resetLastServerValueSeen();
+  server_impl.ResetLastServerValueSeen();
   last_client_callback_value_seen_ = 0;
 
   // Invoke the Echo method.
   base::RunLoop run_loop;
   server_impl.set_closure(run_loop.QuitClosure());
-  interface_ptr_->EchoInt(
-      7,
-      BindValueSaver(&last_client_callback_value_seen_, base::Closure()));
+  remote_->EchoInt(7, base::BindLambdaForTesting([&](int32_t value) {
+                     last_client_callback_value_seen_ = value;
+                   }));
   run_loop.Run();
 
   // Check that server saw the correct value, but the client has not yet.
   EXPECT_EQ(7, server_impl.last_server_value_seen());
   EXPECT_EQ(0, last_client_callback_value_seen_);
 
-  // Now close the Binding.
-  binding.Close();
+  // Now disconnect the Receiver.
+  receiver.reset();
 
   // Delete the callback without running it. This should not
-  // cause a crash because the insfrastructure can detect that the
-  // binding has already been closed.
+  // cause a crash because the infrastructure can detect that the
+  // receiver has already been closed.
   server_impl.DeleteCallback();
 
   // Check that the client has still not seen the correct value.
@@ -297,22 +288,23 @@ TEST_F(BindingCallbackTest, CloseBindingBeforeDeletingCallback) {
 }
 
 // Tests that deleting a Callback without using it before the
-// Binding has been destroyed or closed results in a DCHECK.
-TEST_F(BindingCallbackTest, DeleteCallbackBeforeBindingDeathTest) {
-  // Create the ServerImpl and the Binding.
+// Receiver has been destroyed or closed results in a DCHECK.
+TEST_F(ReceiverCallbackTest, DeleteCallbackBeforeReceiverDeathTest) {
+  // Create the ServerImpl and the Receiver.
   InterfaceImpl server_impl;
-  Binding<sample::Provider> binding(&server_impl, MakeRequest(&interface_ptr_));
+  Receiver<sample::Provider> receiver(&server_impl,
+                                      remote_.BindNewPipeAndPassReceiver());
 
   // Initialize the test values.
-  server_impl.resetLastServerValueSeen();
+  server_impl.ResetLastServerValueSeen();
   last_client_callback_value_seen_ = 0;
 
   // Invoke the Echo method.
   base::RunLoop run_loop;
   server_impl.set_closure(run_loop.QuitClosure());
-  interface_ptr_->EchoInt(
-      7,
-      BindValueSaver(&last_client_callback_value_seen_, base::Closure()));
+  remote_->EchoInt(7, base::BindLambdaForTesting([&](int32_t value) {
+                     last_client_callback_value_seen_ = value;
+                   }));
   run_loop.Run();
 
   // Check that server saw the correct value, but the client has not yet.
