@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @fileoverview Runs the Print Preview tests for the new UI. */
+/** @fileoverview Runs the Print Preview tests. */
 
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 
-const NewPrintPreviewTest = class extends PolymerTest {
+const PrintPreviewTest = class extends PolymerTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/';
@@ -31,7 +31,7 @@ const NewPrintPreviewTest = class extends PolymerTest {
   }
 };
 
-PrintPreviewAppTest = class extends NewPrintPreviewTest {
+PrintPreviewAppTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/app.html';
@@ -64,7 +64,7 @@ TEST_F('PrintPreviewAppTest', 'PrintPresets', function() {
   this.runMochaTest(print_preview_app_test.TestNames.PrintPresets);
 });
 
-PrintPreviewSidebarTest = class extends NewPrintPreviewTest {
+PrintPreviewSidebarTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/sidebar.html';
@@ -94,7 +94,7 @@ TEST_F(
                             .SettingsSectionsVisibilityChange);
     });
 
-PrintPreviewPagesSettingsTest = class extends NewPrintPreviewTest {
+PrintPreviewPagesSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/pages_settings.html';
@@ -131,7 +131,7 @@ TEST_F('PrintPreviewPagesSettingsTest', 'NupChangesPages', function() {
   this.runMochaTest(pages_settings_test.TestNames.NupChangesPages);
 });
 
-PrintPreviewPolicyTest = class extends NewPrintPreviewTest {
+PrintPreviewPolicyTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/app.html';
@@ -171,7 +171,7 @@ TEST_F('PrintPreviewPolicyTest', 'DisableHeaderFooterByPolicy', function() {
   this.runMochaTest(policy_tests.TestNames.DisableHeaderFooterByPolicy);
 });
 
-PrintPreviewSettingsSelectTest = class extends NewPrintPreviewTest {
+PrintPreviewSettingsSelectTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/settings_select.html';
@@ -191,7 +191,7 @@ TEST_F('PrintPreviewSettingsSelectTest', 'All', function() {
   mocha.run();
 });
 
-PrintPreviewSelectBehaviorTest = class extends NewPrintPreviewTest {
+PrintPreviewSelectBehaviorTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/select_behavior.html';
@@ -215,7 +215,7 @@ TEST_F('PrintPreviewSelectBehaviorTest', 'CallProcessSelectChange', function() {
   this.runMochaTest(select_behavior_test.TestNames.CallProcessSelectChange);
 });
 
-PrintPreviewNumberSettingsSectionTest = class extends NewPrintPreviewTest {
+PrintPreviewNumberSettingsSectionTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/number_settings_section.html';
@@ -235,12 +235,13 @@ PrintPreviewNumberSettingsSectionTest = class extends NewPrintPreviewTest {
   }
 };
 
-TEST_F('PrintPreviewNumberSettingsSectionTest', 'BlocksInvalidKeys',
-    function() {
-  this.runMochaTest(number_settings_section_test.TestNames.BlocksInvalidKeys);
-});
+TEST_F(
+    'PrintPreviewNumberSettingsSectionTest', 'BlocksInvalidKeys', function() {
+      this.runMochaTest(
+          number_settings_section_test.TestNames.BlocksInvalidKeys);
+    });
 
-PrintPreviewRestoreStateTest = class extends NewPrintPreviewTest {
+PrintPreviewRestoreStateTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/app.html';
@@ -275,7 +276,7 @@ TEST_F('PrintPreviewRestoreStateTest', 'SaveValues', function() {
   this.runMochaTest(restore_state_test.TestNames.SaveValues);
 });
 
-PrintPreviewModelTest = class extends NewPrintPreviewTest {
+PrintPreviewModelTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/data/model.html';
@@ -316,7 +317,7 @@ TEST_F('PrintPreviewModelTest', 'ChangeDestination', function() {
   this.runMochaTest(model_test.TestNames.ChangeDestination);
 });
 
-PrintPreviewModelSettingsAvailabilityTest = class extends NewPrintPreviewTest {
+PrintPreviewModelSettingsAvailabilityTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/data/model.html';
@@ -337,7 +338,7 @@ TEST_F('PrintPreviewModelSettingsAvailabilityTest', 'All', function() {
 });
 
 GEN('#if defined(OS_CHROMEOS)');
-PrintPreviewModelSettingsPolicyTest = class extends NewPrintPreviewTest {
+PrintPreviewModelSettingsPolicyTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/data/model.html';
@@ -358,7 +359,7 @@ TEST_F('PrintPreviewModelSettingsPolicyTest', 'All', function() {
 });
 GEN('#endif');
 
-PrintPreviewPreviewGenerationTest = class extends NewPrintPreviewTest {
+PrintPreviewPreviewGenerationTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/app.html';
@@ -447,7 +448,7 @@ TEST_F(
     });
 
 GEN('#if !defined(OS_CHROMEOS)');
-PrintPreviewLinkContainerTest = class extends NewPrintPreviewTest {
+PrintPreviewLinkContainerTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/link_container.html';
@@ -488,7 +489,7 @@ TEST_F('PrintPreviewLinkContainerTest', 'OpenInPreviewLinkClick', function() {
 GEN('#endif');  // defined(OS_MACOSX)
 
 GEN('#if defined(OS_WIN) || defined(OS_MACOSX)');
-PrintPreviewSystemDialogBrowserTest = class extends NewPrintPreviewTest {
+PrintPreviewSystemDialogBrowserTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/app.html';
@@ -527,7 +528,7 @@ TEST_F(
     });
 GEN('#endif');  // defined(OS_WIN) || defined(OS_MACOSX)
 
-PrintPreviewInvalidSettingsBrowserTest = class extends NewPrintPreviewTest {
+PrintPreviewInvalidSettingsBrowserTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/app.html';
@@ -580,7 +581,7 @@ TEST_F(
                             .InvalidCertificateErrorReselectDestination);
     });
 
-PrintPreviewDestinationSelectTest = class extends NewPrintPreviewTest {
+PrintPreviewDestinationSelectTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/destination_settings.html';
@@ -671,7 +672,7 @@ TEST_F(
           destination_select_test.TestNames.MultipleRecentDestinationsAccounts);
     });
 
-PrintPreviewDestinationDialogTest = class extends NewPrintPreviewTest {
+PrintPreviewDestinationDialogTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/destination_dialog.html';
@@ -717,7 +718,7 @@ TEST_F('PrintPreviewDestinationDialogTest', 'UserAccounts', function() {
   this.runMochaTest(destination_dialog_test.TestNames.UserAccounts);
 });
 
-PrintPreviewAdvancedDialogTest = class extends NewPrintPreviewTest {
+PrintPreviewAdvancedDialogTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/advanced_settings_dialog.html';
@@ -760,7 +761,7 @@ TEST_F('PrintPreviewAdvancedDialogTest', 'AdvancedSettingsFilter', function() {
   this.runMochaTest(advanced_dialog_test.TestNames.AdvancedSettingsFilter);
 });
 
-PrintPreviewCustomMarginsTest = class extends NewPrintPreviewTest {
+PrintPreviewCustomMarginsTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/margin_control_container.html';
@@ -838,7 +839,7 @@ TEST_F(
           custom_margins_test.TestNames.RequestScrollToOutOfBoundsTextbox);
     });
 
-PrintPreviewNewDestinationSearchTest = class extends NewPrintPreviewTest {
+PrintPreviewDestinationSearchTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/destination_dialog.html';
@@ -863,40 +864,37 @@ PrintPreviewNewDestinationSearchTest = class extends NewPrintPreviewTest {
 };
 
 TEST_F(
-    'PrintPreviewNewDestinationSearchTest', 'ReceiveSuccessfulSetup',
-    function() {
+    'PrintPreviewDestinationSearchTest', 'ReceiveSuccessfulSetup', function() {
       this.runMochaTest(
           destination_search_test.TestNames.ReceiveSuccessfulSetup);
     });
 
 GEN('#if defined(OS_CHROMEOS)');
-TEST_F('PrintPreviewNewDestinationSearchTest', 'ResolutionFails', function() {
+TEST_F('PrintPreviewDestinationSearchTest', 'ResolutionFails', function() {
   this.runMochaTest(destination_search_test.TestNames.ResolutionFails);
 });
 
-TEST_F(
-    'PrintPreviewNewDestinationSearchTest', 'ReceiveFailedSetup', function() {
-      this.runMochaTest(destination_search_test.TestNames.ReceiveFailedSetup);
-    });
+TEST_F('PrintPreviewDestinationSearchTest', 'ReceiveFailedSetup', function() {
+  this.runMochaTest(destination_search_test.TestNames.ReceiveFailedSetup);
+});
 
 TEST_F(
-    'PrintPreviewNewDestinationSearchTest',
-    'ReceiveSuccessfultSetupWithPolicies', function() {
+    'PrintPreviewDestinationSearchTest', 'ReceiveSuccessfultSetupWithPolicies',
+    function() {
       this.runMochaTest(destination_search_test.TestNames.ResolutionFails);
     });
 
 GEN('#else');  // !defined(OS_CHROMEOS)
-TEST_F(
-    'PrintPreviewNewDestinationSearchTest', 'GetCapabilitiesFails', function() {
-      this.runMochaTest(destination_search_test.TestNames.GetCapabilitiesFails);
-    });
+TEST_F('PrintPreviewDestinationSearchTest', 'GetCapabilitiesFails', function() {
+  this.runMochaTest(destination_search_test.TestNames.GetCapabilitiesFails);
+});
 GEN('#endif');  // defined(OS_CHROMEOS)
 
-TEST_F('PrintPreviewNewDestinationSearchTest', 'CloudKioskPrinter', function() {
+TEST_F('PrintPreviewDestinationSearchTest', 'CloudKioskPrinter', function() {
   this.runMochaTest(destination_search_test.TestNames.CloudKioskPrinter);
 });
 
-PrintPreviewHeaderTest = class extends NewPrintPreviewTest {
+PrintPreviewHeaderTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/header.html';
@@ -940,7 +938,7 @@ TEST_F('PrintPreviewHeaderTest', 'EnterprisePolicy', function() {
   this.runMochaTest(header_test.TestNames.EnterprisePolicy);
 });
 
-PrintPreviewHeaderNewTest = class extends NewPrintPreviewTest {
+PrintPreviewHeaderNewTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/header_new.html';
@@ -980,7 +978,7 @@ TEST_F('PrintPreviewHeaderNewTest', 'EnterprisePolicy', function() {
   this.runMochaTest(header_new_test.TestNames.EnterprisePolicy);
 });
 
-PrintPreviewButtonStripTest = class extends NewPrintPreviewTest {
+PrintPreviewButtonStripTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/button_strip.html';
@@ -1012,7 +1010,7 @@ TEST_F('PrintPreviewButtonStripTest', 'ButtonStripFiresEvents', function() {
   this.runMochaTest(button_strip_test.TestNames.ButtonStripFiresEvents);
 });
 
-PrintPreviewDestinationItemTest = class extends NewPrintPreviewTest {
+PrintPreviewDestinationItemTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/destination_list_item.html';
@@ -1052,7 +1050,7 @@ TEST_F('PrintPreviewDestinationItemTest', 'QueryDescription', function() {
   this.runMochaTest(destination_item_test.TestNames.QueryDescription);
 });
 
-PrintPreviewAdvancedItemTest = class extends NewPrintPreviewTest {
+PrintPreviewAdvancedItemTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/advanced_settings_item.html';
@@ -1097,7 +1095,7 @@ TEST_F('PrintPreviewAdvancedItemTest', 'QueryOption', function() {
   this.runMochaTest(advanced_item_test.TestNames.QueryOption);
 });
 
-PrintPreviewDestinationListTest = class extends NewPrintPreviewTest {
+PrintPreviewDestinationListTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/destination_list.html';
@@ -1121,12 +1119,13 @@ TEST_F('PrintPreviewDestinationListTest', 'FilterDestinations', function() {
   this.runMochaTest(destination_list_test.TestNames.FilterDestinations);
 });
 
-TEST_F('PrintPreviewDestinationListTest', 'FireDestinationSelected',
-    function() {
-  this.runMochaTest(destination_list_test.TestNames.FireDestinationSelected);
-});
+TEST_F(
+    'PrintPreviewDestinationListTest', 'FireDestinationSelected', function() {
+      this.runMochaTest(
+          destination_list_test.TestNames.FireDestinationSelected);
+    });
 
-PrintPreviewPrintButtonTest = class extends NewPrintPreviewTest {
+PrintPreviewPrintButtonTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/app.html';
@@ -1157,7 +1156,7 @@ TEST_F('PrintPreviewPrintButtonTest', 'PDFPrintVisiblePreview', function() {
   this.runMochaTest(print_button_test.TestNames.PDFPrintVisiblePreview);
 });
 
-PrintPreviewKeyEventTest = class extends NewPrintPreviewTest {
+PrintPreviewKeyEventTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/app.html';
@@ -1219,7 +1218,7 @@ TEST_F('PrintPreviewKeyEventTest', 'CtrlShiftPOpensSystemDialog', function() {
   this.runMochaTest(key_event_test.TestNames.CtrlShiftPOpensSystemDialog);
 });
 
-PrintPreviewDestinationSettingsTest = class extends NewPrintPreviewTest {
+PrintPreviewDestinationSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/destination_settings.html';
@@ -1302,7 +1301,7 @@ TEST_F(
           destination_settings_test.TestNames.UpdateRecentDestinations);
     });
 
-PrintPreviewScalingSettingsTest = class extends NewPrintPreviewTest {
+PrintPreviewScalingSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/scaling_settings.html';
@@ -1341,7 +1340,7 @@ TEST_F(
           scaling_settings_test.TestNames.InputNotDisabledOnValidityChange);
     });
 
-PrintPreviewCopiesSettingsTest = class extends NewPrintPreviewTest {
+PrintPreviewCopiesSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/copies_settings.html';
@@ -1361,7 +1360,7 @@ TEST_F('PrintPreviewCopiesSettingsTest', 'All', function() {
   mocha.run();
 });
 
-PrintPreviewMediaSizeSettingsTest = class extends NewPrintPreviewTest {
+PrintPreviewMediaSizeSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/media_size_settings.html';
@@ -1381,7 +1380,7 @@ TEST_F('PrintPreviewMediaSizeSettingsTest', 'All', function() {
   mocha.run();
 });
 
-PrintPreviewDpiSettingsTest = class extends NewPrintPreviewTest {
+PrintPreviewDpiSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/dpi_settings.html';
@@ -1401,7 +1400,7 @@ TEST_F('PrintPreviewDpiSettingsTest', 'All', function() {
   mocha.run();
 });
 
-PrintPreviewOtherOptionsSettingsTest = class extends NewPrintPreviewTest {
+PrintPreviewOtherOptionsSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/other_options_settings.html';
@@ -1421,7 +1420,7 @@ TEST_F('PrintPreviewOtherOptionsSettingsTest', 'All', function() {
   mocha.run();
 });
 
-PrintPreviewLayoutSettingsTest = class extends NewPrintPreviewTest {
+PrintPreviewLayoutSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/layout_settings.html';
@@ -1441,7 +1440,7 @@ TEST_F('PrintPreviewLayoutSettingsTest', 'All', function() {
   mocha.run();
 });
 
-PrintPreviewColorSettingsTest = class extends NewPrintPreviewTest {
+PrintPreviewColorSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/color_settings.html';
@@ -1461,7 +1460,7 @@ TEST_F('PrintPreviewColorSettingsTest', 'All', function() {
   mocha.run();
 });
 
-PrintPreviewMarginsSettingsTest = class extends NewPrintPreviewTest {
+PrintPreviewMarginsSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/margins_settings.html';
@@ -1481,7 +1480,7 @@ TEST_F('PrintPreviewMarginsSettingsTest', 'All', function() {
   mocha.run();
 });
 
-PrintPreviewPagesPerSheetSettingsTest = class extends NewPrintPreviewTest {
+PrintPreviewPagesPerSheetSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/pages_per_sheet_settings.html';
@@ -1501,7 +1500,7 @@ TEST_F('PrintPreviewPagesPerSheetSettingsTest', 'All', function() {
   mocha.run();
 });
 
-PrintPreviewDuplexSettingsTest = class extends NewPrintPreviewTest {
+PrintPreviewDuplexSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/duplex_settings.html';
@@ -1522,7 +1521,7 @@ TEST_F('PrintPreviewDuplexSettingsTest', 'All', function() {
 });
 
 GEN('#if defined(OS_CHROMEOS)');
-PrintPreviewPinSettingsTest = class extends NewPrintPreviewTest {
+PrintPreviewPinSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/pin_settings.html';
