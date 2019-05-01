@@ -8,6 +8,7 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/core/events/current_input_event.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
@@ -62,6 +63,11 @@ FrameLoadRequest::FrameLoadRequest(
           base::RefCountedData<mojom::blink::BlobURLTokenPtr>>();
       origin_document->GetPublicURLManager().Resolve(
           resource_request.Url(), MakeRequest(&blob_url_token_->data));
+    }
+
+    if (ContentSecurityPolicy::ShouldBypassMainWorld(origin_document)) {
+      should_check_main_world_content_security_policy_ =
+          kDoNotCheckContentSecurityPolicy;
     }
   }
 }

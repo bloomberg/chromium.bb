@@ -375,12 +375,16 @@ TEST_F(ActivityLoggerTest, IFrameSrcAttribute) {
       "blinkRequestResource | Main resource | data:text/html;charset=utf-8,A\n"
       "blinkSetAttribute | iframe | src | data:text/html;charset=utf-8,A | "
       "data:text/html;charset=utf-8,B\n"
+      "blinkRequestResource | Main resource | data:text/html;charset=utf-8,B\n"
       "blinkSetAttribute | iframe | src | data:text/html;charset=utf-8,B | "
       "data:text/html;charset=utf-8,C\n"
+      "blinkRequestResource | Main resource | data:text/html;charset=utf-8,C\n"
       "blinkSetAttribute | iframe | src | data:text/html;charset=utf-8,C | "
       "data:text/html;charset=utf-8,D\n"
+      "blinkRequestResource | Main resource | data:text/html;charset=utf-8,D\n"
       "blinkSetAttribute | iframe | src | data:text/html;charset=utf-8,D | "
-      "data:text/html;charset=utf-8,E";
+      "data:text/html;charset=utf-8,E\n"
+      "blinkRequestResource | Main resource | data:text/html;charset=utf-8,E";
   ExecuteScriptInMainWorld(code);
   ASSERT_TRUE(VerifyActivities(""));
   ExecuteScriptInIsolatedWorld(code);

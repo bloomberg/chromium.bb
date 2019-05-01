@@ -117,63 +117,6 @@ class ScheduledRedirect final : public ScheduledNavigation {
   }
 };
 
-class ScheduledFrameNavigation final : public ScheduledNavigation {
- public:
-  static ScheduledFrameNavigation* Create(Document* origin_document,
-                                          const KURL& url,
-                                          WebFrameLoadType frame_load_type,
-                                          base::TimeTicks input_timestamp) {
-    return MakeGarbageCollected<ScheduledFrameNavigation>(
-        origin_document, url, frame_load_type, input_timestamp);
-  }
-
-  ScheduledFrameNavigation(Document* origin_document,
-                           const KURL& url,
-                           WebFrameLoadType frame_load_type,
-                           base::TimeTicks input_timestamp)
-      : ScheduledNavigation(ClientNavigationReason::kFrameNavigation,
-                            0.0,
-                            origin_document,
-                            url,
-                            frame_load_type,
-                            input_timestamp),
-        should_check_main_world_content_security_policy_(
-            kCheckContentSecurityPolicy) {
-    if (ContentSecurityPolicy::ShouldBypassMainWorld(origin_document)) {
-      should_check_main_world_content_security_policy_ =
-          kDoNotCheckContentSecurityPolicy;
-    }
-
-    if (origin_document && url.ProtocolIs("blob") &&
-        BlobUtils::MojoBlobURLsEnabled()) {
-      origin_document->GetPublicURLManager().Resolve(
-          Url(), MakeRequest(&blob_url_token_));
-    }
-  }
-
-  void Fire(LocalFrame* frame) override {
-    std::unique_ptr<UserGestureIndicator> gesture_indicator =
-        CreateUserGestureIndicator();
-    FrameLoadRequest request(OriginDocument(), ResourceRequest(Url()), "_self",
-                             should_check_main_world_content_security_policy_);
-    request.SetClientRedirectReason(GetReason());
-    request.SetInputStartTime(InputTimestamp());
-
-    if (blob_url_token_) {
-      mojom::blink::BlobURLTokenPtr token_clone;
-      blob_url_token_->Clone(MakeRequest(&token_clone));
-      request.SetBlobURLToken(std::move(token_clone));
-    }
-
-    frame->Loader().StartNavigation(request, LoadType());
-  }
-
- private:
-  mojom::blink::BlobURLTokenPtr blob_url_token_;
-  ContentSecurityPolicyDisposition
-      should_check_main_world_content_security_policy_;
-};
-
 NavigationScheduler::NavigationScheduler(LocalFrame* frame) : frame_(frame) {}
 
 NavigationScheduler::~NavigationScheduler() {
@@ -207,29 +150,9 @@ void NavigationScheduler::ScheduleRedirect(
     if (delay <= 1)
       frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
     Schedule(MakeGarbageCollected<ScheduledRedirect>(
-                 delay, frame_->GetDocument(), url, http_refresh_type,
-                 frame_load_type, InputTimestamp()),
-             kDoNotCancelParsing);
+        delay, frame_->GetDocument(), url, http_refresh_type, frame_load_type,
+        InputTimestamp()));
   }
-}
-
-bool NavigationScheduler::MustReplaceCurrentItem(LocalFrame* target_frame) {
-  // Non-user navigation before the page has finished firing onload should not
-  // create a new back/forward item. See https://webkit.org/b/42861 for the
-  // original motivation for this.
-  if (!target_frame->GetDocument()->LoadEventFinished() &&
-      !LocalFrame::HasTransientUserActivation(target_frame))
-    return true;
-
-  // Navigation of a subframe during loading of an ancestor frame does not
-  // create a new back/forward item. The definition of "during load" is any time
-  // before all handlers for the load event have been run. See
-  // https://bugs.webkit.org/show_bug.cgi?id=14957 for the original motivation
-  // for this.
-  Frame* parent_frame = target_frame->Tree().Parent();
-  auto* parent_local_frame = DynamicTo<LocalFrame>(parent_frame);
-  return parent_local_frame &&
-         !parent_local_frame->Loader().AllAncestorsAreComplete();
 }
 
 base::TimeTicks NavigationScheduler::InputTimestamp() {
@@ -237,33 +160,6 @@ base::TimeTicks NavigationScheduler::InputTimestamp() {
     return input_event->TimeStamp();
   }
   return base::TimeTicks();
-}
-
-void NavigationScheduler::ScheduleFrameNavigation(
-    Document* origin_document,
-    const KURL& url,
-    WebFrameLoadType frame_load_type) {
-  if (!ShouldScheduleNavigation(url))
-    return;
-
-  if (MustReplaceCurrentItem(frame_))
-    frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
-
-  base::TimeTicks input_timestamp = InputTimestamp();
-  if (url.HasFragmentIdentifier() &&
-      EqualIgnoringFragmentIdentifier(frame_->GetDocument()->Url(), url)) {
-    FrameLoadRequest request(origin_document, ResourceRequest(url), "_self");
-    request.SetInputStartTime(input_timestamp);
-    if (frame_load_type == WebFrameLoadType::kReplaceCurrentItem) {
-      request.SetClientRedirectReason(ClientNavigationReason::kFrameNavigation);
-    }
-    frame_->Loader().StartNavigation(request, frame_load_type);
-    return;
-  }
-
-  Schedule(ScheduledFrameNavigation::Create(origin_document, url,
-                                            frame_load_type, input_timestamp),
-           kCancelParsing);
 }
 
 void NavigationScheduler::NavigateTask() {
@@ -279,8 +175,7 @@ void NavigationScheduler::NavigateTask() {
   probe::FrameClearedScheduledNavigation(frame_);
 }
 
-void NavigationScheduler::Schedule(ScheduledNavigation* redirect,
-                                   CancelParsingPolicy cancel_parsing_policy) {
+void NavigationScheduler::Schedule(ScheduledNavigation* redirect) {
   DCHECK(frame_->GetPage());
 
   // In a back/forward navigation, we sometimes restore history state to
@@ -299,14 +194,6 @@ void NavigationScheduler::Schedule(ScheduledNavigation* redirect,
 
   Cancel();
   redirect_ = redirect;
-
-  // Most navigations are guaranteed to transition documents if they reach this
-  // point. JS urls aren't, and refresh headers are delayed. Don't immediately
-  // cancel parsing for those.
-  if (cancel_parsing_policy == kCancelParsing &&
-      !redirect->Url().ProtocolIsJavaScript()) {
-    frame_->GetDocument()->CancelParsing();
-  }
   StartTimer();
 }
 

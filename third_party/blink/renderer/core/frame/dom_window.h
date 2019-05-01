@@ -17,6 +17,7 @@ namespace blink {
 
 class Document;
 class InputDeviceCapabilitiesConstants;
+class KURL;
 class LocalDOMWindow;
 class Location;
 class MessageEvent;

@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/events/current_input_event.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -404,13 +405,12 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
   KURL url_to_request = url.IsNull() ? BlankURL() : url;
   if (ContentFrame()) {
     // TODO(sclittle): Support lazily loading frame navigations.
+    FrameLoadRequest request(&GetDocument(), ResourceRequest(url_to_request));
+    request.SetClientRedirectReason(ClientNavigationReason::kFrameNavigation);
     WebFrameLoadType frame_load_type = WebFrameLoadType::kStandard;
     if (replace_current_item)
       frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
-
-    ContentFrame()->ScheduleNavigation(GetDocument(), url_to_request,
-                                       frame_load_type,
-                                       UserGestureStatus::kNone);
+    ContentFrame()->Navigate(request, frame_load_type);
     return true;
   }
 

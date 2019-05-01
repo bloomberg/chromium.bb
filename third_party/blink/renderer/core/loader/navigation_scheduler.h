@@ -61,12 +61,9 @@ class CORE_EXPORT NavigationScheduler final
   bool IsNavigationScheduledWithin(double interval_in_seconds) const;
 
   void ScheduleRedirect(double delay, const KURL&, Document::HttpRefreshType);
-  void ScheduleFrameNavigation(Document*, const KURL&, WebFrameLoadType);
 
   void StartTimer();
   void Cancel();
-
-  static bool MustReplaceCurrentItem(LocalFrame* target_frame);
 
   void Trace(blink::Visitor*);
 
@@ -74,9 +71,7 @@ class CORE_EXPORT NavigationScheduler final
   bool ShouldScheduleNavigation(const KURL&) const;
 
   void NavigateTask();
-
-  enum CancelParsingPolicy { kCancelParsing, kDoNotCancelParsing };
-  void Schedule(ScheduledNavigation*, CancelParsingPolicy);
+  void Schedule(ScheduledNavigation*);
 
   base::TimeTicks InputTimestamp();
 

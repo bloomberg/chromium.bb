@@ -325,14 +325,24 @@ bool LocalFrame::IsLocalRoot() const {
   return Tree().Parent()->IsRemoteFrame();
 }
 
-void LocalFrame::ScheduleNavigation(Document& origin_document,
-                                    const KURL& url,
-                                    WebFrameLoadType frame_load_type,
-                                    UserGestureStatus user_gesture_status) {
-  if (!navigation_rate_limiter().CanProceed())
-    return;
-  navigation_scheduler_->ScheduleFrameNavigation(&origin_document, url,
-                                                 frame_load_type);
+static bool MustReplaceCurrentItem(LocalFrame* frame) {
+  // Non-user navigation before the page has finished firing onload should not
+  // create a new back/forward item. See https://webkit.org/b/42861 for the
+  // original motivation for this.
+  if (!frame->GetDocument()->LoadEventFinished() &&
+      !LocalFrame::HasTransientUserActivation(frame)) {
+    return true;
+  }
+
+  // Navigation of a subframe during loading of an ancestor frame does not
+  // create a new back/forward item. The definition of "during load" is any time
+  // before all handlers for the load event have been run. See
+  // https://bugs.webkit.org/show_bug.cgi?id=14957 for the original motivation
+  // for this.
+  Frame* parent_frame = frame->Tree().Parent();
+  auto* parent_local_frame = DynamicTo<LocalFrame>(parent_frame);
+  return parent_local_frame &&
+         !parent_local_frame->Loader().AllAncestorsAreComplete();
 }
 
 void LocalFrame::Navigate(const FrameLoadRequest& request,
@@ -342,7 +352,7 @@ void LocalFrame::Navigate(const FrameLoadRequest& request,
   if (request.ClientRedirect() == ClientRedirectPolicy::kClientRedirect) {
     probe::FrameScheduledNavigation(this, request.GetResourceRequest().Url(),
                                     0.0, request.ClientRedirectReason());
-    if (NavigationScheduler::MustReplaceCurrentItem(this))
+    if (MustReplaceCurrentItem(this))
       frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
   }
   loader_.StartNavigation(request, frame_load_type);

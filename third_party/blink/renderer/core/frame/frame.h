@@ -57,7 +57,6 @@ class Document;
 class FrameClient;
 class FrameOwner;
 class HTMLFrameOwnerElement;
-class KURL;
 class LayoutEmbeddedContent;
 class LocalFrame;
 class Page;
@@ -84,23 +83,6 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   virtual bool IsLocalFrame() const = 0;
   virtual bool IsRemoteFrame() const = 0;
 
-  // Asynchronously schedules a task to begin a navigation: this roughly
-  // corresponds to "queue a task to navigate the target browsing context to
-  // resource" in https://whatwg.org/C/links.html#following-hyperlinks.
-  //
-  // Note that there's currently an exception for same-origin same-document
-  // navigations: these are never scheduled and are always synchronously
-  // processed.
-  //
-  // TODO(dcheng): Note that despite the comment, most navigations in the spec
-  // are *not* currently queued. See https://github.com/whatwg/html/issues/3730.
-  // How this discussion is resolved will affect how https://crbug.com/848171 is
-  // eventually fixed.
-  virtual void ScheduleNavigation(Document& origin_document,
-                                  const KURL&,
-                                  WebFrameLoadType,
-                                  UserGestureStatus) = 0;
-  // Synchronously begins a navigation.
   virtual void Navigate(const FrameLoadRequest&, WebFrameLoadType) = 0;
 
   void Detach(FrameDetachType);
