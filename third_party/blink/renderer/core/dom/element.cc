@@ -4259,11 +4259,11 @@ void Element::UpdateFirstLetterPseudoElement(StyleUpdatePhase phase) {
 
   bool text_node_changed =
       remaining_text_layout_object !=
-      ToFirstLetterPseudoElement(element)->RemainingTextLayoutObject();
+      To<FirstLetterPseudoElement>(element)->RemainingTextLayoutObject();
 
   if (phase == StyleUpdatePhase::kAttachLayoutTree) {
     // RemainingTextLayoutObject should have been cleared from DetachLayoutTree.
-    DCHECK(!ToFirstLetterPseudoElement(element)->RemainingTextLayoutObject());
+    DCHECK(!To<FirstLetterPseudoElement>(element)->RemainingTextLayoutObject());
     DCHECK(text_node_changed);
     scoped_refptr<ComputedStyle> pseudo_style = element->StyleForLayoutObject();
     if (PseudoElementLayoutObjectIsNeeded(pseudo_style.get()))

@@ -163,8 +163,7 @@ Text* LayoutTextFragment::AssociatedTextNode() const {
   if (!node)
     return nullptr;
 
-  if (node->IsFirstLetterPseudoElement()) {
-    FirstLetterPseudoElement* pseudo = ToFirstLetterPseudoElement(node);
+  if (auto* pseudo = DynamicTo<FirstLetterPseudoElement>(node)) {
     LayoutObject* next_layout_object =
         FirstLetterPseudoElement::FirstLetterTextLayoutObject(*pseudo);
     if (!next_layout_object)

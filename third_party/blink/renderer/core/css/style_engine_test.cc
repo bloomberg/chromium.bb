@@ -1689,7 +1689,7 @@ TEST_F(StyleEngineTest, FirstLetterRemoved) {
   Element* d3 = GetDocument().getElementById("d3");
 
   FirstLetterPseudoElement* fl1 =
-      ToFirstLetterPseudoElement(d1->GetPseudoElement(kPseudoIdFirstLetter));
+      To<FirstLetterPseudoElement>(d1->GetPseudoElement(kPseudoIdFirstLetter));
   EXPECT_TRUE(fl1);
 
   GetDocument().getElementById("f1")->firstChild()->remove();
@@ -1702,10 +1702,10 @@ TEST_F(StyleEngineTest, FirstLetterRemoved) {
 
   UpdateAllLifecyclePhases();
   EXPECT_FALSE(
-      ToFirstLetterPseudoElement(d1->GetPseudoElement(kPseudoIdFirstLetter)));
+      To<FirstLetterPseudoElement>(d1->GetPseudoElement(kPseudoIdFirstLetter)));
 
   FirstLetterPseudoElement* fl2 =
-      ToFirstLetterPseudoElement(d2->GetPseudoElement(kPseudoIdFirstLetter));
+      To<FirstLetterPseudoElement>(d2->GetPseudoElement(kPseudoIdFirstLetter));
   EXPECT_TRUE(fl2);
 
   GetDocument().getElementById("f2")->firstChild()->remove();
@@ -1718,10 +1718,10 @@ TEST_F(StyleEngineTest, FirstLetterRemoved) {
 
   UpdateAllLifecyclePhases();
   EXPECT_FALSE(
-      ToFirstLetterPseudoElement(d2->GetPseudoElement(kPseudoIdFirstLetter)));
+      To<FirstLetterPseudoElement>(d2->GetPseudoElement(kPseudoIdFirstLetter)));
 
   FirstLetterPseudoElement* fl3 =
-      ToFirstLetterPseudoElement(d3->GetPseudoElement(kPseudoIdFirstLetter));
+      To<FirstLetterPseudoElement>(d3->GetPseudoElement(kPseudoIdFirstLetter));
   EXPECT_TRUE(fl3);
 
   Element* f3 = GetDocument().getElementById("f3");
@@ -1734,7 +1734,8 @@ TEST_F(StyleEngineTest, FirstLetterRemoved) {
   EXPECT_TRUE(fl3->NeedsStyleRecalc());
 
   UpdateAllLifecyclePhases();
-  fl3 = ToFirstLetterPseudoElement(d3->GetPseudoElement(kPseudoIdFirstLetter));
+  fl3 =
+      To<FirstLetterPseudoElement>(d3->GetPseudoElement(kPseudoIdFirstLetter));
   EXPECT_TRUE(fl3);
   EXPECT_EQ(f3->lastChild()->GetLayoutObject(),
             fl3->RemainingTextLayoutObject());
