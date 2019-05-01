@@ -13,8 +13,11 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
 #include "device/gamepad/public/cpp/gamepads.h"
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
+#include "device/vr/util/copy_to_ustring.h"
 #include "device/vr/windows_mixed_reality/wrappers/wmr_input_location.h"
 #include "device/vr/windows_mixed_reality/wrappers/wmr_input_manager.h"
 #include "device/vr/windows_mixed_reality/wrappers/wmr_input_source.h"
@@ -45,6 +48,10 @@ ParsedInputState::ParsedInputState(ParsedInputState&& other) = default;
 namespace {
 constexpr double kDeadzoneMinimum = 0.1;
 
+double ApplyAxisDeadzone(double value) {
+  return std::fabs(value) < kDeadzoneMinimum ? 0 : value;
+}
+
 void AddButton(mojom::XRGamepadPtr& gamepad, ButtonData* data) {
   if (data) {
     auto button = mojom::XRGamepadButton::New();
@@ -61,13 +68,11 @@ void AddButton(mojom::XRGamepadPtr& gamepad, ButtonData* data) {
 // These methods are only called for the thumbstick and touchpad, which both
 // have an X and Y.
 void AddAxes(mojom::XRGamepadPtr& gamepad, ButtonData data) {
-  gamepad->axes.push_back(
-      std::fabs(data.x_axis) < kDeadzoneMinimum ? 0 : data.x_axis);
-  gamepad->axes.push_back(
-      std::fabs(data.y_axis) < kDeadzoneMinimum ? 0 : data.y_axis);
+  gamepad->axes.push_back(ApplyAxisDeadzone(data.x_axis));
+  gamepad->axes.push_back(ApplyAxisDeadzone(data.y_axis));
 }
 
-void AddButtonAndAxes(mojom::XRGamepadPtr& gamepad, ButtonData data) {
+void AddButtonWithAxes(mojom::XRGamepadPtr& gamepad, ButtonData data) {
   AddButton(gamepad, &data);
   AddAxes(gamepad, data);
 }
@@ -133,11 +138,11 @@ mojom::XRGamepadPtr GetWebVRGamepad(ParsedInputState input_state) {
   // use the polled button state for select here.  Voice (which we cannot get
   // via polling), lacks enough data to be considered a "Gamepad", and if we
   // used eventing the pressed state may be inconsistent.
-  AddButtonAndAxes(gamepad, input_state.button_data[ButtonName::kThumbstick]);
+  AddButtonWithAxes(gamepad, input_state.button_data[ButtonName::kThumbstick]);
   AddButton(gamepad, &input_state.button_data[ButtonName::kSelect]);
   AddButton(gamepad, &input_state.button_data[ButtonName::kGrip]);
   AddButton(gamepad, nullptr);  // Nothing seems to trigger this button in Edge.
-  AddButtonAndAxes(gamepad, input_state.button_data[ButtonName::kTouchpad]);
+  AddButtonWithAxes(gamepad, input_state.button_data[ButtonName::kTouchpad]);
 
   gamepad->pose = ConvertToVRPose(input_state.gamepad_pose);
   gamepad->hand = input_state.source_state->description->handedness;
@@ -146,6 +151,70 @@ mojom::XRGamepadPtr GetWebVRGamepad(ParsedInputState input_state) {
   gamepad->can_provide_orientation = true;
   gamepad->timestamp = base::TimeTicks::Now();
 
+  return gamepad;
+}
+
+GamepadHand MojoToGamepadHandedness(device::mojom::XRHandedness handedness) {
+  switch (handedness) {
+    case device::mojom::XRHandedness::LEFT:
+      return GamepadHand::kLeft;
+    case device::mojom::XRHandedness::RIGHT:
+      return GamepadHand::kRight;
+    case device::mojom::XRHandedness::NONE:
+      return GamepadHand::kNone;
+  }
+
+  NOTREACHED();
+}
+
+void AddButton(Gamepad& gamepad, ButtonData* data) {
+  DCHECK_LT(gamepad.buttons_length, Gamepad::kButtonsLengthCap);
+  if (data) {
+    gamepad.buttons[gamepad.buttons_length++] =
+        GamepadButton(data->pressed, data->touched, data->value);
+  } else {
+    gamepad.buttons[gamepad.buttons_length++] = GamepadButton();
+  }
+}
+
+void AddAxes(Gamepad& gamepad, ButtonData data) {
+  DCHECK_LT(gamepad.axes_length + 1, Gamepad::kAxesLengthCap);
+  gamepad.axes[gamepad.axes_length++] = ApplyAxisDeadzone(data.x_axis);
+  gamepad.axes[gamepad.axes_length++] = ApplyAxisDeadzone(data.y_axis);
+}
+
+void AddButtonWithAxes(Gamepad& gamepad, ButtonData data) {
+  AddButton(gamepad, &data);
+  AddAxes(gamepad, data);
+}
+
+Gamepad GetWebXRGamepad(ParsedInputState& input_state) {
+  Gamepad gamepad;
+  gamepad.connected = true;
+  gamepad.timestamp = base::TimeTicks::Now().since_origin().InMicroseconds();
+
+  // TODO(https://crbug.com/942201): Get correct ID string once WebXR spec issue
+  // #550 (https://github.com/immersive-web/webxr/issues/550) is resolved.
+  CopyToUString(base::UTF8ToUTF16("unknown"), gamepad.id,
+                base::size(gamepad.id));
+
+  CopyToUString(base::UTF8ToUTF16("xr-standard"), gamepad.mapping,
+                base::size(gamepad.mapping));
+
+  if (input_state.source_state && input_state.source_state->description) {
+    gamepad.hand = MojoToGamepadHandedness(
+        input_state.source_state->description->handedness);
+  } else {
+    gamepad.hand = GamepadHand::kNone;
+  }
+
+  // The order of these buttons is dictated by the xr-standard Gamepad mapping.
+  // Thumbstick is considered the primary 2D input axis, while the touchpad is
+  // the secondary 2D input axis.
+  AddButton(gamepad, &input_state.button_data[ButtonName::kSelect]);
+  AddButtonWithAxes(gamepad, input_state.button_data[ButtonName::kThumbstick]);
+  AddButton(gamepad, &input_state.button_data[ButtonName::kGrip]);
+  AddButtonWithAxes(gamepad, input_state.button_data[ButtonName::kTouchpad]);
   return gamepad;
 }
 
@@ -348,8 +417,11 @@ MixedRealityInputHelper::GetInputState(const WMRCoordinateSystem* origin,
   for (auto state : source_states) {
     auto parsed_source_state = LockedParseWindowsSourceState(state, origin);
 
-    if (parsed_source_state.source_state)
+    if (parsed_source_state.source_state) {
+      parsed_source_state.source_state->gamepad =
+          GetWebXRGamepad(parsed_source_state);
       input_states.push_back(std::move(parsed_source_state.source_state));
+    }
   }
 
   for (unsigned int i = 0; i < pending_voice_states_.size(); i++) {
