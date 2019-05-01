@@ -23,7 +23,7 @@ using ipp_converter::kIppSentinel;
 // Log debugging error and send empty response, signalling error.
 void Fail(const std::string& error_log, IppParser::ParseIppCallback cb) {
   DVLOG(1) << "IPP Parser Error: " << error_log;
-  std::move(cb).Run(mojom::IppParserResult::FAILURE, nullptr);
+  std::move(cb).Run(nullptr);
   return;
 }
 
@@ -39,14 +39,14 @@ int LocateEndOfRequestLine(base::StringPiece request) {
 
 // Returns the starting index of the first HTTP header, -1 on failure.
 int LocateStartOfHeaders(base::StringPiece request) {
-  auto idx = request.find(kCarriage);
-  if (idx == base::StringPiece::npos) {
+  auto idx = LocateEndOfRequestLine(request);
+  if (idx < 0) {
     return -1;
   }
 
   // Advance to first header and check it exists
   idx += strlen(kCarriage);
-  return idx < request.size() ? idx : -1;
+  return idx < static_cast<int>(request.size()) ? idx : -1;
 }
 
 // Returns the starting index of the end-of-headers-delimiter, -1 on failure.
@@ -58,36 +58,51 @@ int LocateEndOfHeaders(base::StringPiece request) {
 
   // Back up to the start of the delimiter.
   // Note: The end-of-http-headers delimiter is 2 back-to-back carriage returns.
-  const size_t end_of_headers_delimiter_size = 2 * strlen(kCarriage);
+  const int end_of_headers_delimiter_size = 2 * strlen(kCarriage);
   return idx - end_of_headers_delimiter_size;
 }
 
-// Returns the starting index of the IPP message, -1 on failure.
-int LocateStartOfIppMessage(base::StringPiece request) {
-  return net::HttpUtil::LocateEndOfHeaders(request.data(), request.size());
-}
-
-// Return the starting index of the IPP data/payload(pdf),
-// Returns |request|.size() on empty IppData and -1 on failure.
-int LocateStartOfIppData(base::StringPiece request) {
-  int end_of_headers = LocateEndOfHeaders(request);
-  if (end_of_headers < 0) {
+// Return the starting index of the IPP data/payload (pdf).
+// Returns |ipp_metadata|.size() on empty IPP data and -1 on failure.
+int LocateStartOfIppData(base::span<const uint8_t> ipp_metadata) {
+  std::vector<uint8_t> sentinel_wrapper(
+      ipp_converter::ConvertToByteBuffer(kIppSentinel));
+  auto it = std::search(ipp_metadata.begin(), ipp_metadata.end(),
+                        sentinel_wrapper.begin(), sentinel_wrapper.end());
+  if (it == ipp_metadata.end()) {
     return -1;
   }
 
-  auto idx = request.find(kIppSentinel, end_of_headers);
-  if (idx == base::StringPiece::npos) {
-    return -1;
-  }
-
-  // Advance to start and check existence or end of request.
-  idx += strlen(kIppSentinel);
-  return idx <= request.size() ? idx : -1;
+  // Advance to the start of IPP data and check existence or end of request.
+  it += strlen(kIppSentinel);
+  return it <= ipp_metadata.end() ? std::distance(ipp_metadata.begin(), it)
+                                  : -1;
 }
 
-base::Optional<std::vector<std::string>> ExtractRequestLine(
+// Returns the starting index of the IPP metadata, -1 on failure.
+int LocateStartOfIppMetadata(base::span<const uint8_t> request) {
+  std::vector<char> char_buffer = ipp_converter::ConvertToCharBuffer(request);
+  return net::HttpUtil::LocateEndOfHeaders(char_buffer.data(),
+                                           char_buffer.size());
+}
+
+bool SplitRequestMetadata(base::span<const uint8_t> request,
+                          std::string* http_metadata,
+                          base::span<const uint8_t>* ipp_metadata) {
+  size_t start_of_ipp_metadata = LocateStartOfIppMetadata(request);
+  if (start_of_ipp_metadata < 0) {
+    return false;
+  }
+
+  *http_metadata =
+      ipp_converter::ConvertToString(request.first(start_of_ipp_metadata));
+  *ipp_metadata = request.subspan(start_of_ipp_metadata);
+  return true;
+}
+
+base::Optional<std::vector<std::string>> ExtractHttpRequestLine(
     base::StringPiece request) {
-  int end_of_request_line = LocateEndOfRequestLine(request);
+  size_t end_of_request_line = LocateEndOfRequestLine(request);
   if (end_of_request_line < 0) {
     return base::nullopt;
   }
@@ -97,14 +112,14 @@ base::Optional<std::vector<std::string>> ExtractRequestLine(
   return ipp_converter::ParseRequestLine(request_line_slice);
 }
 
-base::Optional<std::vector<HttpHeader>> ExtractHeaders(
+base::Optional<std::vector<HttpHeader>> ExtractHttpHeaders(
     base::StringPiece request) {
-  int start_of_headers = LocateStartOfHeaders(request);
+  size_t start_of_headers = LocateStartOfHeaders(request);
   if (start_of_headers < 0) {
     return base::nullopt;
   }
 
-  int end_of_headers = LocateEndOfHeaders(request);
+  size_t end_of_headers = LocateEndOfHeaders(request);
   if (end_of_headers < 0) {
     return base::nullopt;
   }
@@ -114,15 +129,8 @@ base::Optional<std::vector<HttpHeader>> ExtractHeaders(
   return ipp_converter::ParseHeaders(headers_slice);
 }
 
-mojom::IppMessagePtr ExtractIppMessage(base::StringPiece request) {
-  int start_of_ipp_message = LocateStartOfIppMessage(request);
-  if (start_of_ipp_message < 0) {
-    return nullptr;
-  }
-
-  std::vector<uint8_t> ipp_slice =
-      ipp_converter::ConvertToByteBuffer(request.substr(start_of_ipp_message));
-  printing::ScopedIppPtr ipp = ipp_converter::ParseIppMessage(ipp_slice);
+mojom::IppMessagePtr ExtractIppMessage(base::span<const uint8_t> ipp_metadata) {
+  printing::ScopedIppPtr ipp = ipp_converter::ParseIppMessage(ipp_metadata);
   if (!ipp) {
     return nullptr;
   }
@@ -130,16 +138,15 @@ mojom::IppMessagePtr ExtractIppMessage(base::StringPiece request) {
   return ipp_converter::ConvertIppToMojo(ipp.get());
 }
 
-// Parse IPP request's |ipp_data|
-base::Optional<std::vector<uint8_t>> ExtractIppData(base::StringPiece request) {
-  size_t start_of_ipp_data = LocateStartOfIppData(request);
+base::Optional<std::vector<uint8_t>> ExtractIppData(
+    base::span<const uint8_t> ipp_metadata) {
+  auto start_of_ipp_data = LocateStartOfIppData(ipp_metadata);
   if (start_of_ipp_data < 0) {
     return base::nullopt;
   }
 
-  // Subtlety: Correctly generates empty buffers for requests without ipp_data.
-  const base::StringPiece ipp_data_slice = request.substr(start_of_ipp_data);
-  return ipp_converter::ConvertToByteBuffer(ipp_data_slice);
+  ipp_metadata = ipp_metadata.subspan(start_of_ipp_data);
+  return std::vector<uint8_t>{ipp_metadata.begin(), ipp_metadata.end()};
 }
 
 }  // namespace
@@ -150,50 +157,54 @@ IppParser::IppParser(
 
 IppParser::~IppParser() = default;
 
-// Checks that |to_parse| is a correctly formatted IPP request, per RFC2910.
-// Calls |callback| with a fully parsed IPP request on success, empty on
-// failure.
-void IppParser::ParseIpp(const std::string& to_parse,
+void IppParser::ParseIpp(const std::vector<uint8_t>& to_parse,
                          ParseIppCallback callback) {
-  // Parse Request line
-  auto request_line = ExtractRequestLine(to_parse);
+  // Separate |to_parse| into http metadata (interpreted as ASCII chars), and
+  // ipp metadata (interpreted as arbitrary bytes).
+  std::string http_metadata;
+  base::span<const uint8_t> ipp_metadata;
+  if (!SplitRequestMetadata(to_parse, &http_metadata, &ipp_metadata)) {
+    return Fail("Failed to split HTTP and IPP metadata", std::move(callback));
+  }
+
+  // Parse Request line.
+  auto request_line = ExtractHttpRequestLine(http_metadata);
   if (!request_line) {
     return Fail("Failed to parse request line", std::move(callback));
   }
 
-  // Parse Headers
-  auto headers = ExtractHeaders(to_parse);
+  // Parse Headers.
+  auto headers = ExtractHttpHeaders(http_metadata);
   if (!headers) {
     return Fail("Failed to parse headers", std::move(callback));
   }
 
-  // Parse IPP message
-  auto ipp_message = ExtractIppMessage(to_parse);
+  // Parse IPP message.
+  auto ipp_message = ExtractIppMessage(ipp_metadata);
   if (!ipp_message) {
     return Fail("Failed to parse IPP message", std::move(callback));
   }
 
-  // Parse IPP data
-  auto ipp_data = ExtractIppData(to_parse);
+  // Parse IPP data.
+  auto ipp_data = ExtractIppData(ipp_metadata);
   if (!ipp_data) {
     return Fail("Failed to parse IPP data", std::move(callback));
   }
 
-  // Marshall response
+  // Marshall response.
   mojom::IppRequestPtr parsed_request = mojom::IppRequest::New();
 
-  std::vector<std::string> request_line_terms = request_line.value();
+  std::vector<std::string> request_line_terms = *request_line;
   parsed_request->method = request_line_terms[0];
   parsed_request->endpoint = request_line_terms[1];
   parsed_request->http_version = request_line_terms[2];
 
-  parsed_request->headers = std::move(headers.value());
+  parsed_request->headers = std::move(*headers);
   parsed_request->ipp = std::move(ipp_message);
-  parsed_request->data = std::move(ipp_data.value());
+  parsed_request->data = std::move(*ipp_data);
 
   DVLOG(1) << "Finished parsing IPP request.";
-  std::move(callback).Run(mojom::IppParserResult::SUCCESS,
-                          std::move(parsed_request));
+  std::move(callback).Run(std::move(parsed_request));
 }
 
 }  // namespace chrome

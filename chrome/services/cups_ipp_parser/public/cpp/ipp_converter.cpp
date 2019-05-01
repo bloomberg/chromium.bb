@@ -378,4 +378,9 @@ std::vector<char> ConvertToCharBuffer(base::span<const uint8_t> byte_buffer) {
   return char_buffer;
 }
 
+std::string ConvertToString(base::span<const uint8_t> byte_buffer) {
+  std::vector<char> char_buffer = ConvertToCharBuffer(byte_buffer);
+  return std::string(char_buffer.begin(), char_buffer.end());
+}
+
 }  // namespace ipp_converter

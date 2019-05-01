@@ -11,6 +11,19 @@
 #include "services/service_manager/public/cpp/service_keepalive.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 
+// CupsIppParser Service Implementation.
+//
+// This service's sole purpose is parsing CUPS IPP printing requests. It accepts
+// arbitrary byte buffers as input and returns a fully-parsed IPP request,
+// mojom::IppRequest, as a result.
+//
+// Because this service doesn't know the origin of these requests, it
+// treats each request as potentially malicious. As such, this service runs
+// out-of-process, lessening the chance of exposing an exploit to the rest of
+// Chrome.
+//
+// Note: In practice, this service is used to support printing requests incoming
+// from ChromeOS.
 class CupsIppParserService : public service_manager::Service {
  public:
   explicit CupsIppParserService(service_manager::mojom::ServiceRequest request);
