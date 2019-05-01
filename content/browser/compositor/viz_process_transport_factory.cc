@@ -313,6 +313,13 @@ void VizProcessTransportFactory::OnContextLost() {
 
 void VizProcessTransportFactory::DisableGpuCompositing(
     ui::Compositor* guilty_compositor) {
+#if defined(OS_CHROMEOS)
+  ALLOW_UNUSED_LOCAL(compositing_mode_reporter_);
+  // A fatal error has occurred and we can't fall back to software compositing
+  // on CrOS. These can be unrecoverable hardware errors, or bugs that should
+  // not happen. Crash the browser process to reset everything.
+  LOG(FATAL) << "Software compositing fallback is unavailable. Goodbye.";
+#else
   DLOG(ERROR) << "Switching to software compositing.";
 
   // Change the result of IsGpuCompositingDisabled() before notifying anything.
@@ -354,6 +361,7 @@ void VizProcessTransportFactory::DisableGpuCompositing(
   }
 
   GpuDataManagerImpl::GetInstance()->NotifyGpuInfoUpdate();
+#endif
 }
 
 void VizProcessTransportFactory::OnGpuProcessLost() {
