@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -32,6 +33,7 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -39,10 +41,12 @@ namespace blink {
 HTMLPortalElement::HTMLPortalElement(
     Document& document,
     const base::UnguessableToken& portal_token,
-    mojom::blink::PortalAssociatedPtr portal_ptr)
+    mojom::blink::PortalAssociatedPtr portal_ptr,
+    mojom::blink::PortalClientAssociatedRequest portal_client_request)
     : HTMLFrameOwnerElement(html_names::kPortalTag, document),
       portal_token_(portal_token),
-      portal_ptr_(std::move(portal_ptr)) {}
+      portal_ptr_(std::move(portal_ptr)),
+      portal_client_binding_(this, std::move(portal_client_request)) {}
 
 HTMLPortalElement::~HTMLPortalElement() {}
 
@@ -71,6 +75,7 @@ void HTMLPortalElement::ConsumePortal() {
     portal_token_ = base::UnguessableToken();
   }
   portal_ptr_.reset();
+  portal_client_binding_.Close();
 }
 
 namespace {
@@ -267,7 +272,25 @@ void HTMLPortalElement::postMessage(ScriptState* script_state,
   if (exception_state.HadException())
     return;
 
-  portal_ptr_->PostMessage(std::move(transferable_message), target_origin);
+  portal_ptr_->PostMessageToGuest(std::move(transferable_message),
+                                  target_origin);
+}
+
+void HTMLPortalElement::ForwardMessageFromGuest(
+    const String& message,
+    const scoped_refptr<const SecurityOrigin>& source_origin,
+    const scoped_refptr<const SecurityOrigin>& target_origin) {
+  if (!portal_ptr_)
+    return;
+
+  if (target_origin && !target_origin->IsSameSchemeHostPort(
+                           GetExecutionContext()->GetSecurityOrigin())) {
+    return;
+  }
+
+  MessageEvent* event =
+      MessageEvent::Create(message, source_origin->ToString());
+  DispatchEvent(*event);
 }
 
 HTMLPortalElement::InsertionNotificationRequest HTMLPortalElement::InsertedInto(
@@ -295,9 +318,11 @@ HTMLPortalElement::InsertionNotificationRequest HTMLPortalElement::InsertedInto(
         WTF::Bind(&HTMLPortalElement::ConsumePortal, WrapWeakPersistent(this)));
     DocumentPortals::From(GetDocument()).OnPortalInserted(this);
   } else {
+    mojom::blink::PortalClientAssociatedPtr client;
+    portal_client_binding_.Bind(mojo::MakeRequest(&client));
     std::tie(portal_frame_, portal_token_) =
         GetDocument().GetFrame()->Client()->CreatePortal(
-            this, mojo::MakeRequest(&portal_ptr_));
+            this, mojo::MakeRequest(&portal_ptr_), client.PassInterface());
     portal_ptr_.set_connection_error_handler(
         WTF::Bind(&HTMLPortalElement::ConsumePortal, WrapWeakPersistent(this)));
     DocumentPortals::From(GetDocument()).OnPortalInserted(this);

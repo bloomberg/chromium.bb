@@ -335,7 +335,8 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   LocalFrame* CreateFrame(const AtomicString&, HTMLFrameOwnerElement*) override;
   std::pair<RemoteFrame*, base::UnguessableToken> CreatePortal(
       HTMLPortalElement*,
-      mojom::blink::PortalAssociatedRequest) override;
+      mojom::blink::PortalAssociatedRequest,
+      mojom::blink::PortalClientAssociatedPtrInfo) override;
   RemoteFrame* AdoptPortal(HTMLPortalElement*) override;
   WebPluginContainerImpl* CreatePlugin(HTMLPlugInElement&,
                                        const KURL&,

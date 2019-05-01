@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PORTAL_HTML_PORTAL_ELEMENT_H_
 
 #include "base/unguessable_token.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -24,7 +25,8 @@ class ScriptState;
 // activated using script. The portal element is still under development and not
 // part of the HTML standard. It can be enabled by passing
 // --enable-features=Portals. See also https://github.com/WICG/portals.
-class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement {
+class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement,
+                                      public mojom::blink::PortalClient {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -33,7 +35,9 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement {
   explicit HTMLPortalElement(
       Document& document,
       const base::UnguessableToken& portal_token = base::UnguessableToken(),
-      mojom::blink::PortalAssociatedPtr portal_ptr = nullptr);
+      mojom::blink::PortalAssociatedPtr portal_ptr = nullptr,
+      mojom::blink::PortalClientAssociatedRequest portal_client_request =
+          nullptr);
   ~HTMLPortalElement() override;
 
   // ScriptWrappable overrides.
@@ -50,6 +54,12 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement {
                    const ScriptValue& message,
                    const WindowPostMessageOptions* options,
                    ExceptionState& exception_state);
+
+  // blink::mojom::PortalClient implementation
+  void ForwardMessageFromGuest(
+      const String& message,
+      const scoped_refptr<const SecurityOrigin>& source_origin,
+      const scoped_refptr<const SecurityOrigin>& target_origin) override;
 
   const base::UnguessableToken& GetToken() const { return portal_token_; }
 
@@ -94,6 +104,7 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement {
   bool is_activating_ = false;
 
   mojom::blink::PortalAssociatedPtr portal_ptr_;
+  mojo::AssociatedBinding<mojom::blink::PortalClient> portal_client_binding_;
 };
 
 }  // namespace blink

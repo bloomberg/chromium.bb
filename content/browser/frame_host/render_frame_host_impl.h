@@ -868,17 +868,18 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // identified by |portal_token| with the interface |portal|. The activation
   // can optionally include a message |data| dispatched with the
   // PortalActivateEvent.
-  void OnPortalActivated(const base::UnguessableToken& portal_token,
-                         blink::mojom::PortalAssociatedPtrInfo portal,
-                         blink::TransferableMessage data,
-                         base::OnceCallback<void(bool)> callback);
+  void OnPortalActivated(
+      const base::UnguessableToken& portal_token,
+      blink::mojom::PortalAssociatedPtrInfo portal,
+      blink::mojom::PortalClientAssociatedRequest portal_client,
+      blink::TransferableMessage data,
+      base::OnceCallback<void(bool)> callback);
 
   // Called on the main frame of a page embedded in a Portal to forward a
-  // message to the PortalHost object in the frame.
-  void ForwardMessageToPortalHost(
-      blink::TransferableMessage message,
-      const url::Origin& source_origin,
-      const base::Optional<url::Origin>& target_origin);
+  // message from the host of a portal.
+  void ForwardMessageFromHost(blink::TransferableMessage message,
+                              const url::Origin& source_origin,
+                              const base::Optional<url::Origin>& target_origin);
 
   // mojom::FrameHost:
   void VisibilityChanged(blink::mojom::FrameVisibility) override;
@@ -1161,6 +1162,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void CreateNewWindow(mojom::CreateNewWindowParamsPtr params,
                        CreateNewWindowCallback callback) override;
   void CreatePortal(blink::mojom::PortalAssociatedRequest request,
+                    blink::mojom::PortalClientAssociatedPtrInfo client,
                     CreatePortalCallback callback) override;
   void AdoptPortal(const base::UnguessableToken& portal_token,
                    AdoptPortalCallback callback) override;

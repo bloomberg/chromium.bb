@@ -211,6 +211,7 @@
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/html/plugin_document.h"
 #include "third_party/blink/renderer/core/html/portal/document_portals.h"
+#include "third_party/blink/renderer/core/html/portal/dom_window_portal_host.h"
 #include "third_party/blink/renderer/core/html/portal/html_portal_element.h"
 #include "third_party/blink/renderer/core/html/portal/portal_host.h"
 #include "third_party/blink/renderer/core/html_names.h"
@@ -1834,8 +1835,9 @@ LocalFrame* WebLocalFrameImpl::CreateChildFrame(
 
 std::pair<RemoteFrame*, base::UnguessableToken> WebLocalFrameImpl::CreatePortal(
     HTMLPortalElement* portal,
-    mojom::blink::PortalAssociatedRequest request) {
-  auto pair = client_->CreatePortal(request.PassHandle());
+    mojom::blink::PortalAssociatedRequest request,
+    mojom::blink::PortalClientAssociatedPtrInfo client) {
+  auto pair = client_->CreatePortal(request.PassHandle(), client.PassHandle());
   WebRemoteFrameImpl* portal_frame = ToWebRemoteFrameImpl(pair.first);
   portal_frame->InitializeCoreFrame(*GetFrame()->GetPage(), portal,
                                     g_null_atom);
@@ -2582,11 +2584,13 @@ void WebLocalFrameImpl::PerformMediaPlayerAction(
 void WebLocalFrameImpl::OnPortalActivated(
     const base::UnguessableToken& portal_token,
     mojo::ScopedInterfaceEndpointHandle portal_pipe,
+    mojo::ScopedInterfaceEndpointHandle portal_client_pipe,
     TransferableMessage data,
     OnPortalActivatedCallback callback) {
-  GetFrame()->GetPage()->SetInsidePortal(false);
-
   LocalDOMWindow* window = GetFrame()->DomWindow();
+
+  DOMWindowPortalHost::portalHost(*window)->OnPortalActivated();
+  GetFrame()->GetPage()->SetInsidePortal(false);
 
   auto blink_data = ToBlinkTransferableMessage(std::move(data));
   DCHECK(!blink_data.locked_agent_cluster_id)
@@ -2599,6 +2603,8 @@ void WebLocalFrameImpl::OnPortalActivated(
       frame_.Get(), portal_token,
       mojom::blink::PortalAssociatedPtr(mojom::blink::PortalAssociatedPtrInfo(
           std::move(portal_pipe), mojom::blink::Portal::Version_)),
+      mojom::blink::PortalClientAssociatedRequest(
+          std::move(portal_client_pipe)),
       std::move(blink_data.message), ports, std::move(callback));
 
   ThreadDebugger* debugger = MainThreadDebugger::Instance();
@@ -2610,7 +2616,7 @@ void WebLocalFrameImpl::OnPortalActivated(
   event->DetachPortalIfNotAdopted();
 }
 
-void WebLocalFrameImpl::ForwardMessageToPortalHost(
+void WebLocalFrameImpl::ForwardMessageFromHost(
     TransferableMessage message,
     const WebSecurityOrigin& source_origin,
     const base::Optional<WebSecurityOrigin>& target_origin) {

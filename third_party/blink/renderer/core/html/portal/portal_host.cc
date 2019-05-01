@@ -4,11 +4,17 @@
 
 #include "third_party/blink/renderer/core/html/portal/portal_host.h"
 
+#include <utility>
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/user_activation.h"
+#include "third_party/blink/renderer/core/frame/window_post_message_options.h"
+#include "third_party/blink/renderer/core/html/portal/dom_window_portal_host.h"
 #include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
@@ -49,6 +55,44 @@ PortalHost* PortalHost::ToPortalHost() {
   return this;
 }
 
+Document* PortalHost::GetDocument() const {
+  return To<Document>(GetExecutionContext());
+}
+
+void PortalHost::OnPortalActivated() {
+  portal_host_ptr_.reset();
+}
+
+void PortalHost::postMessage(const String& message,
+                             const String& target_origin,
+                             Vector<ScriptValue>& transfer,
+                             ExceptionState& exception_state) {
+  WindowPostMessageOptions* options = WindowPostMessageOptions::Create();
+  options->setTargetOrigin(target_origin);
+  if (!transfer.IsEmpty())
+    options->setTransfer(transfer);
+  postMessage(message, options, exception_state);
+}
+
+void PortalHost::postMessage(const String& message,
+                             const WindowPostMessageOptions* options,
+                             ExceptionState& exception_state) {
+  if (!DOMWindowPortalHost::ShouldExposePortalHost(*GetSupplementable())) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The document is no longer inside a portal");
+    return;
+  }
+
+  scoped_refptr<const SecurityOrigin> target_origin;
+  if (options->targetOrigin() == "/")
+    target_origin = GetDocument()->GetSecurityOrigin();
+  else if (options->targetOrigin() != "*")
+    target_origin = SecurityOrigin::CreateFromString(options->targetOrigin());
+
+  GetPortalHostInterface().PostMessageToHost(message, target_origin);
+}
+
 void PortalHost::ReceiveMessage(
     BlinkTransferableMessage message,
     scoped_refptr<const SecurityOrigin> source_origin,
@@ -77,6 +121,17 @@ void PortalHost::ReceiveMessage(
   DispatchEvent(*event);
   if (debugger)
     debugger->ExternalAsyncTaskFinished(message.sender_stack_trace_id);
+}
+
+mojom::blink::PortalHost& PortalHost::GetPortalHostInterface() {
+  if (!portal_host_ptr_) {
+    DCHECK(GetDocument()->GetFrame());
+    GetDocument()
+        ->GetFrame()
+        ->GetRemoteNavigationAssociatedInterfaces()
+        ->GetInterface(&portal_host_ptr_);
+  }
+  return *portal_host_ptr_;
 }
 
 }  // namespace blink

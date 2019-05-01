@@ -217,10 +217,11 @@ interface FrameNavigationControl {
                    mojo_base.mojom.String16 target_origin,
                    blink.mojom.TransferableMessage message);
 
-  // Forwards message to the portal's main frame.
-  ForwardMessageToPortalHost(blink.mojom.TransferableMessage message,
-                             url.mojom.Origin source_origin,
-                             url.mojom.Origin? target_origin);
+  // Forwards a message from a portal's host to the main frame in the portal's
+  // guest contents.
+  ForwardMessageFromHost(blink.mojom.TransferableMessage message,
+                         url.mojom.Origin source_origin,
+                         url.mojom.Origin? target_origin);
 
   // Called on the main frame of a page embedded in a Portal when it is
   // activated. The frame has the option to adopt the previous page as a portal
@@ -231,6 +232,7 @@ interface FrameNavigationControl {
   // current frame.
   OnPortalActivated(mojo_base.mojom.UnguessableToken portal_token,
                     associated blink.mojom.Portal portal,
+                    associated blink.mojom.PortalClient& portal_client,
                     blink.mojom.TransferableMessage data) => (bool was_adopted);
 };
 
@@ -340,10 +342,12 @@ interface FrameHost {
       => (CreateNewWindowStatus status, CreateNewWindowReply? reply);
 
   // Sent by the renderer process to request the creation of a new portal.
-  // |portal| is the interface to be used for the Portal object. Returns
-  // |proxy_routing_id|, which is the routing id of the RenderFrameProxy and
-  // |portal_token|, which is the unique identifier for the portal.
-  [Sync] CreatePortal(associated blink.mojom.Portal& portal)
+  // |portal| is the pipe to be used for the Portal object, |client| is the pipe
+  // used to communicate back with the caller. Returns |proxy_routing_id|, which
+  // is the routing id of the RenderFrameProxy and |portal_token|, which is the
+  // unique identifier for the portal.
+  [Sync] CreatePortal(associated blink.mojom.Portal& portal,
+                      associated blink.mojom.PortalClient client)
       => (int32 proxy_routing_id,
           mojo_base.mojom.UnguessableToken portal_token,
           mojo_base.mojom.UnguessableToken devtools_frame_token);

@@ -30,6 +30,7 @@ class WebContentsImpl;
 // The Portal is owned by its mojo binding, so it is kept alive as long as the
 // other end of the pipe (typically in the renderer) exists.
 class CONTENT_EXPORT Portal : public blink::mojom::Portal,
+                              public blink::mojom::PortalHost,
                               public WebContentsObserver,
                               public WebContentsDelegate {
  public:
@@ -43,11 +44,16 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
   // function creates a strong binding, so the ownership of the Portal is
   // delegated to the binding.
   static Portal* Create(RenderFrameHostImpl* owner_render_frame_host,
-                        blink::mojom::PortalAssociatedRequest request);
+                        blink::mojom::PortalAssociatedRequest request,
+                        blink::mojom::PortalClientAssociatedPtrInfo client);
 
   // Creates a portal without binding it to any pipe. Only used in tests.
   static std::unique_ptr<Portal> CreateForTesting(
       RenderFrameHostImpl* owner_render_frame_host);
+
+  static void BindPortalHostRequest(
+      RenderFrameHostImpl* frame,
+      blink::mojom::PortalHostAssociatedRequest request);
 
   // Called from a synchronous IPC from the renderer process in order to create
   // the proxy.
@@ -57,8 +63,14 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
   void Navigate(const GURL& url) override;
   void Activate(blink::TransferableMessage data,
                 ActivateCallback callback) override;
-  void PostMessage(const blink::TransferableMessage message,
-                   const base::Optional<url::Origin>& target_origin) override;
+  void PostMessageToGuest(
+      const blink::TransferableMessage message,
+      const base::Optional<url::Origin>& target_origin) override;
+
+  // blink::mojom::PortalHost implementation
+  void PostMessageToHost(
+      const std::string& message,
+      const base::Optional<url::Origin>& target_origin) override;
 
   // WebContentsObserver overrides.
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
@@ -87,6 +99,9 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
   }
   void SetBindingForTesting(
       mojo::StrongAssociatedBindingPtr<blink::mojom::Portal> binding);
+  void SetClientForTesting(blink::mojom::PortalClientAssociatedPtr client);
+
+  blink::mojom::PortalClient& client() { return *client_; }
 
  private:
   explicit Portal(RenderFrameHostImpl* owner_render_frame_host);
@@ -101,6 +116,13 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
 
   // WeakPtr to StrongBinding.
   mojo::StrongAssociatedBindingPtr<blink::mojom::Portal> binding_;
+
+  // Receives messages from the inner render process.
+  mojo::AssociatedBinding<blink::mojom::PortalHost> portal_host_binding_;
+
+  // Used to communicate with the HTMLPortalElement in the renderer that
+  // hosts this Portal.
+  blink::mojom::PortalClientAssociatedPtr client_;
 
   // When the portal is not attached, the Portal owns its WebContents.
   std::unique_ptr<WebContents> portal_contents_;

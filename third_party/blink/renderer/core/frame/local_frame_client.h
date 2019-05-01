@@ -291,7 +291,8 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   // identifies the portal.
   virtual std::pair<RemoteFrame*, base::UnguessableToken> CreatePortal(
       HTMLPortalElement*,
-      mojom::blink::PortalAssociatedRequest) = 0;
+      mojom::blink::PortalAssociatedRequest,
+      mojom::blink::PortalClientAssociatedPtrInfo) = 0;
 
   // Adopts the predecessor |portal|. The HTMLPortalElement must have been
   // created by adopting the predecessor in the PortalActivateEvent, and have a

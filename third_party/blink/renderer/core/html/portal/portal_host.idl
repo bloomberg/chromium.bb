@@ -5,4 +5,9 @@
 // https://wicg.github.io/portals/#the-portalhost-interface
 
 [Exposed=Window, RuntimeEnabled=Portals]
-interface PortalHost : EventTarget {};
+interface PortalHost : EventTarget {
+  [RaisesException] void postMessage(DOMString message, DOMString targetOrigin,
+                                     optional sequence<object> transfer = []);
+  [RaisesException] void postMessage(DOMString message,
+                                     optional WindowPostMessageOptions options);
+};

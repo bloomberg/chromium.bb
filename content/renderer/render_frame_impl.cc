@@ -2661,18 +2661,20 @@ void RenderFrameImpl::OnSnapshotAccessibilityTree(int callback_id,
 void RenderFrameImpl::OnPortalActivated(
     const base::UnguessableToken& portal_token,
     blink::mojom::PortalAssociatedPtrInfo portal,
+    blink::mojom::PortalClientAssociatedRequest portal_client,
     blink::TransferableMessage data,
     OnPortalActivatedCallback callback) {
-  frame_->OnPortalActivated(portal_token, portal.PassHandle(), std::move(data),
+  frame_->OnPortalActivated(portal_token, portal.PassHandle(),
+                            portal_client.PassHandle(), std::move(data),
                             std::move(callback));
 }
 
-void RenderFrameImpl::ForwardMessageToPortalHost(
+void RenderFrameImpl::ForwardMessageFromHost(
     blink::TransferableMessage message,
     const url::Origin& source_origin,
     const base::Optional<url::Origin>& target_origin) {
-  frame_->ForwardMessageToPortalHost(std::move(message), source_origin,
-                                     target_origin);
+  frame_->ForwardMessageFromHost(std::move(message), source_origin,
+                                 target_origin);
 }
 
 void RenderFrameImpl::SetLifecycleState(
@@ -4261,13 +4263,16 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
 }
 
 std::pair<blink::WebRemoteFrame*, base::UnguessableToken>
-RenderFrameImpl::CreatePortal(mojo::ScopedInterfaceEndpointHandle pipe) {
+RenderFrameImpl::CreatePortal(mojo::ScopedInterfaceEndpointHandle request,
+                              mojo::ScopedInterfaceEndpointHandle client) {
   int proxy_routing_id = MSG_ROUTING_NONE;
   base::UnguessableToken portal_token;
   base::UnguessableToken devtools_frame_token;
   GetFrameHost()->CreatePortal(
-      blink::mojom::PortalAssociatedRequest(std::move(pipe)), &proxy_routing_id,
-      &portal_token, &devtools_frame_token);
+      blink::mojom::PortalAssociatedRequest(std::move(request)),
+      blink::mojom::PortalClientAssociatedPtrInfo(
+          std::move(client), blink::mojom::PortalClient::Version_),
+      &proxy_routing_id, &portal_token, &devtools_frame_token);
   RenderFrameProxy* proxy = RenderFrameProxy::CreateProxyForPortal(
       this, proxy_routing_id, devtools_frame_token);
   return std::make_pair(proxy->web_frame(), portal_token);

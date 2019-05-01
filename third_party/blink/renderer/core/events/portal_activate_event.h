@@ -37,6 +37,8 @@ class CORE_EXPORT PortalActivateEvent : public Event {
       LocalFrame* frame,
       const base::UnguessableToken& predecessor_portal_token,
       mojom::blink::PortalAssociatedPtr predecessor_portal_ptr,
+      mojom::blink::PortalClientAssociatedRequest
+          predecessor_portal_client_request,
       scoped_refptr<SerializedScriptValue> data,
       MessagePortArray* ports,
       OnPortalActivatedCallback callback);
@@ -48,6 +50,8 @@ class CORE_EXPORT PortalActivateEvent : public Event {
   PortalActivateEvent(Document* document,
                       const base::UnguessableToken& predecessor_portal_token,
                       mojom::blink::PortalAssociatedPtr predecessor_portal_ptr,
+                      mojom::blink::PortalClientAssociatedRequest
+                          predecessor_portal_client_request,
                       UnpackedSerializedScriptValue* data,
                       MessagePortArray*,
                       OnPortalActivatedCallback callback);
@@ -70,6 +74,8 @@ class CORE_EXPORT PortalActivateEvent : public Event {
   Member<Document> document_;
   base::UnguessableToken predecessor_portal_token_;
   mojom::blink::PortalAssociatedPtr predecessor_portal_ptr_;
+  mojom::blink::PortalClientAssociatedRequest
+      predecessor_portal_client_request_;
 
   // Set if this came from a serialized value.
   Member<UnpackedSerializedScriptValue> data_;

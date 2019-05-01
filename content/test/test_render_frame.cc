@@ -106,6 +106,7 @@ class MockFrameHost : public mojom::FrameHost {
   }
 
   void CreatePortal(blink::mojom::PortalAssociatedRequest request,
+                    blink::mojom::PortalClientAssociatedPtrInfo client,
                     CreatePortalCallback callback) override {
     std::move(callback).Run(MSG_ROUTING_NONE, base::UnguessableToken(),
                             base::UnguessableToken());

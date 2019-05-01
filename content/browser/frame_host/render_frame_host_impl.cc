@@ -1049,13 +1049,15 @@ void RenderFrameHostImpl::LeaveBackForwardCache() {
 void RenderFrameHostImpl::OnPortalActivated(
     const base::UnguessableToken& portal_token,
     blink::mojom::PortalAssociatedPtrInfo portal,
+    blink::mojom::PortalClientAssociatedRequest portal_client,
     blink::TransferableMessage data,
     base::OnceCallback<void(bool)> callback) {
   GetNavigationControl()->OnPortalActivated(
-      portal_token, std::move(portal), std::move(data), std::move(callback));
+      portal_token, std::move(portal), std::move(portal_client),
+      std::move(data), std::move(callback));
 }
 
-void RenderFrameHostImpl::ForwardMessageToPortalHost(
+void RenderFrameHostImpl::ForwardMessageFromHost(
     blink::TransferableMessage message,
     const url::Origin& source_origin,
     const base::Optional<url::Origin>& target_origin) {
@@ -1063,12 +1065,11 @@ void RenderFrameHostImpl::ForwardMessageToPortalHost(
   // navigated after the postMessage call, or if the renderer is compromised and
   // the check done in PortalHost::ReceiveMessage is bypassed.
   if (target_origin) {
-    DCHECK(!target_origin->opaque());
     if (target_origin != GetLastCommittedOrigin())
       return;
   }
-  GetNavigationControl()->ForwardMessageToPortalHost(
-      std::move(message), source_origin, target_origin);
+  GetNavigationControl()->ForwardMessageFromHost(std::move(message),
+                                                 source_origin, target_origin);
 }
 
 SiteInstanceImpl* RenderFrameHostImpl::GetSiteInstance() {
@@ -3824,13 +3825,15 @@ void RenderFrameHostImpl::CreateNewWindow(
 
 void RenderFrameHostImpl::CreatePortal(
     blink::mojom::PortalAssociatedRequest request,
+    blink::mojom::PortalClientAssociatedPtrInfo client,
     CreatePortalCallback callback) {
+  // We don't support attaching a portal inside a nested browsing context.
   if (frame_tree_node()->parent()) {
     mojo::ReportBadMessage(
         "RFHI::CreatePortal called in a nested browsing context");
     return;
   }
-  Portal* portal = Portal::Create(this, std::move(request));
+  Portal* portal = Portal::Create(this, std::move(request), std::move(client));
   RenderFrameProxyHost* proxy_host = portal->CreateProxyAndAttachPortal();
   std::move(callback).Run(proxy_host->GetRoutingID(), portal->portal_token(),
                           portal->GetDevToolsFrameToken());
@@ -4960,6 +4963,9 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
   };
   associated_registry_->AddInterface(
       base::BindRepeating(make_binding, base::Unretained(this)));
+
+  associated_registry_->AddInterface(base::BindRepeating(
+      &Portal::BindPortalHostRequest, base::Unretained(this)));
 
   RegisterMojoInterfaces();
   mojom::FrameFactoryPtr frame_factory;
