@@ -19,6 +19,8 @@ proto_library("proto") {
 
 static_library("util") {
   sources = [
+    "cryptauth_proto_to_query_parameters_util.cc",
+    "cryptauth_proto_to_query_parameters_util.h",
     "device_classifier_util.cc",
     "device_classifier_util.h",
     "enum_util.cc",

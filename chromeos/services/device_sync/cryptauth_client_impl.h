@@ -5,8 +5,13 @@
 #ifndef CHROMEOS_SERVICES_DEVICE_SYNC_CRYPTAUTH_CLIENT_IMPL_H_
 #define CHROMEOS_SERVICES_DEVICE_SYNC_CRYPTAUTH_CLIENT_IMPL_H_
 
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "chromeos/services/device_sync/cryptauth_api_call_flow.h"
 #include "chromeos/services/device_sync/cryptauth_client.h"
 #include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
@@ -102,13 +107,30 @@ class CryptAuthClientImpl : public CryptAuthClient {
   std::string GetAccessTokenUsed() override;
 
  private:
-  // Starts a call to the API given by |request_url|, with the templated
-  // request and response types. The client first fetches the access token and
-  // then makes the HTTP request.
-  template <class RequestProto, class ResponseProto>
+  enum class RequestType { kGet, kPost };
+
+  // Starts a call to the API given by |request_url|. The client first fetches
+  // the access token and then makes the HTTP request.
+  //   |request_url|: API endpoint.
+  //   |request_type|: Whether the request is a GET or POST.
+  //   |serialized_request|: Serialized request message proto that will be sent
+  //                         as the body of a POST request. Null if
+  //                         request type is not POST.
+  //   |request_as_query_parameters|: The request message proto represented as
+  //                                  key-value pairs that will be sent as query
+  //                                  parameters in a GET request. Note: A key
+  //                                  can have multiple values. Null if request
+  //                                  type is not GET.
+  //   |response_callback|: Callback for a successful request.
+  //   |error_callback|: Callback for a failed request.
+  //   |partial_traffic_annotation|: A partial tag used to mark a source of
+  template <class ResponseProto>
   void MakeApiCall(
       const GURL& request_url,
-      const RequestProto& request_proto,
+      RequestType request_type,
+      const base::Optional<std::string>& serialized_request,
+      const base::Optional<std::vector<std::pair<std::string, std::string>>>&
+          request_as_query_parameters,
       const base::Callback<void(const ResponseProto&)>& response_callback,
       const ErrorCallback& error_callback,
       const net::PartialNetworkTrafficAnnotationTag&
@@ -117,7 +139,10 @@ class CryptAuthClientImpl : public CryptAuthClient {
   // Called when the access token is obtained so the API request can be made.
   template <class ResponseProto>
   void OnAccessTokenFetched(
-      const std::string& serialized_request,
+      RequestType request_type,
+      const base::Optional<std::string>& serialized_request,
+      const base::Optional<std::vector<std::pair<std::string, std::string>>>&
+          request_as_query_parameters,
       const base::Callback<void(const ResponseProto&)>& response_callback,
       GoogleServiceAuthError error,
       identity::AccessTokenInfo access_token_info);
