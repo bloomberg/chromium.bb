@@ -59,25 +59,23 @@
 
 namespace blink {
 
+// Effectively allows modifying the provided |flags| without technically
+// violating its constness.
+//
+// TODO(gilmanmh): Investigate removing const from |flags| in the calling
+// methods so that this isn't necessary.
 class GraphicsContext::DarkModeFlags final {
   STACK_ALLOCATED();
 
  public:
   // This helper's lifetime should never exceed |flags|'.
   DarkModeFlags(GraphicsContext* gc, const PaintFlags& flags) {
-    sk_sp<SkColorFilter> filter = gc->dark_mode_filter_.GetColorFilter();
-    if (!filter) {
-      flags_ = &flags;
-    } else {
-      dark_mode_flags_ = flags;
-      if (flags.HasShader()) {
-        dark_mode_flags_->setColorFilter(filter);
-      } else {
-        dark_mode_flags_->setColor(filter->filterColor(flags.getColor()));
-      }
-
+    dark_mode_flags_ = gc->dark_mode_filter_.ApplyToFlagsIfNeeded(flags);
+    if (dark_mode_flags_) {
       flags_ = &dark_mode_flags_.value();
+      return;
     }
+    flags_ = &flags;
   }
 
   operator const PaintFlags&() const { return *flags_; }
@@ -387,15 +385,15 @@ int GraphicsContext::FocusRingOutsetExtent(int offset,
 void GraphicsContext::DrawFocusRingPath(const SkPath& path,
                                         const Color& color,
                                         float width) {
-  DrawPlatformFocusRing(path, canvas_, dark_mode_filter_.Apply(color).Rgb(),
-                        width);
+  DrawPlatformFocusRing(path, canvas_,
+                        dark_mode_filter_.ApplyIfNeeded(color).Rgb(), width);
 }
 
 void GraphicsContext::DrawFocusRingRect(const SkRect& rect,
                                         const Color& color,
                                         float width) {
-  DrawPlatformFocusRing(rect, canvas_, dark_mode_filter_.Apply(color).Rgb(),
-                        width);
+  DrawPlatformFocusRing(rect, canvas_,
+                        dark_mode_filter_.ApplyIfNeeded(color).Rgb(), width);
 }
 
 void GraphicsContext::DrawFocusRing(const Path& focus_ring_path,
@@ -470,7 +468,7 @@ void GraphicsContext::DrawInnerShadow(const FloatRoundedRect& rect,
   if (ContextDisabled())
     return;
 
-  Color shadow_color = dark_mode_filter_.Apply(orig_shadow_color);
+  Color shadow_color = dark_mode_filter_.ApplyIfNeeded(orig_shadow_color);
 
   FloatRect hole_rect(rect.Rect());
   hole_rect.Inflate(-shadow_spread);
@@ -873,9 +871,8 @@ void GraphicsContext::DrawImage(
   image_flags.setBlendMode(op);
   image_flags.setColor(SK_ColorBLACK);
   image_flags.setFilterQuality(ComputeFilterQuality(image, dest, src));
-  if (dark_mode_filter_.ShouldApplyToImage(*image, src)) {
-    image_flags.setColorFilter(dark_mode_filter_.GetColorFilter());
-  }
+
+  dark_mode_filter_.ApplyToImageFlagsIfNeeded(src, image, &image_flags);
 
   image->Draw(canvas_, image_flags, dest, src, should_respect_image_orientation,
               Image::kClampImageToSourceRect, decode_mode);
@@ -910,9 +907,8 @@ void GraphicsContext::DrawImageRRect(
   image_flags.setColor(SK_ColorBLACK);
   image_flags.setFilterQuality(
       ComputeFilterQuality(image, dest.Rect(), src_rect));
-  if (dark_mode_filter_.ShouldApplyToImage(*image, src_rect)) {
-    image_flags.setColorFilter(dark_mode_filter_.GetColorFilter());
-  }
+
+  dark_mode_filter_.ApplyToImageFlagsIfNeeded(src_rect, image, &image_flags);
 
   bool use_shader = (visible_src == src_rect) &&
                     (respect_orientation == kDoNotRespectImageOrientation);
@@ -1122,7 +1118,7 @@ void GraphicsContext::FillDRRect(const FloatRoundedRect& outer,
       canvas_->drawDRRect(outer, inner, ImmutableState()->FillFlags());
     } else {
       PaintFlags flags(ImmutableState()->FillFlags());
-      flags.setColor(dark_mode_filter_.Apply(color).Rgb());
+      flags.setColor(dark_mode_filter_.ApplyIfNeeded(color).Rgb());
       canvas_->drawDRRect(outer, inner, flags);
     }
 
@@ -1135,7 +1131,7 @@ void GraphicsContext::FillDRRect(const FloatRoundedRect& outer,
   stroke_r_rect.inset(stroke_width / 2, stroke_width / 2);
 
   PaintFlags stroke_flags(ImmutableState()->FillFlags());
-  stroke_flags.setColor(dark_mode_filter_.Apply(color).Rgb());
+  stroke_flags.setColor(dark_mode_filter_.ApplyIfNeeded(color).Rgb());
   stroke_flags.setStyle(PaintFlags::kStroke_Style);
   stroke_flags.setStrokeWidth(stroke_width);
 
@@ -1330,7 +1326,7 @@ void GraphicsContext::FillRectWithRoundedHole(
     return;
 
   PaintFlags flags(ImmutableState()->FillFlags());
-  flags.setColor(dark_mode_filter_.Apply(color).Rgb());
+  flags.setColor(dark_mode_filter_.ApplyIfNeeded(color).Rgb());
   canvas_->drawDRRect(SkRRect::MakeRect(rect), rounded_hole_rect, flags);
 }
 

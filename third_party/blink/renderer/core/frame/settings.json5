@@ -913,6 +913,12 @@
       invalidate: "Paint",
     },
     {
+      name: "darkModeImageStyle",
+      initial: "DarkModeImageStyle::kDefault",
+      type: "DarkModeImageStyle",
+      invalidate: "Paint",
+    },
+    {
       name: "navigatorPlatformOverride",
       type: "String",
     },
