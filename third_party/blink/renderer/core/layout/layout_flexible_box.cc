@@ -492,7 +492,7 @@ LayoutUnit LayoutFlexibleBox::CrossAxisExtentForChild(
   return IsHorizontalFlow() ? child.Size().Height() : child.Size().Width();
 }
 
-LayoutUnit LayoutFlexibleBox::ChildIntrinsicLogicalHeight(
+LayoutUnit LayoutFlexibleBox::ChildUnstretchedLogicalHeight(
     const LayoutBox& child) const {
   // This should only be called if the logical height is the cross size
   DCHECK(MainAxisIsInlineAxis(child));
@@ -512,19 +512,23 @@ LayoutUnit LayoutFlexibleBox::ChildIntrinsicLogicalHeight(
 }
 
 DISABLE_CFI_PERF
-LayoutUnit LayoutFlexibleBox::ChildIntrinsicLogicalWidth(
+LayoutUnit LayoutFlexibleBox::ChildUnstretchedLogicalWidth(
     const LayoutBox& child) const {
   // This should only be called if the logical width is the cross size
   DCHECK(!MainAxisIsInlineAxis(child));
-  // If our height is auto, make sure that our returned height is unaffected by
-  // earlier layouts by returning the shrink-to-fit size.
+  DCHECK(!child.HasOverrideLogicalWidth());
+  // We compute the width as if we were unstretched. Only the main axis
+  // override size is set at this point.
+  // However, if our cross axis length is definite we don't need to recompute
+  // and can just return the already-set logical width.
   if (!CrossAxisLengthIsDefinite(child, child.StyleRef().LogicalWidth())) {
-    LayoutUnit available_size =
-        ContentLogicalWidth() - child.MarginLogicalWidth();
-    MinMaxSize sizes{child.MinPreferredLogicalWidth(),
-                     child.MaxPreferredLogicalWidth()};
-    return child.ConstrainLogicalWidthByMinMax(
-        sizes.ShrinkToFit(available_size), available_size, this);
+    LogicalExtentComputedValues values;
+    // ComputeLogicalWidth has the side-effect of setting LogicalWidth to 0;
+    // so we store and re-set it.
+    LayoutUnit w = child.LogicalWidth();
+    child.ComputeLogicalWidth(values);
+    const_cast<LayoutBox&>(child).SetLogicalWidth(w);
+    return values.extent_;
   }
 
   return child.LogicalWidth();
@@ -532,8 +536,8 @@ LayoutUnit LayoutFlexibleBox::ChildIntrinsicLogicalWidth(
 
 LayoutUnit LayoutFlexibleBox::CrossAxisUnstretchedExtentForChild(
     const LayoutBox& child) const {
-  return MainAxisIsInlineAxis(child) ? ChildIntrinsicLogicalHeight(child)
-                                     : ChildIntrinsicLogicalWidth(child);
+  return MainAxisIsInlineAxis(child) ? ChildUnstretchedLogicalHeight(child)
+                                     : ChildUnstretchedLogicalWidth(child);
 }
 
 LayoutUnit LayoutFlexibleBox::MainAxisExtentForChild(
