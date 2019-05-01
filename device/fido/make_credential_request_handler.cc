@@ -76,6 +76,15 @@ FidoReturnCode IsCandidateAuthenticatorPostTouch(
     return FidoReturnCode::kAuthenticatorMissingResidentKeys;
   }
 
+  // TODO(martinkr): the Windows integration needs to be able to pass the
+  // credProtect information to the DLL, and to fail if the DLL version is too
+  // low to support credProtect.
+  if (request.cred_protect && request.cred_protect->second &&
+      (!authenticator->Options() ||
+       !authenticator->Options()->supports_cred_protect)) {
+    return FidoReturnCode::kAuthenticatorMissingResidentKeys;
+  }
+
   if (authenticator->WillNeedPINToMakeCredential(request, observer) ==
       MakeCredentialPINDisposition::kUnsatisfiable) {
     return FidoReturnCode::kAuthenticatorMissingUserVerification;
@@ -224,6 +233,11 @@ void MakeCredentialRequestHandler::DispatchRequest(
       request.user_verification = UserVerificationRequirement::kRequired;
     } else {
       request.user_verification = UserVerificationRequirement::kDiscouraged;
+    }
+
+    if (request.cred_protect &&
+        !authenticator->Options()->supports_cred_protect) {
+      request.cred_protect.reset();
     }
   }
 
@@ -507,6 +521,10 @@ void MakeCredentialRequestHandler::OnHavePINToken(
   // If doing a PIN operation then we don't ask the authenticator to also do
   // internal UV.
   request.user_verification = UserVerificationRequirement::kDiscouraged;
+  if (request.cred_protect && authenticator_->Options() &&
+      !authenticator_->Options()->supports_cred_protect) {
+    request.cred_protect.reset();
+  }
 
   ReportMakeCredentialRequestTransport(authenticator_);
 

@@ -26,6 +26,7 @@ enum AuthenticatorStatus {
   ALGORITHM_UNSUPPORTED,
   EMPTY_ALLOW_CREDENTIALS,
   ANDROID_NOT_SUPPORTED_ERROR,
+  PROTECTION_POLICY_INCONSISTENT,
   UNKNOWN_ERROR,
 };
 
@@ -251,6 +252,14 @@ enum AuthenticatorAttachment {
     CROSS_PLATFORM,
 };
 
+enum ProtectionPolicy {
+    // UNSPECIFIED means that no value was given at the Javascript level.
+    UNSPECIFIED,
+    NONE,
+    UV_OR_CRED_ID_REQUIRED,
+    UV_REQUIRED,
+};
+
 // See https://w3c.github.io/webauthn/#dictdef-authenticatorselectioncriteria.
 struct AuthenticatorSelectionCriteria {
   // Filter authenticators by attachment type.
@@ -313,6 +322,13 @@ struct PublicKeyCredentialCreationOptions {
   // the RP. See https://w3c.github.io/webauthn/#sctn-uvm-extension
   [EnableIf=is_android]
   bool user_verification_methods;
+
+  // The value of the `credentialProtectionPolicy` extension, or UNSPECIFIED if
+  // none was provided.
+  ProtectionPolicy protection_policy;
+  // The value of the `enforceCredentialProtectionPolicy`, or false if none was
+  // provided.
+  bool enforce_protection_policy;
 };
 
 enum PublicKeyCredentialType {

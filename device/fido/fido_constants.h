@@ -385,6 +385,7 @@ COMPONENT_EXPORT(DEVICE_FIDO) extern const char kCtap2Version[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kU2fVersion[];
 
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kExtensionHmacSecret[];
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kExtensionCredProtect[];
 
 // Maximum number of seconds the browser waits for Bluetooth authenticator to
 // send packets that advertises that the device is in pairing mode before
@@ -403,6 +404,13 @@ enum class AttestationConveyancePreference : uint8_t {
   // Non-standard value for individual attestation that we hope to end up in
   // the standard eventually.
   ENTERPRISE,
+};
+
+// CredProtect enumerates the levels of credential protection specified by the
+// `credProtect` CTAP2 extension.
+enum class CredProtect : uint8_t {
+  kUVOrCredIDRequired = 1,
+  kUVRequired = 2,
 };
 
 }  // namespace device

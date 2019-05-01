@@ -91,12 +91,19 @@ void GetAssertionTask::GetAssertion() {
   // Silently probe each credential in the allow list to work around
   // authenticators rejecting lists over a certain size. Also probe silently if
   // the request may fall back to U2F and the authenticator doesn't recognize
-  // any of the provided credential IDs. (caBLE devices, however, might not
-  // support silent probing so don't do it with them.)
-  if (device()->DeviceTransport() !=
+  // any of the provided credential IDs.
+  if ((request_.allow_list.size() > 1 ||
+       MayFallbackToU2fWithAppIdExtension(*device(), request_)) &&
+      // caBLE devices might not support silent probing so don't do it with
+      // them.
+      device()->DeviceTransport() !=
           FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy &&
-      (request_.allow_list.size() > 1 ||
-       MayFallbackToU2fWithAppIdExtension(*device(), request_))) {
+      // If the device supports credProtect then it might have UV-required
+      // credentials which it'll pretend don't exist for silent requests.
+      // TODO(agl): should support batching of, and filtering over-long,
+      // credentials based on GetInfo data. Also should support
+      // PIN-authenticated silent requests.
+      !device()->device_info()->options.supports_cred_protect) {
     sign_operation_ = std::make_unique<Ctap2DeviceOperation<
         CtapGetAssertionRequest, AuthenticatorGetAssertionResponse>>(
         device(), NextSilentRequest(),

@@ -144,6 +144,9 @@ TypeConverter<CredentialManagerError, AuthenticatorStatus>::Convert(
     case blink::mojom::blink::AuthenticatorStatus::
         USER_VERIFICATION_UNSUPPORTED:
       return CredentialManagerError::ANDROID_USER_VERIFICATION_UNSUPPORTED;
+    case blink::mojom::blink::AuthenticatorStatus::
+        PROTECTION_POLICY_INCONSISTENT:
+      return CredentialManagerError::PROTECTION_POLICY_INCONSISTENT;
     case blink::mojom::blink::AuthenticatorStatus::SUCCESS:
       NOTREACHED();
       break;
@@ -437,6 +440,8 @@ TypeConverter<PublicKeyCredentialCreationOptionsPtr,
     }
   }
 
+  mojo_options->protection_policy = blink::mojom::ProtectionPolicy::UNSPECIFIED;
+  mojo_options->enforce_protection_policy = false;
   if (options->hasExtensions()) {
     auto* extensions = options->extensions();
     if (extensions->hasCableRegistration()) {
@@ -454,6 +459,24 @@ TypeConverter<PublicKeyCredentialCreationOptionsPtr,
       mojo_options->user_verification_methods = extensions->uvm();
     }
 #endif
+    if (extensions->hasCredentialProtectionPolicy()) {
+      const auto& policy = extensions->credentialProtectionPolicy();
+      if (policy == "userVerificationOptional") {
+        mojo_options->protection_policy = blink::mojom::ProtectionPolicy::NONE;
+      } else if (policy == "userVerificationOptionalWithCredentialIDList") {
+        mojo_options->protection_policy =
+            blink::mojom::ProtectionPolicy::UV_OR_CRED_ID_REQUIRED;
+      } else if (policy == "userVerificationRequired") {
+        mojo_options->protection_policy =
+            blink::mojom::ProtectionPolicy::UV_REQUIRED;
+      } else {
+        return nullptr;
+      }
+    }
+    if (extensions->hasEnforceCredentialProtectionPolicy() &&
+        extensions->enforceCredentialProtectionPolicy()) {
+      mojo_options->enforce_protection_policy = true;
+    }
   }
 
   return mojo_options;

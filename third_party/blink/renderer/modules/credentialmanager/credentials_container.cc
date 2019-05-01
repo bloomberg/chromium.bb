@@ -250,6 +250,11 @@ DOMException* CredentialManagerErrorToDOMException(
                                   "Resident credentials or empty "
                                   "'allowCredentials' lists are not supported "
                                   "at this time.");
+    case CredentialManagerError::PROTECTION_POLICY_INCONSISTENT:
+      return DOMException::Create(
+          DOMExceptionCode::kNotSupportedError,
+          "Requested protection policy is inconsistent or incongurent with "
+          "other requested parameters.");
     case CredentialManagerError::ANDROID_ALGORITHM_UNSUPPORTED:
       return DOMException::Create(DOMExceptionCode::kNotSupportedError,
                                   "None of the algorithms specified in "

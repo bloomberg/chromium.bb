@@ -13,4 +13,7 @@ dictionary AuthenticationExtensionsClientInputs {
   boolean hmacCreateSecret;
   // https://w3c.github.io/webauthn/#sctn-uvm-extension
   boolean uvm;
+  // https://drafts.fidoalliance.org/fido-2/latest/fido-client-to-authenticator-protocol-v2.0-wd-20190409.html#sctn-credProtect-extension
+  USVString credentialProtectionPolicy;
+  boolean enforceCredentialProtectionPolicy = false;
 };

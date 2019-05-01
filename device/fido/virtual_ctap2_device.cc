@@ -496,6 +496,11 @@ VirtualCtap2Device::VirtualCtap2Device(scoped_refptr<State> state,
   if (options_updated) {
     device_info_->options = std::move(options);
   }
+
+  if (config.cred_protect_support) {
+    device_info_->extensions.emplace(
+        {std::string(device::kExtensionCredProtect)});
+  }
 }
 
 VirtualCtap2Device::~VirtualCtap2Device() = default;
@@ -608,7 +613,15 @@ CtapDeviceResponseCode VirtualCtap2Device::OnMakeCredential(
     }
 
     for (const auto& excluded_credential : *request.exclude_list) {
-      if (FindRegistrationData(excluded_credential.id(), rp_id_hash)) {
+      const RegistrationData* found =
+          FindRegistrationData(excluded_credential.id(), rp_id_hash);
+      if (found) {
+        if (found->protection == device::CredProtect::kUVRequired &&
+            !user_verified) {
+          // Cannot disclose the existence of this credential without UV. If
+          // a credentials ends up being created it'll overwrite this one.
+          continue;
+        }
         if (mutable_state()->simulate_press_callback) {
           mutable_state()->simulate_press_callback.Run();
         }
@@ -648,10 +661,19 @@ CtapDeviceResponseCode VirtualCtap2Device::OnMakeCredential(
   std::vector<uint8_t> key_handle(hash.begin(), hash.end());
 
   base::Optional<cbor::Value> extensions;
+  cbor::Value::MapValue extensions_map;
   if (request.hmac_secret) {
-    cbor::Value::MapValue extensions_map;
     extensions_map.emplace(cbor::Value(kExtensionHmacSecret),
                            cbor::Value(true));
+  }
+
+  if (request.cred_protect) {
+    extensions_map.emplace(
+        cbor::Value(kExtensionCredProtect),
+        cbor::Value(
+            request.cred_protect->first == CredProtect::kUVRequired ? 3 : 2));
+  }
+  if (!extensions_map.empty()) {
     extensions = cbor::Value(std::move(extensions_map));
   }
 
@@ -711,6 +733,10 @@ CtapDeviceResponseCode VirtualCtap2Device::OnMakeCredential(
 
     registration.is_resident = true;
     registration.user = request.user;
+  }
+
+  if (request.cred_protect) {
+    registration.protection = request.cred_protect->first;
   }
 
   StoreNewKey(key_handle, std::move(registration));
@@ -792,6 +818,25 @@ CtapDeviceResponseCode VirtualCtap2Device::OnGetAssertion(
       }
     }
   }
+
+  // Enforce credProtect semantics.
+  found_registrations.erase(
+      std::remove_if(
+          found_registrations.begin(), found_registrations.end(),
+          [user_verified, &request](
+              const std::pair<base::span<const uint8_t>, RegistrationData*>&
+                  candidate) -> bool {
+            if (!candidate.second->protection) {
+              return false;
+            }
+            switch (*candidate.second->protection) {
+              case CredProtect::kUVOrCredIDRequired:
+                return request.allow_list.empty() && !user_verified;
+              case CredProtect::kUVRequired:
+                return !user_verified;
+            }
+          }),
+      found_registrations.end());
 
   if (config_.return_immediate_invalid_credential_error &&
       found_registrations.empty()) {
@@ -1438,6 +1483,29 @@ ParseCtapMakeCredentialRequest(const cbor::Value::MapValue& request_map) {
         return base::nullopt;
       }
       request.hmac_secret = hmac_secret_it->second.GetBool();
+    }
+
+    const auto cred_protect_it =
+        extensions.find(cbor::Value(device::kExtensionCredProtect));
+    if (cred_protect_it != extensions.end()) {
+      if (!cred_protect_it->second.is_unsigned()) {
+        return base::nullopt;
+      }
+      switch (cred_protect_it->second.GetUnsigned()) {
+        case 1:
+          // Default behaviour.
+          break;
+        case 2:
+          request.cred_protect =
+              std::make_pair(device::CredProtect::kUVOrCredIDRequired, false);
+          break;
+        case 3:
+          request.cred_protect =
+              std::make_pair(device::CredProtect::kUVRequired, false);
+          break;
+        default:
+          return base::nullopt;
+      }
     }
   }
 

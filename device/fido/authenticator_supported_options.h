@@ -60,6 +60,9 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorSupportedOptions {
   // Indicates whether the authenticator supports the vendor-specific preview of
   // the CTAP2 authenticatorCredentialManagement command.
   bool supports_credential_management_preview = false;
+  // supports_cred_protect is true if the authenticator supports the
+  // `credProtect` extension. See CTAP2 draft for details.
+  bool supports_cred_protect = false;
   // Represents whether client pin is set and stored in authenticator. Set as
   // null optional if client pin capability is not supported by the
   // authenticator.

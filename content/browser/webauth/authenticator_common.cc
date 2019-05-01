@@ -639,8 +639,10 @@ void AuthenticatorCommon::MakeCredential(
     return;
   }
 
-  if (options->authenticator_selection &&
-      options->authenticator_selection->require_resident_key &&
+  const bool resident_key =
+      options->authenticator_selection &&
+      options->authenticator_selection->require_resident_key;
+  if (resident_key &&
       (!base::FeatureList::IsEnabled(device::kWebAuthResidentKeys) ||
        !request_delegate_->SupportsResidentKeys())) {
     // Disallow the creation of resident credentials.
@@ -648,6 +650,43 @@ void AuthenticatorCommon::MakeCredential(
         std::move(callback),
         blink::mojom::AuthenticatorStatus::RESIDENT_CREDENTIALS_UNSUPPORTED);
     return;
+  }
+
+  auto authenticator_selection_criteria =
+      options->authenticator_selection
+          ? mojo::ConvertTo<device::AuthenticatorSelectionCriteria>(
+                options->authenticator_selection)
+          : device::AuthenticatorSelectionCriteria();
+
+  // Reject any non-sensical credProtect extension values.
+  if (  // Can't require the default policy (or no policy).
+      (options->enforce_protection_policy &&
+       (options->protection_policy ==
+            blink::mojom::ProtectionPolicy::UNSPECIFIED ||
+        options->protection_policy == blink::mojom::ProtectionPolicy::NONE)) ||
+      // For non-resident keys the only protection that makes sense is
+      // UV_REQUIRED (or UNSPECIFIED).
+      (!resident_key &&
+       (options->protection_policy == blink::mojom::ProtectionPolicy::NONE ||
+        options->protection_policy ==
+            blink::mojom::ProtectionPolicy::UV_OR_CRED_ID_REQUIRED)) ||
+      // UV_REQUIRED only makes sense if UV is required overall.
+      (options->protection_policy ==
+           blink::mojom::ProtectionPolicy::UV_REQUIRED &&
+       authenticator_selection_criteria.user_verification_requirement() !=
+           device::UserVerificationRequirement::kRequired)) {
+    InvokeCallbackAndCleanup(
+        std::move(callback),
+        blink::mojom::AuthenticatorStatus::PROTECTION_POLICY_INCONSISTENT);
+    return;
+  }
+
+  if (options->protection_policy ==
+          blink::mojom::ProtectionPolicy::UNSPECIFIED &&
+      resident_key) {
+    // If not specified, UV_OR_CRED_ID_REQUIRED is made the default.
+    options->protection_policy =
+        blink::mojom::ProtectionPolicy::UV_OR_CRED_ID_REQUIRED;
   }
 
   DCHECK(make_credential_response_callback_.is_null());
@@ -690,12 +729,6 @@ void AuthenticatorCommon::MakeCredential(
                 {device::FidoTransportProtocol::kUsbHumanInterfaceDevice})
           : transports_;
 
-  auto authenticator_selection_criteria =
-      options->authenticator_selection
-          ? mojo::ConvertTo<device::AuthenticatorSelectionCriteria>(
-                options->authenticator_selection)
-          : device::AuthenticatorSelectionCriteria();
-
   auto ctap_request = CreateCtapMakeCredentialRequest(
       client_data_json_, options, browser_context()->IsOffTheRecord());
   // On dual protocol CTAP2/U2F devices, force credential creation over U2F.
@@ -713,6 +746,21 @@ void AuthenticatorCommon::MakeCredential(
   ctap_request.attestation_preference = attestation;
   attestation_requested_ =
       attestation != ::device::AttestationConveyancePreference::NONE;
+
+  switch (options->protection_policy) {
+    case blink::mojom::ProtectionPolicy::UNSPECIFIED:
+    case blink::mojom::ProtectionPolicy::NONE:
+      break;
+    case blink::mojom::ProtectionPolicy::UV_OR_CRED_ID_REQUIRED:
+      ctap_request.cred_protect =
+          std::make_pair(device::CredProtect::kUVOrCredIDRequired,
+                         options->enforce_protection_policy);
+      break;
+    case blink::mojom::ProtectionPolicy::UV_REQUIRED:
+      ctap_request.cred_protect = std::make_pair(
+          device::CredProtect::kUVRequired, options->enforce_protection_policy);
+      break;
+  }
 
   request_ = std::make_unique<device::MakeCredentialRequestHandler>(
       connector_, transports, std::move(ctap_request),
@@ -732,8 +780,7 @@ void AuthenticatorCommon::MakeCredential(
       base::BindRepeating(
           &device::FidoRequestHandlerBase::InitiatePairingWithDevice,
           request_->GetWeakPtr()) /* ble_pairing_callback */);
-  if (options->authenticator_selection &&
-      options->authenticator_selection->require_resident_key) {
+  if (resident_key) {
     request_delegate_->SetMightCreateResidentCredential(true);
   }
   request_->set_observer(request_delegate_.get());

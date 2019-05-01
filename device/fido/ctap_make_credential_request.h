@@ -75,6 +75,13 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) CtapMakeCredentialRequest {
   base::Optional<uint8_t> pin_protocol;
   AttestationConveyancePreference attestation_preference =
       AttestationConveyancePreference::NONE;
+
+  // cred_protect indicates the level of protection afforded to a credential.
+  // This depends on a CTAP2 extension that not all authenticators will support.
+  // The second element is true if the indicated protection level must be
+  // provided by the target authenticator for the MakeCredential request to be
+  // sent.
+  base::Optional<std::pair<CredProtect, bool>> cred_protect;
 };
 
 }  // namespace device

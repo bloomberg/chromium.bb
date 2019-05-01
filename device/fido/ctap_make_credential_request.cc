@@ -60,9 +60,26 @@ CtapMakeCredentialRequest::EncodeAsCBOR(
     cbor_map[cbor::Value(5)] = cbor::Value(std::move(exclude_list_array));
   }
 
+  cbor::Value::MapValue extensions;
+
   if (request.hmac_secret) {
-    cbor::Value::MapValue extensions;
     extensions[cbor::Value(kExtensionHmacSecret)] = cbor::Value(true);
+  }
+
+  if (request.cred_protect) {
+    int value;
+    switch (request.cred_protect->first) {
+      case CredProtect::kUVOrCredIDRequired:
+        value = 2;
+        break;
+      case CredProtect::kUVRequired:
+        value = 3;
+        break;
+    }
+    extensions.emplace(kExtensionCredProtect, value);
+  }
+
+  if (!extensions.empty()) {
     cbor_map[cbor::Value(6)] = cbor::Value(std::move(extensions));
   }
 

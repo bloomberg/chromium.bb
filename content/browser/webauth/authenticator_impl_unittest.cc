@@ -3452,6 +3452,8 @@ TEST_F(ResidentKeyAuthenticatorImplTest, MakeCredential) {
   }
 }
 
+// TODO(agl): test resident-key storage exhaustion.
+
 TEST_F(ResidentKeyAuthenticatorImplTest, GetAssertionSingle) {
   ASSERT_TRUE(virtual_device_.mutable_state()->InjectResidentKey(
       /*credential_id=*/{{4, 3, 2, 1}}, kTestRelyingPartyId,
@@ -3491,6 +3493,180 @@ TEST_F(ResidentKeyAuthenticatorImplTest, GetAssertionMulti) {
   EXPECT_TRUE(HasUV(callback_receiver));
 }
 
-// TODO(agl): test resident-key storage exhaustion.
+static const char* ProtectionPolicyDescription(
+    blink::mojom::ProtectionPolicy p) {
+  switch (p) {
+    case blink::mojom::ProtectionPolicy::UNSPECIFIED:
+      return "UNSPECIFIED";
+    case blink::mojom::ProtectionPolicy::NONE:
+      return "NONE";
+    case blink::mojom::ProtectionPolicy::UV_OR_CRED_ID_REQUIRED:
+      return "UV_OR_CRED_ID_REQUIRED";
+    case blink::mojom::ProtectionPolicy::UV_REQUIRED:
+      return "UV_REQUIRED";
+  }
+}
+
+TEST_F(ResidentKeyAuthenticatorImplTest, CredProtectRegistration) {
+  TestServiceManagerContext smc;
+  AuthenticatorPtr authenticator = ConnectToAuthenticator();
+
+  const auto UNSPECIFIED = blink::mojom::ProtectionPolicy::UNSPECIFIED;
+  const auto NONE = blink::mojom::ProtectionPolicy::NONE;
+  const auto UV_OR_CRED =
+      blink::mojom::ProtectionPolicy::UV_OR_CRED_ID_REQUIRED;
+  const auto UV_REQ = blink::mojom::ProtectionPolicy::UV_REQUIRED;
+  const int kOk = 0;
+  const int kNonsense = 1;
+  const int kNotAllow = 2;
+
+  const struct {
+    bool supported_by_authenticator;
+    bool is_resident;
+    blink::mojom::ProtectionPolicy protection;
+    bool enforce;
+    bool uv;
+    int expected_outcome;
+    blink::mojom::ProtectionPolicy resulting_policy;
+  } kExpectations[] = {
+      // clang-format off
+    // Support | Resdnt | Level      | Enf  |  UV  || Result   | Prot level
+    {  false,   false,   UNSPECIFIED, false, false,   kOk,       NONE},
+    {  false,   false,   UNSPECIFIED, true,  false,   kNonsense, UNSPECIFIED},
+    {  false,   false,   NONE,        false, false,   kNonsense, UNSPECIFIED},
+    {  false,   false,   NONE,        true,  false,   kNonsense, UNSPECIFIED},
+    {  false,   false,   UV_OR_CRED,  false, false,   kNonsense, UNSPECIFIED},
+    {  false,   false,   UV_OR_CRED,  true,  false,   kNonsense, UNSPECIFIED},
+    {  false,   false,   UV_REQ,      false, false,   kNonsense, UNSPECIFIED},
+    {  false,   false,   UV_REQ,      false, true,    kOk,       NONE},
+    {  false,   false,   UV_REQ,      true,  false,   kNonsense, UNSPECIFIED},
+    {  false,   false,   UV_REQ,      true,  true,    kNotAllow, UNSPECIFIED},
+    {  false,   true,    UNSPECIFIED, false, false,   kOk,       NONE},
+    {  false,   true,    UNSPECIFIED, true,  false,   kNonsense, UNSPECIFIED},
+    {  false,   true,    NONE,        false, false,   kOk,       NONE},
+    {  false,   true,    NONE,        true,  false,   kNonsense, UNSPECIFIED},
+    {  false,   true,    UV_OR_CRED,  false, false,   kOk,       NONE},
+    {  false,   true,    UV_OR_CRED,  true,  false,   kNotAllow, UNSPECIFIED},
+    {  false,   true,    UV_REQ,      false, false,   kNonsense, UNSPECIFIED},
+    {  false,   true,    UV_REQ,      false, true,    kOk,       NONE},
+    {  false,   true,    UV_REQ,      true,  false,   kNonsense, UNSPECIFIED},
+    {  false,   true,    UV_REQ,      true,  true,    kNotAllow, UNSPECIFIED},
+
+    // For the case where the authenticator supports credProtect we do not
+    // repeat the cases above that are |kNonsense| on the assumption that
+    // authenticator support is irrelevant. Therefore these are just the non-
+    // kNonsense cases from the prior block.
+    {  true,    false,   UNSPECIFIED, false, false,   kOk,       NONE},
+    {  true,    false,   UV_REQ,      false, true,    kOk,       UV_REQ},
+    {  true,    false,   UV_REQ,      true,  true,    kOk,       UV_REQ},
+    {  true,    true,    UNSPECIFIED, false, false,   kOk,       UV_OR_CRED},
+    {  true,    true,    NONE,        false, false,   kOk,       NONE},
+    {  true,    true,    UV_OR_CRED,  false, false,   kOk,       UV_OR_CRED},
+    {  true,    true,    UV_OR_CRED,  true,  false,   kOk,       UV_OR_CRED},
+    {  true,    true,    UV_REQ,      false, true,    kOk,       UV_REQ},
+    {  true,    true,    UV_REQ,      true,  true,    kOk,       UV_REQ},
+      // clang-format on
+  };
+
+  for (const auto& test : kExpectations) {
+    device::VirtualCtap2Device::Config config;
+    config.pin_support = true;
+    config.resident_key_support = true;
+    config.cred_protect_support = test.supported_by_authenticator;
+    virtual_device_.SetCtap2Config(config);
+    virtual_device_.mutable_state()->registrations.clear();
+
+    SCOPED_TRACE(::testing::Message() << "uv=" << test.uv);
+    SCOPED_TRACE(::testing::Message() << "enforce=" << test.enforce);
+    SCOPED_TRACE(::testing::Message()
+                 << "level=" << ProtectionPolicyDescription(test.protection));
+    SCOPED_TRACE(::testing::Message() << "resident=" << test.is_resident);
+    SCOPED_TRACE(::testing::Message()
+                 << "support=" << test.supported_by_authenticator);
+
+    PublicKeyCredentialCreationOptionsPtr options = make_credential_options();
+    options->authenticator_selection->require_resident_key = test.is_resident;
+    options->protection_policy = test.protection;
+    options->enforce_protection_policy = test.enforce;
+    options->authenticator_selection->user_verification =
+        test.uv ? blink::mojom::UserVerificationRequirement::REQUIRED
+                : blink::mojom::UserVerificationRequirement::DISCOURAGED;
+
+    TestMakeCredentialCallback callback_receiver;
+    authenticator->MakeCredential(std::move(options),
+                                  callback_receiver.callback());
+    callback_receiver.WaitForCallback();
+
+    switch (test.expected_outcome) {
+      case kOk: {
+        EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+        ASSERT_EQ(1u, virtual_device_.mutable_state()->registrations.size());
+        const base::Optional<device::CredProtect> result =
+            virtual_device_.mutable_state()
+                ->registrations.begin()
+                ->second.protection;
+
+        switch (test.resulting_policy) {
+          case UNSPECIFIED:
+            NOTREACHED();
+            break;
+          case NONE:
+            EXPECT_FALSE(result);
+            break;
+          case UV_OR_CRED:
+            ASSERT_TRUE(result);
+            EXPECT_EQ(device::CredProtect::kUVOrCredIDRequired, *result);
+            break;
+          case UV_REQ:
+            ASSERT_TRUE(result);
+            EXPECT_EQ(device::CredProtect::kUVRequired, *result);
+            break;
+        }
+        break;
+      }
+      case kNonsense:
+        EXPECT_EQ(AuthenticatorStatus::PROTECTION_POLICY_INCONSISTENT,
+                  callback_receiver.status());
+        break;
+      case kNotAllow:
+        EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR,
+                  callback_receiver.status());
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+}
+
+TEST_F(ResidentKeyAuthenticatorImplTest, ProtectedNonResidentCreds) {
+  // Until we have UVToken, there's a danger that we'll preflight UV-required
+  // credential IDs such that the authenticator denies knowledge of all of them
+  // for silent requests and then we fail the whole request.
+  device::VirtualCtap2Device::Config config;
+  config.pin_support = true;
+  config.resident_key_support = true;
+  config.cred_protect_support = true;
+  virtual_device_.SetCtap2Config(config);
+  ASSERT_TRUE(virtual_device_.mutable_state()->InjectRegistration(
+      /*credential_id=*/{{4, 3, 2, 1}}, kTestRelyingPartyId));
+  ASSERT_EQ(1u, virtual_device_.mutable_state()->registrations.size());
+  virtual_device_.mutable_state()->registrations.begin()->second.protection =
+      device::CredProtect::kUVRequired;
+
+  TestServiceManagerContext smc;
+  AuthenticatorPtr authenticator = ConnectToAuthenticator();
+  TestGetAssertionCallback callback_receiver;
+  // |SelectAccount| should not be called when there's only a single response.
+  test_client_.expected_accounts = "<invalid>";
+
+  PublicKeyCredentialRequestOptionsPtr options = get_credential_options();
+  options->allow_credentials = GetTestCredentials(5);
+  options->allow_credentials[0]->id = {4, 3, 2, 1};
+
+  authenticator->GetAssertion(std::move(options), callback_receiver.callback());
+  callback_receiver.WaitForCallback();
+  EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+  EXPECT_TRUE(HasUV(callback_receiver));
+}
 
 }  // namespace content

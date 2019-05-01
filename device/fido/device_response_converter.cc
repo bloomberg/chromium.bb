@@ -206,6 +206,7 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
       std::move(protocol_versions),
       base::make_span<kAaguidLength>(it->second.GetBytestring()));
 
+  AuthenticatorSupportedOptions options;
   it = response_map.find(CBOR(2));
   if (it != response_map.end()) {
     if (!it->second.is_array())
@@ -216,12 +217,15 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
       if (!extension.is_string())
         return base::nullopt;
 
-      extensions.push_back(extension.GetString());
+      const std::string& extension_str = extension.GetString();
+      if (extension_str == kExtensionCredProtect) {
+        options.supports_cred_protect = true;
+      }
+      extensions.push_back(extension_str);
     }
     response.extensions = std::move(extensions);
   }
 
-  AuthenticatorSupportedOptions options;
   it = response_map.find(CBOR(4));
   if (it != response_map.end()) {
     if (!it->second.is_map())
