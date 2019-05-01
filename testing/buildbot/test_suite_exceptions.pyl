@@ -1147,19 +1147,6 @@
   },
   'sizes': {
     'modifications': {
-      # chromium.android.fyi
-      'Android Cronet KitKat Builder': {
-        'args': [
-          '--platform',
-          'android-cronet',
-          '--perf-id',
-          'android_cronet_builder',
-          'cronet-arm/sizes',
-        ],
-        'override_compile_targets': [
-          'cronet',
-        ],
-      },
       'android-cronet-arm-dbg': {
         'args': [
           '--platform', 'android-cronet',

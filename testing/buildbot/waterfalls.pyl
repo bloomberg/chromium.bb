@@ -156,59 +156,6 @@
           'all',
         ],
       },
-      'Android Cronet Builder': {
-        'additional_compile_targets': [
-          'cronet_package',
-        ],
-      },
-      'Android Cronet Builder (dbg)': {
-        'test_suites': {
-          'gtest_tests': 'cronet_gtests',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_os': 'KTU84P',
-              'device_type': 'hammerhead',
-              'os': 'Android',
-            },
-          ],
-        },
-        'os_type': 'android',
-        'skip_merge_script': True,
-      },
-      'Android Cronet Builder Asan': {
-        'test_suites': {
-          'gtest_tests': 'cronet_gtests',
-        },
-        'use_swarming': False,
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_os': 'KTU84P',
-              'device_type': 'hammerhead',
-              'os': 'Android',
-            },
-          ],
-        },
-        'os_type': 'android',
-      },
-      'Android Cronet KitKat Builder': {
-        'test_suites': {
-          'gtest_tests': 'cronet_gtests',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_os': 'KTU84P',
-              'device_type': 'hammerhead',
-              'os': 'Android',
-            },
-          ],
-        },
-        'os_type': 'android',
-        'skip_merge_script': True,
-      },
       'Android WebView L (dbg)': {
         'test_suites': {
           'gtest_tests': 'webview_bot_gtests',
@@ -660,44 +607,6 @@
   {
     'name': 'chromium.android.fyi',
     'machines': {
-      'Android Cronet Builder (dbg)': {
-        'test_suites': {
-          'gtest_tests': 'cronet_gtests',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_os': 'KTU84P',
-              'device_type': 'hammerhead',
-              'os': 'Android',
-            },
-          ],
-        },
-        'os_type': 'android',
-      },
-      'Android Cronet Builder Asan': {
-        'test_suites': {
-          'gtest_tests': 'cronet_gtests',
-        },
-        'os_type': 'android',
-        'use_swarming': False,
-      },
-      'Android Cronet KitKat Builder': {
-        'test_suites': {
-          'gtest_tests': 'cronet_gtests',
-          'scripts': 'cronet_scripts',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_os': 'KTU84P',
-              'device_type': 'hammerhead',
-              'os': 'Android',
-            },
-          ],
-        },
-        'os_type': 'android',
-      },
       'Android WebView O NetworkService (dbg)': {
         'test_suites': {
           'gtest_tests': 'webview_cts_tests_gtest',
