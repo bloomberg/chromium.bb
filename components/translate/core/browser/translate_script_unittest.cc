@@ -35,7 +35,7 @@ class TranslateScriptTest : public testing::Test {
  protected:
   void SetUp() override {
     variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
-    script_.reset(new TranslateScript);
+    script_ = std::make_unique<TranslateScript>();
     auto* translate_download_manager = TranslateDownloadManager::GetInstance();
     translate_download_manager->set_application_locale("en");
     translate_download_manager->set_url_loader_factory(

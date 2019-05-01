@@ -63,8 +63,8 @@ class TranslatePrefsTest : public testing::Test {
       : prefs_(new sync_preferences::TestingPrefServiceSyncable()) {
     language::LanguagePrefs::RegisterProfilePrefs(prefs_->registry());
     TranslatePrefs::RegisterProfilePrefs(prefs_->registry());
-    translate_prefs_.reset(new translate::TranslatePrefs(
-        prefs_.get(), kAcceptLanguagesPref, kPreferredLanguagesPref));
+    translate_prefs_ = std::make_unique<translate::TranslatePrefs>(
+        prefs_.get(), kAcceptLanguagesPref, kPreferredLanguagesPref);
     now_ = base::Time::Now();
     two_days_ago_ = now_ - base::TimeDelta::FromDays(2);
   }
