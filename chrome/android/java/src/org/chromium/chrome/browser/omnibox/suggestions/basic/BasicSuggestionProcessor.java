@@ -118,7 +118,8 @@ public class BasicSuggestionProcessor implements SuggestionProcessor {
             suggestionIcon = SuggestionIcon.GLOBE;
             if (suggestion.isStarred()) {
                 suggestionIcon = SuggestionIcon.BOOKMARK;
-            } else if (suggestionType == OmniboxSuggestionType.HISTORY_URL) {
+            } else if (!mEnableSuggestionFavicons
+                    && suggestionType == OmniboxSuggestionType.HISTORY_URL) {
                 suggestionIcon = SuggestionIcon.HISTORY;
             }
             boolean urlHighlighted = false;
