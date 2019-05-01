@@ -80,7 +80,7 @@ public class SuspensionTracker {
     public boolean isWebsiteSuspended(String fqdn) {
         // We special case isWebsiteSuspended to return a value immediately because its only
         // consumer(PageViewOsberver) only cares about immediate results.
-        if (mRootPromise.isFulfilled()) {
+        if (mRootPromise != null && mRootPromise.isFulfilled()) {
             return mRootPromise.getResult().contains(fqdn);
         }
 

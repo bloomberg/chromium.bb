@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.usage_stats;
 
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -16,10 +15,11 @@ import android.widget.LinearLayout.LayoutParams;
 import android.widget.TextView;
 
 import org.chromium.base.UserData;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.WebContents;
 
 /**
  * Represents the suspension page presented when a user tries to visit a site whose fully-qualified
@@ -59,6 +59,12 @@ public class SuspendedTab extends EmptyTabObserver implements UserData {
         mFqdn = fqdn;
         mTab.addObserver(this);
         mTab.stopLoading();
+
+        WebContents webContents = mTab.getWebContents();
+        if (webContents != null) {
+            webContents.onHide();
+        }
+
         if (isViewAttached()) {
             updateFqdnText();
         } else {
@@ -70,7 +76,11 @@ public class SuspendedTab extends EmptyTabObserver implements UserData {
     public void removeIfPresent() {
         removeViewIfPresent();
 
-        mTab.removeObserver(this);
+        WebContents webContents = mTab.getWebContents();
+        if (webContents != null) {
+            webContents.onShow();
+        }
+
         mView = null;
         mFqdn = null;
     }
@@ -83,6 +93,11 @@ public class SuspendedTab extends EmptyTabObserver implements UserData {
     /** @return Whether this SuspendedTab is currently showing. */
     public boolean isShowing() {
         return mFqdn != null;
+    }
+
+    @VisibleForTesting
+    boolean isViewAttached() {
+        return mView != null && mView.getParent() == mTab.getContentView();
     }
 
     private View createView() {
@@ -121,10 +136,6 @@ public class SuspendedTab extends EmptyTabObserver implements UserData {
                         LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
     }
 
-    private boolean isViewAttached() {
-        return mView != null && mView.getParent() == mTab.getContentView();
-    }
-
     private void updateFqdnText() {
         Context context = mTab.getContext();
         TextView explanationText = (TextView) mView.findViewById(R.id.suspended_tab_explanation);
@@ -135,33 +146,11 @@ public class SuspendedTab extends EmptyTabObserver implements UserData {
     private void removeViewIfPresent() {
         if (isViewAttached()) {
             mTab.getContentView().removeView(mView);
-        }
-    }
-
-    private void removeSelfIfFqdnChanged(String url) {
-        String newFqdn = Uri.parse(url).getHost();
-        if (newFqdn == null || !newFqdn.equals(mFqdn)) {
-            removeIfPresent();
+            mView = null;
         }
     }
 
     // TabObserver implementation.
-    @Override
-    public void onLoadUrl(Tab tab, LoadUrlParams params, int loadType) {
-        removeSelfIfFqdnChanged(params.getUrl());
-    }
-
-    @Override
-    public void onPageLoadStarted(Tab tab, String url) {
-        removeSelfIfFqdnChanged(url);
-    }
-
-    @Override
-    public void onDestroyed(Tab tab) {
-        removeIfPresent();
-    }
-
-    // TODO(pnoland): Add integration tests for SuspendedTab that exercise this multi-window logic.
     @Override
     public void onActivityAttachmentChanged(Tab tab, boolean isAttached) {
         if (!isAttached) {
