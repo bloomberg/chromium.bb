@@ -9,10 +9,12 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
+#include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "chrome/browser/sync/model_type_store_service_factory.h"
 #include "chrome/common/channel_info.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
+#include "components/sync/device_info/device_info_sync_service.h"
 #include "components/sync/model/model_type_store_service.h"
 
 // static
@@ -34,6 +36,7 @@ SendTabToSelfSyncServiceFactory::SendTabToSelfSyncServiceFactory()
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(ModelTypeStoreServiceFactory::GetInstance());
   DependsOn(HistoryServiceFactory::GetInstance());
+  DependsOn(DeviceInfoSyncServiceFactory::GetInstance());
 }
 
 SendTabToSelfSyncServiceFactory::~SendTabToSelfSyncServiceFactory() {}
@@ -51,6 +54,11 @@ KeyedService* SendTabToSelfSyncServiceFactory::BuildServiceInstanceFor(
       HistoryServiceFactory::GetForProfile(profile,
                                            ServiceAccessType::EXPLICIT_ACCESS);
 
+  syncer::DeviceInfoTracker* device_info_tracker =
+      DeviceInfoSyncServiceFactory::GetForProfile(profile)
+          ->GetDeviceInfoTracker();
+
   return new send_tab_to_self::SendTabToSelfSyncService(
-      chrome::GetChannel(), std::move(store_factory), history_service);
+      chrome::GetChannel(), std::move(store_factory), history_service,
+      device_info_tracker);
 }

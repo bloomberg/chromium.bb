@@ -66,6 +66,12 @@ class SendTabToSelfModel {
   void AddObserver(SendTabToSelfModelObserver* observer);
   void RemoveObserver(SendTabToSelfModelObserver* observer);
 
+  // Returns a map of the name of possible target devices for the send tab to
+  // self feature to their cache guid. This is a thin layer on top of
+  // DeviceInfoTracker.
+  virtual std::map<std::string, std::string>
+  GetTargetDeviceNameToCacheGuidMap() = 0;
+
  protected:
   // The observers.
   base::ObserverList<SendTabToSelfModelObserver>::Unchecked observers_;

@@ -33,4 +33,9 @@ bool TestSendTabToSelfModel::IsReady() {
   return false;
 }
 
+std::map<std::string, std::string>
+TestSendTabToSelfModel::GetTargetDeviceNameToCacheGuidMap() {
+  return {};
+}
+
 }  // namespace send_tab_to_self

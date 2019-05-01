@@ -4,6 +4,8 @@
 
 #include "components/send_tab_to_self/send_tab_to_self_bridge.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/logging.h"
@@ -11,10 +13,12 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/time/clock.h"
+#include "base/time/time.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/send_tab_to_self/features.h"
 #include "components/send_tab_to_self/proto/send_tab_to_self.pb.h"
 #include "components/sync/base/get_session_name.h"
+#include "components/sync/device_info/device_info_tracker.h"
 #include "components/sync/model/entity_change.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/metadata_change_list.h"
@@ -43,6 +47,8 @@ enum UMAAddEntryStatus {
 using syncer::ModelTypeStore;
 
 const base::TimeDelta kDedupeTime = base::TimeDelta::FromSeconds(5);
+
+const base::TimeDelta kDeviceExpiration = base::TimeDelta::FromDays(10);
 
 const char kAddEntryStatus[] = "SendTabToSelf.Sync.AddEntryStatus";
 
@@ -95,13 +101,16 @@ SendTabToSelfBridge::SendTabToSelfBridge(
     std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor,
     base::Clock* clock,
     syncer::OnceModelTypeStoreFactory create_store_callback,
-    history::HistoryService* history_service)
+    history::HistoryService* history_service,
+    syncer::DeviceInfoTracker* device_info_tracker)
     : ModelTypeSyncBridge(std::move(change_processor)),
       clock_(clock),
       history_service_(history_service),
+      device_info_tracker_(device_info_tracker),
       mru_entry_(nullptr),
       weak_ptr_factory_(this) {
   DCHECK(clock_);
+  DCHECK(device_info_tracker_);
   if (history_service) {
     history_service->AddObserver(this);
   }
@@ -384,11 +393,23 @@ bool SendTabToSelfBridge::IsReady() {
   return change_processor()->IsTrackingMetadata();
 }
 
+std::map<std::string, std::string>
+SendTabToSelfBridge::GetTargetDeviceNameToCacheGuidMap() {
+  if (ShouldUpdateTargetDeviceNameToCacheGuidMap()) {
+    SetTargetDeviceNameToCacheGuidMap();
+  }
+  return target_device_name_to_cache_guid_;
+}
+
 // static
 std::unique_ptr<syncer::ModelTypeStore>
 SendTabToSelfBridge::DestroyAndStealStoreForTest(
     std::unique_ptr<SendTabToSelfBridge> bridge) {
   return std::move(bridge->store_);
+}
+
+bool SendTabToSelfBridge::ShouldUpdateTargetDeviceNameToCacheGuidMapForTest() {
+  return ShouldUpdateTargetDeviceNameToCacheGuidMap();
 }
 
 void SendTabToSelfBridge::NotifyRemoteSendTabToSelfEntryAdded(
@@ -521,6 +542,68 @@ void SendTabToSelfBridge::DoGarbageCollection() {
     }
   }
   NotifyRemoteSendTabToSelfEntryDeleted(removed);
+}
+
+bool SendTabToSelfBridge::ShouldUpdateTargetDeviceNameToCacheGuidMap() const {
+  // The map should be updated if any of these is true:
+  //   * The map is empty.
+  //   * The number of total devices changed.
+  //   * The oldest non-expired entry in the map is now expired.
+  return target_device_name_to_cache_guid_.empty() ||
+         device_info_tracker_->GetAllDeviceInfo().size() !=
+             number_of_devices_ ||
+         clock_->Now() - change_processor()->GetEntityModificationTime(
+                             oldest_device_cache_guid_) >
+             kDeviceExpiration;
+}
+
+void SendTabToSelfBridge::SetTargetDeviceNameToCacheGuidMap() {
+  std::vector<std::unique_ptr<syncer::DeviceInfo>> all_devices =
+      device_info_tracker_->GetAllDeviceInfo();
+  number_of_devices_ = all_devices.size();
+
+  // Sort the DeviceInfo vector so the most recenly modified devices are first.
+  const syncer::ModelTypeChangeProcessor* change_processor_ptr =
+      change_processor();
+  std::stable_sort(
+      all_devices.begin(), all_devices.end(),
+      [change_processor_ptr](
+          const std::unique_ptr<syncer::DeviceInfo>& device1,
+          const std::unique_ptr<syncer::DeviceInfo>& device2) {
+        return change_processor_ptr->GetEntityModificationTime(
+                   device1->guid()) >
+               change_processor_ptr->GetEntityModificationTime(device2->guid());
+      });
+
+  target_device_name_to_cache_guid_.clear();
+  for (const auto& device : all_devices) {
+    // If the current device is considered expired for our purposes, stop here
+    // since the next devices in the vector are at least as expired than this
+    // one.
+    if (clock_->Now() -
+            change_processor()->GetEntityModificationTime(device->guid()) >
+        kDeviceExpiration) {
+      break;
+    }
+
+    // TODO(crbug.com/957716): Dedupe older versions of this device as well.
+    // Don't include this device.
+    if (device->guid() == change_processor()->TrackedCacheGuid()) {
+      continue;
+    }
+
+    // Don't include devices that have disabled the send tab to self receiving
+    // feature.
+    if (!device->send_tab_to_self_receiving_enabled()) {
+      continue;
+    }
+
+    // Only keep one device per device name. We only keep the first occurrence
+    // which is the most recent.
+    target_device_name_to_cache_guid_.emplace(device->client_name(),
+                                              device->guid());
+    oldest_device_cache_guid_ = device->guid();
+  }
 }
 
 }  // namespace send_tab_to_self

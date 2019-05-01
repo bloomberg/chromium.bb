@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SEND_TAB_TO_SELF_TEST_SEND_TAB_TO_SELF_MODEL_H_
 #define COMPONENTS_SEND_TAB_TO_SELF_TEST_SEND_TAB_TO_SELF_MODEL_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -32,6 +33,8 @@ class TestSendTabToSelfModel : public SendTabToSelfModel {
   void DeleteEntry(const std::string& guid) override;
   void DismissEntry(const std::string& guid) override;
   bool IsReady() override;
+  std::map<std::string, std::string> GetTargetDeviceNameToCacheGuidMap()
+      override;
 };
 
 }  // namespace send_tab_to_self

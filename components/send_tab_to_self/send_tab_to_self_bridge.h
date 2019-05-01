@@ -26,6 +26,7 @@ class HistoryService;
 }  // namespace history
 
 namespace syncer {
+class DeviceInfoTracker;
 class ModelTypeChangeProcessor;
 }  // namespace syncer
 
@@ -41,12 +42,14 @@ class SendTabToSelfBridge : public syncer::ModelTypeSyncBridge,
                             public SendTabToSelfModel,
                             public history::HistoryServiceObserver {
  public:
-  // |clock| must not be null and must outlive this object.
+  // The caller should ensure that all raw pointers are not null and will
+  // outlive this object. This is not guaranteed by this class.
   SendTabToSelfBridge(
       std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor,
       base::Clock* clock,
       syncer::OnceModelTypeStoreFactory create_store_callback,
-      history::HistoryService* history_service);
+      history::HistoryService* history_service,
+      syncer::DeviceInfoTracker* device_info_tracker);
   ~SendTabToSelfBridge() override;
 
   // syncer::ModelTypeSyncBridge overrides.
@@ -76,6 +79,8 @@ class SendTabToSelfBridge : public syncer::ModelTypeSyncBridge,
   void DeleteEntry(const std::string& guid) override;
   void DismissEntry(const std::string& guid) override;
   bool IsReady() override;
+  std::map<std::string, std::string> GetTargetDeviceNameToCacheGuidMap()
+      override;
 
   // history::HistoryServiceObserver:
   void OnURLsDeleted(history::HistoryService* history_service,
@@ -84,6 +89,7 @@ class SendTabToSelfBridge : public syncer::ModelTypeSyncBridge,
   // For testing only.
   static std::unique_ptr<syncer::ModelTypeStore> DestroyAndStealStoreForTest(
       std::unique_ptr<SendTabToSelfBridge> bridge);
+  bool ShouldUpdateTargetDeviceNameToCacheGuidMapForTest();
 
  private:
   using SendTabToSelfEntries =
@@ -122,6 +128,12 @@ class SendTabToSelfBridge : public syncer::ModelTypeSyncBridge,
   // Delete expired entries.
   void DoGarbageCollection();
 
+  // Returns whether the target device name to cache guid map should be updated.
+  bool ShouldUpdateTargetDeviceNameToCacheGuidMap() const;
+
+  // Sets the target device name to cache guid map.
+  void SetTargetDeviceNameToCacheGuidMap();
+
   // |entries_| is keyed by GUIDs.
   SendTabToSelfEntries entries_;
 
@@ -131,6 +143,9 @@ class SendTabToSelfBridge : public syncer::ModelTypeSyncBridge,
   // |history_service_| isn't owned.
   history::HistoryService* const history_service_;
 
+  // |device_info_tracker_| isn't owned.
+  syncer::DeviceInfoTracker* const device_info_tracker_;
+
   // The name of this local device.
   std::string local_device_name_;
 
@@ -139,6 +154,15 @@ class SendTabToSelfBridge : public syncer::ModelTypeSyncBridge,
 
   // A pointer to the most recently used entry used for deduplication.
   const SendTabToSelfEntry* mru_entry_;
+
+  // A map of target devices names to their associated cache guid.
+  std::map<std::string, std::string> target_device_name_to_cache_guid_;
+
+  // The following two variables are used to determine whether we should update
+  // the target device name to cache guid map.
+  std::string oldest_device_cache_guid_ = "";
+  size_t number_of_devices_ = 0;
+
   base::WeakPtrFactory<SendTabToSelfBridge> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SendTabToSelfBridge);
