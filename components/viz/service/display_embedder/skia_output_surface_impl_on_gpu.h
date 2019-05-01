@@ -185,7 +185,7 @@ class SkiaOutputSurfaceImplOnGpu {
     return output_device_->draw_surface();
   }
 
-  sk_sp<SkPromiseImageTexture> FallbackPromiseImage(ResourceFormat format);
+  void CreateFallbackImage(ImageContext* context);
 
   const gpu::SurfaceHandle surface_handle_;
   scoped_refptr<gpu::gles2::FeatureInfo> feature_info_;
@@ -249,11 +249,6 @@ class SkiaOutputSurfaceImplOnGpu {
 
   gl::GLApi* api_ = nullptr;
   bool supports_alpha_ = false;
-
-  // What we display when the mailbox for a texture is invalid. Indexed by
-  // SkColorType.
-  std::vector<sk_sp<SkPromiseImageTexture>> fallback_promise_image_texture_;
-  std::vector<sk_sp<SkImage>> fallback_promise_images_;
 
   THREAD_CHECKER(thread_checker_);
 

@@ -321,7 +321,6 @@ SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
       context_lost_callback_(context_lost_callback),
       weak_ptr_factory_(this) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  fallback_promise_image_texture_.resize(kLastEnum_SkColorType + 1);
   weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
 }
 
@@ -740,44 +739,35 @@ void SkiaOutputSurfaceImplOnGpu::PerformDelayedWork() {
   }
 }
 
-sk_sp<SkPromiseImageTexture> SkiaOutputSurfaceImplOnGpu::FallbackPromiseImage(
-    ResourceFormat format) {
-  SkColorType color_type =
-      ResourceFormatToClosestSkColorType(true /* gpu_compositing */, format);
-  auto& promise_image_texture = fallback_promise_image_texture_[color_type];
-  if (!promise_image_texture) {
-    auto image_info = SkImageInfo::Make(1 /* width */, 1 /* height */,
-                                        color_type, kOpaque_SkAlphaType);
-    auto surface = SkSurface::MakeRenderTarget(
-        gr_context(), SkBudgeted::kNo, image_info, 0 /* sampleCount */,
-        kTopLeft_GrSurfaceOrigin, nullptr /* surfaceProps */);
-    // We don't have driver support for that particular color_type. Try again
-    // with well supported SkColorType. Reads from this may have unusual colors
-    // due to interpreting RGBA as |color_type|, but that's better than
-    // completely undefined.
-    if (!surface) {
-      image_info =
-          SkImageInfo::Make(1 /* width */, 1 /* height */,
-                            kRGBA_8888_SkColorType, kOpaque_SkAlphaType);
-      surface = SkSurface::MakeRenderTarget(
-          gr_context(), SkBudgeted::kNo, image_info, 0 /* sampleCount */,
-          kTopLeft_GrSurfaceOrigin, nullptr /* surfaceProps */);
+// TODO(backer): Add memory tracking.
+void SkiaOutputSurfaceImplOnGpu::CreateFallbackImage(ImageContext* context) {
+  SkColorType color_type = ResourceFormatToClosestSkColorType(
+      true /* gpu_compositing */, context->resource_format);
 
-      if (!surface)
-        return nullptr;
-    }
-    auto* canvas = surface->getCanvas();
+  // Don't use a fallback SkColorType because we may fail checks inside Skia
+  if (SkColorTypeBytesPerPixel(color_type) * 8 !=
+      BitsPerPixel(context->resource_format))
+    return;
+
+  auto image_info =
+      SkImageInfo::Make(context->size.width(), context->size.height(),
+                        color_type, kOpaque_SkAlphaType);
+  auto surface = SkSurface::MakeRenderTarget(
+      gr_context(), SkBudgeted::kNo, image_info, 0 /* sampleCount */,
+      kTopLeft_GrSurfaceOrigin, nullptr /* surfaceProps */);
+  if (!surface)
+    return;
+
+  auto* canvas = surface->getCanvas();
 #if DCHECK_IS_ON()
-    canvas->clear(SK_ColorRED);
+  canvas->clear(SK_ColorRED);
 #else
-    canvas->clear(SK_ColorWHITE);
+  canvas->clear(SK_ColorWHITE);
 #endif
-    fallback_promise_images_.push_back(surface->makeImageSnapshot());
-    auto gr_texture = fallback_promise_images_.back()->getBackendTexture(
-        false /* flushPendingGrContextIO */);
-    promise_image_texture = SkPromiseImageTexture::Make(gr_texture);
-  }
-  return promise_image_texture;
+  context->fallback_image = surface->makeImageSnapshot();
+  auto gr_texture = context->fallback_image->getBackendTexture(
+      false /* flushPendingGrContextIO */);
+  context->promise_image_texture = SkPromiseImageTexture::Make(gr_texture);
 }
 
 void SkiaOutputSurfaceImplOnGpu::BeginAccessImages(
@@ -800,8 +790,7 @@ void SkiaOutputSurfaceImplOnGpu::BeginAccessImages(
         DLOG(ERROR) << "Failed to fulfill the promise texture created from "
                        "RenderPassId:"
                     << context->render_pass_id;
-        context->promise_image_texture =
-            FallbackPromiseImage(context->resource_format);
+        CreateFallbackImage(context);
       }
       continue;
     }
@@ -832,16 +821,14 @@ void SkiaOutputSurfaceImplOnGpu::BeginAccessImages(
       if (!representation) {
         DLOG(ERROR) << "Failed to fulfill the promise texture - SharedImage "
                        "mailbox not found in SharedImageManager.";
-        context->promise_image_texture =
-            FallbackPromiseImage(context->resource_format);
+        CreateFallbackImage(context);
         continue;
       }
 
       if (!(representation->usage() & gpu::SHARED_IMAGE_USAGE_DISPLAY)) {
         DLOG(ERROR) << "Failed to fulfill the promise texture - SharedImage "
                        "was not created with display usage.";
-        context->promise_image_texture =
-            FallbackPromiseImage(context->resource_format);
+        CreateFallbackImage(context);
         continue;
       }
 
@@ -852,8 +839,7 @@ void SkiaOutputSurfaceImplOnGpu::BeginAccessImages(
       if (!context->promise_image_texture) {
         DLOG(ERROR) << "Failed to fulfill the promise texture - SharedImage "
                        "begin read access failed..";
-        context->promise_image_texture =
-            FallbackPromiseImage(context->resource_format);
+        CreateFallbackImage(context);
         continue;
       }
       context->representation_is_being_accessed = true;
@@ -871,16 +857,14 @@ void SkiaOutputSurfaceImplOnGpu::BeginAccessImages(
       DLOG(ERROR)
           << "Failed to fulfill the promise texture whose backend is not "
              "compitable with vulkan.";
-      context->promise_image_texture =
-          FallbackPromiseImage(context->resource_format);
+      CreateFallbackImage(context);
       continue;
     }
 
     auto* texture_base = mailbox_manager_->ConsumeTexture(context->mailbox);
     if (!texture_base) {
       DLOG(ERROR) << "Failed to fulfill the promise texture.";
-      context->promise_image_texture =
-          FallbackPromiseImage(context->resource_format);
+      CreateFallbackImage(context);
       continue;
     }
     BindOrCopyTextureIfNecessary(texture_base);
@@ -890,8 +874,7 @@ void SkiaOutputSurfaceImplOnGpu::BeginAccessImages(
                              context->resource_format, &backend_texture);
     if (!backend_texture.isValid()) {
       DLOG(ERROR) << "Failed to fulfill the promise texture.";
-      context->promise_image_texture =
-          FallbackPromiseImage(context->resource_format);
+      CreateFallbackImage(context);
       continue;
     }
     context->promise_image_texture =
