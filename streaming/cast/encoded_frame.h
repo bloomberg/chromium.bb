@@ -10,7 +10,7 @@
 #include <chrono>
 #include <vector>
 
-#include "base/macros.h"
+#include "osp_base/macros.h"
 #include "platform/api/time.h"
 #include "streaming/cast/frame_id.h"
 #include "streaming/cast/rtp_time.h"
@@ -83,7 +83,7 @@ struct EncodedFrame {
   // The encoded signal data.
   std::vector<uint8_t> data;
 
-  DISALLOW_COPY_AND_ASSIGN(EncodedFrame);
+  OSP_DISALLOW_COPY_AND_ASSIGN(EncodedFrame);
 };
 
 }  // namespace cast_streaming

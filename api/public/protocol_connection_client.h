@@ -12,9 +12,9 @@
 #include "api/public/endpoint_request_ids.h"
 #include "api/public/message_demuxer.h"
 #include "api/public/protocol_connection.h"
-#include "base/error.h"
-#include "base/ip_address.h"
-#include "base/macros.h"
+#include "osp_base/error.h"
+#include "osp_base/ip_address.h"
+#include "osp_base/macros.h"
 
 namespace openscreen {
 
@@ -113,7 +113,7 @@ class ProtocolConnectionClient {
   EndpointRequestIds endpoint_request_ids_;
   ProtocolConnectionServiceObserver* const observer_;
 
-  DISALLOW_COPY_AND_ASSIGN(ProtocolConnectionClient);
+  OSP_DISALLOW_COPY_AND_ASSIGN(ProtocolConnectionClient);
 };
 
 std::ostream& operator<<(std::ostream& os,

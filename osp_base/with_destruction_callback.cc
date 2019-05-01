@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/with_destruction_callback.h"
+#include "osp_base/with_destruction_callback.h"
 
 #include "platform/api/logging.h"
 

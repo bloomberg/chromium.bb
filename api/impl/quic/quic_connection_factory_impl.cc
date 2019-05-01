@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "api/impl/quic/quic_connection_impl.h"
-#include "base/error.h"
+#include "osp_base/error.h"
 #include "platform/api/logging.h"
 #include "platform/base/event_loop.h"
 #include "third_party/chromium_quic/src/base/location.h"

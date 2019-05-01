@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "api/public/service_info.h"
-#include "base/error.h"
+#include "osp_base/error.h"
 
 namespace openscreen {
 

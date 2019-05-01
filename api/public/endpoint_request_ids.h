@@ -8,7 +8,7 @@
 #include <cstdint>
 #include <map>
 
-#include "base/macros.h"
+#include "osp_base/macros.h"
 
 namespace openscreen {
 
@@ -35,7 +35,7 @@ class EndpointRequestIds {
   const Role role_;
   std::map<uint64_t, uint64_t> request_ids_by_endpoint_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(EndpointRequestIds);
+  OSP_DISALLOW_COPY_AND_ASSIGN(EndpointRequestIds);
 };
 
 }  // namespace openscreen

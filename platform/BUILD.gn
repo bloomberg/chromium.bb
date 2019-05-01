@@ -23,11 +23,11 @@ source_set("platform") {
 
   deps = []
   public_deps = [
-    "../base",
+    "../osp_base",
     "../third_party/abseil",
   ]
   configs += [ "..:root_config_overrides" ]
-  allow_circular_includes_from = [ "../base" ]
+  allow_circular_includes_from = [ "../osp_base" ]
 
   if (build_with_chromium) {
     deps += [ ":chromium" ]

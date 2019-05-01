@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_SCOPED_PIPE_H_
-#define BASE_SCOPED_PIPE_H_
+#ifndef OSP_BASE_SCOPED_PIPE_H_
+#define OSP_BASE_SCOPED_PIPE_H_
 
 #include <unistd.h>
 
@@ -68,4 +68,4 @@ using ScopedFd = ScopedPipe<IntFdTraits>;
 
 }  // namespace openscreen
 
-#endif  // BASE_SCOPED_PIPE_H_
+#endif  // OSP_BASE_SCOPED_PIPE_H_

@@ -16,7 +16,7 @@
 #include <memory>
 
 #include "absl/types/optional.h"
-#include "base/error.h"
+#include "osp_base/error.h"
 #include "platform/api/logging.h"
 #include "platform/posix/socket.h"
 

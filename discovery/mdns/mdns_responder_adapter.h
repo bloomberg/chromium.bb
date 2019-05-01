@@ -10,10 +10,10 @@
 #include <string>
 #include <vector>
 
-#include "base/error.h"
-#include "base/ip_address.h"
 #include "discovery/mdns/domain_name.h"
 #include "discovery/mdns/mdns_responder_platform.h"
+#include "osp_base/error.h"
+#include "osp_base/ip_address.h"
 #include "platform/api/network_interface.h"
 #include "platform/api/socket.h"
 #include "platform/base/event_loop.h"

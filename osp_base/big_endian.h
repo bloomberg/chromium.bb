@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_BIG_ENDIAN_H_
-#define BASE_BIG_ENDIAN_H_
+#ifndef OSP_BASE_BIG_ENDIAN_H_
+#define OSP_BASE_BIG_ENDIAN_H_
 
 #include <stdint.h>
 
@@ -103,4 +103,4 @@ inline void WriteBigEndian(Integer val, void* dest) {
 
 }  // namespace openscreen
 
-#endif  // BASE_BIG_ENDIAN_H_
+#endif  // OSP_BASE_BIG_ENDIAN_H_

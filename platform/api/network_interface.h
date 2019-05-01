@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/ip_address.h"
+#include "osp_base/ip_address.h"
 
 namespace openscreen {
 namespace platform {

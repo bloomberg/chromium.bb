@@ -7,8 +7,8 @@
 #include <memory>
 
 #include "api/impl/quic/quic_connection.h"
-#include "base/big_endian.h"
-#include "base/error.h"
+#include "osp_base/big_endian.h"
+#include "osp_base/error.h"
 #include "platform/api/logging.h"
 
 namespace openscreen {

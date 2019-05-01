@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "base/error.h"
+#include "osp_base/error.h"
 #include "platform/api/logging.h"
 
 namespace openscreen {

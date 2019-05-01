@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/error.h"
+#include "osp_base/error.h"
 
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 

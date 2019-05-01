@@ -11,7 +11,7 @@
 #include <array>
 #include <vector>
 
-#include "base/macros.h"
+#include "osp_base/macros.h"
 #include "streaming/cast/encoded_frame.h"
 #include "third_party/boringssl/src/include/openssl/aes.h"
 
@@ -31,7 +31,7 @@ struct EncryptedFrame : public EncodedFrame {
   friend class FrameCrypto;
   EncryptedFrame();
 
-  DISALLOW_COPY_AND_ASSIGN(EncryptedFrame);
+  OSP_DISALLOW_COPY_AND_ASSIGN(EncryptedFrame);
 };
 
 // Encrypts EncodedFrames before sending, or decrypts EncryptedFrames that have

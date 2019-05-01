@@ -10,8 +10,8 @@
 #include "api/impl/receiver_list.h"
 #include "api/public/service_info.h"
 #include "api/public/service_listener.h"
-#include "base/macros.h"
-#include "base/with_destruction_callback.h"
+#include "osp_base/macros.h"
+#include "osp_base/with_destruction_callback.h"
 
 namespace openscreen {
 
@@ -79,7 +79,7 @@ class ServiceListenerImpl final : public ServiceListener,
   Delegate* const delegate_;
   ReceiverList receiver_list_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServiceListenerImpl);
+  OSP_DISALLOW_COPY_AND_ASSIGN(ServiceListenerImpl);
 };
 
 }  // namespace openscreen

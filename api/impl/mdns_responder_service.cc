@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "api/impl/internal_services.h"
-#include "base/error.h"
+#include "osp_base/error.h"
 #include "platform/api/logging.h"
 
 namespace openscreen {

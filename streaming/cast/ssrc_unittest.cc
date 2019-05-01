@@ -6,7 +6,7 @@
 
 #include <vector>
 
-#include "base/std_util.h"
+#include "osp_base/std_util.h"
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
 namespace openscreen {

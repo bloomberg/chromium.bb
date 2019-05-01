@@ -10,8 +10,8 @@
 #include <limits>
 #include <vector>
 
-#include "base/error.h"
-#include "base/ip_address.h"
+#include "osp_base/error.h"
+#include "osp_base/ip_address.h"
 #include "platform/api/logging.h"
 #include "platform/api/network_interface.h"
 #include "platform/api/socket.h"

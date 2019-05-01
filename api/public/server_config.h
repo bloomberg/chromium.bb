@@ -8,7 +8,7 @@
 #include <cstdint>
 #include <vector>
 
-#include "base/ip_address.h"
+#include "osp_base/ip_address.h"
 #include "platform/api/network_interface.h"
 
 namespace openscreen {

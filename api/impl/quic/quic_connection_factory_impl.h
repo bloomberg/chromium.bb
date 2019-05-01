@@ -9,7 +9,7 @@
 #include <memory>
 
 #include "api/impl/quic/quic_connection_factory.h"
-#include "base/ip_address.h"
+#include "osp_base/ip_address.h"
 #include "platform/api/event_waiter.h"
 #include "platform/api/socket.h"
 #include "third_party/chromium_quic/src/base/at_exit.h"

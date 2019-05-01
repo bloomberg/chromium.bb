@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_STD_UTIL_H_
-#define BASE_STD_UTIL_H_
+#ifndef OSP_BASE_STD_UTIL_H_
+#define OSP_BASE_STD_UTIL_H_
 
 #include <map>
 
@@ -36,4 +36,4 @@ void SortAndDedupeElements(RandomAccessContainer* c) {
 
 }  // namespace openscreen
 
-#endif  // BASE_STD_UTIL_H_
+#endif  // OSP_BASE_STD_UTIL_H_

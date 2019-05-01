@@ -13,7 +13,7 @@
 #include "api/impl/quic/quic_connection_factory.h"
 #include "api/impl/quic/quic_service_common.h"
 #include "api/public/protocol_connection_client.h"
-#include "base/ip_address.h"
+#include "osp_base/ip_address.h"
 
 namespace openscreen {
 

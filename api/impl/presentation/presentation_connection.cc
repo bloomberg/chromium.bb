@@ -13,8 +13,8 @@
 #include "api/public/presentation/presentation_controller.h"
 #include "api/public/presentation/presentation_receiver.h"
 #include "api/public/protocol_connection.h"
-#include "base/std_util.h"
 #include "msgs/osp_messages.h"
+#include "osp_base/std_util.h"
 #include "platform/api/logging.h"
 
 // TODO(issue/27): Address TODOs in this file

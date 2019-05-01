@@ -6,8 +6,8 @@
 #define API_IMPL_SERVICE_PUBLISHER_IMPL_H_
 
 #include "api/public/service_publisher.h"
-#include "base/macros.h"
-#include "base/with_destruction_callback.h"
+#include "osp_base/macros.h"
+#include "osp_base/with_destruction_callback.h"
 
 namespace openscreen {
 
@@ -60,7 +60,7 @@ class ServicePublisherImpl final : public ServicePublisher,
 
   Delegate* const delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServicePublisherImpl);
+  OSP_DISALLOW_COPY_AND_ASSIGN(ServicePublisherImpl);
 };
 
 }  // namespace openscreen

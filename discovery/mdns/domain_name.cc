@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <iterator>
 
-#include "base/stringprintf.h"
+#include "osp_base/stringprintf.h"
 
 namespace openscreen {
 namespace mdns {

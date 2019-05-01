@@ -13,7 +13,7 @@ source_set("mdns_interface") {
   ]
 
   public_deps = [
-    "../../base",
+    "../../osp_base",
     "../../platform",
   ]
   configs += [ "../..:root_config_overrides" ]
@@ -60,7 +60,7 @@ if (use_mdns_responder) {
 
     public_deps = [
       ":mdns_interface",
-      "../../base",
+      "../../osp_base",
       "../../platform",
     ]
 

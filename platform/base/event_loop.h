@@ -11,8 +11,8 @@
 #include <cstdint>
 #include <vector>
 
-#include "base/error.h"
-#include "base/ip_address.h"
+#include "osp_base/error.h"
+#include "osp_base/ip_address.h"
 #include "platform/api/event_waiter.h"
 
 namespace openscreen {

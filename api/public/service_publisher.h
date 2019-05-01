@@ -9,8 +9,8 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
-#include "base/time.h"
+#include "osp_base/macros.h"
+#include "osp_base/time.h"
 #include "platform/api/network_interface.h"
 
 namespace openscreen {
@@ -149,7 +149,7 @@ class ServicePublisher {
   ServicePublisherError last_error_;
   Observer* observer_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServicePublisher);
+  OSP_DISALLOW_COPY_AND_ASSIGN(ServicePublisher);
 };
 
 }  // namespace openscreen

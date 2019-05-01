@@ -16,8 +16,8 @@ config("root_config_overrides") {
 group("gn_all") {
   deps = [
     "api",
-    "base",
     "msgs",
+    "osp_base",
     "platform",
     "third_party/abseil",
     "third_party/tinycbor",
@@ -41,9 +41,9 @@ executable("openscreen_unittests") {
   testonly = true
   deps = [
     "api:api_unittests",
-    "base:base_unittests",
     "discovery/mdns:mdns_unittests",
     "msgs:unittests",
+    "osp_base:osp_base_unittests",
     "platform:platform_unittests",
     "streaming/cast:cast_unittests",
     "third_party/abseil",
@@ -59,8 +59,8 @@ if (use_chromium_quic && use_mdns_responder) {
 
     deps = [
       "api:api_with_chromium_quic",
-      "base",
       "discovery/mdns",
+      "osp_base",
       "platform",
     ]
   }

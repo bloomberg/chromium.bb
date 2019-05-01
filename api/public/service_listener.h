@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "api/public/service_info.h"
-#include "base/macros.h"
-#include "base/time.h"
+#include "osp_base/macros.h"
+#include "osp_base/time.h"
 
 namespace openscreen {
 
@@ -154,7 +154,7 @@ class ServiceListener {
   ServiceListenerError last_error_;
   std::vector<Observer*> observers_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServiceListener);
+  OSP_DISALLOW_COPY_AND_ASSIGN(ServiceListener);
 };
 
 }  // namespace openscreen

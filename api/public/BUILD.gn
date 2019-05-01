@@ -41,7 +41,7 @@ source_set("api") {
     "../../msgs",
   ]
   deps = [
-    "../../base",
+    "../../osp_base",
     "../../platform",
   ]
   if (build_with_chromium) {

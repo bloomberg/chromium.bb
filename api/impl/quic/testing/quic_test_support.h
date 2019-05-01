@@ -15,7 +15,7 @@
 #include "api/public/network_metrics.h"
 #include "api/public/protocol_connection_client.h"
 #include "api/public/protocol_connection_server.h"
-#include "base/ip_address.h"
+#include "osp_base/ip_address.h"
 #include "platform/api/time.h"
 #include "third_party/googletest/src/googlemock/include/gmock/gmock.h"
 

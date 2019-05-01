@@ -24,8 +24,8 @@
 #include <cstring>
 
 #include "absl/strings/string_view.h"
-#include "base/ip_address.h"
-#include "base/scoped_pipe.h"
+#include "osp_base/ip_address.h"
+#include "osp_base/scoped_pipe.h"
 #include "platform/api/logging.h"
 
 namespace openscreen {

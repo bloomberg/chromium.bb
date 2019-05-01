@@ -7,7 +7,7 @@
 
 #include <cstdint>
 
-#include "base/time.h"
+#include "osp_base/time.h"
 
 namespace openscreen {
 

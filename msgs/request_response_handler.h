@@ -10,8 +10,8 @@
 
 #include "api/public/message_demuxer.h"
 #include "api/public/protocol_connection.h"
-#include "base/error.h"
-#include "base/macros.h"
+#include "osp_base/error.h"
+#include "osp_base/macros.h"
 #include "platform/api/logging.h"
 
 namespace openscreen {
@@ -198,7 +198,7 @@ class RequestResponseHandler : public MessageDemuxer::MessageCallback {
   std::vector<RequestWithId> sent_;
   MessageDemuxer::MessageWatch response_watch_;
 
-  DISALLOW_COPY_AND_ASSIGN(RequestResponseHandler);
+  OSP_DISALLOW_COPY_AND_ASSIGN(RequestResponseHandler);
 };
 
 }  // namespace openscreen

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_IP_ADDRESS_H_
-#define BASE_IP_ADDRESS_H_
+#ifndef OSP_BASE_IP_ADDRESS_H_
+#define OSP_BASE_IP_ADDRESS_H_
 
 #include <array>
 #include <cstdint>
@@ -11,7 +11,7 @@
 #include <string>
 #include <type_traits>
 
-#include "base/error.h"
+#include "osp_base/error.h"
 
 namespace openscreen {
 
@@ -108,4 +108,4 @@ std::ostream& operator<<(std::ostream& out, const IPEndpoint& endpoint);
 
 }  // namespace openscreen
 
-#endif  // BASE_IP_ADDRESS_H_
+#endif  // OSP_BASE_IP_ADDRESS_H_

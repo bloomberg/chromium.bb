@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_STRINGPRINTF_H_
-#define BASE_STRINGPRINTF_H_
+#ifndef OSP_BASE_STRINGPRINTF_H_
+#define OSP_BASE_STRINGPRINTF_H_
 
 #include <ostream>
 
@@ -38,4 +38,4 @@ void PrettyPrintAsciiHex(std::ostream& os, It first, It last) {
 
 }  // namespace openscreen
 
-#endif  // BASE_STRINGPRINTF_H_
+#endif  // OSP_BASE_STRINGPRINTF_H_

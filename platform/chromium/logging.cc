@@ -4,7 +4,7 @@
 
 #include "platform/api/logging.h"
 
-#include "base/logging.h"
+#include "osp_base/logging.h"
 
 namespace openscreen {
 namespace platform {

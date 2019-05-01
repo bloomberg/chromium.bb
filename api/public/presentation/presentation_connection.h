@@ -14,9 +14,9 @@
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "api/public/message_demuxer.h"
-#include "base/error.h"
-#include "base/ip_address.h"
-#include "base/macros.h"
+#include "osp_base/error.h"
+#include "osp_base/ip_address.h"
+#include "osp_base/macros.h"
 #include "platform/api/logging.h"
 #include "platform/api/time.h"
 
@@ -87,7 +87,7 @@ class Connection {
     virtual void OnBinaryMessage(const std::vector<uint8_t>& data) = 0;
 
    private:
-    DISALLOW_COPY_AND_ASSIGN(Delegate);
+    OSP_DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
 
   // Allows different close, termination, and destruction behavior for both
@@ -106,7 +106,7 @@ class Connection {
     virtual void OnConnectionDestroyed(Connection* connection) = 0;
 
    private:
-    DISALLOW_COPY_AND_ASSIGN(ParentDelegate);
+    OSP_DISALLOW_COPY_AND_ASSIGN(ParentDelegate);
   };
 
   struct PresentationInfo {
@@ -179,7 +179,7 @@ class Connection {
   absl::optional<uint64_t> endpoint_id_;
   std::unique_ptr<ProtocolConnection> protocol_connection_;
 
-  DISALLOW_COPY_AND_ASSIGN(Connection);
+  OSP_DISALLOW_COPY_AND_ASSIGN(Connection);
 };
 
 class ConnectionManager final : public MessageDemuxer::MessageCallback {
@@ -207,7 +207,7 @@ class ConnectionManager final : public MessageDemuxer::MessageCallback {
   MessageDemuxer::MessageWatch close_request_watch_;
   MessageDemuxer::MessageWatch close_event_watch_;
 
-  DISALLOW_COPY_AND_ASSIGN(ConnectionManager);
+  OSP_DISALLOW_COPY_AND_ASSIGN(ConnectionManager);
 };
 
 }  // namespace presentation

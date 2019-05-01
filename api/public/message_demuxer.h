@@ -9,8 +9,8 @@
 #include <memory>
 #include <vector>
 
-#include "base/error.h"
 #include "msgs/osp_messages.h"
+#include "osp_base/error.h"
 #include "platform/api/time.h"
 
 namespace openscreen {

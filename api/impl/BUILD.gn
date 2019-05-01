@@ -40,7 +40,7 @@ source_set("impl") {
     "../public:api",
   ]
   deps = [
-    "../../base",
+    "../../osp_base",
     "../../platform",
     "quic",
   ]
@@ -62,8 +62,8 @@ if (use_chromium_quic) {
 
     deps = [
       "quic",
-      "//base",
       "//msgs",
+      "//osp_base",
       "//platform",
       "//third_party/chromium_quic",
     ]

@@ -14,7 +14,7 @@
 #include "api/public/presentation/presentation_connection.h"
 #include "api/public/protocol_connection.h"
 #include "api/public/service_listener.h"
-#include "base/error.h"
+#include "osp_base/error.h"
 #include "platform/api/time.h"
 
 namespace openscreen {
