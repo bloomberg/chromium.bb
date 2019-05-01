@@ -8,6 +8,10 @@
         "args": [
           "--gtest_filter=WebRtc*"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -19,6 +23,10 @@
           "--run-manual",
           "--test-launcher-jobs=1"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "name": "content_browsertests_sequential",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -42,6 +50,10 @@
           "--run-manual",
           "--test-launcher-jobs=1"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "name": "browser_tests_functional",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -59,6 +71,10 @@
           "--run-manual",
           "--test-launcher-jobs=1"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -76,6 +92,10 @@
           "--test-launcher-jobs=1",
           "--test-launcher-print-test-stdio=always"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
@@ -85,6 +105,10 @@
         "args": [
           "--gtest_filter=WebRtc*"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -101,6 +125,10 @@
           "--run-manual",
           "--test-launcher-jobs=1"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "name": "content_browsertests_sequential",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -118,6 +146,10 @@
           "--run-manual",
           "--ui-test-action-max-timeout=120000"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "name": "content_browsertests_stress",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -133,6 +165,10 @@
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/webrtc.content_unittests.filter"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -144,6 +180,10 @@
         "test": "content_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -158,6 +198,10 @@
         "args": [
           "--gtest_filter=Webrtc*"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -185,6 +229,10 @@
           "--run-manual",
           "--test-launcher-jobs=1"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "name": "browser_tests_functional",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -197,6 +245,10 @@
           "--run-manual",
           "--test-launcher-jobs=1"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -209,6 +261,10 @@
           "--test-launcher-jobs=1",
           "--test-launcher-print-test-stdio=always"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
@@ -218,6 +274,10 @@
         "args": [
           "--gtest_filter=WebRtc*"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -229,6 +289,10 @@
           "--run-manual",
           "--test-launcher-jobs=1"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "name": "content_browsertests_sequential",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -241,6 +305,10 @@
           "--run-manual",
           "--ui-test-action-max-timeout=120000"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "name": "content_browsertests_stress",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -251,12 +319,20 @@
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/webrtc.content_unittests.filter"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "content_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -266,6 +342,10 @@
         "args": [
           "--gtest_filter=Webrtc*"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -288,6 +368,10 @@
           "--run-manual",
           "--test-launcher-jobs=1"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "name": "browser_tests_functional",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -300,6 +384,10 @@
           "--run-manual",
           "--test-launcher-jobs=1"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -312,6 +400,10 @@
           "--test-launcher-jobs=1",
           "--test-launcher-print-test-stdio=always"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
@@ -321,6 +413,10 @@
         "args": [
           "--gtest_filter=WebRtc*"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -332,6 +428,10 @@
           "--run-manual",
           "--test-launcher-jobs=1"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "name": "content_browsertests_sequential",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -344,6 +444,10 @@
           "--run-manual",
           "--ui-test-action-max-timeout=120000"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "name": "content_browsertests_stress",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -354,12 +458,20 @@
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/webrtc.content_unittests.filter"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "content_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -369,6 +481,10 @@
         "args": [
           "--gtest_filter=Webrtc*"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -384,6 +500,10 @@
           "--run-manual",
           "--test-launcher-jobs=1"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "name": "browser_tests_functional",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -396,6 +516,10 @@
           "--run-manual",
           "--test-launcher-jobs=1"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -408,6 +532,10 @@
           "--test-launcher-jobs=1",
           "--test-launcher-print-test-stdio=always"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
@@ -417,6 +545,10 @@
         "args": [
           "--gtest_filter=WebRtc*"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -428,6 +560,10 @@
           "--run-manual",
           "--test-launcher-jobs=1"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "name": "content_browsertests_sequential",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -440,6 +576,10 @@
           "--run-manual",
           "--ui-test-action-max-timeout=120000"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "name": "content_browsertests_stress",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -450,12 +590,20 @@
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/webrtc.content_unittests.filter"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "content_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -465,6 +613,10 @@
         "args": [
           "--gtest_filter=Webrtc*"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -480,6 +632,10 @@
           "--run-manual",
           "--test-launcher-jobs=1"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "name": "browser_tests_functional",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -492,6 +648,10 @@
           "--run-manual",
           "--test-launcher-jobs=1"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -504,6 +664,10 @@
           "--test-launcher-jobs=1",
           "--test-launcher-print-test-stdio=always"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
@@ -513,6 +677,10 @@
         "args": [
           "--gtest_filter=WebRtc*"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -524,6 +692,10 @@
           "--run-manual",
           "--test-launcher-jobs=1"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "name": "content_browsertests_sequential",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -536,6 +708,10 @@
           "--run-manual",
           "--ui-test-action-max-timeout=120000"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "name": "content_browsertests_stress",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -546,12 +722,20 @@
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/webrtc.content_unittests.filter"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "content_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -561,6 +745,10 @@
         "args": [
           "--gtest_filter=Webrtc*"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true
         },

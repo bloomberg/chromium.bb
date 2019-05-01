@@ -1086,6 +1086,10 @@
         "args": [
           "--enable-blink-features=LayoutNG"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "name": "webkit_unit_tests_ng",
         "swarming": {
           "can_use_on_swarming_builders": true,

@@ -883,12 +883,20 @@ COMPOSITION_WATERFALL_OUTPUT = """\
   "Fake Tester": {
     "gtest_tests": [
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "bar_test"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -909,6 +917,10 @@ COMPOSITION_WATERFALL_WITH_ARGS_OUTPUT = """\
         "args": [
           "--this-is-an-argument"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -918,6 +930,10 @@ COMPOSITION_WATERFALL_WITH_ARGS_OUTPUT = """\
         "args": [
           "--this-is-an-argument"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -935,6 +951,10 @@ VARIATION_GTEST_OUTPUT = """\
   "Fake Tester": {
     "gtest_tests": [
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -949,6 +969,10 @@ VARIATION_GTEST_OUTPUT = """\
         "args": [
           "--variation"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "name": "variation_test",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -972,6 +996,10 @@ COMPOSITION_WATERFALL_FILTERED_OUTPUT = """\
   "Fake Tester": {
     "gtest_tests": [
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -993,6 +1021,10 @@ MERGED_ARGS_OUTPUT = """\
           "--c_arg",
           "--bar"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1019,6 +1051,10 @@ LINUX_ARGS_OUTPUT = """\
         "args": [
           "--no-xvfb"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -1039,6 +1075,10 @@ MERGED_ENABLE_FEATURES_OUTPUT = """\
         "args": [
           "--enable-features=Foo,Bar,Baz"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -1059,6 +1099,10 @@ MODIFIED_OUTPUT = """\
         "args": [
           "--bar"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1365,6 +1409,10 @@ ANDROID_WATERFALL_OUTPUT = """\
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -1405,6 +1453,10 @@ ANDROID_WATERFALL_OUTPUT = """\
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -1431,6 +1483,10 @@ ANDROID_WATERFALL_OUTPUT = """\
   "Fake Android M Tester": {
     "gtest_tests": [
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
@@ -1448,6 +1504,10 @@ MULTI_DIMENSION_OUTPUT = """\
   "Fake Tester": {
     "gtest_tests": [
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1484,6 +1544,10 @@ CHROMEOS_TRIGGER_SCRIPT_OUTPUT = """\
   "Fake Tester": {
     "gtest_tests": [
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2603,6 +2667,10 @@ WATERFALL_MIXIN_WATERFALL_OUTPUT = """\
   "Fake Tester": {
     "gtest_tests": [
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2627,6 +2695,10 @@ WATERFALL_MIXIN_WATERFALL_EXCEPTION_OUTPUT = """\
   "Fake Tester": {
     "gtest_tests": [
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2651,6 +2723,10 @@ BUILDER_MIXIN_WATERFALL_OUTPUT = """\
   "Fake Tester": {
     "gtest_tests": [
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2675,6 +2751,10 @@ BUILDER_MIXIN_NON_SWARMING_WATERFALL_OUTPUT = """\
   "Fake Tester": {
     "gtest_tests": [
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2703,6 +2783,10 @@ BUILDER_MIXIN_APPEND_ARGS_WATERFALL_OUTPUT = """\
           "--c_arg",
           "--mixin-argument"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -2720,6 +2804,10 @@ TEST_MIXIN_WATERFALL_OUTPUT = """\
   "Fake Tester": {
     "gtest_tests": [
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2745,6 +2833,10 @@ DIMENSIONS_MIXIN_WATERFALL_OUTPUT = """\
   "Fake Tester": {
     "gtest_tests": [
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3045,6 +3137,10 @@ TEST_QUERY_BOTS_OUTPUT = {
     "gtest_tests": [
       {
         "test": "foo_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": False
         }
@@ -3059,6 +3155,10 @@ TEST_QUERY_BOTS_OUTPUT = {
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "cipd_packages": [
             {
@@ -3088,6 +3188,10 @@ TEST_QUERY_BOTS_OUTPUT = {
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "cipd_packages": [
             {
@@ -3123,6 +3227,10 @@ TEST_QUERY_BOTS_OUTPUT = {
 TEST_QUERY_BOTS_TESTS_OUTPUT = {
   "Fake Android M Tester": [
     {
+      "merge": {
+        "args": [],
+        "script": "//testing/merge_scripts/standard_gtest_merge.py"
+      },
       "test": "foo_test",
       "swarming": {
         "can_use_on_swarming_builders": False
@@ -3136,6 +3244,10 @@ TEST_QUERY_BOTS_TESTS_OUTPUT = {
         "--gs-results-bucket=chromium-result-details",
         "--recover-devices"
       ],
+      "merge": {
+        "args": [],
+        "script": "//testing/merge_scripts/standard_gtest_merge.py"
+      },
       "swarming": {
         "cipd_packages": [
           {
@@ -3162,6 +3274,10 @@ TEST_QUERY_BOTS_TESTS_OUTPUT = {
         "--gs-results-bucket=chromium-result-details",
         "--recover-devices"
       ],
+      "merge": {
+        "args": [],
+        "script": "//testing/merge_scripts/standard_gtest_merge.py"
+      },
       "swarming": {
         "cipd_packages": [
           {
@@ -3196,10 +3312,16 @@ TEST_QUERY_BOT_OUTPUT = {
   "additional_compile_targets": ["bar_test"],
   "gtest_tests": [
     {
-      "test": "foo_test", "args": [
+      "test": "foo_test",
+      "args": [
         "--gs-results-bucket=chromium-result-details",
         "--recover-devices"
-      ], "swarming": {
+      ],
+      "merge": {
+        "args": [],
+        "script": "//testing/merge_scripts/standard_gtest_merge.py"
+      },
+      "swarming": {
         "cipd_packages": [
           {
             "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -3234,6 +3356,10 @@ TEST_QUERY_BOT_TESTS_OUTPUT = [
       "--gs-results-bucket=chromium-result-details",
       "--recover-devices"
     ],
+    "merge": {
+      "args": [],
+      "script": "//testing/merge_scripts/standard_gtest_merge.py"
+    },
     "swarming": {
       "cipd_packages": [
         {
