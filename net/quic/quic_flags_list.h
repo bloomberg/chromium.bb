@@ -343,3 +343,8 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_print_tag_hex, false)
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_terminate_gquic_connection_as_ietf,
           false)
+
+// If true, disable QUIC trial decryption in V44 and above.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_v44_disable_trial_decryption,
+          false)
