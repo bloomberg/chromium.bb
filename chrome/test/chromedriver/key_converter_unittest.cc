@@ -376,29 +376,21 @@ TEST(KeyConverter, MAYBE_AllSpecialWebDriverKeysOnEnglishKeyboard) {
     int modifiers = 0;
     keys.push_back(0xE000U + i);
     std::list<KeyEvent> events;
-    if (i == 1) {
-      EXPECT_NE(kOk, ConvertKeysToKeyEvents(keys,
-                                            true /* release_modifiers*/,
-                                            &modifiers, &events).code())
-          << "Index: " << i;
+    EXPECT_EQ(kOk, ConvertKeysToKeyEvents(keys,
+                                          true /* release_modifiers */,
+                                          &modifiers, &events).code())
+        << "Index: " << i;
+    if (i == 0) {
       EXPECT_EQ(0u, events.size()) << "Index: " << i;
+    } else if (i >= base::size(kTextForKeys) || kTextForKeys[i] == 0) {
+      EXPECT_EQ(2u, events.size()) << "Index: " << i;
     } else {
-      EXPECT_EQ(kOk, ConvertKeysToKeyEvents(keys,
-                                            true /* release_modifiers */,
-                                            &modifiers, &events).code())
+      ASSERT_EQ(3u, events.size()) << "Index: " << i;
+      std::list<KeyEvent>::const_iterator it = events.begin();
+      ++it;  // Move to the second event.
+      ASSERT_EQ(1u, it->unmodified_text.length()) << "Index: " << i;
+      EXPECT_EQ(kTextForKeys[i], it->unmodified_text[0])
           << "Index: " << i;
-      if (i == 0) {
-        EXPECT_EQ(0u, events.size()) << "Index: " << i;
-      } else if (i >= base::size(kTextForKeys) || kTextForKeys[i] == 0) {
-        EXPECT_EQ(2u, events.size()) << "Index: " << i;
-      } else {
-        ASSERT_EQ(3u, events.size()) << "Index: " << i;
-        std::list<KeyEvent>::const_iterator it = events.begin();
-        ++it;  // Move to the second event.
-        ASSERT_EQ(1u, it->unmodified_text.length()) << "Index: " << i;
-        EXPECT_EQ(kTextForKeys[i], it->unmodified_text[0])
-            << "Index: " << i;
-      }
     }
   }
 }

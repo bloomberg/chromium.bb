@@ -35,7 +35,7 @@ const ModifierMaskAndKeyCode kModifiers[] = {
 // points defined by the Unicode standard.
 const ui::KeyboardCode kSpecialWebDriverKeys[] = {
     ui::VKEY_UNKNOWN,   // \uE000
-    ui::VKEY_UNKNOWN,
+    ui::VKEY_CANCEL,  // \uE001
     ui::VKEY_HELP,
     ui::VKEY_BACK,
     ui::VKEY_TAB,

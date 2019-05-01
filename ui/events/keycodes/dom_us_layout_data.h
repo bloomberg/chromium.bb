@@ -555,7 +555,7 @@ const struct DomCodeToKeyboardCodeEntry {
     // DomCode::LANG3                              0x070092 Lang3
     // DomCode::LANG4                              0x070093 Lang4
     // DomCode::LANG5                              0x070094 Lang5
-    // DomCode::ABORT                              0x07009B Abort
+    {DomCode::ABORT, VKEY_CANCEL},              // 0x07009B Abort
     // DomCode::PROPS                              0x0700A3 Props
     // DomCode::NUMPAD_PAREN_LEFT                  0x0700B6 NumpadParenLeft
     // DomCode::NUMPAD_PAREN_RIGHT                 0x0700B7 NumpadParenRight
