@@ -660,4 +660,8 @@ void WebRuntimeFeatures::EnableSkipTouchEventFilter(bool enable) {
   RuntimeEnabledFeatures::SetSkipTouchEventFilterEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableStaleWhileRevalidate(bool enable) {
+  RuntimeEnabledFeatures::SetStaleWhileRevalidateEnabled(enable);
+}
+
 }  // namespace blink

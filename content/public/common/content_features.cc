@@ -460,6 +460,11 @@ const base::Feature kSignedHTTPExchangePingValidity{
 const base::Feature kSpareRendererForSitePerProcess{
     "SpareRendererForSitePerProcess", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables StaleWhileRevalidate support.
+// https://www.chromestatus.com/features/5050913014153216
+const base::Feature kStaleWhileRevalidate{"StaleWhileRevalidate",
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Dispatch touch events to "SyntheticGestureController" for events from
 // Devtool Protocol Input.dispatchTouchEvent to simulate touch events close to
 // real OS events.
