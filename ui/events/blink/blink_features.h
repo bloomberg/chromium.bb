@@ -63,20 +63,20 @@ extern const base::Feature kDontSendKeyEventsToJavascript;
 // "type" FeatureParam,
 // which can be either "discrete" (default) or "all".
 COMPONENT_EXPORT(BLINK_FEATURES)
-extern const base::Feature kSkipBrowserTouchFilter;
+extern const base::Feature kSkipTouchEventFilter;
 COMPONENT_EXPORT(BLINK_FEATURES)
-extern const char kSkipBrowserTouchFilterTypeParamName[];
+extern const char kSkipTouchEventFilterTypeParamName[];
 COMPONENT_EXPORT(BLINK_FEATURES)
-extern const char kSkipBrowserTouchFilterTypeParamValueDiscrete[];
+extern const char kSkipTouchEventFilterTypeParamValueDiscrete[];
 COMPONENT_EXPORT(BLINK_FEATURES)
-extern const char kSkipBrowserTouchFilterTypeParamValueAll[];
+extern const char kSkipTouchEventFilterTypeParamValueAll[];
 COMPONENT_EXPORT(BLINK_FEATURES)
-extern const char kSkipBrowserTouchFilterFilteringProcessParamName[];
+extern const char kSkipTouchEventFilterFilteringProcessParamName[];
 COMPONENT_EXPORT(BLINK_FEATURES)
-extern const char kSkipBrowserTouchFilterFilteringProcessParamValueBrowser[];
+extern const char kSkipTouchEventFilterFilteringProcessParamValueBrowser[];
 COMPONENT_EXPORT(BLINK_FEATURES)
 extern const char
-    kSkipBrowserTouchFilterFilteringProcessParamValueBrowserAndRenderer[];
+    kSkipTouchEventFilterFilteringProcessParamValueBrowserAndRenderer[];
 }
 
 #endif  // UI_EVENTS_BLINK_BLINK_FEATURES_H_

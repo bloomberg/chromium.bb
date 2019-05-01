@@ -1351,6 +1351,10 @@
       status: "experimental",
     },
     {
+      name: "SkipTouchEventFilter",
+      settable_from_internals: true,
+    },
+    {
       name: "SmoothScrollJSIntervention",
       status: "stable",
     },

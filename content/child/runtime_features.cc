@@ -480,6 +480,9 @@ void SetIndividualRuntimeFeatures(
 
   if (!base::FeatureList::IsEnabled(features::kIdleDetection))
     WebRuntimeFeatures::EnableIdleDetection(false);
+
+  WebRuntimeFeatures::EnableSkipTouchEventFilter(
+      base::FeatureList::IsEnabled(features::kSkipTouchEventFilter));
 }
 
 }  // namespace

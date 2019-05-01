@@ -239,7 +239,7 @@ class InputHandlerProxy : public cc::InputHandlerClient,
   // tests and to allow testing both Blink and CC input handling paths.
   bool force_input_to_main_thread_;
 
-  // These flags are set for the SkipBrowserTouchFilter experiment. The
+  // These flags are set for the SkipTouchEventFilter experiment. The
   // experiment either skips filtering discrete (touch start/end) events to the
   // main thread, or all events (touch start/end/move).
   bool skip_touch_filter_discrete_ = false;

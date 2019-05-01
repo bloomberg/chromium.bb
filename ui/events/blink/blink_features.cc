@@ -31,16 +31,14 @@ const base::Feature kFallbackCursorMode{"FallbackCursorMode",
 const base::Feature kDontSendKeyEventsToJavascript{
     "DontSendKeyEventsToJavascript", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kSkipBrowserTouchFilter{"SkipBrowserTouchFilter",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
-const char kSkipBrowserTouchFilterTypeParamName[] = "type";
-const char kSkipBrowserTouchFilterTypeParamValueDiscrete[] = "discrete";
-const char kSkipBrowserTouchFilterTypeParamValueAll[] = "all";
-const char kSkipBrowserTouchFilterFilteringProcessParamName[] =
+const base::Feature kSkipTouchEventFilter{"SkipTouchEventFilter",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+const char kSkipTouchEventFilterTypeParamName[] = "type";
+const char kSkipTouchEventFilterTypeParamValueDiscrete[] = "discrete";
+const char kSkipTouchEventFilterTypeParamValueAll[] = "all";
+const char kSkipTouchEventFilterFilteringProcessParamName[] =
     "skip_filtering_process";
-const char kSkipBrowserTouchFilterFilteringProcessParamValueBrowser[] =
-    "browser";
-const char
-    kSkipBrowserTouchFilterFilteringProcessParamValueBrowserAndRenderer[] =
-        "browser_and_renderer";
+const char kSkipTouchEventFilterFilteringProcessParamValueBrowser[] = "browser";
+const char kSkipTouchEventFilterFilteringProcessParamValueBrowserAndRenderer[] =
+    "browser_and_renderer";
 }

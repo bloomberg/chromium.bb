@@ -656,4 +656,8 @@ void WebRuntimeFeatures::EnableIdleDetection(bool enable) {
   RuntimeEnabledFeatures::SetIdleDetectionEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableSkipTouchEventFilter(bool enable) {
+  RuntimeEnabledFeatures::SetSkipTouchEventFilterEnabled(enable);
+}
+
 }  // namespace blink
