@@ -96,7 +96,6 @@ jumbo_component("wtf") {
     "pod_interval_tree.h",
     "pod_red_black_tree.h",
     "ref_counted.h",
-    "ref_vector.h",
     "sanitizers.h",
     "scoped_logger.cc",
     "scoped_logger.h",

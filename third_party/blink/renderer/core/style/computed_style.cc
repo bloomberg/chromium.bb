@@ -1688,7 +1688,7 @@ const Vector<AppliedTextDecoration>& ComputedStyle::AppliedTextDecorations()
     return empty;
   }
 
-  return AppliedTextDecorationsInternal()->GetVector();
+  return AppliedTextDecorationsInternal()->data;
 }
 
 static bool HasInitialVariables(const StyleInitialData* initial_data) {
@@ -1925,11 +1925,11 @@ void ComputedStyle::AddAppliedTextDecoration(
       MutableAppliedTextDecorationsInternal();
 
   if (!list)
-    list = AppliedTextDecorationList::Create();
+    list = base::MakeRefCounted<AppliedTextDecorationList>();
   else if (!list->HasOneRef())
-    list = list->Copy();
+    list = base::MakeRefCounted<AppliedTextDecorationList>(list->data);
 
-  list->push_back(decoration);
+  list->data.push_back(decoration);
 }
 
 void ComputedStyle::OverrideTextDecorationColors(Color override_color) {
@@ -1937,9 +1937,9 @@ void ComputedStyle::OverrideTextDecorationColors(Color override_color) {
       MutableAppliedTextDecorationsInternal();
   DCHECK(list);
   if (!list->HasOneRef())
-    list = list->Copy();
+    list = base::MakeRefCounted<AppliedTextDecorationList>(list->data);
 
-  for (AppliedTextDecoration& decoration : *list)
+  for (AppliedTextDecoration& decoration : list->data)
     decoration.SetColor(override_color);
 }
 
