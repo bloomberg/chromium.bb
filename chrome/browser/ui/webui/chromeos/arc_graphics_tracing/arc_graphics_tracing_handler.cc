@@ -28,6 +28,7 @@
 #include "chrome/browser/chromeos/arc/tracing/arc_tracing_graphics_model.h"
 #include "chrome/browser/chromeos/arc/tracing/arc_tracing_model.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "components/arc/arc_prefs.h"
@@ -37,6 +38,7 @@
 #include "components/exo/wm_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/tracing_controller.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/ui_base_features.h"
@@ -280,8 +282,10 @@ void ArcGraphicsTracingHandler::OnCommit(exo::Surface* surface) {
 
 void ArcGraphicsTracingHandler::OnJankDetected(const base::Time& timestamp) {
   VLOG(1) << "Jank detected " << timestamp;
-  if (tracing_active_ && stop_on_jank_)
+  if (tracing_active_ && stop_on_jank_) {
     StopTracing();
+    Activate();
+  }
 }
 
 void ArcGraphicsTracingHandler::OnWindowPropertyChanged(aura::Window* window,
@@ -305,10 +309,12 @@ void ArcGraphicsTracingHandler::OnKeyEvent(ui::KeyEvent* event) {
       !event->IsControlDown() || !event->IsShiftDown()) {
     return;
   }
-  if (tracing_active_)
+  if (tracing_active_) {
     StopTracing();
-  else
+    Activate();
+  } else {
     StartTracing();
+  }
 }
 
 void ArcGraphicsTracingHandler::UpdateActiveArcWindowInfo() {
@@ -348,6 +354,17 @@ void ArcGraphicsTracingHandler::DiscardActiveArcWindow() {
   arc_active_window_->RemoveObserver(this);
   jank_detector_.reset();
   arc_active_window_ = nullptr;
+}
+
+void ArcGraphicsTracingHandler::Activate() {
+  aura::Window* const window =
+      web_ui()->GetWebContents()->GetTopLevelNativeWindow();
+  if (!window) {
+    LOG(ERROR) << "Failed to activate, no top level window.";
+    return;
+  }
+
+  platform_util::ActivateWindow(window);
 }
 
 void ArcGraphicsTracingHandler::StartTracing() {
