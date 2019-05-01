@@ -314,18 +314,6 @@
       ]
     },
     {
-      "name": "cheza64",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": true,
-          "leader_board": false,
-          "board_group": "",
-          "arch": "ARM_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "clapper",
       "configs": [
         {
@@ -1504,6 +1492,21 @@
       "models": [
         {
           "board_name": "cheza-freedreno",
+          "name": "cheza",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        }
+      ]
+    },
+    {
+      "name": "cheza64",
+      "reference_board_name": "cheza64",
+      "arch": "ARM_INTERNAL",
+      "builder": "RELEASE",
+      "experimental": true,
+      "models": [
+        {
+          "board_name": "cheza64",
           "name": "cheza",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
