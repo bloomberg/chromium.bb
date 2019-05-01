@@ -321,16 +321,6 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   // See DesktopWindowTreeHost::ShouldUseDesktopNativeCursorManager().
   bool use_desktop_native_cursor_manager_ = false;
 
-  // Whether HandleActivationChanged is being called for deactivation. The
-  // current active aura::Window is deactivated in HandleActivationChanged.
-  // However, the current active window could be a sibling of |content_window_|
-  // (e.g. aura::Window of a child bubble widget such as browser window
-  // bubbles). The deactivation of such window would activate |content_window_|
-  // and could trigger RestoreFocusedView which could activate the widget. The
-  // flag is used to skip RestoreFocusedView to avoid activating the widget
-  // immediately after it is deactivated.
-  bool is_handling_deactivation_ = false;
-
   // The following factory is used for calls to close the NativeWidgetAura
   // instance.
   base::WeakPtrFactory<DesktopNativeWidgetAura> close_widget_factory_;
