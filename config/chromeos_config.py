@@ -2122,6 +2122,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_new_boards = frozenset([
       'atlas',
       'samus-kernelnext',
+      'zork',
   ])
 
   # Paladin configs that exist and should stay as experimental until further

@@ -148,6 +148,7 @@
     wizpig-paladin
     wolf-paladin
     wooten-paladin
+    zork-paladin
 
 == factory ==
   factory-atlas-11907.B-buildspec
@@ -2709,6 +2710,7 @@
     wizpig-paladin-tryjob
     wolf-paladin-tryjob
     wooten-paladin-tryjob
+    zork-paladin-tryjob
   master-pi-android-pfq-tryjob
     betty-arcnext-pi-android-pfq-tryjob
     caroline-arcnext-pi-android-pfq-tryjob
@@ -4209,6 +4211,7 @@
   zako-tot-chrome-pfq-informational-tryjob
   zako-tot-chromium-pfq-informational-tryjob
   zako-unittest-stress
+  zork-chrome-pfq-tryjob
   zork-chromium-pfq-tryjob
   zork-compile-only-pre-cq
   zork-full-tryjob
@@ -4216,9 +4219,14 @@
   zork-llvm-toolchain-tryjob
   zork-no-vmtest-pre-cq
   zork-paladin-tryjob
+  zork-payloads-tryjob
   zork-postsubmit-tryjob
   zork-pre-cq
+  zork-release-afdo-generate-tryjob
+  zork-release-afdo-tryjob
+  zork-release-afdo-use-tryjob
   zork-release-tryjob
+  zork-tot-chrome-pfq-informational-tryjob
   zork-tot-chromium-pfq-informational-tryjob
   zork-unittest-stress
 
