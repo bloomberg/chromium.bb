@@ -13,7 +13,6 @@ pluginVm.testLabelIconContextMenu = async (done) => {
     ['#delete', false],
     ['#zip-selection', true],
     ['#share-with-linux', true],
-    ['#manage-plugin-vm-sharing', true],
     ['#new-folder', true],
   ];
 
@@ -26,7 +25,6 @@ pluginVm.testLabelIconContextMenu = async (done) => {
     ['#delete', true],
     ['#zip-selection', true],
     ['#share-with-linux', true],
-    ['#manage-plugin-vm-sharing', true],
     ['#new-folder', true],
   ];
 
@@ -62,13 +60,6 @@ pluginVm.testLabelIconContextMenu = async (done) => {
   assertTrue(test.fakeMouseClick('#refresh-button'), 'click refresh');
   await test.waitForFiles(test.TestEntryInfo.getExpectedRows(
       [test.ENTRIES.pluginVm, test.ENTRIES.linuxFiles]));
-
-  // Register /PluginVm as shared.
-  const pluginVmEntry =
-      mockVolumeManager
-          .getCurrentProfileVolumeInfo(VolumeManagerCommon.VolumeType.DOWNLOADS)
-          .fileSystem.entries['/PluginVm'];
-  fileManager.crostini.registerSharedPath('PluginVm', pluginVmEntry);
 
   // Verify folder icon.
   await test.waitForElement(iconFolder);

@@ -243,6 +243,14 @@ CrostiniImpl.prototype.canSharePath = function(vmName, entry, persist) {
     return false;
   }
 
+  // Special case to disallow PluginVm sharing on /MyFiles/PluginVm and
+  // subfolders since it gets shared by default.
+  if (vmName === CrostiniImpl.PLUGIN_VM &&
+      root === VolumeManagerCommon.RootType.DOWNLOADS &&
+      entry.fullPath.split('/')[1] === CrostiniImpl.PLUGIN_VM) {
+    return false;
+  }
+
   return CrostiniImpl.VALID_ROOT_TYPES_FOR_SHARE.has(root) ||
       (loadTimeData.getBoolean('DRIVE_FS_ENABLED') &&
        CrostiniImpl.VALID_DRIVE_FS_ROOT_TYPES_FOR_SHARE.has(root));
