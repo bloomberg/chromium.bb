@@ -112,13 +112,12 @@ class ASH_EXPORT WorkspaceLayoutManager
   friend class WorkspaceControllerTestApi;
   typedef std::set<aura::Window*> WindowSet;
 
-  // Observes changes in windows in the SettingsBubbleWindowObserver, and
+  // Observes changes in windows in the BubbleWindowObserver, and
   // notifies WorkspaceLayoutManager to send out system ui area change events.
-  class SettingsBubbleWindowObserver : public aura::WindowObserver {
+  class BubbleWindowObserver : public aura::WindowObserver {
    public:
-    SettingsBubbleWindowObserver(
-        WorkspaceLayoutManager* workspace_layout_manager);
-    ~SettingsBubbleWindowObserver() override;
+    BubbleWindowObserver(WorkspaceLayoutManager* workspace_layout_manager);
+    ~BubbleWindowObserver() override;
 
     void ObserveWindow(aura::Window* window);
 
@@ -138,7 +137,7 @@ class ASH_EXPORT WorkspaceLayoutManager
 
     void StopOberservingWindow(aura::Window* window);
 
-    DISALLOW_COPY_AND_ASSIGN(SettingsBubbleWindowObserver);
+    DISALLOW_COPY_AND_ASSIGN(BubbleWindowObserver);
   };
 
   // Adjusts the bounds of all managed windows when the display area changes.
@@ -162,16 +161,18 @@ class ASH_EXPORT WorkspaceLayoutManager
   void UpdateAlwaysOnTop(aura::Window* active_desk_fullscreen_window);
 
   // Notifies windows about a change in a system ui area. This could be
-  // the keyboard or any window in the SettingsBubbleContainer. Windows will
-  // only be notified about changes to system ui areas on the display they are
-  // on.
+  // the keyboard or any window in the SettingsBubbleContainer or
+  // autoclick_menu_bubble_container_. Windows will only be notified about
+  // changes to system ui areas on the display they are on.
   void NotifySystemUiAreaChanged();
 
   aura::Window* window_;
   aura::Window* root_window_;
   RootWindowController* root_window_controller_;
   aura::Window* settings_bubble_container_;
-  SettingsBubbleWindowObserver settings_bubble_window_observer_;
+  BubbleWindowObserver settings_bubble_window_observer_;
+  aura::Window* autoclick_bubble_container_;
+  BubbleWindowObserver autoclick_bubble_window_observer_;
 
   // Set of windows we're listening to.
   WindowSet windows_;

@@ -9,6 +9,8 @@
 #include "ash/system/accessibility/autoclick_menu_bubble_controller.h"
 #include "ash/system/accessibility/autoclick_menu_view.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/collision_detection/collision_detection_utils.h"
+#include "ash/wm/desks/desks_util.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "ui/accessibility/accessibility_switches.h"
@@ -756,9 +758,11 @@ TEST_F(AutoclickTest, DoesActionOnBubbleWhenInDifferentModes) {
     EXPECT_EQ(0u, events.size());
 
     // If we move over the bubble but not over any button than no real click
-    // occurs.
+    // occurs. There is no button at the top of the bubble.
     button_location = gfx::ScaleToRoundedPoint(
-        GetAutoclickMenuView()->GetBoundsInScreen().CenterPoint(), test.scale);
+        GetAutoclickMenuView()->GetBoundsInScreen().top_center() +
+            gfx::Vector2d(0, 1),
+        test.scale);
     GetEventGenerator()->MoveMouseTo(button_location);
     events = WaitForMouseEvents();
     EXPECT_EQ(0u, events.size());
@@ -840,12 +844,9 @@ TEST_F(AutoclickTest, ShelfAutohidesWithAutoclickBubble) {
   Shelf* shelf = GetPrimaryShelf();
 
   // Create a visible window so auto-hide behavior is enforced.
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
-  params.bounds = gfx::Rect(0, 0, 200, 200);
-  params.context = CurrentContext();
-  views::Widget* widget = new views::Widget;
-  widget->Init(params);
-  widget->Show();
+  std::unique_ptr<views::Widget> widget =
+      CreateTestWidget(nullptr, desks_util::GetActiveDeskContainerId(),
+                       gfx::Rect(0, 0, 200, 200), true /* show */);
 
   // Turn on auto-hide for the shelf.
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
@@ -861,6 +862,57 @@ TEST_F(AutoclickTest, ShelfAutohidesWithAutoclickBubble) {
 
   // Reset state.
   Shell::Get()->accessibility_controller()->SetAutoclickEnabled(false);
+}
+
+TEST_F(AutoclickTest, BubbleMovesWithShelfPositionChange) {
+  UpdateDisplay("800x600");
+  int screen_width = 800;
+  int screen_height = 600;
+
+  // Create a visible window so WMEvents occur.
+  std::unique_ptr<views::Widget> widget =
+      CreateTestWidget(nullptr, desks_util::GetActiveDeskContainerId(),
+                       gfx::Rect(0, 0, 200, 200), true /* show */);
+
+  // Set up autoclick and the shelf.
+  Shell::Get()->accessibility_controller()->SetAutoclickEnabled(true);
+  Shell::Get()->accessibility_controller()->SetAutoclickMenuPosition(
+      mojom::AutoclickMenuPosition::kBottomRight);
+  Shelf* shelf = GetPrimaryShelf();
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+  EXPECT_EQ(shelf->GetVisibilityState(), SHELF_VISIBLE);
+  AutoclickMenuView* menu = GetAutoclickMenuView();
+  ASSERT_TRUE(menu);
+
+  shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
+  // The menu should be positioned above the shelf, not overlapping.
+  EXPECT_EQ(menu->GetBoundsInScreen().bottom_right().y(),
+            screen_height - shelf->GetIdealBounds().height() -
+                kCollisionWindowWorkAreaInsetsDp);
+  // And all the way to the right.
+  EXPECT_EQ(menu->GetBoundsInScreen().bottom_right().x(),
+            screen_width - kCollisionWindowWorkAreaInsetsDp);
+
+  shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
+  // The menu should move to the bottom of the screen.
+  EXPECT_EQ(menu->GetBoundsInScreen().bottom_right().y(),
+            screen_height - kCollisionWindowWorkAreaInsetsDp);
+  // Still be at the far right.
+  EXPECT_EQ(menu->GetBoundsInScreen().bottom_right().x(),
+            screen_width - kCollisionWindowWorkAreaInsetsDp);
+
+  shelf->SetAlignment(SHELF_ALIGNMENT_RIGHT);
+  // The menu should stay at the bottom of the screen.
+  EXPECT_EQ(menu->GetBoundsInScreen().bottom_right().y(),
+            screen_height - kCollisionWindowWorkAreaInsetsDp);
+  // And should be offset from the far right by the shelf width.
+  EXPECT_EQ(menu->GetBoundsInScreen().bottom_right().x(),
+            screen_width - kCollisionWindowWorkAreaInsetsDp -
+                shelf->GetIdealBounds().width());
+
+  // Reset state.
+  Shell::Get()->accessibility_controller()->SetAutoclickEnabled(false);
+  shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
 }
 
 }  // namespace ash

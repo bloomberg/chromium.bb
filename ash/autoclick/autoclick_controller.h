@@ -61,6 +61,9 @@ class ASH_EXPORT AutoclickController : public ui::EventHandler,
   // Sets the menu position and updates the UI.
   void SetMenuPosition(mojom::AutoclickMenuPosition menu_position);
 
+  // Update the bubble menu bounds if necessary to avoid system UI.
+  void UpdateAutoclickMenuBoundsIfNeeded();
+
   // Sets whether to revert to a left click after any other event type.
   void set_revert_to_left_click(bool revert_to_left_click) {
     revert_to_left_click_ = revert_to_left_click;

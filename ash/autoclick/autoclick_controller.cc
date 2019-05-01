@@ -147,6 +147,10 @@ void AutoclickController::SetMovementThreshold(int movement_threshold) {
 void AutoclickController::SetMenuPosition(
     mojom::AutoclickMenuPosition menu_position) {
   menu_position_ = menu_position;
+  UpdateAutoclickMenuBoundsIfNeeded();
+}
+
+void AutoclickController::UpdateAutoclickMenuBoundsIfNeeded() {
   if (menu_bubble_controller_)
     menu_bubble_controller_->SetPosition(menu_position_);
 }

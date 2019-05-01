@@ -76,6 +76,11 @@ class ASH_EXPORT AccessibilityController
   void SetAutoclickMenuPosition(mojom::AutoclickMenuPosition position);
   mojom::AutoclickMenuPosition GetAutoclickMenuPosition();
 
+  // Update the autoclick menu bounds if necessary. This may need to happen when
+  // the display work area changes, or if system ui regions change (like the
+  // virtual keyboard position).
+  void UpdateAutoclickMenuBoundsIfNeeded();
+
   void SetCaretHighlightEnabled(bool enabled);
   bool caret_highlight_enabled() const { return caret_highlight_enabled_; }
 

@@ -44,6 +44,7 @@ class AutoclickMenuBubbleController : public TrayBubbleView::Delegate {
   // Owned by views hierarchy.
   AutoclickMenuBubbleView* bubble_view_ = nullptr;
   AutoclickMenuView* menu_view_ = nullptr;
+  mojom::AutoclickMenuPosition position_;
 
   views::Widget* bubble_widget_ = nullptr;
 
