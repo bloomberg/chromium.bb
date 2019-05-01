@@ -1891,4 +1891,39 @@ TEST_F(StyleEngineTest, EnsureCustomComputedStyle) {
   }
 }
 
+// Via HTMLFormControlElement, it's possible to enter
+// Node::MarkAncestorsWithChildNeedsStyleRecalc for nodes which have
+// isConnected==true, but an ancestor with isConnected==false. This is because
+// we mark the ancestor chain for style recalc via HTMLFormElement::
+// InvalidateDefaultButtonStyle while the subtree disconnection
+// is taking place.
+TEST_F(StyleEngineTest, NoCrashWhenMarkingPartiallyRemovedSubtree) {
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <style>
+      #foo:default {} /* Needed to enter Element::PseudoStateChanged */
+    </style>
+    <form id="form">
+      <div id="outer">
+        <button>
+        <div id="inner"></div>
+      </div>
+    </form>
+  )HTML");
+  UpdateAllLifecyclePhases();
+
+  Element* form = GetDocument().getElementById("form");
+  Element* outer = GetDocument().getElementById("outer");
+  Element* inner = GetDocument().getElementById("inner");
+  ASSERT_TRUE(form);
+  ASSERT_TRUE(outer);
+  ASSERT_TRUE(inner);
+
+  // Add some more buttons, to give InvalidateDefaultButtonStyle
+  // something to do when the original <button> is removed.
+  inner->SetInnerHTMLFromString("<button><button>");
+  UpdateAllLifecyclePhases();
+
+  form->removeChild(outer);
+}
+
 }  // namespace blink
