@@ -368,7 +368,7 @@
   },
 
   "net/base/net_resources.grd": {
-    "includes": [24860],
+    "includes": [24890],
   },
 
   "remoting/resources/remoting_strings.grd": {

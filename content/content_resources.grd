@@ -33,6 +33,7 @@
       <include name="IDR_NETWORK_ERROR_LISTING_HTML" file="browser/resources/net/network_errors_listing.html" flattenhtml="true" allowexternalscript="true" compress="gzip" type="BINDATA" />
       <include name="IDR_NETWORK_ERROR_LISTING_JS" file="browser/resources/net/network_errors_listing.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_NETWORK_ERROR_LISTING_CSS" file="browser/resources/net/network_errors_listing.css" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_ORIGIN_MOJO_HTML" file="${root_gen_dir}/url/mojom/origin.mojom.html" use_base_dir="false" type="BINDATA" compress="gzip" />
       <include name="IDR_ORIGIN_MOJO_JS" file="${root_gen_dir}/url/mojom/origin.mojom-lite.js" use_base_dir="false" type="BINDATA" compress="gzip" />
       <include name="IDR_PROCESS_INTERNALS_HTML" file="browser/resources/process/process_internals.html" flattenhtml="true" allowexternalscript="true" compress="gzip" type="BINDATA" />
       <include name="IDR_PROCESS_INTERNALS_MOJO_JS" file="${root_gen_dir}/content/browser/process_internals/process_internals.mojom-lite.js" use_base_dir="false" type="BINDATA" compress="gzip" />
@@ -41,7 +42,9 @@
       <include name="IDR_SERVICE_WORKER_INTERNALS_HTML" file="browser/resources/service_worker/serviceworker_internals.html" flattenhtml="true" allowexternalscript="true" compress="gzip" type="BINDATA" />
       <include name="IDR_SERVICE_WORKER_INTERNALS_JS" file="browser/resources/service_worker/serviceworker_internals.js" flattenhtml="true" compress="gzip" type="BINDATA" />
       <include name="IDR_SERVICE_WORKER_INTERNALS_CSS" file="browser/resources/service_worker/serviceworker_internals.css" flattenhtml="true" compress="gzip" type="BINDATA" />
+      <include name="IDR_UNGUESSABLE_TOKEN_MOJO_HTML" file="${root_gen_dir}/mojo/public/mojom/base/unguessable_token.mojom.html" use_base_dir="false" type="BINDATA" compress="gzip" />
       <include name="IDR_UNGUESSABLE_TOKEN_MOJO_JS" file="${root_gen_dir}/mojo/public/mojom/base/unguessable_token.mojom-lite.js" use_base_dir="false" type="BINDATA" compress="gzip" />
+      <include name="IDR_URL_MOJO_HTML" file="${root_gen_dir}/url/mojom/url.mojom.html" use_base_dir="false" type="BINDATA" compress="gzip" />
       <include name="IDR_URL_MOJO_JS" file="${root_gen_dir}/url/mojom/url.mojom-lite.js" use_base_dir="false" type="BINDATA" compress="gzip" />
       <include name="IDR_WEBRTC_INTERNALS_HTML" file="browser/resources/media/webrtc_internals.html" flattenhtml="true" allowexternalscript="true" compress="gzip" type="BINDATA" />
       <include name="IDR_WEBRTC_INTERNALS_JS" file="browser/resources/media/webrtc_internals.js" flattenhtml="true" compress="gzip" type="BINDATA" />
