@@ -46,14 +46,18 @@ typedef struct {
   double coded_error;
   // Best of intra pred error and inter pred error using golden frame as ref.
   double sr_coded_error;
+  // Best of intra pred error and inter pred error using altref frame as ref.
+  double tr_coded_error;
   // Percentage of blocks with inter pred error < intra pred error.
   double pcnt_inter;
   // Percentage of blocks using (inter prediction and) non-zero motion vectors.
   double pcnt_motion;
-  // Percentage of blocks where golden frame was the best reference. That is:
+  // Percentage of blocks where golden frame was better than last or intra:
   // inter pred error using golden frame < inter pred error using last frame and
   // inter pred error using golden frame < intra pred error
   double pcnt_second_ref;
+  // Percentage of blocks where altref frame was better than intra, last, golden
+  double pcnt_third_ref;
   // Percentage of blocks where intra and inter prediction errors were very
   // close. Note that this is a 'weighted count', that is, the so blocks may be
   // weighted by how close the two errors were.
@@ -136,7 +140,11 @@ typedef struct {
 typedef struct {
   unsigned int section_intra_rating;
   FIRSTPASS_STATS total_stats;
-  FIRSTPASS_STATS this_frame_stats;
+  // Circular queue of first pass stats stored for most recent frames.
+  // cpi->output_pkt_list[i].data.twopass_stats.buf points to actual data stored
+  // here.
+  FIRSTPASS_STATS frame_stats_arr[MAX_LAG_BUFFERS];
+  int frame_stats_next_idx;  // Index to next unused element in frame_stats_arr.
   const FIRSTPASS_STATS *stats_in;
   const FIRSTPASS_STATS *stats_in_start;
   const FIRSTPASS_STATS *stats_in_end;

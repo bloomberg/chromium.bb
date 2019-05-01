@@ -25,6 +25,7 @@
 #include "av1/encoder/firstpass.h"
 #include "av1/encoder/gop_structure.h"
 #include "av1/encoder/ratectrl.h"
+#include "av1/encoder/use_flat_gop_model_params.h"
 
 // Calculate an active area of the image that discounts formatting
 // bars and partially discounts other 0 energy areas.
@@ -837,6 +838,10 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
   // the GF frame error if we code a normal gf.
   gf_first_frame_err = mod_frame_err;
 
+  const double first_frame_coded_error = this_frame->coded_error;
+  const double first_frame_sr_coded_error = this_frame->sr_coded_error;
+  const double first_frame_tr_coded_error = this_frame->tr_coded_error;
+
   // If this is a key frame or the overlay from a previous arf then
   // the error score / cost of this frame has already been accounted for.
   if (arf_active_or_kf) {
@@ -857,6 +862,15 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
       AOMMIN(rc->max_gf_interval, get_fixed_gf_length(oxcf->gf_max_pyr_height));
 
   double avg_sr_coded_error = 0;
+  double avg_tr_coded_error = 0;
+
+  double avg_pcnt_second_ref = 0;
+  double avg_pcnt_third_ref = 0;
+
+  double avg_new_mv_count = 0;
+
+  double avg_wavelet_energy = 0;
+
   double avg_raw_err_stdev = 0;
   int non_zero_stdev_count = 0;
 
@@ -885,6 +899,11 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
         &abs_mv_in_out_accumulator, &mv_ratio_accumulator);
     // sum up the metric values of current gf group
     avg_sr_coded_error += next_frame.sr_coded_error;
+    avg_tr_coded_error += next_frame.tr_coded_error;
+    avg_pcnt_second_ref += next_frame.pcnt_second_ref;
+    avg_pcnt_third_ref += next_frame.pcnt_third_ref;
+    avg_new_mv_count += next_frame.new_mv_count;
+    avg_wavelet_energy += next_frame.frame_avg_wavelet_energy;
     if (fabs(next_frame.raw_error_stdev) > 0.000001) {
       non_zero_stdev_count++;
       avg_raw_err_stdev += next_frame.raw_error_stdev;
@@ -942,7 +961,24 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
   const int num_mbs = (cpi->oxcf.resize_mode != RESIZE_NONE) ? cpi->initial_mbs
                                                              : cpi->common.MBs;
   assert(num_mbs > 0);
-  if (i) avg_sr_coded_error /= i;
+  const double last_frame_coded_error = next_frame.coded_error;
+  const double last_frame_sr_coded_error = next_frame.sr_coded_error;
+  const double last_frame_tr_coded_error = next_frame.tr_coded_error;
+  double avg_pcnt_third_ref_nolast = avg_pcnt_third_ref;
+  if (i) {
+    avg_sr_coded_error /= i;
+    avg_tr_coded_error /= i;
+    avg_pcnt_second_ref /= i;
+    if (i - 1) {
+      avg_pcnt_third_ref_nolast =
+          (avg_pcnt_third_ref - next_frame.pcnt_third_ref) / (i - 1);
+    } else {
+      avg_pcnt_third_ref_nolast = avg_pcnt_third_ref / i;
+    }
+    avg_pcnt_third_ref /= i;
+    avg_new_mv_count /= i;
+    avg_wavelet_energy /= i;
+  }
 
   if (non_zero_stdev_count) avg_raw_err_stdev /= non_zero_stdev_count;
 
@@ -957,11 +993,47 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
     cpi->internal_altref_allowed = 0;
   }
 
-  const int use_alt_ref =
+  int use_alt_ref =
       !is_almost_static(zero_motion_accumulator, twopass->kf_zeromotion_pct) &&
       allow_alt_ref && (i < cpi->oxcf.lag_in_frames) &&
       (i >= rc->min_gf_interval) &&
       (cpi->oxcf.gf_max_pyr_height > MIN_PYRAMID_LVL);
+
+  // TODO(urvang): Improve and use model for VBR, CQ etc as well.
+  if (use_alt_ref && cpi->oxcf.rc_mode == AOM_Q && cpi->oxcf.cq_level <= 200) {
+    aom_clear_system_state();
+
+    /* clang-format off */
+    // Generate features.
+    const float features[] = {
+      (float)abs_mv_in_out_accumulator,
+      (float)(avg_new_mv_count / num_mbs),
+      (float)avg_pcnt_second_ref,
+      (float)avg_pcnt_third_ref,
+      (float)avg_pcnt_third_ref_nolast,
+      (float)(avg_sr_coded_error / num_mbs),
+      (float)(avg_tr_coded_error / num_mbs),
+      (float)(avg_wavelet_energy / num_mbs),
+      rc->constrained_gf_group,
+      (float)decay_accumulator,
+      (float)(first_frame_coded_error / num_mbs),
+      (float)(first_frame_sr_coded_error / num_mbs),
+      (float)(first_frame_tr_coded_error / num_mbs),
+      (float)(gf_first_frame_err / num_mbs),
+      twopass->kf_zeromotion_pct,
+      (float)(last_frame_coded_error / num_mbs),
+      (float)(last_frame_sr_coded_error / num_mbs),
+      (float)(last_frame_tr_coded_error / num_mbs),
+      i,
+      (float)mv_ratio_accumulator,
+      non_zero_stdev_count
+    };
+    /* clang-format on */
+    // Infer using ML model.
+    float score;
+    av1_nn_predict(features, &av1_use_flat_gop_nn_config, &score);
+    use_alt_ref = (score <= 0.0);
+  }
 
 #define REDUCE_GF_LENGTH_THRESH 4
 #define REDUCE_GF_LENGTH_TO_KEY_THRESH 9

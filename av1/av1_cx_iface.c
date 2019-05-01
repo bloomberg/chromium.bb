@@ -628,8 +628,7 @@ static aom_codec_err_t set_encoder_config(
     case AOM_RC_LAST_PASS: oxcf->pass = 2; break;
   }
 
-  oxcf->lag_in_frames =
-      cfg->g_pass == AOM_RC_FIRST_PASS ? 0 : cfg->g_lag_in_frames;
+  oxcf->lag_in_frames = cfg->g_lag_in_frames;
   oxcf->rc_mode = cfg->rc_end_usage;
 
   // Convert target bandwidth from Kbit/s to Bit/s

@@ -2039,12 +2039,14 @@ static int active_h_edge(const AV1_COMP *cpi, int mi_row, int mi_step) {
   // For two pass account for any formatting bars detected.
   if (cpi->oxcf.pass == 2) {
     const TWO_PASS *const twopass = &cpi->twopass;
+    const FIRSTPASS_STATS *const this_frame_stats =
+        twopass->frame_stats_arr + twopass->frame_stats_next_idx;
 
     // The inactive region is specified in MBs not mi units.
     // The image edge is in the following MB row.
-    top_edge += (int)(twopass->this_frame_stats.inactive_zone_rows * 2);
+    top_edge += (int)(this_frame_stats->inactive_zone_rows * 2);
 
-    bottom_edge -= (int)(twopass->this_frame_stats.inactive_zone_rows * 2);
+    bottom_edge -= (int)(this_frame_stats->inactive_zone_rows * 2);
     bottom_edge = AOMMAX(top_edge, bottom_edge);
   }
 
@@ -2066,12 +2068,14 @@ static int active_v_edge(const AV1_COMP *cpi, int mi_col, int mi_step) {
   // For two pass account for any formatting bars detected.
   if (cpi->oxcf.pass == 2) {
     const TWO_PASS *const twopass = &cpi->twopass;
+    const FIRSTPASS_STATS *const this_frame_stats =
+        twopass->frame_stats_arr + twopass->frame_stats_next_idx;
 
     // The inactive region is specified in MBs not mi units.
     // The image edge is in the following MB row.
-    left_edge += (int)(twopass->this_frame_stats.inactive_zone_cols * 2);
+    left_edge += (int)(this_frame_stats->inactive_zone_cols * 2);
 
-    right_edge -= (int)(twopass->this_frame_stats.inactive_zone_cols * 2);
+    right_edge -= (int)(this_frame_stats->inactive_zone_cols * 2);
     right_edge = AOMMAX(left_edge, right_edge);
   }
 
