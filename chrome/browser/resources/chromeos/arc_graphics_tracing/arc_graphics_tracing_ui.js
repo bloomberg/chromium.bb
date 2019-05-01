@@ -91,7 +91,7 @@ var eventAttributes = {
 
   // Service events.
   // kTimeMark
-  10000: {color: '#fff', name: 'Time mark', width: 0.75},
+  10000: {color: '#888', name: 'Time mark', width: 0.75},
 };
 
 /**
@@ -259,12 +259,15 @@ class SVG {
   }
 
   // Creates text element in the |svg| with provided attributes.
-  static addText(svg, x, y, fontSize, textContent) {
+  static addText(svg, x, y, fontSize, textContent, anchor) {
     var text = document.createElementNS(svgNS, 'text');
     text.setAttributeNS(null, 'x', x);
     text.setAttributeNS(null, 'y', y);
     text.setAttributeNS(null, 'fill', 'black');
     text.setAttributeNS(null, 'font-size', fontSize);
+    if (anchor) {
+      text.setAttributeNS(null, 'text-anchor', anchor);
+    }
     text.appendChild(document.createTextNode(textContent));
     svg.appendChild(text);
     return text;
@@ -396,7 +399,8 @@ class EventBands {
    * @param {number} padding to separate from the next band or chart.
    */
   addBand(eventBand, height, padding) {
-    var currentColor = bandColor;
+    var currentColor = unusedColor;
+    var addToBand = false;
     var x = this.bandOffsetX;
     var eventIndex = eventBand.getFirstAfter(this.minTimestamp);
     while (eventIndex >= 0) {
@@ -405,20 +409,26 @@ class EventBands {
         break;
       }
       var nextX = this.timestampToOffset(event[1]) + this.bandOffsetX;
-      SVG.addRect(
-          this.svg, x, this.nextYOffset, nextX - x, height, currentColor);
+      if (addToBand) {
+        SVG.addRect(
+            this.svg, x, this.nextYOffset, nextX - x, height, currentColor);
+      }
       if (eventBand.isEndOfSequence(eventIndex)) {
-        currentColor = bandColor;
+        currentColor = unusedColor;
+        addToBand = false;
       } else {
         currentColor = eventAttributes[event[0]].color;
+        addToBand = true;
       }
       x = nextX;
       eventIndex = eventBand.getNextEvent(eventIndex, 1 /* direction */);
     }
-    SVG.addRect(
-        this.svg, x, this.nextYOffset,
-        this.timestampToOffset(this.maxTimestamp) - x + this.bandOffsetX,
-        height, currentColor);
+    if (addToBand) {
+      SVG.addRect(
+          this.svg, x, this.nextYOffset,
+          this.timestampToOffset(this.maxTimestamp) - x + this.bandOffsetX,
+          height, currentColor);
+    }
 
     this.bands.push({
       band: eventBand,
@@ -430,6 +440,18 @@ class EventBands {
   }
 
   /**
+   * This adds horizontal separator at |nextYOffset|.
+   *
+   * @param {number} padding to separate from the next band or chart.
+   */
+  addBandSeparator(padding) {
+    SVG.addLine(
+        this.svg, 0, this.nextYOffset, this.width, this.nextYOffset, '#888',
+        0.25);
+    this.updateHeight_(0 /* height */, padding);
+  }
+
+  /**
    * This adds new chart. Height of svg container is automatically adjusted to
    * fit the new content. This creates empty chart and one or more calls
    * |addChartSources| are expected to add actual content to the chart.
@@ -438,10 +460,6 @@ class EventBands {
    * @param {number} padding to separate from the next band or chart.
    */
   addChart(height, padding) {
-    SVG.addRect(
-        this.svg, 0, this.nextYOffset,
-        this.timestampToOffset(this.maxTimestamp), height, bandColor);
-
     this.charts.push({
       sourcesWithBounds: [],
       top: this.nextYOffset,
@@ -628,25 +646,31 @@ class EventBands {
     // Clear previous content.
     this.tooltip.textContent = '';
 
-    if (event.offsetX < this.bandOffsetX) {
+    var svgStyle = window.getComputedStyle(this.svg, null);
+    var paddingLeft = parseFloat(svgStyle.getPropertyValue('padding-left'));
+    var paddingTop = parseFloat(svgStyle.getPropertyValue('padding-top'));
+    var eventX = event.offsetX - paddingLeft;
+    var eventY = event.offsetY - paddingTop;
+
+    if (eventX < this.bandOffsetX) {
       this.tooltip.classList.remove('active');
       return;
     }
 
+    var eventTimestamp = this.offsetToTime(eventX - this.bandOffsetX);
+
     // Find band for this mouse event.
     for (var i = 0; i < this.bands.length; ++i) {
-      if (this.bands[i].top <= event.offsetY &&
-          this.bands[i].bottom > event.offsetY) {
-        this.updateToolTipForBand_(event, this.bands[i].band);
+      if (this.bands[i].top <= eventY && this.bands[i].bottom > eventY) {
+        this.updateToolTipForBand_(event, eventTimestamp, this.bands[i].band);
         return;
       }
     }
 
     // Find chart for this mouse event.
     for (var i = 0; i < this.charts.length; ++i) {
-      if (this.charts[i].top <= event.offsetY &&
-          this.charts[i].bottom > event.offsetY) {
-        this.updateToolTipForChart_(event, this.charts[i]);
+      if (this.charts[i].top <= eventY && this.charts[i].bottom > eventY) {
+        this.updateToolTipForChart_(event, eventTimestamp, this.charts[i]);
         return;
       }
     }
@@ -675,9 +699,10 @@ class EventBands {
    * Creates and shows tooltip for event band for the position under |event|.
    *
    * @param {Object} mouse event.
+   * @param (number} eventTimestamp timestamp of event.
    * @param {Object} active event band.
    */
-  updateToolTipForBand_(event, eventBand) {
+  updateToolTipForBand_(event, eventTimestamp, eventBand) {
     var horizontalGap = 10;
     var eventIconOffset = 24;
     var eventIconRadius = 4;
@@ -688,14 +713,17 @@ class EventBands {
     var fontSize = 12;
     var width = 220;
 
-    var offsetX = event.offsetX - this.bandOffsetX;
     var svg = document.createElementNS(svgNS, 'svg');
     svg.setAttributeNS(
         'http://www.w3.org/2000/xmlns/', 'xmlns:xlink',
         'http://www.w3.org/1999/xlink');
     this.tooltip.appendChild(svg);
     var yOffset = verticalGap + lineHeight;
-    var eventTimestamp = this.offsetToTime(offsetX);
+
+    SVG.addText(
+        svg, horizontalGap, yOffset, fontSize,
+        timestempToMsText(eventTimestamp) + ' ms');
+    yOffset += lineHeight;
 
     // Find the event under the cursor. |index| points to the current event
     // and |nextIndex| points to the next event.
@@ -826,9 +854,10 @@ class EventBands {
    * Creates and show tooltip for event chart for the position under |event|.
    *
    * @param {Object} mouse event.
+   * @param (number} eventTimestamp timestamp of event.
    * @param {Object} active event chart.
    */
-  updateToolTipForChart_(event, chart) {
+  updateToolTipForChart_(event, eventTimestamp, chart) {
     var horizontalGap = 10;
     var iconRadius = 4;
     var valueOffset = 20;
@@ -843,7 +872,6 @@ class EventBands {
         'http://www.w3.org/1999/xlink');
     this.tooltip.appendChild(svg);
     var yOffset = verticalGap + lineHeight;
-    var eventTimestamp = this.offsetToTime(event.offsetX);
     SVG.addText(
         svg, horizontalGap, yOffset, fontSize,
         timestempToMsText(eventTimestamp) + ' ms');
@@ -930,7 +958,8 @@ class CpuDetailedInfoView extends DetailedInfoView {
     this.overlay.textContent = '';
 
     // UI constants to render.
-    var columnWidth = 140;
+    var columnNameWidth = 130;
+    var columnUsageWidth = 40;
     var scrollBarWidth = 3;
     var zoomFactor = 4.0;
     var cpuBandHeight = 14;
@@ -938,12 +967,14 @@ class CpuDetailedInfoView extends DetailedInfoView {
     var padding = 2;
     var fontSize = 12;
     var processInfoPadding = 2;
-    var threadInfoPadding = 6;
+    var threadInfoPadding = 12;
+    var cpuUsagePadding = 2;
+    var columnsWidth = columnNameWidth + columnUsageWidth;
 
     // Use minimum 80% of inner width or 600 pixels to display detailed view
     // zoomed |zoomFactor| times.
     var availableWidthPixels =
-        window.innerWidth * 0.8 - columnWidth - scrollBarWidth;
+        window.innerWidth * 0.8 - columnsWidth - scrollBarWidth;
     availableWidthPixels = Math.max(availableWidthPixels, 600);
     var availableForHalfBandMcs = Math.floor(
         overviewBand.offsetToTime(availableWidthPixels) / (2.0 * zoomFactor));
@@ -1025,9 +1056,9 @@ class CpuDetailedInfoView extends DetailedInfoView {
     var bands = new EventBands(
         title, 'arc-events-cpu-detailed-band',
         overviewBand.resolution / zoomFactor, minTimestamp, maxTimestamp);
-    bands.setBandOffsetX(columnWidth);
+    bands.setBandOffsetX(columnsWidth);
     var bandsWidth = bands.timestampToOffset(maxTimestamp);
-    var totalWidth = bandsWidth + columnWidth;
+    var totalWidth = bandsWidth + columnsWidth;
     bands.setWidth(totalWidth);
 
     for (i = 0; i < pids.length; i++) {
@@ -1039,19 +1070,30 @@ class CpuDetailedInfoView extends DetailedInfoView {
       } else {
         processName = 'Others';
       }
-      bands.nextYOffset += (processInfoHeight + padding);
       var processCpuUsage = 100.0 * threadsPerPid[pid].totalTime / duration;
-      var processInfo = processName + ' <' + pid +
-          '>, cpu usage: ' + processCpuUsage.toFixed(2) + '%.';
+      var processInfo = processName + ' <' + pid + '>';
+      var processInfoTextLine = bands.nextYOffset + processInfoHeight - padding;
       SVG.addText(
-          bands.svg, processInfoPadding, bands.nextYOffset - 2 * padding,
-          fontSize, processInfo);
-      bands.svg.setAttribute('height', bands.nextYOffset + 'px');
+          bands.svg, processInfoPadding, processInfoTextLine, fontSize,
+          processInfo);
+      SVG.addText(
+          bands.svg, columnsWidth - cpuUsagePadding, processInfoTextLine,
+          fontSize, processCpuUsage.toFixed(2), 'end' /* anchor */);
 
       // Sort threads per time usage.
       threads.sort(function(a, b) {
         return eventsPerTid[b.tid].totalTime - eventsPerTid[a.tid].totalTime;
       });
+
+      // In case we have only one main thread add CPU info to process.
+      if (threads.length == 1 && threads[0].tid == pid) {
+        bands.addBand(
+            new Events(eventsPerTid[pid].events, 0, 1), cpuBandHeight, padding);
+        bands.addBandSeparator(2 /* padding */);
+        continue;
+      }
+
+      bands.nextYOffset += (processInfoHeight + padding);
 
       for (j = 0; j < threads.length; j++) {
         var tid = threads[j].tid;
@@ -1059,11 +1101,15 @@ class CpuDetailedInfoView extends DetailedInfoView {
             new Events(eventsPerTid[tid].events, 0, 1), cpuBandHeight, padding);
         var threadName = overviewBand.model.system.threads[tid].name;
         var threadCpuUsage = 100.0 * threads[j].totalTime / duration;
-        var threadInfo = threadName + ' ' + threadCpuUsage.toFixed(2) + '%';
         SVG.addText(
             bands.svg, threadInfoPadding, bands.nextYOffset - padding, fontSize,
-            threadInfo);
+            threadName);
+        SVG.addText(
+            bands.svg, columnsWidth - cpuUsagePadding,
+            bands.nextYOffset - 2 * padding, fontSize,
+            threadCpuUsage.toFixed(2), 'end' /* anchor */);
       }
+      bands.addBandSeparator(2 /* padding */);
     }
 
     // Add center and boundary lines.
@@ -1073,6 +1119,13 @@ class CpuDetailedInfoView extends DetailedInfoView {
       [kTimeMark, maxTimestamp - 1]
     ];
     bands.addGlobal(new Events(timeEvents, kTimeMark, kTimeMark));
+
+    SVG.addLine(
+        bands.svg, columnNameWidth, 0, columnNameWidth, bands.height, '#888',
+        0.25);
+
+    SVG.addLine(
+        bands.svg, columnsWidth, 0, columnsWidth, bands.height, '#888', 0.25);
 
     // Mark zoomed interval in overview.
     var overviewX = overviewBand.timestampToOffset(minTimestamp);
@@ -1088,7 +1141,7 @@ class CpuDetailedInfoView extends DetailedInfoView {
     // Align position in overview and middle line here if possible.
     var left = Math.max(
         Math.min(
-            Math.round(event.clientX - columnWidth - bandsWidth * 0.5),
+            Math.round(event.clientX - columnsWidth - bandsWidth * 0.5),
             window.innerWidth - totalWidth),
         0);
     this.overlay.style.left = left + 'px';
@@ -1395,8 +1448,6 @@ function setGraphicBuffersModel(model) {
         activityTitle, 'arc-events-band', resolution, 0, model.duration);
     activityBands.setWidth(activityBands.timestampToOffset(model.duration));
     for (j = 0; j < view.buffers.length; j++) {
-      var androidBand =
-          new Events(activityTitle, 'arc-events-band', model.duration, 14);
       // Android buffer events.
       activityBands.addBand(
           new Events(view.buffers[j], 100, 199), innerBandHeight,
@@ -1404,8 +1455,13 @@ function setGraphicBuffersModel(model) {
       // exo events.
       activityBands.addBand(
           new Events(view.buffers[j], 200, 299), innerBandHeight,
-          innerLastBandPadding);
+          innerBandPadding /* padding */);
       // Chrome buffer events are not displayed at this time.
+
+      // Add separator between buffers.
+      if (j != view.buffers.length - 1) {
+        activityBands.addBandSeparator(innerBandPadding);
+      }
     }
     // Add vsync events
     activityBands.setVSync(vsyncEvents);
