@@ -44,7 +44,6 @@ fuzzer_test("snappy_compress_fuzzer") {
     "snappy_compress_fuzzer.cc",
   ]
   deps = [
-    "//base",
     "//third_party/snappy:snappy",
   ]
   seed_corpus = "//third_party/snappy/src/testdata"
