@@ -618,6 +618,8 @@ TEST_F(DocumentProviderTest, GetURLForDeduping) {
 
   // URLs that represent documents:
   CheckDeduper("https://drive.google.com/open?id=the_doc-id", "the_doc-id");
+  CheckDeduper("https://drive.google.com/a/domain.com/open?x=3&id=the_doc-id",
+               "the_doc-id");
   CheckDeduper("https://docs.google.com/document/d/the_doc-id/edit",
                "the_doc-id");
   CheckDeduper(
@@ -625,6 +627,10 @@ TEST_F(DocumentProviderTest, GetURLForDeduping) {
       "the_doc-id");
   CheckDeduper(
       "https://docs.google.com/spreadsheets/d/the_doc-id/preview?x=1#y=2",
+      "the_doc-id");
+  CheckDeduper(
+      "https://docs.google.com/a/domain/spreadsheets/d/the_doc-id/"
+      "preview?x=1#y=2",
       "the_doc-id");
   CheckDeduper(
       "https://www.google.com/"
@@ -646,6 +652,8 @@ TEST_F(DocumentProviderTest, GetURLForDeduping) {
       "the_doc_id");
 
   // URLs that do not represent documents:
+  CheckDeduper("https://drive.google.com/b/domain.com/open?id=the_doc-id", "");
+  CheckDeduper("https://drive.google.com/b/domain.com/open?idx=the_doc-id", "");
   CheckDeduper("https://docs.google.com/help?id=d123", "");
   CheckDeduper("https://www.google.com", "");
   CheckDeduper("https://docs.google.com/kittens/d/d123/preview?x=1#y=2", "");
