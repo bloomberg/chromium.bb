@@ -95,11 +95,11 @@ class Typemap(object):
     yield 'type_mappings = [\n  %s\n]' % '\n  '.join(new_mappings)
 
   def _format_new_mappings(self, namespace):
-    for native, mojom in self._new_custom_mappings.iteritems():
+    for native, mojom in self._new_custom_mappings.items():
       yield '"%s.%s=::%s",' % (namespace, mojom, native)
 
   def format_new_types(self):
-    for native_type, typename in self._new_custom_mappings.iteritems():
+    for native_type, typename in self._new_custom_mappings.items():
       if native_type in self._enums:
         yield '[Native]\nenum %s;\n' % typename
       else:
@@ -353,7 +353,7 @@ class Generator(object):
     for m in self._get_messages():
       grouped_messages.setdefault(m.group, []).append(m)
     self._typemaps.load_typemaps()
-    for interface, messages in grouped_messages.iteritems():
+    for interface, messages in grouped_messages.items():
       self._interface_definitions.append(self._format_interface(interface,
                                                                 messages))
 

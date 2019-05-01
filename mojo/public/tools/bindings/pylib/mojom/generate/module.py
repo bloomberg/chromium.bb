@@ -49,7 +49,7 @@ def Repr(obj, as_ref=True):
       return ('{\n%s\n}' % (',\n'.join('    %s: %s' % (
           Repr(key, as_ref).replace('\n', '\n    '),
           Repr(val, as_ref).replace('\n', '\n    '))
-          for key, val in obj.iteritems())))
+          for key, val in obj.items())))
   else:
     return repr(obj)
 
@@ -70,10 +70,8 @@ def GenericRepr(obj, names):
     return '    %s=%s' % (name, Repr(getattr(obj, name), as_ref).replace(
         '\n', '\n    '))
 
-  return '%s(\n%s\n)' % (
-      obj.__class__.__name__,
-      ',\n'.join(ReprIndent(name, as_ref)
-                 for (name, as_ref) in names.iteritems()))
+  return '%s(\n%s\n)' % (obj.__class__.__name__, ',\n'.join(
+      ReprIndent(name, as_ref) for (name, as_ref) in names.items()))
 
 
 class Kind(object):

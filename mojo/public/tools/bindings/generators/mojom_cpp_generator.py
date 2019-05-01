@@ -783,7 +783,7 @@ class Generator(generator.Generator):
         return "std::numeric_limits<float>::quiet_NaN()"
 
     if (kind is not None and mojom.IsFloatKind(kind)):
-        return token if token.isdigit() else token + "f";
+      return token if token.isdigit() else token + "f"
 
     # Per C++11, 2.14.2, the type of an integer literal is the first of the
     # corresponding list in Table 6 in which its value can be represented. In

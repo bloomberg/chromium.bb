@@ -247,12 +247,12 @@ def _Kind(kinds, spec, scope):
 def _Import(module, import_module):
   # Copy the struct kinds from our imports into the current module.
   importable_kinds = (mojom.Struct, mojom.Union, mojom.Enum, mojom.Interface)
-  for kind in import_module.kinds.itervalues():
+  for kind in import_module.kinds.values():
     if (isinstance(kind, importable_kinds) and
         kind.module.path == import_module.path):
       module.kinds[kind.spec] = kind
   # Ditto for values.
-  for value in import_module.values.itervalues():
+  for value in import_module.values.values():
     if value.module.path == import_module.path:
       module.values[value.GetSpec()] = value
 
