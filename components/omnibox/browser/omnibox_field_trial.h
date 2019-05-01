@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
@@ -401,9 +402,10 @@ bool IsHideSteadyStateUrlSchemeEnabled();
 // subdomains is enabled.
 bool IsHideSteadyStateUrlTrivialSubdomainsEnabled();
 
-// Returns the size of the vertical margin that should be used in the
-// suggestion view.
-int GetSuggestionVerticalMargin();
+// Returns the field trial override for the vertical margin size that should be
+// used in the suggestion view. Returns base::nullopt if the UI code should use
+// the default vertical margin.
+base::Optional<int> GetSuggestionVerticalMarginFieldTrialOverride();
 
 // Simply a convenient wrapper for testing a flag. Used downstream for an
 // assortment of keyword mode experiments.

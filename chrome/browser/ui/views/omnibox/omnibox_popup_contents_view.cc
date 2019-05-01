@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/optional.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
@@ -394,11 +395,13 @@ gfx::Rect OmniboxPopupContentsView::GetTargetBounds() {
   // interior between each row of text.
   popup_height += RoundedOmniboxResultsFrame::GetNonResultSectionHeight();
 
-  if (base::FeatureList::IsEnabled(omnibox::kUIExperimentVerticalMargin)) {
+  base::Optional<int> vertical_margin_override =
+      OmniboxFieldTrial::GetSuggestionVerticalMarginFieldTrialOverride();
+  if (vertical_margin_override) {
     // If the vertical margin experiment uses a very small value (like a value
     // similar to pre-Refresh), we need to pad up the popup height at the
     // bottom (just like pre-Refresh) to prevent it from looking very bad.
-    if (OmniboxFieldTrial::GetSuggestionVerticalMargin() < 4)
+    if (vertical_margin_override.value() < 4)
       popup_height += 4;
   }
 

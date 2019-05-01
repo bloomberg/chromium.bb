@@ -579,7 +579,17 @@ bool OmniboxFieldTrial::IsHideSteadyStateUrlTrivialSubdomainsEnabled() {
       omnibox::kHideSteadyStateUrlTrivialSubdomains);
 }
 
-int OmniboxFieldTrial::GetSuggestionVerticalMargin() {
+base::Optional<int>
+OmniboxFieldTrial::GetSuggestionVerticalMarginFieldTrialOverride() {
+  if (!base::FeatureList::IsEnabled(omnibox::kUIExperimentVerticalMargin))
+    return base::nullopt;
+
+  if (base::FeatureList::IsEnabled(
+          omnibox::kUIExperimentVerticalMarginLimitToNonTouchOnly) &&
+      ui::MaterialDesignController::touch_ui()) {
+    return base::nullopt;
+  }
+
   // When the vertical margin is set to 2dp, the suggestion height is the
   // closest to the pre-Refresh height. In fact it's 1dp taller than the
   // pre-Refresh height on Linux.

@@ -213,6 +213,12 @@ const base::Feature kUIExperimentSwapTitleAndUrl{
 const base::Feature kUIExperimentVerticalMargin{
     "OmniboxUIExperimentVerticalMargin", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Feature used to limit the vertical margin UI experiment to non-touch
+// devices only. Has no effect if kUIExperimentVerticalMargin is not enabled.
+const base::Feature kUIExperimentVerticalMarginLimitToNonTouchOnly{
+    "OmniboxUIExperimentVerticalMarginLimitToNonTouchOnly",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Feature used to color "blue" the generic search icon and search terms.
 // Technically, this makes the search icon and search terms match the color of
 // Omnibox link text, which is blue by convention.
