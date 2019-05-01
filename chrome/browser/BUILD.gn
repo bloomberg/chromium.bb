@@ -3552,7 +3552,7 @@ jumbo_split_static_library("browser") {
       "//chrome/chrome_watcher:client",
       "//chrome/common:metrics_constants_util_win",
       "//chrome/common:version_header",
-      "//chrome/credential_provider/common:common_constants",
+      "//chrome/credential_provider/gaiacp:common",
       "//chrome/install_static:install_static_util",
       "//chrome/notification_helper:constants",
       "//chrome/services/util_win/public/mojom",
