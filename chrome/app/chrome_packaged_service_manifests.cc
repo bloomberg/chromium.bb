@@ -120,6 +120,7 @@ const service_manager::Manifest& GetAndroidDownloadManagerManifest() {
                                    InstanceSharingPolicy::kSingleton)
                            .Build())
           .RequireCapability("network", "network_service")
+          .RequireCapability("device", "device:wake_lock")
           .Build()};
   return *manifest;
 }
