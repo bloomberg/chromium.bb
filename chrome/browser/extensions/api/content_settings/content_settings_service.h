@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_store.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_prefs_observer.h"
@@ -45,6 +46,7 @@ class ContentSettingsService : public BrowserContextKeyedAPI,
   void OnExtensionPrefsDeleted(const std::string& extension_id) override;
   void OnExtensionStateChanged(const std::string& extension_id,
                                bool state) override;
+  void OnExtensionPrefsWillBeDestroyed(ExtensionPrefs* prefs) override;
 
   // EarlyExtensionPrefsObserver implementation.
   void OnExtensionPrefsAvailable(ExtensionPrefs* prefs) override;
@@ -57,6 +59,7 @@ class ContentSettingsService : public BrowserContextKeyedAPI,
   static const char* service_name() { return "ContentSettingsService"; }
 
   scoped_refptr<ContentSettingsStore> content_settings_store_;
+  ScopedObserver<ExtensionPrefs, ExtensionPrefsObserver> scoped_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingsService);
 };

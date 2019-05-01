@@ -343,6 +343,9 @@ ExtensionPrefs* ExtensionPrefs::Create(
 }
 
 ExtensionPrefs::~ExtensionPrefs() {
+  for (auto& observer : observer_list_)
+    observer.OnExtensionPrefsWillBeDestroyed(this);
+  DCHECK(observer_list_.begin() == observer_list_.end());
 }
 
 // static

@@ -12,7 +12,8 @@
 namespace extensions {
 
 ContentSettingsService::ContentSettingsService(content::BrowserContext* context)
-    : content_settings_store_(new ContentSettingsStore()) {}
+    : content_settings_store_(new ContentSettingsStore()),
+      scoped_observer_(this) {}
 
 ContentSettingsService::~ContentSettingsService() {}
 
@@ -69,14 +70,13 @@ void ContentSettingsService::OnExtensionStateChanged(
   content_settings_store_->SetExtensionState(extension_id, state);
 }
 
+void ContentSettingsService::OnExtensionPrefsWillBeDestroyed(
+    ExtensionPrefs* prefs) {
+  scoped_observer_.Remove(prefs);
+}
+
 void ContentSettingsService::OnExtensionPrefsAvailable(ExtensionPrefs* prefs) {
-  // TODO(nigeltao): Use a ScopedObserver (as a member field, not a local
-  // variable).
-  //
-  // As is, this is a leak: an AddObserver call that has no matching
-  // RemoveObserver call. This leak will become a dangling pointer when this
-  // ContentSettingsService object is destroyed.
-  prefs->AddObserver(this);
+  scoped_observer_.Add(prefs);
 }
 
 }  // namespace extensions

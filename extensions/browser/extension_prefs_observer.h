@@ -47,6 +47,12 @@ class ExtensionPrefsObserver {
   // https://chromium-review.googlesource.com/c/chromium/src/+/1196107/3/chrome/browser/extensions/runtime_permissions_observer.h#26.
   virtual void OnExtensionRuntimePermissionsChanged(
       const std::string& extension_id) {}
+
+  // Called when the ExtensionPrefs object (the thing that this observer
+  // observes) will be destroyed. In response, the observer, |this|, should
+  // call "prefs->RemoveObserver(this)", whether directly or indirectly (e.g.
+  // via ScopedObserver::Remove).
+  virtual void OnExtensionPrefsWillBeDestroyed(ExtensionPrefs* prefs) {}
 };
 
 // An ExtensionPrefsObserver that's part of the GetEarlyExtensionPrefsObservers
