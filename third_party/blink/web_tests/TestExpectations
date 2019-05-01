@@ -4050,7 +4050,7 @@ crbug.com/626703 external/wpt/IndexedDB/request-abort-ordering.html [ Pass Failu
 crbug.com/626703 external/wpt/media-source/mediasource-avtracks.html [ Failure Crash ]
 crbug.com/626703 external/wpt/media-source/mediasource-getvideoplaybackquality.html [ Timeout Failure ]
 crbug.com/626703 external/wpt/pointerevents/pointerevent_disabled_form_control-manual.html [ Timeout Pass ]
-crbug.com/626703 external/wpt/presentation-api/controlling-ua/getAvailability.https.html [ Timeout ]
+crbug.com/958104 external/wpt/presentation-api/controlling-ua/getAvailability.https.html [ Failure ]
 crbug.com/626703 external/wpt/requestidlecallback/callback-timeout.html [ Timeout ]
 crbug.com/626703 external/wpt/requestidlecallback/callback-xhr-sync.html [ Timeout ]
 crbug.com/626703 external/wpt/screen-orientation/onchange-event-subframe.html [ Timeout ]
