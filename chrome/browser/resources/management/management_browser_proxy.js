@@ -44,6 +44,7 @@ management.ManagedInfo;
  *   deviceManagedInfo: ?management.ManagedInfo,
  *   extensionReportingTitle: string,
  *   pageSubtitle: string,
+ *   managed: boolean,
  *   overview: string,
  * }}
  */
