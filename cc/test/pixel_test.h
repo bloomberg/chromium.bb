@@ -16,25 +16,17 @@
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/skia_renderer.h"
 #include "components/viz/service/display/software_renderer.h"
+#include "components/viz/test/test_gpu_service_holder.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/ipc/in_process_command_buffer.h"
-#include "gpu/vulkan/buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gl/gl_implementation.h"
 
 namespace base {
-class Thread;
 namespace test {
 class ScopedFeatureList;
 }
 }
-
-#if BUILDFLAG(ENABLE_VULKAN)
-namespace gpu {
-class VulkanImplementation;
-}
-#endif
 
 namespace viz {
 class CopyOutputResult;
@@ -77,6 +69,14 @@ class PixelTest : public testing::Test {
     return output_surface_->context_provider();
   }
 
+  viz::GpuServiceImpl* gpu_service() {
+    return gpu_service_holder_->gpu_service();
+  }
+
+  gpu::CommandBufferTaskExecutor* task_executor() {
+    return gpu_service_holder_->task_executor();
+  }
+
   // Allocates a SharedMemory bitmap and registers it with the display
   // compositor's SharedBitmapManager.
   std::unique_ptr<base::SharedMemory> AllocateSharedBitmapMemory(
@@ -89,11 +89,8 @@ class PixelTest : public testing::Test {
                                                   const SkBitmap& source);
 
   // For SkiaRenderer.
-  std::unique_ptr<base::Thread> gpu_thread_;
-  std::unique_ptr<base::Thread> io_thread_;
-  std::unique_ptr<viz::GpuServiceImpl> gpu_service_;
+  std::unique_ptr<viz::TestGpuServiceHolder> gpu_service_holder_;
   std::unique_ptr<gpu::GpuMemoryBufferManager> gpu_memory_buffer_manager_;
-  std::unique_ptr<gpu::CommandBufferTaskExecutor> task_executor_;
 
   viz::RendererSettings renderer_settings_;
   gfx::Size device_viewport_size_;
@@ -123,15 +120,9 @@ class PixelTest : public testing::Test {
 
   bool PixelsMatchReference(const base::FilePath& ref_file,
                             const PixelComparator& comparator);
-  void SetUpGpuServiceOnGpuThread(base::WaitableEvent* event);
-  void TearDownGpuServiceOnGpuThread(base::WaitableEvent* event);
 
   std::unique_ptr<gl::DisableNullDrawGLBindings> enable_pixel_output_;
   std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
-
-#if BUILDFLAG(ENABLE_VULKAN)
-  std::unique_ptr<gpu::VulkanImplementation> vulkan_implementation_;
-#endif
 };
 
 template<typename RendererType>
