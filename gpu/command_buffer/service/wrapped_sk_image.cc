@@ -12,6 +12,7 @@
 #include "base/trace_event/trace_event.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/common/shared_image_trace_utils.h"
+#include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
@@ -22,6 +23,7 @@
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrTypes.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/trace_util.h"
 
 namespace gpu {
@@ -44,8 +46,8 @@ class WrappedSkImage : public SharedImageBacking {
   }
 
   void Destroy() override {
-    DCHECK(!!image_);
-    image_.reset();
+    DCHECK(!!surface_);
+    surface_.reset();
   }
 
   bool IsCleared() const override { return cleared_; }
@@ -70,21 +72,37 @@ class WrappedSkImage : public SharedImageBacking {
   }
 
   sk_sp<SkSurface> GetSkSurface(int final_msaa_count,
-                                SkColorType color_type,
-                                sk_sp<SkColorSpace> color_space,
                                 const SkSurfaceProps& surface_props) {
     if (context_state_->context_lost())
       return nullptr;
     DCHECK(context_state_->IsCurrent(nullptr));
-    GrBackendTexture gr_texture =
-        image_->getBackendTexture(/*flushPendingGrContextIO=*/true);
-    DCHECK(gr_texture.isValid());
+    SkColorType sk_color_type = viz::ResourceFormatToClosestSkColorType(
+        /*gpu_compositing=*/true, format());
+
     return SkSurface::MakeFromBackendTexture(
-        context_state_->gr_context(), gr_texture, kTopLeft_GrSurfaceOrigin,
-        final_msaa_count, color_type, color_space, &surface_props);
+        context_state_->gr_context(), promise_texture_->backendTexture(),
+        kTopLeft_GrSurfaceOrigin, final_msaa_count, sk_color_type,
+        color_space().ToSkColorSpace(), &surface_props);
   }
 
   sk_sp<SkPromiseImageTexture> promise_texture() { return promise_texture_; }
+
+  // TODO(backer): Check if we can remove this once Skia gives us an API to
+  // explicitly allocate GPU memory and we can remove surface_.
+  void ApplyUnbindWorkaround() {
+    if (!context_state_->GrContextIsGL())
+      return;
+
+    // This seems like https://crbug.com/457027 because it only affects Adreno
+    // 4XX and happens just before a glDeleteFramebuffer (triggered by
+    // ~SkSurface). Unfortunately, it does not seem to be enough to just clear
+    // the FBO attachments (which Skia does downstream). The other workaround
+    // listed in https://crbug.com/457027 is a glFlush() and it does work.
+    if (context_state_->feature_info()
+            ->workarounds()
+            .unbind_attachments_on_bound_render_fbo_delete)
+      gl::g_current_gl_context->glFlushFn();
+  }
 
  protected:
   std::unique_ptr<SharedImageRepresentationSkia> ProduceSkia(
@@ -120,36 +138,27 @@ class WrappedSkImage : public SharedImageBacking {
 
     context_state_->set_need_context_state_reset(true);
 
-    if (data.empty()) {
-      auto surface = SkSurface::MakeRenderTarget(context_state_->gr_context(),
-                                                 SkBudgeted::kNo, info);
-      if (!surface)
-        return false;
+    surface_ = SkSurface::MakeRenderTarget(context_state_->gr_context(),
+                                           SkBudgeted::kNo, info);
+    if (!surface_)
+      return false;
 
 #if DCHECK_IS_ON()
-      auto* canvas = surface->getCanvas();
-      canvas->clear(SK_ColorGREEN);
+    auto* canvas = surface_->getCanvas();
+    canvas->clear(SK_ColorGREEN);
 #endif
 
-      image_ = surface->makeImageSnapshot();
-    } else {
+    if (!data.empty()) {
       SkBitmap bitmap;
       if (!bitmap.installPixels(info, const_cast<uint8_t*>(data.data()),
                                 info.minRowBytes())) {
         return false;
       }
-      sk_sp<SkImage> image = SkImage::MakeFromBitmap(bitmap);
-      if (!image)
-        return false;
-      image_ = image->makeTextureImage(context_state_->gr_context(),
-                                       image->colorSpace());
+      surface_->writePixels(bitmap, /*dstX=*/0, /*dstY=*/0);
     }
 
-    if (!image_ || !image_->isTextureBacked())
-      return false;
-
     auto gr_texture =
-        image_->getBackendTexture(/*flushPendingGrContextIO=*/false);
+        surface_->getBackendTexture(SkSurface::kFlushWrite_BackendHandleAccess);
     if (!gr_texture.isValid())
       return false;
     promise_texture_ = SkPromiseImageTexture::Make(gr_texture);
@@ -176,7 +185,7 @@ class WrappedSkImage : public SharedImageBacking {
 
   SharedContextState* const context_state_;
 
-  sk_sp<SkImage> image_;
+  sk_sp<SkSurface> surface_;
   sk_sp<SkPromiseImageTexture> promise_texture_;
 
   bool cleared_ = false;
@@ -200,12 +209,8 @@ class WrappedSkImageRepresentation : public SharedImageRepresentationSkia {
       const SkSurfaceProps& surface_props,
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores) override {
-    SkColorType sk_color_type = viz::ResourceFormatToClosestSkColorType(
-        /*gpu_compositing=*/true, format());
-
-    auto surface = wrapped_sk_image()->GetSkSurface(
-        final_msaa_count, sk_color_type,
-        backing()->color_space().ToSkColorSpace(), surface_props);
+    auto surface =
+        wrapped_sk_image()->GetSkSurface(final_msaa_count, surface_props);
     write_surface_ = surface.get();
     return surface;
   }
@@ -213,16 +218,19 @@ class WrappedSkImageRepresentation : public SharedImageRepresentationSkia {
   void EndWriteAccess(sk_sp<SkSurface> surface) override {
     DCHECK_EQ(surface.get(), write_surface_);
     DCHECK(surface->unique());
+    wrapped_sk_image()->ApplyUnbindWorkaround();
     write_surface_ = nullptr;
   }
 
   sk_sp<SkPromiseImageTexture> BeginReadAccess(
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores) override {
+    DCHECK(!write_surface_);
     return wrapped_sk_image()->promise_texture();
   }
 
   void EndReadAccess() override {
+    DCHECK(!write_surface_);
     // TODO(ericrk): Handle begin/end correctness checks.
   }
 
