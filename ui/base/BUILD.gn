@@ -44,6 +44,7 @@ component("ui_data_pack") {
 
   deps = [
     "//base",
+    "//net",
   ]
 
   defines = [ "UI_DATA_PACK_IMPLEMENTATION" ]

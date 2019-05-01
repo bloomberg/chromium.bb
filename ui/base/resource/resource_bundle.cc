@@ -555,6 +555,15 @@ base::StringPiece ResourceBundle::GetRawDataResourceForScale(
   return base::StringPiece();
 }
 
+bool ResourceBundle::IsGzipped(int resource_id) const {
+  bool is_gzipped;
+  for (const auto& pack : data_packs_) {
+    if (pack->IsGzipped(resource_id, &is_gzipped))
+      return is_gzipped;
+  }
+  return false;
+}
+
 base::string16 ResourceBundle::GetLocalizedString(int resource_id) {
 #if DCHECK_IS_ON()
   {

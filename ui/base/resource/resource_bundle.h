@@ -217,6 +217,10 @@ class UI_BASE_EXPORT ResourceBundle {
   // Loads the raw bytes of a scale independent data resource.
   base::RefCountedMemory* LoadDataResourceBytes(int resource_id) const;
 
+  // Whether the |resource_id| is gzipped in this bundle. False is also returned
+  // if the resource is not found.
+  bool IsGzipped(int resource_id) const;
+
   // Loads the raw bytes of a data resource nearest the scale factor
   // |scale_factor| into |bytes|, without doing any processing or
   // interpretation of the resource. Use ResourceHandle::SCALE_FACTOR_NONE

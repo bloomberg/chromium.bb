@@ -246,6 +246,25 @@ TEST_F(ResourceBundleTest, DelegateGetRawDataResource) {
   EXPECT_EQ(string_piece.data(), result.data());
 }
 
+TEST_F(ResourceBundleTest, IsGzipped) {
+  base::ScopedTempDir dir;
+  ASSERT_TRUE(dir.CreateUniqueTempDir());
+  base::FilePath data_path =
+      dir.GetPath().Append(FILE_PATH_LITERAL("sample.pak"));
+  // Dump contents into a pak file and load it.
+  ASSERT_EQ(base::WriteFile(data_path, kSamplePakContentsV5, kSamplePakSizeV5),
+            static_cast<int>(kSamplePakSizeV5));
+  ResourceBundle* resource_bundle = CreateResourceBundle(nullptr);
+  resource_bundle->AddDataPackFromPath(data_path, SCALE_FACTOR_100P);
+
+  ASSERT_FALSE(resource_bundle->IsGzipped(1));
+  ASSERT_FALSE(resource_bundle->IsGzipped(4));
+  ASSERT_TRUE(resource_bundle->IsGzipped(6));
+  ASSERT_FALSE(resource_bundle->IsGzipped(10));
+  // Ask for a non-existent resource ID.
+  ASSERT_FALSE(resource_bundle->IsGzipped(200));
+}
+
 TEST_F(ResourceBundleTest, DelegateGetLocalizedString) {
   MockResourceBundleDelegate delegate;
   ResourceBundle* resource_bundle = CreateResourceBundle(&delegate);

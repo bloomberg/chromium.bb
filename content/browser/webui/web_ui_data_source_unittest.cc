@@ -24,7 +24,7 @@ const char kDummyResource[] = "<html>blah</html>";
 
 class TestClient : public TestContentClient {
  public:
-  TestClient() {}
+  TestClient() : is_gzipped_(false) {}
   ~TestClient() override {}
 
   base::string16 GetLocalizedString(int message_id) const override {
@@ -45,6 +45,16 @@ class TestClient : public TestContentClient {
     }
     return bytes;
   }
+
+  bool IsDataResourceGzipped(int resource_id) const override {
+    return is_gzipped_;
+  }
+
+  // Sets the response for |IsDataResourceGzipped()|.
+  void SetIsDataResourceGzipped(bool is_gzipped) { is_gzipped_ = is_gzipped; }
+
+ private:
+  bool is_gzipped_;
 };
 
 }  // namespace
@@ -75,6 +85,7 @@ class WebUIDataSourceTest : public testing::Test {
 
  protected:
   std::string request_path_;
+  TestClient client_;
 
  private:
   void SetUp() override {
@@ -88,7 +99,6 @@ class WebUIDataSourceTest : public testing::Test {
 
   TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<WebUIDataSourceImpl> source_;
-  TestClient client_;
 };
 
 void EmptyStringsCallback(scoped_refptr<base::RefCountedMemory> data) {
@@ -180,7 +190,8 @@ TEST_F(WebUIDataSourceTest, RequestFilterQueryString) {
   request_path_ = std::string();
   source()->SetRequestFilter(
       base::BindRepeating([](const std::string& path) { return true; }),
-      base::Bind(&WebUIDataSourceTest::HandleRequest, base::Unretained(this)));
+      base::BindRepeating(&WebUIDataSourceTest::HandleRequest,
+                          base::Unretained(this)));
   source()->SetDefaultResource(kDummyDefaultResourceId);
   source()->AddResourcePath("foobar", kDummyResourceId);
   StartDataRequest(
@@ -217,32 +228,48 @@ TEST_F(WebUIDataSourceTest, MimeType) {
 }
 
 TEST_F(WebUIDataSourceTest, IsGzipped) {
+  source()->SetJsonPath("strings.js");
+  source()->SetDefaultResource(kDummyDefaultResourceId);
+
+  // Test that WebUIDataSource delegates IsGzipped to the content client.
+  client_.SetIsDataResourceGzipped(false);
   EXPECT_FALSE(source()->IsGzipped("foobar"));
   EXPECT_FALSE(source()->IsGzipped(""));
-  source()->UseGzip();
+  // Test that |json_path_| is correctly reported as non-gzipped.
+  EXPECT_FALSE(source()->IsGzipped("strings.js"));
+
+  client_.SetIsDataResourceGzipped(true);
   EXPECT_TRUE(source()->IsGzipped("foobar"));
   EXPECT_TRUE(source()->IsGzipped(""));
+  // Test that |json_path_| is correctly reported as non-gzipped.
+  EXPECT_FALSE(source()->IsGzipped("strings.js"));
 }
 
-TEST_F(WebUIDataSourceTest, IsGzippedWithCallback) {
+TEST_F(WebUIDataSourceTest, IsGzippedNoDefaultResource) {
+  // Test that WebUIDataSource reports non existing resources as non-gzipped
+  // and does not trigger any CHECKs.
+  client_.SetIsDataResourceGzipped(false);
   EXPECT_FALSE(source()->IsGzipped("foobar"));
 
-  source()->AddResourcePath("foobar", kDummyResourceId);
+  client_.SetIsDataResourceGzipped(true);
+  EXPECT_FALSE(source()->IsGzipped("foobar"));
+}
+
+TEST_F(WebUIDataSourceTest, IsGzippedWithRequestFiltering) {
+  source()->SetRequestFilter(
+      base::BindRepeating(
+          [](const std::string& path) { return path == "json/special/path"; }),
+      base::BindRepeating(&WebUIDataSourceTest::HandleRequest,
+                          base::Unretained(this)));
   source()->SetDefaultResource(kDummyDefaultResourceId);
-  source()->SetJsonPath("strings.js");
-  source()->UseGzip(base::BindRepeating(
-      [](const std::string& path) { return path != "json/special/path"; }));
 
-  EXPECT_TRUE(source()->IsGzipped("foobar"));
-  EXPECT_TRUE(source()->IsGzipped("foobar?query"));
-
-  EXPECT_TRUE(source()->IsGzipped("unknown_path"));
-  EXPECT_TRUE(source()->IsGzipped("unknown_path?query"));
-
+  client_.SetIsDataResourceGzipped(false);
   EXPECT_FALSE(source()->IsGzipped("json/special/path"));
-  EXPECT_FALSE(source()->IsGzipped("json/special/path?query"));
-  EXPECT_FALSE(source()->IsGzipped("strings.js"));
-  EXPECT_FALSE(source()->IsGzipped("strings.js?query"));
+  EXPECT_FALSE(source()->IsGzipped("other/path"));
+
+  client_.SetIsDataResourceGzipped(true);
+  EXPECT_FALSE(source()->IsGzipped("json/special/path"));
+  EXPECT_TRUE(source()->IsGzipped("other/path"));
 }
 
 TEST_F(WebUIDataSourceTest, ShouldServeMimeTypeAsContentTypeHeader) {

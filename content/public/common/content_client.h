@@ -168,6 +168,9 @@ class CONTENT_EXPORT ContentClient {
   virtual base::RefCountedMemory* GetDataResourceBytes(
       int resource_id) const;
 
+  // Returns whether the contents of a resource are compressed (with gzip).
+  virtual bool IsDataResourceGzipped(int resource_id) const;
+
   // Returns a native image given its id.
   virtual gfx::Image& GetNativeImageNamed(int resource_id) const;
 

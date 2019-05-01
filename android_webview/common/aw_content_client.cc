@@ -54,6 +54,10 @@ base::RefCountedMemory* AwContentClient::GetDataResourceBytes(
       resource_id);
 }
 
+bool AwContentClient::IsDataResourceGzipped(int resource_id) const {
+  return ui::ResourceBundle::GetSharedInstance().IsGzipped(resource_id);
+}
+
 bool AwContentClient::CanSendWhileSwappedOut(const IPC::Message* message) {
   // For legacy API support we perform a few browser -> renderer synchronous IPC
   // messages that block the browser. However, the synchronous IPC replies might

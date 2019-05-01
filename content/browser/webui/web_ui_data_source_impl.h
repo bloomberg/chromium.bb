@@ -81,7 +81,8 @@ class CONTENT_EXPORT WebUIDataSourceImpl : public URLDataSourceImpl,
   friend class WebUIDataSourceTest;
 
   FRIEND_TEST_ALL_PREFIXES(WebUIDataSourceTest, IsGzipped);
-  FRIEND_TEST_ALL_PREFIXES(WebUIDataSourceTest, IsGzippedWithCallback);
+  FRIEND_TEST_ALL_PREFIXES(WebUIDataSourceTest, IsGzippedNoDefaultResource);
+  FRIEND_TEST_ALL_PREFIXES(WebUIDataSourceTest, IsGzippedWithRequestFiltering);
 
   // Methods that match URLDataSource which are called by
   // InternalDataSource.
@@ -90,6 +91,8 @@ class CONTENT_EXPORT WebUIDataSourceImpl : public URLDataSourceImpl,
       const std::string& path,
       const ResourceRequestInfo::WebContentsGetter& wc_getter,
       const URLDataSource::GotDataCallback& callback);
+
+  int PathToIdrOrDefault(const std::string& path) const;
 
   // Note: this must be called before StartDataRequest() to have an effect.
   void disable_load_time_data_defaults_for_testing() {
@@ -126,8 +129,6 @@ class CONTENT_EXPORT WebUIDataSourceImpl : public URLDataSourceImpl,
   bool deny_xframe_options_;
   bool add_load_time_data_defaults_;
   bool replace_existing_source_;
-  bool use_gzip_;
-  base::RepeatingCallback<bool(const std::string&)> is_gzipped_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUIDataSourceImpl);
 };
