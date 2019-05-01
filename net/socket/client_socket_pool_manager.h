@@ -16,7 +16,6 @@
 #include "net/base/request_priority.h"
 #include "net/http/http_network_session.h"
 #include "net/socket/client_socket_pool.h"
-#include "net/socket/connect_job.h"
 
 namespace base {
 class Value;
@@ -110,7 +109,6 @@ int InitSocketHandleForHttpRequest(
     const SocketTag& socket_tag,
     const NetLogWithSource& net_log,
     ClientSocketHandle* socket_handle,
-    const OnHostResolutionCallback& resolution_callback,
     CompletionOnceCallback callback,
     const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback);
 
@@ -135,7 +133,6 @@ int InitSocketHandleForWebSocketRequest(
     PrivacyMode privacy_mode,
     const NetLogWithSource& net_log,
     ClientSocketHandle* socket_handle,
-    const OnHostResolutionCallback& resolution_callback,
     CompletionOnceCallback callback,
     const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback);
 

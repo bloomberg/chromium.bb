@@ -90,15 +90,13 @@ scoped_refptr<ClientSocketPool::SocketParams> CreateSocketParams(
     const ClientSocketPool::GroupId& group_id,
     const ProxyServer& proxy_server,
     const SSLConfig& ssl_config_for_origin,
-    const SSLConfig& ssl_config_for_proxy,
-    const OnHostResolutionCallback& resolution_callback) {
+    const SSLConfig& ssl_config_for_proxy) {
   bool using_ssl = group_id.socket_type() == ClientSocketPool::SocketType::kSsl;
   bool using_proxy_ssl = proxy_server.is_http_like() && !proxy_server.is_http();
   return base::MakeRefCounted<ClientSocketPool::SocketParams>(
       using_ssl ? std::make_unique<SSLConfig>(ssl_config_for_origin) : nullptr,
       using_proxy_ssl ? std::make_unique<SSLConfig>(ssl_config_for_proxy)
-                      : nullptr,
-      resolution_callback);
+                      : nullptr);
 }
 
 int InitSocketPoolHelper(
@@ -117,7 +115,6 @@ int InitSocketPoolHelper(
     int num_preconnect_streams,
     ClientSocketHandle* socket_handle,
     HttpNetworkSession::SocketPoolType socket_pool_type,
-    const OnHostResolutionCallback& resolution_callback,
     CompletionOnceCallback callback,
     const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback) {
   bool using_ssl = group_type == ClientSocketPoolManager::SSL_GROUP;
@@ -133,8 +130,7 @@ int InitSocketPoolHelper(
       CreateGroupId(group_type, origin_host_port, proxy_info, privacy_mode);
   scoped_refptr<ClientSocketPool::SocketParams> socket_params =
       CreateSocketParams(connection_group, proxy_info.proxy_server(),
-                         ssl_config_for_origin, ssl_config_for_proxy,
-                         resolution_callback);
+                         ssl_config_for_origin, ssl_config_for_proxy);
 
   ClientSocketPool* pool =
       session->GetSocketPool(socket_pool_type, proxy_info.proxy_server());
@@ -247,7 +243,6 @@ int InitSocketHandleForHttpRequest(
     const SocketTag& socket_tag,
     const NetLogWithSource& net_log,
     ClientSocketHandle* socket_handle,
-    const OnHostResolutionCallback& resolution_callback,
     CompletionOnceCallback callback,
     const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback) {
   DCHECK(socket_handle);
@@ -256,7 +251,7 @@ int InitSocketHandleForHttpRequest(
       proxy_info, ssl_config_for_origin, ssl_config_for_proxy,
       false /* is_for_websockets */, privacy_mode, socket_tag, net_log, 0,
       socket_handle, HttpNetworkSession::NORMAL_SOCKET_POOL,
-      resolution_callback, std::move(callback), proxy_auth_callback);
+      std::move(callback), proxy_auth_callback);
 }
 
 int InitSocketHandleForWebSocketRequest(
@@ -271,7 +266,6 @@ int InitSocketHandleForWebSocketRequest(
     PrivacyMode privacy_mode,
     const NetLogWithSource& net_log,
     ClientSocketHandle* socket_handle,
-    const OnHostResolutionCallback& resolution_callback,
     CompletionOnceCallback callback,
     const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback) {
   DCHECK(socket_handle);
@@ -284,7 +278,7 @@ int InitSocketHandleForWebSocketRequest(
       proxy_info, ssl_config_for_origin, ssl_config_for_proxy,
       true /* is_for_websockets */, privacy_mode, SocketTag(), net_log, 0,
       socket_handle, HttpNetworkSession::WEBSOCKET_SOCKET_POOL,
-      resolution_callback, std::move(callback), proxy_auth_callback);
+      std::move(callback), proxy_auth_callback);
 }
 
 int PreconnectSocketsForHttpRequest(
@@ -307,8 +301,7 @@ int PreconnectSocketsForHttpRequest(
       proxy_info, ssl_config_for_origin, ssl_config_for_proxy,
       false /* force_tunnel */, privacy_mode, SocketTag(), net_log,
       num_preconnect_streams, nullptr, HttpNetworkSession::NORMAL_SOCKET_POOL,
-      OnHostResolutionCallback(), CompletionOnceCallback(),
-      ClientSocketPool::ProxyAuthCallback());
+      CompletionOnceCallback(), ClientSocketPool::ProxyAuthCallback());
 }
 
 }  // namespace net

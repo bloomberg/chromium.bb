@@ -58,37 +58,6 @@ namespace net {
 
 namespace {
 
-// Invoked by the transport socket pool after host resolution is complete
-// to allow the connection to be aborted, if a matching SPDY session can
-// be found. Returns OnHostResolutionCallbackResult::kMayBeDeletedAsync if such
-// a session is found, as it will post a task that may delete the calling
-// ConnectJob. Also returns kMayBeDeletedAsync if there may already be such
-// a task posted.
-OnHostResolutionCallbackResult OnHostResolution(
-    SpdySessionPool* spdy_session_pool,
-    const SpdySessionKey& spdy_session_key,
-    bool is_for_websockets,
-    const HostPortPair& host_port_pair,
-    const AddressList& addresses) {
-  // Don't call OnHostResolutionComplete() when the host that just had its name
-  // resolved is not the host identified in the H2 session key. There's not
-  // enough information to find any connections that could be pooled in that
-  // case, and calling into the session pool with the wrong address could
-  // confuse it. This can happen in either the H2 over proxy case, and in the
-  // alternative service case.
-  //
-  // TODO(mmenke): Set the key to point to the proxy's session when this happens
-  // for HTTPS sessions, and don't set a callback at all for other proxy types.
-  if (!host_port_pair.Equals(spdy_session_key.host_port_pair()))
-    return OnHostResolutionCallbackResult::kContinue;
-
-  // It is OK to dereference spdy_session_pool, because the
-  // ClientSocketPoolManager will be destroyed in the same callback that
-  // destroys the SpdySessionPool.
-  return spdy_session_pool->OnHostResolutionComplete(
-      spdy_session_key, is_for_websockets, addresses);
-}
-
 // Experiment to preconnect only one connection if HttpServerProperties is
 // not supported or initialized.
 const base::Feature kLimitEarlyPreconnectsExperiment{
@@ -902,15 +871,6 @@ int HttpStreamFactory::Job::DoInitConnectionImpl() {
         request_info_.privacy_mode, net_log_, num_streams_);
   }
 
-  // If we can't use a HTTP/2 session, don't bother checking for one after
-  // the hostname is resolved.
-  OnHostResolutionCallback resolution_callback =
-      CanUseExistingSpdySession()
-          ? base::BindRepeating(&OnHostResolution,
-                                session_->spdy_session_pool(),
-                                spdy_session_key_, is_websocket_)
-          : OnHostResolutionCallback();
-
   ClientSocketPool::ProxyAuthCallback proxy_auth_callback =
       base::BindRepeating(&HttpStreamFactory::Job::OnNeedsProxyAuthCallback,
                           base::Unretained(this));
@@ -921,16 +881,15 @@ int HttpStreamFactory::Job::DoInitConnectionImpl() {
     return InitSocketHandleForWebSocketRequest(
         GetSocketGroup(), destination_, request_info_.load_flags, priority_,
         session_, proxy_info_, websocket_server_ssl_config, proxy_ssl_config_,
-        request_info_.privacy_mode, net_log_, connection_.get(),
-        resolution_callback, io_callback_, proxy_auth_callback);
+        request_info_.privacy_mode, net_log_, connection_.get(), io_callback_,
+        proxy_auth_callback);
   }
 
   return InitSocketHandleForHttpRequest(
       GetSocketGroup(), destination_, request_info_.load_flags, priority_,
       session_, proxy_info_, server_ssl_config_, proxy_ssl_config_,
       request_info_.privacy_mode, request_info_.socket_tag, net_log_,
-      connection_.get(), resolution_callback, io_callback_,
-      proxy_auth_callback);
+      connection_.get(), io_callback_, proxy_auth_callback);
 }
 
 void HttpStreamFactory::Job::OnQuicHostResolution(int result) {

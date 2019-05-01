@@ -153,18 +153,6 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
     PrivacyMode privacy_mode_;
   };
 
-  // Callback to create a ConnectJob using the provided arguments. The lower
-  // level parameters used to construct the ConnectJob (like hostname, type of
-  // socket, proxy, etc) are all already bound to the callback.  If
-  // |websocket_endpoint_lock_manager| is non-null, a ConnectJob for use by
-  // WebSockets should be created.
-  using CreateConnectJobCallback =
-      base::RepeatingCallback<std::unique_ptr<ConnectJob>(
-          RequestPriority priority,
-          const SocketTag& socket_tag,
-          const CommonConnectJobParams* common_connect_job_params,
-          ConnectJob::Delegate* delegate)>;
-
   // Parameters that, in combination with GroupId, proxy, websocket information,
   // and global state, are sufficient to create a ConnectJob.
   //
@@ -179,8 +167,7 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
     // For non-SSL requests / non-HTTPS proxies, the corresponding SSLConfig
     // argument may be nullptr.
     SocketParams(std::unique_ptr<SSLConfig> ssl_config_for_origin,
-                 std::unique_ptr<SSLConfig> ssl_config_for_proxy,
-                 const OnHostResolutionCallback& resolution_callback);
+                 std::unique_ptr<SSLConfig> ssl_config_for_proxy);
 
     // Creates a  SocketParams object with none of the fields populated. This
     // works for the HTTP case only.
@@ -194,17 +181,12 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
       return ssl_config_for_proxy_.get();
     }
 
-    const OnHostResolutionCallback& resolution_callback() const {
-      return resolution_callback_;
-    }
-
    private:
     friend class base::RefCounted<SocketParams>;
     ~SocketParams();
 
     std::unique_ptr<SSLConfig> ssl_config_for_origin_;
     std::unique_ptr<SSLConfig> ssl_config_for_proxy_;
-    const OnHostResolutionCallback resolution_callback_;
 
     DISALLOW_COPY_AND_ASSIGN(SocketParams);
   };

@@ -11,11 +11,12 @@
 #include "net/http/http_proxy_connect_job.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_with_source.h"
+#include "net/socket/connect_job.h"
 #include "net/socket/socks_connect_job.h"
 #include "net/socket/ssl_connect_job.h"
 #include "net/socket/stream_socket.h"
-#include "net/socket/transport_connect_job.h"
-#include "net/socket/websocket_transport_connect_job.h"
+#include "net/spdy/spdy_session.h"
+#include "net/spdy/spdy_session_pool.h"
 
 namespace net {
 
@@ -24,23 +25,41 @@ namespace {
 // The maximum duration, in seconds, to keep used idle persistent sockets alive.
 int64_t g_used_idle_socket_timeout_s = 300;  // 5 minutes
 
+// Invoked by the transport socket pool after host resolution is complete
+// to allow the connection to be aborted, if a matching SPDY session can
+// be found. Returns OnHostResolutionCallbackResult::kMayBeDeletedAsync if such
+// a session is found, as it will post a task that may delete the calling
+// ConnectJob. Also returns kMayBeDeletedAsync if there may already be such
+// a task posted.
+OnHostResolutionCallbackResult OnHostResolution(
+    SpdySessionPool* spdy_session_pool,
+    const SpdySessionKey& spdy_session_key,
+    bool is_for_websockets,
+    const HostPortPair& host_port_pair,
+    const AddressList& addresses) {
+  DCHECK(host_port_pair == spdy_session_key.host_port_pair());
+
+  // It is OK to dereference spdy_session_pool, because the
+  // ClientSocketPoolManager will be destroyed in the same callback that
+  // destroys the SpdySessionPool.
+  return spdy_session_pool->OnHostResolutionComplete(
+      spdy_session_key, is_for_websockets, addresses);
+}
+
 }  // namespace
 
 ClientSocketPool::SocketParams::SocketParams(
     std::unique_ptr<SSLConfig> ssl_config_for_origin,
-    std::unique_ptr<SSLConfig> ssl_config_for_proxy,
-    const OnHostResolutionCallback& resolution_callback)
+    std::unique_ptr<SSLConfig> ssl_config_for_proxy)
     : ssl_config_for_origin_(std::move(ssl_config_for_origin)),
-      ssl_config_for_proxy_(std::move(ssl_config_for_proxy)),
-      resolution_callback_(resolution_callback) {}
+      ssl_config_for_proxy_(std::move(ssl_config_for_proxy)) {}
 
 ClientSocketPool::SocketParams::~SocketParams() = default;
 
 scoped_refptr<ClientSocketPool::SocketParams>
 ClientSocketPool::SocketParams::CreateForHttpForTesting() {
   return base::MakeRefCounted<SocketParams>(nullptr /* ssl_config_for_origin */,
-                                            nullptr /* ssl_config_for_proxy */,
-                                            OnHostResolutionCallback());
+                                            nullptr /* ssl_config_for_proxy */);
 }
 
 ClientSocketPool::GroupId::GroupId()
@@ -128,12 +147,32 @@ std::unique_ptr<ConnectJob> ClientSocketPool::CreateConnectJob(
     SocketTag socket_tag,
     ConnectJob::Delegate* delegate) {
   bool using_ssl = group_id.socket_type() == ClientSocketPool::SocketType::kSsl;
+
+  // If applicable, set up a callback to handle checking for H2 IP pooling
+  // opportunities.
+  OnHostResolutionCallback resolution_callback;
+  if (using_ssl && proxy_server.is_direct()) {
+    resolution_callback = base::BindRepeating(
+        &OnHostResolution, common_connect_job_params->spdy_session_pool,
+        SpdySessionKey(group_id.destination(), proxy_server,
+                       group_id.privacy_mode(),
+                       SpdySessionKey::IsProxySession::kFalse, socket_tag),
+        is_for_websockets);
+  } else if (proxy_server.is_https()) {
+    resolution_callback = base::BindRepeating(
+        &OnHostResolution, common_connect_job_params->spdy_session_pool,
+        SpdySessionKey(proxy_server.host_port_pair(), ProxyServer::Direct(),
+                       group_id.privacy_mode(),
+                       SpdySessionKey::IsProxySession::kTrue, socket_tag),
+        is_for_websockets);
+  }
+
   return ConnectJob::CreateConnectJob(
       using_ssl, group_id.destination(), proxy_server, proxy_annotation_tag,
       socket_params->ssl_config_for_origin(),
       socket_params->ssl_config_for_proxy(), is_for_websockets,
-      group_id.privacy_mode(), socket_params->resolution_callback(),
-      request_priority, socket_tag, common_connect_job_params, delegate);
+      group_id.privacy_mode(), resolution_callback, request_priority,
+      socket_tag, common_connect_job_params, delegate);
 }
 
 }  // namespace net

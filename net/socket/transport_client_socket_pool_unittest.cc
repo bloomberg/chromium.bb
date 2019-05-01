@@ -1029,7 +1029,7 @@ TEST_F(TransportClientSocketPoolTest, SSLCertError) {
   scoped_refptr<ClientSocketPool::SocketParams> socket_params =
       base::MakeRefCounted<ClientSocketPool::SocketParams>(
           GetSSLConfig() /* ssl_config_for_origin */,
-          nullptr /* ssl_config_for_proxy */, OnHostResolutionCallback());
+          nullptr /* ssl_config_for_proxy */);
 
   ClientSocketHandle handle;
   TestCompletionCallback callback;
@@ -1304,7 +1304,7 @@ TEST_F(TransportClientSocketPoolTest, SOCKS) {
     scoped_refptr<ClientSocketPool::SocketParams> socket_params =
         base::MakeRefCounted<ClientSocketPool::SocketParams>(
             nullptr /* ssl_config_for_origin */,
-            nullptr /* ssl_config_for_proxy */, OnHostResolutionCallback());
+            nullptr /* ssl_config_for_proxy */);
 
     SOCKS5MockData data(socket_io_mode);
     data.data_provider()->set_connect_data(MockConnect(socket_io_mode, OK));
@@ -1377,8 +1377,7 @@ TEST_F(TransportClientSocketPoolTest, SpdyOneConnectJobTwoRequestsError) {
   scoped_refptr<ClientSocketPool::SocketParams> socket_params =
       base::MakeRefCounted<ClientSocketPool::SocketParams>(
           GetSSLConfig() /* ssl_config_for_origin */,
-          GetSSLConfig() /* ssl_config_for_proxy */,
-          OnHostResolutionCallback());
+          GetSSLConfig() /* ssl_config_for_proxy */);
 
   ClientSocketPool::GroupId group_id(kEndpoint,
                                      ClientSocketPool::SocketType::kSsl,
@@ -1482,8 +1481,7 @@ TEST_F(TransportClientSocketPoolTest, SpdyAuthOneConnectJobTwoRequests) {
   scoped_refptr<ClientSocketPool::SocketParams> socket_params =
       base::MakeRefCounted<ClientSocketPool::SocketParams>(
           GetSSLConfig() /* ssl_config_for_origin */,
-          GetSSLConfig() /* ssl_config_for_proxy */,
-          OnHostResolutionCallback());
+          GetSSLConfig() /* ssl_config_for_proxy */);
 
   ClientSocketPool::GroupId group_id(kEndpoint,
                                      ClientSocketPool::SocketType::kSsl,
@@ -1580,8 +1578,7 @@ TEST_F(TransportClientSocketPoolTest, HttpTunnelSetupRedirect) {
       scoped_refptr<ClientSocketPool::SocketParams> socket_params =
           base::MakeRefCounted<ClientSocketPool::SocketParams>(
               GetSSLConfig() /* ssl_config_for_origin */,
-              GetSSLConfig() /* ssl_config_for_proxy */,
-              OnHostResolutionCallback());
+              GetSSLConfig() /* ssl_config_for_proxy */);
 
       int rv = handle.Init(
           ClientSocketPool::GroupId(kEndpoint,
@@ -1755,7 +1752,7 @@ TEST_F(TransportClientSocketPoolTest, TagSOCKSProxy) {
   scoped_refptr<ClientSocketPool::SocketParams> socks_params =
       base::MakeRefCounted<ClientSocketPool::SocketParams>(
           nullptr /* ssl_config_for_origin */,
-          nullptr /* ssl_config_for_proxy */, OnHostResolutionCallback());
+          nullptr /* ssl_config_for_proxy */);
 
   // Test socket is tagged when created synchronously.
   SOCKS5MockData data_sync(SYNCHRONOUS);
@@ -1849,7 +1846,7 @@ TEST_F(TransportClientSocketPoolTest, TagSSLDirect) {
   scoped_refptr<ClientSocketPool::SocketParams> socket_params =
       base::MakeRefCounted<ClientSocketPool::SocketParams>(
           std::make_unique<SSLConfig>() /* ssl_config_for_origin */,
-          nullptr /* ssl_config_for_proxy */, OnHostResolutionCallback());
+          nullptr /* ssl_config_for_proxy */);
 
   // Test socket is tagged before connected.
   uint64_t old_traffic = GetTaggedBytes(tag_val1);
@@ -1918,7 +1915,7 @@ TEST_F(TransportClientSocketPoolTest, TagSSLDirectTwoSockets) {
   scoped_refptr<ClientSocketPool::SocketParams> socket_params =
       base::MakeRefCounted<ClientSocketPool::SocketParams>(
           GetSSLConfig() /* ssl_config_for_origin */,
-          nullptr /* ssl_config_for_proxy */, OnHostResolutionCallback());
+          nullptr /* ssl_config_for_proxy */);
 
   // Test connect jobs that are orphaned and then adopted, appropriately apply
   // new tag. Request socket with |tag1|.
@@ -1981,7 +1978,7 @@ TEST_F(TransportClientSocketPoolTest, TagSSLDirectTwoSocketsFullPool) {
   scoped_refptr<ClientSocketPool::SocketParams> socket_params =
       base::MakeRefCounted<ClientSocketPool::SocketParams>(
           GetSSLConfig() /* ssl_config_for_origin */,
-          nullptr /* ssl_config_for_proxy */, OnHostResolutionCallback());
+          nullptr /* ssl_config_for_proxy */);
 
   // Test that sockets paused by a full underlying socket pool are properly
   // connected and tagged when underlying pool is freed up.
@@ -2061,7 +2058,7 @@ TEST_F(TransportClientSocketPoolTest, TagHttpProxyNoTunnel) {
   scoped_refptr<ClientSocketPool::SocketParams> socket_params =
       base::MakeRefCounted<ClientSocketPool::SocketParams>(
           nullptr /* ssl_config_for_origin */,
-          nullptr /* ssl_config_for_proxy */, OnHostResolutionCallback());
+          nullptr /* ssl_config_for_proxy */);
 
   // Verify requested socket is tagged properly.
   ClientSocketHandle handle;
@@ -2135,7 +2132,7 @@ TEST_F(TransportClientSocketPoolTest, TagHttpProxyTunnel) {
   scoped_refptr<ClientSocketPool::SocketParams> socket_params =
       base::MakeRefCounted<ClientSocketPool::SocketParams>(
           GetSSLConfig() /* ssl_config_for_origin */,
-          nullptr /* ssl_config_for_proxy */, OnHostResolutionCallback());
+          nullptr /* ssl_config_for_proxy */);
 
   // Verify requested socket is tagged properly.
   ClientSocketHandle handle;
@@ -2248,7 +2245,7 @@ TEST_F(TransportClientSocketPoolMockNowSourceTest, IdleUnusedSocketTimeout) {
       scoped_refptr<ClientSocketPool::SocketParams> socket_params =
           base::MakeRefCounted<ClientSocketPool::SocketParams>(
               nullptr /* ssl_config_for_origin */,
-              nullptr /* ssl_config_for_proxy */, OnHostResolutionCallback());
+              nullptr /* ssl_config_for_proxy */);
       session_deps.socket_factory->AddSocketDataProvider(&provider_socket_1);
       ClientSocketHandle connection;
       TestCompletionCallback callback;
@@ -2293,7 +2290,7 @@ TEST_F(TransportClientSocketPoolMockNowSourceTest, IdleUnusedSocketTimeout) {
       scoped_refptr<ClientSocketPool::SocketParams> socket_params =
           base::MakeRefCounted<ClientSocketPool::SocketParams>(
               nullptr /* ssl_config_for_origin */,
-              nullptr /* ssl_config_for_proxy */, OnHostResolutionCallback());
+              nullptr /* ssl_config_for_proxy */);
       SequencedSocketData provider_socket_2(MockConnect(ASYNC, OK),
                                             base::span<MockRead>(),
                                             base::span<MockWrite>());
