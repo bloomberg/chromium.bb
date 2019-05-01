@@ -70,8 +70,8 @@ class GlobalErrorBubbleViewTest : public testing::Test {
         button_(nullptr, base::string16()),
         view_(std::make_unique<GlobalErrorBubbleView>(
             &arg_view_,
-            gfx::Rect(anchor_point_, gfx::Size()),
-            arrow_,
+            gfx::Rect(gfx::Point(), gfx::Size()),
+            views::BubbleBorder::NONE,
             nullptr,
             mock_global_error_with_standard_bubble_->AsWeakPtr())) {}
 
@@ -80,8 +80,6 @@ class GlobalErrorBubbleViewTest : public testing::Test {
   std::unique_ptr<StrictMock<MockGlobalErrorWithStandardBubble>>
       mock_global_error_with_standard_bubble_;
   views::View arg_view_;
-  const gfx::Point anchor_point_;
-  views::BubbleBorder::Arrow arrow_;
   views::LabelButton button_;
   std::unique_ptr<GlobalErrorBubbleView> view_;
 

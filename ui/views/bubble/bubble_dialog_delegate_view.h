@@ -81,7 +81,7 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   // The anchor rect is used in the absence of an assigned anchor view.
   const gfx::Rect& anchor_rect() const { return anchor_rect_; }
 
-  BubbleBorder::Arrow arrow() const { return arrow_; }
+  // Set the desired arrow for the bubble. The arrow will be mirrored for RTL.
   void SetArrow(BubbleBorder::Arrow arrow);
 
   BubbleBorder::Shadow GetShadow() const;
@@ -139,6 +139,9 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
       View* anchor_view,
       BubbleBorder::Arrow arrow,
       BubbleBorder::Shadow shadow = BubbleBorder::DIALOG_SHADOW);
+
+  // Returns the desired arrow post-RTL mirroring if needed.
+  BubbleBorder::Arrow arrow() const { return arrow_; }
 
   // Get bubble bounds from the anchor rect and client view's preferred size.
   virtual gfx::Rect GetBubbleBounds();
@@ -218,8 +221,8 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   // The anchor rect used in the absence of an anchor view.
   mutable gfx::Rect anchor_rect_;
 
-  // The arrow's location on the bubble.
-  BubbleBorder::Arrow arrow_;
+  // The arrow's default location on the bubble post-RTL mirroring if needed.
+  BubbleBorder::Arrow arrow_ = BubbleBorder::NONE;
 
   // Bubble border shadow to use.
   BubbleBorder::Shadow shadow_;
