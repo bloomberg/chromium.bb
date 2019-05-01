@@ -603,6 +603,12 @@ const char kEnforceTLS13DowngradeDescription[] =
     "this is enabled do not implement TLS 1.0 through 1.2 correctly or "
     "securely. They must be fixed by vendors.";
 
+const char kEnableTLS13EarlyDataName[] = "TLS 1.3 Early Data";
+const char kEnableTLS13EarlyDataDescription[] =
+    "This option enables TLS 1.3 Early Data, allowing GET requests to be sent "
+    "during the handshake when resuming a connection to a compatible TLS 1.3 "
+    "server.";
+
 const char kEnableGenericSensorName[] = "Generic Sensor";
 const char kEnableGenericSensorDescription[] =
     "Enables motion sensor classes based on Generic Sensor API, i.e. "

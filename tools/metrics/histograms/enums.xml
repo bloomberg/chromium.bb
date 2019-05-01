@@ -32835,6 +32835,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1327676774" label="disable-accelerated-mjpeg-decode"/>
   <int value="-1326463296" label="SSLCommittedInterstitials:disabled"/>
   <int value="-1325887476" label="NewPrintPreview:enabled"/>
+  <int value="-1324029365" label="EnableTLS13EarlyData:enabled"/>
   <int value="-1322882747" label="disable-datasaver-prompt"/>
   <int value="-1319688939" label="ignore-gpu-blacklist"/>
   <int value="-1318914924" label="OverflowIconsForMediaControls:enabled"/>
@@ -34221,6 +34222,7 @@ from previous Chrome versions.
   <int value="848324390" label="enable-lock-screen-apps"/>
   <int value="849980462" label="RemoveNtpFakebox:disabled"/>
   <int value="851085848" label="enable-settings-window"/>
+  <int value="851616920" label="EnableTLS13EarlyData:disabled"/>
   <int value="852313529" label="RTCUnifiedPlanByDefault:disabled"/>
   <int value="854730848" label="disable-app-info-dialog-mac"/>
   <int value="855746780" label="disable-physical-keyboard-autocorrect"/>

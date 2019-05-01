@@ -1731,6 +1731,11 @@
     "expiry_milestone": 77
   },
   {
+    "name": "enable-tls13-early-data",
+    "owners": [ "svaldez" ],
+    "expiry_milestone": 83
+  },
+  {
     "name": "enable-touch-drag-drop",
     "owners": [ "eirage", "input-dev" ],
     "expiry_milestone": 78

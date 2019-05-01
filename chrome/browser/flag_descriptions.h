@@ -382,6 +382,9 @@ extern const char kEnableSystemWebAppsDescription[];
 extern const char kEnforceTLS13DowngradeName[];
 extern const char kEnforceTLS13DowngradeDescription[];
 
+extern const char kEnableTLS13EarlyDataName[];
+extern const char kEnableTLS13EarlyDataDescription[];
+
 extern const char kEnableGenericSensorName[];
 extern const char kEnableGenericSensorDescription[];
 
