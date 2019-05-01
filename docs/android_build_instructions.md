@@ -181,7 +181,7 @@ out/Default chrome/test:unit_tests`).
 
 The Google Play Store allows apps to send customized `.apk` files depending on
 the version of Android running on a device. Chrome uses this feature to target
-3 different versions using 3 different ninja targets:
+4 different versions using 4 different ninja targets:
 
 1. `chrome_public_apk` (ChromePublic.apk)
    * `minSdkVersion=19` (KitKat).
@@ -198,7 +198,14 @@ the version of Android running on a device. Chrome uses this feature to target
    * `minSdkVersion=24` (Nougat).
    * Contains both WebView and Chrome within the same APK.
      * This APK is even bigger, but much smaller than SystemWebView.apk + ChromePublic.apk.
-   * Stores libchrome.so uncompressed within the APK.
+   * Stores libmonochrome.so uncompressed within the APK.
+   * Does not use Crazy Linker (WebView requires system linker).
+     * But system linker supports crazy linker features now anyways.
+4. `trichrome_chrome_apk` and `trichrome_library_apk` (TrichromeChrome.apk and TrichromeLibrary.apk)
+   * `minSdkVersion=Q` (Q).
+   * TrichromeChrome contains only the Chrome code that is not shared with WebView.
+   * TrichromeLibrary contains the shared code and is a "static shared library APK", which must be installed prior to TrichromeChrome.
+   * Stores libmonochrome.so uncompressed within TrichromeLibrary.apk.
    * Does not use Crazy Linker (WebView requires system linker).
      * But system linker supports crazy linker features now anyways.
 

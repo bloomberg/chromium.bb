@@ -9,8 +9,10 @@ This doc outlines some tricks / gotchas / features of how we ship native code in
  * Android L & M (ChromeModernPublic.apk):
    * `libchrome.so` is stored uncompressed within the apk (with the name `crazy.libchrome.so` to avoid extraction).
    * It is loaded directly from the apk (without extracting) by `mmap()`'ing it.
- * Android N+ (MonochromePublic.apk):
+ * Android N, O & P (MonochromePublic.apk):
    * `libmonochrome.so` is stored uncompressed (AndroidManifest.xml attribute disables extraction) and loaded directly from the apk (functionality now supported by the system linker).
+ * Android Q (TrichromeChrome.apk+TrichromeLibrary.apk):
+   * `libmonochrome.so` is stored in the shared library apk (TrichromeLibrary.apk) instead of in the Chrome apk, so that it can be shared with TrichromeWebView. It's stored uncompressed and loaded directly from the apk the same way as on N-P. Trichrome uses the same native library as Monochrome, so it's still called `libmonochrome.so`.
 
 ## Crashpad Packaging
  * Crashpad is a native library providing out-of-process crash dumping. When a
@@ -20,7 +22,7 @@ This doc outlines some tricks / gotchas / features of how we ship native code in
    * libcrashpad_handler.so is a standalone executable containing all of the
      crash dumping code. It is stored compressed and extracted automatically by
      the system, allowing it to be directly executed to produce a crash dump.
- * Monochrome (N through P), Trichrome (P), and SystemWebView (P-):
+ * Monochrome (N through P) and SystemWebView (L through P):
     * All of the Crashpad code is linked into the package's main native library
       (e.g. libmonochrome.so). When a dump is requested, /system/bin/app_process
       is executed, loading CrashpadMain.java which in turn uses JNI to call into
@@ -72,7 +74,7 @@ This doc outlines some tricks / gotchas / features of how we ship native code in
    * `JNI_OnLoad()` is the only exported symbol (enforced by a linker script).
    * Native methods registered explicitly during start-up by generated code.
      * Explicit generation is required because the Android runtime uses the system's `dlsym()`, which doesn't know about Crazy-Linker-opened libraries.
- * For MonochromePublic.apk:
+ * For MonochromePublic.apk and TrichromeChrome.apk:
    * `JNI_OnLoad()` and `Java_*` symbols are exported by linker script.
    * No manual JNI registration is done. Symbols are resolved lazily by the runtime.
 
@@ -107,17 +109,20 @@ This doc outlines some tricks / gotchas / features of how we ship native code in
       * Linker puts `GNU_RELRO` into private memory and applies relocations as per normal.
       * Afterwards, memory pages are compared against the shared memory and all identical pages are swapped out for ashmem ones (using `munmap()` & `mmap()`).
  * For a more detailed description, refer to comments in [Linker.java](https://cs.chromium.org/chromium/src/base/android/java/src/org/chromium/base/library_loader/Linker.java).
- * For Android N+:
+ * For Android N-P:
    * The OS maintains a RELRO file on disk with the contents of the GNU_RELRO segment.
    * All Android apps that contain a WebView load `libmonochrome.so` at the same virtual address and apply RELRO sharing against the memory-mapped RELRO file.
    * Chrome uses `MonochromeLibraryPreloader` to call into the same WebView library loading code.
      * When Monochrome is the WebView provider, `libmonochrome.so` is loaded with the system's cached RELRO's applied.
    * `System.loadLibrary()` is called afterwards.
      * When Monochrome is the WebView provider, this only calls JNI_OnLoad, since the library is already loaded. Otherwise, this loads the library and no RELRO sharing occurs.
- * For non-low-end Android O+ (where there's a WebView zygote):
+ * For non-low-end Android O-P (where there's a WebView zygote):
    * For non-renderer processes, the above Android N+ logic applies.
    * For renderer processes, the OS starts all Monochrome renderer processes by `fork()`ing the WebView zygote rather than the normal application zygote.
      * In this case, RELRO sharing would be redundant since the entire process' memory is shared with the zygote with copy-on-write semantics.
+ * For Android Q+ (Trichrome):
+   * TrichromeChrome no longer shares its RELRO data with WebView and no RELRO sharing occurs. TrichromeWebView works the same way as on Android N-P.
+   * TrichromeChrome's renderer processes are no longer `fork()`ed from the WebView zygote. TrichromeWebView works the same way as on Android N-P.
 
 ## Library Prefetching
  * During start-up, we `fork()` a process that reads a byte from each page of the library's memory (or just the ordered range of the library).
