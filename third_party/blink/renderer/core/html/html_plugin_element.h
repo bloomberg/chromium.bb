@@ -146,6 +146,10 @@ class CORE_EXPORT HTMLPlugInElement
     UpdateServiceTypeIfEmpty();
   }
 
+  // Set when the current view cannot be re-used on reattach. This is the case
+  // e.g. when attributes (e.g. src) change.
+  void SetDisposeView() { dispose_view_ = true; }
+
   String service_type_;
   String url_;
   KURL loaded_url_;

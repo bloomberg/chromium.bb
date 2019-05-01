@@ -354,7 +354,7 @@ void HTMLPlugInElement::DetachLayoutTree(const AttachContext& context) {
   // since there's no telling what's going to happen next, and it wouldn't be
   // safe to keep it.
   if (!context.performing_reattach)
-    dispose_view_ = true;
+    SetDisposeView();
 
   ResetInstance();
 
@@ -756,7 +756,7 @@ void HTMLPlugInElement::ReattachOnPluginChangeIfNeeded() {
   SetForceReattachLayoutTree();
 
   // Make sure that we don't attempt to re-use the view through re-attachment.
-  dispose_view_ = true;
+  SetDisposeView();
 }
 
 void HTMLPlugInElement::UpdateServiceTypeIfEmpty() {

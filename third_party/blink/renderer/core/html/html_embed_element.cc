@@ -106,6 +106,10 @@ void HTMLEmbedElement::CollectStyleForPresentationAttribute(
 
 void HTMLEmbedElement::ParseAttribute(
     const AttributeModificationParams& params) {
+  // Changing an attribute may change the content, type of content, layout
+  // object type, or all of the above. Not safe to re-use through reattach.
+  SetDisposeView();
+
   if (params.name == kTypeAttr) {
     SetServiceType(params.new_value.LowerASCII());
     wtf_size_t pos = service_type_.Find(";");
