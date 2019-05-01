@@ -30,7 +30,7 @@ import org.chromium.ui.modelutil.PropertyModel;
 import java.util.List;
 
 /**
- * A mediator for the TabGridSheet component, respoonsible for communicating
+ * A mediator for the TabGridSheet component, responsible for communicating
  * with the components' coordinator as well as managing the state of the bottom
  * sheet.
  */

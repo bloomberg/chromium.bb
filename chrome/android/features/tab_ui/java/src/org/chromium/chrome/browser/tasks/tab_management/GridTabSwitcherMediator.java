@@ -38,6 +38,8 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.modelutil.PropertyModel;
 
+import java.util.List;
+
 /**
  * The Mediator that is responsible for resetting the tab grid based on visibility and model
  * changes.
@@ -55,6 +57,7 @@ class GridTabSwitcherMediator
     private final TabModelSelectorObserver mTabModelSelectorObserver;
     private final ObserverList<OverviewModeObserver> mObservers = new ObserverList<>();
     private final ChromeFullscreenManager mFullscreenManager;
+    private final TabGridDialogMediator.ResetHandler mTabGridDialogResetHandler;
     private final ChromeFullscreenManager.FullscreenListener mFullscreenListener =
             new ChromeFullscreenManager.FullscreenListener() {
                 @Override
@@ -99,7 +102,8 @@ class GridTabSwitcherMediator
      */
     GridTabSwitcherMediator(ResetHandler resetHandler, PropertyModel containerViewModel,
             TabModelSelector tabModelSelector, ChromeFullscreenManager fullscreenManager,
-            CompositorViewHolder compositorViewHolder) {
+            CompositorViewHolder compositorViewHolder,
+            TabGridDialogMediator.ResetHandler tabGridDialogResetHandler) {
         mResetHandler = resetHandler;
         mContainerViewModel = containerViewModel;
         mTabModelSelector = tabModelSelector;
@@ -150,6 +154,7 @@ class GridTabSwitcherMediator
                 BOTTOM_CONTROLS_HEIGHT, fullscreenManager.getBottomControlsHeight());
 
         mCompositorViewHolder = compositorViewHolder;
+        mTabGridDialogResetHandler = tabGridDialogResetHandler;
     }
 
     private void setVisibility(boolean isVisible) {
@@ -245,6 +250,14 @@ class GridTabSwitcherMediator
     }
 
     @Nullable
+    TabListMediator.TabActionListener getGridCardOnClickListener(Tab tab) {
+        if (!ableToOpenDialog(tab)) return null;
+        return tabId -> {
+            mTabGridDialogResetHandler.resetWithListOfTabs(getRelatedTabs(tabId));
+        };
+    }
+
+    @Nullable
     TabListMediator.TabActionListener getCreateGroupButtonOnClickListener(Tab tab) {
         if (!ableToCreateGroup(tab)) return null;
 
@@ -261,10 +274,18 @@ class GridTabSwitcherMediator
     private boolean ableToCreateGroup(Tab tab) {
         return FeatureUtilities.isTabGroupsAndroidEnabled()
                 && mTabModelSelector.isIncognitoSelected() == tab.isIncognito()
-                && mTabModelSelector.getTabModelFilterProvider()
-                           .getCurrentTabModelFilter()
-                           .getRelatedTabList(tab.getId())
-                           .size()
-                == 1;
+                && getRelatedTabs(tab.getId()).size() == 1;
+    }
+
+    private boolean ableToOpenDialog(Tab tab) {
+        return FeatureUtilities.isTabGroupsAndroidEnabled()
+                && mTabModelSelector.isIncognitoSelected() == tab.isIncognito()
+                && getRelatedTabs(tab.getId()).size() != 1;
+    }
+
+    private List<Tab> getRelatedTabs(int tabId) {
+        return mTabModelSelector.getTabModelFilterProvider()
+                .getCurrentTabModelFilter()
+                .getRelatedTabList(tabId);
     }
 }

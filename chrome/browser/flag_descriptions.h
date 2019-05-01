@@ -1104,6 +1104,9 @@ extern const char kTabGridLayoutAndroidDescription[];
 extern const char kTabGroupsAndroidName[];
 extern const char kTabGroupsAndroidDescription[];
 
+extern const char kTabGroupsUiImprovementsAndroidName[];
+extern const char kTabGroupsUiImprovementsAndroidDescription[];
+
 extern const char kTabGroupsName[];
 extern const char kTabGroupsDescription[];
 

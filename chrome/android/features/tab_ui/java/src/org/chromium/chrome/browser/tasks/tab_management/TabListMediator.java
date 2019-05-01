@@ -120,6 +120,18 @@ class TabListMediator {
         TabActionListener getCreateGroupButtonOnClickListener(Tab tab);
     }
 
+    /**
+     * An interface to get the onClickListener for opening dialog when click on a grid card.
+     */
+    public interface GridCardOnClickListenerProvider {
+        /**
+         * @return {@link TabActionListener} to open tabgrid dialog. If the given {@link Tab} is not
+         * able to create group, return null;
+         */
+        @Nullable
+        TabActionListener getGridCardOnClickListener(Tab tab);
+    }
+
     @IntDef({TabClosedFrom.TAB_STRIP, TabClosedFrom.TAB_GRID_SHEET, TabClosedFrom.GRID_TAB_SWITCHER,
             TabClosedFrom.GRID_TAB_SWITCHER_GROUP})
     @Retention(RetentionPolicy.SOURCE)
@@ -141,6 +153,7 @@ class TabListMediator {
     private final TabActionListener mTabClosedListener;
     private final TitleProvider mTitleProvider;
     private final CreateGroupButtonProvider mCreateGroupButtonProvider;
+    private final GridCardOnClickListenerProvider mGridCardOnClickListenerProvider;
     private final String mComponentName;
     private boolean mCloseAllRelatedTabs;
     private ComponentCallbacks mComponentCallbacks;
@@ -239,7 +252,9 @@ class TabListMediator {
     public TabListMediator(TabListModel model, TabModelSelector tabModelSelector,
             @Nullable ThumbnailProvider thumbnailProvider, @Nullable TitleProvider titleProvider,
             TabListFaviconProvider tabListFaviconProvider, boolean closeRelatedTabs,
-            @Nullable CreateGroupButtonProvider createGroupButtonProvider, String componentName) {
+            @Nullable CreateGroupButtonProvider createGroupButtonProvider,
+            @Nullable GridCardOnClickListenerProvider gridCardOnClickListenerProvider,
+            String componentName) {
         mTabModelSelector = tabModelSelector;
         mThumbnailProvider = thumbnailProvider;
         mModel = model;
@@ -247,6 +262,7 @@ class TabListMediator {
         mComponentName = componentName;
         mTitleProvider = titleProvider != null ? titleProvider : Tab::getTitle;
         mCreateGroupButtonProvider = createGroupButtonProvider;
+        mGridCardOnClickListenerProvider = gridCardOnClickListenerProvider;
         mCloseAllRelatedTabs = closeRelatedTabs;
 
         mTabModelObserver = new EmptyTabModelObserver() {
@@ -502,6 +518,13 @@ class TabListMediator {
         if (mCloseAllRelatedTabs && !mShownIPH) {
             showIPH = getRelatedTabsForId(tab.getId()).size() > 1;
         }
+        TabActionListener tabSelectedListener;
+        if (mGridCardOnClickListenerProvider == null
+                || getRelatedTabsForId(tab.getId()).size() == 1) {
+            tabSelectedListener = mTabSelectedListener;
+        } else {
+            tabSelectedListener = mGridCardOnClickListenerProvider.getGridCardOnClickListener(tab);
+        }
 
         PropertyModel tabInfo =
                 new PropertyModel.Builder(TabProperties.ALL_KEYS_TAB_GRID)
@@ -511,7 +534,7 @@ class TabListMediator {
                                 mTabListFaviconProvider.getDefaultFaviconDrawable())
                         .with(TabProperties.IS_SELECTED, isSelected)
                         .with(TabProperties.IPH_PROVIDER, showIPH ? mIphProvider : null)
-                        .with(TabProperties.TAB_SELECTED_LISTENER, mTabSelectedListener)
+                        .with(TabProperties.TAB_SELECTED_LISTENER, tabSelectedListener)
                         .with(TabProperties.TAB_CLOSED_LISTENER, mTabClosedListener)
                         .with(TabProperties.CREATE_GROUP_LISTENER, createGroupButtonOnClickListener)
                         .with(TabProperties.ALPHA, 1f)

@@ -83,6 +83,7 @@ public class FeatureUtilities {
     private static Boolean sShouldPrioritizeBootstrapTasks;
     private static Boolean sIsGridTabSwitcherEnabled;
     private static Boolean sIsTabGroupsAndroidEnabled;
+    private static Boolean sIsTabGroupUiImprovementsAndroidEnabled;
     private static Boolean sFeedEnabled;
     private static Boolean sServiceManagerForBackgroundPrefetch;
     private static Boolean sIsNetworkServiceWarmUpEnabled;
@@ -213,6 +214,7 @@ public class FeatureUtilities {
 
         if (isHighEndPhone()) cacheGridTabSwitcherEnabled();
         if (isHighEndPhone()) cacheTabGroupsAndroidEnabled();
+        if (isHighEndPhone()) cacheTabGroupsAndroidUiImprovementsEnabled();
 
         // Propagate REACHED_CODE_PROFILER feature value to LibraryLoader. This can't be done in
         // LibraryLoader itself because it lives in //base and can't depend on ChromeFeatureList.
@@ -637,6 +639,34 @@ public class FeatureUtilities {
         return !SysUtils.isLowEndDevice()
                 && !DeviceFormFactor.isNonMultiDisplayContextOnTablet(
                         ContextUtils.getApplicationContext());
+    }
+
+    private static void cacheTabGroupsAndroidUiImprovementsEnabled() {
+        ChromePreferenceManager.getInstance().writeBoolean(
+                ChromePreferenceManager.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID_ENABLED_KEY,
+                !DeviceClassManager.enableAccessibilityLayout()
+                        && (ChromeFeatureList.isEnabled(
+                                    ChromeFeatureList.DOWNLOAD_TAB_MANAGEMENT_MODULE)
+                                || ChromeFeatureList.isEnabled(
+                                        ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID))
+                        && TabManagementModuleProvider.getTabManagementModule() != null
+                        && ChromeFeatureList.isEnabled(
+                                ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID));
+    }
+
+    /**
+     * @return Whether the tab group ui improvement feature is enabled and available for use.
+     */
+    public static boolean isTabGroupsAndroidUiImprovementsEnabled() {
+        if (!isTabGroupsAndroidEnabled()) return false;
+
+        if (sIsTabGroupUiImprovementsAndroidEnabled == null) {
+            ChromePreferenceManager preferenceManager = ChromePreferenceManager.getInstance();
+
+            sIsTabGroupUiImprovementsAndroidEnabled = preferenceManager.readBoolean(
+                    ChromePreferenceManager.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID_ENABLED_KEY, false);
+        }
+        return sIsTabGroupUiImprovementsAndroidEnabled;
     }
 
     /**

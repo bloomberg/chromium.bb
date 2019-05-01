@@ -50,6 +50,10 @@ public class TabGroupUiToolbarView extends FrameLayout {
         mRightButton.setOnClickListener(listener);
     }
 
+    void setTitleOnClickListener(OnClickListener listener) {
+        mTitleTextView.setOnClickListener(listener);
+    }
+
     ViewGroup getViewContainer() {
         return mContainerView;
     }

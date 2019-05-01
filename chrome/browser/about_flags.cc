@@ -3074,6 +3074,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTabGroupsAndroidDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kTabGroupsAndroid)},
 
+    {"enable-tab-groups-ui-improvements",
+     flag_descriptions::kTabGroupsUiImprovementsAndroidName,
+     flag_descriptions::kTabGroupsUiImprovementsAndroidDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kTabGroupsUiImprovementsAndroid)},
+
     {"enable-tab-switcher-on-return",
      flag_descriptions::kTabSwitcherOnReturnName,
      flag_descriptions::kTabSwitcherOnReturnDescription, kOsAndroid,

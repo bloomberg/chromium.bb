@@ -156,7 +156,7 @@ public class GridTabSwitcherMediatorUnitTest {
         mModel = new PropertyModel(TabListContainerProperties.ALL_KEYS);
         mModel.addObserver(mPropertyObserver);
         mMediator = new GridTabSwitcherMediator(mResetHandler, mModel, mTabModelSelector,
-                mFullscreenManager, mCompositorViewHolder);
+                mFullscreenManager, mCompositorViewHolder, null);
         mMediator.addOverviewModeObserver(mOverviewModeObserver);
     }
 

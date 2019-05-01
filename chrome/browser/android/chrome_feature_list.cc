@@ -170,6 +170,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kSpecialUserDecision,
     &kTabEngagementReportingAndroid,
     &kTabGroupsAndroid,
+    &kTabGroupsUiImprovementsAndroid,
     &kTabGridLayoutAndroid,
     &kTabPersistentStoreTaskRunner,
     &kTabReparenting,
@@ -498,6 +499,9 @@ const base::Feature kTabEngagementReportingAndroid{
 
 const base::Feature kTabGroupsAndroid{"TabGroupsAndroid",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kTabGroupsUiImprovementsAndroid{
+    "TabGroupsUiImprovementsAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kTabGridLayoutAndroid{"TabGridLayoutAndroid",
                                           base::FEATURE_DISABLED_BY_DEFAULT};

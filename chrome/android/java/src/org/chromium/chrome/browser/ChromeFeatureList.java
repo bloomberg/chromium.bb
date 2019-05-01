@@ -313,6 +313,8 @@ public abstract class ChromeFeatureList {
     public static final String QUERY_IN_OMNIBOX = "QueryInOmnibox";
     public static final String TAB_ENGAGEMENT_REPORTING_ANDROID = "TabEngagementReportingAndroid";
     public static final String TAB_GROUPS_ANDROID = "TabGroupsAndroid";
+    public static final String TAB_GROUPS_UI_IMPROVEMENTS_ANDROID =
+            "TabGroupsUiImprovementsAndroid";
     public static final String TAB_GRID_LAYOUT_ANDROID = "TabGridLayoutAndroid";
     public static final String TAB_PERSISTENT_STORE_TASK_RUNNER = "TabPersistentStoreTaskRunner";
     public static final String TAB_REPARENTING = "TabReparenting";

@@ -71,6 +71,8 @@ public class TabListCoordinator implements Destroyable {
             TabListMediator.ThumbnailProvider thumbnailProvider,
             TabListMediator.TitleProvider titleProvider, boolean closeRelatedTabs,
             @Nullable TabListMediator.CreateGroupButtonProvider createGroupButtonProvider,
+            @Nullable TabListMediator
+                    .GridCardOnClickListenerProvider gridCardOnClickListenerProvider,
             @NonNull ViewGroup parentView, boolean attachToParent, String componentName) {
         TabListModel tabListModel = new TabListModel();
         mMode = mode;
@@ -122,7 +124,7 @@ public class TabListCoordinator implements Destroyable {
 
         mMediator = new TabListMediator(tabListModel, tabModelSelector, thumbnailProvider,
                 titleProvider, tabListFaviconProvider, closeRelatedTabs, createGroupButtonProvider,
-                componentName);
+                gridCardOnClickListenerProvider, componentName);
 
         if (mMode == TabListMode.GRID) {
             ItemTouchHelper touchHelper = new ItemTouchHelper(mMediator.getItemTouchHelperCallback(

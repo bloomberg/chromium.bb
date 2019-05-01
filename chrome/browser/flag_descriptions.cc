@@ -1851,6 +1851,10 @@ const char kTabGroupsAndroidName[] = "Tab Groups";
 const char kTabGroupsAndroidDescription[] =
     "Allows users to create groups to better organize their tabs.";
 
+const char kTabGroupsUiImprovementsAndroidName[] = "Tab Groups UI Improvements";
+const char kTabGroupsUiImprovementsAndroidDescription[] =
+    "Allows users to access new features in Tab Group UI.";
+
 const char kTabGroupsName[] = "Tab Groups";
 const char kTabGroupsDescription[] =
     "Allows users to organize tabs into visually distinct groups, e.g. to "

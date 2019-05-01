@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import android.content.res.ColorStateList;
 import android.view.View.OnClickListener;
 
+import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -25,7 +26,13 @@ class TabGridSheetProperties {
             new PropertyModel.WritableIntPropertyKey();
     public static final PropertyModel.WritableObjectPropertyKey<ColorStateList> TINT =
             new PropertyModel.WritableObjectPropertyKey<>();
+    public static final PropertyModel.WritableBooleanPropertyKey IS_DIALOG_VISIBLE =
+            new PropertyModel.WritableBooleanPropertyKey();
+    public static final PropertyModel
+            .WritableObjectPropertyKey<ScrimView.ScrimObserver> SCRIMVIEW_OBSERVER =
+            new PropertyModel.WritableObjectPropertyKey<>();
 
-    public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {COLLAPSE_CLICK_LISTENER,
-            ADD_CLICK_LISTENER, HEADER_TITLE, CONTENT_TOP_MARGIN, PRIMARY_COLOR, TINT};
+    public static final PropertyKey[] ALL_KEYS =
+            new PropertyKey[] {COLLAPSE_CLICK_LISTENER, ADD_CLICK_LISTENER, HEADER_TITLE,
+                    CONTENT_TOP_MARGIN, PRIMARY_COLOR, TINT, IS_DIALOG_VISIBLE, SCRIMVIEW_OBSERVER};
 }

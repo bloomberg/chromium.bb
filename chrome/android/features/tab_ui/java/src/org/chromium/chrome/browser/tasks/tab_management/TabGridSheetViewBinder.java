@@ -8,10 +8,14 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetPrope
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.COLLAPSE_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.CONTENT_TOP_MARGIN;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.HEADER_TITLE;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.IS_DIALOG_VISIBLE;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.PRIMARY_COLOR;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.SCRIMVIEW_OBSERVER;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.TINT;
 
+import android.support.annotation.Nullable;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import org.chromium.ui.modelutil.PropertyKey;
@@ -27,10 +31,17 @@ class TabGridSheetViewBinder {
     public static class ViewHolder {
         public final TabGroupUiToolbarView toolbarView;
         public final View contentView;
+        @Nullable
+        public ViewGroup parentView;
+        @Nullable
+        public TabGridDialogParent dialogView;
 
-        ViewHolder(TabGroupUiToolbarView toolbarView, View contentView) {
+        ViewHolder(TabGroupUiToolbarView toolbarView, View contentView,
+                @Nullable ViewGroup parentView, @Nullable TabGridDialogParent dialogView) {
             this.toolbarView = toolbarView;
             this.contentView = contentView;
+            this.parentView = parentView;
+            this.dialogView = dialogView;
         }
     }
 
@@ -56,6 +67,15 @@ class TabGridSheetViewBinder {
             viewHolder.contentView.setBackgroundColor(model.get(PRIMARY_COLOR));
         } else if (TINT == propertyKey) {
             viewHolder.toolbarView.setTint(model.get(TINT));
+        } else if (SCRIMVIEW_OBSERVER == propertyKey) {
+            viewHolder.dialogView.setScrimViewObserver(model.get(SCRIMVIEW_OBSERVER));
+        } else if (IS_DIALOG_VISIBLE == propertyKey) {
+            if (model.get(IS_DIALOG_VISIBLE)) {
+                viewHolder.dialogView.updateDialog(viewHolder.toolbarView, viewHolder.contentView);
+                viewHolder.dialogView.showDialog(viewHolder.parentView);
+            } else {
+                viewHolder.dialogView.hideDialog();
+            }
         }
     }
 }

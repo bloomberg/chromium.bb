@@ -32950,6 +32950,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1160941363" label="AffiliationBasedMatching:disabled"/>
   <int value="-1160026273" label="enable-web-notification-custom-layouts"/>
   <int value="-1159563774" label="enable-accessibility-script-injection"/>
+  <int value="-1159369873" label="TabGroupsUiImprovementsAndroid:disabled"/>
   <int value="-1158993534" label="PrintScaling:enabled"/>
   <int value="-1156179600" label="OmniboxRichEntitySuggestions:enabled"/>
   <int value="-1155543191" label="CopylessPaste:disabled"/>
@@ -33307,6 +33308,7 @@ from previous Chrome versions.
   <int value="-612480090" label="FasterLocationReload:enabled"/>
   <int value="-610411643" label="enable-printer-app-search"/>
   <int value="-606898702" label="MaterialDesignSettings:disabled"/>
+  <int value="-606696801" label="TabGroupsUiImprovementsAndroid:enabled"/>
   <int value="-606431158" label="DrawVerticallyEdgeToEdge:enabled"/>
   <int value="-604814313" label="enable-pinch"/>
   <int value="-604269405"
