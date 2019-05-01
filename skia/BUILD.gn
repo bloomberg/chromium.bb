@@ -29,10 +29,7 @@ declare_args() {
 
 # External-facing config for dependent code.
 config("skia_config") {
-  include_dirs = [
-    "//third_party/skia",
-    "//third_party/skia/third_party/skcms",
-  ]
+  include_dirs = [ "//third_party/skia" ]
   if (enable_vulkan) {
     include_dirs += [
       "//third_party/vulkan/include",
@@ -195,8 +192,9 @@ source_set("skcms") {
   }
 
   public = [
-    "//third_party/skia/third_party/skcms/skcms.h",
+    "//third_party/skia/include/third_party/skcms/skcms.h",
   ]
+  include_dirs = [ "//third_party/skia/include/third_party/skcms" ]
   sources =
       rebase_path(skcms_sources, ".", "//third_party/skia/third_party/skcms")
 }

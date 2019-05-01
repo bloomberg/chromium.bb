@@ -41,7 +41,7 @@
 #include <memory>
 
 #include "base/numerics/checked_math.h"
-#include "third_party/skia/third_party/skcms/skcms.h"
+#include "third_party/skia/include/third_party/skcms/skcms.h"
 
 #if (defined(__ARM_NEON__) || defined(__ARM_NEON))
 #include <arm_neon.h>

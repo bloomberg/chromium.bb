@@ -13,7 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/synchronization/lock.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
-#include "third_party/skia/third_party/skcms/skcms.h"
+#include "third_party/skia/include/third_party/skcms/skcms.h"
 #include "ui/gfx/skia_color_space_util.h"
 
 namespace gfx {

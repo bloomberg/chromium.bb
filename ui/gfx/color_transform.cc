@@ -13,7 +13,7 @@
 
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "third_party/skia/third_party/skcms/skcms.h"
+#include "third_party/skia/include/third_party/skcms/skcms.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/icc_profile.h"
 #include "ui/gfx/skia_color_space_util.h"
