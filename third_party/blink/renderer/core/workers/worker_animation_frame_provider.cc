@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/core/workers/worker_animation_frame_provider.h"
 
 #include "third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.h"
-#include "third_party/blink/renderer/core/timing/worker_global_scope_performance.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
@@ -44,11 +43,7 @@ void WorkerAnimationFrameProvider::BeginFrame() {
           FROM_HERE,
           WTF::Bind(
               [](base::WeakPtr<WorkerAnimationFrameProvider> provider) {
-                ExecutionContext* context = provider->context_;
-                Performance* performance =
-                    WorkerGlobalScopePerformance::performance(
-                        *To<WorkerGlobalScope>(context));
-                double time = performance->now();
+                double time = WTF::CurrentTimeTicksInMilliseconds();
                 // We don't want to expose microseconds residues to users.
                 time = round(time * 60) / 60;
 
