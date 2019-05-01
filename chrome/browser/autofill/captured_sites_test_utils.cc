@@ -426,7 +426,6 @@ bool TestRecipeReplayer::RunWebPageReplayCmd(
                                                   .AppendASCII("catapult")
                                                   .AppendASCII("telemetry")
                                                   .AppendASCII("telemetry")
-                                                  .AppendASCII("internal")
                                                   .AppendASCII("bin");
   options.current_directory = web_page_replay_binary_dir;
 
