@@ -1234,13 +1234,6 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   // so this cannot happen any earlier than now.
   InitializeMojo();
 
-#if BUILDFLAG(ENABLE_MUS)
-  if (features::IsUsingWindowService()) {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableSurfaceSynchronization);
-  }
-#endif
-
   HistogramSynchronizer::GetInstance();
 
   // cc assumes a single client name for metrics in a process, which is
