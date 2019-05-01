@@ -459,12 +459,6 @@ android_library("chrome_java") {
 java_group("chrome_all_java") {
   deps = [
     ":chrome_java",
-<<<<<<< HEAD   (e8c3e0 M75: Fix an unsafe access in PDFiumEngine::ExtendSelection())
-=======
-    "//chrome/android/features/autofill_assistant:animated_poodle_java",
-    "//chrome/android/features/autofill_assistant:java",
-    "//chrome/android/features/keyboard_accessory:internal_java",
->>>>>>> CHANGE (f086ac [autofill assistant] Make autofill assistant a static featur)
     "//chrome/android/features/media_router:java",
   ]
 }
@@ -2206,6 +2200,12 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
         },
       ]
     }
+    extra_modules += [
+      {
+        name = "autofill_assistant"
+        module_target = ":${target_name}__autofill_assistant_bundle_module"
+      },
+    ]
   }
 }
 
