@@ -31,8 +31,6 @@ source_set("net") {
     "crw_ssl_status_updater.mm",
     "request_group_util.h",
     "request_group_util.mm",
-    "request_tracker_factory_impl.h",
-    "request_tracker_factory_impl.mm",
     "request_tracker_impl.h",
     "request_tracker_impl.mm",
   ]
