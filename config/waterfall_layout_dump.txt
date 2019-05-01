@@ -587,6 +587,7 @@
     chell-release
     cheza-freedreno-release
     cheza-release
+    cheza64-release
     clapper-release
     cobblepot-release
     coral-release
@@ -2882,6 +2883,7 @@
     chell-release-tryjob
     cheza-freedreno-release-tryjob
     cheza-release-tryjob
+    cheza64-release-tryjob
     clapper-release-tryjob
     cobblepot-release-tryjob
     coral-release-tryjob

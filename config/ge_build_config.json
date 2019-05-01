@@ -314,6 +314,18 @@
       ]
     },
     {
+      "name": "cheza64",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "",
+          "arch": "ARM_INTERNAL"
+        }
+      ]
+    },
+    {
       "name": "clapper",
       "configs": [
         {
