@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/numerics/checked_math.h"
+#include "base/trace_event/trace_event.h"
 #include "gpu/command_buffer/client/gpu_control.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 
@@ -195,6 +196,14 @@ void WebGPUImplementation::OnSwapBufferPresented(
 void WebGPUImplementation::OnGpuControlReturnData(
     base::span<const uint8_t> data) {
 #if BUILDFLAG(USE_DAWN)
+
+  static uint32_t return_trace_id = 0;
+  TRACE_EVENT_FLOW_END0(TRACE_DISABLED_BY_DEFAULT("gpu.dawn"),
+                        "DawnReturnCommands", return_trace_id++);
+
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("gpu.dawn"),
+               "WebGPUImplementation::OnGpuControlReturnData", "bytes",
+               data.size());
   if (!wire_client_->HandleCommands(
       reinterpret_cast<const char*>(data.data()), data.size())) {
     // TODO(enga): Lose the context.
@@ -229,6 +238,8 @@ void* WebGPUImplementation::GetCmdSpace(size_t size) {
 
     uint32_t allocation_size =
         std::max(c2s_buffer_default_size_, static_cast<uint32_t>(size));
+    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("gpu.dawn"),
+                 "WebGPUImplementation::GetCmdSpace", "bytes", allocation_size);
     c2s_buffer_.Reset(allocation_size);
     c2s_put_offset_ = 0;
     next_offset = size;
@@ -248,6 +259,14 @@ void* WebGPUImplementation::GetCmdSpace(size_t size) {
 
 bool WebGPUImplementation::Flush() {
   if (c2s_buffer_.valid()) {
+    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("gpu.dawn"),
+                 "WebGPUImplementation::Flush", "bytes", c2s_put_offset_);
+
+    TRACE_EVENT_FLOW_BEGIN0(
+        TRACE_DISABLED_BY_DEFAULT("gpu.dawn"), "DawnCommands",
+        (static_cast<uint64_t>(c2s_buffer_.shm_id()) << 32) +
+            c2s_buffer_.offset());
+
     c2s_buffer_.Shrink(c2s_put_offset_);
     helper_->DawnCommands(c2s_buffer_.shm_id(), c2s_buffer_.offset(),
                           c2s_put_offset_);

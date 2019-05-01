@@ -13,6 +13,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/trace_event/trace_event.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/webgpu_cmd_format.h"
 #include "gpu/command_buffer/common/webgpu_cmd_ids.h"
@@ -81,6 +82,13 @@ void* WireServerCommandSerializer::GetCmdSpace(size_t size) {
 
 bool WireServerCommandSerializer::Flush() {
   if (put_offset_ > 0) {
+    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("gpu.dawn"),
+                 "WireServerCommandSerializer::Flush", "bytes", put_offset_);
+
+    static uint32_t return_trace_id = 0;
+    TRACE_EVENT_FLOW_BEGIN0(TRACE_DISABLED_BY_DEFAULT("gpu.dawn"),
+                            "DawnReturnCommands", return_trace_id++);
+
     client_->HandleReturnData(base::make_span(buffer_.data(), put_offset_));
     put_offset_ = 0;
   }
@@ -171,6 +179,8 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
   void PerformPollingWork() override {
     DCHECK(dawn_device_);
     DCHECK(wire_serializer_);
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("gpu.dawn"),
+                 "WebGPUDecoderImpl::PerformPollingWork");
     dawn_procs_.deviceTick(dawn_device_);
     wire_serializer_->Flush();
   }
@@ -524,6 +534,12 @@ error::Error WebGPUDecoderImpl::HandleDawnCommands(
     return error::kOutOfBounds;
   }
 
+  TRACE_EVENT_FLOW_END0(
+      TRACE_DISABLED_BY_DEFAULT("gpu.dawn"), "DawnCommands",
+      (static_cast<uint64_t>(commands_shm_id) << 32) + commands_shm_offset);
+
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("gpu.dawn"),
+               "WebGPUDecoderImpl::HandleDawnCommands", "bytes", size);
   std::vector<char> commands(shm_commands, shm_commands + size);
   if (!wire_server_->HandleCommands(commands.data(), size)) {
     NOTREACHED();
