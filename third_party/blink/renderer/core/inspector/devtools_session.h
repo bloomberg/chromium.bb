@@ -97,7 +97,6 @@ class CORE_EXPORT DevToolsSession
   Vector<std::unique_ptr<Notification>> notification_queue_;
   InspectorAgentState v8_session_state_;
   InspectorAgentState::String v8_session_state_json_;
-  InspectorAgentState::Boolean uses_binary_protocol_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsSession);
 };
