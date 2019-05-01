@@ -11,6 +11,7 @@
 #include "ash/accelerators/accelerator_table.h"
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/test_accessibility_controller_client.h"
+#include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/focus_cycler.h"
@@ -22,6 +23,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
+#include "ash/screen_util.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/app_list_button.h"
 #include "ash/shelf/shelf.h"
@@ -81,6 +83,12 @@
 
 namespace ash {
 namespace {
+
+void PressAppListButton() {
+  ash::Shell::Get()->app_list_controller()->OnAppListButtonPressed(
+      display::Screen::GetScreen()->GetPrimaryDisplay().id(),
+      app_list::AppListShowSource::kShelfButton, base::TimeTicks());
+}
 
 void StepWidgetLayerAnimatorToEnd(views::Widget* widget) {
   widget->GetNativeView()->layer()->GetAnimator()->Step(
@@ -2530,6 +2538,59 @@ TEST_F(ShelfLayoutManagerTest, HomeLauncherGestureHandler) {
 // events to the home launcher gesture handler to handle.
 TEST_F(ShelfLayoutManagerTest, HomeLauncherGestureHandlerAutoHideShelf) {
   TestHomeLauncherGestureHandler(/*autohide_shelf=*/true);
+}
+
+// Tests that the auto-hide shelf has expected behavior when pressing the
+// AppList button while the shelf is being dragged by gesture (see
+// https://crbug.com/953877).
+TEST_F(ShelfLayoutManagerTest, PressAppListBtnWhenShelfBeingDragged) {
+  // Create a widget to hide the shelf in auto-hide mode.
+  CreateTestWidget();
+  GetPrimaryShelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  EXPECT_FALSE(GetPrimaryShelf()->IsVisible());
+
+  const WorkAreaInsets* const work_area =
+      WorkAreaInsets::ForWindow(GetShelfWidget()->GetNativeWindow());
+  gfx::Rect available_bounds = screen_util::GetDisplayBoundsWithShelf(
+      GetShelfWidget()->GetNativeWindow());
+  available_bounds.Inset(work_area->GetAccessibilityInsets());
+
+  // Emulate to drag the shelf to show it.
+  gfx::Point gesture_location = display::Screen::GetScreen()
+                                    ->GetPrimaryDisplay()
+                                    .bounds()
+                                    .bottom_center();
+  int delta_y = -1;
+  base::TimeTicks timestamp = base::TimeTicks::Now();
+
+  ui::GestureEvent start_event = ui::GestureEvent(
+      gesture_location.x(), gesture_location.y(), ui::EF_NONE, timestamp,
+      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN, 0, delta_y));
+  GetPrimaryShelf()->ProcessGestureEvent(start_event);
+  gesture_location.Offset(0, delta_y);
+  delta_y = -20;
+  timestamp += base::TimeDelta::FromMilliseconds(200);
+  ui::GestureEvent update_event = ui::GestureEvent(
+      gesture_location.x(), gesture_location.y(), ui::EF_NONE, timestamp,
+      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE, 0, delta_y));
+  GetPrimaryShelf()->ProcessGestureEvent(update_event);
+
+  // Emulate to press the AppList button while dragging the Shelf.
+  PressAppListButton();
+  EXPECT_TRUE(GetPrimaryShelf()->IsVisible());
+
+  // Press the AppList button to hide the AppList and Shelf. Check the following
+  // things:
+  // (1) Shelf is hidden
+  // (2) Shelf has correct bounds in screen coordinate.
+  PressAppListButton();
+  EXPECT_EQ(available_bounds.bottom_left() +
+                gfx::Point(0, -kHiddenShelfInScreenPortion).OffsetFromOrigin(),
+            GetPrimaryShelf()
+                ->GetShelfViewForTesting()
+                ->GetBoundsInScreen()
+                .origin());
+  EXPECT_FALSE(GetPrimaryShelf()->IsVisible());
 }
 
 // Tests that tap outside of the AUTO_HIDE_SHOWN shelf should hide it.

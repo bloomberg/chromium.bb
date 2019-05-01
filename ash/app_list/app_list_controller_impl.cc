@@ -541,6 +541,10 @@ ash::ShelfAction AppListControllerImpl::ToggleAppList(
     UMA_HISTOGRAM_ENUMERATION(app_list::kAppListToggleMethodHistogram,
                               show_source);
   }
+
+  for (auto& observer : observers_)
+    observer.OnAppListToggled();
+
   return action;
 }
 
