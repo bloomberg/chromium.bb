@@ -3,7 +3,7 @@
  * found in the LICENSE file. */
 
 #arc-detailed-view-overlay {
-  background-color: rgb(255, 255, 192);
+  background-color: rgb(255, 255, 255);
   border: 1px solid #aaa;
   display: none;
   margin: 0;
@@ -51,8 +51,11 @@
 }
 
 .arc-events-band {
+  border-color: #aaa;
+  border-style: solid;
+  border-width: 1px;
   display: block;
-  margin: 0;
+  padding: 2px;
 }
 
 .arc-events-cpu-detailed-band {
