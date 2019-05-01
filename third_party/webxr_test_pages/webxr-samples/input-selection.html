@@ -95,6 +95,113 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       let floorPosition = [0, -floorSize / 2 + 0.01, 0];
       let floorNode = null;
 
+      let controllerTable = {};
+      let boxTable = {};
+      let movableBoxes = {};
+      let loggedGamepadInfo = {};
+
+      class XRControllerState {
+        constructor(button_count) {
+          this.buttons = [];
+          for (let i = 0; i < button_count; ++i) {
+            this.buttons.push(false);
+          }
+        }
+
+        // returns array of buttons to fire events for
+        update(gamepad) {
+          let result = [];
+          for (let i = 0; i < this.buttons.length; ++i) {
+            let old_state = this.buttons[i];
+            let new_state = gamepad.buttons[i].pressed;
+            if (old_state && !new_state) {
+              // Button which was previously pressed is not pressed anymore.
+              result.push(i);
+            }
+            this.buttons[i] = new_state;
+          }
+          return result;
+        }
+      }
+
+      class GamepadBoxSet {
+        constructor(button_count, x, z) {
+          this.box_list = [];
+          this.box_state = [];
+          for (let y = 1; y <= button_count; ++y) {
+            addBox(x, y, z, 1, 0, 0, this.box_list);
+            this.box_state.push(true);
+          }
+        }
+
+        toggle(box_index) {
+          let box = this.box_list[box_index];
+          let uniforms = box.renderPrimitive.uniforms;
+          if (this.box_state[box_index]) {
+            uniforms.baseColorFactor.value = [0, 1, 0, 1];
+          } else {
+            uniforms.baseColorFactor.value = [1, 0, 0, 1];
+          }
+          this.box_state[box_index] = !this.box_state[box_index];
+        }
+      }
+
+      class MovableBox {
+        constructor(x, y, z, inv_speed) {
+          this.box_list = [];
+          addBox(x, y, z, 0, 0, 1, this.box_list);
+          this.inv_speed = inv_speed;
+        }
+
+        update(dx, dz) {
+          vec3.add(this.box_list[0].position, this.box_list[0].position, [dx / this.inv_speed, 0, dz / this.inv_speed]);
+        }
+      }
+
+      function ProcessGamepad(gamepad, input_source) {
+        let hand = input_source.handedness;
+        if (!(hand in loggedGamepadInfo)) {
+          loggedGamepadInfo[hand] = true;
+          console.log(
+            "Detected gamepad with:\n" +
+            "hand = " + hand + "\n" +
+            "id = " + gamepad.id + "\n" +
+            "mapping = " + gamepad.mapping + "\n");
+        }
+        if (!(hand in movableBoxes)) {
+          let x = 2;
+          let z = 2;
+          if (hand == "right") {
+            x = -2;
+            z = -2;
+          }
+          movableBoxes[hand] = new MovableBox(x, 2, z, 100);
+        }
+        if (!(hand in boxTable)) {
+          let x = 1;
+          let z = 1;
+          if (hand == "right") {
+            x = -1;
+            z = -1;
+          }
+          boxTable[hand] = new GamepadBoxSet(gamepad.buttons.length, x, z);
+        }
+        if (!(hand in controllerTable)) {
+          controllerTable[hand] = new XRControllerState(gamepad.buttons.length);
+        }
+        let buttons_fired = controllerTable[hand].update(gamepad);
+        for (let button_index of buttons_fired) {
+          boxTable[hand].toggle(button_index);
+        }
+        for (let i = 0; i < gamepad.axes.length; i += 2) {
+          let dx = gamepad.axes[i];
+          let dy = gamepad.axes[i + 1];
+          if (dx != 0 || dy != 0) {
+            movableBoxes[hand].update(dx, -dy);
+          }
+        }
+      }
+
       function initXR() {
         xrButton = new XRDeviceButton({
           onRequestSession: onRequestSession,
@@ -117,6 +224,25 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         fallbackHelper.emulateStage = true;
       }
 
+      function addBox(x, y, z, r, g, b, box_list) {
+        let boxBuilder = new BoxBuilder();
+        boxBuilder.pushCube([0, 0, 0], 0.4);
+        let boxPrimitive = boxBuilder.finishPrimitive(renderer);
+        let boxMaterial = new PbrMaterial();
+        boxMaterial.baseColorFactor.value = [r, g, b, 1.0];
+        let boxRenderPrimitive = renderer.createRenderPrimitive(boxPrimitive, boxMaterial);
+        let boxNode = new Node();
+        boxNode.addRenderPrimitive(boxRenderPrimitive);
+        // Marks the node as one that needs to be checked when hit testing.
+        boxNode.selectable = true;
+        box_list.push({
+          node: boxNode,
+          renderPrimitive: boxRenderPrimitive,
+          position: [x, y, z]
+        });
+        scene.addNode(boxNode);
+      }
+
       function initGL() {
         if (gl)
           return;
@@ -131,29 +257,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         scene.inputRenderer.setControllerMesh(new Gltf2Node({url: '../media/gltf/controller/controller.gltf'}));
 
         // Create several boxes to use for hit testing.
-        let boxBuilder = new BoxBuilder();
-        boxBuilder.pushCube([0, 0, 0], 0.4);
-        let boxPrimitive = boxBuilder.finishPrimitive(renderer);
-
-        function addBox(x, y, z, r, g, b) {
-          let boxMaterial = new PbrMaterial();
-          boxMaterial.baseColorFactor.value = [r, g, b, 1.0];
-          let boxRenderPrimitive = renderer.createRenderPrimitive(boxPrimitive, boxMaterial);
-          let boxNode = new Node();
-          boxNode.addRenderPrimitive(boxRenderPrimitive);
-          // Marks the node as one that needs to be checked when hit testing.
-          boxNode.selectable = true;
-          boxes.push({
-            node: boxNode,
-            renderPrimitive: boxRenderPrimitive,
-            position: [x, y, z]
-          });
-          scene.addNode(boxNode);
-        }
-
-        addBox(-1.0, 1.6, -1.3, 1.0, 0.0, 0.0);
-        addBox(0.0, 1.7, -1.5, 0.0, 1.0, 0.0);
-        addBox(1.0, 1.6, -1.3, 0.0, 0.0, 1.0);
+        addBox(-1.0, 1.6, -1.3, 1.0, 0.0, 0.0, boxes);
+        addBox(0.0, 1.7, -1.5, 0.0, 1.0, 0.0, boxes);
+        addBox(1.0, 1.6, -1.3, 0.0, 0.0, 1.0, boxes);
 
         addFloorBox();
       }
@@ -200,27 +306,17 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         });
 
         // Same logic for establishing a reference space as in room-scale.html
-        session.requestReferenceSpace({ type: 'bounded' }).then((refSpace) => {
-          if (!boundsRenderer) {
-            boundsRenderer = new BoundsRenderer(refSpace);
-            scene.addNode(boundsRenderer);
-          } else {
-            boundsRenderer.boundedRefSpace = refSpace;
-          }
+        session.requestReferenceSpace({ type: 'stationary', subtype: 'floor-level' }).then((refSpace) => {
           return refSpace;
-        }).catch(() => {
-          console.log('Falling back to floor-level reference space');
-          return session.requestReferenceSpace({ type: 'stationary', subtype: 'floor-level' }).catch((e) => {
-            if (!session.mode.startsWith('immersive')) {
-              console.log('Falling back to identity reference space');
-              return session.requestReferenceSpace({ type: 'identity' }).then((refSpace) => {
-                refSpace.originOffset = new XRRigidTransform({y: -1.6});
-                return refSpace;
-              });
-            } else {
-              throw e;
-            }
-          });
+        }, (e) => {
+          if (!session.mode.startsWith('immersive')) {
+            // If we're in inline mode, our underlying platform may not support
+            // the stationary reference space, but an identity space is guaranteed.
+            console.log("falling back to identity reference space");
+            return session.requestReferenceSpace({ type: 'identity' });
+          } else {
+            throw e;
+          }
         }).then((refSpace) => {
           if (session.mode.startsWith('immersive')) {
             xrImmersiveRefSpace = refSpace;
@@ -358,13 +454,32 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         scene.startFrame();
         session.requestAnimationFrame(onXRFrame);
 
-        // Update the matrix for each box
-        for (let box of boxes) {
-          let node = box.node;
-          mat4.identity(node.matrix);
-          mat4.translate(node.matrix, node.matrix, box.position);
-          mat4.rotateX(node.matrix, node.matrix, time/1000);
-          mat4.rotateY(node.matrix, node.matrix, time/1500);
+        function updateBoxes(box_list, rotate) {
+          // Update the matrix for each box
+          for (let box of box_list) {
+            let node = box.node;
+            mat4.identity(node.matrix);
+            mat4.translate(node.matrix, node.matrix, box.position);
+            if (rotate) {
+              mat4.rotateX(node.matrix, node.matrix, time/1000);
+              mat4.rotateY(node.matrix, node.matrix, time/1500);
+            }
+          }
+        }
+
+        for (let source of session.getInputSources()) {
+          let gamepad = source.gamepad;
+          if (gamepad) {
+            ProcessGamepad(gamepad, source);
+          }
+        }
+
+        updateBoxes(boxes, true);
+        for (let hand in boxTable) {
+          updateBoxes(boxTable[hand].box_list, false);
+        }
+        for (let hand in movableBoxes) {
+          updateBoxes(movableBoxes[hand].box_list, false);
         }
 
         // In this sample and most samples after it we'll use a helper function

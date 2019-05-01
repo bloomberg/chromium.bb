@@ -302,6 +302,8 @@ std::vector<mojom::XRInputSourceStatePtr> OculusRenderLoop::GetInputState(
         state->primary_input_clicked = true;
       }
 
+      // TODO(https://crbug.com/956190): Expose remote as a gamepad to WebXR.
+
       primary_input_pressed[ovrControllerType_Remote] =
           state->primary_input_pressed;
 
@@ -368,6 +370,8 @@ device::mojom::XRInputSourceStatePtr OculusRenderLoop::GetTouchData(
   desc->pointer_offset->RotateAboutXAxis(-kGripRotationXDelta);
 
   state->description = std::move(desc);
+
+  state->gamepad = OculusGamepadHelper::CreateGamepad(session_, hand);
 
   return state;
 }

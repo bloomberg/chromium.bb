@@ -13,6 +13,8 @@ namespace device {
 class OculusGamepadHelper {
  public:
   static mojom::XRGamepadDataPtr GetGamepadData(ovrSession session);
+  static base::Optional<Gamepad> CreateGamepad(ovrSession session,
+                                               ovrHandType hand);
 };
 
 }  // namespace device
