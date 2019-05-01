@@ -58,8 +58,16 @@ PolicyMap::Entry PolicyListMerger::Merge(const PolicyMap::Entry& policy) const {
   }
 
   for (const auto& it : policy.conflicts) {
+    // On desktop, the user cloud policy potentially comes from a different
+    // domain than e.g. GPO policy or machine-level cloud policy, so prevent
+    // merging user cloud policy with other policy sources.
+    const bool is_user_cloud_policy =
+        it.scope == POLICY_SCOPE_USER &&
+        (it.source == POLICY_SOURCE_CLOUD ||
+         it.source == POLICY_SOURCE_PRIORITY_CLOUD);
     if (it.IsBlocked() || it.source == POLICY_SOURCE_ENTERPRISE_DEFAULT ||
-        it.level != policy.level || it.scope != policy.scope) {
+        is_user_cloud_policy || it.level != policy.level ||
+        it.scope != policy.scope) {
       continue;
     }
 
