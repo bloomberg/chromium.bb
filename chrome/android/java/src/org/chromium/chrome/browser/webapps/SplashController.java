@@ -12,9 +12,10 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.WarmupManager;
-import org.chromium.chrome.browser.compositor.CompositorViewHolder;
+import org.chromium.chrome.browser.compositor.CompositorView;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabObserverRegistrar;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -36,10 +37,9 @@ public class SplashController extends EmptyTabObserver {
     public static final String HISTOGRAM_SPLASHSCREEN_DURATION = "Webapp.Splashscreen.Duration";
     public static final String HISTOGRAM_SPLASHSCREEN_HIDES = "Webapp.Splashscreen.Hides";
 
-    private SplashDelegate mDelegate;
+    private final TabObserverRegistrar mTabObserverRegistrar;
 
-    /** Used to schedule splash screen hiding. */
-    private CompositorViewHolder mCompositorViewHolder;
+    private SplashDelegate mDelegate;
 
     /** View to which the splash screen is added. */
     private ViewGroup mParentView;
@@ -49,16 +49,19 @@ public class SplashController extends EmptyTabObserver {
 
     private ObserverList<SplashscreenObserver> mObservers;
 
-    public SplashController() {
+    public SplashController(TabObserverRegistrar tabObserverRegistrar) {
+        mTabObserverRegistrar = tabObserverRegistrar;
+        mTabObserverRegistrar.registerTabObserver(this);
         mObservers = new ObserverList<>();
     }
 
     /** Shows the splash screen. */
-    public void showSplash(ViewGroup parentView, final WebappInfo webappInfo) {
+    public void showSplash(
+            SplashDelegate delegate, ViewGroup parentView, final WebappInfo webappInfo) {
+        mDelegate = delegate;
         mParentView = parentView;
         mSplashShownTimestamp = SystemClock.elapsedRealtime();
 
-        mDelegate = new SameActivityWebappSplashDelegate();
         mDelegate.showSplash(parentView, webappInfo);
 
         notifySplashscreenVisible(mSplashShownTimestamp);
@@ -74,13 +77,6 @@ public class SplashController extends EmptyTabObserver {
         if (splashView != null) {
             mParentView.bringChildToFront(splashView);
         }
-    }
-
-    /** Should be called once native has loaded and after {@link #showSplash()}. */
-    public void showSplashWithNative(Tab tab, CompositorViewHolder compositorViewHolder) {
-        mCompositorViewHolder = compositorViewHolder;
-        tab.addObserver(this);
-        mDelegate.showSplashWithNative(tab);
     }
 
     @VisibleForTesting
@@ -126,8 +122,8 @@ public class SplashController extends EmptyTabObserver {
         final Runnable onHiddenCallback = new Runnable() {
             @Override
             public void run() {
+                mTabObserverRegistrar.unregisterTabObserver(SplashController.this);
                 tab.removeObserver(SplashController.this);
-                mCompositorViewHolder = null;
                 mDelegate = null;
 
                 long splashHiddenTimestamp = SystemClock.elapsedRealtime();
@@ -137,15 +133,17 @@ public class SplashController extends EmptyTabObserver {
             }
         };
         if (reason == SplashHidesReason.LOAD_FAILED || reason == SplashHidesReason.CRASH) {
-            mDelegate.hideSplash(onHiddenCallback);
+            mDelegate.hideSplash(tab, onHiddenCallback);
             return;
         }
         // Delay hiding the splash screen till the compositor has finished drawing the next frame.
         // Without this callback we were seeing a short flash of white between the splash screen and
         // the web content (crbug.com/734500).
-        mCompositorViewHolder.getCompositorView().surfaceRedrawNeededAsync(() -> {
+        CompositorView compositorView =
+                tab.getActivity().getCompositorViewHolder().getCompositorView();
+        compositorView.surfaceRedrawNeededAsync(() -> {
             if (mDelegate == null || !mDelegate.isSplashVisible()) return;
-            mDelegate.hideSplash(onHiddenCallback);
+            mDelegate.hideSplash(tab, onHiddenCallback);
         });
     }
 

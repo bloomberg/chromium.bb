@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.metrics;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.webapps.SplashscreenObserver;
 
 /**
@@ -12,15 +11,10 @@ import org.chromium.chrome.browser.webapps.SplashscreenObserver;
  * shell.
  */
 public class WebApkSplashscreenMetrics implements SplashscreenObserver {
-    private long mShellApkLaunchTimeMs = -1;
+    private final long mShellApkLaunchTimeMs;
     private long mSplashScreenShownTimeMs = -1;
 
-    /**
-     * Marks that splashscreen metrics should be tracked (if the {@param shellApkLaunchTimeMs} is
-     * not -1, otherwise it is ignored). Must only be called on the UI thread.
-     */
-    public void trackSplashscreenMetrics(long shellApkLaunchTimeMs) {
-        ThreadUtils.assertOnUiThread();
+    public WebApkSplashscreenMetrics(long shellApkLaunchTimeMs) {
         mShellApkLaunchTimeMs = shellApkLaunchTimeMs;
     }
 

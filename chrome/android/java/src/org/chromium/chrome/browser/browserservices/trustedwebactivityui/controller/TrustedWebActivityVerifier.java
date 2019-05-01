@@ -21,7 +21,6 @@ import org.chromium.chrome.browser.browserservices.permissiondelegation.Notifica
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
-import org.chromium.chrome.browser.customtabs.TabObserverRegistrar;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
@@ -31,6 +30,7 @@ import org.chromium.chrome.browser.lifecycle.SaveInstanceStateObserver;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.chrome.browser.tab.TabObserverRegistrar;
 import org.chromium.content_public.browser.NavigationHandle;
 
 import java.lang.annotation.Retention;

@@ -29,8 +29,6 @@ public class WebApkActivity extends WebappActivity {
     /** The start time that the activity becomes focused. */
     private long mStartTime;
 
-    private WebApkSplashscreenMetrics mWebApkSplashscreenMetrics;
-
     private static final String TAG = "cr_WebApkActivity";
 
     @VisibleForTesting
@@ -120,9 +118,6 @@ public class WebApkActivity extends WebappActivity {
         if (mUpdateManager != null) {
             mUpdateManager.destroy();
         }
-        if (mWebApkSplashscreenMetrics != null) {
-            mWebApkSplashscreenMetrics = null;
-        }
 
         // The common case is to be connected to just one WebAPK's services. For the sake of
         // simplicity disconnect from the services of all WebAPKs.
@@ -150,7 +145,14 @@ public class WebApkActivity extends WebappActivity {
     }
 
     @Override
-    public void performPreInflationStartup() {
+    protected boolean loadUrlIfPostShareTarget(WebappInfo webappInfo) {
+        WebApkInfo webApkInfo = (WebApkInfo) webappInfo;
+        return WebApkPostShareTargetNavigator.navigateIfPostShareTarget(
+                webApkInfo, getActivityTab().getWebContents());
+    }
+
+    @Override
+    protected void showSplash() {
         // Decide whether to record startup UMA histograms. This is a similar check to the one done
         // in ChromeTabbedActivity.performPreInflationStartup refer to the comment there for why.
         if (!LibraryLoader.getInstance().isInitialized()) {
@@ -160,23 +162,11 @@ public class WebApkActivity extends WebappActivity {
             if (getSavedInstanceState() == null) {
                 long shellLaunchTimestampMs =
                         IntentHandler.getWebApkShellLaunchTimestampFromIntent(getIntent());
-                mWebApkSplashscreenMetrics.trackSplashscreenMetrics(shellLaunchTimestampMs);
+                // Splash observers are removed once the splash screen is hidden.
+                addSplashscreenObserver(new WebApkSplashscreenMetrics(shellLaunchTimestampMs));
             }
         }
-        super.performPreInflationStartup();
-    }
 
-    @Override
-    protected void initializeStartupMetrics() {
-        super.initializeStartupMetrics();
-        mWebApkSplashscreenMetrics = new WebApkSplashscreenMetrics();
-        addSplashscreenObserver(mWebApkSplashscreenMetrics);
-    }
-
-    @Override
-    protected boolean loadUrlIfPostShareTarget(WebappInfo webappInfo) {
-        WebApkInfo webApkInfo = (WebApkInfo) webappInfo;
-        return WebApkPostShareTargetNavigator.navigateIfPostShareTarget(
-                webApkInfo, getActivityTab().getWebContents());
+        super.showSplash();
     }
 }

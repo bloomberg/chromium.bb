@@ -50,6 +50,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBrowserControlsState;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.chrome.browser.tab.TabObserverRegistrar;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer;
@@ -91,6 +92,8 @@ public class WebappActivity extends SingleTabActivity {
     private final WebappDirectoryManager mDirectoryManager;
 
     private WebappInfo mWebappInfo;
+
+    private TabObserverRegistrar mTabObserverRegistrar;
 
     private SplashController mSplashController;
 
@@ -135,7 +138,8 @@ public class WebappActivity extends SingleTabActivity {
     public WebappActivity() {
         mWebappInfo = createWebappInfo(null);
         mDirectoryManager = new WebappDirectoryManager();
-        mSplashController = new SplashController();
+        mTabObserverRegistrar = new TabObserverRegistrar(getLifecycleDispatcher());
+        mSplashController = new SplashController(mTabObserverRegistrar);
         mDisclosureSnackbarController = new WebappDisclosureSnackbarController();
     }
 
@@ -189,6 +193,7 @@ public class WebappActivity extends SingleTabActivity {
     @Override
     public void initializeState() {
         super.initializeState();
+        mTabObserverRegistrar.addObserversForTab(getActivityTab());
         initializeUI(getSavedInstanceState());
     }
 
@@ -305,10 +310,8 @@ public class WebappActivity extends SingleTabActivity {
         if (mWebappInfo.displayMode() == WebDisplayMode.FULLSCREEN) {
             enterImmersiveMode();
         }
-        try (TraceEvent te = TraceEvent.scoped("WebappActivity.showSplash")) {
-            ViewGroup contentView = (ViewGroup) findViewById(android.R.id.content);
-            mSplashController.showSplash(contentView, mWebappInfo);
-        }
+
+        showSplash();
     }
 
     @Override
@@ -324,7 +327,6 @@ public class WebappActivity extends SingleTabActivity {
         getToolbarManager().setCloseButtonDrawable(null); // Hides close button.
 
         getFullscreenManager().setTab(getActivityTab());
-        mSplashController.showSplashWithNative(getActivityTab(), getCompositorViewHolder());
         super.finishNativeInitialization();
         mIsInitialized = true;
     }
@@ -881,6 +883,16 @@ public class WebappActivity extends SingleTabActivity {
     @Override
     protected boolean isContextualSearchAllowed() {
         return false;
+    }
+
+    /** Shows the splash screen. */
+    protected void showSplash() {
+        try (TraceEvent te = TraceEvent.scoped("WebappActivity.showSplash")) {
+            ViewGroup contentView = (ViewGroup) findViewById(android.R.id.content);
+            SplashDelegate delegate = new SameActivityWebappSplashDelegate(
+                    this, getLifecycleDispatcher(), mTabObserverRegistrar);
+            mSplashController.showSplash(delegate, contentView, mWebappInfo);
+        }
     }
 
     /**

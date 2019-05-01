@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.webapps;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -17,8 +18,11 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.metrics.SameActivityWebappUmaCache;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabObserverRegistrar;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.webapk.lib.common.splash.SplashLayout;
 
@@ -26,7 +30,11 @@ import org.chromium.webapk.lib.common.splash.SplashLayout;
  * Delegate for when splash screen is shown by Chrome (as opposed to by external non-Chrome
  * activity).
  */
-public class SameActivityWebappSplashDelegate implements SplashDelegate {
+public class SameActivityWebappSplashDelegate implements SplashDelegate, NativeInitObserver {
+    private Activity mActivity;
+    private ActivityLifecycleDispatcher mLifecycleDispatcher;
+    private TabObserverRegistrar mTabObserverRegistrar;
+
     /** View to which the splash screen is added. */
     private ViewGroup mParentView;
 
@@ -37,8 +45,6 @@ public class SameActivityWebappSplashDelegate implements SplashDelegate {
 
     /** Whether native was loaded. Native must be loaded in order to record metrics. */
     private boolean mNativeLoaded;
-
-    private Tab mTab;
 
     private WebappInfo mWebappInfo;
 
@@ -71,11 +77,27 @@ public class SameActivityWebappSplashDelegate implements SplashDelegate {
         }
     };
 
+    public SameActivityWebappSplashDelegate(Activity activity,
+            ActivityLifecycleDispatcher lifecycleDispatcher,
+            TabObserverRegistrar tabObserverRegistrar) {
+        mActivity = activity;
+        mLifecycleDispatcher = lifecycleDispatcher;
+        mTabObserverRegistrar = tabObserverRegistrar;
+
+        mLifecycleDispatcher.register(this);
+    }
+
     @Override
     public void showSplash(ViewGroup parentView, WebappInfo webappInfo) {
         mParentView = parentView;
         mWebappInfo = webappInfo;
         mIsSplashVisible = true;
+
+        if (mWebappInfo.isForWebApk()) {
+            mWebApkNetworkErrorObserver =
+                    new WebApkSplashNetworkErrorObserver(mActivity, mWebappInfo.name());
+            mTabObserverRegistrar.registerTabObserver(mWebApkNetworkErrorObserver);
+        }
 
         Context context = ContextUtils.getApplicationContext();
         final int backgroundColor = ColorUtils.getOpaqueColor(webappInfo.backgroundColor(
@@ -107,19 +129,13 @@ public class SameActivityWebappSplashDelegate implements SplashDelegate {
     }
 
     @Override
-    public void showSplashWithNative(Tab tab) {
+    public void onFinishNativeInitialization() {
         mNativeLoaded = true;
-        mTab = tab;
-        if (mWebappInfo.isForWebApk()) {
-            mWebApkNetworkErrorObserver =
-                    new WebApkSplashNetworkErrorObserver(tab.getActivity(), mWebappInfo.name());
-            mTab.addObserver(mWebApkNetworkErrorObserver);
-        }
         if (mUmaCache != null) mUmaCache.commitMetrics();
     }
 
     @Override
-    public void hideSplash(final Runnable finishedHidingCallback) {
+    public void hideSplash(Tab tab, final Runnable finishedHidingCallback) {
         assert mIsSplashVisible;
 
         mIsSplashVisible = false;
@@ -129,12 +145,14 @@ public class SameActivityWebappSplashDelegate implements SplashDelegate {
             public void run() {
                 mParentView.removeView(mSplashScreen);
                 if (mWebApkNetworkErrorObserver != null) {
-                    mTab.removeObserver(mWebApkNetworkErrorObserver);
+                    mTabObserverRegistrar.unregisterTabObserver(mWebApkNetworkErrorObserver);
+                    tab.removeObserver(mWebApkNetworkErrorObserver);
                     mWebApkNetworkErrorObserver = null;
                 }
+                mLifecycleDispatcher.unregister(SameActivityWebappSplashDelegate.this);
 
                 recordTraceEventsFinishedHidingSplash();
-                mTab = null;
+                mActivity = null;
                 mSplashScreen = null;
                 finishedHidingCallback.run();
             }

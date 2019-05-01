@@ -10,7 +10,6 @@ import org.chromium.chrome.browser.customtabs.CustomTabActivityLifecycleUmaTrack
 import org.chromium.chrome.browser.customtabs.CustomTabBottomBarDelegate;
 import org.chromium.chrome.browser.customtabs.CustomTabTabPersistencePolicy;
 import org.chromium.chrome.browser.customtabs.CustomTabTopBarDelegate;
-import org.chromium.chrome.browser.customtabs.TabObserverRegistrar;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityInitialPageLoader;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
@@ -21,6 +20,7 @@ import org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModuleToolbar
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityComponent;
+import org.chromium.chrome.browser.tab.TabObserverRegistrar;
 
 import dagger.Subcomponent;
 

@@ -25,13 +25,13 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
-import org.chromium.chrome.browser.customtabs.TabObserverRegistrar;
 import org.chromium.chrome.browser.customtabs.TranslucentCustomTabActivity;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabObserverRegistrar;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.IntentUtils;
 

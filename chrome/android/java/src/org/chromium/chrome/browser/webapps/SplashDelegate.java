@@ -13,11 +13,8 @@ interface SplashDelegate {
     /** Shows the splash screen. */
     void showSplash(ViewGroup parentView, WebappInfo webappInfo);
 
-    /** Called once native has been loaded and after {@link #showSplash()}. */
-    void showSplashWithNative(Tab tab);
-
     /** Hides the splash screen. Runs the callback once the splash screen is hidden. */
-    void hideSplash(Runnable finishedHidingCallback);
+    void hideSplash(Tab tab, Runnable finishedHidingCallback);
 
     /** Returns whether the splash screen is visible and not in the process of hiding. */
     boolean isSplashVisible();
