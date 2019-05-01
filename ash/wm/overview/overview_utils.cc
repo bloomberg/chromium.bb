@@ -22,7 +22,6 @@
 #include "ash/wm/window_transient_descendant_iterator.h"
 #include "ash/wm/wm_event.h"
 #include "base/no_destructor.h"
-#include "third_party/skia/include/pathops/SkPathOps.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/scoped_canvas.h"
@@ -56,7 +55,8 @@ bool CanCoverAvailableWorkspace(aura::Window* window) {
 
 void FadeInWidgetAndMaybeSlideOnEnter(views::Widget* widget,
                                       OverviewAnimationType animation_type,
-                                      bool slide) {
+                                      bool slide,
+                                      bool observe) {
   aura::Window* window = widget->GetNativeWindow();
   if (window->layer()->GetTargetOpacity() == 1.f && !slide)
     return;
@@ -76,9 +76,10 @@ void FadeInWidgetAndMaybeSlideOnEnter(views::Widget* widget,
   ScopedOverviewAnimationSettings scoped_overview_animation_settings(
       animation_type, window);
   window->layer()->SetOpacity(1.0f);
-  if (slide) {
+  if (slide)
     window->SetTransform(original_transform);
 
+  if (observe) {
     auto enter_observer = std::make_unique<EnterAnimationObserver>();
     scoped_overview_animation_settings.AddObserver(enter_observer.get());
     Shell::Get()->overview_controller()->AddEnterAnimationObserver(

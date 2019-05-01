@@ -32,6 +32,10 @@ class RoundedLabelWidget : public views::Widget {
   ~RoundedLabelWidget() override;
 
   void Init(const InitParams& params);
+
+  // Gets the preferred size of the widget centered in |bounds|.
+  gfx::Rect GetBoundsCenteredIn(const gfx::Rect& bounds);
+
   // Places the widget in the middle of |bounds|. The size will be the preferred
   // size of the label.
   void SetBoundsCenteredIn(const gfx::Rect& bounds);
