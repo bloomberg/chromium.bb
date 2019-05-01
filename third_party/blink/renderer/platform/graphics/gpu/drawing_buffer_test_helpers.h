@@ -83,7 +83,7 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
   void BindTexture(GLenum target, GLuint texture) override {
     if (target == GL_TEXTURE_2D)
       state_.active_texture2d_binding = texture;
-    bound_textures_[target] = texture;
+    bound_textures_.insert(target, texture);
   }
 
   void BindFramebuffer(GLenum target, GLuint framebuffer) override {
@@ -207,7 +207,8 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
                   GLenum type,
                   const void* pixels) override {
     if (target == GL_TEXTURE_2D && !level) {
-      texture_sizes_.Set(bound_textures_[target], IntSize(width, height));
+      texture_sizes_.Set(bound_textures_.find(target)->value,
+                         IntSize(width, height));
     }
   }
 
@@ -233,9 +234,9 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
   MOCK_METHOD1(BindTexImage2DMock, void(GLint imageId));
   void BindTexImage2DCHROMIUM(GLenum target, GLint image_id) override {
     if (target == kImageCHROMIUMTarget) {
-      texture_sizes_.Set(bound_textures_[target],
-                         image_sizes_.find(image_id)->value);
-      image_to_texture_map_.Set(image_id, bound_textures_[target]);
+      GLuint value = bound_textures_.find(target)->value;
+      texture_sizes_.Set(value, image_sizes_.find(image_id)->value);
+      image_to_texture_map_.Set(image_id, value);
       BindTexImage2DMock(image_id);
     }
   }
@@ -373,7 +374,7 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
   static constexpr GLuint kImageCHROMIUMTarget = GL_TEXTURE_2D;
 #endif
 
-  std::map<GLenum, GLuint> bound_textures_;
+  HashMap<GLenum, GLuint> bound_textures_;
 
   // State tracked to verify that it is restored correctly.
   struct State {
