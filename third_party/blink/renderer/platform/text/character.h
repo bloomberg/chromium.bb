@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_CHARACTER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_CHARACTER_H_
 
+#include "base/containers/span.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/text/character_property.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
@@ -77,25 +78,22 @@ class PLATFORM_EXPORT Character {
     return c < 0x1100 ? false : IsHangulSlow(c);
   }
 
-  static unsigned ExpansionOpportunityCount(const LChar*,
-                                            unsigned length,
+  static unsigned ExpansionOpportunityCount(base::span<const LChar>,
                                             TextDirection,
                                             bool& is_after_expansion,
                                             const TextJustify);
-  static unsigned ExpansionOpportunityCount(const UChar*,
-                                            unsigned length,
+  static unsigned ExpansionOpportunityCount(base::span<const UChar>,
                                             TextDirection,
                                             bool& is_after_expansion,
                                             const TextJustify);
   static unsigned ExpansionOpportunityCount(const TextRun& run,
                                             bool& is_after_expansion) {
     if (run.Is8Bit())
-      return ExpansionOpportunityCount(run.Characters8(), run.length(),
-                                       run.Direction(), is_after_expansion,
+      return ExpansionOpportunityCount(run.Span8(), run.Direction(),
+                                       is_after_expansion,
                                        run.GetTextJustify());
-    return ExpansionOpportunityCount(run.Characters16(), run.length(),
-                                     run.Direction(), is_after_expansion,
-                                     run.GetTextJustify());
+    return ExpansionOpportunityCount(run.Span16(), run.Direction(),
+                                     is_after_expansion, run.GetTextJustify());
   }
 
   static bool IsUprightInMixedVertical(UChar32 character);

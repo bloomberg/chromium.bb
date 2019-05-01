@@ -124,19 +124,19 @@ bool Character::IsHangulSlow(UChar32 character) {
   RETURN_HAS_PROPERTY(character, kIsHangul);
 }
 
-unsigned Character::ExpansionOpportunityCount(const LChar* characters,
-                                              unsigned length,
-                                              TextDirection direction,
-                                              bool& is_after_expansion,
-                                              const TextJustify text_justify) {
-  unsigned count = 0;
+unsigned Character::ExpansionOpportunityCount(
+    base::span<const LChar> characters,
+    TextDirection direction,
+    bool& is_after_expansion,
+    const TextJustify text_justify) {
   if (text_justify == TextJustify::kDistribute) {
     is_after_expansion = true;
-    return length;
+    return characters.size();
   }
 
+  unsigned count = 0;
   if (direction == TextDirection::kLtr) {
-    for (unsigned i = 0; i < length; ++i) {
+    for (unsigned i = 0; i < characters.size(); ++i) {
       if (TreatAsSpace(characters[i])) {
         count++;
         is_after_expansion = true;
@@ -145,7 +145,7 @@ unsigned Character::ExpansionOpportunityCount(const LChar* characters,
       }
     }
   } else {
-    for (unsigned i = length; i > 0; --i) {
+    for (unsigned i = characters.size(); i > 0; --i) {
       if (TreatAsSpace(characters[i - 1])) {
         count++;
         is_after_expansion = true;
@@ -158,21 +158,21 @@ unsigned Character::ExpansionOpportunityCount(const LChar* characters,
   return count;
 }
 
-unsigned Character::ExpansionOpportunityCount(const UChar* characters,
-                                              unsigned length,
-                                              TextDirection direction,
-                                              bool& is_after_expansion,
-                                              const TextJustify text_justify) {
+unsigned Character::ExpansionOpportunityCount(
+    base::span<const UChar> characters,
+    TextDirection direction,
+    bool& is_after_expansion,
+    const TextJustify text_justify) {
   unsigned count = 0;
   if (direction == TextDirection::kLtr) {
-    for (unsigned i = 0; i < length; ++i) {
+    for (unsigned i = 0; i < characters.size(); ++i) {
       UChar32 character = characters[i];
       if (TreatAsSpace(character)) {
         count++;
         is_after_expansion = true;
         continue;
       }
-      if (U16_IS_LEAD(character) && i + 1 < length &&
+      if (U16_IS_LEAD(character) && i + 1 < characters.size() &&
           U16_IS_TRAIL(characters[i + 1])) {
         character = U16_GET_SUPPLEMENTARY(character, characters[i + 1]);
         i++;
@@ -188,7 +188,7 @@ unsigned Character::ExpansionOpportunityCount(const UChar* characters,
       is_after_expansion = false;
     }
   } else {
-    for (unsigned i = length; i > 0; --i) {
+    for (unsigned i = characters.size(); i > 0; --i) {
       UChar32 character = characters[i - 1];
       if (TreatAsSpace(character)) {
         count++;

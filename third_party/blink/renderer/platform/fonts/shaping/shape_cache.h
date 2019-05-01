@@ -63,25 +63,23 @@ class ShapeCache {
         : length_(kDeletedValueLength),
           direction_(static_cast<unsigned>(TextDirection::kLtr)) {}
 
-    SmallStringKey(const LChar* characters,
-                   uint16_t length,
-                   TextDirection direction)
-        : length_(length), direction_(static_cast<unsigned>(direction)) {
-      DCHECK(length <= kCapacity);
+    SmallStringKey(base::span<const LChar> characters, TextDirection direction)
+        : length_(static_cast<uint16_t>(characters.size())),
+          direction_(static_cast<unsigned>(direction)) {
+      DCHECK(characters.size() <= kCapacity);
       // Up-convert from LChar to UChar.
-      for (uint16_t i = 0; i < length; ++i) {
+      for (uint16_t i = 0; i < characters.size(); ++i) {
         characters_[i] = characters[i];
       }
 
       HashString();
     }
 
-    SmallStringKey(const UChar* characters,
-                   uint16_t length,
-                   TextDirection direction)
-        : length_(length), direction_(static_cast<unsigned>(direction)) {
-      DCHECK(length <= kCapacity);
-      memcpy(characters_, characters, length * sizeof(UChar));
+    SmallStringKey(base::span<const UChar> characters, TextDirection direction)
+        : length_(static_cast<uint16_t>(characters.size())),
+          direction_(static_cast<unsigned>(direction)) {
+      DCHECK(characters.size() <= kCapacity);
+      memcpy(characters_, characters.data(), characters.size_bytes());
       HashString();
     }
 
@@ -152,10 +150,9 @@ class ShapeCache {
 
  private:
   ShapeCacheEntry* AddSlowCase(const TextRun& run, ShapeCacheEntry entry) {
-    unsigned length = run.length();
     bool is_new_entry;
     ShapeCacheEntry* value;
-    if (length == 1) {
+    if (run.length() == 1) {
       uint32_t key = run[0];
       // All current codepoints in UTF-32 are bewteen 0x0 and 0x10FFFF,
       // as such use bit 31 (zero-based) to indicate direction.
@@ -167,11 +164,9 @@ class ShapeCache {
     } else {
       SmallStringKey small_string_key;
       if (run.Is8Bit()) {
-        small_string_key =
-            SmallStringKey(run.Characters8(), length, run.Direction());
+        small_string_key = SmallStringKey(run.Span8(), run.Direction());
       } else {
-        small_string_key =
-            SmallStringKey(run.Characters16(), length, run.Direction());
+        small_string_key = SmallStringKey(run.Span16(), run.Direction());
       }
 
       SmallStringMap::AddResult add_result =

@@ -26,6 +26,7 @@
 
 #include <unicode/utf16.h>
 
+#include "base/containers/span.h"
 #include "base/optional.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -161,6 +162,16 @@ class PLATFORM_EXPORT TextRun final {
     SECURITY_DCHECK(i < len_);
     DCHECK(!Is8Bit());
     return &data_.characters16[i];
+  }
+
+  // Prefer Span8() and Span16() to Characters8() and Characters16().
+  base::span<const LChar> Span8() const {
+    DCHECK(Is8Bit());
+    return {data_.characters8, len_};
+  }
+  base::span<const UChar> Span16() const {
+    DCHECK(!Is8Bit());
+    return {data_.characters16, len_};
   }
 
   const LChar* Characters8() const {
