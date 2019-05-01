@@ -545,17 +545,15 @@ id<GREYMatcher> BandwidthSettingsButton() {
 
 // Verifies that Settings opens when signed-out and in Incognito mode.
 // This tests that crbug.com/607335 has not regressed.
-// DISABLED, see https://crbug.com/957687.
-// - (void)testSettingsSignedOutIncognito {
-//   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewIncognitoTab]);
-//   [ChromeEarlGreyUI openSettingsMenu];
-//   [[EarlGrey selectElementWithMatcher:SettingsCollectionView()]
-//       assertWithMatcher:grey_notNil()];
-//
-//   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
-//       performAction:grey_tap()];
-//   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey closeAllIncognitoTabs]);
-// }
+- (void)testSettingsSignedOutIncognito {
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewIncognitoTab]);
+  [ChromeEarlGreyUI openSettingsMenu];
+  [[EarlGrey selectElementWithMatcher:SettingsCollectionView()]
+      assertWithMatcher:grey_notNil()];
+
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
+      performAction:grey_tap()];
+}
 
 // Verifies the UI elements are accessible on the Settings page.
 - (void)testAccessibilityOnSettingsPage {
