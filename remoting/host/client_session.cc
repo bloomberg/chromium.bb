@@ -534,6 +534,7 @@ void ClientSession::OnVideoSizeChanged(protocol::VideoStream* video_stream,
 
 void ClientSession::OnDesktopDisplayChanged(
     std::unique_ptr<protocol::VideoLayout> displays) {
+  LOG(INFO) << "OnDesktopDisplayChanged";
   // Scan display list to calculate the full desktop size.
   int min_x = 0;
   int max_x = 0;
@@ -583,15 +584,19 @@ void ClientSession::OnDesktopDisplayChanged(
   video_track->set_height(size_dips.height());
   video_track->set_x_dpi(dpi_x);
   video_track->set_y_dpi(dpi_y);
+  LOG(INFO) << "  Desktop (DIPS) = 0,0 " << size_dips.width() << "x"
+            << size_dips.height() << " [" << dpi_x << "," << dpi_y << "]";
 
   // Add raw geometry for entire desktop (in pixels).
   video_track = layout.add_video_track();
   video_track->set_position_x(0);
   video_track->set_position_y(0);
-  video_track->set_width(max_x - min_x);
-  video_track->set_height(max_y - min_y);
+  video_track->set_width(size.width());
+  video_track->set_height(size.height());
   video_track->set_x_dpi(dpi_x);
   video_track->set_y_dpi(dpi_y);
+  LOG(INFO) << "  Desktop (pixels) = 0,0 " << size.width() << "x"
+            << size.height() << " [" << dpi_x << "," << dpi_y << "]";
 
   // Add a VideoTrackLayout entry for each separate display.
   desktop_display_info_.Reset();
@@ -602,6 +607,10 @@ void ClientSession::OnDesktopDisplayChanged(
 
     protocol::VideoTrackLayout* video_track = layout.add_video_track();
     video_track->CopyFrom(display);
+    LOG(INFO) << "  Display " << display_id << " " << display.position_x()
+              << "," << display.position_y() << display.width() << "x"
+              << display.height() << " [" << display.x_dpi() << ","
+              << display.y_dpi() << "]";
   }
 
   connection_->client_stub()->SetVideoLayout(layout);
