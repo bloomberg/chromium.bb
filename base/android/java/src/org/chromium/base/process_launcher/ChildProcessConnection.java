@@ -103,6 +103,7 @@ public class ChildProcessConnection {
         boolean bind();
         void unbind();
         boolean isBound();
+        void updateGroupImportance(int group, int importanceInGroup);
     }
 
     /** Implementation of ChildServiceConnection that does connect to a service. */
@@ -154,6 +155,16 @@ public class ChildProcessConnection {
         @Override
         public boolean isBound() {
             return mBound;
+        }
+
+        @Override
+        public void updateGroupImportance(int group, int importanceInGroup) {
+            assert isBound();
+            if (BindService.supportVariableConnections()) {
+                BindService.updateServiceGroup(mContext, this, group, importanceInGroup);
+                BindService.doBindService(mContext, mBindIntent, this, mBindFlags, mHandler,
+                        mExecutor, mInstanceName);
+            }
         }
 
         @Override
@@ -250,6 +261,9 @@ public class ChildProcessConnection {
     // Refcount of bindings.
     private int mStrongBindingCount;
     private int mModerateBindingCount;
+
+    private int mGroup;
+    private int mImportanceInGroup;
 
     // Set to true once unbind() was called.
     private boolean mUnbound;
@@ -639,6 +653,17 @@ public class ChildProcessConnection {
             final MemoryPressureCallback callback = mMemoryPressureCallback;
             ThreadUtils.postOnUiThread(() -> MemoryPressureListener.removeCallback(callback));
             mMemoryPressureCallback = null;
+        }
+    }
+
+    public void updateGroupImportance(int group, int importanceInGroup) {
+        assert isRunningOnLauncherThread();
+        assert !mUnbound;
+        assert mWaivedBinding.isBound();
+        if (mGroup != group || mImportanceInGroup != importanceInGroup) {
+            mGroup = group;
+            mImportanceInGroup = importanceInGroup;
+            mWaivedBinding.updateGroupImportance(group, importanceInGroup);
         }
     }
 

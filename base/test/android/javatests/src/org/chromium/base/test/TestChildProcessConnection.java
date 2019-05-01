@@ -31,6 +31,9 @@ public class TestChildProcessConnection extends ChildProcessConnection {
         public boolean isBound() {
             return mBound;
         }
+
+        @Override
+        public void updateGroupImportance(int group, int importanceInGroup) {}
     }
 
     private int mPid;
