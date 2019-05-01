@@ -1158,6 +1158,9 @@ extern const char kTrySupportedChannelLayoutsDescription[];
 extern const char kUnifiedConsentName[];
 extern const char kUnifiedConsentDescription[];
 
+extern const char kUnsafeWebGPUName[];
+extern const char kUnsafeWebGPUDescription[];
+
 extern const char kUiPartialSwapName[];
 extern const char kUiPartialSwapDescription[];
 

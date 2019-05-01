@@ -3889,6 +3889,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillDoNotMigrateUnsupportedLocalCards)},
 
+    {"enable-unsafe-webgpu", flag_descriptions::kUnsafeWebGPUName,
+     flag_descriptions::kUnsafeWebGPUDescription, kOsMac,
+     SINGLE_VALUE_TYPE(switches::kEnableUnsafeWebGPU)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

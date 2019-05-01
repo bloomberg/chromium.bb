@@ -1738,6 +1738,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "enable-unsafe-webgpu",
+    "owners": [ "//third_party/blink/renderer/modules/webgpu/OWNERS" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "enable-ui-devtools",
     "owners": [ "//components/ui_devtools/OWNERS" ],
     // Convenience debugging flag for non-stable ChromeOS Builds.

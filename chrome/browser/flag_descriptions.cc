@@ -1942,6 +1942,12 @@ const char kUnifiedConsentDescription[] =
     "features. This includes new confirmation screens and improved settings "
     "pages.";
 
+const char kUnsafeWebGPUName[] = "Unsafe WebGPU";
+const char kUnsafeWebGPUDescription[] =
+    "Enables access to the experimental WebGPU API. Warning: As GPU sanboxing "
+    "isn't implemented yet for the WebGPU API, it is possible to read GPU data "
+    "for other processes.";
+
 const char kUiPartialSwapName[] = "Partial swap";
 const char kUiPartialSwapDescription[] = "Sets partial swap behavior.";
 
