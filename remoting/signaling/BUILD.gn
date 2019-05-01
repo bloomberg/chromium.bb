@@ -63,7 +63,7 @@ static_library("signaling") {
     "//base",
     "//crypto",
     "//google_apis",
-    "//jingle:jingle_glue",
+    "//jingle:webrtc_glue",
     "//net",
     "//remoting/base",
     "//remoting/base/grpc_support",

@@ -604,7 +604,7 @@ target(link_target_type, "renderer") {
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/command_buffer/client:raster_interface",
     "//gpu/command_buffer/client:webgpu_interface",
-    "//jingle:jingle_glue",
+    "//jingle:webrtc_glue",
     "//media",
     "//media:media_buildflags",
     "//media/blink",
