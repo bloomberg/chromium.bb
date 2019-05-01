@@ -17,6 +17,7 @@
 #include "base/threading/thread_checker.h"
 #include "gpu/vulkan/buildflags.h"
 #include "mojo/public/cpp/system/handle.h"
+#include "ui/ozone/platform/scenic/sysmem_buffer_manager.h"
 #include "ui/ozone/public/gl_ozone.h"
 #include "ui/ozone/public/interfaces/scenic_gpu_host.mojom.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
@@ -90,6 +91,8 @@ class ScenicSurfaceFactory : public SurfaceFactoryOzone {
 
   // Task runner for thread that |scenic_| and |gpu_host_| are bound on.
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
+
+  SysmemBufferManager sysmem_buffer_manager_;
 
   THREAD_CHECKER(thread_checker_);
 

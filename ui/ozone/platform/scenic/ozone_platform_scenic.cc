@@ -24,6 +24,7 @@
 #include "ui/ozone/platform/scenic/scenic_surface_factory.h"
 #include "ui/ozone/platform/scenic/scenic_window.h"
 #include "ui/ozone/platform/scenic/scenic_window_manager.h"
+#include "ui/ozone/platform/scenic/sysmem_buffer_collection.h"
 #include "ui/ozone/platform_selection.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
@@ -158,6 +159,11 @@ class OzonePlatformScenic
     registry->AddInterface<mojom::ScenicGpuService>(
         scenic_gpu_service_->GetBinderCallback(),
         base::ThreadTaskRunnerHandle::Get());
+  }
+
+  bool IsNativePixmapConfigSupported(gfx::BufferFormat format,
+                                     gfx::BufferUsage usage) const override {
+    return SysmemBufferCollection::IsNativePixmapConfigSupported(format, usage);
   }
 
  private:

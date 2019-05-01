@@ -10,6 +10,7 @@
 
 #include <fuchsia/fonts/cpp/fidl.h>
 #include <fuchsia/mediacodec/cpp/fidl.h>
+#include <fuchsia/sysmem/cpp/fidl.h>
 #include <fuchsia/ui/scenic/cpp/fidl.h>
 #include <memory>
 #include <utility>
@@ -69,9 +70,9 @@ constexpr SandboxConfig kSandboxConfigs[] = {
     },
     {
         SANDBOX_TYPE_GPU,
-        base::make_span(
-            (const char* const[]){fuchsia::ui::scenic::Scenic::Name_,
-                                  "fuchsia.vulkan.loader.Loader"}),
+        base::make_span((const char* const[]){
+            fuchsia::ui::scenic::Scenic::Name_,
+            fuchsia::sysmem::Allocator::Name_, "fuchsia.vulkan.loader.Loader"}),
         kProvideVulkanResources,
     },
 };

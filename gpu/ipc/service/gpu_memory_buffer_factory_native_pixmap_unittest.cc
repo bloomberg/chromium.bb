@@ -12,16 +12,11 @@ namespace {
 
 // On Fuchsia NativePixmap depends on Vulkan, which is not initialized in tests.
 // See crbug.com/957700
-#if defined(OS_FUCHSIA)
-#define MAYBE_GpuMemoryBufferFactoryNativePixmap \
-  DISABLED_GpuMemoryBufferFactoryNativePixmap
-#else
-#define MAYBE_GpuMemoryBufferFactoryNativePixmap \
-  GpuMemoryBufferFactoryNativePixmap
-#endif
-INSTANTIATE_TYPED_TEST_SUITE_P(MAYBE_GpuMemoryBufferFactoryNativePixmap,
+#if !defined(OS_FUCHSIA)
+INSTANTIATE_TYPED_TEST_SUITE_P(GpuMemoryBufferFactoryNativePixmap,
                                GpuMemoryBufferFactoryTest,
                                GpuMemoryBufferFactoryNativePixmap);
+#endif
 
 }  // namespace
 }  // namespace gpu

@@ -15,6 +15,7 @@
       "fuchsia.sys.Environment",
       "fuchsia.sys.Launcher",
       "fuchsia.sys.Loader",
+      "fuchsia.sysmem.Allocator",
       "fuchsia.ui.input.ImeService",
       "fuchsia.ui.input.ImeVisibilityService",
       "fuchsia.ui.policy.Presenter",

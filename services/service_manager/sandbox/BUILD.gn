@@ -110,6 +110,7 @@ component("sandbox") {
     deps += [
       "//third_party/fuchsia-sdk/sdk:fonts",
       "//third_party/fuchsia-sdk/sdk:mediacodec",
+      "//third_party/fuchsia-sdk/sdk:sysmem",
       "//third_party/fuchsia-sdk/sdk:ui_scenic",
     ]
   }
