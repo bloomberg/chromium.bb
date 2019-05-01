@@ -444,8 +444,6 @@ blink_core_sources("css") {
     "pseudo_style_request.h",
     "remote_font_face_source.cc",
     "remote_font_face_source.h",
-    "resolver/animated_style_builder.cc",
-    "resolver/animated_style_builder.h",
     "resolver/css_property_priority.h",
     "resolver/css_to_style_map.cc",
     "resolver/css_to_style_map.h",

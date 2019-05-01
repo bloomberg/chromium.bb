@@ -124,15 +124,15 @@
     // - interpolable
     // The interpolable flag indicates whether a property can be animated
     // smoothly. If this flag is set, the property should also be added to the
-    // switch statements in AnimatedStyleBuilder, CSSPropertyEquality and
-    // CSSAnimatableValueFactory.
-    // - inherited
-    // The property will inherit by default if no value is specified, typically
-    // mentioned in specifications as "Inherited: yes"
+    // switch statements in CSSPropertyEquality and CSSInterpolationTypesMap.
     interpolable: {
       default: false,
       valid_type: "bool",
     },
+
+    // - inherited
+    // The property will inherit by default if no value is specified, typically
+    // mentioned in specifications as "Inherited: yes"
     inherited: {
       default: false,
       valid_type: "bool",

@@ -172,8 +172,6 @@ class ComputedStyle : public ComputedStyleBase,
   // Needed to allow access to private/protected getters of fields to allow diff
   // generation
   friend class ComputedStyleBase;
-  // Used by Web Animations CSS. Sets the color styles.
-  friend class AnimatedStyleBuilder;
   // Used by Web Animations CSS. Gets visited and unvisited colors separately.
   friend class CSSAnimatableValueFactory;
   // Used by CSS animations. We can't allow them to animate based off visited
