@@ -196,7 +196,7 @@ IN_PROC_BROWSER_TEST_F(DeviceDisablingTest, DisableWithEphemeralUsers) {
 
   // Verify that the login screen was not shown and the device disabled screen
   // is still being shown instead.
-  EXPECT_EQ(GetOobeScreenName(OobeScreen::SCREEN_DEVICE_DISABLED),
+  EXPECT_EQ(OobeScreen::SCREEN_DEVICE_DISABLED.name,
             GetCurrentScreenName(web_contents));
 
   // Disconnect from the fake Ethernet network.
@@ -219,7 +219,7 @@ IN_PROC_BROWSER_TEST_F(DeviceDisablingTest, DisableWithEphemeralUsers) {
 
   // Verify that the offline error screen was not shown and the device disabled
   // screen is still being shown instead.
-  EXPECT_EQ(GetOobeScreenName(OobeScreen::SCREEN_DEVICE_DISABLED),
+  EXPECT_EQ(OobeScreen::SCREEN_DEVICE_DISABLED.name,
             GetCurrentScreenName(web_contents));
 }
 

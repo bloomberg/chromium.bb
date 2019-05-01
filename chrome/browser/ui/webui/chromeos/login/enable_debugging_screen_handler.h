@@ -22,7 +22,7 @@ class EnableDebuggingScreen;
 // Note, do not forget to call OnViewDestroyed in the dtor.
 class EnableDebuggingScreenView {
  public:
-  constexpr static OobeScreen kScreenId =
+  constexpr static StaticOobeScreenId kScreenId =
       OobeScreen::SCREEN_OOBE_ENABLE_DEBUGGING;
 
   virtual ~EnableDebuggingScreenView() {}

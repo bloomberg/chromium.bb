@@ -18,7 +18,7 @@ class WrongHWIDScreen;
 // Note, do not forget to call OnViewDestroyed in the dtor.
 class WrongHWIDScreenView {
  public:
-  constexpr static OobeScreen kScreenId = OobeScreen::SCREEN_WRONG_HWID;
+  constexpr static StaticOobeScreenId kScreenId = OobeScreen::SCREEN_WRONG_HWID;
 
   virtual ~WrongHWIDScreenView() {}
 

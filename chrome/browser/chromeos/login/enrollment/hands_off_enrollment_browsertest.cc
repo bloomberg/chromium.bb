@@ -157,7 +157,7 @@ IN_PROC_BROWSER_TEST_F(HandsOffEnrollmentTest, EnrollmentError) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(
-      OobeScreen::SCREEN_OOBE_ENROLLMENT,
+      OobeScreen::SCREEN_OOBE_ENROLLMENT.AsId(),
       WizardController::default_controller()->current_screen()->screen_id());
   EXPECT_FALSE(ExistingUserController::current_controller());
   EXPECT_FALSE(StartupUtils::IsOobeCompleted());

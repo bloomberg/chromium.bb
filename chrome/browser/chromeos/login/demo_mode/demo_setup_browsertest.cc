@@ -107,25 +107,21 @@ std::string DialogToStringId(DemoSetupDialog dialog) {
 
 // Returns query to access the content of the given OOBE |screen| or empty
 // string if the |screen| is not a part of Demo Mode setup flow.
-std::string ScreenToContentQuery(OobeScreen screen) {
-  switch (screen) {
-    case OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES:
-      return "$('demo-preferences-content')";
-    case OobeScreen::SCREEN_OOBE_NETWORK:
-      return "$('oobe-network-md')";
-    case OobeScreen::SCREEN_OOBE_EULA:
-      return "$('oobe-eula-md')";
-    case OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE:
-      return "$('arc-tos-root')";
-    case OobeScreen::SCREEN_OOBE_UPDATE:
-      return "$('oobe-update-md')";
-    case OobeScreen::SCREEN_OOBE_DEMO_SETUP:
-      return "$('demo-setup-content')";
-    default: {
-      NOTREACHED() << "This OOBE screen is not a part of Demo Mode setup flow";
-      return std::string();
-    }
-  }
+std::string ScreenToContentQuery(OobeScreenId screen) {
+  if (screen == OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES)
+    return "$('demo-preferences-content')";
+  if (screen == OobeScreen::SCREEN_OOBE_NETWORK)
+    return "$('oobe-network-md')";
+  if (screen == OobeScreen::SCREEN_OOBE_EULA)
+    return "$('oobe-eula-md')";
+  if (screen == OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE)
+    return "$('arc-tos-root')";
+  if (screen == OobeScreen::SCREEN_OOBE_UPDATE)
+    return "$('oobe-update-md')";
+  if (screen == OobeScreen::SCREEN_OOBE_DEMO_SETUP)
+    return "$('demo-setup-content')";
+  NOTREACHED() << "This OOBE screen is not a part of Demo Mode setup flow";
+  return std::string();
 }
 
 // Waits for js condition to be fulfilled.
@@ -159,8 +155,8 @@ class DemoSetupTest : public LoginManagerTest {
     DisconnectAllNetworks();
   }
 
-  bool IsScreenShown(OobeScreen screen) {
-    const std::string screen_name = GetOobeScreenName(screen);
+  bool IsScreenShown(OobeScreenId screen) {
+    const std::string screen_name = screen.name;
     const std::string query = base::StrCat(
         {"!!document.querySelector('#", screen_name,
          "') && !document.querySelector('#", screen_name, "').hidden"});
@@ -174,7 +170,7 @@ class DemoSetupTest : public LoginManagerTest {
   // TODO(michaelpg): Replace this with IsScreenDialogElementVisible, which is
   // more robust because it checks whether the element is actually rendered.
   // Do this after a branch in case it introduces flakiness.
-  bool IsScreenDialogElementShown(OobeScreen screen,
+  bool IsScreenDialogElementShown(OobeScreenId screen,
                                   DemoSetupDialog dialog,
                                   const std::string& element_selector) {
     const std::string element = base::StrCat(
@@ -185,7 +181,7 @@ class DemoSetupTest : public LoginManagerTest {
     return test::OobeJS().GetBool(query);
   }
 
-  bool IsScreenDialogElementVisible(OobeScreen screen,
+  bool IsScreenDialogElementVisible(OobeScreenId screen,
                                     DemoSetupDialog dialog,
                                     const std::string& element_selector) {
     const std::string element = base::StrCat(
@@ -196,7 +192,7 @@ class DemoSetupTest : public LoginManagerTest {
     return test::OobeJS().GetBool(query);
   }
 
-  bool IsScreenDialogElementEnabled(OobeScreen screen,
+  bool IsScreenDialogElementEnabled(OobeScreenId screen,
                                     DemoSetupDialog dialog,
                                     const std::string& element_selector) {
     const std::string element = base::StrCat(
@@ -269,7 +265,7 @@ class DemoSetupTest : public LoginManagerTest {
 
   // Simulates |button| click on a specified OOBE |screen|. Can be used for
   // screens that consists of one oobe-dialog element.
-  void ClickOobeButton(OobeScreen screen,
+  void ClickOobeButton(OobeScreenId screen,
                        OobeButton button,
                        JSExecution execution) {
     ClickOobeButtonWithSelector(screen, ButtonToTag(button), execution);
@@ -277,7 +273,7 @@ class DemoSetupTest : public LoginManagerTest {
 
   // Simulates click on a button with |button_selector| on specified OOBE
   // |screen|. Can be used for screens that consists of one oobe-dialog element.
-  void ClickOobeButtonWithSelector(OobeScreen screen,
+  void ClickOobeButtonWithSelector(OobeScreenId screen,
                                    const std::string& button_selector,
                                    JSExecution execution) {
     const std::string query = base::StrCat(
@@ -297,7 +293,7 @@ class DemoSetupTest : public LoginManagerTest {
 
   // Simulates |button| click on a |dialog| of the specified OOBE |screen|.
   // Can be used for screens that consists of multiple oobe-dialog elements.
-  void ClickScreenDialogButton(OobeScreen screen,
+  void ClickScreenDialogButton(OobeScreenId screen,
                                DemoSetupDialog dialog,
                                OobeButton button,
                                JSExecution execution) {
@@ -308,7 +304,7 @@ class DemoSetupTest : public LoginManagerTest {
   // Simulates click on a button with |button_selector| on a |dialog| of the
   // specified OOBE |screen|. Can be used for screens that consist of multiple
   // oobe-dialog elements.
-  void ClickScreenDialogButtonWithSelector(OobeScreen screen,
+  void ClickScreenDialogButtonWithSelector(OobeScreenId screen,
                                            DemoSetupDialog dialog,
                                            const std::string& button_selector,
                                            JSExecution execution) {
@@ -359,14 +355,14 @@ class DemoSetupTest : public LoginManagerTest {
                         DemoSetupDialog::kError);
   }
 
-  void WaitForScreenDialog(OobeScreen screen, DemoSetupDialog dialog) {
+  void WaitForScreenDialog(OobeScreenId screen, DemoSetupDialog dialog) {
     const std::string query =
         base::StrCat({"!", ScreenToContentQuery(screen), ".$['",
                       DialogToStringId(dialog), "'].hidden"});
     WaitForJsCondition(query);
   }
 
-  void SkipToScreen(OobeScreen screen) {
+  void SkipToScreen(OobeScreenId screen) {
     auto* const wizard_controller = WizardController::default_controller();
     wizard_controller->SimulateDemoModeSetupForTesting();
     wizard_controller->AdvanceToScreen(screen);

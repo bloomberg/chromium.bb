@@ -40,6 +40,8 @@ constexpr char kVoiceMatchDone[] = "voice-match-done";
 
 }  // namespace
 
+constexpr StaticOobeScreenId AssistantOptInFlowScreenView::kScreenId;
+
 AssistantOptInFlowScreenHandler::AssistantOptInFlowScreenHandler(
     JSCallsContainer* js_calls_container)
     : BaseScreenHandler(kScreenId, js_calls_container),

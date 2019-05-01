@@ -16,7 +16,8 @@ class MarketingOptInScreen;
 // WebUI representation.
 class MarketingOptInScreenView {
  public:
-  constexpr static OobeScreen kScreenId = OobeScreen::SCREEN_MARKETING_OPT_IN;
+  constexpr static StaticOobeScreenId kScreenId =
+      OobeScreen::SCREEN_MARKETING_OPT_IN;
 
   virtual ~MarketingOptInScreenView() = default;
 

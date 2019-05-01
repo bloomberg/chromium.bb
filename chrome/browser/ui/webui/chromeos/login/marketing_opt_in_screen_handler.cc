@@ -10,6 +10,8 @@
 
 namespace chromeos {
 
+constexpr StaticOobeScreenId MarketingOptInScreenView::kScreenId;
+
 MarketingOptInScreenHandler::MarketingOptInScreenHandler(
     JSCallsContainer* js_calls_container)
     : BaseScreenHandler(kScreenId, js_calls_container) {

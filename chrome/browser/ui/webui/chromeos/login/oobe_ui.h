@@ -58,8 +58,8 @@ class OobeUI : public ui::MojoWebUIController {
   class Observer {
    public:
     Observer() {}
-    virtual void OnCurrentScreenChanged(OobeScreen current_screen,
-                                        OobeScreen new_screen) = 0;
+    virtual void OnCurrentScreenChanged(OobeScreenId current_screen,
+                                        OobeScreenId new_screen) = 0;
 
     virtual void OnDestroyingOobeUI() = 0;
 
@@ -81,9 +81,9 @@ class OobeUI : public ui::MojoWebUIController {
   void InitializeHandlers();
 
   // Called when the screen has changed.
-  void CurrentScreenChanged(OobeScreen screen);
+  void CurrentScreenChanged(OobeScreenId screen);
 
-  bool IsScreenInitialized(OobeScreen screen);
+  bool IsScreenInitialized(OobeScreenId screen);
 
   bool IsJSReady(const base::Closure& display_is_ready_callback);
 
@@ -105,9 +105,9 @@ class OobeUI : public ui::MojoWebUIController {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  OobeScreen current_screen() const { return current_screen_; }
+  OobeScreenId current_screen() const { return current_screen_; }
 
-  OobeScreen previous_screen() const { return previous_screen_; }
+  OobeScreenId previous_screen() const { return previous_screen_; }
 
   const std::string& display_type() const { return display_type_; }
 
@@ -137,14 +137,13 @@ class OobeUI : public ui::MojoWebUIController {
   // Find a handler instance.
   template <typename THandler>
   THandler* GetHandler() {
-    OobeScreen expected_screen = THandler::kScreenId;
+    OobeScreenId expected_screen = THandler::kScreenId;
     for (BaseScreenHandler* handler : screen_handlers_) {
       if (expected_screen == handler->oobe_screen())
         return static_cast<THandler*>(handler);
     }
 
-    NOTREACHED() << "Unable to find handler for screen "
-                 << GetOobeScreenName(expected_screen);
+    NOTREACHED() << "Unable to find handler for screen " << expected_screen;
     return nullptr;
   }
 
@@ -184,10 +183,10 @@ class OobeUI : public ui::MojoWebUIController {
   std::unique_ptr<ErrorScreen> error_screen_;
 
   // Id of the current oobe/login screen.
-  OobeScreen current_screen_ = OobeScreen::SCREEN_UNKNOWN;
+  OobeScreenId current_screen_ = OobeScreen::SCREEN_UNKNOWN;
 
   // Id of the previous oobe/login screen.
-  OobeScreen previous_screen_ = OobeScreen::SCREEN_UNKNOWN;
+  OobeScreenId previous_screen_ = OobeScreen::SCREEN_UNKNOWN;
 
   // Flag that indicates whether JS part is fully loaded and ready to accept
   // calls.

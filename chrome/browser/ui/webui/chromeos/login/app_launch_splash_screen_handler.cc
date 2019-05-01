@@ -39,6 +39,8 @@ std::string GetNetworkName(const std::string& service_path) {
 
 namespace chromeos {
 
+constexpr StaticOobeScreenId AppLaunchSplashScreenView::kScreenId;
+
 AppLaunchSplashScreenHandler::AppLaunchSplashScreenHandler(
     JSCallsContainer* js_calls_container,
     const scoped_refptr<NetworkStateInformer>& network_state_informer,

@@ -17,7 +17,8 @@ class NetworkScreen;
 // Interface of network screen. Owned by NetworkScreen.
 class NetworkScreenView {
  public:
-  constexpr static OobeScreen kScreenId = OobeScreen::SCREEN_OOBE_NETWORK;
+  constexpr static StaticOobeScreenId kScreenId =
+      OobeScreen::SCREEN_OOBE_NETWORK;
 
   virtual ~NetworkScreenView() {}
 

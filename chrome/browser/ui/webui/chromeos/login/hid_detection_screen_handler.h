@@ -24,7 +24,8 @@ class HIDDetectionScreen;
 // dtor.
 class HIDDetectionView {
  public:
-  constexpr static OobeScreen kScreenId = OobeScreen::SCREEN_OOBE_HID_DETECTION;
+  constexpr static StaticOobeScreenId kScreenId =
+      OobeScreen::SCREEN_OOBE_HID_DETECTION;
 
   virtual ~HIDDetectionView() {}
 

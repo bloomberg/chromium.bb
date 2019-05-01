@@ -10,7 +10,7 @@
 
 namespace chromeos {
 
-OobeScreenExitWaiter::OobeScreenExitWaiter(OobeScreen target_screen)
+OobeScreenExitWaiter::OobeScreenExitWaiter(OobeScreenId target_screen)
     : target_screen_(target_screen) {}
 
 OobeScreenExitWaiter::~OobeScreenExitWaiter() = default;
@@ -37,8 +37,8 @@ void OobeScreenExitWaiter::Wait() {
   oobe_ui_observer_.RemoveAll();
 }
 
-void OobeScreenExitWaiter::OnCurrentScreenChanged(OobeScreen current_screen,
-                                                  OobeScreen new_screen) {
+void OobeScreenExitWaiter::OnCurrentScreenChanged(OobeScreenId current_screen,
+                                                  OobeScreenId new_screen) {
   DCHECK_NE(state_, State::IDLE);
   if (new_screen != target_screen_)
     EndWait();

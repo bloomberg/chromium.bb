@@ -67,7 +67,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   WebUILoginView* GetWebUILoginView() const override;
   void OnFinalize() override;
   void SetStatusAreaVisible(bool visible) override;
-  void StartWizard(OobeScreen first_screen) override;
+  void StartWizard(OobeScreenId first_screen) override;
   WizardController* GetWizardController() override;
   void OnStartUserAdding() override;
   void CancelUserAdding() override;
@@ -248,7 +248,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   RestorePath restore_path_ = RESTORE_UNKNOWN;
 
   // Stored parameters for StartWizard, required to restore in case of crash.
-  OobeScreen first_screen_;
+  OobeScreenId first_screen_ = OobeScreen::SCREEN_UNKNOWN;
 
   // A focus ring controller to draw focus ring around view for keyboard
   // driven oobe.

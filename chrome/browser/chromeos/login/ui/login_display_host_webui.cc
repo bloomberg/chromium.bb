@@ -170,7 +170,7 @@ bool IsOobeComplete() {
 }
 
 // Returns true if signin (not oobe) should be displayed.
-bool ShouldShowSigninScreen(chromeos::OobeScreen first_screen) {
+bool ShouldShowSigninScreen(chromeos::OobeScreenId first_screen) {
   return (first_screen == chromeos::OobeScreen::SCREEN_UNKNOWN &&
           IsOobeComplete()) ||
          first_screen == chromeos::OobeScreen::SCREEN_SPECIAL_LOGIN;
@@ -181,7 +181,7 @@ bool ShouldShowSigninScreen(chromeos::OobeScreen first_screen) {
 // OnLanguageSwitchedCallback()
 // (if locale was updated).
 void ShowLoginWizardFinish(
-    chromeos::OobeScreen first_screen,
+    chromeos::OobeScreenId first_screen,
     const chromeos::StartupCustomizationDocument* startup_manifest) {
   TRACE_EVENT0("chromeos", "ShowLoginWizard::ShowLoginWizardFinish");
 
@@ -229,11 +229,11 @@ void ShowLoginWizardFinish(
 
 struct ShowLoginWizardSwitchLanguageCallbackData {
   explicit ShowLoginWizardSwitchLanguageCallbackData(
-      chromeos::OobeScreen first_screen,
+      chromeos::OobeScreenId first_screen,
       const chromeos::StartupCustomizationDocument* startup_manifest)
       : first_screen(first_screen), startup_manifest(startup_manifest) {}
 
-  const chromeos::OobeScreen first_screen;
+  const chromeos::OobeScreenId first_screen;
   const chromeos::StartupCustomizationDocument* const startup_manifest;
 
   // lock UI while resource bundle is being reloaded.
@@ -532,7 +532,7 @@ void LoginDisplayHostWebUI::OnOobeConfigurationChanged() {
   StartWizard(first_screen_);
 }
 
-void LoginDisplayHostWebUI::StartWizard(OobeScreen first_screen) {
+void LoginDisplayHostWebUI::StartWizard(OobeScreenId first_screen) {
   if (!StartupUtils::IsOobeCompleted()) {
     CHECK(OobeConfiguration::Get());
     if (waiting_for_configuration_)
@@ -564,8 +564,7 @@ void LoginDisplayHostWebUI::StartWizard(OobeScreen first_screen) {
   if (!login_window_)
     LoadURL(GURL(kOobeURL));
 
-  DVLOG(1) << "Starting wizard, first_screen: "
-           << GetOobeScreenName(first_screen);
+  DVLOG(1) << "Starting wizard, first_screen: " << first_screen;
   // Create and show the wizard.
   wizard_controller_ = std::make_unique<WizardController>();
 
@@ -1157,11 +1156,11 @@ void LoginDisplayHostWebUI::PlayStartupSoundIfPossible() {
 
 // Declared in login_wizard.h so that others don't need to depend on our .h.
 // TODO(nkostylev): Split this into a smaller functions.
-void ShowLoginWizard(OobeScreen first_screen) {
+void ShowLoginWizard(OobeScreenId first_screen) {
   if (browser_shutdown::IsTryingToQuit())
     return;
 
-  VLOG(1) << "Showing OOBE screen: " << GetOobeScreenName(first_screen);
+  VLOG(1) << "Showing OOBE screen: " << first_screen;
 
   input_method::InputMethodManager* manager =
       input_method::InputMethodManager::Get();

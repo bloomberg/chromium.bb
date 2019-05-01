@@ -170,6 +170,8 @@ authpolicy::KerberosEncryptionTypes TranslateEncryptionTypesString(
 
 }  // namespace
 
+constexpr StaticOobeScreenId EnrollmentScreenView::kScreenId;
+
 // EnrollmentScreenHandler, public ------------------------------
 
 EnrollmentScreenHandler::EnrollmentScreenHandler(

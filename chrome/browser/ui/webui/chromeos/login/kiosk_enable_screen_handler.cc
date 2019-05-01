@@ -20,6 +20,8 @@
 
 namespace chromeos {
 
+constexpr StaticOobeScreenId KioskEnableScreenView::kScreenId;
+
 KioskEnableScreenHandler::KioskEnableScreenHandler(
     JSCallsContainer* js_calls_container)
     : BaseScreenHandler(kScreenId, js_calls_container),

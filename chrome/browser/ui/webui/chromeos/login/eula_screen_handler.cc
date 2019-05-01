@@ -27,6 +27,8 @@
 
 namespace chromeos {
 
+constexpr StaticOobeScreenId EulaView::kScreenId;
+
 EulaScreenHandler::EulaScreenHandler(JSCallsContainer* js_calls_container,
                                      CoreOobeView* core_oobe_view)
     : BaseScreenHandler(kScreenId, js_calls_container),

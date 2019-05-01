@@ -4,84 +4,80 @@
 
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 
-#include <vector>
-
-#include "base/command_line.h"
-#include "base/logging.h"
-#include "base/stl_util.h"
-#include "base/strings/string_split.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include <ostream>
 
 namespace chromeos {
-namespace {
 
-// These get mapped by the Screen enum ordinal values, so this has to be defined
-// in the same order as the Screen enum.
-const char* kScreenNames[] = {
-    "hid-detection",                   // SCREEN_OOBE_HID_DETECTION
-    "connect",                         // SCREEN_OOBE_WELCOME
-    "network-selection",               // SCREEN_OOBE_NETWORK
-    "eula",                            // SCREEN_OOBE_EULA
-    "update",                          // SCREEN_OOBE_UPDATE
-    "debugging",                       // SCREEN_OOBE_ENABLE_DEBUGGING
-    "oauth-enrollment",                // SCREEN_OOBE_ENROLLMENT
-    "reset",                           // SCREEN_OOBE_RESET
-    "gaia-signin",                     // SCREEN_GAIA_SIGNIN
-    "account-picker",                  // SCREEN_ACCOUNT_PICKER
-    "autolaunch",                      // SCREEN_KIOSK_AUTOLAUNCH
-    "kiosk-enable",                    // SCREEN_KIOSK_ENABLE
-    "error-message",                   // SCREEN_ERROR_MESSAGE
-    "tpm-error-message",               // SCREEN_TPM_ERROR
-    "password-changed",                // SCREEN_PASSWORD_CHANGED
-    "supervised-user-creation",        // SCREEN_CREATE_SUPERVISED_USER_FLOW
-    "terms-of-service",                // SCREEN_TERMS_OF_SERVICE
-    "arc-tos",                         // SCREEN_ARC_TERMS_OF_SERVICE
-    "wrong-hwid",                      // SCREEN_WRONG_HWID
-    "auto-enrollment-check",           // SCREEN_AUTO_ENROLLMENT_CHECK
-    "app-launch-splash",               // SCREEN_APP_LAUNCH_SPLASH
-    "arc-kiosk-splash",                // SCREEN_ARC_KIOSK_SPLASH
-    "confirm-password",                // SCREEN_CONFIRM_PASSWORD
-    "fatal-error",                     // SCREEN_FATAL_ERROR
-    "device-disabled",                 // SCREEN_DEVICE_DISABLED
-    "userBoard",                       // SCREEN_USER_SELECTION
-    "ad-password-change",            // SCREEN_ACTIVE_DIRECTORY_PASSWORD_CHANGE
-    "encryption-migration",          // SCREEN_ENCRYPTION_MIGRATION
-    "supervision-transition",        // SCREEN_SUPERVISION_TRANSITION
-    "update-required",               // SCREEN_UPDATE_REQUIRED
-    "assistant-optin-flow",          // SCREEN_ASSISTANT_OPTIN_FLOW
-    "login",                         // SCREEN_SPECIAL_LOGIN
-    "oobe",                          // SCREEN_SPECIAL_OOBE
-    "test:nowindow",                 // SCREEN_TEST_NO_WINDOW
-    "sync-consent",                  // SCREEN_SYNC_CONSENT
-    "fingerprint-setup",             // SCREEN_FINGERPRINT_SETUP
-    "demo-setup",                    // SCREEN_OOBE_DEMO_SETUP
-    "demo-preferences",              // SCREEN_OOBE_DEMO_PREFERENCES
-    "recommend-apps",                // SCREEN_RECOMMEND_APPS
-    "app-downloading",               // SCREEN_APP_DOWNLOADING
-    "discover",                      // SCREEN_DISCOVER
-    "marketing-opt-in",              // SCREEN_MARKETING_OPT_IN
-    "multidevice-setup",             // SCREEN_MULTIDEVICE_SETUP
-    "unknown",                       // SCREEN_UNKNOWN
-};
+OobeScreenId::OobeScreenId(const std::string& name) : name(name) {}
 
-static_assert(static_cast<size_t>(OobeScreen::SCREEN_UNKNOWN) ==
-                  base::size(kScreenNames) - 1,
-              "Missing element in OobeScreen or kScreenNames");
+OobeScreenId::OobeScreenId(const StaticOobeScreenId& id) : name(id.name) {}
 
-}  // namespace
-
-std::string GetOobeScreenName(OobeScreen screen) {
-  DCHECK(screen <= OobeScreen::SCREEN_UNKNOWN);
-  return kScreenNames[static_cast<size_t>(screen)];
+bool OobeScreenId::operator==(const OobeScreenId& rhs) const {
+  return name == rhs.name;
 }
 
-OobeScreen GetOobeScreenFromName(const std::string& name) {
-  for (size_t i = 0; i < base::size(kScreenNames); ++i) {
-    if (name == kScreenNames[i])
-      return static_cast<OobeScreen>(i);
-  }
-
-  return OobeScreen::SCREEN_UNKNOWN;
+bool OobeScreenId::operator!=(const OobeScreenId& rhs) const {
+  return name != rhs.name;
 }
+
+bool OobeScreenId::operator<(const OobeScreenId& rhs) const {
+  return name < rhs.name;
+}
+
+std::ostream& operator<<(std::ostream& stream, const OobeScreenId& id) {
+  return stream << id.name;
+}
+
+OobeScreenId StaticOobeScreenId::AsId() const {
+  return OobeScreenId(name);
+}
+
+// static
+constexpr StaticOobeScreenId OobeScreen::SCREEN_OOBE_HID_DETECTION;
+constexpr StaticOobeScreenId OobeScreen::SCREEN_OOBE_WELCOME;
+constexpr StaticOobeScreenId OobeScreen::SCREEN_OOBE_NETWORK;
+constexpr StaticOobeScreenId OobeScreen::SCREEN_OOBE_EULA;
+constexpr StaticOobeScreenId OobeScreen::SCREEN_OOBE_UPDATE;
+constexpr StaticOobeScreenId OobeScreen::SCREEN_OOBE_ENABLE_DEBUGGING;
+constexpr StaticOobeScreenId OobeScreen::SCREEN_OOBE_ENROLLMENT;
+constexpr StaticOobeScreenId OobeScreen::SCREEN_OOBE_RESET;
+constexpr StaticOobeScreenId OobeScreen::SCREEN_GAIA_SIGNIN;
+constexpr StaticOobeScreenId OobeScreen::SCREEN_ACCOUNT_PICKER;
+constexpr StaticOobeScreenId OobeScreen::SCREEN_KIOSK_AUTOLAUNCH;
+constexpr StaticOobeScreenId OobeScreen::SCREEN_KIOSK_ENABLE;
+constexpr StaticOobeScreenId OobeScreen::SCREEN_ERROR_MESSAGE;
+constexpr StaticOobeScreenId OobeScreen::SCREEN_TPM_ERROR;
+constexpr StaticOobeScreenId OobeScreen::SCREEN_PASSWORD_CHANGED;
+constexpr StaticOobeScreenId
+    OobeScreen::SCREEN_CREATE_SUPERVISED_USER_FLOW_DEPRECATED;
+constexpr StaticOobeScreenId OobeScreen::SCREEN_TERMS_OF_SERVICE;
+constexpr StaticOobeScreenId OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE;
+constexpr StaticOobeScreenId OobeScreen::SCREEN_WRONG_HWID;
+constexpr StaticOobeScreenId OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK;
+constexpr StaticOobeScreenId OobeScreen::SCREEN_APP_LAUNCH_SPLASH;
+constexpr StaticOobeScreenId OobeScreen::SCREEN_ARC_KIOSK_SPLASH;
+constexpr StaticOobeScreenId OobeScreen::SCREEN_CONFIRM_PASSWORD;
+constexpr StaticOobeScreenId OobeScreen::SCREEN_FATAL_ERROR;
+constexpr StaticOobeScreenId OobeScreen::SCREEN_DEVICE_DISABLED;
+constexpr StaticOobeScreenId OobeScreen::SCREEN_USER_SELECTION;
+constexpr StaticOobeScreenId
+    OobeScreen::SCREEN_ACTIVE_DIRECTORY_PASSWORD_CHANGE;
+constexpr StaticOobeScreenId OobeScreen::SCREEN_ENCRYPTION_MIGRATION;
+constexpr StaticOobeScreenId OobeScreen::SCREEN_SUPERVISION_TRANSITION;
+constexpr StaticOobeScreenId OobeScreen::SCREEN_UPDATE_REQUIRED;
+constexpr StaticOobeScreenId OobeScreen::SCREEN_ASSISTANT_OPTIN_FLOW;
+constexpr StaticOobeScreenId OobeScreen::SCREEN_SPECIAL_LOGIN;
+constexpr StaticOobeScreenId OobeScreen::SCREEN_SPECIAL_OOBE;
+constexpr StaticOobeScreenId OobeScreen::SCREEN_TEST_NO_WINDOW;
+constexpr StaticOobeScreenId OobeScreen::SCREEN_SYNC_CONSENT;
+constexpr StaticOobeScreenId OobeScreen::SCREEN_FINGERPRINT_SETUP;
+constexpr StaticOobeScreenId OobeScreen::SCREEN_OOBE_DEMO_SETUP;
+constexpr StaticOobeScreenId OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES;
+constexpr StaticOobeScreenId OobeScreen::SCREEN_RECOMMEND_APPS;
+constexpr StaticOobeScreenId OobeScreen::SCREEN_APP_DOWNLOADING;
+constexpr StaticOobeScreenId OobeScreen::SCREEN_DISCOVER;
+constexpr StaticOobeScreenId OobeScreen::SCREEN_MARKETING_OPT_IN;
+constexpr StaticOobeScreenId OobeScreen::SCREEN_MULTIDEVICE_SETUP;
+constexpr StaticOobeScreenId OobeScreen::SCREEN_UNKNOWN;
 
 }  // namespace chromeos

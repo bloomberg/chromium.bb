@@ -115,16 +115,17 @@ class BaseWebUIHandler : public content::WebUIMessageHandler {
   virtual void Initialize() = 0;
 
   // Show selected WebUI |screen|.
-  void ShowScreen(OobeScreen screen);
+  void ShowScreen(OobeScreenId screen);
   // Show selected WebUI |screen|. Pass screen initialization using the |data|
   // parameter.
-  void ShowScreenWithData(OobeScreen screen, const base::DictionaryValue* data);
+  void ShowScreenWithData(OobeScreenId screen,
+                          const base::DictionaryValue* data);
 
   // Returns the OobeUI instance.
   OobeUI* GetOobeUI() const;
 
   // Returns current visible OOBE screen.
-  OobeScreen GetCurrentScreen() const;
+  OobeScreenId GetCurrentScreen() const;
 
   // Whether page is ready.
   bool page_is_ready() const { return page_is_ready_; }

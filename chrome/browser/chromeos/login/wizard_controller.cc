@@ -166,7 +166,7 @@ static int g_show_delay_ms = 400;
 const unsigned int kResolveTimeZoneTimeoutSeconds = 60;
 
 // Stores the list of all screens that should be shown when resuming OOBE.
-const chromeos::OobeScreen kResumableScreens[] = {
+const chromeos::StaticOobeScreenId kResumableScreens[] = {
     chromeos::OobeScreen::SCREEN_OOBE_WELCOME,
     chromeos::OobeScreen::SCREEN_OOBE_NETWORK,
     chromeos::OobeScreen::SCREEN_OOBE_UPDATE,
@@ -194,7 +194,7 @@ bool CanShowHIDDetectionScreen() {
              ash::switches::kAshEnableTabletMode);
 }
 
-bool IsResumableScreen(chromeos::OobeScreen screen) {
+bool IsResumableScreen(chromeos::OobeScreenId screen) {
   for (const auto& resumable_screen : kResumableScreens) {
     if (screen == resumable_screen)
       return true;
@@ -203,7 +203,7 @@ bool IsResumableScreen(chromeos::OobeScreen screen) {
 }
 
 struct Entry {
-  chromeos::OobeScreen screen;
+  chromeos::StaticOobeScreenId screen;
   const char* uma_name;
 };
 
@@ -217,13 +217,13 @@ constexpr const Entry kLegacyUmaOobeScreenNames[] = {
      "supervised-user-creation-flow"},
     {chromeos::OobeScreen::SCREEN_TERMS_OF_SERVICE, "tos"}};
 
-void RecordUMAHistogramForOOBEStepCompletionTime(chromeos::OobeScreen screen,
+void RecordUMAHistogramForOOBEStepCompletionTime(chromeos::OobeScreenId screen,
                                                  base::TimeDelta step_time) {
   // Fetch screen name; make sure to use initial UMA name if the name has
   // changed.
-  std::string screen_name = chromeos::GetOobeScreenName(screen);
+  std::string screen_name = screen.name;
   for (const auto& entry : kLegacyUmaOobeScreenNames) {
-    if (entry.screen == screen) {
+    if (entry.screen.AsId() == screen) {
       screen_name = entry.uma_name;
       break;
     }
@@ -329,11 +329,10 @@ WizardController::~WizardController() {
   screen_manager_.reset();
 }
 
-void WizardController::Init(OobeScreen first_screen) {
+void WizardController::Init(OobeScreenId first_screen) {
   screen_manager_->Init(CreateScreens());
 
-  VLOG(1) << "Starting OOBE wizard with screen: "
-          << GetOobeScreenName(first_screen);
+  VLOG(1) << "Starting OOBE wizard with screen: " << first_screen;
   first_screen_ = first_screen;
 
   bool oobe_complete = StartupUtils::IsOobeCompleted();
@@ -378,7 +377,7 @@ void WizardController::Init(OobeScreen first_screen) {
   if (is_out_of_box_ && !screen_pref.empty() &&
       (first_screen == OobeScreen::SCREEN_UNKNOWN ||
        first_screen == OobeScreen::SCREEN_TEST_NO_WINDOW)) {
-    first_screen_ = GetOobeScreenFromName(screen_pref);
+    first_screen_ = OobeScreenId(screen_pref);
   }
 
   AdvanceToScreen(first_screen_);
@@ -396,7 +395,7 @@ ErrorScreen* WizardController::GetErrorScreen() {
   return GetOobeUI()->GetErrorScreen();
 }
 
-BaseScreen* WizardController::GetScreen(OobeScreen screen) {
+BaseScreen* WizardController::GetScreen(OobeScreenId screen) {
   if (screen == OobeScreen::SCREEN_ERROR_MESSAGE)
     return GetErrorScreen();
   return screen_manager_->GetScreen(screen);
@@ -711,11 +710,10 @@ void WizardController::SkipUpdateEnrollAfterEula() {
   skip_update_enroll_after_eula_ = true;
 }
 
-void WizardController::OnScreenExit(OobeScreen screen, int exit_code) {
+void WizardController::OnScreenExit(OobeScreenId screen, int exit_code) {
   DCHECK(current_screen_->screen_id() == screen);
 
-  VLOG(1) << "Wizard screen " << GetOobeScreenName(screen)
-          << " exited with code: " << exit_code;
+  VLOG(1) << "Wizard screen " << screen << " exited with code: " << exit_code;
 
   if (IsOOBEStepToTrack(screen)) {
     RecordUMAHistogramForOOBEStepCompletionTime(
@@ -1297,8 +1295,7 @@ void WizardController::ShowCurrentScreen() {
   // First remember how far have we reached so that we can resume if needed.
   if (is_out_of_box_ && !demo_setup_controller_ &&
       IsResumableScreen(current_screen_->screen_id())) {
-    StartupUtils::SaveOobePendingScreen(
-        GetOobeScreenName(current_screen_->screen_id()));
+    StartupUtils::SaveOobePendingScreen(current_screen_->screen_id().name);
   }
 
   smooth_show_timer_.Stop();
@@ -1310,8 +1307,7 @@ void WizardController::ShowCurrentScreen() {
 
 void WizardController::SetCurrentScreenSmooth(BaseScreen* new_current,
                                               bool use_smoothing) {
-  VLOG(1) << "SetCurrentScreenSmooth: "
-          << GetOobeScreenName(new_current->screen_id());
+  VLOG(1) << "SetCurrentScreenSmooth: " << new_current->screen_id();
   if (current_screen_ == new_current || new_current == nullptr ||
       GetOobeUI() == nullptr) {
     return;
@@ -1324,7 +1320,7 @@ void WizardController::SetCurrentScreenSmooth(BaseScreen* new_current,
     current_screen_->SetConfiguration(nullptr);
   }
 
-  const OobeScreen screen = new_current->screen_id();
+  const OobeScreenId screen = new_current->screen_id();
   if (IsOOBEStepToTrack(screen))
     screen_show_times_[screen] = base::Time::Now();
 
@@ -1340,7 +1336,8 @@ void WizardController::SetCurrentScreenSmooth(BaseScreen* new_current,
   }
 }
 
-void WizardController::UpdateStatusAreaVisibilityForScreen(OobeScreen screen) {
+void WizardController::UpdateStatusAreaVisibilityForScreen(
+    OobeScreenId screen) {
   if (screen == OobeScreen::SCREEN_OOBE_WELCOME) {
     // Hide the status area initially; it only appears after OOBE first animates
     // in. Keep it visible if the user goes back to the existing welcome screen.
@@ -1393,7 +1390,7 @@ void WizardController::UpdateOobeConfiguration() {
   }
 }
 
-void WizardController::AdvanceToScreen(OobeScreen screen) {
+void WizardController::AdvanceToScreen(OobeScreenId screen) {
   if (screen == OobeScreen::SCREEN_OOBE_WELCOME) {
     ShowWelcomeScreen();
   } else if (screen == OobeScreen::SCREEN_OOBE_NETWORK) {
@@ -1563,7 +1560,7 @@ bool WizardController::IsZeroDelayEnabled() {
 }
 
 // static
-bool WizardController::IsOOBEStepToTrack(OobeScreen screen_id) {
+bool WizardController::IsOOBEStepToTrack(OobeScreenId screen_id) {
   return (screen_id == OobeScreen::SCREEN_OOBE_HID_DETECTION ||
           screen_id == OobeScreen::SCREEN_OOBE_WELCOME ||
           screen_id == OobeScreen::SCREEN_OOBE_UPDATE ||
@@ -1578,7 +1575,7 @@ void WizardController::SkipPostLoginScreensForTesting() {
   if (!default_controller() || !default_controller()->current_screen())
     return;
 
-  const OobeScreen current_screen_id =
+  const OobeScreenId current_screen_id =
       default_controller()->current_screen()->screen_id();
   if (current_screen_id == OobeScreen::SCREEN_TERMS_OF_SERVICE ||
       current_screen_id == OobeScreen::SCREEN_SYNC_CONSENT ||
@@ -1589,7 +1586,7 @@ void WizardController::SkipPostLoginScreensForTesting() {
     default_controller()->OnOobeFlowFinished();
   } else {
     LOG(WARNING) << "SkipPostLoginScreensForTesting(): Ignore screen "
-                 << static_cast<int>(current_screen_id);
+                 << current_screen_id.name;
   }
 }
 

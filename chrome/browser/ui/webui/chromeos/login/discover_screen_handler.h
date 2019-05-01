@@ -17,7 +17,7 @@ class DiscoverScreen;
 // WebUI representation.
 class DiscoverScreenView {
  public:
-  constexpr static OobeScreen kScreenId = OobeScreen::SCREEN_DISCOVER;
+  constexpr static StaticOobeScreenId kScreenId = OobeScreen::SCREEN_DISCOVER;
 
   virtual ~DiscoverScreenView() = default;
 

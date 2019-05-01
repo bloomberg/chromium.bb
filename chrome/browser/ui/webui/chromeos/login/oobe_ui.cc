@@ -583,7 +583,7 @@ void OobeUI::InitializeHandlers() {
     handler->InitializeBase();
 }
 
-void OobeUI::CurrentScreenChanged(OobeScreen new_screen) {
+void OobeUI::CurrentScreenChanged(OobeScreenId new_screen) {
   previous_screen_ = current_screen_;
 
   current_screen_ = new_screen;
@@ -591,7 +591,7 @@ void OobeUI::CurrentScreenChanged(OobeScreen new_screen) {
     observer.OnCurrentScreenChanged(current_screen_, new_screen);
 }
 
-bool OobeUI::IsScreenInitialized(OobeScreen screen) {
+bool OobeUI::IsScreenInitialized(OobeScreenId screen) {
   for (BaseScreenHandler* handler : screen_handlers_) {
     if (handler->oobe_screen() == screen) {
       return handler->page_is_ready();

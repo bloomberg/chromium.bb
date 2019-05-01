@@ -44,6 +44,8 @@ using sync_pb::UserConsentTypes;
 
 namespace chromeos {
 
+constexpr StaticOobeScreenId ArcTermsOfServiceScreenView::kScreenId;
+
 ArcTermsOfServiceScreenHandler::ArcTermsOfServiceScreenHandler(
     JSCallsContainer* js_calls_container)
     : BaseScreenHandler(kScreenId, js_calls_container),
@@ -85,8 +87,8 @@ void ArcTermsOfServiceScreenHandler::MaybeLoadPlayStoreToS(
 }
 
 void ArcTermsOfServiceScreenHandler::OnCurrentScreenChanged(
-    OobeScreen current_screen,
-    OobeScreen new_screen) {
+    OobeScreenId current_screen,
+    OobeScreenId new_screen) {
   if (new_screen != OobeScreen::SCREEN_GAIA_SIGNIN)
     return;
 

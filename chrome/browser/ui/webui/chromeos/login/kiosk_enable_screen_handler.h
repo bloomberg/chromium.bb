@@ -19,7 +19,8 @@ class KioskEnableScreen;
 // Note, do not forget to call OnViewDestroyed in the dtor.
 class KioskEnableScreenView {
  public:
-  constexpr static OobeScreen kScreenId = OobeScreen::SCREEN_KIOSK_ENABLE;
+  constexpr static StaticOobeScreenId kScreenId =
+      OobeScreen::SCREEN_KIOSK_ENABLE;
 
   virtual ~KioskEnableScreenView() {}
 

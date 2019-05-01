@@ -47,7 +47,7 @@ class ArcTermsOfServiceScreenViewObserver {
 
 class ArcTermsOfServiceScreenView {
  public:
-  constexpr static OobeScreen kScreenId =
+  constexpr static StaticOobeScreenId kScreenId =
       OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE;
 
   virtual ~ArcTermsOfServiceScreenView() = default;
@@ -102,8 +102,8 @@ class ArcTermsOfServiceScreenHandler
   void Bind(ArcTermsOfServiceScreen* screen) override;
 
   // OobeUI::Observer:
-  void OnCurrentScreenChanged(OobeScreen current_screen,
-                              OobeScreen new_screen) override;
+  void OnCurrentScreenChanged(OobeScreenId current_screen,
+                              OobeScreenId new_screen) override;
   void OnDestroyingOobeUI() override {}
 
   // system::TimezoneSettings::Observer:

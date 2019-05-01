@@ -221,8 +221,8 @@ class SigninScreenHandler
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // OobeUI::Observer implementation:
-  void OnCurrentScreenChanged(OobeScreen current_screen,
-                              OobeScreen new_screen) override;
+  void OnCurrentScreenChanged(OobeScreenId current_screen,
+                              OobeScreenId new_screen) override;
   void OnDestroyingOobeUI() override {}
 
   // ash::mojom::WallpaperObserver implementation:

@@ -23,7 +23,8 @@ class WelcomeScreen;
 // Interface for WelcomeScreenHandler.
 class WelcomeView {
  public:
-  constexpr static OobeScreen kScreenId = OobeScreen::SCREEN_OOBE_WELCOME;
+  constexpr static StaticOobeScreenId kScreenId =
+      OobeScreen::SCREEN_OOBE_WELCOME;
 
   virtual ~WelcomeView() {}
 

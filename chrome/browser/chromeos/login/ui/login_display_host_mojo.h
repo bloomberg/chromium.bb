@@ -69,7 +69,7 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   WebUILoginView* GetWebUILoginView() const override;
   void OnFinalize() override;
   void SetStatusAreaVisible(bool visible) override;
-  void StartWizard(OobeScreen first_screen) override;
+  void StartWizard(OobeScreenId first_screen) override;
   WizardController* GetWizardController() override;
   void OnStartUserAdding() override;
   void CancelUserAdding() override;

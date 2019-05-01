@@ -11,6 +11,8 @@
 
 namespace chromeos {
 
+constexpr StaticOobeScreenId WrongHWIDScreenView::kScreenId;
+
 WrongHWIDScreenHandler::WrongHWIDScreenHandler(
     JSCallsContainer* js_calls_container)
     : BaseScreenHandler(kScreenId, js_calls_container) {

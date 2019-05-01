@@ -18,7 +18,8 @@ class FingerprintSetupScreen;
 // WebUI representation.
 class FingerprintSetupScreenView {
  public:
-  constexpr static OobeScreen kScreenId = OobeScreen::SCREEN_FINGERPRINT_SETUP;
+  constexpr static StaticOobeScreenId kScreenId =
+      OobeScreen::SCREEN_FINGERPRINT_SETUP;
 
   virtual ~FingerprintSetupScreenView() = default;
 

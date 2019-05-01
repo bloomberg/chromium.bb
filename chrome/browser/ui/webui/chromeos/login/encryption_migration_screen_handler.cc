@@ -253,6 +253,8 @@ FirstScreen GetFirstScreenForMode(chromeos::EncryptionMigrationMode mode) {
 
 namespace chromeos {
 
+constexpr StaticOobeScreenId EncryptionMigrationScreenView::kScreenId;
+
 EncryptionMigrationScreenHandler::EncryptionMigrationScreenHandler(
     JSCallsContainer* js_calls_container)
     : BaseScreenHandler(kScreenId, js_calls_container),

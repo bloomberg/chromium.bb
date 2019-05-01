@@ -32,6 +32,8 @@
 
 namespace chromeos {
 
+constexpr StaticOobeScreenId EnableDebuggingScreenView::kScreenId;
+
 EnableDebuggingScreenHandler::EnableDebuggingScreenHandler(
     JSCallsContainer* js_calls_container)
     : BaseScreenHandler(kScreenId, js_calls_container),

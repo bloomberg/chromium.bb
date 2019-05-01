@@ -18,7 +18,8 @@ class SyncConsentScreen;
 // WebUI representation.
 class SyncConsentScreenView {
  public:
-  constexpr static OobeScreen kScreenId = OobeScreen::SCREEN_SYNC_CONSENT;
+  constexpr static StaticOobeScreenId kScreenId =
+      OobeScreen::SCREEN_SYNC_CONSENT;
 
   virtual ~SyncConsentScreenView() = default;
 

@@ -37,6 +37,8 @@
 
 namespace chromeos {
 
+constexpr StaticOobeScreenId WelcomeView::kScreenId;
+
 // WelcomeScreenHandler, public: -----------------------------------------------
 
 WelcomeScreenHandler::WelcomeScreenHandler(JSCallsContainer* js_calls_container,

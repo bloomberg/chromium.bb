@@ -22,6 +22,8 @@
 
 namespace chromeos {
 
+constexpr StaticOobeScreenId HIDDetectionView::kScreenId;
+
 HIDDetectionScreenHandler::HIDDetectionScreenHandler(
     JSCallsContainer* js_calls_container,
     CoreOobeView* core_oobe_view)

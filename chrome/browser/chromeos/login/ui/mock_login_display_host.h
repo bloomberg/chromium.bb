@@ -34,7 +34,7 @@ class MockLoginDisplayHost : public LoginDisplayHost {
   }
 
   MOCK_METHOD1(SetStatusAreaVisible, void(bool));
-  MOCK_METHOD1(StartWizard, void(OobeScreen));
+  MOCK_METHOD1(StartWizard, void(OobeScreenId));
   MOCK_METHOD0(GetWizardController, WizardController*(void));
   MOCK_METHOD0(GetAppLaunchController, AppLaunchController*(void));
 

@@ -18,7 +18,8 @@ class RecommendAppsScreen;
 // WebUI representation.
 class RecommendAppsScreenView {
  public:
-  constexpr static OobeScreen kScreenId = OobeScreen::SCREEN_RECOMMEND_APPS;
+  constexpr static StaticOobeScreenId kScreenId =
+      OobeScreen::SCREEN_RECOMMEND_APPS;
 
   virtual ~RecommendAppsScreenView() = default;
 

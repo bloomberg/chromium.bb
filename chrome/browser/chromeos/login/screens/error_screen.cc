@@ -114,7 +114,7 @@ NetworkError::ErrorState ErrorScreen::GetErrorState() const {
   return error_state_;
 }
 
-OobeScreen ErrorScreen::GetParentScreen() const {
+OobeScreenId ErrorScreen::GetParentScreen() const {
   return parent_screen_;
 }
 
@@ -143,7 +143,7 @@ void ErrorScreen::SetErrorState(NetworkError::ErrorState error_state,
   }
 }
 
-void ErrorScreen::SetParentScreen(OobeScreen parent_screen) {
+void ErrorScreen::SetParentScreen(OobeScreenId parent_screen) {
   parent_screen_ = parent_screen;
   // Not really used on JS side yet so no need to propagate to screen context.
 }

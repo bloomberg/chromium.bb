@@ -90,7 +90,7 @@ class LoginDisplayHost {
   // Starts out-of-box-experience flow or shows other screen handled by
   // Wizard controller i.e. camera, recovery.
   // One could specify start screen with |first_screen|.
-  virtual void StartWizard(OobeScreen first_screen) = 0;
+  virtual void StartWizard(OobeScreenId first_screen) = 0;
 
   // Returns current WizardController, if it exists.
   // Result should not be stored.

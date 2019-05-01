@@ -33,6 +33,8 @@
 
 namespace chromeos {
 
+constexpr StaticOobeScreenId TermsOfServiceScreenView::kScreenId;
+
 TermsOfServiceScreenHandler::TermsOfServiceScreenHandler(
     JSCallsContainer* js_calls_container,
     CoreOobeView* core_oobe_view)

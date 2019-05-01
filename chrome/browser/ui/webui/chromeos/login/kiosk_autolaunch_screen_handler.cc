@@ -27,6 +27,8 @@
 
 namespace chromeos {
 
+constexpr StaticOobeScreenId KioskAutolaunchScreenView::kScreenId;
+
 KioskAutolaunchScreenHandler::KioskAutolaunchScreenHandler(
     JSCallsContainer* js_calls_container)
     : BaseScreenHandler(kScreenId, js_calls_container) {

@@ -407,7 +407,7 @@ class UserSessionManager
   void InitializeChildUserServices(Profile* profile);
 
   // Starts out-of-box flow with the specified screen.
-  void ActivateWizard(OobeScreen screen);
+  void ActivateWizard(OobeScreenId screen);
 
   // Adds first-time login URLs.
   void InitializeStartUrls() const;

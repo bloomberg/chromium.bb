@@ -1620,7 +1620,7 @@ void UserSessionManager::InitializeChildUserServices(Profile* profile) {
   ScreenTimeControllerFactory::GetForBrowserContext(profile);
 }
 
-void UserSessionManager::ActivateWizard(OobeScreen screen) {
+void UserSessionManager::ActivateWizard(OobeScreenId screen) {
   LoginDisplayHost* host = LoginDisplayHost::default_host();
   CHECK(host);
   host->StartWizard(screen);

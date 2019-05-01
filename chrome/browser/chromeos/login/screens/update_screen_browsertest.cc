@@ -442,7 +442,8 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestTemporaryPortalNetwork) {
   // If the network is a captive portal network, error message is shown with a
   // delay.
   EXPECT_TRUE(update_screen_->GetErrorMessageTimerForTesting()->IsRunning());
-  EXPECT_EQ(OobeScreen::SCREEN_UNKNOWN, error_screen_->GetParentScreen());
+  EXPECT_EQ(OobeScreen::SCREEN_UNKNOWN.AsId(),
+            error_screen_->GetParentScreen());
 
   // If network goes back online, the error message timer should be canceled.
   network_portal_detector_.SimulateDefaultNetworkState(
@@ -488,7 +489,8 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestTwoOfflineNetworks) {
   update_screen_->GetErrorMessageTimerForTesting()->FireNow();
   EXPECT_FALSE(update_screen_->GetErrorMessageTimerForTesting()->IsRunning());
 
-  ASSERT_EQ(OobeScreen::SCREEN_OOBE_UPDATE, error_screen_->GetParentScreen());
+  ASSERT_EQ(OobeScreen::SCREEN_OOBE_UPDATE.AsId(),
+            error_screen_->GetParentScreen());
 
   OobeScreenWaiter error_screen_waiter(OobeScreen::SCREEN_ERROR_MESSAGE);
   error_screen_waiter.set_assert_next_screen();
@@ -527,7 +529,8 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestVoidNetwork) {
   network_portal_detector_.SimulateNoNetwork();
 
   EXPECT_FALSE(update_screen_->GetErrorMessageTimerForTesting()->IsRunning());
-  ASSERT_EQ(OobeScreen::SCREEN_OOBE_UPDATE, error_screen_->GetParentScreen());
+  ASSERT_EQ(OobeScreen::SCREEN_OOBE_UPDATE.AsId(),
+            error_screen_->GetParentScreen());
 
   // Second portal detection also returns NULL network and undefined
   // results.  In this case, offline message should be displayed.
@@ -554,7 +557,8 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestAPReselection) {
   // Force timer expiration.
   EXPECT_TRUE(update_screen_->GetErrorMessageTimerForTesting()->IsRunning());
   update_screen_->GetErrorMessageTimerForTesting()->FireNow();
-  ASSERT_EQ(OobeScreen::SCREEN_OOBE_UPDATE, error_screen_->GetParentScreen());
+  ASSERT_EQ(OobeScreen::SCREEN_OOBE_UPDATE.AsId(),
+            error_screen_->GetParentScreen());
 
   OobeScreenWaiter error_screen_waiter(OobeScreen::SCREEN_ERROR_MESSAGE);
   error_screen_waiter.set_assert_next_screen();
@@ -564,7 +568,8 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestAPReselection) {
       "fake_path", base::DoNothing(), base::DoNothing(),
       false /* check_error_state */, ConnectCallbackMode::ON_COMPLETED);
 
-  ASSERT_EQ(OobeScreen::SCREEN_UNKNOWN, error_screen_->GetParentScreen());
+  ASSERT_EQ(OobeScreen::SCREEN_UNKNOWN.AsId(),
+            error_screen_->GetParentScreen());
 
   OobeScreenWaiter update_screen_waiter(OobeScreen::SCREEN_OOBE_UPDATE);
   update_screen_waiter.set_assert_next_screen();

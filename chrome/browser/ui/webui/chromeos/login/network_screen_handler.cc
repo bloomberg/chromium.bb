@@ -19,6 +19,8 @@
 
 namespace chromeos {
 
+constexpr StaticOobeScreenId NetworkScreenView::kScreenId;
+
 NetworkScreenHandler::NetworkScreenHandler(JSCallsContainer* js_calls_container,
                                            CoreOobeView* core_oobe_view)
     : BaseScreenHandler(kScreenId, js_calls_container),

@@ -188,7 +188,7 @@ bool IsProxyError(NetworkStateInformer::State state,
            frame_error == net::ERR_TUNNEL_CONNECTION_FAILED));
 }
 
-bool IsSigninScreen(const OobeScreen screen) {
+bool IsSigninScreen(const OobeScreenId screen) {
   return screen == OobeScreen::SCREEN_GAIA_SIGNIN ||
          screen == OobeScreen::SCREEN_ACCOUNT_PICKER;
 }
@@ -820,8 +820,8 @@ void SigninScreenHandler::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kUsersLastInputMethod);
 }
 
-void SigninScreenHandler::OnCurrentScreenChanged(OobeScreen current_screen,
-                                                 OobeScreen new_screen) {
+void SigninScreenHandler::OnCurrentScreenChanged(OobeScreenId current_screen,
+                                                 OobeScreenId new_screen) {
   if (new_screen == OobeScreen::SCREEN_ACCOUNT_PICKER) {
     // Restore active IME state if returning to user pod row screen.
     input_method::InputMethodManager::Get()->SetState(ime_state_);

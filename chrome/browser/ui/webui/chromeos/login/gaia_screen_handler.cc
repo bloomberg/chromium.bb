@@ -240,6 +240,8 @@ std::string GetAdErrorMessage(authpolicy::ErrorType error) {
 
 }  // namespace
 
+constexpr StaticOobeScreenId GaiaView::kScreenId;
+
 // A class that's used to specify the way how Gaia should be loaded.
 struct GaiaScreenHandler::GaiaContext {
   GaiaContext();

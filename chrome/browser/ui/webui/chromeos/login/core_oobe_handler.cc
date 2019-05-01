@@ -320,7 +320,7 @@ void CoreOobeHandler::HandleSkipUpdateEnrollAfterEula() {
 
 void CoreOobeHandler::HandleUpdateCurrentScreen(
     const std::string& screen_name) {
-  const OobeScreen screen = GetOobeScreenFromName(screen_name);
+  const OobeScreenId screen(screen_name);
   GetOobeUI()->CurrentScreenChanged(screen);
 
   content::ServiceManagerConnection* connection =

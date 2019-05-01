@@ -154,7 +154,7 @@ void LoginDisplayHostMojo::SetStatusAreaVisible(bool visible) {
   NOTIMPLEMENTED();
 }
 
-void LoginDisplayHostMojo::StartWizard(OobeScreen first_screen) {
+void LoginDisplayHostMojo::StartWizard(OobeScreenId first_screen) {
   DCHECK(GetOobeUI());
 
   wizard_controller_ = std::make_unique<WizardController>();

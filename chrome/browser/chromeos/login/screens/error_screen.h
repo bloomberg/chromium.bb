@@ -63,7 +63,7 @@ class ErrorScreen : public BaseScreen,
   // Returns id of the screen behind error screen ("caller" screen).
   // Returns OobeScreen::SCREEN_UNKNOWN if error screen isn't the current
   // screen.
-  OobeScreen GetParentScreen() const;
+  OobeScreenId GetParentScreen() const;
 
   // Called when we're asked to hide captive portal dialog.
   void HideCaptivePortal();
@@ -82,7 +82,7 @@ class ErrorScreen : public BaseScreen,
 
   // Sets "parent screen" i.e. one that has initiated this network error screen
   // instance.
-  void SetParentScreen(OobeScreen parent_screen);
+  void SetParentScreen(OobeScreenId parent_screen);
 
   // Sets callback that is called on hide.
   void SetHideCallback(const base::Closure& on_hide);
@@ -163,7 +163,7 @@ class ErrorScreen : public BaseScreen,
   NetworkError::UIState ui_state_ = NetworkError::UI_STATE_UNKNOWN;
   NetworkError::ErrorState error_state_ = NetworkError::ERROR_STATE_UNKNOWN;
 
-  OobeScreen parent_screen_ = OobeScreen::SCREEN_UNKNOWN;
+  OobeScreenId parent_screen_ = OobeScreen::SCREEN_UNKNOWN;
 
   // Optional callback that is called when NetworkError screen is hidden.
   std::unique_ptr<base::Closure> on_hide_callback_;

@@ -411,7 +411,7 @@ class WizardControllerTest : public MixinBasedInProcessBrowserTest {
     return result;
   }
 
-  void CheckCurrentScreen(OobeScreen screen) {
+  void CheckCurrentScreen(OobeScreenId screen) {
     EXPECT_EQ(WizardController::default_controller()->GetScreen(screen),
               WizardController::default_controller()->current_screen());
   }
@@ -1281,7 +1281,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
   // The error screen shows up if device state could not be retrieved.
   EXPECT_FALSE(StartupUtils::IsOobeCompleted());
   CheckCurrentScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
-  EXPECT_EQ(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK,
+  EXPECT_EQ(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK.AsId(),
             GetErrorScreen()->GetParentScreen());
   base::DictionaryValue device_state;
   device_state.SetString(policy::kDeviceStateMode,
@@ -1383,7 +1383,7 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
   // The error screen shows up if there's no auto-enrollment decision.
   EXPECT_FALSE(StartupUtils::IsOobeCompleted());
   CheckCurrentScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
-  EXPECT_EQ(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK,
+  EXPECT_EQ(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK.AsId(),
             GetErrorScreen()->GetParentScreen());
 
   WaitUntilJSIsReady();
@@ -1492,7 +1492,7 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
     // The error screen shows up.
     EXPECT_FALSE(StartupUtils::IsOobeCompleted());
     CheckCurrentScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
-    EXPECT_EQ(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK,
+    EXPECT_EQ(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK.AsId(),
               GetErrorScreen()->GetParentScreen());
 
     WaitUntilJSIsReady();
@@ -1628,7 +1628,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
 
   // The error screen shows up if there's no auto-enrollment decision.
   EXPECT_FALSE(StartupUtils::IsOobeCompleted());
-  EXPECT_EQ(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK,
+  EXPECT_EQ(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK.AsId(),
             GetErrorScreen()->GetParentScreen());
   base::DictionaryValue device_state;
   device_state.SetString(policy::kDeviceStateMode,
@@ -1712,7 +1712,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
 
   // The error screen shows up if there's no auto-enrollment decision.
   EXPECT_FALSE(StartupUtils::IsOobeCompleted());
-  EXPECT_EQ(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK,
+  EXPECT_EQ(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK.AsId(),
             GetErrorScreen()->GetParentScreen());
 
   WaitUntilJSIsReady();
@@ -2311,7 +2311,7 @@ class WizardControllerDemoSetupTest : public WizardControllerFlowTest {
   }
 
   template <class T>
-  void SkipToScreen(OobeScreen screen, T* screen_mock) {
+  void SkipToScreen(OobeScreenId screen, T* screen_mock) {
     EXPECT_CALL(*screen_mock, Show()).Times(1);
     auto* const wizard_controller = WizardController::default_controller();
     wizard_controller->SimulateDemoModeSetupForTesting();
@@ -2698,7 +2698,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupDeviceDisabledTest,
 
   // The error screen shows up if device state could not be retrieved.
   CheckCurrentScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
-  EXPECT_EQ(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK,
+  EXPECT_EQ(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK.AsId(),
             GetErrorScreen()->GetParentScreen());
   base::DictionaryValue device_state;
   device_state.SetString(policy::kDeviceStateMode,
@@ -2752,7 +2752,7 @@ class WizardControllerOobeResumeTest : public WizardControllerTest {
                                 base::Unretained(wizard_controller))));
   }
 
-  OobeScreen GetFirstScreen() {
+  OobeScreenId GetFirstScreen() {
     return WizardController::default_controller()->first_screen();
   }
 
@@ -2792,7 +2792,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerOobeResumeTest,
 
 IN_PROC_BROWSER_TEST_F(WizardControllerOobeResumeTest,
                        ControlFlowResumeInterruptedOobe) {
-  EXPECT_EQ(OobeScreen::SCREEN_OOBE_ENROLLMENT, GetFirstScreen());
+  EXPECT_EQ(OobeScreen::SCREEN_OOBE_ENROLLMENT.AsId(), GetFirstScreen());
 }
 
 class WizardControllerCellularFirstTest : public WizardControllerFlowTest {

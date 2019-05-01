@@ -27,6 +27,8 @@ int GetNumberOfUserSelectedApps() {
 
 namespace chromeos {
 
+constexpr StaticOobeScreenId AppDownloadingScreenView::kScreenId;
+
 AppDownloadingScreenHandler::AppDownloadingScreenHandler(
     JSCallsContainer* js_calls_container)
     : BaseScreenHandler(kScreenId, js_calls_container) {

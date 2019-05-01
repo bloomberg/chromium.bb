@@ -11,6 +11,8 @@
 
 namespace chromeos {
 
+constexpr StaticOobeScreenId DemoPreferencesScreenView::kScreenId;
+
 DemoPreferencesScreenView::~DemoPreferencesScreenView() = default;
 
 DemoPreferencesScreenHandler::DemoPreferencesScreenHandler(

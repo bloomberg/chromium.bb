@@ -41,7 +41,7 @@ class MockErrorScreenView : public ErrorScreenView {
   MOCK_METHOD0(Hide, void());
   MOCK_METHOD1(MockBind, void(ErrorScreen* screen));
   MOCK_METHOD0(MockUnbind, void());
-  MOCK_METHOD1(ShowOobeScreen, void(OobeScreen screen));
+  MOCK_METHOD1(ShowOobeScreen, void(OobeScreenId screen));
   MOCK_METHOD1(SetErrorStateCode, void(NetworkError::ErrorState error_state));
   MOCK_METHOD1(SetErrorStateNetwork, void(const std::string& network_name));
   MOCK_METHOD1(SetGuestSigninAllowed, void(bool value));

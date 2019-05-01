@@ -78,7 +78,7 @@ class WizardController : public BaseScreenDelegate {
   static bool IsZeroDelayEnabled();
 
   // Checks whether screen show time should be tracked with UMA.
-  static bool IsOOBEStepToTrack(OobeScreen screen_id);
+  static bool IsOOBEStepToTrack(OobeScreenId screen_id);
 
   // Skips any screens that may normally be shown after login (registration,
   // Terms of Service, user image selection).
@@ -96,10 +96,10 @@ class WizardController : public BaseScreenDelegate {
 
   // Shows the first screen defined by |first_screen| or by default if the
   // parameter is empty.
-  void Init(OobeScreen first_screen);
+  void Init(OobeScreenId first_screen);
 
   // Advances to screen defined by |screen| and shows it.
-  void AdvanceToScreen(OobeScreen screen);
+  void AdvanceToScreen(OobeScreenId screen);
 
   // Starts Demo Mode setup flow. The flow starts from network screen and reuses
   // some of regular OOBE screens. It consists of the following screens:
@@ -138,7 +138,7 @@ class WizardController : public BaseScreenDelegate {
   bool login_screen_started() const { return login_screen_started_; }
 
   // Returns a given screen. Creates it lazily.
-  BaseScreen* GetScreen(OobeScreen screen);
+  BaseScreen* GetScreen(OobeScreenId screen);
 
   // Returns the current ScreenManager instance.
   ScreenManager* screen_manager() const { return screen_manager_.get(); }
@@ -191,7 +191,7 @@ class WizardController : public BaseScreenDelegate {
 
   // Shared actions to be performed on a screen exit.
   // |exit_code| is the screen specific exit code reported by the screen.
-  void OnScreenExit(OobeScreen screen, int exit_code);
+  void OnScreenExit(OobeScreenId screen, int exit_code);
 
   // Exit handlers:
   void OnWrongHWIDScreenExit();
@@ -273,7 +273,7 @@ class WizardController : public BaseScreenDelegate {
   void SetCurrentScreenSmooth(BaseScreen* screen, bool use_smoothing);
 
   // Update the status area visibility for |screen|.
-  void UpdateStatusAreaVisibilityForScreen(OobeScreen screen);
+  void UpdateStatusAreaVisibilityForScreen(OobeScreenId screen);
 
   // Launched kiosk app configured for auto-launch.
   void AutoLaunchKioskApp();
@@ -288,7 +288,7 @@ class WizardController : public BaseScreenDelegate {
     local_state_for_testing_ = local_state;
   }
 
-  OobeScreen first_screen() const { return first_screen_; }
+  OobeScreenId first_screen() const { return first_screen_; }
 
   // Called when network is UP.
   void StartTimezoneResolve();
@@ -320,7 +320,7 @@ class WizardController : public BaseScreenDelegate {
   void StartEnrollmentScreen(bool force_interactive);
 
   void OnConfigurationLoaded(
-      OobeScreen first_screen,
+      OobeScreenId first_screen,
       std::unique_ptr<base::DictionaryValue> configuration);
 
   // Returns auto enrollment controller (lazily initializes one if it doesn't
@@ -349,7 +349,7 @@ class WizardController : public BaseScreenDelegate {
   bool is_out_of_box_ = false;
 
   // Value of the screen name that WizardController was started with.
-  OobeScreen first_screen_;
+  OobeScreenId first_screen_ = OobeScreen::SCREEN_UNKNOWN;
 
   base::OneShotTimer smooth_show_timer_;
 
@@ -410,7 +410,7 @@ class WizardController : public BaseScreenDelegate {
   std::unique_ptr<DemoSetupController> demo_setup_controller_;
 
   // Maps screen names to last time of their shows.
-  std::map<OobeScreen, base::Time> screen_show_times_;
+  std::map<OobeScreenId, base::Time> screen_show_times_;
 
   // Tests check result of timezone resolve.
   bool timezone_resolved_ = false;

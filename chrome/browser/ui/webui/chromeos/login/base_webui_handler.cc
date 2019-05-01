@@ -36,16 +36,16 @@ void BaseWebUIHandler::RegisterMessages() {
 
 void BaseWebUIHandler::GetAdditionalParameters(base::DictionaryValue* dict) {}
 
-void BaseWebUIHandler::ShowScreen(OobeScreen screen) {
+void BaseWebUIHandler::ShowScreen(OobeScreenId screen) {
   ShowScreenWithData(screen, nullptr);
 }
 
-void BaseWebUIHandler::ShowScreenWithData(OobeScreen screen,
+void BaseWebUIHandler::ShowScreenWithData(OobeScreenId screen,
                                           const base::DictionaryValue* data) {
   if (!web_ui())
     return;
   base::DictionaryValue screen_params;
-  screen_params.SetString("id", GetOobeScreenName(screen));
+  screen_params.SetString("id", screen.name);
   if (data) {
     screen_params.SetKey("data", data->Clone());
   }
@@ -56,7 +56,7 @@ OobeUI* BaseWebUIHandler::GetOobeUI() const {
   return static_cast<OobeUI*>(web_ui()->GetController());
 }
 
-OobeScreen BaseWebUIHandler::GetCurrentScreen() const {
+OobeScreenId BaseWebUIHandler::GetCurrentScreen() const {
   OobeUI* oobe_ui = GetOobeUI();
   if (!oobe_ui)
     return OobeScreen::SCREEN_UNKNOWN;

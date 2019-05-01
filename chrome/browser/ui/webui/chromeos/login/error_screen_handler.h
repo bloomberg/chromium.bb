@@ -17,7 +17,8 @@ class ErrorScreen;
 // representation. Owned by ErrorScreen.
 class ErrorScreenView {
  public:
-  constexpr static OobeScreen kScreenId = OobeScreen::SCREEN_ERROR_MESSAGE;
+  constexpr static StaticOobeScreenId kScreenId =
+      OobeScreen::SCREEN_ERROR_MESSAGE;
 
   virtual ~ErrorScreenView() {}
 
@@ -34,7 +35,7 @@ class ErrorScreenView {
   virtual void Unbind() = 0;
 
   // Switches to |screen|.
-  virtual void ShowOobeScreen(OobeScreen screen) = 0;
+  virtual void ShowOobeScreen(OobeScreenId screen) = 0;
 
   // Sets current error state of the screen.
   virtual void SetErrorStateCode(NetworkError::ErrorState error_state) = 0;
@@ -69,7 +70,7 @@ class ErrorScreenHandler : public BaseScreenHandler, public ErrorScreenView {
   void Hide() override;
   void Bind(ErrorScreen* screen) override;
   void Unbind() override;
-  void ShowOobeScreen(OobeScreen screen) override;
+  void ShowOobeScreen(OobeScreenId screen) override;
   void SetErrorStateCode(NetworkError::ErrorState error_state) override;
   void SetErrorStateNetwork(const std::string& network_name) override;
   void SetGuestSigninAllowed(bool value) override;
