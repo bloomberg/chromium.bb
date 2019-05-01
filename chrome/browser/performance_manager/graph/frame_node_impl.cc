@@ -4,6 +4,7 @@
 
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
 
+#include "chrome/browser/performance_manager/graph/graph_impl.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/observers/graph_observer.h"
@@ -11,7 +12,7 @@
 
 namespace performance_manager {
 
-FrameNodeImpl::FrameNodeImpl(Graph* graph,
+FrameNodeImpl::FrameNodeImpl(GraphImpl* graph,
                              ProcessNodeImpl* process_node,
                              PageNodeImpl* page_node,
                              FrameNodeImpl* parent_frame_node,

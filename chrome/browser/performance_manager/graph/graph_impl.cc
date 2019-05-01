@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/performance_manager/graph/graph.h"
+#include "chrome/browser/performance_manager/graph/graph_impl.h"
 
 #include <utility>
 
@@ -22,11 +22,11 @@ class UkmEntryBuilder;
 
 namespace performance_manager {
 
-Graph::Graph() {
+GraphImpl::GraphImpl() {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
-Graph::~Graph() {
+GraphImpl::~GraphImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // All observers should have been removed before the graph is deleted.
@@ -43,14 +43,14 @@ Graph::~Graph() {
   DCHECK(nodes_.empty());
 }
 
-void Graph::RegisterObserver(GraphObserver* observer) {
+void GraphImpl::RegisterObserver(GraphObserver* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   observer->set_node_graph(this);
   observers_.push_back(observer);
   observer->OnRegistered();
 }
 
-void Graph::UnregisterObserver(GraphObserver* observer) {
+void GraphImpl::UnregisterObserver(GraphObserver* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   bool removed = false;
   for (auto it = observers_.begin(); it != observers_.end(); ++it) {
@@ -64,7 +64,7 @@ void Graph::UnregisterObserver(GraphObserver* observer) {
   DCHECK(removed);
 }
 
-void Graph::OnNodeAdded(NodeBase* node) {
+void GraphImpl::OnNodeAdded(NodeBase* node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto* observer : observers_) {
     if (observer->ShouldObserve(node)) {
@@ -74,16 +74,16 @@ void Graph::OnNodeAdded(NodeBase* node) {
   }
 }
 
-void Graph::OnBeforeNodeRemoved(NodeBase* node) {
+void GraphImpl::OnBeforeNodeRemoved(NodeBase* node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   node->LeaveGraph();
 }
 
-int64_t Graph::GetNextNodeSerializationId() {
+int64_t GraphImpl::GetNextNodeSerializationId() {
   return ++current_node_serialization_id_;
 }
 
-SystemNodeImpl* Graph::FindOrCreateSystemNode() {
+SystemNodeImpl* GraphImpl::FindOrCreateSystemNode() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!system_node_) {
     // Create the singleton system node instance. Ownership is taken by the
@@ -95,13 +95,13 @@ SystemNodeImpl* Graph::FindOrCreateSystemNode() {
   return system_node_.get();
 }
 
-bool Graph::NodeInGraph(const NodeBase* node) {
+bool GraphImpl::NodeInGraph(const NodeBase* node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const auto& it = nodes_.find(const_cast<NodeBase*>(node));
   return it != nodes_.end();
 }
 
-ProcessNodeImpl* Graph::GetProcessNodeByPid(base::ProcessId pid) {
+ProcessNodeImpl* GraphImpl::GetProcessNodeByPid(base::ProcessId pid) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto it = processes_by_pid_.find(pid);
   if (it == processes_by_pid_.end())
@@ -110,20 +110,20 @@ ProcessNodeImpl* Graph::GetProcessNodeByPid(base::ProcessId pid) {
   return ProcessNodeImpl::FromNodeBase(it->second);
 }
 
-std::vector<ProcessNodeImpl*> Graph::GetAllProcessNodes() {
+std::vector<ProcessNodeImpl*> GraphImpl::GetAllProcessNodes() {
   return GetAllNodesOfType<ProcessNodeImpl>();
 }
 
-std::vector<FrameNodeImpl*> Graph::GetAllFrameNodes() {
+std::vector<FrameNodeImpl*> GraphImpl::GetAllFrameNodes() {
   return GetAllNodesOfType<FrameNodeImpl>();
 }
 
-std::vector<PageNodeImpl*> Graph::GetAllPageNodes() {
+std::vector<PageNodeImpl*> GraphImpl::GetAllPageNodes() {
   return GetAllNodesOfType<PageNodeImpl>();
 }
 
-size_t Graph::GetNodeAttachedDataCountForTesting(NodeBase* node,
-                                                 const void* key) const {
+size_t GraphImpl::GetNodeAttachedDataCountForTesting(NodeBase* node,
+                                                     const void* key) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!node && !key)
     return node_attached_data_map_.size();
@@ -140,7 +140,7 @@ size_t Graph::GetNodeAttachedDataCountForTesting(NodeBase* node,
   return count;
 }
 
-void Graph::AddNewNode(NodeBase* new_node) {
+void GraphImpl::AddNewNode(NodeBase* new_node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto it = nodes_.insert(new_node);
   DCHECK(it.second);  // Inserted successfully
@@ -150,7 +150,7 @@ void Graph::AddNewNode(NodeBase* new_node) {
   OnNodeAdded(new_node);
 }
 
-void Graph::RemoveNode(NodeBase* node) {
+void GraphImpl::RemoveNode(NodeBase* node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   OnBeforeNodeRemoved(node);
 
@@ -166,8 +166,8 @@ void Graph::RemoveNode(NodeBase* node) {
   DCHECK_EQ(1u, erased);
 }
 
-void Graph::BeforeProcessPidChange(ProcessNodeImpl* process,
-                                   base::ProcessId new_pid) {
+void GraphImpl::BeforeProcessPidChange(ProcessNodeImpl* process,
+                                       base::ProcessId new_pid) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // On Windows, PIDs are aggressively reused, and because not all process
   // creation/death notifications are synchronized, it's possible for more than
@@ -184,7 +184,7 @@ void Graph::BeforeProcessPidChange(ProcessNodeImpl* process,
 }
 
 template <typename NodeType>
-std::vector<NodeType*> Graph::GetAllNodesOfType() {
+std::vector<NodeType*> GraphImpl::GetAllNodesOfType() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const auto type = NodeType::Type();
   std::vector<NodeType*> ret;

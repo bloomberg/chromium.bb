@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "chrome/browser/performance_manager/graph/graph.h"
+#include "chrome/browser/performance_manager/graph/graph_impl.h"
 #include "chrome/browser/performance_manager/graph/node_base.h"
 
 namespace performance_manager {
@@ -23,7 +23,7 @@ bool NodeAttachedData::CanAttach(const NodeBase* node) const {
 void NodeAttachedData::AttachInMap(const NodeBase* node,
                                    std::unique_ptr<NodeAttachedData> data) {
   CHECK(data->CanAttach(node->type()));
-  Graph::NodeAttachedDataKey data_key = std::make_pair(node, data->key());
+  GraphImpl::NodeAttachedDataKey data_key = std::make_pair(node, data->key());
   auto& map = node->graph()->node_attached_data_map_;
   DCHECK(!base::ContainsKey(map, data_key));
   map[data_key] = std::move(data);
@@ -32,7 +32,7 @@ void NodeAttachedData::AttachInMap(const NodeBase* node,
 // static
 NodeAttachedData* NodeAttachedData::GetFromMap(const NodeBase* node,
                                                const void* key) {
-  Graph::NodeAttachedDataKey data_key = std::make_pair(node, key);
+  GraphImpl::NodeAttachedDataKey data_key = std::make_pair(node, key);
   auto& map = node->graph()->node_attached_data_map_;
   auto it = map.find(data_key);
   if (it == map.end())
@@ -45,7 +45,7 @@ NodeAttachedData* NodeAttachedData::GetFromMap(const NodeBase* node,
 std::unique_ptr<NodeAttachedData> NodeAttachedData::DetachFromMap(
     const NodeBase* node,
     const void* key) {
-  Graph::NodeAttachedDataKey data_key = std::make_pair(node, key);
+  GraphImpl::NodeAttachedDataKey data_key = std::make_pair(node, key);
   auto& map = node->graph()->node_attached_data_map_;
   auto it = map.find(data_key);
 

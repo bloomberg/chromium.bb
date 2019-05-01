@@ -11,7 +11,7 @@
 namespace performance_manager {
 
 class FrameNodeImpl;
-class Graph;
+class GraphImpl;
 class NodeBase;
 class PageNodeImpl;
 class ProcessNodeImpl;
@@ -78,12 +78,12 @@ class GraphObserver {
   // SystemNodeImpl notifications.
   virtual void OnProcessCPUUsageReady(SystemNodeImpl* system_node) {}
 
-  void set_node_graph(Graph* graph) { node_graph_ = graph; }
+  void set_node_graph(GraphImpl* graph) { node_graph_ = graph; }
 
-  Graph* graph() const { return node_graph_; }
+  GraphImpl* graph() const { return node_graph_; }
 
  private:
-  Graph* node_graph_ = nullptr;
+  GraphImpl* node_graph_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(GraphObserver);
 };

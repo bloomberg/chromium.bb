@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_NODE_TYPE_H_
-#define CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_NODE_TYPE_H_
+#ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_PUBLIC_GRAPH_NODE_TYPE_H_
+#define CHROME_BROWSER_PERFORMANCE_MANAGER_PUBLIC_GRAPH_NODE_TYPE_H_
 
 #include <stdint.h>
 
@@ -19,4 +19,4 @@ enum class NodeTypeEnum : uint8_t {
 
 }  // namespace performance_manager
 
-#endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_NODE_TYPE_H_
+#endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_PUBLIC_GRAPH_NODE_TYPE_H_

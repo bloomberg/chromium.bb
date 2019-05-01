@@ -6,11 +6,12 @@
 
 #include "base/logging.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
+#include "chrome/browser/performance_manager/graph/graph_impl.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 
 namespace performance_manager {
 
-ProcessNodeImpl::ProcessNodeImpl(Graph* graph)
+ProcessNodeImpl::ProcessNodeImpl(GraphImpl* graph)
     : CoordinationUnitInterface(graph) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }

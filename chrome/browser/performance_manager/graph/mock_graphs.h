@@ -10,7 +10,7 @@
 
 namespace performance_manager {
 
-class Graph;
+class GraphImpl;
 class FrameNodeImpl;
 class PageNodeImpl;
 class SystemNodeImpl;
@@ -19,7 +19,7 @@ class SystemNodeImpl;
 // process' PID.
 class TestProcessNodeImpl : public ProcessNodeImpl {
  public:
-  explicit TestProcessNodeImpl(Graph* graph);
+  explicit TestProcessNodeImpl(GraphImpl* graph);
 
   void SetProcessWithPid(base::ProcessId pid,
                          base::Process process,
@@ -38,7 +38,7 @@ class TestProcessNodeImpl : public ProcessNodeImpl {
 // Pr: process(pid:1)
 // Pg: page
 struct MockSinglePageInSingleProcessGraph {
-  explicit MockSinglePageInSingleProcessGraph(Graph* graph);
+  explicit MockSinglePageInSingleProcessGraph(GraphImpl* graph);
   ~MockSinglePageInSingleProcessGraph();
   TestNodeWrapper<SystemNodeImpl> system;
   TestNodeWrapper<TestProcessNodeImpl> process;
@@ -61,7 +61,7 @@ struct MockSinglePageInSingleProcessGraph {
 // Pr: process(pid:1)
 struct MockMultiplePagesInSingleProcessGraph
     : public MockSinglePageInSingleProcessGraph {
-  explicit MockMultiplePagesInSingleProcessGraph(Graph* graph);
+  explicit MockMultiplePagesInSingleProcessGraph(GraphImpl* graph);
   ~MockMultiplePagesInSingleProcessGraph();
   TestNodeWrapper<PageNodeImpl> other_page;
   TestNodeWrapper<FrameNodeImpl> other_frame;
@@ -85,7 +85,7 @@ struct MockMultiplePagesInSingleProcessGraph
 // OPr: other_process(pid:2)
 struct MockSinglePageWithMultipleProcessesGraph
     : public MockSinglePageInSingleProcessGraph {
-  explicit MockSinglePageWithMultipleProcessesGraph(Graph* graph);
+  explicit MockSinglePageWithMultipleProcessesGraph(GraphImpl* graph);
   ~MockSinglePageWithMultipleProcessesGraph();
   TestNodeWrapper<TestProcessNodeImpl> other_process;
   TestNodeWrapper<FrameNodeImpl> child_frame;
@@ -111,7 +111,7 @@ struct MockSinglePageWithMultipleProcessesGraph
 // OPr: other_process(pid:2)
 struct MockMultiplePagesWithMultipleProcessesGraph
     : public MockMultiplePagesInSingleProcessGraph {
-  explicit MockMultiplePagesWithMultipleProcessesGraph(Graph* graph);
+  explicit MockMultiplePagesWithMultipleProcessesGraph(GraphImpl* graph);
   ~MockMultiplePagesWithMultipleProcessesGraph();
   TestNodeWrapper<TestProcessNodeImpl> other_process;
   TestNodeWrapper<FrameNodeImpl> child_frame;

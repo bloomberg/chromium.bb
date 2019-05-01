@@ -29,7 +29,7 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
 
   static constexpr NodeTypeEnum Type() { return NodeTypeEnum::kPage; }
 
-  explicit PageNodeImpl(Graph* graph,
+  explicit PageNodeImpl(GraphImpl* graph,
                         const base::WeakPtr<WebContentsProxy>& contents_proxy);
   ~PageNodeImpl() override;
 

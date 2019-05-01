@@ -67,7 +67,7 @@ TEST_F(PerformancemanagerTabHelperTest, FrameHierarchyReflectsToGraph) {
     EXPECT_NE(0u, hosts.size());
 
     PerformanceManager::GetInstance()->CallOnGraph(
-        FROM_HERE, base::BindLambdaForTesting([num_hosts](Graph* graph) {
+        FROM_HERE, base::BindLambdaForTesting([num_hosts](GraphImpl* graph) {
           EXPECT_GE(num_hosts, graph->GetAllProcessNodes().size());
           EXPECT_EQ(4u, graph->GetAllFrameNodes().size());
 
@@ -113,7 +113,7 @@ TEST_F(PerformancemanagerTabHelperTest, FrameHierarchyReflectsToGraph) {
     size_t num_hosts = CountAllRenderProcessHosts();
 
     PerformanceManager::GetInstance()->CallOnGraph(
-        FROM_HERE, base::BindLambdaForTesting([num_hosts](Graph* graph) {
+        FROM_HERE, base::BindLambdaForTesting([num_hosts](GraphImpl* graph) {
           EXPECT_GE(num_hosts, graph->GetAllProcessNodes().size());
           EXPECT_EQ(0u, graph->GetAllFrameNodes().size());
           ASSERT_EQ(0u, graph->GetAllPageNodes().size());

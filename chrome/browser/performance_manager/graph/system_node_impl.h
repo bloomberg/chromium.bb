@@ -49,7 +49,7 @@ class SystemNodeImpl : public TypedNodeBase<SystemNodeImpl> {
  public:
   static constexpr NodeTypeEnum Type() { return NodeTypeEnum::kSystem; }
 
-  explicit SystemNodeImpl(Graph* graph);
+  explicit SystemNodeImpl(GraphImpl* graph);
   ~SystemNodeImpl() override;
 
   void DistributeMeasurementBatch(

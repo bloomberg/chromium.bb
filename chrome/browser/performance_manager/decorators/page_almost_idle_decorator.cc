@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "chrome/browser/performance_manager/graph/graph_impl.h"
 #include "chrome/browser/performance_manager/graph/node_attached_data_impl.h"
 #include "chrome/browser/performance_manager/performance_manager_clock.h"
 

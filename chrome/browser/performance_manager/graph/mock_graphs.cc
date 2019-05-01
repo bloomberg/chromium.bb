@@ -16,7 +16,7 @@
 
 namespace performance_manager {
 
-TestProcessNodeImpl::TestProcessNodeImpl(Graph* graph)
+TestProcessNodeImpl::TestProcessNodeImpl(GraphImpl* graph)
     : ProcessNodeImpl(graph) {}
 
 void TestProcessNodeImpl::SetProcessWithPid(base::ProcessId pid,
@@ -26,7 +26,7 @@ void TestProcessNodeImpl::SetProcessWithPid(base::ProcessId pid,
 }
 
 MockSinglePageInSingleProcessGraph::MockSinglePageInSingleProcessGraph(
-    Graph* graph)
+    GraphImpl* graph)
     : system(TestNodeWrapper<SystemNodeImpl>::Create(graph)),
       process(TestNodeWrapper<TestProcessNodeImpl>::Create(graph)),
       page(TestNodeWrapper<PageNodeImpl>::Create(graph, nullptr)),
@@ -45,7 +45,7 @@ MockSinglePageInSingleProcessGraph::~MockSinglePageInSingleProcessGraph() {
 }
 
 MockMultiplePagesInSingleProcessGraph::MockMultiplePagesInSingleProcessGraph(
-    Graph* graph)
+    GraphImpl* graph)
     : MockSinglePageInSingleProcessGraph(graph),
       other_page(TestNodeWrapper<PageNodeImpl>::Create(graph, nullptr)),
       other_frame(TestNodeWrapper<FrameNodeImpl>::Create(graph,
@@ -64,7 +64,7 @@ MockMultiplePagesInSingleProcessGraph::
 }
 
 MockSinglePageWithMultipleProcessesGraph::
-    MockSinglePageWithMultipleProcessesGraph(Graph* graph)
+    MockSinglePageWithMultipleProcessesGraph(GraphImpl* graph)
     : MockSinglePageInSingleProcessGraph(graph),
       other_process(TestNodeWrapper<TestProcessNodeImpl>::Create(graph)),
       child_frame(TestNodeWrapper<FrameNodeImpl>::Create(graph,
@@ -82,7 +82,7 @@ MockSinglePageWithMultipleProcessesGraph::
     ~MockSinglePageWithMultipleProcessesGraph() = default;
 
 MockMultiplePagesWithMultipleProcessesGraph::
-    MockMultiplePagesWithMultipleProcessesGraph(Graph* graph)
+    MockMultiplePagesWithMultipleProcessesGraph(GraphImpl* graph)
     : MockMultiplePagesInSingleProcessGraph(graph),
       other_process(TestNodeWrapper<TestProcessNodeImpl>::Create(graph)),
       child_frame(TestNodeWrapper<FrameNodeImpl>::Create(graph,

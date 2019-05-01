@@ -145,7 +145,7 @@ template <typename NodeType>
 void AddNodeAndInvokeCreationCallback(
     base::OnceCallback<void(NodeType*)> callback,
     NodeType* node,
-    Graph* graph) {
+    GraphImpl* graph) {
   graph->AddNewNode(node);
   if (!callback.is_null())
     std::move(callback).Run(node);

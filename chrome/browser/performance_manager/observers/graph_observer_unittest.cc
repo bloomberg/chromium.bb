@@ -8,7 +8,7 @@
 
 #include "base/process/process_handle.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
-#include "chrome/browser/performance_manager/graph/graph.h"
+#include "chrome/browser/performance_manager/graph/graph_impl.h"
 #include "chrome/browser/performance_manager/graph/graph_test_harness.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"

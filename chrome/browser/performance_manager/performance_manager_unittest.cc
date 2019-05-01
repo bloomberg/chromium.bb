@@ -123,7 +123,7 @@ TEST_F(PerformanceManagerTest, CallOnGraph) {
       performance_manager()->CreatePageNode(nullptr);
 
   PerformanceManager::GraphCallback graph_callback = base::BindLambdaForTesting(
-      [&page_node](Graph* graph) { EXPECT_EQ(page_node->graph(), graph); });
+      [&page_node](GraphImpl* graph) { EXPECT_EQ(page_node->graph(), graph); });
 
   performance_manager()->CallOnGraph(FROM_HERE, std::move(graph_callback));
   RunUntilIdle();

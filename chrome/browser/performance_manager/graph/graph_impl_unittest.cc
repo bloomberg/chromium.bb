@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/performance_manager/graph/graph.h"
+#include "chrome/browser/performance_manager/graph/graph_impl.h"
 
 #include "base/process/process.h"
 #include "base/time/time.h"
@@ -15,8 +15,8 @@
 
 namespace performance_manager {
 
-TEST(GraphTest, FindOrCreateSystemNode) {
-  Graph graph;
+TEST(GraphImplTest, FindOrCreateSystemNode) {
+  GraphImpl graph;
 
   SystemNodeImpl* system_node = graph.FindOrCreateSystemNode();
 
@@ -24,8 +24,8 @@ TEST(GraphTest, FindOrCreateSystemNode) {
   EXPECT_EQ(system_node, graph.FindOrCreateSystemNode());
 }
 
-TEST(GraphTest, GetProcessNodeByPid) {
-  Graph graph;
+TEST(GraphImplTest, GetProcessNodeByPid) {
+  GraphImpl graph;
 
   TestNodeWrapper<ProcessNodeImpl> process =
       TestNodeWrapper<ProcessNodeImpl>::Create(&graph);
@@ -51,11 +51,11 @@ TEST(GraphTest, GetProcessNodeByPid) {
   EXPECT_EQ(nullptr, graph.GetProcessNodeByPid(self.Pid()));
 }
 
-TEST(GraphTest, PIDReuse) {
+TEST(GraphImplTest, PIDReuse) {
   // This test emulates what happens on Windows under aggressive PID reuse,
   // where a process termination notification can be delayed until after the
   // PID has been reused for a new process.
-  Graph graph;
+  GraphImpl graph;
 
   static base::Process self = base::Process::Current();
 
@@ -81,8 +81,8 @@ TEST(GraphTest, PIDReuse) {
   EXPECT_EQ(process2.get(), graph.GetProcessNodeByPid(self.Pid()));
 }
 
-TEST(GraphTest, GetAllCUsByType) {
-  Graph graph;
+TEST(GraphImplTest, GetAllCUsByType) {
+  GraphImpl graph;
   MockMultiplePagesInSingleProcessGraph mock_graph(&graph);
 
   std::vector<ProcessNodeImpl*> processes = graph.GetAllProcessNodes();
@@ -100,8 +100,8 @@ TEST(GraphTest, GetAllCUsByType) {
   EXPECT_NE(nullptr, pages[1]);
 }
 
-TEST(GraphTest, SerializationId) {
-  Graph graph;
+TEST(GraphImplTest, SerializationId) {
+  GraphImpl graph;
 
   EXPECT_EQ(0u, NodeBase::GetSerializationId(nullptr));
 

@@ -10,6 +10,7 @@
 #include "base/stl_util.h"
 #include "base/time/default_tick_clock.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
+#include "chrome/browser/performance_manager/graph/graph_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/observers/graph_observer.h"
 #include "chrome/browser/performance_manager/performance_manager_clock.h"
@@ -42,7 +43,7 @@ void ForFrameAndDescendents(FrameNodeImpl* frame_node,
 
 }  // namespace
 
-PageNodeImpl::PageNodeImpl(Graph* graph,
+PageNodeImpl::PageNodeImpl(GraphImpl* graph,
                            const base::WeakPtr<WebContentsProxy>& weak_contents)
     : TypedNodeBase(graph),
       contents_proxy_(weak_contents),

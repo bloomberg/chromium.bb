@@ -38,10 +38,10 @@ class ProcessNodeImpl
  public:
   static constexpr NodeTypeEnum Type() { return NodeTypeEnum::kProcess; }
 
-  explicit ProcessNodeImpl(Graph* graph);
+  explicit ProcessNodeImpl(GraphImpl* graph);
   ~ProcessNodeImpl() override;
 
-  // resource_coordinator::mojom::ProcessCoordinationUnit implementation.
+  // resource_coordinator::mojom::ProcessCoordinationUnit implementation:
   void SetExpectedTaskQueueingDuration(base::TimeDelta duration) override;
   void SetMainThreadTaskLoadIsLow(bool main_thread_task_load_is_low) override;
 

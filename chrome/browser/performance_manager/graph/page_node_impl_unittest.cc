@@ -194,7 +194,7 @@ void ExpectInterventionPolicy(
 }
 
 void ExpectInitialInterventionPolicyAggregationWorks(
-    Graph* mock_graph,
+    GraphImpl* mock_graph,
     resource_coordinator::mojom::InterventionPolicy f0_policy,
     resource_coordinator::mojom::InterventionPolicy f1_policy,
     resource_coordinator::mojom::InterventionPolicy f0_policy_aggregated,

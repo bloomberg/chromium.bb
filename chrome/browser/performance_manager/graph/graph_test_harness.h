@@ -12,7 +12,7 @@
 
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
-#include "chrome/browser/performance_manager/graph/graph.h"
+#include "chrome/browser/performance_manager/graph/graph_impl.h"
 #include "chrome/browser/performance_manager/graph/node_base.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
@@ -27,7 +27,7 @@ class TestNodeWrapper {
   struct Factory;
 
   template <typename... Args>
-  static TestNodeWrapper<NodeClass> Create(Graph* graph, Args&&... args);
+  static TestNodeWrapper<NodeClass> Create(GraphImpl* graph, Args&&... args);
 
   TestNodeWrapper() {}
 
@@ -61,7 +61,7 @@ class TestNodeWrapper {
 template <class NodeClass>
 struct TestNodeWrapper<NodeClass>::Factory {
   template <typename... Args>
-  static std::unique_ptr<NodeClass> Create(Graph* graph, Args&&... args) {
+  static std::unique_ptr<NodeClass> Create(GraphImpl* graph, Args&&... args) {
     return std::make_unique<NodeClass>(graph, std::forward<Args>(args)...);
   }
 };
@@ -71,7 +71,7 @@ struct TestNodeWrapper<NodeClass>::Factory {
 template <>
 struct TestNodeWrapper<FrameNodeImpl>::Factory {
   static std::unique_ptr<FrameNodeImpl> Create(
-      Graph* graph,
+      GraphImpl* graph,
       ProcessNodeImpl* process_node,
       PageNodeImpl* page_node,
       FrameNodeImpl* parent_frame_node = nullptr,
@@ -86,7 +86,7 @@ struct TestNodeWrapper<FrameNodeImpl>::Factory {
 // static
 template <typename NodeClass>
 template <typename... Args>
-TestNodeWrapper<NodeClass> TestNodeWrapper<NodeClass>::Create(Graph* graph,
+TestNodeWrapper<NodeClass> TestNodeWrapper<NodeClass>::Create(GraphImpl* graph,
                                                               Args&&... args) {
   // Dispatch to a helper so that we can use partial specialization.
   std::unique_ptr<NodeClass> node =
@@ -101,7 +101,7 @@ TestNodeWrapper<NodeClass> TestNodeWrapper<NodeClass>::Create(Graph* graph,
 template <>
 class TestNodeWrapper<SystemNodeImpl> {
  public:
-  static TestNodeWrapper<SystemNodeImpl> Create(Graph* graph) {
+  static TestNodeWrapper<SystemNodeImpl> Create(GraphImpl* graph) {
     return TestNodeWrapper<SystemNodeImpl>(graph->FindOrCreateSystemNode());
   }
 
@@ -140,11 +140,11 @@ class GraphTestHarness : public ::testing::Test {
 
  protected:
   base::test::ScopedTaskEnvironment& task_env() { return task_env_; }
-  Graph* graph() { return &graph_; }
+  GraphImpl* graph() { return &graph_; }
 
  private:
   base::test::ScopedTaskEnvironment task_env_;
-  Graph graph_;
+  GraphImpl graph_;
 };
 
 }  // namespace performance_manager

@@ -52,7 +52,7 @@ TEST_F(WebContentsProxyTest, EndToEnd) {
     base::RunLoop run_loop;
     PerformanceManager::GetInstance()->CallOnGraph(
         FROM_HERE, base::BindLambdaForTesting([&run_loop, &deref_proxy,
-                                               page_node](Graph* graph) {
+                                               page_node](GraphImpl* graph) {
           base::PostTaskWithTraits(
               FROM_HERE, {content::BrowserThread::UI},
               base::BindOnce(deref_proxy, page_node->contents_proxy(),
@@ -70,7 +70,7 @@ TEST_F(WebContentsProxyTest, EndToEnd) {
     PerformanceManager::GetInstance()->CallOnGraph(
         FROM_HERE,
         base::BindLambdaForTesting([&contents, &run_loop, &deref_proxy,
-                                    page_node](Graph* graph) {
+                                    page_node](GraphImpl* graph) {
           base::PostTaskWithTraits(
               FROM_HERE, {content::BrowserThread::UI},
               base::BindLambdaForTesting([&contents]() { contents.reset(); }));

@@ -14,10 +14,9 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
-#include "chrome/browser/performance_manager/graph/graph.h"
-#include "chrome/browser/performance_manager/graph/node_type.h"
 #include "chrome/browser/performance_manager/graph/properties.h"
 #include "chrome/browser/performance_manager/observers/graph_observer.h"
+#include "chrome/browser/performance_manager/public/graph/node_type.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -25,7 +24,7 @@
 
 namespace performance_manager {
 
-class Graph;
+class GraphImpl;
 
 // NodeBase implements shared functionality among different types of graph
 // nodes. A specific type of graph node will derive from this class and can
@@ -37,7 +36,7 @@ class NodeBase {
  public:
   // TODO(siggi): Don't store the node type, expose it on a virtual function
   //    instead.
-  NodeBase(NodeTypeEnum type, Graph* graph);
+  NodeBase(NodeTypeEnum type, GraphImpl* graph);
   virtual ~NodeBase();
 
   void AddObserver(GraphObserver* observer);
@@ -47,7 +46,7 @@ class NodeBase {
   NodeTypeEnum type() const { return type_; }
 
   // May be called on any sequence.
-  Graph* graph() const { return graph_; }
+  GraphImpl* graph() const { return graph_; }
 
   const base::ObserverList<GraphObserver>::Unchecked& observers() const {
     return observers_;
@@ -59,7 +58,7 @@ class NodeBase {
   static int64_t GetSerializationId(NodeBase* node);
 
  protected:
-  friend class Graph;
+  friend class GraphImpl;
 
   // Called just before joining |graph_|, a good opportunity to initialize
   // node state.
@@ -68,7 +67,7 @@ class NodeBase {
   // node state.
   virtual void LeaveGraph();
 
-  Graph* const graph_;
+  GraphImpl* const graph_;
   const NodeTypeEnum type_;
 
   // Assigned on first use, immutable from that point forward.
@@ -87,7 +86,8 @@ class TypedNodeBase : public NodeBase {
  public:
   using ObservedProperty = ObservedPropertyImpl<NodeClass, GraphObserver>;
 
-  explicit TypedNodeBase(Graph* graph) : NodeBase(NodeClass::Type(), graph) {}
+  explicit TypedNodeBase(GraphImpl* graph)
+      : NodeBase(NodeClass::Type(), graph) {}
 
   static const NodeClass* FromNodeBase(const NodeBase* node) {
     DCHECK_EQ(node->type(), NodeClass::Type());
@@ -104,7 +104,7 @@ template <class NodeClass, class MojoInterfaceClass, class MojoRequestClass>
 class CoordinationUnitInterface : public TypedNodeBase<NodeClass>,
                                   public MojoInterfaceClass {
  public:
-  explicit CoordinationUnitInterface(Graph* graph)
+  explicit CoordinationUnitInterface(GraphImpl* graph)
       : TypedNodeBase<NodeClass>(graph) {}
 
   ~CoordinationUnitInterface() override = default;

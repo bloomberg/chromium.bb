@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_GRAPH_H_
-#define CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_GRAPH_H_
+#ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_GRAPH_IMPL_H_
+#define CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_GRAPH_IMPL_H_
 
 #include <stdint.h>
 
@@ -32,12 +32,12 @@ class SystemNodeImpl;
 // Represents a graph of the nodes representing a single browser. Maintains a
 // set of nodes that can be retrieved in different ways, some indexed. Keeps
 // a list of observers that are notified of node addition and removal.
-class Graph {
+class GraphImpl {
  public:
   using NodeSet = std::unordered_set<NodeBase*>;
 
-  Graph();
-  ~Graph();
+  GraphImpl();
+  ~GraphImpl();
 
   void set_ukm_recorder(ukm::UkmRecorder* ukm_recorder) {
     ukm_recorder_ = ukm_recorder;
@@ -111,9 +111,9 @@ class Graph {
   int64_t current_node_serialization_id_ = 0u;
 
   SEQUENCE_CHECKER(sequence_checker_);
-  DISALLOW_COPY_AND_ASSIGN(Graph);
+  DISALLOW_COPY_AND_ASSIGN(GraphImpl);
 };
 
 }  // namespace performance_manager
 
-#endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_GRAPH_H_
+#endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_GRAPH_IMPL_H_

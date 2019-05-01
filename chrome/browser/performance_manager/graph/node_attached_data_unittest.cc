@@ -8,7 +8,7 @@
 
 #include "base/test/gtest_util.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
-#include "chrome/browser/performance_manager/graph/graph.h"
+#include "chrome/browser/performance_manager/graph/graph_impl.h"
 #include "chrome/browser/performance_manager/graph/graph_test_harness.h"
 #include "chrome/browser/performance_manager/graph/mock_graphs.h"
 #include "chrome/browser/performance_manager/graph/node_attached_data_impl.h"
@@ -29,7 +29,7 @@ constexpr size_t kFooDataSize = sizeof(uintptr_t);
 // A dummy node type so that we can exercise node attached storage code paths.
 class DummyNode : public NodeBase {
  public:
-  explicit DummyNode(Graph* graph)
+  explicit DummyNode(GraphImpl* graph)
       : NodeBase(NodeTypeEnum::kInvalidType, graph) {}
 
   ~DummyNode() override = default;

@@ -6,12 +6,12 @@
 
 #include <utility>
 
-#include "chrome/browser/performance_manager/graph/graph.h"
+#include "chrome/browser/performance_manager/graph/graph_impl.h"
 #include "chrome/browser/performance_manager/observers/graph_observer.h"
 
 namespace performance_manager {
 
-NodeBase::NodeBase(NodeTypeEnum node_type, Graph* graph)
+NodeBase::NodeBase(NodeTypeEnum node_type, GraphImpl* graph)
     : graph_(graph), type_(node_type) {}
 
 NodeBase::~NodeBase() {

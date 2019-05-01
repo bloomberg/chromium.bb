@@ -12,6 +12,7 @@
 #include "base/process/process_handle.h"
 
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
+#include "chrome/browser/performance_manager/graph/graph_impl.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 
@@ -21,7 +22,7 @@ ProcessResourceMeasurement::ProcessResourceMeasurement() = default;
 ProcessResourceMeasurementBatch::ProcessResourceMeasurementBatch() = default;
 ProcessResourceMeasurementBatch::~ProcessResourceMeasurementBatch() = default;
 
-SystemNodeImpl::SystemNodeImpl(Graph* graph) : TypedNodeBase(graph) {}
+SystemNodeImpl::SystemNodeImpl(GraphImpl* graph) : TypedNodeBase(graph) {}
 
 SystemNodeImpl::~SystemNodeImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

@@ -14,7 +14,7 @@
 #include "base/location.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
-#include "chrome/browser/performance_manager/graph/graph.h"
+#include "chrome/browser/performance_manager/graph/graph_impl.h"
 #include "chrome/browser/performance_manager/performance_manager.h"
 #include "chrome/browser/performance_manager/web_contents_proxy.h"
 #include "chrome/browser/performance_manager/webui_graph_dump_impl.h"
@@ -56,7 +56,7 @@ class PerformanceManager {
 
   // Invokes |graph_callback| on the performance manager's sequence, with the
   // graph as a parameter.
-  using GraphCallback = base::OnceCallback<void(Graph*)>;
+  using GraphCallback = base::OnceCallback<void(GraphImpl*)>;
   void CallOnGraph(const base::Location& from_here,
                    GraphCallback graph_callback);
 
@@ -139,7 +139,7 @@ class PerformanceManager {
 
   // The performance task runner.
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  Graph graph_;
+  GraphImpl graph_;
 
   // The registered graph observers.
   std::vector<std::unique_ptr<GraphObserver>> observers_;

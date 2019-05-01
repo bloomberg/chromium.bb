@@ -17,7 +17,7 @@ namespace performance_manager {
 class WebUIGraphDumpImplTest : public GraphTestHarness {};
 
 TEST_F(WebUIGraphDumpImplTest, Create) {
-  Graph graph;
+  GraphImpl graph;
   MockMultiplePagesWithMultipleProcessesGraph mock_graph(&graph);
 
   base::TimeTicks now = PerformanceManagerClock::NowTicks();

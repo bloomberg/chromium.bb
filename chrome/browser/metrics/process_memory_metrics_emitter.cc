@@ -15,7 +15,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/tab_footprint_aggregator.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
-#include "chrome/browser/performance_manager/graph/graph.h"
+#include "chrome/browser/performance_manager/graph/graph_impl.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/performance_manager.h"
@@ -780,7 +780,7 @@ bool HostsMainFrame(performance_manager::ProcessNodeImpl* process,
 
 void ProcessMemoryMetricsEmitter::GetProcessToPageInfoMap(
     GetProcessToPageInfoMapCallback callback,
-    performance_manager::Graph* graph) {
+    performance_manager::GraphImpl* graph) {
   std::vector<ProcessInfo> process_infos;
   std::vector<performance_manager::ProcessNodeImpl*> process_nodes =
       graph->GetAllProcessNodes();

@@ -6,13 +6,13 @@
 
 #include "base/macros.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
-#include "chrome/browser/performance_manager/graph/graph.h"
+#include "chrome/browser/performance_manager/graph/graph_impl.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 
 namespace performance_manager {
 
-WebUIGraphDumpImpl::WebUIGraphDumpImpl(Graph* graph)
+WebUIGraphDumpImpl::WebUIGraphDumpImpl(GraphImpl* graph)
     : graph_(graph), binding_(this) {
   DCHECK(graph);
 }

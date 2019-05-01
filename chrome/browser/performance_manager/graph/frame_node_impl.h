@@ -52,7 +52,7 @@ class FrameNodeImpl
   // Construct a frame node associated with a |process_node|, a |page_node| and
   // optionally with a |parent_frame_node|. For the main frame of |page_node|
   // the |parent_frame_node| parameter should be nullptr.
-  FrameNodeImpl(Graph* graph,
+  FrameNodeImpl(GraphImpl* graph,
                 ProcessNodeImpl* process_node,
                 PageNodeImpl* page_node,
                 FrameNodeImpl* parent_frame_node,
