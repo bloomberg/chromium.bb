@@ -665,50 +665,47 @@ size_t HttpUtil::LocateEndOfHeaders(const char* buf, size_t buf_len, size_t i) {
 // In order for a line to be continuable, it must specify a
 // non-blank header-name. Line continuations are specifically for
 // header values -- do not allow headers names to span lines.
-static bool IsLineSegmentContinuable(const char* begin, const char* end) {
-  if (begin == end)
+static bool IsLineSegmentContinuable(base::StringPiece line) {
+  if (line.empty())
     return false;
 
-  const char* colon = std::find(begin, end, ':');
-  if (colon == end)
+  size_t colon = line.find(':');
+  if (colon == base::StringPiece::npos)
     return false;
 
-  const char* name_begin = begin;
-  const char* name_end = colon;
+  base::StringPiece name = line.substr(0, colon);
 
   // Name can't be empty.
-  if (name_begin == name_end)
+  if (name.empty())
     return false;
 
   // Can't start with LWS (this would imply the segment is a continuation)
-  if (HttpUtil::IsLWS(*name_begin))
+  if (HttpUtil::IsLWS(name[0]))
     return false;
 
   return true;
 }
 
 // Helper used by AssembleRawHeaders, to find the end of the status line.
-static const char* FindStatusLineEnd(const char* begin, const char* end) {
-  size_t i = base::StringPiece(begin, end - begin).find_first_of("\r\n");
+static size_t FindStatusLineEnd(base::StringPiece str) {
+  size_t i = str.find_first_of("\r\n");
   if (i == base::StringPiece::npos)
-    return end;
-  return begin + i;
+    return str.size();
+  return i;
 }
 
 // Helper used by AssembleRawHeaders, to skip past leading LWS.
-static const char* FindFirstNonLWS(const char* begin, const char* end) {
-  for (const char* cur = begin; cur != end; ++cur) {
-    if (!HttpUtil::IsLWS(*cur))
-      return cur;
+static base::StringPiece RemoveLeadingNonLWS(base::StringPiece str) {
+  for (size_t i = 0; i < str.size(); i++) {
+    if (!HttpUtil::IsLWS(str[i]))
+      return str.substr(i);
   }
-  return end;  // Not found.
+  return base::StringPiece();  // Remove everything.
 }
 
 std::string HttpUtil::AssembleRawHeaders(base::StringPiece input) {
   std::string raw_headers;
   raw_headers.reserve(input.size());
-
-  const char* input_end = input.data() + input.size();
 
   // Skip any leading slop, since the consumers of this output
   // (HttpResponseHeaders) don't deal with it.
@@ -718,36 +715,37 @@ std::string HttpUtil::AssembleRawHeaders(base::StringPiece input) {
     input.remove_prefix(status_begin_offset);
 
   // Copy the status line.
-  const char* status_line_end = FindStatusLineEnd(input.data(), input_end);
-  raw_headers.append(input.data(), status_line_end);
+  size_t status_line_end = FindStatusLineEnd(input);
+  input.substr(0, status_line_end).AppendToString(&raw_headers);
+  input.remove_prefix(status_line_end);
 
   // After the status line, every subsequent line is a header line segment.
   // Should a segment start with LWS, it is a continuation of the previous
   // line's field-value.
 
   // TODO(ericroman): is this too permissive? (delimits on [\r\n]+)
-  base::CStringTokenizer lines(status_line_end, input_end, "\r\n");
+  base::CStringTokenizer lines(input.data(), input.data() + input.size(),
+                               "\r\n");
 
   // This variable is true when the previous line was continuable.
   bool prev_line_continuable = false;
 
   while (lines.GetNext()) {
-    const char* line_begin = lines.token_begin();
-    const char* line_end = lines.token_end();
+    base::StringPiece line = lines.token_piece();
 
-    if (prev_line_continuable && IsLWS(*line_begin)) {
+    if (prev_line_continuable && IsLWS(line[0])) {
       // Join continuation; reduce the leading LWS to a single SP.
       raw_headers.push_back(' ');
-      raw_headers.append(FindFirstNonLWS(line_begin, line_end), line_end);
+      RemoveLeadingNonLWS(line).AppendToString(&raw_headers);
     } else {
       // Terminate the previous line.
       raw_headers.push_back('\n');
 
       // Copy the raw data to output.
-      raw_headers.append(line_begin, line_end);
+      line.AppendToString(&raw_headers);
 
       // Check if the current line can be continued.
-      prev_line_continuable = IsLineSegmentContinuable(line_begin, line_end);
+      prev_line_continuable = IsLineSegmentContinuable(line);
     }
   }
 

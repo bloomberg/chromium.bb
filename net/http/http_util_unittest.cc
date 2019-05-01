@@ -12,10 +12,6 @@
 
 namespace net {
 
-namespace {
-class HttpUtilTest : public testing::Test {};
-}
-
 TEST(HttpUtilTest, IsSafeHeader) {
   static const char* const unsafe_headers[] = {
     "sec-",
