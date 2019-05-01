@@ -63,6 +63,8 @@ class LoginShelfViewTest : public LoginTestBase {
     LockScreenActionBackgroundController::SetFactoryCallbackForTesting(
         &action_background_controller_factory_);
 
+    // Guest Button is visible while session hasn't started.
+    set_start_session(false);
     LoginTestBase::SetUp();
     login_shelf_view_ = GetPrimaryShelf()->shelf_widget()->login_shelf_view();
     Shell::Get()->tray_action()->SetClient(

@@ -91,7 +91,9 @@ void SyncConsentScreen::Show() {
   if (behavior_ != SyncScreenBehavior::SHOW) {
     // Wait for updates and set the loading throbber to be visible.
     view_->SetThrobberVisible(true /*visible*/);
-    GetSyncService(profile_)->AddObserver(this);
+    syncer::SyncService* service = GetSyncService(profile_);
+    if (service)
+      sync_service_observer_.Add(service);
   }
   // Show the entire screen.
   // If SyncScreenBehavior is show, this should show the sync consent screen.
@@ -101,7 +103,7 @@ void SyncConsentScreen::Show() {
 
 void SyncConsentScreen::Hide() {
   shown_ = false;
-  GetSyncService(profile_)->RemoveObserver(this);
+  sync_service_observer_.RemoveAll();
   view_->Hide();
 }
 

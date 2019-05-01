@@ -48,6 +48,20 @@ bool LoginScreenTester::IsAuthErrorBubbleShown() {
   return is_auth_error_button_shown;
 }
 
+bool LoginScreenTester::IsGuestButtonShown() {
+  ash::mojom::LoginScreenTestApiAsyncWaiter login_screen(test_api_.get());
+  bool is_guest_button_shown;
+  login_screen.IsGuestButtonShown(&is_guest_button_shown);
+  return is_guest_button_shown;
+}
+
+bool LoginScreenTester::IsAddUserButtonShown() {
+  ash::mojom::LoginScreenTestApiAsyncWaiter login_screen(test_api_.get());
+  bool is_add_user_button_shown;
+  login_screen.IsAddUserButtonShown(&is_add_user_button_shown);
+  return is_add_user_button_shown;
+}
+
 bool LoginScreenTester::ClickAddUserButton() {
   ash::mojom::LoginScreenTestApiAsyncWaiter login_screen(test_api_.get());
   bool success;

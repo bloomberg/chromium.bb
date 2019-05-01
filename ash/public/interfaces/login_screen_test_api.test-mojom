@@ -23,6 +23,12 @@ interface LoginScreenTestApi {
   // Returns true if Auth Error Button is currently being shown.
   IsAuthErrorBubbleShown() => (bool is_shown);
 
+  // Returns true if Guest button is currently being shown.
+  IsGuestButtonShown() => (bool is_shown);
+
+  // Returns true if Add User button is currently being shown.
+  IsAddUserButtonShown() => (bool is_shown);
+
   // Submit |password| for |account_id|.
   SubmitPassword(signin.mojom.AccountId account_id, string password) => ();
 

@@ -28,6 +28,8 @@ class LoginScreenTestApi : public mojom::LoginScreenTestApi {
   void IsRestartButtonShown(IsRestartButtonShownCallback callback) override;
   void IsShutdownButtonShown(IsShutdownButtonShownCallback callback) override;
   void IsAuthErrorBubbleShown(IsAuthErrorBubbleShownCallback callback) override;
+  void IsGuestButtonShown(IsGuestButtonShownCallback callback) override;
+  void IsAddUserButtonShown(IsAddUserButtonShownCallback callback) override;
   void SubmitPassword(const AccountId& account_id,
                       const std::string& password,
                       SubmitPasswordCallback callback) override;

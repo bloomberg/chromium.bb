@@ -34,8 +34,8 @@ namespace ash {
 
 class LockScreenActionBackgroundController;
 enum class LockScreenActionBackgroundState;
-class TrayAction;
 class LoginScreenController;
+class TrayAction;
 
 class KioskAppsButton;
 
@@ -78,7 +78,7 @@ class ASH_EXPORT LoginShelfView : public views::View,
 
   // ShelfWidget observes SessionController for higher-level UI changes and
   // then notifies LoginShelfView to update its own UI.
-  void UpdateAfterSessionStateChange(session_manager::SessionState state);
+  void UpdateAfterSessionChange();
 
   // Sets the list of kiosk apps that can be launched from the login shelf.
   void SetKioskApps(std::vector<mojom::KioskAppInfoPtr> kiosk_apps);

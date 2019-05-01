@@ -24,6 +24,8 @@ class LoginScreenTester {
   bool IsRestartButtonShown();
   bool IsShutdownButtonShown();
   bool IsAuthErrorBubbleShown();
+  bool IsGuestButtonShown();
+  bool IsAddUserButtonShown();
 
   // Returns true on success (i.e. button is  not disabled).
   bool ClickAddUserButton();
