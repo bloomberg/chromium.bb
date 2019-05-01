@@ -411,6 +411,27 @@ message ListVmDisksRequest {
 
   // The storage location to check.
   StorageLocation storage_location = 2;
+
+  // Requester may set this field to 'true' to retrieve data about
+  // images in all known locations, in which case data in storage_location
+  // field will be ignored.
+  bool all_locations = 3;
+
+  // Tells concierge to only return data about specified VM with matching
+  // name. When empty, information about all VMs will be returned.
+  string vm_name = 4;
+}
+
+// Information about VM image.
+message VmDiskInfo {
+  // Name of the image.
+  string name = 1;
+
+  // Location of the image.
+  StorageLocation storage_location = 2;
+
+  // The size of the image in bytes.
+  uint64 size = 3;
 }
 
 // Response to ListVmDisks {
@@ -419,7 +440,7 @@ message ListVmDisksResponse {
   bool success = 1;
 
   // List of disk images.
-  repeated string images = 2;
+  repeated VmDiskInfo images = 2;
 
   // The failure reason if the disks could not be listed.
   string failure_reason = 3;
