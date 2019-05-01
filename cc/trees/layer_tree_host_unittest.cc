@@ -1581,7 +1581,8 @@ class LayerTreeHostTestPrepareTilesWithoutDraw : public LayerTreeHostTest {
 
 // This behavior is specific to Android WebView, which only uses
 // multi-threaded compositor.
-MULTI_THREAD_TEST_F(LayerTreeHostTestPrepareTilesWithoutDraw);
+// Flaky: https://crbug.com/947673
+// MULTI_THREAD_TEST_F(LayerTreeHostTestPrepareTilesWithoutDraw);
 
 // Verify CanDraw() is false until first commit.
 class LayerTreeHostTestCantDrawBeforeCommit : public LayerTreeHostTest {
