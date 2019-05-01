@@ -370,11 +370,7 @@ class GitWrapper(SCMWrapper):
         return ref
     self.Print('Failed to find a remote ref that contains %s. '
                'Candidate refs were %s.' % (commit, remote_refs))
-    # Fallback to the commit we got.
-    # This means that apply_path_ref will try to find the merge-base between the
-    # patch and the commit (which is most likely the commit) and cherry-pick
-    # everything in between.
-    return commit
+    return None
 
   def apply_patch_ref(self, patch_repo, patch_ref, target_branch, options,
                       file_list):
@@ -419,7 +415,22 @@ class GitWrapper(SCMWrapper):
       pass
 
     base_rev = self._Capture(['rev-parse', 'HEAD'])
-    target_branch = target_branch or self._GetTargetBranchForCommit(base_rev)
+
+    if target_branch:
+      # Convert the target branch to a remote ref if possible.
+      remote_ref = scm.GIT.RefToRemoteRef(target_branch, self.remote)
+      if remote_ref:
+        target_branch = ''.join(remote_ref)
+    else:
+      target_branch = self._GetTargetBranchForCommit(base_rev)
+
+    # Fallback to the commit we got.
+    # This means that apply_path_ref will try to find the merge-base between the
+    # patch and the commit (which is most likely the commit) and cherry-pick
+    # everything in between.
+    if not target_branch:
+      target_branch = base_rev
+
     self.Print('===Applying patch ref===')
     self.Print('Patch ref is %r @ %r. Target branch for patch is %r. '
                'Current HEAD is %r. Current dir is %r' % (
