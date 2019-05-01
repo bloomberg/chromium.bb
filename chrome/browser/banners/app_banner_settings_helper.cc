@@ -88,20 +88,48 @@ std::unique_ptr<base::DictionaryValue> GetOriginAppBannerData(
   return dict;
 }
 
-base::Value* GetAppDict(base::DictionaryValue* origin_dict,
-                        const std::string& key_name) {
-  base::Value* app_dict =
-      origin_dict->FindKeyOfType(key_name, base::Value::Type::DICTIONARY);
-  if (!app_dict) {
-    // Don't allow more than kMaxAppsPerSite dictionaries.
-    if (origin_dict->size() < kMaxAppsPerSite) {
-      app_dict = origin_dict->SetKey(
-          key_name, base::Value(base::Value::Type::DICTIONARY));
+class AppPrefs {
+ public:
+  AppPrefs(content::WebContents* web_contents,
+           const GURL& origin,
+           const std::string& package_name_or_start_url)
+      : origin_(origin) {
+    Profile* profile =
+        Profile::FromBrowserContext(web_contents->GetBrowserContext());
+    if (profile->IsOffTheRecord() || !origin.is_valid())
+      return;
+
+    settings_ = HostContentSettingsMapFactory::GetForProfile(profile);
+    origin_dict_ = GetOriginAppBannerData(settings_, origin);
+    dict_ = origin_dict_->FindKeyOfType(package_name_or_start_url,
+                                        base::Value::Type::DICTIONARY);
+    if (!dict_) {
+      // Don't allow more than kMaxAppsPerSite dictionaries.
+      if (origin_dict_->size() < kMaxAppsPerSite) {
+        dict_ =
+            origin_dict_->SetKey(package_name_or_start_url,
+                                 base::Value(base::Value::Type::DICTIONARY));
+      }
     }
   }
 
-  return app_dict;
-}
+  HostContentSettingsMap* settings() { return settings_; }
+  base::Value* dict() { return dict_; }
+
+  void Save() {
+    DCHECK(dict_);
+    dict_ = nullptr;
+    settings_->SetWebsiteSettingDefaultScope(
+        origin_, GURL(), CONTENT_SETTINGS_TYPE_APP_BANNER, std::string(),
+        std::move(origin_dict_));
+  }
+
+ private:
+  const GURL& origin_;
+  HostContentSettingsMap* settings_ = nullptr;
+  std::unique_ptr<base::DictionaryValue> origin_dict_;
+  base::Value* dict_ = nullptr;
+};
 
 // Queries variations for the number of days which dismissing and ignoring the
 // banner should prevent a banner from showing.
@@ -193,24 +221,12 @@ struct NextInstallTextAnimation {
 base::Optional<NextInstallTextAnimation> NextInstallTextAnimation::Get(
     content::WebContents* web_contents,
     const GURL& scope) {
-  const NextInstallTextAnimation kNever = {base::Time::Max(),
-                                           base::TimeDelta::Max()};
+  AppPrefs app_prefs(web_contents, scope, scope.spec());
+  if (!app_prefs.dict())
+    return NextInstallTextAnimation{base::Time::Max(), base::TimeDelta::Max()};
 
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  if (profile->IsOffTheRecord() || !scope.is_valid())
-    return kNever;
-
-  HostContentSettingsMap* settings =
-      HostContentSettingsMapFactory::GetForProfile(profile);
-  std::unique_ptr<base::DictionaryValue> origin_dict =
-      GetOriginAppBannerData(settings, scope);
-
-  base::Value* app_dict = GetAppDict(origin_dict.get(), scope.spec());
-  if (!app_dict)
-    return kNever;
-
-  const base::Value* next_dict = app_dict->FindKey(kNextInstallTextAnimation);
+  const base::Value* next_dict =
+      app_prefs.dict()->FindKey(kNextInstallTextAnimation);
   if (!next_dict || !next_dict->is_dict())
     return base::nullopt;
 
@@ -230,29 +246,16 @@ base::Optional<NextInstallTextAnimation> NextInstallTextAnimation::Get(
 
 void NextInstallTextAnimation::RecordToPrefs(content::WebContents* web_contents,
                                              const GURL& scope) const {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  if (profile->IsOffTheRecord() || !scope.is_valid())
-    return;
-
-  HostContentSettingsMap* settings =
-      HostContentSettingsMapFactory::GetForProfile(profile);
-  std::unique_ptr<base::DictionaryValue> origin_dict =
-      GetOriginAppBannerData(settings, scope);
-
-  base::Value* app_dict = GetAppDict(origin_dict.get(), scope.spec());
-  if (!app_dict)
+  AppPrefs app_prefs(web_contents, scope, scope.spec());
+  if (!app_prefs.dict())
     return;
 
   base::Value next_dict(base::Value::Type::DICTIONARY);
   next_dict.SetKey(kLastShownKey,
                    SerializeTimeDelta(last_shown.ToDeltaSinceWindowsEpoch()));
   next_dict.SetKey(kDelayKey, SerializeTimeDelta(delay));
-  app_dict->SetKey(kNextInstallTextAnimation, std::move(next_dict));
-
-  settings->SetWebsiteSettingDefaultScope(
-      scope, GURL(), CONTENT_SETTINGS_TYPE_APP_BANNER, std::string(),
-      std::move(origin_dict));
+  app_prefs.dict()->SetKey(kNextInstallTextAnimation, std::move(next_dict));
+  app_prefs.Save();
 }
 
 }  // namespace
@@ -317,21 +320,8 @@ void AppBannerSettingsHelper::RecordBannerEvent(
     const std::string& package_name_or_start_url,
     AppBannerEvent event,
     base::Time time) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  if (profile->IsOffTheRecord() || package_name_or_start_url.empty())
-    return;
-
-  HostContentSettingsMap* settings =
-      HostContentSettingsMapFactory::GetForProfile(profile);
-  std::unique_ptr<base::DictionaryValue> origin_dict =
-      GetOriginAppBannerData(settings, origin_url);
-  if (!origin_dict)
-    return;
-
-  base::Value* app_dict =
-      GetAppDict(origin_dict.get(), package_name_or_start_url);
-  if (!app_dict)
+  AppPrefs app_prefs(web_contents, origin_url, package_name_or_start_url);
+  if (!app_prefs.dict())
     return;
 
   // Dates are stored in their raw form (i.e. not local dates) to be resilient
@@ -340,15 +330,13 @@ void AppBannerSettingsHelper::RecordBannerEvent(
 
   if (event == APP_BANNER_EVENT_COULD_SHOW) {
     // Do not overwrite a could show event, as this is used for metrics.
-    if (app_dict->FindKeyOfType(event_key, base::Value::Type::DOUBLE))
+    if (app_prefs.dict()->FindKeyOfType(event_key, base::Value::Type::DOUBLE))
       return;
   }
-  app_dict->SetKey(event_key,
-                   base::Value(static_cast<double>(time.ToInternalValue())));
+  app_prefs.dict()->SetKey(
+      event_key, base::Value(static_cast<double>(time.ToInternalValue())));
 
-  settings->SetWebsiteSettingDefaultScope(
-      origin_url, GURL(), CONTENT_SETTINGS_TYPE_APP_BANNER, std::string(),
-      std::move(origin_dict));
+  app_prefs.Save();
 
   // App banner content settings are lossy, meaning they will not cause the
   // prefs to become dirty. This is fine for most events, as if they are lost it
@@ -356,7 +344,7 @@ void AppBannerSettingsHelper::RecordBannerEvent(
   // DID_ADD_TO_HOMESCREEN event should always be recorded to prevent
   // spamminess.
   if (event == APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN)
-    settings->FlushLossyWebsiteSettings();
+    app_prefs.settings()->FlushLossyWebsiteSettings();
 }
 
 bool AppBannerSettingsHelper::HasBeenInstalled(
@@ -403,22 +391,11 @@ base::Time AppBannerSettingsHelper::GetSingleBannerEvent(
     AppBannerEvent event) {
   DCHECK(event < APP_BANNER_EVENT_NUM_EVENTS);
 
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  HostContentSettingsMap* settings =
-      HostContentSettingsMapFactory::GetForProfile(profile);
-  std::unique_ptr<base::DictionaryValue> origin_dict =
-      GetOriginAppBannerData(settings, origin_url);
-
-  if (!origin_dict)
+  AppPrefs app_prefs(web_contents, origin_url, package_name_or_start_url);
+  if (!app_prefs.dict())
     return base::Time();
 
-  base::Value* app_dict =
-      GetAppDict(origin_dict.get(), package_name_or_start_url);
-  if (!app_dict)
-    return base::Time();
-
-  base::Value* internal_time = app_dict->FindKeyOfType(
+  base::Value* internal_time = app_prefs.dict()->FindKeyOfType(
       kBannerEventKeys[event], base::Value::Type::DOUBLE);
   if (!internal_time)
     return base::Time();
