@@ -39,6 +39,7 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
@@ -345,6 +346,9 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest, FramePixelSize) {
   // Wait for each frames resource to load so that they will have non-zero
   // bytes.
   waiter->AddMinimumCompleteResourcesExpectation(6);
+  waiter->AddFrameSizeExpectation(gfx::Size(0, 0));
+  waiter->AddFrameSizeExpectation(gfx::Size(10, 1000));
+  waiter->AddFrameSizeExpectation(gfx::Size(100, 100));
   waiter->Wait();
 
   // Navigate away to force the histogram recording.
@@ -376,6 +380,7 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
   // Wait for each frames resource to load so that they will have non-zero
   // bytes.
   waiter->AddMinimumCompleteResourcesExpectation(4);
+  waiter->AddFrameSizeExpectation(gfx::Size(4, 4));
   waiter->Wait();
 
   // Navigate away to force the histogram recording.

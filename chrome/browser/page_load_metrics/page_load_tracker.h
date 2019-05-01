@@ -21,6 +21,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "ui/base/page_transition_types.h"
+#include "ui/gfx/geometry/size.h"
 
 class GURL;
 

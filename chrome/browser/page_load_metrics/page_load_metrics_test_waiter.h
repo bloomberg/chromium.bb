@@ -12,6 +12,7 @@
 #include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
 #include "content/public/browser/render_frame_host.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace page_load_metrics {
 
@@ -41,6 +42,10 @@ class PageLoadMetricsTestWaiter
 
   // Add a subframe-level expectation.
   void AddSubFrameExpectation(TimingField field);
+
+  // Add a frame size expectation. Expects that at least one frame receives a
+  // size update of |size|.
+  void AddFrameSizeExpectation(const gfx::Size& size);
 
   // Add a single WebFeature expectation.
   void AddWebFeatureExpectation(blink::mojom::WebFeature web_feature);
@@ -114,6 +119,8 @@ class PageLoadMetricsTestWaiter
     void OnDidFinishSubFrameNavigation(
         content::NavigationHandle* navigation_handle,
         const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+    void FrameSizeChanged(content::RenderFrameHost* render_frame_host,
+                          const gfx::Size& frame_size) override;
 
    private:
     const base::WeakPtr<PageLoadMetricsTestWaiter> waiter_;
@@ -150,6 +157,10 @@ class PageLoadMetricsTestWaiter
     int bitmask_ = 0;
   };
 
+  struct FrameSizeComparator {
+    bool operator()(const gfx::Size a, const gfx::Size b) const;
+  };
+
   static bool IsPageLevelField(TimingField field);
 
   static TimingFieldBitSet GetMatchedBits(
@@ -182,6 +193,9 @@ class PageLoadMetricsTestWaiter
                                const mojom::PageLoadFeatures& features,
                                const PageLoadExtraInfo& extra_info);
 
+  void FrameSizeChanged(content::RenderFrameHost* render_frame_host,
+                        const gfx::Size& frame_size);
+
   void OnDidFinishSubFrameNavigation(
       content::NavigationHandle* navigation_handle,
       const page_load_metrics::PageLoadExtraInfo& extra_info);
@@ -208,6 +222,9 @@ class PageLoadMetricsTestWaiter
   std::bitset<static_cast<size_t>(blink::mojom::WebFeature::kNumberOfFeatures)>
       observed_web_features_;
   size_t observed_subframe_navigations_ = 0;
+
+  std::set<gfx::Size, FrameSizeComparator> expected_frame_sizes_;
+  std::set<gfx::Size, FrameSizeComparator> observed_frame_sizes_;
 
   int current_complete_resources_ = 0;
   int64_t current_network_bytes_ = 0;

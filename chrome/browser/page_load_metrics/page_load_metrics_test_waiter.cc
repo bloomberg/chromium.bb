@@ -28,6 +28,13 @@ void PageLoadMetricsTestWaiter::AddPageExpectation(TimingField field) {
   }
 }
 
+void PageLoadMetricsTestWaiter::AddFrameSizeExpectation(const gfx::Size& size) {
+  // If we have already seen this size, don't add it to the expectations.
+  if (observed_frame_sizes_.find(size) != observed_frame_sizes_.end())
+    return;
+  expected_frame_sizes_.insert(size);
+}
+
 void PageLoadMetricsTestWaiter::AddSubFrameExpectation(TimingField field) {
   CHECK_NE(field, TimingField::kLoadTimingInfo)
       << "LOAD_TIMING_INFO should only be used as a page-level expectation";
@@ -170,6 +177,15 @@ void PageLoadMetricsTestWaiter::OnDidFinishSubFrameNavigation(
     run_loop_->Quit();
 }
 
+void PageLoadMetricsTestWaiter::FrameSizeChanged(
+    content::RenderFrameHost* render_frame_host,
+    const gfx::Size& frame_size) {
+  observed_frame_sizes_.insert(frame_size);
+  expected_frame_sizes_.erase(frame_size);
+  if (ExpectationsSatisfied() && run_loop_)
+    run_loop_->Quit();
+}
+
 bool PageLoadMetricsTestWaiter::IsPageLevelField(TimingField field) {
   switch (field) {
     case TimingField::kFirstPaint:
@@ -253,7 +269,8 @@ bool PageLoadMetricsTestWaiter::ExpectationsSatisfied() const {
   return subframe_expected_fields_.Empty() && page_expected_fields_.Empty() &&
          ResourceUseExpectationsSatisfied() &&
          WebFeaturesExpectationsSatisfied() &&
-         SubframeNavigationExpectationsSatisfied();
+         SubframeNavigationExpectationsSatisfied() &&
+         expected_frame_sizes_.empty();
 }
 
 PageLoadMetricsTestWaiter::WaiterMetricsObserver::~WaiterMetricsObserver() {}
@@ -300,6 +317,20 @@ void PageLoadMetricsTestWaiter::WaiterMetricsObserver::
         const page_load_metrics::PageLoadExtraInfo& extra_info) {
   if (waiter_)
     waiter_->OnDidFinishSubFrameNavigation(navigation_handle, extra_info);
+}
+
+void PageLoadMetricsTestWaiter::WaiterMetricsObserver::FrameSizeChanged(
+    content::RenderFrameHost* render_frame_host,
+    const gfx::Size& frame_size) {
+  if (waiter_)
+    waiter_->FrameSizeChanged(render_frame_host, frame_size);
+}
+
+bool PageLoadMetricsTestWaiter::FrameSizeComparator::operator()(
+    const gfx::Size a,
+    const gfx::Size b) const {
+  return a.width() < b.width() ||
+         (a.width() == b.width() && a.height() < b.height());
 }
 
 }  // namespace page_load_metrics
