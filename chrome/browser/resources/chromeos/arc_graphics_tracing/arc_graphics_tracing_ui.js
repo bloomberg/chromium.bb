@@ -145,6 +145,12 @@ var valueAttributes = {
 };
 
 /**
+ * @type {Object}.
+ * Currently loaded model.
+ */
+var activeModel = null;
+
+/**
  * @type {DetailedInfoView}.
  * Currently active detailed view.
  */
@@ -200,6 +206,29 @@ function initializeUi() {
     if (!activeDetailedInfoView.overlay.contains(event.target)) {
       discardDetailedInfo();
     }
+  };
+
+  $('arc-graphics-tracing-save').onclick = function(event) {
+    var linkElement = document.createElement('a');
+    var file = new Blob([JSON.stringify(activeModel)], {type: 'text/plain'});
+    linkElement.href = URL.createObjectURL(file);
+    linkElement.download = 'tracing_model.json';
+    linkElement.click();
+  };
+
+  $('arc-graphics-tracing-load').onclick = function(event) {
+    var fileElement = document.createElement('input');
+    fileElement.type = 'file';
+
+    fileElement.onchange = function(event) {
+      var reader = new FileReader();
+      reader.onload = function(response) {
+        chrome.send('loadFromText', [response.target.result]);
+      };
+      reader.readAsText(event.target.files[0]);
+    };
+
+    fileElement.click();
   };
 }
 
@@ -1379,6 +1408,7 @@ class Events {
 function setGraphicBuffersModel(model) {
   // Clear previous content.
   $('arc-event-bands').textContent = '';
+  activeModel = model;
 
   // Microseconds per pixel.
   var resolution = 100.0;
@@ -1487,4 +1517,6 @@ function setGraphicBuffersModel(model) {
     activityBands.addGlobal(new Events(
         view.global_events, 600 /* kCustomEvent */, 600 /* kCustomEvent */));
   }
+
+  $('arc-graphics-tracing-save').disabled = false;
 }

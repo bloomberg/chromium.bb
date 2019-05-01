@@ -18,8 +18,13 @@
     <div id="arc-graphics-tracing-control">
       <h3>ARC graphics tracing</h3>
       Use <b>Ctrl+Shift+G</b> in active Android app to start/stop tracing.
-      <input type="checkbox" id="arc-graphics-tracing-stop-on-jank">
+      <input type="checkbox" id="arc-graphics-tracing-stop-on-jank" checked>
       Stop on jank. Status: <i id="arc-graphics-tracing-status">Idle</i>
+      <div id="arc-graphics-tracing-control-buttons">
+        <button type="button" id="arc-graphics-tracing-save" disabled>Save
+        </button>
+        <button type="button" id="arc-graphics-tracing-load">Load</button>
+      </div>
     </div>
     <hr>
     <div id='arc-event-bands'></div>

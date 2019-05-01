@@ -44,6 +44,10 @@
   display: block;
 }
 
+#arc-graphics-tracing-control-buttons {
+  float: right;
+}
+
 .arc-cpu-view-title {
   border-bottom: 1px solid #888;
   font-size: 14px;

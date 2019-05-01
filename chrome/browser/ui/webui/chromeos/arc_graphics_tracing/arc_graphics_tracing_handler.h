@@ -75,6 +75,7 @@ class ArcGraphicsTracingHandler : public content::WebUIMessageHandler,
   // Handlers for calls from JS.
   void HandleReady(const base::ListValue* args);
   void HandleSetStopOnJank(const base::ListValue* args);
+  void HandleLoadFromText(const base::ListValue* args);
 
   // Updates title and icon for the active ARC window.
   void UpdateActiveArcWindowInfo();
