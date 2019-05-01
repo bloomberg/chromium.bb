@@ -10,10 +10,8 @@
 #include <tuple>
 
 #include "base/synchronization/waitable_event.h"
-#include "base/win/registry.h"
 #include "base/win/win_util.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
-#include "chrome/credential_provider/gaiacp/associated_user_validator.h"
 #include "chrome/credential_provider/gaiacp/auth_utils.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
@@ -21,41 +19,14 @@
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
 #include "chrome/credential_provider/test/com_fakes.h"
 #include "chrome/credential_provider/test/gcp_fakes.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#include "chrome/credential_provider/test/gls_runner_test_base.h"
+#include "chrome/credential_provider/test/test_credential.h"
 
 namespace credential_provider {
 
-class GcpCredentialProviderTest : public ::testing::Test {
- protected:
-  void CreateGCPWUser(const wchar_t* username,
-                      const wchar_t* email,
-                      const wchar_t* password,
-                      const wchar_t* fullname,
-                      const wchar_t* comment,
-                      const wchar_t* gaia_id,
-                      BSTR* sid) {
-    ASSERT_EQ(S_OK,
-              fake_os_user_manager_.CreateTestOSUser(
-                  username, password, fullname, comment, gaia_id, email, sid));
-  }
+namespace testing {
 
-  FakeOSUserManager* fake_os_user_manager() { return &fake_os_user_manager_; }
-  FakeWinHttpUrlFetcherFactory* fake_http_url_fetcher_factory() {
-    return &fake_http_url_fetcher_factory_;
-  }
-
-  void SetUp() override;
-
- private:
-  registry_util::RegistryOverrideManager registry_override_;
-  FakeOSUserManager fake_os_user_manager_;
-  FakeScopedLsaPolicyFactory fake_scoped_lsa_policy_factory_;
-  FakeWinHttpUrlFetcherFactory fake_http_url_fetcher_factory_;
-};
-
-void GcpCredentialProviderTest::SetUp() {
-  InitializeRegistryOverrideForTesting(&registry_override_);
-}
+class GcpCredentialProviderTest : public GlsRunnerTestBase {};
 
 TEST_F(GcpCredentialProviderTest, Basic) {
   CComPtr<IGaiaCredentialProvider> provider;
@@ -65,164 +36,92 @@ TEST_F(GcpCredentialProviderTest, Basic) {
 }
 
 TEST_F(GcpCredentialProviderTest, SetUserArray_NoGaiaUsers) {
-  CComPtr<ICredentialProviderSetUserArray> user_array;
-  ASSERT_EQ(
-      S_OK,
-      CComCreator<CComObject<CGaiaCredentialProvider>>::CreateInstance(
-          nullptr, IID_ICredentialProviderSetUserArray, (void**)&user_array));
-
-  FakeCredentialProviderUserArray array;
-  array.AddUser(L"sid", L"username");
-  ASSERT_EQ(S_OK, user_array->SetUserArray(&array));
+  CComBSTR sid;
+  ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
+                      L"username", L"password", L"full name", L"comment", L"",
+                      L"", &sid));
 
   CComPtr<ICredentialProvider> provider;
-  ASSERT_EQ(S_OK, user_array.QueryInterface(&provider));
+  DWORD count = 0;
+  ASSERT_EQ(S_OK, InitializeProviderWithCredentials(&count, &provider));
 
-  // There should be no credentials. Only users with the requisite registry
-  // entry will be counted.
-  DWORD count;
-  DWORD default_index;
-  BOOL autologon;
-  ASSERT_EQ(S_OK,
-            provider->GetCredentialCount(&count, &default_index, &autologon));
-  EXPECT_EQ(0u, count);
-  EXPECT_EQ(CREDENTIAL_PROVIDER_NO_DEFAULT, default_index);
-  EXPECT_FALSE(autologon);
+  // There should only be the anonymous credential. Only users with the
+  // requisite registry entry will be counted.
+  EXPECT_EQ(1u, count);
+
+  CComPtr<ICredentialProviderCredential> cred;
+  ASSERT_EQ(S_OK, provider->GetCredentialAt(0, &cred));
+
+  CComPtr<ICredentialProviderCredential2> cred2;
+  ASSERT_NE(S_OK, cred.QueryInterface(&cred2));
+
+  CComPtr<IReauthCredential> reauth_cred;
+  ASSERT_NE(S_OK, cred.QueryInterface(&reauth_cred));
 }
 
 TEST_F(GcpCredentialProviderTest, CpusLogon) {
+  CComBSTR sid;
+  ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
+                      L"username", L"password", L"full name", L"comment", L"",
+                      L"", &sid));
+
   CComPtr<ICredentialProvider> provider;
-  ASSERT_EQ(S_OK,
-            CComCreator<CComObject<CGaiaCredentialProvider>>::CreateInstance(
-                nullptr, IID_ICredentialProvider, (void**)&provider));
+  DWORD count = 0;
+  ASSERT_EQ(S_OK, InitializeProviderWithCredentials(&count, &provider));
 
-  // Start process for logon screen.
-  ASSERT_EQ(S_OK, provider->SetUsageScenario(CPUS_LOGON, 0));
+  // There should only be the anonymous credential. Only users with the
+  // requisite registry entry will be counted.
+  EXPECT_EQ(1u, count);
 
-  // Give list of users visible on welcome screen.
-  CComPtr<ICredentialProviderSetUserArray> user_array;
-  ASSERT_EQ(S_OK, provider.QueryInterface(&user_array));
-  FakeCredentialProviderUserArray array;
-  array.AddUser(L"sid1", L"username1");
-  ASSERT_EQ(S_OK, user_array->SetUserArray(&array));
-
-  // Activate the CP.
-  FakeCredentialProviderEvents events;
-  ASSERT_EQ(S_OK, provider->Advise(&events, 0));
-
-  // Check credentials.
-  DWORD count;
-  DWORD default_index;
-  BOOL autologon;
-  ASSERT_EQ(S_OK,
-            provider->GetCredentialCount(&count, &default_index, &autologon));
-  ASSERT_EQ(1u, count);
-  EXPECT_EQ(CREDENTIAL_PROVIDER_NO_DEFAULT, default_index);
-  EXPECT_FALSE(autologon);
   CComPtr<ICredentialProviderCredential> cred;
   ASSERT_EQ(S_OK, provider->GetCredentialAt(0, &cred));
-  CComPtr<IGaiaCredential> gaia_cred;
-  EXPECT_EQ(S_OK, cred.QueryInterface(&gaia_cred));
 
-  // Get fields.
-  DWORD field_count;
-  ASSERT_EQ(S_OK, provider->GetFieldDescriptorCount(&field_count));
-  EXPECT_EQ(FIELD_COUNT, field_count);
+  CComPtr<ICredentialProviderCredential2> cred2;
+  ASSERT_NE(S_OK, cred.QueryInterface(&cred2));
 
-  // Deactivate the CP.
-  ASSERT_EQ(S_OK, provider->UnAdvise());
+  CComPtr<IReauthCredential> reauth_cred;
+  ASSERT_NE(S_OK, cred.QueryInterface(&reauth_cred));
 }
 
 TEST_F(GcpCredentialProviderTest, CpusUnlock) {
+  CComBSTR sid;
+  ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
+                      L"username", L"password", L"full name", L"comment", L"",
+                      L"", &sid));
+
   CComPtr<ICredentialProvider> provider;
-  ASSERT_EQ(S_OK,
-            CComCreator<CComObject<CGaiaCredentialProvider>>::CreateInstance(
-                nullptr, IID_ICredentialProvider, (void**)&provider));
-
-  // Start process for logon screen.
-  ASSERT_EQ(S_OK, provider->SetUsageScenario(CPUS_UNLOCK_WORKSTATION, 0));
-
-  // Give list of users visible on welcome screen.
-  CComPtr<ICredentialProviderSetUserArray> user_array;
-  ASSERT_EQ(S_OK, provider.QueryInterface(&user_array));
-  FakeCredentialProviderUserArray array;
-  array.AddUser(L"sid1", L"username1");
-  ASSERT_EQ(S_OK, user_array->SetUserArray(&array));
-
-  // Activate the CP.
-  FakeCredentialProviderEvents events;
-  ASSERT_EQ(S_OK, provider->Advise(&events, 0));
+  DWORD count = 0;
+  SetUsageScenario(CPUS_UNLOCK_WORKSTATION);
+  ASSERT_EQ(S_OK, InitializeProviderWithCredentials(&count, &provider));
 
   // Check credentials. None should be available because the anonymous
   // credential is not allowed during an unlock scenario.
-  DWORD count;
-  DWORD default_index;
-  BOOL autologon;
-  ASSERT_EQ(S_OK,
-            provider->GetCredentialCount(&count, &default_index, &autologon));
   ASSERT_EQ(0u, count);
-  EXPECT_EQ(CREDENTIAL_PROVIDER_NO_DEFAULT, default_index);
-  EXPECT_FALSE(autologon);
-
-  // Get fields.
-  DWORD field_count;
-  ASSERT_EQ(S_OK, provider->GetFieldDescriptorCount(&field_count));
-  EXPECT_EQ(FIELD_COUNT, field_count);
-
-  // Deactivate the CP.
-  ASSERT_EQ(S_OK, provider->UnAdvise());
 }
 
 TEST_F(GcpCredentialProviderTest, AutoLogonAfterUserRefresh) {
   USES_CONVERSION;
-  CComPtr<ICredentialProvider> provider;
-  ASSERT_EQ(S_OK,
-            CComCreator<CComObject<CGaiaCredentialProvider>>::CreateInstance(
-                nullptr, IID_ICredentialProvider, (void**)&provider));
+  CComBSTR sid;
+  ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
+                      L"username", L"password", L"full name", L"comment", L"",
+                      L"", &sid));
+
+  CComPtr<ICredentialProviderCredential> cred;
+  ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
+
+  CComPtr<ICredentialProvider> provider = created_provider();
 
   CComPtr<IGaiaCredentialProvider> gaia_provider;
   ASSERT_EQ(S_OK, provider.QueryInterface(&gaia_provider));
 
-  CComBSTR sid;
-  ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
-                      L"username", L"passowrd", L"Full Name", L"Comment", L"",
-                      L"", &sid));
-  // Start process for logon screen.
-  ASSERT_EQ(S_OK, provider->SetUsageScenario(CPUS_LOGON, 0));
-
-  // Give empty list of users so that only the anonymous credential is created.
-  CComPtr<ICredentialProviderSetUserArray> user_array;
-  ASSERT_EQ(S_OK, provider.QueryInterface(&user_array));
-  FakeCredentialProviderUserArray array;
-  ASSERT_EQ(S_OK, user_array->SetUserArray(&array));
-
-  // Activate the CP.
-  FakeCredentialProviderEvents events;
-  ASSERT_EQ(S_OK, provider->Advise(&events, 0));
-
-  // Only the anonymous credential should exist.
-  DWORD count;
-  DWORD default_index;
-  BOOL autologon;
-  ASSERT_EQ(S_OK,
-            provider->GetCredentialCount(&count, &default_index, &autologon));
-  ASSERT_EQ(1u, count);
-  EXPECT_EQ(CREDENTIAL_PROVIDER_NO_DEFAULT, default_index);
-  EXPECT_FALSE(autologon);
-
-  // Get the anonymous credential.
-  CComPtr<ICredentialProviderCredential> cred;
-  ASSERT_EQ(S_OK, provider->GetCredentialAt(0, &cred));
-
   // Notify that user access is denied to fake a forced recreation of the users.
-  ICredentialUpdateEventsHandler* update_handler =
-      static_cast<ICredentialUpdateEventsHandler*>(
-          static_cast<CGaiaCredentialProvider*>(provider.p));
+  CComPtr<ICredentialUpdateEventsHandler> update_handler;
+  ASSERT_EQ(S_OK, provider.QueryInterface(&update_handler));
   update_handler->UpdateCredentialsIfNeeded(true);
 
   // Credential changed event should have been received.
-  EXPECT_TRUE(events.CredentialsChangedReceived());
-  events.ResetCredentialsChangedReceived();
+  EXPECT_TRUE(fake_provider_events()->CredentialsChangedReceived());
+  fake_provider_events()->ResetCredentialsChangedReceived();
 
   // At the same time notify that a user has authenticated and requires a
   // sign in.
@@ -236,10 +135,14 @@ TEST_F(GcpCredentialProviderTest, AutoLogonAfterUserRefresh) {
   }
 
   // No credential changed should have been signalled here.
-  EXPECT_FALSE(events.CredentialsChangedReceived());
+  EXPECT_FALSE(fake_provider_events()->CredentialsChangedReceived());
 
   // GetCredentialCount should return back the same credential that was just
   // auto logged on.
+
+  DWORD count;
+  DWORD default_index;
+  BOOL autologon;
   ASSERT_EQ(S_OK,
             provider->GetCredentialCount(&count, &default_index, &autologon));
   ASSERT_EQ(1u, count);
@@ -257,7 +160,7 @@ TEST_F(GcpCredentialProviderTest, AutoLogonAfterUserRefresh) {
   update_handler->UpdateCredentialsIfNeeded(false);
 
   // Credential changed event should have been received.
-  EXPECT_TRUE(events.CredentialsChangedReceived());
+  EXPECT_TRUE(fake_provider_events()->CredentialsChangedReceived());
 
   // GetCredentialCount should return new credentials with no auto logon.
   ASSERT_EQ(S_OK,
@@ -272,12 +175,12 @@ TEST_F(GcpCredentialProviderTest, AutoLogonAfterUserRefresh) {
 
   // Another request to refresh the credentials should yield no credential
   // changed event or refresh of credentials.
-  events.ResetCredentialsChangedReceived();
+  fake_provider_events()->ResetCredentialsChangedReceived();
 
   update_handler->UpdateCredentialsIfNeeded(false);
 
   // No credential changed event should have been received.
-  EXPECT_FALSE(events.CredentialsChangedReceived());
+  EXPECT_FALSE(fake_provider_events()->CredentialsChangedReceived());
 
   // GetCredentialCount should return the same credentials with no change.
   ASSERT_EQ(S_OK,
@@ -289,55 +192,24 @@ TEST_F(GcpCredentialProviderTest, AutoLogonAfterUserRefresh) {
   CComPtr<ICredentialProviderCredential> unchanged_cred;
   ASSERT_EQ(S_OK, provider->GetCredentialAt(0, &unchanged_cred));
   EXPECT_TRUE(new_cred.IsEqualObject(unchanged_cred));
-
-  // Deactivate the CP.
-  ASSERT_EQ(S_OK, provider->UnAdvise());
 }
 
 TEST_F(GcpCredentialProviderTest, AutoLogonBeforeUserRefresh) {
   USES_CONVERSION;
-  CComPtr<ICredentialProvider> provider;
-  ASSERT_EQ(S_OK,
-            CComCreator<CComObject<CGaiaCredentialProvider>>::CreateInstance(
-                nullptr, IID_ICredentialProvider, (void**)&provider));
+  CComBSTR sid;
+  ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
+                      L"username", L"password", L"full name", L"comment", L"",
+                      L"", &sid));
 
+  CComPtr<ICredentialProviderCredential> cred;
+  ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
+
+  CComPtr<ICredentialProvider> provider = created_provider();
   CComPtr<IGaiaCredentialProvider> gaia_provider;
   ASSERT_EQ(S_OK, provider.QueryInterface(&gaia_provider));
 
-  CComBSTR sid;
-  ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
-                      L"username", L"passowrd", L"Full Name", L"Comment", L"",
-                      L"", &sid));
-  // Start process for logon screen.
-  ASSERT_EQ(S_OK, provider->SetUsageScenario(CPUS_LOGON, 0));
-
-  // Give empty list of users so that only the anonymous credential is created.
-  CComPtr<ICredentialProviderSetUserArray> user_array;
-  ASSERT_EQ(S_OK, provider.QueryInterface(&user_array));
-  FakeCredentialProviderUserArray array;
-  ASSERT_EQ(S_OK, user_array->SetUserArray(&array));
-
-  // Activate the CP.
-  FakeCredentialProviderEvents events;
-  ASSERT_EQ(S_OK, provider->Advise(&events, 0));
-
-  // Only the anonymous credential should exist.
-  DWORD count;
-  DWORD default_index;
-  BOOL autologon;
-  ASSERT_EQ(S_OK,
-            provider->GetCredentialCount(&count, &default_index, &autologon));
-  ASSERT_EQ(1u, count);
-  EXPECT_EQ(CREDENTIAL_PROVIDER_NO_DEFAULT, default_index);
-  EXPECT_FALSE(autologon);
-
-  // Get the anonymous credential.
-  CComPtr<ICredentialProviderCredential> cred;
-  ASSERT_EQ(S_OK, provider->GetCredentialAt(0, &cred));
-
-  ICredentialUpdateEventsHandler* update_handler =
-      static_cast<ICredentialUpdateEventsHandler*>(
-          static_cast<CGaiaCredentialProvider*>(provider.p));
+  CComPtr<ICredentialUpdateEventsHandler> update_handler;
+  ASSERT_EQ(S_OK, provider.QueryInterface(&update_handler));
 
   // Notify user auto logon first and then notify user access denied to ensure
   // that auto logon always has precedence over user access denied.
@@ -351,18 +223,22 @@ TEST_F(GcpCredentialProviderTest, AutoLogonBeforeUserRefresh) {
   }
 
   // Credential changed event should have been received.
-  EXPECT_TRUE(events.CredentialsChangedReceived());
-  events.ResetCredentialsChangedReceived();
+  EXPECT_TRUE(fake_provider_events()->CredentialsChangedReceived());
+  fake_provider_events()->ResetCredentialsChangedReceived();
 
   // Notify that user access is denied. This should not cause a credential
   // changed since an event was already processed.
   update_handler->UpdateCredentialsIfNeeded(true);
 
   // No credential changed should have been signalled here.
-  EXPECT_FALSE(events.CredentialsChangedReceived());
+  EXPECT_FALSE(fake_provider_events()->CredentialsChangedReceived());
 
   // GetCredentialCount should return back the same credential that was just
   // auto logged on.
+  DWORD count;
+  DWORD default_index;
+  BOOL autologon;
+
   ASSERT_EQ(S_OK,
             provider->GetCredentialCount(&count, &default_index, &autologon));
   ASSERT_EQ(1u, count);
@@ -380,7 +256,7 @@ TEST_F(GcpCredentialProviderTest, AutoLogonBeforeUserRefresh) {
   update_handler->UpdateCredentialsIfNeeded(false);
 
   // Credential changed event should have been received.
-  EXPECT_TRUE(events.CredentialsChangedReceived());
+  EXPECT_TRUE(fake_provider_events()->CredentialsChangedReceived());
 
   // GetCredentialCount should return new credentials with no auto logon.
   ASSERT_EQ(S_OK,
@@ -398,9 +274,6 @@ TEST_F(GcpCredentialProviderTest, AutoLogonBeforeUserRefresh) {
 }
 
 TEST_F(GcpCredentialProviderTest, AddPersonAfterUserRemove) {
-  FakeAssociatedUserValidator associated_user_validator;
-  FakeInternetAvailabilityChecker internet_checker;
-
   // Set up such that MDM is enabled, mulit-users is not, and a user already
   // exists.
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
@@ -410,39 +283,21 @@ TEST_F(GcpCredentialProviderTest, AddPersonAfterUserRemove) {
   const wchar_t kDummyUsername[] = L"username";
   const wchar_t kDummyPassword[] = L"password";
   CComBSTR sid;
-  CreateGCPWUser(kDummyUsername, L"foo@gmail.com", kDummyPassword, L"Full Name",
-                 L"Comment", L"gaia-id", &sid);
-
-  // Start token handle refresh threads.
-  associated_user_validator.StartRefreshingTokenHandleValidity();
+  ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
+                      kDummyUsername, kDummyPassword, L"full name", L"comment",
+                      L"gaia-id", L"foo@gmail.com", &sid));
 
   {
+    CComPtr<ICredentialProviderCredential> cred;
     CComPtr<ICredentialProvider> provider;
-    ASSERT_EQ(S_OK,
-              CComCreator<CComObject<CGaiaCredentialProvider>>::CreateInstance(
-                  nullptr, IID_ICredentialProvider, (void**)&provider));
-    ASSERT_EQ(S_OK, provider->SetUsageScenario(CPUS_LOGON, 0));
-
-    // Empty user array.
-    CComPtr<ICredentialProviderSetUserArray> user_array;
-    ASSERT_EQ(S_OK, provider.QueryInterface(&user_array));
-    FakeCredentialProviderUserArray array;
-    ASSERT_EQ(S_OK, user_array->SetUserArray(&array));
-
-    // Activate the CP.
-    FakeCredentialProviderEvents events;
-    ASSERT_EQ(S_OK, provider->Advise(&events, 0));
+    DWORD count = 0;
+    ASSERT_EQ(S_OK, InitializeProviderWithCredentials(&count, &provider));
 
     // In this case no credential should be returned.
-    DWORD count;
-    DWORD default_index;
-    BOOL autologon;
-    ASSERT_EQ(S_OK,
-              provider->GetCredentialCount(&count, &default_index, &autologon));
     ASSERT_EQ(0u, count);
 
-    // Deactivate the CP.
-    ASSERT_EQ(S_OK, provider->UnAdvise());
+    // Release the CP so we can create another one.
+    ASSERT_EQ(S_OK, ReleaseProvider());
   }
 
   // Delete the OS user.  At this point, info in the HKLM registry about this
@@ -453,32 +308,52 @@ TEST_F(GcpCredentialProviderTest, AddPersonAfterUserRemove) {
 
   {
     CComPtr<ICredentialProvider> provider;
-    ASSERT_EQ(S_OK,
-              CComCreator<CComObject<CGaiaCredentialProvider>>::CreateInstance(
-                  nullptr, IID_ICredentialProvider, (void**)&provider));
-    ASSERT_EQ(S_OK, provider->SetUsageScenario(CPUS_LOGON, 0));
-
-    // Empty user array.
-    CComPtr<ICredentialProviderSetUserArray> user_array;
-    ASSERT_EQ(S_OK, provider.QueryInterface(&user_array));
-    FakeCredentialProviderUserArray array;
-    ASSERT_EQ(S_OK, user_array->SetUserArray(&array));
-
-    // Activate the CP.
-    FakeCredentialProviderEvents events;
-    ASSERT_EQ(S_OK, provider->Advise(&events, 0));
+    DWORD count = 0;
+    ASSERT_EQ(S_OK, InitializeProviderWithCredentials(&count, &provider));
 
     // This time a credential should be returned.
-    DWORD count;
-    DWORD default_index;
-    BOOL autologon;
-    ASSERT_EQ(S_OK,
-              provider->GetCredentialCount(&count, &default_index, &autologon));
     ASSERT_EQ(1u, count);
 
-    // Deactivate the CP.
+    // And this credential should be the anonymous one.
+    CComPtr<ICredentialProviderCredential> cred;
+    ASSERT_EQ(S_OK, provider->GetCredentialAt(0, &cred));
+
+    CComPtr<ICredentialProviderCredential2> cred2;
+    ASSERT_NE(S_OK, cred.QueryInterface(&cred2));
+
+    CComPtr<IReauthCredential> reauth_cred;
+    ASSERT_NE(S_OK, cred.QueryInterface(&reauth_cred));
+
+    // Release the CP.
     ASSERT_EQ(S_OK, provider->UnAdvise());
   }
+}
+
+class GcpCredentialProviderExecutionTest : public GlsRunnerTestBase {};
+
+TEST_F(GcpCredentialProviderExecutionTest, UnAdviseDuringGls) {
+  USES_CONVERSION;
+
+  CComPtr<ICredentialProviderCredential> cred;
+  ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
+
+  CComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+
+  // This event is merely used to keep the gls running while it is killed by
+  // Terminate().
+  constexpr wchar_t kStartGlsEventName[] = L"UnAdviseDuringGls_Signal";
+  base::win::ScopedHandle start_event_handle(
+      ::CreateEvent(nullptr, false, false, kStartGlsEventName));
+  ASSERT_TRUE(start_event_handle.IsValid());
+  ASSERT_EQ(S_OK, test->SetStartGlsEventName(kStartGlsEventName));
+  base::WaitableEvent start_event(std::move(start_event_handle));
+
+  ASSERT_EQ(S_OK, StartLogonProcess(/*succeeds=*/true));
+
+  // Release the provider which should also Terminate the credential that
+  // was created.
+  ReleaseProvider();
 }
 
 // Tests auto logon enabled when set serialization is called.
@@ -487,13 +362,10 @@ TEST_F(GcpCredentialProviderTest, AddPersonAfterUserRemove) {
 // 2. CREDENTIAL_PROVIDER_USAGE_SCENARIO - the usage scenario.
 class GcpCredentialProviderSetSerializationTest
     : public GcpCredentialProviderTest,
-      public testing::WithParamInterface<
+      public ::testing::WithParamInterface<
           std::tuple<bool, CREDENTIAL_PROVIDER_USAGE_SCENARIO>> {};
 
 TEST_P(GcpCredentialProviderSetSerializationTest, CheckAutoLogon) {
-  FakeAssociatedUserValidator associated_user_validator;
-  FakeInternetAvailabilityChecker internet_checker;
-
   const bool valid_token_handles = std::get<0>(GetParam());
   const CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus = std::get<1>(GetParam());
 
@@ -502,25 +374,15 @@ TEST_P(GcpCredentialProviderSetSerializationTest, CheckAutoLogon) {
 
   CComBSTR first_sid;
   constexpr wchar_t first_username[] = L"username";
-  CreateGCPWUser(first_username, L"foo@gmail.com", L"password", L"Full Name",
-                 L"Comment", L"gaia-id", &first_sid);
+  ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
+                      first_username, L"password", L"full name", L"comment",
+                      L"gaia-id", L"foo@gmail.com", &first_sid));
 
   CComBSTR second_sid;
   constexpr wchar_t second_username[] = L"username2";
-  CreateGCPWUser(second_username, L"foo2@gmail.com", L"password", L"Full Name",
-                 L"Comment", L"gaia-id2", &second_sid);
-
-  // Token fetch result.
-  fake_http_url_fetcher_factory()->SetFakeResponse(
-      GURL(AssociatedUserValidator::kTokenInfoUrl),
-      FakeWinHttpUrlFetcher::Headers(),
-      valid_token_handles ? "{\"expires_in\":1}" : "{}");
-
-  // Start token handle refresh threads.
-  associated_user_validator.StartRefreshingTokenHandleValidity();
-
-  // Lock users as needed based on the validity of their token handles.
-  associated_user_validator.DenySigninForUsersWithInvalidTokenHandles(cpus);
+  ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
+                      second_username, L"password", L"Full Name", L"Comment",
+                      L"gaia-id2", L"foo2@gmail.com", &second_sid));
 
   // Build a dummy authentication buffer that can be passed to SetSerialization.
   CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION cpcs;
@@ -539,31 +401,17 @@ TEST_P(GcpCredentialProviderSetSerializationTest, CheckAutoLogon) {
                       &dummy_domain[0], &dummy_username[0], &dummy_password[0],
                       cpus, &cpcs));
 
+  GetAuthenticationPackageId(&cpcs.ulAuthenticationPackage);
   cpcs.clsidCredentialProvider = CLSID_GaiaCredentialProvider;
 
-  CComPtr<ICredentialProviderSetUserArray> user_array;
-  ASSERT_EQ(
-      S_OK,
-      CComCreator<CComObject<CGaiaCredentialProvider>>::CreateInstance(
-          nullptr, IID_ICredentialProviderSetUserArray, (void**)&user_array));
+  CComPtr<ICredentialProviderCredential> cred;
   CComPtr<ICredentialProvider> provider;
-  ASSERT_EQ(S_OK, user_array.QueryInterface(&provider));
-
-  ASSERT_EQ(S_OK, provider->SetUsageScenario(cpus, 0));
-
-  ASSERT_EQ(S_OK, provider->SetSerialization(&cpcs));
+  SetDefaultTokenHandleResponse(valid_token_handles
+                                    ? kDefaultValidTokenHandleResponse
+                                    : kDefaultInvalidTokenHandleResponse);
+  ASSERT_EQ(S_OK, InitializeProviderWithRemoteCredentials(&cpcs, &provider));
 
   ::CoTaskMemFree(cpcs.rgbSerialization);
-
-  FakeCredentialProviderUserArray array;
-  array.AddUser(OLE2CW(first_sid), first_username);
-  array.AddUser(OLE2CW(second_sid), second_username);
-
-  ASSERT_EQ(S_OK, user_array->SetUserArray(&array));
-
-  // Activate the CP.
-  FakeCredentialProviderEvents events;
-  ASSERT_EQ(S_OK, provider->Advise(&events, 0));
 
   // Check the correct number of credentials are created and whether autologon
   // is enabled based on the token handle validity.
@@ -578,9 +426,6 @@ TEST_P(GcpCredentialProviderSetSerializationTest, CheckAutoLogon) {
   EXPECT_EQ(autologon, should_autologon);
   EXPECT_EQ(default_index,
             should_autologon ? 1 : CREDENTIAL_PROVIDER_NO_DEFAULT);
-
-  // Deactivate the CP.
-  ASSERT_EQ(S_OK, provider->UnAdvise());
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -599,12 +444,9 @@ INSTANTIATE_TEST_SUITE_P(
 //    bool: whether an existing user exists.
 class GcpCredentialProviderMdmTest
     : public GcpCredentialProviderTest,
-      public testing::WithParamInterface<std::tuple<bool, int, bool>> {};
+      public ::testing::WithParamInterface<std::tuple<bool, int, bool>> {};
 
 TEST_P(GcpCredentialProviderMdmTest, Basic) {
-  FakeAssociatedUserValidator associated_user_validator;
-  FakeInternetAvailabilityChecker internet_checker;
-
   const bool config_mdm_url = std::get<0>(GetParam());
   const int supports_multi_users = std::get<1>(GetParam());
   const bool user_exists = std::get<2>(GetParam());
@@ -626,40 +468,16 @@ TEST_P(GcpCredentialProviderMdmTest, Basic) {
 
   if (user_exists) {
     CComBSTR sid;
-    CreateGCPWUser(L"username", L"foo@gmail.com", L"password", L"Full Name",
-                   L"Comment", L"gaia-id", &sid);
+    ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
+                        L"username", L"password", L"full name", L"comment",
+                        L"gaia-id", L"foo@gmail.com", &sid));
   }
 
-  // Valid token fetch result.
-  fake_http_url_fetcher_factory()->SetFakeResponse(
-      GURL(AssociatedUserValidator::kTokenInfoUrl),
-      FakeWinHttpUrlFetcher::Headers(), "{\"expires_in\":1}");
-
-  associated_user_validator.StartRefreshingTokenHandleValidity();
-
+  CComPtr<ICredentialProviderCredential> cred;
   CComPtr<ICredentialProvider> provider;
-  ASSERT_EQ(S_OK,
-            CComCreator<CComObject<CGaiaCredentialProvider>>::CreateInstance(
-                nullptr, IID_ICredentialProvider, (void**)&provider));
+  DWORD count = 0;
+  ASSERT_EQ(S_OK, InitializeProviderWithCredentials(&count, &provider));
 
-  // Start process for logon screen.
-  ASSERT_EQ(S_OK, provider->SetUsageScenario(CPUS_LOGON, 0));
-
-  // Empty user array.
-  CComPtr<ICredentialProviderSetUserArray> user_array;
-  ASSERT_EQ(S_OK, provider.QueryInterface(&user_array));
-  FakeCredentialProviderUserArray array;
-  ASSERT_EQ(S_OK, user_array->SetUserArray(&array));
-
-  // Activate the CP.
-  FakeCredentialProviderEvents events;
-  ASSERT_EQ(S_OK, provider->Advise(&events, 0));
-
-  DWORD count;
-  DWORD default_index;
-  BOOL autologon;
-  ASSERT_EQ(S_OK,
-            provider->GetCredentialCount(&count, &default_index, &autologon));
   ASSERT_EQ(expected_credential_count, count);
 
   // Deactivate the CP.
@@ -668,9 +486,9 @@ TEST_P(GcpCredentialProviderMdmTest, Basic) {
 
 INSTANTIATE_TEST_SUITE_P(GcpCredentialProviderMdmTest,
                          GcpCredentialProviderMdmTest,
-                         ::testing::Combine(testing::Bool(),
-                                            testing::Range(0, 3),
-                                            testing::Bool()));
+                         ::testing::Combine(::testing::Bool(),
+                                            ::testing::Range(0, 3),
+                                            ::testing::Bool()));
 
 // Check that reauth credentials only exist when the token handle for the
 // associated user is no longer valid and internet is available.
@@ -688,61 +506,32 @@ TEST_P(GcpCredentialProviderWithGaiaUsersTest, ReauthCredentialTest) {
   const bool has_token_handle = std::get<0>(GetParam());
   const bool valid_token_handle = std::get<1>(GetParam());
   const bool has_internet = std::get<2>(GetParam());
-  FakeAssociatedUserValidator associated_user_validator;
-  FakeInternetAvailabilityChecker internet_checker(
+  fake_internet_checker()->SetHasInternetConnection(
       has_internet ? FakeInternetAvailabilityChecker::kHicForceYes
                    : FakeInternetAvailabilityChecker::kHicForceNo);
 
   CComBSTR sid;
-  CreateGCPWUser(L"username", L"foo@gmail.com", L"password", L"Full Name",
-                 L"Comment", L"gaia-id", &sid);
+  ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
+                      L"username", L"password", L"full name", L"comment",
+                      L"gaia-id", L"foo@gmail.com", &sid));
 
   if (!has_token_handle)
     ASSERT_EQ(S_OK, SetUserProperty((BSTR)sid, kUserTokenHandle, L""));
 
-  // Token fetch result.
-  fake_http_url_fetcher_factory()->SetFakeResponse(
-      GURL(AssociatedUserValidator::kTokenInfoUrl),
-      FakeWinHttpUrlFetcher::Headers(),
-      valid_token_handle ? "{\"expires_in\":1}" : "{}");
-
-  // Start token handle refresh threads.
-  associated_user_validator.StartRefreshingTokenHandleValidity();
-
-  CComPtr<ICredentialProviderSetUserArray> user_array;
-  ASSERT_EQ(
-      S_OK,
-      CComCreator<CComObject<CGaiaCredentialProvider>>::CreateInstance(
-          nullptr, IID_ICredentialProviderSetUserArray, (void**)&user_array));
-
+  CComPtr<ICredentialProviderCredential> cred;
   CComPtr<ICredentialProvider> provider;
-  ASSERT_EQ(S_OK, user_array.QueryInterface(&provider));
-
-  ASSERT_EQ(S_OK, provider->SetUsageScenario(CPUS_LOGON, 0));
-
-  FakeCredentialProviderUserArray array;
-  array.AddUser(OLE2CW(sid), L"username");
-  ASSERT_EQ(S_OK, user_array->SetUserArray(&array));
-
-  // Activate the CP.
-  FakeCredentialProviderEvents events;
-  ASSERT_EQ(S_OK, provider->Advise(&events, 0));
+  DWORD count = 0;
+  SetDefaultTokenHandleResponse(valid_token_handle
+                                    ? kDefaultValidTokenHandleResponse
+                                    : kDefaultInvalidTokenHandleResponse);
+  ASSERT_EQ(S_OK, InitializeProviderWithCredentials(&count, &provider));
 
   bool should_reauth_user =
       has_internet && (!has_token_handle || !valid_token_handle);
 
   // Check if there is a IReauthCredential depending on the state of the token
   // handle.
-  DWORD count;
-  DWORD default_index;
-  BOOL autologon;
-  // There should always be the anonymous credential and potentially a reauth
-  // credential.
-  ASSERT_EQ(S_OK,
-            provider->GetCredentialCount(&count, &default_index, &autologon));
   ASSERT_EQ(should_reauth_user ? 2u : 1u, count);
-  EXPECT_EQ(CREDENTIAL_PROVIDER_NO_DEFAULT, default_index);
-  EXPECT_FALSE(autologon);
 
   if (should_reauth_user) {
     CComPtr<ICredentialProviderCredential> cred;
@@ -750,9 +539,6 @@ TEST_P(GcpCredentialProviderWithGaiaUsersTest, ReauthCredentialTest) {
     CComPtr<IReauthCredential> reauth;
     EXPECT_EQ(S_OK, cred.QueryInterface(&reauth));
   }
-
-  // Deactivate the CP.
-  ASSERT_EQ(S_OK, provider->UnAdvise());
 }
 
 INSTANTIATE_TEST_SUITE_P(,
@@ -788,9 +574,7 @@ void GcpCredentialProviderAvailableCredentialsTest::SetUp() {
 }
 
 TEST_P(GcpCredentialProviderAvailableCredentialsTest, AvailableCredentials) {
-  FakeAssociatedUserValidator associated_user_validator;
-  FakeInternetAvailabilityChecker internet_checker;
-  FakeCredentialProviderUserArray array;
+  USES_CONVERSION;
 
   const bool valid_token_handles = std::get<0>(GetParam());
   const CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus = std::get<1>(GetParam());
@@ -801,67 +585,33 @@ TEST_P(GcpCredentialProviderAvailableCredentialsTest, AvailableCredentials) {
   GoogleMdmEnrolledStatusForTesting forced_status(enrolled_to_mdm);
 
   if (other_user_tile_available)
-    array.SetAccountOptions(CPAO_EMPTY_LOCAL);
+    fake_user_array()->SetAccountOptions(CPAO_EMPTY_LOCAL);
 
   CComBSTR first_sid;
   constexpr wchar_t first_username[] = L"username";
-  CreateGCPWUser(first_username, L"foo@gmail.com", L"password", L"Full Name",
-                 L"Comment", L"gaia-id", &first_sid);
+  ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
+                      first_username, L"password", L"full name", L"comment",
+                      L"gaia-id", L"foo@gmail.com", &first_sid));
 
   CComBSTR second_sid;
   constexpr wchar_t second_username[] = L"username2";
-  CreateGCPWUser(second_username, L"foo2@gmail.com", L"password", L"Full Name",
-                 L"Comment", L"gaia-id2", &second_sid);
+  ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
+                      second_username, L"password", L"Full Name", L"Comment",
+                      L"gaia-id2", L"foo2@gmail.com", &second_sid));
 
-  // Token fetch result.
-  fake_http_url_fetcher_factory()->SetFakeResponse(
-      GURL(AssociatedUserValidator::kTokenInfoUrl),
-      FakeWinHttpUrlFetcher::Headers(),
-      valid_token_handles ? "{\"expires_in\":1}" : "{}");
+  // Set the user locking the system.
+  SetSidLockingWorkstation(second_user_locking_system ? OLE2CW(second_sid)
+                                                      : OLE2CW(first_sid));
 
-  // Start token handle refresh threads.
-  associated_user_validator.StartRefreshingTokenHandleValidity();
-
-  // Lock users as needed based on the validity of their token handles.
-  associated_user_validator.DenySigninForUsersWithInvalidTokenHandles(cpus);
-
-  CComPtr<ICredentialProviderSetUserArray> user_array;
-  ASSERT_EQ(
-      S_OK,
-      CComCreator<CComObject<CGaiaCredentialProvider>>::CreateInstance(
-          nullptr, IID_ICredentialProviderSetUserArray, (void**)&user_array));
   CComPtr<ICredentialProvider> provider;
-  ASSERT_EQ(S_OK, user_array.QueryInterface(&provider));
-
-  ASSERT_EQ(S_OK, provider->SetUsageScenario(cpus, 0));
-
-  // All users are shown if the usage is not for unlocking the workstation.
-  bool all_users_shown = cpus != CPUS_UNLOCK_WORKSTATION;
-  // If not all the users are shown, the user that locked the system is
-  // the only one that is in the user array (if the other user tile is
-  // not available).
-  if (all_users_shown ||
-      (!second_user_locking_system && !other_user_tile_available)) {
-    array.AddUser(OLE2CW(first_sid), first_username);
-  }
-  if (all_users_shown ||
-      (second_user_locking_system && !other_user_tile_available)) {
-    array.AddUser(OLE2CW(second_sid), second_username);
-  }
-
-  ASSERT_EQ(S_OK, user_array->SetUserArray(&array));
-
-  // Activate the CP.
-  FakeCredentialProviderEvents events;
-  ASSERT_EQ(S_OK, provider->Advise(&events, 0));
+  DWORD count = 0;
+  SetUsageScenario(cpus);
+  SetDefaultTokenHandleResponse(valid_token_handles
+                                    ? kDefaultValidTokenHandleResponse
+                                    : kDefaultInvalidTokenHandleResponse);
+  ASSERT_EQ(S_OK, InitializeProviderWithCredentials(&count, &provider));
 
   // Check the correct number of credentials are created.
-  DWORD count;
-  DWORD default_index;
-  BOOL autologon;
-  ASSERT_EQ(S_OK,
-            provider->GetCredentialCount(&count, &default_index, &autologon));
-
   DWORD expected_credentials = 0;
   if (cpus != CPUS_UNLOCK_WORKSTATION) {
     expected_credentials = valid_token_handles && enrolled_to_mdm ? 0 : 2;
@@ -876,14 +626,10 @@ TEST_P(GcpCredentialProviderAvailableCredentialsTest, AvailableCredentials) {
   }
 
   ASSERT_EQ(expected_credentials, count);
-  EXPECT_EQ(CREDENTIAL_PROVIDER_NO_DEFAULT, default_index);
-  EXPECT_FALSE(autologon);
 
-  if (expected_credentials == 0) {
-    // Deactivate the CP.
-    ASSERT_EQ(S_OK, provider->UnAdvise());
+  // No credentials to verify.
+  if (expected_credentials == 0)
     return;
-  }
 
   CComPtr<ICredentialProviderCredential> cred;
   CComPtr<ICredentialProviderCredential2> cred2;
@@ -942,9 +688,6 @@ TEST_P(GcpCredentialProviderAvailableCredentialsTest, AvailableCredentials) {
     EXPECT_EQ(guid_string, base::string16(guid_in_registry));
     ::CoTaskMemFree(sid);
   }
-
-  // Deactivate the CP.
-  ASSERT_EQ(S_OK, provider->UnAdvise());
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -955,5 +698,7 @@ INSTANTIATE_TEST_SUITE_P(
                        ::testing::Bool(),
                        ::testing::Bool(),
                        ::testing::Bool()));
+
+}  // namespace testing
 
 }  // namespace credential_provider

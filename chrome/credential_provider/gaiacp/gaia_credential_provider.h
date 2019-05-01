@@ -24,7 +24,8 @@ class BackgroundTokenHandleUpdater;
 
 // Event handler that can be notified when a user's access has been revoked,
 // allowing the credential provider to update the list of available credentials.
-class ICredentialUpdateEventsHandler {
+class DECLSPEC_UUID("fc2c889b-b468-4eb9-a61c-c984be8cc496")
+    ICredentialUpdateEventsHandler : public IUnknown {
  public:
   virtual ~ICredentialUpdateEventsHandler() = default;
   virtual void UpdateCredentialsIfNeeded(bool user_access_changed) = 0;
@@ -51,6 +52,7 @@ class ATL_NO_VTABLE CGaiaCredentialProvider
   COM_INTERFACE_ENTRY(IGaiaCredentialProvider)
   COM_INTERFACE_ENTRY(ICredentialProviderSetUserArray)
   COM_INTERFACE_ENTRY(ICredentialProvider)
+  COM_INTERFACE_ENTRY(ICredentialUpdateEventsHandler)
   END_COM_MAP()
 
   DECLARE_PROTECT_FINAL_CONSTRUCT()
@@ -70,16 +72,30 @@ class ATL_NO_VTABLE CGaiaCredentialProvider
   // determine the result of this query.
   static bool CanNewUsersBeCreated(CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus);
 
- private:
-  HRESULT DestroyCredentials();
-
   // Struct to allow passing CComPtr by pointer without the implicit conversion
   // to ** version of the CComPtr
-  struct ComPtrStorage {
-    ComPtrStorage();
-    ~ComPtrStorage();
+  struct GaiaCredentialComPtrStorage {
+    GaiaCredentialComPtrStorage();
+    ~GaiaCredentialComPtrStorage();
     CComPtr<IGaiaCredential> gaia_cred;
   };
+
+  typedef HRESULT (*CredentialCreatorFn)(GaiaCredentialComPtrStorage*);
+
+ protected:
+  void SetCredentialCreatorFunctionsForTesting(
+      CredentialCreatorFn anonymous_cred_creator,
+      CredentialCreatorFn other_user_cred_creator,
+      CredentialCreatorFn reauth_cred_creator);
+
+  virtual HRESULT OnUserAuthenticatedImpl(IUnknown* credential,
+                                          BSTR username,
+                                          BSTR password,
+                                          BSTR sid,
+                                          BOOL fire_credentials_changed);
+
+ private:
+  HRESULT DestroyCredentials();
 
   // Class used to store state information for the provider that may be accessed
   // concurrently. This class is thread safe and ensures that the correct state
@@ -116,7 +132,7 @@ class ATL_NO_VTABLE CGaiaCredentialProvider
     // |needs_to_refresh_users| and |auto_logon_credential| can be set to a non
     // default value.
     void GetUpdatedState(bool* needs_to_refresh_users,
-                         ComPtrStorage* auto_logon_credential);
+                         GaiaCredentialComPtrStorage* auto_logon_credential);
 
     // Resets the state of the provider to be default one. On the next call to
     // GetCredentialCount no auto logon should be performed and no refresh of
@@ -158,24 +174,26 @@ class ATL_NO_VTABLE CGaiaCredentialProvider
   // Creates all the reauth credentials from the users that is returned from
   // |users|. Fills the |gaia_cred| in |auto_logon_credential| with a reference
   // to the credential that needs to perform auto logon (if any).
-  HRESULT CreateReauthCredentials(ICredentialProviderUserArray* users,
-                                  ComPtrStorage* auto_logon_credential);
+  HRESULT CreateReauthCredentials(
+      ICredentialProviderUserArray* users,
+      GaiaCredentialComPtrStorage* auto_logon_credential);
 
   // This function will always add |cred| to |users_| and will also try to check
   // if the |sid| matches the one set in |set_serialization_sid_| to allow auto
   // logon of remote connections. Fills the |gaia_cred| in
   // |auto_logon_credential| with a reference to the credential that needs to
   // perform auto logon (if any).
-  void AddCredentialAndCheckAutoLogon(const CComPtr<IGaiaCredential>& cred,
-                                      const base::string16& sid,
-                                      ComPtrStorage* auto_logon_credential);
+  void AddCredentialAndCheckAutoLogon(
+      const CComPtr<IGaiaCredential>& cred,
+      const base::string16& sid,
+      GaiaCredentialComPtrStorage* auto_logon_credential);
 
   // Destroys existing credentials and recreates them based on the contents of
   // |user_array_|. This member must be set via a call to SetUserArray before
   // RecreateCredentials is called. Fills the |gaia_cred| in
   // |auto_logon_credential| with a reference to the credential that needs to
   // perform auto logon (if any).
-  void RecreateCredentials(ComPtrStorage* auto_logon_credential);
+  void RecreateCredentials(GaiaCredentialComPtrStorage* auto_logon_credential);
 
   void ClearTransient();
   void CleanupOlderVersions();
@@ -235,6 +253,10 @@ class ATL_NO_VTABLE CGaiaCredentialProvider
   base::string16 set_serialization_sid_;
 
   ProviderConcurrentState concurrent_state_;
+
+  CredentialCreatorFn anonymous_cred_creator_ = nullptr;
+  CredentialCreatorFn other_user_cred_creator_ = nullptr;
+  CredentialCreatorFn reauth_cred_creator_ = nullptr;
 };
 
 // OBJECT_ENTRY_AUTO() contains an extra semicolon.

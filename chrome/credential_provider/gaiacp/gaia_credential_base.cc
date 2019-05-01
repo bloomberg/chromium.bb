@@ -1793,6 +1793,12 @@ HRESULT CGaiaCredentialBase::ReportError(LONG status,
   USES_CONVERSION;
   LOGFN(INFO);
 
+  // Provider may be unset if the GLS process ended as a result of a kill
+  // request coming from Terminate() which would release the |provider_|
+  // reference.
+  if (!provider_)
+    return S_OK;
+
   result_status_ = status;
 
   // If the user cancelled out of the logon, the process may be already

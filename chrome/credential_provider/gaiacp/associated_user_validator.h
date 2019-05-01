@@ -139,7 +139,11 @@ class AssociatedUserValidator {
 
   // Returns whether the user should be locked out of sign in (only used in
   // tests).
-  bool IsUserAccessBlocked(const base::string16& sid) const;
+  bool IsUserAccessBlockedForTesting(const base::string16& sid) const;
+
+  // Forces a refresh of all token handles the next time they are queried.
+  // This function should only be called in tests.
+  void ForceRefreshTokenHandlesForTesting();
 
  private:
   bool IsTokenHandleValidForUserInternal(const base::string16& sid);

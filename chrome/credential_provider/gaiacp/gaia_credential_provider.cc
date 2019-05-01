@@ -95,6 +95,19 @@ HRESULT InitializeReauthCredential(CGaiaCredentialProvider* provider,
   return S_OK;
 }
 
+template <class CredentialT>
+HRESULT CreateCredentialObject(
+    CGaiaCredentialProvider::CredentialCreatorFn creator_fn,
+    CGaiaCredentialProvider::GaiaCredentialComPtrStorage* credential_com_ptr) {
+  if (creator_fn) {
+    return creator_fn(credential_com_ptr);
+  }
+
+  return CComCreator<CComObject<CredentialT>>::CreateInstance(
+      nullptr, IID_IGaiaCredential,
+      reinterpret_cast<void**>(&credential_com_ptr->gaia_cred));
+}
+
 }  // namespace
 
 // Class that when constructed automatically starts a thread that tries
@@ -173,8 +186,10 @@ unsigned __stdcall BackgroundTokenHandleUpdater::PeriodicTokenHandleUpdate(
   return 0;
 }
 
-CGaiaCredentialProvider::ComPtrStorage::ComPtrStorage() = default;
-CGaiaCredentialProvider::ComPtrStorage::~ComPtrStorage() = default;
+CGaiaCredentialProvider::GaiaCredentialComPtrStorage::
+    GaiaCredentialComPtrStorage() = default;
+CGaiaCredentialProvider::GaiaCredentialComPtrStorage::
+    ~GaiaCredentialComPtrStorage() = default;
 
 CGaiaCredentialProvider::ProviderConcurrentState::ProviderConcurrentState() =
     default;
@@ -230,7 +245,7 @@ bool CGaiaCredentialProvider::ProviderConcurrentState::SetAutoLogonCredential(
 
 void CGaiaCredentialProvider::ProviderConcurrentState::GetUpdatedState(
     bool* needs_to_refresh_users,
-    ComPtrStorage* auto_logon_credential) {
+    GaiaCredentialComPtrStorage* auto_logon_credential) {
   DCHECK(needs_to_refresh_users);
   DCHECK(auto_logon_credential);
   base::AutoLock locker(state_update_lock_);
@@ -314,22 +329,22 @@ void CGaiaCredentialProvider::CleanupOlderVersions() {
 
 HRESULT CGaiaCredentialProvider::CreateAnonymousCredentialIfNeeded(
     bool showing_other_user) {
-  CComPtr<IGaiaCredential> cred;
+  GaiaCredentialComPtrStorage cred;
   HRESULT hr = E_FAIL;
   if (showing_other_user) {
-    hr = CComCreator<CComObject<COtherUserGaiaCredential>>::CreateInstance(
-        nullptr, IID_IGaiaCredential, reinterpret_cast<void**>(&cred));
+    hr = CreateCredentialObject<COtherUserGaiaCredential>(
+        other_user_cred_creator_, &cred);
   } else if (CanNewUsersBeCreated(cpus_)) {
-    hr = CComCreator<CComObject<CGaiaCredential>>::CreateInstance(
-        nullptr, IID_IGaiaCredential, reinterpret_cast<void**>(&cred));
+    hr =
+        CreateCredentialObject<CGaiaCredential>(anonymous_cred_creator_, &cred);
   } else {
     return S_OK;
   }
 
   if (SUCCEEDED(hr)) {
-    hr = cred->Initialize(this);
+    hr = cred.gaia_cred->Initialize(this);
     if (SUCCEEDED(hr)) {
-      AddCredentialAndCheckAutoLogon(cred, base::string16(), nullptr);
+      AddCredentialAndCheckAutoLogon(cred.gaia_cred, base::string16(), nullptr);
     } else {
       LOG(ERROR) << "Could not create credential hr=" << putHR(hr);
     }
@@ -340,7 +355,7 @@ HRESULT CGaiaCredentialProvider::CreateAnonymousCredentialIfNeeded(
 
 HRESULT CGaiaCredentialProvider::CreateReauthCredentials(
     ICredentialProviderUserArray* users,
-    ComPtrStorage* auto_logon_credential) {
+    GaiaCredentialComPtrStorage* auto_logon_credential) {
   std::map<base::string16, std::pair<base::string16, base::string16>>
       sid_to_username;
 
@@ -401,21 +416,22 @@ HRESULT CGaiaCredentialProvider::CreateReauthCredentials(
     if (AssociatedUserValidator::Get()->IsTokenHandleValidForUser(sid))
       continue;
 
-    CComPtr<IGaiaCredential> cred;
-    HRESULT hr = CComCreator<CComObject<CReauthCredential>>::CreateInstance(
-        nullptr, IID_IGaiaCredential, reinterpret_cast<void**>(&cred));
+    GaiaCredentialComPtrStorage cred;
+    HRESULT hr =
+        CreateCredentialObject<CReauthCredential>(reauth_cred_creator_, &cred);
     if (FAILED(hr)) {
       LOG(ERROR) << "Could not create credential hr=" << putHR(hr);
       return hr;
     }
 
-    hr = InitializeReauthCredential(this, sid, domain, username, cred);
+    hr =
+        InitializeReauthCredential(this, sid, domain, username, cred.gaia_cred);
     if (FAILED(hr)) {
       LOG(ERROR) << "InitializeReauthCredential hr=" << putHR(hr);
       return hr;
     }
 
-    AddCredentialAndCheckAutoLogon(cred, sid, auto_logon_credential);
+    AddCredentialAndCheckAutoLogon(cred.gaia_cred, sid, auto_logon_credential);
   }
 
   return S_OK;
@@ -424,7 +440,7 @@ HRESULT CGaiaCredentialProvider::CreateReauthCredentials(
 void CGaiaCredentialProvider::AddCredentialAndCheckAutoLogon(
     const CComPtr<IGaiaCredential>& cred,
     const base::string16& sid,
-    ComPtrStorage* auto_logon_credential) {
+    GaiaCredentialComPtrStorage* auto_logon_credential) {
   USES_CONVERSION;
   users_.emplace_back(cred);
 
@@ -451,7 +467,7 @@ void CGaiaCredentialProvider::AddCredentialAndCheckAutoLogon(
 }
 
 void CGaiaCredentialProvider::RecreateCredentials(
-    ComPtrStorage* auto_logon_credential) {
+    GaiaCredentialComPtrStorage* auto_logon_credential) {
   LOGFN(INFO);
   DCHECK(user_array_);
 
@@ -468,6 +484,55 @@ void CGaiaCredentialProvider::RecreateCredentials(
   hr = CreateReauthCredentials(user_array_, auto_logon_credential);
   if (FAILED(hr))
     LOG(ERROR) << "CreateReauthCredentials hr=" << putHR(hr);
+}
+
+void CGaiaCredentialProvider::SetCredentialCreatorFunctionsForTesting(
+    CredentialCreatorFn anonymous_cred_creator,
+    CredentialCreatorFn other_user_cred_creator,
+    CredentialCreatorFn reauth_cred_creator) {
+  DCHECK(!anonymous_cred_creator_);
+  DCHECK(!other_user_cred_creator_);
+  DCHECK(!reauth_cred_creator_);
+
+  anonymous_cred_creator_ = anonymous_cred_creator;
+  other_user_cred_creator_ = other_user_cred_creator;
+  reauth_cred_creator_ = reauth_cred_creator;
+}
+
+HRESULT CGaiaCredentialProvider::OnUserAuthenticatedImpl(
+    IUnknown* credential,
+    BSTR /*username*/,
+    BSTR /*password*/,
+    BSTR sid,
+    BOOL fire_credentials_changed) {
+  DCHECK(!credential || sid);
+
+  if (!fire_credentials_changed)
+    return S_OK;
+
+  // Ensure that user access cannot be denied at this time so that the user
+  // that is about to sign in won't be locked. If a ScopedLockDenyAccessUpdate
+  // is created before calling this function this should guarantee that
+  // situation because the call to BlockDenyAccessUpdate is locked with the
+  // same lock that is used in DenySigninForUsersWithInvalidTokenHandles.
+  // So either the call to Deny has finished and no new deny will occur
+  // afterwards or the Deny will be disabled because the block has been
+  // incremented first.
+  CHECK(!credential ||
+        AssociatedUserValidator::Get()->IsDenyAccessUpdateBlocked());
+
+  CComPtr<IGaiaCredential> gaia_credential;
+  if (credential->QueryInterface(IID_IGaiaCredential,
+                                 reinterpret_cast<void**>(&gaia_credential)) ==
+      S_OK) {
+    // Try to set the auto logon credential. If it succeeds we can raise a
+    // credential changed event.
+    if (concurrent_state_.SetAutoLogonCredential(gaia_credential) && events_)
+      events_->CredentialsChanged(advise_context_);
+  }
+
+  LOGFN(INFO) << "Signing in authenticated sid=" << OLE2CW(sid);
+  return S_OK;
 }
 
 // Static.
@@ -527,38 +592,12 @@ HRESULT CGaiaCredentialProvider::GetUsageScenario(DWORD* cpus) {
 
 HRESULT CGaiaCredentialProvider::OnUserAuthenticated(
     IUnknown* credential,
-    BSTR /*username*/,
-    BSTR /*password*/,
+    BSTR username,
+    BSTR password,
     BSTR sid,
     BOOL fire_credentials_changed) {
-  DCHECK(!credential || sid);
-
-  if (!fire_credentials_changed)
-    return S_OK;
-
-  // Ensure that user access cannot be denied at this time so that the user
-  // that is about to sign in won't be locked. If a ScopedLockDenyAccessUpdate
-  // is created before calling this function this should guarantee that
-  // situation because the call to BlockDenyAccessUpdate is locked with the
-  // same lock that is used in DenySigninForUsersWithInvalidTokenHandles.
-  // So either the call to Deny has finished and no new deny will occur
-  // afterwards or the Deny will be disabled because the block has been
-  // incremented first.
-  CHECK(!credential ||
-        AssociatedUserValidator::Get()->IsDenyAccessUpdateBlocked());
-
-  CComPtr<IGaiaCredential> gaia_credential;
-  if (credential->QueryInterface(IID_IGaiaCredential,
-                                 reinterpret_cast<void**>(&gaia_credential)) ==
-      S_OK) {
-    // Try to set the auto logon credential. If it succeeds we can raise a
-    // credential changed event.
-    if (concurrent_state_.SetAutoLogonCredential(gaia_credential) && events_)
-      events_->CredentialsChanged(advise_context_);
-  }
-
-  LOGFN(INFO) << "Signing in authenticated sid=" << OLE2CW(sid);
-  return S_OK;
+  return OnUserAuthenticatedImpl(credential, username, password, sid,
+                                 fire_credentials_changed);
 }
 
 // ICredentialProviderSetUserArray ////////////////////////////////////////////
@@ -710,7 +749,7 @@ HRESULT CGaiaCredentialProvider::GetCredentialCount(
     DWORD* default_index,
     BOOL* autologin_with_default) {
   bool needs_to_refresh_users = false;
-  ComPtrStorage local_auto_logon_credential;
+  GaiaCredentialComPtrStorage local_auto_logon_credential;
 
   // Get the mutually exclusive state of the provider so that we can
   // determine the correct next step (recreate credentials or auto logon).

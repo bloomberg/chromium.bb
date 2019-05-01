@@ -388,6 +388,16 @@ HRESULT FakeOSUserManager::CreateTestOSUser(const base::string16& username,
   return S_OK;
 }
 
+std::vector<std::pair<base::string16, base::string16>>
+FakeOSUserManager::GetUsers() const {
+  std::vector<std::pair<base::string16, base::string16>> users;
+
+  for (auto& kv : username_to_info_)
+    users.emplace_back(std::make_pair(kv.second.sid, kv.first));
+
+  return users;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 FakeScopedLsaPolicyFactory::FakeScopedLsaPolicyFactory()

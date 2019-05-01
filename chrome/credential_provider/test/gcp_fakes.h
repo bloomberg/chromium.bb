@@ -138,6 +138,7 @@ class FakeOSUserManager : public OSUserManager {
                            BSTR* sid);
 
   size_t GetUserCount() const { return username_to_info_.size(); }
+  std::vector<std::pair<base::string16, base::string16>> GetUsers() const;
 
  private:
   OSUserManager* original_manager_;
@@ -294,7 +295,8 @@ class FakeAssociatedUserValidator : public AssociatedUserValidator {
   explicit FakeAssociatedUserValidator(base::TimeDelta validation_timeout);
   ~FakeAssociatedUserValidator() override;
 
-  using AssociatedUserValidator::IsUserAccessBlocked;
+  using AssociatedUserValidator::ForceRefreshTokenHandlesForTesting;
+  using AssociatedUserValidator::IsUserAccessBlockedForTesting;
 
  private:
   AssociatedUserValidator* original_validator_ = nullptr;

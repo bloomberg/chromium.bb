@@ -87,9 +87,6 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   const base::Optional<base::Value>& get_authentication_results() const {
     return authentication_results_;
   }
-  void set_current_windows_password(BSTR password) {
-    current_windows_password_ = password;
-  }
 
   // Returns true if the current credentials stored in |username_| and
   // |password_| are valid and should succeed a local Windows logon. This
