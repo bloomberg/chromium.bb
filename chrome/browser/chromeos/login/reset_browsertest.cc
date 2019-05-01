@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
+#include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_exit_waiter.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -36,6 +37,36 @@ namespace {
 constexpr char kTestUser1[] = "test-user1@gmail.com";
 constexpr char kTestUser1GaiaId[] = "test-user1@gmail.com";
 
+void InvokeRollbackOption() {
+  test::ExecuteOobeJS("cr.ui.Oobe.handleAccelerator('reset');");
+}
+
+void CloseResetScreen() {
+  test::ExecuteOobeJS(
+      "chrome.send('login.ResetScreen.userActed', ['cancel-reset']);");
+}
+
+void ClickResetButton() {
+  test::ExecuteOobeJS(
+      "chrome.send('login.ResetScreen.userActed', ['powerwash-pressed']);");
+}
+
+void ClickRestartButton() {
+  test::ExecuteOobeJS(
+      "chrome.send('login.ResetScreen.userActed', ['restart-pressed']);");
+}
+
+void ClickToConfirmButton() {
+  test::ExecuteOobeJS(
+      "chrome.send('login.ResetScreen.userActed', ['show-confirmation']);");
+}
+
+void ClickDismissConfirmationButton() {
+  test::ExecuteOobeJS(
+      "chrome.send('login.ResetScreen.userActed', "
+      "['reset-confirm-dismissed']);");
+}
+
 }  // namespace
 
 class ResetTest : public MixinBasedInProcessBrowserTest {
@@ -54,50 +85,52 @@ class ResetTest : public MixinBasedInProcessBrowserTest {
     MixinBasedInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
   }
 
+  FakeUpdateEngineClient* update_engine_client_ = nullptr;
+
+  // Simulates reset screen request from views based login.
   void InvokeResetScreen() {
     chromeos::LoginDisplayHost::default_host()->ShowResetScreen();
     OobeScreenWaiter(OobeScreen::SCREEN_OOBE_RESET).Wait();
   }
-
-  void InvokeRollbackOption() {
-    test::ExecuteOobeJS("cr.ui.Oobe.handleAccelerator('reset');");
-  }
-
-  void HideRollbackOption() {
-    test::ExecuteOobeJS("cr.ui.Oobe.handleAccelerator('reset');");
-  }
-
-  void CloseResetScreen() {
-    test::ExecuteOobeJS(
-        "chrome.send('login.ResetScreen.userActed', ['cancel-reset']);");
-  }
-
-  void ClickResetButton() {
-    test::ExecuteOobeJS(
-        "chrome.send('login.ResetScreen.userActed', ['powerwash-pressed']);");
-  }
-
-  void ClickRestartButton() {
-    test::ExecuteOobeJS(
-        "chrome.send('login.ResetScreen.userActed', ['restart-pressed']);");
-  }
-  void ClickToConfirmButton() {
-    test::ExecuteOobeJS(
-        "chrome.send('login.ResetScreen.userActed', ['show-confirmation']);");
-  }
-  void ClickDismissConfirmationButton() {
-    test::ExecuteOobeJS(
-        "chrome.send('login.ResetScreen.userActed', "
-        "['reset-confirm-dismissed']);");
-  }
-
-  FakeUpdateEngineClient* update_engine_client_ = nullptr;
 
  private:
   LoginManagerMixin login_manager_mixin_{
       &mixin_host_,
       {AccountId::FromUserEmailGaiaId(kTestUser1, kTestUser1GaiaId)}};
   DISALLOW_COPY_AND_ASSIGN(ResetTest);
+};
+
+class ResetOobeTest : public OobeBaseTest {
+ public:
+  ResetOobeTest() = default;
+  ~ResetOobeTest() override = default;
+
+  // OobeBaseTest:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(switches::kFirstExecAfterBoot);
+    OobeBaseTest::SetUpCommandLine(command_line);
+  }
+
+  void SetUpInProcessBrowserTestFixture() override {
+    std::unique_ptr<DBusThreadManagerSetter> dbus_setter =
+        chromeos::DBusThreadManager::GetSetterForTesting();
+    update_engine_client_ = new FakeUpdateEngineClient;
+    dbus_setter->SetUpdateEngineClient(
+        std::unique_ptr<UpdateEngineClient>(update_engine_client_));
+
+    OobeBaseTest::SetUpInProcessBrowserTestFixture();
+  }
+
+  // Simulates reset screen request from OOBE UI.
+  void InvokeResetScreen() {
+    test::ExecuteOobeJS("cr.ui.Oobe.handleAccelerator('reset');");
+  }
+
+ protected:
+  FakeUpdateEngineClient* update_engine_client_ = nullptr;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ResetOobeTest);
 };
 
 class ResetFirstAfterBootTest : public ResetTest {
@@ -195,6 +228,34 @@ IN_PROC_BROWSER_TEST_F(ResetTest, RestartBeforePowerwash) {
   ASSERT_EQ(0, FakeSessionManagerClient::Get()->start_device_wipe_call_count());
 
   EXPECT_TRUE(prefs->GetBoolean(prefs::kFactoryResetRequested));
+}
+
+IN_PROC_BROWSER_TEST_F(ResetOobeTest, ResetOnWelcomeScreen) {
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_WELCOME).Wait();
+  InvokeResetScreen();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_RESET).Wait();
+  test::OobeJS().ExpectVisible("reset");
+
+  ClickResetButton();
+  EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
+  EXPECT_EQ(1, FakeSessionManagerClient::Get()->start_device_wipe_call_count());
+  EXPECT_EQ(0, update_engine_client_->rollback_call_count());
+}
+
+IN_PROC_BROWSER_TEST_F(ResetOobeTest, RequestAndCancleResetOnWelcomeScreen) {
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_WELCOME).Wait();
+  InvokeResetScreen();
+
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_RESET).Wait();
+  test::OobeJS().ExpectVisible("reset");
+
+  CloseResetScreen();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_WELCOME).Wait();
+  test::OobeJS().ExpectHidden("reset");
+
+  EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
+  EXPECT_EQ(0, FakeSessionManagerClient::Get()->start_device_wipe_call_count());
+  EXPECT_EQ(0, update_engine_client_->rollback_call_count());
 }
 
 IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, PRE_ViewsLogic) {

@@ -91,6 +91,7 @@ Polymer({
   /** @override */
   ready: function() {
     this.initializeLoginScreen('WelcomeScreen', {
+      resetAllowed: true,
       commonScreenSize: true,
       enableDebuggingAllowed: true,
       enterDemoModeAllowed: true,
