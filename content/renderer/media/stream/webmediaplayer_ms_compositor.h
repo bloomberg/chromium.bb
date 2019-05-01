@@ -84,7 +84,7 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
   virtual void EnableSubmission(
       const viz::SurfaceId& id,
       base::TimeTicks local_surface_id_allocation_time,
-      media::VideoRotation rotation,
+      media::VideoTransformation transformation,
       bool force_submit);
 
   // Notifies the |submitter_| that the frames must be submitted.

@@ -62,14 +62,14 @@ VideoDecoderConfig::VideoDecoderConfig()
     : codec_(kUnknownVideoCodec),
       profile_(VIDEO_CODEC_PROFILE_UNKNOWN),
       format_(PIXEL_FORMAT_UNKNOWN),
-      rotation_(VIDEO_ROTATION_0) {}
+      transformation_(kNoTransformation) {}
 
 VideoDecoderConfig::VideoDecoderConfig(
     VideoCodec codec,
     VideoCodecProfile profile,
     VideoPixelFormat format,
     const VideoColorSpace& color_space,
-    VideoRotation rotation,
+    VideoTransformation rotation,
     const gfx::Size& coded_size,
     const gfx::Rect& visible_rect,
     const gfx::Size& natural_size,
@@ -105,7 +105,7 @@ void VideoDecoderConfig::Initialize(VideoCodec codec,
                                     VideoCodecProfile profile,
                                     VideoPixelFormat format,
                                     const VideoColorSpace& color_space,
-                                    VideoRotation rotation,
+                                    VideoTransformation transformation,
                                     const gfx::Size& coded_size,
                                     const gfx::Rect& visible_rect,
                                     const gfx::Size& natural_size,
@@ -114,7 +114,7 @@ void VideoDecoderConfig::Initialize(VideoCodec codec,
   codec_ = codec;
   profile_ = profile;
   format_ = format;
-  rotation_ = rotation;
+  transformation_ = transformation;
   coded_size_ = coded_size;
   visible_rect_ = visible_rect;
   natural_size_ = natural_size;
@@ -133,7 +133,7 @@ bool VideoDecoderConfig::IsValidConfig() const {
 bool VideoDecoderConfig::Matches(const VideoDecoderConfig& config) const {
   return ((codec() == config.codec()) && (format() == config.format()) &&
           (profile() == config.profile()) &&
-          (video_rotation() == config.video_rotation()) &&
+          (video_transformation() == config.video_transformation()) &&
           (coded_size() == config.coded_size()) &&
           (visible_rect() == config.visible_rect()) &&
           (natural_size() == config.natural_size()) &&
@@ -154,7 +154,8 @@ std::string VideoDecoderConfig::AsHumanReadableString() const {
     << natural_size().height() << "]"
     << ", has extra data: " << (extra_data().empty() ? "false" : "true")
     << ", encryption scheme: " << encryption_scheme()
-    << ", rotation: " << VideoRotationToString(video_rotation())
+    << ", rotation: " << VideoRotationToString(video_transformation().rotation)
+    << ", flipped: " << video_transformation().mirrored
     << ", color space: " << color_space_info().ToGfxColorSpace().ToString();
   if (hdr_metadata().has_value()) {
     s << std::setprecision(4) << ", luminance range: "

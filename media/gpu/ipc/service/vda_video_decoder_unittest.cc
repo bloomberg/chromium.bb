@@ -23,7 +23,7 @@
 #include "media/base/simple_sync_token_client.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_frame.h"
-#include "media/base/video_rotation.h"
+#include "media/base/video_transformation.h"
 #include "media/base/video_types.h"
 #include "media/gpu/ipc/service/picture_buffer_manager.h"
 #include "media/gpu/test/fake_command_buffer_helper.h"
@@ -142,7 +142,7 @@ class VdaVideoDecoderTest : public testing::TestWithParam<bool> {
     EXPECT_CALL(init_cb_, Run(true));
     InitializeWithConfig(VideoDecoderConfig(
         kCodecVP9, VP9PROFILE_PROFILE0, PIXEL_FORMAT_I420,
-        VideoColorSpace::REC709(), VIDEO_ROTATION_0, gfx::Size(1920, 1088),
+        VideoColorSpace::REC709(), kNoTransformation, gfx::Size(1920, 1088),
         gfx::Rect(1920, 1080), gfx::Size(1920, 1080), EmptyExtraData(),
         Unencrypted()));
     RunUntilIdle();
@@ -319,7 +319,7 @@ TEST_P(VdaVideoDecoderTest, Initialize) {
 TEST_P(VdaVideoDecoderTest, Initialize_UnsupportedSize) {
   InitializeWithConfig(
       VideoDecoderConfig(kCodecVP9, VP9PROFILE_PROFILE0, PIXEL_FORMAT_I420,
-                         VideoColorSpace::REC601(), VIDEO_ROTATION_0,
+                         VideoColorSpace::REC601(), kNoTransformation,
                          gfx::Size(320, 240), gfx::Rect(320, 240),
                          gfx::Size(320, 240), EmptyExtraData(), Unencrypted()));
   EXPECT_CALL(init_cb_, Run(false));
@@ -329,7 +329,7 @@ TEST_P(VdaVideoDecoderTest, Initialize_UnsupportedSize) {
 TEST_P(VdaVideoDecoderTest, Initialize_UnsupportedCodec) {
   InitializeWithConfig(VideoDecoderConfig(
       kCodecH264, H264PROFILE_BASELINE, PIXEL_FORMAT_I420,
-      VideoColorSpace::REC709(), VIDEO_ROTATION_0, gfx::Size(1920, 1088),
+      VideoColorSpace::REC709(), kNoTransformation, gfx::Size(1920, 1088),
       gfx::Rect(1920, 1080), gfx::Size(1920, 1080), EmptyExtraData(),
       Unencrypted()));
   EXPECT_CALL(init_cb_, Run(false));
@@ -340,7 +340,7 @@ TEST_P(VdaVideoDecoderTest, Initialize_RejectedByVda) {
   EXPECT_CALL(*vda_, Initialize(_, vdavd_.get())).WillOnce(Return(false));
   InitializeWithConfig(VideoDecoderConfig(
       kCodecVP9, VP9PROFILE_PROFILE0, PIXEL_FORMAT_I420,
-      VideoColorSpace::REC709(), VIDEO_ROTATION_0, gfx::Size(1920, 1088),
+      VideoColorSpace::REC709(), kNoTransformation, gfx::Size(1920, 1088),
       gfx::Rect(1920, 1080), gfx::Size(1920, 1080), EmptyExtraData(),
       Unencrypted()));
   EXPECT_CALL(init_cb_, Run(false));
@@ -423,7 +423,7 @@ TEST_P(VdaVideoDecoderTest, Decode_Output_MaintainsAspect) {
       .WillOnce(Return(GetParam()));
   InitializeWithConfig(VideoDecoderConfig(
       kCodecVP9, VP9PROFILE_PROFILE0, PIXEL_FORMAT_I420,
-      VideoColorSpace::REC709(), VIDEO_ROTATION_0, gfx::Size(640, 480),
+      VideoColorSpace::REC709(), kNoTransformation, gfx::Size(640, 480),
       gfx::Rect(640, 480), gfx::Size(1280, 480), EmptyExtraData(),
       Unencrypted()));
   EXPECT_CALL(init_cb_, Run(true));

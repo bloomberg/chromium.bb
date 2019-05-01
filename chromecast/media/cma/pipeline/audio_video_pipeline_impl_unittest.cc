@@ -155,7 +155,7 @@ class PipelineHelper {
       video_configs.push_back(::media::VideoDecoderConfig(
           ::media::kCodecH264, ::media::H264PROFILE_MAIN,
           ::media::PIXEL_FORMAT_I420, ::media::VideoColorSpace(),
-          ::media::VIDEO_ROTATION_0, gfx::Size(640, 480),
+          ::media::kNoTransformation, gfx::Size(640, 480),
           gfx::Rect(0, 0, 640, 480), gfx::Size(640, 480),
           ::media::EmptyExtraData(), ::media::EncryptionScheme()));
       VideoPipelineClient client;

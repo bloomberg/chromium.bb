@@ -55,8 +55,7 @@ media::VideoDecoderConfig ToClearMediaVideoDecoderConfig(
   VideoDecoderConfig media_config(
       ToMediaVideoCodec(config.codec), ToMediaVideoCodecProfile(config.profile),
       ToMediaVideoFormat(config.format), ToMediaColorSpace(config.color_space),
-      VideoRotation::VIDEO_ROTATION_0, coded_size, gfx::Rect(coded_size),
-      coded_size,
+      kNoTransformation, coded_size, gfx::Rect(coded_size), coded_size,
       std::vector<uint8_t>(config.extra_data,
                            config.extra_data + config.extra_data_size),
       Unencrypted());

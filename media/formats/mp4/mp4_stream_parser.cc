@@ -245,12 +245,9 @@ ParseResult MP4StreamParser::ParseBox() {
   return ParseResult::kOk;
 }
 
-static inline double FixedToFloatingPoint(const int32_t& i) {
-  return static_cast<double>(i >> 16);
-}
-
-VideoRotation MP4StreamParser::CalculateRotation(const TrackHeader& track,
-                                                 const MovieHeader& movie) {
+VideoTransformation MP4StreamParser::CalculateRotation(
+    const TrackHeader& track,
+    const MovieHeader& movie) {
   static_assert(kDisplayMatrixDimension == 9, "Display matrix must be 3x3");
   // 3x3 matrix: [ a b c ]
   //             [ d e f ]
@@ -275,39 +272,9 @@ VideoRotation MP4StreamParser::CalculateRotation(const TrackHeader& track,
     }
   }
 
-  // Rotation by angle Θ is represented in the matrix as:
-  // [ cos(Θ), -sin(Θ), ...]
-  // [ sin(Θ),  cos(Θ), ...]
-  // [ ...,     ...,     1 ]
-  // But we only need cos(Θ) for the angle and sin(Θ) for the quadrant.
-  double angle = acos(FixedToFloatingPoint(rotation_matrix[0]))
-    * 180 / base::kPiDouble;
-
-  if (angle < 0)
-    angle += 360;
-
-  if (angle >= 360)
-    angle -= 360;
-
-  // 16 bits of fixed point decimal is enough to give 6 decimals of precision
-  // to cos(Θ). A delta of ±0.000001 causes acos(cos(Θ)) to differ by a minimum
-  // of 0.0002, which is why we only need to check that the angle is only
-  // accurate to within four decimal places. This is preferred to checking for
-  // a more precise accuracy, as the 'double' type is architecture dependant and
-  // ther may variance in floating point errors.
-  if (abs(angle - 0) < 1e-4)
-    return VIDEO_ROTATION_0;
-
-  if (abs(angle - 180) < 1e-4)
-    return VIDEO_ROTATION_180;
-
-  if (abs(angle - 90) < 1e-4) {
-    bool quadrant = asin(FixedToFloatingPoint(rotation_matrix[3])) < 0;
-    return quadrant ? VIDEO_ROTATION_90 : VIDEO_ROTATION_270;
-  }
-
-  // TODO(tmathmeyer): Record this event and the faulty matrix somewhere.
-  return VIDEO_ROTATION_0;
+  int32_t rotation_only[4] = {rotation_matrix[0], rotation_matrix[1],
+                              rotation_matrix[3], rotation_matrix[4]};
+  return VideoTransformation(rotation_only);
 }
 
 bool MP4StreamParser::ParseMoov(BoxReader* reader) {

@@ -17,7 +17,7 @@
 #include "media/base/media_export.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_color_space.h"
-#include "media/base/video_rotation.h"
+#include "media/base/video_transformation.h"
 #include "media/base/video_types.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -41,7 +41,7 @@ class MEDIA_EXPORT VideoDecoderConfig {
                      VideoCodecProfile profile,
                      VideoPixelFormat format,
                      const VideoColorSpace& color_space,
-                     VideoRotation rotation,
+                     VideoTransformation transformation,
                      const gfx::Size& coded_size,
                      const gfx::Rect& visible_rect,
                      const gfx::Size& natural_size,
@@ -57,7 +57,7 @@ class MEDIA_EXPORT VideoDecoderConfig {
                   VideoCodecProfile profile,
                   VideoPixelFormat format,
                   const VideoColorSpace& color_space,
-                  VideoRotation rotation,
+                  VideoTransformation transformation,
                   const gfx::Size& coded_size,
                   const gfx::Rect& visible_rect,
                   const gfx::Size& natural_size,
@@ -94,7 +94,7 @@ class MEDIA_EXPORT VideoDecoderConfig {
   // scaling to natural_size().
   //
   // TODO(sandersd): Which direction is orientation measured in?
-  VideoRotation video_rotation() const { return rotation_; }
+  VideoTransformation video_transformation() const { return transformation_; }
 
   // Deprecated. TODO(wolenetz): Remove. See https://crbug.com/665539.
   // Width and height of video frame immediately post-decode. Not all pixels
@@ -154,7 +154,7 @@ class MEDIA_EXPORT VideoDecoderConfig {
 
   VideoPixelFormat format_;
 
-  VideoRotation rotation_;
+  VideoTransformation transformation_;
 
   // Deprecated. TODO(wolenetz): Remove. See https://crbug.com/665539.
   gfx::Size coded_size_;

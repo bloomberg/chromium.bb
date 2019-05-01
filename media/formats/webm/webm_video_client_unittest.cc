@@ -58,7 +58,7 @@ TEST_P(WebMVideoClientTest, InitializeConfigVP9Profiles) {
 
   VideoDecoderConfig expected_config(
       kCodecVP9, profile, PIXEL_FORMAT_I420, VideoColorSpace::REC709(),
-      VIDEO_ROTATION_0, kCodedSize, gfx::Rect(kCodedSize), kCodedSize,
+      kNoTransformation, kCodedSize, gfx::Rect(kCodedSize), kCodedSize,
       codec_private, Unencrypted());
 
   EXPECT_TRUE(config.Matches(expected_config))

@@ -279,7 +279,8 @@ void MediaCodecVideoDecoder::Initialize(const VideoDecoderConfig& config,
   }
   decoder_config_ = config;
 
-  surface_chooser_helper_.SetVideoRotation(decoder_config_.video_rotation());
+  surface_chooser_helper_.SetVideoRotation(
+      decoder_config_.video_transformation().rotation);
 
   output_cb_ = output_cb;
   waiting_cb_ = waiting_cb;

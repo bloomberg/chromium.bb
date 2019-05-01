@@ -24,7 +24,7 @@
 #include "media/base/media_content_type.h"
 #include "media/base/media_log.h"
 #include "media/base/video_frame.h"
-#include "media/base/video_rotation.h"
+#include "media/base/video_transformation.h"
 #include "media/base/video_types.h"
 #include "media/blink/webmediaplayer_util.h"
 #include "media/video/gpu_memory_buffer_video_frame_pool.h"
@@ -250,7 +250,7 @@ WebMediaPlayerMS::WebMediaPlayerMS(
       delegate_(delegate),
       delegate_id_(0),
       paused_(true),
-      video_rotation_(media::VIDEO_ROTATION_0),
+      video_transformation_(media::kNoTransformation),
       media_log_(std::move(media_log)),
       renderer_factory_(std::move(factory)),
       main_render_task_runner_(std::move(main_render_task_runner)),
@@ -685,8 +685,8 @@ blink::WebSize WebMediaPlayerMS::NaturalSize() const {
   if (!video_frame_provider_)
     return blink::WebSize();
 
-  if (video_rotation_ == media::VIDEO_ROTATION_90 ||
-      video_rotation_ == media::VideoRotation::VIDEO_ROTATION_270) {
+  if (video_transformation_.rotation == media::VIDEO_ROTATION_90 ||
+      video_transformation_.rotation == media::VIDEO_ROTATION_270) {
     const gfx::Size& current_size = compositor_->GetCurrentSize();
     return blink::WebSize(current_size.height(), current_size.width());
   }
@@ -700,8 +700,8 @@ blink::WebSize WebMediaPlayerMS::VisibleRect() const {
     return blink::WebSize();
 
   const gfx::Rect& visible_rect = video_frame->visible_rect();
-  if (video_rotation_ == media::VIDEO_ROTATION_90 ||
-      video_rotation_ == media::VideoRotation::VIDEO_ROTATION_270) {
+  if (video_transformation_.rotation == media::VIDEO_ROTATION_90 ||
+      video_transformation_.rotation == media::VIDEO_ROTATION_270) {
     return blink::WebSize(visible_rect.height(), visible_rect.width());
   }
   return blink::WebSize(visible_rect.width(), visible_rect.height());
@@ -787,7 +787,7 @@ void WebMediaPlayerMS::Paint(cc::PaintCanvas* canvas,
       return;
   }
   const gfx::RectF dest_rect(rect.x, rect.y, rect.width, rect.height);
-  video_renderer_.Paint(frame, canvas, dest_rect, flags, video_rotation_,
+  video_renderer_.Paint(frame, canvas, dest_rect, flags, video_transformation_,
                         provider);
 }
 
@@ -1054,7 +1054,7 @@ void WebMediaPlayerMS::ActivateSurfaceLayerForVideo() {
       FROM_HERE, base::BindOnce(&WebMediaPlayerMSCompositor::EnableSubmission,
                                 compositor_, bridge_->GetSurfaceId(),
                                 bridge_->GetLocalSurfaceIdAllocationTime(),
-                                video_rotation_, IsInPictureInPicture()));
+                                video_transformation_, IsInPictureInPicture()));
 
   // If the element is already in Picture-in-Picture mode, it means that it
   // was set in this mode prior to this load, with a different
@@ -1110,7 +1110,7 @@ void WebMediaPlayerMS::OnOpacityChanged(bool is_opaque) {
 void WebMediaPlayerMS::OnRotationChanged(media::VideoRotation video_rotation) {
   DVLOG(1) << __func__;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  video_rotation_ = video_rotation;
+  video_transformation_ = {video_rotation, 0};
 
   if (!bridge_) {
     // Keep the old |video_layer_| alive until SetCcLayer() is called with a new

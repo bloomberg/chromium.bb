@@ -211,7 +211,7 @@ void WebMediaPlayerMSCompositor::SetIsSurfaceVisible(bool state) {
 void WebMediaPlayerMSCompositor::EnableSubmission(
     const viz::SurfaceId& id,
     base::TimeTicks local_surface_id_allocation_time,
-    media::VideoRotation rotation,
+    media::VideoTransformation transformation,
     bool force_submit) {
   DCHECK(video_frame_compositor_task_runner_->BelongsToCurrentThread());
 
@@ -221,7 +221,7 @@ void WebMediaPlayerMSCompositor::EnableSubmission(
     video_frame_provider_client_->StopUsingProvider();
   }
 
-  submitter_->SetRotation(rotation);
+  submitter_->SetRotation(transformation.rotation);
   submitter_->SetForceSubmit(force_submit);
   submitter_->EnableSubmission(id, local_surface_id_allocation_time);
   video_frame_provider_client_ = submitter_.get();

@@ -1214,7 +1214,7 @@ void WebMediaPlayerImpl::Paint(cc::PaintCanvas* canvas,
   }
   video_renderer_.Paint(
       video_frame, canvas, gfx::RectF(gfx_rect), flags,
-      pipeline_metadata_.video_decoder_config.video_rotation(),
+      pipeline_metadata_.video_decoder_config.video_transformation(),
       context_provider_.get());
 }
 
@@ -1776,9 +1776,10 @@ void WebMediaPlayerImpl::OnMetadata(PipelineMetadata metadata) {
   pipeline_metadata_ = metadata;
 
   SetReadyState(WebMediaPlayer::kReadyStateHaveMetadata);
-  UMA_HISTOGRAM_ENUMERATION("Media.VideoRotation",
-                            metadata.video_decoder_config.video_rotation(),
-                            VIDEO_ROTATION_MAX + 1);
+  UMA_HISTOGRAM_ENUMERATION(
+      "Media.VideoRotation",
+      metadata.video_decoder_config.video_transformation().rotation,
+      VIDEO_ROTATION_MAX + 1);
 
   if (HasAudio()) {
     RecordEncryptionScheme("Audio",
@@ -1808,9 +1809,11 @@ void WebMediaPlayerImpl::OnMetadata(PipelineMetadata metadata) {
       ActivateSurfaceLayerForVideo();
     } else {
       DCHECK(!video_layer_);
+      // TODO(tmathmeyer) does this need support for reflections as well?
       video_layer_ = cc::VideoLayer::Create(
           compositor_.get(),
-          pipeline_metadata_.video_decoder_config.video_rotation());
+          pipeline_metadata_.video_decoder_config.video_transformation()
+              .rotation);
       video_layer_->SetContentsOpaque(opaque_);
       client_->SetCcLayer(video_layer_.get());
     }
@@ -1844,14 +1847,17 @@ void WebMediaPlayerImpl::ActivateSurfaceLayerForVideo() {
                 .Run(this, compositor_->GetUpdateSubmissionStateCallback());
   bridge_->CreateSurfaceLayer();
 
+  // TODO(tmathmeyer) does this need support for the reflection transformation
+  // as well?
   vfc_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&VideoFrameCompositor::EnableSubmission,
-                     base::Unretained(compositor_.get()),
-                     bridge_->GetSurfaceId(),
-                     bridge_->GetLocalSurfaceIdAllocationTime(),
-                     pipeline_metadata_.video_decoder_config.video_rotation(),
-                     IsInPictureInPicture()));
+      base::BindOnce(
+          &VideoFrameCompositor::EnableSubmission,
+          base::Unretained(compositor_.get()), bridge_->GetSurfaceId(),
+          bridge_->GetLocalSurfaceIdAllocationTime(),
+          pipeline_metadata_.video_decoder_config.video_transformation()
+              .rotation,
+          IsInPictureInPicture()));
   bridge_->SetContentsOpaque(opaque_);
 
   // If the element is already in Picture-in-Picture mode, it means that it
@@ -2107,7 +2113,8 @@ void WebMediaPlayerImpl::OnVideoNaturalSizeChange(const gfx::Size& size) {
   // The input |size| is from the decoded video frame, which is the original
   // natural size and need to be rotated accordingly.
   gfx::Size rotated_size = GetRotatedVideoSize(
-      pipeline_metadata_.video_decoder_config.video_rotation(), size);
+      pipeline_metadata_.video_decoder_config.video_transformation().rotation,
+      size);
 
   RecordVideoNaturalSize(rotated_size);
 
@@ -3114,8 +3121,8 @@ bool WebMediaPlayerImpl::IsStreaming() const {
 }
 
 bool WebMediaPlayerImpl::DoesOverlaySupportMetadata() const {
-  return pipeline_metadata_.video_decoder_config.video_rotation() ==
-         VIDEO_ROTATION_0;
+  return pipeline_metadata_.video_decoder_config.video_transformation() ==
+         kNoTransformation;
 }
 
 void WebMediaPlayerImpl::ActivateViewportIntersectionMonitoring(bool activate) {

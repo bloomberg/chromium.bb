@@ -20,7 +20,7 @@
 #include "media/base/ranges.h"
 #include "media/base/text_track.h"
 #include "media/base/video_decoder_config.h"
-#include "media/base/video_rotation.h"
+#include "media/base/video_transformation.h"
 #include "media/base/waiting.h"
 #include "ui/gfx/geometry/size.h"
 

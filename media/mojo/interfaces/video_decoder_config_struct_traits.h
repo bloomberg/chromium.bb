@@ -11,6 +11,7 @@
 #include "media/mojo/interfaces/hdr_metadata_struct_traits.h"
 #include "media/mojo/interfaces/media_types.mojom.h"
 #include "media/mojo/interfaces/video_color_space_struct_traits.h"
+#include "media/mojo/interfaces/video_transformation_mojom_traits.h"
 #include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
 
 namespace mojo {
@@ -59,9 +60,9 @@ struct StructTraits<media::mojom::VideoDecoderConfigDataView,
     return input.color_space_info();
   }
 
-  static media::VideoRotation video_rotation(
+  static media::VideoTransformation transformation(
       const media::VideoDecoderConfig& input) {
-    return input.video_rotation();
+    return input.video_transformation();
   }
 
   static const base::Optional<media::HDRMetadata>& hdr_metadata(

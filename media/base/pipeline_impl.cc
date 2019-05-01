@@ -953,7 +953,7 @@ void PipelineImpl::RendererWrapper::ReportMetadata(StartType start_type) {
         if (stream->type() == DemuxerStream::VIDEO && !metadata.has_video) {
           metadata.has_video = true;
           metadata.natural_size = GetRotatedVideoSize(
-              stream->video_decoder_config().video_rotation(),
+              stream->video_decoder_config().video_transformation().rotation,
               stream->video_decoder_config().natural_size());
           metadata.video_decoder_config = stream->video_decoder_config();
         }

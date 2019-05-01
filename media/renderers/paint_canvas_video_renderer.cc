@@ -578,7 +578,7 @@ void PaintCanvasVideoRenderer::Paint(
     cc::PaintCanvas* canvas,
     const gfx::RectF& dest_rect,
     cc::PaintFlags& flags,
-    VideoRotation video_rotation,
+    VideoTransformation video_transformation,
     viz::ContextProvider* context_provider) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (flags.getAlpha() == 0) {
@@ -609,10 +609,11 @@ void PaintCanvasVideoRenderer::Paint(
   video_flags.setBlendMode(flags.getBlendMode());
   video_flags.setFilterQuality(flags.getFilterQuality());
 
-  const bool need_rotation = video_rotation != VIDEO_ROTATION_0;
+  const bool need_rotation = video_transformation.rotation != VIDEO_ROTATION_0;
   const bool need_scaling =
       dest_rect.size() != gfx::SizeF(last_image_.width(), last_image_.height());
   const bool need_translation = !dest_rect.origin().IsOrigin();
+  // TODO(tmathmeyer): apply horizontal / vertical mirroring if needed.
   bool need_transform = need_rotation || need_scaling || need_translation;
   if (need_transform) {
     canvas->save();
@@ -620,7 +621,7 @@ void PaintCanvasVideoRenderer::Paint(
         SkFloatToScalar(dest_rect.x() + (dest_rect.width() * 0.5f)),
         SkFloatToScalar(dest_rect.y() + (dest_rect.height() * 0.5f)));
     SkScalar angle = SkFloatToScalar(0.0f);
-    switch (video_rotation) {
+    switch (video_transformation.rotation) {
       case VIDEO_ROTATION_0:
         break;
       case VIDEO_ROTATION_90:
@@ -636,8 +637,8 @@ void PaintCanvasVideoRenderer::Paint(
     canvas->rotate(angle);
 
     gfx::SizeF rotated_dest_size = dest_rect.size();
-    if (video_rotation == VIDEO_ROTATION_90 ||
-        video_rotation == VIDEO_ROTATION_270) {
+    if (video_transformation.rotation == VIDEO_ROTATION_90 ||
+        video_transformation.rotation == VIDEO_ROTATION_270) {
       rotated_dest_size =
           gfx::SizeF(rotated_dest_size.height(), rotated_dest_size.width());
     }
@@ -687,7 +688,7 @@ void PaintCanvasVideoRenderer::Copy(
   flags.setFilterQuality(kLow_SkFilterQuality);
   Paint(video_frame, canvas,
         gfx::RectF(gfx::SizeF(video_frame->visible_rect().size())), flags,
-        media::VIDEO_ROTATION_0, context_provider);
+        media::kNoTransformation, context_provider);
 }
 
 namespace {

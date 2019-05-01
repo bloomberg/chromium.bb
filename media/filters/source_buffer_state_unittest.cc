@@ -37,7 +37,7 @@ VideoDecoderConfig CreateVideoConfig(VideoCodec codec, int w, int h) {
   gfx::Rect visible_rect(size);
   return VideoDecoderConfig(codec, VIDEO_CODEC_PROFILE_UNKNOWN,
                             PIXEL_FORMAT_I420, VideoColorSpace::REC709(),
-                            VIDEO_ROTATION_0, size, visible_rect, size,
+                            kNoTransformation, size, visible_rect, size,
                             EmptyExtraData(), Unencrypted());
 }
 

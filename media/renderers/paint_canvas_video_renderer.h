@@ -20,7 +20,7 @@
 #include "media/base/media_export.h"
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_frame.h"
-#include "media/base/video_rotation.h"
+#include "media/base/video_transformation.h"
 
 namespace gfx {
 class RectF;
@@ -57,7 +57,7 @@ class MEDIA_EXPORT PaintCanvasVideoRenderer {
              cc::PaintCanvas* canvas,
              const gfx::RectF& dest_rect,
              cc::PaintFlags& flags,
-             VideoRotation video_rotation,
+             VideoTransformation video_transformation,
              viz::ContextProvider* context_provider);
 
   // Paints |video_frame| scaled to its visible size on |canvas|.

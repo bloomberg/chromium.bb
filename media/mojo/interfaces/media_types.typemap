@@ -21,17 +21,25 @@ public_headers = [
   "//media/base/sample_format.h",
   "//media/base/subsample_entry.h",
   "//media/base/video_codecs.h",
-  "//media/base/video_rotation.h",
+  "//media/base/video_transformation.h",
   "//media/base/video_types.h",
   "//media/base/waiting.h",
   "//media/base/watch_time_keys.h",
 ]
 
-traits_headers = [ "//media/base/ipc/media_param_traits_macros.h" ]
+traits_headers = [
+  "//media/base/ipc/media_param_traits_macros.h",
+  "//media/mojo/interfaces/video_transformation_mojom_traits.h",
+]
 
 public_deps = [
   "//media",
   "//media/base/ipc",
+]
+
+sources = [
+  "//media/mojo/interfaces/video_transformation_mojom_traits.cc",
+  "//media/mojo/interfaces/video_transformation_mojom_traits.h",
 ]
 
 type_mappings = [
@@ -52,6 +60,7 @@ type_mappings = [
   "media.mojom.VideoCodecProfile=media::VideoCodecProfile",
   "media.mojom.VideoPixelFormat=media::VideoPixelFormat",
   "media.mojom.VideoRotation=media::VideoRotation",
+  "media.mojom.VideoTransformation=media::VideoTransformation",
   "media.mojom.WaitingReason=media::WaitingReason",
   "media.mojom.WatchTimeKey=media::WatchTimeKey",
   "media.mojom.EncryptionPattern=media::EncryptionPattern",

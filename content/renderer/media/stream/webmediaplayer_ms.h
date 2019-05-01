@@ -306,7 +306,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
   media::PaintCanvasVideoRenderer video_renderer_;
 
   bool paused_;
-  media::VideoRotation video_rotation_;
+  media::VideoTransformation video_transformation_;
 
   std::unique_ptr<media::MediaLog> media_log_;
 

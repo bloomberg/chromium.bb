@@ -33,7 +33,7 @@ VideoDecoderConfig CreateFakeVideoConfig() {
   gfx::Rect visible_rect(0, 0, 320, 240);
   gfx::Size natural_size(320, 240);
   return VideoDecoderConfig(kCodecH264, H264PROFILE_MAIN, PIXEL_FORMAT_I420,
-                            VideoColorSpace(), VIDEO_ROTATION_0, coded_size,
+                            VideoColorSpace(), kNoTransformation, coded_size,
                             visible_rect, natural_size, EmptyExtraData(),
                             Unencrypted());
 }

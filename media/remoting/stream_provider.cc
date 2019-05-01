@@ -10,7 +10,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/logging.h"
 #include "media/base/decoder_buffer.h"
-#include "media/base/video_rotation.h"
+#include "media/base/video_transformation.h"
 #include "media/remoting/proto_enum_utils.h"
 #include "media/remoting/proto_utils.h"
 

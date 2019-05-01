@@ -738,7 +738,8 @@ TEST_F(MP4StreamParserTest, MultiTrackFile) {
 }
 
 // <cos(θ), sin(θ), θ expressed as a rotation Enum>
-using MatrixRotationTestCaseParam = std::tuple<double, double, VideoRotation>;
+using MatrixRotationTestCaseParam =
+    std::tuple<double, double, VideoTransformation>;
 
 class MP4StreamParserRotationMatrixEvaluatorTest
     : public ::testing::TestWithParam<MatrixRotationTestCaseParam> {
@@ -771,17 +772,23 @@ TEST_P(MP4StreamParserRotationMatrixEvaluatorTest, RotationCalculation) {
   track_header.display_matrix[1] = -(std::get<1>(data) * (1 << 16));
   track_header.display_matrix[3] = std::get<1>(data) * (1 << 16);
 
-  EXPECT_EQ(parser_->CalculateRotation(track_header, movie_header),
-            std::get<2>(data));
+  VideoTransformation expected = std::get<2>(data);
+  VideoTransformation actual =
+      parser_->CalculateRotation(track_header, movie_header);
+  EXPECT_EQ(actual.rotation, expected.rotation);
+  EXPECT_EQ(actual.mirrored, expected.mirrored);
 }
 
 MatrixRotationTestCaseParam rotation_test_cases[6] = {
-    {1, 0, VIDEO_ROTATION_0},     // cos(0)  = 1, sin(0)  = 0
-    {0, -1, VIDEO_ROTATION_90},   // cos(90) = 0, sin(90) =-1
-    {-1, 0, VIDEO_ROTATION_180},  // cos(180)=-1, sin(180)= 0
-    {0, 1, VIDEO_ROTATION_270},   // cos(270)= 0, sin(270)= 1
-    {1, 1, VIDEO_ROTATION_0},     // Error case
-    {5, 5, VIDEO_ROTATION_0},     // Error case
+    {1, 0, VideoTransformation(VIDEO_ROTATION_0)},  // cos(0)  = 1, sin(0)  = 0
+    {0, -1,
+     VideoTransformation(VIDEO_ROTATION_90)},  // cos(90) = 0, sin(90) =-1
+    {-1, 0,
+     VideoTransformation(VIDEO_ROTATION_180)},  // cos(180)=-1, sin(180)= 0
+    {0, 1,
+     VideoTransformation(VIDEO_ROTATION_270)},      // cos(270)= 0, sin(270)= 1
+    {1, 1, VideoTransformation(VIDEO_ROTATION_0)},  // Error case
+    {5, 5, VideoTransformation(VIDEO_ROTATION_0)},  // Error case
 };
 INSTANTIATE_TEST_SUITE_P(CheckMath,
                          MP4StreamParserRotationMatrixEvaluatorTest,

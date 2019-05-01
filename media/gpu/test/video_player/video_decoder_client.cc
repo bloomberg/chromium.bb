@@ -143,7 +143,7 @@ void VideoDecoderClient::CreateDecoderTask(base::WaitableEvent* done) {
 
   VideoDecoderConfig config(
       video_->Codec(), video_->Profile(), PIXEL_FORMAT_I420, VideoColorSpace(),
-      VIDEO_ROTATION_0, video_->Resolution(), gfx::Rect(video_->Resolution()),
+      kNoTransformation, video_->Resolution(), gfx::Rect(video_->Resolution()),
       video_->Resolution(), std::vector<uint8_t>(0), EncryptionScheme());
 
   VideoDecoder::InitCB init_cb = BindToCurrentLoop(base::BindRepeating(

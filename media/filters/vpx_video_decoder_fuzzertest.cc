@@ -95,8 +95,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   auto coded_size = gfx::Size(1 + (rng() % 127), 1 + (rng() % 127));
   auto visible_rect = gfx::Rect(coded_size);
   auto natural_size = gfx::Size(1 + (rng() % 127), 1 + (rng() % 127));
+  uint8_t reflection = rng() % 4;
 
-  VideoDecoderConfig config(codec, profile, pixel_format, color_space, rotation,
+  VideoDecoderConfig config(codec, profile, pixel_format, color_space,
+                            VideoTransformation(rotation, reflection),
                             coded_size, visible_rect, natural_size,
                             EmptyExtraData(), Unencrypted());
 

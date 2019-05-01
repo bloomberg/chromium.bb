@@ -1003,17 +1003,17 @@ void VideoFrameQualityValidator::Initialize(const gfx::Size& coded_size,
   VideoDecoderConfig config;
   if (IsVP8(profile_)) {
     config.Initialize(kCodecVP8, VP8PROFILE_ANY, pixel_format_,
-                      VideoColorSpace(), VIDEO_ROTATION_0, coded_size,
+                      VideoColorSpace(), kNoTransformation, coded_size,
                       visible_size, natural_size, EmptyExtraData(),
                       Unencrypted());
   } else if (IsVP9(profile_)) {
     config.Initialize(kCodecVP9, VP9PROFILE_PROFILE0, pixel_format_,
-                      VideoColorSpace(), VIDEO_ROTATION_0, coded_size,
+                      VideoColorSpace(), kNoTransformation, coded_size,
                       visible_size, natural_size, EmptyExtraData(),
                       Unencrypted());
   } else if (IsH264(profile_)) {
     config.Initialize(kCodecH264, H264PROFILE_MAIN, pixel_format_,
-                      VideoColorSpace(), VIDEO_ROTATION_0, coded_size,
+                      VideoColorSpace(), kNoTransformation, coded_size,
                       visible_size, natural_size, EmptyExtraData(),
                       Unencrypted());
   } else {

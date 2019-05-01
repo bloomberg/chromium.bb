@@ -35,7 +35,7 @@ class VideoThumbnailDecoderTest : public testing::Test {
     mock_video_decoder_ = mock_video_decoder.get();
     VideoDecoderConfig valid_config(
         kCodecVP8, VP8PROFILE_ANY, PIXEL_FORMAT_I420, VideoColorSpace(),
-        VIDEO_ROTATION_0, gfx::Size(1, 1), gfx::Rect(1, 1), gfx::Size(1, 1),
+        kNoTransformation, gfx::Size(1, 1), gfx::Rect(1, 1), gfx::Size(1, 1),
         EmptyExtraData(), Unencrypted());
 
     thumbnail_decoder_ = std::make_unique<VideoThumbnailDecoder>(

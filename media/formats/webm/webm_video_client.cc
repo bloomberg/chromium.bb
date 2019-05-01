@@ -128,7 +128,7 @@ bool WebMVideoClient::InitializeConfig(
     config->set_hdr_metadata(color_metadata.hdr_metadata);
   }
   config->Initialize(video_codec, profile, format, color_space,
-                     VIDEO_ROTATION_0, coded_size, visible_rect, natural_size,
+                     kNoTransformation, coded_size, visible_rect, natural_size,
                      codec_private, encryption_scheme);
   return config->IsValidConfig();
 }
