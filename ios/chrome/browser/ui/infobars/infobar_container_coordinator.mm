@@ -182,12 +182,14 @@
 
   // Dismisses the presented InfobarCoordinator banner after
   // kInfobarBannerPresentationDurationInSeconds seconds.
-  dispatch_time_t popTime =
-      dispatch_time(DISPATCH_TIME_NOW,
-                    kInfobarBannerPresentationDurationInSeconds * NSEC_PER_SEC);
-  dispatch_after(popTime, dispatch_get_main_queue(), ^(void) {
-    [infobarCoordinator dismissInfobarBannerAfterInteraction];
-  });
+  if (!UIAccessibilityIsVoiceOverRunning()) {
+    dispatch_time_t popTime = dispatch_time(
+        DISPATCH_TIME_NOW,
+        kInfobarBannerPresentationDurationInSeconds * NSEC_PER_SEC);
+    dispatch_after(popTime, dispatch_get_main_queue(), ^(void) {
+      [infobarCoordinator dismissInfobarBannerAfterInteraction];
+    });
+  }
 }
 
 - (void)setUserInteractionEnabled:(BOOL)enabled {

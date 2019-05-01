@@ -99,6 +99,9 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
   [self.view.layer setShadowRadius:kBannerViewShadowRadius];
   [self.view.layer setShadowOpacity:kBannerViewShadowOpacity];
   self.view.accessibilityIdentifier = kInfobarBannerViewIdentifier;
+  self.view.isAccessibilityElement = YES;
+  self.view.accessibilityLabel = [self accessibilityLabel];
+  self.view.accessibilityCustomActions = [self accessibilityActions];
 
   // Bottom Grip setup.
   UIView* bottomGrip = [[UIView alloc] init];
@@ -305,6 +308,52 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
                      self.view.center = self.originalCenter;
                    }
                    completion:nil];
+}
+
+#pragma mark - Accessibility
+
+- (NSArray*)accessibilityActions {
+  UIAccessibilityCustomAction* acceptAction =
+      [[UIAccessibilityCustomAction alloc]
+          initWithName:self.buttonText
+                target:self
+              selector:@selector(acceptInfobar)];
+
+  UIAccessibilityCustomAction* dismissAction =
+      [[UIAccessibilityCustomAction alloc] initWithName:@"Dismiss"
+                                                 target:self
+                                               selector:@selector(dismiss)];
+
+  UIAccessibilityCustomAction* expandAction =
+      [[UIAccessibilityCustomAction alloc]
+          initWithName:@"More options"
+                target:self
+              selector:@selector(presentInfobarModal)];
+
+  return @[ acceptAction, dismissAction, expandAction ];
+}
+
+// A11y Custom actions selectors need to return a BOOL.
+- (BOOL)acceptInfobar {
+  [self.delegate bannerInfobarButtonWasPressed:nil];
+  return NO;
+}
+- (BOOL)presentInfobarModal {
+  [self.delegate presentInfobarModalFromBanner];
+  return NO;
+}
+- (BOOL)dismiss {
+  [self.delegate dismissInfobarBanner:self animated:YES completion:nil];
+  return NO;
+}
+
+- (NSString*)accessibilityLabel {
+  NSString* accessibilityLabel = self.titleText;
+  if ([self.subTitleText length]) {
+    accessibilityLabel =
+        [NSString stringWithFormat:@"%@,%@", self.titleText, self.subTitleText];
+  }
+  return accessibilityLabel;
 }
 
 @end
