@@ -20,6 +20,7 @@
 #include "remoting/base/grpc_support/grpc_async_unary_request.h"
 #include "remoting/base/grpc_support/grpc_support_test_services.grpc.pb.h"
 #include "remoting/base/grpc_support/grpc_test_util.h"
+#include "remoting/base/grpc_support/grpc_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/grpc/src/include/grpcpp/grpcpp.h"
@@ -542,6 +543,43 @@ TEST_F(GrpcAsyncExecutorTest, StreamWithTwoExecutors_VerifyNoInterference) {
   responder_1->SendMessage(ResponseForText("1-1"));
 
   run_loop.Run();
+}
+
+TEST_F(GrpcAsyncExecutorTest, ExecuteWithoutDeadline_DefaultDeadlineSet) {
+  EchoRequest request;
+  auto grpc_request = CreateGrpcAsyncUnaryRequest(
+      base::BindOnce(&GrpcAsyncExecutorTestService::Stub::AsyncEcho,
+                     base::Unretained(stub_.get())),
+      std::make_unique<grpc::ClientContext>(), request,
+      base::BindOnce(
+          [](const grpc::Status&, const EchoResponse&) { NOTREACHED(); }));
+  auto* context = grpc_request->context();
+  ASSERT_TRUE(GetDeadline(*context).is_max());
+  base::Time min_deadline = base::Time::Now();
+  base::Time max_deadline = min_deadline + base::TimeDelta::FromHours(1);
+  executor_->ExecuteRpc(std::move(grpc_request));
+  base::Time deadline = GetDeadline(*context);
+  ASSERT_LT(min_deadline, deadline);
+  ASSERT_GT(max_deadline, deadline);
+}
+
+TEST_F(GrpcAsyncExecutorTest, ExecuteWithDeadline_DeadlineNotChanged) {
+  constexpr base::TimeDelta kDeadlineEpsilon = base::TimeDelta::FromSeconds(1);
+  EchoRequest request;
+  auto context = std::make_unique<grpc::ClientContext>();
+  base::Time deadline = base::Time::Now() + base::TimeDelta::FromSeconds(10);
+  SetDeadline(context.get(), deadline);
+  auto grpc_request = CreateGrpcAsyncUnaryRequest(
+      base::BindOnce(&GrpcAsyncExecutorTestService::Stub::AsyncEcho,
+                     base::Unretained(stub_.get())),
+      std::move(context), request,
+      base::BindOnce(
+          [](const grpc::Status&, const EchoResponse&) { NOTREACHED(); }));
+  auto* unowned_context = grpc_request->context();
+  executor_->ExecuteRpc(std::move(grpc_request));
+  base::Time new_deadline = GetDeadline(*unowned_context);
+  ASSERT_LT(deadline - kDeadlineEpsilon, new_deadline);
+  ASSERT_GT(deadline + kDeadlineEpsilon, new_deadline);
 }
 
 }  // namespace remoting

@@ -12,12 +12,17 @@
 #include "base/no_destructor.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
+#include "base/time/time.h"
 #include "remoting/base/grpc_support/grpc_async_request.h"
+#include "remoting/base/grpc_support/grpc_util.h"
 #include "third_party/grpc/src/include/grpcpp/completion_queue.h"
 
 namespace remoting {
 
 namespace {
+
+constexpr base::TimeDelta kDefaultRequestTimeout =
+    base::TimeDelta::FromSeconds(30);
 
 using DequeueCallback = base::OnceCallback<void(bool operation_succeeded)>;
 
@@ -100,6 +105,10 @@ void GrpcAsyncExecutor::ExecuteRpc(std::unique_ptr<GrpcAsyncRequest> request) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto* unowned_request = request.get();
   DCHECK(FindRequest(unowned_request) == pending_requests_.end());
+  if (GetDeadline(*request->context()).is_max()) {
+    VLOG(1) << "Deadline is not set. Using the default request timeout.";
+    SetDeadline(request->context(), base::Time::Now() + kDefaultRequestTimeout);
+  }
   auto task = std::make_unique<DispatchTask>();
   task->caller_sequence_task_runner = base::SequencedTaskRunnerHandle::Get();
   task->callback =

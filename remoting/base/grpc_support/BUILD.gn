@@ -18,6 +18,8 @@ static_library("grpc_support") {
     "grpc_channel.cc",
     "grpc_channel.h",
     "grpc_executor.h",
+    "grpc_util.cc",
+    "grpc_util.h",
     "scoped_grpc_server_stream.cc",
     "scoped_grpc_server_stream.h",
     "using_grpc_channel_shared_ptr.inc",
