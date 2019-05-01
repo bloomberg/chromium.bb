@@ -5374,6 +5374,7 @@ test("net_unittests") {
     "third_party/quiche/src/quic/platform/api/quic_containers_test.cc",
     "third_party/quiche/src/quic/platform/api/quic_endian_test.cc",
     "third_party/quiche/src/quic/platform/api/quic_hostname_utils_test.cc",
+    "third_party/quiche/src/quic/platform/api/quic_ip_address_test.cc",
     "third_party/quiche/src/quic/platform/api/quic_mem_slice_span_test.cc",
     "third_party/quiche/src/quic/platform/api/quic_mem_slice_storage_test.cc",
     "third_party/quiche/src/quic/platform/api/quic_mem_slice_test.cc",
