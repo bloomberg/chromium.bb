@@ -308,7 +308,10 @@ ScopedJavaLocalRef<jobject> WebContentsAndroid::GetMainFrame(
 ScopedJavaLocalRef<jobject> WebContentsAndroid::GetFocusedFrame(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) const {
-  return web_contents_->GetFocusedFrame()->GetJavaRenderFrameHost();
+  RenderFrameHostImpl* rfh = web_contents_->GetFocusedFrame();
+  if (!rfh)
+    return nullptr;
+  return rfh->GetJavaRenderFrameHost();
 }
 
 ScopedJavaLocalRef<jstring> WebContentsAndroid::GetTitle(
