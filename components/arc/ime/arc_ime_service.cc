@@ -520,6 +520,10 @@ bool ArcImeService::ShouldDoLearning() {
   return is_personalized_learning_allowed_;
 }
 
+void ArcImeService::SetCompositionFromExistingText(
+    const gfx::Range& range,
+    const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {}
+
 // static
 void ArcImeService::SetOverrideDefaultDeviceScaleFactorForTesting(
     base::Optional<double> scale_factor) {

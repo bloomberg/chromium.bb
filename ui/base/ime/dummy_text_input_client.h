@@ -56,11 +56,13 @@ class DummyTextInputClient : public TextInputClient {
   ukm::SourceId GetClientSourceForMetrics() const override;
   bool ShouldDoLearning() override;
 
-#if defined(OS_WIN)
-  // Overridden from ui::TextInputClient(Windows only):
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
   void SetCompositionFromExistingText(
       const gfx::Range& range,
       const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) override;
+#endif
+
+#if defined(OS_WIN)
   void SetActiveCompositionForAccessibility(
       const gfx::Range& range,
       const base::string16& active_composition_text,

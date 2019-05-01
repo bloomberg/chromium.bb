@@ -211,6 +211,10 @@ bool RemoteTextInputClient::ShouldDoLearning() {
   return details_->should_do_learning;
 }
 
+void RemoteTextInputClient::SetCompositionFromExistingText(
+    const gfx::Range& range,
+    const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {}
+
 ui::EventDispatchDetails RemoteTextInputClient::DispatchKeyEventPostIME(
     ui::KeyEvent* event,
     DispatchKeyEventPostIMECallback callback) {

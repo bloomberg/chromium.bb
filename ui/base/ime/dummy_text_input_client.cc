@@ -145,11 +145,13 @@ bool DummyTextInputClient::ShouldDoLearning() {
   return false;
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
 void DummyTextInputClient::SetCompositionFromExistingText(
     const gfx::Range& range,
     const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {}
+#endif
 
+#if defined(OS_WIN)
 void DummyTextInputClient::SetActiveCompositionForAccessibility(
     const gfx::Range& range,
     const base::string16& active_composition_text,

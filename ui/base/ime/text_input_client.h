@@ -204,13 +204,16 @@ class COMPONENT_EXPORT(UI_BASE_IME) TextInputClient {
   // fields that are considered 'private' (e.g. in incognito tabs).
   virtual bool ShouldDoLearning() = 0;
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
   // Start composition over a given UTF-16 code range from existing text. This
   // should only be used for composition scenario when IME wants to start
   // composition on existing text.
   virtual void SetCompositionFromExistingText(
       const gfx::Range& range,
       const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) = 0;
+#endif
+
+#if defined(OS_WIN)
   // Notifies accessibility about active composition. This API is currently
   // only defined for TSF which is available only on Windows
   // https://docs.microsoft.com/en-us/windows/desktop/api/UIAutomationCore/

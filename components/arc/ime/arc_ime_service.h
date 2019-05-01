@@ -141,6 +141,9 @@ class ArcImeService : public KeyedService,
   }
   ukm::SourceId GetClientSourceForMetrics() const override;
   bool ShouldDoLearning() override;
+  void SetCompositionFromExistingText(
+      const gfx::Range& range,
+      const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) override;
 
   // Normally, the default device scale factor is used to convert from DPI to
   // physical pixels. This method provides a way to override it for testing.

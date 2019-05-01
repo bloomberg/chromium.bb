@@ -240,11 +240,13 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   ukm::SourceId GetClientSourceForMetrics() const override;
   bool ShouldDoLearning() override;
 
-#if defined(OS_WIN)
-  // Overridden from ui::TextInputClient(Windows only):
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
   void SetCompositionFromExistingText(
       const gfx::Range& range,
       const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) override;
+#endif
+
+#if defined(OS_WIN)
   // API to notify accessibility whether there is an active composition
   // from TSF or not.
   // It notifies the composition range, composition text and whether the

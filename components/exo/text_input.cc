@@ -311,6 +311,10 @@ bool TextInput::ShouldDoLearning() {
   return should_do_learning_;
 }
 
+void TextInput::SetCompositionFromExistingText(
+    const gfx::Range& range,
+    const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {}
+
 void TextInput::OnKeyboardVisibilityStateChanged(bool is_visible) {
   delegate_->OnVirtualKeyboardVisibilityChanged(is_visible);
 }
