@@ -9,7 +9,6 @@
 #include "components/viz/common/surfaces/surface_id.h"
 #include "content/browser/media/media_web_contents_observer.h"
 #include "content/browser/media/session/media_session_impl.h"
-#include "content/browser/picture_in_picture/overlay_surface_embedder.h"
 #include "content/browser/picture_in_picture/picture_in_picture_service_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/media/media_player_delegate_messages.h"
@@ -113,7 +112,6 @@ void PictureInPictureWindowControllerImpl::CloseAndFocusInitiator() {
 
 void PictureInPictureWindowControllerImpl::OnWindowDestroyed() {
   window_ = nullptr;
-  embedder_ = nullptr;
   CloseInternal(true /* should_pause_video */,
                 true /* should_reset_pip_player */);
 }
@@ -145,10 +143,7 @@ void PictureInPictureWindowControllerImpl::EmbedSurface(
   UpdateMediaPlayerId();
 
   window_->UpdateVideoSize(natural_size);
-
-  if (!embedder_)
-    embedder_.reset(new OverlaySurfaceEmbedder(window_.get()));
-  embedder_->SetSurfaceId(surface_id_);
+  window_->SetSurfaceId(surface_id_);
 }
 
 OverlayWindow* PictureInPictureWindowControllerImpl::GetWindowForTesting() {
@@ -160,9 +155,6 @@ void PictureInPictureWindowControllerImpl::UpdateLayerBounds() {
       window_->IsVisible()) {
     service_->NotifyWindowResized(window_->GetBounds().size());
   }
-
-  if (embedder_)
-    embedder_->UpdateLayerBounds();
 }
 
 bool PictureInPictureWindowControllerImpl::IsPlayerActive() {

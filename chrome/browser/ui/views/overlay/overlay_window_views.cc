@@ -342,12 +342,13 @@ void OverlayWindowViews::SetUpViews() {
   // views::View that is displayed when video is hidden. ----------------------
   // Adding an extra pixel to width/height makes sure controls background cover
   // entirely window when platform has fractional scale applied.
-  gfx::Rect larger_window_bounds = GetBounds();
+  gfx::Rect larger_window_bounds =
+      gfx::Rect(0, 0, GetBounds().width(), GetBounds().height());
   larger_window_bounds.Inset(-1, -1);
-  window_background_view_->SetSize(larger_window_bounds.size());
+  window_background_view_->SetBoundsRect(larger_window_bounds);
   window_background_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
   window_background_view_->layer()->set_name("WindowBackgroundView");
-  GetWindowBackgroundLayer()->SetColor(SK_ColorBLACK);
+  window_background_view_->layer()->SetColor(SK_ColorBLACK);
 
   // views::View that holds the scrim, which appears with the controls. -------
   controls_scrim_view_->SetSize(GetBounds().size());
@@ -390,6 +391,9 @@ void OverlayWindowViews::SetUpViews() {
 
   // view::View that holds the video. -----------------------------------------
   video_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
+  video_view_->SetSize(GetBounds().size());
+  video_view_->layer()->SetMasksToBounds(true);
+  video_view_->layer()->SetFillsBoundsOpaquely(false);
   video_view_->layer()->set_name("VideoView");
 
   // views::View that toggles play/pause/replay. ------------------------------
@@ -415,6 +419,8 @@ void OverlayWindowViews::SetUpViews() {
   controls_parent_view_->AddChildView(play_pause_controls_view_.get());
   controls_parent_view_->AddChildView(next_track_controls_view_.get());
   controls_parent_view_->AddChildView(previous_track_controls_view_.get());
+  GetContentsView()->AddChildView(window_background_view_.get());
+  GetContentsView()->AddChildView(video_view_.get());
   GetContentsView()->AddChildView(controls_scrim_view_.get());
   GetContentsView()->AddChildView(controls_parent_view_.get());
   GetContentsView()->AddChildView(skip_ad_controls_view_.get());
@@ -461,6 +467,13 @@ void OverlayWindowViews::UpdateLayerBoundsWithLetterboxing(
   UpdateControlsBounds();
 
   // Update the surface layer bounds to scale with window size changes.
+  window_background_view_->SetBoundsRect(
+      gfx::Rect(gfx::Point(0, 0), GetBounds().size()));
+  video_view_->SetBoundsRect(video_bounds_);
+  if (video_view_->layer()->has_external_content())
+    video_view_->layer()->SetSurfaceSize(video_bounds_.size());
+
+  // Notify the controller that the bounds have changed.
   controller_->UpdateLayerBounds();
 }
 
@@ -489,10 +502,10 @@ void OverlayWindowViews::UpdateControlsVisibility(bool is_visible) {
 void OverlayWindowViews::UpdateControlsBounds() {
   // Adding an extra pixel to width/height makes sure the scrim covers the
   // entire window when the platform has fractional scaling applied.
-  gfx::Rect larger_window_bounds = GetBounds();
+  gfx::Rect larger_window_bounds =
+      gfx::Rect(0, 0, GetBounds().width(), GetBounds().height());
   larger_window_bounds.Inset(-1, -1);
-  controls_scrim_view_->SetBoundsRect(
-      gfx::Rect(gfx::Point(0, 0), larger_window_bounds.size()));
+  controls_scrim_view_->SetBoundsRect(larger_window_bounds);
 
   WindowQuadrant quadrant = GetCurrentWindowQuadrant(GetBounds(), controller_);
   back_to_tab_controls_view_->SetPosition(GetBounds().size(), quadrant);
@@ -642,16 +655,11 @@ void OverlayWindowViews::SetPreviousTrackButtonVisibility(bool is_visible) {
   UpdateControlsBounds();
 }
 
-ui::Layer* OverlayWindowViews::GetWindowBackgroundLayer() {
-  return window_background_view_->layer();
-}
-
-ui::Layer* OverlayWindowViews::GetVideoLayer() {
-  return video_view_->layer();
-}
-
-gfx::Rect OverlayWindowViews::GetVideoBounds() {
-  return video_bounds_;
+void OverlayWindowViews::SetSurfaceId(const viz::SurfaceId& surface_id) {
+  video_view_->layer()->SetShowSurface(
+      surface_id, GetBounds().size(), SK_ColorBLACK,
+      cc::DeadlinePolicy::UseDefaultDeadline(),
+      true /* stretch_content_to_fill_bounds */);
 }
 
 void OverlayWindowViews::OnNativeBlur() {
@@ -767,7 +775,7 @@ void OverlayWindowViews::OnMouseEvent(ui::MouseEvent* event) {
       // On Windows, ui::ET_MOUSE_EXITED is triggered when hovering over the
       // media controls because of the HitTest. This check ensures the controls
       // are visible if the mouse is still over the window.
-      if (!GetVideoBounds().Contains(event->location()))
+      if (!video_bounds_.Contains(event->location()))
         UpdateControlsVisibility(false);
       break;
 
@@ -1009,4 +1017,8 @@ OverlayWindowViews::playback_state_for_testing() const {
 OverlayWindowViews::MutedState OverlayWindowViews::muted_state_for_testing()
     const {
   return muted_state_for_testing_;
+}
+
+ui::Layer* OverlayWindowViews::video_layer_for_testing() const {
+  return video_view_->layer();
 }

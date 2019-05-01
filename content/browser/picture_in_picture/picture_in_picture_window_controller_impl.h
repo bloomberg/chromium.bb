@@ -19,7 +19,6 @@
 namespace content {
 
 class MediaWebContentsObserver;
-class OverlaySurfaceEmbedder;
 class PictureInPictureServiceImpl;
 class WebContents;
 class WebContentsImpl;
@@ -118,7 +117,7 @@ class PictureInPictureWindowControllerImpl
   bool RemoveMutedPlayerEntry(const MediaPlayerId& id);
 
   std::unique_ptr<OverlayWindow> window_;
-  std::unique_ptr<OverlaySurfaceEmbedder> embedder_;
+
   // TODO(929156): remove this as it should be accessible via `web_contents()`.
   WebContentsImpl* const initiator_;
 

@@ -53,13 +53,11 @@ class TestOverlayWindow : public OverlayWindow {
   void UpdateVideoSize(const gfx::Size& natural_size) override {}
   void SetPlaybackState(PlaybackState playback_state) override {}
   void SetAlwaysHidePlayPauseButton(bool is_visible) override {}
-  ui::Layer* GetWindowBackgroundLayer() override { return nullptr; }
-  ui::Layer* GetVideoLayer() override { return nullptr; }
-  gfx::Rect GetVideoBounds() override { return gfx::Rect(); }
   void SetMutedState(MutedState muted_state) override {}
   void SetSkipAdButtonVisibility(bool is_visible) override {}
   void SetNextTrackButtonVisibility(bool is_visible) override {}
   void SetPreviousTrackButtonVisibility(bool is_visible) override {}
+  void SetSurfaceId(const viz::SurfaceId& surface_id) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestOverlayWindow);

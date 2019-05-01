@@ -18,6 +18,10 @@ namespace ui {
 class Layer;
 }
 
+namespace viz {
+class SurfaceId;
+}
+
 namespace content {
 
 class PictureInPictureWindowController;
@@ -63,13 +67,7 @@ class OverlayWindow {
   virtual void SetSkipAdButtonVisibility(bool is_visible) = 0;
   virtual void SetNextTrackButtonVisibility(bool is_visible) = 0;
   virtual void SetPreviousTrackButtonVisibility(bool is_visible) = 0;
-
-  // Retrieves the ui::Layers corresponding to the window and video.
-  virtual ui::Layer* GetWindowBackgroundLayer() = 0;
-  virtual ui::Layer* GetVideoLayer() = 0;
-
-  // Retrieves the bounds of the video.
-  virtual gfx::Rect GetVideoBounds() = 0;
+  virtual void SetSurfaceId(const viz::SurfaceId& surface_id) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(OverlayWindow);

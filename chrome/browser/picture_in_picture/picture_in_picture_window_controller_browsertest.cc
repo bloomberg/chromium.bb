@@ -18,6 +18,11 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/views/overlay/mute_image_button.h"
+#include "chrome/browser/ui/views/overlay/overlay_window_views.h"
+#include "chrome/browser/ui/views/overlay/playback_image_button.h"
+#include "chrome/browser/ui/views/overlay/skip_ad_label_button.h"
+#include "chrome/browser/ui/views/overlay/track_image_button.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -41,16 +46,8 @@
 #include "ui/aura/window.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/gfx/codec/png_codec.h"
-
-#if !defined(OS_ANDROID)
-#include "chrome/browser/ui/views/overlay/mute_image_button.h"
-#include "chrome/browser/ui/views/overlay/overlay_window_views.h"
-#include "chrome/browser/ui/views/overlay/playback_image_button.h"
-#include "chrome/browser/ui/views/overlay/skip_ad_label_button.h"
-#include "chrome/browser/ui/views/overlay/track_image_button.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/widget/widget_observer.h"
-#endif
 
 #if defined(OS_CHROMEOS)
 #include "ash/accelerators/accelerator_controller.h"
@@ -143,7 +140,6 @@ class PictureInPictureWindowControllerBrowserTest
     EXPECT_TRUE(result);
   }
 
-#if !defined(OS_ANDROID)
   class WidgetBoundsChangeWaiter : public views::WidgetObserver {
    public:
     explicit WidgetBoundsChangeWaiter(views::Widget* widget)
@@ -175,7 +171,6 @@ class PictureInPictureWindowControllerBrowserTest
                               ui::EF_NONE, ui::EF_NONE);
     window->OnMouseEvent(&moved_over);
   }
-#endif  // !defined(OS_ANDROID)
 
  private:
   content::PictureInPictureWindowController* pip_window_controller_ = nullptr;
@@ -409,8 +404,6 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   ui_test_utils::NavigateToURL(browser(), test_page_url);
 }
 
-#if !defined(OS_ANDROID)
-
 // Tests that when creating a Picture-in-Picture window a size is sent to the
 // caller and if the window is resized, the caller is also notified.
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
@@ -446,8 +439,6 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
             content::TitleWatcher(active_web_contents, expected_title)
                 .WaitAndGetTitle());
 }
-
-#endif  // !defined(OS_ANDROID)
 
 // Tests that when closing a Picture-in-Picture window, the video element is
 // reflected as no longer in Picture-in-Picture.
@@ -712,13 +703,11 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                                           &is_paused));
   EXPECT_FALSE(is_paused);
 
-#if !defined(OS_ANDROID)
   OverlayWindowViews* overlay_window = static_cast<OverlayWindowViews*>(
       window_controller()->GetWindowForTesting());
 
   EXPECT_EQ(overlay_window->playback_state_for_testing(),
             OverlayWindowViews::PlaybackState::kPaused);
-#endif
 }
 
 // Tests that resetting video src when video is in Picture-in-Picture session
@@ -728,8 +717,11 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   LoadTabAndEnterPictureInPicture(browser());
 
   EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
-  EXPECT_TRUE(
-      window_controller()->GetWindowForTesting()->GetVideoLayer()->visible());
+
+  OverlayWindowViews* overlay_window = static_cast<OverlayWindowViews*>(
+      window_controller()->GetWindowForTesting());
+
+  EXPECT_TRUE(overlay_window->video_layer_for_testing()->visible());
 
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -741,8 +733,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_TRUE(in_picture_in_picture);
 
   EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
-  EXPECT_TRUE(
-      window_controller()->GetWindowForTesting()->GetVideoLayer()->visible());
+  EXPECT_TRUE(overlay_window->video_layer_for_testing()->visible());
 }
 
 // Tests that updating video src when video is in Picture-in-Picture session
@@ -752,8 +743,11 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   LoadTabAndEnterPictureInPicture(browser());
 
   EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
-  EXPECT_TRUE(
-      window_controller()->GetWindowForTesting()->GetVideoLayer()->visible());
+
+  OverlayWindowViews* overlay_window = static_cast<OverlayWindowViews*>(
+      window_controller()->GetWindowForTesting());
+
+  EXPECT_TRUE(overlay_window->video_layer_for_testing()->visible());
 
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -768,16 +762,9 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_TRUE(in_picture_in_picture);
 
   EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
-  EXPECT_TRUE(
-      window_controller()->GetWindowForTesting()->GetVideoLayer()->visible());
-
-#if !defined(OS_ANDROID)
-  OverlayWindowViews* overlay_window = static_cast<OverlayWindowViews*>(
-      window_controller()->GetWindowForTesting());
-
   EXPECT_FALSE(
       overlay_window->controls_parent_view_for_testing()->layer()->visible());
-#endif
+  EXPECT_TRUE(overlay_window->video_layer_for_testing()->visible());
 }
 
 // Tests that changing video src to media stream when video is in
@@ -788,8 +775,11 @@ IN_PROC_BROWSER_TEST_F(
   LoadTabAndEnterPictureInPicture(browser());
 
   EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
-  EXPECT_TRUE(
-      window_controller()->GetWindowForTesting()->GetVideoLayer()->visible());
+
+  OverlayWindowViews* overlay_window = static_cast<OverlayWindowViews*>(
+      window_controller()->GetWindowForTesting());
+
+  EXPECT_TRUE(overlay_window->video_layer_for_testing()->visible());
 
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -804,16 +794,9 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(in_picture_in_picture);
 
   EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
-  EXPECT_TRUE(
-      window_controller()->GetWindowForTesting()->GetVideoLayer()->visible());
-
-#if !defined(OS_ANDROID)
-  OverlayWindowViews* overlay_window = static_cast<OverlayWindowViews*>(
-      window_controller()->GetWindowForTesting());
-
   EXPECT_FALSE(
       overlay_window->controls_parent_view_for_testing()->layer()->visible());
-#endif
+  EXPECT_TRUE(overlay_window->video_layer_for_testing()->visible());
 }
 
 // Tests that we can enter Picture-in-Picture when a video is not preloaded,
@@ -1155,8 +1138,6 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_FALSE(window_controller()->GetWindowForTesting()->IsVisible());
 }
 
-#if !defined(OS_ANDROID)
-
 // Tests that when a new surface id is sent to the Picture-in-Picture window, it
 // doesn't move back to its default position.
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
@@ -1246,14 +1227,14 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_FALSE(is_paused);
 
   EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
-  EXPECT_TRUE(
-      window_controller()->GetWindowForTesting()->GetVideoLayer()->visible());
 
   OverlayWindowViews* overlay_window = static_cast<OverlayWindowViews*>(
       window_controller()->GetWindowForTesting());
 
   EXPECT_EQ(overlay_window->playback_state_for_testing(),
             OverlayWindowViews::PlaybackState::kPlaying);
+
+  EXPECT_TRUE(overlay_window->video_layer_for_testing()->visible());
 
   ASSERT_TRUE(
       content::ExecuteScript(active_web_contents, "exitPictureInPicture();"));
@@ -1339,8 +1320,6 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   ASSERT_TRUE(overlay_window);
   EXPECT_TRUE(overlay_window->IsVisible());
 }
-
-#endif  // !defined(OS_ANDROID)
 
 // This checks that a video in Picture-in-Picture with preload none, when
 // changing source willproperly update the associated media player id. This is
@@ -1643,7 +1622,6 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 
 #endif  // defined(OS_CHROMEOS)
 
-#if !defined(OS_ANDROID)
 // Tests that the Play/Pause button is displayed appropriately in the
 // Picture-in-Picture window.
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
@@ -1680,7 +1658,6 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_TRUE(
       overlay_window->play_pause_controls_view_for_testing()->IsDrawn());
 }
-#endif
 
 // Check that page visibility API events are fired when tab is hidden, shown,
 // and even occluded.
@@ -1804,7 +1781,6 @@ class MediaSessionPictureInPictureWindowControllerBrowserTest
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-#if !defined(OS_ANDROID)
 // Tests that a Skip Ad button is displayed in the Picture-in-Picture window
 // when Media Session Action "skipad" is handled by the website.
 IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
@@ -1923,7 +1899,6 @@ IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
   EXPECT_TRUE(
       overlay_window->play_pause_controls_view_for_testing()->IsDrawn());
 }
-#endif
 
 // Tests that a Next Track button is displayed in the Picture-in-Picture window
 // when Media Session Action "nexttrack" is handled by the website.
@@ -2705,8 +2680,6 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                 .WaitAndGetTitle());
 }
 
-#if !defined(OS_ANDROID)
-
 class MuteButtonPictureInPictureWindowControllerBrowserTest
     : public PictureInPictureWindowControllerBrowserTest {
  public:
@@ -2896,5 +2869,3 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_EQ(overlay_window->muted_state_for_testing(),
             OverlayWindowViews::MutedState::kNoAudio);
 }
-
-#endif  // #if !defined(OS_ANDROID)

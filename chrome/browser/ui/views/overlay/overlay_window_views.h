@@ -54,9 +54,7 @@ class OverlayWindowViews : public content::OverlayWindow,
   void SetSkipAdButtonVisibility(bool is_visible) override;
   void SetNextTrackButtonVisibility(bool is_visible) override;
   void SetPreviousTrackButtonVisibility(bool is_visible) override;
-  ui::Layer* GetWindowBackgroundLayer() override;
-  ui::Layer* GetVideoLayer() override;
-  gfx::Rect GetVideoBounds() override;
+  void SetSurfaceId(const viz::SurfaceId& surface_id) override;
 
   // views::Widget:
   void OnNativeBlur() override;
@@ -102,6 +100,7 @@ class OverlayWindowViews : public content::OverlayWindow,
   views::View* controls_parent_view_for_testing() const;
   OverlayWindowViews::PlaybackState playback_state_for_testing() const;
   OverlayWindowViews::MutedState muted_state_for_testing() const;
+  ui::Layer* video_layer_for_testing() const;
 
  private:
   // Determine the intended bounds of |this|. This should be called when there
