@@ -26,6 +26,7 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/safe_browsing/features.h"
 #include "components/safe_browsing/password_protection/metrics_util.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -40,15 +41,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_action_data.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event_constants.h"
 
 namespace {
-
-const auto kPageInfoNotSecureTitle =
-    base::ASCIIToUTF16("Your connection to this site is not secure");
-const auto kPageInfoMixedTitle =
-    base::ASCIIToUTF16("Your connection to this site is not fully secure");
-const auto kPageInfoSecureTitle = base::ASCIIToUTF16("Connection is secure");
 
 class ClickEvent : public ui::Event {
  public:
@@ -627,7 +623,7 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
             PageInfoBubbleView::GetShownBubbleType());
 }
 
-// Ensure that changes to security state are reflected in open PageInfo bubble.
+// Ensure changes to security state are reflected in an open PageInfo bubble.
 IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
                        UpdatesOnSecurityStateChange) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
@@ -642,8 +638,10 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
   views::BubbleDialogDelegateView* page_info =
       PageInfoBubbleView::GetPageInfoBubble();
 
-  EXPECT_EQ(page_info->GetWindowTitle(), kPageInfoSecureTitle);
+  EXPECT_EQ(page_info->GetWindowTitle(),
+            l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURE_SUMMARY));
 
   ExecuteJavaScriptForTests("load_mixed();");
-  EXPECT_EQ(page_info->GetWindowTitle(), kPageInfoMixedTitle);
+  EXPECT_EQ(page_info->GetWindowTitle(),
+            l10n_util::GetStringUTF16(IDS_PAGE_INFO_MIXED_CONTENT_SUMMARY));
 }
