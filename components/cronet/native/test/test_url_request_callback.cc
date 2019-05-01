@@ -209,6 +209,9 @@ void TestUrlRequestCallback::OnCanceled(Cronet_UrlRequestPtr request,
 
   response_step_ = ON_CANCELED;
   on_canceled_called_ = true;
+  // It is possible |info| is nullptr if the response has not started.
+  if (info)
+    response_info_ = std::make_unique<UrlResponseInfo>(info);
   MaybeCancelOrPause(request);
   SignalDone();
 }

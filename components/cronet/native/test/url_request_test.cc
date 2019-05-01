@@ -1125,11 +1125,11 @@ void UrlRequestTest::TestCancel(
 
 TEST_P(UrlRequestTest, TestCancel) {
   TestCancel(TestUrlRequestCallback::CANCEL_SYNC,
-             TestUrlRequestCallback::ON_RECEIVED_REDIRECT, false, false);
+             TestUrlRequestCallback::ON_RECEIVED_REDIRECT, true, false);
   TestCancel(TestUrlRequestCallback::CANCEL_ASYNC,
-             TestUrlRequestCallback::ON_RECEIVED_REDIRECT, false, false);
+             TestUrlRequestCallback::ON_RECEIVED_REDIRECT, true, false);
   TestCancel(TestUrlRequestCallback::CANCEL_ASYNC_WITHOUT_PAUSE,
-             TestUrlRequestCallback::ON_RECEIVED_REDIRECT, false, false);
+             TestUrlRequestCallback::ON_RECEIVED_REDIRECT, true, false);
 
   TestCancel(TestUrlRequestCallback::CANCEL_SYNC,
              TestUrlRequestCallback::ON_RESPONSE_STARTED, true, false);
