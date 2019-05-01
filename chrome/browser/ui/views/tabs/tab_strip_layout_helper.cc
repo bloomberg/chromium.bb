@@ -7,6 +7,7 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_style.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
+#include "chrome/browser/ui/views/tabs/tab_animation_state.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_layout.h"
 #include "chrome/browser/ui/views/tabs/tab_style_views.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -53,10 +54,22 @@ int TabStripLayoutHelper::GetPinnedTabCount(
 void TabStripLayoutHelper::UpdateIdealBounds(views::ViewModelT<Tab>* tabs,
                                              int available_width,
                                              int active_tab_index) {
-  const std::vector<gfx::Rect> tab_bounds =
-      CalculateTabBounds(GetTabSizeInfo(), GetPinnedTabCount(tabs),
-                         tabs->view_size(), active_tab_index, available_width,
-                         &active_tab_width_, &inactive_tab_width_);
+  std::vector<TabAnimationState> ideal_animation_states;
+  const int num_pinned_tabs = GetPinnedTabCount(tabs);
+  for (int tab_index = 0; tab_index < tabs->view_size(); tab_index++) {
+    ideal_animation_states.push_back(TabAnimationState::ForIdealTabState(
+        TabAnimationState::TabOpenness::kOpen,
+        tab_index < num_pinned_tabs
+            ? TabAnimationState::TabPinnedness::kPinned
+            : TabAnimationState::TabPinnedness::kUnpinned,
+        tab_index == active_tab_index
+            ? TabAnimationState::TabActiveness::kActive
+            : TabAnimationState::TabActiveness::kInactive,
+        0));
+  }
+  const std::vector<gfx::Rect> tab_bounds = CalculateTabBounds(
+      GetTabSizeInfo(), ideal_animation_states, available_width,
+      &active_tab_width_, &inactive_tab_width_);
   DCHECK_EQ(static_cast<size_t>(tabs->view_size()), tab_bounds.size());
 
   for (size_t i = 0; i < tab_bounds.size(); ++i)
@@ -71,9 +84,17 @@ void TabStripLayoutHelper::UpdateIdealBoundsForPinnedTabs(
   first_non_pinned_tab_x_ = 0;
 
   if (pinned_tab_count > 0) {
-    std::vector<gfx::Rect> tab_bounds(tabs->view_size());
-    first_non_pinned_tab_x_ = CalculateBoundsForPinnedTabs(
-        GetTabSizeInfo(), pinned_tab_count, tabs->view_size(), &tab_bounds);
+    std::vector<TabAnimationState> ideal_animation_states;
+    for (int tab_index = 0; tab_index < pinned_tab_count; tab_index++) {
+      ideal_animation_states.push_back(TabAnimationState::ForIdealTabState(
+          TabAnimationState::TabOpenness::kOpen,
+          TabAnimationState::TabPinnedness::kPinned,
+          TabAnimationState::TabActiveness::kInactive, 0));
+    }
+
+    const std::vector<gfx::Rect> tab_bounds =
+        CalculatePinnedTabBounds(GetTabSizeInfo(), ideal_animation_states);
+
     for (int i = 0; i < pinned_tab_count; ++i)
       tabs->set_ideal_bounds(i, tab_bounds[i]);
   }

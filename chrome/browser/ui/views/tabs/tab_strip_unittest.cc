@@ -835,12 +835,14 @@ TEST_P(TabStripTest, InactiveTabWidthWhenTabsAreTiny) {
   // During mouse-based tab closure, inactive tabs shouldn't shrink
   // so that users can close tabs continuously without moving mouse.
   controller_->SelectTab(0, dummy_event_);
-  int last_inactive_width = tab_strip_->InactiveTabWidth();
-  while (tab_strip_->tab_count() > 0) {
+  // If there are only two tabs in the strip, then after closing one the
+  // remaining one will be active and there will be no inactive tabs,
+  // so we stop at 2.
+  while (tab_strip_->tab_count() > 2) {
+    const int last_inactive_width = tab_strip_->InactiveTabWidth();
     tab_strip_->CloseTab(tab_strip_->tab_at(controller_->GetActiveIndex()),
                          CLOSE_TAB_FROM_MOUSE);
     EXPECT_GE(tab_strip_->InactiveTabWidth(), last_inactive_width);
-    last_inactive_width = tab_strip_->InactiveTabWidth();
   }
 }
 
