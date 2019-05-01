@@ -143,11 +143,11 @@ void CastRenderer::OnApplicationMediaInfoReceived(
       &CastRenderer::OnGetMultiroomInfo, base::Unretained(this), media_resource,
       client, init_cb, application_media_info.Clone(),
       chromecast::mojom::MultiroomInfo::New()));
+  std::string session_id = application_media_info->application_session_id;
   multiroom_manager_->GetMultiroomInfo(
-      application_media_info->application_session_id,
-      base::BindOnce(&CastRenderer::OnGetMultiroomInfo, base::Unretained(this),
-                     media_resource, client, init_cb,
-                     std::move(application_media_info)));
+      session_id, base::BindOnce(&CastRenderer::OnGetMultiroomInfo,
+                                 base::Unretained(this), media_resource, client,
+                                 init_cb, std::move(application_media_info)));
 }
 
 void CastRenderer::OnGetMultiroomInfo(
