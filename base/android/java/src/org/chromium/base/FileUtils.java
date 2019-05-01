@@ -5,10 +5,15 @@
 package org.chromium.base;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.ParcelFileDescriptor;
+import android.support.annotation.Nullable;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileDescriptor;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -151,5 +156,31 @@ public class FileUtils {
         int index = file.lastIndexOf('.');
         if (index == -1) return "";
         return file.substring(index + 1).toLowerCase(Locale.US);
+    }
+
+    /** Queries and decodes bitmap from content provider. */
+    @Nullable
+    public static Bitmap queryBitmapFromContentProvider(Context context, Uri uri) {
+        try (ParcelFileDescriptor parcelFileDescriptor =
+                        context.getContentResolver().openFileDescriptor(uri, "r")) {
+            if (parcelFileDescriptor == null) {
+                Log.w(TAG, "Null ParcelFileDescriptor from uri " + uri);
+                return null;
+            }
+            FileDescriptor fileDescriptor = parcelFileDescriptor.getFileDescriptor();
+            if (fileDescriptor == null) {
+                Log.w(TAG, "Null FileDescriptor from uri " + uri);
+                return null;
+            }
+            Bitmap bitmap = BitmapFactory.decodeFileDescriptor(fileDescriptor);
+            if (bitmap == null) {
+                Log.w(TAG, "Failed to decode image from uri " + uri);
+                return null;
+            }
+            return bitmap;
+        } catch (IOException e) {
+            Log.w(TAG, "IO exception when reading uri " + uri);
+        }
+        return null;
     }
 }

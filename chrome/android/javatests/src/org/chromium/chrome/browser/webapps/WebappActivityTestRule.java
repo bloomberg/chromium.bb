@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.support.customtabs.TrustedWebUtils;
 import android.support.test.InstrumentationRegistry;
+import android.view.View;
 import android.view.ViewGroup;
 
 import org.junit.Assert;
@@ -221,18 +222,24 @@ public class WebappActivityTestRule extends ChromeActivityTestRule<WebappActivit
                 // we are waiting for WebappActivity#getActivityTab() to be non-null because we want
                 // to ensure that native has been loaded.
                 // We also wait till the splash screen has finished initializing.
-                ViewGroup splashScreen = getActivity().getSplashScreenForTests();
-                return getActivity().getActivityTab() != null && splashScreen != null
-                        && splashScreen.getChildCount() > 0;
+                if (getActivity().getActivityTab() == null) return false;
+
+                View splashScreen = getActivity().getSplashScreenForTests();
+                if (splashScreen == null) return false;
+
+                return (!(splashScreen instanceof ViewGroup)
+                        || ((ViewGroup) splashScreen).getChildCount() > 0);
             }
         }, STARTUP_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
 
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        ViewGroup splashScreen = getActivity().getSplashScreenForTests();
+        View splashScreen = getActivity().getSplashScreenForTests();
         if (splashScreen == null) {
             Assert.fail("No splash screen available.");
         }
-        return splashScreen;
+        // TODO(pkotwicz): Change return type in order to accommodate new-style WebAPKs.
+        // (crbug.com/958288)
+        return (splashScreen instanceof ViewGroup) ? (ViewGroup) splashScreen : null;
     }
 
     /**

@@ -854,7 +854,7 @@ public class WebappActivity extends SingleTabActivity {
     }
 
     @VisibleForTesting
-    ViewGroup getSplashScreenForTests() {
+    View getSplashScreenForTests() {
         return mSplashController.getSplashScreenForTests();
     }
 
@@ -889,8 +889,11 @@ public class WebappActivity extends SingleTabActivity {
     protected void showSplash() {
         try (TraceEvent te = TraceEvent.scoped("WebappActivity.showSplash")) {
             ViewGroup contentView = (ViewGroup) findViewById(android.R.id.content);
-            SplashDelegate delegate = new SameActivityWebappSplashDelegate(
-                    this, getLifecycleDispatcher(), mTabObserverRegistrar);
+            SplashDelegate delegate = mWebappInfo.isSplashProvidedByWebApk()
+                    ? new ProvidedByWebApkSplashDelegate()
+                    : new SameActivityWebappSplashDelegate(
+                            this, getLifecycleDispatcher(), mTabObserverRegistrar);
+
             mSplashController.showSplash(delegate, contentView, mWebappInfo);
         }
     }

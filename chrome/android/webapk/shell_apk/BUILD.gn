@@ -61,8 +61,9 @@ template("webapk_java") {
         "src/org/chromium/webapk/shell_apk/h2o/H2OMainActivity.java",
         "src/org/chromium/webapk/shell_apk/h2o/H2OOpaqueMainActivity.java",
         "src/org/chromium/webapk/shell_apk/h2o/H2OTransparentLauncherActivity.java",
-        "src/org/chromium/webapk/shell_apk/h2o/OverlaySplashActivity.java",
         "src/org/chromium/webapk/shell_apk/h2o/SplashActivity.java",
+        "src/org/chromium/webapk/shell_apk/h2o/SplashContentProvider.java",
+        "src/org/chromium/webapk/shell_apk/h2o/SplashUtils.java",
       ]
       deps += [ "//chrome/android/webapk/libs/common:splash_java" ]
     }
@@ -306,10 +307,12 @@ webapk_tmpl("h2o_j_unit_webapk") {
 
 android_library("shell_apk_javatests") {
   testonly = true
-  java_files =
-      [ "javatests/src/org/chromium/webapk/shell_apk/DexLoaderTest.java" ]
+  java_files = [
+    "javatests/src/org/chromium/webapk/shell_apk/DexLoaderTest.java",
+    "javatests/src/org/chromium/webapk/shell_apk/h2o/SplashUtilsTest.java",
+  ]
   deps = [
-    ":webapk_generated_webapk_java",
+    ":new_splash_webapk_generated_webapk_java",
     "//base:base_java",
     "//base:base_java_test_support",
     "//chrome/android/webapk/libs/common:common_java",

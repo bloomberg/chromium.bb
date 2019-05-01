@@ -188,10 +188,9 @@ public class WebappLauncherActivity extends Activity {
         // WebappActivity is launched without going through WebappLauncherActivity first.
         WebappActivity.addWebappInfo(webappInfo.id(), webappInfo);
 
-        Intent[] launchIntents =
-                createIntentsToLaunchForWebapp(intent, webappInfo, createTimestamp);
-        launchingActivity.startActivities(launchIntents);
-        if (IntentUtils.isIntentForNewTaskOrNewDocument(launchIntents[0])) {
+        Intent launchIntent = createIntentToLaunchForWebapp(intent, webappInfo, createTimestamp);
+        IntentUtils.safeStartActivity(launchingActivity, launchIntent);
+        if (IntentUtils.isIntentForNewTaskOrNewDocument(launchIntent)) {
             ApiCompatibilityUtils.finishAndRemoveTask(launchingActivity);
         } else {
             launchingActivity.finish();
@@ -326,11 +325,8 @@ public class WebappLauncherActivity extends Activity {
         }
     }
 
-    /**
-     * Returns intents to launch for the web app. The output array should be sorted in the order
-     * that the intents should be dispatched with the intent to be dispatched first at index 0.
-     */
-    private static Intent[] createIntentsToLaunchForWebapp(
+    /** Returns intent to launch for the web app. */
+    private static Intent createIntentToLaunchForWebapp(
             Intent intent, @NonNull WebappInfo webappInfo, long createTimestamp) {
         String launchActivityClassName = selectWebappActivitySubclass(webappInfo);
 
@@ -338,29 +334,19 @@ public class WebappLauncherActivity extends Activity {
         // crbug.com/702998.
         finishIfReusingActivity(launchActivityClassName, webappInfo.id());
 
-        Intent showSplashIntent = null;
-        if (webappInfo.isSplashProvidedByWebApk()) {
-            showSplashIntent = new Intent(WebApkConstants.ACTION_SHOW_SPLASH);
-            showSplashIntent.setPackage(webappInfo.webApkPackageName());
-            showSplashIntent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-        }
-
-        Intent webappActivityLaunchIntent = new Intent();
-        webappActivityLaunchIntent.setClassName(
-                ContextUtils.getApplicationContext(), launchActivityClassName);
-        webappInfo.setWebappIntentExtras(webappActivityLaunchIntent);
-        webappActivityLaunchIntent.setAction(Intent.ACTION_VIEW);
+        Intent launchIntent = new Intent();
+        launchIntent.setClassName(ContextUtils.getApplicationContext(), launchActivityClassName);
+        webappInfo.setWebappIntentExtras(launchIntent);
+        launchIntent.setAction(Intent.ACTION_VIEW);
 
         // On L+, firing intents with the exact same data should relaunch a particular
         // Activity.
-        webappActivityLaunchIntent.setData(
-                Uri.parse(WebappActivity.WEBAPP_SCHEME + "://" + webappInfo.id()));
+        launchIntent.setData(Uri.parse(WebappActivity.WEBAPP_SCHEME + "://" + webappInfo.id()));
 
-        IntentHandler.addTimestampToIntent(webappActivityLaunchIntent, createTimestamp);
+        IntentHandler.addTimestampToIntent(launchIntent, createTimestamp);
         // Pass through WebAPK shell launch timestamp to the new intent.
         long shellLaunchTimestamp = IntentHandler.getWebApkShellLaunchTimestampFromIntent(intent);
-        IntentHandler.addShellLaunchTimestampToIntent(
-                webappActivityLaunchIntent, shellLaunchTimestamp);
+        IntentHandler.addShellLaunchTimestampToIntent(launchIntent, shellLaunchTimestamp);
 
         // Setting FLAG_ACTIVITY_CLEAR_TOP handles 2 edge cases:
         // - If a legacy PWA is launching from a notification, we want to ensure that the URL being
@@ -373,17 +359,15 @@ public class WebappLauncherActivity extends Activity {
         // CustomTabActivity activity and go back to the WebAPK activity. It is intentional that
         // Custom Tab will not be reachable with a back button.
         if (webappInfo.isSplashProvidedByWebApk()) {
-            webappActivityLaunchIntent.setFlags(
+            launchIntent.setFlags(
                     Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NO_ANIMATION);
         } else {
-            webappActivityLaunchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+            launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                     | ApiCompatibilityUtils.getActivityNewDocumentFlag()
                     | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         }
 
-        return (showSplashIntent == null)
-                ? new Intent[] {webappActivityLaunchIntent}
-                : new Intent[] {webappActivityLaunchIntent, showSplashIntent};
+        return launchIntent;
     }
 
     /** Tries to create WebappInfo/WebApkInfo for the intent. */

@@ -1658,6 +1658,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/webapps/ChromeWebApkHost.java",
   "java/src/org/chromium/chrome/browser/webapps/ChromeWebApkHostSignature.java",
   "java/src/org/chromium/chrome/browser/webapps/GooglePlayWebApkInstallDelegate.java",
+  "java/src/org/chromium/chrome/browser/webapps/ProvidedByWebApkSplashDelegate.java",
   "java/src/org/chromium/chrome/browser/webapps/SameActivityWebappSplashDelegate.java",
   "java/src/org/chromium/chrome/browser/metrics/SameActivityWebappUmaCache.java",
   "java/src/org/chromium/chrome/browser/webapps/SameTaskWebApkActivity.java",

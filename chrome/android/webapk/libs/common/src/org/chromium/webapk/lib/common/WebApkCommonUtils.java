@@ -14,4 +14,21 @@ public class WebApkCommonUtils {
     public static String getRuntimeDexName(int version) {
         return "webapk" + version + ".dex";
     }
+
+    /**
+     * Returns authority of the content provider which provides the splash screen for the given
+     * WebAPK.
+     */
+    public static String generateSplashContentProviderAuthority(String webApkPackageName) {
+        return webApkPackageName + ".SplashContentProvider";
+    }
+
+    /**
+     * Returns the URI of the content provider which provides the splash screen for the given
+     * WebAPK.
+     */
+    public static String generateSplashContentProviderUri(String webApkPackageName) {
+        return "content://" + generateSplashContentProviderAuthority(webApkPackageName)
+                + "/cached_splash_image";
+    }
 }

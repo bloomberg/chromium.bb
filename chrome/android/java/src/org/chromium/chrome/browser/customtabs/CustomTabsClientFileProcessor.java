@@ -8,19 +8,15 @@ import static org.chromium.chrome.browser.dependency_injection.ChromeCommonQuali
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.ParcelFileDescriptor;
 import android.support.annotation.WorkerThread;
 import android.support.customtabs.CustomTabsService;
 import android.support.customtabs.CustomTabsSessionToken;
 
+import org.chromium.base.FileUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.splashscreen.SplashImageHolder;
-
-import java.io.FileDescriptor;
-import java.io.IOException;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -67,29 +63,12 @@ public class CustomTabsClientFileProcessor {
     }
 
     private boolean receiveTwaSplashImage(CustomTabsSessionToken sessionToken, Uri uri) {
-        try(ParcelFileDescriptor parcelFileDescriptor =
-                mContext.getContentResolver().openFileDescriptor(uri, "r")) {
-            if (parcelFileDescriptor == null) {
-                Log.w(TAG, "Null ParcelFileDescriptor from uri " + uri);
-                return false;
-            }
-            FileDescriptor fileDescriptor = parcelFileDescriptor.getFileDescriptor();
-            if (fileDescriptor == null) {
-                Log.w(TAG, "Null FileDescriptor from uri " + uri);
-                return false;
-            }
-            Bitmap bitmap = BitmapFactory.decodeFileDescriptor(fileDescriptor);
-            if (bitmap == null) {
-                Log.w(TAG, "Failed to decode image from uri " + uri);
-                return false;
-            }
-            mTwaSplashImageHolder.get().putImage(sessionToken, bitmap);
-            mTwaSplashImageHolderCreated = true;
-            return true;
-        } catch (IOException e) {
-            Log.w(TAG, "IO exception when reading uri " + uri);
-            return false;
-        }
+        Bitmap bitmap = FileUtils.queryBitmapFromContentProvider(mContext, uri);
+        if (bitmap == null) return false;
+
+        mTwaSplashImageHolder.get().putImage(sessionToken, bitmap);
+        mTwaSplashImageHolderCreated = true;
+        return true;
     }
 
     /**

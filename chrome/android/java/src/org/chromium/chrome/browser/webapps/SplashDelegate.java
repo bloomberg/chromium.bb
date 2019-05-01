@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.webapps;
 
+import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.chrome.browser.tab.Tab;
@@ -20,10 +21,10 @@ interface SplashDelegate {
     boolean isSplashVisible();
 
     /**
-     * Returns the {@link ViewGroup} containing the splash screen if it is a direct child of
+     * Returns the {@link View} containing the splash screen if it is a direct child of
      * the passed-in view.
      */
-    ViewGroup getSplashViewIfChildOf(ViewGroup parent);
+    View getSplashViewIfChildOf(ViewGroup parent);
 
     /** Returns whether to wait for a subsequent page load to hide the splash screen. */
     boolean shouldWaitForSubsequentPageLoadToHideSplash();

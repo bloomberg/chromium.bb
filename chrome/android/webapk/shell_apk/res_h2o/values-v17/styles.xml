@@ -9,16 +9,4 @@
     <item name="android:windowNoTitle">true</item>
     <item name="android:windowBackground">@color/background_color</item>
   </style>
-
-  <!-- Must not be translucent so that background color is shown right when the
-       WebAPK is launched. -->
-  <style name="EarlySplashTheme" parent="SplashTheme">
-    <item name="android:windowIsTranslucent">false</item>
-  </style>
-
-  <!-- Must be translucent so that host browser loads page while splash screen
-       is up. -->
-  <style name="OverlaySplashTheme" parent="SplashTheme">
-    <item name="android:windowIsTranslucent">true</item>
-  </style>
 </resources>

@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.webapps;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ProviderInfo;
 import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -26,6 +27,7 @@ import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.content_public.common.ScreenOrientationValues;
+import org.chromium.webapk.lib.common.WebApkCommonUtils;
 import org.chromium.webapk.lib.common.WebApkConstants;
 import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 import org.chromium.webapk.lib.common.WebApkMetaDataUtils;
@@ -181,12 +183,23 @@ public class WebApkInfo extends WebappInfo {
                 }
             }
         }
-        boolean isSplashProvidedByWebApk = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
-                && IntentUtils.safeGetBooleanExtra(
-                        intent, WebApkConstants.EXTRA_SPLASH_PROVIDED_BY_WEBAPK, false);
+        boolean canUseSplashFromContentProvider = IntentUtils.safeGetBooleanExtra(
+                intent, WebApkConstants.EXTRA_SPLASH_PROVIDED_BY_WEBAPK, false);
 
-        return create(webApkPackageName, url, source, forceNavigation, isSplashProvidedByWebApk,
-                shareData);
+        return create(webApkPackageName, url, source, forceNavigation,
+                canUseSplashFromContentProvider, shareData);
+    }
+
+    /**
+     * Returns whether the WebAPK has a content provider which provides an image to use for the
+     * splash screen.
+     */
+    private static boolean hasContentProviderForSplash(String webApkPackageName) {
+        PackageManager packageManager = ContextUtils.getApplicationContext().getPackageManager();
+        ProviderInfo providerInfo = packageManager.resolveContentProvider(
+                WebApkCommonUtils.generateSplashContentProviderAuthority(webApkPackageName), 0);
+        return (providerInfo != null
+                && TextUtils.equals(providerInfo.packageName, webApkPackageName));
     }
 
     private static @WebApkDistributor int getDistributor(Bundle bundle, String packageName) {
@@ -214,13 +227,12 @@ public class WebApkInfo extends WebappInfo {
      * @param source Source that the WebAPK was launched from.
      * @param forceNavigation Whether the WebAPK should navigate to {@link url} if it is already
      *                        running.
-     * @param isSplashProvidedByWebApk Whether the WebAPK provides a splash screen activity which
-     *                                 should be launched to hide the web contents while the page is
-     *                                 loading.
+     * @param canUseSplashFromContentProvider Whether the WebAPK's content provider can be
+     *                                        queried for a screenshot of the splash screen.
      * @param shareData Shared information from the share intent.
      */
     public static WebApkInfo create(String webApkPackageName, String url, int source,
-            boolean forceNavigation, boolean isSplashProvidedByWebApk, ShareData shareData) {
+            boolean forceNavigation, boolean canUseSplashFromContentProvider, ShareData shareData) {
         // Unlike non-WebAPK web apps, WebAPK ids are predictable. A malicious actor may send an
         // intent with a valid start URL and arbitrary other data. Only use the start URL, the
         // package name and the ShortcutSource from the launch intent and extract the remaining data
@@ -282,6 +294,10 @@ public class WebApkInfo extends WebappInfo {
         Bitmap splashIcon = decodeBitmapFromDrawable(res, splashIconId);
         ShareTarget shareTarget = extractAndMergeShareTargets(webApkPackageName);
 
+        boolean isSplashProvidedByWebApk =
+                (canUseSplashFromContentProvider && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+                        && hasContentProviderForSplash(webApkPackageName));
+
         return create(WebApkConstants.WEBAPK_ID_PREFIX + webApkPackageName, url, scope,
                 new Icon(primaryIcon), new Icon(badgeIcon), new Icon(splashIcon), name, shortName,
                 displayMode, orientation, source, themeColor, backgroundColor, webApkPackageName,
@@ -318,9 +334,9 @@ public class WebApkInfo extends WebappInfo {
      * @param shareTarget              Data about WebAPK's share intent handlers.
      * @param forceNavigation          Whether the WebAPK should navigate to {@link url} if the
      *                                 WebAPK is already open.
-     * @param isSplashProvidedByWebApk Whether the WebAPK provides a splash screen activity which
-     *                                 should be launched to hide the web contents while the page is
-     *                                 loading.
+     * @param isSplashProvidedByWebApk Whether the WebAPK (1) launches an internal activity to
+     *                                 display the splash screen and (2) has a content provider
+     *                                 which provides a screenshot of the splash screen.
      * @param shareData                Shared information from the share intent.
      */
     public static WebApkInfo create(String id, String url, String scope, Icon primaryIcon,

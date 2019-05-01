@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.webapps;
 
 import android.os.SystemClock;
 import android.support.annotation.IntDef;
+import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.base.ObserverList;
@@ -72,7 +73,7 @@ public class SplashController extends EmptyTabObserver {
      * splashscreen on top.
      */
     public void setViewHierarchyBelowSplashscreen(ViewGroup viewHierarchy) {
-        ViewGroup splashView = mDelegate.getSplashViewIfChildOf(mParentView);
+        View splashView = mDelegate.getSplashViewIfChildOf(mParentView);
         WarmupManager.transferViewHeirarchy(viewHierarchy, mParentView);
         if (splashView != null) {
             mParentView.bringChildToFront(splashView);
@@ -80,7 +81,7 @@ public class SplashController extends EmptyTabObserver {
     }
 
     @VisibleForTesting
-    ViewGroup getSplashScreenForTests() {
+    View getSplashScreenForTests() {
         if (mDelegate == null) return null;
         return mDelegate.getSplashViewIfChildOf(mParentView);
     }

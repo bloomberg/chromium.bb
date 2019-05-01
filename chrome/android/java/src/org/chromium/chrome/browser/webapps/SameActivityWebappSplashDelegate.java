@@ -165,7 +165,7 @@ public class SameActivityWebappSplashDelegate implements SplashDelegate, NativeI
     }
 
     @Override
-    public ViewGroup getSplashViewIfChildOf(ViewGroup parent) {
+    public View getSplashViewIfChildOf(ViewGroup parent) {
         return (mParentView == parent) ? mSplashScreen : null;
     }
 

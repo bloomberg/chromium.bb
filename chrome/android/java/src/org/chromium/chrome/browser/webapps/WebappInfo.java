@@ -380,9 +380,8 @@ public class WebappInfo {
     }
 
     /**
-     * Returns whether the WebappInfo is for a WebAPK and the WebAPK provides a splash screen
-     * activity that should be launched on top of the web contents in order to hide the web
-     * contents while the page is loading.
+     * Returns Whether the WebAPK (1) launches an internal activity to display the splash screen
+     * and (2) has a content provider which provides a screenshot of the splash screen.
      */
     public boolean isSplashProvidedByWebApk() {
         return false;
