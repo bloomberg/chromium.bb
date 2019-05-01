@@ -342,6 +342,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
+#include "services/service_manager/sandbox/switches.h"
 #include "services/viz/public/interfaces/constants.mojom.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "third_party/blink/public/common/features.h"
@@ -2281,6 +2282,14 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
   StackSamplingConfiguration::Get()->AppendCommandLineSwitchForChildProcess(
       process_type,
       command_line);
+
+#if defined(OS_LINUX)
+  // Processes may only query perf_event_open with the BPF sandbox disabled.
+  if (browser_command_line.HasSwitch(switches::kEnableThreadInstructionCount) &&
+      command_line->HasSwitch(service_manager::switches::kNoSandbox)) {
+    command_line->AppendSwitch(switches::kEnableThreadInstructionCount);
+  }
+#endif
 }
 
 void ChromeContentBrowserClient::AdjustUtilityServiceProcessCommandLine(

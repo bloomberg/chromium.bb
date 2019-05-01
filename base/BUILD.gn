@@ -991,6 +991,8 @@ jumbo_component("base") {
     "trace_event/memory_usage_estimator.h",
     "trace_event/process_memory_dump.cc",
     "trace_event/process_memory_dump.h",
+    "trace_event/thread_instruction_count.cc",
+    "trace_event/thread_instruction_count.h",
     "trace_event/trace_arguments.cc",
     "trace_event/trace_arguments.h",
     "trace_event/trace_buffer.cc",

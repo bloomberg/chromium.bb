@@ -139,4 +139,12 @@ const char kEnableReachedCodeProfiler[] = "enable-reached-code-profiler";
 const char kOrderfileMemoryOptimization[] = "orderfile-memory-optimization";
 #endif
 
+#if defined(OS_LINUX)
+// Controls whether or not retired instruction counts are surfaced for threads
+// in trace events on Linux.
+//
+// This flag requires the BPF sandbox to be disabled.
+const char kEnableThreadInstructionCount[] = "enable-thread-instruction-count";
+#endif
+
 }  // namespace switches
