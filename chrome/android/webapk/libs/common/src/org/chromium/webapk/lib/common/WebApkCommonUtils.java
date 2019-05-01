@@ -4,10 +4,8 @@
 
 package org.chromium.webapk.lib.common;
 
-/**
- * Contains versioning utility methods.
- */
-public class WebApkVersionUtils {
+/** Contains utility methods which are used both by ShellAPK and by Chrome. */
+public class WebApkCommonUtils {
     /**
      * Returns name of "Runtime Dex" asset in Chrome APK based on version.
      * @param version
