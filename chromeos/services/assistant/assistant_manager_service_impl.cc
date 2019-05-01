@@ -276,8 +276,7 @@ void AssistantManagerServiceImpl::RegisterAlarmsTimersListener() {
 
 void AssistantManagerServiceImpl::EnableListening(bool enable) {
   assistant_manager_->EnableListening(enable);
-  EnableHotword(enable &&
-                service_->assistant_state()->hotword_enabled().value_or(false));
+  EnableHotword(enable && service_->ShouldEnableHotword());
 }
 
 void AssistantManagerServiceImpl::EnableHotword(bool enable) {

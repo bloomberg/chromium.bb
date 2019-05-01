@@ -99,6 +99,11 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
 
   void RequestAccessToken();
 
+  // Returns the "actual" hotword status. In addition to the hotword pref, this
+  // method also take power status into account if dsp support is not available
+  // for the device.
+  bool ShouldEnableHotword();
+
   void SetIdentityAccessorForTesting(
       identity::mojom::IdentityAccessorPtr identity_accessor);
 
@@ -160,8 +165,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   void AddAshSessionObserver();
 
   void UpdateListeningState();
-
-  bool ShouldEnableHotword();
 
   service_manager::ServiceBinding service_binding_;
   service_manager::BinderRegistry registry_;
