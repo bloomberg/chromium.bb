@@ -243,17 +243,19 @@ void FeedContentDatabase::OnLoadEntriesForLoadContent(
     ContentLoadCallback callback,
     bool success,
     std::unique_ptr<std::vector<ContentStorageProto>> content) {
-  std::vector<KeyAndData> results;
-  for (const auto& proto : *content) {
-    DCHECK(proto.has_key());
-    DCHECK(proto.has_content_data());
-
-    results.emplace_back(proto.key(), proto.content_data());
-  }
-
   base::TimeDelta load_time = base::TimeTicks::Now() - start_time;
   UMA_HISTOGRAM_TIMES("ContentSuggestions.Feed.ContentStorage.LoadTime",
                       load_time);
+
+  std::vector<KeyAndData> results;
+  if (success) {
+    for (const auto& proto : *content) {
+      DCHECK(proto.has_key());
+      DCHECK(proto.has_content_data());
+
+      results.emplace_back(proto.key(), proto.content_data());
+    }
+  }
 
   std::move(callback).Run(success, std::move(results));
 }
