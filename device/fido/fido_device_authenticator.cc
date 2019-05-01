@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "device/fido/authenticator_supported_options.h"
+#include "device/fido/credential_management.h"
 #include "device/fido/ctap_get_assertion_request.h"
 #include "device/fido/ctap_make_credential_request.h"
 #include "device/fido/features.h"
@@ -309,43 +310,182 @@ FidoDeviceAuthenticator::WillNeedPINToGetAssertion(
 void FidoDeviceAuthenticator::GetCredentialsMetadata(
     base::span<const uint8_t> pin_token,
     GetCredentialsMetadataCallback callback) {
-  if (!Options()->supports_credential_management) {
-    DCHECK(Options()->supports_credential_management_preview);
-    operation_ = std::make_unique<Ctap2DeviceOperation<
-        CredentialManagementPreviewRequestAdapter<CredentialsMetadataRequest>,
-        CredentialsMetadataResponse>>(
-        device_.get(),
-        CredentialManagementPreviewRequestAdapter<CredentialsMetadataRequest>(
-            CredentialsMetadataRequest(
-                fido_parsing_utils::Materialize(pin_token))),
-        std::move(callback),
-        base::BindOnce(&CredentialsMetadataResponse::Parse),
-        /*string_fixup_predicate=*/nullptr);
-    operation_->Start();
-    return;
-  }
+  DCHECK(Options()->supports_credential_management ||
+         Options()->supports_credential_management_preview);
 
-  operation_ = std::make_unique<Ctap2DeviceOperation<
-      CredentialsMetadataRequest, CredentialsMetadataResponse>>(
+  operation_ =
+      std::make_unique<Ctap2DeviceOperation<CredentialManagementRequest,
+                                            CredentialsMetadataResponse>>(
+          device_.get(),
+          CredentialManagementRequest::ForGetCredsMetadata(
+              Options()->supports_credential_management
+                  ? CredentialManagementRequest::kDefault
+                  : CredentialManagementRequest::kPreview,
+              pin_token),
+          std::move(callback),
+          base::BindOnce(&CredentialsMetadataResponse::Parse),
+          /*string_fixup_predicate=*/nullptr);
+  operation_->Start();
+}
+
+struct FidoDeviceAuthenticator::EnumerateCredentialsState {
+  EnumerateCredentialsState() = default;
+  EnumerateCredentialsState(EnumerateCredentialsState&&) = default;
+  EnumerateCredentialsState& operator=(EnumerateCredentialsState&&) = default;
+
+  std::vector<uint8_t> pin_token;
+  bool is_first_rp = true;
+  bool is_first_credential = true;
+  size_t rp_count;
+  size_t current_rp_credential_count;
+
+  FidoDeviceAuthenticator::EnumerateCredentialsCallback callback;
+  std::vector<AggregatedEnumerateCredentialsResponse> responses;
+};
+
+void FidoDeviceAuthenticator::EnumerateCredentials(
+    base::span<const uint8_t> pin_token,
+    EnumerateCredentialsCallback callback) {
+  DCHECK(Options()->supports_credential_management ||
+         Options()->supports_credential_management_preview);
+
+  EnumerateCredentialsState state;
+  state.pin_token = fido_parsing_utils::Materialize(pin_token);
+  state.callback = std::move(callback);
+
+  operation_ = std::make_unique<
+      Ctap2DeviceOperation<CredentialManagementRequest, EnumerateRPsResponse>>(
       device_.get(),
-      CredentialsMetadataRequest(fido_parsing_utils::Materialize(pin_token)),
-      std::move(callback), base::BindOnce(&CredentialsMetadataResponse::Parse),
+      CredentialManagementRequest::ForEnumerateRPsBegin(
+          Options()->supports_credential_management
+              ? CredentialManagementRequest::kDefault
+              : CredentialManagementRequest::kPreview,
+          pin_token),
+      base::BindOnce(&FidoDeviceAuthenticator::OnEnumerateRPsDone,
+                     weak_factory_.GetWeakPtr(), std::move(state)),
+      base::BindOnce(&EnumerateRPsResponse::Parse, /*expect_rp_count=*/true),
       // TODO(martinkr): implement utf-8 fixup and add a test for it.
       /*string_fixup_predicate=*/nullptr);
   operation_->Start();
 }
 
-void FidoDeviceAuthenticator::EnumerateCredentials(
-    base::span<const uint8_t> pin_token,
-    EnumerateCredentialsCallback callback) {
-  NOTREACHED();  // TODO: implement
+void FidoDeviceAuthenticator::OnEnumerateRPsDone(
+    EnumerateCredentialsState state,
+    CtapDeviceResponseCode status,
+    base::Optional<EnumerateRPsResponse> response) {
+  if (status != CtapDeviceResponseCode::kSuccess) {
+    std::move(state.callback).Run(status, base::nullopt);
+    return;
+  }
+  if (state.is_first_rp) {
+    if (response->rp_count == 0) {
+      std::move(state.callback).Run(status, std::move(state.responses));
+      return;
+    }
+    state.rp_count = response->rp_count;
+    state.is_first_rp = false;
+  }
+  DCHECK(response->rp);
+  DCHECK(response->rp_id_hash);
+
+  state.is_first_credential = true;
+  state.responses.emplace_back(std::move(*response->rp));
+
+  auto request = CredentialManagementRequest::ForEnumerateCredentialsBegin(
+      Options()->supports_credential_management
+          ? CredentialManagementRequest::kDefault
+          : CredentialManagementRequest::kPreview,
+      state.pin_token, std::move(*response->rp_id_hash));
+  operation_ =
+      std::make_unique<Ctap2DeviceOperation<CredentialManagementRequest,
+                                            EnumerateCredentialsResponse>>(
+          device_.get(), std::move(request),
+          base::BindOnce(&FidoDeviceAuthenticator::OnEnumerateCredentialsDone,
+                         weak_factory_.GetWeakPtr(), std::move(state)),
+          base::BindOnce(&EnumerateCredentialsResponse::Parse,
+                         /*expect_credential_count=*/true),
+          // TODO(martinkr): implement utf-8 fixup and add a test for it.
+          /*string_fixup_predicate=*/nullptr);
+  operation_->Start();
+}
+
+void FidoDeviceAuthenticator::OnEnumerateCredentialsDone(
+    EnumerateCredentialsState state,
+    CtapDeviceResponseCode status,
+    base::Optional<EnumerateCredentialsResponse> response) {
+  if (status != CtapDeviceResponseCode::kSuccess) {
+    std::move(state.callback).Run(status, base::nullopt);
+    return;
+  }
+  if (state.is_first_credential) {
+    state.current_rp_credential_count = response->credential_count;
+    state.is_first_credential = false;
+  }
+  state.responses.back().credentials.emplace_back(std::move(*response));
+
+  if (state.responses.back().credentials.size() <
+      state.current_rp_credential_count) {
+    operation_ =
+        std::make_unique<Ctap2DeviceOperation<CredentialManagementRequest,
+                                              EnumerateCredentialsResponse>>(
+            device_.get(),
+            CredentialManagementRequest::ForEnumerateCredentialsGetNext(
+                Options()->supports_credential_management
+                    ? CredentialManagementRequest::kDefault
+                    : CredentialManagementRequest::kPreview),
+            base::BindOnce(&FidoDeviceAuthenticator::OnEnumerateCredentialsDone,
+                           weak_factory_.GetWeakPtr(), std::move(state)),
+            base::BindOnce(&EnumerateCredentialsResponse::Parse,
+                           /*expect_credential_count=*/false),
+            // TODO(martinkr): implement utf-8 fixup and add a test for it.
+            /*string_fixup_predicate=*/nullptr);
+    operation_->Start();
+    return;
+  }
+
+  if (state.responses.size() < state.rp_count) {
+    operation_ =
+        std::make_unique<Ctap2DeviceOperation<CredentialManagementRequest,
+                                              EnumerateRPsResponse>>(
+            device_.get(),
+            CredentialManagementRequest::ForEnumerateRPsGetNext(
+                Options()->supports_credential_management
+                    ? CredentialManagementRequest::kDefault
+                    : CredentialManagementRequest::kPreview),
+            base::BindOnce(&FidoDeviceAuthenticator::OnEnumerateRPsDone,
+                           weak_factory_.GetWeakPtr(), std::move(state)),
+            base::BindOnce(&EnumerateRPsResponse::Parse,
+                           /*expect_rp_count=*/false),
+            // TODO(martinkr): implement utf-8 fixup and add a test for it.
+            /*string_fixup_predicate=*/nullptr);
+    operation_->Start();
+    return;
+  }
+
+  std::move(state.callback)
+      .Run(CtapDeviceResponseCode::kSuccess, std::move(state.responses));
+  return;
 }
 
 void FidoDeviceAuthenticator::DeleteCredential(
     base::span<const uint8_t> pin_token,
     base::span<const uint8_t> credential_id,
     DeleteCredentialCallback callback) {
-  NOTREACHED();  // TODO: implement
+  DCHECK(Options()->supports_credential_management ||
+         Options()->supports_credential_management_preview);
+
+  operation_ =
+      std::make_unique<Ctap2DeviceOperation<CredentialManagementRequest,
+                                            DeleteCredentialResponse>>(
+          device_.get(),
+          CredentialManagementRequest::ForDeleteCredential(
+              Options()->supports_credential_management
+                  ? CredentialManagementRequest::kDefault
+                  : CredentialManagementRequest::kPreview,
+              pin_token, fido_parsing_utils::Materialize(credential_id)),
+          std::move(callback), base::BindOnce(&DeleteCredentialResponse::Parse),
+          /*string_fixup_predicate=*/nullptr);
+  operation_->Start();
 }
 
 void FidoDeviceAuthenticator::Reset(ResetCallback callback) {

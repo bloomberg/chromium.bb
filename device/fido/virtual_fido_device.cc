@@ -107,10 +107,10 @@ bool VirtualFidoDevice::State::InjectResidentKey(
                                 std::move(application_parameter),
                                 0 /* signature counter */);
   registration.is_resident = true;
-  PublicKeyCredentialUserEntity user(std::move(user_id_bytes));
-  user.name = name;
-  user.display_name = display_name;
-  registration.user = std::move(user);
+  registration.rp = PublicKeyCredentialRpEntity(std::move(relying_party_id));
+  registration.user = PublicKeyCredentialUserEntity(std::move(user_id_bytes));
+  registration.user->name = name;
+  registration.user->display_name = display_name;
 
   bool was_inserted;
   std::tie(std::ignore, was_inserted) = registrations.emplace(

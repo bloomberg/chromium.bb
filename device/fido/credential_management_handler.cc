@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/strings/string_number_conversions.h"
 #include "components/cbor/values.h"
 #include "components/cbor/writer.h"
 #include "device/fido/fido_authenticator.h"
@@ -20,9 +19,13 @@ namespace device {
 CredentialManagementHandler::CredentialManagementHandler(
     service_manager::Connector* connector,
     const base::flat_set<FidoTransportProtocol>& supported_transports,
-    Delegate* delegate)
+    ReadyCallback ready_callback,
+    GetPINCallback get_pin_callback,
+    FinishedCallback finished_callback)
     : FidoRequestHandlerBase(connector, supported_transports),
-      delegate_(delegate),
+      ready_callback_(std::move(ready_callback)),
+      get_pin_callback_(std::move(get_pin_callback)),
+      finished_callback_(std::move(finished_callback)),
       weak_factory_(this) {
   Start();
 }
@@ -53,12 +56,10 @@ void CredentialManagementHandler::OnTouch(FidoAuthenticator* authenticator) {
       !(authenticator->Options()->supports_credential_management ||
         authenticator->Options()->supports_credential_management_preview)) {
     state_ = State::kFinished;
-    delegate_->OnError(
-        FidoReturnCode::kAuthenticatorMissingCredentialManagement);
+    std::move(finished_callback_)
+        .Run(FidoReturnCode::kAuthenticatorMissingCredentialManagement);
     return;
   }
-
-  DCHECK(observer()->SupportsPIN());
 
   if (authenticator->Options()->client_pin_availability !=
       AuthenticatorSupportedOptions::ClientPinAvailability::
@@ -67,7 +68,8 @@ void CredentialManagementHandler::OnTouch(FidoAuthenticator* authenticator) {
     // We should implement in-flow PIN setting, but for now just tell the user
     // to set a PIN themselves.
     state_ = State::kFinished;
-    delegate_->OnError(FidoReturnCode::kAuthenticatorMissingUserVerification);
+    std::move(finished_callback_)
+        .Run(FidoReturnCode::kAuthenticatorMissingUserVerification);
     return;
   }
 
@@ -84,18 +86,19 @@ void CredentialManagementHandler::OnRetriesResponse(
   DCHECK_EQ(state_, State::kGettingRetries);
   if (status != CtapDeviceResponseCode::kSuccess) {
     state_ = State::kFinished;
-    delegate_->OnError(FidoReturnCode::kAuthenticatorResponseInvalid);
+    std::move(finished_callback_)
+        .Run(FidoReturnCode::kAuthenticatorResponseInvalid);
     return;
   }
   if (response->retries == 0) {
     state_ = State::kFinished;
-    delegate_->OnError(FidoReturnCode::kHardPINBlock);
+    std::move(finished_callback_).Run(FidoReturnCode::kHardPINBlock);
     return;
   }
   state_ = State::kWaitingForPIN;
-  observer()->CollectPIN(response->retries,
-                         base::BindOnce(&CredentialManagementHandler::OnHavePIN,
-                                        weak_factory_.GetWeakPtr()));
+  get_pin_callback_.Run(response->retries,
+                        base::BindOnce(&CredentialManagementHandler::OnHavePIN,
+                                       weak_factory_.GetWeakPtr()));
 }
 
 void CredentialManagementHandler::OnHavePIN(std::string pin) {
@@ -124,7 +127,8 @@ void CredentialManagementHandler::OnHaveEphemeralKey(
 
   if (status != CtapDeviceResponseCode::kSuccess) {
     state_ = State::kFinished;
-    delegate_->OnError(FidoReturnCode::kAuthenticatorResponseInvalid);
+    std::move(finished_callback_)
+        .Run(FidoReturnCode::kAuthenticatorResponseInvalid);
     return;
   }
 
@@ -163,44 +167,106 @@ void CredentialManagementHandler::OnHavePINToken(
         error = FidoReturnCode::kAuthenticatorResponseInvalid;
         break;
     }
-    delegate_->OnError(error);
+    std::move(finished_callback_).Run(error);
     return;
   }
 
-  observer()->FinishCollectPIN();
-  state_ = State::kGettingCredentials;
+  state_ = State::kReady;
+  pin_token_ = response->token();
+  std::move(ready_callback_).Run();
+}
 
+void CredentialManagementHandler::GetCredentials(
+    GetCredentialsCallback callback) {
+  DCHECK(state_ == State::kReady && !get_credentials_callback_);
+  if (!authenticator_) {
+    // AuthenticatorRemoved() may have been called, but the observer would have
+    // seen a FidoAuthenticatorRemoved() call.
+    NOTREACHED();
+    return;
+  }
+  get_credentials_callback_ = std::move(callback);
+  state_ = State::kGettingCredentials;
   authenticator_->GetCredentialsMetadata(
-      response->token(),
+      *pin_token_,
       base::BindOnce(&CredentialManagementHandler::OnCredentialsMetadata,
                      weak_factory_.GetWeakPtr()));
+}
+
+static void OnDeleteCredential(
+    CredentialManagementHandler::DeleteCredentialCallback callback,
+    CtapDeviceResponseCode status,
+    base::Optional<DeleteCredentialResponse> response) {
+  std::move(callback).Run(status);
+}
+
+void CredentialManagementHandler::DeleteCredential(
+    base::span<const uint8_t> credential_id,
+    DeleteCredentialCallback callback) {
+  DCHECK(state_ == State::kReady && !get_credentials_callback_);
+  if (!authenticator_) {
+    // AuthenticatorRemoved() may have been called, but the observer would have
+    // seen a FidoAuthenticatorRemoved() call.
+    NOTREACHED();
+    return;
+  }
+  DCHECK(pin_token_);
+  authenticator_->DeleteCredential(
+      *pin_token_, credential_id,
+      base::BindOnce(&OnDeleteCredential, std::move(callback)));
 }
 
 void CredentialManagementHandler::OnCredentialsMetadata(
     CtapDeviceResponseCode status,
     base::Optional<CredentialsMetadataResponse> response) {
   if (status != CtapDeviceResponseCode::kSuccess) {
-    delegate_->OnError(FidoReturnCode::kAuthenticatorResponseInvalid);
+    state_ = State::kFinished;
+    std::move(get_credentials_callback_)
+        .Run(status, base::nullopt, base::nullopt);
     return;
   }
-  delegate_->OnCredentialMetadata(
-      response->num_existing_credentials,
-      response->num_estimated_remaining_credentials);
+  authenticator_->EnumerateCredentials(
+      *pin_token_,
+      base::BindOnce(&CredentialManagementHandler::OnEnumerateCredentials,
+                     weak_factory_.GetWeakPtr(), std::move(*response)));
+}
+
+void CredentialManagementHandler::OnEnumerateCredentials(
+    CredentialsMetadataResponse metadata_response,
+    CtapDeviceResponseCode status,
+    base::Optional<std::vector<AggregatedEnumerateCredentialsResponse>>
+        responses) {
+  if (status != CtapDeviceResponseCode::kSuccess) {
+    state_ = State::kFinished;
+    std::move(get_credentials_callback_)
+        .Run(status, base::nullopt, base::nullopt);
+    return;
+  }
+  state_ = State::kReady;
+  std::move(get_credentials_callback_)
+      .Run(status, std::move(responses),
+           metadata_response.num_estimated_remaining_credentials);
 }
 
 void CredentialManagementHandler::AuthenticatorRemoved(
     FidoDiscoveryBase* discovery,
     FidoAuthenticator* authenticator) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
   FidoRequestHandlerBase::AuthenticatorRemoved(discovery, authenticator);
+  if (authenticator != authenticator_) {
+    return;
+  }
 
-  if (authenticator == authenticator_) {
-    authenticator_ = nullptr;
-    if (state_ == State::kWaitingForPIN) {
-      state_ = State::kFinished;
-      delegate_->OnError(FidoReturnCode::kAuthenticatorRemovedDuringPINEntry);
-    }
+  authenticator_ = nullptr;
+  if (state_ == State::kWaitingForPIN) {
+    state_ = State::kFinished;
+    std::move(finished_callback_)
+        .Run(FidoReturnCode::kAuthenticatorRemovedDuringPINEntry);
+    return;
+  }
+  if (state_ == State::kReady) {
+    std::move(finished_callback_).Run(FidoReturnCode::kSuccess);
+    return;
   }
 }
 

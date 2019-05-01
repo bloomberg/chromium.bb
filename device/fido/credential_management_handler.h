@@ -29,27 +29,39 @@ class FidoAuthenticator;
 
 // CredentialManagementHandler implements the authenticatorCredentialManagement
 // protocol.
+//
+// Public methods on instances of this class may be called only after
+// ReadyCallback has run, but not after FinishedCallback has run.
 class COMPONENT_EXPORT(DEVICE_FIDO) CredentialManagementHandler
     : public FidoRequestHandlerBase {
  public:
-  using GetPINCallback = base::OnceCallback<void(base::Optional<int64_t>)>;
-
-  class Delegate {
-   public:
-    // TODO(martinkr): These should probably be combined, but separating them is
-    // more convenient for development right now.
-    virtual void OnCredentialMetadata(size_t num_existing,
-                                      size_t num_remaining) = 0;
-    virtual void OnCredentialsEnumerated(
-        std::vector<AggregatedEnumerateCredentialsResponse> credentials) = 0;
-    virtual void OnError(FidoReturnCode) = 0;
-  };
+  using DeleteCredentialCallback =
+      base::OnceCallback<void(CtapDeviceResponseCode)>;
+  using FinishedCallback = base::OnceCallback<void(FidoReturnCode)>;
+  using GetCredentialsCallback = base::OnceCallback<void(
+      CtapDeviceResponseCode status,
+      base::Optional<std::vector<AggregatedEnumerateCredentialsResponse>>,
+      base::Optional<size_t>)>;
+  using GetPINCallback =
+      base::RepeatingCallback<void(int64_t,
+                                   base::OnceCallback<void(std::string)>)>;
+  using ReadyCallback = base::OnceClosure;
 
   CredentialManagementHandler(
       service_manager::Connector* connector,
       const base::flat_set<FidoTransportProtocol>& supported_transports,
-      Delegate* delegate);
+      ReadyCallback ready_callback,
+      GetPINCallback get_pin_callback,
+      FinishedCallback finished_callback);
   ~CredentialManagementHandler() override;
+
+  // GetCredentials invokes a series of commands to fetch all credentials stored
+  // on the device. The supplied callback receives the status returned by the
+  // device and, if successful, the resident credentials stored and remaining
+  // capacity left on the chosen authenticator.
+  void GetCredentials(GetCredentialsCallback callback);
+  void DeleteCredential(base::span<const uint8_t> credential_id,
+                        DeleteCredentialCallback callback);
 
  private:
   enum class State {
@@ -58,6 +70,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CredentialManagementHandler
     kWaitingForPIN,
     kGettingEphemeralKey,
     kGettingPINToken,
+    kReady,
     kGettingMetadata,
     kGettingRP,
     kGettingCredentials,
@@ -81,12 +94,22 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CredentialManagementHandler
   void OnCredentialsMetadata(
       CtapDeviceResponseCode status,
       base::Optional<CredentialsMetadataResponse> response);
+  void OnEnumerateCredentials(
+      CredentialsMetadataResponse metadata_response,
+      CtapDeviceResponseCode status,
+      base::Optional<std::vector<AggregatedEnumerateCredentialsResponse>>
+          responses);
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  Delegate* const delegate_;
   State state_ = State::kWaitingForTouch;
   FidoAuthenticator* authenticator_ = nullptr;
+  base::Optional<std::vector<uint8_t>> pin_token_;
+
+  ReadyCallback ready_callback_;
+  GetPINCallback get_pin_callback_;
+  GetCredentialsCallback get_credentials_callback_;
+  FinishedCallback finished_callback_;
 
   base::WeakPtrFactory<CredentialManagementHandler> weak_factory_;
 

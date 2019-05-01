@@ -8,6 +8,7 @@
 #include "base/component_export.h"
 #include "base/optional.h"
 #include "device/fido/fido_constants.h"
+#include "device/fido/public_key_credential_descriptor.h"
 #include "device/fido/public_key_credential_rp_entity.h"
 #include "device/fido/public_key_credential_user_entity.h"
 
@@ -81,20 +82,53 @@ class CredentialManagementPreviewRequestAdapter {
   T wrapped_request_;
 };
 
-struct CredentialsMetadataRequest {
+// CredentialManagementRequest is an authenticatorCredentialManagement(0x0a)
+// CTAP2 request. Instances can be obtained via one of the subcommand-specific
+// static factory methods.
+struct CredentialManagementRequest {
   static std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
-  EncodeAsCBOR(const CredentialsMetadataRequest&);
+  EncodeAsCBOR(const CredentialManagementRequest&);
 
-  explicit CredentialsMetadataRequest(std::vector<uint8_t> pin_token);
-  CredentialsMetadataRequest(CredentialsMetadataRequest&&);
-  CredentialsMetadataRequest& operator=(CredentialsMetadataRequest&&);
-  ~CredentialsMetadataRequest();
+  enum Version {
+    kDefault,
+    kPreview,
+  };
 
-  std::vector<uint8_t> pin_token;
+  static CredentialManagementRequest ForGetCredsMetadata(
+      Version version,
+      base::span<const uint8_t> pin_token);
+  static CredentialManagementRequest ForEnumerateRPsBegin(
+      Version version,
+      base::span<const uint8_t> pin_token);
+  static CredentialManagementRequest ForEnumerateRPsGetNext(Version version);
+  static CredentialManagementRequest ForEnumerateCredentialsBegin(
+      Version version,
+      base::span<const uint8_t> pin_token,
+      std::array<uint8_t, kRpIdHashLength> rp_id_hash);
+  static CredentialManagementRequest ForEnumerateCredentialsGetNext(
+      Version version);
+  static CredentialManagementRequest ForDeleteCredential(
+      Version version,
+      base::span<const uint8_t> pin_token,
+      std::vector<uint8_t> credential_id);
+
+  CredentialManagementRequest(CredentialManagementRequest&&);
+  CredentialManagementRequest& operator=(CredentialManagementRequest&&);
+  ~CredentialManagementRequest();
+
+  Version version;
+  CredentialManagementSubCommand subcommand;
+  base::Optional<cbor::Value::MapValue> params;
+  base::Optional<std::array<uint8_t, 16>> pin_auth;
 
  private:
-  CredentialsMetadataRequest(const CredentialsMetadataRequest&) = delete;
-  CredentialsMetadataRequest& operator=(const CredentialsMetadataRequest&) =
+  CredentialManagementRequest() = delete;
+  CredentialManagementRequest(Version version,
+                              CredentialManagementSubCommand subcommand,
+                              base::Optional<cbor::Value::MapValue> params,
+                              base::Optional<std::array<uint8_t, 16>> pin_auth);
+  CredentialManagementRequest(const CredentialManagementRequest&) = delete;
+  CredentialManagementRequest& operator=(const CredentialManagementRequest&) =
       delete;
 };
 
@@ -111,41 +145,42 @@ struct CredentialsMetadataResponse {
 
 struct EnumerateRPsResponse {
   static base::Optional<EnumerateRPsResponse> Parse(
-      const base::Optional<cbor::Value>& cbor_response,
-      bool expect_rp_count);
+      bool expect_rp_count,
+      const base::Optional<cbor::Value>& cbor_response);
 
   EnumerateRPsResponse(EnumerateRPsResponse&&);
   EnumerateRPsResponse& operator=(EnumerateRPsResponse&&);
   ~EnumerateRPsResponse();
 
-  PublicKeyCredentialRpEntity rp;
-  std::array<uint8_t, kRpIdHashLength> rp_id_hash;
+  base::Optional<PublicKeyCredentialRpEntity> rp;
+  base::Optional<std::array<uint8_t, kRpIdHashLength>> rp_id_hash;
   size_t rp_count;
 
  private:
-  EnumerateRPsResponse(PublicKeyCredentialRpEntity rp,
-                       std::array<uint8_t, kRpIdHashLength> rp_id_hash,
-                       size_t rp_count);
+  EnumerateRPsResponse(
+      base::Optional<PublicKeyCredentialRpEntity> rp,
+      base::Optional<std::array<uint8_t, kRpIdHashLength>> rp_id_hash,
+      size_t rp_count);
   EnumerateRPsResponse(const EnumerateRPsResponse&) = delete;
   EnumerateRPsResponse& operator=(const EnumerateRPsResponse&) = delete;
 };
 
 struct EnumerateCredentialsResponse {
   static base::Optional<EnumerateCredentialsResponse> Parse(
-      const base::Optional<cbor::Value>& cbor_response,
-      bool expect_credential_count);
+      bool expect_credential_count,
+      const base::Optional<cbor::Value>& cbor_response);
 
   EnumerateCredentialsResponse(EnumerateCredentialsResponse&&);
   EnumerateCredentialsResponse& operator=(EnumerateCredentialsResponse&&);
   ~EnumerateCredentialsResponse();
 
   PublicKeyCredentialUserEntity user;
-  std::vector<uint8_t> credential_id;
+  PublicKeyCredentialDescriptor credential_id;
   size_t credential_count;
 
  private:
   EnumerateCredentialsResponse(PublicKeyCredentialUserEntity user,
-                               std::vector<uint8_t> credential_id,
+                               PublicKeyCredentialDescriptor credential_id,
                                size_t credential_count);
   EnumerateCredentialsResponse(const EnumerateCredentialsResponse&) = delete;
   EnumerateCredentialsResponse& operator=(EnumerateCredentialsResponse&) =
@@ -154,6 +189,10 @@ struct EnumerateCredentialsResponse {
 
 struct COMPONENT_EXPORT(DEVICE_FIDO) AggregatedEnumerateCredentialsResponse {
   AggregatedEnumerateCredentialsResponse(PublicKeyCredentialRpEntity rp);
+  AggregatedEnumerateCredentialsResponse(
+      AggregatedEnumerateCredentialsResponse&&);
+  AggregatedEnumerateCredentialsResponse& operator=(
+      AggregatedEnumerateCredentialsResponse&&);
   ~AggregatedEnumerateCredentialsResponse();
 
   PublicKeyCredentialRpEntity rp;

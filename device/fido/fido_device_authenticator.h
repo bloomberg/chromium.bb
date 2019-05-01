@@ -23,6 +23,7 @@ namespace device {
 
 struct CtapGetAssertionRequest;
 struct CtapMakeCredentialRequest;
+struct EnumerateRPsResponse;
 class FidoDevice;
 class FidoTask;
 
@@ -105,6 +106,15 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
 
  private:
   void InitializeAuthenticatorDone(base::OnceClosure callback);
+
+  struct EnumerateCredentialsState;
+  void OnEnumerateRPsDone(EnumerateCredentialsState state,
+                          CtapDeviceResponseCode status,
+                          base::Optional<EnumerateRPsResponse> response);
+  void OnEnumerateCredentialsDone(
+      EnumerateCredentialsState state,
+      CtapDeviceResponseCode status,
+      base::Optional<EnumerateCredentialsResponse> response);
 
   const std::unique_ptr<FidoDevice> device_;
   base::Optional<AuthenticatorSupportedOptions> options_;

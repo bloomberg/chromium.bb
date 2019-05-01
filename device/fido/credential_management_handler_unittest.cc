@@ -4,6 +4,8 @@
 
 #include "device/fido/credential_management_handler.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/test/scoped_task_environment.h"
 #include "device/fido/credential_management.h"
@@ -27,70 +29,38 @@ constexpr uint8_t kUserID[] = {0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1,
 constexpr char kUserName[] = "alice@example.com";
 constexpr char kUserDisplayName[] = "Alice Example <alice@example.com>";
 
-class TestObserver : public FidoRequestHandlerBase::Observer {
- public:
-  TestObserver() {}
-  ~TestObserver() override {}
-
- private:
-  // FidoRequestHandlerBase::Observer:
-  void OnTransportAvailabilityEnumerated(
-      FidoRequestHandlerBase::TransportAvailabilityInfo data) override {}
-  bool EmbedderControlsAuthenticatorDispatch(
-      const FidoAuthenticator&) override {
-    return false;
+class CredentialManagementHandlerTest : public ::testing::Test {
+ protected:
+  std::unique_ptr<CredentialManagementHandler> MakeHandler() {
+    auto handler = std::make_unique<CredentialManagementHandler>(
+        /*connector=*/nullptr,
+        base::flat_set<FidoTransportProtocol>{
+            FidoTransportProtocol::kUsbHumanInterfaceDevice},
+        ready_callback_.callback(),
+        base::BindRepeating(&CredentialManagementHandlerTest::GetPIN,
+                            base::Unretained(this)),
+        finished_callback_.callback());
+    return handler;
   }
-  void BluetoothAdapterPowerChanged(bool is_powered_on) override {}
-  void FidoAuthenticatorAdded(const FidoAuthenticator& authenticator) override {
-  }
-  void FidoAuthenticatorRemoved(base::StringPiece device_id) override {}
-  void FidoAuthenticatorIdChanged(base::StringPiece old_authenticator_id,
-                                  std::string new_authenticator_id) override {}
-  void FidoAuthenticatorPairingModeChanged(base::StringPiece authenticator_id,
-                                           bool is_in_pairing_mode) override {}
-  bool SupportsPIN() const override { return true; }
-  void CollectPIN(
-      base::Optional<int> attempts,
-      base::OnceCallback<void(std::string)> provide_pin_cb) override {
-    std::move(provide_pin_cb).Run(kPIN);
-  }
-  void FinishCollectPIN() override {}
-  void SetMightCreateResidentCredential(bool v) override {}
-};
 
-class TestDelegate : public CredentialManagementHandler::Delegate {
- public:
-  TestDelegate() {}
-  ~TestDelegate() {}
+  void GetPIN(int64_t num_attempts,
+              base::OnceCallback<void(std::string)> provide_pin) {
+    std::move(provide_pin).Run(kPIN);
+  }
 
-  test::StatusAndValuesCallbackReceiver<CtapDeviceResponseCode, size_t, size_t>
-      on_credential_metadata;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+
+  test::TestCallbackReceiver<> ready_callback_;
   test::StatusAndValuesCallbackReceiver<
-      std::vector<AggregatedEnumerateCredentialsResponse>>
-      on_credentials_enumerated;
-  test::ValueCallbackReceiver<FidoReturnCode> on_error;
-
- private:
-  // CredentialManagementHandler::Delegate
-  void OnCredentialMetadata(size_t num_existing,
-                            size_t num_remaining) override {
-    on_credential_metadata.callback().Run(CtapDeviceResponseCode::kSuccess,
-                                          num_existing, num_remaining);
-  }
-  void OnCredentialsEnumerated(
-      std::vector<AggregatedEnumerateCredentialsResponse> credentials)
-      override {
-    on_credentials_enumerated.callback().Run(std::move(credentials));
-  }
-  void OnError(FidoReturnCode error) override {
-    on_error.callback().Run(error);
-  }
+      CtapDeviceResponseCode,
+      base::Optional<std::vector<AggregatedEnumerateCredentialsResponse>>,
+      base::Optional<size_t>>
+      get_credentials_callback_;
+  test::ValueCallbackReceiver<CtapDeviceResponseCode> delete_callback_;
+  test::ValueCallbackReceiver<FidoReturnCode> finished_callback_;
 };
 
-TEST(CredentialManagementHandlerTest, Test) {
-  base::test::ScopedTaskEnvironment scoped_task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
-
+TEST_F(CredentialManagementHandlerTest, Test) {
   ScopedVirtualFidoDevice virtual_device;
   VirtualCtap2Device::Config ctap_config;
   ctap_config.pin_support = true;
@@ -104,23 +74,29 @@ TEST(CredentialManagementHandlerTest, Test) {
   ASSERT_TRUE(virtual_device.mutable_state()->InjectResidentKey(
       kCredentialID, kRPID, kUserID, kUserName, kUserDisplayName));
 
-  TestDelegate delegate;
-  CredentialManagementHandler handler(
-      /*connector=*/nullptr, {FidoTransportProtocol::kUsbHumanInterfaceDevice},
-      &delegate);
-  TestObserver observer;
-  handler.set_observer(&observer);
+  auto handler = MakeHandler();
+  ready_callback_.WaitForCallback();
 
-  scoped_task_environment.FastForwardUntilNoTasksRemain();
+  handler->GetCredentials(get_credentials_callback_.callback());
+  get_credentials_callback_.WaitForCallback();
 
-  EXPECT_FALSE(delegate.on_error.was_called())
-      << "error " << static_cast<int>(delegate.on_error.value());
-  EXPECT_TRUE(delegate.on_credential_metadata.was_called());
-  EXPECT_EQ(delegate.on_credential_metadata.value<0>(), 1u);
-  EXPECT_EQ(delegate.on_credential_metadata.value<1>(), 99u);
+  auto result = get_credentials_callback_.TakeResult();
+  ASSERT_EQ(std::get<0>(result), CtapDeviceResponseCode::kSuccess);
+  auto opt_response = std::move(std::get<1>(result));
+  ASSERT_TRUE(opt_response);
+  EXPECT_EQ(opt_response->size(), 1u);
+  auto num_remaining = std::get<2>(result);
+  ASSERT_TRUE(num_remaining);
+  EXPECT_EQ(*num_remaining, 99u);
 
-  // TODO(martinkr): This should be true but is not yet implemented.
-  EXPECT_FALSE(delegate.on_credentials_enumerated.was_called());
+  handler->DeleteCredential(
+      opt_response->front().credentials.front().credential_id.id(),
+      delete_callback_.callback());
+
+  delete_callback_.WaitForCallback();
+  ASSERT_EQ(CtapDeviceResponseCode::kSuccess, delete_callback_.value());
+  EXPECT_EQ(virtual_device.mutable_state()->registrations.size(), 0u);
+  EXPECT_FALSE(finished_callback_.was_called());
 }
 
 }  // namespace

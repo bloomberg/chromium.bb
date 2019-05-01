@@ -33,6 +33,7 @@
 #include "third_party/boringssl/src/include/openssl/digest.h"
 #include "third_party/boringssl/src/include/openssl/ec.h"
 #include "third_party/boringssl/src/include/openssl/ec_key.h"
+#include "third_party/boringssl/src/include/openssl/evp.h"
 #include "third_party/boringssl/src/include/openssl/hmac.h"
 #include "third_party/boringssl/src/include/openssl/mem.h"
 #include "third_party/boringssl/src/include/openssl/obj.h"
@@ -66,15 +67,14 @@ void ReturnCtap2Response(
 }
 
 // CheckPINToken returns true iff |pin_auth| is a valid authentication of
-// |client_data_hash| given that the PIN token in effect is |pin_token|.
+// |data| given that the PIN token in effect is |pin_token|.
 bool CheckPINToken(base::span<const uint8_t> pin_token,
                    base::span<const uint8_t> pin_auth,
-                   base::span<const uint8_t> client_data_hash) {
+                   base::span<const uint8_t> data) {
   uint8_t calculated_pin_auth[SHA256_DIGEST_LENGTH];
   unsigned hmac_bytes;
-  CHECK(HMAC(EVP_sha256(), pin_token.data(), pin_token.size(),
-             client_data_hash.data(), client_data_hash.size(),
-             calculated_pin_auth, &hmac_bytes));
+  CHECK(HMAC(EVP_sha256(), pin_token.data(), pin_token.size(), data.data(),
+             data.size(), calculated_pin_auth, &hmac_bytes));
   DCHECK_EQ(sizeof(calculated_pin_auth), static_cast<size_t>(hmac_bytes));
 
   return pin_auth.size() == 16 &&
@@ -1254,8 +1254,9 @@ void VirtualCtap2Device::InitPendingRPs() {
     if (!registration.second.is_resident) {
       continue;
     }
-    DCHECK(!registration.second.is_u2f && registration.second.user &&
-           registration.second.rp);
+    DCHECK(!registration.second.is_u2f);
+    DCHECK(registration.second.user);
+    DCHECK(registration.second.rp);
     if (!base::ContainsKey(rp_ids, registration.second.rp->rp_id())) {
       mutable_state()->pending_rps.push_back(*registration.second.rp);
     }
@@ -1281,12 +1282,16 @@ void VirtualCtap2Device::InitPendingRegistrations(
             *registration.second.user));
     response_map.emplace(
         static_cast<int>(CredentialManagementResponseKey::kCredentialID),
-        registration.first);
+        PublicKeyCredentialDescriptor(CredentialType::kPublicKey,
+                                      registration.first)
+            .ConvertToCBOR());
     std::string public_key;
-    CHECK(registration.second.private_key->ExportRawPublicKey(&public_key));
+    EC_KEY* ec_key =
+        EVP_PKEY_get0_EC_KEY(registration.second.private_key->key());
+    CHECK(ec_key != nullptr);
     response_map.emplace(
         static_cast<int>(CredentialManagementResponseKey::kPublicKey),
-        ConstructECPublicKey(public_key)->EncodeAsCOSEKey());
+        pin::EncodeCOSEPublicKey(ec_key));
     mutable_state()->pending_registrations.emplace_back(
         std::move(response_map));
   }
