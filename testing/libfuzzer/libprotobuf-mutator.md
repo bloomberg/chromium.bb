@@ -1,4 +1,4 @@
-# Getting Started with libprotobuf-mutator in Chromium
+# Getting Started with libprotobuf-mutator (LPM) in Chromium
 
 *** note
 **Note:** Writing grammar fuzzers with libprotobuf-mutator requires greater
