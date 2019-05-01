@@ -417,7 +417,7 @@ TEST_F(TextFragmentAnchorTest, SameElementTextRange) {
   Text* text = ToText(GetDocument().getElementById("text")->firstChild());
   DocumentMarkerVector markers = GetDocument().Markers().MarkersFor(
       *text, DocumentMarker::MarkerTypes::TextMatch());
-  EXPECT_EQ(1u, markers.size());
+  ASSERT_EQ(1u, markers.size());
   EXPECT_EQ(0u, markers.at(0)->StartOffset());
   EXPECT_EQ(19u, markers.at(0)->EndOffset());
 }
@@ -451,7 +451,7 @@ TEST_F(TextFragmentAnchorTest, NeighboringElementTextRange) {
   Text* text1 = ToText(GetDocument().getElementById("text1")->firstChild());
   DocumentMarkerVector markers = GetDocument().Markers().MarkersFor(
       *text1, DocumentMarker::MarkerTypes::TextMatch());
-  EXPECT_EQ(1u, markers.size());
+  ASSERT_EQ(1u, markers.size());
   EXPECT_EQ(10u, markers.at(0)->StartOffset());
   EXPECT_EQ(19u, markers.at(0)->EndOffset());
 
@@ -459,7 +459,7 @@ TEST_F(TextFragmentAnchorTest, NeighboringElementTextRange) {
   Text* text2 = ToText(GetDocument().getElementById("text2")->firstChild());
   markers = GetDocument().Markers().MarkersFor(
       *text2, DocumentMarker::MarkerTypes::TextMatch());
-  EXPECT_EQ(1u, markers.size());
+  ASSERT_EQ(1u, markers.size());
   EXPECT_EQ(0u, markers.at(0)->StartOffset());
   EXPECT_EQ(22u, markers.at(0)->EndOffset());
 }
@@ -495,7 +495,7 @@ TEST_F(TextFragmentAnchorTest, DifferentDepthElementTextRange) {
   Text* text1 = ToText(GetDocument().getElementById("text1")->firstChild());
   DocumentMarkerVector markers = GetDocument().Markers().MarkersFor(
       *text1, DocumentMarker::MarkerTypes::TextMatch());
-  EXPECT_EQ(1u, markers.size());
+  ASSERT_EQ(1u, markers.size());
   EXPECT_EQ(10u, markers.at(0)->StartOffset());
   EXPECT_EQ(19u, markers.at(0)->EndOffset());
 
@@ -503,7 +503,7 @@ TEST_F(TextFragmentAnchorTest, DifferentDepthElementTextRange) {
   Text* text2 = ToText(GetDocument().getElementById("text2")->firstChild());
   markers = GetDocument().Markers().MarkersFor(
       *text2, DocumentMarker::MarkerTypes::TextMatch());
-  EXPECT_EQ(1u, markers.size());
+  ASSERT_EQ(1u, markers.size());
   EXPECT_EQ(0u, markers.at(0)->StartOffset());
   EXPECT_EQ(22u, markers.at(0)->EndOffset());
 }
@@ -569,7 +569,7 @@ TEST_F(TextFragmentAnchorTest, MultipleTextRanges) {
   Text* text1 = ToText(GetDocument().getElementById("text1")->firstChild());
   DocumentMarkerVector markers = GetDocument().Markers().MarkersFor(
       *text1, DocumentMarker::MarkerTypes::TextMatch());
-  EXPECT_EQ(1u, markers.size());
+  ASSERT_EQ(1u, markers.size());
   EXPECT_EQ(10u, markers.at(0)->StartOffset());
   EXPECT_EQ(19u, markers.at(0)->EndOffset());
 
@@ -577,7 +577,7 @@ TEST_F(TextFragmentAnchorTest, MultipleTextRanges) {
   Text* text2 = ToText(GetDocument().getElementById("text2")->firstChild());
   markers = GetDocument().Markers().MarkersFor(
       *text2, DocumentMarker::MarkerTypes::TextMatch());
-  EXPECT_EQ(2u, markers.size());
+  ASSERT_EQ(2u, markers.size());
   EXPECT_EQ(0u, markers.at(0)->StartOffset());
   EXPECT_EQ(4u, markers.at(0)->EndOffset());
   EXPECT_EQ(13u, markers.at(1)->StartOffset());
@@ -608,6 +608,242 @@ TEST_F(TextFragmentAnchorTest, DistantElementTextRange) {
       << "<p> Element wasn't scrolled into view, viewport's scroll offset: "
       << LayoutViewport()->GetScrollOffset().ToString();
   EXPECT_EQ(2u, GetDocument().Markers().Markers().size());
+}
+
+// Test a text range with both context terms in the same element.
+TEST_F(TextFragmentAnchorTest, TextRangeWithContext) {
+  SimRequest request(
+      "https://example.com/test.html#targetText=this-,is,test,-page",
+      "text/html");
+  LoadURL("https://example.com/test.html#targetText=this-,is,test,-page");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <p id="text">This is a test page</p>
+  )HTML");
+  Compositor().BeginFrame();
+
+  RunAsyncMatchingTasks();
+
+  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
+
+  // Expect marker on "is a test".
+  Text* text = ToText(GetDocument().getElementById("text")->firstChild());
+  DocumentMarkerVector markers = GetDocument().Markers().MarkersFor(
+      *text, DocumentMarker::MarkerTypes::TextMatch());
+  ASSERT_EQ(1u, markers.size());
+  EXPECT_EQ(5u, markers.at(0)->StartOffset());
+  EXPECT_EQ(14u, markers.at(0)->EndOffset());
+}
+
+// Ensure that we do not match a text range if the prefix is not found.
+TEST_F(TextFragmentAnchorTest, PrefixNotFound) {
+  SimRequest request(
+      "https://example.com/test.html#targetText=prefix-,is,test,-page",
+      "text/html");
+  LoadURL("https://example.com/test.html#targetText=prefix-,is,test,-page");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <p id="text">This is a test page</p>
+  )HTML");
+  Compositor().BeginFrame();
+
+  RunAsyncMatchingTasks();
+
+  EXPECT_EQ(0u, GetDocument().Markers().Markers().size());
+}
+
+// Ensure that we do not match a text range if the suffix is not found.
+TEST_F(TextFragmentAnchorTest, SuffixNotFound) {
+  SimRequest request(
+      "https://example.com/test.html#targetText=this-,is,test,-suffix",
+      "text/html");
+  LoadURL("https://example.com/test.html#targetText=this-,is,test,-suffix");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <p id="text">This is a test page</p>
+  )HTML");
+  Compositor().BeginFrame();
+
+  RunAsyncMatchingTasks();
+
+  EXPECT_EQ(0u, GetDocument().Markers().Markers().size());
+}
+
+// Test a text range with context terms in different elements
+TEST_F(TextFragmentAnchorTest, TextRangeWithCrossElementContext) {
+  SimRequest request(
+      "https://example.com/test.html#targetText=header%202-,a,text,-footer%201",
+      "text/html");
+  LoadURL(
+      "https://example.com/"
+      "test.html#targetText=header%202-,a,text,-footer%201");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <h1>Header 1</h1>
+    <p>A string of text</p>
+    <p>Footer 1</p>
+    <h1>Header 2</h1>
+    <p id="expected">A string of text</p>
+    <p>Footer 1</p>
+    <h1>Header 2</h1>
+    <p>A string of text</p>
+    <p>Footer 2</p>
+  )HTML");
+  Compositor().BeginFrame();
+
+  RunAsyncMatchingTasks();
+
+  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
+
+  // Expect marker on the expected "A string of text".
+  Text* text = ToText(GetDocument().getElementById("expected")->firstChild());
+  DocumentMarkerVector markers = GetDocument().Markers().MarkersFor(
+      *text, DocumentMarker::MarkerTypes::TextMatch());
+  ASSERT_EQ(1u, markers.size());
+  EXPECT_EQ(0u, markers.at(0)->StartOffset());
+  EXPECT_EQ(16u, markers.at(0)->EndOffset());
+}
+
+// Test context terms separated by elements and whitespace
+TEST_F(TextFragmentAnchorTest, CrossElementAndWhitespaceContext) {
+  SimRequest request(
+      "https://example.com/"
+      "test.html#targetText=list%202-,cat,-good%20cat",
+      "text/html");
+  LoadURL(
+      "https://example.com/"
+      "test.html#targetText=list%202-,cat,-good%20cat");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <h1> List 1 </h1>
+    <div>
+      <p>Cat</p>
+      <p>&nbsp;Good cat</p>
+    </div>
+    <h1> List 2 </h1>
+    <div>
+      <p id="expected">Cat</p>
+      <p>&nbsp;Good cat</p>
+    </div>
+    <h1> List 2 </h1>
+    <div>
+      <p>Cat</p>
+      <p>&nbsp;Bad cat</p>
+    </div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  RunAsyncMatchingTasks();
+
+  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
+
+  // Expect marker on the expected "cat".
+  Text* text = ToText(GetDocument().getElementById("expected")->firstChild());
+  DocumentMarkerVector markers = GetDocument().Markers().MarkersFor(
+      *text, DocumentMarker::MarkerTypes::TextMatch());
+  ASSERT_EQ(1u, markers.size());
+  EXPECT_EQ(0u, markers.at(0)->StartOffset());
+  EXPECT_EQ(3u, markers.at(0)->EndOffset());
+}
+
+// Test context terms separated by empty sibling and parent elements
+TEST_F(TextFragmentAnchorTest, CrossEmptySiblingAndParentElementContext) {
+  SimRequest request(
+      "https://example.com/"
+      "test.html#targetText=prefix-,match,-suffix",
+      "text/html");
+  LoadURL(
+      "https://example.com/"
+      "test.html#targetText=prefix-,match,-suffix");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <div>
+      <p>prefix</p>
+    <div>
+    <p><br>&nbsp;</p>
+    <div id="expected">match</div>
+    <p><br>&nbsp;</p>
+    <div>
+      <p>suffix</p>
+    <div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  RunAsyncMatchingTasks();
+
+  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
+
+  // Expect marker on "match".
+  Text* text = ToText(GetDocument().getElementById("expected")->firstChild());
+  DocumentMarkerVector markers = GetDocument().Markers().MarkersFor(
+      *text, DocumentMarker::MarkerTypes::TextMatch());
+  ASSERT_EQ(1u, markers.size());
+  EXPECT_EQ(0u, markers.at(0)->StartOffset());
+  EXPECT_EQ(5u, markers.at(0)->EndOffset());
+}
+
+// Ensure we scroll to text when its prefix and suffix are out of view.
+TEST_F(TextFragmentAnchorTest, DistantElementContext) {
+  SimRequest request(
+      "https://example.com/test.html#targetText=prefix-,cats,-suffix",
+      "text/html");
+  LoadURL("https://example.com/test.html#targetText=prefix-,cats,-suffix");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      p {
+        margin-top: 3000px;
+      }
+    </style>
+    <p>Cats</p>
+    <p>Prefix</p>
+    <p id="text">Cats</p>
+    <p>Suffix</p>
+  )HTML");
+  Compositor().BeginFrame();
+
+  RunAsyncMatchingTasks();
+
+  Element& p = *GetDocument().getElementById("text");
+  EXPECT_TRUE(ViewportRect().Contains(BoundingRectInFrame(p)))
+      << "<p> Element wasn't scrolled into view, viewport's scroll offset: "
+      << LayoutViewport()->GetScrollOffset().ToString();
+  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
+}
+
+// Test specifying just one of the prefix and suffix
+TEST_F(TextFragmentAnchorTest, OneContextTerm) {
+  SimRequest request(
+      "https://example.com/"
+      "test.html#targetText=test-,page&targetText=page,-with%20real%20content",
+      "text/html");
+  LoadURL(
+      "https://example.com/"
+      "test.html#targetText=test-,page&targetText=page,-with%20real%20content");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <p id="text1">This is a test page</p>
+    <p id="text2">Not a page with real content</p>
+  )HTML");
+  Compositor().BeginFrame();
+
+  RunAsyncMatchingTasks();
+
+  // Expect marker on the first "page"
+  Text* text1 = ToText(GetDocument().getElementById("text1")->firstChild());
+  DocumentMarkerVector markers = GetDocument().Markers().MarkersFor(
+      *text1, DocumentMarker::MarkerTypes::TextMatch());
+  ASSERT_EQ(1u, markers.size());
+  EXPECT_EQ(15u, markers.at(0)->StartOffset());
+  EXPECT_EQ(19u, markers.at(0)->EndOffset());
+
+  // Expect marker on the second "page"
+  Text* text2 = ToText(GetDocument().getElementById("text2")->firstChild());
+  markers = GetDocument().Markers().MarkersFor(
+      *text2, DocumentMarker::MarkerTypes::TextMatch());
+  ASSERT_EQ(1u, markers.size());
+  EXPECT_EQ(6u, markers.at(0)->StartOffset());
+  EXPECT_EQ(10u, markers.at(0)->EndOffset());
 }
 
 }  // namespace
