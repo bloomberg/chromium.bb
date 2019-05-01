@@ -13,11 +13,11 @@ import logging
 import optparse
 import os
 import re
+import subprocess
+import sys
 import tempfile
 import threading
 import time
-import subprocess
-import sys
 
 try:
   import urlparse
@@ -495,6 +495,11 @@ class Mirror(object):
       # Re-bootstrapping an existing mirror; preserve existing fetch spec.
       self._preserve_fetchspec()
     else:
+      if os.path.exists(self.mirror_path):
+        # If the mirror path exists but self.exists() returns false, we're
+        # in an unexpected state. Nuke the previous mirror directory and
+        # start fresh.
+        gclient_utils.rmtree(self.mirror_path)
       os.mkdir(self.mirror_path)
 
     bootstrapped = (not depth and bootstrap and
