@@ -126,9 +126,14 @@ public interface WebContents extends Parcelable {
     NavigationController getNavigationController();
 
     /**
-     * @return  The main frame associated with this WebContents.
+     * @return The main frame associated with this WebContents.
      */
     RenderFrameHost getMainFrame();
+
+    /**
+     * @return The focused frame associated with this WebContents.
+     */
+    RenderFrameHost getFocusedFrame();
 
     /**
      * @return The title for the current visible page.
