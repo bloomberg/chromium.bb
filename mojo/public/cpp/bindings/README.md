@@ -1797,6 +1797,6 @@ See [Converting Legacy Chrome IPC To Mojo](/docs/mojo_ipc_conversion.md).
 
 ### Additional Documentation
 
-[Calling Mojo From Blink](https://www.chromium.org/developers/design-documents/mojo/calling-mojo-from-blink)
-:    A brief overview of what it looks like to use Mojom C++ bindings from
-     within Blink code.
+[Calling Mojo From Blink](/docs/mojo_ipc_conversion.md#Blink_Specific-Advice):
+A brief overview of what it looks like to use Mojom C++ bindings from
+within Blink code.
