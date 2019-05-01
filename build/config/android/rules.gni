@@ -1959,10 +1959,8 @@ if (enable_java_templates) {
         _rebased_build_config =
             rebase_path(invoker.build_config, root_build_dir)
         defines += [
-          "COMPRESSED_LOCALE_LIST=" +
-              "@FileArg($_rebased_build_config:compressed_locales_java_list)",
-          "UNCOMPRESSED_LOCALE_LIST=" +
-              "@FileArg($_rebased_build_config:uncompressed_locales_java_list)",
+          "COMPRESSED_LOCALE_LIST=" + "@FileArg($_rebased_build_config:deps_info:compressed_locales_java_list)",
+          "UNCOMPRESSED_LOCALE_LIST=" + "@FileArg($_rebased_build_config:deps_info:uncompressed_locales_java_list)",
         ]
         if (defined(invoker.firebase_app_id)) {
           defines += [ "_FIREBASE_APP_ID=${invoker.firebase_app_id}" ]
@@ -2049,9 +2047,13 @@ if (enable_java_templates) {
   #     resources with acceptable/non-acceptable optimizations.
   #   verify_android_configuration: Enables verification of expected merged
   #     manifest and proguard flags based on a golden file.
-  #   static_library_dependent_targets: A list of targets that use this target
-  #     as a static library. Common Java code from the targets listed in
-  #     static_library_dependent_targets will be moved into this target.
+  #   static_library_dependent_targets: A list of scopes describing targets that
+  #     use this target as a static library. Common Java code from the targets
+  #     listed in static_library_dependent_targets will be moved into this
+  #     target. Scope members are name, is_resource_ids_provider,
+  #     is_compressed_locales_provider, is_uncompressed_locales_provider.
+  #     TODO(estevenson): Add a README for static library targets and document
+  #                       additions to "deps_info" in write_build_config.py.
   #   static_library_provider: Specifies a single target that this target will
   #     use as a static library APK. When proguard is enabled, the
   #     static_library_provider target will provide the dex file(s) for this
@@ -2281,6 +2283,15 @@ if (enable_java_templates) {
       _static_library_apk_java_target_output = _jar_path
       _static_library_sync_dex_path =
           "$_gen_dir/static_library_synchronized_proguard.classes.dex.zip"
+      _resource_ids_provider_deps = []
+      foreach(_target, invoker.static_library_dependent_targets) {
+        if (_target.is_resource_ids_provider) {
+          assert(_resource_ids_provider_deps == [],
+                 "Can only have 1 resource_ids_provider_dep")
+          _resource_ids_provider_deps += [ _target.name ]
+        }
+      }
+      _resource_ids_provider_dep = _resource_ids_provider_deps[0]
     }
 
     _uses_static_library = defined(invoker.static_library_provider)
@@ -2371,7 +2382,6 @@ if (enable_java_templates) {
                                "png_to_webp",
                                "resource_blacklist_exceptions",
                                "resource_blacklist_regex",
-                               "resource_ids_provider_dep",
                                "resources_config_path",
                                "shared_resources",
                                "shared_resources_whitelist_locales",
@@ -2380,6 +2390,10 @@ if (enable_java_templates) {
       android_manifest = _android_manifest
       version_code = _version_code
       version_name = _version_name
+
+      if (defined(_resource_ids_provider_dep)) {
+        resource_ids_provider_dep = _resource_ids_provider_dep
+      }
 
       if (defined(invoker.post_process_package_resources_script)) {
         post_process_script = invoker.post_process_package_resources_script
@@ -2749,7 +2763,7 @@ if (enable_java_templates) {
           ":$_java_target",
         ]
         foreach(_dep, invoker.static_library_dependent_targets) {
-          _target_label = get_label_info(_dep, "label_no_toolchain")
+          _target_label = get_label_info(_dep.name, "label_no_toolchain")
           deps += [ "${_target_label}__java" ]
         }
         inputs = [
@@ -2857,7 +2871,8 @@ if (enable_java_templates) {
                 "static_library_dependent_classpath_configs:" +
                 "$_rebased_build_config)",
           ]
-          foreach(_apk_as_module, invoker.static_library_dependent_targets) {
+          foreach(_target, invoker.static_library_dependent_targets) {
+            _apk_as_module = _target.name
             _module_config_target =
                 "${_apk_as_module}$build_config_target_suffix"
             _module_gen_dir = get_label_info(_apk_as_module, "target_gen_dir")
@@ -3255,7 +3270,6 @@ if (enable_java_templates) {
                                "proguard_jar_path",
                                "resource_blacklist_regex",
                                "resource_blacklist_exceptions",
-                               "resource_ids_provider_dep",
                                "resources_config_path",
                                "secondary_abi_loadable_modules",
                                "secondary_abi_shared_libraries",
@@ -3370,7 +3384,6 @@ if (enable_java_templates) {
                                "proguard_jar_path",
                                "resource_blacklist_exceptions",
                                "resource_blacklist_regex",
-                               "resource_ids_provider_dep",
                                "resources_config_path",
                                "secondary_abi_shared_libraries",
                                "shared_libraries",

@@ -546,7 +546,6 @@ invoking `javac`.
 This type corresponds to an Android app bundle (`.aab` file).
 
 --------------- END_MARKDOWN ---------------------------------------------------
-TODO(estevenson): Add docs for static library synchronized proguarding.
 """
 
 import collections
@@ -913,6 +912,8 @@ def main(argv):
   parser.add_option('--incremental-install-json-path',
                     help="Path to the target's generated incremental install "
                     "json.")
+
+  # apk options that are static library specific
   parser.add_option(
       '--static-library-dependent-configs',
       help='GN list of .build_configs of targets that use this target as a '
@@ -920,6 +921,18 @@ def main(argv):
   parser.add_option(
       '--static-library-jar-path',
       help='Equivalent to what normally would be the jar_path for the APK.')
+  parser.add_option(
+      '--resource-ids-provider',
+      help='Path to the .build_config for the APK that this static library '
+      'target uses to generate stable resource IDs.')
+  parser.add_option(
+      '--compressed-locales-provider',
+      help='Path to the .build_config that contains the compressed locales '
+      'Java list for this static library target.')
+  parser.add_option(
+      '--uncompressed-locales-provider',
+      help='Path to the .build_config that contains the uncompressed locales '
+      'Java list for this static library target.')
 
   parser.add_option('--tested-apk-config',
       help='Path to the build config of the tested apk (for an instrumentation '
@@ -1453,13 +1466,24 @@ def main(argv):
         path: sorted(set(classpath))
         for path, classpath in classpath_entries_by_owning_config.iteritems()
     }
-    # Order matters here, must match the order passed in.
-    static_lib_jar_paths = [
-        static_lib_jar_paths[x]
-        for x in options.static_library_dependent_configs
-    ]
-    static_lib_jar_paths.append(options.static_library_jar_path)
-    deps_info['static_library_dependent_apk_jars'] = static_lib_jar_paths
+
+    # resource_ids_provider's jar must go first to ensure the correct R.java
+    # IDs are used.
+    ordered_static_lib_jar_paths = []
+    if options.resource_ids_provider:
+      assert (options.resource_ids_provider in options.
+              static_library_dependent_configs), (
+                  '--resource-ids-provider must be in '
+                  '--static-library-dependent-configs')
+      ordered_static_lib_jar_paths.append(
+          static_lib_jar_paths[options.resource_ids_provider])
+
+    ordered_static_lib_jar_paths.extend(
+        x for x in static_lib_jar_paths.itervalues()
+        if x not in ordered_static_lib_jar_paths)
+    ordered_static_lib_jar_paths.append(options.static_library_jar_path)
+    deps_info[
+        'static_library_dependent_apk_jars'] = ordered_static_lib_jar_paths
     deps_info['static_library_proguard_mapping_output_paths'] = [
         d['proguard_mapping_path']
         for d in static_library_dependent_configs_by_path.itervalues()
@@ -1675,10 +1699,28 @@ def main(argv):
     }
     config['assets'], config['uncompressed_assets'], locale_paks = (
         _MergeAssets(deps.All('android_assets')))
-    config['compressed_locales_java_list'] = _CreateJavaLocaleListFromAssets(
-        config['assets'], locale_paks)
-    config['uncompressed_locales_java_list'] = _CreateJavaLocaleListFromAssets(
-        config['uncompressed_assets'], locale_paks)
+
+    if options.compressed_locales_provider:
+      dep_config = GetDepConfig(options.compressed_locales_provider)
+      if dep_config['type'] == 'android_app_bundle':
+        dep_config = GetDepConfig(dep_config['base_module_config'])
+      deps_info['compressed_locales_java_list'] = dep_config[
+          'compressed_locales_java_list']
+    else:
+      deps_info[
+          'compressed_locales_java_list'] = _CreateJavaLocaleListFromAssets(
+              config['assets'], locale_paks)
+
+    if options.uncompressed_locales_provider:
+      dep_config = GetDepConfig(options.uncompressed_locales_provider)
+      if dep_config['type'] == 'android_app_bundle':
+        dep_config = GetDepConfig(dep_config['base_module_config'])
+      deps_info['uncompressed_locales_java_list'] = dep_config[
+          'uncompressed_locales_java_list']
+    else:
+      deps_info[
+          'uncompressed_locales_java_list'] = _CreateJavaLocaleListFromAssets(
+              config['uncompressed_assets'], locale_paks)
 
     config['extra_android_manifests'] = filter(None, (
         d.get('android_manifest') for d in all_resources_deps))

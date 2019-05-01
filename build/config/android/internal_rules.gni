@@ -470,17 +470,26 @@ template("write_build_config") {
         rebase_path(invoker.static_library_jar_path, root_build_dir),
       ]
       _dependent_configs = []
-      foreach(d, invoker.static_library_dependent_targets) {
-        _target_label = get_label_info(d, "label_no_toolchain")
+      foreach(_target, invoker.static_library_dependent_targets) {
+        _target_name = _target.name
+        _target_label = get_label_info(_target_name, "label_no_toolchain")
         deps += [ "$_target_label$build_config_target_suffix" ]
-        _dep_gen_dir = get_label_info(d, "target_gen_dir")
-        _dep_name = get_label_info(d, "name")
-        _dependent_configs += [ "$_dep_gen_dir/$_dep_name.build_config" ]
+        _dep_gen_dir = get_label_info(_target_name, "target_gen_dir")
+        _dep_name = get_label_info(_target_name, "name")
+        _config =
+            rebase_path("$_dep_gen_dir/$_dep_name.build_config", root_build_dir)
+        _dependent_configs += [ _config ]
+        if (_target.is_resource_ids_provider) {
+          args += [ "--resource-ids-provider=$_config" ]
+        }
+        if (_target.is_compressed_locales_provider) {
+          args += [ "--compressed-locales-provider=$_config" ]
+        }
+        if (_target.is_uncompressed_locales_provider) {
+          args += [ "--uncompressed-locales-provider=$_config" ]
+        }
       }
-      _rebased_dependent_configs =
-          rebase_path(_dependent_configs, root_build_dir)
-      args +=
-          [ "--static-library-dependent-configs=$_rebased_dependent_configs" ]
+      args += [ "--static-library-dependent-configs=$_dependent_configs" ]
     }
     if (defined(invoker.gradle_treat_as_prebuilt) &&
         invoker.gradle_treat_as_prebuilt) {
