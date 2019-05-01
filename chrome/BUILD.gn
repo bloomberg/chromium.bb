@@ -1459,7 +1459,6 @@ group("browser_dependencies") {
 
 group("child_dependencies") {
   public_deps = [
-    "//chrome/browser/devtools",
     "//chrome/child",
     "//chrome/common",
     "//chrome/gpu",
@@ -1480,6 +1479,14 @@ group("child_dependencies") {
 
   if (enable_gwp_asan_malloc) {
     public_deps += [ "//components/gwp_asan/client" ]
+  }
+
+  if (!is_component_build) {
+    assert_no_deps = [
+      # Browser code should not be used in child processes. In component builds,
+      # this is OK because all of content is linked into one library.
+      "//content/browser",
+    ]
   }
 }
 
