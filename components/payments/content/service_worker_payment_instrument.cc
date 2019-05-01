@@ -244,6 +244,10 @@ void ServiceWorkerPaymentInstrument::InvokePaymentApp(Delegate* delegate) {
   payment_request_delegate_->ShowProcessingSpinner();
 }
 
+void ServiceWorkerPaymentInstrument::OnPaymentAppWindowClosed() {
+  delegate_ = nullptr;
+}
+
 mojom::PaymentRequestEventDataPtr
 ServiceWorkerPaymentInstrument::CreatePaymentRequestEventData() {
   mojom::PaymentRequestEventDataPtr event_data =
@@ -283,8 +287,6 @@ ServiceWorkerPaymentInstrument::CreatePaymentRequestEventData() {
 
 void ServiceWorkerPaymentInstrument::OnPaymentAppInvoked(
     mojom::PaymentHandlerResponsePtr response) {
-  DCHECK(delegate_);
-
   if (delegate_ != nullptr) {
     delegate_->OnInstrumentDetailsReady(response->method_name,
                                         response->stringified_details);

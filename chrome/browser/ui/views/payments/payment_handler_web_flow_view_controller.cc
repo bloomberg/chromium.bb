@@ -184,7 +184,9 @@ PaymentHandlerWebFlowViewController::PaymentHandlerWebFlowViewController(
       ui::NativeTheme::kColorId_SeparatorColor));
 }
 
-PaymentHandlerWebFlowViewController::~PaymentHandlerWebFlowViewController() {}
+PaymentHandlerWebFlowViewController::~PaymentHandlerWebFlowViewController() {
+  state()->OnPaymentAppWindowClosed();
+}
 
 base::string16 PaymentHandlerWebFlowViewController::GetSheetTitle() {
   return GetPaymentHandlerDialogTitle(web_contents(), https_prefix_);
