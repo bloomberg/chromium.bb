@@ -1028,11 +1028,11 @@ base::string16 AuthenticatorSelectAccountSheetModel::GetStepDescription()
 }
 
 bool AuthenticatorSelectAccountSheetModel::IsAcceptButtonVisible() const {
-  return true;
+  return false;
 }
 
 bool AuthenticatorSelectAccountSheetModel::IsAcceptButtonEnabled() const {
-  return true;
+  return false;
 }
 
 base::string16 AuthenticatorSelectAccountSheetModel::GetAcceptButtonLabel()
