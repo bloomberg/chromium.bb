@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
-#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -20,11 +19,7 @@
 #include "chrome/browser/media/router/providers/cast/cast_session_tracker.h"
 #include "chrome/common/media_router/mojo/media_router.mojom.h"
 #include "chrome/common/media_router/providers/cast/cast_media_source.h"
-#include "chrome/common/media_router/route_request_result.h"
-#include "components/cast_channel/cast_message_handler.h"
-#include "components/cast_channel/cast_message_util.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 #include "url/origin.h"
 
 namespace cast_channel {
@@ -38,9 +33,19 @@ class CastSession;
 class DataDecoder;
 class MediaSinkServiceBase;
 
+// Base class for CastActivityManager including only functionality needed by
+// CastActivityRecord.
+class CastActivityManagerBase {
+ public:
+  virtual cast_channel::ResultCallback MakeResultCallbackForRoute(
+      const std::string& route_id,
+      mojom::MediaRouteProvider::TerminateRouteCallback callback) = 0;
+};
+
 // Handles launching and terminating Cast application on a Cast receiver, and
 // acts as the source of truth for Cast activities and MediaRoutes.
-class CastActivityManager : public cast_channel::CastMessageHandler::Observer,
+class CastActivityManager : public CastActivityManagerBase,
+                            public cast_channel::CastMessageHandler::Observer,
                             public CastSessionTracker::Observer {
  public:
   // |media_sink_service|: Provides Cast MediaSinks.
@@ -103,9 +108,11 @@ class CastActivityManager : public cast_channel::CastMessageHandler::Observer,
                             const base::Value& media_status,
                             base::Optional<int> request_id) override;
 
- private:
-  friend class CastActivityRecord;
+  cast_channel::ResultCallback MakeResultCallbackForRoute(
+      const std::string& route_id,
+      mojom::MediaRouteProvider::TerminateRouteCallback callback) override;
 
+ private:
   using ActivityMap =
       base::flat_map<MediaRoute::Id, std::unique_ptr<CastActivityRecord>>;
 
@@ -198,8 +205,6 @@ class CastActivityManager : public cast_channel::CastMessageHandler::Observer,
 
   void SendFailedToCastIssue(const MediaSink::Id& sink_id,
                              const MediaRoute::Id& route_id);
-
-  base::WeakPtr<CastActivityManager> GetWeakPtr();
 
   // These methods return |activities_.end()| when nothing is found.
   ActivityMap::iterator FindActivityByChannelId(int channel_id);

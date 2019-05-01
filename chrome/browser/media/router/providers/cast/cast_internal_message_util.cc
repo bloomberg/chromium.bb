@@ -325,9 +325,9 @@ CastInternalMessage::CastInternalMessage(
     const std::string& session_id,
     const std::string& namespace_or_v2_type,
     base::Value message_body)
-    : type(type),
-      client_id(client_id),
-      sequence_number(sequence_number),
+    : type_(type),
+      client_id_(client_id),
+      sequence_number_(sequence_number),
       session_id_(session_id),
       namespace_or_v2_type_(namespace_or_v2_type),
       message_body_(std::move(message_body)) {}

@@ -13,18 +13,7 @@
 #include "chrome/browser/media/router/data_decoder_util.h"
 #include "chrome/browser/media/router/providers/cast/cast_activity_record.h"
 #include "chrome/browser/media/router/providers/cast/cast_session_client.h"
-#include "chrome/browser/media/router/providers/cast/cast_session_tracker.h"
-#include "chrome/common/media_router/discovery/media_sink_internal.h"
-#include "chrome/common/media_router/discovery/media_sink_service_base.h"
-#include "chrome/common/media_router/media_route.h"
 #include "chrome/common/media_router/media_source_helper.h"
-#include "chrome/common/media_router/mojo/media_router.mojom.h"
-#include "chrome/common/media_router/providers/cast/cast_media_source.h"
-#include "chrome/common/media_router/route_request_result.h"
-#include "components/cast_channel/cast_message_handler.h"
-#include "components/cast_channel/cast_message_util.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 #include "url/origin.h"
 
 using blink::mojom::PresentationConnectionCloseReason;
@@ -116,7 +105,8 @@ void CastActivityManager::LaunchSession(
         existing_route_id,
         base::BindOnce(
             &CastActivityManager::LaunchSessionAfterTerminatingExisting,
-            GetWeakPtr(), existing_route_id, std::move(params)));
+            weak_ptr_factory_.GetWeakPtr(), existing_route_id,
+            std::move(params)));
   }
 }
 
@@ -144,7 +134,8 @@ void CastActivityManager::DoLaunchSession(DoLaunchSessionParams params) {
   message_handler_->LaunchSession(
       sink.cast_data().cast_channel_id, app_id, launch_timeout,
       base::BindOnce(&CastActivityManager::HandleLaunchSessionResponse,
-                     GetWeakPtr(), route_id, sink, cast_source));
+                     weak_ptr_factory_.GetWeakPtr(), route_id, sink,
+                     cast_source));
 
   mojom::RoutePresentationConnectionPtr presentation_connection;
   const std::string& client_id = cast_source.client_id();
@@ -499,6 +490,14 @@ void CastActivityManager::OnMediaStatusUpdated(const MediaSinkInternal& sink,
   }
 }
 
+cast_channel::ResultCallback CastActivityManager::MakeResultCallbackForRoute(
+    const std::string& route_id,
+    mojom::MediaRouteProvider::TerminateRouteCallback callback) {
+  return base::BindOnce(&CastActivityManager::HandleStopSessionResponse,
+                        weak_ptr_factory_.GetWeakPtr(), route_id,
+                        std::move(callback));
+}
+
 void CastActivityManager::AddNonLocalActivityRecord(
     const MediaSinkInternal& sink,
     const CastSession& session) {
@@ -639,10 +638,6 @@ void CastActivityManager::SendFailedToCastIssue(
   info.sink_id = sink_id;
   info.route_id = route_id;
   media_router_->OnIssue(info);
-}
-
-base::WeakPtr<CastActivityManager> CastActivityManager::GetWeakPtr() {
-  return weak_ptr_factory_.GetWeakPtr();
 }
 
 CastActivityManager::DoLaunchSessionParams::DoLaunchSessionParams(

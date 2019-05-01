@@ -75,9 +75,9 @@ TEST_F(CastInternalMessageUtilDeathTest,
 
   auto message = CastInternalMessage::From(ParseJson(message_str));
   ASSERT_TRUE(message);
-  EXPECT_EQ(CastInternalMessage::Type::kAppMessage, message->type);
-  EXPECT_EQ("12345", message->client_id);
-  EXPECT_EQ(999, message->sequence_number);
+  EXPECT_EQ(CastInternalMessage::Type::kAppMessage, message->type());
+  EXPECT_EQ("12345", message->client_id());
+  EXPECT_EQ(999, message->sequence_number());
   EXPECT_EQ("urn:x-cast:com.google.foo", message->app_message_namespace());
   EXPECT_EQ("sessionId", message->session_id());
   base::Value message_body(base::Value::Type::DICTIONARY);
@@ -103,9 +103,9 @@ TEST_F(CastInternalMessageUtilDeathTest,
 
   auto message = CastInternalMessage::From(ParseJson(message_str));
   ASSERT_TRUE(message);
-  EXPECT_EQ(CastInternalMessage::Type::kV2Message, message->type);
-  EXPECT_EQ("12345", message->client_id);
-  EXPECT_EQ(999, message->sequence_number);
+  EXPECT_EQ(CastInternalMessage::Type::kV2Message, message->type());
+  EXPECT_EQ("12345", message->client_id());
+  EXPECT_EQ(999, message->sequence_number());
   EXPECT_EQ("sessionId", message->session_id());
   EXPECT_EQ("v2_message_type", message->v2_message_type());
   auto v2_body = ParseJson(R"({
@@ -129,9 +129,9 @@ TEST_F(CastInternalMessageUtilDeathTest,
 
   auto message = CastInternalMessage::From(ParseJson(message_str));
   ASSERT_TRUE(message);
-  EXPECT_EQ(CastInternalMessage::Type::kClientConnect, message->type);
-  EXPECT_EQ("12345", message->client_id);
-  EXPECT_FALSE(message->sequence_number);
+  EXPECT_EQ(CastInternalMessage::Type::kClientConnect, message->type());
+  EXPECT_EQ("12345", message->client_id());
+  EXPECT_FALSE(message->sequence_number());
 
   EXPECT_DCHECK_DEATH(message->session_id());
   EXPECT_DCHECK_DEATH(message->v2_message_type());

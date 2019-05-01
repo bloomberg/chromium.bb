@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,9 @@
 #include "base/bind.h"
 #include "chrome/browser/media/router/data_decoder_util.h"
 #include "chrome/browser/media/router/providers/cast/cast_activity_record.h"
+#include "chrome/browser/media/router/providers/cast/cast_internal_message_util.h"
 #include "components/cast_channel/enum_table.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 using blink::mojom::PresentationConnectionCloseReason;
 using blink::mojom::PresentationConnectionMessagePtr;
@@ -137,9 +139,9 @@ void CastSessionClient::HandleParsedClientMessage(
     return;
   }
 
-  if (cast_message->client_id != client_id_) {
+  if (cast_message->client_id() != client_id_) {
     DLOG(ERROR) << "Client ID mismatch: expected: " << client_id_
-                << ", got: " << cast_message->client_id;
+                << ", got: " << cast_message->client_id();
     return;
   }
 
@@ -151,14 +153,14 @@ void CastSessionClient::HandleParsedClientMessage(
     return;
   }
 
-  switch (cast_message->type) {
+  switch (cast_message->type()) {
     case CastInternalMessage::Type::kAppMessage:
       // Send an ACK message back to SDK client to indicate it is handled.
       if (activity_->SendAppMessageToReceiver(*cast_message) ==
           cast_channel::Result::kOk) {
-        DCHECK(cast_message->sequence_number);
+        DCHECK(cast_message->sequence_number());
         SendMessageToClient(CreateAppMessageAck(
-            cast_message->client_id, *cast_message->sequence_number));
+            cast_message->client_id(), *cast_message->sequence_number()));
       }
       break;
 
@@ -168,13 +170,14 @@ void CastSessionClient::HandleParsedClientMessage(
 
     case CastInternalMessage::Type::kLeaveSession:
       SendMessageToClient(CreateLeaveSessionAckMessage(
-          client_id_, cast_message->sequence_number));
+          client_id_, cast_message->sequence_number()));
       activity_->HandleLeaveSession(client_id_);
       break;
 
     default:
+      // TODO(jrw): Log string value of type instead of int value.
       DLOG(ERROR) << "Unhandled message type: "
-                  << static_cast<int>(cast_message->type);
+                  << static_cast<int>(cast_message->type());
   }
 }
 
@@ -188,7 +191,7 @@ void CastSessionClient::HandleV2ProtocolMessage(
     base::Optional<int> request_id =
         activity_->SendMediaRequestToReceiver(cast_message);
     if (request_id) {
-      DCHECK(cast_message.sequence_number);
+      DCHECK(cast_message.sequence_number());
       if (pending_media_requests_.size() >= kMaxPendingMediaRequests) {
         // Delete old pending requests.  Request IDs are generated sequentially,
         // so this should always delete the oldest requests.  Deleting requests
@@ -199,15 +202,15 @@ void CastSessionClient::HandleV2ProtocolMessage(
                                           pending_media_requests_.size() / 2);
       }
       pending_media_requests_.emplace(*request_id,
-                                      *cast_message.sequence_number);
+                                      *cast_message.sequence_number());
     }
   } else if (type == cast_channel::V2MessageType::kSetVolume) {
     DVLOG(2) << "Got volume command from client";
-    DCHECK(cast_message.sequence_number);
+    DCHECK(cast_message.sequence_number());
     activity_->SendSetVolumeRequestToReceiver(
         cast_message, base::BindOnce(&CastSessionClient::SendResultResponse,
                                      weak_ptr_factory_.GetWeakPtr(),
-                                     *cast_message.sequence_number));
+                                     *cast_message.sequence_number()));
   } else if (type == cast_channel::V2MessageType::kStop) {
     // TODO(jrw): implement STOP_SESSION.
     DVLOG(2) << "Ignoring stop-session (" << type_str << ") message";

@@ -63,12 +63,12 @@ void CastActivityRecord::SetOrUpdateSession(const CastSession& session,
 
 cast_channel::Result CastActivityRecord::SendAppMessageToReceiver(
     const CastInternalMessage& cast_message) {
-  CastSessionClient* client = GetClient(cast_message.client_id);
+  CastSessionClient* client = GetClient(cast_message.client_id());
   const CastSession* session = GetSession();
   if (!session) {
-    if (client && cast_message.sequence_number) {
+    if (client && cast_message.sequence_number()) {
       client->SendErrorCodeToClient(
-          *cast_message.sequence_number,
+          *cast_message.sequence_number(),
           CastInternalMessage::ErrorCode::kSessionError,
           "Invalid session ID: " + session_id_.value_or("<missing>"));
     }
@@ -78,9 +78,9 @@ cast_channel::Result CastActivityRecord::SendAppMessageToReceiver(
   const std::string& message_namespace = cast_message.app_message_namespace();
   if (!base::ContainsKey(session->message_namespaces(), message_namespace)) {
     DLOG(ERROR) << "Disallowed message namespace: " << message_namespace;
-    if (client && cast_message.sequence_number) {
+    if (client && cast_message.sequence_number()) {
       client->SendErrorCodeToClient(
-          *cast_message.sequence_number,
+          *cast_message.sequence_number(),
           CastInternalMessage::ErrorCode::kInvalidParameter,
           "Invalid namespace: " + message_namespace);
     }
@@ -90,7 +90,7 @@ cast_channel::Result CastActivityRecord::SendAppMessageToReceiver(
       GetCastChannelId(),
       cast_channel::CreateCastMessage(
           message_namespace, cast_message.app_message_body(),
-          cast_message.client_id, session->transport_id()));
+          cast_message.client_id(), session->transport_id()));
 }
 
 base::Optional<int> CastActivityRecord::SendMediaRequestToReceiver(
@@ -100,7 +100,7 @@ base::Optional<int> CastActivityRecord::SendMediaRequestToReceiver(
     return base::nullopt;
   return message_handler_->SendMediaRequest(
       GetCastChannelId(), cast_message.v2_message_body(),
-      cast_message.client_id, session->transport_id());
+      cast_message.client_id(), session->transport_id());
 }
 
 void CastActivityRecord::SendSetVolumeRequestToReceiver(
@@ -108,7 +108,7 @@ void CastActivityRecord::SendSetVolumeRequestToReceiver(
     cast_channel::ResultCallback callback) {
   message_handler_->SendSetVolumeRequest(
       GetCastChannelId(), cast_message.v2_message_body(),
-      cast_message.client_id, std::move(callback));
+      cast_message.client_id(), std::move(callback));
 }
 
 void CastActivityRecord::SendStopSessionMessageToReceiver(
@@ -121,9 +121,8 @@ void CastActivityRecord::SendStopSessionMessageToReceiver(
 
   message_handler_->StopSession(
       sink->cast_data().cast_channel_id, *session_id_, client_id,
-      base::BindOnce(&CastActivityManager::HandleStopSessionResponse,
-                     activity_manager_->GetWeakPtr(), route_.media_route_id(),
-                     std::move(callback)));
+      activity_manager_->MakeResultCallbackForRoute(route_.media_route_id(),
+                                                    std::move(callback)));
 }
 
 void CastActivityRecord::HandleLeaveSession(const std::string& client_id) {
@@ -175,7 +174,7 @@ CastActivityRecord::CastActivityRecord(
     cast_channel::CastMessageHandler* message_handler,
     CastSessionTracker* session_tracker,
     DataDecoder* data_decoder,
-    CastActivityManager* owner)
+    CastActivityManagerBase* owner)
     : route_(route),
       app_id_(app_id),
       media_sink_service_(media_sink_service),

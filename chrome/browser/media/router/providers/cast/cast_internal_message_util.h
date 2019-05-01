@@ -20,7 +20,8 @@ class MediaSinkInternal;
 
 // Represents a message sent or received by the Cast SDK via a
 // PresentationConnection.
-struct CastInternalMessage {
+class CastInternalMessage {
+ public:
   // TODO(crbug.com/809249): Add other types of messages.
   enum class Type {
     kClientConnect,   // Initial message sent by SDK client to connect to MRP.
@@ -61,12 +62,12 @@ struct CastInternalMessage {
 
   ~CastInternalMessage();
 
-  const Type type;
-  const std::string client_id;
-  const base::Optional<int> sequence_number;
+  Type type() const { return type_; }
+  const std::string& client_id() const { return client_id_; }
+  base::Optional<int> sequence_number() const { return sequence_number_; }
 
   bool has_session_id() const {
-    return type == Type::kAppMessage || type == Type::kV2Message;
+    return type_ == Type::kAppMessage || type_ == Type::kV2Message;
   }
 
   const std::string& session_id() const {
@@ -75,22 +76,22 @@ struct CastInternalMessage {
   }
 
   const std::string& app_message_namespace() const {
-    DCHECK(type == Type::kAppMessage);
+    DCHECK(type_ == Type::kAppMessage);
     return namespace_or_v2_type_;
   }
 
   const std::string& v2_message_type() const {
-    DCHECK(type == Type::kV2Message);
+    DCHECK(type_ == Type::kV2Message);
     return namespace_or_v2_type_;
   }
 
   const base::Value& app_message_body() const {
-    DCHECK(type == Type::kAppMessage);
+    DCHECK(type_ == Type::kAppMessage);
     return message_body_;
   }
 
   const base::Value& v2_message_body() const {
-    DCHECK(type == Type::kV2Message);
+    DCHECK(type_ == Type::kV2Message);
     return message_body_;
   }
 
@@ -101,6 +102,10 @@ struct CastInternalMessage {
                       const std::string& session_id,
                       const std::string& namespace_or_v2_type_,
                       base::Value message_body);
+
+  const Type type_;
+  const std::string client_id_;
+  const base::Optional<int> sequence_number_;
 
   // Set if |type| is |kAppMessage| or |kV2Message|.
   const std::string session_id_;

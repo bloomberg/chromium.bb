@@ -18,8 +18,8 @@
 
 namespace media_router {
 
-class CastActivityManager;
-struct CastInternalMessage;
+class CastActivityManagerBase;
+class CastInternalMessage;
 class CastSession;
 class CastSessionClient;
 class CastSessionTracker;
@@ -104,6 +104,7 @@ class CastActivityRecord {
  private:
   friend class CastSessionClient;
   friend class CastActivityManager;
+  friend class CastActivityRecordTest;
 
   // Creates a new record owned by |owner|.
   CastActivityRecord(const MediaRoute& route,
@@ -112,7 +113,7 @@ class CastActivityRecord {
                      cast_channel::CastMessageHandler* message_handler,
                      CastSessionTracker* session_tracker,
                      DataDecoder* data_decoder,
-                     CastActivityManager* owner);
+                     CastActivityManagerBase* owner);
 
   CastSession* GetSession();
   int GetCastChannelId();
@@ -137,7 +138,7 @@ class CastActivityRecord {
   cast_channel::CastMessageHandler* const message_handler_;
   CastSessionTracker* const session_tracker_;
   DataDecoder* const data_decoder_;
-  CastActivityManager* const activity_manager_;
+  CastActivityManagerBase* const activity_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(CastActivityRecord);
 };

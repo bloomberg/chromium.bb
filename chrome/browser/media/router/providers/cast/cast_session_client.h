@@ -13,10 +13,12 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/values.h"
-#include "chrome/browser/media/router/providers/cast/cast_session_tracker.h"
+#include "chrome/browser/media/router/providers/cast/cast_internal_message_util.h"
 #include "chrome/common/media_router/mojo/media_router.mojom.h"
 #include "chrome/common/media_router/providers/cast/cast_media_source.h"
+#include "components/cast_channel/cast_message_handler.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 #include "url/origin.h"
 
 namespace media_router {

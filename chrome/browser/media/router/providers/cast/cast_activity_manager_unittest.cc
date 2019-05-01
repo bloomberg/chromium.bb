@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/router/providers/cast/cast_activity_manager.h"
 
+#include <memory>
 #include <tuple>
 #include <utility>
 
@@ -12,16 +13,13 @@
 #include "base/task/post_task.h"
 #include "base/test/values_test_util.h"
 #include "chrome/browser/media/router/data_decoder_util.h"
-#include "chrome/browser/media/router/providers/common/buffered_message_sender.h"
 #include "chrome/browser/media/router/test/mock_mojo_media_router.h"
 #include "chrome/browser/media/router/test/test_helper.h"
 #include "chrome/common/media_router/test/test_helper.h"
 #include "components/cast_channel/cast_test_util.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "services/data_decoder/data_decoder_service.h"
 #include "services/data_decoder/public/cpp/testing_json_parser.h"
-#include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,9 +27,7 @@
 using base::test::IsJson;
 using base::test::ParseJsonDeprecated;
 using testing::_;
-using testing::AnyNumber;
 using testing::IsEmpty;
-using testing::Not;
 using testing::Return;
 using testing::WithArg;
 
@@ -116,9 +112,7 @@ class CastActivityManagerTest
     : public testing::TestWithParam<std::pair<bool, const char*>> {
  public:
   CastActivityManagerTest()
-      : data_decoder_service_(connector_factory_.RegisterInstance(
-            data_decoder::mojom::kServiceName)),
-        socket_service_(base::CreateSingleThreadTaskRunnerWithTraits(
+      : socket_service_(base::CreateSingleThreadTaskRunnerWithTraits(
             {content::BrowserThread::UI})),
         message_handler_(&socket_service_) {
     media_sink_service_.AddOrUpdateSink(sink_);
@@ -131,11 +125,11 @@ class CastActivityManagerTest
     router_binding_ = std::make_unique<mojo::Binding<mojom::MediaRouter>>(
         &mock_router_, mojo::MakeRequest(&router_ptr_));
 
-    delete session_tracker_;
-    session_tracker_ = new CastSessionTracker(
-        &media_sink_service_, &message_handler_, socket_service_.task_runner());
+    session_tracker_.reset(
+        new CastSessionTracker(&media_sink_service_, &message_handler_,
+                               socket_service_.task_runner()));
     manager_ = std::make_unique<CastActivityManager>(
-        &media_sink_service_, session_tracker_, &message_handler_,
+        &media_sink_service_, session_tracker_.get(), &message_handler_,
         router_ptr_.get(),
         std::make_unique<DataDecoder>(connector_factory_.GetDefaultConnector()),
         "hash-token");
@@ -333,7 +327,6 @@ class CastActivityManagerTest
   content::TestBrowserThreadBundle thread_bundle_;
   data_decoder::TestingJsonParser::ScopedFactoryOverride parser_override_;
   service_manager::TestConnectorFactory connector_factory_;
-  data_decoder::DataDecoderService data_decoder_service_;
 
   MockMojoMediaRouter mock_router_;
   mojom::MediaRouterPtr router_ptr_;
@@ -352,9 +345,7 @@ class CastActivityManagerTest
   MockCastAppDiscoveryService app_discovery_service_;
   std::unique_ptr<CastActivityManager> manager_;
 
-  // We mus use a raw pointer instead of a smart pointer because
-  // CastSessionTracker's constructor and destructor are private.
-  CastSessionTracker* session_tracker_ = nullptr;
+  std::unique_ptr<CastSessionTracker> session_tracker_;
 
   const url::Origin origin_ = url::Origin::Create(GURL(kOrigin));
 };
