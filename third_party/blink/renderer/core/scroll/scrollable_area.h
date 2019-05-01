@@ -391,7 +391,9 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   virtual bool RestoreScrollAnchor(const SerializedAnchor&) { return false; }
   virtual ScrollAnchor* GetScrollAnchor() { return nullptr; }
 
-  virtual void DidScrollWithScrollbar(ScrollbarPart, ScrollbarOrientation) {}
+  virtual void DidScrollWithScrollbar(ScrollbarPart,
+                                      ScrollbarOrientation,
+                                      WebInputEvent::Type) {}
 
   // Returns the task runner to be used for scrollable area timers.
   // Ideally a frame-specific throttled one can be used.

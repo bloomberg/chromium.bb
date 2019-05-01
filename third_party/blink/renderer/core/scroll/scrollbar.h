@@ -116,7 +116,7 @@ class CORE_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
   int PressedPos() const { return pressed_pos_; }
 
   virtual void SetHoveredPart(ScrollbarPart);
-  virtual void SetPressedPart(ScrollbarPart);
+  virtual void SetPressedPart(ScrollbarPart, WebInputEvent::Type);
 
   void SetProportion(int visible_size, int total_size);
   void SetPressedPos(int p) { pressed_pos_ = p; }

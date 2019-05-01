@@ -2280,6 +2280,10 @@ enum WebFeature {
   kWebShareSuccessfulWithoutFiles = 2873,
   kWebShareUnsuccessfulContainingFiles = 2874,
   kWebShareUnsuccessfulWithoutFiles = 2875,
+  kVerticalScrollbarThumbScrollingWithMouse = 2876,
+  kVerticalScrollbarThumbScrollingWithTouch = 2877,
+  kHorizontalScrollbarThumbScrollingWithMouse = 2878,
+  kHorizontalScrollbarThumbScrollingWithTouch = 2879,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

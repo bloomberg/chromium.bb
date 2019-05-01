@@ -2832,7 +2832,8 @@ void PaintLayerScrollableArea::ScrollControlWasSetNeedsPaintInvalidation() {
 
 void PaintLayerScrollableArea::DidScrollWithScrollbar(
     ScrollbarPart part,
-    ScrollbarOrientation orientation) {
+    ScrollbarOrientation orientation,
+    WebInputEvent::Type type) {
   WebFeature scrollbar_use_uma;
   switch (part) {
     case kBackButtonStartPart:
@@ -2861,7 +2862,26 @@ void PaintLayerScrollableArea::DidScrollWithScrollbar(
       return;
   }
 
-  UseCounter::Count(GetLayoutBox()->GetDocument(), scrollbar_use_uma);
+  Document& document = GetLayoutBox()->GetDocument();
+
+  // TODO(alpastew): Remove the UseCounters kScrollbarUseVerticalScrollbarThumb
+  // and kScrollbarUseHorizontalScrollbarThumb to avoid redundancy in metrics.
+  UseCounter::Count(document, scrollbar_use_uma);
+
+  if (scrollbar_use_uma == WebFeature::kScrollbarUseVerticalScrollbarThumb) {
+    WebFeature input_specific_uma =
+        (WebInputEvent::IsMouseEventType(type)
+             ? WebFeature::kVerticalScrollbarThumbScrollingWithMouse
+             : WebFeature::kVerticalScrollbarThumbScrollingWithTouch);
+    UseCounter::Count(document, input_specific_uma);
+  } else if (scrollbar_use_uma ==
+             WebFeature::kScrollbarUseHorizontalScrollbarThumb) {
+    WebFeature input_specific_uma =
+        (WebInputEvent::IsMouseEventType(type)
+             ? WebFeature::kHorizontalScrollbarThumbScrollingWithMouse
+             : WebFeature::kHorizontalScrollbarThumbScrollingWithTouch);
+    UseCounter::Count(document, input_specific_uma);
+  }
 }
 
 CompositorElementId PaintLayerScrollableArea::GetCompositorElementId() const {
