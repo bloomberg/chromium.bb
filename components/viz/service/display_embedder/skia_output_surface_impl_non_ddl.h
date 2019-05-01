@@ -11,10 +11,8 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
 #include "base/optional.h"
-#include "base/threading/thread_checker.h"
-#include "components/viz/service/display/skia_output_surface.h"
+#include "components/viz/service/display_embedder/skia_output_surface_base.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
@@ -43,14 +41,12 @@ class SyncPointOrderData;
 
 namespace viz {
 
-struct ImageContext;
-
 // A SkiaOutputSurface implementation for running SkiaRenderer on GpuThread.
 // Comparing to SkiaOutputSurfaceImpl, it will issue skia draw operations
 // against OS graphics API (GL, Vulkan, etc) instead of recording deferred
 // display list first.
 class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImplNonDDL
-    : public SkiaOutputSurface {
+    : public SkiaOutputSurfaceBase {
  public:
   SkiaOutputSurfaceImplNonDDL(
       scoped_refptr<gl::GLSurface> gl_surface,
@@ -62,29 +58,13 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImplNonDDL
   ~SkiaOutputSurfaceImplNonDDL() override;
 
   // OutputSurface implementation:
-  void BindToClient(OutputSurfaceClient* client) override;
   void EnsureBackbuffer() override;
   void DiscardBackbuffer() override;
-  void BindFramebuffer() override;
-  void SetDrawRectangle(const gfx::Rect& draw_rectangle) override;
   void Reshape(const gfx::Size& size,
                float device_scale_factor,
                const gfx::ColorSpace& color_space,
                bool has_alpha,
                bool use_stencil) override;
-  void SwapBuffers(OutputSurfaceFrame frame) override;
-  uint32_t GetFramebufferCopyTextureFormat() override;
-  OverlayCandidateValidator* GetOverlayCandidateValidator() const override;
-  bool IsDisplayedAsOverlayPlane() const override;
-  unsigned GetOverlayTextureId() const override;
-  gfx::BufferFormat GetOverlayBufferFormat() const override;
-  bool HasExternalStencilTest() const override;
-  void ApplyExternalStencil() override;
-  unsigned UpdateGpuFence() override;
-  void SetNeedsSwapSizeNotifications(
-      bool needs_swap_size_notifications) override;
-  void SetUpdateVSyncParametersCallback(
-      UpdateVSyncParametersCallback callback) override;
 
   // SkiaOutputSurface implementation:
   SkCanvas* BeginPaintCurrentFrame() override;
@@ -112,8 +92,6 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImplNonDDL
                   const copy_output::RenderPassGeometry& geometry,
                   const gfx::ColorSpace& color_space,
                   std::unique_ptr<CopyOutputRequest> request) override;
-  void AddContextLostObserver(ContextLostObserver* observer) override;
-  void RemoveContextLostObserver(ContextLostObserver* observer) override;
 
   // ExternalUseClient implementation:
   void ReleaseCachedResources(const std::vector<ResourceId>& ids) override;
@@ -140,7 +118,6 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImplNonDDL
                            GrBackendTexture* backend_texture);
   void FinishPaint(uint64_t sync_fence_release);
   void BufferPresented(const gfx::PresentationFeedback& feedback);
-  void ContextLost();
   void WaitSemaphores(std::vector<GrBackendSemaphore> semaphores);
 
   uint64_t sync_fence_release_ = 0;
@@ -155,8 +132,6 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImplNonDDL
   const bool need_swapbuffers_ack_;
   base::Optional<ScopedGpuTask> scoped_gpu_task_;
 
-  OutputSurfaceClient* client_ = nullptr;
-
   unsigned int backing_framebuffer_object_ = 0;
   gfx::Size reshape_surface_size_;
   float reshape_device_scale_factor_ = 0.f;
@@ -166,9 +141,6 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImplNonDDL
 
   // The current render pass id set by BeginPaintRenderPass.
   RenderPassId current_render_pass_id_ = 0;
-
-  // Observers for context lost.
-  base::ObserverList<ContextLostObserver>::Unchecked observers_;
 
   // The SkSurface for the framebuffer.
   sk_sp<SkSurface> sk_surface_;
@@ -183,17 +155,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImplNonDDL
   // Offscreen SkSurfaces for render passes.
   base::flat_map<RenderPassId, sk_sp<SkSurface>> offscreen_sk_surfaces_;
 
-  // Cached promise image.
-  base::flat_map<ResourceId, std::unique_ptr<ImageContext>>
-      promise_image_cache_;
-
-  // Images for current frame or render pass.
-  std::vector<ImageContext*> images_in_current_paint_;
-
   // Semaphores which need to be signalled for the current paint.
   std::vector<GrBackendSemaphore> pending_semaphores_;
-
-  THREAD_CHECKER(thread_checker_);
 
   base::WeakPtrFactory<SkiaOutputSurfaceImplNonDDL> weak_ptr_factory_;
 

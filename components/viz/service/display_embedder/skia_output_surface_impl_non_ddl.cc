@@ -13,7 +13,6 @@
 #include "base/synchronization/waitable_event.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
-#include "components/viz/common/gpu/context_lost_observer.h"
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/service/display/output_surface_client.h"
@@ -30,7 +29,6 @@
 #include "gpu/command_buffer/service/texture_base.h"
 #include "gpu/vulkan/buildflags.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
-#include "third_party/skia/include/core/SkYUVAIndex.h"
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gl/color_space_utils.h"
@@ -93,29 +91,12 @@ SkiaOutputSurfaceImplNonDDL::~SkiaOutputSurfaceImplNonDDL() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
-void SkiaOutputSurfaceImplNonDDL::BindToClient(OutputSurfaceClient* client) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(client);
-  DCHECK(!client_);
-  client_ = client;
-}
-
 void SkiaOutputSurfaceImplNonDDL::EnsureBackbuffer() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   NOTIMPLEMENTED();
 }
 
 void SkiaOutputSurfaceImplNonDDL::DiscardBackbuffer() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  NOTIMPLEMENTED();
-}
-
-void SkiaOutputSurfaceImplNonDDL::BindFramebuffer() {
-  // TODO(penghuang): remove this method when GLRenderer is removed.
-}
-
-void SkiaOutputSurfaceImplNonDDL::SetDrawRectangle(
-    const gfx::Rect& draw_rectangle) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   NOTIMPLEMENTED();
 }
@@ -159,58 +140,6 @@ void SkiaOutputSurfaceImplNonDDL::Reshape(const gfx::Size& size,
   } else {
     NOTIMPLEMENTED();
   }
-}
-
-void SkiaOutputSurfaceImplNonDDL::SwapBuffers(OutputSurfaceFrame frame) {
-  NOTIMPLEMENTED();
-}
-
-uint32_t SkiaOutputSurfaceImplNonDDL::GetFramebufferCopyTextureFormat() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return GL_RGB;
-}
-
-OverlayCandidateValidator*
-SkiaOutputSurfaceImplNonDDL::GetOverlayCandidateValidator() const {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return nullptr;
-}
-
-bool SkiaOutputSurfaceImplNonDDL::IsDisplayedAsOverlayPlane() const {
-  return false;
-}
-
-unsigned SkiaOutputSurfaceImplNonDDL::GetOverlayTextureId() const {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return 0;
-}
-
-gfx::BufferFormat SkiaOutputSurfaceImplNonDDL::GetOverlayBufferFormat() const {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return gfx::BufferFormat::RGBX_8888;
-}
-
-bool SkiaOutputSurfaceImplNonDDL::HasExternalStencilTest() const {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return false;
-}
-
-void SkiaOutputSurfaceImplNonDDL::ApplyExternalStencil() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-}
-
-unsigned SkiaOutputSurfaceImplNonDDL::UpdateGpuFence() {
-  return 0;
-}
-
-void SkiaOutputSurfaceImplNonDDL::SetNeedsSwapSizeNotifications(
-    bool needs_swap_size_notifications) {
-  NOTIMPLEMENTED();
-}
-
-void SkiaOutputSurfaceImplNonDDL::SetUpdateVSyncParametersCallback(
-    UpdateVSyncParametersCallback callback) {
-  NOTIMPLEMENTED();
 }
 
 SkCanvas* SkiaOutputSurfaceImplNonDDL::BeginPaintCurrentFrame() {
@@ -292,56 +221,14 @@ sk_sp<SkImage> SkiaOutputSurfaceImplNonDDL::MakePromiseSkImageFromYUV(
   DCHECK((has_alpha && (metadatas.size() == 3 || metadatas.size() == 4)) ||
          (!has_alpha && (metadatas.size() == 2 || metadatas.size() == 3)));
 
-  bool is_i420 = has_alpha ? metadatas.size() == 4 : metadatas.size() == 3;
+  SkYUVAIndex indices[4] = {};
+  PrepareYUVATextureIndices(metadatas, has_alpha, indices);
 
-  GrBackendFormat formats[4];
-  SkYUVAIndex indices[4] = {
-      {-1, SkColorChannel::kR},
-      {-1, SkColorChannel::kR},
-      {-1, SkColorChannel::kR},
-      {-1, SkColorChannel::kR},
-  };
   GrBackendTexture yuva_textures[4] = {};
-  const auto process_planar = [&](size_t i, ResourceFormat resource_format) {
-    auto metadata = metadatas[i];
-    metadata.resource_format = resource_format;
+  for (size_t i = 0; i < metadatas.size(); ++i) {
+    const auto& metadata = metadatas[i];
     if (!GetGrBackendTexture(metadata, &yuva_textures[i]))
       DLOG(ERROR) << "Failed to GetGrBackendTexture from a mailbox.";
-  };
-
-  if (is_i420) {
-    process_planar(0, RED_8);
-    indices[SkYUVAIndex::kY_Index].fIndex = 0;
-    indices[SkYUVAIndex::kY_Index].fChannel = SkColorChannel::kR;
-
-    process_planar(1, RED_8);
-    indices[SkYUVAIndex::kU_Index].fIndex = 1;
-    indices[SkYUVAIndex::kU_Index].fChannel = SkColorChannel::kR;
-
-    process_planar(2, RED_8);
-    indices[SkYUVAIndex::kV_Index].fIndex = 2;
-    indices[SkYUVAIndex::kV_Index].fChannel = SkColorChannel::kR;
-    if (has_alpha) {
-      process_planar(3, RED_8);
-      indices[SkYUVAIndex::kA_Index].fIndex = 3;
-      indices[SkYUVAIndex::kA_Index].fChannel = SkColorChannel::kR;
-    }
-  } else {
-    process_planar(0, RED_8);
-    indices[SkYUVAIndex::kY_Index].fIndex = 0;
-    indices[SkYUVAIndex::kY_Index].fChannel = SkColorChannel::kR;
-
-    process_planar(1, RG_88);
-    indices[SkYUVAIndex::kU_Index].fIndex = 1;
-    indices[SkYUVAIndex::kU_Index].fChannel = SkColorChannel::kR;
-
-    indices[SkYUVAIndex::kV_Index].fIndex = 1;
-    indices[SkYUVAIndex::kV_Index].fChannel = SkColorChannel::kG;
-    if (has_alpha) {
-      process_planar(2, RED_8);
-      indices[SkYUVAIndex::kA_Index].fIndex = 2;
-      indices[SkYUVAIndex::kA_Index].fChannel = SkColorChannel::kR;
-    }
   }
 
   return SkImage::MakeFromYUVATextures(
@@ -492,16 +379,6 @@ void SkiaOutputSurfaceImplNonDDL::CopyOutput(
   NOTIMPLEMENTED();
 }
 
-void SkiaOutputSurfaceImplNonDDL::AddContextLostObserver(
-    ContextLostObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void SkiaOutputSurfaceImplNonDDL::RemoveContextLostObserver(
-    ContextLostObserver* observer) {
-  observers_.RemoveObserver(observer);
-}
-
 bool SkiaOutputSurfaceImplNonDDL::WaitSyncToken(
     const gpu::SyncToken& sync_token) {
   base::WaitableEvent event;
@@ -613,12 +490,6 @@ void SkiaOutputSurfaceImplNonDDL::FinishPaint(uint64_t sync_fence_release) {
 void SkiaOutputSurfaceImplNonDDL::BufferPresented(
     const gfx::PresentationFeedback& feedback) {
   client_->DidReceivePresentationFeedback(feedback);
-}
-
-void SkiaOutputSurfaceImplNonDDL::ContextLost() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  for (auto& observer : observers_)
-    observer.OnContextLost();
 }
 
 void SkiaOutputSurfaceImplNonDDL::WaitSemaphores(
