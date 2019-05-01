@@ -29,6 +29,11 @@ extern const char kAutofillCreditCardUploadDescription[];
 extern const char kAutofillDownstreamUseGooglePayBrandingOniOSName[];
 extern const char kAutofillDownstreamUseGooglePayBrandingOniOSDescription[];
 
+// Title and description for the flag that controls whether the maximum number
+// of Autofill suggestions shown to the user is further limited.
+extern const char kAutofillPruneSuggestionsName[];
+extern const char kAutofillPruneSuggestionsDescription[];
+
 // Title and description for the flag that controls whether Autofill's
 // suggestions' labels are formatting with a mobile-friendly approach.
 extern const char kAutofillUseMobileLabelDisambiguationName[];

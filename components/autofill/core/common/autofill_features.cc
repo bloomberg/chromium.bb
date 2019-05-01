@@ -105,6 +105,9 @@ const base::Feature kAutofillManualFallback{"AutofillManualFallback",
 const base::Feature kAutofillManualFallbackPhaseTwo{
     "AutofillManualFallbackPhaseTwo", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kAutofillPruneSuggestions{
+    "AutofillPruneSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kAutofillMetadataUploads{"AutofillMetadataUploads",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 

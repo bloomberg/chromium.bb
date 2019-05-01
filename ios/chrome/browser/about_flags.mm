@@ -581,6 +581,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillUseMobileLabelDisambiguation)},
+    {"enable-autofill-prune-suggestions",
+     flag_descriptions::kAutofillPruneSuggestionsName,
+     flag_descriptions::kAutofillPruneSuggestionsDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillPruneSuggestions)},
 };
 
 // Add all switches from experimental flags to |command_line|.

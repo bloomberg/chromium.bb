@@ -42,15 +42,19 @@ const char kAutofillDownstreamUseGooglePayBrandingOniOSDescription[] =
     "When enabled, shows the Google Pay logo animation when showing payments"
     "credit card suggestions in downstream keyboard accessory";
 
+const char kAutofillPruneSuggestionsName[] = "Autofill Prune Suggestions";
+const char kAutofillPruneSuggestionsDescription[] =
+    "Further limits the number of suggestions in the Autofill dropdown.";
+
 const char kAutofillUseMobileLabelDisambiguationName[] =
     "Autofill Uses Mobile Label Disambiguation";
 const char kAutofillUseMobileLabelDisambiguationDescription[] =
     "When enabled, Autofill suggestions' labels are displayed using a "
     "mobile-friendly format.";
 
-extern const char kBreakpadNoDelayInitialUploadName[] =
+const char kBreakpadNoDelayInitialUploadName[] =
     "Remove delay on initial crash upload";
-extern const char kBreakpadNoDelayInitialUploadDescription[] =
+const char kBreakpadNoDelayInitialUploadDescription[] =
     "When enabled, the initial crash uploading will not be delayed. When "
     "disabled, initial upload is delayed until deferred initialization. This "
     "does not affect recovery mode.";

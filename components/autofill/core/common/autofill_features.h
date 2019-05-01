@@ -39,6 +39,7 @@ extern const base::Feature kAutofillGetPaymentsIdentityFromSync;
 extern const base::Feature kAutofillKeyboardAccessory;
 extern const base::Feature kAutofillManualFallback;
 extern const base::Feature kAutofillManualFallbackPhaseTwo;
+extern const base::Feature kAutofillPruneSuggestions;
 extern const base::Feature kAutofillMetadataUploads;
 extern const base::Feature kAutofillOffNoServerData;
 extern const base::Feature kAutofillOverrideWithRaterConsensus;

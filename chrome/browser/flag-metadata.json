@@ -235,6 +235,11 @@
     "expiry_milestone": 74
   },
   {
+    "name": "autofill-prune-suggestions",
+    "owners": ["ftirelo", "tmartino"],
+    "expiry_milestone": 78
+  },
+  {
     "name": "autofill-no-local-save-on-unmask-success",
     "owners": [ "jsaul@google.com" ],
     // Currently unclear if this is launching independently with M75 or

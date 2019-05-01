@@ -3916,6 +3916,11 @@ const FeatureEntry kFeatureEntries[] = {
          autofill::features::kAutofillUseMobileLabelDisambiguation)},
 #endif  // defined(OS_ANDROID)
 
+    {"autofill-prune-suggestions",
+     flag_descriptions::kAutofillPruneSuggestionsName,
+     flag_descriptions::kAutofillPruneSuggestionsDescription, kOsAll,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillPruneSuggestions)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

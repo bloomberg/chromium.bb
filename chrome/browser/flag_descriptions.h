@@ -126,6 +126,9 @@ extern const char kAutofillProfileServerValidationDescription[];
 extern const char kAutofillRejectCompanyBirthyearName[];
 extern const char kAutofillRejectCompanyBirthyearDescription[];
 
+extern const char kAutofillPruneSuggestionsName[];
+extern const char kAutofillPruneSuggestionsDescription[];
+
 extern const char kAutofillRestrictUnownedFieldsToFormlessCheckoutName[];
 extern const char kAutofillRestrictUnownedFieldsToFormlessCheckoutDescription[];
 

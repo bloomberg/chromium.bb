@@ -22,6 +22,7 @@ namespace suggestion_selection {
 
 extern const size_t kMaxSuggestedProfilesCount;
 extern const size_t kMaxUniqueSuggestionsCount;
+extern const size_t kMaxPrunedUniqueSuggestionsCount;
 
 // Matches based on prefix search, and limits number of profiles.
 // Returns the top matching suggestions based on prefix search, and adds the
