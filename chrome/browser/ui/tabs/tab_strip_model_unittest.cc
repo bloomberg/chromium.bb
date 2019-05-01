@@ -2203,6 +2203,78 @@ TEST_F(TabStripModelTest, MoveWebContentsAtWithPinned) {
   strip.CloseAllTabs();
 }
 
+TEST_F(TabStripModelTest, MoveTabNext) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  ASSERT_NO_FATAL_FAILURE(PrepareTabstripForSelectionTest(&strip, 6, 3, "3"));
+  EXPECT_EQ("0p 1p 2p 3 4 5", GetTabStripStateString(strip));
+
+  strip.MoveTabNext();
+  EXPECT_EQ("0p 1p 2p 4 3 5", GetTabStripStateString(strip));
+
+  strip.MoveTabNext();
+  EXPECT_EQ("0p 1p 2p 4 5 3", GetTabStripStateString(strip));
+
+  strip.MoveTabNext();
+  EXPECT_EQ("0p 1p 2p 4 5 3", GetTabStripStateString(strip));
+
+  strip.CloseAllTabs();
+}
+
+TEST_F(TabStripModelTest, MoveTabNext_Pinned) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  ASSERT_NO_FATAL_FAILURE(PrepareTabstripForSelectionTest(&strip, 6, 3, "0"));
+  EXPECT_EQ("0p 1p 2p 3 4 5", GetTabStripStateString(strip));
+
+  strip.MoveTabNext();
+  EXPECT_EQ("1p 0p 2p 3 4 5", GetTabStripStateString(strip));
+
+  strip.MoveTabNext();
+  EXPECT_EQ("1p 2p 0p 3 4 5", GetTabStripStateString(strip));
+
+  strip.MoveTabNext();
+  EXPECT_EQ("1p 2p 0p 3 4 5", GetTabStripStateString(strip));
+
+  strip.CloseAllTabs();
+}
+
+TEST_F(TabStripModelTest, MoveTabPrevious) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  ASSERT_NO_FATAL_FAILURE(PrepareTabstripForSelectionTest(&strip, 6, 3, "5"));
+  EXPECT_EQ("0p 1p 2p 3 4 5", GetTabStripStateString(strip));
+
+  strip.MoveTabPrevious();
+  EXPECT_EQ("0p 1p 2p 3 5 4", GetTabStripStateString(strip));
+
+  strip.MoveTabPrevious();
+  EXPECT_EQ("0p 1p 2p 5 3 4", GetTabStripStateString(strip));
+
+  strip.MoveTabPrevious();
+  EXPECT_EQ("0p 1p 2p 5 3 4", GetTabStripStateString(strip));
+
+  strip.CloseAllTabs();
+}
+
+TEST_F(TabStripModelTest, MoveTabPrevious_Pinned) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  ASSERT_NO_FATAL_FAILURE(PrepareTabstripForSelectionTest(&strip, 6, 3, "2"));
+  EXPECT_EQ("0p 1p 2p 3 4 5", GetTabStripStateString(strip));
+
+  strip.MoveTabPrevious();
+  EXPECT_EQ("0p 2p 1p 3 4 5", GetTabStripStateString(strip));
+
+  strip.MoveTabPrevious();
+  EXPECT_EQ("2p 0p 1p 3 4 5", GetTabStripStateString(strip));
+
+  strip.MoveTabPrevious();
+  EXPECT_EQ("2p 0p 1p 3 4 5", GetTabStripStateString(strip));
+
+  strip.CloseAllTabs();
+}
+
 TEST_F(TabStripModelTest, MoveSelectedTabsTo) {
   struct TestData {
     // Number of tabs the tab strip should have.

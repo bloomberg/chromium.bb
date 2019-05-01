@@ -520,6 +520,21 @@ class TabStripModel {
   // something related to their current activity.
   bool IsNewTabAtEndOfTabStrip(content::WebContents* contents) const;
 
+  // Adds the specified WebContents at the specified location.
+  // |add_types| is a bitmask of AddTabTypes; see it for details.
+  //
+  // All append/insert methods end up in this method.
+  //
+  // NOTE: adding a tab using this method does NOT query the order controller,
+  // as such the ADD_FORCE_INDEX AddTabTypes is meaningless here.  The only time
+  // the |index| is changed is if using the index would result in breaking the
+  // constraint that all pinned tabs occur before non-pinned tabs.
+  // See also AddWebContents.
+  void InsertWebContentsAtImpl(int index,
+                               std::unique_ptr<content::WebContents> contents,
+                               int add_types,
+                               const TabGroupData* group);
+
   // Closes the WebContentses at the specified indices. This causes the
   // WebContentses to be destroyed, but it may not happen immediately. If
   // the page in question has an unload event the WebContents will not be
@@ -597,6 +612,9 @@ class TabStripModel {
   // group that contains it, if any. Also deletes that group, if it now contains
   // no tabs. Returns that group.
   const TabGroupData* UngroupTab(int index);
+
+  // Changes the pinned state of the tab at |index|.
+  void SetTabPinnedImpl(int index, bool pinned);
 
   // Ensures all tabs indicated by |indices| are pinned, moving them in the
   // process if necessary. Returns the new locations of all of those tabs.
