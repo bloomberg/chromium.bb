@@ -40,7 +40,7 @@ ServiceTabLauncher::~ServiceTabLauncher() {}
 
 void ServiceTabLauncher::LaunchTab(content::BrowserContext* browser_context,
                                    const content::OpenURLParams& params,
-                                   const TabLaunchedCallback& callback) {
+                                   TabLaunchedCallback callback) {
   WindowOpenDisposition disposition = params.disposition;
   if (disposition != WindowOpenDisposition::NEW_WINDOW &&
       disposition != WindowOpenDisposition::NEW_POPUP &&
@@ -61,8 +61,9 @@ void ServiceTabLauncher::LaunchTab(content::BrowserContext* browser_context,
 
   ScopedJavaLocalRef<jobject> post_data;
 
+  // IDMap requires a pointer, so we move |callback| into a heap pointer.
   int request_id = tab_launched_callbacks_.Add(
-      std::make_unique<TabLaunchedCallback>(callback));
+      std::make_unique<TabLaunchedCallback>(std::move(callback)));
   DCHECK_GE(request_id, 1);
 
   Java_ServiceTabLauncher_launchTab(
@@ -75,9 +76,6 @@ void ServiceTabLauncher::OnTabLaunched(int request_id,
                                        content::WebContents* web_contents) {
   TabLaunchedCallback* callback = tab_launched_callbacks_.Lookup(request_id);
   DCHECK(callback);
-
-  if (callback)
-    callback->Run(web_contents);
-
+  std::move(*callback).Run(web_contents);
   tab_launched_callbacks_.Remove(request_id);
 }

@@ -1097,7 +1097,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // invoked with the appropriate WebContents* when available.
   virtual void OpenURL(SiteInstance* site_instance,
                        const OpenURLParams& params,
-                       const base::Callback<void(WebContents*)>& callback);
+                       base::OnceCallback<void(WebContents*)> callback);
 
   // Allows the embedder to record |metric| for a specific |url|.
   virtual void RecordURLMetric(const std::string& metric, const GURL& url) {}

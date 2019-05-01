@@ -30,7 +30,6 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_frame_navigation_observer.h"
 #include "content/public/test/test_navigation_observer.h"
-#include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_javascript_dialog_manager.h"
 #include "net/base/filename_util.h"
@@ -121,9 +120,9 @@ void WaitForAppModalDialog(Shell* window) {
       static_cast<ShellJavaScriptDialogManager*>(
           window->GetJavaScriptDialogManager(window->web_contents()));
 
-  scoped_refptr<MessageLoopRunner> runner = new MessageLoopRunner();
-  dialog_manager->set_dialog_request_callback(runner->QuitClosure());
-  runner->Run();
+  base::RunLoop runner;
+  dialog_manager->set_dialog_request_callback(runner.QuitClosure());
+  runner.Run();
 }
 
 RenderFrameHost* ConvertToRenderFrameHost(Shell* shell) {
@@ -160,18 +159,18 @@ void LookupAndLogNameAndIdOfFirstCamera() {
   run_loop.Run();
 }
 
-ShellAddedObserver::ShellAddedObserver() : shell_(nullptr) {
-  Shell::SetShellCreatedCallback(
-      base::Bind(&ShellAddedObserver::ShellCreated, base::Unretained(this)));
+ShellAddedObserver::ShellAddedObserver() {
+  Shell::SetShellCreatedCallback(base::BindOnce(
+      &ShellAddedObserver::ShellCreated, base::Unretained(this)));
 }
 
-ShellAddedObserver::~ShellAddedObserver() {}
+ShellAddedObserver::~ShellAddedObserver() = default;
 
 Shell* ShellAddedObserver::GetShell() {
   if (shell_)
     return shell_;
 
-  runner_ = new MessageLoopRunner();
+  runner_ = std::make_unique<base::RunLoop>();
   runner_->Run();
   return shell_;
 }
@@ -179,8 +178,8 @@ Shell* ShellAddedObserver::GetShell() {
 void ShellAddedObserver::ShellCreated(Shell* shell) {
   DCHECK(!shell_);
   shell_ = shell;
-  if (runner_.get())
-    runner_->QuitClosure().Run();
+  if (runner_)
+    runner_->Quit();
 }
 
 void IsolateOriginsForTesting(

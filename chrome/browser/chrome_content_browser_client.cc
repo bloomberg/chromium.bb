@@ -4155,7 +4155,7 @@ std::vector<std::string> ChromeContentBrowserClient::GetStartupServices() {
 void ChromeContentBrowserClient::OpenURL(
     content::SiteInstance* site_instance,
     const content::OpenURLParams& params,
-    const base::RepeatingCallback<void(content::WebContents*)>& callback) {
+    base::OnceCallback<void(content::WebContents*)> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(ShouldAllowOpenURL(site_instance, params.url));
 
@@ -4163,7 +4163,7 @@ void ChromeContentBrowserClient::OpenURL(
 
 #if defined(OS_ANDROID)
   ServiceTabLauncher::GetInstance()->LaunchTab(browser_context, params,
-                                               callback);
+                                               std::move(callback));
 #else
   NavigateParams nav_params(Profile::FromBrowserContext(browser_context),
                             params.url, params.transition);
@@ -4171,7 +4171,7 @@ void ChromeContentBrowserClient::OpenURL(
   nav_params.user_gesture = params.user_gesture;
 
   Navigate(&nav_params);
-  callback.Run(nav_params.navigated_or_inserted_contents);
+  std::move(callback).Run(nav_params.navigated_or_inserted_contents);
 #endif
 }
 

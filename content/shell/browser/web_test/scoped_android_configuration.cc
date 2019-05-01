@@ -102,28 +102,27 @@ void RedirectStderr(int fd) {
 }
 
 void FinishRedirection(
-    const base::Callback<void(int)>& redirect,
-    const base::Callback<void(std::unique_ptr<net::SocketPosix>)>&
-        transfer_socket,
+    base::OnceCallback<void(int)> redirect,
+    base::OnceCallback<void(std::unique_ptr<net::SocketPosix>)> transfer_socket,
     base::WaitableEvent* event,
     std::unique_ptr<net::SocketPosix> socket) {
-  redirect.Run(socket->socket_fd());
-  transfer_socket.Run(std::move(socket));
+  std::move(redirect).Run(socket->socket_fd());
+  std::move(transfer_socket).Run(std::move(socket));
   event->Signal();
 }
 
-void RedirectStream(
-    uint16_t port,
-    const base::Callback<void(base::WaitableEvent*,
-                              std::unique_ptr<net::SocketPosix>)>&
-        finish_redirection) {
+void RedirectStream(uint16_t port,
+                    base::OnceCallback<void(base::WaitableEvent*,
+                                            std::unique_ptr<net::SocketPosix>)>
+                        finish_redirection) {
   base::WaitableEvent redirected(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&CreateAndConnectSocket, port,
-                     base::BindOnce(finish_redirection, &redirected)));
+      base::BindOnce(
+          &CreateAndConnectSocket, port,
+          base::BindOnce(std::move(finish_redirection), &redirected)));
   base::ScopedAllowBaseSyncPrimitivesForTesting allow_wait;
   while (!redirected.IsSignaled())
     redirected.Wait();
@@ -138,20 +137,20 @@ ScopedAndroidConfiguration::ScopedAndroidConfiguration() : sockets_() {
 ScopedAndroidConfiguration::~ScopedAndroidConfiguration() = default;
 
 void ScopedAndroidConfiguration::RedirectStreams() {
-  // Unretained is safe here because all executions of add_socket finish
-  // before this function returns.
-  base::Callback<void(std::unique_ptr<net::SocketPosix>)> add_socket =
-      base::Bind(&ScopedAndroidConfiguration::AddSocket,
-                 base::Unretained(this));
-
   std::string stdout_port_str =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueNative(
           switches::kAndroidStdoutPort);
   unsigned stdout_port = 0;
   if (base::StringToUint(stdout_port_str, &stdout_port)) {
-    RedirectStream(base::checked_cast<uint16_t>(stdout_port),
-                   base::Bind(&FinishRedirection, base::Bind(&RedirectStdout),
-                              add_socket));
+    auto redirect_callback = base::BindOnce(&RedirectStdout);
+    // Unretained is safe here because all executions of transfer_callback
+    // finish before this function returns.
+    auto transfer_callback = base::BindOnce(
+        &ScopedAndroidConfiguration::AddSocket, base::Unretained(this));
+    RedirectStream(
+        base::checked_cast<uint16_t>(stdout_port),
+        base::BindOnce(&FinishRedirection, std::move(redirect_callback),
+                       std::move(transfer_callback)));
   }
 
   std::string stdin_port_str =
@@ -159,9 +158,15 @@ void ScopedAndroidConfiguration::RedirectStreams() {
           switches::kAndroidStdinPort);
   unsigned stdin_port = 0;
   if (base::StringToUint(stdin_port_str, &stdin_port)) {
+    auto redirect_callback = base::BindOnce(&RedirectStdin);
+    // Unretained is safe here because all executions of transfer_callback
+    // finish before this function returns.
+    auto transfer_callback = base::BindOnce(
+        &ScopedAndroidConfiguration::AddSocket, base::Unretained(this));
     RedirectStream(
         base::checked_cast<uint16_t>(stdin_port),
-        base::Bind(&FinishRedirection, base::Bind(&RedirectStdin), add_socket));
+        base::BindOnce(&FinishRedirection, std::move(redirect_callback),
+                       std::move(transfer_callback)));
   }
 
   std::string stderr_port_str =
@@ -169,9 +174,15 @@ void ScopedAndroidConfiguration::RedirectStreams() {
           switches::kAndroidStderrPort);
   unsigned stderr_port = 0;
   if (base::StringToUint(stderr_port_str, &stderr_port)) {
-    RedirectStream(base::checked_cast<uint16_t>(stderr_port),
-                   base::Bind(&FinishRedirection, base::Bind(&RedirectStderr),
-                              add_socket));
+    auto redirect_callback = base::BindOnce(&RedirectStderr);
+    // Unretained is safe here because all executions of transfer_callback
+    // finish before this function returns.
+    auto transfer_callback = base::BindOnce(
+        &ScopedAndroidConfiguration::AddSocket, base::Unretained(this));
+    RedirectStream(
+        base::checked_cast<uint16_t>(stderr_port),
+        base::BindOnce(&FinishRedirection, std::move(redirect_callback),
+                       std::move(transfer_callback)));
   }
 }
 

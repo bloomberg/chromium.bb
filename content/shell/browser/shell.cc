@@ -55,7 +55,7 @@ const int kDefaultTestWindowWidthDip = 800;
 const int kDefaultTestWindowHeightDip = 600;
 
 std::vector<Shell*> Shell::windows_;
-base::Callback<void(Shell*)> Shell::shell_created_callback_;
+base::OnceCallback<void(Shell*)> Shell::shell_created_callback_;
 
 class Shell::DevToolsWebContentsObserver : public WebContentsObserver {
  public:
@@ -107,10 +107,8 @@ Shell::Shell(std::unique_ptr<WebContents> web_contents,
 
   windows_.push_back(this);
 
-  if (!shell_created_callback_.is_null()) {
-    shell_created_callback_.Run(this);
-    shell_created_callback_.Reset();
-  }
+  if (shell_created_callback_)
+    std::move(shell_created_callback_).Run(this);
 }
 
 Shell::~Shell() {
@@ -197,8 +195,8 @@ void Shell::QuitMainMessageLoopForTesting() {
 }
 
 void Shell::SetShellCreatedCallback(
-    base::Callback<void(Shell*)> shell_created_callback) {
-  DCHECK(shell_created_callback_.is_null());
+    base::OnceCallback<void(Shell*)> shell_created_callback) {
+  DCHECK(!shell_created_callback_);
   shell_created_callback_ = std::move(shell_created_callback);
 }
 

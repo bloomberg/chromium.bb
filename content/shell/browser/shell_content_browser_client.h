@@ -78,7 +78,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
   void OpenURL(SiteInstance* site_instance,
                const OpenURLParams& params,
-               const base::Callback<void(WebContents*)>& callback) override;
+               base::OnceCallback<void(WebContents*)> callback) override;
   std::unique_ptr<LoginDelegate> CreateLoginDelegate(
       const net::AuthChallengeInfo& auth_info,
       content::WebContents* web_contents,

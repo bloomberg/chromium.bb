@@ -483,10 +483,11 @@ ShellContentBrowserClient::GetDevToolsManagerDelegate() {
 void ShellContentBrowserClient::OpenURL(
     SiteInstance* site_instance,
     const OpenURLParams& params,
-    const base::Callback<void(WebContents*)>& callback) {
-  callback.Run(Shell::CreateNewWindow(site_instance->GetBrowserContext(),
-                                      params.url, nullptr, gfx::Size())
-                   ->web_contents());
+    base::OnceCallback<void(WebContents*)> callback) {
+  std::move(callback).Run(
+      Shell::CreateNewWindow(site_instance->GetBrowserContext(), params.url,
+                             nullptr, gfx::Size())
+          ->web_contents());
 }
 
 std::unique_ptr<LoginDelegate> ShellContentBrowserClient::CreateLoginDelegate(

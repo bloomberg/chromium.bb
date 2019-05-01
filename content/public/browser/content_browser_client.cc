@@ -651,9 +651,9 @@ ContentBrowserClient::GetReceiverPresentationServiceDelegate(
 void ContentBrowserClient::OpenURL(
     content::SiteInstance* site_instance,
     const content::OpenURLParams& params,
-    const base::Callback<void(content::WebContents*)>& callback) {
+    base::OnceCallback<void(content::WebContents*)> callback) {
   DCHECK(site_instance);
-  callback.Run(nullptr);
+  std::move(callback).Run(nullptr);
 }
 
 std::string ContentBrowserClient::GetMetricSuffixForURL(const GURL& url) {

@@ -124,7 +124,7 @@ class Shell : public WebContentsDelegate,
 
   // Used for content_browsertests. Called once.
   static void SetShellCreatedCallback(
-      base::Callback<void(Shell*)> shell_created_callback);
+      base::OnceCallback<void(Shell*)> shell_created_callback);
 
   WebContents* web_contents() const { return web_contents_.get(); }
   gfx::NativeWindow window() { return window_; }
@@ -310,7 +310,7 @@ class Shell : public WebContentsDelegate,
   // of ordering.
   static std::vector<Shell*> windows_;
 
-  static base::Callback<void(Shell*)> shell_created_callback_;
+  static base::OnceCallback<void(Shell*)> shell_created_callback_;
 };
 
 }  // namespace content

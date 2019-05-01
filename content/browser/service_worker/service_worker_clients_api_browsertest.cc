@@ -94,12 +94,11 @@ class ServiceWorkerClientsContentBrowserClient
     return allow_open_url_;
   }
 
-  void OpenURL(
-      SiteInstance* site_instance,
-      const OpenURLParams& params,
-      const base::RepeatingCallback<void(WebContents*)>& callback) override {
+  void OpenURL(SiteInstance* site_instance,
+               const OpenURLParams& params,
+               base::OnceCallback<void(WebContents*)> callback) override {
     opened_url_ = params.url;
-    callback.Run(nullptr);
+    std::move(callback).Run(nullptr);
     if (opened_url_callback_)
       std::move(opened_url_callback_).Run();
   }
