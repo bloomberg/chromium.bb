@@ -866,7 +866,7 @@ bool UserSessionManager::RespectLocalePreference(
 bool UserSessionManager::RestartToApplyPerSessionFlagsIfNeed(
     Profile* profile,
     bool early_restart) {
-  if (!SessionManagerClient::Get()->SupportsRestartToApplyUserFlags())
+  if (!SessionManagerClient::Get()->SupportsBrowserRestart())
     return false;
 
   if (ProfileHelper::IsSigninProfile(profile) ||

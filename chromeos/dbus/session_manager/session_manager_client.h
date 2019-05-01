@@ -309,8 +309,10 @@ class COMPONENT_EXPORT(SESSION_MANAGER) SessionManagerClient {
                            VoidDBusMethodCallback callback) = 0;
 
   // Returns whether session manager can be used to restart Chrome in order to
-  // apply per-user session flags.
-  virtual bool SupportsRestartToApplyUserFlags() const = 0;
+  // apply per-user session flags, or start guest session.
+  // This returns true for the real session manager client implementation, and
+  // false for the fake (unless explicitly set by a test).
+  virtual bool SupportsBrowserRestart() const = 0;
 
   // Sets the flags to be applied next time by the session manager when Chrome
   // is restarted inside an already started session for a particular user.

@@ -1838,6 +1838,7 @@ test("browser_tests") {
         "../browser/chromeos/login/enterprise_enrollment_browsertest.cc",
         "../browser/chromeos/login/eula_browsertest.cc",
         "../browser/chromeos/login/existing_user_controller_browsertest.cc",
+        "../browser/chromeos/login/guest_login_browsertest.cc",
         "../browser/chromeos/login/hid_detection_browsertest.cc",
         "../browser/chromeos/login/kiosk_browsertest.cc",
         "../browser/chromeos/login/lock/fingerprint_unlock_browsertest.cc",

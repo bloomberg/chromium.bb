@@ -306,8 +306,7 @@ class SiteIsolationFlagHandlingTest
     // Note that AttemptRestart() is mocked out in UserSessionManager through
     // |SetAttemptRestartClosureInTests| (set up in SetUpOnMainThread).
     SessionManagerClient::InitializeFake();
-    FakeSessionManagerClient::Get()->set_supports_restart_to_apply_user_flags(
-        true);
+    FakeSessionManagerClient::Get()->set_supports_browser_restart(true);
   }
 
   void SetUpOnMainThread() override {

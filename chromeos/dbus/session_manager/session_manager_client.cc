@@ -369,7 +369,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
     CallStorePolicy(descriptor, policy_blob, std::move(callback));
   }
 
-  bool SupportsRestartToApplyUserFlags() const override { return true; }
+  bool SupportsBrowserRestart() const override { return true; }
 
   void SetFlagsForUser(const cryptohome::AccountIdentifier& cryptohome_id,
                        const std::vector<std::string>& flags) override {

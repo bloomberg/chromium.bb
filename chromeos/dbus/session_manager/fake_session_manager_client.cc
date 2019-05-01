@@ -271,7 +271,16 @@ void FakeSessionManagerClient::EmitAshInitialized() {}
 
 void FakeSessionManagerClient::RestartJob(int socket_fd,
                                           const std::vector<std::string>& argv,
-                                          VoidDBusMethodCallback callback) {}
+                                          VoidDBusMethodCallback callback) {
+  DCHECK(supports_browser_restart_);
+
+  restart_job_argv_ = argv;
+  if (restart_job_callback_)
+    std::move(restart_job_callback_).Run();
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), true));
+}
 
 void FakeSessionManagerClient::SaveLoginPassword(const std::string& password) {}
 
@@ -516,8 +525,8 @@ void FakeSessionManagerClient::StorePolicy(
   }
 }
 
-bool FakeSessionManagerClient::SupportsRestartToApplyUserFlags() const {
-  return supports_restart_to_apply_user_flags_;
+bool FakeSessionManagerClient::SupportsBrowserRestart() const {
+  return supports_browser_restart_;
 }
 
 void FakeSessionManagerClient::SetFlagsForUser(

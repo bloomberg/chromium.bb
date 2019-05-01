@@ -179,8 +179,7 @@ class AutoLaunchedKioskTest : public MixinBasedInProcessBrowserTest {
 
     SessionManagerClient::InitializeFakeInMemory();
 
-    FakeSessionManagerClient::Get()->set_supports_restart_to_apply_user_flags(
-        true);
+    FakeSessionManagerClient::Get()->set_supports_browser_restart(true);
     FakeSessionManagerClient::Get()->set_device_policy(
         device_policy_helper_.device_policy()->GetBlob());
     FakeSessionManagerClient::Get()->set_device_local_account_policy(

@@ -69,6 +69,13 @@ bool LoginScreenTester::ClickAddUserButton() {
   return success;
 }
 
+bool LoginScreenTester::ClickGuestButton() {
+  ash::mojom::LoginScreenTestApiAsyncWaiter login_screen(test_api_.get());
+  bool success;
+  login_screen.ClickGuestButton(&success);
+  return success;
+}
+
 bool LoginScreenTester::WaitForUiUpdate(int64_t previous_update_count) {
   ash::mojom::LoginScreenTestApiAsyncWaiter login_screen(test_api_.get());
   bool success;

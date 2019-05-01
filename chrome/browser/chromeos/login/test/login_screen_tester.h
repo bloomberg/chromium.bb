@@ -29,6 +29,7 @@ class LoginScreenTester {
 
   // Returns true on success (i.e. button is  not disabled).
   bool ClickAddUserButton();
+  bool ClickGuestButton();
 
   // Blocks until LoginShelfView::ui_update_count() is greater then
   // |previous_update_count|. Returns true on success, false on error.

@@ -102,7 +102,7 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
   void StorePolicy(const login_manager::PolicyDescriptor& descriptor,
                    const std::string& policy_blob,
                    VoidDBusMethodCallback callback) override;
-  bool SupportsRestartToApplyUserFlags() const override;
+  bool SupportsBrowserRestart() const override;
   void SetFlagsForUser(const cryptohome::AccountIdentifier& cryptohome_id,
                        const std::vector<std::string>& flags) override;
   void GetServerBackedStateKeys(StateKeysCallback callback) override;
@@ -133,14 +133,21 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
                        std::vector<std::string>* out_flags_for_user) const;
 
   // Sets whether FakeSessionManagerClient should advertise (through
-  // |SupportsRestartToApplyUserFlags|) that it supports restarting chrome to
-  // apply user-session flags. The default is |false|.
-  void set_supports_restart_to_apply_user_flags(
-      bool supports_restart_to_apply_user_flags) {
-    supports_restart_to_apply_user_flags_ =
-        supports_restart_to_apply_user_flags;
+  // |SupportsBrowserRestart|) that it supports restarting Chrome. For example,
+  // to apply user-session flags, or to start guest session.
+  // The default is |false|.
+  void set_supports_browser_restart(bool supports_browser_restart) {
+    supports_browser_restart_ = supports_browser_restart;
   }
 
+  // Requires set_support_restart_job() to be called.
+  void set_restart_job_callback(base::OnceClosure callback) {
+    restart_job_callback_ = std::move(callback);
+  }
+
+  const base::Optional<std::vector<std::string>>& restart_job_argv() const {
+    return restart_job_argv_;
+  }
   // If |force_failure| is true, forces StorePolicy() to fail.
   void ForceStorePolicyFailure(bool force_failure) {
     force_store_policy_failure_ = force_failure;
@@ -245,7 +252,15 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
   }
 
  private:
-  bool supports_restart_to_apply_user_flags_ = false;
+  // Whether browser restarts should be handled - intended for use in tests.
+  bool supports_browser_restart_ = false;
+
+  // Callback that will be run, if set, when RestartJob() is called.
+  base::OnceClosure restart_job_callback_;
+
+  // If restart job was requested, and the client supports restart job, the
+  // requested restarted arguments.
+  base::Optional<std::vector<std::string>> restart_job_argv_;
 
   base::ObserverList<Observer>::Unchecked observers_;
   SessionManagerClient::ActiveSessionsMap user_sessions_;

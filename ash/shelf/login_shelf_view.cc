@@ -532,6 +532,15 @@ bool LoginShelfView::SimulateAddUserButtonForTesting() {
   return true;
 }
 
+bool LoginShelfView::SimulateGuestButtonForTesting() {
+  views::View* guest_login_button = GetViewByID(kBrowseAsGuest);
+  if (!guest_login_button->enabled())
+    return false;
+
+  Shell::Get()->login_screen_controller()->LoginAsGuest();
+  return true;
+}
+
 void LoginShelfView::InstallTestUiUpdateDelegate(
     std::unique_ptr<TestUiUpdateDelegate> delegate) {
   DCHECK(!test_ui_update_delegate_.get());

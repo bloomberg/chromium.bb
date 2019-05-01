@@ -348,7 +348,7 @@ void RestartChrome(const base::CommandLine& command_line) {
   }
   restart_requested = true;
 
-  if (!base::SysInfo::IsRunningOnChromeOS()) {
+  if (!SessionManagerClient::Get()->SupportsBrowserRestart()) {
     // Do nothing when running as test on bots or a dev box.
     const base::CommandLine* current_command_line =
         base::CommandLine::ForCurrentProcess();

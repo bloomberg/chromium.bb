@@ -213,6 +213,12 @@ void LoginScreenTestApi::ClickAddUserButton(
   std::move(callback).Run(view && view->SimulateAddUserButtonForTesting());
 }
 
+void LoginScreenTestApi::ClickGuestButton(ClickGuestButtonCallback callback) {
+  LoginShelfView* view = GetLoginShelfView();
+
+  std::move(callback).Run(view && view->SimulateGuestButtonForTesting());
+}
+
 void LoginScreenTestApi::WaitForUiUpdate(int64_t previous_update_count,
                                          WaitForUiUpdateCallback callback) {
   LoginShelfView* view = GetLoginShelfView();

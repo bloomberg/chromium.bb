@@ -14,7 +14,8 @@
 
 namespace base {
 class CommandLine;
-}
+class Value;
+}  // namespace base
 
 namespace chromeos {
 namespace test {
@@ -26,7 +27,8 @@ namespace test {
 // runs. If a user session was active in the previous run, this will set up
 // command line to restore session for that user, which can be useful for
 // testing chrome restart to apply per-session flags, or session restore on
-// crash.
+// crash. Additionally, it respects restart job arguments if one was requested
+// (restart job is used to restart session as guest user).
 class SessionFlagsManager {
  public:
   // Pair of switch name and value. The value can be empty.
@@ -43,7 +45,8 @@ class SessionFlagsManager {
   // the test command line. The file will contain session information saved
   // during the previous (PRE_) browser test step. The information includes:
   // *   the active user information
-  // *   the active user's per-session flags.
+  // *   the active user's per-session flags
+  // *   restart job flags, if restart job was requested.
   //
   // If the backing file is not found, or empty, command line will be
   // set up with login manager flags so test starts on the login screen.
@@ -79,6 +82,7 @@ class SessionFlagsManager {
 
   void LoadStateFromBackingFile();
   void StoreStateToBackingFile();
+  base::Value GetSwitchesValueFromArgv(const std::vector<std::string>& argv);
 
   // The mode this manager is running in.
   Mode mode_ = Mode::LOGIN_SCREEN;
@@ -95,6 +99,9 @@ class SessionFlagsManager {
   std::string user_id_;
   std::string user_hash_;
   base::Optional<std::vector<Switch>> user_flags_;
+
+  // List of switches passed as a restart job arguments.
+  base::Optional<std::vector<Switch>> restart_job_;
 
   // If |session_restore_enabled_| is set, the path to the file where session
   // state is saved.

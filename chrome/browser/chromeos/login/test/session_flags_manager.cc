@@ -15,11 +15,14 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/common/chrome_paths.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
+#include "components/user_manager/user_names.h"
 #include "third_party/cros_system_api/switches/chrome_switches.h"
 
 namespace chromeos {
@@ -30,6 +33,7 @@ namespace {
 // Keys for values in dictionary used to preserve session manager state.
 constexpr char kUserIdKey[] = "active_user_id";
 constexpr char kUserHashKey[] = "active_user_hash";
+constexpr char kRestartJobKey[] = "restart_job";
 constexpr char kUserFlagsKey[] = "user_flags";
 constexpr char kFlagNameKey[] = "name";
 constexpr char kFlagValueKey[] = "value";
@@ -67,10 +71,22 @@ void SessionFlagsManager::SetDefaultLoginSwitches(
 
 void SessionFlagsManager::AppendSwitchesToCommandLine(
     base::CommandLine* command_line) {
-  if (mode_ == Mode::LOGIN_SCREEN || user_id_.empty()) {
+  if (restart_job_.has_value()) {
+    DCHECK_EQ(mode_, Mode::LOGIN_SCREEN_WITH_SESSION_RESTORE);
+    for (const auto& item : *restart_job_) {
+      // Do not override flags added to test command line by default.
+      if (command_line->HasSwitch(item.first))
+        continue;
+      command_line->AppendSwitchASCII(item.first, item.second);
+    }
+  }
+
+  if (mode_ == Mode::LOGIN_SCREEN ||
+      (user_id_.empty() && !restart_job_.has_value())) {
     command_line->AppendSwitch(switches::kLoginManager);
     command_line->AppendSwitch(switches::kForceLoginManagerInTests);
-  } else {
+    command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
+  } else if (!user_id_.empty()) {
     DCHECK_EQ(mode_, Mode::LOGIN_SCREEN_WITH_SESSION_RESTORE);
     command_line->AppendSwitchASCII(switches::kLoginUser, user_id_);
     command_line->AppendSwitchASCII(switches::kLoginProfile, user_hash_);
@@ -109,21 +125,35 @@ void SessionFlagsManager::LoadStateFromBackingFile() {
 
   DCHECK(value->is_dict());
   const std::string* user_id = value->FindStringKey(kUserIdKey);
-  if (!user_id || user_id->empty())
-    return;
+  if (user_id && !user_id->empty()) {
+    user_id_ = *user_id;
+  }
 
-  user_id_ = *user_id;
-  user_hash_ = *value->FindStringKey(kUserHashKey);
+  const std::string* user_hash = value->FindStringKey(kUserHashKey);
+  if (user_hash && !user_hash->empty()) {
+    user_hash_ = *user_hash;
+  }
 
   base::Value* user_flags = value->FindListKey(kUserFlagsKey);
-  if (!user_flags)
-    return;
+  if (user_flags) {
+    user_flags_ = std::vector<Switch>();
+    for (const base::Value& flag : user_flags->GetList()) {
+      DCHECK(flag.is_dict());
+      user_flags_->emplace_back(
+          std::make_pair(*flag.FindStringKey(kFlagNameKey),
+                         *flag.FindStringKey(kFlagValueKey)));
+    }
+  }
 
-  user_flags_ = std::vector<Switch>();
-  for (const base::Value& flag : user_flags->GetList()) {
-    DCHECK(flag.is_dict());
-    user_flags_->emplace_back(std::make_pair(
-        *flag.FindStringKey(kFlagNameKey), *flag.FindStringKey(kFlagValueKey)));
+  base::Value* restart_job = value->FindListKey(kRestartJobKey);
+  if (restart_job) {
+    restart_job_ = std::vector<Switch>();
+    for (const base::Value& job_switch : restart_job->GetList()) {
+      DCHECK(job_switch.is_dict());
+      restart_job_->emplace_back(
+          std::make_pair(*job_switch.FindStringKey(kFlagNameKey),
+                         *job_switch.FindStringKey(kFlagValueKey)));
+    }
   }
 }
 
@@ -132,49 +162,84 @@ void SessionFlagsManager::StoreStateToBackingFile() {
       FakeSessionManagerClient::Get()->user_sessions();
   const bool session_active =
       !sessions.empty() && !FakeSessionManagerClient::Get()->session_stopped();
-
+  const bool has_restart_job =
+      FakeSessionManagerClient::Get()->restart_job_argv().has_value();
   // If a user session is not active, clear the backing file so default flags
   // are used next time.
-  if (!session_active) {
+  if (!session_active && !has_restart_job) {
     base::DeleteFile(backing_file_, false /*recursive*/);
     return;
   }
 
-  // Currently, only support single user sessions.
-  DCHECK_EQ(1u, sessions.size());
-  const auto& session = sessions.begin();
+  std::string user_id;
+  std::string user_profile;
+  if (has_restart_job) {
+    // Set guest user ID, so it can be used to retrieve user flags.
+    // Restart job is only used for guest login, and the command line it sets
+    // up is expected to already contain switches::kLoginUser and
+    // switches::kLoginProfile. There is a DCHECK below to ensure that restart
+    // job sets these flags to expected guest user values.
+    user_id = user_manager::kGuestUserName;
+  } else {
+    // Currently, only support single user sessions.
+    DCHECK_EQ(1u, sessions.size());
+    user_id = sessions.begin()->first;
+    user_profile = sessions.begin()->second;
+  }
 
   base::Value cached_state(base::Value::Type::DICTIONARY);
-  cached_state.SetKey(kUserIdKey, base::Value(session->first));
-  cached_state.SetKey(kUserHashKey, base::Value(session->second));
+
+  // Restart job command line should already contain login user and profile
+  // switches, no reason to store it separately.
+  if (!has_restart_job && !user_id.empty()) {
+    DCHECK(!user_profile.empty());
+    cached_state.SetKey(kUserIdKey, base::Value(user_id));
+    cached_state.SetKey(kUserHashKey, base::Value(user_profile));
+  }
 
   std::vector<Switch> user_flag_args;
   std::vector<std::string> raw_flags;
   const bool has_user_flags = FakeSessionManagerClient::Get()->GetFlagsForUser(
       cryptohome::CreateAccountIdentifierFromIdentification(
-          cryptohome::Identification::FromString(session->first)),
+          cryptohome::Identification::FromString(user_id)),
       &raw_flags);
   if (has_user_flags) {
     std::vector<std::string> argv = {"" /* Empty program */};
     argv.insert(argv.end(), raw_flags.begin(), raw_flags.end());
+    cached_state.SetKey(kUserFlagsKey, GetSwitchesValueFromArgv(argv));
+  }
 
-    // Parse flag name-value pairs using command line initialization.
-    base::CommandLine cmd_line(base::CommandLine::NO_PROGRAM);
-    cmd_line.InitFromArgv(argv);
+  if (has_restart_job) {
+    const std::vector<std::string>& argv =
+        FakeSessionManagerClient::Get()->restart_job_argv().value();
+    DCHECK(base::ContainsValue(
+        argv, base::StringPrintf("--%s=%s", switches::kLoginUser,
+                                 user_manager::kGuestUserName)));
+    DCHECK(base::ContainsValue(
+        argv, base::StringPrintf("--%s=%s", switches::kLoginProfile, "user")));
 
-    base::Value flag_list(base::Value::Type::LIST);
-    for (const auto& flag : cmd_line.GetSwitches()) {
-      base::Value flag_value(base::Value::Type::DICTIONARY);
-      flag_value.SetKey(kFlagNameKey, base::Value(flag.first));
-      flag_value.SetKey(kFlagValueKey, base::Value(flag.second));
-
-      flag_list.GetList().emplace_back(std::move(flag_value));
-    }
-    cached_state.SetKey(kUserFlagsKey, std::move(flag_list));
+    cached_state.SetKey(kRestartJobKey, GetSwitchesValueFromArgv(argv));
   }
 
   JSONFileValueSerializer serializer(backing_file_);
   serializer.Serialize(cached_state);
+}
+
+base::Value SessionFlagsManager::GetSwitchesValueFromArgv(
+    const std::vector<std::string>& argv) {
+  // Parse flag name-value pairs using command line initialization.
+  base::CommandLine cmd_line(base::CommandLine::NO_PROGRAM);
+  cmd_line.InitFromArgv(argv);
+
+  base::Value flag_list(base::Value::Type::LIST);
+  for (const auto& flag : cmd_line.GetSwitches()) {
+    base::Value flag_value(base::Value::Type::DICTIONARY);
+    flag_value.SetKey(kFlagNameKey, base::Value(flag.first));
+    flag_value.SetKey(kFlagValueKey, base::Value(flag.second));
+
+    flag_list.GetList().emplace_back(std::move(flag_value));
+  }
+  return flag_list;
 }
 
 }  // namespace test
