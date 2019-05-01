@@ -140,8 +140,21 @@ TEST_F(NavigatorShareTest, ShareText) {
   EXPECT_EQ(mock_share_service().text(), message);
   EXPECT_EQ(mock_share_service().url(), KURL(url));
   EXPECT_EQ(mock_share_service().files().size(), 0U);
-  EXPECT_TRUE(
-      UseCounter::IsCounted(GetDocument(), WebFeature::kWebShareWithoutFiles));
+  EXPECT_TRUE(UseCounter::IsCounted(
+      GetDocument(), WebFeature::kWebShareSuccessfulWithoutFiles));
+}
+
+File* CreateSampleFile(ExecutionContext* context,
+                       const String& file_name,
+                       const String& content_type,
+                       const String& file_contents) {
+  HeapVector<ArrayBufferOrArrayBufferViewOrBlobOrUSVString> blob_parts;
+  blob_parts.push_back(ArrayBufferOrArrayBufferViewOrBlobOrUSVString());
+  blob_parts.back().SetUSVString(file_contents);
+
+  FilePropertyBag file_property_bag;
+  file_property_bag.setType(content_type);
+  return File::Create(context, blob_parts, file_name, &file_property_bag);
 }
 
 TEST_F(NavigatorShareTest, ShareFile) {
@@ -149,16 +162,9 @@ TEST_F(NavigatorShareTest, ShareFile) {
   const String content_type = "image/svg+xml";
   const String file_contents = "<svg></svg>";
 
-  HeapVector<ArrayBufferOrArrayBufferViewOrBlobOrUSVString> blob_parts;
-  blob_parts.push_back(ArrayBufferOrArrayBufferViewOrBlobOrUSVString());
-  blob_parts.back().SetUSVString(file_contents);
-
-  FilePropertyBag file_property_bag;
-  file_property_bag.setType(content_type);
-
   HeapVector<Member<File>> files;
-  files.push_back(File::Create(ExecutionContext::From(GetScriptState()),
-                               blob_parts, file_name, &file_property_bag));
+  files.push_back(CreateSampleFile(ExecutionContext::From(GetScriptState()),
+                                   file_name, content_type, file_contents));
 
   ShareData share_data;
   share_data.setFiles(files);
@@ -169,8 +175,8 @@ TEST_F(NavigatorShareTest, ShareFile) {
   EXPECT_EQ(mock_share_service().files()[0]->blob->GetType(), content_type);
   EXPECT_EQ(mock_share_service().files()[0]->blob->size(),
             file_contents.length());
-  EXPECT_TRUE(UseCounter::IsCounted(GetDocument(),
-                                    WebFeature::kWebShareContainingFiles));
+  EXPECT_TRUE(UseCounter::IsCounted(
+      GetDocument(), WebFeature::kWebShareSuccessfulContainingFiles));
 }
 
 TEST_F(NavigatorShareTest, CancelShare) {
@@ -180,8 +186,26 @@ TEST_F(NavigatorShareTest, CancelShare) {
 
   mock_share_service().set_error(mojom::blink::ShareError::CANCELED);
   Share(share_data);
-  EXPECT_TRUE(
-      UseCounter::IsCounted(GetDocument(), WebFeature::kWebShareCancelled));
+  EXPECT_TRUE(UseCounter::IsCounted(
+      GetDocument(), WebFeature::kWebShareUnsuccessfulWithoutFiles));
+}
+
+TEST_F(NavigatorShareTest, CancelShareWithFile) {
+  const String file_name = "counts.csv";
+  const String content_type = "text/csv";
+  const String file_contents = "1,2,3";
+
+  HeapVector<Member<File>> files;
+  files.push_back(CreateSampleFile(ExecutionContext::From(GetScriptState()),
+                                   file_name, content_type, file_contents));
+
+  ShareData share_data;
+  share_data.setFiles(files);
+
+  mock_share_service().set_error(mojom::blink::ShareError::CANCELED);
+  Share(share_data);
+  EXPECT_TRUE(UseCounter::IsCounted(
+      GetDocument(), WebFeature::kWebShareUnsuccessfulContainingFiles));
 }
 
 }  // namespace blink

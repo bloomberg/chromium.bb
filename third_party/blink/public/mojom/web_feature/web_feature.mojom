@@ -2276,9 +2276,10 @@ enum WebFeature {
   kV8RTCQuicTransport_SendDatagram_Method = 2869,
   kV8RTCQuicTransport_ReceiveDatagrams_Method = 2870,
   kCSSValueContainStyle = 2871,
-  kWebShareContainingFiles = 2872,
-  kWebShareWithoutFiles = 2873,
-  kWebShareCancelled = 2874,
+  kWebShareSuccessfulContainingFiles = 2872,
+  kWebShareSuccessfulWithoutFiles = 2873,
+  kWebShareUnsuccessfulContainingFiles = 2874,
+  kWebShareUnsuccessfulWithoutFiles = 2875,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

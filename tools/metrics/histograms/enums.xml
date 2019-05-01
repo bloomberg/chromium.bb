@@ -22932,9 +22932,10 @@ Called by update_net_error_codes.py.-->
   <int value="2869" label="V8RTCQuicTransport_SendDatagram_Method"/>
   <int value="2870" label="V8RTCQuicTransport_ReceiveDatagrams_Method"/>
   <int value="2871" label="CSSValueContainStyle"/>
-  <int value="2872" label="WebShareContainingFiles"/>
-  <int value="2873" label="WebShareWithoutFiles"/>
-  <int value="2874" label="WebShareCancelled"/>
+  <int value="2872" label="WebShareSuccessfulContainingFiles"/>
+  <int value="2873" label="WebShareSuccessfulWithoutFiles"/>
+  <int value="2874" label="WebShareUnsuccessfulContainingFiles"/>
+  <int value="2875" label="WebShareUnsuccessfulWithoutFiles"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
