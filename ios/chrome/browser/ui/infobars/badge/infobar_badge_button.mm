@@ -85,9 +85,13 @@ const CGFloat kCircularCornerRadiusDivisor = 2.0;
     self.hidden = !display;
   };
   if (animated) {
+    // Shrink badge to nothing before animating it's expansion back to original
+    // scale.
+    self.transform = CGAffineTransformMakeScale(0, 0);
+    changeBadgeDisplay();
     [UIView animateWithDuration:kButtonAnimationDuration
                      animations:^{
-                       changeBadgeDisplay();
+                       self.transform = CGAffineTransformIdentity;
                      }];
 
   } else {
