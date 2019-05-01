@@ -51,6 +51,7 @@ class NigoriModelTypeProcessor : public ModelTypeProcessor,
                         NigoriMetadataBatch nigori_metadata) override;
   void Put(std::unique_ptr<EntityData> entity_data) override;
   NigoriMetadataBatch GetMetadata() override;
+  void ReportError(const ModelError& error) override;
 
   bool IsConnectedForTest() const;
 

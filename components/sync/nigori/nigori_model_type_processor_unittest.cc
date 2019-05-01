@@ -493,6 +493,76 @@ TEST_F(NigoriModelTypeProcessorTest, ShouldStopSyncingAndClearMetadata) {
   EXPECT_FALSE(processor()->IsConnectedForTest());
 }
 
+TEST_F(NigoriModelTypeProcessorTest, ShouldDisconnectWhenMergeSyncDataFails) {
+  SimulateModelReadyToSync(/*initial_sync_done=*/false);
+
+  syncer::DataTypeActivationRequest request;
+  base::MockCallback<ModelErrorHandler> error_handler_callback;
+  request.error_handler = error_handler_callback.Get();
+  request.cache_guid = kCacheGuid;
+  processor()->OnSyncStarting(request, base::DoNothing());
+  SimulateConnectSync();
+
+  // Simulate returning error at MergeSyncData()
+  ON_CALL(*mock_nigori_sync_bridge(), MergeSyncData(_))
+      .WillByDefault([&](const base::Optional<EntityData>& data) {
+        return ModelError(FROM_HERE, "some error");
+      });
+
+  UpdateResponseDataList updates;
+  updates.push_back(CreateDummyNigoriUpdateResponseData(
+      /*keystore_decryptor_token_key_name=*/"some key",
+      /*server_version=*/1));
+
+  ASSERT_TRUE(processor()->IsConnectedForTest());
+  EXPECT_CALL(error_handler_callback, Run(_));
+  processor()->OnUpdateReceived(CreateDummyModelTypeState(),
+                                std::move(updates));
+  EXPECT_FALSE(processor()->IsConnectedForTest());
+}
+
+TEST_F(NigoriModelTypeProcessorTest,
+       ShouldDisconnectWhenApplySyncChangesFails) {
+  SimulateModelReadyToSync(/*initial_sync_done=*/true, /*server_version=*/1);
+
+  syncer::DataTypeActivationRequest request;
+  base::MockCallback<ModelErrorHandler> error_handler_callback;
+  request.error_handler = error_handler_callback.Get();
+  request.cache_guid = kCacheGuid;
+  processor()->OnSyncStarting(request, base::DoNothing());
+  SimulateConnectSync();
+
+  // Simulate returning error at ApplySyncChanges()
+  ON_CALL(*mock_nigori_sync_bridge(), ApplySyncChanges(_))
+      .WillByDefault([&](const base::Optional<EntityData>& data) {
+        return ModelError(FROM_HERE, "some error");
+      });
+
+  UpdateResponseDataList updates;
+  updates.push_back(CreateDummyNigoriUpdateResponseData(
+      /*keystore_decryptor_token_key_name=*/"some key",
+      /*server_version=*/2));
+
+  ASSERT_TRUE(processor()->IsConnectedForTest());
+  EXPECT_CALL(error_handler_callback, Run(_));
+  processor()->OnUpdateReceived(CreateDummyModelTypeState(),
+                                std::move(updates));
+  EXPECT_FALSE(processor()->IsConnectedForTest());
+}
+
+TEST_F(NigoriModelTypeProcessorTest,
+       ShouldCallErrorHandlerIfModelErrorBeforeSyncStarts) {
+  processor()->ReportError(ModelError(FROM_HERE, "some error"));
+
+  syncer::DataTypeActivationRequest request;
+  base::MockCallback<ModelErrorHandler> error_handler_callback;
+  request.error_handler = error_handler_callback.Get();
+  request.cache_guid = kCacheGuid;
+
+  EXPECT_CALL(error_handler_callback, Run(_));
+  processor()->OnSyncStarting(request, base::DoNothing());
+}
+
 }  // namespace
 
 }  // namespace syncer

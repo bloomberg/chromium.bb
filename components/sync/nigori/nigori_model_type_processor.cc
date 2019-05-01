@@ -139,8 +139,7 @@ void NigoriModelTypeProcessor::OnUpdateReceived(
       error = bridge_->MergeSyncData(std::move(*updates[0]->entity));
     }
     if (error) {
-      // TODO(mamir): ReportError(*error);
-      NOTIMPLEMENTED();
+      ReportError(*error);
     }
     return;
   }
@@ -171,8 +170,7 @@ void NigoriModelTypeProcessor::OnUpdateReceived(
   }
 
   if (error) {
-    // TODO(mamir): ReportError(*error);
-    NOTIMPLEMENTED();
+    ReportError(*error);
     return;
   }
 
@@ -352,6 +350,27 @@ NigoriMetadataBatch NigoriModelTypeProcessor::GetMetadata() {
   nigori_metadata_batch.entity_metadata = entity_->metadata();
 
   return nigori_metadata_batch;
+}
+
+void NigoriModelTypeProcessor::ReportError(const ModelError& error) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Ignore all errors after the first.
+  if (model_error_) {
+    return;
+  }
+
+  model_error_ = error;
+
+  if (IsConnected()) {
+    DisconnectSync();
+  }
+  // Shouldn't connect anymore.
+  start_callback_.Reset();
+  if (activation_request_.error_handler) {
+    // Tell sync about the error.
+    activation_request_.error_handler.Run(error);
+  }
 }
 
 bool NigoriModelTypeProcessor::IsConnectedForTest() const {
