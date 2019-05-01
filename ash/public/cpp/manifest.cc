@@ -34,6 +34,7 @@
 #include "ash/public/interfaces/process_creation_time_recorder.mojom.h"
 #include "ash/public/interfaces/session_controller.mojom.h"
 #include "ash/public/interfaces/shelf.mojom.h"
+#include "ash/public/interfaces/shelf_integration_test_api.mojom.h"
 #include "ash/public/interfaces/shutdown.mojom.h"
 #include "ash/public/interfaces/split_view.mojom.h"
 #include "ash/public/interfaces/system_tray.mojom.h"
@@ -105,6 +106,8 @@ const service_manager::Manifest& GetManifest() {
           .ExposeCapability("display", service_manager::Manifest::InterfaceList<
                                            mojom::AshDisplayController,
                                            mojom::DisplayOutputProtection>())
+          .ExposeCapability("test", service_manager::Manifest::InterfaceList<
+                                        mojom::ShelfIntegrationTestApi>())
           .RequireCapability("*", "accessibility")
           .RequireCapability("*", "app")
           .RequireCapability(prefs::mojom::kLocalStateServiceName,

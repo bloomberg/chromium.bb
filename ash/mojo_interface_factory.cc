@@ -15,6 +15,7 @@
 #include "ash/assistant/assistant_notification_controller.h"
 #include "ash/assistant/assistant_screen_context_controller.h"
 #include "ash/assistant/assistant_setup_controller.h"
+#include "ash/autotest/shelf_integration_test_api.h"
 #include "ash/cast_config_controller.h"
 #include "ash/custom_tab/arc_custom_tab_controller.h"
 #include "ash/display/ash_display_controller.h"
@@ -51,9 +52,11 @@
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/single_thread_task_runner.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "services/ws/common/switches.h"
 #include "ui/keyboard/keyboard_controller.h"
 
 namespace ash {
@@ -235,6 +238,11 @@ void BindShelfRequestOnMainThread(mojom::ShelfControllerRequest request) {
   Shell::Get()->shelf_controller()->BindRequest(std::move(request));
 }
 
+void BindShelfIntegrationTestApiRequestOnMainThread(
+    mojom::ShelfIntegrationTestApiRequest request) {
+  ShelfIntegrationTestApi::BindRequest(std::move(request));
+}
+
 void BindShutdownControllerRequestOnMainThread(
     mojom::ShutdownControllerRequest request) {
   Shell::Get()->shutdown_controller()->BindRequest(std::move(request));
@@ -403,6 +411,13 @@ void RegisterInterfaces(
                          main_thread_task_runner);
   registry->AddInterface(base::BindRepeating(&BindSplitViewRequestOnMainThread),
                          main_thread_task_runner);
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ws::switches::kUseTestConfig)) {
+    registry->AddInterface(
+        base::BindRepeating(&BindShelfIntegrationTestApiRequestOnMainThread),
+        main_thread_task_runner);
+  }
 
   // Inject additional optional interfaces.
   if (g_register_interfaces_callback.Get()) {

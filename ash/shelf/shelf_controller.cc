@@ -266,24 +266,6 @@ void ShelfController::SetShelfItemDelegate(
     model_.SetShelfItemDelegate(id, nullptr);
 }
 
-void ShelfController::GetAutoHideBehaviorForTesting(
-    int64_t display_id,
-    GetAutoHideBehaviorForTestingCallback callback) {
-  Shelf* shelf = GetShelfForDisplay(display_id);
-  DCHECK(shelf);
-  std::move(callback).Run(shelf->auto_hide_behavior());
-}
-
-void ShelfController::SetAutoHideBehaviorForTesting(
-    int64_t display_id,
-    ShelfAutoHideBehavior behavior,
-    SetAutoHideBehaviorForTestingCallback callback) {
-  Shelf* shelf = GetShelfForDisplay(display_id);
-  DCHECK(shelf);
-  shelf->SetAutoHideBehavior(behavior);
-  std::move(callback).Run();
-}
-
 void ShelfController::ShelfItemAdded(int index) {
   if (applying_remote_shelf_model_changes_)
     return;

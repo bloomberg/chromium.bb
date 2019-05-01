@@ -62,14 +62,6 @@ class ASH_EXPORT ShelfController : public message_center::MessageCenterObserver,
   void UpdateShelfItem(const ShelfItem& item) override;
   void SetShelfItemDelegate(const ShelfID& id,
                             mojom::ShelfItemDelegatePtr delegate) override;
-  void GetAutoHideBehaviorForTesting(
-      int64_t display_id,
-      GetAutoHideBehaviorForTestingCallback callback) override;
-  void SetAutoHideBehaviorForTesting(
-      int64_t display_id,
-      ShelfAutoHideBehavior behavior,
-      SetAutoHideBehaviorForTestingCallback callback) override;
-
   // ShelfModelObserver:
   void ShelfItemAdded(int index) override;
   void ShelfItemRemoved(int index, const ShelfItem& old_item) override;

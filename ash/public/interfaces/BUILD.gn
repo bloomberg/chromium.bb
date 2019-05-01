@@ -57,6 +57,7 @@ mojom("interfaces_internal") {
     "process_creation_time_recorder.mojom",
     "session_controller.mojom",
     "shelf.mojom",
+    "shelf_integration_test_api.mojom",
     "shutdown.mojom",
     "split_view.mojom",
     "system_tray.mojom",

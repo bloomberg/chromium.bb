@@ -8,6 +8,10 @@
  implemented_in="chrome/browser/chromeos/extensions/autotest_private/autotest_private_api.h"]
 namespace autotestPrivate {
 
+  enum ShelfAlignmentType {
+    Bottom, Left, Right, BottomLocked
+  };
+
   dictionary LoginStatusDict {
     // Are we logged in?
     boolean isLoggedIn;
@@ -165,6 +169,8 @@ namespace autotestPrivate {
   callback SetTabletModeEnabledCallback = void(boolean enabled);
 
   callback GetShelfAutoHideBehaviorCallback = void (DOMString behavior);
+
+  callback GetShelfAlignmentCallback = void (ShelfAlignmentType alignment);
 
   callback VoidCallback = void ();
 
@@ -371,6 +377,19 @@ namespace autotestPrivate {
     // |callback|: Called when the operation has completed.
     static void setShelfAutoHideBehavior(DOMString displayId,
         DOMString behavior, VoidCallback callback);
+
+    // Get the shelf alignment.
+    // |displayId|: display that contains the shelf.
+    // |callback| is invoked with the shelf alignment type.
+    static void getShelfAlignment(DOMString displayId,
+        GetShelfAlignmentCallback callback);
+
+    // Set the shelf alignment.
+    // |displayId|: display that contains the shelf.
+    // |alignment|: the type of alignment to set.
+    // |callback|: Called when the operation has completed.
+    static void setShelfAlignment(DOMString displayId,
+        ShelfAlignmentType alignment, VoidCallback callback);
 
     // Show virtual keyboard of the current input method if it's available.
     static void showVirtualKeyboardIfEnabled();

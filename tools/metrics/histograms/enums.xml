@@ -19139,6 +19139,8 @@ Called by update_net_error_codes.py.-->
   <int value="1332" label="MANAGEMENT_INSTALLREPLACEMENTWEBAPP"/>
   <int value="1333" label="FILEMANAGERPRIVATE_GETANDROIDPICKERAPPS"/>
   <int value="1334" label="FILEMANAGERPRIVATE_SELECTANDROIDPICKERAPP"/>
+  <int value="1335" label="AUTOTESTPRIVATE_GETSHELFALIGNMENT"/>
+  <int value="1336" label="AUTOTESTPRIVATE_SETSHELFALIGNMENT"/>
 </enum>
 
 <enum name="ExtensionIconState">

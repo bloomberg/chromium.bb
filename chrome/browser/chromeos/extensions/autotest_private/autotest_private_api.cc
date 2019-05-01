@@ -1181,7 +1181,8 @@ ExtensionFunction::ResponseAction AutotestPrivateGetPrinterListFunction::Run() {
 void AutotestPrivateGetPrinterListFunction::RespondWithTimeoutError() {
   if (did_respond())
     return;
-  Respond(Error("Timeout occured before Enterprise printers were initialized"));
+  Respond(
+      Error("Timeout occurred before Enterprise printers were initialized"));
 }
 
 void AutotestPrivateGetPrinterListFunction::RespondWithSuccess() {
@@ -1668,16 +1669,16 @@ AutotestPrivateGetShelfAutoHideBehaviorFunction::Run() {
 
   service_manager::Connector* connector =
       content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface(ash::mojom::kServiceName, &shelf_controller_);
+  connector->BindInterface(ash::mojom::kServiceName, &shelf_test_api_);
 
   int64_t display_id;
   if (!base::StringToInt64(params->display_id, &display_id)) {
-    return RespondNow(
-        Error("Invalid display_id. Expected string with numbers only. got %s",
-              params->display_id));
+    return RespondNow(Error(base::StrCat(
+        {"Invalid display_id; expected string with numbers only, got ",
+         params->display_id})));
   }
 
-  shelf_controller_->GetAutoHideBehaviorForTesting(
+  shelf_test_api_->GetAutoHideBehavior(
       display_id,
       base::BindOnce(&AutotestPrivateGetShelfAutoHideBehaviorFunction::
                          OnGetShelfAutoHideBehaviorCompleted,
@@ -1723,7 +1724,7 @@ AutotestPrivateSetShelfAutoHideBehaviorFunction::Run() {
 
   service_manager::Connector* connector =
       content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface(ash::mojom::kServiceName, &shelf_controller_);
+  connector->BindInterface(ash::mojom::kServiceName, &shelf_test_api_);
 
   ash::ShelfAutoHideBehavior behavior;
   if (params->behavior == "always") {
@@ -1733,18 +1734,18 @@ AutotestPrivateSetShelfAutoHideBehaviorFunction::Run() {
   } else if (params->behavior == "hidden") {
     behavior = ash::ShelfAutoHideBehavior::SHELF_AUTO_HIDE_ALWAYS_HIDDEN;
   } else {
-    return RespondNow(Error(
-        "Invalid argument: '%s'. Expected: 'always', 'never' or 'hidden'.",
-        params->behavior));
+    return RespondNow(Error(base::StrCat(
+        {"Invalid behavior; expected 'always', 'never' or 'hidden', got ",
+         params->behavior})));
   }
   int64_t display_id;
   if (!base::StringToInt64(params->display_id, &display_id)) {
-    return RespondNow(
-        Error("Invalid display_id. Expected string with numbers only. got %s",
-              params->display_id));
+    return RespondNow(Error(base::StrCat(
+        {"Invalid display_id; expected string with numbers only, got ",
+         params->display_id})));
   }
 
-  shelf_controller_->SetAutoHideBehaviorForTesting(
+  shelf_test_api_->SetAutoHideBehavior(
       display_id, behavior,
       base::BindOnce(&AutotestPrivateSetShelfAutoHideBehaviorFunction::
                          OnSetShelfAutoHideBehaviorCompleted,
@@ -1754,6 +1755,128 @@ AutotestPrivateSetShelfAutoHideBehaviorFunction::Run() {
 
 void AutotestPrivateSetShelfAutoHideBehaviorFunction::
     OnSetShelfAutoHideBehaviorCompleted() {
+  Respond(NoArguments());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateGetShelfAlignmentFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateGetShelfAlignmentFunction::
+    AutotestPrivateGetShelfAlignmentFunction() = default;
+
+AutotestPrivateGetShelfAlignmentFunction::
+    ~AutotestPrivateGetShelfAlignmentFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateGetShelfAlignmentFunction::Run() {
+  DVLOG(1) << "AutotestPrivateGetShelfAlignmentFunction";
+
+  std::unique_ptr<api::autotest_private::GetShelfAlignment::Params> params(
+      api::autotest_private::GetShelfAlignment::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  service_manager::Connector* connector =
+      content::ServiceManagerConnection::GetForProcess()->GetConnector();
+  connector->BindInterface(ash::mojom::kServiceName, &shelf_test_api_);
+
+  int64_t display_id;
+  if (!base::StringToInt64(params->display_id, &display_id)) {
+    return RespondNow(Error(base::StrCat(
+        {"Invalid display_id; expected string with numbers only, got ",
+         params->display_id})));
+  }
+
+  shelf_test_api_->GetAlignment(
+      display_id, base::BindOnce(&AutotestPrivateGetShelfAlignmentFunction::
+                                     OnGetShelfAlignmentCompleted,
+                                 this));
+  return RespondLater();
+}
+
+void AutotestPrivateGetShelfAlignmentFunction::OnGetShelfAlignmentCompleted(
+    ash::ShelfAlignment alignment) {
+  api::autotest_private::ShelfAlignmentType alignment_type;
+  switch (alignment) {
+    case ash::ShelfAlignment::SHELF_ALIGNMENT_BOTTOM:
+      alignment_type = api::autotest_private::ShelfAlignmentType::
+          SHELF_ALIGNMENT_TYPE_BOTTOM;
+      break;
+    case ash::ShelfAlignment::SHELF_ALIGNMENT_LEFT:
+      alignment_type =
+          api::autotest_private::ShelfAlignmentType::SHELF_ALIGNMENT_TYPE_LEFT;
+      break;
+    case ash::ShelfAlignment::SHELF_ALIGNMENT_RIGHT:
+      alignment_type =
+          api::autotest_private::ShelfAlignmentType::SHELF_ALIGNMENT_TYPE_RIGHT;
+      break;
+    case ash::ShelfAlignment::SHELF_ALIGNMENT_BOTTOM_LOCKED:
+      alignment_type = api::autotest_private::ShelfAlignmentType::
+          SHELF_ALIGNMENT_TYPE_BOTTOMLOCKED;
+      break;
+  }
+  Respond(OneArgument(std::make_unique<base::Value>(
+      api::autotest_private::ToString(alignment_type))));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateSetShelfAlignmentFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateSetShelfAlignmentFunction::
+    AutotestPrivateSetShelfAlignmentFunction() = default;
+
+AutotestPrivateSetShelfAlignmentFunction::
+    ~AutotestPrivateSetShelfAlignmentFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateSetShelfAlignmentFunction::Run() {
+  DVLOG(1) << "AutotestPrivateSetShelfAlignmentFunction";
+
+  std::unique_ptr<api::autotest_private::SetShelfAlignment::Params> params(
+      api::autotest_private::SetShelfAlignment::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  service_manager::Connector* connector =
+      content::ServiceManagerConnection::GetForProcess()->GetConnector();
+  connector->BindInterface(ash::mojom::kServiceName, &shelf_test_api_);
+
+  ash::ShelfAlignment alignment;
+  switch (params->alignment) {
+    case api::autotest_private::ShelfAlignmentType::SHELF_ALIGNMENT_TYPE_BOTTOM:
+      alignment = ash::ShelfAlignment::SHELF_ALIGNMENT_BOTTOM;
+      break;
+    case api::autotest_private::ShelfAlignmentType::SHELF_ALIGNMENT_TYPE_LEFT:
+      alignment = ash::ShelfAlignment::SHELF_ALIGNMENT_LEFT;
+      break;
+    case api::autotest_private::ShelfAlignmentType::SHELF_ALIGNMENT_TYPE_RIGHT:
+      alignment = ash::ShelfAlignment::SHELF_ALIGNMENT_RIGHT;
+      break;
+    case api::autotest_private::ShelfAlignmentType::
+        SHELF_ALIGNMENT_TYPE_BOTTOMLOCKED:
+      alignment = ash::ShelfAlignment::SHELF_ALIGNMENT_BOTTOM_LOCKED;
+      break;
+    case api::autotest_private::ShelfAlignmentType::SHELF_ALIGNMENT_TYPE_NONE:
+      return RespondNow(
+          Error("Unsupported None alignment; expected 'Bottom', 'Left', "
+                "'Right' or 'BottomLocked'"));
+  }
+  int64_t display_id;
+  if (!base::StringToInt64(params->display_id, &display_id)) {
+    return RespondNow(Error(base::StrCat(
+        {"Invalid display_id; expected string with numbers only, got ",
+         params->display_id})));
+  }
+
+  shelf_test_api_->SetAlignment(
+      display_id, alignment,
+      base::BindOnce(&AutotestPrivateSetShelfAlignmentFunction::
+                         OnSetShelfAlignmentCompleted,
+                     this));
+  return RespondLater();
+}
+
+void AutotestPrivateSetShelfAlignmentFunction::OnSetShelfAlignmentCompleted() {
   Respond(NoArguments());
 }
 
