@@ -63,7 +63,10 @@ void InstallManager::LoadWebAppAndCheckInstallability(
   InstallableManager::CreateForWebContents(web_contents.get());
   SecurityStateTabHelper::CreateForWebContents(web_contents.get());
 
-  url_loader_.LoadUrl(web_app_url, web_contents.get(),
+  // Grab WebContents pointer now, before the call to BindOnce might null out
+  // |web_contents|.
+  content::WebContents* web_contents_ptr = web_contents.get();
+  url_loader_.LoadUrl(web_app_url, web_contents_ptr,
                       base::BindOnce(&OnWebAppUrlLoaded, std::move(callback),
                                      std::move(web_contents)));
 }
