@@ -39,16 +39,18 @@
 
 namespace ash {
 
-WorkspaceLayoutManager::BubbleWindowObserver::BubbleWindowObserver(
-    WorkspaceLayoutManager* workspace_layout_manager)
+WorkspaceLayoutManager::SettingsBubbleWindowObserver::
+    SettingsBubbleWindowObserver(
+        WorkspaceLayoutManager* workspace_layout_manager)
     : workspace_layout_manager_(workspace_layout_manager) {}
 
-WorkspaceLayoutManager::BubbleWindowObserver::~BubbleWindowObserver() {
+WorkspaceLayoutManager::SettingsBubbleWindowObserver::
+    ~SettingsBubbleWindowObserver() {
   for (auto* window : windows_)
     window->RemoveObserver(this);
 }
 
-void WorkspaceLayoutManager::BubbleWindowObserver::ObserveWindow(
+void WorkspaceLayoutManager::SettingsBubbleWindowObserver::ObserveWindow(
     aura::Window* window) {
   if (!windows_.count(window)) {
     windows_.insert(window);
@@ -56,8 +58,8 @@ void WorkspaceLayoutManager::BubbleWindowObserver::ObserveWindow(
   }
 }
 
-void WorkspaceLayoutManager::BubbleWindowObserver::OnWindowHierarchyChanged(
-    const HierarchyChangeParams& params) {
+void WorkspaceLayoutManager::SettingsBubbleWindowObserver::
+    OnWindowHierarchyChanged(const HierarchyChangeParams& params) {
   if (params.new_parent &&
       params.new_parent !=
           workspace_layout_manager_->settings_bubble_container_) {
@@ -65,27 +67,26 @@ void WorkspaceLayoutManager::BubbleWindowObserver::OnWindowHierarchyChanged(
   }
 }
 
-void WorkspaceLayoutManager::BubbleWindowObserver::OnWindowVisibilityChanged(
-    aura::Window* window,
-    bool visible) {
+void WorkspaceLayoutManager::SettingsBubbleWindowObserver::
+    OnWindowVisibilityChanged(aura::Window* window, bool visible) {
   workspace_layout_manager_->NotifySystemUiAreaChanged();
 }
 
-void WorkspaceLayoutManager::BubbleWindowObserver::OnWindowDestroying(
+void WorkspaceLayoutManager::SettingsBubbleWindowObserver::OnWindowDestroying(
     aura::Window* window) {
   StopOberservingWindow(window);
 }
 
-void WorkspaceLayoutManager::BubbleWindowObserver::OnWindowBoundsChanged(
-    aura::Window* window,
-    const gfx::Rect& old_bounds,
-    const gfx::Rect& new_bounds,
-    ui::PropertyChangeReason reason) {
+void WorkspaceLayoutManager::SettingsBubbleWindowObserver::
+    OnWindowBoundsChanged(aura::Window* window,
+                          const gfx::Rect& old_bounds,
+                          const gfx::Rect& new_bounds,
+                          ui::PropertyChangeReason reason) {
   workspace_layout_manager_->NotifySystemUiAreaChanged();
 }
 
-void WorkspaceLayoutManager::BubbleWindowObserver::StopOberservingWindow(
-    aura::Window* window) {
+void WorkspaceLayoutManager::SettingsBubbleWindowObserver::
+    StopOberservingWindow(aura::Window* window) {
   windows_.erase(window);
   window->RemoveObserver(this);
 }
@@ -95,7 +96,6 @@ WorkspaceLayoutManager::WorkspaceLayoutManager(aura::Window* window)
       root_window_(window->GetRootWindow()),
       root_window_controller_(RootWindowController::ForWindow(root_window_)),
       settings_bubble_window_observer_(this),
-      autoclick_bubble_window_observer_(this),
       work_area_in_parent_(
           screen_util::GetDisplayWorkAreaBoundsInParent(window_)),
       is_fullscreen_(wm::GetWindowForFullscreenModeForContext(window) !=
@@ -109,8 +109,6 @@ WorkspaceLayoutManager::WorkspaceLayoutManager(aura::Window* window)
   keyboard::KeyboardController::Get()->AddObserver(this);
   settings_bubble_container_ = window->GetRootWindow()->GetChildById(
       kShellWindowId_SettingBubbleContainer);
-  autoclick_bubble_container_ =
-      window->GetRootWindow()->GetChildById(kShellWindowId_AutoclickContainer);
   root_window_controller_->shelf()->AddObserver(this);
 }
 
@@ -120,8 +118,6 @@ WorkspaceLayoutManager::~WorkspaceLayoutManager() {
     root_window_->RemoveObserver(this);
   if (settings_bubble_container_)
     settings_bubble_container_->RemoveObserver(this);
-  if (autoclick_bubble_container_)
-    autoclick_bubble_container_->RemoveObserver(this);
   for (aura::Window* window : windows_) {
     wm::WindowState* window_state = wm::GetWindowState(window);
     window_state->RemoveObserver(this);
@@ -265,12 +261,8 @@ void WorkspaceLayoutManager::OnKeyboardWorkspaceDisplacingBoundsChanged(
 
 void WorkspaceLayoutManager::OnWindowHierarchyChanged(
     const HierarchyChangeParams& params) {
-  if (params.new_parent) {
-    if (params.new_parent == settings_bubble_container_)
-      settings_bubble_window_observer_.ObserveWindow(params.target);
-    if (params.new_parent == autoclick_bubble_container_)
-      autoclick_bubble_window_observer_.ObserveWindow(params.target);
-  }
+  if (params.new_parent && params.new_parent == settings_bubble_container_)
+    settings_bubble_window_observer_.ObserveWindow(params.target);
   // The window should have a parent (unless it's being removed), so we can
   // create WindowState, which requires its parent. (crbug.com/924305)
   // TODO(oshima): Change this to |EnsureWindowState|, then change
@@ -300,8 +292,6 @@ void WorkspaceLayoutManager::OnWindowHierarchyChanged(
 void WorkspaceLayoutManager::OnWindowAdded(aura::Window* window) {
   if (window->parent() == settings_bubble_container_)
     settings_bubble_window_observer_.ObserveWindow(window);
-  if (window->parent() == autoclick_bubble_container_)
-    autoclick_bubble_window_observer_.ObserveWindow(window);
 }
 
 void WorkspaceLayoutManager::OnWindowPropertyChanged(aura::Window* window,
@@ -333,8 +323,6 @@ void WorkspaceLayoutManager::OnWindowDestroying(aura::Window* window) {
   }
   if (settings_bubble_container_ == window)
     settings_bubble_container_ = nullptr;
-  if (autoclick_bubble_container_ == window)
-    autoclick_bubble_container_ = nullptr;
 }
 
 void WorkspaceLayoutManager::OnWindowBoundsChanged(

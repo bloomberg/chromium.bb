@@ -1026,10 +1026,6 @@ AccessibilityController::GetAutoclickMenuPosition() {
           prefs::kAccessibilityAutoclickMenuPosition));
 }
 
-void AccessibilityController::UpdateAutoclickMenuBoundsIfNeeded() {
-  Shell::Get()->autoclick_controller()->UpdateAutoclickMenuBoundsIfNeeded();
-}
-
 void AccessibilityController::UpdateCaretHighlightFromPref() {
   DCHECK(active_user_prefs_);
   const bool enabled = active_user_prefs_->GetBoolean(

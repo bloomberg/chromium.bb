@@ -18,6 +18,7 @@ DEFINE_UI_CLASS_PROPERTY_TYPE(ash::CollisionDetectionUtils::RelativePriority)
 namespace ash {
 
 namespace {
+const int kCollisionWindowWorkAreaInsetsDp = 8;
 
 // A property key to store whether the a window should be ignored for window
 // collision detection. For example, StatusBubble windows.
