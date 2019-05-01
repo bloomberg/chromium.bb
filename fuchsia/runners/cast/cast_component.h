@@ -5,8 +5,6 @@
 #ifndef FUCHSIA_RUNNERS_CAST_CAST_COMPONENT_H_
 #define FUCHSIA_RUNNERS_CAST_CAST_COMPONENT_H_
 
-#include <fuchsia/modular/cpp/fidl.h>
-#include <fuchsia/sys/cpp/fidl.h>
 #include <lib/fidl/cpp/binding.h>
 #include <memory>
 
@@ -54,9 +52,6 @@ class CastComponent : public WebComponent,
   std::unique_ptr<CastChannelBindings> cast_channel_;
   std::unique_ptr<QueryableDataBindings> queryable_data_;
   std::unique_ptr<TouchInputBindings> touch_input_;
-
-  fuchsia::sys::ServiceProviderPtr agent_services_;
-  fuchsia::modular::AgentControllerPtr agent_controller_;
 
   fidl::Binding<fuchsia::web::NavigationEventListener>
       navigation_listener_binding_;
