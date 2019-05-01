@@ -53,6 +53,9 @@ def main():
       help='The current processor architecture in the format of the target_cpu '
            'attribute in GN.')
   parser.add_option(
+      '--use_custom_libcxx', default=False, action='store_true',
+      help='Confirm there is a custom libc++ linked in.')
+  parser.add_option(
       '--developer_dir',
       help='Path to Xcode.')
   (options, args) = parser.parse_args()
@@ -119,6 +122,12 @@ def main():
     options.output_obj,
   ]
   subprocess.check_call(command)
+
+  if options.use_custom_libcxx:
+    ret = os.system('xcrun nm -u "' + options.output_obj + '" | grep ___cxa_pure_virtual')
+    if ret == 0:
+      print "ERROR: Found undefined libc++ symbols, is libc++ indcluded in dependencies?"
+      exit(2)
 
 
 if __name__ == "__main__":
