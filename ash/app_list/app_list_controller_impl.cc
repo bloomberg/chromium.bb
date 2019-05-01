@@ -819,7 +819,6 @@ void AppListControllerImpl::StartAssistant() {
 }
 
 void AppListControllerImpl::StartSearch(const base::string16& raw_query) {
-  last_raw_query_ = raw_query;
   if (client_) {
     base::string16 query;
     base::TrimWhitespace(raw_query, base::TRIM_ALL, &query);
@@ -860,13 +859,13 @@ void AppListControllerImpl::OpenSearchResult(
     base::RecordAction(base::UserMetricsAction("AppList_OpenSearchResult"));
 
     UMA_HISTOGRAM_COUNTS_100(app_list::kSearchQueryLength,
-                             last_raw_query_.size());
+                             GetLastQueryLength());
     if (IsTabletMode()) {
       UMA_HISTOGRAM_COUNTS_100(app_list::kSearchQueryLengthInTablet,
-                               last_raw_query_.size());
+                               GetLastQueryLength());
     } else {
       UMA_HISTOGRAM_COUNTS_100(app_list::kSearchQueryLengthInClamshell,
-                               last_raw_query_.size());
+                               GetLastQueryLength());
     }
 
     if (result->distance_from_origin() >= 0) {
@@ -905,8 +904,7 @@ void AppListControllerImpl::LogResultLaunchHistogram(
     app_list::SearchResultLaunchLocation launch_location,
     int suggestion_index) {
   app_list::RecordSearchLaunchIndexAndQueryLength(
-      launch_location, static_cast<int>(last_raw_query_.size()),
-      suggestion_index);
+      launch_location, GetLastQueryLength(), suggestion_index);
 }
 
 void AppListControllerImpl::LogSearchAbandonHistogram() {

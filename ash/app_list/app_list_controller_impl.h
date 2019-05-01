@@ -338,8 +338,6 @@ class ASH_EXPORT AppListControllerImpl
   // Record the app launch for AppListAppLaunchedV2 metric.
   void RecordAppLaunched(mojom::AppListLaunchedFrom launched_from);
 
-  base::string16 last_raw_query_;
-
   mojom::AppListClientPtr client_;
 
   std::unique_ptr<app_list::AppListModel> model_;

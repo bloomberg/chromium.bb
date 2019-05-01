@@ -81,6 +81,11 @@ aura::Window* GetAppListViewNativeWindow() {
   return GetAppListView()->get_fullscreen_widget_for_test()->GetNativeView();
 }
 
+void SetSearchText(AppListControllerImpl* controller, const std::string& text) {
+  controller->GetSearchModel()->search_box()->Update(base::ASCIIToUTF16(text),
+                                                     false);
+}
+
 }  // namespace
 
 class AppListControllerImplTest : public AshTestBase {
@@ -271,7 +276,7 @@ class AppListControllerImplMetricsTest : public AshTestBase {
 TEST_F(AppListControllerImplMetricsTest, LogSingleResultListClick) {
   histogram_tester_.ExpectTotalCount(kAppListResultLaunchIndexAndQueryLength,
                                      0);
-  controller_->StartSearch(base::string16());
+  SetSearchText(controller_, "");
   controller_->LogResultLaunchHistogram(SearchResultLaunchLocation::kResultList,
                                         4);
   histogram_tester_.ExpectUniqueSample(kAppListResultLaunchIndexAndQueryLength,
@@ -280,7 +285,7 @@ TEST_F(AppListControllerImplMetricsTest, LogSingleResultListClick) {
 
 TEST_F(AppListControllerImplMetricsTest, LogSingleTileListClick) {
   histogram_tester_.ExpectTotalCount(kAppListTileLaunchIndexAndQueryLength, 0);
-  controller_->StartSearch(base::ASCIIToUTF16("aaaa"));
+  SetSearchText(controller_, "aaaa");
   controller_->LogResultLaunchHistogram(SearchResultLaunchLocation::kTileList,
                                         4);
   histogram_tester_.ExpectUniqueSample(kAppListTileLaunchIndexAndQueryLength,
@@ -291,10 +296,9 @@ TEST_F(AppListControllerImplMetricsTest, LogOneClickInEveryBucket) {
   histogram_tester_.ExpectTotalCount(kAppListResultLaunchIndexAndQueryLength,
                                      0);
   for (int query_length = 0; query_length < 11; ++query_length) {
-    const base::string16 query =
-        base::ASCIIToUTF16(std::string(query_length, 'a'));
+    const std::string query(query_length, 'a');
     for (int click_index = 0; click_index < 7; ++click_index) {
-      controller_->StartSearch(query);
+      SetSearchText(controller_, query);
       controller_->LogResultLaunchHistogram(
           SearchResultLaunchLocation::kResultList, click_index);
     }
@@ -313,7 +317,7 @@ TEST_F(AppListControllerImplMetricsTest, LogOneClickInEveryBucket) {
 
 TEST_F(AppListControllerImplMetricsTest, LogManyClicksInOneBucket) {
   histogram_tester_.ExpectTotalCount(kAppListTileLaunchIndexAndQueryLength, 0);
-  controller_->StartSearch(base::ASCIIToUTF16("aaaa"));
+  SetSearchText(controller_, "aaaa");
   for (int i = 0; i < 50; ++i)
     controller_->LogResultLaunchHistogram(SearchResultLaunchLocation::kTileList,
                                           4);
