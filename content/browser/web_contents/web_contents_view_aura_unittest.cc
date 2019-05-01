@@ -77,18 +77,18 @@ class WebContentsViewAuraTest : public RenderViewHostTestHarness {
     RenderViewHostTestHarness::TearDown();
   }
 
-  WebContentsViewAura* view() {
+  WebContentsViewAura* GetView() {
     WebContentsImpl* contents = static_cast<WebContentsImpl*>(web_contents());
     return static_cast<WebContentsViewAura*>(contents->GetView());
   }
 
   aura::Window* GetNativeView() { return web_contents()->GetNativeView(); }
 
-  void CheckDropData(WebContentsViewAura* wcva) const {
-    EXPECT_EQ(nullptr, wcva->current_drop_data_);
+  void CheckDropData(WebContentsViewAura* view) const {
+    EXPECT_EQ(nullptr, view->current_drop_data_);
     ASSERT_NE(nullptr, drop_complete_data_);
     EXPECT_TRUE(drop_complete_data_->drop_allowed);
-    EXPECT_EQ(wcva->current_rwh_for_drag_.get(),
+    EXPECT_EQ(view->current_rwh_for_drag_.get(),
               drop_complete_data_->target_rwh.get());
     EXPECT_EQ(kClientPt, drop_complete_data_->client_pt);
     // Screen point of event is ignored, instead cursor position used.
@@ -130,11 +130,11 @@ class WebContentsViewAuraTest : public RenderViewHostTestHarness {
 };
 
 TEST_F(WebContentsViewAuraTest, EnableDisableOverscroll) {
-  WebContentsViewAura* wcva = view();
-  wcva->SetOverscrollControllerEnabled(false);
-  EXPECT_FALSE(wcva->gesture_nav_simple_);
-  wcva->SetOverscrollControllerEnabled(true);
-  EXPECT_TRUE(wcva->gesture_nav_simple_);
+  WebContentsViewAura* view = GetView();
+  view->SetOverscrollControllerEnabled(false);
+  EXPECT_FALSE(view->gesture_nav_simple_);
+  view->SetOverscrollControllerEnabled(true);
+  EXPECT_TRUE(view->gesture_nav_simple_);
 }
 
 TEST_F(WebContentsViewAuraTest, ShowHideParent) {
@@ -157,7 +157,7 @@ TEST_F(WebContentsViewAuraTest, OccludeView) {
 }
 
 TEST_F(WebContentsViewAuraTest, DragDropFiles) {
-  WebContentsViewAura* wcva = view();
+  WebContentsViewAura* view = GetView();
   ui::OSExchangeData data;
 
   const base::string16 string_data = base::ASCIIToUTF16("Some string data");
@@ -187,20 +187,20 @@ TEST_F(WebContentsViewAuraTest, DragDropFiles) {
                             ui::DragDropTypes::DRAG_COPY);
 
   // Simulate drag enter.
-  EXPECT_EQ(nullptr, wcva->current_drop_data_);
-  wcva->OnDragEntered(event);
-  ASSERT_NE(nullptr, wcva->current_drop_data_);
+  EXPECT_EQ(nullptr, view->current_drop_data_);
+  view->OnDragEntered(event);
+  ASSERT_NE(nullptr, view->current_drop_data_);
 
 #if defined(USE_X11)
   // By design, OSExchangeDataProviderAuraX11::GetString returns an empty string
   // if file data is also present.
-  EXPECT_TRUE(wcva->current_drop_data_->text.string().empty());
+  EXPECT_TRUE(view->current_drop_data_->text.string().empty());
 #else
-  EXPECT_EQ(string_data, wcva->current_drop_data_->text.string());
+  EXPECT_EQ(string_data, view->current_drop_data_->text.string());
 #endif
 
   std::vector<ui::FileInfo> retrieved_file_infos =
-      wcva->current_drop_data_->filenames;
+      view->current_drop_data_->filenames;
   ASSERT_EQ(test_file_infos.size(), retrieved_file_infos.size());
   for (size_t i = 0; i < retrieved_file_infos.size(); i++) {
     EXPECT_EQ(test_file_infos[i].path, retrieved_file_infos[i].path);
@@ -211,15 +211,15 @@ TEST_F(WebContentsViewAuraTest, DragDropFiles) {
   // Simulate drop.
   auto callback = base::BindOnce(&WebContentsViewAuraTest::OnDropComplete,
                                  base::Unretained(this));
-  wcva->RegisterDropCallbackForTesting(std::move(callback));
+  view->RegisterDropCallbackForTesting(std::move(callback));
 
   base::RunLoop run_loop;
   async_drop_closure_ = run_loop.QuitClosure();
 
-  wcva->OnPerformDrop(event);
+  view->OnPerformDrop(event);
   run_loop.Run();
 
-  CheckDropData(wcva);
+  CheckDropData(view);
 
 #if defined(USE_X11)
   // By design, OSExchangeDataProviderAuraX11::GetString returns an empty string
@@ -238,9 +238,84 @@ TEST_F(WebContentsViewAuraTest, DragDropFiles) {
   }
 }
 
+#if defined(OS_WIN) || defined(USE_X11)
+TEST_F(WebContentsViewAuraTest, DragDropFilesOriginateFromRenderer) {
+  WebContentsViewAura* view = GetView();
+  ui::OSExchangeData data;
+
+  const base::string16 string_data = base::ASCIIToUTF16("Some string data");
+  data.SetString(string_data);
+
+#if defined(OS_WIN)
+  const std::vector<ui::FileInfo> test_file_infos = {
+      {base::FilePath(FILE_PATH_LITERAL("C:\\tmp\\test_file1")),
+       base::FilePath()},
+      {base::FilePath(FILE_PATH_LITERAL("C:\\tmp\\test_file2")),
+       base::FilePath()},
+      {
+          base::FilePath(FILE_PATH_LITERAL("C:\\tmp\\test_file3")),
+          base::FilePath(),
+      },
+  };
+#else
+  const std::vector<ui::FileInfo> test_file_infos = {
+      {base::FilePath(FILE_PATH_LITERAL("/tmp/test_file1")), base::FilePath()},
+      {base::FilePath(FILE_PATH_LITERAL("/tmp/test_file2")), base::FilePath()},
+      {base::FilePath(FILE_PATH_LITERAL("/tmp/test_file3")), base::FilePath()},
+  };
+#endif
+  data.SetFilenames(test_file_infos);
+
+  // Simulate the drag originating in the renderer process, in which case
+  // any file data should be filtered out (anchor drag scenario).
+  data.MarkOriginatedFromRenderer();
+
+  ui::DropTargetEvent event(data, kClientPt, kScreenPt,
+                            ui::DragDropTypes::DRAG_COPY);
+
+  // Simulate drag enter.
+  EXPECT_EQ(nullptr, view->current_drop_data_);
+  view->OnDragEntered(event);
+  ASSERT_NE(nullptr, view->current_drop_data_);
+
+#if defined(USE_X11)
+  // By design, OSExchangeDataProviderAuraX11::GetString returns an empty string
+  // if file data is also present.
+  EXPECT_TRUE(view->current_drop_data_->text.string().empty());
+#else
+  EXPECT_EQ(string_data, view->current_drop_data_->text.string());
+#endif
+
+  ASSERT_TRUE(view->current_drop_data_->filenames.empty());
+
+  // Simulate drop.
+  auto callback = base::BindOnce(&WebContentsViewAuraTest::OnDropComplete,
+                                 base::Unretained(this));
+  view->RegisterDropCallbackForTesting(std::move(callback));
+
+  base::RunLoop run_loop;
+  async_drop_closure_ = run_loop.QuitClosure();
+
+  view->OnPerformDrop(event);
+  run_loop.Run();
+
+  CheckDropData(view);
+
+#if defined(USE_X11)
+  // By design, OSExchangeDataProviderAuraX11::GetString returns an empty string
+  // if file data is also present.
+  EXPECT_TRUE(drop_complete_data_->drop_data.text.string().empty());
+#else
+  EXPECT_EQ(string_data, drop_complete_data_->drop_data.text.string());
+#endif
+
+  ASSERT_TRUE(drop_complete_data_->drop_data.filenames.empty());
+}
+#endif
+
 #if defined(OS_WIN)
 TEST_F(WebContentsViewAuraTest, DragDropVirtualFiles) {
-  WebContentsViewAura* wcva = view();
+  WebContentsViewAura* view = GetView();
   ui::OSExchangeData data;
 
   const base::string16 string_data = base::ASCIIToUTF16("Some string data");
@@ -263,15 +338,15 @@ TEST_F(WebContentsViewAuraTest, DragDropVirtualFiles) {
                             ui::DragDropTypes::DRAG_COPY);
 
   // Simulate drag enter.
-  EXPECT_EQ(nullptr, wcva->current_drop_data_);
-  wcva->OnDragEntered(event);
-  ASSERT_NE(nullptr, wcva->current_drop_data_);
+  EXPECT_EQ(nullptr, view->current_drop_data_);
+  view->OnDragEntered(event);
+  ASSERT_NE(nullptr, view->current_drop_data_);
 
-  EXPECT_EQ(string_data, wcva->current_drop_data_->text.string());
+  EXPECT_EQ(string_data, view->current_drop_data_->text.string());
 
   const base::FilePath path_placeholder(FILE_PATH_LITERAL("temp.tmp"));
   std::vector<ui::FileInfo> retrieved_file_infos =
-      wcva->current_drop_data_->filenames;
+      view->current_drop_data_->filenames;
   ASSERT_EQ(test_filenames_and_contents.size(), retrieved_file_infos.size());
   for (size_t i = 0; i < retrieved_file_infos.size(); i++) {
     EXPECT_EQ(test_filenames_and_contents[i].first,
@@ -283,15 +358,15 @@ TEST_F(WebContentsViewAuraTest, DragDropVirtualFiles) {
   // present).
   auto callback = base::BindOnce(&WebContentsViewAuraTest::OnDropComplete,
                                  base::Unretained(this));
-  wcva->RegisterDropCallbackForTesting(std::move(callback));
+  view->RegisterDropCallbackForTesting(std::move(callback));
 
   base::RunLoop run_loop;
   async_drop_closure_ = run_loop.QuitClosure();
 
-  wcva->OnPerformDrop(event);
+  view->OnPerformDrop(event);
   run_loop.Run();
 
-  CheckDropData(wcva);
+  CheckDropData(view);
 
   EXPECT_EQ(string_data, drop_complete_data_->drop_data.text.string());
 
@@ -311,6 +386,61 @@ TEST_F(WebContentsViewAuraTest, DragDropVirtualFiles) {
         base::ReadFileToString(retrieved_file_infos[i].path, &read_contents));
     EXPECT_EQ(test_filenames_and_contents[i].second, read_contents);
   }
+}
+
+TEST_F(WebContentsViewAuraTest, DragDropVirtualFilesOriginateFromRenderer) {
+  WebContentsViewAura* view = GetView();
+  ui::OSExchangeData data;
+
+  const base::string16 string_data = base::ASCIIToUTF16("Some string data");
+  data.SetString(string_data);
+
+  const std::vector<std::pair<base::FilePath, std::string>>
+      test_filenames_and_contents = {
+          {base::FilePath(FILE_PATH_LITERAL("filename.txt")),
+           std::string("just some data")},
+          {base::FilePath(FILE_PATH_LITERAL("another filename.txt")),
+           std::string("just some data\0with\0nulls", 25)},
+          {base::FilePath(FILE_PATH_LITERAL("and another filename.txt")),
+           std::string("just some more data")},
+      };
+
+  data.provider().SetVirtualFileContentsForTesting(test_filenames_and_contents,
+                                                   TYMED_ISTREAM);
+
+  // Simulate the drag originating in the renderer process, in which case
+  // any file data should be filtered out (anchor drag scenario).
+  data.MarkOriginatedFromRenderer();
+
+  ui::DropTargetEvent event(data, kClientPt, kScreenPt,
+                            ui::DragDropTypes::DRAG_COPY);
+
+  // Simulate drag enter.
+  EXPECT_EQ(nullptr, view->current_drop_data_);
+  view->OnDragEntered(event);
+  ASSERT_NE(nullptr, view->current_drop_data_);
+
+  EXPECT_EQ(string_data, view->current_drop_data_->text.string());
+
+  ASSERT_TRUE(view->current_drop_data_->filenames.empty());
+
+  // Simulate drop (completes asynchronously since virtual file data is
+  // present).
+  auto callback = base::BindOnce(&WebContentsViewAuraTest::OnDropComplete,
+                                 base::Unretained(this));
+  view->RegisterDropCallbackForTesting(std::move(callback));
+
+  base::RunLoop run_loop;
+  async_drop_closure_ = run_loop.QuitClosure();
+
+  view->OnPerformDrop(event);
+  run_loop.Run();
+
+  CheckDropData(view);
+
+  EXPECT_EQ(string_data, drop_complete_data_->drop_data.text.string());
+
+  ASSERT_TRUE(drop_complete_data_->drop_data.filenames.empty());
 }
 #endif
 

@@ -1370,7 +1370,19 @@ int WebContentsViewAura::OnPerformDrop(const ui::DropTargetEvent& event) {
 
   const int key_modifiers = ui::EventFlagsToWebEventModifiers(event.flags());
 #if defined(OS_WIN)
-  if (event.data().HasVirtualFilenames()) {
+  // As with real files, only add virtual files if the drag did not originate in
+  // the renderer process. Without this, if an anchor element is dragged and
+  // then dropped on the same page, the browser will navigate to the URL
+  // referenced by the anchor. That is because virtual ".url" file data
+  // (internet shortcut) is added to the data object on drag start, and if
+  // script doesn't handle the drop, the browser behaves just as if a .url file
+  // were dragged in from the desktop. Filtering out virtual files if the drag
+  // is renderer tainted also prevents the possibility of a compromised renderer
+  // gaining access to the backing temp file paths.
+  // TODO(https://crbug.com/958273): DragDrop: Extend virtual filename support
+  // to DropData, for parity with real filename support.
+  if (!current_drop_data_->did_originate_from_renderer &&
+      event.data().HasVirtualFilenames()) {
     // Asynchronously retrieve the actual content of any virtual files now (this
     // step is not needed for "real" files already on the file system, e.g.
     // those dropped on Chromium from the desktop). When all content has been
