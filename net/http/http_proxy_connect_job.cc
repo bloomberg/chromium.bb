@@ -465,7 +465,7 @@ int HttpProxyConnectJob::DoSSLConnect() {
         ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
         SpdySessionKey::IsProxySession::kTrue, socket_tag());
     if (common_connect_job_params()->spdy_session_pool->FindAvailableSession(
-            key, /* enable_ip_based_pooling = */ true,
+            key, /* enable_ip_based_pooling = */ false,
             /* is_websocket = */ false, net_log())) {
       using_spdy_ = true;
       next_state_ = STATE_SPDY_PROXY_CREATE_STREAM;
@@ -593,7 +593,7 @@ int HttpProxyConnectJob::DoSpdyProxyCreateStream() {
       SpdySessionKey::IsProxySession::kTrue, socket_tag());
   base::WeakPtr<SpdySession> spdy_session =
       common_connect_job_params()->spdy_session_pool->FindAvailableSession(
-          key, /* enable_ip_based_pooling = */ true,
+          key, /* enable_ip_based_pooling = */ false,
           /* is_websocket = */ false, net_log());
   // It's possible that a session to the proxy has recently been created
   if (spdy_session) {
