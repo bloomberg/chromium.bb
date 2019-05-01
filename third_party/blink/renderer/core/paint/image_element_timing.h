@@ -43,7 +43,7 @@ class CORE_EXPORT ImageElementTiming final
       const PropertyTreeState& current_paint_chunk_properties);
 
   void NotifyBackgroundImagePainted(
-      const Node*,
+      Node*,
       const StyleImage* background_image,
       const PropertyTreeState& current_paint_chunk_properties);
 
@@ -59,7 +59,7 @@ class CORE_EXPORT ImageElementTiming final
   friend class ImageElementTimingTest;
 
   void NotifyImagePaintedInternal(
-      const Node*,
+      Node*,
       const LayoutObject&,
       const ImageResourceContent& cached_image,
       const PropertyTreeState& current_paint_chunk_properties);
@@ -78,20 +78,27 @@ class CORE_EXPORT ImageElementTiming final
   void ReportImagePaintSwapTime(WebWidgetClient::SwapResult,
                                 base::TimeTicks timestamp);
 
-  // Struct containing information about image element timing.
-  struct ElementTimingInfo {
+  // Class containing information about image element timing.
+  class ElementTimingInfo
+      : public GarbageCollectedFinalized<ElementTimingInfo> {
+   public:
     ElementTimingInfo(const AtomicString& name,
                       const FloatRect& rect,
                       const TimeTicks& response_end,
                       const AtomicString& identifier,
                       const IntSize& intrinsic_size,
-                      const AtomicString& id)
+                      const AtomicString& id,
+                      Element* element)
         : name(name),
           rect(rect),
           response_end(response_end),
           identifier(identifier),
           intrinsic_size(intrinsic_size),
-          id(id) {}
+          id(id),
+          element(element) {}
+    ~ElementTimingInfo() = default;
+
+    void Trace(blink::Visitor* visitor) { visitor->Trace(element); }
 
     AtomicString name;
     FloatRect rect;
@@ -99,10 +106,15 @@ class CORE_EXPORT ImageElementTiming final
     AtomicString identifier;
     IntSize intrinsic_size;
     AtomicString id;
+    Member<Element> element;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(ElementTimingInfo);
   };
+
   // Vector containing the element timing infos that will be reported during the
   // next swap promise callback.
-  WTF::Vector<ElementTimingInfo> element_timings_;
+  HeapVector<Member<ElementTimingInfo>> element_timings_;
   // Hashmap of LayoutObjects for which paint has already been notified.
   WTF::HashSet<const LayoutObject*> images_notified_;
   // Hashmap of pairs of elements, background images whose paint has been

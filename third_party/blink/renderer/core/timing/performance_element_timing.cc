@@ -18,14 +18,16 @@ PerformanceElementTiming* PerformanceElementTiming::Create(
     const AtomicString& identifier,
     int naturalWidth,
     int naturalHeight,
-    const AtomicString& id) {
+    const AtomicString& id,
+    Element* element) {
   // It is possible to 'paint' images which have naturalWidth or naturalHeight
   // equal to 0.
   DCHECK_GE(naturalWidth, 0);
   DCHECK_GE(naturalHeight, 0);
+  DCHECK(element);
   return MakeGarbageCollected<PerformanceElementTiming>(
       name, intersection_rect, start_time, response_end, identifier,
-      naturalWidth, naturalHeight, id);
+      naturalWidth, naturalHeight, id, element);
 }
 
 PerformanceElementTiming::PerformanceElementTiming(
@@ -36,8 +38,10 @@ PerformanceElementTiming::PerformanceElementTiming(
     const AtomicString& identifier,
     int naturalWidth,
     int naturalHeight,
-    const AtomicString& id)
+    const AtomicString& id,
+    Element* element)
     : PerformanceEntry(name, start_time, start_time),
+      element_(element),
       intersection_rect_(DOMRectReadOnly::FromFloatRect(intersection_rect)),
       response_end_(response_end),
       identifier_(identifier),
@@ -55,12 +59,20 @@ PerformanceEntryType PerformanceElementTiming::EntryTypeEnum() const {
   return PerformanceEntry::EntryType::kElement;
 }
 
+Element* PerformanceElementTiming::element() const {
+  if (!element_ || !element_->isConnected())
+    return nullptr;
+
+  return element_;
+}
+
 void PerformanceElementTiming::BuildJSONValue(V8ObjectBuilder& builder) const {
   PerformanceEntry::BuildJSONValue(builder);
   builder.Add("intersectionRect", intersection_rect_);
 }
 
 void PerformanceElementTiming::Trace(blink::Visitor* visitor) {
+  visitor->Trace(element_);
   visitor->Trace(intersection_rect_);
   PerformanceEntry::Trace(visitor);
 }

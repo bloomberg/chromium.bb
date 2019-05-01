@@ -400,12 +400,13 @@ void WindowPerformance::AddElementTiming(const AtomicString& name,
                                          TimeTicks response_end,
                                          const AtomicString& identifier,
                                          const IntSize& intrinsic_size,
-                                         const AtomicString& id) {
+                                         const AtomicString& id,
+                                         Element* element) {
   DCHECK(RuntimeEnabledFeatures::ElementTimingEnabled(GetExecutionContext()));
   PerformanceElementTiming* entry = PerformanceElementTiming::Create(
       name, rect, MonotonicTimeToDOMHighResTimeStamp(start_time),
       MonotonicTimeToDOMHighResTimeStamp(response_end), identifier,
-      intrinsic_size.Width(), intrinsic_size.Height(), id);
+      intrinsic_size.Width(), intrinsic_size.Height(), id, element);
   if (HasObserverFor(PerformanceEntry::kElement)) {
     UseCounter::Count(GetFrame()->GetDocument(),
                       WebFeature::kElementTimingExplicitlyRequested);

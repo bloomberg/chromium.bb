@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
+#include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect_read_only.h"
 #include "third_party/blink/renderer/core/timing/performance_entry.h"
 
@@ -27,8 +28,8 @@ class CORE_EXPORT PerformanceElementTiming final : public PerformanceEntry {
                                           const AtomicString& identifier,
                                           int naturalWidth,
                                           int naturalHeight,
-                                          const AtomicString& id);
-
+                                          const AtomicString& id,
+                                          Element*);
   PerformanceElementTiming(const AtomicString& name,
                            const FloatRect& intersection_rect,
                            DOMHighResTimeStamp start_time,
@@ -36,7 +37,9 @@ class CORE_EXPORT PerformanceElementTiming final : public PerformanceEntry {
                            const AtomicString& identifier,
                            int naturalWidth,
                            int naturalHeight,
-                           const AtomicString& id);
+                           const AtomicString& id,
+                           Element*);
+
   ~PerformanceElementTiming() override;
 
   AtomicString entryType() const override;
@@ -54,11 +57,14 @@ class CORE_EXPORT PerformanceElementTiming final : public PerformanceEntry {
 
   AtomicString id() const { return id_; }
 
+  Element* element() const;
+
   void Trace(blink::Visitor*) override;
 
  private:
   void BuildJSONValue(V8ObjectBuilder&) const override;
 
+  WeakMember<Element> element_;
   Member<DOMRectReadOnly> intersection_rect_;
   DOMHighResTimeStamp response_end_;
   AtomicString identifier_;
