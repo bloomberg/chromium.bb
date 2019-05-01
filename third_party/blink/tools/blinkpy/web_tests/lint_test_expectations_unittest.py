@@ -34,6 +34,8 @@ from blinkpy.common import exit_codes
 from blinkpy.common.host_mock import MockHost
 from blinkpy.common.system.log_testing import LoggingTestCase
 from blinkpy.web_tests import lint_test_expectations
+from blinkpy.web_tests.port.base import VirtualTestSuite
+from blinkpy.web_tests.port.test import WEB_TEST_DIR
 
 
 class FakePort(object):
@@ -139,7 +141,7 @@ class LintTest(LoggingTestCase):
 
         host.port_factory.get = lambda platform, options=None: port
         host.port_factory.all_port_names = lambda platform=None: [port.name()]
-        host.filesystem.write_text_file('/test.checkout/wtests/LeakExpectations', '-- syntax error')
+        host.filesystem.write_text_file(WEB_TEST_DIR + '/LeakExpectations', '-- syntax error')
 
         res = lint_test_expectations.lint(host, options)
 
@@ -167,19 +169,35 @@ class LintTest(LoggingTestCase):
 
 class CheckVirtualSuiteTest(unittest.TestCase):
 
-    def test_check_virtual_test_suites(self):
-        host = MockHost()
-        options = optparse.Values({'platform': 'test', 'debug_rwt_logging': False})
-        orig_get = host.port_factory.get
-        host.port_factory.get = lambda options: orig_get('test', options=options)
+    def setUp(self):
+        self.host = MockHost()
+        self.options = optparse.Values({'platform': 'test', 'debug_rwt_logging': False})
+        self.port = self.host.port_factory.get('test', options=self.options)
+        self.host.port_factory.get = lambda options=None: self.port
 
-        res = lint_test_expectations.check_virtual_test_suites(host, options)
-        self.assertTrue(res)
+    def test_check_virtual_test_suites_readme(self):
+        self.port.virtual_test_suites = lambda: [
+            VirtualTestSuite(prefix='foo', base='test', args='--foo'),
+            VirtualTestSuite(prefix='bar', base='test', args='--bar'),
+        ]
 
-        options = optparse.Values({'platform': 'test', 'debug_rwt_logging': False})
-        host.filesystem.exists = lambda path: True
-        res = lint_test_expectations.check_virtual_test_suites(host, options)
+        res = lint_test_expectations.check_virtual_test_suites(self.host, self.options)
+        self.assertEqual(len(res), 2)
+
+        self.host.filesystem.files[WEB_TEST_DIR + '/virtual/foo/README.md'] = ''
+        self.host.filesystem.files[WEB_TEST_DIR + '/virtual/bar/test/README.txt'] = ''
+        res = lint_test_expectations.check_virtual_test_suites(self.host, self.options)
         self.assertFalse(res)
+
+    def test_check_virtual_test_suites_inclusion(self):
+        self.port.virtual_test_suites = lambda: [
+            VirtualTestSuite(prefix='foo', base='test/sub', args='--foo'),
+            VirtualTestSuite(prefix='foo', base='test', args='--foo'),
+        ]
+
+        self.host.filesystem.exists = lambda _: True
+        res = lint_test_expectations.check_virtual_test_suites(self.host, self.options)
+        self.assertEqual(len(res), 1)
 
 
 class MainTest(unittest.TestCase):

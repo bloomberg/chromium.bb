@@ -84,16 +84,32 @@ def check_virtual_test_suites(host, options):
     fs = host.filesystem
     web_tests_dir = port.web_tests_dir()
     virtual_suites = port.virtual_test_suites()
+    # Make sure ancestors come first (e.g. "virtual/foo/bar", "virtual/foo/bar/baz").
+    virtual_suites.sort(key=lambda s: s.name)
 
+    seen = set()
     failures = []
     for suite in virtual_suites:
+        suite_comps = suite.name.split(port.TEST_PATH_SEPARATOR)
+        # E.g. virtual/foo/fast/css/a.html will execute twice if
+        # both virtual/foo/fast and virtual/foo/fast/css are both defined.
+        for i in range(3, len(suite_comps)):
+            ancestor = port.TEST_PATH_SEPARATOR.join(suite_comps[:i])
+            if ancestor in seen:
+                failure = ('{} is a subset of {}; you will see tests under the '
+                           'former running multiple times (potentially with '
+                           'different args).'.format(suite.name, ancestor))
+                _log.error(failure)
+                failures.append(failure)
+        seen.add(suite.name)
+
         # A virtual test suite needs either
         # - a top-level README.md (e.g. virtual/foo/README.md)
         # - a README.txt for each covered dir/file (e.g.
         #   virtual/foo/http/tests/README.txt, virtual/foo/fast/README.txt, ...)
-        comps = [web_tests_dir] + suite.name.split('/') + ['README.txt']
+        comps = [web_tests_dir] + suite_comps + ['README.txt']
         path_to_readme_txt = fs.join(*comps)
-        comps = [web_tests_dir] + suite.name.split('/')[:2] + ['README.md']
+        comps = [web_tests_dir] + suite_comps[:2] + ['README.md']
         path_to_readme_md = fs.join(*comps)
         if not fs.exists(path_to_readme_txt) and not fs.exists(path_to_readme_md):
             failure = '{} and {} are both missing (each virtual suite must have one).'.format(
