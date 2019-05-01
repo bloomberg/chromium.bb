@@ -49,7 +49,6 @@ class LowDiskNotification;
 class NetworkChangeManagerClient;
 class NetworkPrefStateObserver;
 class NetworkThrottlingObserver;
-class PowerManagerMojoClient;
 class PowerMetricsReporter;
 class RendererFreezer;
 class SchedulerConfigurationManager;
@@ -94,8 +93,6 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   int PreEarlyInitialization() override;
   void PreMainMessageLoopStart() override;
   void PostMainMessageLoopStart() override;
-  void ServiceManagerConnectionStarted(
-      content::ServiceManagerConnection* connection) override;
   void PreMainMessageLoopRun() override;
 
   // Stages called from PreMainMessageLoopRun.
@@ -165,8 +162,6 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   std::unique_ptr<DiscoverManager> discover_manager_;
   std::unique_ptr<SchedulerConfigurationManager>
       scheduler_configuration_manager_;
-
-  std::unique_ptr<chromeos::PowerManagerMojoClient> power_manager_mojo_client_;
 
   std::unique_ptr<CrosUsbDetector> cros_usb_detector_;
   std::unique_ptr<DiagnosticsdManager> diagnosticsd_manager_;

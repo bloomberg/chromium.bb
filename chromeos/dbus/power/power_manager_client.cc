@@ -1152,13 +1152,15 @@ class PowerManagerClientImpl : public PowerManagerClient {
   DISALLOW_COPY_AND_ASSIGN(PowerManagerClientImpl);
 };
 
-// Unlike most D-Bus clients, PowerManagerClient doesn't set the singleton
-// instance in the ctor. This is because the mojo client is also a
-// PowerManagerClient, and co-exists with the D-Bus client in single process
-// Mash. When multi-process Mash is default, g_instance setting/clearing can be
-// moved back to the ctor/dtor.
-PowerManagerClient::PowerManagerClient() = default;
-PowerManagerClient::~PowerManagerClient() = default;
+PowerManagerClient::PowerManagerClient() {
+  DCHECK(!g_instance);
+  g_instance = this;
+}
+
+PowerManagerClient::~PowerManagerClient() {
+  DCHECK_EQ(g_instance, this);
+  g_instance = nullptr;
+}
 
 // static
 void PowerManagerClient::Initialize(dbus::Bus* bus) {
@@ -1171,15 +1173,12 @@ void PowerManagerClient::Initialize(dbus::Bus* bus) {
 
 // static
 void PowerManagerClient::InitializeFake() {
-  DCHECK(!g_instance);
-  g_instance = new FakePowerManagerClient();
+  new FakePowerManagerClient();
 }
 
 // static
 void PowerManagerClient::Shutdown() {
-  DCHECK(g_instance);
   delete g_instance;
-  g_instance = nullptr;
 }
 
 // static

@@ -45,7 +45,6 @@
 #include "base/no_destructor.h"
 #include "chromeos/services/multidevice_setup/public/mojom/constants.mojom.h"
 #include "chromeos/services/network_config/public/mojom/constants.mojom.h"
-#include "chromeos/services/power/public/mojom/power_manager.mojom.h"
 #include "services/content/public/mojom/constants.mojom.h"
 #include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/constants.mojom.h"
@@ -77,7 +76,6 @@ const service_manager::Manifest& GetManifest() {
           .ExposeCapability(
               "system_ui",
               service_manager::Manifest::InterfaceList<
-                  chromeos::power::mojom::PowerManagerController,
                   mojom::AcceleratorController, mojom::AccessibilityController,
                   mojom::AccessibilityFocusRingController,
                   mojom::AppListController, mojom::ArcCustomTabController,

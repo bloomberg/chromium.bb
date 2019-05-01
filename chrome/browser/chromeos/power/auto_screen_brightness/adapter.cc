@@ -19,8 +19,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power_manager/backlight.pb.h"
-#include "chromeos/services/power/public/cpp/power_manager_mojo_client.h"
 #include "components/prefs/pref_service.h"
 
 namespace chromeos {
@@ -99,7 +99,7 @@ Adapter::~Adapter() = default;
 
 void Adapter::Init() {
   // Deferred to Init() because it can result in a virtual method being called.
-  power_manager_client_observer_.Add(PowerManagerMojoClient::Get());
+  power_manager_client_observer_.Add(PowerManagerClient::Get());
 }
 
 void Adapter::OnAmbientLightUpdated(int lux) {
@@ -604,7 +604,7 @@ void Adapter::AdjustBrightness(BrightnessChangeCause cause,
   request.set_transition(
       power_manager::SetBacklightBrightnessRequest_Transition_GRADUAL);
   request.set_cause(power_manager::SetBacklightBrightnessRequest_Cause_MODEL);
-  PowerManagerMojoClient::Get()->SetScreenBrightness(request);
+  PowerManagerClient::Get()->SetScreenBrightness(request);
 
   const base::TimeTicks brightness_change_time = tick_clock_->NowTicks();
   if (!latest_model_brightness_change_time_.is_null()) {

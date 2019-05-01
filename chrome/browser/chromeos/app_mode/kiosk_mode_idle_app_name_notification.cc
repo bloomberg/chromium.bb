@@ -11,8 +11,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_switches.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/services/power/public/cpp/power_manager_mojo_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "components/user_manager/user_manager.h"
 #include "extensions/browser/extension_system.h"
 #include "ui/base/user_activity/user_activity_detector.h"
@@ -64,7 +63,7 @@ KioskModeIdleAppNameNotification::~KioskModeIdleAppNameNotification() {
   if (user_activity_detector && user_activity_detector->HasObserver(this))
     user_activity_detector->RemoveObserver(this);
 
-  auto* power_manager = chromeos::PowerManagerMojoClient::Get();
+  auto* power_manager = chromeos::PowerManagerClient::Get();
   if (power_manager && power_manager->HasObserver(this))
     power_manager->RemoveObserver(this);
 }
@@ -110,7 +109,7 @@ void KioskModeIdleAppNameNotification::SuspendDone(
 void KioskModeIdleAppNameNotification::Start() {
   if (!ui::UserActivityDetector::Get()->HasObserver(this)) {
     ui::UserActivityDetector::Get()->AddObserver(this);
-    chromeos::PowerManagerMojoClient::Get()->AddObserver(this);
+    chromeos::PowerManagerClient::Get()->AddObserver(this);
   }
   ResetTimer();
 }

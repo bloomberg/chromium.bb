@@ -178,7 +178,6 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/initialize_dbus_client.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
-#include "chromeos/services/power/public/cpp/power_manager_mojo_controller.h"
 #include "chromeos/system/devicemode.h"
 #include "components/exo/file_helper.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -676,11 +675,6 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
 
-  if (base::FeatureList::IsEnabled(chromeos::features::kMojoDBusRelay)) {
-    power_manager_mojo_controller_ =
-        std::make_unique<chromeos::PowerManagerMojoController>();
-  }
-
   login_screen_controller_ =
       std::make_unique<LoginScreenController>(system_tray_notifier_.get());
   display_manager_.reset(ScreenAsh::CreateDisplayManager());
@@ -954,8 +948,6 @@ Shell::~Shell() {
   // DetachableBaseHandler depends on the PrefService and must be destructed
   // before it.
   detachable_base_handler_.reset();
-
-  power_manager_mojo_controller_.reset();
 
   // MediaNotificationController depends on MessageCenter and must be destructed
   // before it.

@@ -179,7 +179,6 @@ source_set("manifest") {
     "//base",
     "//chromeos/services/multidevice_setup/public/mojom",
     "//chromeos/services/network_config/public/mojom",
-    "//chromeos/services/power/public/mojom",
     "//services/content/public/mojom",
     "//services/data_decoder/public/mojom",
     "//services/device/public/mojom",

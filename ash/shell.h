@@ -35,10 +35,6 @@ class RootWindow;
 class Window;
 }  // namespace aura
 
-namespace chromeos {
-class PowerManagerMojoController;
-}
-
 namespace dbus {
 class Bus;
 }
@@ -472,9 +468,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   NewWindowController* new_window_controller() {
     return new_window_controller_.get();
   }
-  chromeos::PowerManagerMojoController* power_manager_mojo_controller() {
-    return power_manager_mojo_controller_.get();
-  }
   NightLightController* night_light_controller();
   NoteTakingController* note_taking_controller() {
     return note_taking_controller_.get();
@@ -767,8 +760,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<MultiDeviceNotificationPresenter>
       multidevice_notification_presenter_;
   std::unique_ptr<NewWindowController> new_window_controller_;
-  std::unique_ptr<chromeos::PowerManagerMojoController>
-      power_manager_mojo_controller_;
   std::unique_ptr<ResizeShadowController> resize_shadow_controller_;
   std::unique_ptr<SessionController> session_controller_;
   std::unique_ptr<NightLightController> night_light_controller_;
