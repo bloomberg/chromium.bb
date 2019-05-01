@@ -188,16 +188,16 @@ class ShippingProfileViewController : public ProfileListViewController,
     return GetShippingAddressSectionString(spec()->shipping_type());
   }
 
-  int GetExtraFooterViewButtonTextId() override {
-    return IDS_PAYMENTS_ADD_ADDRESS;
+  base::string16 GetSecondaryButtonLabel() override {
+    return l10n_util::GetStringUTF16(IDS_PAYMENTS_ADD_ADDRESS);
   }
 
-  int GetExtraFooterViewButtonTag() override {
+  int GetSecondaryButtonTag() override {
     return static_cast<int>(
         ProfileListViewControllerTags::ADD_SHIPPING_ADDRESS_BUTTON);
   }
 
-  int GetExtraFooterViewButtonViewId() override {
+  int GetSecondaryButtonId() override {
     return static_cast<int>(DialogViewID::PAYMENT_METHOD_ADD_SHIPPING_BUTTON);
   }
 
@@ -288,15 +288,15 @@ class ContactProfileViewController : public ProfileListViewController {
         IDS_PAYMENT_REQUEST_CONTACT_INFO_SECTION_NAME);
   }
 
-  int GetExtraFooterViewButtonTextId() override {
-    return IDS_PAYMENTS_ADD_CONTACT;
+  base::string16 GetSecondaryButtonLabel() override {
+    return l10n_util::GetStringUTF16(IDS_PAYMENTS_ADD_CONTACT);
   }
 
-  int GetExtraFooterViewButtonTag() override {
+  int GetSecondaryButtonTag() override {
     return static_cast<int>(ProfileListViewControllerTags::ADD_CONTACT_BUTTON);
   }
 
-  int GetExtraFooterViewButtonViewId() override {
+  int GetSecondaryButtonId() override {
     return static_cast<int>(DialogViewID::PAYMENT_METHOD_ADD_CONTACT_BUTTON);
   }
 
@@ -366,27 +366,9 @@ void ProfileListViewController::FillContentView(views::View* content_view) {
   content_view->AddChildView(list_view.release());
 }
 
-std::unique_ptr<views::View>
-ProfileListViewController::CreateExtraFooterView() {
-  auto extra_view = std::make_unique<views::View>();
-
-  extra_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets(),
-      kPaymentRequestButtonSpacing));
-
-  views::LabelButton* button = views::MdTextButton::CreateSecondaryUiButton(
-      this, l10n_util::GetStringUTF16(GetExtraFooterViewButtonTextId()));
-  button->set_tag(GetExtraFooterViewButtonTag());
-  button->set_id(GetExtraFooterViewButtonViewId());
-  button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
-  extra_view->AddChildView(button);
-
-  return extra_view;
-}
-
 void ProfileListViewController::ButtonPressed(views::Button* sender,
                                               const ui::Event& event) {
-  if (sender->tag() == GetExtraFooterViewButtonTag())
+  if (sender->tag() == GetSecondaryButtonTag())
     ShowEditor(nullptr);
   else
     PaymentRequestSheetController::ButtonPressed(sender, event);

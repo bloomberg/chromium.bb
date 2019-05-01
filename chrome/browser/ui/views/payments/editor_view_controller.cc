@@ -138,6 +138,11 @@ std::unique_ptr<views::Button> EditorViewController::CreatePrimaryButton() {
   return button;
 }
 
+bool EditorViewController::ShouldShowSecondaryButton() {
+  // Do not show the "Cancel Payment" button.
+  return false;
+}
+
 void EditorViewController::FillContentView(views::View* content_view) {
   auto layout = std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
   layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);

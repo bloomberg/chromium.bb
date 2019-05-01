@@ -273,6 +273,11 @@ std::unique_ptr<views::Button> CvcUnmaskViewController::CreatePrimaryButton() {
   return button;
 }
 
+bool CvcUnmaskViewController::ShouldShowSecondaryButton() {
+  // Do not show the "Cancel Payment" button.
+  return false;
+}
+
 void CvcUnmaskViewController::ButtonPressed(views::Button* sender,
                                             const ui::Event& event) {
   if (!dialog()->IsInteractive())
