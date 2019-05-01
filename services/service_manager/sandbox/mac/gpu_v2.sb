@@ -80,3 +80,7 @@
   (subpath "/Library/Video/Plug-Ins")
   (subpath "/System/Library/Video/Plug-Ins")
 )
+
+; A temporary test to diagnose a hang.
+(if (string=? (param bundle-id) "com.google.Chrome.canary")
+  (allow mach-lookup))
