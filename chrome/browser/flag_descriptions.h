@@ -866,6 +866,9 @@ extern const char kOmniboxUIUseGenericSearchEngineIconDescription[];
 extern const char kOmniboxUIVerticalMarginName[];
 extern const char kOmniboxUIVerticalMarginDescription[];
 
+extern const char kOmniboxUIVerticalMarginLimitToNonTouchOnlyName[];
+extern const char kOmniboxUIVerticalMarginLimitToNonTouchOnlyDescription[];
+
 extern const char kOmniboxUIWhiteBackgroundOnBlurName[];
 extern const char kOmniboxUIWhiteBackgroundOnBlurDescription[];
 

@@ -1423,6 +1423,12 @@ const char kOmniboxUIVerticalMarginName[] = "Omnibox UI Vertical Margin";
 const char kOmniboxUIVerticalMarginDescription[] =
     "Changes the vertical margin in the Omnibox UI.";
 
+const char kOmniboxUIVerticalMarginLimitToNonTouchOnlyName[] =
+    "Omnibox UI Vertical Margin - Limit to Non-Touch Only";
+const char kOmniboxUIVerticalMarginLimitToNonTouchOnlyDescription[] =
+    "Limits the vertical margin UI experiment to non-touch devices only. Has "
+    "no effect if the Omnibox Vertical Margin experiment is not enabled.";
+
 const char kOmniboxUIWhiteBackgroundOnBlurName[] =
     "Omnibox UI White Background On Blur";
 const char kOmniboxUIWhiteBackgroundOnBlurDescription[] =

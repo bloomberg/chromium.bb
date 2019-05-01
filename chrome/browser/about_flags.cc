@@ -2603,6 +2603,13 @@ const FeatureEntry kFeatureEntries[] = {
                                     kOmniboxUIVerticalMarginVariations,
                                     "OmniboxUIVerticalMarginVariations")},
 
+    {"omnibox-ui-vertical-margin-limit-to-non-touch-only",
+     flag_descriptions::kOmniboxUIVerticalMarginLimitToNonTouchOnlyName,
+     flag_descriptions::kOmniboxUIVerticalMarginLimitToNonTouchOnlyDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(
+         omnibox::kUIExperimentVerticalMarginLimitToNonTouchOnly)},
+
     {"omnibox-ui-show-suggestion-favicons",
      flag_descriptions::kOmniboxUIShowSuggestionFaviconsName,
      flag_descriptions::kOmniboxUIShowSuggestionFaviconsDescription,

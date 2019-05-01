@@ -2590,7 +2590,12 @@
   },
   {
     "name": "omnibox-ui-vertical-margin",
-    "owners": [ "chrome-omnibox-team@google.com" ],
+    "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 80
+  },
+  {
+    "name": "omnibox-ui-vertical-margin-limit-to-non-touch-only",
+    "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 80
   },
   {
