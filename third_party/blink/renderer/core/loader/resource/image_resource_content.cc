@@ -523,7 +523,23 @@ bool ImageResourceContent::IsAcceptableCompressionRatio(
   double compression_ratio_1k = (resource_length - 1024) / pixels;
   double compression_ratio_10k = (resource_length - 10240) / pixels;
 
-  int compression_format = GetCompressionFormat();
+  ImageDecoder::CompressionFormat compression_format = GetCompressionFormat();
+  const auto max_value =
+      PolicyValue::CreateMaxPolicyValue(mojom::PolicyValueType::kDecDouble);
+  // If an unoptimized-*-images policy is specified, the specified compression
+  // ratio will be less than the max value.
+  bool is_policy_specified =
+      !context.IsFeatureEnabled(
+          mojom::FeaturePolicyFeature::kUnoptimizedLossyImages, max_value) ||
+      !context.IsFeatureEnabled(
+          mojom::FeaturePolicyFeature::kUnoptimizedLosslessImagesStrict,
+          max_value) ||
+      !context.IsFeatureEnabled(
+          mojom::FeaturePolicyFeature::kUnoptimizedLosslessImages, max_value);
+  if (is_policy_specified) {
+    UMA_HISTOGRAM_ENUMERATION("Blink.UseCounter.FeaturePolicy.ImageFormats",
+                              compression_format);
+  }
   if (compression_format == ImageDecoder::kLossyFormat) {
     // Enforce the lossy image policy.
     return context.IsFeatureEnabled(
