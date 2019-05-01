@@ -33,9 +33,9 @@ def EnsureEmptyDir(path):
 
 def BuildForArch(arch):
   build_dir = 'out/release-' + arch
-  Run('scripts/fx', '--dir', build_dir, 'set', 'sdk_image.' + arch,
-      '--with=//topaz/packages/sdk:topaz', '--args=is_debug=false',
-      '--args=build_sdk_archives=true')
+  Run('scripts/fx', '--dir', build_dir, 'set', 'terminal.' + arch,
+      '--with=//topaz/packages/sdk:topaz', '--with-base=//sdk/bundles:tools',
+      '--args=is_debug=false', '--args=build_sdk_archives=true')
   Run('scripts/fx', 'build', 'topaz/public/sdk:topaz', 'sdk:images_archive')
 
 
