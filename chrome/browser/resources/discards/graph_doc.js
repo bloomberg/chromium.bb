@@ -43,11 +43,25 @@ class GraphNode {
   }
 
   /**
+   * Sets the initial x and y position of this node, also resets
+   * vx and vy.
+   * @param {number} graph_width: Width of the graph view (svg).
+   * @param {number} graph_height: Height of the graph view (svg).
+   */
+  setInitialPosition(graph_width, graph_height) {
+    this.x = graph_width / 2;
+    this.y = this.targetYPosition(graph_height);
+    this.vx = 0;
+    this.vy = 0;
+  }
+
+  /**
    * @param {number} graph_height: Height of the graph view (svg).
    * @return {number}
    */
   targetYPosition(graph_height) {
-    return 0;
+    const bounds = this.allowedYRange(graph_height);
+    return (bounds[0] + bounds[1]) / 2;
   }
 
   /**
@@ -63,8 +77,8 @@ class GraphNode {
    * @return {!Array<number>}
    */
   allowedYRange(graph_height) {
-    // By default, there is no hard constraint on the y position of a node.
-    return [-Infinity, Infinity];
+    // By default, nodes just need to be in bounds of the graph.
+    return [0, graph_height];
   }
 
   /** @return {number}: The strength of the repulsion force with other nodes. */
@@ -99,11 +113,6 @@ class PageNode extends GraphNode {
   /** override */
   get title() {
     return this.page.mainFrameUrl.length > 0 ? this.page.mainFrameUrl : 'Page';
-  }
-
-  /** override */
-  targetYPosition(graph_height) {
-    return kPageNodesTargetY;
   }
 
   /** @override */
@@ -172,11 +181,6 @@ class ProcessNode extends GraphNode {
     return `PID: ${this.process.pid.pid}`;
   }
 
-  /** override */
-  targetYPosition(graph_height) {
-    return graph_height - (kProcessNodesYRange / 2);
-  }
-
   /** @return {number} */
   targetYPositionStrength() {
     return 10;
@@ -193,6 +197,40 @@ class ProcessNode extends GraphNode {
   }
 }
 
+/**
+ * A force that bounds GraphNodes |allowedYRange| in Y.
+ * @param {number} graph_height
+ */
+function bounding_force(graph_height) {
+  /** @type {!Array<!GraphNode>} */
+  let nodes = [];
+  /** @type {!Array<!Array>} */
+  let bounds = [];
+
+  /** @param {number} alpha */
+  function force(alpha) {
+    const n = nodes.length;
+    for (let i = 0; i < n; ++i) {
+      const bound = bounds[i];
+      const node = nodes[i];
+      const yOld = node.y;
+      const yNew = Math.max(bound[0], Math.min(yOld, bound[1]));
+      if (yOld != yNew) {
+        node.y = yNew;
+        // Zero the velocity of clamped nodes.
+        node.vy = 0;
+      }
+    }
+  }
+
+  /** @param {!Array<!GraphNode>} n */
+  force.initialize = function(n) {
+    nodes = n;
+    bounds = nodes.map(node => node.allowedYRange(graph_height));
+  };
+
+  return force;
+}
 
 class Graph {
   /**
@@ -207,10 +245,13 @@ class Graph {
      */
     this.svg_ = svg;
 
+    /** @private {boolean} */
+    this.wasResized_ = false;
+
     /** @private {number} */
-    this.width_ = 100;
+    this.width_ = 0;
     /** @private {number} */
-    this.height_ = 100;
+    this.height_ = 0;
 
     /** @private {d3.ForceSimulation} */
     this.simulation_ = null;
@@ -339,8 +380,7 @@ class Graph {
   /** @private */
   onTick_() {
     const circles = this.nodeGroup_.selectAll('circle');
-    circles.attr('cx', this.getClampedXPosition_.bind(this))
-        .attr('cy', this.getClampedYPosition_.bind(this));
+    circles.attr('cx', d => d.x).attr('cy', d => d.y);
 
     const lines = this.linkGroup_.selectAll('line');
     lines.attr('x1', d => d.source.x)
@@ -363,6 +403,7 @@ class Graph {
       node.page = page;
     } else {
       node = new PageNode(page);
+      node.setInitialPosition(this.width_, this.height_);
     }
 
     this.nodes_.set(page.id, node);
@@ -382,6 +423,7 @@ class Graph {
       node.frame = frame;
     } else {
       node = new FrameNode(frame);
+      node.setInitialPosition(this.width_, this.height_);
     }
 
     this.nodes_.set(frame.id, node);
@@ -401,6 +443,7 @@ class Graph {
       node.process = process;
     } else {
       node = new ProcessNode(process);
+      node.setInitialPosition(this.width_, this.height_);
     }
 
     this.nodes_.set(process.id, node);
@@ -501,25 +544,6 @@ class Graph {
    * @param {!d3.ForceNode} d The node to position.
    * @private
    */
-  getClampedYPosition_(d) {
-    const range = d.allowedYRange(this.height_);
-    d.y = Math.max(range[0], Math.min(d.y, range[1]));
-    return d.y;
-  }
-
-  /**
-   * @param {!d3.ForceNode} d The node to position.
-   * @private
-   */
-  getClampedXPosition_(d) {
-    d.x = Math.max(10, Math.min(d.x, this.width_ - 10));
-    return d.x;
-  }
-
-  /**
-   * @param {!d3.ForceNode} d The node to position.
-   * @private
-   */
   getTargetYPositionStrength_(d) {
     return d.targetYPositionStrength();
   }
@@ -553,6 +577,20 @@ class Graph {
                        .strength(this.getTargetYPositionStrength_.bind(this));
     this.simulation_.force('x_pos', xForce);
     this.simulation_.force('y_pos', yForce);
+    this.simulation_.force('y_bound', bounding_force(this.height_));
+
+    if (!this.wasResized_) {
+      this.wasResized_ = true;
+
+      // Reinitialize all node positions on first resize.
+      this.nodes_.forEach(
+          node => node.setInitialPosition(this.width_, this.height_));
+
+      // Allow the simulation to settle by running it for a bit.
+      for (let i = 0; i < 200; ++i) {
+        this.simulation_.tick();
+      }
+    }
 
     this.restartSimulation_();
   }
