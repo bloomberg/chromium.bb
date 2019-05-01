@@ -49,10 +49,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionUnloadBrowserTest, TestUnload) {
 // After an extension is uninstalled, network requests from its content scripts
 // should fail but not kill the renderer process.
 IN_PROC_BROWSER_TEST_F(ExtensionUnloadBrowserTest, UnloadWithContentScripts) {
-  // https://crbug.com/862176
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Load an extension with a content script that has a button to send XHRs.
