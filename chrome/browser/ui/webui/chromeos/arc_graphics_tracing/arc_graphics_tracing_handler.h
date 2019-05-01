@@ -59,6 +59,7 @@ class ArcGraphicsTracingHandler : public content::WebUIMessageHandler,
   void OnKeyEvent(ui::KeyEvent* event) override;
 
  private:
+  void Activate();
   void StartTracing();
   void StopTracing();
   void SetStatus(const std::string& status);
