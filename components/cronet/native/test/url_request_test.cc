@@ -18,12 +18,15 @@
 #include "components/cronet/native/test/test_util.h"
 #include "components/cronet/test/test_server.h"
 #include "cronet_c.h"
+#include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 using cronet::test::TestUploadDataProvider;
 using cronet::test::TestUrlRequestCallback;
+using ::testing::HasSubstr;
 
 namespace {
 
@@ -134,8 +137,9 @@ class UrlRequestTest : public ::testing::TestWithParam<
       const std::string& url,
       std::unique_ptr<TestUrlRequestCallback> test_callback,
       const std::string& http_method,
-      TestUploadDataProvider* test_upload_data_provider) {
-    Cronet_EnginePtr engine = cronet::test::CreateTestEngine(0);
+      TestUploadDataProvider* test_upload_data_provider,
+      int remapped_port) {
+    Cronet_EnginePtr engine = cronet::test::CreateTestEngine(remapped_port);
     Cronet_UrlRequestPtr request = Cronet_UrlRequest_Create();
     Cronet_UrlRequestParamsPtr request_params =
         Cronet_UrlRequestParams_Create();
@@ -185,6 +189,16 @@ class UrlRequestTest : public ::testing::TestWithParam<
     Cronet_UrlRequestCallback_Destroy(callback);
     Cronet_Engine_Destroy(engine);
     return test_callback;
+  }
+
+  std::unique_ptr<TestUrlRequestCallback> StartAndWaitForComplete(
+      const std::string& url,
+      std::unique_ptr<TestUrlRequestCallback> test_callback,
+      const std::string& http_method,
+      TestUploadDataProvider* test_upload_data_provider) {
+    return StartAndWaitForComplete(url, std::move(test_callback), http_method,
+                                   test_upload_data_provider,
+                                   /* remapped_port = */ 0);
   }
 
   std::unique_ptr<TestUrlRequestCallback> StartAndWaitForComplete(
@@ -517,6 +531,28 @@ TEST_P(UrlRequestTest, SSLCertificateError) {
   EXPECT_EQ(nullptr, callback->response_info_);
   EXPECT_EQ("", callback->response_as_string_);
   EXPECT_EQ("net::ERR_CERT_INVALID", callback->last_error_message_);
+}
+
+TEST_P(UrlRequestTest, SSLUpload) {
+  net::EmbeddedTestServer ssl_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  net::test_server::RegisterDefaultHandlers(&ssl_server);
+  ASSERT_TRUE(ssl_server.Start());
+
+  constexpr char kUrl[] = "https://test.example.com/echoall";
+  constexpr char kUploadString[] =
+      "The quick brown fox jumps over the lazy dog.";
+  TestUploadDataProvider data_provider(TestUploadDataProvider::SYNC,
+                                       /* executor = */ nullptr);
+  data_provider.AddRead(kUploadString);
+  auto callback =
+      std::make_unique<TestUrlRequestCallback>(GetDirectExecutorParam());
+  callback = StartAndWaitForComplete(kUrl, std::move(callback), std::string(),
+                                     &data_provider, ssl_server.port());
+  data_provider.AssertClosed();
+  EXPECT_NE(nullptr, callback->response_info_);
+  EXPECT_EQ("", callback->last_error_message_);
+  EXPECT_EQ(200, callback->response_info_->http_status_code);
+  EXPECT_THAT(callback->response_as_string_, HasSubstr(kUploadString));
 }
 
 TEST_P(UrlRequestTest, UploadMultiplePiecesSync) {
