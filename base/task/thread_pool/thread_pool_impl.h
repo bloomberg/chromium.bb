@@ -21,11 +21,11 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool/delayed_task_manager.h"
 #include "base/task/thread_pool/environment_config.h"
-#include "base/task/thread_pool/scheduler_single_thread_task_runner_manager.h"
-#include "base/task/thread_pool/scheduler_task_runner_delegate.h"
-#include "base/task/thread_pool/scheduler_worker_pool.h"
-#include "base/task/thread_pool/scheduler_worker_pool_impl.h"
+#include "base/task/thread_pool/pooled_single_thread_task_runner_manager.h"
+#include "base/task/thread_pool/pooled_task_runner_delegate.h"
 #include "base/task/thread_pool/task_tracker.h"
+#include "base/task/thread_pool/thread_group.h"
+#include "base/task/thread_pool/thread_group_impl.h"
 #include "base/task/thread_pool/thread_pool.h"
 #include "base/updateable_sequenced_task_runner.h"
 #include "build/build_config.h"
@@ -46,8 +46,8 @@ namespace internal {
 
 // Default ThreadPool implementation. This class is thread-safe.
 class BASE_EXPORT ThreadPoolImpl : public ThreadPool,
-                                   public SchedulerWorkerPool::Delegate,
-                                   public SchedulerTaskRunnerDelegate {
+                                   public ThreadGroup::Delegate,
+                                   public PooledTaskRunnerDelegate {
  public:
   using TaskTrackerImpl =
 #if defined(OS_POSIX) && !defined(OS_NACL_SFI)
@@ -68,7 +68,7 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPool,
 
   // ThreadPool:
   void Start(const ThreadPool::InitParams& init_params,
-             SchedulerWorkerObserver* scheduler_worker_observer) override;
+             WorkerThreadObserver* worker_thread_observer) override;
   int GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
       const TaskTraits& traits) const override;
   void Shutdown() override;
@@ -110,14 +110,12 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPool,
 
   void ReportHeartbeatMetrics() const;
 
-  const SchedulerWorkerPool* GetWorkerPoolForTraits(
-      const TaskTraits& traits) const;
+  const ThreadGroup* GetThreadGroupForTraits(const TaskTraits& traits) const;
 
-  // SchedulerWorkerPool::Delegate:
-  SchedulerWorkerPool* GetWorkerPoolForTraits(
-      const TaskTraits& traits) override;
+  // ThreadGroup::Delegate:
+  ThreadGroup* GetThreadGroupForTraits(const TaskTraits& traits) override;
 
-  // SchedulerTaskRunnerDelegate:
+  // PooledTaskRunnerDelegate:
   bool PostTaskWithSequence(Task task,
                             scoped_refptr<Sequence> sequence) override;
   bool IsRunningPoolWithTraits(const TaskTraits& traits) const override;
@@ -127,7 +125,7 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPool,
   const std::unique_ptr<TaskTrackerImpl> task_tracker_;
   std::unique_ptr<Thread> service_thread_;
   DelayedTaskManager delayed_task_manager_;
-  SchedulerSingleThreadTaskRunnerManager single_thread_task_runner_manager_;
+  PooledSingleThreadTaskRunnerManager single_thread_task_runner_manager_;
 
   // Indicates that all tasks are handled as if they had been posted with
   // TaskPriority::USER_BLOCKING. Since this is set in Start(), it doesn't apply
@@ -137,8 +135,8 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPool,
   // TODO(fdoray): Remove after experiment. https://crbug.com/757022
   AtomicFlag all_tasks_user_blocking_;
 
-  std::unique_ptr<SchedulerWorkerPool> foreground_pool_;
-  std::unique_ptr<SchedulerWorkerPoolImpl> background_pool_;
+  std::unique_ptr<ThreadGroup> foreground_pool_;
+  std::unique_ptr<ThreadGroupImpl> background_pool_;
 
   // Whether this TaskScheduler was started. Access controlled by
   // |sequence_checker_|.
@@ -162,7 +160,7 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPool,
   // Asserts that operations occur in sequence with Start().
   SEQUENCE_CHECKER(sequence_checker_);
 
-  TrackedRefFactory<SchedulerWorkerPool::Delegate> tracked_ref_factory_;
+  TrackedRefFactory<ThreadGroup::Delegate> tracked_ref_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ThreadPoolImpl);
 };

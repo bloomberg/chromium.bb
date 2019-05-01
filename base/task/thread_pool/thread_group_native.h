@@ -2,36 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_TASK_THREAD_POOL_PLATFORM_NATIVE_WORKER_POOL_H_
-#define BASE_TASK_THREAD_POOL_PLATFORM_NATIVE_WORKER_POOL_H_
+#ifndef BASE_TASK_THREAD_POOL_THREAD_GROUP_NATIVE_H_
+#define BASE_TASK_THREAD_POOL_THREAD_GROUP_NATIVE_H_
 
 #include "base/base_export.h"
 #include "base/synchronization/atomic_flag.h"
-#include "base/task/thread_pool/scheduler_worker_pool.h"
+#include "base/task/thread_pool/thread_group.h"
 
 namespace base {
 namespace internal {
 
-class BASE_EXPORT PlatformNativeWorkerPool : public SchedulerWorkerPool {
+class BASE_EXPORT ThreadGroupNative : public ThreadGroup {
  public:
-  // Destroying a PlatformNativeWorkerPool is not allowed in
+  // Destroying a ThreadGroupNative is not allowed in
   // production; it is always leaked. In tests, it can only be destroyed after
   // JoinForTesting() has returned.
-  ~PlatformNativeWorkerPool() override;
+  ~ThreadGroupNative() override;
 
   // Starts the worker pool and allows tasks to begin running.
   void Start(WorkerEnvironment worker_environment = WorkerEnvironment::NONE);
 
-  // SchedulerWorkerPool:
+  // ThreadGroup:
   void JoinForTesting() override;
   size_t GetMaxConcurrentNonBlockedTasksDeprecated() const override;
   void ReportHeartbeatMetrics() const override;
   void DidUpdateCanRunPolicy() override;
 
  protected:
-  PlatformNativeWorkerPool(TrackedRef<TaskTracker> task_tracker,
-                           TrackedRef<Delegate> delegate,
-                           SchedulerWorkerPool* predecessor_pool);
+  ThreadGroupNative(TrackedRef<TaskTracker> task_tracker,
+                    TrackedRef<Delegate> delegate,
+                    ThreadGroup* predecessor_pool);
 
   // Runs a task off the next task source on the |priority_queue_|. Called by
   // callbacks posted to platform native thread pools.
@@ -47,7 +47,7 @@ class BASE_EXPORT PlatformNativeWorkerPool : public SchedulerWorkerPool {
  private:
   class ScopedWorkersExecutor;
 
-  // SchedulerWorkerPool:
+  // ThreadGroup:
   void UpdateSortKey(
       TaskSourceAndTransaction task_source_and_transaction) override;
   void PushTaskSourceAndWakeUpWorkers(
@@ -71,10 +71,10 @@ class BASE_EXPORT PlatformNativeWorkerPool : public SchedulerWorkerPool {
   bool join_for_testing_returned_ = false;
 #endif
 
-  DISALLOW_COPY_AND_ASSIGN(PlatformNativeWorkerPool);
+  DISALLOW_COPY_AND_ASSIGN(ThreadGroupNative);
 };
 
 }  // namespace internal
 }  // namespace base
 
-#endif  // BASE_TASK_THREAD_POOL_PLATFORM_NATIVE_WORKER_POOL_H_
+#endif  // BASE_TASK_THREAD_POOL_THREAD_GROUP_NATIVE_H_

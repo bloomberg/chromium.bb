@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/task/thread_pool/scheduler_worker_stack.h"
+#include "base/task/thread_pool/worker_thread_stack.h"
 
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/task/thread_pool/scheduler_worker.h"
 #include "base/task/thread_pool/task_source.h"
 #include "base/task/thread_pool/task_tracker.h"
+#include "base/task/thread_pool/worker_thread.h"
 #include "base/test/gtest_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -19,13 +19,13 @@ namespace internal {
 
 namespace {
 
-class MockSchedulerWorkerDelegate : public SchedulerWorker::Delegate {
+class MockWorkerThreadDelegate : public WorkerThread::Delegate {
  public:
-  SchedulerWorker::ThreadLabel GetThreadLabel() const override {
-    return SchedulerWorker::ThreadLabel::DEDICATED;
+  WorkerThread::ThreadLabel GetThreadLabel() const override {
+    return WorkerThread::ThreadLabel::DEDICATED;
   }
-  void OnMainEntry(const SchedulerWorker* worker) override {}
-  scoped_refptr<TaskSource> GetWork(SchedulerWorker* worker) override {
+  void OnMainEntry(const WorkerThread* worker) override {}
+  scoped_refptr<TaskSource> GetWork(WorkerThread* worker) override {
     return nullptr;
   }
   void DidRunTask(scoped_refptr<TaskSource> task_source) override {
@@ -37,16 +37,16 @@ class MockSchedulerWorkerDelegate : public SchedulerWorker::Delegate {
 class ThreadPoolWorkerStackTest : public testing::Test {
  protected:
   void SetUp() override {
-    worker_a_ = MakeRefCounted<SchedulerWorker>(
-        ThreadPriority::NORMAL, std::make_unique<MockSchedulerWorkerDelegate>(),
+    worker_a_ = MakeRefCounted<WorkerThread>(
+        ThreadPriority::NORMAL, std::make_unique<MockWorkerThreadDelegate>(),
         task_tracker_.GetTrackedRef());
     ASSERT_TRUE(worker_a_);
-    worker_b_ = MakeRefCounted<SchedulerWorker>(
-        ThreadPriority::NORMAL, std::make_unique<MockSchedulerWorkerDelegate>(),
+    worker_b_ = MakeRefCounted<WorkerThread>(
+        ThreadPriority::NORMAL, std::make_unique<MockWorkerThreadDelegate>(),
         task_tracker_.GetTrackedRef());
     ASSERT_TRUE(worker_b_);
-    worker_c_ = MakeRefCounted<SchedulerWorker>(
-        ThreadPriority::NORMAL, std::make_unique<MockSchedulerWorkerDelegate>(),
+    worker_c_ = MakeRefCounted<WorkerThread>(
+        ThreadPriority::NORMAL, std::make_unique<MockWorkerThreadDelegate>(),
         task_tracker_.GetTrackedRef());
     ASSERT_TRUE(worker_c_);
   }
@@ -55,16 +55,16 @@ class ThreadPoolWorkerStackTest : public testing::Test {
   TaskTracker task_tracker_ = {"Test"};
 
  protected:
-  scoped_refptr<SchedulerWorker> worker_a_;
-  scoped_refptr<SchedulerWorker> worker_b_;
-  scoped_refptr<SchedulerWorker> worker_c_;
+  scoped_refptr<WorkerThread> worker_a_;
+  scoped_refptr<WorkerThread> worker_b_;
+  scoped_refptr<WorkerThread> worker_c_;
 };
 
 }  // namespace
 
 // Verify that Push() and Pop() add/remove values in FIFO order.
 TEST_F(ThreadPoolWorkerStackTest, PushPop) {
-  SchedulerWorkerStack stack;
+  WorkerThreadStack stack;
   EXPECT_EQ(nullptr, stack.Pop());
 
   EXPECT_TRUE(stack.IsEmpty());
@@ -107,7 +107,7 @@ TEST_F(ThreadPoolWorkerStackTest, PushPop) {
 
 // Verify that Peek() returns the correct values in FIFO order.
 TEST_F(ThreadPoolWorkerStackTest, PeekPop) {
-  SchedulerWorkerStack stack;
+  WorkerThreadStack stack;
   EXPECT_EQ(nullptr, stack.Peek());
 
   EXPECT_TRUE(stack.IsEmpty());
@@ -147,7 +147,7 @@ TEST_F(ThreadPoolWorkerStackTest, PeekPop) {
 
 // Verify that Contains() returns true for workers on the stack.
 TEST_F(ThreadPoolWorkerStackTest, Contains) {
-  SchedulerWorkerStack stack;
+  WorkerThreadStack stack;
   EXPECT_FALSE(stack.Contains(worker_a_.get()));
   EXPECT_FALSE(stack.Contains(worker_b_.get()));
   EXPECT_FALSE(stack.Contains(worker_c_.get()));
@@ -185,7 +185,7 @@ TEST_F(ThreadPoolWorkerStackTest, Contains) {
 
 // Verify that a value can be removed by Remove().
 TEST_F(ThreadPoolWorkerStackTest, Remove) {
-  SchedulerWorkerStack stack;
+  WorkerThreadStack stack;
   EXPECT_TRUE(stack.IsEmpty());
   EXPECT_EQ(0U, stack.Size());
 
@@ -216,7 +216,7 @@ TEST_F(ThreadPoolWorkerStackTest, Remove) {
 
 // Verify that a value can be pushed again after it has been removed.
 TEST_F(ThreadPoolWorkerStackTest, PushAfterRemove) {
-  SchedulerWorkerStack stack;
+  WorkerThreadStack stack;
   EXPECT_EQ(0U, stack.Size());
 
   stack.Push(worker_a_.get());
@@ -236,7 +236,7 @@ TEST_F(ThreadPoolWorkerStackTest, PushAfterRemove) {
 
 // Verify that Push() DCHECKs when a value is inserted twice.
 TEST_F(ThreadPoolWorkerStackTest, PushTwice) {
-  SchedulerWorkerStack stack;
+  WorkerThreadStack stack;
   stack.Push(worker_a_.get());
   EXPECT_DCHECK_DEATH({ stack.Push(worker_a_.get()); });
 }

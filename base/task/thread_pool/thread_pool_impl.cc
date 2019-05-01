@@ -19,23 +19,23 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/task/task_features.h"
-#include "base/task/thread_pool/scheduler_parallel_task_runner.h"
-#include "base/task/thread_pool/scheduler_sequenced_task_runner.h"
-#include "base/task/thread_pool/scheduler_worker_pool_impl.h"
-#include "base/task/thread_pool/scheduler_worker_pool_params.h"
+#include "base/task/thread_pool/pooled_parallel_task_runner.h"
+#include "base/task/thread_pool/pooled_sequenced_task_runner.h"
 #include "base/task/thread_pool/sequence_sort_key.h"
 #include "base/task/thread_pool/service_thread.h"
 #include "base/task/thread_pool/task.h"
 #include "base/task/thread_pool/task_source.h"
+#include "base/task/thread_pool/thread_group_impl.h"
+#include "base/task/thread_pool/thread_group_params.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 
 #if defined(OS_WIN)
-#include "base/task/thread_pool/platform_native_worker_pool_win.h"
+#include "base/task/thread_pool/thread_group_native_win.h"
 #endif
 
 #if defined(OS_MACOSX)
-#include "base/task/thread_pool/platform_native_worker_pool_mac.h"
+#include "base/task/thread_pool/thread_group_native_mac.h"
 #endif
 
 namespace base {
@@ -77,15 +77,15 @@ ThreadPoolImpl::ThreadPoolImpl(StringPiece histogram_label,
       tracked_ref_factory_(this) {
   DCHECK(!histogram_label.empty());
 
-  foreground_pool_ = std::make_unique<SchedulerWorkerPoolImpl>(
+  foreground_pool_ = std::make_unique<ThreadGroupImpl>(
       JoinString(
           {histogram_label, kForegroundPoolEnvironmentParams.name_suffix}, "."),
       kForegroundPoolEnvironmentParams.name_suffix,
       kForegroundPoolEnvironmentParams.priority_hint,
       task_tracker_->GetTrackedRef(), tracked_ref_factory_.GetTrackedRef());
 
-  if (CanUseBackgroundPriorityForSchedulerWorker()) {
-    background_pool_ = std::make_unique<SchedulerWorkerPoolImpl>(
+  if (CanUseBackgroundPriorityForWorkerThread()) {
+    background_pool_ = std::make_unique<ThreadGroupImpl>(
         JoinString(
             {histogram_label, kBackgroundPoolEnvironmentParams.name_suffix},
             "."),
@@ -106,7 +106,7 @@ ThreadPoolImpl::~ThreadPoolImpl() {
 }
 
 void ThreadPoolImpl::Start(const ThreadPool::InitParams& init_params,
-                           SchedulerWorkerObserver* scheduler_worker_observer) {
+                           WorkerThreadObserver* worker_thread_observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!started_);
 
@@ -119,8 +119,8 @@ void ThreadPoolImpl::Start(const ThreadPool::InitParams& init_params,
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
   if (FeatureList::IsEnabled(kUseNativeThreadPool)) {
-    std::unique_ptr<SchedulerWorkerPool> pool = std::move(foreground_pool_);
-    foreground_pool_ = std::make_unique<PlatformNativeWorkerPoolImpl>(
+    std::unique_ptr<ThreadGroup> pool = std::move(foreground_pool_);
+    foreground_pool_ = std::make_unique<ThreadGroupNativeImpl>(
         task_tracker_->GetTrackedRef(), tracked_ref_factory_.GetTrackedRef(),
         pool.get());
     pool->InvalidateAndHandoffAllTaskSourcesToOtherPool(foreground_pool_.get());
@@ -151,21 +151,21 @@ void ThreadPoolImpl::Start(const ThreadPool::InitParams& init_params,
       service_thread_->task_runner();
   delayed_task_manager_.Start(service_thread_task_runner);
 
-  single_thread_task_runner_manager_.Start(scheduler_worker_observer);
+  single_thread_task_runner_manager_.Start(worker_thread_observer);
 
-  const SchedulerWorkerPool::WorkerEnvironment worker_environment =
+  const ThreadGroup::WorkerEnvironment worker_environment =
 #if defined(OS_WIN)
-      init_params.shared_worker_pool_environment ==
-              InitParams::SharedWorkerPoolEnvironment::COM_MTA
-          ? SchedulerWorkerPool::WorkerEnvironment::COM_MTA
-          : SchedulerWorkerPool::WorkerEnvironment::NONE;
+      init_params.common_thread_pool_environment ==
+              InitParams::CommonThreadPoolEnvironment::COM_MTA
+          ? ThreadGroup::WorkerEnvironment::COM_MTA
+          : ThreadGroup::WorkerEnvironment::NONE;
 #else
-      SchedulerWorkerPool::WorkerEnvironment::NONE;
+      ThreadGroup::WorkerEnvironment::NONE;
 #endif
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
   if (FeatureList::IsEnabled(kUseNativeThreadPool)) {
-    static_cast<PlatformNativeWorkerPool*>(foreground_pool_.get())
+    static_cast<ThreadGroupNative*>(foreground_pool_.get())
         ->Start(worker_environment);
   } else
 #endif
@@ -177,21 +177,21 @@ void ThreadPoolImpl::Start(const ThreadPool::InitParams& init_params,
     // of best-effort tasks.
 
     const int max_best_effort_tasks_in_foreground_pool = std::max(
-        1, std::min(init_params.background_worker_pool_params.max_tasks(),
-                    init_params.foreground_worker_pool_params.max_tasks() / 2));
-    static_cast<SchedulerWorkerPoolImpl*>(foreground_pool_.get())
-        ->Start(init_params.foreground_worker_pool_params,
+        1,
+        std::min(init_params.background_thread_group_params.max_tasks(),
+                 init_params.foreground_thread_group_params.max_tasks() / 2));
+    static_cast<ThreadGroupImpl*>(foreground_pool_.get())
+        ->Start(init_params.foreground_thread_group_params,
                 max_best_effort_tasks_in_foreground_pool,
-                service_thread_task_runner, scheduler_worker_observer,
+                service_thread_task_runner, worker_thread_observer,
                 worker_environment);
   }
 
   if (background_pool_) {
     background_pool_->Start(
-        init_params.background_worker_pool_params,
-        init_params.background_worker_pool_params.max_tasks(),
-        service_thread_task_runner, scheduler_worker_observer,
-        worker_environment);
+        init_params.background_thread_group_params,
+        init_params.background_thread_group_params.max_tasks(),
+        service_thread_task_runner, worker_thread_observer, worker_environment);
   }
 
   started_ = true;
@@ -212,13 +212,13 @@ bool ThreadPoolImpl::PostDelayedTaskWithTraits(const Location& from_here,
 scoped_refptr<TaskRunner> ThreadPoolImpl::CreateTaskRunnerWithTraits(
     const TaskTraits& traits) {
   const TaskTraits new_traits = SetUserBlockingPriorityIfNeeded(traits);
-  return MakeRefCounted<SchedulerParallelTaskRunner>(new_traits, this);
+  return MakeRefCounted<PooledParallelTaskRunner>(new_traits, this);
 }
 
 scoped_refptr<SequencedTaskRunner>
 ThreadPoolImpl::CreateSequencedTaskRunnerWithTraits(const TaskTraits& traits) {
   const TaskTraits new_traits = SetUserBlockingPriorityIfNeeded(traits);
-  return MakeRefCounted<SchedulerSequencedTaskRunner>(new_traits, this);
+  return MakeRefCounted<PooledSequencedTaskRunner>(new_traits, this);
 }
 
 scoped_refptr<SingleThreadTaskRunner>
@@ -244,7 +244,7 @@ scoped_refptr<UpdateableSequencedTaskRunner>
 ThreadPoolImpl::CreateUpdateableSequencedTaskRunnerWithTraitsForTesting(
     const TaskTraits& traits) {
   const TaskTraits new_traits = SetUserBlockingPriorityIfNeeded(traits);
-  return MakeRefCounted<SchedulerSequencedTaskRunner>(new_traits, this);
+  return MakeRefCounted<PooledSequencedTaskRunner>(new_traits, this);
 }
 
 int ThreadPoolImpl::GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
@@ -252,7 +252,7 @@ int ThreadPoolImpl::GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
   // This method does not support getting the maximum number of BEST_EFFORT
   // tasks that can run concurrently in a pool.
   DCHECK_NE(traits.priority(), TaskPriority::BEST_EFFORT);
-  return GetWorkerPoolForTraits(traits)
+  return GetThreadGroupForTraits(traits)
       ->GetMaxConcurrentNonBlockedTasksDeprecated();
 }
 
@@ -325,7 +325,7 @@ bool ThreadPoolImpl::PostTaskWithSequence(Task task,
     auto sequence_and_transaction =
         SequenceAndTransaction::FromSequence(std::move(sequence));
     const TaskTraits traits = sequence_and_transaction.transaction.traits();
-    GetWorkerPoolForTraits(traits)->PostTaskWithSequenceNow(
+    GetThreadGroupForTraits(traits)->PostTaskWithSequenceNow(
         std::move(task), std::move(sequence_and_transaction));
   } else {
     // It's safe to take a ref on this pointer since the caller must have a ref
@@ -340,7 +340,7 @@ bool ThreadPoolImpl::PostTaskWithSequence(Task task,
                   SequenceAndTransaction::FromSequence(std::move(sequence));
               const TaskTraits traits =
                   sequence_and_transaction.transaction.traits();
-              thread_pool_impl->GetWorkerPoolForTraits(traits)
+              thread_pool_impl->GetThreadGroupForTraits(traits)
                   ->PostTaskWithSequenceNow(
                       std::move(task), std::move(sequence_and_transaction));
             },
@@ -352,7 +352,7 @@ bool ThreadPoolImpl::PostTaskWithSequence(Task task,
 }
 
 bool ThreadPoolImpl::IsRunningPoolWithTraits(const TaskTraits& traits) const {
-  return GetWorkerPoolForTraits(traits)->IsBoundToCurrentThread();
+  return GetThreadGroupForTraits(traits)->IsBoundToCurrentThread();
 }
 
 void ThreadPoolImpl::UpdatePriority(scoped_refptr<TaskSource> task_source,
@@ -360,35 +360,34 @@ void ThreadPoolImpl::UpdatePriority(scoped_refptr<TaskSource> task_source,
   auto task_source_and_transaction =
       TaskSourceAndTransaction::FromTaskSource(std::move(task_source));
 
-  SchedulerWorkerPool* const current_worker_pool =
-      GetWorkerPoolForTraits(task_source_and_transaction.transaction.traits());
+  ThreadGroup* const current_thread_group =
+      GetThreadGroupForTraits(task_source_and_transaction.transaction.traits());
   task_source_and_transaction.transaction.UpdatePriority(priority);
-  SchedulerWorkerPool* const new_worker_pool =
-      GetWorkerPoolForTraits(task_source_and_transaction.transaction.traits());
+  ThreadGroup* const new_thread_group =
+      GetThreadGroupForTraits(task_source_and_transaction.transaction.traits());
 
-  if (new_worker_pool == current_worker_pool) {
+  if (new_thread_group == current_thread_group) {
     // |task_source|'s position needs to be updated within its current pool.
-    current_worker_pool->UpdateSortKey(std::move(task_source_and_transaction));
+    current_thread_group->UpdateSortKey(std::move(task_source_and_transaction));
   } else {
     // |task_source| is changing pools; remove it from its current pool and
     // reenqueue it.
-    const bool task_source_was_found = current_worker_pool->RemoveTaskSource(
+    const bool task_source_was_found = current_thread_group->RemoveTaskSource(
         task_source_and_transaction.task_source);
     if (task_source_was_found) {
       DCHECK(task_source_and_transaction.task_source);
-      new_worker_pool->PushTaskSourceAndWakeUpWorkers(
+      new_thread_group->PushTaskSourceAndWakeUpWorkers(
           std::move(task_source_and_transaction));
     }
   }
 }
 
-const SchedulerWorkerPool* ThreadPoolImpl::GetWorkerPoolForTraits(
+const ThreadGroup* ThreadPoolImpl::GetThreadGroupForTraits(
     const TaskTraits& traits) const {
-  return const_cast<ThreadPoolImpl*>(this)->GetWorkerPoolForTraits(traits);
+  return const_cast<ThreadPoolImpl*>(this)->GetThreadGroupForTraits(traits);
 }
 
-SchedulerWorkerPool* ThreadPoolImpl::GetWorkerPoolForTraits(
-    const TaskTraits& traits) {
+ThreadGroup* ThreadPoolImpl::GetThreadGroupForTraits(const TaskTraits& traits) {
   if (traits.priority() == TaskPriority::BEST_EFFORT && background_pool_) {
     return background_pool_.get();
   }

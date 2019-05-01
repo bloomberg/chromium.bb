@@ -23,10 +23,10 @@
 #include "base/task/task_features.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool/environment_config.h"
-#include "base/task/thread_pool/scheduler_worker_observer.h"
-#include "base/task/thread_pool/scheduler_worker_pool_params.h"
 #include "base/task/thread_pool/test_task_factory.h"
 #include "base/task/thread_pool/test_utils.h"
+#include "base/task/thread_pool/thread_group_params.h"
+#include "base/task/thread_pool/worker_thread_observer.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
 #include "base/test/scoped_feature_list.h"
@@ -83,7 +83,7 @@ bool GetIOAllowed() {
 // to run a Task with |traits|.
 // Note: ExecutionMode is verified inside TestTaskFactory.
 void VerifyTaskEnvironment(const TaskTraits& traits, test::PoolType pool_type) {
-  EXPECT_EQ(CanUseBackgroundPriorityForSchedulerWorker() &&
+  EXPECT_EQ(CanUseBackgroundPriorityForWorkerThread() &&
                     traits.priority() == TaskPriority::BEST_EFFORT
                 ? ThreadPriority::BACKGROUND
                 : ThreadPriority::NORMAL,
@@ -125,7 +125,7 @@ void VerifyTaskEnvironment(const TaskTraits& traits, test::PoolType pool_type) {
   } else {
     EXPECT_NE(std::string::npos,
               current_thread_name.find(
-                  CanUseBackgroundPriorityForSchedulerWorker() && is_best_effort
+                  CanUseBackgroundPriorityForWorkerThread() && is_best_effort
                       ? "Background"
                       : "Foreground"));
 
@@ -261,9 +261,9 @@ class ThreadPoolImplTest
     should_enable_all_tasks_user_blocking_ = true;
   }
 
-  void set_scheduler_worker_observer(
-      SchedulerWorkerObserver* scheduler_worker_observer) {
-    scheduler_worker_observer_ = scheduler_worker_observer;
+  void set_worker_thread_observer(
+      WorkerThreadObserver* worker_thread_observer) {
+    worker_thread_observer_ = worker_thread_observer;
   }
 
   void StartThreadPool(TimeDelta reclaim_time = TimeDelta::FromSeconds(30)) {
@@ -274,7 +274,7 @@ class ThreadPoolImplTest
 
     thread_pool_.Start({{kMaxNumBackgroundThreads, reclaim_time},
                         {kMaxNumForegroundThreads, reclaim_time}},
-                       scheduler_worker_observer_);
+                       worker_thread_observer_);
   }
 
   void TearDown() override {
@@ -305,7 +305,7 @@ class ThreadPoolImplTest
   }
 
   base::test::ScopedFeatureList feature_list_;
-  SchedulerWorkerObserver* scheduler_worker_observer_ = nullptr;
+  WorkerThreadObserver* worker_thread_observer_ = nullptr;
   bool did_tear_down_ = false;
   bool should_enable_all_tasks_user_blocking_ = false;
 
@@ -564,7 +564,7 @@ TEST_P(ThreadPoolImplTest, SetCanRunBestEffort) {
   did_run.Wait();
 }
 
-INSTANTIATE_TEST_SUITE_P(OneThreadPoolImplTestParams,
+INSTANTIATE_TEST_SUITE_P(,
                          ThreadPoolImplTest,
                          ::testing::ValuesIn(GetThreadPoolImplTestParams()));
 
@@ -804,7 +804,7 @@ void VerifyHasStringsOnStack(const std::string& pool_str,
   const std::string stack = debug::StackTrace().ToString();
   SCOPED_TRACE(stack);
   const bool stack_has_symbols =
-      stack.find("SchedulerWorker") != std::string::npos;
+      stack.find("WorkerThread") != std::string::npos;
   if (!stack_has_symbols)
     return;
 
@@ -910,9 +910,9 @@ TEST_P(ThreadPoolImplTest, MAYBE_IdentifiableStacks) {
   thread_pool_.FlushForTesting();
 }
 
-TEST_P(ThreadPoolImplTest, SchedulerWorkerObserver) {
+TEST_P(ThreadPoolImplTest, WorkerThreadObserver) {
 #if defined(OS_WIN) || defined(OS_MACOSX)
-  // SchedulerWorkers are not created (and hence not observed) when using the
+  // WorkerThreads are not created (and hence not observed) when using the
   // native thread pools. We still start the ThreadPool in this case since
   // JoinForTesting is always called on TearDown, and DCHECKs that all worker
   // pools are started.
@@ -922,13 +922,13 @@ TEST_P(ThreadPoolImplTest, SchedulerWorkerObserver) {
   }
 #endif
 
-  testing::StrictMock<test::MockSchedulerWorkerObserver> observer;
-  set_scheduler_worker_observer(&observer);
+  testing::StrictMock<test::MockWorkerThreadObserver> observer;
+  set_worker_thread_observer(&observer);
 
   // A worker should be created for each pool. After that, 4 threads should be
   // created for each SingleThreadTaskRunnerThreadMode (8 on Windows).
   const int kExpectedNumPoolWorkers =
-      CanUseBackgroundPriorityForSchedulerWorker() ? 2 : 1;
+      CanUseBackgroundPriorityForWorkerThread() ? 2 : 1;
 #if defined(OS_WIN)
   const int kExpectedNumSingleThreadedWorkersPerMode = 8;
 #else
@@ -936,13 +936,13 @@ TEST_P(ThreadPoolImplTest, SchedulerWorkerObserver) {
 #endif
   constexpr int kNumSingleThreadTaskRunnerThreadModes = 2;
 
-  EXPECT_CALL(observer, OnSchedulerWorkerMainEntry())
+  EXPECT_CALL(observer, OnWorkerThreadMainEntry())
       .Times(kExpectedNumPoolWorkers +
              kNumSingleThreadTaskRunnerThreadModes *
                  kExpectedNumSingleThreadedWorkersPerMode);
 
   // Infinite detach time to prevent workers from invoking
-  // OnSchedulerWorkerMainExit() earlier than expected.
+  // OnWorkerThreadMainExit() earlier than expected.
   StartThreadPool(TimeDelta::Max());
 
   std::vector<scoped_refptr<SingleThreadTaskRunner>> task_runners;
@@ -1001,13 +1001,13 @@ TEST_P(ThreadPoolImplTest, SchedulerWorkerObserver) {
     task_runner->PostTask(FROM_HERE, DoNothing());
 
   // Release single-threaded workers. This should cause dedicated workers to
-  // invoke OnSchedulerWorkerMainExit().
+  // invoke OnWorkerThreadMainExit().
   observer.AllowCallsOnMainExit(kExpectedNumSingleThreadedWorkersPerMode);
   task_runners.clear();
   observer.WaitCallsOnMainExit();
 
   // Join all remaining workers. This should cause shared single-threaded
-  // workers and pool workers to invoke OnSchedulerWorkerMainExit().
+  // workers and pool workers to invoke OnWorkerThreadMainExit().
   observer.AllowCallsOnMainExit(kExpectedNumPoolWorkers +
                                 kExpectedNumSingleThreadedWorkersPerMode);
   TearDown();
@@ -1118,7 +1118,7 @@ class ThreadPoolPriorityUpdateTest
         thread_pool_.CreateUpdateableSequencedTaskRunnerWithTraitsForTesting(
             TaskTraits({TaskPriority::USER_BLOCKING})),
         TaskPriority::BEST_EFFORT,
-        CanUseBackgroundPriorityForSchedulerWorker()
+        CanUseBackgroundPriorityForWorkerThread()
             ? nullptr
             : &task_runners_and_events_.back()->task_ran));
   }
@@ -1149,7 +1149,7 @@ TEST_F(ThreadPoolPriorityUpdateTest, UpdatePrioritySequenceNotScheduled) {
 
   pool_blocking_events.push_back(std::make_unique<PoolBlockingEvents>(
       TaskTraits({TaskPriority::USER_BLOCKING})));
-  if (CanUseBackgroundPriorityForSchedulerWorker()) {
+  if (CanUseBackgroundPriorityForWorkerThread()) {
     pool_blocking_events.push_back(std::make_unique<PoolBlockingEvents>(
         TaskTraits({TaskPriority::BEST_EFFORT})));
   }
@@ -1257,7 +1257,7 @@ TEST_P(ThreadPoolPriorityUpdateTest, UpdatePrioritySequenceScheduled) {
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(OneThreadPoolPriorityUpdateTestParams,
+INSTANTIATE_TEST_SUITE_P(,
                          ThreadPoolPriorityUpdateTest,
                          ::testing::ValuesIn(GetThreadPoolImplTestParams()));
 

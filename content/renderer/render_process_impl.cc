@@ -68,9 +68,9 @@ std::unique_ptr<base::ThreadPool::InitParams> GetDefaultThreadPoolInitParams() {
   constexpr auto kSuggestedReclaimTime = base::TimeDelta::FromSeconds(30);
 
   return std::make_unique<base::ThreadPool::InitParams>(
-      base::SchedulerWorkerPoolParams(kMaxNumThreadsInBackgroundPool,
-                                      kSuggestedReclaimTime),
-      base::SchedulerWorkerPoolParams(
+      base::ThreadGroupParams(kMaxNumThreadsInBackgroundPool,
+                              kSuggestedReclaimTime),
+      base::ThreadGroupParams(
           std::max(kMaxNumThreadsInForegroundPoolLowerBound,
                    content::GetMinForegroundThreadsInRendererThreadPool()),
           kSuggestedReclaimTime));

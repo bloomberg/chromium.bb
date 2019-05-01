@@ -107,7 +107,7 @@ void Sequence::ReleaseTaskRunner() {
   if (!task_runner())
     return;
   if (execution_mode() == TaskSourceExecutionMode::kParallel) {
-    static_cast<SchedulerParallelTaskRunner*>(task_runner())
+    static_cast<PooledParallelTaskRunner*>(task_runner())
         ->UnregisterSequence(this);
   }
   // No member access after this point, releasing |task_runner()| might delete

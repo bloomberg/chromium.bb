@@ -387,15 +387,15 @@ void ScopedTaskEnvironment::InitializeThreadPool() {
   // data races.
   constexpr int kMaxThreads = 4;
   const TimeDelta kSuggestedReclaimTime = TimeDelta::Max();
-  const SchedulerWorkerPoolParams worker_pool_params(kMaxThreads,
-                                                     kSuggestedReclaimTime);
+  const ThreadGroupParams thread_group_params(kMaxThreads,
+                                              kSuggestedReclaimTime);
   auto task_tracker = std::make_unique<TestTaskTracker>();
   task_tracker_ = task_tracker.get();
   ThreadPool::SetInstance(std::make_unique<internal::ThreadPoolImpl>(
       "ScopedTaskEnvironment", std::move(task_tracker)));
   thread_pool_ = ThreadPool::GetInstance();
   ThreadPool::GetInstance()->Start({
-    worker_pool_params, worker_pool_params
+    thread_group_params, thread_group_params
 #if defined(OS_WIN)
         ,
         // Enable the MTA in unit tests to match the browser process'
@@ -409,7 +409,7 @@ void ScopedTaskEnvironment::InitializeThreadPool() {
         // I/O, waits, etc. Such misuse will still be caught in later phases
         // (and COM usage should already be pretty much inexistent in sandboxed
         // processes).
-        ThreadPool::InitParams::SharedWorkerPoolEnvironment::COM_MTA
+        ThreadPool::InitParams::CommonThreadPoolEnvironment::COM_MTA
 #endif
   });
 }

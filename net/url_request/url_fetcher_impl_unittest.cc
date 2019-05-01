@@ -572,9 +572,9 @@ TEST_F(URLFetcherTest, SequencedTaskTest) {
   auto sequenced_task_runner = base::CreateSequencedTaskRunnerWithTraits({});
 
   // Since we cannot use StartFetchAndWait(), which runs a nested RunLoop owned
-  // by the Delegate, on a SchedulerWorker Sequence, this test is split into
-  // two Callbacks, both run on |sequenced_task_runner_|. The test main thread
-  // then runs its own RunLoop, which the second of the Callbacks will quit.
+  // by the Delegate, in the ThreadPool, this test is split into two Callbacks,
+  // both run on |sequenced_task_runner_|. The test main thread then runs its
+  // own RunLoop, which the second of the Callbacks will quit.
   base::RunLoop run_loop;
 
   // Actually start the test fetch, on the Sequence.

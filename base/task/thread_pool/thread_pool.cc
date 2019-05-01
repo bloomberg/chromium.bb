@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/system/sys_info.h"
-#include "base/task/thread_pool/scheduler_worker_pool_params.h"
+#include "base/task/thread_pool/thread_group_params.h"
 #include "base/task/thread_pool/thread_pool_impl.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -24,12 +24,12 @@ ThreadPool* g_thread_pool = nullptr;
 }  // namespace
 
 ThreadPool::InitParams::InitParams(
-    const SchedulerWorkerPoolParams& background_worker_pool_params_in,
-    const SchedulerWorkerPoolParams& foreground_worker_pool_params_in,
-    SharedWorkerPoolEnvironment shared_worker_pool_environment_in)
-    : background_worker_pool_params(background_worker_pool_params_in),
-      foreground_worker_pool_params(foreground_worker_pool_params_in),
-      shared_worker_pool_environment(shared_worker_pool_environment_in) {}
+    const ThreadGroupParams& background_thread_group_params_in,
+    const ThreadGroupParams& foreground_thread_group_params_in,
+    CommonThreadPoolEnvironment common_thread_pool_environment_in)
+    : background_thread_group_params(background_thread_group_params_in),
+      foreground_thread_group_params(foreground_thread_group_params_in),
+      common_thread_pool_environment(common_thread_pool_environment_in) {}
 
 ThreadPool::InitParams::~InitParams() = default;
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/task/thread_pool/platform_native_worker_pool_win.h"
+#include "base/task/thread_pool/thread_group_native_win.h"
 
 #include "base/optional.h"
 #include "base/task/thread_pool/task_tracker.h"
@@ -12,7 +12,7 @@
 namespace base {
 namespace internal {
 
-class PlatformNativeWorkerPoolWin::ScopedCallbackMayRunLongObserver
+class ThreadGroupNativeWin::ScopedCallbackMayRunLongObserver
     : public BlockingObserver {
  public:
   ScopedCallbackMayRunLongObserver(PTP_CALLBACK_INSTANCE callback)
@@ -40,21 +40,20 @@ class PlatformNativeWorkerPoolWin::ScopedCallbackMayRunLongObserver
   DISALLOW_COPY_AND_ASSIGN(ScopedCallbackMayRunLongObserver);
 };
 
-PlatformNativeWorkerPoolWin::PlatformNativeWorkerPoolWin(
-    TrackedRef<TaskTracker> task_tracker,
-    TrackedRef<Delegate> delegate,
-    SchedulerWorkerPool* predecessor_pool)
-    : PlatformNativeWorkerPool(std::move(task_tracker),
-                               std::move(delegate),
-                               predecessor_pool) {}
+ThreadGroupNativeWin::ThreadGroupNativeWin(TrackedRef<TaskTracker> task_tracker,
+                                           TrackedRef<Delegate> delegate,
+                                           ThreadGroup* predecessor_pool)
+    : ThreadGroupNative(std::move(task_tracker),
+                        std::move(delegate),
+                        predecessor_pool) {}
 
-PlatformNativeWorkerPoolWin::~PlatformNativeWorkerPoolWin() {
+ThreadGroupNativeWin::~ThreadGroupNativeWin() {
   ::DestroyThreadpoolEnvironment(&environment_);
   ::CloseThreadpoolWork(work_);
   ::CloseThreadpool(pool_);
 }
 
-void PlatformNativeWorkerPoolWin::StartImpl() {
+void ThreadGroupNativeWin::StartImpl() {
   ::InitializeThreadpoolEnvironment(&environment_);
 
   pool_ = ::CreateThreadpool(nullptr);
@@ -67,35 +66,35 @@ void PlatformNativeWorkerPoolWin::StartImpl() {
   ::SetThreadpoolCallbackPool(&environment_, pool_);
 }
 
-void PlatformNativeWorkerPoolWin::JoinImpl() {
+void ThreadGroupNativeWin::JoinImpl() {
   ::WaitForThreadpoolWorkCallbacks(work_, true);
 }
 
-void PlatformNativeWorkerPoolWin::SubmitWork() {
+void ThreadGroupNativeWin::SubmitWork() {
   // TODO(fdoray): Handle priorities by having different work objects and using
   // SetThreadpoolCallbackPriority().
   ::SubmitThreadpoolWork(work_);
 }
 
 // static
-void CALLBACK PlatformNativeWorkerPoolWin::RunNextTaskSource(
+void CALLBACK ThreadGroupNativeWin::RunNextTaskSource(
     PTP_CALLBACK_INSTANCE callback_instance,
-    void* scheduler_worker_pool_windows_impl,
+    void* scheduler_thread_group_windows_impl,
     PTP_WORK) {
-  auto* worker_pool = static_cast<PlatformNativeWorkerPoolWin*>(
-      scheduler_worker_pool_windows_impl);
+  auto* thread_group =
+      static_cast<ThreadGroupNativeWin*>(scheduler_thread_group_windows_impl);
 
   // Windows Thread Pool API best practices state that all resources created
   // in the callback function should be cleaned up before returning from the
   // function. This includes COM initialization.
   Optional<win::ScopedCOMInitializer> com_initializer;
-  if (worker_pool->worker_environment_ == WorkerEnvironment::COM_MTA)
+  if (thread_group->worker_environment_ == WorkerEnvironment::COM_MTA)
     com_initializer.emplace(win::ScopedCOMInitializer::kMTA);
 
   ScopedCallbackMayRunLongObserver callback_may_run_long_observer(
       callback_instance);
 
-  worker_pool->RunNextTaskSourceImpl();
+  thread_group->RunNextTaskSourceImpl();
 }
 
 }  // namespace internal

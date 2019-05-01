@@ -10,7 +10,7 @@
 namespace base {
 namespace internal {
 
-TEST(ThreadPoolScopedSetTaskPriorityForCurrentThreadTest,
+TEST(ScopedSetTaskPriorityForCurrentThreadTest,
      ScopedSetTaskPriorityForCurrentThread) {
   EXPECT_EQ(TaskPriority::USER_VISIBLE, GetTaskPriorityForCurrentThread());
   {

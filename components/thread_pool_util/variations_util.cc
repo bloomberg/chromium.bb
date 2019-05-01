@@ -20,9 +20,9 @@ namespace thread_pool_util {
 
 namespace {
 
-// Builds a SchedulerWorkerPoolParams from the pool descriptor in
+// Builds a ThreadGroupParams from the pool descriptor in
 // |variation_params[pool_name]|. Returns an invalid
-// SchedulerWorkerPoolParams on failure.
+// ThreadGroupParams on failure.
 //
 // The pool descriptor is a semi-colon separated value string with the following
 // items:
@@ -32,7 +32,7 @@ namespace {
 // 3. Thread Count Offset (int)
 // 4. Detach Time in Milliseconds (int)
 // Additional values may appear as necessary and will be ignored.
-std::unique_ptr<base::SchedulerWorkerPoolParams> GetWorkerPoolParams(
+std::unique_ptr<base::ThreadGroupParams> GetThreadGroupParams(
     base::StringPiece pool_name,
     const std::map<std::string, std::string>& variation_params) {
   auto pool_descriptor_it = variation_params.find(pool_name.as_string());
@@ -61,7 +61,7 @@ std::unique_ptr<base::SchedulerWorkerPoolParams> GetWorkerPoolParams(
     return nullptr;
   }
 
-  auto params = std::make_unique<base::SchedulerWorkerPoolParams>(
+  auto params = std::make_unique<base::ThreadGroupParams>(
       base::RecommendedMaxNumberOfThreadsInPool(min, max, cores_multiplier,
                                                 offset),
       base::TimeDelta::FromMilliseconds(detach_milliseconds));
@@ -84,11 +84,11 @@ std::unique_ptr<base::SchedulerWorkerPoolParams> GetWorkerPoolParams(
 
 }  // namespace
 
-const base::Feature kBrowserSchedulerInitParams = {
-    "BrowserSchedulerInitParams", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kBrowserThreadPoolInitParams = {
+    "BrowserThreadPoolInitParams", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kRendererSchedulerInitParams = {
-    "RendererSchedulerInitParams", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kRendererThreadPoolInitParams = {
+    "RendererThreadPoolInitParams", base::FEATURE_DISABLED_BY_DEFAULT};
 
 std::unique_ptr<base::ThreadPool::InitParams> GetThreadPoolInitParams(
     const base::Feature& feature) {
@@ -97,9 +97,9 @@ std::unique_ptr<base::ThreadPool::InitParams> GetThreadPoolInitParams(
     return nullptr;
 
   const auto background_worker_pool_params =
-      GetWorkerPoolParams("Background", variation_params);
+      GetThreadGroupParams("Background", variation_params);
   const auto foreground_worker_pool_params =
-      GetWorkerPoolParams("Foreground", variation_params);
+      GetThreadGroupParams("Foreground", variation_params);
 
   if (!background_worker_pool_params || !foreground_worker_pool_params)
     return nullptr;
@@ -111,15 +111,15 @@ std::unique_ptr<base::ThreadPool::InitParams> GetThreadPoolInitParams(
 std::unique_ptr<base::ThreadPool::InitParams>
 GetThreadPoolInitParamsForBrowser() {
   // Variations params for the browser processes are associated with the feature
-  // |kBrowserSchedulerInitParams|.
-  return GetThreadPoolInitParams(kBrowserSchedulerInitParams);
+  // |kBrowserThreadPoolInitParams|.
+  return GetThreadPoolInitParams(kBrowserThreadPoolInitParams);
 }
 
 std::unique_ptr<base::ThreadPool::InitParams>
 GetThreadPoolInitParamsForRenderer() {
   // Variations params for the renderer processes are associated with the
-  // feature |kRendererSchedulerInitParams|.
-  return GetThreadPoolInitParams(kRendererSchedulerInitParams);
+  // feature |kRendererThreadPoolInitParams|.
+  return GetThreadPoolInitParams(kRendererThreadPoolInitParams);
 }
 
 }  // namespace thread_pool_util

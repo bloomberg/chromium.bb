@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/task/thread_pool/scheduler_worker.h"
+#include "base/task/thread_pool/worker_thread.h"
 
 #include <stddef.h>
 
@@ -12,8 +12,8 @@
 #include "base/debug/alias.h"
 #include "base/logging.h"
 #include "base/task/thread_pool/environment_config.h"
-#include "base/task/thread_pool/scheduler_worker_observer.h"
 #include "base/task/thread_pool/task_tracker.h"
+#include "base/task/thread_pool/worker_thread_observer.h"
 #include "base/trace_event/trace_event.h"
 
 #if defined(OS_MACOSX)
@@ -26,7 +26,7 @@
 namespace base {
 namespace internal {
 
-void SchedulerWorker::Delegate::WaitForWork(WaitableEvent* wake_up_event) {
+void WorkerThread::Delegate::WaitForWork(WaitableEvent* wake_up_event) {
   DCHECK(wake_up_event);
   const TimeDelta sleep_time = GetSleepTimeout();
   if (sleep_time.is_max()) {
@@ -38,12 +38,12 @@ void SchedulerWorker::Delegate::WaitForWork(WaitableEvent* wake_up_event) {
   }
 }
 
-SchedulerWorker::SchedulerWorker(
+WorkerThread::WorkerThread(
     ThreadPriority priority_hint,
     std::unique_ptr<Delegate> delegate,
     TrackedRef<TaskTracker> task_tracker,
     const CheckedLock* predecessor_lock,
-    SchedulerBackwardCompatibility backward_compatibility)
+    WorkerThreadBackwardCompatibility backward_compatibility)
     : thread_lock_(predecessor_lock),
       delegate_(std::move(delegate)),
       task_tracker_(std::move(task_tracker)),
@@ -56,13 +56,12 @@ SchedulerWorker::SchedulerWorker(
 {
   DCHECK(delegate_);
   DCHECK(task_tracker_);
-  DCHECK(CanUseBackgroundPriorityForSchedulerWorker() ||
+  DCHECK(CanUseBackgroundPriorityForWorkerThread() ||
          priority_hint_ != ThreadPriority::BACKGROUND);
   wake_up_event_.declare_only_used_while_idle();
 }
 
-bool SchedulerWorker::Start(
-    SchedulerWorkerObserver* scheduler_worker_observer) {
+bool WorkerThread::Start(WorkerThreadObserver* worker_thread_observer) {
   CheckedLock::AssertNoLockHeldOnCurrentThread();
   CheckedAutoLock auto_lock(thread_lock_);
   DCHECK(thread_handle_.is_null());
@@ -70,8 +69,8 @@ bool SchedulerWorker::Start(
   if (should_exit_.IsSet() || join_called_for_testing_.IsSet())
     return true;
 
-  DCHECK(!scheduler_worker_observer_);
-  scheduler_worker_observer_ = scheduler_worker_observer;
+  DCHECK(!worker_thread_observer_);
+  worker_thread_observer_ = worker_thread_observer;
 
   self_ = this;
 
@@ -87,19 +86,19 @@ bool SchedulerWorker::Start(
   return true;
 }
 
-void SchedulerWorker::WakeUp() {
+void WorkerThread::WakeUp() {
   // Signalling an event can deschedule the current thread. Since being
   // descheduled while holding a lock is undesirable (https://crbug.com/890978),
   // assert that no lock is held by the current thread.
   CheckedLock::AssertNoLockHeldOnCurrentThread();
   // Calling WakeUp() after Cleanup() or Join() is wrong because the
-  // SchedulerWorker cannot run more tasks.
+  // WorkerThread cannot run more tasks.
   DCHECK(!join_called_for_testing_.IsSet());
   DCHECK(!should_exit_.IsSet());
   wake_up_event_.Signal();
 }
 
-void SchedulerWorker::JoinForTesting() {
+void WorkerThread::JoinForTesting() {
   DCHECK(!join_called_for_testing_.IsSet());
   join_called_for_testing_.Set();
   wake_up_event_.Signal();
@@ -120,12 +119,12 @@ void SchedulerWorker::JoinForTesting() {
   PlatformThread::Join(thread_handle);
 }
 
-bool SchedulerWorker::ThreadAliveForTesting() const {
+bool WorkerThread::ThreadAliveForTesting() const {
   CheckedAutoLock auto_lock(thread_lock_);
   return !thread_handle_.is_null();
 }
 
-SchedulerWorker::~SchedulerWorker() {
+WorkerThread::~WorkerThread() {
   CheckedAutoLock auto_lock(thread_lock_);
 
   // If |thread_handle_| wasn't joined, detach it.
@@ -135,39 +134,39 @@ SchedulerWorker::~SchedulerWorker() {
   }
 }
 
-void SchedulerWorker::Cleanup() {
+void WorkerThread::Cleanup() {
   DCHECK(!should_exit_.IsSet());
   should_exit_.Set();
   wake_up_event_.Signal();
 }
 
-void SchedulerWorker::BeginUnusedPeriod() {
+void WorkerThread::BeginUnusedPeriod() {
   CheckedAutoLock auto_lock(thread_lock_);
   DCHECK(last_used_time_.is_null());
   last_used_time_ = TimeTicks::Now();
 }
 
-void SchedulerWorker::EndUnusedPeriod() {
+void WorkerThread::EndUnusedPeriod() {
   CheckedAutoLock auto_lock(thread_lock_);
   DCHECK(!last_used_time_.is_null());
   last_used_time_ = TimeTicks();
 }
 
-TimeTicks SchedulerWorker::GetLastUsedTime() const {
+TimeTicks WorkerThread::GetLastUsedTime() const {
   CheckedAutoLock auto_lock(thread_lock_);
   return last_used_time_;
 }
 
-bool SchedulerWorker::ShouldExit() const {
-  // The ordering of the checks is important below. This SchedulerWorker may be
+bool WorkerThread::ShouldExit() const {
+  // The ordering of the checks is important below. This WorkerThread may be
   // released and outlive |task_tracker_| in unit tests. However, when the
-  // SchedulerWorker is released, |should_exit_| will be set, so check that
+  // WorkerThread is released, |should_exit_| will be set, so check that
   // first.
   return should_exit_.IsSet() || join_called_for_testing_.IsSet() ||
          task_tracker_->IsShutdownComplete();
 }
 
-ThreadPriority SchedulerWorker::GetDesiredThreadPriority() const {
+ThreadPriority WorkerThread::GetDesiredThreadPriority() const {
   // To avoid shutdown hangs, disallow a priority below NORMAL during shutdown
   if (task_tracker_->HasShutdownStarted())
     return ThreadPriority::NORMAL;
@@ -175,7 +174,7 @@ ThreadPriority SchedulerWorker::GetDesiredThreadPriority() const {
   return priority_hint_;
 }
 
-void SchedulerWorker::UpdateThreadPriority(
+void WorkerThread::UpdateThreadPriority(
     ThreadPriority desired_thread_priority) {
   if (desired_thread_priority == current_thread_priority_)
     return;
@@ -184,7 +183,7 @@ void SchedulerWorker::UpdateThreadPriority(
   current_thread_priority_ = desired_thread_priority;
 }
 
-void SchedulerWorker::ThreadMain() {
+void WorkerThread::ThreadMain() {
   if (priority_hint_ == ThreadPriority::BACKGROUND) {
     switch (delegate_->GetThreadLabel()) {
       case ThreadLabel::POOLED:
@@ -228,92 +227,93 @@ void SchedulerWorker::ThreadMain() {
   }
 }
 
-NOINLINE void SchedulerWorker::RunPooledWorker() {
+NOINLINE void WorkerThread::RunPooledWorker() {
   const int line_number = __LINE__;
   RunWorker();
   base::debug::Alias(&line_number);
 }
 
-NOINLINE void SchedulerWorker::RunBackgroundPooledWorker() {
+NOINLINE void WorkerThread::RunBackgroundPooledWorker() {
   const int line_number = __LINE__;
   RunWorker();
   base::debug::Alias(&line_number);
 }
 
-NOINLINE void SchedulerWorker::RunSharedWorker() {
+NOINLINE void WorkerThread::RunSharedWorker() {
   const int line_number = __LINE__;
   RunWorker();
   base::debug::Alias(&line_number);
 }
 
-NOINLINE void SchedulerWorker::RunBackgroundSharedWorker() {
+NOINLINE void WorkerThread::RunBackgroundSharedWorker() {
   const int line_number = __LINE__;
   RunWorker();
   base::debug::Alias(&line_number);
 }
 
-NOINLINE void SchedulerWorker::RunDedicatedWorker() {
+NOINLINE void WorkerThread::RunDedicatedWorker() {
   const int line_number = __LINE__;
   RunWorker();
   base::debug::Alias(&line_number);
 }
 
-NOINLINE void SchedulerWorker::RunBackgroundDedicatedWorker() {
+NOINLINE void WorkerThread::RunBackgroundDedicatedWorker() {
   const int line_number = __LINE__;
   RunWorker();
   base::debug::Alias(&line_number);
 }
 
 #if defined(OS_WIN)
-NOINLINE void SchedulerWorker::RunSharedCOMWorker() {
+NOINLINE void WorkerThread::RunSharedCOMWorker() {
   const int line_number = __LINE__;
   RunWorker();
   base::debug::Alias(&line_number);
 }
 
-NOINLINE void SchedulerWorker::RunBackgroundSharedCOMWorker() {
+NOINLINE void WorkerThread::RunBackgroundSharedCOMWorker() {
   const int line_number = __LINE__;
   RunWorker();
   base::debug::Alias(&line_number);
 }
 
-NOINLINE void SchedulerWorker::RunDedicatedCOMWorker() {
+NOINLINE void WorkerThread::RunDedicatedCOMWorker() {
   const int line_number = __LINE__;
   RunWorker();
   base::debug::Alias(&line_number);
 }
 
-NOINLINE void SchedulerWorker::RunBackgroundDedicatedCOMWorker() {
+NOINLINE void WorkerThread::RunBackgroundDedicatedCOMWorker() {
   const int line_number = __LINE__;
   RunWorker();
   base::debug::Alias(&line_number);
 }
 #endif  // defined(OS_WIN)
 
-void SchedulerWorker::RunWorker() {
+void WorkerThread::RunWorker() {
   DCHECK_EQ(self_, this);
-  TRACE_EVENT_INSTANT0("thread_pool", "SchedulerWorkerThread born",
+  TRACE_EVENT_INSTANT0("thread_pool", "WorkerThreadThread born",
                        TRACE_EVENT_SCOPE_THREAD);
-  TRACE_EVENT_BEGIN0("thread_pool", "SchedulerWorkerThread active");
+  TRACE_EVENT_BEGIN0("thread_pool", "WorkerThreadThread active");
 
-  if (scheduler_worker_observer_)
-    scheduler_worker_observer_->OnSchedulerWorkerMainEntry();
+  if (worker_thread_observer_)
+    worker_thread_observer_->OnWorkerThreadMainEntry();
 
   delegate_->OnMainEntry(this);
 
-  // A SchedulerWorker starts out waiting for work.
+  // A WorkerThread starts out waiting for work.
   {
-    TRACE_EVENT_END0("thread_pool", "SchedulerWorkerThread active");
+    TRACE_EVENT_END0("thread_pool", "WorkerThreadThread active");
     delegate_->WaitForWork(&wake_up_event_);
-    TRACE_EVENT_BEGIN0("thread_pool", "SchedulerWorkerThread active");
+    TRACE_EVENT_BEGIN0("thread_pool", "WorkerThreadThread active");
   }
 
 // When defined(COM_INIT_CHECK_HOOK_ENABLED), ignore
-// SchedulerBackwardCompatibility::INIT_COM_STA to find incorrect uses of
+// WorkerThreadBackwardCompatibility::INIT_COM_STA to find incorrect uses of
 // COM that should be running in a COM STA Task Runner.
 #if defined(OS_WIN) && !defined(COM_INIT_CHECK_HOOK_ENABLED)
   std::unique_ptr<win::ScopedCOMInitializer> com_initializer;
-  if (backward_compatibility_ == SchedulerBackwardCompatibility::INIT_COM_STA)
+  if (backward_compatibility_ ==
+      WorkerThreadBackwardCompatibility::INIT_COM_STA)
     com_initializer = std::make_unique<win::ScopedCOMInitializer>();
 #endif
 
@@ -331,9 +331,9 @@ void SchedulerWorker::RunWorker() {
       if (ShouldExit())
         break;
 
-      TRACE_EVENT_END0("thread_pool", "SchedulerWorkerThread active");
+      TRACE_EVENT_END0("thread_pool", "WorkerThreadThread active");
       delegate_->WaitForWork(&wake_up_event_);
-      TRACE_EVENT_BEGIN0("thread_pool", "SchedulerWorkerThread active");
+      TRACE_EVENT_BEGIN0("thread_pool", "WorkerThreadThread active");
       continue;
     }
 
@@ -341,11 +341,11 @@ void SchedulerWorker::RunWorker() {
 
     delegate_->DidRunTask(std::move(task_source));
 
-    // Calling WakeUp() guarantees that this SchedulerWorker will run Tasks from
+    // Calling WakeUp() guarantees that this WorkerThread will run Tasks from
     // TaskSources returned by the GetWork() method of |delegate_| until it
     // returns nullptr. Resetting |wake_up_event_| here doesn't break this
     // invariant and avoids a useless loop iteration before going to sleep if
-    // WakeUp() is called while this SchedulerWorker is awake.
+    // WakeUp() is called while this WorkerThread is awake.
     wake_up_event_.Reset();
   }
 
@@ -354,15 +354,15 @@ void SchedulerWorker::RunWorker() {
 
   delegate_->OnMainExit(this);
 
-  if (scheduler_worker_observer_)
-    scheduler_worker_observer_->OnSchedulerWorkerMainExit();
+  if (worker_thread_observer_)
+    worker_thread_observer_->OnWorkerThreadMainExit();
 
   // Release the self-reference to |this|. This can result in deleting |this|
   // and as such no more member accesses should be made after this point.
   self_ = nullptr;
 
-  TRACE_EVENT_END0("thread_pool", "SchedulerWorkerThread active");
-  TRACE_EVENT_INSTANT0("thread_pool", "SchedulerWorkerThread dead",
+  TRACE_EVENT_END0("thread_pool", "WorkerThreadThread active");
+  TRACE_EVENT_INSTANT0("thread_pool", "WorkerThreadThread dead",
                        TRACE_EVENT_SCOPE_THREAD);
 }
 

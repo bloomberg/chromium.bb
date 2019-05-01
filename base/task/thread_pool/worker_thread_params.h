@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_TASK_THREAD_POOL_SCHEDULER_WORKER_PARAMS_H_
-#define BASE_TASK_THREAD_POOL_SCHEDULER_WORKER_PARAMS_H_
+#ifndef BASE_TASK_THREAD_POOL_WORKER_THREAD_PARAMS_H_
+#define BASE_TASK_THREAD_POOL_WORKER_THREAD_PARAMS_H_
 
 namespace base {
 
-enum class SchedulerBackwardCompatibility {
+enum class WorkerThreadBackwardCompatibility {
   // No backward compatibility.
   DISABLED,
 
@@ -21,4 +21,4 @@ enum class SchedulerBackwardCompatibility {
 
 }  // namespace base
 
-#endif  // BASE_TASK_THREAD_POOL_SCHEDULER_WORKER_PARAMS_H_
+#endif  // BASE_TASK_THREAD_POOL_WORKER_THREAD_PARAMS_H_

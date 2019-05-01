@@ -18,7 +18,6 @@
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "base/process/process_metrics.h"
 #include "base/task/post_task.h"
-#include "base/task/thread_pool/scheduler_worker_pool_params.h"
 #include "base/task/thread_pool/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
 #import "ios/web/net/cookie_notification_bridge.h"

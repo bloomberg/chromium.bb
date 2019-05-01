@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_TASK_THREAD_POOL_PLATFORM_NATIVE_WORKER_POOL_WIN_H_
-#define BASE_TASK_THREAD_POOL_PLATFORM_NATIVE_WORKER_POOL_WIN_H_
+#ifndef BASE_TASK_THREAD_POOL_THREAD_GROUP_NATIVE_WIN_H_
+#define BASE_TASK_THREAD_POOL_THREAD_GROUP_NATIVE_WIN_H_
 
 #include <windows.h>
 
 #include "base/base_export.h"
-#include "base/task/thread_pool/platform_native_worker_pool.h"
+#include "base/task/thread_pool/thread_group_native.h"
 
 namespace base {
 namespace internal {
 
-// A SchedulerWorkerPool implementation backed by the Windows Thread Pool API.
+// A ThreadGroup implementation backed by the Windows Thread Pool API.
 //
 // Windows Thread Pool API official documentation:
 // https://msdn.microsoft.com/en-us/library/windows/desktop/ms686766(v=vs.85).aspx
@@ -24,14 +24,13 @@ namespace internal {
 // https://msdn.microsoft.com/magazine/hh456398.aspx
 // https://msdn.microsoft.com/magazine/hh547107.aspx
 // https://msdn.microsoft.com/magazine/hh580731.aspx
-class BASE_EXPORT PlatformNativeWorkerPoolWin
-    : public PlatformNativeWorkerPool {
+class BASE_EXPORT ThreadGroupNativeWin : public ThreadGroupNative {
  public:
-  PlatformNativeWorkerPoolWin(TrackedRef<TaskTracker> task_tracker,
-                              TrackedRef<Delegate> delegate,
-                              SchedulerWorkerPool* predecessor_pool = nullptr);
+  ThreadGroupNativeWin(TrackedRef<TaskTracker> task_tracker,
+                       TrackedRef<Delegate> delegate,
+                       ThreadGroup* predecessor_pool = nullptr);
 
-  ~PlatformNativeWorkerPoolWin() override;
+  ~ThreadGroupNativeWin() override;
 
  private:
   class ScopedCallbackMayRunLongObserver;
@@ -39,10 +38,10 @@ class BASE_EXPORT PlatformNativeWorkerPoolWin
   // Callback that gets run by |pool_|.
   static void CALLBACK
   RunNextTaskSource(PTP_CALLBACK_INSTANCE callback_instance,
-                    void* scheduler_worker_pool_windows_impl,
+                    void* scheduler_thread_group_windows_impl,
                     PTP_WORK);
 
-  // PlatformNativeWorkerPool:
+  // ThreadGroupNative:
   void JoinImpl() override;
   void StartImpl() override;
   void SubmitWork() override;
@@ -55,16 +54,16 @@ class BASE_EXPORT PlatformNativeWorkerPoolWin
   TP_CALLBACK_ENVIRON environment_ = {};
 
   // Work object that executes RunNextTaskSource. It has a pointer to the
-  // current |PlatformNativeWorkerPoolWin| and a pointer to |environment_| bound
+  // current |ThreadGroupNativeWin| and a pointer to |environment_| bound
   // to it.
   PTP_WORK work_ = nullptr;
 
-  DISALLOW_COPY_AND_ASSIGN(PlatformNativeWorkerPoolWin);
+  DISALLOW_COPY_AND_ASSIGN(ThreadGroupNativeWin);
 };
 
-using PlatformNativeWorkerPoolImpl = PlatformNativeWorkerPoolWin;
+using ThreadGroupNativeImpl = ThreadGroupNativeWin;
 
 }  // namespace internal
 }  // namespace base
 
-#endif  // BASE_TASK_THREAD_POOL_PLATFORM_NATIVE_WORKER_POOL_WIN_H_
+#endif  // BASE_TASK_THREAD_POOL_THREAD_GROUP_NATIVE_WIN_H_

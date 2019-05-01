@@ -16,7 +16,7 @@ struct Feature;
 extern const BASE_EXPORT Feature kAllTasksUserBlocking;
 extern const BASE_EXPORT Feature kMergeBlockingNonBlockingPools;
 
-// Under this feature, unused threads in SchedulerWorkerPool are only detached
+// Under this feature, unused threads in ThreadGroup are only detached
 // if the total number of threads in the pool is above the initial capacity.
 extern const BASE_EXPORT Feature kNoDetachBelowInitialCapacity;
 
@@ -25,7 +25,7 @@ extern const BASE_EXPORT Feature kNoDetachBelowInitialCapacity;
 extern const BASE_EXPORT Feature kMayBlockWithoutDelay;
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
-// Under this feature, ThreadPool will use a SchedulerWorkerPool backed by a
+// Under this feature, ThreadPool will use a ThreadGroup backed by a
 // native thread pool implementation. The Windows Thread Pool API and
 // libdispatch are used on Windows and macOS/iOS respectively.
 extern const BASE_EXPORT Feature kUseNativeThreadPool;

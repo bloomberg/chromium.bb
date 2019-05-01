@@ -8,8 +8,8 @@
 
 #include "base/bind.h"
 #include "base/synchronization/condition_variable.h"
-#include "base/task/thread_pool/scheduler_parallel_task_runner.h"
-#include "base/task/thread_pool/scheduler_sequenced_task_runner.h"
+#include "base/task/thread_pool/pooled_parallel_task_runner.h"
+#include "base/task/thread_pool/pooled_sequenced_task_runner.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_restrictions.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -18,26 +18,26 @@ namespace base {
 namespace internal {
 namespace test {
 
-MockSchedulerWorkerObserver::MockSchedulerWorkerObserver()
+MockWorkerThreadObserver::MockWorkerThreadObserver()
     : on_main_exit_cv_(lock_.CreateConditionVariable()) {}
 
-MockSchedulerWorkerObserver::~MockSchedulerWorkerObserver() {
+MockWorkerThreadObserver::~MockWorkerThreadObserver() {
   WaitCallsOnMainExit();
 }
 
-void MockSchedulerWorkerObserver::AllowCallsOnMainExit(int num_calls) {
+void MockWorkerThreadObserver::AllowCallsOnMainExit(int num_calls) {
   CheckedAutoLock auto_lock(lock_);
   EXPECT_EQ(0, allowed_calls_on_main_exit_);
   allowed_calls_on_main_exit_ = num_calls;
 }
 
-void MockSchedulerWorkerObserver::WaitCallsOnMainExit() {
+void MockWorkerThreadObserver::WaitCallsOnMainExit() {
   CheckedAutoLock auto_lock(lock_);
   while (allowed_calls_on_main_exit_ != 0)
     on_main_exit_cv_->Wait();
 }
 
-void MockSchedulerWorkerObserver::OnSchedulerWorkerMainExit() {
+void MockWorkerThreadObserver::OnWorkerThreadMainExit() {
   CheckedAutoLock auto_lock(lock_);
   EXPECT_GE(allowed_calls_on_main_exit_, 0);
   --allowed_calls_on_main_exit_;
@@ -58,15 +58,15 @@ scoped_refptr<Sequence> CreateSequenceWithTask(
 
 scoped_refptr<TaskRunner> CreateTaskRunnerWithExecutionMode(
     test::ExecutionMode execution_mode,
-    MockSchedulerTaskRunnerDelegate* mock_scheduler_task_runner_delegate,
+    MockPooledTaskRunnerDelegate* mock_pooled_task_runner_delegate,
     const TaskTraits& traits) {
   switch (execution_mode) {
     case test::ExecutionMode::PARALLEL:
       return CreateTaskRunnerWithTraits(traits,
-                                        mock_scheduler_task_runner_delegate);
+                                        mock_pooled_task_runner_delegate);
     case test::ExecutionMode::SEQUENCED:
       return CreateSequencedTaskRunnerWithTraits(
-          traits, mock_scheduler_task_runner_delegate);
+          traits, mock_pooled_task_runner_delegate);
     default:
       // Fall through.
       break;
@@ -77,16 +77,16 @@ scoped_refptr<TaskRunner> CreateTaskRunnerWithExecutionMode(
 
 scoped_refptr<TaskRunner> CreateTaskRunnerWithTraits(
     const TaskTraits& traits,
-    MockSchedulerTaskRunnerDelegate* mock_scheduler_task_runner_delegate) {
-  return MakeRefCounted<SchedulerParallelTaskRunner>(
-      traits, mock_scheduler_task_runner_delegate);
+    MockPooledTaskRunnerDelegate* mock_pooled_task_runner_delegate) {
+  return MakeRefCounted<PooledParallelTaskRunner>(
+      traits, mock_pooled_task_runner_delegate);
 }
 
 scoped_refptr<SequencedTaskRunner> CreateSequencedTaskRunnerWithTraits(
     const TaskTraits& traits,
-    MockSchedulerTaskRunnerDelegate* mock_scheduler_task_runner_delegate) {
-  return MakeRefCounted<SchedulerSequencedTaskRunner>(
-      traits, mock_scheduler_task_runner_delegate);
+    MockPooledTaskRunnerDelegate* mock_pooled_task_runner_delegate) {
+  return MakeRefCounted<PooledSequencedTaskRunner>(
+      traits, mock_pooled_task_runner_delegate);
 }
 
 // Waits on |event| in a scope where the blocking observer is null, to avoid
@@ -97,19 +97,20 @@ void WaitWithoutBlockingObserver(WaitableEvent* event) {
   event->Wait();
 }
 
-MockSchedulerTaskRunnerDelegate::MockSchedulerTaskRunnerDelegate(
+MockPooledTaskRunnerDelegate::MockPooledTaskRunnerDelegate(
     TrackedRef<TaskTracker> task_tracker,
     DelayedTaskManager* delayed_task_manager)
     : task_tracker_(task_tracker),
       delayed_task_manager_(delayed_task_manager) {}
 
-MockSchedulerTaskRunnerDelegate::~MockSchedulerTaskRunnerDelegate() = default;
+MockPooledTaskRunnerDelegate::~MockPooledTaskRunnerDelegate() = default;
 
-bool MockSchedulerTaskRunnerDelegate::PostTaskWithSequence(
+bool MockPooledTaskRunnerDelegate::PostTaskWithSequence(
     Task task,
     scoped_refptr<Sequence> sequence) {
-  // |worker_pool_| must be initialized with SetWorkerPool() before proceeding.
-  DCHECK(worker_pool_);
+  // |thread_group_| must be initialized with SetThreadGroup() before
+  // proceeding.
+  DCHECK(thread_group_);
   DCHECK(task.task);
   DCHECK(sequence);
 
@@ -117,7 +118,7 @@ bool MockSchedulerTaskRunnerDelegate::PostTaskWithSequence(
     return false;
 
   if (task.delayed_run_time.is_null()) {
-    worker_pool_->PostTaskWithSequenceNow(
+    thread_group_->PostTaskWithSequenceNow(
         std::move(task),
         SequenceAndTransaction::FromSequence(std::move(sequence)));
   } else {
@@ -127,39 +128,39 @@ bool MockSchedulerTaskRunnerDelegate::PostTaskWithSequence(
     delayed_task_manager_->AddDelayedTask(
         std::move(task),
         BindOnce(
-            [](scoped_refptr<Sequence> sequence,
-               SchedulerWorkerPool* worker_pool, Task task) {
-              worker_pool->PostTaskWithSequenceNow(
+            [](scoped_refptr<Sequence> sequence, ThreadGroup* thread_group,
+               Task task) {
+              thread_group->PostTaskWithSequenceNow(
                   std::move(task),
                   SequenceAndTransaction::FromSequence(std::move(sequence)));
             },
-            std::move(sequence), worker_pool_),
+            std::move(sequence), thread_group_),
         std::move(task_runner));
   }
 
   return true;
 }
 
-bool MockSchedulerTaskRunnerDelegate::IsRunningPoolWithTraits(
+bool MockPooledTaskRunnerDelegate::IsRunningPoolWithTraits(
     const TaskTraits& traits) const {
-  // |worker_pool_| must be initialized with SetWorkerPool() before proceeding.
-  DCHECK(worker_pool_);
+  // |thread_group_| must be initialized with SetThreadGroup() before
+  // proceeding.
+  DCHECK(thread_group_);
 
-  return worker_pool_->IsBoundToCurrentThread();
+  return thread_group_->IsBoundToCurrentThread();
 }
 
-void MockSchedulerTaskRunnerDelegate::UpdatePriority(
+void MockPooledTaskRunnerDelegate::UpdatePriority(
     scoped_refptr<TaskSource> task_source,
     TaskPriority priority) {
   auto task_source_and_transaction =
       TaskSourceAndTransaction::FromTaskSource(std::move(task_source));
   task_source_and_transaction.transaction.UpdatePriority(priority);
-  worker_pool_->UpdateSortKey(std::move(task_source_and_transaction));
+  thread_group_->UpdateSortKey(std::move(task_source_and_transaction));
 }
 
-void MockSchedulerTaskRunnerDelegate::SetWorkerPool(
-    SchedulerWorkerPool* worker_pool) {
-  worker_pool_ = worker_pool;
+void MockPooledTaskRunnerDelegate::SetThreadGroup(ThreadGroup* thread_group) {
+  thread_group_ = thread_group;
 }
 
 void ShutdownTaskTracker(TaskTracker* task_tracker) {

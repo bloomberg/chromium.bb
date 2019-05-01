@@ -28,7 +28,7 @@ void VerifyHasStringOnStack(const std::string& query) {
   SCOPED_TRACE(stack);
   const bool found_on_stack = stack.find(query) != std::string::npos;
   const bool stack_has_symbols =
-      stack.find("SchedulerWorker") != std::string::npos;
+      stack.find("WorkerThread") != std::string::npos;
   EXPECT_TRUE(found_on_stack || !stack_has_symbols) << query;
 }
 

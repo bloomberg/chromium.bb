@@ -2,22 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/task/thread_pool/scheduler_worker_pool_params.h"
+#include "base/task/thread_pool/thread_group_params.h"
 
 namespace base {
 
-SchedulerWorkerPoolParams::SchedulerWorkerPoolParams(
+ThreadGroupParams::ThreadGroupParams(
     int max_tasks,
     TimeDelta suggested_reclaim_time,
-    SchedulerBackwardCompatibility backward_compatibility)
+    WorkerThreadBackwardCompatibility backward_compatibility)
     : max_tasks_(max_tasks),
       suggested_reclaim_time_(suggested_reclaim_time),
       backward_compatibility_(backward_compatibility) {}
 
-SchedulerWorkerPoolParams::SchedulerWorkerPoolParams(
-    const SchedulerWorkerPoolParams& other) = default;
+ThreadGroupParams::ThreadGroupParams(const ThreadGroupParams& other) = default;
 
-SchedulerWorkerPoolParams& SchedulerWorkerPoolParams::operator=(
-    const SchedulerWorkerPoolParams& other) = default;
+ThreadGroupParams& ThreadGroupParams::operator=(
+    const ThreadGroupParams& other) = default;
 
 }  // namespace base

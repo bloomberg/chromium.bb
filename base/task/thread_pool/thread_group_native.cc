@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/task/thread_pool/platform_native_worker_pool.h"
+#include "base/task/thread_pool/thread_group_native.h"
 
 #include <algorithm>
 #include <utility>
@@ -13,10 +13,10 @@
 namespace base {
 namespace internal {
 
-class PlatformNativeWorkerPool::ScopedWorkersExecutor
-    : public SchedulerWorkerPool::BaseScopedWorkersExecutor {
+class ThreadGroupNative::ScopedWorkersExecutor
+    : public ThreadGroup::BaseScopedWorkersExecutor {
  public:
-  ScopedWorkersExecutor(PlatformNativeWorkerPool* outer) : outer_(outer) {}
+  ScopedWorkersExecutor(ThreadGroupNative* outer) : outer_(outer) {}
   ~ScopedWorkersExecutor() {
     CheckedLock::AssertNoLockHeldOnCurrentThread();
 
@@ -31,21 +31,20 @@ class PlatformNativeWorkerPool::ScopedWorkersExecutor
   }
 
  private:
-  PlatformNativeWorkerPool* const outer_;
+  ThreadGroupNative* const outer_;
   size_t num_threadpool_work_to_submit_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedWorkersExecutor);
 };
 
-PlatformNativeWorkerPool::PlatformNativeWorkerPool(
-    TrackedRef<TaskTracker> task_tracker,
-    TrackedRef<Delegate> delegate,
-    SchedulerWorkerPool* predecessor_pool)
-    : SchedulerWorkerPool(std::move(task_tracker),
-                          std::move(delegate),
-                          predecessor_pool) {}
+ThreadGroupNative::ThreadGroupNative(TrackedRef<TaskTracker> task_tracker,
+                                     TrackedRef<Delegate> delegate,
+                                     ThreadGroup* predecessor_pool)
+    : ThreadGroup(std::move(task_tracker),
+                  std::move(delegate),
+                  predecessor_pool) {}
 
-PlatformNativeWorkerPool::~PlatformNativeWorkerPool() {
+ThreadGroupNative::~ThreadGroupNative() {
 #if DCHECK_IS_ON()
   // Verify join_for_testing has been called to ensure that there is no more
   // outstanding work. Otherwise, work may try to de-reference an invalid
@@ -54,7 +53,7 @@ PlatformNativeWorkerPool::~PlatformNativeWorkerPool() {
 #endif
 }
 
-void PlatformNativeWorkerPool::Start(WorkerEnvironment worker_environment) {
+void ThreadGroupNative::Start(WorkerEnvironment worker_environment) {
   worker_environment_ = worker_environment;
 
   StartImpl();
@@ -66,7 +65,7 @@ void PlatformNativeWorkerPool::Start(WorkerEnvironment worker_environment) {
   EnsureEnoughWorkersLockRequired(&executor);
 }
 
-void PlatformNativeWorkerPool::JoinForTesting() {
+void ThreadGroupNative::JoinForTesting() {
   JoinImpl();
 #if DCHECK_IS_ON()
   DCHECK(!join_for_testing_returned_);
@@ -74,7 +73,7 @@ void PlatformNativeWorkerPool::JoinForTesting() {
 #endif
 }
 
-void PlatformNativeWorkerPool::RunNextTaskSourceImpl() {
+void ThreadGroupNative::RunNextTaskSourceImpl() {
   scoped_refptr<TaskSource> task_source = GetWork();
 
   if (task_source) {
@@ -94,7 +93,7 @@ void PlatformNativeWorkerPool::RunNextTaskSourceImpl() {
   }
 }
 
-scoped_refptr<TaskSource> PlatformNativeWorkerPool::GetWork() {
+scoped_refptr<TaskSource> ThreadGroupNative::GetWork() {
   CheckedAutoLock auto_lock(lock_);
   DCHECK_GT(num_pending_threadpool_work_, 0U);
   --num_pending_threadpool_work_;
@@ -110,20 +109,20 @@ scoped_refptr<TaskSource> PlatformNativeWorkerPool::GetWork() {
   return priority_queue_.PopTaskSource();
 }
 
-void PlatformNativeWorkerPool::UpdateSortKey(
+void ThreadGroupNative::UpdateSortKey(
     TaskSourceAndTransaction task_source_and_transaction) {
   ScopedWorkersExecutor executor(this);
   UpdateSortKeyImpl(&executor, std::move(task_source_and_transaction));
 }
 
-void PlatformNativeWorkerPool::PushTaskSourceAndWakeUpWorkers(
+void ThreadGroupNative::PushTaskSourceAndWakeUpWorkers(
     TaskSourceAndTransaction task_source_and_transaction) {
   ScopedWorkersExecutor executor(this);
   PushTaskSourceAndWakeUpWorkersImpl(&executor,
                                      std::move(task_source_and_transaction));
 }
 
-void PlatformNativeWorkerPool::EnsureEnoughWorkersLockRequired(
+void ThreadGroupNative::EnsureEnoughWorkersLockRequired(
     BaseScopedWorkersExecutor* executor) {
   if (!started_)
     return;
@@ -141,8 +140,7 @@ void PlatformNativeWorkerPool::EnsureEnoughWorkersLockRequired(
   }
 }
 
-size_t PlatformNativeWorkerPool::GetMaxConcurrentNonBlockedTasksDeprecated()
-    const {
+size_t ThreadGroupNative::GetMaxConcurrentNonBlockedTasksDeprecated() const {
   // Native thread pools give us no control over the number of workers that are
   // active at one time. Consequently, we cannot report a true value here.
   // Instead, the values were chosen to match
@@ -151,12 +149,12 @@ size_t PlatformNativeWorkerPool::GetMaxConcurrentNonBlockedTasksDeprecated()
   return std::max(3, num_cores - 1);
 }
 
-void PlatformNativeWorkerPool::ReportHeartbeatMetrics() const {
+void ThreadGroupNative::ReportHeartbeatMetrics() const {
   // Native thread pools do not provide the capability to determine the
   // number of worker threads created.
 }
 
-void PlatformNativeWorkerPool::DidUpdateCanRunPolicy() {
+void ThreadGroupNative::DidUpdateCanRunPolicy() {
   ScopedWorkersExecutor executor(this);
   CheckedAutoLock auto_lock(lock_);
   EnsureEnoughWorkersLockRequired(&executor);

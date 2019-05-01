@@ -86,8 +86,8 @@ enum class PerfTestType {
   kUseUIMessageLoop,
   kUseIOMessageLoop,
 
-  // A SingleThreadTaskRunner in the worker pool.
-  kUseSingleThreadInWorkerPool,
+  // A SingleThreadTaskRunner in the thread pool.
+  kUseSingleThreadInThreadPool,
 };
 
 // Customization point for SequenceManagerPerfTest which allows us to test
@@ -240,21 +240,21 @@ class MessageLoopPerfTestDelegate : public PerfTestDelegate {
   std::unique_ptr<RunLoop> run_loop_;
 };
 
-class SingleThreadInWorkerPoolPerfTestDelegate : public PerfTestDelegate {
+class SingleThreadInThreadPoolPerfTestDelegate : public PerfTestDelegate {
  public:
-  SingleThreadInWorkerPoolPerfTestDelegate() : done_cond_(&done_lock_) {
+  SingleThreadInThreadPoolPerfTestDelegate() : done_cond_(&done_lock_) {
     ThreadPool::SetInstance(
         std::make_unique<::base::internal::ThreadPoolImpl>("Test"));
     ThreadPool::GetInstance()->StartWithDefaultParams();
   }
 
-  ~SingleThreadInWorkerPoolPerfTestDelegate() override {
+  ~SingleThreadInThreadPoolPerfTestDelegate() override {
     ThreadPool::GetInstance()->JoinForTesting();
     ThreadPool::SetInstance(nullptr);
   }
 
   const char* GetName() const override {
-    return " single thread in WorkerPool ";
+    return " single thread in ThreadPool ";
   }
 
   bool VirtualTimeIsSupported() const override { return false; }
@@ -639,8 +639,8 @@ class SequenceManagerPerfTest : public testing::TestWithParam<PerfTestType> {
         return std::make_unique<MessageLoopPerfTestDelegate>(
             " MessageLoopForIO ", std::make_unique<MessageLoopForIO>());
 
-      case PerfTestType::kUseSingleThreadInWorkerPool:
-        return std::make_unique<SingleThreadInWorkerPoolPerfTestDelegate>();
+      case PerfTestType::kUseSingleThreadInThreadPool:
+        return std::make_unique<SingleThreadInThreadPoolPerfTestDelegate>();
 
       default:
         NOTREACHED();
@@ -696,7 +696,7 @@ INSTANTIATE_TEST_SUITE_P(
         PerfTestType::kUseMessageLoop,
         PerfTestType::kUseUIMessageLoop,
         PerfTestType::kUseIOMessageLoop,
-        PerfTestType::kUseSingleThreadInWorkerPool,
+        PerfTestType::kUseSingleThreadInThreadPool,
         PerfTestType::kUseSequenceManagerWithMessagePumpAndRandomSampling));
 TEST_P(SequenceManagerPerfTest, PostDelayedTasks_OneQueue) {
   if (!delegate_->VirtualTimeIsSupported()) {

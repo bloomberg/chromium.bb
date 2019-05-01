@@ -13,8 +13,8 @@
 
 namespace thread_pool_util {
 
-extern const base::Feature kBrowserSchedulerInitParams;
-extern const base::Feature kRendererSchedulerInitParams;
+extern const base::Feature kBrowserThreadPoolInitParams;
+extern const base::Feature kRendererThreadPoolInitParams;
 
 // Builds a ThreadPool::InitParams from variations params that are prefixed
 // for |feature|. Returns nullptr on failure.
@@ -25,12 +25,12 @@ std::unique_ptr<base::ThreadPool::InitParams> GetThreadPoolInitParams(
     const base::Feature& feature);
 
 // Builds a ThreadPool::InitParams to use in the browser process from
-// variation params in the BrowserScheduler field trial.
+// variation params in the BrowserThreadPool field trial.
 std::unique_ptr<base::ThreadPool::InitParams>
 GetThreadPoolInitParamsForBrowser();
 
 // Builds a ThreadPool::InitParams to use in renderer processes from
-// variation params in the BrowserScheduler field trial.
+// variation params in the RendererThreadPool field trial.
 std::unique_ptr<base::ThreadPool::InitParams>
 GetThreadPoolInitParamsForRenderer();
 

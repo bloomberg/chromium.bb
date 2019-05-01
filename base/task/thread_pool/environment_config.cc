@@ -19,9 +19,9 @@ size_t GetEnvironmentIndexForTraits(const TaskTraits& traits) {
   return is_background ? BACKGROUND : FOREGROUND;
 }
 
-bool CanUseBackgroundPriorityForSchedulerWorker() {
+bool CanUseBackgroundPriorityForWorkerThread() {
   // When Lock doesn't handle multiple thread priorities, run all
-  // SchedulerWorker with a normal priority to avoid priority inversion when a
+  // WorkerThread with a normal priority to avoid priority inversion when a
   // thread running with a normal priority tries to acquire a lock held by a
   // thread running with a background priority.
   if (!Lock::HandlesMultipleThreadPriorities())

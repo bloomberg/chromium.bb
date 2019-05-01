@@ -43,7 +43,7 @@ namespace internal {
 // however we must JoinForTesting(). At that point, all the raw back T* refs
 // used by the worker threads are problematic because they can result in use-
 // after-frees if a worker outlives the deletion of its corresponding
-// ThreadPool/TaskTracker/SchedulerWorkerPool/etc.
+// ThreadPool/TaskTracker/ThreadGroup/etc.
 //
 // JoinForTesting() isn't so hard when all workers are managed. But with cleanup
 // semantics (reclaiming a worker who's been idle for too long) it becomes

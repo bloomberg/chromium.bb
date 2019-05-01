@@ -2,49 +2,49 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/task/thread_pool/scheduler_worker_stack.h"
+#include "base/task/thread_pool/worker_thread_stack.h"
 
 #include <algorithm>
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "base/task/thread_pool/scheduler_worker.h"
+#include "base/task/thread_pool/worker_thread.h"
 
 namespace base {
 namespace internal {
 
-SchedulerWorkerStack::SchedulerWorkerStack() = default;
+WorkerThreadStack::WorkerThreadStack() = default;
 
-SchedulerWorkerStack::~SchedulerWorkerStack() = default;
+WorkerThreadStack::~WorkerThreadStack() = default;
 
-void SchedulerWorkerStack::Push(SchedulerWorker* worker) {
-  DCHECK(!Contains(worker)) << "SchedulerWorker already on stack";
+void WorkerThreadStack::Push(WorkerThread* worker) {
+  DCHECK(!Contains(worker)) << "WorkerThread already on stack";
   if (!IsEmpty())
     stack_.back()->BeginUnusedPeriod();
   stack_.push_back(worker);
 }
 
-SchedulerWorker* SchedulerWorkerStack::Pop() {
+WorkerThread* WorkerThreadStack::Pop() {
   if (IsEmpty())
     return nullptr;
-  SchedulerWorker* const worker = stack_.back();
+  WorkerThread* const worker = stack_.back();
   stack_.pop_back();
   if (!IsEmpty())
     stack_.back()->EndUnusedPeriod();
   return worker;
 }
 
-SchedulerWorker* SchedulerWorkerStack::Peek() const {
+WorkerThread* WorkerThreadStack::Peek() const {
   if (IsEmpty())
     return nullptr;
   return stack_.back();
 }
 
-bool SchedulerWorkerStack::Contains(const SchedulerWorker* worker) const {
+bool WorkerThreadStack::Contains(const WorkerThread* worker) const {
   return ContainsValue(stack_, worker);
 }
 
-void SchedulerWorkerStack::Remove(const SchedulerWorker* worker) {
+void WorkerThreadStack::Remove(const WorkerThread* worker) {
   DCHECK(!IsEmpty());
   DCHECK_NE(worker, stack_.back());
   auto it = std::find(stack_.begin(), stack_.end(), worker);

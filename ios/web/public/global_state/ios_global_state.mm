@@ -36,12 +36,12 @@ base::ThreadPool::InitParams GetDefaultThreadPoolInitParams() {
   constexpr int kReclaimTimeForeground = 30;
 
   return base::ThreadPool::InitParams(
-      base::SchedulerWorkerPoolParams(
+      base::ThreadGroupParams(
           base::RecommendedMaxNumberOfThreadsInPool(
               kMinBackgroundThreads, kMaxBackgroundThreads,
               kCoreMultiplierBackgroundThreads, kOffsetBackgroundThreads),
           base::TimeDelta::FromSeconds(kReclaimTimeBackground)),
-      base::SchedulerWorkerPoolParams(
+      base::ThreadGroupParams(
           base::RecommendedMaxNumberOfThreadsInPool(
               kMinForegroundThreads, kMaxForegroundThreads,
               kCoreMultiplierForegroundThreads, kOffsetForegroundThreads),

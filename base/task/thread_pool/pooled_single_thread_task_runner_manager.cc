@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/task/thread_pool/scheduler_single_thread_task_runner_manager.h"
+#include "base/task/thread_pool/pooled_single_thread_task_runner_manager.h"
 
 #include <algorithm>
 #include <memory>
@@ -19,11 +19,11 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool/delayed_task_manager.h"
 #include "base/task/thread_pool/priority_queue.h"
-#include "base/task/thread_pool/scheduler_worker.h"
 #include "base/task/thread_pool/sequence.h"
 #include "base/task/thread_pool/task.h"
 #include "base/task/thread_pool/task_source.h"
 #include "base/task/thread_pool/task_tracker.h"
+#include "base/task/thread_pool/worker_thread.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 
@@ -38,15 +38,15 @@ namespace internal {
 
 namespace {
 
-// Boolean indicating whether there's a SchedulerSingleThreadTaskRunnerManager
+// Boolean indicating whether there's a PooledSingleThreadTaskRunnerManager
 // instance alive in this process. This variable should only be set when the
-// SchedulerSingleThreadTaskRunnerManager instance is brought up (on the main
+// PooledSingleThreadTaskRunnerManager instance is brought up (on the main
 // thread; before any tasks are posted) and decremented when the instance is
 // brought down (i.e., only when unit tests tear down the task environment and
 // never in production). This makes the variable const while worker threads are
 // up and as such it doesn't need to be atomic. It is used to tell when a task
 // is posted from the main thread after the task environment was brought down in
-// unit tests so that SchedulerSingleThreadTaskRunnerManager bound TaskRunners
+// unit tests so that PooledSingleThreadTaskRunnerManager bound TaskRunners
 // can return false on PostTask, letting such callers know they should complete
 // necessary work synchronously. Note: |!g_manager_is_alive| is generally
 // equivalent to |!ThreadPool::GetInstance()| but has the advantage of being
@@ -77,30 +77,30 @@ class AtomicThreadRefChecker {
   DISALLOW_COPY_AND_ASSIGN(AtomicThreadRefChecker);
 };
 
-class SchedulerWorkerDelegate : public SchedulerWorker::Delegate {
+class WorkerThreadDelegate : public WorkerThread::Delegate {
  public:
-  SchedulerWorkerDelegate(const std::string& thread_name,
-                          SchedulerWorker::ThreadLabel thread_label,
-                          TrackedRef<TaskTracker> task_tracker)
+  WorkerThreadDelegate(const std::string& thread_name,
+                       WorkerThread::ThreadLabel thread_label,
+                       TrackedRef<TaskTracker> task_tracker)
       : thread_name_(thread_name),
         thread_label_(thread_label),
         task_tracker_(std::move(task_tracker)) {}
 
-  void set_worker(SchedulerWorker* worker) {
+  void set_worker(WorkerThread* worker) {
     DCHECK(!worker_);
     worker_ = worker;
   }
 
-  SchedulerWorker::ThreadLabel GetThreadLabel() const final {
+  WorkerThread::ThreadLabel GetThreadLabel() const final {
     return thread_label_;
   }
 
-  void OnMainEntry(const SchedulerWorker* /* worker */) override {
+  void OnMainEntry(const WorkerThread* /* worker */) override {
     thread_ref_checker_.Set();
     PlatformThread::SetName(thread_name_);
   }
 
-  scoped_refptr<TaskSource> GetWork(SchedulerWorker* worker) override {
+  scoped_refptr<TaskSource> GetWork(WorkerThread* worker) override {
     CheckedAutoLock auto_lock(lock_);
     DCHECK(worker_awake_);
     auto task_source = GetWorkLockRequired(worker);
@@ -138,7 +138,7 @@ class SchedulerWorkerDelegate : public SchedulerWorker::Delegate {
     return thread_ref_checker_.IsCurrentThreadSameAsSetThread();
   }
 
-  void OnMainExit(SchedulerWorker* /* worker */) override {}
+  void OnMainExit(WorkerThread* /* worker */) override {}
 
   void DidUpdateCanRunPolicy() {
     bool should_wakeup = false;
@@ -159,7 +159,7 @@ class SchedulerWorkerDelegate : public SchedulerWorker::Delegate {
   }
 
  protected:
-  scoped_refptr<TaskSource> GetWorkLockRequired(SchedulerWorker* worker)
+  scoped_refptr<TaskSource> GetWorkLockRequired(WorkerThread* worker)
       EXCLUSIVE_LOCKS_REQUIRED(lock_) {
     if (!CanRunNextTaskSource()) {
       return nullptr;
@@ -194,12 +194,12 @@ class SchedulerWorkerDelegate : public SchedulerWorker::Delegate {
   }
 
   const std::string thread_name_;
-  const SchedulerWorker::ThreadLabel thread_label_;
+  const WorkerThread::ThreadLabel thread_label_;
 
-  // The SchedulerWorker that has |this| as a delegate. Must be set before
-  // starting or posting a task to the SchedulerWorker, because it's used in
+  // The WorkerThread that has |this| as a delegate. Must be set before
+  // starting or posting a task to the WorkerThread, because it's used in
   // OnMainEntry() and PostTaskNow().
-  SchedulerWorker* worker_ = nullptr;
+  WorkerThread* worker_ = nullptr;
 
   const TrackedRef<TaskTracker> task_tracker_;
 
@@ -207,43 +207,43 @@ class SchedulerWorkerDelegate : public SchedulerWorker::Delegate {
 
   AtomicThreadRefChecker thread_ref_checker_;
 
-  DISALLOW_COPY_AND_ASSIGN(SchedulerWorkerDelegate);
+  DISALLOW_COPY_AND_ASSIGN(WorkerThreadDelegate);
 };
 
 #if defined(OS_WIN)
 
-class SchedulerWorkerCOMDelegate : public SchedulerWorkerDelegate {
+class WorkerThreadCOMDelegate : public WorkerThreadDelegate {
  public:
-  SchedulerWorkerCOMDelegate(const std::string& thread_name,
-                             SchedulerWorker::ThreadLabel thread_label,
-                             TrackedRef<TaskTracker> task_tracker)
-      : SchedulerWorkerDelegate(thread_name,
-                                thread_label,
-                                std::move(task_tracker)) {}
+  WorkerThreadCOMDelegate(const std::string& thread_name,
+                          WorkerThread::ThreadLabel thread_label,
+                          TrackedRef<TaskTracker> task_tracker)
+      : WorkerThreadDelegate(thread_name,
+                             thread_label,
+                             std::move(task_tracker)) {}
 
-  ~SchedulerWorkerCOMDelegate() override { DCHECK(!scoped_com_initializer_); }
+  ~WorkerThreadCOMDelegate() override { DCHECK(!scoped_com_initializer_); }
 
-  // SchedulerWorker::Delegate:
-  void OnMainEntry(const SchedulerWorker* worker) override {
-    SchedulerWorkerDelegate::OnMainEntry(worker);
+  // WorkerThread::Delegate:
+  void OnMainEntry(const WorkerThread* worker) override {
+    WorkerThreadDelegate::OnMainEntry(worker);
 
     scoped_com_initializer_ = std::make_unique<win::ScopedCOMInitializer>();
   }
 
-  scoped_refptr<TaskSource> GetWork(SchedulerWorker* worker) override {
+  scoped_refptr<TaskSource> GetWork(WorkerThread* worker) override {
     // This scheme below allows us to cover the following scenarios:
-    // * Only SchedulerWorkerDelegate::GetWork() has work:
+    // * Only WorkerThreadDelegate::GetWork() has work:
     //   Always return the task source from GetWork().
     // * Only the Windows Message Queue has work:
     //   Always return the task source from GetWorkFromWindowsMessageQueue();
-    // * Both SchedulerWorkerDelegate::GetWork() and the Windows Message Queue
+    // * Both WorkerThreadDelegate::GetWork() and the Windows Message Queue
     //   have work:
     //   Process task sources from each source round-robin style.
     CheckedAutoLock auto_lock(lock_);
     DCHECK(worker_awake_);
     scoped_refptr<TaskSource> task_source;
     if (get_work_first_) {
-      task_source = SchedulerWorkerDelegate::GetWorkLockRequired(worker);
+      task_source = WorkerThreadDelegate::GetWorkLockRequired(worker);
       if (task_source)
         get_work_first_ = false;
     }
@@ -259,8 +259,8 @@ class SchedulerWorkerCOMDelegate : public SchedulerWorkerDelegate {
       // This case is important if we checked the Windows Message Queue first
       // and found there was no work. We don't want to return null immediately
       // as that could cause the thread to go to sleep while work is waiting via
-      // SchedulerWorkerDelegate::GetWork().
-      task_source = SchedulerWorkerDelegate::GetWorkLockRequired(worker);
+      // WorkerThreadDelegate::GetWork().
+      task_source = WorkerThreadDelegate::GetWorkLockRequired(worker);
     }
     if (task_source == nullptr) {
       // The worker will sleep after this returns nullptr.
@@ -269,7 +269,7 @@ class SchedulerWorkerCOMDelegate : public SchedulerWorkerDelegate {
     return task_source;
   }
 
-  void OnMainExit(SchedulerWorker* /* worker */) override {
+  void OnMainExit(WorkerThread* /* worker */) override {
     scoped_com_initializer_.reset();
   }
 
@@ -318,23 +318,22 @@ class SchedulerWorkerCOMDelegate : public SchedulerWorkerDelegate {
                                TaskSourceExecutionMode::kParallel);
   std::unique_ptr<win::ScopedCOMInitializer> scoped_com_initializer_;
 
-  DISALLOW_COPY_AND_ASSIGN(SchedulerWorkerCOMDelegate);
+  DISALLOW_COPY_AND_ASSIGN(WorkerThreadCOMDelegate);
 };
 
 #endif  // defined(OS_WIN)
 
 }  // namespace
 
-class SchedulerSingleThreadTaskRunnerManager::SchedulerSingleThreadTaskRunner
+class PooledSingleThreadTaskRunnerManager::PooledSingleThreadTaskRunner
     : public SingleThreadTaskRunner {
  public:
-  // Constructs a SchedulerSingleThreadTaskRunner that indirectly controls the
+  // Constructs a PooledSingleThreadTaskRunner that indirectly controls the
   // lifetime of a dedicated |worker| for |traits|.
-  SchedulerSingleThreadTaskRunner(
-      SchedulerSingleThreadTaskRunnerManager* const outer,
-      const TaskTraits& traits,
-      SchedulerWorker* worker,
-      SingleThreadTaskRunnerThreadMode thread_mode)
+  PooledSingleThreadTaskRunner(PooledSingleThreadTaskRunnerManager* const outer,
+                               const TaskTraits& traits,
+                               WorkerThread* worker,
+                               SingleThreadTaskRunnerThreadMode thread_mode)
       : outer_(outer),
         worker_(worker),
         thread_mode_(thread_mode),
@@ -367,7 +366,7 @@ class SchedulerSingleThreadTaskRunnerManager::SchedulerSingleThreadTaskRunner
       // worker are kept alive as long as there are pending Tasks.
       outer_->delayed_task_manager_->AddDelayedTask(
           std::move(task),
-          BindOnce(&SchedulerWorkerDelegate::PostTaskNow,
+          BindOnce(&WorkerThreadDelegate::PostTaskNow,
                    Unretained(GetDelegate()), sequence_),
           this);
     }
@@ -388,44 +387,44 @@ class SchedulerSingleThreadTaskRunnerManager::SchedulerSingleThreadTaskRunner
   }
 
  private:
-  ~SchedulerSingleThreadTaskRunner() override {
+  ~PooledSingleThreadTaskRunner() override {
     // Only unregister if this is a DEDICATED SingleThreadTaskRunner. SHARED
-    // task runner SchedulerWorkers are managed separately as they are reused.
+    // task runner WorkerThreads are managed separately as they are reused.
     // |g_manager_is_alive| avoids a use-after-free should this
-    // SchedulerSingleThreadTaskRunner outlive its manager. It is safe to access
+    // PooledSingleThreadTaskRunner outlive its manager. It is safe to access
     // |g_manager_is_alive| without synchronization primitives as it is const
-    // for the lifetime of the manager and ~SchedulerSingleThreadTaskRunner()
+    // for the lifetime of the manager and ~PooledSingleThreadTaskRunner()
     // either happens prior to the end of JoinForTesting() (which happens-before
     // manager's destruction) or on main thread after the task environment's
     // entire destruction (which happens-after the manager's destruction). Yes,
     // there's a theoretical use case where the last ref to this
-    // SchedulerSingleThreadTaskRunner is handed to a thread not controlled by
+    // PooledSingleThreadTaskRunner is handed to a thread not controlled by
     // thread_pool and that this ends up causing
-    // ~SchedulerSingleThreadTaskRunner() to race with
-    // ~SchedulerSingleThreadTaskRunnerManager() but this is intentionally not
+    // ~PooledSingleThreadTaskRunner() to race with
+    // ~PooledSingleThreadTaskRunnerManager() but this is intentionally not
     // supported (and it doesn't matter in production where we leak the task
     // environment for such reasons). TSan should catch this weird paradigm
     // should anyone elect to use it in a unit test and the error would point
     // here.
     if (g_manager_is_alive &&
         thread_mode_ == SingleThreadTaskRunnerThreadMode::DEDICATED) {
-      outer_->UnregisterSchedulerWorker(worker_);
+      outer_->UnregisterWorkerThread(worker_);
     }
   }
 
-  SchedulerWorkerDelegate* GetDelegate() const {
-    return static_cast<SchedulerWorkerDelegate*>(worker_->delegate());
+  WorkerThreadDelegate* GetDelegate() const {
+    return static_cast<WorkerThreadDelegate*>(worker_->delegate());
   }
 
-  SchedulerSingleThreadTaskRunnerManager* const outer_;
-  SchedulerWorker* const worker_;
+  PooledSingleThreadTaskRunnerManager* const outer_;
+  WorkerThread* const worker_;
   const SingleThreadTaskRunnerThreadMode thread_mode_;
   const scoped_refptr<Sequence> sequence_;
 
-  DISALLOW_COPY_AND_ASSIGN(SchedulerSingleThreadTaskRunner);
+  DISALLOW_COPY_AND_ASSIGN(PooledSingleThreadTaskRunner);
 };
 
-SchedulerSingleThreadTaskRunnerManager::SchedulerSingleThreadTaskRunnerManager(
+PooledSingleThreadTaskRunnerManager::PooledSingleThreadTaskRunnerManager(
     TrackedRef<TaskTracker> task_tracker,
     DelayedTaskManager* delayed_task_manager)
     : task_tracker_(std::move(task_tracker)),
@@ -433,32 +432,31 @@ SchedulerSingleThreadTaskRunnerManager::SchedulerSingleThreadTaskRunnerManager(
   DCHECK(task_tracker_);
   DCHECK(delayed_task_manager_);
 #if defined(OS_WIN)
-  static_assert(std::extent<decltype(shared_com_scheduler_workers_)>() ==
-                    std::extent<decltype(shared_scheduler_workers_)>(),
-                "The size of |shared_com_scheduler_workers_| must match "
-                "|shared_scheduler_workers_|");
+  static_assert(std::extent<decltype(shared_com_worker_threads_)>() ==
+                    std::extent<decltype(shared_worker_threads_)>(),
+                "The size of |shared_com_worker_threads_| must match "
+                "|shared_worker_threads_|");
   static_assert(
-      std::extent<std::remove_reference<decltype(
-              shared_com_scheduler_workers_[0])>>() ==
+      std::extent<
+          std::remove_reference<decltype(shared_com_worker_threads_[0])>>() ==
           std::extent<
-              std::remove_reference<decltype(shared_scheduler_workers_[0])>>(),
-      "The size of |shared_com_scheduler_workers_| must match "
-      "|shared_scheduler_workers_|");
+              std::remove_reference<decltype(shared_worker_threads_[0])>>(),
+      "The size of |shared_com_worker_threads_| must match "
+      "|shared_worker_threads_|");
 #endif  // defined(OS_WIN)
   DCHECK(!g_manager_is_alive);
   g_manager_is_alive = true;
 }
 
-SchedulerSingleThreadTaskRunnerManager::
-    ~SchedulerSingleThreadTaskRunnerManager() {
+PooledSingleThreadTaskRunnerManager::~PooledSingleThreadTaskRunnerManager() {
   DCHECK(g_manager_is_alive);
   g_manager_is_alive = false;
 }
 
-void SchedulerSingleThreadTaskRunnerManager::Start(
-    SchedulerWorkerObserver* scheduler_worker_observer) {
-  DCHECK(!scheduler_worker_observer_);
-  scheduler_worker_observer_ = scheduler_worker_observer;
+void PooledSingleThreadTaskRunnerManager::Start(
+    WorkerThreadObserver* worker_thread_observer) {
+  DCHECK(!worker_thread_observer_);
+  worker_thread_observer_ = worker_thread_observer;
 
   decltype(workers_) workers_to_start;
   {
@@ -469,15 +467,15 @@ void SchedulerSingleThreadTaskRunnerManager::Start(
 
   // Start workers that were created before this method was called.
   // Workers that already need to wake up are already signaled as part of
-  // SchedulerSingleThreadTaskRunner::PostTaskNow(). As a result, it's
+  // PooledSingleThreadTaskRunner::PostTaskNow(). As a result, it's
   // unnecessary to call WakeUp() for each worker (in fact, an extraneous
   // WakeUp() would be racy and wrong - see https://crbug.com/862582).
-  for (scoped_refptr<SchedulerWorker> worker : workers_to_start) {
-    worker->Start(scheduler_worker_observer_);
+  for (scoped_refptr<WorkerThread> worker : workers_to_start) {
+    worker->Start(worker_thread_observer_);
   }
 }
 
-void SchedulerSingleThreadTaskRunnerManager::DidUpdateCanRunPolicy() {
+void PooledSingleThreadTaskRunnerManager::DidUpdateCanRunPolicy() {
   decltype(workers_) workers_to_update;
 
   {
@@ -490,32 +488,32 @@ void SchedulerSingleThreadTaskRunnerManager::DidUpdateCanRunPolicy() {
   // CanRunPolicy if tasks are posted to it and thus doesn't need a
   // DidUpdateCanRunPolicy() notification.
   for (auto& worker : workers_to_update) {
-    static_cast<SchedulerWorkerDelegate*>(worker->delegate())
+    static_cast<WorkerThreadDelegate*>(worker->delegate())
         ->DidUpdateCanRunPolicy();
   }
 }
 
 scoped_refptr<SingleThreadTaskRunner>
-SchedulerSingleThreadTaskRunnerManager::CreateSingleThreadTaskRunnerWithTraits(
+PooledSingleThreadTaskRunnerManager::CreateSingleThreadTaskRunnerWithTraits(
     const TaskTraits& traits,
     SingleThreadTaskRunnerThreadMode thread_mode) {
-  return CreateTaskRunnerWithTraitsImpl<SchedulerWorkerDelegate>(traits,
-                                                                 thread_mode);
+  return CreateTaskRunnerWithTraitsImpl<WorkerThreadDelegate>(traits,
+                                                              thread_mode);
 }
 
 #if defined(OS_WIN)
 scoped_refptr<SingleThreadTaskRunner>
-SchedulerSingleThreadTaskRunnerManager::CreateCOMSTATaskRunnerWithTraits(
+PooledSingleThreadTaskRunnerManager::CreateCOMSTATaskRunnerWithTraits(
     const TaskTraits& traits,
     SingleThreadTaskRunnerThreadMode thread_mode) {
-  return CreateTaskRunnerWithTraitsImpl<SchedulerWorkerCOMDelegate>(
-      traits, thread_mode);
+  return CreateTaskRunnerWithTraitsImpl<WorkerThreadCOMDelegate>(traits,
+                                                                 thread_mode);
 }
 #endif  // defined(OS_WIN)
 
 // static
-SchedulerSingleThreadTaskRunnerManager::ContinueOnShutdown
-SchedulerSingleThreadTaskRunnerManager::TraitsToContinueOnShutdown(
+PooledSingleThreadTaskRunnerManager::ContinueOnShutdown
+PooledSingleThreadTaskRunnerManager::TraitsToContinueOnShutdown(
     const TaskTraits& traits) {
   if (traits.shutdown_behavior() == TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
     return IS_CONTINUE_ON_SHUTDOWN;
@@ -523,9 +521,8 @@ SchedulerSingleThreadTaskRunnerManager::TraitsToContinueOnShutdown(
 }
 
 template <typename DelegateType>
-scoped_refptr<
-    SchedulerSingleThreadTaskRunnerManager::SchedulerSingleThreadTaskRunner>
-SchedulerSingleThreadTaskRunnerManager::CreateTaskRunnerWithTraitsImpl(
+scoped_refptr<PooledSingleThreadTaskRunnerManager::PooledSingleThreadTaskRunner>
+PooledSingleThreadTaskRunnerManager::CreateTaskRunnerWithTraitsImpl(
     const TaskTraits& traits,
     SingleThreadTaskRunnerThreadMode thread_mode) {
   DCHECK(thread_mode != SingleThreadTaskRunnerThreadMode::SHARED ||
@@ -539,11 +536,11 @@ SchedulerSingleThreadTaskRunnerManager::CreateTaskRunnerWithTraitsImpl(
   // SingleThreadTaskRunnerThreadMode. In DEDICATED, the scoped_refptr is backed
   // by a local variable and in SHARED, the scoped_refptr is backed by a member
   // variable.
-  SchedulerWorker* dedicated_worker = nullptr;
-  SchedulerWorker*& worker =
+  WorkerThread* dedicated_worker = nullptr;
+  WorkerThread*& worker =
       thread_mode == SingleThreadTaskRunnerThreadMode::DEDICATED
           ? dedicated_worker
-          : GetSharedSchedulerWorkerForTraits<DelegateType>(traits);
+          : GetSharedWorkerThreadForTraits<DelegateType>(traits);
   bool new_worker = false;
   bool started;
   {
@@ -555,9 +552,9 @@ SchedulerSingleThreadTaskRunnerManager::CreateTaskRunnerWithTraitsImpl(
       if (thread_mode == SingleThreadTaskRunnerThreadMode::SHARED)
         worker_name += "Shared";
       worker_name += environment_params.name_suffix;
-      worker = CreateAndRegisterSchedulerWorker<DelegateType>(
+      worker = CreateAndRegisterWorkerThread<DelegateType>(
           worker_name, thread_mode,
-          CanUseBackgroundPriorityForSchedulerWorker()
+          CanUseBackgroundPriorityForWorkerThread()
               ? environment_params.priority_hint
               : ThreadPriority::NORMAL);
       new_worker = true;
@@ -566,13 +563,13 @@ SchedulerSingleThreadTaskRunnerManager::CreateTaskRunnerWithTraitsImpl(
   }
 
   if (new_worker && started)
-    worker->Start(scheduler_worker_observer_);
+    worker->Start(worker_thread_observer_);
 
-  return MakeRefCounted<SchedulerSingleThreadTaskRunner>(this, traits, worker,
-                                                         thread_mode);
+  return MakeRefCounted<PooledSingleThreadTaskRunner>(this, traits, worker,
+                                                      thread_mode);
 }
 
-void SchedulerSingleThreadTaskRunnerManager::JoinForTesting() {
+void PooledSingleThreadTaskRunnerManager::JoinForTesting() {
   decltype(workers_) local_workers;
   {
     CheckedAutoLock auto_lock(lock_);
@@ -580,7 +577,7 @@ void SchedulerSingleThreadTaskRunnerManager::JoinForTesting() {
   }
 
   for (const auto& worker : local_workers) {
-    static_cast<SchedulerWorkerDelegate*>(worker->delegate())
+    static_cast<WorkerThreadDelegate*>(worker->delegate())
         ->EnableFlushPriorityQueueTaskSourcesOnDestroyForTesting();
     worker->JoinForTesting();
   }
@@ -592,53 +589,53 @@ void SchedulerSingleThreadTaskRunnerManager::JoinForTesting() {
     workers_ = std::move(local_workers);
   }
 
-  // Release shared SchedulerWorkers at the end so they get joined above. If
-  // this call happens before the joins, the SchedulerWorkers are effectively
-  // detached and may outlive the SchedulerSingleThreadTaskRunnerManager.
-  ReleaseSharedSchedulerWorkers();
+  // Release shared WorkerThreads at the end so they get joined above. If
+  // this call happens before the joins, the WorkerThreads are effectively
+  // detached and may outlive the PooledSingleThreadTaskRunnerManager.
+  ReleaseSharedWorkerThreads();
 }
 
 template <>
-std::unique_ptr<SchedulerWorkerDelegate>
-SchedulerSingleThreadTaskRunnerManager::CreateSchedulerWorkerDelegate<
-    SchedulerWorkerDelegate>(const std::string& name,
-                             int id,
-                             SingleThreadTaskRunnerThreadMode thread_mode) {
-  return std::make_unique<SchedulerWorkerDelegate>(
+std::unique_ptr<WorkerThreadDelegate>
+PooledSingleThreadTaskRunnerManager::CreateWorkerThreadDelegate<
+    WorkerThreadDelegate>(const std::string& name,
+                          int id,
+                          SingleThreadTaskRunnerThreadMode thread_mode) {
+  return std::make_unique<WorkerThreadDelegate>(
       StringPrintf("ThreadPoolSingleThread%s%d", name.c_str(), id),
       thread_mode == SingleThreadTaskRunnerThreadMode::DEDICATED
-          ? SchedulerWorker::ThreadLabel::DEDICATED
-          : SchedulerWorker::ThreadLabel::SHARED,
+          ? WorkerThread::ThreadLabel::DEDICATED
+          : WorkerThread::ThreadLabel::SHARED,
       task_tracker_);
 }
 
 #if defined(OS_WIN)
 template <>
-std::unique_ptr<SchedulerWorkerDelegate>
-SchedulerSingleThreadTaskRunnerManager::CreateSchedulerWorkerDelegate<
-    SchedulerWorkerCOMDelegate>(const std::string& name,
-                                int id,
-                                SingleThreadTaskRunnerThreadMode thread_mode) {
-  return std::make_unique<SchedulerWorkerCOMDelegate>(
+std::unique_ptr<WorkerThreadDelegate>
+PooledSingleThreadTaskRunnerManager::CreateWorkerThreadDelegate<
+    WorkerThreadCOMDelegate>(const std::string& name,
+                             int id,
+                             SingleThreadTaskRunnerThreadMode thread_mode) {
+  return std::make_unique<WorkerThreadCOMDelegate>(
       StringPrintf("ThreadPoolSingleThreadCOMSTA%s%d", name.c_str(), id),
       thread_mode == SingleThreadTaskRunnerThreadMode::DEDICATED
-          ? SchedulerWorker::ThreadLabel::DEDICATED_COM
-          : SchedulerWorker::ThreadLabel::SHARED_COM,
+          ? WorkerThread::ThreadLabel::DEDICATED_COM
+          : WorkerThread::ThreadLabel::SHARED_COM,
       task_tracker_);
 }
 #endif  // defined(OS_WIN)
 
 template <typename DelegateType>
-SchedulerWorker*
-SchedulerSingleThreadTaskRunnerManager::CreateAndRegisterSchedulerWorker(
+WorkerThread*
+PooledSingleThreadTaskRunnerManager::CreateAndRegisterWorkerThread(
     const std::string& name,
     SingleThreadTaskRunnerThreadMode thread_mode,
     ThreadPriority priority_hint) {
   int id = next_worker_id_++;
-  std::unique_ptr<SchedulerWorkerDelegate> delegate =
-      CreateSchedulerWorkerDelegate<DelegateType>(name, id, thread_mode);
-  SchedulerWorkerDelegate* delegate_raw = delegate.get();
-  scoped_refptr<SchedulerWorker> worker = MakeRefCounted<SchedulerWorker>(
+  std::unique_ptr<WorkerThreadDelegate> delegate =
+      CreateWorkerThreadDelegate<DelegateType>(name, id, thread_mode);
+  WorkerThreadDelegate* delegate_raw = delegate.get();
+  scoped_refptr<WorkerThread> worker = MakeRefCounted<WorkerThread>(
       priority_hint, std::move(delegate), task_tracker_);
   delegate_raw->set_worker(worker.get());
   workers_.emplace_back(std::move(worker));
@@ -646,27 +643,27 @@ SchedulerSingleThreadTaskRunnerManager::CreateAndRegisterSchedulerWorker(
 }
 
 template <>
-SchedulerWorker*&
-SchedulerSingleThreadTaskRunnerManager::GetSharedSchedulerWorkerForTraits<
-    SchedulerWorkerDelegate>(const TaskTraits& traits) {
-  return shared_scheduler_workers_[GetEnvironmentIndexForTraits(traits)]
-                                  [TraitsToContinueOnShutdown(traits)];
+WorkerThread*&
+PooledSingleThreadTaskRunnerManager::GetSharedWorkerThreadForTraits<
+    WorkerThreadDelegate>(const TaskTraits& traits) {
+  return shared_worker_threads_[GetEnvironmentIndexForTraits(traits)]
+                               [TraitsToContinueOnShutdown(traits)];
 }
 
 #if defined(OS_WIN)
 template <>
-SchedulerWorker*&
-SchedulerSingleThreadTaskRunnerManager::GetSharedSchedulerWorkerForTraits<
-    SchedulerWorkerCOMDelegate>(const TaskTraits& traits) {
-  return shared_com_scheduler_workers_[GetEnvironmentIndexForTraits(traits)]
-                                      [TraitsToContinueOnShutdown(traits)];
+WorkerThread*&
+PooledSingleThreadTaskRunnerManager::GetSharedWorkerThreadForTraits<
+    WorkerThreadCOMDelegate>(const TaskTraits& traits) {
+  return shared_com_worker_threads_[GetEnvironmentIndexForTraits(traits)]
+                                   [TraitsToContinueOnShutdown(traits)];
 }
 #endif  // defined(OS_WIN)
 
-void SchedulerSingleThreadTaskRunnerManager::UnregisterSchedulerWorker(
-    SchedulerWorker* worker) {
+void PooledSingleThreadTaskRunnerManager::UnregisterWorkerThread(
+    WorkerThread* worker) {
   // Cleanup uses a CheckedLock, so call Cleanup() after releasing |lock_|.
-  scoped_refptr<SchedulerWorker> worker_to_destroy;
+  scoped_refptr<WorkerThread> worker_to_destroy;
   {
     CheckedAutoLock auto_lock(lock_);
 
@@ -682,33 +679,33 @@ void SchedulerSingleThreadTaskRunnerManager::UnregisterSchedulerWorker(
   worker_to_destroy->Cleanup();
 }
 
-void SchedulerSingleThreadTaskRunnerManager::ReleaseSharedSchedulerWorkers() {
-  decltype(shared_scheduler_workers_) local_shared_scheduler_workers;
+void PooledSingleThreadTaskRunnerManager::ReleaseSharedWorkerThreads() {
+  decltype(shared_worker_threads_) local_shared_worker_threads;
 #if defined(OS_WIN)
-  decltype(shared_com_scheduler_workers_) local_shared_com_scheduler_workers;
+  decltype(shared_com_worker_threads_) local_shared_com_worker_threads;
 #endif
   {
     CheckedAutoLock auto_lock(lock_);
-    for (size_t i = 0; i < base::size(shared_scheduler_workers_); ++i) {
-      for (size_t j = 0; j < base::size(shared_scheduler_workers_[i]); ++j) {
-        local_shared_scheduler_workers[i][j] = shared_scheduler_workers_[i][j];
-        shared_scheduler_workers_[i][j] = nullptr;
+    for (size_t i = 0; i < base::size(shared_worker_threads_); ++i) {
+      for (size_t j = 0; j < base::size(shared_worker_threads_[i]); ++j) {
+        local_shared_worker_threads[i][j] = shared_worker_threads_[i][j];
+        shared_worker_threads_[i][j] = nullptr;
 #if defined(OS_WIN)
-        local_shared_com_scheduler_workers[i][j] =
-            shared_com_scheduler_workers_[i][j];
-        shared_com_scheduler_workers_[i][j] = nullptr;
+        local_shared_com_worker_threads[i][j] =
+            shared_com_worker_threads_[i][j];
+        shared_com_worker_threads_[i][j] = nullptr;
 #endif
       }
     }
   }
 
-  for (size_t i = 0; i < base::size(local_shared_scheduler_workers); ++i) {
-    for (size_t j = 0; j < base::size(local_shared_scheduler_workers[i]); ++j) {
-      if (local_shared_scheduler_workers[i][j])
-        UnregisterSchedulerWorker(local_shared_scheduler_workers[i][j]);
+  for (size_t i = 0; i < base::size(local_shared_worker_threads); ++i) {
+    for (size_t j = 0; j < base::size(local_shared_worker_threads[i]); ++j) {
+      if (local_shared_worker_threads[i][j])
+        UnregisterWorkerThread(local_shared_worker_threads[i][j]);
 #if defined(OS_WIN)
-      if (local_shared_com_scheduler_workers[i][j])
-        UnregisterSchedulerWorker(local_shared_com_scheduler_workers[i][j]);
+      if (local_shared_com_worker_threads[i][j])
+        UnregisterWorkerThread(local_shared_com_worker_threads[i][j]);
 #endif
     }
   }

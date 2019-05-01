@@ -13,7 +13,7 @@
 #include "base/optional.h"
 #include "base/sequence_token.h"
 #include "base/task/task_traits.h"
-#include "base/task/thread_pool/scheduler_parallel_task_runner.h"
+#include "base/task/thread_pool/pooled_parallel_task_runner.h"
 #include "base/task/thread_pool/sequence_sort_key.h"
 #include "base/task/thread_pool/task.h"
 #include "base/task/thread_pool/task_source.h"
@@ -30,8 +30,8 @@ namespace internal {
 // Note: there is a known refcounted-ownership cycle in the Scheduler
 // architecture: Sequence -> Task -> TaskRunner -> Sequence -> ...
 // This is okay so long as the other owners of Sequence (PriorityQueue and
-// SchedulerWorker in alternation and
-// SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::GetWork()
+// WorkerThread in alternation and
+// ThreadGroupImpl::WorkerThreadDelegateImpl::GetWork()
 // temporarily) keep running it (and taking Tasks from it as a result). A
 // dangling reference cycle would only occur should they release their reference
 // to it while it's not empty. In other words, it is only correct for them to

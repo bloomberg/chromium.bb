@@ -600,7 +600,7 @@ void NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
   // up the thread sequence. In order to prevent DCHECK failures with the
   // |occlusion_update_timer_, we need to call
   // ScheduleOcclusionCalculationIfNeeded from a task.
-  // See SchedulerWorkerCOMDelegate::GetWorkFromWindowsMessageQueue().
+  // See WorkerThreadCOMDelegate::GetWorkFromWindowsMessageQueue().
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(

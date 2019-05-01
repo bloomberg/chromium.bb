@@ -22,24 +22,24 @@ std::unique_ptr<base::ThreadPool::InitParams> GetDefaultThreadPoolInitParams() {
 #if defined(OS_ANDROID)
   // Mobile config, for iOS see ios/web/app/web_main_loop.cc.
   return std::make_unique<base::ThreadPool::InitParams>(
-      base::SchedulerWorkerPoolParams(
+      base::ThreadGroupParams(
           base::RecommendedMaxNumberOfThreadsInPool(4, 8, 0.2, 0),
           base::TimeDelta::FromSeconds(30)),
-      base::SchedulerWorkerPoolParams(
+      base::ThreadGroupParams(
           base::RecommendedMaxNumberOfThreadsInPool(6, 8, 0.6, 0),
           base::TimeDelta::FromSeconds(30)));
 #else
   // Desktop config.
   return std::make_unique<base::ThreadPool::InitParams>(
-      base::SchedulerWorkerPoolParams(
+      base::ThreadGroupParams(
           base::RecommendedMaxNumberOfThreadsInPool(6, 8, 0.2, 0),
           base::TimeDelta::FromSeconds(30)),
-      base::SchedulerWorkerPoolParams(
+      base::ThreadGroupParams(
           base::RecommendedMaxNumberOfThreadsInPool(16, 32, 0.6, 0),
           base::TimeDelta::FromSeconds(30))
 #if defined(OS_WIN)
           ,
-      base::ThreadPool::InitParams::SharedWorkerPoolEnvironment::COM_MTA
+      base::ThreadPool::InitParams::CommonThreadPoolEnvironment::COM_MTA
 #endif  // defined(OS_WIN)
   );
 #endif
@@ -80,15 +80,14 @@ void StartBrowserThreadPool() {
   // threads in the foreground pool.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSingleProcess)) {
-    const base::SchedulerWorkerPoolParams&
-        current_foreground_worker_pool_params(
-            thread_pool_init_params->foreground_worker_pool_params);
-    thread_pool_init_params->foreground_worker_pool_params =
-        base::SchedulerWorkerPoolParams(
+    const base::ThreadGroupParams& current_foreground_thread_group_params(
+        thread_pool_init_params->foreground_thread_group_params);
+    thread_pool_init_params->foreground_thread_group_params =
+        base::ThreadGroupParams(
             std::max(GetMinForegroundThreadsInRendererThreadPool(),
-                     current_foreground_worker_pool_params.max_tasks()),
-            current_foreground_worker_pool_params.suggested_reclaim_time(),
-            current_foreground_worker_pool_params.backward_compatibility());
+                     current_foreground_thread_group_params.max_tasks()),
+            current_foreground_thread_group_params.suggested_reclaim_time(),
+            current_foreground_thread_group_params.backward_compatibility());
   }
 
   base::ThreadPool::GetInstance()->Start(*thread_pool_init_params.get());

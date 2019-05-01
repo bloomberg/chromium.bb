@@ -2,26 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_TASK_THREAD_POOL_SCHEDULER_WORKER_OBSERVER_H_
-#define BASE_TASK_THREAD_POOL_SCHEDULER_WORKER_OBSERVER_H_
+#ifndef BASE_TASK_THREAD_POOL_WORKER_THREAD_OBSERVER_H_
+#define BASE_TASK_THREAD_POOL_WORKER_THREAD_OBSERVER_H_
 
 namespace base {
 
 // Interface to observe entry and exit of the main function of a ThreadPool
 // worker.
-class SchedulerWorkerObserver {
+class WorkerThreadObserver {
  public:
-  virtual ~SchedulerWorkerObserver() = default;
+  virtual ~WorkerThreadObserver() = default;
 
   // Invoked at the beginning of the main function of a ThreadPool worker,
   // before any task runs.
-  virtual void OnSchedulerWorkerMainEntry() = 0;
+  virtual void OnWorkerThreadMainEntry() = 0;
 
   // Invoked at the end of the main function of a ThreadPool worker, when it
   // can no longer run tasks.
-  virtual void OnSchedulerWorkerMainExit() = 0;
+  virtual void OnWorkerThreadMainExit() = 0;
 };
 
 }  // namespace base
 
-#endif  // BASE_TASK_THREAD_POOL_SCHEDULER_WORKER_OBSERVER_H_
+#endif  // BASE_TASK_THREAD_POOL_WORKER_THREAD_OBSERVER_H_

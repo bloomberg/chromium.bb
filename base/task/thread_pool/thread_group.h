@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_TASK_THREAD_POOL_SCHEDULER_WORKER_POOL_H_
-#define BASE_TASK_THREAD_POOL_SCHEDULER_WORKER_POOL_H_
+#ifndef BASE_TASK_THREAD_POOL_THREAD_GROUP_H_
+#define BASE_TASK_THREAD_POOL_THREAD_GROUP_H_
 
 #include "base/base_export.h"
 #include "base/memory/ref_counted.h"
@@ -21,18 +21,17 @@ namespace internal {
 class TaskTracker;
 
 // Interface and base implementation for a worker pool.
-class BASE_EXPORT SchedulerWorkerPool {
+class BASE_EXPORT ThreadGroup {
  public:
-  // Delegate interface for SchedulerWorkerPool.
+  // Delegate interface for ThreadGroup.
   class BASE_EXPORT Delegate {
    public:
     virtual ~Delegate() = default;
 
     // Invoked when the TaskSource in |task_source_and_transaction| is non-empty
-    // after the SchedulerWorkerPool has run a task from it. The implementation
+    // after the ThreadGroup has run a task from it. The implementation
     // must return the pool in which the TaskSource should be reenqueued.
-    virtual SchedulerWorkerPool* GetWorkerPoolForTraits(
-        const TaskTraits& traits) = 0;
+    virtual ThreadGroup* GetThreadGroupForTraits(const TaskTraits& traits) = 0;
   };
 
   enum class WorkerEnvironment {
@@ -44,9 +43,9 @@ class BASE_EXPORT SchedulerWorkerPool {
 #endif  // defined(OS_WIN)
   };
 
-  virtual ~SchedulerWorkerPool();
+  virtual ~ThreadGroup();
 
-  // Posts |task| to be executed by this SchedulerWorkerPool as part of
+  // Posts |task| to be executed by this ThreadGroup as part of
   // the Sequence in |sequence_and_transaction|. This must only be called after
   // |task| has gone through TaskTracker::WillPostTask() and after |task|'s
   // delayed run time.
@@ -90,11 +89,11 @@ class BASE_EXPORT SchedulerWorkerPool {
   // TODO(crbug.com/756547): Remove this method once the UseNativeThreadPool
   // experiment is complete.
   void InvalidateAndHandoffAllTaskSourcesToOtherPool(
-      SchedulerWorkerPool* destination_pool);
+      ThreadGroup* destination_pool);
 
   // Prevents new tasks from starting to run and waits for currently running
   // tasks to complete their execution. It is guaranteed that no thread will do
-  // work on behalf of this SchedulerWorkerPool after this returns. It is
+  // work on behalf of this ThreadGroup after this returns. It is
   // invalid to post a task once this is called. TaskTracker::Flush() can be
   // called before this to complete existing tasks, which might otherwise post a
   // task during JoinForTesting(). This can only be called once.
@@ -133,12 +132,12 @@ class BASE_EXPORT SchedulerWorkerPool {
 
     void SchedulePushTaskSourceAndWakeUpWorkers(
         TaskSourceAndTransaction task_source_and_transaction,
-        SchedulerWorkerPool* destination_pool);
+        ThreadGroup* destination_pool);
 
    private:
     // A TaskSourceAndTransaction and the pool in which it should be enqueued.
     Optional<TaskSourceAndTransaction> task_source_and_transaction_;
-    SchedulerWorkerPool* destination_pool_ = nullptr;
+    ThreadGroup* destination_pool_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedReenqueueExecutor);
   };
@@ -150,9 +149,9 @@ class BASE_EXPORT SchedulerWorkerPool {
   //
   // TODO(crbug.com/756547): Remove |predecessor_pool| once the experiment is
   // complete.
-  SchedulerWorkerPool(TrackedRef<TaskTracker> task_tracker,
-                      TrackedRef<Delegate> delegate,
-                      SchedulerWorkerPool* predecessor_pool = nullptr);
+  ThreadGroup(TrackedRef<TaskTracker> task_tracker,
+              TrackedRef<Delegate> delegate,
+              ThreadGroup* predecessor_pool = nullptr);
 
   const TrackedRef<TaskTracker> task_tracker_;
   const TrackedRef<Delegate> delegate_;
@@ -200,13 +199,13 @@ class BASE_EXPORT SchedulerWorkerPool {
   // If |replacement_pool_| is non-null, this pool is invalid and all task
   // sources should be scheduled on |replacement_pool_|. Used to support the
   // UseNativeThreadPool experiment.
-  SchedulerWorkerPool* replacement_pool_ = nullptr;
+  ThreadGroup* replacement_pool_ = nullptr;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(SchedulerWorkerPool);
+  DISALLOW_COPY_AND_ASSIGN(ThreadGroup);
 };
 
 }  // namespace internal
 }  // namespace base
 
-#endif  // BASE_TASK_THREAD_POOL_SCHEDULER_WORKER_POOL_H_
+#endif  // BASE_TASK_THREAD_POOL_THREAD_GROUP_H_

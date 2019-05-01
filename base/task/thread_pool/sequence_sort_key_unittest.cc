@@ -11,7 +11,7 @@
 namespace base {
 namespace internal {
 
-TEST(ThreadPoolSequenceSortKeyTest, OperatorLessThanOrEqual) {
+TEST(SequenceSortKeyTest, OperatorLessThanOrEqual) {
   SequenceSortKey key_a(TaskPriority::USER_BLOCKING,
                         TimeTicks::FromInternalValue(1000));
   SequenceSortKey key_b(TaskPriority::USER_BLOCKING,
@@ -68,7 +68,7 @@ TEST(ThreadPoolSequenceSortKeyTest, OperatorLessThanOrEqual) {
   EXPECT_LE(key_f, key_f);
 }
 
-TEST(ThreadPoolSequenceSortKeyTest, OperatorEqual) {
+TEST(SequenceSortKeyTest, OperatorEqual) {
   SequenceSortKey key_a(TaskPriority::USER_BLOCKING,
                         TimeTicks::FromInternalValue(1000));
   SequenceSortKey key_b(TaskPriority::USER_BLOCKING,
@@ -125,7 +125,7 @@ TEST(ThreadPoolSequenceSortKeyTest, OperatorEqual) {
   EXPECT_EQ(key_f, key_f);
 }
 
-TEST(ThreadPoolSequenceSortKeyTest, OperatorNotEqual) {
+TEST(SequenceSortKeyTest, OperatorNotEqual) {
   SequenceSortKey key_a(TaskPriority::USER_BLOCKING,
                         TimeTicks::FromInternalValue(1000));
   SequenceSortKey key_b(TaskPriority::USER_BLOCKING,

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_TASK_THREAD_POOL_SCHEDULER_SINGLE_THREAD_TASK_RUNNER_MANAGER_H_
-#define BASE_TASK_THREAD_POOL_SCHEDULER_SINGLE_THREAD_TASK_RUNNER_MANAGER_H_
+#ifndef BASE_TASK_THREAD_POOL_POOLED_SINGLE_THREAD_TASK_RUNNER_MANAGER_H_
+#define BASE_TASK_THREAD_POOL_POOLED_SINGLE_THREAD_TASK_RUNNER_MANAGER_H_
 
 #include <memory>
 #include <string>
@@ -23,18 +23,18 @@
 namespace base {
 
 class TaskTraits;
-class SchedulerWorkerObserver;
+class WorkerThreadObserver;
 class SingleThreadTaskRunner;
 
 namespace internal {
 
 class DelayedTaskManager;
-class SchedulerWorker;
+class WorkerThread;
 class TaskTracker;
 
 namespace {
 
-class SchedulerWorkerDelegate;
+class WorkerThreadDelegate;
 
 }  // namespace
 
@@ -42,26 +42,25 @@ class SchedulerWorkerDelegate;
 // SingleThreadTaskRunners.
 //
 // SingleThreadTaskRunners using SingleThreadTaskRunnerThreadMode::SHARED are
-// backed by shared SchedulerWorkers for each COM+task environment combination.
+// backed by shared WorkerThreads for each COM+task environment combination.
 // These workers are lazily instantiated and then only reclaimed during
 // JoinForTesting()
 //
 // No threads are created (and hence no tasks can run) before Start() is called.
 //
 // This class is thread-safe.
-class BASE_EXPORT SchedulerSingleThreadTaskRunnerManager final {
+class BASE_EXPORT PooledSingleThreadTaskRunnerManager final {
  public:
-  SchedulerSingleThreadTaskRunnerManager(
-      TrackedRef<TaskTracker> task_tracker,
-      DelayedTaskManager* delayed_task_manager);
-  ~SchedulerSingleThreadTaskRunnerManager();
+  PooledSingleThreadTaskRunnerManager(TrackedRef<TaskTracker> task_tracker,
+                                      DelayedTaskManager* delayed_task_manager);
+  ~PooledSingleThreadTaskRunnerManager();
 
   // Starts threads for existing SingleThreadTaskRunners and allows threads to
   // be started when SingleThreadTaskRunners are created in the future. If
-  // specified, |scheduler_worker_observer| will be notified when a worker
+  // specified, |worker_thread_observer| will be notified when a worker
   // enters and exits its main function. It must not be destroyed before
   // JoinForTesting() has returned (must never be destroyed in production).
-  void Start(SchedulerWorkerObserver* scheduler_worker_observer = nullptr);
+  void Start(WorkerThreadObserver* worker_thread_observer = nullptr);
 
   // Wakes up workers as appropriate for the new CanRunPolicy policy. Must be
   // called after an update to CanRunPolicy in TaskTracker.
@@ -88,7 +87,7 @@ class BASE_EXPORT SchedulerSingleThreadTaskRunnerManager final {
   void JoinForTesting();
 
  private:
-  class SchedulerSingleThreadTaskRunner;
+  class PooledSingleThreadTaskRunner;
 
   enum ContinueOnShutdown {
     IS_CONTINUE_ON_SHUTDOWN,
@@ -100,38 +99,38 @@ class BASE_EXPORT SchedulerSingleThreadTaskRunnerManager final {
       const TaskTraits& traits);
 
   template <typename DelegateType>
-  scoped_refptr<SchedulerSingleThreadTaskRunner> CreateTaskRunnerWithTraitsImpl(
+  scoped_refptr<PooledSingleThreadTaskRunner> CreateTaskRunnerWithTraitsImpl(
       const TaskTraits& traits,
       SingleThreadTaskRunnerThreadMode thread_mode);
 
   template <typename DelegateType>
-  std::unique_ptr<SchedulerWorkerDelegate> CreateSchedulerWorkerDelegate(
+  std::unique_ptr<WorkerThreadDelegate> CreateWorkerThreadDelegate(
       const std::string& name,
       int id,
       SingleThreadTaskRunnerThreadMode thread_mode);
 
   template <typename DelegateType>
-  SchedulerWorker* CreateAndRegisterSchedulerWorker(
+  WorkerThread* CreateAndRegisterWorkerThread(
       const std::string& name,
       SingleThreadTaskRunnerThreadMode thread_mode,
       ThreadPriority priority_hint) EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   template <typename DelegateType>
-  SchedulerWorker*& GetSharedSchedulerWorkerForTraits(const TaskTraits& traits);
+  WorkerThread*& GetSharedWorkerThreadForTraits(const TaskTraits& traits);
 
-  void UnregisterSchedulerWorker(SchedulerWorker* worker);
+  void UnregisterWorkerThread(WorkerThread* worker);
 
-  void ReleaseSharedSchedulerWorkers();
+  void ReleaseSharedWorkerThreads();
 
   const TrackedRef<TaskTracker> task_tracker_;
   DelayedTaskManager* const delayed_task_manager_;
 
   // Optional observer notified when a worker enters and exits its main
   // function. Set in Start() and never modified afterwards.
-  SchedulerWorkerObserver* scheduler_worker_observer_ = nullptr;
+  WorkerThreadObserver* worker_thread_observer_ = nullptr;
 
   CheckedLock lock_;
-  std::vector<scoped_refptr<SchedulerWorker>> workers_ GUARDED_BY(lock_);
+  std::vector<scoped_refptr<WorkerThread>> workers_ GUARDED_BY(lock_);
   int next_worker_id_ GUARDED_BY(lock_) = 0;
 
   // Workers for SingleThreadTaskRunnerThreadMode::SHARED tasks. It is
@@ -139,20 +138,21 @@ class BASE_EXPORT SchedulerSingleThreadTaskRunnerManager final {
   // CONTINUE_ON_SHUTDOWN to avoid being in a situation where a
   // CONTINUE_ON_SHUTDOWN task effectively blocks shutdown by preventing a
   // BLOCK_SHUTDOWN task to be scheduled. https://crbug.com/829786
-  SchedulerWorker* shared_scheduler_workers_
-      [ENVIRONMENT_COUNT][CONTINUE_ON_SHUTDOWN_COUNT] GUARDED_BY(lock_) = {};
+  WorkerThread* shared_worker_threads_[ENVIRONMENT_COUNT]
+                                      [CONTINUE_ON_SHUTDOWN_COUNT] GUARDED_BY(
+                                          lock_) = {};
 #if defined(OS_WIN)
-  SchedulerWorker* shared_com_scheduler_workers_
+  WorkerThread* shared_com_worker_threads_
       [ENVIRONMENT_COUNT][CONTINUE_ON_SHUTDOWN_COUNT] GUARDED_BY(lock_) = {};
 #endif  // defined(OS_WIN)
 
   // Set to true when Start() is called.
   bool started_ GUARDED_BY(lock_) = false;
 
-  DISALLOW_COPY_AND_ASSIGN(SchedulerSingleThreadTaskRunnerManager);
+  DISALLOW_COPY_AND_ASSIGN(PooledSingleThreadTaskRunnerManager);
 };
 
 }  // namespace internal
 }  // namespace base
 
-#endif  // BASE_TASK_THREAD_POOL_SCHEDULER_SINGLE_THREAD_TASK_RUNNER_MANAGER_H_
+#endif  // BASE_TASK_THREAD_POOL_POOLED_SINGLE_THREAD_TASK_RUNNER_MANAGER_H_

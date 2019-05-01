@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_TASK_THREAD_POOL_PLATFORM_NATIVE_WORKER_POOL_MAC_H_
-#define BASE_TASK_THREAD_POOL_PLATFORM_NATIVE_WORKER_POOL_MAC_H_
+#ifndef BASE_TASK_THREAD_POOL_THREAD_GROUP_NATIVE_MAC_H_
+#define BASE_TASK_THREAD_POOL_THREAD_GROUP_NATIVE_MAC_H_
 
 #include <dispatch/dispatch.h>
 
 #include "base/base_export.h"
 #include "base/mac/scoped_dispatch_object.h"
-#include "base/task/thread_pool/platform_native_worker_pool.h"
+#include "base/task/thread_pool/thread_group_native.h"
 
 namespace base {
 namespace internal {
 
-// A SchedulerWorkerPool implementation backed by libdispatch.
+// A ThreadGroup implementation backed by libdispatch.
 //
 // libdispatch official documentation:
 // https://developer.apple.com/documentation/dispatch
@@ -22,17 +22,16 @@ namespace internal {
 // Guides:
 // https://apple.github.io/swift-corelibs-libdispatch/tutorial/
 // https://developer.apple.com/library/archive/documentation/General/Conceptual/ConcurrencyProgrammingGuide/OperationQueues/OperationQueues.html
-class BASE_EXPORT PlatformNativeWorkerPoolMac
-    : public PlatformNativeWorkerPool {
+class BASE_EXPORT ThreadGroupNativeMac : public ThreadGroupNative {
  public:
-  PlatformNativeWorkerPoolMac(TrackedRef<TaskTracker> task_tracker,
-                              TrackedRef<Delegate> delegate,
-                              SchedulerWorkerPool* predecessor_pool = nullptr);
+  ThreadGroupNativeMac(TrackedRef<TaskTracker> task_tracker,
+                       TrackedRef<Delegate> delegate,
+                       ThreadGroup* predecessor_pool = nullptr);
 
-  ~PlatformNativeWorkerPoolMac() override;
+  ~ThreadGroupNativeMac() override;
 
  private:
-  // PlatformNativeWorkerPool:
+  // ThreadGroupNative:
   void JoinImpl() override;
   void StartImpl() override;
   void SubmitWork() override;
@@ -44,12 +43,12 @@ class BASE_EXPORT PlatformNativeWorkerPoolMac
   // Dispatch group to enable synchronization.
   ScopedDispatchObject<dispatch_group_t> group_;
 
-  DISALLOW_COPY_AND_ASSIGN(PlatformNativeWorkerPoolMac);
+  DISALLOW_COPY_AND_ASSIGN(ThreadGroupNativeMac);
 };
 
-using PlatformNativeWorkerPoolImpl = PlatformNativeWorkerPoolMac;
+using ThreadGroupNativeImpl = ThreadGroupNativeMac;
 
 }  // namespace internal
 }  // namespace base
 
-#endif  // BASE_TASK_THREAD_POOL_PLATFORM_NATIVE_WORKER_POOL_MAC_H_
+#endif  // BASE_TASK_THREAD_POOL_THREAD_GROUP_NATIVE_MAC_H_

@@ -32,7 +32,7 @@ scoped_refptr<TaskSource> MakeSequenceWithTraitsAndTask(
   return sequence;
 }
 
-class ThreadPoolPriorityQueueWithSequencesTest : public testing::Test {
+class PriorityQueueWithSequencesTest : public testing::Test {
  protected:
   void ExpectNumSequences(size_t num_best_effort,
                           size_t num_user_visible,
@@ -66,7 +66,7 @@ class ThreadPoolPriorityQueueWithSequencesTest : public testing::Test {
 
 }  // namespace
 
-TEST_F(ThreadPoolPriorityQueueWithSequencesTest, PushPopPeek) {
+TEST_F(PriorityQueueWithSequencesTest, PushPopPeek) {
   EXPECT_TRUE(pq.IsEmpty());
   ExpectNumSequences(0U, 0U, 0U);
 
@@ -118,7 +118,7 @@ TEST_F(ThreadPoolPriorityQueueWithSequencesTest, PushPopPeek) {
   ExpectNumSequences(0U, 0U, 0U);
 }
 
-TEST_F(ThreadPoolPriorityQueueWithSequencesTest, RemoveSequence) {
+TEST_F(PriorityQueueWithSequencesTest, RemoveSequence) {
   EXPECT_TRUE(pq.IsEmpty());
 
   // Push all test Sequences into the PriorityQueue. |sequence_b|
@@ -163,7 +163,7 @@ TEST_F(ThreadPoolPriorityQueueWithSequencesTest, RemoveSequence) {
   ExpectNumSequences(0U, 0U, 0U);
 }
 
-TEST_F(ThreadPoolPriorityQueueWithSequencesTest, UpdateSortKey) {
+TEST_F(PriorityQueueWithSequencesTest, UpdateSortKey) {
   EXPECT_TRUE(pq.IsEmpty());
 
   // Push all test Sequences into the PriorityQueue. |sequence_b| becomes the

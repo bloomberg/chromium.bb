@@ -25,7 +25,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
-#include "base/task/thread_pool/scheduler_worker_pool_params.h"
+#include "base/task/thread_pool/thread_group_params.h"
 #include "base/task/thread_pool/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -164,7 +164,7 @@ bool ServiceProcess::Initialize(base::OnceClosure quit_closure,
   base::ThreadPool::GetInstance()->Start(
       {{kMaxBackgroundThreads, kSuggestedReclaimTime},
        {kMaxForegroundThreads, kSuggestedReclaimTime,
-        base::SchedulerBackwardCompatibility::INIT_COM_STA}});
+        base::WorkerThreadBackwardCompatibility::INIT_COM_STA}});
 
   // The NetworkChangeNotifier must be created after ThreadPool because it
   // posts tasks to it.

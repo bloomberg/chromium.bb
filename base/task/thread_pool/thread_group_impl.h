@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_TASK_THREAD_POOL_SCHEDULER_WORKER_POOL_IMPL_H_
-#define BASE_TASK_THREAD_POOL_SCHEDULER_WORKER_POOL_IMPL_H_
+#ifndef BASE_TASK_THREAD_POOL_THREAD_GROUP_IMPL_H_
+#define BASE_TASK_THREAD_POOL_THREAD_GROUP_IMPL_H_
 
 #include <stddef.h>
 
@@ -23,20 +23,20 @@
 #include "base/synchronization/atomic_flag.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task/thread_pool/scheduler_worker.h"
-#include "base/task/thread_pool/scheduler_worker_pool.h"
-#include "base/task/thread_pool/scheduler_worker_stack.h"
 #include "base/task/thread_pool/task.h"
 #include "base/task/thread_pool/task_source.h"
+#include "base/task/thread_pool/thread_group.h"
 #include "base/task/thread_pool/tracked_ref.h"
+#include "base/task/thread_pool/worker_thread.h"
+#include "base/task/thread_pool/worker_thread_stack.h"
 #include "base/task_runner.h"
 #include "base/time/time.h"
 
 namespace base {
 
 class HistogramBase;
-class SchedulerWorkerObserver;
-class SchedulerWorkerPoolParams;
+class WorkerThreadObserver;
+class ThreadGroupParams;
 
 namespace internal {
 
@@ -48,7 +48,7 @@ class TaskTracker;
 // at any time but will not run until after Start() is called.
 //
 // This class is thread-safe.
-class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
+class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
  public:
   // Constructs a pool without workers.
   //
@@ -58,36 +58,36 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // empty. |priority_hint| is the preferred thread priority; the actual thread
   // priority depends on shutdown state and platform capabilities.
   // |task_tracker| keeps track of tasks.
-  SchedulerWorkerPoolImpl(StringPiece histogram_label,
-                          StringPiece pool_label,
-                          ThreadPriority priority_hint,
-                          TrackedRef<TaskTracker> task_tracker,
-                          TrackedRef<Delegate> delegate);
+  ThreadGroupImpl(StringPiece histogram_label,
+                  StringPiece pool_label,
+                  ThreadPriority priority_hint,
+                  TrackedRef<TaskTracker> task_tracker,
+                  TrackedRef<Delegate> delegate);
 
   // Creates workers following the |params| specification, allowing existing and
   // future tasks to run. The pool runs at most |max_best_effort_tasks|
   // unblocked BEST_EFFORT tasks concurrently, uses |service_thread_task_runner|
   // to monitor for blocked tasks, and, if specified, notifies
-  // |scheduler_worker_observer| when a worker enters and exits its main
+  // |worker_thread_observer| when a worker enters and exits its main
   // function (the observer must not be destroyed before JoinForTesting() has
   // returned). |worker_environment| specifies the environment in which tasks
   // are executed. |may_block_threshold| is the timeout after which a task in a
   // MAY_BLOCK ScopedBlockingCall is considered blocked (the pool will choose an
   // appropriate value if none is specified). Can only be called once. CHECKs on
   // failure.
-  void Start(const SchedulerWorkerPoolParams& params,
+  void Start(const ThreadGroupParams& params,
              int max_best_effort_tasks,
              scoped_refptr<TaskRunner> service_thread_task_runner,
-             SchedulerWorkerObserver* scheduler_worker_observer,
+             WorkerThreadObserver* worker_thread_observer,
              WorkerEnvironment worker_environment,
              Optional<TimeDelta> may_block_threshold = Optional<TimeDelta>());
 
-  // Destroying a SchedulerWorkerPoolImpl returned by Create() is not allowed in
+  // Destroying a ThreadGroupImpl returned by Create() is not allowed in
   // production; it is always leaked. In tests, it can only be destroyed after
   // JoinForTesting() has returned.
-  ~SchedulerWorkerPoolImpl() override;
+  ~ThreadGroupImpl() override;
 
-  // SchedulerWorkerPool:
+  // ThreadGroup:
   void JoinForTesting() override;
   size_t GetMaxConcurrentNonBlockedTasksDeprecated() const override;
   void ReportHeartbeatMetrics() const override;
@@ -135,16 +135,16 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
 
  private:
   class ScopedWorkersExecutor;
-  class SchedulerWorkerDelegateImpl;
+  class WorkerThreadDelegateImpl;
 
   // Friend tests so that they can access |blocked_workers_poll_period| and
   // may_block_threshold().
-  friend class ThreadPoolWorkerPoolBlockingTest;
-  friend class ThreadPoolWorkerPoolMayBlockTest;
-  FRIEND_TEST_ALL_PREFIXES(ThreadPoolWorkerPoolBlockingTest,
+  friend class ThreadGroupImplBlockingTest;
+  friend class ThreadGroupImplMayBlockTest;
+  FRIEND_TEST_ALL_PREFIXES(ThreadGroupImplBlockingTest,
                            ThreadBlockUnblockPremature);
 
-  // SchedulerWorkerPool:
+  // ThreadGroup:
   void UpdateSortKey(
       TaskSourceAndTransaction task_source_and_transaction) override;
   void PushTaskSourceAndWakeUpWorkers(
@@ -162,7 +162,7 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
 
   // Creates a worker, adds it to the pool, schedules its start and returns it.
   // Cannot be called before Start().
-  scoped_refptr<SchedulerWorker> CreateAndRegisterWorkerLockRequired(
+  scoped_refptr<WorkerThread> CreateAndRegisterWorkerLockRequired(
       ScopedWorkersExecutor* executor) EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Returns the number of workers that are awake (i.e. not on the idle stack).
@@ -173,7 +173,7 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   size_t GetDesiredNumAwakeWorkersLockRequired() const
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
-  // Examines the list of SchedulerWorkers and increments |max_tasks_| for each
+  // Examines the list of WorkerThreads and increments |max_tasks_| for each
   // worker that has been within the scope of a MAY_BLOCK ScopedBlockingCall for
   // more than BlockedThreshold(). Reschedules a call if necessary.
   void AdjustMaxTasks();
@@ -228,7 +228,7 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
     // Suggested reclaim time for workers.
     TimeDelta suggested_reclaim_time;
 
-    SchedulerBackwardCompatibility backward_compatibility;
+    WorkerThreadBackwardCompatibility backward_compatibility;
 
     // Environment to be initialized per worker.
     WorkerEnvironment worker_environment = WorkerEnvironment::NONE;
@@ -236,7 +236,7 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
     scoped_refptr<TaskRunner> service_thread_task_runner;
 
     // Optional observer notified when a worker enters and exits its main.
-    SchedulerWorkerObserver* scheduler_worker_observer = nullptr;
+    WorkerThreadObserver* worker_thread_observer = nullptr;
 
     bool may_block_without_delay;
 
@@ -266,7 +266,7 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   const ThreadPriority priority_hint_;
 
   // All workers owned by this worker pool.
-  std::vector<scoped_refptr<SchedulerWorker>> workers_ GUARDED_BY(lock_);
+  std::vector<scoped_refptr<WorkerThread>> workers_ GUARDED_BY(lock_);
 
   // Maximum number of tasks of any priority / BEST_EFFORT priority that can run
   // concurrently in this pool.
@@ -289,7 +289,7 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // it receives work from GetWork() (a worker calls GetWork() when its sleep
   // timeout expires, even if its WakeUp() method hasn't been called). A worker
   // is pushed on this stack when it receives nullptr from GetWork().
-  SchedulerWorkerStack idle_workers_stack_ GUARDED_BY(lock_);
+  WorkerThreadStack idle_workers_stack_ GUARDED_BY(lock_);
 
   // Signaled when a worker is added to the idle workers stack.
   std::unique_ptr<ConditionVariable> idle_workers_stack_cv_for_testing_
@@ -348,18 +348,18 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   HistogramBase* const num_active_workers_histogram_;
 
   // Ensures recently cleaned up workers (ref.
-  // SchedulerWorkerDelegateImpl::CleanupLockRequired()) had time to exit as
+  // WorkerThreadDelegateImpl::CleanupLockRequired()) had time to exit as
   // they have a raw reference to |this| (and to TaskTracker) which can
   // otherwise result in racy use-after-frees per no longer being part of
   // |workers_| and hence not being explicitly joined in JoinForTesting():
   // https://crbug.com/810464. Uses AtomicRefCount to make its only public
   // method thread-safe.
-  TrackedRefFactory<SchedulerWorkerPoolImpl> tracked_ref_factory_;
+  TrackedRefFactory<ThreadGroupImpl> tracked_ref_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(SchedulerWorkerPoolImpl);
+  DISALLOW_COPY_AND_ASSIGN(ThreadGroupImpl);
 };
 
 }  // namespace internal
 }  // namespace base
 
-#endif  // BASE_TASK_THREAD_POOL_SCHEDULER_WORKER_POOL_IMPL_H_
+#endif  // BASE_TASK_THREAD_POOL_THREAD_GROUP_IMPL_H_

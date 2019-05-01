@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_TASK_THREAD_POOL_SCHEDULER_WORKER_POOL_PARAMS_H_
-#define BASE_TASK_THREAD_POOL_SCHEDULER_WORKER_POOL_PARAMS_H_
+#ifndef BASE_TASK_THREAD_POOL_THREAD_GROUP_PARAMS_H_
+#define BASE_TASK_THREAD_POOL_THREAD_GROUP_PARAMS_H_
 
-#include "base/task/thread_pool/scheduler_worker_params.h"
+#include "base/task/thread_pool/worker_thread_params.h"
 #include "base/time/time.h"
 
 namespace base {
 
-class BASE_EXPORT SchedulerWorkerPoolParams final {
+class BASE_EXPORT ThreadGroupParams final {
  public:
   // Constructs a set of params used to initialize a pool. The pool will run
   // concurrently at most |max_tasks| that aren't blocked (ScopedBlockingCall).
@@ -18,27 +18,26 @@ class BASE_EXPORT SchedulerWorkerPoolParams final {
   // The pool is free to ignore this value for performance or correctness
   // reasons. |backward_compatibility| indicates whether backward compatibility
   // is enabled.
-  SchedulerWorkerPoolParams(
-      int max_tasks,
-      TimeDelta suggested_reclaim_time,
-      SchedulerBackwardCompatibility backward_compatibility =
-          SchedulerBackwardCompatibility::DISABLED);
+  ThreadGroupParams(int max_tasks,
+                    TimeDelta suggested_reclaim_time,
+                    WorkerThreadBackwardCompatibility backward_compatibility =
+                        WorkerThreadBackwardCompatibility::DISABLED);
 
-  SchedulerWorkerPoolParams(const SchedulerWorkerPoolParams& other);
-  SchedulerWorkerPoolParams& operator=(const SchedulerWorkerPoolParams& other);
+  ThreadGroupParams(const ThreadGroupParams& other);
+  ThreadGroupParams& operator=(const ThreadGroupParams& other);
 
   int max_tasks() const { return max_tasks_; }
   TimeDelta suggested_reclaim_time() const { return suggested_reclaim_time_; }
-  SchedulerBackwardCompatibility backward_compatibility() const {
+  WorkerThreadBackwardCompatibility backward_compatibility() const {
     return backward_compatibility_;
   }
 
  private:
   int max_tasks_;
   TimeDelta suggested_reclaim_time_;
-  SchedulerBackwardCompatibility backward_compatibility_;
+  WorkerThreadBackwardCompatibility backward_compatibility_;
 };
 
 }  // namespace base
 
-#endif  // BASE_TASK_THREAD_POOL_SCHEDULER_WORKER_POOL_PARAMS_H_
+#endif  // BASE_TASK_THREAD_POOL_THREAD_GROUP_PARAMS_H_

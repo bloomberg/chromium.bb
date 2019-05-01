@@ -15,7 +15,7 @@ namespace base {
 namespace internal {
 
 // TODO(etiennep): This is now specific to
-// SchedulerSingleThreadTaskRunnerManager, move it there.
+// PooledSingleThreadTaskRunnerManager, move it there.
 enum EnvironmentType {
   FOREGROUND = 0,
   FOREGROUND_BLOCKING,
@@ -44,9 +44,9 @@ constexpr EnvironmentParams kEnvironmentParams[] = {
 
 size_t BASE_EXPORT GetEnvironmentIndexForTraits(const TaskTraits& traits);
 
-// Returns true if this platform supports having SchedulerWorkers running with a
+// Returns true if this platform supports having WorkerThreads running with a
 // background priority.
-bool BASE_EXPORT CanUseBackgroundPriorityForSchedulerWorker();
+bool BASE_EXPORT CanUseBackgroundPriorityForWorkerThread();
 
 }  // namespace internal
 }  // namespace base

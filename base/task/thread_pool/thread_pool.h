@@ -18,7 +18,7 @@
 #include "base/task/single_thread_task_runner_thread_mode.h"
 #include "base/task/task_executor.h"
 #include "base/task/task_traits.h"
-#include "base/task/thread_pool/scheduler_worker_pool_params.h"
+#include "base/task/thread_pool/thread_group_params.h"
 #include "base/task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -35,7 +35,7 @@ class BrowserMainLoopTest_CreateThreadsInSingleProcess_Test;
 
 namespace base {
 
-class SchedulerWorkerObserver;
+class WorkerThreadObserver;
 class ThreadPoolTestHelpers;
 
 // Interface for a thread pool and static methods to manage the instance used
@@ -52,25 +52,24 @@ class ThreadPoolTestHelpers;
 class BASE_EXPORT ThreadPool : public TaskExecutor {
  public:
   struct BASE_EXPORT InitParams {
-    enum class SharedWorkerPoolEnvironment {
+    enum class CommonThreadPoolEnvironment {
       // Use the default environment (no environment).
       DEFAULT,
 #if defined(OS_WIN)
-      // Place the worker in a COM MTA.
+      // Place the pool's workers in a COM MTA.
       COM_MTA,
 #endif  // defined(OS_WIN)
     };
 
-    InitParams(
-        const SchedulerWorkerPoolParams& background_worker_pool_params_in,
-        const SchedulerWorkerPoolParams& foreground_worker_pool_params_in,
-        SharedWorkerPoolEnvironment shared_worker_pool_environment_in =
-            SharedWorkerPoolEnvironment::DEFAULT);
+    InitParams(const ThreadGroupParams& background_thread_group_params_in,
+               const ThreadGroupParams& foreground_thread_group_params_in,
+               CommonThreadPoolEnvironment common_thread_pool_environment_in =
+                   CommonThreadPoolEnvironment::DEFAULT);
     ~InitParams();
 
-    SchedulerWorkerPoolParams background_worker_pool_params;
-    SchedulerWorkerPoolParams foreground_worker_pool_params;
-    SharedWorkerPoolEnvironment shared_worker_pool_environment;
+    ThreadGroupParams background_thread_group_params;
+    ThreadGroupParams foreground_thread_group_params;
+    CommonThreadPoolEnvironment common_thread_pool_environment;
   };
 
   // A ScopedExecutionFence prevents any new task from being scheduled in
@@ -96,14 +95,14 @@ class BASE_EXPORT ThreadPool : public TaskExecutor {
   // Allows the thread pool to create threads and run tasks following the
   // |init_params| specification.
   //
-  // If specified, |scheduler_worker_observer| will be notified when a worker
+  // If specified, |worker_thread_observer| will be notified when a worker
   // enters and exits its main function. It must not be destroyed before
   // JoinForTesting() has returned (must never be destroyed in production).
   //
   // CHECKs on failure.
   virtual void Start(
       const InitParams& init_params,
-      SchedulerWorkerObserver* scheduler_worker_observer = nullptr) = 0;
+      WorkerThreadObserver* worker_thread_observer = nullptr) = 0;
 
   // Synchronously shuts down the thread pool. Once this is called, only tasks
   // posted with the BLOCK_SHUTDOWN behavior will be run. When this returns:

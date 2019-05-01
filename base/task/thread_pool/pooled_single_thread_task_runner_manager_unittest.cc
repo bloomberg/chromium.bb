@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/task/thread_pool/scheduler_single_thread_task_runner_manager.h"
+#include "base/task/thread_pool/pooled_single_thread_task_runner_manager.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -15,9 +15,9 @@
 #include "base/task/thread_pool/can_run_policy_test.h"
 #include "base/task/thread_pool/delayed_task_manager.h"
 #include "base/task/thread_pool/environment_config.h"
-#include "base/task/thread_pool/scheduler_worker_pool_params.h"
 #include "base/task/thread_pool/task_tracker.h"
 #include "base/task/thread_pool/test_utils.h"
+#include "base/task/thread_pool/thread_group_params.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
 #include "base/test/test_timeouts.h"
@@ -40,16 +40,16 @@ namespace internal {
 
 namespace {
 
-class ThreadPoolSingleThreadTaskRunnerManagerTest : public testing::Test {
+class PooledSingleThreadTaskRunnerManagerTest : public testing::Test {
  protected:
-  ThreadPoolSingleThreadTaskRunnerManagerTest()
+  PooledSingleThreadTaskRunnerManagerTest()
       : service_thread_("ThreadPoolServiceThread") {}
 
   void SetUp() override {
     service_thread_.Start();
     delayed_task_manager_.Start(service_thread_.task_runner());
     single_thread_task_runner_manager_ =
-        std::make_unique<SchedulerSingleThreadTaskRunnerManager>(
+        std::make_unique<PooledSingleThreadTaskRunnerManager>(
             task_tracker_.GetTrackedRef(), &delayed_task_manager_);
     StartSingleThreadTaskRunnerManagerFromSetUp();
   }
@@ -72,11 +72,11 @@ class ThreadPoolSingleThreadTaskRunnerManagerTest : public testing::Test {
   Thread service_thread_;
   TaskTracker task_tracker_ = {"Test"};
   DelayedTaskManager delayed_task_manager_;
-  std::unique_ptr<SchedulerSingleThreadTaskRunnerManager>
+  std::unique_ptr<PooledSingleThreadTaskRunnerManager>
       single_thread_task_runner_manager_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ThreadPoolSingleThreadTaskRunnerManagerTest);
+  DISALLOW_COPY_AND_ASSIGN(PooledSingleThreadTaskRunnerManagerTest);
 };
 
 void CaptureThreadRef(PlatformThreadRef* thread_ref) {
@@ -99,7 +99,7 @@ void ShouldNotRun() {
 
 }  // namespace
 
-TEST_F(ThreadPoolSingleThreadTaskRunnerManagerTest, DifferentThreadsUsed) {
+TEST_F(PooledSingleThreadTaskRunnerManagerTest, DifferentThreadsUsed) {
   scoped_refptr<SingleThreadTaskRunner> task_runner_1 =
       single_thread_task_runner_manager_
           ->CreateSingleThreadTaskRunnerWithTraits(
@@ -125,7 +125,7 @@ TEST_F(ThreadPoolSingleThreadTaskRunnerManagerTest, DifferentThreadsUsed) {
   EXPECT_NE(thread_ref_1, thread_ref_2);
 }
 
-TEST_F(ThreadPoolSingleThreadTaskRunnerManagerTest, SameThreadUsed) {
+TEST_F(PooledSingleThreadTaskRunnerManagerTest, SameThreadUsed) {
   scoped_refptr<SingleThreadTaskRunner> task_runner_1 =
       single_thread_task_runner_manager_
           ->CreateSingleThreadTaskRunnerWithTraits(
@@ -151,8 +151,7 @@ TEST_F(ThreadPoolSingleThreadTaskRunnerManagerTest, SameThreadUsed) {
   EXPECT_EQ(thread_ref_1, thread_ref_2);
 }
 
-TEST_F(ThreadPoolSingleThreadTaskRunnerManagerTest,
-       RunsTasksInCurrentSequence) {
+TEST_F(PooledSingleThreadTaskRunnerManagerTest, RunsTasksInCurrentSequence) {
   scoped_refptr<SingleThreadTaskRunner> task_runner_1 =
       single_thread_task_runner_manager_
           ->CreateSingleThreadTaskRunnerWithTraits(
@@ -190,7 +189,7 @@ TEST_F(ThreadPoolSingleThreadTaskRunnerManagerTest,
   test::ShutdownTaskTracker(&task_tracker_);
 }
 
-TEST_F(ThreadPoolSingleThreadTaskRunnerManagerTest,
+TEST_F(PooledSingleThreadTaskRunnerManagerTest,
        SharedWithBaseSyncPrimitivesDCHECKs) {
   testing::GTEST_FLAG(death_test_style) = "threadsafe";
   EXPECT_DCHECK_DEATH({
@@ -200,7 +199,7 @@ TEST_F(ThreadPoolSingleThreadTaskRunnerManagerTest,
 }
 
 // Regression test for https://crbug.com/829786
-TEST_F(ThreadPoolSingleThreadTaskRunnerManagerTest,
+TEST_F(PooledSingleThreadTaskRunnerManagerTest,
        ContinueOnShutdownDoesNotBlockBlockShutdown) {
   WaitableEvent task_has_started;
   WaitableEvent task_can_continue;
@@ -244,11 +243,11 @@ TEST_F(ThreadPoolSingleThreadTaskRunnerManagerTest,
 
 namespace {
 
-class ThreadPoolSingleThreadTaskRunnerManagerCommonTest
-    : public ThreadPoolSingleThreadTaskRunnerManagerTest,
+class PooledSingleThreadTaskRunnerManagerCommonTest
+    : public PooledSingleThreadTaskRunnerManagerTest,
       public ::testing::WithParamInterface<SingleThreadTaskRunnerThreadMode> {
  public:
-  ThreadPoolSingleThreadTaskRunnerManagerCommonTest() = default;
+  PooledSingleThreadTaskRunnerManagerCommonTest() = default;
 
   scoped_refptr<SingleThreadTaskRunner> CreateTaskRunner(
       TaskTraits traits = TaskTraits()) {
@@ -257,13 +256,12 @@ class ThreadPoolSingleThreadTaskRunnerManagerCommonTest
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ThreadPoolSingleThreadTaskRunnerManagerCommonTest);
+  DISALLOW_COPY_AND_ASSIGN(PooledSingleThreadTaskRunnerManagerCommonTest);
 };
 
 }  // namespace
 
-TEST_P(ThreadPoolSingleThreadTaskRunnerManagerCommonTest,
-       PrioritySetCorrectly) {
+TEST_P(PooledSingleThreadTaskRunnerManagerCommonTest, PrioritySetCorrectly) {
   // Why are events used here instead of the task tracker?
   // Shutting down can cause priorities to get raised. This means we have to use
   // events to determine when a task is run.
@@ -291,14 +289,14 @@ TEST_P(ThreadPoolSingleThreadTaskRunnerManagerCommonTest,
   waitable_event_background.Wait();
   waitable_event_normal.Wait();
 
-  if (CanUseBackgroundPriorityForSchedulerWorker())
+  if (CanUseBackgroundPriorityForWorkerThread())
     EXPECT_EQ(ThreadPriority::BACKGROUND, thread_priority_background);
   else
     EXPECT_EQ(ThreadPriority::NORMAL, thread_priority_background);
   EXPECT_EQ(ThreadPriority::NORMAL, thread_priority_normal);
 }
 
-TEST_P(ThreadPoolSingleThreadTaskRunnerManagerCommonTest, ThreadNamesSet) {
+TEST_P(PooledSingleThreadTaskRunnerManagerCommonTest, ThreadNamesSet) {
   constexpr TaskTraits foo_traits = {TaskPriority::BEST_EFFORT,
                                      TaskShutdownBehavior::BLOCK_SHUTDOWN};
   scoped_refptr<SingleThreadTaskRunner> foo_task_runner =
@@ -340,15 +338,14 @@ TEST_P(ThreadPoolSingleThreadTaskRunnerManagerCommonTest, ThreadNamesSet) {
   }
 }
 
-TEST_P(ThreadPoolSingleThreadTaskRunnerManagerCommonTest,
-       PostTaskAfterShutdown) {
+TEST_P(PooledSingleThreadTaskRunnerManagerCommonTest, PostTaskAfterShutdown) {
   auto task_runner = CreateTaskRunner();
   test::ShutdownTaskTracker(&task_tracker_);
   EXPECT_FALSE(task_runner->PostTask(FROM_HERE, BindOnce(&ShouldNotRun)));
 }
 
 // Verify that a Task runs shortly after its delay expires.
-TEST_P(ThreadPoolSingleThreadTaskRunnerManagerCommonTest, PostDelayedTask) {
+TEST_P(PooledSingleThreadTaskRunnerManagerCommonTest, PostDelayedTask) {
   TimeTicks start_time = TimeTicks::Now();
 
   WaitableEvent task_ran(WaitableEvent::ResetPolicy::AUTOMATIC,
@@ -380,8 +377,7 @@ TEST_P(ThreadPoolSingleThreadTaskRunnerManagerCommonTest, PostDelayedTask) {
 
 // Verify that posting tasks after the single-thread manager is destroyed fails
 // but doesn't crash.
-TEST_P(ThreadPoolSingleThreadTaskRunnerManagerCommonTest,
-       PostTaskAfterDestroy) {
+TEST_P(PooledSingleThreadTaskRunnerManagerCommonTest, PostTaskAfterDestroy) {
   auto task_runner = CreateTaskRunner();
   EXPECT_TRUE(task_runner->PostTask(FROM_HERE, DoNothing()));
   test::ShutdownTaskTracker(&task_tracker_);
@@ -390,14 +386,14 @@ TEST_P(ThreadPoolSingleThreadTaskRunnerManagerCommonTest,
 }
 
 // Verify that tasks only run when allowed by the CanRunPolicy.
-TEST_P(ThreadPoolSingleThreadTaskRunnerManagerCommonTest, CanRunPolicyBasic) {
+TEST_P(PooledSingleThreadTaskRunnerManagerCommonTest, CanRunPolicyBasic) {
   test::TestCanRunPolicyBasic(
       single_thread_task_runner_manager_.get(),
       [this](TaskPriority priority) { return CreateTaskRunner({priority}); },
       &task_tracker_);
 }
 
-TEST_P(ThreadPoolSingleThreadTaskRunnerManagerCommonTest,
+TEST_P(PooledSingleThreadTaskRunnerManagerCommonTest,
        CanRunPolicyUpdatedBeforeRun) {
   test::TestCanRunPolicyChangedBeforeRun(
       single_thread_task_runner_manager_.get(),
@@ -405,7 +401,7 @@ TEST_P(ThreadPoolSingleThreadTaskRunnerManagerCommonTest,
       &task_tracker_);
 }
 
-TEST_P(ThreadPoolSingleThreadTaskRunnerManagerCommonTest, CanRunPolicyLoad) {
+TEST_P(PooledSingleThreadTaskRunnerManagerCommonTest, CanRunPolicyLoad) {
   test::TestCanRunPolicyLoad(
       single_thread_task_runner_manager_.get(),
       [this](TaskPriority priority) { return CreateTaskRunner({priority}); },
@@ -414,7 +410,7 @@ TEST_P(ThreadPoolSingleThreadTaskRunnerManagerCommonTest, CanRunPolicyLoad) {
 
 INSTANTIATE_TEST_SUITE_P(
     AllModes,
-    ThreadPoolSingleThreadTaskRunnerManagerCommonTest,
+    PooledSingleThreadTaskRunnerManagerCommonTest,
     ::testing::Values(SingleThreadTaskRunnerThreadMode::SHARED,
                       SingleThreadTaskRunnerThreadMode::DEDICATED));
 
@@ -423,8 +419,8 @@ namespace {
 class CallJoinFromDifferentThread : public SimpleThread {
  public:
   CallJoinFromDifferentThread(
-      SchedulerSingleThreadTaskRunnerManager* manager_to_join)
-      : SimpleThread("SchedulerSingleThreadTaskRunnerManagerJoinThread"),
+      PooledSingleThreadTaskRunnerManager* manager_to_join)
+      : SimpleThread("PooledSingleThreadTaskRunnerManagerJoinThread"),
         manager_to_join_(manager_to_join) {}
 
   ~CallJoinFromDifferentThread() override = default;
@@ -437,17 +433,17 @@ class CallJoinFromDifferentThread : public SimpleThread {
   void WaitForRunToStart() { run_started_event_.Wait(); }
 
  private:
-  SchedulerSingleThreadTaskRunnerManager* const manager_to_join_;
+  PooledSingleThreadTaskRunnerManager* const manager_to_join_;
   WaitableEvent run_started_event_;
 
   DISALLOW_COPY_AND_ASSIGN(CallJoinFromDifferentThread);
 };
 
-class ThreadPoolSingleThreadTaskRunnerManagerJoinTest
-    : public ThreadPoolSingleThreadTaskRunnerManagerTest {
+class PooledSingleThreadTaskRunnerManagerJoinTest
+    : public PooledSingleThreadTaskRunnerManagerTest {
  public:
-  ThreadPoolSingleThreadTaskRunnerManagerJoinTest() = default;
-  ~ThreadPoolSingleThreadTaskRunnerManagerJoinTest() override = default;
+  PooledSingleThreadTaskRunnerManagerJoinTest() = default;
+  ~PooledSingleThreadTaskRunnerManagerJoinTest() override = default;
 
  protected:
   void TearDownSingleThreadTaskRunnerManager() override {
@@ -456,12 +452,12 @@ class ThreadPoolSingleThreadTaskRunnerManagerJoinTest
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ThreadPoolSingleThreadTaskRunnerManagerJoinTest);
+  DISALLOW_COPY_AND_ASSIGN(PooledSingleThreadTaskRunnerManagerJoinTest);
 };
 
 }  // namespace
 
-TEST_F(ThreadPoolSingleThreadTaskRunnerManagerJoinTest, ConcurrentJoin) {
+TEST_F(PooledSingleThreadTaskRunnerManagerJoinTest, ConcurrentJoin) {
   // Exercises the codepath where the workers are unavailable for unregistration
   // because of a Join call.
   WaitableEvent task_running;
@@ -488,7 +484,7 @@ TEST_F(ThreadPoolSingleThreadTaskRunnerManagerJoinTest, ConcurrentJoin) {
   join_from_different_thread.Join();
 }
 
-TEST_F(ThreadPoolSingleThreadTaskRunnerManagerJoinTest,
+TEST_F(PooledSingleThreadTaskRunnerManagerJoinTest,
        ConcurrentJoinExtraSkippedTask) {
   // Tests to make sure that tasks are properly cleaned up at Join, allowing
   // SingleThreadTaskRunners to unregister themselves.
@@ -519,7 +515,7 @@ TEST_F(ThreadPoolSingleThreadTaskRunnerManagerJoinTest,
 
 #if defined(OS_WIN)
 
-TEST_P(ThreadPoolSingleThreadTaskRunnerManagerCommonTest, COMSTAInitialized) {
+TEST_P(PooledSingleThreadTaskRunnerManagerCommonTest, COMSTAInitialized) {
   scoped_refptr<SingleThreadTaskRunner> com_task_runner =
       single_thread_task_runner_manager_->CreateCOMSTATaskRunnerWithTraits(
           {TaskShutdownBehavior::BLOCK_SHUTDOWN}, GetParam());
@@ -530,7 +526,7 @@ TEST_P(ThreadPoolSingleThreadTaskRunnerManagerCommonTest, COMSTAInitialized) {
   test::ShutdownTaskTracker(&task_tracker_);
 }
 
-TEST_F(ThreadPoolSingleThreadTaskRunnerManagerTest, COMSTASameThreadUsed) {
+TEST_F(PooledSingleThreadTaskRunnerManagerTest, COMSTASameThreadUsed) {
   scoped_refptr<SingleThreadTaskRunner> task_runner_1 =
       single_thread_task_runner_manager_->CreateCOMSTATaskRunnerWithTraits(
           {TaskShutdownBehavior::BLOCK_SHUTDOWN},
@@ -557,15 +553,15 @@ TEST_F(ThreadPoolSingleThreadTaskRunnerManagerTest, COMSTASameThreadUsed) {
 namespace {
 
 const wchar_t* const kTestWindowClassName =
-    L"ThreadPoolSingleThreadTaskRunnerManagerTestWinMessageWindow";
+    L"PooledSingleThreadTaskRunnerManagerTestWinMessageWindow";
 
-class ThreadPoolSingleThreadTaskRunnerManagerTestWin
-    : public ThreadPoolSingleThreadTaskRunnerManagerTest {
+class PooledSingleThreadTaskRunnerManagerTestWin
+    : public PooledSingleThreadTaskRunnerManagerTest {
  public:
-  ThreadPoolSingleThreadTaskRunnerManagerTestWin() = default;
+  PooledSingleThreadTaskRunnerManagerTestWin() = default;
 
   void SetUp() override {
-    ThreadPoolSingleThreadTaskRunnerManagerTest::SetUp();
+    PooledSingleThreadTaskRunnerManagerTest::SetUp();
     register_class_succeeded_ = RegisterTestWindowClass();
     ASSERT_TRUE(register_class_succeeded_);
   }
@@ -574,7 +570,7 @@ class ThreadPoolSingleThreadTaskRunnerManagerTestWin
     if (register_class_succeeded_)
       ::UnregisterClass(kTestWindowClassName, CURRENT_MODULE());
 
-    ThreadPoolSingleThreadTaskRunnerManagerTest::TearDown();
+    PooledSingleThreadTaskRunnerManagerTest::TearDown();
   }
 
   HWND CreateTestWindow() {
@@ -594,12 +590,12 @@ class ThreadPoolSingleThreadTaskRunnerManagerTestWin
 
   bool register_class_succeeded_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(ThreadPoolSingleThreadTaskRunnerManagerTestWin);
+  DISALLOW_COPY_AND_ASSIGN(PooledSingleThreadTaskRunnerManagerTestWin);
 };
 
 }  // namespace
 
-TEST_F(ThreadPoolSingleThreadTaskRunnerManagerTestWin, PumpsMessages) {
+TEST_F(PooledSingleThreadTaskRunnerManagerTestWin, PumpsMessages) {
   scoped_refptr<SingleThreadTaskRunner> com_task_runner =
       single_thread_task_runner_manager_->CreateCOMSTATaskRunnerWithTraits(
           {TaskShutdownBehavior::BLOCK_SHUTDOWN},
@@ -610,7 +606,7 @@ TEST_F(ThreadPoolSingleThreadTaskRunnerManagerTestWin, PumpsMessages) {
   // COM callback.
   com_task_runner->PostTask(
       FROM_HERE,
-      BindOnce([](ThreadPoolSingleThreadTaskRunnerManagerTestWin* test_harness,
+      BindOnce([](PooledSingleThreadTaskRunnerManagerTestWin* test_harness,
                   HWND* hwnd) { *hwnd = test_harness->CreateTestWindow(); },
                Unretained(this), &hwnd));
 
@@ -631,23 +627,23 @@ TEST_F(ThreadPoolSingleThreadTaskRunnerManagerTestWin, PumpsMessages) {
 
 namespace {
 
-class ThreadPoolSingleThreadTaskRunnerManagerStartTest
-    : public ThreadPoolSingleThreadTaskRunnerManagerTest {
+class PooledSingleThreadTaskRunnerManagerStartTest
+    : public PooledSingleThreadTaskRunnerManagerTest {
  public:
-  ThreadPoolSingleThreadTaskRunnerManagerStartTest() = default;
+  PooledSingleThreadTaskRunnerManagerStartTest() = default;
 
  private:
   void StartSingleThreadTaskRunnerManagerFromSetUp() override {
     // Start() is called in the test body rather than in SetUp().
   }
 
-  DISALLOW_COPY_AND_ASSIGN(ThreadPoolSingleThreadTaskRunnerManagerStartTest);
+  DISALLOW_COPY_AND_ASSIGN(PooledSingleThreadTaskRunnerManagerStartTest);
 };
 
 }  // namespace
 
 // Verify that a task posted before Start() doesn't run until Start() is called.
-TEST_F(ThreadPoolSingleThreadTaskRunnerManagerStartTest, PostTaskBeforeStart) {
+TEST_F(PooledSingleThreadTaskRunnerManagerStartTest, PostTaskBeforeStart) {
   AtomicFlag manager_started;
   WaitableEvent task_finished;
   single_thread_task_runner_manager_
