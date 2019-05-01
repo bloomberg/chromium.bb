@@ -32,6 +32,8 @@ import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionView;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewViewBinder;
 import org.chromium.chrome.browser.omnibox.suggestions.editurl.EditUrlSuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.editurl.EditUrlSuggestionViewBinder;
+import org.chromium.chrome.browser.omnibox.suggestions.entity.EntitySuggestionView;
+import org.chromium.chrome.browser.omnibox.suggestions.entity.EntitySuggestionViewBinder;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.util.KeyNavigationUtil;
@@ -210,6 +212,12 @@ public class AutocompleteCoordinator implements UrlFocusChangeListener, UrlTextC
                         () -> (AnswerSuggestionView) LayoutInflater.from(mListView.getContext())
                                 .inflate(R.layout.omnibox_answer_suggestion, null),
                         AnswerSuggestionViewBinder::bind);
+
+                adapter.registerType(
+                        OmniboxSuggestionUiType.ENTITY_SUGGESTION,
+                        () -> (EntitySuggestionView) LayoutInflater.from(mListView.getContext())
+                                .inflate(R.layout.omnibox_entity_suggestion, null),
+                        EntitySuggestionViewBinder::bind);
                 // clang-format on
 
                 mHolder = new SuggestionListViewHolder(container, list, adapter);

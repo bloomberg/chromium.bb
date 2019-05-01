@@ -37,6 +37,7 @@ import org.chromium.chrome.browser.omnibox.suggestions.basic.BasicSuggestionProc
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionHost;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewDelegate;
 import org.chromium.chrome.browser.omnibox.suggestions.editurl.EditUrlSuggestionProcessor;
+import org.chromium.chrome.browser.omnibox.suggestions.entity.EntitySuggestionProcessor;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.components.omnibox.AnswerType;
@@ -93,7 +94,8 @@ class AutocompleteMediator
     private final Handler mHandler;
     private final BasicSuggestionProcessor mBasicSuggestionProcessor;
     private EditUrlSuggestionProcessor mEditUrlProcessor;
-    private final AnswerSuggestionProcessor mAnswerSuggestionProcessor;
+    private AnswerSuggestionProcessor mAnswerSuggestionProcessor;
+    private final EntitySuggestionProcessor mEntitySuggestionProcessor;
 
     private ToolbarDataProvider mDataProvider;
     private boolean mNativeInitialized;
@@ -155,6 +157,7 @@ class AutocompleteMediator
         mAnswerSuggestionProcessor = new AnswerSuggestionProcessor(mContext, this, textProvider);
         mEditUrlProcessor = new EditUrlSuggestionProcessor(
                 delegate, (suggestion) -> onSelection(suggestion, 0));
+        mEntitySuggestionProcessor = new EntitySuggestionProcessor(mContext, this);
     }
 
     @Override
@@ -317,6 +320,7 @@ class AutocompleteMediator
         mDeferredNativeRunnables.clear();
         mAnswerSuggestionProcessor.onNativeInitialized();
         mBasicSuggestionProcessor.onNativeInitialized();
+        mEntitySuggestionProcessor.onNativeInitialized();
         if (mEditUrlProcessor != null) mEditUrlProcessor.onNativeInitialized();
     }
 
@@ -355,6 +359,7 @@ class AutocompleteMediator
         if (mEditUrlProcessor != null) mEditUrlProcessor.onUrlFocusChange(hasFocus);
         mAnswerSuggestionProcessor.onUrlFocusChange(hasFocus);
         mBasicSuggestionProcessor.onUrlFocusChange(hasFocus);
+        mEntitySuggestionProcessor.onUrlFocusChange(hasFocus);
     }
 
     /**
@@ -705,6 +710,8 @@ class AutocompleteMediator
     private SuggestionProcessor getProcessorForSuggestion(OmniboxSuggestion suggestion) {
         if (mAnswerSuggestionProcessor.doesProcessSuggestion(suggestion)) {
             return mAnswerSuggestionProcessor;
+        } else if (mEntitySuggestionProcessor.doesProcessSuggestion(suggestion)) {
+            return mEntitySuggestionProcessor;
         } else if (mEditUrlProcessor != null
                 && mEditUrlProcessor.doesProcessSuggestion(suggestion)) {
             return mEditUrlProcessor;
