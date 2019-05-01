@@ -249,11 +249,12 @@ public class HttpNegotiateAuthenticator {
      */
     private void processResult(Bundle result, RequestData requestData) {
         mSpnegoContext = result.getBundle(HttpNegotiateConstants.KEY_SPNEGO_CONTEXT);
+        @NetError
         int status;
         switch (result.getInt(
                 HttpNegotiateConstants.KEY_SPNEGO_RESULT, HttpNegotiateConstants.ERR_UNEXPECTED)) {
             case HttpNegotiateConstants.OK:
-                status = 0;
+                status = NetError.OK;
                 break;
             case HttpNegotiateConstants.ERR_UNEXPECTED:
                 status = NetError.ERR_UNEXPECTED;

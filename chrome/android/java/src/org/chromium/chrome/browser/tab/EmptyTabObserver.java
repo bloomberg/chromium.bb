@@ -14,6 +14,7 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.BrowserControlsState;
+import org.chromium.net.NetError;
 
 /**
  * An implementation of the {@link TabObserver} which has empty implementations of all methods.
@@ -50,7 +51,7 @@ public class EmptyTabObserver implements TabObserver {
     public void onPageLoadFinished(Tab tab, String url) {}
 
     @Override
-    public void onPageLoadFailed(Tab tab, int errorCode) { }
+    public void onPageLoadFailed(Tab tab, @NetError int errorCode) {}
 
     @Override
     public void onRestoreStarted(Tab tab) {}

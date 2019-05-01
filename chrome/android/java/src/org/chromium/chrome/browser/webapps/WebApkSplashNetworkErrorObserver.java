@@ -21,9 +21,6 @@ import org.chromium.net.NetworkChangeNotifier;
  * start URL.
  */
 public class WebApkSplashNetworkErrorObserver extends EmptyTabObserver {
-    // No error.
-    public static final int ERROR_OK = 0;
-
     private Activity mActivity;
     private WebApkOfflineDialog mOfflineDialog;
     private String mWebApkName;
@@ -47,7 +44,7 @@ public class WebApkSplashNetworkErrorObserver extends EmptyTabObserver {
         if (!navigation.isInMainFrame()) return;
 
         switch (navigation.errorCode()) {
-            case ERROR_OK:
+            case NetError.OK:
                 if (mOfflineDialog != null) {
                     mOfflineDialog.cancel();
                     mOfflineDialog = null;
@@ -74,7 +71,7 @@ public class WebApkSplashNetworkErrorObserver extends EmptyTabObserver {
         mAllowReloads = false;
     }
 
-    private void onNetworkError(final Tab tab, int errorCode) {
+    private void onNetworkError(final Tab tab, @NetError int errorCode) {
         // Do not show the network error dialog more than once (e.g. if the user backed out of
         // the dialog).
         if (mDidShowNetworkErrorDialog) return;
@@ -100,7 +97,7 @@ public class WebApkSplashNetworkErrorObserver extends EmptyTabObserver {
     }
 
     /** Generates network error dialog message for the given error code. */
-    private String generateNetworkErrorWebApkDialogMessage(int errorCode) {
+    private String generateNetworkErrorWebApkDialogMessage(@NetError int errorCode) {
         Context context = ContextUtils.getApplicationContext();
         switch (errorCode) {
             case NetError.ERR_INTERNET_DISCONNECTED:

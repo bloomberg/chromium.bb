@@ -22,7 +22,7 @@ std::string ExtendedErrorToString(int error, int extended_error_code) {
 }
 
 std::string ErrorToShortString(int error) {
-  if (error == 0)
+  if (error == OK)
     return "OK";
 
   const char* error_string;

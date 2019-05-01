@@ -280,7 +280,7 @@ public class AwContentsClientBridge {
             String url, boolean isMainFrame, boolean hasUserGesture, boolean isRendererInitiated,
             String method, String[] requestHeaderNames, String[] requestHeaderValues,
             // WebResourceError
-            int errorCode, String description, boolean safebrowsingHit) {
+            @NetError int errorCode, String description, boolean safebrowsingHit) {
         AwContentsClient.AwWebResourceRequest request = new AwContentsClient.AwWebResourceRequest(
                 url, isMainFrame, hasUserGesture, method, requestHeaderNames, requestHeaderValues);
         AwContentsClient.AwWebResourceError error = new AwContentsClient.AwWebResourceError();

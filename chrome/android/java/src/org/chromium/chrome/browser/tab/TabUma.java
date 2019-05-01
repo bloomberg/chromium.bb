@@ -148,8 +148,8 @@ public class TabUma extends EmptyTabObserver implements UserData {
      * @param perceivedTime The perceived time taken to perform the tab restore.
      * @param errorCode The error code, on failure (as denoted by the |succeeded| parameter).
      */
-    private void recordTabRestoreResult(boolean succeeded, long time, long perceivedTime,
-            int errorCode) {
+    private void recordTabRestoreResult(
+            boolean succeeded, long time, long perceivedTime, @NetError int errorCode) {
         if (succeeded) {
             RecordHistogram.recordEnumeratedHistogram(
                     "Tab.RestoreResult", TAB_RESTORE_RESULT_SUCCESS, TAB_RESTORE_RESULT_COUNT);
