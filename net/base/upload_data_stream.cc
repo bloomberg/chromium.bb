@@ -19,20 +19,20 @@ base::Value NetLogInitEndInfoCallback(int result,
                                       int total_size,
                                       bool is_chunked,
                                       NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue dict;
+  base::Value dict(base::Value::Type::DICTIONARY);
 
-  dict.SetInteger("net_error", result);
-  dict.SetInteger("total_size", total_size);
-  dict.SetBoolean("is_chunked", is_chunked);
-  return std::move(dict);
+  dict.SetIntKey("net_error", result);
+  dict.SetIntKey("total_size", total_size);
+  dict.SetBoolKey("is_chunked", is_chunked);
+  return dict;
 }
 
 base::Value NetLogReadInfoCallback(int current_position,
                                    NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue dict;
+  base::Value dict(base::Value::Type::DICTIONARY);
 
-  dict.SetInteger("current_position", current_position);
-  return std::move(dict);
+  dict.SetIntKey("current_position", current_position);
+  return dict;
 }
 
 }  // namespace

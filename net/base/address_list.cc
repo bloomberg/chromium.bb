@@ -19,16 +19,15 @@ namespace {
 
 base::Value NetLogAddressListCallback(const AddressList* address_list,
                                       NetLogCaptureMode capture_mode) {
-  base::DictionaryValue dict;
-  base::ListValue list;
+  base::Value dict(base::Value::Type::DICTIONARY);
+  base::Value list(base::Value::Type::LIST);
 
-  for (auto it = address_list->begin(); it != address_list->end(); ++it) {
-    list.AppendString(it->ToString());
-  }
+  for (const auto& ip_endpoint : *address_list)
+    list.GetList().emplace_back(ip_endpoint.ToString());
 
   dict.SetKey("address_list", std::move(list));
-  dict.SetString("canonical_name", address_list->canonical_name());
-  return std::move(dict);
+  dict.SetStringKey("canonical_name", address_list->canonical_name());
+  return dict;
 }
 
 }  // namespace

@@ -41,25 +41,25 @@ int HumanReadableNetworkHandle(NetworkChangeNotifier::NetworkHandle network) {
 base::Value NetworkSpecificNetLogCallback(
     NetworkChangeNotifier::NetworkHandle network,
     NetLogCaptureMode capture_mode) {
-  base::DictionaryValue dict;
-  dict.SetInteger("changed_network_handle",
-                  HumanReadableNetworkHandle(network));
-  dict.SetString("changed_network_type",
-                 NetworkChangeNotifier::ConnectionTypeToString(
-                     NetworkChangeNotifier::GetNetworkConnectionType(network)));
-  dict.SetInteger(
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetIntKey("changed_network_handle", HumanReadableNetworkHandle(network));
+  dict.SetStringKey(
+      "changed_network_type",
+      NetworkChangeNotifier::ConnectionTypeToString(
+          NetworkChangeNotifier::GetNetworkConnectionType(network)));
+  dict.SetIntKey(
       "default_active_network_handle",
       HumanReadableNetworkHandle(NetworkChangeNotifier::GetDefaultNetwork()));
   NetworkChangeNotifier::NetworkList networks;
   NetworkChangeNotifier::GetConnectedNetworks(&networks);
   for (NetworkChangeNotifier::NetworkHandle active_network : networks) {
-    dict.SetString(
+    dict.SetStringKey(
         "current_active_networks." +
             base::NumberToString(HumanReadableNetworkHandle(active_network)),
         NetworkChangeNotifier::ConnectionTypeToString(
             NetworkChangeNotifier::GetNetworkConnectionType(active_network)));
   }
-  return std::move(dict);
+  return dict;
 }
 
 }  // namespace
