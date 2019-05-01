@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_KEYBOARD_KEYBOARD_EVENT_FILTER_H_
-#define UI_KEYBOARD_KEYBOARD_EVENT_FILTER_H_
+#ifndef UI_KEYBOARD_KEYBOARD_EVENT_HANDLER_H_
+#define UI_KEYBOARD_KEYBOARD_EVENT_HANDLER_H_
 
 #include "base/macros.h"
 #include "ui/events/event.h"
@@ -12,12 +12,12 @@
 
 namespace keyboard {
 
-// EventFilter for the keyboard window, which intercepts events before they are
+// EventHandler for the keyboard window, which intercepts events before they are
 // processed by the keyboard window.
-class KEYBOARD_EXPORT KeyboardEventFilter : public ui::EventHandler {
+class KEYBOARD_EXPORT KeyboardEventHandler : public ui::EventHandler {
  public:
-  KeyboardEventFilter() = default;
-  ~KeyboardEventFilter() override = default;
+  KeyboardEventHandler() = default;
+  ~KeyboardEventHandler() override = default;
 
   // ui::EventHandler overrides:
   void OnGestureEvent(ui::GestureEvent* event) override;
@@ -27,9 +27,9 @@ class KEYBOARD_EXPORT KeyboardEventFilter : public ui::EventHandler {
  private:
   void ProcessPointerEvent(ui::LocatedEvent* event);
 
-  DISALLOW_COPY_AND_ASSIGN(KeyboardEventFilter);
+  DISALLOW_COPY_AND_ASSIGN(KeyboardEventHandler);
 };
 
 }  // namespace keyboard
 
-#endif  // UI_KEYBOARD_KEYBOARD_EVENT_FILTER_H_
+#endif  // UI_KEYBOARD_KEYBOARD_EVENT_HANDLER_H_

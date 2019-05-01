@@ -356,7 +356,7 @@ void KeyboardController::DeactivateKeyboard() {
 
   aura::Window* keyboard_window = GetKeyboardWindow();
   if (keyboard_window) {
-    keyboard_window->RemovePreTargetHandler(&event_filter_);
+    keyboard_window->RemovePreTargetHandler(&event_handler_);
     if (keyboard_window->parent()) {
       DCHECK_EQ(parent_container_, keyboard_window->parent());
       parent_container_->RemoveChild(keyboard_window);
@@ -773,7 +773,7 @@ void KeyboardController::LoadKeyboardWindowInBackground() {
   DVLOG(1) << "LoadKeyboardWindow";
   aura::Window* keyboard_window = ui_->LoadKeyboardWindow(base::BindOnce(
       &KeyboardController::NotifyKeyboardWindowLoaded, base::Unretained(this)));
-  keyboard_window->AddPreTargetHandler(&event_filter_);
+  keyboard_window->AddPreTargetHandler(&event_handler_);
   keyboard_window->AddObserver(this);
   parent_container_->AddChild(keyboard_window);
 

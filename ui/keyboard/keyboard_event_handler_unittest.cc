@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/keyboard/keyboard_event_filter.h"
+#include "ui/keyboard/keyboard_event_handler.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
 
 namespace keyboard {
 
-TEST(KeyboardEventFilterTest, FilterGestureEvents) {
-  KeyboardEventFilter filter;
+TEST(KeyboardEventHandlerTest, HandleGestureEvents) {
+  KeyboardEventHandler filter;
   ui::GestureEvent pinch_begin(
       15, 15, 0, base::TimeTicks(),
       ui::GestureEventDetails(ui::ET_GESTURE_PINCH_BEGIN));
@@ -33,4 +33,4 @@ TEST(KeyboardEventFilterTest, FilterGestureEvents) {
   EXPECT_FALSE(tap.stopped_propagation());
 }
 
-}  // namespace keybaord
+}  // namespace keyboard

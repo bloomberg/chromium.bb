@@ -22,7 +22,7 @@
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/keyboard/container_behavior.h"
 #include "ui/keyboard/display_util.h"
-#include "ui/keyboard/keyboard_event_filter.h"
+#include "ui/keyboard/keyboard_event_handler.h"
 #include "ui/keyboard/keyboard_export.h"
 #include "ui/keyboard/keyboard_layout_delegate.h"
 #include "ui/keyboard/keyboard_ukm_recorder.h"
@@ -439,7 +439,7 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
 
   // If true, the keyboard is always visible even if no window has input focus.
   bool keyboard_locked_ = false;
-  KeyboardEventFilter event_filter_;
+  KeyboardEventHandler event_handler_;
 
   base::ObserverList<KeyboardControllerObserver>::Unchecked observer_list_;
 

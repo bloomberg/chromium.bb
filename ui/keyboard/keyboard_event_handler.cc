@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/keyboard/keyboard_event_filter.h"
+#include "ui/keyboard/keyboard_event_handler.h"
 
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -10,7 +10,7 @@
 
 namespace keyboard {
 
-void KeyboardEventFilter::OnGestureEvent(ui::GestureEvent* event) {
+void KeyboardEventHandler::OnGestureEvent(ui::GestureEvent* event) {
   switch (event->type()) {
     case ui::ET_GESTURE_PINCH_BEGIN:
     case ui::ET_GESTURE_PINCH_END:
@@ -22,18 +22,18 @@ void KeyboardEventFilter::OnGestureEvent(ui::GestureEvent* event) {
   }
 }
 
-void KeyboardEventFilter::OnMouseEvent(ui::MouseEvent* event) {
+void KeyboardEventHandler::OnMouseEvent(ui::MouseEvent* event) {
   ProcessPointerEvent(event);
 }
 
-void KeyboardEventFilter::OnTouchEvent(ui::TouchEvent* event) {
+void KeyboardEventHandler::OnTouchEvent(ui::TouchEvent* event) {
   ProcessPointerEvent(event);
 }
 
-void KeyboardEventFilter::ProcessPointerEvent(ui::LocatedEvent* event) {
+void KeyboardEventHandler::ProcessPointerEvent(ui::LocatedEvent* event) {
   auto* controller = KeyboardController::Get();
   if (controller->IsEnabled() && controller->HandlePointerEvent(*event))
     event->SetHandled();
 }
 
-}  // nemespace keyboard
+}  // namespace keyboard
