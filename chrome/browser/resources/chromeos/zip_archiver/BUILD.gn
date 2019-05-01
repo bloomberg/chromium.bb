@@ -96,8 +96,4 @@ static_library("char_coding") {
     "cpp/char_coding.cc",
     "cpp/char_coding.h",
   ]
-
-  deps = [
-    "//base",
-  ]
 }
