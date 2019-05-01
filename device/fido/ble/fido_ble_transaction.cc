@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/fido/ble/fido_ble_connection.h"
@@ -50,6 +51,8 @@ void FidoBleTransaction::WriteRequestFragment(
   fragment.Serialize(&buffer_);
   DCHECK(!has_pending_request_fragment_write_);
   has_pending_request_fragment_write_ = true;
+  FIDO_LOG(DEBUG) << "Writing request fragment: " +
+                         base::HexEncode(buffer_.data(), buffer_.size());
   // A weak pointer is required, since this call might time out. If that
   // happens, the current FidoBleTransaction could be destroyed.
   connection_->WriteControlPoint(
@@ -61,6 +64,7 @@ void FidoBleTransaction::WriteRequestFragment(
 }
 
 static void WriteCancel(FidoBleConnection* connection) {
+  FIDO_LOG(DEBUG) << "Writing control point 'Cancel'";
   connection->WriteControlPoint(
       {static_cast<uint8_t>(FidoBleDeviceCommand::kCancel), 0, 0},
       base::DoNothing());

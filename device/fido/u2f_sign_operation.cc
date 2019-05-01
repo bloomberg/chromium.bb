@@ -7,8 +7,10 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/apdu/apdu_response.h"
+#include "components/device_event_log/device_event_log.h"
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/ctap_get_assertion_request.h"
 #include "device/fido/device_response_converter.h"
@@ -90,6 +92,11 @@ void U2fSignOperation::OnSignResponseReceived(
             .Run(CtapDeviceResponseCode::kCtap2ErrOther, base::nullopt);
         return;
       }
+
+      FIDO_LOG(DEBUG)
+          << "Received successful U2F sign response from authenticator: "
+          << base::HexEncode(apdu_response->data().data(),
+                             apdu_response->data().size());
       std::move(callback())
           .Run(CtapDeviceResponseCode::kSuccess, std::move(sign_response));
       break;

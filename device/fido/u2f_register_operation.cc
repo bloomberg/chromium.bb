@@ -8,8 +8,10 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/apdu/apdu_response.h"
+#include "components/device_event_log/device_event_log.h"
 #include "device/fido/authenticator_make_credential_response.h"
 #include "device/fido/ctap_make_credential_request.h"
 #include "device/fido/device_response_converter.h"
@@ -138,6 +140,10 @@ void U2fRegisterOperation::OnRegisterResponseReceived(
 
   switch (result) {
     case apdu::ApduResponse::Status::SW_NO_ERROR: {
+      FIDO_LOG(DEBUG)
+          << "Received successful U2F register response from authenticator: "
+          << base::HexEncode(apdu_response->data().data(),
+                             apdu_response->data().size());
       auto response =
           AuthenticatorMakeCredentialResponse::CreateFromU2fRegisterResponse(
               device()->DeviceTransport(),
