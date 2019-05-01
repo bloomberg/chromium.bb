@@ -14,6 +14,7 @@ import os
 
 from chromite.api.controller import controller_util
 from chromite.cbuildbot import commands
+from chromite.api.gen.chromite.api import test_pb2
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import failures_lib
@@ -121,3 +122,42 @@ def ChromiteUnitTest(_input_proto, _output_proto):
   cmd = [os.path.join(constants.CHROMITE_DIR, 'scripts', 'run_tests')]
   result = cros_build_lib.RunCommand(cmd, error_code_ok=True)
   return result.returncode
+
+
+def VmTest(input_proto, _output_proto):
+  """Run VM tests."""
+  if not input_proto.HasField('build_target'):
+    cros_build_lib.Die('build_target is required')
+  build_target = input_proto.build_target
+
+  if not input_proto.HasField('vm_image'):
+    cros_build_lib.Die('vm_image is required')
+  vm_image = input_proto.vm_image
+
+  test_harness = input_proto.test_harness
+  if test_harness == test_pb2.VmTestRequest.UNSPECIFIED:
+    cros_build_lib.Die('test_harness is required')
+
+  vm_tests = input_proto.vm_tests
+  if not vm_tests:
+    cros_build_lib.Die('vm_tests must contain at least one element')
+
+  cmd = ['cros_run_vm_test', '--debug', '--no-display', '--copy-on-write',
+         '--board', build_target.name, '--image-path', vm_image.path,
+         '--%s' % test_pb2.VmTestRequest.TestHarness.Name(test_harness).lower()]
+  cmd.extend(vm_test.pattern for vm_test in vm_tests)
+
+  if input_proto.ssh_options.port:
+    cmd.extend(['--ssh-port', str(input_proto.ssh_options.port)])
+
+  if input_proto.ssh_options.private_key_path:
+    cmd.extend(['--private-key', input_proto.ssh_options.private_key_path])
+
+  # TODO(evanhernandez): Find a nice way to pass test_that-args through
+  # the build API. Or obviate them.
+  if test_harness == test_pb2.VmTestRequest.AUTOTEST:
+    cmd.append('--test_that-args=--whitelist-chrome-crashes')
+
+  with osutils.TempDir(prefix='vm-test-results.') as results_dir:
+    cmd.extend(['--results-dir', results_dir])
+    return cros_build_lib.RunCommand(cmd, kill_timeout=10 * 60).returncode
