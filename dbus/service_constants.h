@@ -288,33 +288,6 @@ const char kModemManager1SmsInterface[] =
 const char kSMSAddedSignal[] = "Added";
 }  // namespace modemmanager
 
-namespace wimax_manager {
-// WiMaxManager D-Bus service identifiers
-const char kWiMaxManagerServiceName[] = "org.chromium.WiMaxManager";
-const char kWiMaxManagerServicePath[] = "/org/chromium/WiMaxManager";
-const char kWiMaxManagerServiceError[] = "org.chromium.WiMaxManager.Error";
-const char kWiMaxManagerInterface[] = "org.chromium.WiMaxManager";
-const char kWiMaxManagerDeviceInterface[] = "org.chromium.WiMaxManager.Device";
-const char kWiMaxManagerNetworkInterface[] =
-    "org.chromium.WiMaxManager.Network";
-const char kDeviceObjectPathPrefix[] = "/org/chromium/WiMaxManager/Device/";
-const char kNetworkObjectPathPrefix[] = "/org/chromium/WiMaxManager/Network/";
-const char kDevicesProperty[] = "Devices";
-const char kNetworksProperty[] = "Networks";
-const char kEAPAnonymousIdentity[] = "EAPAnonymousIdentity";
-const char kEAPUserIdentity[] = "EAPUserIdentity";
-const char kEAPUserPassword[] = "EAPUserPassword";
-
-enum DeviceStatus {
-  kDeviceStatusUninitialized,
-  kDeviceStatusDisabled,
-  kDeviceStatusReady,
-  kDeviceStatusScanning,
-  kDeviceStatusConnecting,
-  kDeviceStatusConnected
-};
-}  // namespace wimax_manager
-
 namespace bluetooth_plugin {
 // Service identifiers for the plugin interface added to the /org/bluez object.
 const char kBluetoothPluginServiceName[] = "org.bluez";
