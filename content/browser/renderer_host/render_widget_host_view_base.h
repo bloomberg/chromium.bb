@@ -590,12 +590,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   void OnChildFrameDestroyed(int routing_id);
 #endif
 
-#if defined(OS_MACOSX)
-  // Use only for resize on macOS. Returns true if there is not currently a
-  // frame of the view's size being displayed.
-  virtual bool ShouldContinueToPauseForFrame();
-#endif
-
   virtual void DidNavigate();
 
   // Called when the RenderWidgetHostImpl has be initialized.

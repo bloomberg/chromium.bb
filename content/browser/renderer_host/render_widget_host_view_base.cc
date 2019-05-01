@@ -908,12 +908,6 @@ RenderWidgetHostViewBase::GetWindowTreeClientFromRenderer() {
 
 #endif
 
-#if defined(OS_MACOSX)
-bool RenderWidgetHostViewBase::ShouldContinueToPauseForFrame() {
-  return false;
-}
-#endif
-
 void RenderWidgetHostViewBase::DidNavigate() {
   if (host())
     host()->SynchronizeVisualProperties();
