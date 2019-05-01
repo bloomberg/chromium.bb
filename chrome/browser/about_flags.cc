@@ -3093,6 +3093,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillProfileServerValidationDescription, kOsAll,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillProfileServerValidation)},
 
+    {"autofill-reject-company-birthyear",
+     flag_descriptions::kAutofillRejectCompanyBirthyearName,
+     flag_descriptions::kAutofillRejectCompanyBirthyearDescription, kOsAll,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillRejectCompanyBirthyear)},
+
     {"autofill-restrict-formless-form-extraction",
      flag_descriptions::kAutofillRestrictUnownedFieldsToFormlessCheckoutName,
      flag_descriptions::

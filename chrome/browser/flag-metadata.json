@@ -252,6 +252,11 @@
     "expiry_milestone": 77
   },
   {
+    "name": "autofill-reject-company-birthyear",
+    "owners": [ "parastoog" ],
+    "expiry_milestone": 79
+  },
+  {
     "name": "autofill-restrict-formless-form-extraction",
     "owners": [ "rogerm" ],
     "expiry_milestone": 76

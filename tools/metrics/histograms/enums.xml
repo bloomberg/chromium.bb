@@ -32189,6 +32189,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-2142665444" label="ScrollableTabStrip:disabled"/>
   <int value="-2141661938" label="AnimatedAppMenuIcon:enabled"/>
   <int value="-2141247271" label="AndroidOmniboxPreviewsBadge:enabled"/>
+  <int value="-2138883960" label="AutofillRejectCompanyBirthyearName:disabled"/>
   <int value="-2134333982" label="ShowArcFilesApp:enabled"/>
   <int value="-2134244069" label="HttpFormWarning:enabled"/>
   <int value="-2133892372" label="ResamplingInputEvents:disabled"/>
@@ -32974,6 +32975,7 @@ from previous Chrome versions.
   <int value="-1015006759" label="ImportantSitesInCBD:disabled"/>
   <int value="-1014936248" label="SyncUSSBookmarks:enabled"/>
   <int value="-1014649471" label="committed-interstitials"/>
+  <int value="-1011390415" label="AutofillRejectCompanyBirthyear:enabled"/>
   <int value="-1010588306" label="SlideTopChromeWithPageScrolls:disabled"/>
   <int value="-1008511612" label="EnableCustomMacPaperSizes:disabled"/>
   <int value="-1001837588" label="EnableAppReinstallZeroState:enabled"/>
@@ -33072,6 +33074,7 @@ from previous Chrome versions.
   <int value="-847216521" label="ChromeDuplex:enabled"/>
   <int value="-844537521" label="HttpFormWarning:disabled"/>
   <int value="-844381918" label="ArcNativeBridgeExperiment:disabled"/>
+  <int value="-843496368" label="AutofillRejectCompanyBirthyear:disabled"/>
   <int value="-842438090" label="enable-md-feedback"/>
   <int value="-839664591" label="enable-web-authentication-testing-api"/>
   <int value="-836123854" label="wallet-service-use-sandbox"/>
@@ -33393,6 +33396,7 @@ from previous Chrome versions.
   <int value="-334873793" label="MediaSessionNotification:enabled"/>
   <int value="-329727402" label="disable-files-quick-view"/>
   <int value="-328361990" label="enable-experimental-extension-apis"/>
+  <int value="-327272022" label="AutofillRejectCompanyBirthyearName:enabled"/>
   <int value="-326083626" label="AppBanners:disabled"/>
   <int value="-323964300" label="ArcVpn:enabled"/>
   <int value="-323831744" label="token-binding:enabled"/>

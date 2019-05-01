@@ -153,6 +153,12 @@ const char kAutofillProfileServerValidationName[] =
 const char kAutofillProfileServerValidationDescription[] =
     "Allows autofill to use server side validation";
 
+const char kAutofillRejectCompanyBirthyearName[] =
+    "Autofill Rejects Invalid Company Names";
+const char kAutofillRejectCompanyBirthyearDescription[] =
+    "Autofill rejects using non-verified company names that are in the "
+    "format of a birthyear.";
+
 const char kAutofillUseImprovedLabelDisambiguationName[] =
     "Autofill Uses Improved Label Disambiguation";
 const char kAutofillUseImprovedLabelDisambiguationDescription[] =

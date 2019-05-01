@@ -60,6 +60,11 @@ const base::Feature kAutofillCreditCardAssist{
 const base::Feature kAutofillEnableAccountWalletStorage{
     "AutofillEnableAccountWalletStorage", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether autofill rejects using non-verified company names that are
+// in the format of a birthyear.
+const base::Feature kAutofillRejectCompanyBirthyear{
+    "AutofillRejectCompanyBirthyearName", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether we show also upload prompts when we are using the
 // account-based storage for server cards.
 const base::Feature kAutofillEnableAccountWalletStorageUpload{
