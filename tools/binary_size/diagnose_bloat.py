@@ -264,10 +264,13 @@ class _BuildHelper(object):
   @property
   def main_lib_path(self):
     # Cannot extract this from GN because --cloud needs to work without GN.
+    # TODO(agrieve): Could maybe extract from .apk?
     if self.IsLinux():
       return 'chrome'
-    if 'monochrome' in self.target:
+    if 'monochrome' in self.target or 'trichrome' in self.target:
       ret = 'lib.unstripped/libmonochrome_base.so'
+    elif 'webview' in self.target:
+      ret = 'lib.unstripped/libwebviewchromium.so'
     else:
       ret = 'lib.unstripped/libchrome_base.so'
     # Maintain support for measuring non-bundle apks.
@@ -1064,4 +1067,3 @@ def main():
 
 if __name__ == '__main__':
   sys.exit(main())
-
