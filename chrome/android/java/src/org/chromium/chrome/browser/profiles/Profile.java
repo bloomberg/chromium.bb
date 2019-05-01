@@ -68,6 +68,13 @@ public class Profile {
     }
 
     /**
+     * Wipes all data for this profile.
+     */
+    public void wipe() {
+        nativeWipe(mNativeProfileAndroid);
+    }
+
+    /**
      * @return Whether or not the native side profile exists.
      */
     @VisibleForTesting
@@ -101,4 +108,5 @@ public class Profile {
     private native boolean nativeHasOffTheRecordProfile(long nativeProfileAndroid);
     private native boolean nativeIsOffTheRecord(long nativeProfileAndroid);
     private native boolean nativeIsChild(long nativeProfileAndroid);
+    private native void nativeWipe(long nativeProfileAndroid);
 }

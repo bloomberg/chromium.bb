@@ -55,6 +55,8 @@ class ProfileAndroid : public base::SupportsUserData::Data {
   jboolean IsChild(JNIEnv* env,
                    const base::android::JavaParamRef<jobject>& obj);
 
+  void Wipe(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+
   explicit ProfileAndroid(Profile* profile);
   ~ProfileAndroid() override;
 

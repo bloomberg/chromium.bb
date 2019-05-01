@@ -375,6 +375,9 @@ class Profile : public content::BrowserContext {
   double GetDefaultZoomLevelForProfile();
 #endif
 
+  // Wipes all data for this profile.
+  void Wipe();
+
  protected:
   void set_is_guest_profile(bool is_guest_profile) {
     is_guest_profile_ = is_guest_profile;
