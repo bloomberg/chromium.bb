@@ -332,7 +332,7 @@ bool RangeInputType::ShouldRespectListAttribute() {
 }
 
 inline SliderThumbElement* RangeInputType::GetSliderThumbElement() const {
-  return ToSliderThumbElementOrDie(
+  return To<SliderThumbElement>(
       GetElement().UserAgentShadowRoot()->getElementById(
           shadow_element_names::SliderThumb()));
 }

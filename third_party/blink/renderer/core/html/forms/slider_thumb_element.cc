@@ -392,7 +392,7 @@ void SliderContainerElement::HandleTouchEvent(TouchEvent* event) {
   }
 
   TouchList* touches = event->targetTouches();
-  SliderThumbElement* thumb = ToSliderThumbElement(
+  auto* thumb = To<SliderThumbElement>(
       GetTreeScope().getElementById(shadow_element_names::SliderThumb()));
   if (!thumb || !touches)
     return;

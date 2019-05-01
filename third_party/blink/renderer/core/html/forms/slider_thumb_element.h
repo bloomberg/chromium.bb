@@ -33,6 +33,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_SLIDER_THUMB_ELEMENT_H_
 
 #include "third_party/blink/renderer/core/html/html_div_element.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
@@ -79,7 +80,15 @@ inline Element& SliderThumbElement::CloneWithoutAttributesAndChildren(
 }
 
 // FIXME: There are no ways to check if a node is a SliderThumbElement.
-DEFINE_ELEMENT_TYPE_CASTS(SliderThumbElement, IsHTMLElement());
+template <>
+inline bool IsElementOfType<const SliderThumbElement>(const Node& node) {
+  return node.IsHTMLElement();
+}
+
+template <>
+struct DowncastTraits<SliderThumbElement> {
+  static bool AllowFrom(const Node& node) { return node.IsHTMLElement(); }
+};
 
 class SliderContainerElement final : public HTMLDivElement {
  public:
