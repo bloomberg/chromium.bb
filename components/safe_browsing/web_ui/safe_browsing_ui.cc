@@ -202,6 +202,30 @@ void WebUIInfoSingleton::UnregisterWebUIInstance(SafeBrowsingUIHandler* webui) {
   }
 }
 
+network::mojom::CookieManager* WebUIInfoSingleton::GetCookieManager() {
+  if (!cookie_manager_ptr_)
+    InitializeCookieManager();
+
+  return cookie_manager_ptr_.get();
+}
+
+void WebUIInfoSingleton::InitializeCookieManager() {
+  DCHECK(network_context_);
+
+  // Reset |cookie_manager_ptr_|, and only re-initialize it if we have a
+  // listening SafeBrowsingUIHandler.
+  cookie_manager_ptr_ = nullptr;
+
+  if (HasListener()) {
+    network_context_->GetNetworkContext()->GetCookieManager(
+        mojo::MakeRequest(&cookie_manager_ptr_));
+
+    // base::Unretained is safe because |this| owns |cookie_manager_ptr_|.
+    cookie_manager_ptr_.set_connection_error_handler(base::BindOnce(
+        &WebUIInfoSingleton::InitializeCookieManager, base::Unretained(this)));
+  }
+}
+
 namespace {
 #if SAFE_BROWSING_DB_LOCAL
 
@@ -1027,8 +1051,7 @@ SafeBrowsingUI::SafeBrowsingUI(content::WebUI* web_ui)
 SafeBrowsingUI::~SafeBrowsingUI() {}
 
 SafeBrowsingUIHandler::SafeBrowsingUIHandler(content::BrowserContext* context)
-    : browser_context_(context) {
-}
+    : browser_context_(context) {}
 
 SafeBrowsingUIHandler::~SafeBrowsingUIHandler() {
   WebUIInfoSingleton::GetInstance()->UnregisterWebUIInstance(this);
@@ -1062,6 +1085,35 @@ void SafeBrowsingUIHandler::GetPrefs(const base::ListValue* args) {
   ResolveJavascriptCallback(base::Value(callback_id),
                             safe_browsing::GetSafeBrowsingPreferencesList(
                                 user_prefs::UserPrefs::Get(browser_context_)));
+}
+
+void SafeBrowsingUIHandler::GetCookie(const base::ListValue* args) {
+  std::string callback_id;
+  args->GetString(0, &callback_id);
+
+  WebUIInfoSingleton::GetInstance()->GetCookieManager()->GetAllCookies(
+      base::BindOnce(&SafeBrowsingUIHandler::OnGetCookie,
+                     weak_factory_.GetWeakPtr(), std::move(callback_id)));
+}
+
+void SafeBrowsingUIHandler::OnGetCookie(
+    const std::string& callback_id,
+    const std::vector<net::CanonicalCookie>& cookies) {
+  DCHECK_GE(1u, cookies.size());
+
+  std::string cookie = "No cookie";
+  double time = 0.0;
+  if (!cookies.empty()) {
+    cookie = cookies[0].Value();
+    time = cookies[0].CreationDate().ToJsTime();
+  }
+
+  base::Value response(base::Value::Type::LIST);
+  response.GetList().push_back(base::Value(cookie));
+  response.GetList().push_back(base::Value(time));
+
+  AllowJavascript();
+  ResolveJavascriptCallback(base::Value(callback_id), std::move(response));
 }
 
 void SafeBrowsingUIHandler::GetSavedPasswords(const base::ListValue* args) {
@@ -1339,6 +1391,9 @@ void SafeBrowsingUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getPrefs", base::BindRepeating(&SafeBrowsingUIHandler::GetPrefs,
                                       base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getCookie", base::BindRepeating(&SafeBrowsingUIHandler::GetCookie,
+                                       base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getSavedPasswords",
       base::BindRepeating(&SafeBrowsingUIHandler::GetSavedPasswords,

@@ -5,13 +5,17 @@
 #ifndef COMPONENTS_SAFE_BROWSING_WEBUI_SAFE_BROWSING_UI_H_
 #define COMPONENTS_SAFE_BROWSING_WEBUI_SAFE_BROWSING_UI_H_
 
+#include "base/bind.h"
 #include "base/macros.h"
+#include "components/safe_browsing/browser/safe_browsing_network_context.h"
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "components/safe_browsing/proto/webui.pb.h"
 #include "components/sync/protocol/user_event_specifics.pb.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "services/network/public/mojom/cookie_manager.mojom.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 
 namespace base {
 class ListValue;
@@ -39,6 +43,9 @@ class SafeBrowsingUIHandler : public content::WebUIMessageHandler {
 
   // Get the Safe Browsing related preferences for the current user.
   void GetPrefs(const base::ListValue* args);
+
+  // Get the Safe Browsing cookie.
+  void GetCookie(const base::ListValue* args);
 
   // Get the current captured passwords.
   void GetSavedPasswords(const base::ListValue* args);
@@ -121,10 +128,17 @@ class SafeBrowsingUIHandler : public content::WebUIMessageHandler {
   void NotifyLogMessageJsListener(const base::Time& timestamp,
                                   const std::string& message);
 
+  // Callback when the CookieManager has returned the cookie.
+  void OnGetCookie(const std::string& callback_id,
+                   const std::vector<net::CanonicalCookie>& cookies);
+
   content::BrowserContext* browser_context_;
 
   // List that keeps all the WebUI listener objects.
   static std::vector<SafeBrowsingUIHandler*> webui_list_;
+
+  base::WeakPtrFactory<SafeBrowsingUIHandler> weak_factory_{this};
+
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingUIHandler);
 };
 
@@ -262,11 +276,19 @@ class WebUIInfoSingleton {
     return log_messages_;
   }
 
+  network::mojom::CookieManager* GetCookieManager();
+
+  void set_network_context(SafeBrowsingNetworkContext* network_context) {
+    network_context_ = network_context;
+  }
+
   void AddListenerForTesting() { has_test_listener_ = true; }
 
  private:
   WebUIInfoSingleton();
   ~WebUIInfoSingleton();
+
+  void InitializeCookieManager();
 
   friend struct base::DefaultSingletonTraits<WebUIInfoSingleton>;
 
@@ -313,6 +335,12 @@ class WebUIInfoSingleton {
 
   // The current referrer chain provider, if any. Can be nullptr.
   ReferrerChainProvider* referrer_chain_provider_ = nullptr;
+
+  // The current NetworkContext for Safe Browsing pings.
+  SafeBrowsingNetworkContext* network_context_ = nullptr;
+
+  // The current CookieManager for the Safe Browsing cookie.
+  network::mojom::CookieManagerPtr cookie_manager_ptr_ = nullptr;
 
   // Whether there is a test listener.
   bool has_test_listener_ = false;

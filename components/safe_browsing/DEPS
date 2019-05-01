@@ -14,7 +14,7 @@ include_rules = [
   "+net/log",
   "+net/traffic_annotation",
   "+net/url_request",
-  "+services/network/public/cpp",
+  "+services/network/public",
   "+services/service_manager/public",
   "+testing/gtest",
   "+third_party/protobuf",

@@ -16,6 +16,7 @@ cr.define('safe_browsing', function() {
     cr.sendWithPromise('getExperiments', [])
         .then((experiments) => addExperiments(experiments));
     cr.sendWithPromise('getPrefs', []).then((prefs) => addPrefs(prefs));
+    cr.sendWithPromise('getCookie', []).then((cookie) => addCookie(cookie));
     cr.sendWithPromise('getSavedPasswords', []).then((passwords) =>
         addSavedPasswords(passwords));
     cr.sendWithPromise('getDatabaseManagerInfo', []).then(
@@ -124,6 +125,12 @@ cr.define('safe_browsing', function() {
           result[i] + "</div>";
     }
     $('preferences-list').innerHTML = preferencesListFormatted;
+  }
+
+  function addCookie(result) {
+    var cookieFormatted = '<b>Value:</b> ' + result[0] + '\n' +
+        '<b>Created:</b> ' + (new Date(result[1])).toLocaleString();
+    $('cookie-panel').innerHTML = cookieFormatted;
   }
 
   function addSavedPasswords(result) {

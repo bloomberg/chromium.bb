@@ -42,6 +42,7 @@
 #include "components/safe_browsing/db/database_manager.h"
 #include "components/safe_browsing/ping_manager.h"
 #include "components/safe_browsing/triggers/trigger_manager.h"
+#include "components/safe_browsing/web_ui/safe_browsing_ui.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -173,6 +174,9 @@ void SafeBrowsingService::Initialize() {
           url_request_context_getter_, user_data_dir,
           base::BindRepeating(&SafeBrowsingService::CreateNetworkContextParams,
                               base::Unretained(this)));
+
+  WebUIInfoSingleton::GetInstance()->set_network_context(
+      network_context_.get());
 
   ui_manager_ = CreateUIManager();
 

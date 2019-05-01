@@ -13,8 +13,6 @@ jumbo_source_set("browser") {
     "browser_url_loader_throttle.h",
     "mojo_safe_browsing_impl.cc",
     "mojo_safe_browsing_impl.h",
-    "safe_browsing_network_context.cc",
-    "safe_browsing_network_context.h",
     "safe_browsing_url_checker_impl.cc",
     "safe_browsing_url_checker_impl.h",
     "safe_browsing_url_request_context_getter.cc",
@@ -33,12 +31,26 @@ jumbo_source_set("browser") {
     "//components/safe_browsing:csd_proto",
     "//components/safe_browsing:features",
     "//components/safe_browsing:safe_browsing",
+    "//components/safe_browsing/browser:network_context",
     "//components/safe_browsing/browser:referrer_chain_provider",
     "//components/safe_browsing/common:common",
     "//components/safe_browsing/db:database_manager",
     "//components/safe_browsing/web_ui:constants",
     "//components/safe_browsing/web_ui:web_ui",
     "//components/security_interstitials/content:security_interstitial_page",
+    "//content/public/browser:browser",
+    "//net:extras",
+  ]
+}
+
+source_set("network_context") {
+  sources = [
+    "safe_browsing_network_context.cc",
+    "safe_browsing_network_context.h",
+  ]
+
+  deps = [
+    "//components/safe_browsing/common:common",
     "//content/public/browser:browser",
     "//net:extras",
   ]
