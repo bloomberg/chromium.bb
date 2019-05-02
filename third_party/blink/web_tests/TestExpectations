@@ -4371,12 +4371,6 @@ crbug.com/957458 virtual/threaded/external/wpt/css/css-paint-api/style-backgroun
 crbug.com/957458 virtual/threaded/external/wpt/css/css-paint-api/style-before-pseudo.https.html [ Crash ]
 crbug.com/957458 virtual/threaded/external/wpt/css/css-paint-api/style-first-letter-pseudo.https.html [ Crash ]
 
-crbug.com/943487 external/wpt/wasm/webapi/rejected-arg.any.html [ Timeout Pass ]
-crbug.com/943487 external/wpt/wasm/webapi/rejected-arg.any.serviceworker.html [ Timeout Pass ]
-crbug.com/943487 external/wpt/wasm/webapi/rejected-arg.any.worker.html [ Timeout Pass ]
-crbug.com/943487 external/wpt/wasm/webapi/origin.sub.any.serviceworker.html [ Timeout Pass ]
-crbug.com/943487 external/wpt/wasm/webapi/rejected-arg.any.sharedworker.html [ Timeout Pass ]
-
 # Shared memory growth temporarily disabled.
 crbug.com/951795 external/wpt/wasm/jsapi/memory/grow.any.html [ Pass Failure ]
 crbug.com/951795 external/wpt/wasm/jsapi/memory/grow.any.worker.html [ Pass Failure ]
