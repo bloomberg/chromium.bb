@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/chrome_new_window_client.h"
 
+#include <string>
 #include <utility>
 
 #include "ash/public/cpp/ash_features.h"
@@ -85,6 +86,19 @@ GURL ConvertArcUrlToExternalFileUrlIfNeeded(const GURL& url) {
     return arc::ArcUrlToExternalFileUrl(url);
   }
   return url;
+}
+
+// Returns URL path and query without the "/" prefix. For example, for the URL
+// "chrome://settings/networks/?type=WiFi" returns "networks/?type=WiFi".
+std::string GetPathAndQuery(const GURL& url) {
+  std::string result = url.path();
+  if (!result.empty() && result[0] == '/')
+    result.erase(0, 1);
+  if (url.has_query()) {
+    result += '?';
+    result += url.query();
+  }
+  return result;
 }
 
 // Implementation of CustomTabSession interface.
@@ -474,13 +488,15 @@ content::WebContents* ChromeNewWindowClient::OpenUrlImpl(
     // Show browser settings (e.g. chrome://settings). This may open in a window
     // or a tab depending on feature SplitSettings.
     if (url.host() == chrome::kChromeUISettingsHost) {
-      chrome::ShowSettingsSubPageForProfile(profile,
-                                            /*sub_page=*/std::string());
+      std::string sub_page = GetPathAndQuery(url);
+      chrome::ShowSettingsSubPageForProfile(profile, sub_page);
       return nullptr;
     }
     // OS settings are shown in a window.
     if (url.host() == chrome::kChromeUIOSSettingsHost) {
-      chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(profile);
+      std::string sub_page = GetPathAndQuery(url);
+      chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(profile,
+                                                                   sub_page);
       return nullptr;
     }
   }
