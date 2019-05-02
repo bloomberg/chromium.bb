@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/events/web_input_event_conversion.h"
@@ -155,10 +156,10 @@ bool SpatialNavigationController::HandleArrowKeyboardEvent(
   // event. This prevents double-handling actions for things like search box
   // suggestions.
   if (RuntimeEnabledFeatures::FocuslessSpatialNavigationEnabled()) {
-    LocalFrame* frame =
-        DynamicTo<LocalFrame>(page_->GetFocusController().FocusedOrMainFrame());
-    if (frame->Selection().SelectionHasFocus())
-      return true;
+    if (Element* focused = GetFocusedElement()) {
+      if (HasEditableStyle(*focused) || focused->IsTextControl())
+        return true;
+    }
   }
 
   return Advance(direction);
