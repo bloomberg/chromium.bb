@@ -263,8 +263,9 @@ public class StatusBarColorController
             return mIsIncognito ? mIncognitoPrimaryBgColor : mStandardPrimaryBgColor;
         }
 
-        // Return status bar color in standard NewTabPage.
-        if (isStandardNTP()) {
+        // Return status bar color in standard NewTabPage. If location bar is not shown in NTP, we
+        // use the tab theme color regardless of the URL expansion percentage.
+        if (isLocationBarShownInNTP()) {
             return ColorUtils.getColorWithOverlay(
                     TabThemeColorHelper.getBackgroundColor(mCurrentTab),
                     TabThemeColorHelper.getColor(mCurrentTab), mToolbarUrlExpansionPercentage);
@@ -322,6 +323,15 @@ public class StatusBarColorController
      * @return Whether or not the current tab is a new tab page in standard mode.
      */
     private boolean isStandardNTP() {
-        return mCurrentTab != null && NewTabPage.isNTPUrl(mCurrentTab.getUrl()) && !mIsIncognito;
+        return mCurrentTab != null && mCurrentTab.getNativePage() instanceof NewTabPage;
+    }
+
+    /**
+     * @return Whether or not the fake location bar is shown on the current NTP.
+     */
+    private boolean isLocationBarShownInNTP() {
+        if (!isStandardNTP()) return false;
+        final NewTabPage newTabPage = (NewTabPage) mCurrentTab.getNativePage();
+        return newTabPage != null && newTabPage.isLocationBarShownInNTP();
     }
 }
