@@ -1235,6 +1235,11 @@ enum AuthenticationState {
   [self openAuthenticationDialogAddIdentity];
 }
 
+- (void)unifiedConsentCoordinatorNeedPrimaryButtonUpdate:
+    (UnifiedConsentCoordinator*)coordinator {
+  [self updatePrimaryButtonForIdentityPickerState];
+}
+
 @end
 
 @implementation ChromeSigninViewController (Testing)

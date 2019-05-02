@@ -28,6 +28,12 @@
 - (void)unifiedConsentCoordinatorDidTapOnAddAccount:
     (UnifiedConsentCoordinator*)coordinator;
 
+// Called when the primary button needs to update its title (for example if the
+// last identity disappears, the button needs to change from "YES, I'M IN" to
+// "ADD ACCOUNT").
+- (void)unifiedConsentCoordinatorNeedPrimaryButtonUpdate:
+    (UnifiedConsentCoordinator*)coordinator;
+
 @end
 
 // UnifiedConsentCoordinator coordinates UnifiedConsentViewController, which is
