@@ -11,6 +11,7 @@ import android.view.View;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.night_mode.NightModeMetrics;
 import org.chromium.chrome.browser.preferences.themes.ThemePreferences.ThemeSetting;
 import org.chromium.chrome.browser.widget.RadioButtonWithDescription;
 
@@ -69,6 +70,7 @@ public class RadioButtonGroupThemePreference
             }
         }
         callChangeListener(mSetting);
+        NightModeMetrics.recordThemePreferencesChanged(mSetting);
     }
 
     @VisibleForTesting

@@ -11229,6 +11229,18 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="SSID"/>
 </enum>
 
+<enum name="DarkThemeEnabledReason">
+  <int value="0" label="User preference is set to force dark theme."/>
+  <int value="1" label="Power save mode is on."/>
+  <int value="2" label="Other."/>
+</enum>
+
+<enum name="DarkThemePreferences">
+  <int value="0" label="System default"/>
+  <int value="1" label="Light theme"/>
+  <int value="2" label="Dark theme"/>
+</enum>
+
 <enum name="DataChannelCounters">
   <int value="0" label="Channel created."/>
   <int value="1" label="Channel reached Open state."/>
