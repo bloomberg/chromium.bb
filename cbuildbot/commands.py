@@ -1153,49 +1153,6 @@ def _GetSkylabCreateSuiteArgs(
   return args
 
 
-def _remove_seeded_steps(output):
-  """Remove the user seeded steps in SkylabHWTestStage.
-
-  This step is used for filtering out extra annotations so that they won't show
-  on buildbot page.
-
-  When a suite passes, only the create and final wait swarming task URL are
-  listed.
-  When a suite fails, swarming task URL of the failed task is also listed.
-  No additional links are expected to show on buildbot. An example is:
-      https://cros-goldeneye.corp.google.com/chromeos/healthmonitoring/
-      buildDetails?buildbucketId=8940161120910419584
-
-  But when users view the suite swarming task URL, they're expected to see
-  all its child tests and their results for further debugging, e.g.
-      https://chrome-swarming.appspot.com/task?id=3ee300326eb47a10&refresh=10
-      https://chrome-swarming.appspot.com/task?id=3ee30107bdfe7d10&refresh=10
-
-  It's bad behavior to filter out steps based on swarming output, which
-  means the buildbot interface is highly depending on the output of
-  run_suite_skylab.py in autotest. However, it is hard to insert annotations
-  independently (run_suite_skylab (python) cannot use the LogDog libraries
-  (Go)). Currently we're still relying on printing format
-  '@@@ *** @@@' and let builder running kitchen to interpret it automatically.
-  So this function is needed until we have better approaches to interact with
-  logdog.
-  """
-  output_lines = output.splitlines()
-  return_output = ''
-  is_seeded_step = False
-  for line in output_lines:
-    if '@@@SEED_STEP' in line:
-      is_seeded_step = True
-
-    if not is_seeded_step:
-      return_output += line + '\n'
-
-    if '@@@STEP_CLOSED' in line:
-      is_seeded_step = False
-
-  return return_output
-
-
 def _InstallSkylabTool():
   """Install skylab tool.
 
