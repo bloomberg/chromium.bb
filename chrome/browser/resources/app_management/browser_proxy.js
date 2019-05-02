@@ -20,7 +20,10 @@ cr.define('app_management', function() {
 
         const /** @type {!Array<App>}*/ appList = [
           app_management.FakePageHandler.createApp(
-              'ahfgeienlihckogmohjhadlkjgocpleb', {title: 'Web Store'}),
+              'ahfgeienlihckogmohjhadlkjgocpleb', {
+                title: 'Web Store (system app)',
+                installSource: InstallSource.kSystem
+              }),
           app_management.FakePageHandler.createApp(
               'aohghmighlieiainnegkcijnfilokake',
               {title: 'Docs', type: AppType.kArc}),
@@ -30,7 +33,10 @@ cr.define('app_management', function() {
           app_management.FakePageHandler.createApp(
               'pjkljhegncpnkpknbcohdijeoejaedia', {title: 'Gmail'}),
           app_management.FakePageHandler.createApp(
-              'aapocclcgogkmnckokdopfmhonfmgoek', {title: 'Slide'}),
+              'aapocclcgogkmnckokdopfmhonfmgoek', {
+                title: 'Slides (policy installed)',
+                installSource: InstallSource.kPolicy
+              }),
         ];
 
         this.handler.setApps(appList);

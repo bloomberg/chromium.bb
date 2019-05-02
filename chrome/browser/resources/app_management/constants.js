@@ -47,3 +47,5 @@ const PermissionValueType = apps.mojom.PermissionValueType;
 const TriState = apps.mojom.TriState;
 
 const OptionalBool = apps.mojom.OptionalBool;
+
+const InstallSource = apps.mojom.InstallSource;

@@ -4,6 +4,7 @@
 <link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 
 <dom-module id="app-management-permission-view-header">
   <template>
@@ -36,15 +37,26 @@
       #uninstall-button {
         background: white;
       }
+
+      #policy-indicator {
+        fill: var(--google-grey-refresh-500);
+        padding-inline-end: 10px;
+      }
     </style>
     <cr-icon-button class="icon-arrow-back" id="closeButton"
         on-click="onClickBackButton_" aria-label="$i18n{back}"></cr-icon-button>
     <img id="permission-view-header-icon" src="[[iconUrlFromId_(app_)]]">
     <div class="page-title">[[app_.title]]</div>
     <slot name="extra-right-buttons"></slot>
-    <paper-button id="uninstall-button" on-click="onClickUninstallButton_">
-      $i18n{uninstall}
-    </paper-button>
+    <div id="uninstall-wrapper" title$="[[getUninstallButtonHoverText_(app_)]]">
+      <template is="dom-if" if="[[isPolicyApp_(app_)]]">
+        <iron-icon id="policy-indicator" icon="cr:domain"></iron-icon>
+      </template>
+      <paper-button id="uninstall-button" on-click="onClickUninstallButton_"
+        disabled$="[[getUninstallButtonDisableState_(app_)]]">
+        $i18n{uninstall}
+      </paper-button>
+    </div>
   </template>
   <script src="permission_view_header.js"></script>
 </dom-module>
