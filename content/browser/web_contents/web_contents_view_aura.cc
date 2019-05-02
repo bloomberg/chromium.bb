@@ -694,10 +694,9 @@ void WebContentsViewAura::EndDrag(RenderWidgetHost* source_rwh,
   if (screen_position_client)
     screen_position_client->ConvertPointFromScreen(window, &client_loc);
 
-  // |client_loc| and |screen_loc| are in the root coordinate space, for
-  // non-root RenderWidgetHosts they need to be transformed.
+  // |client_loc| is in the root coordinate space, for non-root
+  // RenderWidgetHosts it needs to be transformed.
   gfx::PointF transformed_point = client_loc;
-  gfx::PointF transformed_screen_point = screen_loc;
   if (source_rwh && web_contents_->GetRenderWidgetHostView()) {
     static_cast<RenderWidgetHostViewBase*>(
         web_contents_->GetRenderWidgetHostView())
@@ -705,17 +704,10 @@ void WebContentsViewAura::EndDrag(RenderWidgetHost* source_rwh,
             client_loc,
             static_cast<RenderWidgetHostViewBase*>(source_rwh->GetView()),
             &transformed_point);
-    static_cast<RenderWidgetHostViewBase*>(
-        web_contents_->GetRenderWidgetHostView())
-        ->TransformPointToCoordSpaceForView(
-            screen_loc,
-            static_cast<RenderWidgetHostViewBase*>(source_rwh->GetView()),
-            &transformed_screen_point);
   }
 
   web_contents_->DragSourceEndedAt(transformed_point.x(), transformed_point.y(),
-                                   transformed_screen_point.x(),
-                                   transformed_screen_point.y(), ops,
+                                   screen_loc.x(), screen_loc.y(), ops,
                                    source_rwh);
 
   web_contents_->SystemDragEnded(source_rwh);
@@ -1292,11 +1284,16 @@ int WebContentsViewAura::OnDragUpdated(const ui::DropTargetEvent& event) {
   if (!IsValidDragTarget(target_rwh))
     return ui::DragDropTypes::DRAG_NONE;
 
+  aura::Window* root_window = GetNativeView()->GetRootWindow();
+  aura::client::ScreenPositionClient* screen_position_client =
+      aura::client::GetScreenPositionClient(root_window);
   gfx::PointF screen_pt = event.root_location_f();
+  if (screen_position_client)
+    screen_position_client->ConvertPointToScreen(root_window, &screen_pt);
+
   if (target_rwh != current_rwh_for_drag_.get()) {
     if (current_rwh_for_drag_) {
       gfx::PointF transformed_leave_point = event.location_f();
-      gfx::PointF transformed_screen_point = screen_pt;
       static_cast<RenderWidgetHostViewBase*>(
           web_contents_->GetRenderWidgetHostView())
           ->TransformPointToCoordSpaceForView(
@@ -1304,14 +1301,8 @@ int WebContentsViewAura::OnDragUpdated(const ui::DropTargetEvent& event) {
               static_cast<RenderWidgetHostViewBase*>(
                   current_rwh_for_drag_->GetView()),
               &transformed_leave_point);
-      static_cast<RenderWidgetHostViewBase*>(
-          web_contents_->GetRenderWidgetHostView())
-          ->TransformPointToCoordSpaceForView(
-              screen_pt, static_cast<RenderWidgetHostViewBase*>(
-                             current_rwh_for_drag_->GetView()),
-              &transformed_screen_point);
       current_rwh_for_drag_->DragTargetDragLeave(transformed_leave_point,
-                                                 transformed_screen_point);
+                                                 screen_pt);
     }
     OnDragEntered(event);
   }
