@@ -16,22 +16,22 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_util.h"
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/native_library.h"
 #include "base/path_service.h"
 #include "base/profiler/stack_sampler.h"
 #include "base/profiler/stack_sampling_profiler.h"
+#include "base/profiler/stack_sampling_profiler_test_util.h"
 #include "base/profiler/unwinder.h"
 #include "base/run_loop.h"
 #include "base/scoped_native_library.h"
 #include "base/stl_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/bind_test_util.h"
-#include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -51,10 +51,6 @@
 #define STACK_SAMPLING_PROFILER_SUPPORTED 1
 #endif
 
-#if defined(OS_WIN)
-#pragma intrinsic(_ReturnAddress)
-#endif
-
 namespace base {
 
 #if defined(STACK_SAMPLING_PROFILER_SUPPORTED)
@@ -67,152 +63,6 @@ namespace base {
 using SamplingParams = StackSamplingProfiler::SamplingParams;
 
 namespace {
-
-// Addresses near the start and end of a function.
-struct FunctionAddressRange {
-  const void* start;
-  const void* end;
-};
-
-// Disable inlining for this function so that it gets its own stack frame.
-NOINLINE const void* GetProgramCounter() {
-  // Saving to a volatile prevents clang from assuming it can reuse the return
-  // value across multiple calls to GetProgramCounter().
-#if defined(OS_WIN)
-  const void* volatile program_counter = _ReturnAddress();
-#else
-  const void* volatile program_counter = __builtin_return_address(0);
-#endif
-  return program_counter;
-}
-
-// Represents a stack unwind scenario to be sampled by the
-// StackSamplingProfiler.
-class UnwindScenario {
- public:
-  // A callback provided by the caller that sets up the unwind scenario, then
-  // calls into the passed closure to wait for a sample to be taken. Returns the
-  // address range of the function that sets up the unwind scenario. The passed
-  // closure will be null when invoked solely to obtain the address range.
-  using SetupFunction = RepeatingCallback<FunctionAddressRange(const Closure&)>;
-
-  // Events to coordinate the sampling.
-  struct SampleEvents {
-    WaitableEvent ready_for_sample;
-    WaitableEvent sample_finished;
-  };
-
-  explicit UnwindScenario(const SetupFunction& setup_function)
-      : setup_function_(setup_function) {}
-
-  UnwindScenario(const UnwindScenario&) = delete;
-  UnwindScenario& operator=(const UnwindScenario&) = delete;
-
-  FunctionAddressRange GetWaitForSampleAddressRange() const;
-  FunctionAddressRange GetSetupFunctionAddressRange() const;
-  FunctionAddressRange GetOuterFunctionAddressRange() const;
-
-  void Execute(SampleEvents* events);
-
- private:
-  static FunctionAddressRange InvokeSetupFunction(
-      const SetupFunction& setup_function,
-      SampleEvents* events);
-
-  static FunctionAddressRange WaitForSample(SampleEvents* events);
-
-  const SetupFunction setup_function_;
-};
-
-FunctionAddressRange UnwindScenario::GetWaitForSampleAddressRange() const {
-  return WaitForSample(nullptr);
-}
-
-FunctionAddressRange UnwindScenario::GetSetupFunctionAddressRange() const {
-  return setup_function_.Run(Closure());
-}
-
-FunctionAddressRange UnwindScenario::GetOuterFunctionAddressRange() const {
-  return InvokeSetupFunction(SetupFunction(), nullptr);
-}
-
-void UnwindScenario::Execute(SampleEvents* events) {
-  InvokeSetupFunction(setup_function_, events);
-}
-
-// static
-// Disable inlining for this function so that it gets its own stack frame.
-NOINLINE FunctionAddressRange
-UnwindScenario::InvokeSetupFunction(const SetupFunction& setup_function,
-                                    SampleEvents* events) {
-  const void* start_program_counter = GetProgramCounter();
-
-  if (!setup_function.is_null()) {
-    const auto wait_for_sample_closure =
-        BindLambdaForTesting([&]() { UnwindScenario::WaitForSample(events); });
-    setup_function.Run(wait_for_sample_closure);
-  }
-
-  // Volatile to prevent a tail call to GetProgramCounter().
-  const void* volatile end_program_counter = GetProgramCounter();
-  return {start_program_counter, end_program_counter};
-}
-
-// static
-// Disable inlining for this function so that it gets its own stack frame.
-NOINLINE FunctionAddressRange
-UnwindScenario::WaitForSample(SampleEvents* events) {
-  const void* start_program_counter = GetProgramCounter();
-
-  if (events) {
-    events->ready_for_sample.Signal();
-    events->sample_finished.Wait();
-  }
-
-  // Volatile to prevent a tail call to GetProgramCounter().
-  const void* volatile end_program_counter = GetProgramCounter();
-  return {start_program_counter, end_program_counter};
-}
-
-// A thread to target for profiling, whose stack is guaranteed to contain
-// SignalAndWaitUntilSignaled() when coordinated with the main thread.
-class TargetThread : public PlatformThread::Delegate {
- public:
-  TargetThread(const Closure& to_run);
-
-  // PlatformThread::Delegate:
-  void ThreadMain() override;
-
-  PlatformThreadId id() const { return id_; }
-
- private:
-  PlatformThreadId id_ = 0;
-  Closure to_run_;
-
-  DISALLOW_COPY_AND_ASSIGN(TargetThread);
-};
-
-TargetThread::TargetThread(const Closure& to_run) : to_run_(to_run) {}
-
-void TargetThread::ThreadMain() {
-  id_ = PlatformThread::CurrentId();
-  to_run_.Run();
-}
-
-// Calls into |wait_for_sample| without doing any special unwinding setup, to
-// test the "normal" unwind scenario.
-// Disable inlining for this function so that it gets its own stack frame.
-NOINLINE FunctionAddressRange
-CallWithPlainFunction(const Closure& wait_for_sample) {
-  const void* start_program_counter = GetProgramCounter();
-
-  if (!wait_for_sample.is_null())
-    wait_for_sample.Run();
-
-  // Volatile to prevent a tail call to GetProgramCounter().
-  const void* volatile end_program_counter = GetProgramCounter();
-  return {start_program_counter, end_program_counter};
-}
 
 // Calls into |wait_for_sample| after using alloca(), to test unwinding with a
 // frame pointer.
@@ -272,72 +122,6 @@ CallThroughOtherLibrary(NativeLibrary library, const Closure& wait_for_sample) {
   // Volatile to prevent a tail call to GetProgramCounter().
   const void* volatile end_program_counter = GetProgramCounter();
   return {start_program_counter, end_program_counter};
-}
-
-// Formats a sample into a string that can be output for test diagnostics.
-std::string FormatSampleForDiagnosticOutput(const std::vector<Frame>& sample) {
-  std::string output;
-  for (const auto& frame : sample) {
-    output += StringPrintf(
-        "0x%p %s\n", reinterpret_cast<const void*>(frame.instruction_pointer),
-        frame.module ? frame.module->GetDebugBasename().AsUTF8Unsafe().c_str()
-                     : "null module");
-  }
-  return output;
-}
-
-// Expects that the stack contains the functions with the specified address
-// ranges, in the specified order.
-void ExpectStackContains(const std::vector<Frame>& stack,
-                         const std::vector<FunctionAddressRange>& functions) {
-  auto frame_it = stack.begin();
-  auto function_it = functions.begin();
-  for (; frame_it != stack.end() && function_it != functions.end();
-       ++frame_it) {
-    if (frame_it->instruction_pointer >=
-            reinterpret_cast<uintptr_t>(function_it->start) &&
-        frame_it->instruction_pointer <=
-            reinterpret_cast<uintptr_t>(function_it->end)) {
-      ++function_it;
-    }
-  }
-
-  EXPECT_EQ(function_it, functions.end())
-      << "Function in position " << function_it - functions.begin() << " at "
-      << function_it->start << " was not found in stack "
-      << "(or did not appear in the expected order):\n"
-      << FormatSampleForDiagnosticOutput(stack);
-}
-
-// Expects that the stack does not contain the functions with the specified
-// address ranges.
-void ExpectStackDoesNotContain(
-    const std::vector<Frame>& stack,
-    const std::vector<FunctionAddressRange>& functions) {
-  struct FunctionAddressRangeCompare {
-    bool operator()(const FunctionAddressRange& a,
-                    const FunctionAddressRange& b) const {
-      return std::make_pair(a.start, a.end) < std::make_pair(b.start, b.end);
-    }
-  };
-
-  std::set<FunctionAddressRange, FunctionAddressRangeCompare> seen_functions;
-  for (const auto frame : stack) {
-    for (const auto function : functions) {
-      if (frame.instruction_pointer >=
-              reinterpret_cast<uintptr_t>(function.start) &&
-          frame.instruction_pointer <=
-              reinterpret_cast<uintptr_t>(function.end)) {
-        seen_functions.insert(function);
-      }
-    }
-  }
-
-  for (const auto function : seen_functions) {
-    ADD_FAILURE() << "Function at " << function.start
-                  << " was unexpectedly found in stack:\n"
-                  << FormatSampleForDiagnosticOutput(stack);
-  }
 }
 
 // Profile consists of a set of samples and other sampling information.
@@ -480,63 +264,9 @@ void SynchronousUnloadNativeLibrary(NativeLibrary library) {
 #endif
 }
 
-// The callback to perform profiling on the provided thread.
-using ProfileCallback = OnceCallback<void(PlatformThreadId)>;
-
-// Executes |profile_callback| while running |scenario| on the target
-// thread. Performs all necessary target thread startup and shutdown work before
-// and afterward.
-void WithTargetThread(UnwindScenario* scenario,
-                      ProfileCallback profile_callback) {
-  UnwindScenario::SampleEvents events;
-  TargetThread target_thread(
-      BindLambdaForTesting([&]() { scenario->Execute(&events); }));
-
-  PlatformThreadHandle target_thread_handle;
-  EXPECT_TRUE(PlatformThread::Create(0, &target_thread, &target_thread_handle));
-
-  events.ready_for_sample.Wait();
-
-  std::move(profile_callback).Run(target_thread.id());
-
-  events.sample_finished.Signal();
-
-  PlatformThread::Join(target_thread_handle);
-}
-
 void WithTargetThread(ProfileCallback profile_callback) {
   UnwindScenario scenario(BindRepeating(&CallWithPlainFunction));
   WithTargetThread(&scenario, std::move(profile_callback));
-}
-
-// Returns the sample seen when taking one sample of |scenario|.
-std::vector<Frame> SampleScenario(UnwindScenario* scenario,
-                                  ModuleCache* module_cache) {
-  SamplingParams params;
-  params.sampling_interval = TimeDelta::FromMilliseconds(0);
-  params.samples_per_profile = 1;
-
-  Profile profile;
-  WithTargetThread(
-      scenario, BindLambdaForTesting([&](PlatformThreadId target_thread_id) {
-        WaitableEvent sampling_thread_completed(
-            WaitableEvent::ResetPolicy::MANUAL,
-            WaitableEvent::InitialState::NOT_SIGNALED);
-        StackSamplingProfiler profiler(
-            target_thread_id, params,
-            std::make_unique<TestProfileBuilder>(
-                module_cache,
-                BindLambdaForTesting([&profile, &sampling_thread_completed](
-                                         Profile result_profile) {
-                  profile = std::move(result_profile);
-                  sampling_thread_completed.Signal();
-                })));
-        profiler.Start();
-        sampling_thread_completed.Wait();
-      }));
-
-  CHECK_EQ(1u, profile.samples.size());
-  return profile.samples[0];
 }
 
 struct TestProfilerInfo {

@@ -2273,6 +2273,19 @@ if (is_win || is_mac) {
   }
 }
 
+source_set("base_stack_sampling_profiler_test_util") {
+  testonly = true
+  sources = [
+    "profiler/stack_sampling_profiler_test_util.cc",
+    "profiler/stack_sampling_profiler_test_util.h",
+  ]
+  deps = [
+    ":base",
+    "//base/test:test_support",
+    "//testing/gtest",
+  ]
+}
+
 bundle_data("base_unittests_bundle_data") {
   testonly = true
   sources = [
@@ -2730,6 +2743,7 @@ test("base_unittests") {
 
   deps = [
     ":base",
+    ":base_stack_sampling_profiler_test_util",
     ":base_unittests_tasktraits",
     ":i18n",
     ":sanitizer_buildflags",
