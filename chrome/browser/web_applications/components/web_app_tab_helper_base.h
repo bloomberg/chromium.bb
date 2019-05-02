@@ -6,7 +6,10 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_TAB_HELPER_BASE_H_
 
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "base/unguessable_token.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/components/app_registrar_observer.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -23,7 +26,8 @@ class WebAppAudioFocusIdMap;
 // (or legacy bookmark app).
 class WebAppTabHelperBase
     : public content::WebContentsObserver,
-      public content::WebContentsUserData<WebAppTabHelperBase> {
+      public content::WebContentsUserData<WebAppTabHelperBase>,
+      AppRegistrarObserver {
  public:
   ~WebAppTabHelperBase() override;
 
@@ -62,11 +66,6 @@ class WebAppTabHelperBase
   friend class content::WebContentsUserData<WebAppTabHelperBase>;
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 
-  // TODO(loyso): Call these methods for new extension-independent system.
-  void OnWebAppInstalled(const AppId& installed_app_id);
-  void OnWebAppUninstalled(const AppId& uninstalled_app_id);
-  void OnWebAppRegistryShutdown();
-
   // Clone |this| tab helper (preserving a derived type).
   virtual WebAppTabHelperBase* CloneForWebContents(
       content::WebContents* web_contents) const = 0;
@@ -78,6 +77,11 @@ class WebAppTabHelperBase
 
  private:
   friend class WebAppAudioFocusBrowserTest;
+
+  // AppRegistrarObserver:
+  void OnWebAppInstalled(const AppId& installed_app_id) override;
+  void OnWebAppUninstalled(const AppId& uninstalled_app_id) override;
+  void OnAppRegistrarShutdown() override;
 
   void ResetAppId();
 
@@ -99,6 +103,8 @@ class WebAppTabHelperBase
 
   // Weak reference to audio focus group id storage.
   WebAppAudioFocusIdMap* audio_focus_id_map_ = nullptr;
+
+  ScopedObserver<AppRegistrar, AppRegistrarObserver> observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebAppTabHelperBase);
 };

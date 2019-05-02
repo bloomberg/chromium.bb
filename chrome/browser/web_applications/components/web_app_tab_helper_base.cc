@@ -18,7 +18,12 @@ namespace web_app {
 WEB_CONTENTS_USER_DATA_KEY_IMPL(WebAppTabHelperBase)
 
 WebAppTabHelperBase::WebAppTabHelperBase(content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {}
+    : content::WebContentsObserver(web_contents) {
+  auto* provider = web_app::WebAppProviderBase::GetProviderBase(
+      Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+  DCHECK(provider);
+  observer_.Add(&provider->registrar());
+}
 
 WebAppTabHelperBase::~WebAppTabHelperBase() = default;
 
@@ -77,12 +82,13 @@ void WebAppTabHelperBase::OnWebAppUninstalled(const AppId& uninstalled_app_id) {
     ResetAppId();
 }
 
-void WebAppTabHelperBase::OnWebAppRegistryShutdown() {
+void WebAppTabHelperBase::OnAppRegistrarShutdown() {
   ResetAppId();
 }
 
 void WebAppTabHelperBase::ResetAppId() {
   app_id_.clear();
+
   OnAssociatedAppChanged();
 }
 

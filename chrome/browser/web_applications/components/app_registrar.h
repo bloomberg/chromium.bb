@@ -6,15 +6,22 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_APP_REGISTRAR_H_
 
 #include "base/callback_forward.h"
+#include "base/observer_list.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 
 class GURL;
 
 namespace web_app {
 
+class AppRegistrarObserver;
+
 class AppRegistrar {
  public:
-  virtual ~AppRegistrar() = default;
+  void AddObserver(AppRegistrarObserver* observer);
+  void RemoveObserver(const AppRegistrarObserver* observer);
+
+  AppRegistrar();
+  virtual ~AppRegistrar();
 
   virtual void Init(base::OnceClosure callback) = 0;
 
@@ -45,6 +52,9 @@ class AppRegistrar {
   // use HasScopeUrl() to know if the app has a scope before calling this
   // method.
   virtual GURL GetScopeUrlForApp(const AppId& app_id) const = 0;
+
+ protected:
+  base::ObserverList<AppRegistrarObserver> observers_;
 };
 
 }  // namespace web_app

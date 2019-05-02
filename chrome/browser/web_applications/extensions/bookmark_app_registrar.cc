@@ -9,6 +9,7 @@
 #include "base/one_shot_event.h"
 #include "chrome/browser/extensions/convert_web_app.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/components/app_registrar_observer.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -21,7 +22,9 @@
 namespace extensions {
 
 BookmarkAppRegistrar::BookmarkAppRegistrar(Profile* profile)
-    : profile_(profile) {}
+    : profile_(profile) {
+  extension_observer_.Add(ExtensionRegistry::Get(profile));
+}
 
 BookmarkAppRegistrar::~BookmarkAppRegistrar() = default;
 
@@ -80,6 +83,28 @@ GURL BookmarkAppRegistrar::GetScopeUrlForApp(
   GURL scope_url = GetScopeURLFromBookmarkApp(GetExtension(app_id));
   CHECK(scope_url.is_valid());
   return scope_url;
+}
+
+void BookmarkAppRegistrar::OnExtensionInstalled(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension,
+    bool is_update) {
+  for (web_app::AppRegistrarObserver& observer : observers_)
+    observer.OnWebAppInstalled(extension->id());
+}
+
+void BookmarkAppRegistrar::OnExtensionUninstalled(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension,
+    extensions::UninstallReason reason) {
+  for (web_app::AppRegistrarObserver& observer : observers_)
+    observer.OnWebAppUninstalled(extension->id());
+}
+
+void BookmarkAppRegistrar::OnShutdown(ExtensionRegistry* registry) {
+  for (web_app::AppRegistrarObserver& observer : observers_)
+    observer.OnAppRegistrarShutdown();
+  extension_observer_.RemoveAll();
 }
 
 const Extension* BookmarkAppRegistrar::GetExtension(

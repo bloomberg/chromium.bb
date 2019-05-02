@@ -4,7 +4,9 @@
 
 source_set("components") {
   sources = [
+    "app_registrar.cc",
     "app_registrar.h",
+    "app_registrar_observer.h",
     "install_finalizer.h",
     "install_manager.cc",
     "install_manager.h",

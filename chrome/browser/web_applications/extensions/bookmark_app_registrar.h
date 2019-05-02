@@ -6,7 +6,10 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_EXTENSIONS_BOOKMARK_APP_REGISTRAR_H_
 
 #include "base/callback_forward.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_registry_observer.h"
 
 class Profile;
 
@@ -14,7 +17,8 @@ namespace extensions {
 
 class Extension;
 
-class BookmarkAppRegistrar : public web_app::AppRegistrar {
+class BookmarkAppRegistrar : public web_app::AppRegistrar,
+                             public ExtensionRegistryObserver {
  public:
   explicit BookmarkAppRegistrar(Profile* profile);
   ~BookmarkAppRegistrar() override;
@@ -28,10 +32,22 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar {
   bool HasScopeUrl(const web_app::AppId& app_id) const override;
   GURL GetScopeUrlForApp(const web_app::AppId& app_id) const override;
 
+  // ExtensionRegistryObserver:
+  void OnExtensionInstalled(content::BrowserContext* browser_context,
+                            const Extension* extension,
+                            bool is_update) override;
+  void OnExtensionUninstalled(content::BrowserContext* browser_context,
+                              const Extension* extension,
+                              UninstallReason reason) override;
+  void OnShutdown(ExtensionRegistry* registry) override;
+
  private:
   const Extension* GetExtension(const web_app::AppId& app_id) const;
 
   Profile* profile_;
+
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_observer_{this};
 };
 
 }  // namespace extensions
