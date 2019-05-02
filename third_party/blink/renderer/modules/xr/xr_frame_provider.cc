@@ -217,11 +217,10 @@ void XRFrameProvider::ScheduleNonImmersiveFrame() {
   if (!doc)
     return;
 
-  // This is cleared by either OnNonImmersiveFrameData (GetFrameData callback)
-  // or by OnNonImmersiveVSync (XRFrameProviderRequestCallback's invoke)
-  // Currently the only way for neither of these methods to be called is
-  // if we don't have a MagicWindowProvider and we have an AR Session
-  // which is guaranteed by our above DCheck.
+  // This is cleared by either OnNonImmersiveFrameData (GetFrameData callback,
+  // used if we have a magic window provider), or by OnNonImmersiveVSync
+  // (XRFrameProviderRequestCallback's invoke, used if there's no magic window
+  // provider).
   pending_non_immersive_vsync_ = true;
 
   // If we have a Magic Window provider, request frame data and flag that

@@ -427,6 +427,8 @@ void XR::OnRequestSessionReturned(
       query->mode == XRSession::kModeImmersiveAR) {
     frameProvider()->BeginImmersiveSession(session, std::move(session_ptr));
     if (environment_integration) {
+      // See Task Sources spreadsheet for more information:
+      // https://docs.google.com/spreadsheets/d/1b-dus1Ug3A8y0lX0blkmOjJILisUASdj8x9YN_XMwYc/view
       frameProvider()->GetDataProvider()->GetEnvironmentIntegrationProvider(
           mojo::MakeRequest(&environment_provider_,
                             GetExecutionContext()->GetTaskRunner(
@@ -436,16 +438,6 @@ void XR::OnRequestSessionReturned(
     }
   } else {
     magic_window_provider_.Bind(std::move(session_ptr->data_provider));
-    if (environment_integration) {
-      // See https://bit.ly/2S0zRAS for task types.
-      magic_window_provider_->GetEnvironmentIntegrationProvider(
-          mojo::MakeRequest(&environment_provider_,
-                            GetExecutionContext()->GetTaskRunner(
-                                TaskType::kMiscPlatformAPI)));
-
-      environment_provider_.set_connection_error_handler(WTF::Bind(
-          &XR::OnEnvironmentProviderDisconnect, WrapWeakPersistent(this)));
-    }
   }
 
   query->resolver->Resolve(session);
