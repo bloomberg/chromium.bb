@@ -56,7 +56,7 @@ constexpr char kLastTracingModelName[] = "last_tracing_model.json";
 
 // Maximum interval to display.
 constexpr base::TimeDelta kMaxIntervalToDisplay =
-    base::TimeDelta::FromSecondsD(2.0);
+    base::TimeDelta::FromSecondsD(3.0);
 
 base::FilePath GetLastTracingModelPath(Profile* profile) {
   DCHECK(profile);

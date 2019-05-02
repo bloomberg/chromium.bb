@@ -60,6 +60,11 @@ base::DictionaryValue SerializeThreads(
   return result;
 }
 
+template <typename T>
+bool CompareByTimestampPred(const T& a, const T& b) {
+  return a.timestamp < b.timestamp;
+}
+
 }  // namespace
 
 ArcSystemModel::ThreadInfo::ThreadInfo() = default;
@@ -79,6 +84,54 @@ void ArcSystemModel::Reset() {
   thread_map_.clear();
   all_cpu_events_.clear();
   memory_events_.clear();
+}
+
+void ArcSystemModel::Trim(int64_t trim_timestamp) {
+  const ArcCpuEvent cpu_trim_point(
+      trim_timestamp, ArcCpuEvent::Type::kActive /* does not matter */,
+      0 /* tid, does not matter */);
+  for (auto& cpu_events : all_cpu_events_) {
+    if (cpu_events.empty())
+      continue;
+    auto cpu_cut_pos =
+        std::lower_bound(cpu_events.begin(), cpu_events.end(), cpu_trim_point,
+                         CompareByTimestampPred<ArcCpuEvent>);
+    if (cpu_cut_pos == cpu_events.begin())
+      continue;  // Nothing to trim.
+    // Keep the last message for this CPU, that would be clamped to
+    // |trim_timestamp|.
+    if (cpu_cut_pos == cpu_events.end() ||
+        cpu_cut_pos->timestamp != trim_timestamp) {
+      --cpu_cut_pos;
+      cpu_cut_pos->timestamp = trim_timestamp;
+    }
+    cpu_events = CpuEvents(cpu_cut_pos, cpu_events.end());
+  }
+
+  const ArcValueEvent memory_trim_point(
+      trim_timestamp, ArcValueEvent::Type::kMemTotal /* does not matter */,
+      0 /* value, does not matter */);
+  auto memory_cut_pos = std::upper_bound(
+      memory_events_.begin(), memory_events_.end(), memory_trim_point,
+      CompareByTimestampPred<ArcValueEvent>);
+
+  // Keep the last message per type, that would be trimmed to |trim_timestamp|.
+  ValueEvents trimmed_memory_events;
+  std::set<ArcValueEvent::Type> trimmed_types;
+  auto scan_memory = memory_cut_pos;
+  while (scan_memory != memory_events_.begin()) {
+    --scan_memory;
+    if (!trimmed_types.count(scan_memory->type)) {
+      ArcValueEvent memory_event = *scan_memory;
+      memory_event.timestamp = trim_timestamp;
+      trimmed_memory_events.insert(trimmed_memory_events.begin(), memory_event);
+      trimmed_types.insert(memory_event.type);
+    }
+  }
+  // Add the rest after the trim point.
+  trimmed_memory_events.insert(trimmed_memory_events.end(), memory_cut_pos,
+                               memory_events_.end());
+  memory_events_ = std::move(trimmed_memory_events);
 }
 
 void ArcSystemModel::CopyFrom(const ArcSystemModel& other) {

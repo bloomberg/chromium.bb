@@ -2277,6 +2277,7 @@ source_set("unit_tests") {
     "arc/process/arc_process_unittest.cc",
     "arc/tracing/arc_cpu_event_unittest.cc",
     "arc/tracing/arc_graphics_jank_detector_unittest.cc",
+    "arc/tracing/arc_system_model_unittest.cc",
     "arc/tracing/arc_system_stat_collector_unittest.cc",
     "arc/tracing/arc_tracing_model_unittest.cc",
     "arc/tracing/arc_value_event_unittest.cc",

@@ -997,6 +997,34 @@ ArcTracingGraphicsModel::ArcTracingGraphicsModel() = default;
 
 ArcTracingGraphicsModel::~ArcTracingGraphicsModel() = default;
 
+// static
+void ArcTracingGraphicsModel::TrimEventsContainer(
+    ArcTracingGraphicsModel::EventsContainer* container,
+    int64_t trim_timestamp,
+    const std::set<ArcTracingGraphicsModel::BufferEventType>& start_types) {
+  const ArcTracingGraphicsModel::BufferEvent trim_point(
+      ArcTracingGraphicsModel::BufferEventType::kCustomEvent, trim_timestamp);
+
+  // Global events are trimmed by timestamp only.
+  auto global_cut_pos = std::lower_bound(container->global_events().begin(),
+                                         container->global_events().end(),
+                                         trim_point, SortByTimestampPred);
+  container->global_events() = ArcTracingGraphicsModel::BufferEvents(
+      global_cut_pos, container->global_events().end());
+
+  for (auto& buffer : container->buffer_events()) {
+    auto cut_pos = std::lower_bound(buffer.begin(), buffer.end(), trim_point,
+                                    SortByTimestampPred);
+    while (cut_pos != buffer.end()) {
+      if (start_types.count(cut_pos->type))
+        break;
+      ++cut_pos;
+    }
+
+    buffer = ArcTracingGraphicsModel::BufferEvents(cut_pos, buffer.end());
+  }
+}
+
 bool ArcTracingGraphicsModel::Build(const ArcTracingModel& common_model) {
   Reset();
 
@@ -1095,6 +1123,8 @@ bool ArcTracingGraphicsModel::Build(const ArcTracingModel& common_model) {
 
   system_model_.CopyFrom(common_model.system_model());
 
+  VsyncTrim();
+
   NormalizeTimestamps();
 
   return true;
@@ -1160,6 +1190,35 @@ void ArcTracingGraphicsModel::Reset() {
   chrome_buffer_id_to_task_id_.clear();
   system_model_.Reset();
   duration_ = 0;
+}
+
+void ArcTracingGraphicsModel::VsyncTrim() {
+  int64_t trim_timestamp = -1;
+
+  for (const auto& it : android_top_level_.global_events()) {
+    if (it.type == BufferEventType::kVsync) {
+      trim_timestamp = it.timestamp;
+      break;
+    }
+  }
+
+  if (trim_timestamp < 0) {
+    LOG(ERROR) << "VSYNC event was not found, could not trim.";
+    return;
+  }
+
+  TrimEventsContainer(&chrome_top_level_, trim_timestamp,
+                      {BufferEventType::kChromeOSDraw});
+  TrimEventsContainer(&android_top_level_, trim_timestamp,
+                      {BufferEventType::kSurfaceFlingerInvalidationStart,
+                       BufferEventType::kSurfaceFlingerCompositionStart});
+  for (auto& view_buffer : view_buffers_) {
+    TrimEventsContainer(&view_buffer.second, trim_timestamp,
+                        {BufferEventType::kBufferQueueDequeueStart,
+                         BufferEventType::kExoSurfaceAttach,
+                         BufferEventType::kChromeBarrierOrder});
+  }
+  system_model_.Trim(trim_timestamp);
 }
 
 int ArcTracingGraphicsModel::GetTaskIdFromBufferName(
