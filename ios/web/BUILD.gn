@@ -510,6 +510,7 @@ source_set("ios_web_web_state_ui_unittests") {
     "//ios/testing:ocmock_support",
     "//ios/web/common",
     "//ios/web/navigation",
+    "//ios/web/navigation:block_universal_links_buildflags",
     "//ios/web/navigation:core",
     "//ios/web/public",
     "//ios/web/public/test",
