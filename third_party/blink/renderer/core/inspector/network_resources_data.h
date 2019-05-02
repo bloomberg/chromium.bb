@@ -79,11 +79,14 @@ class XHRReplayData final : public GarbageCollectedFinalized<XHRReplayData> {
     visitor->Trace(execution_context_);
   }
 
+  void DeleteFormData() { form_data_ = nullptr; }
+
  private:
   WeakMember<ExecutionContext> execution_context_;
   AtomicString method_;
   KURL url_;
   bool async_;
+  // TODO(http://crbug.com/958524): Remove form_data_ after OutOfBlinkCORS is launched.
   scoped_refptr<EncodedFormData> form_data_;
   HTTPHeaderMap headers_;
   bool include_credentials_;
