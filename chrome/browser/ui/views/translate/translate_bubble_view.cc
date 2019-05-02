@@ -515,22 +515,22 @@ void TranslateBubbleView::HandleComboboxPerformAction(
   switch (sender_id) {
     case COMBOBOX_ID_SOURCE_LANGUAGE: {
       if (model_->GetOriginalLanguageIndex() ==
-          source_language_combobox_->selected_index()) {
+          source_language_combobox_->GetSelectedIndex()) {
         break;
       }
       model_->UpdateOriginalLanguageIndex(
-          source_language_combobox_->selected_index());
+          source_language_combobox_->GetSelectedIndex());
       UpdateAdvancedView();
       translate::ReportUiAction(translate::SOURCE_LANGUAGE_MENU_CLICKED);
       break;
     }
     case COMBOBOX_ID_TARGET_LANGUAGE: {
       if (model_->GetTargetLanguageIndex() ==
-          target_language_combobox_->selected_index()) {
+          target_language_combobox_->GetSelectedIndex()) {
         break;
       }
       model_->UpdateTargetLanguageIndex(
-          target_language_combobox_->selected_index());
+          target_language_combobox_->GetSelectedIndex());
       UpdateAdvancedView();
       translate::ReportUiAction(translate::TARGET_LANGUAGE_MENU_CLICKED);
       break;

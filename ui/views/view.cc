@@ -1849,6 +1849,8 @@ PaintInfo::ScaleType View::GetPaintScaleType() const {
 }
 
 void View::HandlePropertyChangeEffects(PropertyEffects effects) {
+  if (effects & kPropertyEffectsPreferredSizeChanged)
+    PreferredSizeChanged();
   if (effects & kPropertyEffectsLayout)
     InvalidateLayout();
   if (effects & kPropertyEffectsPaint)

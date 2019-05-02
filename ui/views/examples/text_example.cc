@@ -213,7 +213,7 @@ void TextExample::OnPerformAction(Combobox* combobox) {
     flags &= ~(gfx::Canvas::TEXT_ALIGN_LEFT |
                gfx::Canvas::TEXT_ALIGN_CENTER |
                gfx::Canvas::TEXT_ALIGN_RIGHT);
-    switch (combobox->selected_index()) {
+    switch (combobox->GetSelectedIndex()) {
       case 0:
         break;
       case 1:
@@ -227,7 +227,7 @@ void TextExample::OnPerformAction(Combobox* combobox) {
         break;
     }
   } else if (combobox == text_cb_) {
-    switch (combobox->selected_index()) {
+    switch (combobox->GetSelectedIndex()) {
       case 0:
         text_view_->set_text(base::ASCIIToUTF16(kShortText));
         break;
@@ -242,7 +242,7 @@ void TextExample::OnPerformAction(Combobox* combobox) {
         break;
     }
   } else if (combobox == eliding_cb_) {
-    switch (combobox->selected_index()) {
+    switch (combobox->GetSelectedIndex()) {
       case 0:
         text_view_->set_elide(gfx::ELIDE_TAIL);
         break;
@@ -255,7 +255,7 @@ void TextExample::OnPerformAction(Combobox* combobox) {
     }
   } else if (combobox == prefix_cb_) {
     flags &= ~(gfx::Canvas::SHOW_PREFIX | gfx::Canvas::HIDE_PREFIX);
-    switch (combobox->selected_index()) {
+    switch (combobox->GetSelectedIndex()) {
       case 0:
         break;
       case 1:
@@ -266,7 +266,7 @@ void TextExample::OnPerformAction(Combobox* combobox) {
         break;
     }
   } else if (combobox == weight_cb_) {
-    text_view_->SetWeight(kFontWeights[combobox->selected_index()]);
+    text_view_->SetWeight(kFontWeights[combobox->GetSelectedIndex()]);
   }
   text_view_->set_flags(flags);
   text_view_->SchedulePaint();

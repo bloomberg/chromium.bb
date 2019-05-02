@@ -309,8 +309,8 @@ void CvcUnmaskViewController::CvcConfirmed() {
           dialog()->GetViewByID(static_cast<int>(DialogViewID::CVC_YEAR)));
       DCHECK(year);
 
-      response.exp_month = month->GetTextForRow(month->selected_index());
-      response.exp_year = year->GetTextForRow(year->selected_index());
+      response.exp_month = month->GetTextForRow(month->GetSelectedIndex());
+      response.exp_year = year->GetTextForRow(year->GetSelectedIndex());
     }
     unmask_delegate_->OnUnmaskResponse(response);
   }
@@ -347,9 +347,9 @@ void CvcUnmaskViewController::UpdatePayButtonState() {
     int month_value = 0;
     int year_value = 0;
     bool parsable =
-        base::StringToInt(month->GetTextForRow(month->selected_index()),
+        base::StringToInt(month->GetTextForRow(month->GetSelectedIndex()),
                           &month_value) &&
-        base::StringToInt(year->GetTextForRow(year->selected_index()),
+        base::StringToInt(year->GetTextForRow(year->GetSelectedIndex()),
                           &year_value);
 
     if (!parsable) {

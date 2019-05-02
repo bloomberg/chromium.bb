@@ -2342,9 +2342,9 @@ IN_PROC_BROWSER_TEST_F(
   VerifyExpirationDateDropdownsAreVisible();
 
   // Ensure the next year is pre-populated but month is not checked.
-  EXPECT_EQ(0, month_input()->selected_index());
+  EXPECT_EQ(0, month_input()->GetSelectedIndex());
   EXPECT_EQ(base::ASCIIToUTF16(test::NextYear()),
-            year_input()->GetTextForRow(year_input()->selected_index()));
+            year_input()->GetTextForRow(year_input()->GetSelectedIndex()));
 }
 
 // Tests the upload save bubble. Ensures that the bubble surfaces a pair of
@@ -2361,8 +2361,8 @@ IN_PROC_BROWSER_TEST_F(
 
   // Ensure the December is pre-populated but year is not checked.
   EXPECT_EQ(base::ASCIIToUTF16("12"),
-            month_input()->GetTextForRow(month_input()->selected_index()));
-  EXPECT_EQ(0, year_input()->selected_index());
+            month_input()->GetTextForRow(month_input()->GetSelectedIndex()));
+  EXPECT_EQ(0, year_input()->GetSelectedIndex());
 }
 
 // Tests the upload save bubble. Ensures that the bubble surfaces a pair of
@@ -2379,7 +2379,7 @@ IN_PROC_BROWSER_TEST_F(
   VerifyExpirationDateDropdownsAreVisible();
 
   // Ensure no pre-populated expiration date.
-  EXPECT_EQ(0, month_input()->selected_index());
+  EXPECT_EQ(0, month_input()->GetSelectedIndex());
   EXPECT_EQ(0, year_input()->GetSelectedRow());
 }
 
@@ -2397,7 +2397,7 @@ IN_PROC_BROWSER_TEST_F(
 
   // Ensure no pre-populated expiration date.
   EXPECT_EQ(base::ASCIIToUTF16("08"),
-            month_input()->GetTextForRow(month_input()->selected_index()));
+            month_input()->GetTextForRow(month_input()->GetSelectedIndex()));
   EXPECT_EQ(0, year_input()->GetSelectedRow());
 }
 
@@ -2418,9 +2418,9 @@ IN_PROC_BROWSER_TEST_F(
 
   // Ensure pre-populated expiration date.
   EXPECT_EQ(base::ASCIIToUTF16("03"),
-            month_input()->GetTextForRow(month_input()->selected_index()));
+            month_input()->GetTextForRow(month_input()->GetSelectedIndex()));
   EXPECT_EQ(base::ASCIIToUTF16("2017"),
-            year_input()->GetTextForRow(year_input()->selected_index()));
+            year_input()->GetTextForRow(year_input()->GetSelectedIndex()));
 }
 
 // TODO(crbug.com/884817): Investigate combining local vs. upload tests using a

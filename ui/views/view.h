@@ -142,6 +142,9 @@ enum PropertyEffects {
   // Changes to the property should cause the container to schedule a painting
   // update.
   kPropertyEffectsPaint = 0x00000002,
+  // Changes to the property should cause the preferred size to change. This
+  // implies kPropertyEffectsLayout.
+  kPropertyEffectsPreferredSizeChanged = 0x00000004,
 };
 
 /////////////////////////////////////////////////////////////////////////////

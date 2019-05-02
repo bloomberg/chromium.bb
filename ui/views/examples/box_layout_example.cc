@@ -72,11 +72,11 @@ void BoxLayoutExample::OnPerformAction(Combobox* combobox) {
     UpdateLayoutManager();
   } else if (combobox == main_axis_alignment_) {
     layout_->set_main_axis_alignment(static_cast<BoxLayout::MainAxisAlignment>(
-        main_axis_alignment_->selected_index()));
+        main_axis_alignment_->GetSelectedIndex()));
   } else if (combobox == cross_axis_alignment_) {
     layout_->set_cross_axis_alignment(
         static_cast<BoxLayout::CrossAxisAlignment>(
-            cross_axis_alignment_->selected_index()));
+            cross_axis_alignment_->GetSelectedIndex()));
   }
   RefreshLayoutPanel(false);
 }
@@ -112,13 +112,14 @@ void BoxLayoutExample::UpdateLayoutManager() {
   base::StringToInt(default_flex_->text(), &default_flex);
   base::StringToInt(min_cross_axis_size_->text(), &min_cross_size);
   auto layout = std::make_unique<BoxLayout>(
-      orientation_->selected_index() == 0 ? BoxLayout::Orientation::kHorizontal
-                                          : BoxLayout::Orientation::kVertical,
+      orientation_->GetSelectedIndex() == 0
+          ? BoxLayout::Orientation::kHorizontal
+          : BoxLayout::Orientation::kVertical,
       gfx::Insets(0, 0), child_spacing, collapse_margins_->checked());
   layout->set_cross_axis_alignment(static_cast<BoxLayout::CrossAxisAlignment>(
-      cross_axis_alignment_->selected_index()));
+      cross_axis_alignment_->GetSelectedIndex()));
   layout->set_main_axis_alignment(static_cast<BoxLayout::MainAxisAlignment>(
-      main_axis_alignment_->selected_index()));
+      main_axis_alignment_->GetSelectedIndex()));
   layout->SetDefaultFlex(default_flex);
   layout->set_minimum_cross_axis_size(min_cross_size);
   View* const panel = layout_panel();

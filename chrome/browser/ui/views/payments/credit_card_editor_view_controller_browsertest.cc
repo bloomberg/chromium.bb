@@ -283,7 +283,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EditingMaskedCard) {
           billing_address_combobox->model());
   EXPECT_EQ(
       billing_profile.guid(),
-      model->GetItemIdentifierAt(billing_address_combobox->selected_index()));
+      model->GetItemIdentifierAt(billing_address_combobox->GetSelectedIndex()));
 
   // Select a different billing address.
   SelectBillingAddress(additional_profile.guid());

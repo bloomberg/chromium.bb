@@ -66,13 +66,13 @@ void FlexLayoutExample::OnPerformAction(Combobox* combobox) {
       LayoutAlignment::kCenter, LayoutAlignment::kEnd};
 
   if (combobox == orientation_) {
-    layout_->SetOrientation(orientations[combobox->selected_index()]);
+    layout_->SetOrientation(orientations[combobox->GetSelectedIndex()]);
   } else if (combobox == main_axis_alignment_) {
     layout_->SetMainAxisAlignment(
-        main_axis_alignments[combobox->selected_index()]);
+        main_axis_alignments[combobox->GetSelectedIndex()]);
   } else if (combobox == cross_axis_alignment_) {
     layout_->SetCrossAxisAlignment(
-        cross_axis_alignments[combobox->selected_index()]);
+        cross_axis_alignments[combobox->GetSelectedIndex()]);
   }
   RefreshLayoutPanel(false);
 }

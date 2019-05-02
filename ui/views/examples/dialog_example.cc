@@ -215,10 +215,10 @@ void DialogExample::AddCheckbox(GridLayout* layout, Checkbox** member) {
 ui::ModalType DialogExample::GetModalType() const {
   // "Fake" modeless happens when a DialogDelegate specifies window-modal, but
   // doesn't provide a parent window.
-  if (mode_->selected_index() == kFakeModeless)
+  if (mode_->GetSelectedIndex() == kFakeModeless)
     return ui::MODAL_TYPE_WINDOW;
 
-  return static_cast<ui::ModalType>(mode_->selected_index());
+  return static_cast<ui::ModalType>(mode_->GetSelectedIndex());
 }
 
 int DialogExample::GetDialogButtons() const {
@@ -266,7 +266,7 @@ void DialogExample::ButtonPressed(Button* sender, const ui::Event& event) {
       // constrained_window::CreateBrowserModalDialogViews() allows dialogs to
       // be created as MODAL_TYPE_WINDOW without specifying a parent.
       gfx::NativeView parent = nullptr;
-      if (mode_->selected_index() != kFakeModeless)
+      if (mode_->GetSelectedIndex() != kFakeModeless)
         parent = container()->GetWidget()->GetNativeView();
 
       DialogDelegate::CreateDialogWidget(

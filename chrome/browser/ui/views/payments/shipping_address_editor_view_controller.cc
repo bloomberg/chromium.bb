@@ -176,9 +176,10 @@ void ShippingAddressEditorViewController::OnPerformAction(
   EditorViewController::OnPerformAction(sender);
   if (sender->id() != GetInputFieldViewId(autofill::ADDRESS_HOME_COUNTRY))
     return;
-  DCHECK_GE(sender->selected_index(), 0);
-  if (chosen_country_index_ != static_cast<size_t>(sender->selected_index())) {
-    chosen_country_index_ = sender->selected_index();
+  DCHECK_GE(sender->GetSelectedIndex(), 0);
+  if (chosen_country_index_ !=
+      static_cast<size_t>(sender->GetSelectedIndex())) {
+    chosen_country_index_ = sender->GetSelectedIndex();
     failed_to_load_region_data_ = false;
     // View update must be asynchronous to let the combobox finish performing
     // the action.
@@ -254,7 +255,7 @@ bool ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
 
 bool ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
     IsValidCombobox(views::Combobox* combobox, base::string16* error_message) {
-  return ValidateValue(combobox->GetTextForRow(combobox->selected_index()),
+  return ValidateValue(combobox->GetTextForRow(combobox->GetSelectedIndex()),
                        error_message);
 }
 
@@ -273,7 +274,7 @@ bool ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
     ComboboxValueChanged(views::Combobox* combobox) {
   base::string16 error_message;
   bool is_valid = ValidateValue(
-      combobox->GetTextForRow(combobox->selected_index()), &error_message);
+      combobox->GetTextForRow(combobox->GetSelectedIndex()), &error_message);
   controller_->DisplayErrorMessageForField(field_.type, error_message);
   return is_valid;
 }
@@ -529,7 +530,8 @@ bool ShippingAddressEditorViewController::SaveFieldsToProfile(
   // The combobox can be null when saving to temporary profile while updating
   // the view.
   if (combobox) {
-    base::string16 country(combobox->GetTextForRow(combobox->selected_index()));
+    base::string16 country(
+        combobox->GetTextForRow(combobox->GetSelectedIndex()));
     bool success =
         profile->SetInfo(autofill::ADDRESS_HOME_COUNTRY, country, locale);
     LOG_IF(ERROR, !success && !ignore_errors)
@@ -561,13 +563,13 @@ bool ShippingAddressEditorViewController::SaveFieldsToProfile(
     if (combobox->IsValid()) {
       success = profile->SetInfo(
           field.second.type,
-          combobox->GetTextForRow(combobox->selected_index()), locale);
+          combobox->GetTextForRow(combobox->GetSelectedIndex()), locale);
     } else {
       success = false;
     }
     LOG_IF(ERROR, !success && !ignore_errors)
         << "Can't setinfo(" << field.second.type << ", "
-        << combobox->GetTextForRow(combobox->selected_index());
+        << combobox->GetTextForRow(combobox->GetSelectedIndex());
     if (!success && !ignore_errors)
       return false;
   }

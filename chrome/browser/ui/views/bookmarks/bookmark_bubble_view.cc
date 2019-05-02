@@ -223,7 +223,7 @@ void BookmarkBubbleView::ButtonPressed(views::Button* sender,
 // views::ComboboxListener -----------------------------------------------------
 
 void BookmarkBubbleView::OnPerformAction(views::Combobox* combobox) {
-  if (combobox->selected_index() + 1 == folder_model()->GetItemCount()) {
+  if (combobox->GetSelectedIndex() + 1 == folder_model()->GetItemCount()) {
     base::RecordAction(UserMetricsAction("BookmarkBubble_EditFromCombobox"));
     ShowEditor();
   }
@@ -324,6 +324,7 @@ void BookmarkBubbleView::ApplyEdits() {
       base::RecordAction(
           UserMetricsAction("BookmarkBubble_ChangeTitleInBubble"));
     }
-    folder_model()->MaybeChangeParent(node, parent_combobox_->selected_index());
+    folder_model()->MaybeChangeParent(node,
+                                      parent_combobox_->GetSelectedIndex());
   }
 }

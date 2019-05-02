@@ -236,7 +236,7 @@ void AppInfoSummaryPanel::AddSubviews() {
 void AppInfoSummaryPanel::OnPerformAction(views::Combobox* combobox) {
   if (combobox == launch_options_combobox_) {
     SetLaunchType(launch_options_combobox_model_->GetLaunchTypeAtIndex(
-        launch_options_combobox_->selected_index()));
+        launch_options_combobox_->GetSelectedIndex()));
   } else {
     NOTREACHED();
   }

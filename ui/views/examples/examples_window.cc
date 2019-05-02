@@ -202,10 +202,10 @@ class ExamplesWindowContents : public WidgetDelegateView,
   // ComboboxListener:
   void OnPerformAction(Combobox* combobox) override {
     DCHECK_EQ(combobox, combobox_);
-    DCHECK(combobox->selected_index() < combobox_model_->GetItemCount());
+    DCHECK(combobox->GetSelectedIndex());
     example_shown_->RemoveAllChildViews(false);
     example_shown_->AddChildView(
-        combobox_model_->GetItemViewAt(combobox->selected_index()));
+        combobox_model_->GetItemViewAt(combobox->GetSelectedIndex()));
     example_shown_->RequestFocus();
     SetStatus(std::string());
     InvalidateLayout();

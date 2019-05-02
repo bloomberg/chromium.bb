@@ -146,7 +146,7 @@ gfx::Size PermissionCombobox::CalculatePreferredSize() const {
 }
 
 void PermissionCombobox::OnPerformAction(Combobox* combobox) {
-  model_->OnPerformAction(combobox->selected_index());
+  model_->OnPerformAction(combobox->GetSelectedIndex());
 }
 
 }  // namespace internal

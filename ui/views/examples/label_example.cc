@@ -140,10 +140,10 @@ void LabelExample::ButtonPressed(Button* button, const ui::Event& event) {
 void LabelExample::OnPerformAction(Combobox* combobox) {
   if (combobox == alignment_) {
     custom_label_->SetHorizontalAlignment(
-        static_cast<gfx::HorizontalAlignment>(combobox->selected_index()));
+        static_cast<gfx::HorizontalAlignment>(combobox->GetSelectedIndex()));
   } else if (combobox == elide_behavior_) {
     custom_label_->SetElideBehavior(
-        static_cast<gfx::ElideBehavior>(combobox->selected_index()));
+        static_cast<gfx::ElideBehavior>(combobox->GetSelectedIndex()));
   }
 }
 

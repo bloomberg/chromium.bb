@@ -109,13 +109,13 @@ class ExpirationDateValidationDelegate : public ValidationDelegate {
         view_parent->GetViewByID(EditorViewController::GetInputFieldViewId(
             autofill::CREDIT_CARD_EXP_MONTH)));
     base::string16 month =
-        month_combobox->model()->GetItemAt(month_combobox->selected_index());
+        month_combobox->model()->GetItemAt(month_combobox->GetSelectedIndex());
 
     views::Combobox* year_combobox = static_cast<views::Combobox*>(
         view_parent->GetViewByID(EditorViewController::GetInputFieldViewId(
             autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR)));
     base::string16 year =
-        year_combobox->model()->GetItemAt(year_combobox->selected_index());
+        year_combobox->model()->GetItemAt(year_combobox->GetSelectedIndex());
 
     bool is_expired = IsCardExpired(month, year, app_locale_);
     month_combobox->SetInvalid(is_expired);
@@ -410,7 +410,7 @@ bool CreditCardEditorViewController::ValidateModelAndSave() {
         static_cast<autofill::AddressComboboxModel*>(address_combobox->model());
 
     credit_card_to_edit_->set_billing_address_id(
-        model->GetItemIdentifierAt(address_combobox->selected_index()));
+        model->GetItemIdentifierAt(address_combobox->GetSelectedIndex()));
     if (!is_incognito()) {
       state()->GetPersonalDataManager()->UpdateServerCardMetadata(
           *credit_card_to_edit_);
@@ -442,10 +442,10 @@ bool CreditCardEditorViewController::ValidateModelAndSave() {
           static_cast<autofill::AddressComboboxModel*>(combobox->model());
 
       credit_card.set_billing_address_id(
-          model->GetItemIdentifierAt(combobox->selected_index()));
+          model->GetItemIdentifierAt(combobox->GetSelectedIndex()));
     } else {
       credit_card.SetInfo(autofill::AutofillType(field.second.type),
-                          combobox->GetTextForRow(combobox->selected_index()),
+                          combobox->GetTextForRow(combobox->GetSelectedIndex()),
                           locale);
     }
   }
@@ -739,7 +739,7 @@ bool CreditCardEditorViewController::CreditCardValidationDelegate::
     // addresses when choosing them as billing addresses.
     autofill::AddressComboboxModel* model =
         static_cast<autofill::AddressComboboxModel*>(combobox->model());
-    if (model->GetItemIdentifierAt(combobox->selected_index()).empty()) {
+    if (model->GetItemIdentifierAt(combobox->GetSelectedIndex()).empty()) {
       if (error_message) {
         *error_message =
             l10n_util::GetStringUTF16(IDS_PAYMENTS_BILLING_ADDRESS_REQUIRED);
@@ -748,7 +748,7 @@ bool CreditCardEditorViewController::CreditCardValidationDelegate::
     }
     return true;
   }
-  return ValidateValue(combobox->GetTextForRow(combobox->selected_index()),
+  return ValidateValue(combobox->GetTextForRow(combobox->GetSelectedIndex()),
                        error_message);
 }
 

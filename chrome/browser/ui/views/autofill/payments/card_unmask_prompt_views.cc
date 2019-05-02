@@ -305,10 +305,10 @@ bool CardUnmaskPromptViews::Accept() {
   controller_->OnUnmaskResponse(
       cvc_input_->text(),
       month_input_->visible()
-          ? month_input_->GetTextForRow(month_input_->selected_index())
+          ? month_input_->GetTextForRow(month_input_->GetSelectedIndex())
           : base::string16(),
       year_input_->visible()
-          ? year_input_->GetTextForRow(year_input_->selected_index())
+          ? year_input_->GetTextForRow(year_input_->GetSelectedIndex())
           : base::string16(),
       storage_checkbox_ ? storage_checkbox_->checked() : false);
   return false;
@@ -330,9 +330,9 @@ void CardUnmaskPromptViews::OnPerformAction(views::Combobox* combobox) {
       year_input_->SetInvalid(false);
       SetRetriableErrorMessage(base::string16());
     }
-  } else if (month_input_->selected_index() !=
+  } else if (month_input_->GetSelectedIndex() !=
                  month_combobox_model_.GetDefaultIndex() &&
-             year_input_->selected_index() !=
+             year_input_->GetSelectedIndex() !=
                  year_combobox_model_.GetDefaultIndex()) {
     month_input_->SetInvalid(true);
     year_input_->SetInvalid(true);
@@ -463,8 +463,8 @@ bool CardUnmaskPromptViews::ExpirationDateIsValid() const {
     return true;
 
   return controller_->InputExpirationIsValid(
-      month_input_->GetTextForRow(month_input_->selected_index()),
-      year_input_->GetTextForRow(year_input_->selected_index()));
+      month_input_->GetTextForRow(month_input_->GetSelectedIndex()),
+      year_input_->GetTextForRow(year_input_->GetSelectedIndex()));
 }
 
 void CardUnmaskPromptViews::ClosePrompt() {

@@ -277,12 +277,15 @@ void Combobox::ModelChanged() {
 }
 
 void Combobox::SetSelectedIndex(int index) {
+  if (selected_index_ == index)
+    return;
+
   selected_index_ = index;
   if (size_to_largest_label_) {
-    SchedulePaint();
+    OnPropertyChanged(&selected_index_, kPropertyEffectsPaint);
   } else {
     content_size_ = GetContentSize();
-    PreferredSizeChanged();
+    OnPropertyChanged(&selected_index_, kPropertyEffectsPreferredSizeChanged);
   }
 }
 
@@ -653,5 +656,9 @@ PrefixSelector* Combobox::GetPrefixSelector() {
     selector_ = std::make_unique<PrefixSelector>(this, this);
   return selector_.get();
 }
+
+BEGIN_METADATA(Combobox)
+ADD_PROPERTY_METADATA(Combobox, int, SelectedIndex)
+END_METADATA()
 
 }  // namespace views

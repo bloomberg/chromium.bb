@@ -92,10 +92,10 @@ bool SaveCardOfferBubbleViews::Accept() {
         {cardholder_name_textfield_ ? cardholder_name_textfield_->text()
                                     : base::string16(),
          month_input_dropdown_ ? month_input_dropdown_->model()->GetItemAt(
-                                     month_input_dropdown_->selected_index())
+                                     month_input_dropdown_->GetSelectedIndex())
                                : base::string16(),
          year_input_dropdown_ ? year_input_dropdown_->model()->GetItemAt(
-                                    year_input_dropdown_->selected_index())
+                                    year_input_dropdown_->GetSelectedIndex())
                               : base::string16()});
   }
   return true;
@@ -139,10 +139,10 @@ bool SaveCardOfferBubbleViews::IsDialogButtonEnabled(
     DCHECK(!cardholder_name_textfield_);
     int month_value = 0, year_value = 0;
     if (!base::StringToInt(month_input_dropdown_->model()->GetItemAt(
-                               month_input_dropdown_->selected_index()),
+                               month_input_dropdown_->GetSelectedIndex()),
                            &month_value) ||
         !base::StringToInt(year_input_dropdown_->model()->GetItemAt(
-                               year_input_dropdown_->selected_index()),
+                               year_input_dropdown_->GetSelectedIndex()),
                            &year_value)) {
       return false;
     }

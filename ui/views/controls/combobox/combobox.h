@@ -37,6 +37,8 @@ class VIEWS_EXPORT Combobox : public View,
                               public PrefixDelegate,
                               public ButtonListener {
  public:
+  METADATA_HEADER(Combobox);
+
   // The combobox's class name.
   static const char kViewClassName[];
   static constexpr int kDefaultComboboxTextContext = style::CONTEXT_BUTTON;
@@ -61,7 +63,7 @@ class VIEWS_EXPORT Combobox : public View,
   void ModelChanged();
 
   // Gets/Sets the selected index.
-  int selected_index() const { return selected_index_; }
+  int GetSelectedIndex() const { return selected_index_; }
   void SetSelectedIndex(int index);
 
   // Looks for the first occurrence of |value| in |model()|. If found, selects
