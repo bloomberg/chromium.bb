@@ -121,8 +121,10 @@ This doc outlines some tricks / gotchas / features of how we ship native code in
    * For renderer processes, the OS starts all Monochrome renderer processes by `fork()`ing the WebView zygote rather than the normal application zygote.
      * In this case, RELRO sharing would be redundant since the entire process' memory is shared with the zygote with copy-on-write semantics.
  * For Android Q+ (Trichrome):
-   * TrichromeChrome no longer shares its RELRO data with WebView and no RELRO sharing occurs. TrichromeWebView works the same way as on Android N-P.
-   * TrichromeChrome's renderer processes are no longer `fork()`ed from the WebView zygote. TrichromeWebView works the same way as on Android N-P.
+   * For non-renderer processes, TrichromeChrome no longer shares its RELRO data with WebView and no RELRO sharing occurs. TrichromeWebView works the same way as on Android N-P.
+   * For renderer processes, TrichromeChrome `fork()`s from a chrome-specific app zygote. `libmonochrome.so` is loaded in the zygote before `fork()`.
+     * Similar to O-P, app zygote provides copy-on-write memory semantics so RELRO sharing is redundant.
+   * For renderer processes, TrichromeWebView works the same way as on Android N-P.
 
 ## Library Prefetching
  * During start-up, we `fork()` a process that reads a byte from each page of the library's memory (or just the ordered range of the library).
