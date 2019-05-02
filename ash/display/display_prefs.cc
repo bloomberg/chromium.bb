@@ -918,6 +918,11 @@ void DisplayPrefs::MaybeStoreDisplayPrefs() {
   StoreDisplayTouchAssociations(pref_service);
   StoreExternalDisplayMirrorInfo(pref_service);
   StoreCurrentDisplayMixedMirrorModeParams(pref_service);
+
+  // The display prefs need to be committed immediately to guarantee they're not
+  // lost, and are restored properly on reboot. https://crbug.com/936884.
+  // This sends a request via mojo to commit the prefs to disk.
+  pref_service->CommitPendingWrite();
 }
 
 void DisplayPrefs::LoadDisplayPreferences() {
