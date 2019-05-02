@@ -473,6 +473,8 @@ void OverviewSession::AddItem(
   grid->AddItem(window, reposition, animate, ignored_items, index);
   ++num_items_;
 
+  MaybeCreateAndPositionNoWindowsWidget();
+
   // Transfer focus from |window| to |overview_focus_widget_| to match the
   // behavior of entering overview mode in the beginning.
   DCHECK(overview_focus_widget_);
@@ -503,6 +505,8 @@ void OverviewSession::RemoveItem(OverviewItem* overview_item) {
     if (overview_item->GetWindow() == restore_focus_window_)
       restore_focus_window_ = nullptr;
   }
+
+  MaybeCreateAndPositionNoWindowsWidget();
 
   GetGridWithOverviewItem(overview_item)->RemoveItem(overview_item);
   --num_items_;

@@ -1730,6 +1730,20 @@ TEST_F(OverviewSessionTest, NoWindowsIndicatorPositionSplitview) {
             no_windows_widget->GetWindowBoundsInScreen().CenterPoint());
 }
 
+// Tests that the no windows indicator shows properly after adding an item.
+TEST_F(OverviewSessionTest, NoWindowsIndicatorAddItem) {
+  std::unique_ptr<aura::Window> window(CreateTestWindow());
+
+  ToggleOverview();
+  auto* split_view_controller = Shell::Get()->split_view_controller();
+  split_view_controller->SnapWindow(window.get(), SplitViewController::LEFT);
+  EXPECT_TRUE(overview_session()->no_windows_widget_for_testing());
+
+  overview_session()->AddItem(window.get(), /*reposition=*/true,
+                              /*animate=*/false);
+  EXPECT_FALSE(overview_session()->no_windows_widget_for_testing());
+}
+
 // Verify that when opening overview mode with multiple displays, the no items
 // indicator on the primary grid if there are no windows.
 TEST_F(OverviewSessionTest, NoWindowsIndicatorPositionMultiDisplay) {
