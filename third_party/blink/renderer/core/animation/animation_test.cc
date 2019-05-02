@@ -32,8 +32,8 @@
 
 #include <memory>
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/core/animation/animatable/animatable_double.h"
 #include "third_party/blink/renderer/core/animation/animation_clock.h"
+#include "third_party/blink/renderer/core/animation/css/compositor_keyframe_double.h"
 #include "third_party/blink/renderer/core/animation/css_number_interpolation_type.h"
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
@@ -86,7 +86,7 @@ class AnimationAnimationTest : public RenderingTest {
     // Egregious hack: Sideload the compositor value.
     // This is usually set in a part of the rendering process SimulateFrame
     // doesn't call.
-    start_keyframe->SetCompositorValue(AnimatableDouble::Create(1.0));
+    start_keyframe->SetCompositorValue(CompositorKeyframeDouble::Create(1.0));
     TransitionKeyframe* end_keyframe =
         TransitionKeyframe::Create(PropertyHandleOpacity);
     end_keyframe->SetValue(std::make_unique<TypedInterpolationValue>(
@@ -94,7 +94,7 @@ class AnimationAnimationTest : public RenderingTest {
         std::make_unique<InterpolableNumber>(0.0)));
     end_keyframe->SetOffset(1.0);
     // Egregious hack: Sideload the compositor value.
-    end_keyframe->SetCompositorValue(AnimatableDouble::Create(0.0));
+    end_keyframe->SetCompositorValue(CompositorKeyframeDouble::Create(0.0));
 
     TransitionKeyframeVector keyframes;
     keyframes.push_back(start_keyframe);

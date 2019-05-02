@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "third_party/blink/renderer/core/animation/css/css_animatable_value_factory.h"
 #include "third_party/blink/renderer/core/animation/length_interpolation_functions.h"
 #include "third_party/blink/renderer/core/animation/length_property_functions.h"
 #include "third_party/blink/renderer/core/css/css_calculation_value.h"

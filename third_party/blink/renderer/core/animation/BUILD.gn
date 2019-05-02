@@ -8,10 +8,6 @@ blink_core_sources("animation") {
   split_count = 5
 
   sources = [
-    "animatable/animatable_double.h",
-    "animatable/animatable_filter_operations.h",
-    "animatable/animatable_transform.h",
-    "animatable/animatable_value.h",
     "animation.cc",
     "animation.h",
     "animation_clock.cc",
@@ -30,8 +26,12 @@ blink_core_sources("animation") {
     "color_property_functions.h",
     "compositor_animations.cc",
     "compositor_animations.h",
-    "css/css_animatable_value_factory.cc",
-    "css/css_animatable_value_factory.h",
+    "css/compositor_keyframe_double.h",
+    "css/compositor_keyframe_filter_operations.h",
+    "css/compositor_keyframe_transform.h",
+    "css/compositor_keyframe_value.h",
+    "css/compositor_keyframe_value_factory.cc",
+    "css/compositor_keyframe_value_factory.h",
     "css/css_animation_data.cc",
     "css/css_animation_data.h",
     "css/css_animation_update.cc",

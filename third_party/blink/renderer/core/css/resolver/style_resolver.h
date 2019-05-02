@@ -42,9 +42,9 @@
 
 namespace blink {
 
-class AnimatableValue;
 class CSSRuleList;
 class CSSValue;
+class CompositorKeyframeValue;
 class Document;
 class Element;
 class Interpolation;
@@ -75,7 +75,7 @@ class CORE_EXPORT StyleResolver final
 
   static scoped_refptr<ComputedStyle> InitialStyleForElement(Document&);
 
-  static AnimatableValue* CreateAnimatableValueSnapshot(
+  static CompositorKeyframeValue* CreateCompositorKeyframeValueSnapshot(
       Element&,
       const ComputedStyle& base_style,
       const ComputedStyle* parent_style,

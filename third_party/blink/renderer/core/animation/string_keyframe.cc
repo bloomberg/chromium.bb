@@ -168,13 +168,14 @@ StringKeyframe::CreatePropertySpecificKeyframe(
       offset, &Easing(), SvgPropertyValue(property.SvgAttribute()), composite);
 }
 
-bool StringKeyframe::CSSPropertySpecificKeyframe::PopulateAnimatableValue(
-    const PropertyHandle& property,
-    Element& element,
-    const ComputedStyle& base_style,
-    const ComputedStyle* parent_style) const {
-  animatable_value_cache_ = StyleResolver::CreateAnimatableValueSnapshot(
-      element, base_style, parent_style, property, value_.Get());
+bool StringKeyframe::CSSPropertySpecificKeyframe::
+    PopulateCompositorKeyframeValue(const PropertyHandle& property,
+                                    Element& element,
+                                    const ComputedStyle& base_style,
+                                    const ComputedStyle* parent_style) const {
+  compositor_keyframe_value_cache_ =
+      StyleResolver::CreateCompositorKeyframeValueSnapshot(
+          element, base_style, parent_style, property, value_.Get());
   return true;
 }
 
@@ -187,7 +188,7 @@ StringKeyframe::CSSPropertySpecificKeyframe::NeutralKeyframe(
 
 void StringKeyframe::CSSPropertySpecificKeyframe::Trace(Visitor* visitor) {
   visitor->Trace(value_);
-  visitor->Trace(animatable_value_cache_);
+  visitor->Trace(compositor_keyframe_value_cache_);
   Keyframe::PropertySpecificKeyframe::Trace(visitor);
 }
 
@@ -196,7 +197,7 @@ StringKeyframe::CSSPropertySpecificKeyframe::CloneWithOffset(
     double offset) const {
   CSSPropertySpecificKeyframe* clone =
       Create(offset, easing_, value_.Get(), composite_);
-  clone->animatable_value_cache_ = animatable_value_cache_;
+  clone->compositor_keyframe_value_cache_ = compositor_keyframe_value_cache_;
   return clone;
 }
 

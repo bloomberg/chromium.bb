@@ -34,11 +34,11 @@
 #include <cmath>
 #include <memory>
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/renderer/core/animation/animatable/animatable_double.h"
-#include "third_party/blink/renderer/core/animation/animatable/animatable_filter_operations.h"
-#include "third_party/blink/renderer/core/animation/animatable/animatable_transform.h"
-#include "third_party/blink/renderer/core/animation/animatable/animatable_value.h"
 #include "third_party/blink/renderer/core/animation/animation_effect.h"
+#include "third_party/blink/renderer/core/animation/css/compositor_keyframe_double.h"
+#include "third_party/blink/renderer/core/animation/css/compositor_keyframe_filter_operations.h"
+#include "third_party/blink/renderer/core/animation/css/compositor_keyframe_transform.h"
+#include "third_party/blink/renderer/core/animation/css/compositor_keyframe_value.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
@@ -226,13 +226,13 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
             "modes other than 'replace'");
       }
 
-      if (!keyframe->GetAnimatableValue()) {
+      if (!keyframe->GetCompositorKeyframeValue()) {
         return FailureCode::NonActionable(
             "Accelerated keyframe value could not be computed");
       }
 
       // FIXME: Determine candidacy based on the CSSValue instead of a snapshot
-      // AnimatableValue.
+      // CompositorKeyframeValue.
       switch (property.GetCSSProperty().PropertyID()) {
         case CSSPropertyID::kOpacity:
           break;
@@ -240,7 +240,8 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
         case CSSPropertyID::kScale:
         case CSSPropertyID::kTranslate:
         case CSSPropertyID::kTransform:
-          if (ToAnimatableTransform(keyframe->GetAnimatableValue())
+          if (ToCompositorKeyframeTransform(
+                  keyframe->GetCompositorKeyframeValue())
                   ->GetTransformOperations()
                   .DependsOnBoxSize()) {
             return FailureCode::Actionable(
@@ -251,7 +252,8 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
         case CSSPropertyID::kFilter:
         case CSSPropertyID::kBackdropFilter: {
           const FilterOperations& operations =
-              ToAnimatableFilterOperations(keyframe->GetAnimatableValue())
+              ToCompositorKeyframeFilterOperations(
+                  keyframe->GetCompositorKeyframeValue())
                   ->Operations();
           if (operations.HasFilterThatMovesPixels()) {
             return FailureCode::Actionable(
@@ -261,7 +263,7 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
         }
         case CSSPropertyID::kVariable: {
           DCHECK(RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled());
-          if (!keyframe->GetAnimatableValue()->IsDouble()) {
+          if (!keyframe->GetCompositorKeyframeValue()->IsDouble()) {
             // TODO(kevers): Extend support to other custom property types.
             return FailureCode::Actionable(
                 "Accelerated animation cannot be applied to a custom property "
@@ -572,34 +574,34 @@ namespace {
 
 void AddKeyframeToCurve(CompositorFilterAnimationCurve& curve,
                         Keyframe::PropertySpecificKeyframe* keyframe,
-                        const AnimatableValue* value,
+                        const CompositorKeyframeValue* value,
                         const TimingFunction& keyframe_timing_function) {
   FilterEffectBuilder builder(FloatRect(), 1);
   CompositorFilterKeyframe filter_keyframe(
       keyframe->Offset(),
       builder.BuildFilterOperations(
-          ToAnimatableFilterOperations(value)->Operations()),
+          ToCompositorKeyframeFilterOperations(value)->Operations()),
       keyframe_timing_function);
   curve.AddKeyframe(filter_keyframe);
 }
 
 void AddKeyframeToCurve(CompositorFloatAnimationCurve& curve,
                         Keyframe::PropertySpecificKeyframe* keyframe,
-                        const AnimatableValue* value,
+                        const CompositorKeyframeValue* value,
                         const TimingFunction& keyframe_timing_function) {
-  CompositorFloatKeyframe float_keyframe(keyframe->Offset(),
-                                         ToAnimatableDouble(value)->ToDouble(),
-                                         keyframe_timing_function);
+  CompositorFloatKeyframe float_keyframe(
+      keyframe->Offset(), ToCompositorKeyframeDouble(value)->ToDouble(),
+      keyframe_timing_function);
   curve.AddKeyframe(float_keyframe);
 }
 
 void AddKeyframeToCurve(CompositorTransformAnimationCurve& curve,
                         Keyframe::PropertySpecificKeyframe* keyframe,
-                        const AnimatableValue* value,
+                        const CompositorKeyframeValue* value,
                         const TimingFunction& keyframe_timing_function) {
   CompositorTransformOperations ops;
   ToCompositorTransformOperations(
-      ToAnimatableTransform(value)->GetTransformOperations(), &ops);
+      ToCompositorKeyframeTransform(value)->GetTransformOperations(), &ops);
 
   CompositorTransformKeyframe transform_keyframe(
       keyframe->Offset(), std::move(ops), keyframe_timing_function);
@@ -618,7 +620,8 @@ void AddKeyframesToCurve(PlatformAnimationCurveType& curve,
     else
       keyframe_timing_function = &keyframe->Easing();
 
-    const AnimatableValue* value = keyframe->GetAnimatableValue();
+    const CompositorKeyframeValue* value =
+        keyframe->GetCompositorKeyframeValue();
     AddKeyframeToCurve(curve, keyframe, value, *keyframe_timing_function);
   }
 }

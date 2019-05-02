@@ -112,12 +112,13 @@ class CORE_EXPORT StringKeyframe : public Keyframe {
 
     const CSSValue* Value() const { return value_.Get(); }
 
-    bool PopulateAnimatableValue(const PropertyHandle&,
-                                 Element&,
-                                 const ComputedStyle& base_style,
-                                 const ComputedStyle* parent_style) const final;
-    const AnimatableValue* GetAnimatableValue() const final {
-      return animatable_value_cache_;
+    bool PopulateCompositorKeyframeValue(
+        const PropertyHandle&,
+        Element&,
+        const ComputedStyle& base_style,
+        const ComputedStyle* parent_style) const final;
+    const CompositorKeyframeValue* GetCompositorKeyframeValue() const final {
+      return compositor_keyframe_value_cache_;
     }
 
     bool IsNeutral() const final { return !value_; }
@@ -133,7 +134,7 @@ class CORE_EXPORT StringKeyframe : public Keyframe {
     bool IsCSSPropertySpecificKeyframe() const override { return true; }
 
     Member<const CSSValue> value_;
-    mutable Member<AnimatableValue> animatable_value_cache_;
+    mutable Member<CompositorKeyframeValue> compositor_keyframe_value_cache_;
   };
 
   class SVGPropertySpecificKeyframe
@@ -161,7 +162,9 @@ class CORE_EXPORT StringKeyframe : public Keyframe {
 
     PropertySpecificKeyframe* CloneWithOffset(double offset) const final;
 
-    const AnimatableValue* GetAnimatableValue() const final { return nullptr; }
+    const CompositorKeyframeValue* GetCompositorKeyframeValue() const final {
+      return nullptr;
+    }
 
     bool IsNeutral() const final { return value_.IsNull(); }
     PropertySpecificKeyframe* NeutralKeyframe(

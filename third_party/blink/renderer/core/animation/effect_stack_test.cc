@@ -6,7 +6,6 @@
 
 #include <memory>
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/core/animation/animatable/animatable_double.h"
 #include "third_party/blink/renderer/core/animation/animation_clock.h"
 #include "third_party/blink/renderer/core/animation/animation_test_helper.h"
 #include "third_party/blink/renderer/core/animation/document_timeline.h"

@@ -41,10 +41,8 @@
 #include "cc/trees/transform_node.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/web/web_settings.h"
-#include "third_party/blink/renderer/core/animation/animatable/animatable_double.h"
-#include "third_party/blink/renderer/core/animation/animatable/animatable_filter_operations.h"
-#include "third_party/blink/renderer/core/animation/animatable/animatable_transform.h"
 #include "third_party/blink/renderer/core/animation/animation.h"
+#include "third_party/blink/renderer/core/animation/css/compositor_keyframe_double.h"
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect.h"
@@ -149,7 +147,7 @@ class AnimationCompositorAnimationsTest : public PaintTestConfigurations,
 
   bool CanStartEffectOnCompositor(const Timing& timing,
                                   const KeyframeEffectModelBase& effect) {
-    // As the compositor code only understands AnimatableValues, we must
+    // As the compositor code only understands CompositorKeyframeValues, we must
     // snapshot the effect to make those available.
     base::Optional<CompositorElementIdSet> none;
     // TODO(crbug.com/725385): Remove once compositor uses InterpolationTypes.
@@ -248,7 +246,7 @@ class AnimationCompositorAnimationsTest : public PaintTestConfigurations,
                                         double offset = 0) {
     String value = "0.1";
     if (id == CSSPropertyID::kTransform)
-      value = "none";  // AnimatableTransform::Create(TransformOperations(), 1);
+      value = "none";
     else if (id == CSSPropertyID::kColor)
       value = "red";
 
@@ -287,22 +285,21 @@ class AnimationCompositorAnimationsTest : public PaintTestConfigurations,
     EXPECT_TRUE(element_->style()->getPropertyValue(name));
   }
 
-  // This class exists to dodge the interlock between creating animatable
-  // values iff we can animate them on the compositor, and hence can
-  // start their animations on it. i.e. two far away switch statements
-  // have matching non-default values, preventing us from testing the
-  // default.
-  class AnimatableMockStringKeyframe : public StringKeyframe {
+  // This class exists to dodge the interlock between creating compositor
+  // keyframe values iff we can animate them on the compositor, and hence can
+  // start their animations on it. i.e. two far away switch statements have
+  // matching non-default values, preventing us from testing the default.
+  class MockStringKeyframe : public StringKeyframe {
    public:
     static StringKeyframe* Create(double offset) {
-      return MakeGarbageCollected<AnimatableMockStringKeyframe>(offset);
+      return MakeGarbageCollected<MockStringKeyframe>(offset);
     }
 
-    AnimatableMockStringKeyframe(double offset)
+    MockStringKeyframe(double offset)
         : StringKeyframe(),
           property_specific_(
-              MakeGarbageCollected<
-                  AnimatableMockPropertySpecificStringKeyframe>(offset)) {
+              MakeGarbageCollected<MockPropertySpecificStringKeyframe>(
+                  offset)) {
       SetOffset(offset);
     }
 
@@ -319,33 +316,30 @@ class AnimationCompositorAnimationsTest : public PaintTestConfigurations,
     }
 
    private:
-    class AnimatableMockPropertySpecificStringKeyframe
-        : public PropertySpecificKeyframe {
+    class MockPropertySpecificStringKeyframe : public PropertySpecificKeyframe {
      public:
-      // Pretend to have an animatable value. Pick the offset for
-      // pure convenience: it matters not what it is.
-      AnimatableMockPropertySpecificStringKeyframe(double offset)
+      // Pretend to have a compositor keyframe value. Pick the offset for pure
+      // convenience: it matters not what it is.
+      MockPropertySpecificStringKeyframe(double offset)
           : PropertySpecificKeyframe(offset,
                                      LinearTimingFunction::Shared(),
                                      EffectModel::kCompositeReplace),
-            animatable_offset_(AnimatableDouble::Create(offset)) {}
+            compositor_keyframe_value_(
+                CompositorKeyframeDouble::Create(offset)) {}
       bool IsNeutral() const final { return true; }
       PropertySpecificKeyframe* CloneWithOffset(double) const final {
         NOTREACHED();
         return nullptr;
       }
-      bool PopulateAnimatableValue(
+      bool PopulateCompositorKeyframeValue(
           const PropertyHandle&,
           Element&,
           const ComputedStyle& base_style,
           const ComputedStyle* parent_style) const final {
         return true;
       }
-      const AnimatableValue* GetAnimatableValue() const final {
-        return animatable_offset_;
-      }
-      bool IsAnimatableValuePropertySpecificKeyframe() const final {
-        return true;
+      const CompositorKeyframeValue* GetCompositorKeyframeValue() const final {
+        return compositor_keyframe_value_;
       }
       PropertySpecificKeyframe* NeutralKeyframe(
           double,
@@ -355,21 +349,21 @@ class AnimationCompositorAnimationsTest : public PaintTestConfigurations,
       }
 
       void Trace(Visitor* visitor) override {
-        visitor->Trace(animatable_offset_);
+        visitor->Trace(compositor_keyframe_value_);
         PropertySpecificKeyframe::Trace(visitor);
       }
 
      private:
-      Member<AnimatableDouble> animatable_offset_;
+      Member<CompositorKeyframeDouble> compositor_keyframe_value_;
     };
 
     Member<PropertySpecificKeyframe> property_specific_;
   };
 
-  StringKeyframe* CreateAnimatableReplaceKeyframe(CSSPropertyID id,
-                                                  const String& value,
-                                                  double offset) {
-    StringKeyframe* keyframe = AnimatableMockStringKeyframe::Create(offset);
+  StringKeyframe* CreateMockReplaceKeyframe(CSSPropertyID id,
+                                            const String& value,
+                                            double offset) {
+    StringKeyframe* keyframe = MockStringKeyframe::Create(offset);
     keyframe->SetCSSPropertyValue(id, value,
                                   SecureContextMode::kInsecureContext, nullptr);
     keyframe->SetComposite(EffectModel::kCompositeReplace);
@@ -428,7 +422,7 @@ class AnimationCompositorAnimationsTest : public PaintTestConfigurations,
   std::unique_ptr<CompositorKeyframeModel> ConvertToCompositorAnimation(
       StringKeyframeEffectModel& effect,
       double animation_playback_rate) {
-    // As the compositor code only understands AnimatableValues, we must
+    // As the compositor code only understands CompositorKeyframeValues, we must
     // snapshot the effect to make those available.
     // TODO(crbug.com/725385): Remove once compositor uses InterpolationTypes.
     auto style = GetDocument().EnsureStyleResolver().StyleForElement(element_);
@@ -944,7 +938,7 @@ TEST_P(AnimationCompositorAnimationsTest,
   EXPECT_EQ(2u,
             effect1->GetPropertySpecificKeyframes(target_property1h).size());
   EXPECT_FALSE(effect1->GetPropertySpecificKeyframes(target_property1h)[0]
-                   ->GetAnimatableValue());
+                   ->GetCompositorKeyframeValue());
   EXPECT_EQ(1u, effect1->Properties().size());
   EXPECT_FALSE(CheckCanStartEffectOnCompositor(timing_, *element.Get(),
                                                animation1, *effect1, none));
@@ -966,7 +960,7 @@ TEST_P(AnimationCompositorAnimationsTest,
   EXPECT_EQ(2u,
             effect2->GetPropertySpecificKeyframes(target_property2h).size());
   EXPECT_TRUE(effect2->GetPropertySpecificKeyframes(target_property2h)[0]
-                  ->GetAnimatableValue());
+                  ->GetCompositorKeyframeValue());
   EXPECT_EQ(1u, effect2->Properties().size());
   EXPECT_FALSE(CheckCanStartEffectOnCompositor(timing_, *element.Get(),
                                                animation2, *effect2, none));
@@ -977,10 +971,8 @@ TEST_P(AnimationCompositorAnimationsTest,
   const CSSProperty& target_property3(GetCSSPropertyWidth());
   PropertyHandle target_property3h(target_property3);
   StringKeyframeEffectModel* effect3 = CreateKeyframeEffectModel(
-      CreateAnimatableReplaceKeyframe(target_property3.PropertyID(), "10px",
-                                      0.0),
-      CreateAnimatableReplaceKeyframe(target_property3.PropertyID(), "20px",
-                                      1.0));
+      CreateMockReplaceKeyframe(target_property3.PropertyID(), "10px", 0.0),
+      CreateMockReplaceKeyframe(target_property3.PropertyID(), "20px", 1.0));
 
   KeyframeEffect* keyframe_effect3 =
       KeyframeEffect::Create(element.Get(), effect3, timing_);
@@ -992,7 +984,7 @@ TEST_P(AnimationCompositorAnimationsTest,
   EXPECT_EQ(2u,
             effect3->GetPropertySpecificKeyframes(target_property3h).size());
   EXPECT_TRUE(effect3->GetPropertySpecificKeyframes(target_property3h)[0]
-                  ->GetAnimatableValue());
+                  ->GetCompositorKeyframeValue());
   EXPECT_EQ(1u, effect3->Properties().size());
   EXPECT_FALSE(CheckCanStartEffectOnCompositor(timing_, *element.Get(),
                                                animation3, *effect3, none));

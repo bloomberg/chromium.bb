@@ -30,8 +30,7 @@
 
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 
-#include "third_party/blink/renderer/core/animation/animatable/animatable_value.h"
-#include "third_party/blink/renderer/core/animation/css/css_animatable_value_factory.h"
+#include "third_party/blink/renderer/core/animation/css/compositor_keyframe_value_factory.h"
 #include "third_party/blink/renderer/core/animation/css/css_animations.h"
 #include "third_party/blink/renderer/core/animation/css_interpolation_environment.h"
 #include "third_party/blink/renderer/core/animation/css_interpolation_types_map.h"
@@ -852,9 +851,7 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForElement(
   return state.TakeStyle();
 }
 
-// TODO(alancutter): Create compositor keyframe values directly instead of
-// intermediate AnimatableValues.
-AnimatableValue* StyleResolver::CreateAnimatableValueSnapshot(
+CompositorKeyframeValue* StyleResolver::CreateCompositorKeyframeValueSnapshot(
     Element& element,
     const ComputedStyle& base_style,
     const ComputedStyle* parent_style,
@@ -872,7 +869,7 @@ AnimatableValue* StyleResolver::CreateAnimatableValueSnapshot(
         state.StyleRef());
     CSSVariableResolver(state).ResolveVariableDefinitions();
   }
-  return CSSAnimatableValueFactory::Create(property, *state.Style());
+  return CompositorKeyframeValueFactory::Create(property, *state.Style());
 }
 
 bool StyleResolver::PseudoStyleForElementInternal(

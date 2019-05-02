@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/core/animation/animatable/animatable_double.h"
 #include "third_party/blink/renderer/core/animation/animation_test_helper.h"
 #include "third_party/blink/renderer/core/animation/css_default_interpolation_type.h"
 #include "third_party/blink/renderer/core/animation/invalidatable_interpolation.h"
@@ -618,13 +617,13 @@ TEST_F(AnimationKeyframeEffectModel, CompositorSnapshotUpdateBasic) {
 
   auto style = GetDocument().EnsureStyleResolver().StyleForElement(element);
 
-  const AnimatableValue* value;
+  const CompositorKeyframeValue* value;
 
-  // Animatable value should be empty before snapshot
+  // Compositor keyframe value should be empty before snapshot
   value = effect
               ->GetPropertySpecificKeyframes(
                   PropertyHandle(GetCSSPropertyOpacity()))[0]
-              ->GetAnimatableValue();
+              ->GetCompositorKeyframeValue();
   EXPECT_FALSE(value);
 
   // Snapshot should update first time after construction
@@ -638,11 +637,11 @@ TEST_F(AnimationKeyframeEffectModel, CompositorSnapshotUpdateBasic) {
   EXPECT_TRUE(effect->SnapshotAllCompositorKeyframesIfNecessary(
       *element, *style, nullptr));
 
-  // Animatable value should be available after snapshot
+  // Compositor keyframe value should be available after snapshot
   value = effect
               ->GetPropertySpecificKeyframes(
                   PropertyHandle(GetCSSPropertyOpacity()))[0]
-              ->GetAnimatableValue();
+              ->GetCompositorKeyframeValue();
   EXPECT_TRUE(value);
   EXPECT_TRUE(value->IsDouble());
 }
@@ -659,11 +658,11 @@ TEST_F(AnimationKeyframeEffectModel,
   EXPECT_TRUE(effect->SnapshotAllCompositorKeyframesIfNecessary(
       *element, *style, nullptr));
 
-  const AnimatableValue* value;
+  const CompositorKeyframeValue* value;
   value = effect
               ->GetPropertySpecificKeyframes(
                   PropertyHandle(GetCSSPropertyOpacity()))[0]
-              ->GetAnimatableValue();
+              ->GetCompositorKeyframeValue();
   EXPECT_TRUE(value);
   EXPECT_TRUE(value->IsDouble());
 
@@ -677,7 +676,7 @@ TEST_F(AnimationKeyframeEffectModel,
   value = effect
               ->GetPropertySpecificKeyframes(
                   PropertyHandle(GetCSSPropertyFilter()))[0]
-              ->GetAnimatableValue();
+              ->GetCompositorKeyframeValue();
   EXPECT_TRUE(value);
   EXPECT_TRUE(value->IsFilterOperations());
 }
@@ -706,17 +705,17 @@ TEST_F(AnimationKeyframeEffectModel, CompositorSnapshotUpdateCustomProperty) {
 
   auto style = GetDocument().EnsureStyleResolver().StyleForElement(element);
 
-  const AnimatableValue* value;
+  const CompositorKeyframeValue* value;
 
   // Snapshot should update first time after construction
   EXPECT_TRUE(effect->SnapshotAllCompositorKeyframesIfNecessary(
       *element, *style, nullptr));
 
-  // Animatable value should be available after snapshot
+  // Compositor keyframe value available after snapshot
   value = effect
               ->GetPropertySpecificKeyframes(
                   PropertyHandle(AtomicString("--foo")))[0]
-              ->GetAnimatableValue();
+              ->GetCompositorKeyframeValue();
   EXPECT_TRUE(value);
   EXPECT_TRUE(value->IsDouble());
 }

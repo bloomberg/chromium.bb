@@ -35,7 +35,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/animation/animation.h"
 #include "third_party/blink/renderer/core/animation/compositor_animations.h"
-#include "third_party/blink/renderer/core/animation/css/css_animatable_value_factory.h"
+#include "third_party/blink/renderer/core/animation/css/compositor_keyframe_value_factory.h"
 #include "third_party/blink/renderer/core/animation/css_interpolation_types_map.h"
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
@@ -809,10 +809,10 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
   keyframes.push_back(end_keyframe);
 
   if (property.GetCSSProperty().IsCompositableProperty()) {
-    AnimatableValue* from =
-        CSSAnimatableValueFactory::Create(property, state.old_style);
-    AnimatableValue* to =
-        CSSAnimatableValueFactory::Create(property, state.style);
+    CompositorKeyframeValue* from =
+        CompositorKeyframeValueFactory::Create(property, state.old_style);
+    CompositorKeyframeValue* to =
+        CompositorKeyframeValueFactory::Create(property, state.style);
     start_keyframe->SetCompositorValue(from);
     end_keyframe->SetCompositorValue(to);
   }
