@@ -403,6 +403,82 @@ bool MaySkipLegacyLayout(const NGBlockNode& node,
   return true;
 }
 
+bool MaySkipLayoutWithinBlockFormattingContext(
+    const NGLayoutResult& cached_layout_result,
+    const NGConstraintSpace& new_space,
+    base::Optional<LayoutUnit>* bfc_block_offset) {
+  DCHECK_EQ(cached_layout_result.Status(), NGLayoutResult::kSuccess);
+  DCHECK(cached_layout_result.HasValidConstraintSpaceForCaching());
+  DCHECK(bfc_block_offset);
+
+  const NGConstraintSpace& old_space =
+      cached_layout_result.GetConstraintSpaceForCaching();
+
+  LayoutUnit old_clearance_offset = old_space.ClearanceOffset();
+  LayoutUnit new_clearance_offset = new_space.ClearanceOffset();
+
+  // Determine if we can reuse a result if it was affected by clearance.
+  bool is_pushed_by_floats = cached_layout_result.IsPushedByFloats();
+  if (is_pushed_by_floats) {
+    DCHECK(old_space.HasFloats());
+
+    // We don't attempt to reuse the cached result if the clearance offset
+    // differs from the final BFC-block-offset.
+    //
+    // The |is_pushed_by_floats| flag is also used by nodes who have a *child*
+    // which was pushed by floats. In this case the node may not have a
+    // BFC-block-offset or one equal to the clearance offset.
+    if (!cached_layout_result.BfcBlockOffset() ||
+        *cached_layout_result.BfcBlockOffset() != old_space.ClearanceOffset())
+      return false;
+
+    // We only reuse the cached result if the delta between the
+    // BFC-block-offset, and the clearance offset grows or remains the same. If
+    // it shrinks it may not be affected by clearance anymore as a margin may
+    // push the fragment below the clearance offset instead.
+    //
+    // TODO(layout-dev): If we track if any margins affected this calculation
+    // (with an additional bit on the layout result) we could potentially skip
+    // this check.
+    if (old_clearance_offset - old_space.BfcOffset().block_offset >
+        new_clearance_offset - new_space.BfcOffset().block_offset) {
+      return false;
+    }
+  }
+
+  // Check we have a descendant that *may* be positioned above the block-start
+  // edge. We abort if either the old or new space has floats, as we don't keep
+  // track of how far above the child could be. This case is relatively rare,
+  // and only occurs with negative margins.
+  if (cached_layout_result.MayHaveDescendantAboveBlockStart() &&
+      (old_space.HasFloats() || new_space.HasFloats()))
+    return false;
+
+  // We can now try to adjust the BFC block-offset.
+  if (*bfc_block_offset) {
+    // Check if the previous position may intersect with any floats.
+    if (**bfc_block_offset <
+        old_space.ExclusionSpace().ClearanceOffset(EClear::kBoth))
+      return false;
+
+    if (is_pushed_by_floats) {
+      DCHECK_EQ(**bfc_block_offset, old_clearance_offset);
+      *bfc_block_offset = new_clearance_offset;
+    } else {
+      *bfc_block_offset = **bfc_block_offset -
+                          old_space.BfcOffset().block_offset +
+                          new_space.BfcOffset().block_offset;
+    }
+
+    // Check if the new position may intersect with any floats.
+    if (**bfc_block_offset <
+        new_space.ExclusionSpace().ClearanceOffset(EClear::kBoth))
+      return false;
+  }
+
+  return true;
+}
+
 bool IsBlockLayoutComplete(const NGConstraintSpace& space,
                            const NGLayoutResult& result) {
   if (result.Status() != NGLayoutResult::kSuccess)

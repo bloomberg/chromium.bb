@@ -2344,12 +2344,12 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
                      initial_fragment_geometry))
     return nullptr;
 
-  const NGConstraintSpace& old_space =
-      cached_layout_result->GetConstraintSpaceForCaching();
-
   base::Optional<LayoutUnit> bfc_block_offset =
       cached_layout_result->BfcBlockOffset();
   LayoutUnit bfc_line_offset = new_space.BfcOffset().line_offset;
+
+  const NGConstraintSpace& old_space =
+      cached_layout_result->GetConstraintSpaceForCaching();
 
   DCHECK_EQ(old_space.BfcOffset().line_offset,
             cached_layout_result->BfcLineOffset());
@@ -2369,72 +2369,22 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
   bool is_exclusion_space_equal =
       new_space.ExclusionSpace() == old_space.ExclusionSpace();
 
-  LayoutUnit old_clearance_offset = old_space.ClearanceOffset();
-  LayoutUnit new_clearance_offset = new_space.ClearanceOffset();
+  bool is_new_formatting_context =
+      cached_layout_result->PhysicalFragment()->IsBlockFormattingContextRoot();
 
-  // If anything changes within the layout regarding floats, we need to perform
-  // a series of additional checks to see if the result can still be reused.
-  if (!is_bfc_offset_equal || !is_exclusion_space_equal ||
-      new_clearance_offset != old_clearance_offset) {
-    // Determine if we can reuse a result if it was affected by clearance.
-    bool is_pushed_by_floats = cached_layout_result->IsPushedByFloats();
-    if (is_pushed_by_floats) {
-      DCHECK(old_space.HasFloats());
+  // If a node *doesn't* establish a new formatting context it may be affected
+  // by floats, or clearance.
+  // If anything has changed prior to us (different exclusion space, etc), we
+  // need to perform a series of additional checks if we can still reuse this
+  // layout result.
+  if (!is_new_formatting_context &&
+      (!is_bfc_offset_equal || !is_exclusion_space_equal ||
+       new_space.ClearanceOffset() != old_space.ClearanceOffset())) {
+    DCHECK(!CreatesNewFormattingContext());
 
-      // We don't attempt to reuse the cached result if the clearance offset
-      // differs from the final BFC-block-offset.
-      //
-      // The |is_pushed_by_floats| flag is also used by nodes who have a
-      // *child* which was pushed by floats. In this case the node may not have
-      // a BFC-block-offset or one equal to the clearance offset.
-      if (!cached_layout_result->BfcBlockOffset() ||
-          *cached_layout_result->BfcBlockOffset() !=
-              old_space.ClearanceOffset())
-        return nullptr;
-
-      // We only reuse the cached result if the delta between the
-      // BFC-block-offset, and the clearance offset grows or remains the same.
-      // If it shrinks it may not be affected by clearance anymore as a margin
-      // may push the fragment below the clearance offset instead.
-      //
-      // TODO(layout-dev): If we track if any margins affected this calculation
-      // (with an additional bit on the layout result) we could potentially
-      // skip this check.
-      if (old_clearance_offset - old_space.BfcOffset().block_offset >
-          new_clearance_offset - new_space.BfcOffset().block_offset) {
-        return nullptr;
-      }
-    }
-
-    // Check we have a descendant that *may* be positioned above the block-start
-    // edge. We abort if either the old or new space has floats, as we don't
-    // keep track of how far above the child could be. This case is relatively
-    // rare, and only occurs with negative margins.
-    if (cached_layout_result->MayHaveDescendantAboveBlockStart() &&
-        (old_space.HasFloats() || new_space.HasFloats()))
+    if (!MaySkipLayoutWithinBlockFormattingContext(
+            *cached_layout_result, new_space, &bfc_block_offset))
       return nullptr;
-
-    // We can now try to adjust the BFC block-offset.
-    if (bfc_block_offset) {
-      // Check if the previous position may intersect with any floats.
-      if (*bfc_block_offset <
-          old_space.ExclusionSpace().ClearanceOffset(EClear::kBoth))
-        return nullptr;
-
-      if (is_pushed_by_floats) {
-        DCHECK_EQ(*bfc_block_offset, old_clearance_offset);
-        bfc_block_offset = new_clearance_offset;
-      } else {
-        bfc_block_offset = *bfc_block_offset -
-                           old_space.BfcOffset().block_offset +
-                           new_space.BfcOffset().block_offset;
-      }
-
-      // Check if the new position may intersect with any floats.
-      if (*bfc_block_offset <
-          new_space.ExclusionSpace().ClearanceOffset(EClear::kBoth))
-        return nullptr;
-    }
   }
 
   // We can safely re-use this fragment if we are positioned, and only our

@@ -26,6 +26,17 @@ bool MaySkipLegacyLayout(const NGBlockNode& node,
                          const NGLayoutResult& cached_layout_result,
                          const NGConstraintSpace& new_space);
 
+// Returns true if for a given |new_space|, the |cached_layout_result| won't be
+// affected by clearance, or floats, and therefore might be able to skip
+// layout.
+// Additionally (if this function returns true) it will calculate the new
+// |bfc_block_offset| for the layout result. This may still be |base::nullopt|
+// if not previously set.
+bool MaySkipLayoutWithinBlockFormattingContext(
+    const NGLayoutResult& cached_layout_result,
+    const NGConstraintSpace& new_space,
+    base::Optional<LayoutUnit>* bfc_block_offset);
+
 // Return true if layout is considered complete. In some cases we require more
 // than one layout pass.
 // This function never considers intermediate layouts with
