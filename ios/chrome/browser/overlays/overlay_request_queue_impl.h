@@ -62,10 +62,6 @@ class OverlayRequestQueueImpl : public OverlayRequestQueue {
   // Private constructor called by container.
   OverlayRequestQueueImpl();
 
-  // Notifies the observers of |request|'s removal, with |frontmost| indicating
-  // whether the removed requests was at the front of the queue.
-  void NotifyRequestRemoved(OverlayRequest* request, bool frontmost);
-
   base::ObserverList<OverlayRequestQueueImplObserver>::Unchecked observers_;
   // The queue used to hold the received requests.  Stored as a circular dequeue
   // to allow performant pop events from the front of the queue.

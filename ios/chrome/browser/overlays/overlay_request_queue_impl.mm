@@ -48,16 +48,12 @@ OverlayRequestQueueImpl::~OverlayRequestQueueImpl() = default;
 
 void OverlayRequestQueueImpl::PopFrontRequest() {
   DCHECK(!requests_.empty());
-  std::unique_ptr<OverlayRequest> popped_request = std::move(requests_.front());
   requests_.pop_front();
-  NotifyRequestRemoved(popped_request.get(), true);
 }
 
 void OverlayRequestQueueImpl::PopBackRequest() {
   DCHECK(!requests_.empty());
-  std::unique_ptr<OverlayRequest> popped_request = std::move(requests_.back());
   requests_.pop_back();
-  NotifyRequestRemoved(popped_request.get(), requests_.empty());
 }
 
 #pragma mark OverlayRequestQueue
@@ -72,13 +68,4 @@ void OverlayRequestQueueImpl::AddRequest(
 
 OverlayRequest* OverlayRequestQueueImpl::front_request() const {
   return requests_.empty() ? nullptr : requests_.front().get();
-}
-
-#pragma mark Private
-
-void OverlayRequestQueueImpl::NotifyRequestRemoved(OverlayRequest* request,
-                                                   bool frontmost) {
-  for (auto& observer : observers_) {
-    observer.OnRequestRemoved(this, request, frontmost);
-  }
 }

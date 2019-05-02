@@ -80,16 +80,6 @@ void OverlayPresenter::OnRequestAdded(OverlayRequestQueueImpl* queue,
   }
 }
 
-void OverlayPresenter::OnRequestRemoved(OverlayRequestQueueImpl* queue,
-                                        OverlayRequest* request,
-                                        bool frontmost) {
-  // Only attempt to present overlay UI for the next reqeust for removal of the
-  // frontmost request.
-  if (frontmost) {
-    // TODO:(crbug.com/941745): Trigger presentation for next request in queue.
-  }
-}
-
 #pragma mark - WebStateListObserver
 
 void OverlayPresenter::WebStateInsertedAt(WebStateList* web_state_list,

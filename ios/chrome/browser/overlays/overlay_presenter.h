@@ -42,9 +42,6 @@ class OverlayPresenter : public OverlayRequestQueueImplObserver,
   // OverlayRequestQueueImplObserver:
   void OnRequestAdded(OverlayRequestQueueImpl* queue,
                       OverlayRequest* request) override;
-  void OnRequestRemoved(OverlayRequestQueueImpl* queue,
-                        OverlayRequest* request,
-                        bool frontmost) override;
 
   // WebStateListObserver:
   void WebStateInsertedAt(WebStateList* web_state_list,
