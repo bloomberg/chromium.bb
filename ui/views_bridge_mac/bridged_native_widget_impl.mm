@@ -1345,18 +1345,26 @@ void BridgedNativeWidgetImpl::NotifyVisibilityChangeDown() {
     // are currently visible. They probably aren't, since the parent was hidden
     // prior to this, but they could have been made visible in other ways.
     if (child->wants_to_be_visible_) {
-      ++visible_bridged_children;
-      // Here -[NSWindow orderWindow:relativeTo:] is used to put the window on
-      // screen. However, that by itself is insufficient to guarantee a correct
-      // z-order relationship. If this function is being called from a z-order
-      // change in the parent, orderWindow turns out to be unreliable (i.e. the
-      // ordering doesn't always take effect). What this actually relies on is
-      // the resulting call to OnVisibilityChanged() in the child, which will
-      // then insert itself into -[NSWindow childWindows] to let Cocoa do its
-      // internal layering magic.
-      [child->ns_window() orderWindow:NSWindowAbove
-                           relativeTo:parent_window_number];
-      DCHECK(child->window_visible_);
+      if ([child->ns_window() isSheet]) {
+        // Sheets should not be counted as children since their NSWindows are
+        // not children of this NSWindow, and they should not be directly
+        // ordered back in - that causes them to lose their sheet-ness.
+        child->ShowAsModalSheet();
+      } else {
+        ++visible_bridged_children;
+
+        // Here -[NSWindow orderWindow:relativeTo:] is used to put the window on
+        // screen. However, that by itself is insufficient to guarantee a
+        // correct z-order relationship. If this function is being called from a
+        // z-order change in the parent, orderWindow turns out to be unreliable
+        // (i.e. the ordering doesn't always take effect). What this actually
+        // relies on is the resulting call to OnVisibilityChanged() in the
+        // child, which will then insert itself into -[NSWindow childWindows] to
+        // let Cocoa do its internal layering magic.
+        [child->ns_window() orderWindow:NSWindowAbove
+                             relativeTo:parent_window_number];
+        DCHECK(child->window_visible_);
+      }
     }
     CHECK_EQ(child_count, child_windows_.size());
   }
