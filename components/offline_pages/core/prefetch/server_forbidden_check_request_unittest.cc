@@ -6,9 +6,12 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/test/metrics/histogram_tester.h"
+
 #include "components/offline_pages/core/offline_clock.h"
+#include "components/offline_pages/core/prefetch/fake_suggestions_provider.h"
 #include "components/offline_pages/core/prefetch/prefetch_prefs.h"
 #include "components/offline_pages/core/prefetch/prefetch_request_test_base.h"
+#include "components/offline_pages/core/prefetch/prefetch_service_test_taco.h"
 #include "components/offline_pages/core/prefetch/proto/offline_pages.pb.h"
 #include "components/offline_pages/core/prefetch/proto/operation.pb.h"
 #include "components/offline_pages/core/prefetch/server_forbidden_check_request.h"
@@ -21,36 +24,44 @@
 class PrefService;
 
 namespace offline_pages {
+
 class ServerForbiddenCheckRequestTest : public PrefetchRequestTestBase {
  public:
   ServerForbiddenCheckRequestTest();
-
   void SetUp() override;
 
   void MakeRequest();
 
-  PrefService* prefs() { return &pref_service_; }
-  PrefetchNetworkRequestFactory* request_factory() { return &request_factory_; }
+  PrefService* prefs() { return taco_.pref_service(); }
+  PrefetchNetworkRequestFactory* request_factory() {
+    return taco_.network_request_factory();
+  }
+  PrefetchService* prefetch_service() { return taco_.prefetch_service(); }
 
  private:
-  TestingPrefServiceSimple pref_service_;
-  TestPrefetchNetworkRequestFactory request_factory_;
+  PrefetchServiceTestTaco taco_;
+  FakeSuggestionsProvider suggestions_provider_;
 };
 
 ServerForbiddenCheckRequestTest::ServerForbiddenCheckRequestTest()
-    : request_factory_(shared_url_loader_factory(), prefs()) {}
+    : taco_(PrefetchServiceTestTaco::SuggestionSource::kFeed) {}
 
 void ServerForbiddenCheckRequestTest::SetUp() {
   PrefetchRequestTestBase::SetUp();
 
-  prefetch_prefs::RegisterPrefs(pref_service_.registry());
+  taco_.SetPrefetchNetworkRequestFactory(
+      std::make_unique<TestPrefetchNetworkRequestFactory>(
+          shared_url_loader_factory().get(), prefs()));
+  taco_.CreatePrefetchService();
+  // Feed requirement.
+  prefetch_service()->SetSuggestionProvider(&suggestions_provider_);
 
   // Ensure check will happen.
   prefetch_prefs::SetPrefetchingEnabledInSettings(prefs(), true);
 }
 
 void ServerForbiddenCheckRequestTest::MakeRequest() {
-  CheckIfEnabledByServer(request_factory(), prefs());
+  CheckIfEnabledByServer(prefs(), prefetch_service());
 }
 
 TEST_F(ServerForbiddenCheckRequestTest, StillForbidden) {

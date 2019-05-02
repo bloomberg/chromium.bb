@@ -23,6 +23,7 @@ class StubPrefetchService : public PrefetchService {
   void SetCachedGCMToken(const std::string& gcm_token) override;
   const std::string& GetCachedGCMToken() const override;
   void GetGCMToken(GCMTokenCallback callback) override;
+  void ForceRefreshSuggestions() override;
   PrefetchGCMHandler* GetPrefetchGCMHandler() override;
   OfflineEventLogger* GetLogger() override;
   OfflineMetricsCollector* GetOfflineMetricsCollector() override;
@@ -35,6 +36,7 @@ class StubPrefetchService : public PrefetchService {
   ThumbnailFetcher* GetThumbnailFetcher() override;
   OfflinePageModel* GetOfflinePageModel() override;
   image_fetcher::ImageFetcher* GetImageFetcher() override;
+  void SetEnabledByServer(PrefService* pref_service, bool enabled) override;
 
   SuggestedArticlesObserver* GetSuggestedArticlesObserverForTesting() override;
 

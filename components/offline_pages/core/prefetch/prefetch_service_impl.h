@@ -50,8 +50,10 @@ class PrefetchServiceImpl : public PrefetchService {
   void SetCachedGCMToken(const std::string& gcm_token) override;
   const std::string& GetCachedGCMToken() const override;
   void GetGCMToken(GCMTokenCallback callback) override;
+  void SetEnabledByServer(PrefService* pref_service, bool enabled) override;
 
   // Internal usage only functions.
+  void ForceRefreshSuggestions() override;
   OfflineMetricsCollector* GetOfflineMetricsCollector() override;
   PrefetchDispatcher* GetPrefetchDispatcher() override;
   PrefetchNetworkRequestFactory* GetPrefetchNetworkRequestFactory() override;
@@ -96,6 +98,7 @@ class PrefetchServiceImpl : public PrefetchService {
   std::unique_ptr<ThumbnailFetcher> thumbnail_fetcher_;
   // Owned by CachedImageFetcherService.
   image_fetcher::ImageFetcher* image_fetcher_;
+  ntp_snippets::ContentSuggestionsService* content_suggestions_;
 
   // Zine/Feed: only non-null when using Feed.
   SuggestionsProvider* suggestions_provider_ = nullptr;

@@ -275,6 +275,7 @@ void OfflineInternalsUIMessageHandler::HandleScheduleNwake(
 void OfflineInternalsUIMessageHandler::ScheduleNwakeWithGCMToken(
     base::Value callback_id,
     const std::string& gcm_token) {
+  prefetch_service_->ForceRefreshSuggestions();
   prefetch_service_->GetPrefetchBackgroundTaskHandler()->EnsureTaskScheduled(
       gcm_token);
   ResolveJavascriptCallback(callback_id, base::Value("Scheduled."));
@@ -455,7 +456,8 @@ void OfflineInternalsUIMessageHandler::HandleSetPrefetchTestingHeader(
   offline_pages::prefetch_prefs::SetPrefetchTestingHeader(
       prefs, args->GetList()[0].GetString());
 
-  offline_pages::prefetch_prefs::SetEnabledByServer(prefs, true);
+  if (prefetch_service_)
+    prefetch_service_->SetEnabledByServer(prefs, true);
 }
 
 void OfflineInternalsUIMessageHandler::HandleGetPrefetchTestingHeader(

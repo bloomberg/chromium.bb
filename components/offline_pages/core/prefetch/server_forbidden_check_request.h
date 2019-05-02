@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "components/offline_pages/core/prefetch/prefetch_network_request_factory.h"
+#include "components/offline_pages/core/prefetch/prefetch_service.h"
 #include "components/prefs/pref_service.h"
 
 namespace offline_pages {
@@ -19,8 +20,8 @@ namespace offline_pages {
 // forbidden, i.e. whether the user has started making requests from an
 // allowed country. This is for checking whether the client is forbidden
 // by making a GeneratePageBundle request with no URLs.
-void CheckIfEnabledByServer(PrefetchNetworkRequestFactory* request_factory,
-                            PrefService* pref_service);
+void CheckIfEnabledByServer(PrefService* pref_service,
+                            PrefetchService* prefetch_service);
 }  // namespace offline_pages
 
 #endif  // COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_SERVER_FORBIDDEN_CHECK_REQUEST_H_

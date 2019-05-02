@@ -106,8 +106,7 @@ void PrefetchDispatcherImpl::AddCandidatePrefetchURLs(
     const std::vector<PrefetchURL>& prefetch_urls) {
   if (!prefetch_prefs::IsEnabled(pref_service_)) {
     if (prefetch_prefs::IsForbiddenCheckDue(pref_service_)) {
-      CheckIfEnabledByServer(service_->GetPrefetchNetworkRequestFactory(),
-                             pref_service_);
+      CheckIfEnabledByServer(pref_service_, service_);
     }
     return;
   }

@@ -18,6 +18,7 @@
 #include "components/offline_pages/core/prefetch/prefetch_gcm_handler.h"
 #include "components/offline_pages/core/prefetch/prefetch_importer.h"
 #include "components/offline_pages/core/prefetch/prefetch_network_request_factory.h"
+#include "components/offline_pages/core/prefetch/prefetch_prefs.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
 #include "components/offline_pages/core/prefetch/suggested_articles_observer.h"
 #include "components/offline_pages/core/prefetch/suggestions_provider.h"
@@ -66,6 +67,17 @@ PrefetchServiceImpl::~PrefetchServiceImpl() {
   prefetch_dispatcher_.reset();
 }
 
+void PrefetchServiceImpl::ForceRefreshSuggestions() {
+  if (suggestions_provider_) {
+    // Feed only.
+    NewSuggestionsAvailable();
+  } else {
+    // Zine only.
+    DCHECK(suggested_articles_observer_);
+    suggested_articles_observer_->ConsumeSuggestions();
+  }
+}
+
 void PrefetchServiceImpl::SetCachedGCMToken(const std::string& gcm_token) {
   gcm_token_ = gcm_token;
 }
@@ -105,6 +117,7 @@ void PrefetchServiceImpl::SetContentSuggestionsService(
   suggested_articles_observer_->SetContentSuggestionsServiceAndObserve(
       content_suggestions);
   thumbnail_fetcher_->SetContentSuggestionsService(content_suggestions);
+  content_suggestions_ = content_suggestions;
 }
 
 void PrefetchServiceImpl::SetSuggestionProvider(
@@ -113,6 +126,16 @@ void PrefetchServiceImpl::SetSuggestionProvider(
   DCHECK(!thumbnail_fetcher_);
   DCHECK(image_fetcher_);
   suggestions_provider_ = suggestions_provider;
+}
+
+void PrefetchServiceImpl::SetEnabledByServer(PrefService* pref_service,
+                                             bool enabled) {
+  if (enabled == prefetch_prefs::IsEnabledByServer(pref_service))
+    return;
+
+  prefetch_prefs::SetEnabledByServer(pref_service, enabled);
+  if (enabled)
+    ForceRefreshSuggestions();
 }
 
 void PrefetchServiceImpl::NewSuggestionsAvailable() {

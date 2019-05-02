@@ -20,6 +20,8 @@ namespace ntp_snippets {
 class ContentSuggestionsService;
 }
 
+class PrefService;
+
 namespace offline_pages {
 class OfflineEventLogger;
 class OfflineMetricsCollector;
@@ -92,8 +94,14 @@ class PrefetchService : public KeyedService {
   virtual void SetCachedGCMToken(const std::string& gcm_token) = 0;
   virtual const std::string& GetCachedGCMToken() const = 0;
 
+  virtual void SetEnabledByServer(PrefService* pref_service, bool enabled) = 0;
+
   // Internal usage only functions. They will eventually be moved out of this
   // class.
+
+  // Attempt prefetching the current set of suggested articles by pretending
+  // they are new. Can be used to force-start the prefetching pipeline.
+  virtual void ForceRefreshSuggestions() = 0;
 
   // Sub-components that are created and owned by this service.
   // The service manages lifetime, hookup and initialization of Prefetch
