@@ -735,8 +735,8 @@ void PNGImageDecoder::RowAvailable(unsigned char* row_buffer,
     auto* xform = ColorTransform();
     auto* src_profile = xform ? xform->SrcProfile() : nullptr;
     auto* dst_profile = xform ? xform->DstProfile() : nullptr;
-    auto src_format = has_alpha ? skcms_PixelFormat_RGBA_16161616
-                                : skcms_PixelFormat_RGB_161616;
+    auto src_format = has_alpha ? skcms_PixelFormat_RGBA_16161616BE
+                                : skcms_PixelFormat_RGB_161616BE;
     auto src_alpha_format =
         has_alpha ? skcms_AlphaFormat_Unpremul : skcms_AlphaFormat_Opaque;
     auto dst_alpha_format = has_alpha ? (buffer.PremultiplyAlpha()
