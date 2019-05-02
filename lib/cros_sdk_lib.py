@@ -76,7 +76,11 @@ def GetChrootVersion(chroot):
   Returns:
     The version of the chroot dir, or None if the version is missing/invalid.
   """
-  ver_path = os.path.join(chroot, CHROOT_VERSION_FILE.lstrip(os.sep))
+  if chroot:
+    ver_path = os.path.join(chroot, CHROOT_VERSION_FILE.lstrip(os.sep))
+  else:
+    ver_path = CHROOT_VERSION_FILE
+
   updater = ChrootUpdater(version_file=ver_path)
   try:
     return updater.GetVersion()

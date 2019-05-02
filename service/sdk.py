@@ -133,16 +133,26 @@ def Create(arguments):
 
   cros_build_lib.RunCommand(cmd)
 
-  return GetChrootVersion()
+  return GetChrootVersion(arguments.paths.chroot_path)
 
 
-def GetChrootVersion():
+def GetChrootVersion(chroot_path=None):
   """Get the chroot version.
+
+  Args:
+    chroot_path (str|None): The chroot path.
 
   Returns:
     int|None - The version of the chroot if the chroot is valid, else None.
   """
-  return cros_sdk_lib.GetChrootVersion(constants.DEFAULT_CHROOT_PATH)
+  if chroot_path:
+    path = chroot_path
+  elif cros_build_lib.IsInsideChroot():
+    path = None
+  else:
+    path = constants.DEFAULT_CHROOT_PATH
+
+  return cros_sdk_lib.GetChrootVersion(path)
 
 
 def Update(arguments):
