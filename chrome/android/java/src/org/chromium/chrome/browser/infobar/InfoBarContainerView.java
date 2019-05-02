@@ -190,8 +190,8 @@ public class InfoBarContainerView extends SwipableOverlayView {
      */
     void setParentView(ViewGroup parent) {
         mParentView = parent;
-        removeFromParentView();
-        addToParentView();
+        // Don't attach the container to the new parent if it is not previously attached.
+        if (removeFromParentView()) addToParentView();
     }
 
     /**
