@@ -204,18 +204,6 @@ const char kAutofillUseImprovedLabelDisambiguationDescription[] =
     "When enabled, the Autofill dropdown's suggestions' labels are displayed "
     "using the improved disambiguation format.";
 
-const char kAutoplayPolicyName[] = "Autoplay policy";
-const char kAutoplayPolicyDescription[] =
-    "Policy used when deciding if audio or video is allowed to autoplay.";
-
-const char kAutoplayPolicyUserGestureRequiredForCrossOrigin[] =
-    "User gesture is required for cross-origin iframes.";
-const char kAutoplayPolicyNoUserGestureRequired[] =
-    "No user gesture is required.";
-const char kAutoplayPolicyUserGestureRequired[] = "User gesture is required.";
-const char kAutoplayPolicyDocumentUserActivation[] =
-    "Document user activation is required.";
-
 const char kAwaitOptimizationName[] = "Await optimization";
 const char kAwaitOptimizationDescription[] =
     "Enables await taking 1 tick on the microtask queue.";
@@ -498,16 +486,6 @@ const char kEnableAutofillSendExperimentIdsInPaymentsRPCsName[] =
 const char kEnableAutofillSendExperimentIdsInPaymentsRPCsDescription[] =
     "If enabled, adds the status of certain experiment variations when making "
     "calls to Google Payments.";
-
-const char kEnableAutoplayIgnoreWebAudioName[] =
-    "Autoplay ignores WebAudio playbacks";
-const char kEnableAutoplayIgnoreWebAudioDescription[] =
-    "If enabled, autoplay restrictions will be ignored for WebAudio.";
-
-const char kEnableAutoplayUnifiedSoundSettingsName[] =
-    "Autoplay unified sound settings UI";
-const char kEnableAutoplayUnifiedSoundSettingsDescription[] =
-    "If enabled, shows the new unified autoplay sound settings UI.";
 
 const char kEnableBrotliName[] = "Brotli Content-Encoding.";
 const char kEnableBrotliDescription[] =

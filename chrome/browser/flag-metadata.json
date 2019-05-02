@@ -304,11 +304,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "autoplay-policy",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "background-task-component-update",
     "owners": [ "sorin", "waffles", "tiborg" ],
     "expiry_milestone": 76
@@ -870,16 +865,6 @@
     "name": "autofill-off-no-server-data",
     "owners": [ "seblalancette" ],
     "expiry_milestone": 79
-  },
-  {
-    "name": "enable-autoplay-ignore-web-audio",
-    "owners": [ "beccahughes", "mlamouri", "media-dev" ],
-    "expiry_milestone": 73
-  },
-  {
-    "name": "enable-autoplay-unified-sound-settings",
-    "owners": [ "beccahughes", "mlamouri", "media-dev" ],
-    "expiry_milestone": 73
   },
   {
     "name": "enable-avoid-flash-between-navigation",

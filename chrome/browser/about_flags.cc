@@ -593,20 +593,6 @@ const FeatureEntry::Choice kForceColorProfileChoices[] = {
      switches::kForceDisplayColorProfile, "scrgb-linear"},
 };
 
-const FeatureEntry::Choice kAutoplayPolicyChoices[] = {
-    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {flag_descriptions::kAutoplayPolicyNoUserGestureRequired,
-     switches::kAutoplayPolicy,
-     switches::autoplay::kNoUserGestureRequiredPolicy},
-#if defined(OS_ANDROID)
-    {flag_descriptions::kAutoplayPolicyUserGestureRequired,
-     switches::kAutoplayPolicy, switches::autoplay::kUserGestureRequiredPolicy},
-#endif
-    {flag_descriptions::kAutoplayPolicyDocumentUserActivation,
-     switches::kAutoplayPolicy,
-     switches::autoplay::kDocumentUserActivationRequiredPolicy},
-};
-
 const FeatureEntry::Choice kForceEffectiveConnectionTypeChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flag_descriptions::kEffectiveConnectionTypeUnknownDescription,
@@ -2539,10 +2525,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kWebNfc)},
 #endif
 
-    {"autoplay-policy", flag_descriptions::kAutoplayPolicyName,
-     flag_descriptions::kAutoplayPolicyDescription, kOsAll,
-     MULTI_VALUE_TYPE(kAutoplayPolicyChoices)},
-
     {"force-effective-connection-type",
      flag_descriptions::kForceEffectiveConnectionTypeName,
      flag_descriptions::kForceEffectiveConnectionTypeDescription, kOsAll,
@@ -3202,11 +3184,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAccessibilityObjectModelDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableAccessibilityObjectModel)},
 
-    {"enable-autoplay-ignore-web-audio",
-     flag_descriptions::kEnableAutoplayIgnoreWebAudioName,
-     flag_descriptions::kEnableAutoplayIgnoreWebAudioDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(media::kAutoplayIgnoreWebAudio)},
-
 #if defined(OS_ANDROID)
     {"cct-module", flag_descriptions::kCCTModuleName,
      flag_descriptions::kCCTModuleDescription, kOsAndroid,
@@ -3369,11 +3346,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCompositorThreadedScrollbarScrollingDescription,
      kOsAll,
      FEATURE_VALUE_TYPE(features::kCompositorThreadedScrollbarScrolling)},
-
-    {"enable-autoplay-unified-sound-settings",
-     flag_descriptions::kEnableAutoplayUnifiedSoundSettingsName,
-     flag_descriptions::kEnableAutoplayUnifiedSoundSettingsDescription,
-     kOsDesktop, FEATURE_VALUE_TYPE(media::kAutoplayWhitelistSettings)},
 
 #if defined(OS_CHROMEOS)
     {"enable-chromeos-account-manager",

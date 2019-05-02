@@ -141,14 +141,6 @@ extern const char kAutofillSettingsSplitByCardTypeDescription[];
 extern const char kAutofillUseImprovedLabelDisambiguationName[];
 extern const char kAutofillUseImprovedLabelDisambiguationDescription[];
 
-extern const char kAutoplayPolicyName[];
-extern const char kAutoplayPolicyDescription[];
-
-extern const char kAutoplayPolicyUserGestureRequiredForCrossOrigin[];
-extern const char kAutoplayPolicyNoUserGestureRequired[];
-extern const char kAutoplayPolicyUserGestureRequired[];
-extern const char kAutoplayPolicyDocumentUserActivation[];
-
 extern const char kAwaitOptimizationName[];
 extern const char kAwaitOptimizationDescription[];
 
@@ -321,12 +313,6 @@ extern const char kEnableAutofillNativeDropdownViewsDescription[];
 
 extern const char kEnableAutofillSendExperimentIdsInPaymentsRPCsName[];
 extern const char kEnableAutofillSendExperimentIdsInPaymentsRPCsDescription[];
-
-extern const char kEnableAutoplayIgnoreWebAudioName[];
-extern const char kEnableAutoplayIgnoreWebAudioDescription[];
-
-extern const char kEnableAutoplayUnifiedSoundSettingsName[];
-extern const char kEnableAutoplayUnifiedSoundSettingsDescription[];
 
 extern const char kEnableBrotliName[];
 extern const char kEnableBrotliDescription[];
