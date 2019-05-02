@@ -24,6 +24,7 @@ component("android") {
   defines = [ "IS_VULKAN_ANDROID_IMPL" ]
 
   deps = [
+    "//gpu/ipc/common:interfaces",
     "//ui/gfx",
   ]
 

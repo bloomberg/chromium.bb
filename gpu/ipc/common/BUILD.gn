@@ -198,6 +198,7 @@ mojom("interfaces") {
     "memory_stats.mojom",
     "surface_handle.mojom",
     "sync_token.mojom",
+    "vulkan_ycbcr_info.mojom",
   ]
 
   public_deps = [

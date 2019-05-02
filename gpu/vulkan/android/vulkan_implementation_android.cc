@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "gpu/ipc/common/vulkan_ycbcr_info.mojom.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_instance.h"
@@ -162,7 +163,8 @@ bool VulkanImplementationAndroid::CreateVkImageAndImportAHB(
     VkImage* vk_image,
     VkImageCreateInfo* vk_image_info,
     VkDeviceMemory* vk_device_memory,
-    VkDeviceSize* mem_allocation_size) {
+    VkDeviceSize* mem_allocation_size,
+    mojom::VulkanYCbCrInfo* ycbcr_info) {
   DCHECK(ahb_handle.is_valid());
   DCHECK(vk_image);
   DCHECK(vk_image_info);
@@ -342,6 +344,16 @@ bool VulkanImplementationAndroid::CreateVkImageAndImportAHB(
   }
 
   *mem_allocation_size = mem_alloc_info.allocationSize;
+  if (ycbcr_info) {
+    ycbcr_info->suggested_ycbcr_model = ahb_format_props.suggestedYcbcrModel;
+    ycbcr_info->suggested_ycbcr_range = ahb_format_props.suggestedYcbcrRange;
+    ycbcr_info->suggested_xchroma_offset =
+        ahb_format_props.suggestedXChromaOffset;
+    ycbcr_info->suggested_ychroma_offset =
+        ahb_format_props.suggestedYChromaOffset;
+    ycbcr_info->external_format = ahb_format_props.externalFormat;
+    ycbcr_info->format_features = ahb_format_props.formatFeatures;
+  }
   return true;
 }
 
