@@ -38,11 +38,12 @@ class SharedRemoteBase
       : forwarder_(std::move(forwarder)) {}
 
   // Creates a SharedRemoteBase wrapping an underlying non-thread-safe
-  // RemoteType which is bound to the calling sequence. All messages sent
+  // PendingType which is bound to the calling sequence. All messages sent
   // via this thread-safe proxy will internally be sent by first posting to this
   // (the calling) sequence's TaskRunner.
-  static scoped_refptr<SharedRemoteBase> Create(RemoteType remote) {
-    scoped_refptr<RemoteWrapper> wrapper = new RemoteWrapper(std::move(remote));
+  static scoped_refptr<SharedRemoteBase> Create(PendingType pending_remote) {
+    scoped_refptr<RemoteWrapper> wrapper =
+        new RemoteWrapper(RemoteType(std::move(pending_remote)));
     return new SharedRemoteBase(wrapper->CreateForwarder());
   }
 
@@ -83,7 +84,7 @@ class SharedRemoteBase
     explicit RemoteWrapper(scoped_refptr<base::SequencedTaskRunner> task_runner)
         : task_runner_(std::move(task_runner)) {}
 
-    void BindOnTaskRunner(PendingRemote<InterfaceType> remote) {
+    void BindOnTaskRunner(PendingType remote) {
       // TODO(https://crbug.com/682334): At the moment we don't have a group
       // controller available. That means the user won't be able to pass
       // associated endpoints on this interface (at least not immediately). In
@@ -173,8 +174,10 @@ class SharedRemote {
  public:
   SharedRemote() = default;
   explicit SharedRemote(PendingRemote<Interface> pending_remote)
-      : SharedRemote(std::move(pending_remote),
-                     base::SequencedTaskRunnerHandle::Get()) {}
+      : remote_(pending_remote.is_valid()
+                    ? SharedRemoteBase<Remote<Interface>>::Create(
+                          std::move(pending_remote))
+                    : nullptr) {}
   SharedRemote(PendingRemote<Interface> pending_remote,
                scoped_refptr<base::SequencedTaskRunner> bind_task_runner)
       : remote_(pending_remote.is_valid()

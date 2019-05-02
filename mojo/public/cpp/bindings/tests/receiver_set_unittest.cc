@@ -343,7 +343,7 @@ class PingProviderImpl : public AssociatedPingProvider, public PingService {
 
  private:
   // AssociatedPingProvider:
-  void GetPing(AssociatedInterfaceRequest<PingService> receiver) override {
+  void GetPing(PendingAssociatedReceiver<PingService> receiver) override {
     ping_receivers_.Add(this, std::move(receiver), new_ping_context_);
     if (!new_ping_handler_.is_null())
       new_ping_handler_.Run();

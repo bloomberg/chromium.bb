@@ -56,6 +56,15 @@ class PendingAssociatedReceiver {
     handle_ = std::move(handle);
   }
 
+  // Hangs up this endpoint, invalidating the PendingAssociatedReceiver.
+  void reset() { handle_.reset(); }
+
+  // Similar to above but provides additional metadata in case the remote
+  // endpoint wants details about why this endpoint hung up.
+  void ResetWithReason(uint32_t custom_reason, const std::string& description) {
+    handle_.ResetWithReason(custom_reason, description);
+  }
+
  private:
   ScopedInterfaceEndpointHandle handle_;
 

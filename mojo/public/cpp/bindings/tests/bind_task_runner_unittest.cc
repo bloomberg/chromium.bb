@@ -166,9 +166,9 @@ class IntegerSenderConnectionImpl : public IntegerSenderConnection {
   void set_get_sender_notification(base::OnceClosure notification) {
     get_sender_notification_ = std::move(notification);
   }
-  void GetSender(IntegerSenderAssociatedRequest request) override {
+  void GetSender(PendingAssociatedReceiver<IntegerSender> receiver) override {
     sender_impl_ =
-        std::make_unique<SenderType>(std::move(request), sender_runner_);
+        std::make_unique<SenderType>(std::move(receiver), sender_runner_);
     std::move(get_sender_notification_).Run();
   }
 

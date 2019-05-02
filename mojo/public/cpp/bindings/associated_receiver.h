@@ -106,6 +106,12 @@ class AssociatedReceiver {
   // unbinding are effectively cancelled.
   void reset() { binding_.Close(); }
 
+  // Similar to above but provides additional information to the remote endpoint
+  // about why this end is hanging up.
+  void ResetWithReason(uint32_t custom_reason, const std::string& description) {
+    binding_.CloseWithReason(custom_reason, description);
+  }
+
   // Binds this AssociatedReceiver, connecting it to a new
   // PendingAssociatedRemote which is returned for transmission elsewhere
   // (typically to an AssociatedRemote who will consume it to start making
@@ -187,6 +193,12 @@ class AssociatedReceiver {
     DCHECK(is_bound());
     binding_.AddFilter(std::move(filter));
   }
+
+  // Sends a message on the underlying message pipe and runs the current
+  // message loop until its response is received. This can be used in tests to
+  // verify that no message was sent on a message pipe in response to some
+  // stimulus.
+  void FlushForTesting() { binding_.FlushForTesting(); }
 
  private:
   // TODO(https://crbug.com/875030): Move AssociatedBinding details into this

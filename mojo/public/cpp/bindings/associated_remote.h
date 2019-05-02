@@ -123,6 +123,14 @@ class AssociatedRemote {
       internal_state_.set_connection_error_handler(std::move(handler));
   }
 
+  // Similar to above but the handler receives additional metadata if provided
+  // by the receiving endpoint when closing itself.
+  void set_disconnect_with_reason_handler(
+      ConnectionErrorWithReasonCallback handler) {
+    internal_state_.set_connection_error_with_reason_handler(
+        std::move(handler));
+  }
+
   // Resets this AssociatedRemote to an unbound state. To reset the
   // AssociatedRemote and recover an PendingAssociatedRemote that can be bound
   // again later, use |Unbind()| instead.
@@ -219,6 +227,12 @@ class AssociatedRemote {
     return PendingAssociatedRemote<Interface>(info.PassHandle(),
                                               info.version());
   }
+
+  // Sends a message on the underlying message pipe and runs the current
+  // message loop until its response is received. This can be used in tests to
+  // verify that no message was sent on a message pipe in response to some
+  // stimulus.
+  void FlushForTesting() { internal_state_.FlushForTesting(); }
 
   internal::AssociatedInterfacePtrState<Interface>* internal_state() {
     return &internal_state_;

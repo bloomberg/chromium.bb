@@ -45,6 +45,8 @@ class PendingAssociatedRemote {
   bool is_valid() const { return handle_.is_valid(); }
   explicit operator bool() const { return is_valid(); }
 
+  void reset() { handle_.reset(); }
+
   // Temporary helper for transitioning away from old bindings types. This is
   // intentionally an implicit conversion.
   operator AssociatedInterfacePtrInfo<Interface>() {
