@@ -76,6 +76,7 @@
 #include "chrome/browser/metrics/renderer_uptime_tracker.h"
 #include "chrome/browser/metrics/thread_watcher.h"
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/performance_monitor/process_monitor.h"
 #include "chrome/browser/performance_monitor/system_monitor.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
@@ -1311,17 +1312,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // running.
   browser_process_->PreMainMessageLoopRun();
 
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-  // Wait for the result of machine level user cloud policy enrollment after
-  // we start the enrollment process in browser_porcess_->PreMainMessageLoopRun.
-  // Abort the launch process if the enrollment is failed.
-  if (!browser_process_->browser_policy_connector()
-           ->machine_level_user_cloud_policy_controller()
-           ->WaitUntilPolicyEnrollmentFinished()) {
-    return chrome::RESULT_CODE_CLOUD_POLICY_ENROLLMENT_FAILED;
-  }
-#endif
-
   // Record last shutdown time into a histogram.
   browser_shutdown::ReadLastShutdownInfo();
 
@@ -1415,6 +1405,32 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
                     "now to avoid profile corruption.";
       return chrome::RESULT_CODE_PROFILE_IN_USE;
   }
+
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+  // Initialize the machine level user cloud policy controller after the
+  // browser process singleton is acquired to remove race conditions where
+  // multiple browser processes start simultaneously.  The main
+  // initialization of browser_policy_connector is performed inside
+  // PreMainMessageLoopRun() so that policies can be applied as soon as
+  // possible.
+  //
+  // Note that this protects against multiple browser process starts in
+  // the same user data dir and not multiple starts across user data dirs.
+  browser_process_->browser_policy_connector()
+      ->machine_level_user_cloud_policy_controller()
+      ->Init(browser_process_->local_state(),
+             browser_process_->system_network_context_manager()
+                 ->GetSharedURLLoaderFactory());
+
+  // Wait for the machine level user cloud policy enrollment to finish.
+  // If no enrollment is needed, this function returns immediately.
+  // Abort the launch process if the enrollment fails.
+  if (!browser_process_->browser_policy_connector()
+           ->machine_level_user_cloud_policy_controller()
+           ->WaitUntilPolicyEnrollmentFinished()) {
+    return chrome::RESULT_CODE_CLOUD_POLICY_ENROLLMENT_FAILED;
+  }
+#endif
 
   // Handle special early return paths (which couldn't be processed even earlier
   // as they require the process singleton to be held) first.
