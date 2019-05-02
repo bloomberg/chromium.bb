@@ -19,7 +19,7 @@ class BASE_EXPORT ThreadGroupNative : public ThreadGroup {
   // JoinForTesting() has returned.
   ~ThreadGroupNative() override;
 
-  // Starts the worker pool and allows tasks to begin running.
+  // Starts the thread group and allows tasks to begin running.
   void Start(WorkerEnvironment worker_environment = WorkerEnvironment::NONE);
 
   // ThreadGroup:
@@ -31,7 +31,7 @@ class BASE_EXPORT ThreadGroupNative : public ThreadGroup {
  protected:
   ThreadGroupNative(TrackedRef<TaskTracker> task_tracker,
                     TrackedRef<Delegate> delegate,
-                    ThreadGroup* predecessor_pool);
+                    ThreadGroup* predecessor_thread_group);
 
   // Runs a task off the next task source on the |priority_queue_|. Called by
   // callbacks posted to platform native thread pools.
@@ -59,11 +59,11 @@ class BASE_EXPORT ThreadGroupNative : public ThreadGroup {
   // if the |priority_queue_| is empty.
   scoped_refptr<TaskSource> GetWork();
 
-  // Indicates whether the pool has been started yet.
+  // Indicates whether the thread group has been started yet.
   bool started_ GUARDED_BY(lock_) = false;
 
-  // Number of threadpool work submitted to the pool which haven't popped a
-  // TaskSource from the PriorityQueue yet.
+  // Number of threadpool work submitted to the thread group which haven't
+  // popped a TaskSource from the PriorityQueue yet.
   size_t num_pending_threadpool_work_ GUARDED_BY(lock_) = 0;
 
 #if DCHECK_IS_ON()

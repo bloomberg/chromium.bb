@@ -77,7 +77,7 @@ ThreadPoolImpl::ThreadPoolImpl(StringPiece histogram_label,
       tracked_ref_factory_(this) {
   DCHECK(!histogram_label.empty());
 
-  foreground_pool_ = std::make_unique<ThreadGroupImpl>(
+  foreground_thread_group_ = std::make_unique<ThreadGroupImpl>(
       JoinString(
           {histogram_label, kForegroundPoolEnvironmentParams.name_suffix}, "."),
       kForegroundPoolEnvironmentParams.name_suffix,
@@ -85,7 +85,7 @@ ThreadPoolImpl::ThreadPoolImpl(StringPiece histogram_label,
       task_tracker_->GetTrackedRef(), tracked_ref_factory_.GetTrackedRef());
 
   if (CanUseBackgroundPriorityForWorkerThread()) {
-    background_pool_ = std::make_unique<ThreadGroupImpl>(
+    background_thread_group_ = std::make_unique<ThreadGroupImpl>(
         JoinString(
             {histogram_label, kBackgroundPoolEnvironmentParams.name_suffix},
             "."),
@@ -100,9 +100,9 @@ ThreadPoolImpl::~ThreadPoolImpl() {
   DCHECK(join_for_testing_returned_.IsSet());
 #endif
 
-  // Reset worker pools to release held TrackedRefs, which block teardown.
-  foreground_pool_.reset();
-  background_pool_.reset();
+  // Reset thread groups to release held TrackedRefs, which block teardown.
+  foreground_thread_group_.reset();
+  background_thread_group_.reset();
 }
 
 void ThreadPoolImpl::Start(const ThreadPool::InitParams& init_params,
@@ -119,11 +119,12 @@ void ThreadPoolImpl::Start(const ThreadPool::InitParams& init_params,
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
   if (FeatureList::IsEnabled(kUseNativeThreadPool)) {
-    std::unique_ptr<ThreadGroup> pool = std::move(foreground_pool_);
-    foreground_pool_ = std::make_unique<ThreadGroupNativeImpl>(
+    std::unique_ptr<ThreadGroup> pool = std::move(foreground_thread_group_);
+    foreground_thread_group_ = std::make_unique<ThreadGroupNativeImpl>(
         task_tracker_->GetTrackedRef(), tracked_ref_factory_.GetTrackedRef(),
         pool.get());
-    pool->InvalidateAndHandoffAllTaskSourcesToOtherPool(foreground_pool_.get());
+    pool->InvalidateAndHandoffAllTaskSourcesToOtherThreadGroup(
+        foreground_thread_group_.get());
   }
 #endif
 
@@ -165,7 +166,7 @@ void ThreadPoolImpl::Start(const ThreadPool::InitParams& init_params,
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
   if (FeatureList::IsEnabled(kUseNativeThreadPool)) {
-    static_cast<ThreadGroupNative*>(foreground_pool_.get())
+    static_cast<ThreadGroupNative*>(foreground_thread_group_.get())
         ->Start(worker_environment);
   } else
 #endif
@@ -176,19 +177,19 @@ void ThreadPoolImpl::Start(const ThreadPool::InitParams& init_params,
     // room for incoming foreground tasks and to minimize the performance impact
     // of best-effort tasks.
 
-    const int max_best_effort_tasks_in_foreground_pool = std::max(
+    const int max_best_effort_tasks_in_foreground_thread_group = std::max(
         1,
         std::min(init_params.background_thread_group_params.max_tasks(),
                  init_params.foreground_thread_group_params.max_tasks() / 2));
-    static_cast<ThreadGroupImpl*>(foreground_pool_.get())
+    static_cast<ThreadGroupImpl*>(foreground_thread_group_.get())
         ->Start(init_params.foreground_thread_group_params,
-                max_best_effort_tasks_in_foreground_pool,
+                max_best_effort_tasks_in_foreground_thread_group,
                 service_thread_task_runner, worker_thread_observer,
                 worker_environment);
   }
 
-  if (background_pool_) {
-    background_pool_->Start(
+  if (background_thread_group_) {
+    background_thread_group_->Start(
         init_params.background_thread_group_params,
         init_params.background_thread_group_params.max_tasks(),
         service_thread_task_runner, worker_thread_observer, worker_environment);
@@ -289,9 +290,9 @@ void ThreadPoolImpl::JoinForTesting() {
   // https://crbug.com/771701.
   service_thread_->Stop();
   single_thread_task_runner_manager_.JoinForTesting();
-  foreground_pool_->JoinForTesting();
-  if (background_pool_)
-    background_pool_->JoinForTesting();
+  foreground_thread_group_->JoinForTesting();
+  if (background_thread_group_)
+    background_thread_group_->JoinForTesting();
 #if DCHECK_IS_ON()
   join_for_testing_returned_.Set();
 #endif
@@ -367,11 +368,12 @@ void ThreadPoolImpl::UpdatePriority(scoped_refptr<TaskSource> task_source,
       GetThreadGroupForTraits(task_source_and_transaction.transaction.traits());
 
   if (new_thread_group == current_thread_group) {
-    // |task_source|'s position needs to be updated within its current pool.
+    // |task_source|'s position needs to be updated within its current thread
+    // group.
     current_thread_group->UpdateSortKey(std::move(task_source_and_transaction));
   } else {
-    // |task_source| is changing pools; remove it from its current pool and
-    // reenqueue it.
+    // |task_source| is changing thread groups; remove it from its current
+    // thread group and reenqueue it.
     const bool task_source_was_found = current_thread_group->RemoveTaskSource(
         task_source_and_transaction.task_source);
     if (task_source_was_found) {
@@ -388,11 +390,12 @@ const ThreadGroup* ThreadPoolImpl::GetThreadGroupForTraits(
 }
 
 ThreadGroup* ThreadPoolImpl::GetThreadGroupForTraits(const TaskTraits& traits) {
-  if (traits.priority() == TaskPriority::BEST_EFFORT && background_pool_) {
-    return background_pool_.get();
+  if (traits.priority() == TaskPriority::BEST_EFFORT &&
+      background_thread_group_) {
+    return background_thread_group_.get();
   }
 
-  return foreground_pool_.get();
+  return foreground_thread_group_.get();
 }
 
 void ThreadPoolImpl::UpdateCanRunPolicy() {
@@ -403,9 +406,9 @@ void ThreadPoolImpl::UpdateCanRunPolicy() {
                                        : CanRunPolicy::kForegroundOnly)
                : CanRunPolicy::kNone;
   task_tracker_->SetCanRunPolicy(can_run_policy);
-  foreground_pool_->DidUpdateCanRunPolicy();
-  if (background_pool_)
-    background_pool_->DidUpdateCanRunPolicy();
+  foreground_thread_group_->DidUpdateCanRunPolicy();
+  if (background_thread_group_)
+    background_thread_group_->DidUpdateCanRunPolicy();
   single_thread_task_runner_manager_.DidUpdateCanRunPolicy();
 }
 
@@ -417,9 +420,9 @@ TaskTraits ThreadPoolImpl::SetUserBlockingPriorityIfNeeded(
 }
 
 void ThreadPoolImpl::ReportHeartbeatMetrics() const {
-  foreground_pool_->ReportHeartbeatMetrics();
-  if (background_pool_)
-    background_pool_->ReportHeartbeatMetrics();
+  foreground_thread_group_->ReportHeartbeatMetrics();
+  if (background_thread_group_)
+    background_thread_group_->ReportHeartbeatMetrics();
 }
 
 }  // namespace internal

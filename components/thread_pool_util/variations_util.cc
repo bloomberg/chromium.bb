@@ -62,8 +62,8 @@ std::unique_ptr<base::ThreadGroupParams> GetThreadGroupParams(
   }
 
   auto params = std::make_unique<base::ThreadGroupParams>(
-      base::RecommendedMaxNumberOfThreadsInPool(min, max, cores_multiplier,
-                                                offset),
+      base::RecommendedMaxNumberOfThreadsInThreadGroup(
+          min, max, cores_multiplier, offset),
       base::TimeDelta::FromMilliseconds(detach_milliseconds));
 
   if (params->max_tasks() <= 0) {

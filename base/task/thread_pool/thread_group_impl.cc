@@ -55,8 +55,8 @@ constexpr char kNumActiveWorkersHistogramPrefix[] =
     "ThreadPool.NumActiveWorkers.";
 constexpr size_t kMaxNumberOfWorkers = 256;
 
-// In a background pool:
-// - Blocking calls take more time than in a foreground pool.
+// In a background thread group:
+// - Blocking calls take more time than in a foreground thread group.
 // - We want to minimize impact on foreground work, not maximize execution
 //   throughput.
 // For these reasons, the timeout to increase the maximum number of concurrent
@@ -64,7 +64,7 @@ constexpr size_t kMaxNumberOfWorkers = 256;
 // infinite because execution throughput should not be reduced forever if a task
 // blocks forever.
 //
-// TODO(fdoray): On platforms without background pools, blocking in a
+// TODO(fdoray): On platforms without background thread groups, blocking in a
 // BEST_EFFORT task should:
 // 1. Increment the maximum number of concurrent tasks after a *short* timeout,
 //    to allow scheduling of USER_VISIBLE/USER_BLOCKING tasks.
@@ -72,7 +72,7 @@ constexpr size_t kMaxNumberOfWorkers = 256;
 //    *long* timeout, because we only want to allow more BEST_EFFORT tasks to be
 //    be scheduled concurrently when we believe that a BEST_EFFORT task is
 //    blocked forever.
-// Currently, only 1. is true as the configuration is per pool.
+// Currently, only 1. is true as the configuration is per thread group.
 // TODO(https://crbug.com/927755): Fix racy condition when MayBlockThreshold ==
 // BlockedWorkersPoll.
 constexpr TimeDelta kForegroundMayBlockThreshold =
@@ -246,11 +246,11 @@ class ThreadGroupImpl::WorkerThreadDelegateImpl : public WorkerThread::Delegate,
 
  private:
   // Returns true if |worker| is allowed to cleanup and remove itself from the
-  // pool. Called from GetWork() when no work is available.
+  // thread group. Called from GetWork() when no work is available.
   bool CanCleanupLockRequired(const WorkerThread* worker) const
       EXCLUSIVE_LOCKS_REQUIRED(outer_->lock_);
 
-  // Calls cleanup on |worker| and removes it from the pool. Called from
+  // Calls cleanup on |worker| and removes it from the thread group. Called from
   // GetWork() when no work is available and CanCleanupLockRequired() returns
   // true.
   void CleanupLockRequired(WorkerThread* worker)
@@ -324,12 +324,12 @@ class ThreadGroupImpl::WorkerThreadDelegateImpl : public WorkerThread::Delegate,
 };
 
 ThreadGroupImpl::ThreadGroupImpl(StringPiece histogram_label,
-                                 StringPiece pool_label,
+                                 StringPiece thread_group_label,
                                  ThreadPriority priority_hint,
                                  TrackedRef<TaskTracker> task_tracker,
                                  TrackedRef<Delegate> delegate)
     : ThreadGroup(std::move(task_tracker), std::move(delegate)),
-      pool_label_(pool_label.as_string()),
+      thread_group_label_(thread_group_label.as_string()),
       priority_hint_(priority_hint),
       idle_workers_stack_cv_for_testing_(lock_.CreateConditionVariable()),
       // Mimics the UMA_HISTOGRAM_LONG_TIMES macro.
@@ -378,7 +378,7 @@ ThreadGroupImpl::ThreadGroupImpl(StringPiece histogram_label,
           HistogramBase::kUmaTargetedHistogramFlag)),
       tracked_ref_factory_(this) {
   DCHECK(!histogram_label.empty());
-  DCHECK(!pool_label_.empty());
+  DCHECK(!thread_group_label_.empty());
 }
 
 void ThreadGroupImpl::Start(
@@ -388,7 +388,7 @@ void ThreadGroupImpl::Start(
     WorkerThreadObserver* worker_thread_observer,
     WorkerEnvironment worker_environment,
     Optional<TimeDelta> may_block_threshold) {
-  DCHECK(!replacement_pool_);
+  DCHECK(!replacement_thread_group_);
 
   ScopedWorkersExecutor executor(this);
 
@@ -451,7 +451,7 @@ size_t ThreadGroupImpl::GetMaxConcurrentNonBlockedTasksDeprecated() const {
   CheckedAutoLock auto_lock(lock_);
   DCHECK_NE(after_start().initial_max_tasks, 0U)
       << "GetMaxConcurrentTasksDeprecated() should only be called after the "
-      << "worker pool has started.";
+      << "thread group has started.";
 #endif
   return after_start().initial_max_tasks;
 }
@@ -496,7 +496,8 @@ void ThreadGroupImpl::JoinForTesting() {
     CheckedAutoLock auto_lock(lock_);
     priority_queue_.EnableFlushTaskSourcesOnDestroyForTesting();
 
-    DCHECK_GT(workers_.size(), size_t(0)) << "Joined an unstarted worker pool.";
+    DCHECK_GT(workers_.size(), size_t(0))
+        << "Joined an unstarted thread group.";
 
     // Ensure WorkerThreads in |workers_| do not attempt to cleanup while
     // being joined.
@@ -584,7 +585,7 @@ void ThreadGroupImpl::WorkerThreadDelegateImpl::OnMainEntry(
   DCHECK_EQ(worker_only().num_tasks_since_last_wait, 0U);
 
   PlatformThread::SetName(
-      StringPrintf("ThreadPool%sWorker", outer_->pool_label_.c_str()));
+      StringPrintf("ThreadPool%sWorker", outer_->thread_group_label_.c_str()));
 
   outer_->BindToCurrentThread();
   SetBlockingObserverForCurrentThread(this);
@@ -790,8 +791,8 @@ void ThreadGroupImpl::WorkerThreadDelegateImpl::OnMainExit(
 
     // |worker| should already have been removed from the idle workers stack and
     // |workers_| by the time the thread is about to exit. (except in the cases
-    // where the pool is no longer going to be used - in which case, it's fine
-    // for there to be invalid workers in the pool.
+    // where the thread group is no longer going to be used - in which case,
+    // it's fine for there to be invalid workers in the thread group.
     if (!shutdown_complete && !outer_->join_for_testing_started_.IsSet()) {
       DCHECK(!outer_->idle_workers_stack_.Contains(worker));
       DCHECK(!ContainsWorker(outer_->workers_, worker));
@@ -923,7 +924,8 @@ bool ThreadGroupImpl::WorkerThreadDelegateImpl::CanGetWorkLockRequired(
 
   // Excess workers should not get work, until they are no longer excess (i.e.
   // max tasks increases). This ensures that if we have excess workers in the
-  // pool, they get a chance to no longer be excess before being cleaned up.
+  // thread group, they get a chance to no longer be excess before being cleaned
+  // up.
   if (outer_->GetNumAwakeWorkersLockRequired() >
       outer_->GetDesiredNumAwakeWorkersLockRequired()) {
     OnWorkerBecomesIdleLockRequired(worker);
@@ -1046,7 +1048,7 @@ void ThreadGroupImpl::DidUpdateCanRunPolicy() {
 
 void ThreadGroupImpl::EnsureEnoughWorkersLockRequired(
     BaseScopedWorkersExecutor* base_executor) {
-  // Don't do anything if the pool isn't started.
+  // Don't do anything if the thread group isn't started.
   if (max_tasks_ == 0)
     return;
 

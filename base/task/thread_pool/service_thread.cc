@@ -79,8 +79,8 @@ void ServiceThread::PerformHeartbeatLatencyReport() const {
   // Only record latency for one set of TaskTraits per report to avoid bias in
   // the order in which tasks are posted (should we record all at once) as well
   // as to avoid spinning up many worker threads to process this report if the
-  // thread pool is currently idle (each pool keeps at least one idle thread so
-  // a single task isn't an issue).
+  // thread pool is currently idle (each thread group keeps at least one idle
+  // thread so a single task isn't an issue).
 
   // Invoke RandInt() out-of-line to ensure it's obtained before
   // TimeTicks::Now().

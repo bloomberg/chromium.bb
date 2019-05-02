@@ -34,15 +34,14 @@ class BASE_EXPORT PooledTaskRunnerDelegate {
                                     scoped_refptr<Sequence> sequence) = 0;
 
   // Invoked when RunsTasksInCurrentSequence() is called on a
-  // PooledParallelTaskRunner. Returns true if the worker pool used by the
-  // PooledParallelTaskRunner (as determined by |traits|) is running on
-  // this thread.
+  // PooledParallelTaskRunner. Returns true if the current thread is part of the
+  // ThreadGroup associated with |traits|.
   virtual bool IsRunningPoolWithTraits(const TaskTraits& traits) const = 0;
 
   // Invoked when the priority of |sequence|'s TaskRunner is updated. The
   // implementation must update |sequence|'s priority to |priority|, then place
   // |sequence| in the correct priority-queue position within the appropriate
-  // worker pool.
+  // thread group.
   virtual void UpdatePriority(scoped_refptr<TaskSource> task_source,
                               TaskPriority priority) = 0;
 };

@@ -20,7 +20,9 @@ namespace internal {
 
 class TaskTracker;
 
-// Interface and base implementation for a worker pool.
+// Interface and base implementation for a thread group. A thread group is a
+// subset of the threads in the thread pool (see GetThreadGroupForTraits() for
+// thread group selection logic when posting tasks and creating task runners).
 class BASE_EXPORT ThreadGroup {
  public:
   // Delegate interface for ThreadGroup.
@@ -29,8 +31,8 @@ class BASE_EXPORT ThreadGroup {
     virtual ~Delegate() = default;
 
     // Invoked when the TaskSource in |task_source_and_transaction| is non-empty
-    // after the ThreadGroup has run a task from it. The implementation
-    // must return the pool in which the TaskSource should be reenqueued.
+    // after the ThreadGroup has run a task from it. The implementation must
+    // return the thread group in which the TaskSource should be reenqueued.
     virtual ThreadGroup* GetThreadGroupForTraits(const TaskTraits& traits) = 0;
   };
 
@@ -52,13 +54,13 @@ class BASE_EXPORT ThreadGroup {
   void PostTaskWithSequenceNow(Task task,
                                SequenceAndTransaction sequence_and_transaction);
 
-  // Registers the worker pool in TLS.
+  // Registers the thread group in TLS.
   void BindToCurrentThread();
 
-  // Resets the worker pool in TLS.
+  // Resets the thread group in TLS.
   void UnbindFromCurrentThread();
 
-  // Returns true if the worker pool is registered in TLS.
+  // Returns true if the thread group is registered in TLS.
   bool IsBoundToCurrentThread() const;
 
   // Removes |task_source| from |priority_queue_|. Returns true if successful,
@@ -67,29 +69,30 @@ class BASE_EXPORT ThreadGroup {
   bool RemoveTaskSource(scoped_refptr<TaskSource> task_source);
 
   // Updates the position of the TaskSource in |task_source_and_transaction| in
-  // this pool's PriorityQueue based on the TaskSource's current traits.
+  // this ThreadGroup's PriorityQueue based on the TaskSource's current traits.
   //
   // Implementations should instantiate a concrete ScopedWorkersExecutor and
   // invoke UpdateSortKeyImpl().
   virtual void UpdateSortKey(
       TaskSourceAndTransaction task_source_and_transaction) = 0;
 
-  // Pushes the TaskSource in |task_source_and_transaction| into this pool's
-  // PriorityQueue and wakes up workers as appropriate.
+  // Pushes the TaskSource in |task_source_and_transaction| into this
+  // ThreadGroup's PriorityQueue and wakes up workers as appropriate.
   //
   // Implementations should instantiate a concrete ScopedWorkersExecutor and
   // invoke PushTaskSourceAndWakeUpWorkersImpl().
   virtual void PushTaskSourceAndWakeUpWorkers(
       TaskSourceAndTransaction task_source_and_transaction) = 0;
 
-  // Removes all task sources from this pool's PriorityQueue and enqueues them
-  // in another |destination_pool|. After this method is called, any task
-  // sources posted to this pool will be forwarded to |destination_pool|.
+  // Removes all task sources from this ThreadGroup's PriorityQueue and enqueues
+  // them in another |destination_thread_group|. After this method is called,
+  // any task sources posted to this ThreadGroup will be forwarded to
+  // |destination_thread_group|.
   //
   // TODO(crbug.com/756547): Remove this method once the UseNativeThreadPool
   // experiment is complete.
-  void InvalidateAndHandoffAllTaskSourcesToOtherPool(
-      ThreadGroup* destination_pool);
+  void InvalidateAndHandoffAllTaskSourcesToOtherThreadGroup(
+      ThreadGroup* destination_thread_group);
 
   // Prevents new tasks from starting to run and waits for currently running
   // tasks to complete their execution. It is guaranteed that no thread will do
@@ -100,7 +103,7 @@ class BASE_EXPORT ThreadGroup {
   virtual void JoinForTesting() = 0;
 
   // Returns the maximum number of non-blocked tasks that can run concurrently
-  // in this pool.
+  // in this ThreadGroup.
   //
   // TODO(fdoray): Remove this method. https://crbug.com/687264
   virtual size_t GetMaxConcurrentNonBlockedTasksDeprecated() const = 0;
@@ -123,35 +126,38 @@ class BASE_EXPORT ThreadGroup {
     DISALLOW_COPY_AND_ASSIGN(BaseScopedWorkersExecutor);
   };
 
-  // Allows a task source to be pushed to a pool's PriorityQueue at the end of a
-  // scope, when all locks have been released.
+  // Allows a task source to be pushed to a ThreadGroup's PriorityQueue at the
+  // end of a scope, when all locks have been released.
   class ScopedReenqueueExecutor {
    public:
     ScopedReenqueueExecutor();
     ~ScopedReenqueueExecutor();
 
+    // A TaskSourceAndTransaction and the ThreadGroup in which it should be
+    // enqueued.
     void SchedulePushTaskSourceAndWakeUpWorkers(
         TaskSourceAndTransaction task_source_and_transaction,
-        ThreadGroup* destination_pool);
+        ThreadGroup* destination_thread_group);
 
    private:
-    // A TaskSourceAndTransaction and the pool in which it should be enqueued.
+    // A TaskSourceAndTransaction and the thread group in which it should be
+    // enqueued.
     Optional<TaskSourceAndTransaction> task_source_and_transaction_;
-    ThreadGroup* destination_pool_ = nullptr;
+    ThreadGroup* destination_thread_group_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedReenqueueExecutor);
   };
 
-  // |predecessor_pool| is a pool whose lock can be acquired before the
-  // constructed pool's lock. This is necessary to move all task sources from
-  // |predecessor_pool| to the constructed pool and support the
-  // UseNativeThreadPool experiment.
+  // |predecessor_thread_group| is a ThreadGroup whose lock can be acquired
+  // before the constructed ThreadGroup's lock. This is necessary to move all
+  // task sources from |predecessor_thread_group| to the constructed ThreadGroup
+  // and support the UseNativeThreadPool experiment.
   //
-  // TODO(crbug.com/756547): Remove |predecessor_pool| once the experiment is
-  // complete.
+  // TODO(crbug.com/756547): Remove |predecessor_thread_group| once the
+  // experiment is complete.
   ThreadGroup(TrackedRef<TaskTracker> task_tracker,
               TrackedRef<Delegate> delegate,
-              ThreadGroup* predecessor_pool = nullptr);
+              ThreadGroup* predecessor_thread_group = nullptr);
 
   const TrackedRef<TaskTracker> task_tracker_;
   const TrackedRef<Delegate> delegate_;
@@ -173,7 +179,7 @@ class BASE_EXPORT ThreadGroup {
       BaseScopedWorkersExecutor* executor) EXCLUSIVE_LOCKS_REQUIRED(lock_) = 0;
 
   // Reenqueues a |task_source_and_transaction| from which a Task just ran in
-  // the current pool into the appropriate pool.
+  // the current ThreadGroup into the appropriate ThreadGroup.
   void ReEnqueueTaskSourceLockRequired(
       BaseScopedWorkersExecutor* workers_executor,
       ScopedReenqueueExecutor* reenqueue_executor,
@@ -193,13 +199,13 @@ class BASE_EXPORT ThreadGroup {
   // within its scope (no thread creation or wake up).
   mutable CheckedLock lock_;
 
-  // PriorityQueue from which all threads of this worker pool get work.
+  // PriorityQueue from which all threads of this ThreadGroup get work.
   PriorityQueue priority_queue_ GUARDED_BY(lock_);
 
-  // If |replacement_pool_| is non-null, this pool is invalid and all task
-  // sources should be scheduled on |replacement_pool_|. Used to support the
-  // UseNativeThreadPool experiment.
-  ThreadGroup* replacement_pool_ = nullptr;
+  // If |replacement_thread_group_| is non-null, this ThreadGroup is invalid and
+  // all task sources should be scheduled on |replacement_thread_group_|. Used
+  // to support the UseNativeThreadPool experiment.
+  ThreadGroup* replacement_thread_group_ = nullptr;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ThreadGroup);

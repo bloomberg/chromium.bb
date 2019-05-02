@@ -73,7 +73,7 @@ class MockPooledTaskRunnerDelegate : public PooledTaskRunnerDelegate {
 // TODO(etiennep): Migrate to TaskSourceExecutionMode.
 enum class ExecutionMode { PARALLEL, SEQUENCED, SINGLE_THREADED };
 
-// An enumeration of possible pool types. Used to parametrize relevant
+// An enumeration of possible thread pool types. Used to parametrize relevant
 // thread_pool tests.
 enum class PoolType {
   GENERIC,
@@ -92,9 +92,8 @@ scoped_refptr<Sequence> CreateSequenceWithTask(
     TaskSourceExecutionMode execution_mode =
         TaskSourceExecutionMode::kParallel);
 
-// Creates a TaskRunner that posts tasks to the worker pool owned by
-// |pooled_task_runner_delegate| with the |execution_mode| execution mode
-// and the WithBaseSyncPrimitives() trait.
+// Creates a TaskRunner that posts tasks to the thread group owned by
+// |pooled_task_runner_delegate| with the |execution_mode|.
 // Caveat: this does not support ExecutionMode::SINGLE_THREADED.
 scoped_refptr<TaskRunner> CreateTaskRunnerWithExecutionMode(
     test::ExecutionMode execution_mode,

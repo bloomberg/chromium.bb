@@ -40,12 +40,13 @@ class ThreadGroupNativeWin::ScopedCallbackMayRunLongObserver
   DISALLOW_COPY_AND_ASSIGN(ScopedCallbackMayRunLongObserver);
 };
 
-ThreadGroupNativeWin::ThreadGroupNativeWin(TrackedRef<TaskTracker> task_tracker,
-                                           TrackedRef<Delegate> delegate,
-                                           ThreadGroup* predecessor_pool)
+ThreadGroupNativeWin::ThreadGroupNativeWin(
+    TrackedRef<TaskTracker> task_tracker,
+    TrackedRef<Delegate> delegate,
+    ThreadGroup* predecessor_thread_group)
     : ThreadGroupNative(std::move(task_tracker),
                         std::move(delegate),
-                        predecessor_pool) {}
+                        predecessor_thread_group) {}
 
 ThreadGroupNativeWin::~ThreadGroupNativeWin() {
   ::DestroyThreadpoolEnvironment(&environment_);
@@ -77,12 +78,12 @@ void ThreadGroupNativeWin::SubmitWork() {
 }
 
 // static
-void CALLBACK ThreadGroupNativeWin::RunNextTaskSource(
-    PTP_CALLBACK_INSTANCE callback_instance,
-    void* scheduler_thread_group_windows_impl,
-    PTP_WORK) {
+void CALLBACK
+ThreadGroupNativeWin::RunNextTaskSource(PTP_CALLBACK_INSTANCE callback_instance,
+                                        void* thread_group_windows_impl,
+                                        PTP_WORK) {
   auto* thread_group =
-      static_cast<ThreadGroupNativeWin*>(scheduler_thread_group_windows_impl);
+      static_cast<ThreadGroupNativeWin*>(thread_group_windows_impl);
 
   // Windows Thread Pool API best practices state that all resources created
   // in the callback function should be cleaned up before returning from the

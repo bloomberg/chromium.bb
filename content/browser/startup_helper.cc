@@ -23,19 +23,19 @@ std::unique_ptr<base::ThreadPool::InitParams> GetDefaultThreadPoolInitParams() {
   // Mobile config, for iOS see ios/web/app/web_main_loop.cc.
   return std::make_unique<base::ThreadPool::InitParams>(
       base::ThreadGroupParams(
-          base::RecommendedMaxNumberOfThreadsInPool(4, 8, 0.2, 0),
+          base::RecommendedMaxNumberOfThreadsInThreadGroup(4, 8, 0.2, 0),
           base::TimeDelta::FromSeconds(30)),
       base::ThreadGroupParams(
-          base::RecommendedMaxNumberOfThreadsInPool(6, 8, 0.6, 0),
+          base::RecommendedMaxNumberOfThreadsInThreadGroup(6, 8, 0.6, 0),
           base::TimeDelta::FromSeconds(30)));
 #else
   // Desktop config.
   return std::make_unique<base::ThreadPool::InitParams>(
       base::ThreadGroupParams(
-          base::RecommendedMaxNumberOfThreadsInPool(6, 8, 0.2, 0),
+          base::RecommendedMaxNumberOfThreadsInThreadGroup(6, 8, 0.2, 0),
           base::TimeDelta::FromSeconds(30)),
       base::ThreadGroupParams(
-          base::RecommendedMaxNumberOfThreadsInPool(16, 32, 0.6, 0),
+          base::RecommendedMaxNumberOfThreadsInThreadGroup(16, 32, 0.6, 0),
           base::TimeDelta::FromSeconds(30))
 #if defined(OS_WIN)
           ,

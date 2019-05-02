@@ -30,8 +30,8 @@ const ThreadGroup* GetCurrentThreadGroup() {
 ThreadGroup::ScopedReenqueueExecutor::ScopedReenqueueExecutor() = default;
 
 ThreadGroup::ScopedReenqueueExecutor::~ScopedReenqueueExecutor() {
-  if (destination_pool_) {
-    destination_pool_->PushTaskSourceAndWakeUpWorkers(
+  if (destination_thread_group_) {
+    destination_thread_group_->PushTaskSourceAndWakeUpWorkers(
         std::move(task_source_and_transaction_.value()));
   }
 }
@@ -39,20 +39,21 @@ ThreadGroup::ScopedReenqueueExecutor::~ScopedReenqueueExecutor() {
 void ThreadGroup::ScopedReenqueueExecutor::
     SchedulePushTaskSourceAndWakeUpWorkers(
         TaskSourceAndTransaction task_source_and_transaction,
-        ThreadGroup* destination_pool) {
-  DCHECK(destination_pool);
-  DCHECK(!destination_pool_);
+        ThreadGroup* destination_thread_group) {
+  DCHECK(destination_thread_group);
+  DCHECK(!destination_thread_group_);
   DCHECK(!task_source_and_transaction_);
   task_source_and_transaction_.emplace(std::move(task_source_and_transaction));
-  destination_pool_ = destination_pool;
+  destination_thread_group_ = destination_thread_group;
 }
 
 ThreadGroup::ThreadGroup(TrackedRef<TaskTracker> task_tracker,
                          TrackedRef<Delegate> delegate,
-                         ThreadGroup* predecessor_pool)
+                         ThreadGroup* predecessor_thread_group)
     : task_tracker_(std::move(task_tracker)),
       delegate_(std::move(delegate)),
-      lock_(predecessor_pool ? &predecessor_pool->lock_ : nullptr) {
+      lock_(predecessor_thread_group ? &predecessor_thread_group->lock_
+                                     : nullptr) {
   DCHECK(task_tracker_);
 }
 
@@ -121,20 +122,20 @@ void ThreadGroup::ReEnqueueTaskSourceLockRequired(
     BaseScopedWorkersExecutor* workers_executor,
     ScopedReenqueueExecutor* reenqueue_executor,
     TaskSourceAndTransaction task_source_and_transaction) {
-  // Decide in which pool the TaskSource should be reenqueued.
-  ThreadGroup* destination_pool = delegate_->GetThreadGroupForTraits(
+  // Decide in which thread group the TaskSource should be reenqueued.
+  ThreadGroup* destination_thread_group = delegate_->GetThreadGroupForTraits(
       task_source_and_transaction.transaction.traits());
 
-  if (destination_pool == this) {
-    // If the TaskSource should be reenqueued in the current pool, reenqueue it
-    // inside the scope of the lock.
+  if (destination_thread_group == this) {
+    // If the TaskSource should be reenqueued in the current thread group,
+    // reenqueue it inside the scope of the lock.
     priority_queue_.Push(std::move(task_source_and_transaction.task_source),
                          task_source_and_transaction.transaction.GetSortKey());
     EnsureEnoughWorkersLockRequired(workers_executor);
   } else {
     // Otherwise, schedule a reenqueue after releasing the lock.
     reenqueue_executor->SchedulePushTaskSourceAndWakeUpWorkers(
-        std::move(task_source_and_transaction), destination_pool);
+        std::move(task_source_and_transaction), destination_thread_group);
   }
 }
 
@@ -150,18 +151,19 @@ void ThreadGroup::PushTaskSourceAndWakeUpWorkersImpl(
     BaseScopedWorkersExecutor* executor,
     TaskSourceAndTransaction task_source_and_transaction) {
   CheckedAutoLock auto_lock(lock_);
-  DCHECK(!replacement_pool_);
+  DCHECK(!replacement_thread_group_);
   priority_queue_.Push(std::move(task_source_and_transaction.task_source),
                        task_source_and_transaction.transaction.GetSortKey());
   EnsureEnoughWorkersLockRequired(executor);
 }
 
-void ThreadGroup::InvalidateAndHandoffAllTaskSourcesToOtherPool(
-    ThreadGroup* destination_pool) {
-  CheckedAutoLock current_pool_lock(lock_);
-  CheckedAutoLock destination_pool_lock(destination_pool->lock_);
-  destination_pool->priority_queue_ = std::move(priority_queue_);
-  replacement_pool_ = destination_pool;
+void ThreadGroup::InvalidateAndHandoffAllTaskSourcesToOtherThreadGroup(
+    ThreadGroup* destination_thread_group) {
+  CheckedAutoLock current_thread_group_lock(lock_);
+  CheckedAutoLock destination_thread_group_lock(
+      destination_thread_group->lock_);
+  destination_thread_group->priority_queue_ = std::move(priority_queue_);
+  replacement_thread_group_ = destination_thread_group;
 }
 
 }  // namespace internal

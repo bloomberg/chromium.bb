@@ -26,7 +26,7 @@ class BASE_EXPORT ThreadGroupNativeMac : public ThreadGroupNative {
  public:
   ThreadGroupNativeMac(TrackedRef<TaskTracker> task_tracker,
                        TrackedRef<Delegate> delegate,
-                       ThreadGroup* predecessor_pool = nullptr);
+                       ThreadGroup* predecessor_thread_group = nullptr);
 
   ~ThreadGroupNativeMac() override;
 

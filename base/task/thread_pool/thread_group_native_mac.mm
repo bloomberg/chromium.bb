@@ -9,12 +9,13 @@
 namespace base {
 namespace internal {
 
-ThreadGroupNativeMac::ThreadGroupNativeMac(TrackedRef<TaskTracker> task_tracker,
-                                           TrackedRef<Delegate> delegate,
-                                           ThreadGroup* predecessor_pool)
+ThreadGroupNativeMac::ThreadGroupNativeMac(
+    TrackedRef<TaskTracker> task_tracker,
+    TrackedRef<Delegate> delegate,
+    ThreadGroup* predecessor_thread_group)
     : ThreadGroupNative(std::move(task_tracker),
                         std::move(delegate),
-                        predecessor_pool) {}
+                        predecessor_thread_group) {}
 
 ThreadGroupNativeMac::~ThreadGroupNativeMac() {}
 

@@ -28,7 +28,7 @@ class BASE_EXPORT ThreadGroupNativeWin : public ThreadGroupNative {
  public:
   ThreadGroupNativeWin(TrackedRef<TaskTracker> task_tracker,
                        TrackedRef<Delegate> delegate,
-                       ThreadGroup* predecessor_pool = nullptr);
+                       ThreadGroup* predecessor_thread_group = nullptr);
 
   ~ThreadGroupNativeWin() override;
 
@@ -38,7 +38,7 @@ class BASE_EXPORT ThreadGroupNativeWin : public ThreadGroupNative {
   // Callback that gets run by |pool_|.
   static void CALLBACK
   RunNextTaskSource(PTP_CALLBACK_INSTANCE callback_instance,
-                    void* scheduler_thread_group_windows_impl,
+                    void* thread_group_windows_impl,
                     PTP_WORK);
 
   // ThreadGroupNative:

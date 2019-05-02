@@ -90,7 +90,7 @@ scoped_refptr<SequencedTaskRunner> CreateSequencedTaskRunnerWithTraits(
 }
 
 // Waits on |event| in a scope where the blocking observer is null, to avoid
-// affecting the max tasks in a worker pool.
+// affecting the max tasks in a thread group.
 void WaitWithoutBlockingObserver(WaitableEvent* event) {
   internal::ScopedClearBlockingObserverForTesting clear_blocking_observer;
   ScopedAllowBaseSyncPrimitivesForTesting allow_base_sync_primitives;

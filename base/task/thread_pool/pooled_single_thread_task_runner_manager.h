@@ -38,7 +38,7 @@ class WorkerThreadDelegate;
 
 }  // namespace
 
-// Manages a pool of threads which are each associated with one or more
+// Manages a group of threads which are each associated with one or more
 // SingleThreadTaskRunners.
 //
 // SingleThreadTaskRunners using SingleThreadTaskRunnerThreadMode::SHARED are

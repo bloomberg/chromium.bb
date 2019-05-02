@@ -135,8 +135,8 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPool,
   // TODO(fdoray): Remove after experiment. https://crbug.com/757022
   AtomicFlag all_tasks_user_blocking_;
 
-  std::unique_ptr<ThreadGroup> foreground_pool_;
-  std::unique_ptr<ThreadGroupImpl> background_pool_;
+  std::unique_ptr<ThreadGroup> foreground_thread_group_;
+  std::unique_ptr<ThreadGroupImpl> background_thread_group_;
 
   // Whether this TaskScheduler was started. Access controlled by
   // |sequence_checker_|.

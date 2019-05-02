@@ -303,7 +303,7 @@ class ThreadGroupImplImplStartInBodyTest : public ThreadGroupImplImplTest {
  public:
   void SetUp() override {
     CreateThreadGroup();
-    // Let the test start the worker pool.
+    // Let the test start the thread group.
   }
 };
 
@@ -344,15 +344,15 @@ TEST_F(ThreadGroupImplImplStartInBodyTest, PostTasksBeforeStart) {
           BindOnce(&TaskPostedBeforeStart, Unretained(&task_2_thread_ref),
                    Unretained(&task_2_running), Unretained(&barrier)));
 
-  // Workers should not be created and tasks should not run before the pool is
-  // started.
+  // Workers should not be created and tasks should not run before the thread
+  // group is started.
   EXPECT_EQ(0U, thread_group_->NumberOfWorkersForTesting());
   EXPECT_FALSE(task_1_running.IsSignaled());
   EXPECT_FALSE(task_2_running.IsSignaled());
 
   StartThreadGroup(TimeDelta::Max(), kMaxTasks);
 
-  // Tasks should run shortly after the pool is started.
+  // Tasks should run shortly after the thread group is started.
   task_1_running.Wait();
   task_2_running.Wait();
 
@@ -463,7 +463,7 @@ TEST_F(ThreadGroupImplCheckTlsReuse, CheckCleanupWorkers) {
   // All workers should be done running by now, so reset for the next phase.
   waiter_.Reset();
 
-  // Wait for the worker pool to clean up at least one worker.
+  // Wait for the thread group to clean up at least one worker.
   thread_group_->WaitForWorkersCleanedUpForTesting(1U);
 
   // Saturate and count the worker threads that do not have the magic TLS value.
@@ -495,15 +495,15 @@ class ThreadGroupImplHistogramTest : public ThreadGroupImplImplTest {
   ThreadGroupImplHistogramTest() = default;
 
  protected:
-  // Override SetUp() to allow every test case to initialize a worker pool with
+  // Override SetUp() to allow every test case to initialize a thread group with
   // its own arguments.
   void SetUp() override {}
 
   // Floods |thread_group_| with a single task each that blocks until
-  // |continue_event| is signaled. Every worker in the pool is blocked on
-  // |continue_event| when this method returns. Note: this helper can easily be
-  // generalized to be useful in other tests, but it's here for now because it's
-  // only used in a ThreadGroupImplHistogramTest at the moment.
+  // |continue_event| is signaled. Every worker in the thread group is blocked
+  // on |continue_event| when this method returns. Note: this helper can easily
+  // be generalized to be useful in other tests, but it's here for now because
+  // it's only used in a ThreadGroupImplHistogramTest at the moment.
   void FloodPool(WaitableEvent* continue_event) {
     ASSERT_FALSE(continue_event->IsSignaled());
 
@@ -608,7 +608,7 @@ TEST_F(ThreadGroupImplHistogramTest,
             histogram->SnapshotSamples()->GetCount(1));
   EXPECT_EQ(0, histogram->SnapshotSamples()->GetCount(10));
 
-  // Flooding the pool once again (without letting any workers go idle)
+  // Flooding the thread group once again (without letting any workers go idle)
   // shouldn't affect the counts either.
 
   workers_continue.Reset();
@@ -664,17 +664,17 @@ TEST_F(ThreadGroupImplHistogramTest, NumTasksBeforeCleanup) {
           Unretained(&thread_ref), Unretained(&cleanup_thread_running),
           Unretained(&cleanup_thread_continue)));
 
-  // Start the worker pool with 2 workers, to avoid depending on the scheduler's
+  // Start the thread group with 2 workers, to avoid depending on the internal
   // logic to always keep one extra idle worker.
   //
-  // The pool is started after the 3 initial tasks have been posted to ensure
-  // that they are scheduled on the same worker. If the tasks could run as they
-  // are posted, there would be a chance that:
+  // The thread group is started after the 3 initial tasks have been posted to
+  // ensure that they are scheduled on the same worker. If the tasks could run
+  // as they are posted, there would be a chance that:
   // 1. Worker #1:        Runs a tasks and empties the sequence, without adding
   //                      itself to the idle stack yet.
-  // 2. Posting thread:   Posts another task to the now empty sequence. Wakes
-  //                      up a new worker, since worker #1 isn't on the idle
-  //                      stack yet.
+  // 2. Posting thread:   Posts another task to the now empty sequence.
+  //                      Wakes up a new worker, since worker #1 isn't on the
+  //                      idle stack yet.
   // 3: Worker #2:        Runs the tasks, violating the expectation that the 3
   //                      initial tasks run on the same worker.
   constexpr size_t kTwoWorkers = 2;
@@ -782,8 +782,8 @@ TEST_F(ThreadGroupImplStandbyPolicyTest, VerifyStandbyThread) {
   // Wait long enough for all but one worker to clean up.
   thread_group_->WaitForWorkersCleanedUpForTesting(kMaxTasks - 1);
   EXPECT_EQ(1U, thread_group_->NumberOfWorkersForTesting());
-  // Give extra time for a worker to cleanup : none should as the pool is
-  // expected to keep a worker ready regardless of how long it was idle for.
+  // Give extra time for a worker to cleanup : none should as the thread group
+  // is expected to keep a worker ready regardless of how long it was idle for.
   PlatformThread::Sleep(kReclaimTimeForCleanupTests);
   EXPECT_EQ(1U, thread_group_->NumberOfWorkersForTesting());
 }
@@ -844,7 +844,7 @@ TEST_F(ThreadGroupImplStandbyPolicyTest, OnlyKeepActiveStandbyThreads) {
   PlatformThread::Sleep(kReclaimTimeForCleanupTests * 2);
   EXPECT_EQ(2U, thread_group_->NumberOfWorkersForTesting());
 
-  // Then also flood the pool (cycling the top of the idle stack).
+  // Then also flood the thread group (cycling the top of the idle stack).
   {
     auto task_runner = test::CreateTaskRunnerWithTraits(
         {WithBaseSyncPrimitives()}, &mock_pooled_task_runner_delegate_);
@@ -949,7 +949,7 @@ class ThreadGroupImplBlockingTest
   void TearDown() override { ThreadGroupImplImplTestBase::CommonTearDown(); }
 
  protected:
-  // Saturates the worker pool with a task that first blocks, waits to be
+  // Saturates the thread group with a task that first blocks, waits to be
   // unblocked, then exits.
   void SaturateWithBlockingTasks(
       const NestedBlockingType& nested_blocking_type) {
@@ -972,7 +972,7 @@ class ThreadGroupImplBlockingTest
     threads_running.Wait();
   }
 
-  // Saturates the worker pool with a task that waits for other tasks without
+  // Saturates the thread group with a task that waits for other tasks without
   // entering a ScopedBlockingCall, then exits.
   void SaturateWithBusyTasks() {
     WaitableEvent threads_running;
@@ -1050,7 +1050,7 @@ TEST_P(ThreadGroupImplBlockingTest, ThreadBlockedUnblocked) {
   EXPECT_EQ(thread_group_->GetMaxTasksForTesting(), kMaxTasks);
 }
 
-// Verify that flooding the pool with more BEST_EFFORT tasks than
+// Verify that flooding the thread group with more BEST_EFFORT tasks than
 // kMaxBestEffortTasks doesn't prevent USER_VISIBLE tasks from running.
 TEST_P(ThreadGroupImplBlockingTest, TooManyBestEffortTasks) {
   constexpr size_t kMaxBestEffortTasks = kMaxTasks / 2;
@@ -1117,8 +1117,8 @@ TEST_P(ThreadGroupImplBlockingTest, TooManyBestEffortTasks) {
   task_tracker_.FlushForTesting();
 }
 
-// Verify that tasks posted in a saturated pool before a ScopedBlockingCall will
-// execute after ScopedBlockingCall is instantiated.
+// Verify that tasks posted in a saturated thread group before a
+// ScopedBlockingCall will execute after ScopedBlockingCall is instantiated.
 TEST_P(ThreadGroupImplBlockingTest, PostBeforeBlocking) {
   CreateAndStartThreadGroup();
 
@@ -1145,8 +1145,8 @@ TEST_P(ThreadGroupImplBlockingTest, PostBeforeBlocking) {
     thread_running.Wait();
   }
 
-  // All workers should be occupied and the pool should be saturated. Workers
-  // have not entered ScopedBlockingCall yet.
+  // All workers should be occupied and the thread group should be saturated.
+  // Workers have not entered ScopedBlockingCall yet.
   EXPECT_EQ(thread_group_->NumberOfWorkersForTesting(), kMaxTasks);
   EXPECT_EQ(thread_group_->GetMaxTasksForTesting(), kMaxTasks);
 
@@ -1181,8 +1181,8 @@ TEST_P(ThreadGroupImplBlockingTest, PostBeforeBlocking) {
   task_tracker_.FlushForTesting();
 }
 
-// Verify that workers become idle when the pool is over-capacity and that
-// those workers do no work.
+// Verify that workers become idle when the thread group is over-capacity and
+// that those workers do no work.
 TEST_P(ThreadGroupImplBlockingTest, WorkersIdleWhenOverCapacity) {
   CreateAndStartThreadGroup();
 
@@ -1207,15 +1207,15 @@ TEST_P(ThreadGroupImplBlockingTest, WorkersIdleWhenOverCapacity) {
                                           Unretained(&is_exiting)));
   }
 
-  // The original |kMaxTasks| will finish their tasks after being
-  // unblocked. There will be work in the work queue, but the pool should now
-  // be over-capacity and workers will become idle.
+  // The original |kMaxTasks| will finish their tasks after being unblocked.
+  // There will be work in the work queue, but the thread group should now be
+  // over-capacity and workers will become idle.
   UnblockBlockingTasks();
   thread_group_->WaitForWorkersIdleForTesting(kMaxTasks);
   EXPECT_EQ(thread_group_->NumberOfIdleWorkersForTesting(), kMaxTasks);
 
-  // Posting more tasks should not cause workers idle from the pool being over
-  // capacity to begin doing work.
+  // Posting more tasks should not cause workers idle from the thread group
+  // being over capacity to begin doing work.
   for (size_t i = 0; i < kMaxTasks; ++i) {
     task_runner_->PostTask(FROM_HERE, BindOnce(
                                           [](AtomicFlag* is_exiting) {
@@ -1255,8 +1255,8 @@ INSTANTIATE_TEST_SUITE_P(
 // but exits the scope before the MayBlock threshold is reached, that the max
 // tasks does not increase.
 TEST_F(ThreadGroupImplBlockingTest, ThreadBlockUnblockPremature) {
-  // Create a pool with an infinite MayBlock threshold so that a MAY_BLOCK
-  // ScopedBlockingCall never increases the max tasks.
+  // Create a thread group with an infinite MayBlock threshold so that a
+  // MAY_BLOCK ScopedBlockingCall never increases the max tasks.
   CreateAndStartThreadGroup(TimeDelta::Max(),  // |suggested_reclaim_time|
                             kMaxTasks,         // |max_tasks|
                             nullopt,           // |max_best_effort_tasks|
@@ -1290,8 +1290,8 @@ TEST_F(ThreadGroupImplBlockingTest, MayBlockIncreaseCapacityNestedWillBlock) {
                                        &mock_pooled_task_runner_delegate_);
   WaitableEvent can_return;
 
-  // Saturate the pool so that a MAY_BLOCK ScopedBlockingCall would increment
-  // the max tasks.
+  // Saturate the thread group so that a MAY_BLOCK ScopedBlockingCall would
+  // increment the max tasks.
   for (size_t i = 0; i < kMaxTasks - 1; ++i) {
     task_runner->PostTask(
         FROM_HERE,
@@ -1364,8 +1364,8 @@ class ThreadGroupImplOverCapacityTest : public ThreadGroupImplImplTestBase,
   DISALLOW_COPY_AND_ASSIGN(ThreadGroupImplOverCapacityTest);
 };
 
-// Verify that workers that become idle due to the pool being over capacity will
-// eventually cleanup.
+// Verify that workers that become idle due to the thread group being over
+// capacity will eventually cleanup.
 TEST_F(ThreadGroupImplOverCapacityTest, VerifyCleanup) {
   WaitableEvent threads_running;
   WaitableEvent threads_continue;
@@ -1420,7 +1420,8 @@ TEST_F(ThreadGroupImplOverCapacityTest, VerifyCleanup) {
   extra_threads_continue.Signal();
 
   // Periodically post tasks to ensure that posting tasks does not prevent
-  // workers that are idle due to the pool being over capacity from cleaning up.
+  // workers that are idle due to the thread group being over capacity from
+  // cleaning up.
   for (int i = 0; i < 16; ++i) {
     task_runner_->PostDelayedTask(FROM_HERE, DoNothing(),
                                   kReclaimTimeForCleanupTests * i * 0.5);
@@ -1436,7 +1437,7 @@ TEST_F(ThreadGroupImplOverCapacityTest, VerifyCleanup) {
 }
 
 // Verify that the maximum number of workers is 256 and that hitting the max
-// leaves the pool in a valid state with regards to max tasks.
+// leaves the thread group in a valid state with regards to max tasks.
 TEST_F(ThreadGroupImplBlockingTest, MaximumWorkersTest) {
   CreateAndStartThreadGroup();
 
@@ -1489,8 +1490,8 @@ TEST_F(ThreadGroupImplBlockingTest, MaximumWorkersTest) {
                                Unretained(&late_blocking_threads_running)));
 
   // Posts additional tasks. Note: we should already have |kMaxNumberOfWorkers|
-  // tasks running. These tasks should not be able to get executed yet as
-  // the pool is already at its max worker cap.
+  // tasks running. These tasks should not be able to get executed yet as the
+  // thread group is already at its max worker cap.
   for (size_t i = 0; i < kNumExtraTasks; ++i) {
     task_runner_->PostTask(
         FROM_HERE,
@@ -1520,7 +1521,7 @@ TEST_F(ThreadGroupImplBlockingTest, MaximumWorkersTest) {
       kMaxTasks,
       BindOnce(&WaitableEvent::Signal, Unretained(&final_tasks_running)));
 
-  // Verify that we are still able to saturate the pool.
+  // Verify that we are still able to saturate the thread group.
   for (size_t i = 0; i < kMaxTasks; ++i) {
     task_runner_->PostTask(
         FROM_HERE,
@@ -1596,8 +1597,8 @@ TEST_F(ThreadGroupImplImplStartInBodyTest, MaxBestEffortTasks) {
   task_tracker_.FlushForTesting();
 }
 
-// Verify that flooding the pool with BEST_EFFORT tasks doesn't cause the
-// creation of more than |max_best_effort_tasks| + 1 workers.
+// Verify that flooding the thread group with BEST_EFFORT tasks doesn't cause
+// the creation of more than |max_best_effort_tasks| + 1 workers.
 TEST_F(ThreadGroupImplImplStartInBodyTest,
        FloodBestEffortTasksDoesNotCreateTooManyWorkers) {
   constexpr size_t kMaxBestEffortTasks = kMaxTasks / 2;
@@ -1695,7 +1696,7 @@ TEST_F(ThreadGroupImplImplStartInBodyTest,
                    }));
   hold_will_block_task.Signal();
 
-  // Join the pool to avoid invalid accesses to |worker_observer|.
+  // Join the thread group to avoid invalid accesses to |worker_observer|.
   task_tracker_.FlushForTesting();
   thread_group_->JoinForTesting();
   thread_group_.reset();

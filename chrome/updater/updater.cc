@@ -55,10 +55,10 @@ void ThreadPoolStart() {
   const auto thread_pool_init_params =
       std::make_unique<base::ThreadPool::InitParams>(
           base::ThreadGroupParams(
-              base::RecommendedMaxNumberOfThreadsInPool(3, 8, 0.1, 0),
+              base::RecommendedMaxNumberOfThreadsInThreadGroup(3, 8, 0.1, 0),
               base::TimeDelta::FromSeconds(30)),
           base::ThreadGroupParams(
-              base::RecommendedMaxNumberOfThreadsInPool(8, 32, 0.3, 0),
+              base::RecommendedMaxNumberOfThreadsInThreadGroup(8, 32, 0.3, 0),
               base::TimeDelta::FromSeconds(30)));
   base::ThreadPool::GetInstance()->Start(*thread_pool_init_params);
 }

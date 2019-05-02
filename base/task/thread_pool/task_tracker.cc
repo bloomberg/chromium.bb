@@ -38,7 +38,7 @@ static_assert(
         static_cast<size_t>(TaskSourceExecutionMode::kMax) + 1,
     "Array kExecutionModeString is out of sync with TaskSourceExecutionMode.");
 
-// An immutable copy of a scheduler task's info required by tracing.
+// An immutable copy of a thread pool task's info required by tracing.
 class TaskTracingInfo : public trace_event::ConvertableToTraceFormat {
  public:
   TaskTracingInfo(const TaskTraits& task_traits,

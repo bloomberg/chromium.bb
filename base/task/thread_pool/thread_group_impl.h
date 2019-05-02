@@ -42,37 +42,37 @@ namespace internal {
 
 class TaskTracker;
 
-// A pool of workers that run Tasks.
+// A group of workers that run Tasks.
 //
-// The pool doesn't create threads until Start() is called. Tasks can be posted
-// at any time but will not run until after Start() is called.
+// The thread group doesn't create threads until Start() is called. Tasks can be
+// posted at any time but will not run until after Start() is called.
 //
 // This class is thread-safe.
 class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
  public:
-  // Constructs a pool without workers.
+  // Constructs a group without workers.
   //
-  // |histogram_label| is used to label the pool's histograms ("ThreadPool."
-  // + histogram_name + "." + |histogram_label| + extra suffixes), it must not
-  // be empty. |pool_label| is used to label the pool's threads, it must not be
-  // empty. |priority_hint| is the preferred thread priority; the actual thread
-  // priority depends on shutdown state and platform capabilities.
-  // |task_tracker| keeps track of tasks.
+  // |histogram_label| is used to label the thread group's histograms as
+  // "ThreadPool." + histogram_name + "." + |histogram_label| + extra suffixes.
+  // It must not be empty. |thread group_label| is used to label the thread
+  // group's threads, it must not be empty. |priority_hint| is the preferred
+  // thread priority; the actual thread priority depends on shutdown state and
+  // platform capabilities. |task_tracker| keeps track of tasks.
   ThreadGroupImpl(StringPiece histogram_label,
-                  StringPiece pool_label,
+                  StringPiece thread_group_label,
                   ThreadPriority priority_hint,
                   TrackedRef<TaskTracker> task_tracker,
                   TrackedRef<Delegate> delegate);
 
   // Creates workers following the |params| specification, allowing existing and
-  // future tasks to run. The pool runs at most |max_best_effort_tasks|
+  // future tasks to run. The thread group runs at most |max_best_effort_tasks|
   // unblocked BEST_EFFORT tasks concurrently, uses |service_thread_task_runner|
   // to monitor for blocked tasks, and, if specified, notifies
-  // |worker_thread_observer| when a worker enters and exits its main
-  // function (the observer must not be destroyed before JoinForTesting() has
-  // returned). |worker_environment| specifies the environment in which tasks
-  // are executed. |may_block_threshold| is the timeout after which a task in a
-  // MAY_BLOCK ScopedBlockingCall is considered blocked (the pool will choose an
+  // |worker_thread_observer| when a worker enters and exits its main function
+  // (the observer must not be destroyed before JoinForTesting() has returned).
+  // |worker_environment| specifies the environment in which tasks are executed.
+  // |may_block_threshold| is the timeout after which a task in a MAY_BLOCK
+  // ScopedBlockingCall is considered blocked (the thread group will choose an
   // appropriate value if none is specified). Can only be called once. CHECKs on
   // failure.
   void Start(const ThreadGroupParams& params,
@@ -124,7 +124,7 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
   // WaitForWorkersCleanedUpForTesting() or Start() if it wasn't called yet).
   void WaitForWorkersCleanedUpForTesting(size_t n);
 
-  // Returns the number of workers in this worker pool.
+  // Returns the number of workers in this thread group.
   size_t NumberOfWorkersForTesting() const;
 
   // Returns |max_tasks_|.
@@ -160,8 +160,8 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
   // Returns true if worker cleanup is permitted.
   bool CanWorkerCleanupForTestingLockRequired() EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
-  // Creates a worker, adds it to the pool, schedules its start and returns it.
-  // Cannot be called before Start().
+  // Creates a worker, adds it to the thread group, schedules its start and
+  // returns it. Cannot be called before Start().
   scoped_refptr<WorkerThread> CreateAndRegisterWorkerLockRequired(
       ScopedWorkersExecutor* executor) EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
@@ -184,8 +184,8 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
     return after_start().may_block_threshold;
   }
 
-  // Interval at which the service thread checks for workers in this pool
-  // that have been in a MAY_BLOCK ScopedBlockingCall for more than
+  // Interval at which the service thread checks for workers in this thread
+  // group that have been in a MAY_BLOCK ScopedBlockingCall for more than
   // may_block_threshold().
   TimeDelta blocked_workers_poll_period_for_testing() const {
     return after_start().blocked_workers_poll_period;
@@ -204,9 +204,9 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
   bool ShouldPeriodicallyAdjustMaxTasksLockRequired()
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
-  // Increments/decrements the number of tasks that can run in this pool.
-  // |is_running_best_effort_task| indicates whether the worker causing the
-  // change is currently running a TaskPriority::BEST_EFFORT task.
+  // Increments/decrements the number of tasks that can run in this thread
+  // group. |is_running_best_effort_task| indicates whether the worker causing
+  // the change is currently running a TaskPriority::BEST_EFFORT task.
   void DecrementMaxTasksLockRequired(bool is_running_best_effort_task)
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
   void IncrementMaxTasksLockRequired(bool is_running_best_effort_task)
@@ -244,7 +244,7 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
     // worker that is within a MAY_BLOCK ScopedBlockingCall.
     TimeDelta may_block_threshold;
 
-    // The period between calls to AdjustMaxTasks() when the pool is at
+    // The period between calls to AdjustMaxTasks() when the thread group is at
     // capacity.
     TimeDelta blocked_workers_poll_period;
   } initialized_in_start_;
@@ -262,19 +262,19 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
     return initialized_in_start_;
   }
 
-  const std::string pool_label_;
+  const std::string thread_group_label_;
   const ThreadPriority priority_hint_;
 
-  // All workers owned by this worker pool.
+  // All workers owned by this thread group.
   std::vector<scoped_refptr<WorkerThread>> workers_ GUARDED_BY(lock_);
 
   // Maximum number of tasks of any priority / BEST_EFFORT priority that can run
-  // concurrently in this pool.
+  // concurrently in this thread group.
   size_t max_tasks_ GUARDED_BY(lock_) = 0;
   size_t max_best_effort_tasks_ GUARDED_BY(lock_) = 0;
 
   // Number of tasks of any priority / BEST_EFFORT priority that are currently
-  // running in this pool.
+  // running in this thread group.
   size_t num_running_tasks_ GUARDED_BY(lock_) = 0;
   size_t num_running_best_effort_tasks_ GUARDED_BY(lock_) = 0;
 
@@ -327,23 +327,23 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
   AtomicFlag join_for_testing_started_;
 #endif
 
-  // ThreadPool.DetachDuration.[worker pool name] histogram. Intentionally
+  // ThreadPool.DetachDuration.[thread group name] histogram. Intentionally
   // leaked.
   HistogramBase* const detach_duration_histogram_;
 
-  // ThreadPool.NumTasksBeforeDetach.[worker pool name] histogram.
+  // ThreadPool.NumTasksBeforeDetach.[thread group name] histogram.
   // Intentionally leaked.
   HistogramBase* const num_tasks_before_detach_histogram_;
 
-  // ThreadPool.NumTasksBetweenWaits.[worker pool name] histogram.
+  // ThreadPool.NumTasksBetweenWaits.[thread group name] histogram.
   // Intentionally leaked.
   HistogramBase* const num_tasks_between_waits_histogram_;
 
-  // ThreadPool.NumWorkers.[worker pool name] histogram.
+  // ThreadPool.NumWorkers.[thread group name] histogram.
   // Intentionally leaked.
   HistogramBase* const num_workers_histogram_;
 
-  // ThreadPool.NumActiveWorkers.[worker pool name] histogram.
+  // ThreadPool.NumActiveWorkers.[thread group name] histogram.
   // Intentionally leaked.
   HistogramBase* const num_active_workers_histogram_;
 

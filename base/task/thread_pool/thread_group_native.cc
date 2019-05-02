@@ -39,10 +39,10 @@ class ThreadGroupNative::ScopedWorkersExecutor
 
 ThreadGroupNative::ThreadGroupNative(TrackedRef<TaskTracker> task_tracker,
                                      TrackedRef<Delegate> delegate,
-                                     ThreadGroup* predecessor_pool)
+                                     ThreadGroup* predecessor_thread_group)
     : ThreadGroup(std::move(task_tracker),
                   std::move(delegate),
-                  predecessor_pool) {}
+                  predecessor_thread_group) {}
 
 ThreadGroupNative::~ThreadGroupNative() {
 #if DCHECK_IS_ON()

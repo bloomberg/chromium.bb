@@ -53,7 +53,8 @@ using ThreadGroupNativeType =
 #endif
 
 constexpr size_t kMaxTasks = 4;
-// By default, tests allow half of the pool to be used by best-effort tasks.
+// By default, tests allow half of the thread group to be used by best-effort
+// tasks.
 constexpr size_t kMaxBestEffortTasks = kMaxTasks / 2;
 constexpr size_t kNumThreadsPostingTasks = 4;
 constexpr size_t kNumTasksPostedPerThread = 150;
@@ -146,18 +147,18 @@ class ThreadGroupTest : public testing::TestWithParam<PoolExecutionType>,
     ASSERT_TRUE(thread_group_);
     switch (GetParam().pool_type) {
       case test::PoolType::GENERIC: {
-        ThreadGroupImpl* scheduler_thread_group_impl =
+        ThreadGroupImpl* thread_group_impl =
             static_cast<ThreadGroupImpl*>(thread_group_.get());
-        scheduler_thread_group_impl->Start(
+        thread_group_impl->Start(
             ThreadGroupParams(kMaxTasks, TimeDelta::Max()), kMaxBestEffortTasks,
             service_thread_.task_runner(), nullptr, worker_environment);
         break;
       }
 #if defined(OS_WIN) || defined(OS_MACOSX)
       case test::PoolType::NATIVE: {
-        ThreadGroupNativeType* scheduler_thread_group_native_impl =
+        ThreadGroupNativeType* thread_group_native_impl =
             static_cast<ThreadGroupNativeType*>(thread_group_.get());
-        scheduler_thread_group_native_impl->Start(worker_environment);
+        thread_group_native_impl->Start(worker_environment);
         break;
       }
 #endif
@@ -248,8 +249,8 @@ TEST_P(ThreadGroupTest, PostTaskAfterShutdown) {
   EXPECT_FALSE(task_runner->PostTask(FROM_HERE, BindOnce(&ShouldNotRun)));
 }
 
-// Verify that posting tasks after the pool was destroyed fails but doesn't
-// crash.
+// Verify that posting tasks after the thread group was destroyed fails but
+// doesn't crash.
 TEST_P(ThreadGroupTest, PostAfterDestroy) {
   StartThreadGroup();
   auto task_runner = CreateTaskRunner();
@@ -327,15 +328,16 @@ TEST_P(ThreadGroupTest, PostBeforeStart) {
   task_runner->PostTask(
       FROM_HERE, BindOnce(&WaitableEvent::Signal, Unretained(&task_2_running)));
 
-  // Workers should not be created and tasks should not run before the pool is
-  // started. The sleep is to give time for the tasks to potentially run.
+  // Workers should not be created and tasks should not run before the thread
+  // group is started. The sleep is to give time for the tasks to potentially
+  // run.
   PlatformThread::Sleep(TestTimeouts::tiny_timeout());
   EXPECT_FALSE(task_1_running.IsSignaled());
   EXPECT_FALSE(task_2_running.IsSignaled());
 
   StartThreadGroup();
 
-  // Tasks should run shortly after the pool is started.
+  // Tasks should run shortly after the thread group is started.
   task_1_running.Wait();
   task_2_running.Wait();
 
@@ -372,8 +374,8 @@ TEST_P(ThreadGroupTest, CanRunPolicyLoad) {
 }
 
 // Verify that the maximum number of BEST_EFFORT tasks that can run concurrently
-// in a pool does not affect Sequences with a priority that was increased from
-// BEST_EFFORT to USER_BLOCKING.
+// in a thread group does not affect Sequences with a priority that was
+// increased from BEST_EFFORT to USER_BLOCKING.
 TEST_P(ThreadGroupTest, UpdatePriorityBestEffortToUserBlocking) {
   StartThreadGroup();
 
@@ -420,8 +422,8 @@ TEST_P(ThreadGroupTest, UpdatePriorityBestEffortToUserBlocking) {
     task_runners[i]->UpdatePriority(TaskPriority::USER_BLOCKING);
 
   // Wait until all posted tasks start running. This should not block forever,
-  // even in a pool that enforces a maximum number of concurrent BEST_EFFORT
-  // tasks lower than |kMaxTasks|.
+  // even in a thread group that enforces a maximum number of concurrent
+  // BEST_EFFORT tasks lower than |kMaxTasks|.
   static_assert(kMaxBestEffortTasks < kMaxTasks, "");
   {
     CheckedAutoLock auto_lock(num_tasks_running_lock);

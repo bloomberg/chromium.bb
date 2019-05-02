@@ -10,11 +10,12 @@
 namespace base {
 
 // Computes a value that may be used as the maximum number of threads in a
-// ThreadPool pool. Developers may use other methods to choose this maximum.
-BASE_EXPORT int RecommendedMaxNumberOfThreadsInPool(int min,
-                                                    int max,
-                                                    double cores_multiplier,
-                                                    int offset);
+// ThreadGroup. Developers may use other methods to choose this maximum.
+BASE_EXPORT int RecommendedMaxNumberOfThreadsInThreadGroup(
+    int min,
+    int max,
+    double cores_multiplier,
+    int offset);
 
 }  // namespace base
 

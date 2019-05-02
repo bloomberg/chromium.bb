@@ -37,12 +37,12 @@ base::ThreadPool::InitParams GetDefaultThreadPoolInitParams() {
 
   return base::ThreadPool::InitParams(
       base::ThreadGroupParams(
-          base::RecommendedMaxNumberOfThreadsInPool(
+          base::RecommendedMaxNumberOfThreadsInThreadGroup(
               kMinBackgroundThreads, kMaxBackgroundThreads,
               kCoreMultiplierBackgroundThreads, kOffsetBackgroundThreads),
           base::TimeDelta::FromSeconds(kReclaimTimeBackground)),
       base::ThreadGroupParams(
-          base::RecommendedMaxNumberOfThreadsInPool(
+          base::RecommendedMaxNumberOfThreadsInThreadGroup(
               kMinForegroundThreads, kMaxForegroundThreads,
               kCoreMultiplierForegroundThreads, kOffsetForegroundThreads),
           base::TimeDelta::FromSeconds(kReclaimTimeForeground)));
