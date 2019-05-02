@@ -431,9 +431,13 @@ TEST_F(RTCIceTransportTest, OnStateChangedFailedUpdatesStateAndFiresEvent) {
   ASSERT_TRUE(delegate);
 
   Persistent<MockEventListener> event_listener = CreateMockEventListener();
+  // Due to the quick fix for crbug.com/957487 (should go to "disconnected"
+  // state when end-of-candidates is signalled), this is accepting
+  // that the end state is 'disconnected' rather than 'failed'.
   EXPECT_CALL(*event_listener, Invoke(_, _))
-      .WillOnce(InvokeWithoutArgs(
-          [ice_transport] { EXPECT_EQ("failed", ice_transport->state()); }));
+      .WillOnce(InvokeWithoutArgs([ice_transport] {
+        EXPECT_EQ("disconnected", ice_transport->state());
+      }));
   ice_transport->addEventListener(event_type_names::kStatechange,
                                   event_listener);
 
@@ -539,8 +543,10 @@ TEST_F(RTCIceTransportTest,
 // Test that receiving an OnStateChange callback to the failed state once a
 // connection has been established clears the selected candidate pair without
 // firing the selectedcandidatepairchange event.
+// Disabled while sorting out the use of "failed" vs "disconnected"
+// (crbug.com/957847).
 TEST_F(RTCIceTransportTest,
-       OnStateChangeFailedAfterConnectedClearsSelectedCandidatePair) {
+       DISABLED_OnStateChangeFailedAfterConnectedClearsSelectedCandidatePair) {
   V8TestingScope scope;
 
   IceTransportAdapter::Delegate* delegate = nullptr;
