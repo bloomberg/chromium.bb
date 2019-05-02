@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/spatial_navigation.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/histogram.h"
 
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 
@@ -238,6 +239,8 @@ void SpatialNavigationController::Trace(blink::Visitor* visitor) {
 
 bool SpatialNavigationController::Advance(
     SpatialNavigationDirection direction) {
+  SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Blink.SpatialNavigation.Advance");
+
   Node* interest_node = StartingNode();
   if (!interest_node)
     return false;
