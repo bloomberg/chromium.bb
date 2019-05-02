@@ -541,26 +541,26 @@ bool IsSystemKeyEvent(const WebKeyboardEvent& event) {
 #endif
 }
 
-bool GetScrollUnits(gin::Arguments* args, WebGestureEvent::ScrollUnits* units) {
+bool GetScrollUnits(gin::Arguments* args, blink::WebScrollGranularity* units) {
   std::string units_string;
   if (!args->PeekNext().IsEmpty()) {
     if (args->PeekNext()->IsString())
       args->GetNext(&units_string);
     if (units_string == "Page") {
-      *units = WebGestureEvent::kPage;
+      *units = blink::WebScrollGranularity::kScrollByPage;
       return true;
     } else if (units_string == "Pixels") {
-      *units = WebGestureEvent::kPixels;
+      *units = blink::WebScrollGranularity::kScrollByPixel;
       return true;
     } else if (units_string == "PrecisePixels") {
-      *units = WebGestureEvent::kPrecisePixels;
+      *units = blink::WebScrollGranularity::kScrollByPrecisePixel;
       return true;
     } else {
       args->ThrowError();
       return false;
     }
   } else {
-    *units = WebGestureEvent::kPrecisePixels;
+    *units = blink::WebScrollGranularity::kScrollByPrecisePixel;
     return true;
   }
 }
@@ -2854,7 +2854,7 @@ void EventSender::SendGesturesForMouseWheelEvent(
   begin_event.data.scroll_begin.delta_y_hint = wheel_event.delta_y;
   if (wheel_event.scroll_by_page) {
     begin_event.data.scroll_begin.delta_hint_units =
-        blink::WebGestureEvent::kPage;
+        blink::WebScrollGranularity::kScrollByPage;
     if (begin_event.data.scroll_begin.delta_x_hint) {
       begin_event.data.scroll_begin.delta_x_hint =
           begin_event.data.scroll_begin.delta_x_hint > 0 ? 1 : -1;
@@ -2866,8 +2866,8 @@ void EventSender::SendGesturesForMouseWheelEvent(
   } else {
     begin_event.data.scroll_begin.delta_hint_units =
         wheel_event.has_precise_scrolling_deltas
-            ? blink::WebGestureEvent::kPrecisePixels
-            : blink::WebGestureEvent::kPixels;
+            ? blink::WebScrollGranularity::kScrollByPrecisePixel
+            : blink::WebScrollGranularity::kScrollByPixel;
   }
 
   if (force_layout_on_events_)

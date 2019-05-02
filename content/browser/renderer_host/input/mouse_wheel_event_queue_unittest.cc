@@ -277,9 +277,9 @@ class MouseWheelEventQueueTest : public testing::Test,
   }
 
   void GestureSendingTest(bool high_precision) {
-    const WebGestureEvent::ScrollUnits scroll_units =
-        high_precision ? WebGestureEvent::kPrecisePixels
-                       : WebGestureEvent::kPixels;
+    const blink::WebScrollGranularity scroll_units =
+        high_precision ? blink::WebScrollGranularity::kScrollByPrecisePixel
+                       : blink::WebScrollGranularity::kScrollByPixel;
     SendMouseWheel(kWheelScrollX, kWheelScrollY, kWheelScrollGlobalX,
                    kWheelScrollGlobalY, 1, 1, 0, high_precision,
                    WebMouseWheelEvent::kPhaseBegan,
@@ -313,9 +313,9 @@ class MouseWheelEventQueueTest : public testing::Test,
   }
 
   void PhaseGestureSendingTest(bool high_precision) {
-    const WebGestureEvent::ScrollUnits scroll_units =
-        high_precision ? WebGestureEvent::kPrecisePixels
-                       : WebGestureEvent::kPixels;
+    const blink::WebScrollGranularity scroll_units =
+        high_precision ? blink::WebScrollGranularity::kScrollByPrecisePixel
+                       : blink::WebScrollGranularity::kScrollByPixel;
 
     SendMouseWheel(kWheelScrollX, kWheelScrollY, kWheelScrollGlobalX,
                    kWheelScrollGlobalY, 1, 1, 0, high_precision,
@@ -441,8 +441,8 @@ TEST_F(MouseWheelEventQueueTest,
 // scroll_end.data.scroll_end.generated_by_fling_controller.
 #if defined(CHROME_OS)
 TEST_F(MouseWheelEventQueueTest, WheelEndWithMomentumPhaseEndedInformation) {
-  const WebGestureEvent::ScrollUnits scroll_units =
-      WebGestureEvent::kPrecisePixels;
+  const blink::WebScrollGranularity scroll_units =
+      blink::WebScrollGranularity::kScrollByPrecisePixel;
   SendMouseWheel(kWheelScrollX, kWheelScrollY, kWheelScrollGlobalX,
                  kWheelScrollGlobalY, 1, 1, 0, true /* high_precision */,
                  WebMouseWheelEvent::kPhaseBegan,
@@ -471,7 +471,8 @@ TEST_F(MouseWheelEventQueueTest, WheelEndWithMomentumPhaseEndedInformation) {
 #endif  // defined(CHROME_OS)
 
 TEST_F(MouseWheelEventQueueTest, GestureSendingInterrupted) {
-  const WebGestureEvent::ScrollUnits scroll_units = WebGestureEvent::kPixels;
+  const blink::WebScrollGranularity scroll_units =
+      blink::WebScrollGranularity::kScrollByPixel;
   SendMouseWheel(kWheelScrollX, kWheelScrollY, kWheelScrollGlobalX,
                  kWheelScrollGlobalY, 1, 1, 0, false,
                  WebMouseWheelEvent::kPhaseBegan,
@@ -551,7 +552,8 @@ TEST_F(MouseWheelEventQueueTest, GestureSendingInterrupted) {
 }
 
 TEST_F(MouseWheelEventQueueTest, GestureRailScrolling) {
-  const WebGestureEvent::ScrollUnits scroll_units = WebGestureEvent::kPixels;
+  const blink::WebScrollGranularity scroll_units =
+      blink::WebScrollGranularity::kScrollByPixel;
   SendMouseWheel(
       kWheelScrollX, kWheelScrollY, kWheelScrollGlobalX, kWheelScrollGlobalY, 1,
       1, 0, false, WebMouseWheelEvent::kPhaseBegan,
@@ -600,7 +602,8 @@ TEST_F(MouseWheelEventQueueTest, GestureRailScrolling) {
 }
 
 TEST_F(MouseWheelEventQueueTest, WheelScrollLatching) {
-  const WebGestureEvent::ScrollUnits scroll_units = WebGestureEvent::kPixels;
+  const blink::WebScrollGranularity scroll_units =
+      blink::WebScrollGranularity::kScrollByPixel;
   SendMouseWheel(
       kWheelScrollX, kWheelScrollY, kWheelScrollGlobalX, kWheelScrollGlobalY, 1,
       1, 0, false, WebMouseWheelEvent::kPhaseBegan,

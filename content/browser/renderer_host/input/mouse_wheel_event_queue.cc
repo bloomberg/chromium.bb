@@ -175,7 +175,8 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
           WebGestureEvent::kNonMomentumPhase;
     }
     if (event_sent_for_gesture_ack_->event.scroll_by_page) {
-      scroll_update.data.scroll_update.delta_units = WebGestureEvent::kPage;
+      scroll_update.data.scroll_update.delta_units =
+          blink::WebScrollGranularity::kScrollByPage;
 
       // Turn page scrolls into a *single* page scroll because
       // the magnitude the number of ticks is lost when coalescing.
@@ -188,8 +189,8 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
     } else {
       scroll_update.data.scroll_update.delta_units =
           event_sent_for_gesture_ack_->event.has_precise_scrolling_deltas
-              ? WebGestureEvent::kPrecisePixels
-              : WebGestureEvent::kPixels;
+              ? blink::WebScrollGranularity::kScrollByPrecisePixel
+              : blink::WebScrollGranularity::kScrollByPixel;
 
       if (event_sent_for_gesture_ack_->event.rails_mode ==
           WebInputEvent::kRailsModeVertical)

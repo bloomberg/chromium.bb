@@ -166,10 +166,11 @@ void InputScrollElasticityController::ObserveGestureEventAndResult(
 
       bool enter_momentum = gesture_event.data.scroll_begin.inertial_phase ==
                             blink::WebGestureEvent::kMomentumPhase;
-      bool leave_momentum = gesture_event.data.scroll_begin.inertial_phase ==
-                                blink::WebGestureEvent::kNonMomentumPhase &&
-                            gesture_event.data.scroll_begin.delta_hint_units ==
-                                blink::WebGestureEvent::kPrecisePixels;
+      bool leave_momentum =
+          gesture_event.data.scroll_begin.inertial_phase ==
+              blink::WebGestureEvent::kNonMomentumPhase &&
+          gesture_event.data.scroll_begin.delta_hint_units ==
+              blink::WebScrollGranularity::kScrollByPrecisePixel;
       ObserveRealScrollBegin(enter_momentum, leave_momentum);
       break;
     }

@@ -245,21 +245,6 @@ inline ScrollOffset ToScrollDelta(ScrollDirectionPhysical dir, float delta) {
                                                      : ScrollOffset(0, delta);
 }
 
-inline ScrollGranularity ToPlatformScrollGranularity(
-    WebGestureEvent::ScrollUnits units) {
-  switch (units) {
-    case WebGestureEvent::ScrollUnits::kPrecisePixels:
-      return ScrollGranularity::kScrollByPrecisePixel;
-    case WebGestureEvent::ScrollUnits::kPixels:
-      return ScrollGranularity::kScrollByPixel;
-    case WebGestureEvent::ScrollUnits::kPage:
-      return ScrollGranularity::kScrollByPage;
-    default:
-      NOTREACHED();
-      return ScrollGranularity::kScrollByPrecisePixel;
-  }
-}
-
 typedef unsigned ScrollbarControlPartMask;
 
 }  // namespace blink

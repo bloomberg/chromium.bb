@@ -22,13 +22,13 @@ enum WebScrollDirection {
 };
 
 enum WebScrollGranularity {
-  kScrollByLine,
-  kFirstScrollGranularity = kScrollByLine,
-  kScrollByPage,
-  kScrollByDocument,
+  kScrollByPrecisePixel = 0,
+  kFirstScrollGranularity = kScrollByPrecisePixel,
   kScrollByPixel,
-  kScrollByPrecisePixel,
-  kLastScrollGranularity = kScrollByPrecisePixel
+  kScrollByPage,
+  kScrollByLine,
+  kScrollByDocument,
+  kLastScrollGranularity = kScrollByDocument
 };
 
 }  // namespace blink

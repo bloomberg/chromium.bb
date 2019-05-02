@@ -354,7 +354,7 @@ void InputHandlerProxy::InjectScrollbarGestureScroll(
     synthetic_gesture_event->data.scroll_begin.inertial_phase =
         WebGestureEvent::kNonMomentumPhase;
     synthetic_gesture_event->data.scroll_begin.delta_hint_units =
-        WebGestureEvent::kPixels;
+        blink::WebScrollGranularity::kScrollByPixel;
   } else if (type == WebInputEvent::Type::kGestureScrollUpdate) {
     synthetic_gesture_event->data.scroll_update.delta_x =
         -pointer_result.scroll_offset.x();
@@ -363,7 +363,7 @@ void InputHandlerProxy::InjectScrollbarGestureScroll(
     synthetic_gesture_event->data.scroll_update.inertial_phase =
         WebGestureEvent::kNonMomentumPhase;
     synthetic_gesture_event->data.scroll_update.delta_units =
-        WebGestureEvent::kPixels;
+        blink::WebScrollGranularity::kScrollByPixel;
   }
 
   synthetic_gesture_event->SetPositionInWidget(position_in_widget);
@@ -679,7 +679,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
   cc::ScrollState scroll_state = CreateScrollStateForGesture(gesture_event);
   cc::InputHandler::ScrollStatus scroll_status;
   if (gesture_event.data.scroll_begin.delta_hint_units ==
-      blink::WebGestureEvent::ScrollUnits::kPage) {
+      blink::WebScrollGranularity::kScrollByPage) {
     scroll_status.thread = cc::InputHandler::SCROLL_ON_MAIN_THREAD;
     scroll_status.main_thread_scrolling_reasons =
         cc::MainThreadScrollingReason::kContinuingMainThreadScroll;
@@ -687,7 +687,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
     scroll_status = input_handler_->RootScrollBegin(
         &scroll_state, GestureScrollInputType(gesture_event.SourceDevice()));
   } else if (ShouldAnimate(gesture_event.data.scroll_begin.delta_hint_units !=
-                           blink::WebGestureEvent::ScrollUnits::kPixels)) {
+                           blink::WebScrollGranularity::kScrollByPixel)) {
     DCHECK(!scroll_state.is_in_inertial_phase());
     scroll_status = input_handler_->ScrollAnimatedBegin(&scroll_state);
   } else {
@@ -756,7 +756,7 @@ InputHandlerProxy::HandleGestureScrollUpdate(
   gfx::PointF scroll_point(gesture_event.PositionInWidget());
 
   if (ShouldAnimate(gesture_event.data.scroll_update.delta_units !=
-                    blink::WebGestureEvent::ScrollUnits::kPixels)) {
+                    blink::WebScrollGranularity::kScrollByPixel)) {
     DCHECK(!scroll_state.is_in_inertial_phase());
     base::TimeTicks event_time = gesture_event.TimeStamp();
     base::TimeDelta delay = base::TimeTicks::Now() - event_time;

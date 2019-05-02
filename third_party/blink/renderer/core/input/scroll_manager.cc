@@ -290,17 +290,17 @@ bool ScrollManager::LogicalScroll(ScrollDirection direction,
     // direction and end position. Pressing the Home/End key is considered as a
     // scroll with intended end position only.
     switch (granularity) {
-      case kScrollByLine: {
+      case ScrollGranularity::kScrollByLine: {
         if (snap_coordinator->SnapForDirection(*box, delta))
           return true;
         break;
       }
-      case kScrollByPage: {
+      case ScrollGranularity::kScrollByPage: {
         if (snap_coordinator->SnapForEndAndDirection(*box, delta))
           return true;
         break;
       }
-      case kScrollByDocument: {
+      case ScrollGranularity::kScrollByDocument: {
         FloatPoint end_position = scrollable_area->ScrollPosition() + delta;
         bool scrolled_x = physical_direction == kScrollLeft ||
                           physical_direction == kScrollRight;
@@ -562,8 +562,8 @@ WebInputEventResult ScrollManager::HandleGestureScrollUpdate(
       std::make_unique<ScrollStateData>();
   scroll_state_data->delta_x = delta.Width();
   scroll_state_data->delta_y = delta.Height();
-  scroll_state_data->delta_granularity = static_cast<double>(
-      ToPlatformScrollGranularity(gesture_event.DeltaUnits()));
+  scroll_state_data->delta_granularity =
+      static_cast<double>(gesture_event.DeltaUnits());
   scroll_state_data->velocity_x = velocity.Width();
   scroll_state_data->velocity_y = velocity.Height();
   scroll_state_data->position_x = position.X();

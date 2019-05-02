@@ -329,7 +329,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
       blink::WebInputEvent::GetStaticTimeStampForTests(),
       blink::WebGestureDevice::kTouchscreen);
   gesture_scroll_begin.data.scroll_begin.delta_hint_units =
-      blink::WebGestureEvent::ScrollUnits::kPrecisePixels;
+      blink::WebScrollGranularity::kScrollByPrecisePixel;
   gesture_scroll_begin.data.scroll_begin.delta_x_hint = 0.f;
   gesture_scroll_begin.data.scroll_begin.delta_y_hint = 0.f;
   GetRenderWidgetHost()->ForwardGestureEvent(gesture_scroll_begin);
@@ -340,7 +340,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
       blink::WebInputEvent::GetStaticTimeStampForTests(),
       blink::WebGestureDevice::kTouchscreen);
   gesture_scroll_update.data.scroll_update.delta_units =
-      blink::WebGestureEvent::ScrollUnits::kPrecisePixels;
+      blink::WebScrollGranularity::kScrollByPrecisePixel;
   gesture_scroll_update.data.scroll_update.delta_y = 0.f;
   float start_threshold = OverscrollConfig::GetThreshold(
       OverscrollConfig::Threshold::kStartTouchscreen);

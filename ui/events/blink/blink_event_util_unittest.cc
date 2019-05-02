@@ -4,6 +4,7 @@
 
 #include "ui/events/blink/blink_event_util.h"
 
+#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_gesture_event.h"
@@ -129,6 +130,44 @@ TEST(BlinkEventUtilTest, PaginatedScrollUpdateEvent) {
       static_cast<blink::WebGestureEvent*>(webEvent.get());
   EXPECT_EQ(1.f, gestureEvent->data.scroll_update.delta_x);
   EXPECT_EQ(1.f, gestureEvent->data.scroll_update.delta_y);
+}
+
+TEST(BlinkEventUtilTest, LineAndDocumentScrollEvents) {
+  static const ui::EventType types[] = {
+      ui::ET_GESTURE_SCROLL_BEGIN,
+      ui::ET_GESTURE_SCROLL_UPDATE,
+  };
+
+  static const ui::GestureEventDetails::ScrollUnits units[] = {
+      ui::GestureEventDetails::ScrollUnits::LINE,
+      ui::GestureEventDetails::ScrollUnits::DOCUMENT,
+  };
+
+  for (size_t i = 0; i < base::size(types); i++) {
+    ui::EventType type = types[i];
+    for (size_t j = 0; j < base::size(units); j++) {
+      ui::GestureEventDetails::ScrollUnits unit = units[j];
+      ui::GestureEventDetails details(type, 1, 1, unit);
+      details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
+      auto event = CreateWebGestureEvent(details, base::TimeTicks(),
+                                         gfx::PointF(1.f, 1.f),
+                                         gfx::PointF(1.f, 1.f), 0, 0U);
+      std::unique_ptr<blink::WebInputEvent> webEvent =
+          ScaleWebInputEvent(event, 2.f);
+      EXPECT_TRUE(webEvent);
+      blink::WebGestureEvent* gestureEvent =
+          static_cast<blink::WebGestureEvent*>(webEvent.get());
+      // Line and document based scroll events should not be scaled.
+      if (type == ui::ET_GESTURE_SCROLL_BEGIN) {
+        EXPECT_EQ(1.f, gestureEvent->data.scroll_begin.delta_x_hint);
+        EXPECT_EQ(1.f, gestureEvent->data.scroll_begin.delta_y_hint);
+      } else {
+        EXPECT_TRUE(type == ui::ET_GESTURE_SCROLL_UPDATE);
+        EXPECT_EQ(1.f, gestureEvent->data.scroll_update.delta_x);
+        EXPECT_EQ(1.f, gestureEvent->data.scroll_update.delta_y);
+      }
+    }
+  }
 }
 
 TEST(BlinkEventUtilTest, TouchEventCoalescing) {

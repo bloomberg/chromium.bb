@@ -68,7 +68,7 @@ enum Cancelability;
 enum GestureDevice;
 
 [Native]
-enum ScrollUnits;
+enum WebScrollGranularity;
 
 [Native]
 enum InertialPhaseState;

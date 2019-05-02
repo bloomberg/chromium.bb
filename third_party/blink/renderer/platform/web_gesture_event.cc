@@ -20,7 +20,7 @@ float WebGestureEvent::DeltaYInRootFrame() const {
   return data.scroll_update.delta_y / frame_scale_;
 }
 
-WebGestureEvent::ScrollUnits WebGestureEvent::DeltaUnits() const {
+WebScrollGranularity WebGestureEvent::DeltaUnits() const {
   if (type_ == WebInputEvent::kGestureScrollBegin)
     return data.scroll_begin.delta_hint_units;
   if (type_ == WebInputEvent::kGestureScrollUpdate)

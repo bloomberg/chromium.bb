@@ -286,8 +286,8 @@ IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
       blink::WebInputEvent::GetStaticTimeStampForTests(),
       blink::WebGestureDevice::kTouchpad);
   gesture_scroll_begin.data.scroll_begin.delta_hint_units =
-      precise ? blink::WebGestureEvent::ScrollUnits::kPrecisePixels
-              : blink::WebGestureEvent::ScrollUnits::kPixels;
+      precise ? blink::WebScrollGranularity::kScrollByPrecisePixel
+              : blink::WebScrollGranularity::kScrollByPixel;
   gesture_scroll_begin.data.scroll_begin.delta_x_hint = 0.f;
   gesture_scroll_begin.data.scroll_begin.delta_y_hint = -20.f;
   gesture_scroll_begin.SetPositionInWidget(gfx::PointF(x, y));
@@ -298,8 +298,8 @@ IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
   blink::WebGestureEvent gesture_scroll_update(gesture_scroll_begin);
   gesture_scroll_update.SetType(blink::WebGestureEvent::kGestureScrollUpdate);
   gesture_scroll_update.data.scroll_update.delta_units =
-      precise ? blink::WebGestureEvent::ScrollUnits::kPrecisePixels
-              : blink::WebGestureEvent::ScrollUnits::kPixels;
+      precise ? blink::WebScrollGranularity::kScrollByPrecisePixel
+              : blink::WebScrollGranularity::kScrollByPixel;
   gesture_scroll_update.data.scroll_update.delta_x = 0.f;
   gesture_scroll_update.data.scroll_update.delta_y = -20.f;
   GetRootView()->ProcessGestureEvent(gesture_scroll_update, ui::LatencyInfo());

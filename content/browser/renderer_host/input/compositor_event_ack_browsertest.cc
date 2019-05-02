@@ -266,7 +266,7 @@ IN_PROC_BROWSER_TEST_F(CompositorEventAckBrowserTest,
       blink::WebInputEvent::kNoModifiers, ui::EventTimeForNow());
   gesture_scroll_begin.SetSourceDevice(blink::WebGestureDevice::kTouchscreen);
   gesture_scroll_begin.data.scroll_begin.delta_hint_units =
-      blink::WebGestureEvent::ScrollUnits::kPrecisePixels;
+      blink::WebScrollGranularity::kScrollByPrecisePixel;
   gesture_scroll_begin.data.scroll_begin.delta_x_hint = 0.f;
   gesture_scroll_begin.data.scroll_begin.delta_y_hint = -5.f;
   GetWidgetHost()->ForwardGestureEvent(gesture_scroll_begin);
