@@ -240,7 +240,6 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   std::unique_ptr<ui::ScopedLayerAnimationSettings> UpdateYPositionAndOpacity(
       int new_y,
       float opacity,
-      const gfx::Rect& work_area,
       OverviewSession::UpdateAnimationSettingsCallback callback);
 
   // Returns the window of the overview item that contains |location_in_screen|.

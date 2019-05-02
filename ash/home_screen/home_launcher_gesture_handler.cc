@@ -626,10 +626,11 @@ void HomeLauncherGestureHandler::UpdateWindows(double progress, bool animate) {
   std::unique_ptr<ui::ScopedLayerAnimationSettings> overview_settings;
   if (overview_active_on_gesture_start_ && controller->IsSelecting()) {
     DCHECK_EQ(mode_, Mode::kSlideUpToShow);
+    const int inverted_y_position = gfx::Tween::IntValueBetween(
+        progress, work_area.y(), work_area.bottom());
     overview_settings =
         controller->overview_session()->UpdateGridAtLocationYPositionAndOpacity(
-            display_.id(), y_position - work_area.height(), 1.f - opacity,
-            work_area,
+            display_.id(), inverted_y_position, 1.f - opacity,
             animate ? base::BindRepeating(
                           &HomeLauncherGestureHandler::UpdateSettings,
                           base::Unretained(this))

@@ -231,8 +231,12 @@ void ScopedOverviewTransformWindow::RestoreWindow(bool reset_transform) {
   if (Shell::Get()->shadow_controller())
     Shell::Get()->shadow_controller()->UpdateShadowForWindow(window_);
 
-  if (IsMinimized())
+  if (IsMinimized()) {
+    // Minimized windows may have had their transforms altered by swiping up
+    // from the shelf.
+    SetTransform(window_, gfx::Transform());
     return;
+  }
 
   if (reset_transform) {
     ScopedAnimationSettings animation_settings_list;

@@ -1232,7 +1232,6 @@ std::unique_ptr<ui::ScopedLayerAnimationSettings>
 OverviewGrid::UpdateYPositionAndOpacity(
     int new_y,
     float opacity,
-    const gfx::Rect& work_area,
     OverviewSession::UpdateAnimationSettingsCallback callback) {
   DCHECK(!window_list_.empty());
   // Translate the window items to |new_y| with the opacity. Observe the

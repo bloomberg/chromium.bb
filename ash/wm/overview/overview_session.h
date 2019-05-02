@@ -25,7 +25,6 @@
 
 namespace gfx {
 class Point;
-class Rect;
 }  // namespace gfx
 
 namespace ui {
@@ -221,7 +220,6 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
       int64_t display_id,
       int new_y,
       float opacity,
-      const gfx::Rect& work_area,
       UpdateAnimationSettingsCallback callback);
 
   // Updates all the overview items' mask and shadow.

@@ -654,7 +654,6 @@ OverviewSession::UpdateGridAtLocationYPositionAndOpacity(
     int64_t display_id,
     int new_y,
     float opacity,
-    const gfx::Rect& work_area,
     UpdateAnimationSettingsCallback callback) {
   OverviewGrid* grid = GetGridWithRootWindow(
       Shell::Get()->GetRootWindowForDisplayId(display_id));
@@ -677,7 +676,7 @@ OverviewSession::UpdateGridAtLocationYPositionAndOpacity(
     return settings;
   }
 
-  return grid->UpdateYPositionAndOpacity(new_y, opacity, work_area, callback);
+  return grid->UpdateYPositionAndOpacity(new_y, opacity, callback);
 }
 
 void OverviewSession::UpdateMaskAndShadow() {

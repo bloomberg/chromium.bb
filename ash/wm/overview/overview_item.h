@@ -11,6 +11,7 @@
 #include "ash/wm/overview/caption_container_view.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/scoped_overview_transform_window.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "ui/aura/window_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -273,6 +274,10 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   // it visible while dragging around.
   void StartDrag();
 
+  // Returns the list of windows that we want to slide up or down when swiping
+  // on the shelf in tablet mode.
+  aura::Window::Windows GetWindowsForHomeGesture();
+
   // The root window this item is being displayed on.
   aura::Window* root_window_;
 
@@ -334,6 +339,11 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
 
   // True to always disable mask regardless of the state.
   bool disable_mask_ = false;
+
+  // Stores the last translations of the windows affected by SetBounds. Used for
+  // ease of calculations when swiping away overview mode using home launcher
+  // gesture.
+  base::flat_map<aura::Window*, int> translation_y_map_;
 
   // The shadow around the overview window. Shadows the original window, not
   // |item_widget_|. Done here instead of on the original window because of the

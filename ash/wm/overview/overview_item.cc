@@ -46,6 +46,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/shadow_types.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 
@@ -326,33 +327,10 @@ OverviewItem::UpdateYPositionAndOpacity(
     int new_grid_y,
     float opacity,
     OverviewSession::UpdateAnimationSettingsCallback callback) {
-  // Animate |item_widget_| and the window itself.
-  // TODO(sammiequon): Investigate if we can combine with
-  // FadeInWidgetAndMaybeSlideOnEnter. Also when animating we should remove
-  // shadow and rounded corners.
-  std::vector<std::pair<ui::Layer*, int>> animation_layers_and_offsets = {
-      {item_widget_->GetNativeWindow()->layer(), 0}};
-
-  // For minimized windows we don't need to animate the original window or its
-  // transient ancestors since they are not visible.
-  if (!transform_window_.IsMinimized()) {
-    // Transient children may already have a y translation relative to their
-    // base ancestor, so factor that in when computing their new y translation.
-    base::Optional<int> base_window_y_translation = base::nullopt;
-    for (auto* window : wm::GetTransientTreeIterator(GetWindow())) {
-      if (!base_window_y_translation.has_value()) {
-        base_window_y_translation = base::make_optional(
-            window->layer()->transform().To2dTranslation().y());
-      }
-      const int offset = *base_window_y_translation -
-                         window->layer()->transform().To2dTranslation().y();
-      animation_layers_and_offsets.push_back({window->layer(), offset});
-    }
-  }
-
+  aura::Window::Windows windows = GetWindowsForHomeGesture();
   std::unique_ptr<ui::ScopedLayerAnimationSettings> settings_to_observe;
-  for (auto& layer_and_offset : animation_layers_and_offsets) {
-    ui::Layer* layer = layer_and_offset.first;
+  for (auto* window : windows) {
+    ui::Layer* layer = window->layer();
     std::unique_ptr<ui::ScopedLayerAnimationSettings> settings;
     if (!callback.is_null()) {
       settings = std::make_unique<ui::ScopedLayerAnimationSettings>(
@@ -361,12 +339,15 @@ OverviewItem::UpdateYPositionAndOpacity(
     }
     layer->SetOpacity(opacity);
 
+    int initial_y_ = 0;
+    if (translation_y_map_.contains(window))
+      initial_y_ = translation_y_map_[window];
+
     // Alter the y-translation. Offset by the window location relative to the
     // grid.
-    const int offset = target_bounds_.y() + kHeaderHeightDp + kWindowMargin -
-                       layer_and_offset.second;
     gfx::Transform transform = layer->transform();
-    transform.matrix().setFloat(1, 3, static_cast<float>(offset + new_grid_y));
+    transform.matrix().setFloat(1, 3,
+                                static_cast<float>(initial_y_ - new_grid_y));
     layer->SetTransform(transform);
 
     // Return the first layer for the caller to observe.
@@ -472,6 +453,22 @@ void OverviewItem::SetBounds(const gfx::RectF& target_bounds,
         cannot_snap_widget_->GetBoundsCenteredIn(
             gfx::ToEnclosingRect(inset_bounds)),
         new_animation_type, nullptr);
+  }
+
+  translation_y_map_.clear();
+  aura::Window::Windows windows = GetWindowsForHomeGesture();
+  for (auto* window : windows) {
+    // There is a bug where the first OverviewItem |window_| will always return
+    // the identity, even though a transform has been visually applied. For this
+    // case use the y location of the screen bounds.
+    // TODO: Investigate why this is happening and remove the if clause.
+    if (window->transform().IsIdentity() &&
+        (window == GetWindow() ||
+         ::wm::HasTransientAncestor(window, GetWindow()))) {
+      translation_y_map_[window] = window->GetBoundsInScreen().y();
+    } else {
+      translation_y_map_[window] = window->transform().To2dTranslation().y();
+    }
   }
 }
 
@@ -1083,6 +1080,17 @@ void OverviewItem::StartDrag() {
     widget_window->parent()->StackChildAtTop(window);
     widget_window->parent()->StackChildBelow(widget_window, window);
   }
+}
+
+aura::Window::Windows OverviewItem::GetWindowsForHomeGesture() {
+  aura::Window::Windows windows = {item_widget_->GetNativeWindow()};
+  if (!transform_window_.IsMinimized()) {
+    for (auto* window : wm::GetTransientTreeIterator(GetWindow()))
+      windows.push_back(window);
+  }
+  if (cannot_snap_widget_)
+    windows.push_back(cannot_snap_widget_->GetNativeWindow());
+  return windows;
 }
 
 }  // namespace ash
