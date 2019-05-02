@@ -19,6 +19,7 @@ void StubPrefetchService::NewSuggestionsAvailable() {}
 void StubPrefetchService::RemoveSuggestion(GURL url) {}
 
 void StubPrefetchService::SetCachedGCMToken(const std::string& gcm_token) {}
+
 void StubPrefetchService::GetGCMToken(GCMTokenCallback callback) {}
 
 void StubPrefetchService::ForceRefreshSuggestions() {}

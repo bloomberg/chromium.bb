@@ -194,14 +194,15 @@ void PrefetchServiceTestTaco::SetPrefService(
 
 void PrefetchServiceTestTaco::CreatePrefetchService() {
   CHECK(!prefetch_service_);
-  prefetch_service_ = std::make_unique<PrefetchServiceImpl>(
+  auto service = std::make_unique<PrefetchServiceImpl>(
       std::move(metrics_collector_), std::move(dispatcher_),
-      std::move(gcm_handler_), std::move(network_request_factory_),
-      offline_page_model_.get(), std::move(prefetch_store_),
-      std::move(suggested_articles_observer_), std::move(prefetch_downloader_),
-      std::move(prefetch_importer_),
+      std::move(network_request_factory_), offline_page_model_.get(),
+      std::move(prefetch_store_), std::move(suggested_articles_observer_),
+      std::move(prefetch_downloader_), std::move(prefetch_importer_),
       std::move(prefetch_background_task_handler_),
       std::move(thumbnail_fetcher_), thumbnail_image_fetcher_.get());
+  service->SetPrefetchGCMHandler(std::move(gcm_handler_));
+  prefetch_service_ = std::move(service);
 }
 
 std::unique_ptr<PrefetchService>

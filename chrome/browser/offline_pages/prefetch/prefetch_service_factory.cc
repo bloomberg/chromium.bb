@@ -7,10 +7,11 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/memory/singleton.h"
-#include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/image_fetcher/image_fetcher_service_factory.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/offline_pages/prefetch/prefetch_instance_id_proxy.h"
 #include "chrome/browser/offline_pages/prefetch/thumbnail_fetcher_impl.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/transition_manager/full_browser_transition_manager.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "components/feed/feed_feature_list.h"
@@ -28,6 +30,7 @@
 #include "components/image_fetcher/core/image_fetcher_impl.h"
 #include "components/image_fetcher/core/image_fetcher_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher_impl.h"
 #include "components/offline_pages/core/prefetch/prefetch_downloader_impl.h"
 #include "components/offline_pages/core/prefetch/prefetch_gcm_app_handler.h"
@@ -37,9 +40,33 @@
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
 #include "components/offline_pages/core/prefetch/suggested_articles_observer.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace offline_pages {
+
+namespace {
+
+void OnProfileCreated(PrefetchServiceImpl* service, Profile* profile) {
+  auto gcm_app_handler = std::make_unique<PrefetchGCMAppHandler>(
+      std::make_unique<PrefetchInstanceIDProxy>(kPrefetchingOfflinePagesAppId,
+                                                profile));
+  service->SetPrefetchGCMHandler(std::move(gcm_app_handler));
+  if (IsPrefetchingOfflinePagesEnabled()) {
+    // Trigger an update of the cached GCM token. This needs to be post tasked
+    // because otherwise leads to circular dependency between
+    // PrefetchServiceFactory and GCMProfileServiceFactory. See
+    // https://crbug.com/944952
+    // Update is not a priority so make sure it happens after the critical
+    // startup path.
+    content::BrowserThread::PostAfterStartupTask(
+        FROM_HERE, base::SequencedTaskRunnerHandle::Get(),
+        base::BindOnce(&PrefetchServiceImpl::GetGCMToken, service->GetWeakPtr(),
+                       base::DoNothing::Once<const std::string&>()));
+  }
+}
+
+}  // namespace
 
 PrefetchServiceFactory::PrefetchServiceFactory()
     : BrowserContextKeyedServiceFactory(
@@ -77,10 +104,6 @@ KeyedService* PrefetchServiceFactory::BuildServiceInstanceFor(
 
   auto prefetch_dispatcher =
       std::make_unique<PrefetchDispatcherImpl>(profile->GetPrefs());
-
-  auto prefetch_gcm_app_handler = std::make_unique<PrefetchGCMAppHandler>(
-      std::make_unique<PrefetchInstanceIDProxy>(kPrefetchingOfflinePagesAppId,
-                                                context));
 
   auto prefetch_network_request_factory =
       std::make_unique<PrefetchNetworkRequestFactoryImpl>(
@@ -122,14 +145,19 @@ KeyedService* PrefetchServiceFactory::BuildServiceInstanceFor(
   auto prefetch_background_task_handler =
       std::make_unique<PrefetchBackgroundTaskHandlerImpl>(profile->GetPrefs());
 
-  return new PrefetchServiceImpl(
+  auto* service = new PrefetchServiceImpl(
       std::move(offline_metrics_collector), std::move(prefetch_dispatcher),
-      std::move(prefetch_gcm_app_handler),
       std::move(prefetch_network_request_factory), offline_page_model,
       std::move(prefetch_store), std::move(suggested_articles_observer),
       std::move(prefetch_downloader), std::move(prefetch_importer),
       std::move(prefetch_background_task_handler), std::move(thumbnail_fetcher),
       image_fetcher);
+
+  auto callback = base::BindOnce(&OnProfileCreated, service);
+  FullBrowserTransitionManager::Get()->RegisterCallbackOnProfileCreation(
+      profile->GetProfileKey(), std::move(callback));
+
+  return service;
 }
 
 }  // namespace offline_pages
