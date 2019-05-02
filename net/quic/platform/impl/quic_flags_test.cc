@@ -77,7 +77,7 @@ TEST_F(QuicCommandLineFlagTest, NotSpecified) {
 TEST_F(QuicCommandLineFlagTest, BoolFlag) {
   for (const char* s :
        {"--foo", "--foo=1", "--foo=t", "--foo=True", "--foo=Y", "--foo=yes"}) {
-    SetQuicFlag(&FLAGS_foo, false);
+    SetQuicFlag(FLAGS_foo, false);
     const char* argv[]{"argv0", s};
     auto parse_result = QuicParseCommandLineFlagsForTest(
         "usage message", base::size(argv), argv);
@@ -88,7 +88,7 @@ TEST_F(QuicCommandLineFlagTest, BoolFlag) {
 
   for (const char* s :
        {"--foo=0", "--foo=f", "--foo=False", "--foo=N", "--foo=no"}) {
-    SetQuicFlag(&FLAGS_foo, true);
+    SetQuicFlag(FLAGS_foo, true);
     const char* argv[]{"argv0", s};
     auto parse_result = QuicParseCommandLineFlagsForTest(
         "usage message", base::size(argv), argv);
@@ -98,7 +98,7 @@ TEST_F(QuicCommandLineFlagTest, BoolFlag) {
   }
 
   for (const char* s : {"--foo=7", "--foo=abc", "--foo=trueish"}) {
-    SetQuicFlag(&FLAGS_foo, false);
+    SetQuicFlag(FLAGS_foo, false);
     const char* argv[]{"argv0", s};
 
     testing::internal::CaptureStderr();
@@ -117,7 +117,7 @@ TEST_F(QuicCommandLineFlagTest, BoolFlag) {
 
 TEST_F(QuicCommandLineFlagTest, Int32Flag) {
   for (const int i : {-1, 0, 100, 38239832}) {
-    SetQuicFlag(&FLAGS_bar, 0);
+    SetQuicFlag(FLAGS_bar, 0);
     std::string flag_str = base::StringPrintf("--bar=%d", i);
     const char* argv[]{"argv0", flag_str.c_str()};
     auto parse_result = QuicParseCommandLineFlagsForTest(
@@ -128,7 +128,7 @@ TEST_F(QuicCommandLineFlagTest, Int32Flag) {
   }
 
   for (const char* s : {"--bar", "--bar=a", "--bar=9999999999999"}) {
-    SetQuicFlag(&FLAGS_bar, 0);
+    SetQuicFlag(FLAGS_bar, 0);
     const char* argv[]{"argv0", s};
 
     testing::internal::CaptureStderr();
@@ -147,7 +147,7 @@ TEST_F(QuicCommandLineFlagTest, Int32Flag) {
 
 TEST_F(QuicCommandLineFlagTest, StringFlag) {
   {
-    SetQuicFlag(&FLAGS_baz, "whee");
+    SetQuicFlag(FLAGS_baz, "whee");
     const char* argv[]{"argv0", "--baz"};
     auto parse_result = QuicParseCommandLineFlagsForTest(
         "usage message", base::size(argv), argv);
@@ -157,7 +157,7 @@ TEST_F(QuicCommandLineFlagTest, StringFlag) {
   }
 
   for (const char* s : {"", "12345", "abcdefg"}) {
-    SetQuicFlag(&FLAGS_baz, "qux");
+    SetQuicFlag(FLAGS_baz, "qux");
     std::string flag_str = base::StrCat({"--baz=", s});
     const char* argv[]{"argv0", flag_str.c_str()};
     auto parse_result = QuicParseCommandLineFlagsForTest(
