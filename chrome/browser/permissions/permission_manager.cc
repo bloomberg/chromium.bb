@@ -14,6 +14,7 @@
 #include "chrome/browser/accessibility/accessibility_permission_context.h"
 #include "chrome/browser/background_fetch/background_fetch_permission_context.h"
 #include "chrome/browser/background_sync/background_sync_permission_context.h"
+#include "chrome/browser/background_sync/periodic_background_sync_permission_context.h"
 #include "chrome/browser/clipboard/clipboard_read_permission_context.h"
 #include "chrome/browser/clipboard/clipboard_write_permission_context.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -128,6 +129,8 @@ ContentSettingsType PermissionTypeToContentSetting(PermissionType permission) {
       return CONTENT_SETTINGS_TYPE_BACKGROUND_FETCH;
     case PermissionType::IDLE_DETECTION:
       return CONTENT_SETTINGS_TYPE_IDLE_DETECTION;
+    case PermissionType::PERIODIC_BACKGROUND_SYNC:
+      return CONTENT_SETTINGS_TYPE_PERIODIC_BACKGROUND_SYNC;
     case PermissionType::NUM:
       // This will hit the NOTREACHED below.
       break;
@@ -316,6 +319,8 @@ PermissionManager::PermissionManager(Profile* profile) : profile_(profile) {
       std::make_unique<BackgroundFetchPermissionContext>(profile);
   permission_contexts_[CONTENT_SETTINGS_TYPE_IDLE_DETECTION] =
       std::make_unique<IdleDetectionPermissionContext>(profile);
+  permission_contexts_[CONTENT_SETTINGS_TYPE_PERIODIC_BACKGROUND_SYNC] =
+      std::make_unique<PeriodicBackgroundSyncPermissionContext>(profile);
 }
 
 PermissionManager::~PermissionManager() {

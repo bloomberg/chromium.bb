@@ -29,6 +29,7 @@ enum ContentSettingsType {
   // TODO(csharrison): Consider renaming it to POPUPS_AND_REDIRECTS, but it
   // might not be worth the trouble.
   CONTENT_SETTINGS_TYPE_POPUPS,
+
   CONTENT_SETTINGS_TYPE_GEOLOCATION,
   CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
   CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
@@ -135,6 +136,11 @@ enum ContentSettingsType {
   // data" website setting.
   CONTENT_SETTINGS_TYPE_SERIAL_GUARD,
   CONTENT_SETTINGS_TYPE_SERIAL_CHOOSER_DATA,
+
+  // Nothing is stored in this setting at present. Please refer to
+  // PeriodicBackgroundSyncPermissionContext for details on how this permission
+  // is ascertained.
+  CONTENT_SETTINGS_TYPE_PERIODIC_BACKGROUND_SYNC,
 
   CONTENT_SETTINGS_NUM_TYPES,
 };

@@ -54,6 +54,8 @@ std::string PermissionUtil::GetPermissionString(
       return "BackgroundFetch";
     case CONTENT_SETTINGS_TYPE_IDLE_DETECTION:
       return "IdleDetection";
+    case CONTENT_SETTINGS_TYPE_PERIODIC_BACKGROUND_SYNC:
+      return "PeriodicBackgroundSync";
     default:
       break;
   }
@@ -128,6 +130,8 @@ bool PermissionUtil::GetPermissionType(ContentSettingsType type,
     *out = PermissionType::PAYMENT_HANDLER;
   } else if (type == CONTENT_SETTINGS_TYPE_BACKGROUND_FETCH) {
     *out = PermissionType::BACKGROUND_FETCH;
+  } else if (type == CONTENT_SETTINGS_TYPE_PERIODIC_BACKGROUND_SYNC) {
+    *out = PermissionType::PERIODIC_BACKGROUND_SYNC;
   } else {
     return false;
   }
@@ -152,6 +156,7 @@ bool PermissionUtil::IsPermission(ContentSettingsType type) {
     case CONTENT_SETTINGS_TYPE_CLIPBOARD_READ:
     case CONTENT_SETTINGS_TYPE_PAYMENT_HANDLER:
     case CONTENT_SETTINGS_TYPE_BACKGROUND_FETCH:
+    case CONTENT_SETTINGS_TYPE_PERIODIC_BACKGROUND_SYNC:
       return true;
     default:
       return false;

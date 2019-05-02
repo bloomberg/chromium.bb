@@ -109,6 +109,7 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {CONTENT_SETTINGS_TYPE_PLUGINS_DATA, nullptr},
     {CONTENT_SETTINGS_TYPE_BACKGROUND_FETCH, nullptr},
     {CONTENT_SETTINGS_TYPE_INTENT_PICKER_DISPLAY, nullptr},
+    {CONTENT_SETTINGS_TYPE_PERIODIC_BACKGROUND_SYNC, nullptr},
 };
 static_assert(base::size(kContentSettingsTypeGroupNames) ==
                   // ContentSettingsType starts at -1, so add 1 here.

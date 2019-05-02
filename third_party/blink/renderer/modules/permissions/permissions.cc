@@ -139,11 +139,18 @@ PermissionDescriptorPtr ParsePermission(ScriptState* script_state,
   }
   if (name == "payment-handler")
     return CreatePermissionDescriptor(PermissionName::PAYMENT_HANDLER);
-  if (name == "background-fetch") {
+  if (name == "background-fetch")
     return CreatePermissionDescriptor(PermissionName::BACKGROUND_FETCH);
-  }
   if (name == "idle-detection")
     return CreatePermissionDescriptor(PermissionName::IDLE_DETECTION);
+  if (name == "periodic-background-sync") {
+    if (!RuntimeEnabledFeatures::PeriodicBackgroundSyncEnabled()) {
+      exception_state.ThrowTypeError(
+          "Periodic Background Sync is not enabled.");
+      return nullptr;
+    }
+    return CreatePermissionDescriptor(PermissionName::PERIODIC_BACKGROUND_SYNC);
+  }
 
   return nullptr;
 }

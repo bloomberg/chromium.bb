@@ -18,18 +18,36 @@ namespace content {
 namespace {
 
 bool IsWhitelistedPermissionType(PermissionType permission) {
-  return permission == PermissionType::GEOLOCATION ||
-         permission == PermissionType::MIDI ||
-         permission == PermissionType::SENSORS ||
-         permission == PermissionType::PAYMENT_HANDLER ||
-         permission == PermissionType::IDLE_DETECTION ||
-         // Background Sync and Background Fetch browser tests require
-         // permission to be granted by default.
-         // TODO(nsatragno): add a command line flag so that it's only granted
-         // for tests.
-         permission == PermissionType::BACKGROUND_SYNC ||
-         permission == PermissionType::BACKGROUND_FETCH ||
-         permission == PermissionType::ACCESSIBILITY_EVENTS;
+  switch (permission) {
+    case PermissionType::GEOLOCATION:
+    case PermissionType::MIDI:
+    case PermissionType::SENSORS:
+    case PermissionType::ACCESSIBILITY_EVENTS:
+    case PermissionType::PAYMENT_HANDLER:
+
+    // Background Sync and Background Fetch browser tests require
+    // permission to be granted by default.
+    case PermissionType::BACKGROUND_SYNC:
+    case PermissionType::BACKGROUND_FETCH:
+    case PermissionType::PERIODIC_BACKGROUND_SYNC:
+
+    case PermissionType::IDLE_DETECTION:
+      return true;
+    case PermissionType::MIDI_SYSEX:
+    case PermissionType::NOTIFICATIONS:
+    case PermissionType::PROTECTED_MEDIA_IDENTIFIER:
+    case PermissionType::DURABLE_STORAGE:
+    case PermissionType::AUDIO_CAPTURE:
+    case PermissionType::VIDEO_CAPTURE:
+    case PermissionType::FLASH:
+    case PermissionType::CLIPBOARD_READ:
+    case PermissionType::CLIPBOARD_WRITE:
+    case PermissionType::NUM:
+      return false;
+  }
+
+  NOTREACHED();
+  return false;
 }
 
 }  // namespace

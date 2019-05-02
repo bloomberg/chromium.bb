@@ -169,6 +169,9 @@ void SetIndividualRuntimeFeatures(
   WebRuntimeFeatures::EnableReducedReferrerGranularity(
       base::FeatureList::IsEnabled(features::kReducedReferrerGranularity));
 
+  if (base::FeatureList::IsEnabled(features::kPeriodicBackgroundSync))
+    WebRuntimeFeatures::EnablePeriodicBackgroundSync(true);
+
   if (command_line.HasSwitch(switches::kDisablePermissionsAPI))
     WebRuntimeFeatures::EnablePermissionsAPI(false);
 

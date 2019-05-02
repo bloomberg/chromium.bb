@@ -345,6 +345,10 @@ void WebRuntimeFeatures::EnablePermissionsAPI(bool enable) {
   RuntimeEnabledFeatures::SetPermissionsEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnablePeriodicBackgroundSync(bool enable) {
+  RuntimeEnabledFeatures::SetPeriodicBackgroundSyncEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnablePictureInPicture(bool enable) {
   RuntimeEnabledFeatures::SetPictureInPictureEnabled(enable);
 }

@@ -91,7 +91,8 @@ BackgroundSyncController* GetBackgroundSyncControllerOnUIThread(
 
 blink::mojom::PermissionStatus GetBackgroundSyncPermissionOnUIThread(
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
-    const url::Origin& origin) {
+    const url::Origin& origin,
+    BackgroundSyncType sync_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BrowserContext* browser_context =
@@ -106,7 +107,10 @@ blink::mojom::PermissionStatus GetBackgroundSyncPermissionOnUIThread(
   // The requesting origin always matches the embedding origin.
   GURL origin_url = origin.GetURL();
   return permission_controller->GetPermissionStatus(
-      PermissionType::BACKGROUND_SYNC, origin_url, origin_url);
+      sync_type == BackgroundSyncType::ONE_SHOT
+          ? PermissionType::BACKGROUND_SYNC
+          : PermissionType::PERIODIC_BACKGROUND_SYNC,
+      origin_url, origin_url);
 }
 
 void NotifyBackgroundSyncRegisteredOnUIThread(
@@ -305,12 +309,26 @@ void BackgroundSyncManager::Register(
     return;
   }
 
-  op_scheduler_.ScheduleOperation(
-      CacheStorageSchedulerOp::kBackgroundSync,
-      base::BindOnce(&BackgroundSyncManager::RegisterCheckIfHasMainFrame,
-                     weak_ptr_factory_.GetWeakPtr(), sw_registration_id,
-                     std::move(options),
-                     op_scheduler_.WrapCallbackToRunNext(std::move(callback))));
+  if (GetBackgroundSyncType(options) == BackgroundSyncType::ONE_SHOT) {
+    op_scheduler_.ScheduleOperation(
+        CacheStorageSchedulerOp::kBackgroundSync,
+        base::BindOnce(
+            &BackgroundSyncManager::RegisterCheckIfHasMainFrame,
+            weak_ptr_factory_.GetWeakPtr(), sw_registration_id,
+            std::move(options),
+            op_scheduler_.WrapCallbackToRunNext(std::move(callback))));
+  } else {
+    // Periodic Background Sync events already have a pre-defined cadence which
+    // the user agent decides. Don't block registration if there's no top level
+    // frame at the time of registration.
+    op_scheduler_.ScheduleOperation(
+        CacheStorageSchedulerOp::kBackgroundSync,
+        base::BindOnce(
+            &BackgroundSyncManager::RegisterImpl,
+            weak_ptr_factory_.GetWeakPtr(), sw_registration_id,
+            std::move(options),
+            op_scheduler_.WrapCallbackToRunNext(std::move(callback))));
+  }
 }
 
 void BackgroundSyncManager::DidResolveRegistration(
@@ -605,11 +623,12 @@ void BackgroundSyncManager::RegisterImpl(
     return;
   }
 
+  BackgroundSyncType sync_type = GetBackgroundSyncType(options);
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&GetBackgroundSyncPermissionOnUIThread,
-                     service_worker_context_,
-                     url::Origin::Create(sw_registration->scope().GetOrigin())),
+      base::BindOnce(
+          &GetBackgroundSyncPermissionOnUIThread, service_worker_context_,
+          url::Origin::Create(sw_registration->scope().GetOrigin()), sync_type),
       base::BindOnce(&BackgroundSyncManager::RegisterDidAskForPermission,
                      weak_ptr_factory_.GetWeakPtr(), sw_registration_id,
                      std::move(options), std::move(callback)));

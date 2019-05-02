@@ -156,6 +156,8 @@ jumbo_split_static_library("browser") {
     "background_sync/background_sync_metrics.h",
     "background_sync/background_sync_permission_context.cc",
     "background_sync/background_sync_permission_context.h",
+    "background_sync/periodic_background_sync_permission_context.cc",
+    "background_sync/periodic_background_sync_permission_context.h",
     "bad_message.cc",
     "bad_message.h",
     "banners/app_banner_manager.cc",

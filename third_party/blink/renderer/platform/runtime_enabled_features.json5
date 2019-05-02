@@ -1094,6 +1094,10 @@
       status: "experimental",
     },
     {
+      name: "PeriodicBackgroundSync",
+      settable_from_internals: true,
+    },
+    {
       name: "PerMethodCanMakePaymentQuota",
       origin_trial_feature_name: "PerMethodCanMakePaymentQuota",
       status: "experimental",

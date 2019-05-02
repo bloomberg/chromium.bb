@@ -22,6 +22,7 @@ enum PermissionName {
   PAYMENT_HANDLER,
   BACKGROUND_FETCH,
   IDLE_DETECTION,
+  PERIODIC_BACKGROUND_SYNC,
 };
 
 struct MidiPermissionDescriptor {

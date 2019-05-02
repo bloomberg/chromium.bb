@@ -9142,8 +9142,10 @@ Called by update_net_error_codes.py.-->
   <int value="44" label="USB guard"/>
   <int value="45" label="Background fetch"/>
   <int value="46" label="Intent picker display"/>
-  <int value="47" label="Serial guard"/>
-  <int value="48" label="Serial permission data"/>
+  <int value="47" label="Idle detection"/>
+  <int value="48" label="Serial guard"/>
+  <int value="49" label="Serial permission data"/>
+  <int value="50" label="Periodic background sync"/>
 </enum>
 
 <enum name="ContentTypeParseableResult">
@@ -44767,6 +44769,14 @@ Called by update_net_trust_anchors.py.-->
   <int value="9" label="PERMISSION_VIDEO_CAPTURE"/>
   <int value="10" label="PERMISSION_BACKGROUND_SYNC"/>
   <int value="11" label="PERMISSION_FLASH"/>
+  <int value="12" label="PERMISSION_SENSORS"/>
+  <int value="13" label="PERMISSION_ACCESSIBILITY_EVENTS"/>
+  <int value="14" label="PERMISSION_CLIPBOARD_READ"/>
+  <int value="15" label="PERMISSION_CLIPBOARD_WRITE"/>
+  <int value="16" label="PERMISSION_PAYMENT_HANDLER"/>
+  <int value="17" label="PERMISSION_BACKGROUND_FETCH"/>
+  <int value="18" label="PERMISSION_IDLE_DETECTION"/>
+  <int value="19" label="PERMISSION_PERIODIC_BACKGROUND_SYNC"/>
 </enum>
 
 <enum name="PersistedLogsLogReadStatus">

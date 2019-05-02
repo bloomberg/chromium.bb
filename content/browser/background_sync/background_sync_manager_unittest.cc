@@ -116,6 +116,9 @@ class BackgroundSyncManagerTest
     ON_CALL(*mock_permission_manager,
             GetPermissionStatus(PermissionType::BACKGROUND_SYNC, _, _))
         .WillByDefault(Return(blink::mojom::PermissionStatus::GRANTED));
+    ON_CALL(*mock_permission_manager,
+            GetPermissionStatus(PermissionType::PERIODIC_BACKGROUND_SYNC, _, _))
+        .WillByDefault(Return(blink::mojom::PermissionStatus::GRANTED));
     helper_->browser_context()->SetPermissionControllerDelegate(
         std::move(mock_permission_manager));
 
@@ -577,6 +580,13 @@ TEST_F(BackgroundSyncManagerTest, RegisterPermissionDenied) {
                                   expected_origin, expected_origin))
       .WillOnce(testing::Return(blink::mojom::PermissionStatus::DENIED));
   EXPECT_FALSE(Register(sync_options_1_));
+
+  sync_options_2_.min_interval = 36000;
+  EXPECT_CALL(*mock_permission_manager,
+              GetPermissionStatus(PermissionType::PERIODIC_BACKGROUND_SYNC,
+                                  expected_origin, expected_origin))
+      .WillOnce(testing::Return(blink::mojom::PermissionStatus::DENIED));
+  EXPECT_FALSE(Register(sync_options_2_));
 }
 
 TEST_F(BackgroundSyncManagerTest, RegisterPermissionGranted) {
@@ -589,6 +599,13 @@ TEST_F(BackgroundSyncManagerTest, RegisterPermissionGranted) {
                                   expected_origin, expected_origin))
       .WillOnce(testing::Return(blink::mojom::PermissionStatus::GRANTED));
   EXPECT_TRUE(Register(sync_options_1_));
+
+  sync_options_2_.min_interval = 36000;
+  EXPECT_CALL(*mock_permission_manager,
+              GetPermissionStatus(PermissionType::PERIODIC_BACKGROUND_SYNC,
+                                  expected_origin, expected_origin))
+      .WillOnce(testing::Return(blink::mojom::PermissionStatus::GRANTED));
+  EXPECT_TRUE(Register(sync_options_2_));
 }
 
 TEST_F(BackgroundSyncManagerTest, TwoRegistrations) {
