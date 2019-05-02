@@ -372,6 +372,10 @@ public class AwContentsClientBridge {
         AwWebResourceResponse response = new AwWebResourceResponse(
                 mimeType, encoding, null, statusCode, reasonPhrase, responseHeaders);
         mClient.getCallbackHelper().postOnReceivedHttpError(request, response);
+
+        // Record UMA on http response status.
+        RecordHistogram.recordSparseHistogram(
+                "Android.WebView.onReceivedHttpError.StatusCode", statusCode);
     }
 
     @CalledByNativeUnchecked
