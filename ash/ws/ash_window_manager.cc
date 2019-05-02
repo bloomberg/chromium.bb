@@ -4,7 +4,6 @@
 
 #include "ash/ws/ash_window_manager.h"
 
-#include "ash/display/screen_orientation_controller.h"
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -52,40 +51,6 @@ void AshWindowManager::CommitSnap(ws::Id window_id, mojom::SnapDirection snap) {
     caption_controller_.CommitSnap(window, snap);
   } else {
     DVLOG(1) << "CommitSnap passed invalid window, id=" << window_id;
-  }
-}
-
-void AshWindowManager::LockOrientation(
-    ws::Id window_id,
-    mojom::OrientationLockType lock_orientation) {
-  if (window_tree_->connection_type() ==
-      ws::WindowTree::ConnectionType::kEmbedding) {
-    DVLOG(1) << "LockOrientation not allowed from embed connection";
-    return;
-  }
-
-  aura::Window* window = window_tree_->GetWindowByTransportId(window_id);
-  if (window) {
-    Shell::Get()->screen_orientation_controller()->LockOrientationForWindow(
-        window, lock_orientation);
-  } else {
-    DVLOG(1) << "LockOrientation passed invalid window, id=" << window_id;
-  }
-}
-
-void AshWindowManager::UnlockOrientation(ws::Id window_id) {
-  if (window_tree_->connection_type() ==
-      ws::WindowTree::ConnectionType::kEmbedding) {
-    DVLOG(1) << "UnlockOrientation not allowed from embed connection";
-    return;
-  }
-
-  aura::Window* window = window_tree_->GetWindowByTransportId(window_id);
-  if (window) {
-    Shell::Get()->screen_orientation_controller()->UnlockOrientationForWindow(
-        window);
-  } else {
-    DVLOG(1) << "UnlockOrientation passed invalid window, id=" << window_id;
   }
 }
 

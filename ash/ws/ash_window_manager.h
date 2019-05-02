@@ -34,9 +34,6 @@ class AshWindowManager : public mojom::AshWindowManager,
   void AddWindowToTabletMode(ws::Id window_id) override;
   void ShowSnapPreview(ws::Id window_id, mojom::SnapDirection snap) override;
   void CommitSnap(ws::Id window_id, mojom::SnapDirection snap) override;
-  void LockOrientation(ws::Id window_id,
-                       mojom::OrientationLockType lock_orientation) override;
-  void UnlockOrientation(ws::Id window_id) override;
   void MaximizeWindowByCaptionClick(ws::Id window_id,
                                     ui::mojom::PointerKind pointer) override;
   void BounceWindow(ws::Id window_id) override;

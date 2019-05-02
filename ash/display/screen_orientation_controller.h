@@ -26,7 +26,17 @@ class Window;
 
 namespace ash {
 
-using OrientationLockType = mojom::OrientationLockType;
+enum class OrientationLockType {
+  kAny,
+  kNatural,
+  kCurrent,
+  kPortrait,
+  kLandscape,
+  kPortraitPrimary,
+  kPortraitSecondary,
+  kLandscapePrimary,
+  kLandscapeSecondary,
+};
 
 // Test if the orientation lock type is primary/landscape/portrait.
 bool IsPrimaryOrientation(OrientationLockType type);
