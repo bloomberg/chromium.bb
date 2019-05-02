@@ -42,22 +42,6 @@ const PrintPreviewTest = class extends PolymerTest {
   runMochaTest(testName) {
     runMochaTest(this.suiteName, testName);
   }
-
-  /** @override */
-  setUp() {
-    super.setUp();
-    suiteSetup(() => {
-      return new Promise(resolve => {
-               HTMLImports.whenReady(resolve);
-             })
-          .then(() => {
-            const customElementName = this.customElementName;
-            if (customElementName) {
-              return customElements.whenDefined(customElementName);
-            }
-          });
-    });
-  }
 };
 
 PrintPreviewAppTest = class extends PrintPreviewTest {

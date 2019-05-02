@@ -3937,6 +3937,13 @@
         ],
         'test': 'browser_tests',
       },
+      'webui_html_imports_polyfill_interactive_ui_tests': {
+        'args': [
+          '--disable-blink-features=HTMLImports,ShadowDOMV0,CustomElementsV0',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/webui_html_imports_polyfill_interactive_ui_tests.filter',
+        ],
+        'test': 'interactive_ui_tests',
+      },
     },
 
     'non_linux_chromium_gtests': {
