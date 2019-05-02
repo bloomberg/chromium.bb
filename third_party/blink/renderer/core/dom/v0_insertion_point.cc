@@ -67,7 +67,7 @@ void V0InsertionPoint::SetDistributedNodes(
       for (; j < distributed_nodes.size() &&
              distributed_nodes_.at(i) != distributed_nodes.at(j);
            ++j)
-        distributed_nodes.at(j)->LazyReattachIfAttached();
+        distributed_nodes.at(j)->FlatTreeParentChanged();
       if (j == distributed_nodes.size())
         break;
     } else if (distributed_nodes_.size() > distributed_nodes.size()) {
@@ -76,13 +76,13 @@ void V0InsertionPoint::SetDistributedNodes(
       for (; i < distributed_nodes_.size() &&
              distributed_nodes_.at(i) != distributed_nodes.at(j);
            ++i)
-        distributed_nodes_.at(i)->LazyReattachIfAttached();
+        distributed_nodes_.at(i)->FlatTreeParentChanged();
       if (i == distributed_nodes_.size())
         break;
     } else if (distributed_nodes_.at(i) != distributed_nodes.at(j)) {
       // If both distributions are the same length reattach both old and new.
-      distributed_nodes_.at(i)->LazyReattachIfAttached();
-      distributed_nodes.at(j)->LazyReattachIfAttached();
+      distributed_nodes_.at(i)->FlatTreeParentChanged();
+      distributed_nodes.at(j)->FlatTreeParentChanged();
     }
   }
 
@@ -90,10 +90,10 @@ void V0InsertionPoint::SetDistributedNodes(
   // nodes.
 
   for (; i < distributed_nodes_.size(); ++i)
-    distributed_nodes_.at(i)->LazyReattachIfAttached();
+    distributed_nodes_.at(i)->FlatTreeParentChanged();
 
   for (; j < distributed_nodes.size(); ++j)
-    distributed_nodes.at(j)->LazyReattachIfAttached();
+    distributed_nodes.at(j)->FlatTreeParentChanged();
 
   distributed_nodes_.Swap(distributed_nodes);
   // Deallocate a Vector and a HashMap explicitly so that
