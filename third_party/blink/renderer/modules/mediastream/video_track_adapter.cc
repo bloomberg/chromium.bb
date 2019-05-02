@@ -568,7 +568,7 @@ void VideoTrackAdapter::StopFrameMonitoring() {
       base::BindOnce(&VideoTrackAdapter::StopFrameMonitoringOnIO, this));
 }
 
-void VideoTrackAdapter::SetSourceFrameSize(const gfx::Size& source_frame_size) {
+void VideoTrackAdapter::SetSourceFrameSize(const IntSize& source_frame_size) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   io_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&VideoTrackAdapter::SetSourceFrameSizeOnIO,
@@ -664,7 +664,7 @@ void VideoTrackAdapter::StopFrameMonitoringOnIO() {
 }
 
 void VideoTrackAdapter::SetSourceFrameSizeOnIO(
-    const gfx::Size& source_frame_size) {
+    const IntSize& source_frame_size) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   source_frame_size_ = source_frame_size;
 }
@@ -717,8 +717,8 @@ void VideoTrackAdapter::DeliverFrameOnIO(
   // TODO(guidou): Use actual device information instead of this heuristic to
   // detect frames from rotated devices. https://crbug.com/722748
   if (source_frame_size_ &&
-      frame->natural_size().width() == source_frame_size_->height() &&
-      frame->natural_size().height() == source_frame_size_->width()) {
+      frame->natural_size().width() == source_frame_size_->Height() &&
+      frame->natural_size().height() == source_frame_size_->Width()) {
     is_device_rotated = true;
   }
   if (adapters_.IsEmpty()) {

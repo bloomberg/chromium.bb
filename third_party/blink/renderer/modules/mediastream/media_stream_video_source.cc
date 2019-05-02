@@ -397,7 +397,7 @@ void MediaStreamVideoSource::StartFrameMonitoring() {
   base::Optional<media::VideoCaptureFormat> current_format = GetCurrentFormat();
   double frame_rate = current_format ? current_format->frame_rate : 0.0;
   if (current_format && enable_device_rotation_detection_) {
-    track_adapter_->SetSourceFrameSize(current_format->frame_size);
+    track_adapter_->SetSourceFrameSize(IntSize(current_format->frame_size));
   }
   track_adapter_->StartFrameMonitoring(
       frame_rate, base::Bind(&MediaStreamVideoSource::SetMutedState,

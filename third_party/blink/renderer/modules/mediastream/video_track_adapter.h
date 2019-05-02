@@ -16,6 +16,7 @@
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_types.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -74,7 +75,7 @@ class BLINK_EXPORT VideoTrackAdapter
                             const OnMutedCallback& on_muted_callback);
   void StopFrameMonitoring();
 
-  void SetSourceFrameSize(const gfx::Size& source_frame_size);
+  void SetSourceFrameSize(const IntSize& source_frame_size);
 
   // Exported for testing.
   //
@@ -103,7 +104,7 @@ class BLINK_EXPORT VideoTrackAdapter
   void StartFrameMonitoringOnIO(const OnMutedCallback& on_muted_state_callback,
                                 double source_frame_rate);
   void StopFrameMonitoringOnIO();
-  void SetSourceFrameSizeOnIO(const gfx::Size& frame_size);
+  void SetSourceFrameSizeOnIO(const IntSize& frame_size);
 
   // Compare |frame_counter_snapshot| with the current |frame_counter_|, and
   // inform of the situation (muted, not muted) via |set_muted_state_callback|.
@@ -144,7 +145,7 @@ class BLINK_EXPORT VideoTrackAdapter
   float source_frame_rate_;
 
   // Resolution configured on the video source, accessed on the IO-thread.
-  base::Optional<gfx::Size> source_frame_size_;
+  base::Optional<IntSize> source_frame_size_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoTrackAdapter);
 };
