@@ -696,28 +696,34 @@ class EventBands {
   }
 
   /**
-   * Finds the global event that is closest to the |timestamp| and not farther
-   * than |distance|.
+   * Finds global events around |timestamp| and not farther than |distance|.
    *
    * @param {number} timestamp to search.
    * @param {number} distance to search.
+   * @returns {Array} array of events sorted by distance to |timestamp| from
+   *                  closest to farthest.
    */
-  findGlobalEvent_(timestamp, distance) {
-    var bestDistance = distance;
-    var bestEvent = null;
+  findGlobalEvents_(timestamp, distance) {
+    var events = [];
+    var leftBorder = timestamp - distance;
+    var rightBorder = timestamp + distance;
     for (var i = 0; i < this.globalEvents.length; ++i) {
-      var globalEvents = this.globalEvents[i];
-      var closestIndex = this.globalEvents[i].getClosest(timestamp);
-      if (closestIndex >= 0) {
-        var testEvent = this.globalEvents[i].events[closestIndex];
-        var testDistance = Math.abs(testEvent[1] - timestamp);
-        if (testDistance < bestDistance) {
-          bestDistance = testDistance;
-          bestEvent = testEvent;
+      var index = this.globalEvents[i].getFirstAfter(leftBorder);
+      while (index >= 0) {
+        var event = this.globalEvents[i].events[index];
+        if (event[1] > rightBorder) {
+          break;
         }
+        events.push(event);
+        index = this.globalEvents[i].getNextEvent(index, 1 /* direction */);
       }
     }
-    return bestEvent;
+    events.sort(function(a, b) {
+      var distanceA = Math.abs(timestamp - a[1]);
+      var distanceB = Math.abs(timestamp - b[1]);
+      return distanceA - distanceB;
+    });
+    return events;
   }
 
   /**
@@ -740,12 +746,24 @@ class EventBands {
       return;
     }
 
+    var svg = document.createElementNS(svgNS, 'svg');
+    svg.setAttributeNS(
+        'http://www.w3.org/2000/xmlns/', 'xmlns:xlink',
+        'http://www.w3.org/1999/xlink');
+    this.tooltip.appendChild(svg);
+
     var eventTimestamp = this.offsetToTime(eventX - this.bandOffsetX);
+
+    // Try global events fist.
+    if (this.updateToolTipForGlobalEvents_(event, svg, eventTimestamp)) {
+      return;
+    }
 
     // Find band for this mouse event.
     for (var i = 0; i < this.bands.length; ++i) {
       if (this.bands[i].top <= eventY && this.bands[i].bottom > eventY) {
-        this.updateToolTipForBand_(event, eventTimestamp, this.bands[i].band);
+        this.updateToolTipForBand_(
+            event, svg, eventTimestamp, this.bands[i].band);
         return;
       }
     }
@@ -753,7 +771,7 @@ class EventBands {
     // Find chart for this mouse event.
     for (var i = 0; i < this.charts.length; ++i) {
       if (this.charts[i].top <= eventY && this.charts[i].bottom > eventY) {
-        this.updateToolTipForChart_(event, eventTimestamp, this.charts[i]);
+        this.updateToolTipForChart_(event, svg, eventTimestamp, this.charts[i]);
         return;
       }
     }
@@ -785,16 +803,16 @@ class EventBands {
    * be found.
    *
    * @param {Object} svg tooltip container.
+   * @param {number} yOffset current vertical offset.
    * @param {number} eventTimestamp timestamp of the event.
    * @returns {number} vertical position of the next element.
    */
-  addTimeInfoToTooltip_(svg, eventTimestamp) {
-    var verticalGap = 5;
+  addTimeInfoToTooltip_(svg, yOffset, eventTimestamp) {
     var horizontalGap = 10;
     var fontSize = 12;
     var lineHeight = 16;
 
-    var yOffset = verticalGap + lineHeight;
+    yOffset += lineHeight;
 
     var vsyncTimestamp = this.getVSyncTimestamp_(eventTimestamp);
 
@@ -814,13 +832,78 @@ class EventBands {
   }
 
   /**
+   * Creates and shows tooltip for global events in case they are found around
+   * mouse event position.
+   *
+   * @param {Object} mouse event.
+   * @param {Object} svg tooltip content.
+   * @param (number} eventTimestamp timestamp of event.
+   * @returns {boolean} True in case global events where found and displayed.
+   */
+  updateToolTipForGlobalEvents_(event, svg, eventTimestamp) {
+    var verticalGap = 5;
+    var horizontalGap = 10;
+    var textOffset = 16;
+    var intentOffset = 12;
+    var lineHeight = 16;
+    var fontSize = 12;
+    var width = 220;
+
+    // Try to find closest global events in the range -3..3 pixels. Several
+    // events may stick close each other so let diplay up to 3 closest events.
+    var distanceMcs = 3 * this.resolution;
+    var globalEvents = this.findGlobalEvents_(eventTimestamp, distanceMcs);
+    if (globalEvents.length == 0) {
+      return false;
+    }
+
+    // Show the global events info.
+    var globalEventCnt = Math.min(globalEvents.length, 3);
+    var yOffset = verticalGap;
+    for (var i = 0; i < globalEventCnt; ++i) {
+      var globalEvent = globalEvents[i];
+      var globalEventType = globalEvent[0];
+      var globalEventTimestamp = globalEvent[1];
+      if (globalEventType == 400 /* kVsync */) {
+        // -1 to prevent VSYNC detects itself. In last case, previous VSYNC
+        // would be chosen.
+        globalEventTimestamp -= 1;
+      }
+
+      yOffset = this.addTimeInfoToTooltip_(svg, yOffset, globalEventTimestamp);
+
+      var attributes = eventAttributes[globalEventType];
+      SVG.addText(svg, textOffset, yOffset, fontSize, attributes.name);
+      yOffset += lineHeight;
+      // Render content if exists.
+      if (globalEvent.length > 2) {
+        SVG.addText(
+            svg, textOffset + intentOffset, yOffset, fontSize, globalEvent[2]);
+        yOffset += lineHeight;
+      }
+    }
+
+    if (this.canShowDetailedInfo()) {
+      yOffset += lineHeight;
+      SVG.addText(
+          svg, horizontalGap, yOffset, fontSize, 'Click for detailed info');
+    }
+    yOffset += verticalGap;
+
+    this.showTooltipForEvent_(event, svg, yOffset, width);
+
+    return true;
+  }
+
+  /**
    * Creates and shows tooltip for event band for the position under |event|.
    *
    * @param {Object} mouse event.
+   * @param {Object} svg tooltip content.
    * @param (number} eventTimestamp timestamp of event.
    * @param {Object} active event band.
    */
-  updateToolTipForBand_(event, eventTimestamp, eventBand) {
+  updateToolTipForBand_(event, svg, eventTimestamp, eventBand) {
     var horizontalGap = 10;
     var eventIconOffset = 24;
     var eventIconRadius = 4;
@@ -830,12 +913,6 @@ class EventBands {
     var lineHeight = 16;
     var fontSize = 12;
     var width = 220;
-
-    var svg = document.createElementNS(svgNS, 'svg');
-    svg.setAttributeNS(
-        'http://www.w3.org/2000/xmlns/', 'xmlns:xlink',
-        'http://www.w3.org/1999/xlink');
-    this.tooltip.appendChild(svg);
 
     // Find the event under the cursor. |index| points to the current event
     // and |nextIndex| points to the next event.
@@ -848,32 +925,7 @@ class EventBands {
     }
     var index = eventBand.getNextEvent(nextIndex, -1 /* direction */);
 
-    // Try to find closest global event in the range -200..200 mcs from
-    // |eventTimestamp|.
-    var globalEvent = this.findGlobalEvent_(eventTimestamp, 200 /* distance */);
-    if (globalEvent) {
-      // Show the global event info.
-      var globalEventType = globalEvent[0];
-      var globalEventTimestamp = globalEvent[1];
-      if (globalEventType == 400 /* kVsync */) {
-        // -1 to prevent VSYNC detects itself. In last case, previous VSYNC
-        // would be chosen.
-        globalEventTimestamp -= 1;
-      }
-
-      var yOffset = this.addTimeInfoToTooltip_(svg, globalEventTimestamp);
-
-      var attributes = eventAttributes[globalEventType];
-      SVG.addText(svg, horizontalGap, yOffset, fontSize, attributes.name);
-      yOffset += lineHeight;
-      // Render content if exists.
-      if (globalEvent.length > 2) {
-        SVG.addText(
-            svg, horizontalGap + intentOffset, yOffset, fontSize,
-            globalEvent[2]);
-        yOffset += lineHeight;
-      }
-    } else if (index < 0 || eventBand.isEndOfSequence(index)) {
+    if (index < 0 || eventBand.isEndOfSequence(index)) {
       // In case cursor points to idle event, show its interval.
       var yOffset = verticalGap + lineHeight;
       var startIdle = index < 0 ? 0 : eventBand.events[index][1];
@@ -896,7 +948,8 @@ class EventBands {
       }
 
       var sequenceTimestamp = eventBand.events[index][1];
-      var yOffset = this.addTimeInfoToTooltip_(svg, sequenceTimestamp);
+      var yOffset =
+          this.addTimeInfoToTooltip_(svg, verticalGap, sequenceTimestamp);
 
       var lastTimestamp = sequenceTimestamp;
       // Scan for the entries to show.
@@ -933,23 +986,24 @@ class EventBands {
       }
     }
     if (this.canShowDetailedInfo()) {
+      yOffset += lineHeight;
       SVG.addText(
           svg, horizontalGap, yOffset, fontSize, 'Click for detailed info');
-      yOffset += lineHeight;
     }
     yOffset += verticalGap;
 
-    this.showTooltipForEvent_(event, yOffset, width);
+    this.showTooltipForEvent_(event, svg, yOffset, width);
   }
 
   /**
    * Creates and show tooltip for event chart for the position under |event|.
    *
    * @param {Object} mouse event.
+   * @param {Object} svg tooltip content.
    * @param (number} eventTimestamp timestamp of event.
    * @param {Object} active event chart.
    */
-  updateToolTipForChart_(event, eventTimestamp, chart) {
+  updateToolTipForChart_(event, svg, eventTimestamp, chart) {
     var horizontalGap = 10;
     var iconRadius = 4;
     var iconOffset = 24;
@@ -960,13 +1014,7 @@ class EventBands {
     var width = 150;
     var iconRadius = 4;
 
-    var svg = document.createElementNS(svgNS, 'svg');
-    svg.setAttributeNS(
-        'http://www.w3.org/2000/xmlns/', 'xmlns:xlink',
-        'http://www.w3.org/1999/xlink');
-    this.tooltip.appendChild(svg);
-
-    var yOffset = this.addTimeInfoToTooltip_(svg, eventTimestamp);
+    var yOffset = this.addTimeInfoToTooltip_(svg, verticalGap, eventTimestamp);
 
     for (var i = 0; i < chart.sourcesWithBounds.length; ++i) {
       var sourceWithBounds = chart.sourcesWithBounds[i];
@@ -994,18 +1042,20 @@ class EventBands {
       yOffset += lineHeight;
     }
 
-    this.tooltip.style.height = yOffset + 'px';
-    this.showTooltipForEvent_(event, yOffset, width);
+    this.showTooltipForEvent_(event, svg, yOffset, width);
   }
 
   /**
    * Helper that shows tooltip after filling its content.
    *
    * @param {Object} mouse event, used to determine the position of tooltip.
+   * @param {Object} svg content of tooltip.
    * @param {number} height of the tooltip view.
    * @param {number} width of the tooltip view.
    */
-  showTooltipForEvent_(event, height, width) {
+  showTooltipForEvent_(event, svg, height, width) {
+    svg.setAttribute('height', height + 'px');
+    svg.setAttribute('width', width + 'px');
     this.tooltip.style.left = event.clientX + 'px';
     this.tooltip.style.top = event.clientY + 'px';
     this.tooltip.style.height = height + 'px';
