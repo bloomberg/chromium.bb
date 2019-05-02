@@ -21,17 +21,11 @@ bool IsReceivingEnabled();
 // flags are enabled.
 bool IsSendingEnabled();
 
-// Return true if the the sync mode is paused.
-bool IsSyncPaused(Profile* profile);
-
 // Returns true if the SendTabToSelf sync datatype is active.
 bool IsUserSyncTypeActive(Profile* profile);
 
 // Returns true if the user syncing on two or more devices.
 bool IsSyncingOnMultipleDevices(Profile* profile);
-
-// Returns true if the flag and sync setting requirements are met.
-bool IsSettingRequirementsMet(Profile* profile);
 
 // Returns true if the tab and web content requirements are met:
 //  User is viewing an HTTP or HTTPS page.

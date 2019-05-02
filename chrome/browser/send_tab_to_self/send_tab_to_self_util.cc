@@ -14,7 +14,6 @@
 #include "components/sync/device_info/device_info.h"
 #include "components/sync/device_info/device_info_sync_service.h"
 #include "components/sync/device_info/device_info_tracker.h"
-#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
@@ -34,13 +33,6 @@ bool IsSendingEnabled() {
          base::FeatureList::IsEnabled(kSendTabToSelfShowSendingUI);
 }
 
-bool IsSyncPaused(Profile* profile) {
-  syncer::ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetAsProfileSyncServiceForProfile(profile);
-  return service->GetDisableReasons() ==
-         syncer::SyncService::DISABLE_REASON_PAUSED;
-}
-
 bool IsUserSyncTypeActive(Profile* profile) {
   SendTabToSelfSyncService* service =
       SendTabToSelfSyncServiceFactory::GetForProfile(profile);
@@ -58,12 +50,6 @@ bool IsSyncingOnMultipleDevices(Profile* profile) {
          device_sync_service->GetDeviceInfoTracker()->CountActiveDevices() > 1;
 }
 
-bool IsSettingRequirementsMet(Profile* profile) {
-  // If sending is enabled, then so is receiving.
-  return IsSendingEnabled() && !IsSyncPaused(profile) &&
-         IsUserSyncTypeActive(profile) && IsSyncingOnMultipleDevices(profile);
-}
-
 bool IsContentRequirementsMet(const GURL& url, Profile* profile) {
   bool is_http_or_https = url.SchemeIsHTTPOrHTTPS();
   bool is_native_page = url.SchemeIs(content::kChromeUIScheme);
@@ -79,7 +65,9 @@ bool ShouldOfferFeature(content::WebContents* web_contents) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
 
-  return IsSettingRequirementsMet(profile) &&
+  // If sending is enabled, then so is receiving.
+  return IsSendingEnabled() && IsUserSyncTypeActive(profile) &&
+         IsSyncingOnMultipleDevices(profile) &&
          IsContentRequirementsMet(web_contents->GetURL(), profile);
 }
 
@@ -89,7 +77,8 @@ bool ShouldOfferFeatureForLink(content::WebContents* web_contents,
     return false;
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  return IsSettingRequirementsMet(profile) &&
+  return IsSendingEnabled() && IsUserSyncTypeActive(profile) &&
+         IsSyncingOnMultipleDevices(profile) &&
          (IsContentRequirementsMet(web_contents->GetURL(), profile) ||
           IsContentRequirementsMet(link_url, profile));
 }
