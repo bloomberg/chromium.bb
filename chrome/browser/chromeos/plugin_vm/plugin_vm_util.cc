@@ -70,10 +70,11 @@ bool IsPluginVmEnabled(Profile* profile) {
   return IsPluginVmAllowedForProfile(profile) && IsPluginVmConfigured(profile);
 }
 
-// TODO(timloh): Implement detection for Plugin VM windows, e.g. by setting an
-// exo application id (crbug.com/940319).
 bool IsPluginVmWindow(const aura::Window* window) {
-  return false;
+  const std::string* app_id = exo::GetShellApplicationId(window);
+  if (!app_id)
+    return false;
+  return *app_id == "org.chromium.plugin_vm_ui";
 }
 
 void OnPluginVmDispatcherStarted(Profile* profile,
