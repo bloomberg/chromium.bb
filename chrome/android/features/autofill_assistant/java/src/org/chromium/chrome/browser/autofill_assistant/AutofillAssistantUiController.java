@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
-import static org.chromium.chrome.browser.autofill_assistant.carousel.AssistantCarouselModel.ALIGNMENT;
-
 import android.support.annotation.Nullable;
 
 import org.chromium.base.annotations.CalledByNative;
@@ -229,7 +227,6 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
                     disabled[i], () -> safeNativeOnSuggestionSelected(suggestionIndex)));
         }
         AssistantCarouselModel model = getModel().getSuggestionsModel();
-        model.set(ALIGNMENT, AssistantCarouselModel.Alignment.START);
         setChips(model, chips);
     }
 
@@ -284,10 +281,6 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
     @CalledByNative
     private void setActions(List<AssistantChip> chips) {
         AssistantCarouselModel model = getModel().getActionsModel();
-        model.set(ALIGNMENT,
-                (chips.size() == 1 && chips.get(0).getType() != Type.BUTTON_FILLED_BLUE)
-                        ? AssistantCarouselModel.Alignment.CENTER
-                        : AssistantCarouselModel.Alignment.END);
         setChips(model, chips);
     }
 
