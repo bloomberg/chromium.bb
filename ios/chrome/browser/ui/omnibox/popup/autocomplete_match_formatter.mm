@@ -11,6 +11,7 @@
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/suggestion_answer.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_util.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
@@ -42,6 +43,12 @@ UIColor* SuggestionTextColorIncognito() {
 
 UIColor* DimColorIncognito() {
   return [UIColor whiteColor];
+}
+
+// Temporary convenience accessor for this flag.
+// Cleanup along with feature: crbug.com/945334.
+bool ShouldUseNewFormatting() {
+  return base::FeatureList::IsEnabled(kNewOmniboxPopupLayout);
 }
 }  // namespace
 
@@ -101,8 +108,12 @@ UIColor* DimColorIncognito() {
 
   NSAttributedString* detailAttributedText = nil;
   if (self.hasAnswer) {
-    detailAttributedText =
-        [self attributedStringWithAnswerLine:_match.answer->second_line()];
+    const SuggestionAnswer::ImageLine& detailTextLine =
+        ShouldUseNewFormatting() && !_match.answer->IsExceptedFromLineReversal()
+            ? _match.answer->first_line()
+            : _match.answer->second_line();
+    detailAttributedText = [self attributedStringWithAnswerLine:detailTextLine
+                                         useDeemphasizedStyling:YES];
   } else {
     const ACMatchClassifications* classifications =
         self.isURL ? &_match.contents_class : nullptr;
@@ -155,8 +166,12 @@ UIColor* DimColorIncognito() {
   NSAttributedString* attributedText = nil;
 
   if (self.hasAnswer) {
-    attributedText =
-        [self attributedStringWithAnswerLine:_match.answer->first_line()];
+    const SuggestionAnswer::ImageLine& textLine =
+        ShouldUseNewFormatting() && !_match.answer->IsExceptedFromLineReversal()
+            ? _match.answer->second_line()
+            : _match.answer->first_line();
+    attributedText = [self attributedStringWithAnswerLine:textLine
+                                   useDeemphasizedStyling:NO];
   } else {
     const ACMatchClassifications* textClassifications =
         !self.isURL ? &_match.contents_class : &_match.description_class;
@@ -219,27 +234,33 @@ UIColor* DimColorIncognito() {
 #pragma mark helpers
 
 // Create a string to display for an answer line.
-- (NSMutableAttributedString*)attributedStringWithAnswerLine:
-    (const SuggestionAnswer::ImageLine&)line {
+- (NSMutableAttributedString*)
+    attributedStringWithAnswerLine:(const SuggestionAnswer::ImageLine&)line
+            useDeemphasizedStyling:(BOOL)useDeemphasizedStyling {
   NSMutableAttributedString* result =
       [[NSMutableAttributedString alloc] initWithString:@""];
 
   for (const auto field : line.text_fields()) {
-    [result appendAttributedString:[self attributedStringForTextfield:&field]];
+    [result appendAttributedString:
+                [self attributedStringForTextfield:&field
+                            useDeemphasizedStyling:useDeemphasizedStyling]];
   }
 
   NSAttributedString* spacer =
       [[NSAttributedString alloc] initWithString:@"  "];
   if (line.additional_text() != nil) {
     [result appendAttributedString:spacer];
-    [result appendAttributedString:
-                [self attributedStringForTextfield:line.additional_text()]];
+    NSAttributedString* extra =
+        [self attributedStringForTextfield:line.additional_text()
+                    useDeemphasizedStyling:useDeemphasizedStyling];
+    [result appendAttributedString:extra];
   }
 
   if (line.status_text() != nil) {
     [result appendAttributedString:spacer];
     [result appendAttributedString:
-                [self attributedStringForTextfield:line.status_text()]];
+                [self attributedStringForTextfield:line.status_text()
+                            useDeemphasizedStyling:useDeemphasizedStyling]];
   }
 
   return result;
@@ -247,77 +268,10 @@ UIColor* DimColorIncognito() {
 
 // Create a string to display for a textual part ("textfield") of a suggestion
 // answer.
-- (NSAttributedString*)attributedStringForTextfield:
-    (const SuggestionAnswer::TextField*)field {
+- (NSAttributedString*)
+    attributedStringForTextfield:(const SuggestionAnswer::TextField*)field
+          useDeemphasizedStyling:(BOOL)useDeemphasizedStyling {
   const base::string16& string = field->text();
-  const int type = field->type();
-
-  NSDictionary* attributes = nil;
-
-  // Answer types, sizes and colors specified at http://goto.google.com/ais_api.
-  switch (type) {
-    case SuggestionAnswer::TOP_ALIGNED:
-      attributes = @{
-        NSFontAttributeName : [UIFont systemFontOfSize:12],
-        NSBaselineOffsetAttributeName : @10.0f,
-        NSForegroundColorAttributeName : [UIColor grayColor],
-      };
-      break;
-    case SuggestionAnswer::DESCRIPTION_POSITIVE:
-      attributes = @{
-        NSFontAttributeName : [UIFont systemFontOfSize:16],
-        NSForegroundColorAttributeName : [UIColor colorWithRed:11 / 255.0
-                                                         green:128 / 255.0
-                                                          blue:67 / 255.0
-                                                         alpha:1.0],
-      };
-      break;
-    case SuggestionAnswer::DESCRIPTION_NEGATIVE:
-      attributes = @{
-        NSFontAttributeName : [UIFont systemFontOfSize:16],
-        NSForegroundColorAttributeName : [UIColor colorWithRed:197 / 255.0
-                                                         green:57 / 255.0
-                                                          blue:41 / 255.0
-                                                         alpha:1.0],
-      };
-      break;
-    case SuggestionAnswer::PERSONALIZED_SUGGESTION:
-      attributes = @{
-        NSFontAttributeName : [UIFont systemFontOfSize:16],
-      };
-      break;
-    case SuggestionAnswer::ANSWER_TEXT_MEDIUM:
-      attributes = @{
-        NSFontAttributeName : [UIFont systemFontOfSize:20],
-
-        NSForegroundColorAttributeName : [UIColor grayColor],
-      };
-      break;
-    case SuggestionAnswer::ANSWER_TEXT_LARGE:
-      attributes = @{
-        NSFontAttributeName : [UIFont systemFontOfSize:24],
-        NSForegroundColorAttributeName : [UIColor grayColor],
-      };
-      break;
-    case SuggestionAnswer::SUGGESTION_SECONDARY_TEXT_SMALL:
-      attributes = @{
-        NSFontAttributeName : [UIFont systemFontOfSize:12],
-        NSForegroundColorAttributeName : [UIColor grayColor],
-      };
-      break;
-    case SuggestionAnswer::SUGGESTION_SECONDARY_TEXT_MEDIUM:
-      attributes = @{
-        NSFontAttributeName : [UIFont systemFontOfSize:14],
-        NSForegroundColorAttributeName : [UIColor grayColor],
-      };
-      break;
-    case SuggestionAnswer::SUGGESTION:
-    // Fall through.
-    default:
-      attributes = @{
-        NSFontAttributeName : [UIFont systemFontOfSize:16],
-      };
-  }
 
   NSString* unescapedString =
       base::SysUTF16ToNSString(net::UnescapeForHTML(string));
@@ -329,8 +283,167 @@ UIColor* DimColorIncognito() {
       [unescapedString stringByReplacingOccurrencesOfString:@"</b>"
                                                  withString:@""];
 
+  NSDictionary* attributes =
+      ShouldUseNewFormatting()
+          ? [self formattingAttributesForSuggestionStyle:field->style()
+                                  useDeemphasizedStyling:useDeemphasizedStyling]
+          : [self attributesForSuggestionType:field->type()];
+
   return [[NSAttributedString alloc] initWithString:unescapedString
                                          attributes:attributes];
+}
+
+- (NSDictionary<NSAttributedStringKey, id>*)attributesForSuggestionType:
+    (int)type {
+  DCHECK(!ShouldUseNewFormatting());
+  // Answer types, sizes and colors specified at http://goto.google.com/ais_api.
+  switch (type) {
+    case SuggestionAnswer::TOP_ALIGNED:
+      return @{
+        NSFontAttributeName : [UIFont systemFontOfSize:12],
+        NSBaselineOffsetAttributeName : @10.0f,
+        NSForegroundColorAttributeName : [UIColor grayColor],
+      };
+    case SuggestionAnswer::DESCRIPTION_POSITIVE:
+      return @{
+        NSFontAttributeName : [UIFont systemFontOfSize:16],
+        NSForegroundColorAttributeName : [UIColor colorWithRed:11 / 255.0
+                                                         green:128 / 255.0
+                                                          blue:67 / 255.0
+                                                         alpha:1.0],
+      };
+    case SuggestionAnswer::DESCRIPTION_NEGATIVE:
+      return @{
+        NSFontAttributeName : [UIFont systemFontOfSize:16],
+        NSForegroundColorAttributeName : [UIColor colorWithRed:197 / 255.0
+                                                         green:57 / 255.0
+                                                          blue:41 / 255.0
+                                                         alpha:1.0],
+      };
+    case SuggestionAnswer::PERSONALIZED_SUGGESTION:
+      return @{
+        NSFontAttributeName : [UIFont systemFontOfSize:16],
+      };
+    case SuggestionAnswer::ANSWER_TEXT_MEDIUM:
+      return @{
+        NSFontAttributeName : [UIFont systemFontOfSize:20],
+
+        NSForegroundColorAttributeName : [UIColor grayColor],
+      };
+    case SuggestionAnswer::ANSWER_TEXT_LARGE:
+      return @{
+        NSFontAttributeName : [UIFont systemFontOfSize:24],
+        NSForegroundColorAttributeName : [UIColor grayColor],
+      };
+    case SuggestionAnswer::SUGGESTION_SECONDARY_TEXT_SMALL:
+      return @{
+        NSFontAttributeName : [UIFont systemFontOfSize:12],
+        NSForegroundColorAttributeName : [UIColor grayColor],
+      };
+    case SuggestionAnswer::SUGGESTION_SECONDARY_TEXT_MEDIUM:
+      return @{
+        NSFontAttributeName : [UIFont systemFontOfSize:14],
+        NSForegroundColorAttributeName : [UIColor grayColor],
+      };
+    case SuggestionAnswer::SUGGESTION:
+      // Fall through.
+    default:
+      return @{
+        NSFontAttributeName : [UIFont systemFontOfSize:16],
+      };
+  }
+}
+
+// Return correct formatting attributes for the given style.
+// |useDeemphasizedStyling| is necessary because some styles (e.g. SUPERIOR)
+// should take their color from the surrounding line; they don't have a fixed
+// color.
+- (NSDictionary<NSAttributedStringKey, id>*)
+    formattingAttributesForSuggestionStyle:(SuggestionAnswer::TextStyle)style
+                    useDeemphasizedStyling:(BOOL)useDeemphasizedStyling {
+  DCHECK(ShouldUseNewFormatting());
+  UIFontDescriptor* defaultFontDescriptor =
+      useDeemphasizedStyling
+          ? [[UIFontDescriptor
+                preferredFontDescriptorWithTextStyle:UIFontTextStyleSubheadline]
+                fontDescriptorWithSymbolicTraits:
+                    UIFontDescriptorTraitTightLeading]
+          : [UIFontDescriptor
+                preferredFontDescriptorWithTextStyle:UIFontTextStyleBody];
+  UIColor* defaultColor =
+      useDeemphasizedStyling ? UIColor.grayColor : UIColor.blackColor;
+
+  switch (style) {
+    case SuggestionAnswer::TextStyle::NORMAL:
+      return @{
+        NSFontAttributeName : [UIFont fontWithDescriptor:defaultFontDescriptor
+                                                    size:0],
+        NSForegroundColorAttributeName : defaultColor,
+      };
+    case SuggestionAnswer::TextStyle::NORMAL_DIM:
+      return @{
+        NSFontAttributeName : [UIFont fontWithDescriptor:defaultFontDescriptor
+                                                    size:0],
+        NSForegroundColorAttributeName : UIColor.grayColor,
+      };
+    case SuggestionAnswer::TextStyle::SECONDARY:
+      return @{
+        NSFontAttributeName : [UIFont fontWithDescriptor:defaultFontDescriptor
+                                                    size:0],
+        NSForegroundColorAttributeName : UIColor.grayColor,
+      };
+    case SuggestionAnswer::TextStyle::BOLD: {
+      UIFontDescriptor* boldFontDescriptor = [defaultFontDescriptor
+          fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitBold];
+      return @{
+        NSFontAttributeName : [UIFont fontWithDescriptor:boldFontDescriptor
+                                                    size:0.0],
+        NSForegroundColorAttributeName : defaultColor,
+      };
+    }
+    case SuggestionAnswer::TextStyle::POSITIVE:
+      return @{
+        NSFontAttributeName : [UIFont fontWithDescriptor:defaultFontDescriptor
+                                                    size:0],
+        NSForegroundColorAttributeName : [UIColor colorWithRed:11 / 255.0
+                                                         green:128 / 255.0
+                                                          blue:67 / 255.0
+                                                         alpha:1.0],
+      };
+    case SuggestionAnswer::TextStyle::NEGATIVE:
+      return @{
+        NSFontAttributeName : [UIFont fontWithDescriptor:defaultFontDescriptor
+                                                    size:0],
+        NSForegroundColorAttributeName : [UIColor colorWithRed:197 / 255.0
+                                                         green:57 / 255.0
+                                                          blue:41 / 255.0
+                                                         alpha:1.0],
+      };
+    case SuggestionAnswer::TextStyle::SUPERIOR: {
+      // Calculate a slightly smaller font. The ratio here is somewhat
+      // arbitrary. Proportions from 5/9 to 5/7 all look pretty good.
+      CGFloat ratio = 5.0 / 9.0;
+      UIFont* defaultFont = [UIFont fontWithDescriptor:defaultFontDescriptor
+                                                  size:0];
+      UIFontDescriptor* superiorFontDescriptor = [defaultFontDescriptor
+          fontDescriptorWithSize:defaultFontDescriptor.pointSize * ratio];
+      CGFloat baselineOffset =
+          defaultFont.capHeight - defaultFont.capHeight * ratio;
+      return @{
+        NSFontAttributeName : [UIFont fontWithDescriptor:superiorFontDescriptor
+                                                    size:0],
+        NSBaselineOffsetAttributeName :
+            [NSNumber numberWithFloat:baselineOffset],
+        NSForegroundColorAttributeName : defaultColor,
+      };
+    }
+    case SuggestionAnswer::TextStyle::NONE:
+      return @{
+        NSFontAttributeName : [UIFont fontWithDescriptor:defaultFontDescriptor
+                                                    size:0],
+        NSForegroundColorAttributeName : defaultColor,
+      };
+  }
 }
 
 // Create a formatted string given text and classifications.
@@ -343,8 +456,16 @@ UIColor* DimColorIncognito() {
   if (text == nil)
     return nil;
 
-  UIFont* fontRef =
-      smallFont ? [UIFont systemFontOfSize:12] : [UIFont systemFontOfSize:17];
+  UIFont* fontRef;
+  if (ShouldUseNewFormatting()) {
+    fontRef =
+        smallFont
+            ? [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline]
+            : [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+  } else {
+    fontRef =
+        smallFont ? [UIFont systemFontOfSize:15] : [UIFont systemFontOfSize:17];
+  }
 
   NSMutableAttributedString* styledText =
       [[NSMutableAttributedString alloc] initWithString:text];
@@ -357,8 +478,17 @@ UIColor* DimColorIncognito() {
   [styledText addAttributes:dict range:NSMakeRange(0, [text length])];
 
   if (classifications != NULL) {
-    UIFont* boldFontRef = [UIFont systemFontOfSize:fontRef.pointSize
-                                            weight:UIFontWeightMedium];
+    UIFont* boldFontRef;
+    if (ShouldUseNewFormatting()) {
+      UIFontDescriptor* fontDescriptor = fontRef.fontDescriptor;
+      UIFontDescriptor* boldFontDescriptor = [fontDescriptor
+          fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitBold];
+      boldFontRef = [UIFont fontWithDescriptor:boldFontDescriptor size:0];
+    } else {
+      UIFontWeight boldFontWeight = UIFontWeightMedium;
+      boldFontRef = [UIFont systemFontOfSize:fontRef.pointSize
+                                      weight:boldFontWeight];
+    }
 
     for (ACMatchClassifications::const_iterator i = classifications->begin();
          i != classifications->end(); ++i) {

@@ -95,6 +95,7 @@ source_set("popup_internal") {
     "//base",
     "//components/omnibox/browser",
     "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/omnibox:omnibox_util",
     "//ios/chrome/browser/ui/util",
     "//ios/third_party/material_components_ios",
