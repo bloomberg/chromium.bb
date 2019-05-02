@@ -151,7 +151,8 @@ class COMPONENT_EXPORT(SESSION_MANAGER) SessionManagerClient {
   virtual void StartSession(
       const cryptohome::AccountIdentifier& cryptohome_id) = 0;
 
-  // Stops the current session.
+  // Stops the current session. Don't call directly unless there's no user on
+  // the device. Use SessionTerminationManager::StopSession instead.
   virtual void StopSession() = 0;
 
   // Starts the factory reset.

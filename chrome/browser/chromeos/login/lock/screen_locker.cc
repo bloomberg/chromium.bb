@@ -54,6 +54,7 @@
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/login/auth/authenticator.h"
 #include "chromeos/login/auth/extended_authenticator.h"
+#include "chromeos/login/session/session_termination_manager.h"
 #include "components/password_manager/core/browser/hash_password_manager.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/core/session_manager_observer.h"
@@ -524,8 +525,8 @@ void ScreenLocker::HandleShowLockScreenRequest() {
     // avoid complications with displaying the lock screen over the login
     // screen while remaining secure in the case the user walks away during
     // the sign-in steps. See crbug.com/112225 and crbug.com/110933.
-    VLOG(1) << "Calling session manager's StopSession D-Bus method";
-    SessionManagerClient::Get()->StopSession();
+    VLOG(1) << "The user session cannot be locked, logging out";
+    SessionTerminationManager::Get()->StopSession();
   }
 }
 

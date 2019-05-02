@@ -78,6 +78,7 @@
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/login/auth/key.h"
+#include "chromeos/login/session/session_termination_manager.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_util.h"
@@ -120,6 +121,8 @@
 #include "ui/views/widget/widget.h"
 
 using PolicyFetchResult = policy::PreSigninPolicyFetcher::PolicyFetchResult;
+using RebootOnSignOutPolicy =
+    enterprise_management::DeviceRebootOnUserSignoutProto;
 
 namespace apu = arc::policy_util;
 
@@ -406,6 +409,15 @@ void ExistingUserController::Init(const user_manager::UserList& users) {
 
 void ExistingUserController::UpdateLoginDisplay(
     const user_manager::UserList& users) {
+  int reboot_on_signout_policy = -1;
+  cros_settings_->GetInteger(kDeviceRebootOnUserSignout,
+                             &reboot_on_signout_policy);
+  if (reboot_on_signout_policy != -1 &&
+      reboot_on_signout_policy !=
+          RebootOnSignOutPolicy::REBOOT_ON_SIGNOUT_MODE_UNSPECIFIED &&
+      reboot_on_signout_policy != RebootOnSignOutPolicy::NEVER) {
+    SessionTerminationManager::Get()->RebootIfNecessary();
+  }
   bool show_users_on_signin;
   user_manager::UserList filtered_users;
 
@@ -856,12 +868,13 @@ void ExistingUserController::OnAuthFailure(const AuthFailure& failure) {
       last_login_attempt_account_id_);
   if (failure.reason() == AuthFailure::OWNER_REQUIRED) {
     ShowError(IDS_LOGIN_ERROR_OWNER_REQUIRED, error);
-    // Using Untretained here is safe because SessionManagerClient is destroyed
-    // after the task runner, in ChromeBrowserMainParts::PostDestroyThreads().
+    // Using Untretained here is safe because SessionTerminationManager is
+    // destroyed after the task runner, in
+    // ChromeBrowserMainParts::PostDestroyThreads().
     base::PostDelayedTaskWithTraits(
         FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(&SessionManagerClient::StopSession,
-                       base::Unretained(SessionManagerClient::Get())),
+        base::BindOnce(&SessionTerminationManager::StopSession,
+                       base::Unretained(SessionTerminationManager::Get())),
         base::TimeDelta::FromMilliseconds(kSafeModeRestartUiDelayMs));
   } else if (failure.reason() == AuthFailure::TPM_ERROR) {
     ShowTPMError();

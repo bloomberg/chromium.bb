@@ -16,6 +16,7 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 #include "chromeos/login/login_state/login_state.h"
+#include "chromeos/login/session/session_termination_manager.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_service_manager.h"
@@ -96,6 +97,8 @@ class LockToSingleUserManagerTest : public BrowserWithTestWindowTest {
       base::WrapUnique(fake_user_manager_)};
   std::unique_ptr<arc::ArcServiceManager> arc_service_manager_;
   std::unique_ptr<arc::ArcSessionManager> arc_session_manager_;
+  // Required for initialization.
+  chromeos::SessionTerminationManager termination_manager_;
   std::unique_ptr<LockToSingleUserManager> lock_to_single_user_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(LockToSingleUserManagerTest);
