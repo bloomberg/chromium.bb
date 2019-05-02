@@ -218,7 +218,7 @@ void Portal::PostMessageToGuest(
 }
 
 void Portal::PostMessageToHost(
-    const std::string& message,
+    blink::TransferableMessage message,
     const base::Optional<url::Origin>& target_origin) {
   DCHECK(GetPortalContents());
   if (target_origin) {
@@ -226,7 +226,8 @@ void Portal::PostMessageToHost(
       return;
   }
   client().ForwardMessageFromGuest(
-      message, GetPortalContents()->GetMainFrame()->GetLastCommittedOrigin(),
+      std::move(message),
+      GetPortalContents()->GetMainFrame()->GetLastCommittedOrigin(),
       target_origin);
 }
 

@@ -424,36 +424,22 @@ void DOMWindow::DoPostMessage(scoped_refptr<SerializedScriptValue> message,
 
   Document* source_document = source->document();
 
-  const String& target_origin = options->targetOrigin();
+  // Capture the source of the message.  We need to do this synchronously
+  // in order to capture the source of the message correctly.
+  if (!source_document)
+    return;
 
   // Compute the target origin.  We need to do this synchronously in order
   // to generate the SyntaxError exception correctly.
-  scoped_refptr<const SecurityOrigin> target;
-  if (target_origin == "/") {
-    if (!source_document)
-      return;
-    target = source_document->GetSecurityOrigin();
-  } else if (target_origin != "*") {
-    target = SecurityOrigin::CreateFromString(target_origin);
-    // It doesn't make sense target a postMessage at a unique origin
-    // because there's no way to represent a unique origin in a string.
-    if (target->IsOpaque()) {
-      exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
-                                        "Invalid target origin '" +
-                                            target_origin +
-                                            "' in a call to 'postMessage'.");
-      return;
-    }
-  }
+  scoped_refptr<const SecurityOrigin> target =
+      PostMessageHelper::GetTargetOrigin(options, *source_document,
+                                         exception_state);
+  if (exception_state.HadException())
+    return;
 
   auto channels = MessagePort::DisentanglePorts(GetExecutionContext(), ports,
                                                 exception_state);
   if (exception_state.HadException())
-    return;
-
-  // Capture the source of the message.  We need to do this synchronously
-  // in order to capture the source of the message correctly.
-  if (!source_document)
     return;
 
   const SecurityOrigin* security_origin = source_document->GetSecurityOrigin();

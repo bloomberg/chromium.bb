@@ -57,7 +57,7 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement,
 
   // blink::mojom::PortalClient implementation
   void ForwardMessageFromGuest(
-      const String& message,
+      BlinkTransferableMessage message,
       const scoped_refptr<const SecurityOrigin>& source_origin,
       const scoped_refptr<const SecurityOrigin>& target_origin) override;
 

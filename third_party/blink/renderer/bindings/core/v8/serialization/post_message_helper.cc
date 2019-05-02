@@ -5,8 +5,10 @@
 #include "third_party/blink/renderer/bindings/core/v8/serialization/post_message_helper.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/window_post_message_options.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/core/messaging/post_message_options.h"
 
@@ -98,6 +100,30 @@ PostMessageHelper::CreateUserActivationSnapshot(
     }
   }
   return nullptr;
+}
+
+// static
+scoped_refptr<const SecurityOrigin> PostMessageHelper::GetTargetOrigin(
+    const WindowPostMessageOptions* options,
+    const Document& source_document,
+    ExceptionState& exception_state) {
+  const String& target_origin = options->targetOrigin();
+  if (target_origin == "/")
+    return source_document.GetSecurityOrigin();
+  if (target_origin == "*")
+    return nullptr;
+  scoped_refptr<const SecurityOrigin> target =
+      SecurityOrigin::CreateFromString(target_origin);
+  // It doesn't make sense target a postMessage at an opaque origin
+  // because there's no way to represent an opaque origin in a string.
+  if (target->IsOpaque()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
+                                      "Invalid target origin '" +
+                                          target_origin +
+                                          "' in a call to 'postMessage'.");
+    return nullptr;
+  }
+  return target;
 }
 
 }  // namespace blink

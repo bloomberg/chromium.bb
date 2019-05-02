@@ -33,7 +33,7 @@ interface Portal {
 interface PortalClient {
   // Forwards message sent from the portal's guest to the portal's host
   // HTMLPortalElement.
-  ForwardMessageFromGuest(string message,
+  ForwardMessageFromGuest(TransferableMessage message,
                           url.mojom.Origin source_origin,
                           url.mojom.Origin? target_origin);
 };
@@ -45,5 +45,5 @@ interface PortalHost {
   // the portal's host HTMLPortalElement. |targetOrigin| indicates which origin
   // the message can be delivered to, and if null, it indicates that the message
   // can be delivered to any origin.
-  PostMessageToHost(string message, url.mojom.Origin? target_origin);
+  PostMessageToHost(TransferableMessage message, url.mojom.Origin? target_origin);
 };

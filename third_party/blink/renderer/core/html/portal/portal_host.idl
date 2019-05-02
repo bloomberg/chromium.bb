@@ -6,8 +6,8 @@
 
 [Exposed=Window, RuntimeEnabled=Portals]
 interface PortalHost : EventTarget {
-  [RaisesException] void postMessage(DOMString message, DOMString targetOrigin,
-                                     optional sequence<object> transfer = []);
-  [RaisesException] void postMessage(DOMString message,
-                                     optional WindowPostMessageOptions options);
+  [RaisesException, CallWith=ScriptState] void postMessage(any message, DOMString targetOrigin,
+                                                           optional sequence<object> transfer = []);
+  [RaisesException, CallWith=ScriptState] void postMessage(any message,
+                                                           optional WindowPostMessageOptions options);
 };

@@ -69,7 +69,7 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
 
   // blink::mojom::PortalHost implementation
   void PostMessageToHost(
-      const std::string& message,
+      blink::TransferableMessage message,
       const base::Optional<url::Origin>& target_origin) override;
 
   // WebContentsObserver overrides.

@@ -44,11 +44,13 @@ class CORE_EXPORT PortalHost : public EventTargetWithInlineData,
   void OnPortalActivated();
 
   // idl implementation
-  void postMessage(const String& message,
+  void postMessage(ScriptState* script_state,
+                   const ScriptValue& message,
                    const String& target_origin,
                    Vector<ScriptValue>& transfer,
                    ExceptionState& exception_state);
-  void postMessage(const String& message,
+  void postMessage(ScriptState* script_state,
+                   const ScriptValue& message,
                    const WindowPostMessageOptions* options,
                    ExceptionState& exception_state);
 
