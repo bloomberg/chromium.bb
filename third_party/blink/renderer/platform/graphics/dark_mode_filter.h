@@ -6,6 +6,7 @@
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/dark_mode_settings.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
+#include "third_party/blink/renderer/platform/graphics/lab_color_space.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 class SkColorFilter;
@@ -30,11 +31,14 @@ class DarkModeFilter {
   base::Optional<cc::PaintFlags> ApplyToFlagsIfNeeded(
       const cc::PaintFlags& flags);
 
+  Color InvertColor(const Color& color) const;
+
  private:
   DarkModeSettings settings_;
 
   sk_sp<SkColorFilter> default_filter_;
   sk_sp<SkColorFilter> image_filter_;
+  base::Optional<LabColorSpace::RGBLABTransformer> transformer_;
 };
 
 }  // namespace blink

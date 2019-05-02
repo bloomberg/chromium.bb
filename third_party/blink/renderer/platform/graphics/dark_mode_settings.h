@@ -14,6 +14,7 @@ enum class DarkMode {
   kSimpleInvertForTesting,
   kInvertBrightness,
   kInvertLightness,
+  kInvertLightnessLAB,
 };
 
 enum class DarkModeImagePolicy {
