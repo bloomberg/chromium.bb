@@ -33,6 +33,8 @@ from typ import expectations_parser
 path_util.AddDirToPathIfNeeded(path_util.GetChromiumSrcDir(), 'tools', 'perf')
 from chrome_telemetry_build import chromium_config
 
+GPU_CONDITIONS = ['amd', 'arm', 'broadcom', 'hisilicon', 'intel', 'imagination',
+                  'nvidia', 'qualcomm', 'vivante']
 WIN_CONDITIONS = ['xp', 'vista', 'win7', 'win8', 'win10']
 MAC_CONDITIONS = ['leopard', 'snowleopard', 'lion', 'mountainlion',
                   'mavericks', 'yosemite', 'sierra', 'highsierra', 'mojave']
@@ -196,6 +198,12 @@ def _checkTestExpectationsAreForExistingTests(
 
 def _checkTestExpectationsForCollision(expectations, file_name):
   parser = expectations_parser.TaggedTestListParser(expectations)
+  for tag_set in parser.tag_sets:
+    if any(gpu in tag_set for gpu in GPU_CONDITIONS):
+      _map_specific_to_generic.update(
+          {t[0]: t[1] for t in
+           itertools.permutations(tag_set, 2) if (t[0] + '-').startswith(t[1])})
+      break
   tests_to_exps = defaultdict(list)
   master_conflicts_found = False
   for exp in parser.expectations:
@@ -282,7 +290,7 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     finally:
       temp_file.close()
 
-  def testCollisionInTestExpectationsWithGenericAndSpecificTags(self):
+  def testCollisionInTestExpectationsWithSpecifcAndGenericOsTags(self):
     test_expectations = '''# tags: [ mac win linux xp ]
     # tags: [ intel amd nvidia ]
     # tags: [ debug release ]
@@ -292,12 +300,31 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     with self.assertRaises(AssertionError):
       _checkTestExpectationsForCollision(test_expectations, 'test.txt')
 
-  def testNoCollisionBetweenSpecificTags(self):
+  def testNoCollisionBetweenSpecificOsTags(self):
     test_expectations = '''# tags: [ mac win linux xp win7 ]
     # tags: [ intel amd nvidia ]
     # tags: [ debug release ]
     [ intel win7 ] a/b/c/d [ Failure ]
     [ intel xp debug ] a/b/c/d [ Skip ]
+    '''
+    _checkTestExpectationsForCollision(test_expectations, 'test.txt')
+
+  def testCollisionInTestExpectationsWithGpuVendorAndDeviceTags(self):
+    test_expectations = '''# tags: [ mac win linux xp ]
+    # tags: [ intel amd nvidia nvidia-0x01 ]
+    # tags: [ debug release ]
+    [ nvidia win ] a/b/c/d [ Failure ]
+    [ nvidia-0x01 xp debug ] a/b/c/d [ Skip ]
+    '''
+    with self.assertRaises(AssertionError):
+      _checkTestExpectationsForCollision(test_expectations, 'test.txt')
+
+  def testNoCollisionBetweenGpuDeviceTags(self):
+    test_expectations = '''# tags: [ mac win linux xp win7 ]
+    # tags: [ intel amd nvidia nvidia-0x01 ]
+    # tags: [ debug release ]
+    [ nvidia-0x01 win7 ] a/b/c/d [ Failure ]
+    [ nvidia-0x01 xp debug ] a/b/c/d [ Skip ]
     '''
     _checkTestExpectationsForCollision(test_expectations, 'test.txt')
 
