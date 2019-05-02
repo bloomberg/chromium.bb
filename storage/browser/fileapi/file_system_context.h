@@ -285,9 +285,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemContext
                                            const base::FilePath& path) const;
 
 #if defined(OS_CHROMEOS)
-  // Used only on ChromeOS for now.
-  // TODO(https://crbug.com/93417): Remove this function when incognito file
-  // system is active.
+  // Used only on ChromeOS for now. It can be removed when
+  // kEnableFilesystemInIncognito feature flag is removed.
   void EnableTemporaryFileSystemInIncognito();
 #endif
 

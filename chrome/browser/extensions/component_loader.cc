@@ -42,6 +42,7 @@
 #include "extensions/common/manifest_constants.h"
 #include "pdf/buildflags.h"
 #include "printing/buildflags/buildflags.h"
+#include "storage/browser/fileapi/file_system_features.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -682,7 +683,12 @@ void ComponentLoader::EnableFileSystemInGuestMode(const std::string& id) {
         content::BrowserContext::GetStoragePartitionForSite(
             off_the_record_context, site)
             ->GetFileSystemContext();
-    file_system_context->EnableTemporaryFileSystemInIncognito();
+    // Incognito file system is enabled by default. This function can be removed
+    // when the feature flag is removed.
+    if (!base::FeatureList::IsEnabled(
+            storage::features::kEnableFilesystemInIncognito)) {
+      file_system_context->EnableTemporaryFileSystemInIncognito();
+    }
   }
 }
 
