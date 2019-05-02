@@ -176,13 +176,6 @@ class CORE_EXPORT ImagePaintTimingDetector final
   void OnPaintFinished();
   void NotifyNodeRemoved(DOMNodeId);
   void NotifyBackgroundImageRemoved(DOMNodeId, const ImageResourceContent*);
-  base::TimeTicks LargestImagePaint() const {
-    return !largest_image_paint_ ? base::TimeTicks()
-                                 : largest_image_paint_->paint_time;
-  }
-  uint64_t LargestImagePaintSize() const {
-    return !largest_image_paint_ ? 0 : largest_image_paint_->first_size;
-  }
   // After the method being called, the detector stops to record new entries and
   // node removal. But it still observe the loading status. In other words, if
   // an image is recorded before stopping recording, and finish loading after
@@ -190,6 +183,7 @@ class CORE_EXPORT ImagePaintTimingDetector final
   // finished.
   void StopRecordEntries();
   bool IsRecording() const { return is_recording_; }
+  bool FinishedReportingImages() const;
   void Trace(blink::Visitor*);
 
  private:
@@ -222,6 +216,10 @@ class CORE_EXPORT ImagePaintTimingDetector final
   // Used to control if we record new image entries and image removal, but has
   // no effect on recording the loading status.
   bool is_recording_ = true;
+
+  // Used to determine how many swap callbacks are pending. In combination with
+  // |is_recording|, helps determine whether this detector can be destroyed.
+  int num_pending_swap_callbacks_ = 0;
 
   bool need_update_timing_at_frame_end_ = false;
 

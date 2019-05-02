@@ -51,6 +51,8 @@ class CORE_EXPORT PaintTimingDetector
   void NotifyInputEvent(WebInputEvent::Type);
   bool NeedToNotifyInputOrScroll();
   void NotifyScroll(ScrollType);
+  void NotifyLargestImage(base::TimeTicks, uint64_t size);
+  void NotifyLargestText(base::TimeTicks, uint64_t size);
   void DidChangePerformanceTiming();
 
   // |visual_rect| should be an object's bounding rect in the space of
@@ -58,18 +60,35 @@ class CORE_EXPORT PaintTimingDetector
   uint64_t CalculateVisualSize(const IntRect& visual_rect,
                                const PropertyTreeState&) const;
 
-  TextPaintTimingDetector& GetTextPaintTimingDetector() {
-    return *text_paint_timing_detector_;
+  TextPaintTimingDetector* GetTextPaintTimingDetector() {
+    return text_paint_timing_detector_;
   }
-  ImagePaintTimingDetector& GetImagePaintTimingDetector() {
-    return *image_paint_timing_detector_;
+  ImagePaintTimingDetector* GetImagePaintTimingDetector() {
+    return image_paint_timing_detector_;
   }
+  base::TimeTicks LargestImagePaint() const {
+    return largest_image_paint_time_;
+  }
+  uint64_t LargestImagePaintSize() const { return largest_image_paint_size_; }
+  base::TimeTicks LargestTextPaint() const { return largest_text_paint_time_; }
+  uint64_t LargestTextPaintSize() const { return largest_text_paint_size_; }
   void Trace(Visitor* visitor);
 
  private:
   Member<LocalFrameView> frame_view_;
+  // This member lives until the end of the paint phase after the largest text
+  // paint is found.
   Member<TextPaintTimingDetector> text_paint_timing_detector_;
+  // This member lives until the end of the paint phase after the largest image
+  // paint is found.
   Member<ImagePaintTimingDetector> image_paint_timing_detector_;
+
+  // Largest image information.
+  base::TimeTicks largest_image_paint_time_;
+  uint64_t largest_image_paint_size_ = 0;
+  // Largest text information.
+  base::TimeTicks largest_text_paint_time_;
+  uint64_t largest_text_paint_size_ = 0;
 };
 
 }  // namespace blink

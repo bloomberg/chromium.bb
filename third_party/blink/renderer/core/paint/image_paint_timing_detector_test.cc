@@ -67,57 +67,60 @@ class ImagePaintTimingDetectorTest
 
   void ReplaceCallBackQueue(PaintTimingDetector& detector) {
     detector.GetImagePaintTimingDetector()
-        .notify_swap_time_override_for_testing_ =
+        ->notify_swap_time_override_for_testing_ =
         base::BindRepeating(&ImagePaintTimingDetectorTest::FakeNotifySwapTime,
                             base::Unretained(this));
   }
   ImageRecord* FindLargestPaintCandidate() {
     return GetPaintTimingDetector()
         .GetImagePaintTimingDetector()
-        .records_manager_.FindLargestPaintCandidate();
+        ->records_manager_.FindLargestPaintCandidate();
   }
 
   ImageRecord* FindChildFrameLargestPaintCandidate() {
     return GetChildFrameView()
         .GetPaintTimingDetector()
         .GetImagePaintTimingDetector()
-        .records_manager_.FindLargestPaintCandidate();
+        ->records_manager_.FindLargestPaintCandidate();
   }
 
   size_t CountVisibleImageRecords() {
+    if (!GetPaintTimingDetector().GetImagePaintTimingDetector())
+      return 0;
+
     return GetPaintTimingDetector()
         .GetImagePaintTimingDetector()
-        .records_manager_.visible_node_map_.size();
+        ->records_manager_.visible_node_map_.size();
   }
 
   size_t CountVisibleBackgroundImageRecords() {
     return GetPaintTimingDetector()
         .GetImagePaintTimingDetector()
-        .records_manager_.visible_background_image_map_.size();
+        ->records_manager_.visible_background_image_map_.size();
   }
 
   size_t CountChildFrameRecords() {
     return GetChildPaintTimingDetector()
         .GetImagePaintTimingDetector()
-        .records_manager_.visible_node_map_.size();
+        ->records_manager_.visible_node_map_.size();
   }
 
   size_t CountRankingSetRecords() {
     return GetPaintTimingDetector()
         .GetImagePaintTimingDetector()
-        .records_manager_.size_ordered_set_.size();
+        ->records_manager_.size_ordered_set_.size();
   }
 
   void UpdateCandidate() {
     return GetPaintTimingDetector()
         .GetImagePaintTimingDetector()
-        .UpdateCandidate();
+        ->UpdateCandidate();
   }
 
   TimeTicks LargestPaintStoredResult() {
     ImageRecord* record = GetPaintTimingDetector()
                               .GetImagePaintTimingDetector()
-                              .largest_image_paint_;
+                              ->largest_image_paint_;
     return !record ? base::TimeTicks() : record->paint_time;
   }
 

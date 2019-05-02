@@ -123,6 +123,13 @@ void ImagePaintTimingDetector::UpdateCandidate() {
     OnLargestImagePaintDetected(largest_image_record);
     frame_view_->GetPaintTimingDetector().DidChangePerformanceTiming();
   }
+  if (largest_image_paint_) {
+    frame_view_->GetPaintTimingDetector().NotifyLargestImage(
+        largest_image_paint_->paint_time, largest_image_paint_->first_size);
+  } else {
+    frame_view_->GetPaintTimingDetector().NotifyLargestImage(base::TimeTicks(),
+                                                             0);
+  }
   // TODO(crbug/949974): when the largest image is still loading, we should
   // update the result as the current time.
 }
@@ -172,6 +179,7 @@ void ImagePaintTimingDetector::RegisterNotifySwapTime() {
   if (notify_swap_time_override_for_testing_) {
     // Run is not to run the |callback|, but to queue it.
     notify_swap_time_override_for_testing_.Run(std::move(callback));
+    num_pending_swap_callbacks_++;
     return;
   }
   // ReportSwapTime on layerTreeView will queue a swap-promise, the callback is
@@ -179,7 +187,9 @@ void ImagePaintTimingDetector::RegisterNotifySwapTime() {
   LocalFrame& frame = frame_view_->GetFrame();
   if (!frame.GetPage())
     return;
+
   frame.GetPage()->GetChromeClient().NotifySwapTime(frame, std::move(callback));
+  num_pending_swap_callbacks_++;
 }
 
 void ImagePaintTimingDetector::ReportSwapTime(
@@ -191,6 +201,8 @@ void ImagePaintTimingDetector::ReportSwapTime(
   records_manager_.AssignPaintTimeToRegisteredQueuedNodes(
       timestamp, last_queued_frame_index);
   UpdateCandidate();
+  num_pending_swap_callbacks_--;
+  DCHECK_GE(num_pending_swap_callbacks_, 0);
 }
 
 void ImageRecordsManager::AssignPaintTimeToRegisteredQueuedNodes(
@@ -448,6 +460,10 @@ std::unique_ptr<ImageRecord> ImageRecordsManager::CreateImageRecord(
 
 void ImagePaintTimingDetector::StopRecordEntries() {
   is_recording_ = false;
+}
+
+bool ImagePaintTimingDetector::FinishedReportingImages() const {
+  return !is_recording_ && num_pending_swap_callbacks_ == 0;
 }
 
 ImageRecord* ImageRecordsManager::FindLargestPaintCandidate() {

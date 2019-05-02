@@ -86,6 +86,8 @@ void TextPaintTimingDetector::UpdateCandidate() {
     OnLargestTextDetected(*candidate);
     frame_view_->GetPaintTimingDetector().DidChangePerformanceTiming();
   }
+  frame_view_->GetPaintTimingDetector().NotifyLargestText(
+      largest_text_paint_, largest_text_paint_size_);
 }
 
 void TextPaintTimingDetector::OnPaintFinished() {

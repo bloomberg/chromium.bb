@@ -38,66 +38,70 @@ class TextPaintTimingDetectorTest
   LocalFrameView& GetChildFrameView() { return *ChildFrame().View(); }
 
   unsigned CountVisibleTexts() {
+    if (!GetPaintTimingDetector().GetTextPaintTimingDetector())
+      return 0u;
+
     return GetPaintTimingDetector()
                .GetTextPaintTimingDetector()
-               .records_manager_.visible_node_map_.size() -
+               ->records_manager_.visible_node_map_.size() -
            GetPaintTimingDetector()
                .GetTextPaintTimingDetector()
-               .records_manager_.detached_ids_.size();
+               ->records_manager_.detached_ids_.size();
   }
 
   unsigned CountRankingSetSize() {
     return GetPaintTimingDetector()
         .GetTextPaintTimingDetector()
-        .records_manager_.size_ordered_set_.size();
+        ->records_manager_.size_ordered_set_.size();
   }
 
   unsigned CountDetachedTexts() {
     return GetPaintTimingDetector()
         .GetTextPaintTimingDetector()
-        .records_manager_.detached_ids_.size();
+        ->records_manager_.detached_ids_.size();
   }
 
   void InvokeCallback() {
-    TextPaintTimingDetector& detector =
+    TextPaintTimingDetector* detector =
         GetPaintTimingDetector().GetTextPaintTimingDetector();
-    detector.ReportSwapTime(WebWidgetClient::SwapResult::kDidSwap,
-                            CurrentTimeTicks());
+    detector->ReportSwapTime(WebWidgetClient::SwapResult::kDidSwap,
+                             CurrentTimeTicks());
   }
 
   TimeTicks LargestPaintStoredResult() {
     return GetPaintTimingDetector()
         .GetTextPaintTimingDetector()
-        .largest_text_paint_;
+        ->largest_text_paint_;
   }
 
   // This only triggers ReportSwapTime in main frame.
   void UpdateAllLifecyclePhasesAndSimulateSwapTime() {
     UpdateAllLifecyclePhasesForTest();
-    TextPaintTimingDetector& detector =
+    TextPaintTimingDetector* detector =
         GetPaintTimingDetector().GetTextPaintTimingDetector();
-    if (!detector.records_manager_.texts_queued_for_paint_time_.empty()) {
-      detector.ReportSwapTime(WebWidgetClient::SwapResult::kDidSwap,
-                              CurrentTimeTicks());
+    if (detector &&
+        !detector->records_manager_.texts_queued_for_paint_time_.empty()) {
+      detector->ReportSwapTime(WebWidgetClient::SwapResult::kDidSwap,
+                               CurrentTimeTicks());
     }
   }
 
   size_t CountPendingSwapTime(LocalFrameView& frame_view) {
-    TextPaintTimingDetector& detector =
+    TextPaintTimingDetector* detector =
         frame_view.GetPaintTimingDetector().GetTextPaintTimingDetector();
-    return detector.records_manager_.texts_queued_for_paint_time_.size();
+    return detector->records_manager_.texts_queued_for_paint_time_.size();
   }
 
   void ChildFrameSwapTimeCallBack() {
     GetChildFrameView()
         .GetPaintTimingDetector()
         .GetTextPaintTimingDetector()
-        .ReportSwapTime(WebWidgetClient::SwapResult::kDidSwap,
-                        CurrentTimeTicks());
+        ->ReportSwapTime(WebWidgetClient::SwapResult::kDidSwap,
+                         CurrentTimeTicks());
   }
 
   void UpdateCandidate() {
-    GetPaintTimingDetector().GetTextPaintTimingDetector().UpdateCandidate();
+    GetPaintTimingDetector().GetTextPaintTimingDetector()->UpdateCandidate();
   }
 
   Element* AppendFontElementToBody(String content) {
@@ -129,14 +133,14 @@ class TextPaintTimingDetectorTest
     return GetFrameView()
         .GetPaintTimingDetector()
         .GetTextPaintTimingDetector()
-        .FindLargestPaintCandidate();
+        ->FindLargestPaintCandidate();
   }
 
   TextRecord* ChildFrameTextRecordOfLargestTextPaint() {
     return GetChildFrameView()
         .GetPaintTimingDetector()
         .GetTextPaintTimingDetector()
-        .FindLargestPaintCandidate();
+        ->FindLargestPaintCandidate();
   }
 
   void SetFontSize(Element* font_element, uint16_t font_size) {
@@ -428,11 +432,12 @@ TEST_F(TextPaintTimingDetectorTest, StopRecordingOverNodeLimit) {
 
   AppendDivElementToBody(WTF::String::Number(5000));
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
-  EXPECT_EQ(CountVisibleTexts(), 5000u);
+  // Reached limit, so stopped recording and now should have 0 texts.
+  EXPECT_EQ(CountVisibleTexts(), 0u);
 
   AppendDivElementToBody(WTF::String::Number(5001));
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
-  EXPECT_EQ(CountVisibleTexts(), 5000u);
+  EXPECT_EQ(CountVisibleTexts(), 0u);
 }
 
 // This is for comparison with the ClippedByViewport test.

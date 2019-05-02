@@ -118,10 +118,11 @@ class CORE_EXPORT TextPaintTimingDetector final
   void OnPaintFinished();
   void NotifyNodeRemoved(DOMNodeId);
   TextRecord* FindLargestPaintCandidate();
-  base::TimeTicks LargestTextPaint() const { return largest_text_paint_; }
-  uint64_t LargestTextPaintSize() const { return largest_text_paint_size_; }
   void StopRecordEntries();
   bool IsRecording() const { return is_recording_; }
+  bool FinishedReportingText() const {
+    return !is_recording_ && !need_update_timing_at_frame_end_;
+  }
   void Trace(blink::Visitor*);
 
  private:

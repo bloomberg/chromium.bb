@@ -55,8 +55,16 @@ PaintTimingDetector::PaintTimingDetector(LocalFrameView* frame_view)
           MakeGarbageCollected<ImagePaintTimingDetector>(frame_view)) {}
 
 void PaintTimingDetector::NotifyPaintFinished() {
-  text_paint_timing_detector_->OnPaintFinished();
-  image_paint_timing_detector_->OnPaintFinished();
+  if (text_paint_timing_detector_) {
+    text_paint_timing_detector_->OnPaintFinished();
+    if (text_paint_timing_detector_->FinishedReportingText())
+      text_paint_timing_detector_ = nullptr;
+  }
+  if (image_paint_timing_detector_) {
+    image_paint_timing_detector_->OnPaintFinished();
+    if (image_paint_timing_detector_->FinishedReportingImages())
+      image_paint_timing_detector_ = nullptr;
+  }
 }
 
 // static
@@ -72,17 +80,17 @@ void PaintTimingDetector::NotifyBackgroundImagePaint(
   LayoutObject* object = node->GetLayoutObject();
   if (!object)
     return;
-  if (!IsBackgroundImageContentful(*object, *image))
-    return;
   LocalFrameView* frame_view = object->GetFrameView();
   if (!frame_view)
     return;
-  if (!cached_image)
+  PaintTimingDetector& detector = frame_view->GetPaintTimingDetector();
+  if (!detector.GetImagePaintTimingDetector())
+    return;
+  if (!IsBackgroundImageContentful(*object, *image))
     return;
   if (!object->HasNonZeroEffectiveOpacity())
     return;
-  PaintTimingDetector& detector = frame_view->GetPaintTimingDetector();
-  detector.GetImagePaintTimingDetector().RecordBackgroundImage(
+  detector.GetImagePaintTimingDetector()->RecordBackgroundImage(
       *object, image->Size(), cached_image, current_paint_chunk_properties);
 }
 
@@ -100,8 +108,10 @@ void PaintTimingDetector::NotifyImagePaint(
   if (!object.HasNonZeroEffectiveOpacity())
     return;
   PaintTimingDetector& detector = frame_view->GetPaintTimingDetector();
-  detector.GetImagePaintTimingDetector().RecordImage(
-      object, intrinsic_size, cached_image, current_paint_chunk_properties);
+  if (detector.GetImagePaintTimingDetector()) {
+    detector.GetImagePaintTimingDetector()->RecordImage(
+        object, intrinsic_size, cached_image, current_paint_chunk_properties);
+  }
 }
 
 // static
@@ -114,16 +124,21 @@ void PaintTimingDetector::NotifyTextPaint(
   if (!object.HasNonZeroEffectiveOpacity())
     return;
   PaintTimingDetector& detector = frame_view->GetPaintTimingDetector();
-  detector.GetTextPaintTimingDetector().RecordText(
-      object, current_paint_chunk_properties);
+  if (detector.GetTextPaintTimingDetector()) {
+    detector.GetTextPaintTimingDetector()->RecordText(
+        object, current_paint_chunk_properties);
+  }
 }
 
 void PaintTimingDetector::NotifyNodeRemoved(const LayoutObject& object) {
   DOMNodeId node_id = DOMNodeIds::ExistingIdForNode(object.GetNode());
   if (node_id == kInvalidDOMNodeId)
     return;
-  text_paint_timing_detector_->NotifyNodeRemoved(node_id);
-  image_paint_timing_detector_->NotifyNodeRemoved(node_id);
+
+  if (text_paint_timing_detector_)
+    text_paint_timing_detector_->NotifyNodeRemoved(node_id);
+  if (image_paint_timing_detector_)
+    image_paint_timing_detector_->NotifyNodeRemoved(node_id);
 }
 
 void PaintTimingDetector::NotifyBackgroundImageRemoved(
@@ -132,8 +147,10 @@ void PaintTimingDetector::NotifyBackgroundImageRemoved(
   DOMNodeId node_id = DOMNodeIds::ExistingIdForNode(object.GetNode());
   if (node_id == kInvalidDOMNodeId)
     return;
-  image_paint_timing_detector_->NotifyBackgroundImageRemoved(node_id,
-                                                             cached_image);
+  if (image_paint_timing_detector_) {
+    image_paint_timing_detector_->NotifyBackgroundImageRemoved(node_id,
+                                                               cached_image);
+  }
 }
 
 void PaintTimingDetector::NotifyInputEvent(WebInputEvent::Type type) {
@@ -142,20 +159,38 @@ void PaintTimingDetector::NotifyInputEvent(WebInputEvent::Type type) {
       WebInputEvent::IsPinchGestureEventType(type)) {
     return;
   }
-  text_paint_timing_detector_->StopRecordEntries();
-  image_paint_timing_detector_->StopRecordEntries();
+  if (text_paint_timing_detector_)
+    text_paint_timing_detector_->StopRecordEntries();
+  if (image_paint_timing_detector_)
+    image_paint_timing_detector_->StopRecordEntries();
 }
 
 void PaintTimingDetector::NotifyScroll(ScrollType scroll_type) {
   if (scroll_type != kUserScroll && scroll_type != kCompositorScroll)
     return;
-  text_paint_timing_detector_->StopRecordEntries();
-  image_paint_timing_detector_->StopRecordEntries();
+  if (text_paint_timing_detector_)
+    text_paint_timing_detector_->StopRecordEntries();
+  if (image_paint_timing_detector_)
+    image_paint_timing_detector_->StopRecordEntries();
 }
 
 bool PaintTimingDetector::NeedToNotifyInputOrScroll() {
-  return text_paint_timing_detector_->IsRecording() ||
-         image_paint_timing_detector_->IsRecording();
+  return (text_paint_timing_detector_ &&
+          text_paint_timing_detector_->IsRecording()) ||
+         (image_paint_timing_detector_ &&
+          image_paint_timing_detector_->IsRecording());
+}
+
+void PaintTimingDetector::NotifyLargestImage(base::TimeTicks image_paint_time,
+                                             uint64_t image_paint_size) {
+  largest_image_paint_time_ = image_paint_time;
+  largest_image_paint_size_ = image_paint_size;
+}
+
+void PaintTimingDetector::NotifyLargestText(base::TimeTicks text_paint_time,
+                                            uint64_t text_paint_size) {
+  largest_text_paint_time_ = text_paint_time;
+  largest_text_paint_size_ = text_paint_size;
 }
 
 void PaintTimingDetector::DidChangePerformanceTiming() {
