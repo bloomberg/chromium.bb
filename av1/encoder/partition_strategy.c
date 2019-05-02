@@ -44,6 +44,7 @@ void av1_simple_motion_search_based_split(
   aom_clear_system_state();
 
   const AV1_COMMON *const cm = &cpi->common;
+  const int is_720p_or_larger = AOMMIN(cm->width, cm->height) >= 720;
   const int is_480p_or_larger = AOMMIN(cm->width, cm->height) >= 480;
   const int bsize_idx = convert_bsize_to_idx(bsize);
 
@@ -56,7 +57,10 @@ void av1_simple_motion_search_based_split(
   const float *ml_std = av1_simple_motion_search_split_std[bsize_idx];
   const NN_CONFIG *nn_config =
       av1_simple_motion_search_split_nn_config[bsize_idx];
-  if (is_480p_or_larger) {
+  if (is_720p_or_larger) {
+    split_only_thresh = av1_simple_motion_search_split_hdres_thresh[bsize_idx];
+    no_split_thresh = av1_simple_motion_search_split_hdres_no_thresh[bsize_idx];
+  } else if (is_480p_or_larger) {
     split_only_thresh = av1_simple_motion_search_split_midres_thresh[bsize_idx];
     no_split_thresh =
         av1_simple_motion_search_split_midres_no_thresh[bsize_idx];

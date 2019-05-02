@@ -2443,6 +2443,25 @@ static const NN_CONFIG av1_rect_partition_nnconfig_128 = {
 
 // Below are the models used for simple_motion_search_based_split
 // Threshold from BLOCK_128X128 to BLOCK_8X88
+// TODO(any): The thresholds on hdres are still pretty rough due to the codec
+// being slow on hdres videos. We should be able to get better tradeoff by fine
+// tuning the thresholds here.
+static const float av1_simple_motion_search_split_hdres_thresh[5] = {
+  5.839480f,  // p = 0.997098
+  1.877167f,  // p = 0.867285
+  3.073499f,  // p = 0.955783
+  1.405601f,  // p = 0.803071
+  2.555636f,  // p = 0.927951
+};
+
+static const float av1_simple_motion_search_split_hdres_no_thresh[5] = {
+  -100.0f,       // p = 0
+  -100.0f,       // p = 0
+  -2.98718897f,  // p = 0.048008
+  -100.0f,       // p = 0
+  -3.33229488f,  // p = 0.03447975
+};
+
 static const float av1_simple_motion_search_split_midres_thresh[5] = {
   5.839480f,  // p = 0.997098
   1.877167f,  // p = 0.867285

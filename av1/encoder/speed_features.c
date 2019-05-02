@@ -117,20 +117,12 @@ static void set_good_speed_feature_framesize_dependent(
     sf->ml_early_term_after_part_split_level = 1;
   }
 
-  // TODO(chiyotsai@google.com): Try to replace two pass partition search with
-  // other speed features.
-  if (is_720p_or_larger && speed >= CONFIG_2PASS_PARTITION_SEARCH_LVL_START &&
-      speed < CONFIG_2PASS_PARTITION_SEARCH_LVL_END) {
-    sf->two_pass_partition_search = 1;
-  }
-
   if (speed >= 1) {
+    sf->simple_motion_search_split = 2;
     if (is_720p_or_larger) {
       sf->use_square_partition_only_threshold = BLOCK_128X128;
     } else if (is_480p_or_larger) {
       sf->use_square_partition_only_threshold = BLOCK_64X64;
-
-      sf->simple_motion_search_split = 2;
     } else {
       sf->use_square_partition_only_threshold = BLOCK_32X32;
 
@@ -145,8 +137,8 @@ static void set_good_speed_feature_framesize_dependent(
       sf->ml_partition_search_breakout_thresh[4] = -1;   // BLOCK_128X128
 
       sf->firstpass_simple_motion_search_early_term = 1;
-      sf->ml_early_term_after_part_split_level = 2;
     }
+    sf->ml_early_term_after_part_split_level = 2;
   }
 
   if (speed >= 2) {
