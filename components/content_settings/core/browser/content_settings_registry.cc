@@ -168,8 +168,7 @@ void ContentSettingsRegistry::Init() {
            ContentSettingsInfo::PERSISTENT,
            ContentSettingsInfo::EXCEPTIONS_ON_SECURE_AND_INSECURE_ORIGINS);
 
-  Register(CONTENT_SETTINGS_TYPE_PLUGINS, "plugins",
-           CONTENT_SETTING_DETECT_IMPORTANT_CONTENT,
+  Register(CONTENT_SETTINGS_TYPE_PLUGINS, "plugins", CONTENT_SETTING_BLOCK,
            WebsiteSettingsInfo::SYNCABLE,
            WhitelistedSchemes(kChromeUIScheme, kChromeDevToolsScheme),
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK,

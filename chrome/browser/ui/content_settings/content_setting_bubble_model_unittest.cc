@@ -743,8 +743,8 @@ TEST_F(ContentSettingBubbleModelTest, Plugins) {
   EXPECT_FALSE(bubble_content.title.empty());
   ASSERT_EQ(0U, bubble_content.list_items.size());
   EXPECT_EQ(0U, bubble_content.radio_group.radio_items.size());
-  EXPECT_FALSE(bubble_content.custom_link.empty());
-  EXPECT_TRUE(bubble_content.custom_link_enabled);
+  EXPECT_FALSE(bubble_content.custom_link_enabled);
+  EXPECT_TRUE(bubble_content.custom_link.empty());
   EXPECT_FALSE(bubble_content.manage_text.empty());
   EXPECT_TRUE(bubble_content.show_learn_more);
 }

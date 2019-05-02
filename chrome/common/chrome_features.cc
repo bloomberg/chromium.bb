@@ -510,7 +510,7 @@ const base::Feature kPrerenderFallbackToPreconnect{
 // Show Flash deprecation warning to users who have manually enabled Flash.
 // https://crbug.com/918428
 const base::Feature kFlashDeprecationWarning{"FlashDeprecationWarning",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)

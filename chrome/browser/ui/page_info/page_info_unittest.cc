@@ -328,7 +328,7 @@ TEST_F(PageInfoTest, OnPermissionsChanged) {
 #if BUILDFLAG(ENABLE_PLUGINS)
   setting = content_settings->GetContentSetting(
       url(), url(), CONTENT_SETTINGS_TYPE_PLUGINS, std::string());
-  EXPECT_EQ(setting, CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
+  EXPECT_EQ(setting, CONTENT_SETTING_BLOCK);
 #endif
   setting = content_settings->GetContentSetting(
       url(), url(), CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string());

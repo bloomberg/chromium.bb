@@ -254,19 +254,20 @@ TEST_F(PluginInfoHostImplTest, PreferHtmlOverPlugins) {
 
   PluginMetadata::SecurityStatus security_status =
       PluginMetadata::SECURITY_STATUS_UP_TO_DATE;
-  context()->DecidePluginStatus(GURL(), main_frame_origin, plugin,
-                                security_status, content::kFlashPluginName,
-                                &status);
-  EXPECT_EQ(chrome::mojom::PluginStatus::kFlashHiddenPreferHtml, status);
-
-  // Now block plugins.
-  host_content_settings_map()->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_BLOCK);
 
   context()->DecidePluginStatus(GURL(), main_frame_origin, plugin,
                                 security_status, content::kFlashPluginName,
                                 &status);
   EXPECT_EQ(chrome::mojom::PluginStatus::kBlockedNoLoading, status);
+
+  // Now enable plugins.
+  host_content_settings_map()->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
+
+  context()->DecidePluginStatus(GURL(), main_frame_origin, plugin,
+                                security_status, content::kFlashPluginName,
+                                &status);
+  EXPECT_EQ(chrome::mojom::PluginStatus::kPlayImportantContent, status);
 }
 
 TEST_F(PluginInfoHostImplTest, RunAllFlashInAllowMode) {
@@ -310,7 +311,10 @@ TEST_F(PluginInfoHostImplTest, RunAllFlashInAllowMode) {
   EXPECT_THAT(status, Eq(chrome::mojom::PluginStatus::kAllowed));
 }
 
-TEST_F(PluginInfoHostImplTest, PluginsAllowedInWhitelistedSchemes) {
+TEST_F(PluginInfoHostImplTest, PluginsOnlyAllowedInWhitelistedSchemes) {
+  host_content_settings_map()->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
+
   VerifyPluginContentSetting(GURL("http://example.com"), "foo",
                              CONTENT_SETTING_DETECT_IMPORTANT_CONTENT, true,
                              false);
@@ -329,17 +333,6 @@ TEST_F(PluginInfoHostImplTest, PluginsAllowedInWhitelistedSchemes) {
 
 TEST_F(PluginInfoHostImplTest, GetPluginContentSetting) {
   HostContentSettingsMap* map = host_content_settings_map();
-  {
-    bool is_managed = false;
-    EXPECT_EQ(
-        CONTENT_SETTING_DETECT_IMPORTANT_CONTENT,
-        PluginUtils::UnsafeGetRawDefaultFlashContentSetting(map, &is_managed));
-    EXPECT_FALSE(is_managed);
-  }
-
-  // Block plugins by default.
-  map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
-                                CONTENT_SETTING_BLOCK);
   {
     bool is_managed = false;
     EXPECT_EQ(
