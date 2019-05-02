@@ -71,8 +71,6 @@ class MODULES_EXPORT InstalledAppController final
   // Handle to the InstalledApp mojo service.
   mojom::blink::InstalledAppProviderPtr provider_;
 
-  bool context_destroyed_ = false;
-
   DISALLOW_COPY_AND_ASSIGN(InstalledAppController);
 };
 

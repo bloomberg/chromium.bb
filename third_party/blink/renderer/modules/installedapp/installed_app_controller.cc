@@ -21,7 +21,7 @@ InstalledAppController::~InstalledAppController() = default;
 void InstalledAppController::GetInstalledRelatedApps(
     std::unique_ptr<AppInstalledCallbacks> callbacks) {
   // When detached, the fetch logic is no longer valid.
-  if (context_destroyed_) {
+  if (!GetExecutionContext()) {
     // TODO(mgiuca): AbortError rather than simply undefined.
     // https://crbug.com/687846
     callbacks->OnError();
@@ -56,7 +56,6 @@ InstalledAppController::InstalledAppController(LocalFrame& frame)
 
 void InstalledAppController::ContextDestroyed(ExecutionContext*) {
   provider_.reset();
-  context_destroyed_ = true;
 }
 
 void InstalledAppController::OnGetManifestForRelatedApps(
