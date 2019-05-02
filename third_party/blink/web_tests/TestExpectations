@@ -3037,6 +3037,11 @@ crbug.com/939181 external/wpt/html/browsers/origin/cross-origin-objects/cross-or
 crbug.com/939181 virtual/not-site-per-process/external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Failure Timeout ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-text/hyphens/hyphens-shaping-002.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/hyphens/hyphens-shaping-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/overflow-wrap/overflow-wrap-shaping-002.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/overflow-wrap/overflow-wrap-shaping-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/line-break/line-break-shaping-001.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-text/hyphens/hyphens-span-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/hyphens/hyphens-span-001.html [ Failure ]
 crbug.com/626703 [ Mac10.11 ] external/wpt/webrtc/no-media-call.html [ Timeout ]
