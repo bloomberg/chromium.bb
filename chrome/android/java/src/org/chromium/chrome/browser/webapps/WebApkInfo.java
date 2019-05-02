@@ -585,16 +585,14 @@ public class WebApkInfo extends WebappInfo {
         Intent shareIntent = new Intent();
         shareIntent.setAction(Intent.ACTION_SEND);
         shareIntent.setPackage(webApkPackageName);
-        shareIntent.setType("text/plain");
+        shareIntent.setType("*/*");
         List<ResolveInfo> resolveInfos =
                 ContextUtils.getApplicationContext().getPackageManager().queryIntentActivities(
                         shareIntent, PackageManager.GET_META_DATA);
 
         for (ResolveInfo resolveInfo : resolveInfos) {
             Bundle shareTargetMetaData = resolveInfo.activityInfo.metaData;
-            if (shareTargetMetaData == null
-                    || WebApkShareTargetUtil.methodFromShareTargetMetaDataIsPost(
-                            shareTargetMetaData)) {
+            if (shareTargetMetaData == null) {
                 continue;
             }
 

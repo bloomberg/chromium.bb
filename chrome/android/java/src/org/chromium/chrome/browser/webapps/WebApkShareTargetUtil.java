@@ -36,10 +36,25 @@ public class WebApkShareTargetUtil {
     // A class containing data required to generate a share target post request.
     protected static class PostData {
         public boolean isMultipartEncoding;
-        public String[] names;
-        public byte[][] values;
-        public String[] filenames;
-        public String[] types;
+        public ArrayList<String> names;
+        public ArrayList<byte[]> values;
+        public ArrayList<String> filenames;
+        public ArrayList<String> types;
+
+        public PostData(boolean isMultipartEncoding) {
+            this.isMultipartEncoding = isMultipartEncoding;
+            names = new ArrayList<>();
+            values = new ArrayList<>();
+            filenames = new ArrayList<>();
+            types = new ArrayList<>();
+        }
+
+        private void add(String name, byte[] value, String fileName, String type) {
+            names.add(name);
+            values.add(value);
+            filenames.add(fileName);
+            types.add(type);
+        }
     }
 
     private static Bundle computeShareTargetMetaData(
@@ -125,49 +140,32 @@ public class WebApkShareTargetUtil {
         return originalData;
     }
 
-    protected static PostData computeMultipartPostData(
-            Bundle shareTargetMetaData, WebApkInfo.ShareData shareData) {
-        String nameString = IntentUtils.safeGetString(
-                shareTargetMetaData, WebApkMetaDataKeys.SHARE_PARAM_NAMES);
-        String acceptString = IntentUtils.safeGetString(
-                shareTargetMetaData, WebApkMetaDataKeys.SHARE_PARAM_ACCEPTS);
-        ArrayList<Uri> fileUris = shareData.files;
+    protected static boolean methodFromShareTargetMetaDataIsPost(Bundle metaData) {
+        String method = IntentUtils.safeGetString(metaData, WebApkMetaDataKeys.SHARE_METHOD);
+        return method != null && "POST".equals(method.toUpperCase(Locale.ENGLISH));
+    }
 
-        if (nameString == null || acceptString == null) {
-            return null;
+    protected static void addFilesToMultipartPostData(PostData postData, String encodedFileNames,
+            String encodedFileAccepts, ArrayList<Uri> shareFiles) {
+        if (encodedFileNames == null || encodedFileAccepts == null || shareFiles == null) {
+            return;
         }
 
-        if (fileUris == null) {
-            return null;
-        }
         ArrayList<String> names;
         ArrayList<ArrayList<String>> accepts;
-
         try {
-            names = decodeJsonStringArray(new JSONArray(nameString));
+            names = decodeJsonStringArray(new JSONArray(encodedFileNames));
+            accepts = decodeJsonAccepts(encodedFileAccepts);
         } catch (JSONException e) {
-            return null;
-        }
-
-        try {
-            accepts = decodeJsonAccepts(acceptString);
-        } catch (JSONException e) {
-            return null;
+            return;
         }
 
         if (names.size() != accepts.size()) {
-            return null;
+            return;
         }
 
-        PostData postData = new PostData();
-        postData.isMultipartEncoding = true;
-        ArrayList<String> shareNames = new ArrayList<>();
-        ArrayList<byte[]> shareValues = new ArrayList<>();
-        ArrayList<String> shareFilenames = new ArrayList<>();
-        ArrayList<String> shareTypes = new ArrayList<>();
-
         try (StrictModeContext strictModeContextUnused = StrictModeContext.allowDiskReads()) {
-            for (Uri fileUri : fileUris) {
+            for (Uri fileUri : shareFiles) {
                 String fileType = getFileTypeFromContentUri(fileUri);
                 String fileName = getFileNameFromContentUri(fileUri);
 
@@ -181,55 +179,13 @@ public class WebApkShareTargetUtil {
                     if (mimeTypeFilter.accept(fileUri, fileType)) {
                         byte[] fileContent = readStringFromContentUri(fileUri);
                         if (fileContent != null) {
-                            shareNames.add(names.get(i));
-                            shareValues.add(fileContent);
-                            shareFilenames.add(fileName);
-                            shareTypes.add(fileType);
+                            postData.add(names.get(i), fileContent, fileName, fileType);
                         }
                         break;
                     }
                 }
             }
         }
-        postData.names = shareNames.toArray(new String[0]);
-        postData.values = shareValues.toArray(new byte[0][]);
-        postData.filenames = shareFilenames.toArray(new String[0]);
-        postData.types = shareTypes.toArray(new String[0]);
-        return postData;
-    }
-
-    protected static PostData computeUrlEncodedPostData(
-            Bundle shareTargetMetaData, WebApkInfo.ShareData shareData) {
-        PostData postData = new PostData();
-        postData.isMultipartEncoding = false;
-        postData.filenames = new String[0];
-        postData.types = new String[0];
-
-        ArrayList<String> names = new ArrayList<>();
-        ArrayList<byte[]> values = new ArrayList<>();
-
-        String shareTitleName = IntentUtils.safeGetString(
-                shareTargetMetaData, WebApkMetaDataKeys.SHARE_PARAM_TITLE);
-        String shareTextName =
-                IntentUtils.safeGetString(shareTargetMetaData, WebApkMetaDataKeys.SHARE_PARAM_TEXT);
-
-        if (shareTitleName != null && shareData.subject != null) {
-            names.add(shareTitleName);
-            values.add(ApiCompatibilityUtils.getBytesUtf8(shareData.subject));
-        }
-        if (shareTextName != null && shareData.text != null) {
-            names.add(shareTextName);
-            values.add(ApiCompatibilityUtils.getBytesUtf8(shareData.text));
-        }
-
-        postData.names = names.toArray(new String[0]);
-        postData.values = values.toArray(new byte[0][]);
-        return postData;
-    }
-
-    protected static boolean methodFromShareTargetMetaDataIsPost(Bundle metaData) {
-        String method = IntentUtils.safeGetString(metaData, WebApkMetaDataKeys.SHARE_METHOD);
-        return method != null && "POST".equals(method.toUpperCase(Locale.ENGLISH));
     }
 
     protected static PostData computePostData(
@@ -239,9 +195,34 @@ public class WebApkShareTargetUtil {
                 || !methodFromShareTargetMetaDataIsPost(shareTargetMetaData)) {
             return null;
         }
-        if (enctypeFromMetaDataIsMultipart(shareTargetMetaData)) {
-            return computeMultipartPostData(shareTargetMetaData, shareData);
+
+        PostData postData = new PostData(enctypeFromMetaDataIsMultipart(shareTargetMetaData));
+
+        String shareTitleName = IntentUtils.safeGetString(
+                shareTargetMetaData, WebApkMetaDataKeys.SHARE_PARAM_TITLE);
+        if (shareTitleName != null && shareData.subject != null) {
+            postData.add(shareTitleName, ApiCompatibilityUtils.getBytesUtf8(shareData.subject), "",
+                    "text/plain");
         }
-        return computeUrlEncodedPostData(shareTargetMetaData, shareData);
+
+        String shareTextName =
+                IntentUtils.safeGetString(shareTargetMetaData, WebApkMetaDataKeys.SHARE_PARAM_TEXT);
+        if (shareTextName != null && shareData.text != null) {
+            postData.add(shareTextName, ApiCompatibilityUtils.getBytesUtf8(shareData.text), "",
+                    "text/plain");
+        }
+
+        if (!postData.isMultipartEncoding) {
+            return postData;
+        }
+
+        addFilesToMultipartPostData(postData,
+                IntentUtils.safeGetString(
+                        shareTargetMetaData, WebApkMetaDataKeys.SHARE_PARAM_NAMES),
+                IntentUtils.safeGetString(
+                        shareTargetMetaData, WebApkMetaDataKeys.SHARE_PARAM_ACCEPTS),
+                shareData.files);
+
+        return postData;
     }
 }

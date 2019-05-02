@@ -20,8 +20,9 @@ TEST(WebApkActivityTest, InvalidMultipartBody) {
   EXPECT_EQ("", multipart_body);
 }
 
-// Test that multipart/form-data body is correctly computed for accepted inputs.
-TEST(WebApkActivityTest, ValidMultipartBody) {
+// Test that multipart/form-data body is correctly computed for accepted
+// file inputs.
+TEST(WebApkActivityTest, ValidMultipartBodyForFile) {
   std::vector<std::string> names = {"name\""};
   std::vector<std::string> values = {"value"};
   std::vector<std::string> filenames = {"filename\r\n"};
@@ -33,6 +34,44 @@ TEST(WebApkActivityTest, ValidMultipartBody) {
       "--boundary\r\nContent-Disposition: form-data;"
       " name=\"name%22\"; filename=\"filename%0D%0A\"\r\nContent-Type: type"
       "\r\n\r\nvalue\r\n"
+      "--boundary--\r\n";
+  EXPECT_EQ(expected_multipart_body, multipart_body);
+}
+
+// Test that multipart/form-data body is correctly computed for non-file inputs.
+TEST(WebApkActivityTest, ValidMultipartBodyForText) {
+  std::vector<std::string> names = {"name\""};
+  std::vector<std::string> values = {"value"};
+  std::vector<std::string> filenames = {""};
+  std::vector<std::string> types = {"type"};
+  std::string boundary = "boundary";
+  std::string multipart_body =
+      webapk::ComputeMultipartBody(names, values, filenames, types, boundary);
+  std::string expected_multipart_body =
+      "--boundary\r\nContent-Disposition: form-data;"
+      " name=\"name%22\"\r\nContent-Type: type"
+      "\r\n\r\nvalue\r\n"
+      "--boundary--\r\n";
+  EXPECT_EQ(expected_multipart_body, multipart_body);
+}
+
+// Test that multipart/form-data body is correctly computed for a mixture
+// of file and non-file inputs.
+TEST(WebApkActivityTest, ValidMultipartBodyForTextAndFile) {
+  std::vector<std::string> names = {"name1\"", "name2"};
+  std::vector<std::string> values = {"value1", "value2"};
+  std::vector<std::string> filenames = {"", "filename2\r\n"};
+  std::vector<std::string> types = {"type1", "type2"};
+  std::string boundary = "boundary";
+  std::string multipart_body =
+      webapk::ComputeMultipartBody(names, values, filenames, types, boundary);
+  std::string expected_multipart_body =
+      "--boundary\r\nContent-Disposition: form-data;"
+      " name=\"name1%22\"\r\nContent-Type: type1"
+      "\r\n\r\nvalue1\r\n"
+      "--boundary\r\nContent-Disposition: form-data;"
+      " name=\"name2\"; filename=\"filename2%0D%0A\"\r\nContent-Type: type2"
+      "\r\n\r\nvalue2\r\n"
       "--boundary--\r\n";
   EXPECT_EQ(expected_multipart_body, multipart_body);
 }

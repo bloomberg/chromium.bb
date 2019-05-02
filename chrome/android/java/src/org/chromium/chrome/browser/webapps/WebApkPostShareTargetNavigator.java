@@ -17,9 +17,10 @@ public class WebApkPostShareTargetNavigator {
         if (postData == null) {
             return false;
         }
-        nativeLoadViewForShareTargetPost(postData.isMultipartEncoding, postData.names,
-                postData.values, postData.filenames, postData.types, webApkInfo.uri().toString(),
-                webContents);
+        nativeLoadViewForShareTargetPost(postData.isMultipartEncoding,
+                postData.names.toArray(new String[0]), postData.values.toArray(new byte[0][]),
+                postData.filenames.toArray(new String[0]), postData.types.toArray(new String[0]),
+                webApkInfo.uri().toString(), webContents);
         return true;
     }
 

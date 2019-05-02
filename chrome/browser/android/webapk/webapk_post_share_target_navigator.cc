@@ -54,10 +54,16 @@ std::string ComputeMultipartBody(const std::vector<std::string>& names,
   }
 
   std::string body;
-  for (size_t i = 0; i < num_files; i++)
-    net::AddMultipartValueForUploadWithFileName(
-        PercentEscapeString(names[i]), PercentEscapeString(filenames[i]),
-        values[i], boundary, types[i], &body);
+  for (size_t i = 0; i < num_files; i++) {
+    if (filenames[i].empty()) {
+      net::AddMultipartValueForUpload(PercentEscapeString(names[i]), values[i],
+                                      boundary, types[i], &body);
+    } else {
+      net::AddMultipartValueForUploadWithFileName(
+          PercentEscapeString(names[i]), PercentEscapeString(filenames[i]),
+          values[i], boundary, types[i], &body);
+    }
+  }
   net::AddMultipartFinalDelimiterForUpload(boundary, &body);
   return body;
 }

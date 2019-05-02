@@ -83,13 +83,13 @@
                   android:targetActivity="org.chromium.webapk.shell_apk.[[#use_new_splash]]h2o.H2O[[/use_new_splash]]TransparentLauncherActivity">
           <meta-data android:name="org.chromium.webapk.shell_apk.shareAction" android:value="{{{action}}}" />
           <meta-data android:name="org.chromium.webapk.shell_apk.shareMethod" android:value="{{{method}}}" />
+          <meta-data android:name="org.chromium.webapk.shell_apk.shareParamTitle" android:value="{{{param_title}}}" />
+          <meta-data android:name="org.chromium.webapk.shell_apk.shareParamText" android:value="{{{param_text}}}" />
+          <meta-data android:name="org.chromium.webapk.shell_apk.shareParamUrl" android:value="{{{param_url}}}" />
           {{#enctype}}
           <meta-data android:name="org.chromium.webapk.shell_apk.shareEnctype" android:value="{{{enctype}}}" />
           {{/enctype}}
           {{^is_file_upload}}
-          <meta-data android:name="org.chromium.webapk.shell_apk.shareParamTitle" android:value="{{{param_title}}}" />
-          <meta-data android:name="org.chromium.webapk.shell_apk.shareParamText" android:value="{{{param_text}}}" />
-          <meta-data android:name="org.chromium.webapk.shell_apk.shareParamUrl" android:value="{{{param_url}}}" />
           <intent-filter>
             <action android:name="android.intent.action.SEND" />
             <category android:name="android.intent.category.DEFAULT" />
@@ -97,11 +97,15 @@
           </intent-filter>
           {{/is_file_upload}}
           {{#is_file_upload}}
+          {{^is_file_upload_param_empty}}
           <meta-data android:name="org.chromium.webapk.shell_apk.shareParamNames" android:value="{{{param_names}}}" />
           <meta-data android:name="org.chromium.webapk.shell_apk.shareParamAccepts" android:value="{{{param_accepts}}}" />
+          {{/is_file_upload_param_empty}}
           <intent-filter>
             <action android:name="android.intent.action.SEND" />
+            {{^is_file_upload_param_empty}}
             <action android:name="android.intent.action.SEND_MULTIPLE" />
+            {{/is_file_upload_param_empty}}
             <category android:name="android.intent.category.DEFAULT" />
             {{#mime_types}}
             <data android:mimeType="{{{mime_type}}}" />
