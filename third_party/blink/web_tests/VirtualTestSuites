@@ -713,12 +713,6 @@
     "args": ["--disable-features=RTCUnifiedPlanByDefault"]
   },
   {
-    "prefix": "video-surface-layer",
-    "base": "media",
-    "args": ["--enable-features=UseSurfaceLayerForVideo",
-             "--enable-display-compositor-pixel-dump"]
-  },
-  {
     "prefix": "user-activation-v2",
     "base": "fast/dom/Window",
     "args": ["--enable-features=UserActivationV2"]

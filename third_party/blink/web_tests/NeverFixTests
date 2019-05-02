@@ -1679,9 +1679,6 @@ http/tests/ManualTests/ [ WontFix ]
 # direct compositing reason (for performance). Only applies to SPv1.
 paint/invalidation/compositing/subpixel-offset-scaled-transform-composited.html [ WontFix ]
 
-# This test will only work in the "video-surface-layer" virtual test suite.
-media/picture-in-picture/picture-in-picture-interstitial-sizing.html [ WontFix ]
-
 # Tests that use too much storage for automation.
 http/tests/cachestorage/large-put.html [ WontFix ]
 
@@ -1699,9 +1696,6 @@ crbug.com/869492 virtual/unified-autoplay/external/wpt/feature-policy/experiment
 crbug.com/869492 virtual/threaded/external/wpt/feature-policy/experimental-features/lazyload/lazyload-disabled-image-tentative.html [ WontFix ]
 crbug.com/869492 virtual/threaded/external/wpt/feature-policy/experimental-features/lazyload/lazyload-enabled-image-tentative.sub.html [ WontFix ]
 crbug.com/869492 virtual/threaded/external/wpt/feature-policy/experimental-features/lazyload/lazyload-image-attribute-on-sanity-check-tentative.sub.html [ WontFix ]
-crbug.com/869492 virtual/video-surface-layer/external/wpt/feature-policy/experimental-features/lazyload/lazyload-disabled-image-tentative.html [ WontFix ]
-crbug.com/869492 virtual/video-surface-layer/external/wpt/feature-policy/experimental-features/lazyload/lazyload-enabled-image-tentative.sub.html [ WontFix ]
-crbug.com/869492 virtual/video-surface-layer/external/wpt/feature-policy/experimental-features/lazyload/lazyload-image-attribute-on-sanity-check-tentative.sub.html [ WontFix ]
 
 # Tests that are not supported if outofblink-cors feature is enabled.
 # These functionarities should be verified on browser_tests for outofblink-cors.
@@ -2299,7 +2293,6 @@ crbug.com/946022 [ Win7 ] images/image-click-scale-restore-zoomed-image.html [ W
 crbug.com/946022 [ Win7 ] images/image-zoom-to-25.html [ WontFix ]
 crbug.com/946022 [ Win7 ] images/image-zoom-to-500.html [ WontFix ]
 crbug.com/946022 [ Win7 ] media/controls/overflow-menu-hide-on-resize.html [ WontFix ]
-crbug.com/946022 [ Win7 ] virtual/video-surface-layer/media/controls/overflow-menu-hide-on-resize.html [ WontFix ]
 crbug.com/946022 [ Win7 ] paint/invalidation/resize-iframe-text.html [ WontFix ]
 crbug.com/946022 [ Win7 ] paint/invalidation/scroll/scrollbar-damage-and-full-viewport-repaint.html [ WontFix ]
 crbug.com/946022 [ Win7 ] paint/invalidation/window-resize/ [ WontFix ]
