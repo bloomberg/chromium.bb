@@ -170,10 +170,7 @@ declare_args() {
 
 declare_args() {
   # Set to true to use lld, the LLVM linker.
-  # https://crbug.com/917504 for arm chromeos
-  use_lld = is_clang && (is_win || is_fuchsia || is_android ||
-                         (is_linux && target_os != "chromeos") ||
-                         (target_os == "chromeos" && current_cpu != "arm"))
+  use_lld = is_clang && (is_win || is_fuchsia || is_android || is_linux)
 }
 
 declare_args() {
