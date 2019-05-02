@@ -1430,7 +1430,6 @@ test("content_unittests") {
     "../browser/cocoa/system_hotkey_map_unittest.mm",
     "../browser/code_cache/generated_code_cache_unittest.cc",
     "../browser/compositor/reflector_impl_unittest.cc",
-    "../browser/compositor/software_browser_compositor_output_surface_unittest.cc",
     "../browser/cookie_store/cookie_store_manager_unittest.cc",
     "../browser/devtools/devtools_background_services_context_unittest.cc",
     "../browser/devtools/devtools_http_handler_unittest.cc",
@@ -2246,10 +2245,7 @@ test("content_unittests") {
     deps += [ "//ui/events:test_support" ]
   }
   if (!use_aura && !is_mac) {
-    sources -= [
-      "../browser/compositor/reflector_impl_unittest.cc",
-      "../browser/compositor/software_browser_compositor_output_surface_unittest.cc",
-    ]
+    sources -= [ "../browser/compositor/reflector_impl_unittest.cc" ]
   }
 
   if (!is_win && !is_mac) {
