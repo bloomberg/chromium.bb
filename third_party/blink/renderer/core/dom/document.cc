@@ -3720,7 +3720,6 @@ void Document::DispatchUnloadEvents(DocumentLoadTiming* timing) {
 }
 
 void Document::DispatchFreezeEvent() {
-  DCHECK(RuntimeEnabledFeatures::PageLifecycleEnabled());
   const TimeTicks freeze_event_start = CurrentTimeTicks();
   SetFreezingInProgress(true);
   DispatchEvent(*Event::Create(event_type_names::kFreeze));

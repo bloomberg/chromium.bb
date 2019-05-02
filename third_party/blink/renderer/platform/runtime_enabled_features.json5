@@ -1019,12 +1019,6 @@
       settable_from_internals: true,
       status: "experimental",
     },
-    // This feature refers to the API that delivers notifications to pages on
-    // lifecycle state changes.
-    {
-      name: "PageLifecycle",
-      status: "stable",
-    },
     // The following are developer opt-outs and opt-ins for PageLifecycle state
     // transitions. If neither is specified then heuristics will be applied to
     // determine whether the page is eligible.

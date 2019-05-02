@@ -495,7 +495,6 @@ void Page::SetLifecycleState(PageLifecycleState state) {
     return;
   DCHECK_NE(state, PageLifecycleState::kUnknown);
 
-  if (RuntimeEnabledFeatures::PageLifecycleEnabled()) {
     if (state == PageLifecycleState::kFrozen) {
       for (Frame* frame = main_frame_.Get(); frame;
            frame = frame->Tree().TraverseNext()) {
@@ -512,7 +511,6 @@ void Page::SetLifecycleState(PageLifecycleState state) {
         frame->DidResume();
       }
     }
-  }
   page_lifecycle_state_ = state;
 }
 

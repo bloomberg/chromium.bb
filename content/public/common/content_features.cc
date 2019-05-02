@@ -304,10 +304,6 @@ const base::Feature kOverscrollHistoryNavigation {
 #endif
 };
 
-// Blink PageLifecycle feature. See https://crbug.com/775194
-const base::Feature kPageLifecycle{"PageLifecycle",
-                                   base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Whether document level event listeners should default 'passive' to true.
 const base::Feature kPassiveDocumentEventListeners{
     "PassiveDocumentEventListeners", base::FEATURE_ENABLED_BY_DEFAULT};

@@ -581,7 +581,6 @@ void LocalFrame::DidChangeVisibilityState() {
 }
 
 void LocalFrame::DidFreeze() {
-  DCHECK(RuntimeEnabledFeatures::PageLifecycleEnabled());
   if (GetDocument()) {
     auto* document_resource_coordinator =
         GetDocument()->GetResourceCoordinator();
@@ -607,7 +606,6 @@ void LocalFrame::DidFreeze() {
 }
 
 void LocalFrame::DidResume() {
-  DCHECK(RuntimeEnabledFeatures::PageLifecycleEnabled());
   if (GetDocument()) {
     const TimeTicks resume_event_start = CurrentTimeTicks();
     GetDocument()->DispatchEvent(*Event::Create(event_type_names::kResume));

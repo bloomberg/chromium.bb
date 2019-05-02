@@ -178,7 +178,7 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
     // https://w3c.github.io/page-visibility/#extensions-to-the-document-interface
     readonly attribute boolean hidden;
     readonly attribute VisibilityState visibilityState;
-    [RuntimeEnabled=PageLifecycle] readonly attribute boolean wasDiscarded;
+    readonly attribute boolean wasDiscarded;
 
     // CORS and RFC1918
     // https://wicg.github.io/cors-rfc1918/#feature-detect
@@ -201,8 +201,8 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
     attribute EventHandler onbeforecopy;
     attribute EventHandler onbeforecut;
     attribute EventHandler onbeforepaste;
-    [RuntimeEnabled=PageLifecycle] attribute EventHandler onfreeze;
-    [RuntimeEnabled=PageLifecycle] attribute EventHandler onresume;
+    attribute EventHandler onfreeze;
+    attribute EventHandler onresume;
     attribute EventHandler onsearch;
     [RuntimeEnabled=ExperimentalContentSecurityPolicyFeatures] attribute EventHandler onsecuritypolicyviolation;
     attribute EventHandler onvisibilitychange;

@@ -172,12 +172,10 @@ bool RemoteFrame::ShouldClose() {
 }
 
 void RemoteFrame::DidFreeze() {
-  DCHECK(RuntimeEnabledFeatures::PageLifecycleEnabled());
   // TODO(fmeawad): Add support for remote frames.
 }
 
 void RemoteFrame::DidResume() {
-  DCHECK(RuntimeEnabledFeatures::PageLifecycleEnabled());
   // TODO(fmeawad): Add support for remote frames.
 }
 

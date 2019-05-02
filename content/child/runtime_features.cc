@@ -404,9 +404,6 @@ void SetIndividualRuntimeFeatures(
   if (base::FeatureList::IsEnabled(features::kFeaturePolicyForSandbox))
     WebRuntimeFeatures::EnableFeaturePolicyForSandbox(true);
 
-  if (base::FeatureList::IsEnabled(features::kPageLifecycle))
-    WebRuntimeFeatures::EnablePageLifecycle(true);
-
 #if defined(OS_ANDROID)
   if (base::android::BuildInfo::GetInstance()->sdk_int() >=
       base::android::SDK_VERSION_P) {

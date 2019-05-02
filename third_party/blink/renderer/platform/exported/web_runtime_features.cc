@@ -304,10 +304,6 @@ void WebRuntimeFeatures::EnableOverscrollCustomization(bool enable) {
   RuntimeEnabledFeatures::SetOverscrollCustomizationEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnablePageLifecycle(bool enable) {
-  RuntimeEnabledFeatures::SetPageLifecycleEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnablePagePopup(bool enable) {
   RuntimeEnabledFeatures::SetPagePopupEnabled(enable);
 }
