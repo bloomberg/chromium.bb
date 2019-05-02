@@ -243,7 +243,7 @@ int av1_get_active_map(AV1_COMP *cpi, unsigned char *new_map_16x16, int rows,
 // Compute the horizontal frequency components' energy in a frame
 // by calculuating the 16x4 Horizontal DCT. This is to be used to
 // decide the superresolution parameters.
-void analyze_hor_freq(const AV1_COMP *cpi, double *energy) {
+static void analyze_hor_freq(const AV1_COMP *cpi, double *energy) {
   uint64_t freq_energy[16] = { 0 };
   const YV12_BUFFER_CONFIG *buf = cpi->source;
   const int bd = cpi->td.mb.e_mbd.bd;

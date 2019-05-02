@@ -30,11 +30,9 @@
 // bars and partially discounts other 0 energy areas.
 #define MIN_ACTIVE_AREA 0.5
 #define MAX_ACTIVE_AREA 1.0
-double calculate_active_area(const AV1_COMP *cpi,
-                             const FIRSTPASS_STATS *this_frame) {
-  double active_pct;
-
-  active_pct =
+static double calculate_active_area(const AV1_COMP *cpi,
+                                    const FIRSTPASS_STATS *this_frame) {
+  const double active_pct =
       1.0 -
       ((this_frame->intra_skip_pct / 2) +
        ((this_frame->inactive_zone_rows * 2) / (double)cpi->common.mb_rows));
@@ -44,9 +42,10 @@ double calculate_active_area(const AV1_COMP *cpi,
 // Calculate a modified Error used in distributing bits between easier and
 // harder frames.
 #define ACT_AREA_CORRECTION 0.5
-double calculate_modified_err(const AV1_COMP *cpi, const TWO_PASS *twopass,
-                              const AV1EncoderConfig *oxcf,
-                              const FIRSTPASS_STATS *this_frame) {
+static double calculate_modified_err(const AV1_COMP *cpi,
+                                     const TWO_PASS *twopass,
+                                     const AV1EncoderConfig *oxcf,
+                                     const FIRSTPASS_STATS *this_frame) {
   const FIRSTPASS_STATS *const stats = &twopass->total_stats;
   const double av_weight = stats->weight / stats->count;
   const double av_err = (stats->coded_error * av_weight) / stats->count;

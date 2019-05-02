@@ -46,8 +46,6 @@ static const RestorationType force_restore_type = RESTORE_TYPES;
 // Working precision for Wiener filter coefficients
 #define WIENER_TAP_SCALE_FACTOR ((int64_t)1 << 16)
 
-const int frame_level_restore_bits[RESTORE_TYPES] = { 2, 2, 2, 2 };
-
 typedef int64_t (*sse_extractor_type)(const YV12_BUFFER_CONFIG *a,
                                       const YV12_BUFFER_CONFIG *b);
 typedef int64_t (*sse_part_extractor_type)(const YV12_BUFFER_CONFIG *a,
