@@ -218,7 +218,8 @@ storage::FileSystemOperationRunner::OperationID StartCopyOnIOThread(
   storage::FileSystemOperationRunner::OperationID* operation_id =
       new storage::FileSystemOperationRunner::OperationID;
   *operation_id = file_system_context->operation_runner()->Copy(
-      source_url, destination_url, storage::FileSystemOperation::OPTION_NONE,
+      source_url, destination_url,
+      storage::FileSystemOperation::OPTION_PRESERVE_LAST_MODIFIED,
       storage::FileSystemOperation::ERROR_BEHAVIOR_ABORT,
       base::BindRepeating(&OnCopyProgress, profile_id,
                           base::Unretained(operation_id)),
