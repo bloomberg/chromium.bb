@@ -624,6 +624,7 @@ void LocationBarView::Layout() {
 void LocationBarView::OnThemeChanged() {
   tint_ = GetTint();
   SkColor icon_color = GetColor(OmniboxPart::RESULTS_ICON);
+  omnibox_page_action_icon_container_view_->SetIconColor(icon_color);
   for (PageActionIconView* icon_view : page_action_icons_)
     icon_view->SetIconColor(icon_color);
   for (ContentSettingImageView* image_view : content_setting_views_)
