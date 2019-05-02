@@ -10,10 +10,7 @@
 #include "components/download/public/common/download_url_loader_factory_getter.h"
 #include "components/download/public/common/stream_handle_input_stream.h"
 #include "components/download/public/common/url_download_request_handle.h"
-#include "services/device/public/mojom/constants.mojom.h"
-#include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace network {
 struct ResourceResponseHead;
@@ -70,14 +67,12 @@ std::unique_ptr<ResourceDownloader> ResourceDownloader::BeginDownload(
     const GURL& tab_referrer_url,
     bool is_new_download,
     bool is_parallel_request,
-    std::unique_ptr<service_manager::Connector> connector,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
   auto downloader = std::make_unique<ResourceDownloader>(
       delegate, std::move(request), params->render_process_host_id(),
       params->render_frame_host_routing_id(), site_url, tab_url,
       tab_referrer_url, is_new_download, task_runner,
-      std::move(url_loader_factory_getter), url_security_policy,
-      std::move(connector));
+      std::move(url_loader_factory_getter), url_security_policy);
 
   downloader->Start(std::move(params), is_parallel_request);
   return downloader;
@@ -100,13 +95,11 @@ ResourceDownloader::InterceptNavigationResponse(
     scoped_refptr<download::DownloadURLLoaderFactoryGetter>
         url_loader_factory_getter,
     const URLSecurityPolicy& url_security_policy,
-    std::unique_ptr<service_manager::Connector> connector,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
   auto downloader = std::make_unique<ResourceDownloader>(
       delegate, std::move(resource_request), render_process_id, render_frame_id,
       site_url, tab_url, tab_referrer_url, true, task_runner,
-      std::move(url_loader_factory_getter), url_security_policy,
-      std::move(connector));
+      std::move(url_loader_factory_getter), url_security_policy);
   downloader->InterceptResponse(std::move(response), std::move(url_chain),
                                 cert_status,
                                 std::move(url_loader_client_endpoints));
@@ -125,8 +118,7 @@ ResourceDownloader::ResourceDownloader(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     scoped_refptr<download::DownloadURLLoaderFactoryGetter>
         url_loader_factory_getter,
-    const URLSecurityPolicy& url_security_policy,
-    std::unique_ptr<service_manager::Connector> connector)
+    const URLSecurityPolicy& url_security_policy)
     : delegate_(delegate),
       resource_request_(std::move(resource_request)),
       is_new_download_(is_new_download),
@@ -138,9 +130,7 @@ ResourceDownloader::ResourceDownloader(
       delegate_task_runner_(task_runner),
       url_loader_factory_getter_(std::move(url_loader_factory_getter)),
       url_security_policy_(url_security_policy),
-      weak_ptr_factory_(this) {
-  RequestWakeLock(connector.get());
-}
+      weak_ptr_factory_(this) {}
 
 ResourceDownloader::~ResourceDownloader() = default;
 
@@ -264,27 +254,10 @@ void ResourceDownloader::CancelRequest() {
 }
 
 void ResourceDownloader::Destroy() {
-  if (wake_lock_)
-    wake_lock_->CancelWakeLock();
   delegate_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&UrlDownloadHandler::Delegate::OnUrlDownloadStopped,
                      delegate_, this));
-}
-
-void ResourceDownloader::RequestWakeLock(
-    service_manager::Connector* connector) {
-  if (!connector)
-    return;
-  device::mojom::WakeLockProviderPtr wake_lock_provider;
-  connector->BindInterface(device::mojom::kServiceName,
-                           mojo::MakeRequest(&wake_lock_provider));
-  wake_lock_provider->GetWakeLockWithoutContext(
-      device::mojom::WakeLockType::kPreventAppSuspension,
-      device::mojom::WakeLockReason::kOther, "Download in progress",
-      mojo::MakeRequest(&wake_lock_));
-
-  wake_lock_->RequestWakeLock();
 }
 
 }  // namespace download

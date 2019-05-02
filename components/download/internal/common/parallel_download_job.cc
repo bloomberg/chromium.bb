@@ -27,8 +27,7 @@ ParallelDownloadJob::ParallelDownloadJob(
     const DownloadCreateInfo& create_info,
     scoped_refptr<download::DownloadURLLoaderFactoryGetter>
         url_loader_factory_getter,
-    net::URLRequestContextGetter* url_request_context_getter,
-    service_manager::Connector* connector)
+    net::URLRequestContextGetter* url_request_context_getter)
     : DownloadJobImpl(download_item, std::move(request_handle), true),
       initial_request_offset_(create_info.offset),
       initial_received_slices_(download_item->GetReceivedSlices()),
@@ -36,8 +35,7 @@ ParallelDownloadJob::ParallelDownloadJob(
       requests_sent_(false),
       is_canceled_(false),
       url_loader_factory_getter_(std::move(url_loader_factory_getter)),
-      url_request_context_getter_(url_request_context_getter),
-      connector_(connector) {}
+      url_request_context_getter_(url_request_context_getter) {}
 
 ParallelDownloadJob::~ParallelDownloadJob() = default;
 
@@ -300,7 +298,7 @@ void ParallelDownloadJob::CreateRequest(int64_t offset, int64_t length) {
 
   // Send the request.
   worker->SendRequest(std::move(download_params), url_loader_factory_getter_,
-                      url_request_context_getter_, connector_);
+                      url_request_context_getter_);
   DCHECK(workers_.find(offset) == workers_.end());
   workers_[offset] = std::move(worker);
 }

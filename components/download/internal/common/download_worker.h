@@ -17,11 +17,7 @@
 
 namespace net {
 class URLRequestContextGetter;
-}  // namespace net
-
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
+}
 
 namespace download {
 class DownloadURLLoaderFactoryGetter;
@@ -57,8 +53,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadWorker
       std::unique_ptr<DownloadUrlParameters> params,
       scoped_refptr<download::DownloadURLLoaderFactoryGetter>
           url_loader_factory_getter,
-      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
-      service_manager::Connector* connector);
+      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter);
 
   // Download operations.
   void Pause();

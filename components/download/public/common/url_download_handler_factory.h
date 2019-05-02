@@ -11,11 +11,7 @@
 
 namespace net {
 class URLRequestContextGetter;
-}  // namespace net
-
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
+}
 
 namespace download {
 class DownloadURLLoaderFactoryGetter;
@@ -39,7 +35,6 @@ class COMPONENTS_DOWNLOAD_EXPORT UrlDownloadHandlerFactory {
           url_loader_factory_getter,
       const URLSecurityPolicy& url_security_policy,
       scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
-      std::unique_ptr<service_manager::Connector> connector,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
   virtual ~UrlDownloadHandlerFactory();
@@ -57,7 +52,6 @@ class COMPONENTS_DOWNLOAD_EXPORT UrlDownloadHandlerFactory {
           url_loader_factory_getter,
       const URLSecurityPolicy& url_security_policy,
       scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
-      std::unique_ptr<service_manager::Connector> connector,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) = 0;
 };
 
