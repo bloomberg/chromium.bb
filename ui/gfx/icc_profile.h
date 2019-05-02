@@ -48,6 +48,10 @@ class COLOR_SPACE_EXPORT ICCProfile {
   // Return a ColorSpace that best represents this ICCProfile.
   ColorSpace GetColorSpace() const;
 
+  // Return a ColorSpace with the primaries from this ICCProfile and an
+  // sRGB transfer function.
+  ColorSpace GetPrimariesOnlyColorSpace() const;
+
   // Returns true if GetColorSpace returns an accurate representation of this
   // ICCProfile. This could be false if the result of GetColorSpace had to
   // approximate transfer functions.

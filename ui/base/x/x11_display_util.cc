@@ -232,7 +232,7 @@ std::vector<display::Display> BuildDisplaysFromXRandRInfo(
         gfx::ICCProfile icc_profile = ui::GetICCProfileForMonitor(
             monitor_iter == output_to_monitor.end() ? 0 : monitor_iter->second);
         icc_profile.HistogramDisplay(display.id());
-        display.set_color_space(icc_profile.GetColorSpace());
+        display.set_color_space(icc_profile.GetPrimariesOnlyColorSpace());
       }
 
       displays.push_back(display);

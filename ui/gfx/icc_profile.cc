@@ -163,6 +163,13 @@ ColorSpace ICCProfile::GetColorSpace() const {
                                   internals_->transfer_fn_);
 }
 
+ColorSpace ICCProfile::GetPrimariesOnlyColorSpace() const {
+  ColorSpace result = GetColorSpace();
+  if (result.IsValid())
+    result.transfer_ = ColorSpace::TransferID::IEC61966_2_1;
+  return result;
+}
+
 bool ICCProfile::IsColorSpaceAccurate() const {
   if (!internals_)
     return false;
