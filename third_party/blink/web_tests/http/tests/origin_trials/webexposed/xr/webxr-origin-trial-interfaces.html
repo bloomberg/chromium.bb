@@ -5,57 +5,37 @@
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../../resources/origin-trials-helper.js"></script>
 <script>
+
 let properties_to_check = {'Navigator': ['xr']};
 
-// Can only run these two tests if webXR is not enabled via a Chrome flag.
-// That is only the case when running this in a virtual test suite (by default,
-// runtime enabled features are on for layout tests).
-// To run in virtual test suite:
-// tools/run_web_tests.py virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed
-if (!self.internals.runtimeFlags.webXREnabled) {
-  test(t => {
-    OriginTrialsHelper.check_properties_missing(this, properties_to_check);
-  }, "WebXR's entrypoint properties are not available without a token.");
+// The WebXR APIs should not be present without the token.
+test(t => {
+  OriginTrialsHelper.check_properties_missing_unless_runtime_flag(this, properties_to_check, 'webXREnabled');
+}, "WebXR's entrypoint properties are not available without a token.");
 
-  // The WebXRDeviceM69 token has been disabled due to breaking webxr API
-  // changes made in M73.
-  // generated with command
-  // tools/origin_trials/generate_token.py http://127.0.0.1:8000 WebXRDeviceM69 --expire-timestamp=2000000000
-  let token_m69 = "AkvrKmuIjbDoP4zBBuZLWVMJLzFCV+2l8Iv2RPYCSbeSjFRRidSbIgW41p+jnCcOukYZ3tE4ZvQsR6qNhiIW5QoAAABWeyJvcmlnaW4iOiAiaHR0cDovLzEyNy4wLjAuMTo4MDAwIiwgImZlYXR1cmUiOiAiV2ViWFJEZXZpY2VNNjkiLCAiZXhwaXJ5IjogMjAwMDAwMDAwMH0=";
-  OriginTrialsHelper.add_token(token_m69);
-  test(t => {
-    OriginTrialsHelper.check_properties_missing(this, properties_to_check);
-  }, "WebXR's entrypoint properties are not available with WebXRDeviceM69 token.");
-}
-
-// generated with command
+// Add the token, which was generated with the following command:
 // tools/origin_trials/generate_token.py http://127.0.0.1:8000 WebXRDeviceM73 --expire-timestamp=2000000000
-let token_m73 = "AkdUKG/76uPyi1gvtP+q4o8XF9C6DWpF45h6xzMHwBFS+cfXrgo0zMHkA1T9ovuz+VVtxacaS/dc8F8JeWpcqAoAAABWeyJvcmlnaW4iOiAiaHR0cDovLzEyNy4wLjAuMTo4MDAwIiwgImZlYXR1cmUiOiAiV2ViWFJEZXZpY2VNNzMiLCAiZXhwaXJ5IjogMjAwMDAwMDAwMH0=";
-OriginTrialsHelper.add_token(token_m73);
+let token = "AkdUKG/76uPyi1gvtP+q4o8XF9C6DWpF45h6xzMHwBFS+cfXrgo0zMHkA1T9ovuz+VVtxacaS/dc8F8JeWpcqAoAAABWeyJvcmlnaW4iOiAiaHR0cDovLzEyNy4wLjAuMTo4MDAwIiwgImZlYXR1cmUiOiAiV2ViWFJEZXZpY2VNNzMiLCAiZXhwaXJ5IjogMjAwMDAwMDAwMH0=";
+OriginTrialsHelper.add_token(token);
+
+// The WebXR APIs should be available now.
 test(t => {
   OriginTrialsHelper.check_properties(this, properties_to_check);
-}, "WebXR's entrypoint properties are available with WebXRDeviceM73 token.");
+}, "WebXR's entrypoint properties are available with origin trial token.");
 
 
-// Ensure that no Gamepad Extensions are enabled.
+// Ensure that Gamepad Extensions are NOT enabled by the origin trial token.
+test(t => {
+    webvr_gamepad_properties = {
+    'Gamepad': ['pose', 'hand', 'displayId'],
+  };
+    OriginTrialsHelper.check_properties_missing_unless_runtime_flag(this, webvr_gamepad_properties, 'webVREnabled');
+}, "WebVR-specific Gamepad properties are not available with a token.");
 
-gamepad_properties_to_check = {
-  'Gamepad': ['pose', 'hand', 'displayId'],
-};
-
-gamepad_interfaces_to_check = [
-  'GamepadPose'
-];
-
-// Experimental web platform features are always enabled when this test is run
-// normally, so do not check in that case.
-if (!self.internals.runtimeFlags.webVREnabled) {
-  test(t => {
-    OriginTrialsHelper.check_properties_missing(this, gamepad_properties_to_check);
-  }, "WebVR-specific Gamepad properties are not available.");
-
-  test(t => {
-    OriginTrialsHelper.check_interfaces_missing(this, gamepad_interfaces_to_check);
-  }, "WebVR-specific Gamepad interfaces are not available.");
-}
+test(t => {
+  webvr_gamepad_interfaces = [
+    'GamepadPose'
+  ];
+    OriginTrialsHelper.check_interfaces_missing_unless_runtime_flag(this, webvr_gamepad_interfaces, 'webVREnabled');
+}, "WebVR-specific Gamepad interfaces are not available with a token.");
 </script>
