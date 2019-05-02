@@ -416,12 +416,12 @@ void MediaNotificationView::UpdateViewForExpandedState() {
 void MediaNotificationView::CreateMediaButton(
     MediaSessionAction action,
     const base::string16& accessible_name) {
-  views::ImageButton* button = views::CreateVectorImageButton(this);
+  auto button = views::CreateVectorImageButton(this);
   button->set_tag(static_cast<int>(action));
   button->SetPreferredSize(kMediaButtonSize);
   button->SetAccessibleName(accessible_name);
   button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
-  button_row_->AddChildView(button);
+  button_row_->AddChildView(std::move(button));
 }
 
 MediaNotificationBackground*

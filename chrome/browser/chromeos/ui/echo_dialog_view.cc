@@ -76,12 +76,13 @@ void EchoDialogView::Show(gfx::NativeWindow parent) {
 }
 
 views::View* EchoDialogView::CreateExtraView() {
-  learn_more_button_ = views::CreateVectorImageButton(this);
-  views::SetImageFromVectorIcon(learn_more_button_,
+  auto learn_more_button = views::CreateVectorImageButton(this);
+  views::SetImageFromVectorIcon(learn_more_button.get(),
                                 vector_icons::kHelpOutlineIcon);
-  learn_more_button_->SetAccessibleName(
+  learn_more_button->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_CHROMEOS_ACC_LEARN_MORE));
-  learn_more_button_->SetFocusForPlatform();
+  learn_more_button->SetFocusForPlatform();
+  learn_more_button_ = learn_more_button.release();
   return learn_more_button_;
 }
 

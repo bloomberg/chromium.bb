@@ -59,12 +59,13 @@ SkColor GetDefaultFrameColor() {
 #endif
 }
 
-views::ImageButton* CreateCloseButton(views::ButtonListener* listener,
-                                      SkColor color) {
-  views::ImageButton* close_button = CreateVectorImageButton(listener);
-  SetImageFromVectorIconWithColor(close_button, vector_icons::kCloseRoundedIcon,
-                                  GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
-                                  color);
+std::unique_ptr<views::ImageButton> CreateCloseButton(
+    views::ButtonListener* listener,
+    SkColor color) {
+  auto close_button = CreateVectorImageButton(listener);
+  SetImageFromVectorIconWithColor(
+      close_button.get(), vector_icons::kCloseRoundedIcon,
+      GetLayoutConstant(LOCATION_BAR_ICON_SIZE), color);
   close_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_APP_CLOSE));
   close_button->SetBorder(views::CreateEmptyBorder(
       gfx::Insets(GetLayoutConstant(LOCATION_BAR_CHILD_INTERIOR_PADDING))));
@@ -190,8 +191,7 @@ CustomTabBarView::CustomTabBarView(BrowserView* browser_view,
   const gfx::FontList& font_list = views::style::GetFont(
       CONTEXT_OMNIBOX_PRIMARY, views::style::STYLE_PRIMARY);
 
-  close_button_ = CreateCloseButton(this, foreground_color);
-  AddChildView(close_button_);
+  close_button_ = AddChildView(CreateCloseButton(this, foreground_color));
 
   location_icon_view_ = new LocationIconView(font_list, this);
   AddChildView(location_icon_view_);

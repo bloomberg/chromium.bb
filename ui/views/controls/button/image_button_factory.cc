@@ -28,9 +28,9 @@ void ConfigureVectorImageButton(ImageButton* button) {
 
 }  // namespace
 
-ImageButton* CreateVectorImageButton(ButtonListener* listener) {
-  ImageButton* button = new ImageButton(listener);
-  ConfigureVectorImageButton(button);
+std::unique_ptr<ImageButton> CreateVectorImageButton(ButtonListener* listener) {
+  auto button = std::make_unique<ImageButton>(listener);
+  ConfigureVectorImageButton(button.get());
   return button;
 }
 

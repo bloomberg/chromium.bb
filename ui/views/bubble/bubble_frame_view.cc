@@ -113,10 +113,9 @@ std::unique_ptr<Label> BubbleFrameView::CreateDefaultTitleLabel(
 std::unique_ptr<Button> BubbleFrameView::CreateCloseButton(
     ButtonListener* listener,
     bool is_dark_mode) {
-  ImageButton* close_button = nullptr;
-  close_button = CreateVectorImageButton(listener);
+  auto close_button = CreateVectorImageButton(listener);
   SetImageFromVectorIconWithColor(
-      close_button, vector_icons::kCloseRoundedIcon,
+      close_button.get(), vector_icons::kCloseRoundedIcon,
       is_dark_mode ? SkColorSetA(SK_ColorWHITE, 0xDD) : gfx::kGoogleGrey700);
   close_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_APP_CLOSE));
   close_button->SizeToPreferredSize();
@@ -131,7 +130,7 @@ std::unique_ptr<Button> BubbleFrameView::CreateCloseButton(
   // access to the close button when not using a screen reader is done via the
   // ESC key handler in DialogClientView.
   close_button->SetFocusBehavior(View::FocusBehavior::NEVER);
-  return base::WrapUnique(close_button);
+  return close_button;
 }
 
 gfx::Rect BubbleFrameView::GetBoundsForClientView() const {

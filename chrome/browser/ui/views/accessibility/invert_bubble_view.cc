@@ -94,11 +94,12 @@ InvertBubbleView::~InvertBubbleView() {
 }
 
 views::View* InvertBubbleView::CreateExtraView() {
-  views::ImageButton* learn_more = views::CreateVectorImageButton(this);
-  views::SetImageFromVectorIcon(learn_more, vector_icons::kHelpOutlineIcon);
+  auto learn_more = views::CreateVectorImageButton(this);
+  views::SetImageFromVectorIcon(learn_more.get(),
+                                vector_icons::kHelpOutlineIcon);
   learn_more->SetTooltipText(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
   learn_more->set_tag(kLearnMoreButton);
-  return learn_more;
+  return learn_more.release();
 }
 
 int InvertBubbleView::GetDialogButtons() const {

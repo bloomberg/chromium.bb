@@ -109,19 +109,19 @@ InfoBarView::InfoBarView(std::unique_ptr<infobars::InfoBarDelegate> delegate)
     AddChildView(icon_);
   }
 
-  close_button_ = views::CreateVectorImageButton(this);
+  auto close_button = views::CreateVectorImageButton(this);
   // This is the wrong color, but allows the button's size to be computed
   // correctly.  We'll reset this with the correct color in OnThemeChanged().
-  views::SetImageFromVectorIcon(close_button_, vector_icons::kCloseRoundedIcon,
+  views::SetImageFromVectorIcon(close_button.get(),
+                                vector_icons::kCloseRoundedIcon,
                                 gfx::kPlaceholderColor);
-  close_button_->SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
-  close_button_->SetFocusForPlatform();
+  close_button->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
+  close_button->SetFocusForPlatform();
   gfx::Insets close_button_spacing = GetCloseButtonSpacing();
-  close_button_->SetProperty(views::kMarginsKey,
-                             new gfx::Insets(close_button_spacing.top(), 0,
-                                             close_button_spacing.bottom(), 0));
-  AddChildView(close_button_);
+  close_button->SetProperty(views::kMarginsKey,
+                            new gfx::Insets(close_button_spacing.top(), 0,
+                                            close_button_spacing.bottom(), 0));
+  close_button_ = AddChildView(std::move(close_button));
 }
 
 InfoBarView::~InfoBarView() {

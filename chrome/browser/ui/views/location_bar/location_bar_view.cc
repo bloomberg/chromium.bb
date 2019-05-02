@@ -269,11 +269,11 @@ void LocationBarView::Init() {
     AddChildView(icon_view);
   }
 
-  clear_all_button_ = views::CreateVectorImageButton(this);
-  clear_all_button_->SetTooltipText(
+  auto clear_all_button = views::CreateVectorImageButton(this);
+  clear_all_button->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_OMNIBOX_CLEAR_ALL));
+  clear_all_button_ = AddChildView(std::move(clear_all_button));
   RefreshClearAllButtonIcon();
-  AddChildView(clear_all_button_);
 
   // Initialize the location entry. We do this to avoid a black flash which is
   // visible when the location entry has just been initialized.

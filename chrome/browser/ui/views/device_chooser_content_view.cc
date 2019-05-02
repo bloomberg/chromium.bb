@@ -314,25 +314,28 @@ base::string16 DeviceChooserContentView::GetWindowTitle() const {
 }
 
 std::unique_ptr<views::View> DeviceChooserContentView::CreateExtraView() {
-  std::vector<views::View*> extra_views;
+  std::vector<std::unique_ptr<views::View>> extra_views;
   if (chooser_controller_->ShouldShowHelpButton()) {
-    views::ImageButton* help_button = views::CreateVectorImageButton(this);
-    views::SetImageFromVectorIcon(help_button, vector_icons::kHelpOutlineIcon);
+    auto help_button = views::CreateVectorImageButton(this);
+    views::SetImageFromVectorIcon(help_button.get(),
+                                  vector_icons::kHelpOutlineIcon);
     help_button->SetFocusForPlatform();
     help_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
     help_button->set_tag(kHelpButtonTag);
-    extra_views.push_back(help_button);
+    extra_views.push_back(std::move(help_button));
   }
 
   if (chooser_controller_->ShouldShowReScanButton()) {
-    bluetooth_status_container_ = new BluetoothStatusContainer(this);
-    extra_views.push_back(bluetooth_status_container_);
+    auto bluetooth_status_container =
+        std::make_unique<BluetoothStatusContainer>(this);
+    bluetooth_status_container_ = bluetooth_status_container.get();
+    extra_views.push_back(std::move(bluetooth_status_container));
   }
 
   if (extra_views.empty())
     return nullptr;
   if (extra_views.size() == 1)
-    return std::unique_ptr<views::View>(extra_views.at(0));
+    return std::move(extra_views.at(0));
 
   auto container = std::make_unique<views::View>();
   auto layout = std::make_unique<views::BoxLayout>(
@@ -342,8 +345,9 @@ std::unique_ptr<views::View> DeviceChooserContentView::CreateExtraView() {
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
   container->SetLayoutManager(std::move(layout));
-  for (auto* view : extra_views)
-    container->AddChildView(view);
+
+  for (auto& view : extra_views)
+    container->AddChildView(std::move(view));
   return container;
 }
 

@@ -42,10 +42,9 @@ TabGroupHeader::TabGroupHeader(const base::string16& group_title) {
                              views::MinimumFlexSizeRule::kScaleToZero,
                              views::MaximumFlexSizeRule::kUnbounded));
 
-  auto* group_menu_button =
-      views::CreateVectorImageButton(/*listener*/ nullptr);
-  views::SetImageFromVectorIcon(group_menu_button, kBrowserToolsIcon);
-  AddChildView(group_menu_button);
+  auto group_menu_button = views::CreateVectorImageButton(/*listener*/ nullptr);
+  views::SetImageFromVectorIcon(group_menu_button.get(), kBrowserToolsIcon);
+  AddChildView(std::move(group_menu_button));
 }
 
 void TabGroupHeader::OnPaint(gfx::Canvas* canvas) {

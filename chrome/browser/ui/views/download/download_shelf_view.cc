@@ -64,8 +64,6 @@ DownloadShelfView::DownloadShelfView(Browser* browser, BrowserView* parent)
     : browser_(browser),
       new_item_animation_(this),
       shelf_animation_(this),
-      show_all_view_(nullptr),
-      close_button_(views::CreateVectorImageButton(this)),
       parent_(parent),
       mouse_watcher_(
           std::make_unique<views::MouseWatcherViewHost>(this, gfx::Insets()),
@@ -78,9 +76,9 @@ DownloadShelfView::DownloadShelfView(Browser* browser, BrowserView* parent)
       this, l10n_util::GetStringUTF16(IDS_SHOW_ALL_DOWNLOADS));
   AddChildView(show_all_view_);
 
-  close_button_->SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
-  AddChildView(close_button_);
+  auto close_button = views::CreateVectorImageButton(this);
+  close_button->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
+  close_button_ = AddChildView(std::move(close_button));
 
   accessible_alert_ = new views::View();
   AddChildView(accessible_alert_);

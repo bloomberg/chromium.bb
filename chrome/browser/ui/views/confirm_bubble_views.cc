@@ -45,12 +45,6 @@ ConfirmBubbleViews::ConfirmBubbleViews(
   layout->StartRow(views::GridLayout::kFixedSize, 0);
   layout->AddView(label);
 
-  // Initialize the help button.
-  help_button_ = CreateVectorImageButton(this);
-  help_button_->SetFocusForPlatform();
-  help_button_->SetTooltipText(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
-  SetImageFromVectorIcon(help_button_, vector_icons::kHelpOutlineIcon);
-
   chrome::RecordDialogCreation(chrome::DialogIdentifier::CONFIRM_BUBBLE);
 }
 
@@ -83,6 +77,11 @@ bool ConfirmBubbleViews::IsDialogButtonEnabled(ui::DialogButton button) const {
 }
 
 views::View* ConfirmBubbleViews::CreateExtraView() {
+  auto help_button = CreateVectorImageButton(this);
+  help_button->SetFocusForPlatform();
+  help_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
+  help_button_ = help_button.release();
+  SetImageFromVectorIcon(help_button_, vector_icons::kHelpOutlineIcon);
   return help_button_;
 }
 

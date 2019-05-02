@@ -168,7 +168,7 @@ class DownloadShelfView : public views::AccessiblePaneView,
   std::vector<DownloadItemView*> download_views_;
 
   // Button for showing all downloads (chrome://downloads).
-  views::MdTextButton* show_all_view_;
+  views::MdTextButton* show_all_view_ = nullptr;
 
   // Button for closing the downloads. This is contained as a child, and
   // deleted by View.

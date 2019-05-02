@@ -176,13 +176,15 @@ MigratableCardView::GetMigratableCardDescriptionView(
             IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_LABEL_INVALID_CARDS),
         views::style::CONTEXT_LABEL, ChromeTextStyle::STYLE_RED));
 
-    delete_card_from_local_button_ = views::CreateVectorImageButton(listener);
-    views::SetImageFromVectorIcon(delete_card_from_local_button_,
+    auto delete_card_from_local_button =
+        views::CreateVectorImageButton(listener);
+    views::SetImageFromVectorIcon(delete_card_from_local_button.get(),
                                   kTrashCanIcon);
-    delete_card_from_local_button_->SetTooltipText(l10n_util::GetStringUTF16(
+    delete_card_from_local_button->SetTooltipText(l10n_util::GetStringUTF16(
         IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_TRASH_CAN_BUTTON_TOOLTIP));
-    migratable_card_description_view->AddChildView(
-        delete_card_from_local_button_);
+    delete_card_from_local_button_ =
+        migratable_card_description_view->AddChildView(
+            std::move(delete_card_from_local_button));
   }
 
   return migratable_card_description_view;

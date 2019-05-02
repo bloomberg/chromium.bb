@@ -135,7 +135,6 @@ DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr download,
       model_(std::move(download)),
       save_button_(nullptr),
       discard_button_(nullptr),
-      dropdown_button_(views::CreateVectorImageButton(this)),
       dangerous_download_label_(nullptr),
       dangerous_download_label_sized_(false),
       creation_time_(base::Time::Now()),
@@ -163,13 +162,14 @@ DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr download,
   status_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   status_label_ = AddChildView(std::move(status_label));
 
-  dropdown_button_->SetAccessibleName(l10n_util::GetStringUTF16(
+  auto dropdown_button = views::CreateVectorImageButton(this);
+  dropdown_button->SetAccessibleName(l10n_util::GetStringUTF16(
       IDS_DOWNLOAD_ITEM_DROPDOWN_BUTTON_ACCESSIBLE_TEXT));
 
-  dropdown_button_->SetBorder(
+  dropdown_button->SetBorder(
       views::CreateEmptyBorder(gfx::Insets(kDropdownBorderWidth)));
-  dropdown_button_->set_has_ink_drop_action_on_click(false);
-  AddChildView(dropdown_button_);
+  dropdown_button->set_has_ink_drop_action_on_click(false);
+  dropdown_button_ = AddChildView(std::move(dropdown_button));
 
   LoadIcon();
 

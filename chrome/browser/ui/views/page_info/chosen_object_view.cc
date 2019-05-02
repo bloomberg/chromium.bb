@@ -76,7 +76,7 @@ ChosenObjectView::ChosenObjectView(
   layout->AddView(label);
 
   // Create the delete button.
-  delete_button_ = views::CreateVectorImageButton(this);
+  delete_button_ = views::CreateVectorImageButton(this).release();
   views::SetImageFromVectorIcon(
       delete_button_, vector_icons::kCloseRoundedIcon,
       views::style::GetColor(*this, CONTEXT_BODY_TEXT_LARGE,

@@ -104,7 +104,7 @@ void PaymentRequestItemList::Item::Init() {
     layout->AddView(extra_view.release());
 
   if (show_edit_button_) {
-    views::ImageButton* edit_button = views::CreateVectorImageButton(this);
+    auto edit_button = views::CreateVectorImageButton(this);
     const SkColor icon_color =
         color_utils::DeriveDefaultIconColor(SK_ColorBLACK);
     edit_button->SetImage(views::Button::STATE_NORMAL,
@@ -115,7 +115,7 @@ void PaymentRequestItemList::Item::Init() {
     edit_button->set_id(static_cast<int>(DialogViewID::EDIT_ITEM_BUTTON));
     edit_button->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_PAYMENTS_EDIT));
-    layout->AddView(edit_button);
+    layout->AddView(edit_button.release());
   }
 
   UpdateAccessibleName();

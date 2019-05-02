@@ -367,7 +367,7 @@ class DownloadItemView : public views::InkDropHostView,
   views::Label* status_label_;
 
   // The drop down button.
-  views::ImageButton* dropdown_button_;
+  views::ImageButton* dropdown_button_ = nullptr;
 
   // Dangerous mode label.
   views::Label* dangerous_download_label_;

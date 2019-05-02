@@ -545,15 +545,16 @@ views::View* ContentSettingBubbleContents::CreateExtraView() {
   DCHECK(content_setting_bubble_model_);
   const auto& bubble_content = content_setting_bubble_model_->bubble_content();
   const auto* layout = ChromeLayoutProvider::Get();
-  std::vector<View*> extra_views;
+  std::vector<std::unique_ptr<views::View>> extra_views;
   // Optionally add a help icon if the view wants to link to a help page.
   if (bubble_content.show_learn_more) {
-    learn_more_button_ = views::CreateVectorImageButton(this);
-    learn_more_button_->SetFocusForPlatform();
-    learn_more_button_->SetTooltipText(
+    auto learn_more_button = views::CreateVectorImageButton(this);
+    learn_more_button->SetFocusForPlatform();
+    learn_more_button->SetTooltipText(
         l10n_util::GetStringUTF16(IDS_LEARN_MORE));
+    learn_more_button_ = learn_more_button.get();
     StyleLearnMoreButton(GetNativeTheme());
-    extra_views.push_back(learn_more_button_);
+    extra_views.push_back(std::move(learn_more_button));
   }
   // Optionally add a "Manage" button if the view wants to use a button to
   // invoke a separate management UI related to the dialog content.
@@ -566,18 +567,18 @@ views::View* ContentSettingBubbleContents::CreateExtraView() {
     manage_button_->SetMinSize(gfx::Size(
         layout->GetDistanceMetric(views::DISTANCE_DIALOG_BUTTON_MINIMUM_WIDTH),
         0));
-    extra_views.push_back(manage_button_);
+    extra_views.push_back(base::WrapUnique(manage_button_));
   }
   if (extra_views.empty())
     return nullptr;
   if (extra_views.size() == 1)
-    return extra_views.front();
+    return extra_views.front().release();
   views::View* container = new views::View();
   container->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, gfx::Insets(),
       layout->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
-  for (auto* extra_view : extra_views)
-    container->AddChildView(extra_view);
+  for (auto& extra_view : extra_views)
+    container->AddChildView(std::move(extra_view));
   return container;
 }
 

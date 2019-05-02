@@ -218,9 +218,9 @@ void PopulateSheetHeaderView(bool show_back_arrow,
   if (!show_back_arrow) {
     layout->SkipColumns(1);
   } else {
-    views::ImageButton* back_arrow = views::CreateVectorImageButton(listener);
+    auto back_arrow = views::CreateVectorImageButton(listener);
     views::SetImageFromVectorIcon(
-        back_arrow, vector_icons::kBackArrowIcon,
+        back_arrow.get(), vector_icons::kBackArrowIcon,
         color_utils::GetColorWithMaxContrast(background_color));
     constexpr int kBackArrowSize = 16;
     back_arrow->SetSize(gfx::Size(kBackArrowSize, kBackArrowSize));
@@ -229,7 +229,7 @@ void PopulateSheetHeaderView(bool show_back_arrow,
         static_cast<int>(PaymentRequestCommonTags::BACK_BUTTON_TAG));
     back_arrow->set_id(static_cast<int>(DialogViewID::BACK_BUTTON));
     back_arrow->SetAccessibleName(l10n_util::GetStringUTF16(IDS_PAYMENTS_BACK));
-    layout->AddView(back_arrow);
+    layout->AddView(back_arrow.release());
   }
 
   layout->AddView(header_content_view.release());

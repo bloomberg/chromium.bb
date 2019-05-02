@@ -109,8 +109,7 @@ AuthenticatorRequestSheetView::CreateIllustrationWithOverlays() {
   }
 
   if (model()->IsBackButtonVisible()) {
-    std::unique_ptr<views::ImageButton> back_arrow(
-        views::CreateVectorImageButton(this));
+    auto back_arrow = views::CreateVectorImageButton(this);
     back_arrow->SetFocusForPlatform();
     back_arrow->SetAccessibleName(l10n_util::GetStringUTF16(IDS_BACK_BUTTON));
 
@@ -128,8 +127,8 @@ AuthenticatorRequestSheetView::CreateIllustrationWithOverlays() {
     back_arrow->SizeToPreferredSize();
     back_arrow->SetX(dialog_insets.left());
     back_arrow->SetY(dialog_insets.top());
-    back_arrow_button_ = back_arrow.get();
-    image_with_overlays->AddChildView(back_arrow.release());
+    back_arrow_button_ =
+        image_with_overlays->AddChildView(std::move(back_arrow));
   }
 
   return image_with_overlays;
