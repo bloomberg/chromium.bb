@@ -36,6 +36,7 @@ if (is_mac || is_win) {
     data = [
       "//build/android/pylib",
       "//chrome/test/data/perf",
+      "//components/variations/service/generate_ui_string_overrider.py",
       "//testing/scripts",
       "//testing/test_env.py",
       "//testing/xvfb.py",
