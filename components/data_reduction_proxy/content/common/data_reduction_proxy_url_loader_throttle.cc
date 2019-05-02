@@ -76,6 +76,7 @@ void DataReductionProxyURLLoaderThrottle::BeforeWillProcessResponse(
     const GURL& response_url,
     const network::ResourceResponseHead& response_head,
     bool* defer) {
+  before_will_process_response_received_ = true;
   if (response_head.was_fetched_via_cache)
     return;
 
@@ -89,7 +90,6 @@ void DataReductionProxyURLLoaderThrottle::BeforeWillProcessResponse(
   if (params::IsWarmupURL(response_url))
     return;
 
-  before_will_process_response_received_ = true;
   MaybeRetry(proxy_server, response_head.headers.get(), net::OK, defer);
   RecordQuicProxyStatus(proxy_server);
 }
