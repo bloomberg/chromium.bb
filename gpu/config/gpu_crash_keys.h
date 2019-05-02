@@ -28,11 +28,6 @@ extern GPU_EXPORT crash_reporter::CrashKeyString<128> gpu_renderer;
 #endif
 extern GPU_EXPORT crash_reporter::CrashKeyString<4> gpu_gl_context_is_virtual;
 extern GPU_EXPORT crash_reporter::CrashKeyString<20>
-    seconds_since_last_progress_report;
-extern GPU_EXPORT crash_reporter::CrashKeyString<20> seconds_since_last_suspend;
-extern GPU_EXPORT crash_reporter::CrashKeyString<20> seconds_since_last_resume;
-extern GPU_EXPORT crash_reporter::CrashKeyString<20> seconds_since_last_logging;
-extern GPU_EXPORT crash_reporter::CrashKeyString<20>
     available_physical_memory_in_mb;
 
 }  // namespace crash_keys

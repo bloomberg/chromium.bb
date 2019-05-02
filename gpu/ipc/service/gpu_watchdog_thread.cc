@@ -114,19 +114,7 @@ std::unique_ptr<GpuWatchdogThread> GpuWatchdogThread::Create(
 }
 
 void GpuWatchdogThread::CheckArmed() {
-  last_reported_progress_timeticks_ = base::TimeTicks::Now();
-  // If the watchdog is |awaiting_acknowledge_|, reset this variable to false
-  // and post an acknowledge task now. No barrier is needed as
-  // |awaiting_acknowledge_| is only ever read from this thread.
-  if (base::subtle::NoBarrier_CompareAndSwap(&awaiting_acknowledge_, true,
-                                             false)) {
-    // Called on the monitored thread. Responds with OnAcknowledge. Cannot use
-    // the method factory. As we stop the task runner before destroying this
-    // class, the unretained reference will always outlive the task.
-    task_runner()->PostTask(FROM_HERE,
-                            base::BindOnce(&GpuWatchdogThread::OnAcknowledge,
-                                           base::Unretained(this)));
-  }
+  base::subtle::NoBarrier_Store(&awaiting_acknowledge_, false);
 }
 
 void GpuWatchdogThread::ReportProgress() {
@@ -346,6 +334,11 @@ void GpuWatchdogThread::OnCheck(bool after_suspend) {
 }
 
 void GpuWatchdogThread::OnCheckTimeout() {
+  DeliberatelyTerminateToRecoverFromHang();
+}
+
+// Use the --disable-gpu-watchdog command line switch to disable this.
+void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
   // Should not get here while the system is suspended.
   DCHECK(!suspension_counter_.HasRefs());
 
@@ -354,41 +347,14 @@ void GpuWatchdogThread::OnCheckTimeout() {
   // when a machine wakes up from sleep or hibernation, which would otherwise
   // appear to be a hang.
   if (base::Time::Now() > suspension_timeout_) {
-    armed_ = false;
-    OnCheck(true);
+    OnAcknowledge();
     return;
   }
 
   if (!base::subtle::NoBarrier_Load(&awaiting_acknowledge_)) {
-    // This should be possible only when CheckArmed() has been called but
-    // OnAcknowledge() hasn't.
-    // In this case the watched thread might need more time to finish posting
-    // OnAcknowledge task.
-
-    if (!base::FeatureList::IsEnabled(
-            features::kGpuWatchdogNoTerminationAwaitingAcknowledge)) {
-      // Continue with the termination after an additional delay.
-      task_runner()->PostDelayedTask(
-          FROM_HERE,
-          base::BindOnce(
-              &GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang,
-              weak_factory_.GetWeakPtr()),
-          0.5 * timeout_);
-    }
-
-    // Post a task that does nothing on the watched thread to bump its priority
-    // and make it more likely to get scheduled.
-    watched_task_runner_->PostTask(FROM_HERE, base::DoNothing());
+    OnAcknowledge();
     return;
   }
-
-  DeliberatelyTerminateToRecoverFromHang();
-}
-
-// Use the --disable-gpu-watchdog command line switch to disable this.
-void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
-  // Should not get here while the system is suspended.
-  DCHECK(!suspension_counter_.HasRefs());
 
   if (alternative_terminate_for_testing_) {
     alternative_terminate_for_testing_.Run();
@@ -403,9 +369,8 @@ void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
   if (use_thread_cpu_time_ && (time_since_arm < timeout_)) {
     task_runner()->PostDelayedTask(
         FROM_HERE,
-        base::BindOnce(
-            &GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang,
-            weak_factory_.GetWeakPtr()),
+        base::BindOnce(&GpuWatchdogThread::OnCheckTimeout,
+                       weak_factory_.GetWeakPtr()),
         timeout_ - time_since_arm);
     return;
   }
@@ -504,8 +469,6 @@ void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
       base::subtle::NoBarrier_Load(&awaiting_acknowledge_);
   base::debug::Alias(&awaiting_acknowledge);
 
-  base::TimeTicks before_logging_timeticks = base::TimeTicks::Now();
-
   // Don't log the message to stderr in release builds because the buffer
   // may be full.
   std::string message = base::StringPrintf(
@@ -521,27 +484,16 @@ void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
   base::debug::Alias(&current_time);
   base::debug::Alias(&current_timeticks);
 
-  int64_t since_last_logging =
-      (current_timeticks - before_logging_timeticks).InSeconds();
-  crash_keys::seconds_since_last_logging.Set(
-      base::NumberToString(since_last_logging));
-  int64_t since_last_progress_report =
-      (current_timeticks - last_reported_progress_timeticks_).InSeconds();
-  crash_keys::seconds_since_last_progress_report.Set(
-      base::NumberToString(since_last_progress_report));
-  int64_t since_last_suspend =
-      (current_timeticks - last_suspend_timeticks_).InSeconds();
-  crash_keys::seconds_since_last_suspend.Set(
-      base::NumberToString(since_last_suspend));
-  int64_t since_last_resume =
-      (current_timeticks - last_resume_timeticks_).InSeconds();
-  crash_keys::seconds_since_last_resume.Set(
-      base::NumberToString(since_last_resume));
-
   int64_t available_physical_memory =
       base::SysInfo::AmountOfAvailablePhysicalMemory() >> 20;
   crash_keys::available_physical_memory_in_mb.Set(
       base::NumberToString(available_physical_memory));
+
+  // Check it one last time before crashing.
+  if (!base::subtle::NoBarrier_Load(&awaiting_acknowledge_)) {
+    OnAcknowledge();
+    return;
+  }
 
   // Deliberately crash the process to create a crash dump.
   *((volatile int*)0) = 0x1337;
@@ -591,12 +543,10 @@ void GpuWatchdogThread::OnAddPowerObserver() {
 }
 
 void GpuWatchdogThread::OnSuspend() {
-  last_suspend_timeticks_ = base::TimeTicks::Now();
   power_suspend_ref_ = suspension_counter_.Take();
 }
 
 void GpuWatchdogThread::OnResume() {
-  last_resume_timeticks_ = base::TimeTicks::Now();
   power_suspend_ref_.reset();
 }
 
