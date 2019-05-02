@@ -222,7 +222,7 @@ struct GLRenderer::DrawRenderPassDrawQuadParams {
   gfx::Transform quad_to_target_transform;
   const cc::FilterOperations* filters = nullptr;
   const cc::FilterOperations* backdrop_filters = nullptr;
-  const gfx::RRectF* backdrop_filter_bounds = nullptr;
+  gfx::RRectF backdrop_filter_bounds;
 
   // Whether the texture to be sampled from needs to be flipped.
   bool source_needs_flip = false;
@@ -721,6 +721,23 @@ bool GetScaledRegion(const gfx::Rect& rect,
   return true;
 }
 
+// This takes a rounded rect and a rect that it lives in, and returns an
+// equivalent rounded rect in the space -0.5->0.5.
+bool GetScaledRRectF(const gfx::Rect& space,
+                     const gfx::RRectF& rect,
+                     gfx::RRectF* scaled_rect) {
+  float x_scale = 1.0f / space.width();
+  float y_scale = 1.0f / space.height();
+  float new_x = (rect.rect().x() - space.x()) * x_scale - 0.5f;
+  float new_y = (rect.rect().y() - space.y()) * y_scale - 0.5f;
+  *scaled_rect = rect;
+  scaled_rect->Scale(x_scale, y_scale);
+  scaled_rect->Offset(-scaled_rect->rect().origin().x(),
+                      -scaled_rect->rect().origin().y());
+  scaled_rect->Offset(new_x, new_y);
+  return true;
+}
+
 // This takes a gfx::Rect and a clip region quad in the same space,
 // and returns the proportional uv's in the space 0->1.
 bool GetScaledUVs(const gfx::Rect& rect, const gfx::QuadF* clip, float uvs[8]) {
@@ -739,41 +756,37 @@ bool GetScaledUVs(const gfx::Rect& rect, const gfx::QuadF* clip, float uvs[8]) {
 }
 
 gfx::Rect GLRenderer::GetBackdropBoundingBoxForRenderPassQuad(
-    const RenderPassDrawQuad* quad,
-    const gfx::Transform& contents_device_transform,
-    const cc::FilterOperations* regular_filters,
-    const cc::FilterOperations* backdrop_filters,
-    const gfx::QuadF* clip_region,
-    const gfx::RRectF* backdrop_filter_bounds_input,
-    bool use_aa,
+    DrawRenderPassDrawQuadParams* params,
+    gfx::Transform* backdrop_filter_bounds_transform,
     gfx::RRectF* backdrop_filter_bounds,
     gfx::Rect* unclipped_rect) {
+  DCHECK(backdrop_filter_bounds_transform);
   DCHECK(backdrop_filter_bounds);
   DCHECK(unclipped_rect);
+
+  const RenderPassDrawQuad* quad = params->quad;
   gfx::QuadF scaled_region;
   // |scaled_region| is a quad in [-0.5,0.5] space that represents |clip_region|
   // as a fraction of the space defined by |quad->rect|. If |clip_region| is
   // nullptr, then scaled_region is [-0.5,0.5].
-  if (!GetScaledRegion(quad->rect, clip_region, &scaled_region)) {
+  if (!GetScaledRegion(quad->rect, params->clip_region, &scaled_region)) {
     scaled_region = SharedGeometryQuad().BoundingBox();
+  }
+  // |backdrop_filter_bounds| is a rounded rect in [-0.5,0.5] space that
+  // represents |params->backdrop_filter_bounds| as a fraction of the space
+  // defined by |quad->rect|, not including its offset.
+  if (!GetScaledRRectF(gfx::Rect(quad->rect.size()),
+                       params->backdrop_filter_bounds,
+                       backdrop_filter_bounds)) {
+    *backdrop_filter_bounds = gfx::RRectF(SharedGeometryQuad().BoundingBox());
   }
 
   // |backdrop_rect| is now the bounding box of clip_region, in window pixel
   // coordinates, and with flip applied.
   gfx::Rect backdrop_rect = gfx::ToEnclosingRect(cc::MathUtil::MapClippedRect(
-      contents_device_transform, scaled_region.BoundingBox()));
-  gfx::Rect orig_backdrop_rect = backdrop_rect;
+      params->contents_device_transform, scaled_region.BoundingBox()));
 
-  // |backdrop_filter_bounds_input| can (rarely) be nullptr, if the render pass
-  // was not found. For example, some GLRenderer tests can trigger this case,
-  // e.g. GLRendererShaderTest.DrawRenderPassQuadShaderPermutations.
-  if (backdrop_filter_bounds_input) {
-    *backdrop_filter_bounds = *backdrop_filter_bounds_input;
-  } else {
-    *backdrop_filter_bounds = gfx::RRectF();
-  }
-
-  if (ShouldApplyBackdropFilters(backdrop_filters)) {
+  if (ShouldApplyBackdropFilters(params->backdrop_filters)) {
     SkMatrix matrix;
     // |filters_scale| is the ratio of render pass physical pixels to root layer
     // layer space, including content-to-target-space scale and device pixel
@@ -790,17 +803,18 @@ gfx::Rect GLRenderer::GetBackdropBoundingBoxForRenderPassQuad(
     // by any backdrop-filter drop-shadow offset (flipped if
     // FlippedFramebuffer()). Note that scale is not applied to the
     // backdrop_rect itself, only the sigma or x/y offset of filters.
-    backdrop_rect = backdrop_filters->MapRectReverse(backdrop_rect, matrix);
+    backdrop_rect =
+        params->backdrop_filters->MapRectReverse(backdrop_rect, matrix);
   }
 
-  if (!backdrop_rect.IsEmpty() && use_aa) {
+  if (!backdrop_rect.IsEmpty() && params->use_aa) {
     const int kOutsetForAntialiasing = 1;
     backdrop_rect.Inset(-kOutsetForAntialiasing, -kOutsetForAntialiasing);
   }
 
-  if (regular_filters) {
-    DCHECK(!regular_filters->IsEmpty());
-    // If we have filters, grab an extra one-pixel border around the
+  if (params->filters) {
+    DCHECK(!params->filters->IsEmpty());
+    // If we have regular filters, grab an extra one-pixel border around the
     // background, so texture edge clamping gives us a transparent border
     // in case the filter expands the result.
     backdrop_rect.Inset(-1, -1, -1, -1);
@@ -809,8 +823,18 @@ gfx::Rect GLRenderer::GetBackdropBoundingBoxForRenderPassQuad(
   *unclipped_rect = backdrop_rect;
   backdrop_rect.Intersect(MoveFromDrawToWindowSpace(
       current_frame()->current_render_pass->output_rect));
-  backdrop_filter_bounds->Offset(orig_backdrop_rect.origin() -
-                                 backdrop_rect.origin());
+
+  // The frame buffer flip is already included in the captured backdrop image,
+  // and it is included in |contents_device_transform| (through
+  // |projection_matrix|). Don't double-flip.
+  *backdrop_filter_bounds_transform = params->contents_device_transform;
+  float old_y = backdrop_filter_bounds_transform->To2dTranslation().y();
+  backdrop_filter_bounds_transform->PostScale(1, -1);
+  backdrop_filter_bounds_transform->PostTranslate(0, 2 * old_y);
+  // Shift to the space of the captured backdrop image.
+  backdrop_filter_bounds_transform->PostTranslate(-backdrop_rect.x(),
+                                                  -backdrop_rect.y());
+
   return backdrop_rect;
 }
 
@@ -869,25 +893,24 @@ uint32_t GLRenderer::GetBackdropTexture(const gfx::Rect& window_rect) {
 }
 
 sk_sp<SkImage> GLRenderer::ApplyBackdropFilters(
-    const RenderPassDrawQuad* quad,
-    const cc::FilterOperations* backdrop_filters,
-    const cc::FilterOperations* regular_filters,
-    uint32_t background_texture,
-    const gfx::Rect& background_rect,
+    DrawRenderPassDrawQuadParams* params,
     const gfx::Rect& unclipped_rect,
-    const float backdrop_filter_quality,
-    const gfx::RRectF& backdrop_filter_bounds) {
-  DCHECK(ShouldApplyBackdropFilters(backdrop_filters));
+    const gfx::RRectF& backdrop_filter_bounds,
+    const gfx::Transform& backdrop_filter_bounds_transform) {
+  DCHECK(ShouldApplyBackdropFilters(params->backdrop_filters));
+  DCHECK(params->backdrop_filter_quality);
+  const RenderPassDrawQuad* quad = params->quad;
   auto use_gr_context = ScopedUseGrContext::Create(this);
 
   gfx::Vector2d clipping_offset =
-      (background_rect.top_right() - unclipped_rect.top_right()) +
-      (background_rect.bottom_left() - unclipped_rect.bottom_left());
+      (params->background_rect.top_right() - unclipped_rect.top_right()) +
+      (params->background_rect.bottom_left() - unclipped_rect.bottom_left());
 
   // Update the backdrop filter to include "regular" filters and opacity.
-  cc::FilterOperations backdrop_filters_plus_effects = *backdrop_filters;
-  if (regular_filters) {
-    for (const auto& filter_op : regular_filters->operations())
+  cc::FilterOperations backdrop_filters_plus_effects =
+      *params->backdrop_filters;
+  if (params->filters) {
+    for (const auto& filter_op : params->filters->operations())
       backdrop_filters_plus_effects.Append(filter_op);
   }
   if (quad->shared_quad_state->opacity < 1.0) {
@@ -897,7 +920,7 @@ sk_sp<SkImage> GLRenderer::ApplyBackdropFilters(
   }
 
   auto paint_filter = cc::RenderSurfaceFilters::BuildImageFilter(
-      backdrop_filters_plus_effects, gfx::SizeF(background_rect.size()),
+      backdrop_filters_plus_effects, gfx::SizeF(params->background_rect.size()),
       gfx::Vector2dF(clipping_offset));
 
   // TODO(senorblanco): background filters should be moved to the
@@ -908,9 +931,9 @@ sk_sp<SkImage> GLRenderer::ApplyBackdropFilters(
 
   auto filter = paint_filter->cached_sk_filter_;
   bool flip_texture = true;
-  sk_sp<SkImage> src_image =
-      WrapTexture(background_texture, GL_TEXTURE_2D, background_rect.size(),
-                  use_gr_context->context(), flip_texture);
+  sk_sp<SkImage> src_image = WrapTexture(
+      params->background_texture, GL_TEXTURE_2D, params->background_rect.size(),
+      use_gr_context->context(), flip_texture);
   if (!src_image) {
     TRACE_EVENT_INSTANT0("cc",
                          "ApplyBackdropFilters wrap background texture failed",
@@ -918,8 +941,8 @@ sk_sp<SkImage> GLRenderer::ApplyBackdropFilters(
     return nullptr;
   }
 
-  gfx::Rect quality_adjusted_rect =
-      ScaleToEnclosingRect(background_rect, backdrop_filter_quality);
+  gfx::Rect quality_adjusted_rect = ScaleToEnclosingRect(
+      params->background_rect, params->backdrop_filter_quality);
 
   // Create surface to draw into.
   SkImageInfo dst_info = SkImageInfo::MakeN32Premul(
@@ -940,8 +963,8 @@ sk_sp<SkImage> GLRenderer::ApplyBackdropFilters(
   // First paint the backdrop at full opacity. The backdrop-filtered content
   // will not be blended with the backdrop later, it will be rastered over the
   // top. So we need to paint it here, unfiltered.
-  gfx::RectF src_image_rect =
-      gfx::RectF(background_rect.width(), background_rect.height());
+  gfx::RectF src_image_rect = gfx::RectF(params->background_rect.width(),
+                                         params->background_rect.height());
   SkRect dest_rect = RectToSkRect(gfx::Rect(quality_adjusted_rect.size()));
   surface->getCanvas()->drawImageRect(src_image, RectFToSkRect(src_image_rect),
                                       dest_rect, nullptr);
@@ -958,14 +981,15 @@ sk_sp<SkImage> GLRenderer::ApplyBackdropFilters(
       gfx::Vector2dF(1, 1), std::move(filter), &offset, &subset,
       quad->filters_origin, true);
 
+  // Clip the filtered image to the (rounded) bounding box of the element.
   if (!backdrop_filter_bounds.IsEmpty()) {
-    // Clip the filtered image to the (rounded) bounding box of the element.
     surface->getCanvas()->save();
     gfx::RRectF clip_rect(backdrop_filter_bounds);
-    DCHECK(backdrop_filter_quality);
-    clip_rect.Scale(backdrop_filter_quality);
+    clip_rect.Scale(params->backdrop_filter_quality);
+    surface->getCanvas()->setMatrix(backdrop_filter_bounds_transform.matrix());
     surface->getCanvas()->clipRRect(SkRRect(clip_rect), SkClipOp::kIntersect,
                                     true /* antialias */);
+    surface->getCanvas()->resetMatrix();
   }
 
   // Now paint the pre-filtered image onto the canvas.
@@ -1063,8 +1087,14 @@ bool GLRenderer::InitializeRPDQParameters(
   local_matrix.postScale(quad->filters_scale.x(), quad->filters_scale.y());
   params->filters = FiltersForPass(quad->render_pass_id);
   params->backdrop_filters = BackdropFiltersForPass(quad->render_pass_id);
-  params->backdrop_filter_bounds =
-      BackdropFilterBoundsForPass(quad->render_pass_id);
+  if (ShouldApplyBackdropFilters(params->backdrop_filters)) {
+    params->backdrop_filter_bounds =
+        *BackdropFilterBoundsForPass(quad->render_pass_id);
+    params->backdrop_filter_bounds.Scale(quad->filters_scale.x(),
+                                         quad->filters_scale.y());
+  } else {
+    params->backdrop_filter_bounds = gfx::RRectF();
+  }
   params->backdrop_filter_quality = quad->backdrop_filter_quality;
   gfx::Rect dst_rect = params->filters
                            ? params->filters->MapRect(quad->rect, local_matrix)
@@ -1135,12 +1165,11 @@ void GLRenderer::UpdateRPDQShadersForBlending(
     // Compute a bounding box around the pixels that will be visible through
     // the quad.
     gfx::RRectF backdrop_filter_bounds_rect;
+    gfx::Transform backdrop_filter_bounds_transform;
     gfx::Rect unclipped_rect;
     params->background_rect = GetBackdropBoundingBoxForRenderPassQuad(
-        quad, params->contents_device_transform, params->filters,
-        params->backdrop_filters, params->clip_region,
-        params->backdrop_filter_bounds, params->use_aa,
-        &backdrop_filter_bounds_rect, &unclipped_rect);
+        params, &backdrop_filter_bounds_transform, &backdrop_filter_bounds_rect,
+        &unclipped_rect);
 
     if (!params->background_rect.IsEmpty()) {
       // The pixels from the filtered background should completely replace the
@@ -1158,9 +1187,8 @@ void GLRenderer::UpdateRPDQShadersForBlending(
         // Apply the background filters to R, so that it is applied in the
         // pixels' coordinate space.
         params->background_image = ApplyBackdropFilters(
-            quad, params->backdrop_filters, params->filters,
-            params->background_texture, params->background_rect, unclipped_rect,
-            params->backdrop_filter_quality, backdrop_filter_bounds_rect);
+            params, unclipped_rect, backdrop_filter_bounds_rect,
+            backdrop_filter_bounds_transform);
         if (params->background_image) {
           params->background_image_id =
               GetGLTextureIDFromSkImage(params->background_image.get());

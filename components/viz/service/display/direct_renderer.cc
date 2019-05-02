@@ -353,7 +353,7 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
       render_pass_backdrop_filters_[pass->id] = &pass->backdrop_filters;
       // |backdrop_filter_bounds| only apply if there is a non-empty
       // backdrop-filter to apply.
-      if (!pass->backdrop_filter_bounds.IsEmpty()) {
+      if (!pass->backdrop_filters.IsEmpty()) {
         render_pass_backdrop_filter_bounds_[pass->id] =
             &pass->backdrop_filter_bounds;
       }

@@ -99,12 +99,21 @@ class GEOMETRY_SKIA_EXPORT Transform {
     return gfx::Vector2dF(matrix_.get(0, 0), matrix_.get(1, 1));
   }
 
+  // Applies a scale to the current transformation and assigns the result to
+  // |this|.
+  void PostScale(SkMScalar x, SkMScalar y);
+
   // Applies the current transformation on a translation and assigns the result
   // to |this|.
   void Translate(const Vector2dF& offset);
   void Translate(SkMScalar x, SkMScalar y);
   void Translate3d(const Vector3dF& offset);
   void Translate3d(SkMScalar x, SkMScalar y, SkMScalar z);
+
+  // Applies a translation to the current transformation and assigns the result
+  // to |this|.
+  void PostTranslate(const Vector2dF& offset);
+  void PostTranslate(SkMScalar x, SkMScalar y);
 
   // Applies the current transformation on a skew and assigns the result
   // to |this|.
