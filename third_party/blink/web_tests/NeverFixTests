@@ -2314,3 +2314,5 @@ external/wpt/pointerevents/pointerevent_touch-action-inherit_child-pan-x-child-p
 external/wpt/pointerevents/pointerevent_touch-action-inherit_child-none_touch-manual.html [ WontFix ]
 external/wpt/pointerevents/pointerevent_touch-action-inherit_parent-none_touch-manual.html [ WontFix ]
 external/wpt/pointerevents/pointerevent_touch-action-inherit_child-auto-child-none_touch-manual.html [ WontFix ]
+external/wpt/web-share/share-files-manual.html [ WontFix ]
+external/wpt/web-share/share-image-manual.html [ WontFix ]
