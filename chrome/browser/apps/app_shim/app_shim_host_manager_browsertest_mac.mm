@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/hash/md5.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/macros.h"

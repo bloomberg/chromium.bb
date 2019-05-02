@@ -5,8 +5,10 @@
 #ifndef NET_HTTP_HTTP_VARY_DATA_H_
 #define NET_HTTP_HTTP_VARY_DATA_H_
 
-#include "base/hash/md5.h"
+#include <string>
+
 #include "net/base/net_export.h"
+#include "third_party/boringssl/src/include/openssl/md5.h"
 
 namespace base {
 class Pickle;
@@ -73,10 +75,10 @@ class NET_EXPORT_PRIVATE HttpVaryData {
   // Append to the MD5 context for the given request header.
   static void AddField(const HttpRequestInfo& request_info,
                        const std::string& request_header,
-                       base::MD5Context* context);
+                       MD5_CTX* context);
 
   // A digested version of the request headers corresponding to the Vary header.
-  base::MD5Digest request_digest_;
+  uint8_t request_digest_[MD5_DIGEST_LENGTH];
 
   // True when request_digest_ contains meaningful data.
   bool is_valid_;

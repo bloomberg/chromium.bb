@@ -6,9 +6,9 @@
 
 #include <string>
 
-#include "base/hash/md5.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -22,6 +22,7 @@
 #include "net/http/http_auth_scheme.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_util.h"
+#include "third_party/boringssl/src/include/openssl/md5.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -330,24 +331,30 @@ std::string HttpAuthHandlerDigest::AssembleResponseDigest(
     const AuthCredentials& credentials,
     const std::string& cnonce,
     const std::string& nc) const {
+  const auto md5_string = [](const std::string& input) {
+    uint8_t digest[MD5_DIGEST_LENGTH];
+    MD5(reinterpret_cast<const uint8_t*>(input.data()), input.size(), digest);
+    return base::ToLowerASCII(base::HexEncode(digest, MD5_DIGEST_LENGTH));
+  };
+
   // ha1 = MD5(A1)
   // TODO(eroman): is this the right encoding?
-  std::string ha1 = base::MD5String(base::UTF16ToUTF8(credentials.username()) +
-                                    ":" + original_realm_ + ":" +
-                                    base::UTF16ToUTF8(credentials.password()));
+  std::string ha1 = md5_string(base::UTF16ToUTF8(credentials.username()) + ":" +
+                               original_realm_ + ":" +
+                               base::UTF16ToUTF8(credentials.password()));
   if (algorithm_ == HttpAuthHandlerDigest::ALGORITHM_MD5_SESS)
-    ha1 = base::MD5String(ha1 + ":" + nonce_ + ":" + cnonce);
+    ha1 = md5_string(ha1 + ":" + nonce_ + ":" + cnonce);
 
   // ha2 = MD5(A2)
   // TODO(eroman): need to add MD5(req-entity-body) for qop=auth-int.
-  std::string ha2 = base::MD5String(method + ":" + path);
+  std::string ha2 = md5_string(method + ":" + path);
 
   std::string nc_part;
   if (qop_ != HttpAuthHandlerDigest::QOP_UNSPECIFIED) {
     nc_part = nc + ":" + cnonce + ":" + QopToString(qop_) + ":";
   }
 
-  return base::MD5String(ha1 + ":" + nonce_ + ":" + nc_part + ha2);
+  return md5_string(ha1 + ":" + nonce_ + ":" + nc_part + ha2);
 }
 
 std::string HttpAuthHandlerDigest::AssembleCredentials(

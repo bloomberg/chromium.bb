@@ -20,9 +20,9 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
-#include "base/hash/md5.h"
 #include "base/macros.h"
 #include "base/path_service.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -36,6 +36,7 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
+#include "third_party/boringssl/src/include/openssl/md5.h"
 
 namespace net {
 namespace test_server {
@@ -409,12 +410,18 @@ std::unique_ptr<HttpResponse> HandleAuthBasic(const HttpRequest& request) {
   return std::move(http_response);
 }
 
+const std::string MD5String(const std::string& input) {
+  uint8_t digest[MD5_DIGEST_LENGTH];
+  MD5(reinterpret_cast<const uint8_t*>(input.c_str()), input.size(), digest);
+  return base::ToLowerASCII(base::HexEncode(digest, sizeof(digest)));
+}
+
 // /auth-digest
 // Performs "Digest" HTTP authentication.
 std::unique_ptr<HttpResponse> HandleAuthDigest(const HttpRequest& request) {
-  std::string nonce = base::MD5String(
+  std::string nonce = MD5String(
       base::StringPrintf("privatekey%s", request.relative_url.c_str()));
-  std::string opaque = base::MD5String("opaque");
+  std::string opaque = MD5String("opaque");
   std::string password = kDefaultPassword;
   std::string realm = kDefaultRealm;
 
@@ -453,23 +460,23 @@ std::unique_ptr<HttpResponse> HandleAuthDigest(const HttpRequest& request) {
     } else {
       username = auth_pairs["username"];
 
-      std::string hash1 = base::MD5String(
+      std::string hash1 = MD5String(
           base::StringPrintf("%s:%s:%s", auth_pairs["username"].c_str(),
                              realm.c_str(), password.c_str()));
-      std::string hash2 = base::MD5String(base::StringPrintf(
+      std::string hash2 = MD5String(base::StringPrintf(
           "%s:%s", request.method_string.c_str(), auth_pairs["uri"].c_str()));
 
       std::string response;
       if (auth_pairs.find("qop") != auth_pairs.end() &&
           auth_pairs.find("nc") != auth_pairs.end() &&
           auth_pairs.find("cnonce") != auth_pairs.end()) {
-        response = base::MD5String(base::StringPrintf(
+        response = MD5String(base::StringPrintf(
             "%s:%s:%s:%s:%s:%s", hash1.c_str(), nonce.c_str(),
             auth_pairs["nc"].c_str(), auth_pairs["cnonce"].c_str(),
             auth_pairs["qop"].c_str(), hash2.c_str()));
       } else {
-        response = base::MD5String(base::StringPrintf(
-            "%s:%s:%s", hash1.c_str(), nonce.c_str(), hash2.c_str()));
+        response = MD5String(base::StringPrintf("%s:%s:%s", hash1.c_str(),
+                                                nonce.c_str(), hash2.c_str()));
       }
 
       if (auth_pairs["response"] == response)

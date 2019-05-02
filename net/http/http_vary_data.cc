@@ -20,8 +20,8 @@ HttpVaryData::HttpVaryData() : is_valid_(false) {
 
 bool HttpVaryData::Init(const HttpRequestInfo& request_info,
                         const HttpResponseHeaders& response_headers) {
-  base::MD5Context ctx;
-  base::MD5Init(&ctx);
+  MD5_CTX ctx;
+  MD5_Init(&ctx);
 
   is_valid_ = false;
   bool processed_header = false;
@@ -50,7 +50,7 @@ bool HttpVaryData::Init(const HttpRequestInfo& request_info,
   if (!processed_header)
     return false;
 
-  base::MD5Final(&request_digest_, &ctx);
+  MD5_Final(request_digest_, &ctx);
   return is_valid_ = true;
 }
 
@@ -104,7 +104,7 @@ std::string HttpVaryData::GetRequestValue(
 // static
 void HttpVaryData::AddField(const HttpRequestInfo& request_info,
                             const std::string& request_header,
-                            base::MD5Context* ctx) {
+                            MD5_CTX* ctx) {
   std::string request_value = GetRequestValue(request_info, request_header);
 
   // Append a character that cannot appear in the request header line so that we
@@ -113,7 +113,7 @@ void HttpVaryData::AddField(const HttpRequestInfo& request_info,
   // For example, "foo: 12\nbar: 3" looks like "foo: 1\nbar: 23" otherwise.
   request_value.append(1, '\n');
 
-  base::MD5Update(ctx, request_value);
+  MD5_Update(ctx, request_value.c_str(), request_value.size());
 }
 
 }  // namespace net
