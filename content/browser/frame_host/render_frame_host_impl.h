@@ -918,8 +918,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Scheduler-relevant features this frame is using, for use in metrics.
   // See comments at |scheduler_tracked_features_|.
-  // NOTE: It now always returns 0 for subframes.
-  // TODO(altimin): Support subframes here as well.
   uint64_t scheduler_tracked_features() const {
     return scheduler_tracked_features_;
   }
