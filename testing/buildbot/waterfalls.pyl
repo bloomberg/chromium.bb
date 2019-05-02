@@ -2897,6 +2897,7 @@
         'test_suites': {
           'gtest_tests': 'gpu_fyi_mac_release_gtests',
           'gpu_telemetry_tests': 'gpu_fyi_mac_release_telemetry_tests',
+          'isolated_scripts': 'rendering_representative_perf_tests_isolated_scripts',
         },
       },
       'Mac FYI Retina Debug (AMD)': {
@@ -2930,6 +2931,7 @@
         'test_suites': {
           'gtest_tests': 'gpu_fyi_mac_release_gtests',
           'gpu_telemetry_tests': 'gpu_fyi_mac_release_telemetry_tests',
+          'isolated_scripts': 'rendering_representative_perf_tests_isolated_scripts',
         },
       },
       'Mac FYI Retina Release (NVIDIA)': {
@@ -3152,7 +3154,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_win_gtests',
-          'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
+          'isolated_scripts': 'gpu_angle_and_representative_perf_fyi_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_fyi_win_intel_release_telemetry_tests',
         },
       },
@@ -3178,7 +3180,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_win_gtests',
-          'isolated_scripts': 'gpu_angle_fyi_win_optional_isolated_scripts',
+          'isolated_scripts': 'gpu_angle_fyi_win_optional_and_representative_perf_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_fyi_win_release_telemetry_tests',
         },
         # We keep this value enabled to provide minimal regression testing.
