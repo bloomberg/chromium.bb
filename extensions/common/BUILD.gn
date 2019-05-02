@@ -326,8 +326,6 @@ if (enable_extensions) {
       "//components/version_info",
       "//crypto",
       "//device/bluetooth",
-      "//device/usb",
-      "//device/usb/mojo",
       "//device/usb/public/cpp",
       "//device/usb/public/mojom",
       "//extensions:extensions_resources",
@@ -454,8 +452,6 @@ if (enable_extensions) {
       "//base/test:test_support",
       "//components/crx_file",
       "//components/version_info:version_info",
-      "//device/usb",
-      "//device/usb/mojo",
       "//device/usb/public/cpp:test_support",
       "//extensions:extensions_resources",
 

@@ -3,7 +3,7 @@ include_rules = [
   "+components/url_formatter",
   "+components/nacl/common/buildflags.h",
   "+device/bluetooth",  # For BluetoothPermission
-  "+device/usb",
+  "+device/usb/public",
   "+grit/extensions_strings.h",
   "+libxml",
   "+net",

@@ -27,7 +27,6 @@ namespace extensions {
 class DesktopController;
 class ShellBrowserContext;
 class ShellBrowserMainDelegate;
-class ShellDeviceClient;
 class ShellExtensionsClient;
 class ShellExtensionsBrowserClient;
 class ShellExtensionSystem;
@@ -79,7 +78,6 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
   // The DesktopController outlives ExtensionSystem and context-keyed services.
   std::unique_ptr<DesktopController> desktop_controller_;
 
-  std::unique_ptr<ShellDeviceClient> device_client_;
   std::unique_ptr<ShellExtensionsClient> extensions_client_;
   std::unique_ptr<ShellExtensionsBrowserClient> extensions_browser_client_;
   std::unique_ptr<ShellUpdateQueryParamsDelegate> update_query_params_delegate_;

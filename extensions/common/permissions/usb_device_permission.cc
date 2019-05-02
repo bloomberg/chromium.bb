@@ -13,9 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "device/usb/mojo/type_converters.h"
-#include "device/usb/usb_device.h"
-#include "device/usb/usb_ids.h"
+#include "device/usb/public/cpp/usb_ids.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/features/behavior_feature.h"
 #include "extensions/common/features/feature.h"
@@ -41,17 +39,6 @@ bool IsInterfaceClassPermissionAlowed(const Extension* extension) {
 }
 
 }  // namespace
-
-// static
-std::unique_ptr<UsbDevicePermission::CheckParam>
-UsbDevicePermission::CheckParam::ForUsbDevice(const Extension* extension,
-                                              const device::UsbDevice* device) {
-  DCHECK(device);
-  auto device_info = device::mojom::UsbDeviceInfo::From(*device);
-  return CheckParam::ForUsbDeviceAndInterface(
-      extension, *device_info,
-      UsbDevicePermissionData::SPECIAL_VALUE_UNSPECIFIED);
-}
 
 // static
 std::unique_ptr<UsbDevicePermission::CheckParam>

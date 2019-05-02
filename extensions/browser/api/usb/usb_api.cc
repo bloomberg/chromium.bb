@@ -16,15 +16,10 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/values.h"
-#include "device/base/device_client.h"
-#include "device/usb/mojo/type_converters.h"
 #include "device/usb/public/cpp/usb_utils.h"
 #include "device/usb/public/mojom/device.mojom.h"
 #include "device/usb/public/mojom/device_enumeration_options.mojom.h"
 #include "device/usb/public/mojom/device_manager.mojom.h"
-#include "device/usb/usb_descriptors.h"
-#include "device/usb/usb_device_handle.h"
-#include "device/usb/usb_service.h"
 #include "extensions/browser/api/device_permissions_manager.h"
 #include "extensions/browser/api/device_permissions_prompt.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -277,7 +272,7 @@ SynchronizationType ConvertSynchronizationTypeToApi(
   }
 }
 
-usb::UsageType ConvertUsageTypeToApi(const device::UsbUsageType& input) {
+usb::UsageType ConvertUsageTypeToApi(const UsbUsageType& input) {
   switch (input) {
     case UsbUsageType::DATA:
       return usb::USAGE_TYPE_DATA;

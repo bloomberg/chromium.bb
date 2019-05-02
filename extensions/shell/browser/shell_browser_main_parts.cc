@@ -33,7 +33,6 @@
 #include "extensions/shell/browser/shell_browser_context_keyed_service_factories.h"
 #include "extensions/shell/browser/shell_browser_main_delegate.h"
 #include "extensions/shell/browser/shell_desktop_controller_aura.h"
-#include "extensions/shell/browser/shell_device_client.h"
 #include "extensions/shell/browser/shell_extension_system.h"
 #include "extensions/shell/browser/shell_extension_system_factory.h"
 #include "extensions/shell/browser/shell_extensions_browser_client.h"
@@ -224,8 +223,6 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
       browser_main_delegate_->CreateDesktopController(browser_context_.get()));
 
   // TODO(jamescook): Initialize user_manager::UserManager.
-
-  device_client_.reset(new ShellDeviceClient);
 
   update_query_params_delegate_.reset(new ShellUpdateQueryParamsDelegate);
   update_client::UpdateQueryParams::SetDelegate(

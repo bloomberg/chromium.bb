@@ -106,7 +106,6 @@ source_set("api") {
   deps += [
     "//components/onc",
     "//components/storage_monitor",
-    "//device/base",
     "//device/bluetooth",
   ]
 
