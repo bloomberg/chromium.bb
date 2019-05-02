@@ -22,6 +22,10 @@ const char kBlueZLongTermKeyBlocklistParamName[] = "ltk_blocklist";
 const base::Feature kCrostiniBackup{"CrostiniBackup",
                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables or disables Crostini GPU support.
+const base::Feature kCrostiniGpuSupport{"CrostiniGpuSupport",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables Crostini support for usb mounting.
 const base::Feature kCrostiniUsbSupport{"CrostiniUsbSupport",
                                         base::FEATURE_ENABLED_BY_DEFAULT};

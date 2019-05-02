@@ -910,6 +910,8 @@ void CrostiniManager::StartTerminaVm(std::string name,
   request.set_name(std::move(name));
   request.set_start_termina(true);
   request.set_owner_id(owner_id_);
+  if (base::FeatureList::IsEnabled(chromeos::features::kCrostiniGpuSupport))
+    request.set_enable_gpu(true);
 
   vm_tools::concierge::DiskImage* disk_image = request.add_disks();
   disk_image->set_path(std::move(disk_path_string));

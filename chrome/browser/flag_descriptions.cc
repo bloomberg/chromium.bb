@@ -2988,6 +2988,9 @@ const char kCrostiniAppSearchDescription[] =
 const char kCrostiniBackupName[] = "Crostini Backup";
 const char kCrostiniBackupDescription[] = "Enable Crostini export and import.";
 
+const char kCrostiniGpuSupportName[] = "Crostini GPU Support";
+const char kCrostiniGpuSupportDescription[] = "Enable Crostini GPU support.";
+
 const char kCrostiniUsbAllowUnsupportedName[] =
     "Crostini Usb Allow Unsupported";
 const char kCrostiniUsbAllowUnsupportedDescription[] =

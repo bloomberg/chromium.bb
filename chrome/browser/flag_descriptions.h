@@ -1800,6 +1800,9 @@ extern const char kCrostiniAppSearchDescription[];
 extern const char kCrostiniBackupName[];
 extern const char kCrostiniBackupDescription[];
 
+extern const char kCrostiniGpuSupportName[];
+extern const char kCrostiniGpuSupportDescription[];
+
 extern const char kCrostiniUsbAllowUnsupportedName[];
 extern const char kCrostiniUsbAllowUnsupportedDescription[];
 
