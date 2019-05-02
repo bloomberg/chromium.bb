@@ -2,12 +2,12 @@
 // LayoutTests that are checking members exposed to script by origin trials.
 //
 // The current available methods are:
-// check_properties:
+// check_properties_exist:
 //   Tests that the given property names exist on the given interface
 //   names on the global object. It can also test for properties of the
 //   global object itself by giving 'global' as the interface name.
 // Example:
-//   OriginTrialsHelper.check_properties(
+//   OriginTrialsHelper.check_properties_exist(
 //     this,
 //     {'InstallEvent':['registerForeignFetch'], 'global':['onforeignfetch']});
 //
@@ -15,7 +15,7 @@
 //   Tests that the given property names do NOT exist on the given interface
 //   names on the global object.  It can also test for properties of the
 //   global object itself by giving 'global' as the interface name.
-//   In other words, tests for the opposite of check_properties().
+//   In other words, tests for the opposite of check_properties_exist().
 // Example:
 //   OriginTrialsHelper.check_properties_missing(
 //     this,
@@ -26,7 +26,7 @@
 //   names on the global object if and only if the specified runtime flag is
 //   enabled. It can also test for properties of the global object itself by
 //   giving 'global' as the interface name.
-//   Equivalent to calling check_properties() if the specified runtime
+//   Equivalent to calling check_properties_exist() if the specified runtime
 //   flag is enabled and calling check_properties_missing() otherwise.
 // Example:
 //   OriginTrialsHelper.check_properties_missing_unless_runtime_flag(
@@ -34,16 +34,16 @@
 //     {'InstallEvent':['registerForeignFetch'], 'global':['onforeignfetch']},
 //     'foreignFetchEnabled');
 //
-// check_interfaces:
+// check_interfaces_exist:
 //   Tests that the given interface names exist on the global object.
 // Example:
-//   OriginTrialsHelper.check_interfaces(
+//   OriginTrialsHelper.check_interfaces_exist(
 //     this,
 //     ['USBAlternateInterface', 'USBConfiguration']);
 //
 // check_interfaces_missing:
 //   Tests that the given interface names do NOT exist on the global object.
-//   In other words, tests for the opposite of check_interfaces().
+//   In other words, tests for the opposite of check_interfaces_exist().
 // Example:
 //   OriginTrialsHelper.check_interfaces_missing(
 //     this,
@@ -52,7 +52,7 @@
 // check_interfaces_missing_unless_runtime_flag
 //   Tests that the given interface names exist on the global object if and
 //   only if the specified runtime flag is enabled.
-//   Equivalent to calling check_interfaces() if the specified runtime
+//   Equivalent to calling check_interfaces_exist() if the specified runtime
 //   flag is enabled and calling check_interfaces_missing() otherwise.
 // Example:
 //   OriginTrialsHelper.check_interfaces_missing_unless_runtime_flag(
@@ -105,7 +105,7 @@ var OriginTrialsHelper = (function() {
   }
 
   return {
-    check_properties: (global_object, property_filters) => {
+    check_properties_exist: (global_object, property_filters) => {
       check_properties_impl(global_object, property_filters, true);
     },
 
@@ -118,7 +118,7 @@ var OriginTrialsHelper = (function() {
                             OriginTrialsHelper.is_runtime_flag_enabled(flag_name));
     },
 
-    check_interfaces: (global_object, interface_names) => {
+    check_interfaces_exist: (global_object, interface_names) => {
       check_interfaces_impl(global_object, interface_names, true);
     },
 

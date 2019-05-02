@@ -23,6 +23,6 @@ if (!self.internals.runtimeFlags.installedAppEnabled) {
 OriginTrialsHelper.add_token(token);
 
 test(t => {
-  OriginTrialsHelper.check_properties(this, properties_to_check);
+  OriginTrialsHelper.check_properties_exist(this, properties_to_check);
 }, "InstalledApp related properties is on interfaces after adding trial token via script.");
 </script>

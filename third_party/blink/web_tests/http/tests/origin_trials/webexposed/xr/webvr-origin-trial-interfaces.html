@@ -27,11 +27,11 @@ if (!self.internals.runtimeFlags.webVREnabled) {
 OriginTrialsHelper.add_token(token);
 
 test(t => {
-  OriginTrialsHelper.check_properties(this, properties_to_check);
+  OriginTrialsHelper.check_properties_exist(this, properties_to_check);
 }, 'WebVR properties are available.');
 
 test(t => {
-  OriginTrialsHelper.check_properties(this, {
+  OriginTrialsHelper.check_properties_exist(this, {
         'Navigator': ['getVRDisplays'],
         'VRDisplay':[
           'displayId',

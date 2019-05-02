@@ -20,7 +20,7 @@ OriginTrialsHelper.add_token(token);
 
 // The WebXR APIs should be available now.
 test(t => {
-  OriginTrialsHelper.check_properties(this, properties_to_check);
+  OriginTrialsHelper.check_properties_exist(this, properties_to_check);
 }, "WebXR's entrypoint properties are available with origin trial token.");
 
 

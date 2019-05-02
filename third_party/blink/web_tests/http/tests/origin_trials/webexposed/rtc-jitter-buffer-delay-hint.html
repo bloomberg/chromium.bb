@@ -20,7 +20,7 @@ const token = 'AooRFiyDVrZyXNbm9GQp3TYVKdLvpH99sd/OKrMUHQ8FSxG4ok5MAff2Wqu9j6rXM
 OriginTrialsHelper.add_token(token);
 
 test(t => {
-  OriginTrialsHelper.check_properties(
+  OriginTrialsHelper.check_properties_exist(
       this, {'RTCRtpReceiver': ['jitterBufferDelayHint']});
 }, 'RTCRtpReceiver jitterBufferDelayHint is in Origin-Trial enabled document');
 
