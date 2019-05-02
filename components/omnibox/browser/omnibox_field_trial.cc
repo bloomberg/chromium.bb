@@ -558,6 +558,11 @@ bool OmniboxFieldTrial::IsReverseAnswersEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kOmniboxReverseAnswers);
 }
 
+bool OmniboxFieldTrial::IsShortBookmarkSuggestionsEnabled() {
+  return base::FeatureList::IsEnabled(
+      omnibox::kOmniboxShortBookmarkSuggestions);
+}
+
 bool OmniboxFieldTrial::IsTabSwitchSuggestionsEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kOmniboxTabSwitchSuggestions);
 }

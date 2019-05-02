@@ -386,6 +386,9 @@ bool IsRichEntitySuggestionsEnabled();
 // Returns true if the reverse answers flag is enabled.
 bool IsReverseAnswersEnabled();
 
+// Returns true if the short bookmark suggestions flag is enabled.
+bool IsShortBookmarkSuggestionsEnabled();
+
 // Returns true if either the tab switch suggestions flag is enabled.
 bool IsTabSwitchSuggestionsEnabled();
 

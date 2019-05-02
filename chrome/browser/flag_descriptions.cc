@@ -2718,6 +2718,12 @@ const char kOmniboxReverseTabSwitchLogicDescription[] =
     "Reverse the logic of suggestions that have a tab switch button: Have "
     "them switch by default, and have the button navigate.";
 
+const char kOmniboxShortBookmarkSuggestionsName[] =
+    "Omnibox short bookmark suggestions";
+const char kOmniboxShortBookmarkSuggestionsDescription[] =
+    "Match very short input words to beginning of words in bookmark "
+    "suggestions.";
+
 const char kOmniboxSuggestionTransparencyOptionsName[] =
     "Omnibox Suggestion Transparency Options";
 const char kOmniboxSuggestionTransparencyOptionsDescription[] =

@@ -78,6 +78,10 @@ const base::Feature kOmniboxNewAnswerLayout{"OmniboxNewAnswerLayout",
 const base::Feature kOmniboxReverseAnswers{"OmniboxReverseAnswers",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Feature used to enable matching short words to bookmarks for suggestions.
+const base::Feature kOmniboxShortBookmarkSuggestions{
+    "OmniboxShortBookmarkSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Feature used to force on the experiment of transmission of tail suggestions
 // from GWS to this client, currently testing for desktop.
 const base::Feature kOmniboxTailSuggestions{

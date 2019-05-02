@@ -2499,6 +2499,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "omnibox-short-bookmark-suggestions",
+    "owners": [ "krb", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 78
+  },
+  {
     "name": "omnibox-spare-renderer",
     "owners": [ "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 76

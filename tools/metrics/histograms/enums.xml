@@ -32553,6 +32553,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1768672408" label="ChromeDuplex:disabled"/>
   <int value="-1768308156" label="OmniboxDedupeGoogleDriveURLs:enabled"/>
   <int value="-1767470652" label="out-of-process-pdf"/>
+  <int value="-1766648764" label="OmniboxShortBookmarkSuggestions:disabled"/>
   <int value="-1766129470" label="DataSaverLiteModeRebranding:disabled"/>
   <int value="-1758468685" label="DownloadHomeV2:disabled"/>
   <int value="-1755301960" label="ClearOldBrowsingData:enabled"/>
@@ -34654,6 +34655,7 @@ from previous Chrome versions.
   <int value="1466502102" label="DelayNavigation:disabled"/>
   <int value="1469407485" label="disable-accelerated-2d-canvas"/>
   <int value="1473838479" label="EnableVirtualKeyboardMdUi:disabled"/>
+  <int value="1473967338" label="OmniboxShortBookmarkSuggestions:enabled"/>
   <int value="1474861626" label="disable-multi-mirroring"/>
   <int value="1479248574" label="disable-voice-input"/>
   <int value="1481562816" label="disable-password-link"/>

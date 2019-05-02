@@ -17,6 +17,7 @@
 #include "components/bookmarks/browser/titled_url_match.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/autocomplete_result.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/titled_url_match_utils.h"
 #include "components/prefs/pref_service.h"
 #include "components/query_parser/snippet.h"
@@ -66,6 +67,7 @@ void BookmarkProvider::DoAutocomplete(const AutocompleteInput& input) {
   //  - Terms must be at least three characters in length in order to perform
   //    partial word matches. Any term of lesser length will only be used as an
   //    exact match. 'def' will match against 'define' but 'de' will not match.
+  //    (The flag below changes this behavior.)
   //  - A search containing multiple terms will return results with those words
   //    occuring in any order.
   //  - Terms enclosed in quotes comprises a phrase that must match exactly.
@@ -75,9 +77,12 @@ void BookmarkProvider::DoAutocomplete(const AutocompleteInput& input) {
   // Please refer to the code for TitledUrlIndex::GetResultsMatching for
   // complete details of how searches are performed against the user's
   // bookmarks.
-  bookmark_model_->GetBookmarksMatching(input.text(),
-                                        kMaxBookmarkMatches,
-                                        &matches);
+  bookmark_model_->GetBookmarksMatching(
+      input.text(), kMaxBookmarkMatches,
+      OmniboxFieldTrial::IsShortBookmarkSuggestionsEnabled()
+          ? query_parser::MatchingAlgorithm::ALWAYS_PREFIX_SEARCH
+          : query_parser::MatchingAlgorithm::DEFAULT,
+      &matches);
   if (matches.empty())
     return;  // There were no matches.
   const base::string16 fixed_up_input(FixupUserInput(input).second);

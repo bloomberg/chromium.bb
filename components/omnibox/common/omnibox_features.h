@@ -20,6 +20,7 @@ extern const base::Feature kOmniboxLocalEntitySuggestions;
 extern const base::Feature kOmniboxRichEntitySuggestions;
 extern const base::Feature kOmniboxNewAnswerLayout;
 extern const base::Feature kOmniboxReverseAnswers;
+extern const base::Feature kOmniboxShortBookmarkSuggestions;
 extern const base::Feature kOmniboxTailSuggestions;
 extern const base::Feature kOmniboxTabSwitchSuggestions;
 extern const base::Feature kOmniboxReverseTabSwitchLogic;
