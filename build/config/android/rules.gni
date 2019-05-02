@@ -4122,7 +4122,7 @@ if (enable_java_templates) {
         jar_path = "$_output_path/classes.jar"
         output_name = invoker.target_name
 
-        if (_scanned_files.has_proguard_flags) {
+        if (!_ignore_proguard_configs && _scanned_files.has_proguard_flags) {
           if (!defined(proguard_configs)) {
             proguard_configs = []
           }
