@@ -29,8 +29,6 @@ source_set("net") {
     "crw_cert_verification_controller.mm",
     "crw_ssl_status_updater.h",
     "crw_ssl_status_updater.mm",
-    "request_group_util.h",
-    "request_group_util.mm",
     "request_tracker_impl.h",
     "request_tracker_impl.mm",
   ]
