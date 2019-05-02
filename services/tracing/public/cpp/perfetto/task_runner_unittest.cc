@@ -136,13 +136,14 @@ TEST_F(PerfettoTaskRunnerTest, SequentialDeferredTasks) {
   base::RunLoop wait_for_tasks;
   SetTaskExpectations(wait_for_tasks.QuitClosure(), 3);
 
-  task_runner()->BlockPostTaskForThread();
   auto weak_ptr = destination()->GetWeakPtr();
-  task_runner()->PostTask([weak_ptr]() { weak_ptr->TestTask(1); });
-  task_runner()->PostTask([weak_ptr]() { weak_ptr->TestTask(2); });
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(0u, destination()->tasks_run());
-  task_runner()->UnblockPostTaskForThread();
+  {
+    ScopedPerfettoPostTaskBlocker block(true);
+    task_runner()->PostTask([weak_ptr]() { weak_ptr->TestTask(1); });
+    task_runner()->PostTask([weak_ptr]() { weak_ptr->TestTask(2); });
+    base::RunLoop().RunUntilIdle();
+    EXPECT_EQ(0u, destination()->tasks_run());
+  }
   // Posting an unblocked task should post the earlier deferred ones,
   // in the right order.
   task_runner()->PostTask([weak_ptr]() { weak_ptr->TestTask(3); });
@@ -154,7 +155,7 @@ TEST_F(PerfettoTaskRunnerTest, SequentialDeferredTasksByTimer) {
   base::RunLoop wait_for_tasks;
   SetTaskExpectations(wait_for_tasks.QuitClosure(), 3);
 
-  task_runner()->BlockPostTaskForThread();
+  ScopedPerfettoPostTaskBlocker block(true);
   auto weak_ptr = destination()->GetWeakPtr();
   task_runner()->PostTask([weak_ptr]() { weak_ptr->TestTask(1); });
   task_runner()->PostTask([weak_ptr]() { weak_ptr->TestTask(2); });

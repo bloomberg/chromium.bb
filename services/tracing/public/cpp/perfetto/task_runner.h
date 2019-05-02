@@ -17,7 +17,7 @@
 
 namespace tracing {
 
-class ScopedPerfettoPostTaskBlocker {
+class COMPONENT_EXPORT(TRACING_CPP) ScopedPerfettoPostTaskBlocker {
  public:
   explicit ScopedPerfettoPostTaskBlocker(bool enable);
   ~ScopedPerfettoPostTaskBlocker();
