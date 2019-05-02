@@ -169,151 +169,27 @@ base::WeakPtr<SpdySession> SpdySessionPool::FindAvailableSession(
     bool is_websocket,
     const NetLogWithSource& net_log) {
   auto it = LookupAvailableSessionByKey(key);
-  if (it != available_sessions_.end() &&
-      (!is_websocket || it->second->support_websocket())) {
-    if (key == it->second->spdy_session_key()) {
-      UMA_HISTOGRAM_ENUMERATION("Net.SpdySessionGet", FOUND_EXISTING,
-                                SPDY_SESSION_GET_MAX);
-      net_log.AddEvent(
-          NetLogEventType::HTTP2_SESSION_POOL_FOUND_EXISTING_SESSION,
-          it->second->net_log().source().ToEventParametersCallback());
-      return it->second;
-    }
-
-    if (enable_ip_based_pooling) {
-      UMA_HISTOGRAM_ENUMERATION("Net.SpdySessionGet",
-                                FOUND_EXISTING_FROM_IP_POOL,
-                                SPDY_SESSION_GET_MAX);
-      net_log.AddEvent(
-          NetLogEventType::
-              HTTP2_SESSION_POOL_FOUND_EXISTING_SESSION_FROM_IP_POOL,
-          it->second->net_log().source().ToEventParametersCallback());
-      return it->second;
-    }
+  if (it == available_sessions_.end() ||
+      (is_websocket && !it->second->support_websocket())) {
     return base::WeakPtr<SpdySession>();
   }
 
-  if (!enable_ip_based_pooling)
-    return base::WeakPtr<SpdySession>();
+  if (key == it->second->spdy_session_key()) {
+    UMA_HISTOGRAM_ENUMERATION("Net.SpdySessionGet", FOUND_EXISTING,
+                              SPDY_SESSION_GET_MAX);
+    net_log.AddEvent(
+        NetLogEventType::HTTP2_SESSION_POOL_FOUND_EXISTING_SESSION,
+        it->second->net_log().source().ToEventParametersCallback());
+    return it->second;
+  }
 
-  // Look up IP addresses from resolver cache.
-  HostResolver::ResolveHostParameters parameters;
-  parameters.source = HostResolverSource::LOCAL_ONLY;
-  std::unique_ptr<HostResolver::ResolveHostRequest> request =
-      resolver_->CreateRequest(key.host_port_pair(), net_log, parameters);
-
-  int rv = request->Start(base::BindOnce([](int error) { NOTREACHED(); }));
-  DCHECK_NE(rv, ERR_IO_PENDING);
-  if (rv != OK)
-    return base::WeakPtr<SpdySession>();
-
-  // Check if we have a session through a domain alias.
-  for (const auto& address : request->GetAddressResults().value().endpoints()) {
-    auto range = aliases_.equal_range(address);
-    for (auto alias_it = range.first; alias_it != range.second; ++alias_it) {
-      // We found an alias.
-      const SpdySessionKey& alias_key = alias_it->second;
-
-      // We can reuse this session only if the proxy and privacy
-      // settings match.
-      if (!(alias_key.proxy_server() == key.proxy_server()) ||
-          !(alias_key.privacy_mode() == key.privacy_mode()) ||
-          !(alias_key.is_proxy_session() == key.is_proxy_session())) {
-        continue;
-      }
-
-      auto available_session_it = LookupAvailableSessionByKey(alias_key);
-      if (available_session_it == available_sessions_.end()) {
-        NOTREACHED();  // It shouldn't be in the aliases table if we can't get
-                       // it!
-        continue;
-      }
-
-      // Make copy of WeakPtr as call to UnmapKey() will delete original.
-      const base::WeakPtr<SpdySession> available_session =
-          available_session_it->second;
-      DCHECK(base::ContainsKey(sessions_, available_session.get()));
-
-      if (is_websocket && !available_session->support_websocket())
-        continue;
-
-      // Need to verify that the server is authenticated to serve traffic for
-      // |host_port_proxy_pair| too.
-      if (!available_session->VerifyDomainAuthentication(
-              key.host_port_pair().host())) {
-        UMA_HISTOGRAM_ENUMERATION("Net.SpdyIPPoolDomainMatch", 0, 2);
-        continue;
-      }
-
-      bool adding_pooled_alias = true;
-
-      // If socket tags differ, see if session's socket tag can be changed.
-      if (alias_key.socket_tag() != key.socket_tag()) {
-        SpdySessionKey old_key = available_session->spdy_session_key();
-        SpdySessionKey new_key(old_key.host_port_pair(), old_key.proxy_server(),
-                               old_key.privacy_mode(),
-                               old_key.is_proxy_session(), key.socket_tag());
-
-        // If there is already a session with |new_key|, skip this one.
-        // It will be found in |aliases_| in a future iteration.
-        if (available_sessions_.find(new_key) != available_sessions_.end())
-          continue;
-
-        if (!available_session->ChangeSocketTag(key.socket_tag()))
-          continue;
-
-        DCHECK(available_session->spdy_session_key() == new_key);
-
-        // This isn't a pooled alias, it's the actual session.
-        adding_pooled_alias = false;
-
-        // Remap main session key.
-        UnmapKey(old_key);
-        MapKeyToAvailableSession(new_key, available_session);
-
-        // Remap alias. From this point on |alias_it| is invalid, so no more
-        // iterations of the loop should be allowed.
-        aliases_.insert(AliasMap::value_type(alias_it->first, new_key));
-        aliases_.erase(alias_it);
-
-        // Remap pooled session keys.
-        const auto& aliases = available_session->pooled_aliases();
-        for (auto it = aliases.begin(); it != aliases.end();) {
-          // Ignore aliases this loop is inserting.
-          if (it->socket_tag() == key.socket_tag()) {
-            ++it;
-            continue;
-          }
-          UnmapKey(*it);
-          SpdySessionKey new_pool_alias_key = SpdySessionKey(
-              it->host_port_pair(), it->proxy_server(), it->privacy_mode(),
-              it->is_proxy_session(), key.socket_tag());
-          MapKeyToAvailableSession(new_pool_alias_key, available_session);
-          auto old_it = it;
-          ++it;
-          available_session->RemovePooledAlias(*old_it);
-          available_session->AddPooledAlias(new_pool_alias_key);
-        }
-      }
-
-      UMA_HISTOGRAM_ENUMERATION("Net.SpdyIPPoolDomainMatch", 1, 2);
-      UMA_HISTOGRAM_ENUMERATION("Net.SpdySessionGet",
-                                FOUND_EXISTING_FROM_IP_POOL,
-                                SPDY_SESSION_GET_MAX);
-      net_log.AddEvent(
-          NetLogEventType::
-              HTTP2_SESSION_POOL_FOUND_EXISTING_SESSION_FROM_IP_POOL,
-          available_session->net_log().source().ToEventParametersCallback());
-      if (adding_pooled_alias) {
-        // Add this session to the map so that we can find it next time.
-        MapKeyToAvailableSession(key, available_session);
-        available_session->AddPooledAlias(key);
-      }
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(&SpdySessionPool::UpdatePendingRequests,
-                                    weak_ptr_factory_.GetWeakPtr(), key));
-      return available_session;
-    }
+  if (enable_ip_based_pooling) {
+    UMA_HISTOGRAM_ENUMERATION("Net.SpdySessionGet", FOUND_EXISTING_FROM_IP_POOL,
+                              SPDY_SESSION_GET_MAX);
+    net_log.AddEvent(
+        NetLogEventType::HTTP2_SESSION_POOL_FOUND_EXISTING_SESSION_FROM_IP_POOL,
+        it->second->net_log().source().ToEventParametersCallback());
+    return it->second;
   }
 
   return base::WeakPtr<SpdySession>();

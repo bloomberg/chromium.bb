@@ -97,6 +97,22 @@ class MockRequireCTDelegate : public TransportSecurityState::RequireCTDelegate {
                                   const HashValueVector& hashes));
 };
 
+// SpdySessionRequest::Delegate implementation that does nothing. The test it's
+// used in need to create a session request to trigger the creation of a session
+// alias, but doesn't care about when or if OnSpdySessionAvailable() is invoked.
+class SpdySessionRequestDelegate
+    : public SpdySessionPool::SpdySessionRequest::Delegate {
+ public:
+  SpdySessionRequestDelegate() = default;
+  ~SpdySessionRequestDelegate() override = default;
+
+  void OnSpdySessionAvailable(
+      base::WeakPtr<SpdySession> spdy_session) override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SpdySessionRequestDelegate);
+};
+
 }  // namespace
 
 class SpdySessionTest : public PlatformTest, public WithScopedTaskEnvironment {
@@ -3571,14 +3587,8 @@ TEST_F(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
 
   AddSSLSocketData();
 
-  session_deps_.host_resolver->set_synchronous_mode(true);
   session_deps_.host_resolver->rules()->AddIPLiteralRule(
       "www.example.org", "192.168.0.2", std::string());
-  session_deps_.host_resolver->rules()->AddIPLiteralRule(
-      "mail.example.org", "192.168.0.2", std::string());
-  // Not strictly needed.
-  session_deps_.host_resolver->rules()->AddIPLiteralRule("3.com", "192.168.0.3",
-                                                         std::string());
 
   CreateNetworkSession();
 
@@ -3597,17 +3607,28 @@ TEST_F(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
   SpdySessionKey key2(HostPortPair("mail.example.org", 80),
                       ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
                       SpdySessionKey::IsProxySession::kFalse, SocketTag());
-  // Pre-populate the DNS cache, since a cached entry is required in order to
-  // create the alias.
-  int rv = session_deps_.host_resolver->LoadIntoCache(key2.host_port_pair(),
-                                                      base::nullopt);
-  EXPECT_THAT(rv, IsOk());
+  std::unique_ptr<SpdySessionPool::SpdySessionRequest> request;
+  bool is_blocking_request_for_session = false;
+  SpdySessionRequestDelegate request_delegate;
+  EXPECT_FALSE(spdy_session_pool_->RequestSession(
+      key2, /* enable_ip_based_pooling = */ true,
+      /* is_websocket = */ false, NetLogWithSource(),
+      /* on_blocking_request_destroyed_callback = */ base::RepeatingClosure(),
+      &request_delegate, &request, &is_blocking_request_for_session));
+  EXPECT_TRUE(request);
+
+  // Simulate DNS resolution completing, which should set up an alias.
+  EXPECT_EQ(OnHostResolutionCallbackResult::kMayBeDeletedAsync,
+            spdy_session_pool_->OnHostResolutionComplete(
+                key2, /* is_websocket = */ false,
+                AddressList(IPEndPoint(IPAddress(192, 168, 0, 2), 80))));
 
   // Get a session for |key2|, which should return the session created earlier.
   base::WeakPtr<SpdySession> session2 =
       spdy_session_pool_->FindAvailableSession(
           key2, /* enable_ip_based_pooling = */ true,
           /* is_websocket = */ false, NetLogWithSource());
+  EXPECT_TRUE(session2);
   ASSERT_EQ(session1.get(), session2.get());
   EXPECT_FALSE(pool->IsStalled());
 
