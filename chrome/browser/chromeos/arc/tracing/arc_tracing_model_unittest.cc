@@ -186,6 +186,12 @@ TEST_F(ArcTracingModelTest, TopLevel) {
       graphics_model.android_top_level().global_events(),
       {GraphicsEventType::kVsync,
        GraphicsEventType::kSurfaceFlingerCompositionJank}));
+  ASSERT_FALSE(graphics_model.android_top_level().global_events().empty());
+  // Check trimmed by VSYNC.
+  EXPECT_EQ(GraphicsEventType::kVsync,
+            graphics_model.android_top_level().global_events()[0].type);
+  EXPECT_EQ(0, graphics_model.android_top_level().global_events()[0].timestamp);
+
   EXPECT_EQ(2U, graphics_model.chrome_top_level().buffer_events().size());
   for (const auto& chrome_top_level_band :
        graphics_model.chrome_top_level().buffer_events()) {
@@ -225,14 +231,15 @@ TEST_F(ArcTracingModelTest, TopLevel) {
   }
 
   // Note, CPU events in |graphics_model| are normalized by timestamp. So they
-  // are not equal and we cannot do direct comparison.
-  ASSERT_EQ(graphics_model.system_model().all_cpu_events().size(),
+  // are not equal and we cannot do direct comparison. Also first VSYNC event
+  // trimming may drop some events.
+  ASSERT_LE(graphics_model.system_model().all_cpu_events().size(),
             model.system_model().all_cpu_events().size());
   EXPECT_EQ(graphics_model.system_model().thread_map(),
             model.system_model().thread_map());
   for (size_t i = 0; i < graphics_model.system_model().all_cpu_events().size();
        ++i) {
-    EXPECT_EQ(graphics_model.system_model().all_cpu_events()[i].size(),
+    EXPECT_LE(graphics_model.system_model().all_cpu_events()[i].size(),
               model.system_model().all_cpu_events()[i].size());
   }
 
@@ -425,6 +432,48 @@ TEST_F(ArcTracingModelTest, GraphicsModelLoadSerialize) {
   EXPECT_FALSE(LoadGraphicsModel("gm_bad_no_view_buffers.json"));
   EXPECT_FALSE(LoadGraphicsModel("gm_bad_no_view_desc.json"));
   EXPECT_FALSE(LoadGraphicsModel("gm_bad_wrong_timestamp.json"));
+}
+
+TEST_F(ArcTracingModelTest, EventsContainerTrim) {
+  ArcTracingGraphicsModel::EventsContainer events;
+  constexpr int64_t trim_timestamp = 25;
+  events.global_events().emplace_back(
+      ArcTracingGraphicsModel::BufferEventType::kChromeOSJank,
+      15 /* timestamp */);
+  events.global_events().emplace_back(
+      ArcTracingGraphicsModel::BufferEventType::kChromeOSJank,
+      25 /* timestamp */);
+  events.global_events().emplace_back(
+      ArcTracingGraphicsModel::BufferEventType::kChromeOSJank,
+      30 /* timestamp */);
+  events.global_events().emplace_back(
+      ArcTracingGraphicsModel::BufferEventType::kChromeOSJank,
+      35 /* timestamp */);
+  events.buffer_events().resize(1);
+  // Two sequences, first sequence starts before trim and ends after. After
+  // trimming  next sequence should be preserved only.
+  events.buffer_events()[0].emplace_back(
+      ArcTracingGraphicsModel::BufferEventType::kChromeOSDraw,
+      20 /* timestamp */);
+  events.buffer_events()[0].emplace_back(
+      ArcTracingGraphicsModel::BufferEventType::kChromeOSSwapDone,
+      30 /* timestamp */);
+  events.buffer_events()[0].emplace_back(
+      ArcTracingGraphicsModel::BufferEventType::kChromeOSDraw,
+      40 /* timestamp */);
+  events.buffer_events()[0].emplace_back(
+      ArcTracingGraphicsModel::BufferEventType::kChromeOSSwapDone,
+      50 /* timestamp */);
+  ArcTracingGraphicsModel::TrimEventsContainer(
+      &events, trim_timestamp,
+      {ArcTracingGraphicsModel::BufferEventType::kChromeOSDraw});
+  ASSERT_EQ(3U, events.global_events().size());
+  EXPECT_EQ(25, events.global_events()[0].timestamp);
+  ASSERT_EQ(1U, events.buffer_events().size());
+  ASSERT_EQ(2U, events.buffer_events()[0].size());
+  EXPECT_EQ(40, events.buffer_events()[0][0].timestamp);
+  EXPECT_EQ(ArcTracingGraphicsModel::BufferEventType::kChromeOSDraw,
+            events.buffer_events()[0][0].type);
 }
 
 }  // namespace arc

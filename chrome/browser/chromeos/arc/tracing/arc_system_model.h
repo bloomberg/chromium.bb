@@ -38,6 +38,11 @@ class ArcSystemModel {
   ~ArcSystemModel();
 
   void Reset();
+  // Trims the model using |trim_timestamp|. Events before
+  // |trim_timestamp| are consolidated with their timestamps aligned
+  // to |trim_timestamp|. Events on or after |trim_timestamp| are left
+  // in the model unchanged.
+  void Trim(int64_t trim_timestamp);
 
   void CopyFrom(const ArcSystemModel& other);
   base::DictionaryValue Serialize() const;
