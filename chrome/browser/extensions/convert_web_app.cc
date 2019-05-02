@@ -20,6 +20,7 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -37,6 +38,7 @@
 #include "extensions/common/image_util.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/file_handler_info.h"
+#include "net/base/url_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/color_utils.h"
@@ -52,10 +54,10 @@ const char kIconsDirName[] = "icons";
 const char kScopeUrlHandlerId[] = "scope";
 
 std::unique_ptr<base::DictionaryValue> CreateFileHandlersForBookmarkApp(
-    blink::Manifest::FileHandler file_handler) {
+    const blink::Manifest::FileHandler& manifest_file_handler) {
   base::Value file_handlers(base::Value::Type::DICTIONARY);
 
-  for (const auto& handler : file_handler) {
+  for (const auto& handler : manifest_file_handler.files) {
     base::Value file_handler(base::Value::Type::DICTIONARY);
     file_handler.SetKey(keys::kFileHandlerIncludeDirectories,
                         base::Value(false));
@@ -81,8 +83,13 @@ std::unique_ptr<base::DictionaryValue> CreateFileHandlersForBookmarkApp(
     file_handler.SetKey(keys::kFileHandlerExtensions,
                         std::move(file_extensions));
 
-    file_handlers.SetKey(base::UTF16ToUTF8(handler.name),
-                         std::move(file_handler));
+    // Use '{action}/?name={name}' as the id for the file handler, so we don't
+    // have to introduce a new field to the extension manifest.
+    file_handlers.SetKey(
+        net::AppendQueryParameter(manifest_file_handler.action, "name",
+                                  base::UTF16ToUTF8(handler.name))
+            .spec(),
+        std::move(file_handler));
   }
 
   return base::DictionaryValue::From(

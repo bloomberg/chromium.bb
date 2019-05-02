@@ -1038,32 +1038,82 @@ TEST_F(ManifestParserTest, IconPurposeParseRules) {
 }
 
 TEST_F(ManifestParserTest, FileHandlerParseRules) {
-  // Contains file_handler field but no keys.
+  // Does not contain file_handler field.
   {
-    Manifest manifest = ParseManifest("{ \"file_handler\": [] }");
+    Manifest manifest = ParseManifest("{ }");
+    EXPECT_FALSE(manifest.file_handler.has_value());
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Contains empty file_handler field.
+  {
+    Manifest manifest = ParseManifest("{ \"file_handler\": { } }");
+    EXPECT_FALSE(manifest.file_handler.has_value());
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("property 'file_handler' ignored. Property 'action' is invalid.",
+              errors()[0]);
+  }
+
+  // Contains file_handler field but no file handlers.
+  {
+    Manifest manifest =
+        ParseManifest("{ \"file_handler\": { \"action\": \"/files\" } }");
     EXPECT_FALSE(manifest.file_handler.has_value());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("no file handlers were specified.", errors()[0]);
+  }
+
+  // Contains file_handler field but files list is empty.
+  {
+    Manifest manifest = ParseManifest(
+        "{ \"file_handler\": { \"action\": \"/files\", \"files\": [] } }");
+    EXPECT_FALSE(manifest.file_handler.has_value());
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("no file handlers were specified.", errors()[0]);
+  }
+
+  // Invalid action causes parsing to fail.
+  {
+    Manifest manifest = ParseManifest(
+        "{"
+        "  \"file_handler\": {"
+        "    \"files\": ["
+        "      {"
+        "        \"name\": \"name\", "
+        "        \"accept\": \"image/png\""
+        "      }"
+        "    ]"
+        "  }"
+        "}");
+    manifest.scope = GURL("http://frobnicate.notatld");
+    EXPECT_FALSE(manifest.file_handler.has_value());
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("property 'file_handler' ignored. Property 'action' is invalid.",
+              errors()[0]);
   }
 
   // Single accept value can be parsed from string.
   {
     Manifest manifest = ParseManifest(
         "{"
-        "  \"file_handler\": ["
-        "    {"
-        "      \"name\": \"name\","
-        "      \"accept\": \"image/png\""
-        "    }"
-        "  ]"
+        "  \"file_handler\": {"
+        "    \"files\": ["
+        "      {"
+        "        \"name\": \"name\", "
+        "        \"accept\": \"image/png\""
+        "      }"
+        "    ], "
+        "    \"action\": \"/files\""
+        "  }"
         "}");
     EXPECT_TRUE(manifest.file_handler.has_value());
 
     auto file_handler = manifest.file_handler.value();
-    EXPECT_EQ(file_handler.size(), 1u);
-    EXPECT_EQ(file_handler[0].name, base::ASCIIToUTF16("name"));
-    EXPECT_EQ(file_handler[0].accept.size(), 1u);
-    EXPECT_EQ(file_handler[0].accept[0], base::ASCIIToUTF16("image/png"));
+    EXPECT_EQ(file_handler.action, GURL("http://foo.com/files"));
+    EXPECT_EQ(file_handler.files.size(), 1u);
+    EXPECT_EQ(file_handler.files[0].name, base::ASCIIToUTF16("name"));
+    EXPECT_EQ(file_handler.files[0].accept.size(), 1u);
+    EXPECT_EQ(file_handler.files[0].accept[0], base::ASCIIToUTF16("image/png"));
     EXPECT_EQ(0u, GetErrorCount());
   }
 
@@ -1071,20 +1121,26 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
   {
     Manifest manifest = ParseManifest(
         "{"
-        "  \"file_handler\": ["
-        "    {"
-        "      \"name\": \"name\","
-        "      \"accept\": [\"image/png\"]"
-        "    }"
-        "  ]"
+        "  \"file_handler\": {"
+        "    \"action\": \"/files\", "
+        "    \"files\": ["
+        "      {"
+        "        \"name\": \"name\", "
+        "        \"accept\": ["
+        "          \"image/png\""
+        "        ]"
+        "      }"
+        "    ]"
+        "  }"
         "}");
     EXPECT_TRUE(manifest.file_handler.has_value());
 
     auto file_handler = manifest.file_handler.value();
-    EXPECT_EQ(file_handler.size(), 1u);
-    EXPECT_EQ(file_handler[0].name, base::ASCIIToUTF16("name"));
-    EXPECT_EQ(file_handler[0].accept.size(), 1u);
-    EXPECT_EQ(file_handler[0].accept[0], base::ASCIIToUTF16("image/png"));
+    EXPECT_EQ(file_handler.action, GURL("http://foo.com/files"));
+    EXPECT_EQ(file_handler.files.size(), 1u);
+    EXPECT_EQ(file_handler.files[0].name, base::ASCIIToUTF16("name"));
+    EXPECT_EQ(file_handler.files[0].accept.size(), 1u);
+    EXPECT_EQ(file_handler.files[0].accept[0], base::ASCIIToUTF16("image/png"));
     EXPECT_EQ(0u, GetErrorCount());
   }
 
@@ -1092,21 +1148,28 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
   {
     Manifest manifest = ParseManifest(
         "{"
-        "  \"file_handler\": ["
-        "    {"
-        "      \"name\": \"name\","
-        "      \"accept\": [\"image/png\", \".png\"]"
-        "    }"
-        "  ]"
+        "  \"file_handler\": {"
+        "    \"action\": \"/files\", "
+        "    \"files\": ["
+        "      {"
+        "        \"name\": \"name\", "
+        "        \"accept\": ["
+        "          \"image/png\", "
+        "          \".png\""
+        "        ]"
+        "      }"
+        "    ]"
+        "  }"
         "}");
     EXPECT_TRUE(manifest.file_handler.has_value());
 
     auto file_handler = manifest.file_handler.value();
-    EXPECT_EQ(file_handler.size(), 1u);
-    EXPECT_EQ(file_handler[0].name, base::ASCIIToUTF16("name"));
-    EXPECT_EQ(file_handler[0].accept.size(), 2u);
-    EXPECT_EQ(file_handler[0].accept[0], base::ASCIIToUTF16("image/png"));
-    EXPECT_EQ(file_handler[0].accept[1], base::ASCIIToUTF16(".png"));
+    EXPECT_EQ(file_handler.action, GURL("http://foo.com/files"));
+    EXPECT_EQ(file_handler.files.size(), 1u);
+    EXPECT_EQ(file_handler.files[0].name, base::ASCIIToUTF16("name"));
+    EXPECT_EQ(file_handler.files[0].accept.size(), 2u);
+    EXPECT_EQ(file_handler.files[0].accept[0], base::ASCIIToUTF16("image/png"));
+    EXPECT_EQ(file_handler.files[0].accept[1], base::ASCIIToUTF16(".png"));
     EXPECT_EQ(0u, GetErrorCount());
   }
 
@@ -1114,32 +1177,39 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
   {
     Manifest manifest = ParseManifest(
         "{"
-        "  \"file_handler\": ["
-        "    {"
-        "      \"name\": \"name\","
-        "      \"accept\": [\"image/png\", \".png\"]"
-        "    },"
-        "    {"
-        "      \"name\": \"svgish\","
-        "      \"accept\": ["
-        "        \".svg\","
-        "        \"xml/svg\""
-        "      ]"
-        "    }"
-        "  ]"
+        "  \"file_handler\": {"
+        "    \"action\": \"/files\", "
+        "    \"files\": ["
+        "      {"
+        "        \"name\": \"name\", "
+        "        \"accept\": ["
+        "          \"image/png\", "
+        "          \".png\""
+        "        ]"
+        "      }, "
+        "      {"
+        "        \"name\": \"svgish\", "
+        "        \"accept\": ["
+        "          \".svg\","
+        "          \"xml/svg\""
+        "        ]"
+        "      }"
+        "    ]"
+        "  }"
         "}");
     EXPECT_TRUE(manifest.file_handler.has_value());
 
     auto file_handler = manifest.file_handler.value();
-    EXPECT_EQ(file_handler.size(), 2u);
-    EXPECT_EQ(file_handler[0].name, base::ASCIIToUTF16("name"));
-    EXPECT_EQ(file_handler[0].accept.size(), 2u);
-    EXPECT_EQ(file_handler[0].accept[0], base::ASCIIToUTF16("image/png"));
-    EXPECT_EQ(file_handler[0].accept[1], base::ASCIIToUTF16(".png"));
-    EXPECT_EQ(file_handler[1].name, base::ASCIIToUTF16("svgish"));
-    EXPECT_EQ(file_handler[1].accept.size(), 2u);
-    EXPECT_EQ(file_handler[1].accept[0], base::ASCIIToUTF16(".svg"));
-    EXPECT_EQ(file_handler[1].accept[1], base::ASCIIToUTF16("xml/svg"));
+    EXPECT_EQ(file_handler.action, GURL("http://foo.com/files"));
+    EXPECT_EQ(file_handler.files.size(), 2u);
+    EXPECT_EQ(file_handler.files[0].name, base::ASCIIToUTF16("name"));
+    EXPECT_EQ(file_handler.files[0].accept.size(), 2u);
+    EXPECT_EQ(file_handler.files[0].accept[0], base::ASCIIToUTF16("image/png"));
+    EXPECT_EQ(file_handler.files[0].accept[1], base::ASCIIToUTF16(".png"));
+    EXPECT_EQ(file_handler.files[1].name, base::ASCIIToUTF16("svgish"));
+    EXPECT_EQ(file_handler.files[1].accept.size(), 2u);
+    EXPECT_EQ(file_handler.files[1].accept[0], base::ASCIIToUTF16(".svg"));
+    EXPECT_EQ(file_handler.files[1].accept[1], base::ASCIIToUTF16("xml/svg"));
     EXPECT_EQ(0u, GetErrorCount());
   }
 }

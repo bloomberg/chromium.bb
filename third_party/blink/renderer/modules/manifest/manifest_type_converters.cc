@@ -8,6 +8,7 @@
 
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/blink/public/common/manifest/manifest_mojom_traits.h"
+#include "third_party/blink/public/mojom/manifest/manifest.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -48,15 +49,16 @@ TypeConverter<blink::mojom::blink::ManifestPtr,
         &input->share_target.value());
   }
 
-  if (input->file_handler.has_value() && input->file_handler->size() > 0) {
-    WTF::Vector<blink::mojom::blink::ManifestFileFilterPtr> mojo_file_handler;
-    mojo_file_handler.ReserveInitialCapacity(
-        static_cast<WTF::wtf_size_t>(input->file_handler->size()));
-    for (auto& file_handler : input->file_handler.value()) {
-      mojo_file_handler.push_back(
+  if (input->file_handler.has_value()) {
+    WTF::Vector<blink::mojom::blink::ManifestFileFilterPtr> file_filters;
+    file_filters.ReserveInitialCapacity(
+        static_cast<WTF::wtf_size_t>(input->file_handler->files.size()));
+    for (auto& file_handler : input->file_handler->files) {
+      file_filters.push_back(
           blink::mojom::blink::ManifestFileFilter::From(&file_handler));
     }
-    output->file_handler = std::move(mojo_file_handler);
+    output->file_handler->action = blink::KURL(input->file_handler->action);
+    output->file_handler->files = std::move(file_filters);
   }
 
   if (input->related_applications.size() > 0) {

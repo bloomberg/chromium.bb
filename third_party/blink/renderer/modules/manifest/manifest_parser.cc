@@ -654,13 +654,22 @@ base::Optional<Manifest::ShareTarget> ManifestParser::ParseShareTarget(
 
 base::Optional<Manifest::FileHandler> ManifestParser::ParseFileHandler(
     const base::DictionaryValue& dictionary) {
-  constexpr char file_handler_key[] = "file_handler";
-  if (!dictionary.HasKey(file_handler_key))
+  const base::DictionaryValue* file_handler_value;
+  if (!dictionary.GetDictionary("file_handler", &file_handler_value))
     return base::nullopt;
 
-  Manifest::FileHandler file_handler =
-      ParseTargetFiles(file_handler_key, dictionary);
-  if (file_handler.size() == 0) {
+  Manifest::FileHandler file_handler;
+  file_handler.action = ParseURL(*file_handler_value, "action", manifest_url_,
+                                 ParseURLOriginRestrictions::kSameOriginOnly);
+  if (!file_handler.action.is_valid()) {
+    AddErrorInfo(
+        "property 'file_handler' ignored. Property 'action' is "
+        "invalid.");
+    return base::nullopt;
+  }
+
+  file_handler.files = ParseTargetFiles("files", *file_handler_value);
+  if (file_handler.files.size() == 0) {
     AddErrorInfo("no file handlers were specified.");
     return base::nullopt;
   }

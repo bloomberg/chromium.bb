@@ -201,4 +201,14 @@ bool StructTraits<blink::mojom::ManifestShareTargetDataView,
   return data.ReadParams(&out->params);
 }
 
+bool StructTraits<blink::mojom::ManifestFileHandlerDataView,
+                  ::blink::Manifest::FileHandler>::
+    Read(blink::mojom::ManifestFileHandlerDataView data,
+         ::blink::Manifest::FileHandler* out) {
+  if (!data.ReadAction(&out->action))
+    return false;
+
+  return data.ReadFiles(&out->files);
+}
+
 }  // namespace mojo

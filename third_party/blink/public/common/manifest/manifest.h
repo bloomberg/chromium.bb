@@ -105,8 +105,12 @@ struct BLINK_COMMON_EXPORT Manifest {
     ShareTargetParams params;
   };
 
-  // Structure representing a File Handler's query parameter keys.
-  using FileHandler = std::vector<FileFilter>;
+  // Structure representing a File Handler.
+  struct BLINK_COMMON_EXPORT FileHandler {
+    // The URL which will be opened when the file handler is invoked.
+    GURL action;
+    std::vector<FileFilter> files;
+  };
 
   // Structure representing a related application.
   struct BLINK_COMMON_EXPORT RelatedApplication {

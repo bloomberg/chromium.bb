@@ -8,6 +8,7 @@
 #include "chrome/common/web_application_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
+#include "url/gurl.h"
 
 namespace web_app {
 
@@ -37,10 +38,11 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest) {
 
   {
     blink::Manifest::FileHandler file_handler;
+    file_handler.action = GURL("http://example.com/open-files");
     blink::Manifest::FileFilter file;
     file.accept.push_back(base::UTF8ToUTF16(".png"));
     file.name = base::UTF8ToUTF16("Images");
-    file_handler.push_back(file);
+    file_handler.files.push_back(file);
     manifest.file_handler =
         base::Optional<blink::Manifest::FileHandler>(std::move(file_handler));
   }
@@ -81,10 +83,11 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest) {
   // Check file handlers were updated
   EXPECT_TRUE(web_app_info.file_handler.has_value());
   auto file_handler = web_app_info.file_handler.value();
-  EXPECT_EQ(1u, file_handler.size());
-  EXPECT_EQ(base::UTF8ToUTF16("Images"), file_handler[0].name);
-  EXPECT_EQ(1u, file_handler[0].accept.size());
-  EXPECT_EQ(base::UTF8ToUTF16(".png"), file_handler[0].accept[0]);
+  EXPECT_EQ(manifest.file_handler->action, file_handler.action);
+  EXPECT_EQ(1u, file_handler.files.size());
+  EXPECT_EQ(base::UTF8ToUTF16("Images"), file_handler.files[0].name);
+  EXPECT_EQ(1u, file_handler.files[0].accept.size());
+  EXPECT_EQ(base::UTF8ToUTF16(".png"), file_handler.files[0].accept[0]);
 }
 
 // Tests "scope" is only set for installable sites.

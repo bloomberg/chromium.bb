@@ -246,6 +246,22 @@ struct BLINK_COMMON_EXPORT
 
 template <>
 struct BLINK_COMMON_EXPORT
+    StructTraits<blink::mojom::ManifestFileHandlerDataView,
+                 ::blink::Manifest::FileHandler> {
+  static const GURL& action(
+      const ::blink::Manifest::FileHandler& file_handler) {
+    return file_handler.action;
+  }
+  static const std::vector<::blink::Manifest::FileFilter>& files(
+      const ::blink::Manifest::FileHandler& file_handler) {
+    return file_handler.files;
+  }
+  static bool Read(blink::mojom::ManifestFileHandlerDataView data,
+                   ::blink::Manifest::FileHandler* out);
+};
+
+template <>
+struct BLINK_COMMON_EXPORT
     EnumTraits<blink::mojom::ManifestImageResource_Purpose,
                ::blink::Manifest::ImageResource::Purpose> {
   static blink::mojom::ManifestImageResource_Purpose ToMojom(

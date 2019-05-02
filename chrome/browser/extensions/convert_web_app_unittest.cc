@@ -419,24 +419,25 @@ TEST(ExtensionFromWebApp, FileHandlersAreCorrectlyConverted) {
   WebApplicationInfo web_app;
   web_app.title = base::ASCIIToUTF16("Graphr");
   web_app.description = base::ASCIIToUTF16("A magical graphy thing");
-  web_app.app_url = GURL("https://not-a-real-site.not-a-tld/");
-  web_app.scope = GURL("https://not-a-real-site.not-a-tld/");
+  web_app.app_url = GURL("https://graphr.n/");
+  web_app.scope = GURL("https://graphr.n/");
 
   {
     blink::Manifest::FileHandler file_handler;
+    file_handler.action = GURL("https://graphr.n/open-file/");
 
     blink::Manifest::FileFilter graph;
     graph.name = base::ASCIIToUTF16("Graph");
     graph.accept.push_back(base::ASCIIToUTF16("text/svg+xml"));
     graph.accept.push_back(base::ASCIIToUTF16(""));
     graph.accept.push_back(base::ASCIIToUTF16(".svg"));
-    file_handler.push_back(graph);
+    file_handler.files.push_back(graph);
 
     blink::Manifest::FileFilter raw;
     raw.name = base::ASCIIToUTF16("Raw");
     raw.accept.push_back(base::ASCIIToUTF16(".csv"));
     raw.accept.push_back(base::ASCIIToUTF16("text/csv"));
-    file_handler.push_back(raw);
+    file_handler.files.push_back(raw);
 
     web_app.file_handler =
         base::Optional<blink::Manifest::FileHandler>(std::move(file_handler));
@@ -453,7 +454,7 @@ TEST(ExtensionFromWebApp, FileHandlersAreCorrectlyConverted) {
 
   EXPECT_EQ(2u, file_handler_info.size());
 
-  EXPECT_EQ("Graph", file_handler_info[0].id);
+  EXPECT_EQ("https://graphr.n/open-file/?name=Graph", file_handler_info[0].id);
   EXPECT_FALSE(file_handler_info[0].include_directories);
   EXPECT_EQ(extensions::file_handler_verbs::kOpenWith,
             file_handler_info[0].verb);
@@ -464,7 +465,7 @@ TEST(ExtensionFromWebApp, FileHandlersAreCorrectlyConverted) {
   EXPECT_THAT(file_handler_info[0].types,
               testing::UnorderedElementsAre("text/svg+xml"));
 
-  EXPECT_EQ("Raw", file_handler_info[1].id);
+  EXPECT_EQ("https://graphr.n/open-file/?name=Raw", file_handler_info[1].id);
   EXPECT_FALSE(file_handler_info[1].include_directories);
   EXPECT_EQ(extensions::file_handler_verbs::kOpenWith,
             file_handler_info[1].verb);
