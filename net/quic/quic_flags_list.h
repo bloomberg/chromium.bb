@@ -241,12 +241,6 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_bbr_startup_rate_reduction,
           false)
 
-// If true, QuicPacketCreator::SetTransmissionType will set the transmission
-// type of the next successfully added frame.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_set_transmission_type_for_next_frame,
-          true)
-
 // If true, log leaf cert subject name into warning log.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_log_cert_name_for_empty_sct,
