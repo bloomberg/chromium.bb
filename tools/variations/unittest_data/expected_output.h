@@ -14,6 +14,11 @@
 
 #include "components/variations/proto/study.pb.h"
 
+struct OverrideUIString {
+  const int name_hash;
+  const char* const value;
+};
+
 struct FieldTrialTestingExperimentParams {
   const char* const key;
   const char* const value;
@@ -33,6 +38,8 @@ struct FieldTrialTestingExperiment {
   const char* const * disable_features;
   const size_t disable_features_size;
   const char* const forcing_flag;
+  const OverrideUIString * override_ui_string;
+  const size_t override_ui_string_size;
 };
 
 struct FieldTrialTestingStudy {

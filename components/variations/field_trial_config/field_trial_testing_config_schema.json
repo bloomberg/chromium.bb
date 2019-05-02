@@ -63,6 +63,18 @@
               {
                 "field": "forcing_flag",
                 "type": "string"
+              },
+              {
+                "field": "override_ui_string",
+                "type": "array",
+                "contents": {
+                  "type_name": "OverrideUIString",
+                  "type": "struct",
+                  "fields": [
+                    {"field": "name_hash", "type": "int"},
+                    {"field": "value", "type": "string"}
+                  ]
+                }
               }
             ]
           }

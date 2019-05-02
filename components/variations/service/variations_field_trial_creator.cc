@@ -530,7 +530,12 @@ bool VariationsFieldTrialCreator::SetupFieldTrials(
   if (!command_line->HasSwitch(switches::kDisableFieldTrialTestingConfig) &&
       !command_line->HasSwitch(::switches::kForceFieldTrials) &&
       !command_line->HasSwitch(switches::kVariationsServerURL)) {
-    AssociateDefaultFieldTrialConfig(feature_list.get(), GetPlatform());
+    // Note that passing base::Unretained(this) below is safe because the
+    // callback is executed synchronously.
+    AssociateDefaultFieldTrialConfig(
+        base::BindRepeating(&VariationsFieldTrialCreator::OverrideUIString,
+                            base::Unretained(this)),
+        GetPlatform(), feature_list.get());
     used_testing_config = true;
   }
 #endif  // BUILDFLAG(FIELDTRIAL_TESTING_ENABLED)

@@ -13,13 +13,42 @@
 #include "base/metrics/field_trial.h"
 #include "base/stl_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/variations/field_trial_config/fieldtrial_testing_config.h"
 #include "components/variations/variations_associated_data.h"
+#include "components/variations/variations_seed_processor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/device_form_factor.h"
 
 namespace variations {
 namespace {
+
+class TestOverrideStringCallback {
+ public:
+  typedef std::map<uint32_t, base::string16> OverrideMap;
+
+  TestOverrideStringCallback()
+      : callback_(base::BindRepeating(&TestOverrideStringCallback::Override,
+                                      base::Unretained(this))) {}
+
+  virtual ~TestOverrideStringCallback() {}
+
+  const VariationsSeedProcessor::UIStringOverrideCallback& callback() const {
+    return callback_;
+  }
+
+  const OverrideMap& overrides() const { return overrides_; }
+
+ private:
+  void Override(uint32_t hash, const base::string16& string) {
+    overrides_[hash] = string;
+  }
+
+  VariationsSeedProcessor::UIStringOverrideCallback callback_;
+  OverrideMap overrides_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestOverrideStringCallback);
+};
 
 class FieldTrialUtilTest : public ::testing::Test {
  public:
@@ -45,8 +74,9 @@ class FieldTrialUtilTest : public ::testing::Test {
     }
   }
 
- private:
+ protected:
   base::FieldTrialList field_trial_list_;
+  TestOverrideStringCallback override_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(FieldTrialUtilTest);
 };
@@ -83,15 +113,18 @@ TEST_F(FieldTrialUtilTest, AssociateParamsFromFieldTrialConfig) {
       {{"x", "1"}, {"y", "2"}};
   const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments_0[] = {
       {"TestGroup1", &platform, 1, {}, 0, Study::OPTIONAL_BOOL_MISSING,
-       array_kFieldTrialConfig_params_0, 2, nullptr, 0, nullptr, 0, nullptr},
+       array_kFieldTrialConfig_params_0, 2, nullptr, 0, nullptr, 0, nullptr,
+       nullptr, 0},
   };
   const FieldTrialTestingExperimentParams array_kFieldTrialConfig_params_1[] =
       {{"x", "3"}, {"y", "4"}};
   const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments_1[] = {
       {"TestGroup2", &platform, 1, {}, 0, Study::OPTIONAL_BOOL_MISSING,
-       array_kFieldTrialConfig_params_0, 2, nullptr, 0, nullptr, 0, nullptr},
+       array_kFieldTrialConfig_params_0, 2, nullptr, 0, nullptr, 0, nullptr,
+       nullptr, 0},
       {"TestGroup2-2", &platform, 1, {}, 0, Study::OPTIONAL_BOOL_MISSING,
-       array_kFieldTrialConfig_params_1, 2, nullptr, 0, nullptr, 0, nullptr},
+       array_kFieldTrialConfig_params_1, 2, nullptr, 0, nullptr, 0, nullptr,
+       nullptr, 0},
   };
   const FieldTrialTestingStudy array_kFieldTrialConfig_studies[] = {
       {"TestTrial1", array_kFieldTrialConfig_experiments_0, 1},
@@ -102,7 +135,10 @@ TEST_F(FieldTrialUtilTest, AssociateParamsFromFieldTrialConfig) {
   };
 
   base::FeatureList feature_list;
-  AssociateParamsFromFieldTrialConfig(kConfig, &feature_list, platform);
+  AssociateParamsFromFieldTrialConfig(kConfig,
+                                      override_callback_.callback(),
+                                      platform,
+                                      &feature_list);
 
   EXPECT_EQ("1", GetVariationParamValue("TestTrial1", "x"));
   EXPECT_EQ("2", GetVariationParamValue("TestTrial1", "y"));
@@ -141,7 +177,8 @@ TEST_F(FieldTrialUtilTest,
     const Study::Platform platform = all_platforms[i];
     const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments[] = {
         {"TestGroup", &platform, 1, {}, 0, Study::OPTIONAL_BOOL_MISSING,
-         array_kFieldTrialConfig_params, 2, nullptr, 0, nullptr, 0, nullptr},
+         array_kFieldTrialConfig_params, 2, nullptr, 0, nullptr, 0, nullptr,
+         nullptr, 0},
     };
     const FieldTrialTestingStudy array_kFieldTrialConfig_studies[] = {
         {"TestTrial", array_kFieldTrialConfig_experiments, 1}
@@ -151,7 +188,10 @@ TEST_F(FieldTrialUtilTest,
     };
 
     base::FeatureList feature_list;
-    AssociateParamsFromFieldTrialConfig(kConfig, &feature_list, platform);
+    AssociateParamsFromFieldTrialConfig(kConfig,
+                                        override_callback_.callback(),
+                                        platform,
+                                        &feature_list);
 
     EXPECT_EQ("1", GetVariationParamValue("TestTrial", "x"));
     EXPECT_EQ("2", GetVariationParamValue("TestTrial", "y"));
@@ -173,7 +213,8 @@ TEST_F(FieldTrialUtilTest,
       {{"x", "1"}, {"y", "2"}};
   const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments[] = {
       {"TestGroup", &platform, 1, {}, 0, Study::OPTIONAL_BOOL_MISSING,
-       array_kFieldTrialConfig_params, 2, nullptr, 0, nullptr, 0, nullptr},
+       array_kFieldTrialConfig_params, 2, nullptr, 0, nullptr, 0, nullptr,
+       nullptr, 0},
   };
   const FieldTrialTestingStudy array_kFieldTrialConfig_studies[] =
       {{"TestTrial", array_kFieldTrialConfig_experiments, 1}};
@@ -182,8 +223,9 @@ TEST_F(FieldTrialUtilTest,
 
   // The platforms don't match, so trial shouldn't be added.
   base::FeatureList feature_list;
-  AssociateParamsFromFieldTrialConfig(kConfig, &feature_list,
-                                      Study::PLATFORM_ANDROID_WEBVIEW);
+  AssociateParamsFromFieldTrialConfig(kConfig, override_callback_.callback(),
+                                      Study::PLATFORM_ANDROID_WEBVIEW,
+                                      &feature_list);
 
   EXPECT_EQ("", GetVariationParamValue("TestTrial", "x"));
   EXPECT_EQ("", GetVariationParamValue("TestTrial", "y"));
@@ -202,7 +244,8 @@ TEST_F(FieldTrialUtilTest,
       {{"x", "1"}, {"y", "2"}};
   const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments[] = {
       {"TestGroup", platforms, 2, {}, 0, Study::OPTIONAL_BOOL_MISSING,
-       array_kFieldTrialConfig_params, 2, nullptr, 0, nullptr, 0, nullptr},
+       array_kFieldTrialConfig_params, 2, nullptr, 0, nullptr, 0, nullptr,
+       nullptr, 0},
   };
   const FieldTrialTestingStudy array_kFieldTrialConfig_studies[] =
       {{"TestTrial", array_kFieldTrialConfig_experiments, 1}};
@@ -211,8 +254,9 @@ TEST_F(FieldTrialUtilTest,
 
   // One of the platforms matches, so trial should be added.
   base::FeatureList feature_list;
-  AssociateParamsFromFieldTrialConfig(kConfig, &feature_list,
-                                      Study::PLATFORM_ANDROID_WEBVIEW);
+  AssociateParamsFromFieldTrialConfig(kConfig, override_callback_.callback(),
+                                      Study::PLATFORM_ANDROID_WEBVIEW,
+                                      &feature_list);
 
   EXPECT_EQ("1", GetVariationParamValue("TestTrial", "x"));
   EXPECT_EQ("2", GetVariationParamValue("TestTrial", "y"));
@@ -235,7 +279,8 @@ TEST_F(FieldTrialUtilTest,
       {{"x", "1"}, {"y", "2"}};
   const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments[] = {
       {"TestGroup", &platform, 1, form_factors, 4, Study::OPTIONAL_BOOL_MISSING,
-       array_kFieldTrialConfig_params, 2, nullptr, 0, nullptr, 0, nullptr},
+       array_kFieldTrialConfig_params, 2, nullptr, 0, nullptr, 0, nullptr,
+       nullptr, 0},
   };
   const FieldTrialTestingStudy array_kFieldTrialConfig_studies[] =
       {{"TestTrial", array_kFieldTrialConfig_experiments, 1}};
@@ -244,7 +289,10 @@ TEST_F(FieldTrialUtilTest,
 
   // One of the form_factors matches, so trial should be added.
   base::FeatureList feature_list;
-  AssociateParamsFromFieldTrialConfig(kConfig, &feature_list, platform);
+  AssociateParamsFromFieldTrialConfig(kConfig,
+                                      override_callback_.callback(),
+                                      platform,
+                                      &feature_list);
 
   EXPECT_EQ("1", GetVariationParamValue("TestTrial", "x"));
   EXPECT_EQ("2", GetVariationParamValue("TestTrial", "y"));
@@ -267,7 +315,7 @@ TEST_F(FieldTrialUtilTest,
   const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments[] = {
       {"TestGroup", &platform, 1, &form_factor, 1,
        Study::OPTIONAL_BOOL_MISSING, array_kFieldTrialConfig_params, 2,
-       nullptr, 0, nullptr, 0, nullptr},
+       nullptr, 0, nullptr, 0, nullptr, nullptr, 0},
   };
   const FieldTrialTestingStudy array_kFieldTrialConfig_studies[] = {
       {"TestTrial", array_kFieldTrialConfig_experiments, 1}
@@ -278,7 +326,10 @@ TEST_F(FieldTrialUtilTest,
 
   // One of the form_factors matches, so trial should be added.
   base::FeatureList feature_list;
-  AssociateParamsFromFieldTrialConfig(kConfig, &feature_list, platform);
+  AssociateParamsFromFieldTrialConfig(kConfig,
+                                      override_callback_.callback(),
+                                      platform,
+                                      &feature_list);
 
   EXPECT_EQ("1", GetVariationParamValue("TestTrial", "x"));
   EXPECT_EQ("2", GetVariationParamValue("TestTrial", "y"));
@@ -307,7 +358,7 @@ TEST_F(FieldTrialUtilTest,
     const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments[] = {
         {"TestGroup", &platform, 1, &form_factor, 1,
          Study::OPTIONAL_BOOL_MISSING, array_kFieldTrialConfig_params, 2,
-         nullptr, 0, nullptr, 0, nullptr},
+         nullptr, 0, nullptr, 0, nullptr, nullptr, 0},
     };
     const FieldTrialTestingStudy array_kFieldTrialConfig_studies[] =
         {{"TestTrial", array_kFieldTrialConfig_experiments, 1}};
@@ -316,8 +367,9 @@ TEST_F(FieldTrialUtilTest,
 
     // The form factor don't match, so trial shouldn't be added.
     base::FeatureList feature_list;
-    AssociateParamsFromFieldTrialConfig(kConfig, &feature_list,
-                                        Study::PLATFORM_ANDROID_WEBVIEW);
+    AssociateParamsFromFieldTrialConfig(kConfig, override_callback_.callback(),
+                                        Study::PLATFORM_ANDROID_WEBVIEW,
+                                        &feature_list);
 
     EXPECT_EQ("", GetVariationParamValue("TestTrial", "x"));
     EXPECT_EQ("", GetVariationParamValue("TestTrial", "y"));
@@ -341,13 +393,13 @@ TEST_F(FieldTrialUtilTest, AssociateFeaturesFromFieldTrialConfig) {
   const Study::Platform platform = Study::PLATFORM_LINUX;
   const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments_0[] = {
       {"TestGroup1", &platform, 1, {}, 0, Study::OPTIONAL_BOOL_MISSING, nullptr,
-       0, enable_features, 2, nullptr, 0, nullptr},
+       0, enable_features, 2, nullptr, 0, nullptr, nullptr, 0},
   };
   const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments_1[] = {
       {"TestGroup2", &platform, 1, {}, 0, Study::OPTIONAL_BOOL_MISSING, nullptr,
-       0, nullptr, 0, disable_features, 2, nullptr},
+       0, nullptr, 0, disable_features, 2, nullptr, nullptr, 0},
       {"TestGroup2-2", &platform, 1, {}, 0, Study::OPTIONAL_BOOL_MISSING,
-       nullptr, 0, nullptr, 0, nullptr, 0, nullptr},
+       nullptr, 0, nullptr, 0, nullptr, 0, nullptr, nullptr, 0},
   };
 
   const FieldTrialTestingStudy array_kFieldTrialConfig_studies[] = {
@@ -360,7 +412,10 @@ TEST_F(FieldTrialUtilTest, AssociateFeaturesFromFieldTrialConfig) {
   };
 
   std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-  AssociateParamsFromFieldTrialConfig(kConfig, feature_list.get(), platform);
+  AssociateParamsFromFieldTrialConfig(kConfig,
+                                      override_callback_.callback(),
+                                      platform,
+                                      feature_list.get());
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatureList(std::move(feature_list));
 
@@ -381,20 +436,20 @@ TEST_F(FieldTrialUtilTest, AssociateForcingFlagsFromFieldTrialConfig) {
   const Study::Platform platform = Study::PLATFORM_LINUX;
   const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments_0[] = {
       {"TestGroup1", &platform, 1, {}, 0, Study::OPTIONAL_BOOL_MISSING, nullptr,
-       0, nullptr, 0, nullptr, 0, nullptr}};
+       0, nullptr, 0, nullptr, 0, nullptr, nullptr, 0}};
   const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments_1[] = {
       {"TestGroup2", &platform, 1, {}, 0, Study::OPTIONAL_BOOL_MISSING, nullptr,
-       0, nullptr, 0, nullptr, 0, nullptr},
+       0, nullptr, 0, nullptr, 0, nullptr, nullptr, 0},
       {"ForcedGroup2", &platform, 1, {}, 0, Study::OPTIONAL_BOOL_MISSING,
-       nullptr, 0, nullptr, 0, nullptr, 0, "flag-2"},
+       nullptr, 0, nullptr, 0, nullptr, 0, "flag-2", nullptr, 0},
   };
   const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments_2[] = {
       {"TestGroup3", &platform, 1, {}, 0, Study::OPTIONAL_BOOL_MISSING, nullptr,
-       0, nullptr, 0, nullptr, 0, nullptr},
+       0, nullptr, 0, nullptr, 0, nullptr, nullptr, 0},
       {"ForcedGroup3", &platform, 1, {}, 0, Study::OPTIONAL_BOOL_MISSING,
-       nullptr, 0, nullptr, 0, nullptr, 0, "flag-3"},
+       nullptr, 0, nullptr, 0, nullptr, 0, "flag-3", nullptr, 0},
       {"ForcedGroup3-2", &platform, 1, {}, 0, Study::OPTIONAL_BOOL_MISSING,
-       nullptr, 0, nullptr, 0, nullptr, 0, "flag-3-2"},
+       nullptr, 0, nullptr, 0, nullptr, 0, "flag-3-2", nullptr, 0},
   };
   const FieldTrialTestingStudy array_kFieldTrialConfig_studies[] = {
       {"TestTrial1", array_kFieldTrialConfig_experiments_0, 1},
@@ -409,11 +464,60 @@ TEST_F(FieldTrialUtilTest, AssociateForcingFlagsFromFieldTrialConfig) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch("flag-3");
 
   base::FeatureList feature_list;
-  AssociateParamsFromFieldTrialConfig(kConfig, &feature_list, platform);
+  AssociateParamsFromFieldTrialConfig(kConfig,
+                                      override_callback_.callback(),
+                                      platform,
+                                      &feature_list);
 
   EXPECT_EQ("TestGroup1", base::FieldTrialList::FindFullName("TestTrial1"));
   EXPECT_EQ("ForcedGroup2", base::FieldTrialList::FindFullName("TestTrial2"));
   EXPECT_EQ("ForcedGroup3", base::FieldTrialList::FindFullName("TestTrial3"));
+}
+
+TEST_F(FieldTrialUtilTest,
+       AssociateParamsFromFieldTrialConfigWithUIStringOverrides) {
+  const Study::Platform platform = Study::PLATFORM_WINDOWS;
+  const FieldTrialTestingExperimentParams array_kFieldTrialConfig_params[] =
+        {{"x", "1"}, {"y", "2"}};
+  const OverrideUIString array_kFieldTrialConfig_override_ui_string[] =
+        {{1234, "test1"}, {5678, "test2"}};
+  const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments[] = {
+      {"TestGroup", &platform, 1, nullptr, 0,
+       Study::OPTIONAL_BOOL_MISSING, array_kFieldTrialConfig_params, 2,
+       nullptr, 0, nullptr, 0, nullptr,
+       array_kFieldTrialConfig_override_ui_string, 2},
+  };
+  const FieldTrialTestingStudy array_kFieldTrialConfig_studies[] = {
+      {"TestTrial", array_kFieldTrialConfig_experiments, 1}
+  };
+  const FieldTrialTestingConfig kConfig = {
+      array_kFieldTrialConfig_studies, 1
+  };
+
+  // One of the form_factors matches, so trial should be added.
+  base::FeatureList feature_list;
+  AssociateParamsFromFieldTrialConfig(kConfig,
+                                      override_callback_.callback(),
+                                      platform,
+                                      &feature_list);
+
+  EXPECT_EQ("1", GetVariationParamValue("TestTrial", "x"));
+  EXPECT_EQ("2", GetVariationParamValue("TestTrial", "y"));
+
+  std::map<std::string, std::string> params;
+  EXPECT_TRUE(GetVariationParams("TestTrial", &params));
+  EXPECT_EQ(2U, params.size());
+  EXPECT_EQ("1", params["x"]);
+  EXPECT_EQ("2", params["y"]);
+
+  EXPECT_EQ("TestGroup", base::FieldTrialList::FindFullName("TestTrial"));
+  const TestOverrideStringCallback::OverrideMap& overrides =
+      override_callback_.overrides();
+  EXPECT_EQ(2u, overrides.size());
+  auto it = overrides.find(1234);
+  EXPECT_EQ(base::ASCIIToUTF16("test1"), it->second);
+  it = overrides.find(5678);
+  EXPECT_EQ(base::ASCIIToUTF16("test2"), it->second);
 }
 
 TEST_F(FieldTrialUtilTest, TestEscapeValue) {
