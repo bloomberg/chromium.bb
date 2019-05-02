@@ -140,6 +140,10 @@ RenderProcessImpl::RenderProcessImpl(
   SetV8FlagIfFeature(features::kWebAssemblyCodeGC, "--wasm-code-gc");
   SetV8FlagIfNotFeature(features::kWebAssemblyCodeGC, "--no-wasm-code-gc");
 
+  SetV8FlagIfFeature(features::kWebAssemblySimd, "--experimental-wasm-simd");
+  SetV8FlagIfNotFeature(features::kWebAssemblySimd,
+                        "--no-experimental-wasm-simd");
+
   if (base::FeatureList::IsEnabled(features::kWebAssemblyThreads)) {
     constexpr char kFlags[] =
         "--harmony-sharedarraybuffer "

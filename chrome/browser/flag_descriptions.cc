@@ -943,6 +943,10 @@ const char kEnableWasmCodeGCName[] = "WebAssembly code garbage collection";
 const char kEnableWasmCodeGCDescription[] =
     "Enables garbage collection of WebAssembly code.";
 
+const char kEnableWasmSimdName[] = "WebAssembly SIMD support.";
+const char kEnableWasmSimdDescription[] =
+    "Enables support for the WebAssembly SIMD proposal.";
+
 const char kEnableWasmThreadsName[] = "WebAssembly threads support.";
 const char kEnableWasmThreadsDescription[] =
     "Enables support for the WebAssembly Threads proposal. Implies "

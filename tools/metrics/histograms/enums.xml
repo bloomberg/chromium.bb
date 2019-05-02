@@ -32304,6 +32304,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-2132591642" label="enable-input-view"/>
   <int value="-2131746498"
       label="AutofillUseImprovedLabelDisambiguation:enabled"/>
+  <int value="-2129940395" label="WebAssemblySimd:disabled"/>
   <int value="-2128705444" label="AssistantAppSupport:enabled"/>
   <int value="-2124839789"
       label="OmniboxUIExperimentHideSteadyStateUrlSchemeAndSubdomains:enabled"/>
@@ -34195,6 +34196,7 @@ from previous Chrome versions.
   <int value="728656094" label="PasswordForceSaving:disabled"/>
   <int value="730024226" label="enable-out-of-process-pdf"/>
   <int value="730750097" label="PermissionsBlacklist:disabled"/>
+  <int value="731318054" label="WebAssemblySimd:enabled"/>
   <int value="731757746" label="ArcEnableDocumentsProviderInFilesApp:disabled"/>
   <int value="731775657" label="DownloadsAutoResumptionNative:disabled"/>
   <int value="731779469" label="BlinkHeapUnifiedGarbageCollection:enabled"/>

@@ -572,6 +572,9 @@ extern const char kEnableWasmCodeGCDescription[];
 extern const char kEnableWasmCodeCacheName[];
 extern const char kEnableWasmCodeCacheDescription[];
 
+extern const char kEnableWasmSimdName[];
+extern const char kEnableWasmSimdDescription[];
+
 extern const char kEnableWasmThreadsName[];
 extern const char kEnableWasmThreadsDescription[];
 

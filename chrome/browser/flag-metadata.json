@@ -1857,6 +1857,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "enable-webassembly-simd",
+    "owners": [ "gdeepti", "wasm-team@google.com" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "enable-webassembly-threads",
     "owners": [ "binji", "hablich", "wasm-team@google.com" ],
     "expiry_milestone": 76
