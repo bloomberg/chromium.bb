@@ -15,6 +15,12 @@ var bandColor = '#d3d3d3';
 // Color that should never appear on UI.
 var unusedColor = '#ff0000';
 
+// Supported zooms, mcs per pixel
+var zooms = [2.5, 5.0, 10.0, 25.0, 50.0, 100.0, 250.0, 500.0, 1000.0, 2500.0];
+
+// Active zoom level, as index in |zooms|. By default 100 mcs per pixel.
+var zoomLevel = 5;
+
 /**
  * Keep in sync with ArcTracingGraphicsModel::BufferEventType
  * See chrome/browser/chromeos/arc/tracing/arc_tracing_graphics_model.h.
@@ -187,6 +193,23 @@ function timestempToMsText(timestamp) {
 }
 
 /**
+ * Changes zoom. |delta| specifies how many zoom levels to adjust. Negative
+ * |delta| means zoom in and positive zoom out.
+ */
+function updateZoom(delta) {
+  if (!activeModel) {
+    return;
+  }
+  var newZoomLevel = zoomLevel + delta;
+  if (newZoomLevel < 0 || newZoomLevel >= zooms.length) {
+    return;
+  }
+
+  zoomLevel = newZoomLevel;
+  setGraphicBuffersModel(activeModel);
+}
+
+/**
  * Initialises UI by setting keyboard and mouse listeners to discard detailed
  * view overlay.
  */
@@ -195,6 +218,12 @@ function initializeUi() {
     // Escape and Enter.
     if (event.key === 'Escape' || event.key === 'Enter') {
       discardDetailedInfo();
+    } else if (event.key === 'w') {
+      // Zoom in.
+      updateZoom(-1 /* delta */);
+    } else if (event.key === 's') {
+      // Zoom out.
+      updateZoom(1 /* delta */);
     }
   };
 
@@ -1410,8 +1439,8 @@ function setGraphicBuffersModel(model) {
   $('arc-event-bands').textContent = '';
   activeModel = model;
 
-  // Microseconds per pixel.
-  var resolution = 100.0;
+  // Microseconds per pixel. 100% zoom corresponds to 100 mcs per pixel.
+  var resolution = zooms[zoomLevel];
   var parent = $('arc-event-bands');
 
   var topBandHeight = 16;
