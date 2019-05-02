@@ -14,7 +14,8 @@
     <structures>
       <structure name="IDR_PRINT_PREVIEW_HTML"
                  file="print_preview.html"
-                 type="chrome_html" />
+                 type="chrome_html"
+                 preprocess="true" />
       <structure name="IDR_PRINT_PREVIEW_UI_APP_HTML"
                  file="ui/app.html"
                  type="chrome_html"

@@ -108,6 +108,17 @@ Polymer({
   openDialogs_: [],
 
   /** @override */
+  created: function() {
+    // Regular expression that captures the leading slash, the content and the
+    // trailing slash in three different groups.
+    const CANONICAL_PATH_REGEX = /(^\/)([\/-\w]+)(\/$)/;
+    const path = location.pathname.replace(CANONICAL_PATH_REGEX, '$1$2');
+    if (path !== '/') {  // There are no subpages in Print Preview.
+      window.history.replaceState(undefined /* stateObject */, '', '/');
+    }
+  },
+
+  /** @override */
   ready: function() {
     cr.ui.FocusOutlineManager.forDocument(document);
   },

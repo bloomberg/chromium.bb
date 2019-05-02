@@ -3,6 +3,9 @@
     $i18n{dark} $i18n{newprintpreviewlayout}>
 <head>
   <meta charset="utf-8">
+<if expr="not optimize_webui">
+  <base href="chrome://print">
+</if>
   <style>
     html {
       background: rgb(232, 234, 237);  /* --google-grey-200 */
