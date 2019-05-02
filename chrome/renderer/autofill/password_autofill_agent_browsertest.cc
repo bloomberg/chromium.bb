@@ -1717,6 +1717,22 @@ TEST_F(PasswordAutofillAgentTest,
   }
 }
 
+// Tests that HasFillData() works correctly for fiiable and non-fillable fields.
+TEST_F(PasswordAutofillAgentTest, HasFillData) {
+  // Initially no fill data is available.
+  WebInputElement random_element = GetInputElementByID("random_field");
+  EXPECT_FALSE(password_autofill_agent_->HasFillData(username_element_));
+  EXPECT_FALSE(password_autofill_agent_->HasFillData(password_element_));
+  EXPECT_FALSE(password_autofill_agent_->HasFillData(random_element));
+
+  // This changes once fill data is simulated. |random_element| continue  to
+  // have no fill data, though.
+  SimulateOnFillPasswordForm(fill_data_);
+  EXPECT_TRUE(password_autofill_agent_->HasFillData(username_element_));
+  EXPECT_TRUE(password_autofill_agent_->HasFillData(password_element_));
+  EXPECT_FALSE(password_autofill_agent_->HasFillData(random_element));
+}
+
 // Tests that |FillIntoFocusedField| doesn't fill read-only text fields.
 TEST_F(PasswordAutofillAgentTest, FillIntoFocusedReadonlyTextField) {
   // Neither field should be autocompleted.

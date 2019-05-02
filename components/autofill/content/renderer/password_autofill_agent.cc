@@ -17,6 +17,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -954,6 +955,13 @@ bool PasswordAutofillAgent::IsUsernameOrPasswordField(
   if (!password_form)
     return false;
   return (password_form->username_element == element.NameForAutofill().Utf16());
+}
+
+bool PasswordAutofillAgent::HasFillData(
+    const WebFormControlElement& control_element) const {
+  const WebInputElement* element = ToWebInputElement(&control_element);
+  return element && (base::ContainsKey(web_input_to_password_info_, *element) ||
+                     base::ContainsKey(password_to_username_, *element));
 }
 
 bool PasswordAutofillAgent::ShowSuggestions(const WebInputElement& element,
