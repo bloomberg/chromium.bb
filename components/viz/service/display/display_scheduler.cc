@@ -332,7 +332,7 @@ bool DisplayScheduler::OnSurfaceDamaged(const SurfaceId& surface_id,
   bool damaged = client_->SurfaceDamaged(surface_id, ack);
   ProcessSurfaceDamage(surface_id, ack, damaged);
 
-  return damaged;
+  return damaged && inside_begin_frame_deadline_interval_;
 }
 
 void DisplayScheduler::OnSurfaceDestroyed(const SurfaceId& surface_id) {

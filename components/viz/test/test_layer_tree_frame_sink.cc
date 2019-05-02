@@ -148,6 +148,7 @@ void TestLayerTreeFrameSink::DetachFromClient() {
   frame_sink_manager_ = nullptr;
   shared_bitmap_manager_ = nullptr;
   test_client_ = nullptr;
+  weak_ptr_factory_.InvalidateWeakPtrs();
   LayerTreeFrameSink::DetachFromClient();
 }
 
@@ -222,7 +223,11 @@ void TestLayerTreeFrameSink::DidReceiveCompositorFrameAck(
   // used.
   if (!display_->has_scheduler())
     return;
-  client_->DidReceiveCompositorFrameAck();
+  // Do a PostTask, because the cc::Scheduler doesn't like a synchronous ack.
+  compositor_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&TestLayerTreeFrameSink::SendCompositorFrameAckToClient,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void TestLayerTreeFrameSink::OnBeginFrame(

@@ -48,7 +48,7 @@ class FakeDisplaySchedulerClient : public DisplaySchedulerClient {
 
   bool SurfaceDamaged(const SurfaceId& surface_id,
                       const BeginFrameAck& ack) override {
-    return false;
+    return surface_damaged_return_value_;
   }
 
   void SurfaceDestroyed(const SurfaceId& surface_id) override {}
@@ -61,6 +61,10 @@ class FakeDisplaySchedulerClient : public DisplaySchedulerClient {
 
   void SetNextDrawAndSwapFails() { next_draw_and_swap_fails_ = true; }
 
+  void SetSurfaceDamagedReturnValue(bool surface_damaged_return_value) {
+    surface_damaged_return_value_ = surface_damaged_return_value;
+  }
+
   void SurfaceDamaged(const SurfaceId& surface_id) {
     undrawn_surfaces_.insert(surface_id);
   }
@@ -70,6 +74,7 @@ class FakeDisplaySchedulerClient : public DisplaySchedulerClient {
  protected:
   int draw_and_swap_count_;
   bool next_draw_and_swap_fails_;
+  bool surface_damaged_return_value_ = false;
   std::set<SurfaceId> undrawn_surfaces_;
   BeginFrameAck last_begin_frame_ack_;
 };
@@ -789,6 +794,36 @@ TEST_F(DisplaySchedulerTest, SetNeedsOneBeginFrame) {
   // System should be idle again.
   AdvanceTimeAndBeginFrameForTest(std::vector<SurfaceId>());
   EXPECT_FALSE(scheduler_.inside_begin_frame_deadline_interval());
+}
+
+// This test verifies that if a client submits a frame after display scheduler's
+// deadline, it is acked immediately. https://crbug.com/951992
+TEST_F(DisplaySchedulerTest, AckImmediatelyAfterDeadline) {
+  SurfaceId root_surface_id(
+      kArbitraryFrameSinkId,
+      LocalSurfaceId(1, base::UnguessableToken::Create()));
+  BeginFrameAck ack;
+  ack.has_damage = true;
+
+  // Make the display always report that it is damaged in SurfaceDamaged.
+  client().SetSurfaceDamagedReturnValue(true);
+
+  scheduler_.SetNewRootSurface(root_surface_id);
+  scheduler_.SetVisible(true);
+
+  // Send a BeginFrame and pretend the client responded BEFORE the display
+  // scheduler deadline. OnSurfaceDamaged should return true, meaning that the
+  // ack should not be sent until display deadline.
+  AdvanceTimeAndBeginFrameForTest({root_surface_id});
+  EXPECT_TRUE(scheduler_.OnSurfaceDamaged(root_surface_id, ack));
+  scheduler_.BeginFrameDeadlineForTest();
+
+  // Send a BeginFrame and pretend the client responded AFTER the display
+  // scheduler deadline. OnSurfaceDamaged should return false, meaning that the
+  // ack should be sent immediately.
+  AdvanceTimeAndBeginFrameForTest({root_surface_id});
+  scheduler_.BeginFrameDeadlineForTest();
+  EXPECT_FALSE(scheduler_.OnSurfaceDamaged(root_surface_id, ack));
 }
 
 }  // namespace
