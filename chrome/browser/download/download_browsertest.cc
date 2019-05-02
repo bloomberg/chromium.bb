@@ -105,6 +105,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
+#include "content/public/common/service_manager_connection.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/slow_download_http_response.h"
@@ -121,6 +122,10 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/device/public/mojom/constants.mojom.h"
+#include "services/device/public/mojom/wake_lock.mojom.h"
+#include "services/device/public/mojom/wake_lock_provider.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
@@ -1193,6 +1198,40 @@ class DownloadTestWithFakeSafeBrowsing : public DownloadTest {
 
  protected:
   std::unique_ptr<TestSafeBrowsingServiceFactory> test_safe_browsing_factory_;
+};
+
+class DownloadWakeLockTest : public DownloadTest {
+ public:
+  DownloadWakeLockTest() = default;
+
+  void Initialize() {
+    auto* connection = content::ServiceManagerConnection::GetForProcess();
+    auto* connector = connection->GetConnector();
+    connector_ = connector->Clone();
+    connector_->BindInterface(device::mojom::kServiceName,
+                              &wake_lock_provider_);
+  }
+
+  // Returns the number of active wake locks of type |type|.
+  int GetActiveWakeLocks(device::mojom::WakeLockType type) {
+    base::RunLoop run_loop;
+    int result_count = 0;
+    wake_lock_provider_->GetActiveWakeLocksForTests(
+        type,
+        base::BindOnce(
+            [](base::RunLoop* run_loop, int* result_count, int32_t count) {
+              *result_count = count;
+              run_loop->Quit();
+            },
+            &run_loop, &result_count));
+    run_loop.Run();
+    return result_count;
+  }
+
+ protected:
+  device::mojom::WakeLockProviderPtr wake_lock_provider_;
+  std::unique_ptr<service_manager::Connector> connector_;
+  DISALLOW_COPY_AND_ASSIGN(DownloadWakeLockTest);
 };
 
 }  // namespace
@@ -3705,6 +3744,20 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrossOriginDownloadNavigatesIframe) {
   ASSERT_TRUE(origin_one.ShutdownAndWaitUntilComplete());
   ASSERT_TRUE(origin_two.ShutdownAndWaitUntilComplete());
   ASSERT_TRUE(origin_three.ShutdownAndWaitUntilComplete());
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadWakeLockTest, WakeLockAcquireAndCancel) {
+  Initialize();
+  EXPECT_EQ(0, GetActiveWakeLocks(
+                   device::mojom::WakeLockType::kPreventAppSuspension));
+  DownloadItem* download_item = CreateSlowTestDownload();
+  ASSERT_TRUE(download_item);
+  EXPECT_EQ(1, GetActiveWakeLocks(
+                   device::mojom::WakeLockType::kPreventAppSuspension));
+  download_item->Cancel(true);
+  EXPECT_EQ(DownloadItem::CANCELLED, download_item->GetState());
+  EXPECT_EQ(0, GetActiveWakeLocks(
+                   device::mojom::WakeLockType::kPreventAppSuspension));
 }
 
 #if defined(FULL_SAFE_BROWSING)
