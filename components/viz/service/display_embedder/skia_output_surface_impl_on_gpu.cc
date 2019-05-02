@@ -832,7 +832,13 @@ void SkiaOutputSurfaceImplOnGpu::BeginAccessImages(
         continue;
       }
 
-      DCHECK(representation->size() == context->size);
+      if (representation->size() != context->size) {
+        DLOG(ERROR) << "Failed to fulfill the promise texture - SharedImage "
+                       "size does not match TransferableResource size.";
+        CreateFallbackImage(context);
+        continue;
+      }
+
       context->representation = std::move(representation);
       context->promise_image_texture = context->representation->BeginReadAccess(
           begin_semaphores, end_semaphores);
@@ -856,7 +862,7 @@ void SkiaOutputSurfaceImplOnGpu::BeginAccessImages(
       // (GLES2Interface).
       DLOG(ERROR)
           << "Failed to fulfill the promise texture whose backend is not "
-             "compitable with vulkan.";
+             "compatible with vulkan.";
       CreateFallbackImage(context);
       continue;
     }
@@ -867,7 +873,16 @@ void SkiaOutputSurfaceImplOnGpu::BeginAccessImages(
       CreateFallbackImage(context);
       continue;
     }
-    BindOrCopyTextureIfNecessary(texture_base);
+
+    gfx::Size texture_size;
+    if (BindOrCopyTextureIfNecessary(texture_base, &texture_size) &&
+        texture_size != context->size) {
+      DLOG(ERROR) << "Failed to fulfill the promise texture - texture "
+                     "size does not match TransferableResource size.";
+      CreateFallbackImage(context);
+      continue;
+    }
+
     GrBackendTexture backend_texture;
     gpu::GetGrBackendTexture(gl_version_info_, texture_base->target(),
                              context->size, texture_base->service_id(),
@@ -991,11 +1006,12 @@ void SkiaOutputSurfaceImplOnGpu::InitializeForVulkan(
 #endif
 }
 
-void SkiaOutputSurfaceImplOnGpu::BindOrCopyTextureIfNecessary(
-    gpu::TextureBase* texture_base) {
+bool SkiaOutputSurfaceImplOnGpu::BindOrCopyTextureIfNecessary(
+    gpu::TextureBase* texture_base,
+    gfx::Size* size) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (texture_base->GetType() != gpu::TextureBase::Type::kValidated)
-    return;
+    return false;
   // If a texture is validated and bound to an image, we may defer copying the
   // image to the texture until the texture is used. It is for implementing low
   // latency drawing (e.g. fast ink) and avoiding unnecessary texture copy. So
@@ -1007,15 +1023,24 @@ void SkiaOutputSurfaceImplOnGpu::BindOrCopyTextureIfNecessary(
   if (image && image_state == gpu::gles2::Texture::UNBOUND) {
     glBindTexture(texture_base->target(), texture_base->service_id());
     if (image->ShouldBindOrCopy() == gl::GLImage::BIND) {
-      if (!image->BindTexImage(texture_base->target()))
+      if (!image->BindTexImage(texture_base->target())) {
         LOG(ERROR) << "Failed to bind a gl image to texture.";
+        return false;
+      }
     } else {
       texture->SetLevelImageState(texture_base->target(), 0,
                                   gpu::gles2::Texture::COPIED);
-      if (!image->CopyTexImage(texture_base->target()))
+      if (!image->CopyTexImage(texture_base->target())) {
         LOG(ERROR) << "Failed to copy a gl image to texture.";
+        return false;
+      }
     }
   }
+  GLsizei temp_width, temp_height;
+  texture->GetLevelSize(texture_base->target(), 0 /* level */, &temp_width,
+                        &temp_height, nullptr /* depth */);
+  *size = gfx::Size(temp_width, temp_height);
+  return true;
 }
 
 bool SkiaOutputSurfaceImplOnGpu::MakeCurrent(bool need_fbo0) {

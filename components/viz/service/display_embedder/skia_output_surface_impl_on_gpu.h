@@ -163,7 +163,11 @@ class SkiaOutputSurfaceImplOnGpu {
   void InitializeForGLWithGpuService(GpuServiceImpl* gpu_service);
   void InitializeForVulkan(GpuServiceImpl* gpu_service);
 
-  void BindOrCopyTextureIfNecessary(gpu::TextureBase* texture_base);
+  // Returns true if |texture_base| is a gles2::Texture and all necessary
+  // operations completed successfully. In this case, |*size| is the size of
+  // of level 0.
+  bool BindOrCopyTextureIfNecessary(gpu::TextureBase* texture_base,
+                                    gfx::Size* size);
 
   // Make context current for GL, and return false if the context is lost.
   // It will do nothing when Vulkan is used.
