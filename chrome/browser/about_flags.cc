@@ -1393,6 +1393,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-request-tablet-site", flag_descriptions::kRequestTabletSiteName,
      flag_descriptions::kRequestTabletSiteDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(chromeos::switches::kEnableRequestTabletSite)},
+    {"force-use-chrome-camera", flag_descriptions::kForceUseChromeCameraName,
+     flag_descriptions::kForceUseChromeCameraDescription, kOsCrOS,
+     SINGLE_VALUE_TYPE(chromeos::switches::kForceUseChromeCamera)},
 #endif  // OS_CHROMEOS
     {"debug-packed-apps", flag_descriptions::kDebugPackedAppName,
      flag_descriptions::kDebugPackedAppDescription, kOsDesktop,
