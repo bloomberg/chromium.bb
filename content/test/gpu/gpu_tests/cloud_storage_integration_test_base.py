@@ -520,3 +520,8 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
           self.GetParsedCommandLineOptions().build_revision,
           SKIA_GOLD_INSTANCE)
     logging.error('View and triage untriaged images at %s', skia_url)
+
+  @classmethod
+  def GenerateGpuTests(cls, options):
+    del options
+    return []

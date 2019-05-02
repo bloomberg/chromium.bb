@@ -25,6 +25,7 @@ from gpu_tests import path_util
 from gpu_tests import pixel_integration_test
 from gpu_tests import pixel_test_pages
 from gpu_tests import webgl_conformance_integration_test
+from gpu_tests import webgl_test_util
 
 from py_utils import discover
 from typ import expectations_parser
@@ -100,6 +101,18 @@ class MockArgs(object):
     self.is_asan = is_asan
     self.webgl_conformance_version = webgl_version
     self.webgl2_only = False
+    self.url = 'https://www.google.com'
+    self.duration = 10
+    self.delay = 10
+    self.resolution = 100
+    self.fullscreen = False
+    self.underlay = False
+    self.logdir = '/tmp'
+    self.repeat = 1
+    self.outliers = 0
+    self.bypass_ipg = False
+    self.expected_vendor_id = 0
+    self.expected_device_id = 0
     self.browser_options = []
 
 
@@ -156,10 +169,10 @@ def _generateNvidiaExampleTagsForTestClassAndArgs(test_class, args):
 
 def _checkTestExpectationsAreForExistingTests(
     test_class, mock_options, test_names=None):
-  expectations_file = test_class.ExpectationsFiles()[0]
   test_names = test_names or [
       args[0] for args in
       test_class.GenerateGpuTests(mock_options)]
+  expectations_file = test_class.ExpectationsFiles()[0]
   trie = {}
   for test in test_names:
     _trie = trie.setdefault(test[0], {})
@@ -188,23 +201,32 @@ def _checkTestExpectationsAreForExistingTests(
 def _checkTestExpectationsForCollision(expectations, file_name):
   parser = expectations_parser.TaggedTestListParser(expectations)
   tests_to_exps = defaultdict(list)
-  conflicts_found = False
+  master_conflicts_found = False
   for exp in parser.expectations:
     if not exp.test.endswith('*'):
       tests_to_exps[exp.test].append(exp)
   error_msg = ''
   for pattern, exps in tests_to_exps.items():
-    if len(exps) > 1:
-      error_msg += ('\n\nFound conflicts for test %s in %s:\n' %
-                    (pattern, file_name))
+    conflicts_found = False
     for e1, e2 in itertools.combinations(exps, 2):
       if (e1.tags.issubset(_get_generic(e2.tags)) or
           e2.tags.issubset(_get_generic(e1.tags))):
-        conflicts_found = True
+        if not conflicts_found:
+          error_msg += ('\n\nFound conflicts for test %s in %s:\n' %
+                        (pattern, file_name))
+        master_conflicts_found = conflicts_found = True
         error_msg += ('  line %d conflicts with line %d\n' %
                       (e1.lineno, e2.lineno))
-  assert not conflicts_found, error_msg
+  assert not master_conflicts_found, error_msg
 
+
+def _CheckPatternIsValid(pattern):
+  if not '*' in pattern and not 'WebglExtension_' in pattern:
+    full_path = os.path.normpath(os.path.join(
+        webgl_test_util.conformance_path, pattern))
+    if not os.path.exists(full_path):
+      raise Exception('The WebGL conformance test path specified in ' +
+        'expectation does not exist: ' + full_path)
 
 def _testCheckTestExpectationsAreForExistingTests(expectations):
   options = MockArgs()
@@ -292,6 +314,8 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     [ intel  ] a/b/c/d [ Failure ]
     [ amd mac ] a/b [ RetryOnFailure ]
     [ mac ] a/b [ Skip ]
+    [ amd mac ] a/b/c [ Failure ]
+    [ intel mac ] a/b/c [ Failure ]
     '''
     with self.assertRaises(AssertionError) as context:
       _checkTestExpectationsForCollision(test_expectations, 'test.txt')
@@ -307,6 +331,8 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
       str(context.exception))
     self.assertIn('line 7 conflicts with line 8',
       str(context.exception))
+    self.assertNotIn("Found conflicts for test a/b/c in test.txt:",
+      str(context.exception))
 
   def testNoCollisionInTestExpectations(self):
     test_expectations = '''# tags: [ mac win linux ]
@@ -319,12 +345,17 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     _checkTestExpectationsForCollision(test_expectations, 'test.txt')
 
   def testNoCollisionsInGpuTestExpectations(self):
+    webgl_conformance_test_class = (
+        webgl_conformance_integration_test.WebGLConformanceIntegrationTest)
     for test_case in _FindTestCases():
       if 'gpu_tests.gpu_integration_test_unittest' not in test_case.__module__:
-        if test_case.ExpectationsFiles():
-          with open(test_case.ExpectationsFiles()[0]) as f:
-            _checkTestExpectationsForCollision(f.read(),
-            os.path.basename(f.name))
+        for i in xrange(1, 2 + (test_case == webgl_conformance_test_class)):
+          _ = list(test_case.GenerateGpuTests(
+              MockArgs(webgl_version=('%d.0.0' % i))))
+          if test_case.ExpectationsFiles():
+            with open(test_case.ExpectationsFiles()[0]) as f:
+              _checkTestExpectationsForCollision(f.read(),
+              os.path.basename(f.name))
 
   def testGpuTestExpectationsAreForExistingTests(self):
     options = MockArgs()
@@ -333,6 +364,19 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
         if (test_case.Name() not in ('pixel', 'webgl_conformance')
             and test_case.ExpectationsFiles()):
           _checkTestExpectationsAreForExistingTests(test_case, options)
+
+  def testWebglTestPathsExist(self):
+    webgl_test_class = (
+        webgl_conformance_integration_test.WebGLConformanceIntegrationTest)
+    for test_case in _FindTestCases():
+      if test_case == webgl_test_class:
+        for i in xrange(1, 3):
+          _ = list(test_case.GenerateGpuTests(
+              MockArgs(webgl_version='%d.0.0' % i)))
+          with open(test_case.ExpectationsFiles()[0], 'r') as f:
+            expectations = expectations_parser.TaggedTestListParser(f.read())
+            for exp in expectations.expectations:
+              _CheckPatternIsValid(exp.test)
 
   def testPixelTestsExpectationsAreForExistingTests(self):
     pixel_test_names = []

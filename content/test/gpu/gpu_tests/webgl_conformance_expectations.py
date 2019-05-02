@@ -923,6 +923,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['android', 'opengles'], bug=906724)
     self.Skip('conformance/textures/video/*',
         ['android', 'opengles'], bug=906724)
+
     # Failures with accelerated canvases on nexus5x
     self.Fail('conformance/extensions/oes-texture-float-with-image.html',
         ['android', 'opengles'], bug=957199)

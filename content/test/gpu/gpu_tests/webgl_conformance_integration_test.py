@@ -478,6 +478,17 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
          'webgl-version-%d' % cls._webgl_version])
     return tags
 
+  @classmethod
+  def ExpectationsFiles(cls):
+    assert cls._webgl_version == 1 or cls._webgl_version == 2
+    if cls._webgl_version == 1:
+      file_name = 'webgl_conformance_expectations.txt'
+    else:
+      file_name = 'webgl2_conformance_expectations.txt'
+    return [
+        os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                     'test_expectations', file_name)]
+
 
 def load_tests(loader, tests, pattern):
   del loader, tests, pattern  # Unused.

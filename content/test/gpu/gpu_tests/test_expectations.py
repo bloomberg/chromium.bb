@@ -132,6 +132,10 @@ class TestExpectations(object):
       for p in url_prefixes:
         self._url_prefixes.append(p)
 
+  @property
+  def expectations(self):
+    return self._expectations
+
   def SetExpectations(self):
     """Called on creation. Override to set up custom expectations."""
     pass

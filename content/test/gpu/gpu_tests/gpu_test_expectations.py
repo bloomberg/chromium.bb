@@ -2,8 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from collections import defaultdict
 from gpu_tests import test_expectations
 
+import inspect
 import re
 
 ANGLE_CONDITIONS = ['d3d9', 'd3d11', 'opengl', 'opengles', 'vulkan', 'no_angle']
@@ -211,3 +213,59 @@ class GpuTestExpectations(test_expectations.TestExpectations):
         gpu_info.aux_attributes.get('passthrough_cmd_decoder', False):
       return 'passthrough'
     return 'no_passthrough'
+
+  def GenerateNewExpectationsFormat(self):
+    expectations = ''
+    expectations_lines = []
+
+    def _GenerateTestExpectation(exp, conditions, cond=''):
+      if not conditions:
+        line = ''
+        if exp.bug:
+          line += 'crbug.com/%d ' % exp.bug
+        if cond:
+          line += '[ ' + cond + '] '
+        line += exp.pattern + ' '
+        if exp.expectation == 'flaky':
+          line += '[ RetryOnFailure ]'
+        elif exp.expectation == 'fail':
+          line += '[ Failure ]'
+        else:
+          line += '[ Skip ]'
+        expectations_lines.append(line)
+      else:
+        if conditions[0]:
+          for c in conditions[0]:
+            _GenerateTestExpectation(exp, conditions[1:], cond + c + ' ')
+        else:
+          _GenerateTestExpectation(exp, [], cond)
+
+    conditions_by_type = {
+        member: set() for member, attr in inspect.getmembers(
+            self.expectations[0]) if type(attr) == list}
+    for exp in self.expectations:
+      _conds = defaultdict(set)
+      for member, attr in inspect.getmembers(exp):
+        if member in conditions_by_type:
+          tags = []
+          for tag in attr:
+            if isinstance(tag, tuple):
+              try:
+                int(tag[1])
+                tags.append('%s-0x%x' % tag)
+              except Exception:
+                tags.append('%s-%s' % tag)
+            else:
+              tags.append(tag)
+          tags = [t.lower().replace(' ', '-').replace('_', '-')  for t in tags]
+          key = 'gpu_conditions' if member == 'device_id_conditions' else member
+          _conds[key].update(tags)
+          conditions_by_type[key].update(tags)
+      exp_conditions = sorted(_conds.values(), key=lambda l: -len(l))
+      _GenerateTestExpectation(exp, exp_conditions)
+    for _, tags in conditions_by_type.items():
+      if not tags:
+        continue
+      expectations += '# tags: [ %s ]\n' % ' '.join(tags)
+    expectations += '\n' + '\n'.join(expectations_lines) + '\n'
+    return expectations
