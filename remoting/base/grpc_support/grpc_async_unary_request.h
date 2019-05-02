@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "remoting/base/grpc_support/grpc_async_request.h"
+#include "remoting/base/grpc_support/grpc_util.h"
 #include "third_party/grpc/src/include/grpcpp/support/async_unary_call.h"
 
 namespace remoting {
@@ -51,6 +52,14 @@ class GrpcAsyncUnaryRequest : public GrpcAsyncRequest {
              grpc::CompletionQueue* cq,
              void* event_tag) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+    static constexpr base::TimeDelta kDefaultRequestTimeout =
+        base::TimeDelta::FromSeconds(30);
+    if (GetDeadline(*context()).is_max()) {
+      VLOG(1) << "Deadline is not set. Using the default request timeout.";
+      SetDeadline(context(), base::Time::Now() + kDefaultRequestTimeout);
+    }
+
     response_reader_ = std::move(create_reader_cb_).Run(cq);
     response_reader_->Finish(&response_, &status_, event_tag);
     run_task_cb_ = run_task_cb;
