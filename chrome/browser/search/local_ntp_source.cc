@@ -17,6 +17,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
@@ -96,7 +97,6 @@ const int kLocalResource = -1;
 const char kConfigDataFilename[] = "config.js";
 const char kDoodleScriptFilename[] = "doodle.js";
 const char kGoogleUrl[] = "https://www.google.com/";
-const char kIntegrityFormat[] = "integrity=\"sha256-%s\"";
 const char kMainHtmlFilename[] = "local-ntp.html";
 const char kNtpBackgroundCollectionScriptFilename[] =
     "ntp-background-collections.js";
@@ -104,6 +104,7 @@ const char kNtpBackgroundImageScriptFilename[] = "ntp-background-images.js";
 const char kOneGoogleBarScriptFilename[] = "one-google.js";
 const char kPromoScriptFilename[] = "promo.js";
 const char kSearchSuggestionsScriptFilename[] = "search-suggestions.js";
+const char kSha256[] = "sha256-";
 const char kThemeCSSFilename[] = "theme.css";
 
 const struct Resource{
@@ -920,20 +921,19 @@ void LocalNtpSource::StartDataRequest(
     // URLDataSource, and get magical $i18n{} replacement for free.
     ui::TemplateReplacements replacements;
     replacements["animationsIntegrity"] =
-        base::StringPrintf(kIntegrityFormat, ANIMATIONS_JS_INTEGRITY);
-    replacements["configDataIntegrity"] = base::StringPrintf(
-        kIntegrityFormat,
-        search_config_provider_->config_data_integrity().c_str());
+        base::StrCat({kSha256, ANIMATIONS_JS_INTEGRITY});
+    replacements["configDataIntegrity"] = base::StrCat(
+        {kSha256, search_config_provider_->config_data_integrity()});
     replacements["localNtpCustomBgIntegrity"] =
-        base::StringPrintf(kIntegrityFormat, CUSTOM_BACKGROUNDS_JS_INTEGRITY);
+        base::StrCat({kSha256, CUSTOM_BACKGROUNDS_JS_INTEGRITY});
     replacements["doodlesIntegrity"] =
-        base::StringPrintf(kIntegrityFormat, DOODLES_JS_INTEGRITY);
+        base::StrCat({kSha256, DOODLES_JS_INTEGRITY});
     replacements["localNtpIntegrity"] =
-        base::StringPrintf(kIntegrityFormat, LOCAL_NTP_JS_INTEGRITY);
+        base::StrCat({kSha256, LOCAL_NTP_JS_INTEGRITY});
     replacements["utilsIntegrity"] =
-        base::StringPrintf(kIntegrityFormat, UTILS_JS_INTEGRITY);
+        base::StrCat({kSha256, UTILS_JS_INTEGRITY});
     replacements["localNtpVoiceIntegrity"] =
-        base::StringPrintf(kIntegrityFormat, VOICE_JS_INTEGRITY);
+        base::StrCat({kSha256, VOICE_JS_INTEGRITY});
     // TODO(dbeam): why is this needed? How does it interact with
     // URLDataSource::GetContentSecurityPolicy*() methods?
     replacements["contentSecurityPolicy"] = GetContentSecurityPolicy();
