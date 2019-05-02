@@ -1300,6 +1300,13 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable_messages_web_push", flag_descriptions::kEnableMessagesWebPushName,
      flag_descriptions::kEnableMessagesWebPushDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kEnableMessagesWebPush)},
+    {
+        "enable-background-blur",
+        flag_descriptions::kEnableBackgroundBlurName,
+        flag_descriptions::kEnableBackgroundBlurDescription,
+        kOsCrOS,
+        FEATURE_VALUE_TYPE(app_list_features::kEnableBackgroundBlur),
+    },
     {"enable-notification-indicator",
      flag_descriptions::kNotificationIndicatorName,
      flag_descriptions::kNotificationIndicatorDescription, kOsCrOS,

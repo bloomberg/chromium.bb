@@ -3072,6 +3072,10 @@ const char kEnableAssistantVoiceMatchName[] = "Enable Assistant Voice Match";
 const char kEnableAssistantVoiceMatchDescription[] =
     "Enable the Assistant Voice Match feature";
 
+const char kEnableBackgroundBlurName[] = "Enable background blur.";
+const char kEnableBackgroundBlurDescription[] =
+    "Enables background blur for the Launcher and Shelf.";
+
 const char kEnableChromeOsAccountManagerName[] = "Enable Account Manager";
 const char kEnableChromeOsAccountManagerDescription[] =
     "Enables the Chrome OS Account Manager";

@@ -887,6 +887,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-background-blur",
+    "owners": [ "newcomer" ],
+    "expiry_milestone": 86
+  },
+  {
     "name": "enable-bloated-renderer-detection",
     "owners": [ "ulan" ],
     "expiry_milestone": 75

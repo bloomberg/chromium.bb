@@ -1851,6 +1851,9 @@ extern const char kEnableAssistantLauncherIntegrationDescription[];
 extern const char kEnableAssistantVoiceMatchName[];
 extern const char kEnableAssistantVoiceMatchDescription[];
 
+extern const char kEnableBackgroundBlurName[];
+extern const char kEnableBackgroundBlurDescription[];
+
 extern const char kEnableChromeOsAccountManagerName[];
 extern const char kEnableChromeOsAccountManagerDescription[];
 
