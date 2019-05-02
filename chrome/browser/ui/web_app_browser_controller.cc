@@ -56,6 +56,29 @@ base::string16 WebAppBrowserController::FormatUrlOrigin(const GURL& url) {
       net::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
 }
 
+// static
+bool WebAppBrowserController::IsSiteSecure(
+    const content::WebContents* web_contents) {
+  const SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(web_contents);
+  if (helper) {
+    switch (helper->GetSecurityLevel()) {
+      case security_state::SECURITY_LEVEL_COUNT:
+        NOTREACHED();
+        return false;
+      case security_state::EV_SECURE:
+      case security_state::SECURE:
+      case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
+        return true;
+      case security_state::NONE:
+      case security_state::HTTP_SHOW_WARNING:
+      case security_state::DANGEROUS:
+        return false;
+    }
+  }
+  return false;
+}
+
 WebAppBrowserController::WebAppBrowserController(Browser* browser)
     : content::WebContentsObserver(nullptr), browser_(browser) {
   browser->tab_strip_model()->AddObserver(this);
@@ -117,6 +140,17 @@ base::Optional<SkColor> WebAppBrowserController::GetThemeColor() const {
 
   // The frame/tabstrip code expects an opaque color.
   return SkColorSetA(*result, SK_AlphaOPAQUE);
+}
+
+base::string16 WebAppBrowserController::GetTitle() const {
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  if (!web_contents)
+    return base::string16();
+
+  content::NavigationEntry* entry =
+      web_contents->GetController().GetVisibleEntry();
+  return entry ? entry->GetTitle() : base::string16();
 }
 
 void WebAppBrowserController::OnTabStripModelChanged(

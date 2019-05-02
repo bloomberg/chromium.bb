@@ -41,27 +41,6 @@ namespace extensions {
 
 namespace {
 
-bool IsSiteSecure(const content::WebContents* web_contents) {
-  const SecurityStateTabHelper* helper =
-      SecurityStateTabHelper::FromWebContents(web_contents);
-  if (helper) {
-    switch (helper->GetSecurityLevel()) {
-      case security_state::SECURITY_LEVEL_COUNT:
-        NOTREACHED();
-        return false;
-      case security_state::EV_SECURE:
-      case security_state::SECURE:
-      case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
-        return true;
-      case security_state::NONE:
-      case security_state::HTTP_SHOW_WARNING:
-      case security_state::DANGEROUS:
-        return false;
-    }
-  }
-  return false;
-}
-
 // Returns true if |app_url| and |page_url| are the same origin. To avoid
 // breaking Hosted Apps and Bookmark Apps that might redirect to sites in the
 // same domain but with "www.", this returns true if |page_url| is secure and in
@@ -294,14 +273,7 @@ base::string16 HostedAppBrowserController::GetTitle() const {
     return base::UTF8ToUTF16(extension->name());
   }
 
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  if (!web_contents)
-    return base::string16();
-
-  content::NavigationEntry* entry =
-      web_contents->GetController().GetVisibleEntry();
-  return entry ? entry->GetTitle() : base::string16();
+  return WebAppBrowserController::GetTitle();
 }
 
 GURL HostedAppBrowserController::GetAppLaunchURL() const {

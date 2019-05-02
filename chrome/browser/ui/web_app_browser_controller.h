@@ -34,6 +34,9 @@ class WebAppBrowserController : public TabStripModelObserver,
   // Renders |url|'s origin as Unicode.
   static base::string16 FormatUrlOrigin(const GURL& url);
 
+  // Returns whether the site is secure based on content's security level.
+  static bool IsSiteSecure(const content::WebContents* web_contents);
+
   // Returns true if this controller is for an experimental web app browser.
   bool IsForExperimentalWebAppBrowser() const;
 
@@ -63,7 +66,7 @@ class WebAppBrowserController : public TabStripModelObserver,
   virtual base::Optional<SkColor> GetThemeColor() const;
 
   // Returns the title to be displayed in the window title bar.
-  virtual base::string16 GetTitle() const = 0;
+  virtual base::string16 GetTitle() const;
 
   // Gets the short name of the app.
   virtual std::string GetAppShortName() const = 0;

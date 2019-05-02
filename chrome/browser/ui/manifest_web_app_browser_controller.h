@@ -39,13 +39,17 @@ class ManifestWebAppBrowserController : public WebAppBrowserController {
 
   gfx::ImageSkia GetWindowIcon() const override;
 
-  base::string16 GetTitle() const override;
-
   std::string GetAppShortName() const override;
 
   base::string16 GetFormattedUrlOrigin() const override;
 
   GURL GetAppLaunchURL() const override;
+
+ protected:
+  void OnTabInserted(content::WebContents* contents) override;
+
+ private:
+  GURL app_launch_url_;
 };
 
 #endif  // CHROME_BROWSER_UI_MANIFEST_WEB_APP_BROWSER_CONTROLLER_H_
