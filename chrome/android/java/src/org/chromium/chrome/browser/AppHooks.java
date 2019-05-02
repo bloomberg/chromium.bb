@@ -461,6 +461,19 @@ public abstract class AppHooks {
     }
 
     /**
+     * @param view {@link View} to define the area on.
+     * @param left Left The left coordinate of the area.
+     * @param top The top coordinate of the area.
+     * @param right The right coordinate of the area.
+     * @param bottom The bottom coordinate of the area.
+     * @return A {@link Runnable} that sets the input space in which swipe triggers navigation.
+     */
+    public Runnable createNavigationInputAreaSetter(
+            View view, int left, int top, int right, int bottom) {
+        return () -> {};
+    }
+
+    /**
      * Starts monitoring network quality. Must be called after native initialization is complete.
      */
     public void startMonitoringNetworkQuality() {}
