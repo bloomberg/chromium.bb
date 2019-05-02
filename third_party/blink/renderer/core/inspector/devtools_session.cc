@@ -37,6 +37,7 @@ bool ShouldInterruptForMethod(const String& method) {
          method == "Debugger.setBreakpointsActive" ||
          method == "Performance.getMetrics" || method == "Page.crash" ||
          method == "Runtime.terminateExecution" ||
+         method == "Debugger.getStackTrace" ||
          method == "Emulation.setScriptExecutionDisabled";
 }
 

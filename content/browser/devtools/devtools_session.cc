@@ -27,11 +27,12 @@ using IPEStatus = ::inspector_protocol_encoding::Status;
 
 bool ShouldSendOnIO(const std::string& method) {
   // Keep in sync with WebDevToolsAgent::ShouldInterruptForMethod.
-  // TODO(dgozman): find a way to share this.
+  // TODO(einbinder): find a way to share this.
   return method == "Debugger.pause" || method == "Debugger.setBreakpoint" ||
          method == "Debugger.setBreakpointByUrl" ||
          method == "Debugger.removeBreakpoint" ||
          method == "Debugger.setBreakpointsActive" ||
+         method == "Debugger.getStackTrace" ||
          method == "Performance.getMetrics" || method == "Page.crash" ||
          method == "Runtime.terminateExecution" ||
          method == "Emulation.setScriptExecutionDisabled";
