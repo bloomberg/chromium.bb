@@ -47,11 +47,6 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
 
     public PrefetchBackgroundTask() {}
 
-    protected Profile getProfile() {
-        if (mProfile == null) mProfile = Profile.getLastUsedProfile();
-        return mProfile;
-    }
-
     @Override
     public @StartBeforeNativeResult int onStartTaskBeforeNativeLoaded(
             Context context, TaskParameters taskParameters, TaskFinishedCallback callback) {
@@ -113,7 +108,7 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
             return;
         }
 
-        nativeStartPrefetchTask(getProfile(), mGcmToken);
+        nativeStartPrefetchTask(mGcmToken);
     }
 
     private boolean isBrowserRunningInReducedMode() {
@@ -206,7 +201,7 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
     }
 
     @VisibleForTesting
-    native boolean nativeStartPrefetchTask(Profile profile, String gcmToken);
+    native boolean nativeStartPrefetchTask(String gcmToken);
     @VisibleForTesting
     native boolean nativeOnStopTask(long nativePrefetchBackgroundTaskAndroid);
     native void nativeSetTaskReschedulingForTesting(

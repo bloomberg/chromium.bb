@@ -128,9 +128,8 @@ public class PrefetchBackgroundTaskUnitTest {
             }
         })
                 .when(mPrefetchBackgroundTask)
-                .nativeStartPrefetchTask(any(), eq(GCM_TOKEN));
+                .nativeStartPrefetchTask(eq(GCM_TOKEN));
         doReturn(true).when(mPrefetchBackgroundTask).nativeOnStopTask(1);
-        doReturn(null).when(mPrefetchBackgroundTask).getProfile();
 
         mFakeTaskScheduler = new FakeBackgroundTaskScheduler();
         BackgroundTaskSchedulerFactory.setSchedulerForTesting(mFakeTaskScheduler);

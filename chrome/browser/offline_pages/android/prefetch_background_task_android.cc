@@ -11,6 +11,7 @@
 #include "chrome/browser/offline_pages/prefetch/prefetch_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "components/offline_pages/core/prefetch/prefetch_background_task.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
@@ -28,9 +29,8 @@ namespace prefetch {
 static jboolean JNI_PrefetchBackgroundTask_StartPrefetchTask(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller,
-    const JavaParamRef<jobject>& jprofile,
     const JavaParamRef<jstring>& gcm_token) {
-  Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
+  Profile* profile = ProfileManager::GetLastUsedProfile();
   DCHECK(profile);
 
   PrefetchService* prefetch_service =
