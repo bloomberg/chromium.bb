@@ -126,14 +126,6 @@ void AppBannerManagerAndroid::RequestAppBanner(const GURL& validated_url) {
   AppBannerManager::RequestAppBanner(validated_url);
 }
 
-void AppBannerManagerAndroid::SendBannerDismissed() {
-  AppBannerManager::SendBannerDismissed();
-
-  // If we are dismissing the banner, the site can't be installed.
-  if (IsExperimentalAppBannersEnabled())
-    MaybeShowAmbientBadge();
-}
-
 void AppBannerManagerAndroid::AddToHomescreenFromBadge() {
   ShowBannerUi(InstallableMetrics::GetInstallSource(
       web_contents(), InstallTrigger::AMBIENT_BADGE));
@@ -160,14 +152,6 @@ std::string AppBannerManagerAndroid::GetAppIdentifier() {
 std::string AppBannerManagerAndroid::GetBannerType() {
   return native_app_data_.is_null() ? AppBannerManager::GetBannerType()
                                     : "play";
-}
-
-bool AppBannerManagerAndroid::CheckIfInstalled() {
-  bool is_installed = AppBannerManager::CheckIfInstalled();
-  if (IsExperimentalAppBannersEnabled() && !is_installed)
-    MaybeShowAmbientBadge();
-
-  return is_installed;
 }
 
 bool AppBannerManagerAndroid::IsWebAppConsideredInstalled(
@@ -247,11 +231,6 @@ void AppBannerManagerAndroid::OnAppIconFetched(const SkBitmap& bitmap) {
   }
 
   primary_icon_ = bitmap;
-
-  // We will not reach this point if the app is already installed since querying
-  // for native app details will return nothing.
-  if (IsExperimentalAppBannersEnabled())
-    MaybeShowAmbientBadge();
 
   // If we triggered the installability check on page load, then it's possible
   // we don't have enough engagement yet. If that's the case, return here but

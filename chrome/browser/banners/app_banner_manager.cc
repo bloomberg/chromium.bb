@@ -730,10 +730,12 @@ void AppBannerManager::OnBannerPromptReply(
     }
   }
 
-  bool need_prompt = IsExperimentalAppBannersEnabled() ||
-                     reply == blink::mojom::AppBannerPromptReply::CANCEL;
+  bool event_canceled = reply == blink::mojom::AppBannerPromptReply::CANCEL;
+  bool need_prompt = IsExperimentalAppBannersEnabled() || event_canceled;
 
   if (need_prompt && state_ == State::SENDING_EVENT) {
+    if (!event_canceled)
+      MaybeShowAmbientBadge();
     UpdateState(State::PENDING_PROMPT);
     return;
   }
@@ -742,6 +744,8 @@ void AppBannerManager::OnBannerPromptReply(
 
   ShowBanner();
 }
+
+void AppBannerManager::MaybeShowAmbientBadge() {}
 
 void AppBannerManager::ShowBanner() {
   content::WebContents* contents = web_contents();

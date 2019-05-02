@@ -650,6 +650,7 @@ public class AppBannerManagerTest {
     public void testBlockedAmbientBadgeDoesNotAppearAgainForMonths() throws Exception {
         // Visit a site that is a PWA. The ambient badge should show.
         String webBannerUrl = WebappTestPage.getServiceWorkerUrl(mTestServer);
+        resetEngagementForUrl(webBannerUrl, 10);
 
         Tab tab = mTabbedActivityTestRule.getActivity().getActivityTab();
         new TabLoadObserver(tab).fullyLoadUrl(webBannerUrl);
@@ -680,6 +681,31 @@ public class AppBannerManagerTest {
         AppBannerManager.setTimeDeltaForTesting(91);
         new TabLoadObserver(tab).fullyLoadUrl(webBannerUrl);
         waitUntilAmbientBadgeInfoBarAppears(mTabbedActivityTestRule);
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AppBanners"})
+    @CommandLineFlags.Add("enable-features=" + ChromeFeatureList.INSTALLABLE_AMBIENT_BADGE_INFOBAR)
+    public void testAmbientBadgeDoesNotAppearWhenEventCanceled() throws Exception {
+        String webBannerUrl = WebappTestPage.getServiceWorkerUrlWithAction(
+                mTestServer, "stash_event_and_prevent_default");
+        resetEngagementForUrl(webBannerUrl, 10);
+        navigateToUrlAndWaitForBannerManager(mTabbedActivityTestRule, webBannerUrl);
+
+        // As the page called preventDefault on the beforeinstallprompt event, we do not expect to
+        // see an ambient badge.
+        InfoBarUtil.waitUntilNoInfoBarsExist(mTabbedActivityTestRule.getInfoBars());
+
+        // Even after waiting for three months, there should not be no ambient badge.
+        AppBannerManager.setTimeDeltaForTesting(91);
+        navigateToUrlAndWaitForBannerManager(mTabbedActivityTestRule, webBannerUrl);
+        InfoBarUtil.waitUntilNoInfoBarsExist(mTabbedActivityTestRule.getInfoBars());
+
+        // When the page is ready and calls prompt() on the beforeinstallprompt event, only then we
+        // expect to see the modal banner.
+        Tab tab = mTabbedActivityTestRule.getActivity().getActivityTab();
+        tapAndWaitForModalBanner(tab);
     }
 
     @Test

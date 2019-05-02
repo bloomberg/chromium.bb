@@ -16,6 +16,7 @@ const Action = {
   CANCEL_PROMPT_AND_NAVIGATE: 'cancel_prompt_and_navigate',
   CANCEL_PROMPT: 'cancel_prompt',
   STASH_EVENT: 'stash_event',
+  STASH_EVENT_AND_PREVENT_DEFAULT: 'stash_event_and_prevent_default',
 };
 
 const LISTENER = "listener";
@@ -74,28 +75,33 @@ function addClickListener(action) {
 
 function addPromptListener(action) {
   window.addEventListener('beforeinstallprompt', function(e) {
-    e.preventDefault();
-
     switch (action) {
       case Action.VERIFY_APPINSTALLED_STASH_EVENT:
         stashedEvent = e;
         verifyEvents('appinstalled');
         break;
       case Action.CALL_PROMPT_DELAYED:
+        e.preventDefault();
         setTimeout(callPrompt, 0, e);
         break;
       case Action.CALL_PROMPT_IN_HANDLER:
         callPrompt(e);
         break;
       case Action.CALL_PROMPT_NO_USERCHOICE:
+        e.preventDefault();
         setTimeout(() => e.prompt(), 0);
         break;
       case Action.CANCEL_PROMPT_AND_NAVIGATE:
+        e.preventDefault();
         // Navigate the window to trigger cancellation in the renderer.
         setTimeout(function() { window.location.href = "/" }, 0);
         break;
       case Action.STASH_EVENT:
         stashedEvent = e;
+        break;
+      case Action.STASH_EVENT_AND_PREVENT_DEFAULT:
+        stashedEvent = e;
+        e.preventDefault();
         break;
     }
   });
@@ -137,6 +143,10 @@ function initialize() {
     case Action.CALL_STASHED_PROMPT_ON_CLICK_VERIFY_APPINSTALLED:
       addPromptListener(Action.STASH_EVENT);
       addClickListener(action);
+      break;
+    case Action.STASH_EVENT_AND_PREVENT_DEFAULT:
+      addPromptListener(action);
+      addClickListener(Action.CALL_STASHED_PROMPT_ON_CLICK);
       break;
     case Action.VERIFY_APPINSTALLED_STASH_EVENT:
     case Action.CALL_PROMPT_DELAYED:

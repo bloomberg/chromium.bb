@@ -168,7 +168,7 @@ class AppBannerManager : public content::WebContentsObserver,
   void SendBannerAccepted();
 
   // Sends a message to the renderer that the user dismissed the banner.
-  virtual void SendBannerDismissed();
+  void SendBannerDismissed();
 
   // Returns a WeakPtr to this object. Exposed so subclasses/infobars may
   // may bind callbacks without needing their own WeakPtrFactory.
@@ -210,10 +210,7 @@ class AppBannerManager : public content::WebContentsObserver,
   // Called when the current site is eligible to show a banner. Returns true if
   // the banner should not be shown because the site is already installed, and
   // false if the banner should be shown because the site is not yet installed.
-  // Overridden in platform-specific code to perform actions when it is
-  // guaranteed that a site is banner-eligible, depending on whether the site is
-  // installed (i.e. the ambient badge).
-  virtual bool CheckIfInstalled();
+  bool CheckIfInstalled();
 
   // Return a string identifying this app for metrics.
   virtual std::string GetAppIdentifier();
@@ -284,6 +281,11 @@ class AppBannerManager : public content::WebContentsObserver,
   // show a banner. The page can respond to cancel the banner (and possibly
   // display it later), or otherwise allow it to be shown.
   void SendBannerPromptRequest();
+
+  // Shows the ambient badge if the current page advertises a native app or is
+  // a PWA. By default this shows nothing, but platform-specific code might
+  // override this to show UI (e.g. on Android).
+  virtual void MaybeShowAmbientBadge();
 
   // Updates the current state to |state|. Virtual to allow overriding in tests.
   virtual void UpdateState(State state);
