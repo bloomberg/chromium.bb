@@ -121,6 +121,10 @@ class AURA_EXPORT WindowObserver : public base::CheckedObserver {
   // Invoked when the alpha shape of the |window|'s layer is set.
   virtual void OnWindowAlphaShapeSet(Window* window) {}
 
+  // Invoked when whether |window|'s layer fills its bounds opaquely or not
+  // is changed.
+  virtual void OnWindowTransparentChanged(Window* window) {}
+
   // Invoked when |window|'s position among its siblings in the stacking order
   // has changed.
   virtual void OnWindowStackingChanged(Window* window) {}
@@ -184,6 +188,9 @@ class AURA_EXPORT WindowObserver : public base::CheckedObserver {
   // Called when the window manager ends an interactive resize loop. This is not
   // called if the window is destroyed during the loop.
   virtual void OnResizeLoopEnded(Window* window) {}
+
+  // Called when the opaque regions for occlusion of |window| is changed.
+  virtual void OnWindowOpaqueRegionsForOcclusionChanged(Window* window) {}
 
  protected:
   ~WindowObserver() override;

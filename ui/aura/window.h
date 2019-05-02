@@ -475,6 +475,35 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Returns |state| as a string. This is generally only useful for debugging.
   static const char* OcclusionStateToString(OcclusionState state);
 
+  // Sets the regions of this window to consider opaque when computing the
+  // occlusion of underneath windows. Opaque regions can only be set for a
+  // transparent() window, and cannot extend outside of the window bounds.
+  // Opaque regions are relative to the window, i.e. the top-left corner of the
+  // window is considered to be the point (0, 0). If
+  // |opaque_regions_for_occlusion| is empty, the window is considered fully
+  // transparent. Opaque regions do not affect what parts of the window are
+  // visible; they only affect occlusion tracking of underneath windows. An
+  // example use case for this is when a window is made transparent because of
+  // rounded corners, and therefore does not contribute to occlusion. But,
+  // almost all of that window could be opaque and we would want it to
+  // contribute to occlusion. Occlusion tracking can affect rendering, page
+  // behaviour, and triggering for Picture-in-picture, for example. Clients
+  // should set the opaque regions for occlusion if they have transparent
+  // regions, but want to specify that certain areas of them are completely
+  // opaque. Clients that use the window shape API should also specify their
+  // shape region as a region for occlusion, if it is opaque. The opaque regions
+  // for occlusion for a window do not affect occlusion for that window itself,
+  // only what parts of other windows that window occludes.
+  // TODO: Currently, we only support one Rect in
+  //       |opaque_regions_for_occlusion|. Supporting multiple Rects will
+  //       enable window shape based occlusion.
+  void SetOpaqueRegionsForOcclusion(
+      const std::vector<gfx::Rect>& opaque_regions_for_occlusion);
+
+  const std::vector<gfx::Rect>& opaque_regions_for_occlusion() const {
+    return opaque_regions_for_occlusion_;
+  }
+
  protected:
   // Deletes (or removes if not owned by parent) all child windows. Intended for
   // use from the destructor.
@@ -585,6 +614,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
                           ui::PropertyChangeReason reason) override;
   void OnLayerOpacityChanged(ui::PropertyChangeReason reason) override;
   void OnLayerAlphaShapeChanged() override;
+  void OnLayerFillsBoundsOpaquelyChanged() override;
 
   // Overridden from ui::EventTarget:
   bool CanAcceptEvent(const ui::Event& event) override;
@@ -671,6 +701,10 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
 
   std::unique_ptr<LayoutManager> layout_manager_;
   std::unique_ptr<WindowTargeter> targeter_;
+
+  // The opaque regions for occlusion for this window. See comment on
+  // |SetOpaqueRegionsForOcclusion| for documentation.
+  std::vector<gfx::Rect> opaque_regions_for_occlusion_;
 
   // Makes the window pass all events through to any windows behind it.
   ws::mojom::EventTargetingPolicy event_targeting_policy_;

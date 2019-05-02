@@ -1224,6 +1224,17 @@ const char* Window::OcclusionStateToString(OcclusionState state) {
   return "";
 }
 
+void Window::SetOpaqueRegionsForOcclusion(
+    const std::vector<gfx::Rect>& opaque_regions_for_occlusion) {
+  // Only transparent windows should try to set opaque regions for occlusion.
+  DCHECK(transparent());
+  if (opaque_regions_for_occlusion == opaque_regions_for_occlusion_)
+    return;
+  opaque_regions_for_occlusion_ = opaque_regions_for_occlusion;
+  for (auto& observer : observers_)
+    observer.OnWindowOpaqueRegionsForOcclusionChanged(this);
+}
+
 void Window::NotifyResizeLoopStarted() {
   for (auto& observer : observers_)
     observer.OnResizeLoopStarted(this);
@@ -1273,6 +1284,19 @@ void Window::OnLayerAlphaShapeChanged() {
   WindowOcclusionTracker::ScopedPause pause_occlusion_tracking(env_);
   for (WindowObserver& observer : observers_)
     observer.OnWindowAlphaShapeSet(this);
+}
+
+void Window::OnLayerFillsBoundsOpaquelyChanged() {
+  // Let observers know that this window's transparent status has changed.
+  // Transparent status can affect the occlusion computed for windows.
+  WindowOcclusionTracker::ScopedPause pause_occlusion_tracking(env_);
+
+  // Non-transparent windows should not have opaque regions for occlusion set.
+  if (!transparent())
+    DCHECK(opaque_regions_for_occlusion_.empty());
+
+  for (WindowObserver& observer : observers_)
+    observer.OnWindowTransparentChanged(this);
 }
 
 void Window::OnLayerTransformed(const gfx::Transform& old_transform,

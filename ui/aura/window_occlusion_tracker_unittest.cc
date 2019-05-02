@@ -2594,4 +2594,60 @@ TEST_F(WindowOcclusionTrackerTest, ComputeTargetOcclusionForAnimatedWindow) {
   EXPECT_FALSE(delegate_a->is_expecting_call());
 }
 
+TEST_F(WindowOcclusionTrackerTest,
+       SetOpaqueRegionsForOcclusionAffectsOcclusionOfOtherWindows) {
+  MockWindowDelegate* delegate_a = new MockWindowDelegate();
+  delegate_a->set_expectation(Window::OcclusionState::VISIBLE, SkRegion());
+  CreateTrackedWindow(delegate_a, gfx::Rect(0, 0, 10, 10));
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+
+  delegate_a->set_expectation(Window::OcclusionState::OCCLUDED, SkRegion());
+  Window* window_b = CreateUntrackedWindow(gfx::Rect(0, 0, 10, 10));
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+
+  // Make |window_b| transparent, which should make it no longer affect
+  // |window_a|'s occlusion.
+  delegate_a->set_expectation(Window::OcclusionState::VISIBLE, SkRegion());
+  window_b->SetTransparent(true);
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+
+  // Set the opaque regions for occlusion to fully cover |window_a|. Opaque
+  // regions for occlusion are relative to the window.
+  delegate_a->set_expectation(Window::OcclusionState::OCCLUDED, SkRegion());
+  window_b->SetOpaqueRegionsForOcclusion({gfx::Rect(0, 0, 10, 10)});
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+
+  // Setting the opaque regions for occlusion to an empty list should restore to
+  // normal behavior:
+  delegate_a->set_expectation(Window::OcclusionState::VISIBLE, SkRegion());
+  window_b->SetOpaqueRegionsForOcclusion({});
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+}
+
+TEST_F(
+    WindowOcclusionTrackerTest,
+    SetOpaqueRegionsForOcclusionOfAWindowDoesNotAffectOcclusionOfThatWindowItself) {
+  // The opaque regions for occlusion of a window affect how that window
+  // occludes other windows, but should not affect occlusion for that window
+  // itself. This is because occluding only the opaque regions of occlusion for
+  // a window may still leave translucent parts of that window visible.
+  MockWindowDelegate* delegate_a = new MockWindowDelegate();
+  delegate_a->set_expectation(Window::OcclusionState::VISIBLE, SkRegion());
+  Window* window_a = CreateTrackedWindow(delegate_a, gfx::Rect(0, 0, 10, 10));
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+
+  delegate_a->set_expectation(Window::OcclusionState::VISIBLE,
+                              SkRegion(SkIRect::MakeXYWH(5, 5, 5, 5)));
+  CreateUntrackedWindow(gfx::Rect(5, 5, 5, 5));
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+
+  window_a->SetTransparent(true);
+  // Changing the opaque regions for occlusion should not affect how much
+  // |window_a| is occluded by |window_b|.
+  window_a->SetOpaqueRegionsForOcclusion({gfx::Rect(0, 0, 0, 0)});
+  window_a->SetOpaqueRegionsForOcclusion({gfx::Rect(0, 0, 1, 1)});
+  window_a->SetOpaqueRegionsForOcclusion({gfx::Rect(0, 0, 5, 5)});
+  window_a->SetOpaqueRegionsForOcclusion({});
+}
+
 }  // namespace aura

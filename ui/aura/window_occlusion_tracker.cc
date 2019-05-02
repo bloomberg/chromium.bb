@@ -56,6 +56,10 @@ bool WindowOrParentHasShape(Window* window) {
   return false;
 }
 
+bool WindowHasOpaqueRegionsForOcclusion(Window* window) {
+  return !window->opaque_regions_for_occlusion().empty();
+}
+
 // Returns the transform of |window| relative to its root.
 // |parent_transform_relative_to_root| is the transform of |window->parent()|
 // relative to its root.
@@ -87,6 +91,21 @@ gfx::Transform GetWindowTransformRelativeToRoot(
   return transform_relative_to_root;
 }
 
+SkIRect ComputeClippedAndTransformedBounds(
+    const gfx::Rect& bounds,
+    const gfx::Transform& transform_relative_to_root,
+    const SkIRect* clipped_bounds) {
+  DCHECK(transform_relative_to_root.Preserves2dAxisAlignment());
+  gfx::RectF transformed_bounds(bounds);
+  transform_relative_to_root.TransformRect(&transformed_bounds);
+  SkIRect skirect_bounds =
+      gfx::RectToSkIRect(gfx::ToEnclosedRect(transformed_bounds));
+  // If necessary, clip the bounds.
+  if (clipped_bounds && !skirect_bounds.intersect(*clipped_bounds))
+    return SkIRect::MakeEmpty();
+  return skirect_bounds;
+}
+
 // Returns the bounds of |window| relative to its |root|.
 // |transform_relative_to_root| is the transform of |window| relative to its
 // root. If |clipped_bounds| is not null, the returned bounds are clipped by it.
@@ -95,18 +114,33 @@ SkIRect GetWindowBoundsInRootWindow(
     const gfx::Transform& transform_relative_to_root,
     const SkIRect* clipped_bounds,
     bool use_target_values) {
-  DCHECK(transform_relative_to_root.Preserves2dAxisAlignment());
   // Compute the unclipped bounds of |window|.
   const gfx::Rect src_bounds =
       use_target_values ? window->layer()->GetTargetBounds() : window->bounds();
-  gfx::RectF bounds(0.0f, 0.0f, static_cast<float>(src_bounds.width()),
-                    static_cast<float>(src_bounds.height()));
-  transform_relative_to_root.TransformRect(&bounds);
-  SkIRect skirect_bounds = gfx::RectToSkIRect(gfx::ToEnclosedRect(bounds));
-  // If necessary, clip the bounds.
-  if (clipped_bounds && !skirect_bounds.intersect(*clipped_bounds))
-    return SkIRect::MakeEmpty();
-  return skirect_bounds;
+  return ComputeClippedAndTransformedBounds(
+      gfx::Rect(src_bounds.size()), transform_relative_to_root, clipped_bounds);
+}
+
+// Returns the bounds that |window| should contribute to be used for occluding
+// other windows. This is different to the bounds of the window if |window|
+// has opaque regions for occlusion set. We need to use different sets of bounds
+// for computing the occlusion of a window itself versus what it should
+// contribute to occluding other windows because a translucent region should
+// not be considered to occlude other windows, but must be covered by something
+// opaque for it itself to be occluded.
+SkIRect GetOpaqueBoundsInRootWindow(
+    Window* window,
+    const gfx::Transform& transform_relative_to_root,
+    const SkIRect* clipped_bounds) {
+  DCHECK(WindowHasOpaqueRegionsForOcclusion(window));
+  // TODO: Currently, we only support one Rect in the opaque region.
+  DCHECK_EQ(1u, window->opaque_regions_for_occlusion().size());
+
+  // Don't let clients mark regions outside their window bounds as opaque.
+  gfx::Rect opaque_region = window->opaque_regions_for_occlusion()[0];
+  opaque_region.Intersect(window->bounds());
+  return ComputeClippedAndTransformedBounds(
+      opaque_region, transform_relative_to_root, clipped_bounds);
 }
 
 float GetLayerCombinedTargetOpacity(const ui::Layer* layer) {
@@ -382,20 +416,28 @@ bool WindowOcclusionTracker::RecomputeOcclusionImpl(
       window, false, /* is_parent_visible */ true,
       force_visible ? SkRegion() : occluded_region_before_traversing_children);
 
-  if (!force_visible && VisibleWindowIsOpaque(window))
-    occluded_region->op(window_bounds, SkRegion::kUnion_Op);
+  if (!force_visible && VisibleWindowCanOccludeOtherWindows(window)) {
+    const SkIRect occlusion_bounds =
+        WindowHasOpaqueRegionsForOcclusion(window)
+            ? GetOpaqueBoundsInRootWindow(window, transform_relative_to_root,
+                                          clipped_bounds)
+            : window_bounds;
+    occluded_region->op(occlusion_bounds, SkRegion::kUnion_Op);
+  }
   return true;
 }
 
-bool WindowOcclusionTracker::VisibleWindowIsOpaque(Window* window) const {
+bool WindowOcclusionTracker::VisibleWindowCanOccludeOtherWindows(
+    Window* window) const {
   DCHECK(window->layer());
   const float combined_opacity =
       ShouldUseTargetValues() ? GetLayerCombinedTargetOpacity(window->layer())
                               : window->layer()->GetCombinedOpacity();
-  return !window->transparent() && WindowHasContent(window) &&
-         combined_opacity == 1.0f &&
-         // For simplicity, a shaped window is not considered opaque.
-         !WindowOrParentHasShape(window);
+  return (!window->transparent() && WindowHasContent(window) &&
+          combined_opacity == 1.0f &&
+          // For simplicity, a shaped window is not considered opaque.
+          !WindowOrParentHasShape(window)) ||
+         WindowHasOpaqueRegionsForOcclusion(window);
 }
 
 bool WindowOcclusionTracker::WindowHasContent(Window* window) const {
@@ -580,7 +622,7 @@ bool WindowOcclusionTracker::WindowOrDescendantIsTrackedAndVisible(
   return false;
 }
 
-bool WindowOcclusionTracker::WindowOrDescendantIsOpaque(
+bool WindowOcclusionTracker::WindowOrDescendantCanOccludeOtherWindows(
     Window* window,
     bool assume_parent_opaque,
     bool assume_window_opaque) const {
@@ -595,10 +637,12 @@ bool WindowOcclusionTracker::WindowOrDescendantIsOpaque(
       WindowIsAnimated(window)) {
     return false;
   }
-  if (!window->transparent() && WindowHasContent(window))
+  if ((!window->transparent() && WindowHasContent(window)) ||
+      WindowHasOpaqueRegionsForOcclusion(window)) {
     return true;
+  }
   for (Window* child_window : window->children()) {
-    if (WindowOrDescendantIsOpaque(child_window, true))
+    if (WindowOrDescendantCanOccludeOtherWindows(child_window, true))
       return true;
   }
   return false;
@@ -618,7 +662,7 @@ bool WindowOcclusionTracker::WindowOpacityChangeMayAffectOcclusionStates(
 bool WindowOcclusionTracker::WindowMoveMayAffectOcclusionStates(
     Window* window) const {
   return !WindowOrParentIsAnimated(window) && !WindowIsExcluded(window) &&
-         (WindowOrDescendantIsOpaque(window) ||
+         (WindowOrDescendantCanOccludeOtherWindows(window) ||
           WindowOrDescendantIsTrackedAndVisible(window));
 }
 
@@ -768,7 +812,7 @@ void WindowOcclusionTracker::OnWindowAdded(Window* window) {
 void WindowOcclusionTracker::OnWillRemoveWindow(Window* window) {
   MarkRootWindowAsDirtyAndMaybeComputeOcclusionIf(window, [=]() {
     return !WindowOrParentIsAnimated(window) &&
-           WindowOrDescendantIsOpaque(window);
+           WindowOrDescendantCanOccludeOtherWindows(window);
   });
 }
 
@@ -814,6 +858,12 @@ void WindowOcclusionTracker::OnWindowOpacitySet(
 }
 
 void WindowOcclusionTracker::OnWindowAlphaShapeSet(Window* window) {
+  MarkRootWindowAsDirtyAndMaybeComputeOcclusionIf(window, [=]() {
+    return WindowOpacityChangeMayAffectOcclusionStates(window);
+  });
+}
+
+void WindowOcclusionTracker::OnWindowTransparentChanged(Window* window) {
   MarkRootWindowAsDirtyAndMaybeComputeOcclusionIf(window, [=]() {
     return WindowOpacityChangeMayAffectOcclusionStates(window);
   });
@@ -880,6 +930,17 @@ void WindowOcclusionTracker::OnWindowLayerRecreated(Window* window) {
   animator->RemoveObserver(this);
   if (MarkRootWindowAsDirty(window->GetRootWindow()))
     MaybeComputeOcclusion();
+}
+
+void WindowOcclusionTracker::OnWindowOpaqueRegionsForOcclusionChanged(
+    Window* window) {
+  // If the opaque regions for occlusion change, the occlusion state may be
+  // affected if the effective opacity of the window changes (e.g. clearing the
+  // regions for occlusion), or if their bounds change.
+  MarkRootWindowAsDirtyAndMaybeComputeOcclusionIf(window, [=]() {
+    return WindowOpacityChangeMayAffectOcclusionStates(window) ||
+           WindowMoveMayAffectOcclusionStates(window);
+  });
 }
 
 void WindowOcclusionTracker::OnOcclusionStateChanged(

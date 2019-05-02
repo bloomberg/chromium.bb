@@ -90,6 +90,15 @@ void BrowserFrameAsh::OnWidgetInitDone() {
   window_state->SetCanConsumeSystemKeys(browser->is_app());
 }
 
+void BrowserFrameAsh::OnBoundsChanged(const gfx::Rect& old_bounds,
+                                      const gfx::Rect& new_bounds) {
+  NativeWidgetAura::OnBoundsChanged(old_bounds, new_bounds);
+  if (GetNativeWindow()->transparent()) {
+    GetNativeWindow()->SetOpaqueRegionsForOcclusion(
+        {gfx::Rect(new_bounds.size())});
+  }
+}
+
 void BrowserFrameAsh::OnWindowTargetVisibilityChanged(bool visible) {
   if (visible) {
     // Once the window has been shown we know the requested bounds

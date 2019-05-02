@@ -192,9 +192,10 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
       const SkIRect* clipped_bounds,
       SkRegion* occluded_region);
 
-  // Returns true if |window| opaquely fills its bounds. |window| must be
-  // visible.
-  bool VisibleWindowIsOpaque(Window* window) const;
+  // Returns true if |window| can occlude other windows (e.g. because it is
+  // not transparent or has opaque regions for occlusion).
+  // |window| must be visible.
+  bool VisibleWindowCanOccludeOtherWindows(Window* window) const;
 
   // Returns true if |window| has content.
   bool WindowHasContent(Window* window) const;
@@ -261,14 +262,15 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
   // |tracked_windows_| and visible.
   bool WindowOrDescendantIsTrackedAndVisible(Window* window) const;
 
-  // Returns true if |window| or one of its descendants is visible, opaquely
-  // fills its bounds and is not in |animated_windows_|. If
-  // |assume_parent_opaque| is true, the function assumes that the combined
-  // opacity of window->parent() is 1.0f. If |assume_window_opaque|, the
-  // function assumes that the opacity of |window| is 1.0f.
-  bool WindowOrDescendantIsOpaque(Window* window,
-                                  bool assume_parent_opaque = false,
-                                  bool assume_window_opaque = false) const;
+  // Returns true if |window| or one of its descendants is visible, has some
+  // opaque region and is not in |animated_windows_|. If |assume_parent_opaque|
+  // is true, the function assumes that the combined opacity of window->parent()
+  // is 1.0f. If |assume_window_opaque|, the function assumes that the opacity
+  // of |window| is 1.0f.
+  bool WindowOrDescendantCanOccludeOtherWindows(
+      Window* window,
+      bool assume_parent_opaque = false,
+      bool assume_window_opaque = false) const;
 
   // Returns true if changing the opacity or alpha state of |window| could
   // affect the occlusion state of a tracked window.
@@ -327,6 +329,7 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
   void OnWindowOpacitySet(Window* window,
                           ui::PropertyChangeReason reason) override;
   void OnWindowAlphaShapeSet(Window* window) override;
+  void OnWindowTransparentChanged(Window* window) override;
   void OnWindowTransformed(Window* window,
                            ui::PropertyChangeReason reason) override;
   void OnWindowStackingChanged(Window* window) override;
@@ -335,6 +338,7 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
   void OnWindowRemovingFromRootWindow(Window* window,
                                       Window* new_root) override;
   void OnWindowLayerRecreated(Window* window) override;
+  void OnWindowOpaqueRegionsForOcclusionChanged(Window* window) override;
 
   // WindowTreeHostObserver
   void OnOcclusionStateChanged(WindowTreeHost* host,
