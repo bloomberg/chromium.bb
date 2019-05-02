@@ -483,4 +483,9 @@ public abstract class AppHooks {
      * ChromeActivity initialization.
      */
     public void startSystemSettingsObserver() {}
+
+    /**
+     * Initializes the lifecycle tracker for Touchless mode.
+     */
+    public void initTouchlessLifecycleTracker() {}
 }

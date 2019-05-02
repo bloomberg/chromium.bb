@@ -133,6 +133,8 @@ public class ChromeApplication extends Application {
             // Disable MemoryPressureMonitor polling when Chrome goes to the background.
             ApplicationStatus.registerApplicationStateListener(
                     ChromeApplication::updateMemoryPressurePolling);
+
+            AppHooks.get().initTouchlessLifecycleTracker();
         }
 
         // Write installed modules to crash keys. This needs to be done as early as possible so that
