@@ -185,12 +185,8 @@ def _checkTestExpectationsAreForExistingTests(
   parser = expectations_parser.TaggedTestListParser(expectations)
   for exp in parser.expectations:
     _trie = trie
-    for i, l in enumerate(exp.test):
+    for l in exp.test:
       if l == '*':
-        assert i == len(exp.test)-1, (
-            ("%s:%d: '*' can only be at the "
-            "end of a test expectation's patttern")
-            % (expectations_file, exp.lineno))
         break
       assert l in _trie, (
         "%s:%d: Glob '%s' does not match with any tests in the %s test suite" %
@@ -388,14 +384,6 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     _checkTestExpectationsAreForExistingTests(
         pixel_integration_test.PixelIntegrationTest,
         MockArgs(), pixel_test_names)
-
-  def testStarMustBeAtEndOfTestPattern(self):
-    with self.assertRaises(AssertionError) as context:
-      _testCheckTestExpectationsAreForExistingTests(
-          'a/b*/c [ Failure ]\n')
-    self.assertIn(("1: '*' can only be at the end of"
-                   " a test expectation's patttern"),
-                  str(context.exception))
 
   def testExpectationPatternNotInGeneratedTests(self):
     with self.assertRaises(AssertionError) as context:
