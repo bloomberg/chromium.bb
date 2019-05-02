@@ -985,7 +985,6 @@ TEST_F(PasswordControllerTest, SuggestionUpdateTests) {
   EXPECT_NSEQ(@"[]=, onkeyup=false, onchange=false",
               ExecuteJavaScript(kUsernamePasswordVerificationScript));
 
-  NSString* showAll = @"Show All\u2026";
   // clang-format off
   SuggestionTestData test_data[] = {
     {
@@ -993,7 +992,7 @@ TEST_F(PasswordControllerTest, SuggestionUpdateTests) {
       @[(@"var evt = document.createEvent('Events');"
          "username_.focus();"),
         @""],
-      @[@"user0 ••••••••", @"abc ••••••••", showAll],
+      @[@"user0 ••••••••", @"abc ••••••••"],
       @"[]=, onkeyup=false, onchange=false"
     },
     {
@@ -1001,7 +1000,7 @@ TEST_F(PasswordControllerTest, SuggestionUpdateTests) {
       @[(@"var evt = document.createEvent('Events');"
          "password_.focus();"),
         @""],
-      @[@"user0 ••••••••", @"abc ••••••••", showAll],
+      @[@"user0 ••••••••", @"abc ••••••••"],
       @"[]=, onkeyup=false, onchange=false"
     },
     {
@@ -1009,7 +1008,7 @@ TEST_F(PasswordControllerTest, SuggestionUpdateTests) {
       @[(@"username_.value='ab';"
          "username_.focus();"),
         @""],
-      @[@"user0 ••••••••", @"abc ••••••••", showAll],
+      @[@"user0 ••••••••", @"abc ••••••••"],
       @"ab[]=, onkeyup=false, onchange=false"
     },
   };
@@ -1119,7 +1118,6 @@ TEST_F(PasswordControllerTest, SelectingSuggestionShouldFillPasswordForm) {
                      [suggestion_values addObject:suggestion.value];
                    EXPECT_NSEQ((@[
                                  @"user0 ••••••••", @"abc ••••••••",
-                                 @"Show All\u2026"
                                ]),
                                suggestion_values);
                    block_was_called = YES;
@@ -1484,7 +1482,6 @@ TEST_F(PasswordControllerTest, CheckPasswordGenerationSuggestion) {
   EXPECT_NSEQ(@"[]=, onkeyup=false, onchange=false",
               ExecuteJavaScript(kUsernamePasswordVerificationScript));
 
-  NSString* showAll = @"Show All\u2026";
   // clang-format off
   SuggestionTestData test_data[] = {
     {
@@ -1492,7 +1489,7 @@ TEST_F(PasswordControllerTest, CheckPasswordGenerationSuggestion) {
       @[(@"var evt = document.createEvent('Events');"
          "username_.focus();"),
         @""],
-      @[@"user0 ••••••••", @"abc ••••••••", showAll],
+      @[@"user0 ••••••••", @"abc ••••••••"],
       @"[]=, onkeyup=false, onchange=false"
     },
     {
@@ -1500,7 +1497,7 @@ TEST_F(PasswordControllerTest, CheckPasswordGenerationSuggestion) {
       @[(@"var evt = document.createEvent('Events');"
          "password_.focus();"),
         @""],
-      @[@"user0 ••••••••", @"abc ••••••••", @"Suggest  Password\u2026", showAll],
+      @[@"user0 ••••••••", @"abc ••••••••", @"Suggest  Password\u2026"],
       @"[]=, onkeyup=false, onchange=false"
     },
   };

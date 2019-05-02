@@ -99,11 +99,11 @@ const base::Feature kAutofillKeyboardAccessory{
 
 // Controls whether the manual fallback will be present.
 const base::Feature kAutofillManualFallback{"AutofillManualFallback",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether the manual fallback will include addresses and cards.
 const base::Feature kAutofillManualFallbackPhaseTwo{
-    "AutofillManualFallbackPhaseTwo", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AutofillManualFallbackPhaseTwo", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kAutofillPruneSuggestions{
     "AutofillPruneSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
