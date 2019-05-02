@@ -3940,7 +3940,7 @@ def ApplyCustomOverrides(site_config):
   # release builders. Configure it here since it's easier, for both
   # llvm-toolchain and llvm-next-toolchain builders.
   for board in ['lakitu', 'guado_moblab', 'gale', 'mistral', 'whirlwind']:
-    if board is 'lakitu':
+    if board == 'lakitu':
       overwritten_configs[board+'-llvm-toolchain'] = {
           'vm_tests': [config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
                                                test_suite='smoke')],
@@ -3949,7 +3949,7 @@ def ApplyCustomOverrides(site_config):
                         config_lib.GCETestConfig(constants.GCE_SUITE_TEST_TYPE,
                                                  test_suite='gce-smoke')]
       }
-    elif board is 'guado_moblab':
+    elif board == 'guado_moblab':
       overwritten_configs[board+'-llvm-toolchain'] = {
           'hw_tests': [
               config_lib.HWTestConfig(
