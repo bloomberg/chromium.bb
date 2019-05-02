@@ -14,6 +14,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.CalledByNativeUnchecked;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.net.NetError;
@@ -335,8 +336,12 @@ public class AwContentsClientBridge {
                                 response.action(), response.reporting(), requestId));
         // clang-format on
 
-        mClient.getCallbackHelper().postOnSafeBrowsingHit(
-                request, AwSafeBrowsingConversionHelper.convertThreatType(threatType), callback);
+        int webViewThreatType = AwSafeBrowsingConversionHelper.convertThreatType(threatType);
+        mClient.getCallbackHelper().postOnSafeBrowsingHit(request, webViewThreatType, callback);
+
+        // Record UMA on threat type
+        RecordHistogram.recordEnumeratedHistogram("Android.WebView.onSafeBrowsingHit.ThreatType",
+                webViewThreatType, AwSafeBrowsingConversionHelper.SAFE_BROWSING_THREAT_BOUNDARY);
     }
 
     @CalledByNative
