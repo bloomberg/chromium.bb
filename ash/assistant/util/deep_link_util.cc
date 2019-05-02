@@ -108,8 +108,10 @@ base::Optional<std::string> GetDeepLinkParam(
   return it != params.end()
              ? base::Optional<std::string>(net::UnescapeURLComponent(
                    it->second,
-                   net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS |
-                       net::UnescapeRule::REPLACE_PLUS_WITH_SPACE))
+                   net::UnescapeRule::PATH_SEPARATORS |
+                       net::UnescapeRule::REPLACE_PLUS_WITH_SPACE |
+                       net::UnescapeRule::
+                           URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS))
              : base::nullopt;
 }
 
