@@ -61,7 +61,12 @@ if (safe_browsing_mode == 1) {
     }
 
     configs -= [ "//build/config/compiler:chromium_code" ]
-    configs += [ "//build/config/compiler:no_chromium_code" ]
+    configs += [
+      "//build/config/compiler:no_chromium_code",
+
+      # This must be after no_chromium_code for warning flags to be ordered correctly
+      ":unrar_warnings",
+    ]
 
     defines = [
       "_FILE_OFFSET_BITS=64",
@@ -82,4 +87,23 @@ if (safe_browsing_mode == 1) {
       "//base",
     ]
   }
+}
+
+config("unrar_warnings") {
+  cflags = [
+    # unrar frequently drops parentheses around logical ops
+    "-Wno-logical-op-parentheses",
+
+    # unrar frequently has dangling elses
+    "-Wno-dangling-else",
+
+    # unrar has several non-exhaustive switch statements
+    "-Wno-switch",
+
+    # unrar has several unused functions
+    "-Wno-unused-function",
+
+    # unrar has missing braces for initialization in rarvm.cpp
+    "-Wno-missing-braces",
+  ]
 }
