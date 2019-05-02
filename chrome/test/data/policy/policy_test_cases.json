@@ -3079,6 +3079,18 @@
     ]
   },
 
+  "DockedMagnifierEnabled": {
+    "os": ["chromeos"],
+    "test_policy": { "DockedMagnifierEnabled": true },
+    "pref_mappings": [
+      { "pref": "ash.docked_magnifier.enabled",
+        "indicator_tests": [
+          { "policy": { "DockedMagnifierEnabled": true } }
+        ]
+      }
+    ]
+  },
+
   "SpokenFeedbackEnabled": {
     "os": ["chromeos"],
     "test_policy": { "SpokenFeedbackEnabled": true },

@@ -607,6 +607,7 @@
         'HighContrastEnabled',
         'VirtualKeyboardEnabled',
         'StickyKeysEnabled',
+        'DockedMagnifierEnabled',
         'KeyboardDefaultToFunctionKeys',
         'ScreenMagnifierType',
         'DeviceLoginScreenDefaultLargeCursorEnabled',
@@ -9242,6 +9243,30 @@
           If this policy is left unset, the sticky keys is disabled initially but can be enabled by the user anytime.'''
     },
     {
+      'name': 'DockedMagnifierEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:76-'],
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 562,
+      'caption': '''Enable docked magnifier''',
+      'tags': [],
+      'desc': '''Enable the docked magnifier accessibility feature.
+
+          If this policy is set to true, the docked magnifier will always be enabled.
+
+          If this policy is set to false, the docked magnifier will always be disabled.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, the docked magnifier is disabled initially but can be enabled by the user anytime.'''
+    },
+    {
       'name': 'KeyboardDefaultToFunctionKeys',
       'type': 'main',
       'schema': { 'type': 'boolean' },
@@ -16589,5 +16614,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used':  561
+  'highest_id_currently_used':  562
 }

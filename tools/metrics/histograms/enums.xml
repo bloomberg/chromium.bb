@@ -16669,6 +16669,7 @@ Called by update_net_error_codes.py.-->
   <int value="559" label="KerberosAddAccountsAllowed"/>
   <int value="560" label="KerberosAccounts"/>
   <int value="561" label="StickyKeysEnabled"/>
+  <int value="562" label="DockedMagnifierEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
