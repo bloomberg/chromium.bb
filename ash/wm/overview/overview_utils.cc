@@ -119,6 +119,12 @@ void FadeOutWidgetAndMaybeSlideOnExit(std::unique_ptr<views::Widget> widget,
   }
 }
 
+void ImmediatelyCloseWidgetOnExit(std::unique_ptr<views::Widget> widget) {
+  ScopedAnimationDisabler animation_disabler(widget->GetNativeWindow());
+  widget->Close();
+  widget.reset();
+}
+
 wm::WindowTransientDescendantIteratorRange GetVisibleTransientTreeIterator(
     aura::Window* window) {
   auto hide_predicate = [](aura::Window* window) {

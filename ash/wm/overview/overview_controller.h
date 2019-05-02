@@ -26,11 +26,6 @@ namespace ash {
 class ASH_EXPORT OverviewController : public OverviewDelegate,
                                       public ::wm::ActivationChangeObserver {
  public:
-  enum class AnimationCompleteReason {
-    kCompleted,
-    kCanceled,
-  };
-
   OverviewController();
   ~OverviewController() override;
 

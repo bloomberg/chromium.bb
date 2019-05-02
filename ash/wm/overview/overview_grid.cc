@@ -995,9 +995,12 @@ bool OverviewGrid::ShouldAnimateWallpaper() const {
   if (Shell::Get()->kiosk_next_shell_controller()->IsEnabled())
     return false;
 
-  // Never animate when doing app dragging.
-  if (overview_session_->enter_exit_overview_type() ==
-      OverviewSession::EnterExitOverviewType::kWindowDragged) {
+  // Never animate when doing app dragging or when immediately exiting.
+  const auto enter_exit_type = overview_session_->enter_exit_overview_type();
+  if (enter_exit_type ==
+          OverviewSession::EnterExitOverviewType::kWindowDragged ||
+      enter_exit_type ==
+          OverviewSession::EnterExitOverviewType::kImmediateExit) {
     return false;
   }
 
@@ -1331,27 +1334,32 @@ void OverviewGrid::MoveSelectionWidget(OverviewSession::Direction direction,
   // If the selection widget is already active, fade it out in the selection
   // direction.
   if (selection_widget_ && (recreate_selection_widget || out_of_bounds)) {
-    // Animate the old selection widget and then destroy it.
-    views::Widget* old_selection = selection_widget_.get();
-    aura::Window* old_selection_window = old_selection->GetNativeWindow();
-    gfx::Vector2d fade_out_direction =
-        GetSlideVectorForFadeIn(direction, old_selection_window->bounds());
+    if (overview_session_->enter_exit_overview_type() ==
+        OverviewSession::EnterExitOverviewType::kImmediateExit) {
+      ImmediatelyCloseWidgetOnExit(std::move(selection_widget_));
+    } else {
+      // Animate the old selection widget and then destroy it.
+      views::Widget* old_selection = selection_widget_.get();
+      aura::Window* old_selection_window = old_selection->GetNativeWindow();
+      gfx::Vector2d fade_out_direction =
+          GetSlideVectorForFadeIn(direction, old_selection_window->bounds());
 
-    ScopedOverviewAnimationSettings settings(
-        OVERVIEW_ANIMATION_SELECTION_WINDOW, old_selection_window);
-    // CleanupAnimationObserver will delete itself (and the widget) when the
-    // motion animation is complete. Ownership over the observer is passed to
-    // the overview_session_->delegate() which has longer lifetime so that
-    // animations can continue even after the overview session is shut down.
-    std::unique_ptr<CleanupAnimationObserver> observer(
-        new CleanupAnimationObserver(std::move(selection_widget_)));
-    settings.AddObserver(observer.get());
-    overview_session_->delegate()->AddExitAnimationObserver(
-        std::move(observer));
-    old_selection->SetOpacity(0.f);
-    old_selection_window->SetBounds(old_selection_window->bounds() +
-                                    fade_out_direction);
-    old_selection->Hide();
+      ScopedOverviewAnimationSettings settings(
+          OVERVIEW_ANIMATION_SELECTION_WINDOW, old_selection_window);
+      // CleanupAnimationObserver will delete itself (and the widget) when the
+      // motion animation is complete. Ownership over the observer is passed to
+      // the overview_session_->delegate() which has longer lifetime so that
+      // animations can continue even after the overview session is shut down.
+      std::unique_ptr<CleanupAnimationObserver> observer(
+          new CleanupAnimationObserver(std::move(selection_widget_)));
+      settings.AddObserver(observer.get());
+      overview_session_->delegate()->AddExitAnimationObserver(
+          std::move(observer));
+      old_selection->SetOpacity(0.f);
+      old_selection_window->SetBounds(old_selection_window->bounds() +
+                                      fade_out_direction);
+      old_selection->Hide();
+    }
   }
   if (out_of_bounds)
     return;

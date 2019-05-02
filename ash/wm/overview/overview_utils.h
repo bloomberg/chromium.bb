@@ -44,6 +44,9 @@ void FadeInWidgetAndMaybeSlideOnEnter(views::Widget* widget,
 void FadeOutWidgetAndMaybeSlideOnExit(std::unique_ptr<views::Widget> widget,
                                       OverviewAnimationType animation_type);
 
+// Takes ownership of |widget|, closes and destroys it without any animations.
+void ImmediatelyCloseWidgetOnExit(std::unique_ptr<views::Widget> widget);
+
 // Iterates through all the windows in the transient tree associated with
 // |window| that are visible.
 wm::WindowTransientDescendantIteratorRange GetVisibleTransientTreeIterator(

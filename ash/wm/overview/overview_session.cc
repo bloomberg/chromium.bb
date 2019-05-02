@@ -284,6 +284,10 @@ void OverviewSession::Init(const WindowList& windows,
 // may cause other, unrelated classes, to make indirect calls to
 // restoring_minimized_windows() on a partially destructed object.
 void OverviewSession::Shutdown() {
+  // This should have been set already when the process of ending overview mode
+  // began. See OverviewController::OnSelectionEnded().
+  DCHECK(is_shutting_down_);
+
   Shell::Get()->RemovePreTargetHandler(this);
   Shell::Get()->RemoveShellObserver(this);
 
@@ -316,8 +320,10 @@ void OverviewSession::Shutdown() {
   // Setting focus after restoring windows' state avoids unnecessary animations.
   // No need to restore if we are sliding to the home launcher screen, as all
   // windows will be minimized.
-  ResetFocusRestoreWindow(enter_exit_overview_type_ ==
-                          EnterExitOverviewType::kNormal);
+  const bool should_focus =
+      enter_exit_overview_type_ == EnterExitOverviewType::kNormal ||
+      enter_exit_overview_type_ == EnterExitOverviewType::kImmediateExit;
+  ResetFocusRestoreWindow(should_focus);
   RemoveAllObservers();
 
   for (std::unique_ptr<OverviewGrid>& overview_grid : grid_list_)
@@ -332,6 +338,11 @@ void OverviewSession::Shutdown() {
   grid_list_.clear();
 
   if (no_windows_widget_) {
+    if (enter_exit_overview_type_ == EnterExitOverviewType::kImmediateExit) {
+      ImmediatelyCloseWidgetOnExit(std::move(no_windows_widget_));
+      return;
+    }
+
     // Fade out the no windows widget. This animation continues past the
     // lifetime of |this|.
     FadeOutWidgetAndMaybeSlideOnExit(std::move(no_windows_widget_),

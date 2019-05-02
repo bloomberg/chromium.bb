@@ -83,7 +83,12 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
     // launcher does not animate in. On exit this mode is used to avoid the
     // update bounds animation of the windows in overview grid on overview mode
     // ended.
-    kWindowDragged
+    kWindowDragged,
+    // Used only when it's desired to exit overview mode immediately without
+    // animations. This is used when performing the desk switch animation when
+    // the source desk is in overview mode, while the target desk is not.
+    // This should not be used for entering overview mode.
+    kImmediateExit
   };
 
   // Callback which fills out the passed settings object. Used by several
@@ -264,6 +269,11 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
 
   OverviewDelegate* delegate() { return delegate_; }
 
+  bool is_shutting_down() const { return is_shutting_down_; }
+  void set_is_shutting_down(bool is_shutting_down) {
+    is_shutting_down_ = is_shutting_down;
+  }
+
   SplitViewDragIndicators* split_view_drag_indicators() {
     return split_view_drag_indicators_.get();
   }
@@ -341,6 +351,9 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // used to prevent handling the resulting expected activation. This is
   // initially true until this is initialized.
   bool ignore_activations_ = true;
+
+  // True when overview mode is exiting.
+  bool is_shutting_down_ = false;
 
   // List of all the window overview grids, one for each root window.
   std::vector<std::unique_ptr<OverviewGrid>> grid_list_;

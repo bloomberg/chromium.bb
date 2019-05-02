@@ -86,6 +86,11 @@ constexpr SkColor kCloseButtonInkDropRippleHighlightColor =
 OverviewAnimationType GetExitOverviewAnimationTypeForMinimizedWindow(
     OverviewSession::EnterExitOverviewType type,
     bool should_animate_when_exiting) {
+  // We should never get here when overview mode should exit immediately. The
+  // minimized window's |item_widget_| should be closed and destroyed
+  // immediately.
+  DCHECK_NE(type, OverviewSession::EnterExitOverviewType::kImmediateExit);
+
   // EnterExitOverviewType can only be set to kWindowMinimized in talbet mode.
   // Fade out the minimized window without animation if switch from tablet mode
   // to clamshell mode.
@@ -270,16 +275,22 @@ void OverviewItem::RestoreWindow(bool reset_transform) {
 
   caption_container_view_->ResetEventDelegate();
   close_button_->ResetListener();
+  transform_window_.RestoreWindow(reset_transform);
 
   if (transform_window_.IsMinimized()) {
+    const auto enter_exit_type = overview_session_->enter_exit_overview_type();
+
+    if (enter_exit_type ==
+        OverviewSession::EnterExitOverviewType::kImmediateExit) {
+      ImmediatelyCloseWidgetOnExit(std::move(item_widget_));
+      return;
+    }
+
     FadeOutWidgetAndMaybeSlideOnExit(
         std::move(item_widget_),
         GetExitOverviewAnimationTypeForMinimizedWindow(
-            overview_session_->enter_exit_overview_type(),
-            should_animate_when_exiting_));
+            enter_exit_type, should_animate_when_exiting_));
   }
-
-  transform_window_.RestoreWindow(reset_transform);
 }
 
 void OverviewItem::EnsureVisible() {
@@ -779,12 +790,22 @@ float OverviewItem::GetOpacity() {
 }
 
 OverviewAnimationType OverviewItem::GetExitOverviewAnimationType() {
+  if (overview_session_->enter_exit_overview_type() ==
+      OverviewSession::EnterExitOverviewType::kImmediateExit) {
+    return OVERVIEW_ANIMATION_NONE;
+  }
+
   return should_animate_when_exiting_
              ? OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_ON_EXIT
              : OVERVIEW_ANIMATION_NONE;
 }
 
 OverviewAnimationType OverviewItem::GetExitTransformAnimationType() {
+  if (overview_session_->enter_exit_overview_type() ==
+      OverviewSession::EnterExitOverviewType::kImmediateExit) {
+    return OVERVIEW_ANIMATION_NONE;
+  }
+
   return should_animate_when_exiting_ ? OVERVIEW_ANIMATION_RESTORE_WINDOW
                                       : OVERVIEW_ANIMATION_RESTORE_WINDOW_ZERO;
 }

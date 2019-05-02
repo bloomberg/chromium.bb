@@ -433,7 +433,7 @@ void OverviewController::ResetPauser() {
 }
 
 bool OverviewController::IsSelecting() const {
-  return overview_session_ != nullptr;
+  return overview_session_ && !overview_session_->is_shutting_down();
 }
 
 bool OverviewController::IsCompletingShutdownAnimations() {
@@ -594,15 +594,28 @@ void OverviewController::OnSelectionEnded() {
     OnStartingAnimationComplete(/*canceled=*/true);
   start_animations_.clear();
 
-  auto* overview_session = overview_session_.release();
+  overview_session_->set_is_shutting_down(true);
   // Do not show mask and show during overview shutdown.
-  overview_session->UpdateMaskAndShadow();
+  overview_session_->UpdateMaskAndShadow();
 
   for (auto& observer : observers_)
-    observer.OnOverviewModeEnding(overview_session);
-  overview_session->Shutdown();
+    observer.OnOverviewModeEnding(overview_session_.get());
+  overview_session_->Shutdown();
+
+#if DCHECK_IS_ON()
+  const auto enter_exit_type = overview_session_->enter_exit_overview_type();
+  if (enter_exit_type ==
+          OverviewSession::EnterExitOverviewType::kImmediateExit &&
+      !delayed_animations_.empty()) {
+    // Immediate exit type implies no delayed exit animations at all, if we get
+    // here then this is a bug.
+    NOTREACHED();
+  }
+#endif
+
   // Don't delete |overview_session_| yet since the stack is still using it.
-  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, overview_session);
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE,
+                                                  overview_session_.release());
   last_selection_time_ = base::Time::Now();
   for (auto& observer : observers_)
     observer.OnOverviewModeEnded();
@@ -612,6 +625,11 @@ void OverviewController::OnSelectionEnded() {
 
 void OverviewController::AddExitAnimationObserver(
     std::unique_ptr<DelayedAnimationObserver> animation_observer) {
+  // No delayed animations should be created when overview mode is set to exit
+  // immediately.
+  DCHECK_NE(overview_session_->enter_exit_overview_type(),
+            OverviewSession::EnterExitOverviewType::kImmediateExit);
+
   animation_observer->SetOwner(this);
   delayed_animations_.push_back(std::move(animation_observer));
 }
