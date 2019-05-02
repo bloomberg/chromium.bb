@@ -4,16 +4,17 @@
 
 #include "third_party/blink/renderer/modules/filesystem/file_system_writer.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view_or_blob_or_usv_string.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_blob.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_readable_stream.h"
-#include "third_party/blink/renderer/bindings/modules/v8/blob_or_readable_stream.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/fetch/fetch_data_loader.h"
 #include "third_party/blink/renderer/core/fetch/readable_stream_bytes_consumer.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
+#include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -23,15 +24,36 @@ FileSystemWriter::FileSystemWriter(mojom::blink::FileWriterPtr writer)
   DCHECK(writer_);
 }
 
-ScriptPromise FileSystemWriter::write(ScriptState* script_state,
-                                      uint64_t position,
-                                      const BlobOrReadableStream& data,
-                                      ExceptionState& exception_state) {
+ScriptPromise FileSystemWriter::write(
+    ScriptState* script_state,
+    uint64_t position,
+    const ArrayBufferOrArrayBufferViewOrBlobOrUSVString& data,
+    ExceptionState& exception_state) {
   DCHECK(!data.IsNull());
-  if (data.IsBlob())
-    return WriteBlob(script_state, position, data.GetAsBlob());
-  return WriteStream(script_state, position, data.GetAsReadableStream(),
-                     exception_state);
+
+  auto blob_data = std::make_unique<BlobData>();
+  Blob* blob = nullptr;
+  if (data.IsArrayBuffer()) {
+    DOMArrayBuffer* array_buffer = data.GetAsArrayBuffer();
+    blob_data->AppendBytes(array_buffer->Data(), array_buffer->ByteLength());
+  } else if (data.IsArrayBufferView()) {
+    DOMArrayBufferView* array_buffer_view = data.GetAsArrayBufferView().View();
+    blob_data->AppendBytes(array_buffer_view->BaseAddress(),
+                           array_buffer_view->byteLength());
+  } else if (data.IsBlob()) {
+    blob = data.GetAsBlob();
+  } else if (data.IsUSVString()) {
+    // Let the developer be explicit about line endings.
+    blob_data->AppendText(data.GetAsUSVString(),
+                          /*normalize_line_endings_to_native=*/false);
+  }
+
+  if (!blob) {
+    uint64_t size = blob_data->length();
+    blob = Blob::Create(BlobDataHandle::Create(std::move(blob_data), size));
+  }
+
+  return WriteBlob(script_state, position, blob);
 }
 
 ScriptPromise FileSystemWriter::WriteBlob(ScriptState* script_state,
