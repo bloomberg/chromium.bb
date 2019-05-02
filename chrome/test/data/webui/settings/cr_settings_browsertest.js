@@ -12,6 +12,7 @@ GEN('#include "ash/public/cpp/ash_features.h"');
 GEN('#endif  // defined(OS_CHROMEOS)');
 
 GEN('#include "chrome/common/chrome_features.h"');
+GEN('#include "chromeos/constants/chromeos_features.h"');
 GEN('#include "components/autofill/core/common/autofill_features.h"');
 GEN('#include "components/omnibox/common/omnibox_features.h"');
 
@@ -2493,6 +2494,29 @@ CrSettingsAddUsersTest.prototype = {
 };
 
 TEST_F('CrSettingsAddUsersTest', 'All', function() {
+  mocha.run();
+});
+
+CrSettingsSplitSettingsFlagTest = class extends CrSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/basic_page/basic_page.html';
+  }
+
+  /** @override */
+  get featureList() {
+    return ['chromeos::features::kSplitSettings', ''];
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'split_settings_flag_test.js',
+    ]);
+  }
+};
+
+TEST_F('CrSettingsSplitSettingsFlagTest', 'All', function() {
   mocha.run();
 });
 
