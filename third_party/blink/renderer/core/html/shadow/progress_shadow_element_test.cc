@@ -40,7 +40,7 @@ TEST_F(ProgressShadowElementTest, LayoutObjectIsNeeded) {
   GetDocument().View()->UpdateAllLifecyclePhases(
       DocumentLifecycle::LifecycleUpdateReason::kTest);
 
-  progress->LazyReattachIfAttached();
+  progress->SetForceReattachLayoutTree();
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
   StyleRecalcChange change;
   change = change.ForceRecalcDescendants();

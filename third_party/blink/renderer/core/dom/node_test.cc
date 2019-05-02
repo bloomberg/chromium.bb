@@ -36,7 +36,7 @@ class FakeMediaControls : public HTMLDivElement {
 class NodeTest : public EditingTestBase {
  protected:
   LayoutObject* ReattachLayoutTreeForNode(Node& node) {
-    node.LazyReattachIfAttached();
+    node.SetForceReattachLayoutTree();
     GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
     GetDocument().GetStyleEngine().RecalcStyle({});
     Node::AttachContext context;
@@ -326,6 +326,7 @@ TEST_F(NodeTest, appendChildCommentNoStyleRecalc) {
 }
 
 TEST_F(NodeTest, LazyReattachCommentAndPI) {
+  // TODO(futhark): Remove this test when LazyReattachIfAttached is removed.
   SetBodyContent("<!-- -->");
   HTMLElement* body = GetDocument().body();
   ProcessingInstruction* pi =

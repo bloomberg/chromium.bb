@@ -2101,6 +2101,9 @@ void Element::RemovedFrom(ContainerNode& insertion_point) {
     // AttachLayoutTree again. We don't clear pseudo elements on
     // DetachLayoutTree() if we intend to attach again to avoid recreating the
     // pseudo elements.
+    //
+    // TODO(futhark): This block can be removed when LazyReattachIfAttached is
+    // removed.
     ElementRareData* rare_data = GetElementRareData();
     rare_data->ClearPseudoElements();
   }
