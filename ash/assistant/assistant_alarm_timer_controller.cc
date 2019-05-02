@@ -259,6 +259,14 @@ void AssistantAlarmTimerController::SetAssistant(
   assistant_ = assistant;
 }
 
+void AssistantAlarmTimerController::OnAssistantControllerConstructed() {
+  assistant_controller_->ui_controller()->AddModelObserver(this);
+}
+
+void AssistantAlarmTimerController::OnAssistantControllerDestroying() {
+  assistant_controller_->ui_controller()->RemoveModelObserver(this);
+}
+
 void AssistantAlarmTimerController::OnDeepLinkReceived(
     assistant::util::DeepLinkType type,
     const std::map<std::string, std::string>& params) {
@@ -283,6 +291,38 @@ void AssistantAlarmTimerController::OnDeepLinkReceived(
                                                    DeepLinkParam::kDurationMs);
 
   PerformAlarmTimerAction(action.value(), alarm_timer_id, duration);
+}
+
+void AssistantAlarmTimerController::OnUiVisibilityChanged(
+    AssistantVisibility new_visibility,
+    AssistantVisibility old_visibility,
+    base::Optional<AssistantEntryPoint> entry_point,
+    base::Optional<AssistantExitPoint> exit_point) {
+  // When the Assistant UI transitions from a visible state, we'll dismiss any
+  // ringing alarms or timers (assuming certain conditions have been met).
+  if (old_visibility != AssistantVisibility::kVisible)
+    return;
+
+  // We only do this if the AlarmTimerManager is enabled, as otherwise we would
+  // have to issue an Assistant query to stop ringing alarms/timers which would
+  // cause Assistant UI to once again show. This would be a bad user experience.
+  if (!chromeos::assistant::features::IsAlarmTimerManagerEnabled())
+    return;
+
+  // We only do this if timer notifications are enabled, as otherwise the
+  // ringing alarm/timer isn't bound to any particular UI affordance so it can
+  // maintain its own lifecycle.
+  if (!chromeos::assistant::features::IsTimerNotificationEnabled())
+    return;
+
+  // We only do this if in-Assistant notifications are enabled, as in-Assistant
+  // alarm/timer notifications only live as long the Assistant UI. Per UX
+  // requirement, when Assistant UI dismisses with an in-Assistant timer
+  // notification showing, any ringing alarms/timers should be stopped.
+  if (!chromeos::assistant::features::IsInAssistantNotificationsEnabled())
+    return;
+
+  assistant_->StopAlarmTimerRinging();
 }
 
 void AssistantAlarmTimerController::PerformAlarmTimerAction(

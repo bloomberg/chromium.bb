@@ -8,6 +8,7 @@
 #include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/model/assistant_alarm_timer_model.h"
 #include "ash/assistant/model/assistant_alarm_timer_model_observer.h"
+#include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
@@ -28,7 +29,8 @@ class AssistantController;
 class AssistantAlarmTimerController
     : public mojom::AssistantAlarmTimerController,
       public AssistantControllerObserver,
-      public AssistantAlarmTimerModelObserver {
+      public AssistantAlarmTimerModelObserver,
+      public AssistantUiModelObserver {
  public:
   explicit AssistantAlarmTimerController(
       AssistantController* assistant_controller);
@@ -60,9 +62,18 @@ class AssistantAlarmTimerController
   void SetAssistant(chromeos::assistant::mojom::Assistant* assistant);
 
   // AssistantControllerObserver:
+  void OnAssistantControllerConstructed() override;
+  void OnAssistantControllerDestroying() override;
   void OnDeepLinkReceived(
       assistant::util::DeepLinkType type,
       const std::map<std::string, std::string>& params) override;
+
+  // AssistantUiModelObserver:
+  void OnUiVisibilityChanged(
+      AssistantVisibility new_visibility,
+      AssistantVisibility old_visibility,
+      base::Optional<AssistantEntryPoint> entry_point,
+      base::Optional<AssistantExitPoint> exit_point) override;
 
  private:
   void PerformAlarmTimerAction(
