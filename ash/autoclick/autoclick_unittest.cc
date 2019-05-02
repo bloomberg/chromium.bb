@@ -10,6 +10,7 @@
 #include "ash/system/accessibility/autoclick_menu_view.h"
 #include "ash/test/ash_test_base.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/aura/test/test_window_delegate.h"

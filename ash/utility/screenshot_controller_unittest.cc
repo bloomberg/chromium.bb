@@ -480,20 +480,4 @@ TEST_F(ScreenshotControllerTest, BreaksCapture) {
   EXPECT_FALSE(window->HasCapture());
 }
 
-TEST_F(ScreenshotControllerTest, DontTargetNonTopLevels) {
-  std::unique_ptr<aura::Window> toplevel = CreateTestWindow();
-  std::unique_ptr<aura::Window> content(GetWindowTreeTestHelper()->NewWindow());
-  content->SetBounds(gfx::Rect(toplevel->bounds().size()));
-  toplevel->AddChild(content.get());
-  content->set_owned_by_parent(false);
-  content->Show();
-
-  StartWindowScreenshotSession();
-
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
-  generator.MoveMouseTo(toplevel->GetBoundsInScreen().CenterPoint());
-
-  EXPECT_EQ(toplevel.get(), GetCurrentSelectedWindow());
-}
-
 }  // namespace ash

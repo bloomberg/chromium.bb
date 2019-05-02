@@ -20,8 +20,6 @@
 #include "base/test/metrics/user_action_tester.h"
 #include "chromeos/dbus/shill/shill_clients.h"
 #include "chromeos/network/network_handler.h"
-#include "services/ws/public/mojom/window_tree_constants.mojom.h"
-#include "services/ws/test_window_tree_client.h"
 #include "ui/aura/window.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/test_accelerator_target.h"
@@ -204,33 +202,6 @@ TEST_F(AcceleratorTest, ToggleAppList) {
   SendKeyPressSync(ui::VKEY_LWIN, false, false, false);
   base::RunLoop().RunUntilIdle();
   GetAppListTestHelper()->CheckVisibility(false);
-}
-
-// This is meant to exercise an end to end test of an accelerator that happens
-// *after* the remote client is given a chance to handle it.
-TEST_F(AcceleratorTest, PostAcceleratorWorks) {
-  // Register a post-accelerator. That is, an accelerator that is handled
-  // *after* the remote client (focused target) is given a chance.
-  ui::TestAcceleratorTarget test_target;
-  const ui::KeyboardCode accelerator_code = ui::VKEY_N;
-  const int accelerator_modifiers = ui::EF_CONTROL_DOWN;
-  Shell::Get()->accelerator_controller()->Register(
-      {ui::Accelerator(accelerator_code, accelerator_modifiers)}, &test_target);
-  std::unique_ptr<aura::Window> window = CreateTestWindow();
-  window->Focus();
-  ASSERT_TRUE(window->HasFocus());
-  GetEventGenerator()->PressKey(accelerator_code, accelerator_modifiers);
-
-  // The accelerator was not pressed yet (the KeyEvent was sent to the client,
-  // but the client hasn't responded).
-  EXPECT_EQ(0, test_target.accelerator_count());
-
-  EXPECT_TRUE(GetTestWindowTreeClient()->AckFirstEvent(
-      GetWindowTree(), ws::mojom::EventResult::UNHANDLED));
-
-  // The client didn't handle the event, so |test_target| should get the
-  // accelerator.
-  EXPECT_EQ(1, test_target.accelerator_count());
 }
 
 }  // namespace ash

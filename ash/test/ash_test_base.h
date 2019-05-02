@@ -15,7 +15,6 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/wm/desks/desks_util.h"
 #include "base/macros.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread.h"
 #include "components/user_manager/user_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -271,7 +270,6 @@ class AshTestBase : public testing::Test {
 
   // Returns the WindowTreeTestHelper, creating if necessary.
   ws::WindowTreeTestHelper* GetWindowTreeTestHelper();
-  ws::TestWindowTreeClient* GetTestWindowTreeClient();
   ws::WindowTree* GetWindowTree();
 
  private:
@@ -302,26 +300,6 @@ class NoSessionAshTestBase : public AshTestBase {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NoSessionAshTestBase);
-};
-
-// Base test class that forces single-process mash to be enabled *and* creates
-// a views::MusClient. This base class is useful for testing WindowService
-// related functionality exposed by Ash.
-// TODO(sky): this name is misleading. Rename to better indicate what it does.
-class SingleProcessMashTestBase : public AshTestBase {
- public:
-  SingleProcessMashTestBase();
-  ~SingleProcessMashTestBase() override;
-
-  // AshTestBase:
-  void SetUp() override;
-  void TearDown() override;
-
- private:
-  aura::Env::Mode original_aura_env_mode_ = aura::Env::Mode::LOCAL;
-  base::test::ScopedFeatureList feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(SingleProcessMashTestBase);
 };
 
 }  // namespace ash

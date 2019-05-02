@@ -56,14 +56,12 @@
 #include "ui/aura/env.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/test/aura_test_utils.h"
-#include "ui/aura/test/env_test_helper.h"
 #include "ui/aura/test/event_generator_delegate_aura.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/init/input_method_initializer.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
@@ -561,11 +559,6 @@ ws::WindowTreeTestHelper* AshTestBase::GetWindowTreeTestHelper() {
   return window_tree_test_helper_.get();
 }
 
-ws::TestWindowTreeClient* AshTestBase::GetTestWindowTreeClient() {
-  CreateWindowTreeIfNecessary();
-  return window_tree_client_.get();
-}
-
 ws::WindowTree* AshTestBase::GetWindowTree() {
   CreateWindowTreeIfNecessary();
   return window_tree_.get();
@@ -583,34 +576,6 @@ void AshTestBase::CreateWindowTreeIfNecessary() {
   window_tree_->InitFromFactory();
   window_tree_test_helper_ =
       std::make_unique<ws::WindowTreeTestHelper>(window_tree_.get());
-}
-
-SingleProcessMashTestBase::SingleProcessMashTestBase() = default;
-
-SingleProcessMashTestBase::~SingleProcessMashTestBase() = default;
-
-void SingleProcessMashTestBase::SetUp() {
-  original_aura_env_mode_ =
-      aura::test::EnvTestHelper().SetMode(aura::Env::Mode::MUS);
-  feature_list_.InitWithFeatures({::features::kSingleProcessMash}, {});
-  AshTestBase::SetUp();
-
-  // TabletModeController calls to PowerManagerClient with a callback that is
-  // run via a posted task. Run the loop now so that we know the task is
-  // processed. Without this, the task gets processed later on, which may
-  // interfer with things.
-  base::RunLoop().RunUntilIdle();
-
-  // This test configures views with mus, which means it triggers some of the
-  // DCHECKs ensuring Shell's Env is used.
-  SetRunningOutsideAsh();
-
-  ash_test_helper()->CreateMusClient();
-}
-
-void SingleProcessMashTestBase::TearDown() {
-  AshTestBase::TearDown();
-  aura::test::EnvTestHelper().SetMode(original_aura_env_mode_);
 }
 
 }  // namespace ash
