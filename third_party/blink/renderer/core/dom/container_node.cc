@@ -1453,7 +1453,7 @@ void ContainerNode::RebuildChildrenLayoutTrees(
     if (auto* slot = ToHTMLSlotElementOrNull(this)) {
       slot->RebuildDistributedChildrenLayoutTrees(whitespace_attacher);
     } else {
-      ToV0InsertionPoint(this)->RebuildDistributedChildrenLayoutTrees(
+      To<V0InsertionPoint>(this)->RebuildDistributedChildrenLayoutTrees(
           whitespace_attacher);
     }
     RebuildNonDistributedChildren();

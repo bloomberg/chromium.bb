@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/css/css_selector_list.h"
 #include "third_party/blink/renderer/core/dom/distributed_nodes.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -100,10 +101,9 @@ class CORE_EXPORT V0InsertionPoint : public HTMLElement {
 
 using DestinationInsertionPoints = HeapVector<Member<V0InsertionPoint>, 1>;
 
-DEFINE_ELEMENT_TYPE_CASTS(V0InsertionPoint, IsV0InsertionPoint());
-
 inline bool IsActiveV0InsertionPoint(const Node& node) {
-  return node.IsV0InsertionPoint() && ToV0InsertionPoint(node).IsActive();
+  auto* insertion_point = DynamicTo<V0InsertionPoint>(node);
+  return insertion_point && insertion_point->IsActive();
 }
 
 inline ShadowRoot* ShadowRootWhereNodeCanBeDistributedForV0(const Node& node) {
@@ -122,6 +122,16 @@ const V0InsertionPoint* ResolveReprojection(const Node*);
 void CollectDestinationInsertionPoints(
     const Node&,
     HeapVector<Member<V0InsertionPoint>, 8>& results);
+
+template <>
+inline bool IsElementOfType<const V0InsertionPoint>(const Node& node) {
+  return node.IsV0InsertionPoint();
+}
+
+template <>
+struct DowncastTraits<V0InsertionPoint> {
+  static bool AllowFrom(const Node& node) { return node.IsV0InsertionPoint(); }
+};
 
 }  // namespace blink
 

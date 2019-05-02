@@ -1523,9 +1523,9 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::BuildObjectForNode(
         value->setXmlVersion(element->ownerDocument()->xmlVersion());
     }
 
-    if (element->IsV0InsertionPoint()) {
+    if (auto* insertion_point = DynamicTo<V0InsertionPoint>(element)) {
       value->setDistributedNodes(
-          BuildArrayForDistributedNodes(ToV0InsertionPoint(element)));
+          BuildArrayForDistributedNodes(insertion_point));
       force_push_children = true;
     }
     if (auto* slot = ToHTMLSlotElementOrNull(*element)) {
