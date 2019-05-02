@@ -170,10 +170,22 @@
 <dom-module id="add-printer-manufacturer-model-dialog">
   <template>
     <style include="cups-printer-shared">
+      .subtext {
+        margin-bottom: 10px;
+        padding-inline-start: 20px;
+      }
     </style>
     <add-printer-dialog>
       <div slot="dialog-title">$i18n{selectManufacturerAndModelTitle}</div>
       <div slot="dialog-body">
+        <div class="subtext" id="makeModelTextInfo"
+            hidden="[[!activePrinter.printerMakeAndModel]]">
+          <span>[[getManufacturerAndModelSubtext_(
+              activePrinter.printerMakeAndModel)]]</span>
+          <a href="$i18n{printingCUPSPrintLearnMoreUrl}" target="_blank">
+            $i18n{learnMore}
+          </a>
+        </div>
         <div class="settings-box two-line">
           <cr-searchable-drop-down items="[[manufacturerList]]"
               label="$i18n{printerManufacturer}"

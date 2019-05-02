@@ -1496,6 +1496,9 @@
     <message name="IDS_SETTINGS_PRINTING_CUPS_EDIT_PRINTER_CURRENT_PPD_MESSAGE" desc="Informational text displayed to the user if they have an existing custom PPD.">
       Current PPD file in use: <ph name="PPD_NAME">$1<ex>example.ppd.gz</ex></ph>
     </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_MANUFACTURER_MODEL_ADDITIONAL_INFORMATION" desc="Informational text displayed to the user when the the user is doing advanced manual printer setup.">
+      <ph name="PRINTER_NAME">$1<ex>Printer</ex></ph> could not be configured automatically. Please specify advanced printer details.
+    </message>
   </if>
   <if expr="not chromeos">
     <message name="IDS_SETTINGS_PRINTING_LOCAL_PRINTERS_TITLE" desc="In Printing Settings, the title of local printers setting section on OS other than Chrome OS.">

@@ -253,6 +253,17 @@ Polymer({
   },
 
   /**
+   * @param {string} printerMakeAndModel
+   * @return {string} The additional information subtext of the manufacturer and
+   * model dialog.
+   * @private
+   */
+  getManufacturerAndModelSubtext_: function(printerMakeAndModel) {
+    return loadTimeData.getStringF(
+        'manufacturerAndModelAdditionalInformation', printerMakeAndModel);
+  },
+
+  /**
    * @param {string} manufacturer The manufacturer for which we are retrieving
    *     models.
    * @private
