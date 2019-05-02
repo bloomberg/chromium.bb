@@ -1941,7 +1941,12 @@ void HTMLInputElement::SetShouldRevealPassword(bool value) {
   if (!!should_reveal_password_ == value)
     return;
   should_reveal_password_ = value;
-  LazyReattachIfAttached();
+  if (HTMLElement* inner_editor = InnerEditorElement()) {
+    // Update -webkit-text-security style.
+    inner_editor->SetNeedsStyleRecalc(
+        kLocalStyleChange,
+        StyleChangeReasonForTracing::Create(style_change_reason::kControl));
+  }
 }
 
 bool HTMLInputElement::IsInteractiveContent() const {
