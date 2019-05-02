@@ -38,9 +38,11 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAuraLinux
   void FireLoadingEvent(BrowserAccessibility* node, bool is_loading);
   void FireNameChangedEvent(BrowserAccessibility* node);
   void FireDescriptionChangedEvent(BrowserAccessibility* node);
+  void FireSubtreeCreatedEvent(BrowserAccessibility* node);
 
  protected:
   // AXTreeObserver methods.
+  void OnSubtreeWillBeDeleted(ui::AXTree* tree, ui::AXNode* node) override;
   void OnAtomicUpdateFinished(
       ui::AXTree* tree,
       bool root_changed,

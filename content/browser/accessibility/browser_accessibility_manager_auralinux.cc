@@ -119,6 +119,13 @@ void BrowserAccessibilityManagerAuraLinux::FireDescriptionChangedEvent(
   ToBrowserAccessibilityAuraLinux(node)->GetNode()->OnDescriptionChanged();
 }
 
+void BrowserAccessibilityManagerAuraLinux::FireSubtreeCreatedEvent(
+    BrowserAccessibility* node) {
+  // Sending events during a load would create a lot of spam, don't do that.
+  if (GetTreeData().loaded)
+    ToBrowserAccessibilityAuraLinux(node)->GetNode()->OnSubtreeCreated();
+}
+
 void BrowserAccessibilityManagerAuraLinux::FireGeneratedEvent(
     ui::AXEventGenerator::Event event_type,
     BrowserAccessibility* node) {
@@ -157,6 +164,9 @@ void BrowserAccessibilityManagerAuraLinux::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::MENU_ITEM_SELECTED:
     case ui::AXEventGenerator::Event::SELECTED_CHANGED:
       FireSelectedEvent(node);
+      break;
+    case ui::AXEventGenerator::Event::SUBTREE_CREATED:
+      FireSubtreeCreatedEvent(node);
       break;
     case ui::AXEventGenerator::Event::VALUE_CHANGED:
       FireEvent(node, ax::mojom::Event::kValueChanged);
@@ -207,6 +217,19 @@ static void EstablishEmbeddedRelationship(AtkObject* document_object) {
 
   window_platform_node->SetEmbeddedDocument(document_object);
   document_platform_node->SetEmbeddingWindow(window);
+}
+
+void BrowserAccessibilityManagerAuraLinux::OnSubtreeWillBeDeleted(
+    ui::AXTree* tree,
+    ui::AXNode* node) {
+  BrowserAccessibilityManager::OnSubtreeWillBeDeleted(tree, node);
+  // Sending events on load/destruction would create a lot of spam, avoid that.
+  if (!GetTreeData().loaded)
+    return;
+
+  BrowserAccessibility* obj = GetFromAXNode(node);
+  if (obj && obj->IsNative())
+    ToBrowserAccessibilityAuraLinux(obj)->GetNode()->OnSubtreeWillBeDeleted();
 }
 
 void BrowserAccessibilityManagerAuraLinux::OnAtomicUpdateFinished(

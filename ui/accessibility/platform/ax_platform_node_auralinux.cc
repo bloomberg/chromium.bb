@@ -3248,6 +3248,25 @@ void AXPlatformNodeAuraLinux::OnDocumentTitleChanged() {
   window->OnNameChanged();
 }
 
+void AXPlatformNodeAuraLinux::OnSubtreeCreated() {
+  DCHECK(atk_object_);
+  // We might not have a parent, in that case we don't need to send the event.
+  if (!GetParent())
+    return;
+  g_signal_emit_by_name(GetParent(), "children-changed::add",
+                        GetIndexInParent(), atk_object_);
+}
+
+void AXPlatformNodeAuraLinux::OnSubtreeWillBeDeleted() {
+  DCHECK(atk_object_);
+  // There is a chance there won't be a parent as we're in the deletion process.
+  if (!GetParent())
+    return;
+
+  g_signal_emit_by_name(GetParent(), "children-changed::remove",
+                        GetIndexInParent(), atk_object_);
+}
+
 void AXPlatformNodeAuraLinux::OnInvalidStatusChanged() {
   DCHECK(atk_object_);
   atk_object_notify_state_change(

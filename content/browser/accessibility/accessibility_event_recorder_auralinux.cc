@@ -51,6 +51,7 @@ class AccessibilityEventRecorderAuraLinux : public AccessibilityEventRecorder {
  private:
   bool ShouldUseATSPI();
 
+  std::string AtkObjectToString(AtkObject* obj, bool include_name);
   void AddATKEventListener(const char* event_name);
   void AddATKEventListeners();
   void RemoveATKEventListeners();
@@ -152,6 +153,7 @@ void AccessibilityEventRecorderAuraLinux::AddATKEventListeners() {
   AddATKEventListener("ATK:AtkObject:state-change");
   AddATKEventListener("ATK:AtkObject:focus-event");
   AddATKEventListener("ATK:AtkObject:property-change");
+  AddATKEventListener("ATK:AtkObject:children-changed");
   AddATKEventListener("ATK:AtkText:text-insert");
   AddATKEventListener("ATK:AtkText:text-remove");
   AddATKEventListener("ATK:AtkSelection:selection-changed");
@@ -182,6 +184,20 @@ bool AccessibilityEventRecorderAuraLinux::IncludeState(
   }
 }
 
+std::string AccessibilityEventRecorderAuraLinux::AtkObjectToString(
+    AtkObject* obj,
+    bool include_name) {
+  std::string role = atk_role_get_name(atk_object_get_role(obj));
+  base::ReplaceChars(role, " ", "_", &role);
+  std::string str =
+      base::StringPrintf("role=ROLE_%s", base::ToUpperASCII(role).c_str());
+  // Getting the name breaks firing of name-change events. Allow disabling of
+  // logging the name in those situations.
+  if (include_name)
+    str += base::StringPrintf(" name='%s'", atk_object_get_name(obj));
+  return str;
+}
+
 void AccessibilityEventRecorderAuraLinux::ProcessATKEvent(
     const char* event,
     unsigned int n_params,
@@ -192,6 +208,7 @@ void AccessibilityEventRecorderAuraLinux::ProcessATKEvent(
     return;
   }
 
+  bool log_name = true;
   std::string event_name(event);
   std::string log;
   if (event_name.find("property-change") != std::string::npos) {
@@ -214,6 +231,17 @@ void AccessibilityEventRecorderAuraLinux::ProcessATKEvent(
     } else {
       return;
     }
+  } else if (event_name.find("children-changed") != std::string::npos) {
+    log_name = false;
+    log += base::ToUpperASCII(event);
+    // Despite this actually being a signed integer, it's defined as a uint.
+    int index = static_cast<int>(g_value_get_uint(&params[1]));
+    log += base::StringPrintf(" index:%d", index);
+    AtkObject* child = static_cast<AtkObject*>(g_value_get_pointer(&params[2]));
+    if (child)
+      log += " CHILD:(" + AtkObjectToString(child, log_name) + ")";
+    else
+      log += " CHILD:(NULL)";
   } else {
     log += base::ToUpperASCII(event);
     if (event_name.find("state-change") != std::string::npos) {
@@ -234,10 +262,7 @@ void AccessibilityEventRecorderAuraLinux::ProcessATKEvent(
   }
 
   AtkObject* obj = ATK_OBJECT(g_value_get_object(&params[0]));
-  std::string role = atk_role_get_name(atk_object_get_role(obj));
-  base::ReplaceChars(role, " ", "_", &role);
-  log += base::StringPrintf(" role=ROLE_%s", base::ToUpperASCII(role).c_str());
-  log += base::StringPrintf(" name='%s'", atk_object_get_name(obj));
+  log += " " + AtkObjectToString(obj, log_name);
 
   std::string states = "";
   AtkStateSet* state_set = atk_object_ref_state_set(obj);
