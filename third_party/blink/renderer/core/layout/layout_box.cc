@@ -2340,8 +2340,9 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
     return nullptr;
 
   NGBlockNode node(this);
-  if (!MaySkipLayout(node, *cached_layout_result, new_space,
-                     initial_fragment_geometry))
+  if (CalculateSizeBasedLayoutCacheStatus(
+          node, *cached_layout_result, new_space, initial_fragment_geometry) !=
+      NGLayoutCacheStatus::kHit)
     return nullptr;
 
   base::Optional<LayoutUnit> bfc_block_offset =

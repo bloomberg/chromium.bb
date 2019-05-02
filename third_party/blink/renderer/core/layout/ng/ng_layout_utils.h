@@ -12,13 +12,31 @@ namespace blink {
 class NGConstraintSpace;
 class NGLayoutResult;
 
-// Returns true if for a given |new_space|, the |node| will provide the same
-// |NGLayoutResult| as |cached_layout_result|, and therefore might be able to
-// skip layout.
-bool MaySkipLayout(const NGBlockNode& node,
-                   const NGLayoutResult& cached_layout_result,
-                   const NGConstraintSpace& new_space,
-                   base::Optional<NGFragmentGeometry>* fragment_geometry);
+// NGLayoutCacheStatus indicates what type of cache hit/miss occurred. For
+// various types of misses we may be able to perform less work than a full
+// layout.
+//
+// TODO(ikilpatrick): Link to the simplified layout algorithm definition to
+// explain |kNeedsSimplifiedLayout| when it exists.
+enum class NGLayoutCacheStatus {
+  kHit,                   // Cache hit, no additional work required.
+  kNeedsLayout,           // Cache miss, full layout required.
+  kNeedsSimplifiedLayout  // Cache miss, simplified layout required.
+};
+
+// Calculates the |NGLayoutCacheStatus| based on sizing information. Returns:
+//  - |NGLayoutCacheStatus::kHit| if the size will be the same as
+//    |cached_layout_result|, and therefore might be able to skip layout.
+//  - |NGLayoutCacheStatus::kNeedsSimplifiedLayout| if a simplified layout may
+//    be possible (just based on the sizing information at this point).
+//  - |NGLayoutCacheStatus::kNeedsLayout| if a full layout is required.
+//
+// May pre-compute the |fragment_geometry| while calculating this status.
+NGLayoutCacheStatus CalculateSizeBasedLayoutCacheStatus(
+    const NGBlockNode& node,
+    const NGLayoutResult& cached_layout_result,
+    const NGConstraintSpace& new_space,
+    base::Optional<NGFragmentGeometry>* fragment_geometry);
 
 // Similar to |MaySkipLayout| but for legacy layout roots. Doesn't attempt to
 // pre-compute the geometry of the fragment.
