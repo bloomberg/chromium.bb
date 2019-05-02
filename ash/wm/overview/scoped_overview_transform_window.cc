@@ -226,13 +226,20 @@ gfx::Transform ScopedOverviewTransformWindow::GetTransformForRect(
   return transform;
 }
 
-void ScopedOverviewTransformWindow::RestoreWindow(bool reset_transform) {
+void ScopedOverviewTransformWindow::RestoreWindow(
+    bool reset_transform,
+    OverviewSession::EnterExitOverviewType type) {
   // Shadow controller may be null on shutdown.
   if (Shell::Get()->shadow_controller())
     Shell::Get()->shadow_controller()->UpdateShadowForWindow(window_);
-
-  if (IsMinimized())
+  if (minimized_widget_) {
+    // Fade out the minimized widget. This animation continues past the
+    // lifetime of |this|.
+    FadeOutWidgetAndMaybeSlideOnExit(
+        std::move(minimized_widget_),
+        GetExitOverviewAnimationTypeForMinimizedWindow(type));
     return;
+  }
 
   if (reset_transform) {
     ScopedAnimationSettings animation_settings_list;
@@ -247,7 +254,7 @@ void ScopedOverviewTransformWindow::RestoreWindow(bool reset_transform) {
 
     // Use identity transform directly to reset window's transform when exiting
     // overview.
-    SetTransform(window_, gfx::Transform());
+    SetTransform(GetOverviewWindow(), gfx::Transform());
     // Add requests to cache render surface and perform trilinear filtering for
     // the exit animation of overview mode. The requests will be removed when
     // the exit animation finishes.
@@ -271,7 +278,7 @@ void ScopedOverviewTransformWindow::BeginScopedAnimation(
   if (animation_type == OVERVIEW_ANIMATION_NONE)
     return;
 
-  for (auto* window : GetVisibleTransientTreeIterator(window_)) {
+  for (auto* window : GetVisibleTransientTreeIterator(GetOverviewWindow())) {
     auto settings = std::make_unique<ScopedOverviewAnimationSettings>(
         animation_type, window);
     settings->DeferPaint();
@@ -300,18 +307,18 @@ bool ScopedOverviewTransformWindow::Contains(const aura::Window* target) const {
       return true;
   }
 
-  if (!IsMinimized())
+  if (!minimized_widget_)
     return false;
-  return overview_item_->item_widget()->GetNativeWindow()->Contains(target);
+  return minimized_widget_->GetNativeWindow()->Contains(target);
 }
 
 gfx::RectF ScopedOverviewTransformWindow::GetTransformedBounds() const {
-  return ::ash::GetTransformedBounds(window_, GetTopInset());
+  return ::ash::GetTransformedBounds(GetOverviewWindow(), GetTopInset());
 }
 
 int ScopedOverviewTransformWindow::GetTopInset() const {
   // Mirror window doesn't have insets.
-  if (IsMinimized())
+  if (minimized_widget_)
     return 0;
   for (auto* window : GetVisibleTransientTreeIterator(window_)) {
     // If there are regular windows in the transient ancestor tree, all those
@@ -331,6 +338,21 @@ void ScopedOverviewTransformWindow::OnWindowDestroyed() {
 void ScopedOverviewTransformWindow::SetOpacity(float opacity) {
   for (auto* window : GetVisibleTransientTreeIterator(GetOverviewWindow()))
     window->layer()->SetOpacity(opacity);
+}
+
+void ScopedOverviewTransformWindow::UpdateMirrorWindowForMinimizedState() {
+  // TODO(oshima): Disable animation.
+  if (window_->GetProperty(aura::client::kShowStateKey) ==
+      ui::SHOW_STATE_MINIMIZED) {
+    if (!minimized_widget_)
+      CreateMirrorWindowForMinimizedState();
+  } else {
+    // If the original window is no longer minimized, make sure it will be
+    // visible when we restore it when selection mode ends.
+    EnsureVisible();
+    minimized_widget_->CloseNow();
+    minimized_widget_.reset();
+  }
 }
 
 gfx::RectF ScopedOverviewTransformWindow::ShrinkRectToFitPreservingAspectRatio(
@@ -387,12 +409,6 @@ gfx::RectF ScopedOverviewTransformWindow::ShrinkRectToFitPreservingAspectRatio(
   return new_bounds;
 }
 
-aura::Window* ScopedOverviewTransformWindow::GetOverviewWindow() const {
-  if (IsMinimized())
-    return overview_item_->item_widget()->GetNativeWindow();
-  return window_;
-}
-
 void ScopedOverviewTransformWindow::Close() {
   if (immediate_close_for_tests) {
     CloseWidget();
@@ -406,15 +422,15 @@ void ScopedOverviewTransformWindow::Close() {
       base::TimeDelta::FromMilliseconds(kCloseWindowDelayInMilliseconds));
 }
 
-bool ScopedOverviewTransformWindow::IsMinimized() const {
-  return wm::GetWindowState(window_)->IsMinimized();
-}
-
 void ScopedOverviewTransformWindow::PrepareForOverview() {
   Shell::Get()->shadow_controller()->UpdateShadowForWindow(window_);
 
   DCHECK(!overview_started_);
   overview_started_ = true;
+  if (window_->GetProperty(aura::client::kShowStateKey) ==
+      ui::SHOW_STATE_MINIMIZED) {
+    CreateMirrorWindowForMinimizedState();
+  }
 
   // Add requests to cache render surface and perform trilinear filtering. The
   // requests will be removed in dtor. So the requests will be valid during the
@@ -439,6 +455,12 @@ void ScopedOverviewTransformWindow::SetImmediateCloseForTests() {
   immediate_close_for_tests = true;
 }
 
+aura::Window* ScopedOverviewTransformWindow::GetOverviewWindow() const {
+  if (minimized_widget_)
+    return minimized_widget_->GetNativeWindow();
+  return window_;
+}
+
 void ScopedOverviewTransformWindow::EnsureVisible() {
   original_opacity_ = 1.f;
 }
@@ -449,13 +471,11 @@ void ScopedOverviewTransformWindow::UpdateWindowDimensionsType() {
 }
 
 void ScopedOverviewTransformWindow::UpdateMask(bool show) {
-  // Minimized windows have their corners rounded in CaptionContainerView.
-  if (IsMinimized())
-    return;
-
   // Add the mask which gives the overview item rounded corners, and add the
   // shadow around the window.
-  ui::Layer* layer = window_->layer();
+  ui::Layer* layer = minimized_widget_
+                         ? minimized_widget_->GetNativeWindow()->layer()
+                         : window_->layer();
   if (ash::features::ShouldUseShaderRoundedCorner()) {
     const float scale = layer->transform().Scale2d().x();
     static constexpr std::array<uint32_t, 4> kEmptyRadii = {0, 0, 0, 0};
@@ -466,14 +486,12 @@ void ScopedOverviewTransformWindow::UpdateMask(bool show) {
     layer->SetIsFastRoundedCorner(true);
     return;
   }
-
   if (!base::FeatureList::IsEnabled(features::kEnableOverviewRoundedCorners) ||
       !show) {
     mask_.reset();
     return;
   }
-
-  mask_ = std::make_unique<WindowMask>(window_);
+  mask_ = std::make_unique<WindowMask>(GetOverviewWindow());
   mask_->layer()->SetBounds(layer->bounds());
   mask_->set_top_inset(GetTopInset());
   layer->SetMaskLayer(mask_->layer());
@@ -481,6 +499,34 @@ void ScopedOverviewTransformWindow::UpdateMask(bool show) {
 
 void ScopedOverviewTransformWindow::CancelAnimationsListener() {
   StopObservingImplicitAnimations();
+}
+
+void ScopedOverviewTransformWindow::ResizeMinimizedWidgetIfNeeded() {
+  if (!minimized_widget_)
+    return;
+
+  gfx::Rect bounds(window_->GetBoundsInScreen());
+  if (bounds.size() == window_->GetBoundsInScreen().size())
+    return;
+
+  auto* preview_view =
+      static_cast<wm::WindowPreviewView*>(minimized_widget_->GetContentsView());
+  if (preview_view) {
+    preview_view->RecreatePreviews();
+    bounds.Inset(0, 0, 0,
+                 bounds.height() - preview_view->GetPreferredSize().height());
+    minimized_widget_->SetBounds(bounds);
+  }
+}
+
+void ScopedOverviewTransformWindow::UpdateMinimizedWidget() {
+  if (!minimized_widget_)
+    return;
+
+  wm::WindowPreviewView* preview_view =
+      new wm::WindowPreviewView(window_, /*trilinear_filtering_on_init=*/false);
+  preview_view->SetVisible(true);
+  minimized_widget_->SetContentsView(preview_view);
 }
 
 void ScopedOverviewTransformWindow::OnLayerAnimationStarted(
@@ -499,6 +545,68 @@ gfx::Rect ScopedOverviewTransformWindow::GetMaskBoundsForTesting() const {
   if (!mask_)
     return gfx::Rect();
   return mask_->layer()->bounds();
+}
+
+void ScopedOverviewTransformWindow::CreateMirrorWindowForMinimizedState() {
+  DCHECK(!minimized_widget_.get());
+  views::Widget::InitParams params;
+  params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.visible_on_all_workspaces = true;
+  params.name = "OverviewModeMinimized";
+  params.activatable = views::Widget::InitParams::Activatable::ACTIVATABLE_NO;
+  params.accept_events = false;
+  params.parent = window_->parent();
+  minimized_widget_ = std::make_unique<views::Widget>();
+  minimized_widget_->set_focus_on_creation(false);
+  minimized_widget_->Init(params);
+
+  // Trilinear filtering will be applied on the |minimized_widget_| in
+  // PrepareForOverview() and RestoreWindow().
+  wm::WindowPreviewView* mirror_view =
+      new wm::WindowPreviewView(window_, /*trilinear_filtering_on_init=*/false);
+  mirror_view->SetVisible(true);
+  minimized_widget_->SetContentsView(mirror_view);
+  gfx::Rect bounds(window_->GetBoundsInScreen());
+  gfx::Size preferred = mirror_view->GetPreferredSize();
+  // In unit tests, the content view can have empty size.
+  if (!preferred.IsEmpty()) {
+    int inset = bounds.height() - preferred.height();
+    bounds.Inset(0, 0, 0, inset);
+  }
+  minimized_widget_->SetBounds(bounds);
+  minimized_widget_->SetVisibilityAnimationTransition(
+      views::Widget::ANIMATE_NONE);
+  minimized_widget_->Show();
+  minimized_widget_->SetOpacity(0.f);
+
+  // Stack the minimized window at the bottom since it is never transformed in
+  // and only faded in, so it should always be underneath non minimized windows.
+  window_->parent()->StackChildAtBottom(minimized_widget_->GetNativeWindow());
+
+  FadeInWidgetAndMaybeSlideOnEnter(
+      minimized_widget_.get(), OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN,
+      /*slide=*/false);
+}
+
+OverviewAnimationType
+ScopedOverviewTransformWindow::GetExitOverviewAnimationTypeForMinimizedWindow(
+    OverviewSession::EnterExitOverviewType type) {
+  // EnterExitOverviewType can only be set to kWindowMinimized in talbet mode.
+  // Fade out the minimized window without animation if switch from tablet mode
+  // to clamshell mode.
+  if (type == OverviewSession::EnterExitOverviewType::kWindowsMinimized) {
+    return Shell::Get()
+                   ->tablet_mode_controller()
+                   ->IsTabletModeWindowManagerEnabled()
+               ? OVERVIEW_ANIMATION_EXIT_TO_HOME_LAUNCHER
+               : OVERVIEW_ANIMATION_NONE;
+  }
+
+  DCHECK(overview_item_);
+  return overview_item_->should_animate_when_exiting()
+             ? OVERVIEW_ANIMATION_EXIT_OVERVIEW_MODE_FADE_OUT
+             : OVERVIEW_ANIMATION_RESTORE_WINDOW_ZERO;
 }
 
 }  // namespace ash

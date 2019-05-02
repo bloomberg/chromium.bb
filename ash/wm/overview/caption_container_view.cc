@@ -4,9 +4,7 @@
 
 #include "ash/wm/overview/caption_container_view.h"
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/wm/overview/rounded_rect_view.h"
-#include "ash/wm/window_preview_view.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
@@ -96,11 +94,9 @@ void AnimateLayerOpacity(ui::Layer* layer, bool visible) {
 
 CaptionContainerView::CaptionContainerView(EventDelegate* event_delegate,
                                            aura::Window* window,
-                                           bool show_preview,
                                            views::ImageButton* close_button)
     : Button(nullptr),
       event_delegate_(event_delegate),
-      window_(window),
       close_button_(close_button) {
   // This should not be focusable. It's also to avoid accessibility error when
   // |window->GetTitle()| is empty.
@@ -141,14 +137,6 @@ CaptionContainerView::CaptionContainerView(EventDelegate* event_delegate,
 
   if (close_button)
     AddChildWithLayer(header_view_, close_button);
-
-  // Call this last as it calls |Layout()| which relies on the some of the other
-  // elements existing.
-  SetShowPreview(show_preview);
-  if (show_preview) {
-    header_view_->layer()->SetOpacity(0.f);
-    current_header_visibility_ = HeaderVisibility::kInvisible;
-  }
 }
 
 CaptionContainerView::~CaptionContainerView() = default;
@@ -218,42 +206,6 @@ void CaptionContainerView::SetTitle(const base::string16& title) {
   SetAccessibleName(title);
 }
 
-void CaptionContainerView::SetShowPreview(bool show) {
-  if (show == !!preview_view_)
-    return;
-
-  if (!show) {
-    RemoveChildView(preview_view_);
-    preview_view_ = nullptr;
-    return;
-  }
-
-  preview_view_ = new wm::WindowPreviewView(window_, false);
-  AddChildWithLayer(this, preview_view_);
-  Layout();
-}
-
-void CaptionContainerView::UpdatePreviewRoundedCorners(bool show,
-                                                       float rounding) {
-  if (!preview_view_ || !ash::features::ShouldUseShaderRoundedCorner())
-    return;
-
-  const float scale = preview_view_->layer()->transform().Scale2d().x();
-  constexpr std::array<uint32_t, 4> kEmptyRadii = {0, 0, 0, 0};
-  const std::array<uint32_t, 4> kRadii = {rounding / scale, rounding / scale,
-                                          rounding / scale, rounding / scale};
-  preview_view_->layer()->SetRoundedCornerRadius(show ? kRadii : kEmptyRadii);
-  preview_view_->layer()->SetIsFastRoundedCorner(true);
-}
-
-void CaptionContainerView::UpdatePreviewView() {
-  if (!preview_view_)
-    return;
-
-  preview_view_->RecreatePreviews();
-  Layout();
-}
-
 void CaptionContainerView::Layout() {
   gfx::Rect bounds(GetLocalBounds());
   bounds.Inset(kMarginDp, kMarginDp);
@@ -262,13 +214,6 @@ void CaptionContainerView::Layout() {
     gfx::Rect backdrop_bounds = bounds;
     backdrop_bounds.Inset(0, kHeaderPreferredHeightDp, 0, 0);
     backdrop_view_->SetBoundsRect(backdrop_bounds);
-  }
-
-  if (preview_view_) {
-    gfx::Rect preview_bounds = bounds;
-    preview_bounds.Inset(0, kHeaderPreferredHeightDp, 0, 0);
-    preview_bounds.ClampToCenteredSize(preview_view_->CalculatePreferredSize());
-    preview_view_->SetBoundsRect(preview_bounds);
   }
 
   // Position the header at the top.

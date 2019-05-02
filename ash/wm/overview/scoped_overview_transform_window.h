@@ -29,6 +29,10 @@ namespace ui {
 class Layer;
 }
 
+namespace views {
+class Widget;
+}
+
 namespace ash {
 class OverviewItem;
 class ScopedOverviewAnimationSettings;
@@ -106,7 +110,8 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   // If |reset_transform| equals false, the window's transform will not be reset
   // to identity transform when exiting the overview mode. See
   // OverviewItem::RestoreWindow() for details why we need this.
-  void RestoreWindow(bool reset_transform);
+  void RestoreWindow(bool reset_transform,
+                     OverviewSession::EnterExitOverviewType type);
 
   // Informs the ScopedOverviewTransformWindow that the window being watched was
   // destroyed. This resets the internal window pointer.
@@ -118,6 +123,9 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   // Sets the opacity of the managed windows.
   void SetOpacity(float opacity);
 
+  // Creates/Deletes a mirror window for minimized windows.
+  void UpdateMirrorWindowForMinimizedState();
+
   // Returns |rect| having been shrunk to fit within |bounds| (preserving the
   // aspect ratio). Takes into account a window header that is |top_view_inset|
   // tall in the original window getting replaced by a window caption that is
@@ -128,14 +136,20 @@ class ASH_EXPORT ScopedOverviewTransformWindow
                                                   int top_view_inset,
                                                   int title_height);
 
-  // Returns the window used to show the content in overview mode.
-  // For minimized window this will be a window that hosts mirrored layers.
-  aura::Window* GetOverviewWindow() const;
+  aura::Window* window() const { return window_; }
+
+  GridWindowFillMode type() const { return type_; }
+
+  base::Optional<gfx::RectF> overview_bounds() const {
+    return overview_bounds_;
+  }
 
   // Closes the transient root of the window managed by |this|.
   void Close();
 
-  bool IsMinimized() const;
+  // Returns the window used to show the content in overview mode.
+  // For minimized window this will be a window that hosts mirrored layers.
+  aura::Window* GetOverviewWindow() const;
 
   // Ensures that a window is visible by setting its opacity to 1.
   void EnsureVisible();
@@ -151,17 +165,18 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   // Stop listening to any animations to finish.
   void CancelAnimationsListener();
 
+  // If the original window is minimized, resize |minimized_widget_| to match
+  // the bounds of the |window_|.
+  void ResizeMinimizedWidgetIfNeeded();
+
+  // Update |minimized_widget_| so that its content view is up-to-date.
+  void UpdateMinimizedWidget();
+
+  views::Widget* minimized_widget() { return minimized_widget_.get(); }
+
   // ui::ImplicitAnimationObserver:
   void OnLayerAnimationStarted(ui::LayerAnimationSequence* sequence) override;
   void OnImplicitAnimationsCompleted() override;
-
-  aura::Window* window() const { return window_; }
-
-  GridWindowFillMode type() const { return type_; }
-
-  base::Optional<gfx::RectF> overview_bounds() const {
-    return overview_bounds_;
-  }
 
   gfx::Rect GetMaskBoundsForTesting() const;
 
@@ -175,11 +190,15 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   // Closes the window managed by |this|.
   void CloseWidget();
 
+  void CreateMirrorWindowForMinimizedState();
+
+  OverviewAnimationType GetExitOverviewAnimationTypeForMinimizedWindow(
+      OverviewSession::EnterExitOverviewType type);
+
   // Makes Close() execute synchronously when used in tests.
   static void SetImmediateCloseForTests();
 
-  // A weak pointer to the overview item that owns |this|. Guaranteed to be not
-  // null for the lifetime of |this|.
+  // A weak pointer to the overview item that owns the transform window.
   OverviewItem* overview_item_;
 
   // A weak pointer to the real window in the overview.
@@ -202,6 +221,9 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   // Empty if window is of type normal. Contains the bounds the overview item
   // should be if the window is too wide or too tall.
   base::Optional<gfx::RectF> overview_bounds_;
+
+  // A widget that holds the content for the minimized window.
+  std::unique_ptr<views::Widget> minimized_widget_;
 
   // The observers associated with the layers we requested caching render
   // surface and trilinear filtering. The requests will be removed in dtor if

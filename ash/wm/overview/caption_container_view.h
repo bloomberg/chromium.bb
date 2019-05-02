@@ -21,11 +21,8 @@ class View;
 }  // namespace views
 
 namespace ash {
-class RoundedRectView;
 
-namespace wm {
-class WindowPreviewView;
-}  // namespace wm
+class RoundedRectView;
 
 // CaptionContainerView covers the overview window and listens for events. It
 // also draws a header for overview mode which contains a icon, title and close
@@ -60,11 +57,8 @@ class ASH_EXPORT CaptionContainerView : public views::Button {
     virtual ~EventDelegate() {}
   };
 
-  // If |show_preview| is true, this class will contain a child view which
-  // mirrors |window|.
   CaptionContainerView(EventDelegate* event_delegate,
                        aura::Window* window,
-                       bool show_preview,
                        views::ImageButton* close_button);
   ~CaptionContainerView() override;
 
@@ -88,20 +82,9 @@ class ASH_EXPORT CaptionContainerView : public views::Button {
   // Set the title of the view, and also updates the accessiblity name.
   void SetTitle(const base::string16& title);
 
-  // Creates or deletes |preview_view_| as needed.
-  void SetShowPreview(bool show);
-
-  void UpdatePreviewRoundedCorners(bool show, float rounding);
-
-  // Update |preview_view_| so that its content is up-to-date. Used by tab
-  // dragging.
-  void UpdatePreviewView();
-
-  // TODO(sammiequon): Move these to a test api.
   views::View* header_view() { return header_view_; }
   views::Label* title_label() { return title_label_; }
   RoundedRectView* backdrop_view() { return backdrop_view_; }
-  wm::WindowPreviewView* preview_view() { return preview_view_; }
 
  protected:
   // views::View:
@@ -117,11 +100,6 @@ class ASH_EXPORT CaptionContainerView : public views::Button {
   // The delegate which all the events get forwarded to.
   EventDelegate* event_delegate_;
 
-  // The window this class is meant to be a header for. This class also may
-  // optionally show a mirrored view of this window. This is needed when
-  // |window_| is minimized.
-  aura::Window* window_;
-
   // View which contains the icon, title and an optional close button.
   views::View* header_view_ = nullptr;
   views::Label* title_label_ = nullptr;
@@ -131,9 +109,6 @@ class ASH_EXPORT CaptionContainerView : public views::Button {
   // A view that covers the area except the header. It is null when the window
   // associated is not pillar or letter boxed.
   RoundedRectView* backdrop_view_ = nullptr;
-
-  // Optionally shows a preview of |window_|.
-  wm::WindowPreviewView* preview_view_ = nullptr;
 
   HeaderVisibility current_header_visibility_ = HeaderVisibility::kVisible;
 

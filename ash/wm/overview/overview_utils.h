@@ -30,12 +30,10 @@ bool CanCoverAvailableWorkspace(aura::Window* window);
 
 // Fades |widget| to opacity one with the enter overview settings. Additionally
 // place |widget| closer to the top of screen and slide it down if |slide| is
-// true. Have OverviewController observe this animation as a enter animation if
-// |observe| is true.
+// true.
 void FadeInWidgetAndMaybeSlideOnEnter(views::Widget* widget,
                                       OverviewAnimationType animation_type,
-                                      bool slide,
-                                      bool observe);
+                                      bool slide);
 
 // Fades |widget| to opacity zero with animation settings depending on
 // |animation_type|. Used by several classes which need to be destroyed on

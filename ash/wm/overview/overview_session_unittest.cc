@@ -43,7 +43,6 @@
 #include "ash/wm/tablet_mode/tablet_mode_browser_window_drag_delegate.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_drag_controller.h"
-#include "ash/wm/window_preview_view.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
@@ -187,6 +186,13 @@ class OverviewSessionTest : public AshTestBase {
     overview_controller()->ToggleOverview(type);
   }
 
+  aura::Window* GetOverviewWindowForMinimizedState(int index,
+                                                   aura::Window* window) {
+    OverviewItem* item = GetWindowItemForWindow(index, window);
+    views::Widget* widget = minimized_widget(item);
+    return widget ? widget->GetNativeWindow() : nullptr;
+  }
+
   gfx::Rect GetTransformedBounds(aura::Window* window) {
     gfx::Rect bounds_in_screen = window->layer()->bounds();
     ::wm::ConvertRectToScreen(window->parent(), &bounds_in_screen);
@@ -299,10 +305,6 @@ class OverviewSessionTest : public AshTestBase {
     return item->caption_container_view_->backdrop_view();
   }
 
-  wm::WindowPreviewView* GetPreviewView(OverviewItem* item) {
-    return item->caption_container_view_->preview_view();
-  }
-
   // Tests that a window is contained within a given OverviewItem, and that both
   // the window and its matching close button are within the same screen.
   void CheckWindowAndCloseButtonInScreen(aura::Window* window,
@@ -328,6 +330,10 @@ class OverviewSessionTest : public AshTestBase {
 
   views::Widget* item_widget(OverviewItem* item) {
     return item->item_widget_.get();
+  }
+
+  views::Widget* minimized_widget(OverviewItem* item) {
+    return item->transform_window_.minimized_widget();
   }
 
   const ScopedOverviewTransformWindow& transform_window(
@@ -470,11 +476,13 @@ TEST_F(OverviewSessionTest, ActivateMinimized) {
   EXPECT_FALSE(window->IsVisible());
   EXPECT_EQ(0.f, window->layer()->GetTargetOpacity());
   EXPECT_EQ(mojom::WindowStateType::MINIMIZED, window_state->GetStateType());
-  wm::WindowPreviewView* preview_view =
-      GetPreviewView(GetWindowItemForWindow(0, window.get()));
-  EXPECT_TRUE(preview_view);
+  aura::Window* window_for_minimized_window =
+      GetOverviewWindowForMinimizedState(0, window.get());
+  EXPECT_TRUE(window_for_minimized_window);
 
-  const gfx::Point point = preview_view->GetBoundsInScreen().CenterPoint();
+  const gfx::Point point =
+      GetTransformedBoundsInRootWindow(window_for_minimized_window)
+          .CenterPoint();
   GetEventGenerator()->set_current_screen_location(point);
   GetEventGenerator()->ClickLeftButton();
 
@@ -726,12 +734,12 @@ TEST_F(OverviewSessionTest, CloseButton) {
   EXPECT_TRUE(widget->IsClosed());
   ASSERT_TRUE(IsSelecting());
 
-  aura::Window* minimized_window = minimized_widget->GetNativeWindow();
-  wm::WindowPreviewView* preview_view =
-      GetPreviewView(GetWindowItemForWindow(0, minimized_window));
-  EXPECT_TRUE(preview_view);
+  aura::Window* window_for_minimized_window =
+      GetOverviewWindowForMinimizedState(0,
+                                         minimized_widget->GetNativeWindow());
+  ASSERT_TRUE(window_for_minimized_window);
   const gfx::Point point2 =
-      GetCloseButton(GetWindowItemForWindow(0, minimized_window))
+      GetCloseButton(GetWindowItemForWindow(0, window_for_minimized_window))
           ->GetBoundsInScreen()
           .CenterPoint();
   GetEventGenerator()->MoveMouseTo(point2);
@@ -751,16 +759,16 @@ TEST_F(OverviewSessionTest, MinimizeUnminimize) {
   aura::Window* window = widget->GetNativeWindow();
 
   ToggleOverview();
-  EXPECT_FALSE(GetPreviewView(GetWindowItemForWindow(0, window)));
+  EXPECT_FALSE(GetOverviewWindowForMinimizedState(0, window));
 
   widget->Minimize();
   EXPECT_TRUE(widget->IsMinimized());
   EXPECT_TRUE(IsSelecting());
-  EXPECT_TRUE(GetPreviewView(GetWindowItemForWindow(0, window)));
+  EXPECT_TRUE(GetOverviewWindowForMinimizedState(0, window));
 
   widget->Restore();
   EXPECT_FALSE(widget->IsMinimized());
-  EXPECT_FALSE(GetPreviewView(GetWindowItemForWindow(0, window)));
+  EXPECT_FALSE(GetOverviewWindowForMinimizedState(0, window));
   EXPECT_TRUE(IsSelecting());
 }
 
@@ -2266,19 +2274,40 @@ TEST_F(OverviewSessionTest, OverviewWidgetStackingOrder) {
   views::Widget* widget1 = item_widget(item1);
   views::Widget* widget2 = item_widget(item2);
   views::Widget* widget3 = item_widget(item3);
+  views::Widget* min_widget1 = minimized_widget(item1);
+  views::Widget* min_widget2 = minimized_widget(item2);
+  views::Widget* min_widget3 = minimized_widget(item3);
 
   // The original order of stacking is determined by the order the associated
-  // window was activated (created in this case).
+  // window was activated (created in this case). All widgets associated with
+  // minimized windows will be below non minimized windows, because a widget for
+  // the minimized windows is created upon entering overview, and they are
+  // explicitly stacked beneath non minimized windows so they do not cover them
+  // during enter animation.
   EXPECT_GT(IndexOf(widget3->GetNativeWindow(), parent),
-            IndexOf(widget2->GetNativeWindow(), parent));
-  EXPECT_GT(IndexOf(widget2->GetNativeWindow(), parent),
             IndexOf(widget1->GetNativeWindow(), parent));
+  EXPECT_GT(IndexOf(widget1->GetNativeWindow(), parent),
+            IndexOf(widget2->GetNativeWindow(), parent));
 
-  // Verify that the item widget is stacked below the window.
+  // Verify that only minimized windows have minimized widgets in overview.
+  EXPECT_FALSE(min_widget1);
+  ASSERT_TRUE(min_widget2);
+  EXPECT_FALSE(min_widget3);
+
+  // Verify both item widgets and minimized widgets are parented to the parent
+  // of the original windows.
+  EXPECT_EQ(parent, widget1->GetNativeWindow()->parent());
+  EXPECT_EQ(parent, widget2->GetNativeWindow()->parent());
+  EXPECT_EQ(parent, widget3->GetNativeWindow()->parent());
+  EXPECT_EQ(parent, min_widget2->GetNativeWindow()->parent());
+
+  // Verify that the item widget is stacked below the window if not minimized.
+  // Verify that the item widget is stacked below the minimized widget if
+  // minimized.
   EXPECT_LT(IndexOf(widget1->GetNativeWindow(), parent),
             IndexOf(window.get(), parent));
   EXPECT_LT(IndexOf(widget2->GetNativeWindow(), parent),
-            IndexOf(minimized.get(), parent));
+            IndexOf(min_widget2->GetNativeWindow(), parent));
   EXPECT_LT(IndexOf(widget3->GetNativeWindow(), parent),
             IndexOf(window3.get(), parent));
 
@@ -2312,10 +2341,9 @@ TEST_F(OverviewSessionTest, OverviewWidgetStackingOrder) {
 
   // Verify the stacking order is same as before dragging started.
   EXPECT_GT(IndexOf(widget3->GetNativeWindow(), parent),
-            IndexOf(widget2->GetNativeWindow(), parent));
-  EXPECT_GT(IndexOf(widget2->GetNativeWindow(), parent),
             IndexOf(widget1->GetNativeWindow(), parent));
-
+  EXPECT_GT(IndexOf(widget1->GetNativeWindow(), parent),
+            IndexOf(widget2->GetNativeWindow(), parent));
   histogram_tester.ExpectTotalCount(
       "Ash.Overview.WindowDrag.PresentationTime.TabletMode", 2);
   histogram_tester.ExpectTotalCount(
@@ -2435,10 +2463,11 @@ class OverviewSessionRoundedCornerTest
 
   bool HasRoundedCorner(OverviewItem* item) {
     if (!UseShaderForRoundedCorner())
-      return HasMaskForItem(item) || item->transform_window_.IsMinimized();
-    const ui::Layer* layer = item->transform_window_.IsMinimized()
-                                 ? GetPreviewView(item)->layer()
-                                 : transform_window(item).window()->layer();
+      return HasMaskForItem(item);
+    const ui::Layer* layer =
+        minimized_widget(item)
+            ? minimized_widget(item)->GetNativeWindow()->layer()
+            : transform_window(item).window()->layer();
     const std::array<uint32_t, 4>& radii = layer->rounded_corner_radii();
     return (radii[0] + radii[1] + radii[2] + radii[3]) > 0;
   }
@@ -2492,12 +2521,12 @@ TEST_F(OverviewSessionRoundedCornerTest, DISABLED_RoundedEdgeMaskVisibility) {
   item2 = GetWindowItemForWindow(0, window2.get());
   EXPECT_FALSE(HasRoundedCorner(item1));
   EXPECT_FALSE(HasRoundedCorner(item2));
-  item_widget(item1)
+  minimized_widget(item1)
       ->GetNativeWindow()
       ->layer()
       ->GetAnimator()
       ->StopAnimating();
-  item_widget(item2)
+  minimized_widget(item2)
       ->GetNativeWindow()
       ->layer()
       ->GetAnimator()
