@@ -222,13 +222,30 @@ void StreamFactory::DestroyMuter(LocalMuter* muter) {
   CHECK_EQ(magic_bytes_, 0x600DC0DEu);
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
   DCHECK(muter);
-  SetStateForCrashing("destroying muter");
 
-  const auto it = std::find_if(muters_.begin(), muters_.end(),
-                               base::MatchesUniquePtr(muter));
-  DCHECK(it != muters_.end());
-  muters_.erase(it);
-  SetStateForCrashing("destroyed muter");
+  // Output streams have a task posting before destruction (see the OnError
+  // function in output_stream.cc). To ensure that stream destruction and
+  // unmuting is done in the intended order (the order in which the messeges are
+  // received by the service), we post a task for destroying the muter as well.
+  // Otherwise, a "destroy all streams, then destroy the muter" sequence may
+  // result in a brief blip of audio.
+  auto do_destroy = [](base::WeakPtr<StreamFactory> weak_this,
+                       LocalMuter* muter) {
+    if (weak_this) {
+      weak_this->SetStateForCrashing("destroying muter");
+
+      const auto it =
+          std::find_if(weak_this->muters_.begin(), weak_this->muters_.end(),
+                       base::MatchesUniquePtr(muter));
+      DCHECK(it != weak_this->muters_.end());
+      weak_this->muters_.erase(it);
+      weak_this->SetStateForCrashing("destroyed muter");
+    }
+  };
+
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(do_destroy, weak_ptr_factory_.GetWeakPtr(), muter));
 }
 
 void StreamFactory::DestroyLoopbackStream(LoopbackStream* stream) {
