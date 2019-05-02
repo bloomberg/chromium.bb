@@ -1053,13 +1053,18 @@ void NavigationRequest::ResetForCrossDocumentRestart() {
   DCHECK(!loader_);
 
 #if defined(OS_ANDROID)
-  if (navigation_handle_proxy_) {
+  if (navigation_handle_proxy_)
     navigation_handle_proxy_->DidFinish();
-    navigation_handle_proxy_.reset();
-  }
 #endif
 
+  // The below order of resets is necessary to avoid accessing null pointers.
+  // See https://crbug.com/958396.
   navigation_handle_.reset();
+
+#if defined(OS_ANDROID)
+  if (navigation_handle_proxy_)
+    navigation_handle_proxy_.reset();
+#endif
 
   // Reset the previously selected RenderFrameHost. This is expected to be null
   // at the beginning of a new navigation. See https://crbug.com/936962.
