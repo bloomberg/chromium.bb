@@ -306,8 +306,7 @@ crbug.com/767318 compositing/reflections/nested-reflection-mask-change.html [ Fa
 crbug.com/887000 virtual/prefer_compositing_to_lcd_text/scrollbars/hidden-scrollbars-invisible.html [ Failure ]
 crbug.com/882975 virtual/threaded/fast/events/pinch/gesture-pinch-zoom-prevent-in-handler.html [ Failure Pass ]
 crbug.com/882975 virtual/threaded/fast/events/pinch/scroll-visual-viewport-send-boundary-events.html [ Failure Pass ]
-crbug.com/884239 virtual/threaded/animations/animationworklet/worklet-animation-local-time-undefined.html [ Timeout Failure Pass ]
-crbug.com/884239 virtual/disable-blink-gen-property-trees/animations/animationworklet/worklet-animation-local-time-undefined.html [ Skip ]
+
 # Subpixel rounding differences that are incorrect.
 crbug.com/836886 virtual/prefer_compositing_to_lcd_text/compositing/overflow/scaled-overflow.html [ Failure ]
 crbug.com/836886 compositing/overflow/scaled-overflow.html [ Failure ]
