@@ -147,7 +147,7 @@ class GIT(object):
         # 3-way merges can cause the status can be 'MMM' instead of 'M'. This
         # can happen when the user has 2 local branches and he diffs between
         # these 2 branches instead diffing to upstream.
-        m = re.match('^(\w)+\t(.+)$', statusline)
+        m = re.match(r'^(\w)+\t(.+)$', statusline)
         if not m:
           raise gclient_utils.Error(
               'status currently unsupported: %s' % statusline)

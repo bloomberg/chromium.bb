@@ -60,7 +60,7 @@ class FilePatchBase(object):
     if filename == 'CON':
       raise UnsupportedPatchFormat(
           filename, 'Filename can\'t be \'CON\'.')
-    if re.match('COM\d', filename):
+    if re.match(r'COM\d', filename):
       raise UnsupportedPatchFormat(
           filename, 'Filename can\'t be \'%s\'.' % filename)
     return filename

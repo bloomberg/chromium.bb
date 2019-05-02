@@ -66,7 +66,7 @@ def main():
   backend = sys.argv[1]
   output = sys.stdin.read().rstrip()
 
-  callout_re = re.compile('\x1b\[(\d+)c\n')
+  callout_re = re.compile(r'\x1b\[(\d+)c\n')
   callouts = collections.defaultdict(int)
   for i, line in enumerate(output.splitlines(True)):
     m = callout_re.match(line)

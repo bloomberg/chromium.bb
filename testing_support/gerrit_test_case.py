@@ -77,7 +77,7 @@ class GerritTestCase(unittest.TestCase):
   """
 
   COMMIT_RE = re.compile(r'^commit ([0-9a-fA-F]{40})$')
-  CHANGEID_RE = re.compile('^\s+Change-Id:\s*(\S+)$')
+  CHANGEID_RE = re.compile(r'^\s+Change-Id:\s*(\S+)$')
   DEVNULL = open(os.devnull, 'w')
   TEST_USERNAME = 'test-username'
   TEST_EMAIL = 'test-username@test.org'

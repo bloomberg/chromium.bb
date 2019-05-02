@@ -308,7 +308,7 @@ class Database(object):
       line = line.strip()
       if line.startswith('#'):
         if is_toplevel:
-          m = re.match('#\s*OWNERS_STATUS\s+=\s+(.+)$', line)
+          m = re.match(r'#\s*OWNERS_STATUS\s+=\s+(.+)$', line)
           if m:
             self._status_file = m.group(1).strip()
             continue

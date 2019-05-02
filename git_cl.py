@@ -2467,7 +2467,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       part = parsed_url.fragment
     else:
       part = parsed_url.path
-    match = re.match('(/c(/.*/\+)?)?/(\d+)(/(\d+)?/?)?$', part)
+    match = re.match(r'(/c(/.*/\+)?)?/(\d+)(/(\d+)?/?)?$', part)
     if match:
       return _ParsedIssueNumberArgument(
           issue=int(match.group(3)),
