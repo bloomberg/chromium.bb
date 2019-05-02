@@ -66,8 +66,7 @@ void FakeCentral::SimulatePreconnectedPeripheral(
 void FakeCentral::SimulateAdvertisementReceived(
     mojom::ScanResultPtr scan_result_ptr,
     SimulateAdvertisementReceivedCallback callback) {
-  // TODO(https://crbug.com/719826): Add a DCHECK to proceed only if a scan is
-  // currently in progress.
+  DCHECK(num_discovery_sessions_ > 0);
   auto* fake_peripheral = GetFakePeripheral(scan_result_ptr->device_address);
   const bool is_new_device = fake_peripheral == nullptr;
   if (is_new_device) {

@@ -261,6 +261,9 @@ jumbo_static_library("content_shell_lib") {
     # #include'ed by renderer/web_test/blink_test_runner.h
     ":mojo_bindings",
 
+    # The generated mojom JS bindings are used by web tests.
+    ":mojo_bindings_js",
+
     # This exposes all public content APIs.
     "//content/public/app:both",
     "//content/public/browser",
@@ -922,6 +925,7 @@ mojom("mojo_bindings") {
     "//skia/public/interfaces",
     "//ui/gfx/geometry/mojo",
     "//url/mojom:url_mojom_gurl",
+    "//url/mojom:url_mojom_origin",
   ]
 }
 
