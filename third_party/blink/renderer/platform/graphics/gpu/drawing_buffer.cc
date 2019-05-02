@@ -581,7 +581,9 @@ scoped_refptr<StaticBitmapImage> DrawingBuffer::TransferToStaticBitmapImage(
     // Return the mailbox but report that the resource is lost to prevent trying
     // to use the backing for future frames. We keep it alive with our own
     // reference to the backing via our |textureId|.
-    release_callback->Run(gpu::SyncToken(), true /* lost_resource */);
+    gpu::SyncToken sync_token;
+    gl_->GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());
+    release_callback->Run(sync_token, true /* lost_resource */);
   }
 
   // We reuse the same mailbox name from above since our texture id was consumed
