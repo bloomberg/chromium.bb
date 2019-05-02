@@ -25,6 +25,8 @@ fuzzer_test("lnk_parser_fuzzer") {
     "//base:base",
     "//base/test:test_support",
   ]
+
+  seed_corpus = "data/lnk_parser_fuzzer"
 }
 
 source_set("unittest_sources") {
