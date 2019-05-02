@@ -487,7 +487,7 @@ base::string16 UnescapeAndDecodeUTF8URLComponentWithAdjustments(
   return base::UTF8ToUTF16WithAdjustments(text, adjustments);
 }
 
-void UnescapeBinaryURLComponent(base::StringPiece escaped_text,
+void UnescapeBinaryURLComponent(const std::string& escaped_text,
                                 UnescapeRule::Type rules,
                                 std::string* unescaped_text) {
   // Only NORMAL and REPLACE_PLUS_WITH_SPACE are supported.

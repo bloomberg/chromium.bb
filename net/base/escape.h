@@ -150,11 +150,11 @@ NET_EXPORT base::string16 UnescapeAndDecodeUTF8URLComponentWithAdjustments(
 //
 // Only the NORMAL and REPLACE_PLUS_WITH_SPACE rules are allowed.
 // |escaped_text| and |unescaped_text| can be the same string.
-NET_EXPORT void UnescapeBinaryURLComponent(base::StringPiece escaped_text,
+NET_EXPORT void UnescapeBinaryURLComponent(const std::string& escaped_text,
                                            UnescapeRule::Type rules,
                                            std::string* unescaped_text);
 NET_EXPORT inline void UnescapeBinaryURLComponent(
-    base::StringPiece escaped_text,
+    const std::string& escaped_text,
     std::string* unescaped_text) {
   UnescapeBinaryURLComponent(escaped_text, UnescapeRule::NORMAL,
                              unescaped_text);
