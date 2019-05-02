@@ -424,7 +424,7 @@ bool AuthenticationService::ShowMDMErrorDialogForIdentity(
 }
 
 void AuthenticationService::ResetChromeIdentityServiceObserverForTesting() {
-  identity_service_observer_.RemoveAll();
+  DCHECK(!identity_service_observer_.IsObservingSources());
   identity_service_observer_.Add(
       ios::GetChromeBrowserProvider()->GetChromeIdentityService());
 }
