@@ -8,6 +8,7 @@ import("//build/config/compiler/compiler.gni")
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//build/toolchain/toolchain.gni")
 import("//build/util/version.gni")
 import("//chrome/chrome_repack_locales.gni")
 import("//chrome/common/features.gni")
@@ -3053,6 +3054,10 @@ test("unit_tests") {
     if (enable_widevine) {
       sources += [ "../browser/media/widevine_hardware_caps_win_unittest.cc" ]
     }
+    if (llvm_force_head_revision) {
+      # TODO(https://crbug.com/958955): Fix dupes and remove this flag.
+      ldflags = [ "/FORCE:MultipleRes" ]
+    }
   }
 
   if (!is_android) {
@@ -5762,6 +5767,10 @@ if (!is_android && !is_fuchsia) {
       configs -= [ "//build/config/win:default_incremental_linking" ]
       configs +=
           [ "//build/config/win:default_large_module_incremental_linking" ]
+      if (llvm_force_head_revision) {
+        # TODO(https://crbug.com/958955): Fix dupes and remove this flag.
+        ldflags = [ "/FORCE:MultipleRes" ]
+      }
     } else {
       sources -= [ "../app/chrome_version.rc.version" ]
     }

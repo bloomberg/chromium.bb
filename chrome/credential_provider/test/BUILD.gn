@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/toolchain/toolchain.gni")
 import("//testing/test.gni")
 
 test("gcp_unittests") {
@@ -50,4 +51,9 @@ test("gcp_unittests") {
     "//third_party/pywebsocket/src/mod_pywebsocket/",
     "//third_party/tlslite/",
   ]
+
+  if (is_win && llvm_force_head_revision) {
+    # TODO(https://crbug.com/958955): Fix dupes and remove this flag.
+    ldflags = [ "/FORCE:MultipleRes" ]
+  }
 }
