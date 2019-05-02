@@ -8,6 +8,6 @@
     Exposed=Window,
     RuntimeEnabled=WebXR
 ] interface XRPose {
-  readonly attribute XRRigidTransform transform;
+  [SameObject] readonly attribute XRRigidTransform transform;
   readonly attribute boolean emulatedPosition;
 };

@@ -7,7 +7,7 @@
     ImplementedAs=NavigatorVR
 ] partial interface Navigator {
     // Latest API
-    [SecureContext, RuntimeEnabled=WebXR, MeasureAs=NavigatorXR] readonly attribute XR xr;
+    [SecureContext, RuntimeEnabled=WebXR, MeasureAs=NavigatorXR, SameObject] readonly attribute XR xr;
 
     // Legacy API
     [RuntimeEnabled=WebVR, CallWith=ScriptState] Promise<sequence<VRDisplay>> getVRDisplays();

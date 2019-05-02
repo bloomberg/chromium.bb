@@ -9,5 +9,6 @@
     Exposed=Window,
     RuntimeEnabled=WebXR
 ] interface XRViewerPose : XRPose {
+  // TODO(https://crbug.com/958014): Ensure that this can be SameObject.
   readonly attribute FrozenArray<XRView> views;
 };

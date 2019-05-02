@@ -8,7 +8,7 @@
     Exposed=Window,
     RuntimeEnabled=WebXR
 ] interface XRFrame {
-  readonly attribute XRSession session;
+  [SameObject] readonly attribute XRSession session;
 
   // More details about the real-world understanding APIs can be found here:
   // https://github.com/immersive-web/real-world-geometry/blob/master/plane-detection-explainer.md

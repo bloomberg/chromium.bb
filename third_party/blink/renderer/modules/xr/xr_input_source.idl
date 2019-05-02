@@ -21,7 +21,9 @@ enum XRTargetRayMode {
 ] interface XRInputSource {
   readonly attribute XRHandedness handedness;
   readonly attribute XRTargetRayMode targetRayMode;
-  readonly attribute XRSpace targetRaySpace;
-  readonly attribute XRSpace? gripSpace;
+  [SameObject] readonly attribute XRSpace targetRaySpace;
+  [SameObject] readonly attribute XRSpace? gripSpace;
+
+  // TODO(https://crbug.com/955101): This should be tagged [SameObject].
   readonly attribute Gamepad? gamepad;
 };

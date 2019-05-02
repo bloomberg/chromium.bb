@@ -12,13 +12,13 @@ typedef (WebGLRenderingContext or WebGL2RenderingContext) XRWebGLRenderingContex
     Constructor(XRSession session, XRWebGLRenderingContext context, optional XRWebGLLayerInit layerInit),
     RaisesException=Constructor
 ] interface XRWebGLLayer : XRLayer {
-  [ImplementedAs=getXRWebGLRenderingContext] readonly attribute XRWebGLRenderingContext context;
+  [SameObject, SaveSameObject, ImplementedAs=getXRWebGLRenderingContext] readonly attribute XRWebGLRenderingContext context;
   readonly attribute boolean antialias;
   readonly attribute boolean ignoreDepthValues;
 
   readonly attribute unsigned long framebufferWidth;
   readonly attribute unsigned long framebufferHeight;
-  readonly attribute WebGLFramebuffer framebuffer;
+  [SameObject] readonly attribute WebGLFramebuffer framebuffer;
 
   XRViewport? getViewport(XRView view);
   void requestViewportScaling(double viewportScaleFactor);

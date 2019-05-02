@@ -12,7 +12,7 @@
     Constructor(DOMPointInit origin, DOMPointInit direction),
     Constructor(XRRigidTransform transform)
 ] interface XRRay {
-  readonly attribute DOMPointReadOnly origin;
-  readonly attribute DOMPointReadOnly direction;
-  readonly attribute Float32Array matrix;
+  [SameObject] readonly attribute DOMPointReadOnly origin;
+  [SameObject] readonly attribute DOMPointReadOnly direction;
+  [SameObject] readonly attribute Float32Array matrix;
 };

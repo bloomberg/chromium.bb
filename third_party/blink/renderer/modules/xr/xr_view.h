@@ -56,6 +56,7 @@ class MODULES_EXPORT XRView final : public ScriptWrappable {
                                                          double canvas_width,
                                                          double canvas_height);
 
+  // TODO(crbug.com/958014): Remove UpdatePoseMatrix to ensure SameObject.
   void UpdatePoseMatrix(TransformationMatrix pose_matrix);
 
   // TODO(bajones): Should eventually represent this as a full transform.

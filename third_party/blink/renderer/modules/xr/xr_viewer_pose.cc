@@ -14,6 +14,8 @@ XRViewerPose::XRViewerPose(
     XRSession* session,
     std::unique_ptr<TransformationMatrix> pose_model_matrix)
     : XRPose(std::move(pose_model_matrix), session->EmulatedPosition()) {
+  // TODO(https://crbug.com/958014): Ensure that this copy doesn't still
+  // point to the underlying views objects from session.
   // session will update views if required
   // views array gets copied to views_
   views_ = session->views();

@@ -9,5 +9,5 @@
     RuntimeEnabled=WebXR
 ] interface XRPresentationContext {
     // back-reference to the canvas
-    readonly attribute HTMLCanvasElement canvas;
+    [SameObject, SaveSameObject] readonly attribute HTMLCanvasElement canvas;
 };
