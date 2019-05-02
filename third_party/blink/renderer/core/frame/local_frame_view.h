@@ -608,7 +608,7 @@ class CORE_EXPORT LocalFrameView final
   // Returns true if this frame could potentially skip rendering and avoid
   // scheduling visual updates.
   bool CanThrottleRendering() const;
-  bool IsHiddenForThrottling() const { return hidden_for_throttling_; }
+  bool IsHiddenForThrottling() const;
   void SetupRenderThrottling();
 
   void BeginLifecycleUpdates();

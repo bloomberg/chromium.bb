@@ -548,12 +548,18 @@ void HTMLFrameOwnerElement::OnViewportIntersectionChanged(
 }
 
 void HTMLFrameOwnerElement::StartVisibilityObserver() {
-  if (visibility_observer_)
-    return;
-  visibility_observer_ = IntersectionObserver::Create(
-      {}, {IntersectionObserver::kMinimumThreshold}, &GetDocument(),
-      WTF::BindRepeating(&HTMLFrameOwnerElement::OnViewportIntersectionChanged,
-                         WrapWeakPersistent(this)));
+  // When this method is called, it indicates that the caller wants to receive
+  // a notification at the next opportunity, even if nothing has changed.
+  // Un-observing and then re-observing will accomplish that.
+  if (visibility_observer_) {
+    visibility_observer_->unobserve(this);
+  } else {
+    visibility_observer_ = IntersectionObserver::Create(
+        {}, {IntersectionObserver::kMinimumThreshold}, &GetDocument(),
+        WTF::BindRepeating(
+            &HTMLFrameOwnerElement::OnViewportIntersectionChanged,
+            WrapWeakPersistent(this)));
+  }
   visibility_observer_->observe(this);
 }
 

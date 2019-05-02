@@ -3942,7 +3942,7 @@ void LocalFrameView::UpdateThrottlingStatusForSubtree() {
 
   // Don't throttle display:none frames (see updateRenderThrottlingStatus).
   HTMLFrameOwnerElement* owner_element = frame_->DeprecatedLocalOwner();
-  if (hidden_for_throttling_ && owner_element &&
+  if (IsHiddenForThrottling() && owner_element &&
       !owner_element->GetLayoutObject()) {
     // No need to notify children because descendants of display:none frames
     // should remain throttled.
@@ -3976,11 +3976,8 @@ void LocalFrameView::UpdateRenderThrottlingStatus(
 
   // Note that we disallow throttling of 0x0 and display:none frames because
   // some sites use them to drive UI logic.
-  hidden_for_throttling_ = hidden && !Size().IsEmpty();
+  hidden_for_throttling_ = hidden;
   subtree_throttled_ = subtree_throttled;
-  HTMLFrameOwnerElement* owner_element = frame_->DeprecatedLocalOwner();
-  if (owner_element)
-    hidden_for_throttling_ &= !!owner_element->GetLayoutObject();
 
   bool is_throttled = CanThrottleRendering();
   bool became_unthrottled = was_throttled && !is_throttled;
@@ -4040,7 +4037,7 @@ void LocalFrameView::UpdateRenderThrottlingStatus(
   }
 
   if (FrameScheduler* frame_scheduler = frame_->GetFrameScheduler()) {
-    frame_scheduler->SetFrameVisible(!hidden_for_throttling_);
+    frame_scheduler->SetFrameVisible(!IsHiddenForThrottling());
     frame_scheduler->SetCrossOrigin(frame_->IsCrossOriginSubframe());
     frame_scheduler->TraceUrlChange(frame_->GetDocument()->Url().GetString());
   }
@@ -4137,7 +4134,22 @@ bool LocalFrameView::CanThrottleRendering() const {
   // cross-origin frames must already communicate with asynchronous messages,
   // so they should be able to tolerate some delay in receiving replies from a
   // throttled peer.
-  return hidden_for_throttling_ && frame_->IsCrossOriginSubframe();
+  return IsHiddenForThrottling() && frame_->IsCrossOriginSubframe();
+}
+
+bool LocalFrameView::IsHiddenForThrottling() const {
+  // TODO(szager): hidden_for_throttling_ has a different meaning depending on
+  // whether this frame has a remote parent (i.e, if it's OOPIF). In the OOPIF
+  // case, it means "non-zero sized AND not display:none AND scrolled out of the
+  // parent document's viewport." For the non-OOPIF case, it just means
+  // "scrolled out of the parent document's viewport." Fixing this will
+  // require some moderately complex refactoring of render throttling.
+  if (!hidden_for_throttling_)
+    return false;
+  HTMLFrameOwnerElement* owner_element = frame_->DeprecatedLocalOwner();
+  if (owner_element)
+    return !Size().IsEmpty() && !!owner_element->GetLayoutObject();
+  return true;
 }
 
 void LocalFrameView::BeginLifecycleUpdates() {
@@ -4157,7 +4169,6 @@ void LocalFrameView::BeginLifecycleUpdates() {
   }
 
   SetupRenderThrottling();
-  UpdateRenderThrottlingStatus(hidden_for_throttling_, subtree_throttled_);
 
   // The compositor will "defer commits" for the main frame until we
   // explicitly request them.
