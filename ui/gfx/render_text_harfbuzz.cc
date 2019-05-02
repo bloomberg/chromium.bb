@@ -1801,9 +1801,16 @@ void RenderTextHarfBuzz::ShapeRuns(
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
   Font fallback_font(primary_font);
-  const base::char16* run_text = &(text[runs.front()->range.start()]);
-  if (GetFallbackFont(primary_font, run_text, runs.front()->range.length(),
-                      &fallback_font)) {
+  bool fallback_found;
+  {
+    SCOPED_UMA_HISTOGRAM_LONG_TIMER("RenderTextHarfBuzz.GetFallbackFontTime");
+    TRACE_EVENT1("ui", "RenderTextHarfBuzz::GetFallbackFont", "script",
+                 TRACE_STR_COPY(uscript_getShortName(font_params.script)));
+    const base::char16* run_text = &(text[runs.front()->range.start()]);
+    fallback_found = GetFallbackFont(
+        primary_font, run_text, runs.front()->range.length(), &fallback_font);
+  }
+  if (fallback_found) {
     preferred_fallback_family = fallback_font.GetFontName();
     internal::TextRunHarfBuzz::FontParams test_font_params = font_params;
     if (test_font_params.SetFontAndRenderParams(
