@@ -28,7 +28,7 @@ typedef enum {
   GLOBAL_MOTION_DISFLOW_BASED,
 } GlobalMotionEstimationType;
 
-unsigned char *downconvert_frame(YV12_BUFFER_CONFIG *frm, int bit_depth);
+unsigned char *av1_downconvert_frame(YV12_BUFFER_CONFIG *frm, int bit_depth);
 
 void av1_convert_model_to_params(const double *params,
                                  WarpedMotionParams *model);

@@ -247,16 +247,7 @@ int64_t av1_refine_integerized_param(WarpedMotionParams *wm,
   return best_error;
 }
 
-static INLINE RansacFunc get_ransac_type(TransformationType type) {
-  switch (type) {
-    case AFFINE: return ransac_affine;
-    case ROTZOOM: return ransac_rotzoom;
-    case TRANSLATION: return ransac_translation;
-    default: assert(0); return NULL;
-  }
-}
-
-unsigned char *downconvert_frame(YV12_BUFFER_CONFIG *frm, int bit_depth) {
+unsigned char *av1_downconvert_frame(YV12_BUFFER_CONFIG *frm, int bit_depth) {
   int i, j;
   uint16_t *orig_buf = CONVERT_TO_SHORTPTR(frm->y_buffer);
   uint8_t *buf_8bit = frm->y_buffer_8bit;
@@ -284,10 +275,10 @@ static int compute_global_motion_feature_based(
   int *correspondences;
   int ref_corners[2 * MAX_CORNERS];
   unsigned char *ref_buffer = ref->y_buffer;
-  RansacFunc ransac = get_ransac_type(type);
+  RansacFunc ransac = av1_get_ransac_type(type);
 
   if (ref->flags & YV12_FLAG_HIGHBITDEPTH) {
-    ref_buffer = downconvert_frame(ref, bit_depth);
+    ref_buffer = av1_downconvert_frame(ref, bit_depth);
   }
 
   num_ref_corners = fast_corner_detect(ref_buffer, ref->y_width, ref->y_height,
@@ -318,16 +309,6 @@ static int compute_global_motion_feature_based(
     if (num_inliers_by_motion[i] > 0) return 1;
   }
   return 0;
-}
-
-static INLINE RansacFuncDouble
-get_ransac_double_prec_type(TransformationType type) {
-  switch (type) {
-    case AFFINE: return ransac_affine_double_prec;
-    case ROTZOOM: return ransac_rotzoom_double_prec;
-    case TRANSLATION: return ransac_translation_double_prec;
-    default: assert(0); return NULL;
-  }
 }
 
 // Don't use points around the frame border since they are less reliable
@@ -777,7 +758,7 @@ static int compute_global_motion_disflow_based(
   const int pad_size = AOMMAX(PATCH_SIZE, MIN_PAD);
   int num_correspondences;
   double *correspondences;
-  RansacFuncDouble ransac = get_ransac_double_prec_type(type);
+  RansacFuncDouble ransac = av1_get_ransac_double_prec_type(type);
   assert(frm_width == ref_width);
   assert(frm_height == ref_height);
 
@@ -787,7 +768,7 @@ static int compute_global_motion_disflow_based(
   const int n_levels = AOMMIN(msb, N_LEVELS);
 
   if (ref->flags & YV12_FLAG_HIGHBITDEPTH) {
-    ref_buffer = downconvert_frame(ref, bit_depth);
+    ref_buffer = av1_downconvert_frame(ref, bit_depth);
   }
 
   // TODO(sarahparker) We will want to do the source pyramid computation

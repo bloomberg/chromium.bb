@@ -25,26 +25,6 @@ typedef int (*RansacFunc)(int *matched_points, int npoints,
 typedef int (*RansacFuncDouble)(double *matched_points, int npoints,
                                 int *num_inliers_by_motion,
                                 double *params_by_motion, int num_motions);
-
-/* Each of these functions fits a motion model from a set of
-   corresponding points in 2 frames using RANSAC. */
-int ransac_affine(int *matched_points, int npoints, int *num_inliers_by_motion,
-                  double *params_by_motion, int num_motions);
-int ransac_rotzoom(int *matched_points, int npoints, int *num_inliers_by_motion,
-                   double *params_by_motion, int num_motions);
-int ransac_translation(int *matched_points, int npoints,
-                       int *num_inliers_by_motion, double *params_by_motion,
-                       int num_motions);
-int ransac_translation_double_prec(double *matched_points, int npoints,
-                                   int *num_inliers_by_motion,
-                                   double *params_by_motion,
-                                   int num_desired_motions);
-int ransac_rotzoom_double_prec(double *matched_points, int npoints,
-                               int *num_inliers_by_motion,
-                               double *params_by_motion,
-                               int num_desired_motions);
-int ransac_affine_double_prec(double *matched_points, int npoints,
-                              int *num_inliers_by_motion,
-                              double *params_by_motion,
-                              int num_desired_motions);
+RansacFunc av1_get_ransac_type(TransformationType type);
+RansacFuncDouble av1_get_ransac_double_prec_type(TransformationType type);
 #endif  // AOM_AV1_ENCODER_RANSAC_H_

@@ -739,55 +739,76 @@ static int is_degenerate_affine(double *p) {
   return is_collinear3(p, p + 2, p + 4);
 }
 
-int ransac_translation(int *matched_points, int npoints,
-                       int *num_inliers_by_motion, double *params_by_motion,
-                       int num_desired_motions) {
+static int ransac_translation(int *matched_points, int npoints,
+                              int *num_inliers_by_motion,
+                              double *params_by_motion,
+                              int num_desired_motions) {
   return ransac(matched_points, npoints, num_inliers_by_motion,
                 params_by_motion, num_desired_motions, 3,
                 is_degenerate_translation, find_translation,
                 project_points_double_translation);
 }
 
-int ransac_rotzoom(int *matched_points, int npoints, int *num_inliers_by_motion,
-                   double *params_by_motion, int num_desired_motions) {
+static int ransac_rotzoom(int *matched_points, int npoints,
+                          int *num_inliers_by_motion, double *params_by_motion,
+                          int num_desired_motions) {
   return ransac(matched_points, npoints, num_inliers_by_motion,
                 params_by_motion, num_desired_motions, 3, is_degenerate_affine,
                 find_rotzoom, project_points_double_rotzoom);
 }
 
-int ransac_affine(int *matched_points, int npoints, int *num_inliers_by_motion,
-                  double *params_by_motion, int num_desired_motions) {
+static int ransac_affine(int *matched_points, int npoints,
+                         int *num_inliers_by_motion, double *params_by_motion,
+                         int num_desired_motions) {
   return ransac(matched_points, npoints, num_inliers_by_motion,
                 params_by_motion, num_desired_motions, 3, is_degenerate_affine,
                 find_affine, project_points_double_affine);
 }
 
-int ransac_translation_double_prec(double *matched_points, int npoints,
-                                   int *num_inliers_by_motion,
-                                   double *params_by_motion,
-                                   int num_desired_motions) {
+RansacFunc av1_get_ransac_type(TransformationType type) {
+  switch (type) {
+    case AFFINE: return ransac_affine;
+    case ROTZOOM: return ransac_rotzoom;
+    case TRANSLATION: return ransac_translation;
+    default: assert(0); return NULL;
+  }
+}
+
+static int ransac_translation_double_prec(double *matched_points, int npoints,
+                                          int *num_inliers_by_motion,
+                                          double *params_by_motion,
+                                          int num_desired_motions) {
   return ransac_double_prec(matched_points, npoints, num_inliers_by_motion,
                             params_by_motion, num_desired_motions, 3,
                             is_degenerate_translation, find_translation,
                             project_points_double_translation);
 }
 
-int ransac_rotzoom_double_prec(double *matched_points, int npoints,
-                               int *num_inliers_by_motion,
-                               double *params_by_motion,
-                               int num_desired_motions) {
+static int ransac_rotzoom_double_prec(double *matched_points, int npoints,
+                                      int *num_inliers_by_motion,
+                                      double *params_by_motion,
+                                      int num_desired_motions) {
   return ransac_double_prec(matched_points, npoints, num_inliers_by_motion,
                             params_by_motion, num_desired_motions, 3,
                             is_degenerate_affine, find_rotzoom,
                             project_points_double_rotzoom);
 }
 
-int ransac_affine_double_prec(double *matched_points, int npoints,
-                              int *num_inliers_by_motion,
-                              double *params_by_motion,
-                              int num_desired_motions) {
+static int ransac_affine_double_prec(double *matched_points, int npoints,
+                                     int *num_inliers_by_motion,
+                                     double *params_by_motion,
+                                     int num_desired_motions) {
   return ransac_double_prec(matched_points, npoints, num_inliers_by_motion,
                             params_by_motion, num_desired_motions, 3,
                             is_degenerate_affine, find_affine,
                             project_points_double_affine);
+}
+
+RansacFuncDouble av1_get_ransac_double_prec_type(TransformationType type) {
+  switch (type) {
+    case AFFINE: return ransac_affine_double_prec;
+    case ROTZOOM: return ransac_rotzoom_double_prec;
+    case TRANSLATION: return ransac_translation_double_prec;
+    default: assert(0); return NULL;
+  }
 }

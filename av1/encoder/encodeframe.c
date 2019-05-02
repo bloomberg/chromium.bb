@@ -5018,7 +5018,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
       // The frame buffer is 16-bit, so we need to convert to 8 bits for the
       // following code. We cache the result until the frame is released.
       frm_buffer =
-          downconvert_frame(cpi->source, cpi->common.seq_params.bit_depth);
+          av1_downconvert_frame(cpi->source, cpi->common.seq_params.bit_depth);
     }
     for (frame = ALTREF_FRAME; frame >= LAST_FRAME; --frame) {
       ref_buf[frame] = NULL;
