@@ -93,7 +93,7 @@ class PerfPlatform(object):
 
   @property
   def buildbot_url(self):
-    return ('https://ci.chromium.org/buildbot/chromium.perf/%s/' %
+    return ('https://ci.chromium.org/p/chrome/builders/luci.chrome.ci/%s' %
              urllib.quote(self._name))
 
 # Linux
@@ -143,12 +143,12 @@ _ANDROID_GO_BENCHMARK_NAMES = {
 
 
 ANDROID_GO = PerfPlatform(
-    'android-go-perf', 'Android O',
+    'android-go-perf', 'Android O (gobo)',
     num_shards=19,
     benchmarks_names_to_run=_ANDROID_GO_BENCHMARK_NAMES)
 
 ANDROID_GO_WEBVIEW = PerfPlatform(
-    'android-go_webview-perf', 'Android OPM1.171019.021',
+    'android-go_webview-perf', 'Android OPM1.171019.021 (gobo)',
     num_shards=25, benchmarks_names_to_run=_ANDROID_GO_BENCHMARK_NAMES)
 
 ANDROID_NEXUS_5 = PerfPlatform(
