@@ -28,13 +28,13 @@ namespace base {
 namespace chromeos {
 
 namespace {
-// Type-safe version of |g_monitor| from base/memory/memory_pressure_monitor.cc,
-// this was originally added because TabManagerDelegate for chromeos needs to
-// call into ScheduleEarlyCheck which isn't a public API in the base
-// MemoryPressureMonitor. This matters because ChromeOS may create a
-// FakeMemoryPressureMonitor for browser tests and that's why this type-specific
-// version was added.
-MemoryPressureMonitorNotifying* g_monitor = nullptr;
+// Type-safe version of |g_monitor_notifying| from
+// base/memory/memory_pressure_monitor.cc, this was originally added because
+// TabManagerDelegate for chromeos needs to call into ScheduleEarlyCheck which
+// isn't a public API in the base MemoryPressureMonitor. This matters because
+// ChromeOS may create a FakeMemoryPressureMonitor for browser tests and that's
+// why this type-specific version was added.
+MemoryPressureMonitorNotifying* g_monitor_notifying = nullptr;
 
 // We try not to re-notify on moderate too frequently, this time
 // controls how frequently we will notify after our first notification.
@@ -132,8 +132,8 @@ MemoryPressureMonitorNotifying::MemoryPressureMonitorNotifying(
           base::BindRepeating(std::move(kernel_waiting_callback),
                               available_mem_file_.get())),
       weak_ptr_factory_(this) {
-  DCHECK(g_monitor == nullptr);
-  g_monitor = this;
+  DCHECK(g_monitor_notifying == nullptr);
+  g_monitor_notifying = this;
 
   CHECK(available_mem_file_.is_valid());
   std::vector<int> margin_parts =
@@ -160,8 +160,8 @@ MemoryPressureMonitorNotifying::MemoryPressureMonitorNotifying(
 }
 
 MemoryPressureMonitorNotifying::~MemoryPressureMonitorNotifying() {
-  DCHECK(g_monitor);
-  g_monitor = nullptr;
+  DCHECK(g_monitor_notifying);
+  g_monitor_notifying = nullptr;
 }
 
 std::vector<int> MemoryPressureMonitorNotifying::GetMarginFileParts() {
@@ -305,7 +305,7 @@ void MemoryPressureMonitorNotifying::SetDispatchCallback(
 
 // static
 MemoryPressureMonitorNotifying* MemoryPressureMonitorNotifying::Get() {
-  return g_monitor;
+  return g_monitor_notifying;
 }
 
 }  // namespace chromeos
