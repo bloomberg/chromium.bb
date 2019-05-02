@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "ash/components/shortcut_viewer/public/mojom/shortcut_viewer.mojom.h"
 #include "ash/public/cpp/ash_typography.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shelf/shelf.h"
@@ -57,12 +56,6 @@ void FlagWarningTray::UpdateAfterShelfAlignmentChange() {
 void FlagWarningTray::ButtonPressed(views::Button* sender,
                                     const ui::Event& event) {
   DCHECK_EQ(button_, sender);
-
-  // Open the shortcut viewer mini-app to demonstrate that mini-apps work.
-  shortcut_viewer::mojom::ShortcutViewerPtr shortcut_viewer_ptr;
-  Shell::Get()->connector()->BindInterface(shortcut_viewer::mojom::kServiceName,
-                                           &shortcut_viewer_ptr);
-  shortcut_viewer_ptr->Toggle(base::TimeTicks::Now());
 }
 
 void FlagWarningTray::GetAccessibleNodeData(ui::AXNodeData* node_data) {

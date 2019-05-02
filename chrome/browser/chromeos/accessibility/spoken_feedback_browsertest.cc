@@ -27,7 +27,6 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/ui/ash/ksv/keyboard_shortcut_viewer_util.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "chrome/browser/ui/browser.h"
@@ -235,44 +234,6 @@ IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest,
   EXPECT_EQ("Do not disturb", speech_monitor_.GetNextUtterance());
   EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
   EXPECT_EQ("Not pressed", speech_monitor_.GetNextUtterance());
-}
-
-// Tests the keyboard shortcut viewer, which is an out-of-process mojo app.
-IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, KeyboardShortcutViewer) {
-  EnableChromeVox();
-  keyboard_shortcut_viewer_util::ToggleKeyboardShortcutViewer();
-
-  // Focus should move to the search field and ChromeVox should speak it.
-  while ("Search for keyboard shortcuts" !=
-         speech_monitor_.GetNextUtterance()) {
-  }
-
-  // Capture the destroyed AX tree id when the remote host disconnects.
-  base::RunLoop run_loop;
-  ui::AXTreeID destroyed_tree_id = ui::AXTreeIDUnknown();
-  extensions::AutomationEventRouter::GetInstance()
-      ->SetTreeDestroyedCallbackForTest(base::BindRepeating(
-          [](base::RunLoop* run_loop, ui::AXTreeID* destroyed_tree_id,
-             ui::AXTreeID tree_id) {
-            *destroyed_tree_id = tree_id;
-            run_loop->Quit();
-          },
-          &run_loop, &destroyed_tree_id));
-
-  // Close the remote shortcut viewer app.
-  keyboard_shortcut_viewer_util::ToggleKeyboardShortcutViewer();
-
-  // Wait for the AX tree to be destroyed.
-  run_loop.Run();
-
-  // Verify an AX tree was destroyed. It's awkward to get the remote app's
-  // actual tree ID, so just ensure it's a valid ID and not the desktop.
-  EXPECT_NE(ui::AXTreeIDUnknown(), destroyed_tree_id);
-  EXPECT_NE(AutomationManagerAura::GetInstance()->ax_tree_id(),
-            destroyed_tree_id);
-
-  extensions::AutomationEventRouter::GetInstance()
-      ->SetTreeDestroyedCallbackForTest(base::DoNothing());
 }
 
 //

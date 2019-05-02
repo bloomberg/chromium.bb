@@ -22,7 +22,6 @@
 #include "services/service_manager/public/cpp/manifest_builder.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/components/shortcut_viewer/public/cpp/manifest.h"
 #include "ash/components/tap_visualizer/public/cpp/manifest.h"
 #include "ash/public/cpp/manifest.h"
 #include "chrome/browser/chromeos/prefs/ash_pref_connector_manifest.h"
@@ -168,7 +167,6 @@ GetChromePackagedServiceManifests() {
       GetProfileImportManifest(),
 #endif
 #if defined(OS_CHROMEOS)
-      shortcut_viewer::GetManifest(),
       tap_visualizer::GetManifest(),
       ash::GetManifest(),
       GetAshPrefConnectorManifest(),

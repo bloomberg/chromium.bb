@@ -4,8 +4,6 @@
 
 #include "ash/shell/content/client/shell_main_delegate.h"
 
-#include "ash/components/shortcut_viewer/public/mojom/shortcut_viewer.mojom.h"
-#include "ash/components/shortcut_viewer/shortcut_viewer_application.h"
 #include "ash/components/tap_visualizer/public/mojom/tap_visualizer.mojom.h"
 #include "ash/components/tap_visualizer/tap_visualizer_app.h"
 #include "ash/shell/content/client/shell_content_browser_client.h"
@@ -28,13 +26,6 @@ namespace {
 
 void TerminateThisProcess() {
   content::UtilityThread::Get()->ReleaseProcess();
-}
-
-std::unique_ptr<service_manager::Service> CreateShortcutViewer(
-    service_manager::mojom::ServiceRequest request) {
-  logging::SetLogPrefix("shortcut");
-  return std::make_unique<keyboard_shortcut_viewer::ShortcutViewerApplication>(
-      std::move(request));
 }
 
 std::unique_ptr<service_manager::Service> CreateTapVisualizer(
@@ -60,8 +51,6 @@ class ShellContentUtilityClient : public content::ContentUtilityClient {
     std::unique_ptr<service_manager::Service> service;
     if (service_name == test_ime_driver::mojom::kServiceName)
       service = CreateTestImeDriver(std::move(request));
-    else if (service_name == shortcut_viewer::mojom::kServiceName)
-      service = CreateShortcutViewer(std::move(request));
     else if (service_name == tap_visualizer::mojom::kServiceName)
       service = CreateTapVisualizer(std::move(request));
 

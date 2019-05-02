@@ -48,8 +48,6 @@
 #include "third_party/blink/public/mojom/webshare/webshare.mojom.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/components/shortcut_viewer/public/cpp/manifest.h"  // nogncheck
-#include "ash/components/shortcut_viewer/public/mojom/shortcut_viewer.mojom.h"  // nogncheck
 #include "ash/components/tap_visualizer/public/cpp/manifest.h"  // nogncheck
 #include "ash/components/tap_visualizer/public/mojom/tap_visualizer.mojom.h"  // nogncheck
 #include "chrome/browser/chromeos/kiosk_next_home/mojom/kiosk_next_home_interface_broker.mojom.h"  // nogncheck
@@ -199,8 +197,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
             .RequireCapability(
                 chromeos::network_config::mojom::kServiceName,
                 chromeos::network_config::mojom::kNetworkConfigCapability)
-            .RequireCapability(shortcut_viewer::mojom::kServiceName,
-                               shortcut_viewer::mojom::kToggleUiCapability)
             // This is required for remoting, which runs in the browser and
             // injects events.
             .RequireCapability(ws::mojom::kServiceName, "privileged")

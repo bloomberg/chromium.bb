@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "ash/components/shortcut_viewer/public/mojom/shortcut_viewer.mojom.h"
 #include "ash/components/tap_visualizer/public/mojom/tap_visualizer.mojom.h"
 #include "ash/keyboard/test_keyboard_ui.h"
 #include "ash/login_status.h"
@@ -158,11 +157,6 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
       test_ime_driver::mojom::kServiceName));
   connector->WarmService(service_manager::ServiceFilter::ByName(
       tap_visualizer::mojom::kServiceName));
-  shortcut_viewer::mojom::ShortcutViewerPtr shortcut_viewer;
-  connector->BindInterface(service_manager::ServiceFilter::ByName(
-                               shortcut_viewer::mojom::kServiceName),
-                           mojo::MakeRequest(&shortcut_viewer));
-  shortcut_viewer->Toggle(base::TimeTicks::Now());
   ash::Shell::Get()->InitWaylandServer(nullptr);
 }
 

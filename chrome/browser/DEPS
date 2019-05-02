@@ -110,7 +110,7 @@ include_rules = [
   # interfaces in //ash/public/interfaces. See //ash/README.md.
   "-ash",
   "+ash/public",
-  "+ash/components/shortcut_viewer/public/mojom",
+  "+ash/components/shortcut_viewer",
   "+ash/components/tap_visualizer/public/mojom",
 
   # The message center may not exist, or may run out of process (in mash).

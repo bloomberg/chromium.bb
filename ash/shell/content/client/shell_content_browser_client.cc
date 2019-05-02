@@ -8,8 +8,6 @@
 #include <utility>
 
 #include "ash/ash_service.h"
-#include "ash/components/shortcut_viewer/public/cpp/manifest.h"
-#include "ash/components/shortcut_viewer/public/mojom/shortcut_viewer.mojom.h"
 #include "ash/components/tap_visualizer/public/cpp/manifest.h"
 #include "ash/components/tap_visualizer/public/mojom/tap_visualizer.mojom.h"
 #include "ash/public/cpp/manifest.h"
@@ -48,8 +46,6 @@ const service_manager::Manifest& GetAshShellBrowserOverlayManifest() {
   static base::NoDestructor<service_manager::Manifest> manifest{
       service_manager::ManifestBuilder()
           .RequireCapability(device::mojom::kServiceName, "device:fingerprint")
-          .RequireCapability(shortcut_viewer::mojom::kServiceName,
-                             shortcut_viewer::mojom::kToggleUiCapability)
           .RequireCapability(tap_visualizer::mojom::kServiceName,
                              tap_visualizer::mojom::kShowUiCapability)
           .Build()};
@@ -61,7 +57,6 @@ const service_manager::Manifest& GetAshShellPackagedServicesOverlayManifest() {
       service_manager::ManifestBuilder()
           .PackageService(service_manager::Manifest(ash::GetManifest())
                               .Amend(ash::GetManifestOverlayForTesting()))
-          .PackageService(shortcut_viewer::GetManifest())
           .PackageService(tap_visualizer::GetManifest())
           .PackageService(test_ime_driver::GetManifest())
           .Build()};
@@ -92,8 +87,7 @@ void ShellContentBrowserClient::GetQuotaSettings(
 
 base::Optional<service_manager::Manifest>
 ShellContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
-  // This is necessary for outgoing interface requests (such as the keyboard
-  // shortcut viewer).
+  // This is necessary for outgoing interface requests.
   if (name == content::mojom::kBrowserServiceName)
     return GetAshShellBrowserOverlayManifest();
 
@@ -105,8 +99,6 @@ ShellContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
 
 void ShellContentBrowserClient::RegisterOutOfProcessServices(
     OutOfProcessServiceMap* services) {
-  (*services)[shortcut_viewer::mojom::kServiceName] = base::BindRepeating(
-      &base::ASCIIToUTF16, shortcut_viewer::mojom::kServiceName);
   (*services)[tap_visualizer::mojom::kServiceName] = base::BindRepeating(
       &base::ASCIIToUTF16, tap_visualizer::mojom::kServiceName);
   (*services)[test_ime_driver::mojom::kServiceName] = base::BindRepeating(

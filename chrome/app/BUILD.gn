@@ -456,8 +456,6 @@ source_set("chrome_content_browser_overlay_manifest") {
 
   if (is_chromeos) {
     deps += [
-      "//ash/components/shortcut_viewer/public/cpp:manifest",
-      "//ash/components/shortcut_viewer/public/mojom",
       "//ash/components/tap_visualizer/public/cpp:manifest",
       "//ash/components/tap_visualizer/public/mojom",
       "//chrome/browser/chromeos/kiosk_next_home/mojom",
@@ -620,7 +618,6 @@ source_set("chrome_packaged_service_manifests") {
 
   if (is_chromeos) {
     deps += [
-      "//ash/components/shortcut_viewer/public/cpp:manifest",
       "//ash/components/tap_visualizer/public/cpp:manifest",
       "//ash/public/cpp:manifest",
       "//chrome/browser/chromeos:ash_pref_connector_manifest",

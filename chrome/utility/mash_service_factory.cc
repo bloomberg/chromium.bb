@@ -7,8 +7,6 @@
 #include <memory>
 
 #include "ash/ash_service.h"
-#include "ash/components/shortcut_viewer/public/mojom/shortcut_viewer.mojom.h"
-#include "ash/components/shortcut_viewer/shortcut_viewer_application.h"
 #include "ash/components/tap_visualizer/public/mojom/tap_visualizer.mojom.h"
 #include "ash/components/tap_visualizer/tap_visualizer_app.h"
 #include "ash/public/interfaces/constants.mojom.h"
@@ -25,7 +23,7 @@ enum class MashService {
   kAsh = 0,
   kAutoclickDeprecated = 1,    // Deleted Aug 2018, https://crbug.com/876115
   kQuickLaunchDeprecated = 2,  // Deleted Feb 2019.
-  kShortcutViewer = 3,
+  kShortcutViewer = 3,         // Deleted May 2019, https://crbug.com/958073
   kTapVisualizer = 4,
   kFontDeprecated = 5,  // Font Service is not in use for mash, but run
                         // in-process in the browser
@@ -43,14 +41,6 @@ std::unique_ptr<service_manager::Service> CreateAshService(
   RecordMashServiceLaunch(MashService::kAsh);
   logging::SetLogPrefix("ash");
   return std::make_unique<ash::AshService>(std::move(request));
-}
-
-std::unique_ptr<service_manager::Service> CreateShortcutViewerApp(
-    service_manager::mojom::ServiceRequest request) {
-  RecordMashServiceLaunch(MashService::kShortcutViewer);
-  logging::SetLogPrefix("shortcut");
-  return std::make_unique<keyboard_shortcut_viewer::ShortcutViewerApplication>(
-      std::move(request));
 }
 
 std::unique_ptr<service_manager::Service> CreateTapVisualizerApp(
@@ -72,11 +62,6 @@ MashServiceFactory::HandleServiceRequest(
     service_manager::mojom::ServiceRequest request) {
   if (service_name == ash::mojom::kServiceName)
     return CreateAshService(std::move(request));
-  if (service_name == shortcut_viewer::mojom::kServiceName) {
-    keyboard_shortcut_viewer::ShortcutViewerApplication ::
-        RegisterForTraceEvents();
-    return CreateShortcutViewerApp(std::move(request));
-  }
   if (service_name == tap_visualizer::mojom::kServiceName)
     return CreateTapVisualizerApp(std::move(request));
 

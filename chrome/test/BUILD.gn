@@ -1999,7 +1999,6 @@ test("browser_tests") {
         "../browser/ui/ash/network/networking_config_chromeos_browsertest.cc",
         "../browser/ui/ash/screen_orientation_delegate_chromeos_browsertest.cc",
         "../browser/ui/ash/shelf_browsertest.cc",
-        "../browser/ui/ash/shortcut_viewer_browsertest.cc",
         "../browser/ui/ash/system_tray_client_browsertest.cc",
         "../browser/ui/ash/system_tray_tray_cast_browsertest_media_router_chromeos.cc",
         "../browser/ui/ash/tab_scrubber_browsertest.cc",
