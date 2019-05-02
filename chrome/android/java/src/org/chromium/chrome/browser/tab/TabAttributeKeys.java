@@ -20,4 +20,12 @@ public @interface TabAttributeKeys {
 
     /** Whether tab modal dialog is showing or not. */
     public static final String MODAL_DIALOG_SHOWING = "isTabModalDialogShowing";
+
+    /** Parent Tab Task Id. See ContextRecordTaskId (context_record_task_id.h) for definition */
+    public static final String PARENT_TAB_TASK_ID = "ParentTaskId";
+
+    /**
+     * Parent Tab Root Task Id. See ContextRecordTaskId (context_record_task_id.h) for definition
+     */
+    public static final String PARENT_TAB_ROOT_TASK_ID = "ParentRootTaskId";
 }

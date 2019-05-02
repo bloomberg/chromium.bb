@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.tab;
 import org.chromium.chrome.browser.ChromeActionModeCallback;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.SwipeRefreshHandler;
+import org.chromium.chrome.browser.complex_tasks.TaskTabHelper;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchTabHelper;
 import org.chromium.chrome.browser.crypto.CipherFactory;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
@@ -26,9 +27,10 @@ public final class TabHelpers {
     /**
      * Creates Tab helper objects upon Tab creation.
      * @param tab {@link Tab} to create helpers for.
+     * @param parentTab {@link Tab} parent tab
      * @param creationState State in which the tab is created.
      */
-    static void initTabHelpers(Tab tab, @TabCreationState Integer creationState) {
+    static void initTabHelpers(Tab tab, Tab parentTab, @TabCreationState Integer creationState) {
         if (creationState != null) TabUma.create(tab, creationState);
         TabThemeColorHelper.createForTab(tab);
         TabFullscreenHandler.createForTab(tab);
@@ -39,6 +41,7 @@ public final class TabHelpers {
             TaskRecognizer.createForTab(tab);
         }
         MediaSessionTabHelper.createForTab(tab);
+        TaskTabHelper.createForTab(tab, parentTab);
 
         // TODO(jinsukkim): Do this by having something observe new tab creation.
         if (tab.isIncognito()) CipherFactory.getInstance().triggerKeyGeneration();

@@ -9,10 +9,19 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/sessions/content/content_record_task_id.h"
 #include "content/public/browser/navigation_entry.h"
+
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/tab_android.h"
+#include "jni/TaskTabHelper_jni.h"
+
+using base::android::JavaParamRef;
+#endif  // defined(OS_ANDROID)
 
 namespace tasks {
 
@@ -69,6 +78,21 @@ void TaskTabHelper::NavigationListPruned(
       entry_index_to_spoke_count_map_[current_entry_index]);
 }
 
+sessions::ContextRecordTaskId* TaskTabHelper::GetContextRecordTaskId(
+    content::WebContents* web_contents) {
+  if (!web_contents)
+    return nullptr;
+  content::NavigationEntry* navigation_entry =
+      web_contents->GetController().GetLastCommittedEntry();
+  if (!navigation_entry)
+    return nullptr;
+  sessions::ContextRecordTaskId* context_record_task_id =
+      sessions::ContextRecordTaskId::Get(navigation_entry);
+  if (!context_record_task_id)
+    return nullptr;
+  return context_record_task_id;
+}
+
 void TaskTabHelper::RecordHubAndSpokeNavigationUsage(int spokes) {
   DCHECK_GT(spokes, 1);
 
@@ -94,6 +118,43 @@ void TaskTabHelper::RecordHubAndSpokeNavigationUsage(int spokes) {
 
   base::UmaHistogramExactLinear(histogram_name, spokes, 100);
 }
+
+#if defined(OS_ANDROID)
+int64_t TaskTabHelper::GetParentTaskId() {
+  TabAndroid* tab_android = TabAndroid::FromWebContents(web_contents());
+  return Java_TaskTabHelper_getParentTaskId(
+      base::android::AttachCurrentThread(), tab_android->GetJavaObject());
+}
+
+int64_t TaskTabHelper::GetParentRootTaskId() {
+  TabAndroid* tab_android = TabAndroid::FromWebContents(web_contents());
+  return Java_TaskTabHelper_getParentRootTaskId(
+      base::android::AttachCurrentThread(), tab_android->GetJavaObject());
+}
+
+jlong JNI_TaskTabHelper_GetTaskId(JNIEnv* env,
+                                  const JavaParamRef<jobject>& jweb_contents) {
+  sessions::ContextRecordTaskId* context_record_task_id =
+      TaskTabHelper::GetContextRecordTaskId(
+          content::WebContents::FromJavaWebContents(jweb_contents));
+  if (context_record_task_id) {
+    return context_record_task_id->task_id();
+  }
+  return -1;
+}
+
+jlong JNI_TaskTabHelper_GetRootTaskId(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jweb_contents) {
+  sessions::ContextRecordTaskId* context_record_task_id =
+      TaskTabHelper::GetContextRecordTaskId(
+          content::WebContents::FromJavaWebContents(jweb_contents));
+  if (context_record_task_id) {
+    return context_record_task_id->root_task_id();
+  }
+  return -1;
+}
+#endif  // defined(OS_ANDROID)
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(TaskTabHelper)
 

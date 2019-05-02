@@ -8,9 +8,14 @@
 #include <map>
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+
+namespace sessions {
+class ContextRecordTaskId;
+}
 
 namespace tasks {
 
@@ -26,6 +31,8 @@ class TaskTabHelper : public content::WebContentsObserver,
       const content::LoadCommittedDetails& load_details) override;
   void NavigationListPruned(
       const content::PrunedDetails& pruned_details) override;
+  static sessions::ContextRecordTaskId* GetContextRecordTaskId(
+      content::WebContents* web_contents);
 
  protected:
   explicit TaskTabHelper(content::WebContents* web_contents);
@@ -43,6 +50,11 @@ class TaskTabHelper : public content::WebContentsObserver,
   friend class content::WebContentsUserData<TaskTabHelper>;
 
   void RecordHubAndSpokeNavigationUsage(int sample);
+
+#if defined(OS_ANDROID)
+  int64_t GetParentTaskId();
+  int64_t GetParentRootTaskId();
+#endif  // defined(OS_ANDROID)
 
   int last_pruned_navigation_entry_index_;
   std::map<int, int> entry_index_to_spoke_count_map_;

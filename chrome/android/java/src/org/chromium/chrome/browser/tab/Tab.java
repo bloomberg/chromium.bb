@@ -332,7 +332,7 @@ public class Tab
         mPendingLoadParams = loadUrlParams;
         if (loadUrlParams != null) mUrl = loadUrlParams.getUrl();
 
-        TabHelpers.initTabHelpers(this, creationState);
+        TabHelpers.initTabHelpers(this, parent, creationState);
 
         mAttachStateChangeListener = new OnAttachStateChangeListener() {
             @Override

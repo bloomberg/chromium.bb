@@ -8,7 +8,9 @@
 
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/sessions/content/content_record_task_id.h"
 #include "content/public/test/navigation_simulator.h"
+#include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -173,4 +175,28 @@ TEST_F(TaskTabHelperUnitTest, ComplexRecordHubAndSpokeUsage) {
       testing::ElementsAre(base::Bucket(2, 1), base::Bucket(3, 1)));
   EXPECT_THAT(histogram_tester_.GetAllSamples(from_form_submit_histogram),
               testing::ElementsAre(base::Bucket(2, 1)));
+}
+
+TEST_F(TaskTabHelperUnitTest, TestGetContextRecordTaskId) {
+  std::unique_ptr<content::WebContents> test_parent_web_contents(
+      content::WebContentsTester::CreateTestWebContents(
+          web_contents()->GetBrowserContext(), nullptr));
+  GURL parent_gurl("http://parent.com");
+  content::WebContentsTester::For(test_parent_web_contents.get())
+      ->NavigateAndCommit(parent_gurl);
+
+  content::NavigationEntry* navigation_entry =
+      test_parent_web_contents->GetController().GetLastCommittedEntry();
+  sessions::ContextRecordTaskId* context_record_task_id =
+      sessions::ContextRecordTaskId::Get(navigation_entry);
+  context_record_task_id->set_task_id(3);
+  context_record_task_id->set_root_task_id(4);
+  EXPECT_EQ(tasks::TaskTabHelper::GetContextRecordTaskId(
+                test_parent_web_contents.get())
+                ->task_id(),
+            3);
+  EXPECT_EQ(tasks::TaskTabHelper::GetContextRecordTaskId(
+                test_parent_web_contents.get())
+                ->root_task_id(),
+            4);
 }
