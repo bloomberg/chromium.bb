@@ -43,11 +43,6 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
 
   aura::Window* GetWindow();
 
-  // Returns the native window of the |transformed_window_|'s minimized widget
-  // if the original window is in minimized state, or the original window
-  // otherwise.
-  aura::Window* GetWindowForStacking();
-
   // Returns the root window on which this item is shown.
   aura::Window* root_window() { return root_window_; }
 
@@ -140,8 +135,6 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   // Increases the bounds of the dragged item.
   void ScaleUpSelectedItem(OverviewAnimationType animation_type);
 
-  const gfx::RectF& target_bounds() const { return target_bounds_; }
-
   // Shift the window item up and then animates it to its original spot. Used
   // to transition from the home launcher.
   void SlideWindowIn();
@@ -211,6 +204,10 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override;
 
+  const gfx::RectF& target_bounds() const { return target_bounds_; }
+
+  views::Widget* item_widget() { return item_widget_.get(); }
+
   OverviewGrid* overview_grid() { return overview_grid_; }
 
   void set_should_animate_when_entering(bool should_animate) {
@@ -245,6 +242,7 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   }
 
  private:
+  friend class OverviewSessionRoundedCornerTest;
   friend class OverviewSessionTest;
   class OverviewCloseButton;
   class WindowSurfaceCacheObserver;

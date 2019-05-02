@@ -94,13 +94,17 @@ void RoundedLabelWidget::Init(const InitParams& params) {
   Show();
 }
 
-void RoundedLabelWidget::SetBoundsCenteredIn(const gfx::Rect& bounds) {
+gfx::Rect RoundedLabelWidget::GetBoundsCenteredIn(const gfx::Rect& bounds) {
   DCHECK(GetContentsView());
   RoundedLabelView* contents_view =
       static_cast<RoundedLabelView*>(GetContentsView());
   gfx::Rect widget_bounds = bounds;
   widget_bounds.ClampToCenteredSize(contents_view->GetPreferredSize());
-  GetNativeWindow()->SetBounds(widget_bounds);
+  return widget_bounds;
+}
+
+void RoundedLabelWidget::SetBoundsCenteredIn(const gfx::Rect& bounds) {
+  GetNativeWindow()->SetBounds(GetBoundsCenteredIn(bounds));
 }
 
 }  // namespace ash
