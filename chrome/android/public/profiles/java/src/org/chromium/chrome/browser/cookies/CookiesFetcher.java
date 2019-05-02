@@ -127,8 +127,7 @@ public class CookiesFetcher {
                             cookie.getSameSite(), cookie.getPriority());
                 }
             }
-        }
-                .executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        }.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
     /**
@@ -197,8 +196,7 @@ public class CookiesFetcher {
             }
 
             ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
-            CipherOutputStream cipherOut =
-                    new CipherOutputStream(byteOut, cipher);
+            CipherOutputStream cipherOut = new CipherOutputStream(byteOut, cipher);
             out = new DataOutputStream(cipherOut);
             CanonicalCookie.saveListToStream(out, cookies);
             out.close();

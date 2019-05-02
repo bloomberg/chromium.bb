@@ -25,7 +25,6 @@ import android.support.v7.content.res.AppCompatResources;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.profiles.ProfileDownloader;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ProfileDataSource;
 

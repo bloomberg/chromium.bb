@@ -14,7 +14,6 @@ import org.chromium.content_public.browser.BrowserStartupController;
  * Wrapper that allows passing a Profile reference around in the Java layer.
  */
 public class Profile {
-
     /** Whether this wrapper corresponds to an off the record Profile. */
     private final boolean mIsOffTheRecord;
 

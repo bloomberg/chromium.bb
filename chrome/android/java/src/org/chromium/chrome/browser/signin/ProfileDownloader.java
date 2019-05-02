@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.profiles;
+package org.chromium.chrome.browser.signin;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -10,7 +10,7 @@ import android.graphics.Bitmap;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.chrome.browser.signin.IdentityServicesProvider;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.signin.AccountTrackerService;
 
 import java.util.ArrayList;
@@ -34,8 +34,8 @@ public class ProfileDownloader {
          * @param givenName A given name.
          * @param bitmap A user picture.
          */
-        void onProfileDownloaded(String accountId, String fullName, String givenName,
-                Bitmap bitmap);
+        void onProfileDownloaded(
+                String accountId, String fullName, String givenName, Bitmap bitmap);
     }
 
     /**
@@ -55,10 +55,10 @@ public class ProfileDownloader {
     }
 
     /**
-    * Private class to pend profile download requests when system accounts have not been seeded into
-    * AccountTrackerService. It listens onSystemAccountsSeedingComplete to finish pending requests
-    * and onSystemAccountsChanged to clear outdated pending requests.
-    */
+     * Private class to pend profile download requests when system accounts have not been seeded
+     * into AccountTrackerService. It listens onSystemAccountsSeedingComplete to finish pending
+     * requests and onSystemAccountsChanged to clear outdated pending requests.
+     */
     private static class PendingProfileDownloads
             implements AccountTrackerService.OnSystemAccountsSeededListener {
         private static PendingProfileDownloads sPendingProfileDownloads;
@@ -131,8 +131,8 @@ public class ProfileDownloader {
     }
 
     @CalledByNative
-    private static void onProfileDownloadSuccess(String accountId, String fullName,
-            String givenName, Bitmap bitmap) {
+    private static void onProfileDownloadSuccess(
+            String accountId, String fullName, String givenName, Bitmap bitmap) {
         ThreadUtils.assertOnUiThread();
         for (Observer observer : sObservers) {
             observer.onProfileDownloaded(accountId, fullName, givenName, bitmap);

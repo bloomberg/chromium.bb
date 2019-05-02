@@ -318,7 +318,6 @@ public class CipherFactory {
         mObservers.removeObserver(observer);
     }
 
-
     private void notifyCipherDataGenerated() {
         for (CipherDataObserver observer : mObservers) {
             observer.onCipherDataGenerated();
