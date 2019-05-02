@@ -5745,6 +5745,16 @@ PaintLayer* LayoutBox::EnclosingFloatPaintingLayer() const {
   return nullptr;
 }
 
+const LayoutBlock& LayoutBox::EnclosingScrollportBox() const {
+  const LayoutBlock* ancestor = ContainingBlock();
+  for (; ancestor; ancestor = ancestor->ContainingBlock()) {
+    if (ancestor->HasOverflowClip())
+      return *ancestor;
+  }
+  NOTREACHED();
+  return *ancestor;
+}
+
 LayoutRect LayoutBox::LogicalVisualOverflowRectForPropagation() const {
   LayoutRect rect = VisualOverflowRectForPropagation();
   if (!Parent()->StyleRef().IsHorizontalWritingMode())
