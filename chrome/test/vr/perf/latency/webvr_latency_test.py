@@ -105,13 +105,13 @@ class WebVrLatencyTest(object):
     for device_type, vendor_ids in VENDOR_IDS.iteritems():
       devices = GetTtyDevices(r'ttyACM\d+', vendor_ids)
       if devices:
-        if device_type is 'arduino':
+        if device_type == 'arduino':
           if len(devices) != 1:
             raise RuntimeError(
                 'Found %d arduino devices, expected 1' % len(devices))
           self.robot_arm = arduino_arm.RobotArmArduino(devices[0])
           break
-        elif device_type is 'maestro':
+        elif device_type == 'maestro':
           # The Maestro controllers open up two serial ports. We only use one,
           # but if we don't detect both, that's an indication that something is
           # wrong.
