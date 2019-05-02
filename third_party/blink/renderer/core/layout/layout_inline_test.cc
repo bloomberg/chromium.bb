@@ -30,35 +30,35 @@ class ParameterizedLayoutInlineTest : public testing::WithParamInterface<bool>,
 
 INSTANTIATE_TEST_SUITE_P(All, ParameterizedLayoutInlineTest, testing::Bool());
 
-TEST_P(ParameterizedLayoutInlineTest, LinesBoundingBox) {
+TEST_P(ParameterizedLayoutInlineTest, PhysicalLinesBoundingBox) {
   LoadAhem();
-  SetBodyInnerHTML(
-      "<style>"
-      "html { font-family: Ahem; font-size: 13px; }"
-      // LayoutNG requires box decorations at this moment. crbug.com/789390
-      "span { background-color: yellow; }"
-      ".vertical { writing-mode: vertical-rl; }"
-      "</style>"
-      "<p><span id=ltr1>abc<br>xyz</span></p>"
-      "<p><span id=ltr2>12 345 6789</span></p>"
-      "<p dir=rtl><span id=rtl1>abc<br>xyz</span></p>"
-      "<p dir=rtl><span id=rtl2>12 345 6789</span></p>"
-      "<p class=vertical><span id=vertical>abc<br>xyz</span></p>");
-  EXPECT_EQ(
-      LayoutRect(LayoutPoint(0, 0), LayoutSize(39, 26)),
-      ToLayoutInline(GetLayoutObjectByElementId("ltr1"))->LinesBoundingBox());
-  EXPECT_EQ(
-      LayoutRect(LayoutPoint(0, 0), LayoutSize(143, 13)),
-      ToLayoutInline(GetLayoutObjectByElementId("ltr2"))->LinesBoundingBox());
-  EXPECT_EQ(
-      LayoutRect(LayoutPoint(745, 0), LayoutSize(39, 26)),
-      ToLayoutInline(GetLayoutObjectByElementId("rtl1"))->LinesBoundingBox());
-  EXPECT_EQ(
-      LayoutRect(LayoutPoint(641, 0), LayoutSize(143, 13)),
-      ToLayoutInline(GetLayoutObjectByElementId("rtl2"))->LinesBoundingBox());
-  EXPECT_EQ(LayoutRect(LayoutPoint(0, 0), LayoutSize(26, 39)),
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      html { font-family: Ahem; font-size: 10px; line-height: 10px; }
+      p { width: 300px; height: 100px; }
+      .vertical { writing-mode: vertical-rl; }
+    </style>
+    <p><span id=ltr1>abc<br>xyz</span></p>
+    <p><span id=ltr2>12 345 6789</span></p>
+    <p dir=rtl><span id=rtl1>abc<br>xyz</span></p>
+    <p dir=rtl><span id=rtl2>12 345 6789</span></p>
+    <p class=vertical><span id=vertical>abc<br>xyz</span></p>
+  )HTML");
+  EXPECT_EQ(LayoutRect(0, 0, 30, 20),
+            ToLayoutInline(GetLayoutObjectByElementId("ltr1"))
+                ->PhysicalLinesBoundingBox());
+  EXPECT_EQ(LayoutRect(0, 0, 110, 10),
+            ToLayoutInline(GetLayoutObjectByElementId("ltr2"))
+                ->PhysicalLinesBoundingBox());
+  EXPECT_EQ(LayoutRect(270, 0, 30, 20),
+            ToLayoutInline(GetLayoutObjectByElementId("rtl1"))
+                ->PhysicalLinesBoundingBox());
+  EXPECT_EQ(LayoutRect(190, 0, 110, 10),
+            ToLayoutInline(GetLayoutObjectByElementId("rtl2"))
+                ->PhysicalLinesBoundingBox());
+  EXPECT_EQ(LayoutRect(280, 0, 20, 30),
             ToLayoutInline(GetLayoutObjectByElementId("vertical"))
-                ->LinesBoundingBox());
+                ->PhysicalLinesBoundingBox());
 }
 
 TEST_F(LayoutInlineTest, SimpleContinuation) {
@@ -463,6 +463,74 @@ TEST_P(ParameterizedLayoutInlineTest,
   EXPECT_EQ(LayoutRect(390, 70, 160, 100),
             GetLayoutObjectByElementId("target6")
                 ->AbsoluteBoundingBoxRectHandlingEmptyInline());
+}
+
+TEST_P(ParameterizedLayoutInlineTest, AddAnnotatedRegions) {
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body {
+        margin: 0;
+        font: 10px/10px Ahem;
+      }
+    </style>
+    <div style="width: 600px; height: 400px">
+      A<br>B
+      <span id="target1" style="-webkit-app-region: drag">CDE<br>FGH</span>
+      <span id="target2" style="-webkit-app-region: no-drag">IJK<br>LMN</span>
+      <span id="target3">OPQ<br>RST</span>
+    </div>
+  )HTML");
+
+  Vector<AnnotatedRegionValue> regions1;
+  GetLayoutObjectByElementId("target1")->AddAnnotatedRegions(regions1);
+  ASSERT_EQ(1u, regions1.size());
+  EXPECT_EQ(LayoutRect(0, 10, 50, 20), regions1[0].bounds);
+  EXPECT_TRUE(regions1[0].draggable);
+
+  Vector<AnnotatedRegionValue> regions2;
+  GetLayoutObjectByElementId("target2")->AddAnnotatedRegions(regions2);
+  ASSERT_EQ(1u, regions2.size());
+  EXPECT_EQ(LayoutRect(0, 20, 70, 20), regions2[0].bounds);
+  EXPECT_FALSE(regions2[0].draggable);
+
+  Vector<AnnotatedRegionValue> regions3;
+  GetLayoutObjectByElementId("target3")->AddAnnotatedRegions(regions3);
+  EXPECT_TRUE(regions3.IsEmpty());
+}
+
+TEST_P(ParameterizedLayoutInlineTest, AddAnnotatedRegionsVerticalRL) {
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body {
+        margin: 0;
+        font: 10px/10px Ahem;
+      }
+    </style>
+    <div style="width: 600px; height: 400px; writing-mode: vertical-rl">
+      A<br>B
+      <span id="target1" style="-webkit-app-region: drag">CDE<br>FGH</span>
+      <span id="target2" style="-webkit-app-region: no-drag">IJK<br>LMN</span>
+      <span id="target3">OPQ<br>RST</span>
+    </div>
+  )HTML");
+
+  Vector<AnnotatedRegionValue> regions1;
+  GetLayoutObjectByElementId("target1")->AddAnnotatedRegions(regions1);
+  ASSERT_EQ(1u, regions1.size());
+  EXPECT_EQ(LayoutRect(570, 0, 20, 50), regions1[0].bounds);
+  EXPECT_TRUE(regions1[0].draggable);
+
+  Vector<AnnotatedRegionValue> regions2;
+  GetLayoutObjectByElementId("target2")->AddAnnotatedRegions(regions2);
+  ASSERT_EQ(1u, regions2.size());
+  EXPECT_EQ(LayoutRect(560, 0, 20, 70), regions2[0].bounds);
+  EXPECT_FALSE(regions2[0].draggable);
+
+  Vector<AnnotatedRegionValue> regions3;
+  GetLayoutObjectByElementId("target3")->AddAnnotatedRegions(regions3);
+  EXPECT_TRUE(regions3.IsEmpty());
 }
 
 }  // namespace blink

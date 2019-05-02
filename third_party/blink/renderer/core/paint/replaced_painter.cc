@@ -179,7 +179,8 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
   if (draw_selection_tint && !DrawingRecorder::UseCachedDrawingIfPossible(
                                  local_paint_info.context, layout_replaced_,
                                  DisplayItem::kSelectionTint)) {
-    LayoutRect selection_painting_rect = layout_replaced_.LocalSelectionRect();
+    LayoutRect selection_painting_rect =
+        layout_replaced_.LocalSelectionVisualRect();
     selection_painting_rect.MoveBy(paint_offset);
     IntRect selection_painting_int_rect =
         PixelSnappedIntRect(selection_painting_rect);
@@ -213,9 +214,8 @@ bool ReplacedPainter::ShouldPaint(const ScopedPaintState& paint_state) const {
       layout_replaced_.StyleRef().Visibility() != EVisibility::kVisible)
     return false;
 
-  LayoutRect local_rect(layout_replaced_.VisualOverflowRect());
-  local_rect.Unite(layout_replaced_.LocalSelectionRect());
-  layout_replaced_.FlipForWritingMode(local_rect);
+  LayoutRect local_rect(layout_replaced_.PhysicalVisualOverflowRect());
+  local_rect.Unite(layout_replaced_.LocalSelectionVisualRect());
   if (!paint_state.LocalRectIntersectsCullRect(local_rect))
     return false;
 

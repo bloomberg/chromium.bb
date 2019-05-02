@@ -1591,12 +1591,11 @@ bool LayoutBox::HitTestAllPhases(HitTestResult& result,
     LayoutRect overflow_box;
     if (result.GetHitTestRequest().GetType() &
         HitTestRequest::kHitTestVisualOverflow) {
-      overflow_box = VisualOverflowRectIncludingFilters();
+      overflow_box = PhysicalVisualOverflowRectIncludingFilters();
     } else {
       overflow_box = (HasOverflowClip() || ShouldApplyPaintContainment())
                          ? BorderBoxRect()
-                         : VisualOverflowRect();
-      FlipForWritingMode(overflow_box);
+                         : PhysicalVisualOverflowRect();
     }
     LayoutPoint adjusted_location = accumulated_offset + Location();
     overflow_box.MoveBy(adjusted_location);
@@ -1651,8 +1650,7 @@ bool LayoutBox::NodeAtPoint(HitTestResult& result,
     LayoutRect bounds_rect;
     if (result.GetHitTestRequest().GetType() &
         HitTestRequest::kHitTestVisualOverflow) {
-      bounds_rect = VisualOverflowRectIncludingFilters();
-      FlipForWritingMode(bounds_rect);
+      bounds_rect = PhysicalVisualOverflowRectIncludingFilters();
     } else {
       bounds_rect = BorderBoxRect();
     }
@@ -1964,7 +1962,7 @@ void LayoutBox::SizeChanged() {
 }
 
 bool LayoutBox::IntersectsVisibleViewport() const {
-  LayoutRect rect = VisualOverflowRect();
+  LayoutRect rect = PhysicalVisualOverflowRect();
   LayoutView* layout_view = View();
   while (layout_view->GetFrame()->OwnerLayoutObject())
     layout_view = layout_view->GetFrame()->OwnerLayoutObject()->View();
@@ -2685,7 +2683,11 @@ bool LayoutBox::PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
 }
 
 LayoutRect LayoutBox::LocalVisualRectIgnoringVisibility() const {
-  return SelfVisualOverflowRect();
+  // VisualOverflowRect() is in "physical coordinates with flipped blocks
+  // direction", while all "VisualRect"s are in pure physical coordinates.
+  LayoutRect rect = SelfVisualOverflowRect();
+  FlipForWritingMode(rect);
+  return rect;
 }
 
 void LayoutBox::InflateVisualRectForFilterUnderContainer(
@@ -2751,13 +2753,8 @@ bool LayoutBox::MapToVisualRectInAncestorSpaceInternal(
       container_offset.MoveBy(
           -table_row_container->PhysicalLocation(ToLayoutBox(container)));
     }
-  } else if (container->IsRuby()) {
-    // TODO(wkorman): Generalize Ruby specialization and/or document more
-    // clearly. See the accompanying specialization in
-    // LayoutInline::mapToVisualRectInAncestorSpaceInternal.
-    container_offset.MoveBy(PhysicalLocation());
   } else {
-    container_offset.MoveBy(Location());
+    container_offset.MoveBy(PhysicalLocation());
   }
 
   const ComputedStyle& style_to_use = StyleRef();
@@ -4260,11 +4257,11 @@ LayoutUnit LayoutBox::ContainingBlockLogicalHeightForPositioned(
     return LayoutUnit();
 
   LayoutUnit height_result;
-  LayoutRect bounding_box(flow->LinesBoundingBox());
+  auto bounding_box_size = flow->PhysicalLinesBoundingBox().Size();
   if (containing_block->IsHorizontalWritingMode())
-    height_result = bounding_box.Height();
+    height_result = bounding_box_size.Height();
   else
-    height_result = bounding_box.Width();
+    height_result = bounding_box_size.Width();
   height_result -=
       (containing_block->BorderBefore() + containing_block->BorderAfter());
   return height_result;
@@ -5530,9 +5527,8 @@ LayoutUnit LayoutBox::LayoutClientAfterEdge() const {
              : ClientLogicalBottom();
 }
 
-LayoutRect LayoutBox::VisualOverflowRectIncludingFilters() const {
-  LayoutRect bounds_rect = VisualOverflowRect();
-  FlipForWritingMode(bounds_rect);
+LayoutRect LayoutBox::PhysicalVisualOverflowRectIncludingFilters() const {
+  LayoutRect bounds_rect = PhysicalVisualOverflowRect();
   if (!StyleRef().HasFilter())
     return bounds_rect;
   FloatRect float_rect = Layer()->MapRectForFilter(FloatRect(bounds_rect));
@@ -6269,7 +6265,7 @@ void LayoutBox::ClearCustomLayoutChild() {
 }
 
 LayoutRect LayoutBox::DebugRect() const {
-  return FrameRect();
+  return LayoutRect(PhysicalLocation(), Size());
 }
 
 bool LayoutBox::ComputeShouldClipOverflow() const {

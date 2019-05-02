@@ -987,7 +987,7 @@ PositionWithAffinity LayoutReplaced::PositionForPoint(
   return LayoutBox::PositionForPoint(point);
 }
 
-LayoutRect LayoutReplaced::LocalSelectionRect() const {
+LayoutRect LayoutReplaced::LocalSelectionVisualRect() const {
   if (GetSelectionState() == SelectionState::kNone ||
       GetSelectionState() == SelectionState::kContain) {
     return LayoutRect();

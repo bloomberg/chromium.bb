@@ -1245,7 +1245,7 @@ class LinesBoundingBoxGeneratorContext {
 
 }  // unnamed namespace
 
-LayoutRect LayoutInline::LinesBoundingBox() const {
+LayoutRect LayoutInline::PhysicalLinesBoundingBox() const {
   if (IsInLayoutNGInlineFormattingContext()) {
     const NGPhysicalBoxFragment* box_fragment =
         ContainingBlockFlowFragmentOf(*this);
@@ -1257,8 +1257,6 @@ LayoutRect LayoutInline::LinesBoundingBox() const {
     for (const auto& child : children)
       bounding_box.UniteIfNonZero(child.RectInContainerBox());
     LayoutRect rect = bounding_box.ToLayoutRect();
-    if (UNLIKELY(HasFlippedBlocksWritingMode()))
-      ContainingBlock()->FlipForWritingMode(rect);
     return rect;
   }
 
@@ -1267,6 +1265,8 @@ LayoutRect LayoutInline::LinesBoundingBox() const {
     FloatRect float_result;
     LinesBoundingBoxGeneratorContext context(float_result);
     GenerateCulledLineBoxRects(context, this);
+    if (UNLIKELY(HasFlippedBlocksWritingMode()))
+      ContainingBlock()->FlipForWritingMode(float_result);
     return EnclosingLayoutRect(float_result);
   }
 
@@ -1302,6 +1302,8 @@ LayoutRect LayoutInline::LinesBoundingBox() const {
     result = LayoutRect(x, y, width, height);
   }
 
+  if (UNLIKELY(HasFlippedBlocksWritingMode()))
+    ContainingBlock()->FlipForWritingMode(result);
   return result;
 }
 
@@ -1464,16 +1466,20 @@ LayoutRect LayoutInline::VisualRectInDocument(VisualRectFlags flags) const {
 
 LayoutRect LayoutInline::LocalVisualRectIgnoringVisibility() const {
   if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
-    LayoutRect visual_rect;
-    if (NGPaintFragment::FlippedLocalVisualRectFor(this, &visual_rect))
-      return visual_rect;
+    if (const auto& visual_rect = NGPaintFragment::LocalVisualRectFor(*this))
+      return *visual_rect;
   }
 
   // If we don't create line boxes, we don't have any invalidations to do.
   if (!AlwaysCreateLineBoxes())
     return LayoutRect();
 
-  return VisualOverflowRect();
+  // VisualOverflowRect() is in "physical coordinates with flipped blocks
+  // direction", while all "VisualRect"s are in pure physical coordinates.
+  auto rect = VisualOverflowRect();
+  if (UNLIKELY(HasFlippedBlocksWritingMode()))
+    ContainingBlock()->FlipForWritingMode(rect);
+  return rect;
 }
 
 LayoutRect LayoutInline::VisualOverflowRect() const {
@@ -1556,13 +1562,6 @@ bool LayoutInline::MapToVisualRectInAncestorSpaceInternal(
                                                 *this, visual_rect_flags))
     return false;
 
-  // TODO(wkorman): Generalize Ruby specialization and/or document more clearly.
-  if (container_box && !IsRuby()) {
-    transform_state.Flatten();
-    LayoutRect rect(transform_state.LastPlanarQuad().BoundingBox());
-    container_box->FlipForWritingMode(rect);
-    transform_state.SetQuad(FloatQuad(FloatRect(rect)));
-  }
   return container->MapToVisualRectInAncestorSpaceInternal(
       ancestor, transform_state, visual_rect_flags);
 }
@@ -1847,7 +1846,7 @@ void LayoutInline::AddAnnotatedRegions(Vector<AnnotatedRegionValue>& regions) {
   AnnotatedRegionValue region;
   region.draggable =
       StyleRef().DraggableRegionMode() == EDraggableRegionMode::kDrag;
-  region.bounds = LayoutRect(LinesBoundingBox());
+  region.bounds = LayoutRect(PhysicalLinesBoundingBox());
 
   LayoutObject* container = ContainingBlock();
   if (!container)
@@ -1894,7 +1893,7 @@ void LayoutInline::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
 }
 
 LayoutRect LayoutInline::DebugRect() const {
-  return LayoutRect(EnclosingIntRect(LinesBoundingBox()));
+  return LayoutRect(EnclosingIntRect(PhysicalLinesBoundingBox()));
 }
 
 }  // namespace blink

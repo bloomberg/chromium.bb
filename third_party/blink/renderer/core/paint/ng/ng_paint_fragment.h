@@ -284,13 +284,9 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   // Mark the line box that contains this fragment dirty.
   void MarkContainingLineBoxDirty();
 
-  // Computes LocalVisualRect for an inline LayoutObject in the
-  // LayoutObject::LocalVisualRect semantics; i.e., physical coordinates with
-  // flipped block-flow direction. See layout/README.md for the coordinate
-  // spaces.
-  // Returns false if the LayoutObject is not in LayoutNG inline formatting
-  // context.
-  static bool FlippedLocalVisualRectFor(const LayoutObject*, LayoutRect*);
+  // Computes LocalVisualRect for an inline LayoutObject. Returns nullopt if the
+  // LayoutObject is not in LayoutNG inline formatting context.
+  static base::Optional<LayoutRect> LocalVisualRectFor(const LayoutObject&);
 
  private:
   static scoped_refptr<NGPaintFragment> CreateOrReuse(

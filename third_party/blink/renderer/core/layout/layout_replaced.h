@@ -80,7 +80,8 @@ class CORE_EXPORT LayoutReplaced : public LayoutBox {
   bool CanHaveChildren() const override { return false; }
   virtual void PaintReplaced(const PaintInfo&,
                              const LayoutPoint& paint_offset) const {}
-  LayoutRect LocalSelectionRect() const final;
+
+  LayoutRect LocalSelectionVisualRect() const final;
 
   bool HasObjectFit() const {
     return StyleRef().GetObjectFit() !=

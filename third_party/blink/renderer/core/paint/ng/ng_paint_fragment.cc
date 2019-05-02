@@ -664,25 +664,19 @@ IntRect NGPaintFragment::PartialInvalidationVisualRect() const {
              : layout_object.PartialInvalidationVisualRect();
 }
 
-bool NGPaintFragment::FlippedLocalVisualRectFor(
-    const LayoutObject* layout_object,
-    LayoutRect* visual_rect) {
-  auto fragments = InlineFragmentsFor(layout_object);
+base::Optional<LayoutRect> NGPaintFragment::LocalVisualRectFor(
+    const LayoutObject& layout_object) {
+  auto fragments = InlineFragmentsFor(&layout_object);
   if (!fragments.IsInLayoutNGInlineFormattingContext())
-    return false;
+    return base::nullopt;
 
+  LayoutRect visual_rect;
   for (NGPaintFragment* fragment : fragments) {
     PhysicalRect child_visual_rect = fragment->SelfInkOverflow();
     child_visual_rect.offset += fragment->InlineOffsetToContainerBox();
-    visual_rect->Unite(child_visual_rect.ToLayoutRect());
+    visual_rect.Unite(child_visual_rect.ToLayoutRect());
   }
-  if (!layout_object->HasFlippedBlocksWritingMode())
-    return true;
-
-  NGPaintFragment* container = GetForInlineContainer(layout_object);
-  DCHECK(container);
-  ToLayoutBox(container->GetLayoutObject())->FlipForWritingMode(*visual_rect);
-  return true;
+  return visual_rect;
 }
 
 void NGPaintFragment::AddSelfOutlineRect(Vector<LayoutRect>* outline_rects,

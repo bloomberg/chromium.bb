@@ -1988,7 +1988,7 @@ float LayoutText::Width(unsigned from,
   return w;
 }
 
-LayoutRect LayoutText::LinesBoundingBox() const {
+LayoutRect LayoutText::PhysicalLinesBoundingBox() const {
   if (const NGPhysicalBoxFragment* box_fragment =
           ContainingBlockFlowFragment()) {
     PhysicalRect bounding_box;
@@ -1996,10 +1996,7 @@ LayoutRect LayoutText::LinesBoundingBox() const {
         NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, this);
     for (const auto& child : children)
       bounding_box.UniteIfNonZero(child.RectInContainerBox());
-    LayoutRect rect = bounding_box.ToLayoutRect();
-    if (HasFlippedBlocksWritingMode())
-      ContainingBlock()->FlipForWritingMode(rect);
-    return rect;
+    return bounding_box.ToLayoutRect();
   }
 
   LayoutRect result;
@@ -2028,15 +2025,17 @@ LayoutRect LayoutText::LinesBoundingBox() const {
     result = EnclosingLayoutRect(FloatRect(x, y, width, height));
   }
 
+  if (UNLIKELY(HasFlippedBlocksWritingMode()))
+    ContainingBlock()->FlipForWritingMode(result);
   return result;
 }
 
 LayoutRect LayoutText::VisualOverflowRect() const {
-  if (IsInLayoutNGInlineFormattingContext()) {
-    LayoutRect rect;
-    if (NGPaintFragment::FlippedLocalVisualRectFor(this, &rect))
-      return rect;
-    NOTREACHED();
+  if (base::Optional<LayoutRect> rect =
+          NGPaintFragment::LocalVisualRectFor(*this)) {
+    if (UNLIKELY(HasFlippedBlocksWritingMode()))
+      ContainingBlock()->FlipForWritingMode(*rect);
+    return *rect;
   }
 
   if (!FirstTextBox())
@@ -2084,25 +2083,19 @@ LayoutRect LayoutText::VisualOverflowRect() const {
 }
 
 LayoutRect LayoutText::LocalVisualRectIgnoringVisibility() const {
-  if (IsInLayoutNGInlineFormattingContext()) {
-    LayoutRect rect;
-    if (NGPaintFragment::FlippedLocalVisualRectFor(this, &rect)) {
-      if (!IsSelected())
-        return rect;
-      return UnionRect(rect, LocalSelectionRect());
-    }
-    NOTREACHED();
-  }
-  return UnionRect(VisualOverflowRect(), LocalSelectionRect());
+  if (const auto& rect = NGPaintFragment::LocalVisualRectFor(*this))
+    return UnionRect(*rect, LocalSelectionVisualRect());
+
+  auto rect = VisualOverflowRect();
+  if (UNLIKELY(HasFlippedBlocksWritingMode()))
+    ContainingBlock()->FlipForWritingMode(rect);
+  return UnionRect(rect, LocalSelectionVisualRect());
 }
 
-LayoutRect LayoutText::LocalSelectionRect() const {
+LayoutRect LayoutText::LocalSelectionVisualRect() const {
   DCHECK(!NeedsLayout());
 
   if (!IsSelected())
-    return LayoutRect();
-  LayoutBlock* cb = ContainingBlock();
-  if (!cb)
     return LayoutRect();
 
   const FrameSelection& frame_selection = GetFrame()->Selection();
@@ -2119,15 +2112,6 @@ LayoutRect LayoutText::LocalSelectionRect() const {
       fragment_rect.offset += fragment->InlineOffsetToContainerBox();
       rect.Unite(fragment_rect.ToLayoutRect());
     }
-
-    if (!HasFlippedBlocksWritingMode())
-      return rect;
-    // Since legacy requires LocalSelectionRect return flipped block direction,
-    // we need to convert physical coordinates into physical coordinates in
-    // flipped block direction.
-    NGPaintFragment* container = NGPaintFragment::GetForInlineContainer(this);
-    DCHECK(container);
-    ToLayoutBox(container->GetLayoutObject())->FlipForWritingMode(rect);
     return rect;
   }
 
@@ -2142,6 +2126,8 @@ LayoutRect LayoutText::LocalSelectionRect() const {
     rect.Unite(LayoutRect(EllipsisRectForBox(box, start_pos, end_pos)));
   }
 
+  if (UNLIKELY(HasFlippedBlocksWritingMode()))
+    ContainingBlock()->FlipForWritingMode(rect);
   return rect;
 }
 
@@ -2462,7 +2448,7 @@ void LayoutText::InvalidateDisplayItemClients(
 }
 
 LayoutRect LayoutText::DebugRect() const {
-  return LayoutRect(EnclosingIntRect(LinesBoundingBox()));
+  return LayoutRect(EnclosingIntRect(PhysicalLinesBoundingBox()));
 }
 
 NodeHolder LayoutText::EnsureNodeHolder() {

@@ -129,7 +129,7 @@ FloatRect LayoutSVGInlineText::FloatLinesBoundingBox() const {
   return bounding_box;
 }
 
-LayoutRect LayoutSVGInlineText::LinesBoundingBox() const {
+LayoutRect LayoutSVGInlineText::PhysicalLinesBoundingBox() const {
   return EnclosingLayoutRect(FloatLinesBoundingBox());
 }
 

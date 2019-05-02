@@ -186,9 +186,10 @@ class CORE_EXPORT LayoutText : public LayoutObject {
                          bool& strip_front_spaces,
                          TextDirection);
 
-  virtual LayoutRect LinesBoundingBox() const;
+  virtual LayoutRect PhysicalLinesBoundingBox() const;
 
-  // Returns the bounding box of visual overflow rects of all line boxes.
+  // Returns the bounding box of visual overflow rects of all line boxes,
+  // in containing block's physical coordinates with flipped blocks direction.
   LayoutRect VisualOverflowRect() const;
 
   LayoutPoint FirstLineBoxTopLeft() const;
@@ -203,7 +204,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
   virtual void TransformText();
 
-  LayoutRect LocalSelectionRect() const final;
+  LayoutRect LocalSelectionVisualRect() const final;
   LayoutRect LocalCaretRect(
       const InlineBox*,
       int caret_offset,

@@ -64,7 +64,7 @@ class LayoutTextTest : public RenderingTest {
     const Node* target = GetDocument().getElementById("target");
     const LayoutObject* layout_object =
         target ? target->GetLayoutObject() : FindFirstLayoutText();
-    return layout_object->LocalSelectionRect();
+    return layout_object->LocalSelectionVisualRect();
   }
 };
 
@@ -587,7 +587,7 @@ TEST_P(ParameterizedLayoutTextTest, AbsoluteRectsVRL) {
                                           IntRect(110, 200, 10, 20)));
 }
 
-TEST_P(ParameterizedLayoutTextTest, LinesBoundingBox) {
+TEST_P(ParameterizedLayoutTextTest, PhysicalLinesBoundingBox) {
   LoadAhem();
   SetBasicBody(
       "<style>"
@@ -620,15 +620,52 @@ TEST_P(ParameterizedLayoutTextTest, LinesBoundingBox) {
   const Element& div = *GetDocument().getElementById("div");
   const Element& one = *GetDocument().getElementById("one");
   const Element& two = *GetDocument().getElementById("two");
-  EXPECT_EQ(
-      LayoutRect(LayoutPoint(3, 6), LayoutSize(52, 13)),
-      ToLayoutText(div.firstChild()->GetLayoutObject())->LinesBoundingBox());
-  EXPECT_EQ(
-      LayoutRect(LayoutPoint(55, 6), LayoutSize(39, 13)),
-      ToLayoutText(one.firstChild()->GetLayoutObject())->LinesBoundingBox());
-  EXPECT_EQ(
-      LayoutRect(LayoutPoint(28, 25), LayoutSize(39, 13)),
-      ToLayoutText(two.firstChild()->GetLayoutObject())->LinesBoundingBox());
+  EXPECT_EQ(LayoutRect(LayoutPoint(3, 6), LayoutSize(52, 13)),
+            ToLayoutText(div.firstChild()->GetLayoutObject())
+                ->PhysicalLinesBoundingBox());
+  EXPECT_EQ(LayoutRect(LayoutPoint(55, 6), LayoutSize(39, 13)),
+            ToLayoutText(one.firstChild()->GetLayoutObject())
+                ->PhysicalLinesBoundingBox());
+  EXPECT_EQ(LayoutRect(LayoutPoint(28, 25), LayoutSize(39, 13)),
+            ToLayoutText(two.firstChild()->GetLayoutObject())
+                ->PhysicalLinesBoundingBox());
+}
+
+TEST_P(ParameterizedLayoutTextTest, PhysicalLinesBoundingBoxVerticalRL) {
+  LoadAhem();
+  SetBasicBody(R"HTML(
+    <style>
+    div {
+      font-family:Ahem;
+      font-size: 13px;
+      line-height: 19px;
+      padding: 3px;
+      writing-mode: vertical-rl;
+    }
+    </style>
+    <div id=div>
+      012
+      <span id=one>345</span>
+      <br>
+      <span style='padding: 20px'>
+        <span id=two style='padding: 5px'>678</span>
+      </span>
+    </div>
+  )HTML");
+  // Similar to the previous test, with logical coordinates converted to
+  // physical coordinates.
+  const Element& div = *GetDocument().getElementById("div");
+  const Element& one = *GetDocument().getElementById("one");
+  const Element& two = *GetDocument().getElementById("two");
+  EXPECT_EQ(LayoutRect(LayoutPoint(25, 3), LayoutSize(13, 52)),
+            ToLayoutText(div.firstChild()->GetLayoutObject())
+                ->PhysicalLinesBoundingBox());
+  EXPECT_EQ(LayoutRect(LayoutPoint(25, 55), LayoutSize(13, 39)),
+            ToLayoutText(one.firstChild()->GetLayoutObject())
+                ->PhysicalLinesBoundingBox());
+  EXPECT_EQ(LayoutRect(LayoutPoint(6, 28), LayoutSize(13, 39)),
+            ToLayoutText(two.firstChild()->GetLayoutObject())
+                ->PhysicalLinesBoundingBox());
 }
 
 TEST_P(ParameterizedLayoutTextTest, QuadsBasic) {
@@ -721,7 +758,7 @@ TEST_P(ParameterizedLayoutTextTest, LocalSelectionRectVertical) {
       GetSelectionRectFor("<div style='writing-mode: vertical-lr; height: 2em'>"
                           "f^oo ba|r baz</div>"));
   EXPECT_EQ(
-      LayoutRect(0, 0, 20, 40),
+      LayoutRect(10, 0, 20, 40),
       GetSelectionRectFor("<div style='writing-mode: vertical-rl; height: 2em'>"
                           "f^oo ba|r baz</div>"));
 }
@@ -734,8 +771,8 @@ TEST_P(ParameterizedLayoutTextTest, LocalSelectionRectVerticalRTL) {
             GetSelectionRectFor(
                 "<div style='writing-mode: vertical-lr; height: 2em' dir=rtl>"
                 "f^oo ba|r baz</div>"));
-  EXPECT_EQ(LayoutNGEnabled() ? LayoutRect(0, -10, 20, 30)
-                              : LayoutRect(0, -10, 20, 40),
+  EXPECT_EQ(LayoutNGEnabled() ? LayoutRect(10, -10, 20, 30)
+                              : LayoutRect(10, -10, 20, 40),
             GetSelectionRectFor(
                 "<div style='writing-mode: vertical-rl; height: 2em' dir=rtl>"
                 "f^oo ba|r baz</div>"));

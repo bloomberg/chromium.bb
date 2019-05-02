@@ -210,8 +210,8 @@ LayoutRect IntersectionGeometry::InitializeTargetRect(LayoutObject* target) {
   if (target->IsBox())
     return LayoutRect(ToLayoutBoxModelObject(target)->BorderBoundingBox());
   if (target->IsLayoutInline())
-    return ToLayoutInline(target)->LinesBoundingBox();
-  return ToLayoutText(target)->LinesBoundingBox();
+    return ToLayoutInline(target)->PhysicalLinesBoundingBox();
+  return ToLayoutText(target)->PhysicalLinesBoundingBox();
 }
 
 LayoutRect IntersectionGeometry::InitializeRootRect(

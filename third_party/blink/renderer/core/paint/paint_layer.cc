@@ -866,7 +866,7 @@ bool PaintLayer::UpdateSize() {
   } else if (GetLayoutObject().IsInline() &&
              GetLayoutObject().IsLayoutInline()) {
     LayoutInline& inline_flow = ToLayoutInline(GetLayoutObject());
-    IntRect line_box = EnclosingIntRect(inline_flow.LinesBoundingBox());
+    IntRect line_box = EnclosingIntRect(inline_flow.PhysicalLinesBoundingBox());
     size_ = LayoutSize(line_box.Size());
   } else if (LayoutBox* box = GetLayoutBox()) {
     size_ = box->Size();

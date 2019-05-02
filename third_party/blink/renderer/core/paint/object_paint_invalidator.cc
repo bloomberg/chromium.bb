@@ -305,7 +305,7 @@ PaintInvalidationReason ObjectPaintInvalidatorWithContext::InvalidateSelection(
 #endif
   if (context_.NeedsVisualRectUpdate(object_)) {
     new_selection_rect = context_.MapLocalRectToVisualRect(
-        object_, object_.LocalSelectionRect());
+        object_, object_.LocalSelectionVisualRect());
   } else {
     new_selection_rect = old_selection_rect;
   }

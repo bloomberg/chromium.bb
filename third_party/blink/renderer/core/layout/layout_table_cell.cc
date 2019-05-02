@@ -381,7 +381,7 @@ void LayoutTableCell::ComputeVisualOverflow(
   unsigned top = CollapsedBorderHalfTop(true);
   unsigned bottom = CollapsedBorderHalfBottom(true);
 
-  // TODO(wangxianzhu): The following looks incorrect for vertical direction.
+  // TODO(layout-ng): The following looks incorrect for vertical direction.
   // This cell's borders may be lengthened to match the widths of orthogonal
   // borders of adjacent cells. Expand visual overflow to cover the lengthened
   // parts.

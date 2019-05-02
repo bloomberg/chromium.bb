@@ -897,14 +897,16 @@ void LayoutBoxModelObject::UpdateStickyPositionConstraints() const {
   constraints.scroll_container_relative_containing_block_rect =
       FloatRect(scroll_container_relative_containing_block_rect);
 
-  FloatRect sticky_box_rect =
-      IsLayoutInline() ? FloatRect(ToLayoutInline(this)->LinesBoundingBox())
-                       : FloatRect(ToLayoutBox(this)->FrameRect());
-
-  FloatRect flipped_sticky_box_rect = sticky_box_rect;
-  containing_block->FlipForWritingMode(flipped_sticky_box_rect);
+  FloatRect sticky_box_rect;
+  if (IsLayoutInline()) {
+    sticky_box_rect =
+        FloatRect(ToLayoutInline(this)->PhysicalLinesBoundingBox());
+  } else {
+    sticky_box_rect = FloatRect(ToLayoutBox(this)->FrameRect());
+    containing_block->FlipForWritingMode(sticky_box_rect);
+  }
   FloatPoint sticky_location =
-      flipped_sticky_box_rect.Location() + skipped_containers_offset;
+      sticky_box_rect.Location() + skipped_containers_offset;
 
   // The scrollContainerRelativePaddingBoxRect's position is the padding box so
   // we need to remove the border when finding the position of the sticky box
@@ -917,7 +919,7 @@ void LayoutBoxModelObject::UpdateStickyPositionConstraints() const {
   constraints.scroll_container_relative_sticky_box_rect =
       FloatRect(scroll_container_relative_padding_box_rect.Location() +
                     ToFloatSize(sticky_location),
-                flipped_sticky_box_rect.Size());
+                sticky_box_rect.Size());
 
   // To correctly compute the offsets, the constraints need to know about any
   // nested position:sticky elements between themselves and their

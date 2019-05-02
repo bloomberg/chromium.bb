@@ -156,7 +156,7 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
                      const LayoutPoint& accumulated_offset) const final;
   FloatRect LocalBoundingBoxRectForAccessibility() const final;
 
-  LayoutRect LinesBoundingBox() const;
+  LayoutRect PhysicalLinesBoundingBox() const;
   LayoutRect VisualOverflowRect() const final;
   LayoutRect ReferenceBoxForClipPath() const;
 
@@ -340,15 +340,20 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
 
   LayoutUnit OffsetLeft(const Element*) const final;
   LayoutUnit OffsetTop(const Element*) const final;
-  LayoutUnit OffsetWidth() const final { return LinesBoundingBox().Width(); }
-  LayoutUnit OffsetHeight() const final { return LinesBoundingBox().Height(); }
+  LayoutUnit OffsetWidth() const final {
+    return PhysicalLinesBoundingBox().Width();
+  }
+  LayoutUnit OffsetHeight() const final {
+    return PhysicalLinesBoundingBox().Height();
+  }
 
   LayoutRect VisualRectInDocument(
       VisualRectFlags = kDefaultVisualRectFlags) const override;
 
-  // This method differs from visualOverflowRect in that it doesn't include the
-  // rects for culled inline boxes, which aren't necessary for paint
-  // invalidation.
+  // This method differs from VisualOverflowRect() in that
+  // 1. it doesn't include the rects for culled inline boxes, which aren't
+  //    necessary for paint invalidation;
+  // 2. it is in physical coordinates.
   LayoutRect LocalVisualRectIgnoringVisibility() const override;
 
   bool MapToVisualRectInAncestorSpaceInternal(
@@ -359,7 +364,7 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
   PositionWithAffinity PositionForPoint(const LayoutPoint&) const final;
 
   IntRect BorderBoundingBox() const final {
-    IntRect bounding_box = EnclosingIntRect(LinesBoundingBox());
+    IntRect bounding_box = EnclosingIntRect(PhysicalLinesBoundingBox());
     return IntRect(0, 0, bounding_box.Width(), bounding_box.Height());
   }
 

@@ -1657,10 +1657,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       VisualRectFlags = kDefaultVisualRectFlags) const;
 
   // Returns the rect that should have raster invalidated whenever this object
-  // changes. The rect is in the object's local coordinate space. This is for
-  // non-SVG objects and LayoutSVGRoot only. SVG objects (except LayoutSVGRoot)
-  // should use VisualRectInLocalSVGCoordinates() and map with SVG transforms
-  // instead.
+  // changes. The rect is in the object's local physical coordinate space.
+  // This is for non-SVG objects and LayoutSVGRoot only. SVG objects (except
+  // LayoutSVGRoot) should use VisualRectInLocalSVGCoordinates() and map with
+  // SVG transforms instead.
   LayoutRect LocalVisualRect() const {
     if (StyleRef().Visibility() != EVisibility::kVisible &&
         VisualRectRespectsVisibility())
@@ -1668,11 +1668,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return LocalVisualRectIgnoringVisibility();
   }
 
-  // Given a rect in the object's coordinate space, mutates the rect into one
-  // representing the size of its visual painted output as if |ancestor| was the
-  // root of the page: the rect is modified by any intervening clips, transforms
-  // and scrolls between |this| and |ancestor| (not inclusive of |ancestor|),
-  // but not any above |ancestor|.
+  // Given a rect in the object's physical coordinate space, mutates the rect
+  // into one representing the size of its visual painted output as if
+  // |ancestor| was the root of the page: the rect is modified by any
+  // intervening clips, transforms and scrolls between |this| and |ancestor|
+  // (not inclusive of |ancestor|), but not any above |ancestor|.
   // The output is in the physical, painted coordinate pixel space of
   // |ancestor|.
   // Overflow clipping, CSS clipping and scrolling is *not* applied for
@@ -1683,10 +1683,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // the rect to the main frame's space which includes the root view's scroll
   // and clip. This is even true if the main frame is remote.
   //
-  // If visualRectFlags has the EdgeInclusive bit set, clipping operations will
+  // If VisualRectFlags has the kEdgeInclusive bit set, clipping operations will
   // use LayoutRect::InclusiveIntersect, and the return value of
   // InclusiveIntersect will be propagated to the return value of this method.
-  // Otherwise, clipping operations will use LayoutRect::intersect, and the
+  // Otherwise, clipping operations will use LayoutRect::Intersect, and the
   // return value will be true only if the clipped rect has non-zero area.
   // See the documentation for LayoutRect::InclusiveIntersect for more
   // information.
@@ -1736,8 +1736,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   // A single rectangle that encompasses all of the selected objects within this
   // object. Used to determine the tightest possible bounding box for the
-  // selection. The rect returned is in the object's local coordinate space.
-  virtual LayoutRect LocalSelectionRect() const { return LayoutRect(); }
+  // selection. The rect is in the object's local physical coordinate space.
+  virtual LayoutRect LocalSelectionVisualRect() const { return LayoutRect(); }
 
   LayoutRect AbsoluteSelectionRect() const;
 
@@ -2455,6 +2455,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     bitfields_.SetPreviousOutlineMayBeAffectedByDescendants(b);
   }
 
+  // See LocalVisualRect().
   virtual bool VisualRectRespectsVisibility() const { return true; }
   virtual LayoutRect LocalVisualRectIgnoringVisibility() const;
 

@@ -30,12 +30,8 @@ class VisualRectMappingTest : public PaintTestConfigurations,
       const LayoutBoxModelObject& ancestor,
       const LayoutRect& expected_visual_rect_in_ancestor) {
     LayoutRect rect = object.LocalVisualRect();
-    if (object.IsBox())
-      ToLayoutBox(object).FlipForWritingMode(rect);
-
     if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
       EXPECT_EQ(&ancestor, &object.ContainerForPaintInvalidation());
-
     CheckVisualRect(object, ancestor, rect, expected_visual_rect_in_ancestor);
   }
 
@@ -123,6 +119,45 @@ TEST_P(VisualRectMappingTest, LayoutText) {
 
   LayoutRect original_rect(0, 60, 20, 80);
   LayoutRect rect = original_rect;
+  // For a LayoutText, the "local coordinate space" is actually the contents
+  // coordinate space of the containing block, so the following mappings are
+  // only affected by the geometry of the container, not related to where the
+  // text is laid out.
+  EXPECT_TRUE(text->MapToVisualRectInAncestorSpace(container, rect));
+  rect.Move(-container->ScrolledContentOffset());
+  EXPECT_EQ(rect, LayoutRect(0, 10, 20, 80));
+
+  rect = original_rect;
+  EXPECT_TRUE(text->MapToVisualRectInAncestorSpace(&GetLayoutView(), rect));
+  EXPECT_EQ(rect, LayoutRect(0, 10, 20, 40));
+
+  rect = LayoutRect(0, 60, 80, 0);
+  EXPECT_TRUE(
+      text->MapToVisualRectInAncestorSpace(container, rect, kEdgeInclusive));
+  rect.Move(-container->ScrolledContentOffset());
+  EXPECT_EQ(rect, LayoutRect(0, 10, 80, 0));
+}
+
+TEST_P(VisualRectMappingTest, LayoutTextContainerFlippedWritingMode) {
+  SetBodyInnerHTML(R"HTML(
+    <style>body { margin: 0; }</style>
+    <div id='container' style='vertical-align: bottom; overflow: scroll;
+        width: 50px; height: 50px; writing-mode: vertical-rl'>
+      <span><img style='width: 20px; height: 100px'></span>
+      <span id='text'>text text text text text text text</span>
+    </div>
+  )HTML");
+
+  auto* container = To<LayoutBlock>(GetLayoutObjectByElementId("container"));
+  auto* text = GetLayoutObjectByElementId("text")->SlowFirstChild();
+
+  container->SetScrollTop(LayoutUnit(50));
+  UpdateAllLifecyclePhasesForTest();
+
+  // All results are the same as VisualRectMappingTest.LayoutText because all
+  // rects are in physical coordinates of the container's contents space.
+  LayoutRect original_rect(0, 60, 20, 80);
+  LayoutRect rect = original_rect;
   EXPECT_TRUE(text->MapToVisualRectInAncestorSpace(container, rect));
   rect.Move(-container->ScrolledContentOffset());
   EXPECT_EQ(rect, LayoutRect(0, 10, 20, 80));
@@ -154,6 +189,45 @@ TEST_P(VisualRectMappingTest, LayoutInline) {
   container->SetScrollTop(LayoutUnit(50));
   UpdateAllLifecyclePhasesForTest();
 
+  LayoutRect original_rect(0, 60, 20, 80);
+  LayoutRect rect = original_rect;
+  EXPECT_TRUE(leaf->MapToVisualRectInAncestorSpace(container, rect));
+  rect.Move(-container->ScrolledContentOffset());
+  EXPECT_EQ(rect, LayoutRect(0, 10, 20, 80));
+
+  rect = original_rect;
+  EXPECT_TRUE(leaf->MapToVisualRectInAncestorSpace(&GetLayoutView(), rect));
+  EXPECT_EQ(rect, LayoutRect(0, 10, 20, 40));
+
+  // The span is empty.
+  CheckPaintInvalidationVisualRect(*leaf, GetLayoutView(), LayoutRect());
+
+  rect = LayoutRect(0, 60, 80, 0);
+  EXPECT_TRUE(
+      leaf->MapToVisualRectInAncestorSpace(container, rect, kEdgeInclusive));
+  rect.Move(-container->ScrolledContentOffset());
+  EXPECT_EQ(rect, LayoutRect(0, 10, 80, 0));
+}
+
+TEST_P(VisualRectMappingTest, LayoutInlineContainerFlippedWritingMode) {
+  GetDocument().SetBaseURLOverride(KURL("http://test.com"));
+  SetBodyInnerHTML(R"HTML(
+    <style>body { margin: 0; }</style>
+    <div id='container' style='overflow: scroll; width: 50px; height: 50px;
+        writing-mode: vertical-rl'>
+      <span><img style='width: 20px; height: 100px'></span>
+      <span id='leaf'></span>
+    </div>
+  )HTML");
+
+  auto* container = To<LayoutBlock>(GetLayoutObjectByElementId("container"));
+  LayoutObject* leaf = container->LastChild();
+
+  container->SetScrollTop(LayoutUnit(50));
+  UpdateAllLifecyclePhasesForTest();
+
+  // All results are the same as VisualRectMappingTest.LayoutInline because all
+  // rects are in physical coordinates.
   LayoutRect original_rect(0, 60, 20, 80);
   LayoutRect rect = original_rect;
   EXPECT_TRUE(leaf->MapToVisualRectInAncestorSpace(container, rect));
@@ -296,19 +370,11 @@ TEST_P(VisualRectMappingTest, SelfFlippedWritingMode) {
 
   auto* target = To<LayoutBlock>(GetLayoutObjectByElementId("target"));
   LayoutRect local_visual_rect = target->LocalVisualRect();
-  // -40 = -box_shadow_offset_x(40) (with target's top-right corner as the
-  // origin)
   // 140 = width(100) + box_shadow_offset_x(40)
   // 70 = height(50) + box_shadow_offset_y(20)
-  EXPECT_EQ(LayoutRect(-40, 0, 140, 70), local_visual_rect);
+  EXPECT_EQ(LayoutRect(0, 0, 140, 70), local_visual_rect);
 
   LayoutRect rect = local_visual_rect;
-  // TODO(wkorman): The calls to flipForWritingMode() here and in other test
-  // cases below are necessary because mapToVisualRectInAncestorSpace()
-  // currently expects the input rect to be in "physical coordinates" (*not*
-  // "physical coordinates with flipped block-flow direction"), see
-  // LayoutBoxModelObject.h.
-  target->FlipForWritingMode(rect);
   EXPECT_TRUE(target->MapToVisualRectInAncestorSpace(target, rect));
   // This rect is in physical coordinates of target.
   EXPECT_EQ(LayoutRect(0, 0, 140, 70), rect);
@@ -329,21 +395,17 @@ TEST_P(VisualRectMappingTest, ContainerFlippedWritingMode) {
 
   auto* target = To<LayoutBlock>(GetLayoutObjectByElementId("target"));
   LayoutRect target_local_visual_rect = target->LocalVisualRect();
-  // -40 = -box_shadow_offset_x(40) (with target's top-right corner as the
-  // origin)
   // 140 = width(100) + box_shadow_offset_x(40)
   // 110 = height(90) + box_shadow_offset_y(20)
-  EXPECT_EQ(LayoutRect(-40, 0, 140, 110), target_local_visual_rect);
+  EXPECT_EQ(LayoutRect(0, 0, 140, 110), target_local_visual_rect);
 
   LayoutRect rect = target_local_visual_rect;
-  target->FlipForWritingMode(rect);
   EXPECT_TRUE(target->MapToVisualRectInAncestorSpace(target, rect));
   // This rect is in physical coordinates of target.
   EXPECT_EQ(LayoutRect(0, 0, 140, 110), rect);
 
   auto* container = To<LayoutBlock>(GetLayoutObjectByElementId("container"));
   rect = target_local_visual_rect;
-  target->FlipForWritingMode(rect);
   EXPECT_TRUE(target->MapToVisualRectInAncestorSpace(container, rect));
   // 100 is the physical x location of target in container.
   EXPECT_EQ(LayoutRect(100, 0, 140, 110), rect);
@@ -354,11 +416,9 @@ TEST_P(VisualRectMappingTest, ContainerFlippedWritingMode) {
   LayoutRect container_local_visual_rect = container->LocalVisualRect();
   EXPECT_EQ(LayoutRect(0, 0, 200, 100), container_local_visual_rect);
   rect = container_local_visual_rect;
-  container->FlipForWritingMode(rect);
   EXPECT_TRUE(container->MapToVisualRectInAncestorSpace(container, rect));
   EXPECT_EQ(LayoutRect(0, 0, 200, 100), rect);
   rect = container_local_visual_rect;
-  container->FlipForWritingMode(rect);
   EXPECT_TRUE(
       container->MapToVisualRectInAncestorSpace(&GetLayoutView(), rect));
   EXPECT_EQ(LayoutRect(222, 111, 200, 100), rect);
@@ -445,20 +505,16 @@ TEST_P(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowScroll) {
 
   auto* target = To<LayoutBlock>(GetLayoutObjectByElementId("target"));
   LayoutRect target_local_visual_rect = target->LocalVisualRect();
-  // -40 = -box_shadow_offset_x(40) (with target's top-right corner as the
-  // origin)
   // 140 = width(100) + box_shadow_offset_x(40)
   // 110 = height(90) + box_shadow_offset_y(20)
-  EXPECT_EQ(LayoutRect(-40, 0, 140, 110), target_local_visual_rect);
+  EXPECT_EQ(LayoutRect(0, 0, 140, 110), target_local_visual_rect);
 
   LayoutRect rect = target_local_visual_rect;
-  target->FlipForWritingMode(rect);
   EXPECT_TRUE(target->MapToVisualRectInAncestorSpace(target, rect));
   // This rect is in physical coordinates of target.
   EXPECT_EQ(LayoutRect(0, 0, 140, 110), rect);
 
   rect = target_local_visual_rect;
-  target->FlipForWritingMode(rect);
   EXPECT_TRUE(target->MapToVisualRectInAncestorSpace(container, rect));
   rect.Move(-container->ScrolledContentOffset());
   // -2 = target_physical_x(100) + container_border_left(40) - scroll_left(142)
@@ -486,7 +542,6 @@ TEST_P(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowScroll) {
   EXPECT_EQ(LayoutRect(0, 0, 110, 120), container_local_visual_rect);
 
   rect = container_local_visual_rect;
-  container->FlipForWritingMode(rect);
   EXPECT_TRUE(container->MapToVisualRectInAncestorSpace(container, rect));
   EXPECT_EQ(LayoutRect(0, 0, 110, 120), rect);
 
@@ -554,20 +609,16 @@ TEST_P(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowHidden) {
 
   auto* target = To<LayoutBlock>(GetLayoutObjectByElementId("target"));
   LayoutRect target_local_visual_rect = target->LocalVisualRect();
-  // -40 = -box_shadow_offset_x(40) (with target's top-right corner as the
-  // origin)
   // 140 = width(100) + box_shadow_offset_x(40)
   // 110 = height(90) + box_shadow_offset_y(20)
-  EXPECT_EQ(LayoutRect(-40, 0, 140, 110), target_local_visual_rect);
+  EXPECT_EQ(LayoutRect(0, 0, 140, 110), target_local_visual_rect);
 
   LayoutRect rect = target_local_visual_rect;
-  target->FlipForWritingMode(rect);
   EXPECT_TRUE(target->MapToVisualRectInAncestorSpace(target, rect));
   // This rect is in physical coordinates of target.
   EXPECT_EQ(LayoutRect(0, 0, 140, 110), rect);
 
   rect = target_local_visual_rect;
-  target->FlipForWritingMode(rect);
   // 58 = target_physical_x(100) + container_border_left(40) - scroll_left(58)
   CheckVisualRect(*target, *container, rect, LayoutRect(-10, 10, 140, 110));
   EXPECT_TRUE(target->MapToVisualRectInAncestorSpace(container, rect));
@@ -767,6 +818,159 @@ TEST_P(VisualRectMappingTest, FloatUnderInline) {
   } else {
     CheckVisualRect(*target, *span, rect, LayoutRect(-200, -100, 33, 44));
   }
+}
+
+TEST_P(VisualRectMappingTest, FloatUnderInlineVerticalRL) {
+  SetBodyInnerHTML(R"HTML(
+    <div style='position: absolute; writing-mode: vertical-rl;
+                top: 55px; left: 66px; width: 600px; height: 400px'>
+      <span id='span' style='position: relative; top: 100px; left: -200px'>
+        <div id='target' style='float: left; width: 33px; height: 44px'>
+        </div>
+      </span>
+    </div>
+  )HTML");
+
+  auto* span = ToLayoutBoxModelObject(GetLayoutObjectByElementId("span"));
+  auto* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
+
+  auto target_visual_rect = target->LocalVisualRect();
+  EXPECT_EQ(LayoutRect(0, 0, 33, 44), target_visual_rect);
+
+  auto rect = target_visual_rect;
+  EXPECT_TRUE(target->MapToVisualRectInAncestorSpace(&GetLayoutView(), rect));
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    // LayoutNG inline-level floats are children of their inline-level
+    // containers. As such they are positioned relative to their inline-level
+    // container, (and shifted by an additional 200,100 in this case).
+    EXPECT_EQ(LayoutRect(66 + 600 - 200 - 33, 55 + 100, 33, 44), rect);
+  } else {
+    EXPECT_EQ(LayoutRect(66 + 600 - 33, 55, 33, 44), rect);
+  }
+  EXPECT_EQ(EnclosingIntRect(rect), target->FirstFragment().VisualRect());
+
+  // An inline object's coordinate space is its containing block's coordinate
+  // space shifted by the inline's relative offset. |target|'s left is 100 from
+  // the right edge of the coordinate space whose width is 600.
+  rect = target_visual_rect;
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    CheckVisualRect(*target, *span, rect, LayoutRect(600 - 33, 0, 33, 44));
+  } else {
+    CheckVisualRect(*target, *span, rect,
+                    LayoutRect(600 + 200 - 33, -100, 33, 44));
+  }
+}
+
+TEST_P(VisualRectMappingTest, InlineBlock) {
+  SetBodyInnerHTML(R"HTML(
+    <div style="position: absolute; top: 55px; left: 66px">
+      <span id="span" style="position: relative; top: 100px; left: 200px">
+        <div id="target"
+             style="display: inline-block; width: 33px; height: 44px">
+        </div>
+      </span>
+    </div>
+  )HTML");
+
+  auto* span = ToLayoutBoxModelObject(GetLayoutObjectByElementId("span"));
+  auto* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
+
+  auto target_visual_rect = target->LocalVisualRect();
+  EXPECT_EQ(LayoutRect(0, 0, 33, 44), target_visual_rect);
+
+  auto rect = target_visual_rect;
+  EXPECT_TRUE(target->MapToVisualRectInAncestorSpace(&GetLayoutView(), rect));
+  EXPECT_EQ(LayoutRect(266, 155, 33, 44), rect);
+  EXPECT_EQ(EnclosingIntRect(rect), target->FirstFragment().VisualRect());
+
+  rect = target_visual_rect;
+  CheckVisualRect(*target, *span, rect, LayoutRect(0, 0, 33, 44));
+}
+
+TEST_P(VisualRectMappingTest, InlineBlockVerticalRL) {
+  SetBodyInnerHTML(R"HTML(
+    <div style='position: absolute; writing-mode: vertical-rl;
+                top: 55px; left: 66px; width: 600px; height: 400px'>
+      <span id="span" style="position: relative; top: 100px; left: -200px">
+        <div id="target"
+             style="display: inline-block; width: 33px; height: 44px">
+        </div>
+      </span>
+    </div>
+  )HTML");
+
+  auto* span = ToLayoutBoxModelObject(GetLayoutObjectByElementId("span"));
+  auto* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
+
+  auto target_visual_rect = target->LocalVisualRect();
+  EXPECT_EQ(LayoutRect(0, 0, 33, 44), target_visual_rect);
+
+  auto rect = target_visual_rect;
+  EXPECT_TRUE(target->MapToVisualRectInAncestorSpace(&GetLayoutView(), rect));
+  EXPECT_EQ(LayoutRect(66 + 600 - 200 - 33, 155, 33, 44), rect);
+  EXPECT_EQ(EnclosingIntRect(rect), target->FirstFragment().VisualRect());
+
+  // An inline object's coordinate space is its containing block's coordinate
+  // space shifted by the inline's relative offset. |target|'s left is -33 from
+  // the right edge of the coordinate space whose width is 600.
+  rect = target_visual_rect;
+  CheckVisualRect(*target, *span, rect, LayoutRect(600 - 33, 0, 33, 44));
+}
+
+TEST_P(VisualRectMappingTest, AbsoluteUnderRelativeInline) {
+  SetBodyInnerHTML(R"HTML(
+    <div style='position: absolute; top: 55px; left: 66px'>
+      <span id='span' style='position: relative; top: 100px; left: 200px'>
+        <div id='target' style='position: absolute; top: 50px; left: 100px;
+                                width: 33px; height: 44px'>
+        </div>
+      </span>
+    </div>
+  )HTML");
+
+  auto* span = ToLayoutBoxModelObject(GetLayoutObjectByElementId("span"));
+  auto* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
+
+  auto target_visual_rect = target->LocalVisualRect();
+  EXPECT_EQ(LayoutRect(0, 0, 33, 44), target_visual_rect);
+
+  auto rect = target_visual_rect;
+  EXPECT_TRUE(target->MapToVisualRectInAncestorSpace(&GetLayoutView(), rect));
+  EXPECT_EQ(LayoutRect(66 + 200 + 100, 55 + 100 + 50, 33, 44), rect);
+  EXPECT_EQ(EnclosingIntRect(rect), target->FirstFragment().VisualRect());
+
+  rect = target_visual_rect;
+  CheckVisualRect(*target, *span, rect, LayoutRect(100, 50, 33, 44));
+}
+
+TEST_P(VisualRectMappingTest, AbsoluteUnderRelativeInlineVerticalRL) {
+  SetBodyInnerHTML(R"HTML(
+    <div style='position: absolute; writing-mode: vertical-rl;
+                top: 55px; left: 66px; width: 600px; height: 400px'>
+      <span id='span' style='position: relative; top: 100px; left: -200px'>
+        <div id='target' style='position: absolute; top: 50px; left: 100px;
+                                width: 33px; height: 44px'>
+        </div>
+      </span>
+    </div>
+  )HTML");
+
+  auto* span = ToLayoutBoxModelObject(GetLayoutObjectByElementId("span"));
+  auto* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
+
+  auto target_visual_rect = target->LocalVisualRect();
+  EXPECT_EQ(LayoutRect(0, 0, 33, 44), target_visual_rect);
+
+  auto rect = target_visual_rect;
+  EXPECT_TRUE(target->MapToVisualRectInAncestorSpace(&GetLayoutView(), rect));
+  EXPECT_EQ(LayoutRect(66 + 600 - 200 + 100, 55 + 100 + 50, 33, 44), rect);
+  EXPECT_EQ(EnclosingIntRect(rect), target->FirstFragment().VisualRect());
+
+  // An inline object's coordinate space is its containing block's coordinate
+  // space shifted by the inline's relative offset. |target|'s left is 100 from
+  // the right edge of the coordinate space whose width is 600.
+  rect = target_visual_rect;
+  CheckVisualRect(*target, *span, rect, LayoutRect(600 + 100, 50, 33, 44));
 }
 
 TEST_P(VisualRectMappingTest, ShouldAccountForPreserve3d) {

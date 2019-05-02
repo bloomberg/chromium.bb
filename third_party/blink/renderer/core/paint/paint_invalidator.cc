@@ -80,25 +80,13 @@ IntRect PaintInvalidatorContext::MapLocalRectToVisualRect(
          // objects, for carets, selections, etc.
          object.IsBoxModelObject() || object.IsText());
 
-  // The flip below is required because local visual rects are currently in
-  // "physical coordinates with flipped block-flow direction" (see
-  // LayoutBoxModelObject.h) but we need them to be in physical coordinates.
-  auto rect = local_rect;
-  if (object.IsBox()) {
-    ToLayoutBox(object).FlipForWritingMode(rect);
-  } else {
-    // Also convert the rect for non-boxes into physical coordinates before
-    // applying paint offset.
-    // TODO(wangxianzhu): Avoid ContainingBlock().
-    object.ContainingBlock()->FlipForWritingMode(rect);
-  }
-
   // Unite visual rect with clip path bounding rect.
   // It is because the clip path display items are owned by the layout object
   // who has the clip path, and uses its visual rect as bounding rect too.
   // Usually it is done at layout object level and included as a part of
   // local visual overflow, but clip-path can be a reference to SVG, and we
   // have to wait until pre-paint to ensure clean layout.
+  auto rect = local_rect;
   if (base::Optional<FloatRect> clip_path_bounding_box =
           ClipPathClipper::LocalClipPathBoundingBox(object))
     rect.Unite(LayoutRect(EnclosingIntRect(*clip_path_bounding_box)));

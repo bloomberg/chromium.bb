@@ -737,7 +737,7 @@ bool InspectorHighlight::BuildNodeQuads(Node* node,
 
     // LayoutInline's bounding box includes paddings and borders, excludes
     // margins.
-    border_box = LayoutRect(layout_inline->LinesBoundingBox());
+    border_box = LayoutRect(layout_inline->PhysicalLinesBoundingBox());
     padding_box = LayoutRect(border_box.X() + layout_inline->BorderLeft(),
                              border_box.Y() + layout_inline->BorderTop(),
                              border_box.Width() - layout_inline->BorderLeft() -

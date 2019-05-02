@@ -1531,7 +1531,7 @@ void LayoutObject::InvalidatePaintRectangle(const LayoutRect& dirty_rect) {
 }
 
 LayoutRect LayoutObject::AbsoluteSelectionRect() const {
-  LayoutRect selection_rect = LocalSelectionRect();
+  LayoutRect selection_rect = LocalSelectionVisualRect();
   if (!selection_rect.IsEmpty())
     MapToVisualRectInAncestorSpace(View(), selection_rect);
 
@@ -1664,25 +1664,14 @@ bool LayoutObject::MapToVisualRectInAncestorSpaceInternal(
 
   if (LayoutObject* parent = Parent()) {
     if (parent->IsBox()) {
-      LayoutBox* parent_box = ToLayoutBox(parent);
-
-      // Never flip for SVG as it handles writing modes itself.
-      if (!IsSVG()) {
-        transform_state.Flatten();
-        LayoutRect rect(transform_state.LastPlanarQuad().BoundingBox());
-        parent_box->FlipForWritingMode(rect);
-        transform_state.SetQuad(FloatQuad(FloatRect(rect)));
-      }
-
       bool preserve3d = parent->StyleRef().Preserves3D() && !parent->IsText();
-
       TransformState::TransformAccumulation accumulation =
           preserve3d ? TransformState::kAccumulateTransform
                      : TransformState::kFlattenTransform;
 
       if (parent != ancestor &&
-          !parent_box->MapContentsRectToBoxSpace(transform_state, accumulation,
-                                                 *this, visual_rect_flags))
+          !ToLayoutBox(parent)->MapContentsRectToBoxSpace(
+              transform_state, accumulation, *this, visual_rect_flags))
         return false;
     }
     return parent->MapToVisualRectInAncestorSpaceInternal(

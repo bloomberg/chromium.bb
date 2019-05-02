@@ -2030,8 +2030,7 @@ static LayoutRect MapLocalRectToAncestorLayer(
     const PaintLayer& ancestor_layer) {
   TransformState transform_state(TransformState::kApplyTransformDirection,
                                  FloatPoint(local_rect.Location()));
-  box.MapLocalToAncestor(&ancestor_layer.GetLayoutObject(), transform_state,
-                         kApplyContainerFlip);
+  box.MapLocalToAncestor(&ancestor_layer.GetLayoutObject(), transform_state, 0);
   transform_state.Flatten();
   return LayoutRect(LayoutPoint(transform_state.LastPlanarPoint()),
                     local_rect.Size());
@@ -2080,7 +2079,6 @@ static LayoutRect BoundingBoxInPaginationContainer(
     // instead of falling back to the bounds of the enclosing block.
     if (!object.IsSVG()) {
       local_bounds = object.LocalVisualRect();
-      local_space_object->FlipForWritingMode(local_bounds);
     } else {
       local_bounds = LayoutRect(SVGLayoutSupport::LocalVisualRect(object));
     }
