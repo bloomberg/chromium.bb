@@ -4246,6 +4246,53 @@ TEST_F(RenderTextTest, HarfBuzz_UnicodeFallback) {
 }
 #endif  // !defined(OS_LINUX) && !defined(OS_ANDROID)
 
+// Ensure that the fallback fonts offered by GetFallbackFont() support glyphs
+// for different languages.
+TEST_F(RenderTextTest, HarfBuzz_FallbackFontsSupportGlyphs) {
+  // The word 'test' in different languages.
+  static const wchar_t* kLanguageTests[] = {
+      L"test", L"اختبار", L"Δοκιμή", L"परीक्षा", L"تست", L"Փորձարկում",
+  };
+
+  for (const wchar_t* text : kLanguageTests) {
+    RenderTextHarfBuzz* render_text = GetRenderText();
+    render_text->SetText(WideToUTF16(text));
+    test_api()->EnsureLayout();
+
+    const internal::TextRunList* run_list = GetHarfBuzzRunList();
+    ASSERT_EQ(1U, run_list->size());
+    int missing_glyphs = run_list->runs()[0]->CountMissingGlyphs();
+    if (missing_glyphs != 0) {
+      ADD_FAILURE() << "Text '" << text << "' is missing " << missing_glyphs
+                    << " glyphs.";
+    }
+  }
+}
+
+TEST_F(RenderTextTest, HarfBuzz_MultiRunsSupportGlyphs) {
+  static const wchar_t* kLanguageTests[] = {
+      L"www.اختبار.com",
+      L"(اختبار)",
+      L"/ זה (מבחן) /",
+  };
+
+  for (const wchar_t* text : kLanguageTests) {
+    RenderTextHarfBuzz* render_text = GetRenderText();
+    render_text->SetText(WideToUTF16(text));
+    test_api()->EnsureLayout();
+
+    int missing_glyphs = 0;
+    const internal::TextRunList* run_list = GetHarfBuzzRunList();
+    for (const auto& run : run_list->runs())
+      missing_glyphs += run->CountMissingGlyphs();
+
+    if (missing_glyphs != 0) {
+      ADD_FAILURE() << "Text '" << text << "' is missing " << missing_glyphs
+                    << " glyphs.";
+    }
+  }
+}
+
 // Ensure that the width reported by RenderText is sufficient for drawing. Draws
 // to a canvas and checks if any pixel beyond the bounding rectangle is colored.
 TEST_F(RenderTextTest, TextDoesntClip) {
