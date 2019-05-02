@@ -1362,6 +1362,272 @@ TEST_P(ScrollingCoordinatorTest, FrameIsScrollableDidChange) {
   EXPECT_FALSE(GetFrame()->View()->FrameIsScrollableDidChange());
 }
 
+TEST_P(ScrollingCoordinatorTest, NestedIFramesMainThreadScrollingRegion) {
+  // This page has an absolute IFRAME. It contains a scrollable child DIV
+  // that's nested within an intermediate IFRAME.
+  GetWebView()->GetPage()->GetSettings().SetPreferCompositingToLCDTextEnabled(
+      false);
+  LoadHTML(R"HTML(
+          <!DOCTYPE html>
+          <style>
+            #spacer {
+              height: 10000px;
+            }
+            iframe {
+              position: absolute;
+              top: 1200px;
+              left: 0px;
+              width: 200px;
+              height: 200px;
+              border: 0;
+            }
+
+          </style>
+          <div id="spacer"></div>
+          <iframe srcdoc="
+              <!DOCTYPE html>
+              <style>
+                body { margin: 0; }
+                iframe { width: 100px; height: 100px; border: 0; }
+              </style>
+              <iframe srcdoc='<!DOCTYPE html>
+                              <style>
+                                body { margin: 0; }
+                                div {
+                                  width: 65px;
+                                  height: 65px;
+                                  overflow: auto;
+                                }
+                                p {
+                                  width: 300px;
+                                  height: 300px;
+                                }
+                              </style>
+                              <div>
+                                <p></p>
+                              </div>'>
+              </iframe>">
+          </iframe>
+      )HTML");
+
+  ForceFullCompositingUpdate();
+
+  // Scroll the frame to ensure the rect is in the correct coordinate space.
+  GetFrame()->GetDocument()->View()->GetScrollableArea()->SetScrollOffset(
+      ScrollOffset(0, 1000), kProgrammaticScroll);
+
+  Region scrolling;
+  Region fixed;
+  Page* page = GetFrame()->GetPage();
+  page->GetScrollingCoordinator()
+      ->ComputeShouldHandleScrollGestureOnMainThreadRegion(
+          To<LocalFrame>(page->MainFrame()), &scrolling, &fixed);
+
+  EXPECT_TRUE(fixed.IsEmpty()) << "Since the DIV will move when the main frame "
+                                  "is scrolled, it should not "
+                                  "be placed in the fixed region.";
+
+  EXPECT_EQ(scrolling.Bounds(), IntRect(0, 1200, 65, 65))
+      << "Since the DIV will move when the main frame is scrolled, it should "
+         "be placed in the scrolling region.";
+}
+
+// Same as above but test that the rect is correctly calculated into the fixed
+// region when the containing iframe is position: fixed.
+TEST_P(ScrollingCoordinatorTest, NestedFixedIFramesMainThreadScrollingRegion) {
+  // This page has a fixed IFRAME. It contains a scrollable child DIV that's
+  // nested within an intermediate IFRAME.
+  GetWebView()->GetPage()->GetSettings().SetPreferCompositingToLCDTextEnabled(
+      false);
+  LoadHTML(R"HTML(
+          <!DOCTYPE html>
+          <style>
+            #spacer {
+              height: 10000px;
+            }
+            iframe {
+              position: fixed;
+              top: 20px;
+              left: 0px;
+              width: 200px;
+              height: 200px;
+              border: 0;
+            }
+
+          </style>
+          <div id="spacer"></div>
+          <iframe srcdoc="
+              <!DOCTYPE html>
+              <style>
+                body { margin: 0; }
+                iframe { width: 100px; height: 100px; border: 0; }
+              </style>
+              <iframe srcdoc='<!DOCTYPE html>
+                              <style>
+                                body { margin: 0; }
+                                div {
+                                  width: 75px;
+                                  height: 75px;
+                                  overflow: auto;
+                                }
+                                p {
+                                  width: 300px;
+                                  height: 300px;
+                                }
+                              </style>
+                              <div>
+                                <p></p>
+                              </div>'>
+              </iframe>">
+          </iframe>
+      )HTML");
+
+  ForceFullCompositingUpdate();
+
+  // Scroll the frame to ensure the rect is in the correct coordinate space.
+  GetFrame()->GetDocument()->View()->GetScrollableArea()->SetScrollOffset(
+      ScrollOffset(0, 1000), kProgrammaticScroll);
+
+  Region scrolling;
+  Region fixed;
+  Page* page = GetFrame()->GetPage();
+  page->GetScrollingCoordinator()
+      ->ComputeShouldHandleScrollGestureOnMainThreadRegion(
+          To<LocalFrame>(page->MainFrame()), &scrolling, &fixed);
+
+  EXPECT_TRUE(scrolling.IsEmpty()) << "Since the DIV will not move when the "
+                                      "main frame is scrolled, it should "
+                                      "not be placed in the scrolling region.";
+
+  // TODO(bokan): We have a bug in calculating the fixed rects, we use document
+  // coordinates but we should be using frame coordinates since they go on the
+  // inner viewport scroll layer which doesn't scroll with the document.
+  // EXPECT_EQ(fixed.Rects().at(0), IntRect(0, 20, 75, 75));
+  EXPECT_EQ(fixed.Bounds(), IntRect(0, 1020, 75, 75))
+      << "Since the DIV not move when the main frame is scrolled, it should be "
+         "placed in the scrolling region.";
+}
+
+TEST_P(ScrollingCoordinatorTest, IframeCompositedScrollingHideAndShow) {
+  GetWebView()->GetPage()->GetSettings().SetPreferCompositingToLCDTextEnabled(
+      false);
+  LoadHTML(R"HTML(
+          <!DOCTYPE html>
+          <style>
+            body {
+              margin: 0;
+            }
+            iframe {
+              height: 100px;
+              width: 100px;
+            }
+          </style>
+          <iframe id="iframe" srcdoc="
+              <!DOCTYPE html>
+              <style>
+                body {height: 1000px;}
+              </style>"></iframe>
+      )HTML");
+
+  ForceFullCompositingUpdate();
+
+  // Since the main frame isn't scrollable, the NonFastScrollableRegions should
+  // be stored on the visual viewport's scrolling layer, rather than the main
+  // frame's scrolling contents layer.
+  Page* page = GetFrame()->GetPage();
+  cc::Layer* inner_viewport_scroll_layer =
+      page->GetVisualViewport().ScrollLayer()->CcLayer();
+  Element* iframe = GetFrame()->GetDocument()->getElementById("iframe");
+
+  // Should have a NFSR initially.
+  ForceFullCompositingUpdate();
+  EXPECT_FALSE(inner_viewport_scroll_layer->non_fast_scrollable_region()
+                   .bounds()
+                   .IsEmpty());
+
+  // Ensure the frame's scrolling layer didn't get an NFSR.
+  cc::Layer* outer_viewport_scroll_layer =
+      GetFrame()->View()->LayoutViewport()->LayerForScrolling()->CcLayer();
+  EXPECT_TRUE(outer_viewport_scroll_layer->non_fast_scrollable_region()
+                  .bounds()
+                  .IsEmpty());
+
+  // Hiding the iframe should clear the NFSR.
+  iframe->setAttribute(html_names::kStyleAttr, "display: none");
+  ForceFullCompositingUpdate();
+  EXPECT_TRUE(inner_viewport_scroll_layer->non_fast_scrollable_region()
+                  .bounds()
+                  .IsEmpty());
+
+  // Showing it again should compute the NFSR.
+  iframe->setAttribute(html_names::kStyleAttr, "");
+  ForceFullCompositingUpdate();
+  EXPECT_FALSE(inner_viewport_scroll_layer->non_fast_scrollable_region()
+                   .bounds()
+                   .IsEmpty());
+}
+
+// Same as above but the main frame is scrollable. This should cause the non
+// fast scrollable regions to go on the outer viewport's scroll layer.
+TEST_P(ScrollingCoordinatorTest,
+       IframeCompositedScrollingHideAndShowScrollable) {
+  GetWebView()->GetPage()->GetSettings().SetPreferCompositingToLCDTextEnabled(
+      false);
+  LoadHTML(R"HTML(
+          <!DOCTYPE html>
+          <style>
+            body {
+              height: 1000px;
+              margin: 0;
+            }
+            iframe {
+              height: 100px;
+              width: 100px;
+            }
+          </style>
+          <iframe id="iframe" srcdoc="
+              <!DOCTYPE html>
+              <style>
+                body {height: 1000px;}
+              </style>"></iframe>
+      )HTML");
+
+  ForceFullCompositingUpdate();
+
+  Page* page = GetFrame()->GetPage();
+  cc::Layer* inner_viewport_scroll_layer =
+      page->GetVisualViewport().ScrollLayer()->CcLayer();
+  Element* iframe = GetFrame()->GetDocument()->getElementById("iframe");
+
+  cc::Layer* outer_viewport_scroll_layer =
+      GetFrame()->View()->LayoutViewport()->LayerForScrolling()->CcLayer();
+
+  // Should have a NFSR initially.
+  ForceFullCompositingUpdate();
+  EXPECT_FALSE(outer_viewport_scroll_layer->non_fast_scrollable_region()
+                   .bounds()
+                   .IsEmpty());
+
+  // Ensure the visual viewport's scrolling layer didn't get an NFSR.
+  EXPECT_TRUE(inner_viewport_scroll_layer->non_fast_scrollable_region()
+                  .bounds()
+                  .IsEmpty());
+
+  // Hiding the iframe should clear the NFSR.
+  iframe->setAttribute(html_names::kStyleAttr, "display: none");
+  ForceFullCompositingUpdate();
+  EXPECT_TRUE(outer_viewport_scroll_layer->non_fast_scrollable_region()
+                  .bounds()
+                  .IsEmpty());
+
+  // Showing it again should compute the NFSR.
+  iframe->setAttribute(html_names::kStyleAttr, "");
+  ForceFullCompositingUpdate();
+  EXPECT_FALSE(outer_viewport_scroll_layer->non_fast_scrollable_region()
+                   .bounds()
+                   .IsEmpty());
+}
+
 TEST_P(ScrollingCoordinatorTest, ScrollOffsetClobberedBeforeCompositingUpdate) {
   // This test fails without BGPT enabled. https://crbug.com/930636.
   if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())

@@ -49,6 +49,7 @@
 #include "third_party/blink/renderer/core/frame/page_scale_constraints_set.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
+#include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
@@ -822,10 +823,23 @@ bool ScrollingCoordinator::CoordinatesScrollingForFrameView(
 
 namespace {
 
-bool ScrollsWithFrame(const LocalFrame& frame, LayoutObject* object) {
+bool ScrollsWithRootFrame(LayoutObject* object) {
   DCHECK(object);
-  DCHECK(object->EnclosingLayer());
+  DCHECK(object->GetFrame());
 
+  const LocalFrame& frame = *object->GetFrame();
+
+  // If we're in an iframe document, we need to determine if the containing
+  // <iframe> element scrolls with the root frame.
+  if (&frame != &frame.LocalFrameRoot()) {
+    DCHECK(frame.GetDocument());
+    DCHECK(frame.GetDocument()->LocalOwner());
+    DCHECK(frame.GetDocument()->LocalOwner()->GetLayoutObject());
+    return ScrollsWithRootFrame(
+        frame.GetDocument()->LocalOwner()->GetLayoutObject());
+  }
+
+  DCHECK(object->EnclosingLayer());
   if (object->EnclosingLayer()->AncestorScrollingLayer() ==
       frame.ContentLayoutObject()->Layer())
     return true;
@@ -861,7 +875,7 @@ void ScrollingCoordinator::ComputeShouldHandleScrollGestureOnMainThreadRegion(
       if (scrollable_area->UsesCompositedScrolling())
         continue;
 
-      Region* region = ScrollsWithFrame(*frame, scrollable_area->GetLayoutBox())
+      Region* region = ScrollsWithRootFrame(scrollable_area->GetLayoutBox())
                            ? scrolling_region
                            : fixed_region;
 
@@ -880,7 +894,7 @@ void ScrollingCoordinator::ComputeShouldHandleScrollGestureOnMainThreadRegion(
       PaintLayerScrollableArea* scrollable_area =
           box->Layer()->GetScrollableArea();
 
-      Region* region = ScrollsWithFrame(*frame, scrollable_area->GetLayoutBox())
+      Region* region = ScrollsWithRootFrame(scrollable_area->GetLayoutBox())
                            ? scrolling_region
                            : fixed_region;
 
@@ -904,7 +918,7 @@ void ScrollingCoordinator::ComputeShouldHandleScrollGestureOnMainThreadRegion(
     if (!element->GetLayoutObject())
       continue;
 
-    Region* region = ScrollsWithFrame(*frame, element->GetLayoutObject())
+    Region* region = ScrollsWithRootFrame(element->GetLayoutObject())
                          ? scrolling_region
                          : fixed_region;
 
@@ -918,13 +932,8 @@ void ScrollingCoordinator::ComputeShouldHandleScrollGestureOnMainThreadRegion(
   for (Frame* sub_frame = tree.FirstChild(); sub_frame;
        sub_frame = sub_frame->Tree().NextSibling()) {
     if (auto* sub_local_frame = DynamicTo<LocalFrame>(sub_frame)) {
-      // We always use the scrolling_region in subframes because the returned
-      // regions will be relative to the local root frame. Inside an iframe,
-      // there's no way to fix an element to an ancestor frame. i.e. A fixed
-      // region inside the iframe will still translate when the root frame
-      // scrolls; it's only fixed with repsect to its own frame.
       ComputeShouldHandleScrollGestureOnMainThreadRegion(
-          sub_local_frame, scrolling_region, scrolling_region);
+          sub_local_frame, scrolling_region, fixed_region);
     }
   }
 }
