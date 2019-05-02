@@ -446,6 +446,10 @@ const DataResource kDataResources[] = {
     {"xhtmlmp.css", IDR_UASTYLE_XHTMLMP_CSS, ui::SCALE_FACTOR_NONE, true},
     {"viewportAndroid.css", IDR_UASTYLE_VIEWPORT_ANDROID_CSS,
      ui::SCALE_FACTOR_NONE, true},
+#if defined(ENABLE_TOUCHLESS_UASTYLE_THEME)
+    {"touchless.css", IDR_UASTYLE_THEME_TOUCHLESS_CSS, ui::SCALE_FACTOR_NONE,
+     true},
+#endif
     {"viewportTelevision.css", IDR_UASTYLE_VIEWPORT_TELEVISION_CSS,
      ui::SCALE_FACTOR_NONE, true},
     {"inspect_tool_common.css", IDR_INSPECT_TOOL_COMMON_CSS,

@@ -12,6 +12,7 @@ import("//tools/grit/grit_rule.gni")
 import("//tools/grit/repack.gni")
 
 if (is_android) {
+  import("//build/config/android/config.gni")
   import("//build/config/android/rules.gni")
 }
 
@@ -597,6 +598,9 @@ grit("resources") {
     "grit/blink_resources.h",
     "blink_resources.pak",
   ]
+  if (is_android) {
+    defines = [ "notouch_build=$notouch_build" ]
+  }
   html_min_css = "$blink_core_output_dir/html.css"
   grit_flags = [
     "-E",

@@ -32,6 +32,9 @@ config("config") {
   if (blink_animation_use_time_delta) {
     defines += [ "BLINK_ANIMATION_USE_TIME_DELTA" ]
   }
+  if (is_android && notouch_build) {
+    defines += [ "ENABLE_TOUCHLESS_UASTYLE_THEME" ]
+  }
 }
 
 config("core_include_dirs") {

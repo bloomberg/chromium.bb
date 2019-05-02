@@ -1997,16 +1997,6 @@ void RenderViewImpl::OnSetRendererPrefs(
   }
 #endif  // BUILDFLAG(USE_DEFAULT_RENDER_THEME)
 
-#if defined(OS_ANDROID)
-  if (renderer_prefs.use_custom_colors)
-    blink::SetFocusRingColor(renderer_prefs.focus_ring_color);
-
-  blink::SetMinimumStrokeWidthForFocusRing(
-      renderer_prefs.minimum_stroke_width_for_focus_ring);
-
-  blink::SetIsFocusRingOutset(renderer_prefs.is_focus_ring_outset);
-#endif
-
   if (webview() &&
       old_accept_languages != renderer_preferences_.accept_languages) {
     webview()->AcceptLanguagesChanged();

@@ -46,6 +46,7 @@ class CSSDefaultStyleSheets
 
   bool EnsureDefaultStyleSheetsForElement(const Element&);
   void EnsureDefaultStyleSheetForFullscreen();
+  void EnsureDefaultStyleSheetForTouchless();
 
   RuleSet* DefaultStyle() { return default_style_.Get(); }
   RuleSet* DefaultQuirksStyle() { return default_quirks_style_.Get(); }
@@ -104,6 +105,7 @@ class CSSDefaultStyleSheets
   Member<StyleSheetContents> mathml_style_sheet_;
   Member<StyleSheetContents> media_controls_style_sheet_;
   Member<StyleSheetContents> fullscreen_style_sheet_;
+  Member<StyleSheetContents> touchless_style_sheet_;
 
   std::unique_ptr<UAStyleSheetLoader> media_controls_style_sheet_loader_;
   DISALLOW_COPY_AND_ASSIGN(CSSDefaultStyleSheets);

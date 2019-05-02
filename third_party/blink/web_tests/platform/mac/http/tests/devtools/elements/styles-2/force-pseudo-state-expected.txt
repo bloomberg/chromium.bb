@@ -65,10 +65,10 @@ div:focus, a:focus { (<style>)
 
 [expanded] 
 :focus { (user agent stylesheet)
-    outline: -webkit-focus-ring-color auto 1px;
+    outline: -webkit-focus-ring-color auto 5px;
         outline-color: -webkit-focus-ring-color;
         outline-style: auto;
-        outline-width: 1px;
+        outline-width: 5px;
 
 [expanded] 
 div { (user agent stylesheet)
