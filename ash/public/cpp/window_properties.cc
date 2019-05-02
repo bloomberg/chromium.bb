@@ -73,10 +73,6 @@ void RegisterWindowProperties(aura::PropertyConverter* property_converter) {
       ws::mojom::WindowManager::kFrameInactiveColor_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
   property_converter->RegisterPrimitiveProperty(
-      aura::client::kGestureDragFromClientAreaTopMovesWindow,
-      mojom::kGestureDragFromClientAreaTopMovesWindow_Property,
-      aura::PropertyConverter::CreateAcceptAnyValueCallback());
-  property_converter->RegisterPrimitiveProperty(
       kHideInOverviewKey, mojom::kHideInOverview_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
   property_converter->RegisterPrimitiveProperty(

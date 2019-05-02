@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO(estade,mukai): Delete this file.
+
 #include "ui/aura/mus/client_side_window_move_handler.h"
 
 #include "base/bind.h"
@@ -22,56 +24,7 @@ namespace aura {
 
 namespace {
 
-// TODO(estade,mukai): De-dupe this constant and the following logic with
-// WmToplevelWindowEventHandler.
-constexpr int kDragStartTopEdgeInset = 8;
-
 Window* GetToplevelTargetForEvent(ui::LocatedEvent* event, int* component) {
-  DCHECK(!event->handled());
-  auto* window = static_cast<Window*>(event->target());
-
-  if (!window || !window->delegate())
-    return nullptr;
-
-  *component = window->delegate()->GetNonClientComponent(event->location());
-
-  if (ui::CanPerformDragOrResize(*component)) {
-    DCHECK_EQ(window, window->GetToplevelWindow());
-    return window;
-  }
-
-  // Gestures can sometimes trigger drags from the client area. All other events
-  // and hit locations will not trigger a drag.
-  if (event->type() != ui::ET_GESTURE_SCROLL_BEGIN || *component != HTCLIENT)
-    return nullptr;
-
-  window = window->GetToplevelWindow();
-  if (!window->GetRootWindow()->GetProperty(
-          client::kGestureDragFromClientAreaTopMovesWindow)) {
-    return nullptr;
-  }
-
-  if (event->AsGestureEvent()->details().scroll_y_hint() < 0)
-    return nullptr;
-
-  const gfx::Point location_in_screen =
-      event->target()->GetScreenLocation(*event);
-  const gfx::Rect work_area_bounds =
-      display::Screen::GetScreen()->GetDisplayNearestWindow(window).work_area();
-
-  gfx::Rect hit_bounds_in_screen(work_area_bounds);
-  hit_bounds_in_screen.set_height(kDragStartTopEdgeInset);
-
-  // There may be a bezel sensor off screen logically above
-  // |hit_bounds_in_screen|. Handles the ET_GESTURE_SCROLL_BEGIN event
-  // triggered in the bezel area too.
-  bool in_bezel = location_in_screen.y() < hit_bounds_in_screen.y() &&
-                  location_in_screen.x() >= hit_bounds_in_screen.x() &&
-                  location_in_screen.x() < hit_bounds_in_screen.right();
-
-  if (hit_bounds_in_screen.Contains(location_in_screen) || in_bezel)
-    return window;
-
   return nullptr;
 }
 

@@ -268,8 +268,6 @@ NonClientFrameController::NonClientFrameController(
   params.show_state = window_->GetProperty(aura::client::kShowStateKey);
   widget_->Init(params);
   did_init_native_widget_ = true;
-
-  wm::MakeGestureDraggableInImmersiveMode(window_);
 }
 
 // static

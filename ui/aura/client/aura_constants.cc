@@ -57,9 +57,6 @@ DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Rect,
                                    kEmbeddedWindowEnsureNotInRect,
                                    nullptr)
 DEFINE_UI_CLASS_PROPERTY_KEY(FocusClient*, kFocusClientKey, nullptr)
-DEFINE_UI_CLASS_PROPERTY_KEY(bool,
-                             kGestureDragFromClientAreaTopMovesWindow,
-                             false)
 DEFINE_UI_CLASS_PROPERTY_KEY(Window*, kHostWindowKey, nullptr)
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Size, kMaximumSize, nullptr)
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Size, kMinimumSize, nullptr)

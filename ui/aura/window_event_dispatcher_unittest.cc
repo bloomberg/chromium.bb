@@ -139,11 +139,8 @@ TEST_P(WindowEventDispatcherTest, OnHostMouseEvent) {
                         ui::EF_LEFT_MOUSE_BUTTON);
   DispatchEventUsingWindowDispatcher(&event1);
 
-  // Event was tested for non-client area for the target window. The expected
-  // value is 2 when mode is MUS, since ClientSideWindowMoveHandler also invokes
-  // it.
-  EXPECT_EQ((Env::GetInstance()->mode() == Env::Mode::MUS) ? 2 : 1,
-            delegate1->non_client_count());
+  // Event was tested for non-client area for the target window.
+  EXPECT_EQ(1, delegate1->non_client_count());
   EXPECT_EQ(0, delegate2->non_client_count());
   // The non-client component test was in local coordinates.
   EXPECT_EQ(gfx::Point(1, 1), delegate1->non_client_location());

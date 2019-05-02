@@ -117,65 +117,7 @@ class InteriorResizeHandleTargeter : public aura::WindowTargeter {
   DISALLOW_COPY_AND_ASSIGN(InteriorResizeHandleTargeter);
 };
 
-// A class to track immersive and tablet mode state and update
-// kGestureDragFromClientAreaTopMovesWindow accordingly. It is owned by the
-// window it tracks by way of being an owned property.
-class GestureDraggableTracker : public aura::WindowObserver,
-                                public TabletModeObserver {
- public:
-  explicit GestureDraggableTracker(aura::Window* window)
-      : observed_window_(window) {
-    observed_window_->AddObserver(this);
-    Shell::Get()->tablet_mode_controller()->AddObserver(this);
-  }
-
-  ~GestureDraggableTracker() override {
-    observed_window_->RemoveObserver(this);
-    if (Shell::Get()->tablet_mode_controller())
-      Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
-  }
-
-  // aura::WindowObserver:
-  void OnWindowPropertyChanged(aura::Window* window,
-                               const void* key,
-                               intptr_t old) override {
-    if (key == kImmersiveIsActive)
-      UpdateFlag();
-  }
-
-  // TabletModeObserver:
-  void OnTabletModeStarted() override { UpdateFlag(); }
-  void OnTabletModeEnded() override { UpdateFlag(); }
-
- private:
-  void UpdateFlag() {
-    observed_window_->SetProperty(
-        aura::client::kGestureDragFromClientAreaTopMovesWindow,
-        observed_window_->GetProperty(kImmersiveIsActive) &&
-            Shell::Get()->tablet_mode_controller() &&
-            Shell::Get()
-                ->tablet_mode_controller()
-                ->IsTabletModeWindowManagerEnabled());
-  }
-
-  // |observed_window_| owns |this|.
-  aura::Window* observed_window_;
-
-  DISALLOW_COPY_AND_ASSIGN(GestureDraggableTracker);
-};
-
-DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(GestureDraggableTracker,
-                                   kGestureDraggableTracker,
-                                   nullptr)
-
 }  // namespace
-}  // namespace wm
-}  // namespace ash
-
-DEFINE_UI_CLASS_PROPERTY_TYPE(ash::wm::GestureDraggableTracker*)
-
-namespace ash {
-namespace wm {
 
 // TODO(beng): replace many of these functions with the corewm versions.
 void ActivateWindow(aura::Window* window) {
@@ -320,19 +262,6 @@ void InstallResizeHandleWindowTargeterForWindow(aura::Window* window) {
   // ServerWindowTargeter, so make sure it knows about the resize insets.
   window->SetProperty(aura::client::kResizeHandleInset,
                       kResizeInsideBoundsSize);
-}
-
-void MakeGestureDraggableInImmersiveMode(aura::Window* frame_window) {
-  // For Browser windows, gesture drags from the top in immersive mode reveal
-  // the frame, so kGestureDragFromClientAreaTopMovesWindow should always be
-  // false.
-  if (static_cast<ash::AppType>(frame_window->GetProperty(
-          aura::client::kAppType)) == AppType::BROWSER) {
-    return;
-  }
-
-  frame_window->SetProperty(kGestureDraggableTracker,
-                            new GestureDraggableTracker(frame_window));
 }
 
 bool IsDraggingTabs(const aura::Window* window) {

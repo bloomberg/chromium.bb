@@ -97,12 +97,6 @@ AURA_EXPORT extern const WindowProperty<gfx::Rect*>* const
 // A property key to store the focus client on the window.
 AURA_EXPORT extern const WindowProperty<FocusClient*>* const kFocusClientKey;
 
-// Should be set to true for fullscreen/maximized windows that want to be
-// drag-moved in response to gesture events in the top of the client
-// area/screen.
-AURA_EXPORT extern const WindowProperty<bool>* const
-    kGestureDragFromClientAreaTopMovesWindow;
-
 // A property key to store the host window of a window. This lets
 // WebContentsViews find the windows that should constrain NPAPI plugins.
 AURA_EXPORT extern const WindowProperty<Window*>* const kHostWindowKey;

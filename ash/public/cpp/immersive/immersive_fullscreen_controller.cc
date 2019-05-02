@@ -686,16 +686,6 @@ bool ImmersiveFullscreenController::ShouldHandleGestureEvent(
     return false;
   }
 
-  // Don't perform an immersive reveal when gesture scrolls from the top ought
-  // to be dragging the window.
-  aura::Window* window = widget_->GetNativeWindow();
-  if (window->env()->mode() == aura::Env::Mode::MUS)
-    window = window->GetRootWindow();
-  if (window->GetProperty(
-          aura::client::kGestureDragFromClientAreaTopMovesWindow)) {
-    return false;
-  }
-
   // When the top-of-window views are not fully revealed, handle gestures which
   // start in the top few pixels of the screen.
   gfx::Rect hit_bounds_in_screen(GetDisplayBoundsInScreen());
