@@ -2973,20 +2973,16 @@ void Document::SetPrinting(PrintingState state) {
   printing_ = state;
   bool is_printing = Printing();
 
-  // Changing the state of Printing() can change whether layout objects are
-  // created for iframes. As such, we need to do a full reattach. See
-  // LayoutView::CanHaveChildren.
-  // https://crbug.com/819327.
   if ((was_printing != is_printing) && documentElement() && GetFrame() &&
       !GetFrame()->IsMainFrame() && GetFrame()->Owner() &&
       GetFrame()->Owner()->IsDisplayNone()) {
-    // LazyReattachIfAttached() is not idempotent. HTMLObjectElements will lose
-    // their contents, which must be asynchronously regenerated. As such, we
-    // avoid calling this method unless we think that this is a display-none
-    // iframe and calling this is necessary.
-    // This still leaves the edge case of a display: none iframe with an
-    // HTMLObjectElement that doesn't print properly. https://crbug.com/838760.
-    documentElement()->LazyReattachIfAttached();
+    // In non-printing mode we do not generate style or layout objects for
+    // display:none iframes, yet we do when printing (see
+    // LayoutView::CanHaveChildren). Trigger a style recalc on the root element
+    // to create a layout tree for printing.
+    documentElement()->SetNeedsStyleRecalc(
+        kLocalStyleChange,
+        StyleChangeReasonForTracing::Create(style_change_reason::kFrame));
   }
 }
 
