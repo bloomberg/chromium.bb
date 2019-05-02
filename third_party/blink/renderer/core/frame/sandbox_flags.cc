@@ -37,11 +37,6 @@
 
 namespace blink {
 
-// An array of pairs of some sandbox flags and their corresponding
-// FeaturePolicies that implement them. Eventually almost all sandbox flags
-// should be converted to feature policies (https://crbug.com/812381).
-using SandboxFlagFeaturePolicyPairs =
-    Vector<std::pair<WebSandboxFlags, mojom::FeaturePolicyFeature>>;
 const SandboxFlagFeaturePolicyPairs& SandboxFlagsWithFeaturePolicies() {
   DEFINE_STATIC_LOCAL(
       SandboxFlagFeaturePolicyPairs, array,

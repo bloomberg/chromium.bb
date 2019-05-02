@@ -290,16 +290,17 @@ ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy(
   if (RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
     // If the frame is sandboxed at all, then warn if feature policy attributes
     // will override the sandbox attributes.
-    // TODO(ekaramad): Add similar messages for all the converted sandbox flags.
     if (messages && (sandbox_flags_converted_to_feature_policies_ &
                      WebSandboxFlags::kNavigation) != WebSandboxFlags::kNone) {
-      if ((sandbox_flags_converted_to_feature_policies_ &
-           WebSandboxFlags::kForms) == WebSandboxFlags::kNone &&
-          IsFeatureDeclared(mojom::FeaturePolicyFeature::kFormSubmission,
-                            container_policy)) {
-        messages->push_back(
-            "Allow and Sandbox attributes both mention forms. Allow will take "
-            "precedence.");
+      for (const auto& pair : SandboxFlagsWithFeaturePolicies()) {
+        if ((sandbox_flags_converted_to_feature_policies_ & pair.first) !=
+                WebSandboxFlags::kNone &&
+            IsFeatureDeclared(pair.second, container_policy)) {
+          messages->push_back(String::Format(
+              "Allow and Sandbox attributes both mention '%s'. Allow will take "
+              "precedence.",
+              GetNameForFeature(pair.second).Utf8().data()));
+        }
       }
     }
     ApplySandboxFlagsToParsedFeaturePolicy(

@@ -35,6 +35,13 @@
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
+using SandboxFlagFeaturePolicyPairs =
+    Vector<std::pair<WebSandboxFlags, mojom::FeaturePolicyFeature>>;
+
+// Returns a vector of pairs of sandbox flags and the corresponding feature
+// policies. This includes most but not all sandbox flags as some flags have not
+// yet migrated to using feature policies.
+const SandboxFlagFeaturePolicyPairs& SandboxFlagsWithFeaturePolicies();
 
 WebSandboxFlags ParseSandboxPolicy(const SpaceSplitString& policy,
                                    String& invalid_tokens_error_message);
