@@ -62,10 +62,10 @@ int ShellPermissionManager::RequestPermission(
     RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
     bool user_gesture,
-    const base::Callback<void(blink::mojom::PermissionStatus)>& callback) {
-  callback.Run(IsWhitelistedPermissionType(permission)
-                   ? blink::mojom::PermissionStatus::GRANTED
-                   : blink::mojom::PermissionStatus::DENIED);
+    base::OnceCallback<void(blink::mojom::PermissionStatus)> callback) {
+  std::move(callback).Run(IsWhitelistedPermissionType(permission)
+                              ? blink::mojom::PermissionStatus::GRANTED
+                              : blink::mojom::PermissionStatus::DENIED);
   return PermissionController::kNoPendingOperation;
 }
 
@@ -74,15 +74,15 @@ int ShellPermissionManager::RequestPermissions(
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
     bool user_gesture,
-    const base::Callback<
-        void(const std::vector<blink::mojom::PermissionStatus>&)>& callback) {
+    base::OnceCallback<void(const std::vector<blink::mojom::PermissionStatus>&)>
+        callback) {
   std::vector<blink::mojom::PermissionStatus> result;
   for (const auto& permission : permissions) {
     result.push_back(IsWhitelistedPermissionType(permission)
                          ? blink::mojom::PermissionStatus::GRANTED
                          : blink::mojom::PermissionStatus::DENIED);
   }
-  callback.Run(result);
+  std::move(callback).Run(result);
   return PermissionController::kNoPendingOperation;
 }
 
@@ -125,7 +125,7 @@ int ShellPermissionManager::SubscribePermissionStatusChange(
     PermissionType permission,
     RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
-    const base::Callback<void(blink::mojom::PermissionStatus)>& callback) {
+    base::RepeatingCallback<void(blink::mojom::PermissionStatus)> callback) {
   return PermissionController::kNoPendingOperation;
 }
 

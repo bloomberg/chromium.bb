@@ -19,14 +19,13 @@ class GURL;
 // is executed.
 class PermissionRequestImpl : public PermissionRequest {
  public:
-  using PermissionDecidedCallback = base::Callback<void(ContentSetting)>;
+  using PermissionDecidedCallback = base::OnceCallback<void(ContentSetting)>;
 
-  PermissionRequestImpl(
-      const GURL& request_origin,
-      ContentSettingsType content_settings_type,
-      bool has_gesture,
-      const PermissionDecidedCallback& permission_decided_callback,
-      const base::Closure delete_callback);
+  PermissionRequestImpl(const GURL& request_origin,
+                        ContentSettingsType content_settings_type,
+                        bool has_gesture,
+                        PermissionDecidedCallback permission_decided_callback,
+                        base::OnceClosure delete_callback);
 
   ~PermissionRequestImpl() override;
 
@@ -51,11 +50,11 @@ class PermissionRequestImpl : public PermissionRequest {
   bool has_gesture_;
 
   // Called once a decision is made about the permission.
-  const PermissionDecidedCallback permission_decided_callback_;
+  PermissionDecidedCallback permission_decided_callback_;
 
   // Called when the request is no longer in use so it can be deleted by the
   // caller.
-  const base::Closure delete_callback_;
+  base::OnceClosure delete_callback_;
   bool is_finished_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionRequestImpl);

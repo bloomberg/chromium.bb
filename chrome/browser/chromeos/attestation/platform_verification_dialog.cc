@@ -41,7 +41,7 @@ namespace attestation {
 views::Widget* PlatformVerificationDialog::ShowDialog(
     content::WebContents* web_contents,
     const GURL& requesting_origin,
-    const ConsentCallback& callback) {
+    ConsentCallback callback) {
   // This could happen when the permission is requested from an extension. See
   // http://crbug.com/728534
   // TODO(wittman): Remove this check after ShowWebModalDialogViews() API is
@@ -64,9 +64,7 @@ views::Widget* PlatformVerificationDialog::ShowDialog(
   std::string origin = extension ? extension->name() : requesting_origin.spec();
 
   PlatformVerificationDialog* dialog = new PlatformVerificationDialog(
-      web_contents,
-      base::UTF8ToUTF16(origin),
-      callback);
+      web_contents, base::UTF8ToUTF16(origin), std::move(callback));
 
   return constrained_window::ShowWebModalDialogViews(dialog, web_contents);
 }
@@ -77,10 +75,10 @@ PlatformVerificationDialog::~PlatformVerificationDialog() {
 PlatformVerificationDialog::PlatformVerificationDialog(
     content::WebContents* web_contents,
     const base::string16& domain,
-    const ConsentCallback& callback)
+    ConsentCallback callback)
     : content::WebContentsObserver(web_contents),
       domain_(domain),
-      callback_(callback),
+      callback_(std::move(callback)),
       learn_more_button_(nullptr) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
   SetBorder(views::CreateEmptyBorder(
@@ -109,13 +107,13 @@ views::View* PlatformVerificationDialog::CreateExtraView() {
 
 bool PlatformVerificationDialog::Cancel() {
   // This method is called when user clicked "Block" button.
-  callback_.Run(CONSENT_RESPONSE_DENY);
+  std::move(callback_).Run(CONSENT_RESPONSE_DENY);
   return true;
 }
 
 bool PlatformVerificationDialog::Accept() {
   // This method is called when user clicked "Allow" button.
-  callback_.Run(CONSENT_RESPONSE_ALLOW);
+  std::move(callback_).Run(CONSENT_RESPONSE_ALLOW);
   return true;
 }
 
@@ -123,7 +121,7 @@ bool PlatformVerificationDialog::Close() {
   // This method is called when user clicked "x" or pressed "Esc" to dismiss the
   // dialog, the permission request is canceled, or when the tab containing this
   // dialog is closed.
-  callback_.Run(CONSENT_RESPONSE_NONE);
+  std::move(callback_).Run(CONSENT_RESPONSE_NONE);
   return true;
 }
 

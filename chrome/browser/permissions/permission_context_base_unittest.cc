@@ -87,11 +87,12 @@ class TestPermissionContext : public PermissionContextBase {
                          const PermissionRequestID& id,
                          const GURL& requesting_frame,
                          bool user_gesture,
-                         const BrowserPermissionCallback& callback) override {
+                         BrowserPermissionCallback callback) override {
     base::RunLoop run_loop;
     quit_closure_ = run_loop.QuitClosure();
     PermissionContextBase::RequestPermission(web_contents, id, requesting_frame,
-                                             true /* user_gesture */, callback);
+                                             true /* user_gesture */,
+                                             std::move(callback));
     run_loop.Run();
   }
 
@@ -100,10 +101,10 @@ class TestPermissionContext : public PermissionContextBase {
                         const GURL& requesting_origin,
                         const GURL& embedding_origin,
                         bool user_gesture,
-                        const BrowserPermissionCallback& callback) override {
+                        BrowserPermissionCallback callback) override {
     PermissionContextBase::DecidePermission(web_contents, id, requesting_origin,
                                             embedding_origin, user_gesture,
-                                            callback);
+                                            std::move(callback));
     if (respond_permission_) {
       respond_permission_.Run();
       respond_permission_.Reset();

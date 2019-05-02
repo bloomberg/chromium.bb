@@ -35,7 +35,7 @@ class WebViewPermissionHelperDelegate : public content::WebContentsObserver {
       int bridge_id,
       const GURL& requesting_frame,
       bool user_gesture,
-      const base::Callback<void(bool)>& callback) {}
+      base::OnceCallback<void(bool)> callback) {}
 
   virtual void CancelGeolocationPermissionRequest(int bridge_id) {}
 

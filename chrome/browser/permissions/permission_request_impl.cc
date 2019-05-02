@@ -23,13 +23,13 @@ PermissionRequestImpl::PermissionRequestImpl(
     const GURL& request_origin,
     ContentSettingsType content_settings_type,
     bool has_gesture,
-    const PermissionDecidedCallback& permission_decided_callback,
-    const base::Closure delete_callback)
+    PermissionDecidedCallback permission_decided_callback,
+    base::OnceClosure delete_callback)
     : request_origin_(request_origin),
       content_settings_type_(content_settings_type),
       has_gesture_(has_gesture),
-      permission_decided_callback_(permission_decided_callback),
-      delete_callback_(delete_callback),
+      permission_decided_callback_(std::move(permission_decided_callback)),
+      delete_callback_(std::move(delete_callback)),
       is_finished_(false) {}
 
 PermissionRequestImpl::~PermissionRequestImpl() {
@@ -175,20 +175,20 @@ GURL PermissionRequestImpl::GetOrigin() const {
 }
 
 void PermissionRequestImpl::PermissionGranted() {
-  permission_decided_callback_.Run(CONTENT_SETTING_ALLOW);
+  std::move(permission_decided_callback_).Run(CONTENT_SETTING_ALLOW);
 }
 
 void PermissionRequestImpl::PermissionDenied() {
-  permission_decided_callback_.Run(CONTENT_SETTING_BLOCK);
+  std::move(permission_decided_callback_).Run(CONTENT_SETTING_BLOCK);
 }
 
 void PermissionRequestImpl::Cancelled() {
-  permission_decided_callback_.Run(CONTENT_SETTING_DEFAULT);
+  std::move(permission_decided_callback_).Run(CONTENT_SETTING_DEFAULT);
 }
 
 void PermissionRequestImpl::RequestFinished() {
   is_finished_ = true;
-  delete_callback_.Run();
+  std::move(delete_callback_).Run();
 }
 
 PermissionRequestType PermissionRequestImpl::GetPermissionRequestType()

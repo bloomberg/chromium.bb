@@ -30,10 +30,10 @@ namespace android_webview {
 namespace {
 
 void PermissionRequestResponseCallbackWrapper(
-    const base::Callback<void(PermissionStatus)>& callback,
+    base::OnceCallback<void(PermissionStatus)> callback,
     const std::vector<PermissionStatus>& vector) {
   DCHECK_EQ(vector.size(), 1ul);
-  callback.Run(vector[0]);
+  std::move(callback).Run(vector.at(0));
 }
 
 }  // namespace
@@ -233,11 +233,12 @@ int AwPermissionManager::RequestPermission(
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
     bool user_gesture,
-    const base::Callback<void(PermissionStatus)>& callback) {
+    base::OnceCallback<void(PermissionStatus)> callback) {
   return RequestPermissions(
       std::vector<PermissionType>(1, permission), render_frame_host,
       requesting_origin, user_gesture,
-      base::Bind(&PermissionRequestResponseCallbackWrapper, callback));
+      base::BindOnce(&PermissionRequestResponseCallbackWrapper,
+                     std::move(callback)));
 }
 
 int AwPermissionManager::RequestPermissions(
@@ -245,10 +246,9 @@ int AwPermissionManager::RequestPermissions(
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
     bool user_gesture,
-    const base::Callback<void(const std::vector<PermissionStatus>&)>&
-        callback) {
+    base::OnceCallback<void(const std::vector<PermissionStatus>&)> callback) {
   if (permissions.empty()) {
-    callback.Run(std::vector<PermissionStatus>());
+    std::move(callback).Run(std::vector<PermissionStatus>());
     return content::PermissionController::kNoPendingOperation;
   }
 
@@ -257,7 +257,7 @@ int AwPermissionManager::RequestPermissions(
   auto pending_request = std::make_unique<PendingRequest>(
       permissions, requesting_origin, embedding_origin,
       GetRenderProcessID(render_frame_host),
-      GetRenderFrameID(render_frame_host), callback);
+      GetRenderFrameID(render_frame_host), std::move(callback));
   std::vector<bool> should_delegate_requests =
       std::vector<bool>(permissions.size(), true);
   for (size_t i = 0; i < permissions.size(); ++i) {
@@ -279,7 +279,7 @@ int AwPermissionManager::RequestPermissions(
   // Keep copy of pointer for performing further operations after ownership is
   // transferred to pending_requests_
   PendingRequest* pending_request_raw = pending_request.get();
-  int request_id = pending_requests_.Add(std::move(pending_request));
+  const int request_id = pending_requests_.Add(std::move(pending_request));
 
   AwBrowserPermissionRequestDelegate* delegate =
       GetDelegate(pending_request_raw->render_process_id,
@@ -362,8 +362,10 @@ int AwPermissionManager::RequestPermissions(
   // without invoking the callback.
   if (pending_request_raw->IsCompleted()) {
     std::vector<PermissionStatus> results = pending_request_raw->results;
+    RequestPermissionsCallback completed_callback =
+        std::move(pending_request_raw->callback);
     pending_requests_.Remove(request_id);
-    callback.Run(results);
+    std::move(completed_callback).Run(results);
     return content::PermissionController::kNoPendingOperation;
   }
 
@@ -454,7 +456,7 @@ int AwPermissionManager::SubscribePermissionStatusChange(
     PermissionType permission,
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
-    const base::Callback<void(PermissionStatus)>& callback) {
+    base::RepeatingCallback<void(PermissionStatus)> callback) {
   return content::PermissionController::kNoPendingOperation;
 }
 

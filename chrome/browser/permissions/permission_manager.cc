@@ -142,33 +142,33 @@ ContentSettingsType PermissionTypeToContentSetting(PermissionType permission) {
 }
 
 void SubscriptionCallbackWrapper(
-    const base::Callback<void(PermissionStatus)>& callback,
+    base::OnceCallback<void(PermissionStatus)> callback,
     ContentSetting content_setting) {
-  callback.Run(ContentSettingToPermissionStatus(content_setting));
+  std::move(callback).Run(ContentSettingToPermissionStatus(content_setting));
 }
 
 void PermissionStatusCallbackWrapper(
-    const base::Callback<void(PermissionStatus)>& callback,
+    base::OnceCallback<void(PermissionStatus)> callback,
     const std::vector<ContentSetting>& vector) {
   DCHECK_EQ(1ul, vector.size());
-  callback.Run(ContentSettingToPermissionStatus(vector[0]));
+  std::move(callback).Run(ContentSettingToPermissionStatus(vector.at(0)));
 }
 
 void PermissionStatusVectorCallbackWrapper(
-    const base::Callback<void(const std::vector<PermissionStatus>&)>& callback,
+    base::OnceCallback<void(const std::vector<PermissionStatus>&)> callback,
     const std::vector<ContentSetting>& content_settings) {
   std::vector<PermissionStatus> permission_statuses;
   std::transform(content_settings.begin(), content_settings.end(),
                  back_inserter(permission_statuses),
                  ContentSettingToPermissionStatus);
-  callback.Run(permission_statuses);
+  std::move(callback).Run(permission_statuses);
 }
 
-void ContentSettingCallbackWraper(
-    const base::Callback<void(ContentSetting)>& callback,
+void ContentSettingCallbackWrapper(
+    base::OnceCallback<void(ContentSetting)> callback,
     const std::vector<ContentSetting>& vector) {
   DCHECK_EQ(1ul, vector.size());
-  callback.Run(vector[0]);
+  std::move(callback).Run(vector.at(0));
 }
 
 }  // anonymous namespace
@@ -178,10 +178,10 @@ class PermissionManager::PendingRequest {
   PendingRequest(
       content::RenderFrameHost* render_frame_host,
       const std::vector<ContentSettingsType>& permissions,
-      const base::Callback<void(const std::vector<ContentSetting>&)>& callback)
+      base::OnceCallback<void(const std::vector<ContentSetting>&)> callback)
       : render_process_id_(render_frame_host->GetProcess()->GetID()),
         render_frame_id_(render_frame_host->GetRoutingID()),
-        callback_(callback),
+        callback_(std::move(callback)),
         permissions_(permissions),
         results_(permissions.size(), CONTENT_SETTING_BLOCK),
         remaining_results_(permissions.size()) {}
@@ -200,9 +200,8 @@ class PermissionManager::PendingRequest {
   int render_process_id() const { return render_process_id_; }
   int render_frame_id() const { return render_frame_id_; }
 
-  const base::Callback<void(const std::vector<ContentSetting>&)> callback()
-      const {
-    return callback_;
+  base::OnceCallback<void(const std::vector<ContentSetting>&)> TakeCallback() {
+    return std::move(callback_);
   }
 
   std::vector<ContentSettingsType> permissions() const {
@@ -214,7 +213,7 @@ class PermissionManager::PendingRequest {
  private:
   int render_process_id_;
   int render_frame_id_;
-  const base::Callback<void(const std::vector<ContentSetting>&)> callback_;
+  base::OnceCallback<void(const std::vector<ContentSetting>&)> callback_;
   std::vector<ContentSettingsType> permissions_;
   std::vector<ContentSetting> results_;
   size_t remaining_results_;
@@ -264,7 +263,7 @@ struct PermissionManager::Subscription {
   GURL requesting_origin;
   int render_frame_id = -1;
   int render_process_id = -1;
-  base::Callback<void(ContentSetting)> callback;
+  base::RepeatingCallback<void(ContentSetting)> callback;
   ContentSetting current_value;
 };
 
@@ -373,11 +372,11 @@ int PermissionManager::RequestPermission(
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
     bool user_gesture,
-    const base::Callback<void(ContentSetting)>& callback) {
+    base::OnceCallback<void(ContentSetting)> callback) {
   return RequestPermissions(
       std::vector<ContentSettingsType>(1, content_settings_type),
       render_frame_host, requesting_origin, user_gesture,
-      base::Bind(&ContentSettingCallbackWraper, callback));
+      base::BindOnce(&ContentSettingCallbackWrapper, std::move(callback)));
 }
 
 int PermissionManager::RequestPermissions(
@@ -385,10 +384,10 @@ int PermissionManager::RequestPermissions(
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
     bool user_gesture,
-    const base::Callback<void(const std::vector<ContentSetting>&)>& callback) {
+    base::OnceCallback<void(const std::vector<ContentSetting>&)> callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (permissions.empty()) {
-    callback.Run(std::vector<ContentSetting>());
+    std::move(callback).Run(std::vector<ContentSetting>());
     return content::PermissionController::kNoPendingOperation;
   }
 
@@ -400,19 +399,20 @@ int PermissionManager::RequestPermissions(
       GetCanonicalOrigin(requesting_origin, embedding_origin);
 
   int request_id = pending_requests_.Add(std::make_unique<PendingRequest>(
-      render_frame_host, permissions, callback));
+      render_frame_host, permissions, std::move(callback)));
 
   const PermissionRequestID request(render_frame_host, request_id);
 
   for (size_t i = 0; i < permissions.size(); ++i) {
     const ContentSettingsType permission = permissions[i];
 
-    auto callback =
+    auto response_callback =
         std::make_unique<PermissionResponseCallback>(this, request_id, i);
     auto status = GetPermissionOverrideForDevTools(canonical_requesting_origin,
                                                    permission);
     if (status != CONTENT_SETTING_DEFAULT) {
-      callback->OnPermissionsRequestResponseStatus(CONTENT_SETTING_ALLOW);
+      response_callback->OnPermissionsRequestResponseStatus(
+          CONTENT_SETTING_ALLOW);
       continue;
     }
 
@@ -421,9 +421,9 @@ int PermissionManager::RequestPermissions(
 
     context->RequestPermission(
         web_contents, request, canonical_requesting_origin, user_gesture,
-        base::Bind(
+        base::BindOnce(
             &PermissionResponseCallback::OnPermissionsRequestResponseStatus,
-            base::Passed(&callback)));
+            std::move(response_callback)));
   }
 
   // The request might have been resolved already.
@@ -464,13 +464,13 @@ int PermissionManager::RequestPermission(
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
     bool user_gesture,
-    const base::Callback<void(PermissionStatus)>& callback) {
+    base::OnceCallback<void(PermissionStatus)> callback) {
   ContentSettingsType content_settings_type =
       PermissionTypeToContentSetting(permission);
   return RequestPermissions(
       std::vector<ContentSettingsType>(1, content_settings_type),
       render_frame_host, requesting_origin, user_gesture,
-      base::Bind(&PermissionStatusCallbackWrapper, callback));
+      base::BindOnce(&PermissionStatusCallbackWrapper, std::move(callback)));
 }
 
 int PermissionManager::RequestPermissions(
@@ -478,8 +478,7 @@ int PermissionManager::RequestPermissions(
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
     bool user_gesture,
-    const base::Callback<void(const std::vector<PermissionStatus>&)>&
-        callback) {
+    base::OnceCallback<void(const std::vector<PermissionStatus>&)> callback) {
   std::vector<ContentSettingsType> content_settings_types;
   std::transform(permissions.begin(), permissions.end(),
                  back_inserter(content_settings_types),
@@ -487,7 +486,8 @@ int PermissionManager::RequestPermissions(
   return RequestPermissions(
       content_settings_types, render_frame_host, requesting_origin,
       user_gesture,
-      base::Bind(&PermissionStatusVectorCallbackWrapper, callback));
+      base::BindOnce(&PermissionStatusVectorCallbackWrapper,
+                     std::move(callback)));
 }
 
 PermissionContextBase* PermissionManager::GetPermissionContext(
@@ -509,7 +509,7 @@ void PermissionManager::OnPermissionsRequestResponseStatus(
   if (!pending_request->IsComplete())
     return;
 
-  pending_request->callback().Run(pending_request->results());
+  pending_request->TakeCallback().Run(pending_request->results());
   pending_requests_.Remove(request_id);
 }
 
@@ -576,7 +576,7 @@ int PermissionManager::SubscribePermissionStatusChange(
     PermissionType permission,
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
-    const base::Callback<void(PermissionStatus)>& callback) {
+    base::RepeatingCallback<void(PermissionStatus)> callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (subscriptions_.IsEmpty())
     HostContentSettingsMapFactory::GetForProfile(profile_)->AddObserver(this);
@@ -608,7 +608,8 @@ int PermissionManager::SubscribePermissionStatusChange(
   subscription->permission = content_type;
   subscription->requesting_origin =
       GetCanonicalOrigin(requesting_origin, embedding_origin);
-  subscription->callback = base::Bind(&SubscriptionCallbackWrapper, callback);
+  subscription->callback =
+      base::BindRepeating(&SubscriptionCallbackWrapper, std::move(callback));
 
   return subscriptions_.Add(std::move(subscription));
 }
@@ -635,7 +636,8 @@ void PermissionManager::OnContentSettingChanged(
     ContentSettingsType content_type,
     const std::string& resource_identifier) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  std::list<base::Closure> callbacks;
+  std::vector<base::OnceClosure> callbacks;
+  callbacks.reserve(subscriptions_.size());
 
   for (SubscriptionsMap::iterator iter(&subscriptions_);
        !iter.IsAtEnd(); iter.Advance()) {
@@ -681,11 +683,11 @@ void PermissionManager::OnContentSettingChanged(
 
     // Add the callback to |callbacks| which will be run after the loop to
     // prevent re-entrance issues.
-    callbacks.push_back(base::Bind(subscription->callback, new_value));
+    callbacks.push_back(base::BindOnce(subscription->callback, new_value));
   }
 
-  for (const auto& callback : callbacks)
-    callback.Run();
+  for (auto& callback : callbacks)
+    std::move(callback).Run();
 }
 
 PermissionResult PermissionManager::GetPermissionStatusHelper(

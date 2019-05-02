@@ -31,7 +31,7 @@ class GeolocationPermissionContext  : public PermissionContextBase {
                         const GURL& requesting_origin,
                         const GURL& embedding_origin,
                         bool user_gesture,
-                        const BrowserPermissionCallback& callback) override;
+                        BrowserPermissionCallback callback) override;
 
  private:
   void UpdateTabContext(const PermissionRequestID& id,

@@ -77,7 +77,7 @@ class WebViewPermissionHelper
   void RequestGeolocationPermission(int bridge_id,
                                     const GURL& requesting_frame,
                                     bool user_gesture,
-                                    const base::Callback<void(bool)>& callback);
+                                    base::OnceCallback<void(bool)> callback);
   void CancelGeolocationPermissionRequest(int bridge_id);
 
   void RequestFileSystemPermission(const GURL& url,
