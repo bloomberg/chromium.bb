@@ -9,7 +9,7 @@ static_library("lnk_parser") {
   ]
 
   deps = [
-    "//base:base",
+    "//base",
     "//chrome/chrome_cleaner/interfaces:parser_interface",
   ]
 }
@@ -23,7 +23,7 @@ source_set("unittest_sources") {
 
   deps = [
     ":lnk_parser",
-    "//base:base",
+    "//base",
     "//chrome/chrome_cleaner/os:common_os",
     "//chrome/chrome_cleaner/test:test_util",
     "//testing/gtest",

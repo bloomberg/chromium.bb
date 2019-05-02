@@ -135,16 +135,16 @@ jumbo_static_library("safe_browsing") {
       "//chrome/common/safe_browsing:proto",
       "//components/safe_browsing:csd_proto",
       "//components/safe_browsing:safe_browsing",
-      "//components/safe_browsing/browser:browser",
-      "//components/safe_browsing/common:common",
+      "//components/safe_browsing/browser",
+      "//components/safe_browsing/common",
       "//components/safe_browsing/common:safe_browsing_prefs",
       "//components/safe_browsing/db:metadata_proto",
       "//components/safe_browsing/db:whitelist_checker_client",
       "//components/safe_browsing/password_protection",
+      "//components/safe_browsing/triggers",
       "//components/safe_browsing/triggers:ad_sampler_trigger",
       "//components/safe_browsing/triggers:suspicious_site_trigger",
       "//components/safe_browsing/triggers:trigger_throttler",
-      "//components/safe_browsing/triggers:triggers",
     ]
     if (safe_browsing_mode == 1) {
       # "Safe Browsing Full" files in addition to the "basic" ones to use for
@@ -245,14 +245,14 @@ jumbo_static_library("safe_browsing") {
         "//chrome/common/safe_browsing:disk_image_type_sniffer_mac",
         "//chrome/common/safe_browsing:download_type_util",
         "//chrome/services/file_util/public/cpp",
-        "//components/content_settings/core/browser:browser",
-        "//components/language/core/common:common",
-        "//components/prefs:prefs",
-        "//components/safe_browsing/db:db",
+        "//components/content_settings/core/browser",
+        "//components/language/core/common",
+        "//components/prefs",
+        "//components/safe_browsing/db",
         "//components/security_interstitials/content:security_interstitial_page",
-        "//components/signin/core/browser:browser",
-        "//content/public/browser:browser",
-        "//net:net",
+        "//components/signin/core/browser",
+        "//content/public/browser",
+        "//net",
       ]
       if (is_win) {
         deps += [ "//chrome/browser/safe_browsing/incident_reporting:state_store_data_proto" ]
@@ -291,11 +291,11 @@ static_library("advanced_protection") {
 
   deps = [
     "//components/keyed_service/content",
-    "//components/prefs:prefs",
-    "//components/safe_browsing/common:common",
+    "//components/prefs",
+    "//components/safe_browsing/common",
     "//components/safe_browsing/common:safe_browsing_prefs",
-    "//components/signin/core/browser:browser",
-    "//content/public/browser:browser",
+    "//components/signin/core/browser",
+    "//content/public/browser",
     "//services/identity/public/cpp",
   ]
 }
@@ -313,7 +313,7 @@ source_set("test_support") {
       "//components/safe_browsing/db:database_manager",
       "//components/safe_browsing/db:test_database_manager",
       "//components/safe_browsing/db:v4_protocol_manager_util",
-      "//content/public/browser:browser",
+      "//content/public/browser",
     ]
   }
 }

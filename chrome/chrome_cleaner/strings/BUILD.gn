@@ -10,7 +10,7 @@ source_set("strings") {
     "string_util.h",
   ]
   deps = [
-    "//base:base",
+    "//base",
     "//base:i18n",
   ]
 }
@@ -25,7 +25,7 @@ source_set("string_test_helpers") {
 
   deps = [
     ":strings",
-    "//base:base",
+    "//base",
   ]
 }
 

@@ -176,7 +176,7 @@ jumbo_static_library("renderer") {
     "//third_party/re2",
     "//third_party/widevine/cdm:buildflags",
     "//ui/surface",
-    "//v8:v8",
+    "//v8",
   ]
 
   data_deps = [
@@ -240,7 +240,7 @@ jumbo_static_library("renderer") {
 
   if (safe_browsing_mode != 0) {
     deps += [
-      "//components/safe_browsing/common:common",
+      "//components/safe_browsing/common",
       "//components/safe_browsing/renderer",
     ]
     if (safe_browsing_mode == 1) {

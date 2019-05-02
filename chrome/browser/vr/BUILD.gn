@@ -413,7 +413,7 @@ component("vr_base") {
     "//components/ukm/content",
     "//components/url_formatter",
     "//components/vector_icons",
-    "//content/public/browser:browser",
+    "//content/public/browser",
     "//media",
     "//net",
     "//services/metrics/public/cpp:ukm_builders",
@@ -571,7 +571,7 @@ source_set("vr_test_support") {
     ":vr_ui",
     "//base/test:test_support",
     "//cc:test_support",
-    "//components/omnibox/browser:browser",
+    "//components/omnibox/browser",
     "//components/omnibox/browser:vector_icons",
     "//components/security_state/core",
     "//content/test:test_support",
@@ -700,7 +700,7 @@ if (!is_android) {
       "//device/base",
       "//device/vr:vr",
       "//device/vr/buildflags:buildflags",
-      "//device/vr/public/mojom:mojom",
+      "//device/vr/public/mojom",
       "//device/vr/public/mojom:test_mojom",
       "//services/service_manager/sandbox",
     ]
@@ -738,8 +738,8 @@ if (!is_android) {
       ]
 
       deps += [
-        "//components/content_settings/core/browser:browser",
-        "//third_party/openvr:openvr",
+        "//components/content_settings/core/browser",
+        "//third_party/openvr",
       ]
 
       data_deps += [ "//device/vr:openvr_mock" ]

@@ -29,7 +29,7 @@ source_set("test_support") {
   ]
 
   deps = [
-    "//base:base",
+    "//base",
     "//testing/gtest",
     "//third_party/zlib:minizip",
   ]

@@ -37,7 +37,7 @@ source_set("settings") {
 
   deps = [
     ":settings_types",
-    "//base:base",
+    "//base",
     "//chrome/chrome_cleaner/constants:common_strings",
     "//components/chrome_cleaner/public/constants:constants",
   ]
@@ -124,7 +124,7 @@ source_set("unittest_sources") {
     ":engine_settings_header",
     ":settings",
     ":settings_definitions",
-    "//base:base",
+    "//base",
     "//base/test:test_support",
     "//chrome/chrome_cleaner/constants:common_strings",
     "//chrome/chrome_cleaner/test:test_util",

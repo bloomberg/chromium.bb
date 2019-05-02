@@ -36,7 +36,7 @@ source_set("shutdown_sequence") {
   ]
 
   deps = [
-    "//base:base",
+    "//base",
     "//chrome/chrome_cleaner/engines/broker:common",
     "//chrome/chrome_cleaner/engines/controllers:facade_interface_header",
     "//chrome/chrome_cleaner/ipc:mojo_task_runner",
@@ -73,7 +73,7 @@ template("chrome_cleaner_executable") {
       ":engine_definitions",
       ":engine_target_factory",
       ":shutdown_sequence",
-      "//base:base",
+      "//base",
       "//build/win:default_exe_manifest",
       "//chrome/chrome_cleaner/constants:common_strings",
       "//chrome/chrome_cleaner/constants:version_header",
@@ -91,10 +91,10 @@ template("chrome_cleaner_executable") {
       "//chrome/chrome_cleaner/parsers/broker:parser_sandbox_broker",
       "//chrome/chrome_cleaner/parsers/shortcut_parser/broker:sandboxed_shortcut_parser",
       "//chrome/chrome_cleaner/parsers/target:parser_sandbox_target",
+      "//chrome/chrome_cleaner/settings",
       "//chrome/chrome_cleaner/settings:default_matching_options",
       "//chrome/chrome_cleaner/settings:engine_settings_header",
       "//chrome/chrome_cleaner/settings:matching_options",
-      "//chrome/chrome_cleaner/settings:settings",
       "//chrome/chrome_cleaner/settings:settings_types",
       "//sandbox/win:sandbox",
     ]

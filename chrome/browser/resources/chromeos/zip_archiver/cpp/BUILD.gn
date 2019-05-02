@@ -30,7 +30,7 @@ static_library("zip_archiver_library") {
   ]
 
   deps = [
-    "//base:base",
+    "//base",
     "//chrome/browser/resources/chromeos/zip_archiver:char_coding",
     "//ppapi/cpp",
     "//third_party/minizip:minizip",

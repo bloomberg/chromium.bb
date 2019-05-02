@@ -10,7 +10,7 @@ mojom("mojo_bindings") {
   ]
 
   deps = [
-    "//device/usb/public/mojom:mojom",
+    "//device/usb/public/mojom",
     "//device/usb/public/mojom:test",
   ]
 }

@@ -19,7 +19,7 @@ source_set("cleaner_ui") {
     "//chrome/chrome_cleaner/os:common_os",
     "//chrome/chrome_cleaner/pup_data:cleaner_pup_util",
     "//chrome/chrome_cleaner/pup_data:pup_data_base",
-    "//chrome/chrome_cleaner/settings:settings",
+    "//chrome/chrome_cleaner/settings",
     "//components/chrome_cleaner/public/constants:constants",
     "//components/chrome_cleaner/public/interfaces:interfaces",
   ]
@@ -37,7 +37,7 @@ source_set("unittest_sources") {
 
   deps = [
     ":cleaner_ui",
-    "//base:base",
+    "//base",
     "//chrome/chrome_cleaner/constants:uws_id",
     "//chrome/chrome_cleaner/ipc:mock_chrome_prompt_ipc",
     "//chrome/chrome_cleaner/test:test_pup_data",

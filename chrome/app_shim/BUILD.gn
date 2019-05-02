@@ -21,7 +21,7 @@ source_set("app_shim") {
 
   deps = [
     "//chrome:strings",
-    "//chrome/browser/ui:ui",
+    "//chrome/browser/ui",
     "//chrome/common",
     "//chrome/common:mojo_bindings",
     "//components/crash/content/app",

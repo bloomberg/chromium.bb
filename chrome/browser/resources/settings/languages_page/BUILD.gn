@@ -34,7 +34,7 @@ js_library("languages") {
   deps = [
     ":languages_browser_proxy",
     ":languages_types",
-    "../prefs:prefs",
+    "../prefs",
     "../prefs:prefs_types",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:cr",
@@ -76,7 +76,7 @@ js_library("manage_input_methods_page") {
   deps = [
     ":languages",
     ":languages_types",
-    "../prefs:prefs",
+    "../prefs",
   ]
   externs_list = [ "$externs_path/language_settings_private.js" ]
 }

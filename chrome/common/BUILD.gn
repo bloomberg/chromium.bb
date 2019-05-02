@@ -222,7 +222,7 @@ static_library("common") {
     ":offline_page_auto_fetcher_mojom",
     ":page_load_metrics_mojom",
     ":supervised_user_commands_mojom",
-    "//base:base",
+    "//base",
     "//base:base_static",
     "//base:i18n",
     "//chrome:resources",
@@ -264,7 +264,7 @@ static_library("common") {
     "//components/translate/core/common",
     "//components/url_formatter",
     "//components/variations",
-    "//components/variations/net:net",
+    "//components/variations/net",
     "//components/visitedlink/common",
     "//content/public/common",
     "//extensions/buildflags",
@@ -395,7 +395,7 @@ static_library("common") {
       ]
 
       # This dependency is for a header used only by extensions code.
-      public_deps += [ "//ui/keyboard:keyboard" ]
+      public_deps += [ "//ui/keyboard" ]
     }
   }
 

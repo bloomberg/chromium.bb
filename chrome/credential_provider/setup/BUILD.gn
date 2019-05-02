@@ -24,7 +24,7 @@ source_set("common") {
     "setup_lib.h",
   ]
   public_deps = [
-    "//base:base",
+    "//base",
   ]
   deps = [
     ":version",

@@ -92,9 +92,9 @@ static_library("vr_android") {
     "//base",
     "//cc",
     "//chrome/android/features/vr:jni_headers",
-    "//chrome/browser/ui:ui",
+    "//chrome/browser/ui",
     "//chrome/browser/vr:vr_common",
-    "//chrome/common:common",
+    "//chrome/common",
     "//chrome/common:constants",
     "//components/language/core/browser",
     "//components/omnibox/browser",
@@ -256,7 +256,7 @@ test("vr_android_unittests") {
     ":test_support",
     ":vr_android",
     "//base/test:test_support",
-    "//chrome/browser:browser",
+    "//chrome/browser",
     "//components/translate/core/language_detection:language_detection",
     "//device/vr:fakes",
     "//device/vr/public/mojom",
@@ -265,6 +265,6 @@ test("vr_android_unittests") {
     "//services/network:test_support",
     "//testing/android/native_test:native_test_native_code",
     "//testing/gmock",
-    "//testing/gtest:gtest",
+    "//testing/gtest",
   ]
 }
