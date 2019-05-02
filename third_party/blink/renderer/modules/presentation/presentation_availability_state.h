@@ -122,6 +122,10 @@ class MODULES_EXPORT PresentationAvailabilityState {
   // A pointer to PresentationService owned by PresentationController.
   mojom::blink::PresentationService* const presentation_service_;
 
+  // Whether we are iterating listeners, if this state is set we avoid
+  // removing items from |availability_listeners_|.
+  bool iterating_listeners_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(PresentationAvailabilityState);
 };
 
