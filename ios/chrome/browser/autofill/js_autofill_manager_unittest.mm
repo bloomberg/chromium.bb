@@ -59,6 +59,9 @@ NSString* const kUnownedUntitledFormHtml =
      "<TEXTAREA id='textarea-nonempty'>Go&#10;away!</TEXTAREA>"
      "<INPUT type='submit' name='reply-send' value='Send'/>";
 
+// TODO(crbug.com/619982): MobileSafari corrected HTMLInputElement.maxLength
+// with the specification ( https://bugs.webkit.org/show_bug.cgi?id=154906 ).
+// Add support for old and new default maxLength value until we dropped Xcode 7.
 NSNumber* GetDefaultMaxLength() {
   return @524288;
 }
