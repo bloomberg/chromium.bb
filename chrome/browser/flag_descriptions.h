@@ -979,9 +979,6 @@ extern const char kResourceLoadSchedulerDescription[];
 extern const char kSafeBrowsingUseAPDownloadVerdictsName[];
 extern const char kSafeBrowsingUseAPDownloadVerdictsDescription[];
 
-extern const char kSafeSearchUrlReportingName[];
-extern const char kSafeSearchUrlReportingDescription[];
-
 extern const char kSameSiteByDefaultCookiesName[];
 extern const char kSameSiteByDefaultCookiesDescription[];
 

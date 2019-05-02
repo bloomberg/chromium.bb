@@ -2771,11 +2771,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "safe-search-url-reporting",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "same-site-by-default-cookies",
     "owners": [ "chlily", "morlovich" ],
     "expiry_milestone": 80

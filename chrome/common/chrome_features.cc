@@ -542,9 +542,6 @@ const base::Feature kRemoveSupervisedUsersOnStartup{
 const base::Feature kLoadBrokenImagesFromContextMenu{
     "LoadBrokenImagesFromContextMenu", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kSafeSearchUrlReporting{"SafeSearchUrlReporting",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Controls whether the user is prompted when sites request attestation.
 const base::Feature kSecurityKeyAttestationPrompt{
     "SecurityKeyAttestationPrompt", base::FEATURE_ENABLED_BY_DEFAULT};

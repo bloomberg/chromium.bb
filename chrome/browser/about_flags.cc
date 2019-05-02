@@ -1955,10 +1955,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillCreditCardUploadDescription, kOsAll,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillUpstream)},
 #endif  // TOOLKIT_VIEWS || OS_ANDROID
-    {"safe-search-url-reporting",
-     flag_descriptions::kSafeSearchUrlReportingName,
-     flag_descriptions::kSafeSearchUrlReportingDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kSafeSearchUrlReporting)},
     {"force-ui-direction", flag_descriptions::kForceUiDirectionName,
      flag_descriptions::kForceUiDirectionDescription, kOsAll,
      MULTI_VALUE_TYPE(kForceUIDirectionChoices)},

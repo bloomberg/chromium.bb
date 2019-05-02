@@ -4812,8 +4812,6 @@ jumbo_split_static_library("browser") {
       "supervised_user/child_accounts/kids_management_api.h",
       "supervised_user/child_accounts/permission_request_creator_apiary.cc",
       "supervised_user/child_accounts/permission_request_creator_apiary.h",
-      "supervised_user/experimental/safe_search_url_reporter.cc",
-      "supervised_user/experimental/safe_search_url_reporter.h",
       "supervised_user/experimental/supervised_user_blacklist.cc",
       "supervised_user/experimental/supervised_user_blacklist.h",
       "supervised_user/experimental/supervised_user_filtering_switches.cc",

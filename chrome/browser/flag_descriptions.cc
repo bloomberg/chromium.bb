@@ -1631,10 +1631,6 @@ const char kSafeBrowsingUseAPDownloadVerdictsDescription[] =
     "verdicts from Safe Browsing. These will provide stronger protections "
     "from files Safe Browsing is unsure about.";
 
-const char kSafeSearchUrlReportingName[] = "SafeSearch URLs reporting.";
-const char kSafeSearchUrlReportingDescription[] =
-    "If enabled, inappropriate URLs can be reported back to SafeSearch.";
-
 const char kSameSiteByDefaultCookiesName[] = "SameSite by default cookies";
 const char kSameSiteByDefaultCookiesDescription[] =
     "Treat cookies that don't specify a SameSite attribute as if they were "

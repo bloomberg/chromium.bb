@@ -350,9 +350,6 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kLoadBrokenImagesFromContextMenu;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kSafeSearchUrlReporting;
-
-COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kSecurityKeyAttestationPrompt;
 
 #if !defined(OS_ANDROID)
