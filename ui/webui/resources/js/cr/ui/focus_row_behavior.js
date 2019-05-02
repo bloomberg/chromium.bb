@@ -288,6 +288,8 @@ cr.define('cr.ui', function() {
       if (!this.lastFocused || restoreFocusToFirst) {
         const firstFocusable = assert(this.firstControl_);
         firstFocusable.focus();
+      } else if (this.getFocusRow().getElements().includes(this.lastFocused)) {
+        this.lastFocused.focus();
       } else if (lastKeyDownKey == 'ArrowDown' || lastKeyDownKey == 'ArrowUp') {
         this.row_.getEquivalentElement(this.lastFocused).focus();
       }
