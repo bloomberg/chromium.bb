@@ -134,6 +134,7 @@ executable("character_data_generator") {
   configs += [ "//third_party/blink/renderer:config" ]
   deps = [
     # Default manifest on Windows (a no-op elsewhere).
+    "//base",
     "//build/win:default_exe_manifest",
     "//third_party/icu",
   ]

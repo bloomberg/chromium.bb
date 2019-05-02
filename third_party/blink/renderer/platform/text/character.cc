@@ -43,8 +43,7 @@
 #if defined(USING_SYSTEM_ICU)
 #include <unicode/uniset.h>
 #else
-#define MUTEX_H  // Prevent compile failure of utrie2.h on Windows
-#include <utrie2.h>
+#include <unicode/ucptrie.h>
 #endif
 
 namespace blink {
@@ -73,21 +72,22 @@ static icu::UnicodeSet* createUnicodeSet(const UChar32* characters,
     unicodeSet = CREATE_UNICODE_SET(name);      \
   return unicodeSet->contains(c);
 #else
-static UTrie2* CreateTrie() {
+static UCPTrie* CreateTrie() {
   // Create a Trie from the value array.
   ICUError error;
-  UTrie2* trie = utrie2_openFromSerialized(
-      UTrie2ValueBits::UTRIE2_16_VALUE_BITS, kSerializedCharacterData,
-      kSerializedCharacterDataSize, nullptr, &error);
+  UCPTrie* trie = ucptrie_openFromBinary(
+      UCPTrieType::UCPTRIE_TYPE_FAST, UCPTrieValueWidth::UCPTRIE_VALUE_BITS_16,
+      kSerializedCharacterData, kSerializedCharacterDataSize, nullptr, &error);
   DCHECK_EQ(error, U_ZERO_ERROR);
   return trie;
 }
 
 static bool HasProperty(UChar32 c, CharacterProperty property) {
-  static UTrie2* trie = nullptr;
+  static UCPTrie* trie = nullptr;
   if (!trie)
     trie = CreateTrie();
-  return UTRIE2_GET16(trie, c) & static_cast<CharacterPropertyType>(property);
+  return UCPTRIE_FAST_GET(trie, UCPTRIE_16, c) &
+         static_cast<CharacterPropertyType>(property);
 }
 
 #define RETURN_HAS_PROPERTY(c, name) \
