@@ -15,10 +15,8 @@
 
 namespace {
 
-const int kMuteButtonMargin = 8;
-const int kMuteButtonSize = 24;
+const int kMuteImageSize = 18;
 
-constexpr SkColor kMuteBgColor = gfx::kGoogleGrey700;
 constexpr SkColor kMuteIconColor = SK_ColorWHITE;
 
 }  // namespace
@@ -27,20 +25,13 @@ namespace views {
 
 MuteImageButton::MuteImageButton(ButtonListener* listener)
     : ImageButton(listener),
-      mute_background_(
-          gfx::CreateVectorIcon(kPictureInPictureControlBackgroundIcon,
-                                kMuteButtonSize,
-                                kMuteBgColor)),
-      mute_image_(gfx::CreateVectorIcon(kTabAudioIcon,
-                                        std::round(kMuteButtonSize * 2.0 / 3.0),
-                                        kMuteIconColor)),
-      unmute_image_(
-          gfx::CreateVectorIcon(kTabAudioMutingIcon,
-                                std::round(kMuteButtonSize * 2.0 / 3.0),
-                                kMuteIconColor)) {
+      mute_image_(
+          gfx::CreateVectorIcon(kTabAudioIcon, kMuteImageSize, kMuteIconColor)),
+      unmute_image_(gfx::CreateVectorIcon(kTabAudioMutingIcon,
+                                          kMuteImageSize,
+                                          kMuteIconColor)) {
   SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                     views::ImageButton::ALIGN_MIDDLE);
-  SetSize(gfx::Size(kMuteButtonSize, kMuteButtonSize));
 
   // Accessibility.
   SetFocusForPlatform();
@@ -48,38 +39,6 @@ MuteImageButton::MuteImageButton(ButtonListener* listener)
       IDS_PICTURE_IN_PICTURE_MUTE_CONTROL_ACCESSIBLE_TEXT));
   SetAccessibleName(mute_button_label);
   SetInstallFocusRingOnFocus(true);
-}
-
-void MuteImageButton::StateChanged(ButtonState old_state) {
-  ImageButton::StateChanged(old_state);
-
-  if (state() == STATE_HOVERED || state() == STATE_PRESSED)
-    SetBackgroundImage(kMuteBgColor, &mute_background_, &mute_background_);
-  else
-    SetBackgroundImage(kMuteBgColor, nullptr, nullptr);
-}
-
-void MuteImageButton::OnFocus() {
-  ImageButton::OnFocus();
-  SetBackgroundImage(kMuteBgColor, &mute_background_, &mute_background_);
-}
-
-void MuteImageButton::OnBlur() {
-  ImageButton::OnBlur();
-  SetBackgroundImage(kMuteBgColor, nullptr, nullptr);
-}
-
-void MuteImageButton::SetPosition(const gfx::Size& size,
-                                  OverlayWindowViews::WindowQuadrant quadrant) {
-#if defined(OS_CHROMEOS)
-  if (quadrant == OverlayWindowViews::WindowQuadrant::kTopLeft ||
-      quadrant == OverlayWindowViews::WindowQuadrant::kTopRight) {
-    ImageButton::SetPosition(gfx::Point(kMuteButtonMargin, kMuteButtonMargin));
-    return;
-  }
-#endif
-  ImageButton::SetPosition(gfx::Point(
-      kMuteButtonMargin, size.height() - kMuteButtonSize - kMuteButtonMargin));
 }
 
 void MuteImageButton::SetMutedState(
@@ -99,6 +58,16 @@ void MuteImageButton::SetMutedState(
     case OverlayWindowViews::kNoAudio:
       ToggleVisibility(false);
   }
+  SchedulePaint();
+}
+
+gfx::Size MuteImageButton::GetLastVisibleSize() const {
+  return size().IsEmpty() ? last_visible_size_ : size();
+}
+
+void MuteImageButton::OnBoundsChanged(const gfx::Rect&) {
+  if (!size().IsEmpty())
+    last_visible_size_ = size();
 }
 
 void MuteImageButton::ToggleVisibility(bool is_visible) {
@@ -107,8 +76,7 @@ void MuteImageButton::ToggleVisibility(bool is_visible) {
 
   layer()->SetVisible(is_visible);
   SetEnabled(is_visible);
-  SetSize(is_visible ? gfx::Size(kMuteButtonSize, kMuteButtonSize)
-                     : gfx::Size());
+  SetSize(is_visible ? GetLastVisibleSize() : gfx::Size());
 }
 
 }  // namespace views

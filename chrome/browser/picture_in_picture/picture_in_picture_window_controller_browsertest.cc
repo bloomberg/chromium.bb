@@ -763,9 +763,16 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_TRUE(in_picture_in_picture);
 
   EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
-  EXPECT_FALSE(
-      overlay_window->controls_parent_view_for_testing()->layer()->visible());
   EXPECT_TRUE(overlay_window->video_layer_for_testing()->visible());
+  EXPECT_FALSE(overlay_window->previous_track_controls_view_for_testing()
+                   ->layer()
+                   ->visible());
+  EXPECT_FALSE(overlay_window->play_pause_controls_view_for_testing()
+                   ->layer()
+                   ->visible());
+  EXPECT_FALSE(overlay_window->next_track_controls_view_for_testing()
+                   ->layer()
+                   ->visible());
 }
 
 // Tests that changing video src to media stream when video is in
@@ -795,9 +802,16 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(in_picture_in_picture);
 
   EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
-  EXPECT_FALSE(
-      overlay_window->controls_parent_view_for_testing()->layer()->visible());
   EXPECT_TRUE(overlay_window->video_layer_for_testing()->visible());
+  EXPECT_FALSE(overlay_window->previous_track_controls_view_for_testing()
+                   ->layer()
+                   ->visible());
+  EXPECT_FALSE(overlay_window->play_pause_controls_view_for_testing()
+                   ->layer()
+                   ->visible());
+  EXPECT_FALSE(overlay_window->next_track_controls_view_for_testing()
+                   ->layer()
+                   ->visible());
 }
 
 // Tests that we can enter Picture-in-Picture when a video is not preloaded,
@@ -1510,24 +1524,14 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   // The relative center point of the window.
   gfx::Point center(bottom_right_bounds.width() / 2,
                     bottom_right_bounds.height() / 2);
-  gfx::Point back_to_tab_button_position =
-      overlay_window_views->back_to_tab_image_position_for_testing();
   gfx::Point close_button_position =
       overlay_window_views->close_image_position_for_testing();
-  gfx::Point mute_button_position =
-      overlay_window_views->mute_image_position_for_testing();
   gfx::Point resize_button_position =
       overlay_window_views->resize_handle_position_for_testing();
 
-  // The back-to-tab button should be in the bottom right corner.
-  EXPECT_LT(center.x(), back_to_tab_button_position.x());
-  EXPECT_LT(center.y(), back_to_tab_button_position.y());
   // The close button should be in the top right corner.
   EXPECT_LT(center.x(), close_button_position.x());
   EXPECT_GT(center.y(), close_button_position.y());
-  // The mute button should be in the bottom left corner.
-  EXPECT_GT(center.x(), mute_button_position.x());
-  EXPECT_LT(center.y(), mute_button_position.y());
   // The resize button should be in the top left corner.
   EXPECT_GT(center.x(), resize_button_position.x());
   EXPECT_GT(center.y(), resize_button_position.y());
@@ -1539,24 +1543,14 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                                bottom_right_bounds.width(),
                                bottom_right_bounds.height());
   overlay_window_views->SetBounds(bottom_left_bounds);
-  back_to_tab_button_position =
-      overlay_window_views->back_to_tab_image_position_for_testing();
   close_button_position =
       overlay_window_views->close_image_position_for_testing();
-  mute_button_position =
-      overlay_window_views->mute_image_position_for_testing();
   resize_button_position =
       overlay_window_views->resize_handle_position_for_testing();
 
-  // The back-to-tab button should be in the bottom right corner.
-  EXPECT_LT(center.x(), back_to_tab_button_position.x());
-  EXPECT_LT(center.y(), back_to_tab_button_position.y());
   // The close button should be in the top left corner.
   EXPECT_GT(center.x(), close_button_position.x());
   EXPECT_GT(center.y(), close_button_position.y());
-  // The mute button should be in the bottom left corner.
-  EXPECT_GT(center.x(), mute_button_position.x());
-  EXPECT_LT(center.y(), mute_button_position.y());
   // The resize button should be in the top right corner.
   EXPECT_LT(center.x(), resize_button_position.x());
   EXPECT_GT(center.y(), resize_button_position.y());
@@ -1568,24 +1562,14 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                              bottom_right_bounds.width(),
                              bottom_right_bounds.height());
   overlay_window_views->SetBounds(top_right_bounds);
-  back_to_tab_button_position =
-      overlay_window_views->back_to_tab_image_position_for_testing();
   close_button_position =
       overlay_window_views->close_image_position_for_testing();
-  mute_button_position =
-      overlay_window_views->mute_image_position_for_testing();
   resize_button_position =
       overlay_window_views->resize_handle_position_for_testing();
 
-  // The back-to-tab button should be in bottom right corner.
-  EXPECT_LT(center.x(), back_to_tab_button_position.x());
-  EXPECT_LT(center.y(), back_to_tab_button_position.y());
   // The close button should be in the top right corner.
   EXPECT_LT(center.x(), close_button_position.x());
   EXPECT_GT(center.y(), close_button_position.y());
-  // The mute button should be in the top left corner.
-  EXPECT_GT(center.x(), mute_button_position.x());
-  EXPECT_GT(center.y(), mute_button_position.y());
   // The resize button should be in the bottom left corner.
   EXPECT_GT(center.x(), resize_button_position.x());
   EXPECT_LT(center.y(), resize_button_position.y());
@@ -1596,24 +1580,14 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   gfx::Rect top_left_bounds(0, 0, bottom_right_bounds.width(),
                             bottom_right_bounds.height());
   overlay_window_views->SetBounds(top_left_bounds);
-  back_to_tab_button_position =
-      overlay_window_views->back_to_tab_image_position_for_testing();
   close_button_position =
       overlay_window_views->close_image_position_for_testing();
-  mute_button_position =
-      overlay_window_views->mute_image_position_for_testing();
   resize_button_position =
       overlay_window_views->resize_handle_position_for_testing();
 
-  // The back-to-tab button should be in the bottom left corner.
-  EXPECT_GT(center.x(), back_to_tab_button_position.x());
-  EXPECT_LT(center.y(), back_to_tab_button_position.y());
   // The close button should be in the top right corner.
   EXPECT_LT(center.x(), close_button_position.x());
   EXPECT_GT(center.y(), close_button_position.y());
-  // The mute button should be in the top left corner.
-  EXPECT_GT(center.x(), mute_button_position.x());
-  EXPECT_GT(center.y(), mute_button_position.y());
   // The resize button should be in the bottom right corner.
   EXPECT_LT(center.x(), resize_button_position.x());
   EXPECT_LT(center.y(), resize_button_position.y());

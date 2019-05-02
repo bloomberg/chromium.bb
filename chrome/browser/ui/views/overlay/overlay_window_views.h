@@ -96,7 +96,6 @@ class OverlayWindowViews : public content::OverlayWindow,
   gfx::Point close_image_position_for_testing() const;
   gfx::Point mute_image_position_for_testing() const;
   gfx::Point resize_handle_position_for_testing() const;
-  views::View* controls_parent_view_for_testing() const;
   OverlayWindowViews::PlaybackState playback_state_for_testing() const;
   OverlayWindowViews::MutedState muted_state_for_testing() const;
   ui::Layer* video_layer_for_testing() const;
@@ -204,17 +203,14 @@ class OverlayWindowViews : public content::OverlayWindow,
   std::unique_ptr<views::View> window_background_view_;
   std::unique_ptr<views::View> video_view_;
   std::unique_ptr<views::View> controls_scrim_view_;
-  // |controls_parent_view_| is the parent view of play/pause, previous
-  // track and next track control views.
-  std::unique_ptr<views::View> controls_parent_view_;
-  std::unique_ptr<views::BackToTabImageButton> back_to_tab_controls_view_;
-  std::unique_ptr<views::MuteImageButton> mute_controls_view_;
-  std::unique_ptr<views::SkipAdLabelButton> skip_ad_controls_view_;
   std::unique_ptr<views::CloseImageButton> close_controls_view_;
-  std::unique_ptr<views::ResizeHandleButton> resize_handle_view_;
+  std::unique_ptr<views::BackToTabImageButton> back_to_tab_controls_view_;
+  std::unique_ptr<views::TrackImageButton> previous_track_controls_view_;
   std::unique_ptr<views::PlaybackImageButton> play_pause_controls_view_;
   std::unique_ptr<views::TrackImageButton> next_track_controls_view_;
-  std::unique_ptr<views::TrackImageButton> previous_track_controls_view_;
+  std::unique_ptr<views::MuteImageButton> mute_controls_view_;
+  std::unique_ptr<views::SkipAdLabelButton> skip_ad_controls_view_;
+  std::unique_ptr<views::ResizeHandleButton> resize_handle_view_;
 #if defined(OS_CHROMEOS)
   std::unique_ptr<ash::RoundedCornerDecorator> decorator_;
 #endif
@@ -229,6 +225,10 @@ class OverlayWindowViews : public content::OverlayWindow,
   // Current muted state on the video in Picture-in-Picture window. It is
   // used to toggle mute button.
   MutedState muted_state_for_testing_ = kNoAudio;
+
+  // Whether or not the mute button will be shown. This is not the case when
+  // there is no audio track.
+  bool show_mute_button_ = false;
 
   // Whether or not the skip ad button will be shown. This is the
   // case when Media Session "skipad" action is handled by the website.

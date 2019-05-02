@@ -17,8 +17,8 @@
 
 namespace {
 
-const int kResizeHandleButtonSize = 36;
-const int kResizeHandleImageSize = 18;
+const int kResizeHandleButtonMargin = 4;
+const int kResizeHandleButtonSize = 16;
 
 constexpr SkColor kResizeHandleIconColor = SK_ColorWHITE;
 
@@ -67,20 +67,23 @@ void ResizeHandleButton::SetPosition(
   // This is determined as the opposite quadrant on the window.
   switch (quadrant) {
     case OverlayWindowViews::WindowQuadrant::kBottomLeft:
-      ImageButton::SetPosition(
-          gfx::Point(size.width() - kResizeHandleButtonSize, 0));
+      ImageButton::SetPosition(gfx::Point(
+          size.width() - kResizeHandleButtonSize - kResizeHandleButtonMargin,
+          kResizeHandleButtonMargin));
       break;
     case OverlayWindowViews::WindowQuadrant::kBottomRight:
-      ImageButton::SetPosition(gfx::Point(0, 0));
+      ImageButton::SetPosition(
+          gfx::Point(kResizeHandleButtonMargin, kResizeHandleButtonMargin));
       break;
     case OverlayWindowViews::WindowQuadrant::kTopLeft:
-      ImageButton::SetPosition(
-          gfx::Point(size.width() - kResizeHandleButtonSize,
-                     size.height() - kResizeHandleButtonSize));
+      ImageButton::SetPosition(gfx::Point(
+          size.width() - kResizeHandleButtonSize - kResizeHandleButtonMargin,
+          size.height() - kResizeHandleButtonSize - kResizeHandleButtonMargin));
       break;
     case OverlayWindowViews::WindowQuadrant::kTopRight:
-      ImageButton::SetPosition(
-          gfx::Point(0, size.height() - kResizeHandleButtonSize));
+      ImageButton::SetPosition(gfx::Point(
+          kResizeHandleButtonMargin,
+          size.height() - kResizeHandleButtonSize - kResizeHandleButtonMargin));
       break;
   }
 
@@ -95,7 +98,7 @@ void ResizeHandleButton::SetImageForQuadrant(
   current_quadrant_ = quadrant;
 
   gfx::ImageSkia icon = gfx::CreateVectorIcon(
-      kResizeHandleIcon, kResizeHandleImageSize, kResizeHandleIconColor);
+      kResizeHandleIcon, kResizeHandleButtonSize, kResizeHandleIconColor);
   switch (quadrant) {
     case OverlayWindowViews::WindowQuadrant::kBottomLeft:
       SetImageAlignment(views::ImageButton::ALIGN_RIGHT,

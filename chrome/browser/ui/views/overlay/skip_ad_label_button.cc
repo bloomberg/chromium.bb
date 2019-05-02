@@ -13,7 +13,7 @@ namespace {
 
 const int kSkipAdButtonWidth = 72;
 const int kSkipAdButtonHeight = 24;
-const int kSkipAdButtonMarginBottom = 40;
+const int kSkipAdButtonMarginBottom = 48;
 
 constexpr SkColor kSkipAdButtonTextColor = SK_ColorWHITE;
 constexpr SkColor kSkipAdButtonBorderColor = SK_ColorWHITE;

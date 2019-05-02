@@ -14,8 +14,9 @@
 
 namespace {
 
-SkColor kPlaybackIconBackgroundColor = SK_ColorWHITE;
-SkColor kPlaybackIconColor = SK_ColorBLACK;
+SkColor kPlaybackIconColor = SK_ColorWHITE;
+
+const double kPlaybackImageRatio = 9.0 / 10.0;
 
 }  // namespace
 
@@ -25,6 +26,8 @@ PlaybackImageButton::PlaybackImageButton(ButtonListener* listener)
     : ImageButton(listener) {
   SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                     views::ImageButton::ALIGN_MIDDLE);
+
+  // Accessibility.
   SetFocusForPlatform();
   const base::string16 playback_accessible_button_label(
       l10n_util::GetStringUTF16(
@@ -33,21 +36,16 @@ PlaybackImageButton::PlaybackImageButton(ButtonListener* listener)
   SetInstallFocusRingOnFocus(true);
 }
 
-PlaybackImageButton::~PlaybackImageButton() = default;
-
-void PlaybackImageButton::OnBoundsChanged(const gfx::Rect&) {
+void PlaybackImageButton::OnBoundsChanged(const gfx::Rect& rect) {
   play_image_ = gfx::CreateVectorIcon(vector_icons::kPlayArrowIcon,
-                                      size().width() / 2, kPlaybackIconColor);
+                                      size().width() * kPlaybackImageRatio,
+                                      kPlaybackIconColor);
   pause_image_ = gfx::CreateVectorIcon(vector_icons::kPauseIcon,
-                                       size().width() / 2, kPlaybackIconColor);
+                                       size().width() * kPlaybackImageRatio,
+                                       kPlaybackIconColor);
   replay_image_ = gfx::CreateVectorIcon(vector_icons::kReplayIcon,
-                                        size().width() / 2, kPlaybackIconColor);
-
-  const gfx::ImageSkia background_image_ =
-      gfx::CreateVectorIcon(kPictureInPictureControlBackgroundIcon,
-                            size().width(), kPlaybackIconBackgroundColor);
-  SetBackgroundImage(kPlaybackIconBackgroundColor, &background_image_,
-                     &background_image_);
+                                        size().width() * kPlaybackImageRatio,
+                                        kPlaybackIconColor);
 
   UpdateImageAndTooltipText();
 }
