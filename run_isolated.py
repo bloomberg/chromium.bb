@@ -204,6 +204,8 @@ TaskData = collections.namedtuple(
       'env_prefix',
       # Lowers the task process priority.
       'lower_priority',
+      # subprocess42.Containment instance. Can be None.
+      'containment',
     ])
 
 
@@ -420,15 +422,16 @@ def get_command_env(tmp_dir, cipd_info, run_dir, env, env_prefixes, out_dir,
   return out
 
 
-def run_command(command, cwd, env, hard_timeout, grace_period, lower_priority):
+def run_command(
+    command, cwd, env, hard_timeout, grace_period, lower_priority, containment):
   """Runs the command.
 
   Returns:
     tuple(process exit code, bool if had a hard timeout)
   """
   logging.info(
-      'run_command(%s, %s, %s, %s, %s)',
-      command, cwd, hard_timeout, grace_period, lower_priority)
+      'run_command(%s, %s, %s, %s, %s, %s)',
+      command, cwd, hard_timeout, grace_period, lower_priority, containment)
 
   exit_code = None
   had_hard_timeout = False
@@ -447,7 +450,7 @@ def run_command(command, cwd, env, hard_timeout, grace_period, lower_priority):
 
       proc = subprocess42.Popen(
           command, cwd=cwd, env=env, detached=True, close_fds=True,
-          lower_priority=lower_priority)
+          lower_priority=lower_priority, containment=containment)
       with subprocess42.set_signal_handler(subprocess42.STOP_SIGNALS, handler):
         try:
           exit_code = proc.wait(hard_timeout or None)
@@ -757,7 +760,7 @@ def map_and_run(data, constant_run_path):
 
             result['exit_code'], result['had_hard_timeout'] = run_command(
                 command, cwd, env, data.hard_timeout, data.grace_period,
-                data.lower_priority)
+                data.lower_priority, data.containment)
         finally:
           result['duration'] = max(time.time() - start, 0)
 
@@ -1077,9 +1080,6 @@ def create_option_parser():
            '$VAR using the OS\'s path separator. Multiple items for the same '
            '$VAR will be prepended in order.')
   parser.add_option(
-      '--lower-priority', action='store_true',
-      help='Lowers the child process priority')
-  parser.add_option(
       '--bot-file',
       help='Path to a file describing the state of the host. The content is '
            'defined by on_before_task() in bot_config.')
@@ -1102,12 +1102,13 @@ def create_option_parser():
       help='Specify a file containing a JSON array of arguments to this '
            'script. If --argsfile is provided, no other argument may be '
            'provided on the command line.')
-  data_group = optparse.OptionGroup(parser, 'Data source')
-  data_group.add_option(
+
+  group = optparse.OptionGroup(parser, 'Data source')
+  group.add_option(
       '-s', '--isolated',
       help='Hash of the .isolated to grab from the isolate server.')
-  isolateserver.add_isolate_server_options(data_group)
-  parser.add_option_group(data_group)
+  isolateserver.add_isolate_server_options(group)
+  parser.add_option_group(group)
 
   isolateserver.add_cache_options(parser)
 
@@ -1130,15 +1131,31 @@ def create_option_parser():
       help='Cache root directory. Default=%default')
   parser.add_option_group(group)
 
-  debug_group = optparse.OptionGroup(parser, 'Debugging')
-  debug_group.add_option(
+  group = optparse.OptionGroup(parser, 'Process containment')
+  parser.add_option(
+      '--lower-priority', action='store_true',
+      help='Lowers the child process priority')
+  parser.add_option(
+      '--containment-type', choices=('NONE', 'AUTO', 'JOB_OBJECT'),
+      default='NONE',
+      help='Type of container to use')
+  parser.add_option(
+      '--limit-processes', type='int', default=0,
+      help='Maximum number of active processes in the containment')
+  parser.add_option(
+      '--limit-total-committed-memory', type='int', default=0,
+      help='Maximum sum of committed memory in the containment')
+  parser.add_option_group(group)
+
+  group = optparse.OptionGroup(parser, 'Debugging')
+  group.add_option(
       '--leak-temp-dir',
       action='store_true',
       help='Deliberately leak isolate\'s temp dir for later examination. '
            'Default: %default')
-  debug_group.add_option(
+  group.add_option(
       '--root-dir', help='Use a directory instead of a random one')
-  parser.add_option_group(debug_group)
+  parser.add_option_group(group)
 
   auth.add_auth_options(parser)
 
@@ -1372,6 +1389,16 @@ def main(args):
       parser.error('--relative-cwd requires --raw-cmd')
     extra_args = args
 
+  containment_type = subprocess42.Containment.NONE
+  if options.containment_type == 'AUTO':
+    containment_type = subprocess42.Containment.AUTO
+  if options.containment_type == 'JOB_OBJECT':
+    containment_type = subprocess42.Containment.JOB_OBJECT
+  containment = subprocess42.Containment(
+      containment_type=containment_type,
+      limit_processes=options.limit_processes,
+      limit_total_committed_memory=options.limit_total_committed_memory)
+
   data = TaskData(
       command=command,
       relative_cwd=options.relative_cwd,
@@ -1391,7 +1418,8 @@ def main(args):
       use_symlinks=bool(options.use_symlinks),
       env=options.env,
       env_prefix=options.env_prefix,
-      lower_priority=bool(options.lower_priority))
+      lower_priority=bool(options.lower_priority),
+      containment=containment)
   try:
     if options.isolate_server:
       server_ref = isolate_storage.ServerRef(

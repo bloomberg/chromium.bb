@@ -271,6 +271,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
               'detached': True,
               'close_fds': True,
               'lower_priority': False,
+              'containment': subprocess42.Containment(),
             },
           ),
         ],
@@ -307,6 +308,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
               'detached': True,
               'close_fds': True,
               'lower_priority': False,
+              'containment': subprocess42.Containment(),
             },
           ),
         ],
@@ -343,7 +345,8 @@ class RunIsolatedTest(RunIsolatedTestBase):
         use_symlinks=False,
         env={},
         env_prefix={},
-        lower_priority=lower_priority)
+        lower_priority=lower_priority,
+        containment=None)
     ret = run_isolated.run_tha_test(data, None)
     self.assertEqual(0, ret)
     return make_tree_call
@@ -368,6 +371,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
               'detached': True,
               'close_fds': True,
               'lower_priority': False,
+              'containment': None,
             },
           ),
         ],
@@ -397,6 +401,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
               'detached': True,
               'close_fds': True,
               'lower_priority': False,
+              'containment': None,
             },
           ),
         ],
@@ -426,6 +431,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
               'detached': True,
               'close_fds': True,
               'lower_priority': False,
+              'containment': None,
             },
           ),
         ],
@@ -455,6 +461,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
               'detached': True,
               'close_fds': True,
               'lower_priority': False,
+              'containment': None,
             },
           ),
         ],
@@ -497,6 +504,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
               'detached': True,
               'close_fds': True,
               'lower_priority': False,
+              'containment': subprocess42.Containment(),
             },
           ),
         ],
@@ -525,6 +533,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
               'detached': True,
               'close_fds': True,
               'lower_priority': False,
+              'containment': subprocess42.Containment(),
             },
           ),
         ],
@@ -736,6 +745,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
               'detached': True,
               'close_fds': True,
               'lower_priority': False,
+              'containment': subprocess42.Containment(),
             },
           ),
         ],
@@ -820,6 +830,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
               'detached': True,
               'close_fds': True,
               'lower_priority': False,
+              'containment': None,
             },
           ),
         ],
@@ -843,6 +854,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
           'detached': True,
           'close_fds': True,
           'lower_priority': True,
+          'containment': None,
         },
         args)
     self.assertIn('python', cmd[0])
@@ -859,6 +871,49 @@ class RunIsolatedTest(RunIsolatedTestBase):
               'detached': True,
               'close_fds': True,
               'lower_priority': False,
+              'containment': None,
+            },
+          ),
+        ],
+        self.popen_calls)
+
+  def test_main_containment(self):
+    def fake_wait(args, **kwargs):  # pylint: disable=unused-argument
+      # Success.
+      return 0
+    self.popen_fakes.append(fake_wait)
+    cmd = [
+      '--no-log',
+      '--raw-cmd',
+      '--lower-priority',
+      '--containment-type', 'JOB_OBJECT',
+      '--limit-processes', '42',
+      '--limit-total-committed-memory', '1024',
+      '--',
+      '/bin/echo',
+      'hello',
+      'world',
+    ]
+    ret = run_isolated.main(cmd)
+    self.assertEqual(0, ret)
+    self.assertEqual(
+        [
+          (
+            ['/bin/echo', 'hello', 'world'],
+            {
+              'cwd': os.path.join(
+                  # Necessary on macOS.
+                  os.path.realpath(self.tempdir),
+                  'cwd',
+                  run_isolated.ISOLATED_RUN_DIR),
+              'detached': True,
+              'close_fds': True,
+              'lower_priority': True,
+              'containment': subprocess42.Containment(
+                  containment_type=subprocess42.Containment.JOB_OBJECT,
+                  limit_processes=42,
+                  limit_total_committed_memory=1024,
+              ),
             },
           ),
         ],
@@ -917,7 +972,8 @@ class RunIsolatedTestRun(RunIsolatedTestBase):
           use_symlinks=False,
           env={},
           env_prefix={},
-          lower_priority=False)
+          lower_priority=False,
+          containment=None)
       ret = run_isolated.run_tha_test(data, None)
       self.assertEqual(0, ret)
 
@@ -1289,7 +1345,8 @@ class RunIsolatedTestOutputFiles(RunIsolatedTestBase):
           use_symlinks=False,
           env={},
           env_prefix={},
-          lower_priority=False)
+          lower_priority=False,
+          containment=None)
       ret = run_isolated.run_tha_test(data, None)
       self.assertEqual(0, ret)
 
@@ -1436,6 +1493,7 @@ class RunIsolatedJsonTest(RunIsolatedTestBase):
               'detached': True,
               'close_fds': True,
               'lower_priority': False,
+              'containment': subprocess42.Containment(),
             },
           ),
         ],

@@ -389,23 +389,46 @@ class Containment(object):
   # AUTO will use containment if possible, but will not fail if not adequate on
   # this operating system.
   #
-  # For example, job objects cannot be nested on Windows 7 / Windows Server
-  # 2008 and earlier, thus AUTO means DISABLED on these platforms. Windows 8 and
-  # Window Server 2012 and later support nest job objects, thus AUTO means
-  # ENABLED on these platforms.
+  # For example, job objects cannot be nested on Windows 7 / Windows Server 2008
+  # and earlier, thus AUTO means NONE on these platforms. Windows 8 and Window
+  # Server 2012 and later support nest job objects, thus AUTO means ENABLED on
+  # these platforms.
   # See https://docs.microsoft.com/en-us/windows/desktop/procthread/job-objects
   # cgroups will be added.
-  DISABLED, AUTO, JOB_OBJECT = range(3)
+  NONE, AUTO, JOB_OBJECT = range(3)
+
+  NAMES = {
+    NONE: 'NONE',
+    AUTO: 'AUTO',
+    JOB_OBJECT: 'JOB_OBJECT',
+  }
 
   def __init__(
       self,
-      containment_type=DISABLED,
+      containment_type=NONE,
       limit_processes=0,
       limit_total_committed_memory=0):
     self.containment_type = containment_type
     # Limit on the number of active processes.
     self.limit_processes = limit_processes
     self.limit_total_committed_memory = limit_total_committed_memory
+
+  def __eq__(self, rhs):
+    if not rhs:
+      return False
+    return (
+        self.containment_type == rhs.containment_type and
+        self.limit_processes == rhs.limit_processes and
+        self.limit_total_committed_memory == rhs.limit_total_committed_memory)
+
+  def __str__(self):
+    return 'Containment<%s, %s, %s>' % (
+        self.NAMES[self.containment_type],
+        self.limit_processes,
+        self.limit_total_committed_memory)
+
+  def __repr__(self):
+    return self.__str__()
 
 
 class Popen(subprocess.Popen):
@@ -499,7 +522,7 @@ class Popen(subprocess.Popen):
         kwargs['preexec_fn'] = new_preexec_fn_2
 
     self.containment = kwargs.pop('containment', None) or Containment()
-    if self.containment.containment_type != Containment.DISABLED:
+    if self.containment.containment_type != Containment.NONE:
       if self.containment.containment_type == Containment.JOB_OBJECT:
         if not subprocess.mswindows:
           raise NotImplementedError(

@@ -464,6 +464,32 @@ class RunIsolatedTest(unittest.TestCase):
       self.assertEqual(str(os.nice(0)+1), out)
     self.assertEqual(0, returncode)
 
+  def test_limit_processes(self):
+    # Execution fails because it tries to run a second process.
+    cmd = ['--limit-processes', '1', '--raw-cmd']
+    if sys.platform == 'win32':
+      cmd.extend(('--containment-type', 'JOB_OBJECT'))
+    cmd.extend(('--', sys.executable, '-c'))
+    if sys.platform == 'win32':
+      cmd.append(
+          'import subprocess,sys; '
+          'subprocess.call([sys.executable, "-c", "print 0"])')
+    else:
+      cmd.append('import os,sys; sys.stdout.write(str(os.nice(0)))')
+    out, err, returncode = self._run(cmd)
+    if sys.platform == 'win32':
+      self.assertIn('WindowsError', err)
+      # Value for ERROR_NOT_ENOUGH_QUOTA. See
+      # https://docs.microsoft.com/windows/desktop/debug/system-error-codes--1700-3999-
+      self.assertIn('1816', err)
+      self.assertEqual('', out)
+      self.assertEqual(1, returncode)
+    else:
+      # TODO(maruel): Add containment on other platforms.
+      self.assertEqual('', err)
+      self.assertEqual('0', out, out)
+      self.assertEqual(0, returncode)
+
   def test_named_cache(self):
     # Runs a task that drops a file in the named cache, and assert that it's
     # correctly saved.

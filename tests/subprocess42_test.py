@@ -371,6 +371,13 @@ class Subprocess42Test(unittest.TestCase):
         'subprocess.call([sys.executable, "-c", "print(\\"good\\")"])',
     ]
 
+  def test_containment_none(self):
+    # Minimal test case. Starts two processes.
+    cmd = self._cmd_print_good()
+    containment = subprocess42.Containment(
+        containment_type=subprocess42.Containment.NONE)
+    self.assertEqual(0, subprocess42.check_call(cmd, containment=containment))
+
   def test_containment_auto(self):
     # Minimal test case. Starts two processes.
     cmd = self._cmd_print_good()
