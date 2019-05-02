@@ -333,6 +333,13 @@ def main():
     print('https://www.chromium.org/developers/how-tos/android-build-instructions')
     print('for how to install the NDK, or pass --without-android.')
     return 1
+
+  if args.llvm_force_head_revision:
+    # Always run tests for ToT builds.
+    args.run_tests = True
+    # Don't build fuchsia runtime on ToT bots at all.
+    args.with_fuchsia = False
+
   if args.with_fuchsia and not os.path.exists(FUCHSIA_SDK_DIR):
     print('Fuchsia SDK not found at ' + FUCHSIA_SDK_DIR)
     print('The Fuchsia SDK is needed to build libclang_rt for Fuchsia.')
@@ -342,9 +349,6 @@ def main():
     print('https://chromium.googlesource.com/chromium/src/+/master/docs/fuchsia_build_instructions.md')
     print('for general Fuchsia build instructions.')
     return 1
-  if args.llvm_force_head_revision:
-    # Always run tests for ToT builds.
-    args.run_tests = True
 
 
   # DEVELOPER_DIR needs to be set when Xcode isn't in a standard location
@@ -360,8 +364,6 @@ def main():
   if args.llvm_force_head_revision:
     CLANG_REVISION = GetSvnRevision(LLVM_REPO_URL)
     PACKAGE_VERSION = CLANG_REVISION + '-0'
-    # Don't build fuchsia runtime on ToT bots at all.
-    args.with_fuchsia = False
 
   # Don't buffer stdout, so that print statements are immediately flushed.
   sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
