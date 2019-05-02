@@ -42,7 +42,6 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client_impl.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client_impl_test_helper.h"
 #include "chrome/browser/ui/ash/session_controller_client.h"
 #include "chrome/browser/ui/ash/session_util.h"
 #include "chrome/browser/ui/ash/test_wallpaper_controller.h"
@@ -62,9 +61,6 @@
 #include "components/user_manager/user_manager.h"
 #include "services/ws/common/util.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/env.h"
-#include "ui/aura/mus/window_port_mus.h"
-#include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/test/env_test_helper.h"
 #include "ui/aura/test/mus/change_completion_waiter.h"
 #include "ui/aura/window.h"
@@ -147,7 +143,6 @@ class MultiUserWindowManagerClientImplTest : public ChromeAshTestBase {
     fake_user_manager_->SwitchActiveUser(id);
     ash::MultiUserWindowManagerImpl::Get()->OnActiveUserSessionChanged(id);
     aura::test::WaitForAllChangesToComplete();
-    MultiUserWindowManagerClientImplTestHelper::FlushBindings();
   }
 
   // Set up the test environment for this many windows.
@@ -215,7 +210,15 @@ class MultiUserWindowManagerClientImplTest : public ChromeAshTestBase {
   // Like: "S[B], .." would mean that window#0 is shown and belongs to user B.
   // or "S[B,A], .." would mean that window#0 is shown, belongs to B but is
   // shown by A, and "D,..." would mean that window#0 is deleted.
-  std::string GetStatus();
+  std::string GetStatus() {
+    return GetStatusImpl(/* follow_transients */ false);
+  }
+
+  // Same as GetStatus(), but uses the transient root to determine the owning
+  // account.
+  std::string GetStatusUseTransientOwners() {
+    return GetStatusImpl(/* follow_transients */ true);
+  }
 
   // Returns a test-friendly string format of GetOwnersOfVisibleWindows().
   std::string GetOwnersOfVisibleWindowsAsString();
@@ -267,11 +270,9 @@ class MultiUserWindowManagerClientImplTest : public ChromeAshTestBase {
     return ash::UserSwitchAnimator::CoversScreen(window);
   }
 
-  void FlushWindowClientBinding() {
-    multi_user_window_manager_client_->client_binding_.FlushForTesting();
-  }
-
  private:
+  std::string GetStatusImpl(bool follow_transients);
+
   chromeos::ScopedStubInstallAttributes test_install_attributes_;
 
   // These get created for each session.
@@ -313,10 +314,6 @@ void MultiUserWindowManagerClientImplTest::SetUp() {
   EnsureTestUser(AccountId::FromUserEmail("a"));
   EnsureTestUser(AccountId::FromUserEmail("b"));
   EnsureTestUser(AccountId::FromUserEmail("c"));
-
-  // MultiUserWindowManager uses MusClient in single-process mash mode.
-  if (features::IsUsingWindowService())
-    ash_test_helper()->CreateMusClient();
 }
 
 void MultiUserWindowManagerClientImplTest::SetUpForThisManyWindows(
@@ -354,7 +351,8 @@ void MultiUserWindowManagerClientImplTest::TearDown() {
   chromeos::DeviceSettingsService::Shutdown();
 }
 
-std::string MultiUserWindowManagerClientImplTest::GetStatus() {
+std::string MultiUserWindowManagerClientImplTest::GetStatusImpl(
+    bool follow_transients) {
   std::string s;
   for (size_t i = 0; i < windows_.size(); i++) {
     if (i)
@@ -364,11 +362,14 @@ std::string MultiUserWindowManagerClientImplTest::GetStatus() {
       continue;
     }
     s += window(i)->IsVisible() ? "S[" : "H[";
-    const AccountId& owner =
-        multi_user_window_manager_client_->GetWindowOwner(window(i));
+    aura::Window* window_to_use_for_owner =
+        follow_transients ? ::wm::GetTransientRoot(window(i)) : window(i);
+    const AccountId& owner = multi_user_window_manager_client_->GetWindowOwner(
+        window_to_use_for_owner);
     s += owner.GetUserEmail();
     const AccountId& presenter =
-        multi_user_window_manager_client_->GetUserPresentingWindow(window(i));
+        multi_user_window_manager_client_->GetUserPresentingWindow(
+            window_to_use_for_owner);
     if (!owner.empty() && owner != presenter) {
       s += ",";
       s += presenter.GetUserEmail();
@@ -843,7 +844,7 @@ TEST_F(MultiUserWindowManagerClientImplTest, SetWindowOwnerOnTransientDialog) {
   multi_user_window_manager_client()->SetWindowOwner(transient, account_id);
 
   // Both windows are shown and owned by user A.
-  EXPECT_EQ("S[A], S[A]", GetStatus());
+  EXPECT_EQ("S[A], S[A]", GetStatusUseTransientOwners());
 
   // Cleanup.
   ::wm::RemoveTransientChild(parent, transient);
@@ -1616,159 +1617,6 @@ TEST_F(MultiUserWindowManagerClientImplTest, AccountIdChangesAfterSwitch) {
   SwitchActiveUser(account2);
   EXPECT_EQ(account2,
             multi_user_window_manager_client()->GetCurrentUserForTest());
-}
-
-class MultiUserWindowManagerClientImplMashTest
-    : public MultiUserWindowManagerClientImplTest {
- public:
-  MultiUserWindowManagerClientImplMashTest() = default;
-  ~MultiUserWindowManagerClientImplMashTest() override = default;
-
-  // MultiUserWindowManagerClientImplTest:
-  void SetUp() override {
-    original_aura_env_mode_ =
-        aura::test::EnvTestHelper().SetMode(aura::Env::Mode::MUS);
-    feature_list_.InitWithFeatures({::features::kSingleProcessMash}, {});
-    MultiUserWindowManagerClientImplTest::SetUp();
-    // TabletModeController calls to PowerManagerClient with a callback that is
-    // run via a posted task. Run the loop now so that we know the task is
-    // processed. Without this, the task gets processed later on, interfering
-    // with this test.
-    base::RunLoop().RunUntilIdle();
-
-    // This test configures views with mus, which means it triggers some of the
-    // DCHECKs ensuring Shell's Env is used.
-    SetRunningOutsideAsh();
-  }
-  void TearDown() override {
-    MultiUserWindowManagerClientImplTest::TearDown();
-    aura::test::EnvTestHelper().SetMode(original_aura_env_mode_);
-  }
-
- protected:
-  std::unique_ptr<views::Widget> CreateMusWidget() {
-    std::unique_ptr<views::Widget> widget = std::make_unique<views::Widget>();
-    views::Widget::InitParams params;
-    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    params.bounds = gfx::Rect(0, 0, 200, 200);
-    params.native_widget =
-        views::MusClient::Get()->CreateNativeWidget(params, widget.get());
-    widget->Init(params);
-    widget->Show();
-    EXPECT_EQ(aura::Env::Mode::MUS, widget->GetNativeWindow()->env()->mode());
-    // Flush all messages from the WindowTreeClient to ensure ash has finished
-    // Widget creation.
-    aura::test::WaitForAllChangesToComplete();
-    return widget;
-  }
-
- private:
-  aura::Env::Mode original_aura_env_mode_ = aura::Env::Mode::LOCAL;
-  base::test::ScopedFeatureList feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(MultiUserWindowManagerClientImplMashTest);
-};
-
-TEST_F(MultiUserWindowManagerClientImplMashTest,
-       SingleProcessMashWindowOrdering) {
-  SetUpForThisManyWindows(1);
-
-  std::unique_ptr<views::Widget> widget = CreateMusWidget();
-  // Flush all messages from the WindowTreeClient to ensure the client id has
-  // been received.
-  aura::test::WaitForAllChangesToComplete();
-  aura::Window* widget_window_in_ash =
-      ash::window_lookup::GetProxyWindowForClientWindow(
-          widget->GetNativeWindow()->parent());
-  ASSERT_TRUE(widget_window_in_ash);
-  EXPECT_EQ(widget_window_in_ash->parent(), window(0)->parent());
-
-  const AccountId account_id_A(AccountId::FromUserEmail("A"));
-  const AccountId account_id_B(AccountId::FromUserEmail("B"));
-  AddTestUser(account_id_A);
-  AddTestUser(account_id_B);
-  SwitchActiveUser(account_id_A);
-
-  // Set the windows owner.
-  ::wm::ActivationClient* activation_client =
-      ::wm::GetActivationClient(window(0)->GetRootWindow());
-  multi_user_window_manager_client()->SetWindowOwner(window(0), account_id_A);
-  multi_user_window_manager_client()->SetWindowOwner(widget->GetNativeWindow(),
-                                                     account_id_A);
-  aura::test::WaitForAllChangesToComplete();
-
-  // Activate the windows one by one.
-  activation_client->ActivateWindow(widget_window_in_ash);
-  EXPECT_EQ(activation_client->GetActiveWindow(), widget_window_in_ash);
-  activation_client->ActivateWindow(window(0));
-  EXPECT_EQ(activation_client->GetActiveWindow(), window(0));
-
-  aura::Window::Windows mru_list =
-      Shell::Get()->mru_window_tracker()->BuildMruWindowList();
-  EXPECT_EQ(mru_list[0], window(0));
-  EXPECT_EQ(mru_list[1], widget_window_in_ash);
-
-  SwitchActiveUser(account_id_B);
-  EXPECT_EQ(activation_client->GetActiveWindow(), nullptr);
-
-  SwitchActiveUser(account_id_A);
-  EXPECT_EQ(activation_client->GetActiveWindow(), window(0));
-
-  mru_list = Shell::Get()->mru_window_tracker()->BuildMruWindowList();
-  ASSERT_EQ(2u, mru_list.size());
-  EXPECT_EQ(mru_list[0], window(0));
-  EXPECT_TRUE(widget_window_in_ash->Contains(mru_list[1]));
-
-  // Swap the activation order, and retry.
-  activation_client->ActivateWindow(window(0));
-  EXPECT_EQ(activation_client->GetActiveWindow(), window(0));
-  activation_client->ActivateWindow(widget_window_in_ash);
-  EXPECT_EQ(activation_client->GetActiveWindow(), widget_window_in_ash);
-
-  mru_list = Shell::Get()->mru_window_tracker()->BuildMruWindowList();
-  EXPECT_EQ(mru_list[0], widget_window_in_ash);
-  EXPECT_EQ(mru_list[1], window(0));
-
-  SwitchActiveUser(account_id_B);
-  EXPECT_EQ(activation_client->GetActiveWindow(), nullptr);
-
-  SwitchActiveUser(account_id_A);
-  EXPECT_EQ(activation_client->GetActiveWindow(), widget_window_in_ash);
-
-  mru_list = Shell::Get()->mru_window_tracker()->BuildMruWindowList();
-  EXPECT_EQ(mru_list[0], widget_window_in_ash);
-  EXPECT_EQ(mru_list[1], window(0));
-}
-
-TEST_F(MultiUserWindowManagerClientImplMashTest, SetWindowOwner) {
-  SetUpForThisManyWindows(1);
-
-  std::unique_ptr<views::Widget> widget = CreateMusWidget();
-  const AccountId account1(AccountId::FromUserEmail("A"));
-  const AccountId account2(AccountId::FromUserEmail("B"));
-  AddTestUser(account1);
-  AddTestUser(account2);
-  SwitchActiveUser(account1);
-
-  // Make both windows be own by |account1|.
-  multi_user_window_manager_client()->SetWindowOwner(window(0), account1);
-  multi_user_window_manager_client()->SetWindowOwner(widget->GetNativeWindow(),
-                                                     account1);
-  aura::test::WaitForAllChangesToComplete();
-
-  // Switch to account2, which should hide the widget.
-  SwitchActiveUser(account2);
-  EXPECT_FALSE(widget->IsVisible());
-
-  // Show the widget for the current user, which should trigger showing it.
-  multi_user_window_manager_client()->ShowWindowForUser(
-      widget->GetNativeWindow(), account2);
-  aura::test::WaitForAllChangesToComplete();
-  FlushWindowClientBinding();
-  EXPECT_TRUE(widget->IsVisible());
-  EXPECT_EQ(account2,
-            multi_user_window_manager_client()->GetUserPresentingWindow(
-                widget->GetNativeWindow()));
 }
 
 }  // namespace ash

@@ -7,7 +7,7 @@
 #include <set>
 #include <vector>
 
-#include "ash/multi_user/multi_user_window_manager_impl.h"
+#include "ash/public/cpp/multi_user_window_manager.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
@@ -26,14 +26,8 @@
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/env.h"
-#include "ui/aura/mus/window_mus.h"
-#include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/window.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/views/mus/mus_client.h"
-#include "ui/views/widget/widget.h"
 
 namespace {
 
@@ -86,26 +80,6 @@ void RecordUMAForTransferredWindowType(aura::Window* window) {
                             NUM_TELEPORT_WINDOW_TYPES);
 }
 
-// Returns the WindowMus to use when sending messages to the server.
-aura::WindowMus* GetWindowMus(aura::Window* window) {
-  if (!aura::WindowMus::Get(window))
-    return nullptr;
-
-  aura::Window* root_window = window->GetRootWindow();
-  if (!root_window)
-    return nullptr;
-
-  // DesktopNativeWidgetAura creates two aura Windows. GetNativeWindow() returns
-  // the child window. Get the widget for |window| and its root. If the Widgets
-  // are the same, it means |window| is the native window of a
-  // DesktopNativeWidgetAura. Use the root window to notify the server as that
-  // corresponds to the top-level window that ash knows about.
-  views::Widget* widget = views::Widget::GetWidgetForNativeView(window);
-  views::Widget* root_widget =
-      views::Widget::GetWidgetForNativeView(root_window);
-  return widget == root_widget ? aura::WindowMus::Get(root_window) : nullptr;
-}
-
 }  // namespace
 
 // This class keeps track of all applications which were started for a user.
@@ -135,39 +109,12 @@ class AppObserver : public extensions::AppWindowRegistry::Observer {
 MultiUserWindowManagerClientImpl* MultiUserWindowManagerClientImpl::instance_ =
     nullptr;
 
-MultiUserWindowManagerClientImpl::ClassicSupport::ClassicSupport(
-    MultiUserWindowManagerClientImpl* host)
-    : binding(host) {}
-
-MultiUserWindowManagerClientImpl::ClassicSupport::~ClassicSupport() = default;
-
 MultiUserWindowManagerClientImpl::MultiUserWindowManagerClientImpl(
-    const AccountId& current_account_id)
-    : current_account_id_(current_account_id) {
+    const AccountId& current_account_id) {
   DCHECK(!instance_);
   instance_ = this;
-  ash::mojom::MultiUserWindowManagerClient* client = nullptr;
-  if (features::IsUsingWindowService()) {
-    // This path doesn't set |client| as it'll be wired up in ash when it
-    // sees the MultiUserWindowManagerClient registration.
-    multi_user_window_manager_mojom_ =
-        views::MusClient::Get()
-            ->window_tree_client()
-            ->BindWindowManagerInterface<ash::mojom::MultiUserWindowManager>();
-    ash::mojom::MultiUserWindowManagerClientAssociatedPtrInfo ptr_info;
-    client_binding_.Bind(mojo::MakeRequest(&ptr_info));
-    multi_user_window_manager_mojom_->SetClient(std::move(ptr_info));
-  } else {
-    classic_support_ = std::make_unique<ClassicSupport>(this);
-    classic_support_->binding.Bind(
-        mojo::MakeRequest(&classic_support_->client_ptr));
-    client = classic_support_->client_ptr.get();
-  }
-  if (!features::IsMultiProcessMash()) {
-    ash_multi_user_window_manager_ =
-        std::make_unique<ash::MultiUserWindowManagerImpl>(client, this,
-                                                          current_account_id);
-  }
+  ash_multi_user_window_manager_ =
+      ash::MultiUserWindowManager::Create(this, current_account_id);
 }
 
 MultiUserWindowManagerClientImpl::~MultiUserWindowManagerClientImpl() {
@@ -176,15 +123,6 @@ MultiUserWindowManagerClientImpl::~MultiUserWindowManagerClientImpl() {
 
   // This may trigger callbacks to us, delete it early on.
   ash_multi_user_window_manager_.reset();
-
-  // Remove all window observers.
-  while (!window_to_entry_.empty()) {
-    // Explicitly remove this from window observer list since OnWindowDestroyed
-    // no longer does that.
-    aura::Window* window = window_to_entry_.begin()->first;
-    window->RemoveObserver(this);
-    OnWindowDestroyed(window);
-  }
 
   // Remove all app observers.
   ProfileManager* profile_manager = g_browser_process->profile_manager();
@@ -209,7 +147,8 @@ MultiUserWindowManagerClientImpl::~MultiUserWindowManagerClientImpl() {
 void MultiUserWindowManagerClientImpl::Init() {
   // Since we are setting the SessionStateObserver and adding the user, this
   // function should get called only once.
-  DCHECK(account_id_to_app_observer_.find(current_account_id_) ==
+  auto current_account_id = ash_multi_user_window_manager_->CurrentAccountId();
+  DCHECK(account_id_to_app_observer_.find(current_account_id) ==
          account_id_to_app_observer_.end());
 
   // The BrowserListObserver would have been better to use then the old
@@ -219,7 +158,7 @@ void MultiUserWindowManagerClientImpl::Init() {
 
   // Add an app window observer & all already running apps.
   Profile* profile =
-      multi_user_util::GetProfileFromAccountId(current_account_id_);
+      multi_user_util::GetProfileFromAccountId(current_account_id);
   if (profile)
     AddUser(profile);
 }
@@ -233,35 +172,13 @@ void MultiUserWindowManagerClientImpl::SetWindowOwner(
   if (GetWindowOwner(window) == account_id)
     return;
 
-  DCHECK(GetWindowOwner(window).empty());
-  std::unique_ptr<WindowEntry> window_entry_ptr =
-      std::make_unique<WindowEntry>(account_id);
-  WindowEntry* window_entry = window_entry_ptr.get();
-  window_to_entry_[window] = std::move(window_entry_ptr);
-
   // Check if this window was created due to a user interaction. If it was,
   // transfer it to the current user.
+  // TODO: get rid of aura::client::kCreatedByUserGesture.
   const bool show_for_current_user =
       window->GetProperty(aura::client::kCreatedByUserGesture);
-  if (window->env()->mode() == aura::Env::Mode::MUS) {
-    aura::WindowMus* window_mus = GetWindowMus(window);
-    if (window_mus) {
-      multi_user_window_manager_mojom_->SetWindowOwner(
-          window_mus->server_id(), account_id, show_for_current_user);
-    }  // else case can happen during shutdown, or for child windows.
-  } else {
-    // If there is a non-MUS window, then we must have created
-    // |ash_multi_user_window_manager_|.
-    DCHECK(ash_multi_user_window_manager_);
-    ash_multi_user_window_manager_->SetWindowOwner(window, account_id,
-                                                   show_for_current_user);
-  }
-
-  // Add observers to track state changes.
-  window->AddObserver(this);
-
-  if (show_for_current_user)
-    window_entry->set_show_for_user(current_account_id_);
+  ash_multi_user_window_manager_->SetWindowOwner(window, account_id,
+                                                 show_for_current_user);
 
   // Notify entry adding.
   for (Observer& observer : observers_)
@@ -270,12 +187,7 @@ void MultiUserWindowManagerClientImpl::SetWindowOwner(
 
 const AccountId& MultiUserWindowManagerClientImpl::GetWindowOwner(
     const aura::Window* window) const {
-  for (WindowToEntryMap::const_iterator it = window_to_entry_.begin();
-       it != window_to_entry_.end(); it++) {
-    if (it->first == window)
-      return it->second->owner();
-  }
-  return EmptyAccountId();
+  return ash_multi_user_window_manager_->GetWindowOwner(window);
 }
 
 void MultiUserWindowManagerClientImpl::ShowWindowForUser(
@@ -284,31 +196,16 @@ void MultiUserWindowManagerClientImpl::ShowWindowForUser(
   if (!window)
     return;
 
-  if (window->env()->mode() == aura::Env::Mode::MUS) {
-    aura::WindowMus* window_mus = GetWindowMus(window);
-    if (window_mus) {
-      multi_user_window_manager_mojom_->ShowWindowForUser(
-          window_mus->server_id(), account_id);
-    }
-  } else {
-    ash_multi_user_window_manager_->ShowWindowForUser(window, account_id);
-  }
+  ash_multi_user_window_manager_->ShowWindowForUser(window, account_id);
 }
 
 bool MultiUserWindowManagerClientImpl::AreWindowsSharedAmongUsers() const {
-  for (auto& window_pair : window_to_entry_) {
-    if (window_pair.second->owner() != window_pair.second->show_for_user())
-      return true;
-  }
-  return false;
+  return ash_multi_user_window_manager_->AreWindowsSharedAmongUsers();
 }
 
 void MultiUserWindowManagerClientImpl::GetOwnersOfVisibleWindows(
     std::set<AccountId>* account_ids) const {
-  for (auto& window_pair : window_to_entry_) {
-    if (window_pair.first->IsVisible())
-      account_ids->insert(window_pair.second->owner());
-  }
+  *account_ids = ash_multi_user_window_manager_->GetOwnersOfVisibleWindows();
 }
 
 bool MultiUserWindowManagerClientImpl::IsWindowOnDesktopOfUser(
@@ -320,15 +217,7 @@ bool MultiUserWindowManagerClientImpl::IsWindowOnDesktopOfUser(
 
 const AccountId& MultiUserWindowManagerClientImpl::GetUserPresentingWindow(
     const aura::Window* window) const {
-  for (WindowToEntryMap::const_iterator it = window_to_entry_.begin();
-       it != window_to_entry_.end(); it++) {
-    if (it->first == window)
-      // We ask the object for its desktop.
-      return it->second->show_for_user();
-  }
-  // If the window is not owned by anyone it is shown on all desktops and we
-  // return the empty string.
-  return EmptyAccountId();
+  return ash_multi_user_window_manager_->GetUserPresentingWindow(window);
 }
 
 void MultiUserWindowManagerClientImpl::AddUser(
@@ -370,10 +259,6 @@ void MultiUserWindowManagerClientImpl::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void MultiUserWindowManagerClientImpl::OnWindowDestroyed(aura::Window* window) {
-  window_to_entry_.erase(window);
-}
-
 void MultiUserWindowManagerClientImpl::Observe(
     int type,
     const content::NotificationSource& source,
@@ -382,19 +267,13 @@ void MultiUserWindowManagerClientImpl::Observe(
   AddBrowserWindow(content::Source<Browser>(source).ptr());
 }
 
-void MultiUserWindowManagerClientImpl::OnOwnerEntryChanged(
+void MultiUserWindowManagerClientImpl::OnWindowOwnerEntryChanged(
     aura::Window* window,
     const AccountId& account_id,
     bool was_minimized,
     bool teleported) {
-  WindowToEntryMap::iterator it = window_to_entry_.find(window);
-  if (it == window_to_entry_.end())
-    return;
-
   if (was_minimized)
     RecordUMAForTransferredWindowType(window);
-
-  it->second->set_show_for_user(account_id);
 
   const AccountId& owner = GetWindowOwner(window);
   // Browser windows don't use kAvatarIconKey. See
@@ -404,14 +283,12 @@ void MultiUserWindowManagerClientImpl::OnOwnerEntryChanged(
         user_manager::UserManager::IsInitialized()
             ? user_manager::UserManager::Get()->FindUser(owner)
             : nullptr;
-    aura::Window* property_window =
-        features::IsUsingWindowService() ? window->GetRootWindow() : window;
     if (window_owner && teleported) {
-      property_window->SetProperty(
+      window->SetProperty(
           aura::client::kAvatarIconKey,
           new gfx::ImageSkia(GetAvatarImageForUser(window_owner)));
     } else {
-      property_window->ClearProperty(aura::client::kAvatarIconKey);
+      window->ClearProperty(aura::client::kAvatarIconKey);
     }
   }
 
@@ -419,17 +296,14 @@ void MultiUserWindowManagerClientImpl::OnOwnerEntryChanged(
     observer.OnOwnerEntryChanged(window);
 }
 
-void MultiUserWindowManagerClientImpl::OnWillSwitchActiveAccount(
-    const AccountId& account_id) {
-  current_account_id_ = account_id;
-}
-
 void MultiUserWindowManagerClientImpl::OnTransitionUserShelfToNewAccount() {
   ChromeLauncherController* chrome_launcher_controller =
       ChromeLauncherController::instance();
   // Some unit tests have no ChromeLauncherController.
-  if (chrome_launcher_controller)
-    chrome_launcher_controller->ActiveUserChanged(current_account_id_);
+  if (!chrome_launcher_controller)
+    return;
+  chrome_launcher_controller->ActiveUserChanged(
+      ash_multi_user_window_manager_->CurrentAccountId());
 }
 
 void MultiUserWindowManagerClientImpl::OnDidSwitchActiveAccount() {
@@ -439,7 +313,7 @@ void MultiUserWindowManagerClientImpl::OnDidSwitchActiveAccount() {
 
 const AccountId& MultiUserWindowManagerClientImpl::GetCurrentUserForTest()
     const {
-  return current_account_id_;
+  return ash_multi_user_window_manager_->CurrentAccountId();
 }
 
 void MultiUserWindowManagerClientImpl::AddBrowserWindow(Browser* browser) {
@@ -449,25 +323,4 @@ void MultiUserWindowManagerClientImpl::AddBrowserWindow(Browser* browser) {
     return;
   SetWindowOwner(browser->window()->GetNativeWindow(),
                  multi_user_util::GetAccountIdFromProfile(browser->profile()));
-}
-
-void MultiUserWindowManagerClientImpl::OnWindowOwnerEntryChanged(
-    ws::Id window_id,
-    const AccountId& account_id,
-    bool was_minimized,
-    bool teleported) {
-  // This undoes the logic in GetWindowMus(). See it for details.
-  aura::WindowMus* window_mus =
-      views::MusClient::Get()->window_tree_client()->GetWindowByServerId(
-          window_id);
-  if (!window_mus)
-    return;
-
-  views::Widget* widget =
-      views::Widget::GetWidgetForNativeWindow(window_mus->GetWindow());
-  if (!widget)
-    return;
-
-  OnOwnerEntryChanged(widget->GetNativeWindow(), account_id, was_minimized,
-                      teleported);
 }

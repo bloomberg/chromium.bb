@@ -7,7 +7,6 @@
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/ime/ime_engine_factory_registry.h"
-#include "ash/public/interfaces/ash_window_manager.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/container_finder.h"
@@ -18,7 +17,6 @@
 #include "ash/wm/window_finder.h"
 #include "ash/wm/window_util.h"
 #include "ash/ws/ash_window_manager.h"
-#include "ash/ws/multi_user_window_manager_bridge.h"
 #include "base/bind.h"
 #include "mojo/public/cpp/bindings/map.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
@@ -253,11 +251,6 @@ WindowServiceDelegateImpl::CreateWindowManagerInterface(
     mojo::ScopedInterfaceEndpointHandle handle) {
   if (name == mojom::AshWindowManager::Name_)
     return std::make_unique<AshWindowManager>(tree, std::move(handle));
-
-  if (name == mojom::MultiUserWindowManager::Name_) {
-    return std::make_unique<MultiUserWindowManagerBridge>(tree,
-                                                          std::move(handle));
-  }
   return nullptr;
 }
 

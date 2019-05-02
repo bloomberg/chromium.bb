@@ -8,16 +8,14 @@
 #include <vector>
 
 #include "ash/media/media_controller.h"
-#include "ash/multi_user/multi_user_window_manager_delegate_classic.h"
 #include "ash/multi_user/user_switch_animator.h"
+#include "ash/public/cpp/multi_user_window_manager_delegate.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/auto_reset.h"
 #include "base/macros.h"
-#include "ui/aura/mus/window_mus.h"
-#include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/events/event.h"
@@ -116,22 +114,16 @@ class AnimationSetter {
 };
 
 MultiUserWindowManagerImpl::WindowEntry::WindowEntry(
-    const AccountId& account_id,
-    base::Optional<ws::Id> window_id)
-    : owner_(account_id),
-      show_for_user_(account_id),
-      window_id_(std::move(window_id)),
-      from_window_service_(window_id.has_value()) {}
+    const AccountId& account_id)
+    : owner_(account_id), show_for_user_(account_id) {}
 
 MultiUserWindowManagerImpl::WindowEntry::~WindowEntry() = default;
 
 MultiUserWindowManagerImpl::MultiUserWindowManagerImpl(
-    mojom::MultiUserWindowManagerClient* client,
-    MultiUserWindowManagerDelegateClassic* classic_delegate,
+    MultiUserWindowManagerDelegate* delegate,
     const AccountId& account_id)
-    : client_(client),
-      classic_delegate_(classic_delegate),
-      current_account_id_(account_id) {
+    : delegate_(delegate), current_account_id_(account_id) {
+  DCHECK(delegate_);
   g_instance = this;
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
   Shell::Get()->session_controller()->AddObserver(this);
@@ -163,21 +155,9 @@ MultiUserWindowManagerImpl* MultiUserWindowManagerImpl::Get() {
   return g_instance;
 }
 
-void MultiUserWindowManagerImpl::SetClient(
-    mojom::MultiUserWindowManagerClient* client) {
-  client_ = client;
-
-  // Window ids are unique to a particular client. If the client changes, drop
-  // any existing ids.
-  for (auto& pair : window_to_entry_)
-    pair.second->reset_window_id();
-}
-
-void MultiUserWindowManagerImpl::SetWindowOwner(
-    aura::Window* window,
-    const AccountId& account_id,
-    bool show_for_current_user,
-    base::Optional<ws::Id> window_id) {
+void MultiUserWindowManagerImpl::SetWindowOwner(aura::Window* window,
+                                                const AccountId& account_id,
+                                                bool show_for_current_user) {
   // Make sure the window is valid and there was no owner yet.
   DCHECK(window);
   DCHECK(account_id.is_valid());
@@ -191,7 +171,7 @@ void MultiUserWindowManagerImpl::SetWindowOwner(
 
   DCHECK(GetWindowOwner(window).empty());
   std::unique_ptr<WindowEntry> window_entry_ptr =
-      std::make_unique<WindowEntry>(account_id, std::move(window_id));
+      std::make_unique<WindowEntry>(account_id);
   WindowEntry* window_entry = window_entry_ptr.get();
   window_to_entry_[window] = std::move(window_entry_ptr);
 
@@ -215,12 +195,6 @@ void MultiUserWindowManagerImpl::SetWindowOwner(
     SetWindowVisibility(window, false);
 }
 
-const AccountId& MultiUserWindowManagerImpl::GetWindowOwner(
-    aura::Window* window) const {
-  WindowToEntryMap::const_iterator it = window_to_entry_.find(window);
-  return it != window_to_entry_.end() ? it->second->owner() : EmptyAccountId();
-}
-
 void MultiUserWindowManagerImpl::ShowWindowForUser(
     aura::Window* window,
     const AccountId& account_id) {
@@ -237,12 +211,42 @@ void MultiUserWindowManagerImpl::ShowWindowForUser(
   Shell::Get()->session_controller()->SwitchActiveUser(account_id);
 }
 
+const AccountId& MultiUserWindowManagerImpl::GetWindowOwner(
+    const aura::Window* window) const {
+  WindowToEntryMap::const_iterator it =
+      window_to_entry_.find(const_cast<aura::Window*>(window));
+  return it != window_to_entry_.end() ? it->second->owner() : EmptyAccountId();
+}
+
 bool MultiUserWindowManagerImpl::AreWindowsSharedAmongUsers() const {
   for (auto& window_pair : window_to_entry_) {
     if (window_pair.second->owner() != window_pair.second->show_for_user())
       return true;
   }
   return false;
+}
+
+std::set<AccountId> MultiUserWindowManagerImpl::GetOwnersOfVisibleWindows()
+    const {
+  std::set<AccountId> result;
+  for (auto& window_pair : window_to_entry_) {
+    if (window_pair.first->IsVisible())
+      result.insert(window_pair.second->owner());
+  }
+  return result;
+}
+
+const AccountId& MultiUserWindowManagerImpl::GetUserPresentingWindow(
+    const aura::Window* window) const {
+  auto iter = window_to_entry_.find(const_cast<aura::Window*>(window));
+  // If the window is not owned by anyone it is shown on all desktops and we
+  // return the empty string.
+  return (iter == window_to_entry_.end()) ? EmptyAccountId()
+                                          : iter->second->show_for_user();
+}
+
+const AccountId& MultiUserWindowManagerImpl::CurrentAccountId() const {
+  return current_account_id_;
 }
 
 bool MultiUserWindowManagerImpl::IsWindowOnDesktopOfUser(
@@ -276,9 +280,6 @@ void MultiUserWindowManagerImpl::OnActiveUserSessionChanged(
 
   // This needs to be set before the animation starts.
   current_account_id_ = account_id;
-
-  if (client_)
-    client_->OnWillSwitchActiveAccount(current_account_id_);
 
   // Here to avoid a very nasty race condition, we must destruct any previously
   // created animation before creating a new one. Otherwise, the newly
@@ -420,14 +421,8 @@ bool MultiUserWindowManagerImpl::ShowWindowForUserIntern(
     SetWindowVisibility(window, false, kTeleportAnimationTime);
   }
 
-  // Notify entry change.
-  if (!window_entry->from_window_service()) {
-    classic_delegate_->OnOwnerEntryChanged(window, account_id, minimized,
-                                           teleported);
-  } else if (client_ && window_entry->window_id().has_value()) {
-    client_->OnWindowOwnerEntryChanged(*window_entry->window_id(), account_id,
-                                       minimized, teleported);
-  }
+  delegate_->OnWindowOwnerEntryChanged(window, account_id, minimized,
+                                       teleported);
   return true;
 }
 
@@ -574,6 +569,13 @@ base::TimeDelta MultiUserWindowManagerImpl::GetAdjustedAnimationTime(
              : (animation_speed_ == ANIMATION_SPEED_FAST
                     ? base::TimeDelta::FromMilliseconds(10)
                     : base::TimeDelta());
+}
+
+// static
+std::unique_ptr<MultiUserWindowManager> MultiUserWindowManager::Create(
+    MultiUserWindowManagerDelegate* delegate,
+    const AccountId& account_id) {
+  return std::make_unique<MultiUserWindowManagerImpl>(delegate, account_id);
 }
 
 }  // namespace ash

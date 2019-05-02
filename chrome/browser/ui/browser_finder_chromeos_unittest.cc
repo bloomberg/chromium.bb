@@ -8,7 +8,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client_impl.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client_impl_test_helper.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/test_browser_window_aura.h"
@@ -124,7 +123,6 @@ TEST_F(BrowserFinderChromeOSTest, FindBrowserOwnedByAnotherProfile) {
       browser->window()->GetNativeWindow(), test_account_id2_);
   // ShowWindowForUser() notifies chrome async. FlushBindings() to ensure all
   // the changes happen.
-  MultiUserWindowManagerClientImplTestHelper::FlushBindings();
   EXPECT_EQ(0u, chrome::GetBrowserCount(profile()));
   EXPECT_FALSE(chrome::FindAnyBrowser(profile(), true));
   EXPECT_FALSE(chrome::FindAnyBrowser(profile(), false));

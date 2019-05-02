@@ -9,21 +9,19 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/public/interfaces/multi_user_window_manager.mojom.h"
+#include "ash/public/cpp/multi_user_window_manager.h"
 #include "ash/session/session_observer.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "components/account_id/account_id.h"
-#include "services/ws/common/types.h"
 #include "ui/aura/window_observer.h"
 #include "ui/wm/core/transient_window_observer.h"
 
 namespace ash {
 
-class MultiUserWindowManagerDelegateClassic;
+class MultiUserWindowManagerDelegate;
 class UserSwitchAnimator;
 
 // MultiUserWindowManager associates windows with users and ensures the
@@ -37,12 +35,6 @@ class UserSwitchAnimator;
 // account are the same, but the user may choose to show a window from an other
 // account, in which case the 'shown' account changes.
 //
-// MultiUserWindowManager makes use of the following client/delegate interfaces
-// mojom::MultiUserWindowManagerClient: used for windows created by the window
-// service, as well as major state changes (such as animation changing).
-// MultiUserWindowManagerDelegateClassic: used for all other windows. See
-// MultiUserWindowManagerDelegateClassic for details on what this means.
-//
 // Note:
 // - aura::Window::Hide() is currently hiding the window and all owned transient
 //   children. However aura::Window::Show() is only showing the window itself.
@@ -52,7 +44,8 @@ class UserSwitchAnimator;
 //   changed back to its requested state upon showing by us - or when the window
 //   gets detached from its current owning parent.
 class ASH_EXPORT MultiUserWindowManagerImpl
-    : public SessionObserver,
+    : public MultiUserWindowManager,
+      public SessionObserver,
       public aura::WindowObserver,
       public ::wm::TransientWindowObserver,
       public TabletModeObserver {
@@ -64,38 +57,24 @@ class ASH_EXPORT MultiUserWindowManagerImpl
     ANIMATION_SPEED_DISABLED  // Unit tests which do not require animations.
   };
 
-  MultiUserWindowManagerImpl(
-      mojom::MultiUserWindowManagerClient* client,
-      MultiUserWindowManagerDelegateClassic* classic_delegate,
-      const AccountId& account_id);
+  MultiUserWindowManagerImpl(MultiUserWindowManagerDelegate* delegate,
+                             const AccountId& account_id);
   ~MultiUserWindowManagerImpl() override;
 
   static MultiUserWindowManagerImpl* Get();
 
-  // Resets the client. This is called when running in mash. In single-process
-  // mash, the browser creates this class (with no client) and
-  // MultiUserWindowManagerBridge sets the client (as the client is provided
-  // over mojom). In multi-process mash, MultiUserWindowManagerBridge creates
-  // this and sets the client. This function is only necessary until
-  // multi-process mash is the default.
-  void SetClient(mojom::MultiUserWindowManagerClient* client);
-
-  // Associates a window with a particular account. This may result in hiding
-  // |window|. This should *not* be called more than once with a different
-  // account. If |show_for_current_user| is true, this sets the 'shown'
-  // account to the current account. If |window_id| is valid, changes to
-  // |window| are notified through MultiUserWindowManagerClient. If |window_id|
-  // is empty, MultiUserWindowManagerDelegateClassic is used.
+  // MultiUserWindowManager:
   void SetWindowOwner(aura::Window* window,
                       const AccountId& account_id,
-                      bool show_for_current_user,
-                      base::Optional<ws::Id> window_id = base::nullopt);
-
-  // Sets the 'shown' account for a window. See class description for details on
-  // what the 'shown' account is. This function may trigger changing the active
-  // user. When the window is minimized, the 'shown' account is reset to the
-  // 'owning' account.
-  void ShowWindowForUser(aura::Window* window, const AccountId& account_id);
+                      bool show_for_current_user) override;
+  void ShowWindowForUser(aura::Window* window,
+                         const AccountId& account_id) override;
+  const AccountId& GetWindowOwner(const aura::Window* window) const override;
+  bool AreWindowsSharedAmongUsers() const override;
+  std::set<AccountId> GetOwnersOfVisibleWindows() const override;
+  const AccountId& GetUserPresentingWindow(
+      const aura::Window* window) const override;
+  const AccountId& CurrentAccountId() const override;
 
   // SessionObserver:
   void OnActiveUserSessionChanged(const AccountId& account_id) override;
@@ -129,7 +108,7 @@ class ASH_EXPORT MultiUserWindowManagerImpl
 
   class WindowEntry {
    public:
-    WindowEntry(const AccountId& account_id, base::Optional<ws::Id> window_id);
+    explicit WindowEntry(const AccountId& account_id);
     ~WindowEntry();
 
     // Returns the owner of this window. This cannot be changed.
@@ -150,16 +129,6 @@ class ASH_EXPORT MultiUserWindowManagerImpl
     // Sets if the window gets shown for the active user or not.
     void set_show(bool show) { show_ = show; }
 
-    // True if this window was created by the window service.
-    bool from_window_service() const { return from_window_service_; }
-
-    // Unsets the |window_id|. This does not effect whether the window is
-    // from the window-service, only the stored id. Resetting the id happens
-    // when the client changes. This is necessary as the id is generally unique
-    // to a client.
-    void reset_window_id() { window_id_.reset(); }
-    const base::Optional<ws::Id> window_id() const { return window_id_; }
-
    private:
     // The user id of the owner of this window.
     const AccountId owner_;
@@ -170,11 +139,6 @@ class ASH_EXPORT MultiUserWindowManagerImpl
     // True if the window should be visible for the user which shows the window.
     bool show_ = true;
 
-    // The id assigned to the window by the WindowService.
-    base::Optional<ws::Id> window_id_;
-
-    const bool from_window_service_;
-
     DISALLOW_COPY_AND_ASSIGN(WindowEntry);
   };
 
@@ -182,13 +146,6 @@ class ASH_EXPORT MultiUserWindowManagerImpl
 
   using WindowToEntryMap =
       std::map<aura::Window*, std::unique_ptr<WindowEntry>>;
-
-  const AccountId& GetWindowOwner(aura::Window* window) const;
-
-  // Returns true if at least one window's 'owner' account differs from its
-  // 'shown' account. In other words, a window from one account is shown with
-  // windows from another account.
-  bool AreWindowsSharedAmongUsers() const;
 
   // Returns true if the 'shown' owner of |window| is |account_id|.
   bool IsWindowOnDesktopOfUser(aura::Window* window,
@@ -243,9 +200,7 @@ class ASH_EXPORT MultiUserWindowManagerImpl
   // Returns the time for an animation.
   base::TimeDelta GetAdjustedAnimationTime(base::TimeDelta default_time) const;
 
-  mojom::MultiUserWindowManagerClient* client_;
-
-  MultiUserWindowManagerDelegateClassic* classic_delegate_;
+  MultiUserWindowManagerDelegate* delegate_;
 
   // A lookup to see to which user the given window belongs to, where and if it
   // should get shown.

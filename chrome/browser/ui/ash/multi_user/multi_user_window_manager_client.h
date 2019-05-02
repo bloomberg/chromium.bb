@@ -27,11 +27,8 @@ class Window;
 //
 // See ash::MultiUserWindowManager for more details on the API provided here.
 //
-// WARNING: in mash this code ends up referencing windows with an aura Env
-// of MUS *and* windows with an aura Env of LOCAL. This is because Arc/Crostini
-// windows are created by Ash, and browser/app windows are created by the
-// browser. Long term this code needs to be refactored out of chrome, at which
-// time *all* windows should be created by Ash.
+// TODO(sky): this name is confusing. Maybe it should be
+// ChromeMultiUserWindowManager.
 class MultiUserWindowManagerClient {
  public:
   // Observer to notify of any window owner changes.
