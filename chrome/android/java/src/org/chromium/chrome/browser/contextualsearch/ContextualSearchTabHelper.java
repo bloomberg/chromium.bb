@@ -62,6 +62,7 @@ public class ContextualSearchTabHelper
      */
     private SelectionClientManager mSelectionClientManager;
 
+    /** The pointer to our native C++ implementation. */
     private long mNativeHelper;
 
     /** {@code true} while observing other overlay panel via {@link OverlayPanelManagerObserver} */
@@ -72,6 +73,9 @@ public class ContextualSearchTabHelper
      * showing on it, or {@code null}.
      */
     private Tab mUnhookedTab;
+
+    /** Whether the current default search engine is Google.  Is {@code null} if not inited. */
+    private Boolean mIsDefaultSearchEngineGoogle;
 
     /**
      * Creates a contextual search tab helper for the given tab.
@@ -202,7 +206,13 @@ public class ContextualSearchTabHelper
             mTemplateUrlObserver = new TemplateUrlServiceObserver() {
                 @Override
                 public void onTemplateURLServiceChanged() {
-                    updateContextualSearchHooks(mWebContents);
+                    boolean isDefaultSearchEngineGoogle =
+                            TemplateUrlService.getInstance().isDefaultSearchEngineGoogle();
+                    if (mIsDefaultSearchEngineGoogle == null
+                            || isDefaultSearchEngineGoogle != mIsDefaultSearchEngineGoogle) {
+                        mIsDefaultSearchEngineGoogle = isDefaultSearchEngineGoogle;
+                        updateContextualSearchHooks(mWebContents);
+                    }
                 }
             };
             TemplateUrlService.getInstance().addObserver(mTemplateUrlObserver);
