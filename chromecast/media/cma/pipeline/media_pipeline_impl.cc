@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/default_tick_clock.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/media/cdm/cast_cdm_context.h"
 #include "chromecast/media/cma/backend/cma_backend.h"
@@ -99,6 +100,7 @@ MediaPipelineImpl::MediaPipelineImpl()
       video_bytes_for_bitrate_estimation_(0),
       playback_stalled_(false),
       playback_stalled_notification_sent_(false),
+      media_time_interpolator_(base::DefaultTickClock::GetInstance()),
       weak_factory_(this) {
   LOG(INFO) << __FUNCTION__;
   weak_this_ = weak_factory_.GetWeakPtr();
@@ -248,6 +250,9 @@ void MediaPipelineImpl::StartPlayingFrom(base::TimeDelta time) {
 
   waiting_for_first_have_enough_data_ = true;
 
+  media_time_interpolator_.SetBounds(time, time, base::TimeTicks::Now());
+  media_time_interpolator_.StartInterpolating();
+
   // Setup the audio and video pipeline for the new timeline.
   if (audio_pipeline_) {
     scoped_refptr<BufferingState> buffering_state;
@@ -276,6 +281,8 @@ void MediaPipelineImpl::Flush(const base::Closure& flush_cb) {
          (backend_state_ == BACKEND_STATE_PAUSED));
   DCHECK(audio_pipeline_ || video_pipeline_);
   DCHECK(!pending_flush_task_);
+
+  media_time_interpolator_.StopInterpolating();
 
   buffering_controller_->Reset();
 
@@ -308,6 +315,7 @@ void MediaPipelineImpl::SetPlaybackRate(double rate) {
 
   if (rate != 0.0f) {
     media_pipeline_backend_->SetPlaybackRate(rate);
+    media_time_interpolator_.SetPlaybackRate(rate);
     if (backend_state_ == BACKEND_STATE_PAUSED) {
       media_pipeline_backend_->Resume();
       backend_state_ = BACKEND_STATE_PLAYING;
@@ -317,6 +325,7 @@ void MediaPipelineImpl::SetPlaybackRate(double rate) {
     }
   } else if (backend_state_ == BACKEND_STATE_PLAYING) {
     media_pipeline_backend_->Pause();
+    media_time_interpolator_.SetPlaybackRate(0.f);
     backend_state_ = BACKEND_STATE_PAUSED;
     metrics::CastMetricsHelper::GetInstance()->RecordApplicationEvent(
         "Cast.Platform.Pause");
@@ -403,6 +412,7 @@ void MediaPipelineImpl::OnBufferingNotification(bool is_buffering) {
 
   if (is_buffering && (backend_state_ == BACKEND_STATE_PLAYING)) {
     media_pipeline_backend_->Pause();
+    media_time_interpolator_.SetPlaybackRate(0.f);
     backend_state_ = BACKEND_STATE_PAUSED;
     metrics::CastMetricsHelper::GetInstance()->RecordApplicationEvent(
         "Cast.Platform.Pause");
@@ -501,9 +511,14 @@ void MediaPipelineImpl::UpdateMediaTime() {
   statistics_rolling_counter_ =
       (statistics_rolling_counter_ + 1) % kStatisticsUpdatePeriod;
 
+  // Wait until the first available timestamp returned from backend, which means
+  // the actual playback starts. Some of the rest of the logic, mainly media
+  // time interpolating, expects a valid timestamp as baseline.
   base::TimeDelta media_time = base::TimeDelta::FromMicroseconds(
       media_pipeline_backend_->GetCurrentPts());
-  if (media_time == ::media::kNoTimestamp) {
+  if (media_time == ::media::kNoTimestamp &&
+      (last_media_time_ == ::media::kNoTimestamp ||
+       !media_time_interpolator_.interpolating())) {
     pending_time_update_task_ = true;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
@@ -511,7 +526,22 @@ void MediaPipelineImpl::UpdateMediaTime() {
         kTimeUpdateInterval);
     return;
   }
+
   base::TimeTicks stc = base::TimeTicks::Now();
+
+  if (media_time == ::media::kNoTimestamp) {
+    DCHECK(media_time_interpolator_.interpolating());
+    media_time = media_time_interpolator_.GetInterpolatedTime();
+
+    LOG(WARNING) << "Backend returns invalid timestamp. Estimated time is "
+                 << media_time;
+  } else {
+    // It's safe to use kInfiniteDuration as upper bound. When pipeline
+    // rebuffers, time interpolator is also paused, in which case it returns
+    // the timestamp when pausing it.
+    media_time_interpolator_.SetBounds(media_time, ::media::kInfiniteDuration,
+                                       stc);
+  }
 
   CheckForPlaybackStall(media_time, stc);
 
