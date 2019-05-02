@@ -69,6 +69,16 @@ int AXNodePosition::AnchorIndexInParent() const {
   return GetAnchor() ? GetAnchor()->index_in_parent() : INVALID_INDEX;
 }
 
+base::stack<AXNode*> AXNodePosition::GetAncestorAnchors() const {
+  base::stack<AXNode*> anchors;
+  AXNode* current_anchor = GetAnchor();
+  while (current_anchor) {
+    anchors.push(current_anchor);
+    current_anchor = current_anchor->parent();
+  }
+  return anchors;
+}
+
 void AXNodePosition::AnchorParent(AXTreeID* tree_id, int32_t* parent_id) const {
   DCHECK(tree_id);
   DCHECK(parent_id);

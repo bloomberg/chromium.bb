@@ -358,22 +358,23 @@ class AXPosition {
     if (GetAnchor() == second.GetAnchor())
       return Clone();
 
-    base::stack<AXPositionInstance> ancestors1;
-    ancestors1.push(std::move(Clone()));
-    while (!ancestors1.top()->IsNullPosition())
-      ancestors1.push(std::move(ancestors1.top()->CreateParentPosition()));
+    base::stack<AXNodeType*> our_ancestors = GetAncestorAnchors();
+    base::stack<AXNodeType*> other_ancestors = second.GetAncestorAnchors();
 
-    base::stack<AXPositionInstance> ancestors2;
-    ancestors2.push(std::move(second.Clone()));
-    while (!ancestors2.top()->IsNullPosition())
-      ancestors2.push(std::move(ancestors2.top()->CreateParentPosition()));
+    AXNodeType* common_anchor = nullptr;
+    while (!our_ancestors.empty() && !other_ancestors.empty() &&
+           our_ancestors.top() == other_ancestors.top()) {
+      common_anchor = our_ancestors.top();
+      our_ancestors.pop();
+      other_ancestors.pop();
+    }
+    if (!common_anchor)
+      return CreateNullPosition();
 
-    AXPositionInstance common_ancestor;
-    while (!ancestors1.empty() && !ancestors2.empty() &&
-           ancestors1.top()->GetAnchor() == ancestors2.top()->GetAnchor()) {
-      common_ancestor = std::move(ancestors1.top());
-      ancestors1.pop();
-      ancestors2.pop();
+    AXPositionInstance common_ancestor = Clone();
+    while (!common_ancestor->IsNullPosition() &&
+           common_ancestor->GetAnchor() != common_anchor) {
+      common_ancestor = common_ancestor->CreateParentPosition();
     }
     return common_ancestor;
   }
@@ -1459,6 +1460,7 @@ class AXPosition {
                            int32_t* child_id) const = 0;
   virtual int AnchorChildCount() const = 0;
   virtual int AnchorIndexInParent() const = 0;
+  virtual base::stack<AXNodeType*> GetAncestorAnchors() const = 0;
   virtual void AnchorParent(AXTreeID* tree_id, int32_t* parent_id) const = 0;
   virtual AXNodeType* GetNodeInTree(AXTreeID tree_id,
                                     int32_t node_id) const = 0;

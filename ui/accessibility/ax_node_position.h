@@ -38,6 +38,7 @@ class AX_EXPORT AXNodePosition : public AXPosition<AXNodePosition, AXNode> {
                    int32_t* child_id) const override;
   int AnchorChildCount() const override;
   int AnchorIndexInParent() const override;
+  base::stack<AXNode*> GetAncestorAnchors() const override;
   void AnchorParent(AXTreeID* tree_id, int32_t* parent_id) const override;
   AXNode* GetNodeInTree(AXTreeID tree_id, int32_t node_id) const override;
   bool IsInWhiteSpace() const override;

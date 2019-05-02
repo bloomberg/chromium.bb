@@ -68,6 +68,17 @@ int BrowserAccessibilityPosition::AnchorIndexInParent() const {
                      : AXPosition::INVALID_INDEX;
 }
 
+base::stack<BrowserAccessibility*>
+BrowserAccessibilityPosition::GetAncestorAnchors() const {
+  base::stack<BrowserAccessibility*> anchors;
+  BrowserAccessibility* current_anchor = GetAnchor();
+  while (current_anchor) {
+    anchors.push(current_anchor);
+    current_anchor = current_anchor->PlatformGetParent();
+  }
+  return anchors;
+}
+
 void BrowserAccessibilityPosition::AnchorParent(AXTreeID* tree_id,
                                                 int32_t* parent_id) const {
   DCHECK(tree_id);
