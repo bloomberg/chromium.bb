@@ -50,7 +50,6 @@ list(APPEND AOM_AV1_COMMON_SOURCES
             "${AOM_ROOT}/av1/common/frame_buffers.h"
             "${AOM_ROOT}/av1/common/idct.c"
             "${AOM_ROOT}/av1/common/idct.h"
-            "${AOM_ROOT}/av1/common/loopfiltermask.c"
             "${AOM_ROOT}/av1/common/mv.h"
             "${AOM_ROOT}/av1/common/mvref_common.c"
             "${AOM_ROOT}/av1/common/mvref_common.h"
@@ -88,6 +87,10 @@ list(APPEND AOM_AV1_COMMON_SOURCES
             "${AOM_ROOT}/av1/common/txb_common.h"
             "${AOM_ROOT}/av1/common/warped_motion.c"
             "${AOM_ROOT}/av1/common/warped_motion.h")
+
+if(CONFIG_LPF_MASK)
+  list(APPEND AOM_AV1_COMMON_SOURCES "${AOM_ROOT}/av1/common/loopfiltermask.c")
+endif()
 
 list(APPEND AOM_AV1_DECODER_SOURCES
             "${AOM_ROOT}/av1/av1_dx_iface.c"
