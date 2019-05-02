@@ -200,11 +200,8 @@ void ShellTestApi::EnableTabletModeWindowManager(bool enable) {
 }
 
 void ShellTestApi::EnableVirtualKeyboard(EnableVirtualKeyboardCallback cb) {
-  // TODO(https://crbug.com/845780): The callers to this function have already
-  // enabled the virtual keyboard. For some reason, in those tests, the virtual
-  // keyboard requires a rebuild. Remove this function once we no longer need a
-  // rebuild.
-  shell_->ash_keyboard_controller()->RebuildKeyboardIfEnabled();
+  shell_->ash_keyboard_controller()->SetEnableFlag(
+      keyboard::mojom::KeyboardEnableFlag::kCommandLineEnabled);
   std::move(cb).Run();
 }
 

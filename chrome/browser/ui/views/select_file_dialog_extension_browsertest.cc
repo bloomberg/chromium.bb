@@ -162,17 +162,6 @@ class SelectFileDialogExtensionBrowserTest
     extensions::ExtensionBrowserTest::SetUp();
   }
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    // Ash tablet mode does not automatically enable the virtual keyboard, so
-    // force the virtual keyboard via the command line for tablet mode tests.
-    const char* test_name =
-        ::testing::UnitTest::GetInstance()->current_test_info()->name();
-    if (base::StringPiece(test_name).find("_TabletMode") != std::string::npos)
-      command_line->AppendSwitch(keyboard::switches::kEnableVirtualKeyboard);
-
-    extensions::ExtensionBrowserTest::SetUpCommandLine(command_line);
-  }
-
   void SetUpOnMainThread() override {
     extensions::ExtensionBrowserTest::SetUpOnMainThread();
     CHECK(profile());
