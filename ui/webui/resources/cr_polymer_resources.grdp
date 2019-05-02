@@ -32,6 +32,8 @@
   <structure name="IDR_WEBUI_HTML_SEARCH_HIGHLIGHT_UTILS"
              file="html/search_highlight_utils.html" type="chrome_html"
              compress="gzip" />
+  <structure name="IDR_WEBUI_HTML_SUBPAGE_LOADER"
+             file="html/subpage_loader.html" type="chrome_html" />
 
   <!-- CSS resources -->
   <structure name="IDR_WEBUI_CSS_MD_COLORS"
@@ -64,4 +66,6 @@
   <structure name="IDR_WEBUI_JS_SEARCH_HIGHLIGHT_UTILS"
              file="js/search_highlight_utils.js" type="chrome_html"
              compress="gzip" />
+  <structure name="IDR_WEBUI_JS_SUBPAGE_LOADER"
+             file="js/subpage_loader.js" type="chrome_html" />
 </grit-part>

@@ -40,6 +40,7 @@
 #include "chrome/common/secure_origin_whitelist.h"
 #include "chrome/common/thread_profiler.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/renderer_resources.h"
@@ -1594,4 +1595,16 @@ void ChromeContentRendererClient::DidSetUserAgent(
 #if BUILDFLAG(ENABLE_PRINTING)
   printing::SetAgent(user_agent);
 #endif
+}
+
+bool ChromeContentRendererClient::RequiresHtmlImports(const GURL& url) {
+  // Chrome Web UI pages are in the process of being migrated to use the HTML
+  // Imports Polyfill so that they will not require native imports. Return true
+  // for only pages that have not been updated yet. See
+  // https://crbug.com/937747.
+  bool canUsePolyfill = false;
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+  canUsePolyfill = url.host() == chrome::kChromeUIPrintHost;
+#endif
+  return url.SchemeIs(content::kChromeUIScheme) && !canUsePolyfill;
 }

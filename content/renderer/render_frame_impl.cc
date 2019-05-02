@@ -3482,7 +3482,7 @@ void RenderFrameImpl::CommitNavigationWithParams(
   // use the old web APIs.
   // After completion of the migration, we should remove this.
   // See crbug.com/924871 for detail.
-  if (common_params.url.SchemeIs(content::kChromeUIScheme)) {
+  if (GetContentClient()->renderer()->RequiresHtmlImports(common_params.url)) {
     blink::WebRuntimeFeatures::EnableShadowDOMV0(true);
     blink::WebRuntimeFeatures::EnableCustomElementsV0(true);
     blink::WebRuntimeFeatures::EnableHTMLImports(true);

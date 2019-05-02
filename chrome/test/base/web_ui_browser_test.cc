@@ -268,7 +268,19 @@ void BaseWebUIBrowserTest::BrowsePreload(const GURL& browse_to) {
   WebUIJsInjectionReadyObserver injection_observer(
       web_contents, this, preload_test_fixture_, preload_test_name_);
   content::TestNavigationObserver navigation_observer(web_contents);
-  NavigateParams params(browser(), GURL(browse_to), ui::PAGE_TRANSITION_TYPED);
+
+  GURL browse_to_final(browse_to);
+  std::string path = browse_to.path();
+  if (!loader_file_.empty() && path.length() > 1) {
+    GURL::Replacements replace_url;
+    replace_url.SetPathStr(loader_file_);
+    // Remove the leading '/', and use file=<rest of the path> as the query.
+    std::string query = "file=" + path.substr(1);
+    replace_url.SetQueryStr(query);
+    browse_to_final = browse_to_final.ReplaceComponents(replace_url);
+  }
+
+  NavigateParams params(browser(), browse_to_final, ui::PAGE_TRANSITION_TYPED);
   params.disposition = WindowOpenDisposition::CURRENT_TAB;
 
   Navigate(&params);
@@ -356,6 +368,10 @@ void BaseWebUIBrowserTest::set_preload_test_fixture(
 void BaseWebUIBrowserTest::set_preload_test_name(
     const std::string& preload_test_name) {
   preload_test_name_ = preload_test_name;
+}
+
+void BaseWebUIBrowserTest::set_loader_file(const std::string& loader_file) {
+  loader_file_ = loader_file;
 }
 
 namespace {

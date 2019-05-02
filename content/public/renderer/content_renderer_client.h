@@ -425,6 +425,12 @@ class CONTENT_EXPORT ContentRendererClient {
   // The user agent string is given from the browser process. This is called at
   // most once.
   virtual void DidSetUserAgent(const std::string& user_agent);
+
+  // Returns true if |url| still requires native HTML imports. Used for Web UI
+  // pages.
+  // TODO(https://crbug.com/937747): Remove this function, when all WebUIs have
+  // been migrated to use the HTML Imports Polyfill.
+  virtual bool RequiresHtmlImports(const GURL& url);
 };
 
 }  // namespace content

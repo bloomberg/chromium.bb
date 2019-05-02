@@ -211,6 +211,7 @@ class ChromeContentRendererClient
                              const std::string& name) override;
   bool IsSafeRedirectTarget(const GURL& url) override;
   void DidSetUserAgent(const std::string& user_agent) override;
+  bool RequiresHtmlImports(const GURL& url) override;
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   static chrome::mojom::PluginInfoHostAssociatedPtr& GetPluginInfoHost();

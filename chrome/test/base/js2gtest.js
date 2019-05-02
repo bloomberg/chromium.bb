@@ -407,6 +407,7 @@ function TEST_F(testFixture, testFunction, testBody, opt_preamble) {
       this[testFixture].prototype.isAsync + ',\n          ';
   var testShouldFail = this[testFixture].prototype.testShouldFail;
   var testPredicate = testShouldFail ? 'ASSERT_FALSE' : 'ASSERT_TRUE';
+  var loaderFile = this[testFixture].prototype.loaderFile;
   var extraLibraries = genIncludes.concat(
       this[testFixture].prototype.extraLibraries.map(includeFileToPath),
       resolveClosureModuleDeps(this[testFixture].prototype.closureModuleDeps),
@@ -521,6 +522,10 @@ for (var i = 0; i < extraLibraries.length; i++) {
   if(testType == 'mojo_lite_webui') {
     output(`
   set_use_mojo_lite_bindings();`);
+  }
+  if (loaderFile) {
+    output(`
+  set_loader_file("${loaderFile}");`);
   }
   if (testGenPreamble)
     testGenPreamble(testFixture, testFunction);
