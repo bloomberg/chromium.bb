@@ -216,8 +216,8 @@ def main():
     opt_flags = []
     if sys.platform.startswith('linux'):
       opt_flags += ['--lto-lld']
-    build_cmd = [sys.executable, os.path.join(THIS_DIR, 'update.py'),
-                 '--bootstrap', '--disable-asserts', '--force-local-build',
+    build_cmd = [sys.executable, os.path.join(THIS_DIR, 'build.py'),
+                 '--bootstrap', '--disable-asserts',
                  '--run-tests'] + opt_flags
     TeeCmd(build_cmd, log)
 
