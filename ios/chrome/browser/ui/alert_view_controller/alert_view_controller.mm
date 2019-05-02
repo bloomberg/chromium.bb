@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/alert_view_controller/alert_view_controller.h"
 
+#include "base/logging.h"
 #import "ios/chrome/browser/ui/elements/gray_highlight_button.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
@@ -37,12 +38,10 @@ constexpr CGFloat kAlertMarginTop = 22;
 constexpr CGFloat kAlertActionsSpacing = 12;
 
 // Insets for the content in the alert view.
-constexpr CGFloat kTitleInsetTop = 0;
 constexpr CGFloat kTitleInsetLeading = 20;
 constexpr CGFloat kTitleInsetBottom = 9;
 constexpr CGFloat kTitleInsetTrailing = 20;
 
-constexpr CGFloat kMessageInsetTop = 0;
 constexpr CGFloat kMessageInsetLeading = 20;
 constexpr CGFloat kMessageInsetBottom = 6;
 constexpr CGFloat kMessageInsetTrailing = 20;
@@ -54,7 +53,6 @@ constexpr CGFloat kButtonInsetTrailing = 20;
 
 constexpr CGFloat kTextfieldStackInsetTop = 12;
 constexpr CGFloat kTextfieldStackInsetLeading = 12;
-constexpr CGFloat kTextfieldStackInsetBottom = 0;
 constexpr CGFloat kTextfieldStackInsetTrailing = 12;
 
 constexpr CGFloat kTextfieldInset = 8;
@@ -201,6 +199,7 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
   UIStackView* stackView = [[UIStackView alloc] init];
   stackView.axis = UILayoutConstraintAxisVertical;
   stackView.translatesAutoresizingMaskIntoConstraints = NO;
+  stackView.alignment = UIStackViewAlignmentCenter;
   [self.contentView addSubview:stackView];
 
   ChromeDirectionalEdgeInsets stackViewInsets =
@@ -214,18 +213,14 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
     titleLabel.textAlignment = NSTextAlignmentCenter;
     titleLabel.text = self.title;
     titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    [stackView addArrangedSubview:titleLabel];
+    [stackView setCustomSpacing:kTitleInsetBottom afterView:titleLabel];
 
-    UIView* titleContainer = [[UIView alloc] init];
-    [titleContainer addSubview:titleLabel];
-    titleContainer.translatesAutoresizingMaskIntoConstraints = NO;
-    [stackView addArrangedSubview:titleContainer];
-
-    ChromeDirectionalEdgeInsets contentInsets =
-        ChromeDirectionalEdgeInsetsMake(kTitleInsetTop, kTitleInsetLeading,
-                                        kTitleInsetBottom, kTitleInsetTrailing);
-    AddSameConstraintsWithInsets(titleLabel, titleContainer, contentInsets);
-    AddSameConstraintsToSides(titleContainer, self.contentView,
-                              LayoutSides::kTrailing | LayoutSides::kLeading);
+    ChromeDirectionalEdgeInsets titleInsets = ChromeDirectionalEdgeInsetsMake(
+        0, kTitleInsetLeading, 0, kTitleInsetTrailing);
+    AddSameConstraintsToSidesWithInsets(
+        titleLabel, self.contentView,
+        LayoutSides::kTrailing | LayoutSides::kLeading, titleInsets);
   }
 
   if (self.message.length) {
@@ -236,28 +231,17 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
     messageLabel.textAlignment = NSTextAlignmentCenter;
     messageLabel.text = self.message;
     messageLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    [stackView addArrangedSubview:messageLabel];
+    [stackView setCustomSpacing:kMessageInsetBottom afterView:messageLabel];
 
-    UIView* messageContainer = [[UIView alloc] init];
-    [messageContainer addSubview:messageLabel];
-    messageContainer.translatesAutoresizingMaskIntoConstraints = NO;
-    [stackView addArrangedSubview:messageContainer];
-
-    ChromeDirectionalEdgeInsets contentInsets = ChromeDirectionalEdgeInsetsMake(
-        kMessageInsetTop, kMessageInsetLeading, kMessageInsetBottom,
-        kMessageInsetTrailing);
-    AddSameConstraintsWithInsets(messageLabel, messageContainer, contentInsets);
-    AddSameConstraintsToSides(messageContainer, self.contentView,
-                              LayoutSides::kTrailing | LayoutSides::kLeading);
+    ChromeDirectionalEdgeInsets messageInsets = ChromeDirectionalEdgeInsetsMake(
+        0, kMessageInsetLeading, 0, kMessageInsetTrailing);
+    AddSameConstraintsToSidesWithInsets(
+        messageLabel, self.contentView,
+        LayoutSides::kTrailing | LayoutSides::kLeading, messageInsets);
   }
 
   if (self.textFields.count) {
-    // |container| insets |stackHolder|.
-    UIView* container = [[UIView alloc] init];
-    container.translatesAutoresizingMaskIntoConstraints = NO;
-    [stackView addArrangedSubview:container];
-    AddSameConstraintsToSides(container, self.contentView,
-                              LayoutSides::kTrailing | LayoutSides::kLeading);
-
     // |stackHolder| has the background, border and round corners of the stacked
     // fields.
     UIView* stackHolder = [[UIView alloc] init];
@@ -267,13 +251,27 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
     stackHolder.clipsToBounds = YES;
     stackHolder.backgroundColor = UIColorFromRGB(kTextfieldBackgroundColor);
     stackHolder.translatesAutoresizingMaskIntoConstraints = NO;
-    [container addSubview:stackHolder];
+
+    // Updates the custom space before the text fields to account for their
+    // inset.
+    UIView* previousView = stackView.arrangedSubviews.lastObject;
+    if (previousView) {
+      CGFloat spaceBefore = [stackView customSpacingAfterView:previousView];
+      [stackView setCustomSpacing:kTextfieldStackInsetTop + spaceBefore
+                        afterView:previousView];
+    } else {
+      // There should always be a title or message.
+      NOTREACHED() << "Presenting alert without a title or message.";
+    }
+    [stackView addArrangedSubview:stackHolder];
+
     ChromeDirectionalEdgeInsets stackHolderContentInsets =
-        ChromeDirectionalEdgeInsetsMake(
-            kTextfieldStackInsetTop, kTextfieldStackInsetLeading,
-            kTextfieldStackInsetBottom, kTextfieldStackInsetTrailing);
-    AddSameConstraintsWithInsets(stackHolder, container,
-                                 stackHolderContentInsets);
+        ChromeDirectionalEdgeInsetsMake(0, kTextfieldStackInsetLeading, 0,
+                                        kTextfieldStackInsetTrailing);
+    AddSameConstraintsToSidesWithInsets(
+        stackHolder, self.contentView,
+        LayoutSides::kTrailing | LayoutSides::kLeading,
+        stackHolderContentInsets);
 
     UIStackView* fieldStack = [[UIStackView alloc] init];
     fieldStack.axis = UILayoutConstraintAxisVertical;
@@ -318,6 +316,11 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
 
   self.buttonAlertActionsDictionary = [[NSMutableDictionary alloc] init];
   for (AlertAction* action in self.actions) {
+    UIView* hairline = [[UIView alloc] init];
+    hairline.backgroundColor = [UIColor lightGrayColor];
+    hairline.translatesAutoresizingMaskIntoConstraints = NO;
+    [stackView addArrangedSubview:hairline];
+
     GrayHighlightButton* button = [[GrayHighlightButton alloc] init];
     UIFont* font = nil;
     UIColor* textColor = nil;
@@ -344,25 +347,14 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
     button.contentEdgeInsets =
         UIEdgeInsetsMake(kButtonInsetTop, kButtonInsetLeading,
                          kButtonInsetBottom, kButtonInsetTrailing);
-
-    UIView* hairline = [[UIView alloc] init];
-    hairline.backgroundColor = [UIColor lightGrayColor];
-    hairline.translatesAutoresizingMaskIntoConstraints = NO;
-
-    UIView* buttonContainer = [[UIView alloc] init];
-    [buttonContainer addSubview:button];
-    [buttonContainer addSubview:hairline];
-    buttonContainer.translatesAutoresizingMaskIntoConstraints = NO;
-    [stackView addArrangedSubview:buttonContainer];
+    [stackView addArrangedSubview:button];
 
     CGFloat pixelHeight = 1.0 / [UIScreen mainScreen].scale;
     [hairline.heightAnchor constraintEqualToConstant:pixelHeight].active = YES;
-    AddSameConstraintsToSides(
-        hairline, buttonContainer,
-        (LayoutSides::kTrailing | LayoutSides::kTop | LayoutSides::kLeading));
+    AddSameConstraintsToSides(hairline, button,
+                              (LayoutSides::kTrailing | LayoutSides::kLeading));
 
-    AddSameConstraints(button, buttonContainer);
-    AddSameConstraintsToSides(buttonContainer, self.contentView,
+    AddSameConstraintsToSides(button, self.contentView,
                               LayoutSides::kTrailing | LayoutSides::kLeading);
 
     button.tag = action.uniqueIdentifier;

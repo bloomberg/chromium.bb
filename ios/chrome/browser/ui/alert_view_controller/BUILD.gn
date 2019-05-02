@@ -8,6 +8,7 @@ source_set("alert_view_controller") {
     "alert_view_controller.mm",
   ]
   deps = [
+    "//base",
     "//ios/chrome/browser/ui/elements",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common/ui_util",
