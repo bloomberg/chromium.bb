@@ -680,7 +680,8 @@ void Annotator::ProcessResults(
     // Populate the result struct for this image and copy it into the cache if
     // necessary.
     if (result_lookup != results.end())
-      cached_results_.insert({request_key, result_lookup->second.Clone()});
+      cached_results_.insert(
+          std::make_pair(request_key, result_lookup->second.Clone()));
 
     // This should not happen, since only this method removes entries of
     // |request_infos_|, and this method should only execute once per request
