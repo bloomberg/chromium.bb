@@ -4,6 +4,7 @@
 
 source_set("cpp") {
   sources = [
+    "usb_ids.h",
     "usb_utils.cc",
     "usb_utils.h",
   ]
