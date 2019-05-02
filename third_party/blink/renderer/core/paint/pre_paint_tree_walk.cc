@@ -50,13 +50,15 @@ void PrePaintTreeWalk::WalkTree(LocalFrameView& root_frame_view) {
   if (needs_tree_builder_context_update)
     GeometryMapper::ClearCache();
 
-  auto property_changed = VisualViewportPaintPropertyTreeBuilder::Update(
-      root_frame_view.GetPage()->GetVisualViewport(),
-      *context_storage_.back().tree_builder_context);
+  if (root_frame_view.GetFrame().IsMainFrame()) {
+    auto property_changed = VisualViewportPaintPropertyTreeBuilder::Update(
+        root_frame_view.GetPage()->GetVisualViewport(),
+        *context_storage_.back().tree_builder_context);
 
-  if (property_changed >
-      PaintPropertyChangeType::kChangedOnlyCompositedValues) {
-    root_frame_view.SetPaintArtifactCompositorNeedsUpdate();
+    if (property_changed >
+        PaintPropertyChangeType::kChangedOnlyCompositedValues) {
+      root_frame_view.SetPaintArtifactCompositorNeedsUpdate();
+    }
   }
 
   Walk(root_frame_view);
@@ -250,7 +252,7 @@ bool PrePaintTreeWalk::NeedsTreeBuilderContextUpdate(
     const PrePaintTreeWalkContext& context) {
   if ((RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
        RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) &&
-      frame_view.GetFrame().IsLocalRoot() &&
+      frame_view.GetFrame().IsMainFrame() &&
       frame_view.GetPage()->GetVisualViewport().NeedsPaintPropertyUpdate())
     return true;
 

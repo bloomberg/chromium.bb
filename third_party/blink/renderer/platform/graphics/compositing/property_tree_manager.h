@@ -161,6 +161,10 @@ class PropertyTreeManager {
   // compositor has an assumption that the page scale is in the post_local
   // matrix but |UpdateCcTransformLocalMatrix| uses the local matrix.
   void AdjustPageScaleToUsePostLocal(cc::TransformNode&);
+  // Sets |cc::TransformNode::page_scale_factor_| from the scale in the page
+  // scale node.
+  void SetTransformTreePageScaleFactor(cc::TransformTree*,
+                                       cc::TransformNode* page_scale_node);
   // Move the local translation into the scroll_offset field of the compositor
   // transform node. The compositor uses a speical scroll_offset field instead
   // of the local matrix for scroll nodes, whereas

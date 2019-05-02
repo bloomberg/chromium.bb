@@ -3473,6 +3473,51 @@ TEST_P(PaintArtifactCompositorTest, InSubtreeOfPageScale) {
   EXPECT_TRUE(cc_descendant_transform->in_subtree_of_page_scale_layer);
 }
 
+// Test that PaintArtifactCompositor pushes page scale to the transform tree.
+TEST_P(PaintArtifactCompositorTest, ViewportPageScale) {
+  // Create a page scale transform node with a page scale factor of 2.0.
+  TransformationMatrix matrix;
+  matrix.Scale(2);
+  TransformPaintPropertyNode::State transform_state{matrix};
+  transform_state.in_subtree_of_page_scale = false;
+  transform_state.compositor_element_id =
+      CompositorElementIdFromUniqueObjectId(1);
+  auto scale_transform_node = TransformPaintPropertyNode::Create(
+      TransformPaintPropertyNode::Root(), std::move(transform_state));
+
+  // Create a viewport scroll node with container size 20x10 and contents size
+  // 27x32.
+  ScrollPaintPropertyNode::State scroll_state;
+  scroll_state.container_rect = IntRect(5, 5, 20, 10);
+  scroll_state.contents_size = IntSize(27, 32);
+  scroll_state.user_scrollable_vertical = true;
+  scroll_state.max_scroll_offset_affected_by_page_scale = true;
+  scroll_state.compositor_element_id = ScrollElementId(2);
+
+  auto scroll =
+      CreateScroll(ScrollPaintPropertyNode::Root(), scroll_state,
+                   kNotScrollingOnMain, scroll_state.compositor_element_id);
+  auto scroll_translation =
+      CreateScrollTranslation(*scale_transform_node, 0, 0, *scroll);
+
+  TestPaintArtifact artifact;
+  artifact.Chunk(*scroll_translation, c0(), e0())
+      .RectDrawing(FloatRect(0, 0, 10, 10), Color::kBlack);
+  ViewportProperties viewport_properties;
+  viewport_properties.page_scale = scale_transform_node.get();
+  CompositorElementIdSet element_ids;
+  Update(artifact.Build(), element_ids, viewport_properties);
+
+  cc::ScrollTree& scroll_tree = GetPropertyTrees().scroll_tree;
+  cc::ScrollNode* cc_scroll_node =
+      scroll_tree.FindNodeFromElementId(scroll_state.compositor_element_id);
+  auto max_scroll_offset = scroll_tree.MaxScrollOffset(cc_scroll_node->id);
+  // The max scroll offset should be scaled by the page scale factor (see:
+  // |ScrollTree::MaxScrollOffset|). This adjustment scales the contents from
+  // 27x32 to 54x64 so the max scroll offset becomes (54-20)/2 x (64-10)/2.
+  EXPECT_EQ(gfx::ScrollOffset(17, 27), max_scroll_offset);
+}
+
 enum {
   kNoRenderSurface = 0,
   kHasRenderSurface = 1 << 0,
