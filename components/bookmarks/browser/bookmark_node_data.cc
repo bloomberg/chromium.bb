@@ -4,18 +4,22 @@
 
 #include "components/bookmarks/browser/bookmark_node_data.h"
 
+#include <algorithm>
 #include <string>
 
+#include "base/numerics/safe_conversions.h"
 #include "base/pickle.h"
-#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "build/build_config.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 
 namespace bookmarks {
 
 #if !defined(OS_MACOSX)
+namespace {
+constexpr size_t kMaxVectorPreallocateSize = 10000;
+}  // namespace
+
 const char BookmarkNodeData::kClipboardFormatString[] =
     "chromium/x-bookmark-entries";
 #endif
@@ -86,12 +90,22 @@ bool BookmarkNodeData::Element::ReadFromPickle(base::PickleIterator* iterator) {
   }
   children.clear();
   if (!is_url) {
-    uint32_t children_count;
-    if (!iterator->ReadUInt32(&children_count))
+    uint32_t children_count_tmp;
+    if (!iterator->ReadUInt32(&children_count_tmp))
       return false;
-    children.reserve(children_count);
+    if (!base::IsValueInRangeForNumericType<size_t>(children_count_tmp)) {
+      LOG(WARNING) << "children_count failed bounds check";
+      return false;
+    }
+    const size_t children_count =
+        base::checked_cast<size_t>(children_count_tmp);
+    // Restrict vector preallocation to prevent OOM crashes on invalid (or
+    // malicious) pickles.
+    if (children_count > kMaxVectorPreallocateSize)
+      LOG(WARNING) << "children_count exceeds kMaxVectorPreallocateSize";
+    children.reserve(std::min(children_count, kMaxVectorPreallocateSize));
     for (size_t i = 0; i < children_count; ++i) {
-      children.push_back(Element());
+      children.emplace_back();
       if (!children.back().ReadFromPickle(iterator))
         return false;
     }
@@ -242,13 +256,23 @@ void BookmarkNodeData::WriteToPickle(const base::FilePath& profile_path,
 
 bool BookmarkNodeData::ReadFromPickle(base::Pickle* pickle) {
   base::PickleIterator data_iterator(*pickle);
-  uint32_t element_count;
+  uint32_t element_count_tmp;
   if (profile_path_.ReadFromPickle(&data_iterator) &&
-      data_iterator.ReadUInt32(&element_count)) {
+      data_iterator.ReadUInt32(&element_count_tmp)) {
+    if (!base::IsValueInRangeForNumericType<size_t>(element_count_tmp)) {
+      LOG(WARNING) << "element_count failed bounds check";
+      return false;
+    }
+    const size_t element_count = base::checked_cast<size_t>(element_count_tmp);
+    // Restrict vector preallocation to prevent OOM crashes on invalid or
+    // malicious pickles.
+    if (element_count > kMaxVectorPreallocateSize)
+      LOG(WARNING) << "element_count exceeds kMaxVectorPreallocateSize";
     std::vector<Element> tmp_elements;
-    tmp_elements.resize(element_count);
+    tmp_elements.reserve(std::min(element_count, kMaxVectorPreallocateSize));
     for (size_t i = 0; i < element_count; ++i) {
-      if (!tmp_elements[i].ReadFromPickle(&data_iterator)) {
+      tmp_elements.emplace_back();
+      if (!tmp_elements.back().ReadFromPickle(&data_iterator)) {
         return false;
       }
     }
