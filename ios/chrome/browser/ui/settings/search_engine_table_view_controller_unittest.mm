@@ -69,6 +69,11 @@ class SearchEngineTableViewControllerTest
     template_url_service_->Load();
   }
 
+  void TearDown() override {
+    DefaultSearchManager::SetFallbackSearchEnginesDisabledForTesting(false);
+    ChromeTableViewControllerTest::TearDown();
+  }
+
   ChromeTableViewController* InstantiateController() override {
     return [[SearchEngineTableViewController alloc]
         initWithBrowserState:chrome_browser_state_.get()];
