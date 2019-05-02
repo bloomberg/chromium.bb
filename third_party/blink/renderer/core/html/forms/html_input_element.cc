@@ -415,7 +415,7 @@ void HTMLInputElement::UpdateType() {
 
   input_type_view_->DestroyShadowSubtree();
   DropInnerEditorElement();
-  LazyReattachIfAttached();
+  SetForceReattachLayoutTree();
 
   if (input_type_->SupportsRequired() != new_type->SupportsRequired() &&
       IsRequired()) {

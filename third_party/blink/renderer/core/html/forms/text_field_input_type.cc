@@ -227,7 +227,13 @@ void TextFieldInputType::ForwardEvent(Event& event) {
       return;
   }
 
+  // Style and layout may be dirty at this point. E.g. if an event handler for
+  // the input element has modified its type attribute. If so, the LayoutObject
+  // and the input type is out of sync. Avoid accessing the LayoutObject if we
+  // have scheduled a forced re-attach (GetForceReattachLayoutTree()) for the
+  // input element.
   if (GetElement().GetLayoutObject() &&
+      !GetElement().GetForceReattachLayoutTree() &&
       (event.IsMouseEvent() || event.IsDragEvent() ||
        event.HasInterface(event_interface_names::kWheelEvent) ||
        event.type() == event_type_names::kBlur ||

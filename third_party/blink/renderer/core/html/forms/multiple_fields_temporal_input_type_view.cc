@@ -355,12 +355,6 @@ MultipleFieldsTemporalInputTypeView::CustomStyleForLayoutObject(
 void MultipleFieldsTemporalInputTypeView::CreateShadowSubtree() {
   DCHECK(IsShadowHost(GetElement()));
 
-  // Element must not have a layoutObject here, because if it did
-  // DateTimeEditElement::customStyleForLayoutObject() is called in
-  // appendChild() before the field wrapper element is created.
-  // FIXME: This code should not depend on such craziness.
-  DCHECK(!GetElement().GetLayoutObject());
-
   Document& document = GetElement().GetDocument();
   ContainerNode* container = GetElement().UserAgentShadowRoot();
 
