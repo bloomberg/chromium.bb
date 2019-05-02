@@ -2968,6 +2968,18 @@ ScriptableDocumentParser* Document::GetScriptableDocumentParser() const {
   return Parser() ? Parser()->AsScriptableDocumentParser() : nullptr;
 }
 
+void Document::DisplayNoneChangedForFrame() {
+  if (!documentElement())
+    return;
+  // LayoutView()::CanHaveChildren(), hence the existence of style and
+  // layout tree, depends on the owner being display:none or not. Trigger
+  // detaching or attaching the style/layout-tree as a result of that
+  // changing.
+  documentElement()->SetNeedsStyleRecalc(
+      kLocalStyleChange,
+      StyleChangeReasonForTracing::Create(style_change_reason::kFrame));
+}
+
 void Document::SetPrinting(PrintingState state) {
   bool was_printing = Printing();
   printing_ = state;
@@ -2980,9 +2992,7 @@ void Document::SetPrinting(PrintingState state) {
     // display:none iframes, yet we do when printing (see
     // LayoutView::CanHaveChildren). Trigger a style recalc on the root element
     // to create a layout tree for printing.
-    documentElement()->SetNeedsStyleRecalc(
-        kLocalStyleChange,
-        StyleChangeReasonForTracing::Create(style_change_reason::kFrame));
+    DisplayNoneChangedForFrame();
   }
 }
 
@@ -5202,10 +5212,8 @@ void Document::WillChangeFrameOwnerProperties(int margin_width,
   DCHECK(GetFrame() && GetFrame()->Owner());
   FrameOwner* owner = GetFrame()->Owner();
 
-  if (documentElement()) {
-    if (is_display_none != owner->IsDisplayNone())
-      documentElement()->LazyReattachIfAttached();
-  }
+  if (is_display_none != owner->IsDisplayNone())
+    DisplayNoneChangedForFrame();
 
   // body() may become null as a result of modification event listeners, so we
   // check before each call.

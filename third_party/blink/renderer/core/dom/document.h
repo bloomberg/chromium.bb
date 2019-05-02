@@ -1697,6 +1697,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void NotifyFocusedElementChanged(Node* old_focused_element,
                                    Node* new_focused_element);
+  void DisplayNoneChangedForFrame();
 
   DocumentLifecycle lifecycle_;
 
