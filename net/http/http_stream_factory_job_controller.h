@@ -250,13 +250,13 @@ class HttpStreamFactory::JobController
       HttpStreamRequest::Delegate* delegate,
       HttpStreamRequest::StreamType stream_type);
 
-  // Returns a quic::QuicTransportVersion that has been advertised in
+  // Returns a quic::ParsedQuicVersion that has been advertised in
   // |advertised_versions| and is supported.  If more than one
-  // QuicTransportVersions are supported, the first matched in the supported
+  // ParsedQuicVersions are supported, the first matched in the supported
   // versions will be returned.  If no mutually supported version is found,
   // QUIC_VERSION_UNSUPPORTED_VERSION will be returned.
-  quic::QuicTransportVersion SelectQuicVersion(
-      const quic::QuicTransportVersionVector& advertised_versions);
+  quic::ParsedQuicVersion SelectQuicVersion(
+      const quic::ParsedQuicVersionVector& advertised_versions);
 
   // Returns true if the |request_| can be fetched via an alternative
   // proxy server, and sets |alternative_proxy_info| to the alternative proxy

@@ -429,7 +429,7 @@ size_t GetQuicMaxPacketLength(const VariationParameters& quic_trial_params) {
   return 0;
 }
 
-quic::QuicTransportVersionVector GetQuicVersions(
+quic::ParsedQuicVersionVector GetQuicVersions(
     const VariationParameters& quic_trial_params) {
   return network_session_configurator::ParseQuicVersions(
       GetVariationParam(quic_trial_params, "quic_version"));
@@ -564,7 +564,7 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
 
   params->quic_user_agent_id = quic_user_agent_id;
 
-  quic::QuicTransportVersionVector supported_versions =
+  quic::ParsedQuicVersionVector supported_versions =
       GetQuicVersions(quic_trial_params);
   if (!supported_versions.empty())
     params->quic_supported_versions = supported_versions;
@@ -574,9 +574,9 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
 
 namespace network_session_configurator {
 
-quic::QuicTransportVersionVector ParseQuicVersions(
+quic::ParsedQuicVersionVector ParseQuicVersions(
     const std::string& quic_versions) {
-  quic::QuicTransportVersionVector supported_versions;
+  quic::ParsedQuicVersionVector supported_versions;
   quic::QuicTransportVersionVector all_supported_versions =
       quic::AllSupportedTransportVersions();
 
@@ -585,7 +585,8 @@ quic::QuicTransportVersionVector ParseQuicVersions(
     auto it = all_supported_versions.begin();
     while (it != all_supported_versions.end()) {
       if (quic::QuicVersionToString(*it) == version) {
-        supported_versions.push_back(*it);
+        supported_versions.push_back(
+            quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO, *it));
         // Remove the supported version to deduplicate versions extracted from
         // |quic_versions|.
         all_supported_versions.erase(it);
@@ -642,7 +643,7 @@ void ParseCommandLineAndFieldTrials(const base::CommandLine& command_line,
     }
 
     if (command_line.HasSwitch(switches::kQuicVersion)) {
-      quic::QuicTransportVersionVector supported_versions =
+      quic::ParsedQuicVersionVector supported_versions =
           network_session_configurator::ParseQuicVersions(
               command_line.GetSwitchValueASCII(switches::kQuicVersion));
       if (!supported_versions.empty())

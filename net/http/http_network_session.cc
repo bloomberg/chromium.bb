@@ -137,7 +137,8 @@ HttpNetworkSession::Params::Params()
       quic_initial_rtt_for_handshake_milliseconds(0),
       http_09_on_non_default_ports_enabled(false),
       disable_idle_sockets_close_on_memory_pressure(false) {
-  quic_supported_versions.push_back(quic::QUIC_VERSION_43);
+  quic_supported_versions.push_back(quic::ParsedQuicVersion(
+      quic::PROTOCOL_QUIC_CRYPTO, quic::QUIC_VERSION_43));
   enable_early_data =
       base::FeatureList::IsEnabled(features::kEnableTLS13EarlyData);
 }
@@ -333,7 +334,7 @@ std::unique_ptr<base::Value> HttpNetworkSession::QuicInfoToValue() const {
 
   auto supported_versions(std::make_unique<base::ListValue>());
   for (const auto& version : params_.quic_supported_versions)
-    supported_versions->AppendString(QuicVersionToString(version));
+    supported_versions->AppendString(ParsedQuicVersionToString(version));
   dict->Set("supported_versions", std::move(supported_versions));
 
   auto origins_to_force_quic_on(std::make_unique<base::ListValue>());

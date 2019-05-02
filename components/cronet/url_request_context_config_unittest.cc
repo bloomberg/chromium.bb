@@ -334,7 +334,9 @@ TEST(URLRequestContextConfigTest, SetSupportedQuicVersion) {
   const net::HttpNetworkSession::Params* params =
       context->GetNetworkSessionParams();
   EXPECT_EQ(params->quic_supported_versions.size(), 1u);
-  EXPECT_EQ(params->quic_supported_versions[0], quic::QUIC_VERSION_44);
+  EXPECT_EQ(params->quic_supported_versions[0],
+            quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
+                                    quic::QUIC_VERSION_44));
 }
 
 TEST(URLRequestContextConfigTest, SetUnsupportedQuicVersion) {
@@ -385,7 +387,9 @@ TEST(URLRequestContextConfigTest, SetUnsupportedQuicVersion) {
   const net::HttpNetworkSession::Params* params =
       context->GetNetworkSessionParams();
   EXPECT_EQ(params->quic_supported_versions.size(), 1u);
-  EXPECT_EQ(params->quic_supported_versions[0], quic::QUIC_VERSION_43);
+  EXPECT_EQ(params->quic_supported_versions[0],
+            quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
+                                    quic::QUIC_VERSION_43));
 }
 
 TEST(URLRequestContextConfigTest, SetQuicServerMigrationOptions) {

@@ -75,7 +75,7 @@ void HttpStreamFactory::ProcessAlternativeServices(
       continue;
     }
     // Check if QUIC version is supported. Filter supported QUIC versions.
-    quic::QuicTransportVersionVector advertised_versions;
+    quic::ParsedQuicVersionVector advertised_versions;
     if (protocol == kProtoQUIC && !alternative_service_entry.version.empty()) {
       advertised_versions = FilterSupportedAltSvcVersions(
           alternative_service_entry, session->params().quic_supported_versions,

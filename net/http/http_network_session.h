@@ -139,7 +139,7 @@ class NET_EXPORT HttpNetworkSession {
     // QUIC runtime configuration options.
 
     // Versions of QUIC which may be used.
-    quic::QuicTransportVersionVector quic_supported_versions;
+    quic::ParsedQuicVersionVector quic_supported_versions;
     // User agent description to send in the QUIC handshake.
     std::string quic_user_agent_id;
     // Limit on the size of QUIC packets.

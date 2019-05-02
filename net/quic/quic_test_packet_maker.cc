@@ -28,7 +28,7 @@ quic::QuicAckFrame MakeAckFrame(uint64_t largest_observed) {
 }  // namespace
 
 QuicTestPacketMaker::QuicTestPacketMaker(
-    quic::QuicTransportVersion version,
+    quic::ParsedQuicVersion version,
     quic::QuicConnectionId connection_id,
     quic::MockClock* clock,
     const std::string& host,
@@ -45,7 +45,7 @@ QuicTestPacketMaker::QuicTestPacketMaker(
       long_header_type_(quic::INVALID_PACKET_TYPE),
       client_headers_include_h2_stream_dependency_(
           client_headers_include_h2_stream_dependency &&
-          version >= quic::QUIC_VERSION_43) {
+          version.transport_version >= quic::QUIC_VERSION_43) {
   DCHECK(!(perspective_ == quic::Perspective::IS_SERVER &&
            client_headers_include_h2_stream_dependency_));
 }
@@ -70,22 +70,22 @@ QuicTestPacketMaker::MakeConnectivityProbingPacket(uint64_t num,
   header.packet_number_length = GetPacketNumberLength();
   header.packet_number = quic::QuicPacketNumber(num);
 
-  if (quic::QuicVersionHasLongHeaderLengths(version_) && header.version_flag) {
+  if (quic::QuicVersionHasLongHeaderLengths(version_.transport_version) &&
+      header.version_flag) {
     if (long_header_type_ == quic::INITIAL) {
       header.retry_token_length_length = quic::VARIABLE_LENGTH_INTEGER_LENGTH_1;
     }
     header.length_length = quic::VARIABLE_LENGTH_INTEGER_LENGTH_2;
   }
 
-  quic::QuicFramer framer(quic::test::SupportedVersions(quic::ParsedQuicVersion(
-                              quic::PROTOCOL_QUIC_CRYPTO, version_)),
+  quic::QuicFramer framer(quic::test::SupportedVersions(version_),
                           clock_->Now(), perspective_,
                           quic::kQuicDefaultConnectionIdLength);
   size_t max_plaintext_size =
       framer.GetMaxPlaintextSize(quic::kDefaultMaxPacketSize);
   char buffer[quic::kDefaultMaxPacketSize];
   size_t length;
-  if (version_ != quic::QUIC_VERSION_99) {
+  if (version_.transport_version != quic::QUIC_VERSION_99) {
     length = framer.BuildConnectivityProbingPacket(
         header, buffer, max_plaintext_size, encryption_level_);
   } else if (perspective_ == quic::Perspective::IS_CLIENT) {
@@ -125,7 +125,8 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakePingPacket(
   header.packet_number_length = GetPacketNumberLength();
   header.packet_number = quic::QuicPacketNumber(num);
 
-  if (quic::QuicVersionHasLongHeaderLengths(version_) && header.version_flag) {
+  if (quic::QuicVersionHasLongHeaderLengths(version_.transport_version) &&
+      header.version_flag) {
     if (long_header_type_ == quic::INITIAL) {
       header.retry_token_length_length = quic::VARIABLE_LENGTH_INTEGER_LENGTH_1;
     }
@@ -149,10 +150,10 @@ QuicTestPacketMaker::MakeDummyCHLOPacket(uint64_t packet_num) {
   quic::QuicCryptoFrame crypto_frame;
   quic::test::SimpleDataProducer producer;
   quic::QuicStreamFrameDataProducer* producer_p = nullptr;
-  if (!QuicVersionUsesCryptoFrames(version_)) {
-    quic::QuicStreamFrame frame(quic::QuicUtils::GetCryptoStreamId(version_),
-                                /*fin=*/false, /*offset=*/0,
-                                data.AsStringPiece());
+  if (!QuicVersionUsesCryptoFrames(version_.transport_version)) {
+    quic::QuicStreamFrame frame(
+        quic::QuicUtils::GetCryptoStreamId(version_.transport_version),
+        /*fin=*/false, /*offset=*/0, data.AsStringPiece());
     frames.push_back(quic::QuicFrame(frame));
   } else {
     crypto_frame =
@@ -188,7 +189,8 @@ QuicTestPacketMaker::MakeAckAndPingPacket(uint64_t num,
   header.packet_number_length = GetPacketNumberLength();
   header.packet_number = quic::QuicPacketNumber(num);
 
-  if (quic::QuicVersionHasLongHeaderLengths(version_) && header.version_flag) {
+  if (quic::QuicVersionHasLongHeaderLengths(version_.transport_version) &&
+      header.version_flag) {
     if (long_header_type_ == quic::INITIAL) {
       header.retry_token_length_length = quic::VARIABLE_LENGTH_INTEGER_LENGTH_1;
     }
@@ -242,7 +244,8 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeRstPacket(
   header.packet_number_length = GetPacketNumberLength();
   header.packet_number = quic::QuicPacketNumber(num);
 
-  if (quic::QuicVersionHasLongHeaderLengths(version_) && header.version_flag) {
+  if (quic::QuicVersionHasLongHeaderLengths(version_.transport_version) &&
+      header.version_flag) {
     if (long_header_type_ == quic::INITIAL) {
       header.retry_token_length_length = quic::VARIABLE_LENGTH_INTEGER_LENGTH_1;
     }
@@ -258,7 +261,8 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeRstPacket(
   // The STOP_SENDING frame must be outside of the if (version==99) so that it
   // stays in scope until the packet is built.
   quic::QuicStopSendingFrame stop(1, stream_id, error_code);
-  if (include_stop_sending_if_v99 && version_ == quic::QUIC_VERSION_99) {
+  if (include_stop_sending_if_v99 &&
+      version_.transport_version == quic::QUIC_VERSION_99) {
     frames.push_back(quic::QuicFrame(&stop));
     DVLOG(1) << "Adding frame: " << frames.back();
   }
@@ -282,7 +286,8 @@ QuicTestPacketMaker::MakeStreamsBlockedPacket(
   header.packet_number_length = GetPacketNumberLength();
   header.packet_number = quic::QuicPacketNumber(num);
 
-  if (quic::QuicVersionHasLongHeaderLengths(version_) && header.version_flag) {
+  if (quic::QuicVersionHasLongHeaderLengths(version_.transport_version) &&
+      header.version_flag) {
     if (long_header_type_ == quic::INITIAL) {
       header.retry_token_length_length = quic::VARIABLE_LENGTH_INTEGER_LENGTH_1;
     }
@@ -310,7 +315,8 @@ QuicTestPacketMaker::MakeMaxStreamsPacket(uint64_t num,
   header.packet_number_length = GetPacketNumberLength();
   header.packet_number = quic::QuicPacketNumber(num);
 
-  if (quic::QuicVersionHasLongHeaderLengths(version_) && header.version_flag) {
+  if (quic::QuicVersionHasLongHeaderLengths(version_.transport_version) &&
+      header.version_flag) {
     if (long_header_type_ == quic::INITIAL) {
       header.retry_token_length_length = quic::VARIABLE_LENGTH_INTEGER_LENGTH_1;
     }
@@ -348,7 +354,8 @@ QuicTestPacketMaker::MakeRstAndRequestHeadersPacket(
     *offset += spdy_frame.size();
   }
   quic::QuicStreamFrame headers_frame(
-      quic::QuicUtils::GetHeadersStreamId(version_), false, header_offset,
+      quic::QuicUtils::GetHeadersStreamId(version_.transport_version), false,
+      header_offset,
       quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
 
   quic::QuicFrames frames;
@@ -358,7 +365,7 @@ QuicTestPacketMaker::MakeRstAndRequestHeadersPacket(
   // The STOP_SENDING frame must be outside of the if (version==99) so that it
   // stays in scope until the packet is built.
   quic::QuicStopSendingFrame stop(1, rst_stream_id, rst_error_code);
-  if (version_ == quic::QUIC_VERSION_99) {
+  if (version_.transport_version == quic::QUIC_VERSION_99) {
     frames.push_back(quic::QuicFrame(&stop));
     DVLOG(1) << "Adding frame: " << frames.back();
   }
@@ -408,7 +415,8 @@ QuicTestPacketMaker::MakeAckAndRstPacket(
   header.packet_number_length = GetPacketNumberLength();
   header.packet_number = quic::QuicPacketNumber(num);
 
-  if (quic::QuicVersionHasLongHeaderLengths(version_) && header.version_flag) {
+  if (quic::QuicVersionHasLongHeaderLengths(version_.transport_version) &&
+      header.version_flag) {
     if (long_header_type_ == quic::INITIAL) {
       header.retry_token_length_length = quic::VARIABLE_LENGTH_INTEGER_LENGTH_1;
     }
@@ -436,7 +444,8 @@ QuicTestPacketMaker::MakeAckAndRstPacket(
   // The STOP_SENDING frame must be outside of the if (version==99) so that it
   // stays in scope until the packet is built.
   quic::QuicStopSendingFrame stop(1, stream_id, error_code);
-  if (version_ == quic::QUIC_VERSION_99 && include_stop_sending_if_v99) {
+  if (version_.transport_version == quic::QUIC_VERSION_99 &&
+      include_stop_sending_if_v99) {
     frames.push_back(quic::QuicFrame(&stop));
     DVLOG(1) << "Adding frame: " << frames.back();
   }
@@ -467,7 +476,8 @@ QuicTestPacketMaker::MakeRstAckAndConnectionClosePacket(
   header.packet_number_length = GetPacketNumberLength();
   header.packet_number = quic::QuicPacketNumber(num);
 
-  if (quic::QuicVersionHasLongHeaderLengths(version_) && header.version_flag) {
+  if (quic::QuicVersionHasLongHeaderLengths(version_.transport_version) &&
+      header.version_flag) {
     if (long_header_type_ == quic::INITIAL) {
       header.retry_token_length_length = quic::VARIABLE_LENGTH_INTEGER_LENGTH_1;
     }
@@ -483,7 +493,7 @@ QuicTestPacketMaker::MakeRstAckAndConnectionClosePacket(
   // stays in scope until the packet is built.
   quic::QuicStopSendingFrame stop(
       1, stream_id, static_cast<quic::QuicApplicationErrorCode>(error_code));
-  if (version_ == quic::QUIC_VERSION_99) {
+  if (version_.transport_version == quic::QUIC_VERSION_99) {
     frames.push_back(quic::QuicFrame(&stop));
     DVLOG(1) << "Adding frame: " << frames.back();
   }
@@ -504,7 +514,7 @@ QuicTestPacketMaker::MakeRstAckAndConnectionClosePacket(
   quic::QuicConnectionCloseFrame close;
   close.quic_error_code = quic_error;
   close.error_details = quic_error_details;
-  if (version_ == quic::QUIC_VERSION_99) {
+  if (version_.transport_version == quic::QUIC_VERSION_99) {
     close.close_type = quic::IETF_QUIC_TRANSPORT_CONNECTION_CLOSE;
   }
 
@@ -535,7 +545,8 @@ QuicTestPacketMaker::MakeAckAndConnectionClosePacket(
   header.packet_number_length = GetPacketNumberLength();
   header.packet_number = quic::QuicPacketNumber(num);
 
-  if (quic::QuicVersionHasLongHeaderLengths(version_) && header.version_flag) {
+  if (quic::QuicVersionHasLongHeaderLengths(version_.transport_version) &&
+      header.version_flag) {
     if (long_header_type_ == quic::INITIAL) {
       header.retry_token_length_length = quic::VARIABLE_LENGTH_INTEGER_LENGTH_1;
     }
@@ -559,7 +570,7 @@ QuicTestPacketMaker::MakeAckAndConnectionClosePacket(
   quic::QuicConnectionCloseFrame close;
   close.quic_error_code = quic_error;
   close.error_details = quic_error_details;
-  if (version_ == quic::QUIC_VERSION_99) {
+  if (version_.transport_version == quic::QUIC_VERSION_99) {
     close.close_type = quic::IETF_QUIC_TRANSPORT_CONNECTION_CLOSE;
   }
 
@@ -586,7 +597,8 @@ QuicTestPacketMaker::MakeConnectionClosePacket(
   header.packet_number_length = GetPacketNumberLength();
   header.packet_number = quic::QuicPacketNumber(num);
 
-  if (quic::QuicVersionHasLongHeaderLengths(version_) && header.version_flag) {
+  if (quic::QuicVersionHasLongHeaderLengths(version_.transport_version) &&
+      header.version_flag) {
     if (long_header_type_ == quic::INITIAL) {
       header.retry_token_length_length = quic::VARIABLE_LENGTH_INTEGER_LENGTH_1;
     }
@@ -596,7 +608,7 @@ QuicTestPacketMaker::MakeConnectionClosePacket(
   quic::QuicConnectionCloseFrame close;
   close.quic_error_code = quic_error;
   close.error_details = quic_error_details;
-  if (version_ == quic::QUIC_VERSION_99) {
+  if (version_.transport_version == quic::QUIC_VERSION_99) {
     close.close_type = quic::IETF_QUIC_TRANSPORT_CONNECTION_CLOSE;
   }
 
@@ -618,7 +630,8 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeGoAwayPacket(
   header.packet_number_length = GetPacketNumberLength();
   header.packet_number = quic::QuicPacketNumber(num);
 
-  if (quic::QuicVersionHasLongHeaderLengths(version_) && header.version_flag) {
+  if (quic::QuicVersionHasLongHeaderLengths(version_.transport_version) &&
+      header.version_flag) {
     if (long_header_type_ == quic::INITIAL) {
       header.retry_token_length_length = quic::VARIABLE_LENGTH_INTEGER_LENGTH_1;
     }
@@ -685,7 +698,8 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeAckPacket(
   header.packet_number_length = GetPacketNumberLength();
   header.packet_number = quic::QuicPacketNumber(packet_number);
 
-  if (quic::QuicVersionHasLongHeaderLengths(version_) && header.version_flag) {
+  if (quic::QuicVersionHasLongHeaderLengths(version_.transport_version) &&
+      header.version_flag) {
     if (long_header_type_ == quic::INITIAL) {
       header.retry_token_length_length = quic::VARIABLE_LENGTH_INTEGER_LENGTH_1;
     }
@@ -703,8 +717,7 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeAckPacket(
     ack.packets.AddRange(quic::QuicPacketNumber(first_received),
                          quic::QuicPacketNumber(largest_received + 1));
   }
-  quic::QuicFramer framer(quic::test::SupportedVersions(quic::ParsedQuicVersion(
-                              quic::PROTOCOL_QUIC_CRYPTO, version_)),
+  quic::QuicFramer framer(quic::test::SupportedVersions(version_),
                           clock_->Now(), perspective_,
                           quic::kQuicDefaultConnectionIdLength);
   quic::QuicFrames frames;
@@ -854,7 +867,8 @@ QuicTestPacketMaker::MakeRequestHeadersAndMultipleDataFramesPacket(
   quic::QuicStreamOffset header_offset =
       header_stream_offset == nullptr ? 0 : *header_stream_offset;
   quic::QuicStreamFrame frame(
-      quic::QuicUtils::GetHeadersStreamId(version_), false, header_offset,
+      quic::QuicUtils::GetHeadersStreamId(version_.transport_version), false,
+      header_offset,
       quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
   frames.push_back(quic::QuicFrame(frame));
   DVLOG(1) << "Adding frame: " << frames.back();
@@ -934,14 +948,14 @@ QuicTestPacketMaker::MakeRequestHeadersPacketAndSaveData(
 
   if (offset != nullptr) {
     quic::QuicStreamFrame frame(
-        quic::QuicUtils::GetHeadersStreamId(version_), false, *offset,
-        quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
+        quic::QuicUtils::GetHeadersStreamId(version_.transport_version), false,
+        *offset, quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
     *offset += spdy_frame.size();
     return MakePacket(header_, quic::QuicFrame(frame));
   } else {
     quic::QuicStreamFrame frame(
-        quic::QuicUtils::GetHeadersStreamId(version_), false, 0,
-        quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
+        quic::QuicUtils::GetHeadersStreamId(version_.transport_version), false,
+        0, quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
 
     return MakePacket(header_, quic::QuicFrame(frame));
   }
@@ -971,7 +985,8 @@ QuicTestPacketMaker::MakeRequestHeadersAndRstPacket(
     *header_stream_offset += spdy_frame.size();
   }
   quic::QuicStreamFrame headers_frame(
-      quic::QuicUtils::GetHeadersStreamId(version_), false, header_offset,
+      quic::QuicUtils::GetHeadersStreamId(version_.transport_version), false,
+      header_offset,
       quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
 
   quic::QuicRstStreamFrame rst_frame(1, stream_id, error_code, bytes_written);
@@ -985,7 +1000,7 @@ QuicTestPacketMaker::MakeRequestHeadersAndRstPacket(
   // The STOP_SENDING frame must be outside of the if (version==99) so that it
   // stays in scope until the packet is built.
   quic::QuicStopSendingFrame stop(1, stream_id, error_code);
-  if (version_ == quic::QUIC_VERSION_99) {
+  if (version_.transport_version == quic::QUIC_VERSION_99) {
     frames.push_back(quic::QuicFrame(&stop));
     DVLOG(1) << "Adding frame: " << frames.back();
   }
@@ -1056,14 +1071,14 @@ QuicTestPacketMaker::MakePushPromisePacket(
   }
   if (offset != nullptr) {
     quic::QuicStreamFrame frame(
-        quic::QuicUtils::GetHeadersStreamId(version_), false, *offset,
-        quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
+        quic::QuicUtils::GetHeadersStreamId(version_.transport_version), false,
+        *offset, quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
     *offset += spdy_frame.size();
     return MakePacket(header_, quic::QuicFrame(frame));
   } else {
     quic::QuicStreamFrame frame(
-        quic::QuicUtils::GetHeadersStreamId(version_), false, 0,
-        quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
+        quic::QuicUtils::GetHeadersStreamId(version_.transport_version), false,
+        0, quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
     return MakePacket(header_, quic::QuicFrame(frame));
   }
 }
@@ -1081,8 +1096,8 @@ QuicTestPacketMaker::MakeForceHolDataPacket(uint64_t packet_number,
       spdy_request_framer_.SerializeFrame(spdy_data));
   InitializeHeader(packet_number, should_include_version);
   quic::QuicStreamFrame quic_frame(
-      quic::QuicUtils::GetHeadersStreamId(version_), false, *offset,
-      quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
+      quic::QuicUtils::GetHeadersStreamId(version_.transport_version), false,
+      *offset, quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
   *offset += spdy_frame.size();
   return MakePacket(header_, quic::QuicFrame(quic_frame));
 }
@@ -1109,14 +1124,14 @@ QuicTestPacketMaker::MakeResponseHeadersPacket(
   }
   if (offset != nullptr) {
     quic::QuicStreamFrame frame(
-        quic::QuicUtils::GetHeadersStreamId(version_), false, *offset,
-        quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
+        quic::QuicUtils::GetHeadersStreamId(version_.transport_version), false,
+        *offset, quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
     *offset += spdy_frame.size();
     return MakePacket(header_, quic::QuicFrame(frame));
   } else {
     quic::QuicStreamFrame frame(
-        quic::QuicUtils::GetHeadersStreamId(version_), false, 0,
-        quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
+        quic::QuicUtils::GetHeadersStreamId(version_.transport_version), false,
+        0, quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
     return MakePacket(header_, quic::QuicFrame(frame));
   }
 }
@@ -1200,8 +1215,7 @@ QuicTestPacketMaker::MakeMultipleFramesPacket(
     const quic::QuicPacketHeader& header,
     const quic::QuicFrames& frames,
     quic::QuicStreamFrameDataProducer* data_producer) {
-  quic::QuicFramer framer(quic::test::SupportedVersions(quic::ParsedQuicVersion(
-                              quic::PROTOCOL_QUIC_CRYPTO, version_)),
+  quic::QuicFramer framer(quic::test::SupportedVersions(version_),
                           clock_->Now(), perspective_,
                           quic::kQuicDefaultConnectionIdLength);
   if (data_producer != nullptr) {
@@ -1232,7 +1246,7 @@ void QuicTestPacketMaker::InitializeHeader(uint64_t packet_number,
   header_.long_packet_type = long_header_type_;
   header_.packet_number_length = GetPacketNumberLength();
   header_.packet_number = quic::QuicPacketNumber(packet_number);
-  if (quic::QuicVersionHasLongHeaderLengths(version_) &&
+  if (quic::QuicVersionHasLongHeaderLengths(version_.transport_version) &&
       should_include_version) {
     if (long_header_type_ == quic::INITIAL) {
       header_.retry_token_length_length =
@@ -1264,13 +1278,13 @@ QuicTestPacketMaker::MakeInitialSettingsPacketAndSaveData(
   *stream_data = std::string(spdy_frame.data(), spdy_frame.size());
   if (offset != nullptr) {
     quic::QuicStreamFrame quic_frame(
-        quic::QuicUtils::GetHeadersStreamId(version_), false, *offset,
-        quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
+        quic::QuicUtils::GetHeadersStreamId(version_.transport_version), false,
+        *offset, quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
     *offset += spdy_frame.size();
     return MakePacket(header_, quic::QuicFrame(quic_frame));
   }
   quic::QuicStreamFrame quic_frame(
-      quic::QuicUtils::GetHeadersStreamId(version_), false, 0,
+      quic::QuicUtils::GetHeadersStreamId(version_.transport_version), false, 0,
       quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
   return MakePacket(header_, quic::QuicFrame(quic_frame));
 }
@@ -1297,7 +1311,8 @@ QuicTestPacketMaker::MakePriorityPacket(uint64_t packet_number,
     *offset += spdy_frame.size();
   }
   quic::QuicStreamFrame quic_frame(
-      quic::QuicUtils::GetHeadersStreamId(version_), false, header_offset,
+      quic::QuicUtils::GetHeadersStreamId(version_.transport_version), false,
+      header_offset,
       quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
   DVLOG(1) << "Adding frame: " << quic::QuicFrame(quic_frame);
   InitializeHeader(packet_number, should_include_version);
@@ -1344,8 +1359,8 @@ QuicTestPacketMaker::MakeAckAndMultiplePriorityFramesPacket(
 
     spdy::SpdySerializedFrame* spdy_frame = spdy_frames.back().get();
     quic::QuicStreamFrame stream_frame(
-        quic::QuicUtils::GetHeadersStreamId(version_), false, *offset,
-        quic::QuicStringPiece(spdy_frame->data(), spdy_frame->size()));
+        quic::QuicUtils::GetHeadersStreamId(version_.transport_version), false,
+        *offset, quic::QuicStringPiece(spdy_frame->data(), spdy_frame->size()));
     *offset += spdy_frame->size();
 
     frames.push_back(quic::QuicFrame(stream_frame));
@@ -1375,7 +1390,7 @@ void QuicTestPacketMaker::SetEncryptionLevel(quic::EncryptionLevel level) {
 }
 
 bool QuicTestPacketMaker::ShouldIncludeVersion(bool include_version) const {
-  if (version_ > quic::QUIC_VERSION_43) {
+  if (version_.transport_version > quic::QUIC_VERSION_43) {
     return encryption_level_ < quic::ENCRYPTION_FORWARD_SECURE;
   }
   return include_version;
@@ -1383,9 +1398,9 @@ bool QuicTestPacketMaker::ShouldIncludeVersion(bool include_version) const {
 
 quic::QuicPacketNumberLength QuicTestPacketMaker::GetPacketNumberLength()
     const {
-  if (version_ > quic::QUIC_VERSION_43 &&
+  if (version_.transport_version > quic::QUIC_VERSION_43 &&
       encryption_level_ < quic::ENCRYPTION_FORWARD_SECURE &&
-      version_ != quic::QUIC_VERSION_99) {
+      version_.transport_version != quic::QUIC_VERSION_99) {
     return quic::PACKET_4BYTE_PACKET_NUMBER;
   }
   return quic::PACKET_1BYTE_PACKET_NUMBER;
@@ -1394,7 +1409,7 @@ quic::QuicPacketNumberLength QuicTestPacketMaker::GetPacketNumberLength()
 quic::QuicConnectionIdIncluded QuicTestPacketMaker::HasDestinationConnectionId()
     const {
   if (perspective_ == quic::Perspective::IS_SERVER &&
-      version_ > quic::QUIC_VERSION_43) {
+      version_.transport_version > quic::QUIC_VERSION_43) {
     return quic::CONNECTION_ID_ABSENT;
   }
   return quic::CONNECTION_ID_PRESENT;
@@ -1403,7 +1418,7 @@ quic::QuicConnectionIdIncluded QuicTestPacketMaker::HasDestinationConnectionId()
 quic::QuicConnectionIdIncluded QuicTestPacketMaker::HasSourceConnectionId()
     const {
   if (perspective_ == quic::Perspective::IS_SERVER &&
-      version_ > quic::QUIC_VERSION_43 &&
+      version_.transport_version > quic::QUIC_VERSION_43 &&
       encryption_level_ < quic::ENCRYPTION_FORWARD_SECURE) {
     return quic::CONNECTION_ID_PRESENT;
   }

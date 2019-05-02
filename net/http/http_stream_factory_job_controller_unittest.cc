@@ -841,7 +841,7 @@ TEST_F(HttpStreamFactoryJobControllerTest,
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   session_->http_server_properties()->SetQuicAlternativeService(
       server, alternative_service, expiration,
-      {quic::QUIC_VERSION_UNSUPPORTED});
+      {quic::UnsupportedQuicVersion()});
 
   request_ =
       job_controller_->Start(&request_delegate_, nullptr, net_log_.bound(),
@@ -2896,8 +2896,7 @@ TEST_F(HttpStreamFactoryJobControllerTest, GetAlternativeServiceInfoFor) {
 
   // Set alternative service with no advertised version.
   session_->http_server_properties()->SetQuicAlternativeService(
-      server, alternative_service, expiration,
-      quic::QuicTransportVersionVector());
+      server, alternative_service, expiration, quic::ParsedQuicVersionVector());
 
   AlternativeServiceInfo alt_svc_info =
       JobControllerPeer::GetAlternativeServiceInfoFor(
@@ -2908,7 +2907,7 @@ TEST_F(HttpStreamFactoryJobControllerTest, GetAlternativeServiceInfoFor) {
 
   // Set alternative service for the same server with the same list of versions
   // that is supported.
-  quic::QuicTransportVersionVector supported_versions =
+  quic::ParsedQuicVersionVector supported_versions =
       session_->params().quic_supported_versions;
   ASSERT_TRUE(session_->http_server_properties()->SetQuicAlternativeService(
       server, alternative_service, expiration, supported_versions));
@@ -2916,19 +2915,22 @@ TEST_F(HttpStreamFactoryJobControllerTest, GetAlternativeServiceInfoFor) {
   alt_svc_info = JobControllerPeer::GetAlternativeServiceInfoFor(
       job_controller_, request_info, &request_delegate_,
       HttpStreamRequest::HTTP_STREAM);
-  std::sort(supported_versions.begin(), supported_versions.end());
+  std::sort(
+      supported_versions.begin(), supported_versions.end(),
+      [](const quic::ParsedQuicVersion& a, const quic::ParsedQuicVersion& b) {
+        return a.transport_version < b.transport_version;
+      });
   EXPECT_EQ(supported_versions, alt_svc_info.advertised_versions());
 
-  quic::QuicTransportVersion unsupported_version_1(
-      quic::QUIC_VERSION_UNSUPPORTED);
-  quic::QuicTransportVersion unsupported_version_2(
-      quic::QUIC_VERSION_UNSUPPORTED);
-  for (const quic::QuicTransportVersion& version :
-       quic::AllSupportedTransportVersions()) {
+  quic::ParsedQuicVersion unsupported_version_1 =
+      quic::UnsupportedQuicVersion();
+  quic::ParsedQuicVersion unsupported_version_2 =
+      quic::UnsupportedQuicVersion();
+  for (const quic::ParsedQuicVersion& version : quic::AllSupportedVersions()) {
     if (std::find(supported_versions.begin(), supported_versions.end(),
                   version) != supported_versions.end())
       continue;
-    if (unsupported_version_1 == quic::QUIC_VERSION_UNSUPPORTED) {
+    if (unsupported_version_1 == quic::UnsupportedQuicVersion()) {
       unsupported_version_1 = version;
       continue;
     }
@@ -2939,7 +2941,7 @@ TEST_F(HttpStreamFactoryJobControllerTest, GetAlternativeServiceInfoFor) {
   // Set alternative service for the same server with two QUIC versions:
   // - one unsupported version: |unsupported_version_1|,
   // - one supported version: session_->params().quic_supported_versions[0].
-  quic::QuicTransportVersionVector mixed_quic_versions = {
+  quic::ParsedQuicVersionVector mixed_quic_versions = {
       unsupported_version_1, session_->params().quic_supported_versions[0]};
   ASSERT_TRUE(session_->http_server_properties()->SetQuicAlternativeService(
       server, alternative_service, expiration, mixed_quic_versions));
@@ -2949,7 +2951,11 @@ TEST_F(HttpStreamFactoryJobControllerTest, GetAlternativeServiceInfoFor) {
       HttpStreamRequest::HTTP_STREAM);
   EXPECT_EQ(2u, alt_svc_info.advertised_versions().size());
   // Verify that JobController returns the list of versions specified in set.
-  std::sort(mixed_quic_versions.begin(), mixed_quic_versions.end());
+  std::sort(
+      mixed_quic_versions.begin(), mixed_quic_versions.end(),
+      [](const quic::ParsedQuicVersion& a, const quic::ParsedQuicVersion& b) {
+        return a.transport_version < b.transport_version;
+      });
   EXPECT_EQ(mixed_quic_versions, alt_svc_info.advertised_versions());
 
   // Set alternative service for the same server with two unsupported QUIC
@@ -2984,7 +2990,7 @@ TEST_F(HttpStreamFactoryJobControllerTest, QuicHostWhitelist) {
   // Set alternative service for www.google.com to be www.example.com over QUIC.
   url::SchemeHostPort server(request_info.url);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
-  quic::QuicTransportVersionVector supported_versions =
+  quic::ParsedQuicVersionVector supported_versions =
       session_->params().quic_supported_versions;
   session_->http_server_properties()->SetQuicAlternativeService(
       server, AlternativeService(kProtoQUIC, "www.example.com", 443),
@@ -2995,7 +3001,11 @@ TEST_F(HttpStreamFactoryJobControllerTest, QuicHostWhitelist) {
           job_controller_, request_info, &request_delegate_,
           HttpStreamRequest::HTTP_STREAM);
 
-  std::sort(supported_versions.begin(), supported_versions.end());
+  std::sort(
+      supported_versions.begin(), supported_versions.end(),
+      [](const quic::ParsedQuicVersion& a, const quic::ParsedQuicVersion& b) {
+        return a.transport_version < b.transport_version;
+      });
   EXPECT_EQ(kProtoQUIC, alt_svc_info.alternative_service().protocol);
   EXPECT_EQ(supported_versions, alt_svc_info.advertised_versions());
 

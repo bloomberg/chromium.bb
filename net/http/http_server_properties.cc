@@ -86,14 +86,14 @@ AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
     base::Time expiration) {
   DCHECK_EQ(alternative_service.protocol, kProtoHTTP2);
   return AlternativeServiceInfo(alternative_service, expiration,
-                                quic::QuicTransportVersionVector());
+                                quic::ParsedQuicVersionVector());
 }
 
 // static
 AlternativeServiceInfo AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
     const AlternativeService& alternative_service,
     base::Time expiration,
-    const quic::QuicTransportVersionVector& advertised_versions) {
+    const quic::ParsedQuicVersionVector& advertised_versions) {
   DCHECK_EQ(alternative_service.protocol, kProtoQUIC);
   return AlternativeServiceInfo(alternative_service, expiration,
                                 advertised_versions);
@@ -106,11 +106,12 @@ AlternativeServiceInfo::~AlternativeServiceInfo() = default;
 AlternativeServiceInfo::AlternativeServiceInfo(
     const AlternativeService& alternative_service,
     base::Time expiration,
-    const quic::QuicTransportVersionVector& advertised_versions)
+    const quic::ParsedQuicVersionVector& advertised_versions)
     : alternative_service_(alternative_service), expiration_(expiration) {
   if (alternative_service_.protocol == kProtoQUIC) {
     advertised_versions_ = advertised_versions;
-    std::sort(advertised_versions_.begin(), advertised_versions_.end());
+    std::sort(advertised_versions_.begin(), advertised_versions_.end(),
+              TransportVersionLessThan);
   }
 }
 
@@ -132,6 +133,13 @@ std::string AlternativeServiceInfo::ToString() const {
       "%s, expires %04d-%02d-%02d %02d:%02d:%02d",
       alternative_service_.ToString().c_str(), exploded.year, exploded.month,
       exploded.day_of_month, exploded.hour, exploded.minute, exploded.second);
+}
+
+// static
+bool AlternativeServiceInfo::TransportVersionLessThan(
+    const quic::ParsedQuicVersion& lhs,
+    const quic::ParsedQuicVersion& rhs) {
+  return lhs.transport_version < rhs.transport_version;
 }
 
 std::ostream& operator<<(std::ostream& os,

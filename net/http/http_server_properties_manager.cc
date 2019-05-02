@@ -225,7 +225,7 @@ bool HttpServerPropertiesManager::SetQuicAlternativeService(
     const url::SchemeHostPort& origin,
     const AlternativeService& alternative_service,
     base::Time expiration,
-    const quic::QuicTransportVersionVector& advertised_versions) {
+    const quic::ParsedQuicVersionVector& advertised_versions) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const bool changed = http_server_properties_impl_->SetQuicAlternativeService(
       origin, alternative_service, expiration, advertised_versions);
@@ -842,7 +842,7 @@ bool HttpServerPropertiesManager::ParseAlternativeServiceInfoDictOfServer(
                << "server: " << server_str;
       return false;
     }
-    quic::QuicTransportVersionVector advertised_versions;
+    quic::ParsedQuicVersionVector advertised_versions;
     for (const auto& value : *versions_list) {
       int version;
       if (!value.GetAsInteger(&version)) {
@@ -850,7 +850,10 @@ bool HttpServerPropertiesManager::ParseAlternativeServiceInfoDictOfServer(
                  << server_str;
         return false;
       }
-      advertised_versions.push_back(quic::QuicTransportVersion(version));
+      // TODO(nharper): Support ParsedQuicVersions (instead of
+      // QuicTransportVersions) in AlternativeServiceMap.
+      advertised_versions.push_back(quic::ParsedQuicVersion(
+          quic::PROTOCOL_QUIC_CRYPTO, quic::QuicTransportVersion(version)));
     }
     alternative_service_info->set_advertised_versions(advertised_versions);
   }
@@ -1175,7 +1178,7 @@ void HttpServerPropertiesManager::SaveAlternativeServiceToServerPrefs(
     std::unique_ptr<base::ListValue> advertised_versions_list =
         std::make_unique<base::ListValue>();
     for (const auto& version : alternative_service_info.advertised_versions()) {
-      advertised_versions_list->AppendInteger(version);
+      advertised_versions_list->AppendInteger(version.transport_version);
     }
     alternative_service_dict->SetList(kAdvertisedVersionsKey,
                                       std::move(advertised_versions_list));

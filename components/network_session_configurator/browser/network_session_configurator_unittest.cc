@@ -492,8 +492,8 @@ TEST_F(NetworkSessionConfiguratorTest, QuicVersionFromFieldTrialParams) {
 
   ParseFieldTrials();
 
-  quic::QuicTransportVersionVector supported_versions;
-  supported_versions.push_back(quic::AllSupportedTransportVersions().back());
+  quic::ParsedQuicVersionVector supported_versions;
+  supported_versions.push_back(quic::AllSupportedVersions().back());
   EXPECT_EQ(supported_versions, params_.quic_supported_versions);
 }
 
@@ -511,9 +511,9 @@ TEST_F(NetworkSessionConfiguratorTest,
 
   ParseFieldTrials();
 
-  quic::QuicTransportVersionVector supported_versions;
-  supported_versions.push_back(quic::AllSupportedTransportVersions().front());
-  supported_versions.push_back(quic::AllSupportedTransportVersions().back());
+  quic::ParsedQuicVersionVector supported_versions;
+  supported_versions.push_back(quic::AllSupportedVersions().front());
+  supported_versions.push_back(quic::AllSupportedVersions().back());
   EXPECT_EQ(supported_versions, params_.quic_supported_versions);
 }
 
@@ -530,8 +530,8 @@ TEST_F(NetworkSessionConfiguratorTest, SameQuicVersionsFromFieldTrialParams) {
 
   ParseFieldTrials();
 
-  quic::QuicTransportVersionVector supported_versions;
-  supported_versions.push_back(quic::AllSupportedTransportVersions().front());
+  quic::ParsedQuicVersionVector supported_versions;
+  supported_versions.push_back(quic::AllSupportedVersions().front());
   EXPECT_EQ(supported_versions, params_.quic_supported_versions);
 }
 
@@ -670,7 +670,7 @@ TEST_F(NetworkSessionConfiguratorTest, QuicVersion) {
                                    quic::QuicVersionToString(version));
     ParseCommandLineAndFieldTrials(command_line);
     ASSERT_EQ(1u, params_.quic_supported_versions.size());
-    EXPECT_EQ(version, params_.quic_supported_versions[0]);
+    EXPECT_EQ(version, params_.quic_supported_versions[0].transport_version);
   }
 }
 

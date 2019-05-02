@@ -883,7 +883,7 @@ SpdySession::SpdySession(
     HttpServerProperties* http_server_properties,
     TransportSecurityState* transport_security_state,
     SSLConfigService* ssl_config_service,
-    const quic::QuicTransportVersionVector& quic_supported_versions,
+    const quic::ParsedQuicVersionVector& quic_supported_versions,
     bool enable_sending_initial_data,
     bool enable_ping_based_connection_checking,
     bool support_ietf_format_quic_altsvc,
@@ -3393,7 +3393,7 @@ void SpdySession::OnAltSvc(
       continue;
 
     // Check if QUIC version is supported. Filter supported QUIC versions.
-    quic::QuicTransportVersionVector advertised_versions;
+    quic::ParsedQuicVersionVector advertised_versions;
     if (protocol == kProtoQUIC && !altsvc.version.empty()) {
       advertised_versions = FilterSupportedAltSvcVersions(
           altsvc, quic_supported_versions_, support_ietf_format_quic_altsvc_);

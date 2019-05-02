@@ -63,7 +63,7 @@ struct NET_EXPORT_PRIVATE CommonConnectJobParams {
       HttpAuthCache* http_auth_cache,
       HttpAuthHandlerFactory* http_auth_handler_factory,
       SpdySessionPool* spdy_session_pool,
-      const quic::QuicTransportVersionVector* quic_supported_versions,
+      const quic::ParsedQuicVersionVector* quic_supported_versions,
       QuicStreamFactory* quic_stream_factory,
       ProxyDelegate* proxy_delegate,
       const HttpUserAgentSettings* http_user_agent_settings,
@@ -83,7 +83,7 @@ struct NET_EXPORT_PRIVATE CommonConnectJobParams {
   HttpAuthCache* http_auth_cache;
   HttpAuthHandlerFactory* http_auth_handler_factory;
   SpdySessionPool* spdy_session_pool;
-  const quic::QuicTransportVersionVector* quic_supported_versions;
+  const quic::ParsedQuicVersionVector* quic_supported_versions;
   QuicStreamFactory* quic_stream_factory;
   ProxyDelegate* proxy_delegate;
   const HttpUserAgentSettings* http_user_agent_settings;

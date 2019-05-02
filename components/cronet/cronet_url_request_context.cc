@@ -393,7 +393,7 @@ void CronetURLRequestContext::NetworkTasks::Initialize(
           static_cast<uint16_t>(quic_hint->alternate_port));
       context_->http_server_properties()->SetQuicAlternativeService(
           quic_server, alternative_service, base::Time::Max(),
-          quic::QuicTransportVersionVector());
+          quic::ParsedQuicVersionVector());
     }
   }
 

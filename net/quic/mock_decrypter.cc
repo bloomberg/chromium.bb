@@ -11,7 +11,6 @@ using quic::DiversificationNonce;
 using quic::Perspective;
 using quic::QuicPacketNumber;
 using quic::QuicStringPiece;
-using quic::QuicTransportVersion;
 
 namespace net {
 

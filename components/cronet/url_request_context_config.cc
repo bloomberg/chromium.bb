@@ -203,9 +203,9 @@ ParseNetworkErrorLoggingHeaders(
   return result;
 }
 
-quic::QuicTransportVersionVector ParseQuicVersions(
+quic::ParsedQuicVersionVector ParseQuicVersions(
     const std::string& quic_versions) {
-  quic::QuicTransportVersionVector supported_versions;
+  quic::ParsedQuicVersionVector supported_versions;
   quic::QuicTransportVersionVector all_supported_versions =
       quic::AllSupportedTransportVersions();
 
@@ -214,7 +214,8 @@ quic::QuicTransportVersionVector ParseQuicVersions(
     auto it = all_supported_versions.begin();
     while (it != all_supported_versions.end()) {
       if (quic::QuicVersionToString(*it) == version) {
-        supported_versions.push_back(*it);
+        supported_versions.push_back(
+            quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO, *it));
         // Remove the supported version to deduplicate versions extracted from
         // |quic_versions|.
         all_supported_versions.erase(it);
@@ -336,7 +337,7 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
 
       std::string quic_version_string;
       if (quic_args->GetString(kQuicVersion, &quic_version_string)) {
-        quic::QuicTransportVersionVector supported_versions =
+        quic::ParsedQuicVersionVector supported_versions =
             ParseQuicVersions(quic_version_string);
         if (!supported_versions.empty())
           session_params->quic_supported_versions = supported_versions;

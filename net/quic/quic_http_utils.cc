@@ -57,18 +57,18 @@ base::Value QuicResponseNetLogCallback(quic::QuicStreamId stream_id,
   return dict;
 }
 
-quic::QuicTransportVersionVector FilterSupportedAltSvcVersions(
+quic::ParsedQuicVersionVector FilterSupportedAltSvcVersions(
     const spdy::SpdyAltSvcWireFormat::AlternativeService& quic_alt_svc,
-    const quic::QuicTransportVersionVector& supported_versions,
+    const quic::ParsedQuicVersionVector& supported_versions,
     bool support_ietf_format_quic_altsvc) {
-  quic::QuicTransportVersionVector supported_alt_svc_versions;
+  quic::ParsedQuicVersionVector supported_alt_svc_versions;
   if (support_ietf_format_quic_altsvc && quic_alt_svc.protocol_id == "hq") {
     // Using IETF format for advertising QUIC. In this case,
     // |alternative_service_entry.version| will store QUIC version labels.
     for (uint32_t quic_version_label : quic_alt_svc.version) {
-      for (quic::QuicTransportVersion supported : supported_versions) {
+      for (quic::ParsedQuicVersion supported : supported_versions) {
         quic::QuicVersionLabel supported_version_label_network_order =
-            QuicVersionToQuicVersionLabel(supported);
+            CreateQuicVersionLabel(supported);
         if (supported_version_label_network_order == quic_version_label) {
           supported_alt_svc_versions.push_back(supported);
           RecordAltSvcFormat(IETF_FORMAT);
@@ -77,8 +77,9 @@ quic::QuicTransportVersionVector FilterSupportedAltSvcVersions(
     }
   } else if (quic_alt_svc.protocol_id == "quic") {
     for (uint32_t quic_version : quic_alt_svc.version) {
-      for (quic::QuicTransportVersion supported : supported_versions) {
-        if (static_cast<uint32_t>(supported) == quic_version) {
+      for (quic::ParsedQuicVersion supported : supported_versions) {
+        if (static_cast<uint32_t>(supported.transport_version) ==
+            quic_version) {
           supported_alt_svc_versions.push_back(supported);
           RecordAltSvcFormat(GOOGLE_FORMAT);
         }

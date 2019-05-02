@@ -109,7 +109,7 @@ class NET_EXPORT HttpServerPropertiesImpl
       const url::SchemeHostPort& origin,
       const AlternativeService& alternative_service,
       base::Time expiration,
-      const quic::QuicTransportVersionVector& advertised_versions) override;
+      const quic::ParsedQuicVersionVector& advertised_versions) override;
   bool SetAlternativeServices(const url::SchemeHostPort& origin,
                               const AlternativeServiceInfoVector&
                                   alternative_service_info_vector) override;

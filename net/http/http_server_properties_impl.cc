@@ -385,7 +385,7 @@ bool HttpServerPropertiesImpl::SetQuicAlternativeService(
     const url::SchemeHostPort& origin,
     const AlternativeService& alternative_service,
     base::Time expiration,
-    const quic::QuicTransportVersionVector& advertised_versions) {
+    const quic::ParsedQuicVersionVector& advertised_versions) {
   DCHECK(alternative_service.protocol == kProtoQUIC);
 
   return SetAlternativeServices(
