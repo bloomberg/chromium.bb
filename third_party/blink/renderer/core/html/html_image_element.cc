@@ -838,7 +838,13 @@ void HTMLImageElement::SetLayoutDisposition(
     EventDispatchForbiddenScope::AllowUserAgentEvents allow_events;
     EnsureUserAgentShadowRoot();
   }
-  LazyReattachIfAttached();
+
+  // ComputedStyle depends on layout_disposition_. Trigger recalc.
+  SetNeedsStyleRecalc(
+      kLocalStyleChange,
+      StyleChangeReasonForTracing::Create(style_change_reason::kUseFallback));
+  // LayoutObject type depends on layout_disposition_. Trigger re-attach.
+  SetForceReattachLayoutTree();
 }
 
 scoped_refptr<ComputedStyle> HTMLImageElement::CustomStyleForLayoutObject() {

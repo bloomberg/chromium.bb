@@ -23,6 +23,7 @@
 
 #include "third_party/blink/renderer/core/html/forms/image_input_type.h"
 
+#include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
@@ -263,8 +264,14 @@ void ImageInputType::EnsurePrimaryContent() {
 }
 
 void ImageInputType::ReattachFallbackContent() {
-  if (!GetElement().GetDocument().InStyleRecalc())
-    GetElement().LazyReattachIfAttached();
+  if (!GetElement().GetDocument().InStyleRecalc()) {
+    // ComputedStyle depends on use_fallback_content_. Trigger recalc.
+    GetElement().SetNeedsStyleRecalc(
+        kLocalStyleChange,
+        StyleChangeReasonForTracing::Create(style_change_reason::kUseFallback));
+    // LayoutObject type depends on use_fallback_content_. Trigger re-attach.
+    GetElement().SetForceReattachLayoutTree();
+  }
 }
 
 void ImageInputType::CreateShadowSubtree() {
