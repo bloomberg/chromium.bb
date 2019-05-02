@@ -41,6 +41,8 @@ source_set("vaapi") {
     "vaapi_dmabuf_video_frame_mapper.h",
     "vaapi_h264_accelerator.cc",
     "vaapi_h264_accelerator.h",
+    "vaapi_jpeg_decode_accelerator_worker.cc",
+    "vaapi_jpeg_decode_accelerator_worker.h",
     "vaapi_jpeg_decoder.cc",
     "vaapi_jpeg_decoder.h",
     "vaapi_jpeg_encode_accelerator.cc",
@@ -80,6 +82,7 @@ source_set("vaapi") {
     "//media",
     "//media/gpu:common",
     "//media/gpu:video_frame_mapper_common",
+    "//mojo/public/cpp/bindings",
     "//third_party/libyuv",
     "//ui/gfx/geometry",
   ]

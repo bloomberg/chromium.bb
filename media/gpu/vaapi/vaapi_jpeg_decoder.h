@@ -25,7 +25,7 @@ struct JpegFrameHeader;
 class ScopedVAImage;
 class VaapiWrapper;
 
-enum class VaapiJpegDecodeStatus {
+enum class VaapiJpegDecodeStatus : uint32_t {
   kSuccess,
   kParseJpegFailed,
   kUnsupportedJpeg,
@@ -49,6 +49,10 @@ constexpr unsigned int kInvalidVaRtFormat = 0u;
 // or 4:4:4, returns kInvalidVaRtFormat.
 unsigned int VaSurfaceFormatForJpeg(const JpegFrameHeader& frame_header);
 
+// Encapsulates a VaapiWrapper for the purpose of performing
+// hardware-accelerated JPEG decodes. Objects of this class are not thread-safe,
+// but they are also not thread-affine, i.e., the caller is free to call the
+// methods on any thread, but calls must be synchronized externally.
 class VaapiJpegDecoder final {
  public:
   VaapiJpegDecoder();
