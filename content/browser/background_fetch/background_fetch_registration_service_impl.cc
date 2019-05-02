@@ -43,14 +43,14 @@ BackgroundFetchRegistrationServiceImpl::CreateInterfaceInfo(
     scoped_refptr<BackgroundFetchContext> background_fetch_context) {
   DCHECK(background_fetch_context);
 
-  blink::mojom::BackgroundFetchRegistrationServicePtr interface;
+  blink::mojom::BackgroundFetchRegistrationServicePtr mojo_interface;
 
   mojo::MakeStrongBinding(
       base::WrapUnique(new BackgroundFetchRegistrationServiceImpl(
           std::move(registration_id), std::move(background_fetch_context))),
-      mojo::MakeRequest(&interface));
+      mojo::MakeRequest(&mojo_interface));
 
-  return interface.PassInterface();
+  return mojo_interface.PassInterface();
 }
 
 BackgroundFetchRegistrationServiceImpl::BackgroundFetchRegistrationServiceImpl(
