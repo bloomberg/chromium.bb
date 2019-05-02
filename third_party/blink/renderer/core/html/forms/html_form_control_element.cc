@@ -216,14 +216,32 @@ const AtomicString& HTMLFormControlElement::autocapitalize() const {
 static bool ShouldAutofocusOnAttach(const HTMLFormControlElement* element) {
   if (!element->IsAutofocusable())
     return false;
-  if (element->GetDocument().IsSandboxed(WebSandboxFlags::kAutomaticFeatures)) {
-    // FIXME: This message should be moved off the console once a solution to
-    // https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
-    element->GetDocument().AddConsoleMessage(ConsoleMessage::Create(
+
+  Document& doc = element->GetDocument();
+
+  // The rest of this function implements part of the autofocus algorithm in the
+  // spec:
+  // https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#autofocusing-a-form-control:-the-autofocus-attribute
+
+  // Step 4 of the spec algorithm above.
+  if (doc.IsSandboxed(WebSandboxFlags::kAutomaticFeatures)) {
+    doc.AddConsoleMessage(ConsoleMessage::Create(
         mojom::ConsoleMessageSource::kSecurity,
         mojom::ConsoleMessageLevel::kError,
         "Blocked autofocusing on a form control because the form's frame is "
         "sandboxed and the 'allow-scripts' permission is not set."));
+    return false;
+  }
+
+  // TODO(mustaq): Add Step 5 checks.
+
+  // Step 6 of the spec algorithm above.
+  if (!doc.IsInMainFrame() &&
+      !doc.TopFrameOrigin()->CanAccess(doc.GetSecurityOrigin())) {
+    doc.AddConsoleMessage(ConsoleMessage::Create(
+        mojom::ConsoleMessageSource::kSecurity,
+        mojom::ConsoleMessageLevel::kError,
+        "Blocked autofocusing on a form control in a cross-origin subframe."));
     return false;
   }
 
