@@ -533,10 +533,6 @@ extern const char kNtpCollapsedForeignSessions[];
 extern const char kNtpCollapsedRecentlyClosedTabs[];
 extern const char kNtpCollapsedSnapshotDocument[];
 extern const char kNtpCollapsedSyncPromo[];
-extern const char kContentSuggestionsNotificationsEnabled[];
-extern const char kContentSuggestionsConsecutiveIgnoredPrefName[];
-extern const char kContentSuggestionsNotificationsSentDay[];
-extern const char kContentSuggestionsNotificationsSentCount[];
 #else
 extern const char kNtpActivateHideShortcutsFieldTrial[];
 extern const char kNtpCustomBackgroundDict[];

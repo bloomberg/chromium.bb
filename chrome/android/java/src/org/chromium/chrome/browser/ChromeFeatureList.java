@@ -196,8 +196,6 @@ public abstract class ChromeFeatureList {
     public static final String CHROME_SMART_SELECTION = "ChromeSmartSelection";
     public static final String CLEAR_OLD_BROWSING_DATA = "ClearOldBrowsingData";
     public static final String COMMAND_LINE_ON_NON_ROOTED = "CommandLineOnNonRooted";
-    public static final String CONTENT_SUGGESTIONS_NOTIFICATIONS =
-            "ContentSuggestionsNotifications";
     public static final String CONTENT_SUGGESTIONS_SCROLL_TO_LOAD =
             "ContentSuggestionsScrollToLoad";
     public static final String CONTEXTUAL_SEARCH_DEFINITIONS = "ContextualSearchDefinitions";

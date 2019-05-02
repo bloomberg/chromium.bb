@@ -1540,24 +1540,6 @@ const char kNtpCollapsedSnapshotDocument[] = "ntp.collapsed_snapshot_document";
 
 // Keeps track of sync promo collapsed state in the Other Devices menu.
 const char kNtpCollapsedSyncPromo[] = "ntp.collapsed_sync_promo";
-
-// Tracks whether we should show notifications related to content suggestions.
-const char kContentSuggestionsNotificationsEnabled[] =
-    "ntp.content_suggestions.notifications.enabled";
-
-// Tracks how many notifications the user has ignored, so we can tell when we
-// should stop showing them.
-const char kContentSuggestionsConsecutiveIgnoredPrefName[] =
-    "ntp.content_suggestions.notifications.consecutive_ignored";
-
-// Tracks how many notifications have been sent today, and what day "today" is,
-// as an integer YYYYMMDD, in wall time in the local timezone.
-// If sent_day changes, sent_count is reset to 0. Allows limiting per-day
-// notification count.
-const char kContentSuggestionsNotificationsSentDay[] =
-    "ntp.content_suggestions.notifications.sent_day";
-const char kContentSuggestionsNotificationsSentCount[] =
-    "ntp.content_suggestions.notifications.sent_count";
 #else
 // Tracks whether a field trial to hide shortcuts on the NTP has been activated.
 // It is only activated for fresh installs, and remains active for those clients

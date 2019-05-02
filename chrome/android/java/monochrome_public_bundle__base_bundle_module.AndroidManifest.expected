@@ -1291,15 +1291,6 @@
     </receiver>
     <receiver
         android:exported="false"
-        android:name="org.chromium.chrome.browser.ntp.ContentSuggestionsNotifier$DeleteReceiver"/>
-    <receiver
-        android:exported="false"
-        android:name="org.chromium.chrome.browser.ntp.ContentSuggestionsNotifier$OpenUrlReceiver"/>
-    <receiver
-        android:exported="false"
-        android:name="org.chromium.chrome.browser.ntp.ContentSuggestionsNotifier$TimeoutReceiver"/>
-    <receiver
-        android:exported="false"
         android:name="org.chromium.chrome.browser.offlinepages.AutoFetchNotifier$CompleteNotificationReceiver"/>
     <receiver
         android:exported="false"

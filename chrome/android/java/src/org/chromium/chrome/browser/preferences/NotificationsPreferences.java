@@ -48,11 +48,12 @@ public class NotificationsPreferences extends PreferenceFragment {
             mSnippetsBridge = new SnippetsBridge(Profile.getLastUsedProfile());
 
             mSuggestionsPref = (ChromeSwitchPreference) findPreference(PREF_SUGGESTIONS);
-            mSuggestionsPref.setOnPreferenceChangeListener((Preference preference,
-                                                                   Object newValue) -> {
-                SnippetsBridge.setContentSuggestionsNotificationsEnabled((boolean) newValue);
-                return true;
-            });
+            mSuggestionsPref.setOnPreferenceChangeListener(
+                    (Preference preference, Object newValue) -> {
+                        PrefServiceBridge.getInstance().setBoolean(
+                                Pref.CONTENT_SUGGESTIONS_NOTIFICATIONS_ENABLED, (boolean) newValue);
+                        return true;
+                    });
         } else {
             // This preference is not applicable, does not currently affect Feed.
             getPreferenceScreen().removePreference(findPreference(PREF_SUGGESTIONS));
@@ -86,7 +87,8 @@ public class NotificationsPreferences extends PreferenceFragment {
             boolean suggestionsEnabled =
                     mSnippetsBridge != null && mSnippetsBridge.areRemoteSuggestionsEnabled();
             mSuggestionsPref.setChecked(suggestionsEnabled
-                    && SnippetsBridge.areContentSuggestionsNotificationsEnabled());
+                    && PrefServiceBridge.getInstance().getBoolean(
+                            Pref.CONTENT_SUGGESTIONS_NOTIFICATIONS_ENABLED));
             mSuggestionsPref.setEnabled(suggestionsEnabled);
             mSuggestionsPref.setSummary(suggestionsEnabled
                             ? R.string.notifications_content_suggestions_summary

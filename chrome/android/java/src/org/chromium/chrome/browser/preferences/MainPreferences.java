@@ -142,16 +142,14 @@ public class MainPreferences extends PreferenceFragment
                 // isn't triggered.
                 return true;
             });
-        } else if (!ChromeFeatureList.isEnabled(
-                           ChromeFeatureList.CONTENT_SUGGESTIONS_NOTIFICATIONS)) {
-            // The Notifications Preferences page currently only contains the Content Suggestions
-            // Notifications setting and a link to per-website notification settings. The latter can
-            // be access through Site Settings, so if the Content Suggestions Notifications feature
-            // isn't enabled we don't show the Notifications Preferences page.
+        } else {
+            // Since the Content Suggestions Notification feature has been removed, the
+            // Notifications Preferences page only contains a link to per-website notification
+            // settings, which can be access through Site Settings, so don't show the Notifications
+            // Preferences page.
 
-            // This checks whether the Content Suggestions Notifications *feature* is enabled on the
-            // user's device, not whether the user has Content Suggestions Notifications themselves
-            // enabled (which is what the user can toggle on the Notifications Preferences page).
+            // TODO(crbug.com/944912): Have the Offline Pages Prefetch Notifier start using the pref
+            // that can be set on this page, then re-enable.
             getPreferenceScreen().removePreference(findPreference(PREF_NOTIFICATIONS));
         }
 

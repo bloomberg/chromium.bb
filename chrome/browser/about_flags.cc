@@ -538,18 +538,6 @@ const FeatureEntry::Choice kSchedulerConfigurationChoices[] = {
 #endif  // OS_CHROMEOS
 
 #if defined(OS_ANDROID)
-const FeatureEntry::FeatureParam kForceFetchedSuggestionsNotifications[] = {
-    {"force_fetched_suggestions_notifications", "true"},
-    {"enable_fetched_suggestions_notifications", "true"}};
-
-const FeatureEntry::FeatureVariation
-    kContentSuggestionsNotificationsFeatureVariations[] = {
-        {"(notify always, server side)", nullptr, 0, "3313312"},
-        {"(notify always, client side)", kForceFetchedSuggestionsNotifications,
-         base::size(kForceFetchedSuggestionsNotifications), nullptr}};
-#endif  // OS_ANDROID
-
-#if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam
     kInterestFeedLargerImagesFeatureVariationConstant[] = {
         {"feed_ui_enabled", "true"}};
@@ -2046,14 +2034,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(ntp_snippets::kArticleSuggestionsFeature,
                                     kRemoteSuggestionsFeatureVariations,
                                     "NTPArticleSuggestions")},
-    {"enable-ntp-suggestions-notifications",
-     flag_descriptions::kEnableNtpSuggestionsNotificationsName,
-     flag_descriptions::kEnableNtpSuggestionsNotificationsDescription,
-     kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         ntp_snippets::kNotificationsFeature,
-         kContentSuggestionsNotificationsFeatureVariations,
-         "ContentSuggestionsNotifications")},
 #endif  // OS_ANDROID
     {"user-activation-v2", flag_descriptions::kUserActivationV2Name,
      flag_descriptions::kUserActivationV2Description, kOsAll,

@@ -61,9 +61,6 @@ interface PageHandler {
   // Download the last suggestions in json form.
   GetLastJson() => (string json);
 
-  // Reset the notification state.
-  ResetNotificationState();
-
   // Get the suggestions by category.
   GetSuggestionsByCategory() => (array<SuggestionCategory> categories);
 

@@ -1212,13 +1212,6 @@ android:value="true" />
         <receiver android:name="org.chromium.chrome.browser.notifications.NotificationIntentInterceptor$Receiver"
             android:exported="false"/>
 
-        <receiver android:name="org.chromium.chrome.browser.ntp.ContentSuggestionsNotifier$OpenUrlReceiver"
-            android:exported="false"/>
-        <receiver android:name="org.chromium.chrome.browser.ntp.ContentSuggestionsNotifier$DeleteReceiver"
-            android:exported="false"/>
-        <receiver android:name="org.chromium.chrome.browser.ntp.ContentSuggestionsNotifier$TimeoutReceiver"
-            android:exported="false"/>
-
         <receiver android:name="org.chromium.chrome.browser.send_tab_to_self.NotificationManager$TapReceiver"
             android:exported="false"/>
         <receiver android:name="org.chromium.chrome.browser.send_tab_to_self.NotificationManager$DeleteReceiver"

@@ -2309,12 +2309,6 @@ const char kEnableNtpRemoteSuggestionsDescription[] =
     "allows to override the source used to retrieve these server-side "
     "suggestions.";
 
-const char kEnableNtpSuggestionsNotificationsName[] =
-    "Notify about new content suggestions available at the New Tab page";
-const char kEnableNtpSuggestionsNotificationsDescription[] =
-    "If enabled, notifications will inform about new content suggestions on "
-    "the New Tab page.";
-
 const char kEnableOfflinePreviewsName[] = "Offline Page Previews";
 const char kEnableOfflinePreviewsDescription[] =
     "Enable showing offline page previews on slow networks.";

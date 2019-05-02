@@ -243,16 +243,6 @@ function setupEventListeners() {
     });
   });
 
-  $('reset-notifications-state-button')
-      .addEventListener('click', function(event) {
-        pageHandler.resetNotificationState();
-      });
-
-  $('reset-notifications-state-button')
-      .addEventListener('click', function(event) {
-        pageHandler.resetNotificationState();
-      });
-
   $('submit-dump').addEventListener('click', function(event) {
     pageHandler.getSuggestionsByCategory().then(function(response) {
       downloadJson('snippets.json', JSON.stringify(response.categories));

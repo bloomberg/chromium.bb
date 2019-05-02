@@ -23,7 +23,6 @@ import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ContentSettingsType;
-import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.preferences.website.ContentSettingsResources;
 import org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences;
 import org.chromium.chrome.browser.preferences.website.SiteSettingsCategory;
@@ -71,20 +70,23 @@ public class NotificationsPreferencesTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Make sure the toggle reflects the state correctly.
             boolean initiallyChecked = toggle.isChecked();
-            Assert.assertEquals(
-                    toggle.isChecked(), SnippetsBridge.areContentSuggestionsNotificationsEnabled());
+            Assert.assertEquals(toggle.isChecked(),
+                    PrefServiceBridge.getInstance().getBoolean(
+                            Pref.CONTENT_SUGGESTIONS_NOTIFICATIONS_ENABLED));
 
             // Make sure we can change the state.
             PreferencesTest.clickPreference(fragment, toggle);
             Assert.assertEquals(toggle.isChecked(), !initiallyChecked);
-            Assert.assertEquals(
-                    toggle.isChecked(), SnippetsBridge.areContentSuggestionsNotificationsEnabled());
+            Assert.assertEquals(toggle.isChecked(),
+                    PrefServiceBridge.getInstance().getBoolean(
+                            Pref.CONTENT_SUGGESTIONS_NOTIFICATIONS_ENABLED));
 
             // Make sure we can change it back.
             PreferencesTest.clickPreference(fragment, toggle);
             Assert.assertEquals(toggle.isChecked(), initiallyChecked);
-            Assert.assertEquals(
-                    toggle.isChecked(), SnippetsBridge.areContentSuggestionsNotificationsEnabled());
+            Assert.assertEquals(toggle.isChecked(),
+                    PrefServiceBridge.getInstance().getBoolean(
+                            Pref.CONTENT_SUGGESTIONS_NOTIFICATIONS_ENABLED));
 
             // Click it one last time so we're in a toggled state for the UI Capture.
             PreferencesTest.clickPreference(fragment, toggle);

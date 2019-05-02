@@ -1399,11 +1399,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-ntp-suggestions-notifications",
-    "owners": [ "fgorski" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-offer-store-unmasked-wallet-cards",
     "owners": [ "jsaul@google.com" ],
     "expiry_milestone": 76

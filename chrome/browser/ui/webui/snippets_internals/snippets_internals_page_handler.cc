@@ -4,6 +4,10 @@
 
 #include "chrome/browser/ui/webui/snippets_internals/snippets_internals_page_handler.h"
 
+#include <set>
+#include <string>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/containers/flat_map.h"
 #include "base/feature_list.h"
@@ -11,7 +15,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/android/ntp/android_content_suggestions_notifier.h"
 #include "chrome/common/pref_names.h"
 #include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/features.h"
@@ -276,16 +279,6 @@ void SnippetsInternalsPageHandler::GetLastJson(GetLastJsonCallback callback) {
   }
 
   std::move(callback).Run(json);
-}
-
-void SnippetsInternalsPageHandler::ResetNotificationState() {
-  pref_service_->SetInteger(
-      prefs::kContentSuggestionsConsecutiveIgnoredPrefName, 0);
-  pref_service_->SetInteger(prefs::kContentSuggestionsNotificationsSentCount,
-                            0);
-  pref_service_->SetInteger(prefs::kContentSuggestionsNotificationsSentDay, 0);
-  AndroidContentSuggestionsNotifier().HideAllNotifications(
-      ContentSuggestionsNotificationAction::HIDE_FRONTMOST);
 }
 
 void SnippetsInternalsPageHandler::GetSuggestionsByCategory(

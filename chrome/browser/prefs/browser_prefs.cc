@@ -199,7 +199,6 @@
 #include "chrome/browser/android/bookmarks/partner_bookmarks_shim.h"
 #include "chrome/browser/android/contextual_suggestions/contextual_suggestions_prefs.h"
 #include "chrome/browser/android/explore_sites/history_statistics_reporter.h"
-#include "chrome/browser/android/ntp/content_suggestions_notifier_service.h"
 #include "chrome/browser/android/ntp/recent_tabs_page_prefs.h"
 #include "chrome/browser/android/oom_intervention/oom_intervention_decider.h"
 #include "chrome/browser/android/preferences/browser_prefs_android.h"
@@ -433,6 +432,16 @@ const char kBreakingNewsGCMLastTokenValidationTime[] =
     "ntp_suggestions.breaking_news_gcm_last_token_validation_time";
 const char kBreakingNewsGCMLastForcedSubscriptionTime[] =
     "ntp_suggestions.breaking_news_gcm_last_forced_subscription_time";
+
+// Deprecated 4/2019.
+const char kContentSuggestionsConsecutiveIgnoredPrefName[] =
+    "ntp.content_suggestions.notifications.consecutive_ignored";
+const char kContentSuggestionsNotificationsSentDay[] =
+    "ntp.content_suggestions.notifications.sent_day";
+const char kContentSuggestionsNotificationsSentCount[] =
+    "ntp.content_suggestions.notifications.sent_count";
+const char kNotificationIDWithinCategory[] =
+    "ContentSuggestionsNotificationIDWithinCategory";
 #endif  // defined(OS_ANDROID)
 
 // Register prefs used only for migration (clearing or moving to a new key).
@@ -484,6 +493,12 @@ void RegisterProfilePrefsForMigration(
                                std::string());
   registry->RegisterInt64Pref(kBreakingNewsGCMLastTokenValidationTime, 0);
   registry->RegisterInt64Pref(kBreakingNewsGCMLastForcedSubscriptionTime, 0);
+
+  registry->RegisterIntegerPref(kContentSuggestionsConsecutiveIgnoredPrefName,
+                                0);
+  registry->RegisterIntegerPref(kContentSuggestionsNotificationsSentDay, 0);
+  registry->RegisterIntegerPref(kContentSuggestionsNotificationsSentCount, 0);
+  registry->RegisterStringPref(kNotificationIDWithinCategory, std::string());
 #endif  // defined(OS_ANDROID)
 }
 
@@ -776,7 +791,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   MediaDrmOriginIdManager::RegisterProfilePrefs(registry);
   contextual_suggestions::ContextualSuggestionsPrefs::RegisterProfilePrefs(
       registry);
-  ContentSuggestionsNotifierService::RegisterProfilePrefs(registry);
   explore_sites::HistoryStatisticsReporter::RegisterPrefs(registry);
   ntp_snippets::ClickBasedCategoryRanker::RegisterProfilePrefs(registry);
   OomInterventionDecider::RegisterProfilePrefs(registry);
@@ -1062,4 +1076,12 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   // Added 4/2019.
   syncer::ClearObsoleteSyncSpareBootstrapToken(profile_prefs);
 #endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_ANDROID)
+  // Added 4/2019.
+  profile_prefs->ClearPref(kContentSuggestionsConsecutiveIgnoredPrefName);
+  profile_prefs->ClearPref(kContentSuggestionsNotificationsSentDay);
+  profile_prefs->ClearPref(kContentSuggestionsNotificationsSentCount);
+  profile_prefs->ClearPref(kNotificationIDWithinCategory);
+#endif  // defined(OS_ANDROID)
 }
