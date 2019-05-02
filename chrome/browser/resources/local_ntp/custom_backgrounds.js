@@ -5,13 +5,13 @@
 
 'use strict';
 
-let customBackgrounds = {};
+const customBackgrounds = {};
 
 /**
  * The browser embeddedSearch.newTabPage object.
  * @type {Object}
  */
-var ntpApiHandle;
+let ntpApiHandle;
 
 /**
  * The different types of events that are logged from the NTP. This enum is
@@ -21,7 +21,7 @@ var ntpApiHandle;
  * @enum {number}
  * @const
  */
-var BACKGROUND_CUSTOMIZATION_LOG_TYPE = {
+const BACKGROUND_CUSTOMIZATION_LOG_TYPE = {
   // The 'Chrome backgrounds' menu item was clicked.
   NTP_CUSTOMIZE_CHROME_BACKGROUNDS_CLICKED: 40,
   // The 'Upload an image' menu item was clicked.
@@ -220,10 +220,10 @@ customBackgrounds.setMenuVisibility = function() {
  */
 customBackgrounds.setAttribution = function(
     attributionLine1, attributionLine2, attributionActionUrl) {
-  var attributionBox = $(customBackgrounds.IDS.ATTRIBUTIONS);
-  var attr1 = document.createElement('div');
+  const attributionBox = $(customBackgrounds.IDS.ATTRIBUTIONS);
+  const attr1 = document.createElement('div');
   attr1.setAttribute('id', customBackgrounds.IDS.ATTR1);
-  var attr2 = document.createElement('div');
+  const attr2 = document.createElement('div');
   attr2.setAttribute('id', customBackgrounds.IDS.ATTR2);
 
   if (attributionLine1 !== '') {
@@ -240,10 +240,10 @@ customBackgrounds.setAttribution = function(
     attributionBox.appendChild(attr2);
   }
   if (attributionActionUrl !== '') {
-    var attr = (attributionLine2 !== '' ? attr2 : attr1);
+    const attr = (attributionLine2 !== '' ? attr2 : attr1);
     attr.classList.add(customBackgrounds.CLASSES.ATTR_LINK);
 
-    var linkIcon = document.createElement('div');
+    const linkIcon = document.createElement('div');
     linkIcon.id = customBackgrounds.IDS.LINK_ICON;
     // Enlarge link-icon when there is only one line of attribution
     if (attributionLine2 === '') {
@@ -262,7 +262,7 @@ customBackgrounds.setAttribution = function(
 };
 
 customBackgrounds.clearAttribution = function() {
-  var attributions = $(customBackgrounds.IDS.ATTRIBUTIONS);
+  const attributions = $(customBackgrounds.IDS.ATTRIBUTIONS);
   while (attributions.firstChild) {
     attributions.removeChild(attributions.firstChild);
   }
@@ -280,7 +280,7 @@ customBackgrounds.unselectTile = function() {
  */
 customBackgrounds.resetSelectionDialog = function() {
   $(customBackgrounds.IDS.TILES).scrollTop = 0;
-  var tileContainer = $(customBackgrounds.IDS.TILES);
+  const tileContainer = $(customBackgrounds.IDS.TILES);
   while (tileContainer.firstChild) {
     tileContainer.removeChild(tileContainer.firstChild);
   }
@@ -310,7 +310,7 @@ customBackgrounds.setBackground = function(
  * Create a tile for a Chrome Backgrounds collection.
  */
 customBackgrounds.createChromeBackgroundTile = function(data) {
-  let tile = document.createElement('div');
+  const tile = document.createElement('div');
   tile.style.backgroundImage = 'url(' + data.previewImageUrl + ')';
   tile.dataset.id = data.collectionId;
   tile.dataset.name = data.collectionName;
@@ -349,13 +349,13 @@ customBackgrounds.getNextTile = function(deltaX, deltaY, current) {
   }
 
   if (deltaX != 0) {
-    let target = parseInt(current, /*radix=*/ 10) + deltaX;
+    const target = parseInt(current, /*radix=*/ 10) + deltaX;
     return $(idPrefix + target);
   } else if (deltaY != 0) {
     let target = parseInt(current, /*radix=*/ 10);
     let nextTile = $(idPrefix + target);
-    let startingTop = nextTile.getBoundingClientRect().top;
-    let startingLeft = nextTile.getBoundingClientRect().left;
+    const startingTop = nextTile.getBoundingClientRect().top;
+    const startingLeft = nextTile.getBoundingClientRect().left;
 
     // Search until a tile in a different row and the same column is found.
     while (nextTile &&
@@ -374,8 +374,8 @@ customBackgrounds.getNextTile = function(deltaX, deltaY, current) {
  *              collection data from.
  */
 customBackgrounds.showCollectionSelectionDialog = function(collectionsSource) {
-  var tileContainer = $(customBackgrounds.IDS.TILES);
-  var menu = $(customBackgrounds.IDS.MENU);
+  const tileContainer = $(customBackgrounds.IDS.TILES);
+  const menu = $(customBackgrounds.IDS.MENU);
   if (collectionsSource != customBackgrounds.SOURCES.CHROME_BACKGROUNDS) {
     console.log(
         'showCollectionSelectionDialog() called with invalid source=' +
@@ -395,11 +395,11 @@ customBackgrounds.showCollectionSelectionDialog = function(collectionsSource) {
   menu.classList.remove(customBackgrounds.CLASSES.IMAGE_DIALOG);
 
   // Create dialog tiles.
-  for (var i = 0; i < coll.length; ++i) {
-    let tileBackground = document.createElement('div');
+  for (let i = 0; i < coll.length; ++i) {
+    const tileBackground = document.createElement('div');
     tileBackground.classList.add(
         customBackgrounds.CLASSES.COLLECTION_TILE_BG);
-    var tile = customBackgrounds.createChromeBackgroundTile(coll[i]);
+    const tile = customBackgrounds.createChromeBackgroundTile(coll[i]);
     tile.classList.add(customBackgrounds.CLASSES.COLLECTION_TILE);
     tile.id = 'coll_tile_' + i;
     tile.dataset.tile_num = i;
@@ -407,22 +407,22 @@ customBackgrounds.showCollectionSelectionDialog = function(collectionsSource) {
     // Accessibility support for screen readers.
     tile.setAttribute('role', 'button');
 
-    var title = document.createElement('div');
+    const title = document.createElement('div');
     title.classList.add(customBackgrounds.CLASSES.COLLECTION_TITLE);
     title.textContent = tile.dataset.name;
 
-    var tileInteraction = function(event) {
-      var tile = event.target;
+    const tileInteraction = function(event) {
+      let tile = event.target;
       if (tile.classList.contains(customBackgrounds.CLASSES.COLLECTION_TITLE)) {
         tile = tile.parentNode;
       }
 
       // Load images for selected collection.
-      var imgElement = $('ntp-images-loader');
+      const imgElement = $('ntp-images-loader');
       if (imgElement) {
         imgElement.parentNode.removeChild(imgElement);
       }
-      var imgScript = document.createElement('script');
+      const imgScript = document.createElement('script');
       imgScript.id = 'ntp-images-loader';
       imgScript.src = 'chrome-search://local-ntp/ntp-background-images.js?' +
           'collection_id=' + tile.dataset.id;
@@ -434,7 +434,7 @@ customBackgrounds.showCollectionSelectionDialog = function(collectionsSource) {
 
       imgScript.onload = function() {
         // Verify that the individual image data was successfully loaded.
-        var imageDataLoaded =
+        const imageDataLoaded =
             (collImg.length > 0 && collImg[0].collectionId == tile.dataset.id);
 
         // Dependent upon the success of the load, populate the image selection
@@ -501,9 +501,9 @@ customBackgrounds.showCollectionSelectionDialog = function(collectionsSource) {
  */
 customBackgrounds.applySelectedState = function(tile) {
   tile.classList.add(customBackgrounds.CLASSES.COLLECTION_SELECTED);
-  var selectedBorder = document.createElement('div');
-  var selectedCircle = document.createElement('div');
-  var selectedCheck = document.createElement('div');
+  const selectedBorder = document.createElement('div');
+  const selectedCircle = document.createElement('div');
+  const selectedCheck = document.createElement('div');
   selectedBorder.classList.add(customBackgrounds.CLASSES.SELECTED_BORDER);
   selectedCircle.classList.add(customBackgrounds.CLASSES.SELECTED_CIRCLE);
   selectedCheck.classList.add(customBackgrounds.CLASSES.SELECTED_CHECK);
@@ -536,21 +536,21 @@ customBackgrounds.removeSelectedState = function(tile) {
 customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
   const firstNTile = customBackgrounds.ROWS_TO_PRELOAD
       * customBackgrounds.getTilesWide();
-  var menu = $(customBackgrounds.IDS.MENU);
-  var tileContainer = $(customBackgrounds.IDS.TILES);
+  const menu = $(customBackgrounds.IDS.MENU);
+  const tileContainer = $(customBackgrounds.IDS.TILES);
 
   $(customBackgrounds.IDS.TITLE).textContent = dialogTitle;
   menu.classList.remove(customBackgrounds.CLASSES.COLLECTION_DIALOG);
   menu.classList.add(customBackgrounds.CLASSES.IMAGE_DIALOG);
 
-  let preLoadTiles = [];
-  let postLoadTiles = [];
+  const preLoadTiles = [];
+  const postLoadTiles = [];
 
-  for (var i = 0; i < collImg.length; ++i) {
-    let tileBackground = document.createElement('div');
+  for (let i = 0; i < collImg.length; ++i) {
+    const tileBackground = document.createElement('div');
     tileBackground.classList.add(
         customBackgrounds.CLASSES.COLLECTION_TILE_BG);
-    var tile = document.createElement('div');
+    const tile = document.createElement('div');
     tile.classList.add(customBackgrounds.CLASSES.COLLECTION_TILE);
     // Accessibility support for screen readers.
     tile.setAttribute('role', 'button');
@@ -586,7 +586,7 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
       postLoadTiles.push(tile);
     }
 
-    let tileInteraction = function(tile) {
+    const tileInteraction = function(tile) {
       if (customBackgrounds.selectedTile) {
         customBackgrounds.removeSelectedState(customBackgrounds.selectedTile);
         if (customBackgrounds.selectedTile.id === tile.id) {
@@ -608,7 +608,7 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
     };
 
     tile.onclick = function(event) {
-      let clickCount = event.detail;
+      const clickCount = event.detail;
       // Control + option + space will fire the onclick event with 0 clickCount.
       if (clickCount <= 1) {
         tileInteraction(event.currentTarget);
@@ -665,7 +665,7 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
     tileContainer.appendChild(tileBackground);
   }
   let tileGetsLoaded = 0;
-  for (let tile of preLoadTiles) {
+  for (const tile of preLoadTiles) {
     loadTile(tile, collImg, () => {
       // After the preloaded tiles finish loading, the rest of the tiles start
       // loading.
@@ -686,7 +686,7 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
  * @param {?Function} countLoad If not null, called after the tile finishes
  * loading.
  */
-let loadTile = function(tile, imageData, countLoad) {
+const loadTile = function(tile, imageData, countLoad) {
   if (imageData[tile.dataset.tile_num].collectionId === 'solidcolors') {
     tile.style.backgroundImage = [customBackgrounds.CUSTOM_BACKGROUND_OVERLAY,
       'url(' + imageData[tile.dataset.tile_num].thumbnailImageUrl + ')'].join(
@@ -708,8 +708,8 @@ let loadTile = function(tile, imageData, countLoad) {
  * @param {?Function} countLoad If not null, called after the tile finishes
  * loading.
  */
-let fadeInImageTile = function(tile, imageUrl, countLoad) {
-  let image = new Image();
+const fadeInImageTile = function(tile, imageUrl, countLoad) {
+  const image = new Image();
   image.onload = () => {
     tile.style.opacity = '1';
     if (countLoad) {
@@ -725,11 +725,11 @@ let fadeInImageTile = function(tile, imageUrl, countLoad) {
  * @private
  */
 customBackgrounds.loadChromeBackgrounds = function() {
-  var collElement = $('ntp-collection-loader');
+  const collElement = $('ntp-collection-loader');
   if (collElement) {
     collElement.parentNode.removeChild(collElement);
   }
-  var collScript = document.createElement('script');
+  const collScript = document.createElement('script');
   collScript.id = 'ntp-collection-loader';
   collScript.src = 'chrome-search://local-ntp/ntp-background-collections.js?' +
       'collection_type=background';
@@ -750,13 +750,13 @@ customBackgrounds.closeCustomizationDialog = function() {
 customBackgrounds.getNextOption = function(current_index, deltaY) {
   // Create array corresponding to the menu. Important that this is in the same
   // order as the MENU_ENTRIES enum, so we can index into it.
-  var entries = [];
+  const entries = [];
   entries.push($(customBackgrounds.IDS.DEFAULT_WALLPAPERS));
   entries.push($(customBackgrounds.IDS.UPLOAD_IMAGE));
   entries.push($(customBackgrounds.IDS.CUSTOM_LINKS_RESTORE_DEFAULT));
   entries.push($(customBackgrounds.IDS.RESTORE_DEFAULT));
 
-  var idx = current_index;
+  let idx = current_index;
   do {
     idx = idx + deltaY;
     if (idx === -1) {
@@ -789,8 +789,8 @@ customBackgrounds.networkStateChanged = function(online) {
 customBackgrounds.init = function(
     showErrorNotification, hideCustomLinkNotification) {
   ntpApiHandle = window.chrome.embeddedSearch.newTabPage;
-  let editDialog = $(customBackgrounds.IDS.EDIT_BG_DIALOG);
-  let menu = $(customBackgrounds.IDS.MENU);
+  const editDialog = $(customBackgrounds.IDS.EDIT_BG_DIALOG);
+  const menu = $(customBackgrounds.IDS.MENU);
 
   $(customBackgrounds.IDS.OPTIONS_TITLE).textContent =
       configData.translatedStrings.customizeBackground;
@@ -803,7 +803,7 @@ customBackgrounds.init = function(
       .setAttribute('title', configData.translatedStrings.customizeBackground);
 
   // Edit gear icon interaction events.
-  let editBackgroundInteraction = function() {
+  const editBackgroundInteraction = function() {
     editDialog.showModal();
   };
   $(customBackgrounds.IDS.EDIT_BG).onclick = function(event) {
@@ -812,10 +812,10 @@ customBackgrounds.init = function(
   };
 
   // Find the first menu option that is not hidden or disabled.
-  let findFirstMenuOption = () => {
-    let editMenu = $(customBackgrounds.IDS.EDIT_BG_MENU);
+  const findFirstMenuOption = () => {
+    const editMenu = $(customBackgrounds.IDS.EDIT_BG_MENU);
     for (let i = 1; i < editMenu.children.length; i++) {
-      let option = editMenu.children[i];
+      const option = editMenu.children[i];
       if (option.classList.contains(customBackgrounds.CLASSES.OPTION)
           && !option.hidden && !option.classList.contains(
               customBackgrounds.CLASSES.OPTION_DISABLED)) {
@@ -837,7 +837,7 @@ customBackgrounds.init = function(
   };
 
   // Interactions to close the customization option dialog.
-  let editDialogInteraction = function() {
+  const editDialogInteraction = function() {
     editDialog.close();
   };
   editDialog.onclick = function(event) {
@@ -885,14 +885,14 @@ customBackgrounds.init = function(
 customBackgrounds.initCustomLinksItems = function(hideCustomLinkNotification) {
   customBackgrounds.hideCustomLinkNotification = hideCustomLinkNotification;
 
-  let editDialog = $(customBackgrounds.IDS.EDIT_BG_DIALOG);
-  let menu = $(customBackgrounds.IDS.MENU);
+  const editDialog = $(customBackgrounds.IDS.EDIT_BG_DIALOG);
+  const menu = $(customBackgrounds.IDS.MENU);
 
   $(customBackgrounds.IDS.CUSTOM_LINKS_RESTORE_DEFAULT_TEXT).textContent =
       configData.translatedStrings.restoreDefaultLinks;
 
   // Interactions with the "Restore default shortcuts" option.
-  let customLinksRestoreDefaultInteraction = function() {
+  const customLinksRestoreDefaultInteraction = function() {
     editDialog.close();
     customBackgrounds.hideCustomLinkNotification();
     window.chrome.embeddedSearch.newTabPage.resetCustomLinks();
@@ -935,8 +935,8 @@ customBackgrounds.initCustomLinksItems = function(hideCustomLinkNotification) {
 customBackgrounds.initCustomBackgrounds = function(showErrorNotification) {
   customBackgrounds.showErrorNotification = showErrorNotification;
 
-  var editDialog = $(customBackgrounds.IDS.EDIT_BG_DIALOG);
-  var menu = $(customBackgrounds.IDS.MENU);
+  const editDialog = $(customBackgrounds.IDS.EDIT_BG_DIALOG);
+  const menu = $(customBackgrounds.IDS.MENU);
 
   $(customBackgrounds.IDS.DEFAULT_WALLPAPERS_TEXT).textContent =
       configData.translatedStrings.defaultWallpapers;
@@ -973,7 +973,7 @@ customBackgrounds.initCustomBackgrounds = function(showErrorNotification) {
   $(customBackgrounds.IDS.DONE).disabled = true;
 
   // Interactions with the "Upload an image" option.
-  var uploadImageInteraction = function() {
+  const uploadImageInteraction = function() {
     window.chrome.embeddedSearch.newTabPage.selectLocalBackgroundImage();
     ntpApiHandle.logEvent(
         BACKGROUND_CUSTOMIZATION_LOG_TYPE.NTP_CUSTOMIZE_LOCAL_IMAGE_CLICKED);
@@ -1006,7 +1006,7 @@ customBackgrounds.initCustomBackgrounds = function(showErrorNotification) {
   };
 
   // Interactions with the "Restore default background" option.
-  var restoreDefaultInteraction = function() {
+  const restoreDefaultInteraction = function() {
     editDialog.close();
     customBackgrounds.clearAttribution();
     window.chrome.embeddedSearch.newTabPage.setBackgroundURL('');
@@ -1040,7 +1040,7 @@ customBackgrounds.initCustomBackgrounds = function(showErrorNotification) {
   };
 
   // Interactions with the "Chrome backgrounds" option.
-  var defaultWallpapersInteraction = function(event) {
+  const defaultWallpapersInteraction = function(event) {
     customBackgrounds.loadChromeBackgrounds();
     $('ntp-collection-loader').onload = function() {
       editDialog.close();
@@ -1115,7 +1115,7 @@ customBackgrounds.initCustomBackgrounds = function(showErrorNotification) {
   };
 
   // Interactions with the back arrow on the image selection dialog.
-  var backInteraction = function(event) {
+  const backInteraction = function(event) {
     customBackgrounds.resetSelectionDialog();
     customBackgrounds.showCollectionSelectionDialog(
         customBackgrounds.dialogCollectionsSource);
@@ -1150,7 +1150,7 @@ customBackgrounds.initCustomBackgrounds = function(showErrorNotification) {
   };
 
   // Interactions with the done button on the background picker dialog.
-  var doneInteraction = function(event) {
+  const doneInteraction = function(event) {
     if ($(customBackgrounds.IDS.DONE).disabled) {
       return;
     }
@@ -1195,13 +1195,13 @@ customBackgrounds.initCustomBackgrounds = function(showErrorNotification) {
 };
 
 customBackgrounds.handleError = function(errors) {
-  var unavailableString = configData.translatedStrings.backgroundsUnavailable;
+  const unavailableString = configData.translatedStrings.backgroundsUnavailable;
 
   if (errors != 'undefined') {
     // Network errors.
     if (errors.net_error) {
       if (errors.net_error_no != 0) {
-        let onClick = () => {
+        const onClick = () => {
           window.open(
               'https://chrome://network-error/' + errors.net_error_no,
               '_blank');

@@ -23,12 +23,12 @@ const MV_DOMAIN_ORIGIN = '{{ORIGIN}}';
  * @return {Object} Dictionary containing name value pairs for URL.
  */
 function parseQueryParams(location) {
-  var params = Object.create(null);
-  var query = location.search.substring(1);
-  var vars = query.split('&');
-  for (var i = 0; i < vars.length; i++) {
-    var pair = vars[i].split('=');
-    var k = decodeURIComponent(pair[0]);
+  const params = Object.create(null);
+  const query = location.search.substring(1);
+  const vars = query.split('&');
+  for (let i = 0; i < vars.length; i++) {
+    const pair = vars[i].split('=');
+    const k = decodeURIComponent(pair[0]);
     if (k in params) {
       // Duplicate parameters are not allowed to prevent attackers who can
       // append things to |location| from getting their parameter values to
@@ -52,8 +52,8 @@ function parseQueryParams(location) {
  * @return {!Element} A new link element.
  */
 function createMostVisitedLink(params, href, title, text, direction) {
-  var styles = getMostVisitedStyles(params, !!text);
-  var link = document.createElement('a');
+  const styles = getMostVisitedStyles(params, !!text);
+  const link = document.createElement('a');
   link.style.color = styles.color;
   link.style.fontSize = styles.fontSize + 'px';
   if (styles.fontFamily) {
@@ -63,9 +63,9 @@ function createMostVisitedLink(params, href, title, text, direction) {
     link.style.textAlign = styles.textAlign;
   }
   if (styles.textFadePos) {
-    var dir = /^rtl$/i.test(direction) ? 'to left' : 'to right';
+    const dir = /^rtl$/i.test(direction) ? 'to left' : 'to right';
     // The fading length in pixels is passed by the caller.
-    var mask = 'linear-gradient(' + dir + ', rgba(0,0,0,1), rgba(0,0,0,1) ' +
+    const mask = 'linear-gradient(' + dir + ', rgba(0,0,0,1), rgba(0,0,0,1) ' +
         styles.textFadePos + 'px, rgba(0,0,0,0))';
     link.style.textOverflow = 'clip';
     link.style.webkitMask = mask;
@@ -82,7 +82,7 @@ function createMostVisitedLink(params, href, title, text, direction) {
   link.tabIndex = '0';
   if (text) {
     // Wrap text with span so ellipsis will appear at the end of multiline.
-    var spanWrap = document.createElement('span');
+    const spanWrap = document.createElement('span');
     spanWrap.textContent = text;
     link.appendChild(spanWrap);
   }
@@ -123,7 +123,7 @@ function getTextColor(params, isTitle) {
   // 'RRGGBBAA' color format overrides everything.
   if ('c' in params && params.c.match(/^[0-9A-Fa-f]{8}$/)) {
     // Extract the 4 pairs of hex digits, map to number, then form rgba().
-    var t = params.c.match(/(..)(..)(..)(..)/).slice(1).map(function(s) {
+    const t = params.c.match(/(..)(..)(..)(..)/).slice(1).map(function(s) {
       return parseInt(s, 16);
     });
     return 'rgba(' + t[0] + ',' + t[1] + ',' + t[2] + ',' + t[3] / 255 + ')';
@@ -131,9 +131,9 @@ function getTextColor(params, isTitle) {
 
   // For backward compatibility with server-side NTP, look at themes directly
   // and use param.c for non-title or as fallback.
-  var apiHandle = chrome.embeddedSearch.newTabPage;
-  var themeInfo = apiHandle.themeBackgroundInfo;
-  var c = '#777';
+  const apiHandle = chrome.embeddedSearch.newTabPage;
+  const themeInfo = apiHandle.themeBackgroundInfo;
+  let c = '#777';
   if (isTitle && themeInfo && !themeInfo.usingDefaultTheme) {
     // Read from theme directly
     c = convertArrayToRGBAColor(themeInfo.textColorRgba) || c;
@@ -157,7 +157,7 @@ function getTextColor(params, isTitle) {
  * @return {Object} Styles suitable for CSS interpolation.
  */
 function getMostVisitedStyles(params, isTitle) {
-  var styles = {
+  const styles = {
     color: getTextColor(params, isTitle),  // Handles 'c' in params.
     fontFamily: '',
     fontSize: 11
@@ -172,13 +172,13 @@ function getMostVisitedStyles(params, isTitle) {
     styles.textAlign = params.ta;
   }
   if ('tf' in params) {
-    var tf = parseInt(params.tf, 10);
+    const tf = parseInt(params.tf, 10);
     if (isFinite(tf)) {
       styles.textFadePos = tf;
     }
   }
   if ('ntl' in params) {
-    var ntl = parseInt(params.ntl, 10);
+    const ntl = parseInt(params.ntl, 10);
     if (isFinite(ntl)) {
       styles.numTitleLines = ntl;
     }
@@ -191,7 +191,7 @@ function getMostVisitedStyles(params, isTitle) {
  * Returns whether the given URL has a known, safe scheme.
  * @param {string} url URL to check.
  */
-var isSchemeAllowed = function(url) {
+const isSchemeAllowed = function(url) {
   return url.startsWith('http://') || url.startsWith('https://') ||
       url.startsWith('ftp://') || url.startsWith('chrome-extension://');
 };
@@ -203,12 +203,12 @@ var isSchemeAllowed = function(url) {
  *     data to fill.
  */
 function fillMostVisited(location, fill) {
-  var params = parseQueryParams(location);
+  const params = parseQueryParams(location);
   params.rid = parseInt(params.rid, 10);
   if (!isFinite(params.rid)) {
     return;
   }
-  var data =
+  const data =
       chrome.embeddedSearch.newTabPage.getMostVisitedItemData(params.rid);
   if (!data) {
     return;

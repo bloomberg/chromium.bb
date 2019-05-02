@@ -71,7 +71,7 @@ const CLASSES = {
  * @enum {number}
  * @const
  */
-var LOG_TYPE = {
+const LOG_TYPE = {
   // All NTP tiles have finished loading (successfully or failing).
   NTP_ALL_TILES_LOADED: 11,
   // The data for all NTP tiles (title, URL, etc, but not the thumbnail image)
@@ -95,7 +95,7 @@ var LOG_TYPE = {
  * @enum {number}
  * @const
  */
-var TileVisualType = {
+const TileVisualType = {
   NONE: 0,
   ICON_REAL: 1,
   ICON_COLOR: 2,
@@ -164,7 +164,7 @@ const DOMAIN_ORIGIN = '{{ORIGIN}}';
  * at 1 because initially we're waiting for the "show" message from the parent.
  * @type {number}
  */
-var loadedCounter = 1;
+let loadedCounter = 1;
 
 
 /**
@@ -172,7 +172,7 @@ var loadedCounter = 1;
  * Works as a double-buffer that is shown when we receive a "show" postMessage.
  * @type {Element}
  */
-var tiles = null;
+let tiles = null;
 
 
 /**
@@ -189,7 +189,7 @@ let maxNumTiles = 8;
  * List of parameters passed by query args.
  * @type {Object}
  */
-var queryArgs = {};
+let queryArgs = {};
 
 
 /**
@@ -218,9 +218,9 @@ let isCustomLinksEnabled = false;
  * Log an event on the NTP.
  * @param {number} eventType Event from LOG_TYPE.
  */
-var logEvent = function(eventType) {
+function logEvent(eventType) {
   chrome.embeddedSearch.newTabPage.logEvent(eventType);
-};
+}
 
 /**
  * Log impression of an NTP tile.
@@ -261,7 +261,7 @@ function logMostVisitedNavigation(
  * When we get to 0, we send a message to the parent window.
  * This is usually used as an EventListener of onload/onerror.
  */
-var countLoad = function() {
+function countLoad() {
   loadedCounter -= 1;
   if (loadedCounter <= 0) {
     swapInNewTiles();
@@ -284,22 +284,22 @@ var countLoad = function() {
     // fresh tiles.
     loadedCounter = 1;
   }
-};
+}
 
 
 /**
  * Handles postMessages coming from the host page to the iframe.
  * Mostly, it dispatches every command to handleCommand.
  */
-var handlePostMessage = function(event) {
+function handlePostMessage(event) {
   if (event.data instanceof Array) {
-    for (var i = 0; i < event.data.length; ++i) {
+    for (let i = 0; i < event.data.length; ++i) {
       handleCommand(event.data[i]);
     }
   } else {
     handleCommand(event.data);
   }
-};
+}
 
 
 /**
@@ -307,8 +307,8 @@ var handlePostMessage = function(event) {
  * We try to keep the logic here to a minimum and just dispatch to the relevant
  * functions.
  */
-var handleCommand = function(data) {
-  var cmd = data.cmd;
+function handleCommand(data) {
+  const cmd = data.cmd;
 
   if (cmd == 'tile') {
     addTile(data);
@@ -324,25 +324,25 @@ var handleCommand = function(data) {
   } else {
     console.error('Unknown command: ' + JSON.stringify(data));
   }
-};
+}
 
 
 /**
  * Handler for the 'show' message from the host page.
  * @param {!Object} info Data received in the message.
  */
-var showTiles = function(info) {
+function showTiles(info) {
   logEvent(LOG_TYPE.NTP_ALL_TILES_RECEIVED);
   utils.setPlatformClass(document.body);
   countLoad();
-};
+}
 
 
 /**
  * Handler for the 'updateTheme' message from the host page.
  * @param {!Object} info Data received in the message.
  */
-var updateTheme = function(info) {
+function updateTheme(info) {
   document.body.style.setProperty('--tile-title-color', info.tileTitleColor);
   document.body.classList.toggle('dark-theme', info.isThemeDark);
   document.body.classList.toggle('using-theme', info.isUsingTheme);
@@ -354,7 +354,7 @@ var updateTheme = function(info) {
       !info.isThemeDark && !info.isUsingTheme &&
           (navigator.userAgent.indexOf('Mac') > -1 ||
            navigator.userAgent.indexOf('CrOS') > -1));
-};
+}
 
 
 /**
@@ -363,26 +363,26 @@ var updateTheme = function(info) {
  * without saving.
  * @param {!Object} info Data received in the message.
  */
-var focusTileMenu = function(info) {
-  let tile = document.querySelector(`a.md-tile[data-tid="${info.tid}"]`);
+function focusTileMenu(info) {
+  const tile = document.querySelector(`a.md-tile[data-tid="${info.tid}"]`);
   if (info.tid === -1 /* Add shortcut tile */) {
     tile.focus();
   } else {
     tile.parentNode.childNodes[1].focus();
   }
-};
+}
 
 
 /**
  * Removes all old instances of |IDS.MV_TILES| that are pending for deletion.
  */
-var removeAllOldTiles = function() {
-  var parent = document.querySelector('#' + IDS.MOST_VISITED);
-  var oldList = parent.querySelectorAll('.mv-tiles-old');
-  for (var i = 0; i < oldList.length; ++i) {
+function removeAllOldTiles() {
+  const parent = document.querySelector('#' + IDS.MOST_VISITED);
+  const oldList = parent.querySelectorAll('.mv-tiles-old');
+  for (let i = 0; i < oldList.length; ++i) {
     parent.removeChild(oldList[i]);
   }
-};
+}
 
 
 /**
@@ -390,14 +390,14 @@ var removeAllOldTiles = function() {
  * their thumbnail images, and we are ready to show the new tiles and drop the
  * old ones.
  */
-var swapInNewTiles = function() {
+function swapInNewTiles() {
   // Store the tiles on the current closure.
-  var cur = tiles;
+  const cur = tiles;
 
   // Add an "add new custom link" button if we haven't reached the maximum
   // number of tiles.
   if (isCustomLinksEnabled && cur.childNodes.length < maxNumTiles) {
-    let data = {
+    const data = {
       'tid': -1,
       'title': queryArgs['addLink'],
       'url': '',
@@ -409,11 +409,11 @@ var swapInNewTiles = function() {
     tiles.appendChild(renderMaterialDesignTile(data));
   }
 
-  var parent = document.querySelector('#' + IDS.MOST_VISITED);
+  const parent = document.querySelector('#' + IDS.MOST_VISITED);
 
   // Only fade in the new tiles if there were tiles before.
-  var fadeIn = false;
-  var old = parent.querySelector('#' + IDS.MV_TILES);
+  let fadeIn = false;
+  const old = parent.querySelector('#' + IDS.MV_TILES);
   if (old) {
     fadeIn = true;
     // Mark old tile DIV for removal after the transition animation is done.
@@ -451,7 +451,7 @@ var swapInNewTiles = function() {
   // Make sure the tiles variable contain the next tileset we'll use if the host
   // page sends us an updated set of tiles.
   tiles = document.createElement('div');
-};
+}
 
 
 /**
@@ -480,10 +480,10 @@ function updateTileVisibility() {
  * It's also used to fill up our tiles to |maxNumTiles| if necessary.
  * @param {?MostVisitedData} args Data for the tile to be rendered.
  */
-var addTile = function(args) {
+function addTile(args) {
   if (isFinite(args.rid)) {
     // An actual suggestion. Grab the data from the embeddedSearch API.
-    var data =
+    const data =
         chrome.embeddedSearch.newTabPage.getMostVisitedItemData(args.rid);
     if (!data) {
       return;
@@ -501,7 +501,7 @@ var addTile = function(args) {
     // An empty tile
     tiles.appendChild(renderTile(null));
   }
-};
+}
 
 /**
  * Called when the user decided to add a tile to the blacklist.
@@ -509,8 +509,8 @@ var addTile = function(args) {
  * to the host page.
  * @param {Element} tile DOM node of the tile we want to remove.
  */
-var blacklistTile = function(tile) {
-  let tid = Number(tile.firstChild.getAttribute('data-tid'));
+function blacklistTile(tile) {
+  const tid = Number(tile.firstChild.getAttribute('data-tid'));
 
   if (isCustomLinksEnabled) {
     chrome.embeddedSearch.newTabPage.deleteMostVisitedItem(tid);
@@ -524,7 +524,7 @@ var blacklistTile = function(tile) {
           {cmd: 'tileBlacklisted', tid: Number(tid)}, DOMAIN_ORIGIN);
     });
   }
-};
+}
 
 
 /**
@@ -597,19 +597,19 @@ function setupReorder(tile) {
 
       // Cancel the timeout if the user drags the mouse off the tile and
       // releases or if the mouse if released.
-      let dragend = () => {
+      const dragend = () => {
         window.clearTimeout(timeout);
       };
       document.addEventListener('dragend', dragend, {once: true});
 
-      let mouseup = () => {
+      const mouseup = () => {
         if (event.button == 0 /* LEFT CLICK */) {
           window.clearTimeout(timeout);
         }
       };
       document.addEventListener('mouseup', mouseup, {once: true});
 
-      let timeoutFunc = (dragend_in, mouseup_in) => {
+      const timeoutFunc = (dragend_in, mouseup_in) => {
         if (!reordering) {
           startReorder(tile);
         }
@@ -652,9 +652,9 @@ function setupReorder(tile) {
  *     construct an empty tile. isAddButton can only be set if custom links is
  *     enabled.
  */
-var renderTile = function(data) {
+function renderTile(data) {
   return renderMaterialDesignTile(data);
-};
+}
 
 
 /**
@@ -666,7 +666,7 @@ var renderTile = function(data) {
  * @return {Element}
  */
 function renderMaterialDesignTile(data) {
-  let mdTileContainer = document.createElement('div');
+  const mdTileContainer = document.createElement('div');
   mdTileContainer.role = 'none';
 
   if (data == null) {
@@ -680,7 +680,7 @@ function renderMaterialDesignTile(data) {
   // This is set in the load/error event for the favicon image.
   let tileType = TileVisualType.NONE;
 
-  let mdTile = document.createElement('a');
+  const mdTile = document.createElement('a');
   mdTile.className = CLASSES.MD_TILE;
   mdTile.tabIndex = 0;
   mdTile.setAttribute('data-tid', data.tid);
@@ -726,22 +726,22 @@ function renderMaterialDesignTile(data) {
   });
   utils.disableOutlineOnMouseClick(mdTile);
 
-  let mdTileInner = document.createElement('div');
+  const mdTileInner = document.createElement('div');
   mdTileInner.className = CLASSES.MD_TILE_INNER;
 
-  let mdIcon = document.createElement('div');
+  const mdIcon = document.createElement('div');
   mdIcon.className = CLASSES.MD_ICON;
 
   if (data.isAddButton) {
-    let mdAdd = document.createElement('div');
+    const mdAdd = document.createElement('div');
     mdAdd.className = CLASSES.MD_ADD_ICON;
-    let addBackground = document.createElement('div');
+    const addBackground = document.createElement('div');
     addBackground.className = CLASSES.MD_ICON_BACKGROUND;
 
     addBackground.appendChild(mdAdd);
     mdIcon.appendChild(addBackground);
   } else {
-    let fi = document.createElement('img');
+    const fi = document.createElement('img');
     // Set title and alt to empty so screen readers won't say the image name.
     fi.title = '';
     fi.alt = '';
@@ -763,9 +763,9 @@ function renderMaterialDesignTile(data) {
       countLoad();
     });
     fi.addEventListener('error', function(ev) {
-      let fallbackBackground = document.createElement('div');
+      const fallbackBackground = document.createElement('div');
       fallbackBackground.className = CLASSES.MD_ICON_BACKGROUND;
-      let fallbackLetter = document.createElement('div');
+      const fallbackLetter = document.createElement('div');
       fallbackLetter.className = CLASSES.MD_FALLBACK_LETTER;
       fallbackLetter.textContent = data.title.charAt(0).toUpperCase();
       mdIcon.classList.add(CLASSES.FAILED_FAVICON);
@@ -790,11 +790,11 @@ function renderMaterialDesignTile(data) {
 
   mdTileInner.appendChild(mdIcon);
 
-  let mdTitleContainer = document.createElement('div');
+  const mdTitleContainer = document.createElement('div');
   mdTitleContainer.className = CLASSES.MD_TITLE_CONTAINER;
-  let mdTitle = document.createElement('div');
+  const mdTitle = document.createElement('div');
   mdTitle.className = CLASSES.MD_TITLE;
-  let mdTitleTextwrap = document.createElement('span');
+  const mdTitleTextwrap = document.createElement('span');
   mdTitleTextwrap.innerText = data.title;
   mdTitle.style.direction = data.direction || 'ltr';
   mdTitleContainer.appendChild(mdTitle);
@@ -804,7 +804,7 @@ function renderMaterialDesignTile(data) {
   mdTitle.appendChild(mdTitleTextwrap);
 
   if (!data.isAddButton) {
-    let mdMenu = document.createElement('button');
+    const mdMenu = document.createElement('button');
     mdMenu.className = CLASSES.MD_MENU;
     if (isCustomLinksEnabled) {
       mdMenu.classList.add(CLASSES.MD_EDIT_MENU);
@@ -852,7 +852,7 @@ function renderMaterialDesignTile(data) {
 /**
  * Does some initialization and parses the query arguments passed to the iframe.
  */
-var init = function() {
+function init() {
   // Create a new DOM element to hold the tiles. The tiles will be added
   // one-by-one via addTile, and the whole thing will be inserted into the page
   // in swapInNewTiles, after the parent has sent us the 'show' message, and all
@@ -860,10 +860,10 @@ var init = function() {
   tiles = document.createElement('div');
 
   // Parse query arguments.
-  var query = window.location.search.substring(1).split('&');
+  const query = window.location.search.substring(1).split('&');
   queryArgs = {};
-  for (var i = 0; i < query.length; ++i) {
-    var val = query[i].split('=');
+  for (let i = 0; i < query.length; ++i) {
+    const val = query[i].split('=');
     if (val[0] == '') {
       continue;
     }
@@ -874,7 +874,7 @@ var init = function() {
 
   // Enable RTL.
   if (queryArgs['rtl'] == '1') {
-    var html = document.querySelector('html');
+    const html = document.querySelector('html');
     html.dir = 'rtl';
   }
 
@@ -901,7 +901,7 @@ var init = function() {
   };
 
   window.addEventListener('message', handlePostMessage);
-};
+}
 
 
 window.addEventListener('DOMContentLoaded', init);

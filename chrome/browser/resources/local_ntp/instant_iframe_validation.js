@@ -18,7 +18,7 @@ function convertToHexColor(color) {
   // range for an RGB hex color.
   if (isFinite(color) && Math.floor(color) == color && color >= 0 &&
       color <= 0xffffff) {
-    var hexColor = color.toString(16);
+    const hexColor = color.toString(16);
     // Pads with initial zeros and # (e.g. for 'ff' yields '#0000ff').
     return '#000000'.substr(0, 7 - hexColor.length) + hexColor;
   }

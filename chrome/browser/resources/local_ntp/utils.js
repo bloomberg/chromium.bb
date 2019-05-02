@@ -28,7 +28,7 @@ function $(id) {
 /**
  * Contains common functions used in the main NTP page and its iframes.
  */
-let utils = {};
+const utils = {};
 
 
 /**
