@@ -41,6 +41,10 @@ in [src/chromeos/dbus/kerberos].
     (Many existing clients provide additional test functionality in the fake
     implementation, however this complicates tests and the fake implementation).
 
+*   These clients do not have any dependency on FeatureList, and care should be
+    taken regarding initialization order if such dependencies are added (see
+    BluezDBusManager for an example of such client).
+
 ## Shill clients
 
 Shill clients will eventually only be available to Chrome. As such, the

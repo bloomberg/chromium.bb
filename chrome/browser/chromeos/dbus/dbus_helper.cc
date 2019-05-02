@@ -58,7 +58,6 @@ void InitializeDBus() {
   InitializeDBusClient<ArcCameraClient>(bus);
   InitializeDBusClient<AuthPolicyClient>(bus);
   InitializeDBusClient<BiodClient>(bus);  // For device::Fingerprint.
-  InitializeDBusClient<bluez::BluezDBusManager>(bus);
   InitializeDBusClient<CrasAudioClient>(bus);
   InitializeDBusClient<CryptohomeClient>(bus);
   InitializeDBusClient<CupsProxyClient>(bus);
@@ -78,7 +77,17 @@ void InitializeDBus() {
   InstallAttributes::Initialize();
 }
 
+void InitializeFeatureListDependentDBus() {
+  dbus::Bus* bus = DBusThreadManager::Get()->GetSystemBus();
+  InitializeDBusClient<bluez::BluezDBusManager>(bus);
+}
+
 void ShutdownDBus() {
+  // Feature list-dependent D-Bus clients are shut down first because we try to.
+  // shut down in reverse order of initialization (in case of dependencies).
+  bluez::BluezDBusManager::Shutdown();
+
+  // Other D-Bus clients are shut down, also in reverse order of initialization.
   UpstartClient::Shutdown();
   SystemClockClient::Shutdown();
   SessionManagerClient::Shutdown();
@@ -90,7 +99,6 @@ void ShutdownDBus() {
   CupsProxyClient::Shutdown();
   CryptohomeClient::Shutdown();
   CrasAudioClient::Shutdown();
-  bluez::BluezDBusManager::Shutdown();
   BiodClient::Shutdown();
   AuthPolicyClient::Shutdown();
   ArcCameraClient::Shutdown();

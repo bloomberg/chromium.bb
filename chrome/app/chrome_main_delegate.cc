@@ -521,7 +521,8 @@ void ChromeMainDelegate::PostEarlyInitialization(bool is_running_tests) {
 
 #if defined(OS_CHROMEOS)
   // The feature list depends on BrowserPolicyConnectorChromeOS which depends
-  // on DBus, so initialize it here.
+  // on DBus, so initialize it here. Some D-Bus clients may depend on feature
+  // list, so initialize them separately later at the end of this function.
   chromeos::InitializeDBus();
 #endif
 
@@ -536,6 +537,11 @@ void ChromeMainDelegate::PostEarlyInitialization(bool is_running_tests) {
       LoadLocalState(chrome_feature_list_creator, is_running_tests);
   chrome_feature_list_creator->SetApplicationLocale(actual_locale);
   chrome_feature_list_creator->OverrideCachedUIStrings();
+
+#if defined(OS_CHROMEOS)
+  // Initialize D-Bus clients that depend on feature list.
+  chromeos::InitializeFeatureListDependentDBus();
+#endif
 }
 
 bool ChromeMainDelegate::ShouldCreateFeatureList() {
