@@ -22,8 +22,6 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
-#elif defined(OS_IOS)
-#include "base/ios/ios_util.h"
 #elif defined(OS_WIN)
 #include <windows.h>
 #endif
@@ -187,19 +185,6 @@ TEST_F(TimeTest, UTCTimeT) {
 
 // Test conversions to/from time_t and exploding/unexploding (local time).
 TEST_F(TimeTest, LocalTimeT) {
-#if defined(OS_IOS) && TARGET_OS_SIMULATOR
-  // The function CFTimeZoneCopySystem() fails to determine the system timezone
-  // when running iOS 11.0 simulator on an host running High Sierra and return
-  // the "GMT" timezone. This causes Time::LocalExplode and localtime_r values
-  // to differ by the local timezone offset. Disable the test if simulating
-  // iOS 10.0 as it is not possible to check the version of the host mac.
-  // TODO(crbug.com/782033): remove this once support for iOS pre-11.0 is
-  // dropped or when the bug in CFTimeZoneCopySystem() is fixed.
-  if (ios::IsRunningOnIOS10OrLater() && !ios::IsRunningOnIOS11OrLater()) {
-    return;
-  }
-#endif
-
   // C library time and exploded time.
   time_t now_t_1 = time(nullptr);
   struct tm tms;
