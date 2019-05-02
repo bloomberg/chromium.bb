@@ -105,16 +105,12 @@ base::string16 FormatAssociationState(const em::PolicyData* data) {
   return l10n_util::GetStringUTF16(IDS_POLICY_ASSOCIATION_STATE_UNMANAGED);
 }
 
-void GetStatusFromCore(const policy::CloudPolicyCore* core,
-                       base::DictionaryValue* dict) {
-  const policy::CloudPolicyStore* store = core->store();
-  const policy::CloudPolicyClient* client = core->client();
-  const policy::CloudPolicyRefreshScheduler* refresh_scheduler =
-        core->refresh_scheduler();
-
-  // CloudPolicyStore errors take precedence to show in the status message.
-  // Other errors (such as transient policy fetching problems) get displayed
-  // only if CloudPolicyStore is in STATUS_OK.
+// CloudPolicyStore errors take precedence to show in the status message.
+// Other errors (such as transient policy fetching problems) get displayed
+// only if CloudPolicyStore is in STATUS_OK.
+base::string16 GetPolicyStatusFromStore(
+    const policy::CloudPolicyStore* store,
+    const policy::CloudPolicyClient* client) {
   base::string16 status =
       policy::FormatStoreStatus(store->status(), store->validation_status());
   if (store->status() == policy::CloudPolicyStore::STATUS_OK) {
@@ -123,6 +119,17 @@ void GetStatusFromCore(const policy::CloudPolicyCore* core,
     else if (!store->is_managed())
       status = FormatAssociationState(store->policy());
   }
+  return status;
+}
+
+void GetStatusFromCore(const policy::CloudPolicyCore* core,
+                       base::DictionaryValue* dict) {
+  const policy::CloudPolicyStore* store = core->store();
+  const policy::CloudPolicyClient* client = core->client();
+  const policy::CloudPolicyRefreshScheduler* refresh_scheduler =
+      core->refresh_scheduler();
+
+  const base::string16 status = GetPolicyStatusFromStore(store, client);
 
   const em::PolicyData* policy = store->policy();
   std::string client_id = policy ? policy->device_id() : std::string();
@@ -238,7 +245,7 @@ class MachineLevelUserCloudPolicyStatusProvider
       public policy::CloudPolicyStore::Observer {
  public:
   explicit MachineLevelUserCloudPolicyStatusProvider(
-      policy::MachineLevelUserCloudPolicyStore* store);
+      policy::CloudPolicyCore* core);
   ~MachineLevelUserCloudPolicyStatusProvider() override;
 
   void GetStatus(base::DictionaryValue* dict) override;
@@ -248,7 +255,7 @@ class MachineLevelUserCloudPolicyStatusProvider
   void OnStoreError(policy::CloudPolicyStore* store) override;
 
  private:
-  policy::MachineLevelUserCloudPolicyStore* store_;
+  policy::CloudPolicyCore* core_;
 
   DISALLOW_COPY_AND_ASSIGN(MachineLevelUserCloudPolicyStatusProvider);
 };
@@ -400,21 +407,23 @@ void UserCloudPolicyStatusProvider::GetStatus(base::DictionaryValue* dict) {
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 
 MachineLevelUserCloudPolicyStatusProvider::
-    MachineLevelUserCloudPolicyStatusProvider(
-        policy::MachineLevelUserCloudPolicyStore* store) {
-  store_ = store;
-  if (store_)
-    store_->AddObserver(this);
+    MachineLevelUserCloudPolicyStatusProvider(policy::CloudPolicyCore* core)
+    : core_(core) {
+  if (core_->store())
+    core_->store()->AddObserver(this);
 }
 
 MachineLevelUserCloudPolicyStatusProvider::
     ~MachineLevelUserCloudPolicyStatusProvider() {
-  if (store_)
-    store_->RemoveObserver(this);
+  if (core_->store())
+    core_->store()->RemoveObserver(this);
 }
 
 void MachineLevelUserCloudPolicyStatusProvider::GetStatus(
     base::DictionaryValue* dict) {
+  policy::CloudPolicyStore* store = core_->store();
+  policy::CloudPolicyClient* client = core_->client();
+
   policy::BrowserDMTokenStorage* dmTokenStorage =
       policy::BrowserDMTokenStorage::Get();
 
@@ -431,12 +440,11 @@ void MachineLevelUserCloudPolicyStatusProvider::GetStatus(
 
     dict->SetString("deviceId", dmTokenStorage->RetrieveClientId());
   }
-  if (store_) {
-    base::string16 status = policy::FormatStoreStatus(
-        store_->status(), store_->validation_status());
+  if (store) {
+    base::string16 status = GetPolicyStatusFromStore(store, client);
 
     dict->SetString("status", status);
-    const em::PolicyData* policy = store_->policy();
+    const em::PolicyData* policy = store->policy();
     if (policy) {
       dict->SetString(
           "timeSinceLastRefresh",
@@ -706,7 +714,7 @@ void PolicyUIHandler::RegisterMessages() {
   if (manager) {
     machine_status_provider_ =
         std::make_unique<MachineLevelUserCloudPolicyStatusProvider>(
-            manager->store());
+            manager->core());
   }
 #endif  // !defined(OS_ANDROID)
 #endif  // defined(OS_CHROMEOS)
