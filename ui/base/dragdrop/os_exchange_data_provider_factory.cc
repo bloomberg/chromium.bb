@@ -18,28 +18,9 @@
 
 namespace ui {
 
-OSExchangeDataProviderFactory::Factory* factory_ = nullptr;
-
-// static
-void OSExchangeDataProviderFactory::SetFactory(Factory* factory) {
-  DCHECK(!factory_ || !factory);
-  factory_ = factory;
-}
-
-// static
-OSExchangeDataProviderFactory::Factory*
-OSExchangeDataProviderFactory::TakeFactory() {
-  OSExchangeDataProviderFactory::Factory* to_return = factory_;
-  factory_ = nullptr;
-  return to_return;
-}
-
 //static
 std::unique_ptr<OSExchangeData::Provider>
 OSExchangeDataProviderFactory::CreateProvider() {
-  if (factory_)
-    return factory_->BuildProvider();
-
 #if defined(USE_X11)
   return std::make_unique<OSExchangeDataProviderAuraX11>();
 #elif defined(OS_LINUX)

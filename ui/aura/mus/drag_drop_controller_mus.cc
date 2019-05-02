@@ -19,7 +19,6 @@
 #include "ui/aura/env.h"
 #include "ui/aura/mus/drag_drop_controller_host.h"
 #include "ui/aura/mus/mus_types.h"
-#include "ui/aura/mus/os_exchange_data_provider_mus.h"
 #include "ui/aura/mus/window_mus.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -79,8 +78,7 @@ bool DragDropControllerMus::DoesChangeIdMatchDragChangeId(uint32_t id) const {
 
 void DragDropControllerMus::OnDragDropStart(
     std::map<std::string, std::vector<uint8_t>> data) {
-  os_exchange_data_ = std::make_unique<ui::OSExchangeData>(
-      std::make_unique<aura::OSExchangeDataProviderMus>(std::move(data)));
+  os_exchange_data_ = std::make_unique<ui::OSExchangeData>();
 }
 
 uint32_t DragDropControllerMus::OnDragEnter(WindowMus* window,
@@ -188,17 +186,15 @@ int DragDropControllerMus::StartDragAndDrop(
     current_drag_state.source_window_tracker.Add(source_window);
   }
 
-  std::map<std::string, std::vector<uint8_t>> drag_data =
-      static_cast<const aura::OSExchangeDataProviderMus&>(data.provider())
-          .GetData();
+  std::map<std::string, std::vector<uint8_t>> drag_data;
 
   for (client::DragDropClientObserver& observer : observers_)
     observer.OnDragStarted();
 
-  window_tree_->PerformDragDrop(
-      change_id, source_window_mus->server_id(), screen_location,
-      mojo::MapToFlatMap(drag_data), data.provider().GetDragImage(),
-      data.provider().GetDragImageOffset(), drag_operations, mojo_source);
+  window_tree_->PerformDragDrop(change_id, source_window_mus->server_id(),
+                                screen_location, mojo::MapToFlatMap(drag_data),
+                                gfx::ImageSkia(), gfx::Vector2d(),
+                                drag_operations, mojo_source);
 
   run_loop.Run();
   return current_drag_state.completed_action;

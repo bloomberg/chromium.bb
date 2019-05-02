@@ -15,7 +15,6 @@
 #include "build/build_config.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "ui/aura/aura_export.h"
-#include "ui/base/dragdrop/os_exchange_data_provider_factory.h"
 #include "ui/events/event_target.h"
 #include "ui/events/system_input_injector.h"
 #include "ui/gfx/geometry/point.h"
@@ -68,7 +67,6 @@ class WindowTreeHost;
 
 // A singleton object that tracks general state within Aura.
 class AURA_EXPORT Env : public ui::EventTarget,
-                        public ui::OSExchangeDataProviderFactory::Factory,
                         public ui::SystemInputInjectorFactory,
                         public base::SupportsUserData {
  public:
@@ -230,11 +228,6 @@ class AURA_EXPORT Env : public ui::EventTarget,
 
   void Init(service_manager::Connector* connector);
 
-  // After calling this method, all OSExchangeDataProvider instances will be
-  // Mus instances. We can't do this work in Init(), because our mode may
-  // changed via the EnvTestHelper.
-  void EnableMusOSExchangeDataProvider();
-
   // After calling this method, all SystemInputInjectors will go through mus
   // instead of ozone.
   void EnableMusOverrideInputInjector();
@@ -252,9 +245,6 @@ class AURA_EXPORT Env : public ui::EventTarget,
   ui::EventTarget* GetParentTarget() override;
   std::unique_ptr<ui::EventTargetIterator> GetChildIterator() const override;
   ui::EventTargeter* GetEventTargeter() override;
-
-  // Overridden from ui::OSExchangeDataProviderFactory::Factory:
-  std::unique_ptr<ui::OSExchangeData::Provider> BuildProvider() override;
 
   // Overridden from SystemInputInjectorFactory:
   std::unique_ptr<ui::SystemInputInjector> CreateSystemInputInjector() override;
@@ -289,8 +279,6 @@ class AURA_EXPORT Env : public ui::EventTarget,
   // This may be set to true in tests to force using |last_mouse_location_|
   // rather than querying WindowTreeClient.
   bool always_use_last_mouse_location_ = false;
-  // Whether we set ourselves as the OSExchangeDataProviderFactory.
-  bool is_os_exchange_data_provider_factory_ = false;
   // Whether we set ourselves as the SystemInputInjectorFactory.
   bool is_override_input_injector_factory_ = false;
 

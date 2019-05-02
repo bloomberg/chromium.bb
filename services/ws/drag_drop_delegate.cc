@@ -9,45 +9,12 @@
 #include "base/strings/string16.h"
 #include "mojo/public/cpp/bindings/map.h"
 #include "services/ws/window_tree.h"
-#include "ui/aura/mus/os_exchange_data_provider_mus.h"
 #include "ui/base/dragdrop/drop_target_event.h"
 #include "ui/base/dragdrop/file_info.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "url/gurl.h"
 
 namespace ws {
-
-namespace {
-
-// Converts OSExchangeData into mime type data.
-using DragDataType = aura::OSExchangeDataProviderMus::Data;
-DragDataType GetDragData(const ui::OSExchangeData& data) {
-  aura::OSExchangeDataProviderMus mus_provider;
-
-  base::string16 string;
-  if (data.GetString(&string))
-    mus_provider.SetString(string);
-
-  GURL url;
-  base::string16 title;
-  if (data.GetURLAndTitle(ui::OSExchangeData::DO_NOT_CONVERT_FILENAMES, &url,
-                          &title)) {
-    mus_provider.SetURL(url, title);
-  }
-
-  std::vector<ui::FileInfo> file_names;
-  if (data.GetFilenames(&file_names))
-    mus_provider.SetFilenames(file_names);
-
-  base::string16 html;
-  GURL base_url;
-  if (data.GetHtml(&html, &base_url))
-    mus_provider.SetHtml(html, base_url);
-
-  return mus_provider.GetData();
-}
-
-}  // namespace
 
 DragDropDelegate::DragDropDelegate(WindowTree* window_tree,
                                    mojom::WindowTreeClient* window_tree_client,
@@ -114,7 +81,7 @@ void DragDropDelegate::StartDrag(const ui::DropTargetEvent& event) {
   DCHECK(!in_drag_);
 
   in_drag_ = true;
-  tree_client_->OnDragDropStart(mojo::MapToFlatMap(GetDragData(event.data())));
+  tree_client_->OnDragDropStart({});
 }
 
 void DragDropDelegate::EndDrag() {

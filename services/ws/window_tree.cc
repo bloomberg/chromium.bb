@@ -36,7 +36,6 @@
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/env.h"
-#include "ui/aura/mus/os_exchange_data_provider_mus.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/mus/property_utils.h"
 #include "ui/aura/window.h"
@@ -550,9 +549,7 @@ void WindowTree::DoPerformDragDrop(
     return;
   }
 
-  ui::OSExchangeData data(std::make_unique<aura::OSExchangeDataProviderMus>(
-      mojo::FlatMapToMap(drag_data)));
-  data.provider().SetDragImage(drag_image, drag_image_offset);
+  ui::OSExchangeData data;
 
   window_service_->delegate()->RunDragLoop(
       source_window, data, screen_location, drag_operation,

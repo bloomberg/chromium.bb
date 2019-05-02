@@ -17,7 +17,6 @@
 #include "ui/aura/local/window_port_local.h"
 #include "ui/aura/mouse_location_manager.h"
 #include "ui/aura/mus/mus_types.h"
-#include "ui/aura/mus/os_exchange_data_provider_mus.h"
 #include "ui/aura/mus/system_input_injector_mus.h"
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/mus/window_tree_client.h"
@@ -90,8 +89,6 @@ class EventObserverAdapter : public ui::EventHandler,
 // Env, public:
 
 Env::~Env() {
-  if (is_os_exchange_data_provider_factory_)
-    ui::OSExchangeDataProviderFactory::SetFactory(nullptr);
   if (is_override_input_injector_factory_)
     ui::SetSystemInputInjectorFactory(nullptr);
 
@@ -334,7 +331,6 @@ Env::Env(Mode mode)
 
 void Env::Init(service_manager::Connector* connector) {
   if (mode_ == Mode::MUS) {
-    EnableMusOSExchangeDataProvider();
     EnableMusOverrideInputInjector();
     // Remote clients should not throttle, only the window-service should
     // throttle (which corresponds to Mode::LOCAL).
@@ -367,13 +363,6 @@ void Env::Init(service_manager::Connector* connector) {
 #endif
   if (!ui::PlatformEventSource::GetInstance())
     event_source_ = ui::PlatformEventSource::CreateDefault();
-}
-
-void Env::EnableMusOSExchangeDataProvider() {
-  if (!is_os_exchange_data_provider_factory_) {
-    ui::OSExchangeDataProviderFactory::SetFactory(this);
-    is_os_exchange_data_provider_factory_ = true;
-  }
 }
 
 void Env::EnableMusOverrideInputInjector() {
@@ -421,10 +410,6 @@ std::unique_ptr<ui::EventTargetIterator> Env::GetChildIterator() const {
 ui::EventTargeter* Env::GetEventTargeter() {
   NOTREACHED();
   return nullptr;
-}
-
-std::unique_ptr<ui::OSExchangeData::Provider> Env::BuildProvider() {
-  return std::make_unique<aura::OSExchangeDataProviderMus>();
 }
 
 std::unique_ptr<ui::SystemInputInjector> Env::CreateSystemInputInjector() {

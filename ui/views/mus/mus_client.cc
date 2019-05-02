@@ -134,7 +134,6 @@ MusClient::~MusClient() {
   // we are still valid.
   owned_window_tree_client_.reset();
   window_tree_client_ = nullptr;
-  ui::OSExchangeDataProviderFactory::SetFactory(nullptr);
   ui::Clipboard::DestroyClipboardForCurrentThread();
 
   if (ViewsDelegate::GetInstance()) {
