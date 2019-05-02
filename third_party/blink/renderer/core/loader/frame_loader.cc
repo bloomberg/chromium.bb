@@ -402,15 +402,6 @@ void FrameLoader::FinishedParsing() {
   frame_->GetDocument()->CheckCompleted();
 }
 
-bool FrameLoader::AllAncestorsAreComplete() const {
-  for (Frame* ancestor = frame_; ancestor;
-       ancestor = ancestor->Tree().Parent()) {
-    if (ancestor->IsLoading())
-      return false;
-  }
-  return true;
-}
-
 void FrameLoader::DidFinishNavigation() {
   // We should have either finished the provisional or committed navigation if
   // this is called. Only delcare the whole frame finished if neither is in

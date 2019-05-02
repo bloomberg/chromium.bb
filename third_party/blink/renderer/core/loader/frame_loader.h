@@ -191,8 +191,6 @@ class CORE_EXPORT FrameLoader final {
 
   FrameLoaderStateMachine* StateMachine() const { return &state_machine_; }
 
-  bool AllAncestorsAreComplete() const;  // including this
-
   bool ShouldClose(bool is_reload = false);
   void DispatchUnloadEvent();
 
