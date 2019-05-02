@@ -205,9 +205,10 @@ void UsbDeviceAndroid::OnReadDescriptors(
   descriptor_ = *descriptor;
 
   if (usb_version() >= 0x0210) {
-    ReadWebUsbDescriptors(device_handle,
-                          base::Bind(&UsbDeviceAndroid::OnReadWebUsbDescriptors,
-                                     this, device_handle));
+    ReadWebUsbDescriptors(
+        device_handle,
+        base::BindOnce(&UsbDeviceAndroid::OnReadWebUsbDescriptors, this,
+                       device_handle));
   } else {
     device_handle->Close();
     CallRequestPermissionCallbacks(true);

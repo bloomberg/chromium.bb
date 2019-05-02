@@ -269,7 +269,7 @@ TEST_F(WebUsbDescriptorsTest, ReadDescriptors) {
       .WillOnce(InvokeCallback(kExampleUrlDescriptor1,
                                sizeof(kExampleUrlDescriptor1)));
 
-  ReadWebUsbDescriptors(device_handle, base::Bind(&ExpectLandingPage));
+  ReadWebUsbDescriptors(device_handle, base::BindOnce(&ExpectLandingPage));
 }
 
 }  // namespace

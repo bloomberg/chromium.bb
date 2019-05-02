@@ -136,9 +136,8 @@ void UsbDeviceWin::OnOpenedToReadWebUsbDescriptors(
   }
 
   ReadWebUsbDescriptors(
-      device_handle,
-      base::BindRepeating(&UsbDeviceWin::OnReadWebUsbDescriptors, this,
-                          base::Passed(&callback), device_handle));
+      device_handle, base::BindOnce(&UsbDeviceWin::OnReadWebUsbDescriptors,
+                                    this, std::move(callback), device_handle));
 }
 
 void UsbDeviceWin::OnReadWebUsbDescriptors(

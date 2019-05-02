@@ -202,13 +202,14 @@ void OnDeviceOpenedReadDescriptors(
 
       ReadUsbStringDescriptors(
           device_handle, std::move(string_map),
-          base::Bind(&SaveStringsAndRunContinuation, device, manufacturer,
-                     product, serial_number, barrier));
+          base::BindOnce(&SaveStringsAndRunContinuation, device, manufacturer,
+                         product, serial_number, barrier));
     }
 
     if (read_bos_descriptors) {
-      ReadWebUsbDescriptors(device_handle, base::Bind(&OnReadBosDescriptor,
-                                                      device_handle, barrier));
+      ReadWebUsbDescriptors(
+          device_handle,
+          base::BindOnce(&OnReadBosDescriptor, device_handle, barrier));
     }
   } else {
     std::move(failure_closure).Run();

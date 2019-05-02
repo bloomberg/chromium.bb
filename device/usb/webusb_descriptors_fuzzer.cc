@@ -27,7 +27,7 @@ void Done(const GURL& landing_page) {}
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   scoped_refptr<UsbDeviceHandle> device_handle =
       new FakeUsbDeviceHandle(data, size);
-  ReadWebUsbDescriptors(device_handle, base::Bind(&Done));
+  ReadWebUsbDescriptors(device_handle, base::BindOnce(&Done));
   return 0;
 }
 

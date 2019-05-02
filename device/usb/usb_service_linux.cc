@@ -38,7 +38,7 @@ const uint16_t kUsbVersion2_1 = 0x0210;
 
 const uint8_t kDeviceClassHub = 0x09;
 
-void OnReadDescriptors(const base::Callback<void(bool)>& callback,
+void OnReadDescriptors(base::OnceCallback<void(bool)> callback,
                        scoped_refptr<UsbDeviceHandle> device_handle,
                        const GURL& landing_page) {
   UsbDeviceLinux* device =
@@ -48,17 +48,18 @@ void OnReadDescriptors(const base::Callback<void(bool)>& callback,
     device->set_webusb_landing_page(landing_page);
 
   device_handle->Close();
-  callback.Run(true /* success */);
+  std::move(callback).Run(true /* success */);
 }
 
 void OnDeviceOpenedToReadDescriptors(
-    const base::Callback<void(bool)>& callback,
+    base::OnceCallback<void(bool)> callback,
     scoped_refptr<UsbDeviceHandle> device_handle) {
   if (device_handle) {
     ReadWebUsbDescriptors(
-        device_handle, base::Bind(&OnReadDescriptors, callback, device_handle));
+        device_handle,
+        base::BindOnce(&OnReadDescriptors, std::move(callback), device_handle));
   } else {
-    callback.Run(false /* failure */);
+    std::move(callback).Run(false /* failure */);
   }
 }
 
@@ -252,8 +253,8 @@ void UsbServiceLinux::OnDeviceAdded(const std::string& device_path,
   if (device->usb_version() >= kUsbVersion2_1) {
     device->Open(
         base::BindOnce(&OnDeviceOpenedToReadDescriptors,
-                       base::Bind(&UsbServiceLinux::DeviceReady,
-                                  weak_factory_.GetWeakPtr(), device)));
+                       base::BindOnce(&UsbServiceLinux::DeviceReady,
+                                      weak_factory_.GetWeakPtr(), device)));
   } else {
     DeviceReady(device, true /* success */);
   }

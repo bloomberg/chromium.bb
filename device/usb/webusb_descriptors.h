@@ -33,7 +33,7 @@ bool ParseWebUsbUrlDescriptor(const std::vector<uint8_t>& bytes, GURL* output);
 
 void ReadWebUsbDescriptors(
     scoped_refptr<UsbDeviceHandle> device_handle,
-    const base::Callback<void(const GURL& landing_page)>& callback);
+    base::OnceCallback<void(const GURL& landing_page)> callback);
 
 }  // device
 
