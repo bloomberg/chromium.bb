@@ -1574,6 +1574,7 @@
       'Optional Win10 Release (NVIDIA)',
       'Win10 FYI Debug (NVIDIA)',
       'Win10 FYI Release (NVIDIA)',
+      'Win10 FYI Release (NVIDIA GeForce GTX 1660)',
       'Win7 FYI Release (NVIDIA)',
       'Win7 FYI x64 Release (NVIDIA)',
     ],
