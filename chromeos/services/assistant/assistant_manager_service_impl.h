@@ -326,6 +326,8 @@ class AssistantManagerServiceImpl
   // the media that was being played has been stopped.
   base::Optional<media_session::MediaMetadata> media_metadata_ = base::nullopt;
 
+  bool start_finished_ = false;
+
   base::WeakPtrFactory<AssistantManagerServiceImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantManagerServiceImpl);

@@ -198,6 +198,7 @@ void AssistantManagerServiceImpl::Stop() {
   DCHECK_NE(state_, State::STARTED);
 
   state_ = State::STOPPED;
+  start_finished_ = false;
 
   // When user disables the feature, we also deletes all data.
   if (!service_->assistant_state()->settings_enabled().value() &&
@@ -284,6 +285,11 @@ void AssistantManagerServiceImpl::EnableHotword(bool enable) {
 }
 
 void AssistantManagerServiceImpl::SetArcPlayStoreEnabled(bool enable) {
+  if (!start_finished_) {
+    // Skip setting play store status if libassistant is not ready. The status
+    // will be set when it is ready.
+    return;
+  }
   // Both LibAssistant and Chrome threads may access |display_connection_|.
   // |display_connection_| is thread safe.
   display_connection_->SetArcPlayStoreEnabled(enable);
@@ -1041,8 +1047,13 @@ void AssistantManagerServiceImpl::HandleVerifyAndroidAppResponse(
 
 // assistant_client::DeviceStateListener overrides
 // Run on LibAssistant threads
+// This method currently only triggered as the callback of libassistant bootup
+// checkin. For example, it won't get triggered for opted-out users.
 void AssistantManagerServiceImpl::OnStartFinished() {
   ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnStartFinished);
+
+  // TODO(b/129896357): find a better place for additional setups.
+  start_finished_ = true;
 
   RegisterFallbackMediaHandler();
   AddMediaControllerObserver();
