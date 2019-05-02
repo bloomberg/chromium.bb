@@ -228,6 +228,10 @@ class CORE_EXPORT PointerEventManager
   // Adjust coordinates so it can be used to find the best clickable target.
   void AdjustTouchPointerEvent(WebPointerEvent&);
 
+  // Check if the SkipTouchEventFilter experiment is configured to skip
+  // filtering on the given event.
+  bool ShouldFilterEvent(PointerEvent* pointer_event);
+
   // NOTE: If adding a new field to this class please ensure that it is
   // cleared in |PointerEventManager::clear()|.
 
@@ -270,6 +274,12 @@ class CORE_EXPORT PointerEventManager
   // The pointerId of the PointerEvent currently being dispatched within this
   // frame or 0 if none.
   PointerId dispatching_pointer_id_;
+
+  // These flags are set for the SkipTouchEventFilter experiment. The
+  // experiment either skips filtering discrete (touch start/end) events to the
+  // main thread, or all events (touch start/end/move).
+  bool skip_touch_filter_discrete_ = false;
+  bool skip_touch_filter_all_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PointerEventManager);
 };

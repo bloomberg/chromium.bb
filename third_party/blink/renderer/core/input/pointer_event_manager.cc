@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/input/pointer_event_manager.h"
 
 #include "base/auto_reset.h"
+#include "base/metrics/field_trial_params.h"
 #include "third_party/blink/public/platform/web_touch_event.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/event_path.h"
@@ -25,10 +26,17 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
 namespace {
+
+// Field trial name for skipping touch filtering
+const char kSkipTouchEventFilterTrial[] = "SkipTouchEventFilter";
+const char kSkipTouchEventFilterTrialProcessParamName[] =
+    "skip_filtering_process";
+const char kSkipTouchEventFilterTrialTypeParamName[] = "type";
 
 size_t ToPointerTypeIndex(WebPointerProperties::PointerType t) {
   return static_cast<size_t>(t);
@@ -69,6 +77,18 @@ PointerEventManager::PointerEventManager(LocalFrame& frame,
       touch_event_manager_(MakeGarbageCollected<TouchEventManager>(frame)),
       mouse_event_manager_(mouse_event_manager) {
   Clear();
+  if (RuntimeEnabledFeatures::SkipTouchEventFilterEnabled() &&
+      base::GetFieldTrialParamValue(
+          kSkipTouchEventFilterTrial,
+          kSkipTouchEventFilterTrialProcessParamName) ==
+          "browser_and_renderer") {
+    skip_touch_filter_discrete_ = true;
+    if (base::GetFieldTrialParamValue(
+            kSkipTouchEventFilterTrial,
+            kSkipTouchEventFilterTrialTypeParamName) == "all") {
+      skip_touch_filter_all_ = true;
+    }
+  }
 }
 
 void PointerEventManager::Clear() {
@@ -160,8 +180,10 @@ WebInputEventResult PointerEventManager::DispatchPointerEvent(
 
   const PointerId pointer_id = pointer_event->pointerId();
   const AtomicString& event_type = pointer_event->type();
+  bool should_filter = ShouldFilterEvent(pointer_event);
 
-  if (!frame_ || !HasPointerEventListener(frame_->GetEventHandlerRegistry()))
+  if (should_filter &&
+      !HasPointerEventListener(frame_->GetEventHandlerRegistry()))
     return WebInputEventResult::kNotHandled;
 
   if (event_type == event_type_names::kPointerdown) {
@@ -172,13 +194,17 @@ WebInputEventResult PointerEventManager::DispatchPointerEvent(
     }
   }
 
-  if (!check_for_listener || target->HasEventListeners(event_type)) {
+  bool listeners_exist =
+      !check_for_listener || target->HasEventListeners(event_type);
+  if (listeners_exist) {
     UseCounter::Count(frame_->GetDocument(), WebFeature::kPointerEventDispatch);
     if (event_type == event_type_names::kPointerdown) {
       UseCounter::Count(frame_->GetDocument(),
                         WebFeature::kPointerEventDispatchPointerDown);
     }
+  }
 
+  if (!should_filter || listeners_exist) {
     DCHECK(!dispatching_pointer_id_);
     base::AutoReset<PointerId> dispatch_holder(&dispatching_pointer_id_,
                                                pointer_id);
@@ -355,6 +381,27 @@ void PointerEventManager::AdjustTouchPointerEvent(
 
   frame_->GetEventHandler().CacheTouchAdjustmentResult(
       pointer_event.unique_touch_event_id, pointer_event.PositionInWidget());
+}
+
+bool PointerEventManager::ShouldFilterEvent(PointerEvent* pointer_event) {
+  // Filter as normal if the experiment is disabled.
+  if (!skip_touch_filter_discrete_)
+    return true;
+
+  // If the experiment is enabled and the event is pointer up/down, do not
+  // filter.
+  if (pointer_event->type() == event_type_names::kPointerdown ||
+      pointer_event->type() == event_type_names::kPointerup) {
+    return false;
+  }
+  // If the experiment is "all", do not filter pointermove.
+  if (skip_touch_filter_all_ &&
+      pointer_event->type() == event_type_names::kPointermove)
+    return false;
+
+  // Continue filtering other types of events, even thought the experiment is
+  // enabled.
+  return true;
 }
 
 event_handling_util::PointerEventTarget

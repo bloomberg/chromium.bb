@@ -907,6 +907,14 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HitTestTouchEvent(
     }
   }
 
+  // Depending on which arm of the SkipTouchEventFilter experiment we're on, we
+  // may need to simulate a passive listener instead of dropping touch events.
+  if (result == DROP_EVENT &&
+      (skip_touch_filter_all_ ||
+       (skip_touch_filter_discrete_ &&
+        touch_event.GetType() == WebInputEvent::kTouchStart)))
+    result = DID_HANDLE_NON_BLOCKING;
+
   // Merge |touch_result_| and |result| so the result has the highest
   // priority value according to the sequence; (DROP_EVENT,
   // DID_HANDLE_NON_BLOCKING, DID_NOT_HANDLE).
