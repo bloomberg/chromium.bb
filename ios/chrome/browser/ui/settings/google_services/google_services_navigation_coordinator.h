@@ -8,6 +8,7 @@
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
 @protocol ApplicationCommands;
+@protocol BrowserCommands;
 @class GoogleServicesNavigationCoordinator;
 
 // GoogleServicesNavigationCoordinator delegate.
@@ -26,7 +27,8 @@
 @property(nonatomic, weak) id<GoogleServicesNavigationCoordinatorDelegate>
     delegate;
 // Global dispatcher.
-@property(nonatomic, weak) id<ApplicationCommands> dispatcher;
+@property(nonatomic, weak) id<ApplicationCommands, BrowserCommands>
+    dispatcherForSettings;
 
 // Dismisses the Google services navigation view controller.
 - (void)dismissAnimated:(BOOL)animated;
