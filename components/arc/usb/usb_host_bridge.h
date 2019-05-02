@@ -5,18 +5,20 @@
 #ifndef COMPONENTS_ARC_USB_USB_HOST_BRIDGE_H_
 #define COMPONENTS_ARC_USB_USB_HOST_BRIDGE_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/scoped_observer.h"
+#include "base/sequence_checker.h"
 #include "components/arc/common/usb_host.mojom.h"
 #include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "device/usb/public/mojom/device.mojom.h"
 #include "device/usb/public/mojom/device_manager.mojom.h"
-#include "device/usb/usb_device.h"
-#include "device/usb/usb_service.h"
+#include "device/usb/public/mojom/device_manager_client.mojom.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 
 namespace content {
 class BrowserContext;
@@ -32,7 +34,7 @@ class ArcUsbHostUiDelegate;
 // Private implementation of UsbHostHost.
 class ArcUsbHostBridge : public KeyedService,
                          public ConnectionObserver<mojom::UsbHostInstance>,
-                         public device::UsbService::Observer,
+                         public device::mojom::UsbDeviceManagerClient,
                          public mojom::UsbHostHost {
  public:
   // Returns singleton instance for the given BrowserContext,
@@ -41,8 +43,8 @@ class ArcUsbHostBridge : public KeyedService,
       content::BrowserContext* context);
 
   // The constructor will register an Observer with ArcBridgeService.
-  explicit ArcUsbHostBridge(content::BrowserContext* context,
-                            ArcBridgeService* bridge_service);
+  ArcUsbHostBridge(content::BrowserContext* context,
+                   ArcBridgeService* bridge_service);
   ~ArcUsbHostBridge() override;
 
   // Returns the factory instance for this class.
@@ -62,11 +64,6 @@ class ArcUsbHostBridge : public KeyedService,
   void GetDeviceInfo(const std::string& guid,
                      GetDeviceInfoCallback callback) override;
 
-  // device::UsbService::Observer overrides:
-  void OnDeviceAdded(scoped_refptr<device::UsbDevice> device) override;
-  void OnDeviceRemoved(scoped_refptr<device::UsbDevice> device) override;
-  void WillDestroyUsbService() override;
-
   // ConnectionObserver<mojom::UsbHostInstance> overrides:
   void OnConnectionReady() override;
   void OnConnectionClosed() override;
@@ -77,26 +74,39 @@ class ArcUsbHostBridge : public KeyedService,
   void SetUiDelegate(ArcUsbHostUiDelegate* ui_delegate);
 
  private:
+  // Init |devices_| once the device list has been returned, so that we
+  // can get UsbDeviceInfo from |guid| for other methods.
+  void InitDeviceList(std::vector<device::mojom::UsbDeviceInfoPtr> devices);
   std::vector<std::string> GetEventReceiverPackages(
-      scoped_refptr<device::UsbDevice> device);
+      const device::mojom::UsbDeviceInfo& device_info);
   void OnDeviceChecked(const std::string& guid, bool allowed);
-  void DoRequestUserAuthorization(const std::string& guid,
-                                  const std::string& package,
-                                  RequestPermissionCallback callback);
-  bool HasPermissionForDevice(const std::string& guid,
+  bool HasPermissionForDevice(const device::mojom::UsbDeviceInfo& device_info,
                               const std::string& package);
   void HandleScanDeviceListRequest(const std::string& package,
                                    RequestPermissionCallback callback);
+  void Disconnect();
+
+  // device::mojom::UsbDeviceManagerClient implementation.
+  void OnDeviceAdded(device::mojom::UsbDeviceInfoPtr device_info) override;
+  void OnDeviceRemoved(device::mojom::UsbDeviceInfoPtr device_info) override;
+
+  SEQUENCE_CHECKER(sequence_);
 
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
   mojom::UsbHostHostPtr usb_host_ptr_;
-  ScopedObserver<device::UsbService, device::UsbService::Observer>
-      usb_observer_;
-  device::UsbService* usb_service_;
+
+  // Connection to the DeviceService for usb manager.
+  device::mojom::UsbDeviceManagerPtr usb_manager_;
+  mojo::AssociatedBinding<device::mojom::UsbDeviceManagerClient>
+      client_binding_{this};
+
+  // A mapping from GUID -> UsbDeviceInfoPtr for each attached USB device.
+  std::map<std::string, device::mojom::UsbDeviceInfoPtr> devices_;
+
   ArcUsbHostUiDelegate* ui_delegate_ = nullptr;
 
   // WeakPtrFactory to use for callbacks.
-  base::WeakPtrFactory<ArcUsbHostBridge> weak_factory_;
+  base::WeakPtrFactory<ArcUsbHostBridge> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcUsbHostBridge);
 };
