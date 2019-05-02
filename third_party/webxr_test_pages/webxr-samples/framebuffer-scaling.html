@@ -117,6 +117,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
 
       function onSessionStarted(session) {
+        session.mode = 'immersive-vr';
         xrButton.setSession(session);
 
         session.addEventListener('end', onSessionEnded);

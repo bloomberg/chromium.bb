@@ -103,6 +103,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         // This will likely prompt the user to allow camera use, so the promise
         // may remain outstanding for a while.
         navigator.xr.requestSession('immersive-ar').then((session) => {
+            session.mode = 'immersive-ar';
             xrButton.setSession(session);
             onSessionStarted(session);
         });

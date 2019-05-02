@@ -90,6 +90,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       function onRequestSession() {
         navigator.xr.requestSession('immersive-vr').then((session) => {
+          session.mode = 'immersive-vr';
           // In order to mirror an exclusive session, we must provide
           // an XRPresentationContext, which indicates the canvas that will
           // contain results of the session's rendering.

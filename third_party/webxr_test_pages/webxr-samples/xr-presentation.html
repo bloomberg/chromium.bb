@@ -100,6 +100,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       // Called when we've successfully acquired a XRSession. In response we
       // will set up the necessary session state and kick off the frame loop.
       function onSessionStarted(session) {
+        session.mode = 'immersive-vr';
         // This informs the 'Enter XR' button that the session has started and
         // that it should display 'Exit XR' instead.
         xrButton.setSession(session);

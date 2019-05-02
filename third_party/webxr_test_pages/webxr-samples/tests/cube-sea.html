@@ -306,14 +306,17 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
 
       function onRequestSession() {
-        let xrOptions = appSettings.arMode ? 'immersive-ar' : 'immersive-vr';
-        navigator.xr.requestSession(xrOptions).then((session) => {
+        let xrMode = appSettings.arMode ? 'immersive-ar' : 'immersive-vr';
+        navigator.xr.requestSession(xrMode).then((session) => {
+          session.mode = xrMode;
           xrButton.setSession(session);
           onSessionStarted(session);
         });
       }
 
       function onSessionStarted(session) {
+        if (!session.mode)
+          session.mode = 'inline';
         session.addEventListener('end', onSessionEnded);
 
         initGL();

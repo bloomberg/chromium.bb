@@ -216,12 +216,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       function onRequestSession() {
         navigator.xr.requestSession('immersive-vr').then((session) => {
+          session.mode = 'immersive-vr';
           xrButton.setSession(session);
           onSessionStarted(session);
         });
       }
 
       function onSessionStarted(session) {
+        if (!session.mode) {
+          session.mode = 'inline';
+        }
         session.addEventListener('end', onSessionEnded);
 
         session.addEventListener('select', (ev) => {

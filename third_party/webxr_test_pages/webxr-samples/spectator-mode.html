@@ -103,6 +103,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
           navigator.xr.requestSession('inline')
               .then((session) => {
+                session.mode = 'inline';
                 document.body.appendChild(outputCanvas);
                 session.updateRenderState({
                   outputContext: outputCanvas.getContext('xrpresent')
@@ -141,6 +142,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       function onRequestSession() {
         navigator.xr.requestSession('immersive-vr').then((session) => {
+          session.mode = 'immersive-vr';
           xrButton.setSession(session);
           onSessionStarted(session);
 

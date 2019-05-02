@@ -1196,6 +1196,11 @@ var XRDevice = function (_EventTarget) {
           try {
             sessionId = $await_1;
             session = new XRSession(this[PRIVATE$11].polyfill, this, sessionOptions, sessionId);
+            // TODO(crbug.com/958922): remove polyfill from tests.
+            if (sessionOptions.immersive)
+              session.mode = 'immersive-vr';
+            else
+              session.mode = 'inline';
             if (sessionOptions.immersive) {
               this[PRIVATE$11].immersiveSession = session;
             } else {
