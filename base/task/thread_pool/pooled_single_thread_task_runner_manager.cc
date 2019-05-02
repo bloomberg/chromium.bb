@@ -240,7 +240,27 @@ class WorkerThreadCOMDelegate : public WorkerThreadDelegate {
     //   have work:
     //   Process task sources from each source round-robin style.
     CheckedAutoLock auto_lock(lock_);
-    DCHECK(worker_awake_);
+
+    // |worker_awake_| is always set before a call to WakeUp(), but it is
+    // not set when messages are added to the Windows Message Queue. Ensure that
+    // it is set before getting work, to avoid unnecessary wake ups.
+    //
+    // Note: It wouldn't be sufficient to set |worker_awake_| in WaitForWork()
+    // when MsgWaitForMultipleObjectsEx() indicates that it was woken up by a
+    // Windows Message, because of the following scenario:
+    //  T1: PostTask
+    //      Queue task
+    //      Set |worker_awake_| to true
+    //  T2: Woken up by a Windows Message
+    //      Set |worker_awake_| to true
+    //      Run the task posted by T1
+    //      Wait for work
+    //  T1: WakeUp()
+    //  T2: Woken up by Waitable Event
+    //      Does not set |worker_awake_| (wake up not from Windows Message)
+    //      GetWork
+    //      !! Getting work while |worker_awake_| is false !!
+    worker_awake_ = true;
     scoped_refptr<TaskSource> task_source;
     if (get_work_first_) {
       task_source = WorkerThreadDelegate::GetWorkLockRequired(worker);
@@ -279,12 +299,8 @@ class WorkerThreadCOMDelegate : public WorkerThreadDelegate {
     const DWORD milliseconds_wait = checked_cast<DWORD>(
         sleep_time.is_max() ? INFINITE : sleep_time.InMilliseconds());
     const HANDLE wake_up_event_handle = wake_up_event->handle();
-    DWORD reason = MsgWaitForMultipleObjectsEx(
-        1, &wake_up_event_handle, milliseconds_wait, QS_ALLINPUT, 0);
-    if (reason != WAIT_OBJECT_0) {
-      CheckedAutoLock auto_lock(lock_);
-      worker_awake_ = true;
-    }
+    MsgWaitForMultipleObjectsEx(1, &wake_up_event_handle, milliseconds_wait,
+                                QS_ALLINPUT, 0);
   }
 
  private:
