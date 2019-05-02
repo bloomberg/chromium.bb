@@ -128,12 +128,10 @@ Bug(none) fast/forms/validation-bubble-device-emulation-change.html [ Failure ]
 Bug(none) fast/webgl/pixelated.html [ Failure ]
 Bug(none) images/color-profile-svg-foreign-object.html [ Failure ]
 Bug(none) fast/multicol/insane-column-count-and-padding-nested-crash.html [ Crash ]
-Bug(none) fast/sub-pixel/repaint-subpixel-layer-in-subpixel-composited-layer.html [ Failure ]
 Bug(none) fast/sub-pixel/should-not-repaint-subpixel-composited-layer.html [ Failure ]
 Bug(none) fast/sub-pixel/transformed-iframe-copy-on-scroll.html [ Failure ]
 Bug(none) fragmentation/outline-crossing-columns.html [ Crash ]
 Bug(none) fullscreen/compositor-touch-hit-rects-fullscreen-video-controls.html [ Failure ]
-Bug(none) http/tests/misc/slow-loading-mask.html [ Failure ]
 Bug(none) http/tests/subresource_filter/ad-highlight-frame-resized.html [ Failure ]
 Bug(none) paint/pagination/pagination-change-clip-crash.html [ Failure ]
 Bug(none) printing/fixed-positioned-headers-and-footers-absolute-covering-some-pages.html [ Failure ]
@@ -247,13 +245,12 @@ Bug(none) css3/blending/mix-blend-mode-isolation-layer.html [ Failure ]
 Bug(none) css3/blending/mix-blend-mode-isolation-remove.html [ Failure ]
 
 # virtual/threaded variants of sub-directories and tests already skipped or marked as failing above.
-Bug(none) virtual/threaded/fast/events/pinch/gesture-pinch-zoom-scroll-bubble.html [ Timeout ]
 Bug(none) virtual/threaded/fast/events/pinch/pinch-zoom-pan-within-zoomed-viewport.html [ Failure ]
 Bug(none) virtual/threaded/fast/events/pinch/scroll-visual-viewport-send-boundary-events.html [ Timeout ]
 Bug(none) virtual/threaded/fast/scroll-behavior/first-scroll-runs-on-compositor.html [ Failure ]
 Bug(none) virtual/threaded/compositing/visibility/layer-visible-content.html [ Failure ]
 Bug(none) virtual/threaded/compositing/visibility/visibility-image-layers-dynamic.html [ Failure ]
-Bug(none) virtual/threaded/synthetic_gestures/smooth-scroll-tiny-delta.html [ Failure Timeout ]
+Bug(none) virtual/threaded/synthetic_gestures/smooth-scroll-tiny-delta.html [ Failure Timeout Pass ]
 
 Bug(none) fast/block/float/float-change-composited-scrolling.html [ Failure ]
 
@@ -359,7 +356,6 @@ crbug.com/882075 compositing/overflow/composited-sticky-element-with-non-integer
 
 Bug(none) compositing/overflow/ancestor-with-clip-path.html [ Failure ]
 Bug(none) compositing/overflow/descendant-with-clip-path.html [ Failure ]
-Bug(none) fast/css/pseudo-element-selector-scrollbar-hover.html [ Failure ]
 Bug(none) paint/invalidation/media-audio-no-spurious-repaints.html [ Failure ]
 Bug(none) paint/invalidation/subpixel-shadow-included-in-invalidation.html [ Failure ]
 Bug(none) paint/invalidation/clip/clip-path-constant-repaint.html [ Failure ]
@@ -370,7 +366,6 @@ Bug(none) svg/transforms/text-with-mask-with-svg-transform.svg [ Failure ]
 
 Bug(none) compositing/squashing/frame-clip-squashed-scrolled.html [ Failure ]
 Bug(none) paint/invalidation/selection/japanese-rl-selection-repaint.html [ Failure ]
-Bug(none) virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Failure ]
 Bug(none) compositing/overflow/scrollbar-layer-placement-negative-z-index-child-positioned.html [ Failure ]
 
 Bug(none) paint/float/float-under-inline-self-painting-change.html [ Failure ]
@@ -396,17 +391,6 @@ crbug.com/909749 fast/events/touch/compositor-touch-hit-rects-transform-changed-
 crbug.com/909749 fast/events/touch/compositor-touch-hit-rects-visibility-hidden.html [ Failure ]
 crbug.com/909749 fast/events/touch/compositor-touch-hit-rects.html [ Failure ]
 crbug.com/909749 fast/events/touch/touch-rect-crash-on-unpromote-layer.html [ Failure ]
-crbug.com/924680 virtual/threaded/fast/events/pinch/pinch-zoom-into-center.html [ Failure ]
-crbug.com/924680 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchpad.html [ Failure ]
-
-# These were introduced when we started setting the scrolls_outer_viewport bit on ScrollNodes
-Bug(none) virtual/fractional_scrolling_threaded/fast/scrolling/hover-during-scroll.html [ Failure ]
-Bug(none) virtual/fractional_scrolling_threaded/fast/scrolling/no-hover-during-scroll.html [ Failure ]
-Bug(none) virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-disabled-frame-no-scroll-manual.tentative.html [ Failure ]
-Bug(none) virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-action-manual.tentative.html [ Failure ]
-Bug(none) virtual/threaded/fast/scrolling/hover-during-scroll.html [ Failure ]
-Bug(none) virtual/threaded/fast/scrolling/no-hover-during-scroll.html [ Failure ]
-Bug(none) virtual/threaded/synthetic_gestures/animated-wheel-tiny-delta.html [ Failure ]
 
 # Backdrop filter
 crbug.com/923429 css3/filters/backdrop-filter-basic-blur.html [ Failure ]
@@ -423,8 +407,6 @@ crbug.com/923429 external/wpt/css/filter-effects/backdrop-filter-isolation.html 
 crbug.com/940033 virtual/fractional_scrolling_threaded/fast/scrolling/wheel-scrolling-over-custom-scrollbar.html [ Failure ]
 crbug.com/940033 virtual/threaded/fast/scrolling/wheel-scrolling-over-custom-scrollbar.html [ Failure ]
 
-Bug(none) virtual/threaded/fast/scrolling/scroll-then-composite.html [ Failure ]
-Bug(none) virtual/fractional_scrolling_threaded/fast/scrolling/scroll-then-composite.html [ Failure ]
 
 # Missing composited layer for fixed-position
 crbug.com/931491 compositing/layer-creation/fixed-position-change-out-of-view-in-view.html [ Failure ]
