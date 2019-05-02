@@ -161,7 +161,7 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
       isAccessibilityContentSize ? kAlertWidthAccessibilty : kAlertWidth;
   NSLayoutConstraint* widthConstraint =
       [self.contentView.widthAnchor constraintEqualToConstant:alertWidth];
-  widthConstraint.priority = 999;
+  widthConstraint.priority = UILayoutPriorityRequired - 1;
 
   [NSLayoutConstraint activateConstraints:@[
     widthConstraint,
@@ -196,15 +196,34 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
 
   ]];
 
+  UIScrollView* scrollView = [[UIScrollView alloc] init];
+  scrollView.showsVerticalScrollIndicator = YES;
+  scrollView.showsHorizontalScrollIndicator = NO;
+  scrollView.translatesAutoresizingMaskIntoConstraints = NO;
+  scrollView.scrollEnabled = YES;
+  scrollView.contentInsetAdjustmentBehavior =
+      UIScrollViewContentInsetAdjustmentAlways;
+  [self.contentView addSubview:scrollView];
+  AddSameConstraints(scrollView, self.contentView);
+
   UIStackView* stackView = [[UIStackView alloc] init];
   stackView.axis = UILayoutConstraintAxisVertical;
   stackView.translatesAutoresizingMaskIntoConstraints = NO;
   stackView.alignment = UIStackViewAlignmentCenter;
-  [self.contentView addSubview:stackView];
+  [scrollView addSubview:stackView];
+
+  NSLayoutConstraint* heightConstraint = [scrollView.heightAnchor
+      constraintEqualToAnchor:scrollView.contentLayoutGuide.heightAnchor
+                   multiplier:1];
+  // UILayoutPriorityDefaultHigh is the default priority for content
+  // compression. Setting this lower avoids compressing the content of the
+  // scroll view.
+  heightConstraint.priority = UILayoutPriorityDefaultHigh - 1;
+  heightConstraint.active = YES;
 
   ChromeDirectionalEdgeInsets stackViewInsets =
       ChromeDirectionalEdgeInsetsMake(kAlertMarginTop, 0, 0, 0);
-  AddSameConstraintsWithInsets(stackView, self.contentView, stackViewInsets);
+  AddSameConstraintsWithInsets(stackView, scrollView, stackViewInsets);
 
   if (self.title.length) {
     UILabel* titleLabel = [[UILabel alloc] init];
