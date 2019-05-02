@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/web_state/ui/wk_navigation_action_policy_util.h"
+#import "ios/web/navigation/wk_navigation_action_policy_util.h"
 
 #import <WebKit/WebKit.h>
 
 #include "base/test/scoped_feature_list.h"
 #include "ios/web/common/features.h"
-#include "ios/web/web_state/ui/block_universal_links_buildflags.h"
+#include "ios/web/navigation/block_universal_links_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 

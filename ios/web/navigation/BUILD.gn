@@ -2,10 +2,18 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
 import("//ios/build/config.gni")
+import("//ios/features.gni")
+
+buildflag_header("block_universal_links_buildflags") {
+  header = "block_universal_links_buildflags.h"
+  flags = [ "BLOCK_UNIVERSAL_LINKS_IN_OFF_THE_RECORD_MODE=$block_universal_links_in_off_the_record_mode" ]
+}
 
 source_set("navigation") {
   deps = [
+    ":block_universal_links_buildflags",
     ":core",
     "//base",
     "//ios/web:core",
@@ -43,6 +51,10 @@ source_set("navigation") {
     "time_smoother.h",
     "wk_based_navigation_manager_impl.h",
     "wk_based_navigation_manager_impl.mm",
+    "wk_navigation_action_policy_util.h",
+    "wk_navigation_action_policy_util.mm",
+    "wk_navigation_action_util.h",
+    "wk_navigation_action_util.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]

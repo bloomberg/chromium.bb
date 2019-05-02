@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/web_state/ui/wk_navigation_action_util.h"
+#import "ios/web/navigation/wk_navigation_action_util.h"
 
 #import <WebKit/WebKit.h>
 
@@ -65,9 +65,8 @@ GetNavigationActionInitiationTypeWithVoiceOverOff(
 NavigationActionInitiationType GetNavigationActionInitiationTypeWithVoiceOverOn(
     NSString* action_description) {
   NSRegularExpression* position_regex = [NSRegularExpression
-      regularExpressionWithPattern:
-          @"\\bposition x = ([0-9]+\\.?[0-9]+) y = "
-          @"([0-9]+\\.?[0-9]+)\\b"
+      regularExpressionWithPattern:@"\\bposition x = ([0-9]+\\.?[0-9]+) y = "
+                                   @"([0-9]+\\.?[0-9]+)\\b"
                            options:NSRegularExpressionCaseInsensitive
                              error:nil];
   NSTextCheckingResult* position_match_result = [position_regex

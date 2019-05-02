@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/web_state/ui/wk_navigation_action_util.h"
+#import "ios/web/navigation/wk_navigation_action_util.h"
 
 #import <WebKit/WebKit.h>
 
