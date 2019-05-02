@@ -77,7 +77,7 @@
 //    00000000|00000000
 //
 // A loopfilter should be applied to every other 4x4 horizontally.
-#if LOOP_FILTER_BITMASK
+#if CONFIG_LPF_MASK
 static const int mask_id_table_tx_4x4[BLOCK_SIZES_ALL] = {
   0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, -1, -1, -1, 13, 14, 15, 16, 17, 18
 };
@@ -1431,4 +1431,4 @@ void av1_store_bitmask_other_info(AV1_COMMON *cm, int mi_row, int mi_col,
            sizeof(uint8_t) * mi_size_wide[bsize]);
   }
 }
-#endif  // LOOP_FILTER_BITMASK
+#endif  // CONFIG_LPF_MASK

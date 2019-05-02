@@ -133,6 +133,8 @@ set_aom_config_var(CONFIG_COLLECT_PARTITION_STATS 0 NUMBER
                    "Collect stats on partition decisions.")
 set_aom_config_var(CONFIG_COLLECT_COMPONENT_TIMING 0 NUMBER
                    "Collect encoding component timing information.")
+set_aom_config_var(CONFIG_LPF_MASK 0 NUMBER
+                   "Enable the use loop filter bitmasks for optimizations.")
 #
 # Variables in this section control optional features of the build system.
 #

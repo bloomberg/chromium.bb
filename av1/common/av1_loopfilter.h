@@ -38,7 +38,7 @@ typedef struct {
   uint64_t bits[4];
 } FilterMask;
 
-#if LOOP_FILTER_BITMASK
+#if CONFIG_LPF_MASK
 // This structure holds bit masks for all 4x4 blocks in a 64x64 region.
 // Each 1 bit represents a position in which we want to apply the loop filter.
 // For Y plane, 4x4 in 64x64 requires 16x16 = 256 bit, therefore we use 4
@@ -77,7 +77,7 @@ typedef struct {
   FilterMask tx_size_ver[2][5];
   FilterMask tx_size_hor[2][5];
 } LoopFilterMask;
-#endif  // LOOP_FILTER_BITMASK
+#endif  // CONFIG_LPF_MASK
 
 struct loopfilter {
   int filter_level[2];
@@ -98,11 +98,11 @@ struct loopfilter {
 
   int combine_vert_horz_lf;
 
-#if LOOP_FILTER_BITMASK
+#if CONFIG_LPF_MASK
   LoopFilterMask *lfm;
   size_t lfm_num;
   int lfm_stride;
-#endif  // LOOP_FILTER_BITMASK
+#endif  // CONFIG_LPF_MASK
 };
 
 // Need to align this structure so when it is declared and
@@ -128,7 +128,7 @@ void av1_loop_filter_init(struct AV1Common *cm);
 void av1_loop_filter_frame_init(struct AV1Common *cm, int plane_start,
                                 int plane_end);
 
-#if LOOP_FILTER_BITMASK
+#if CONFIG_LPF_MASK
 void av1_loop_filter_frame(YV12_BUFFER_CONFIG *frame, struct AV1Common *cm,
                            struct macroblockd *mbd, int is_decoding,
                            int plane_start, int plane_end, int partial_frame);
@@ -160,7 +160,7 @@ typedef struct LoopFilterWorkerData {
 uint8_t av1_get_filter_level(const struct AV1Common *cm,
                              const loop_filter_info_n *lfi_n, const int dir_idx,
                              int plane, const MB_MODE_INFO *mbmi);
-#if LOOP_FILTER_BITMASK
+#if CONFIG_LPF_MASK
 void av1_filter_block_plane_ver(struct AV1Common *const cm,
                                 struct macroblockd_plane *const plane_ptr,
                                 int pl, int mi_row, int mi_col);
@@ -199,7 +199,7 @@ void av1_store_bitmask_other_info(struct AV1Common *cm, int mi_row, int mi_col,
 void av1_store_bitmask_vartx(struct AV1Common *cm, int mi_row, int mi_col,
                              BLOCK_SIZE bsize, TX_SIZE tx_size,
                              MB_MODE_INFO *mbmi);
-#endif  // LOOP_FILTER_BITMASK
+#endif  // CONFIG_LPF_MASK
 
 #ifdef __cplusplus
 }  // extern "C"

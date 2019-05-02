@@ -606,7 +606,7 @@ void av1_filter_block_plane_horz_test(const AV1_COMMON *const cm,
 
 static void loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
                              MACROBLOCKD *xd, int start, int stop,
-#if LOOP_FILTER_BITMASK
+#if CONFIG_LPF_MASK
                              int is_decoding,
 #endif
                              int plane_start, int plane_end) {
@@ -616,7 +616,7 @@ static void loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
   int mi_row, mi_col;
   int plane;
 
-#if LOOP_FILTER_BITMASK
+#if CONFIG_LPF_MASK
   if (is_decoding) {
     cm->is_decoding = is_decoding;
     for (plane = plane_start; plane < plane_end; plane++) {
@@ -715,7 +715,7 @@ static void loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
 
 void av1_loop_filter_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
                            MACROBLOCKD *xd,
-#if LOOP_FILTER_BITMASK
+#if CONFIG_LPF_MASK
                            int is_decoding,
 #endif
                            int plane_start, int plane_end, int partial_frame) {
@@ -731,7 +731,7 @@ void av1_loop_filter_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
   end_mi_row = start_mi_row + mi_rows_to_filter;
   av1_loop_filter_frame_init(cm, plane_start, plane_end);
   loop_filter_rows(frame, cm, xd, start_mi_row, end_mi_row,
-#if LOOP_FILTER_BITMASK
+#if CONFIG_LPF_MASK
                    is_decoding,
 #endif
                    plane_start, plane_end);

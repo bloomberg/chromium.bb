@@ -1250,7 +1250,7 @@ static void set_inter_tx_size(MB_MODE_INFO *mbmi, int stride_log2,
 
 static void read_tx_size_vartx(MACROBLOCKD *xd, MB_MODE_INFO *mbmi,
                                TX_SIZE tx_size, int depth,
-#if LOOP_FILTER_BITMASK
+#if CONFIG_LPF_MASK
                                AV1_COMMON *cm, int mi_row, int mi_col,
                                int store_bitmask,
 #endif
@@ -1295,7 +1295,7 @@ static void read_tx_size_vartx(MACROBLOCKD *xd, MB_MODE_INFO *mbmi,
       mbmi->tx_size = sub_txs;
       txfm_partition_update(xd->above_txfm_context + blk_col,
                             xd->left_txfm_context + blk_row, sub_txs, tx_size);
-#if LOOP_FILTER_BITMASK
+#if CONFIG_LPF_MASK
       if (store_bitmask) {
         av1_store_bitmask_vartx(cm, mi_row + blk_row, mi_col + blk_col,
                                 txsize_to_bsize[tx_size], TX_4X4, mbmi);
@@ -1303,7 +1303,7 @@ static void read_tx_size_vartx(MACROBLOCKD *xd, MB_MODE_INFO *mbmi,
 #endif
       return;
     }
-#if LOOP_FILTER_BITMASK
+#if CONFIG_LPF_MASK
     if (depth + 1 == MAX_VARTX_DEPTH && store_bitmask) {
       av1_store_bitmask_vartx(cm, mi_row + blk_row, mi_col + blk_col,
                               txsize_to_bsize[tx_size], sub_txs, mbmi);
@@ -1317,7 +1317,7 @@ static void read_tx_size_vartx(MACROBLOCKD *xd, MB_MODE_INFO *mbmi,
         int offsetr = blk_row + row;
         int offsetc = blk_col + col;
         read_tx_size_vartx(xd, mbmi, sub_txs, depth + 1,
-#if LOOP_FILTER_BITMASK
+#if CONFIG_LPF_MASK
                            cm, mi_row, mi_col, store_bitmask,
 #endif
                            offsetr, offsetc, r);
@@ -1329,7 +1329,7 @@ static void read_tx_size_vartx(MACROBLOCKD *xd, MB_MODE_INFO *mbmi,
     mbmi->tx_size = tx_size;
     txfm_partition_update(xd->above_txfm_context + blk_col,
                           xd->left_txfm_context + blk_row, tx_size, tx_size);
-#if LOOP_FILTER_BITMASK
+#if CONFIG_LPF_MASK
     if (store_bitmask) {
       av1_store_bitmask_vartx(cm, mi_row + blk_row, mi_col + blk_col,
                               txsize_to_bsize[tx_size], tx_size, mbmi);
@@ -1396,7 +1396,7 @@ static void parse_decode_block(AV1Decoder *const pbi, ThreadData *const td,
     for (int idy = 0; idy < height; idy += bh)
       for (int idx = 0; idx < width; idx += bw)
         read_tx_size_vartx(xd, mbmi, max_tx_size, 0,
-#if LOOP_FILTER_BITMASK
+#if CONFIG_LPF_MASK
                            cm, mi_row, mi_col, 1,
 #endif
                            idy, idx, r);
@@ -1406,7 +1406,7 @@ static void parse_decode_block(AV1Decoder *const pbi, ThreadData *const td,
       memset(mbmi->inter_tx_size, mbmi->tx_size, sizeof(mbmi->inter_tx_size));
     set_txfm_ctxs(mbmi->tx_size, xd->n4_w, xd->n4_h,
                   mbmi->skip && is_inter_block(mbmi), xd);
-#if LOOP_FILTER_BITMASK
+#if CONFIG_LPF_MASK
     const int w = mi_size_wide[bsize];
     const int h = mi_size_high[bsize];
     if (w <= mi_size_wide[BLOCK_64X64] && h <= mi_size_high[BLOCK_64X64]) {
@@ -1421,7 +1421,7 @@ static void parse_decode_block(AV1Decoder *const pbi, ThreadData *const td,
     }
 #endif
   }
-#if LOOP_FILTER_BITMASK
+#if CONFIG_LPF_MASK
   const int w = mi_size_wide[bsize];
   const int h = mi_size_high[bsize];
   if (w <= mi_size_wide[BLOCK_64X64] && h <= mi_size_high[BLOCK_64X64]) {
@@ -5386,7 +5386,7 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
 
   if (initialize_flag) setup_frame_info(pbi);
   const int num_planes = av1_num_planes(cm);
-#if LOOP_FILTER_BITMASK
+#if CONFIG_LPF_MASK
   av1_loop_filter_frame_init(cm, 0, num_planes);
 #endif
 
@@ -5414,13 +5414,13 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
       if (pbi->num_workers > 1) {
         av1_loop_filter_frame_mt(
             &cm->cur_frame->buf, cm, &pbi->mb, 0, num_planes, 0,
-#if LOOP_FILTER_BITMASK
+#if CONFIG_LPF_MASK
             1,
 #endif
             pbi->tile_workers, pbi->num_workers, &pbi->lf_row_sync);
       } else {
         av1_loop_filter_frame(&cm->cur_frame->buf, cm, &pbi->mb,
-#if LOOP_FILTER_BITMASK
+#if CONFIG_LPF_MASK
                               1,
 #endif
                               0, num_planes, 0);
@@ -5478,7 +5478,7 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
       }
     }
   }
-#if LOOP_FILTER_BITMASK
+#if CONFIG_LPF_MASK
   av1_zero_array(cm->lf.lfm, cm->lf.lfm_num);
 #endif
 

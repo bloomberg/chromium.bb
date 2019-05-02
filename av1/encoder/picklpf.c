@@ -72,13 +72,13 @@ static int64_t try_filter_frame(const YV12_BUFFER_CONFIG *sd,
   if (cpi->num_workers > 1)
     av1_loop_filter_frame_mt(&cm->cur_frame->buf, cm, &cpi->td.mb.e_mbd, plane,
                              plane + 1, partial_frame,
-#if LOOP_FILTER_BITMASK
+#if CONFIG_LPF_MASK
                              0,
 #endif
                              cpi->workers, cpi->num_workers, &cpi->lf_row_sync);
   else
     av1_loop_filter_frame(&cm->cur_frame->buf, cm, &cpi->td.mb.e_mbd,
-#if LOOP_FILTER_BITMASK
+#if CONFIG_LPF_MASK
                           0,
 #endif
                           plane, plane + 1, partial_frame);

@@ -4041,14 +4041,14 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
   if (lf->filter_level[0] || lf->filter_level[1]) {
     if (cpi->num_workers > 1)
       av1_loop_filter_frame_mt(&cm->cur_frame->buf, cm, xd, 0, num_planes, 0,
-#if LOOP_FILTER_BITMASK
+#if CONFIG_LPF_MASK
                                0,
 #endif
                                cpi->workers, cpi->num_workers,
                                &cpi->lf_row_sync);
     else
       av1_loop_filter_frame(&cm->cur_frame->buf, cm, xd,
-#if LOOP_FILTER_BITMASK
+#if CONFIG_LPF_MASK
                             0,
 #endif
                             0, num_planes, 0);
