@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/string_piece.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/bindings/connector.h"
 #include "net/base/ip_address.h"
@@ -27,12 +28,14 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace network {
+namespace {
+
 using ::testing::Invoke;
 using ::testing::NiceMock;
 using ::testing::Return;
 using ::testing::_;
-
-namespace {
+using ServiceError = MdnsResponderManager::ServiceError;
 
 const net::IPAddress kPublicAddrs[2] = {net::IPAddress(11, 11, 11, 11),
                                         net::IPAddress(22, 22, 22, 22)};
@@ -44,6 +47,11 @@ const base::TimeDelta kDefaultTtl = base::TimeDelta::FromSeconds(120);
 
 const int kNumAnnouncementsPerInterface = 2;
 const int kNumMaxRetriesPerResponse = 2;
+
+// Keep in sync with the histogram name in ReportServiceError in
+// mdns_responder.cc
+const char kServiceErrorHistogram[] =
+    "NetworkService.MdnsResponder.ServiceError";
 
 std::string CreateMdnsQuery(uint16_t query_id,
                             const std::string& dotted_name,
@@ -118,8 +126,6 @@ class MockFailingMdnsSocketFactory : public net::MDnsSocketFactory {
 };
 
 }  // namespace
-
-namespace network {
 
 // Tests of the response creation helpers. For positive responses, we have the
 // address records in the Answer section and, if TTL is nonzero, the
@@ -542,6 +548,7 @@ TEST_F(MdnsResponderTest, SendNegativeResponseToQueryForNonAddressRecord) {
 // an invalid IP address is given to create a name for.
 TEST_F(MdnsResponderTest,
        HostClosesMojoConnectionWhenCreatingNameForInvalidAddress) {
+  base::HistogramTester tester;
   const net::IPAddress addr;
   ASSERT_TRUE(!addr.IsValid());
   EXPECT_TRUE(client_[0].is_bound());
@@ -549,6 +556,10 @@ TEST_F(MdnsResponderTest,
   EXPECT_CALL(socket_factory_, OnSendTo(_)).Times(0);
   CreateNameForAddress(0, addr);
   EXPECT_FALSE(client_[0].is_bound());
+
+  tester.ExpectBucketCount(kServiceErrorHistogram,
+                           ServiceError::kInvalidIpToRegisterName, 1);
+  tester.ExpectTotalCount(kServiceErrorHistogram, 1);
 }
 
 // Test that the responder manager closes the connection after observing
@@ -612,12 +623,19 @@ TEST_F(MdnsResponderTest, ResponderHostDoesCleanUpAfterMojoConnectionError) {
 // Test that the host generates a Mojo connection error when no socket handler
 // is successfully started.
 TEST_F(MdnsResponderTest, ClosesBindingWhenNoSocketHanlderStarted) {
+  base::HistogramTester tester;
   EXPECT_CALL(failing_socket_factory_, CreateSockets(_)).WillOnce(Return());
   Reset(true /* use_failing_socket_factory */);
   RunUntilNoTasksRemain();
   // MdnsResponderTest::OnMojoConnectionError.
   EXPECT_FALSE(client_[0].is_bound());
   EXPECT_FALSE(client_[1].is_bound());
+
+  tester.ExpectBucketCount(kServiceErrorHistogram,
+                           ServiceError::kFailToStartManager, 1);
+  tester.ExpectBucketCount(kServiceErrorHistogram,
+                           ServiceError::kFailToCreateResponder, 2);
+  tester.ExpectTotalCount(kServiceErrorHistogram, 3);
 }
 
 // Test that an announcement is retried after send failure.
@@ -967,6 +985,7 @@ TEST_F(MdnsResponderTest, ScheduledSendsAreCancelledAfterManagerDestroyed) {
 
 // Test that if all socket handlers fail to read, the manager restarts itself.
 TEST_F(MdnsResponderTest, ManagerCanRestartAfterAllSocketHandlersFailToRead) {
+  base::HistogramTester tester;
   auto create_read_failing_socket =
       [this](std::vector<std::unique_ptr<net::DatagramServerSocket>>* sockets) {
         auto socket =
@@ -983,8 +1002,15 @@ TEST_F(MdnsResponderTest, ManagerCanRestartAfterAllSocketHandlersFailToRead) {
   EXPECT_CALL(failing_socket_factory_, CreateSockets(_))
       .WillOnce(Invoke(create_read_failing_socket));
   Reset(true /* use_failing_socket_factory */);
+  // Called when the manager restarts. The mocked CreateSockets() by default
+  // returns an empty vector of sockets, thus failing the restart again.
   EXPECT_CALL(failing_socket_factory_, CreateSockets(_)).Times(1);
   RunUntilNoTasksRemain();
+  tester.ExpectBucketCount(kServiceErrorHistogram,
+                           ServiceError::kFatalSocketHandlerError, 1);
+  tester.ExpectBucketCount(kServiceErrorHistogram,
+                           ServiceError::kFailToStartManager, 1);
+  tester.ExpectTotalCount(kServiceErrorHistogram, 2);
 }
 
 }  // namespace network
