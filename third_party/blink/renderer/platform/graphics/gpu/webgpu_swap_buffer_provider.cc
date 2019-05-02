@@ -137,7 +137,7 @@ bool WebGPUSwapBufferProvider::PrepareTransferableResource(
       current_swap_buffer_->access_finished_token.GetData());
 
   // Populate the output resource
-  *out_resource = viz::TransferableResource::MakeGLOverlay(
+  *out_resource = viz::TransferableResource::MakeGL(
       current_swap_buffer_->mailbox, GL_LINEAR, GL_TEXTURE_RECTANGLE_ARB,
       current_swap_buffer_->access_finished_token, current_swap_buffer_->size,
       false);

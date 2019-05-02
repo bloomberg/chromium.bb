@@ -378,7 +378,8 @@ std::unique_ptr<ui::LayerTreeOwner> ScreenRotationAnimator::CopyLayerTree(
   DCHECK_EQ(result->format(), viz::CopyOutputResult::Format::RGBA_TEXTURE);
   auto transfer_resource = viz::TransferableResource::MakeGL(
       result->GetTextureResult()->mailbox, GL_LINEAR, GL_TEXTURE_2D,
-      result->GetTextureResult()->sync_token);
+      result->GetTextureResult()->sync_token, result->size(),
+      false /* is_overlay_candidate */);
   std::unique_ptr<viz::SingleReleaseCallback> release_callback =
       result->TakeTextureOwnership();
   const gfx::Rect rect(

@@ -99,8 +99,8 @@ ResourceId CreateGpuResource(scoped_refptr<ContextProvider> context_provider,
   gpu::SyncToken sync_token = sii->GenUnverifiedSyncToken();
 
   TransferableResource gl_resource = TransferableResource::MakeGL(
-      mailbox, GL_LINEAR, GL_TEXTURE_2D, sync_token);
-  gl_resource.size = size;
+      mailbox, GL_LINEAR, GL_TEXTURE_2D, sync_token, size,
+      false /* is_overlay_candidate */);
   gl_resource.format = format;
   gl_resource.color_space = std::move(color_space);
   auto release_callback = SingleReleaseCallback::Create(

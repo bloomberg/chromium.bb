@@ -5444,7 +5444,7 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
                                     ->SharedImageInterface()
                                     ->GenUnverifiedSyncToken();
 
-    transferable = viz::TransferableResource::MakeGLOverlay(
+    transferable = viz::TransferableResource::MakeGL(
         mailbox, GL_LINEAR, texture_target, sync_token, upload_size,
         overlay_candidate);
     transferable.format = format;

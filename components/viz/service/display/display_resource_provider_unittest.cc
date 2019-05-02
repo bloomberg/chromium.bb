@@ -158,17 +158,18 @@ class DisplayResourceProviderTest : public testing::TestWithParam<bool> {
 
 
   TransferableResource CreateResource(ResourceFormat format) {
+    constexpr gfx::Size size(64, 64);
     if (use_gpu()) {
       gpu::Mailbox gpu_mailbox = gpu::Mailbox::Generate();
       gpu::SyncToken sync_token = GenSyncToken();
       EXPECT_TRUE(sync_token.HasData());
 
       TransferableResource gl_resource = TransferableResource::MakeGL(
-          gpu_mailbox, GL_LINEAR, GL_TEXTURE_2D, sync_token);
+          gpu_mailbox, GL_LINEAR, GL_TEXTURE_2D, sync_token, size,
+          false /* is_overlay_candidate */);
       gl_resource.format = format;
       return gl_resource;
     } else {
-      gfx::Size size(64, 64);
       SharedBitmapId shared_bitmap_id = CreateAndFillSharedBitmap(
           shared_bitmap_manager_.get(), size, format, 0);
 
@@ -186,8 +187,10 @@ class DisplayResourceProviderTest : public testing::TestWithParam<bool> {
     int child = resource_provider->CreateChild(return_callback, true);
 
     gpu::Mailbox gpu_mailbox = gpu::Mailbox::Generate();
-    auto resource = TransferableResource::MakeGL(gpu_mailbox, GL_LINEAR, target,
-                                                 sync_token);
+    constexpr gfx::Size size(64, 64);
+    auto resource =
+        TransferableResource::MakeGL(gpu_mailbox, GL_LINEAR, target, sync_token,
+                                     size, false /* is_overlay_candidate */);
     resource.id = 11;
     resource_provider->ReceiveFromChild(child, {resource});
     auto& map = resource_provider->GetChildToParentMap(child);
@@ -234,8 +237,10 @@ TEST_P(DisplayResourceProviderTest, LockForExternalUse) {
                              gpu::CommandBufferId::FromUnsafeValue(0x123),
                              0x42);
   auto mailbox = gpu::Mailbox::Generate();
+  constexpr gfx::Size size(64, 64);
   TransferableResource gl_resource = TransferableResource::MakeGL(
-      mailbox, GL_LINEAR, GL_TEXTURE_2D, sync_token1);
+      mailbox, GL_LINEAR, GL_TEXTURE_2D, sync_token1, size,
+      false /* is_overlay_candidate */);
   ResourceId id1 = child_resource_provider_->ImportResource(
       gl_resource, SingleReleaseCallback::Create(base::DoNothing()));
   std::vector<ReturnedResource> returned_to_child;
@@ -544,10 +549,11 @@ TEST_P(DisplayResourceProviderTest, ReturnResourcesWithoutSyncToken) {
   gpu::Mailbox external_mailbox = gpu::Mailbox::Generate();
   gpu::SyncToken external_sync_token = GenSyncToken();
   EXPECT_TRUE(external_sync_token.HasData());
+  constexpr gfx::Size size(64, 64);
   ResourceId id = no_token_resource_provider->ImportResource(
       TransferableResource::MakeGL(external_mailbox, GL_LINEAR,
-                                   GL_TEXTURE_EXTERNAL_OES,
-                                   external_sync_token),
+                                   GL_TEXTURE_EXTERNAL_OES, external_sync_token,
+                                   size, false /* is_overlay_candidate */),
       SingleReleaseCallback::Create(base::DoNothing()));
 
   std::vector<ReturnedResource> returned_to_child;
@@ -822,8 +828,10 @@ class ResourceProviderTestImportedResourceGLFilters {
 
     gpu::Mailbox gpu_mailbox = gpu::Mailbox::Generate();
     GLuint filter = mailbox_nearest_neighbor ? GL_NEAREST : GL_LINEAR;
-    auto resource = TransferableResource::MakeGL(gpu_mailbox, filter,
-                                                 GL_TEXTURE_2D, sync_token);
+    constexpr gfx::Size size(64, 64);
+    auto resource = TransferableResource::MakeGL(
+        gpu_mailbox, filter, GL_TEXTURE_2D, sync_token, size,
+        false /* is_overlay_candidate */);
 
     MockReleaseCallback release;
     ResourceId resource_id = child_resource_provider->ImportResource(
@@ -969,8 +977,10 @@ TEST_P(DisplayResourceProviderTest, ReceiveGLTextureExternalOES) {
   std::unique_ptr<SingleReleaseCallback> callback =
       SingleReleaseCallback::Create(base::DoNothing());
 
+  constexpr gfx::Size size(64, 64);
   auto resource = TransferableResource::MakeGL(
-      gpu_mailbox, GL_LINEAR, GL_TEXTURE_EXTERNAL_OES, sync_token);
+      gpu_mailbox, GL_LINEAR, GL_TEXTURE_EXTERNAL_OES, sync_token, size,
+      false /* is_overlay_candidate */);
 
   ResourceId resource_id =
       child_resource_provider->ImportResource(resource, std::move(callback));
@@ -1081,7 +1091,7 @@ TEST_P(DisplayResourceProviderTest, OverlayPromotionHint) {
   gpu::SyncToken external_sync_token = GenSyncToken();
   EXPECT_TRUE(external_sync_token.HasData());
 
-  TransferableResource id1_transfer = TransferableResource::MakeGLOverlay(
+  TransferableResource id1_transfer = TransferableResource::MakeGL(
       external_mailbox, GL_LINEAR, GL_TEXTURE_EXTERNAL_OES, external_sync_token,
       gfx::Size(1, 1), true);
   id1_transfer.wants_promotion_hint = true;
@@ -1089,7 +1099,7 @@ TEST_P(DisplayResourceProviderTest, OverlayPromotionHint) {
   ResourceId id1 = child_resource_provider_->ImportResource(
       id1_transfer, SingleReleaseCallback::Create(base::DoNothing()));
 
-  TransferableResource id2_transfer = TransferableResource::MakeGLOverlay(
+  TransferableResource id2_transfer = TransferableResource::MakeGL(
       external_mailbox, GL_LINEAR, GL_TEXTURE_EXTERNAL_OES, external_sync_token,
       gfx::Size(1, 1), true);
   id2_transfer.wants_promotion_hint = false;

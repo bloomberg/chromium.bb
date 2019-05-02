@@ -782,7 +782,8 @@ void VideoResourceUpdater::CopyHardwarePlane(
   gpu::SyncToken sync_token = video_frame->UpdateReleaseSyncToken(&client);
 
   auto transferable_resource = viz::TransferableResource::MakeGL(
-      hardware_resource->mailbox(), GL_LINEAR, GL_TEXTURE_2D, sync_token);
+      hardware_resource->mailbox(), GL_LINEAR, GL_TEXTURE_2D, sync_token,
+      output_plane_resource_size, false /* is_overlay_candidate */);
   transferable_resource.color_space = resource_color_space;
   transferable_resource.format = copy_resource_format;
   external_resources->resources.push_back(std::move(transferable_resource));
@@ -842,7 +843,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
       const size_t height =
           VideoFrame::Rows(i, video_frame->format(), coded_size.height());
       const gfx::Size plane_size(width, height);
-      auto transfer_resource = viz::TransferableResource::MakeGLOverlay(
+      auto transfer_resource = viz::TransferableResource::MakeGL(
           mailbox_holder.mailbox, GL_LINEAR, mailbox_holder.texture_target,
           mailbox_holder.sync_token, plane_size,
           video_frame->metadata()->IsTrue(VideoFrameMetadata::ALLOW_OVERLAY));
@@ -1034,7 +1035,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
                      ? raster_context_provider_->ContextGL()
                      : context_provider_->ContextGL();
       GenerateCompositorSyncToken(gl, &sync_token);
-      transferable_resource = viz::TransferableResource::MakeGLOverlay(
+      transferable_resource = viz::TransferableResource::MakeGL(
           hardware_resource->mailbox(), GL_LINEAR,
           hardware_resource->texture_target(), sync_token,
           hardware_resource->resource_size(),
@@ -1188,7 +1189,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
 
   for (size_t i = 0; i < plane_resources.size(); ++i) {
     HardwarePlaneResource* plane_resource = plane_resources[i]->AsHardware();
-    auto transferable_resource = viz::TransferableResource::MakeGLOverlay(
+    auto transferable_resource = viz::TransferableResource::MakeGL(
         plane_resource->mailbox(), GL_LINEAR, plane_resource->texture_target(),
         sync_token, plane_resource->resource_size(),
         plane_resource->overlay_candidate());

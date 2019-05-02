@@ -698,7 +698,7 @@ TEST_F(GLRendererWithDefaultHarnessTest, TextureDrawQuadShaderPrecisionHigh) {
 
   // Here is where the texture is created. Any value bigger than 1024 should use
   // a highp.
-  auto transfer_resource = TransferableResource::MakeGLOverlay(
+  auto transfer_resource = TransferableResource::MakeGL(
       gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
       gfx::Size(1025, 1025), true);
   ResourceId client_resource_id = child_resource_provider->ImportResource(
@@ -761,7 +761,7 @@ TEST_F(GLRendererWithDefaultHarnessTest, TextureDrawQuadShaderPrecisionMedium) {
 
   // Here is where the texture is created. Any value smaller than 1024 should
   // use a mediump.
-  auto transfer_resource = TransferableResource::MakeGLOverlay(
+  auto transfer_resource = TransferableResource::MakeGL(
       gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
       gfx::Size(1023, 1023), true);
   ResourceId client_resource_id = child_resource_provider->ImportResource(
@@ -1776,7 +1776,8 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
   RenderPass* root_pass;
 
   auto transfer_resource = TransferableResource::MakeGL(
-      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken());
+      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
+      child_rect.size(), false /* is_overlay_candidate */);
   ResourceId mask = child_resource_provider_->ImportResource(
       transfer_resource, SingleReleaseCallback::Create(base::DoNothing()));
 
@@ -2232,7 +2233,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   child_context_provider->BindToCurrentThread();
   auto child_resource_provider = std::make_unique<ClientResourceProvider>(true);
 
-  auto transfer_resource = TransferableResource::MakeGLOverlay(
+  auto transfer_resource = TransferableResource::MakeGL(
       gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
       gfx::Size(256, 256), true);
   auto release_callback =
@@ -2446,7 +2447,7 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
 
   gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO,
                             gpu::CommandBufferId::FromUnsafeValue(0x123), 29);
-  auto transfer_resource = TransferableResource::MakeGLOverlay(
+  auto transfer_resource = TransferableResource::MakeGL(
       gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, sync_token,
       gfx::Size(256, 256), true);
   auto release_callback =
@@ -2835,7 +2836,7 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
   child_context_provider->BindToCurrentThread();
   auto child_resource_provider = std::make_unique<ClientResourceProvider>(true);
 
-  auto transfer_resource = TransferableResource::MakeGLOverlay(
+  auto transfer_resource = TransferableResource::MakeGL(
       gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
       gfx::Size(256, 256), true);
   auto release_callback =
@@ -4109,7 +4110,7 @@ class GLRendererWithGpuFenceTest : public GLRendererTest {
     child_context_provider_->BindToCurrentThread();
 
     child_resource_provider_ = std::make_unique<ClientResourceProvider>(true);
-    auto transfer_resource = TransferableResource::MakeGLOverlay(
+    auto transfer_resource = TransferableResource::MakeGL(
         gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
         gfx::Size(256, 256), true);
     ResourceId client_resource_id = child_resource_provider_->ImportResource(

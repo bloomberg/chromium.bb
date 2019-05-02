@@ -125,7 +125,7 @@ bool CanvasResource::PrepareAcceleratedTransferableResource(
   if (mailbox.IsZero())
     return false;
 
-  *out_resource = viz::TransferableResource::MakeGLOverlay(
+  *out_resource = viz::TransferableResource::MakeGL(
       mailbox, GLFilter(), TextureTarget(), GetSyncToken(), gfx::Size(Size()),
       IsOverlayCandidate());
 

@@ -278,7 +278,7 @@ static ResourceId CreateResourceInLayerTree(
     ClientResourceProvider* child_resource_provider,
     const gfx::Size& size,
     bool is_overlay_candidate) {
-  auto resource = TransferableResource::MakeGLOverlay(
+  auto resource = TransferableResource::MakeGL(
       gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
       size, is_overlay_candidate);
   auto release_callback = SingleReleaseCallback::Create(

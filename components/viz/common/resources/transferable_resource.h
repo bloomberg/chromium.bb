@@ -48,25 +48,15 @@ struct VIZ_COMMON_EXPORT TransferableResource {
   static TransferableResource MakeGL(const gpu::Mailbox& mailbox,
                                      uint32_t filter,
                                      uint32_t texture_target,
-                                     const gpu::SyncToken& sync_token) {
+                                     const gpu::SyncToken& sync_token,
+                                     const gfx::Size& size,
+                                     bool is_overlay_candidate) {
     TransferableResource r;
     r.is_software = false;
     r.filter = filter;
     r.mailbox_holder.mailbox = mailbox;
     r.mailbox_holder.texture_target = texture_target;
     r.mailbox_holder.sync_token = sync_token;
-    r.size = gfx::Size();
-    return r;
-  }
-
-  static TransferableResource MakeGLOverlay(const gpu::Mailbox& mailbox,
-                                            uint32_t filter,
-                                            uint32_t texture_target,
-                                            const gpu::SyncToken& sync_token,
-                                            const gfx::Size& size,
-                                            bool is_overlay_candidate) {
-    TransferableResource r =
-        MakeGL(mailbox, filter, texture_target, sync_token);
     r.size = size;
     r.is_overlay_candidate = is_overlay_candidate;
     return r;
@@ -86,10 +76,7 @@ struct VIZ_COMMON_EXPORT TransferableResource {
   // mailbox field is a gpu::Mailbox, else it is a SharedBitmapId.
   bool is_software = false;
 
-  // The number of pixels in the gpu mailbox/software bitmap. This must
-  // be set for software bitmaps, and must also be set for gpu mailboxes
-  // when they are an overlay candidate. Otherwise it will not be used
-  // and may be unset.
+  // The number of pixels in the gpu mailbox/software bitmap.
   gfx::Size size;
 
   // The format of the pixels in the gpu mailbox/software bitmap. This should

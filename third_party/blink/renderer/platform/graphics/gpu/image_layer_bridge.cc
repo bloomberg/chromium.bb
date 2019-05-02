@@ -116,12 +116,15 @@ bool ImageLayerBridge::PrepareTransferableResource(
     if (!image_for_compositor)
       return false;
 
+    const gfx::Size size(image_for_compositor->width(),
+                         image_for_compositor->height());
     uint32_t filter =
         filter_quality_ == kNone_SkFilterQuality ? GL_NEAREST : GL_LINEAR;
     image_for_compositor->EnsureMailbox(kUnverifiedSyncToken, filter);
     *out_resource = viz::TransferableResource::MakeGL(
         image_for_compositor->GetMailbox(), filter, GL_TEXTURE_2D,
-        image_for_compositor->GetSyncToken());
+        image_for_compositor->GetSyncToken(), size,
+        false /* is_overlay_candidate */);
     auto func =
         WTF::Bind(&ImageLayerBridge::ResourceReleasedGpu,
                   WrapWeakPersistent(this), std::move(image_for_compositor));

@@ -719,7 +719,7 @@ bool PepperGraphics2DHost::PrepareTransferableResource(
     *release_callback = viz::SingleReleaseCallback::Create(
         base::BindOnce(&ReleaseTextureCallback, this->AsWeakPtr(),
                        main_thread_context_, size, gpu_mailbox));
-    *transferable_resource = viz::TransferableResource::MakeGLOverlay(
+    *transferable_resource = viz::TransferableResource::MakeGL(
         std::move(gpu_mailbox), GL_LINEAR, texture_target,
         std::move(out_sync_token), size, overlays_supported);
     transferable_resource->format = format;

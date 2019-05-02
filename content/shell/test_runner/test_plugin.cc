@@ -319,9 +319,11 @@ bool TestPlugin::PrepareTransferableResource(
     std::unique_ptr<viz::SingleReleaseCallback>* release_callback) {
   if (!content_changed_)
     return false;
+  gfx::Size size(rect_.width, rect_.height);
   if (!mailbox_.IsZero()) {
-    *resource = viz::TransferableResource::MakeGL(mailbox_, GL_LINEAR,
-                                                  GL_TEXTURE_2D, sync_token_);
+    *resource = viz::TransferableResource::MakeGL(
+        mailbox_, GL_LINEAR, GL_TEXTURE_2D, sync_token_, size,
+        false /* is_overlay_candidate */);
     // We pass ownership of the shared image to the callback.
     *release_callback = viz::SingleReleaseCallback::Create(
         base::BindOnce(&ReleaseSharedImage, context_provider_, mailbox_));
@@ -340,7 +342,7 @@ bool TestPlugin::PrepareTransferableResource(
         base::BindOnce(&ReleaseSharedMemory, std::move(shared_bitmap_),
                        std::move(registration)));
   }
-  resource->size = gfx::Size(rect_.width, rect_.height);
+  resource->size = size;
   content_changed_ = false;
   return true;
 }

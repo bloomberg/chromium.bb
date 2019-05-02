@@ -464,7 +464,7 @@ void DrawingBuffer::FinishPrepareTransferableResourceGpu(
   // Populate the output mailbox and callback.
   {
     bool is_overlay_candidate = !!color_buffer_for_mailbox->gpu_memory_buffer;
-    *out_resource = viz::TransferableResource::MakeGLOverlay(
+    *out_resource = viz::TransferableResource::MakeGL(
         color_buffer_for_mailbox->mailbox, GL_LINEAR, texture_target_,
         color_buffer_for_mailbox->produce_sync_token, gfx::Size(size_),
         is_overlay_candidate);

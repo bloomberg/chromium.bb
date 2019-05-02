@@ -576,8 +576,11 @@ void ReturnMailbox(bool* run, const gpu::SyncToken& sync_token, bool is_lost) {
 TEST(LayerStandaloneTest, ReleaseMailboxOnDestruction) {
   std::unique_ptr<Layer> layer(new Layer(LAYER_TEXTURED));
   bool callback_run = false;
+
+  constexpr gfx::Size size(64, 64);
   auto resource = viz::TransferableResource::MakeGL(
-      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken());
+      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
+      size, false /* is_overlay_candidate */);
   layer->SetTransferableResource(
       resource,
       viz::SingleReleaseCallback::Create(
@@ -1036,8 +1039,10 @@ TEST_F(LayerWithNullDelegateTest, SwitchLayerPreservesCCLayerState) {
   cc::Layer* before_layer = l1->cc_layer_for_testing();
 
   bool callback1_run = false;
+  constexpr gfx::Size size(64, 64);
   auto resource = viz::TransferableResource::MakeGL(
-      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken());
+      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
+      size, false /* is_overlay_candidate */);
   l1->SetTransferableResource(resource,
                               viz::SingleReleaseCallback::Create(base::BindOnce(
                                   ReturnMailbox, &callback1_run)),
@@ -1057,7 +1062,8 @@ TEST_F(LayerWithNullDelegateTest, SwitchLayerPreservesCCLayerState) {
 
   bool callback2_run = false;
   resource = viz::TransferableResource::MakeGL(
-      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken());
+      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
+      size, false /* is_overlay_candidate */);
   l1->SetTransferableResource(resource,
                               viz::SingleReleaseCallback::Create(base::BindOnce(
                                   ReturnMailbox, &callback2_run)),
@@ -1082,7 +1088,8 @@ TEST_F(LayerWithNullDelegateTest, SwitchLayerPreservesCCLayerState) {
   // Back to a texture, without changing the bounds of the layer or the texture.
   bool callback3_run = false;
   resource = viz::TransferableResource::MakeGL(
-      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken());
+      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
+      size, false /* is_overlay_candidate */);
   l1->SetTransferableResource(resource,
                               viz::SingleReleaseCallback::Create(base::BindOnce(
                                   ReturnMailbox, &callback3_run)),
@@ -1395,8 +1402,10 @@ TEST_F(LayerWithNullDelegateTest, EmptyDamagedRect) {
       base::Unretained(&run_loop));
 
   std::unique_ptr<Layer> root(CreateLayer(LAYER_SOLID_COLOR));
+  constexpr gfx::Size size(64, 64);
   auto resource = viz::TransferableResource::MakeGL(
-      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken());
+      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
+      size, false /* is_overlay_candidate */);
   root->SetTransferableResource(
       resource, viz::SingleReleaseCallback::Create(std::move(callback)),
       gfx::Size(10, 10));
@@ -2268,8 +2277,10 @@ TEST_F(LayerWithDelegateTest, ExternalContentMirroring) {
 TEST_F(LayerWithDelegateTest, TransferableResourceMirroring) {
   std::unique_ptr<Layer> layer(CreateLayer(LAYER_SOLID_COLOR));
 
+  constexpr gfx::Size size(64, 64);
   auto resource = viz::TransferableResource::MakeGL(
-      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken());
+      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
+      size, false /* is_overlay_candidate */);
   bool release_callback_run = false;
 
   layer->SetTransferableResource(
@@ -2299,7 +2310,8 @@ TEST_F(LayerWithDelegateTest, TransferableResourceMirroring) {
   EXPECT_FALSE(mirror->has_external_content());
 
   resource = viz::TransferableResource::MakeGL(
-      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken());
+      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
+      size, false /* is_overlay_candidate */);
   release_callback_run = false;
 
   // Setting a transferable resource on the source layer should set it on the
