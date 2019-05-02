@@ -129,10 +129,6 @@
 #include "third_party/skia/include/core/SkPixelRef.h"
 #endif  // defined(OS_POSIX)
 
-#if defined(USE_AURA)
-#include "content/renderer/mus/renderer_window_tree_client.h"
-#endif
-
 #if defined(OS_MACOSX)
 #include "content/renderer/text_input_client_observer.h"
 #endif
@@ -480,11 +476,6 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
                                           ->NewRenderWidgetSchedulingState();
     render_widget_scheduling_state_->SetHidden(is_hidden_);
   }
-#if defined(USE_AURA)
-  RendererWindowTreeClient::CreateIfNecessary(routing_id_);
-  if (features::IsMultiProcessMash())
-    RendererWindowTreeClient::Get(routing_id_)->SetVisible(!is_hidden_);
-#endif
 
   if (routing_id_ != MSG_ROUTING_NONE)
     g_routing_id_widget_map.Get().emplace(routing_id_, this);
@@ -498,13 +489,6 @@ RenderWidget::~RenderWidget() {
   // and RenderViewImpl are rationalized. Currently, too many unit and
   // browser tests delete a RenderWidget without correclty going through
   // the shutdown. https://crbug.com/545684
-
-#if defined(USE_AURA)
-  // It is possible for a RenderWidget to be destroyed before it was embedded
-  // in a mus window. The RendererWindowTreeClient will leak in such cases. So
-  // explicitly delete it here.
-  RendererWindowTreeClient::Destroy(routing_id_);
-#endif
 }
 
 // static
@@ -2518,14 +2502,8 @@ void RenderWidget::SetHidden(bool hidden) {
   // throttled acks are released in case frame production ceases.
   is_hidden_ = hidden;
 
-#if defined(USE_AURA)
-  if (features::IsMultiProcessMash())
-    RendererWindowTreeClient::Get(routing_id_)->SetVisible(!hidden);
-#endif
-
-  if (is_hidden_) {
+  if (is_hidden_)
     first_update_visual_state_after_hidden_ = true;
-  }
 
   if (render_widget_scheduling_state_)
     render_widget_scheduling_state_->SetHidden(hidden);

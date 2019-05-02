@@ -33,7 +33,6 @@
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "skia/ext/platform_canvas.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/gfx/geometry/dip_util.h"
@@ -359,14 +358,6 @@ void RenderWidgetHostViewGuest::OnDidUpdateVisualPropertiesComplete(
 
 void RenderWidgetHostViewGuest::OnAttached() {
   RegisterFrameSinkId();
-#if defined(USE_AURA)
-  if (features::IsMultiProcessMash()) {
-    aura::Env::GetInstance()->ScheduleEmbed(
-        GetWindowTreeClientFromRenderer(),
-        base::BindOnce(&RenderWidgetHostViewGuest::OnGotEmbedToken,
-                       weak_ptr_factory_.GetWeakPtr()));
-  }
-#endif
   SendSurfaceInfoToEmbedder();
 }
 
@@ -803,17 +794,5 @@ void RenderWidgetHostViewGuest::OnHandleInputEvent(
     return;
   }
 }
-
-#if defined(USE_AURA)
-void RenderWidgetHostViewGuest::OnGotEmbedToken(
-    const base::UnguessableToken& token) {
-  if (!guest_)
-    return;
-
-  guest_->SendMessageToEmbedder(
-      std::make_unique<BrowserPluginMsg_SetMusEmbedToken>(
-          guest_->browser_plugin_instance_id(), token));
-}
-#endif
 
 }  // namespace content

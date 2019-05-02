@@ -722,12 +722,6 @@ target(link_target_type, "renderer") {
   ]
   allow_circular_includes_from = []
 
-  if (use_aura) {
-    public_deps += [ "//content/renderer/mus" ]
-    allow_circular_includes_from += [ "//content/renderer/mus" ]
-    deps += [ "//services/ws/public/cpp" ]
-  }
-
   if (use_external_popup_menu) {
     sources += [
       "external_popup_menu.cc",

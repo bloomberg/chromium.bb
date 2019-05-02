@@ -24,10 +24,6 @@
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace base {
-class UnguessableToken;
-}
-
 namespace content {
 class BrowserPluginGuest;
 class RenderWidgetHost;
@@ -186,10 +182,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
 
   void ProcessTouchpadZoomEventAckInRoot(const blink::WebGestureEvent& event,
                                          InputEventAckState ack_result);
-
-#if defined(USE_AURA)
-  void OnGotEmbedToken(const base::UnguessableToken& token);
-#endif
 
   // BrowserPluginGuest and RenderWidgetHostViewGuest's lifetimes are not tied
   // to one another, therefore we access |guest_| through WeakPtr.
