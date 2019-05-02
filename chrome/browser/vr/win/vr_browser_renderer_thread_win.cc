@@ -371,21 +371,20 @@ device::mojom::XRFrameDataPtr ValidateFrameData(
         }
       }
     }
+  }  // if (data->pose)
 
-    if (!ret->pose->orientation) {
-      ret->pose->orientation = std::vector<float>{0, 0, 0, 1};
-    }
-
-    if (!ret->pose->position) {
-      ret->pose->position = std::vector<float>{0, 0, 0};
-    }
-
-    ret->frame_id = data->frame_id;
-
-    // Frame data has several other fields that we are ignoring.  If they are
-    // used, validate them before use.
+  if (!ret->pose->orientation) {
+    ret->pose->orientation = std::vector<float>{0, 0, 0, 1};
   }
 
+  if (!ret->pose->position) {
+    ret->pose->position = std::vector<float>{0, 0, 0};
+  }
+
+  ret->frame_id = data->frame_id;
+
+  // Frame data has several other fields that we are ignoring.  If they are
+  // used, validate them before use.
   return ret;
 }
 
