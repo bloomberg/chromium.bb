@@ -51,6 +51,12 @@
                  action:@selector(showHTTPAuth)
        forControlEvents:UIControlEventTouchUpInside];
 
+  UIButton* longButton = [UIButton buttonWithType:UIButtonTypeSystem];
+  [longButton setTitle:@"Long Alert" forState:UIControlStateNormal];
+  [longButton addTarget:self
+                 action:@selector(showLongAlert)
+       forControlEvents:UIControlEventTouchUpInside];
+
   UILabel* blockAlertsLabel = [[UILabel alloc] init];
   blockAlertsLabel.text = @"Show \"Block Alerts Button\"";
 
@@ -63,7 +69,8 @@
   switchStack.translatesAutoresizingMaskIntoConstraints = NO;
 
   UIStackView* verticalStack = [[UIStackView alloc] initWithArrangedSubviews:@[
-    alertButton, promptButton, confirmButton, authButton, switchStack
+    alertButton, promptButton, confirmButton, authButton, longButton,
+    switchStack
   ]];
   verticalStack.axis = UILayoutConstraintAxisVertical;
   verticalStack.spacing = 30;
@@ -183,6 +190,46 @@
                                  dismissViewControllerAnimated:YES
                                                     completion:nil];
                            }];
+  [alert addAction:cancelAction];
+  [self presentAlertViewController:alert];
+}
+
+- (void)showLongAlert {
+  AlertViewController* alert = [[AlertViewController alloc] init];
+  alert.title = @"Sign in";
+  alert.message =
+      @"It was the best of times, it was the worst of times, it was the age of "
+      @"wisdom, it was the age of foolishness, it was the epoch of belief, it "
+      @"was the epoch of incredulity, it was the season of Light, it was the "
+      @"season of Darkness, it was the spring of hope, it was the winter of "
+      @"despair, we had everything before us, we had nothing before us, we "
+      @"were all going direct to Heaven, we were all going direct the other "
+      @"way.";
+  [alert addTextFieldWithConfigurationHandler:^(UITextField* textField) {
+    textField.placeholder = @"Username";
+  }];
+  [alert addTextFieldWithConfigurationHandler:^(UITextField* textField) {
+    textField.placeholder = @"Password";
+    textField.secureTextEntry = YES;
+  }];
+  __weak __typeof(self) weakSelf = self;
+  AlertAction* OKAction =
+      [AlertAction actionWithTitle:@"Sign In"
+                             style:UIAlertActionStyleDefault
+                           handler:^(AlertAction* action) {
+                             [weakSelf.containerViewController
+                                 dismissViewControllerAnimated:YES
+                                                    completion:nil];
+                           }];
+  AlertAction* cancelAction =
+      [AlertAction actionWithTitle:@"Cancel"
+                             style:UIAlertActionStyleCancel
+                           handler:^(AlertAction* action) {
+                             [weakSelf.containerViewController
+                                 dismissViewControllerAnimated:YES
+                                                    completion:nil];
+                           }];
+  [alert addAction:OKAction];
   [alert addAction:cancelAction];
   [self presentAlertViewController:alert];
 }
