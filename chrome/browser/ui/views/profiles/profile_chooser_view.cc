@@ -51,13 +51,7 @@
 #include "services/identity/public/cpp/primary_account_mutator.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/image/canvas_image_source.h"
-#include "ui/gfx/image/image_skia_operations.h"
-#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/accessibility/view_accessibility.h"
-#include "ui/views/controls/button/label_button.h"
-#include "ui/views/controls/button/md_text_button.h"
-#include "ui/views/layout/fill_layout.h"
 
 namespace {
 
@@ -450,75 +444,30 @@ bool ProfileChooserView::AddSyncErrorViewIfNeeded(
   if (error == sync_ui_util::NO_SYNC_ERROR)
     return false;
 
-  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-
   if (dice_enabled_) {
     AddDiceSyncErrorView(avatar_item, error, button_string_id);
     return true;
   }
 
-  // TODO(https://crbug.com/934689): Move layout management to
-  // ProfileMenuViewBase.
-  // Sets an overall horizontal layout.
-  std::unique_ptr<views::View> view = std::make_unique<views::View>();
-  auto layout = std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets(GetMenuEdgeMargin()),
-      provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_HORIZONTAL));
-  layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
-  view->SetLayoutManager(std::move(layout));
-
-  // Adds the sync problem icon.
-  views::ImageView* sync_problem_icon = new views::ImageView();
+  // Create pre-dice sync error view.
+  AddMenuGroup();
+  auto sync_problem_icon = std::make_unique<views::ImageView>();
   sync_problem_icon->SetImage(gfx::CreateVectorIcon(
-      kSyncProblemIcon, GetDefaultIconSize(), gfx::kGoogleRed700));
-  view->AddChildView(sync_problem_icon);
-
-  // Adds a vertical view to organize the error title, message, and button.
-  views::View* vertical_view = new views::View();
-  const int small_vertical_spacing =
-      provider->GetDistanceMetric(DISTANCE_RELATED_CONTROL_VERTICAL_SMALL);
-  auto vertical_layout = std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(), small_vertical_spacing);
-  vertical_layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
-  vertical_view->SetLayoutManager(std::move(vertical_layout));
-
-  // Adds the title.
-  views::Label* title_label = new views::Label(
-      l10n_util::GetStringUTF16(IDS_SYNC_ERROR_USER_MENU_TITLE));
-  title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  title_label->SetEnabledColor(gfx::kGoogleRed700);
-  vertical_view->AddChildView(title_label);
-
-  // Adds body content.
-  views::Label* content_label =
-      new views::Label(l10n_util::GetStringUTF16(content_string_id));
-  content_label->SetMultiLine(true);
-  content_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  vertical_view->AddChildView(content_label);
+      kSyncProblemIcon, BadgedProfilePhoto::kImageSize, gfx::kGoogleRed700));
+  views::Button* button = CreateAndAddTitleCard(
+      std::move(sync_problem_icon),
+      l10n_util::GetStringUTF16(IDS_SYNC_ERROR_USER_MENU_TITLE),
+      l10n_util::GetStringUTF16(content_string_id), false);
+  static_cast<HoverButton*>(button)->SetStyle(HoverButton::STYLE_ERROR);
 
   // Adds an action button if an action exists.
   if (button_string_id) {
-    // Adds a padding row between error title/content and the button.
-    auto* padding = new views::View;
-    padding->SetPreferredSize(gfx::Size(
-        0,
-        provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
-    vertical_view->AddChildView(padding);
-
-    sync_error_button_ = views::MdTextButton::CreateSecondaryUiBlueButton(
-        this, l10n_util::GetStringUTF16(button_string_id));
+    sync_error_button_ = CreateAndAddBlueButton(
+        l10n_util::GetStringUTF16(button_string_id), true /* md_style */);
     // Track the error type so that the correct action can be taken in
     // ButtonPressed().
     sync_error_button_->set_id(error);
-    vertical_view->AddChildView(sync_error_button_);
-    view->SetBorder(views::CreateEmptyBorder(0, 0, small_vertical_spacing, 0));
   }
-
-  view->AddChildView(vertical_view);
-  AddMenuGroup();
-  AddViewItem(std::move(view));
 
   return true;
 }

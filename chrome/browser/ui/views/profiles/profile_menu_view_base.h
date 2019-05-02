@@ -92,11 +92,6 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
 
   static ProfileMenuViewBase* GetBubbleForTesting();
 
-  // Spacing between the edge of the user menu and the top/bottom or left/right
-  // of the menu items.
-  // TODO(https://crbug.com/934689): Remove after refactoring.
-  int GetMenuEdgeMargin() const;
-
  protected:
   ProfileMenuViewBase(views::Button* anchor_button,
                       const gfx::Rect& anchor_rect,

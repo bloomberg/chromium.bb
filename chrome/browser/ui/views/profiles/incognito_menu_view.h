@@ -18,10 +18,6 @@ class Button;
 
 class Browser;
 
-// TODO(https://crbug.com/934689): Separation of providing content for different
-// menus and the UI effort to view it between this class and
-// |ProfileMenuViewBase| is in progress.
-
 // This bubble view is displayed when the user clicks on the avatar button in
 // incognito mode and displays the incognito menu.
 class IncognitoMenuView : public ProfileMenuViewBase {

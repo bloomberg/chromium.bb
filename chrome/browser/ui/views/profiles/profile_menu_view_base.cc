@@ -228,10 +228,6 @@ int ProfileMenuViewBase::GetMarginSize(GroupMarginSize margin_size) const {
   }
 }
 
-int ProfileMenuViewBase::GetMenuEdgeMargin() const {
-  return kMenuEdgeMargin;
-}
-
 void ProfileMenuViewBase::AddMenuGroup(bool add_separator) {
   if (add_separator && !menu_item_groups_.empty()) {
     DCHECK(!menu_item_groups_.back().items.empty());

@@ -30,9 +30,6 @@ class Browser;
 class DiceSigninButtonView;
 class HoverButton;
 
-// TODO(https://crbug.com/934689): Separation of providing content for different
-// menus and the UI effort to view it between this class and
-// |ProfileMenuViewBase| is in progress.
 
 // This bubble view is displayed when the user clicks on the avatar button.
 // It displays a list of profiles and allows users to switch between profiles.

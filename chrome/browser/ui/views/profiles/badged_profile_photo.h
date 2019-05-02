@@ -28,6 +28,9 @@ class BadgedProfilePhoto : public views::View {
 
   static const char kViewClassName[];
 
+  // Width/Height of the profile photo.
+  static constexpr int kImageSize = 40;
+
   // Constructs a View hierarchy with the gfx::ImageSkia corresponding to
   // |badge_type| positioned in the bottom-right corner of |profile_photo|. In
   // RTL mode the badge is positioned in the bottom-left corner. The profile
