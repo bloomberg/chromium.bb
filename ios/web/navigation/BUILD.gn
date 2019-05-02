@@ -35,6 +35,8 @@ source_set("navigation") {
     "crw_session_controller+private_constructors.h",
     "crw_session_controller.h",
     "crw_session_controller.mm",
+    "crw_wk_navigation_handler.h",
+    "crw_wk_navigation_handler.mm",
     "legacy_navigation_manager_impl.h",
     "legacy_navigation_manager_impl.mm",
     "navigation_item_impl_list.h",
