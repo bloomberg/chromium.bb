@@ -157,6 +157,19 @@ class GeolocationNetworkProviderTest : public testing::Test {
     return data;
   }
 
+  static WifiData CreateReferenceWifiScanDataWithNoMACAddress(int ap_count) {
+    WifiData data;
+    for (int i = 0; i < ap_count; ++i) {
+      AccessPointData ap;
+      ap.radio_signal_strength = ap_count - i;
+      ap.channel = IndexToChannel(i);
+      ap.signal_to_noise = i + 42;
+      ap.ssid = base::ASCIIToUTF16("Some nice+network|name\\");
+      data.access_point_data.insert(ap);
+    }
+    return data;
+  }
+
   static void CreateReferenceWifiScanDataJson(
       int ap_count,
       int start_index,
@@ -341,6 +354,24 @@ TEST_F(GeolocationNetworkProviderTest, StartProviderLongRequest) {
   EXPECT_LT(request_url.size(), size_t(2048));
   // Expect only 16 out of 20 original access points.
   CheckRequestIsValid(16, 4);
+}
+
+TEST_F(GeolocationNetworkProviderTest, StartProviderNoMacAddress) {
+  std::unique_ptr<LocationProvider> provider(CreateProvider(true));
+  provider->StartProvider(false);
+  // Create Wifi scan data with no MAC Addresses.
+  const int kFirstScanAps = 5;
+  wifi_data_provider_->SetData(
+      CreateReferenceWifiScanDataWithNoMACAddress(kFirstScanAps));
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_EQ(1, test_url_loader_factory_.NumPending());
+
+  test_url_loader_factory_.pending_requests()->back().request.url.spec();
+
+  // Expect only 0 out of 5 original access points. since none of them have
+  // MAC Addresses.
+  CheckRequestIsValid(0, 0);
 }
 
 // Tests that the provider issues the right requests, and provides the right

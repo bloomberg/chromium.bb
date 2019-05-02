@@ -288,7 +288,8 @@ void AddWifiData(const WifiData& wifi_data,
     AddInteger("signalToNoiseRatio", ap_data->signal_to_noise, wifi_dict.get());
     wifi_access_point_list->Append(std::move(wifi_dict));
   }
-  request->Set("wifiAccessPoints", std::move(wifi_access_point_list));
+  if (!wifi_access_point_list->empty())
+    request->Set("wifiAccessPoints", std::move(wifi_access_point_list));
 }
 
 void FormatPositionError(const GURL& server_url,
