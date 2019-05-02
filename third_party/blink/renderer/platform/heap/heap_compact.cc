@@ -51,6 +51,19 @@ class HeapCompact::MovableObjectFixups final {
     BasePage* const slot_page =
         heap_->LookupPageForAddress(reinterpret_cast<Address>(slot));
     CHECK(slot_page);
+    if (slot_page->IsLargeObjectPage()) {
+      CHECK(
+          static_cast<LargeObjectPage*>(slot_page)->ObjectHeader()->IsMarked());
+    } else {
+      HeapObjectHeader* const header =
+          static_cast<NormalPage*>(slot_page)->FindHeaderFromAddress(
+              reinterpret_cast<Address>(slot));
+      CHECK(header);
+      CHECK(slot_page->Arena()->ArenaIndex() ==
+                BlinkGC::kEagerSweepArenaIndex ||
+            header->IsMarked());
+    }
+
     BasePage* const value_page =
         heap_->LookupPageForAddress(reinterpret_cast<Address>(value));
     CHECK(value_page);
@@ -61,6 +74,18 @@ class HeapCompact::MovableObjectFixups final {
     if (value_page->IsLargeObjectPage() ||
         !HeapCompact::IsCompactableArena(value_page->Arena()->ArenaIndex()))
       return;
+
+    // Slots must reside in and values must point to live objects at this
+    // point, with the exception of slots in eagerly swept arenas where objects
+    // have already been processed. |value| usually points to a separate
+    // backing store but can also point to inlined storage which is why the
+    // dynamic header lookup is required.
+    CHECK(value_page->Arena()->ArenaIndex() != BlinkGC::kEagerSweepArenaIndex);
+    HeapObjectHeader* const value_header =
+        static_cast<NormalPage*>(value_page)
+            ->FindHeaderFromAddress(reinterpret_cast<Address>(value));
+    CHECK(value_header);
+    CHECK(value_header->IsMarked());
 
     // Slots may have been recorded already but must point to the same
     // value. Example: Ephemeron iterations may register slots multiple
@@ -76,26 +101,6 @@ class HeapCompact::MovableObjectFixups final {
 
     // Add regular fixup.
     fixups_.insert({value, slot});
-
-    // Slots must reside in and values must point to live objects at this
-    // point, with the exception of slots in eagerly swept arenas where objects
-    // have already been processed. |value| usually points to a separate
-    // backing store but can also point to inlined storage which is why the
-    // dynamic header lookup is required.
-    CHECK(value_page->Arena()->ArenaIndex() != BlinkGC::kEagerSweepArenaIndex);
-    CHECK(static_cast<NormalPage*>(value_page)
-              ->FindHeaderFromAddress(reinterpret_cast<Address>(value))
-              ->IsMarked());
-    if (slot_page->IsLargeObjectPage()) {
-      CHECK(
-          static_cast<LargeObjectPage*>(slot_page)->ObjectHeader()->IsMarked());
-    } else {
-      CHECK(slot_page->Arena()->ArenaIndex() ==
-                BlinkGC::kEagerSweepArenaIndex ||
-            static_cast<NormalPage*>(slot_page)
-                ->FindHeaderFromAddress(reinterpret_cast<Address>(slot))
-                ->IsMarked());
-    }
 
     // Check whether the slot itself resides on a page that is compacted.
     if (LIKELY(!relocatable_pages_.Contains(slot_page)))

@@ -1862,5 +1862,31 @@ TEST(IncrementalMarkingTest, StepDuringMixinObjectConstruction) {
   PreciselyCollectGarbage();
 }
 
+TEST(IncrementalMarkingTest, IncrementalMarkingShrinkingBackingCompaction) {
+  // Regression test: https://crbug.com/918064
+
+  using Nested = HeapVector<HeapVector<Member<Object>>>;
+  // The following setup will ensure that the outer HeapVector's backing store
+  // contains slots to other to-be-compacted backings.
+  Persistent<Nested> holder(MakeGarbageCollected<Nested>());
+  for (int i = 0; i < 32; i++) {
+    holder->emplace_back();
+    holder->at(i).emplace_back(MakeGarbageCollected<Object>());
+  }
+  IncrementalMarkingTestDriver driver(ThreadState::Current());
+  ThreadState::Current()->Heap().Compaction()->ScheduleCompactionGCForTesting(
+      true);
+  driver.Start();
+  driver.FinishSteps();
+  // Reduce size of the outer backing store.
+  for (int i = 0; i < 16; i++) {
+    holder->pop_back();
+  }
+  // Ensure that shrinking the backing does not crash in compaction as there may
+  // be registered slots left in the area that is already freed.
+  holder->ShrinkToFit();
+  driver.FinishGC();
+}
+
 }  // namespace incremental_marking_test
 }  // namespace blink
