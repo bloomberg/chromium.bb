@@ -25,6 +25,10 @@ class PeriodicBackgroundSyncPermissionContext : public PermissionContextBase {
   explicit PeriodicBackgroundSyncPermissionContext(Profile* profile);
   ~PeriodicBackgroundSyncPermissionContext() override = default;
 
+ protected:
+  // Virtual for testing.
+  virtual bool IsPwaInstalled(const GURL& url) const;
+
  private:
   // PermissionContextBase implementation.
   bool IsRestrictedToSecureOrigins() const override;
