@@ -742,6 +742,11 @@ def IsInsideChroot():
   return os.path.exists('/etc/cros_chroot_version')
 
 
+def IsOutsideChroot():
+  """Returns True if we are outside chroot."""
+  return not IsInsideChroot()
+
+
 def AssertInsideChroot():
   """Die if we are outside the chroot"""
   if not IsInsideChroot():

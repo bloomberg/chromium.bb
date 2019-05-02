@@ -101,6 +101,45 @@ class BuildConfigTest(cros_test_lib.MockTestCase):
     config.version = None
 
 
+class CreateVmTest(cros_test_lib.RunCommandTestCase):
+  """Create VM tests."""
+
+  def setUp(self):
+    self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=True)
+
+  def testNoBoardFails(self):
+    """Should fail when not given a valid board-ish value."""
+    with self.assertRaises(AssertionError):
+      image.CreateVm('')
+
+  def testBoardArgument(self):
+    """Test the board argument."""
+    image.CreateVm('board')
+    self.assertCommandContains(['--board', 'board'])
+
+  def testTestImage(self):
+    """Test the application of the --test_image argument."""
+    image.CreateVm('board', is_test=True)
+    self.assertCommandContains(['--test_image'])
+
+  def testNonTestImage(self):
+    """Test the non-application of the --test_image argument."""
+    image.CreateVm('board', is_test=False)
+    self.assertCommandContains(['--test_image'], expected=False)
+
+  def testCommandError(self):
+    """Test handling of an error when running the command."""
+    self.rc.SetDefaultCmdResult(returncode=1)
+    with self.assertRaises(image.ImageToVmError):
+      image.CreateVm('board')
+
+  def testResultPath(self):
+    """Test the path building."""
+    self.PatchObject(image_lib, 'GetLatestImageLink', return_value='/tmp')
+    self.assertEqual(os.path.join('/tmp', constants.VM_IMAGE_BIN),
+                     image.CreateVm('board'))
+
+
 class ImageTestTest(cros_test_lib.RunCommandTempDirTestCase):
   """Image Test tests."""
 

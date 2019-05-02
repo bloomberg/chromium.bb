@@ -7,7 +7,16 @@
 
 from __future__ import print_function
 
+from chromite.lib import chroot_lib
 from chromite.lib import portage_util
+
+
+def ParseChroot(chroot_message):
+  """Create a chroot object from the chroot message."""
+  path = chroot_message.path
+  cache_dir = chroot_message.cache_dir
+
+  return chroot_lib.Chroot(path=path, cache_dir=cache_dir)
 
 
 def CPVToPackageInfo(cpv, package_info):
