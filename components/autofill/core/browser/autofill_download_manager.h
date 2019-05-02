@@ -31,6 +31,8 @@ namespace autofill {
 class AutofillDriver;
 class FormStructure;
 
+const size_t kMaxAPIQueryGetSize = 10240;  // 10 KiB
+
 // A helper to make sure that tests which modify the set of active autofill
 // experiments do not interfere with one another.
 struct ScopedActiveAutofillExperiments {

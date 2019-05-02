@@ -60,7 +60,7 @@ constexpr std::pair<int, int> kAutofillExperimentRanges[] = {
     {3314445, 3314448}, {3314854, 3314883},
 };
 
-const size_t kMaxQueryGetSize = 1400;  // 1.25KB
+const size_t kMaxQueryGetSize = 1400;  // 1.25 KiB
 const size_t kAutofillDownloadManagerMaxFormCacheSize = 16;
 const size_t kMaxFieldsPerQueryRequest = 100;
 
@@ -448,16 +448,22 @@ bool GetUploadPayloadForApi(const AutofillUploadContents& upload,
   return upload_request.SerializeToString(payload);
 }
 
-// Gets an API method URL given its type (query or upload) and an optional
-// resource ID.
+// Gets an API method URL given its type (query or upload), an optional
+// resource ID, and the HTTP method to be used.
 // Example usage:
-//   * GetAPIMethodUrl(REQUEST_QUERY, "1234") will return "/v1/pages/1234".
-//   * GetAPIMethodUrl(REQUEST_UPLOAD, "") will return "/v1/forms:vote".
+// * GetAPIMethodUrl(REQUEST_QUERY, "1234", "GET") will return "/v1/pages/1234".
+// * GetAPIMethodUrl(REQUEST_QUERY, "1234", "POST") will return "/v1/pages:get".
+// * GetAPIMethodUrl(REQUEST_UPLOAD, "", "POST") will return "/v1/forms:vote".
 std::string GetAPIMethodUrl(AutofillDownloadManager::RequestType type,
-                            base::StringPiece resource_id) {
+                            base::StringPiece resource_id,
+                            base::StringPiece method) {
   const char* api_method_url;
   if (type == AutofillDownloadManager::REQUEST_QUERY) {
-    api_method_url = "/v1/pages";
+    if (method == "POST") {
+      api_method_url = "/v1/pages:get";
+    } else {
+      api_method_url = "/v1/pages";
+    }
   } else if (type == AutofillDownloadManager::REQUEST_UPLOAD) {
     api_method_url = "/v1/forms:vote";
   } else {
@@ -469,6 +475,35 @@ std::string GetAPIMethodUrl(AutofillDownloadManager::RequestType type,
     return std::string(api_method_url);
   }
   return base::StrCat({api_method_url, "/", resource_id});
+}
+
+// Gets HTTP body payload for API POST request.
+std::string GetAPIBodyPayload(const std::string& payload,
+                              AutofillDownloadManager::RequestType type) {
+  // Don't do anything for payloads not related to Query.
+  if (type != AutofillDownloadManager::REQUEST_QUERY) {
+    return payload;
+  }
+  // Wrap query payload in a request proto to interface with API Query method.
+  AutofillPageResourceQueryRequest request;
+  request.set_serialized_request(payload);
+  std::string new_payload;
+  DCHECK(request.SerializeToString(&new_payload))
+      << "could not serialize AutofillPageResourceQueryRequest payload";
+  return new_payload;
+}
+
+// Gets the data payload for API Query (POST and GET).
+bool GetAPIQueryPayload(const AutofillQueryContents& query,
+                        std::string* payload) {
+  std::string serialized_query;
+  if (!CreateApiRequestFromLegacyRequest(query).SerializeToString(
+          &serialized_query)) {
+    return false;
+  }
+  base::Base64UrlEncode(serialized_query,
+                        base::Base64UrlEncodePolicy::INCLUDE_PADDING, payload);
+  return true;
 }
 
 }  // namespace
@@ -542,10 +577,8 @@ bool AutofillDownloadManager::StartQueryRequest(
 
   // Get the query request payload.
   std::string payload;
-  bool is_payload_serialized =
-      UseApi()
-          ? CreateApiRequestFromLegacyRequest(query).SerializeToString(&payload)
-          : query.SerializeToString(&payload);
+  bool is_payload_serialized = UseApi() ? GetAPIQueryPayload(query, &payload)
+                                        : query.SerializeToString(&payload);
   if (!is_payload_serialized) {
     return false;
   }
@@ -674,31 +707,27 @@ AutofillDownloadManager::GetRequestURLAndMethodForApi(
   // ID of the resource to add to the API request URL. Nothing will be added if
   // |resource_id| is empty.
   std::string resource_id;
+  std::string method = "POST";
 
-  // Get the resource id of corresponding webpage when doing a query request.
   if (request_data.request_type == AutofillDownloadManager::REQUEST_QUERY) {
-    if (request_data.payload.length() <= kMaxQueryGetSize) {
-      base::Base64UrlEncode(request_data.payload,
-                            base::Base64UrlEncodePolicy::INCLUDE_PADDING,
-                            &resource_id);
+    if (request_data.payload.length() <= kMaxAPIQueryGetSize) {
+      resource_id = request_data.payload;
+      method = "GET";
+      UMA_HISTOGRAM_BOOLEAN("Autofill.Query.ApiUrlIsTooLong", false);
+    } else {
+      UMA_HISTOGRAM_BOOLEAN("Autofill.Query.ApiUrlIsTooLong", true);
     }
-    // Query method is always GET (represented by 0) with API.
-    UMA_HISTOGRAM_BOOLEAN("Autofill.Query.Method", 0);
+    UMA_HISTOGRAM_BOOLEAN("Autofill.Query.Method", (method == "GET") ? 0 : 1);
   }
 
   // Make the canonical URL to query the API, e.g.,
   // https://autofill.googleapis.com/v1/forms/1234?alt=proto.
   GURL url = autofill_server_url_.Resolve(
-      GetAPIMethodUrl(request_data.request_type, resource_id));
+      GetAPIMethodUrl(request_data.request_type, resource_id, method));
 
   // Add the query parameter to set the response format to a serialized proto.
   url = net::AppendQueryParameter(url, "alt", "proto");
 
-  // Determine the HTTP method that should be used.
-  std::string method =
-      (request_data.request_type == AutofillDownloadManager::REQUEST_QUERY)
-          ? "GET"
-          : "POST";
   return std::make_tuple(std::move(url), std::move(method));
 }
 
@@ -713,6 +742,14 @@ bool AutofillDownloadManager::StartRequest(FormRequestData request_data) {
   std::tie(request_url, method) =
       UseApi() ? GetRequestURLAndMethodForApi(request_data)
                : GetRequestURLAndMethod(request_data);
+
+  // Track the URL length for GET queries because the URL length can be in the
+  // thousands when rich metadata is enabled.
+  if (request_data.request_type == AutofillDownloadManager::REQUEST_QUERY &&
+      method == "GET") {
+    UMA_HISTOGRAM_COUNTS_100000("Autofill.Query.GetUrlLength",
+                                request_url.spec().length());
+  }
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = request_url;
@@ -750,10 +787,14 @@ bool AutofillDownloadManager::StartRequest(FormRequestData request_data) {
   simple_loader->SetAllowHttpErrorResults(true);
 
   if (method == "POST") {
-    const std::string content_type =
+    const std::string& content_type =
         UseApi() ? "application/x-protobuf" : "text/proto";
+    const std::string& payload =
+        UseApi()
+            ? GetAPIBodyPayload(request_data.payload, request_data.request_type)
+            : request_data.payload;
     // Attach payload data and add data format header.
-    simple_loader->AttachStringForUpload(request_data.payload, content_type);
+    simple_loader->AttachStringForUpload(payload, content_type);
   }
 
   // Transfer ownership of the loader into url_loaders_. Temporarily hang
