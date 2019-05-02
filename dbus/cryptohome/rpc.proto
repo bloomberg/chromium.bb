@@ -499,3 +499,11 @@ message LockToSingleUserMountUntilRebootReply {
   // One of the values from LockToSingleUserMountUntilRebootResult.
   optional int32 result = 1;
 }
+
+// Returns lookup key for Remote Server Unlock
+message GetRsuDeviceIdReply {
+  extend BaseReply { optional GetRsuDeviceIdReply reply = 1013; }
+  optional bytes rsu_device_id = 1;
+}
+
+message GetRsuDeviceIdRequest {}
