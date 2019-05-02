@@ -11,5 +11,8 @@ found in the LICENSE file. -->
 
     <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="28" />
 
-    <application android:label="WebView Log Verbosifier" />
+    <application
+        android:label="WebView Log Verbosifier"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round" />
 </manifest>
