@@ -52,7 +52,7 @@ Below is a list of all WebDriver commands and their current support in ChromeDri
 | DELETE | /session/{session id}/cookie/{name}                            | Delete Cookie              | Complete           |
 | DELETE | /session/{session id)/cookie                                   | Delete All Cookies         | Complete           |
 | POST   | /session/{session id}/actions                                  | Perform Actions            | Partially Complete | [1897](https://bugs.chromium.org/p/chromedriver/issues/detail?id=1897)
-| DELETE | /session/{session id}/actions                                  | Release Actions            | Partially Complete | [1897](https://bugs.chromium.org/p/chromedriver/issues/detail?id=1897)
+| DELETE | /session/{session id}/actions                                  | Release Actions            | Complete           |
 | POST   | /session/{session id}/alert/dismiss                            | Dismiss Alert              | Complete           |
 | POST   | /session/{session id}/alert/accept                             | Accept Alert               | Complete           |
 | GET    | /session/{session id}/alert/text                               | Get Alert Text             | Complete           |

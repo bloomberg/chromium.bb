@@ -1089,11 +1089,11 @@ Status ProcessInputActionSequence(
       // enum KeyModifierMask.
       tmp_state.SetInteger("modifiers", 0);
     } else if (type == "pointer") {
-      std::unique_ptr<base::ListValue> pressed(new base::ListValue);
       int x = 0;
       int y = 0;
 
-      tmp_state.SetList("pressed", std::move(pressed));
+      // "pressed" is stored as a bitmask of pointer buttons.
+      tmp_state.SetInteger("pressed", 0);
       tmp_state.SetString("subtype", pointer_type);
 
       tmp_state.SetInteger("x", x);
@@ -1508,6 +1508,17 @@ Status ExecutePerformActions(Session* session,
           event.click_count = session->click_count;
         }
         dispatch_mouse_events.push_back(event);
+        if (event.type == kPressedMouseEventType) {
+          session->input_cancel_list.emplace_back(mouse_input_states[j], &event,
+                                                  nullptr, nullptr);
+          mouse_input_states[j]->SetInteger(
+              "pressed", mouse_input_states[j]->FindKey("pressed")->GetInt() |
+                             (1 << event.button));
+        } else if (event.type == kReleasedMouseEventType) {
+          mouse_input_states[j]->SetInteger(
+              "pressed", mouse_input_states[j]->FindKey("pressed")->GetInt() &
+                             ~(1 << event.button));
+        }
       }
     }
     if (dispatch_mouse_events.size() > 0) {
@@ -1543,6 +1554,13 @@ Status ExecutePerformActions(Session* session,
         }
         if (event.dispatch)
           dispatch_touch_events.push_back(event);
+        if (event.type == kTouchStart) {
+          session->input_cancel_list.emplace_back(touch_input_states[j],
+                                                  nullptr, &event, nullptr);
+          touch_input_states[j]->SetInteger("pressed", 1);
+        } else if (event.type == kTouchEnd) {
+          touch_input_states[j]->SetInteger("pressed", 0);
+        }
       }
     }
     if (dispatch_touch_events.size() > 0) {
@@ -1574,8 +1592,6 @@ Status ExecuteReleaseActions(Session* session,
                              const base::DictionaryValue& params,
                              std::unique_ptr<base::Value>* value,
                              Timeout* timeout) {
-  // TODO(https://crbug.com/chromedriver/1897): Process "input cancel list" for
-  // mouse and touch events.
   for (auto it = session->input_cancel_list.rbegin();
        it != session->input_cancel_list.rend(); ++it) {
     if (it->key_event) {
@@ -1585,6 +1601,20 @@ Status ExecuteReleaseActions(Session* session,
         continue;
       web_view->DispatchKeyEvents({*it->key_event});
       pressed->Remove(it->key_event->key, nullptr);
+    } else if (it->mouse_event) {
+      int pressed = it->input_state->FindKey("pressed")->GetInt();
+      int button_mask = 1 << it->mouse_event->button;
+      if ((pressed & button_mask) == 0)
+        continue;
+      web_view->DispatchMouseEvents({*it->mouse_event},
+                                    session->GetCurrentFrameId());
+      it->input_state->SetInteger("pressed", pressed & ~button_mask);
+    } else if (it->touch_event) {
+      int pressed = it->input_state->FindKey("pressed")->GetInt();
+      if (pressed == 0)
+        continue;
+      web_view->DispatchTouchEvents({*it->touch_event});
+      it->input_state->SetInteger("pressed", 0);
     }
   }
 

@@ -900,6 +900,67 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
         elapsed_time = events[i]['time'] - events[i-1]['time']
         self.assertGreaterEqual(elapsed_time, 200)
 
+  def testReleaseActions(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+    self._driver.ExecuteScript(
+        '''
+        document.body.innerHTML
+          = "<input id='target' type='text' style='width:200px; height:200px'>";
+        window.events = [];
+        const recordKeyEvent = event => {
+          window.events.push(
+              {type: event.type, code: event.code});
+        };
+        const recordMouseEvent = event => {
+          window.events.push(
+              {type: event.type, x: event.clientX, y: event.clientY});
+        };
+        const target = document.getElementById('target');
+        target.addEventListener('keydown', recordKeyEvent);
+        target.addEventListener('keyup', recordKeyEvent);
+        target.addEventListener('mousedown', recordMouseEvent);
+        target.addEventListener('mouseup', recordMouseEvent);
+        ''')
+
+    # Move mouse to (50, 50), press a mouse button, and press a key.
+    self._driver.PerformActions({'actions': [
+        {
+            'type': 'pointer',
+            'id': 'mouse',
+            'actions': [
+                {'type': 'pointerMove', 'x': 50, 'y': 50},
+                {'type': 'pointerDown', "button": 0}
+            ]
+        },
+        {
+            'type': 'key',
+            'id': 'key',
+            'actions': [
+                {'type': 'pause'},
+                {'type': 'pause'},
+                {'type': 'keyDown', 'value': 'a'}
+            ]
+        }
+    ]})
+
+    events = self._driver.ExecuteScript('return window.events')
+    self.assertEquals(2, len(events))
+    self.assertEquals('mousedown', events[0]['type'])
+    self.assertEquals(50, events[0]['x'])
+    self.assertEquals(50, events[0]['y'])
+    self.assertEquals('keydown', events[1]['type'])
+    self.assertEquals('KeyA', events[1]['code'])
+
+    self._driver.ReleaseActions()
+
+    events = self._driver.ExecuteScript('return window.events')
+    self.assertEquals(4, len(events))
+    self.assertEquals('keyup', events[2]['type'])
+    self.assertEquals('KeyA', events[2]['code'])
+    self.assertEquals('mouseup', events[3]['type'])
+    self.assertEquals(50, events[3]['x'])
+    self.assertEquals(50, events[3]['y'])
+
   def testPageLoadStrategyIsNormalByDefault(self):
     self.assertEquals('normal',
                       self._driver.capabilities['pageLoadStrategy'])

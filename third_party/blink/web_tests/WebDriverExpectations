@@ -127,7 +127,6 @@ crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/new_window/new.py>>test_
 crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/perform_actions/pointer_contextmenu.py>>test_control_click[\ue009-ctrlKey] [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/new_window/new.py>>test_type_with_null_value [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/take_element_screenshot/user_prompts.py>>test_dismiss[capabilities0-confirm] [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/perform_actions/pointer_contextmenu.py>>test_release_control_click [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/execute_script/promise.py>>test_promise_resolve_delayed [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/take_element_screenshot/user_prompts.py>>test_accept[capabilities0-alert] [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/fullscreen_window/stress.py>>test_stress[2] [ Failure ]
