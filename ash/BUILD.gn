@@ -1271,8 +1271,6 @@ component("ash") {
     "ws/ash_gpu_interface_provider.h",
     "ws/ash_window_manager.cc",
     "ws/ash_window_manager.h",
-    "ws/ax_ash_window_utils.cc",
-    "ws/ax_ash_window_utils.h",
     "ws/multi_user_window_manager_bridge.cc",
     "ws/multi_user_window_manager_bridge.h",
     "ws/window_lookup.cc",
@@ -1918,7 +1916,6 @@ test("ash_unittests") {
     "wm/workspace/workspace_window_resizer_unittest.cc",
     "wm/workspace_controller_unittest.cc",
     "ws/ash_window_manager_unittest.cc",
-    "ws/ax_ash_window_utils_unittest.cc",
     "ws/window_lookup_unittest.cc",
     "ws/window_service_delegate_impl_unittest.cc",
   ]

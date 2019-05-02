@@ -17,6 +17,7 @@ class Widget;
 // to its corresponding client window. This is just a temporary solution to
 // that issue and should be removed once Mash is fully launched.
 // crbug.com/911945
+// TODO(jamescook): Delete this.
 class VIEWS_EXPORT AXAuraWindowUtils {
  public:
   virtual ~AXAuraWindowUtils();
