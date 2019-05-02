@@ -4,66 +4,6 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-config("views_bridge_mac_warnings") {
-  if (is_mac) {
-    # TODO(thakis): Remove this once http://crbug.com/383820 is figured out
-    cflags = [ "-Wno-nonnull" ]
-  }
-}
-
-component("views_bridge_mac") {
-  assert(is_mac)
-
-  configs += [ ":views_bridge_mac_warnings" ]
-  sources = [
-    "alert.h",
-    "alert.mm",
-    "bridge_factory_impl.h",
-    "bridge_factory_impl.mm",
-    "bridged_content_view.h",
-    "bridged_content_view.mm",
-    "bridged_content_view_touch_bar.mm",
-    "bridged_native_widget_host_helper.h",
-    "bridged_native_widget_impl.h",
-    "bridged_native_widget_impl.mm",
-    "browser_native_widget_window_mac.h",
-    "browser_native_widget_window_mac.mm",
-    "cocoa_mouse_capture.h",
-    "cocoa_mouse_capture.mm",
-    "cocoa_mouse_capture_delegate.h",
-    "cocoa_window_move_loop.h",
-    "cocoa_window_move_loop.mm",
-    "drag_drop_client.h",
-    "native_widget_mac_frameless_nswindow.h",
-    "native_widget_mac_frameless_nswindow.mm",
-    "native_widget_mac_nswindow.h",
-    "native_widget_mac_nswindow.mm",
-    "views_bridge_mac_export.h",
-    "views_nswindow_delegate.h",
-    "views_nswindow_delegate.mm",
-    "views_scrollbar_bridge.h",
-    "views_scrollbar_bridge.mm",
-    "window_touch_bar_delegate.h",
-  ]
-  defines = [ "VIEWS_BRIDGE_MAC_IMPLEMENTATION" ]
-  deps = [
-    ":mojo",
-    "//base",
-    "//base:i18n",
-    "//components/crash/core/common",
-    "//mojo/public/cpp/bindings",
-    "//ui/accelerated_widget_mac",
-    "//ui/base",
-    "//ui/base/ime:ime",
-    "//ui/events",
-    "//ui/gfx",
-  ]
-  libs = [
-    "Cocoa.framework",
-    "QuartzCore.framework",
-  ]
-}
-
 mojom("mojo") {
   assert(is_mac)
 

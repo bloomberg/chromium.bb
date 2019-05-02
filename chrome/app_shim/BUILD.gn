@@ -25,12 +25,12 @@ source_set("app_shim") {
     "//chrome/common",
     "//chrome/common:mojo_bindings",
     "//components/crash/content/app",
+    "//components/remote_cocoa/app_shim",
     "//content/public/browser",
     "//ipc",
     "//mojo/core/embedder",
     "//ui/accelerated_widget_mac",
     "//ui/base",
-    "//ui/views_bridge_mac",
   ]
 }
 

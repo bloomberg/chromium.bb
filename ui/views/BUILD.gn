@@ -769,9 +769,9 @@ jumbo_component("views") {
     ]
     deps += [
       "//components/crash/core/common",
+      "//components/remote_cocoa/app_shim",
       "//ui/accelerated_widget_mac",
       "//ui/events:dom_keycode_converter",
-      "//ui/views_bridge_mac",
     ]
     public_deps += [ "//ui/views_bridge_mac:mojo" ]
     libs = [
@@ -944,7 +944,7 @@ jumbo_source_set("test_support") {
     ]
   }
   if (is_mac) {
-    deps += [ "//ui/views_bridge_mac" ]
+    deps += [ "//components/remote_cocoa/app_shim" ]
   }
 
   if (use_aura) {
@@ -1187,8 +1187,8 @@ test("views_unittests") {
     sources -= [ "controls/native/native_view_host_unittest.cc" ]
 
     public_deps = [
+      "//components/remote_cocoa/app_shim",
       "//ui/accelerated_widget_mac",
-      "//ui/views_bridge_mac:views_bridge_mac",
     ]
   }
 
@@ -1291,7 +1291,7 @@ source_set("views_interactive_ui_tests") {
       "cocoa/bridged_native_widget_interactive_uitest.mm",
       "widget/native_widget_mac_interactive_uitest.mm",
     ]
-    deps += [ "//ui/views_bridge_mac" ]
+    deps += [ "//components/remote_cocoa/app_shim" ]
   }
 
   if (use_aura) {

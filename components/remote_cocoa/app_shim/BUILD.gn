@@ -1,0 +1,66 @@
+# Copyright 2019 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//mojo/public/tools/bindings/mojom.gni")
+
+config("app_shim_warnings") {
+  if (is_mac) {
+    # TODO(thakis): Remove this once http://crbug.com/383820 is figured out
+    cflags = [ "-Wno-nonnull" ]
+  }
+}
+
+# This component is for code that is to run in the app shim process.
+component("app_shim") {
+  assert(is_mac)
+
+  configs += [ ":app_shim_warnings" ]
+  sources = [
+    "//ui/views_bridge_mac/alert.h",
+    "//ui/views_bridge_mac/alert.mm",
+    "//ui/views_bridge_mac/bridge_factory_impl.h",
+    "//ui/views_bridge_mac/bridge_factory_impl.mm",
+    "//ui/views_bridge_mac/bridged_content_view.h",
+    "//ui/views_bridge_mac/bridged_content_view.mm",
+    "//ui/views_bridge_mac/bridged_content_view_touch_bar.mm",
+    "//ui/views_bridge_mac/bridged_native_widget_host_helper.h",
+    "//ui/views_bridge_mac/bridged_native_widget_impl.h",
+    "//ui/views_bridge_mac/bridged_native_widget_impl.mm",
+    "//ui/views_bridge_mac/browser_native_widget_window_mac.h",
+    "//ui/views_bridge_mac/browser_native_widget_window_mac.mm",
+    "//ui/views_bridge_mac/cocoa_mouse_capture.h",
+    "//ui/views_bridge_mac/cocoa_mouse_capture.mm",
+    "//ui/views_bridge_mac/cocoa_mouse_capture_delegate.h",
+    "//ui/views_bridge_mac/cocoa_window_move_loop.h",
+    "//ui/views_bridge_mac/cocoa_window_move_loop.mm",
+    "//ui/views_bridge_mac/drag_drop_client.h",
+    "//ui/views_bridge_mac/native_widget_mac_frameless_nswindow.h",
+    "//ui/views_bridge_mac/native_widget_mac_frameless_nswindow.mm",
+    "//ui/views_bridge_mac/native_widget_mac_nswindow.h",
+    "//ui/views_bridge_mac/native_widget_mac_nswindow.mm",
+    "//ui/views_bridge_mac/views_bridge_mac_export.h",
+    "//ui/views_bridge_mac/views_nswindow_delegate.h",
+    "//ui/views_bridge_mac/views_nswindow_delegate.mm",
+    "//ui/views_bridge_mac/views_scrollbar_bridge.h",
+    "//ui/views_bridge_mac/views_scrollbar_bridge.mm",
+    "//ui/views_bridge_mac/window_touch_bar_delegate.h",
+  ]
+  defines = [ "VIEWS_BRIDGE_MAC_IMPLEMENTATION" ]
+  deps = [
+    "//base",
+    "//base:i18n",
+    "//components/crash/core/common",
+    "//mojo/public/cpp/bindings",
+    "//ui/accelerated_widget_mac",
+    "//ui/base",
+    "//ui/base/ime:ime",
+    "//ui/events",
+    "//ui/gfx",
+    "//ui/views_bridge_mac:mojo",
+  ]
+  libs = [
+    "Cocoa.framework",
+    "QuartzCore.framework",
+  ]
+}
