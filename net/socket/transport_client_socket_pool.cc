@@ -436,39 +436,34 @@ int TransportClientSocketPool::RequestSocketInternal(const GroupId& group_id,
   group->AddJob(std::move(owned_connect_job), preconnecting);
 
   int rv = connect_job->Connect();
-  if (rv == OK) {
-    LogBoundConnectJobToRequest(connect_job->net_log().source(), request);
-    if (!preconnecting) {
-      HandOutSocket(connect_job->PassSocket(), ClientSocketHandle::UNUSED,
-                    connect_job->connect_timing(), handle, base::TimeDelta(),
-                    group, request.net_log());
-    } else {
-      AddIdleSocket(connect_job->PassSocket(), group);
-    }
-    RemoveConnectJob(connect_job, group);
-  } else if (rv == ERR_IO_PENDING) {
+  if (rv == ERR_IO_PENDING) {
     // If we didn't have any sockets in this group, set a timer for potentially
     // creating a new one.  If the SYN is lost, this backup socket may complete
     // before the slow socket, improving end user latency.
     if (connect_backup_jobs_enabled_ && was_group_empty)
       group->StartBackupJobTimer(group_id);
-  } else {
-    LogBoundConnectJobToRequest(connect_job->net_log().source(), request);
-    std::unique_ptr<StreamSocket> error_socket;
-    if (!preconnecting) {
-      DCHECK(handle);
-      handle->SetAdditionalErrorState(connect_job);
-      error_socket = connect_job->PassSocket();
-    }
-    if (error_socket) {
-      HandOutSocket(std::move(error_socket), ClientSocketHandle::UNUSED,
-                    connect_job->connect_timing(), handle, base::TimeDelta(),
-                    group, request.net_log());
-    }
-    RemoveConnectJob(connect_job, group);
-    if (group->IsEmpty())
-      RemoveGroup(group_id);
+    return rv;
   }
+
+  LogBoundConnectJobToRequest(connect_job->net_log().source(), request);
+  if (preconnecting) {
+    if (rv == OK)
+      AddIdleSocket(connect_job->PassSocket(), group);
+  } else {
+    DCHECK(handle);
+    if (rv != OK)
+      handle->SetAdditionalErrorState(connect_job);
+    std::unique_ptr<StreamSocket> socket = connect_job->PassSocket();
+    if (socket) {
+      HandOutSocket(std::move(socket), ClientSocketHandle::UNUSED,
+                    connect_job->connect_timing(), handle,
+                    base::TimeDelta() /* idle_time */, group,
+                    request.net_log());
+    }
+  }
+  RemoveConnectJob(connect_job, group);
+  if (group->IsEmpty())
+    RemoveGroup(group_id);
 
   return rv;
 }
@@ -1204,105 +1199,79 @@ void TransportClientSocketPool::OnConnectJobComplete(Group* group,
   DCHECK_NE(ERR_IO_PENDING, result);
   DCHECK(group_map_.find(group->group_id()) != group_map_.end());
   DCHECK_EQ(group, group_map_[group->group_id()]);
+  DCHECK(result != OK || job->socket() != nullptr);
 
-  std::unique_ptr<StreamSocket> socket = job->PassSocket();
-
-  // Copies of these are needed because |job| may be deleted before they are
-  // accessed.
-  NetLogWithSource job_log = job->net_log();
-  LoadTimingInfo::ConnectTiming connect_timing = job->connect_timing();
-
-  // Check if the ConnectJob is already bound to a Request. If so, complete the
-  // request.
-  //
-  // TODO(mmenke) this logic resembles the case where the job is assigned to a
-  // request below. Look into merging the logic.
+  // Check if the ConnectJob is already bound to a Request. If so, result is
+  // returned to that specific request.
   base::Optional<Group::BoundRequest> bound_request =
       group->FindAndRemoveBoundRequestForConnectJob(job);
+  Request* request = nullptr;
+  std::unique_ptr<Request> owned_request;
   if (bound_request) {
     --connecting_socket_count_;
-    // If the ConnectJob is from a previous generation, and the socket pools
-    // weren't flushed with an error, add the request back to the group, and
-    // kick off another request.
-    if (bound_request->generation != group->generation() &&
-        bound_request->pending_error == OK) {
+
+    // If the socket pools were previously flushed with an error, return that
+    // error to the bound request and discard the socket.
+    if (bound_request->pending_error != OK) {
+      InvokeUserCallbackLater(bound_request->request->handle(),
+                              bound_request->request->release_callback(),
+                              bound_request->pending_error,
+                              bound_request->request->socket_tag());
+      bound_request->request->net_log().EndEventWithNetErrorCode(
+          NetLogEventType::SOCKET_POOL, bound_request->pending_error);
+      OnAvailableSocketSlot(group->group_id(), group);
+      CheckForStalledSocketGroups();
+      return;
+    }
+
+    // If the ConnectJob is from a previous generation, add the request back to
+    // the group, and kick off another request. The socket will be discarded.
+    if (bound_request->generation != group->generation()) {
       group->InsertUnboundRequest(std::move(bound_request->request));
       OnAvailableSocketSlot(group->group_id(), group);
       CheckForStalledSocketGroups();
       return;
     }
 
-    bool handed_out_socket = false;
-    if (bound_request->pending_error != OK) {
-      result = bound_request->pending_error;
-    } else {
-      bound_request->request->handle()->SetAdditionalErrorState(job);
-      if (socket) {
-        handed_out_socket = true;
-        HandOutSocket(std::move(socket), ClientSocketHandle::UNUSED,
-                      connect_timing, bound_request->request->handle(),
-                      base::TimeDelta(), group,
-                      bound_request->request->net_log());
-      }
-    }
-    bound_request->request->net_log().EndEventWithNetErrorCode(
-        NetLogEventType::SOCKET_POOL, result);
-    InvokeUserCallbackLater(bound_request->request->handle(),
-                            bound_request->request->release_callback(), result,
-                            bound_request->request->socket_tag());
-    if (!handed_out_socket) {
+    request = bound_request->request.get();
+  } else {
+    // In this case, RemoveConnectJob(job, _) must be called before exiting this
+    // method. Otherwise, |job| will be leaked.
+    owned_request = group->PopNextUnboundRequest();
+    request = owned_request.get();
+
+    if (!request) {
+      if (result == OK)
+        AddIdleSocket(job->PassSocket(), group);
+      RemoveConnectJob(job, group);
       OnAvailableSocketSlot(group->group_id(), group);
       CheckForStalledSocketGroups();
+      return;
     }
-    return;
+
+    LogBoundConnectJobToRequest(job->net_log().source(), *request);
   }
 
-  // RemoveConnectJob(job, _) must be called by all branches below;
-  // otherwise, |job| will be leaked.
+  // The case where there's no request is handled above.
+  DCHECK(request);
 
-  if (result == OK) {
-    DCHECK(socket.get());
-    std::unique_ptr<Request> request = group->PopNextUnboundRequest();
+  if (result != OK)
+    request->handle()->SetAdditionalErrorState(job);
+  if (job->socket()) {
+    HandOutSocket(job->PassSocket(), ClientSocketHandle::UNUSED,
+                  job->connect_timing(), request->handle(), base::TimeDelta(),
+                  group, request->net_log());
+  }
+  request->net_log().EndEventWithNetErrorCode(NetLogEventType::SOCKET_POOL,
+                                              result);
+  InvokeUserCallbackLater(request->handle(), request->release_callback(),
+                          result, request->socket_tag());
+  if (!bound_request)
     RemoveConnectJob(job, group);
-    if (request) {
-      LogBoundConnectJobToRequest(job_log.source(), *request);
-      HandOutSocket(std::move(socket), ClientSocketHandle::UNUSED,
-                    connect_timing, request->handle(), base::TimeDelta(), group,
-                    request->net_log());
-      request->net_log().EndEvent(NetLogEventType::SOCKET_POOL);
-      InvokeUserCallbackLater(request->handle(), request->release_callback(),
-                              result, request->socket_tag());
-    } else {
-      AddIdleSocket(std::move(socket), group);
-      OnAvailableSocketSlot(group->group_id(), group);
-      CheckForStalledSocketGroups();
-    }
-  } else {
-    // If we got a socket, it must contain error information so pass that
-    // up so that the caller can retrieve it.
-    bool handed_out_socket = false;
-    std::unique_ptr<Request> request = group->PopNextUnboundRequest();
-    if (request) {
-      LogBoundConnectJobToRequest(job_log.source(), *request);
-      request->handle()->SetAdditionalErrorState(job);
-      RemoveConnectJob(job, group);
-      if (socket.get()) {
-        handed_out_socket = true;
-        HandOutSocket(std::move(socket), ClientSocketHandle::UNUSED,
-                      connect_timing, request->handle(), base::TimeDelta(),
-                      group, request->net_log());
-      }
-      request->net_log().EndEventWithNetErrorCode(NetLogEventType::SOCKET_POOL,
-                                                  result);
-      InvokeUserCallbackLater(request->handle(), request->release_callback(),
-                              result, request->socket_tag());
-    } else {
-      RemoveConnectJob(job, group);
-    }
-    if (!handed_out_socket) {
-      OnAvailableSocketSlot(group->group_id(), group);
-      CheckForStalledSocketGroups();
-    }
+  // If no socket was handed out, there's a new socket slot available.
+  if (!request->handle()->socket()) {
+    OnAvailableSocketSlot(group->group_id(), group);
+    CheckForStalledSocketGroups();
   }
 }
 
