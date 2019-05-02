@@ -766,7 +766,7 @@
   },
   {
     "prefix": "display-lock",
-    "base": "display-lock",
+    "base": "wpt_internal/display-lock",
     "args": ["--enable-blink-features=DisplayLocking"]
   },
   {

@@ -1,0 +1,33 @@
+<!doctype HTML>
+<html class="reftest-wait">
+<meta charset="utf8">
+<title>Display Locking: layout replaced</title>
+<link rel="author" title="Vladimir Levin" href="mailto:vmpstr@chromium.org">
+<link rel="help" href="https://github.com/WICG/display-locking">
+<link rel="match" href="layout-replaced-ref.html">
+<script src="/common/reftest-wait.js"></script>
+
+<style>
+#border {
+  border: 1px solid blue;
+  width: max-content;
+}
+img {
+  contain: style layout;
+}
+</style>
+
+<div id="border">
+  <img id="element" src="resources/blue-100.png">
+</div>
+
+<script>
+async function runTest() {
+  const element = document.getElementById("element");
+  await element.displayLock.acquire({ timeout: Infinity, size: [12, 34] });
+  takeScreenshot();
+}
+
+window.onload = () => requestAnimationFrame(runTest);
+</script>
+</html>
