@@ -841,9 +841,9 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   content::RenderFrameHost* subframe = CreateSubframeWithTestNavigation(
       GURL("https://www.example.com/allowed.html"), main_rfh());
 
-  EXPECT_FALSE(throttle_manager()->IsFrameTaggedAsAdForTesting(subframe));
+  EXPECT_FALSE(throttle_manager()->IsFrameTaggedAsAd(subframe));
   throttle_manager()->OnFrameIsAdSubframe(subframe);
-  EXPECT_TRUE(throttle_manager()->IsFrameTaggedAsAdForTesting(subframe));
+  EXPECT_TRUE(throttle_manager()->IsFrameTaggedAsAd(subframe));
 
   SimulateStartAndExpectResult(content::NavigationThrottle::PROCEED);
   subframe =
@@ -880,8 +880,7 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
 
   // Simulate the render process telling the manager that the frame is an ad.
   throttle_manager()->OnFrameIsAdSubframe(initial_subframe);
-  EXPECT_TRUE(
-      throttle_manager()->IsFrameTaggedAsAdForTesting(initial_subframe));
+  EXPECT_TRUE(throttle_manager()->IsFrameTaggedAsAd(initial_subframe));
 
   SimulateStartAndExpectResult(content::NavigationThrottle::PROCEED);
 
@@ -890,9 +889,8 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   EXPECT_TRUE(final_subframe);
   EXPECT_NE(initial_subframe, final_subframe);
 
-  EXPECT_TRUE(throttle_manager()->IsFrameTaggedAsAdForTesting(final_subframe));
-  EXPECT_FALSE(
-      throttle_manager()->IsFrameTaggedAsAdForTesting(initial_subframe));
+  EXPECT_TRUE(throttle_manager()->IsFrameTaggedAsAd(final_subframe));
+  EXPECT_FALSE(throttle_manager()->IsFrameTaggedAsAd(initial_subframe));
   ExpectActivationSignalForFrame(final_subframe, true /* expect_activation */,
                                  true /* is_ad_subframe */);
 }
@@ -927,8 +925,7 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
       SimulateCommitAndExpectResult(content::NavigationThrottle::PROCEED);
   ExpectActivationSignalForFrame(grandchild_frame, true /* expect_activation */,
                                  true /* is_ad_subframe */);
-  EXPECT_TRUE(
-      throttle_manager()->IsFrameTaggedAsAdForTesting(grandchild_frame));
+  EXPECT_TRUE(throttle_manager()->IsFrameTaggedAsAd(grandchild_frame));
 }
 
 TEST_P(ContentSubresourceFilterThrottleManagerTest,
@@ -953,7 +950,7 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   // But it should still be activated.
   ExpectActivationSignalForFrame(child, true /* expect_activation */,
                                  true /* is_ad_subframe */);
-  EXPECT_TRUE(throttle_manager()->IsFrameTaggedAsAdForTesting(child));
+  EXPECT_TRUE(throttle_manager()->IsFrameTaggedAsAd(child));
 
   // Create a subframe which is allowed as per ruleset but should still be
   // tagged as ad because of its parent.
@@ -965,7 +962,7 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   EXPECT_TRUE(grandchild);
   ExpectActivationSignalForFrame(grandchild, true /* expect_activation */,
                                  true /* is_ad_subframe */);
-  EXPECT_TRUE(throttle_manager()->IsFrameTaggedAsAdForTesting(grandchild));
+  EXPECT_TRUE(throttle_manager()->IsFrameTaggedAsAd(grandchild));
 
   // Verify that a 2nd level nested frame should also be tagged.
   CreateSubframeWithTestNavigation(
@@ -977,7 +974,7 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   EXPECT_TRUE(greatGrandchild);
   ExpectActivationSignalForFrame(greatGrandchild, true /* expect_activation */,
                                  true /* is_ad_subframe */);
-  EXPECT_TRUE(throttle_manager()->IsFrameTaggedAsAdForTesting(greatGrandchild));
+  EXPECT_TRUE(throttle_manager()->IsFrameTaggedAsAd(greatGrandchild));
 
   EXPECT_EQ(0, disallowed_notification_count());
 }
@@ -995,7 +992,7 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   EXPECT_TRUE(child);
   ExpectActivationSignalForFrame(child, true /* expect_activation */,
                                  false /* is_ad_subframe */);
-  EXPECT_FALSE(throttle_manager()->IsFrameTaggedAsAdForTesting(child));
+  EXPECT_FALSE(throttle_manager()->IsFrameTaggedAsAd(child));
 
   // Create a subframe which is allowed as per ruleset and should not be tagged
   // as ad because its parent is not tagged as well.
@@ -1007,7 +1004,7 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   EXPECT_TRUE(grandchild);
   ExpectActivationSignalForFrame(grandchild, true /* expect_activation */,
                                  false /* is_ad_subframe */);
-  EXPECT_FALSE(throttle_manager()->IsFrameTaggedAsAdForTesting(grandchild));
+  EXPECT_FALSE(throttle_manager()->IsFrameTaggedAsAd(grandchild));
 
   EXPECT_EQ(0, disallowed_notification_count());
 }

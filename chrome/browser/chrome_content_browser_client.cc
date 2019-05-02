@@ -446,6 +446,7 @@
 #include "components/crash/content/browser/child_exit_observer_android.h"
 #include "components/crash/content/browser/crash_memory_metrics_collector_android.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
+#include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
 #include "content/public/browser/android/java_interfaces.h"
 #include "services/proxy_resolver/proxy_resolver_service.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -5794,4 +5795,29 @@ ChromeContentBrowserClient::GetMimeHandlerViewMimeTypes(
     mime_types.insert(pair.first);
 #endif
   return mime_types;
+}
+
+void ChromeContentBrowserClient::AugmentNavigationDownloadPolicy(
+    const content::WebContents* web_contents,
+    const content::RenderFrameHost* frame_host,
+    bool user_gesture,
+    content::NavigationDownloadPolicy* download_policy) const {
+  const ChromeSubresourceFilterClient* client =
+      ChromeSubresourceFilterClient::FromWebContents(web_contents);
+  if (client && client->GetThrottleManager()->IsFrameTaggedAsAd(frame_host)) {
+    if (!user_gesture) {
+      if (base::FeatureList::IsEnabled(
+              blink::features::
+                  kBlockingDownloadsInAdFrameWithoutUserActivation)) {
+        download_policy->SetDisallowed(
+            content::NavigationDownloadType::kAdFrameNoGesture);
+      } else {
+        download_policy->SetAllowed(
+            content::NavigationDownloadType::kAdFrameNoGesture);
+      }
+    } else {
+      download_policy->SetAllowed(
+          content::NavigationDownloadType::kAdFrameGesture);
+    }
+  }
 }

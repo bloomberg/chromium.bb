@@ -276,8 +276,8 @@ bool ContentSubresourceFilterThrottleManager::CalculateIsAdSubframe(
          base::ContainsKey(ad_frames_, parent_frame);
 }
 
-bool ContentSubresourceFilterThrottleManager::IsFrameTaggedAsAdForTesting(
-    content::RenderFrameHost* frame_host) const {
+bool ContentSubresourceFilterThrottleManager::IsFrameTaggedAsAd(
+    const content::RenderFrameHost* frame_host) const {
   return base::ContainsKey(ad_frames_, frame_host);
 }
 

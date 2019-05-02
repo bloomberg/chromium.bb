@@ -831,8 +831,8 @@ void RenderFrameProxy::Navigate(
   params.blob_url_token = blob_url_token.release();
 
   // Note: For the AdFrame download policy here it only covers the case where
-  // the navigation initiator frame is ad.
-  // TODO(yaoxia): Also cover the case where the navigating frame is ad.
+  // the navigation initiator frame is ad. The download_policy may be further
+  // augmented in RenderFrameProxyHost::OnOpenURL if the navigating frame is ad.
   RenderFrameImpl::MaybeSetDownloadFramePolicy(
       is_opener_navigation, request, web_frame_->GetSecurityOrigin(),
       has_download_sandbox_flag,

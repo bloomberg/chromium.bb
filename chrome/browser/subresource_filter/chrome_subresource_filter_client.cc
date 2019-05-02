@@ -148,6 +148,11 @@ void ChromeSubresourceFilterClient::ToggleForceActivationInCurrentWebContents(
   activated_via_devtools_ = force_activation;
 }
 
+const subresource_filter::ContentSubresourceFilterThrottleManager*
+ChromeSubresourceFilterClient::GetThrottleManager() const {
+  return throttle_manager_.get();
+}
+
 // static
 void ChromeSubresourceFilterClient::LogAction(SubresourceFilterAction action) {
   UMA_HISTOGRAM_ENUMERATION("SubresourceFilter.Actions2", action);

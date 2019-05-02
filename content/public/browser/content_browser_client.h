@@ -33,6 +33,7 @@
 #include "content/public/browser/quota_permission_context.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/navigation_policy.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/socket_permission_request.h"
@@ -1566,6 +1567,14 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Obtains the list of MIME types that are handled by a MimeHandlerView.
   virtual base::flat_set<std::string> GetMimeHandlerViewMimeTypes(
       ResourceContext* resource_context);
+
+  // Possibly augment |download_policy| based on the status of |frame_host| as
+  // well as |user_gesture|.
+  virtual void AugmentNavigationDownloadPolicy(
+      const WebContents* web_contents,
+      const RenderFrameHost* frame_host,
+      bool user_gesture,
+      NavigationDownloadPolicy* download_policy) const;
 };
 
 }  // namespace content

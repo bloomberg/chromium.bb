@@ -991,4 +991,10 @@ base::flat_set<std::string> ContentBrowserClient::GetMimeHandlerViewMimeTypes(
   return base::flat_set<std::string>();
 }
 
+void ContentBrowserClient::AugmentNavigationDownloadPolicy(
+    const WebContents* web_contents,
+    const RenderFrameHost* frame_host,
+    bool user_gesture,
+    NavigationDownloadPolicy* download_policy) const {}
+
 }  // namespace content

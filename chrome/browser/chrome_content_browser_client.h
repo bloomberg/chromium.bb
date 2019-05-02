@@ -596,6 +596,12 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   base::flat_set<std::string> GetMimeHandlerViewMimeTypes(
       content::ResourceContext* resource_context) override;
 
+  void AugmentNavigationDownloadPolicy(
+      const content::WebContents* web_contents,
+      const content::RenderFrameHost* frame_host,
+      bool user_gesture,
+      content::NavigationDownloadPolicy* download_policy) const override;
+
   content::PreviewsState DetermineAllowedPreviewsWithoutHoldback(
       content::PreviewsState initial_state,
       content::NavigationHandle* navigation_handle,
