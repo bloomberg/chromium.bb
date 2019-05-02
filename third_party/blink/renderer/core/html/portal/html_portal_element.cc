@@ -242,6 +242,22 @@ void HTMLPortalElement::postMessage(ScriptState* script_state,
                                   target_origin);
 }
 
+EventListener* HTMLPortalElement::onmessage() {
+  return GetAttributeEventListener(event_type_names::kMessage);
+}
+
+void HTMLPortalElement::setOnmessage(EventListener* listener) {
+  SetAttributeEventListener(event_type_names::kMessage, listener);
+}
+
+EventListener* HTMLPortalElement::onmessageerror() {
+  return GetAttributeEventListener(event_type_names::kMessageerror);
+}
+
+void HTMLPortalElement::setOnmessageerror(EventListener* listener) {
+  SetAttributeEventListener(event_type_names::kMessageerror, listener);
+}
+
 void HTMLPortalElement::ForwardMessageFromGuest(
     BlinkTransferableMessage message,
     const scoped_refptr<const SecurityOrigin>& source_origin,

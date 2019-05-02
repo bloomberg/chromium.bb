@@ -53,6 +53,10 @@ class CORE_EXPORT PortalHost : public EventTargetWithInlineData,
                    const ScriptValue& message,
                    const WindowPostMessageOptions* options,
                    ExceptionState& exception_state);
+  EventListener* onmessage();
+  void setOnmessage(EventListener* listener);
+  EventListener* onmessageerror();
+  void setOnmessageerror(EventListener* listener);
 
   void ReceiveMessage(BlinkTransferableMessage message,
                       scoped_refptr<const SecurityOrigin> source_origin,

@@ -879,6 +879,8 @@ html element picture
 html element plaintext
 html element portal
     property activate
+    property onmessage
+    property onmessageerror
     property postMessage
     property src
 html element pre

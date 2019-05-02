@@ -54,6 +54,10 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement,
                    const ScriptValue& message,
                    const WindowPostMessageOptions* options,
                    ExceptionState& exception_state);
+  EventListener* onmessage();
+  void setOnmessage(EventListener* listener);
+  EventListener* onmessageerror();
+  void setOnmessageerror(EventListener* listener);
 
   // blink::mojom::PortalClient implementation
   void ForwardMessageFromGuest(

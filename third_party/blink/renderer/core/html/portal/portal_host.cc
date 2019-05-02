@@ -101,6 +101,22 @@ void PortalHost::postMessage(ScriptState* script_state,
                                              target_origin);
 }
 
+EventListener* PortalHost::onmessage() {
+  return GetAttributeEventListener(event_type_names::kMessage);
+}
+
+void PortalHost::setOnmessage(EventListener* listener) {
+  SetAttributeEventListener(event_type_names::kMessage, listener);
+}
+
+EventListener* PortalHost::onmessageerror() {
+  return GetAttributeEventListener(event_type_names::kMessageerror);
+}
+
+void PortalHost::setOnmessageerror(EventListener* listener) {
+  SetAttributeEventListener(event_type_names::kMessageerror, listener);
+}
+
 void PortalHost::ReceiveMessage(
     BlinkTransferableMessage message,
     scoped_refptr<const SecurityOrigin> source_origin,

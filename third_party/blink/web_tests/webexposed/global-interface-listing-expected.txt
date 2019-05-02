@@ -3625,10 +3625,14 @@ interface HTMLPictureElement : HTMLElement
     method constructor
 interface HTMLPortalElement : HTMLElement
     attribute @@toStringTag
+    getter onmessage
+    getter onmessageerror
     getter src
     method activate
     method constructor
     method postMessage
+    setter onmessage
+    setter onmessageerror
     setter src
 interface HTMLPreElement : HTMLElement
     attribute @@toStringTag
@@ -5564,8 +5568,12 @@ interface PortalActivateEvent : Event
     method constructor
 interface PortalHost : EventTarget
     attribute @@toStringTag
+    getter onmessage
+    getter onmessageerror
     method constructor
     method postMessage
+    setter onmessage
+    setter onmessageerror
 interface Presentation
     attribute @@toStringTag
     getter defaultRequest
