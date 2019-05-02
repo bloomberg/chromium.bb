@@ -1237,14 +1237,16 @@ class AXPosition {
 
     if (AnchorChildCount()) {
       if (IsTreePosition()) {
-        return CreateChildPositionAt(child_index_);
+        if (child_index_ < AnchorChildCount())
+          return CreateChildPositionAt(child_index_);
       } else {
         // We have to find the child node that encompasses the current text
         // offset.
         AXPositionInstance tree_position = AsTreePosition();
         DCHECK(tree_position);
-        return tree_position->CreateChildPositionAt(
-            tree_position->child_index_);
+        int child_index = tree_position->child_index_;
+        if (child_index < tree_position->AnchorChildCount())
+          return tree_position->CreateChildPositionAt(child_index);
       }
     }
 

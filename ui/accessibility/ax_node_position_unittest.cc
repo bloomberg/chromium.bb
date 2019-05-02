@@ -2059,6 +2059,63 @@ TEST_F(AXPositionTest, OperatorsLessThanAndGreaterThan) {
   EXPECT_EQ(*text_position1, *text_position2);
 }
 
+TEST_F(AXPositionTest, CreateNextAnchorPosition) {
+  // This test updates the tree structure to test a specific edge case -
+  // CreateNextAnchorPosition on an empty text field.
+  AXNodePosition::SetTreeForTesting(nullptr);
+
+  ui::AXNodeData root_data;
+  root_data.id = 0;
+  root_data.role = ax::mojom::Role::kRootWebArea;
+
+  ui::AXNodeData text_data;
+  text_data.id = 1;
+  text_data.role = ax::mojom::Role::kStaticText;
+  text_data.SetName("some text");
+
+  ui::AXNodeData text_field_data;
+  text_field_data.id = 2;
+  text_field_data.role = ax::mojom::Role::kTextField;
+
+  ui::AXNodeData empty_text_data;
+  empty_text_data.id = 3;
+  empty_text_data.role = ax::mojom::Role::kStaticText;
+  empty_text_data.SetName("");
+
+  ui::AXNodeData more_text_data;
+  more_text_data.id = 4;
+  more_text_data.role = ax::mojom::Role::kStaticText;
+  more_text_data.SetName("more text");
+
+  root_data.child_ids = {1, 2, 4};
+  text_field_data.child_ids = {3};
+
+  ui::AXTreeUpdate update;
+  ui::AXTreeData tree_data;
+  tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
+  update.tree_data = tree_data;
+  update.has_tree_data = true;
+  update.root_id = root_data.id;
+  update.nodes = {root_data, text_data, text_field_data, empty_text_data,
+                  more_text_data};
+
+  std::unique_ptr<AXTree> new_tree;
+  new_tree.reset(new AXTree(update));
+  AXNodePosition::SetTreeForTesting(new_tree.get());
+
+  // Test that CreateNextAnchorPosition will successfully navigate past the
+  // empty text field.
+  TestPositionType text_position1 = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, text_data.id, 8 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_NE(nullptr, text_position1);
+  ASSERT_FALSE(text_position1->CreateNextAnchorPosition()
+                   ->CreateNextAnchorPosition()
+                   ->IsNullPosition());
+
+  AXNodePosition::SetTreeForTesting(&tree_);
+}
+
 //
 // Parameterized tests.
 //
