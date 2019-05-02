@@ -111,7 +111,7 @@ RebootPromptType GetRebootPromptType() {
     return REBOOT_PROMPT_TYPE_OPEN_SETTINGS_PAGE;
   if (base::GetFieldTrialParamByFeatureAsBool(kRebootPromptDialogFeature,
                                               kIsModalParam,
-                                              /*default_value=*/true)) {
+                                              /*default_value=*/false)) {
     return REBOOT_PROMPT_TYPE_SHOW_MODAL_DIALOG;
   } else {
     return REBOOT_PROMPT_TYPE_SHOW_NON_MODAL_DIALOG;
