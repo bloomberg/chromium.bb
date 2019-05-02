@@ -3238,8 +3238,8 @@ uint32_t av1_write_obu_header(AV1_COMP *const cpi, OBU_TYPE obu_type,
   return size;
 }
 
-int write_uleb_obu_size(uint32_t obu_header_size, uint32_t obu_payload_size,
-                        uint8_t *dest) {
+int av1_write_uleb_obu_size(uint32_t obu_header_size, uint32_t obu_payload_size,
+                            uint8_t *dest) {
   const uint32_t obu_size = obu_payload_size;
   const uint32_t offset = obu_header_size;
   size_t coded_obu_size = 0;
@@ -3278,7 +3278,7 @@ static void write_bitstream_level(AV1_LEVEL seq_level_idx,
   aom_wb_write_literal(wb, seq_level_idx, LEVEL_BITS);
 }
 
-uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst) {
+uint32_t av1_write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst) {
   AV1_COMMON *const cm = &cpi->common;
   struct aom_write_bit_buffer wb = { dst, 0 };
   uint32_t size = 0;
@@ -3535,7 +3535,7 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
     const uint32_t obu_payload_size = total_size - tg_hdr_size;
     const size_t length_field_size =
         obu_memmove(tg_hdr_size, obu_payload_size, dst);
-    if (write_uleb_obu_size(tg_hdr_size, obu_payload_size, dst) !=
+    if (av1_write_uleb_obu_size(tg_hdr_size, obu_payload_size, dst) !=
         AOM_CODEC_OK) {
       assert(0);
     }
@@ -3632,7 +3632,7 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
         const uint32_t obu_payload_size = curr_tg_data_size - obu_header_size;
         const size_t length_field_size =
             obu_memmove(obu_header_size, obu_payload_size, data);
-        if (write_uleb_obu_size(obu_header_size, obu_payload_size, data) !=
+        if (av1_write_uleb_obu_size(obu_header_size, obu_payload_size, data) !=
             AOM_CODEC_OK) {
           assert(0);
         }
@@ -3753,10 +3753,11 @@ int av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size,
   if (cm->current_frame.frame_type == KEY_FRAME && cm->show_frame) {
     obu_header_size = av1_write_obu_header(cpi, OBU_SEQUENCE_HEADER, 0, data);
 
-    obu_payload_size = write_sequence_header_obu(cpi, data + obu_header_size);
+    obu_payload_size =
+        av1_write_sequence_header_obu(cpi, data + obu_header_size);
     const size_t length_field_size =
         obu_memmove(obu_header_size, obu_payload_size, data);
-    if (write_uleb_obu_size(obu_header_size, obu_payload_size, data) !=
+    if (av1_write_uleb_obu_size(obu_header_size, obu_payload_size, data) !=
         AOM_CODEC_OK) {
       return AOM_CODEC_ERROR;
     }
@@ -3777,7 +3778,7 @@ int av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size,
 
     const size_t length_field_size =
         obu_memmove(obu_header_size, obu_payload_size, data);
-    if (write_uleb_obu_size(obu_header_size, obu_payload_size, data) !=
+    if (av1_write_uleb_obu_size(obu_header_size, obu_payload_size, data) !=
         AOM_CODEC_OK) {
       return AOM_CODEC_ERROR;
     }

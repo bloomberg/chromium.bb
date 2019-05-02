@@ -5705,7 +5705,7 @@ aom_fixed_buf_t *av1_get_global_headers(AV1_COMP *cpi) {
 
   uint8_t header_buf[512] = { 0 };
   const uint32_t sequence_header_size =
-      write_sequence_header_obu(cpi, &header_buf[0]);
+      av1_write_sequence_header_obu(cpi, &header_buf[0]);
   assert(sequence_header_size <= sizeof(header_buf));
   if (sequence_header_size == 0) return NULL;
 
