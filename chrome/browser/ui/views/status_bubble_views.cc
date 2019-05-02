@@ -254,7 +254,7 @@ StatusBubbleViews::StatusView::~StatusView() {
 
 void StatusBubbleViews::StatusView::Layout() {
   gfx::Rect text_rect(kTextPositionX, 0,
-                      popup_size_.width() - kTextHorizPadding,
+                      popup_size_.width() - kTextHorizPadding - kTextPositionX,
                       popup_size_.height());
   text_rect.Inset(kShadowThickness, kShadowThickness);
   // Make sure the text is aligned to the right on RTL UIs.
