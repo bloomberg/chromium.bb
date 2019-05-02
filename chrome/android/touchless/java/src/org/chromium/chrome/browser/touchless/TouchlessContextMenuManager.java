@@ -12,6 +12,7 @@ import android.view.View.OnClickListener;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
 import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties;
+import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties.ActionNames;
 import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties.DialogListItemProperties;
 import org.chromium.chrome.touchless.R;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -106,6 +107,10 @@ public class TouchlessContextMenuManager extends ContextMenuManager {
     private PropertyModel buildMenuModel(Context context, String title, PropertyModel[] menuItems) {
         PropertyModel.Builder builder =
                 new PropertyModel.Builder(TouchlessDialogProperties.ALL_DIALOG_KEYS);
+        ActionNames names = new ActionNames();
+        names.cancel = context.getResources().getString(org.chromium.chrome.R.string.cancel);
+        names.select = context.getResources().getString(org.chromium.chrome.R.string.select);
+        names.alt = "";
         builder.with(TouchlessDialogProperties.IS_FULLSCREEN, true)
                 .with(ModalDialogProperties.CONTROLLER,
                         new ModalDialogProperties.Controller() {
@@ -115,11 +120,7 @@ public class TouchlessContextMenuManager extends ContextMenuManager {
                             @Override
                             public void onDismiss(PropertyModel model, int dismissalCause) {}
                         })
-                .with(TouchlessDialogProperties.ALT_NAME, "")
-                .with(TouchlessDialogProperties.SELECT_NAME, context.getResources(),
-                        org.chromium.chrome.R.string.select)
-                .with(TouchlessDialogProperties.CANCEL_NAME, context.getResources(),
-                        org.chromium.chrome.R.string.cancel)
+                .with(TouchlessDialogProperties.ACTION_NAMES, names)
                 .with(TouchlessDialogProperties.CANCEL_ACTION, (v) -> closeTouchlessContextMenu())
                 .with(TouchlessDialogProperties.LIST_MODELS, menuItems)
                 .with(TouchlessDialogProperties.PRIORITY, TouchlessDialogProperties.Priority.HIGH);

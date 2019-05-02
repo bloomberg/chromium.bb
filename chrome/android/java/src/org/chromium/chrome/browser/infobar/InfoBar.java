@@ -19,6 +19,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties;
+import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties.ActionNames;
 import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties.Priority;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -133,18 +134,18 @@ public abstract class InfoBar implements InfoBarView {
             icon = ApiCompatibilityUtils.getDrawable(getContext().getResources(), mIconDrawableId);
         }
 
+        ActionNames names = new ActionNames();
+        names.cancel = mContext.getResources().getString(R.string.cancel);
+        names.select = mContext.getResources().getString(R.string.select);
+        names.alt = "";
         PropertyModel model =
                 new PropertyModel.Builder(TouchlessDialogProperties.ALL_DIALOG_KEYS)
                         .with(TouchlessDialogProperties.IS_FULLSCREEN, false)
                         .with(TouchlessDialogProperties.PRIORITY, Priority.HIGH)
+                        .with(TouchlessDialogProperties.ACTION_NAMES, names)
                         .with(TouchlessDialogProperties.CANCEL_ACTION,
                                 view -> onCloseButtonClicked())
-                        .with(TouchlessDialogProperties.CANCEL_NAME,
-                                mContext.getResources().getString(R.string.cancel))
-                        .with(TouchlessDialogProperties.SELECT_NAME,
-                                mContext.getResources().getString(R.string.select))
                         .with(TouchlessDialogProperties.ALT_ACTION, null)
-                        .with(TouchlessDialogProperties.ALT_NAME, null)
                         .with(ModalDialogProperties.TITLE, mMessage.toString())
                         .with(ModalDialogProperties.TITLE_ICON, icon)
                         .with(ModalDialogProperties.CONTROLLER,
