@@ -718,6 +718,9 @@ typedef struct SPEED_FEATURES {
 
   // Use compound reference for non-RD mode.
   int use_comp_ref_nonrd;
+
+  // check intra prediction for non-RD mode.
+  int check_intra_pred_nonrd;
 } SPEED_FEATURES;
 
 struct AV1_COMP;

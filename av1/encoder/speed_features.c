@@ -460,6 +460,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
   sf->reuse_inter_pred_nonrd = 0;
   sf->estimate_motion_for_var_based_partition = 1;
   sf->use_comp_ref_nonrd = 1;
+  sf->check_intra_pred_nonrd = 1;
 
   if (speed >= 1) {
     sf->gm_erroradv_type = GM_ERRORADV_TR_1;

@@ -428,7 +428,7 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
   const int is_small_sb = (cm->seq_params.sb_size == BLOCK_64X64);
   const int num_64x64_blocks = is_small_sb ? 1 : 4;
 
-  CHECK_MEM_ERROR(cm, vt, aom_calloc(1, sizeof(*vt)));
+  CHECK_MEM_ERROR(cm, vt, aom_malloc(sizeof(*vt)));
 
   int64_t thresholds[5] = { cpi->vbp_thresholds[0], cpi->vbp_thresholds[1],
                             cpi->vbp_thresholds[2], cpi->vbp_thresholds[3],
@@ -519,7 +519,7 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
   }
 
   if (low_res && threshold_4x4avg < INT64_MAX)
-    CHECK_MEM_ERROR(cm, vt2, aom_calloc(64, sizeof(*vt2)));
+    CHECK_MEM_ERROR(cm, vt2, aom_malloc(sizeof(*vt2)));
   // Fill in the entire tree of 8x8 (or 4x4 under some conditions) variances
   // for splits.
   for (m = 0; m < num_64x64_blocks; m++) {
