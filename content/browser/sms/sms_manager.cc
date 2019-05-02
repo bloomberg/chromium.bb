@@ -13,8 +13,7 @@
 
 namespace content {
 
-SmsManager::SmsManager()
-    : sms_provider_(std::make_unique<DefaultSmsProvider>()) {}
+SmsManager::SmsManager() : sms_provider_(SmsProvider::Create()) {}
 
 SmsManager::~SmsManager() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

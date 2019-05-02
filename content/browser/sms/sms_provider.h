@@ -13,28 +13,23 @@
 
 namespace content {
 
+using SmsCallback = base::OnceCallback<void(const std::string&)>;
+
 // This class wraps the platform-specific functions and allows tests to
 // inject custom providers.
 class SmsProvider {
  public:
-  using SmsCallback = base::OnceCallback<void(const std::string&)>;
-
-  SmsProvider() {}
-  virtual ~SmsProvider() {}
+  SmsProvider() = default;
+  virtual ~SmsProvider() = default;
 
   // Listen to the next incoming SMS and call the callback when it is received.
   // On timeout, call the callback with an empty message.
   virtual void Retrieve(base::TimeDelta timeout, SmsCallback callback) = 0;
 
+  static std::unique_ptr<SmsProvider> Create();
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SmsProvider);
-};
-
-class DefaultSmsProvider : public SmsProvider {
- public:
-  DefaultSmsProvider() = default;
-  ~DefaultSmsProvider() override = default;
-  void Retrieve(base::TimeDelta timeout, SmsCallback callback) override;
 };
 
 }  // namespace content

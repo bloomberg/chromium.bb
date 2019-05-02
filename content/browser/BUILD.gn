@@ -2388,6 +2388,8 @@ jumbo_source_set("browser") {
       "renderer_host/render_widget_host_view_android.h",
       "screen_orientation/screen_orientation_delegate_android.cc",
       "screen_orientation/screen_orientation_delegate_android.h",
+      "sms/sms_provider_android.cc",
+      "sms/sms_provider_android.h",
       "web_contents/web_contents_android.cc",
       "web_contents/web_contents_android.h",
       "web_contents/web_contents_view_android.cc",
@@ -2454,6 +2456,10 @@ jumbo_source_set("browser") {
       "serial/serial_service.cc",
       "serial/serial_service.h",
 
+      # The SMS API is stubbed out outside of Android.
+      "sms/sms_provider_desktop.cc",
+      "sms/sms_provider_desktop.h",
+
       # Most speech code is non-Android.
       "speech/audio_buffer.cc",
       "speech/audio_buffer.h",
@@ -2486,6 +2492,7 @@ jumbo_source_set("browser") {
       "webauth/virtual_discovery.cc",
       "webauth/virtual_discovery.h",
     ]
+
     deps += [ "//third_party/flac" ]
   }
 
