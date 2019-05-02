@@ -16,6 +16,7 @@
 
 #include "base/guid.h"
 #include "base/metrics/metrics_hashes.h"
+#include "base/strings/string16.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
@@ -90,6 +91,39 @@ std::string NextMonth() {
   base::Time::Now().LocalExplode(&now);
   return std::to_string(now.month % 12 + 1);
 }
+
+// Used to configure form for |CreateTestCreditCardFormData|.
+struct CreditCardFormOptions {
+  CreditCardFormOptions& with_is_https(bool b) {
+    is_https = b;
+    return *this;
+  }
+
+  CreditCardFormOptions& with_split_names(bool b) {
+    split_names = b;
+    return *this;
+  }
+
+  CreditCardFormOptions& with_is_from_non_focusable_form(bool b) {
+    is_from_non_focusable_form = b;
+    return *this;
+  }
+
+  CreditCardFormOptions& with_is_google_host(bool b) {
+    is_google_host = b;
+    return *this;
+  }
+  // True if the scheme of a form is https.
+  bool is_https = true;
+  // True if the form is using both first name and last name field.
+  bool split_names = false;
+  // True if the form is a non-focusable form, such as a form that is hidden
+  // after information has been entered into it.
+  bool is_from_non_focusable_form = false;
+  // True if the form is from Google-hosted website, such as payments.google.com
+  // or YouTube.
+  bool is_google_host = false;
+};
 
 }  // anonymous namespace
 
@@ -180,20 +214,19 @@ class CreditCardSaveManagerTest : public testing::Test {
 
   // Populates |form| with data corresponding to a simple credit card form.
   // Note that this actually appends fields to the form data, which can be
-  // useful for building up more complex test forms.
+  // useful for building up more complex test forms. The |form| can be
+  // configured using the provided |options|.
   void CreateTestCreditCardFormData(FormData* form,
-                                    bool is_https,
-                                    bool use_month_type,
-                                    bool split_names = false,
-                                    bool is_from_non_focusable_form = false,
-                                    bool is_google_host = false) {
+                                    CreditCardFormOptions options) {
     form->name = ASCIIToUTF16("MyForm");
     base::string16 scheme =
-        is_https ? ASCIIToUTF16("https://") : ASCIIToUTF16("http://");
-    base::string16 host = is_google_host ? ASCIIToUTF16("pay.google.com")
-                                         : ASCIIToUTF16("myform.com");
-    base::string16 root_host = is_google_host ? ASCIIToUTF16("pay.google.com")
-                                              : ASCIIToUTF16("myform.root.com");
+        options.is_https ? ASCIIToUTF16("https://") : ASCIIToUTF16("http://");
+    base::string16 host = options.is_google_host
+                              ? ASCIIToUTF16("pay.google.com")
+                              : ASCIIToUTF16("myform.com");
+    base::string16 root_host = options.is_google_host
+                                   ? ASCIIToUTF16("pay.google.com")
+                                   : ASCIIToUTF16("myform.root.com");
     base::string16 form_path = ASCIIToUTF16("/form.html");
     base::string16 submit_path = ASCIIToUTF16("/submit.html");
     form->url = GURL(scheme + host + form_path);
@@ -202,7 +235,7 @@ class CreditCardSaveManagerTest : public testing::Test {
         url::Origin::Create(GURL(scheme + root_host + form_path));
 
     FormFieldData field;
-    if (split_names) {
+    if (options.split_names) {
       test::CreateTestFormField("First Name on Card", "firstnameoncard", "",
                                 "text", &field);
       field.autocomplete_attribute = "cc-given-name";
@@ -218,19 +251,12 @@ class CreditCardSaveManagerTest : public testing::Test {
       form->fields.push_back(field);
     }
     test::CreateTestFormField("Card Number", "cardnumber", "", "text", &field);
-    field.is_focusable = !is_from_non_focusable_form;
+    field.is_focusable = !options.is_from_non_focusable_form;
     form->fields.push_back(field);
-    if (use_month_type) {
-      test::CreateTestFormField("Expiration Date", "ccmonth", "", "month",
-                                &field);
-      form->fields.push_back(field);
-    } else {
-      test::CreateTestFormField("Expiration Date", "ccmonth", "", "text",
-                                &field);
-      form->fields.push_back(field);
-      test::CreateTestFormField("", "ccyear", "", "text", &field);
-      form->fields.push_back(field);
-    }
+    test::CreateTestFormField("Expiration Date", "ccmonth", "", "text", &field);
+    form->fields.push_back(field);
+    test::CreateTestFormField("", "ccyear", "", "text", &field);
+    form->fields.push_back(field);
     test::CreateTestFormField("CVC", "cvc", "", "text", &field);
     form->fields.push_back(field);
   }
@@ -263,7 +289,8 @@ class CreditCardSaveManagerTest : public testing::Test {
   void TestSaveCreditCards(bool is_https) {
     // Set up our form data.
     FormData form;
-    CreateTestCreditCardFormData(&form, is_https, false);
+    CreateTestCreditCardFormData(
+        &form, CreditCardFormOptions().with_is_https(is_https));
     std::vector<FormData> forms(1, form);
     FormsSeen(forms);
 
@@ -403,7 +430,8 @@ TEST_F(CreditCardSaveManagerTest, MAYBE_CreditCardSavedWhenAutocompleteOff) {
 
   // Set up our form data.
   FormData form;
-  CreateTestCreditCardFormData(&form, false, false);
+  CreateTestCreditCardFormData(&form,
+                               CreditCardFormOptions().with_is_https(false));
 
   // Set "autocomplete=off" for cardnumber field.
   form.fields[1].should_autocomplete = false;
@@ -424,7 +452,7 @@ TEST_F(CreditCardSaveManagerTest, MAYBE_CreditCardSavedWhenAutocompleteOff) {
 TEST_F(CreditCardSaveManagerTest, InvalidCreditCardNumberIsNotSaved) {
   // Set up our form data.
   FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
+  CreateTestCreditCardFormData(&form, CreditCardFormOptions());
   std::vector<FormData> forms(1, form);
   FormsSeen(forms);
 
@@ -451,7 +479,7 @@ TEST_F(CreditCardSaveManagerTest, CreditCardDisabledDoesNotSave) {
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -488,7 +516,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_FullAddresses) {
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
   ExpectFillableFormParsedUkm(2 /* num_fillable_forms_parsed */);
 
@@ -554,7 +582,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_OnlyCountryInAddresses) {
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
   ExpectFillableFormParsedUkm(2 /* num_fillable_forms_parsed */);
 
@@ -625,8 +653,8 @@ TEST_F(CreditCardSaveManagerTest, LocalCreditCard_FirstAndLastName) {
   // Set up our credit card form data with credit card first and last name
   // fields.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, /*is_https=*/true,
-                               /*use_month_type=*/false, /*split_names=*/true);
+  CreateTestCreditCardFormData(&credit_card_form,
+                               CreditCardFormOptions().with_split_names(true));
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -736,8 +764,8 @@ TEST_F(CreditCardSaveManagerTest,
   // Set up our credit card form data with credit card first and last name
   // fields.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, /*is_https=*/true,
-                               /*use_month_type=*/false, /*split_names=*/true);
+  CreateTestCreditCardFormData(&credit_card_form,
+                               CreditCardFormOptions().with_split_names(true));
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -779,9 +807,10 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_WithNonFocusableField) {
 
   // Set up our credit card form data with non_focusable form field.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, /*is_https=*/true,
-                               /*use_month_type=*/false, /*split_names=*/true,
-                               /*is_from_non_focusable_form=*/true);
+  CreateTestCreditCardFormData(&credit_card_form,
+                               CreditCardFormOptions()
+                                   .with_split_names(true)
+                                   .with_is_from_non_focusable_form(true));
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -827,9 +856,10 @@ TEST_F(CreditCardSaveManagerTest,
 
   // Set up our credit card form data with non_focusable form field.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, /*is_https=*/true,
-                               /*use_month_type=*/false, /*split_names=*/true,
-                               /*is_from_non_focusable_form=*/true);
+  CreateTestCreditCardFormData(&credit_card_form,
+                               CreditCardFormOptions()
+                                   .with_split_names(true)
+                                   .with_is_from_non_focusable_form(true));
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -865,9 +895,10 @@ TEST_F(CreditCardSaveManagerTest, LocalCreditCard_WithNonFocusableField) {
 
   // Set up our credit card form data with non_focusable form field.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, /*is_https=*/true,
-                               /*use_month_type=*/false, /*split_names=*/true,
-                               /*is_from_non_focusable_form=*/true);
+  CreateTestCreditCardFormData(&credit_card_form,
+                               CreditCardFormOptions()
+                                   .with_split_names(true)
+                                   .with_is_from_non_focusable_form(true));
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -905,9 +936,10 @@ TEST_F(CreditCardSaveManagerTest,
 
   // Set up our credit card form data with non_focusable form field.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, /*is_https=*/true,
-                               /*use_month_type=*/false, /*split_names=*/true,
-                               /*is_from_non_focusable_form=*/true);
+  CreateTestCreditCardFormData(&credit_card_form,
+                               CreditCardFormOptions()
+                                   .with_split_names(true)
+                                   .with_is_from_non_focusable_form(true));
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -941,8 +973,8 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_FirstAndLastName) {
   // Set up our credit card form data with credit card first and last name
   // fields.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, /*is_https=*/true,
-                               /*use_month_type=*/false, /*split_names=*/true);
+  CreateTestCreditCardFormData(&credit_card_form,
+                               CreditCardFormOptions().with_split_names(true));
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -1080,7 +1112,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCardAndSaveCopy) {
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -1134,7 +1166,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_DisableLocalSave) {
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -1165,7 +1197,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_FeatureNotEnabled) {
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -1199,7 +1231,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_CvcUnavailable) {
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
   ExpectFillableFormParsedUkm(2 /* num_fillable_forms_parsed */);
 
@@ -1238,7 +1270,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_CvcInvalidLength) {
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -1547,7 +1579,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoProfileAvailable) {
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -1593,7 +1625,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoRecentlyUsedProfile) {
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -1631,7 +1663,7 @@ TEST_F(CreditCardSaveManagerTest,
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -1673,7 +1705,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoNameAvailable) {
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, but don't include a name, and submit.
@@ -1705,7 +1737,7 @@ TEST_F(CreditCardSaveManagerTest,
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, but don't include a name, and submit.
@@ -1755,7 +1787,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_ZipCodesConflict) {
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
   ExpectFillableFormParsedUkm(3 /* num_fillable_forms_parsed */);
 
@@ -1804,7 +1836,7 @@ TEST_F(CreditCardSaveManagerTest,
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen({credit_card_form});
 
   // Edit the data and submit.
@@ -1851,7 +1883,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_ZipCodesHavePrefixMatch) {
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data and submit.
@@ -1893,7 +1925,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoZipCodeAvailable) {
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -1937,7 +1969,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_CCFormHasMiddleInitial) {
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen({credit_card_form});
 
   // Edit the data, but use the name with a middle initial *and* period, and
@@ -1977,7 +2009,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoMiddleInitialInCCForm) {
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen({credit_card_form});
 
   // Edit the data, but do not use middle initial.
@@ -2012,7 +2044,7 @@ TEST_F(CreditCardSaveManagerTest,
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen({credit_card_form});
 
   // Edit the name by adding a middle name.
@@ -2050,7 +2082,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_CCFormHasAddressMiddleName) {
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen({credit_card_form});
 
   // Edit the name by removing middle name.
@@ -2097,7 +2129,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NamesCanMismatch) {
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, but use yet another name, and submit.
@@ -2148,7 +2180,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_IgnoreOldProfiles) {
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, but use yet another name, and submit.
@@ -2189,7 +2221,7 @@ TEST_F(
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, but don't include a name, and submit.
@@ -2231,7 +2263,7 @@ TEST_F(
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, but include a conflicting name, and submit.
@@ -2269,10 +2301,8 @@ TEST_F(CreditCardSaveManagerTest,
   FormSubmitted(address_form);
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, /*is_https=*/true,
-                               /*split_names=*/false, /*split_names=*/false,
-                               /*is_from_non_focusable_form*/ false,
-                               /*is_google_host*/ true);
+  CreateTestCreditCardFormData(
+      &credit_card_form, CreditCardFormOptions().with_is_google_host(true));
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -2306,10 +2336,9 @@ TEST_F(CreditCardSaveManagerTest,
   FormSubmitted(address_form);
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, /*is_https=*/true,
-                               /*split_names=*/false, /*split_names=*/false,
-                               /*is_from_non_focusable_form*/ false,
-                               /*is_google_host*/ true);
+  CreateTestCreditCardFormData(
+      &credit_card_form, CreditCardFormOptions().with_is_google_host(true));
+
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -2343,7 +2372,7 @@ TEST_F(
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -2390,7 +2419,7 @@ TEST_F(
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, but don't include a name, and submit.
@@ -2437,7 +2466,7 @@ TEST_F(
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, but include a conflicting name, and submit.
@@ -2481,7 +2510,7 @@ TEST_F(
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, but don't include a name, and submit.
@@ -2523,7 +2552,7 @@ TEST_F(
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, but include a conflicting name, and submit.
@@ -2569,7 +2598,7 @@ TEST_F(
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, but don't include a name, and submit.
@@ -2620,7 +2649,7 @@ TEST_F(
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, but don't include a expiration date, and submit.
@@ -2671,7 +2700,7 @@ TEST_F(
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -2702,7 +2731,7 @@ TEST_F(CreditCardSaveManagerTest,
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -2745,7 +2774,7 @@ TEST_F(CreditCardSaveManagerTest,
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -2788,7 +2817,7 @@ TEST_F(CreditCardSaveManagerTest,
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -2831,7 +2860,7 @@ TEST_F(CreditCardSaveManagerTest,
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -2875,7 +2904,7 @@ TEST_F(
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data with 2 digit year and submit.
@@ -2919,7 +2948,7 @@ TEST_F(CreditCardSaveManagerTest,
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -2969,7 +2998,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_LogPreviousUseDate) {
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen({credit_card_form});
 
   // Edit the credit card form and submit.
@@ -3007,7 +3036,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_UploadDetailsFails) {
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -3052,7 +3081,7 @@ TEST_F(CreditCardSaveManagerTest, DuplicateMaskedCreditCard_NoUpload) {
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -3093,7 +3122,7 @@ class CreditCardSaveManagerFeatureParameterizedTest
 TEST_P(CreditCardSaveManagerFeatureParameterizedTest, NothingIfNothingFound) {
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -3111,7 +3140,7 @@ TEST_P(CreditCardSaveManagerFeatureParameterizedTest, NothingIfNothingFound) {
 TEST_P(CreditCardSaveManagerFeatureParameterizedTest, DetectCvc) {
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -3133,7 +3162,7 @@ TEST_P(CreditCardSaveManagerFeatureParameterizedTest, DetectCvc) {
 TEST_P(CreditCardSaveManagerFeatureParameterizedTest, DetectCardholderName) {
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -3162,7 +3191,7 @@ TEST_P(CreditCardSaveManagerFeatureParameterizedTest, DetectAddressName) {
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -3192,7 +3221,7 @@ TEST_P(CreditCardSaveManagerFeatureParameterizedTest,
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -3223,7 +3252,7 @@ TEST_P(CreditCardSaveManagerFeatureParameterizedTest,
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -3247,7 +3276,7 @@ TEST_P(CreditCardSaveManagerFeatureParameterizedTest, DetectPostalCode) {
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -3281,7 +3310,7 @@ TEST_P(CreditCardSaveManagerFeatureParameterizedTest,
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -3305,7 +3334,7 @@ TEST_P(CreditCardSaveManagerFeatureParameterizedTest, DetectAddressLine) {
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -3334,7 +3363,7 @@ TEST_P(CreditCardSaveManagerFeatureParameterizedTest, DetectLocality) {
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -3363,7 +3392,7 @@ TEST_P(CreditCardSaveManagerFeatureParameterizedTest,
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -3392,7 +3421,7 @@ TEST_P(CreditCardSaveManagerFeatureParameterizedTest, DetectCountryCode) {
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -3421,7 +3450,7 @@ TEST_P(CreditCardSaveManagerFeatureParameterizedTest,
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -3455,7 +3484,7 @@ TEST_P(CreditCardSaveManagerFeatureParameterizedTest, DetectEverythingAtOnce) {
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -3495,7 +3524,7 @@ TEST_P(CreditCardSaveManagerFeatureParameterizedTest,
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -3544,7 +3573,7 @@ TEST_P(CreditCardSaveManagerFeatureParameterizedTest,
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -3584,7 +3613,7 @@ TEST_P(CreditCardSaveManagerFeatureParameterizedTest,
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -3637,7 +3666,7 @@ TEST_P(
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -3678,8 +3707,8 @@ TEST_P(
   // Set up our credit card form data with credit card first and last name
   // fields.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, /*is_https=*/true,
-                               /*use_month_type=*/false, /*split_names=*/true);
+  CreateTestCreditCardFormData(&credit_card_form,
+                               CreditCardFormOptions().with_split_names(true));
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -3725,7 +3754,7 @@ TEST_P(
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -3756,7 +3785,7 @@ TEST_P(CreditCardSaveManagerFeatureParameterizedTest,
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -3799,7 +3828,7 @@ TEST_P(CreditCardSaveManagerFeatureParameterizedTest,
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -3841,7 +3870,7 @@ TEST_P(CreditCardSaveManagerFeatureParameterizedTest,
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -3885,7 +3914,7 @@ TEST_P(CreditCardSaveManagerFeatureParameterizedTest,
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -3941,7 +3970,7 @@ TEST_P(CreditCardSaveManagerFeatureParameterizedTest,
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -3984,7 +4013,7 @@ TEST_P(CreditCardSaveManagerFeatureParameterizedTest,
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -4042,7 +4071,7 @@ TEST_P(CreditCardSaveManagerFeatureParameterizedTest,
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
   ExpectFillableFormParsedUkm(2 /* num_fillable_forms_parsed */);
 
@@ -4083,7 +4112,7 @@ TEST_P(CreditCardSaveManagerFeatureParameterizedTest,
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
   ExpectFillableFormParsedUkm(2 /* num_fillable_forms_parsed */);
 
@@ -4138,7 +4167,7 @@ TEST_P(CreditCardSaveManagerFeatureParameterizedTest,
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
   ExpectFillableFormParsedUkm(2 /* num_fillable_forms_parsed */);
 
@@ -4183,7 +4212,7 @@ TEST_F(CreditCardSaveManagerTest,
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -4213,7 +4242,7 @@ TEST_F(CreditCardSaveManagerTest,
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -4242,7 +4271,7 @@ TEST_F(CreditCardSaveManagerTest,
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -4264,7 +4293,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_EloDisallowed) {
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -4294,7 +4323,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_EloAllowed) {
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -4323,7 +4352,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_JcbDisallowed) {
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -4353,7 +4382,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_JcbAllowed) {
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -4393,7 +4422,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_DisallowedLocalCard) {
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -4432,7 +4461,7 @@ TEST_F(CreditCardSaveManagerTest,
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
   ExpectFillableFormParsedUkm(1 /* num_fillable_forms_parsed */);
 
@@ -4484,7 +4513,7 @@ TEST_F(CreditCardSaveManagerTest,
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
   ExpectFillableFormParsedUkm(2 /* num_fillable_forms_parsed */);
 
@@ -4527,7 +4556,7 @@ TEST_F(CreditCardSaveManagerTest,
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
   ExpectFillableFormParsedUkm(1 /* num_fillable_forms_parsed */);
 
@@ -4577,7 +4606,7 @@ TEST_F(CreditCardSaveManagerTest,
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
   ExpectFillableFormParsedUkm(2 /* num_fillable_forms_parsed */);
 
@@ -4619,7 +4648,7 @@ TEST_F(CreditCardSaveManagerTest,
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
   ExpectFillableFormParsedUkm(1 /* num_fillable_forms_parsed */);
 
@@ -4667,7 +4696,7 @@ TEST_F(CreditCardSaveManagerTest,
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
   ExpectFillableFormParsedUkm(2 /* num_fillable_forms_parsed */);
 
@@ -4714,7 +4743,7 @@ TEST_F(CreditCardSaveManagerTest,
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
   ExpectFillableFormParsedUkm(1 /* num_fillable_forms_parsed */);
 
@@ -4766,7 +4795,7 @@ TEST_F(CreditCardSaveManagerTest,
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
   ExpectFillableFormParsedUkm(2 /* num_fillable_forms_parsed */);
 
@@ -4811,7 +4840,7 @@ TEST_F(CreditCardSaveManagerTest,
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
   ExpectFillableFormParsedUkm(1 /* num_fillable_forms_parsed */);
 
@@ -4856,7 +4885,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_ClearLegacyStrikesOnAdd) {
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
   ExpectFillableFormParsedUkm(2 /* num_fillable_forms_parsed */);
 
@@ -4893,7 +4922,7 @@ TEST_F(CreditCardSaveManagerTest,
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
   ExpectFillableFormParsedUkm(1 /* num_fillable_forms_parsed */);
 
@@ -4942,7 +4971,7 @@ TEST_F(CreditCardSaveManagerTest,
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
   ExpectFillableFormParsedUkm(2 /* num_fillable_forms_parsed */);
 
@@ -5003,7 +5032,7 @@ TEST_F(CreditCardSaveManagerTest,
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
   ExpectFillableFormParsedUkm(1 /* num_fillable_forms_parsed */);
 
@@ -5054,7 +5083,7 @@ TEST_F(CreditCardSaveManagerTest,
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
   ExpectFillableFormParsedUkm(2 /* num_fillable_forms_parsed */);
 
@@ -5098,7 +5127,7 @@ TEST_F(CreditCardSaveManagerTest,
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
   ExpectFillableFormParsedUkm(1 /* num_fillable_forms_parsed */);
 
@@ -5147,7 +5176,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_MaxStrikesDisallowsSave) {
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
   ExpectFillableFormParsedUkm(2 /* num_fillable_forms_parsed */);
 
@@ -5196,7 +5225,7 @@ TEST_F(CreditCardSaveManagerTest,
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
   ExpectFillableFormParsedUkm(1 /* num_fillable_forms_parsed */);
 
@@ -5249,7 +5278,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_MaxStrikesStillAllowsSave) {
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
   ExpectFillableFormParsedUkm(2 /* num_fillable_forms_parsed */);
 
@@ -5292,7 +5321,7 @@ TEST_F(CreditCardSaveManagerTest, LocallySaveCreditCard_ClearStrikesOnAdd) {
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
   ExpectFillableFormParsedUkm(1 /* num_fillable_forms_parsed */);
 
@@ -5335,7 +5364,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_ClearStrikesOnAdd) {
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
   ExpectFillableFormParsedUkm(2 /* num_fillable_forms_parsed */);
 
@@ -5370,7 +5399,7 @@ TEST_F(CreditCardSaveManagerTest, LocallySaveCreditCard_NumStrikesLoggedOnAdd) {
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
   ExpectFillableFormParsedUkm(1 /* num_fillable_forms_parsed */);
 
@@ -5417,7 +5446,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NumStrikesLoggedOnAdd) {
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
   ExpectFillableFormParsedUkm(2 /* num_fillable_forms_parsed */);
 
@@ -5500,8 +5529,8 @@ TEST_F(CreditCardSaveManagerTest,
   // Set up our credit card form data with credit card first and last name
   // fields.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, /*is_https=*/true,
-                               /*use_month_type=*/false, /*split_names=*/true);
+  CreateTestCreditCardFormData(&credit_card_form,
+                               CreditCardFormOptions().with_split_names(true));
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -5551,8 +5580,8 @@ TEST_F(CreditCardSaveManagerTest,
   // Set up our credit card form data with credit card first and last name
   // fields.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, /*is_https=*/true,
-                               /*use_month_type=*/false, /*split_names=*/true);
+  CreateTestCreditCardFormData(&credit_card_form,
+                               CreditCardFormOptions().with_split_names(true));
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -5584,7 +5613,7 @@ TEST_F(CreditCardSaveManagerTest, UploadSaveNotOfferedForUnsupportedCard) {
   payments_client_->SetSupportedBINRanges(supported_card_bin_ranges);
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
@@ -5612,7 +5641,7 @@ TEST_F(CreditCardSaveManagerTest, LocalSaveNotOfferedForSavedUnsupportedCard) {
   payments_client_->SetSupportedBINRanges(supported_card_bin_ranges);
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Add a local credit card whose number matches what we will
@@ -5647,7 +5676,7 @@ TEST_F(CreditCardSaveManagerTest, UploadSaveOfferedForSupportedCard) {
 
   // Set up our credit card form data.
   FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
