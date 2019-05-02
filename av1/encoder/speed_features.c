@@ -262,7 +262,7 @@ static void set_good_speed_features_framesize_independent(
     sf->prune_comp_search_by_single_result = 1;
     sf->skip_repeated_newmv = 1;
     sf->obmc_full_pixel_search_level = 1;
-    // TODO(anyone): Following speed feature will be further explored to
+    // TODO(jianj): Following speed feature will be further explored to
     // identify the appropriate tradeoff between encoder performance and its
     // speed.
     sf->prune_single_motion_modes_by_simple_trans = 1;
@@ -487,7 +487,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->prune_comp_search_by_single_result = 1;
     sf->skip_repeated_newmv = 1;
     sf->obmc_full_pixel_search_level = 1;
-    // TODO(anyone): Following speed feature will be further explored to
+    // TODO(jianj): Following speed feature will be further explored to
     // identify the appropriate tradeoff between encoder performance and its
     // speed.
     sf->prune_single_motion_modes_by_simple_trans = 1;
@@ -837,7 +837,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
     sf->mesh_patterns[i].interval =
         good_quality_mesh_patterns[mesh_speed][i].interval;
   }
-  if ((frame_is_intra_only(cm) && cm->allow_screen_content_tools) &&
+  if (frame_is_intra_only(cm) && cm->allow_screen_content_tools &&
       (cpi->twopass.fr_content_type == FC_GRAPHICS_ANIMATION ||
        cpi->oxcf.content == AOM_CONTENT_SCREEN)) {
     for (i = 0; i < MAX_MESH_STEP; ++i) {

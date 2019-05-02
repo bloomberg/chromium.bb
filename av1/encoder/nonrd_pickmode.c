@@ -643,7 +643,6 @@ static void model_rd_for_sb(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
   // Note our transform coeffs are 8 times an orthogonal transform.
   // Hence quantizer step is also 8 times. To get effective quantizer
   // we need to divide by 8 before sending to modeling function.
-  int plane;
   (void)mi_row;
   (void)mi_col;
   const int ref = xd->mi[0]->ref_frame[0];
@@ -653,7 +652,7 @@ static void model_rd_for_sb(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
   int64_t total_sse = 0;
   assert(bsize < BLOCK_SIZES_ALL);
 
-  for (plane = plane_from; plane <= plane_to; ++plane) {
+  for (int plane = plane_from; plane <= plane_to; ++plane) {
     struct macroblock_plane *const p = &x->plane[plane];
     struct macroblockd_plane *const pd = &xd->plane[plane];
     const BLOCK_SIZE plane_bsize =
@@ -705,7 +704,7 @@ static void block_yrd(AV1_COMP *cpi, MACROBLOCK *x, int mi_row, int mi_col,
   const int num_4x4_h = mi_size_high[bsize];
   const int step = 1 << (tx_size << 1);
   const int block_step = (1 << tx_size);
-  int block = 0, r, c;
+  int block = 0;
   const int max_blocks_wide =
       num_4x4_w + (xd->mb_to_right_edge >= 0 ? 0 : xd->mb_to_right_edge >> 5);
   const int max_blocks_high =
@@ -726,8 +725,8 @@ static void block_yrd(AV1_COMP *cpi, MACROBLOCK *x, int mi_row, int mi_col,
   *skippable = 1;
   // Keep track of the row and column of the blocks we use so that we know
   // if we are in the unrestricted motion border.
-  for (r = 0; r < max_blocks_high; r += block_step) {
-    for (c = 0; c < num_4x4_w; c += block_step) {
+  for (int r = 0; r < max_blocks_high; r += block_step) {
+    for (int c = 0; c < num_4x4_w; c += block_step) {
       if (c < max_blocks_wide) {
         const SCAN_ORDER *const scan_order = &av1_default_scan_orders[tx_size];
         tran_low_t *const coeff = BLOCK_OFFSET(p->coeff, block);
@@ -783,8 +782,8 @@ static void block_yrd(AV1_COMP *cpi, MACROBLOCK *x, int mi_row, int mi_col,
 
   block = 0;
   this_rdc->dist = 0;
-  for (r = 0; r < max_blocks_high; r += block_step) {
-    for (c = 0; c < num_4x4_w; c += block_step) {
+  for (int r = 0; r < max_blocks_high; r += block_step) {
+    for (int c = 0; c < num_4x4_w; c += block_step) {
       if (c < max_blocks_wide) {
         int64_t dummy;
         tran_low_t *const coeff = BLOCK_OFFSET(p->coeff, block);
@@ -846,9 +845,7 @@ static void store_coding_context(MACROBLOCK *x, PICK_MODE_CONTEXT *ctx,
 }
 
 static int get_pred_buffer(PRED_BUFFER *p, int len) {
-  int i;
-
-  for (i = 0; i < len; i++) {
+  for (int i = 0; i < len; i++) {
     if (!p[i].in_use) {
       p[i].in_use = 1;
       return i;
@@ -929,8 +926,8 @@ static void newmv_diff_bias(MACROBLOCKD *xd, PREDICTION_MODE this_mode,
     } else {
       al_mv_average_row = al_mv_average_col = 0;
     }
-    row_diff = (al_mv_average_row - mv_row);
-    col_diff = (al_mv_average_col - mv_col);
+    row_diff = al_mv_average_row - mv_row;
+    col_diff = al_mv_average_col - mv_col;
     if (row_diff > 48 || row_diff < -48 || col_diff > 48 || col_diff < -48) {
       if (bsize > BLOCK_32X32)
         this_rdc->rdcost = this_rdc->rdcost << 1;
@@ -972,7 +969,6 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   InterpFilter filter_ref;
   int const_motion[REF_FRAMES] = { 0 };
   int ref_frame_skip_mask = 0;
-  int idx;
   int best_pred_sad = INT_MAX;
   int best_early_term = 0;
   unsigned int ref_costs_single[REF_FRAMES],
@@ -1026,8 +1022,7 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
   memset(&mode_checked[0][0], 0, MB_MODE_COUNT * REF_FRAMES);
   if (reuse_inter_pred) {
-    int i;
-    for (i = 0; i < 3; i++) {
+    for (int i = 0; i < 3; i++) {
       tmp[i].data = &pred_buf[pixels_in_block * i];
       tmp[i].stride = bw;
       tmp[i].in_use = 0;
@@ -1087,29 +1082,28 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 #endif
   usable_ref_frame = LAST_FRAME;
 
-  for (ref_frame = LAST_FRAME; ref_frame <= usable_ref_frame; ++ref_frame) {
+  for (MV_REFERENCE_FRAME ref_frame_iter = LAST_FRAME;
+       ref_frame_iter <= usable_ref_frame; ++ref_frame_iter) {
     // Skip find_predictor if the reference frame is not in the
     // ref_frame_flags (i.e., not used as a reference for this frame).
-    skip_ref_find_pred[ref_frame] =
-        !(cpi->ref_frame_flags & flag_list[ref_frame]);
-    if (!skip_ref_find_pred[ref_frame]) {
-      find_predictors(cpi, x, ref_frame, frame_mv, const_motion,
+    skip_ref_find_pred[ref_frame_iter] =
+        !(cpi->ref_frame_flags & flag_list[ref_frame_iter]);
+    if (!skip_ref_find_pred[ref_frame_iter]) {
+      find_predictors(cpi, x, ref_frame_iter, frame_mv, const_motion,
                       &ref_frame_skip_mask, flag_list, tile_data, mi_row,
                       mi_col, yv12_mb, bsize, force_skip_low_temp_var,
                       comp_modes > 0);
     }
   }
 
-  for (idx = 0; idx < num_inter_modes; ++idx) {
+  for (int idx = 0; idx < num_inter_modes; ++idx) {
     int rate_mv = 0;
     int mode_rd_thresh;
     int mode_index;
-    int i;
     int64_t this_sse;
     int is_skippable;
     int this_early_term = 0;
     int rd_computed = 0;
-    int inter_mv_mode = 0;
     int skip_this_mv = 0;
     int comp_pred = 0;
     int force_mv_inter_layer = 0;
@@ -1198,7 +1192,7 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 #endif
 
     // Select prediction reference frames.
-    for (i = 0; i < MAX_MB_PLANE; i++) {
+    for (int i = 0; i < MAX_MB_PLANE; i++) {
       xd->plane[i].pre[0] = yv12_mb[ref_frame][i];
     }
 
@@ -1222,7 +1216,8 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
         continue;
     }
 
-    for (inter_mv_mode = NEARESTMV; inter_mv_mode <= NEWMV; inter_mv_mode++) {
+    for (PREDICTION_MODE inter_mv_mode = NEARESTMV; inter_mv_mode <= NEWMV;
+         inter_mv_mode++) {
       if (inter_mv_mode == this_mode || comp_pred) continue;
       if (mode_checked[inter_mv_mode][ref_frame] &&
           frame_mv[this_mode][ref_frame].as_int ==
@@ -1303,7 +1298,6 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     }
 
     // TODO(kyslov) account for UV prediction cost
-
     this_rdc.rate += rate_mv;
     const int16_t mode_ctx =
         av1_mode_context_analyzer(mbmi_ext->mode_context, mi->ref_frame);

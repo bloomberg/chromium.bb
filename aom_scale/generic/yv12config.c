@@ -272,7 +272,7 @@ int aom_realloc_lookahead_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height,
         aligned_width, aligned_height, uv_width, uv_height, uv_stride,
         uv_border_w, uv_border_h);
   }
-  return -2;
+  return AOM_CODEC_MEM_ERROR;
 }
 
 int aom_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height,
@@ -284,5 +284,5 @@ int aom_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height,
                                     use_highbitdepth, border, byte_alignment,
                                     NULL, NULL, NULL);
   }
-  return -2;
+  return AOM_CODEC_MEM_ERROR;
 }
