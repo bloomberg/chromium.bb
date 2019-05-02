@@ -925,7 +925,7 @@ Response InspectorDOMAgent::setNodeValue(int node_id, const String& value) {
   if (node->getNodeType() != Node::kTextNode)
     return Response::Error("Can only set value of text nodes");
 
-  return dom_editor_->ReplaceWholeText(ToText(node), value);
+  return dom_editor_->ReplaceWholeText(To<Text>(node), value);
 }
 
 static Node* NextNodeWithShadowDOMInMind(const Node& current,

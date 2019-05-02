@@ -585,7 +585,7 @@ TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByTextSetData) {
       "<div id=container>line 1<br><b id=target>line 2</b><br>line "
       "3<br></div>");
   Element& target = *GetDocument().getElementById("target");
-  ToText(*target.firstChild()).setData("abc");
+  To<Text>(*target.firstChild()).setData("abc");
   const NGPaintFragment& container = *GetPaintFragmentByElementId("container");
   auto lines = ToList(container.Children());
   // TODO(kojii): Currently we don't optimzie for <br>. We can do this, then

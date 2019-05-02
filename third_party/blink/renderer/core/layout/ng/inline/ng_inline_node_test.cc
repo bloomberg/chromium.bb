@@ -546,7 +546,7 @@ TEST_F(NGInlineNodeTest, NeedsCollectInlinesOnSetText) {
 
   Element* container = GetElementById("container");
   Element* parent = GetElementById("parent");
-  Text* text = ToText(parent->firstChild());
+  auto* text = To<Text>(parent->firstChild());
   EXPECT_FALSE(text->GetLayoutObject()->NeedsCollectInlines());
   EXPECT_FALSE(parent->GetLayoutObject()->NeedsCollectInlines());
   EXPECT_FALSE(container->GetLayoutObject()->NeedsCollectInlines());
@@ -630,7 +630,7 @@ TEST_P(StyleChangeTest, NeedsCollectInlinesOnStyle) {
 
   Element* container = GetElementById("container");
   Element* parent = GetElementById("parent");
-  Text* text = ToText(parent->firstChild());
+  auto* text = To<Text>(parent->firstChild());
   EXPECT_FALSE(text->GetLayoutObject()->NeedsCollectInlines());
   EXPECT_FALSE(parent->GetLayoutObject()->NeedsCollectInlines());
   EXPECT_FALSE(container->GetLayoutObject()->NeedsCollectInlines());

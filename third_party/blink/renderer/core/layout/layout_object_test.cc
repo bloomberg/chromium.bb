@@ -486,7 +486,7 @@ TEST_F(LayoutObjectTest, AssociatedLayoutObjectOfFirstLetterSplit) {
   Node* sample = GetDocument().getElementById("sample");
   Node* first_letter = sample->firstChild();
   // Split "abc" into "a" "bc"
-  ToText(first_letter)->splitText(1, ASSERT_NO_EXCEPTION);
+  To<Text>(first_letter)->splitText(1, ASSERT_NO_EXCEPTION);
   UpdateAllLifecyclePhasesForTest();
 
   const LayoutTextFragment* layout_object0 =

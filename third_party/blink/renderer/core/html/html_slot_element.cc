@@ -414,8 +414,8 @@ void HTMLSlotElement::DidRecalcStyle(const StyleRecalcChange change) {
       continue;
     if (node->IsElementNode())
       ToElement(node)->RecalcStyle(change);
-    else if (node->IsTextNode())
-      ToText(node)->RecalcTextStyle(change);
+    else if (auto* text_node = DynamicTo<Text>(node.Get()))
+      text_node->RecalcTextStyle(change);
   }
 }
 

@@ -349,8 +349,8 @@ bool LayoutText::HasTextBoxes() const {
 }
 
 scoped_refptr<StringImpl> LayoutText::OriginalText() const {
-  Node* e = GetNode();
-  return (e && e->IsTextNode()) ? ToText(e)->DataImpl() : nullptr;
+  auto* text_node = DynamicTo<Text>(GetNode());
+  return text_node ? text_node->DataImpl() : nullptr;
 }
 
 String LayoutText::PlainText() const {
@@ -2148,14 +2148,14 @@ Position LayoutText::PositionForCaretOffset(unsigned offset) const {
   const Node* node = GetNode();
   if (!node)
     return Position();
-  DCHECK(node->IsTextNode());
+  auto* text_node = To<Text>(node);
   // TODO(layout-dev): Support offset change due to text-transform.
 #if DCHECK_IS_ON()
   // Ensures that the clamping hack kicks in only with text-transform.
   if (StyleRef().TextTransform() == ETextTransform::kNone)
-    DCHECK_LE(offset, ToText(node)->length());
+    DCHECK_LE(offset, text_node->length());
 #endif
-  const unsigned clamped_offset = std::min(offset, ToText(node)->length());
+  const unsigned clamped_offset = std::min(offset, text_node->length());
   return Position(node, clamped_offset);
 }
 

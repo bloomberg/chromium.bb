@@ -974,7 +974,7 @@ unsigned Internals::markerCountForNode(Node* node,
 
   return node->GetDocument()
       .Markers()
-      .MarkersFor(ToText(*node), marker_types.value())
+      .MarkersFor(To<Text>(*node), marker_types.value())
       .size();
 }
 
@@ -983,7 +983,7 @@ unsigned Internals::activeMarkerCountForNode(Node* node) {
 
   // Only TextMatch markers can be active.
   DocumentMarkerVector markers = node->GetDocument().Markers().MarkersFor(
-      ToText(*node), DocumentMarker::MarkerTypes::TextMatch());
+      To<Text>(*node), DocumentMarker::MarkerTypes::TextMatch());
 
   unsigned active_marker_count = 0;
   for (const auto& marker : markers) {
@@ -1009,7 +1009,7 @@ DocumentMarker* Internals::MarkerAt(Node* node,
   }
 
   DocumentMarkerVector markers = node->GetDocument().Markers().MarkersFor(
-      ToText(*node), marker_types.value());
+      To<Text>(*node), marker_types.value());
   if (markers.size() <= index)
     return nullptr;
   return markers[index];
@@ -1230,7 +1230,7 @@ void Internals::setTextMatchMarkersActive(Node* node,
                                           bool active) {
   DCHECK(node);
   node->GetDocument().Markers().SetTextMatchMarkersActive(
-      ToText(*node), start_offset, end_offset, active);
+      To<Text>(*node), start_offset, end_offset, active);
 }
 
 void Internals::setMarkedTextMatchesAreHighlighted(Document* document,

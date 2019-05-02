@@ -277,7 +277,7 @@ class MediaControlsImplTest : public PageTestBase,
   }
 
   const String GetDisplayedTime(MediaControlTimeDisplayElement* display) {
-    return ToText(display->firstChild())->data();
+    return To<Text>(display->firstChild())->data();
   }
 
  private:

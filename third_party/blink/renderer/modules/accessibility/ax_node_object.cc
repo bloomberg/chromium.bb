@@ -1374,12 +1374,12 @@ void AXNodeObject::Markers(Vector<DocumentMarker::MarkerType>& marker_types,
   if (!GetNode() || !GetDocument() || !GetDocument()->View())
     return;
 
-  if (!GetNode()->IsTextNode())
+  auto* text_node = DynamicTo<Text>(GetNode());
+  if (!text_node)
     return;
 
   DocumentMarkerController& marker_controller = GetDocument()->Markers();
-  DocumentMarkerVector markers =
-      marker_controller.MarkersFor(ToText(*GetNode()));
+  DocumentMarkerVector markers = marker_controller.MarkersFor(*text_node);
   for (DocumentMarker* marker : markers) {
     if (!MarkerTypeIsUsedForAccessibility(marker->GetType()))
       continue;
@@ -1970,8 +1970,8 @@ String AXNodeObject::TextAlternative(bool recursive,
         name_sources->back().type = name_from;
       }
 
-      if (node && node->IsTextNode())
-        text_alternative = ToText(node)->wholeText();
+      if (auto* text_node = DynamicTo<Text>(node))
+        text_alternative = text_node->wholeText();
       else if (IsHTMLBRElement(node))
         text_alternative = String("\n");
       else

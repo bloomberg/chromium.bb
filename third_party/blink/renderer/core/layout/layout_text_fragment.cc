@@ -170,7 +170,7 @@ Text* LayoutTextFragment::AssociatedTextNode() const {
       return nullptr;
     node = next_layout_object->GetNode();
   }
-  return (node && node->IsTextNode()) ? ToText(node) : nullptr;
+  return DynamicTo<Text>(node);
 }
 
 LayoutText* LayoutTextFragment::GetFirstLetterPart() const {

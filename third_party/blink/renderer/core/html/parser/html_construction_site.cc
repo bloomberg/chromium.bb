@@ -135,15 +135,13 @@ static inline void ExecuteInsertTask(HTMLConstructionSiteTask& task) {
 
 static inline void ExecuteInsertTextTask(HTMLConstructionSiteTask& task) {
   DCHECK_EQ(task.operation, HTMLConstructionSiteTask::kInsertText);
-  DCHECK(task.child->IsTextNode());
 
   // Merge text nodes into previous ones if possible:
   // http://www.whatwg.org/specs/web-apps/current-work/multipage/tree-construction.html#insert-a-character
-  Text* new_text = ToText(task.child.Get());
+  auto* new_text = To<Text>(task.child.Get());
   Node* previous_child = task.next_child ? task.next_child->previousSibling()
                                          : task.parent->lastChild();
-  if (previous_child && previous_child->IsTextNode()) {
-    Text* previous_text = ToText(previous_child);
+  if (auto* previous_text = DynamicTo<Text>(previous_child)) {
     unsigned length_limit = TextLengthLimitForContainer(*task.parent);
     if (previous_text->length() + new_text->length() < length_limit) {
       previous_text->ParserAppendData(new_text->data());
@@ -283,7 +281,7 @@ void HTMLConstructionSite::FlushPendingText(FlushMode mode) {
 
     DCHECK_GT(break_index, current_position);
     DCHECK_EQ(break_index - current_position, substring.length());
-    DCHECK_EQ(ToText(task.child.Get())->length(), substring.length());
+    DCHECK_EQ(To<Text>(task.child.Get())->length(), substring.length());
     current_position = break_index;
   }
 }

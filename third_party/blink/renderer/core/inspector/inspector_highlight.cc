@@ -425,10 +425,11 @@ InspectorHighlight::InspectorHighlight(
     scale_ = 1.f / frame_view->GetChromeClient()->WindowToViewportScalar(1.f);
   AppendPathsForShapeOutside(node, highlight_config);
   AppendNodeHighlight(node, highlight_config);
+  auto* text_node = DynamicTo<Text>(node);
   if (append_element_info && node->IsElementNode())
     element_info_ = BuildElementInfo(ToElement(node));
-  else if (append_element_info && node->IsTextNode())
-    element_info_ = BuildTextNodeInfo(ToText(node));
+  else if (append_element_info && text_node)
+    element_info_ = BuildTextNodeInfo(text_node);
   if (element_info_ && highlight_config.show_styles)
     AppendStyleInfo(node, element_info_.get(), node_contrast);
 
