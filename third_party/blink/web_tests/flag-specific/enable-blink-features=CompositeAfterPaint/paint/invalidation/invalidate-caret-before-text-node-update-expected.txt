@@ -9,7 +9,7 @@
         {
           "object": "LayoutBlockFlow DIV id='root' class='editing'",
           "rect": [7, 7, 786, 20],
-          "reason": "full"
+          "reason": "style change"
         },
         {
           "object": "InlineTextBox '1'",

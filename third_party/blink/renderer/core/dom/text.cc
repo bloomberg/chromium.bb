@@ -398,8 +398,9 @@ void Text::RecalcTextStyle(const StyleRecalcChange change) {
   if (LayoutText* layout_text = GetLayoutObject()) {
     const ComputedStyle* layout_parent_style =
         GetLayoutObject()->Parent()->Style();
-    if (!new_style || (new_style != layout_parent_style &&
-                       !new_style->InheritedEqual(*layout_parent_style))) {
+    if (!new_style || GetForceReattachLayoutTree() ||
+        (new_style != layout_parent_style &&
+         !new_style->InheritedEqual(*layout_parent_style))) {
       // The computed style or the need for an anonymous inline wrapper for a
       // display:contents text child changed.
       SetNeedsReattachLayoutTree();
@@ -409,6 +410,7 @@ void Text::RecalcTextStyle(const StyleRecalcChange change) {
         layout_text->SetText(DataImpl());
     }
   } else if (new_style && (NeedsStyleRecalc() || change.ReattachLayoutTree() ||
+                           GetForceReattachLayoutTree() ||
                            NeedsWhitespaceLayoutObject(*new_style))) {
     SetNeedsReattachLayoutTree();
   }
@@ -425,15 +427,15 @@ void Text::RebuildTextLayoutTree(WhitespaceAttacher& whitespace_attacher) {
   ClearNeedsReattachLayoutTree();
 }
 
-// Passing both |textNode| and its layout object because repeated calls to
-// |Node::layoutObject()| are discouraged.
+// Passing both |text_node| and its layout object because repeated calls to
+// |Node::GetLayoutObject()| are discouraged.
 static bool ShouldUpdateLayoutByReattaching(const Text& text_node,
                                             LayoutText* text_layout_object) {
   DCHECK_EQ(text_node.GetLayoutObject(), text_layout_object);
   if (!text_layout_object)
     return true;
   // In general we do not want to branch on lifecycle states such as
-  // |childNeedsDistributionRecalc|, but this code tries to figure out if we can
+  // |ChildNeedsDistributionRecalc|, but this code tries to figure out if we can
   // use an optimized code path that avoids reattach.
   if (!text_node.GetDocument().ChildNeedsDistributionRecalc() &&
       !text_node.TextLayoutObjectIsNeeded(Node::AttachContext(),
@@ -456,7 +458,7 @@ void Text::UpdateTextLayoutObject(unsigned offset_of_replaced_data,
     return;
   LayoutText* text_layout_object = GetLayoutObject();
   if (ShouldUpdateLayoutByReattaching(*this, text_layout_object)) {
-    LazyReattachIfAttached();
+    SetForceReattachLayoutTree();
     return;
   }
 
