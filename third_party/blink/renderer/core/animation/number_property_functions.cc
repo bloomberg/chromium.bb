@@ -109,9 +109,6 @@ double NumberPropertyFunctions::ClampNumber(const CSSProperty& property,
     case CSSPropertyID::kColumnCount:
       return clampTo<uint16_t>(round(value), 1);
 
-    case CSSPropertyID::kColumnRuleWidth:
-      return clampTo<uint16_t>(round(value));
-
     case CSSPropertyID::kOrder:
     case CSSPropertyID::kZIndex:
       return clampTo<int>(round(value));
