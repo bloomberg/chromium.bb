@@ -1098,7 +1098,7 @@ class CpuDetailedInfoView extends DetailedInfoView {
     var totalWidth = bandsWidth + columnsWidth;
     bands.setWidth(totalWidth);
 
-    for (i = 0; i < pids.length; i++) {
+    for (var i = 0; i < pids.length; i++) {
       var pid = pids[i];
       var threads = threadsPerPid[pid].threads;
       var processName;
@@ -1132,7 +1132,7 @@ class CpuDetailedInfoView extends DetailedInfoView {
 
       bands.nextYOffset += (processInfoHeight + padding);
 
-      for (j = 0; j < threads.length; j++) {
+      for (var j = 0; j < threads.length; j++) {
         var tid = threads[j].tid;
         bands.addBand(
             new Events(eventsPerTid[tid].events, 0, 1), cpuBandHeight, padding);
@@ -1452,7 +1452,7 @@ function setGraphicBuffersModel(model) {
   var chromeBands = new EventBands(
       chromeTitle, 'arc-events-band', resolution, 0, model.duration);
   chromeBands.setWidth(chromeBands.timestampToOffset(model.duration));
-  for (i = 0; i < model.chrome.buffers.length; i++) {
+  for (var i = 0; i < model.chrome.buffers.length; i++) {
     chromeBands.addBand(
         new Events(model.chrome.buffers[i], 500, 599), topBandHeight,
         topBandPadding);
@@ -1477,7 +1477,7 @@ function setGraphicBuffersModel(model) {
       model.android.global_events, 405 /* kSurfaceFlingerCompositionJank */,
       405 /* kSurfaceFlingerCompositionJank */));
 
-  for (i = 0; i < model.views.length; i++) {
+  for (var i = 0; i < model.views.length; i++) {
     var view = model.views[i];
     var activityTitleText;
     var icon;
@@ -1493,7 +1493,7 @@ function setGraphicBuffersModel(model) {
     var activityBands = new EventBands(
         activityTitle, 'arc-events-band', resolution, 0, model.duration);
     activityBands.setWidth(activityBands.timestampToOffset(model.duration));
-    for (j = 0; j < view.buffers.length; j++) {
+    for (var j = 0; j < view.buffers.length; j++) {
       // Android buffer events.
       activityBands.addBand(
           new Events(view.buffers[j], 100, 199), innerBandHeight,
