@@ -24,26 +24,6 @@ public class HistoryNavigationLayout extends FrameLayout {
     private GestureDetector mDetector;
     private NavigationHandler mNavigationHandler;
 
-    /**
-     * Interface providing navigation-related configuration for native pages using this class.
-     */
-    public interface HistoryNavigationDelegate {
-        /**
-         * @return {@code true} if history navigation is enabled.
-         */
-        boolean isEnabled();
-
-        /**
-         * @return {@code true} if swipe events are delegated to websites first.
-         */
-        boolean delegateSwipes();
-
-        /**
-         * @return {@link NavigationHandler#ActionDelegate} object.
-         */
-        NavigationHandler.ActionDelegate createActionDelegate();
-    }
-
     public HistoryNavigationLayout(Context context) {
         this(context, null);
     }

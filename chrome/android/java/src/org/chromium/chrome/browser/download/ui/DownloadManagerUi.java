@@ -37,7 +37,7 @@ import org.chromium.chrome.browser.download.home.metrics.UmaUtils;
 import org.chromium.chrome.browser.download.home.metrics.UmaUtils.MenuAction;
 import org.chromium.chrome.browser.download.home.toolbar.ToolbarUtils;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
-import org.chromium.chrome.browser.gesturenav.HistoryNavigationLayout.HistoryNavigationDelegate;
+import org.chromium.chrome.browser.gesturenav.HistoryNavigationDelegate;
 import org.chromium.chrome.browser.native_page.BasicNativePage;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.download.DownloadPreferences;

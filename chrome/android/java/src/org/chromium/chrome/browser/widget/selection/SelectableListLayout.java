@@ -26,8 +26,8 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.gesturenav.HistoryNavigationDelegate;
 import org.chromium.chrome.browser.gesturenav.HistoryNavigationLayout;
-import org.chromium.chrome.browser.gesturenav.HistoryNavigationLayout.HistoryNavigationDelegate;
 import org.chromium.chrome.browser.widget.FadingShadow;
 import org.chromium.chrome.browser.widget.FadingShadowView;
 import org.chromium.chrome.browser.widget.LoadingView;

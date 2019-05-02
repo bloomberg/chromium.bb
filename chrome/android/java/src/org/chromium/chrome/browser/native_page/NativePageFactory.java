@@ -16,8 +16,7 @@ import org.chromium.chrome.browser.bookmarks.BookmarkPage;
 import org.chromium.chrome.browser.download.DownloadPage;
 import org.chromium.chrome.browser.explore_sites.ExploreSitesPage;
 import org.chromium.chrome.browser.feed.FeedNewTabPage;
-import org.chromium.chrome.browser.gesturenav.HistoryNavigationDelegateImpl;
-import org.chromium.chrome.browser.gesturenav.HistoryNavigationLayout.HistoryNavigationDelegate;
+import org.chromium.chrome.browser.gesturenav.HistoryNavigationDelegate;
 import org.chromium.chrome.browser.history.HistoryPage;
 import org.chromium.chrome.browser.ntp.IncognitoNewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPage;
@@ -244,7 +243,7 @@ public class NativePageFactory {
 
         @Override
         public HistoryNavigationDelegate createHistoryNavigationDelegate() {
-            return new HistoryNavigationDelegateImpl(mTab.getActivity(), mTab);
+            return HistoryNavigationDelegate.createForNativePage(mTab);
         }
     }
 }

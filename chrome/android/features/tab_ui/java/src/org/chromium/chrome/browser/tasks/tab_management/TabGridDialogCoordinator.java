@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.List;
@@ -42,7 +43,8 @@ public class TabGridDialogCoordinator {
 
         mTabListCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.GRID, context,
                 tabModelSelector, tabContentManager::getTabThumbnailWithCallback, null, false, null,
-                null, compositorViewHolder, false, COMPONENT_NAME);
+                null, compositorViewHolder, false, R.layout.tab_list_recycler_view_layout,
+                COMPONENT_NAME);
 
         mMediator = new TabGridDialogMediator(context, this::resetWithListOfTabs,
                 mToolbarPropertyModel, tabModelSelector, tabCreatorManager, resetHandler);

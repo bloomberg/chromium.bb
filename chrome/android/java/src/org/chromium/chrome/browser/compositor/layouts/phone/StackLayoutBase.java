@@ -19,7 +19,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
@@ -41,6 +40,7 @@ import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.TabListSceneLayer;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.gesturenav.NavigationHandler;
+import org.chromium.chrome.browser.gesturenav.TabSwitcherActionDelegate;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabList;
@@ -530,23 +530,8 @@ public abstract class StackLayoutBase extends Layout {
             }
         };
         if (mNavigationEnabled && mNavigationHandler == null) {
-            final ChromeActivity activity = currentTab().getActivity();
-            mNavigationHandler =
-                    new NavigationHandler(mViewContainer, new NavigationHandler.ActionDelegate() {
-                        @Override
-                        public boolean canNavigate(boolean forward) {
-                            return !forward;
-                        }
-                        @Override
-                        public void navigate(boolean forward) {
-                            // Called only when !forward.
-                            activity.onBackPressed();
-                        }
-                        @Override
-                        public boolean willBackExitApp() {
-                            return currentTab() == null;
-                        }
-                    });
+            mNavigationHandler = new NavigationHandler(mViewContainer,
+                    new TabSwitcherActionDelegate(mTabModelSelector::getCurrentTab));
         }
     }
 

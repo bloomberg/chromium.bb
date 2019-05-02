@@ -22,7 +22,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
-import org.chromium.chrome.browser.gesturenav.HistoryNavigationLayout.HistoryNavigationDelegate;
+import org.chromium.chrome.browser.gesturenav.HistoryNavigationDelegate;
 import org.chromium.chrome.browser.native_page.BasicNativePage;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksReader;
 import org.chromium.chrome.browser.profiles.Profile;

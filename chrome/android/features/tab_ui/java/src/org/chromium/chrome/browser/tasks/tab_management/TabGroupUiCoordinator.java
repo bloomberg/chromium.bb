@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tabgroup.TabGroupModelFilter;
 import org.chromium.chrome.browser.toolbar.bottom.BottomControlsCoordinator;
+import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.List;
@@ -75,7 +76,8 @@ public class TabGroupUiCoordinator
 
         mTabStripCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.STRIP,
                 mContext, tabModelSelector, null, null, false, null, null,
-                mTabStripToolbarCoordinator.getTabListContainerView(), true, COMPONENT_NAME);
+                mTabStripToolbarCoordinator.getTabListContainerView(), true,
+                R.layout.tab_list_recycler_view_layout, COMPONENT_NAME);
 
         mTabGridSheetCoordinator =
                 new TabGridSheetCoordinator(mContext, activity.getBottomSheetController(),

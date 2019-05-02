@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.support.annotation.IntDef;
+import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.GridLayoutManager;
@@ -63,6 +64,7 @@ public class TabListCoordinator implements Destroyable {
      *         to provide "Create group" button.
      * @param parentView {@link ViewGroup} The root view of the UI.
      * @param attachToParent Whether the UI should attach to root view.
+     * @param layoutId ID of the layout resource.
      * @param componentName A unique string uses to identify different components for UMA recording.
      *                      Recommended to use the class name or make sure the string is unique
      *                      through actions.xml file.
@@ -73,7 +75,8 @@ public class TabListCoordinator implements Destroyable {
             @Nullable TabListMediator.CreateGroupButtonProvider createGroupButtonProvider,
             @Nullable TabListMediator
                     .GridCardOnClickListenerProvider gridCardOnClickListenerProvider,
-            @NonNull ViewGroup parentView, boolean attachToParent, String componentName) {
+            @NonNull ViewGroup parentView, boolean attachToParent, @LayoutRes int layoutId,
+            String componentName) {
         TabListModel tabListModel = new TabListModel();
         mMode = mode;
 
@@ -94,13 +97,11 @@ public class TabListCoordinator implements Destroyable {
             throw new IllegalArgumentException(
                     "Attempting to create a tab list UI with invalid mode");
         }
-
         if (!attachToParent) {
             mRecyclerView = (TabListRecyclerView) LayoutInflater.from(context).inflate(
-                    R.layout.tab_list_recycler_view_layout, parentView, false);
+                    layoutId, parentView, false);
         } else {
-            LayoutInflater.from(context).inflate(
-                    R.layout.tab_list_recycler_view_layout, parentView, true);
+            LayoutInflater.from(context).inflate(layoutId, parentView, true);
             mRecyclerView = parentView.findViewById(R.id.tab_list_view);
         }
 

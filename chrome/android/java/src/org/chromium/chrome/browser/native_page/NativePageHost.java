@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.native_page;
 
 import android.support.annotation.Nullable;
 
-import org.chromium.chrome.browser.gesturenav.HistoryNavigationLayout.HistoryNavigationDelegate;
+import org.chromium.chrome.browser.gesturenav.HistoryNavigationDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.LoadUrlParams;
 

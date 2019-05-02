@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.download.home;
 
 import android.view.View;
 
-import org.chromium.chrome.browser.gesturenav.HistoryNavigationLayout.HistoryNavigationDelegate;
+import org.chromium.chrome.browser.gesturenav.HistoryNavigationDelegate;
 
 /**
  * A coordinator that represents the main download manager UI page. This visually shows a list of
