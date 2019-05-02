@@ -533,10 +533,10 @@ void VTTTreeBuilder::ConstructTreeFromToken(Document& document) {
       if (node_type == kVTTNodeTypeNone)
         break;
 
-      VTTNodeType current_type =
-          current_node_->IsVTTElement()
-              ? ToVTTElement(current_node_.Get())->WebVTTNodeType()
-              : kVTTNodeTypeNone;
+      auto* curr_vtt_element = DynamicTo<VTTElement>(current_node_.Get());
+      VTTNodeType current_type = curr_vtt_element
+                                     ? curr_vtt_element->WebVTTNodeType()
+                                     : kVTTNodeTypeNone;
       // <rt> is only allowed if the current node is <ruby>.
       if (node_type == kVTTNodeTypeRubyText && current_type != kVTTNodeTypeRuby)
         break;
@@ -566,11 +566,11 @@ void VTTTreeBuilder::ConstructTreeFromToken(Document& document) {
 
       // The only non-VTTElement would be the DocumentFragment root. (Text
       // nodes and PIs will never appear as current_node_.)
-      if (!current_node_->IsVTTElement())
+      auto* curr_vtt_element = DynamicTo<VTTElement>(current_node_.Get());
+      if (!curr_vtt_element)
         break;
 
-      VTTNodeType current_type =
-          ToVTTElement(current_node_.Get())->WebVTTNodeType();
+      VTTNodeType current_type = curr_vtt_element->WebVTTNodeType();
       bool matches_current = node_type == current_type;
       if (!matches_current) {
         // </ruby> auto-closes <rt>.

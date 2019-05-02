@@ -1021,11 +1021,9 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
     case CSSSelector::kPseudoRoot:
       return element == element.GetDocument().documentElement();
     case CSSSelector::kPseudoLang: {
-      AtomicString value;
-      if (element.IsVTTElement())
-        value = ToVTTElement(element).Language();
-      else
-        value = element.ComputeInheritedLanguage();
+      auto* vtt_element = DynamicTo<VTTElement>(element);
+      AtomicString value = vtt_element ? vtt_element->Language()
+                                       : element.ComputeInheritedLanguage();
       const AtomicString& argument = selector.Argument();
       if (value.IsEmpty() ||
           !value.StartsWith(argument, kTextCaseASCIIInsensitive))
@@ -1058,10 +1056,14 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
       if (mode_ == kResolvingStyle)
         element.GetDocument().SetContainsValidityStyleRules();
       return element.IsOutOfRange();
-    case CSSSelector::kPseudoFutureCue:
-      return element.IsVTTElement() && !ToVTTElement(element).IsPastNode();
-    case CSSSelector::kPseudoPastCue:
-      return element.IsVTTElement() && ToVTTElement(element).IsPastNode();
+    case CSSSelector::kPseudoFutureCue: {
+      auto* vtt_element = DynamicTo<VTTElement>(element);
+      return vtt_element && !vtt_element->IsPastNode();
+    }
+    case CSSSelector::kPseudoPastCue: {
+      auto* vtt_element = DynamicTo<VTTElement>(element);
+      return vtt_element && vtt_element->IsPastNode();
+    }
     case CSSSelector::kPseudoScope:
       if (!context.scope)
         return false;

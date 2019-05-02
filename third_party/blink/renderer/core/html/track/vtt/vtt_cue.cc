@@ -458,9 +458,8 @@ void VTTCue::CopyVTTNodeToDOMTree(ContainerNode* vtt_node,
                                   ContainerNode* parent) {
   for (Node* node = vtt_node->firstChild(); node; node = node->nextSibling()) {
     Node* cloned_node;
-    if (node->IsVTTElement())
-      cloned_node =
-          ToVTTElement(node)->CreateEquivalentHTMLElement(GetDocument());
+    if (auto* vtt_element = DynamicTo<VTTElement>(node))
+      cloned_node = vtt_element->CreateEquivalentHTMLElement(GetDocument());
     else
       cloned_node = node->cloneNode(false);
     parent->AppendChild(cloned_node);
@@ -572,8 +571,8 @@ static CSSValueID DetermineTextDirection(DocumentFragment* vtt_root) {
           DetermineDirectionality(node->nodeValue(), has_strong_directionality);
       if (has_strong_directionality)
         break;
-    } else if (node->IsVTTElement()) {
-      if (ToVTTElement(node)->WebVTTNodeType() == kVTTNodeTypeRubyText) {
+    } else if (auto* vtt_element = DynamicTo<VTTElement>(node)) {
+      if (vtt_element->WebVTTNodeType() == kVTTNodeTypeRubyText) {
         node = NodeTraversal::NextSkippingChildren(*node);
         continue;
       }
@@ -782,8 +781,8 @@ void VTTCue::UpdatePastAndFutureNodes(double movie_time) {
         is_past_node = false;
     }
 
-    if (child.IsVTTElement()) {
-      ToVTTElement(child).SetIsPastNode(is_past_node);
+    if (auto* child_vtt_element = DynamicTo<VTTElement>(child)) {
+      child_vtt_element->SetIsPastNode(is_past_node);
       // Make an elemenet id match a cue id for style matching purposes.
       if (!id().IsEmpty())
         ToElement(child).SetIdAttribute(id());
