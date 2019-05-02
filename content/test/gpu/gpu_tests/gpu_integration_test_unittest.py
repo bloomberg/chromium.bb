@@ -32,6 +32,19 @@ from typ import expectations_parser
 path_util.AddDirToPathIfNeeded(path_util.GetChromiumSrcDir(), 'tools', 'perf')
 from chrome_telemetry_build import chromium_config
 
+WIN_CONDITIONS = ['xp', 'vista', 'win7', 'win8', 'win10']
+MAC_CONDITIONS = ['leopard', 'snowleopard', 'lion', 'mountainlion',
+                  'mavericks', 'yosemite', 'sierra', 'highsierra', 'mojave']
+# These aren't expanded out into "lollipop", "marshmallow", etc.
+ANDROID_CONDITIONS = ['l', 'm', 'n', 'o', 'p', 'q']
+
+_map_specific_to_generic = {sos:'win' for sos in WIN_CONDITIONS}
+_map_specific_to_generic.update({sos:'mac' for sos in MAC_CONDITIONS})
+_map_specific_to_generic.update({sos:'android' for sos in ANDROID_CONDITIONS})
+
+_get_generic = lambda tags: set(
+    [_map_specific_to_generic.get(tag, tag) for tag in tags])
+
 VENDOR_NVIDIA = 0x10DE
 VENDOR_AMD = 0x1002
 VENDOR_INTEL = 0x8086
@@ -185,7 +198,8 @@ def _checkTestExpectationsForCollision(expectations, file_name):
       error_msg += ('\n\nFound conflicts for test %s in %s:\n' %
                     (pattern, file_name))
     for e1, e2 in itertools.combinations(exps, 2):
-      if e1.tags.issubset(e2.tags) or e2.tags.issubset(e1.tags):
+      if (e1.tags.issubset(_get_generic(e2.tags)) or
+          e2.tags.issubset(_get_generic(e1.tags))):
         conflicts_found = True
         error_msg += ('  line %d conflicts with line %d\n' %
                       (e1.lineno, e2.lineno))
@@ -249,6 +263,25 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
         self._test_result = json.load(f)
     finally:
       temp_file.close()
+
+  def testCollisionInTestExpectationsWithGenericAndSpecificTags(self):
+    test_expectations = '''# tags: [ mac win linux xp ]
+    # tags: [ intel amd nvidia ]
+    # tags: [ debug release ]
+    [ intel win ] a/b/c/d [ Failure ]
+    [ intel xp debug ] a/b/c/d [ Skip ]
+    '''
+    with self.assertRaises(AssertionError):
+      _checkTestExpectationsForCollision(test_expectations, 'test.txt')
+
+  def testNoCollisionBetweenSpecificTags(self):
+    test_expectations = '''# tags: [ mac win linux xp win7 ]
+    # tags: [ intel amd nvidia ]
+    # tags: [ debug release ]
+    [ intel win7 ] a/b/c/d [ Failure ]
+    [ intel xp debug ] a/b/c/d [ Skip ]
+    '''
+    _checkTestExpectationsForCollision(test_expectations, 'test.txt')
 
   def testCollisionInTestExpectationCausesAssertion(self):
     test_expectations = '''# tags: [ mac win linux ]
