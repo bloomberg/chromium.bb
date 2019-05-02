@@ -472,6 +472,14 @@ void MakeCredentialRequestHandler::OnHaveSetPIN(
     base::Optional<pin::EmptyResponse> response) {
   DCHECK_EQ(state_, State::kSettingPIN);
 
+  if (status != CtapDeviceResponseCode::kSuccess) {
+    state_ = State::kFinished;
+    std::move(completion_callback_)
+        .Run(FidoReturnCode::kAuthenticatorResponseInvalid, base::nullopt,
+             base::nullopt);
+    return;
+  }
+
   // Having just set the PIN, we need to immediately turn around and use it to
   // get a PIN token.
   state_ = State::kRequestWithPIN;

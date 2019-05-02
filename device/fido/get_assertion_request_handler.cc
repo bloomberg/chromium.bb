@@ -338,8 +338,14 @@ void GetAssertionRequestHandler::HandleResponse(
   const base::Optional<FidoReturnCode> maybe_result =
       ConvertDeviceResponseCodeToFidoReturnCode(status);
   if (!maybe_result) {
-    FIDO_LOG(ERROR) << "Ignoring status " << static_cast<int>(status)
-                    << " from " << authenticator->GetDisplayName();
+    if (state_ == State::kWaitingForSecondTouch) {
+      OnAuthenticatorResponse(authenticator,
+                              FidoReturnCode::kAuthenticatorResponseInvalid,
+                              base::nullopt);
+    } else {
+      FIDO_LOG(ERROR) << "Ignoring status " << static_cast<int>(status)
+                      << " from " << authenticator->GetDisplayName();
+    }
     return;
   }
 
