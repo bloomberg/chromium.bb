@@ -23,7 +23,7 @@ class TestTokenFactory : public PrefetchGCMAppHandler::TokenFactory {
 
   void GetGCMToken(
       instance_id::InstanceID::GetTokenCallback callback) override {
-    callback.Run(token, result);
+    std::move(callback).Run(token, result);
   }
 
   instance_id::InstanceID::Result result = instance_id::InstanceID::SUCCESS;
@@ -103,10 +103,10 @@ TEST_F(PrefetchGCMAppHandlerTest, TestInvalidMessage) {
 TEST_F(PrefetchGCMAppHandlerTest, TestGetToken) {
   std::string result_token;
 
-  handler()->GetGCMToken(base::AdaptCallbackForRepeating(base::BindOnce(
+  handler()->GetGCMToken(base::BindOnce(
       [](std::string* result_token, const std::string& token,
          instance_id::InstanceID::Result result) { *result_token = token; },
-      &result_token)));
+      &result_token));
   EXPECT_EQ(token_factory()->token, result_token);
 }
 

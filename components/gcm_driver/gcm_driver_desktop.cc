@@ -865,7 +865,7 @@ void GCMDriverDesktop::GetToken(
     const std::string& authorized_entity,
     const std::string& scope,
     const std::map<std::string, std::string>& options,
-    const GetTokenCallback& callback) {
+    GetTokenCallback callback) {
   DCHECK(!app_id.empty());
   DCHECK(!authorized_entity.empty());
   DCHECK(!scope.empty());
@@ -877,18 +877,18 @@ void GCMDriverDesktop::GetToken(
     DLOG(ERROR)
         << "Unable to get the InstanceID token: cannot start the GCM Client";
 
-    callback.Run(std::string(), result);
+    std::move(callback).Run(std::string(), result);
     return;
   }
 
   // If previous GetToken operation is still in progress, bail out.
   TokenTuple tuple_key(app_id, authorized_entity, scope);
   if (get_token_callbacks_.find(tuple_key) != get_token_callbacks_.end()) {
-    callback.Run(std::string(), GCMClient::ASYNC_OPERATION_PENDING);
+    std::move(callback).Run(std::string(), GCMClient::ASYNC_OPERATION_PENDING);
     return;
   }
 
-  get_token_callbacks_[tuple_key] = callback;
+  get_token_callbacks_[tuple_key] = std::move(callback);
 
   // Delay the GetToken operation until GCMClient is ready.
   if (!delayed_task_controller_->CanRunTaskWithoutDelay()) {
@@ -966,7 +966,7 @@ void GCMDriverDesktop::ValidateToken(const std::string& app_id,
 void GCMDriverDesktop::DeleteToken(const std::string& app_id,
                                    const std::string& authorized_entity,
                                    const std::string& scope,
-                                   const DeleteTokenCallback& callback) {
+                                   DeleteTokenCallback callback) {
   DCHECK(!app_id.empty());
   DCHECK(!authorized_entity.empty());
   DCHECK(!scope.empty());
@@ -978,7 +978,7 @@ void GCMDriverDesktop::DeleteToken(const std::string& app_id,
     DLOG(ERROR)
         << "Unable to delete the InstanceID token: cannot start the GCM Client";
 
-    callback.Run(result);
+    std::move(callback).Run(result);
     return;
   }
 
@@ -986,11 +986,11 @@ void GCMDriverDesktop::DeleteToken(const std::string& app_id,
   TokenTuple tuple_key(app_id, authorized_entity, scope);
   if (delete_token_callbacks_.find(tuple_key) !=
       delete_token_callbacks_.end()) {
-    callback.Run(GCMClient::ASYNC_OPERATION_PENDING);
+    std::move(callback).Run(GCMClient::ASYNC_OPERATION_PENDING);
     return;
   }
 
-  delete_token_callbacks_[tuple_key] = callback;
+  delete_token_callbacks_[tuple_key] = std::move(callback);
 
   // Delay the DeleteToken operation until GCMClient is ready.
   if (!delayed_task_controller_->CanRunTaskWithoutDelay()) {
@@ -1141,9 +1141,9 @@ void GCMDriverDesktop::GetTokenFinished(const std::string& app_id,
     return;
   }
 
-  GetTokenCallback callback = callback_iter->second;
+  GetTokenCallback callback = std::move(callback_iter->second);
   get_token_callbacks_.erase(callback_iter);
-  callback.Run(token, result);
+  std::move(callback).Run(token, result);
 }
 
 void GCMDriverDesktop::DeleteTokenFinished(const std::string& app_id,
@@ -1157,9 +1157,9 @@ void GCMDriverDesktop::DeleteTokenFinished(const std::string& app_id,
     return;
   }
 
-  DeleteTokenCallback callback = callback_iter->second;
+  DeleteTokenCallback callback = std::move(callback_iter->second);
   delete_token_callbacks_.erase(callback_iter);
-  callback.Run(result);
+  std::move(callback).Run(result);
 }
 
 void GCMDriverDesktop::WakeFromSuspendForHeartbeat(bool wake) {

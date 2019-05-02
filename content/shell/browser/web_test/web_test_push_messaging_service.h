@@ -30,11 +30,11 @@ class WebTestPushMessagingService : public PushMessagingService {
                              int render_frame_id,
                              const PushSubscriptionOptions& options,
                              bool user_gesture,
-                             const RegisterCallback& callback) override;
+                             RegisterCallback callback) override;
   void SubscribeFromWorker(const GURL& requesting_origin,
                            int64_t service_worker_registration_id,
                            const PushSubscriptionOptions& options,
-                           const RegisterCallback& callback) override;
+                           RegisterCallback callback) override;
   void GetSubscriptionInfo(const GURL& origin,
                            int64_t service_worker_registration_id,
                            const std::string& sender_id,
@@ -45,7 +45,7 @@ class WebTestPushMessagingService : public PushMessagingService {
                    const GURL& requesting_origin,
                    int64_t service_worker_registration_id,
                    const std::string& sender_id,
-                   const UnregisterCallback& callback) override;
+                   UnregisterCallback callback) override;
   void DidDeleteServiceWorkerRegistration(
       const GURL& origin,
       int64_t service_worker_registration_id) override;

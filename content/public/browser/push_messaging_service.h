@@ -35,12 +35,12 @@ struct PushSubscriptionOptions;
 class CONTENT_EXPORT PushMessagingService {
  public:
   using RegisterCallback =
-      base::Callback<void(const std::string& registration_id,
-                          const std::vector<uint8_t>& p256dh,
-                          const std::vector<uint8_t>& auth,
-                          mojom::PushRegistrationStatus status)>;
+      base::OnceCallback<void(const std::string& registration_id,
+                              const std::vector<uint8_t>& p256dh,
+                              const std::vector<uint8_t>& auth,
+                              mojom::PushRegistrationStatus status)>;
   using UnregisterCallback =
-      base::Callback<void(mojom::PushUnregistrationStatus)>;
+      base::OnceCallback<void(mojom::PushUnregistrationStatus)>;
   using SubscriptionInfoCallback =
       base::Callback<void(bool is_valid,
                           const std::vector<uint8_t>& p256dh,
@@ -67,7 +67,7 @@ class CONTENT_EXPORT PushMessagingService {
                                      int render_frame_id,
                                      const PushSubscriptionOptions& options,
                                      bool user_gesture,
-                                     const RegisterCallback& callback) = 0;
+                                     RegisterCallback callback) = 0;
 
   // Subscribe the given |options.sender_info| with the push messaging service.
   // The frame is not known so if permission was not previously granted by the
@@ -77,7 +77,7 @@ class CONTENT_EXPORT PushMessagingService {
   virtual void SubscribeFromWorker(const GURL& requesting_origin,
                                    int64_t service_worker_registration_id,
                                    const PushSubscriptionOptions& options,
-                                   const RegisterCallback& callback) = 0;
+                                   RegisterCallback callback) = 0;
 
   // Retrieves the subscription associated with |origin| and
   // |service_worker_registration_id|, validates that the provided
@@ -99,7 +99,7 @@ class CONTENT_EXPORT PushMessagingService {
                            const GURL& requesting_origin,
                            int64_t service_worker_registration_id,
                            const std::string& sender_id,
-                           const UnregisterCallback& callback) = 0;
+                           UnregisterCallback callback) = 0;
 
   // Returns whether subscriptions that do not mandate user visible UI upon
   // receiving a push message are supported. Influences permission request and
@@ -127,7 +127,7 @@ class CONTENT_EXPORT PushMessagingService {
   static void ClearPushSubscriptionId(BrowserContext* browser_context,
                                       const GURL& origin,
                                       int64_t service_worker_registration_id,
-                                      const base::Closure& callback);
+                                      base::OnceClosure callback);
 
   // Stores a push subscription in the service worker for the given |origin|.
   // Must only be used by tests.

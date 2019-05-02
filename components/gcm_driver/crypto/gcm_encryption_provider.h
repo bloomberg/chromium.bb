@@ -70,7 +70,7 @@ class GCMEncryptionProvider {
   // all InstanceID tokens, or "" for non-InstanceID GCM registrations.
   void RemoveEncryptionInfo(const std::string& app_id,
                             const std::string& authorized_entity,
-                            const base::Closure& callback);
+                            base::OnceClosure callback);
 
   // Determines whether |message| contains encrypted content.
   bool IsEncryptedMessage(const IncomingMessage& message) const;

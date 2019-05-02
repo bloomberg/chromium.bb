@@ -311,7 +311,7 @@ bool WebTestContentBrowserClient::CanIgnoreCertificateErrorIfNeeded() {
 void WebTestContentBrowserClient::ExposeInterfacesToFrame(
     service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>*
         registry) {
-  registry->AddInterface(base::Bind(&BindWebTestHelper));
+  registry->AddInterface(base::BindRepeating(&BindWebTestHelper));
 }
 
 std::unique_ptr<LoginDelegate> WebTestContentBrowserClient::CreateLoginDelegate(

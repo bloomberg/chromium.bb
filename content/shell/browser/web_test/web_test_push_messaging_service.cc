@@ -61,16 +61,16 @@ void WebTestPushMessagingService::SubscribeFromDocument(
     int render_frame_id,
     const PushSubscriptionOptions& options,
     bool user_gesture,
-    const RegisterCallback& callback) {
+    RegisterCallback callback) {
   SubscribeFromWorker(requesting_origin, service_worker_registration_id,
-                      options, callback);
+                      options, std::move(callback));
 }
 
 void WebTestPushMessagingService::SubscribeFromWorker(
     const GURL& requesting_origin,
     int64_t service_worker_registration_id,
     const PushSubscriptionOptions& options,
-    const RegisterCallback& callback) {
+    RegisterCallback callback) {
   blink::mojom::PermissionStatus permission_status =
       WebTestContentBrowserClient::Get()
           ->browser_context()
@@ -89,12 +89,14 @@ void WebTestPushMessagingService::SubscribeFromWorker(
                               kAuthentication + base::size(kAuthentication));
 
     subscribed_service_worker_registration_ = service_worker_registration_id;
-    callback.Run("layoutTestRegistrationId", p256dh, auth,
-                 mojom::PushRegistrationStatus::SUCCESS_FROM_PUSH_SERVICE);
+    std::move(callback).Run(
+        "layoutTestRegistrationId", p256dh, auth,
+        mojom::PushRegistrationStatus::SUCCESS_FROM_PUSH_SERVICE);
   } else {
-    callback.Run("registration_id", std::vector<uint8_t>() /* p256dh */,
-                 std::vector<uint8_t>() /* auth */,
-                 mojom::PushRegistrationStatus::PERMISSION_DENIED);
+    std::move(callback).Run("registration_id",
+                            std::vector<uint8_t>() /* p256dh */,
+                            std::vector<uint8_t>() /* auth */,
+                            mojom::PushRegistrationStatus::PERMISSION_DENIED);
   }
 }
 
@@ -121,12 +123,12 @@ void WebTestPushMessagingService::Unsubscribe(
     const GURL& requesting_origin,
     int64_t service_worker_registration_id,
     const std::string& sender_id,
-    const UnregisterCallback& callback) {
+    UnregisterCallback callback) {
   ClearPushSubscriptionId(
       WebTestContentBrowserClient::Get()->browser_context(), requesting_origin,
       service_worker_registration_id,
-      base::Bind(
-          callback,
+      base::BindOnce(
+          std::move(callback),
           service_worker_registration_id ==
                   subscribed_service_worker_registration_
               ? mojom::PushUnregistrationStatus::SUCCESS_UNREGISTERED

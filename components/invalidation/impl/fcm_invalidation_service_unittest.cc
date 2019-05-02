@@ -49,12 +49,19 @@ class MockInstanceID : public InstanceID {
 
   MOCK_METHOD1(GetID, void(const GetIDCallback& callback));
   MOCK_METHOD1(GetCreationTime, void(const GetCreationTimeCallback& callback));
-  MOCK_METHOD5(GetToken,
+  void GetToken(const std::string& authorized_entity,
+                const std::string& scope,
+                const std::map<std::string, std::string>& options,
+                bool is_lazy,
+                GetTokenCallback callback) override {
+    GetToken_(authorized_entity, scope, options, is_lazy, callback);
+  }
+  MOCK_METHOD5(GetToken_,
                void(const std::string& authorized_entity,
                     const std::string& scope,
                     const std::map<std::string, std::string>& options,
                     bool is_lazy,
-                    const GetTokenCallback& callback));
+                    GetTokenCallback& callback));
   MOCK_METHOD4(ValidateToken,
                void(const std::string& authorized_entity,
                     const std::string& scope,
@@ -62,11 +69,19 @@ class MockInstanceID : public InstanceID {
                     const ValidateTokenCallback& callback));
 
  protected:
-  MOCK_METHOD3(DeleteTokenImpl,
+  void DeleteTokenImpl(const std::string& authorized_entity,
+                       const std::string& scope,
+                       DeleteTokenCallback callback) override {
+    DeleteTokenImpl_(authorized_entity, scope, callback);
+  }
+  MOCK_METHOD3(DeleteTokenImpl_,
                void(const std::string& authorized_entity,
                     const std::string& scope,
-                    const DeleteTokenCallback& callback));
-  MOCK_METHOD1(DeleteIDImpl, void(const DeleteIDCallback& callback));
+                    DeleteTokenCallback& callback));
+  void DeleteIDImpl(DeleteIDCallback callback) override {
+    DeleteIDImpl_(callback);
+  }
+  MOCK_METHOD1(DeleteIDImpl_, void(DeleteIDCallback& callback));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockInstanceID);

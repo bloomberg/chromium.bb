@@ -54,11 +54,11 @@ class FakeGCMProfileService::CustomFakeGCMDriver
                 const std::string& authorized_entity,
                 const std::string& scope,
                 const std::map<std::string, std::string>& options,
-                const GetTokenCallback& callback) override;
+                GetTokenCallback callback) override;
   void DeleteToken(const std::string& app_id,
                    const std::string& authorized_entity,
                    const std::string& scope,
-                   const DeleteTokenCallback& callback) override;
+                   DeleteTokenCallback callback) override;
 
  private:
   void DoRegister(const std::string& app_id,
@@ -168,24 +168,24 @@ void FakeGCMProfileService::CustomFakeGCMDriver::GetToken(
     const std::string& authorized_entity,
     const std::string& scope,
     const std::map<std::string, std::string>& options,
-    const GetTokenCallback& callback) {
+    GetTokenCallback callback) {
   if (service_->is_offline_)
     return;  // Drop request.
 
-  instance_id::FakeGCMDriverForInstanceID::GetToken(app_id, authorized_entity,
-                                                    scope, options, callback);
+  instance_id::FakeGCMDriverForInstanceID::GetToken(
+      app_id, authorized_entity, scope, options, std::move(callback));
 }
 
 void FakeGCMProfileService::CustomFakeGCMDriver::DeleteToken(
     const std::string& app_id,
     const std::string& authorized_entity,
     const std::string& scope,
-    const DeleteTokenCallback& callback) {
+    DeleteTokenCallback callback) {
   if (service_->is_offline_)
     return;  // Drop request.
 
   instance_id::FakeGCMDriverForInstanceID::DeleteToken(
-      app_id, authorized_entity, scope, callback);
+      app_id, authorized_entity, scope, std::move(callback));
 }
 
 void FakeGCMProfileService::CustomFakeGCMDriver::OnDispatchMessage(

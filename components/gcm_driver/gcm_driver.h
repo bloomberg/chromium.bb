@@ -33,10 +33,11 @@ struct AccountMapping;
 // Provides the InstanceID support via GCMDriver.
 class InstanceIDHandler {
  public:
-  using GetTokenCallback =
-      base::Callback<void(const std::string& token, GCMClient::Result result)>;
+  using GetTokenCallback = base::OnceCallback<void(const std::string& token,
+                                                   GCMClient::Result result)>;
   using ValidateTokenCallback = base::Callback<void(bool is_valid)>;
-  using DeleteTokenCallback = base::Callback<void(GCMClient::Result result)>;
+  using DeleteTokenCallback =
+      base::OnceCallback<void(GCMClient::Result result)>;
   using GetInstanceIDDataCallback =
       base::Callback<void(const std::string& instance_id,
                           const std::string& extra_data)>;
@@ -49,7 +50,7 @@ class InstanceIDHandler {
                         const std::string& authorized_entity,
                         const std::string& scope,
                         const std::map<std::string, std::string>& options,
-                        const GetTokenCallback& callback) = 0;
+                        GetTokenCallback callback) = 0;
   virtual void ValidateToken(const std::string& app_id,
                              const std::string& authorized_entity,
                              const std::string& scope,
@@ -58,9 +59,9 @@ class InstanceIDHandler {
   virtual void DeleteToken(const std::string& app_id,
                            const std::string& authorized_entity,
                            const std::string& scope,
-                           const DeleteTokenCallback& callback) = 0;
+                           DeleteTokenCallback callback) = 0;
   void DeleteAllTokensForApp(const std::string& app_id,
-                             const DeleteTokenCallback& callback);
+                             DeleteTokenCallback callback);
 
   // Persistence support.
   virtual void AddInstanceIDData(const std::string& app_id,
@@ -83,10 +84,10 @@ class GCMDriver {
 
   using GCMAppHandlerMap = std::map<std::string, GCMAppHandler*>;
   using RegisterCallback =
-      base::Callback<void(const std::string& registration_id,
-                          GCMClient::Result result)>;
+      base::OnceCallback<void(const std::string& registration_id,
+                              GCMClient::Result result)>;
   using ValidateRegistrationCallback = base::Callback<void(bool is_valid)>;
-  using UnregisterCallback = base::Callback<void(GCMClient::Result result)>;
+  using UnregisterCallback = base::OnceCallback<void(GCMClient::Result result)>;
   using SendCallback = base::Callback<void(const std::string& message_id,
                                            GCMClient::Result result)>;
   using GetEncryptionInfoCallback =
@@ -116,7 +117,7 @@ class GCMDriver {
   // |callback|: to be called once the asynchronous operation is done.
   void Register(const std::string& app_id,
                 const std::vector<std::string>& sender_ids,
-                const RegisterCallback& callback);
+                RegisterCallback callback);
 
   // Checks that the provided |sender_ids| and |registration_id| matches the
   // stored registration info for |app_id|.
@@ -130,8 +131,7 @@ class GCMDriver {
   // remove any encryption keys associated with the |app_id|.
   // |app_id|: application ID.
   // |callback|: to be called once the asynchronous operation is done.
-  void Unregister(const std::string& app_id,
-                  const UnregisterCallback& callback);
+  void Unregister(const std::string& app_id, UnregisterCallback callback);
 
   // Unregisters an (app_id, sender_id) pair from using GCM. Only works on
   // Android. Will also remove any encryption keys associated with the |app_id|.
@@ -141,7 +141,7 @@ class GCMDriver {
   // |callback|: to be called once the asynchronous operation is done.
   void UnregisterWithSenderId(const std::string& app_id,
                               const std::string& sender_id,
-                              const UnregisterCallback& callback);
+                              UnregisterCallback callback);
 
   // Sends a message to a given receiver.
   // |app_id|: application ID.
@@ -317,7 +317,7 @@ class GCMDriver {
   // Common code shared by Unregister and UnregisterWithSenderId.
   void UnregisterInternal(const std::string& app_id,
                           const std::string* sender_id,
-                          const UnregisterCallback& callback);
+                          UnregisterCallback callback);
 
   // Dispatches the OnMessage event to the app handler associated with |app_id|
   // if |result| indicates that it is safe to do so, or will report a decryption
@@ -331,7 +331,7 @@ class GCMDriver {
   void RegisterAfterUnregister(
       const std::string& app_id,
       const std::vector<std::string>& normalized_sender_ids,
-      const UnregisterCallback& unregister_callback,
+      UnregisterCallback unregister_callback,
       GCMClient::Result result);
 
   // Callback map (from app_id to callback) for Register.

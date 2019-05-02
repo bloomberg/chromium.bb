@@ -57,12 +57,12 @@ class InstanceID {
   using GetCreationTimeCallback =
       base::Callback<void(const base::Time& creation_time)>;
   using GetTokenCallback =
-      base::Callback<void(const std::string& token, Result result)>;
+      base::OnceCallback<void(const std::string& token, Result result)>;
   using ValidateTokenCallback = base::Callback<void(bool is_valid)>;
   using GetEncryptionInfoCallback =
       base::Callback<void(const std::string&, const std::string&)>;
-  using DeleteTokenCallback = base::Callback<void(Result result)>;
-  using DeleteIDCallback = base::Callback<void(Result result)>;
+  using DeleteTokenCallback = base::OnceCallback<void(Result result)>;
+  using DeleteIDCallback = base::OnceCallback<void(Result result)>;
 
   static const int kInstanceIDByteLength = 8;
 
@@ -102,7 +102,7 @@ class InstanceID {
                         const std::string& scope,
                         const std::map<std::string, std::string>& options,
                         bool is_lazy,
-                        const GetTokenCallback& callback) = 0;
+                        GetTokenCallback callback) = 0;
 
   // Checks that the provided |token| matches the stored token for (|app_id()|,
   // |authorized_entity|, |scope|).
@@ -125,12 +125,12 @@ class InstanceID {
   // |callback|: to be called once the asynchronous operation is done.
   void DeleteToken(const std::string& authorized_entity,
                    const std::string& scope,
-                   const DeleteTokenCallback& callback);
+                   DeleteTokenCallback callback);
 
   // Resets the app instance identifier and revokes all tokens associated with
   // it.
   // |callback|: to be called once the asynchronous operation is done.
-  void DeleteID(const DeleteIDCallback& callback);
+  void DeleteID(DeleteIDCallback callback);
 
   std::string app_id() const { return app_id_; }
 
@@ -140,8 +140,8 @@ class InstanceID {
   // Platform-specific implementations.
   virtual void DeleteTokenImpl(const std::string& authorized_entity,
                                const std::string& scope,
-                               const DeleteTokenCallback& callback) = 0;
-  virtual void DeleteIDImpl(const DeleteIDCallback& callback) = 0;
+                               DeleteTokenCallback callback) = 0;
+  virtual void DeleteIDImpl(DeleteIDCallback callback) = 0;
 
   void NotifyTokenRefresh(bool update_id);
 
@@ -149,7 +149,7 @@ class InstanceID {
 
  private:
   void DidDelete(const std::string& authorized_entity,
-                 const base::Callback<void(Result result)>& callback,
+                 base::OnceCallback<void(Result result)> callback,
                  Result result);
 
   // Owned by GCMProfileServiceFactory, which is a dependency of

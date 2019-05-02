@@ -95,9 +95,9 @@ void GCMEncryptionProvider::DidGetEncryptionInfo(
 void GCMEncryptionProvider::RemoveEncryptionInfo(
     const std::string& app_id,
     const std::string& authorized_entity,
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   DCHECK(key_store_);
-  key_store_->RemoveKeys(app_id, authorized_entity, callback);
+  key_store_->RemoveKeys(app_id, authorized_entity, std::move(callback));
 }
 
 bool GCMEncryptionProvider::IsEncryptedMessage(const IncomingMessage& message)

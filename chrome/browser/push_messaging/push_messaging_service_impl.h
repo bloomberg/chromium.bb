@@ -88,11 +88,11 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
                              int render_frame_id,
                              const content::PushSubscriptionOptions& options,
                              bool user_gesture,
-                             const RegisterCallback& callback) override;
+                             RegisterCallback callback) override;
   void SubscribeFromWorker(const GURL& requesting_origin,
                            int64_t service_worker_registration_id,
                            const content::PushSubscriptionOptions& options,
-                           const RegisterCallback& callback) override;
+                           RegisterCallback callback) override;
   void GetSubscriptionInfo(const GURL& origin,
                            int64_t service_worker_registration_id,
                            const std::string& sender_id,
@@ -102,7 +102,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
                    const GURL& requesting_origin,
                    int64_t service_worker_registration_id,
                    const std::string& sender_id,
-                   const UnregisterCallback&) override;
+                   UnregisterCallback) override;
   bool SupportNonVisibleMessages() override;
   void DidDeleteServiceWorkerRegistration(
       const GURL& origin,
@@ -157,27 +157,27 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
 
   void DoSubscribe(const PushMessagingAppIdentifier& app_identifier,
                    const content::PushSubscriptionOptions& options,
-                   const RegisterCallback& callback,
+                   RegisterCallback callback,
                    ContentSetting permission_status);
 
-  void SubscribeEnd(const RegisterCallback& callback,
+  void SubscribeEnd(RegisterCallback callback,
                     const std::string& subscription_id,
                     const std::vector<uint8_t>& p256dh,
                     const std::vector<uint8_t>& auth,
                     content::mojom::PushRegistrationStatus status);
 
-  void SubscribeEndWithError(const RegisterCallback& callback,
+  void SubscribeEndWithError(RegisterCallback callback,
                              content::mojom::PushRegistrationStatus status);
 
   void DidSubscribe(const PushMessagingAppIdentifier& app_identifier,
                     const std::string& sender_id,
-                    const RegisterCallback& callback,
+                    RegisterCallback callback,
                     const std::string& subscription_id,
                     instance_id::InstanceID::Result result);
 
   void DidSubscribeWithEncryptionInfo(
       const PushMessagingAppIdentifier& app_identifier,
-      const RegisterCallback& callback,
+      RegisterCallback callback,
       const std::string& subscription_id,
       const std::string& p256dh,
       const std::string& auth_secret);
@@ -204,13 +204,13 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
                            int64_t service_worker_registration_id,
                            const std::string& app_id,
                            const std::string& sender_id,
-                           const UnregisterCallback& callback);
+                           UnregisterCallback callback);
 
   void DidClearPushSubscriptionId(
       content::mojom::PushUnregistrationReason reason,
       const std::string& app_id,
       const std::string& sender_id,
-      const UnregisterCallback& callback);
+      UnregisterCallback callback);
 
   void DidUnregister(bool was_subscribed, gcm::GCMClient::Result result);
   void DidDeleteID(const std::string& app_id,
@@ -223,7 +223,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
 
   void UnsubscribeBecausePermissionRevoked(
       const PushMessagingAppIdentifier& app_identifier,
-      const UnregisterCallback& callback,
+      UnregisterCallback callback,
       const std::string& sender_id,
       bool success,
       bool not_found);
