@@ -215,8 +215,8 @@ void AccountManagerUIHandler::HandleReauthenticateAccount(
     const base::ListValue* args) {
   AllowJavascript();
 
-  std::string account_email;
-  args->GetList()[0].GetAsString(&account_email);
+  CHECK(!args->GetList().empty());
+  const std::string& account_email = args->GetList()[0].GetString();
 
   InlineLoginHandlerDialogChromeOS::Show(account_email);
 }
@@ -225,8 +225,9 @@ void AccountManagerUIHandler::HandleRemoveAccount(const base::ListValue* args) {
   AllowJavascript();
 
   const base::DictionaryValue* dictionary = nullptr;
+  CHECK(!args->GetList().empty());
   args->GetList()[0].GetAsDictionary(&dictionary);
-  DCHECK(dictionary);
+  CHECK(dictionary);
 
   const AccountId device_account_id =
       ProfileHelper::Get()
