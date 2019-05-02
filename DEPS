@@ -94,9 +94,8 @@ recursedeps = [
 # TODO(mfoltz): Change to allow only base and third_party from the top level
 # once OSP code is moved into osp/.
 include_rules = [
-    '+api',
+    '+osp',
     '+osp_base',
-    '+msgs',
     '+platform',
     '+third_party',
 
