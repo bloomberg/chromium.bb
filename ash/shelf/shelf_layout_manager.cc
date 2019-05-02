@@ -641,12 +641,6 @@ void ShelfLayoutManager::OnAppListVisibilityChanged(bool shown,
   MaybeUpdateShelfBackground(AnimationChangeType::IMMEDIATE);
 }
 
-void ShelfLayoutManager::OnAppListToggled() {
-  // Reset the Shelf's drag status to deal with the edge case that toggling
-  // the AppList button while dragging the shelf in auto-hide mode.
-  gesture_drag_status_ = GestureDragStatus::GESTURE_DRAG_NONE;
-}
-
 void ShelfLayoutManager::OnHomeLauncherTargetPositionChanged(
     bool showing,
     int64_t display_id) {

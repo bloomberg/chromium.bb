@@ -14,9 +14,6 @@ class ASH_EXPORT AppListControllerObserver : public base::CheckedObserver {
  public:
   // Called when the AppList is shown or dismissed.
   virtual void OnAppListVisibilityChanged(bool shown, int64_t display_id) {}
-
-  // Called when the AppList button is toggled.
-  virtual void OnAppListToggled() {}
 };
 
 }  // namespace ash

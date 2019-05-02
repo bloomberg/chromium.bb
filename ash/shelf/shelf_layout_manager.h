@@ -141,7 +141,6 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
 
   // AppListControllerObserver:
   void OnAppListVisibilityChanged(bool shown, int64_t display_id) override;
-  void OnAppListToggled() override;
 
   // HomeLauncherGestureHandlerObserver:
   void OnHomeLauncherTargetPositionChanged(bool showing,
