@@ -447,14 +447,11 @@ class QueryParams {
   std::vector<std::string> GetParams(const std::string& name) {
     std::vector<std::string> results;
     for (const auto& param : params_) {
-      std::string unescaped_name;
-      net::UnescapeBinaryURLComponent(
-          param.first, net::UnescapeRule::REPLACE_PLUS_WITH_SPACE,
-          &unescaped_name);
+      std::string unescaped_name = net::UnescapeBinaryURLComponent(
+          param.first, net::UnescapeRule::REPLACE_PLUS_WITH_SPACE);
       if (unescaped_name == name) {
-        std::string value;
-        net::UnescapeBinaryURLComponent(
-            param.second, net::UnescapeRule::REPLACE_PLUS_WITH_SPACE, &value);
+        std::string value = net::UnescapeBinaryURLComponent(
+            param.second, net::UnescapeRule::REPLACE_PLUS_WITH_SPACE);
         results.push_back(value);
       }
     }

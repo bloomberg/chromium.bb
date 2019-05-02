@@ -46,9 +46,8 @@ GURL FileSystemURLToExternalFileURL(
 base::FilePath ExternalFileURLToVirtualPath(const GURL& url) {
   if (!url.is_valid() || url.scheme() != content::kExternalFileScheme)
     return base::FilePath();
-  std::string path_string;
-  net::UnescapeBinaryURLComponent(url.path(), &path_string);
-  return base::FilePath::FromUTF8Unsafe(path_string);
+  return base::FilePath::FromUTF8Unsafe(
+      net::UnescapeBinaryURLComponent(url.path_piece()));
 }
 
 GURL VirtualPathToExternalFileURL(const base::FilePath& virtual_path) {

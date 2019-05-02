@@ -487,48 +487,48 @@ base::string16 UnescapeAndDecodeUTF8URLComponentWithAdjustments(
   return base::UTF8ToUTF16WithAdjustments(text, adjustments);
 }
 
-void UnescapeBinaryURLComponent(const std::string& escaped_text,
-                                UnescapeRule::Type rules,
-                                std::string* unescaped_text) {
+std::string UnescapeBinaryURLComponent(base::StringPiece escaped_text,
+                                       UnescapeRule::Type rules) {
   // Only NORMAL and REPLACE_PLUS_WITH_SPACE are supported.
   DCHECK(rules != UnescapeRule::NONE);
   DCHECK(!(rules &
            ~(UnescapeRule::NORMAL | UnescapeRule::REPLACE_PLUS_WITH_SPACE)));
+
+  std::string unescaped_text;
 
   // The output of the unescaping is always smaller than the input, so we can
   // reserve the input size to make sure we have enough buffer and don't have
   // to allocate in the loop below.
   // Increase capacity before size, as just resizing can grow capacity
   // needlessly beyond our requested size.
-  if (unescaped_text->capacity() < escaped_text.size())
-    unescaped_text->reserve(escaped_text.size());
-  if (unescaped_text->size() < escaped_text.size())
-    unescaped_text->resize(escaped_text.size());
+  unescaped_text.reserve(escaped_text.size());
+  unescaped_text.resize(escaped_text.size());
 
   size_t output_index = 0;
 
-  for (size_t i = 0, max = unescaped_text->size(); i < max;) {
+  for (size_t i = 0, max = escaped_text.size(); i < max;) {
     unsigned char byte;
     // UnescapeUnsignedByteAtIndex does bounds checking, so this is always safe
     // to call.
     if (UnescapeUnsignedByteAtIndex(escaped_text, i, &byte)) {
-      (*unescaped_text)[output_index++] = byte;
+      unescaped_text[output_index++] = byte;
       i += 3;
       continue;
     }
 
     if ((rules & UnescapeRule::REPLACE_PLUS_WITH_SPACE) &&
         escaped_text[i] == '+') {
-      (*unescaped_text)[output_index++] = ' ';
+      unescaped_text[output_index++] = ' ';
       ++i;
       continue;
     }
 
-    (*unescaped_text)[output_index++] = escaped_text[i++];
+    unescaped_text[output_index++] = escaped_text[i++];
   }
 
-  DCHECK_LE(output_index, unescaped_text->size());
-  unescaped_text->resize(output_index);
+  DCHECK_LE(output_index, unescaped_text.size());
+  unescaped_text.resize(output_index);
+  return unescaped_text;
 }
 
 base::string16 UnescapeForHTML(base::StringPiece16 input) {

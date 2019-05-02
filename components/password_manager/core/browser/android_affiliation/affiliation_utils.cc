@@ -94,8 +94,7 @@ bool CanonicalizeHashComponent(const base::StringPiece& input_hash,
   // safe" base64 alphabet; plus the padding ('=').
   const char kBase64NonAlphanumericChars[] = "-_=";
 
-  std::string base64_encoded_hash;
-  net::UnescapeBinaryURLComponent(input_hash.as_string(), &base64_encoded_hash);
+  std::string base64_encoded_hash = net::UnescapeBinaryURLComponent(input_hash);
 
   if (!base64_encoded_hash.empty() &&
       CanonicalizeBase64Padding(&base64_encoded_hash) &&
@@ -118,9 +117,8 @@ bool CanonicalizePackageNameComponent(
   // Characters other than alphanumeric that are permitted in the package names.
   const char kPackageNameNonAlphanumericChars[] = "._";
 
-  std::string package_name;
-  net::UnescapeBinaryURLComponent(input_package_name.as_string(),
-                                  &package_name);
+  std::string package_name =
+      net::UnescapeBinaryURLComponent(input_package_name);
 
   // TODO(engedy): We might want to use a regex to check this more throughly.
   if (!package_name.empty() &&
