@@ -100,6 +100,11 @@
   pointer-events: none;
 }
 
+.arc-time-ruler-title {
+  display: flex;
+  margin-top: 10px;
+}
+
 .hidden.arc-events-band-title::before {
   content: '\002B';
 }
