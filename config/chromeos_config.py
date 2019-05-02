@@ -1063,17 +1063,27 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.toolchain,
       description='Full release build with next minor GCC toolchain revision',
       useflags=config_lib.append_useflags(['next_gcc']),
-      hw_tests=hw_test_list.ToolchainTestFull(constants.HWTEST_SUITES_POOL),
+      hw_tests=hw_test_list.ToolchainTestFull(
+          constants.HWTEST_QUOTA_POOL,
+          quota_account='toolchain'
+      ),
       hw_tests_override=hw_test_list.ToolchainTestFull(
-          constants.HWTEST_SUITES_POOL),
+          constants.HWTEST_QUOTA_POOL,
+          quota_account='toolchain'
+      ),
   )
   site_config.AddTemplate(
       'llvm_toolchain',
       site_config.templates.toolchain,
       description='Full release build with LLVM toolchain',
-      hw_tests=hw_test_list.ToolchainTestMedium(constants.HWTEST_SUITES_POOL),
+      hw_tests=hw_test_list.ToolchainTestMedium(
+          constants.HWTEST_QUOTA_POOL,
+          quota_account='toolchain'
+      ),
       hw_tests_override=hw_test_list.ToolchainTestMedium(
-          constants.HWTEST_SUITES_POOL),
+          constants.HWTEST_QUOTA_POOL,
+          quota_account='toolchain'
+      ),
   )
   site_config.AddTemplate(
       'llvm_next_toolchain',
@@ -1145,10 +1155,6 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
             site_config.templates.llvm_next_toolchain,
             *args,
             boards=[board],
-            hw_tests=hw_test_list.ToolchainTestMedium(
-                constants.HWTEST_MACH_POOL),
-            hw_tests_override=hw_test_list.ToolchainTestMedium(
-                constants.HWTEST_MACH_POOL),
             **kwargs
         )
     ])
@@ -3956,19 +3962,32 @@ def ApplyCustomOverrides(site_config):
       }
     elif board == 'guado_moblab':
       overwritten_configs[board+'-llvm-toolchain'] = {
+          'enable_skylab_hw_tests': False,
           'hw_tests': [
               config_lib.HWTestConfig(
                   constants.HWTEST_MOBLAB_QUICK_SUITE)
           ],
-          'hw_tests_override': None # If not set, *-tryjob won't be updated
+          'hw_tests_override': [
+              config_lib.HWTestConfig(
+                  constants.HWTEST_MOBLAB_QUICK_SUITE)
+          ],
       }
     else: # This is the case for gale, mistral and whirlwind
       overwritten_configs[board+'-llvm-toolchain'] = {
           'hw_tests': [
               config_lib.HWTestConfig(
-                  constants.HWTEST_JETSTREAM_COMMIT_SUITE)
+                  constants.HWTEST_JETSTREAM_COMMIT_SUITE,
+                  pool=constants.HWTEST_QUOTA_POOL,
+                  quota_account='toolchain'
+              )
           ],
-          'hw_tests_override': None
+          'hw_tests_override': [
+              config_lib.HWTestConfig(
+                  constants.HWTEST_JETSTREAM_COMMIT_SUITE,
+                  pool=constants.HWTEST_QUOTA_POOL,
+                  quota_account='toolchain'
+              )
+          ]
       }
 
     # Use the same configuration for llvm-next
