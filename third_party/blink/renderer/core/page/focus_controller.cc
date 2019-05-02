@@ -1158,6 +1158,11 @@ Element* FocusController::NextFocusableElementInForm(Element* element,
     if (form_element->formOwner() != form_owner ||
         form_element->IsDisabledOrReadOnly())
       continue;
+    // Focusless spatial navigation supports all form types.
+    if (RuntimeEnabledFeatures::FocuslessSpatialNavigationEnabled() &&
+        page_->GetSettings().GetSpatialNavigationEnabled()) {
+      return next_element;
+    }
     LayoutObject* layout = next_element->GetLayoutObject();
     if (layout && layout->IsTextControl()) {
       // TODO(ajith.v) Extend it for select elements, radio buttons and check
