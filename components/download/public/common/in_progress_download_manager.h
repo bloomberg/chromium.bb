@@ -24,11 +24,15 @@
 
 namespace net {
 class URLRequestContextGetter;
-}
+}  // namespace net
 
 namespace network {
 struct ResourceResponse;
-}
+}  // namespace network
+
+namespace service_manager {
+class Connector;
+}  // namespace service_manager
 
 namespace download {
 
@@ -77,6 +81,9 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
     // TODO(qinmin): remove this once network service is fully enabled.
     virtual net::URLRequestContextGetter* GetURLRequestContextGetter(
         const DownloadCreateInfo& download_create_info);
+
+    virtual std::unique_ptr<service_manager::Connector>
+    GetServiceConnector() = 0;
   };
 
   using IsOriginSecureCallback = base::RepeatingCallback<bool(const GURL&)>;

@@ -13,7 +13,11 @@
 
 namespace net {
 class URLRequestContextGetter;
-}
+}  // namespace net
+
+namespace service_manager {
+class Connector;
+}  // namespace service_manager
 
 namespace download {
 
@@ -32,7 +36,8 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadJobFactory {
       bool is_save_package_download,
       scoped_refptr<download::DownloadURLLoaderFactoryGetter>
           url_loader_factory_getter,
-      net::URLRequestContextGetter* url_request_context_getter);
+      net::URLRequestContextGetter* url_request_context_getter,
+      service_manager::Connector* connector);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadJobFactory);

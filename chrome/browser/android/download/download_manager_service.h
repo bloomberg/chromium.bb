@@ -239,6 +239,7 @@ class DownloadManagerService
 
   // download::InProgressDownloadManager::Delegate implementations.
   void OnDownloadsInitialized() override;
+  std::unique_ptr<service_manager::Connector> GetServiceConnector() override;
 
   typedef base::Callback<void(bool)> ResumeCallback;
   void set_resume_callback_for_testing(const ResumeCallback& resume_cb) {

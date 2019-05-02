@@ -81,6 +81,7 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "storage/browser/blob/blob_url_loader_factory.h"
 #include "storage/browser/blob/blob_url_request_job_factory.h"
 #include "url/origin.h"
@@ -670,6 +671,23 @@ net::URLRequestContextGetter* DownloadManagerImpl::GetURLRequestContextGetter(
       browser_context_, info.render_process_id, info.render_frame_id);
   return storage_partition ? storage_partition->GetURLRequestContext()
                            : nullptr;
+}
+
+std::unique_ptr<service_manager::Connector>
+DownloadManagerImpl::GetServiceConnector() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  service_manager::Connector* connector = GetServiceManagerConnector();
+  if (connector)
+    return connector->Clone();  // Clone for use on a different thread.
+  return nullptr;
+}
+
+service_manager::Connector* DownloadManagerImpl::GetServiceManagerConnector() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (auto* connection = ServiceManagerConnection::GetForProcess())
+    return connection->GetConnector();
+  return nullptr;
 }
 
 void DownloadManagerImpl::StartDownload(

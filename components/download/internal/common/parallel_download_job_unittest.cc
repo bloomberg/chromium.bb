@@ -69,6 +69,7 @@ class ParallelDownloadJobForTest : public ParallelDownloadJob {
                             std::move(request_handle),
                             create_info,
                             nullptr,
+                            nullptr,
                             nullptr),
         request_count_(request_count),
         min_slice_size_(min_slice_size),

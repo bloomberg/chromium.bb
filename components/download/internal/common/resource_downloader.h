@@ -12,8 +12,13 @@
 #include "components/download/public/common/url_download_handler.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/cert/cert_status_flags.h"
+#include "services/device/public/mojom/wake_lock.mojom.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+
+namespace service_manager {
+class Connector;
+}  // namespace service_manager
 
 namespace download {
 class DownloadURLLoaderFactoryGetter;
@@ -36,6 +41,7 @@ class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
       const GURL& tab_referrer_url,
       bool is_new_download,
       bool is_parallel_request,
+      std::unique_ptr<service_manager::Connector> connector,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
   // Create a ResourceDownloader from a navigation that turns to be a download.
@@ -56,6 +62,7 @@ class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
       scoped_refptr<download::DownloadURLLoaderFactoryGetter>
           url_loader_factory_getter,
       const URLSecurityPolicy& url_security_policy,
+      std::unique_ptr<service_manager::Connector> connector,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
   ResourceDownloader(
@@ -70,7 +77,8 @@ class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       scoped_refptr<download::DownloadURLLoaderFactoryGetter>
           url_loader_factory_getter,
-      const URLSecurityPolicy& url_security_policy);
+      const URLSecurityPolicy& url_security_policy,
+      std::unique_ptr<service_manager::Connector> connector);
   ~ResourceDownloader() override;
 
   // download::DownloadResponseHandler::Delegate
@@ -100,6 +108,9 @@ class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
 
   // Ask the |delegate_| to destroy this object.
   void Destroy();
+
+  // Requests the wake lock using |connector|.
+  void RequestWakeLock(service_manager::Connector* connector);
 
   base::WeakPtr<download::UrlDownloadHandler::Delegate> delegate_;
 
@@ -153,6 +164,11 @@ class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
 
   // Used to check if the URL is safe to request.
   URLSecurityPolicy url_security_policy_;
+
+  // Used to keep the system from sleeping while a download is ongoing. If the
+  // system enters power saving mode while a download is alive, it can cause
+  // download to be interrupted.
+  device::mojom::WakeLockPtr wake_lock_;
 
   base::WeakPtrFactory<ResourceDownloader> weak_ptr_factory_;
 
