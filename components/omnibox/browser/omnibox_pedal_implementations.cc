@@ -142,7 +142,7 @@ std::unordered_map<OmniboxPedalId, std::unique_ptr<OmniboxPedal>>
 GetPedalImplementations() {
   std::unordered_map<OmniboxPedalId, std::unique_ptr<OmniboxPedal>> pedals;
   const auto add = [&](OmniboxPedalId id, OmniboxPedal* pedal) {
-    pedals.insert({id, std::unique_ptr<OmniboxPedal>(pedal)});
+    pedals.insert(std::make_pair(id, std::unique_ptr<OmniboxPedal>(pedal)));
   };
   add(OmniboxPedalId::CLEAR_BROWSING_DATA, new OmniboxPedalClearBrowsingData());
   add(OmniboxPedalId::CHANGE_SEARCH_ENGINE,
