@@ -15,7 +15,6 @@ import sys
 import threading
 import time
 
-import utils
 from . import zip_package
 
 
@@ -354,9 +353,12 @@ def get_cacerts_bundle():
   with _ca_certs_lock:
     if _ca_certs is not None and os.path.exists(_ca_certs):
       return _ca_certs
+
+    # Late load certifi to help with import path hacking.
+    import certifi
     # Some rogue process clears /tmp and causes cacert.pem to disappear. Extract
     # to current directory instead. We use our own bundled copy of cacert.pem.
-    _ca_certs = zip_package.extract_resource(utils, 'cacert.pem', temp_dir='.')
+    _ca_certs = zip_package.extract_resource(certifi, 'cacert.pem', '.')
     return _ca_certs
 
 
