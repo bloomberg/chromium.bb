@@ -1262,7 +1262,7 @@ class Changelist(object):
   def GetUpstreamBranch(self):
     if self.upstream_branch is None:
       remote, upstream_branch = self.FetchUpstreamTuple(self.GetBranch())
-      if remote is not '.':
+      if remote != '.':
         upstream_branch = upstream_branch.replace('refs/heads/',
                                                   'refs/remotes/%s/' % remote)
         upstream_branch = upstream_branch.replace('refs/branch-heads/',
