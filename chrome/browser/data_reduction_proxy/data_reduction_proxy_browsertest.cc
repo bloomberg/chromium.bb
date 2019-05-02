@@ -911,8 +911,9 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
   EXPECT_THAT(GetBody(), kSecondaryResponse);
 }
 
-IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
-                       BadProxiesResetWhenDisabled) {
+IN_PROC_BROWSER_TEST_F(
+    DataReductionProxyFallbackBrowsertest,
+    DISABLE_ON_WIN_MAC_CHROMEOS(BadProxiesResetWhenDisabled)) {
   base::HistogramTester histogram_tester;
   SetHeader("bypass=100");
   ui_test_utils::NavigateToURL(
