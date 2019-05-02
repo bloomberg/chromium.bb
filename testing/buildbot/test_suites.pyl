@@ -4162,6 +4162,12 @@
     },
 
     'viz_chromeos_fyi_gtests': {
+       'viz_content_unittests': {
+        'args': [
+          '--enable-features=VizDisplayCompositor',
+        ],
+        'test': 'content_unittests',
+       },
        'viz_interactive_ui_tests': {
          'args': [
           '--enable-features=VizDisplayCompositor',
@@ -4181,15 +4187,6 @@
         },
         'test': 'browser_tests',
       },
-      'viz_content_unittests': {
-        'args': [
-          '--enable-features=VizDisplayCompositor',
-        ],
-        'test': 'content_unittests',
-      },
-    },
-
-    'viz_gtests': {
       'viz_content_browsertests': {
         'args': [
           '--enable-features=VizDisplayCompositor',
@@ -4199,9 +4196,6 @@
         },
         'test': 'content_browsertests',
       },
-    },
-
-    'viz_non_android_fyi_gtests': {
       'viz_content_unittests': {
         'args': [
           '--enable-features=VizDisplayCompositor',
@@ -4973,7 +4967,6 @@
       'linux_flavor_specific_chromium_gtests',
       'non_android_chromium_gtests',
       'viz_chromeos_gtests',
-      'viz_gtests',
     ],
 
     'linux_chromeos_with_non_network_service_gtests': [
@@ -4990,7 +4983,6 @@
       'non_android_chromium_gtests',
       'non_network_service_gtests',
       'viz_chromeos_gtests',
-      'viz_gtests',
     ],
 
     'linux_viz_gtests': [
@@ -5014,8 +5006,6 @@
       'network_service_gtests',
       'viz_chromeos_fyi_gtests',
       'viz_chromeos_gtests',
-      'viz_gtests',
-      'viz_non_android_fyi_gtests',
     ],
 
     'mojo_linux_gtests': [
