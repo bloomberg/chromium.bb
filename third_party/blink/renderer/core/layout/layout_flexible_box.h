@@ -123,8 +123,8 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
   Length FlexBasisForChild(const LayoutBox& child) const;
   LayoutUnit CrossAxisExtentForChild(const LayoutBox& child) const;
   LayoutUnit CrossAxisUnstretchedExtentForChild(const LayoutBox& child) const;
-  LayoutUnit ChildIntrinsicLogicalHeight(const LayoutBox& child) const;
-  LayoutUnit ChildIntrinsicLogicalWidth(const LayoutBox& child) const;
+  LayoutUnit ChildUnstretchedLogicalHeight(const LayoutBox& child) const;
+  LayoutUnit ChildUnstretchedLogicalWidth(const LayoutBox& child) const;
   LayoutUnit MainAxisExtentForChild(const LayoutBox& child) const;
   LayoutUnit MainAxisContentExtentForChildIncludingScrollbar(
       const LayoutBox& child) const;
