@@ -413,10 +413,11 @@ void SpellChecker::RemoveSpellingAndGrammarMarkers(const HTMLElement& element,
   GetFrame().GetDocument()->UpdateStyleAndLayoutTreeForNode(&element);
 
   for (Node& node : NodeTraversal::InclusiveDescendantsOf(element)) {
+    auto* text_node = DynamicTo<Text>(node);
     if ((elements_type == ElementsType::kAll || !HasEditableStyle(node)) &&
-        node.IsTextNode()) {
+        text_node) {
       GetFrame().GetDocument()->Markers().RemoveMarkersForNode(
-          ToText(node), DocumentMarker::MarkerTypes::Misspelling());
+          *text_node, DocumentMarker::MarkerTypes::Misspelling());
     }
   }
 }
@@ -566,13 +567,14 @@ bool SpellChecker::SelectionStartHasMarkerFor(
                                      .ComputeVisibleSelectionInDOMTree()
                                      .Start()
                                      .AnchorNode());
-  if (!node || !node->IsTextNode())
+  auto* text_node = DynamicTo<Text>(node);
+  if (!text_node)
     return false;
 
   unsigned start_offset = static_cast<unsigned>(from);
   unsigned end_offset = static_cast<unsigned>(from + length);
   DocumentMarkerVector markers =
-      GetFrame().GetDocument()->Markers().MarkersFor(ToText(*node));
+      GetFrame().GetDocument()->Markers().MarkersFor(*text_node);
   for (wtf_size_t i = 0; i < markers.size(); ++i) {
     DocumentMarker* marker = markers[i];
     if (marker->StartOffset() <= start_offset &&

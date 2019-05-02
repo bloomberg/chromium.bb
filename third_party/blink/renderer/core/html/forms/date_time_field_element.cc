@@ -207,7 +207,7 @@ bool DateTimeFieldElement::SupportsFocus() const {
 }
 
 void DateTimeFieldElement::UpdateVisibleValue(EventBehavior event_behavior) {
-  Text* const text_node = ToText(firstChild());
+  auto* const text_node = To<Text>(firstChild());
   const String new_visible_value = VisibleValue();
   DCHECK_GT(new_visible_value.length(), 0u);
 

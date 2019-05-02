@@ -787,11 +787,13 @@ void HTMLElement::setOuterText(const String& text,
   parent->ReplaceChild(new_child, this, exception_state);
 
   Node* node = next ? next->previousSibling() : nullptr;
-  if (!exception_state.HadException() && node && node->IsTextNode())
-    MergeWithNextTextNode(ToText(node), exception_state);
+  auto* next_text_node = DynamicTo<Text>(node);
+  if (!exception_state.HadException() && next_text_node)
+    MergeWithNextTextNode(next_text_node, exception_state);
 
+  auto* prev_text_node = DynamicTo<Text>(prev);
   if (!exception_state.HadException() && prev && prev->IsTextNode())
-    MergeWithNextTextNode(ToText(prev), exception_state);
+    MergeWithNextTextNode(prev_text_node, exception_state);
 }
 
 void HTMLElement::ApplyAlignmentAttributeToStyle(

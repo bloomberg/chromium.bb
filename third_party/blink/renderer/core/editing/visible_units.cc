@@ -995,11 +995,10 @@ static UChar32 CharacterAfterAlgorithm(
       MostForwardCaretPosition(visible_position.DeepEquivalent());
   if (!pos.IsOffsetInAnchor())
     return 0;
-  Node* container_node = pos.ComputeContainerNode();
-  if (!container_node || !container_node->IsTextNode())
+  auto* text_node = DynamicTo<Text>(pos.ComputeContainerNode());
+  if (!text_node)
     return 0;
   unsigned offset = static_cast<unsigned>(pos.OffsetInContainerNode());
-  Text* text_node = ToText(container_node);
   unsigned length = text_node->length();
   if (offset >= length)
     return 0;

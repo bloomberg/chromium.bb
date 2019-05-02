@@ -179,10 +179,10 @@ PositionWithAffinityTemplate<Strategy> StartPositionForLine(
     return PositionWithAffinityTemplate<Strategy>();
 
   const Node* const start_node = start_box->GetLineLayoutItem().NonPseudoNode();
-  DCHECK(start_node);
+  auto* text_start_node = DynamicTo<Text>(start_node);
   return PositionWithAffinityTemplate<Strategy>(
-      start_node->IsTextNode()
-          ? PositionTemplate<Strategy>(ToText(start_node),
+      text_start_node
+          ? PositionTemplate<Strategy>(text_start_node,
                                        ToInlineTextBox(start_box)->Start())
           : PositionTemplate<Strategy>::BeforeNode(*start_node));
 }
@@ -456,13 +456,15 @@ static PositionWithAffinityTemplate<Strategy> EndPositionForLine(
         PositionTemplate<Strategy>::BeforeNode(*end_node),
         TextAffinity::kUpstreamIfPossible);
   }
-  if (end_box->IsInlineTextBox() && end_node->IsTextNode()) {
+
+  auto* end_text_node = DynamicTo<Text>(end_node);
+  if (end_box->IsInlineTextBox() && end_text_node) {
     const InlineTextBox* end_text_box = ToInlineTextBox(end_box);
     int end_offset = end_text_box->Start();
     if (!end_text_box->IsLineBreak())
       end_offset += end_text_box->Len();
     return PositionWithAffinityTemplate<Strategy>(
-        PositionTemplate<Strategy>(ToText(end_node), end_offset),
+        PositionTemplate<Strategy>(end_text_node, end_offset),
         TextAffinity::kUpstreamIfPossible);
   }
   return PositionWithAffinityTemplate<Strategy>(

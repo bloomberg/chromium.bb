@@ -192,8 +192,9 @@ bool HTMLObjectElement::HasFallbackContent() const {
   for (Node* child = firstChild(); child; child = child->nextSibling()) {
     // Ignore whitespace-only text, and <param> tags, any other content is
     // fallback content.
-    if (child->IsTextNode()) {
-      if (!ToText(child)->ContainsOnlyWhitespaceOrEmpty())
+    auto* child_text_node = DynamicTo<Text>(child);
+    if (child_text_node) {
+      if (!child_text_node->ContainsOnlyWhitespaceOrEmpty())
         return true;
     } else if (!IsHTMLParamElement(*child)) {
       return true;

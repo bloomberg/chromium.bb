@@ -56,11 +56,11 @@ TextOffset ToTextOffset(const PositionTemplate<Strategy>& position) {
   if (position.IsNull())
     return TextOffset();
 
-  if (!position.ComputeContainerNode()->IsTextNode())
+  auto* text_node = DynamicTo<Text>(position.ComputeContainerNode());
+  if (!text_node)
     return TextOffset();
 
-  return TextOffset(ToText(position.ComputeContainerNode()),
-                    position.OffsetInContainerNode());
+  return TextOffset(text_node, position.OffsetInContainerNode());
 }
 
 template <typename EditingStrategy>
@@ -496,7 +496,7 @@ void StyledMarkupTraverser<Strategy>::AppendStartMarkup(Node& node) {
     return;
   switch (node.getNodeType()) {
     case Node::kTextNode: {
-      Text& text = ToText(node);
+      auto& text = To<Text>(node);
       if (text.parentElement() && IsHTMLTextAreaElement(text.parentElement())) {
         accumulator_->AppendText(text);
         break;

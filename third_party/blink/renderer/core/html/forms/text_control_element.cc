@@ -366,11 +366,10 @@ static Position PositionForIndex(HTMLElement* inner_editor, unsigned index) {
       continue;
     }
 
-    if (node.IsTextNode()) {
-      Text& text = ToText(node);
-      if (remaining_characters_to_move_forward < text.length())
-        return Position(&text, remaining_characters_to_move_forward);
-      remaining_characters_to_move_forward -= text.length();
+    if (auto* text = DynamicTo<Text>(node)) {
+      if (remaining_characters_to_move_forward < text->length())
+        return Position(text, remaining_characters_to_move_forward);
+      remaining_characters_to_move_forward -= text->length();
       last_br_or_text = &node;
       continue;
     }
@@ -401,8 +400,8 @@ unsigned TextControlElement::IndexForPosition(HTMLElement* inner_editor,
 
   for (Node* node = start_node; node;
        node = NodeTraversal::Previous(*node, inner_editor)) {
-    if (node->IsTextNode()) {
-      int length = ToText(*node).length();
+    if (auto* text_node = DynamicTo<Text>(node)) {
+      int length = text_node->length();
       if (node == passed_position.ComputeContainerNode())
         index += std::min(length, passed_position.OffsetInContainerNode());
       else
@@ -795,11 +794,11 @@ void TextControlElement::AddPlaceholderBreakElementIfNecessary() {
   if (inner_editor->GetLayoutObject() &&
       !inner_editor->GetLayoutObject()->Style()->PreserveNewline())
     return;
-  Node* last_child = inner_editor->lastChild();
-  if (!last_child || !last_child->IsTextNode())
+  auto* last_child_text_node = DynamicTo<Text>(inner_editor->lastChild());
+  if (!last_child_text_node)
     return;
-  if (ToText(last_child)->data().EndsWith('\n') ||
-      ToText(last_child)->data().EndsWith('\r'))
+  if (last_child_text_node->data().EndsWith('\n') ||
+      last_child_text_node->data().EndsWith('\r'))
     inner_editor->AppendChild(CreatePlaceholderBreakElement());
 }
 
@@ -846,12 +845,11 @@ String TextControlElement::InnerEditorValue() const {
   if (!inner_editor->HasChildren())
     return g_empty_string;
   Node& first_child = *inner_editor->firstChild();
-  if (first_child.IsTextNode()) {
+  if (auto* first_child_text_node = DynamicTo<Text>(first_child)) {
     Node* second_child = first_child.nextSibling();
-    if (!second_child)
-      return ToText(first_child).data();
-    if (!second_child->nextSibling() && IsHTMLBRElement(*second_child))
-      return ToText(first_child).data();
+    if (!second_child ||
+        (!second_child->nextSibling() && IsHTMLBRElement(*second_child)))
+      return first_child_text_node->data();
   } else if (!first_child.nextSibling() && IsHTMLBRElement(first_child)) {
     return g_empty_string;
   }
@@ -862,8 +860,8 @@ String TextControlElement::InnerEditorValue() const {
       DCHECK_EQ(&node, inner_editor->lastChild());
       if (&node != inner_editor->lastChild())
         result.Append(kNewlineCharacter);
-    } else if (node.IsTextNode()) {
-      result.Append(ToText(node).data());
+    } else if (auto* text_node = DynamicTo<Text>(node)) {
+      result.Append(text_node->data());
     }
   }
   return result.ToString();
@@ -913,8 +911,8 @@ String TextControlElement::ValueWithHardLineBreaks() const {
       DCHECK_EQ(&node, inner_text->lastChild());
       if (&node != inner_text->lastChild())
         result.Append(kNewlineCharacter);
-    } else if (node.IsTextNode()) {
-      String data = ToText(node).data();
+    } else if (auto* text_node = DynamicTo<Text>(node)) {
+      String data = text_node->data();
       unsigned length = data.length();
       unsigned position = 0;
       while (break_node == node && break_offset <= length) {

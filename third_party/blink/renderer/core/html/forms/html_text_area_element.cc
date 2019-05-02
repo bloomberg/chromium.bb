@@ -460,8 +460,8 @@ String HTMLTextAreaElement::defaultValue() const {
 
   // Since there may be comments, ignore nodes other than text nodes.
   for (Node* n = firstChild(); n; n = n->nextSibling()) {
-    if (n->IsTextNode())
-      value.Append(ToText(n)->data());
+    if (auto* text_node = DynamicTo<Text>(n))
+      value.Append(text_node->data());
   }
 
   return value.ToString();

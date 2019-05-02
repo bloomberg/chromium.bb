@@ -84,7 +84,7 @@ TEST_F(TextSuggestionControllerTest, ApplyTextSuggestion) {
       "word1 word2 word3 word4"
       "</div>");
   Element* div = GetDocument().QuerySelector("div");
-  Text* text = ToText(div->firstChild());
+  auto* text = To<Text>(div->firstChild());
 
   // Add marker on "word1". This marker should *not* be cleared by the
   // replace operation.
@@ -195,7 +195,7 @@ TEST_F(TextSuggestionControllerTest,
       "mispelled"
       "</div>");
   Element* div = GetDocument().QuerySelector("div");
-  Text* text = ToText(div->firstChild());
+  auto* text = To<Text>(div->firstChild());
 
   // Add marker on "mispelled". This marker should be cleared by the replace
   // operation.
@@ -472,7 +472,7 @@ TEST_F(TextSuggestionControllerTest, SuggestionMarkerWithEmptySuggestion) {
       "hello"
       "</div>");
   Element* div = GetDocument().QuerySelector("div");
-  Text* text = ToText(div->firstChild());
+  auto* text = To<Text>(div->firstChild());
 
   // Set suggestion marker with empty suggestion list.
   GetDocument().Markers().AddSuggestionMarker(
@@ -521,7 +521,7 @@ TEST_F(TextSuggestionControllerTest, SuggestionMarkerWithSuggestion) {
       "hello"
       "</div>");
   Element* div = GetDocument().QuerySelector("div");
-  Text* text = ToText(div->firstChild());
+  auto* text = To<Text>(div->firstChild());
 
   // Set suggestion marker with two suggestions.
   GetDocument().Markers().AddSuggestionMarker(

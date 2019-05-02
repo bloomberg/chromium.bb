@@ -379,12 +379,13 @@ EphemeralRangeInFlatTree TextOffsetMapping::InlineContents::GetRange() const {
   }
   const Node& first_node = *first_->NonPseudoNode();
   const Node& last_node = *last_->NonPseudoNode();
+  auto* first_text_node = DynamicTo<Text>(first_node);
+  auto* last_text_node = DynamicTo<Text>(last_node);
   return EphemeralRangeInFlatTree(
-      first_node.IsTextNode() ? PositionInFlatTree(first_node, 0)
-                              : PositionInFlatTree::BeforeNode(first_node),
-      last_node.IsTextNode()
-          ? PositionInFlatTree(last_node, ToText(last_node).length())
-          : PositionInFlatTree::AfterNode(last_node));
+      first_text_node ? PositionInFlatTree(first_node, 0)
+                      : PositionInFlatTree::BeforeNode(first_node),
+      last_text_node ? PositionInFlatTree(last_node, last_text_node->length())
+                     : PositionInFlatTree::AfterNode(last_node));
 }
 
 PositionInFlatTree
