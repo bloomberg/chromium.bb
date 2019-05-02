@@ -411,6 +411,7 @@ test("aura_unittests") {
     "window_occlusion_change_builder_unittest.cc",
     "window_occlusion_tracker_unittest.cc",
     "window_targeter_unittest.cc",
+    "window_tree_host_platform_unittest.cc",
     "window_tree_host_unittest.cc",
     "window_unittest.cc",
   ]

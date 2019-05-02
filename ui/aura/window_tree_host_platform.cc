@@ -199,8 +199,14 @@ void WindowTreeHostPlatform::OnCursorVisibilityChangedNative(bool show) {
 }
 
 void WindowTreeHostPlatform::OnBoundsChanged(const gfx::Rect& new_bounds) {
-  for (WindowTreeHostObserver& observer : observers())
-    observer.OnHostWillProcessBoundsChange(this);
+  // It's possible this function may be called recursively. Only notify
+  // observers on initial entry. This way observers can safely assume that
+  // OnHostDidProcessBoundsChange() is called when all bounds changes have
+  // completed.
+  if (++on_bounds_changed_recursion_depth_ == 1) {
+    for (WindowTreeHostObserver& observer : observers())
+      observer.OnHostWillProcessBoundsChange(this);
+  }
   float current_scale = compositor()->device_scale_factor();
   float new_scale = ui::GetScaleFactorForNativeView(window());
   gfx::Rect old_bounds = bounds_in_pixels_;
@@ -218,8 +224,11 @@ void WindowTreeHostPlatform::OnBoundsChanged(const gfx::Rect& new_bounds) {
     OnHostResizedInPixels(bounds_in_pixels_.size(),
                           local_surface_id_allocation);
   }
-  for (WindowTreeHostObserver& observer : observers())
-    observer.OnHostDidProcessBoundsChange(this);
+  DCHECK_GT(on_bounds_changed_recursion_depth_, 0);
+  if (--on_bounds_changed_recursion_depth_ == 0) {
+    for (WindowTreeHostObserver& observer : observers())
+      observer.OnHostDidProcessBoundsChange(this);
+  }
 }
 
 void WindowTreeHostPlatform::OnDamageRect(const gfx::Rect& damage_rect) {

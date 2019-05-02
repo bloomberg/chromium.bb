@@ -106,6 +106,11 @@ class AURA_EXPORT WindowTreeHostPlatform : public WindowTreeHost,
   viz::LocalSurfaceIdAllocation pending_local_surface_id_allocation_;
   gfx::Size pending_size_;
 
+  // Tracks how nested OnBoundsChanged() is. That is, on entering
+  // OnBoundsChanged() this is incremented and on leaving OnBoundsChanged() this
+  // is decremented.
+  int on_bounds_changed_recursion_depth_ = 0;
+
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHostPlatform);
 };
 
