@@ -12,7 +12,6 @@
 #include "components/download/public/common/download_utils.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace download {
 
@@ -32,7 +31,6 @@ class DefaultUrlDownloadHandlerFactory : public UrlDownloadHandlerFactory {
           url_loader_factory_getter,
       const URLSecurityPolicy& url_security_policy,
       scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
-      std::unique_ptr<service_manager::Connector> connector,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) override {
     std::unique_ptr<network::ResourceRequest> request =
         CreateResourceRequest(params.get());
@@ -40,7 +38,7 @@ class DefaultUrlDownloadHandlerFactory : public UrlDownloadHandlerFactory {
         download::ResourceDownloader::BeginDownload(
             delegate, std::move(params), std::move(request),
             std::move(url_loader_factory_getter), url_security_policy, GURL(),
-            GURL(), GURL(), true, true, std::move(connector), task_runner)
+            GURL(), GURL(), true, true, task_runner)
             .release(),
         base::OnTaskRunnerDeleter(base::ThreadTaskRunnerHandle::Get()));
   }
@@ -68,7 +66,6 @@ UrlDownloadHandlerFactory::Create(
         url_loader_factory_getter,
     const URLSecurityPolicy& url_security_policy,
     scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
-    std::unique_ptr<service_manager::Connector> connector,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
   base::AutoLock auto_lock(GetURLDownloadHandlerFactoryLock());
   if (!g_url_download_handler_factory)
@@ -76,7 +73,7 @@ UrlDownloadHandlerFactory::Create(
   return g_url_download_handler_factory->CreateUrlDownloadHandler(
       std::move(params), delegate, std::move(url_loader_factory_getter),
       std::move(url_security_policy), std::move(url_request_context_getter),
-      std::move(connector), task_runner);
+      task_runner);
 }
 
 // static

@@ -35,7 +35,6 @@ class UrlDownloaderFactory : public download::UrlDownloadHandlerFactory {
           shared_url_loader_factory,
       const download::URLSecurityPolicy& url_security_policy,
       scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
-      std::unique_ptr<service_manager::Connector> connector,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) override;
 };
 

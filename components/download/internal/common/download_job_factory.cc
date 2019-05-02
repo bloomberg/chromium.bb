@@ -98,8 +98,7 @@ std::unique_ptr<DownloadJob> DownloadJobFactory::CreateJob(
     bool is_save_package_download,
     scoped_refptr<download::DownloadURLLoaderFactoryGetter>
         url_loader_factory_getter,
-    net::URLRequestContextGetter* url_request_context_getter,
-    service_manager::Connector* connector) {
+    net::URLRequestContextGetter* url_request_context_getter) {
   if (is_save_package_download) {
     return std::make_unique<SavePackageDownloadJob>(download_item,
                                                     std::move(req_handle));
@@ -110,8 +109,7 @@ std::unique_ptr<DownloadJob> DownloadJobFactory::CreateJob(
   if (IsParallelDownloadEnabled() && is_parallelizable) {
     return std::make_unique<ParallelDownloadJob>(
         download_item, std::move(req_handle), create_info,
-        std::move(url_loader_factory_getter), url_request_context_getter,
-        connector);
+        std::move(url_loader_factory_getter), url_request_context_getter);
   }
 
   // An ordinary download job.

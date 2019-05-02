@@ -15,10 +15,6 @@
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_url_parameters.h"
 
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
-
 namespace download {
 struct DownloadEntry;
 class DownloadItemImpl;
@@ -116,9 +112,6 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImplDelegate {
 
   // Report extra bytes wasted during resumption.
   virtual void ReportBytesWasted(DownloadItemImpl* download);
-
-  // Gets the ServiceManager connector that can be used on UI thread.
-  virtual service_manager::Connector* GetServiceManagerConnector();
 
  private:
   // For "Outlives attached DownloadItemImpl" invariant assertion.
