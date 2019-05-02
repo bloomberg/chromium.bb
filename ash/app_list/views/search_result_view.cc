@@ -520,8 +520,9 @@ void SearchResultView::OnGetContextMenu(
     return;
 
   context_menu_ = std::make_unique<AppListMenuModelAdapter>(
-      std::string(), this, source_type, this,
-      AppListMenuModelAdapter::SEARCH_RESULT, base::OnceClosure());
+      std::string(), GetWidget(), source_type, this,
+      AppListMenuModelAdapter::SEARCH_RESULT, base::OnceClosure(),
+      view_delegate_->GetSearchModel()->tablet_mode());
   context_menu_->Build(std::move(menu));
   context_menu_->Run(gfx::Rect(point, gfx::Size()),
                      views::MenuAnchorPosition::kTopLeft,

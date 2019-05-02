@@ -479,10 +479,11 @@ void AppListItemView::OnContextMenuModelReceived(
   views::View::ConvertRectToScreen(apps_grid_view_, &anchor_rect);
 
   context_menu_ = std::make_unique<AppListMenuModelAdapter>(
-      item_weak_->GetMetadata()->id, this, source_type, this,
+      item_weak_->GetMetadata()->id, GetWidget(), source_type, this,
       AppListMenuModelAdapter::FULLSCREEN_APP_GRID,
       base::BindOnce(&AppListItemView::OnMenuClosed,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr()),
+      apps_grid_view_->IsTabletMode());
   context_menu_->Build(std::move(menu));
   context_menu_->Run(anchor_rect, views::MenuAnchorPosition::kBubbleRight,
                      run_types);

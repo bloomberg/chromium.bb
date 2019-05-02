@@ -841,6 +841,13 @@ void AppListControllerImpl::OpenSearchResult(
 
     UMA_HISTOGRAM_COUNTS_100(app_list::kSearchQueryLength,
                              last_raw_query_.size());
+    if (IsTabletMode()) {
+      UMA_HISTOGRAM_COUNTS_100(app_list::kSearchQueryLengthInTablet,
+                               last_raw_query_.size());
+    } else {
+      UMA_HISTOGRAM_COUNTS_100(app_list::kSearchQueryLengthInClamshell,
+                               last_raw_query_.size());
+    }
 
     if (result->distance_from_origin() >= 0) {
       UMA_HISTOGRAM_COUNTS_100(app_list::kSearchResultDistanceFromOrigin,
@@ -859,7 +866,7 @@ void AppListControllerImpl::OpenSearchResult(
            "search results (ie. search results in the search result page) not "
            "chips.";
     app_list::RecordSearchResultOpenTypeHistogram(
-        app_list::ASSISTANT_OMNIBOX_RESULT);
+        app_list::ASSISTANT_OMNIBOX_RESULT, IsTabletMode());
     Shell::Get()->assistant_controller()->ui_controller()->ShowUi(
         AssistantEntryPoint::kLauncherSearchResult);
     Shell::Get()->assistant_controller()->OpenUrl(

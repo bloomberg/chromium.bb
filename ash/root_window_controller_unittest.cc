@@ -695,24 +695,20 @@ TEST_F(RootWindowControllerTest, ContextMenuDisappearsInTabletMode) {
   ui::test::EventGenerator generator(controller->GetRootWindow());
   generator.PressRightButton();
   generator.ReleaseRightButton();
-  EXPECT_TRUE(controller->menu_model_);
-  EXPECT_TRUE(controller->menu_runner_);
+  EXPECT_TRUE(controller->root_window_menu_model_adapter_);
 
   // Verify menu closes on entering tablet mode.
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
-  EXPECT_FALSE(controller->menu_model_);
-  EXPECT_FALSE(controller->menu_runner_);
+  EXPECT_FALSE(controller->root_window_menu_model_adapter_);
 
   // Open context menu.
   generator.PressRightButton();
   generator.ReleaseRightButton();
-  EXPECT_TRUE(controller->menu_model_);
-  EXPECT_TRUE(controller->menu_runner_);
+  EXPECT_TRUE(controller->root_window_menu_model_adapter_);
 
   // Verify menu closes on exiting tablet mode.
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
-  EXPECT_FALSE(controller->menu_model_);
-  EXPECT_FALSE(controller->menu_runner_);
+  EXPECT_FALSE(controller->root_window_menu_model_adapter_);
 }
 
 class VirtualKeyboardRootWindowControllerTest

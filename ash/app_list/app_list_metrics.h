@@ -88,6 +88,16 @@ constexpr char kSearchResultOpenDisplayTypeHistogram[] =
 // opened.
 constexpr char kSearchQueryLength[] = "Apps.AppListSearchQueryLength";
 
+// The UMA histogram that logs how long the search query was when a result was
+// opened in clamshell mode.
+constexpr char kSearchQueryLengthInClamshell[] =
+    "Apps.AppListSearchQueryLength.ClamshellMode";
+
+// The UMA histogram that logs how long the search query was when a result was
+// opened in tablet mode.
+constexpr char kSearchQueryLengthInTablet[] =
+    "Apps.AppListSearchQueryLength.TabletMode";
+
 // The UMA histogram that logs the Manhattan distance from the origin of the
 // search results to the selected result.
 constexpr char kSearchResultDistanceFromOrigin[] =

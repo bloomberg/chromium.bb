@@ -132,7 +132,8 @@ void AppListClientImpl::OpenSearchResult(
 
   if (launched_from ==
       ash::mojom::AppListLaunchedFrom::kLaunchedFromSearchBox) {
-    RecordSearchResultOpenTypeHistogram(result->GetSearchResultType());
+    RecordSearchResultOpenTypeHistogram(result->GetSearchResultType(),
+                                        IsTabletMode());
   }
 }
 

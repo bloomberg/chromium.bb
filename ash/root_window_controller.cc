@@ -12,6 +12,7 @@
 #include "ash/accessibility/accessibility_panel_layout_manager.h"
 #include "ash/accessibility/touch_exploration_controller.h"
 #include "ash/accessibility/touch_exploration_manager.h"
+#include "ash/app_menu/app_menu_model_adapter.h"
 #include "ash/focus_cycler.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/host/ash_window_tree_host.h"
@@ -53,6 +54,7 @@
 #include "ash/wm/switchable_windows.h"
 #include "ash/wm/system_modal_container_layout_manager.h"
 #include "ash/wm/system_wallpaper_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -362,6 +364,50 @@ class RootWindowTargeter : public aura::WindowTargeter {
   DISALLOW_COPY_AND_ASSIGN(RootWindowTargeter);
 };
 
+class RootWindowMenuModelAdapter : public AppMenuModelAdapter {
+ public:
+  RootWindowMenuModelAdapter(std::unique_ptr<ui::SimpleMenuModel> model,
+                             views::Widget* widget_owner,
+                             ui::MenuSourceType source_type,
+                             base::OnceClosure on_menu_closed_callback,
+                             bool is_tablet_mode)
+      : AppMenuModelAdapter(std::string(),
+                            std::move(model),
+                            widget_owner,
+                            source_type,
+                            std::move(on_menu_closed_callback),
+                            is_tablet_mode) {}
+
+  ~RootWindowMenuModelAdapter() override = default;
+
+ private:
+  // AppMenuModelAdapter overrides:
+  void RecordHistogramOnMenuClosed() override {
+    const base::TimeDelta user_journey_time =
+        base::TimeTicks::Now() - menu_open_time();
+
+    UMA_HISTOGRAM_TIMES("Apps.ContextMenuUserJourneyTime.Desktop",
+                        user_journey_time);
+    UMA_HISTOGRAM_ENUMERATION("Apps.ContextMenuShowSource.Desktop",
+                              source_type(), ui::MENU_SOURCE_TYPE_LAST);
+    if (is_tablet_mode()) {
+      UMA_HISTOGRAM_TIMES("Apps.ContextMenuUserJourneyTime.Desktop.TabletMode",
+                          user_journey_time);
+      UMA_HISTOGRAM_ENUMERATION("Apps.ContextMenuShowSource.Desktop.TabletMode",
+                                source_type(), ui::MENU_SOURCE_TYPE_LAST);
+    } else {
+      UMA_HISTOGRAM_TIMES(
+          "Apps.ContextMenuUserJourneyTime.Desktop.ClamshellMode",
+          user_journey_time);
+      UMA_HISTOGRAM_ENUMERATION(
+          "Apps.ContextMenuShowSource.Desktop.ClamshellMode", source_type(),
+          ui::MENU_SOURCE_TYPE_LAST);
+    }
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(RootWindowMenuModelAdapter);
+};
+
 }  // namespace
 
 // static
@@ -656,32 +702,37 @@ void RootWindowController::ShowContextMenu(const gfx::Point& location_in_screen,
   const int64_t display_id = display::Screen::GetScreen()
                                  ->GetDisplayNearestWindow(GetRootWindow())
                                  .id();
-  menu_model_ = std::make_unique<ShelfContextMenuModel>(
-      std::vector<mojom::MenuItemPtr>(), nullptr, display_id);
 
-  menu_model_->set_histogram_name("Apps.ContextMenuExecuteCommand.NotFromApp");
-  UMA_HISTOGRAM_ENUMERATION("Apps.ContextMenuShowSource.Desktop", source_type,
-                            ui::MENU_SOURCE_TYPE_LAST);
+  std::unique_ptr<ShelfContextMenuModel> menu_model =
+      std::make_unique<ShelfContextMenuModel>(std::vector<mojom::MenuItemPtr>(),
+                                              nullptr, display_id);
 
-  menu_runner_ = std::make_unique<views::MenuRunner>(
-      menu_model_.get(),
+  root_window_menu_model_adapter_ =
+      std::make_unique<RootWindowMenuModelAdapter>(
+          std::move(menu_model), wallpaper_widget_controller()->GetWidget(),
+          source_type,
+          base::BindOnce(&RootWindowController::OnMenuClosed,
+                         base::Unretained(this)),
+          Shell::Get()
+              ->tablet_mode_controller()
+              ->IsTabletModeWindowManagerEnabled());
+
+  root_window_menu_model_adapter_->Run(
+      gfx::Rect(location_in_screen, gfx::Size()),
+      views::MenuAnchorPosition::kBubbleRight,
       views::MenuRunner::CONTEXT_MENU |
           views::MenuRunner::USE_TOUCHABLE_LAYOUT |
-          views::MenuRunner::FIXED_ANCHOR,
-      base::Bind(&RootWindowController::OnMenuClosed, base::Unretained(this),
-                 base::TimeTicks::Now()));
-  menu_runner_->RunMenuAt(wallpaper_widget_controller()->GetWidget(), nullptr,
-                          gfx::Rect(location_in_screen, gfx::Size()),
-                          views::MenuAnchorPosition::kBubbleRight, source_type);
+          views::MenuRunner::FIXED_ANCHOR);
 }
 
 void RootWindowController::HideContextMenu() {
-  if (menu_runner_)
-    menu_runner_->Cancel();
+  if (root_window_menu_model_adapter_)
+    root_window_menu_model_adapter_->Cancel();
 }
 
 bool RootWindowController::IsContextMenuShown() const {
-  return menu_runner_ && menu_runner_->IsRunning();
+  return root_window_menu_model_adapter_ &&
+         root_window_menu_model_adapter_->IsShowingMenu();
 }
 
 void RootWindowController::UpdateAfterLoginStatusChange(LoginStatus status) {
@@ -1106,13 +1157,9 @@ RootWindowController::GetAccessibilityPanelLayoutManager() const {
   return layout_manager;
 }
 
-void RootWindowController::OnMenuClosed(
-    const base::TimeTicks desktop_context_menu_show_time) {
-  menu_runner_.reset();
-  menu_model_.reset();
+void RootWindowController::OnMenuClosed() {
+  root_window_menu_model_adapter_.reset();
   shelf_->UpdateVisibilityState();
-  UMA_HISTOGRAM_TIMES("Apps.ContextMenuUserJourneyTime.Desktop",
-                      base::TimeTicks::Now() - desktop_context_menu_show_time);
 }
 
 void RootWindowController::OnFirstWallpaperWidgetSet() {

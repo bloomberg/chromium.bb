@@ -38,7 +38,8 @@ class AppListMenuModelAdapterTest : public views::ViewsTestBase {
     app_list_menu_model_adapter_ = std::make_unique<AppListMenuModelAdapter>(
         "test-app-id", nullptr, ui::MenuSourceType::MENU_SOURCE_TYPE_LAST,
         mock_app_list_menu_model_adapter_delegate_.get(),
-        AppListMenuModelAdapter::FULLSCREEN_APP_GRID, base::OnceClosure());
+        AppListMenuModelAdapter::FULLSCREEN_APP_GRID, base::OnceClosure(),
+        false /* is_tablet_mode */);
   }
 
   std::unique_ptr<AppListMenuModelAdapter> app_list_menu_model_adapter_;
