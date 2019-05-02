@@ -64,7 +64,8 @@ class PackedField(object):
 
   @classmethod
   def GetAlignmentForKind(cls, kind):
-    if isinstance(kind, (mojom.Interface, mojom.AssociatedInterface)):
+    if isinstance(kind, (mojom.Interface, mojom.AssociatedInterface,
+                         mojom.PendingRemote, mojom.PendingAssociatedRemote)):
       return 4
     if isinstance(kind, mojom.Union):
       return 8

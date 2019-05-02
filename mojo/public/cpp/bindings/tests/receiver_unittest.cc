@@ -29,11 +29,16 @@ namespace {
 
 class ServiceImpl : public sample::Service {
  public:
-  explicit ServiceImpl(bool* was_deleted = nullptr)
-      : was_deleted_(was_deleted) {}
+  ServiceImpl() = default;
+  explicit ServiceImpl(bool* was_deleted)
+      : destruction_callback_(base::BindLambdaForTesting(
+            [was_deleted] { *was_deleted = true; })) {}
+  explicit ServiceImpl(base::OnceClosure destruction_callback)
+      : destruction_callback_(std::move(destruction_callback)) {}
+
   ~ServiceImpl() override {
-    if (was_deleted_)
-      *was_deleted_ = true;
+    if (destruction_callback_)
+      std::move(destruction_callback_).Run();
   }
 
  private:
@@ -46,7 +51,7 @@ class ServiceImpl : public sample::Service {
   }
   void GetPort(PendingReceiver<sample::Port> port) override {}
 
-  bool* const was_deleted_;
+  base::OnceClosure destruction_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceImpl);
 };
@@ -535,6 +540,16 @@ TEST_P(ReceiverTest, GetBadMessageCallback) {
   core::SetDefaultProcessErrorCallback(base::NullCallback());
 }
 
+TEST_P(ReceiverTest, InvalidPendingReceivers) {
+  PendingReceiver<sample::Service> uninitialized_pending;
+  EXPECT_FALSE(uninitialized_pending);
+
+  // A "null" receiver is just a generic helper for an uninitialized
+  // PendingReceiver. Verify that it's equivalent to above.
+  PendingReceiver<sample::Service> null_pending{NullReceiver()};
+  EXPECT_FALSE(null_pending);
+}
+
 using StrongBindingTest = BindingsTestBase;
 
 TEST_P(StrongBindingTest, CloseDestroysImplAndPipe) {
@@ -575,9 +590,13 @@ TEST_P(StrongBindingTest, DisconnectDestroysImplAndPipe) {
   Remote<sample::Service> remote;
   bool was_deleted = false;
   base::RunLoop run_loop;
-  // Will delete itself.
-  new ServiceImplWithReceiver(&was_deleted, run_loop.QuitClosure(),
-                              remote.BindNewPipeAndPassReceiver());
+
+  MakeStrongBinding<sample::Service>(
+      std::make_unique<ServiceImpl>(base::BindLambdaForTesting([&] {
+        was_deleted = true;
+        run_loop.Quit();
+      })),
+      remote.BindNewPipeAndPassReceiver());
 
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(was_deleted);

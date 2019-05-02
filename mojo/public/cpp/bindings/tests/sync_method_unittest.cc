@@ -135,11 +135,11 @@ class TestSyncMasterImpl : public TestSyncMaster, public TestSyncCommonImpl {
   void AsyncEcho(int32_t value, AsyncEchoCallback callback) override {
     AsyncEchoImpl(value, std::move(callback));
   }
-  void SendInterface(TestSyncAssociatedPtrInfo ptr) override {
-    SendInterfaceImpl(std::move(ptr));
+  void SendRemote(PendingAssociatedRemote<TestSync> remote) override {
+    SendInterfaceImpl(std::move(remote));
   }
-  void SendRequest(TestSyncAssociatedRequest request) override {
-    SendRequestImpl(std::move(request));
+  void SendReceiver(PendingAssociatedReceiver<TestSync> receiver) override {
+    SendRequestImpl(std::move(receiver));
   }
 
   Binding<TestSyncMaster>* binding() { return &binding_; }
@@ -329,8 +329,8 @@ class SyncMethodAssociatedTest : public SyncMethodTest {
           run_loop.Quit();
         });
 
-    master_ptr_->SendInterface(std::move(opposite_asso_ptr_info_));
-    master_ptr_->SendRequest(std::move(asso_request_));
+    master_ptr_->SendRemote(std::move(opposite_asso_ptr_info_));
+    master_ptr_->SendReceiver(std::move(asso_request_));
     run_loop.Run();
   }
 

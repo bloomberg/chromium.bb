@@ -293,9 +293,14 @@ TEST_P(RemoteTest, Resettable) {
   Wait(pipe.handle1.get(), MOJO_HANDLE_SIGNAL_PEER_CLOSED);
 }
 
-TEST_P(RemoteTest, InvalidPendingRemote) {
+TEST_P(RemoteTest, InvalidPendingRemotes) {
   PendingRemote<math::Calculator> invalid_remote;
   EXPECT_FALSE(invalid_remote);
+
+  // A "null" remote is just a generic helper for an uninitialized
+  // PendingRemote. Verify that it's equivalent to above.
+  PendingRemote<math::Calculator> null_remote{NullRemote()};
+  EXPECT_FALSE(null_remote);
 }
 
 TEST_P(RemoteTest, IsConnected) {

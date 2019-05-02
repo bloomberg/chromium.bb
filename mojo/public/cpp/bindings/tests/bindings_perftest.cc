@@ -10,10 +10,11 @@
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_endpoint_client.h"
 #include "mojo/public/cpp/bindings/lib/multiplex_router.h"
 #include "mojo/public/cpp/bindings/message.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/test_support/test_support.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "mojo/public/interfaces/bindings/tests/ping_service.mojom.h"
@@ -32,30 +33,45 @@ double MojoTicksToSeconds(MojoTimeTicks ticks) {
 
 class PingServiceImpl : public test::PingService {
  public:
-  PingServiceImpl() {}
-  ~PingServiceImpl() override {}
+  PingServiceImpl() = default;
+  ~PingServiceImpl() override = default;
 
   // |PingService| methods:
-  void Ping(PingCallback callback) override;
+  void Ping(PingCallback callback) override { std::move(callback).Run(); }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PingServiceImpl);
 };
 
-void PingServiceImpl::Ping(PingCallback callback) {
-  std::move(callback).Run();
-}
-
 class PingPongTest {
  public:
-  explicit PingPongTest(test::PingServicePtr service);
+  explicit PingPongTest(PendingRemote<test::PingService> remote)
+      : remote_(std::move(remote)) {}
 
-  void Run(unsigned int iterations);
+  void Run(unsigned int iterations) {
+    iterations_to_run_ = iterations;
+    current_iterations_ = 0;
+
+    base::RunLoop run_loop;
+    quit_closure_ = run_loop.QuitClosure();
+    remote_->Ping(
+        base::BindOnce(&PingPongTest::OnPingDone, base::Unretained(this)));
+    run_loop.Run();
+  }
 
  private:
-  void OnPingDone();
+  void OnPingDone() {
+    current_iterations_++;
+    if (current_iterations_ >= iterations_to_run_) {
+      quit_closure_.Run();
+      return;
+    }
 
-  test::PingServicePtr service_;
+    remote_->Ping(
+        base::BindOnce(&PingPongTest::OnPingDone, base::Unretained(this)));
+  }
+
+  Remote<test::PingService> remote_;
   unsigned int iterations_to_run_;
   unsigned int current_iterations_;
 
@@ -64,50 +80,28 @@ class PingPongTest {
   DISALLOW_COPY_AND_ASSIGN(PingPongTest);
 };
 
-PingPongTest::PingPongTest(test::PingServicePtr service)
-    : service_(std::move(service)) {}
-
-void PingPongTest::Run(unsigned int iterations) {
-  iterations_to_run_ = iterations;
-  current_iterations_ = 0;
-
-  base::RunLoop run_loop;
-  quit_closure_ = run_loop.QuitClosure();
-  service_->Ping(base::Bind(&PingPongTest::OnPingDone, base::Unretained(this)));
-  run_loop.Run();
-}
-
-void PingPongTest::OnPingDone() {
-  current_iterations_++;
-  if (current_iterations_ >= iterations_to_run_) {
-    quit_closure_.Run();
-    return;
-  }
-
-  service_->Ping(base::Bind(&PingPongTest::OnPingDone, base::Unretained(this)));
-}
-
 struct BoundPingService {
-  BoundPingService() : binding(&impl) { binding.Bind(MakeRequest(&service)); }
+  BoundPingService() : receiver(&impl, remote.BindNewPipeAndPassReceiver()) {}
 
   PingServiceImpl impl;
-  test::PingServicePtr service;
-  Binding<test::PingService> binding;
+  Remote<test::PingService> remote;
+  Receiver<test::PingService> receiver;
 };
 
 class MojoBindingsPerftest : public testing::Test {
  public:
-  MojoBindingsPerftest() {}
+  MojoBindingsPerftest() = default;
 
  protected:
   base::MessageLoop loop_;
 };
 
 TEST_F(MojoBindingsPerftest, InProcessPingPong) {
-  test::PingServicePtr service;
+  PendingRemote<test::PingService> remote;
   PingServiceImpl impl;
-  Binding<test::PingService> binding(&impl, MakeRequest(&service));
-  PingPongTest test(std::move(service));
+  Receiver<test::PingService> receiver(&impl,
+                                       remote.InitWithNewPipeAndPassReceiver());
+  PingPongTest test(std::move(remote));
 
   {
     const unsigned int kIterations = 100000;

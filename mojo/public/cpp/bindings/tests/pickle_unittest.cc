@@ -10,8 +10,9 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/tests/pickled_types_blink.h"
 #include "mojo/public/cpp/bindings/tests/pickled_types_chromium.h"
 #include "mojo/public/cpp/bindings/tests/variant_test_util.h"
@@ -68,8 +69,8 @@ base::Callback<void(T)> EnumFail(const std::string& reason) {
 }
 
 template <typename T>
-void ExpectError(InterfacePtr<T>* proxy, const base::Closure& callback) {
-  proxy->set_connection_error_handler(callback);
+void ExpectError(Remote<T>* proxy, base::OnceClosure callback) {
+  proxy->set_disconnect_handler(std::move(callback));
 }
 
 template <typename Func, typename Arg>
@@ -153,20 +154,20 @@ class PickleTest : public testing::Test {
   PickleTest() {}
 
   template <typename ProxyType = PicklePasser>
-  InterfacePtr<ProxyType> ConnectToChromiumService() {
-    InterfacePtr<ProxyType> proxy;
-    chromium_bindings_.AddBinding(
-        &chromium_service_,
-        ConvertInterfaceRequest<PicklePasser>(mojo::MakeRequest(&proxy)));
+  Remote<ProxyType> ConnectToChromiumService() {
+    Remote<ProxyType> proxy;
+    chromium_receivers_.Add(&chromium_service_,
+                            ConvertPendingReceiver<PicklePasser>(
+                                proxy.BindNewPipeAndPassReceiver()));
     return proxy;
   }
 
   template <typename ProxyType = blink::PicklePasser>
-  InterfacePtr<ProxyType> ConnectToBlinkService() {
-    InterfacePtr<ProxyType> proxy;
-    blink_bindings_.AddBinding(&blink_service_,
-                               ConvertInterfaceRequest<blink::PicklePasser>(
-                                   mojo::MakeRequest(&proxy)));
+  Remote<ProxyType> ConnectToBlinkService() {
+    Remote<ProxyType> proxy;
+    blink_receivers_.Add(&blink_service_,
+                         ConvertPendingReceiver<blink::PicklePasser>(
+                             proxy.BindNewPipeAndPassReceiver()));
     return proxy;
   }
 
@@ -192,9 +193,9 @@ class PickleTest : public testing::Test {
  private:
   base::MessageLoop loop_;
   ChromiumPicklePasserImpl chromium_service_;
-  BindingSet<PicklePasser> chromium_bindings_;
+  ReceiverSet<PicklePasser> chromium_receivers_;
   BlinkPicklePasserImpl blink_service_;
-  BindingSet<blink::PicklePasser> blink_bindings_;
+  ReceiverSet<blink::PicklePasser> blink_receivers_;
 };
 
 }  // namespace
