@@ -368,22 +368,6 @@ void SetAndroidPayMethodData(const ScriptValue& input,
   if (android_pay->hasEnvironment() && android_pay->environment() == "TEST")
     output->environment = payments::mojom::blink::AndroidPayEnvironment::TEST;
 
-  if (android_pay->hasMerchantName() &&
-      android_pay->merchantName().length() > PaymentRequest::kMaxStringLength) {
-    exception_state.ThrowTypeError(
-        "Android Pay merchant name cannot be longer than 1024 characters");
-    return;
-  }
-  output->merchant_name = android_pay->merchantName();
-
-  if (android_pay->hasMerchantId() &&
-      android_pay->merchantId().length() > PaymentRequest::kMaxStringLength) {
-    exception_state.ThrowTypeError(
-        "Android Pay merchant id cannot be longer than 1024 characters");
-    return;
-  }
-  output->merchant_id = android_pay->merchantId();
-
   // 0 means the merchant did not specify or it was an invalid value
   output->min_google_play_services_version = 0;
   if (android_pay->hasMinGooglePlayServicesVersion()) {
@@ -400,86 +384,6 @@ void SetAndroidPayMethodData(const ScriptValue& input,
   output->api_version = 0;
   if (android_pay->hasApiVersion())
     output->api_version = android_pay->apiVersion();
-
-  if (android_pay->hasAllowedCardNetworks()) {
-    using ::payments::mojom::blink::AndroidPayCardNetwork;
-
-    const struct {
-      const AndroidPayCardNetwork code;
-      const char* const name;
-    } kAndroidPayNetwork[] = {{AndroidPayCardNetwork::AMEX, "AMEX"},
-                              {AndroidPayCardNetwork::DISCOVER, "DISCOVER"},
-                              {AndroidPayCardNetwork::MASTERCARD, "MASTERCARD"},
-                              {AndroidPayCardNetwork::VISA, "VISA"}};
-
-    for (const String& allowed_card_network :
-         android_pay->allowedCardNetworks()) {
-      for (size_t i = 0; i < base::size(kAndroidPayNetwork); ++i) {
-        if (allowed_card_network == kAndroidPayNetwork[i].name) {
-          output->allowed_card_networks.push_back(kAndroidPayNetwork[i].code);
-          break;
-        }
-      }
-    }
-  }
-
-  if (android_pay->hasPaymentMethodTokenizationParameters()) {
-    const blink::AndroidPayTokenization* tokenization =
-        android_pay->paymentMethodTokenizationParameters();
-    output->tokenization_type =
-        payments::mojom::blink::AndroidPayTokenization::UNSPECIFIED;
-    if (tokenization->hasTokenizationType()) {
-      using ::payments::mojom::blink::AndroidPayTokenization;
-
-      const struct {
-        const AndroidPayTokenization code;
-        const char* const name;
-      } kAndroidPayTokenization[] = {
-          {AndroidPayTokenization::GATEWAY_TOKEN, "GATEWAY_TOKEN"},
-          {AndroidPayTokenization::NETWORK_TOKEN, "NETWORK_TOKEN"}};
-
-      for (size_t i = 0; i < base::size(kAndroidPayTokenization); ++i) {
-        if (tokenization->tokenizationType() ==
-            kAndroidPayTokenization[i].name) {
-          output->tokenization_type = kAndroidPayTokenization[i].code;
-          break;
-        }
-      }
-    }
-
-    if (tokenization->hasParameters()) {
-      const Vector<String>& keys =
-          tokenization->parameters().GetPropertyNames(exception_state);
-      if (exception_state.HadException())
-        return;
-      if (keys.size() > PaymentRequest::kMaxListSize) {
-        exception_state.ThrowTypeError(
-            "At most 1024 tokenization parameters allowed for Android Pay");
-        return;
-      }
-      String value;
-      for (const String& key : keys) {
-        if (!DictionaryHelper::Get(tokenization->parameters(), key, value))
-          continue;
-        if (key.length() > PaymentRequest::kMaxStringLength) {
-          exception_state.ThrowTypeError(
-              "Android Pay tokenization parameter key cannot be longer than "
-              "1024 characters");
-          return;
-        }
-        if (value.length() > PaymentRequest::kMaxStringLength) {
-          exception_state.ThrowTypeError(
-              "Android Pay tokenization parameter value cannot be longer than "
-              "1024 characters");
-          return;
-        }
-        output->parameters.push_back(
-            payments::mojom::blink::AndroidPayTokenizationParameter::New());
-        output->parameters.back()->key = key;
-        output->parameters.back()->value = value;
-      }
-    }
-  }
 }
 
 // Parses basic-card data to avoid parsing JSON in the browser.

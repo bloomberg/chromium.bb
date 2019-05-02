@@ -94,24 +94,6 @@ enum AndroidPayEnvironment {
   TEST
 };
 
-enum AndroidPayCardNetwork {
-  AMEX,
-  DISCOVER,
-  MASTERCARD,
-  VISA
-};
-
-enum AndroidPayTokenization {
-  UNSPECIFIED,
-  GATEWAY_TOKEN,
-  NETWORK_TOKEN
-};
-
-struct AndroidPayTokenizationParameter {
-  string? key;
-  string? value;
-};
-
 enum BasicCardNetwork {
   AMEX,
   DINERS,
@@ -146,11 +128,6 @@ struct PaymentMethodData {
   // https://developers.google.com/web/fundamentals/getting-started/primers/payment-request/android-pay
   // TODO(rouslan): Stop parsing Android Pay data. http://crbug.com/620173
   AndroidPayEnvironment environment;
-  string? merchant_name;
-  string? merchant_id;
-  array<AndroidPayCardNetwork> allowed_card_networks;
-  AndroidPayTokenization tokenization_type;
-  array<AndroidPayTokenizationParameter> parameters;
   // Value of 0 means the merchant did not specify or it was an invalid value.
   int32 min_google_play_services_version;
   // Value of 0 means the merchant did not specify or it was an invalid value.
