@@ -84,8 +84,12 @@ void Desk::AddWindowToDesk(aura::Window* window) {
 
   for (auto* transient_window : wm::GetTransientTreeIterator(window)) {
     const auto result = windows_.emplace(transient_window);
-    DCHECK(result.second);
-    transient_window->AddObserver(this);
+
+    // GetTransientTreeIterator() starts iterating the transient tree hierarchy
+    // from the root transient parent, which may include windows that we already
+    // track from before.
+    if (result.second)
+      transient_window->AddObserver(this);
   }
 }
 

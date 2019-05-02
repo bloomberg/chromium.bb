@@ -7,6 +7,7 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/window_factory.h"
 #include "ash/wm/desks/close_desk_button.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desk_mini_view.h"
@@ -20,12 +21,27 @@
 #include "ash/wm/window_util.h"
 #include "base/stl_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "ui/aura/client/window_parenting_client.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
 
 namespace {
+
+std::unique_ptr<aura::Window> CreateTransientWindow(
+    aura::Window* transient_parent,
+    const gfx::Rect& bounds) {
+  std::unique_ptr<aura::Window> window =
+      window_factory::NewWindow(nullptr, aura::client::WINDOW_TYPE_POPUP);
+  window->Init(ui::LAYER_NOT_DRAWN);
+  window->SetBounds(bounds);
+  ::wm::AddTransientChild(transient_parent, window.get());
+  aura::client::ParentWindowWithContext(
+      window.get(), transient_parent->GetRootWindow(), bounds);
+  window->Show();
+  return window;
+}
 
 bool DoesActiveDeskContainWindow(aura::Window* window) {
   return DesksController::Get()->active_desk()->windows().contains(window);
@@ -283,9 +299,7 @@ TEST_F(DesksTest, TransientWindows) {
 
   // Create two windows, one is a transient child of the other.
   auto win0 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
-  auto win1 = CreateTestWindow(gfx::Rect(100, 100, 100, 100),
-                               aura::client::WINDOW_TYPE_POPUP);
-  ::wm::AddTransientChild(win0.get(), win1.get());
+  auto win1 = CreateTransientWindow(win0.get(), gfx::Rect(100, 100, 100, 100));
 
   EXPECT_EQ(2u, desk_1->windows().size());
   EXPECT_TRUE(DoesActiveDeskContainWindow(win0.get()));
@@ -305,14 +319,23 @@ TEST_F(DesksTest, TransientWindows) {
   EXPECT_FALSE(desk_1->is_active());
   EXPECT_TRUE(desk_2->is_active());
 
+  // Create another transient child of the earlier transient child, and confirm
+  // it's tracked in desk_1 (even though desk_2 is the currently active one).
+  // This is because the transient parent exists in desk_1.
+  auto win2 = CreateTransientWindow(win1.get(), gfx::Rect(100, 100, 50, 50));
+  ::wm::AddTransientChild(win1.get(), win2.get());
+  EXPECT_EQ(3u, desk_1->windows().size());
+  EXPECT_FALSE(DoesActiveDeskContainWindow(win2.get()));
+
   // Remove the inactive desk 1, and expect that its windows, including
   // transient will move to desk 2.
   controller->RemoveDesk(desk_1);
   EXPECT_EQ(1u, controller->desks().size());
   EXPECT_EQ(desk_2, controller->active_desk());
-  EXPECT_EQ(2u, desk_2->windows().size());
+  EXPECT_EQ(3u, desk_2->windows().size());
   EXPECT_TRUE(DoesActiveDeskContainWindow(win0.get()));
   EXPECT_TRUE(DoesActiveDeskContainWindow(win1.get()));
+  EXPECT_TRUE(DoesActiveDeskContainWindow(win2.get()));
 }
 
 TEST_F(DesksTest, WindowActivation) {
