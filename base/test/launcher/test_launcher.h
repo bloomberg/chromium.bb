@@ -79,7 +79,6 @@ class TestLauncherDelegate {
   virtual size_t RetryTests(TestLauncher* test_launcher,
                             const std::vector<std::string>& test_names) = 0;
 
- protected:
   virtual ~TestLauncherDelegate();
 };
 
@@ -151,7 +150,8 @@ class TestLauncher {
   // Constructor. |parallel_jobs| is the limit of simultaneous parallel test
   // jobs.
   TestLauncher(TestLauncherDelegate* launcher_delegate, size_t parallel_jobs);
-  ~TestLauncher();
+  // virtual to mock in testing.
+  virtual ~TestLauncher();
 
   // Runs the launcher. Must be called at most once.
   bool Run() WARN_UNUSED_RESULT;
@@ -161,7 +161,8 @@ class TestLauncher {
   // command line. |observer|, if not null, is used to convey process lifetime
   // events to the caller. |observer| is destroyed after its OnCompleted
   // method is invoked.
-  void LaunchChildGTestProcess(
+  // virtual to mock in testing.
+  virtual void LaunchChildGTestProcess(
       const CommandLine& command_line,
       const std::string& wrapper,
       TimeDelta timeout,

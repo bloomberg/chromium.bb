@@ -4,7 +4,7 @@
 
 #include <stddef.h>
 
-#include "base/files/file.h"
+#include "base/base64.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
@@ -17,124 +17,263 @@
 namespace base {
 namespace {
 
-void ValidateTestResult(Value* root,
-                        const char* name,
-                        int elapsed_time,
-                        bool losless_snippet,
-                        const char* output,
-                        const char* output_base64,
-                        unsigned result_parts_count,
-                        const char* status) {
-  Value* val = root->FindKeyOfType(name, Value::Type::LIST);
-  ASSERT_TRUE(val);
-  ASSERT_EQ(1u, val->GetList().size());
-  val = &val->GetList().at(0);
-  ASSERT_TRUE(val->is_dict());
-
-  Value* value = val->FindKeyOfType("elapsed_time_ms", Value::Type::INTEGER);
-  ASSERT_TRUE(value);
-  EXPECT_EQ(elapsed_time, value->GetInt());
-
-  value = val->FindKeyOfType("losless_snippet", Value::Type::BOOLEAN);
-  ASSERT_TRUE(value);
-  EXPECT_EQ(losless_snippet, value->GetBool());
-
-  value = val->FindKeyOfType("output_snippet", Value::Type::STRING);
-  ASSERT_TRUE(value);
-  EXPECT_EQ(output, value->GetString());
-
-  value = val->FindKeyOfType("output_snippet_base64", Value::Type::STRING);
-  ASSERT_TRUE(value);
-  EXPECT_EQ(output_base64, value->GetString());
-
-  value = val->FindKeyOfType("result_parts", Value::Type::LIST);
-  ASSERT_TRUE(value);
-  EXPECT_EQ(result_parts_count, value->GetList().size());
-
-  value = val->FindKeyOfType("status", Value::Type::STRING);
-  ASSERT_TRUE(value);
-  EXPECT_EQ(status, value->GetString());
-}
-
-void ValidateStringList(Optional<Value>& root,
-                        const char* key,
-                        std::vector<const char*> values) {
-  Value* val = root->FindKeyOfType(key, Value::Type::LIST);
-  ASSERT_TRUE(val);
-  EXPECT_EQ(values.size(), val->GetList().size());
-  for (unsigned i = 0; i < values.size(); i++) {
-    ASSERT_TRUE(val->GetList().at(i).is_string());
-    EXPECT_EQ(values.at(i), val->GetList().at(i).GetString());
+// Unit tests to validate TestResultsTracker outputs the correct JSON file
+// given the correct setup.
+class TestResultsTrackerTester : public testing::Test {
+ protected:
+  void ValidateKeyValue(Value* dict_value,
+                        const std::string& key,
+                        int64_t expected_value) {
+    base::Optional<int> value = dict_value->FindIntKey(key);
+    ASSERT_TRUE(value);
+    EXPECT_EQ(expected_value, value.value());
   }
-}
 
-void ValidateTestLocation(Value* root,
-                          const char* key,
-                          const char* file,
-                          int line) {
-  Value* val = root->FindKeyOfType(key, Value::Type::DICTIONARY);
-  ASSERT_TRUE(val);
-  EXPECT_EQ(2u, val->DictSize());
+  void ValidateKeyValue(Value* dict_value,
+                        const std::string& key,
+                        int expected_value) {
+    base::Optional<int> value = dict_value->FindIntKey(key);
+    ASSERT_TRUE(value);
+    EXPECT_EQ(expected_value, value.value());
+  }
 
-  Value* value = val->FindKeyOfType("file", Value::Type::STRING);
-  ASSERT_TRUE(value);
-  EXPECT_EQ(file, value->GetString());
+  void ValidateKeyValue(Value* dict_value,
+                        const std::string& key,
+                        bool expected_value) {
+    base::Optional<bool> value = dict_value->FindBoolKey(key);
+    ASSERT_TRUE(value);
+    EXPECT_EQ(expected_value, value.value());
+  }
 
-  value = val->FindKeyOfType("line", Value::Type::INTEGER);
-  ASSERT_TRUE(value);
-  EXPECT_EQ(line, value->GetInt());
-}
-}  // namespace
+  void ValidateKeyValue(Value* dict_value,
+                        const std::string& key,
+                        const std::string& expected_value) {
+    const std::string* value = dict_value->FindStringKey(key);
+    ASSERT_TRUE(value);
+    EXPECT_EQ(expected_value, *value);
+  }
 
-TEST(TestResultsTracker, SaveSummaryAsJSON) {
+  // Validate a json child node for a particular test result.
+  void ValidateTestResult(Value* root, TestResult& result) {
+    Value* val = root->FindListKey(result.full_name);
+    ASSERT_TRUE(val);
+    ASSERT_EQ(1u, val->GetList().size());
+    val = &val->GetList().at(0);
+    ASSERT_TRUE(val->is_dict());
+
+    ValidateKeyValue(val, "elapsed_time_ms",
+                     result.elapsed_time.InMilliseconds());
+    ValidateKeyValue(val, "losless_snippet", true);
+    ValidateKeyValue(val, "output_snippet", result.output_snippet);
+
+    std::string base64_output_snippet;
+    Base64Encode(result.output_snippet, &base64_output_snippet);
+    ValidateKeyValue(val, "output_snippet_base64", base64_output_snippet);
+    ValidateKeyValue(val, "status", result.StatusAsString());
+
+    Value* value = val->FindListKey("result_parts");
+    ASSERT_TRUE(value);
+    EXPECT_EQ(result.test_result_parts.size(), value->GetList().size());
+    for (unsigned i = 0; i < result.test_result_parts.size(); i++) {
+      TestResultPart result_part = result.test_result_parts.at(0);
+      Value* part_dict = &(value->GetList().at(i));
+      ASSERT_TRUE(part_dict);
+      ASSERT_TRUE(part_dict->is_dict());
+      ValidateKeyValue(part_dict, "type", result_part.TypeAsString());
+      ValidateKeyValue(part_dict, "file", result_part.file_name);
+      ValidateKeyValue(part_dict, "line", result_part.line_number);
+      ValidateKeyValue(part_dict, "summary", result_part.summary);
+      ValidateKeyValue(part_dict, "message", result_part.message);
+    }
+  }
+
+  void ValidateStringList(Optional<Value>& root,
+                          const std::string& key,
+                          std::vector<const char*> values) {
+    Value* val = root->FindListKey(key);
+    ASSERT_TRUE(val);
+    ASSERT_EQ(values.size(), val->GetList().size());
+    for (unsigned i = 0; i < values.size(); i++) {
+      ASSERT_TRUE(val->GetList().at(i).is_string());
+      EXPECT_EQ(values.at(i), val->GetList().at(i).GetString());
+    }
+  }
+
+  void ValidateTestLocation(Value* root,
+                            const std::string& key,
+                            const std::string& file,
+                            int line) {
+    Value* val = root->FindDictKey(key);
+    ASSERT_TRUE(val);
+    EXPECT_EQ(2u, val->DictSize());
+    ValidateKeyValue(val, "file", file);
+    ValidateKeyValue(val, "line", line);
+  }
+
+  TestResult GenerateTestResult(const std::string& test_name,
+                                TestResult::Status status,
+                                TimeDelta elapsed_td,
+                                const std::string& output_snippet) {
+    TestResult result;
+    result.full_name = test_name;
+    result.status = status;
+    result.elapsed_time = elapsed_td;
+    result.output_snippet = output_snippet;
+    return result;
+  }
+
+  TestResultPart GenerateTestResultPart(TestResultPart::Type type,
+                                        const std::string& file_name,
+                                        int line_number,
+                                        const std::string& summary,
+                                        const std::string& message) {
+    TestResultPart test_result_part;
+    test_result_part.type = type;
+    test_result_part.file_name = file_name;
+    test_result_part.line_number = line_number;
+    test_result_part.summary = summary;
+    test_result_part.message = message;
+    return test_result_part;
+  }
+
+  Optional<Value> SaveAndReadSummary() {
+    ScopedTempDir dir;
+    CHECK(dir.CreateUniqueTempDir());
+    FilePath path = dir.GetPath().AppendASCII("SaveSummaryResult.json");
+    CHECK(tracker.SaveSummaryAsJSON(path, std::vector<std::string>()));
+    File resultFile(path, File::FLAG_OPEN | File::FLAG_READ);
+    const int size = 2048;
+    std::string json;
+    CHECK(ReadFileToStringWithMaxSize(path, &json, size));
+    return JSONReader::Read(json);
+  }
+
   TestResultsTracker tracker;
+};
+
+// Validate JSON result file is saved with the correct structure.
+TEST_F(TestResultsTrackerTester, JsonSummaryEmptyResult) {
   tracker.OnTestIterationStarting();
-  tracker.AddGlobalTag("global1");
-  // tests should re-order in alphabetical order
-  tracker.AddTest("Test2");
-  tracker.AddTest("Test1");
-  tracker.AddTest("Test1");  // tests should only show once
-  tracker.AddTest("Test3");
-  tracker.AddDisabledTest("Test4");
-  tracker.AddTestLocation("Test1", "Test1File", 100);
-  tracker.AddTestPlaceholder("Test1");
-  tracker.GeneratePlaceholderIteration();
-  TestResult result;
-  result.full_name = "Test1";
-  result.status = TestResult::TEST_SUCCESS;
-  tracker.AddTestResult(result);
 
-  ScopedTempDir dir;
-  ASSERT_TRUE(dir.CreateUniqueTempDir());
-  FilePath path = dir.GetPath().AppendASCII("SaveSummaryResult.json");
-  ASSERT_TRUE(tracker.SaveSummaryAsJSON(path, std::vector<std::string>()));
-  File resultFile(path, File::FLAG_OPEN | File::FLAG_READ);
-  const int size = 2048;
-  std::string json;
-  ASSERT_TRUE(ReadFileToStringWithMaxSize(path, &json, size));
+  Optional<Value> root = SaveAndReadSummary();
 
-  Optional<Value> root = JSONReader::Read(json);
   ASSERT_TRUE(root);
   ASSERT_TRUE(root->is_dict());
   EXPECT_EQ(5u, root->DictSize());
+}
+
+// Validate global tags are saved correctly.
+TEST_F(TestResultsTrackerTester, JsonSummaryRootTags) {
+  tracker.OnTestIterationStarting();
+  tracker.AddTest("Test2");  // Test should appear in alphabetical order.
+  tracker.AddTest("Test1");
+  tracker.AddTest("Test3");
+  tracker.AddTest("Test1");  // Test should only appear once.
+  tracker.AddDisabledTest("Test3");
+  tracker.AddGlobalTag("global1");
+
+  Optional<Value> root = SaveAndReadSummary();
 
   ValidateStringList(root, "global_tags", {"global1"});
   ValidateStringList(root, "all_tests", {"Test1", "Test2", "Test3"});
-  ValidateStringList(root, "disabled_tests", {"Test4"});
+  ValidateStringList(root, "disabled_tests", {"Test3"});
+}
 
-  Value* val = root->FindKeyOfType("per_iteration_data", Value::Type::LIST);
+// Validate test locations are saved correctly.
+TEST_F(TestResultsTrackerTester, JsonSummaryTestLocation) {
+  tracker.OnTestIterationStarting();
+  tracker.AddTestLocation("Test1", "Test1File", 100);
+  tracker.AddTestLocation("Test2", "Test2File", 200);
+
+  Optional<Value> root = SaveAndReadSummary();
+
+  Value* val = root->FindDictKey("test_locations");
+
+  ASSERT_TRUE(val);
+  ASSERT_TRUE(val->is_dict());
+  EXPECT_EQ(2u, val->DictSize());
+
+  ValidateTestLocation(val, "Test1", "Test1File", 100);
+  ValidateTestLocation(val, "Test2", "Test2File", 200);
+}
+
+// Validate test results are saved correctly.
+TEST_F(TestResultsTrackerTester, JsonSummaryTestResults) {
+  TestResult test_result =
+      GenerateTestResult("Test", TestResult::TEST_SUCCESS,
+                         TimeDelta::FromMilliseconds(30), "output");
+  test_result.test_result_parts.push_back(GenerateTestResultPart(
+      TestResultPart::kSuccess, "TestFile", 110, "summary", "message"));
+  tracker.AddTestPlaceholder("Test");
+
+  tracker.OnTestIterationStarting();
+  tracker.GeneratePlaceholderIteration();
+  tracker.AddTestResult(test_result);
+
+  Optional<Value> root = SaveAndReadSummary();
+
+  Value* val = root->FindListKey("per_iteration_data");
   ASSERT_TRUE(val);
   ASSERT_EQ(1u, val->GetList().size());
-  val = &(val->GetList().at(0));
-  ASSERT_TRUE(val);
-  ASSERT_TRUE(val->is_dict());
-  ValidateTestResult(val, "Test1", 0, true, "", "", 0u, "SUCCESS");
 
-  val = root->FindKeyOfType("test_locations", Value::Type::DICTIONARY);
-  ASSERT_TRUE(val);
-  ASSERT_TRUE(val->is_dict());
-  EXPECT_EQ(1u, val->DictSize());
-  ValidateTestLocation(val, "Test1", "Test1File", 100);
+  Value* iteration_val = &(val->GetList().at(0));
+  ASSERT_TRUE(iteration_val);
+  ASSERT_TRUE(iteration_val->is_dict());
+  EXPECT_EQ(1u, iteration_val->DictSize());
+  ValidateTestResult(iteration_val, test_result);
 }
+
+// Validate test results without a placeholder.
+TEST_F(TestResultsTrackerTester, JsonSummaryTestWithoutPlaceholder) {
+  TestResult test_result =
+      GenerateTestResult("Test", TestResult::TEST_SUCCESS,
+                         TimeDelta::FromMilliseconds(30), "output");
+
+  tracker.OnTestIterationStarting();
+  tracker.GeneratePlaceholderIteration();
+  tracker.AddTestResult(test_result);
+
+  Optional<Value> root = SaveAndReadSummary();
+
+  Value* val = root->FindListKey("per_iteration_data");
+  ASSERT_TRUE(val);
+  ASSERT_EQ(1u, val->GetList().size());
+
+  Value* iteration_val = &(val->GetList().at(0));
+  // No result is saved since a placeholder was not specified.
+  EXPECT_EQ(0u, iteration_val->DictSize());
+}
+
+// Validate test results are saved correctly based on setup.
+TEST_F(TestResultsTrackerTester, JsonSummaryTestPlaceholderOrder) {
+  TestResult test_result =
+      GenerateTestResult("Test", TestResult::TEST_SUCCESS,
+                         TimeDelta::FromMilliseconds(30), "output");
+  TestResult test_result_empty = GenerateTestResult(
+      "Test", TestResult::TEST_NOT_RUN, TimeDelta::FromMilliseconds(0), "");
+
+  tracker.AddTestPlaceholder("Test");
+  // Test added before GeneratePlaceholderIteration, will not record.
+  tracker.OnTestIterationStarting();
+  tracker.AddTestResult(test_result);
+  tracker.GeneratePlaceholderIteration();
+  // This is the correct order of operations.
+  tracker.OnTestIterationStarting();
+  tracker.GeneratePlaceholderIteration();
+  tracker.AddTestResult(test_result);
+
+  Optional<Value> root = SaveAndReadSummary();
+  Value* val = root->FindListKey("per_iteration_data");
+  ASSERT_TRUE(val);
+  ASSERT_EQ(2u, val->GetList().size());
+
+  Value* iteration_val = &(val->GetList().at(0));
+  ValidateTestResult(iteration_val, test_result_empty);
+
+  iteration_val = &(val->GetList().at(1));
+  ValidateTestResult(iteration_val, test_result);
+}
+
+}  // namespace
 
 }  // namespace base

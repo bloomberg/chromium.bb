@@ -91,10 +91,11 @@ TestResultsTracker::TestResultsTracker() : iteration_(-1), out_(nullptr) {}
 
 TestResultsTracker::~TestResultsTracker() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_GE(iteration_, 0);
 
   if (!out_)
     return;
+
+  DCHECK_GE(iteration_, 0);
 
   // Maps test case names to test results.
   typedef std::map<std::string, std::vector<TestResult> > TestCaseMap;

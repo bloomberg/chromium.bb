@@ -2636,6 +2636,7 @@ test("base_unittests") {
     "task_runner_util_unittest.cc",
     "template_util_unittest.cc",
     "test/launcher/test_results_tracker_unittest.cc",
+    "test/launcher/unit_test_launcher_unittest.cc",
     "test/metrics/histogram_enum_reader_unittest.cc",
     "test/metrics/histogram_tester_unittest.cc",
     "test/metrics/user_action_tester_unittest.cc",
@@ -2830,6 +2831,7 @@ test("base_unittests") {
       "sync_socket_unittest.cc",
       "synchronization/waitable_event_watcher_unittest.cc",
       "test/launcher/test_results_tracker_unittest.cc",
+      "test/launcher/unit_test_launcher_unittest.cc",
     ]
 
     # Pull in specific Mac files for iOS (which have been filtered out by file
