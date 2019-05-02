@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# Keep in sync with group("perf_without_chrome").
 group("perf") {
   testonly = true
   deps = [
@@ -53,7 +54,8 @@ if (is_android) {
   }
 }
 
-# Group for running benchmarks without building Chrome
+# Group for running benchmarks without building Chrome. Keep in sync with
+# group("perf").
 group("perf_without_chrome") {
   testonly = true
   deps = [
@@ -70,6 +72,7 @@ group("perf_without_chrome") {
     # Field trial dependencies
     "//tools/json_comment_eater/",
     "//tools/json_to_struct/",
+    "//components/variations/service/generate_ui_string_overrider.py",
 
     # For blink_perf benchmarks.
     "//third_party/blink/perf_tests/",
