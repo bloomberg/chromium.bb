@@ -1352,10 +1352,6 @@ def RunSkylabHWTestSuite(
       logging.error('Error when json parsing:\n%s', output.output)
       raise
 
-    # TODO(crbug.com/958142): Once the schema change in this bug is landed,
-    # remove this if block.
-    if task_id in report:
-      report = report[task_id]
     logging.info(
         'Suite ended in state %s (failure=%s) with output:\n%s',
         report['task-result']['state'],
