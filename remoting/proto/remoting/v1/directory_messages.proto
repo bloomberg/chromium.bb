@@ -74,13 +74,14 @@ message HeartbeatResponse {
 
 // TODO(joedow): Translate XMPP stanza errors into proto format.
 // The result of a HeartBeatRequest.
+// Added HEARTBEATRESULT_ prefix because logging.h pollutes `ERROR`.
 enum HeartbeatResult {
   // Field was not set.
   HEARTBEATRESULT_UNSET = 0;
   // The heartbeat was handled successfully.
-  SUCCESS = 1;
+  HEARTBEATRESULT_SUCCESS = 1;
   // There was an error processing the heartbeat request.
-  ERROR = 2;
+  HEARTBEATRESULT_ERROR = 2;
 }
 
 // Requests an auth_code with updated OAuth scopes.  Should only be called by
