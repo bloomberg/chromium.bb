@@ -215,13 +215,15 @@ const DialProvider = class {
     const sink = this.sinkDiscoveryService_.getSinkById(sinkId);
     if (!sink) {
       DialAnalytics.recordCreateRoute(
-          DialAnalytics.DialRouteCreation.FAILED_NO_SINK);
+          DialAnalytics.DialCreateRouteResult.SINK_NOT_FOUND);
       return CancellablePromise.reject(Error('Unkown sink: ' + sinkId));
     }
     SinkUtils.getInstance().recentLaunchedDevice =
         new SinkUtils.DeviceData(sink.getModelName(), sink.getIpAddress());
     const dialMediaSource = DialPresentationUrl.create(sourceUrn);
     if (!dialMediaSource) {
+      DialAnalytics.recordCreateRoute(
+          DialAnalytics.DialCreateRouteResult.UNSUPPORTED_SOURCE);
       return CancellablePromise.reject(Error('No app name set.'));
     }
     const appName = dialMediaSource.appName;
@@ -246,7 +248,7 @@ const DialProvider = class {
              })
              .catch(err => {
                DialAnalytics.recordCreateRoute(
-                   DialAnalytics.DialRouteCreation.FAILED_LAUNCH_APP);
+                   DialAnalytics.DialCreateRouteResult.APP_LAUNCH_FAILED);
                throw err;
              })));
   }
@@ -282,7 +284,7 @@ const DialProvider = class {
    */
   addRoute(sinkId, sourceUrn, isLocal, appName, presentationId, offTheRecord) {
     DialAnalytics.recordCreateRoute(
-        DialAnalytics.DialRouteCreation.ROUTE_CREATED);
+        DialAnalytics.DialCreateRouteResult.SUCCESS);
     const route = Route.createRoute(
         presentationId, this.getName(), sinkId, sourceUrn, isLocal, appName,
         null);
@@ -362,6 +364,8 @@ const DialProvider = class {
   terminateRoute(routeId) {
     const activity = this.activityRecords_.getByRouteId(routeId);
     if (!activity) {
+      DialAnalytics.recordTerminateRoute(
+          DialAnalytics.DialTerminateRouteResult.ROUTE_NOT_FOUND);
       return Promise.reject(new RouteRequestError(
           RouteRequestResultCode.ROUTE_NOT_FOUND,
           'Route in DIAL provider not found for routeId ' + routeId));
@@ -369,12 +373,25 @@ const DialProvider = class {
     this.activityRecords_.removeByRouteId(routeId);
     const sink = this.sinkDiscoveryService_.getSinkById(activity.route.sinkId);
     if (!sink) {
+      DialAnalytics.recordTerminateRoute(
+          DialAnalytics.DialTerminateRouteResult.ROUTE_NOT_FOUND);
       return Promise.reject(new RouteRequestError(
           RouteRequestResultCode.ROUTE_NOT_FOUND,
           'Sink in DIAL provider not found for sinkId ' +
               activity.route.sinkId));
     }
-    return this.newClient_(sink).stopApp(activity.appName);
+    return this.newClient_(sink)
+        .stopApp(activity.appName)
+        .then(() => {
+          DialAnalytics.recordTerminateRoute(
+              DialAnalytics.DialTerminateRouteResult.SUCCESS);
+          return Promise.resolve();
+        })
+        .catch(error => {
+          DialAnalytics.recordTerminateRoute(
+              DialAnalytics.DialTerminateRouteResult.STOP_APP_FAILED);
+          return Promise.reject(error);
+        });
   }
 
   /**

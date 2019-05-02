@@ -12,17 +12,17 @@ describe('Dial Analytics', function() {
         ['recordSmallCount', 'recordUserAction', 'recordValue']);
   });
 
-  it('should record a Dial.Create.Route result', function() {
+  it('should record a Dial.CreateRoute result', function() {
     const testConfig = {
-      'metricName': 'MediaRouter.Dial.Create.Route',
+      'metricName': 'MediaRouter.Dial.CreateRoute',
       'type': 'histogram-linear',
       'min': 1,
-      'max': 4,
-      'buckets': 5
+      'max': 6,
+      'buckets': 7
     };
     let numCalls = 0;
-    for (key in mr.DialAnalytics.DialRouteCreation) {
-      const value = mr.DialAnalytics.DialRouteCreation[key];
+    for (key in mr.DialAnalytics.DialCreateRouteResult) {
+      const value = mr.DialAnalytics.DialCreateRouteResult[key];
       mr.DialAnalytics.recordCreateRoute(value);
       expect(chrome.metricsPrivate.recordValue.calls.count()).toBe(++numCalls);
       expect(chrome.metricsPrivate.recordValue)
@@ -30,8 +30,31 @@ describe('Dial Analytics', function() {
     }
   });
 
-  it('should not record an unknown Dial.Create.Route result', function() {
+  it('should not record an unknown Dial.CreateRoute result', function() {
     mr.DialAnalytics.recordCreateRoute('test');
+    expect(chrome.metricsPrivate.recordValue).not.toHaveBeenCalled();
+  });
+
+  it('should record a Dial.TerminateRoute result', function() {
+    const testConfig = {
+      'metricName': 'MediaRouter.Dial.TerminateRoute',
+      'type': 'histogram-linear',
+      'min': 1,
+      'max': 4,
+      'buckets': 5
+    };
+    let numCalls = 0;
+    for (key in mr.DialAnalytics.DialTerminateRouteResult) {
+      const value = mr.DialAnalytics.DialTerminateRouteResult[key];
+      mr.DialAnalytics.recordTerminateRoute(value);
+      expect(chrome.metricsPrivate.recordValue.calls.count()).toBe(++numCalls);
+      expect(chrome.metricsPrivate.recordValue)
+          .toHaveBeenCalledWith(testConfig, value);
+    }
+  });
+
+  it('should not record an unknown Dial.TerminateRoute result', function() {
+    mr.DialAnalytics.recordTerminateRoute('test');
     expect(chrome.metricsPrivate.recordValue).not.toHaveBeenCalled();
   });
 

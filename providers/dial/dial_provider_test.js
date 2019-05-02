@@ -6,6 +6,7 @@ goog.module('mr.DialProviderTest');
 goog.setTestOnly('mr.DialProviderTest');
 
 const Activity = goog.require('mr.dial.Activity');
+const DialAnalytics = goog.require('mr.DialAnalytics');
 const DialClient = goog.require('mr.dial.Client');
 const DialProvider = goog.require('mr.DialProvider');
 const DialSink = goog.require('mr.dial.Sink');
@@ -59,7 +60,7 @@ describe('DialProvider tests', function() {
     mockSinkDiscoveryService.getSinkById.and.returnValue(fakeDialSink);
     appInfo.name = 'YouTube';
     appInfo.state = DialClient.DialAppState.STOPPED;
-    mr.DialAnalytics.recordCreateRoute = jasmine.createSpy('recordCreateRoute');
+    DialAnalytics.recordCreateRoute = jasmine.createSpy('recordCreateRoute');
   });
 
   afterEach(function() {
@@ -143,9 +144,9 @@ describe('DialProvider tests', function() {
                 expect(route.sinkId).toBe('sink1');
                 expect(route.mediaSource).toBe(youTubeUrl);
                 expect(route.offTheRecord).toBe(false);
-                expect(mr.DialAnalytics.recordCreateRoute)
+                expect(DialAnalytics.recordCreateRoute)
                     .toHaveBeenCalledWith(
-                        mr.DialAnalytics.DialRouteCreation.ROUTE_CREATED);
+                        DialAnalytics.DialCreateRouteResult.SUCCESS);
                 done();
               },
               e => {
@@ -162,9 +163,9 @@ describe('DialProvider tests', function() {
                 expect(route.sinkId).toBe('sink1');
                 expect(route.mediaSource).toBe(youTubeUrl);
                 expect(route.offTheRecord).toBe(true);
-                expect(mr.DialAnalytics.recordCreateRoute)
+                expect(DialAnalytics.recordCreateRoute)
                     .toHaveBeenCalledWith(
-                        mr.DialAnalytics.DialRouteCreation.ROUTE_CREATED);
+                        DialAnalytics.DialCreateRouteResult.SUCCESS);
                 done();
               },
               e => {
@@ -176,9 +177,9 @@ describe('DialProvider tests', function() {
       mockDialClient.getAppInfo.and.returnValue(Promise.reject('fail'));
       provider.createRoute(youTubeUrl, 'sink1', 'presentationId1', true)
           .promise.then(done.fail, e => {
-            expect(mr.DialAnalytics.recordCreateRoute)
+            expect(DialAnalytics.recordCreateRoute)
                 .toHaveBeenCalledWith(
-                    mr.DialAnalytics.DialRouteCreation.FAILED_LAUNCH_APP);
+                    DialAnalytics.DialCreateRouteResult.APP_LAUNCH_FAILED);
             done();
           });
     });
@@ -188,9 +189,9 @@ describe('DialProvider tests', function() {
       mockDialClient.launchApp.and.returnValue(Promise.reject('fail'));
       provider.createRoute(youTubeUrl, 'sink1', 'presentationId1', true)
           .promise.then(done.fail, e => {
-            expect(mr.DialAnalytics.recordCreateRoute)
+            expect(DialAnalytics.recordCreateRoute)
                 .toHaveBeenCalledWith(
-                    mr.DialAnalytics.DialRouteCreation.FAILED_LAUNCH_APP);
+                    DialAnalytics.DialCreateRouteResult.APP_LAUNCH_FAILED);
             done();
           });
     });
@@ -226,6 +227,31 @@ describe('DialProvider tests', function() {
       provider.onSinksRemoved([]);
       expect(mockPmCallbacks.onSinkAvailabilityUpdated)
           .toHaveBeenCalledWith(provider, SinkAvailability.UNAVAILABLE);
+    });
+  });
+
+  describe('terminateRoute Test', function() {
+    it('Terminates an existing route', function(done) {
+      const route = provider.addRoute(
+          'sink1', youTubeUrl, false, 'app1', 'presentationId1');
+      mockDialClient.stopApp.and.returnValue(Promise.resolve());
+      provider.terminateRoute(route.id).then(() => done());
+    });
+
+    it('Fails to terminate when DialClient returns an error', function(done) {
+      const route = provider.addRoute(
+          'sink1', youTubeUrl, false, 'app1', 'presentationId1');
+      const errorMsg = 'Failed to stop';
+      mockDialClient.stopApp.and.returnValue(Promise.reject(errorMsg));
+      provider.terminateRoute(route.id)
+          .then(() => done.fail('terminateRoute() succeeded unexpectedly'))
+          .catch(error => {
+            if (error == errorMsg) {
+              done();
+            } else {
+              done.fail('Got an unexpected error: ' + error);
+            }
+          });
     });
   });
 

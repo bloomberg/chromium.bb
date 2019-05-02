@@ -22,7 +22,8 @@ mr.DialAnalytics = {};
 mr.DialAnalytics.Metric = {
   DEVICE_DESCRIPTION_FAILURE: 'MediaRouter.Dial.Device.Description.Failure',
   DEVICE_DESCRIPTION_FROM_CACHE: 'MediaRouter.Dial.Device.Description.Cached',
-  DIAL_CREATE_ROUTE: 'MediaRouter.Dial.Create.Route',
+  DIAL_CREATE_ROUTE: 'MediaRouter.Dial.CreateRoute',
+  DIAL_TERMINATE_ROUTE: 'MediaRouter.Dial.TerminateRoute',
   NON_CAST_DISCOVERY: 'MediaRouter.Dial.Sink.Discovered.NonCast'
 };
 
@@ -31,11 +32,22 @@ mr.DialAnalytics.Metric = {
  * Possible values for the route creation analytics.
  * @enum {number}
  */
-mr.DialAnalytics.DialRouteCreation = {
-  FAILED_NO_SINK: 0,
-  ROUTE_CREATED: 1,
-  NO_APP_INFO: 2,
-  FAILED_LAUNCH_APP: 3
+mr.DialAnalytics.DialCreateRouteResult = {
+  SUCCESS: 0,
+  SINK_NOT_FOUND: 1,
+  APP_INFO_NOT_FOUND: 2,
+  APP_LAUNCH_FAILED: 3,
+  UNSUPPORTED_SOURCE: 4,
+  ROUTE_ALREADY_EXISTS: 5
+};
+
+
+/** @enum {number} */
+mr.DialAnalytics.DialTerminateRouteResult = {
+  SUCCESS: 0,
+  ROUTE_NOT_FOUND: 1,
+  SINK_NOT_FOUND: 2,
+  STOP_APP_FAILED: 3,
 };
 
 
@@ -52,14 +64,21 @@ mr.DialAnalytics.DeviceDescriptionFailures = {
 
 /**
  * Records analytics around route creation.
- * @param {mr.DialAnalytics.DialRouteCreation} value
+ * @param {!mr.DialAnalytics.DialCreateRouteResult} value
  */
 mr.DialAnalytics.recordCreateRoute = function(value) {
   mr.Analytics.recordEnum(
       mr.DialAnalytics.Metric.DIAL_CREATE_ROUTE, value,
-      mr.DialAnalytics.DialRouteCreation);
+      mr.DialAnalytics.DialCreateRouteResult);
 };
 
+
+/** @param {!mr.DialAnalytics.DialTerminateRouteResult} value */
+mr.DialAnalytics.recordTerminateRoute = function(value) {
+  mr.Analytics.recordEnum(
+      mr.DialAnalytics.Metric.DIAL_TERMINATE_ROUTE, value,
+      mr.DialAnalytics.DialTerminateRouteResult);
+};
 
 /**
  * Records a failure with the device description.
