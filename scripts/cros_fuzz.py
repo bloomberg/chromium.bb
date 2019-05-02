@@ -90,12 +90,13 @@ class BuildType(object):
   """Class to hold the different kinds of build types."""
 
   ASAN = 'asan'
+  MSAN = 'msan'
   UBSAN = 'ubsan'
   COVERAGE = 'coverage'
   STANDARD = ''
 
   # Build types that users can specify.
-  CHOICES = (ASAN, UBSAN, COVERAGE)
+  CHOICES = (ASAN, MSAN, UBSAN, COVERAGE)
 
 
 class SysrootPath(object):
@@ -634,7 +635,7 @@ def BuildPackage(package, board, build_type):
   Args:
     package: The package to build. Nothing is built if None.
     board: The board to build the package on.
-    build_type: The type of the build to do (e.g. asan, ubsan or coverage).
+    build_type: The type of the build to do (e.g. asan, msan, ubsan, coverage).
   """
   if package is None:
     return
