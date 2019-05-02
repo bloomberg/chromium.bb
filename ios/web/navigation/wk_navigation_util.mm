@@ -25,9 +25,9 @@ namespace wk_navigation_util {
 
 // Session restoration algorithms uses pushState calls to restore back forward
 // navigation list. WKWebView does not allow pushing more than 100 items per
-// 30 seconds. Limiting max session size to 75 will allow web pages to use push
+// 30 seconds. Limiting max session size to 49 will allow web pages to use push
 // state calls.
-const int kMaxSessionSize = 75;
+const int kMaxSessionSize = 49;
 
 const char kRestoreSessionSessionHashPrefix[] = "session=";
 const char kRestoreSessionTargetUrlHashPrefix[] = "targetUrl=";

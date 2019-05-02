@@ -157,14 +157,14 @@ TEST_F(WKNavigationUtilTest, CreateRestoreSessionUrlForExtraLargeForwardList) {
   ASSERT_EQ(static_cast<size_t>(kMaxSessionSize),
             titles_value->GetList().size());
   ASSERT_EQ("Test0", titles_value->GetList()[0].GetString());
-  ASSERT_EQ("Test74", titles_value->GetList()[kMaxSessionSize - 1].GetString());
+  ASSERT_EQ("Test48", titles_value->GetList()[kMaxSessionSize - 1].GetString());
 
   base::Value* urls_value = value_with_error.value->FindKey("urls");
   ASSERT_TRUE(urls_value);
   ASSERT_TRUE(urls_value->is_list());
   ASSERT_EQ(static_cast<size_t>(kMaxSessionSize), urls_value->GetList().size());
   ASSERT_EQ("http:%2F%2Fwww.0.com%2F", urls_value->GetList()[0].GetString());
-  ASSERT_EQ("http:%2F%2Fwww.74.com%2F",
+  ASSERT_EQ("http:%2F%2Fwww.48.com%2F",
             urls_value->GetList()[kMaxSessionSize - 1].GetString());
 
   // Verify the offset is correct.
@@ -185,7 +185,7 @@ TEST_F(WKNavigationUtilTest, CreateRestoreSessionUrlForExtraLargeBackList) {
   CreateRestoreSessionUrl(
       /*last_committed_item_index=*/kItemCount - 1, items, &restore_session_url,
       &first_index);
-  ASSERT_EQ(150, first_index);
+  ASSERT_EQ(98, first_index);
   ASSERT_TRUE(IsRestoreSessionUrl(restore_session_url));
 
   // Extract session JSON from restoration URL.
@@ -200,16 +200,16 @@ TEST_F(WKNavigationUtilTest, CreateRestoreSessionUrlForExtraLargeBackList) {
   ASSERT_TRUE(titles_value->is_list());
   ASSERT_EQ(static_cast<size_t>(kMaxSessionSize),
             titles_value->GetList().size());
-  ASSERT_EQ("Test150", titles_value->GetList()[0].GetString());
-  ASSERT_EQ("Test224",
+  ASSERT_EQ("Test98", titles_value->GetList()[0].GetString());
+  ASSERT_EQ("Test146",
             titles_value->GetList()[kMaxSessionSize - 1].GetString());
 
   base::Value* urls_value = value_with_error.value->FindKey("urls");
   ASSERT_TRUE(urls_value);
   ASSERT_TRUE(urls_value->is_list());
   ASSERT_EQ(static_cast<size_t>(kMaxSessionSize), urls_value->GetList().size());
-  ASSERT_EQ("http:%2F%2Fwww.150.com%2F", urls_value->GetList()[0].GetString());
-  ASSERT_EQ("http:%2F%2Fwww.224.com%2F",
+  ASSERT_EQ("http:%2F%2Fwww.98.com%2F", urls_value->GetList()[0].GetString());
+  ASSERT_EQ("http:%2F%2Fwww.146.com%2F",
             urls_value->GetList()[kMaxSessionSize - 1].GetString());
 
   // Verify the offset is correct.
@@ -230,7 +230,7 @@ TEST_F(WKNavigationUtilTest,
   CreateRestoreSessionUrl(
       /*last_committed_item_index=*/kMaxSessionSize, items,
       &restore_session_url, &first_index);
-  ASSERT_EQ(38, first_index);
+  ASSERT_EQ(25, first_index);
   ASSERT_TRUE(IsRestoreSessionUrl(restore_session_url));
 
   // Extract session JSON from restoration URL.
@@ -245,16 +245,15 @@ TEST_F(WKNavigationUtilTest,
   ASSERT_TRUE(titles_value->is_list());
   ASSERT_EQ(static_cast<size_t>(kMaxSessionSize),
             titles_value->GetList().size());
-  ASSERT_EQ("Test38", titles_value->GetList()[0].GetString());
-  ASSERT_EQ("Test112",
-            titles_value->GetList()[kMaxSessionSize - 1].GetString());
+  ASSERT_EQ("Test25", titles_value->GetList()[0].GetString());
+  ASSERT_EQ("Test73", titles_value->GetList()[kMaxSessionSize - 1].GetString());
 
   base::Value* urls_value = value_with_error.value->FindKey("urls");
   ASSERT_TRUE(urls_value);
   ASSERT_TRUE(urls_value->is_list());
   ASSERT_EQ(static_cast<size_t>(kMaxSessionSize), urls_value->GetList().size());
-  ASSERT_EQ("http:%2F%2Fwww.38.com%2F", urls_value->GetList()[0].GetString());
-  ASSERT_EQ("http:%2F%2Fwww.112.com%2F",
+  ASSERT_EQ("http:%2F%2Fwww.25.com%2F", urls_value->GetList()[0].GetString());
+  ASSERT_EQ("http:%2F%2Fwww.73.com%2F",
             urls_value->GetList()[kMaxSessionSize - 1].GetString());
 
   // Verify the offset is correct.
