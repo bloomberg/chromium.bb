@@ -145,6 +145,13 @@ class CredentialProviderWebUIMessageHandler
         base::BindRepeating(
             &CredentialProviderWebUIMessageHandler::OnSigninComplete,
             base::Unretained(this)));
+
+    // This message is always sent as part of the SAML flow but we don't really
+    // need to process it. We do however have to handle the message or else
+    // there will be a DCHECK failure in web_ui about an unhandled message.
+    web_ui()->RegisterMessageCallback(
+        "updatePasswordAttributes",
+        base::BindRepeating([](const base::ListValue* args) {}));
   }
 
   void AbortIfPossible() {

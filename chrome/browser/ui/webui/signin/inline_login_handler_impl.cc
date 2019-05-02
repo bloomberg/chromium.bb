@@ -525,6 +525,9 @@ void InlineLoginHandlerImpl::SetExtraInitParams(base::DictionaryValue& params) {
     // Chrome window in incognito mode.
     params.SetBoolean("dontResizeNonEmbeddedPages", true);
 
+    // Scrape the SAML password if possible.
+    params.SetBoolean("extractSamlPasswordAttributes", true);
+
     GURL windows_url = GaiaUrls::GetInstance()->embedded_setup_windows_url();
     // Redirect to specified gaia endpoint path for GCPW:
     std::string windows_endpoint_path = windows_url.path().substr(1);
