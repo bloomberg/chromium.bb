@@ -117,6 +117,7 @@ jumbo_source_set("blink_heap_unittests_sources") {
     "object_start_bitmap_test.cc",
     "persistent_test.cc",
     "run_all_tests.cc",
+    "sparse_heap_bitmap_test.cc",
     "thread_state_scheduling_test.cc",
     "worklist_test.cc",
   ]
