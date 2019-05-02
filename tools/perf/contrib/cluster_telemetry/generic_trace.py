@@ -33,7 +33,8 @@ class _GenericTraceMeasurement(legacy_page_test.LegacyPageTest):
     tab.browser.platform.tracing_controller.StartTracing(config)
 
   def ValidateAndMeasurePage(self, page, tab, results):
-    trace_data = tab.browser.platform.tracing_controller.StopTracing()
+    with tab.browser.platform.tracing_controller.StopTracing() as trace_builder:
+      trace_data = trace_builder.AsData()
     for trace in trace_data.GetTracesFor(trace_data_module.CHROME_TRACE_PART):
       for event in trace['traceEvents']:
         # We collect data from duration begin, complete, instant and count
