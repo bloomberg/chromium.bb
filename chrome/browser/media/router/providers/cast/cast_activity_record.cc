@@ -18,7 +18,13 @@ using blink::mojom::PresentationConnectionMessagePtr;
 
 namespace media_router {
 
-CastActivityRecord::~CastActivityRecord() {}
+CastActivityRecordBase::CastActivityRecordBase(const MediaRoute& route,
+                                               const std::string& app_id)
+    : route_(route), app_id_(app_id) {}
+
+CastActivityRecordBase::~CastActivityRecordBase() = default;
+
+CastActivityRecord::~CastActivityRecord() = default;
 
 mojom::RoutePresentationConnectionPtr CastActivityRecord::AddClient(
     const CastMediaSource& source,
@@ -181,8 +187,7 @@ CastActivityRecord::CastActivityRecord(
     CastSessionTracker* session_tracker,
     DataDecoder* data_decoder,
     CastActivityManagerBase* owner)
-    : route_(route),
-      app_id_(app_id),
+    : CastActivityRecordBase(route, app_id),
       media_sink_service_(media_sink_service),
       message_handler_(message_handler),
       session_tracker_(session_tracker),

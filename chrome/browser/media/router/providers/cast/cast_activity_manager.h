@@ -28,7 +28,8 @@ class CastMessage;
 
 namespace media_router {
 
-class CastActivityRecord;
+class CastActivityRecordBase;
+class CastActivityRecordFactory;
 class CastSession;
 class DataDecoder;
 class MediaSinkServiceBase;
@@ -108,13 +109,18 @@ class CastActivityManager : public CastActivityManagerBase,
                             const base::Value& media_status,
                             base::Optional<int> request_id) override;
 
+  static void SetActitivyRecordFactoryForTest(
+      CastActivityRecordFactory* factory) {
+    activity_record_factory_ = factory;
+  }
+
   cast_channel::ResultCallback MakeResultCallbackForRoute(
       const std::string& route_id,
       mojom::MediaRouteProvider::TerminateRouteCallback callback) override;
 
  private:
   using ActivityMap =
-      base::flat_map<MediaRoute::Id, std::unique_ptr<CastActivityRecord>>;
+      base::flat_map<MediaRoute::Id, std::unique_ptr<CastActivityRecordBase>>;
 
   // Bundle of parameters for DoLaunchSession().
   struct DoLaunchSessionParams {
@@ -188,18 +194,19 @@ class CastActivityManager : public CastActivityManagerBase,
       mojom::MediaRouteProvider::TerminateRouteCallback callback,
       cast_channel::Result result);
 
-  CastActivityRecord* FindActivityForAutoJoin(
+  CastActivityRecordBase* FindActivityForAutoJoin(
       const CastMediaSource& cast_source,
       const url::Origin& origin,
       int tab_id);
-  CastActivityRecord* FindActivityForSessionJoin(
-      const CastMediaSource& cast_source,
-      const std::string& presentation_id);
-  bool CanJoinSession(const CastActivityRecord& activity,
+  bool CanJoinSession(const CastActivityRecordBase& activity,
                       const CastMediaSource& cast_source,
                       bool incognito) const;
+  CastActivityRecordBase* FindActivityForSessionJoin(
+      const CastMediaSource& cast_source,
+      const std::string& presentation_id);
 
-  // Creates and stores a CastActivityRecord representing a non-local activity.
+  // Creates and stores a CastActivityRecordBase representing a non-local
+  // activity.
   void AddNonLocalActivityRecord(const MediaSinkInternal& sink,
                                  const CastSession& session);
 
@@ -209,6 +216,11 @@ class CastActivityManager : public CastActivityManagerBase,
   // These methods return |activities_.end()| when nothing is found.
   ActivityMap::iterator FindActivityByChannelId(int channel_id);
   ActivityMap::iterator FindActivityBySink(const MediaSinkInternal& sink);
+
+  CastActivityRecordBase* AddActivityRecord(const MediaRoute& route,
+                                            const std::string& app_id);
+
+  static CastActivityRecordFactory* activity_record_factory_;
 
   base::flat_set<MediaSource::Id> route_queries_;
   ActivityMap activities_;
