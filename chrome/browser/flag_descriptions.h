@@ -1080,6 +1080,9 @@ extern const char kStopInBackgroundDescription[];
 extern const char kStopNonTimersInBackgroundName[];
 extern const char kStopNonTimersInBackgroundDescription[];
 
+extern const char kStrictOriginIsolationName[];
+extern const char kStrictOriginIsolationDescription[];
+
 extern const char kSystemKeyboardLockName[];
 extern const char kSystemKeyboardLockDescription[];
 

@@ -3806,6 +3806,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kMimeHandlerViewInCrossProcessFrame)},
 #endif
 
+    {"strict-origin-isolation", flag_descriptions::kStrictOriginIsolationName,
+     flag_descriptions::kStrictOriginIsolationDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kStrictOriginIsolation)},
+
     {"autofill-no-local-save-on-unmask-success",
      flag_descriptions::kAutofillNoLocalSaveOnUnmaskSuccessName,
      flag_descriptions::kAutofillNoLocalSaveOnUnmaskSuccessDescription, kOsAll,

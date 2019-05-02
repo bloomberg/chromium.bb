@@ -901,6 +901,46 @@ TEST_F(SiteInstanceTest, IsSameWebsiteForNestedURLs) {
   EXPECT_FALSE(IsSameWebSite(&context, https_bar_url, fs_bar_url));
 }
 
+TEST_F(SiteInstanceTest, StrictOriginIsolation) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kStrictOriginIsolation);
+  EXPECT_TRUE(base::FeatureList::IsEnabled(features::kStrictOriginIsolation));
+
+  GURL isolated1_foo_url("http://isolated1.foo.com");
+  GURL isolated2_foo_url("http://isolated2.foo.com");
+  TestBrowserContext browser_context;
+  IsolationContext isolation_context(&browser_context);
+
+  EXPECT_FALSE(IsSameWebSite(context(), isolated1_foo_url, isolated2_foo_url));
+  EXPECT_NE(
+      SiteInstanceImpl::GetSiteForURL(isolation_context, isolated1_foo_url),
+      SiteInstanceImpl::GetSiteForURL(isolation_context, isolated2_foo_url));
+
+  // A bunch of special cases of origins.
+  GURL secure_foo("https://foo.com");
+  EXPECT_EQ(SiteInstanceImpl::GetSiteForURL(isolation_context, secure_foo),
+            secure_foo);
+  GURL foo_with_port("http://foo.com:1234");
+  EXPECT_EQ(SiteInstanceImpl::GetSiteForURL(isolation_context, foo_with_port),
+            foo_with_port);
+  GURL local_host("http://localhost");
+  EXPECT_EQ(SiteInstanceImpl::GetSiteForURL(isolation_context, local_host),
+            local_host);
+  GURL ip_local_host("http://127.0.0.1");
+  EXPECT_EQ(SiteInstanceImpl::GetSiteForURL(isolation_context, ip_local_host),
+            ip_local_host);
+
+  // The following should not get origin-specific SiteInstances, as they don't
+  // have valid hosts.
+  GURL about_url("about:flags");
+  EXPECT_NE(SiteInstanceImpl::GetSiteForURL(isolation_context, about_url),
+            about_url);
+
+  GURL file_url("file:///home/user/foo");
+  EXPECT_NE(SiteInstanceImpl::GetSiteForURL(isolation_context, file_url),
+            file_url);
+}
+
 TEST_F(SiteInstanceTest, IsolatedOrigins) {
   GURL foo_url("http://www.foo.com");
   GURL isolated_foo_url("http://isolated.foo.com");

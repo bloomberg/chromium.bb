@@ -465,6 +465,11 @@ const base::Feature kSpareRendererForSitePerProcess{
 const base::Feature kStaleWhileRevalidate{"StaleWhileRevalidate",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls whether site isolation should use origins instead of scheme and
+// eTLD+1.
+const base::Feature kStrictOriginIsolation{"StrictOriginIsolation",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Dispatch touch events to "SyntheticGestureController" for events from
 // Devtool Protocol Input.dispatchTouchEvent to simulate touch events close to
 // real OS events.

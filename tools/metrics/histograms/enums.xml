@@ -32883,6 +32883,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1319688939" label="ignore-gpu-blacklist"/>
   <int value="-1318914924" label="OverflowIconsForMediaControls:enabled"/>
   <int value="-1314603238" label="ChromeHomePullToRefreshIphAtTop:enabled"/>
+  <int value="-1313810940" label="StrictOriginIsolation:disabled"/>
   <int value="-1311575452"
       label="AutofillEnforceMinRequiredFieldsForUpload:disabled"/>
   <int value="-1311133348" label="VrBrowsingNativeAndroidUi:enabled"/>
@@ -33230,6 +33231,7 @@ from previous Chrome versions.
   <int value="-797310986" label="CSSFragmentIdentifiers:disabled"/>
   <int value="-795600188" label="disable-async-dns"/>
   <int value="-793921836" label="ShowAllDialogsWithViewsToolkit:disabled"/>
+  <int value="-793383355" label="StrictOriginIsolation:enabled"/>
   <int value="-792079435" label="EnableAppsGridGapFeature:disabled"/>
   <int value="-790036192" label="overscroll-start-threshold"/>
   <int value="-788074946"

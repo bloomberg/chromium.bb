@@ -106,6 +106,19 @@ bool SiteIsolationPolicy::AreIsolatedOriginsEnabled() {
 }
 
 // static
+bool SiteIsolationPolicy::IsStrictOriginIsolationEnabled() {
+  // TODO(wjmaclean): Figure out what should happen when this feature is
+  // combined with --isolate-origins.
+  if (IsSiteIsolationDisabled())
+    return false;
+
+  // The feature needs to be checked last, because checking the feature
+  // activates the field trial and assigns the client either to a control or an
+  // experiment group - such assignment should be final.
+  return base::FeatureList::IsEnabled(features::kStrictOriginIsolation);
+}
+
+// static
 bool SiteIsolationPolicy::IsErrorPageIsolationEnabled(bool in_main_frame) {
   return GetContentClient()->browser()->ShouldIsolateErrorPage(in_main_frame);
 }

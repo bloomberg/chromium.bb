@@ -1795,6 +1795,12 @@ const char kSSLCommittedInterstitialsDescription[] =
     "Use committed error pages instead of transient navigation entries "
     "for SSL interstitial error pages (i.e. certificate errors).";
 
+extern const char kStrictOriginIsolationName[] = "Strict-Origin-Isolation";
+extern const char kStrictOriginIsolationDescription[] =
+    "Experimental security mode that strengthens the site isolation policy. "
+    "Controls whether site isolation should use origins instead of scheme and "
+    "eTLD+1.";
+
 const char kStopInBackgroundName[] = "Stop in background";
 const char kStopInBackgroundDescription[] =
     "Stop scheduler task queues, in the background, "

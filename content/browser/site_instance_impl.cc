@@ -485,6 +485,9 @@ bool SiteInstanceImpl::IsSameWebSite(const IsolationContext& isolation_context,
   if (src_origin.scheme() != dest_origin.scheme())
     return false;
 
+  if (SiteIsolationPolicy::IsStrictOriginIsolationEnabled())
+    return src_origin == dest_origin;
+
   if (!net::registry_controlled_domains::SameDomainOrHost(
           src_origin, dest_origin,
           net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
@@ -574,6 +577,9 @@ GURL SiteInstanceImpl::GetSiteForURLInternal(
   // situation where site URL of file://localhost/ would mismatch Blink's origin
   // (which ignores the hostname in this case - see https://crbug.com/776160).
   if (!origin.host().empty() && origin.scheme() != url::kFileScheme) {
+    if (SiteIsolationPolicy::IsStrictOriginIsolationEnabled())
+      return origin.GetURL();
+
     GURL site_url(GetSiteForOrigin(origin));
 
     // Isolated origins should use the full origin as their site URL. A

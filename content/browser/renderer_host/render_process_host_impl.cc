@@ -2584,6 +2584,8 @@ void RenderProcessHostImpl::ShutdownForBadMessage(
       site_isolation_mode += "spp ";
     if (SiteIsolationPolicy::AreIsolatedOriginsEnabled())
       site_isolation_mode += "io ";
+    if (SiteIsolationPolicy::IsStrictOriginIsolationEnabled())
+      site_isolation_mode += "soi ";
     if (site_isolation_mode.empty())
       site_isolation_mode = "(none)";
 

@@ -41,6 +41,10 @@ class CONTENT_EXPORT SiteIsolationPolicy {
   // Returns true if isolated origins feature is enabled.
   static bool AreIsolatedOriginsEnabled();
 
+  // Returns true if strict origin isolation is enabled. Controls whether site
+  // isolation uses origins instead of scheme and eTLD+1.
+  static bool IsStrictOriginIsolationEnabled();
+
   // Returns true if error page isolation is enabled.
   static bool IsErrorPageIsolationEnabled(bool in_main_frame);
 
