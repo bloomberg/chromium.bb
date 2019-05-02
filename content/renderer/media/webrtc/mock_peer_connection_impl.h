@@ -207,8 +207,8 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
     return PeerConnectionInterface::kIceGatheringNew;
   }
 
-  bool StartRtcEventLog(rtc::PlatformFile file,
-                        int64_t max_size_bytes) override {
+  bool StartRtcEventLog(std::unique_ptr<webrtc::RtcEventLogOutput> output,
+                        int64_t output_period_ms) override {
     NOTIMPLEMENTED();
     return false;
   }
