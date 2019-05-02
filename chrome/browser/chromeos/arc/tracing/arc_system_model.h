@@ -62,6 +62,8 @@ class ArcSystemModel {
  private:
   ThreadMap thread_map_;
   AllCpuEvents all_cpu_events_;
+  // TODO(khmel): For simplification and performance use separate channels
+  // for each event type.
   ValueEvents memory_events_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcSystemModel);

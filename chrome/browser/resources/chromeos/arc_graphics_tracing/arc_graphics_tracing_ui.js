@@ -162,6 +162,10 @@ var valueAttributes = {
   2: {color: '#ffc400', name: 'swap read sectors', scale: 1.0, width: 1.0},
   // kSwapWrite.
   3: {color: '#ff9100', name: 'swap write sectors', scale: 1.0, width: 1.0},
+  // kGemObjects.
+  5: {color: '#3d5afe', name: 'geom. objects', scale: 1.0, width: 1.0},
+  // kGemSize.
+  6: {color: '#7c4dff', name: 'geom. size mb', scale: 1.0 / 1024.0, width: 1.0},
 };
 
 /**
@@ -1559,6 +1563,11 @@ function setGraphicBuffersModel(model) {
     new Events(model.system.memory, 2 /* kSwapRead */, 2 /* kSwapRead */),
     new Events(model.system.memory, 3 /* kSwapWrite */, 3 /* kSwapWrite */)
   ]);
+  // Geom objects and size.
+  memoryBands.addChartSources([new Events(
+      model.system.memory, 5 /* kGemObjects */, 5 /* kGemObjects */)]);
+  memoryBands.addChartSources(
+      [new Events(model.system.memory, 6 /* kGemSize */, 6 /* kGemSize */)]);
   memoryBands.setVSync(vsyncEvents);
 
   var chromeTitle =

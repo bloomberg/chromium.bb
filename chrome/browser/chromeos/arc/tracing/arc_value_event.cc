@@ -45,6 +45,8 @@ bool LoadValueEvents(const base::Value* value, ValueEvents* value_events) {
       case ArcValueEvent::Type::kSwapRead:
       case ArcValueEvent::Type::kSwapWrite:
       case ArcValueEvent::Type::kSwapWait:
+      case ArcValueEvent::Type::kGemObjects:
+      case ArcValueEvent::Type::kGemSize:
         break;
       default:
         return false;

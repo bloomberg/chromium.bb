@@ -48,6 +48,17 @@ class ArcSystemStatCollector {
       -1,  // End of sequence
   };
 
+  // Indices of fields to parse /run/debugfs_gpu/i915_gem_objects
+  // As an example:
+  // 656 objects, 354971648 bytes
+  // 113 unbound objects, 17240064 bytes
+  // ...
+  static constexpr int kGemInfoColumns[] = {
+      0,   // Number of objects.
+      2,   // Used memory in bytes.
+      -1,  // End of sequence
+  };
+
   ArcSystemStatCollector();
   ~ArcSystemStatCollector();
 
@@ -71,6 +82,8 @@ class ArcSystemStatCollector {
     int64_t zram_stat[base::size(kZramStatColumns) - 1] = {0};
     // total, available.
     int64_t mem_info[base::size(kMemInfoColumns) - 1] = {0};
+    // objects, used bytes.
+    int64_t gem_info[base::size(kGemInfoColumns) - 1] = {0};
   };
 
   // Schedule reading System stat files in |ReadSystemStatOnBackgroundThread| on
