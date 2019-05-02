@@ -15,5 +15,5 @@
 ] interface SMSReceiver : EventTarget {
   readonly attribute SMS sms;
   attribute EventHandler onchange;
-  [CallWith=ScriptState] Promise<void> start();
+  [CallWith=ScriptState, MeasureAs=SMSReceiverStart] Promise<void> start();
 };

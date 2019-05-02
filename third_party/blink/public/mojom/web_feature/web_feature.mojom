@@ -2284,6 +2284,7 @@ enum WebFeature {
   kVerticalScrollbarThumbScrollingWithTouch = 2877,
   kHorizontalScrollbarThumbScrollingWithMouse = 2878,
   kHorizontalScrollbarThumbScrollingWithTouch = 2879,
+  kSMSReceiverStart = 2880,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

@@ -22976,6 +22976,7 @@ Called by update_net_error_codes.py.-->
   <int value="2877" label="VerticalScrollbarThumbScrollingWithTouch"/>
   <int value="2878" label="HorizontalScrollbarThumbScrollingWithMouse"/>
   <int value="2879" label="HorizontalScrollbarThumbScrollingWithTouch"/>
+  <int value="2880" label="SMSReceiverStart"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
