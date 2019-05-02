@@ -74,8 +74,8 @@ void AppUpdate::Merge(apps::mojom::App* state, const apps::mojom::App* delta) {
     state->permissions.clear();
     ClonePermissions(delta->permissions, &state->permissions);
   }
-  if (delta->installed_internally != apps::mojom::OptionalBool::kUnknown) {
-    state->installed_internally = delta->installed_internally;
+  if (delta->install_source != apps::mojom::InstallSource::kUnknown) {
+    state->install_source = delta->install_source;
   }
   if (delta->is_platform_app != apps::mojom::OptionalBool::kUnknown) {
     state->is_platform_app = delta->is_platform_app;
@@ -241,23 +241,35 @@ bool AppUpdate::PermissionsChanged() const {
          (!state_ || (delta_->permissions != state_->permissions));
 }
 
-apps::mojom::OptionalBool AppUpdate::InstalledInternally() const {
+apps::mojom::InstallSource AppUpdate::InstallSource() const {
   if (delta_ &&
-      (delta_->installed_internally != apps::mojom::OptionalBool::kUnknown)) {
-    return delta_->installed_internally;
+      (delta_->install_source != apps::mojom::InstallSource::kUnknown)) {
+    return delta_->install_source;
   }
   if (state_) {
-    return state_->installed_internally;
+    return state_->install_source;
   }
-  return apps::mojom::OptionalBool::kUnknown;
+  return apps::mojom::InstallSource::kUnknown;
 }
 
-bool AppUpdate::InstalledInternallyChanged() const {
+bool AppUpdate::InstallSourceChanged() const {
   return delta_ &&
-         (delta_->installed_internally !=
-          apps::mojom::OptionalBool::kUnknown) &&
-         (!state_ ||
-          (delta_->installed_internally != state_->installed_internally));
+         (delta_->install_source != apps::mojom::InstallSource::kUnknown) &&
+         (!state_ || (delta_->install_source != state_->install_source));
+}
+
+apps::mojom::OptionalBool AppUpdate::InstalledInternally() const {
+  switch (InstallSource()) {
+    case apps::mojom::InstallSource::kUnknown:
+      return apps::mojom::OptionalBool::kUnknown;
+    case apps::mojom::InstallSource::kSystem:
+    case apps::mojom::InstallSource::kPolicy:
+    case apps::mojom::InstallSource::kOem:
+    case apps::mojom::InstallSource::kDefault:
+      return apps::mojom::OptionalBool::kTrue;
+    default:
+      return apps::mojom::OptionalBool::kFalse;
+  }
 }
 
 apps::mojom::OptionalBool AppUpdate::IsPlatformApp() const {

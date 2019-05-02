@@ -187,6 +187,7 @@ app_management::mojom::AppPtr AppManagementPageHandler::CreateUIAppPtr(
   app->type = update.AppType();
   app->title = update.Name();
   app->permissions = std::move(permissions);
+  app->install_source = update.InstallSource();
 
   // On other OS's, is_pinned defaults to OptionalBool::kUnknown, which is
   // used to represent the fact that there is no concept of being pinned.

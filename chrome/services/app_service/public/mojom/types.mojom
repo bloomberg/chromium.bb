@@ -30,7 +30,7 @@ struct App {
   array<Permission> permissions;
 
   // Whether the app was installed by sync, policy or as a default app.
-  OptionalBool installed_internally;
+  InstallSource install_source;
 
   // Whether the app is an extensions::Extensions where is_platform_app()
   // returns true.
@@ -75,6 +75,17 @@ enum Readiness {
   kDisabledByUser,       // Disabled by explicit user action.
   kTerminated,           // Renderer process crashed.
   kUninstalledByUser,
+};
+
+// How the app was installed.
+enum InstallSource {
+  kUnknown = 0,
+  kSystem,     // Installed with the system and is considered a part of the OS.
+  kPolicy,     // Installed by policy.
+  kOem,        // Installed by an OEM.
+  kDefault,    // Preinstalled by default, but is not considered a system app.
+  kSync,       // Installed by sync.
+  kUser,       // Installed by user action.
 };
 
 // Augments a bool to include an 'unknown' value.

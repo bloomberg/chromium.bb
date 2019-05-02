@@ -472,6 +472,23 @@ void ArcApps::LoadPlayStoreIcon(apps::mojom::IconCompression icon_compression,
                        is_placeholder_icon, icon_effects, std::move(callback));
 }
 
+apps::mojom::InstallSource GetInstallSource(const ArcAppListPrefs* prefs,
+                                            const std::string& package_name) {
+  if (prefs->IsDefault(package_name)) {
+    return apps::mojom::InstallSource::kDefault;
+  }
+
+  if (prefs->IsOem(package_name)) {
+    return apps::mojom::InstallSource::kOem;
+  }
+
+  if (prefs->IsControlledByPolicy(package_name)) {
+    return apps::mojom::InstallSource::kPolicy;
+  }
+
+  return apps::mojom::InstallSource::kUser;
+}
+
 apps::mojom::AppPtr ArcApps::Convert(const std::string& app_id,
                                      const ArcAppListPrefs::AppInfo& app_info) {
   apps::mojom::AppPtr app = apps::mojom::App::New();
@@ -491,12 +508,7 @@ apps::mojom::AppPtr ArcApps::Convert(const std::string& app_id,
   app->last_launch_time = app_info.last_launch_time;
   app->install_time = app_info.install_time;
 
-  bool installed_internally =
-      prefs_->IsDefault(app_id) ||
-      prefs_->IsControlledByPolicy(app_info.package_name);
-  app->installed_internally = installed_internally
-                                  ? apps::mojom::OptionalBool::kTrue
-                                  : apps::mojom::OptionalBool::kFalse;
+  app->install_source = GetInstallSource(prefs_, app_info.package_name);
 
   app->is_platform_app = apps::mojom::OptionalBool::kFalse;
 

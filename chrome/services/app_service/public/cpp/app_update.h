@@ -82,8 +82,10 @@ class AppUpdate {
   std::vector<apps::mojom::PermissionPtr> Permissions() const;
   bool PermissionsChanged() const;
 
+  apps::mojom::InstallSource InstallSource() const;
+  bool InstallSourceChanged() const;
+
   apps::mojom::OptionalBool InstalledInternally() const;
-  bool InstalledInternallyChanged() const;
 
   apps::mojom::OptionalBool IsPlatformApp() const;
   bool IsPlatformAppChanged() const;

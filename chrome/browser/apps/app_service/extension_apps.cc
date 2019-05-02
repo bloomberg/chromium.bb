@@ -22,6 +22,8 @@
 #include "chrome/browser/ui/app_list/extension_uninstaller.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/extensions/web_app_extension_ids_map.h"
 #include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
@@ -440,6 +442,37 @@ void ExtensionApps::PopulatePermissions(
   }
 }
 
+apps::mojom::InstallSource GetInstallSource(
+    const Profile* profile,
+    const extensions::Extension* extension) {
+  if (extensions::Manifest::IsComponentLocation(extension->location()) ||
+      web_app::ExtensionIdsMap::HasExtensionIdWithInstallSource(
+          profile->GetPrefs(), extension->id(),
+          web_app::InstallSource::kSystemInstalled)) {
+    return apps::mojom::InstallSource::kSystem;
+  }
+
+  if (extensions::Manifest::IsPolicyLocation(extension->location()) ||
+      web_app::ExtensionIdsMap::HasExtensionIdWithInstallSource(
+          profile->GetPrefs(), extension->id(),
+          web_app::InstallSource::kExternalPolicy)) {
+    return apps::mojom::InstallSource::kPolicy;
+  }
+
+  if (extension->was_installed_by_oem()) {
+    return apps::mojom::InstallSource::kOem;
+  }
+
+  if (extension->was_installed_by_default() ||
+      web_app::ExtensionIdsMap::HasExtensionIdWithInstallSource(
+          profile->GetPrefs(), extension->id(),
+          web_app::InstallSource::kExternalDefault)) {
+    return apps::mojom::InstallSource::kDefault;
+  }
+
+  return apps::mojom::InstallSource::kUser;
+}
+
 apps::mojom::AppPtr ExtensionApps::Convert(
     const extensions::Extension* extension,
     apps::mojom::Readiness readiness) {
@@ -482,17 +515,7 @@ apps::mojom::AppPtr ExtensionApps::Convert(
     PopulatePermissions(extension, &app->permissions);
   }
 
-  // TODO(crbug.com/826982): does this catch default installed web apps?
-  //
-  // https://crrev.com/c/1377955/3/chrome/browser/apps/app_service/extension_apps.cc#263
-  bool installed_internally =
-      extension->was_installed_by_default() ||
-      extension->was_installed_by_oem() ||
-      extensions::Manifest::IsComponentLocation(extension->location()) ||
-      extensions::Manifest::IsPolicyLocation(extension->location());
-  app->installed_internally = installed_internally
-                                  ? apps::mojom::OptionalBool::kTrue
-                                  : apps::mojom::OptionalBool::kFalse;
+  app->install_source = GetInstallSource(profile_, extension);
 
   app->is_platform_app = extension->is_platform_app()
                              ? apps::mojom::OptionalBool::kTrue
