@@ -9,11 +9,20 @@ assert(is_chromeos, "MultiDevice UI is Chrome OS only.")
 js_type_check("closure_compile") {
   deps = [
     ":cellular_setup",
+    ":mojo_interface_provider",
   ]
 }
 
 js_library("cellular_setup") {
   deps = [
+    ":mojo_interface_provider",
     "//ui/webui/resources/js:i18n_behavior",
+  ]
+}
+
+js_library("mojo_interface_provider") {
+  deps = [
+    "//chromeos/services/cellular_setup/public/mojom:mojom_js_library_for_compile",
+    "//ui/webui/resources/js:cr",
   ]
 }

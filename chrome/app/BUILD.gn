@@ -460,6 +460,7 @@ source_set("chrome_content_browser_overlay_manifest") {
       "//ash/components/tap_visualizer/public/mojom",
       "//chrome/browser/chromeos/kiosk_next_home/mojom",
       "//chromeos/assistant:buildflags",
+      "//chromeos/services/cellular_setup/public/mojom",
       "//chromeos/services/device_sync/public/cpp:manifest",
       "//chromeos/services/ime/public/mojom",
       "//chromeos/services/media_perception/public/mojom",

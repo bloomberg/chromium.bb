@@ -1823,6 +1823,7 @@ jumbo_split_static_library("ui") {
       "//chromeos/services/assistant/public:feature_flags",
       "//chromeos/services/assistant/public/mojom",
       "//chromeos/services/assistant/public/proto:proto",
+      "//chromeos/services/cellular_setup/public/mojom",
       "//chromeos/services/multidevice_setup/public/cpp",
       "//chromeos/services/multidevice_setup/public/cpp:android_sms_app_helper_delegate",
       "//chromeos/services/multidevice_setup/public/cpp:prefs",

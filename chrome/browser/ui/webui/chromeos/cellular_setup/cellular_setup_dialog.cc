@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/cellular_setup/cellular_setup_dialog.h"
 
+#include "base/bind.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -11,7 +12,9 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/cellular_setup_resources.h"
 #include "chrome/grit/cellular_setup_resources_map.h"
+#include "chromeos/services/cellular_setup/public/mojom/constants.mojom.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/window.h"
 
 namespace chromeos {
@@ -88,11 +91,20 @@ CellularSetupDialogUI::CellularSetupDialogUI(content::WebUI* web_ui)
 
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
 
-  // TODO(khorimoto): Add Mojo bindings to this WebUI so that Mojo calls can
-  // occur in JavaScript.
+  // Add Mojo bindings to this WebUI so that Mojo calls can occur in JavaScript.
+  AddHandlerToRegistry(base::BindRepeating(
+      &CellularSetupDialogUI::BindCellularSetup, base::Unretained(this)));
 }
 
 CellularSetupDialogUI::~CellularSetupDialogUI() = default;
+
+void CellularSetupDialogUI::BindCellularSetup(
+    mojom::CellularSetupRequest request) {
+  service_manager::Connector* connector =
+      content::BrowserContext::GetConnectorFor(
+          web_ui()->GetWebContents()->GetBrowserContext());
+  connector->BindInterface(mojom::kServiceName, std::move(request));
+}
 
 }  // namespace cellular_setup
 

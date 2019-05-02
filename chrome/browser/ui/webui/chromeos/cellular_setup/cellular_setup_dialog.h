@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/chromeos/system_web_dialog_delegate.h"
+#include "chromeos/services/cellular_setup/public/mojom/cellular_setup.mojom.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 
 namespace chromeos {
@@ -37,6 +38,9 @@ class CellularSetupDialogUI : public ui::MojoWebDialogUI {
  public:
   explicit CellularSetupDialogUI(content::WebUI* web_ui);
   ~CellularSetupDialogUI() override;
+
+ private:
+  void BindCellularSetup(mojom::CellularSetupRequest request);
 
   DISALLOW_COPY_AND_ASSIGN(CellularSetupDialogUI);
 };

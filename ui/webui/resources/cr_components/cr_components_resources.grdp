@@ -260,12 +260,20 @@
                compress="gzip" />
 
     <!-- Shared between cellular setup flow and OOBE. -->
-    <structure name="IDR_WEBUI_CHROMEOS_CELLULAR_SETUP_CELLULAR_SETUP_BROWSER_HTML"
+    <structure name="IDR_WEBUI_CHROMEOS_CELLULAR_SETUP_CELLULAR_SETUP_HTML"
                file="cr_components/chromeos/cellular_setup/cellular_setup.html"
                type="chrome_html"
                compress="gzip" />
-    <structure name="IDR_WEBUI_CHROMEOS_CELLULAR_SETUP_CELLULAR_SETUP_BROWSER_JS"
+    <structure name="IDR_WEBUI_CHROMEOS_CELLULAR_SETUP_CELLULAR_SETUP_JS"
                file="cr_components/chromeos/cellular_setup/cellular_setup.js"
+               type="chrome_html"
+               compress="gzip" />
+    <structure name="IDR_WEBUI_CHROMEOS_CELLULAR_SETUP_MOJO_INTERFACE_PROVIDER_HTML"
+               file="cr_components/chromeos/cellular_setup/mojo_interface_provider.html"
+               type="chrome_html"
+               compress="gzip" />
+    <structure name="IDR_WEBUI_CHROMEOS_CELLULAR_SETUP_MOJO_INTERFACE_PROVIDER_JS"
+               file="cr_components/chromeos/cellular_setup/mojo_interface_provider.js"
                type="chrome_html"
                compress="gzip" />
 

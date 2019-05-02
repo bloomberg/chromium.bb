@@ -52,6 +52,7 @@
 #include "ash/components/tap_visualizer/public/mojom/tap_visualizer.mojom.h"  // nogncheck
 #include "chrome/browser/chromeos/kiosk_next_home/mojom/kiosk_next_home_interface_broker.mojom.h"  // nogncheck
 #include "chromeos/assistant/buildflags.h"  // nogncheck
+#include "chromeos/services/cellular_setup/public/mojom/cellular_setup.mojom.h"
 #include "chromeos/services/device_sync/public/cpp/manifest.h"
 #include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
 #include "chromeos/services/media_perception/public/mojom/media_perception.mojom.h"
@@ -202,6 +203,10 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
             .RequireCapability(ws::mojom::kServiceName, "privileged")
             .RequireCapability(tap_visualizer::mojom::kServiceName,
                                tap_visualizer::mojom::kShowUiCapability)
+            .ExposeInterfaceFilterCapability_Deprecated(
+                "navigation:frame", "cellular_setup",
+                service_manager::Manifest::InterfaceList<
+                    chromeos::cellular_setup::mojom::CellularSetup>())
             .ExposeInterfaceFilterCapability_Deprecated(
                 "navigation:frame", "multidevice_setup",
                 service_manager::Manifest::InterfaceList<
