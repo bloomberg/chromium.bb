@@ -62,8 +62,24 @@ PreviewsUKMObserver::OnCommit(content::NavigationHandle* navigation_handle,
     return STOP_OBSERVING;
 
   committed_preview_ = previews_user_data->committed_previews_type();
+
+  // Only check for preview types that are decided before commit in the
+  // |allowed_previews_state|.
+  previews_likely_ = HasEnabledPreviews(
+      previews_user_data->allowed_previews_state() & kPreCommitPreviews);
+
+  // Check all preview types in the |committed_previews_state|. In practice
+  // though, this will only set |previews_likely_| if it wasn't before for an
+  // Optimization Hints preview.
+  previews_likely_ |=
+      HasEnabledPreviews(previews_user_data->committed_previews_state());
+
+  coin_flip_result_ = previews_user_data->coin_flip_holdback_result();
   content::PreviewsState previews_state =
       previews_user_data->committed_previews_state();
+
+  if (coin_flip_result_ != CoinFlipHoldbackResult::kNotSet)
+    DCHECK(previews_likely_);
 
   if (navigation_handle->GetWebContents()->GetContentsMimeType() ==
       kOfflinePreviewsMimeType) {
@@ -176,6 +192,7 @@ void PreviewsUKMObserver::RecordPreviewsTypes(
   }
 
   ukm::builders::Previews builder(info.source_id);
+  builder.Setcoin_flip_result(static_cast<int>(coin_flip_result_));
   if (server_lofi_seen_)
     builder.Setserver_lofi(1);
   if (client_lofi_seen_)
@@ -196,6 +213,8 @@ void PreviewsUKMObserver::RecordPreviewsTypes(
     builder.Setorigin_opt_out(1);
   if (save_data_enabled_)
     builder.Setsave_data_enabled(1);
+  if (previews_likely_)
+    builder.Setpreviews_likely(1);
   if (navigation_restart_penalty_.has_value()) {
     builder.Setnavigation_restart_penalty(
         navigation_restart_penalty_->InMilliseconds());

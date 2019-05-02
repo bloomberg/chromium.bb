@@ -434,14 +434,6 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
   return content::PREVIEWS_OFF;
 }
 
-namespace {
-// This bit mask is all the preview types we should potentially holdback on
-// before commit.
-content::PreviewsState kPreCommitPreviews =
-    content::SERVER_LOFI_ON | content::SERVER_LITE_PAGE_ON |
-    content::OFFLINE_PAGE_ON | content::LITE_PAGE_REDIRECT_ON;
-}  // namespace
-
 content::PreviewsState MaybeCoinFlipHoldbackBeforeCommit(
     content::PreviewsState initial_state,
     content::NavigationHandle* navigation_handle) {
