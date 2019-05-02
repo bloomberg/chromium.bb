@@ -73,6 +73,7 @@ message CreateRequest {
 
   // keys contain the key data to add to the key for the mount that we
   // are creating. Currently, only one key is supported.
+  // TODO(b/133212955): Change the name of this to "key".
   repeated cryptohome.Key keys = 1;
   // Explicitly use the |key| from the AuthorizationRequest.
   // Setting this value means that the KeyData is filled as it
