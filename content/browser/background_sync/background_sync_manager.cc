@@ -964,7 +964,7 @@ void BackgroundSyncManager::AddActiveRegistration(
   if (ShouldLogToDevTools(sync_type)) {
     devtools_context_->LogBackgroundServiceEvent(
         sw_registration_id, origin, devtools::proto::BACKGROUND_SYNC,
-        /* event_name= */ "registered sync",
+        /* event_name= */ "Registered sync",
         /* instance_id= */ sync_registration.options()->tag,
         /* event_metadata= */ {});
   }
@@ -1028,10 +1028,10 @@ void BackgroundSyncManager::DispatchSyncEvent(
     devtools_context_->LogBackgroundServiceEvent(
         active_version->registration_id(), active_version->script_origin(),
         devtools::proto::BACKGROUND_SYNC,
-        /* event_name= */ "dispatched sync event",
+        /* event_name= */ "Dispatched sync event",
         /* instance_id= */ tag,
         /* event_metadata= */
-        {{"last chance", last_chance ? "yes" : "no"}});
+        {{"Last Chance", last_chance ? "Yes" : "No"}});
   }
 }
 
@@ -1459,7 +1459,7 @@ void BackgroundSyncManager::EventCompleteDidGetDelay(
       devtools_context_->LogBackgroundServiceEvent(
           registration_info->service_worker_registration_id, origin,
           devtools::proto::BACKGROUND_SYNC,
-          /* event_name= */ "sync event reregistered",
+          /* event_name= */ "Sync event reregistered",
           /* instance_id= */ registration_info->tag,
           /* event_metadata= */ {});
     }
@@ -1476,10 +1476,10 @@ void BackgroundSyncManager::EventCompleteDidGetDelay(
       devtools_context_->LogBackgroundServiceEvent(
           registration_info->service_worker_registration_id, origin,
           devtools::proto::BACKGROUND_SYNC,
-          /* event_name= */ "sync event failed",
+          /* event_name= */ "Sync event failed",
           /* instance_id= */ registration_info->tag,
-          {{"next attempt delay (ms)", delay_ms},
-           {"failure reason", GetEventStatusString(status_code)}});
+          {{"Next Attempt Delay (ms)", delay_ms},
+           {"Failure Reason", GetEventStatusString(status_code)}});
     }
   }
 
@@ -1491,9 +1491,9 @@ void BackgroundSyncManager::EventCompleteDidGetDelay(
       devtools_context_->LogBackgroundServiceEvent(
           registration_info->service_worker_registration_id, origin,
           devtools::proto::BACKGROUND_SYNC,
-          /* event_name= */ "sync complete",
+          /* event_name= */ "Sync completed",
           /* instance_id= */ registration_info->tag,
-          {{"status", GetEventStatusString(status_code)}});
+          {{"Status", GetEventStatusString(status_code)}});
     }
 
     if (registration_info->sync_type ==
