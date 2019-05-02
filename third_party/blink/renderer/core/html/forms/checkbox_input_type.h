@@ -37,8 +37,6 @@ namespace blink {
 
 class CheckboxInputType final : public BaseCheckableInputType {
  public:
-  static InputType* Create(HTMLInputElement&);
-
   CheckboxInputType(HTMLInputElement& element)
       : BaseCheckableInputType(element) {}
 

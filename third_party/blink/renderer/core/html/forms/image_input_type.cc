@@ -45,12 +45,8 @@ namespace blink {
 
 using namespace html_names;
 
-inline ImageInputType::ImageInputType(HTMLInputElement& element)
+ImageInputType::ImageInputType(HTMLInputElement& element)
     : BaseButtonInputType(element), use_fallback_content_(false) {}
-
-InputType* ImageInputType::Create(HTMLInputElement& element) {
-  return MakeGarbageCollected<ImageInputType>(element);
-}
 
 void ImageInputType::CountUsage() {
   CountUsageIfVisible(WebFeature::kInputTypeImage);

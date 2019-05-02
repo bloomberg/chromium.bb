@@ -37,7 +37,7 @@ class HTMLMediaElement;
 class LoadableTextTrack;
 
 class HTMLTrackElement final : public HTMLElement,
-                               private TextTrackLoaderClient {
+                               public TextTrackLoaderClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(HTMLTrackElement);
 

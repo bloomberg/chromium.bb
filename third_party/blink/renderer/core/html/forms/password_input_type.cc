@@ -44,10 +44,6 @@
 
 namespace blink {
 
-InputType* PasswordInputType::Create(HTMLInputElement& element) {
-  return MakeGarbageCollected<PasswordInputType>(element);
-}
-
 void PasswordInputType::CountUsage() {
   CountUsageIfVisible(WebFeature::kInputTypePassword);
   if (GetElement().FastHasAttribute(html_names::kMaxlengthAttr))

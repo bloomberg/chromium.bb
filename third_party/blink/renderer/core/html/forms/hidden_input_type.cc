@@ -43,10 +43,6 @@ namespace blink {
 
 using namespace html_names;
 
-InputType* HiddenInputType::Create(HTMLInputElement& element) {
-  return MakeGarbageCollected<HiddenInputType>(element);
-}
-
 void HiddenInputType::CountUsage() {
   UseCounter::Count(GetElement().GetDocument(), WebFeature::kInputTypeHidden);
 }

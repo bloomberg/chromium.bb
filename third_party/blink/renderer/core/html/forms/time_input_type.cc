@@ -55,10 +55,6 @@ static const int kTimeStepScaleFactor = 1000;
 TimeInputType::TimeInputType(HTMLInputElement& element)
     : BaseTemporalInputType(element) {}
 
-InputType* TimeInputType::Create(HTMLInputElement& element) {
-  return MakeGarbageCollected<TimeInputType>(element);
-}
-
 void TimeInputType::CountUsage() {
   CountUsageIfVisible(WebFeature::kInputTypeTime);
 }

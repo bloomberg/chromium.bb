@@ -61,10 +61,6 @@ struct VTTDisplayParameters {
 
 class VTTCueBox final : public HTMLDivElement {
  public:
-  static VTTCueBox* Create(Document& document) {
-    return MakeGarbageCollected<VTTCueBox>(document);
-  }
-
   explicit VTTCueBox(Document&);
 
   void ApplyCSSProperties(const VTTDisplayParameters&);

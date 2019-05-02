@@ -94,10 +94,6 @@ static RealNumberRenderSize CalculateRenderSize(const Decimal& value) {
       number_of_zero_after_decimal_point + size_of_digits);
 }
 
-InputType* NumberInputType::Create(HTMLInputElement& element) {
-  return MakeGarbageCollected<NumberInputType>(element);
-}
-
 void NumberInputType::CountUsage() {
   CountUsageIfVisible(WebFeature::kInputTypeNumber);
 }

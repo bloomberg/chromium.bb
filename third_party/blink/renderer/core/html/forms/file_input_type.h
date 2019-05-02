@@ -51,8 +51,6 @@ class CORE_EXPORT FileInputType final : public InputType,
   USING_GARBAGE_COLLECTED_MIXIN(FileInputType);
 
  public:
-  static InputType* Create(HTMLInputElement&);
-
   FileInputType(HTMLInputElement&);
 
   void Trace(Visitor*) override;

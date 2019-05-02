@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element_sync_microtask_queue.h"
 #include "third_party/blink/renderer/core/html/imports/html_import_child.h"
 #include "third_party/blink/renderer/core/html/imports/html_imports_controller.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -125,9 +126,8 @@ void V0CustomElementScheduler::ResolveOrScheduleResolution(
   }
 
   Document& document = element->GetDocument();
-  V0CustomElementMicrotaskResolutionStep* step =
-      V0CustomElementMicrotaskResolutionStep::Create(context, element,
-                                                     descriptor);
+  auto* step = MakeGarbageCollected<V0CustomElementMicrotaskResolutionStep>(
+      context, element, descriptor);
   EnqueueMicrotaskStep(document, step);
 }
 

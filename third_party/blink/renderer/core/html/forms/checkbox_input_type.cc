@@ -40,10 +40,6 @@
 
 namespace blink {
 
-InputType* CheckboxInputType::Create(HTMLInputElement& element) {
-  return MakeGarbageCollected<CheckboxInputType>(element);
-}
-
 void CheckboxInputType::CountUsage() {
   CountUsageIfVisible(WebFeature::kInputTypeCheckbox);
 }
