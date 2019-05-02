@@ -51,21 +51,31 @@ class SiteSuggestionsMediator implements MostVisitedSites.Observer,
     private Profile mProfile;
     private int mIconSize;
 
+    // Whether we should set focus to the data. Used to delay focus-setting until after loading
+    // pending suggestions.
+    private boolean mShouldSetFocus;
+    // Whether we have pending requests for suggestions.
+    private boolean mHasPendingRequests;
+
     SiteSuggestionsMediator(
             PropertyModel model, Profile profile, ImageFetcher imageFetcher, int minIconSize) {
         mModel = model;
         mImageFetcher = imageFetcher;
         mIconSize = minIconSize;
         mProfile = profile;
+
+        mHasPendingRequests = true;
         mMostVisitedSites =
                 SuggestionsDependencyFactory.getInstance().createMostVisitedSites(mProfile);
         mMostVisitedSites.setObserver(this, NUM_FETCHED_SITES);
+
         mModel.addObserver(this);
         ExploreSitesBridge.getEspCatalog(mProfile, this::onGetEspCatalog);
     }
 
     @Override
     public void onSiteSuggestionsAvailable(List<SiteSuggestion> siteSuggestions) {
+        mHasPendingRequests = false;
         HashSet<String> urls = new HashSet<>();
         for (PropertyModel model : mModel.get(SiteSuggestionsCoordinator.SUGGESTIONS_KEY)) {
             urls.add(model.get(SiteSuggestionModel.URL_KEY));
@@ -113,6 +123,10 @@ class SiteSuggestionsMediator implements MostVisitedSites.Observer,
             mModel.set(SiteSuggestionsCoordinator.INITIAL_INDEX_KEY, INITIAL_SCROLLED_POSITION);
             mModel.set(SiteSuggestionsCoordinator.CURRENT_INDEX_KEY, INITIAL_SCROLLED_POSITION);
         }
+
+        if (mShouldSetFocus) {
+            mModel.set(SiteSuggestionsCoordinator.SHOULD_FOCUS_VIEW, true);
+        }
     }
 
     @Override
@@ -145,6 +159,7 @@ class SiteSuggestionsMediator implements MostVisitedSites.Observer,
             // When removal of a site causes us to have fewer sites than we want to display, fetch
             // again.
             if (itemCount < MAX_DISPLAYED_TILES) {
+                mHasPendingRequests = true;
                 mMostVisitedSites.setObserver(this, NUM_FETCHED_SITES);
             }
         }
@@ -156,7 +171,11 @@ class SiteSuggestionsMediator implements MostVisitedSites.Observer,
 
     @Override
     public void requestFocus() {
-        mModel.set(SiteSuggestionsCoordinator.SHOULD_FOCUS_VIEW, true);
+        if (mHasPendingRequests) {
+            mShouldSetFocus = true;
+        } else {
+            mModel.set(SiteSuggestionsCoordinator.SHOULD_FOCUS_VIEW, true);
+        }
     }
 
     @Override

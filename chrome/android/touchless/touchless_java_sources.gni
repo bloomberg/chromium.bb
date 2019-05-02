@@ -21,6 +21,7 @@ touchless_java_sources = [
   "touchless/java/src/org/chromium/chrome/browser/touchless/SiteSuggestionsCoordinator.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/SiteSuggestionsLayoutManager.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/SiteSuggestionsMediator.java",
+  "touchless/java/src/org/chromium/chrome/browser/touchless/SiteSuggestionsRecyclerView.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/SiteSuggestionsTileView.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/SiteSuggestionsViewHolderFactory.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessActionItemViewHolder.java",
