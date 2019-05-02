@@ -1939,6 +1939,31 @@ TEST_F(NewPasswordFormManagerTest, HTTPAuthPasswordOverridden) {
   EXPECT_TRUE(credentials_to_update.empty());
 }
 
+TEST_F(NewPasswordFormManagerTest, BlacklistHttpAuthCredentials) {
+  PasswordForm http_auth_form = parsed_observed_form_;
+  http_auth_form.signon_realm += "my-auth-realm";
+  http_auth_form.scheme = PasswordForm::SCHEME_BASIC;
+
+  CreateFormManagerForHttpAuthForm(http_auth_form);
+  MockFormSaver& form_saver = MockFormSaver::Get(form_manager_.get());
+
+  // Simulate that the user submits http auth credentials.
+  http_auth_form.username_value = ASCIIToUTF16("user1");
+  http_auth_form.password_value = ASCIIToUTF16("pass1");
+  ASSERT_TRUE(
+      form_manager_->ProvisionallySaveHttpAuthFormIfIsManaged(http_auth_form));
+
+  // Simulate that the user clicks never.
+  PasswordForm blacklisted_form;
+  EXPECT_CALL(form_saver, PermanentlyBlacklist(_))
+      .WillOnce(SaveArgPointee<0>(&blacklisted_form));
+  form_manager_->OnNeverClicked();
+
+  EXPECT_EQ(http_auth_form.signon_realm, blacklisted_form.signon_realm);
+  EXPECT_EQ(http_auth_form.origin, blacklisted_form.origin);
+  EXPECT_EQ(http_auth_form.scheme, blacklisted_form.scheme);
+}
+
 }  // namespace
 
 }  // namespace password_manager
