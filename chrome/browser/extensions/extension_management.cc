@@ -107,7 +107,8 @@ ExtensionManagement::GetProviders() const {
 }
 
 bool ExtensionManagement::BlacklistedByDefault() const {
-  return default_settings_->installation_mode == INSTALLATION_BLOCKED;
+  return (default_settings_->installation_mode == INSTALLATION_BLOCKED ||
+          default_settings_->installation_mode == INSTALLATION_REMOVED);
 }
 
 ExtensionManagement::InstallationMode ExtensionManagement::GetInstallationMode(
@@ -139,8 +140,10 @@ ExtensionManagement::GetRecommendedInstallList() const {
 }
 
 bool ExtensionManagement::HasWhitelistedExtension() const {
-  if (default_settings_->installation_mode != INSTALLATION_BLOCKED)
+  if (default_settings_->installation_mode != INSTALLATION_BLOCKED &&
+      default_settings_->installation_mode != INSTALLATION_REMOVED) {
     return true;
+  }
 
   for (const auto& it : settings_by_id_) {
     if (it.second->installation_mode == INSTALLATION_ALLOWED)

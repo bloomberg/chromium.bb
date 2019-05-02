@@ -55,6 +55,8 @@ bool IndividualSettings::Parse(const base::DictionaryValue* dict,
       installation_mode = ExtensionManagement::INSTALLATION_FORCED;
     } else if (installation_mode_str == schema_constants::kNormalInstalled) {
       installation_mode = ExtensionManagement::INSTALLATION_RECOMMENDED;
+    } else if (installation_mode_str == schema_constants::kRemoved) {
+      installation_mode = ExtensionManagement::INSTALLATION_REMOVED;
     } else {
       // Invalid value for 'installation_mode'.
       LOG(WARNING) << kMalformedPreferenceWarning;
