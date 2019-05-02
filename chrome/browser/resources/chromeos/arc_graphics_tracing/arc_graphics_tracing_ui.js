@@ -25,7 +25,9 @@ var zoomLevel = 5;
  * Keep in sync with ArcTracingGraphicsModel::BufferEventType
  * See chrome/browser/chromeos/arc/tracing/arc_tracing_graphics_model.h.
  * Describes how events should be rendered. |color| specifies color of the
- * event, |name| is used in tooltips.
+ * event, |name| is used in tooltips. |width| defines the width in case it is
+ * rendered as a line and |radius| defines the radius in case it is rendered as
+ * a circle.
  */
 var eventAttributes = {
   // kIdleIn
@@ -46,7 +48,7 @@ var eventAttributes = {
   // kBufferQueueReleased
   105: {color: unusedColor, name: 'buffer released'},
   // kBufferFillJank
-  106: {color: '#ff0000', name: 'buffer filling jank', width: 1.0},
+  106: {color: '#ff0000', name: 'buffer filling jank', width: 1.0, radius: 4.0},
 
   // kExoSurfaceAttach.
   200: {color: '#99ccff', name: 'surface attach'},
@@ -59,7 +61,7 @@ var eventAttributes = {
   // kExoReleased
   204: {color: unusedColor, name: 'released'},
   // kExoJank
-  205: {color: '#ff0000', name: 'surface attach jank', width: 1.0},
+  205: {color: '#ff0000', name: 'surface attach jank', width: 1.0, radius: 4.0},
 
   // kChromeBarrierOrder.
   300: {color: '#ff9933', name: 'barrier order'},
@@ -77,7 +79,12 @@ var eventAttributes = {
   // kSurfaceFlingerCompositionDone
   404: {color: unusedColor, name: 'composition done'},
   // kSurfaceFlingerCompositionJank
-  405: {color: '#ff0000', name: 'Android composition jank', width: 1.0},
+  405: {
+    color: '#ff0000',
+    name: 'Android composition jank',
+    width: 1.0,
+    radius: 4.0
+  },
 
   // kChromeOSDraw
   500: {color: '#3399ff', name: 'draw'},
@@ -90,14 +97,21 @@ var eventAttributes = {
   // kChromeOSSwapDone
   504: {color: '#65f441', name: 'swap done'},
   // kChromeOSJank
-  505: {color: '#ff0000', name: 'Chrome composition jank', width: 1.0},
+  505: {
+    color: '#ff0000',
+    name: 'Chrome composition jank',
+    width: 1.0,
+    radius: 4.0
+  },
 
   // kCustomEvent
-  600: {color: '#7cb342', name: 'Custom event', width: 1.0},
+  600: {color: '#7cb342', name: 'Custom event', width: 1.0, radius: 4.0},
 
   // Service events.
   // kTimeMark
   10000: {color: '#888', name: 'Time mark', width: 0.75},
+  // kTimeMarkSmall
+  10001: {color: '#888', name: 'Time mark', width: 0.15},
 };
 
 /**
@@ -188,7 +202,7 @@ function showDetailedInfoForBand(eventBand, mouseEvent) {
  *
  * @param {number} timestamp in microseconds.
  */
-function timestempToMsText(timestamp) {
+function timestampToMsText(timestamp) {
   return (timestamp / 1000.0).toFixed(1);
 }
 
@@ -317,7 +331,7 @@ class SVG {
   }
 
   // Creates text element in the |svg| with provided attributes.
-  static addText(svg, x, y, fontSize, textContent, anchor) {
+  static addText(svg, x, y, fontSize, textContent, anchor, transform) {
     var text = document.createElementNS(svgNS, 'text');
     text.setAttributeNS(null, 'x', x);
     text.setAttributeNS(null, 'y', y);
@@ -325,6 +339,9 @@ class SVG {
     text.setAttributeNS(null, 'font-size', fontSize);
     if (anchor) {
       text.setAttributeNS(null, 'text-anchor', anchor);
+    }
+    if (transform) {
+      text.setAttributeNS(null, 'transform', transform);
     }
     text.appendChild(document.createTextNode(textContent));
     svg.appendChild(text);
@@ -494,7 +511,7 @@ class EventBands {
       bottom: this.nextYOffset + height
     });
 
-    this.updateHeight_(height, padding);
+    this.updateHeight(height, padding);
   }
 
   /**
@@ -506,7 +523,7 @@ class EventBands {
     SVG.addLine(
         this.svg, 0, this.nextYOffset, this.width, this.nextYOffset, '#888',
         0.25);
-    this.updateHeight_(0 /* height */, padding);
+    this.updateHeight(0 /* height */, padding);
   }
 
   /**
@@ -524,7 +541,7 @@ class EventBands {
       bottom: this.nextYOffset + height
     });
 
-    this.updateHeight_(height, padding);
+    this.updateHeight(height, padding);
   }
 
   /**
@@ -611,7 +628,7 @@ class EventBands {
    * @param {number} new height of the chart.
    * @param {number} padding to separate from the next band or chart.
    */
-  updateHeight_(height, padding) {
+  updateHeight(height, padding) {
     this.nextYOffset += height;
     this.height = this.nextYOffset;
     this.svg.setAttribute('height', this.height + 'px');
@@ -622,8 +639,10 @@ class EventBands {
    * This adds events as a global events that do not belong to any band.
    *
    * @param {Events} events to add.
+   * @param {string} renderType defines how to render events, can be underfined
+   *                 for default or set to 'circle'.
    */
-  addGlobal(events) {
+  addGlobal(events, renderType) {
     var eventIndex = -1;
     while (true) {
       eventIndex = events.getNextEvent(eventIndex, 1 /* direction */);
@@ -633,8 +652,14 @@ class EventBands {
       var event = events.events[eventIndex];
       var attributes = events.getEventAttributes(eventIndex);
       var x = this.timestampToOffset(event[1]) + this.bandOffsetX;
-      SVG.addLine(
-          this.svg, x, 0, x, this.height, attributes.color, attributes.width);
+      if (renderType == 'circle') {
+        SVG.addCircle(
+            this.svg, x, this.height / 2, attributes.radius,
+            1 /* strokeWidth */, attributes.color, 'black' /* strokeColor */);
+      } else {
+        SVG.addLine(
+            this.svg, x, 0, x, this.height, attributes.color, attributes.width);
+      }
     }
     this.globalEvents.push(events);
   }
@@ -775,12 +800,12 @@ class EventBands {
 
     SVG.addText(
         svg, horizontalGap, yOffset, fontSize,
-        timestempToMsText(eventTimestamp) + ' ms');
+        timestampToMsText(eventTimestamp) + ' ms');
     yOffset += lineHeight;
     if (vsyncTimestamp) {
       SVG.addText(
           svg, horizontalGap, yOffset, fontSize,
-          '+' + timestempToMsText(eventTimestamp - vsyncTimestamp) +
+          '+' + timestampToMsText(eventTimestamp - vsyncTimestamp) +
               ' since last vsync ms');
       yOffset += lineHeight;
     }
@@ -814,7 +839,7 @@ class EventBands {
 
     // Find the event under the cursor. |index| points to the current event
     // and |nextIndex| points to the next event.
-    var nextIndex = eventBand.getNextEvent(-1 /* index */, 1 /* direction */);
+    var nextIndex = eventBand.getFirstEvent();
     while (nextIndex >= 0) {
       if (eventBand.events[nextIndex][1] > eventTimestamp) {
         break;
@@ -856,8 +881,8 @@ class EventBands {
           nextIndex < 0 ? this.maxTimestamp : eventBand.events[nextIndex][1];
       SVG.addText(
           svg, horizontalGap, yOffset, fontSize,
-          'Idle ' + timestempToMsText(startIdle) + '...' +
-              timestempToMsText(endIdle) + ' chart time ms.');
+          'Idle ' + timestampToMsText(startIdle) + '...' +
+              timestampToMsText(endIdle) + ' chart time ms.');
       yOffset += lineHeight;
     } else {
       // Show the sequence of non-idle events.
@@ -884,7 +909,7 @@ class EventBands {
         entryToShow.text = attributes.name;
         if (entriesToShow.length > 0) {
           entriesToShow[entriesToShow.length - 1].text +=
-              ' [' + timestempToMsText(eventTimestamp - lastTimestamp) + ' ms]';
+              ' [' + timestampToMsText(eventTimestamp - lastTimestamp) + ' ms]';
         }
         entriesToShow.push(entryToShow);
         if (eventBand.isEndOfSequence(index)) {
@@ -1320,6 +1345,15 @@ class Events {
   }
 
   /**
+   * Helper that finds first event. Events that pass filter are only processed.
+   *
+   * @returns {number} index of the first event or -1 in case not found.
+   */
+  getFirstEvent() {
+    return this.getNextEvent(-1 /* index */, 1 /* direction */);
+  }
+
+  /**
    * Helper that returns render attributes for the event.
    *
    * @param {number} index element index in |this.events|.
@@ -1359,7 +1393,7 @@ class Events {
       return -1;
     }
     if (this.events[0][1] >= timestamp) {
-      return this.getNextEvent(-1 /* index */, 1 /* direction */);
+      return this.getFirstEvent();
     }
     if (this.events[this.events.length - 1][1] <= timestamp) {
       return this.getNextEvent(
@@ -1449,6 +1483,7 @@ function setGraphicBuffersModel(model) {
   var innerBandPadding = 2;
   var innerLastBandPadding = 12;
   var chartHeight = 48;
+  var fontSize = 12;
 
   var vsyncEvents = new Events(
       model.android.global_events, 400 /* kVsync */, 400 /* kVsync */);
@@ -1488,9 +1523,10 @@ function setGraphicBuffersModel(model) {
   }
 
   chromeBands.setVSync(vsyncEvents);
-  chromeBands.addGlobal(new Events(
+  var chromeJanks = new Events(
       model.chrome.global_events, 505 /* kChromeOSJank */,
-      505 /* kChromeOSJank */));
+      505 /* kChromeOSJank */);
+  chromeBands.addGlobal(chromeJanks);
 
   var androidTitle =
       new EventBandTitle(parent, 'Android graphics', 'arc-events-band-title');
@@ -1502,10 +1538,13 @@ function setGraphicBuffersModel(model) {
       topBandPadding);
   // Add vsync events
   androidBands.setVSync(vsyncEvents);
-  androidBands.addGlobal(new Events(
+  var androidJanks = new Events(
       model.android.global_events, 405 /* kSurfaceFlingerCompositionJank */,
-      405 /* kSurfaceFlingerCompositionJank */));
+      405 /* kSurfaceFlingerCompositionJank */);
+  androidBands.addGlobal(androidJanks);
 
+  var allActivityJanks = [];
+  var allActivityCustomEvents = [];
   for (var i = 0; i < model.views.length; i++) {
     var view = model.views[i];
     var activityTitleText;
@@ -1540,11 +1579,98 @@ function setGraphicBuffersModel(model) {
     }
     // Add vsync events
     activityBands.setVSync(vsyncEvents);
-    activityBands.addGlobal(new Events(
+
+    var activityJank = new Events(
         view.global_events, 106 /* kBufferFillJank */,
-        106 /* kBufferFillJank */));
-    activityBands.addGlobal(new Events(
-        view.global_events, 600 /* kCustomEvent */, 600 /* kCustomEvent */));
+        106 /* kBufferFillJank */);
+    activityBands.addGlobal(activityJank);
+    allActivityJanks.push(activityJank);
+
+    var activityCustomEvents = new Events(
+        view.global_events, 600 /* kCustomEvent */, 600 /* kCustomEvent */);
+    activityBands.addGlobal(activityCustomEvents);
+    allActivityCustomEvents.push(activityCustomEvents);
+  }
+
+  // Create time ruler.
+  var timeRulerEventHeight = 16;
+  var timeRulerLabelHeight = 92;
+  var timeRulerTitle =
+      new EventBandTitle(parent, '' /* title */, 'arc-time-ruler-title');
+  var timeRulerBands = new EventBands(
+      timeRulerTitle, 'arc-events-band', resolution, 0, model.duration);
+  timeRulerBands.setWidth(timeRulerBands.timestampToOffset(model.duration));
+  // Reseve space for ticks and global events.
+  timeRulerBands.updateHeight(timeRulerEventHeight, 0 /* padding */);
+
+  var kTimeMark = 10000;
+  var kTimeMarkSmall = 10001;
+  var timeEvents = [];
+  var timeTick = 0;
+  var timeTickOffset = 20 * resolution;
+  var timeTickIndex = 0;
+  while (timeTick < model.duration) {
+    if ((timeTickIndex % 10) == 0) {
+      timeEvents.push([kTimeMark, timeTick]);
+    } else {
+      timeEvents.push([kTimeMarkSmall, timeTick]);
+    }
+    timeTick += timeTickOffset;
+    ++timeTickIndex;
+  }
+  var timeMarkEvents = new Events(timeEvents, kTimeMark, kTimeMarkSmall);
+  timeRulerBands.addGlobal(timeMarkEvents);
+
+  // Add all janks
+  timeRulerBands.addGlobal(chromeJanks, 'circle' /* renderType */);
+  timeRulerBands.addGlobal(androidJanks, 'circle' /* renderType */);
+  for (var i = 0; i < allActivityJanks.length; ++i) {
+    timeRulerBands.addGlobal(allActivityJanks[i], 'circle' /* renderType */);
+  }
+  for (var i = 0; i < allActivityCustomEvents.length; ++i) {
+    timeRulerBands.addGlobal(
+        allActivityCustomEvents[i], 'circle' /* renderType */);
+  }
+  // Add vsync events
+  timeRulerBands.setVSync(vsyncEvents);
+
+  // Reseve space for labels.
+  // Add tick labels.
+  timeRulerBands.updateHeight(timeRulerLabelHeight, 0 /* padding */);
+  timeTick = 0;
+  timeTickOffset = 200 * resolution;
+  while (timeTick < model.duration) {
+    SVG.addText(
+        timeRulerBands.svg, timeRulerBands.timestampToOffset(timeTick),
+        timeRulerEventHeight, fontSize, timestampToMsText(timeTick));
+    timeTick += timeTickOffset;
+  }
+  // Add janks and custom events labels.
+  var rotationY = timeRulerEventHeight + fontSize;
+  for (var i = 0; i < timeRulerBands.globalEvents.length; ++i) {
+    var globalEvents = timeRulerBands.globalEvents[i];
+    if (globalEvents == timeMarkEvents ||
+        globalEvents == timeRulerBands.vsyncEvents) {
+      continue;
+    }
+    var index = globalEvents.getFirstEvent();
+    while (index >= 0) {
+      var event = globalEvents.events[index];
+      index = globalEvents.getNextEvent(index, 1 /* direction */);
+      var eventType = event[0];
+      var attributes = eventAttributes[eventType];
+      var text;
+      if (eventType == 600 /* kCustomEvent */) {
+        text = event[2];
+      } else {
+        text = attributes.name;
+      }
+      var x = timeRulerBands.timestampToOffset(event[1]) - fontSize;
+      SVG.addText(
+          timeRulerBands.svg, x, timeRulerEventHeight, fontSize, text,
+          'start' /* anchor */,
+          'rotate(45 ' + x + ', ' + rotationY + ')' /* transform */);
+    }
   }
 
   $('arc-graphics-tracing-save').disabled = false;
