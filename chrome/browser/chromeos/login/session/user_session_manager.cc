@@ -103,6 +103,7 @@
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/discover_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/modules/discover_module_pin_setup.h"
+#include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -147,6 +148,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/page_zoom.h"
 #include "extensions/common/features/feature_session_type.h"
 #include "rlz/buildflags/buildflags.h"
 #include "services/identity/public/cpp/accounts_mutator.h"
@@ -1510,6 +1512,14 @@ void UserSessionManager::OnCryptohomeOperationCompleted(Profile* profile,
 }
 
 void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
+  // Record each user's "Page zoom" setting for https://crbug.com/955071.
+  // This can be removed after M79.
+  double zoom_level = profile->GetZoomLevelPrefs()->GetDefaultZoomLevelPref();
+  double zoom_factor = content::ZoomLevelToZoomFactor(zoom_level);
+  int zoom_percent = std::floor(zoom_factor * 100);
+  // Zoom can be greater than 100%.
+  UMA_HISTOGRAM_COUNTS_1000("Login.DefaultPageZoom", zoom_percent);
+
   BootTimesRecorder::Get()->AddLoginTimeMarker("TPMOwn-End", false);
 
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
