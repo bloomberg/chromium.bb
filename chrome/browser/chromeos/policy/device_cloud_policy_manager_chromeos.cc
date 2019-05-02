@@ -22,6 +22,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/attestation/attestation_policy_observer.h"
 #include "chrome/browser/chromeos/attestation/enrollment_policy_observer.h"
+#include "chrome/browser/chromeos/attestation/machine_certificate_uploader.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
@@ -307,12 +308,15 @@ void DeviceCloudPolicyManagerChromeOS::StartConnection(
   enrollment_policy_observer_.reset(
       new chromeos::attestation::EnrollmentPolicyObserver(client()));
 
-  // Don't start the AttestationPolicyObserver if machine cert requests
-  // are disabled.
+  // Don't create a MachineCertificateUploader or start the
+  // AttestationPolicyObserver if machine cert requests are disabled.
   if (!(base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kDisableMachineCertRequest))) {
+    machine_certificate_uploader_.reset(
+        new chromeos::attestation::MachineCertificateUploader(client()));
     attestation_policy_observer_.reset(
-        new chromeos::attestation::AttestationPolicyObserver(client()));
+        new chromeos::attestation::AttestationPolicyObserver(
+            machine_certificate_uploader_.get()));
   }
 
   // Enable device reporting and status monitoring for cloud managed devices. We

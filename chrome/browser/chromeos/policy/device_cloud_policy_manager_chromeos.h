@@ -29,6 +29,7 @@ class InstallAttributes;
 namespace attestation {
 class AttestationPolicyObserver;
 class EnrollmentPolicyObserver;
+class MachineCertificateUploader;
 }
 }
 
@@ -143,6 +144,13 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
         component_policy_disabled_for_testing;
   }
 
+  // Return a pointer to the machine certificate uploader. The callers do
+  // not take ownership of that pointer.
+  chromeos::attestation::MachineCertificateUploader*
+  GetMachineCertificateUploader() {
+    return machine_certificate_uploader_.get();
+  }
+
  private:
   // Saves the state keys received from |session_manager_client_|.
   void OnStateKeysUpdated();
@@ -186,6 +194,8 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
 
   std::unique_ptr<chromeos::attestation::EnrollmentPolicyObserver>
       enrollment_policy_observer_;
+  std::unique_ptr<chromeos::attestation::MachineCertificateUploader>
+      machine_certificate_uploader_;
   std::unique_ptr<chromeos::attestation::AttestationPolicyObserver>
       attestation_policy_observer_;
 
