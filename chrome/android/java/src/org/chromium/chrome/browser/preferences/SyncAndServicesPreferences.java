@@ -75,6 +75,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     private static final String FRAGMENT_CANCEL_SYNC = "cancel_sync_dialog";
 
     private static final String PREF_SIGNIN = "sign_in";
+    private static final String PREF_MANAGE_YOUR_GOOGLE_ACCOUNT = "manage_your_google_account";
 
     private static final String PREF_SYNC_CATEGORY = "sync_category";
     private static final String PREF_SYNC_ERROR_CARD = "sync_error_card";
@@ -113,6 +114,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     private boolean mIsFromSigninScreen;
 
     private SignInPreference mSigninPreference;
+    private Preference mManageYourGoogleAccount;
 
     private PreferenceCategory mSyncCategory;
     private Preference mSyncErrorCard;
@@ -163,6 +165,9 @@ public class SyncAndServicesPreferences extends PreferenceFragment
 
         mSigninPreference = (SignInPreference) findPreference(PREF_SIGNIN);
         mSigninPreference.setPersonalizedPromoEnabled(false);
+        mManageYourGoogleAccount = findPreference(PREF_MANAGE_YOUR_GOOGLE_ACCOUNT);
+        mManageYourGoogleAccount.setOnPreferenceClickListener(SyncPreferenceUtils.toOnClickListener(
+                this, () -> SyncPreferenceUtils.openGoogleMyAccount(getActivity())));
 
         mSyncCategory = (PreferenceCategory) findPreference(PREF_SYNC_CATEGORY);
         mSyncErrorCard = findPreference(PREF_SYNC_ERROR_CARD);
@@ -521,9 +526,11 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         }
 
         if (!ChromeSigninController.get().isSignedIn()) {
+            getPreferenceScreen().removePreference(mManageYourGoogleAccount);
             getPreferenceScreen().removePreference(mSyncCategory);
             return;
         }
+        getPreferenceScreen().addPreference(mManageYourGoogleAccount);
         getPreferenceScreen().addPreference(mSyncCategory);
 
         mCurrentSyncError = getSyncError();

@@ -35,6 +35,8 @@ import org.chromium.ui.UiUtils;
  */
 public class SyncPreferenceUtils {
     private static final String DASHBOARD_URL = "https://www.google.com/settings/chrome/sync";
+    private static final String MY_ACCOUNT_URL =
+            "https://accounts.google.com/AccountChooser?Email=%s&continue=https://myaccount.google.com/";
 
     /**
      * Checks if sync error icon should be shown. Show sync error icon if sync is off because
@@ -176,14 +178,14 @@ public class SyncPreferenceUtils {
     }
 
     /**
-     * Opens web dashboard to manage sync in a custom tab.
+     * Opens web dashboard to specified url in a custom tab.
      * @param activity The activity to use for starting the intent.
+     * @param url The url link to open in the custom tab.
      */
-    public static void openSyncDashboard(Activity activity) {
-        // TODO(https://crbug.com/948103): Create a builder for custom tab intents.
+    private static void openCustomTabWithURL(Activity activity, String url) {
         CustomTabsIntent customTabIntent =
                 new CustomTabsIntent.Builder().setShowTitle(false).build();
-        customTabIntent.intent.setData(Uri.parse(DASHBOARD_URL));
+        customTabIntent.intent.setData(Uri.parse(url));
 
         Intent intent = LaunchIntentDispatcher.createCustomTabActivityIntent(
                 activity, customTabIntent.intent);
@@ -194,5 +196,25 @@ public class SyncPreferenceUtils {
         IntentHandler.addTrustedIntentExtras(intent);
 
         IntentUtils.safeStartActivity(activity, intent);
+    }
+
+    /**
+     * Opens web dashboard to manage sync in a custom tab.
+     * @param activity The activity to use for starting the intent.
+     */
+    public static void openSyncDashboard(Activity activity) {
+        // TODO(https://crbug.com/948103): Create a builder for custom tab intents.
+        openCustomTabWithURL(activity, DASHBOARD_URL);
+    }
+
+    /**
+     * Opens web dashboard to manage google account in a custom tab.
+     * @param activity The activity to use for starting the intent.
+     */
+    public static void openGoogleMyAccount(Activity activity) {
+        assert ChromeSigninController.get().isSignedIn();
+        openCustomTabWithURL(activity,
+                String.format(
+                        MY_ACCOUNT_URL, ChromeSigninController.get().getSignedInAccountName()));
     }
 }

@@ -12,6 +12,10 @@
         android:key="sign_in"
         android:title="@string/sign_in_to_chrome"/>
 
+    <org.chromium.chrome.browser.preferences.ChromeBasePreference
+        android:key="manage_your_google_account"
+        android:title="@string/manage_your_google_account"/>
+
     <PreferenceCategory
         android:key="sync_category"
         android:title="@string/sync_category_title">
