@@ -3109,6 +3109,12 @@ FloatPoint LocalFrameView::RootFrameToDocument(
   return local_frame + layout_viewport->GetScrollOffset();
 }
 
+IntRect LocalFrameView::DocumentToFrame(const IntRect& rect_in_document) const {
+  IntRect rect_in_frame = rect_in_document;
+  rect_in_frame.SetLocation(DocumentToFrame(rect_in_document.Location()));
+  return rect_in_frame;
+}
+
 DoublePoint LocalFrameView::DocumentToFrame(
     const DoublePoint& point_in_document) const {
   ScrollableArea* layout_viewport = LayoutViewport();
@@ -3116,6 +3122,11 @@ DoublePoint LocalFrameView::DocumentToFrame(
     return point_in_document;
 
   return point_in_document - layout_viewport->GetScrollOffset();
+}
+
+IntPoint LocalFrameView::DocumentToFrame(
+    const IntPoint& point_in_document) const {
+  return FlooredIntPoint(DocumentToFrame(DoublePoint(point_in_document)));
 }
 
 FloatPoint LocalFrameView::DocumentToFrame(
@@ -3139,6 +3150,10 @@ LayoutRect LocalFrameView::DocumentToFrame(
                     rect_in_document.Size());
 }
 
+IntPoint LocalFrameView::FrameToDocument(const IntPoint& point_in_frame) const {
+  return FlooredIntPoint(FrameToDocument(LayoutPoint(point_in_frame)));
+}
+
 LayoutPoint LocalFrameView::FrameToDocument(
     const LayoutPoint& point_in_frame) const {
   ScrollableArea* layout_viewport = LayoutViewport();
@@ -3146,6 +3161,11 @@ LayoutPoint LocalFrameView::FrameToDocument(
     return point_in_frame;
 
   return point_in_frame + LayoutSize(layout_viewport->GetScrollOffset());
+}
+
+IntRect LocalFrameView::FrameToDocument(const IntRect& rect_in_frame) const {
+  return IntRect(FrameToDocument(rect_in_frame.Location()),
+                 rect_in_frame.Size());
 }
 
 LayoutRect LocalFrameView::FrameToDocument(

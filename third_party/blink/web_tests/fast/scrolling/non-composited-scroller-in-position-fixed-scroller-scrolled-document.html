@@ -106,6 +106,29 @@
                             "Scroller should be scrolled.");
       }
 
+      // Now mutate the scroller so that we force a recompute of its non-fast
+      // scrollable region.
+      {
+        scroller.style.height = "151px";
+        await waitForCompositorCommit();
+      }
+
+      // Perform another scroll to ensure the recalculated region is still
+      // correct after the scroll.
+      {
+        const delta = 100;
+        const location = elementCenter(scroller);
+        await smoothScroll(delta,
+                           location.x,
+                           location.y,
+                           GestureSourceType.TOUCH_INPUT,
+                           'up',
+                           SPEED_INSTANT);
+
+        assert_equals(scroller.scrollTop, 0,
+                      "Scroller should be scrolled to the top.");
+      }
+
     }, 'Scrolling over an uncomposited scroller inside a composited position' +
        ': fixed element.');
   }
