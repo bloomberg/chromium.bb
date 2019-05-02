@@ -153,6 +153,15 @@ void MimeHandlerViewGuest::SetEmbedderFrame(int process_id, int routing_id) {
     embedder_widget_routing_id_ =
         rfh->GetView()->GetRenderWidgetHost()->GetRoutingID();
   }
+  auto owner_type = rfh ? rfh->GetFrameOwnerElementType()
+                        : blink::FrameOwnerElementType::kNone;
+  // If the embedder frame is the ContentFrame() of a plugin element, then there
+  // could be a MimeHandlerViewFrameContainer in the parent frame. Note that
+  // the MHVFC is only created through HTMLPlugInElement::UpdatePlugin (manually
+  // navigating a plugin element's window would create a MHVFC).
+  maybe_has_frame_container_ =
+      owner_type == blink::FrameOwnerElementType::kEmbed ||
+      owner_type == blink::FrameOwnerElementType::kObject;
   DCHECK_NE(MSG_ROUTING_NONE, embedder_widget_routing_id_);
 }
 
@@ -433,13 +442,12 @@ void MimeHandlerViewGuest::DocumentOnLoadCompletedInMainFrame() {
     // TODO(ekaramad): Verify if the container manager corresponding to the
     // embedder frame itself needs to be notified; possibly for postMessage
     // support from print helpers (https://crbug.com/659750).
-    if (auto* ancestor = GetEmbedderFrame()->GetParent()) {
-      // TODO(ekaramad): We should only send this IPC when the FrameOwner of the
-      // embedder frame is a plugin element (https://crbug.com/957373).
+    if (maybe_has_frame_container_) {
       // For plugin elements, the embedder should be notified so that the queued
       // messages (postMessage) are forwarded to the guest page.
       mojom::MimeHandlerViewContainerManagerPtr container_manager;
-      ancestor->GetRemoteInterfaces()->GetInterface(&container_manager);
+      GetEmbedderFrame()->GetParent()->GetRemoteInterfaces()->GetInterface(
+          &container_manager);
       container_manager->DidLoad(element_instance_id(), original_resource_url_);
     }
   }

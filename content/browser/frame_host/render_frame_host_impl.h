@@ -276,6 +276,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void PrepareForInnerWebContentsAttach(
       PrepareForInnerWebContentsAttachCallback callback) override;
   void UpdateSubresourceLoaderFactories() override;
+  blink::FrameOwnerElementType GetFrameOwnerElementType() override;
 
   // IPC::Sender
   bool Send(IPC::Message* msg) override;

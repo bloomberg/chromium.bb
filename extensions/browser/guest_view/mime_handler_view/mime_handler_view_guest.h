@@ -187,6 +187,9 @@ class MimeHandlerViewGuest
   bool is_embedder_fullscreen_ = false;
   bool plugin_can_save_ = false;
   GURL original_resource_url_;
+  // True when the MimeHandlerViewGeust might have a frame container in its
+  // embedder's parent frame to facilitate postMessage.
+  bool maybe_has_frame_container_ = false;
   mime_handler::BeforeUnloadControlPtrInfo pending_before_unload_control_;
 
   DISALLOW_COPY_AND_ASSIGN(MimeHandlerViewGuest);

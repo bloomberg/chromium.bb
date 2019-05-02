@@ -19,6 +19,7 @@
 #include "ipc/ipc_sender.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-forward.h"
@@ -394,6 +395,12 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // Used in case we need to add or remove intercepting proxies to the
   // running renderer, or in case of Network Service connection errors.
   virtual void UpdateSubresourceLoaderFactories() = 0;
+
+  // Returns the type of frame owner element for the FrameTreeNode associated
+  // with this RenderFrameHost (e.g., <iframe>, <object>, etc). Note that it
+  // returns blink::FrameOwnerElementType::kNone if the RenderFrameHost is a
+  // main frame.
+  virtual blink::FrameOwnerElementType GetFrameOwnerElementType() = 0;
 
  private:
   // This interface should only be implemented inside content.
