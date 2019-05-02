@@ -779,6 +779,8 @@ void BrowserThemePack::BuildFromColor(SkColor color, BrowserThemePack* pack) {
   SkColor tab_color;
   pack->GetColor(TP::COLOR_TOOLBAR, &tab_color);
   pack->SetColor(TP::COLOR_NTP_BACKGROUND, tab_color);
+  pack->SetColor(TP::COLOR_NTP_TEXT,
+                 color_utils::GetColorWithMaxContrast(tab_color));
 
   SkColor tab_text_color;
   pack->GetColor(TP::COLOR_TAB_TEXT, &tab_text_color);
@@ -1078,6 +1080,9 @@ void BrowserThemePack::AdjustThemePack() {
   // and tab colors, as generated text colors will try to appropriately contrast
   // with the frame/tab behind them.
   GenerateMissingTextColors();
+
+  // Generates missing NTP related colors.
+  GenerateMissingNtpColors();
 
   // Make sure the |images_on_file_thread_| has bitmaps for supported
   // scale factors before passing to FILE thread.
@@ -1828,6 +1833,22 @@ void BrowserThemePack::GenerateMissingTextColorForID(int text_color_id,
   const SkColor result_color =
       color_utils::GetColorWithMinimumContrast(blend_source_color, bg_color);
   SetColor(text_color_id, result_color);
+}
+
+void BrowserThemePack::GenerateMissingNtpColors() {
+  // Calculate NTP text color based on NTP background.
+  SkColor ntp_background_color;
+  gfx::Image image = GetImageNamed(IDR_THEME_NTP_BACKGROUND);
+  if (!image.IsEmpty()) {
+    ntp_background_color = ComputeImageColor(image, image.Height());
+    SetColorIfUnspecified(
+        TP::COLOR_NTP_TEXT,
+        color_utils::GetColorWithMaxContrast(ntp_background_color));
+  } else if (GetColor(TP::COLOR_NTP_BACKGROUND, &ntp_background_color)) {
+    SetColorIfUnspecified(
+        TP::COLOR_NTP_TEXT,
+        color_utils::GetColorWithMaxContrast(ntp_background_color));
+  }
 }
 
 void BrowserThemePack::RepackImages(const ImageCache& images,
