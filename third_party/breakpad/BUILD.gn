@@ -712,9 +712,9 @@ if (is_linux || is_android) {
     deps = [
       ":client",
       ":processor_support",
+      "//base/test:run_all_unittests",
       "//testing/gmock",
       "//testing/gtest",
-      "//testing/gtest:gtest_main",
     ]
 
     data_deps = [

@@ -2267,6 +2267,21 @@
             {
               "os": "Ubuntu-14.04"
             }
+          ]
+        },
+        "test": "breakpad_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-14.04"
+            }
           ],
           "shards": 10
         },
@@ -3867,6 +3882,21 @@
             {
               "os": "Ubuntu-14.04"
             }
+          ]
+        },
+        "test": "breakpad_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-14.04"
+            }
           ],
           "shards": 10
         },
@@ -5426,6 +5456,21 @@
             {
               "os": "Ubuntu-14.04"
             }
+          ]
+        },
+        "test": "breakpad_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-14.04"
+            }
           ],
           "shards": 10
         },
@@ -6903,6 +6948,22 @@
           ]
         },
         "test": "boringssl_ssl_tests"
+      },
+      {
+        "isolate_coverage_data": true,
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-14.04"
+            }
+          ]
+        },
+        "test": "breakpad_unittests"
       },
       {
         "isolate_coverage_data": true,
@@ -8667,6 +8728,21 @@
           ]
         },
         "test": "boringssl_ssl_tests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ]
+        },
+        "test": "breakpad_unittests"
       },
       {
         "merge": {
