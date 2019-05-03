@@ -2045,8 +2045,10 @@ if (enable_java_templates) {
   #     resources.arsc file in the apk or module.
   #   resources_config_path: Path to the aapt2 optimize config file that tags
   #     resources with acceptable/non-acceptable optimizations.
-  #   verify_android_configuration: Enables verification of expected merged
-  #     manifest and proguard flags based on a golden file.
+  #   verify_manifest: Enables verification of expected merged manifest based
+  #     on a golden file.
+  #   verify_proguard_flags: Enables verification of expected merged proguard
+  #     flags based on a golden file.
   #   static_library_dependent_targets: A list of scopes describing targets that
   #     use this target as a static library. Common Java code from the targets
   #     listed in static_library_dependent_targets will be moved into this
@@ -2310,13 +2312,6 @@ if (enable_java_templates) {
       _incremental_install_json_path = "$root_out_dir/gen.runtime/$_target_dir_name/$target_name.incremental.json"
     }
 
-    _verify_android_configuration =
-        defined(invoker.verify_android_configuration) &&
-        invoker.verify_android_configuration && !is_java_debug
-    if (_verify_android_configuration) {
-      _target_src_dir = get_label_info(":$target_name", "dir")
-    }
-
     _android_manifest =
         "$target_gen_dir/${_template_name}_manifest/AndroidManifest.xml"
     _merge_manifest_target = "${_template_name}__merge_manifests"
@@ -2324,7 +2319,9 @@ if (enable_java_templates) {
       input_manifest = _android_root_manifest
       output_manifest = _android_manifest
       build_config = _build_config
-      if (_verify_android_configuration) {
+      if (defined(invoker.verify_manifest) && invoker.verify_manifest &&
+          !is_java_debug) {
+        _target_src_dir = get_label_info(":$target_name", "dir")
         expected_manifest =
             "$_target_src_dir/java/$_template_name.AndroidManifest.expected"
       }
@@ -2809,11 +2806,6 @@ if (enable_java_templates) {
           forward_variables_from(invoker, [ "proguard_jar_path" ])
           deps += _deps + [ ":$_compile_resources_target" ]
           proguard_mapping_path = _proguard_mapping_path
-          if (!defined(invoker.proguard_jar_path) &&
-              _verify_android_configuration) {
-            proguard_expectations_file =
-                "$_target_src_dir/java/$_template_name.proguard_flags.expected"
-          }
         } else {
           input_jars = [ _lib_dex_path ]
           input_dex_classpath =
@@ -3266,7 +3258,6 @@ if (enable_java_templates) {
                                "product_version_resources_dep",
                                "proguard_configs",
                                "proguard_enabled",
-                               "verify_android_configuration",
                                "proguard_jar_path",
                                "resource_blacklist_regex",
                                "resource_blacklist_exceptions",
@@ -3396,7 +3387,7 @@ if (enable_java_templates) {
                                "testonly",
                                "uncompress_shared_libraries",
                                "use_chromium_linker",
-                               "verify_android_configuration",
+                               "verify_manifest",
                                "version_code",
                                "version_name",
                                "write_asset_list",
@@ -4432,6 +4423,13 @@ if (enable_java_templates) {
           not_needed(invoker, [ "proguard_jar_path" ])
         }
       } else {
+        _verify_proguard_flags = defined(invoker.verify_proguard_flags) &&
+                                 invoker.verify_proguard_flags
+        if (_verify_proguard_flags) {
+          _proguard_expectations_file =
+              get_label_info(":$target_name", "dir") +
+              "/java/$target_name.proguard_flags.expected"
+        }
         dex(_sync_dex_target) {
           enable_multidex = _enable_multidex
           proguard_enabled = true
@@ -4442,6 +4440,10 @@ if (enable_java_templates) {
                                    "min_sdk_version",
                                  ])
           build_config = _build_config
+
+          if (_verify_proguard_flags) {
+            proguard_expectations_file = _proguard_expectations_file
+          }
 
           deps = _sync_module_java_targets + [ ":$_build_config_target" ]
           output = _unsplit_dex_zip

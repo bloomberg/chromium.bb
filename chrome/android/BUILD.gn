@@ -1782,11 +1782,11 @@ template("monochrome_public_apk_or_module_tmpl") {
                              "is_64_bit_browser",
                              "is_base_module",
                              "module_name",
-                             "verify_android_configuration",
                              "proguard_jar_path",
                              "static_library_provider",
                              "target_type",
                              "use_trichrome_library",
+                             "verify_manifest",
                              "version_code",
                              "version_name",
                            ])
@@ -2194,13 +2194,9 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
     version_code = _version_code
     version_name = _version_name
 
-    # Having //clank present causes different flags because of how play services
-    # is wired up. Also, only check for the 32 bit browser as this is the
-    # default.
-    if (!enable_chrome_android_internal &&
-        (!defined(invoker.is_64_bit_browser) || !invoker.is_64_bit_browser) &&
-        !_is_trichrome) {
-      verify_android_configuration = true
+    if (defined(invoker.verify_android_configuration) &&
+        invoker.verify_android_configuration) {
+      verify_manifest = true
     }
   }
 
@@ -2264,6 +2260,10 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
     if (!is_java_debug) {
       proguard_enabled = true
       proguard_android_sdk_dep = webview_framework_dep
+      if (defined(invoker.verify_android_configuration) &&
+          invoker.verify_android_configuration) {
+        verify_proguard_flags = true
+      }
     }
     enable_language_splits = enable_chrome_language_splits
     min_sdk_version = _min_sdk_version
@@ -2296,6 +2296,12 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
 
 monochrome_or_trichrome_public_bundle_tmpl("monochrome_public_bundle") {
   bundle_suffix = ""
+
+  # Having //clank present causes different flags because of how play services
+  # is wired up.
+  if (!enable_chrome_android_internal) {
+    verify_android_configuration = true
+  }
 }
 
 if (is_official_build) {

@@ -297,7 +297,7 @@ template("monochrome_public_common_apk_or_module_tmpl") {
     forward_variables_from(invoker,
                            [
                              "version_code",
-                             "verify_android_configuration",
+                             "verify_manifest",
                            ])
     is_trichrome =
         defined(invoker.use_trichrome_library) && invoker.use_trichrome_library
