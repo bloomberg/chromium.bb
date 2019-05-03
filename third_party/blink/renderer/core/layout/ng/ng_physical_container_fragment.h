@@ -45,14 +45,6 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
     return ChildLinkList(num_children_, buffer_);
   }
 
-  void AddOutlineRectsForNormalChildren(Vector<LayoutRect>* outline_rects,
-                                        const LayoutPoint& additional_offset,
-                                        NGOutlineType outline_type) const;
-  void AddOutlineRectsForDescendant(const NGLink& descendant,
-                                    Vector<LayoutRect>* rects,
-                                    const LayoutPoint& additional_offset,
-                                    NGOutlineType outline_type) const;
-
   bool HasFloatingDescendants() const { return has_floating_descendants_; }
 
  protected:
@@ -62,6 +54,14 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
                               NGLinkStorage* buffer,
                               NGFragmentType,
                               unsigned sub_type);
+
+  void AddOutlineRectsForNormalChildren(Vector<LayoutRect>* outline_rects,
+                                        const LayoutPoint& additional_offset,
+                                        NGOutlineType outline_type) const;
+  void AddOutlineRectsForDescendant(const NGLink& descendant,
+                                    Vector<LayoutRect>* rects,
+                                    const LayoutPoint& additional_offset,
+                                    NGOutlineType outline_type) const;
 
   // Because flexible arrays need to be the last member in a class, the actual
   // storage is in the subclass and we just keep a pointer to it here.

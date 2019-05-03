@@ -29,6 +29,11 @@ static_assert(sizeof(NGPhysicalBoxFragment) ==
                   sizeof(SameSizeAsNGPhysicalBoxFragment),
               "NGPhysicalBoxFragment should stay small");
 
+bool HasControlClip(const NGPhysicalBoxFragment& self) {
+  const LayoutBox* box = ToLayoutBoxOrNull(self.GetLayoutObject());
+  return box && box->HasControlClip();
+}
+
 }  // namespace
 
 scoped_refptr<const NGPhysicalBoxFragment> NGPhysicalBoxFragment::Create(
@@ -74,13 +79,9 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
 }
 
 bool NGPhysicalBoxFragment::HasSelfPaintingLayer() const {
-  return GetLayoutBoxModelObject().HasSelfPaintingLayer();
-}
-
-bool NGPhysicalBoxFragment::HasControlClip() const {
-  const LayoutObject* layout_object = GetLayoutObject();
-  DCHECK(layout_object);
-  return layout_object->IsBox() && ToLayoutBox(layout_object)->HasControlClip();
+  SECURITY_DCHECK(GetLayoutObject() && GetLayoutObject()->IsBoxModelObject());
+  return (static_cast<LayoutBoxModelObject*>(GetLayoutObject()))
+      ->HasSelfPaintingLayer();
 }
 
 LayoutRect NGPhysicalBoxFragment::OverflowClipRect(
@@ -195,7 +196,7 @@ void NGPhysicalBoxFragment::AddSelfOutlineRects(
   }
 
   if (outline_type == NGOutlineType::kIncludeBlockVisualOverflow &&
-      !HasOverflowClip() && !HasControlClip()) {
+      !HasOverflowClip() && !HasControlClip(*this)) {
     AddOutlineRectsForNormalChildren(outline_rects, additional_offset,
                                      outline_type);
 

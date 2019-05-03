@@ -44,8 +44,6 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   bool HasSelfPaintingLayer() const;
   bool ChildrenInline() const { return children_inline_; }
 
-  bool HasControlClip() const;
-
   PhysicalRect ScrollableOverflow() const;
 
   // TODO(layout-dev): These three methods delegate to legacy layout for now,
@@ -67,13 +65,6 @@ class CORE_EXPORT NGPhysicalBoxFragment final
                            NGOutlineType include_block_overflows) const;
 
   UBiDiLevel BidiLevel() const;
-
-  scoped_refptr<const NGPhysicalFragment> CloneWithoutOffset() const;
-
-  LayoutBoxModelObject& GetLayoutBoxModelObject() const {
-    SECURITY_DCHECK(GetLayoutObject() && GetLayoutObject()->IsBoxModelObject());
-    return *static_cast<LayoutBoxModelObject*>(GetLayoutObject());
-  }
 
  private:
   NGPhysicalBoxFragment(NGBoxFragmentBuilder* builder,
