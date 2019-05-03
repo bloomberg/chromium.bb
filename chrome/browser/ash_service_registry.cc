@@ -13,7 +13,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "chrome/browser/chromeos/accessibility/ax_host_service.h"
 #include "chrome/browser/chromeos/prefs/pref_connector_service.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/common/service_manager_connection.h"
@@ -69,8 +68,6 @@ std::unique_ptr<service_manager::Service> HandleServiceRequest(
   }
   if (service_name == ash::mojom::kPrefConnectorServiceName)
     return std::make_unique<AshPrefConnector>(std::move(request));
-  if (service_name == ax::mojom::kAXHostServiceName)
-    return std::make_unique<AXHostService>(std::move(request));
 
   return nullptr;
 }

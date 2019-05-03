@@ -325,16 +325,3 @@ fuzzer_test("ax_table_fuzzer") {
 
   seed_corpus = "fuzz_corpus"
 }
-
-source_set("ax_host_manifest") {
-  sources = [
-    "ax_host_manifest.cc",
-    "ax_host_manifest.h",
-  ]
-
-  deps = [
-    "//base",
-    "//services/service_manager/public/cpp",
-    "//ui/accessibility/mojom",
-  ]
-}

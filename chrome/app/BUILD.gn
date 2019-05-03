@@ -466,7 +466,6 @@ source_set("chrome_content_browser_overlay_manifest") {
       "//chromeos/services/multidevice_setup/public/mojom",
       "//chromeos/services/network_config/public/mojom",
       "//media/capture/video/chromeos/mojo:cros_camera",
-      "//ui/accessibility/mojom",
     ]
 
     if (enable_cros_assistant) {
@@ -626,7 +625,6 @@ source_set("chrome_packaged_service_manifests") {
       "//chromeos/services/network_config/public/cpp:manifest",
       "//chromeos/services/secure_channel/public/cpp:manifest",
       "//services/ws/public/mojom/input_devices",
-      "//ui/accessibility:ax_host_manifest",
     ]
   }
 

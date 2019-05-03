@@ -60,7 +60,6 @@
 #include "media/capture/video/chromeos/mojo/cros_image_capture.mojom.h"
 #include "services/ws/common/switches.h"
 #include "services/ws/public/mojom/constants.mojom.h"
-#include "ui/accessibility/mojom/ax_host.mojom.h"  // nogncheck
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)
 #include "chromeos/services/assistant/public/cpp/manifest.h"  // nogncheck
 #endif
@@ -119,11 +118,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
             .ExposeCapability("gpu",
                               service_manager::Manifest::InterfaceList<
                                   metrics::mojom::CallStackProfileCollector>())
-#if defined(OS_CHROMEOS)
-            .ExposeCapability(
-                "app",
-                service_manager::Manifest::InterfaceList<ax::mojom::AXHost>())
-#endif
             .ExposeCapability("profiling_client",
                               service_manager::Manifest::InterfaceList<
                                   heap_profiling::mojom::ProfilingClient>())
