@@ -138,6 +138,9 @@ target(link_target_type, "child") {
 
   if (is_android) {
     deps += [ "//third_party/android_sdk:cpu_features" ]
+    if (notouch_build) {
+      configs += [ ":notouch_config" ]
+    }
   }
 
   if (is_linux) {
@@ -168,6 +171,10 @@ target(link_target_type, "child") {
     "//content:content_implementation",
     "//build/config/compiler:no_size_t_to_int_warning",
   ]
+}
+
+config("notouch_config") {
+  defines = [ "ENABLE_TOUCHLESS_UASTYLE_THEME" ]
 }
 
 # See comment at the top of //content/BUILD.gn for how this works.

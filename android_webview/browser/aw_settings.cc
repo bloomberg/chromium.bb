@@ -239,7 +239,6 @@ void AwSettings::UpdateRendererPreferencesLocked(
 
   if (!renderer_prefs_initialized_) {
     content::UpdateFontRendererPreferencesFromSystemSettings(prefs);
-    content::UpdateFocusRingPreferencesFromSystemSettings(prefs);
     renderer_prefs_initialized_ = true;
     update_prefs = true;
   }

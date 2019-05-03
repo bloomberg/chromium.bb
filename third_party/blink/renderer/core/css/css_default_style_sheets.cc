@@ -121,6 +121,10 @@ void CSSDefaultStyleSheets::InitializeDefaultStyles() {
   default_style_->AddRulesFromSheet(DefaultStyleSheet(), ScreenEval());
   default_print_style_->AddRulesFromSheet(DefaultStyleSheet(), PrintEval());
   default_quirks_style_->AddRulesFromSheet(QuirksStyleSheet(), ScreenEval());
+
+#if defined(ENABLE_TOUCHLESS_UASTYLE_THEME)
+  EnsureDefaultStyleSheetForTouchless();
+#endif
 }
 
 RuleSet* CSSDefaultStyleSheets::DefaultViewSourceStyle() {
@@ -214,6 +218,20 @@ void CSSDefaultStyleSheets::EnsureDefaultStyleSheetForFullscreen() {
                                            ScreenEval());
 }
 
+void CSSDefaultStyleSheets::EnsureDefaultStyleSheetForTouchless() {
+  if (touchless_style_sheet_)
+    return;
+
+  String touchless_rules = GetDataResourceAsASCIIString("touchless.css");
+  if (touchless_rules.IsEmpty())
+    return;
+
+  touchless_style_sheet_ = ParseUASheet(touchless_rules);
+  default_style_->AddRulesFromSheet(touchless_style_sheet_.Get(), ScreenEval());
+  default_quirks_style_->AddRulesFromSheet(touchless_style_sheet_.Get(),
+                                           ScreenEval());
+}
+
 void CSSDefaultStyleSheets::Trace(blink::Visitor* visitor) {
   visitor->Trace(default_style_);
   visitor->Trace(default_quirks_style_);
@@ -228,6 +246,7 @@ void CSSDefaultStyleSheets::Trace(blink::Visitor* visitor) {
   visitor->Trace(mathml_style_sheet_);
   visitor->Trace(media_controls_style_sheet_);
   visitor->Trace(fullscreen_style_sheet_);
+  visitor->Trace(touchless_style_sheet_);
 }
 
 }  // namespace blink

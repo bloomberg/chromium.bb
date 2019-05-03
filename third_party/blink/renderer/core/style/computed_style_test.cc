@@ -78,26 +78,6 @@ TEST(ComputedStyleTest, FocusRingOutset) {
 #endif
 }
 
-TEST(ComputedStyleTest, FocusRingCustomizedOutset) {
-  float old_minimum_stroke_width_for_focus_ring =
-      LayoutTheme::GetTheme().MinimumStrokeWidthForFocusRing();
-  bool old_is_focus_ring_outset = LayoutTheme::GetTheme().IsFocusRingOutset();
-  LayoutTheme::GetTheme().SetMinimumStrokeWidthForFocusRing(4.0);
-  LayoutTheme::GetTheme().SetIsFocusRingOutset(true);
-  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
-  style->SetOutlineStyle(EBorderStyle::kSolid);
-  style->SetOutlineStyleIsAuto(static_cast<bool>(OutlineIsAuto::kOn));
-  style->SetEffectiveZoom(4.75);
-#if defined(OS_MACOSX)
-  EXPECT_EQ(4, style->OutlineOutsetExtent());
-#else
-  EXPECT_EQ(5, style->OutlineOutsetExtent());
-#endif
-  LayoutTheme::GetTheme().SetMinimumStrokeWidthForFocusRing(
-      old_minimum_stroke_width_for_focus_ring);
-  LayoutTheme::GetTheme().SetIsFocusRingOutset(old_is_focus_ring_outset);
-}
-
 TEST(ComputedStyleTest, SVGStackingContext) {
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
   style->UpdateIsStackingContext(false, false, true);

@@ -42,10 +42,6 @@ BLINK_EXPORT void SetCaretBlinkInterval(base::TimeDelta);
 
 BLINK_EXPORT void SetFocusRingColor(SkColor);
 
-BLINK_EXPORT void SetMinimumStrokeWidthForFocusRing(float);
-
-BLINK_EXPORT void SetIsFocusRingOutset(bool);
-
 }  // namespace blink
 
 #endif

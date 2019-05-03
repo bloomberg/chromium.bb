@@ -435,11 +435,11 @@ void GraphicsContext::DrawFocusRing(const Path& focus_ring_path,
   DrawFocusRingPath(focus_ring_path.GetSkPath(), color, width);
 }
 
-void GraphicsContext::DrawFocusRing(const Vector<IntRect>& rects,
-                                    float width,
-                                    int offset,
-                                    const Color& color,
-                                    bool is_outset) {
+void GraphicsContext::DrawFocusRingInternal(const Vector<IntRect>& rects,
+                                            float width,
+                                            int offset,
+                                            const Color& color,
+                                            bool is_outset) {
   if (ContextDisabled())
     return;
 
@@ -467,6 +467,45 @@ void GraphicsContext::DrawFocusRing(const Vector<IntRect>& rects,
     SkPath path;
     if (focus_ring_region.getBoundaryPath(&path))
       DrawFocusRingPath(path, color, width);
+  }
+}
+
+namespace {
+
+static const double kFocusRingLuminanceThreshold = 0.45;
+
+bool ShouldDrawInnerFocusRingForContrast(bool is_outset,
+                                         float width,
+                                         Color color) {
+  if (!is_outset || width < 3) {
+    return false;
+  }
+  double h = 0.0, s = 0.0, l = 0.0;
+  color.GetHSL(h, s, l);
+  return l < kFocusRingLuminanceThreshold;
+}
+
+}  // namespace
+
+void GraphicsContext::DrawFocusRing(const Vector<IntRect>& rects,
+                                    float width,
+                                    int offset,
+                                    const Color& color,
+                                    bool is_outset) {
+  // If a focus ring is outset and the color is dark, it may be hard to see on
+  // dark backgrounds. In this case, we'll actually draw two focus rings, the
+  // outset focus ring with a white inner ring for contrast.
+  if (ShouldDrawInnerFocusRingForContrast(is_outset, width, color)) {
+    int contrast_offset = static_cast<int>(std::floor(width * 0.5));
+    // We create a 1px gap for the contrast ring. The contrast ring is drawn
+    // first, and we overdraw by a pixel to ensure no gaps or AA artifacts.
+    DrawFocusRingInternal(rects, contrast_offset, offset, SK_ColorWHITE,
+                          is_outset);
+    DrawFocusRingInternal(rects, width - contrast_offset,
+                          offset + contrast_offset, color, is_outset);
+
+  } else {
+    DrawFocusRingInternal(rects, width, offset, color, is_outset);
   }
 }
 

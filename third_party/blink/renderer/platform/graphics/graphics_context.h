@@ -427,6 +427,12 @@ class PLATFORM_EXPORT GraphicsContext {
   void DrawFocusRingPath(const SkPath&, const Color&, float width);
   void DrawFocusRingRect(const SkRect&, const Color&, float width);
 
+  void DrawFocusRingInternal(const Vector<IntRect>&,
+                             float width,
+                             int offset,
+                             const Color&,
+                             bool is_outset);
+
   // SkCanvas wrappers.
   void ClipRRect(const SkRRect&,
                  AntiAliasingMode = kNotAntiAliased,
