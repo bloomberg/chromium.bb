@@ -573,16 +573,13 @@ html[darkmode=true] .customize-dialog::backdrop {
 }
 
 #one-google {
+  display: none;
   position: absolute;
   top: 0;
   transition: opacity 130ms;
   /* One Google Bar can automatically align to left and right
     based on the profile language preference */
   width: 100%;
-}
-
-#one-google.hidden {
-  opacity: 0;
 }
 
 /* The box containing the slider */
@@ -752,7 +749,7 @@ html[darkmode=true] body:not(.light-chip) #error-notice-link:active {
 
 #promo {
   bottom: 16px;
-  display: block;
+  display: none;
   left: 0;
   pointer-events: none;
   position: fixed;
@@ -828,8 +825,9 @@ html[darkmode=true] body:not(.light-chip) #promo > div > img {
   background-color: rgb(var(--GG200-rgb));
 }
 
-#promo.hide-promo {
-  display: none;
+#one-google.show-element,
+#promo.show-element {
+  display: block;
 }
 
 #promo.notice-hide {
