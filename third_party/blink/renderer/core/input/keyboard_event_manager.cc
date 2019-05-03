@@ -185,8 +185,9 @@ WebInputEventResult KeyboardEventManager::KeyEvent(
       static_cast<ui::DomKey>(initial_key_event.dom_key));
 
   std::unique_ptr<UserGestureIndicator> gesture_indicator;
-  if (!is_modifier)
+  if (!is_modifier && initial_key_event.dom_key != ui::DomKey::ESCAPE) {
     gesture_indicator = LocalFrame::NotifyUserActivation(frame_);
+  }
 
   // In IE, access keys are special, they are handled after default keydown
   // processing, but cannot be canceled - this is hard to match.  On Mac OS X,
