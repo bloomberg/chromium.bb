@@ -27,6 +27,7 @@
 #include "components/password_manager/core/browser/sync/password_model_type_controller.h"
 #include "components/prefs/pref_service.h"
 #include "components/reading_list/features/reading_list_switches.h"
+#include "components/send_tab_to_self/send_tab_to_self_model_type_controller.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/device_info/device_info_sync_service.h"
@@ -378,12 +379,13 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
 
   if (!disabled_types.Has(syncer::SEND_TAB_TO_SELF) &&
       base::FeatureList::IsEnabled(switches::kSyncSendTabToSelf)) {
-    controllers.push_back(std::make_unique<syncer::ModelTypeController>(
-        syncer::SEND_TAB_TO_SELF,
-        std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
-            sync_client_->GetSendTabToSelfSyncService()
-                ->GetControllerDelegate()
-                .get())));
+    controllers.push_back(
+        std::make_unique<send_tab_to_self::SendTabToSelfModelTypeController>(
+            sync_service,
+            std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
+                sync_client_->GetSendTabToSelfSyncService()
+                    ->GetControllerDelegate()
+                    .get())));
   }
 
   // Forward both on-disk and in-memory storage modes to the same delegate,

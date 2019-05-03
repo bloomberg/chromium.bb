@@ -4,4 +4,5 @@ include_rules = [
   "+components/sync",
   "+components/version_info",
   "+components/history",
+  "+google_apis",
 ]
