@@ -1970,6 +1970,14 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
                       rendererInitiated:NO
                   placeholderNavigation:IsPlaceholderUrl(navigationURL)];
 
+    // Disable |allowsBackForwardNavigationGestures| during restore. Otherwise,
+    // WebKit will trigger a snapshot for each (blank) page, and quickly
+    // overload system memory.
+    if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
+        self.navigationManagerImpl->IsRestoreSessionInProgress()) {
+      _webView.allowsBackForwardNavigationGestures = NO;
+    }
+
     WKNavigation* navigation = nil;
     if (navigationURL.SchemeIsFile() &&
         web::GetWebClient()->IsAppSpecificURL(virtualURL)) {
@@ -2191,6 +2199,15 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   // nothing if the document has already loaded.
   if (_loadPhase == web::PAGE_LOADED)
     return;
+
+  // Restore allowsBackForwardNavigationGestures once restoration is complete.
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
+      !self.navigationManagerImpl->IsRestoreSessionInProgress()) {
+    if (_webView.allowsBackForwardNavigationGestures !=
+        _allowsBackForwardNavigationGestures)
+      _webView.allowsBackForwardNavigationGestures =
+          _allowsBackForwardNavigationGestures;
+  }
 
   BOOL success = !context || !context->GetError();
   [self loadCompleteWithSuccess:success forContext:context];

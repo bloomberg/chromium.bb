@@ -337,15 +337,6 @@ TEST_P(WebStateTest, SetHasOpener) {
 // Verifies that large session can be restored. SlimNavigationManagder has max
 // session size limit of |wk_navigation_util::kMaxSessionSize|.
 TEST_P(WebStateTest, RestoreLargeSession) {
-#if !TARGET_IPHONE_SIMULATOR
-  if (@available(iOS 12.2, *)) {
-    if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-      // TODO(crbug.com/957666): Reenable test for this set of conditions
-      return;
-    }
-  }
-#endif
-
   // Create session storage with large number of items.
   const int kItemCount = 150;
   NSMutableArray<CRWNavigationItemStorage*>* item_storages =
