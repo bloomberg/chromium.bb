@@ -8,7 +8,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -22,19 +21,14 @@ import org.chromium.webapk.lib.common.WebApkCommonUtils;
 
 /** Delegate which uses splash screen screenshot from the WebAPK's content provider. */
 public class ProvidedByWebApkSplashDelegate implements SplashDelegate {
-    private ViewGroup mParentView;
-    private ImageView mSplashView;
-
     @Override
-    public void showSplash(ViewGroup parentView, WebappInfo webappInfo) {
-        mParentView = parentView;
-
+    public View buildSplashView(WebappInfo webappInfo) {
         Context appContext = ContextUtils.getApplicationContext();
-        mSplashView = new ImageView(appContext);
+        ImageView splashView = new ImageView(appContext);
         int backgroundColor =
                 ColorUtils.getOpaqueColor(webappInfo.backgroundColor(ApiCompatibilityUtils.getColor(
                         appContext.getResources(), R.color.webapp_default_bg)));
-        mSplashView.setBackgroundColor(backgroundColor);
+        splashView.setBackgroundColor(backgroundColor);
 
         Bitmap splashBitmap = null;
         try (StrictModeContext smc = StrictModeContext.allowDiskReads()) {
@@ -43,26 +37,16 @@ public class ProvidedByWebApkSplashDelegate implements SplashDelegate {
                             webappInfo.webApkPackageName())));
         }
         if (splashBitmap != null) {
-            mSplashView.setScaleType(ImageView.ScaleType.FIT_CENTER);
-            mSplashView.setImageBitmap(splashBitmap);
+            splashView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            splashView.setImageBitmap(splashBitmap);
         }
 
-        parentView.addView(mSplashView);
+        return splashView;
     }
 
     @Override
-    public void hideSplash(Tab tab, Runnable finishedHidingCallback) {
+    public void onSplashHidden(Tab tab) {
         // TODO(pkotwicz) implement.
-    }
-
-    @Override
-    public boolean isSplashVisible() {
-        return true;
-    }
-
-    @Override
-    public View getSplashViewIfChildOf(ViewGroup parent) {
-        return (mParentView == parent) ? mSplashView : null;
     }
 
     @Override

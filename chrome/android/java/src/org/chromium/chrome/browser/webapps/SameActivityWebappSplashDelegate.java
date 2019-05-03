@@ -11,12 +11,10 @@ import android.graphics.Bitmap;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.TraceEvent;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
@@ -35,14 +33,6 @@ public class SameActivityWebappSplashDelegate implements SplashDelegate, NativeI
     private ActivityLifecycleDispatcher mLifecycleDispatcher;
     private TabObserverRegistrar mTabObserverRegistrar;
 
-    /** View to which the splash screen is added. */
-    private ViewGroup mParentView;
-
-    private ViewGroup mSplashScreen;
-
-    /** Whether the splash screen is visible and not in the process of hiding. */
-    private boolean mIsSplashVisible;
-
     /** Whether native was loaded. Native must be loaded in order to record metrics. */
     private boolean mNativeLoaded;
 
@@ -51,31 +41,6 @@ public class SameActivityWebappSplashDelegate implements SplashDelegate, NativeI
     private SameActivityWebappUmaCache mUmaCache;
 
     private WebApkSplashNetworkErrorObserver mWebApkNetworkErrorObserver;
-
-    private static class SingleShotOnDrawListener implements ViewTreeObserver.OnDrawListener {
-        private final View mView;
-        private final Runnable mAction;
-        private boolean mHasRun;
-
-        public static void install(View view, Runnable action) {
-            SingleShotOnDrawListener listener = new SingleShotOnDrawListener(view, action);
-            view.getViewTreeObserver().addOnDrawListener(listener);
-        }
-
-        private SingleShotOnDrawListener(View view, Runnable action) {
-            mView = view;
-            mAction = action;
-        }
-
-        @Override
-        public void onDraw() {
-            if (mHasRun) return;
-            mHasRun = true;
-            mAction.run();
-            // Cannot call removeOnDrawListener within OnDraw, so do on next tick.
-            mView.post(() -> mView.getViewTreeObserver().removeOnDrawListener(this));
-        }
-    };
 
     public SameActivityWebappSplashDelegate(Activity activity,
             ActivityLifecycleDispatcher lifecycleDispatcher,
@@ -88,10 +53,8 @@ public class SameActivityWebappSplashDelegate implements SplashDelegate, NativeI
     }
 
     @Override
-    public void showSplash(ViewGroup parentView, WebappInfo webappInfo) {
-        mParentView = parentView;
+    public View buildSplashView(WebappInfo webappInfo) {
         mWebappInfo = webappInfo;
-        mIsSplashVisible = true;
 
         if (mWebappInfo.isForWebApk()) {
             mWebApkNetworkErrorObserver =
@@ -103,29 +66,29 @@ public class SameActivityWebappSplashDelegate implements SplashDelegate, NativeI
         final int backgroundColor = ColorUtils.getOpaqueColor(webappInfo.backgroundColor(
                 ApiCompatibilityUtils.getColor(context.getResources(), R.color.webapp_default_bg)));
 
-        mSplashScreen = new FrameLayout(context);
-        mSplashScreen.setBackgroundColor(backgroundColor);
-        mParentView.addView(mSplashScreen);
-        recordTraceEventsShowedSplash();
+        ViewGroup splashScreen = new FrameLayout(context);
+        splashScreen.setBackgroundColor(backgroundColor);
 
         if (webappInfo.isForWebApk()) {
-            initializeLayout(webappInfo, backgroundColor, ((WebApkInfo) webappInfo).splashIcon());
-            return;
+            initializeLayout(webappInfo, splashScreen, backgroundColor,
+                    ((WebApkInfo) webappInfo).splashIcon());
+            return splashScreen;
         }
 
         WebappDataStorage storage =
                 WebappRegistry.getInstance().getWebappDataStorage(webappInfo.id());
         if (storage == null) {
-            initializeLayout(webappInfo, backgroundColor, null);
-            return;
+            initializeLayout(webappInfo, splashScreen, backgroundColor, null);
+            return splashScreen;
         }
 
         storage.getSplashScreenImage(new WebappDataStorage.FetchCallback<Bitmap>() {
             @Override
             public void onDataRetrieved(Bitmap splashImage) {
-                initializeLayout(webappInfo, backgroundColor, splashImage);
+                initializeLayout(webappInfo, splashScreen, backgroundColor, splashImage);
             }
         });
+        return splashScreen;
     }
 
     @Override
@@ -135,38 +98,15 @@ public class SameActivityWebappSplashDelegate implements SplashDelegate, NativeI
     }
 
     @Override
-    public void hideSplash(Tab tab, final Runnable finishedHidingCallback) {
-        assert mIsSplashVisible;
+    public void onSplashHidden(Tab tab) {
+        if (mWebApkNetworkErrorObserver != null) {
+            mTabObserverRegistrar.unregisterTabObserver(mWebApkNetworkErrorObserver);
+            tab.removeObserver(mWebApkNetworkErrorObserver);
+            mWebApkNetworkErrorObserver = null;
+        }
+        mLifecycleDispatcher.unregister(SameActivityWebappSplashDelegate.this);
 
-        mIsSplashVisible = false;
-        recordTraceEventsStartedHidingSplash();
-        mSplashScreen.animate().alpha(0f).withEndAction(new Runnable() {
-            @Override
-            public void run() {
-                mParentView.removeView(mSplashScreen);
-                if (mWebApkNetworkErrorObserver != null) {
-                    mTabObserverRegistrar.unregisterTabObserver(mWebApkNetworkErrorObserver);
-                    tab.removeObserver(mWebApkNetworkErrorObserver);
-                    mWebApkNetworkErrorObserver = null;
-                }
-                mLifecycleDispatcher.unregister(SameActivityWebappSplashDelegate.this);
-
-                recordTraceEventsFinishedHidingSplash();
-                mActivity = null;
-                mSplashScreen = null;
-                finishedHidingCallback.run();
-            }
-        });
-    }
-
-    @Override
-    public boolean isSplashVisible() {
-        return mIsSplashVisible;
-    }
-
-    @Override
-    public View getSplashViewIfChildOf(ViewGroup parent) {
-        return (mParentView == parent) ? mSplashScreen : null;
+        mActivity = null;
     }
 
     @Override
@@ -176,7 +116,8 @@ public class SameActivityWebappSplashDelegate implements SplashDelegate, NativeI
     }
 
     /** Sets the splash screen layout and sets the splash screen's title and icon. */
-    private void initializeLayout(WebappInfo webappInfo, int backgroundColor, Bitmap splashImage) {
+    private void initializeLayout(WebappInfo webappInfo, ViewGroup splashScreen,
+            int backgroundColor, Bitmap splashImage) {
         Context context = ContextUtils.getApplicationContext();
         Resources resources = context.getResources();
 
@@ -192,7 +133,7 @@ public class SameActivityWebappSplashDelegate implements SplashDelegate, NativeI
         int selectedIconClassification = SplashLayout.classifyIcon(
                 context.getResources(), selectedIcon, selectedIconGenerated);
 
-        SplashLayout.createLayout(context, mSplashScreen, selectedIcon, selectedIconAdaptive,
+        SplashLayout.createLayout(context, splashScreen, selectedIcon, selectedIconAdaptive,
                 selectedIconClassification, webappInfo.name(),
                 ColorUtils.shouldUseLightForegroundOnBackground(backgroundColor));
 
@@ -228,20 +169,5 @@ public class SameActivityWebappSplashDelegate implements SplashDelegate, NativeI
         }
 
         if (mNativeLoaded) mUmaCache.commitMetrics();
-    }
-
-    private void recordTraceEventsShowedSplash() {
-        SingleShotOnDrawListener.install(mParentView,
-                () -> { TraceEvent.startAsync("WebappSplashScreen.visible", hashCode()); });
-    }
-
-    private void recordTraceEventsStartedHidingSplash() {
-        TraceEvent.startAsync("WebappSplashScreen.hidingAnimation", hashCode());
-    }
-
-    private void recordTraceEventsFinishedHidingSplash() {
-        TraceEvent.finishAsync("WebappSplashScreen.hidingAnimation", hashCode());
-        SingleShotOnDrawListener.install(mParentView,
-                () -> { TraceEvent.finishAsync("WebappSplashScreen.visible", hashCode()); });
     }
 }

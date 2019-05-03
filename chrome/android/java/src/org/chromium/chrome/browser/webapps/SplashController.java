@@ -8,8 +8,10 @@ import android.os.SystemClock;
 import android.support.annotation.IntDef;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 
 import org.chromium.base.ObserverList;
+import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.WarmupManager;
@@ -23,6 +25,31 @@ import java.lang.annotation.RetentionPolicy;
 
 /** Shows and hides splash screen. */
 public class SplashController extends EmptyTabObserver {
+    private static class SingleShotOnDrawListener implements ViewTreeObserver.OnDrawListener {
+        private final View mView;
+        private final Runnable mAction;
+        private boolean mHasRun;
+
+        public static void install(View view, Runnable action) {
+            view.getViewTreeObserver().addOnDrawListener(
+                    new SingleShotOnDrawListener(view, action));
+        }
+
+        private SingleShotOnDrawListener(View view, Runnable action) {
+            mView = view;
+            mAction = action;
+        }
+
+        @Override
+        public void onDraw() {
+            if (mHasRun) return;
+            mHasRun = true;
+            mAction.run();
+            // Cannot call removeOnDrawListener within OnDraw, so do on next tick.
+            mView.post(() -> mView.getViewTreeObserver().removeOnDrawListener(this));
+        }
+    };
+
     // SplashHidesReason defined in tools/metrics/histograms/enums.xml.
     @IntDef({SplashHidesReason.PAINT, SplashHidesReason.LOAD_FINISHED,
             SplashHidesReason.LOAD_FAILED, SplashHidesReason.CRASH})
@@ -45,6 +72,11 @@ public class SplashController extends EmptyTabObserver {
     /** View to which the splash screen is added. */
     private ViewGroup mParentView;
 
+    private View mSplashView;
+
+    /** Whether the splash hide animation was started. */
+    private boolean mWasSplashHideAnimationStarted;
+
     /** Time that the splash screen was shown. */
     private long mSplashShownTimestamp;
 
@@ -63,7 +95,8 @@ public class SplashController extends EmptyTabObserver {
         mParentView = parentView;
         mSplashShownTimestamp = SystemClock.elapsedRealtime();
 
-        mDelegate.showSplash(parentView, webappInfo);
+        mSplashView = mDelegate.buildSplashView(webappInfo);
+        mParentView.addView(mSplashView);
 
         notifySplashscreenVisible(mSplashShownTimestamp);
     }
@@ -73,17 +106,15 @@ public class SplashController extends EmptyTabObserver {
      * splashscreen on top.
      */
     public void setViewHierarchyBelowSplashscreen(ViewGroup viewHierarchy) {
-        View splashView = mDelegate.getSplashViewIfChildOf(mParentView);
         WarmupManager.transferViewHeirarchy(viewHierarchy, mParentView);
-        if (splashView != null) {
-            mParentView.bringChildToFront(splashView);
+        if (mSplashView != null) {
+            mParentView.bringChildToFront(mSplashView);
         }
     }
 
     @VisibleForTesting
     View getSplashScreenForTests() {
-        if (mDelegate == null) return null;
-        return mDelegate.getSplashViewIfChildOf(mParentView);
+        return mSplashView;
     }
 
     @Override
@@ -117,24 +148,9 @@ public class SplashController extends EmptyTabObserver {
     }
 
     /** Hides the splash screen. */
-    private void hideSplash(Tab tab, final @SplashHidesReason int reason) {
-        if (!mDelegate.isSplashVisible()) return;
-
-        final Runnable onHiddenCallback = new Runnable() {
-            @Override
-            public void run() {
-                mTabObserverRegistrar.unregisterTabObserver(SplashController.this);
-                tab.removeObserver(SplashController.this);
-                mDelegate = null;
-
-                long splashHiddenTimestamp = SystemClock.elapsedRealtime();
-                notifySplashscreenHidden(splashHiddenTimestamp);
-
-                recordSplashHiddenUma(reason, splashHiddenTimestamp);
-            }
-        };
+    private void hideSplash(final Tab tab, final @SplashHidesReason int reason) {
         if (reason == SplashHidesReason.LOAD_FAILED || reason == SplashHidesReason.CRASH) {
-            mDelegate.hideSplash(tab, onHiddenCallback);
+            animateHideSplash(tab, reason);
             return;
         }
         // Delay hiding the splash screen till the compositor has finished drawing the next frame.
@@ -142,10 +158,33 @@ public class SplashController extends EmptyTabObserver {
         // the web content (crbug.com/734500).
         CompositorView compositorView =
                 tab.getActivity().getCompositorViewHolder().getCompositorView();
-        compositorView.surfaceRedrawNeededAsync(() -> {
-            if (mDelegate == null || !mDelegate.isSplashVisible()) return;
-            mDelegate.hideSplash(tab, onHiddenCallback);
-        });
+        compositorView.surfaceRedrawNeededAsync(() -> { animateHideSplash(tab, reason); });
+    }
+
+    private void animateHideSplash(final Tab tab, final @SplashHidesReason int reason) {
+        if (mWasSplashHideAnimationStarted) return;
+
+        mWasSplashHideAnimationStarted = true;
+        mTabObserverRegistrar.unregisterTabObserver(this);
+        tab.removeObserver(this);
+
+        recordTraceEventsStartedHidingSplash();
+
+        mSplashView.animate().alpha(0f).withEndAction(() -> { hideSplashNow(tab, reason); });
+    }
+
+    private void hideSplashNow(Tab tab, @SplashHidesReason int reason) {
+        mParentView.removeView(mSplashView);
+
+        long splashHiddenTimestamp = SystemClock.elapsedRealtime();
+        recordTraceEventsFinishedHidingSplash();
+
+        mDelegate.onSplashHidden(tab);
+        recordSplashHiddenUma(reason, splashHiddenTimestamp);
+        notifySplashscreenHidden(splashHiddenTimestamp);
+
+        mDelegate = null;
+        mSplashView = null;
     }
 
     /** Called once the splash screen is hidden to record UMA metrics. */
@@ -183,5 +222,20 @@ public class SplashController extends EmptyTabObserver {
             observer.onSplashscreenHidden(timestamp);
         }
         mObservers.clear();
+    }
+
+    private void recordTraceEventsShowedSplash() {
+        SingleShotOnDrawListener.install(
+                mParentView, () -> { TraceEvent.startAsync("SplashScreen.visible", hashCode()); });
+    }
+
+    private void recordTraceEventsStartedHidingSplash() {
+        TraceEvent.startAsync("SplashScreen.hidingAnimation", hashCode());
+    }
+
+    private void recordTraceEventsFinishedHidingSplash() {
+        TraceEvent.finishAsync("SplashScreen.hidingAnimation", hashCode());
+        SingleShotOnDrawListener.install(mParentView,
+                () -> { TraceEvent.finishAsync("WebappSplashScreen.visible", hashCode()); });
     }
 }

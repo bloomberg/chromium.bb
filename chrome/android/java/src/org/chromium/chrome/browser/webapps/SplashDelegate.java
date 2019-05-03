@@ -5,26 +5,16 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.view.View;
-import android.view.ViewGroup;
 
 import org.chromium.chrome.browser.tab.Tab;
 
 /** Delegate for {@link SplashController}. */
 interface SplashDelegate {
-    /** Shows the splash screen. */
-    void showSplash(ViewGroup parentView, WebappInfo webappInfo);
+    /** Builds the splash view. */
+    View buildSplashView(WebappInfo webappInfo);
 
-    /** Hides the splash screen. Runs the callback once the splash screen is hidden. */
-    void hideSplash(Tab tab, Runnable finishedHidingCallback);
-
-    /** Returns whether the splash screen is visible and not in the process of hiding. */
-    boolean isSplashVisible();
-
-    /**
-     * Returns the {@link View} containing the splash screen if it is a direct child of
-     * the passed-in view.
-     */
-    View getSplashViewIfChildOf(ViewGroup parent);
+    /** Called when splash screen has been hidden. */
+    void onSplashHidden(Tab tab);
 
     /** Returns whether to wait for a subsequent page load to hide the splash screen. */
     boolean shouldWaitForSubsequentPageLoadToHideSplash();
