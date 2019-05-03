@@ -196,14 +196,12 @@ void ChromeFeedbackPrivateDelegate::FetchExtraLogs(
   constexpr bool scrub = true;
 
   if (system_logs::ContainsIwlwifiLogs(feedback_data->sys_info())) {
-    VLOG(1) << "Fetching WiFi dump logs.";
     system_logs::SystemLogsFetcher* fetcher =
         new system_logs::SystemLogsFetcher(scrub);
     fetcher->AddSource(std::make_unique<system_logs::IwlwifiDumpLogSource>());
     fetcher->Fetch(base::BindOnce(&OnFetchedExtraLogs, feedback_data,
                                   std::move(callback)));
   } else {
-    VLOG(1) << "WiFi dump logs are not present.";
     std::move(callback).Run(feedback_data);
   }
 }

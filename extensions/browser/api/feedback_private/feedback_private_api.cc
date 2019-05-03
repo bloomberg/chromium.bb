@@ -215,7 +215,6 @@ ExtensionFunction::ResponseAction FeedbackPrivateGetUserEmailFunction::Run() {
 
 ExtensionFunction::ResponseAction
 FeedbackPrivateGetSystemInformationFunction::Run() {
-  VLOG(1) << "Fetching system logs started.";
   // Self-deleting object.
   system_logs::SystemLogsFetcher* fetcher =
       ExtensionsAPIClient::Get()
@@ -229,7 +228,6 @@ FeedbackPrivateGetSystemInformationFunction::Run() {
 
 void FeedbackPrivateGetSystemInformationFunction::OnCompleted(
     std::unique_ptr<system_logs::SystemLogsResponse> sys_info) {
-  VLOG(1) << "Received system logs.";
   SystemInformationList sys_info_list;
   if (sys_info) {
     sys_info_list.reserve(sys_info->size());
@@ -294,7 +292,6 @@ void FeedbackPrivateReadLogSourceFunction::OnCompleted(
 #endif  // defined(OS_CHROMEOS)
 
 ExtensionFunction::ResponseAction FeedbackPrivateSendFeedbackFunction::Run() {
-  VLOG(1) << "Sending feedback report started.";
   std::unique_ptr<feedback_private::SendFeedback::Params> params(
       feedback_private::SendFeedback::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -368,7 +365,6 @@ void FeedbackPrivateSendFeedbackFunction::OnAllLogsFetched(
     bool send_histograms,
     bool send_bluetooth_logs,
     scoped_refptr<feedback::FeedbackData> feedback_data) {
-  VLOG(1) << "All logs have been fetched. Proceeding with sending the report.";
 
   feedback_data->CompressSystemInfo();
 
