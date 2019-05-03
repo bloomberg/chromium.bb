@@ -4,6 +4,7 @@
 
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//chrome/browser/chromeos/kiosk_next_home/kiosk_next.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//media/media_options.gni")
 import("//printing/buildflags/buildflags.gni")
@@ -43,6 +44,11 @@ source_set("chromeos") {
     "//ui/resources",
     "//ui/strings",
   ]
+
+  if (enable_kiosk_next && is_chrome_branded) {
+    public_deps +=
+        [ "//chrome/browser/resources:kiosk_next_internal_resources" ]
+  }
 
   deps = [
     ":attestation_proto",

@@ -756,10 +756,6 @@ jumbo_static_library("extensions") {
   ]
   defines = []
 
-  if (is_chromeos && enable_kiosk_next) {
-    defines += [ "KIOSK_NEXT" ]
-  }
-
   allow_circular_includes_from = [
     # Lots of APIs use headers from the list above.
     "//chrome/browser/extensions/api:api_registration",
@@ -982,7 +978,6 @@ jumbo_static_library("extensions") {
     }
     deps += [
       "//ash/public/cpp",
-      "//chrome/browser/chromeos/kiosk_next_home/mojom",
       "//chrome/browser/resources/chromeos/camera:chrome_camera_app",
       "//chromeos",
       "//chromeos/attestation",
@@ -1021,6 +1016,13 @@ jumbo_static_library("extensions") {
       "//ui/ozone",
       "//ui/views",
     ]
+    if (enable_kiosk_next) {
+      defines += [ "KIOSK_NEXT" ]
+      deps += [ "//chrome/browser/chromeos/kiosk_next_home/mojom" ]
+      if (is_chrome_branded) {
+        deps += [ "//chrome/browser/resources:kiosk_next_internal_resources" ]
+      }
+    }
     if (enable_nacl) {
       deps += [ "//chrome/browser/resources/chromeos/zip_archiver" ]
     }

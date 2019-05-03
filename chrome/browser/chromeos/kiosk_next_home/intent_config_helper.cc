@@ -19,7 +19,7 @@
 #include "url/url_constants.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
-#include "chrome/grit/component_extension_resources.h"
+#include "chrome/grit/kiosk_next_internal_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #endif
 
