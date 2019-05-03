@@ -1126,13 +1126,13 @@ static void init_config(struct AV1_COMP *cpi, AV1EncoderConfig *oxcf) {
     cm->buffer_model.num_units_in_decoding_tick =
         oxcf->buffer_model.num_units_in_decoding_tick;
     cm->buffer_removal_time_present = 1;
-    set_aom_dec_model_info(&cm->buffer_model);
-    set_dec_model_op_parameters(&cm->op_params[0]);
+    av1_set_aom_dec_model_info(&cm->buffer_model);
+    av1_set_dec_model_op_parameters(&cm->op_params[0]);
   } else if (cm->timing_info_present &&
              cm->timing_info.equal_picture_interval &&
              !cm->seq_params.decoder_model_info_present_flag) {
     // set the decoder model parameters in resource availability mode
-    set_resource_availability_parameters(&cm->op_params[0]);
+    av1_set_resource_availability_parameters(&cm->op_params[0]);
   } else {
     cm->op_params[0].initial_display_delay =
         10;  // Default value (not signaled)
@@ -2422,13 +2422,13 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
     cm->buffer_model.num_units_in_decoding_tick =
         oxcf->buffer_model.num_units_in_decoding_tick;
     cm->buffer_removal_time_present = 1;
-    set_aom_dec_model_info(&cm->buffer_model);
-    set_dec_model_op_parameters(&cm->op_params[0]);
+    av1_set_aom_dec_model_info(&cm->buffer_model);
+    av1_set_dec_model_op_parameters(&cm->op_params[0]);
   } else if (cm->timing_info_present &&
              cm->timing_info.equal_picture_interval &&
              !seq_params->decoder_model_info_present_flag) {
     // set the decoder model parameters in resource availability mode
-    set_resource_availability_parameters(&cm->op_params[0]);
+    av1_set_resource_availability_parameters(&cm->op_params[0]);
   } else {
     cm->op_params[0].initial_display_delay =
         10;  // Default value (not signaled)
