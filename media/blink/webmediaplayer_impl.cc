@@ -1065,7 +1065,8 @@ base::TimeDelta WebMediaPlayerImpl::GetCurrentTimeInternal() const {
   else
     current_time = pipeline_controller_.GetMediaTime();
 
-  DCHECK_NE(current_time, kInfiniteDuration);
+  // It's possible for |current_time| to be kInfiniteDuration here if the page
+  // seeks to kInfiniteDuration (2**64 - 1) when Duration() is infinite.
   DCHECK_GE(current_time, base::TimeDelta());
   return current_time;
 }
