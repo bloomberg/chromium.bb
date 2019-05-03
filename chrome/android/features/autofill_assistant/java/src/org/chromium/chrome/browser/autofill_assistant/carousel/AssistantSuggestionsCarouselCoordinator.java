@@ -9,7 +9,6 @@ import android.graphics.Rect;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
-import android.util.TypedValue;
 import android.view.View;
 
 import org.chromium.base.ThreadUtils;
@@ -95,11 +94,9 @@ public class AssistantSuggestionsCarouselCoordinator implements AssistantCarouse
         private final int mOuterSpacePx;
 
         SpaceItemDecoration(Context context) {
-            mInnerSpacePx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                    context.getResources().getDimensionPixelSize(
-                            R.dimen.autofill_assistant_carousel_chips_spacing)
-                            / 2,
-                    context.getResources().getDisplayMetrics());
+            mInnerSpacePx = context.getResources().getDimensionPixelSize(
+                                    R.dimen.autofill_assistant_carousel_chips_spacing)
+                    / 2;
             mOuterSpacePx = context.getResources().getDimensionPixelSize(
                     R.dimen.autofill_assistant_bottombar_horizontal_spacing);
         }
