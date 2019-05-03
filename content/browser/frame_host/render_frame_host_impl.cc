@@ -423,15 +423,26 @@ void LogRendererKillCrashKeys(const GURL& site_url) {
   base::debug::SetCrashKeyString(site_url_key, site_url.spec());
 }
 
-url::Origin GetOriginForURLLoaderFactory(
-    const CommonNavigationParams& common_params) {
-  // Use |initiator_origin| for navigations to about:blank and about:srcdoc.
-  //
-  // |initiator_origin| is provided for all renderer-initiated navigations;
-  // for browser-initiated navigations a unique origin should be used.
-  GURL target_url = common_params.url;
-  if (target_url.SchemeIs(url::kAboutScheme))
-    return common_params.initiator_origin.value_or(url::Origin());
+base::Optional<url::Origin> GetOriginForURLLoaderFactory(
+    GURL target_url,
+    SiteInstanceImpl* site_instance) {
+  // TODO(lukasza, nasko): https://crbug.com/888079: Use exact origin, instead
+  // of falling back to site URL for about:blank and about:srcdoc.
+  if (target_url.SchemeIs(url::kAboutScheme)) {
+    // |site_instance|'s site URL cannot be used as
+    // |request_initiator_site_lock| unless the site requires a dedicated
+    // process.  Otherwise b.com may share a process associated with a.com, in
+    // a SiteInstance with |site_url| set to "http://a.com" (and/or
+    // "http://nonisolated.invalid" in the future) and in that scenario
+    // |request_initiator| for requests from b.com should NOT be locked to
+    // a.com.
+    if (!SiteInstanceImpl::ShouldLockToOrigin(
+            site_instance->GetIsolationContext(), site_instance->GetSiteURL()))
+      return base::nullopt;
+
+    return SiteInstanceImpl::GetRequestInitiatorSiteLock(
+        site_instance->GetSiteURL());
+  }
 
   // In cases not covered above, URLLoaderFactory should be associated with the
   // origin of |target_url|.  This works fine for all URLs, including data: URLs
@@ -4674,7 +4685,8 @@ void RenderFrameHostImpl::CommitNavigation(
       recreate_default_url_loader_factory_after_network_service_crash_ = true;
       bool bypass_redirect_checks =
           CreateNetworkServiceDefaultFactoryAndObserve(
-              GetOriginForURLLoaderFactory(common_params),
+              GetOriginForURLLoaderFactory(common_params.url,
+                                           GetSiteInstance()),
               mojo::MakeRequest(&default_factory_info));
       subresource_loader_factories->set_bypass_redirect_checks(
           bypass_redirect_checks);
@@ -4739,8 +4751,10 @@ void RenderFrameHostImpl::CommitNavigation(
       GetContentClient()->browser()->WillCreateURLLoaderFactory(
           browser_context, this, GetProcess()->GetID(),
           false /* is_navigation */, false /* is_download */,
-          GetOriginForURLLoaderFactory(common_params), &factory_request,
-          nullptr /* header_client */, nullptr /* bypass_redirect_checks */);
+          GetOriginForURLLoaderFactory(common_params.url, GetSiteInstance())
+              .value_or(url::Origin()),
+          &factory_request, nullptr /* header_client */,
+          nullptr /* bypass_redirect_checks */);
       // Keep DevTools proxy last, i.e. closest to the network.
       devtools_instrumentation::WillCreateURLLoaderFactory(
           this, false /* is_navigation */, false /* is_download */,
