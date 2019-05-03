@@ -23,12 +23,12 @@
         android:layout_marginEnd="12dp"
         tools:ignore="ContentDescription"
         android:scaleType="centerInside"
-        app:tint="@color/white_mode_tint" />
+        app:tint="@color/default_icon_color_inverse" />
 
     <TextView
         android:id="@+id/message"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="@style/TextAppearance.WhiteTitle2" />
+        android:textAppearance="@style/TextAppearance.Title2.Inverse" />
 
 </LinearLayout>
