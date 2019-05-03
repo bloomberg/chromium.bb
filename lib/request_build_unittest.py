@@ -322,9 +322,7 @@ class RequestBuildHelperTestsNetork(RequestBuildHelperTestsBase):
             bucket='luci.chromeos.general',
             buildbucket_id=result.buildbucket_id,
             build_config='amd64-generic-paladin-tryjob',
-            url=(u'https://cros-goldeneye.corp.google.com/chromeos/'
-                 u'healthmonitoring/buildDetails?buildbucketId=%s' %
-                 result.buildbucket_id),
+            url=u'https://ci.chromium.org/b/%s' % result.buildbucket_id,
             created_ts=mock.ANY),
     )
 
@@ -378,9 +376,7 @@ class RequestBuildHelperTestsNetork(RequestBuildHelperTestsBase):
             bucket='luci.chromeos.general',
             buildbucket_id=result.buildbucket_id,
             build_config='amd64-generic-paladin',
-            url=(u'https://cros-goldeneye.corp.google.com/chromeos/'
-                 u'healthmonitoring/buildDetails?buildbucketId=%s' %
-                 result.buildbucket_id),
+            url=u'https://ci.chromium.org/b/%s' % result.buildbucket_id,
             created_ts=mock.ANY),
     )
 

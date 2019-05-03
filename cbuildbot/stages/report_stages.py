@@ -286,7 +286,7 @@ class BuildStartStage(generic_stages.BuilderStage):
             build_ids=[master_build_id])[0]
 
         if master_build_status['buildbucket_id']:
-          master_url = tree_status.ConstructLegolandBuildURL(
+          master_url = tree_status.ConstructMiloBuildURL(
               master_build_status['buildbucket_id'])
         else:
           master_url = tree_status.ConstructDashboardURL(
@@ -344,7 +344,7 @@ class SlaveFailureSummaryStage(generic_stages.BuilderStage):
       if (failure.stage_status != constants.BUILDER_STATUS_FAILED or
           failure.build_status == constants.BUILDER_STATUS_INFLIGHT):
         continue
-      slave_stage_url = tree_status.ConstructLegolandBuildURL(
+      slave_stage_url = tree_status.ConstructMiloBuildURL(
           failure.buildbucket_id)
       logging.PrintBuildbotLink('%s %s' % (failure.build_config,
                                            failure.stage_name),

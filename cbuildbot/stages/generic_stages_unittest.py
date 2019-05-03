@@ -366,8 +366,7 @@ class BuilderStageTest(AbstractStageTestCase):
     """Basic test for the ConstructDashboardURL() function."""
     stage = self.ConstructStage()
 
-    exp_url = ('https://cros-goldeneye.corp.google.com/chromeos/'
-               'healthmonitoring/buildDetails?buildbucketId=fake_bb_id')
+    exp_url = 'https://ci.chromium.org/b/fake_bb_id'
     self.assertEqual(stage.ConstructDashboardURL(), exp_url)
 
     stage_name = 'Archive'

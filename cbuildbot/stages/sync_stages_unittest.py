@@ -1257,8 +1257,7 @@ pre-cq-configs: grunt-pre-cq
     self.assertIn('The banana-pre-cq trybot for your change crashed.',
                   send_notification.call_args[1]['details'])
     self.assertIn(
-        'https://cros-goldeneye.corp.google.com/chromeos/healthmonitoring'
-        '/buildDetails?buildbucketId=bb_id_1',
+        'https://ci.chromium.org/b/bb_id_1',
         send_notification.call_args[1]['details'])
 
   def testSpeculativePreCQ(self):

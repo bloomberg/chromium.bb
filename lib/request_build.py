@@ -140,9 +140,9 @@ class RequestBuild(object):
     # Don't include tags with no value, there is no point.
     # Convert tag values to strings.
     #
-    # Note that cbb_master_build_id must be a string (not a number) in properties
-    # because JSON does not distnguish integers and floats, so nothing
-    # guarantees that 0 won't turn into 0.0.
+    # Note that cbb_master_build_id must be a string (not a number) in
+    # properties because JSON does not distnguish integers and floats, so
+    # nothing guarantees that 0 won't turn into 0.0.
     # Recipe expects it to be a string anyway.
     tags = {k: str(v) for k, v in tags.iteritems() if v}
 
@@ -205,7 +205,7 @@ class RequestBuild(object):
            buildbucket_lib.GetErrorMessage(content)))
 
     buildbucket_id = buildbucket_lib.GetBuildId(content)
-    url = tree_status.ConstructLegolandBuildURL(buildbucket_id)
+    url = tree_status.ConstructMiloBuildURL(buildbucket_id)
     created_ts = buildbucket_lib.GetBuildCreated_ts(content)
 
     result = ScheduledBuild(

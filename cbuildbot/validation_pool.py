@@ -277,8 +277,8 @@ class ValidationPool(object):
     # Unused except for picking.
     self.tree_was_open = tree_was_open
 
-    # A set of changes filtered by throttling, default to None.
-    self.filtered_set = None
+    # A set of changes filtered by throttling, default to empty set.
+    self.filtered_set = set()
 
   def GetAppliedPatches(self):
     """Get the applied_patches instance.
@@ -297,7 +297,7 @@ class ValidationPool(object):
 
   @property
   def build_log(self):
-    return tree_status.ConstructLegolandBuildURL(self._buildbucket_id)
+    return tree_status.ConstructMiloBuildURL(self._buildbucket_id)
 
   @staticmethod
   def GetGerritHelpersForOverlays(overlays):

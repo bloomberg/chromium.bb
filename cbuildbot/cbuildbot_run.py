@@ -677,7 +677,7 @@ class _BuilderRunBase(object):
     if stage:
       return tree_status.ConstructLogDogURL(self.options.buildnumber, stage)
     else:
-      return tree_status.ConstructLegolandBuildURL(self.options.buildbucket_id)
+      return tree_status.ConstructMiloBuildURL(self.options.buildbucket_id)
 
   def ShouldBuildAutotest(self):
     """Return True if this run should build autotest and artifacts."""

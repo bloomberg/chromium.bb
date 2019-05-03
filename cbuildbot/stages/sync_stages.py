@@ -1760,7 +1760,7 @@ class PreCQLauncherStage(SyncStage):
           continue
 
         msg = PRECQ_EARLY_CRASH_MSG % (config,
-                                       tree_status.ConstructLegolandBuildURL(
+                                       tree_status.ConstructMiloBuildURL(
                                            progress.buildbucket_id))
         pool.SendNotification(change, '%(details)s', details=msg)
         pool.RemoveReady(change, reason=config)
@@ -2083,7 +2083,7 @@ class PreCQLauncherStage(SyncStage):
         build_dicts = self.buildstore.GetBuildStatuses(build_ids=build_ids)
         lines = []
         for b in build_dicts:
-          url = tree_status.ConstructLegolandBuildURL(b['buildbucket_id'])
+          url = tree_status.ConstructMiloBuildURL(b['buildbucket_id'])
           lines.append('(%s) : %s ' % (b['build_config'], url))
 
         # Send notifications.

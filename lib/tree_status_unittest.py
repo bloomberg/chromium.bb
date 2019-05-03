@@ -42,10 +42,9 @@ class TestGettingGardenerEmails(cros_test_lib.MockTestCase):
 class TestUrlConstruction(cros_test_lib.TestCase):
   """Tests functions that create URLs."""
 
-  def testConstructLegolandBuildURL(self):
+  def testConstructMiloBuildURL(self):
     """Tests generating Legoland build URLs."""
-    output = tree_status.ConstructLegolandBuildURL('bbid')
-    expected = ('https://cros-goldeneye.corp.google.com/chromeos/'
-                'healthmonitoring/buildDetails?buildbucketId=bbid')
+    output = tree_status.ConstructMiloBuildURL('bbid')
+    expected = 'https://ci.chromium.org/b/bbid'
 
     self.assertEqual(output, expected)

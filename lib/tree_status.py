@@ -17,13 +17,16 @@ from chromite.lib import cros_logging as logging
 
 
 _LUCI_MILO_BUILDBOT_URL = 'https://luci-milo.appspot.com/buildbot'
-_LEGOLAND_BUILD_URL = ('https://cros-goldeneye.corp.google.com/chromeos/'
-                       'healthmonitoring/buildDetails?buildbucketId='
-                       '%(buildbucket_id)s')
 
 _LOGDOG_URL = ('https://luci-logdog.appspot.com/v/'
                '?s=chromeos/buildbucket/cr-buildbucket.appspot.com/'
                '%s/%%2B/steps/%s/0/stdout')
+
+# Will redirect:
+#   https://ci.chromium.org/b/8914470887449121184
+# to:
+#   https://ci.chromium.org/p/chromeos/builds/b8914470887449121184
+_MILO_BUILD_URL = 'https://ci.chromium.org/b/%(buildbucket_id)s'
 
 
 def GetGardenerEmailAddresses():
@@ -79,8 +82,8 @@ def SendHealthAlert(builder_run, subject, body, extra_fields=None):
                      extra_fields=extra_fields)
 
 
-def ConstructLegolandBuildURL(buildbucket_id):
-  """Return a Legoland build URL.
+def ConstructMiloBuildURL(buildbucket_id):
+  """Return a Milo build URL.
 
   Args:
     buildbucket_id: Buildbucket id of the build to link.
@@ -91,7 +94,7 @@ def ConstructLegolandBuildURL(buildbucket_id):
   # Only local tryjobs will not have a buildbucket_id but they also do not have
   # a web UI to point at. Generate a fake URL.
   buildbucket_id = buildbucket_id or 'fake_bb_id'
-  return _LEGOLAND_BUILD_URL % {'buildbucket_id': buildbucket_id}
+  return _MILO_BUILD_URL % {'buildbucket_id': buildbucket_id}
 
 
 def ConstructDashboardURL(buildbot_master_name, builder_name, build_number):
