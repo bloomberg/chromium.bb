@@ -42806,6 +42806,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="6" label="/tmp, different volume"/>
 </enum>
 
+<enum name="OSXStartupUpdateState">
+  <int value="0" label="Update key not set"/>
+  <int value="1" label="Update key set, staged copy present"/>
+  <int value="2" label="Update key set, staged copy not present"/>
+</enum>
+
 <enum name="OtherPossibleUsernamesUsage">
   <int value="0" label="Nothing to Autofill"/>
   <int value="1" label="No other possible usernames"/>

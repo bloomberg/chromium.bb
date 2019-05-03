@@ -64,7 +64,7 @@ class StagingKeyWatcherTest : public testing::TestWithParam<KVOOrNot> {
                              arguments:@[
                                @"write", testingBundleID_.get(),
                                [CrStagingKeyWatcher stagingKeyForTesting],
-                               @"-array", appPath
+                               @"-dict", appPath, appPath
                              ]];
   }
 
@@ -87,14 +87,14 @@ TEST_P(StagingKeyWatcherTest, NoBlockingWhenNoKey) {
 }
 
 TEST_P(StagingKeyWatcherTest, NoBlockingWhenWrongKeyType) {
-  SetDefaultsValue(@"this is not an string array");
+  SetDefaultsValue(@"this is not a dictionary");
 
   base::scoped_nsobject<CrStagingKeyWatcher> watcher = CreateKeyWatcher();
   [watcher waitForStagingKeyToClear];
   ASSERT_FALSE([watcher lastWaitWasBlockedForTesting]);
 }
 
-TEST_P(StagingKeyWatcherTest, NoBlockingWhenWrongArrayType) {
+TEST_P(StagingKeyWatcherTest, NoBlockingWhenArrayType) {
   SetDefaultsValue(@[ @3, @1, @4, @1, @5 ]);
 
   base::scoped_nsobject<CrStagingKeyWatcher> watcher = CreateKeyWatcher();
@@ -110,9 +110,17 @@ TEST_P(StagingKeyWatcherTest, NoBlockingWhenEmptyArray) {
   ASSERT_FALSE([watcher lastWaitWasBlockedForTesting]);
 }
 
+TEST_P(StagingKeyWatcherTest, NoBlockingWhenEmptyDictionary) {
+  SetDefaultsValue(@{});
+
+  base::scoped_nsobject<CrStagingKeyWatcher> watcher = CreateKeyWatcher();
+  [watcher waitForStagingKeyToClear];
+  ASSERT_FALSE([watcher lastWaitWasBlockedForTesting]);
+}
+
 TEST_P(StagingKeyWatcherTest, BlockFunctionality) {
   NSString* appPath = [base::mac::OuterBundle() bundlePath];
-  SetDefaultsValue(@[ appPath ]);
+  SetDefaultsValue(@{appPath : appPath});
 
   NSRunLoop* runloop = [NSRunLoop currentRunLoop];
   ASSERT_EQ(nil, [runloop currentMode]);
@@ -151,7 +159,7 @@ TEST_P(StagingKeyWatcherTest, CallbackOnKeySet) {
 
 TEST_P(StagingKeyWatcherTest, CallbackOnKeyUnset) {
   NSString* appPath = [base::mac::OuterBundle() bundlePath];
-  SetDefaultsValue(@[ appPath ]);
+  SetDefaultsValue(@{appPath : appPath});
 
   base::scoped_nsobject<CrStagingKeyWatcher> watcher = CreateKeyWatcher();
   NSRunLoop* runloop = [NSRunLoop currentRunLoop];

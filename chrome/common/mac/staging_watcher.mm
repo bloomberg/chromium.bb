@@ -5,6 +5,7 @@
 #include "chrome/common/mac/staging_watcher.h"
 
 #include "base/mac/bundle_locations.h"
+#include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_block.h"
 #include "base/mac/scoped_nsobject.h"
@@ -44,6 +45,8 @@ NSString* const kStagingKey = @"UpdatePending";
   BOOL lastWaitWasBlockedForTesting_;
 }
 
++ (NSString*)stagingLocationWithUserDefaults:(NSUserDefaults*)defaults;
+
 @end
 
 @implementation CrStagingKeyWatcher
@@ -78,14 +81,32 @@ NSString* const kStagingKey = @"UpdatePending";
   return self;
 }
 
-- (BOOL)isStagingKeySet {
-  NSArray<NSString*>* paths = [defaults_ stringArrayForKey:kStagingKey];
-  if (!paths)
-    return NO;
++ (NSString*)stagingLocationWithUserDefaults:(NSUserDefaults*)defaults {
+  NSDictionary<NSString*, id>* stagedPathPairs =
+      [defaults dictionaryForKey:kStagingKey];
+  if (!stagedPathPairs)
+    return nil;
 
   NSString* appPath = [base::mac::OuterBundle() bundlePath];
 
-  return [paths containsObject:appPath];
+  return base::mac::ObjCCast<NSString>([stagedPathPairs objectForKey:appPath]);
+}
+
+- (BOOL)isStagingKeySet {
+  return [self stagingLocation] != nil;
+}
+
++ (BOOL)isStagingKeySet {
+  return [self stagingLocation] != nil;
+}
+
+- (NSString*)stagingLocation {
+  return [CrStagingKeyWatcher stagingLocationWithUserDefaults:defaults_];
+}
+
++ (NSString*)stagingLocation {
+  return [self
+      stagingLocationWithUserDefaults:[NSUserDefaults standardUserDefaults]];
 }
 
 - (void)waitForStagingKeyToClear {

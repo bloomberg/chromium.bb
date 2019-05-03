@@ -181,10 +181,7 @@ bool ShouldContinueToRelaunchForUpgrade() {
   // If this isn't a new-style update, and the staging key isn't set, don't
   // block at all.
 
-  const NSTimeInterval kPollingTime = 60 * 60;  // 1 hour
-  base::scoped_nsobject<CrStagingKeyWatcher> staging_watcher(
-      [[CrStagingKeyWatcher alloc] initWithPollingTime:kPollingTime]);
-  if (![staging_watcher isStagingKeySet]) {
+  if (![CrStagingKeyWatcher isStagingKeySet]) {
     LogInstanceCheckResult(OtherInstancesCheckResult::kOldStyleUpdate);
     return true;
   }
