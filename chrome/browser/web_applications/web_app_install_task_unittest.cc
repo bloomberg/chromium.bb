@@ -694,11 +694,14 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_Success) {
                                      InstallResultCode code) {
         EXPECT_EQ(InstallResultCode::kSuccess, code);
         EXPECT_EQ(app_id, installed_app_id);
-        EXPECT_FALSE(
-            test_install_finalizer().finalize_options().no_network_install);
-        EXPECT_EQ(
-            LaunchContainer::kDefault,
-            test_install_finalizer().finalize_options().force_launch_container);
+        EXPECT_FALSE(test_install_finalizer()
+                         .finalize_options_list()
+                         .at(0)
+                         .no_network_install);
+        EXPECT_EQ(LaunchContainer::kDefault, test_install_finalizer()
+                                                 .finalize_options_list()
+                                                 .at(0)
+                                                 .force_launch_container);
 
         run_loop.Quit();
       }));
@@ -719,16 +722,19 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_NoNetworkInstall) {
   install_task_->InstallWebAppFromInfo(
       std::move(web_app_info), /*no_network_install=*/true,
       WebappInstallSource::MENU_BROWSER_TAB,
-      base::BindLambdaForTesting([&](const AppId& installed_app_id,
-                                     InstallResultCode code) {
-        EXPECT_TRUE(
-            test_install_finalizer().finalize_options().no_network_install);
-        EXPECT_EQ(
-            LaunchContainer::kWindow,
-            test_install_finalizer().finalize_options().force_launch_container);
+      base::BindLambdaForTesting(
+          [&](const AppId& installed_app_id, InstallResultCode code) {
+            EXPECT_TRUE(test_install_finalizer()
+                            .finalize_options_list()
+                            .at(0)
+                            .no_network_install);
+            EXPECT_EQ(LaunchContainer::kWindow, test_install_finalizer()
+                                                    .finalize_options_list()
+                                                    .at(0)
+                                                    .force_launch_container);
 
-        run_loop.Quit();
-      }));
+            run_loop.Quit();
+          }));
 
   run_loop.Run();
 }

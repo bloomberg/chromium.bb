@@ -469,7 +469,9 @@ TEST_F(BookmarkAppInstallationTaskTest, InstallPlaceholder) {
         EXPECT_TRUE(IsPlaceholderApp(profile(), kWebAppUrl));
 
         EXPECT_EQ(1, install_finalizer()->num_create_os_shortcuts_calls());
-        EXPECT_TRUE(install_finalizer()->finalize_options().policy_installed);
+        EXPECT_EQ(1u, install_finalizer()->finalize_options_list().size());
+        EXPECT_TRUE(
+            install_finalizer()->finalize_options_list()[0].policy_installed);
         std::unique_ptr<WebApplicationInfo> web_app_info =
             install_finalizer()->web_app_info();
 

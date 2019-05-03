@@ -36,7 +36,7 @@ void TestInstallFinalizer::FinalizeInstall(
 
   // Store input data copies for inspecting in tests.
   web_app_info_copy_ = std::make_unique<WebApplicationInfo>(web_app_info);
-  finalize_options_ = options;
+  finalize_options_list_.push_back(options);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), app_id, code));
