@@ -27,6 +27,7 @@ from chromite.api.gen.chromiumos import common_pb2
 from chromite.lib import constants
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.utils import matching
 
@@ -45,6 +46,10 @@ class InvalidInputFormatError(Error):
 
 class InvalidOutputFileError(Error):
   """Raised when the output file cannot be written."""
+
+
+class CrosSdkNotRunError(Error):
+  """Raised when the cros_sdk command could not be run to enter the chroot."""
 
 
 # API Service Errors.
@@ -217,6 +222,7 @@ class Router(object):
     service_options = svc.GetOptions().Extensions[self._service_options]
     if self._ChrootCheck(service_options, method_options):
       # Run inside the chroot instead.
+      logging.info('Re-executing the endpoint inside the chroot.')
       return self._ReexecuteInside(input_msg, output_path, service_name,
                                    method_name)
 
@@ -264,8 +270,7 @@ class Router(object):
 
     return False
 
-  def _ReexecuteInside(self, input_msg, output_path, service_name,
-                       method_name):
+  def _ReexecuteInside(self, input_msg, output_path, service_name, method_name):
     """Re-execute the service inside the chroot.
 
     Args:
@@ -297,14 +302,33 @@ class Router(object):
 
       if chroot_field_name:
         input_msg.ClearField(chroot_field_name)
+
+      logging.info('Writing input message to: %s', new_input)
       osutils.WriteFile(new_input, json_format.MessageToJson(input_msg))
       osutils.Touch(new_output)
 
       cmd = ['build_api', '%s/%s' % (service_name, method_name),
              '--input-json', chroot_input, '--output-json', chroot_output]
-      result = cros_build_lib.RunCommand(cmd, enter_chroot=True,
-                                         chroot_args=chroot_args,
-                                         error_code_ok=True)
+
+      extra_env = {
+          'FEATURES': 'separatedebug',
+          'USE': 'chrome_internal',
+      }
+      try:
+        result = cros_build_lib.RunCommand(cmd, enter_chroot=True,
+                                           chroot_args=chroot_args,
+                                           error_code_ok=True,
+                                           extra_env=extra_env)
+      except cros_build_lib.RunCommandError:
+        # A non-zero return code will not result in an error, but one is still
+        # thrown when the command cannot be run in the first place. This is
+        # known to happen at least when the PATH does not include the chromite
+        # bin dir.
+        raise CrosSdkNotRunError('Unable to enter the chroot.')
+
+      logging.info('Endpoint execution completed, return code: %d',
+                   result.returncode)
+
       shutil.move(new_output, output_path)
 
       return result.returncode
@@ -363,6 +387,7 @@ def RegisterServices(router):
   router.Register(sdk_pb2)
   router.Register(sysroot_pb2)
   router.Register(test_pb2)
+  logging.debug('Services registered successfully.')
 
 
 def main(argv):
