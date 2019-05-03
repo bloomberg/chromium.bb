@@ -380,9 +380,6 @@ EmphasizeTitlesCondition GetEmphasizeTitlesConditionForInput(
 // ---------------------------------------------------------
 // For UI experiments.
 
-// Returns true if the rich entities flag is enabled.
-bool IsRichEntitySuggestionsEnabled();
-
 // Returns true if the reverse answers flag is enabled.
 bool IsReverseAnswersEnabled();
 

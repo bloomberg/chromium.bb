@@ -549,11 +549,6 @@ OmniboxFieldTrial::GetEmphasizeTitlesConditionForInput(
   return static_cast<EmphasizeTitlesCondition>(value);
 }
 
-bool OmniboxFieldTrial::IsRichEntitySuggestionsEnabled() {
-  return base::FeatureList::IsEnabled(omnibox::kOmniboxRichEntitySuggestions) ||
-         base::FeatureList::IsEnabled(omnibox::kOmniboxLocalEntitySuggestions);
-}
-
 bool OmniboxFieldTrial::IsReverseAnswersEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kOmniboxReverseAnswers);
 }

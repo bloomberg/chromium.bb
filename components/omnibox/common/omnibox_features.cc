@@ -67,7 +67,13 @@ const base::Feature kOmniboxLocalEntitySuggestions{
 // Feature used to enable entity suggestion images and enhanced presentation
 // showing more context and descriptive text about the entity.
 const base::Feature kOmniboxRichEntitySuggestions{
-    "OmniboxRichEntitySuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
+    "OmniboxRichEntitySuggestions",
+#if defined(OS_IOS) || defined(OS_ANDROID)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 // Feature used to enable enhanced presentation showing larger images.
 // This is currently only used on Android.
