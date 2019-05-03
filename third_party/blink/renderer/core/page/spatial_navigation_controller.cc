@@ -175,14 +175,17 @@ bool SpatialNavigationController::HandleEnterKeyboardEvent(
     return false;
 
   if (event->type() == event_type_names::kKeydown) {
+    interest_element->SetActive(true);
+  } else if (event->type() == event_type_names::kKeyup) {
+    interest_element->SetActive(false);
     if (RuntimeEnabledFeatures::FocuslessSpatialNavigationEnabled()) {
       interest_element->focus(FocusParams(SelectionBehaviorOnFocus::kReset,
                                           kWebFocusTypeSpatialNavigation,
                                           nullptr));
+      // We need enter to activate links, etc. The click should be after the
+      // focus in case the site transfers focus upon clicking.
+      interest_element->DispatchSimulatedClick(event);
     }
-    interest_element->SetActive(true);
-  } else if (event->type() == event_type_names::kKeyup) {
-    interest_element->SetActive(false);
   }
 
   return true;
