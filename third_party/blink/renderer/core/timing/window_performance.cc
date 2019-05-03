@@ -62,7 +62,7 @@ namespace {
 // Events taking longer than this threshold to finish being processed are
 // regarded as long-latency events by event-timing. Shorter-latency events are
 // ignored to reduce performance impact.
-constexpr int kEventTimingDurationThresholdInMs = 50;
+constexpr int kEventTimingDurationThresholdInMs = 104;
 
 String GetFrameAttribute(HTMLFrameOwnerElement* frame_owner,
                          const QualifiedName& attr_name,
@@ -379,7 +379,7 @@ void WindowPerformance::ReportEventTimings(WebWidgetClient::SwapResult result,
             PerformanceEventTiming::CreateFirstInputTiming(entry));
       }
     }
-    if (duration_in_ms <= kEventTimingDurationThresholdInMs)
+    if (duration_in_ms < kEventTimingDurationThresholdInMs)
       continue;
 
     if (HasObserverFor(PerformanceEntry::kEvent)) {
