@@ -8,11 +8,8 @@
 #include <memory>
 
 #include "base/logging.h"
-#include "base/stl_util.h"
-#include "base/strings/string16.h"
-#include "base/strings/utf_string_conversions.h"
 #include "device/gamepad/public/cpp/gamepads.h"
-#include "device/vr/util/copy_to_ustring.h"
+#include "device/vr/util/gamepad_builder.h"
 #include "device/vr/vr_device.h"
 #include "third_party/libovr/src/Include/OVR_CAPI.h"
 #include "ui/gfx/transform.h"
@@ -188,75 +185,63 @@ void AddRemoteData(mojom::XRGamepadDataPtr& data,
   data->gamepads.push_back(std::move(remote));
 }
 
-class WebXROculusGamepadBuilder {
+device::mojom::XRHandedness OculusToMojomHand(ovrHandType hand) {
+  switch (hand) {
+    case ovrHand_Left:
+      return device::mojom::XRHandedness::LEFT;
+    case ovrHand_Right:
+      return device::mojom::XRHandedness::RIGHT;
+    default:
+      return device::mojom::XRHandedness::NONE;
+  }
+}
+
+class OculusGamepadBuilder : public GamepadBuilder {
  public:
-  explicit WebXROculusGamepadBuilder(ovrInputState state) : state_(state) {
-    gamepad_.connected = true;
+  // TODO(https://crbug.com/942201): Get correct ID string once WebXR spec issue
+  // #550 (https://github.com/immersive-web/webxr/issues/550) is resolved.
+  OculusGamepadBuilder(ovrInputState state, ovrHandType hand)
+      : GamepadBuilder("unknown",
+                       GamepadMapping::kXRStandard,
+                       OculusToMojomHand(hand)),
+        state_(state) {}
 
-    // According to device::Gamepad comments, this is how to get the timestamp.
-    gamepad_.timestamp = base::TimeTicks::Now().since_origin().InMicroseconds();
-  }
-
-  void SetID(const base::string16& id) {
-    CopyToUString(id, gamepad_.id, base::size(gamepad_.id));
-  }
-
-  void SetMapping(const base::string16& mapping) {
-    CopyToUString(mapping, gamepad_.mapping, base::size(gamepad_.mapping));
-  }
-
-  void SetHand(GamepadHand hand) { gamepad_.hand = hand; }
+  ~OculusGamepadBuilder() override = default;
 
   void AddStandardButton(ovrButton id) {
     bool pressed = (state_.Buttons & id) != 0;
     bool touched = (state_.Touches & id) != 0;
     double value = pressed ? 1.0 : 0.0;
-    AddButton(pressed, touched, value);
+    AddButton(GamepadButton(pressed, touched, value));
   }
 
   void AddTouchButton(ovrTouch id) {
     bool touched = (state_.Touches & id) != 0;
-    AddButton(false, touched, 0.0f);
+    AddButton(GamepadButton(false, touched, 0.0f));
   }
 
   void AddTriggerButton(float value) {
     value = ApplyTriggerDeadzone(value);
     bool pressed = value != 0;
     bool touched = pressed;
-    AddButton(pressed, touched, value);
+    AddButton(GamepadButton(pressed, touched, value));
   }
 
   void AddTouchTriggerButton(ovrTouch id, float value) {
     value = ApplyTriggerDeadzone(value);
     bool pressed = value != 0;
     bool touched = (state_.Touches & id) != 0;
-    AddButton(pressed, touched, value);
+    AddButton(GamepadButton(pressed, touched, value));
   }
 
-  // Used when xr-standard mapping requires an empty button in a reserved slot
-  // instead of just shifting all remaining buttons in the array down by 1
-  // index.
-  void AddEmptyButton() { AddButton(false, false, 0); }
-
-  void AddAxis(double value) {
-    DCHECK_LT(gamepad_.axes_length, Gamepad::kAxesLengthCap);
-    gamepad_.axes[gamepad_.axes_length++] = value;
+  bool IsValid() const override {
+    return GamepadBuilder::IsValid() && GetHandedness() != GamepadHand::kNone;
   }
-
-  Gamepad GetGamepad() { return gamepad_; }
 
  private:
-  void AddButton(bool pressed, bool touched, double value) {
-    DCHECK_LT(gamepad_.buttons_length, Gamepad::kButtonsLengthCap);
-    gamepad_.buttons[gamepad_.buttons_length++] =
-        GamepadButton(pressed, touched, value);
-  }
-
   ovrInputState state_;
 
-  Gamepad gamepad_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebXROculusGamepadBuilder);
+  DISALLOW_COPY_AND_ASSIGN(OculusGamepadBuilder);
 };
 
 }  // namespace
@@ -304,36 +289,28 @@ base::Optional<Gamepad> OculusGamepadHelper::CreateGamepad(ovrSession session,
     return base::nullopt;
   }
 
-  WebXROculusGamepadBuilder touch(input_touch);
-
-  // TODO(https://crbug.com/942201): Get correct ID string once WebXR spec issue
-  // #550 (https://github.com/immersive-web/webxr/issues/550) is resolved.
-  touch.SetID(base::UTF8ToUTF16("unknown"));
-
-  touch.SetMapping(base::UTF8ToUTF16("xr-standard"));
+  OculusGamepadBuilder touch(input_touch, hand);
 
   touch.AddAxis(input_touch.Thumbstick[hand].x);
   touch.AddAxis(-input_touch.Thumbstick[hand].y);
 
   switch (hand) {
     case ovrHand_Left:
-      touch.SetHand(GamepadHand::kLeft);
       touch.AddTouchTriggerButton(ovrTouch_LIndexTrigger,
                                   input_touch.IndexTrigger[hand]);
       touch.AddStandardButton(ovrButton_LThumb);
       touch.AddTriggerButton(input_touch.HandTrigger[hand]);
-      touch.AddEmptyButton();
+      touch.AddPlaceholderButton();
       touch.AddStandardButton(ovrButton_X);
       touch.AddStandardButton(ovrButton_Y);
       touch.AddTouchButton(ovrTouch_LThumbRest);
       break;
     case ovrHand_Right:
-      touch.SetHand(GamepadHand::kRight);
       touch.AddTouchTriggerButton(ovrTouch_RIndexTrigger,
                                   input_touch.IndexTrigger[hand]);
       touch.AddStandardButton(ovrButton_RThumb);
       touch.AddTriggerButton(input_touch.HandTrigger[hand]);
-      touch.AddEmptyButton();
+      touch.AddPlaceholderButton();
       touch.AddStandardButton(ovrButton_A);
       touch.AddStandardButton(ovrButton_B);
       touch.AddTouchButton(ovrTouch_RThumbRest);

@@ -17,16 +17,9 @@
 #include "device/gamepad/public/cpp/gamepads.h"
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
+#include "device/vr/util/gamepad_builder.h"
 
 namespace device {
-struct ButtonData {
-  bool pressed;
-  bool touched;
-  double value;
-
-  double x_axis;
-  double y_axis;
-};
 
 enum class ButtonName {
   kSelect,
@@ -37,7 +30,7 @@ enum class ButtonName {
 
 struct ParsedInputState {
   mojom::XRInputSourceStatePtr source_state;
-  std::unordered_map<ButtonName, ButtonData> button_data;
+  std::unordered_map<ButtonName, GamepadBuilder::ButtonData> button_data;
   GamepadPose gamepad_pose;
   ParsedInputState();
   ~ParsedInputState();
@@ -97,6 +90,7 @@ class MixedRealityInputHelper {
 
   DISALLOW_COPY_AND_ASSIGN(MixedRealityInputHelper);
 };
+
 }  // namespace device
 
 #endif  // DEVICE_VR_WINDOWS_MIXED_REALITY_MIXED_REALITY_INPUT_HELPER_H_

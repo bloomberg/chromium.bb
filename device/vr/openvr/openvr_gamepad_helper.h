@@ -13,6 +13,11 @@ namespace device {
 class OpenVRGamepadHelper {
  public:
   static mojom::XRGamepadDataPtr GetGamepadData(vr::IVRSystem* system);
+  static base::Optional<Gamepad> GetXRGamepad(
+      vr::IVRSystem* system,
+      uint32_t controller_id,
+      vr::VRControllerState_t controller_state,
+      device::mojom::XRHandedness handedness);
 };
 
 }  // namespace device

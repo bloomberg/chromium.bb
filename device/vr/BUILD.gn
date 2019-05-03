@@ -29,6 +29,8 @@ if (enable_vr) {
       "util/copy_to_ustring.h",
       "util/fps_meter.cc",
       "util/fps_meter.h",
+      "util/gamepad_builder.cc",
+      "util/gamepad_builder.h",
       "util/sample_queue.cc",
       "util/sample_queue.h",
       "util/sliding_average.cc",
