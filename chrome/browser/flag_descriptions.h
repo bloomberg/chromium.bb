@@ -1810,9 +1810,6 @@ extern const char kDisableExplicitDmaFencesDescription[];
 extern const char kDisableTabletAutohideTitlebarsName[];
 extern const char kDisableTabletAutohideTitlebarsDescription[];
 
-extern const char kDisableTabletSplitViewName[];
-extern const char kDisableTabletSplitViewDescription[];
-
 extern const char kDoubleTapToZoomInTabletModeName[];
 extern const char kDoubleTapToZoomInTabletModeDescription[];
 

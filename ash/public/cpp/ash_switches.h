@@ -19,7 +19,6 @@ namespace switches {
 ASH_PUBLIC_EXPORT extern const char kAshConstrainPointerToRoot[];
 ASH_PUBLIC_EXPORT extern const char kAshDebugShortcuts[];
 ASH_PUBLIC_EXPORT extern const char kAshDeveloperShortcuts[];
-ASH_PUBLIC_EXPORT extern const char kAshDisableTabletSplitView[];
 ASH_PUBLIC_EXPORT extern const char kAshDisableTouchExplorationMode[];
 ASH_PUBLIC_EXPORT extern const char kAshEnableCursorMotionBlur[];
 ASH_PUBLIC_EXPORT extern const char kAshEnableV1AppBackButton[];

@@ -224,11 +224,6 @@ bool IsClamshellSplitViewModeEnabled() {
 }
 
 bool ShouldAllowSplitView() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshDisableTabletSplitView)) {
-    return false;
-  }
-
   if (!Shell::Get()
            ->tablet_mode_controller()
            ->IsTabletModeWindowManagerEnabled() &&
