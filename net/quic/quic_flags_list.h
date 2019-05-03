@@ -28,7 +28,7 @@ QUIC_FLAG(int64_t, FLAGS_quic_time_wait_list_max_connections, 600000)
 // Enables server-side support for QUIC stateless rejects.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_enable_quic_stateless_reject_support,
-          true)
+          false)
 
 // If true, require handshake confirmation for QUIC connections, functionally
 // disabling 0-rtt handshakes.
@@ -47,7 +47,7 @@ QUIC_FLAG(bool, FLAGS_quic_enforce_single_packet_chlo, true)
 // connection.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_use_cheap_stateless_rejects,
-          true)
+          false)
 
 // If true, allows packets to be buffered in anticipation of a future CHLO, and
 // allow CHLO packets to be buffered until next iteration of the event loop.
@@ -347,4 +347,9 @@ QUIC_FLAG(bool,
 // it's received.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_do_not_accept_stop_waiting,
+          false)
+
+// If true, deprecate queued_control_frames_ from QuicPacketGenerator.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_deprecate_queued_control_frames,
           false)

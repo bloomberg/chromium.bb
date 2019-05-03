@@ -5545,6 +5545,8 @@ test("net_unittests") {
       "third_party/quiche/src/quic/quartc/test/quartc_peer.cc",
       "third_party/quiche/src/quic/quartc/test/quartc_peer.h",
       "third_party/quiche/src/quic/quartc/test/quartc_peer_test.cc",
+      "third_party/quiche/src/quic/quartc/test/quic_trace_interceptor.cc",
+      "third_party/quiche/src/quic/quartc/test/quic_trace_interceptor.h",
       "third_party/quiche/src/quic/quartc/test/random_delay_link.cc",
       "third_party/quiche/src/quic/quartc/test/random_delay_link.h",
       "third_party/quiche/src/quic/quartc/test/random_packet_filter.cc",
