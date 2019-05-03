@@ -120,9 +120,6 @@ MAX_TOTAL_ERRORS_FOR_RETRY = 30
 UPLOAD_STATS = 'UPLOAD'
 
 
-class DuplicateFile(Exception):
-  """Thrown when a symbol file already exists on the server."""
-
 def BatchGenerator(iterator, batch_size):
   """Given an iterator, break into lists of size batch_size.
 
@@ -388,8 +385,9 @@ def UploadSymbolFile(upload_url, symbol, api_key):
   '''
   timeout = GetUploadTimeout(symbol)
   if UploadExists(symbol, upload_url, timeout, api_key):
-    logging.info('%s symbol file already uploaded, skipping', symbol.header.id)
-    raise DuplicateFile
+    logging.info('%s/%s symbol file already uploaded, skipping',
+                 symbol.header.id, symbol.header.name)
+    symbol.status = SymbolFile.DUPLICATE
   else:
     upload = ExecRequest('post',
                          '%s/uploads:create' % upload_url, timeout, api_key)
@@ -452,10 +450,10 @@ def PerformSymbolsFileUpload(symbols, upload_url, api_key):
               upload_url, s, api_key,
               sleep=INITIAL_RETRY_DELAY,
               log_all_retries=True)
-        logging.info('upload of %10i bytes took %s', s.FileSize(), timer.delta)
-        s.status = SymbolFile.UPLOADED
-      except DuplicateFile:
-        s.status = SymbolFile.DUPLICATE
+        if s.status != SymbolFile.DUPLICATE:
+          logging.info('upload of %10i bytes took %s', s.FileSize(),
+                       timer.delta)
+          s.status = SymbolFile.UPLOADED
       except (requests.exceptions.HTTPError,
               requests.exceptions.Timeout,
               requests.exceptions.RequestException) as e:
