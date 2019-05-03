@@ -342,3 +342,9 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_v44_disable_trial_decryption,
           false)
+
+// In v44 and above, where STOP_WAITING is never sent, close the connection if
+// it's received.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_do_not_accept_stop_waiting,
+          false)
