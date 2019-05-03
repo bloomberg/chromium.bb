@@ -18,7 +18,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/network/network_handler.h"
@@ -90,7 +89,7 @@ void ArcTermsOfServiceScreenHandler::MaybeLoadPlayStoreToS(
 void ArcTermsOfServiceScreenHandler::OnCurrentScreenChanged(
     OobeScreenId current_screen,
     OobeScreenId new_screen) {
-  if (new_screen != GaiaView::kScreenId)
+  if (new_screen != OobeScreen::SCREEN_GAIA_SIGNIN)
     return;
 
   MaybeLoadPlayStoreToS(false);

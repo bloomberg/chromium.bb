@@ -284,7 +284,7 @@ void LoginDisplayHostCommon::ShowGaiaDialogCommon(
     }
     LoadWallpaper(*prefilled_account);
   } else {
-    if (GetOobeUI()->current_screen() != GaiaView::kScreenId)
+    if (GetOobeUI()->current_screen() != OobeScreen::SCREEN_GAIA_SIGNIN)
       GetOobeUI()->GetView<GaiaScreenHandler>()->ShowGaiaAsync(base::nullopt);
     LoadSigninWallpaper();
   }

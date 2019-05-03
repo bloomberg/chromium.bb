@@ -27,7 +27,7 @@ class HelpAppLauncher;
 // dtor.
 class EulaView {
  public:
-  constexpr static StaticOobeScreenId kScreenId{"eula"};
+  constexpr static StaticOobeScreenId kScreenId = OobeScreen::SCREEN_OOBE_EULA;
 
   virtual ~EulaView() {}
 

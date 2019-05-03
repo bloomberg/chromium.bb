@@ -42,7 +42,7 @@ class EnrollmentScreenTest : public InProcessBrowserTest {
   }
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
-    ShowLoginWizard(EnrollmentScreenView::kScreenId);
+    ShowLoginWizard(OobeScreen::SCREEN_OOBE_ENROLLMENT);
     EXPECT_EQ(WizardController::default_controller()->current_screen(),
               enrollment_screen());
     enrollment_screen()->set_exit_callback_for_testing(base::BindRepeating(
@@ -138,7 +138,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentScreenTest, EnrollmentSpinner) {
 
   // Run through the flow
   view->Show();
-  OobeScreenWaiter(EnrollmentScreenView::kScreenId).Wait();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_ENROLLMENT).Wait();
   checker.ExpectTrue(
       "window.getComputedStyle(document.getElementById('oauth-enroll-step-"
       "signin')).display !== 'none'");

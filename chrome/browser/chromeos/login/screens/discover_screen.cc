@@ -20,7 +20,7 @@ const char kFinished[] = "finished";
 
 DiscoverScreen::DiscoverScreen(DiscoverScreenView* view,
                                const base::RepeatingClosure& exit_callback)
-    : BaseScreen(DiscoverScreenView::kScreenId),
+    : BaseScreen(OobeScreen::SCREEN_DISCOVER),
       view_(view),
       exit_callback_(exit_callback) {
   DCHECK(view_);

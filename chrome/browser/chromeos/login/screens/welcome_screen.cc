@@ -47,12 +47,12 @@ namespace chromeos {
 // static
 WelcomeScreen* WelcomeScreen::Get(ScreenManager* manager) {
   return static_cast<WelcomeScreen*>(
-      manager->GetScreen(WelcomeView::kScreenId));
+      manager->GetScreen(OobeScreen::SCREEN_OOBE_WELCOME));
 }
 
 WelcomeScreen::WelcomeScreen(WelcomeView* view,
                              const base::RepeatingClosure& exit_callback)
-    : BaseScreen(WelcomeView::kScreenId),
+    : BaseScreen(OobeScreen::SCREEN_OOBE_WELCOME),
       view_(view),
       exit_callback_(exit_callback),
       weak_factory_(this) {

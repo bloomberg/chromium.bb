@@ -19,7 +19,7 @@ class ResetScreen;
 // representation, either views based or WebUI.
 class ResetView {
  public:
-  constexpr static StaticOobeScreenId kScreenId{"reset"};
+  constexpr static StaticOobeScreenId kScreenId = OobeScreen::SCREEN_OOBE_RESET;
 
   virtual ~ResetView() {}
 

@@ -17,7 +17,8 @@ class ErrorScreen;
 // representation. Owned by ErrorScreen.
 class ErrorScreenView {
  public:
-  constexpr static StaticOobeScreenId kScreenId{"error-message"};
+  constexpr static StaticOobeScreenId kScreenId =
+      OobeScreen::SCREEN_ERROR_MESSAGE;
 
   virtual ~ErrorScreenView() {}
 

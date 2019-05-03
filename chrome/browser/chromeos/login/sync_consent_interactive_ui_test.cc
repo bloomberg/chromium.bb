@@ -147,7 +147,7 @@ class SyncConsentTest : public OobeBaseTest {
       const std::string expected_consent_confirmation_string) {
     SyncConsentScreen* screen = static_cast<SyncConsentScreen*>(
         WizardController::default_controller()->GetScreen(
-            SyncConsentScreenView::kScreenId));
+            OobeScreen::SCREEN_SYNC_CONSENT));
     ConsentRecordedWaiter consent_recorded_waiter;
     screen->SetDelegateForTesting(&consent_recorded_waiter);
 
@@ -269,7 +269,7 @@ IN_PROC_BROWSER_TEST_P(SyncConsentPolicyDisabledTest,
 
   SyncConsentScreen* screen = static_cast<SyncConsentScreen*>(
       WizardController::default_controller()->GetScreen(
-          SyncConsentScreenView::kScreenId));
+          OobeScreen::SCREEN_SYNC_CONSENT));
 
   screen->SetProfileSyncDisabledByPolicyForTesting(true);
   screen->SetProfileSyncEngineInitializedForTesting(GetParam());

@@ -12,7 +12,6 @@
 #include "chrome/browser/chromeos/login/app_launch_controller.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
-#include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/chromium_strings.h"
@@ -183,7 +182,7 @@ void AppLaunchSplashScreenHandler::ShowNetworkConfigureUI() {
       break;
   }
 
-  if (GetCurrentScreen() != ErrorScreenView::kScreenId)
+  if (GetCurrentScreen() != OobeScreen::SCREEN_ERROR_MESSAGE)
     error_screen_->SetParentScreen(kScreenId);
   error_screen_->Show();
 }

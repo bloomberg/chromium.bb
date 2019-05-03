@@ -12,7 +12,6 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
-#include "chrome/browser/ui/webui/chromeos/login/sync_consent_screen_handler.h"
 #include "net/dns/mock_host_resolver.h"
 
 namespace chromeos {
@@ -75,7 +74,7 @@ IN_PROC_BROWSER_TEST_F(LoginUIShelfVisibilityTest, PostLoginScreen) {
                                 FakeGaiaMixin::kEmptyUserServices);
 
   // Sync consent is the first post-login screen shown when a new user signs in.
-  OobeScreenWaiter(SyncConsentScreenView::kScreenId).Wait();
+  OobeScreenWaiter(OobeScreen::SCREEN_SYNC_CONSENT).Wait();
 
   EXPECT_FALSE(test::LoginScreenTester().IsGuestButtonShown());
   EXPECT_FALSE(test::LoginScreenTester().IsAddUserButtonShown());

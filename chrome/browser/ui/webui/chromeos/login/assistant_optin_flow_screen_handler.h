@@ -23,7 +23,8 @@ class AssistantOptInFlowScreen;
 // and its WebUI representation.
 class AssistantOptInFlowScreenView {
  public:
-  constexpr static StaticOobeScreenId kScreenId{"assistant-optin-flow"};
+  constexpr static StaticOobeScreenId kScreenId =
+      OobeScreen::SCREEN_ASSISTANT_OPTIN_FLOW;
 
   virtual ~AssistantOptInFlowScreenView() = default;
 

@@ -226,7 +226,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalWindowCtorDtorTest, OpenPortalDialog) {
 
   ASSERT_EQ(PortalDetectorStrategy::STRATEGY_ID_LOGIN_SCREEN, strategy_id());
   network_portal_detector()->NotifyObserversForTesting();
-  OobeScreenWaiter(ErrorScreenView::kScreenId).Wait();
+  OobeScreenWaiter(OobeScreen::SCREEN_ERROR_MESSAGE).Wait();
   ASSERT_EQ(PortalDetectorStrategy::STRATEGY_ID_ERROR_SCREEN, strategy_id());
 
   error_screen->ShowCaptivePortal();

@@ -90,12 +90,12 @@ namespace chromeos {
 // static
 EnrollmentScreen* EnrollmentScreen::Get(ScreenManager* manager) {
   return static_cast<EnrollmentScreen*>(
-      manager->GetScreen(EnrollmentScreenView::kScreenId));
+      manager->GetScreen(OobeScreen::SCREEN_OOBE_ENROLLMENT));
 }
 
 EnrollmentScreen::EnrollmentScreen(EnrollmentScreenView* view,
                                    const ScreenExitCallback& exit_callback)
-    : BaseScreen(EnrollmentScreenView::kScreenId),
+    : BaseScreen(OobeScreen::SCREEN_OOBE_ENROLLMENT),
       view_(view),
       exit_callback_(exit_callback),
       weak_ptr_factory_(this) {

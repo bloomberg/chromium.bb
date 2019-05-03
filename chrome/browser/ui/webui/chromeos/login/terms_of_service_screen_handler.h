@@ -21,7 +21,8 @@ class TermsOfServiceScreen;
 // WebUI representation.
 class TermsOfServiceScreenView {
  public:
-  constexpr static StaticOobeScreenId kScreenId{"terms-of-service"};
+  constexpr static StaticOobeScreenId kScreenId =
+      OobeScreen::SCREEN_TERMS_OF_SERVICE;
 
   virtual ~TermsOfServiceScreenView() {}
 

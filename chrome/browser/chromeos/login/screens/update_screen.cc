@@ -88,14 +88,15 @@ const int kDelayErrorMessageSec = 10;
 
 // static
 UpdateScreen* UpdateScreen::Get(ScreenManager* manager) {
-  return static_cast<UpdateScreen*>(manager->GetScreen(UpdateView::kScreenId));
+  return static_cast<UpdateScreen*>(
+      manager->GetScreen(OobeScreen::SCREEN_OOBE_UPDATE));
 }
 
 UpdateScreen::UpdateScreen(BaseScreenDelegate* base_screen_delegate,
                            UpdateView* view,
                            ErrorScreen* error_screen,
                            const ScreenExitCallback& exit_callback)
-    : BaseScreen(UpdateView::kScreenId),
+    : BaseScreen(OobeScreen::SCREEN_OOBE_UPDATE),
       tick_clock_(base::DefaultTickClock::GetInstance()),
       reboot_check_delay_(kWaitForRebootTimeSec),
       base_screen_delegate_(base_screen_delegate),
@@ -524,7 +525,7 @@ void UpdateScreen::ShowErrorMessage() {
       error_screen_->RegisterConnectRequestCallback(base::BindRepeating(
           &UpdateScreen::OnConnectRequested, base::Unretained(this)));
   error_screen_->SetUIState(NetworkError::UI_STATE_UPDATE);
-  error_screen_->SetParentScreen(UpdateView::kScreenId);
+  error_screen_->SetParentScreen(OobeScreen::SCREEN_OOBE_UPDATE);
   error_screen_->SetHideCallback(base::BindRepeating(
       &UpdateScreen::OnErrorScreenHidden, weak_factory_.GetWeakPtr()));
   error_screen_->Show();

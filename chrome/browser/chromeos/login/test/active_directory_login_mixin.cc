@@ -8,7 +8,6 @@
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
-#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chromeos/dbus/auth_policy/fake_auth_policy_client.h"
@@ -89,7 +88,7 @@ void ActiveDirectoryLoginMixin::ExpectValid(const std::string& parent_id,
 
 // Checks if Active Directory login is visible.
 void ActiveDirectoryLoginMixin::TestLoginVisible() {
-  OobeScreenWaiter screen_waiter(GaiaView::kScreenId);
+  OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_GAIA_SIGNIN);
   screen_waiter.Wait();
   // Checks if Gaia signin is hidden.
   test::OobeJS().ExpectHidden(kGaiaSigninId);

@@ -40,7 +40,7 @@ void SetApplicationLocaleAndInputMethod(const std::string& locale,
 DemoPreferencesScreen::DemoPreferencesScreen(
     DemoPreferencesScreenView* view,
     const ScreenExitCallback& exit_callback)
-    : BaseScreen(DemoPreferencesScreenView::kScreenId),
+    : BaseScreen(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES),
       input_manager_observer_(this),
       view_(view),
       exit_callback_(exit_callback) {

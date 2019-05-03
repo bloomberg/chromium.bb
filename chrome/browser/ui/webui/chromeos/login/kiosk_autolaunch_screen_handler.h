@@ -19,7 +19,8 @@ class KioskAutolaunchScreen;
 // Note, do not forget to call OnViewDestroyed in the dtor.
 class KioskAutolaunchScreenView {
  public:
-  constexpr static StaticOobeScreenId kScreenId{"autolaunch"};
+  constexpr static StaticOobeScreenId kScreenId =
+      OobeScreen::SCREEN_KIOSK_AUTOLAUNCH;
 
   virtual ~KioskAutolaunchScreenView() {}
 

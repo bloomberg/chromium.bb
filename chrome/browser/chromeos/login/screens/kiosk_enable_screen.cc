@@ -14,7 +14,7 @@ namespace chromeos {
 KioskEnableScreen::KioskEnableScreen(
     KioskEnableScreenView* view,
     const base::RepeatingClosure& exit_callback)
-    : BaseScreen(KioskEnableScreenView::kScreenId),
+    : BaseScreen(OobeScreen::SCREEN_KIOSK_ENABLE),
       view_(view),
       exit_callback_(exit_callback) {
   DCHECK(view_);

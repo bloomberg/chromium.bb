@@ -86,7 +86,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/chromium_strings.h"
@@ -2183,7 +2182,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, TermsOfServiceWithLocaleSwitch) {
         chromeos::WizardController::default_controller();
   ASSERT_TRUE(wizard_controller);
   ASSERT_TRUE(wizard_controller->current_screen());
-  EXPECT_EQ(chromeos::TermsOfServiceScreenView::kScreenId.AsId(),
+  EXPECT_EQ(chromeos::OobeScreen::SCREEN_TERMS_OF_SERVICE.AsId(),
             wizard_controller->current_screen()->screen_id());
 
   // Wait for the Terms of Service to finish downloading.
@@ -2639,7 +2638,7 @@ IN_PROC_BROWSER_TEST_P(TermsOfServiceDownloadTest, TermsOfServiceScreen) {
         chromeos::WizardController::default_controller();
   ASSERT_TRUE(wizard_controller);
   ASSERT_TRUE(wizard_controller->current_screen());
-  EXPECT_EQ(chromeos::TermsOfServiceScreenView::kScreenId.AsId(),
+  EXPECT_EQ(chromeos::OobeScreen::SCREEN_TERMS_OF_SERVICE.AsId(),
             wizard_controller->current_screen()->screen_id());
 
   // Wait for the Terms of Service to finish downloading, then get the status of
@@ -2785,7 +2784,7 @@ IN_PROC_BROWSER_TEST_P(TermsOfServiceDownloadTest, DeclineTermsOfService) {
       chromeos::WizardController::default_controller();
   ASSERT_TRUE(wizard_controller);
   ASSERT_TRUE(wizard_controller->current_screen());
-  EXPECT_EQ(chromeos::TermsOfServiceScreenView::kScreenId.AsId(),
+  EXPECT_EQ(chromeos::OobeScreen::SCREEN_TERMS_OF_SERVICE.AsId(),
             wizard_controller->current_screen()->screen_id());
 
   // Click the back button.

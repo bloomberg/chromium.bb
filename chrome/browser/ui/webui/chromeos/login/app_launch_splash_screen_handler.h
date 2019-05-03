@@ -28,7 +28,8 @@ class AppLaunchSplashScreenView {
     APP_LAUNCH_STATE_SHOWING_NETWORK_CONFIGURE_UI,
   };
 
-  constexpr static StaticOobeScreenId kScreenId{"app-launch-splash"};
+  constexpr static StaticOobeScreenId kScreenId =
+      OobeScreen::SCREEN_APP_LAUNCH_SPLASH;
 
   virtual ~AppLaunchSplashScreenView() {}
 

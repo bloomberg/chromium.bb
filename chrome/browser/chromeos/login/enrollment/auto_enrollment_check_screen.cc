@@ -39,14 +39,14 @@ NetworkPortalDetector::CaptivePortalStatus GetCaptivePortalStatus() {
 AutoEnrollmentCheckScreen* AutoEnrollmentCheckScreen::Get(
     ScreenManager* manager) {
   return static_cast<AutoEnrollmentCheckScreen*>(
-      manager->GetScreen(AutoEnrollmentCheckScreenView::kScreenId));
+      manager->GetScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK));
 }
 
 AutoEnrollmentCheckScreen::AutoEnrollmentCheckScreen(
     AutoEnrollmentCheckScreenView* view,
     ErrorScreen* error_screen,
     const base::RepeatingClosure& exit_callback)
-    : BaseScreen(AutoEnrollmentCheckScreenView::kScreenId),
+    : BaseScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK),
       view_(view),
       error_screen_(error_screen),
       exit_callback_(exit_callback),
@@ -249,7 +249,7 @@ void AutoEnrollmentCheckScreen::ShowErrorScreen(
   error_screen_->SetHideCallback(
       base::BindRepeating(&AutoEnrollmentCheckScreen::OnErrorScreenHidden,
                           weak_ptr_factory_.GetWeakPtr()));
-  error_screen_->SetParentScreen(AutoEnrollmentCheckScreenView::kScreenId);
+  error_screen_->SetParentScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
   error_screen_->Show();
   histogram_helper_->OnErrorShow(error_state);
 }

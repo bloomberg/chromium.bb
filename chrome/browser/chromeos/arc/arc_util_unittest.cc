@@ -26,7 +26,6 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chromeos/login/demo_preferences_screen_handler.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -977,7 +976,7 @@ TEST_F(ArcOobeOpaOptInActiveInTest, OobeOptInActive) {
   EXPECT_FALSE(IsArcOobeOptInActive());
   // ARC ToS wizard but not for new user.
   login_display_host()->StartWizard(
-      chromeos::ArcTermsOfServiceScreenView::kScreenId);
+      chromeos::OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE);
   EXPECT_FALSE(IsArcOobeOptInActive());
 }
 
@@ -998,7 +997,7 @@ TEST_F(DemoSetupFlowArcOptInTest, TermsOfServiceOobeNegotiationNeeded) {
   DisableDBusForProfileManager();
   CreateLoginDisplayHost();
   login_display_host()->StartWizard(
-      chromeos::DemoPreferencesScreenView::kScreenId);
+      chromeos::OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES);
   login_display_host()
       ->GetWizardController()
       ->SimulateDemoModeSetupForTesting();
@@ -1014,7 +1013,7 @@ TEST_F(DemoSetupFlowArcOptInTest,
   DisableDBusForProfileManager();
   CreateLoginDisplayHost();
   login_display_host()->StartWizard(
-      chromeos::DemoPreferencesScreenView::kScreenId);
+      chromeos::OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES);
   login_display_host()
       ->GetWizardController()
       ->SimulateDemoModeSetupForTesting();

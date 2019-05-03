@@ -15,7 +15,8 @@ class DeviceDisabledScreen;
 // Interface between the device disabled screen and its representation.
 class DeviceDisabledScreenView {
  public:
-  constexpr static StaticOobeScreenId kScreenId{"device-disabled"};
+  constexpr static StaticOobeScreenId kScreenId =
+      OobeScreen::SCREEN_DEVICE_DISABLED;
 
   virtual ~DeviceDisabledScreenView() {}
 

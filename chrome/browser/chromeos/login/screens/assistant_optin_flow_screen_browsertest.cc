@@ -365,7 +365,7 @@ class AssistantOptInFlowTest : public MixinBasedInProcessBrowserTest {
 
     WizardController::default_controller()
         ->screen_manager()
-        ->DeleteScreenForTesting(AssistantOptInFlowScreenView::kScreenId);
+        ->DeleteScreenForTesting(OobeScreen::SCREEN_ASSISTANT_OPTIN_FLOW);
     auto assistant_optin_flow_screen =
         std::make_unique<AssistantOptInFlowScreen>(
             GetOobeUI()->GetView<AssistantOptInFlowScreenHandler>(),
@@ -531,7 +531,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTestWithVoiceMatchDisabled,
   SetUpAssistantScreensForTest();
   assistant_optin_flow_screen_->Show();
 
-  OobeScreenWaiter screen_waiter(AssistantOptInFlowScreenView::kScreenId);
+  OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_ASSISTANT_OPTIN_FLOW);
   screen_waiter.set_assert_next_screen();
   screen_waiter.Wait();
 
@@ -569,7 +569,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTestWithVoiceMatchDisabled,
   SetUpAssistantScreensForTest();
   assistant_optin_flow_screen_->Show();
 
-  OobeScreenWaiter screen_waiter(AssistantOptInFlowScreenView::kScreenId);
+  OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_ASSISTANT_OPTIN_FLOW);
   screen_waiter.set_assert_next_screen();
   screen_waiter.Wait();
 
@@ -608,7 +608,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, Basic) {
   SetUpAssistantScreensForTest();
   assistant_optin_flow_screen_->Show();
 
-  OobeScreenWaiter screen_waiter(AssistantOptInFlowScreenView::kScreenId);
+  OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_ASSISTANT_OPTIN_FLOW);
   screen_waiter.set_assert_next_screen();
   screen_waiter.Wait();
 
@@ -644,7 +644,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, DisableScreenContext) {
   SetUpAssistantScreensForTest();
   assistant_optin_flow_screen_->Show();
 
-  OobeScreenWaiter screen_waiter(AssistantOptInFlowScreenView::kScreenId);
+  OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_ASSISTANT_OPTIN_FLOW);
   screen_waiter.set_assert_next_screen();
   screen_waiter.Wait();
 
@@ -682,7 +682,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest,
   SetUpAssistantScreensForTest();
   assistant_optin_flow_screen_->Show();
 
-  OobeScreenWaiter screen_waiter(AssistantOptInFlowScreenView::kScreenId);
+  OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_ASSISTANT_OPTIN_FLOW);
   screen_waiter.set_assert_next_screen();
   screen_waiter.Wait();
 
@@ -726,7 +726,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, RetryOnWebviewLoadFail) {
   arc::VoiceInteractionControllerClient::Get()->NotifyStatusChanged(
       ash::mojom::VoiceInteractionState::STOPPED);
 
-  OobeScreenWaiter screen_waiter(AssistantOptInFlowScreenView::kScreenId);
+  OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_ASSISTANT_OPTIN_FLOW);
   screen_waiter.set_assert_next_screen();
   screen_waiter.Wait();
 
@@ -765,7 +765,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, RejectValueProp) {
 
   assistant_optin_flow_screen_->Show();
 
-  OobeScreenWaiter screen_waiter(AssistantOptInFlowScreenView::kScreenId);
+  OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_ASSISTANT_OPTIN_FLOW);
   screen_waiter.set_assert_next_screen();
   screen_waiter.Wait();
 
@@ -791,7 +791,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, AskEmailOptIn_NotChecked) {
   SetUpAssistantScreensForTest();
   assistant_optin_flow_screen_->Show();
 
-  OobeScreenWaiter screen_waiter(AssistantOptInFlowScreenView::kScreenId);
+  OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_ASSISTANT_OPTIN_FLOW);
   screen_waiter.set_assert_next_screen();
   screen_waiter.Wait();
 
@@ -832,7 +832,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, AskEmailOptIn_Accepted) {
   SetUpAssistantScreensForTest();
   assistant_optin_flow_screen_->Show();
 
-  OobeScreenWaiter screen_waiter(AssistantOptInFlowScreenView::kScreenId);
+  OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_ASSISTANT_OPTIN_FLOW);
   screen_waiter.set_assert_next_screen();
   screen_waiter.Wait();
 
@@ -877,7 +877,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, SkipShowingValueProp) {
 
   assistant_optin_flow_screen_->Show();
 
-  OobeScreenWaiter screen_waiter(AssistantOptInFlowScreenView::kScreenId);
+  OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_ASSISTANT_OPTIN_FLOW);
   screen_waiter.set_assert_next_screen();
   screen_waiter.Wait();
 
@@ -912,7 +912,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest,
 
   assistant_optin_flow_screen_->Show();
 
-  OobeScreenWaiter screen_waiter(AssistantOptInFlowScreenView::kScreenId);
+  OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_ASSISTANT_OPTIN_FLOW);
   screen_waiter.set_assert_next_screen();
   screen_waiter.Wait();
 
@@ -945,7 +945,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, SpeakerIdEnrollment) {
 
   assistant_optin_flow_screen_->Show();
 
-  OobeScreenWaiter screen_waiter(AssistantOptInFlowScreenView::kScreenId);
+  OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_ASSISTANT_OPTIN_FLOW);
   screen_waiter.set_assert_next_screen();
   screen_waiter.Wait();
 
@@ -1035,7 +1035,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest,
 
   assistant_optin_flow_screen_->Show();
 
-  OobeScreenWaiter screen_waiter(AssistantOptInFlowScreenView::kScreenId);
+  OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_ASSISTANT_OPTIN_FLOW);
   screen_waiter.set_assert_next_screen();
   screen_waiter.Wait();
 
@@ -1087,7 +1087,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest,
 
   assistant_optin_flow_screen_->Show();
 
-  OobeScreenWaiter screen_waiter(AssistantOptInFlowScreenView::kScreenId);
+  OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_ASSISTANT_OPTIN_FLOW);
   screen_waiter.set_assert_next_screen();
   screen_waiter.Wait();
 

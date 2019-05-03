@@ -27,7 +27,8 @@ class ArcKioskSplashScreenView {
     WAITING_APP_WINDOW,
   };
 
-  constexpr static StaticOobeScreenId kScreenId{"arc-kiosk-splash"};
+  constexpr static StaticOobeScreenId kScreenId =
+      OobeScreen::SCREEN_ARC_KIOSK_SPLASH;
 
   ArcKioskSplashScreenView() = default;
 

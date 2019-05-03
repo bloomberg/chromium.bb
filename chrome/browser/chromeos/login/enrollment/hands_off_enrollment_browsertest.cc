@@ -14,8 +14,6 @@
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
-#include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
@@ -100,11 +98,11 @@ IN_PROC_BROWSER_TEST_F(HandsOffEnrollmentTest, NetworkConnectionReady) {
   SimulateNetworkConnected();
 
   WizardController::default_controller()->AdvanceToScreen(
-      WelcomeView::kScreenId);
+      OobeScreen::SCREEN_OOBE_WELCOME);
 
-  OobeScreenWaiter(NetworkScreenView::kScreenId).Wait();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
 
-  OobeScreenWaiter(EnrollmentScreenView::kScreenId).Wait();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_ENROLLMENT).Wait();
 
   base::RunLoop().RunUntilIdle();
 
@@ -120,13 +118,13 @@ IN_PROC_BROWSER_TEST_F(HandsOffEnrollmentTest, WaitForNetworkConnection) {
   enrollment_helper_.DisableAttributePromptUpdate();
   enrollment_helper_.SetupClearAuth();
   WizardController::default_controller()->AdvanceToScreen(
-      WelcomeView::kScreenId);
+      OobeScreen::SCREEN_OOBE_WELCOME);
 
-  OobeScreenWaiter(NetworkScreenView::kScreenId).Wait();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
 
   SimulateNetworkConnected();
 
-  OobeScreenWaiter(EnrollmentScreenView::kScreenId).Wait();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_ENROLLMENT).Wait();
 
   base::RunLoop().RunUntilIdle();
 
@@ -150,16 +148,16 @@ IN_PROC_BROWSER_TEST_F(HandsOffEnrollmentTest, EnrollmentError) {
   SimulateNetworkConnected();
 
   WizardController::default_controller()->AdvanceToScreen(
-      WelcomeView::kScreenId);
+      OobeScreen::SCREEN_OOBE_WELCOME);
 
-  OobeScreenWaiter(NetworkScreenView::kScreenId).Wait();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
 
-  OobeScreenWaiter(EnrollmentScreenView::kScreenId).Wait();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_ENROLLMENT).Wait();
 
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(
-      EnrollmentScreenView::kScreenId.AsId(),
+      OobeScreen::SCREEN_OOBE_ENROLLMENT.AsId(),
       WizardController::default_controller()->current_screen()->screen_id());
   EXPECT_FALSE(ExistingUserController::current_controller());
   EXPECT_FALSE(StartupUtils::IsOobeCompleted());

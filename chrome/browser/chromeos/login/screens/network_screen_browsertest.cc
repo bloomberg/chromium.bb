@@ -19,7 +19,6 @@
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -59,7 +58,7 @@ class NetworkScreenTest : public InProcessBrowserTest {
 
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
-    ShowLoginWizard(NetworkScreenView::kScreenId);
+    ShowLoginWizard(OobeScreen::SCREEN_OOBE_NETWORK);
     network_screen_ = NetworkScreen::Get(
         WizardController::default_controller()->screen_manager());
     ASSERT_EQ(WizardController::default_controller()->current_screen(),

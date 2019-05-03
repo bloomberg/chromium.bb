@@ -19,7 +19,8 @@ class UpdateScreen;
 // representation. Owned by UpdateScreen.
 class UpdateView {
  public:
-  constexpr static StaticOobeScreenId kScreenId{"update"};
+  constexpr static StaticOobeScreenId kScreenId =
+      OobeScreen::SCREEN_OOBE_UPDATE;
 
   virtual ~UpdateView() {}
 

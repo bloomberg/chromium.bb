@@ -31,7 +31,6 @@
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 #include "chrome/browser/chromeos/policy/policy_oauth2_token_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -628,7 +627,7 @@ bool EnrollmentScreenHandler::IsOnEnrollmentScreen() const {
 }
 
 bool EnrollmentScreenHandler::IsEnrollmentScreenHiddenByError() const {
-  return (GetCurrentScreen() == ErrorScreenView::kScreenId &&
+  return (GetCurrentScreen() == OobeScreen::SCREEN_ERROR_MESSAGE &&
           error_screen_->GetParentScreen() == kScreenId);
 }
 
@@ -736,7 +735,7 @@ void EnrollmentScreenHandler::SetupAndShowOfflineMessage(
                                  std::string());
   }
 
-  if (GetCurrentScreen() != ErrorScreenView::kScreenId) {
+  if (GetCurrentScreen() != OobeScreen::SCREEN_ERROR_MESSAGE) {
     error_screen_->SetUIState(NetworkError::UI_STATE_SIGNIN);
     error_screen_->SetParentScreen(kScreenId);
     error_screen_->SetHideCallback(base::Bind(&EnrollmentScreenHandler::DoShow,
@@ -927,7 +926,7 @@ void EnrollmentScreenHandler::DoShowWithPartition(
   const bool cfm = policy_manager && policy_manager->IsRemoraRequisition();
   screen_data.SetString("flow", cfm ? "cfm" : "enterprise");
 
-  ShowScreenWithData(EnrollmentScreenView::kScreenId, &screen_data);
+  ShowScreenWithData(OobeScreen::SCREEN_OOBE_ENROLLMENT, &screen_data);
   if (first_show_) {
     first_show_ = false;
     UpdateStateInternal(NetworkError::ERROR_REASON_UPDATE, true);

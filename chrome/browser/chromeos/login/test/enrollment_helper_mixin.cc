@@ -47,7 +47,7 @@ void EnrollmentHelperMixin::TearDownInProcessBrowserTestFixture() {
   if (WizardController::default_controller()) {
     auto* screen_manager =
         WizardController::default_controller()->screen_manager();
-    if (screen_manager->HasScreen(EnrollmentScreenView::kScreenId)) {
+    if (screen_manager->HasScreen(OobeScreen::SCREEN_OOBE_ENROLLMENT)) {
       EnrollmentScreen::Get(screen_manager)->enrollment_helper_.reset();
     }
   }

@@ -15,7 +15,6 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/ui/login/login_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_details.h"
@@ -109,7 +108,7 @@ IN_PROC_BROWSER_TEST_F(ProxyAuthOnUserBoardScreenTest,
   }
 
   {
-    OobeScreenWaiter screen_waiter(GaiaView::kScreenId);
+    OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_GAIA_SIGNIN);
     ProxyAuthDialogWaiter auth_dialog_waiter;
     ASSERT_TRUE(test::LoginScreenTester().ClickAddUserButton());
     screen_waiter.Wait();

@@ -15,7 +15,8 @@ class DemoSetupScreen;
 // Interface of the demo mode setup screen view.
 class DemoSetupScreenView {
  public:
-  constexpr static StaticOobeScreenId kScreenId{"demo-setup"};
+  constexpr static StaticOobeScreenId kScreenId =
+      OobeScreen::SCREEN_OOBE_DEMO_SETUP;
 
   virtual ~DemoSetupScreenView();
 

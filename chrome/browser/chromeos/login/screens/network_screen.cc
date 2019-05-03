@@ -33,12 +33,12 @@ namespace chromeos {
 // static
 NetworkScreen* NetworkScreen::Get(ScreenManager* manager) {
   return static_cast<NetworkScreen*>(
-      manager->GetScreen(NetworkScreenView::kScreenId));
+      manager->GetScreen(OobeScreen::SCREEN_OOBE_NETWORK));
 }
 
 NetworkScreen::NetworkScreen(NetworkScreenView* view,
                              const ScreenExitCallback& exit_callback)
-    : BaseScreen(NetworkScreenView::kScreenId),
+    : BaseScreen(OobeScreen::SCREEN_OOBE_NETWORK),
       view_(view),
       exit_callback_(exit_callback),
       network_state_helper_(std::make_unique<login::NetworkStateHelper>()),

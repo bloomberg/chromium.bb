@@ -21,7 +21,6 @@
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/chromeos/login/ui/fake_login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/ui/webui/chromeos/login/demo_preferences_screen_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/scoped_browser_locale.h"
@@ -180,7 +179,7 @@ class DemoModeChromeOSTermsTest : public ChromeOSTermsTest {
     fake_login_display_host_ =
         std::make_unique<chromeos::FakeLoginDisplayHost>();
     fake_login_display_host_->StartWizard(
-        chromeos::DemoPreferencesScreenView::kScreenId);
+        chromeos::OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES);
     fake_login_display_host_->GetWizardController()
         ->SimulateDemoModeSetupForTesting();
     fake_login_display_host_->GetWizardController()

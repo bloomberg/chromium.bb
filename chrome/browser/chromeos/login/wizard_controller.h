@@ -103,12 +103,12 @@ class WizardController : public BaseScreenDelegate {
 
   // Starts Demo Mode setup flow. The flow starts from network screen and reuses
   // some of regular OOBE screens. It consists of the following screens:
-  //    chromeos::DemoPreferencesScreenView::kScreenId
-  //    chromeos::NetworkScreenView::kScreenId
-  //    chromeos::EulaView::kScreenId
-  //    chromeos::ArcTermsOfServiceScreenView::kScreenId
-  //    chromeos::UpdateView::kScreenId
-  //    chromeos::DemoSetupScreenView::kScreenId
+  //    chromeos::OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES
+  //    chromeos::OobeScreen::SCREEN_OOBE_NETWORK
+  //    chromeos::OobeScreen::SCREEN_OOBE_EULA
+  //    chromeos::OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE
+  //    chromeos::OobeScreen::SCREEN_OOBE_UPDATE
+  //    chromeos::OobeScreen::SCREEN_OOBE_DEMO_SETUP
   void StartDemoModeSetup();
 
   // Simulates demo mode setup environment. If |demo_config| has a value, it

@@ -90,7 +90,7 @@ void ResetScreen::SetTpmFirmwareUpdateCheckerForTesting(
 ResetScreen::ResetScreen(ResetView* view,
                          ErrorScreen* error_screen,
                          const base::RepeatingClosure& exit_callback)
-    : BaseScreen(ResetView::kScreenId),
+    : BaseScreen(OobeScreen::SCREEN_OOBE_RESET),
       view_(view),
       error_screen_(error_screen),
       exit_callback_(exit_callback),
