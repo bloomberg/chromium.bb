@@ -1042,10 +1042,26 @@ class TestManifestCheckout(cros_test_lib.TempDirTestCase):
     # Initialize a repo instance here.
     local_repo = os.path.join(constants.SOURCE_ROOT, '.repo/repo/.git')
 
+    # TODO(evanhernandez): This is a hack. Find a way to simplify this test.
+    # We used to use the current checkout's manifests.git, but that caused
+    # problems in production environemnts.
+    remote_manifests = os.path.join(self.tempdir, 'remote', 'manifests.git')
+    osutils.SafeMakedirs(remote_manifests)
+    git.Init(remote_manifests)
+    default_manifest = os.path.join(remote_manifests, 'default.xml')
+    osutils.WriteFile(
+        default_manifest,
+        '<?xml version="1.0" encoding="UTF-8"?><manifest></manifest>')
+    git.AddPath(default_manifest)
+    git.Commit(remote_manifests, 'dummy commit', allow_empty=True)
+    git.CreateBranch(remote_manifests, 'default')
+    git.CreateBranch(remote_manifests, 'release-R23-2913.B')
+    git.CreateBranch(remote_manifests, 'firmware-link-')
+
     # Create a copy of our existing manifests.git, but rewrite it so it
     # looks like a remote manifests.git.  This is to avoid hitting the
     # network, and speeds things up in general.
-    local_manifests = 'file://%s/.repo/manifests.git' % constants.SOURCE_ROOT
+    local_manifests = 'file://%s' % remote_manifests
     temp_manifests = os.path.join(self.tempdir, 'manifests.git')
     git.RunGit(self.tempdir, ['clone', '-n', '--bare', local_manifests])
     git.RunGit(temp_manifests,
