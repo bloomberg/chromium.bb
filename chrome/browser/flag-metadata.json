@@ -908,11 +908,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-client-lo-fi",
-    "owners": [ "//components/data_reduction_proxy/OWNERS" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-cloud-print-xps",
     "owners": [ "//printing/OWNERS" ],
     "expiry_milestone": 76
@@ -962,11 +957,6 @@
   {
     "name": "enable-custom-mac-paper-sizes",
     "owners": [ "//printing/OWNERS" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "enable-data-reduction-proxy-savings-promo",
-    "owners": [ "//components/data_reduction_proxy/OWNERS" ],
     "expiry_milestone": 76
   },
   {
@@ -1240,11 +1230,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-lite-mode-rebrand",
-    "owners": [ "//components/data_reduction_proxy/OWNERS" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-lite-page-server-previews",
     "owners": [ "//components/data_reduction_proxy/OWNERS" ],
     "expiry_milestone": 76
@@ -1415,11 +1400,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-optimization-hints",
-    "owners": [ "//components/data_reduction_proxy/OWNERS" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-osk-overscroll",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
@@ -1450,11 +1430,6 @@
     "name": "enable-portals",
     "owners": [ "adithyas", "jbroman", "lfg" ],
     "expiry_milestone": 80
-  },
-  {
-    "name": "enable-previews-android-omnibox-ui",
-    "owners": [ "//components/data_reduction_proxy/OWNERS" ],
-    "expiry_milestone": 76
   },
   {
     "name": "enable-process-sharing-with-strict-site-instances",

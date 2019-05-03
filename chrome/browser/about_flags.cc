@@ -1658,19 +1658,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableDataReductionProxyServerExperimentDescription,
      kOsAll, MULTI_VALUE_TYPE(kDataReductionProxyServerExperiment)},
 #if defined(OS_ANDROID)
-    {"enable-data-reduction-proxy-savings-promo",
-     flag_descriptions::kEnableDataReductionProxySavingsPromoName,
-     flag_descriptions::kEnableDataReductionProxySavingsPromoDescription,
-     kOsAndroid,
-     SINGLE_VALUE_TYPE(data_reduction_proxy::switches::
-                           kEnableDataReductionProxySavingsPromo)},
     {"enable-offline-previews", flag_descriptions::kEnableOfflinePreviewsName,
      flag_descriptions::kEnableOfflinePreviewsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(previews::features::kOfflinePreviews)},
-    {"enable-previews-android-omnibox-ui",
-     flag_descriptions::kEnablePreviewsAndroidOmniboxUIName,
-     flag_descriptions::kEnablePreviewsAndroidOmniboxUIDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(previews::features::kAndroidOmniboxPreviewsBadge)},
     {"enable-lite-page-server-previews",
      flag_descriptions::kEnableLitePageServerPreviewsName,
      flag_descriptions::kEnableLitePageServerPreviewsDescription, kOsAndroid,
@@ -1681,19 +1671,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          previews::features::kHTTPSServerPreviewsUsingURLLoader)},
 #endif  // OS_ANDROID
-    {"enable-lite-mode-rebrand",
-     flag_descriptions::kEnableDataSaverLiteModeRebrandName,
-     flag_descriptions::kEnableDataSaverLiteModeRebrandDescription, kOsAll,
-     FEATURE_VALUE_TYPE(previews::features::kDataSaverLiteModeRebranding)},
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
     {"enable-save-data", flag_descriptions::kEnableSaveDataName,
      flag_descriptions::kEnableSaveDataDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(
          data_reduction_proxy::switches::kEnableDataReductionProxy)},
 #endif  // OS_CHROMEOS
-    {"enable-client-lo-fi", flag_descriptions::kEnableClientLoFiName,
-     flag_descriptions::kEnableClientLoFiDescription, kOsAll,
-     FEATURE_VALUE_TYPE(previews::features::kClientLoFi)},
     {"enable-noscript-previews", flag_descriptions::kEnableNoScriptPreviewsName,
      flag_descriptions::kEnableNoScriptPreviewsDescription, kOsAll,
      FEATURE_VALUE_TYPE(previews::features::kNoScriptPreviews)},
@@ -1701,10 +1684,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableResourceLoadingHintsName,
      flag_descriptions::kEnableResourceLoadingHintsDescription, kOsAll,
      FEATURE_VALUE_TYPE(previews::features::kResourceLoadingHints)},
-    {"enable-optimization-hints",
-     flag_descriptions::kEnableOptimizationHintsName,
-     flag_descriptions::kEnableOptimizationHintsDescription, kOsAll,
-     FEATURE_VALUE_TYPE(previews::features::kOptimizationHints)},
     {"allow-insecure-localhost", flag_descriptions::kAllowInsecureLocalhostName,
      flag_descriptions::kAllowInsecureLocalhostDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kAllowInsecureLocalhost)},

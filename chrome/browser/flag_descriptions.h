@@ -320,14 +320,8 @@ extern const char kEnableAutofillSendExperimentIdsInPaymentsRPCsDescription[];
 extern const char kEnableBrotliName[];
 extern const char kEnableBrotliDescription[];
 
-extern const char kEnableDataSaverLiteModeRebrandName[];
-extern const char kEnableDataSaverLiteModeRebrandDescription[];
-
 extern const char kEnableSaveDataName[];
 extern const char kEnableSaveDataDescription[];
-
-extern const char kEnableClientLoFiName[];
-extern const char kEnableClientLoFiDescription[];
 
 extern const char kEnableFilesystemInIncognitoName[];
 extern const char kEnableFilesystemInIncognitoDescription[];
@@ -349,9 +343,6 @@ extern const char kEnableDataReductionProxyNetworkServiceName[];
 extern const char kEnableDataReductionProxyNetworkServiceDescription[];
 extern const char kEnableDataReductionProxyServerExperimentName[];
 extern const char kEnableDataReductionProxyServerExperimentDescription[];
-
-extern const char kEnableDataReductionProxySavingsPromoName[];
-extern const char kEnableDataReductionProxySavingsPromoDescription[];
 
 extern const char kEnableDesktopPWAsName[];
 extern const char kEnableDesktopPWAsDescription[];
@@ -391,9 +382,6 @@ extern const char kEnableHDRDescription[];
 
 extern const char kEnableImplicitRootScrollerName[];
 extern const char kEnableImplicitRootScrollerDescription[];
-
-extern const char kEnablePreviewsAndroidOmniboxUIName[];
-extern const char kEnablePreviewsAndroidOmniboxUIDescription[];
 
 extern const char kEnableLitePageServerPreviewsName[];
 extern const char kEnableLitePageServerPreviewsDescription[];
@@ -448,9 +436,6 @@ extern const char kEnableNotificationScrollBarDescription[];
 
 extern const char kEnableNotificationExpansionAnimationName[];
 extern const char kEnableNotificationExpansionAnimationDescription[];
-
-extern const char kEnableOptimizationHintsName[];
-extern const char kEnableOptimizationHintsDescription[];
 
 extern const char kEnableOutOfBlinkCorsName[];
 extern const char kEnableOutOfBlinkCorsDescription[];

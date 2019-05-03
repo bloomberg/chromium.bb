@@ -496,20 +496,10 @@ const char kEnableBrotliName[] = "Brotli Content-Encoding.";
 const char kEnableBrotliDescription[] =
     "Enable Brotli Content-Encoding support.";
 
-const char kEnableDataSaverLiteModeRebrandName[] =
-    "Data Saver Lite Mode Rebranding";
-const char kEnableDataSaverLiteModeRebrandDescription[] =
-    "Enable the Data Saver rebranding to Lite Mode.";
-
 const char kEnableSaveDataName[] = "Enables save data feature";
 const char kEnableSaveDataDescription[] =
     "Enables save data feature. May cause user's traffic to be proxied via "
     "Google's data reduction proxy.";
-
-const char kEnableClientLoFiName[] = "Client-side Lo-Fi previews";
-
-const char kEnableClientLoFiDescription[] =
-    "Enable showing low fidelity images on some pages on slow networks.";
 
 const char kEnableFilesystemInIncognitoName[] = "Filesystem API in Incognito";
 const char kEnableFilesystemInIncognitoDescription[] =
@@ -540,13 +530,6 @@ const char kEnableDataReductionProxyServerExperimentName[] =
 const char kEnableDataReductionProxyServerExperimentDescription[] =
     "Enable a different approach to saving data by configuring the back end "
     "server";
-
-const char kEnableDataReductionProxySavingsPromoName[] =
-    "Data Saver 1 MB Savings Promo";
-const char kEnableDataReductionProxySavingsPromoDescription[] =
-    "Enable a Data Saver promo for 1 MB of savings. If Data Saver has already "
-    "saved 1 MB of data, then the promo will not be shown. Data Saver must be "
-    "enabled for the promo to be shown.";
 
 const char kEnableDesktopPWAsName[] = "Desktop PWAs";
 const char kEnableDesktopPWAsDescription[] =
@@ -622,12 +605,6 @@ const char kEnableImplicitRootScrollerDescription[] =
     "Enables implicitly choosing which scroller on a page is the 'root "
     "scroller'. i.e. The one that gets special features like URL bar movement, "
     "overscroll glow, rotation anchoring, etc.";
-
-const char kEnablePreviewsAndroidOmniboxUIName[] =
-    "Previews Android Omnibox UI";
-const char kEnablePreviewsAndroidOmniboxUIDescription[] =
-    "Enable showing the Previews UI in the Omnibox on Android instead of an "
-    "InfoBar. This has no effect on other platforms.";
 
 const char kEnableLitePageServerPreviewsName[] = "Lite Page Server Previews";
 const char kEnableLitePageServerPreviewsDescription[] =
@@ -737,12 +714,6 @@ const char kEnableNotificationExpansionAnimationName[] =
     "Enable notification expansion animations";
 const char kEnableNotificationExpansionAnimationDescription[] =
     "Enable notification animations whenever the expansion state is toggled.";
-
-const char kEnableOptimizationHintsName[] = "Optimization Hints";
-const char kEnableOptimizationHintsDescription[] =
-    "Enable the Optimization Hints feature which incorporates server hints "
-    "into decisions for what optimizations to perform on some pages on slow "
-    "networks.";
 
 const char kEnableOutOfBlinkCorsName[] = "Out of blink CORS";
 const char kEnableOutOfBlinkCorsDescription[] =
