@@ -25,6 +25,7 @@
 #include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
+#include "google_apis/google_api_keys.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "url/url_constants.h"
 
@@ -179,9 +180,29 @@ void SigninViewController::ShowDiceSigninTab(
     const std::string& email_hint,
     const GURL& redirect_url) {
   Profile* profile = browser->profile();
-  DCHECK(signin::DiceMethodGreaterOrEqual(
-      AccountConsistencyModeManager::GetMethodForProfile(profile),
-      signin::AccountConsistencyMethod::kDiceMigration));
+
+#if DCHECK_IS_ON()
+  if (!signin::DiceMethodGreaterOrEqual(
+          AccountConsistencyModeManager::GetMethodForProfile(profile),
+          signin::AccountConsistencyMethod::kDiceMigration)) {
+    // Developers often fall into the trap of not configuring the OAuth client
+    // ID and client secret and then attempt to sign in to Chromium, which
+    // fail as the account consistency is disabled. Explicitly check that the
+    // OAuth client ID are configured when developers attempt to sign in to
+    // Chromium.
+    DCHECK(google_apis::HasOAuthClientConfigured())
+        << "You must configure the OAuth client ID and client secret in order "
+           "to sign in to Chromium. See instruction at "
+           "https://www.chromium.org/developers/how-tos/api-keys";
+
+    // Account consistency mode does not support signing in to Chrome due to
+    // some other unexpected reason. Signing in to Chrome is not supported.
+    NOTREACHED()
+        << "OAuth client ID and client secret is configured, but "
+           "the account consistency mode does not support signing in to "
+           "Chromium.";
+  }
+#endif
 
   // If redirect_url is empty, we would like to redirect to the NTP, but it's
   // not possible through the continue_url, because Gaia cannot redirect to
