@@ -56,3 +56,103 @@ Note that there currently is no mechanism to disable the implicit proxy bypass
 rules when using a PAC script. Proxy bypass lists only apply to manual
 settings, so the technique above cannot be used to let PAC scripts decide the
 proxy for localhost URLs.
+
+## Evaluating proxy lists (proxy fallback)
+
+Proxy resolution results in a _list_ of proxy servers to use for a given
+request, not just a single proxy server.
+
+For instance, consider this PAC script:
+
+```
+function FindProxyForURL(url, host) {
+    if (host == "www.example.com") {
+        return "PROXY proxy1; HTTPS proxy2; SOCKS5 proxy3";
+    }
+    return "DIRECT";
+}
+
+```
+
+What proxy will Chrome use for connections to `www.example.com`, given that
+we have a choice of 3 separate proxies, each of different type?
+
+Initially, Chrome will try the proxies in order. This means first attempting the
+request through the HTTP WebProxy `proxy1`. If that "fails", the request is
+next attempted through the HTTPS proxy `proxy2`. Lastly if that fails, the request is
+attempted through the SOCKSv5 proxy `proxy3`.
+
+This process is referred to as _proxy fallback_. What constitutes a
+"failure" is described later.
+
+Proxy fallback is stateful. The actual order of proxy attempts made be Chrome
+is influenced by the past responsiveness of proxy servers.
+
+Let's say we request `http://www.example.com/`. Per the PAC script this resolves to:
+
+```
+"PROXY proxy1; HTTPS proxy2; SOCKS5 proxy3"
+```
+
+Chrome will first attempt to issue the request through these proxies in the
+left-to-right order (`proxy1`, `proxy2`, `proxy3`).
+
+Let's say that the attempt through `proxy1` fails, but then the attempt through
+`proxy2` succeeds. Chrome will mark `proxy1` as _bad_ for the next 5 minutes.
+Being marked as _bad_ means that `proxy1` is de-prioritized with respect to other
+proxies options (including DIRECT) that are not marked as bad.
+
+That means the next time `http://www.example.com/` is requested, the effective
+order for proxies to attempt will be:
+
+```
+HTTPS proxy2; SOCKS5 proxy3; "PROXY proxy1"
+```
+
+Conceptually, _bad_ proxies are moved to the end of the list, rather than being
+removed from consideration all together.
+
+What constitutes a "failure" when it comes to triggering proxy fallback depends
+on the proxy type. Generally speaking, only connection level failures
+are deemed eligible for proxy fallback. This includes:
+
+* Failure resolving the proxy server's DNS
+* Failure connecting a TCP socket to the proxy server
+
+(There are some caveats for how HTTPS and QUIC proxies count failures for
+fallback)
+
+Prior to M67, Chrome would consider failures establishing a
+CONNECT tunnel as an error eligible for proxy fallback. This policy [resulted
+in problems](https://bugs.chromium.org/p/chromium/issues/detail?id=680837) for
+deployments whose HTTP proxies intentionally failed certain https:// requests,
+since that necessitates inducing a failure during the CONNECT tunnel
+establishment. The problem would occur when a working proxy fallback option
+like DIRECT was given, since the failing proxy would then be marked as bad.
+
+Currently there are no options to configure proxy fallback (including disabling
+the caching of bad proxies). Future versions of Chrome may [remove caching
+of bad proxies](https://bugs.chromium.org/p/chromium/issues/detail?id=936130)
+to make fallback predictable.
+
+To investigate issues relating to proxy fallback, one can [collect a NetLog
+dump using
+chrome://net-export/](https://dev.chromium.org/for-testers/providing-network-details).
+These logs can then be loaded with the [NetLog
+viewer](https://netlog-viewer.appspot.com/).
+
+There are a few things of interest in the logs:
+
+* The "Proxy" tab will show which proxies (if any) were marked as bad at the
+  time the capture ended.
+* The "Events" tab notes what the resolved proxy list was, and what the
+  re-ordered proxy list was after taking into account bad proxies.
+* The "Events" tab notes when a proxy is marked as bad and why (provided the
+  event occurred while capturing was enabled).
+
+When debugging issues with bad proxies, it is also useful to reset Chrome's
+cache of bad proxies. This can be done by clicking the "Clear bad proxies"
+button on
+[chrome://net-internals/#proxy](chrome://net-internals/#proxy). Note the UI
+will not give feedback that the bad proxies were cleared, however capturing a
+new NetLog dump can confirm it was cleared.
