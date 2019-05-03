@@ -11,13 +11,15 @@ namespace previews {
 const void* const kPreviewsUserDataKey = &kPreviewsUserDataKey;
 
 PreviewsUserData::PreviewsUserData(uint64_t page_id)
-    : page_id_(page_id), server_lite_page_info_(nullptr) {}
+    : page_id_(page_id),
+      random_coin_flip_for_navigation_(base::RandInt(0, 1)),
+      server_lite_page_info_(nullptr) {}
 
 PreviewsUserData::~PreviewsUserData() {}
 
 PreviewsUserData::PreviewsUserData(const PreviewsUserData& other)
     : page_id_(other.page_id_),
-      random_coin_flip_for_navigation_(base::RandInt(0, 1)),
+      random_coin_flip_for_navigation_(other.random_coin_flip_for_navigation_),
       navigation_ect_(other.navigation_ect_),
       data_savings_inflation_percent_(other.data_savings_inflation_percent_),
       cache_control_no_transform_directive_(
