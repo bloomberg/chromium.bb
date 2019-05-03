@@ -548,10 +548,9 @@ void InstantService::BuildThemeInfo() {
   // Get theme information from theme service.
   theme_info_.reset(new ThemeBackgroundInfo());
 
-  // Get if the current theme is the default theme (or GTK+ on linux).
+  // Get if the current theme is the default theme.
   ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile_);
-  theme_info_->using_default_theme =
-      theme_service->UsingDefaultTheme() || theme_service->UsingSystemTheme();
+  theme_info_->using_default_theme = theme_service->UsingDefaultTheme();
 
   theme_info_->using_dark_mode = dark_mode_observer_->InDarkMode();
 
