@@ -4,18 +4,18 @@
 
 #include "chrome/browser/chromeos/policy/device_wilco_dtc_configuration_handler.h"
 
-#include "chrome/browser/chromeos/diagnosticsd/diagnosticsd_manager.h"
+#include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_manager.h"
 #include "components/policy/policy_constants.h"
 
 namespace policy {
 
 namespace {
 
-chromeos::DiagnosticsdManager* GetDiagnosticsdManager() {
-  chromeos::DiagnosticsdManager* const diagnosticsd_manager =
-      chromeos::DiagnosticsdManager::Get();
-  DCHECK(diagnosticsd_manager);
-  return diagnosticsd_manager;
+chromeos::WilcoDtcSupportdManager* GetWilcoDtcSupportdManager() {
+  chromeos::WilcoDtcSupportdManager* const wilco_dtc_supportd_manager =
+      chromeos::WilcoDtcSupportdManager::Get();
+  DCHECK(wilco_dtc_supportd_manager);
+  return wilco_dtc_supportd_manager;
 }
 
 }  // namespace
@@ -32,14 +32,14 @@ DeviceWilcoDtcConfigurationHandler::~DeviceWilcoDtcConfigurationHandler() {}
 
 void DeviceWilcoDtcConfigurationHandler::OnDeviceExternalDataCleared(
     const std::string& policy) {
-  GetDiagnosticsdManager()->SetConfigurationData(nullptr);
+  GetWilcoDtcSupportdManager()->SetConfigurationData(nullptr);
 }
 
 void DeviceWilcoDtcConfigurationHandler::OnDeviceExternalDataFetched(
     const std::string& policy,
     std::unique_ptr<std::string> data,
     const base::FilePath& file_path) {
-  GetDiagnosticsdManager()->SetConfigurationData(std::move(data));
+  GetWilcoDtcSupportdManager()->SetConfigurationData(std::move(data));
 }
 
 void DeviceWilcoDtcConfigurationHandler::Shutdown() {

@@ -65,8 +65,6 @@ component("dbus") {
     "dbus_thread_manager.h",
     "debug_daemon_client.cc",
     "debug_daemon_client.h",
-    "diagnosticsd_client.cc",
-    "diagnosticsd_client.h",
     "easy_unlock_client.cc",
     "easy_unlock_client.h",
     "fake_arc_appfuse_provider_client.cc",
@@ -89,8 +87,6 @@ component("dbus") {
     "fake_cros_disks_client.h",
     "fake_debug_daemon_client.cc",
     "fake_debug_daemon_client.h",
-    "fake_diagnosticsd_client.cc",
-    "fake_diagnosticsd_client.h",
     "fake_easy_unlock_client.cc",
     "fake_easy_unlock_client.h",
     "fake_image_burner_client.cc",
@@ -111,6 +107,8 @@ component("dbus") {
     "fake_update_engine_client.h",
     "fake_virtual_file_provider_client.cc",
     "fake_virtual_file_provider_client.h",
+    "fake_wilco_dtc_supportd_client.cc",
+    "fake_wilco_dtc_supportd_client.h",
     "image_burner_client.cc",
     "image_burner_client.h",
     "image_loader_client.cc",
@@ -131,6 +129,8 @@ component("dbus") {
     "util/version_loader.h",
     "virtual_file_provider_client.cc",
     "virtual_file_provider_client.h",
+    "wilco_dtc_supportd_client.cc",
+    "wilco_dtc_supportd_client.h",
   ]
 }
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/dbus/fake_diagnosticsd_client.h"
+#include "chromeos/dbus/fake_wilco_dtc_supportd_client.h"
 
 #include <utility>
 
@@ -11,13 +11,13 @@
 
 namespace chromeos {
 
-FakeDiagnosticsdClient::FakeDiagnosticsdClient() = default;
+FakeWilcoDtcSupportdClient::FakeWilcoDtcSupportdClient() = default;
 
-FakeDiagnosticsdClient::~FakeDiagnosticsdClient() = default;
+FakeWilcoDtcSupportdClient::~FakeWilcoDtcSupportdClient() = default;
 
-void FakeDiagnosticsdClient::Init(dbus::Bus* bus) {}
+void FakeWilcoDtcSupportdClient::Init(dbus::Bus* bus) {}
 
-void FakeDiagnosticsdClient::WaitForServiceToBeAvailable(
+void FakeWilcoDtcSupportdClient::WaitForServiceToBeAvailable(
     WaitForServiceToBeAvailableCallback callback) {
   if (wait_for_service_to_be_available_result_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -30,7 +30,7 @@ void FakeDiagnosticsdClient::WaitForServiceToBeAvailable(
   }
 }
 
-void FakeDiagnosticsdClient::BootstrapMojoConnection(
+void FakeWilcoDtcSupportdClient::BootstrapMojoConnection(
     base::ScopedFD fd,
     VoidDBusMethodCallback callback) {
   if (bootstrap_mojo_connection_result_) {
@@ -43,13 +43,13 @@ void FakeDiagnosticsdClient::BootstrapMojoConnection(
   }
 }
 
-int FakeDiagnosticsdClient::
+int FakeWilcoDtcSupportdClient::
     wait_for_service_to_be_available_in_flight_call_count() const {
   return static_cast<int>(
       pending_wait_for_service_to_be_available_callbacks_.size());
 }
 
-void FakeDiagnosticsdClient::SetWaitForServiceToBeAvailableResult(
+void FakeWilcoDtcSupportdClient::SetWaitForServiceToBeAvailableResult(
     base::Optional<bool> wait_for_service_to_be_available_result) {
   wait_for_service_to_be_available_result_ =
       wait_for_service_to_be_available_result;
@@ -61,12 +61,12 @@ void FakeDiagnosticsdClient::SetWaitForServiceToBeAvailableResult(
     std::move(callback).Run(*wait_for_service_to_be_available_result_);
 }
 
-int FakeDiagnosticsdClient::bootstrap_mojo_connection_in_flight_call_count()
+int FakeWilcoDtcSupportdClient::bootstrap_mojo_connection_in_flight_call_count()
     const {
   return static_cast<int>(pending_bootstrap_mojo_connection_callbacks_.size());
 }
 
-void FakeDiagnosticsdClient::SetBootstrapMojoConnectionResult(
+void FakeWilcoDtcSupportdClient::SetBootstrapMojoConnectionResult(
     base::Optional<bool> bootstrap_mojo_connection_result) {
   bootstrap_mojo_connection_result_ = bootstrap_mojo_connection_result;
   if (!bootstrap_mojo_connection_result_)

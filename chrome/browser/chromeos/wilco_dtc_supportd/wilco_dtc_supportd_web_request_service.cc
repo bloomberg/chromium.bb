@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/diagnosticsd/diagnosticsd_web_request_service.h"
+#include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_web_request_service.h"
 
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
-#include "chrome/browser/chromeos/diagnosticsd/mojo_utils.h"
+#include "chrome/browser/chromeos/wilco_dtc_supportd/mojo_utils.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -24,24 +24,25 @@
 namespace chromeos {
 
 // Maximum size of the |request_queue_|.
-const int kDiagnosticsdWebRequestQueueMaxSize = 10;
+const int kWilcoDtcSupportdWebRequestQueueMaxSize = 10;
 
 // Maximum size of the web response body.
-const int kDiagnosticsdWebResponseMaxSizeInBytes = 1000000;
+const int kWilcoDtcSupportdWebResponseMaxSizeInBytes = 1000000;
 
 namespace {
 
 // Converts mojo HTTP method into string.
 std::string GetHttpMethod(
-    diagnosticsd::mojom::DiagnosticsdWebRequestHttpMethod http_method) {
+    wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestHttpMethod
+        http_method) {
   switch (http_method) {
-    case diagnosticsd::mojom::DiagnosticsdWebRequestHttpMethod::kGet:
+    case wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestHttpMethod::kGet:
       return "GET";
-    case diagnosticsd::mojom::DiagnosticsdWebRequestHttpMethod::kHead:
+    case wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestHttpMethod::kHead:
       return "HEAD";
-    case diagnosticsd::mojom::DiagnosticsdWebRequestHttpMethod::kPost:
+    case wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestHttpMethod::kPost:
       return "POST";
-    case diagnosticsd::mojom::DiagnosticsdWebRequestHttpMethod::kPut:
+    case wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestHttpMethod::kPut:
       return "PUT";
   }
 }
@@ -53,16 +54,17 @@ bool IsHttpOkCode(int code) {
 
 }  //  namespace
 
-DiagnosticsdWebRequestService::DiagnosticsdWebRequestService(
+WilcoDtcSupportdWebRequestService::WilcoDtcSupportdWebRequestService(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : url_loader_factory_(std::move(url_loader_factory)) {
   DCHECK(url_loader_factory_);
 }
 
-DiagnosticsdWebRequestService::~DiagnosticsdWebRequestService() {
+WilcoDtcSupportdWebRequestService::~WilcoDtcSupportdWebRequestService() {
   if (active_request_) {
     std::move(active_request_->callback)
-        .Run(diagnosticsd::mojom::DiagnosticsdWebRequestStatus::kNetworkError,
+        .Run(wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus::
+                 kNetworkError,
              0 /* http_status */, mojo::ScopedHandle() /* response_body */);
     active_request_.reset();
   }
@@ -70,66 +72,74 @@ DiagnosticsdWebRequestService::~DiagnosticsdWebRequestService() {
     auto request = std::move(request_queue_.front());
     request_queue_.pop();
     std::move(request->callback)
-        .Run(diagnosticsd::mojom::DiagnosticsdWebRequestStatus::kNetworkError,
+        .Run(wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus::
+                 kNetworkError,
              0 /* http_status */, mojo::ScopedHandle() /* response_body */);
   }
   DCHECK(!active_request_);
 }
 
-void DiagnosticsdWebRequestService::PerformRequest(
-    diagnosticsd::mojom::DiagnosticsdWebRequestHttpMethod http_method,
+void WilcoDtcSupportdWebRequestService::PerformRequest(
+    wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestHttpMethod http_method,
     GURL url,
     std::vector<base::StringPiece> headers,
     std::string request_body,
     PerformWebRequestCallback callback) {
   // Fail with the kNetworkError if the queue overflows.
-  if (request_queue_.size() == kDiagnosticsdWebRequestQueueMaxSize) {
-    LOG(ERROR) << "Too many incomplete requests in the diagnosticsd web request"
-               << " queue.";
-    std::move(callback).Run(
-        diagnosticsd::mojom::DiagnosticsdWebRequestStatus::kNetworkError,
-        0 /* http_status */, mojo::ScopedHandle() /* response_body */);
+  if (request_queue_.size() == kWilcoDtcSupportdWebRequestQueueMaxSize) {
+    LOG(ERROR)
+        << "Too many incomplete requests in the wilco_dtc_supportd web request"
+        << " queue.";
+    std::move(callback).Run(wilco_dtc_supportd::mojom::
+                                WilcoDtcSupportdWebRequestStatus::kNetworkError,
+                            0 /* http_status */,
+                            mojo::ScopedHandle() /* response_body */);
     return;
   }
 
   // Fail with kNetworkError if the |url| is invalid.
   if (!url.is_valid()) {
-    LOG(ERROR) << "Diagnosticsd web request URL is invalid.";
-    std::move(callback).Run(
-        diagnosticsd::mojom::DiagnosticsdWebRequestStatus::kNetworkError,
-        0 /* http_status */, mojo::ScopedHandle() /* response_body */);
+    LOG(ERROR) << "WilcoDtcSupportd web request URL is invalid.";
+    std::move(callback).Run(wilco_dtc_supportd::mojom::
+                                WilcoDtcSupportdWebRequestStatus::kNetworkError,
+                            0 /* http_status */,
+                            mojo::ScopedHandle() /* response_body */);
     return;
   }
 
   // Fail with kNetworkError for non-HTTPs URL.
   if (!url.SchemeIs(url::kHttpsScheme)) {
-    LOG(ERROR) << "Diagnosticsd web request URL must have a HTTPS scheme.";
-    std::move(callback).Run(
-        diagnosticsd::mojom::DiagnosticsdWebRequestStatus::kNetworkError,
-        0 /* http_status */, mojo::ScopedHandle() /* response_body */);
+    LOG(ERROR) << "WilcoDtcSupportd web request URL must have a HTTPS scheme.";
+    std::move(callback).Run(wilco_dtc_supportd::mojom::
+                                WilcoDtcSupportdWebRequestStatus::kNetworkError,
+                            0 /* http_status */,
+                            mojo::ScopedHandle() /* response_body */);
     return;
   }
 
   // request_body must be empty for GET and HEAD HTTP methods.
   if (!request_body.empty() &&
-      (http_method ==
-           diagnosticsd::mojom::DiagnosticsdWebRequestHttpMethod::kGet ||
-       http_method ==
-           diagnosticsd::mojom::DiagnosticsdWebRequestHttpMethod::kHead)) {
-    LOG(ERROR) << "Incorrect diagnosticsd web request format: require an empty "
-               << "request body for GET and HEAD HTTP methods.";
-    std::move(callback).Run(
-        diagnosticsd::mojom::DiagnosticsdWebRequestStatus::kNetworkError,
-        0 /* http_status */, mojo::ScopedHandle() /*response_body */);
+      (http_method == wilco_dtc_supportd::mojom::
+                          WilcoDtcSupportdWebRequestHttpMethod::kGet ||
+       http_method == wilco_dtc_supportd::mojom::
+                          WilcoDtcSupportdWebRequestHttpMethod::kHead)) {
+    LOG(ERROR)
+        << "Incorrect wilco_dtc_supportd web request format: require an empty "
+        << "request body for GET and HEAD HTTP methods.";
+    std::move(callback).Run(wilco_dtc_supportd::mojom::
+                                WilcoDtcSupportdWebRequestStatus::kNetworkError,
+                            0 /* http_status */,
+                            mojo::ScopedHandle() /*response_body */);
     return;
   }
 
   // Do not allow local requests.
   if (net::IsLocalhost(url)) {
     LOG(ERROR) << "Local requests are not allowed.";
-    std::move(callback).Run(
-        diagnosticsd::mojom::DiagnosticsdWebRequestStatus::kNetworkError,
-        0 /* http_status */, mojo::ScopedHandle() /*response_body */);
+    std::move(callback).Run(wilco_dtc_supportd::mojom::
+                                WilcoDtcSupportdWebRequestStatus::kNetworkError,
+                            0 /* http_status */,
+                            mojo::ScopedHandle() /*response_body */);
     return;
   }
 
@@ -151,19 +161,19 @@ void DiagnosticsdWebRequestService::PerformRequest(
   MaybeStartNextRequest();
 }
 
-DiagnosticsdWebRequestService::WebRequest::WebRequest() = default;
+WilcoDtcSupportdWebRequestService::WebRequest::WebRequest() = default;
 
-DiagnosticsdWebRequestService::WebRequest::~WebRequest() = default;
+WilcoDtcSupportdWebRequestService::WebRequest::~WebRequest() = default;
 
-void DiagnosticsdWebRequestService::MaybeStartNextRequest() {
+void WilcoDtcSupportdWebRequestService::MaybeStartNextRequest() {
   // Starts the next web requests only if there is nothing pending.
   if (active_request_ || request_queue_.empty())
     return;
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("diagnosticsd", R"(
+      net::DefineNetworkTrafficAnnotation("wilco_dtc_supportd", R"(
           semantics {
-            sender: "Diagnosticsd"
+            sender: "WilcoDtcSupportd"
             description: "Perform a web request."
             trigger:
                 "diagnostics_processor performs a web request to their server."
@@ -193,12 +203,12 @@ void DiagnosticsdWebRequestService::MaybeStartNextRequest() {
   url_loader_->SetRetryOptions(0, network::SimpleURLLoader::RETRY_NEVER);
   url_loader_->DownloadToString(
       url_loader_factory_.get(),
-      base::BindOnce(&DiagnosticsdWebRequestService::OnRequestComplete,
+      base::BindOnce(&WilcoDtcSupportdWebRequestService::OnRequestComplete,
                      base::Unretained(this)),
-      kDiagnosticsdWebResponseMaxSizeInBytes);
+      kWilcoDtcSupportdWebResponseMaxSizeInBytes);
 }
 
-void DiagnosticsdWebRequestService::OnRequestComplete(
+void WilcoDtcSupportdWebRequestService::OnRequestComplete(
     std::unique_ptr<std::string> response_body) {
   DCHECK(active_request_);
 
@@ -214,7 +224,8 @@ void DiagnosticsdWebRequestService::OnRequestComplete(
     DVLOG(0) << "Web request failed with error: " << net_error
              << net::ErrorToString(net_error);
     std::move(active_request_->callback)
-        .Run(diagnosticsd::mojom::DiagnosticsdWebRequestStatus::kNetworkError,
+        .Run(wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus::
+                 kNetworkError,
              0 /* http_status */, mojo::ScopedHandle() /* response_body */);
     active_request_.reset();
     MaybeStartNextRequest();
@@ -228,7 +239,7 @@ void DiagnosticsdWebRequestService::OnRequestComplete(
   }
 
   DCHECK(!response_body ||
-         response_body->size() <= kDiagnosticsdWebResponseMaxSizeInBytes);
+         response_body->size() <= kWilcoDtcSupportdWebResponseMaxSizeInBytes);
 
   mojo::ScopedHandle response_body_handle;
   if (response_body)
@@ -237,7 +248,8 @@ void DiagnosticsdWebRequestService::OnRequestComplete(
   // Got an HTTP error.
   if (!IsHttpOkCode(response_code)) {
     std::move(active_request_->callback)
-        .Run(diagnosticsd::mojom::DiagnosticsdWebRequestStatus::kHttpError,
+        .Run(wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus::
+                 kHttpError,
              response_code, std::move(response_body_handle));
     active_request_.reset();
     MaybeStartNextRequest();
@@ -246,7 +258,7 @@ void DiagnosticsdWebRequestService::OnRequestComplete(
 
   // The web request is completed successfully.
   std::move(active_request_->callback)
-      .Run(diagnosticsd::mojom::DiagnosticsdWebRequestStatus::kOk,
+      .Run(wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus::kOk,
            response_code, std::move(response_body_handle));
   active_request_.reset();
   MaybeStartNextRequest();
