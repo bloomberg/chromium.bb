@@ -755,7 +755,7 @@ bool PaymentRequestBrowserTestBase::IsEditorComboboxInvalid(
       static_cast<ValidatingCombobox*>(delegate_->dialog_view()->GetViewByID(
           EditorViewController::GetInputFieldViewId(type)));
   DCHECK(combobox);
-  return combobox->invalid();
+  return combobox->GetInvalid();
 }
 
 bool PaymentRequestBrowserTestBase::IsPayButtonEnabled() {

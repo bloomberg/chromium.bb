@@ -319,7 +319,7 @@ void Combobox::SetInvalid(bool invalid) {
     focus_ring_->SetInvalid(invalid);
 
   UpdateBorder();
-  SchedulePaint();
+  OnPropertyChanged(&selected_index_, kPropertyEffectsPaint);
 }
 
 void Combobox::Layout() {
@@ -658,7 +658,9 @@ PrefixSelector* Combobox::GetPrefixSelector() {
 }
 
 BEGIN_METADATA(Combobox)
+METADATA_PARENT_CLASS(View)
 ADD_PROPERTY_METADATA(Combobox, int, SelectedIndex)
+ADD_PROPERTY_METADATA(Combobox, bool, Invalid)
 END_METADATA()
 
 }  // namespace views

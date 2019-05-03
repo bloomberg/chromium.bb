@@ -403,7 +403,7 @@ bool CreditCardEditorViewController::ValidateModelAndSave() {
   if (IsEditingServerCard()) {
     views::Combobox* address_combobox = static_cast<views::Combobox*>(
         dialog()->GetViewByID(GetInputFieldViewId(kBillingAddressType)));
-    if (address_combobox->invalid())
+    if (address_combobox->GetInvalid())
       return false;
 
     autofill::AddressComboboxModel* model =

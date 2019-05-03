@@ -82,7 +82,7 @@ class VIEWS_EXPORT Combobox : public View,
   // When invalid, it paints with white text on a red background.
   // Callers are responsible for restoring validity with selection changes.
   void SetInvalid(bool invalid);
-  bool invalid() const { return invalid_; }
+  bool GetInvalid() const { return invalid_; }
 
   // Overridden from View:
   gfx::Size CalculatePreferredSize() const override;

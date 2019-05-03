@@ -325,7 +325,7 @@ void CardUnmaskPromptViews::ContentsChanged(
 
 void CardUnmaskPromptViews::OnPerformAction(views::Combobox* combobox) {
   if (ExpirationDateIsValid()) {
-    if (month_input_->invalid()) {
+    if (month_input_->GetInvalid()) {
       month_input_->SetInvalid(false);
       year_input_->SetInvalid(false);
       SetRetriableErrorMessage(base::string16());

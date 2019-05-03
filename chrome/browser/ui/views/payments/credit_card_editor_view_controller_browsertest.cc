@@ -852,7 +852,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
       dialog_view()->GetViewByID(EditorViewController::GetInputFieldViewId(
           autofill::ADDRESS_BILLING_LINE1)));
   ASSERT_NE(nullptr, billing_combobox);
-  EXPECT_FALSE(billing_combobox->invalid());
+  EXPECT_FALSE(billing_combobox->GetInvalid());
   EXPECT_TRUE(billing_combobox->enabled());
 
   // And then save credit card state and come back to payment sheet.
