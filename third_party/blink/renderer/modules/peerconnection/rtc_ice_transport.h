@@ -102,6 +102,21 @@ class MODULES_EXPORT RTCIceTransport final
   // a QuicTransportProxy. It may be called repeatedly with the same
   // RTCQuicTransport.
   bool HasConsumer() const;
+  // If |this| was created from an RTCPeerConnection.
+  //
+  // Background: This is because we don't reuse an RTCIceTransport that has been
+  // created from an RTCPeerConnection for an RTCQuicTransport (see
+  // bugs.webrtc.org/10591). The core issue here is that the source of truth for
+  // connecting a consumer to ICE is at the P2PTransportChannel. In the case of
+  // RTCPeerConnection, the P2PTransportChannel is already connected and given
+  // to the RTCIceTransport. In the case of the RTCQuicTransport it uses the
+  // RTCIceTransport as the source of truth for enforcing just one connected
+  // consumer. Possible fixes to this issue could include: -Use the
+  // P2PTransportChannel as the source of truth directly (calling this
+  // synchronously from the main thread)
+  // -Asynchronously connect to the P2PTransport - if the count of connected
+  // transports to the P2PTransportChannel is > 1, then throw an exception.
+  bool IsFromPeerConnection() const;
   IceTransportProxy* ConnectConsumer(RTCQuicTransport* consumer);
   void DisconnectConsumer(RTCQuicTransport* consumer);
 

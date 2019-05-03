@@ -115,6 +115,14 @@ RTCQuicTransport* RTCQuicTransport::Create(
                                       "has a connected RTCQuicTransport.");
     return nullptr;
   }
+  if (transport->IsFromPeerConnection()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "Cannot construct an RTCQuicTransport "
+        "with an RTCIceTransport that came from an "
+        "RTCPeerConnection.");
+    return nullptr;
+  }
   for (const auto& certificate : certificates) {
     if (certificate->expires() < ConvertSecondsToDOMTimeStamp(CurrentTime())) {
       exception_state.ThrowTypeError(
