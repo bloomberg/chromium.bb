@@ -64,7 +64,6 @@ bool ExtensionDevToolsInfoBarDelegate::ShouldExpire(
 
 void ExtensionDevToolsInfoBarDelegate::InfoBarDismissed() {
   DCHECK(!dismissed_callback_.is_null());
-  // Use ResetAndReturn() since running the callback may delete |this|.
   std::move(dismissed_callback_).Run();
 }
 

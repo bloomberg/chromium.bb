@@ -50,16 +50,6 @@ template <template <typename> class CallbackType>
 using EnableIfIsBaseCallback =
     std::enable_if_t<IsBaseCallback<CallbackType<void()>>::value>;
 
-// Prefer std::move() over ResetAndReturn().
-template <template <typename> class CallbackType,
-          typename RunType,
-          typename = EnableIfIsBaseCallback<CallbackType>>
-CallbackType<RunType> ResetAndReturn(CallbackType<RunType>* cb) {
-  auto ret = std::move(*cb);
-  DCHECK(!*cb);
-  return ret;
-}
-
 namespace internal {
 
 template <typename... Args>

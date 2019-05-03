@@ -153,7 +153,7 @@ void ArCoreJavaUtils::OnDrawingSurfaceDestroyed(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
   DVLOG(1) << __func__ << ":::";
-  base::ResetAndReturn(&surface_destroyed_callback_).Run();
+  std::move(surface_destroyed_callback_).Run();
 }
 
 void ArCoreJavaUtils::OnRequestInstallArModuleResult(

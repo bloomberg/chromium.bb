@@ -339,8 +339,7 @@ void ArCoreDevice::OnRequestArCoreInstallOrUpdateResult(bool success) {
   }
 
   DCHECK(session_state_->start_immersive_activity_callback_);
-  base::ResetAndReturn(&session_state_->start_immersive_activity_callback_)
-      .Run();
+  std::move(session_state_->start_immersive_activity_callback_).Run();
 }
 
 void ArCoreDevice::OnRequestInstallArModuleResult(bool success) {
@@ -370,7 +369,7 @@ void ArCoreDevice::CallDeferredRequestSessionCallback(bool success) {
     return;
 
   mojom::XRRuntime::RequestSessionCallback deferred_callback =
-      base::ResetAndReturn(&session_state_->pending_request_session_callback_);
+      std::move(session_state_->pending_request_session_callback_);
 
   if (!success) {
     std::move(deferred_callback).Run(nullptr, nullptr);

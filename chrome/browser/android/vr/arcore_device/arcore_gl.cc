@@ -12,7 +12,6 @@
 #include "base/android/jni_android.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/callback_helpers.h"
 #include "base/containers/queue.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -450,7 +449,7 @@ void ArCoreGl::SubmitFrameMissing(int16_t frame_index,
   // update if we had deferred it. This will get the next frame's camera image
   // and pose in parallel while we're waiting for this frame's rendered image.
   if (pending_getframedata_) {
-    base::ResetAndReturn(&pending_getframedata_).Run();
+    std::move(pending_getframedata_).Run();
   }
 
   surface_->SwapBuffers(base::DoNothing());
@@ -492,7 +491,7 @@ void ArCoreGl::SubmitFrameDrawnIntoTexture(int16_t frame_index,
   // update if we had deferred it. This will get the next frame's camera image
   // and pose in parallel while we're waiting for this frame's rendered image.
   if (pending_getframedata_) {
-    base::ResetAndReturn(&pending_getframedata_).Run();
+    std::move(pending_getframedata_).Run();
   }
 
   ar_image_transport_->CreateGpuFenceForSyncToken(
@@ -683,7 +682,7 @@ void ArCoreGl::OnBindingDisconnect() {
 
   CloseBindingsIfOpen();
 
-  base::ResetAndReturn(&session_shutdown_callback_).Run();
+  std::move(session_shutdown_callback_).Run();
 }
 
 void ArCoreGl::CloseBindingsIfOpen() {
