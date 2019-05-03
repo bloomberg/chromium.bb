@@ -135,7 +135,7 @@ public class TabStateBrowserControlsVisibilityDelegate
     @Override
     public boolean canAutoHideBrowserControls() {
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.DONT_AUTO_HIDE_BROWSER_CONTROLS)
-                && mTab.getActivity().getToolbarManager() != null
+                && mTab.getActivity() != null && mTab.getActivity().getToolbarManager() != null
                 && mTab.getActivity().getToolbarManager().getBottomToolbarCoordinator() != null) {
             return false;
         }
