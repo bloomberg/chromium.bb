@@ -52,7 +52,8 @@ std::string GetWhitelistEntries() {
 
 bool IsWhitelistedSourceId(SourceId source_id) {
   return GetSourceIdType(source_id) == SourceIdType::NAVIGATION_ID ||
-         GetSourceIdType(source_id) == SourceIdType::APP_ID;
+         GetSourceIdType(source_id) == SourceIdType::APP_ID ||
+         GetSourceIdType(source_id) == SourceIdType::HISTORY_ID;
 }
 
 // Gets the maximum number of Sources we'll keep in memory before discarding any

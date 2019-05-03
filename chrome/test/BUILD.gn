@@ -758,6 +758,7 @@ test("browser_tests") {
       "../browser/metrics/startup_metrics_browsertest.cc",
       "../browser/metrics/tab_reactivation_tracker_browsertest.cc",
       "../browser/metrics/tab_stats_tracker_browsertest.cc",
+      "../browser/metrics/ukm_background_recorder_browsertest.cc",
       "../browser/metrics/ukm_browsertest.cc",
       "../browser/metrics/variations/force_field_trials_browsertest.cc",
       "../browser/navigation_predictor/navigation_predictor_browsertest.cc",

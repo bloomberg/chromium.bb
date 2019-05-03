@@ -20,6 +20,9 @@ class BASE_EXPORT UkmSourceId {
     UKM = 0,
     NAVIGATION_ID = 1,
     APP_ID = 2,
+    // Source ID for background events that don't have an open tab but the
+    // associated URL is still present in the browser's history.
+    HISTORY_ID = 3,
   };
 
   // Default constructor has the invalid value.

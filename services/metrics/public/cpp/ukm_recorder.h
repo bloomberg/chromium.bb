@@ -66,6 +66,7 @@ namespace ukm {
 
 class DelegatingUkmRecorder;
 class TestRecordingHelper;
+class UkmBackgroundRecorderService;
 
 namespace internal {
 class SourceUrlRecorderWebContentsObserver;
@@ -111,6 +112,7 @@ class METRICS_EXPORT UkmRecorder {
   friend PlatformNotificationServiceImpl;
   friend PluginInfoHostImpl;
   friend TestRecordingHelper;
+  friend UkmBackgroundRecorderService;
   friend autofill::TestAutofillClient;
   friend blink::Document;
   friend cc::UkmManager;
