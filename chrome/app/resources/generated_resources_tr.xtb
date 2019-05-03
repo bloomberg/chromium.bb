@@ -799,6 +799,7 @@
 <translation id="2241053333139545397">Çeşitli web sitelerinde verilerinizi okuma ve değiştirme</translation>
 <translation id="2241634353105152135">Sadece bir defa</translation>
 <translation id="2242687258748107519">Dosya Bilgileri</translation>
+<translation id="2246549592927364792">Google'dan resim açıklamaları alınsın mı?</translation>
 <translation id="224940702122312781">Bu sayfa çok fazla veri kullanacak.</translation>
 <translation id="2249605167705922988">ör. 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">Sistem görüntüleyici ile aç</translation>
@@ -1104,6 +1105,7 @@
 <translation id="271033894570825754">Yeni</translation>
 <translation id="2714393097308983682">Google Play Store</translation>
 <translation id="2715751256863167692">Bu sürüm güncellemesi, Chromebook'unuzu sıfırlar ve mevcut kullanıcı verilerini kaldırır.</translation>
+<translation id="2716986496990888774">Bu ayar, ebeveynler tarafından yönetilir.</translation>
 <translation id="2718395828230677721">Gece Işığı</translation>
 <translation id="2718998670920917754">Virüsten koruma yazılımı bir virüs algıladı.</translation>
 <translation id="2719936478972253983">Aşağıdaki çerezler engellendi</translation>
@@ -1154,7 +1156,6 @@
 <translation id="2783829359200813069">Şifreleme türlerini seçme</translation>
 <translation id="2783952358106015700">Güvenlik anahtarınızı <ph name="APP_NAME" /> ile kullanın</translation>
 <translation id="2784407158394623927">Mobil veri hizmetiniz etkinleştiriliyor</translation>
-<translation id="2785008241190445880">Yer işareti değiştirildi</translation>
 <translation id="2785873697295365461">Dosya açıklayıcıları</translation>
 <translation id="2787354132612937472">—</translation>
 <translation id="2788135150614412178">+</translation>
@@ -1215,6 +1216,7 @@
 <translation id="2874939134665556319">Önceki parça</translation>
 <translation id="2875698561019555027">(Chrome hata sayfaları)</translation>
 <translation id="2876336351874743617">2. parmak</translation>
+<translation id="2876369937070532032">Güvenliğiniz risk altında olduğunda ziyaret ettiğiniz bazı sayfaların URL'lerini Google'a gönderir</translation>
 <translation id="288042212351694283">Evrensel 2. Faktör cihazlarınıza erişim</translation>
 <translation id="2881076733170862447">Uzantıyı Tıkladığınızda</translation>
 <translation id="2881966438216424900">Son erişim zamanı:</translation>
@@ -1397,6 +1399,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3170072451822350649">Ayrıca, oturum açmayı atlayabilir ve <ph name="LINK_START" />misafir olarak göz atabilirsiniz<ph name="LINK_END" />.</translation>
 <translation id="3172045848207518317">Bir site, video girişine erişiyor</translation>
 <translation id="3177909033752230686">Sayfanın Dili:</translation>
+<translation id="3181954750937456830">Gizli Göz Atma (sizi ve cihazınızı tehlikelerden korur)</translation>
 <translation id="3182749001423093222">Yazım denetimi</translation>
 <translation id="3183139917765991655">Profil İçe Aktarıcısı</translation>
 <translation id="3188465121994729530">Hareketli Ortalama</translation>
@@ -1702,6 +1705,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3664511988987167893">Uzantı Simgesi</translation>
 <translation id="3665589677786828986">Chrome, bazı ayarlarınızın başka bir program tarafından bozulduğunu algıladı ve onları orijinal varsayılan değerlerine sıfırladı.</translation>
 <translation id="3668570675727296296">Dil ayarları</translation>
+<translation id="366867565525278777">Depolama alanı yetersiz olduğu için yüklenemedi. En az <ph name="INSTALL_SIZE" /> boyutunda boş alan gerekli. Yer açmak için cihaz depolama alanındaki dosyaları silin.</translation>
 <translation id="3668801437375206837">Google çalışanları Bluetooth sorunlarını daha iyi teşhis etmek için geri bildirim raporlarına ek Bluetooth günlükleri dahil edebilirler. Bu seçenek işaretlendiğinde, geçerli oturumunuzdan btsnoop ve HCI günlükleri raporunuza eklenecektir. Bu şekilde mümkün olan en fazla sayıda PII temizlenecektir. Bu günlüklere erişim, Listnr'da Chrome OS ürün grubu yöneticileri ile kısıtlı olacaktır. Günlükler 90 gün sonra tamamen silinecektir.</translation>
 <translation id="3668823961463113931">İşleyiciler</translation>
 <translation id="3670113805793654926">Herhangi bir tedarikçinin cihazları</translation>
@@ -2011,6 +2015,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="409579654357498729">Google Cloud Print'e ekle</translation>
 <translation id="4096508467498758490">Geliştirici modu uzantılarını devre dışı bırakın</translation>
 <translation id="4096824249111507322">Güvenli modül hazırlanıyor, lütfen bekleyin (bu işlem birkaç dakika sürebilir)...</translation>
+<translation id="4097560579602855702">Google’da arama yapın</translation>
 <translation id="4099060993766194518">Varsayılan arama motoru geri yüklensin mi?</translation>
 <translation id="4099874310852108874">Ağ hatası oluştu.</translation>
 <translation id="4100733287846229632">Cihazda kullanılabilir alan kritik düzeyde az</translation>
@@ -4009,6 +4014,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7289225569524511578">Duvar kağıdı uygulamasını aç</translation>
 <translation id="7290242001003353852"><ph name="SAML_DOMAIN" /> tarafından barındırılan bu oturum açma hizmeti kameranıza erişiyor.</translation>
 <translation id="7290594223351252791">Kaydı onaylayın</translation>
+<translation id="7295614427631867477">Android, Play ve ilgili uygulamaların kendi veri toplama ve kullanım politikalarına tabi olduğunu unutmayın.</translation>
 <translation id="729583233778673644">AES ve RC4 şifrelemesine izin ver. RC4 şifreleri güvenli olmadığından bu seçeneğin kullanılması, riskinizi artırır.</translation>
 <translation id="7296774163727375165"><ph name="DOMAIN" /> Şartları</translation>
 <translation id="7297443947353982503">Kullanıcı adı/şifre yanlış veya EAP yetkilendirmesi başarısız oldu</translation>
@@ -4285,6 +4291,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7732111077498238432">Ağ, politika ile denetleniyor</translation>
 <translation id="7737238973539693982">Linux'u (Beta) silin</translation>
 <translation id="7740996059027112821">Standart</translation>
+<translation id="7746457520633464754">Chrome, tehlikeli uygulamaları ve siteleri algılamak için Google'a ziyaret ettiğiniz bazı sitelerin URL'lerini, sınırlı sistem bilgisini ve bazı sayfa içeriklerini gönderir.</translation>
 <translation id="7750228210027921155">Pencere içinde pencere</translation>
 <translation id="7751260505918304024">Tümünü göster</translation>
 <translation id="7754704193130578113">İndirmeden önce her dosyanın nereye kaydedileceğini sor</translation>
@@ -4935,7 +4942,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8732212173949624846">Oturum açtığınız tüm cihazlarda göz atma geçmişinizi okuma ve değiştirme</translation>
 <translation id="8732844209475700754">Gizlilik, güvenlik ve veri toplamayla ilgili daha fazla ayar</translation>
 <translation id="8734073480934656039">Bu ayar etkinleştirildiğinde açılışta kiosk uygulamaları otomatik olarak başlar.</translation>
-<translation id="8734671092194994316">Bu işlem <ph name="WEBSITE" /> sitesini ziyaretinizle ilgili bir kaydı güvenlik anahtarınıza depolar.</translation>
 <translation id="873545264931343897"><ph name="PLUGIN_NAME" /> eklentisinin güncellenmesi tamamlandığında etkinleştirmek için sayfayı yeniden yükleyin</translation>
 <translation id="8736288397686080465">Bu site arka planda güncellendi.</translation>
 <translation id="8737685506611670901"><ph name="REPLACED_HANDLER_TITLE" /> yerine <ph name="PROTOCOL" /> bağlantılarını açma</translation>
@@ -4968,6 +4974,7 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8780123805589053431">Google'dan resim açıklamaları al</translation>
 <translation id="8780443667474968681">Sesli arama özelliği kapatıldı.</translation>
 <translation id="878069093594050299">Bu sertifika, aşağıdaki kullanımlar için doğrulanmıştır:</translation>
+<translation id="8781470833671194250">Tıklama pozisyonunu sabitleme</translation>
 <translation id="8781980678064919987">Kapak kapatıldığında gücü kapat</translation>
 <translation id="8782565991310229362">Kiosk uygulaması başlatma iptal edildi.</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; sizinle bir yazıcı (&lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt;) paylaşmak istiyor.</translation>

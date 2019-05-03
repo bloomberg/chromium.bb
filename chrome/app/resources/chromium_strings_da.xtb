@@ -51,6 +51,7 @@
 <translation id="2718390899429598676">Som et ekstra sikkerhedsniveau krypterer Chromium dine data.</translation>
 <translation id="2770231113462710648">Skift standardbrowser til:</translation>
 <translation id="2799223571221894425">Genstart</translation>
+<translation id="2838154144102149890">Chromium skal standses på denne computer, før du kan opdatere. Det kan medføre, at andre brugere, som er logget ind på computeren, mister ændringer, der ikke er gemt.</translation>
 <translation id="2847479871509788944">Fjern fra Chromium...</translation>
 <translation id="2886012850691518054">Valgfrit: Hjælp med at gøre Chromium bedre ved automatisk at sende forbrugsstatistik og nedbrudsrapporter til Google.</translation>
 <translation id="2898082584336937987">Installer Chromium på din telefon. Vi sender en sms til din telefon: <ph name="PHONE_NUMBER" /></translation>
@@ -187,6 +188,7 @@ Visse funktioner kan være utilgængelige. Angiv en anden profilmappe, eller bru
 <translation id="6810143991807788455">Hjælp med at gøre Chromium bedre ved at rapportere de aktuelle indstillinger</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (kopieret til Chromium)</translation>
+<translation id="6868056391275687737">Der kører andre kopier af Chromium. Luk dem for at opdatere.</translation>
 <translation id="6893813176749746474">Chromium er blevet opdateret, men du har ikke brugt den i 30 dage.</translation>
 <translation id="6964305034639999644">Åbn linket i et Chromium-inko&amp;gnitovindue</translation>
 <translation id="6970811910055250180">Opdaterer din enhed...</translation>
@@ -257,6 +259,7 @@ Gå til din mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejlednin
 <translation id="8697124171261953979">Den styrer også, hvilken side der vises, når du åbner Chromium eller søger via omnifeltet.</translation>
 <translation id="8704119203788522458">Dette er din Chromium-browser</translation>
 <translation id="8704255848199359374">Dette anvender den samme stavekontrol, som anvendes i Google Søgning. Tekst, som du angiver i browseren, sendes til Google. Du kan altid ændre dette i indstillingerne.</translation>
+<translation id="8748383401829947534">Luk alle kopier af Chromium.</translation>
 <translation id="8796602469536043152">Chromium skal have tilladelse til at bruge dit kamera og din mikrofon på dette website</translation>
 <translation id="8803635938069941624">Vilkår for Chromium OS</translation>
 <translation id="8821041990367117597">Chromium kunne ikke synkronisere dine data, fordi loginoplysningerne for din konto er forældede.</translation>

@@ -223,6 +223,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">Kortti</translation>
 <translation id="2114841414352855701">Ei käytetä – käytännön <ph name="POLICY_NAME" /> ohittama.</translation>
+<translation id="2129079103035905234">Liiketunnistimet</translation>
 <translation id="213826338245044447">Mobiilikirjanmerkit</translation>
 <translation id="214556005048008348">Peruuta maksu</translation>
 <translation id="2147827593068025794">Taustasynkronointi</translation>
@@ -344,7 +345,7 @@
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">Yhteys katkaistiin.</translation>
 <translation id="2788784517760473862">Hyväksytyt luottokortit</translation>
-<translation id="2792012897584536778">Tämän laitteen järjestelmänvalvojat ovat ottaneet käyttöön tietosuojavarmenteita, joiden avulla he voivat mahdollisesti nähdä vierailemiesi sivustojen sisällöt.</translation>
+<translation id="2792012897584536778">Tämän laitteen järjestelmänvalvojat ovat ottaneet käyttöön tietosuojavarmenteita, joiden avulla he saattavat nähdä avaamiesi sivustojen sisällöt.</translation>
 <translation id="2794233252405721443">Sivusto estetty</translation>
 <translation id="2799020568854403057">Sivusto sisältää haitallisia sovelluksia</translation>
 <translation id="2799223571221894425">Käynnistä uudelleen</translation>
@@ -431,7 +432,7 @@
 <translation id="3287510313208355388">Lataa, kun verkkoyhteys on muodostettu</translation>
 <translation id="3293642807462928945">Lisätietoja käytännöstä: <ph name="POLICY_NAME" /></translation>
 <translation id="3303855915957856445">Ei hakutuloksia</translation>
-<translation id="3311730110465560799">Voi muuttaa laitteesi kokoonpanoa etänä.</translation>
+<translation id="3311730110465560799">Voi muuttaa laitteesi määrityksiä etänä.</translation>
 <translation id="3320021301628644560">Lisää laskutusosoite</translation>
 <translation id="3324983252691184275">Karmiininpunainen</translation>
 <translation id="3338095232262050444">Turvallinen</translation>
@@ -618,6 +619,7 @@
 <translation id="4265872034478892965">Järjestelmänvalvojan sallima</translation>
 <translation id="4275830172053184480">Käynnistä laite uudelleen</translation>
 <translation id="4277028893293644418">Pyydä uusi salasana</translation>
+<translation id="4279811152705618813"><ph name="ENROLLMENT_DOMAIN" /> ylläpitää laitetta (<ph name="DEVICE_TYPE" />)</translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Tämä kortti on tallennettu Google-tilillesi}other{Nämä kortit on tallennettu Google-tilillesi}}</translation>
 <translation id="42981349822642051">Laajenna</translation>
 <translation id="4302965934281694568">Chou3 (kirjekuori)</translation>

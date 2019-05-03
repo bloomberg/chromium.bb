@@ -743,20 +743,6 @@
       A verificação ortográfica também pode ser efetuada através de um dicionário previamente transferido; esta política apenas controla a utilização do serviço online.
 
       Se esta definição não estiver configurada, os utilizadores podem optar por utilizar o serviço de verificação ortográfica ou não.</translation>
-<translation id="2294283832646774959">Configura uma lista de impressoras.
-
-      Esta política permite que os administradores facultem configurações de impressoras aos utilizadores.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> e <ph name="PRINTER_DESCRIPTION" /> são strings de forma livre que podem ser personalizadas para facilitar a seleção da impressora. <ph name="PRINTER_MANUFACTURER" /> e <ph name="PRINTER_MODEL" /> servem para facilitar a identificação da impressora por parte dos utilizadores finais. Representam o fabricante e o modelo da impressora. <ph name="PRINTER_URI" /> deve ser um endereço acessível a partir do computador do cliente, incluindo <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> e <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> é opcional. Se fornecido, é utilizado para ajudar a remover duplicados de impressoras <ph name="ZEROCONF_DISCOVERY" />.
-
-      <ph name="PRINTER_EFFECTIVE_MODEL" /> tem de corresponder a uma das strings que representam uma impressora compatível com <ph name="PRODUCT_NAME" />. A string será utilizada para identificar e instalar os PPDs adequados à impressora. Pode encontrar mais informações em https://support.google.com/chrome?p=noncloudprint.
-
-      A configuração das impressoras fica concluída com a primeira utilização de uma impressora. Os PPDs não são transferidos enquanto a impressora não for utilizada. Posteriormente, os PPDs utilizados com frequência são colocados em cache.
-
-      Esta política não influencia a possibilidade de os utilizadores poderem configurar impressoras em dispositivos individuais e destina-se a complementar a configuração das impressoras por parte de utilizadores individuais.
-
-      Para dispositivos geridos pelo Active Directory, esta política suporta a expansão de <ph name="MACHINE_NAME_VARIABLE" /> para o nome do computador do Active Directory ou uma substring do mesmo. Por exemplo, se o nome do computador for <ph name="MACHINE_NAME_EXAMPLE" />, <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> será substituído pelos 4 carateres a partir da 6.ª posição, ou seja, <ph name="MACHINE_NAME_PART_EXAMPLE" />. Tenha em atenção que a posição baseia-se em zero.
-      </translation>
 <translation id="2294382669900758280">A reprodução de vídeos em aplicações para Android não é tida em consideração mesmo que esta política esteja definida como <ph name="TRUE" />.</translation>
 <translation id="2299220924812062390">Especificar uma lista de plug-ins ativados</translation>
 <translation id="2303795211377219696">Ativar Preenchimento automático para cartões de crédito</translation>
@@ -1392,6 +1378,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se esta política estiver definida como "DeveloperToolsAllowed" (valor 1), é possível aceder às Ferramentas para programadores e à Consola de JavaScript e utilizá-las em todos os contextos, inclusive no contexto de extensões instaladas pela política empresarial.
       Se esta política estiver definida como "DeveloperToolsDisallowed" (valor 2), não é possível aceder às Ferramentas do programador e deixa de ser possível inspecionar os elementos do Website. Todos os atalhos de teclado e todas as entradas de menu ou de menu de contexto para abrir as Ferramentas para programadores ou a Consola de JavaScript serão desativados.</translation>
 <translation id="3547954654003013442">Definições de proxy</translation>
+<translation id="3550875587920006460">Permite definir uma agenda personalizada para verificar a existência de atualizações. Aplica-se a todos os utilizadores e a todas as interfaces no dispositivo. Uma vez definida, o dispositivo verifica se existem atualizações de acordo com a agenda. A política deve ser removida para cancelar futuras verificações da existência de atualizações agendadas.</translation>
 <translation id="355118380775352753">Websites a abrir num navegador alternativo</translation>
 <translation id="3554984410014457319">Permitir ao Assistente Google ouvir a frase de ativação por voz</translation>
 <translation id="356579196325389849">Os utilizadores podem configurar o canal de lançamento do Chrome OS.</translation>
@@ -1423,7 +1410,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="3709266154059827597">Configurar lista negra de instalação de extensões</translation>
 <translation id="3711895659073496551">Suspenso</translation>
 <translation id="3715569262675717862">Autenticação baseada em certificados de cliente</translation>
-<translation id="3734995764843493369">A introdução da palavra-passe é obrigatória todos os dias (24 horas)</translation>
 <translation id="3736879847913515635">Ativar a opção para adicionar uma pessoa no gestor de utilizadores</translation>
 <translation id="3738723882663496016">Esta política especifica a chave da licença de <ph name="PLUGIN_VM_NAME" /> para este dispositivo.</translation>
 <translation id="3748900290998155147">Especifica se são permitidos wake locks. Os wake locks podem ser solicitados por extensões através da API da extensão de gestão da alimentação e por aplicações ARC.
@@ -1627,6 +1613,29 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se esta política estiver definida como verdadeira ou não estiver definida, os utilizadores poderão resgatar ofertas através do Registo no Chrome OS.
 
       Se esta política estiver definida como falsa, os utilizadores não poderão resgatar ofertas.</translation>
+<translation id="4008233182078913897">Especifica uma lista de aplicações e de extensões que são instaladas silenciosamente,
+          sem a interação do utilizador, e que não podem ser desinstaladas nem
+          desativadas pelo utilizador. Todas as autorizações solicitadas pelas
+          aplicações/extensões são fornecidas implicitamente, sem interação do utilizador,
+          incluindo autorizações adicionais solicitadas por versões futuras da
+          aplicação/extensão. Além disso, as autorizações são fornecidas às
+          APIs de extensão enterprise.deviceAttributes e enterprise.platformKeys 
+          (estas duas APIs não estão disponíveis para aplicações/extensões cuja
+          instalação não é forçada).
+
+          Esta política tem precedência sobre uma política <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> potencialmente conflituosa. Se uma aplicação ou uma extensão previamente instalada de forma forçada for removida desta lista, é automaticamente desinstalada pelo <ph name="PRODUCT_NAME" />.
+
+          Em instâncias do Windows que não fazem parte de um domínio <ph name="MS_AD_NAME" />, a instalação forçada está limitada a aplicações e extensões apresentadas na Web Store do Chrome.
+
+          Tenha em atenção que o código-fonte de qualquer extensão pode ser alterado pelos utilizadores através das Ferramentas para programadores (o que pode resultar no funcionamento incorreto da extensão). Se pretender evitar esta situação, defina a política <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+          Cada item de lista da política é uma string que contém um ID de extensão e, opcionalmente, um URL de "atualização" separado por ponto e vírgula (<ph name="SEMICOLON" />). O ID de extensão é a string de 32 letras encontrada, por exemplo, em <ph name="CHROME_EXTENSIONS_LINK" /> no modo de programador. O URL de "atualização", se especificado, deve apontar para um documento XML de Atualização do manifesto conforme descrito em <ph name="LINK_TO_EXTENSION_DOC1" />. Por predefinição, utiliza-se o URL de atualização da Web Store do Chrome (que, atualmente, é "https://clients2.google.com/service/update2/crx"). Tenha em atenção que o URL de "atualização" definido nesta política apenas é utilizado para a instalação inicial e as atualizações subsequentes da extensão utilizam o URL de atualização indicado no manifesto da extensão. Tenha também em atenção que era obrigatório especificar explicitamente o URL de "atualização" até à versão 67 do <ph name="PRODUCT_NAME" />, inclusive.
+
+          Por exemplo, <ph name="EXTENSION_POLICY_EXAMPLE" /> instala a extensão com o ID <ph name="EXTENSION_ID_SAMPLE" /> a partir do URL de "atualização" padrão da Web Store do Chrome. Para obter mais informações sobre o alojamento de extensões, consulte: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Se esta política não estiver definida, não é efetuada a instalação automática de aplicações ou de extensões e o utilizador pode desinstalar qualquer aplicação ou extensão no <ph name="PRODUCT_NAME" />.
+
+          Tenha em consideração que esta política não se aplica ao modo de navegação anónima.</translation>
 <translation id="4008507541867797979">Se esta política estiver definida como verdadeira ou não estiver configurada, o <ph name="PRODUCT_OS_NAME" /> apresenta os utilizadores existentes no ecrã de início de sessão e permite selecionar um.
 
       Se esta política estiver definida como falsa, o <ph name="PRODUCT_OS_NAME" /> não apresenta os utilizadores existentes no ecrã de início de sessão. É apresentado o ecrã de início de sessão normal (que solicita o email e a palavra-passe ou o número de telefone do utilizador) ou o ecrã intercalar em SAML (se ativado através da política <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />), exceto se configurar uma sessão gerida. Quando configura uma sessão gerida, são apenas apresentadas as contas da sessão gerida para que selecione uma.
@@ -2560,6 +2569,12 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="5897913798715600338">Carregue a bateria com a tecnologia de Carregamento rápido.</translation>
 <translation id="5898486742390981550">Quando vários utilizadores têm sessão iniciada, apenas o utilizador principal pode utilizar aplicações para Android.</translation>
 <translation id="5901427587865226597">Apenas impressão duplex</translation>
+<translation id="5903898512448364160">
+      Se a política estiver definida como Verdadeira, a política da nuvem tem prioridade em caso de conflito com a política da plataforma.
+      Se a política estiver definida como Falsa ou não estiver configurada, a política da plataforma tem prioridade em caso de conflito com a política da nuvem.
+
+      Esta política só está disponível como uma política de plataforma de máquinas obrigatória e afeta apenas as políticas de nuvem num âmbito das máquinas.
+      </translation>
 <translation id="5905473632148429217">Ative as verificações OCSP/CRL online</translation>
 <translation id="5906199912611534122">Permite a ativação ou a desativação do controlo de rede.
       Aplica-se a todos os utilizadores e a todas as interfaces no dispositivo. Depois de definido,
@@ -2586,6 +2601,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
       Se desativar esta definição ou não definir um valor, a Pesquisa Segura na Pesquisa do Google não será imposta.</translation>
 <translation id="5946082169633555022">Canal Beta</translation>
+<translation id="5946329690214660966">Definir uma agenda personalizada para verificar a existência de atualizações</translation>
 <translation id="5950205771952201658">Na medida em que as verificações de revogação online de falha suave não fornecem uma vantagem de segurança eficaz, estas estão desativadas por predefinição na versão 19 e posterior do <ph name="PRODUCT_NAME" />. Ao definir esta política como verdadeira, o comportamento anterior é restaurado e são efetuadas verificações OCSP/CRL online.
 
       Se a política não for definida ou for definida como falsa, o <ph name="PRODUCT_NAME" /> não efetuará verificações de revogação online no <ph name="PRODUCT_NAME" /> 19 e posterior.</translation>
@@ -2652,6 +2668,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="6034341625190551415">Controla os tipos de conta de sessão pública e quiosque.</translation>
 <translation id="6034603289689965535">Permite a uma página mostrar pop-ups durante o descarregamento</translation>
 <translation id="6036523166753287175">Ativar transposição da firewall a partir do anfitrião de acesso remoto</translation>
+<translation id="605475635122964053">Restringe o modo de impressão com PIN. Uma política não definida é considerada uma não restrição. Se o modo não estiver disponível, esta política é ignorada. Tenha em atenção que a funcionalidade de impressão com PIN está ativada apenas para impressoras que utilizam um dos protocolos IPPS, USB ou IPP através de USB. </translation>
 <translation id="6070667616071269965">Esquemas de teclado do ecrã de início de sessão do dispositivo</translation>
 <translation id="6074963268421707432">Não permitir que os sites mostrem notificações do ambiente de trabalho</translation>
 <translation id="6074964551275531965">Define o período de tempo para notificações de atualização.</translation>
@@ -3352,6 +3369,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se esta política estiver definida para "RemoveLRUIfDormant", a limpeza automática continuará a remover utilizadores que não iniciam sessão há, pelo menos, 3 meses, pela ordem de início de sessão menos recente até existir espaço livre suficiente.
 
       Se esta política não estiver definida, a limpeza automática utiliza a estratégia integrada predefinida. Atualmente, é a estratégia "RemoveLRUIfDormant".</translation>
+<translation id="7334274148831027933">Ativar lupa ancorada</translation>
 <translation id="7336785017449297672">Controla as definições do relógio e do fuso horário.</translation>
 <translation id="7336878834592315572">Manter cookies durante toda a sessão</translation>
 <translation id="7339315111520512972">Forçar a execução do código de rede no processo do navegador</translation>

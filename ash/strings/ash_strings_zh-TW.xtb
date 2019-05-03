@@ -71,7 +71,6 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">進一步瞭解最新的 <ph name="SYSTEM_APP_NAME" />更新內容</translation>
 <translation id="1995660704900986789">關閉</translation>
-<translation id="1999763610967697511">拖曳</translation>
 <translation id="2012624427112548395">Ctrl 鍵 + 搜尋鍵 + H 鍵</translation>
 <translation id="2016340657076538683">輸入訊息</translation>
 <translation id="2050339315714019657">縱向</translation>
@@ -200,6 +199,7 @@
 <translation id="394485226368336402">音訊設定</translation>
 <translation id="3962859241508114581">上一首曲目</translation>
 <translation id="397105322502079400">計算中…</translation>
+<translation id="3977512764614765090">電池電量：<ph name="PERCENTAGE" />% (充電中)。</translation>
 <translation id="3995138139523574647">USB-C 裝置 (右後方連接埠)</translation>
 <translation id="4017989525502048489">雷射筆</translation>
 <translation id="4042660782729322247">你正在分享螢幕畫面</translation>
@@ -217,6 +217,7 @@
 <translation id="4279490309300973883">鏡像</translation>
 <translation id="4281007048406351813">將計時器時間增加 1 分鐘</translation>
 <translation id="4292681942966152062">正在啟動<ph name="NETWORK_NAME" /></translation>
+<translation id="4296136865091727875">清除全部 <ph name="COUNT" /> 則通知</translation>
 <translation id="4321179778687042513">Ctrl</translation>
 <translation id="4321776623976362024">你按下了高對比的鍵盤快速鍵。確定要啟用這項功能嗎？</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -501,6 +502,7 @@
 <translation id="8877788021141246043">設定提醒</translation>
 <translation id="8878886163241303700">延伸螢幕</translation>
 <translation id="890616557918890486">變更來源</translation>
+<translation id="8909138438987180327">電池剩餘電量：<ph name="PERCENTAGE" />%。</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google 助理不支援這個語言。</translation>
 <translation id="8938800817013097409">USB-C 裝置 (背面右側連接埠)</translation>
@@ -512,6 +514,7 @@
 <translation id="9029474291399787231">有可用的 Adobe Flash Player 更新</translation>
 <translation id="9056839673611986238">裝置將復原</translation>
 <translation id="9070640332319875144">個人助理設定</translation>
+<translation id="9072519059834302790">電池剩餘使用時間：<ph name="TIME_LEFT" />。</translation>
 <translation id="9074739597929991885">藍牙</translation>
 <translation id="9079731690316798640">Wi-Fi：<ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">麥克風正在使用中。</translation>
@@ -523,6 +526,7 @@
 <translation id="9193626018745640770">正在透過不明接收器投放</translation>
 <translation id="9194617393863864469">登入其他使用者帳戶...</translation>
 <translation id="9210037371811586452">退出整合桌面模式</translation>
+<translation id="9211681782751733685">電池剩餘充電時間：<ph name="TIME_REMAINING" />。</translation>
 <translation id="9215934040295798075">設定桌布</translation>
 <translation id="921989828232331238">你的家長今天已鎖定這部裝置</translation>
 <translation id="923686485342484400">按兩下 Ctrl+Shift+Q 鍵即可登出。</translation>

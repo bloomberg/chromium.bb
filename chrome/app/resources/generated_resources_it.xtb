@@ -799,6 +799,7 @@
 <translation id="2241053333139545397">Leggere e modificare i tuoi dati su una serie di siti web</translation>
 <translation id="2241634353105152135">Solo una volta</translation>
 <translation id="2242687258748107519">Info sul file</translation>
+<translation id="2246549592927364792">Scaricare le descrizioni delle immagini da Google?</translation>
 <translation id="224940702122312781">Questa pagina utilizzerà una grande quantità di dati.</translation>
 <translation id="2249605167705922988">ad es. 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">Apri con visualizzatore di sistema</translation>
@@ -1102,6 +1103,7 @@
 <translation id="271033894570825754">Nuovo</translation>
 <translation id="2714393097308983682">Google Play Store</translation>
 <translation id="2715751256863167692">Questo upgrade ripristina il Chromebook e rimuove i dati utente correnti.</translation>
+<translation id="2716986496990888774">Questa impostazione è gestita da un genitore.</translation>
 <translation id="2718395828230677721">Luminosità notturna</translation>
 <translation id="2718998670920917754">Il software antivirus ha rilevato un virus.</translation>
 <translation id="2719936478972253983">Sono stati bloccati i seguenti cookie</translation>
@@ -1152,7 +1154,6 @@
 <translation id="2783829359200813069">Seleziona i tipi di crittografia</translation>
 <translation id="2783952358106015700">Utilizza il token di sicurezza con <ph name="APP_NAME" /></translation>
 <translation id="2784407158394623927">Attivazione del servizio dati mobile</translation>
-<translation id="2785008241190445880">Segnalibro sostituito</translation>
 <translation id="2785873697295365461">Descrittori di file</translation>
 <translation id="2787354132612937472">-</translation>
 <translation id="2788135150614412178">+</translation>
@@ -1213,6 +1214,7 @@
 <translation id="2874939134665556319">Traccia precedente</translation>
 <translation id="2875698561019555027">(pagine di errore Chrome)</translation>
 <translation id="2876336351874743617">Dito 2</translation>
+<translation id="2876369937070532032">Invia a Google gli URL di alcune pagine che visiti quando la tua sicurezza è a rischio</translation>
 <translation id="288042212351694283">Accesso ai tuoi dispositivi Universal 2nd Factor</translation>
 <translation id="2881076733170862447">Quando fai clic sull'estensione</translation>
 <translation id="2881966438216424900">Ultimo accesso:</translation>
@@ -1395,6 +1397,7 @@
 <translation id="3170072451822350649">Puoi anche saltare l'accesso e <ph name="LINK_START" />navigare come ospite<ph name="LINK_END" />.</translation>
 <translation id="3172045848207518317">Un sito sta accedendo all'input video</translation>
 <translation id="3177909033752230686">Lingua della pagina:</translation>
+<translation id="3181954750937456830">Navigazione sicura (protegge te e il tuo dispositivo da siti pericolosi)</translation>
 <translation id="3182749001423093222">Controllo ortografico</translation>
 <translation id="3183139917765991655">Profile Importer</translation>
 <translation id="3188465121994729530">Media spostamento</translation>
@@ -1698,6 +1701,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="3664511988987167893">Icona dell'estensione</translation>
 <translation id="3665589677786828986">Chrome ha rilevato che alcune impostazioni sono state danneggiate da un altro programma e le ha ripristinate con i valori originali predefiniti.</translation>
 <translation id="3668570675727296296">Impostazioni lingua</translation>
+<translation id="366867565525278777">Installazione non riuscita per spazio di archiviazione insufficiente. Sono necessari almeno <ph name="INSTALL_SIZE" /> di spazio libero. Per liberare spazio, elimina i file dallo spazio di archiviazione del dispositivo.</translation>
 <translation id="3668801437375206837">Per meglio diagnosticare i problemi del Bluetooth, i Googler possono includere log Bluetooth aggiuntivi nei loro rapporti di feedback. Quando questa opzione è selezionata, il rapporto includerà i log btsnoop e HCI relativi alla tua sessione attuale, sottoposti a sanitizzazione per rimuovere il maggior numero possibile di PII. L'accesso a questi log verrà limitato agli amministratori del gruppo di prodotti Chrome OS in Listnr. I log verranno eliminati dopo 90 giorni.</translation>
 <translation id="3668823961463113931">Gestori</translation>
 <translation id="3670113805793654926">Dispositivi di qualsiasi fornitore</translation>
@@ -2007,6 +2011,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="409579654357498729">Aggiungi a Cloud Print</translation>
 <translation id="4096508467498758490">Disattiva estensioni in modalità sviluppatore</translation>
 <translation id="4096824249111507322">Preparazione del modulo per la sicurezza in corso, attendi (l'operazione potrebbe richiedere alcuni minuti)...</translation>
+<translation id="4097560579602855702">Cerca con Google</translation>
 <translation id="4099060993766194518">Ripristinare il motore di ricerca predefinito?</translation>
 <translation id="4099874310852108874">Si è verificato un errore di rete.</translation>
 <translation id="4100733287846229632">Lo spazio sul dispositivo sta per esaurirsi</translation>
@@ -4004,6 +4009,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="7289225569524511578">Apri l'app wallpaper</translation>
 <translation id="7290242001003353852">Questo servizio di accesso, ospitato da <ph name="SAML_DOMAIN" />, sta accedendo alla videocamera.</translation>
 <translation id="7290594223351252791">Conferma registrazione</translation>
+<translation id="7295614427631867477">Tieni presente che Android, Play e le app associate sono gestiti dalle loro norme di raccolta e utilizzo dei dati.</translation>
 <translation id="729583233778673644">Consenti la crittografia AES e RC4. Se scegli di utilizzare quest'opzione vai incontro a un rischio maggiore, in quanto le crittografie RC4 non sono sicure.</translation>
 <translation id="7296774163727375165">Termini di <ph name="DOMAIN" /></translation>
 <translation id="7297443947353982503">Nome utente/password errati o autenticazione EAP non riuscita</translation>
@@ -4278,6 +4284,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="7732111077498238432">La rete è gestita tramite norme</translation>
 <translation id="7737238973539693982">Elimina Linux (beta)</translation>
 <translation id="7740996059027112821">Standard</translation>
+<translation id="7746457520633464754">Per rilevare app e siti pericolosi, Chrome invia a Google gli URL di alcune pagine che visiti, informazioni limitate sul sistema e i contenuti di alcune pagine</translation>
 <translation id="7750228210027921155">Picture in picture</translation>
 <translation id="7751260505918304024">Mostra tutto</translation>
 <translation id="7754704193130578113">Chiedi dove salvare il file prima di scaricarlo</translation>
@@ -4928,7 +4935,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8732212173949624846">Lettura e modifica della cronologia di navigazione su tutti i dispositivi su cui viene eseguito l'accesso</translation>
 <translation id="8732844209475700754">Altre impostazioni relative a privacy, sicurezza e raccolta dei dati</translation>
 <translation id="8734073480934656039">L'attivazione di questa impostazione consente l'apertura automatica delle applicazioni kiosk all'avvio.</translation>
-<translation id="8734671092194994316">Lascerà un record della tua visita al sito <ph name="WEBSITE" /> sul tuo token di sicurezza.</translation>
 <translation id="873545264931343897">Al termine dell'aggiornamento del plug-in <ph name="PLUGIN_NAME" />, ricarica la pagina per attivarlo</translation>
 <translation id="8736288397686080465">Il sito è stato aggiornato in background.</translation>
 <translation id="8737685506611670901">Aprire link <ph name="PROTOCOL" /> anziché <ph name="REPLACED_HANDLER_TITLE" /></translation>
@@ -4961,6 +4967,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8780123805589053431">Scarica le descrizioni delle immagini da Google</translation>
 <translation id="8780443667474968681">La ricerca vocale è stata disattivata.</translation>
 <translation id="878069093594050299">Questo certificato è stato verificato per i seguenti utilizzi:</translation>
+<translation id="8781470833671194250">Stabilizzazione della posizione dei clic</translation>
 <translation id="8781980678064919987">Spegni alla chiusura del coperchio</translation>
 <translation id="8782565991310229362">Avvio dell'applicazione kiosk annullato.</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; vuole condividere una stampante &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; con te.</translation>

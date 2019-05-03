@@ -9,7 +9,7 @@
 <translation id="1290373024480130896"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="MODIFIER3" /><ph name="SEPARATOR3" /><ph name="KEY" /></translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1299858300159559687">നിങ്ങളുടെ നിലവിലെ പേജ് പ്രിന്‍റ് ചെയ്യുക</translation>
-<translation id="1383876407941801731">തിരയൂ</translation>
+<translation id="1383876407941801731">തിരയുക</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> അല്ലെങ്കിൽ <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
 <translation id="1477442857810932985">വരിയുടെ അവസാനത്തിലേക്ക് പോകുക</translation>
 <translation id="1510238584712386396">ലോഞ്ചർ</translation>
@@ -72,13 +72,13 @@
 <translation id="3655154169297074232">ടാബുകളും വിൻഡോകളും</translation>
 <translation id="3668361878347172356">നിങ്ങൾ ഒടുവിൽ ചെയ്ത പ്രവൃത്തി വീണ്ടും ചെയ്യുക</translation>
 <translation id="3710784500737332588">സഹായ കേന്ദ്രം തുറക്കുക</translation>
-<translation id="3720939646656082033">ഒരു പുതിയ ടാബിൽ ലിങ്ക് തുറക്കുകയും പുതിയ ടാബിലേക്ക് മാറുകയും ചെയ്യുക</translation>
+<translation id="3720939646656082033">പുതിയൊരു ടാബിൽ ലിങ്ക് തുറക്കുകയും പുതിയ ടാബിലേക്ക് മാറുകയും ചെയ്യുക</translation>
 <translation id="3725795051337497754">നിലവിലെ ടാബ് അവസാനിപ്പിക്കുക</translation>
 <translation id="3751033133896282964">നിങ്ങളുടെ അവസാന പ്രവർത്തനം പഴയപടിയാക്കുക</translation>
 <translation id="3792178297143798024">നിങ്ങളുടെ ഷെൽഫിലെ ഹൈലൈറ്റ് ചെയ്ത ഇനം തുറക്കുക</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 മുതൽ 8 വരെ</translation>
 <translation id="3837047332182291558">കീബോഡ് കൂടുതൽ തെളിച്ചമുള്ളതാക്കുക (ബാക്ക്‌ലൈറ്റ് കീബോഡുകൾക്കായി മാത്രം)</translation>
-<translation id="3976863468609830880">നിങ്ങളുടെ ഷെൽഫിലെ അവസാനത്തെ ഐക്കൺ ക്ലിക്ക് ചെയ്യുക</translation>
+<translation id="3976863468609830880">നിങ്ങളുടെ ഷെൽഫിലെ അവസാനത്തെ ചിഹ്നം ക്ലിക്ക് ചെയ്യുക</translation>
 <translation id="3994783594793697310">ഡിസ്‌പ്ലേ സൂം നില പുനഃസജ്ജീകരിക്കുക</translation>
 <translation id="4026843240379844265">ഡിസ്‌പ്ലേകൾക്ക് ഇടയിൽ സജീവ വിൻഡോകൾ നീക്കുക</translation>
 <translation id="4035482366624727273">പേജിലെ എല്ലാം തിരഞ്ഞെടുക്കുക</translation>
@@ -155,7 +155,7 @@
 <translation id="7076878155205969899">ശബ്‌ദം മ്യൂട്ട് ചെയ്യുക</translation>
 <translation id="7077383985738259936">ബുക്ക്‌മാര്‍‌ക്ക് ബാറിൽ ഫോക്കസ് ചെയ്യുക അല്ലെങ്കിൽ അത് ഹൈലൈറ്റ് ചെയ്യുക (കാണിച്ചിട്ടുണ്ടെങ്കിൽ)</translation>
 <translation id="7237562915163138771">വിലാസ ബാറിൽ ഒരു വെബ് വിലാസം ടൈപ്പ് ചെയ്യുക, തുടർന്ന് <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /> അമർത്തുക</translation>
-<translation id="7254764037241667478">ഉറക്ക മോഡിലേക്ക് ഉപകരണത്തെ മാറ്റുക (തൽക്കാലം അവസാനിപ്പിക്കുക)</translation>
+<translation id="7254764037241667478">സ്ലീപ്പ് മോഡിലേക്ക് ഉപകരണത്തെ മാറ്റുക (തൽക്കാലം അവസാനിപ്പിക്കുക)</translation>
 <translation id="7379254767514753910"><ph name="ALT" /> അല്ലെങ്കിൽ <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="7422707470576323858">ലഭ്യമായ അടുത്ത ഇൻപുട്ട് രീതിയിലേക്ക് മാറുക</translation>
 <translation id="743754632698445141">ഒരു ആപ്പ് അൺപിൻ ചെയ്യുക</translation>
@@ -198,7 +198,7 @@
 <translation id="9162942292291287644"><ph name="QUERY" /> എന്നതിനായി തിരയൽ ഫലമൊന്നുമില്ല</translation>
 <translation id="9179672198516322668">ജനപ്രിയ കുറുക്കുവഴികൾ</translation>
 <translation id="93603345341560814"><ph name="SHIFT" /> അമർത്തുക, ഒരു ലിങ്ക് ക്ലിക്ക് ചെയ്യുക</translation>
-<translation id="945383118875625837">ബുക്ക്‌മാർക്കുകളുടെ ബാറിലേക്ക് ലിങ്ക് ഇഴയ്‌ക്കുക</translation>
+<translation id="945383118875625837">ബുക്ക്‌മാർക്കുകളുടെ ബാറിലേക്ക് ലിങ്ക് വലിച്ചിടുക</translation>
 <translation id="969054500339500113">മെനു ബാറിൽ ശ്രദ്ധ കേന്ദ്രീകരിക്കുക</translation>
 <translation id="98120814841227350">ഡോക്യുമെന്റിന്റെ താഴേക്ക് പോവുക</translation>
 </translationbundle>

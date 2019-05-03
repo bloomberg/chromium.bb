@@ -193,6 +193,7 @@
 <translation id="2359808026110333948">Jätka</translation>
 <translation id="2369533728426058518">avatud vahelehed</translation>
 <translation id="2387895666653383613">Teksti skaleerimine</translation>
+<translation id="2394602618534698961">Allalaaditud failid kuvatakse siin</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2410754283952462441">Konto valimine</translation>
 <translation id="2414886740292270097">Tume</translation>
@@ -204,6 +205,7 @@
 <translation id="2450083983707403292">Kas soovite faili <ph name="FILE_NAME" /> allalaadimist uuesti alustada?</translation>
 <translation id="2476578072172137802">Saidi seaded</translation>
 <translation id="2482878487686419369">Märguanded</translation>
+<translation id="2490684707762498678">Haldab <ph name="APP_NAME" /></translation>
 <translation id="2494974097748878569">Google'i assistent Chrome'is</translation>
 <translation id="2496180316473517155">Sirvimise ajalugu</translation>
 <translation id="2498359688066513246">Abi ja tagasiside</translation>
@@ -254,6 +256,7 @@
 <translation id="2845873210977809562">Avatud vahelehed suleti</translation>
 <translation id="2870560284913253234">Sait</translation>
 <translation id="2874939134665556319">Eelmine lugu</translation>
+<translation id="2876369937070532032">Saadab mõnede teie külastatud lehtede URL-id Google'ile, kui teie turvalisus ohtu satub</translation>
 <translation id="2876764156902388290">Chrome kasutab selle lehe kuvamiseks vähem andmeid</translation>
 <translation id="2888126860611144412">Teave Chrome'i kohta</translation>
 <translation id="2891154217021530873">Peata lehe laadimine</translation>
@@ -289,6 +292,7 @@
 <translation id="3148434565183091099">Järjehoidjate hankimiseks kõikidesse seadmetesse logige Chrome'i sisse.</translation>
 <translation id="3157842584138209013">Nupu Rohkem valikuid abil saate vaadata, kui palju andmemahtu olete säästnud</translation>
 <translation id="3166827708714933426">Vahelehe ja akna otseteed</translation>
+<translation id="3181954750937456830">Ohutu sirvimine (kaitseb teid ja teie seadet ohtlike saitide eest)</translation>
 <translation id="3190152372525844641">Lülita <ph name="BEGIN_LINK" />Android-seadetes<ph name="END_LINK" /> sisse load Chrome'ile.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> salvestatud andmeid</translation>
 <translation id="3205824638308738187">Peaaegu valmis.</translation>
@@ -442,6 +446,7 @@ Otsingutermini korrigeerimiseks vajutage valimiseks pikalt. Otsingu täpsustamis
 <translation id="4404568932422911380">Järjehoidjaid pole</translation>
 <translation id="4409723563706114196">Kasuta lehe ennustusi</translation>
 <translation id="4411535500181276704">Lihtsustatud režiim</translation>
+<translation id="4415276339145661267">Google'i konto haldamine</translation>
 <translation id="4432792777822557199"><ph name="SOURCE_LANGUAGE" /> keeles olevad lehed tõlgitakse edaspidi <ph name="TARGET_LANGUAGE" /> keelde</translation>
 <translation id="4433925000917964731">Lihtsustatud lehte pakub Google</translation>
 <translation id="4434045419905280838">Hüpikaknad ja ümbersuunamised</translation>
@@ -604,6 +609,7 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="5512137114520586844">Seda kontot haldab <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Keelas selle seadme administraator</translation>
 <translation id="5515439363601853141">Avage oma parooli vaatamiseks</translation>
+<translation id="5516455585884385570">Ava märguandeseaded</translation>
 <translation id="5517095782334947753">Teil on järjehoidjad, ajalugu, paroolid ja muud seaded kontolt <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5524843473235508879">Ümbersuunamine blokeeriti.</translation>
 <translation id="5527082711130173040">Chrome vajab seadmete otsimiseks juurdepääsu teie asukohale. <ph name="BEGIN_LINK1" />Värskendage lube<ph name="END_LINK1" />. Juurdepääs asukohale on samuti <ph name="BEGIN_LINK2" />selles seadmes välja lülitatud<ph name="END_LINK2" />.</translation>
@@ -619,6 +625,7 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="5581519193887989363">Jaotises <ph name="BEGIN_LINK1" />Seaded<ph name="END_LINK1" /> saate igal ajal valida, mida sünkroonida.</translation>
 <translation id="5595485650161345191">Muuda aadressi</translation>
 <translation id="5596627076506792578">Rohkem valikuid</translation>
+<translation id="5599455543593328020">Inkognito režiim</translation>
 <translation id="5620928963363755975">Leidke oma failid ja lehed jaotisest Allalaadimised, kasutades nuppu Rohkem valikuid</translation>
 <translation id="5626134646977739690">Nimi:</translation>
 <translation id="5639724618331995626">Luba kõik saidid</translation>
@@ -913,11 +920,13 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="7649070708921625228">Abi</translation>
 <translation id="7658239707568436148">Tühista</translation>
 <translation id="7665369617277396874">Konto lisamine</translation>
+<translation id="766587987807204883">Artiklid kuvatakse siin ja saate neid lugeda ka võrguühenduseta</translation>
 <translation id="7682724950699840886">Järgige neid nõuandeid: veenduge, et seadmes oleks piisavalt ruumi, seejärel proovige uuesti eksportida.</translation>
 <translation id="7698359219371678927">Looge meil rakenduses <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Otsingute ja URL-ide automaatne täitmine</translation>
 <translation id="773466115871691567">Tõlgi alati <ph name="SOURCE_LANGUAGE" /> keeles olevad lehed</translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
+<translation id="7746457520633464754">Ohtlike rakenduste ja saitide tuvastamiseks saadab Chrome mõnede teie külastatud lehtede URL-id, piiratud süsteemiteabe ja mõne lehe sisu Google'ile</translation>
 <translation id="7762668264895820836">SD-kaart <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Lisage aadress</translation>
 <translation id="7765158879357617694">Liiguta</translation>

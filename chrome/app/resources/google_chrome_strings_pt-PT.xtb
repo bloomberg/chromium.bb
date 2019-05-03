@@ -25,6 +25,7 @@
 <translation id="1585657529869845941">Clique em <ph name="BEGIN_BOLD" />Mudar mesmo assim<ph name="END_BOLD" />, se esta opção for apresentada.</translation>
 <translation id="1587223624401073077">O Google Chrome está a utilizar a câmara.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> é perigoso, por isso o Chrome bloqueou-o.</translation>
+<translation id="1590588151039584890">Para atualizar, deve interromper a execução do Chrome neste computador. Tal pode fazer com que outros utilizadores com sessão iniciada neste computador percam alterações não guardadas.</translation>
 <translation id="1619887657840448962">Para tornar o Chrome mais seguro, desativámos a seguinte extensão, que não está listada na <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />, e é possível que tenha sido adicionada sem o seu conhecimento.</translation>
 <translation id="1628000112320670027">Obter ajuda relacionada com o Chrome</translation>
 <translation id="1662639173275167396">Foi possível conceber o Chrome OS devido a <ph name="BEGIN_LINK_CROS_OSS" />software de código aberto<ph name="END_LINK_CROS_OSS" />, como o <ph name="BEGIN_LINK_LINUX_OSS" />Linux (Beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
@@ -164,6 +165,7 @@ Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" 
 <translation id="5386244825306882791">Também controla a página apresentada quando inicia o Chrome ou pesquisa a partir da Caixa geral.</translation>
 <translation id="5430073640787465221">O ficheiro de preferências está danificado ou não é válido. O Google Chrome não consegue recuperar as suas definições.</translation>
 <translation id="5483595757826856374">{0,plural, =0{O Chrome será reiniciado agora}=1{O Chrome será reiniciado dentro de 1 segundo}other{O Chrome será reiniciado dentro de # segundos}}</translation>
+<translation id="5543953544073077331">Estão em execução outras cópias do Chrome. Para atualizar, encerre-as.</translation>
 <translation id="556024056938947818">O Google Chrome está a tentar mostrar palavras-passe.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> pode ser perigoso, por isso o Chrome bloqueou-o.</translation>
@@ -224,6 +226,7 @@ Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" 
 <translation id="7473136999113284234">O Chrome é atualizado automaticamente para que tenha sempre a versão mais recente.</translation>
 <translation id="7486227612705979895">O Chrome vai aceder ao Drive para fornecer sugestões na barra de endereço.</translation>
 <translation id="748945194546522577">Este ficheiro é perigoso. Como tal, o Chrome bloqueou-o. Está protegido pela Proteção avançada.</translation>
+<translation id="7531671357096394523">Saia de todas as cópias do Chrome</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Apresentar o Chrome OS neste idioma</translation>
 <translation id="7561940363513215021">{0,plural, =1{O Chrome será reiniciado dentro de 1 minuto}other{O Chrome será reiniciado dentro de # minutos}}</translation>

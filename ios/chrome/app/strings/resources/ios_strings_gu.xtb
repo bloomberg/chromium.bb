@@ -98,6 +98,7 @@
 <translation id="2320166752086256636">કીબોર્ડ છુપાવો</translation>
 <translation id="2339560363438331454">સિંક અને Google સેવાઓ</translation>
 <translation id="2351097562818989364">તમારી અનુવાદ સેટિંગ્સ ફરીથી સેટ કરવામાં આવી છે.</translation>
+<translation id="2359043044084662842">અનુવાદ કરો</translation>
 <translation id="2359808026110333948">આગળ વધો</translation>
 <translation id="2360196772093551345">મોબાઇલ સાઇટની વિનંતી કરો</translation>
 <translation id="2381405137052800939">મૂળભૂત</translation>
@@ -127,6 +128,7 @@
 <translation id="2800683595868705743">ટેબ સ્વિચર છોડી દો</translation>
 <translation id="2830972654601096923">સરનામા મેનેજ કરો…</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
+<translation id="2840687315230832938">સિંકનું પ્રારંભિક સેટઅપ પૂર્ણ થયું નથી</translation>
 <translation id="2843803966603263712">અનુવાદ સેટિંગ્સને ફરીથી સેટ કરો</translation>
 <translation id="2858204748079866344">તમારી પ્રાઇવસીની સુરક્ષા કરવા માટે, Chrome આ ફીલ્ડમાં તમારો પાસવર્ડ સ્વતઃ નહીં ભરે.</translation>
 <translation id="285960592395650245">ડાઉનલોડનો ફરી પ્રયાસ કરો</translation>
@@ -292,6 +294,7 @@
 <translation id="5659593005791499971">ઇમેઇલ</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">વર્ઝન <ph name="PRODUCT_VERSION" /></translation>
+<translation id="5711039611392265845">પ્રાઇવસી, સુરક્ષા અને ડેટા સંગ્રહથી સંબંધિત વધુ સેટિંગ માટે, <ph name="BEGIN_LINK" />સિંક અને Google સેવાઓ<ph name="END_LINK" /> જુઓ.</translation>
 <translation id="5728700505257787410">માફ કરશો, તમારા એકાઉન્ટમાં સાઇન ઇન કરવામાં સમસ્યા હતી.</translation>
 <translation id="5737974891429562743">એકાઉન્ટ સાઇન ઇન વિગતો જૂની થઈ ગઈ છે. સિંકને પ્રારંભ કરવા માટે અપડેટ કરો.</translation>
 <translation id="5738887413654608789">આ તમને તમારી આસપાસના વાતાવરણના આધારે સંગત વેબ પૃષ્ઠોની શોધ કરવા દે છે.</translation>
@@ -409,6 +412,7 @@
 <translation id="7280856130494094142">સિંક શરૂ કરવા માટે પાસફ્રેઝ દાખલ કરો</translation>
 <translation id="7285236536143823449">હા, હું સંમત છું</translation>
 <translation id="7291368939935408496">પાસવર્ડ તૈયાર કરી રહ્યાં છીએ…</translation>
+<translation id="7293171162284876153">સિંક કરવાનું શરૂ કરવા માટે, "તમારો Chromeનો ડેટા સિંક કરો"ને ચાલુ કરો.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> ટકા ડાઉનલોડ થઈ</translation>
 <translation id="7346909386216857016">બરાબર, સમજાઇ ગયું</translation>
 <translation id="7348502496356775519">બુકમાર્ક કરો</translation>

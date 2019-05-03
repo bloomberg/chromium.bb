@@ -755,21 +755,6 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
       Õigekirjakontrolli saab siiski teha, kasutades selleks allalaaditud sõnastikku. Reegel haldab ainult veebiteenuse kasutamist.
 
       Kui seade pole seadistatud, siis saavad kasutajad valida, kas kasutada õigekirjakontrolli teenust või mitte.</translation>
-<translation id="2294283832646774959">Seadistab printerite loendi.
-
-      See reegel võimaldab administraatoritel kasutajatele printerite seadistusi
-      pakkuda.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> ja <ph name="PRINTER_DESCRIPTION" /> on vabas vormis stringid, mida saab printeri valimise hõlbustamiseks kohandada. <ph name="PRINTER_MANUFACTURER" /> ja <ph name="PRINTER_MODEL" /> lihtsustavad printeri tuvastamist lõppkasutajatele. Need näitavad printeri tootjat ja mudelit. <ph name="PRINTER_URI" /> peab olema aadress, mida saab külastada klientarvutist, sh <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> ja <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> on valikuline. Selle olemasolul aitab see seadistus printerite <ph name="ZEROCONF_DISCOVERY" /> duplikaate eemaldada.
-
-      <ph name="PRINTER_EFFECTIVE_MODEL" /> peab ühtima mõne stringiga, mis esindab teenuses <ph name="PRODUCT_NAME" /> toetatud printerit. Stringi kasutatakse printeri vastava PPD tuvastamiseks ja installimiseks. Lisateavet leiate aadressilt https://support.google.com/chrome?p=noncloudprint.
-
-      Printeri seadistus viiakse lõpule printeri esimesel kasutuskorral. PPD-sid ei laadita alla enne, kui printerit kasutatakse. Pärast seda salvestatakse sageli kasutatud PPD-d vahemällu.
-
-      Reegel ei mõjuta seda, kas kasutajad saavad individuaalsetes seadmetes printereid seadistada. See on mõeldud individuaalsete kasutajate printerite seadistusi täiendama.
-
-      Active Directory hallatavate seadmete puhul toetab see reegel seadme <ph name="MACHINE_NAME_VARIABLE" /> laiendamist Active Directory seadme nimele või selle alamstringile. Näiteks kui seadme nimi on <ph name="MACHINE_NAME_EXAMPLE" />, siis asendatakse <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> nelja tähemärgiga, mis algab pärast kuuendat märki (nt <ph name="MACHINE_NAME_PART_EXAMPLE" />). Pange tähele, et loendamist alustatakse nullist.
-      </translation>
 <translation id="2294382669900758280">Video esitamist Androidi rakendustes ei arvestata, isegi kui reegli väärtuseks on määratud <ph name="TRUE" />.</translation>
 <translation id="2299220924812062390">Lubatud pistikprogrammide loendi määramine</translation>
 <translation id="2303795211377219696">Automaattäite lubamine krediitkaartide puhul</translation>
@@ -1420,6 +1405,7 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
       Kui reegel on seatud väärtusele „DeveloperToolsAllowed” (väärtus 1), on arendaja tööriistad ja JavaScripti konsool juurdepääsetavad ja kasutamiseks saadaval igas kontekstis, sealhulgas ettevõtte reegli alusel installitud laienduste puhul.
       Kui reegel on seatud väärtusele „DeveloperToolsDisallowed” (väärtus 2), ei ole arendaja tööriistad saadaval ja veebisaitide elemente ei saa enam uurida. Kõik arendaja tööriistade või JavaScripti konsooli avamiseks kasutatavad klaviatuuri otseteed ning menüü- ja kontekstimenüükirjed keelatakse.</translation>
 <translation id="3547954654003013442">Puhverserveri seaded</translation>
+<translation id="3550875587920006460">Lubab värskenduste kontrollimiseks kohandatud ajakava määramise. See kehtib seadme kõigi kasutajate ja liideste puhul. Kui see on määratud, otsib seade värskendusi selle ajakava järgi. See reegel tuleb eemaldada, et ajastatud värskenduste otsimine tühistada.</translation>
 <translation id="355118380775352753">Alternatiivses brauseris avatavad veebisaidid</translation>
 <translation id="3554984410014457319">Google'i assistendile loa andmine kuulata häälega aktiveerimise fraasi</translation>
 <translation id="356579196325389849">Kasutajad saavad Chrome OS-i väljalaskekanalit seadistada</translation>
@@ -1451,7 +1437,6 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
 <translation id="3709266154059827597">Laienduste installimise musta nimekirja seadistamine</translation>
 <translation id="3711895659073496551">Peata</translation>
 <translation id="3715569262675717862">Kliendi sertifikaatidel põhinev autentimine</translation>
-<translation id="3734995764843493369">Parool tuleb sisestada iga päev (24 tundi)</translation>
 <translation id="3736879847913515635">Kasutajahalduris inimese lisamise lubamine</translation>
 <translation id="3738723882663496016">See reegel määrab selle seadme jaoks pistikprogrammi <ph name="PLUGIN_VM_NAME" /> litsentsivõtme.</translation>
 <translation id="3748900290998155147">Määrab, kas äratuslukud on lubatud. Äratuslukke saavad taotleda laiendused toitehalduse laienduse API kaudu ja ARC-rakendused.
@@ -1657,6 +1642,26 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
       Kui see reegel määratakse tõeseks või seda ei määrata, saavad kasutajad pakkumisi lunastada Chrome OS-i registreerimise abil.
 
       Kui see reegel määratakse valeks, ei saa kasutajad pakkumisi lunastada.</translation>
+<translation id="4008233182078913897">Määrab loendi rakendustest ja laiendustest, mis installitakse vaikimisi
+          ning kasutajaga suhtlemata ja mida kasutaja ei saa desinstallida
+          ega keelata. Kõik rakenduste/laienduste taotletud
+          load antakse vaikimisi ning kasutajaga suhtlemata
+          (sh kõik lisaload, mida rakenduse/laienduse tulevased versioonid
+          taotlevad). Load antakse ka laienduste API-dele enterprise.deviceAttributes
+          ja enterprise.platformKeys. (Need kaks API-t pole saadaval
+          rakendustele/laiendustele, mis pole sundinstallitud.)
+
+          See reegel seatakse ettepoole potentsiaalselt konfliktsest reeglist <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Kui rakendus või laiendus, mis varem sundinstalliti, sellest loendist eemaldatakse, siis desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
+
+          Windowsi eksemplaride puhul, mis ei ole ühendatud domeeniga <ph name="MS_AD_NAME" />, saab sundinstallida vaid Chrome’i veebipoes olevaid rakendusi ja laiendusi.
+
+          Pange tähele, et arendaja tööriistadega saavad kasutajad muuta iga laienduse lähtekoodi (mis võib põhjustada laienduse väärtalitlust). Kui see on probleem, tuleb määrata reegel <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+          Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d ja „värskenduse” URL-i, mis on eraldatud semikooloniga (<ph name="SEMICOLON" />). Laienduse ID on 32-täheline string, mis kuvatakse näiteks arendajarežiimis aadressil <ph name="CHROME_EXTENSIONS_LINK" />. „Värskenduse” URL peab viitama XML-dokumendi värskendusmanifestile, nagu on kirjeldatud jaotises <ph name="LINK_TO_EXTENSION_DOC1" />. Vaikimisi kasutatakse Chrome'i veebipoe värskenduse URL-i (praegu „https://clients2.google.com/service/update2/crx”). Pange tähele, et reeglis määratud „värskenduse” URL-i kasutatakse vaid algsel installimisel ja laienduse tulevased värskendused kasutavad laienduse manifestis märgitud värskenduse URL-i. Samuti pange tähele, et selgesõnalise „värskenduse” URL-i määramine oli kuni rakenduse <ph name="PRODUCT_NAME" /> 67. versioonini kohustuslik.
+
+          Näiteks reegel <ph name="EXTENSION_POLICY_EXAMPLE" /> installib laienduse ID-ga <ph name="EXTENSION_ID_SAMPLE" /> standardselt Chrome’i veebipoe „värskenduse” URL-ilt. Lisateavet laienduste hostimise kohta leiate siit: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Kui see reegel jäetakse määramata, ei installita automaatselt mitte ühtegi rakendust ega laiendust ja kasutaja saab iga rakenduse või laienduse desinstallida teenuses <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4008507541867797979">Kui reegel on määratud väärtusele Tõene või seadistamata, kuvab <ph name="PRODUCT_OS_NAME" /> olemasolevad kasutajad sisselogimiskuval ja võimaldab ühe neist valida.
 
       Kui reegel on määratud väärtusele Väär, ei kuva <ph name="PRODUCT_OS_NAME" /> sisselogimiskuval olemasolevaid kasutajaid. Kuvatakse tavapärane sisselogimisekraan (kus palutakse kasutajal sisestada e-posti aadress ja parool või telefoninumber) või SAML-i vaheekraan (kui see on reegliga <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" /> lubatud), v.a juhul, kui hallatud seanss on seadistatud. Kui hallatud seanss on seadistatud, kuvatakse ainult hallatud seansi kontod, mille hulgast saab valida soovitud konto.
@@ -2630,6 +2635,12 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
 <translation id="5897913798715600338">Aku laadimiseks kasutatakse kiirlaadimise tehnoloogiat.</translation>
 <translation id="5898486742390981550">Kui sisse on loginud mitu kasutajat, saab Androidi rakendusi kasutada ainult peamine kasutaja.</translation>
 <translation id="5901427587865226597">Ainult dupleksprintimine</translation>
+<translation id="5903898512448364160">
+      Kui reegel on seatud väärtusele Tõene, alistavad pilvereeglid konflikti puhul platvormireeglid.
+      Kui reegli väärtuseks on määratud Väär või see jäetakse määramata, alistavad platvormireeglid konflikti puhul pilvereeglid.
+
+      Reegel on saadaval ainult seadme kohustusliku platvormireeglina ja see mõjutab ainult seadme ulatuses pilvereegleid.
+      </translation>
 <translation id="5905473632148429217">Luba veebipõhised OCSP-/CRL-i kontrollid</translation>
 <translation id="5906199912611534122">Võimaldab lubada või keelata võrguühenduse piiramise.
       See kehtib kõigi kasutajate ja seadme kõigi liideste puhul. Pärast määramist
@@ -2656,6 +2667,7 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
 
       Kui keelate seade või ei määra väärtust, ei jõustata Google'i otsingus SafeSearchi kasutamist.</translation>
 <translation id="5946082169633555022">Beetakanal</translation>
+<translation id="5946329690214660966">Kohandatud ajakava määramine värskenduste otsimiseks</translation>
 <translation id="5950205771952201658">Kuna veebipõhised softfail-tühistamiskontrollid ei suurenda turvalisust, keelatakse need vaikimisi toote <ph name="PRODUCT_NAME" /> 19. versioonis ja hilisemates versioonides. Kui seate reegli olekuks Tõene, taastatakse varasem käitumine ja kasutatakse veebipõhiseid OCSP-/CRL-kontrolle.
 
       Kui jätate reegli määramata või seate selle olekuks Väär, ei tee <ph name="PRODUCT_NAME" /> 19. versioonis ja hilisemates versioonides toote <ph name="PRODUCT_NAME" /> veebipõhiseid tühistamiskontrolle.</translation>
@@ -2722,6 +2734,7 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
 <translation id="6034341625190551415">Haldab avalikku seanssi ja kioski kontotüüpe.</translation>
 <translation id="6034603289689965535">Lubab lehel mahalaadimise ajal kuvada hüpikaknaid</translation>
 <translation id="6036523166753287175">Luba tulemüüri läbimine kaugjuurdepääsu hostist</translation>
+<translation id="605475635122964053">Piirab PIN-koodiga printimise režiimi. Määramata reeglit tõlgendatakse piirangu puudumisena. Reeglit eiratakse, kui režiim ei ole saadaval. Pange tähele, et PIN-koodiga printimise funktsioon on lubatud ainult printerites, mis kasutavad üht järgmistest protokollidest: IPPS, USB või IPP USB kaudu </translation>
 <translation id="6070667616071269965">Seadme sisselogimisekraani klaviatuuripaigutused</translation>
 <translation id="6074963268421707432">Keela kõigil saitidel töölaua märguannete kuvamine</translation>
 <translation id="6074964551275531965">Värskendusmärguannete ajavahemiku määramine</translation>
@@ -3447,6 +3460,7 @@ Kui jätate selle reegli määramata, ei ole kasutajate sisselogimine piiratud. 
       Kui reegel on määratud valikule „RemoveLRUIfDormant”, jätkab automaatne puhastamine nende kasutajate eemaldamist, kes ei ole vähemalt 3 kuu jooksul sisse loginud, lähtudes sellest, milline kasutaja kõige kauem aega tagasi sisse logis, kuni on piisavalt vaba ruumi.
 
       Kui reegel on määramata, kasutab automaatne puhastamine sisseehitatud vaikestrateegiat. Praegu on selleks strateegia „RemoveLRUIfDormant”.</translation>
+<translation id="7334274148831027933">Luba dokitud luup</translation>
 <translation id="7336785017449297672">Haldab kella ja ajavööndi seadeid.</translation>
 <translation id="7336878834592315572">Säilita küpsised seansi kestuse jooksul</translation>
 <translation id="7339315111520512972">Brauseri protsessis võrgustiku koodi sundkäitamine</translation>

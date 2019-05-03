@@ -626,7 +626,7 @@
 <translation id="197288927597451399">Manter</translation>
 <translation id="1974043046396539880">Pontos de distribuição de lista de certificados revogados</translation>
 <translation id="1974060860693918893">Avançado</translation>
-<translation id="1974821797477522211">Conectar-se à rede</translation>
+<translation id="1974821797477522211">Conectar à rede</translation>
 <translation id="1975841812214822307">Remover...</translation>
 <translation id="1976150099241323601">Faça login no dispositivo seguro</translation>
 <translation id="1976323404609382849">Cookies de vários sites foram bloqueados.</translation>
@@ -799,6 +799,7 @@
 <translation id="2241053333139545397">Ler e alterar seus dados em vários websites</translation>
 <translation id="2241634353105152135">Apenas uma vez</translation>
 <translation id="2242687258748107519">Informações do arquivo</translation>
+<translation id="2246549592927364792">Ver descrições de imagens do Google?</translation>
 <translation id="224940702122312781">Esta página usará muitos dados.</translation>
 <translation id="2249605167705922988">por exemplo, 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">Abrir com o Visualizador do sistema</translation>
@@ -1104,6 +1105,7 @@
 <translation id="271033894570825754">Novo</translation>
 <translation id="2714393097308983682">Google Play Store</translation>
 <translation id="2715751256863167692">Esse upgrade redefine seu Chromebook e remove os dados do usuário atuais.</translation>
+<translation id="2716986496990888774">Esta configuração é gerenciada por um dos seus pais.</translation>
 <translation id="2718395828230677721">Modo noturno</translation>
 <translation id="2718998670920917754">O software antivírus detectou um vírus.</translation>
 <translation id="2719936478972253983">Os seguintes cookies foram bloqueados</translation>
@@ -1154,7 +1156,6 @@
 <translation id="2783829359200813069">Selecionar tipos de criptografia</translation>
 <translation id="2783952358106015700">Usar sua chave de segurança com <ph name="APP_NAME" /></translation>
 <translation id="2784407158394623927">Ativando seu serviço de dados móveis</translation>
-<translation id="2785008241190445880">Favorito substituído</translation>
 <translation id="2785873697295365461">Descritores de arquivos</translation>
 <translation id="2787354132612937472">—</translation>
 <translation id="2788135150614412178">+</translation>
@@ -1215,6 +1216,7 @@
 <translation id="2874939134665556319">Faixa anterior</translation>
 <translation id="2875698561019555027">Páginas de erro do Chrome</translation>
 <translation id="2876336351874743617">Dedo 2</translation>
+<translation id="2876369937070532032">Quando há risco de segurança, envia para o Google os URLs de algumas páginas que você visita</translation>
 <translation id="288042212351694283">Acessar seus dispositivos Universal 2nd Factor</translation>
 <translation id="2881076733170862447">Quando você clicar na extensão</translation>
 <translation id="2881966438216424900">Acessado pela última vez:</translation>
@@ -1397,6 +1399,7 @@
 <translation id="3170072451822350649">Também é possível ignorar o login e <ph name="LINK_START" />navegar como visitante<ph name="LINK_END" />.</translation>
 <translation id="3172045848207518317">Um site está acessando a entrada de vídeo</translation>
 <translation id="3177909033752230686">Idioma da página:</translation>
+<translation id="3181954750937456830">Navegação segura: protege você e seu dispositivo de sites perigosos</translation>
 <translation id="3182749001423093222">Verificação ortográfica</translation>
 <translation id="3183139917765991655">Importador de perfil</translation>
 <translation id="3188465121994729530">Média móvel</translation>
@@ -1702,6 +1705,7 @@
 <translation id="3664511988987167893">Ícone de extensão</translation>
 <translation id="3665589677786828986">O Google Chrome detectou que algumas das suas configurações foram corrompidas por outro programa e as redefiniu para os padrões originais.</translation>
 <translation id="3668570675727296296">Configurações de idioma</translation>
+<translation id="366867565525278777">Falha na instalação devido à falta de espaço de armazenamento. É necessário pelo menos <ph name="INSTALL_SIZE" /> de espaço livre. Para liberar espaço, exclua arquivos do armazenamento do dispositivo.</translation>
 <translation id="3668801437375206837">Para diagnosticar melhor os problemas de Bluetooth, os Googlers podem incluir outros registros de Bluetooth aos relatórios de feedback deles. Quando essa opção estiver marcada, seu relatório incluirá registros btsnoop e HCI da sua sessão atual, depois de terem sido corrigidos para remover o máximo de PII possível. O acesso a esses registros será restrito aos gerentes do grupo de produtos do Chrome OS no Listnr. Os registros serão excluídos após 90 dias.</translation>
 <translation id="3668823961463113931">Manipuladores</translation>
 <translation id="3670113805793654926">Dispositivos de qualquer fornecedor</translation>
@@ -2100,7 +2104,7 @@
 <translation id="4258348331913189841">Sistemas de arquivos</translation>
 <translation id="4263757076580287579">O registro da impressora foi cancelado.</translation>
 <translation id="426564820080660648">Para verificar se há atualizações, utilize Ethernet, Wi-Fi ou a rede de dados móveis.</translation>
-<translation id="4267953847983678297">Conectar-se automaticamente à rede celular</translation>
+<translation id="4267953847983678297">Conectar automaticamente à rede celular</translation>
 <translation id="4268025649754414643">Codificação de chaves</translation>
 <translation id="4270393598798225102">Versão <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Nenhuma correspondência</translation>
@@ -2730,7 +2734,7 @@
 <translation id="5302048478445481009">Idioma</translation>
 <translation id="5305688511332277257">Nenhum instalado</translation>
 <translation id="5307030433605830021">Fonte incompatível</translation>
-<translation id="5308380583665731573">Conectar-se</translation>
+<translation id="5308380583665731573">Conectar</translation>
 <translation id="5310281978693206542">Enviar link para seus dispositivos</translation>
 <translation id="5311304534597152726">Login como</translation>
 <translation id="5315873049536339193">Identidade</translation>
@@ -3509,7 +3513,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6499143127267478107">Resolvendo host no script de proxy...</translation>
 <translation id="6499681088828539489">Bloquear proxies para redes compartilhadas</translation>
 <translation id="6503077044568424649">Mais visitados</translation>
-<translation id="6504611359718185067">Conectar-se à Internet para adicionar uma impressora</translation>
+<translation id="6504611359718185067">Conectar à Internet para adicionar uma impressora</translation>
 <translation id="6506374932220792071">Assinatura X9.62 ECDSA com SHA-256</translation>
 <translation id="6508248480704296122">Relacionado a <ph name="NAME_PH" /></translation>
 <translation id="6508261954199872201">Aplicativo: <ph name="APP_NAME" /></translation>
@@ -3972,7 +3976,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7235716375204803342">Buscando atividades…</translation>
 <translation id="7238585580608191973">Assinatura digital SHA-256</translation>
 <translation id="7240120331469437312">Nome alternativo do requerente do certificado</translation>
-<translation id="7240339475467890413">Conectar-se a um novo ponto de acesso?</translation>
+<translation id="7240339475467890413">Conectar a um novo ponto de acesso?</translation>
 <translation id="7241389281993241388">Faça login no <ph name="TOKEN_NAME" /> para importar o certificado do cliente.</translation>
 <translation id="7241443820034350811">Se sua chave de segurança não estiver na lista, pressione o botão dela por pelo menos cinco segundos.</translation>
 <translation id="7243632151880336635">Limpar e sair</translation>
@@ -4011,6 +4015,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7289225569524511578">Abra o app de papel de parede</translation>
 <translation id="7290242001003353852">Este serviço de login, hospedado por <ph name="SAML_DOMAIN" />, está acessando sua câmara.</translation>
 <translation id="7290594223351252791">Confirmar registro</translation>
+<translation id="7295614427631867477">O Android, o Google Play e os apps associados são regidos pelas próprias políticas de uso e coleta de dados.</translation>
 <translation id="729583233778673644">Permitir a codificação AES e RC4. O uso dessa opção é mais arriscado, porque as criptografias RC4 não são seguras.</translation>
 <translation id="7296774163727375165">Termos de <ph name="DOMAIN" /></translation>
 <translation id="7297443947353982503">Nome de usuário/senha incorretos ou falha de autenticação EAP</translation>
@@ -4116,7 +4121,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="746216226901520237">Na próxima vez, o smartphone desbloqueará o <ph name="DEVICE_TYPE" />. É possível desativar o Smart Lock nas configurações.</translation>
 <translation id="7463006580194749499">Adicionar pessoa</translation>
 <translation id="7465778193084373987">URL da revogação do certificado do Netscape</translation>
-<translation id="7469894403370665791">Conectar-se automaticamente a esta rede</translation>
+<translation id="7469894403370665791">Conectar automaticamente a esta rede</translation>
 <translation id="747114903913869239">Erro: Não foi possível decodificar a extensão</translation>
 <translation id="7473891865547856676">Não, obrigado</translation>
 <translation id="747459581954555080">Restaurar todas</translation>
@@ -4287,6 +4292,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7732111077498238432">A rede é controlada por política</translation>
 <translation id="7737238973539693982">Excluir o Linux (Beta)</translation>
 <translation id="7740996059027112821">Padrão</translation>
+<translation id="7746457520633464754">Para detectar apps e sites perigosos, o Chrome envia para o Google URLs de algumas páginas visitadas, informações limitadas do sistema e um pouco do conteúdo da página</translation>
 <translation id="7750228210027921155">Picture-in-picture</translation>
 <translation id="7751260505918304024">Exibir todos</translation>
 <translation id="7754704193130578113">Perguntar onde salvar cada arquivo antes de fazer download</translation>
@@ -4939,7 +4945,6 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8732212173949624846">Ler e modificar seu histórico de navegação em todos os dispositivos nos quais você fez login</translation>
 <translation id="8732844209475700754">Mais configurações relacionadas à privacidade, segurança e coleta de dados</translation>
 <translation id="8734073480934656039">A ativação dessa configuração permite que os aplicativos de quiosque sejam iniciados automaticamente na inicialização.</translation>
-<translation id="8734671092194994316">Isso deixará um registro da sua visita a <ph name="WEBSITE" /> na sua chave de segurança.</translation>
 <translation id="873545264931343897">Quando a atualização do plug-in <ph name="PLUGIN_NAME" /> terminar, atualize a página para ativá-lo</translation>
 <translation id="8736288397686080465">Este site foi atualizado em segundo plano.</translation>
 <translation id="8737685506611670901">Abrir links de <ph name="PROTOCOL" /> em vez de <ph name="REPLACED_HANDLER_TITLE" /></translation>
@@ -4972,6 +4977,7 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8780123805589053431">Ver descrições de imagens do Google</translation>
 <translation id="8780443667474968681">A pesquisa por voz foi desativada.</translation>
 <translation id="878069093594050299">Este certificado foi confirmado para os seguintes usos:</translation>
+<translation id="8781470833671194250">Estabilização da posição do clique</translation>
 <translation id="8781980678064919987">Desligar quando a tampa estiver fechada</translation>
 <translation id="8782565991310229362">A inicialização do aplicativo de quiosque foi cancelada.</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; quer compartilhar uma impressora &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; com você.</translation>
@@ -5189,7 +5195,7 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="9121814364785106365">Abrir como guia fixada</translation>
 <translation id="9124003689441359348">As senhas salvas aparecerão aqui</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (<ph name="LICENSE_COUNT" /> rest.)</translation>
-<translation id="9128870381267983090">Conectar-se à rede</translation>
+<translation id="9128870381267983090">Conectar à rede</translation>
 <translation id="9130015405878219958">Modo inválido inserido.</translation>
 <translation id="9131487537093447019">Enviar mensagens para e receber mensagens de dispositivos Bluetooth.</translation>
 <translation id="9134304429738380103">Sim, vamos lá.</translation>

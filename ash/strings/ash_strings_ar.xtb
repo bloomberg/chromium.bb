@@ -71,7 +71,6 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">مزيد من المعلومات حول آخر تحديث لتطبيق <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1995660704900986789">إيقاف التشغيل</translation>
-<translation id="1999763610967697511">السحب والإفلات</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">كتابة رسالة</translation>
 <translation id="2050339315714019657">رأسي</translation>
@@ -200,6 +199,7 @@
 <translation id="394485226368336402">إعدادات الصوت</translation>
 <translation id="3962859241508114581">المقطع الصوتي السابق</translation>
 <translation id="397105322502079400">جارٍ الحساب...</translation>
+<translation id="3977512764614765090">مستوى البطارية عند <ph name="PERCENTAGE" />% ويجري شحنها.</translation>
 <translation id="3995138139523574647">‏جهاز USB-C (المنفذ الخلفي الأيمن)</translation>
 <translation id="4017989525502048489">مؤشر الليزر</translation>
 <translation id="4042660782729322247">أنت تشارك الشاشة</translation>
@@ -217,6 +217,7 @@
 <translation id="4279490309300973883">النسخ المطابق</translation>
 <translation id="4281007048406351813">إضافة دقيقة واحدة إلى الموقِّت</translation>
 <translation id="4292681942966152062">جارٍ تفعيل <ph name="NETWORK_NAME" /></translation>
+<translation id="4296136865091727875">محو جميع<ph name="COUNT" /> من الإشعارات</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">لقد ضغطت على اختصار لوحة المفاتيح للتباين العالي. هل ترغب في تفعيله؟</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -502,6 +503,7 @@
 <translation id="8877788021141246043">ضبط تذكير</translation>
 <translation id="8878886163241303700">توسيع الشاشة</translation>
 <translation id="890616557918890486">تغيير المصدر</translation>
+<translation id="8909138438987180327">مستوى طاقة البطارية عند <ph name="PERCENTAGE" /> في المئة.</translation>
 <translation id="8921554779039049422">H+‎</translation>
 <translation id="8921624153894383499">‏لا يتحدث مساعد Google هذه اللغة.</translation>
 <translation id="8938800817013097409">‏جهاز USB-C (المنفذ الأيمن في الخلف)</translation>
@@ -513,6 +515,7 @@
 <translation id="9029474291399787231">‏هناك تحديث جديد لتطبيق Adobe Flash Player</translation>
 <translation id="9056839673611986238">‏سيتم إعادة النسخة السابقة من نظام التشغيل Chrome إلى جهازك.</translation>
 <translation id="9070640332319875144">إعدادات المساعد</translation>
+<translation id="9072519059834302790"><ph name="TIME_LEFT" /> حتى تصبح البطارية فارغة.</translation>
 <translation id="9074739597929991885">بلوتوث</translation>
 <translation id="9079731690316798640">‏Wi-Fi:‏ <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">الميكروفون قيد الاستخدام</translation>
@@ -524,6 +527,7 @@
 <translation id="9193626018745640770">إرسال إلى مستلم غير معروف</translation>
 <translation id="9194617393863864469">تسجيل دخول مستخدم آخر...</translation>
 <translation id="9210037371811586452">جارٍ الخروج من وضع سطح المكتب الموحد</translation>
+<translation id="9211681782751733685"><ph name="TIME_REMAINING" /> متبقٍ حتى يتم شحن البطارية بالكامل.</translation>
 <translation id="9215934040295798075">تعيين خلفية</translation>
 <translation id="921989828232331238">قفّل أحد الوالدين جهازك لليوم</translation>
 <translation id="923686485342484400">‏للخروج اضغط على Ctrl Shift Q مرتين.</translation>

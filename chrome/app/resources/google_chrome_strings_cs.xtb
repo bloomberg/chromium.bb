@@ -27,6 +27,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="1585657529869845941">Pokud je zobrazeno tlačítko <ph name="BEGIN_BOLD" />Přesto přepnout<ph name="END_BOLD" />, klikněte na něj</translation>
 <translation id="1587223624401073077">Google Chrome používá vaši kameru.</translation>
 <translation id="1587325591171447154">Soubor <ph name="FILE_NAME" /> je nebezpečný, proto jej Chrome zablokoval.</translation>
+<translation id="1590588151039584890">Aby Chrome bylo možné aktualizovat, je třeba ho na tomto počítači ukončit. Může to vést ke ztrátě neuložených změn u ostatních uživatelů, kteří jsou na tomto počítači přihlášeni.</translation>
 <translation id="1619887657840448962">Aby byl prohlížeč Chrome bezpečnější, deaktivovali jsme následující rozšíření, které není uvedeno na webu <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> a mohlo být přidáno bez vašeho vědomí.</translation>
 <translation id="1628000112320670027">Pomoc s prohlížečem Chrome</translation>
 <translation id="1662639173275167396">Chrome OS by nemohl existovat bez dalšího <ph name="BEGIN_LINK_CROS_OSS" />softwaru s otevřeným zdrojovým kódem<ph name="END_LINK_CROS_OSS" />, jako je <ph name="BEGIN_LINK_LINUX_OSS" />Linux (beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
@@ -172,6 +173,7 @@ Některé funkce mohou být nedostupné. Zadejte prosím jiný adresář profilu
 
 Aplikace Google Chrome nemůže vaše nastavení obnovit.</translation>
 <translation id="5483595757826856374">{0,plural, =0{Chrome se nyní restartuje}=1{Chrome se za 1 sekundu restartuje}few{Chrome se za # sekundy restartuje}many{Chrome se za # sekundy restartuje}other{Chrome se za # sekund restartuje}}</translation>
+<translation id="5543953544073077331">Jsou spuštěné další kopie Chromu. Chcete-li jej aktualizovat, zavřete je.</translation>
 <translation id="556024056938947818">Google Chrome se pokouší zobrazit hesla.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598">Soubor <ph name="FILE_NAME" /> může být nebezpečný, proto jej Chrome zablokoval.</translation>
@@ -232,6 +234,7 @@ Aplikace Google Chrome nemůže vaše nastavení obnovit.</translation>
 <translation id="7473136999113284234">Chrome se automaticky aktualizuje, abyste měli vždy nejaktuálnější verzi.</translation>
 <translation id="7486227612705979895">Chrome bude za účelem zobrazování návrhů v adresním řádku číst váš obsah na Disku</translation>
 <translation id="748945194546522577">Tento soubor je nebezpečný, proto jej Chrome zablokoval. Jste chráněni pokročilou ochranou.</translation>
+<translation id="7531671357096394523">Ukončit všechny kopie Chromu</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Zobrazit Chrome OS v tomto jazyce</translation>
 <translation id="7561940363513215021">{0,plural, =1{Chrome se za 1 minutu restartuje}few{Chrome se za # minuty restartuje}many{Chrome se za # minuty restartuje}other{Chrome se za # minut restartuje}}</translation>

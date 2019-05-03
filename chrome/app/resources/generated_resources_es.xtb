@@ -799,6 +799,7 @@
 <translation id="2241053333139545397">Leer y modificar tus datos en una serie de sitios web</translation>
 <translation id="2241634353105152135">Solo una vez</translation>
 <translation id="2242687258748107519">Información del archivo</translation>
+<translation id="2246549592927364792">¿Quieres obtener descripciones de imágenes de Google?</translation>
 <translation id="224940702122312781">Esta página consumirá una gran cantidad de datos.</translation>
 <translation id="2249605167705922988">p. ej. 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">Abrir con visor del sistema</translation>
@@ -1104,6 +1105,7 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="271033894570825754">Nuevo</translation>
 <translation id="2714393097308983682">Google Play Store</translation>
 <translation id="2715751256863167692">Esta actualización recupera la configuración de tu Chromebook y elimina los datos de usuario actuales.</translation>
+<translation id="2716986496990888774">Este ajuste está gestionado por un padre o una madre.</translation>
 <translation id="2718395828230677721">Luz nocturna</translation>
 <translation id="2718998670920917754">El programa antivirus ha detectado un virus.</translation>
 <translation id="2719936478972253983">Se han bloqueado las siguientes cookies</translation>
@@ -1154,7 +1156,6 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="2783829359200813069">Seleccionar tipos de cifrado</translation>
 <translation id="2783952358106015700">Usar la llave de seguridad con <ph name="APP_NAME" /></translation>
 <translation id="2784407158394623927">Activando el servicio de datos móviles</translation>
-<translation id="2785008241190445880">Marcador sustituido</translation>
 <translation id="2785873697295365461">Descriptores de archivo</translation>
 <translation id="2787354132612937472">—</translation>
 <translation id="2788135150614412178">+</translation>
@@ -1215,6 +1216,7 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="2874939134665556319">Pista anterior</translation>
 <translation id="2875698561019555027">(Páginas de error de Chrome)</translation>
 <translation id="2876336351874743617">Dedo 2</translation>
+<translation id="2876369937070532032">Envía a Google las URL de algunas de las páginas que visitas cuando tu seguridad corre peligro</translation>
 <translation id="288042212351694283">Acceso a tus dispositivos U2F (Universal 2nd Factor)</translation>
 <translation id="2881076733170862447">Al hacer clic en la extensión</translation>
 <translation id="2881966438216424900">Último acceso:</translation>
@@ -1397,6 +1399,7 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="3170072451822350649">También puedes <ph name="LINK_START" />navegar como invitado<ph name="LINK_END" /> sin iniciar sesión.</translation>
 <translation id="3172045848207518317">Un sitio web está accediendo a la entrada de vídeo</translation>
 <translation id="3177909033752230686">Idioma de la página:</translation>
+<translation id="3181954750937456830">Navegación Segura (te protege a ti y a tu dispositivo frente a sitios web peligrosos)</translation>
 <translation id="3182749001423093222">Revisión ortográfica</translation>
 <translation id="3183139917765991655">Importador de perfiles</translation>
 <translation id="3188465121994729530">Media móvil</translation>
@@ -1480,7 +1483,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3317459757438853210">Doble cara</translation>
 <translation id="3317678681329786349">Cámara y micrófono bloqueados</translation>
 <translation id="3319048459796106952">Nueva ventana de &amp;incógnito</translation>
-<translation id="3323521181261657960">Extras: ya tienes más tiempo de pantalla</translation>
+<translation id="3323521181261657960">¡Extra! Has conseguido más tiempo de pantalla</translation>
 <translation id="3325910708063135066">La cámara y el micrófono están desactivados en las Preferencias del Sistema de Mac</translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET" />) <ph name="LONGTZNAME" /> (<ph name="EXEMPLARCITY" />)</translation>
 <translation id="3331974543021145906">Información de la aplicación</translation>
@@ -1700,6 +1703,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3664511988987167893">Icono de la extensión</translation>
 <translation id="3665589677786828986">Chrome ha detectado que otro programa ha dañado algunas opciones de configuración y ha restablecido la configuración predeterminada original.</translation>
 <translation id="3668570675727296296">Configuración de idioma</translation>
+<translation id="366867565525278777">No se ha podido realizar la instalación porque falta espacio de almacenamiento. Se necesitan al menos <ph name="INSTALL_SIZE" /> de espacio libre. Para liberar espacio, elimina archivos del almacenamiento del dispositivo.</translation>
 <translation id="3668801437375206837">Para diagnosticar mejor los problemas de Bluetooth, los Googlers pueden incluir registros en sus comentarios. Si seleccionas esta opción, tu informe contendrá registros btsnoop y HCI de la sesión actual modificados para retirar tanta información personal identificable como sea posible. Solo los administradores de grupo de Chrome OS de Listnr podrán acceder a estos registros, que se eliminarán definitivamente después de 90 días.</translation>
 <translation id="3668823961463113931">Controladores</translation>
 <translation id="3670113805793654926">Dispositivos de cualquier proveedor</translation>
@@ -2012,7 +2016,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4099060993766194518">¿Restaurar el motor de búsqueda predeterminado?</translation>
 <translation id="4099874310852108874">Se ha producido un error de red</translation>
 <translation id="4100733287846229632">Queda muy poco espacio en el dispositivo</translation>
-<translation id="4100853287411968461">Nuevo límite de tiempo de uso</translation>
+<translation id="4100853287411968461">Nuevo límite de tiempo de pantalla</translation>
 <translation id="4103091233824664032">Introduce tu contraseña para configurar el bloqueo de pantalla y el inicio de sesión</translation>
 <translation id="4104163789986725820">E&amp;xportar...</translation>
 <translation id="4107048419833779140">Identificar y expulsar dispositivos de almacenamiento</translation>
@@ -4006,6 +4010,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7289225569524511578">Abrir aplicación de fondos de pantalla</translation>
 <translation id="7290242001003353852">Este servicio de inicio de sesión (que se aloja en <ph name="SAML_DOMAIN" />) está accediendo a la cámara.</translation>
 <translation id="7290594223351252791">Confirmar registro</translation>
+<translation id="7295614427631867477">Ten en cuenta que Android, Google Play y las aplicaciones asociadas se rigen por sus propias políticas de recogida y uso de datos.</translation>
 <translation id="729583233778673644">Permite los cifrados AES y RC4. Esta opción aumenta el riesgo, ya que los algoritmos de cifrado de RC4 no son seguros.</translation>
 <translation id="7296774163727375165">Condiciones de <ph name="DOMAIN" /></translation>
 <translation id="7297443947353982503">Nombre de usuario o contraseña incorrectos o error de autenticación EAP</translation>
@@ -4282,6 +4287,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7732111077498238432">La red está controlada por políticas</translation>
 <translation id="7737238973539693982">Eliminar Linux (Beta)</translation>
 <translation id="7740996059027112821">Estándar</translation>
+<translation id="7746457520633464754">Para detectar aplicaciones y sitios web peligrosos, Chrome envía a Google las URL de algunas de las páginas que visitas, información limitada del sistema y parte del contenido de las páginas.</translation>
 <translation id="7750228210027921155">Imagen en imagen</translation>
 <translation id="7751260505918304024">Mostrar todo</translation>
 <translation id="7754704193130578113">Preguntar dónde se guardará cada archivo antes de descargarlo</translation>
@@ -4933,7 +4939,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8732212173949624846">Leer y modificar tu historial de navegación en todos los dispositivos en los que has iniciado sesión</translation>
 <translation id="8732844209475700754">Más ajustes relacionados con la privacidad, la seguridad y la recogida de datos</translation>
 <translation id="8734073480934656039">Al habilitar esta opción, las aplicaciones de kiosk se pueden iniciar automáticamente al iniciarse el navegador.</translation>
-<translation id="8734671092194994316">Se guardará un registro de tu visita a <ph name="WEBSITE" /> en tu llave de seguridad.</translation>
 <translation id="873545264931343897">Cuando el complemento <ph name="PLUGIN_NAME" /> se haya actualizado, vuelve a cargar la página para activarlo</translation>
 <translation id="8736288397686080465">Este sitio se ha actualizado en segundo plano.</translation>
 <translation id="8737685506611670901">Abrir enlaces de <ph name="PROTOCOL" /> en lugar de <ph name="REPLACED_HANDLER_TITLE" /></translation>
@@ -4966,6 +4971,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8780123805589053431">Obtener descripciones de imagen de Google</translation>
 <translation id="8780443667474968681">Se ha desactivado la búsqueda por voz.</translation>
 <translation id="878069093594050299">Este certificado se ha verificado para los siguientes usos:</translation>
+<translation id="8781470833671194250">Estabilización de la posición de clic</translation>
 <translation id="8781980678064919987">Apagar cuando la tapa esté cerrada</translation>
 <translation id="8782565991310229362">Se ha cancelado el inicio de la aplicación del kiosco.</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; quiere compartir una impresora &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; contigo.</translation>

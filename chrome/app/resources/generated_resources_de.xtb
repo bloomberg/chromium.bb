@@ -796,6 +796,7 @@
 <translation id="2241053333139545397">Eigene Daten auf verschiedenen Websites lesen und ändern</translation>
 <translation id="2241634353105152135">Nur einmal</translation>
 <translation id="2242687258748107519">Dateiinformationen</translation>
+<translation id="2246549592927364792">Bildbeschreibungen von Google verwenden?</translation>
 <translation id="224940702122312781">Diese Seite verbraucht eine große Menge an Daten.</translation>
 <translation id="2249605167705922988">z. B. 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">Mit System Viewer öffnen</translation>
@@ -1099,6 +1100,7 @@
 <translation id="271033894570825754">Neu</translation>
 <translation id="2714393097308983682">Google Play Store</translation>
 <translation id="2715751256863167692">Durch dieses Upgrade wird Ihr Chromebook zurückgesetzt und die aktuellen Nutzerdaten werden entfernt.</translation>
+<translation id="2716986496990888774">Diese Einstellung wird von einem Elternteil verwaltet.</translation>
 <translation id="2718395828230677721">Nachtlicht</translation>
 <translation id="2718998670920917754">Die Antivirensoftware hat ein Virus erkannt.</translation>
 <translation id="2719936478972253983">Die folgenden Cookies wurden blockiert</translation>
@@ -1149,7 +1151,6 @@
 <translation id="2783829359200813069">Verschlüsselungstypen auswählen</translation>
 <translation id="2783952358106015700">Sicherheitsschlüssel mit <ph name="APP_NAME" /> verwenden</translation>
 <translation id="2784407158394623927">Ihr mobiler Datendienst wird aktiviert.</translation>
-<translation id="2785008241190445880">Lesezeichen ersetzt</translation>
 <translation id="2785873697295365461">Dateideskriptoren</translation>
 <translation id="2787354132612937472">—</translation>
 <translation id="2788135150614412178">+</translation>
@@ -1210,6 +1211,7 @@
 <translation id="2874939134665556319">Vorheriger Titel</translation>
 <translation id="2875698561019555027">(Chrome-Fehlerseiten)</translation>
 <translation id="2876336351874743617">Finger 2</translation>
+<translation id="2876369937070532032">URLs einiger von mir besuchter Seiten an Google senden, wenn meine Sicherheit gefährdet ist</translation>
 <translation id="288042212351694283">Auf Ihre Universal 2nd Factor-Geräte zugreifen</translation>
 <translation id="2881076733170862447">Wenn die Erweiterung angeklickt wird</translation>
 <translation id="2881966438216424900">Letzter Zugriff am:</translation>
@@ -1392,6 +1394,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3170072451822350649">Sie können die Anmeldung auch überspringen und <ph name="LINK_START" />als Gast surfen<ph name="LINK_END" />.</translation>
 <translation id="3172045848207518317">Eine Website greift auf Ihre Videoeingaben zu</translation>
 <translation id="3177909033752230686">Sprache der Seite:</translation>
+<translation id="3181954750937456830">Safe Browsing (mich und mein Gerät vor schädlichen Websites schützen)</translation>
 <translation id="3182749001423093222">Rechtschreibprüfung</translation>
 <translation id="3183139917765991655">Profilimport</translation>
 <translation id="3188465121994729530">Gleitender Durchschnitt</translation>
@@ -1697,6 +1700,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3664511988987167893">Erweiterungssymbol</translation>
 <translation id="3665589677786828986">Chrome hat festgestellt, dass einige Ihrer Einstellungen von einem anderen Programm manipuliert wurden, und hat sie auf die ursprünglichen Standardwerte zurückgesetzt.</translation>
 <translation id="3668570675727296296">Spracheinstellungen</translation>
+<translation id="366867565525278777">Die Installation ist fehlgeschlagen, weil nicht genügend Speicherplatz vorhanden ist. Es sind mindestens <ph name="INSTALL_SIZE" /> erforderlich. Löschen Sie Dateien aus dem Gerätespeicher, um Speicherplatz freizugeben.</translation>
 <translation id="3668801437375206837">Damit Bluetooth-Probleme besser diagnostiziert werden können, haben Google-Mitarbeiter die Möglichkeit, Feedbackberichte durch zusätzliche Bluetooth-Protokolle zu ergänzen. Wenn diese Option ausgewählt ist, enthält Ihr Bericht btsnoop- und HCI-Protokolle der aktuellen Sitzung. Personenidentifizierbare Informationen werden dabei so gut wie möglich entfernt. Nur die Administratoren der entsprechenden Chrome OS-Produktgruppe in Listnr haben Zugriff auf die Protokolle. Diese werden nach 90 Tagen dauerhaft gelöscht.</translation>
 <translation id="3668823961463113931">Handler</translation>
 <translation id="3670113805793654926">Geräte von allen Anbietern</translation>
@@ -3234,7 +3238,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6076448957780543068">Diesen Screenshot einfügen</translation>
 <translation id="6077131872140550515">Von bevorzugten Netzwerken entfernen</translation>
 <translation id="6077189836672154517">Tipps und Updates für <ph name="DEVICE_TYPE" /></translation>
-<translation id="6078323886959318429">Tastenkombination hinzufügen</translation>
+<translation id="6078323886959318429">Verknüpfung hinzufügen</translation>
 <translation id="6078752646384677957">Überprüfen Sie Ihr Mikrofon und die Audio-Lautstärke.</translation>
 <translation id="6080515710685820702">Sie teilen sich einen Computer? Dann können Sie ganz einfach ein Inkognitofenster nutzen.</translation>
 <translation id="6080689532560039067">Systemzeit überprüfen</translation>
@@ -4004,6 +4008,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7289225569524511578">Hintergrund-App öffnen</translation>
 <translation id="7290242001003353852">Dieser Anmeldedienst wird von <ph name="SAML_DOMAIN" /> gehostet und greift auf Ihre Kamera zu.</translation>
 <translation id="7290594223351252791">Registrierung bestätigen</translation>
+<translation id="7295614427631867477">Hinweis: Für Android, Play und zugehörige Apps gelten eigene Richtlinien für die Erhebung und Nutzung von Daten.</translation>
 <translation id="729583233778673644">AES- und RC4-Verschlüsselung erlauben. Mit dieser Option ist ein höheres Risiko verbunden, da RC4-Verschlüsselungen nicht sicher sind.</translation>
 <translation id="7296774163727375165">Nutzungsbedingungen für <ph name="DOMAIN" /></translation>
 <translation id="7297443947353982503">Nutzername/Passwort falsch oder Fehler bei EAP-Authentifizierung</translation>
@@ -4280,6 +4285,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7732111077498238432">Das Netzwerk ist richtliniengesteuert</translation>
 <translation id="7737238973539693982">Linux (Beta) löschen</translation>
 <translation id="7740996059027112821">Standard</translation>
+<translation id="7746457520633464754">Chrome sendet die URLs einiger von Ihnen besuchter Seiten, bestimmte Systeminformationen und einige Seiteninhalte an Google, um gefährliche Apps und Websites zu erkennen.</translation>
 <translation id="7750228210027921155">Bild-in-Bild</translation>
 <translation id="7751260505918304024">Alle anzeigen</translation>
 <translation id="7754704193130578113">Vor dem Download von Dateien nach dem Speicherort fragen</translation>
@@ -4931,7 +4937,6 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8732212173949624846">Browserverlauf auf all Ihren angemeldeten Geräten lesen und ändern</translation>
 <translation id="8732844209475700754">Weitere Einstellungen im Zusammenhang mit Datenschutz, Sicherheit und der Erhebung von Daten</translation>
 <translation id="8734073480934656039">Bei Aktivierung dieser Einstellung dürfen Kioskanwendungen beim Systemstart automatisch gestartet werden.</translation>
-<translation id="8734671092194994316">Hierdurch wird ein Vermerk Ihres Besuchs auf <ph name="WEBSITE" /> auf Ihrem Sicherheitsschlüssel eingetragen.</translation>
 <translation id="873545264931343897">Aktualisieren Sie die Seite nach dem Update, damit <ph name="PLUGIN_NAME" /> aktiviert wird</translation>
 <translation id="8736288397686080465">Diese Website wurde im Hintergrund aktualisiert.</translation>
 <translation id="8737685506611670901"><ph name="PROTOCOL" />-Links anstelle von <ph name="REPLACED_HANDLER_TITLE" /> öffnen</translation>
@@ -4964,6 +4969,7 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8780123805589053431">Bildbeschreibungen von Google abrufen</translation>
 <translation id="8780443667474968681">Die Sprachsuche wurde deaktiviert.</translation>
 <translation id="878069093594050299">Dieses Zertifikat wurde für folgende Verwendungszwecke verifiziert:</translation>
+<translation id="8781470833671194250">Stabilisierung der Klickposition</translation>
 <translation id="8781980678064919987">Beim Zuklappen herunterfahren</translation>
 <translation id="8782565991310229362">Starten der Kioskanwendung wurde abgebrochen.</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; möchte den Drucker &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; für Sie freigeben.</translation>

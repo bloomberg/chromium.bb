@@ -25,6 +25,7 @@
 <translation id="1585657529869845941">النقر على زر <ph name="BEGIN_BOLD" />التبديل على أي حال<ph name="END_BOLD" /> في حال ظهوره</translation>
 <translation id="1587223624401073077">‏يستخدم Google Chrome الكاميرا.</translation>
 <translation id="1587325591171447154">‏ملف <ph name="FILE_NAME" /> ضار، لذلك فقد حظره Chrome.</translation>
+<translation id="1590588151039584890">‏للتحديث، على Chrome التوقف عن العمل على جهاز الكمبيوتر هذا. قد يتسبب هذا في فقد المستخدمين الآخرين الذين سجَّلوا الدخول إلى جهاز الكمبيوتر هذا التغييرات غير المحفوظة.</translation>
 <translation id="1619887657840448962">‏لجعل Chrome أكثر أمنًا، أوقفنا الإضافة التالية التي لم تُدرج في <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> وربما تكون قد أضيفت دون علمك.</translation>
 <translation id="1628000112320670027">‏الحصول على مساعدة في Chrome</translation>
 <translation id="1662639173275167396">‏أصبح نظام التشغيل Chrome متاحًا من خلال <ph name="BEGIN_LINK_CROS_OSS" />برنامج مفتوح المصدر<ph name="END_LINK_CROS_OSS" />إضافي، كما في نظام التشغيل <ph name="BEGIN_LINK_LINUX_OSS" />Linux (إصدار تجريبي)<ph name="END_LINK_LINUX_OSS" />.</translation>
@@ -168,6 +169,7 @@
 <translation id="5386244825306882791">‏كما أنها تتحكم في الصفحة التي تظهر عند تشغيل Chrome أو إجراء بحث من المربع متعدد الاستخدامات.</translation>
 <translation id="5430073640787465221">‏ملف التفضيلات تالف أو غير صالح. يتعذر على Google Chrome استرداد إعداداتك.</translation>
 <translation id="5483595757826856374">{0,plural, =0{‏ستتم إعادة تشغيل Chrome الآن}=1{‏ستتم إعادة تشغيل Chrome خلال ثانية واحدة}two{‏ستتم إعادة تشغيل Chrome خلال ثانيتين (#)}few{‏ستتم إعادة تشغيل Chrome خلال # ثوانٍ}many{‏ستتم إعادة تشغيل Chrome خلال # ثانيةً}other{‏ستتم إعادة تشغيل Chrome خلال # ثانية}}</translation>
+<translation id="5543953544073077331">‏هناك نُسخ أخرى من Chrome قيد التشغيل. يُرجى إغلاقها للتحديث.</translation>
 <translation id="556024056938947818">‏يحاول Google Chrome إظهار كلمات المرور.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598">‏قد يكون ملف <ph name="FILE_NAME" /> ضارًا، لذلك فقد حظره Chrome.</translation>
@@ -228,6 +230,7 @@
 <translation id="7473136999113284234">‏يجري تحديث Chrome تلقائيًا بحيث يكون لديك أحدث إصدار.</translation>
 <translation id="7486227612705979895">‏سيصل Chrome إلى Drive لإنشاء الاقتراحات في شريط العناوين.</translation>
 <translation id="748945194546522577">‏هذا الملف ضار، لذلك قد حظره Chrome. تتم حمايتك في إطار برنامج "الحماية المتقدمة".</translation>
+<translation id="7531671357096394523">‏الخروج من جميع نُسخ Chrome.</translation>
 <translation id="7535429826459677826">‏إصدار مطوري البرامج من Google Chrome</translation>
 <translation id="7552219221109926349">‏عرض نظام تشغيل Chrome بهذه اللغة</translation>
 <translation id="7561940363513215021">{0,plural, =1{‏ستتم إعادة تشغيل Chrome خلال دقيقة واحدة}zero{‏ستتم إعادة تشغيل Chrome خلال # دقيقة}two{‏ستتم إعادة تشغيل Chrome خلال دقيقتين (#)}few{‏ستتم إعادة تشغيل Chrome خلال # دقائق}many{‏ستتم إعادة تشغيل Chrome خلال # دقيقةً}other{‏ستتم إعادة تشغيل Chrome خلال # دقيقة}}</translation>

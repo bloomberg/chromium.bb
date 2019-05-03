@@ -25,6 +25,7 @@
 <translation id="1585657529869845941">Hãy nhấp vào nút <ph name="BEGIN_BOLD" />Vẫn chuyển<ph name="END_BOLD" /> khi nút này xuất hiện</translation>
 <translation id="1587223624401073077">Google Chrome đang sử dụng máy ảnh của bạn.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> nguy hiểm, do đó Chrome đã chặn tệp.</translation>
+<translation id="1590588151039584890">Để cập nhật, Chrome cần ngừng chạy trên máy tính này. Nếu ngừng chạy, những người dùng khác đăng nhập vào máy tính này có thể bị mất các thay đổi chưa lưu.</translation>
 <translation id="1619887657840448962">Để làm cho Chrome an toàn hơn, chúng tôi đã vô hiệu hóa tiện ích không được liệt kê trong <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> và có thể đã được thêm mà bạn không biết.</translation>
 <translation id="1628000112320670027">Nhận trợ giúp về Chrome</translation>
 <translation id="1662639173275167396">Chrome OS có thể hoạt động được là nhờ <ph name="BEGIN_LINK_CROS_OSS" />phần mềm nguồn mở<ph name="END_LINK_CROS_OSS" /> bổ sung, tương tự như <ph name="BEGIN_LINK_LINUX_OSS" />Linux (Bản beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
@@ -169,6 +170,7 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="5386244825306882791">Tiện ích này cũng điều khiển trang nào được hiển thị khi bạn khởi động Chrome hoặc tìm kiếm từ Thanh địa chỉ.</translation>
 <translation id="5430073640787465221">Tệp tùy chọn của bạn bị hỏng hoặc không hợp lệ. Google Chrome không thể khôi phục cài đặt của bạn.</translation>
 <translation id="5483595757826856374">{0,plural, =0{Chrome sẽ chạy lại ngay bây giờ}=1{Chrome sẽ chạy lại sau 1 giây}other{Chrome sẽ chạy lại sau # giây}}</translation>
+<translation id="5543953544073077331">Các bản sao khác của Chrome đang chạy. Để cập nhật, hãy đóng các bản sao này.</translation>
 <translation id="556024056938947818">Google Chrome đang cố gắng hiển thị mật khẩu.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> có thể nguy hiểm, do đó Chrome đã chặn tệp.</translation>
@@ -229,6 +231,7 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="7473136999113284234">Chrome tự động cập nhật nên bạn luôn có phiên bản mới nhất.</translation>
 <translation id="7486227612705979895">Chrome sẽ truy cập vào Drive của bạn để đưa ra đề xuất trên thanh địa chỉ</translation>
 <translation id="748945194546522577">Tệp này nguy hiểm nên đã bị Chrome chặn. Tính năng Bảo vệ nâng cao giữ an toàn cho bạn.</translation>
+<translation id="7531671357096394523">Thoát khỏi tất cả các bản sao của Chrome.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Hiển thị Chrome OS bằng ngôn ngữ này</translation>
 <translation id="7561940363513215021">{0,plural, =1{Chrome sẽ chạy lại sau 1 phút}other{Chrome sẽ chạy lại sau # phút}}</translation>

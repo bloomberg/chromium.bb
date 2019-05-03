@@ -193,6 +193,7 @@
 <translation id="2359808026110333948">Continuar</translation>
 <translation id="2369533728426058518">pestañas abiertas</translation>
 <translation id="2387895666653383613">Ajuste de texto</translation>
+<translation id="2394602618534698961">Los archivos que descargues aparecerán aquí</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2410754283952462441">Elegir una cuenta</translation>
 <translation id="2414886740292270097">Oscuro</translation>
@@ -204,6 +205,7 @@
 <translation id="2450083983707403292">¿Deseas comenzar la descarga de <ph name="FILE_NAME" /> de nuevo?</translation>
 <translation id="2476578072172137802">Configuración del sitio</translation>
 <translation id="2482878487686419369">Notificaciones</translation>
+<translation id="2490684707762498678">Administradas por <ph name="APP_NAME" /></translation>
 <translation id="2494974097748878569">Asistente de Google en Chrome</translation>
 <translation id="2496180316473517155">Historial de navegación</translation>
 <translation id="2498359688066513246">Ayuda y comentarios</translation>
@@ -254,6 +256,7 @@
 <translation id="2845873210977809562">Se cerraron las pestañas abiertas</translation>
 <translation id="2870560284913253234">Sitio</translation>
 <translation id="2874939134665556319">Pista anterior</translation>
+<translation id="2876369937070532032">Enviar a Google las URL de algunas páginas que visitas, cuando tu seguridad está en riesgo</translation>
 <translation id="2876764156902388290">Chrome usa menos datos para mostrarte esta página</translation>
 <translation id="2888126860611144412">Acerca de Chrome</translation>
 <translation id="2891154217021530873">Detener la carga de la página</translation>
@@ -289,6 +292,7 @@
 <translation id="3148434565183091099">Para usar tus favoritos en todos los dispositivos, accede a Chrome.</translation>
 <translation id="3157842584138209013">Para ver cuántos datos redujiste, selecciona el botón Más opciones</translation>
 <translation id="3166827708714933426">Accesos directos a ventanas y pestañas</translation>
+<translation id="3181954750937456830">Navegación segura (te protege a ti a y tu dispositivo de sitios peligrosos)</translation>
 <translation id="3190152372525844641">Activa los permisos para Chrome en <ph name="BEGIN_LINK" />Configuración de Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905">Datos almacenados: <ph name="STORAGE_AMOUNT" /></translation>
 <translation id="3205824638308738187">Ya casi terminas.</translation>
@@ -442,6 +446,7 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="4404568932422911380">No hay favoritos</translation>
 <translation id="4409723563706114196">Usar las predicciones de página</translation>
 <translation id="4411535500181276704">Modo lite</translation>
+<translation id="4415276339145661267">Administrar tu Cuenta de Google</translation>
 <translation id="4432792777822557199">De ahora en más, las páginas en <ph name="SOURCE_LANGUAGE" /> se traducirán al <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4433925000917964731">Google proporcionó la página básica</translation>
 <translation id="4434045419905280838">Ventanas emergentes y redirec.</translation>
@@ -604,6 +609,7 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="5512137114520586844"><ph name="PARENT_NAME" /> administra esta cuenta.</translation>
 <translation id="5514904542973294328">El administrador de este dispositivo inhabilitó esta opción</translation>
 <translation id="5515439363601853141">Desbloquea la pantalla para ver tu contraseña</translation>
+<translation id="5516455585884385570">Abrir la configuración de notificaciones</translation>
 <translation id="5517095782334947753">Tienes favoritos, historial, contraseñas y otras opciones de configuración de <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5524843473235508879">Se bloqueó el redireccionamiento</translation>
 <translation id="5527082711130173040">Chrome debe acceder a la ubicación para buscar dispositivos. <ph name="BEGIN_LINK1" />Actualiza los permisos<ph name="END_LINK1" />. El acceso a la ubicación también está <ph name="BEGIN_LINK2" />desactivado en este dispositivo<ph name="END_LINK2" />.</translation>
@@ -619,6 +625,7 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="5581519193887989363">En la <ph name="BEGIN_LINK1" />configuración<ph name="END_LINK1" />, puedes elegir los datos para sincronizar en cualquier momento.</translation>
 <translation id="5595485650161345191">Editar dirección</translation>
 <translation id="5596627076506792578">Más opciones</translation>
+<translation id="5599455543593328020">Modo de navegación incógnito</translation>
 <translation id="5620928963363755975">Encuentra tus archivos y páginas en Descargas desde el botón Más opciones</translation>
 <translation id="5626134646977739690">Nombre:</translation>
 <translation id="5639724618331995626">Permitir todos los sitios</translation>
@@ -913,11 +920,13 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="7649070708921625228">Ayuda</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7665369617277396874">Agregar cuenta</translation>
+<translation id="766587987807204883">Los artículos aparecerán aquí y puedes leerlos incluso cuando estás sin conexión</translation>
 <translation id="7682724950699840886">Intenta las siguientes sugerencias: Antes de exportar las contraseñas nuevamente, asegúrate de que haya espacio suficiente en tu dispositivo.</translation>
 <translation id="7698359219371678927">Crear correo electrónico en <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Autocompletar búsquedas y URL</translation>
 <translation id="773466115871691567">Traducir siempre las páginas en <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
+<translation id="7746457520633464754">Para detectar apps y sitios peligrosos, Chrome envía a Google URL de algunas páginas que visitas, información limitada sobre el sistema y contenido de algunas páginas</translation>
 <translation id="7762668264895820836">Tarjeta SD <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Agregar dirección</translation>
 <translation id="7765158879357617694">Mover</translation>

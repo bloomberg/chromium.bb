@@ -71,7 +71,6 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854"><ph name="SYSTEM_APP_NAME" /> के नए अपडेट के बारे में ज़्यादा जानें</translation>
 <translation id="1995660704900986789">पावर बंद करें</translation>
-<translation id="1999763610967697511">खींचें और छोड़ें</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">कोई मैसेज लिखें</translation>
 <translation id="2050339315714019657">पोर्ट्रेट</translation>
@@ -201,6 +200,7 @@
 <translation id="394485226368336402">ऑडियो सेटिंग</translation>
 <translation id="3962859241508114581">पिछला ट्रैक</translation>
 <translation id="397105322502079400">गणना की जा रही है...</translation>
+<translation id="3977512764614765090">बैटरी <ph name="PERCENTAGE" />% बाकी है और चार्ज हो रही है.</translation>
 <translation id="3995138139523574647">USB-C डिवाइस (दायां पिछला पोर्ट)</translation>
 <translation id="4017989525502048489">लेज़र पॉइंटर</translation>
 <translation id="4042660782729322247">आप अपनी स्क्रीन शेयर कर रहे हैं</translation>
@@ -218,6 +218,7 @@
 <translation id="4279490309300973883">स्क्रीन शेयर करने की सुविधा चालू है</translation>
 <translation id="4281007048406351813">टाइमर में एक मिनट जोड़ें</translation>
 <translation id="4292681942966152062"><ph name="NETWORK_NAME" /> चालू हो रहा है</translation>
+<translation id="4296136865091727875">सभी <ph name="COUNT" /> सूचनाएं हटाएं</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">आपने 'हाई कंट्रास्ट' का कीबोर्ड शॉर्टकट दबाया है. क्या आप इसे चालू करना चाहते हैं?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -423,7 +424,7 @@
 <translation id="7692480393933218409">कनेक्ट किए गए USB-C डिवाइस चार्ज कर रहा है</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{एक सूचना}one{# सूचनाएं}other{# सूचनाएं}}</translation>
-<translation id="776344839111254542">अपडेट किए गए विवरण देखने के लिए क्लिक करें</translation>
+<translation id="776344839111254542">अपडेट के विवरण देखने के लिए क्लिक करें</translation>
 <translation id="7780159184141939021">स्क्रीन घुमाएं</translation>
 <translation id="7796353162336583443">नोट लेने, स्क्रीनशॉट लेने और Google Assistant, लेज़र पॉइंटर या आवर्धक ग्लास का इस्तेमाल करने के लिए अलमारी में मौजूद स्टाइलस बटन पर टैप करें.</translation>
 <translation id="7798302898096527229">रद्द करने के लिए Search या Shift दबाएं.</translation>
@@ -502,6 +503,7 @@
 <translation id="8877788021141246043">रिमाइंडर लगाओ</translation>
 <translation id="8878886163241303700">स्क्रीन का विस्तार करना</translation>
 <translation id="890616557918890486">स्रोत बदलें</translation>
+<translation id="8909138438987180327">बैटरी <ph name="PERCENTAGE" /> बैटरी बची है.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google Assistant सेवा इस भाषा में उपलब्ध नहीं है.</translation>
 <translation id="8938800817013097409">USB-C डिवाइस (पीछे की ओर दायां पोर्ट)</translation>
@@ -513,6 +515,7 @@
 <translation id="9029474291399787231">Adobe Flash Player का अपडेट मौजूद है</translation>
 <translation id="9056839673611986238">डिवाइस बहाल कर दिया जाएगा</translation>
 <translation id="9070640332319875144">Assistant की सेटिंग</translation>
+<translation id="9072519059834302790">बैटरी खाली होने में<ph name="TIME_LEFT" /> का समय बाकी है.</translation>
 <translation id="9074739597929991885">ब्लूटूथ</translation>
 <translation id="9079731690316798640">वाई-फ़ाई: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">माइक्रोफ़ोन का उपयोग हो रहा है.</translation>
@@ -524,6 +527,7 @@
 <translation id="9193626018745640770">ऐसे रिसीवर पर कास्ट किया जा रहा है जिसकी जानकारी नहीं है</translation>
 <translation id="9194617393863864469">किसी दूसरे उपयोगकर्ता के रूप में साइन इन करें...</translation>
 <translation id="9210037371811586452">संयुक्त डेस्कटॉप मोड से बाहर निकाला जा रहा है</translation>
+<translation id="9211681782751733685">बैटरी के पूरी तरह से चार्ज होने में<ph name="TIME_REMAINING" /> का समय बाकी है.</translation>
 <translation id="9215934040295798075">वॉलपेपर सेट करें</translation>
 <translation id="921989828232331238">आपके अभिभावक ने आज के लिए यह डिवाइस लॉक कर दिया है</translation>
 <translation id="923686485342484400">साइन आउट करने के लिए दो बार Control Shift Q दबाएं.</translation>

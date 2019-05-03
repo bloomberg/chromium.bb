@@ -1128,12 +1128,12 @@
 <translation id="7390545607259442187">கார்டை உறுதிசெய்</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7403591733719184120">உங்கள் <ph name="DEVICE_NAME" /> சாதனம் நிர்வகிக்கப்படுகிறது</translation>
-<translation id="7407424307057130981">&lt;p&gt;உங்கள் Windows கம்ப்யூட்டரில் Superfish மென்பொருள் இருந்தால், இந்தப் பிழையைப் பார்ப்பீர்கள்.&lt;/p&gt; 
+<translation id="7407424307057130981">&lt;p&gt;உங்கள் Windows கம்ப்யூட்டரில் Superfish மென்பொருள் இருந்தால் இந்தப் பிழையைப் பார்ப்பீர்கள்.&lt;/p&gt; 
       &lt;p&gt;மென்பொருளைத் தற்காலிகமாக முடக்கி இணையத்துடன் இணைவதற்கு, பின்வரும் படிகளைப் பின்பற்றவும். உங்களுக்கு நிர்வாகி முன்னுரிமைகள் தேவைப்படும்.&lt;/p&gt; 
       &lt;ol&gt; 
-      &lt;li&gt;&lt;strong&gt;தொடங்கு&lt;/strong&gt; என்பதைக் கிளிக் செய்து, பிறகு &lt;strong&gt;"அகச் சேவைகளைக் காட்டு"&lt;/strong&gt; என்பதைத் தேடித் தேர்ந்தெடுக்கவும் 
+      &lt;li&gt;&lt;strong&gt;தொடங்கு&lt;/strong&gt; என்பதைக் கிளிக் செய்து, பிறகு &lt;strong&gt;"அகச் சேவைகளைக் காட்டு"&lt;/strong&gt; என்பதைத் தேடி, தேர்ந்தெடுக்கவும் 
       &lt;li&gt;&lt;strong&gt;VisualDiscovery&lt;/strong&gt; என்பதைத் தேர்ந்தெடுக்கவும்
-      &lt;li&gt;&lt;strong&gt;தொடக்க வகை&lt;/strong&gt; என்பதன் கீழ், &lt;strong&gt;முடக்கப்பட்டது&lt;/strong&gt; என்பதைத் தேர்ந்தெடுக்கவும்
+      &lt;li&gt;&lt;strong&gt;தொடங்கப்படும் வகை&lt;/strong&gt; என்பதன் கீழ், &lt;strong&gt;முடக்கப்பட்டது&lt;/strong&gt; என்பதைத் தேர்ந்தெடுக்கவும்
       &lt;li&gt;&lt;strong&gt;சேவை நிலை&lt;/strong&gt; என்பதன் கீழ், &lt;strong&gt;நிறுத்து&lt;/strong&gt; என்பதைக் கிளிக் செய்யவும்
       &lt;li&gt;&lt;strong&gt;பயன்படுத்து&lt;/strong&gt; என்பதைக் கிளிக் செய்து, &lt;strong&gt;சரி&lt;/strong&gt; என்பதைக் கிளிக் செய்யவும்
       &lt;li&gt;உங்கள் கம்ப்யூட்டரிலிருந்து மென்பொருளை நிரந்தரமாக அகற்றுவது எப்படி என்பதை அறிய, &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Chrome உதவி மையம்&lt;/a&gt; என்பதற்குச் செல்லவும்

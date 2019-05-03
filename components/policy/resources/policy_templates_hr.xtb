@@ -729,21 +729,6 @@
       Provjera pravopisa još se uvijek može vršiti pomoću preuzetog rječnika; to pravilo upravlja samo upotrebom mrežne usluge.
 
       Ako ta postavka nije konfigurirana, korisnici mogu sami odlučiti hoće li se usluga provjere pravopisa upotrebljavati ili neće.</translation>
-<translation id="2294283832646774959">Konfigurira popis pisača.
-
-      To pravilo omogućuje administratorima da navedu konfiguracije pisača za
-      korisnike.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> i <ph name="PRINTER_DESCRIPTION" /> nemaju nizove koji se mogu prilagoditi radi lakšeg odabira pisača. <ph name="PRINTER_MANUFACTURER" /> i <ph name="PRINTER_MODEL" /> olakšavaju krajnjim korisnicima da prepoznaju pisače tako što predstavljaju proizvođača i model pisača. <ph name="PRINTER_URI" /> treba biti adresa kojoj se može pristupiti s računala klijenta uključujući <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> i <ph name="URI_QUEUE" />. Polje <ph name="PRINTER_UUID" /> izborno je. Ako se navede, služi za uklanjanje duplikata <ph name="ZEROCONF_DISCOVERY" /> pisača.
-
-      <ph name="PRINTER_EFFECTIVE_MODEL" /> mora odgovarati jednom od nizova koji predstavljaju pisač koji <ph name="PRODUCT_NAME" /> podržava. Niz će se koristiti za identifikaciju i instaliranje odgovarajućeg PPD-a za pisač. Više informacija dostupno je na https://support.google.com/chrome?p=noncloudprint.
-
-      Postavljanje pisača dovršava se po prvoj upotrebi pisača. PPD-ovi će se preuzeti tek kada se pisač upotrijebi. Nakon toga često korišteni PPD-ovi spremit će se u predmemoriju.
-
-      To pravilo ne utječe na to mogu li korisnici konfigurirati pisače na pojedinačnim uređajima. Služi kao dodatno pravilo za konfiguraciju pisača koju vrše pojedinačni korisnici.
-
-      Za uređaje kojima upravlja Active Directory to pravilo podržava proširivanje naziva uređaja <ph name="MACHINE_NAME_VARIABLE" /> na naziv uređaja Active Directoryja ili njegov podniz. Na primjer, ako naziv uređaja glasi <ph name="MACHINE_NAME_EXAMPLE" />, onda će se <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> zamijenjen s četiri znaka počevši od šestog položaja, tj. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Položaj je utemeljen na nuli.
-      </translation>
 <translation id="2294382669900758280">Reprodukcija videozapisa u Android aplikacijama ne uzima se u obzir, čak i ako se to pravilo postavi na <ph name="TRUE" />.</translation>
 <translation id="2299220924812062390">Odredi popis omogućenih dodataka</translation>
 <translation id="2303795211377219696">Omogući Automatsko popunjavanje za kreditne kartice</translation>
@@ -1377,6 +1362,7 @@
       Ako se to pravilo postavi na "DeveloperToolsAllowed" (vrijednost 1, Alatima za razvojne programere i konzoli JavaScript može se pristupiti i može ih se upotrebljavati u svim kontekstima, uključujući kontekst proširenja instaliranih prema pravilima organizacije.
       Ako se to pravilo postavi na "DeveloperToolsDisallowed" (vrijednost 2), Alatima za razvojne programere neće se moći pristupiti, a elementi web-lokacije više se neće moći pregledavati. Onemogućit će se svi tipkovni prečaci i svi unosi izbornika ili kontekstnih izbornika za otvaranje Alata za razvojne programere ili konzole JavaScript:</translation>
 <translation id="3547954654003013442">Proxy postavke</translation>
+<translation id="3550875587920006460">Omogućuje postavljanje prilagođenog rasporeda za traženje ažuriranja. Primjenjuje se na sve korisnike i sva sučelja na uređaju. Kada se postavi, uređaj će provjeravati ima li ažuriranja prema tom rasporedu. Pravilo se mora ukloniti da bi se otkazala daljnja primjena rasporeda za traženje ažuriranja.</translation>
 <translation id="355118380775352753">Web-lokacije koje se trebaju otvoriti u zamjenskom pregledniku</translation>
 <translation id="3554984410014457319">Dopustite Google asistentu da osluškuje izraze za glasovnu aktivaciju.</translation>
 <translation id="356579196325389849">Korisnici mogu konfigurirati kanal izdanja OS-a Chrome</translation>
@@ -1408,7 +1394,6 @@
 <translation id="3709266154059827597">Konfiguriraj crnu listu instalacije proširenja</translation>
 <translation id="3711895659073496551">Obustavi</translation>
 <translation id="3715569262675717862">Autentifikacija na temelju korisničkih certifikata</translation>
-<translation id="3734995764843493369">Zaporku treba unijeti svaki dan (24 sata)</translation>
 <translation id="3736879847913515635">Omogućivanje dodavanja osobe u upravitelju korisnika</translation>
 <translation id="3738723882663496016">U ovom se pravilu navodi licencni ključ <ph name="PLUGIN_VM_NAME" /> za ovaj uređaj.</translation>
 <translation id="3748900290998155147">Određuje jesu li dopuštena zaključavanja aktivacije. Ta zaključavanja mogu tražiti proširenja putem API-ja proširenja za upravljanje napajanjem i ARC aplikacije.
@@ -1612,6 +1597,29 @@
       Ako je ovo pravilo postavljeno na istinito ili ako nije postavljeno, korisnici će moći iskoristiti ponude registracijom OS-a Chrome.
 
       Ako je pravilo postavljeno na neistinito, korisnici neće moći iskoristiti ponude.</translation>
+<translation id="4008233182078913897">Određuje popis aplikacija i proširenja koja se instaliraju u pozadini,
+          bez interakcije s korisnikom, i koje korisnik ne može deinstalirati
+          niti onemogućiti. Sva dopuštenja koje aplikacije/proširenja
+          zahtijevaju dodjeljuju se implicitno, bez interakcije s korisnikom,
+          uključujući sva dodatna dopuštenja koja bi buduće verzije
+          aplikacije/proširenja mogle tražiti. Osim toga, dopuštenja se dodjeljuju
+          za API-je proširenja enterprise.deviceAttributes i enterprise.platformKeys extension.
+          (Ta dva API-ja nisu dostupna aplikacijama/proširenjima koji nisu prisilno
+          instalirani.)
+
+          To pravilo ima prednost pred pravilom <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> s kojim potencijalno može biti u sukobu. Ako se s popisa ukloni aplikacija ili proširenje koje su prethodno bili prisilno instalirani, <ph name="PRODUCT_NAME" /> automatski će ih deinstalirati.
+
+          Za instance Windowsa koje nisu pridružene domeni <ph name="MS_AD_NAME" /> prisilna instalacija ograničena je na aplikacije i proširenja navedene u Chrome web-trgovini.
+
+          Korisnici mogu izmijeniti izvorni kôd proširenja pomoću Alata za razvojne programere (zbog čega proširenje može prestati funkcionirati). Ako to predstavlja problem, postavite pravilo <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+          Svaka stavka pravila niz je koji sadrži ID proširenja i URL za "ažuriranje" odvojene točkom sa zarezom (<ph name="SEMICOLON" />). ID proširenja niz je od 32 slova koji se primjerice može pronaći na <ph name="CHROME_EXTENSIONS_LINK" /> u načinu rada razvojnog programera. URL za "ažuriranje", ako se navede, treba usmjeravati na XML dokument manifesta ažuriranja kako je opisano u dokumentu <ph name="LINK_TO_EXTENSION_DOC1" />. Prema zadanim postavkama, upotrebljava se URL za ažuriranje Chrome web-trgovine (koji je trenutačno "https://clients2.google.com/service/update2/crx"). URL za "ažuriranje" postavljen u ovom pravilu upotrebljava se samo za prvo instaliranje, dok će se za daljnja ažuriranja proširenja upotrebljavati URL ažuriranja naveden u manifestu proširenja. Napominjemo i da je eksplicitno navođenje URL-a za "ažuriranje" bilo obavezno u verzijama preglednika <ph name="PRODUCT_NAME" /> zaključno s verzijom 67.
+
+          Na primjer, <ph name="EXTENSION_POLICY_EXAMPLE" /> instalira proširenje s ID-om <ph name="EXTENSION_ID_SAMPLE" /> sa standardnog URL-a za "ažuriranje" Chrome web-trgovine. Više informacija o hostingu proširenja potražite ovdje: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Ako se to pravilo ne postavi, aplikacije ili proširenja neće se instalirati automatski i korisnik može deinstalirati bilo koju aplikaciju ili proširenje u pregledniku <ph name="PRODUCT_NAME" />.
+
+          To se pravilo ne primjenjuje u anonimnom načinu.</translation>
 <translation id="4008507541867797979">Ako se to pravilo postavi na True ili se ne konfigurira, sustav <ph name="PRODUCT_OS_NAME" /> na zaslonu za prijavu prikazivat će postojeće korisnike i omogućivati odabir korisnika.
 
       Ako se pravilo postavi na False, <ph name="PRODUCT_OS_NAME" /> neće prikazivati postojeće korisnike na zaslonu za prijavu. Prikazivat će se obični zaslon za prijavu (na kojem se unose korisnička e-adresa i zaporka ili telefon) ili SAML međuprostorni zaslon (ako se omogući pravilom <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />) osim ako se konfigurira upravljana sesija. Ako se konfigurira upravljana sesija, prikazivat će se samo računi upravljane sesije od kojih je moguće odabrati jedan.
@@ -2550,6 +2558,12 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 <translation id="5897913798715600338">Napuni bateriju pomoću tehnologije brzog punjenja.</translation>
 <translation id="5898486742390981550">Kada je prijavljeno više korisnika, samo primarni korisnik može upotrebljavati Android aplikacije.</translation>
 <translation id="5901427587865226597">Samo dvostrani ispis</translation>
+<translation id="5903898512448364160">
+      Ako se pravilo postavi na true, pravilo oblaka imat će prednost u slučaju sukoba s pravilom platforme.
+      Ako se pravilo postavi na false ili se ne konfigurira, pravilo platforme imat će prednost ako je u sukobu pravilom oblaka.
+
+      To je pravilo dostupno samo kao obavezno pravilo platforme računala i utječe samo na pravila oblaka koja se odnose na računalo.
+      </translation>
 <translation id="5905473632148429217">Omogući online OCSP/CRL provjere</translation>
 <translation id="5906199912611534122">Dopušta omogućivanje ili onemogućivanje usporavanja mreže.
       Primjenjuje se na sve korisnike i sva sučelja na uređaju. Kada se postavi,
@@ -2576,6 +2590,7 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 
       Ako onemogućite tu postavku ili ne odredite njenu vrijednost, Sigurno pretraživanje u Google pretraživanju neće biti primijenjeno.</translation>
 <translation id="5946082169633555022">Beta kanal</translation>
+<translation id="5946329690214660966">Postavite prilagođeni raspored za traženje ažuriranja</translation>
 <translation id="5950205771952201658">Budući da "soft-fail", mrežne provjere opoziva ne pružaju učinkovitu zaštitu sigurnosti, onemogućuju se prema zadanim postavkama u pregledniku <ph name="PRODUCT_NAME" /> verzije 19 i novijih verzija. Postavljanjem tog pravila na točno prethodno se ponašanje vraća i izvršit će se mrežne provjere OCSP/CRL.
 
       Ako to pravilo nije postavljeno ili je postavljeno na netočno, <ph name="PRODUCT_NAME" /> neće vršiti mrežne provjere opoziva u pregledniku <ph name="PRODUCT_NAME" /> 19 i novijim verzijama.</translation>
@@ -2642,6 +2657,7 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 <translation id="6034341625190551415">Upravlja javnom sesijom i vrstama računa za kiosk.</translation>
 <translation id="6034603289689965535">Omogućuje stranici da prikazuje skočne prozore tijekom unloadinga</translation>
 <translation id="6036523166753287175">Omogući prijelaz vatrozida iz hosta za daljinski pristup</translation>
+<translation id="605475635122964053">Ograničava način ispisa s PIN-om. Ako se pravilo ne postavi, smatra se da nema ograničenja. Pravilo se zanemaruje ako način nije dostupan. Značajka ispisa s PIN-om omogućena je samo za pisače koji upotrebljavaju protokole IPPS, USB ili IPP putem USB-a </translation>
 <translation id="6070667616071269965">Rasporedi tipkovnice za zaslon za prijavu na uređaju</translation>
 <translation id="6074963268421707432">Nemoj dopustiti nijednoj web-lokaciji da prikazuje obavijesti radne površine</translation>
 <translation id="6074964551275531965">Postavi razdoblje za obavijesti o ažuriranjima</translation>
@@ -3341,6 +3357,7 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
       Ako se to pravilo postavi na "RemoveLRUIfDormant", automatsko čišćenje uklanjat će korisnike koji se nisu prijavili najmanje 3 mjeseca počevši od onog koji se najdulje nije prijavljivao, sve dok ne bude dovoljno prostora.
 
       Ako se to pravilo ne postavi, automatsko čišćenje upotrebljava zadanu ugrađenu strategiju. Ta je strategija trenutačno "RemoveLRUIfDormant".</translation>
+<translation id="7334274148831027933">Omogući usidreno povećalo</translation>
 <translation id="7336785017449297672">Upravlja postavkama sata i vremenske zone.</translation>
 <translation id="7336878834592315572">Zadrži kolačiće za vrijeme trajanja sesije</translation>
 <translation id="7339315111520512972">Nametni pokretanje koda za umrežavanje u procesu preglednika</translation>

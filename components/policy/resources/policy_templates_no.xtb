@@ -727,21 +727,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Du kan fortsatt utføre stavekontroll av innhold, men da med en ordliste du har lastet ned selv – denne innstillingen styrer bare bruk av tjenesten på nettet.
 
       Hvis denne innstillingen ikke er konfigurert, kan brukere velge om tjenesten for stavekontroll skal eller ikke skal brukes.</translation>
-<translation id="2294283832646774959">Konfigurerer en liste over skrivere.
-
-      Denne regelen gjør det mulig for administratorer å gi ut skriverkonfigurasjoner til
-      brukerne sine.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> og <ph name="PRINTER_DESCRIPTION" /> er strenger i et fritt format som kan tilpasses for å gjøre det enklere å velge skriver. <ph name="PRINTER_MANUFACTURER" /> og <ph name="PRINTER_MODEL" /> brukes til å gjøre det lettere for brukerne å identifisere skrivere. De representerer skrivermodellen og -produsenten. <ph name="PRINTER_URI" /> skal være en adresse som kan nås fra en klientdatamaskin, inkludert <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> og <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> er valgfritt. Hvis den oppgis, brukes den til å deduplisere <ph name="ZEROCONF_DISCOVERY" />-skrivere.
-
-      <ph name="PRINTER_EFFECTIVE_MODEL" /> må samsvare med en av strengene som representerer en <ph name="PRODUCT_NAME" />-støttet skriver. Strengen blir brukt til å identifisere og installere den riktige PPD-filen for skriveren. Du finner mer informasjon på https://support.google.com/chrome?p=noncloudprint.
-
-      Skriverkonfigureringen er fullført når en skriver brukes for første gang. PPD-filer lastes ikke ned før skriveren brukes. Etter det blir PPD-filer som brukes ofte, bufret.
-
-      Denne regelen kan ikke brukes til å bestemme om brukere kan konfigurere skrivere på individuelle enheter. Den er ment å være et supplement til konfigureringen av skrivere som er gjort av individuelle brukere.
-
-      For Active Directory-administrerte enheter støtter denne regelen utvidelse av <ph name="MACHINE_NAME_VARIABLE" /> til Active Directory-maskinnavnet eller en delstreng av det. Hvis maskinnavnet for eksempel er <ph name="MACHINE_NAME_EXAMPLE" />, erstattes <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> med de 4 tegnene etter 6. posisjon, dvs. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Merk at posisjonen er null-basert.
-      </translation>
 <translation id="2294382669900758280">Videoavspilling i Android-apper tas ikke med i betraktningen – selv ikke når denne regelen er angitt som <ph name="TRUE" />.</translation>
 <translation id="2299220924812062390">Angi en liste over aktiverte programtillegg</translation>
 <translation id="2303795211377219696">Slå på autofyll for kredittkort</translation>
@@ -1383,6 +1368,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Hvis denne regelen er angitt som «DeveloperToolsAllowed» (verdi 1), kan utviklerverktøyene og JavaScript-konsollen brukes i alle kontekster, inkludert konteksten til utvidelser installert av bedriftens retningslinjer.
       Hvis denne regelen er angitt som «DeveloperToolsDisallowed» (verdi 2), kan ikke utviklerverktøyene brukes, og elementer på nettsteder kan ikke inspiseres lenger. Alle hurtigtaster og alle oppføringer for menyer eller kontekstuelle menyer for å åpne utviklerverktøy eller JavaScript-konsollen deaktiveres.</translation>
 <translation id="3547954654003013442">Innstillinger for proxy-tjener</translation>
+<translation id="3550875587920006460">Gjør det mulig å sette opp en egendefinert tidsplan for når enheten skal se etter oppdateringer. Denne gjelder alle brukere og alle grensesnitt på enheten. Når regelen er angitt, ser enheten etter oppdateringer i henhold til tidsplanen. Regelen må fjernes for å avbryte eventuelle andre oppdateringssjekker som er planlagt.</translation>
 <translation id="355118380775352753">Nettsteder som skal åpnes i en alternativ nettleser</translation>
 <translation id="3554984410014457319">La Google-assistenten lytte etter frasen for taleaktivering</translation>
 <translation id="356579196325389849">Brukere kan konfigurere utgivelseskanalen for Chrome OS</translation>
@@ -1414,7 +1400,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="3709266154059827597">Konfigurer installasjonssperrelisten for utvidelser</translation>
 <translation id="3711895659073496551">Suspender</translation>
 <translation id="3715569262675717862">Autentisering basert på klientsertifikater</translation>
-<translation id="3734995764843493369">Passordet må skrives inn hver dag (hver 24. time)</translation>
 <translation id="3736879847913515635">Slå på «Legg til person» i brukeradministreringen</translation>
 <translation id="3738723882663496016">Denne regelen spesifiserer lisensnøkkelen for <ph name="PLUGIN_VM_NAME" /> for denne enheten.</translation>
 <translation id="3748900290998155147">Angir om det er tillatt med oppvekkingslåser. Utvidelser kan be om oppvekkingslåser via Power Management Extension API. ARC-apper kan også be om dem.
@@ -1619,6 +1604,29 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Hvis denne innstillingen angis som sann eller ikke angis, kan brukere innløse tilbud via Chrome OS-registrering.
 
       Hvis denne innstillingen angis som usann, kan ikke brukeren innløse tilbud.</translation>
+<translation id="4008233182078913897">Spesifiserer en liste over apper og utvidelser som installeres stille,
+          uten brukerinteraksjon, og som ikke kan avinstalleres eller
+          deaktiveres av brukere. Det er underforstått at alle tillatelser
+          appene/utvidelsene ber om, gis uten brukerinteraksjon. Dette gjelder
+          også eventuelle tillatelser fremtidige versjoner av appen/utvidelsen
+          ber om. Tillatelser gis også for utvidelses-API-ene
+          enterprise.deviceAttributes og enterprise.platformKeys.
+          (Disse to API-ene er ikke tilgjengelig for apper/utvidelser som ikke er
+          administratorinstallert.)
+
+          Denne regelen prioriteres foran eventuelle regler for <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> hvis de er i konflikt med hverandre. Hvis apper eller utvidelser som tidligere var administratorinstallert, blir fjernet fra listen, blir de automatisk avinstallert av <ph name="PRODUCT_NAME" />.
+
+          For Windows-forekomster som ikke er tilknyttet noe <ph name="MS_AD_NAME" />-domene, er administratorinstallasjon begrenset til apper og utvidelser som står oppført i Chrome Nettmarked.
+
+         Vær oppmerksom på at kildekoden for utvidelsene kan endres av brukere via utviklerverktøy (noe som potensielt kan føre til at utvidelsene ikke fungerer). Hvis dette kan bli et problem, bør du angi regelen <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+          Hvert av elementene i listen er en streng som inneholder en utvidelses-ID og eventuelt (valgfritt) en «oppdatering»-nettadresse, atskilt med semikolon (<ph name="SEMICOLON" />). Utvidelses-ID-en er strengen på 32 tegn du for eksempel finner i <ph name="CHROME_EXTENSIONS_LINK" /> når du er i utviklermodus. «Oppdatering»-nettadressen peker til et oppdateringsmanifest i XML-format, som beskrevet her: <ph name="LINK_TO_EXTENSION_DOC1" />. Oppdateringsnettadressen for Chrome Nettmarked brukes som standard (og for øyeblikket er den «https://clients2.google.com/service/update2/crx»). Vær oppmerksom på at «oppdatering»-nettadressen som angis i denne regelen, bare brukes for den første installasjonen. Påfølgende oppdateringer av utvidelsen bruker oppdateringsnettadressen som er beskrevet i utvidelsens manifest. Vær også oppmerksom på at det var uttrykkelig påkrevd å angi «oppdatering»-nettadressen i <ph name="PRODUCT_NAME" />-versjoner opptil og inkludert 67.
+
+          For eksempel installerer <ph name="EXTENSION_POLICY_EXAMPLE" /> utvidelsen med ID-en <ph name="EXTENSION_ID_SAMPLE" /> fra «oppdatering»-nettadressen som er standard for Chrome Nettmarked. Gå til <ph name="LINK_TO_EXTENSION_DOC2" /> for å finne ut mer om å være vert for utvidelser.
+
+          Hvis denne regelen ikke er angitt, blir ingen apper eller utvidelser installert automatisk, og brukere kan avinstallere hvilke som helst apper og utvidelser i <ph name="PRODUCT_NAME" />.
+
+          Vær oppmerksom på at denne regelen ikke gjelder for inkognitomodus.</translation>
 <translation id="4008507541867797979">Hvis denne regelen er angitt som «true» (sant) eller ikke er konfigurert, viser <ph name="PRODUCT_OS_NAME" /> eksisterende brukere på påloggingsskjermen og tillater valg av én av dem.
 
       Hvis denne regelen er angitt som «false» (usant), viser ikke <ph name="PRODUCT_OS_NAME" /> eksisterende brukere på påloggingsskjermen. Den vanlige påloggingsskjermen (der brukere blir bedt om e-postadresse og passord eller telefonnummer) eller SAML-skjermen for interstitial-annonser (hvis dette er slått på i regelen <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />) vises, med mindre en administrert økt er konfigurert. Når en administrert økt er konfigurert, vises kun kontoene i den administrerte økten, og én av dem kan velges.
@@ -2583,6 +2591,12 @@ I motsetning til <ph name="URL_LIST_POLICY_NAME" /> gjelder denne regelen begge 
 <translation id="5897913798715600338">Lad batteriet ved bruk av teknologi for hurtiglading.</translation>
 <translation id="5898486742390981550">Når flere brukere er logget på, er det bare hovedbrukeren som kan bruke Android-apper.</translation>
 <translation id="5901427587865226597">Bare tosidig utskrift</translation>
+<translation id="5903898512448364160">
+      Hvis regelen er satt til «true» (sann), har skyregelen forrang ved konflikt med plattformregelen.
+      Hvis regelen er satt til «false» (usann) eller ikke er konfigurert, har plattformregelen forrang ved konflikt med skyregelen.
+
+      Denne regelen er bare tilgjengelig som en obligatorisk maskinplattformregel og påvirker kun skyregler med maskinomfang.
+      </translation>
 <translation id="5905473632148429217">Slå på OCSP/CRL-kontroller på nettet</translation>
 <translation id="5906199912611534122">Brukes til å slå reduksjon av nettverkshastighet av og på.
       Dette gjelder alle brukere og alle grensesnitt på enheten. Når regelen er angitt,
@@ -2609,6 +2623,7 @@ I motsetning til <ph name="URL_LIST_POLICY_NAME" /> gjelder denne regelen begge 
 
       Hvsi du deaktiverer denne innstillingen, eller ikke angir noen verdi, blir ikke Sikkert Søk i Google Søk iverksatt.</translation>
 <translation id="5946082169633555022">Betakanal</translation>
+<translation id="5946329690214660966">Sett opp egendefinert tidsplan for når enheten skal se etter oppdateringer</translation>
 <translation id="5950205771952201658">Som et resultat av at nettbaserte opphevelsekontroller for «soft-fail» ikke gir noen effektiv sikkerhetsfordel, er de avslått som standard i <ph name="PRODUCT_NAME" /> versjon 19 og nyere. Hvis denne regelen settes til true (sann), gjenopprettes tidligere atferd. I tillegg blir OCSP/CRL-kontroller på nettet utført.
 
       Hvis regelen ikke spesifiseres eller settes til false (usann), utfører ikke <ph name="PRODUCT_NAME" /> nettbaserte opphevelsekontroller i <ph name="PRODUCT_NAME" /> 19 og nyere.</translation>
@@ -2675,6 +2690,7 @@ I motsetning til <ph name="URL_LIST_POLICY_NAME" /> gjelder denne regelen begge 
 <translation id="6034341625190551415">Kontrollerer typer kioskkontoer og offentlige økter.</translation>
 <translation id="6034603289689965535">Tillater sider å vise forgrunnsvinduer mens de lastes ut</translation>
 <translation id="6036523166753287175">Muliggjør kryssing av brannmur fra ekstern tilgangsvert</translation>
+<translation id="605475635122964053">Begrenser modusen for utskrift med PIN-kode. Hvis regelen ikke er angitt, er det ingen begrensninger. Hvis modusen ikke er tilgjengelig, ignoreres denne regelen. Merk at PIN-utskriftsfunksjonen kun er påslått for skrivere som bruker en av protokollene IPPS, USB eller IPP-over-USB. </translation>
 <translation id="6070667616071269965">Tastaturoppsett for påloggingsskjermen på enheten</translation>
 <translation id="6074963268421707432">Ikke tillat noen nettsteder å vise skrivebordsvarsler</translation>
 <translation id="6074964551275531965">Angi tidsperioden for oppdateringsvarsler</translation>
@@ -3390,6 +3406,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Hvis denne innstillingen angis som «RemoveLRUIfDormant», fortsetter den automatiske oppryddingen å fjerne brukere som ikke har logget på de siste tre månedene (gamle pålogginger først) til det er nok ledig plass.
 
       Hvis denne innstillingen ikke angis, tar automatisk opprydding i bruk den innebygde standardstrategien. For øyeblikket er det «RemoveLRUIfDormant»-strategien.</translation>
+<translation id="7334274148831027933">Aktivér den dokkede lupen</translation>
 <translation id="7336785017449297672">Kontrollerer innstillinger for klokke og tidssone.</translation>
 <translation id="7336878834592315572">Behold informasjonskapsler så lenge økten varer</translation>
 <translation id="7339315111520512972">Tving nettverkskode til å kjøre i nettleserprosessen</translation>

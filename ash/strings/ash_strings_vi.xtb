@@ -71,7 +71,6 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">Tìm hiểu thêm về bản cập nhật <ph name="SYSTEM_APP_NAME" /> mới nhất</translation>
 <translation id="1995660704900986789">Tắt nguồn</translation>
-<translation id="1999763610967697511">Kéo và thả</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">Nhập tin nhắn</translation>
 <translation id="2050339315714019657">Khổ dọc</translation>
@@ -200,6 +199,7 @@
 <translation id="394485226368336402">Cài đặt âm thanh</translation>
 <translation id="3962859241508114581">Bản nhạc trước</translation>
 <translation id="397105322502079400">Đang tính...</translation>
+<translation id="3977512764614765090">Pin ở mức <ph name="PERCENTAGE" />% và đang sạc.</translation>
 <translation id="3995138139523574647">Thiết bị USB-C (cổng phía sau, bên phải)</translation>
 <translation id="4017989525502048489">Con trỏ laser</translation>
 <translation id="4042660782729322247">Bạn đang chia sẻ màn hình</translation>
@@ -217,6 +217,7 @@
 <translation id="4279490309300973883">Đang phản chiếu</translation>
 <translation id="4281007048406351813">Thêm 1 phút vào bộ hẹn giờ</translation>
 <translation id="4292681942966152062">Đang kích hoạt <ph name="NETWORK_NAME" /></translation>
+<translation id="4296136865091727875">Xóa tất cả <ph name="COUNT" /> thông báo</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">Bạn đã nhấn phím tắt của chế độ tương phản cao. Bạn có muốn bật chế độ này không?</translation>
 <translation id="4331809312908958774">Chrome OS
@@ -502,6 +503,7 @@
 <translation id="8877788021141246043">Đặt lời nhắc</translation>
 <translation id="8878886163241303700">Mở rộng màn hình</translation>
 <translation id="890616557918890486">Thay đổi nguồn</translation>
+<translation id="8909138438987180327">Pin ở mức <ph name="PERCENTAGE" />%.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Trợ lý Google không hỗ trợ ngôn ngữ này.</translation>
 <translation id="8938800817013097409">Thiết bị USB-C (cổng bên phải ở phía sau)</translation>
@@ -513,6 +515,7 @@
 <translation id="9029474291399787231">Đã có bản cập nhật Adobe Flash Player</translation>
 <translation id="9056839673611986238">Thiết bị sẽ được hạ cấp hệ điều hành</translation>
 <translation id="9070640332319875144">Cài đặt Trợ lý</translation>
+<translation id="9072519059834302790">Còn <ph name="TIME_LEFT" /> nữa là pin hết.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Micrô đang được sử dụng.</translation>
@@ -524,6 +527,7 @@
 <translation id="9193626018745640770">Đang truyền trên bộ thu không xác định</translation>
 <translation id="9194617393863864469">Đăng nhập người dùng khác...</translation>
 <translation id="9210037371811586452">Đang thoát chế độ màn hình hợp nhất</translation>
+<translation id="9211681782751733685">Còn <ph name="TIME_REMAINING" /> nữa là sạc đầy pin.</translation>
 <translation id="9215934040295798075">Đặt hình nền</translation>
 <translation id="921989828232331238">Cha mẹ đã khóa thiết bị của bạn cả ngày</translation>
 <translation id="923686485342484400">Nhấn Control Shift Q hai lần để đăng xuất.</translation>

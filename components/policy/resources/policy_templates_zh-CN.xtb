@@ -692,20 +692,6 @@
       使用已下载的字典，仍然可以进行拼写检查，此策略仅控制在线服务的使用情况。
 
       如果未配置此设置，那么用户可以选择是否使用拼写检查服务。</translation>
-<translation id="2294283832646774959">配置打印机列表。
-
-      通过此政策，管理员可为他们的用户提供打印机配置。
-
-      “<ph name="PRINTER_DISPLAY_NAME" />”和“<ph name="PRINTER_DESCRIPTION" />”均是自由格式的字符串，且均可被自定义以便于选择打印机。“<ph name="PRINTER_MANUFACTURER" />”和“<ph name="PRINTER_MODEL" />”则可帮助最终用户轻松地识别打印机。它们分别代表打印机的制造商和型号。“<ph name="PRINTER_URI" />”应是可通过客户端计算机访问的地址，包括“<ph name="URI_SCHEME" />”、“<ph name="URI_PORT" />”和“<ph name="URI_QUEUE" />”。“<ph name="PRINTER_UUID" />”是可选项。如果提供的话，该项可用于帮助删除重复的“<ph name="ZEROCONF_DISCOVERY" />”打印机。
-
-      “<ph name="PRINTER_EFFECTIVE_MODEL" />”必须与代表 <ph name="PRODUCT_NAME" />所支持打印机的某个字符串匹配。该字符串将会被用来识别和为打印机安装相应的 PPD。如需了解详情，请访问 https://support.google.com/chrome?p=noncloudprint。
-
-      打印机设置会在用户首次使用打印机时完成。在用户开始使用打印机之前，系统不会下载 PPD。在用户开始使用打印机之后，系统则会缓存经常使用的 PPD。
-
-      此政策对用户能否在各台设备上配置打印机没有影响。它旨在对各用户的打印机配置进行补充。
-
-      对于由 Active Directory 托管的设备，此政策支持将“<ph name="MACHINE_NAME_VARIABLE" />”扩展为 Active Directory 机器名称或其子字符串。例如，如果机器名称是“<ph name="MACHINE_NAME_EXAMPLE" />”，则“<ph name="MACHINE_NAME_VARIABLE_EXAMPLE" />”将被替换为第 6 个位置后面的 4 个字符（即 <ph name="MACHINE_NAME_PART_EXAMPLE" />）。请注意，位置序数从 0 起算。
-      </translation>
 <translation id="2294382669900758280">即使此政策设为 <ph name="TRUE" />，系统也不会考虑在 Android 应用中播放视频。</translation>
 <translation id="2299220924812062390">指定已启用插件的列表</translation>
 <translation id="2303795211377219696">允许使用“自动填充”功能填写信用卡信息</translation>
@@ -1333,6 +1319,7 @@
       如果此政策设为“DeveloperToolsAllowed”（值为 1），那么无论在什么情况下（包括在运行由企业政策安装的扩展程序的情况下），用户都可以访问和使用开发者工具以及 JavaScript 控制台。
       如果此政策设为“DeveloperToolsDisallowed”（值为 2），用户便无法再访问开发者工具和查看网站元素。用于打开开发者工具或 JavaScript 控制台的任何键盘快捷键以及任何菜单（或上下文菜单）条目都会被停用。</translation>
 <translation id="3547954654003013442">代理设置</translation>
+<translation id="3550875587920006460">允许设定自定义时间表以检查是否有更新。这适用于所有用户以及相应设备上的所有界面。一旦设定了时间表，相应设备便会按照它来检查是否有更新。必须移除此政策，才能取消其他已排定的更新检查。</translation>
 <translation id="355118380775352753">要在替代浏览器中打开的网站</translation>
 <translation id="3554984410014457319">允许 Google 助理听取语音启动词组</translation>
 <translation id="356579196325389849">用户可以配置 Chrome 操作系统发布版本</translation>
@@ -1364,7 +1351,6 @@
 <translation id="3709266154059827597">配置扩展程序安装黑名单</translation>
 <translation id="3711895659073496551">暂停</translation>
 <translation id="3715569262675717862">基于客户端证书的身份验证</translation>
-<translation id="3734995764843493369">必须每天（24 小时）输入一次密码</translation>
 <translation id="3736879847913515635">允许通过用户管理器添加用户</translation>
 <translation id="3738723882663496016">此政策可为该设备指定 <ph name="PLUGIN_VM_NAME" /> 许可密钥。</translation>
 <translation id="3748900290998155147">指定是否允许使用唤醒锁定。屏幕唤醒锁定可由扩展程序通过 Power Management Extension API 请求，也可由 ARC 应用请求。
@@ -1563,6 +1549,21 @@
       如果此政策设为true或未设置，用户将能够通过注册Chrome操作系统兑换优惠。
 
       如果此政策设为false，用户将不能兑换优惠。</translation>
+<translation id="4008233182078913897">以列表形式指定无需用户干预即会自动静默安装且无法被用户卸载或停用的应用或扩展程序。此类应用/扩展程序所请求的所有权限（包括相应应用/扩展程序的后续版本所请求的任何其他权限）均由系统默认授予（无需用户干预）。此外，系统还会向 enterprise.deviceAttributes 和 enterprise.platformKeys 扩展程序 API 授予相关权限（这两个 API 不适用于非强制安装的应用/扩展程序）。
+
+          此政策优先于可能会与其冲突的 <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> 政策。如果从此列表中移除了先前强制安装的某个应用或扩展程序，<ph name="PRODUCT_NAME" /> 便会自动卸载该应用或扩展程序。
+
+          对于未加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，强制安装仅限于 Chrome 网上应用店中所列的应用和扩展程序。
+
+          请注意，用户可通过开发者工具更改任何扩展程序的源代码（此类更改可能会导致相应扩展程序无法正常运行）。如果您不希望用户进行此类更改，则应设置 <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> 政策。
+
+          此政策的每个列表项都是一个字符串，其中包含一个扩展程序 ID 和一个可选的“更新”网址（这两者之间以英文分号 (<ph name="SEMICOLON" />) 分隔）。扩展程序 ID 是一个由 32 个字母构成的字符串；若想查看示例，请在开发者模式下前往 <ph name="CHROME_EXTENSIONS_LINK" />。“更新”网址（若指定）应指向一个更新清单 XML 文档，如 <ph name="LINK_TO_EXTENSION_DOC1" /> 中所述。默认情况下，系统会使用 Chrome 网上应用店的更新网址（目前为“https://clients2.google.com/service/update2/crx”）。请注意，此政策中设置的“更新”网址仅用于初次安装；相应扩展程序的后续更新将会使用该扩展程序的清单中指定的更新网址。另请注意，在 <ph name="PRODUCT_NAME" /> 67 及更低版本中，明确指定“更新”网址是一项强制性要求。
+
+          例如，<ph name="EXTENSION_POLICY_EXAMPLE" /> 会从标准的 Chrome 网上应用店“更新”网址安装 ID 为 <ph name="EXTENSION_ID_SAMPLE" /> 的扩展程序。要详细了解如何托管扩展程序，请访问 <ph name="LINK_TO_EXTENSION_DOC2" />。
+
+          如果未设置此政策，系统便不会自动安装任何应用或扩展程序，而且用户可在 <ph name="PRODUCT_NAME" /> 中卸载任何应用或扩展程序。
+
+          请注意，此政策不适用于无痕模式。</translation>
 <translation id="4008507541867797979">如果此政策设为 true 或未配置，<ph name="PRODUCT_OS_NAME" />将会在登录屏幕上显示现有用户并允许选择其一。
 
       如果此政策设为 false，<ph name="PRODUCT_OS_NAME" />将不会在登录屏幕上显示现有用户。除非配置了受管理自助服务终端，否则系统将会显示标准登录屏幕（提示用户输入电子邮件地址和密码/手机号码）或 SAML 插页式屏幕（若已通过 <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" /> 政策启用的话）。如果配置了受管理自助服务终端，系统将仅会显示受管理自助服务终端帐号并允许选择其一。
@@ -2487,6 +2488,12 @@
 <translation id="5897913798715600338">使用快速充电技术为电池充电。</translation>
 <translation id="5898486742390981550">如果有多个用户同时登录，则只有主要用户可以使用 Android 应用。</translation>
 <translation id="5901427587865226597">仅限双面打印</translation>
+<translation id="5903898512448364160">
+      如果此政策设为 true，当云政策与平台政策冲突时，即会以云政策为准。
+      如果此政策设为 false 或未配置，当平台政策与云政策冲突时，就会以平台政策为准。
+
+      此政策仅可作为强制性的机器平台政策使用，且仅会影响机器范围内的云政策。
+      </translation>
 <translation id="5905473632148429217">启用在线 OCSP/CRL 检查</translation>
 <translation id="5906199912611534122">允许启用或停用网络节流功能。
       这适用于所有用户以及设备上的所有界面。节流功能一经启用便会一直有效，除非通过更改此政策停用该功能。
@@ -2512,6 +2519,7 @@
 
       如果您停用此设置或未设置值，将不会执行 Google 搜索中的安全搜索。</translation>
 <translation id="5946082169633555022">测试版</translation>
+<translation id="5946329690214660966">设定自定义时间表以检查是否有更新</translation>
 <translation id="5950205771952201658">鉴于软故障在线撤消检查并不具备有效的安全优势，在 19 版及更高版本的 <ph name="PRODUCT_NAME" /> 中，这些功能默认处于停用状态。此政策设为 true 时，系统会恢复先前的行为并执行在线 OCSP/CRL 检查。
 
       如果此政策未设置或设为 false，在 19 版及更高版本的 <ph name="PRODUCT_NAME" /> 中，<ph name="PRODUCT_NAME" /> 将不会执行在线撤消检查。</translation>
@@ -2578,6 +2586,7 @@
 <translation id="6034341625190551415">控制公用自助终端和自助服务终端帐号类型。</translation>
 <translation id="6034603289689965535">允许页面在取消加载的过程中显示弹出式窗口</translation>
 <translation id="6036523166753287175">支持通过远程访问主机穿越防火墙</translation>
+<translation id="605475635122964053">限制 PIN 码打印模式。如果此政策未设置，则会被视为无限制。如果这种模式不适用，系统会忽略此政策。请注意，只有那些使用 IPPS 协议、USB 协议或 USB 型 IPP 协议的打印机才能启用 PIN 码打印功能。 </translation>
 <translation id="6070667616071269965">设备登录屏幕键盘布局</translation>
 <translation id="6074963268421707432">不允许任何网站显示桌面通知</translation>
 <translation id="6074964551275531965">设置一个时间段以用于显示更新通知</translation>
@@ -3260,6 +3269,7 @@
       如果此政策设为“RemoveLRUIfDormant”，自动清理将按最近最少登录顺序移除至少已有3个月未登录的用户，直至系统有足够的可用空间。
 
       如果此政策未设置，自动清理将使用默认的内置策略（目前为“RemoveLRUIfDormant”策略）。</translation>
+<translation id="7334274148831027933">启用停靠的放大镜</translation>
 <translation id="7336785017449297672">控制时钟和时区设置。</translation>
 <translation id="7336878834592315572">在会话期间保留 Cookie</translation>
 <translation id="7339315111520512972">强制网络代码在浏览器进程中运行</translation>

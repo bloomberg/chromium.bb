@@ -71,7 +71,6 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">Vaadake lisateavet operatsioonisüsteemi <ph name="SYSTEM_APP_NAME" /> uusima värskenduse kohta</translation>
 <translation id="1995660704900986789">Lülita välja</translation>
-<translation id="1999763610967697511">Pukseerimine</translation>
 <translation id="2012624427112548395">Ctrl + otsinguklahv + H</translation>
 <translation id="2016340657076538683">Sisestage sõnum</translation>
 <translation id="2050339315714019657">Vertikaalpaigutus</translation>
@@ -201,6 +200,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="394485226368336402">Heliseaded</translation>
 <translation id="3962859241508114581">Eelmine lugu</translation>
 <translation id="397105322502079400">Arvutamine ...</translation>
+<translation id="3977512764614765090">Aku laetuse tase on <ph name="PERCENTAGE" />% ja seda laetakse.</translation>
 <translation id="3995138139523574647">C-tüüpi USB-seade (tagumine parempoolne port)</translation>
 <translation id="4017989525502048489">Laserkursor</translation>
 <translation id="4042660782729322247">Jagate oma ekraanikuva</translation>
@@ -218,6 +218,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="4279490309300973883">Peegeldamine</translation>
 <translation id="4281007048406351813">Lisa taimerile 1 minut</translation>
 <translation id="4292681942966152062">Võrgu <ph name="NETWORK_NAME" /> aktiveerimine</translation>
+<translation id="4296136865091727875">Kustuta kõik <ph name="COUNT" /> märguannet</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">Vajutasite suure kontrastsusega režiimi otseteed. Kas soovite režiimi sisse lülitada?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -502,6 +503,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="8877788021141246043">Määra meeldetuletus</translation>
 <translation id="8878886163241303700">Ekraani laiendamine</translation>
 <translation id="890616557918890486">Vaheta allikat</translation>
+<translation id="8909138438987180327">Aku laetuse tase on <ph name="PERCENTAGE" /> protsenti.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google'i assistent ei räägi selles keeles.</translation>
 <translation id="8938800817013097409">C-tüüpi USB-seade (parempoolne port taga)</translation>
@@ -513,6 +515,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="9029474291399787231">Saadaval on Adobe Flash Playeri värskendus</translation>
 <translation id="9056839673611986238">Seade viiakse vanemale versioonile</translation>
 <translation id="9070640332319875144">Assistendi seaded</translation>
+<translation id="9072519059834302790"><ph name="TIME_LEFT" /> aku tühjenemiseni.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">WiFi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Mikrofon on kasutusel.</translation>
@@ -524,6 +527,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="9193626018745640770">Ülekandmine tundmatus vastuvõtjas</translation>
 <translation id="9194617393863864469">Logi sisse teine kasutaja ...</translation>
 <translation id="9210037371811586452">Ühendatud töölaua režiimist väljumine</translation>
+<translation id="9211681782751733685">Aku täitumiseni on aega <ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">Taustapildi määramine</translation>
 <translation id="921989828232331238">Vanem lukustas sinu seadme päevaks</translation>
 <translation id="923686485342484400">Väljalogimiseks vajutage kaks korda klahvikombinatsiooni Ctrl + tõstuklahv + Q.</translation>

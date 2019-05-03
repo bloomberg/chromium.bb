@@ -51,6 +51,7 @@
 <translation id="2718390899429598676">Per més seguretat, Chromium encriptarà les vostres dades.</translation>
 <translation id="2770231113462710648">Canvia el navegador predeterminat a:</translation>
 <translation id="2799223571221894425">Reinicia</translation>
+<translation id="2838154144102149890">Per fer l'actualització, cal que Chromium deixi d'executar-se en aquest ordinador. Com a conseqüència, és possible que altres usuaris que hagin iniciat la sessió en aquest ordinador perdin els canvis que no hagin desat.</translation>
 <translation id="2847479871509788944">Suprimeix de Chromium...</translation>
 <translation id="2886012850691518054">Opcional: ajuda'ns a millorar Chromium enviant estadístiques d'ús i informes d'error a Google automàticament.</translation>
 <translation id="2898082584336937987">Instal·la Chromium al telèfon. T'enviarem un SMS al telèfon: <ph name="PHONE_NUMBER" /></translation>
@@ -187,6 +188,7 @@
 <translation id="6810143991807788455">Informa de la configuració actual per ajudar-nos a millorar Chromium</translation>
 <translation id="6857782730669500492">Chromium: <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (copiada a Chromium)</translation>
+<translation id="6868056391275687737">S'estan executant altres còpies de Chromium. Tanca-les per poder fer l'actualització.</translation>
 <translation id="6893813176749746474">S'ha actualitzat Chromium, però fa almenys 30 dies que no l'heu utilitzat.</translation>
 <translation id="6964305034639999644">Obre l'enllaç en una finestra d'incò&amp;gnit a Chromium</translation>
 <translation id="6970811910055250180">S'està actualitzant el dispositiu...</translation>
@@ -257,6 +259,7 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="8697124171261953979">També controla la pàgina que es mostra quan inicieu Chromium o quan feu una cerca des de l'omnibox.</translation>
 <translation id="8704119203788522458">Aquest és el vostre Chromium</translation>
 <translation id="8704255848199359374">Fa servir el mateix corrector ortogràfic que s'utilitza a la Cerca de Google. El text que escrius al navegador s'envia a Google. Pots canviar aquest comportament sempre que vulguis a la configuració.</translation>
+<translation id="8748383401829947534">Tanca totes les còpies de Chromium.</translation>
 <translation id="8796602469536043152">Per visitar aquest lloc web, Chromium necessita permís per accedir a la càmera i al micròfon</translation>
 <translation id="8803635938069941624">Condicions de Chromium OS</translation>
 <translation id="8821041990367117597">Chromium no ha pogut sincronitzar les dades perquè la informació d'inici de sessió del vostre compte no està actualitzada.</translation>

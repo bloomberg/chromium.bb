@@ -741,20 +741,6 @@ Diese Richtlinie gilt auch für Komponentenerweiterungen, zum Beispiel die Hango
       Die Rechtschreibprüfung kann weiterhin mit einem heruntergeladenen Wörterbuch durchgeführt werden. Diese Richtlinie bezieht sich nur auf die Verwendung des Online-Dienstes.
 
       Ist diese Einstellung nicht konfiguriert, können die Nutzer auswählen, ob die Rechtschreibprüfung verwendet werden soll oder nicht.</translation>
-<translation id="2294283832646774959">Eine Liste der Drucker wird konfiguriert.
-
-      Mit dieser Richtlinie können Administratoren den Nutzern Druckerkonfigurationen bereitstellen.
-
-      Bei <ph name="PRINTER_DISPLAY_NAME" /> und <ph name="PRINTER_DESCRIPTION" /> handelt es sich um Freiform-Strings, die für eine einfachere Druckerauswahl angepasst werden können. <ph name="PRINTER_MANUFACTURER" /> und <ph name="PRINTER_MODEL" /> dienen der vereinfachten Druckererkennung durch die Nutzer. Sie geben den Hersteller und das Modell des Druckers an. Bei <ph name="PRINTER_URI" /> sollte es sich um eine Adresse, einschließlich <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> und <ph name="URI_QUEUE" />, handeln, auf die über einen Client-Computer zugegriffen werden kann. Die <ph name="PRINTER_UUID" /> ist optional. Wenn sie angegeben ist, wird sie zum Entfernen von Duplikaten bei <ph name="ZEROCONF_DISCOVERY" />-Druckern verwendet.
-
-      <ph name="PRINTER_EFFECTIVE_MODEL" /> muss mit einem der Strings übereinstimmen, die einen von <ph name="PRODUCT_NAME" /> unterstützten Drucker angeben. Der String wird zur Ermittlung und Installation der korrekten PPD für den Drucker verwendet. Weitere Informationen finden Sie unter https://support.google.com/chrome?p=noncloudprint.
-
-      Die Druckereinrichtung wird bei der ersten Verwendung des Druckers abgeschlossen. PPDs werden erst dann heruntergeladen, wenn der Drucker genutzt wird. Anschließend werden häufig verwendete PPDs im Cache gespeichert.
-
-      Diese Richtlinie hat keinen Einfluss darauf, ob Nutzer Drucker auf ihren individuellen Geräten konfigurieren können. Sie ist als Ergänzung zu den Druckerkonfigurationen der einzelnen Nutzer gedacht.
-
-      Bei Geräten, die über Active Directory verwaltet werden, unterstützt diese Richtlinie die Erweiterung von <ph name="MACHINE_NAME_VARIABLE" /> auf den Active Directory-Computernamen oder einen Teilstring davon. Wenn der Computername beispielsweise <ph name="MACHINE_NAME_EXAMPLE" /> lautet, wird <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> durch die vier Zeichen nach der sechsten Stelle ersetzt, z. B. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Beachten Sie, dass die Position auf Null basiert.
-      </translation>
 <translation id="2294382669900758280">Das Abspielen von Videos in Android-Apps wird nicht berücksichtigt, auch wenn diese Richtlinie auf <ph name="TRUE" /> gesetzt ist.</translation>
 <translation id="2299220924812062390">Liste der aktivierten Plug-ins angeben</translation>
 <translation id="2303795211377219696">AutoFill für Kreditkarten aktivieren</translation>
@@ -1386,6 +1372,7 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
       Wenn diese Richtlinie auf "DeveloperToolsAllowed" (Wert 1), gesetzt ist, können die Entwicklertools und die JavaScript-Konsole in allen Kontexten aufgerufen und verwendet werden. Dies gilt auch für Erweiterungen, die über die Unternehmensrichtlinie installiert wurden.
       Wenn diese Richtlinie auf "DeveloperToolsDisallowed" (Wert 2) gesetzt ist, kann nicht auf die Entwicklertools zugegriffen werden und Websiteelemente können nicht mehr überprüft werden. Alle Tastenkombinationen und Menü- oder Kontextmenüeinträge, mit denen die Entwicklertools oder die JavaScript-Konsole aufgerufen werden, sind deaktiviert.</translation>
 <translation id="3547954654003013442">Proxy-Einstellungen</translation>
+<translation id="3550875587920006460">Wenn diese Richtlinie konfiguriert ist, kann ein benutzerdefinierter Zeitplan zum Prüfen auf Updates festgelegt werden. Er gilt für alle Nutzer und alle Oberflächen auf diesem Gerät. Das Gerät sucht dann gemäß dem Zeitplan nach Updates. Wenn geplante Prüfungen auf Updates nicht mehr durchgeführt werden sollen, müssen Sie die Richtlinie entfernen.</translation>
 <translation id="355118380775352753">Websites, die in einem alternativen Browser geöffnet werden sollen</translation>
 <translation id="3554984410014457319">Google Assistant erlauben, bei Gesprächen zuzuhören und so zu prüfen, ob die Wortgruppe für die Sprachaktivierung genannt wird</translation>
 <translation id="356579196325389849">Nutzer dürfen die Chrome OS-Release-Version konfigurieren</translation>
@@ -1417,7 +1404,6 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
 <translation id="3709266154059827597">Schwarze Liste für Installation von Erweiterungen konfigurieren</translation>
 <translation id="3711895659073496551">Suspend-Modus</translation>
 <translation id="3715569262675717862">Authentifizierung auf Grundlage von Clientzertifikaten</translation>
-<translation id="3734995764843493369">Passworteingabe täglich erforderlich (alle 24 Stunden)</translation>
 <translation id="3736879847913515635">"Person hinzufügen" im Nutzermanager aktivieren</translation>
 <translation id="3738723882663496016">In dieser Richtlinie ist der <ph name="PLUGIN_VM_NAME" />-Lizenzschlüssel für dieses Gerät angegeben.</translation>
 <translation id="3748900290998155147">Gibt an, ob Wakelocks zulässig sind. Wakelocks können von Erweiterungen über die Power Management Extension API oder ARC-Apps angefordert werden.
@@ -1618,6 +1604,21 @@ Wird die Richtlinie auf "false" gesetzt oder nicht konfiguriert, wird kein Zerti
       Wenn diese Richtlinie auf "True" gesetzt oder nicht konfiguriert ist, können Nutzer Angebote über die Chrome OS-Registrierung einlösen.
 
       Ist die Richtlinie auf "False" eingestellt, können Nutzer keine Angebote einlösen.</translation>
+<translation id="4008233182078913897">Hierdurch wird eine Liste von Apps und Erweiterungen festgelegt, die automatisch installiert werden, also ohne Interaktion des Nutzers, und die vom Nutzer weder deinstalliert noch deaktiviert werden können. Alle von den Apps und Erweiterungen angeforderten Berechtigungen werden implizit, ohne Eingriff durch den Nutzer, gewährt. Dazu gehören auch alle weiteren Berechtigungen, die von künftigen Versionen der Apps oder Erweiterungen angefordert werden. Außerdem werden den Erweiterungs-APIs "enterprise.deviceAttributes" und "enterprise.platformKeys" Berechtigungen erteilt. Diese beiden APIs stehen bei Apps und Erweiterungen ohne erzwungene Installation nicht zur Verfügung.
+
+          Diese Richtlinie hat Vorrang gegenüber einer möglicherweise damit in Konflikt stehenden Richtlinie "<ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />". Wenn eine App oder Erweiterung mit erzwungener Installation aus dieser Liste entfernt wird, wird sie automatisch von <ph name="PRODUCT_NAME" /> deinstalliert.
+
+Bei Windows-Instanzen, die nicht Teil einer <ph name="MS_AD_NAME" />-Domain sind, bleibt die erzwungene Installation auf die im Chrome Web Store aufgeführten Apps und Erweiterungen beschränkt.
+
+          Beachten Sie, dass Nutzer den Quellcode jeder Erweiterung mithilfe der Entwicklertools ändern können. Danach funktioniert die entsprechende Erweiterung eventuell nicht mehr. Wenn Sie das verhindern möchten, können Sie die Richtlinie "<ph name="DEVELOPER_TOOLS_POLICY_NAME" />" festlegen.
+
+          Jedes Listenelement der Richtlinie ist ein String mit einer Erweiterungs-ID und einer optionalen Update-URL, die durch ein Semikolon (<ph name="SEMICOLON" />) getrennt sind. Die Erweiterungs-ID ist der String mit 32 Buchstaben, den Sie beispielsweise im Entwicklermodus in <ph name="CHROME_EXTENSIONS_LINK" /> sehen. Die Update-URL sollte, sofern festgelegt, auf ein XML-Dokument mit einem Update-Manifest verweisen, wie in <ph name="LINK_TO_EXTENSION_DOC1" /> beschrieben. Standardmäßig kommt die Update-URL des Chrome Web Store zum Einsatz, die derzeit "https://clients2.google.com/service/update2/crx" lautet. Die in dieser Richtlinie festgelegte Update-URL wird nur für die erste Installation verwendet. In nachfolgenden Updates der Erweiterung kommt die Update-URL zum Einsatz, die im Manifest der Erweiterung angegeben wurde. Außerdem war die explizite Festlegung der Update-URL in <ph name="PRODUCT_NAME" />-Versionen bis einschließlich Version 67 obligatorisch.
+
+          Beispiel: <ph name="EXTENSION_POLICY_EXAMPLE" /> installiert die Erweiterung <ph name="EXTENSION_ID_SAMPLE" /> über die standardmäßige Update-URL aus dem Chrome Web Store. Weitere Informationen zum Hosten von Erweiterungen finden Sie unter: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+Wenn diese Richtlinie nicht festgelegt ist, werden Apps und Erweiterungen nicht automatisch installiert und der Nutzer kann jede App oder Erweiterung in <ph name="PRODUCT_NAME" /> deinstallieren.
+
+Diese Richtlinie gilt nicht für den Inkognitomodus.</translation>
 <translation id="4008507541867797979">Wenn diese Richtlinie auf "true" gesetzt oder nicht festgelegt ist, werden in <ph name="PRODUCT_OS_NAME" /> vorhandene Nutzer auf der Anmeldeseite aufgeführt und der Nutzer kann einen Namen auswählen.
 
 Ist die Richtlinie auf "false" gesetzt, werden in <ph name="PRODUCT_OS_NAME" /> keine vorhandenen Nutzer auf der Anmeldeseite angezeigt. Stattdessen wird die normale Anmeldeseite, auf der der Nutzer seine E-Mail-Adresse und sein Passwort bzw. seine Telefonnummer eingeben muss, oder der SAML-Interstitialbildschirm angezeigt, wenn dieser über die Richtlinie "<ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />" aktiviert wurde. Falls eine verwaltete Sitzung konfiguriert ist, werden nur die entsprechenden Konten angezeigt, von denen der Nutzer eins auswählen kann.
@@ -2553,6 +2554,12 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
 <translation id="5897913798715600338">Lädt den Akku mit Schnellladetechnologie auf.</translation>
 <translation id="5898486742390981550">Wenn mehrere Nutzer angemeldet sind, kann nur der Hauptnutzer Android-Apps verwenden.</translation>
 <translation id="5901427587865226597">Nur Duplexdruck</translation>
+<translation id="5903898512448364160">
+      Ist die Richtlinie auf "true" gesetzt, hat die Cloudrichtlinie Vorrang, wenn sie mit der Plattformrichtlinie in Konflikt steht.
+      Falls die Richtlinie auf "false" gesetzt oder nicht konfiguriert ist, hat die Plattformrichtlinie Vorrang, wenn sie mit der Cloudrichtlinie in Konflikt steht.
+
+      Diese Richtlinie ist nur als obligatorische Computer-Plattformvariante verfügbar. Sie gilt nur für Cloudrichtlinien auf Computern.
+      </translation>
 <translation id="5905473632148429217">OCSP/CRL-Online-Prüfungen aktivieren</translation>
 <translation id="5906199912611534122">Ermöglicht die Aktivierung oder Deaktivierung der Netzwerkbegrenzung.
       Diese Richtlinie gilt für alle Nutzer und alle Oberflächen auf diesem Gerät.
@@ -2579,6 +2586,7 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
 
       Wenn diese Einstellung deaktiviert ist oder kein Wert festgelegt wurde, wird SafeSearch in der Google-Suche nicht erzwungen.</translation>
 <translation id="5946082169633555022">Beta-Kanal</translation>
+<translation id="5946329690214660966">Benutzerdefinierten Zeitplan zum Prüfen auf Updates festlegen</translation>
 <translation id="5950205771952201658">Da Online-Überprüfungen zu SoftFail-Zertifikatssperren keinen wirkungsvollen Sicherheitseffekt bieten, werden sie ab <ph name="PRODUCT_NAME" />-Version 19 standardmäßig deaktiviert. Wenn Sie diese Richtlinie auf "true" setzen, wird das vorherige Verhalten wiederhergestellt und es werden online OCSP-/CRL-Prüfungen durchgeführt.
 
       Falls die Richtlinie nicht konfiguriert oder auf "false" eingestellt ist, führt <ph name="PRODUCT_NAME" /> ab <ph name="PRODUCT_NAME" />-Version 19 keine Online-Überprüfungen auf Zertifikatssperren mehr durch.</translation>
@@ -2645,6 +2653,7 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
 <translation id="6034341625190551415">Legt die Typen für öffentliche Sitzungen und Kiosk-Konten fest.</translation>
 <translation id="6034603289689965535">Erlaubt einer Seite, während des Unloads Pop-ups einzublenden</translation>
 <translation id="6036523166753287175">Firewallausnahme über Host für Remotezugriff aktivieren</translation>
+<translation id="605475635122964053">Hiermit wird der PIN-Druckmodus eingeschränkt. Wenn die Richtlinie nicht konfiguriert ist, wird keine Einschränkung angewendet. Wenn der Modus nicht verfügbar ist, wird diese Richtlinie ignoriert. Der PIN-Druckmodus ist nur für Drucker verfügbar, die IPPS, USB oder IPP über USB verwenden. </translation>
 <translation id="6070667616071269965">Tastaturlayouts der Anmeldeseite</translation>
 <translation id="6074963268421707432">Anzeige von Desktop-Benachrichtigungen für keine Website zulassen</translation>
 <translation id="6074964551275531965">Zeitraum für Updatebenachrichtigungen festlegen</translation>
@@ -3332,6 +3341,7 @@ Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSIO
       Wenn für diese Richtlinie "RemoveLRUIfDormant" festgelegt ist, entfernt die automatische Bereinigungsfunktion nur diejenigen Nutzer vom Gerät, die seit mindestens drei Monaten nicht mehr angemeldet waren. Diese Nutzer werden in der chronologischen Reihenfolge ihrer letzten Anmeldung vom Gerät gelöscht, bis wieder genügend freier Speicher vorhanden ist.
 
       Ist die Richtlinie nicht konfiguriert, erfolgt die automatische Bereinigung auf Grundlage der integrierten Standardstrategie. Zurzeit handelt es sich dabei um die "RemoveLRUIfDormant"-Strategie.</translation>
+<translation id="7334274148831027933">Angedockte Lupe aktivieren</translation>
 <translation id="7336785017449297672">Legt die Einstellungen für die Uhrzeit und Zeitzone fest.</translation>
 <translation id="7336878834592315572">Cookies für die Dauer der Sitzung beibehalten</translation>
 <translation id="7339315111520512972">Ausführung des Netzwerkcodes im Browserprozess erzwingen</translation>

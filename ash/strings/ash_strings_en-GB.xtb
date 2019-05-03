@@ -71,7 +71,6 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">Learn more about the latest <ph name="SYSTEM_APP_NAME" /> update</translation>
 <translation id="1995660704900986789">Power off</translation>
-<translation id="1999763610967697511">Drag and drop</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">Type a message</translation>
 <translation id="2050339315714019657">Portrait</translation>
@@ -200,6 +199,7 @@
 <translation id="394485226368336402">Audio settings</translation>
 <translation id="3962859241508114581">Previous track</translation>
 <translation id="397105322502079400">Calculating...</translation>
+<translation id="3977512764614765090">Battery at <ph name="PERCENTAGE" />% and charging.</translation>
 <translation id="3995138139523574647">USB-C device (right-hand-side back port)</translation>
 <translation id="4017989525502048489">Laser pointer</translation>
 <translation id="4042660782729322247">You're sharing your screen</translation>
@@ -217,6 +217,7 @@
 <translation id="4279490309300973883">Mirroring</translation>
 <translation id="4281007048406351813">Add 1 min to timer</translation>
 <translation id="4292681942966152062">Activating <ph name="NETWORK_NAME" /></translation>
+<translation id="4296136865091727875">Clear all <ph name="COUNT" /> notifications</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">You pressed the keyboard shortcut for high contrast. Do you want to turn it on?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -501,6 +502,7 @@
 <translation id="8877788021141246043">Set a reminder</translation>
 <translation id="8878886163241303700">Extending screen</translation>
 <translation id="890616557918890486">Change source</translation>
+<translation id="8909138438987180327">Battery at <ph name="PERCENTAGE" /> per cent.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">The Google Assistant doesn’t speak this language.</translation>
 <translation id="8938800817013097409">USB-C device (right port in the back)</translation>
@@ -512,6 +514,7 @@
 <translation id="9029474291399787231">Adobe Flash Player update available</translation>
 <translation id="9056839673611986238">Device will be rolled back</translation>
 <translation id="9070640332319875144">Assistant settings</translation>
+<translation id="9072519059834302790"><ph name="TIME_LEFT" /> until battery is empty.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Microphone is in use.</translation>
@@ -523,6 +526,7 @@
 <translation id="9193626018745640770">Casting on an unknown receiver</translation>
 <translation id="9194617393863864469">Sign in another user...</translation>
 <translation id="9210037371811586452">Exiting unified desktop mode</translation>
+<translation id="9211681782751733685"><ph name="TIME_REMAINING" /> remaining until battery is fully charged.</translation>
 <translation id="9215934040295798075">Set wallpaper</translation>
 <translation id="921989828232331238">Your parent locked your device for the day</translation>
 <translation id="923686485342484400">Press Control Shift Q twice to sign out.</translation>

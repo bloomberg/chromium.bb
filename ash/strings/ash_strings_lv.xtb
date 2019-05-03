@@ -71,7 +71,6 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">Uzzināt vairāk par pēdējo <ph name="SYSTEM_APP_NAME" /> atjauninājumu</translation>
 <translation id="1995660704900986789">Izslēgt</translation>
-<translation id="1999763610967697511">Vilkšana un nomešana</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">Ierakstiet ziņojumu</translation>
 <translation id="2050339315714019657">Portrets</translation>
@@ -200,6 +199,7 @@
 <translation id="394485226368336402">Audio iestatījumi</translation>
 <translation id="3962859241508114581">Iepriekšējais ieraksts</translation>
 <translation id="397105322502079400">Aprēķina...</translation>
+<translation id="3977512764614765090">Akumulatora uzlādes līmenis ir <ph name="PERCENTAGE" />%, un notiek uzlāde.</translation>
 <translation id="3995138139523574647">USB-C ierīce (pieslēgvieta labajā pusē aizmugurē)</translation>
 <translation id="4017989525502048489">Lāzera rādītājs</translation>
 <translation id="4042660782729322247">Jūs šobrīd kopīgojat savu ekrānu</translation>
@@ -217,6 +217,7 @@
 <translation id="4279490309300973883">Spoguļošana</translation>
 <translation id="4281007048406351813">Pievienot taimerim 1 min</translation>
 <translation id="4292681942966152062">Notiek tīkla <ph name="NETWORK_NAME" /> aktivizēšana</translation>
+<translation id="4296136865091727875">Notīrīt visus paziņojumus (kopā <ph name="COUNT" />)</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">Jūs nospiedāt augsta kontrasta īsinājumtaustiņu. Vai vēlaties to ieslēgt?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -501,6 +502,7 @@
 <translation id="8877788021141246043">Iestatīt atgādinājumu</translation>
 <translation id="8878886163241303700">Notiek ekrāna izvēršana</translation>
 <translation id="890616557918890486">Mainīt avotu</translation>
+<translation id="8909138438987180327">Akumulatora uzlādes līmenis:<ph name="PERCENTAGE" />.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google asistents nav pieejams šajā valodā.</translation>
 <translation id="8938800817013097409">USB-C ierīce (pieslēgvieta aizmugurē pa labi)</translation>
@@ -512,6 +514,7 @@
 <translation id="9029474291399787231">Ir pieejams Adobe Flash Player atjauninājums</translation>
 <translation id="9056839673611986238">Ierīcē tiks veikta atrite</translation>
 <translation id="9070640332319875144">Asistenta iestatījumi</translation>
+<translation id="9072519059834302790">Atlikušais akumulatora darbības laiks: <ph name="TIME_LEFT" />.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi adrese: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Tiek izmantots mikrofons.</translation>
@@ -523,6 +526,7 @@
 <translation id="9193626018745640770">Apraide nezināmā uztvērējā</translation>
 <translation id="9194617393863864469">Pierakstīties kā citam lietotājam...</translation>
 <translation id="9210037371811586452">Notiek iziešana no vienotās darbvirsmas režīma</translation>
+<translation id="9211681782751733685">Līdz pilnīgai akumulatora uzlādei atlikušais laiks: <ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">Iestatīt fona tapeti</translation>
 <translation id="921989828232331238">Jūsu vecāki bloķēja jūsu ierīci šai dienai</translation>
 <translation id="923686485342484400">Lai izrakstītos, divas reizes nospiediet taustiņu kombināciju Ctrl+Shift+Q.</translation>

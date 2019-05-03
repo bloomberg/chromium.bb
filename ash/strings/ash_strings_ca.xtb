@@ -71,7 +71,6 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">Obtén més informació sobre l'última actualització de: <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1995660704900986789">Apaga</translation>
-<translation id="1999763610967697511">Arrossega i deixa anar</translation>
 <translation id="2012624427112548395">Ctrl+Cerca+H</translation>
 <translation id="2016340657076538683">Escriu un missatge</translation>
 <translation id="2050339315714019657">Vertical</translation>
@@ -200,6 +199,7 @@
 <translation id="394485226368336402">Configuració d'àudio</translation>
 <translation id="3962859241508114581">Pista anterior</translation>
 <translation id="397105322502079400">S’està calculant...</translation>
+<translation id="3977512764614765090">La bateria s'està carregant i està a un <ph name="PERCENTAGE" />%.</translation>
 <translation id="3995138139523574647">Dispositiu USB-C (port posterior dret)</translation>
 <translation id="4017989525502048489">Punter làser</translation>
 <translation id="4042660782729322247">Estàs compartint la pantalla</translation>
@@ -217,6 +217,7 @@
 <translation id="4279490309300973883">S'està creant una rèplica</translation>
 <translation id="4281007048406351813">Afegeix 1 minut al temporitzador</translation>
 <translation id="4292681942966152062">S'està activant <ph name="NETWORK_NAME" /></translation>
+<translation id="4296136865091727875">Esborra les <ph name="COUNT" /> notificacions</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">Has premut la tecla de drecera de l'alt contrast. Vols activar-lo?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -501,6 +502,7 @@
 <translation id="8877788021141246043">Estableix un recordatori</translation>
 <translation id="8878886163241303700">Ampliació de la pantalla</translation>
 <translation id="890616557918890486">Canvia la font</translation>
+<translation id="8909138438987180327">La bateria està a un <ph name="PERCENTAGE" />%.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">L'Assistent de Google no parla aquest idioma.</translation>
 <translation id="8938800817013097409">Dispositiu USB-C (port posterior dret)</translation>
@@ -512,6 +514,7 @@
 <translation id="9029474291399787231">Hi ha disponible una actualització d'Adobe Flash Player</translation>
 <translation id="9056839673611986238">El dispositiu es revertirà a una versió anterior</translation>
 <translation id="9070640332319875144">Configuració de l'Assistent</translation>
+<translation id="9072519059834302790">Temps restant perquè s'esgoti la bateria: <ph name="TIME_LEFT" />.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">S'està fent servir el micròfon.</translation>
@@ -523,6 +526,7 @@
 <translation id="9193626018745640770">S'està emetent contingut en un receptor desconegut</translation>
 <translation id="9194617393863864469">Inicia la sessió amb un altre usuari...</translation>
 <translation id="9210037371811586452">S'està sortint del mode d'escriptori unificat</translation>
+<translation id="9211681782751733685">Temps restant perquè es carregui totalment la bateria: <ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">Estableix fons de pantalla</translation>
 <translation id="921989828232331238">El teu pare o la teva mare han bloquejat el dispositiu per a tot el dia</translation>
 <translation id="923686485342484400">Premeu Control+Maj+Q dues vegades per tancar la sessió.</translation>

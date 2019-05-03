@@ -799,6 +799,7 @@
 <translation id="2241053333139545397">Llegir i modificar les dades d'una sèrie de llocs web</translation>
 <translation id="2241634353105152135">Només una vegada</translation>
 <translation id="2242687258748107519">Informació del fitxer</translation>
+<translation id="2246549592927364792">Vols obtenir descripcions d'imatges de Google?</translation>
 <translation id="224940702122312781">Aquesta pàgina farà servir moltes dades.</translation>
 <translation id="2249605167705922988">p. ex. 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">Obre amb el lector del sistema</translation>
@@ -1102,6 +1103,7 @@
 <translation id="271033894570825754">Nou</translation>
 <translation id="2714393097308983682">Google Play Store</translation>
 <translation id="2715751256863167692">Amb aquesta actualització es restableix el dispositiu Chromebook i se suprimeixen les dades d'usuari actuals.</translation>
+<translation id="2716986496990888774">El teu pare o la teva mare gestiona aquesta opció de configuració.</translation>
 <translation id="2718395828230677721">Llum nocturna</translation>
 <translation id="2718998670920917754">El programari antivirus ha detectat un virus.</translation>
 <translation id="2719936478972253983">S'han bloquejat les galetes següents</translation>
@@ -1152,7 +1154,6 @@
 <translation id="2783829359200813069">Selecciona els tipus d'encriptació</translation>
 <translation id="2783952358106015700">Utilitza la clau de seguretat amb <ph name="APP_NAME" /></translation>
 <translation id="2784407158394623927">S'està activant el servei de dades mòbils</translation>
-<translation id="2785008241190445880">L'adreça d'interès s'ha substituït</translation>
 <translation id="2785873697295365461">Descriptors dels fitxers</translation>
 <translation id="2787354132612937472">—</translation>
 <translation id="2788135150614412178">+</translation>
@@ -1213,6 +1214,7 @@
 <translation id="2874939134665556319">Pista anterior</translation>
 <translation id="2875698561019555027">(Pàgines d'error de Chrome)</translation>
 <translation id="2876336351874743617">Dit 2</translation>
+<translation id="2876369937070532032">Envia a Google els URL d'algunes de les pàgines que visites quan la teva seguretat està en risc</translation>
 <translation id="288042212351694283">Accés als dispositius Universal 2nd Factor</translation>
 <translation id="2881076733170862447">Quan facis clic a l'extensió</translation>
 <translation id="2881966438216424900">Darrer accés:</translation>
@@ -1393,6 +1395,7 @@ Descripció: <ph name="LINUX_DESCRIPTION" /></translation>
 <translation id="3170072451822350649">També podeu <ph name="LINK_START" />navegar com a convidat<ph name="LINK_END" /> sense iniciar sessió.</translation>
 <translation id="3172045848207518317">Un lloc web està accedint a l'entrada de vídeo</translation>
 <translation id="3177909033752230686">Idioma de la pàgina:</translation>
+<translation id="3181954750937456830">Navegació segura (et protegeix a tu i al teu dispositiu de llocs web perillosos)</translation>
 <translation id="3182749001423093222">Corrector ortogràfic</translation>
 <translation id="3183139917765991655">Importador de perfils</translation>
 <translation id="3188465121994729530">Mitjana variable</translation>
@@ -1697,6 +1700,7 @@ Descripció: <ph name="LINUX_DESCRIPTION" /></translation>
 <translation id="3664511988987167893">Icona de l'extensió</translation>
 <translation id="3665589677786828986">Chrome ha detectat que un altre programa ha malmès alguns dels paràmetres de configuració i els ha restablert als valors predeterminats originals.</translation>
 <translation id="3668570675727296296">Configuració d'idioma</translation>
+<translation id="366867565525278777">No s'ha pogut fer la instal·lació perquè falta espai d'emmagatzematge. Calen almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, suprimeix fitxers de l'emmagatzematge del dispositiu.</translation>
 <translation id="3668801437375206837">Per diagnosticar millor els problemes del Bluetooth, els Googlers poden incloure registres de Bluetooth addicionals als seus informes de suggeriments. Si aquesta opció està marcada, l'informe inclourà registres BTSnoop i HCI de la teva sessió actual, que es depurarà per suprimir tanta informació d'identificació personal (IIP) com sigui possible. L'accés a aquests registres es restringirà als gestors del grup de productes de Chrome OS a Listnr. Els registres se suprimiran permanentment al cap de 90 dies.</translation>
 <translation id="3668823961463113931">Gestors</translation>
 <translation id="3670113805793654926">Dispositius de qualsevol proveïdor</translation>
@@ -4005,6 +4009,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7289225569524511578">Obre l'aplicació de fons de pantalla</translation>
 <translation id="7290242001003353852">Aquest servei d'inici de sessió, que s'allotja a <ph name="SAML_DOMAIN" />, està accedint a la càmera.</translation>
 <translation id="7290594223351252791">Confirmació del registre</translation>
+<translation id="7295614427631867477">Tingues en compte que Android, Play i les aplicacions associades es regeixen per les seves pròpies polítiques d'ús i recollida de dades.</translation>
 <translation id="729583233778673644">Permet l'encriptació AES i RC4. L'ús d'aquesta opció augmenta el risc, ja que els xifratges RC4 no són segurs.</translation>
 <translation id="7296774163727375165">Condicions de <ph name="DOMAIN" /></translation>
 <translation id="7297443947353982503">El nom d'usuari o la contrasenya és incorrecte o no s'ha pogut realitzar l'autorització d'EAP.</translation>
@@ -4279,6 +4284,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7732111077498238432">La xarxa està controlada per una política</translation>
 <translation id="7737238973539693982">Suprimeix Linux (versió beta)</translation>
 <translation id="7740996059027112821">Estàndard</translation>
+<translation id="7746457520633464754">Per detectar aplicacions i llocs web perillosos, Chrome envia a Google els URL d'algunes de les pàgines que visites, informació limitada del sistema i part del contingut de les pàgines</translation>
 <translation id="7750228210027921155">Pantalla en pantalla</translation>
 <translation id="7751260505918304024">Mostra-ho tot</translation>
 <translation id="7754704193130578113">Pregunta on es desarà cada fitxer abans de baixar-lo</translation>
@@ -4929,7 +4935,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8732212173949624846">Llegir i canviar l'historial de navegació en tots els dispositius on s'hagi iniciat la sessió</translation>
 <translation id="8732844209475700754">Més opcions de configuració relacionades amb la privadesa, la seguretat i la recollida de dades</translation>
 <translation id="8734073480934656039">Si s'activa aquesta configuració, les aplicacions de quiosc es podran iniciar automàticament en iniciar el dispositiu.</translation>
-<translation id="8734671092194994316">Es conservarà un registre de la visita a <ph name="WEBSITE" /> a la clau de seguretat.</translation>
 <translation id="873545264931343897">Quan el connector <ph name="PLUGIN_NAME" /> s'acabi d'actualitzar, torna a carregar la pàgina per activar-lo</translation>
 <translation id="8736288397686080465">El lloc s'ha actualitzat en segon pla.</translation>
 <translation id="8737685506611670901">Obrir els enllaços del protocol <ph name="PROTOCOL" /> en lloc del gestor <ph name="REPLACED_HANDLER_TITLE" /></translation>
@@ -4962,6 +4967,7 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8780123805589053431">Obtén descripcions d'imatges de Google</translation>
 <translation id="8780443667474968681">La cerca per veu s'ha desactivat.</translation>
 <translation id="878069093594050299">Aquest certificat s'ha verificat per als usos següents:</translation>
+<translation id="8781470833671194250">Estabilització de la posició de clic</translation>
 <translation id="8781980678064919987">Apaga quan es tanqui la tapa</translation>
 <translation id="8782565991310229362">S'ha cancel·lat l'inici de l'aplicació de quiosc.</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; vol compartir una impressora &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; amb l'usuari.</translation>

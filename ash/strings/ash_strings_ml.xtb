@@ -33,7 +33,7 @@
 <translation id="1341651618736211726">ഓവര്‍ഫ്ലോ</translation>
 <translation id="1346748346194534595">ശരി</translation>
 <translation id="1351937230027495976">മെനു ചുരുക്കുക</translation>
-<translation id="1383876407941801731">തിരയൂ</translation>
+<translation id="1383876407941801731">തിരയുക</translation>
 <translation id="1419738280318246476">അറിയിപ്പ് പ്രവർത്തനം നിർവഹിക്കുന്നതിന് ഉപകരണം അൺലോക്ക് ചെയ്യുക</translation>
 <translation id="1455242230282523554">ഭാഷാ ക്രമീകരണം കാണിക്കുക</translation>
 <translation id="1467432559032391204">ഇടത്</translation>
@@ -43,7 +43,7 @@
 <translation id="1537254971476575106">പൂർണ്ണസ്‌ക്രീൻ മാഗ്‌നിഫയർ</translation>
 <translation id="15373452373711364">വലിയ മൗസ് കഴ്‌സർ</translation>
 <translation id="1546492247443594934">ഡെസ്‌ക് 2</translation>
-<translation id="1550523713251050646">കൂടുതൽ ഓപ്‌ഷനുകൾക്ക് ക്ലിക്കുചെയ്യുക</translation>
+<translation id="1550523713251050646">കൂടുതൽ ഓപ്‌ഷനുകൾക്ക് ക്ലിക്ക് ചെയ്യുക</translation>
 <translation id="1570871743947603115">Bluetooth മാറ്റുക. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">ഈ സെഷനിൽ നിങ്ങളുടെ എല്ലാ ആക്‌റ്റിവിറ്റികളും ആക്‌സസ് ചെയ്യുക</translation>
 <translation id="1608626060424371292">ഈ ഉപയോക്താവിനെ നീക്കംചെയ്യുക</translation>
@@ -60,7 +60,7 @@
 <translation id="1836215606488044471">സഹായി (ലോഡുചെയ്യുന്നു...)</translation>
 <translation id="1850504506766569011">Wi-Fi ഓഫുചെയ്‌തു.</translation>
 <translation id="1864454756846565995">USB-C ഉപകരണം (പുറകിലെ പോർട്ട്)</translation>
-<translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> എന്നതിലേക്ക് മിറർചെയ്യുന്നു</translation>
+<translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> എന്നതിലേക്ക് മിറർ ചെയ്യുന്നു</translation>
 <translation id="1885785240814121742">ഫിംഗർപ്രിന്‍റ് ഉപയോഗിച്ച് അൺലോക്ക് ചെയ്യുക</translation>
 <translation id="1919743966458266018">ടാസ്‌ക് മാനേജർ തുറക്കാനുള്ള കുറുക്കുവഴി മാറ്റി. <ph name="OLD_SHORTCUT" /> എന്നതിന് പകരം <ph name="NEW_SHORTCUT" /> ഉപയോഗിക്കുക.</translation>
 <translation id="1923539912171292317">യാന്ത്രിക ക്ലിക്കുകൾ</translation>
@@ -71,10 +71,9 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">ഏറ്റവും പുതിയ <ph name="SYSTEM_APP_NAME" /> അപ്‌ഡേറ്റിനെ കുറിച്ച് കൂടുതലറിയുക</translation>
 <translation id="1995660704900986789">പവർ ഓഫാക്കുക</translation>
-<translation id="1999763610967697511">വലിച്ചിടുക</translation>
 <translation id="2012624427112548395">Ctrl+തിരയൽ+H</translation>
 <translation id="2016340657076538683">ഒരു സന്ദേശം ടൈപ്പ് ചെയ്യുക</translation>
-<translation id="2050339315714019657">ഛായാചിത്രം</translation>
+<translation id="2050339315714019657">പോർട്രെയ്റ്റ്</translation>
 <translation id="2067602449040652523">കീബോർഡ് തെളിച്ചം</translation>
 <translation id="209965399369889474">നെറ്റ്‌വർക്കിൽ കണക്‌റ്റ് ചെയ്‌തിട്ടില്ല</translation>
 <translation id="2127372758936585790">കുറഞ്ഞ തോതിൽ വൈദ്യുതി പ്രവഹിക്കുന്ന ചാർജർ</translation>
@@ -101,7 +100,7 @@
 <translation id="2413728805700750528"><ph name="DOMAIN" /> എന്നതിനാൽ നിയന്ത്രിക്കപ്പെടുന്ന, മാനേജ് ചെയ്യപ്പെടുന്ന സെഷനാണ് <ph name="DISPLAY_NAME" /></translation>
 <translation id="2416346634399901812"><ph name="NETWORK_NAME" /> നെറ്റ്‌വർക്കിലേക്ക് കണക്‌റ്റ് ചെയ്‌തു</translation>
 <translation id="2427507373259914951">ഇടത് ക്ലിക്ക്</translation>
-<translation id="2429753432712299108">"<ph name="DEVICE_NAME" />" എന്ന Bluetooth ഉപകരണം ജോടിയാക്കുന്നതിനുള്ള അനുമതി ആവശ്യപ്പെടുന്നു. അനുമതി നൽകുന്നതിനുമുമ്പ്, ആ ഉപകരണത്തിൽ ഇപ്പറയുന്ന പാസ്‌കീ കാണിച്ചിരിക്കുന്നുവെന്ന് സ്ഥിരീകരിക്കുക: <ph name="PASSKEY" /></translation>
+<translation id="2429753432712299108">"<ph name="DEVICE_NAME" />" എന്ന Bluetooth ഉപകരണം ജോടിയാക്കുന്നതിനുള്ള അനുമതി ആവശ്യപ്പെടുന്നു. അനുമതി നൽകുന്നതിനുമുമ്പ്, ആ ഉപകരണത്തിൽ ഈ പാസ്‌കീ കാണിച്ചിരിക്കുന്നുവെന്ന് സ്ഥിരീകരിക്കുക: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">വിജ്ഞാപനങ്ങള്‍‌</translation>
 <translation id="2484513351006226581">കീബോര്‍‌ഡ് ലേഔട്ട് മാറാൻ <ph name="KEYBOARD_SHORTCUT" /> അമർത്തുക.</translation>
 <translation id="2501920221385095727">സ്‌റ്റിക്കി കീകൾ</translation>
@@ -150,7 +149,7 @@
 <translation id="3151786313568798007">ഓറിയന്റേഷൻ</translation>
 <translation id="3152934361839663679">നിങ്ങളുടെ ഉപകരണം പരമാവധി മോണിറ്ററുകളുമായി കണക്‌റ്റ് ചെയ്‌തിരിക്കുന്നു, അതിനാൽ സ്‌ക്രീനുകളിലൊന്ന് വിച്ഛേദിച്ചു.</translation>
 <translation id="3153444934357957346">ഒന്നിലധികം സൈൻ ഇന്നുകളിൽ നിങ്ങൾക്ക് <ph name="MULTI_PROFILE_USER_LIMIT" /> അക്കൗണ്ടുകൾ വരെ മാത്രമേ ഉണ്ടായിരിക്കാൻ പാടുള്ളൂ.</translation>
-<translation id="3154351730702813399">ഉപകരണ അഡ്‌മിൻ നിങ്ങളുടെ ബ്രൗസിംഗ് ആക്‌റ്റിവിറ്റി നിരീക്ഷിച്ചേക്കാം.</translation>
+<translation id="3154351730702813399">നിങ്ങളുടെ ബ്രൗസിംഗ് ആക്‌റ്റിവിറ്റി ഉപകരണ അഡ്‌മിൻ നിരീക്ഷിച്ചേക്കാം.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{ഒരു ഉപകരണത്തിലേക്ക് കണക്റ്റ് ചെയ്‌തു}other{# ഉപകരണങ്ങളിലേക്ക് കണക്റ്റ് ചെയ്‌തു}}</translation>
 <translation id="3226991577105957773">+<ph name="COUNT" /> കൂടുതൽ</translation>
 <translation id="3236488194889173876">മൊബൈൽ നെറ്റ്‌വർക്ക് ലഭ്യമല്ല</translation>
@@ -174,7 +173,7 @@
 <translation id="3513798432020909783">അക്കൗണ്ട് മാനേജ് ചെയ്യുന്നത് <ph name="MANAGER_EMAIL" /> ആണ്</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" ഭാഷയിലേയ്‌ക്ക് തിരികെ മാറ്റുക (പുനരാരംഭിക്കേണ്ടതുണ്ട്)</translation>
 <translation id="3595596368722241419">ബാറ്ററി നിറഞ്ഞു</translation>
-<translation id="3606978283550408104">ബ്രെയ്‌ലി ഡിസ്‌പ്ലേ കണക്‌റ്റുചെയ്‌തു.</translation>
+<translation id="3606978283550408104">ബ്രെയ്‌ലി ഡിസ്‌പ്ലേ കണക്‌റ്റ് ചെയ്‌തു.</translation>
 <translation id="3621202678540785336">ഇൻപുട്ട്</translation>
 <translation id="3626281679859535460">മിഴിവ്</translation>
 <translation id="3631369015426612114">ഇനിപ്പറയുന്നതിൽ നിന്നുള്ള അറിയിപ്പുകൾ അനുവദിക്കുക</translation>
@@ -200,7 +199,8 @@
 <translation id="394485226368336402">ഓഡിയോ ക്രമീകരണം</translation>
 <translation id="3962859241508114581">മുമ്പത്തെ ട്രാക്ക്</translation>
 <translation id="397105322502079400">കണക്കാക്കുന്നു...</translation>
-<translation id="3995138139523574647">USB-C ഉപകരണം (വലതുവശത്തെ പിന്നിലെ പോർട്ട്)</translation>
+<translation id="3977512764614765090">ബാറ്ററി <ph name="PERCENTAGE" />% ഉണ്ട്, ചാർജ് ചെയ്യുകയുമാണ്.</translation>
+<translation id="3995138139523574647">USB-C ഉപകരണം (വലതുവശത്ത് പിന്നിലെ പോർട്ട്)</translation>
 <translation id="4017989525502048489">ലേസർ പോയിന്റർ</translation>
 <translation id="4042660782729322247">നിങ്ങൾ സ്‌ക്രീൻ പങ്കിടുന്നു</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{ഒരു ആപ്പിൽ നിന്നുള്ള അറിയിപ്പുകൾ ഓഫാണ്}other{# ആപ്പുകളിൽ നിന്നുള്ള അറിയിപ്പുകൾ ഓഫാണ്}}</translation>
@@ -217,6 +217,7 @@
 <translation id="4279490309300973883">മിററിംഗ്</translation>
 <translation id="4281007048406351813">ടൈമറിൽ ഒരു മിനിറ്റ് ചേർക്കുക</translation>
 <translation id="4292681942966152062"><ph name="NETWORK_NAME" /> സജീവമാക്കുന്നു</translation>
+<translation id="4296136865091727875">എല്ലാ <ph name="COUNT" /> അറിയിപ്പുകളും മായ്ക്കുക</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">നിങ്ങൾ ഉയർന്ന ദൃശ്യതീവ്രതയ്‌ക്കുള്ള കീബോഡ് കുറുക്കുവഴി അമർത്തി. അത് ഓണാക്കണോ?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -261,7 +262,7 @@
 <translation id="4917385247580444890">ശക്തം</translation>
 <translation id="4918086044614829423">സ്വീകരിക്കുക</translation>
 <translation id="4924411785043111640">പുനഃരാരംഭിച്ച് പുനഃസജ്ജീകരിക്കുക</translation>
-<translation id="4961318399572185831">സ്‌ക്രീൻ കാസ്റ്റുചെയ്യുക</translation>
+<translation id="4961318399572185831">സ്‌ക്രീൻ കാസ്റ്റ് ചെയ്യുക</translation>
 <translation id="5030687792513154421">സമയം കഴിഞ്ഞു</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> പുതിയ ഫോണിലേക്ക് കണക്‌റ്റ് ചെയ്‌തു</translation>
 <translation id="5083553833479578423">കൂടുതൽ അസിസ്റ്റന്റ് ഫീച്ചറുകൾ അൺലോക്ക് ചെയ്യുക.</translation>
@@ -273,8 +274,8 @@
 <translation id="5260676007519551770">ഡെസ്‌ക് 4</translation>
 <translation id="5283198616748585639">ഒരു മിനിറ്റ് ചേർക്കുക</translation>
 <translation id="5302048478445481009">ഭാഷ</translation>
-<translation id="5313326810920013265">Bluetooth ക്രമീകരണങ്ങൾ</translation>
-<translation id="5331975486040154427">USB-C ഉപകരണം (ഇടതുവശത്തെ പിന്നിലെ പോർട്ട്)</translation>
+<translation id="5313326810920013265">ബ്ലൂടൂത്ത് ക്രമീകരണങ്ങൾ</translation>
+<translation id="5331975486040154427">USB-C ഉപകരണം (പുറകിൽ ഇടതുവശത്തെ പോർട്ട്)</translation>
 <translation id="5379115545237091094">നിരവധി ശ്രമങ്ങൾ</translation>
 <translation id="5397578532367286026">ഈ ഉപയോക്താവിന്റെ ഉപയോഗവും ചരിത്രവും chrome.com-ൽ മാനേജർക്ക് (<ph name="MANAGER_EMAIL" />) അവലോകനം ചെയ്യാനാകും.</translation>
 <translation id="5430931332414098647">തൽക്ഷണ ടെതറിംഗ്</translation>
@@ -284,7 +285,7 @@
 <translation id="5496819745535887422">നിങ്ങളുടെ അഡ്‌മിൻ ഉപകരണം മുമ്പത്തെ അവസ്ഥയിലേക്ക് പുനഃസ്ഥാപിക്കുകയാണ്. ഉപകരണം പുനഃരാരംഭിക്കുമ്പോൾ എല്ലാ ഡാറ്റയും ഇല്ലാതാക്കപ്പെടും.</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">സെഷനിൽ നിന്ന് പുറത്തുകടക്കുന്നു</translation>
-<translation id="5537725057119320332">കാസ്‌റ്റുചെയ്യുക</translation>
+<translation id="5537725057119320332">കാസ്‌റ്റ് ചെയ്യുക</translation>
 <translation id="5548285847212963613">ഈ നെറ്റ്‌വർക്കിലേക്ക് കണക്റ്റുചെയ്യാൻ "<ph name="EXTENSION_NAME" />" വിപുലീകരണത്തിന് സഹായിക്കാനാകും.</translation>
 <translation id="554893713779400387">പറഞ്ഞ് കൊടുക്കൽ മാറ്റുക</translation>
 <translation id="5571066253365925590">Bluetooth പ്രവർത്തനക്ഷമമാക്കി</translation>
@@ -300,7 +301,7 @@
 <translation id="5744083938413354016">ടാപ്പുചെയ്‌ത് വലിച്ചിടൽ</translation>
 <translation id="5750765938512549687">Bluetooth ഓഫാണ്</translation>
 <translation id="5777841717266010279">സ്‌ക്രീൻ പങ്കിടൽ നിർത്തണോ?</translation>
-<translation id="57838592816432529">മ്യൂട്ടുചെയ്യുക</translation>
+<translation id="57838592816432529">മ്യൂട്ട് ചെയ്യുക</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804"><ph name="RECEIVER_NAME" />-ൽ <ph name="ROUTE_TITLE" /> നിർത്തുക</translation>
 <translation id="5860033963881614850">ഓഫാക്കുക</translation>
@@ -356,7 +357,7 @@
 <translation id="6574601967010742428">ഉപകരണ അഡ്‌മിനിസ്‌ട്രേറ്റർക്ക് നിങ്ങളുടെ ആക്‌റ്റിവിറ്റി നിരീക്ഷിക്കാനായേക്കും.</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" />-നുള്ളിൽ സെഷൻ അവസാനിക്കുന്നു.</translation>
 <translation id="6627638273713273709">തിരയല്‍+Shift+K</translation>
-<translation id="6650933572246256093">"<ph name="DEVICE_NAME" />" എന്ന Bluetooth ഉപകരണം ജോടിയാക്കുന്നതിനുള്ള അനുമതി ആവശ്യപ്പെടുന്നു. ആ ഉപകരണത്തിൽ ഇപ്പറയുന്ന പാസ്‌കീ നൽകുക: <ph name="PASSKEY" /></translation>
+<translation id="6650933572246256093">"<ph name="DEVICE_NAME" />" എന്ന Bluetooth ഉപകരണം ജോടിയാക്കുന്നതിനുള്ള അനുമതി ആവശ്യപ്പെടുന്നു. ആ ഉപകരണത്തിൽ ഈ പാസ്‌കീ നൽകുക: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">പാസ്‌വേഡ്</translation>
 <translation id="6665545700722362599">ലൊക്കേഷൻ സേവനങ്ങൾ, ഉപകരണത്തിന്‍റെ മൈക്രോഫോൺ, ക്യാമറ അല്ലെങ്കിൽ മറ്റ് ഫീച്ചറുകൾ  ഉപയോഗിക്കാൻ, വെബ്സൈറ്റുകൾക്കും ആപ്പുകൾക്കും വിപുലീകരണങ്ങൾക്കും അനുമതി നൽകുക</translation>
 <translation id="6670153871843998651">ഡെസ്‌ക് 3</translation>
@@ -370,7 +371,7 @@
 <translation id="6790428901817661496">പ്ലേചെയ്യുക</translation>
 <translation id="6803622936009808957">പിന്തുണയ്‌ക്കുന്ന മിഴിവുകൾ കണ്ടെത്താത്തതിനാൽ പ്രദർശനങ്ങൾ പ്രതിഫലിപ്പിക്കാനായില്ല. പകരം വിപുലീകൃത ഡെസ്‌ക്‌ടോപ്പ് നൽകി.</translation>
 <translation id="6820676911989879663">ഒരു ഇടവേള എടുക്കൂ!</translation>
-<translation id="683971173229319003">തിരയൽ+L</translation>
+<translation id="683971173229319003">തിരയൽ+Lത</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> സജീവമാക്കുക</translation>
 <translation id="6910714959251846841">ഈ അപ്ഡേറ്റിനായി നിങ്ങളുടെ ഉപകരണം powerwash ചെയ്യേണ്ടതുണ്ട്. ഏറ്റവും പുതിയ <ph name="SYSTEM_APP_NAME" /> അപ്‌ഡേറ്റിനെ കുറിച്ച് കൂടുതലറിയുക.</translation>
 <translation id="6911468394164995108">മറ്റുള്ളവ ചേർക്കുക...</translation>
@@ -386,7 +387,7 @@
 <translation id="7076293881109082629">സൈൻ ഇൻ ചെയ്യുന്നു</translation>
 <translation id="7088960765736518739">ആക്‌സസ് മാറുക</translation>
 <translation id="7092922358121866860">നൈറ്റ് ‌ലൈറ്റ് ക്രമീകരണം കാണിക്കുക</translation>
-<translation id="7098389117866926363">USB-C ഉപകരണം (ഇടതുവശത്തെ പോർട്ട് പുറകിൽ)</translation>
+<translation id="7098389117866926363">USB-C ഉപകരണം (പുറകിൽ ഇടതുവശത്തെ പോർട്ട്)</translation>
 <translation id="7131634465328662194">നിങ്ങൾ സ്വമേധയാ സൈൻ ഔട്ടാകും.</translation>
 <translation id="7143207342074048698">കണക്റ്റുചെയ്യുന്നു</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
@@ -437,11 +438,11 @@
 <translation id="7886277072580235377">സൈൻ ഔട്ട് ചെയ്യുമ്പോൾ നിങ്ങളുടെ ഇന്റർനെറ്റ് സെഷൻ മായ്ക്കപ്പെടും. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">ഒരു ഇമെയിൽ അയയ്ക്കുക</translation>
 <translation id="7897375687985782769">നിങ്ങൾ സ്‌ക്രീൻ തിരിക്കുന്നതിനായി കീബോഡ് കുറുക്കുവഴി അമർത്തി. സ്‌ക്രീൻ തിരിക്കണോ?</translation>
-<translation id="7904094684485781019">ഈ അക്കൗണ്ടിന്‍റെ അഡ്‌മിനിസ്‌ട്രേറ്റർ ഒന്നിലധികം സൈൻ-ഇൻ അനുവദിക്കുന്നില്ല.</translation>
-<translation id="7933084174919150729">പ്രാഥമിക പ്രൊഫൈലിന് മാത്രമേ Google സഹായി ലഭ്യമാകൂ.</translation>
+<translation id="7904094684485781019">ഈ അക്കൗണ്ടിന്റെ അഡ്‌മിനിസ്‌ട്രേറ്റർ ഒന്നിലധികം സൈൻ-ഇൻ അനുവദിക്കുന്നില്ല.</translation>
+<translation id="7933084174919150729">പ്രാഥമിക പ്രൊഫൈലിന് മാത്രമേ Google അസിസ്റ്റന്‍റ് ലഭ്യമാകൂ.</translation>
 <translation id="79341161159229895">അക്കൗണ്ട് മാനേജ് ചെയ്യുന്നത് <ph name="FIRST_PARENT_EMAIL" />, <ph name="SECOND_PARENT_EMAIL" /> എന്നിവരാണ്</translation>
 <translation id="7977927628060636163">മൊബൈൽ നെറ്റ്‌വർക്കുകൾ തിരയുന്നു...</translation>
-<translation id="7982789257301363584">നെറ്റ്വര്‍ക്ക്</translation>
+<translation id="7982789257301363584">നെറ്റ്‌വർക്ക്</translation>
 <translation id="7984197416080286869">വിരലടയാളം ഉപയോഗിച്ച് നിരവധി ശ്രമങ്ങൾ നടത്തി</translation>
 <translation id="7994370417837006925">ഒന്നിലധികം സൈൻ ഇൻ</translation>
 <translation id="8000066093800657092">നെറ്റ്‍വര്‍ക്ക് ഇല്ല</translation>
@@ -466,7 +467,7 @@
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">കുറിപ്പ് സൃഷ്‌ടിക്കുക</translation>
 <translation id="8375916635258623388">ഈ <ph name="DEVICE_NAME" /> ഉം നിങ്ങളുടെ ഫോണും സ്വമേധയാ കണക്റ്റ് ചെയ്യും</translation>
-<translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> എന്നതിനുള്ള ഓപ്‌ഷനുകൾ മെനു</translation>
+<translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> എന്നതിനുള്ള ഓപ്‌ഷൻ മെനു</translation>
 <translation id="8394567579869570560">നിങ്ങളുടെ രക്ഷിതാവ് ഈ ഉപകരണം ലോക്ക് ചെയ്‌തു</translation>
 <translation id="8406981827175133772">പൂർണ്ണസ്‌ക്രീൻ മാഗ്‌നിഫയർ</translation>
 <translation id="8425213833346101688">മാറ്റുക</translation>
@@ -501,9 +502,10 @@
 <translation id="8877788021141246043">ഒരു റിമൈൻഡർ സജ്ജീകരിക്കുക</translation>
 <translation id="8878886163241303700">സ്‌ക്രീൻ വിപുലീകരിക്കുന്നു</translation>
 <translation id="890616557918890486">ഉറവിടം മാറ്റുക</translation>
+<translation id="8909138438987180327">ബാറ്ററി <ph name="PERCENTAGE" /> ശതമാനം ഉണ്ട്..</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google അസിസ്‌റ്റന്‍റ് ഈ ഭാഷ സംസാരിക്കില്ല.</translation>
-<translation id="8938800817013097409">USB-C ഉപകരണം (വലതുവശത്തെ പോർട്ട് പുറകിൽ)</translation>
+<translation id="8938800817013097409">USB-C ഉപകരണം (പുറകിൽ വലതുവശത്തെ പോർട്ട്)</translation>
 <translation id="8940956008527784070">ബാറ്ററി കുറവാണ് (<ph name="PERCENTAGE" />%)</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" /> ഉപയോഗിക്കുന്നു</translation>
@@ -512,6 +514,7 @@
 <translation id="9029474291399787231">Adobe Flash Player അപ്‌ഡേറ്റ് ലഭ്യമാണ്</translation>
 <translation id="9056839673611986238">ഉപകരണം പഴയ അവസ്ഥയിലേക്ക് പുനഃസ്ഥാപിക്കും</translation>
 <translation id="9070640332319875144">അസി‌സ്‌റ്റന്റ് ക്രമീകരണം</translation>
+<translation id="9072519059834302790">ബാറ്ററി തീരുന്നത് വരെ <ph name="TIME_LEFT" />.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">മൈക്രോഫോൺ ഉപയോഗത്തിലാണ്.</translation>
@@ -519,14 +522,15 @@
 <translation id="9089416786594320554">ഇൻപുട്ട്  രീതികൾ</translation>
 <translation id="9091626656156419976"><ph name="DISPLAY_NAME" /> ഡിസ്‌പ്ലേ നീക്കംചെയ്‌തു</translation>
 <translation id="9151726767154816831">അപ്‌ഡേറ്റ് ചെയ്യാൻ, പുനരാരംഭിച്ച് പവർവാഷ് ചെയ്യുക</translation>
-<translation id="9179259655489829027">സൈൻ ഇൻ ചെയ്‌ത ഏതൊരു ഉപയോക്താവിനെയും പാസ്‌വേഡ് ഇല്ലാതെ തന്നെ വേഗത്തിൽ ആക്‌സസ് ചെയ്യാൻ ഈ ഫീച്ചർ നിങ്ങളെ അനുവദിക്കുന്നു. നിങ്ങൾക്ക് വിശ്വാസമുള്ള അക്കൗണ്ടുകളിൽ മാത്രം ഈ ഫീച്ചർ ഉപയോഗിക്കുക.</translation>
+<translation id="9179259655489829027">സൈൻ ഇൻ ചെയ്‌ത ഏതൊരു ഉപയോക്താവിനെ പാസ്‌വേഡ് ഇല്ലാതെ തന്നെ വേഗത്തിൽ ആക്‌സസ് ചെയ്യാൻ ഈ ഫീച്ചർ നിങ്ങളെ അനുവദിക്കുന്നു. നിങ്ങൾക്ക് വിശ്വാസമുള്ള അക്കൗണ്ടുകളിൽ മാത്രം ഈ ഫീച്ചർ ഉപയോഗിക്കുക.</translation>
 <translation id="9193626018745640770">ഒരു അജ്ഞാത റിസീവറിൽ കാസ്‌റ്റ് ചെയ്യുന്നു</translation>
 <translation id="9194617393863864469">മറ്റൊരു ഉപയോക്താവായി സൈൻ ഇൻ ചെയ്യുക...</translation>
 <translation id="9210037371811586452">ഏകീകൃത ഡെസ്‌ക്‌ടോപ്പ് മോഡിൽ നിന്ന് പുറത്തുകടക്കുന്നു</translation>
+<translation id="9211681782751733685">ബാറ്ററി പൂർണ്ണമായി ചാർജ് ആകാൻ <ph name="TIME_REMAINING" /> ശേഷിക്കുന്നു.</translation>
 <translation id="9215934040295798075">വാൾപേപ്പർ സജ്ജമാക്കുക</translation>
 <translation id="921989828232331238">നിങ്ങളുടെ രക്ഷിതാവ് ഇന്നത്തേക്ക് ഉപകരണം ലോക്ക് ചെയ്‌തു</translation>
 <translation id="923686485342484400">സൈൻ ഔട്ട് ചെയ്യുന്നതിന് രണ്ടു‌തവണ Control Shift Q അമർത്തുക.</translation>
 <translation id="938963181863597773">എന്റെ കലണ്ടറിൽ എന്താണുള്ളത്?</translation>
 <translation id="945522503751344254">ഫീഡ്ബാക്ക് അയയ്ക്കുക</translation>
-<translation id="98515147261107953">ലാന്‍ഡ്സ്കേപ്പ്</translation>
+<translation id="98515147261107953">ലാന്‍ഡ്‌സ്‌കേപ്പ്</translation>
 </translationbundle>

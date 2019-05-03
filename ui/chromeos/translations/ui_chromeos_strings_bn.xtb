@@ -84,7 +84,7 @@
 <translation id="1931134289871235022">স্লোভাক</translation>
 <translation id="1933345018156373194">স্থানান্তরিত করা যায়নি, অপ্রত্যাশিত সমস্যা হয়েছে: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">ফিনিশ</translation>
-<translation id="1942765061641586207">ইমেজের রেজোলিউশন</translation>
+<translation id="1942765061641586207">ইমেজ রেজোলিউশন</translation>
 <translation id="1943097386230153518">নতুন পরিষেবা ইনস্টল করুন</translation>
 <translation id="1947424002851288782">জার্মান কীবোর্ড</translation>
 <translation id="197560921582345123">সম্পাদনা করতে পারবেন</translation>
@@ -409,9 +409,9 @@
 <translation id="5817397429773072584">ঐতিহ্যবাহি চীনা</translation>
 <translation id="5818003990515275822">কোরীয়</translation>
 <translation id="5819442873484330149">হাঙ্গুল ৩ সেট (সর্বশেষ)</translation>
-<translation id="5833610766403489739">এই ফাইলটির আসার পথ কোথাও বন্ধ করা আছে৷ অনুগ্রহ করে আপনার ডাউনলোড লোকেশনের সেটিংস পরীক্ষা করুন এবং আবার চেষ্টা করুন৷</translation>
+<translation id="5833610766403489739">এই ফাইলটির আসার পথ কোথাও বন্ধ করা আছে৷ অনুগ্রহ করে আপনার ডাউনলোড অবস্থানের সেটিংস পরীক্ষা করে আবার চেষ্টা করুন৷</translation>
 <translation id="5838825566232597749">মার্কিন ওয়ার্কম্যান আন্তর্জাতিক</translation>
-<translation id="5850516540536751549">এই ধরনের ফাইল সমর্থিত নয়৷ এই ধরনের ফাইল খুলতে পারে এমন অ্যাপ খুঁজতে <ph name="BEGIN_LINK" />Chrome ওয়েব স্টোর<ph name="END_LINK" /> দেখুন৷
+<translation id="5850516540536751549">এই ফাইল প্রকারটি সমর্থিত নয়৷ এই ধরণের ফাইল খুলতে পারে এমন অ্যাপ খুঁজতে অনুগ্রহ করে <ph name="BEGIN_LINK" />Chrome ওয়েব স্টোর<ph name="END_LINK" /> দেখুন৷
         <ph name="BEGIN_LINK_HELP" />আরও জানুন<ph name="END_LINK_HELP" /></translation>
 <translation id="5851063901794976166">এখানে দেখার মতো কিছু নেই...</translation>
 <translation id="5857774240076772505">Linux অ্যাপকে <ph name="FOLDER_NAME" /> ফোল্ডারের ফাইলগুলি পরিবর্তন করার অনুমতি দিন</translation>
@@ -505,6 +505,7 @@
 <translation id="6979158407327259162">Google ড্রাইভ</translation>
 <translation id="6990081529015358884">আপনার ডিভাইসে স্পেশ নেই৷</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" />টি ফোল্ডার নির্বাচিত</translation>
+<translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">ইনস্টলেশান ব্যর্থ হয়েছে৷</translation>
 <translation id="7040138676081995583">এর মাধ্যমে খুলুন...</translation>
 <translation id="7100897339030255923"><ph name="COUNT" />টি আইটেম নির্বাচিত</translation>
@@ -654,7 +655,7 @@
 <translation id="8722421161699219904">মার্কিন আন্তর্জাতিক কীবোর্ড</translation>
 <translation id="872537912056138402">ক্রোয়েশিয়</translation>
 <translation id="874420130893181774">ঐতিহ্যবাহি পিনয়িন ইনপুট পদ্ধতি</translation>
-<translation id="8775404590947523323">আপনার সম্পাদনাগুলি অটোমেটিক সেভ হয়৷ আসল ইমেজের একটি কপি রাখতে <ph name="BREAKS" /> করুন, "মূল লেখা ওভাররাইট করুন" চিহ্ন মুছে দিন</translation>
+<translation id="8775404590947523323">আপনার সম্পাদনাগুলি অটোমেটিক সংরক্ষিত হয়৷ মূল ইমেজের একটি কপি রাখতে <ph name="BREAKS" /> করুন , "মূল লেখা ওভাররাইট করুন" চিহ্ন মুছে দিন</translation>
 <translation id="8803496343472038847">রুশ ফোনেটিক কীবোর্ড</translation>
 <translation id="8808686172382650546">বিড়াল</translation>
 <translation id="8810671769985673465">জিপ করা যায়নি, আইটেমটি এখনও আছে: "<ph name="FILE_NAME" />"</translation>
@@ -668,7 +669,7 @@
 <translation id="8965697826696209160">সেখানে যথেষ্ট স্থান নেই৷</translation>
 <translation id="9017798300203431059">রাশিয়ান ফনেটিক</translation>
 <translation id="9034924485347205037">Linux ফাইল</translation>
-<translation id="9035012421917565900">আইটেমগুলিকে '<ph name="DESTINATION_NAME" />' - ফিরিয়ে নেওয়া যাবে না, তাই আপনি এই কাজটি আর পূর্বাবস্থায় ফেরাতে পারবেন না।</translation>
+<translation id="9035012421917565900">আইটেমগুলিকে '<ph name="DESTINATION_NAME" />'-এ ফিরিয়ে নেওয়া যাবে না, তাই আপনি এই কাজটি আর আগের অবস্থায় ফেরাতে পারবেন না।</translation>
 <translation id="9038620279323455325">"<ph name="FILE_NAME" />" নামের ফাইল আগে থেকেই আছে। অন্য একটি নাম লিখুন।</translation>
 <translation id="9064939804718829769">হস্তান্তর হচ্ছে...</translation>
 <translation id="9065203028668620118">সম্পাদনা</translation>

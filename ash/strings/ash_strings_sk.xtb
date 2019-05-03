@@ -71,7 +71,6 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">Ďalšie informácie o najnovšej aktualizácii aplikácie <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1995660704900986789">Vypnúť</translation>
-<translation id="1999763610967697511">Presunutie</translation>
 <translation id="2012624427112548395">Ctrl+Hľadať+H</translation>
 <translation id="2016340657076538683">Zadajte správu</translation>
 <translation id="2050339315714019657">Na výšku</translation>
@@ -200,6 +199,7 @@
 <translation id="394485226368336402">Nastavenia zvuku</translation>
 <translation id="3962859241508114581">Predchádzajúca stopa</translation>
 <translation id="397105322502079400">Prebieha výpočet...</translation>
+<translation id="3977512764614765090">Batéria je nabitá na <ph name="PERCENTAGE" /> % a nabíja sa.</translation>
 <translation id="3995138139523574647">zariadenia USB-C (port vpravo vzadu)</translation>
 <translation id="4017989525502048489">Laserový ukazovateľ</translation>
 <translation id="4042660782729322247">Zdieľate svoju obrazovku</translation>
@@ -217,6 +217,7 @@
 <translation id="4279490309300973883">Zrkadlenie</translation>
 <translation id="4281007048406351813">Pridať 1 minútu k časovaču</translation>
 <translation id="4292681942966152062">Aktivuje sa sieť <ph name="NETWORK_NAME" /></translation>
+<translation id="4296136865091727875">Vymazať všetky upozornenia (počet: <ph name="COUNT" />)</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">Stlačili ste klávesovú skratku pre vysoký kontrast. Chcete ho zapnúť?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -501,6 +502,7 @@
 <translation id="8877788021141246043">Nastaviť pripomenutie</translation>
 <translation id="8878886163241303700">Rozšírenie obrazovky</translation>
 <translation id="890616557918890486">Zmeniť zdroj</translation>
+<translation id="8909138438987180327">Úroveň stavu batérie: <ph name="PERCENTAGE" /> %.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Asistent Google nehovorí týmto jazykom.</translation>
 <translation id="8938800817013097409">Zariadenie USB-C (pravý port vzadu)</translation>
@@ -512,6 +514,7 @@
 <translation id="9029474291399787231">K dispozícii je aktualizácia prehrávača Adobe Flash Player</translation>
 <translation id="9056839673611986238">Zariadenie sa obnoví</translation>
 <translation id="9070640332319875144">Nastavenia Asistenta</translation>
+<translation id="9072519059834302790">Zostávajúci čas do vybitia batérie: <ph name="TIME_LEFT" />.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi‑Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Mikrofón sa používa.</translation>
@@ -523,6 +526,7 @@
 <translation id="9193626018745640770">Prebieha prenášanie do neznámeho prijímača</translation>
 <translation id="9194617393863864469">Prihlásiť ďalšieho používateľa...</translation>
 <translation id="9210037371811586452">Ukončuje sa režim jednotnej pracovnej plochy</translation>
+<translation id="9211681782751733685">Zostávajúci čas do úplného nabitia batérie: <ph name="TIME_REMAINING" /></translation>
 <translation id="9215934040295798075">Nastaviť tapetu</translation>
 <translation id="921989828232331238">Rodič na dnes toto zariadenie uzamkol</translation>
 <translation id="923686485342484400">Ak sa chcete odhlásiť, stlačte dvakrát kombináciu klávesov Ctrl, Shift a Q.</translation>

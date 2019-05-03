@@ -799,6 +799,7 @@
 <translation id="2241053333139545397">قراءة بياناتك وتغييرها على عدد من المواقع</translation>
 <translation id="2241634353105152135">مرة واحدة فقط</translation>
 <translation id="2242687258748107519">معلومات الملف</translation>
+<translation id="2246549592927364792">‏هل ترغب في الحصول على أوصاف الصور من Google؟</translation>
 <translation id="224940702122312781">ستستخدم هذه الصفحة الكثير من البيانات.</translation>
 <translation id="2249605167705922988">مثال: 1-5، 8، 11-13</translation>
 <translation id="2251218783371366160">فتح باستخدام عارض النظام</translation>
@@ -1103,6 +1104,7 @@
 <translation id="271033894570825754">جديدة</translation>
 <translation id="2714393097308983682">‏متجر Google Play</translation>
 <translation id="2715751256863167692">‏تؤدي هذه الترقية إلى إعادة تعيين جهاز Chromebook وإزالة بيانات المستخدمين الحالية.</translation>
+<translation id="2716986496990888774">يتولى إدارة هذا الإعداد أحد الوالدين.</translation>
 <translation id="2718395828230677721">الإضاءة الليلية</translation>
 <translation id="2718998670920917754">اكتشف برنامج مكافحة الفيروسات فيروسًا.</translation>
 <translation id="2719936478972253983">تم حظر ملفات تعريف الارتباط التالية</translation>
@@ -1153,7 +1155,6 @@
 <translation id="2783829359200813069">اختيار أنواع التشفير</translation>
 <translation id="2783952358106015700">استخدام مفتاح الأمان مع <ph name="APP_NAME" /></translation>
 <translation id="2784407158394623927">جارٍ تفعيل خدمة بيانات الجوال.</translation>
-<translation id="2785008241190445880">تم استبدال الإشارة المرجعية</translation>
 <translation id="2785873697295365461">أدوات وصف الملفات</translation>
 <translation id="2787354132612937472">—</translation>
 <translation id="2788135150614412178">+</translation>
@@ -1214,6 +1215,7 @@
 <translation id="2874939134665556319">المقطع الصوتي السابق</translation>
 <translation id="2875698561019555027">‏(صفحات الخطأ في Chrome)</translation>
 <translation id="2876336351874743617">إصبع 2</translation>
+<translation id="2876369937070532032">‏يتم إرسال عناوين URL لبعض الصفحات التي تزورها إلى Google، عندما يكون أمانك في خطر</translation>
 <translation id="288042212351694283">الوصول إلى أجهزة العامل الثاني العالمي</translation>
 <translation id="2881076733170862447">عند النقر على "الإضافة"</translation>
 <translation id="2881966438216424900">تاريخ آخر دخول:</translation>
@@ -1396,6 +1398,7 @@
 <translation id="3170072451822350649">يمكنك أيضًا تخطي تسجيل الدخول و<ph name="LINK_START" />التصفح كضيف<ph name="LINK_END" />.</translation>
 <translation id="3172045848207518317">يحاول موقع ويب الوصول إلى إدخال الفيديو</translation>
 <translation id="3177909033752230686">لغة الصفحة:</translation>
+<translation id="3181954750937456830">التصفُّح الآمن (يحميك ويحمي جهازك من مواقع الويب الضارة)</translation>
 <translation id="3182749001423093222">التدقيق الإملائي</translation>
 <translation id="3183139917765991655">مستورد الملف الشخصي</translation>
 <translation id="3188465121994729530">معدل الانتقال</translation>
@@ -1700,6 +1703,7 @@
 <translation id="3664511988987167893">رمز الإضافة</translation>
 <translation id="3665589677786828986">‏اكتشف Chrome أن بعض إعداداتك تم إتلافها من قبل برنامج آخر وإعادة تعيينها للحالة التلقائية الأصلية.</translation>
 <translation id="3668570675727296296">إعدادات اللغة</translation>
+<translation id="366867565525278777">تعذَّر التثبيت لعدم توفر مساحة تخزين. تتطلب <ph name="INSTALL_SIZE" /> على الأقل من المساحة الخالية. لتفريغ مساحة، يمكنك حذف الملفات من مساحة تخزين الجهاز.</translation>
 <translation id="3668801437375206837">‏لتشخيص مشاكل البلوتوث بشكل أفضل، يمكن لمستخدمي Google تضمين سجلّات بلوتوث إضافية مع تقارير التعليقات. وعند تحديد هذا الخيار، سيتضمَّن تقريرك للجلسة الحالية ملفات بتنسيقات btsnoop وسجلّات وحدة تحكُّم المُضيف (HCI) مُصحَّحة لإزالة أكبر قدر ممكن من معلومات تحديد الهوية الشخصية. وسيقتصر الوصول إلى هذه السجلّات على مديري مجموعة منتجات نظام التشغيل Chrome في Listnr. وستُزال السجلّات نهائيًا بعد 90 يومًا.</translation>
 <translation id="3668823961463113931">المعالجات</translation>
 <translation id="3670113805793654926">أجهزة من أي مورّد</translation>
@@ -2102,7 +2106,7 @@
 <translation id="4275830172053184480">إعادة تشغيل جهازك</translation>
 <translation id="4278101229438943600">المساعد جاهز</translation>
 <translation id="4278390842282768270">مسموح</translation>
-<translation id="4281844954008187215">شروط الخدمة</translation>
+<translation id="4281844954008187215">بنود الخدمة</translation>
 <translation id="4282196459431406533">‏Smart Lock قيد التشغيل</translation>
 <translation id="4285418559658561636">تحديث كلمة المرور</translation>
 <translation id="4285498937028063278">إزالة تثبيت</translation>
@@ -2165,7 +2169,7 @@
 <translation id="438503109373656455">ساراتوجا</translation>
 <translation id="4387004326333427325">تم رفض شهادة المصادقة عن بُعد</translation>
 <translation id="4389091756366370506">المستخدم <ph name="VALUE" /></translation>
-<translation id="4390000551125140321">{0,plural, =1{نافذة واحدة للتصفُّح المتخفي}zero{# نافذة مفتوحة للتصفُّح المتخفي}two{نافذتان مفتوحان للتصفُّح المتخفي (#)}few{# نوافذ مفتوحة للتصفُّح المتخفي}many{# نافذة مفتوحة للتصفُّح المتخفي}other{# نافذة مفتوحة للتصفُّح المتخفي}}</translation>
+<translation id="4390000551125140321">{0,plural, =1{نافذة واحدة للتصفُّح المتخفي}zero{# نافذة مفتوحة للتصفُّح المتخفي}two{نافذتان مفتوحان للتصفُّح المتخفي (#)}few{# نوافذ مفتوحة للتصفُّح المتخفي}many{# نافذةً مفتوحةً للتصفُّح المتخفي}other{# نافذة مفتوحة للتصفُّح المتخفي}}</translation>
 <translation id="439266289085815679">يتم التحكّم في تهيئة البلوتوث من قِبل <ph name="USER_EMAIL" />.</translation>
 <translation id="4394049700291259645">إيقاف</translation>
 <translation id="4400367121200150367">ستظهر هنا مواقع الويب التي لا يتم حفظ كلمات المرور لها مطلقًا</translation>
@@ -4005,6 +4009,7 @@
 <translation id="7289225569524511578">فتح تطبيق الخلفية</translation>
 <translation id="7290242001003353852">تحاول خدمة تسجيل الدخول هذه، المُستضافة من قبل <ph name="SAML_DOMAIN" />، الدخول إلى الكاميرا.</translation>
 <translation id="7290594223351252791">تأكيد التسجيل</translation>
+<translation id="7295614427631867477">‏تجدر الإشارة إلى أن Android وPlay والتطبيقات المرتبطة بها محكومة بسياسات الاستخدام وجمع البيانات.</translation>
 <translation id="729583233778673644">‏السماح بتشفير AES وRC4: يؤدي استخدام هذا الخيار إلى زيادة المخاطر، لأن رموز RC4 غير آمنة.</translation>
 <translation id="7296774163727375165">بنود <ph name="DOMAIN" /></translation>
 <translation id="7297443947353982503">‏اسم المستخدم/كلمة المرور غير صحيحة أو تعذّرت مصادقة EAP</translation>
@@ -4281,6 +4286,7 @@
 <translation id="7732111077498238432">هناك سياسة تحكم هذه الشبكة</translation>
 <translation id="7737238973539693982">‏حذف Linux (إصدار تجريبي)</translation>
 <translation id="7740996059027112821">قياسي</translation>
+<translation id="7746457520633464754">‏لرصد التطبيقات ومواقع الويب الضارة، يُرسل Chrome عناوين URL لبعض الصفحات التي زرتها ومعلومات محدودة للنظام وبعض أنواع محتوى الصفحات إلى Google.</translation>
 <translation id="7750228210027921155">نافذة ضمن النافذة</translation>
 <translation id="7751260505918304024">عرض الكل</translation>
 <translation id="7754704193130578113">السؤال عن مكان حفظ الملفّات قبل التحميل</translation>
@@ -4932,7 +4938,6 @@
 <translation id="8732212173949624846">قراءة سجل التصفح وتعديله على كل الأجهزة التي سجلت الدخول إليها</translation>
 <translation id="8732844209475700754">مزيد من الإعدادات المتعلِّقة بالخصوصية والأمان وجمع البيانات</translation>
 <translation id="8734073480934656039">يتيح تفعيل هذا الإعداد تشغيل تطبيقات الكشك تلقائيًا عند بدء التشغيل.</translation>
-<translation id="8734671092194994316">سيؤدي ذلك إلى مغادرة سجلّ زيارتك إلى <ph name="WEBSITE" /> في مفتاح الأمان.</translation>
 <translation id="873545264931343897">عند انتهاء <ph name="PLUGIN_NAME" /> من التحديث، أعد تحميل الصفحة لتفعيلها</translation>
 <translation id="8736288397686080465">تم تحديث هذا الموقع في الخلفية.</translation>
 <translation id="8737685506611670901">فتح روابط <ph name="PROTOCOL" /> بدلاً من <ph name="REPLACED_HANDLER_TITLE" /></translation>
@@ -4965,6 +4970,7 @@
 <translation id="8780123805589053431">‏الحصول على أوصاف الصور من Google</translation>
 <translation id="8780443667474968681">تم إيقاف ميزة البحث الصوتي.</translation>
 <translation id="878069093594050299">تم التحقق من هذه الشهادة للاستخدامات التالية:</translation>
+<translation id="8781470833671194250">النقر على تثبيت الموضع</translation>
 <translation id="8781980678064919987">إيقاف التشغيل عند إغلاق الغطاء</translation>
 <translation id="8782565991310229362">‏تم إلغاء تشغيل تطبيق Kiosk.</translation>
 <translation id="8783093612333542422">‏يرغب &lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; بمشاركة طابعة &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; معك.</translation>

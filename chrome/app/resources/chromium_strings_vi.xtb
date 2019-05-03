@@ -51,6 +51,7 @@
 <translation id="2718390899429598676">Để bảo mật hơn, Chromium sẽ mã hóa dữ liệu của bạn.</translation>
 <translation id="2770231113462710648">Thay đổi trình duyệt mặc định thành:</translation>
 <translation id="2799223571221894425">Chạy lại</translation>
+<translation id="2838154144102149890">Để cập nhật, Chromium cần ngừng chạy trên máy tính này. Nếu ngừng chạy, những người dùng khác đăng nhập vào máy tính này có thể bị mất các thay đổi chưa lưu.</translation>
 <translation id="2847479871509788944">Xóa khỏi Chromium...</translation>
 <translation id="2886012850691518054">Tùy chọn: giúp cải thiện Chromium bằng cách tự động gửi thống kê sử dụng và báo cáo sự cố cho Google.</translation>
 <translation id="2898082584336937987">Cài đặt Chromium trên điện thoại của bạn. Chúng tôi sẽ gửi SMS tới điện thoại của bạn: <ph name="PHONE_NUMBER" /></translation>
@@ -187,6 +188,7 @@ Một số tính năng có thể không khả dụng. Hãy chỉ định thư m�
 <translation id="6810143991807788455">Giúp cải thiện Chromium bằng cách báo cáo cài đặt hiện tại</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (đã sao chép vào Chromium)</translation>
+<translation id="6868056391275687737">Các bản sao khác của Chromium đang chạy. Để cập nhật, hãy đóng các bản sao này.</translation>
 <translation id="6893813176749746474">Chromium đã được cập nhật nhưng bạn đã không sử dụng trình duyệt này trong ít nhất 30 ngày.</translation>
 <translation id="6964305034639999644">Mở liên kết trong cửa sổ ẩn danh của Chromium</translation>
 <translation id="6970811910055250180">Đang cập nhật thiết bị của bạn...</translation>
@@ -257,6 +259,7 @@ Vui lòng xem email của bạn tại <ph name="ACCOUNT_EMAIL" /> để được
 <translation id="8697124171261953979">Tiện ích này cũng điều khiển trang nào được hiển thị khi bạn khởi động Chromium hoặc tìm kiếm từ Thanh địa chỉ.</translation>
 <translation id="8704119203788522458">Đây là Chromium của bạn</translation>
 <translation id="8704255848199359374">Dịch vụ này sử dụng cùng một trình kiểm tra lỗi chính tả dùng trong Google Tìm kiếm. Chrome gửi cho Google văn bản mà bạn nhập vào trình duyệt. Bạn luôn có thể thay đổi hành động này trong các tùy chọn cài đặt.</translation>
+<translation id="8748383401829947534">Thoát khỏi tất cả các bản sao của Chromium.</translation>
 <translation id="8796602469536043152">Chromium cần có quyền truy cập vào máy ảnh và micrô của bạn cho trang web này</translation>
 <translation id="8803635938069941624">Điều khoản Chromium OS</translation>
 <translation id="8821041990367117597">Chromium không thể đồng bộ hóa dữ liệu của bạn vì chi tiết đăng nhập tài khoản của bạn đã cũ.</translation>

@@ -71,7 +71,6 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" />（USB）</translation>
 <translation id="1993072747612765854"><ph name="SYSTEM_APP_NAME" /> の最新アップデートの詳細をご確認ください</translation>
 <translation id="1995660704900986789">電源を切る</translation>
-<translation id="1999763610967697511">ドラッグ＆ドロップ</translation>
 <translation id="2012624427112548395">Ctrl+検索+H</translation>
 <translation id="2016340657076538683">メッセージを入力</translation>
 <translation id="2050339315714019657">縦</translation>
@@ -200,6 +199,7 @@
 <translation id="394485226368336402">音声設定</translation>
 <translation id="3962859241508114581">前の曲</translation>
 <translation id="397105322502079400">計算しています...</translation>
+<translation id="3977512764614765090">電池残量は <ph name="PERCENTAGE" />% です（現在充電中）。</translation>
 <translation id="3995138139523574647">USB-C デバイス（右奥のポート）</translation>
 <translation id="4017989525502048489">レーザー ポインタ</translation>
 <translation id="4042660782729322247">画面を共有しています</translation>
@@ -217,6 +217,7 @@
 <translation id="4279490309300973883">ミラーリング</translation>
 <translation id="4281007048406351813">タイマーに 1 分追加</translation>
 <translation id="4292681942966152062"><ph name="NETWORK_NAME" /> を有効化しています</translation>
+<translation id="4296136865091727875"><ph name="COUNT" /> 件の通知をすべて消去</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">ハイ コントラストのキーボード ショートカットを押しました。この機能をオンにしますか？</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -502,6 +503,7 @@
 <translation id="8877788021141246043">リマインダーを設定して</translation>
 <translation id="8878886163241303700">画面を拡張しています</translation>
 <translation id="890616557918890486">ソースを変更</translation>
+<translation id="8909138438987180327">電池残量は <ph name="PERCENTAGE" />% です。</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google アシスタントはこの言語に対応していません。</translation>
 <translation id="8938800817013097409">USB-C デバイス（背面右のポート）</translation>
@@ -513,6 +515,7 @@
 <translation id="9029474291399787231">Adobe Flash Player のアップデートが利用可能</translation>
 <translation id="9056839673611986238">デバイスはロールバックされます</translation>
 <translation id="9070640332319875144">アシスタントの設定</translation>
+<translation id="9072519059834302790">あと <ph name="TIME_LEFT" />で電池がなくなります。</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">マイクは使用中です。</translation>
@@ -524,6 +527,7 @@
 <translation id="9193626018745640770">不明な受信デバイスにキャストしています</translation>
 <translation id="9194617393863864469">別のユーザーとしてログイン...</translation>
 <translation id="9210037371811586452">デスクトップ統合モードの終了中</translation>
+<translation id="9211681782751733685">充電完了まであと <ph name="TIME_REMAINING" />です。</translation>
 <translation id="9215934040295798075">壁紙を設定</translation>
 <translation id="921989828232331238">保護者の方がこのデバイスを終日ロックしています</translation>
 <translation id="923686485342484400">ログアウトするには、Ctrl Shift Q を 2 回押します。</translation>

@@ -25,6 +25,7 @@
 <translation id="1585657529869845941">Если появится кнопка <ph name="BEGIN_BOLD" />Изменить<ph name="END_BOLD" />, нажмите ее.</translation>
 <translation id="1587223624401073077">Google Chrome использует камеру.</translation>
 <translation id="1587325591171447154">Chrome заблокировал файл <ph name="FILE_NAME" /> как опасный.</translation>
+<translation id="1590588151039584890">Чтобы выполнить обновление, необходимо остановить работу Chrome. В результате могут быть утеряны несохраненные изменения, внесенные другими пользователями на этом компьютере.</translation>
 <translation id="1619887657840448962">Чтобы обеспечить безопасность ваших данных, некоторые расширения были отключены, так как <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> не содержит сведений о них (то есть они могли быть установлены без вашего ведома).</translation>
 <translation id="1628000112320670027">Справка Google Chrome</translation>
 <translation id="1662639173275167396">Chrome OS, как и <ph name="BEGIN_LINK_LINUX_OSS" />Linux (бета-версия)<ph name="END_LINK_LINUX_OSS" />, работает благодаря дополнительному <ph name="BEGIN_LINK_CROS_OSS" />программному обеспечению с открытым исходным кодом<ph name="END_LINK_CROS_OSS" />.</translation>
@@ -164,6 +165,7 @@
 <translation id="5386244825306882791">Кроме того, расширение изменило стартовую страницу Chrome и поисковую систему, используемую по умолчанию при вводе запроса в омнибокс.</translation>
 <translation id="5430073640787465221">Файл настроек поврежден или недействителен. Google Chrome не может восстановить ваши параметры.</translation>
 <translation id="5483595757826856374">{0,plural, =0{Chrome перезапускается}=1{Chrome перезапустится через 1 секунду}one{Chrome перезапустится через # секунду}few{Chrome перезапустится через # секунды}many{Chrome перезапустится через # секунд}other{Chrome перезапустится через # секунды}}</translation>
+<translation id="5543953544073077331">Запущены другие экземпляры Chrome. Чтобы выполнить обновление, закройте их.</translation>
 <translation id="556024056938947818">Вводимые пароли будут отображаться в Google Chrome.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598">Chrome заблокировал файл <ph name="FILE_NAME" /> как потенциально опасный.</translation>
@@ -224,6 +226,7 @@
 <translation id="7473136999113284234">Chrome обновляется автоматически, поэтому у вас всегда будет установлена последняя версия.</translation>
 <translation id="7486227612705979895">Chrome получит доступ к Google Диску, чтобы вы могли просматривать рекомендации в адресной строке</translation>
 <translation id="748945194546522577">Chrome заблокировал этот файл как опасный. Вы пользуетесь Дополнительной защитой.</translation>
+<translation id="7531671357096394523">Закройте все экземпляры Chrome</translation>
 <translation id="7535429826459677826">Google Chrome для разработчиков</translation>
 <translation id="7552219221109926349">Отображать Chrome OS на этом языке</translation>
 <translation id="7561940363513215021">{0,plural, =1{Chrome перезапустится через 1 минуту}one{Chrome перезапустится через # минуту}few{Chrome перезапустится через # минуты}many{Chrome перезапустится через # минут}other{Chrome перезапустится через # минуты}}</translation>

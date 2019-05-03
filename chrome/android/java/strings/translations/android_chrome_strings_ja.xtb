@@ -193,6 +193,7 @@
 <translation id="2359808026110333948">続行</translation>
 <translation id="2369533728426058518">開いているタブ</translation>
 <translation id="2387895666653383613">テキストの拡大と縮小</translation>
+<translation id="2394602618534698961">ダウンロードしたファイルがここに表示されます</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2410754283952462441">アカウントの選択</translation>
 <translation id="2414886740292270097">暗</translation>
@@ -204,6 +205,7 @@
 <translation id="2450083983707403292"><ph name="FILE_NAME" /> のダウンロードをやり直してもよろしいですか？</translation>
 <translation id="2476578072172137802">サイトの設定</translation>
 <translation id="2482878487686419369">通知</translation>
+<translation id="2490684707762498678"><ph name="APP_NAME" /> によって管理されています</translation>
 <translation id="2494974097748878569">Chrome の Google アシスタント</translation>
 <translation id="2496180316473517155">閲覧履歴</translation>
 <translation id="2498359688066513246">ヘルプとフィードバック</translation>
@@ -254,6 +256,7 @@
 <translation id="2845873210977809562">開いているタブが閉じられました</translation>
 <translation id="2870560284913253234">サイト</translation>
 <translation id="2874939134665556319">前のトラック</translation>
+<translation id="2876369937070532032">セキュリティ上のリスクがある場合に、アクセスした一部のページの URL を Google に送信します</translation>
 <translation id="2876764156902388290">Chrome ではデータ使用量を削減してこのページを表示しています</translation>
 <translation id="2888126860611144412">Chrome について</translation>
 <translation id="2891154217021530873">ページの読み込みを停止</translation>
@@ -289,6 +292,7 @@
 <translation id="3148434565183091099">お使いのどのデバイスでも同じブックマークを使用するには、Chrome にログインします。</translation>
 <translation id="3157842584138209013">[その他のオプション] からデータ削減量を確認できます</translation>
 <translation id="3166827708714933426">タブとウィンドウのショートカット</translation>
+<translation id="3181954750937456830">セーフ ブラウジング（危険なサイトからユーザーとデバイスを保護します）</translation>
 <translation id="3190152372525844641"><ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />で Chrome の権限を有効にしてください。</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> の保存データ</translation>
 <translation id="3205824638308738187">あと少しで完了です</translation>
@@ -442,6 +446,7 @@
 <translation id="4404568932422911380">ブックマークがありません</translation>
 <translation id="4409723563706114196">ページ予測の使用</translation>
 <translation id="4411535500181276704">ライトモード</translation>
+<translation id="4415276339145661267">Google アカウントの管理</translation>
 <translation id="4432792777822557199">今後、<ph name="SOURCE_LANGUAGE" />のページは<ph name="TARGET_LANGUAGE" />に翻訳されます</translation>
 <translation id="4433925000917964731">Google から提供されている軽量版のページ</translation>
 <translation id="4434045419905280838">ポップアップとリダイレクト</translation>
@@ -604,6 +609,7 @@
 <translation id="5512137114520586844">このアカウントは <ph name="PARENT_NAME" /> によって管理されています。</translation>
 <translation id="5514904542973294328">このデバイスの管理者によって無効にされています</translation>
 <translation id="5515439363601853141">パスワードを表示するにはロックを解除してください</translation>
+<translation id="5516455585884385570">通知設定を開く</translation>
 <translation id="5517095782334947753"><ph name="FROM_ACCOUNT" /> のブックマーク、履歴、パスワードとその他の設定を使用できます。</translation>
 <translation id="5524843473235508879">リダイレクトがブロックされました。</translation>
 <translation id="5527082711130173040">Chrome ではデバイスをスキャンするために現在地情報にアクセスする必要があります。<ph name="BEGIN_LINK1" />権限を更新<ph name="END_LINK1" />してください。また、現在地情報へのアクセスが<ph name="BEGIN_LINK2" />このデバイスでオフになっています<ph name="END_LINK2" />。</translation>
@@ -619,6 +625,7 @@
 <translation id="5581519193887989363">同期する項目はいつでも [<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />] で選択できます。</translation>
 <translation id="5595485650161345191">住所の編集</translation>
 <translation id="5596627076506792578">その他のオプション</translation>
+<translation id="5599455543593328020">シークレット モード</translation>
 <translation id="5620928963363755975">[その他のオプション] から [ダウンロード] を開いて自分のファイルやページを探すことができます</translation>
 <translation id="5626134646977739690">名前:</translation>
 <translation id="5639724618331995626">すべてのサイトを許可</translation>
@@ -913,11 +920,13 @@
 <translation id="7649070708921625228">ヘルプ</translation>
 <translation id="7658239707568436148">キャンセル</translation>
 <translation id="7665369617277396874">アカウントを追加</translation>
+<translation id="766587987807204883">記事がここに表示されます。これらの記事はオフラインでも読むことができます</translation>
 <translation id="7682724950699840886">推奨される対策: デバイスに十分な空き容量があることを確認し、再度エクスポートを試します。</translation>
 <translation id="7698359219371678927"><ph name="APP_NAME" /> でメールを作成</translation>
 <translation id="7704317875155739195">検索語句や URL をオートコンプリートする</translation>
 <translation id="773466115871691567"><ph name="SOURCE_LANGUAGE" />のページを常に翻訳する</translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" />（<ph name="SPACE_OTHER" />）</translation>
+<translation id="7746457520633464754">危険なアプリやサイトを検出するために、アクセスした一部のページの URL と限定的なシステム情報、一部のページ コンテンツが Chrome から Google に送信されます</translation>
 <translation id="7762668264895820836">SD カード <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">住所を追加</translation>
 <translation id="7765158879357617694">移動</translation>

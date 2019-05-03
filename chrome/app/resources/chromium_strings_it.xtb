@@ -51,6 +51,7 @@
 <translation id="2718390899429598676">Per maggiore sicurezza, Chromium cripterà i tuoi dati.</translation>
 <translation id="2770231113462710648">Cambia browser predefinito con:</translation>
 <translation id="2799223571221894425">Riavvia</translation>
+<translation id="2838154144102149890">Per aggiornarsi, Chromium deve essere chiuso su questo computer. Questo potrebbe causare la perdita di modifiche non salvate per altri utenti che hanno eseguito l'accesso a questo computer.</translation>
 <translation id="2847479871509788944">Rimuovi da Chromium...</translation>
 <translation id="2886012850691518054">Facoltativo: aiutaci a migliorare Chromium inviando automaticamente a Google statistiche sull'utilizzo e rapporti sugli arresti anomali.</translation>
 <translation id="2898082584336937987">Installa Chromium sul telefono. Invieremo un SMS al tuo numero di telefono: <ph name="PHONE_NUMBER" /></translation>
@@ -187,6 +188,7 @@ Alcune funzioni potrebbero non essere disponibili. Specifica un'altra directory 
 <translation id="6810143991807788455">Contribuisci a migliorare Chromium indicando le impostazioni attuali</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (copiata in Chromium)</translation>
+<translation id="6868056391275687737">Sono in esecuzione altre copie di Chromium. Chiudile per eseguire l'aggiornamento.</translation>
 <translation id="6893813176749746474">Chromium è stato aggiornato ma non lo utilizzi da almeno 30 giorni.</translation>
 <translation id="6964305034639999644">Apri link in una finestra di navigazione in inco&amp;gnito di Chromium</translation>
 <translation id="6970811910055250180">Aggiornamento del dispositivo in corso...</translation>
@@ -257,6 +259,7 @@ Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EM
 <translation id="8697124171261953979">Controlla anche la pagina visualizzata all'avvio di Chromium o quando esegui ricerche dalla Omnibox.</translation>
 <translation id="8704119203788522458">Questo è il tuo account Chromium</translation>
 <translation id="8704255848199359374">Viene usato lo stesso controllo ortografico utilizzato nella Ricerca Google. Il testo digitato nel browser viene inviato a Google. Puoi modificare questo comportamento in qualsiasi momento nelle impostazioni.</translation>
+<translation id="8748383401829947534">Chiudi tutte le copie di Chromium.</translation>
 <translation id="8796602469536043152">Per questo sito Chromium ha bisogno dell'autorizzazione ad accedere alla fotocamera e al microfono</translation>
 <translation id="8803635938069941624">Termini di Chromium OS</translation>
 <translation id="8821041990367117597">Impossibile sincronizzare i dati in Chromium perché i dati di accesso dell'account sono obsoleti.</translation>

@@ -53,6 +53,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="2718390899429598676">For added security, Chromium will encrypt your data.</translation>
 <translation id="2770231113462710648">Change default browser to:</translation>
 <translation id="2799223571221894425">Relaunch</translation>
+<translation id="2838154144102149890">To update, Chromium needs to stop running on this computer. This may cause other users logged into this computer to lose unsaved changes.</translation>
 <translation id="2847479871509788944">Remove from Chromium...</translation>
 <translation id="2886012850691518054">Optional: Help make Chrome better by automatically sending usage statistics and crash reports to Google.</translation>
 <translation id="2898082584336937987">Install Chromium on your phone. We’ll send an SMS to your phone: <ph name="PHONE_NUMBER" /></translation>
@@ -189,6 +190,7 @@ Some features may be unavailable. Please specify a different profile directory o
 <translation id="6810143991807788455">Help make Chromium better by reporting the current settings</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (copied to Chromium)</translation>
+<translation id="6868056391275687737">Other copies of Chromium are running. To update, close them.</translation>
 <translation id="6893813176749746474">Chromium has been updated, but you haven't used it for 30 days or more.</translation>
 <translation id="6964305034639999644">Open link in Chromium inco&amp;gnito window</translation>
 <translation id="6970811910055250180">Updating your device...</translation>
@@ -259,6 +261,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.
 <translation id="8697124171261953979">It also controls what page is shown when you start Chromium or search from the Omnibox.</translation>
 <translation id="8704119203788522458">This is your Chromium</translation>
 <translation id="8704255848199359374">This uses the same spellchecker that's used in Google search. Text that you type in the browser is sent to Google. You can always change this behaviour in settings.</translation>
+<translation id="8748383401829947534">Quit all copies of Chromium.</translation>
 <translation id="8796602469536043152">Chromium needs permission to access your camera and microphone for this site</translation>
 <translation id="8803635938069941624">Chromium OS terms</translation>
 <translation id="8821041990367117597">Chromium could not sync your data because your account sign-in details are out of date.</translation>

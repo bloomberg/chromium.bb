@@ -27,6 +27,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="1585657529869845941">Klik op <ph name="BEGIN_BOLD" />Toch overschakelen<ph name="END_BOLD" /> als die knop wordt weergegeven</translation>
 <translation id="1587223624401073077">Google Chrome gebruikt je camera.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> is gevaarlijk en is daarom door Chrome geblokkeerd.</translation>
+<translation id="1590588151039584890">Chrome moet worden gestopt op deze computer om een update uit te voeren. Hierdoor kunnen andere gebruikers die bij deze computer zijn ingelogd, niet-opgeslagen wijzigingen kwijtraken.</translation>
 <translation id="1619887657840448962">We hebben de volgende extensie uitgeschakeld die niet wordt vermeld in de <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> en mogelijk zonder je medeweten is toegevoegd. We doen dit om Chrome veiliger te maken.</translation>
 <translation id="1628000112320670027">Hulp bij Chrome</translation>
 <translation id="1662639173275167396">Chrome OS wordt mogelijk gemaakt door aanvullende <ph name="BEGIN_LINK_CROS_OSS" />open-sourcesoftware<ph name="END_LINK_CROS_OSS" />, net als <ph name="BEGIN_LINK_LINUX_OSS" />Linux (bèta)<ph name="END_LINK_LINUX_OSS" />.</translation>
@@ -170,6 +171,7 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="5386244825306882791">Hiermee wordt ook gecontroleerd welke pagina wordt weergegeven wanneer je Chrome start of vanuit de omnibox zoekt.</translation>
 <translation id="5430073640787465221">Je bestand met voorkeuren is beschadigd of ongeldig. Google Chrome kan je instellingen niet herstellen.</translation>
 <translation id="5483595757826856374">{0,plural, =0{Chrome wordt nu opnieuw gestart}=1{Chrome wordt over één seconde opnieuw gestart}other{Chrome wordt over # seconden opnieuw gestart}}</translation>
+<translation id="5543953544073077331">Er zijn andere exemplaren van Chrome actief. Sluit ze om een update uit te voeren.</translation>
 <translation id="556024056938947818">Google Chrome probeert wachtwoorden weer te geven.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> kan gevaarlijk zijn en is daarom door Chrome geblokkeerd.</translation>
@@ -230,6 +232,7 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="7473136999113284234">Chrome wordt automatisch bijgewerkt, zodat je altijd beschikt over de nieuwste versie.</translation>
 <translation id="7486227612705979895">Chrome gebruikt de toegang tot je Drive om suggesties te doen in de adresbalk</translation>
 <translation id="748945194546522577">Dit bestand is gevaarlijk en is daarom door Chrome geblokkeerd. Je bent beschermd met Geavanceerde beveiliging.</translation>
+<translation id="7531671357096394523">Sluit alle exemplaren van Chrome.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Chrome OS weergeven in deze taal</translation>
 <translation id="7561940363513215021">{0,plural, =1{Chrome wordt over één minuut opnieuw gestart}other{Chrome wordt over # minuten opnieuw gestart}}</translation>

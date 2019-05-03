@@ -71,7 +71,6 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">Sužinokite daugiau apie naujausią „<ph name="SYSTEM_APP_NAME" />“ naujinį</translation>
 <translation id="1995660704900986789">Išjungti maitinimą</translation>
-<translation id="1999763610967697511">Nuvilkti</translation>
 <translation id="2012624427112548395">„Ctrl“ + paieškos klavišas + H</translation>
 <translation id="2016340657076538683">Įveskite pranešimą</translation>
 <translation id="2050339315714019657">Stačias</translation>
@@ -200,6 +199,7 @@
 <translation id="394485226368336402">Garso nustatymai</translation>
 <translation id="3962859241508114581">Ankstesnis takelis</translation>
 <translation id="397105322502079400">Skaičiuojama...</translation>
+<translation id="3977512764614765090">Aumuliatoriaus įkrova <ph name="PERCENTAGE" /> % ir jis įkraunamas.</translation>
 <translation id="3995138139523574647">USB-C įrenginys (prievadas dešinėje, užpakalinėje dalyje)</translation>
 <translation id="4017989525502048489">Lazerinis žymeklis</translation>
 <translation id="4042660782729322247">Bendrinate ekraną</translation>
@@ -217,6 +217,7 @@
 <translation id="4279490309300973883">Dubliuojama</translation>
 <translation id="4281007048406351813">Pridėti 1 min. prie laikmačio</translation>
 <translation id="4292681942966152062">Suaktyvinamas „<ph name="NETWORK_NAME" />“</translation>
+<translation id="4296136865091727875">Išvalykite visus pranešimus (<ph name="COUNT" />)</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">Paspaudėte didelio kontrasto spartųjį klavišą. Ar norite jį įjungti?</translation>
 <translation id="4331809312908958774">Chrome OS
@@ -502,6 +503,7 @@
 <translation id="8877788021141246043">„Set a reminder“ (Nustatyk priminimą)</translation>
 <translation id="8878886163241303700">Išplečiamas ekranas</translation>
 <translation id="890616557918890486">Keisti šaltinį</translation>
+<translation id="8909138438987180327">Akumuliatoriaus įkrovos lygis <ph name="PERCENTAGE" /> proc.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">„Google“ padėjėjas nekalba šia kalba.</translation>
 <translation id="8938800817013097409">USB-C įrenginys (prievadas dešinėje, užpakalinėje dalyje)</translation>
@@ -513,6 +515,7 @@
 <translation id="9029474291399787231">Pasiekiamas „Adobe Flash Player“ naujinys</translation>
 <translation id="9056839673611986238">Įrenginys bus atkurtas</translation>
 <translation id="9070640332319875144">Padėjėjo nustatymai</translation>
+<translation id="9072519059834302790">Iki akumuliatoriaus išsikrovimo liko <ph name="TIME_LEFT" />.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">„Wi-Fi“: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Mikrofonas naudojamas.</translation>
@@ -524,6 +527,7 @@
 <translation id="9193626018745640770">Perduodama į nežinomą imtuvą</translation>
 <translation id="9194617393863864469">Prisijungti kaip kitas naudotojas...</translation>
 <translation id="9210037371811586452">Išjungiamas sujungiamojo darbalaukio režimas</translation>
+<translation id="9211681782751733685">Iki akumuliatoriaus įkrovimo liko <ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">Nustatyti ekrano foną</translation>
 <translation id="921989828232331238">Vienas iš tėvų užrakino įrenginį dienai</translation>
 <translation id="923686485342484400">Jei norite atsijungti, du kartus paspauskite „Control“ + „Shift“ + Q.</translation>

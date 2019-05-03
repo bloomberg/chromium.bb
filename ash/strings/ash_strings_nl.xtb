@@ -71,7 +71,6 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">Meer informatie over de laatste update van <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1995660704900986789">Uitschakelen</translation>
-<translation id="1999763610967697511">Slepen en neerzetten</translation>
 <translation id="2012624427112548395">Ctrl+Zoeken+H</translation>
 <translation id="2016340657076538683">Typ een bericht</translation>
 <translation id="2050339315714019657">Staand</translation>
@@ -200,6 +199,7 @@
 <translation id="394485226368336402">Audio-instellingen</translation>
 <translation id="3962859241508114581">Vorig nummer</translation>
 <translation id="397105322502079400">Berekenen...</translation>
+<translation id="3977512764614765090">Batterij op <ph name="PERCENTAGE" />% en wordt opgeladen.</translation>
 <translation id="3995138139523574647">USB-C-apparaat (poort rechts aan de achterkant)</translation>
 <translation id="4017989525502048489">Laserpen</translation>
 <translation id="4042660782729322247">Je deelt je scherm</translation>
@@ -217,6 +217,7 @@
 <translation id="4279490309300973883">Mirroring</translation>
 <translation id="4281007048406351813">1 min toevoegen aan timer</translation>
 <translation id="4292681942966152062"><ph name="NETWORK_NAME" /> activeren</translation>
+<translation id="4296136865091727875">Alle <ph name="COUNT" /> meldingen wissen</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">Je hebt op de sneltoets voor hoog contrast gedrukt. Wil je deze functie inschakelen?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -501,6 +502,7 @@
 <translation id="8877788021141246043">Stel een herinnering in</translation>
 <translation id="8878886163241303700">Uitgebreid scherm</translation>
 <translation id="890616557918890486">Bron wijzigen</translation>
+<translation id="8909138438987180327">Batterij op <ph name="PERCENTAGE" /> procent.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">De Google Assistent spreekt deze taal niet.</translation>
 <translation id="8938800817013097409">USB-C-apparaat (poort rechts aan de achterkant)</translation>
@@ -512,6 +514,7 @@
 <translation id="9029474291399787231">Update van Adobe Flash Player beschikbaar</translation>
 <translation id="9056839673611986238">Apparaat wordt teruggezet naar oudere versie</translation>
 <translation id="9070640332319875144">Instellingen voor Assistent</translation>
+<translation id="9072519059834302790"><ph name="TIME_LEFT" /> tot de batterij leeg is.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wifi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Microfoon wordt gebruikt.</translation>
@@ -523,6 +526,7 @@
 <translation id="9193626018745640770">Casten naar een onbekende ontvanger</translation>
 <translation id="9194617393863864469">Als andere gebruiker inloggen...</translation>
 <translation id="9210037371811586452">Samengestelde desktopmodus wordt gesloten</translation>
+<translation id="9211681782751733685"><ph name="TIME_REMAINING" /> resterend totdat de batterij volledig is opgeladen.</translation>
 <translation id="9215934040295798075">Achtergrond instellen</translation>
 <translation id="921989828232331238">Je ouder heeft je apparaat de hele dag vergrendeld</translation>
 <translation id="923686485342484400">Druk twee keer op Control+Shift+Q om uit te loggen.</translation>

@@ -711,20 +711,6 @@ Zásada platí také pro rozšíření komponent, jako je rozšíření Hangout 
       Kontrolu pravopisu lze nicméně provést pomocí staženého slovníku. Tato zásada se vztahuje pouze na používání internetových služeb.
 
       Pokud toto nastavení není nakonfigurováno, uživatelé mohou zvolit, zda službu pro kontrolu pravopisu chtějí použít či nikoli.</translation>
-<translation id="2294283832646774959">Konfiguruje seznam tiskáren.
-
-Tato zásada administrátorům umožňuje poskytnout uživatelům konfigurace tiskáren.
-
-Hodnoty <ph name="PRINTER_DISPLAY_NAME" /> a <ph name="PRINTER_DESCRIPTION" /> jsou volně upravitelné textové řetězce, pomocí kterých lze usnadnit výběr tiskárny. Hodnoty <ph name="PRINTER_MANUFACTURER" /> a <ph name="PRINTER_MODEL" /> koncovým uživatelům umožní snáze tiskárnu rozpoznat. Představují výrobce a model tiskárny. Hodnotou <ph name="PRINTER_URI" /> by měla být adresa přístupná z klientského počítače, včetně údajů <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> a <ph name="URI_QUEUE" />. Hodnota <ph name="PRINTER_UUID" /> je volitelná. Pokud je zadána, slouží k odebrání duplicitních tiskáren <ph name="ZEROCONF_DISCOVERY" />.
-
-Hodnota <ph name="PRINTER_EFFECTIVE_MODEL" /> musí odpovídat jednomu z řetězců, které představují tiskárny podporované systémem <ph name="PRODUCT_NAME" />. Řetězec se použije k identifikaci a instalaci vhodného souboru PPD pro tiskárnu. Další informace naleznete na stránce https://support.google.com/chrome?p=noncloudprint.
-
-Nastavení tiskárny se dokončí při jejím prvním použití. Soubory PPD se stáhnou až při použití tiskárny. Často používané soubory PPD budou následně uloženy do mezipaměti.
-
-Tato zásada nemá vliv na to, zda uživatelé mohou konfigurovat tiskárny na jednotlivých zařízeních. Je zamýšlena jako doplněk ke konfiguraci tiskáren ze strany jednotlivých uživatelů.
-
-U zařízení spravovaných pomocí služby Active Directory tato zásada podporuje rozšíření <ph name="MACHINE_NAME_VARIABLE" /> na název počítače ve službě Active Directory nebo jeho podřetězec. V případě názvu počítače <ph name="MACHINE_NAME_EXAMPLE" /> by byl řetězec <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> nahrazen čtyřmi znaky po šesté pozici, tj. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Pozice se počítají od nuly.
-      </translation>
 <translation id="2294382669900758280">Přehrávání videí v aplikacích Android není bráno v potaz ani v případě, že je tato zásada nastavena na hodnotu <ph name="TRUE" />.</translation>
 <translation id="2299220924812062390">Zadat seznam aktivovaných pluginů</translation>
 <translation id="2303795211377219696">Povolit automatické vyplňování pro platební karty</translation>
@@ -1370,6 +1356,7 @@ Tuto zásadu lze nastavit pouze jako doporučenou. Zásada slouží k přesunut
       Je-li tato zásada nastavena na možnost DeveloperToolsAllowed (hodnota 1), je možné Nástroje pro vývojáře a konzoli JavaScriptu otevřít a používat ve všech kontextech, včetně rozšíření nainstalovaných pomocí podnikových zásad.
       Je-li tato zásada nastavena na možnost DeveloperToolsDisallowed (hodnota 2), Nástroje pro vývojáře nelze otevřít a nelze prozkoumávat prvky na webech. Deaktivovány budou také veškeré klávesové zkratky a položky klasických či kontextových nabídek, pomocí kterých lze nástroje pro vývojáře nebo konzoli JavaScriptu otevřít.</translation>
 <translation id="3547954654003013442">Nastavení proxy serveru</translation>
+<translation id="3550875587920006460">Umožňuje nastavit vlastní plán kontroly dostupnosti aktualizací. Toto nastavení platí pro všechny uživatele a všechna rozhraní v zařízení. Po nastavení bude zařízení kontrolovat dostupnost aktualizací podle plánu. Ke zrušení zbývajících naplánovaných kontrol dostupnosti aktualizací je tuto zásadu potřeba odstranit.</translation>
 <translation id="355118380775352753">Weby, které se mají otevírat v alternativním prohlížeči</translation>
 <translation id="3554984410014457319">Povolit Asistentovi Google naslouchat hlasové aktivační frázi</translation>
 <translation id="356579196325389849">Uživatelé mohou nakonfigurovat kanál verzí systému Chrome OS</translation>
@@ -1401,7 +1388,6 @@ Tuto zásadu lze nastavit pouze jako doporučenou. Zásada slouží k přesunut
 <translation id="3709266154059827597">Konfigurace seznamu zakázaných položek instalace rozšíření</translation>
 <translation id="3711895659073496551">Pozastavit</translation>
 <translation id="3715569262675717862">Ověřování založené na certifikátech klientů</translation>
-<translation id="3734995764843493369">Heslo je třeba zadat každý den (24 hodin)</translation>
 <translation id="3736879847913515635">Povolit přidání osoby ve správci uživatelů</translation>
 <translation id="3738723882663496016">Tato zásada určuje licenční klíč pluginu <ph name="PLUGIN_VM_NAME" /> pro toto zařízení.</translation>
 <translation id="3748900290998155147">Určuje, zda je povoleno blokování přechodu do režimu spánku. O blokování přechodu do režimu spánku mohou žádat aplikace ARC a rozšíření prostřednictvím rozhraní API pro řízení spotřeby.
@@ -1604,6 +1590,21 @@ Existující nepřihlášené profily po zapnutí této zásady budou uzamčeny 
       Pokud je tato zásada nastavena na hodnotu true nebo ponechána bez nastavení, uživatelé budou moci při registraci systému Chrome OS uplatňovat zvláštní nabídky.
 
       Pokud je tato zásada nastavena na hodnotu false, uživatelé zvláštní nabídky nebudou moci uplatnit.</translation>
+<translation id="4008233182078913897">Určuje seznam aplikací a rozšíření, které se instalují na pozadí bez zásahu uživatele a které uživatel nemůže odinstalovat ani deaktivovat. Všechna oprávnění požadovaná aplikacemi nebo rozšířeními jsou udělována implicitně bez zásahu uživatele, a to včetně všech dodatečných oprávnění požadovaných budoucími verzemi aplikace nebo rozšíření. Kromě toho jsou udělována také oprávnění k používání těchto rozhraní API pro rozšíření: enterprise.deviceAttributes a enterprise.platformKeys. (Tato rozhraní API jsou k dispozici pouze u aplikací/rozšíření, jejichž instalace je vynucena.)
+
+Tato zásada má přednost před potenciálně konfliktní zásadou <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Bude-li aplikace nebo rozšíření, které bylo dříve vynuceně nainstalováno, z tohoto seznamu odebráno, <ph name="PRODUCT_NAME" /> je automaticky odinstaluje.
+
+U instancí systému Windows, které nejsou propojeny s doménou <ph name="MS_AD_NAME" />, je vynucená instalace omezena pouze na aplikace a rozšíření z Internetového obchodu Chrome.
+
+Zdrojový kód libovolného rozšíření mohou uživatelé pomocí Nástrojů pro vývojáře upravit (což může způsobit, že rozšíření nebude fungovat). Pokud je to problém, nastavte zásadu <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+Každá položka v seznamu zásady představuje řetězec, který obsahuje ID rozšíření a volitelně také adresu URL pro aktualizaci oddělené středníkem (<ph name="SEMICOLON" />). ID rozšíření je řetězec s 32 písmeny a naleznete jej například zde: <ph name="CHROME_EXTENSIONS_LINK" /> (v režimu pro vývojáře). Pokud je zadána adresa URL pro aktualizaci, měla by odkazovat na dokument XML manifestu aktualizace (viz <ph name="LINK_TO_EXTENSION_DOC1" />). Ve výchozím nastavení se použije adresa URL pro aktualizaci Internetového obchodu Chrome (v současné době https://clients2.google.com/service/update2/crx). Adresa URL pro aktualizaci nastavená v této zásadě slouží pouze k počáteční instalaci. Další aktualizace rozšíření budou používat adresu URL pro aktualizaci uvedenou v manifestu rozšíření. Upozorňujeme, že až do verze 67 prohlížeče <ph name="PRODUCT_NAME" /> bylo explicitní zadání adresy URL pro aktualizaci povinné.
+
+Například <ph name="EXTENSION_POLICY_EXAMPLE" /> nainstaluje rozšíření s ID <ph name="EXTENSION_ID_SAMPLE" /> ze standardní adresy URL pro aktualizaci z Internetového obchodu Chrome. Další informace o hostování rozšíření viz <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+Je-li tato zásada ponechána nenastavená, žádné aplikace ani rozšíření se automaticky neinstalují a uživatel v prohlížeči <ph name="PRODUCT_NAME" /> může kteroukoliv aplikaci nebo rozšíření odinstalovat.
+
+Tato zásada se nevztahuje na anonymní režim.</translation>
 <translation id="4008507541867797979">Pokud je tato zásada nastavena na hodnotu true nebo není nakonfigurována, bude <ph name="PRODUCT_OS_NAME" /> na přihlašovací obrazovce ukazovat existující uživatele a umožní vybrat si z nich.
 
       Pokud je tato zásada nastavena na hodnotu false, <ph name="PRODUCT_OS_NAME" /> na přihlašovací obrazovce existující uživatele zobrazovat nebude. Jestliže není nakonfigurována spravovaná návštěvy, zobrazí se běžná přihlašovací obrazovka (vyzývající k zadání e‑mailu a hesla nebo telefonu uživatele) nebo vsunutá obrazovka SAML (pokud je zapnuta pomocí zásady <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />). Když je nakonfigurována spravovaná návštěvy, budou se zobrazovat jen účty spravované návštěvy a bude si z nich možné vybrat.
@@ -2565,6 +2566,12 @@ Pokud tuto zásadu nenastavíte, bude při prvním zobrazení přihlašovací ob
 <translation id="5897913798715600338">Nabíjet baterii technologií rychlého nabíjení.</translation>
 <translation id="5898486742390981550">Když je přihlášeno několik uživatelů, může aplikace Android používat pouze primární uživatel.</translation>
 <translation id="5901427587865226597">Pouze oboustranný tisk</translation>
+<translation id="5903898512448364160">
+      Je-li tato zásada nastavená na hodnotu true, mají cloudové zásady v případě konfliktu přednost před zásadami platformy.
+      Pokud je tato zásada nastavená na hodnotu false nebo není nakonfigurovaná, mají v případě konfliktu zásady platformy přednost před cloudovými zásadami.
+
+      Tato zásada je k dispozici pouze jako povinná zásada platformy pro počítač a má vliv pouze na cloudové zásady pro počítač.
+      </translation>
 <translation id="5905473632148429217">Zapnout online kontroly OCSP/CRL</translation>
 <translation id="5906199912611534122">Umožňuje aktivovat nebo deaktivovat omezení rychlosti sítě.
       Toto nastavení platí pro všechny uživatele a všechna rozhraní v zařízení. Jakmile je omezení nastaveno,
@@ -2591,6 +2598,7 @@ Pokud tuto zásadu nenastavíte, bude při prvním zobrazení přihlašovací ob
 
       Pokud toto nastavení deaktivujete nebo nenastavíte žádnou hodnotu, Bezpečné vyhledávání nebude při použití Vyhledávání Google vynuceno.</translation>
 <translation id="5946082169633555022">Verze beta</translation>
+<translation id="5946329690214660966">Nastavit vlastní plán kontroly aktualizací</translation>
 <translation id="5950205771952201658">Vzhledem k tomu, že online kontroly zamítnutých certifikátů nepřinášejí žádné efektivní bezpečnostní výhody a také snadno selhávají, jsou v prohlížeči <ph name="PRODUCT_NAME" /> verze 19 a vyšší ve výchozím nastavení deaktivovány. Nastavíte-li tuto zásadu na hodnotu True, obnoví se předchozí chování a budou prováděny online kontroly OCSP/CRL.
 
 Pokud tato zásada není nastavena nebo je nastavena na hodnotu False, <ph name="PRODUCT_NAME" /> nebude u verzí <ph name="PRODUCT_NAME" /> 19 a novějších provádět online kontroly zamítnutých certifikátů.</translation>
@@ -2657,6 +2665,7 @@ Pokud tato zásada není nastavena nebo je nastavena na hodnotu False, <ph name=
 <translation id="6034341625190551415">Ovládá typy účtů veřejných relací a veřejných terminálů</translation>
 <translation id="6034603289689965535">Povoluje stránce zobrazovat při odstraňování z paměti vyskakovací okna</translation>
 <translation id="6036523166753287175">Povolení přechodu přes bránu firewall z hostitele vzdáleného připojení</translation>
+<translation id="605475635122964053">Omezuje režim tisku s kódem PIN. Pokud tato zásada není nastavená, žádná omezení se neuplatňují. Pokud režim není k dispozici, zásada se ignoruje. Upozorňujeme, že tisk s kódem PIN je k dispozici pouze u tiskáren, které používají protokol IPPS, USB nebo IPP-over-USB. </translation>
 <translation id="6070667616071269965">Rozložení klávesnice na přihlašovací obrazovce zařízení</translation>
 <translation id="6074963268421707432">Nepovolovat žádnému webu zobrazovat oznámení na ploše</translation>
 <translation id="6074964551275531965">Nastavit dobu pro oznámení o aktualizacích</translation>
@@ -3359,6 +3368,7 @@ Pokud nezadáte žádné nastavení, ověření protokolu <ph name="HTTP_NEGOTIA
       Je-li tato zásada nastavena na hodnotu RemoveLRUIfDormant, budou při automatickém čištění odstraňováni uživatelé, kteří se nejdelší dobu nepřihlásili, dokud nevznikne dostatek volného místa. Uživatelé, kteří se přihlásili během posledních 3 měsíců, však odstraněni nebudou.
 
       Pokud tato zásada nastavena není, bude při automatickém čištění použita výchozí integrovaná strategie. Aktuálně je to strategie RemoveLRUIfDormant.</translation>
+<translation id="7334274148831027933">Zapnout zadokovanou lupu</translation>
 <translation id="7336785017449297672">Ovládá nastavení hodin a časového pásma.</translation>
 <translation id="7336878834592315572">Uchovat soubory cookie po dobu trvání návštěvy</translation>
 <translation id="7339315111520512972">Vynutit spuštění kódu pro sítě v procesu prohlížeče</translation>

@@ -51,6 +51,7 @@
 <translation id="2718390899429598676">Untuk keamanan tambahan, Chromium akan mengenkripsi data Anda.</translation>
 <translation id="2770231113462710648">Ubah browser default ke:</translation>
 <translation id="2799223571221894425">Luncurkan Ulang</translation>
+<translation id="2838154144102149890">Untuk menjalankan update, Chromium harus ditutup di komputer ini. Proses ini dapat menyebabkan pengguna lain yang login ke komputer ini kehilangan perubahan yang belum tersimpan.</translation>
 <translation id="2847479871509788944">Buang dari Chromium...</translation>
 <translation id="2886012850691518054">Opsional: Bantu menjadikan Chrome lebih baik dengan mengirim statistik penggunaan dan laporan kerusakan secara otomatis ke Google.</translation>
 <translation id="2898082584336937987">Instal Chromium di ponsel. Kami akan mengirimkan SMS ke ponsel Anda: <ph name="PHONE_NUMBER" /></translation>
@@ -187,6 +188,7 @@ Sebagian fitur mungkin tidak tersedia. Tentukan direktori profil yang berbeda at
 <translation id="6810143991807788455">Bantu menjadikan Chromium lebih baik dengan melaporkan setelan saat ini</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (disalin ke Chromium)</translation>
+<translation id="6868056391275687737">Salinan Chromium lain sedang berjalan. Untuk menjalankan update, tutup salinan tersebut.</translation>
 <translation id="6893813176749746474">Chromium telah diperbarui, tetapi Anda belum menggunakannya selama setidaknya 30 hari.</translation>
 <translation id="6964305034639999644">Buka link di jendela sa&amp;maran Chromium</translation>
 <translation id="6970811910055250180">Memperbarui perangkat Anda...</translation>
@@ -257,6 +259,7 @@ Lihat email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</tr
 <translation id="8697124171261953979">Juga mengontrol halaman apa yang ditampilkan saat Anda memulai Chromium atau menelusuri dari Omnibox.</translation>
 <translation id="8704119203788522458">Ini Chromium Anda</translation>
 <translation id="8704255848199359374">Tindakan ini akan menggunakan pemeriksa ejaan yang sama dengan yang digunakan di penelusuran Google. Teks yang Anda ketikkan di browser dikirim ke Google. Anda dapat mengubah perilaku ini di setelan.</translation>
+<translation id="8748383401829947534">Tutup semua salinan Chromium.</translation>
 <translation id="8796602469536043152">Chromium memerlukan izin akses ke kamera dan mikrofon untuk situs ini</translation>
 <translation id="8803635938069941624">Persyaratan Chromium OS</translation>
 <translation id="8821041990367117597">Chromium tidak dapat menyinkronkan data karena detail proses masuk Anda sebelum diperbarui.</translation>

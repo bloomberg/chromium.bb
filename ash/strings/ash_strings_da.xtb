@@ -71,7 +71,6 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">Få flere oplysninger om den nyeste <ph name="SYSTEM_APP_NAME" />-opdatering</translation>
 <translation id="1995660704900986789">Sluk</translation>
-<translation id="1999763610967697511">Træk og slip</translation>
 <translation id="2012624427112548395">Ctrl+Søg+H</translation>
 <translation id="2016340657076538683">Skriv en besked</translation>
 <translation id="2050339315714019657">Stående</translation>
@@ -200,6 +199,7 @@
 <translation id="394485226368336402">Lydindstillinger</translation>
 <translation id="3962859241508114581">Forrige nummer</translation>
 <translation id="397105322502079400">Beregner...</translation>
+<translation id="3977512764614765090">Batteriet er på <ph name="PERCENTAGE" /> % og oplader.</translation>
 <translation id="3995138139523574647">USB-C-enhed (porten bagpå i højre side)</translation>
 <translation id="4017989525502048489">Laserpegepind</translation>
 <translation id="4042660782729322247">Du deler din skærm</translation>
@@ -217,6 +217,7 @@
 <translation id="4279490309300973883">Spejling</translation>
 <translation id="4281007048406351813">Føj 1 minut til timeren</translation>
 <translation id="4292681942966152062">Aktiverer <ph name="NETWORK_NAME" /></translation>
+<translation id="4296136865091727875">Ryd alle <ph name="COUNT" /> notifikationer</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">Du trykkede på tastaturgenvejen for høj kontrast. Vil du aktivere indstillingen?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -502,6 +503,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="8877788021141246043">Opret en påmindelse</translation>
 <translation id="8878886163241303700">Udvider skærm</translation>
 <translation id="890616557918890486">Skift kilde</translation>
+<translation id="8909138438987180327">Batteriet er på <ph name="PERCENTAGE" /> procent.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google-assistenten taler ikke dette sprog.</translation>
 <translation id="8938800817013097409">USB-C-enhed (porten bagpå i højre side)</translation>
@@ -513,6 +515,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="9029474291399787231">Der er en tilgængelig Adobe Flash Player-opdatering</translation>
 <translation id="9056839673611986238">En tidligere version gendannes på enheden</translation>
 <translation id="9070640332319875144">Indstillinger for Assistent</translation>
+<translation id="9072519059834302790"><ph name="TIME_LEFT" /> til batteriet løber tør.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Mikrofonen er i brug.</translation>
@@ -524,6 +527,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="9193626018745640770">Caster på en ukendt modtager</translation>
 <translation id="9194617393863864469">Log ind med en anden bruger...</translation>
 <translation id="9210037371811586452">Lukker tilstanden Kombineret skrivebord</translation>
+<translation id="9211681782751733685"><ph name="TIME_REMAINING" /> til batteriet er fuldt opladet.</translation>
 <translation id="9215934040295798075">Vælg baggrund</translation>
 <translation id="921989828232331238">Din forælder har låst din enhed resten af dagen</translation>
 <translation id="923686485342484400">Tryk på Control+Shift+Q to gange for at logge ud.</translation>

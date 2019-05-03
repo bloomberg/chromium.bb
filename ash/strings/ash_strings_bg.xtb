@@ -71,7 +71,6 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">Научете повече за най-новата актуализация на <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1995660704900986789">Изключване</translation>
-<translation id="1999763610967697511">Хващане и преместване с мишката</translation>
 <translation id="2012624427112548395">Ctrl + клавиш „Търсене“ + H</translation>
 <translation id="2016340657076538683">Въведете съобщение</translation>
 <translation id="2050339315714019657">Вертикално</translation>
@@ -200,6 +199,7 @@
 <translation id="394485226368336402">Настройки за звука</translation>
 <translation id="3962859241508114581">Предишен запис</translation>
 <translation id="397105322502079400">Изчислява се...</translation>
+<translation id="3977512764614765090">Батерията е на <ph name="PERCENTAGE" />% и се зарежда.</translation>
 <translation id="3995138139523574647">устройство с USB-C (задният десен порт)</translation>
 <translation id="4017989525502048489">Лазерна показалка</translation>
 <translation id="4042660782729322247">Споделяте екрана си</translation>
@@ -217,6 +217,7 @@
 <translation id="4279490309300973883">Дублиране</translation>
 <translation id="4281007048406351813">Добавяне на 1 минута към таймера</translation>
 <translation id="4292681942966152062">Мрежата се активира (<ph name="NETWORK_NAME" />)</translation>
+<translation id="4296136865091727875">Изчистване на всичките <ph name="COUNT" /> известия</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">Използвахте клавишната комбинация за режима на висок контраст. Искате ли да го включите?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -501,6 +502,7 @@
 <translation id="8877788021141246043">„Set a reminder“ („Задай напомняне“)</translation>
 <translation id="8878886163241303700">Разгъване на екрана</translation>
 <translation id="890616557918890486">Промяна на източника</translation>
+<translation id="8909138438987180327">Батерията е на <ph name="PERCENTAGE" /> процента.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google Асистент не поддържа този език.</translation>
 <translation id="8938800817013097409">Устройство с USB-C (десният порт на гърба)</translation>
@@ -512,6 +514,7 @@
 <translation id="9029474291399787231">Налице е актуализация на Adobe Flash Player</translation>
 <translation id="9056839673611986238">Устройството ще бъде върнато към по-ранна версия</translation>
 <translation id="9070640332319875144">Настройки на Асистент</translation>
+<translation id="9072519059834302790"><ph name="TIME_LEFT" /> до изразходването на батерията.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Микрофонът се използва.</translation>
@@ -523,6 +526,7 @@
 <translation id="9193626018745640770">Предава се към неизвестен приемник</translation>
 <translation id="9194617393863864469">Влизане в профила на друг потребител...</translation>
 <translation id="9210037371811586452">Излиза се от режима на обединен работен плот</translation>
+<translation id="9211681782751733685">Оставащо време до пълното зареждане на батерията: <ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">Задаване на тапета</translation>
 <translation id="921989828232331238">Родителят ви заключи устройството ви за деня</translation>
 <translation id="923686485342484400">Натиснете два пъти „Control+Shift+Q“ за изход.</translation>

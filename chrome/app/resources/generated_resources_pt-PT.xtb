@@ -799,6 +799,7 @@
 <translation id="2241053333139545397">Ler e alterar os seus dados em vários Sites</translation>
 <translation id="2241634353105152135">Apenas uma vez</translation>
 <translation id="2242687258748107519">Informação de ficheiro</translation>
+<translation id="2246549592927364792">Pretende obter descrições de imagens a partir do Google?</translation>
 <translation id="224940702122312781">Esta página utiliza uma grande quantidade de dados.</translation>
 <translation id="2249605167705922988">por exemplo 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">Abrir com o System Viewer</translation>
@@ -1103,6 +1104,7 @@
 <translation id="271033894570825754">Novo</translation>
 <translation id="2714393097308983682">Google Play Store</translation>
 <translation id="2715751256863167692">Esta atualização repõe o Chromebook e remove os dados do utilizador atuais.</translation>
+<translation id="2716986496990888774">Esta definição é gerida por um dos pais.</translation>
 <translation id="2718395828230677721">Luz noturna</translation>
 <translation id="2718998670920917754">O software antivírus detetou um vírus.</translation>
 <translation id="2719936478972253983">Os seguintes cookies foram bloqueados</translation>
@@ -1153,7 +1155,6 @@
 <translation id="2783829359200813069">Selecionar tipos de encriptação</translation>
 <translation id="2783952358106015700">Utilizar a chave de segurança com a aplicação <ph name="APP_NAME" /></translation>
 <translation id="2784407158394623927">A ativar o serviço de dados móveis</translation>
-<translation id="2785008241190445880">Marcador substituído</translation>
 <translation id="2785873697295365461">Descritores de ficheiros</translation>
 <translation id="2787354132612937472">–</translation>
 <translation id="2788135150614412178">+</translation>
@@ -1214,6 +1215,7 @@
 <translation id="2874939134665556319">Faixa anterior</translation>
 <translation id="2875698561019555027">(Páginas de erro do Chrome)</translation>
 <translation id="2876336351874743617">Dedo 2</translation>
+<translation id="2876369937070532032">Quando a sua segurança está em risco, envia para a Google URLs de algumas páginas que visita.</translation>
 <translation id="288042212351694283">Aceder aos seus dispositivos Universal 2nd Factor</translation>
 <translation id="2881076733170862447">Quando clica na extensão</translation>
 <translation id="2881966438216424900">Último acesso:</translation>
@@ -1397,6 +1399,7 @@ Pretende pará-lo?</translation>
 <translation id="3170072451822350649">Também pode ignorar o início de sessão e <ph name="LINK_START" />navegar como Convidado<ph name="LINK_END" />.</translation>
 <translation id="3172045848207518317">Um site está a aceder à entrada de vídeo.</translation>
 <translation id="3177909033752230686">Idioma da página:</translation>
+<translation id="3181954750937456830">Navegação segura (protege o utilizador e o seu dispositivo contra sites perigosos)</translation>
 <translation id="3182749001423093222">Verificação ortográfica</translation>
 <translation id="3183139917765991655">Importador de perfis</translation>
 <translation id="3188465121994729530">Média de movimentações</translation>
@@ -1702,6 +1705,7 @@ Pretende pará-lo?</translation>
 <translation id="3664511988987167893">Ícone da extensão</translation>
 <translation id="3665589677786828986">O Chrome detetou que algumas das suas definições foram danificadas por outro programa e repôs as respetivas predefinições originais.</translation>
 <translation id="3668570675727296296">Definições de idioma</translation>
+<translation id="366867565525278777">A instalação falhou devido à falta de espaço de armazenamento. É necessário, pelo menos, <ph name="INSTALL_SIZE" /> de espaço livre. Para libertar espaço, elimine ficheiros do armazenamento do dispositivo.</translation>
 <translation id="3668801437375206837">Para melhorar o diagnóstico de problemas com o Bluetooth, os funcionários da Google podem incluir registos do Bluetooth adicionais nos respetivos relatórios de comentários. Quando esta opção está selecionada, o seu relatório inclui os registos btsnoop e HCI da sua sessão atual, limpos para remover o máximo de PII possível. O acesso a estes registos será restringido aos gestores do grupo de produtos do Chrome OS no Listnr. Os registos são removidos completamente após 90 dias.</translation>
 <translation id="3668823961463113931">Processadores</translation>
 <translation id="3670113805793654926">Dispositivos de qualquer fornecedor</translation>
@@ -4010,6 +4014,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7289225569524511578">Abrir a aplicação da imagem de fundo</translation>
 <translation id="7290242001003353852">Este serviço de início de sessão, alojado por <ph name="SAML_DOMAIN" />, está a aceder à sua câmara.</translation>
 <translation id="7290594223351252791">Confirmar registo</translation>
+<translation id="7295614427631867477">Tenha em atenção que o Android, o Google Play e as aplicações associadas são regidos pelas suas próprias políticas de recolha e utilização de dados.</translation>
 <translation id="729583233778673644">Permitir a encriptação AES e RC4. A utilização desta opção aumenta o seu risco, uma vez que as cifras RC4 são inseguras.</translation>
 <translation id="7296774163727375165">Termos de <ph name="DOMAIN" /></translation>
 <translation id="7297443947353982503">Nome de utilizador ou palavra-passe incorreto ou falha na autenticação EAP</translation>
@@ -4286,6 +4291,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7732111077498238432">A rede é controlada por políticas.</translation>
 <translation id="7737238973539693982">Eliminar o Linux (Beta)</translation>
 <translation id="7740996059027112821">Padrão</translation>
+<translation id="7746457520633464754">Para detetar aplicações e sites perigosos, o Chrome envia para a Google URLs de algumas páginas que visita, informações limitadas do sistema e algum conteúdo das páginas.</translation>
 <translation id="7750228210027921155">Ecrã no ecrã</translation>
 <translation id="7751260505918304024">Mostrar tudo</translation>
 <translation id="7754704193130578113">Perguntar onde guardar cada ficheiro antes da transferência</translation>
@@ -4936,7 +4942,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8732212173949624846">Ler e alterar o histórico de navegação em todos os dispositivos com sessão iniciada</translation>
 <translation id="8732844209475700754">Mais definições relacionadas com privacidade, segurança e recolha de dados</translation>
 <translation id="8734073480934656039">A ativação desta definição permite que aplicações do quiosque sejam iniciadas automaticamente no arranque.</translation>
-<translation id="8734671092194994316">Esta ativação deixa um registo da sua visita ao Website <ph name="WEBSITE" /> na sua chave de segurança.</translation>
 <translation id="873545264931343897">Quando a atualização do <ph name="PLUGIN_NAME" /> estiver concluída, atualize a página para o ativar</translation>
 <translation id="8736288397686080465">Este site foi atualizado em segundo plano.</translation>
 <translation id="8737685506611670901">Abrir links de <ph name="PROTOCOL" /> em vez de <ph name="REPLACED_HANDLER_TITLE" /></translation>
@@ -4969,6 +4974,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8780123805589053431">Obter descrições de imagens a partir do Google</translation>
 <translation id="8780443667474968681">A pesquisa por voz foi desativada.</translation>
 <translation id="878069093594050299">Este certificado foi confirmado para as seguintes utilizações:</translation>
+<translation id="8781470833671194250">Estabilização da posição do clique</translation>
 <translation id="8781980678064919987">Encerrar quando a tampa for fechada</translation>
 <translation id="8782565991310229362">A iniciação da aplicação de quiosque foi cancelada.</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; pretende partilhar uma impressora &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; consigo.</translation>

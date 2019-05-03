@@ -753,21 +753,6 @@ Si cette règle n'est pas configurée, le paramètre "BlockPopups" est utilisé 
       Il reste toutefois possible de procéder à la correction orthographique à l'aide d'un dictionnaire téléchargé. Cette règle ne contrôle que l'utilisation du service en ligne.
 
       En cas de non-configuration de ce paramètre, les utilisateurs peuvent décider d'utiliser le service de correction orthographique ou non.</translation>
-<translation id="2294283832646774959">Configure une liste d'imprimantes.
-
-      Cette règle autorise les administrateurs à fournir des configurations d'imprimante
-      pour leurs utilisateurs.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> et <ph name="PRINTER_DESCRIPTION" /> sont des chaînes au format libre que vous pouvez personnaliser pour sélectionner facilement l'imprimante. <ph name="PRINTER_MANUFACTURER" /> et <ph name="PRINTER_MODEL" /> servent à faciliter l'identification de l'imprimante par les utilisateurs finaux. Ces chaînes correspondent au fabricant et au modèle de l'imprimante. <ph name="PRINTER_URI" /> doit être une adresse accessible à partir d'un ordinateur client, et doit contenir le <ph name="URI_SCHEME" />, le <ph name="URI_PORT" /> et la <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> est facultatif. S'il est indiqué, il est utilisé pour supprimer les imprimantes en double <ph name="ZEROCONF_DISCOVERY" />.
-
-      <ph name="PRINTER_EFFECTIVE_MODEL" /> doit correspondre à l'une des chaînes qui représentent une imprimante <ph name="PRODUCT_NAME" /> compatible. Cette chaîne est utilisée pour identifier et installer le fichier PPD approprié pour l'imprimante. Pour plus d'informations, consultez la page https://support.google.com/chrome?p=noncloudprint.
-
-      La configuration d'une imprimante est effectuée lors de sa première utilisation. Les fichiers PPD ne sont pas téléchargés tant que l'imprimante n'a pas été utilisée. Par la suite, les fichiers PPD fréquemment utilisés sont mis en cache.
-
-      Cette règle n'a aucune incidence sur la capacité ou non des utilisateurs à configurer des imprimantes sur différents appareils. Elle est destinée à compléter la configuration des imprimantes effectuée par les différents utilisateurs.
-
-      Pour les appareils gérés par Active Directory, cette règle permet l'expansion de <ph name="MACHINE_NAME_VARIABLE" /> en fonction du nom de machine Active Directory ou de l'une de ses sous-chaînes. Par exemple, si le nom de machine est <ph name="MACHINE_NAME_EXAMPLE" />, alors <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> est remplacé par les 4 caractères suivant la 6e position, soit <ph name="MACHINE_NAME_PART_EXAMPLE" />. Notez que la position prend en compte le zéro.
-      </translation>
 <translation id="2294382669900758280">La lecture vidéo dans les applications Android n'est pas prise en compte même si cette règle est définie sur "<ph name="TRUE" />".</translation>
 <translation id="2299220924812062390">Indiquer une liste de plug-ins activés</translation>
 <translation id="2303795211377219696">Activer la saisie automatique pour les cartes de crédit</translation>
@@ -1419,6 +1404,7 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
       Si cette règle est définie sur "DeveloperToolsAllowed" (valeur 1), les outils pour les développeurs et la console JavaScript sont accessibles et utilisables dans tous les cas, y compris si des extensions ont été installées dans le cadre des règles de l'entreprise.
       Si cette règle est définie sur "DeveloperToolsDisallowed" (valeur 2), les outils pour les développeurs sont inaccessibles et les éléments de sites Web ne peuvent plus être examinés. En outre, les raccourcis clavier, ainsi que les entrées de menu ou de menu contextuel permettant d'ouvrir les outils pour les développeurs ou la console JavaScript sont désactivés.</translation>
 <translation id="3547954654003013442">Paramètres de proxy</translation>
+<translation id="3550875587920006460">Permet de planifier de manière personnalisée la recherche de mises à jour. Cette règle s'applique à l'ensemble des utilisateurs et des interfaces de l'appareil. L'appareil recherche alors les mises à jour en fonction du calendrier établi. Cette règle doit être supprimée pour annuler toute autre recherche planifiée de mises à jour.</translation>
 <translation id="355118380775352753">Sites Web à ouvrir dans le navigateur secondaire</translation>
 <translation id="3554984410014457319">Autoriser l'Assistant Google à écouter l'expression d'activation des commandes vocales</translation>
 <translation id="356579196325389849">Les utilisateurs peuvent configurer la version disponible de Chrome OS</translation>
@@ -1450,7 +1436,6 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="3709266154059827597">Configurer la liste noire d'installation des extensions</translation>
 <translation id="3711895659073496551">Arrêter</translation>
 <translation id="3715569262675717862">Authentification basée sur les certificats client</translation>
-<translation id="3734995764843493369">Saisie du mot de passe requise tous les jours (toutes les 24 heures)</translation>
 <translation id="3736879847913515635">Autoriser l'ajout de personnes dans le gestionnaire d'utilisateurs</translation>
 <translation id="3738723882663496016">Cette règle définit la clé de licence <ph name="PLUGIN_VM_NAME" /> pour cet appareil.</translation>
 <translation id="3748900290998155147">Indique si les wakelocks sont autorisés. Les wakelocks peuvent être demandés par des extensions par le biais de l'API d'extension de gestion de l'alimentation et par les applications ARC.
@@ -1656,6 +1641,29 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Si cette règle est définie sur "True" ou si elle n'est pas définie, les utilisateurs peuvent utiliser leurs offres via ce service.
 
       Si elle est définie sur "False", les utilisateurs ne peuvent pas utiliser leurs offres.</translation>
+<translation id="4008233182078913897">Définit la liste des applications et des extensions qui sont installées en arrière-plan,
+          sans aucune intervention de l'utilisateur, et qui ne peuvent pas être désinstallées ni
+          désactivées par ce dernier. Toutes les autorisations demandées par les
+          applications ou les extensions sont accordées implicitement, sans intervention de l'utilisateur,
+          y compris n'importe quelle autre autorisation demandée par les futures versions de
+          l'application ou de l'extension. En outre, les autorisations sont accordées pour les
+          API d'extension enterprise.deviceAttributes et enterprise.platformKeys
+          (ces deux API ne sont pas disponibles pour les applications/extensions qui ne sont pas
+          installées d'office).
+
+          Cette règle prévaut en cas de conflit avec la règle <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Si une application ou une extension installée d'office est supprimée de la liste, <ph name="PRODUCT_NAME" /> la désinstalle automatiquement.
+
+          Pour les instances Windows qui ne sont pas associées à un domaine <ph name="MS_AD_NAME" />, l'installation d'office est limitée aux applications et aux extensions répertoriées sur le Chrome Web Store.
+
+          Sachez que le code source de toute extension peut être modifié par les utilisateurs (cela pouvant entraîner son dysfonctionnement) via les outils pour les développeurs. Si cela pose problème, la règle <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> doit être définie.
+
+          Chaque élément de la règle correspond à une chaîne constituée d'un ID d'extension et d'une URL de mise à jour séparés par un point-virgule (<ph name="SEMICOLON" />). L'ID d'extension est la chaîne de 32 lettres qui se trouve, par exemple, dans <ph name="CHROME_EXTENSIONS_LINK" /> en mode développeur. L'URL de mise à jour doit renvoyer à un fichier manifeste de mise à jour au format XML, comme décrit sur la page <ph name="LINK_TO_EXTENSION_DOC1" />. Par défaut, l'URL de mise à jour du Chrome Web Store est utilisée (il s'agit actuellement de "https://clients2.google.com/service/update2/crx"). Sachez que l'URL de mise à jour spécifiée dans cette règle n'est utilisée que pour l'installation initiale. Toute mise à jour ultérieure de l'extension est effectuée avec l'URL indiquée dans le fichier manifeste de l'extension. Notez également que la définition explicite de l'URL de mise à jour était obligatoire dans les versions de <ph name="PRODUCT_NAME" /> jusqu'à la 67.
+
+          Par exemple, <ph name="EXTENSION_POLICY_EXAMPLE" /> installe l'application <ph name="EXTENSION_ID_SAMPLE" /> à partir de l'URL de mise à jour standard du Chrome Web Store. Pour en savoir plus sur l'hébergement des extensions, consultez la page <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Si cette règle n'est pas configurée, aucune application ni extension n'est installée automatiquement. Toute application ou extension de <ph name="PRODUCT_NAME" /> peut donc être désinstallée.
+
+          Sachez que cette règle n'est pas compatible avec le mode navigation privée.</translation>
 <translation id="4008507541867797979">Si cette règle est définie sur True ou si elle n'est pas configurée, <ph name="PRODUCT_OS_NAME" /> affiche les utilisateurs existants sur l'écran de connexion et permet d'en choisir un.
 
       Si cette règle est définie sur False, <ph name="PRODUCT_OS_NAME" /> n'affiche pas les utilisateurs existants sur l'écran de connexion. L'écran de connexion habituel (demandant l'e-mail et le mot de passe ou le numéro de téléphone de l'utilisateur) ou l'écran interstitiel SAML (si autorisé via la règle <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />) s'affiche, à moins qu'une session gérée ne soit configurée. Lorsqu'une session gérée est configurée, seuls les comptes de la session gérée s'affichent, et permettent d'en choisir un.
@@ -2629,6 +2637,12 @@ Si l'option "Forcé" est sélectionnée, les pages peuvent être ouvertes UNIQUE
 <translation id="5897913798715600338">Recharge de la batterie à l'aide d'une technologie de recharge rapide.</translation>
 <translation id="5898486742390981550">Lorsque plusieurs personnes sont connectées, l'utilisateur principal est le seul à pouvoir se servir des applications Android.</translation>
 <translation id="5901427587865226597">Impression recto verso seulement</translation>
+<translation id="5903898512448364160">
+      Si cette règle est définie sur "True", les règles relatives au cloud prévalent en cas de conflit avec celles concernant les plates-formes.
+      Si cette règle est définie sur "False" ou n'est pas configurée, les règles relatives aux plates-formes prévalent en cas de conflit avec celles concernant le cloud.
+
+      Cette règle n'est disponible qu'en tant que règle obligatoire concernant les plates-formes (machine) et n'affecte que les règles relatives au cloud (machine).
+      </translation>
 <translation id="5905473632148429217">Activer les contrôles OCSP/CRL en ligne</translation>
 <translation id="5906199912611534122">Permet d'activer ou de désactiver la limitation du débit réseau.
       Cette règle s'applique à l'ensemble des utilisateurs et des interfaces de
@@ -2657,6 +2671,7 @@ Si l'option "Forcé" est sélectionnée, les pages peuvent être ouvertes UNIQUE
 
       Si vous désactivez ce paramètre ou ne définissez pas de valeur, SafeSearch n'est pas activé dans la recherche Google.</translation>
 <translation id="5946082169633555022">Version bêta</translation>
+<translation id="5946329690214660966">Planifiez de manière personnalisée la recherche de mises à jour</translation>
 <translation id="5950205771952201658">Les contrôles de révocation en ligne étant sujets à erreur, ils ne présentent aucun avantage concret en termes de sécurité, ils sont désactivés par défaut dans <ph name="PRODUCT_NAME" /> 19 ou version ultérieure. La définition de cette règle sur "True" restaure le comportement précédent. Des contrôles OCSP/CRL sont alors effectués.
 
       Si cette règle n'est pas définie ou si elle est définie sur "False", aucun contrôle de révocation en ligne n'est effectué par <ph name="PRODUCT_NAME" /> dans <ph name="PRODUCT_NAME" /> 19 ou version ultérieure.</translation>
@@ -2723,6 +2738,7 @@ Si l'option "Forcé" est sélectionnée, les pages peuvent être ouvertes UNIQUE
 <translation id="6034341625190551415">Contrôle les types de comptes kiosque et les sessions publiques.</translation>
 <translation id="6034603289689965535">Autorise une page à afficher des fenêtres contextuelles pendant son déchargement</translation>
 <translation id="6036523166753287175">Activer la traversée de pare-feu depuis l'hôte d'accès à distance</translation>
+<translation id="605475635122964053">Limite le mode d'impression par code. Si cette règle n'est pas définie, aucune limite ne s'applique. Si le mode est indisponible, cette règle est ignorée. Notez que la fonctionnalité d'impression par code n'est activée que pour les imprimantes utilisant l'un des protocoles IPPS, USB ou IPP sur USB. </translation>
 <translation id="6070667616071269965">Dispositions de clavier de l'écran de connexion de l'appareil</translation>
 <translation id="6074963268421707432">Interdire à tous les sites d'afficher des notifications sur le Bureau</translation>
 <translation id="6074964551275531965">Définir la période d'affichage des notifications de mise à jour</translation>
@@ -3442,6 +3458,7 @@ Si elle est définie sur "False" ou si elle n'est pas configurée, ces publicit�
       Si cette règle est définie sur "RemoveLRUIfDormant", le nettoyage automatique continue à supprimer les comptes des utilisateurs qui ne se sont pas connectés depuis au moins trois mois en commençant par ceux qui se sont connectés il y a le plus longtemps, et ce jusqu'à ce que l'espace libre soit suffisant.
 
       Si cette règle n'est pas définie, le nettoyage automatique utilise la stratégie intégrée par défaut. Actuellement, il s'agit de la stratégie "RemoveLRUIfDormant".</translation>
+<translation id="7334274148831027933">Activer la loupe ancrée</translation>
 <translation id="7336785017449297672">Contrôle les paramètres d'horloge et de fuseau horaire.</translation>
 <translation id="7336878834592315572">Conserver les cookies pendant toute la durée de la session</translation>
 <translation id="7339315111520512972">Forcer le code réseau à s'exécuter dans le processus du navigateur</translation>

@@ -12,7 +12,7 @@
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">ശുപാർശിത ആപ്പുകൾ</translation>
 <translation id="1368832886055348810">ഇടതുനിന്ന് വലത്തേക്ക്</translation>
-<translation id="1383876407941801731">തിരയൂ</translation>
+<translation id="1383876407941801731">തിരയുക</translation>
 <translation id="1398853756734560583">വലുതാക്കുക</translation>
 <translation id="1409544243779336081">ആപ്പ് നിർദ്ദേശങ്ങൾ</translation>
 <translation id="1413622004203049571"><ph name="NOTIFIER_NAME" /> എന്നതിൽ നിന്നുള്ള അറിയിപ്പുകൾ പ്രവർത്തനരഹിതമാക്കുക</translation>
@@ -54,14 +54,14 @@
 <translation id="2522350507219695259">കാലിബറേഷൻ പൂർത്തിയായി</translation>
 <translation id="252373100621549798">അജ്ഞാത പ്രദർശനം</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{ഒരു മണിക്കൂറിനുള്ളിൽ}other{# മണിക്കൂറിനുള്ളിൽ}}</translation>
-<translation id="2583543531130364912">നിങ്ങളുടെ ടച്ച്സ്‌ക്രീൻ കാലിബറേറ്റുചെയ്യുക</translation>
+<translation id="2583543531130364912">നിങ്ങളുടെ ടച്ച്സ്‌ക്രീൻ കാലിബറേറ്റ് ചെയ്യുക</translation>
 <translation id="2666092431469916601">മുകളിലേക്ക്</translation>
 <translation id="2701330563083355633"><ph name="DEVICE_NAME" /> ഉപകരണത്തിൽ നിന്ന് പങ്കിട്ടു</translation>
 <translation id="2743387203779672305">ക്ലിപ്പ്ബോർഡിലേക്ക് പകർത്തുക</translation>
 <translation id="2803313416453193357">ഫോൾഡർ തുറക്കുക</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{ഒരു വർഷം മുമ്പ്}other{# വർഷം മുമ്പ്}}</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{ഒരു ദിവസത്തിൽ}other{# ദിവസത്തിൽ}}</translation>
-<translation id="2931838996092594335">ക്ലിക്കുചെയ്യുക</translation>
+<translation id="2931838996092594335">ക്ലിക്ക് ചെയ്യുക</translation>
 <translation id="3036649622769666520">ഫയലുകള്‍‌ തുറക്കുക</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3068711042108640621">സ്‌ക്രീനിൻ്റെ ഇടതുഭാഗത്താണ് ഷെൽഫ്</translation>
@@ -72,6 +72,7 @@
 <translation id="3234408098842461169">താഴേക്കുള്ള ആരോ അടയാളം</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{ഒരു ദിവസം}other{# ദിവസം}}</translation>
 <translation id="335581015389089642">സംഭാഷണം</translation>
+<translation id="3443810440409579745">ടാബ് സ്വീകരിച്ചു.</translation>
 <translation id="3479552764303398839">ഇപ്പോഴല്ല</translation>
 <translation id="348799646910989694">ഷെൽഫ് സ്വയമേവ മറച്ചു</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{ഒരു ദിവസം ശേഷിക്കുന്നു}other{# ദിവസം ശേഷിക്കുന്നു}}</translation>
@@ -202,7 +203,7 @@
 <translation id="8725488761726303204"><ph name="NUMBER" /> എണ്ണം കൂടി</translation>
 <translation id="8730621377337864115">പൂർത്തിയാക്കി</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1 മണിക്കൂർ}other{# മണിക്കൂർ}}</translation>
-<translation id="8798099450830957504">സ്ഥിരസ്ഥിതി</translation>
+<translation id="8798099450830957504">ഡിഫോൾട്ട്</translation>
 <translation id="8806053966018712535">ഫോൾഡർ <ph name="FOLDER_NAME" /></translation>
 <translation id="883911313571074303">ചിത്രം വ്യാഖ്യാനിക്കുക</translation>
 <translation id="8841375032071747811">ബാക്ക് ബട്ടൺ</translation>

@@ -747,20 +747,6 @@
       Spellingcontrole kan nog steeds worden uitgevoerd met een gedownload woordenboek. Dit beleid beheert alleen het gebruik van de online service.
 
       Als deze instelling niet is geconfigureerd, kunnen gebruikers kiezen of de service voor spellingcontrole moet worden gebruikt.</translation>
-<translation id="2294283832646774959">Hiermee configureer je een lijst met printers.
-
-      Met dit beleid kunnen beheerders hun gebruikers voorzien van printerconfiguraties.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> en <ph name="PRINTER_DESCRIPTION" /> zijn vrije tekenreeksen die kunnen worden aangepast om de printerselectie te vereenvoudigen. <ph name="PRINTER_MANUFACTURER" /> en <ph name="PRINTER_MODEL" /> zijn bedoeld om de printeridentificatie door eindgebruikers te vereenvoudigen. Ze staan voor de fabrikant en het model van de printer. <ph name="PRINTER_URI" /> moet een adres zijn dat bereikbaar is vanaf een clientcomputer, inclusief <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> en <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> is optioneel. Als de UUID van de printer is opgegeven, wordt deze gebruikt om <ph name="ZEROCONF_DISCOVERY" />-printers te dedupliceren.
-
-      <ph name="PRINTER_EFFECTIVE_MODEL" /> moet overeenkomen met een van de tekenreeksen die een door <ph name="PRODUCT_NAME" /> ondersteunde printer vertegenwoordigen. De tekenreeks wordt gebruikt om de juiste PPD voor de printer te identificeren en te installeren. Meer informatie hierover vind je op https://support.google.com/chrome?p=noncloudprint.
-
-      De instellingen van de printer worden voltooid wanneer de printer voor het eerst wordt gebruikt. Daarna worden veelgebruikte PPD's opgeslagen in het cachegeheugen.
-
-      Dit beleid is niet van invloed op de mogelijkheid van gebruikers om printers op afzonderlijke apparaten in te stellen. Het is bedoeld als aanvulling op de printerinstellingen van afzonderlijke gebruikers.
-
-      Voor apparaten die via Active Directory worden beheerd, ondersteunt dit beleid de uitbreiding van <ph name="MACHINE_NAME_VARIABLE" /> naar de naam van de Active Directory-machine of naar een subtekenreeks daarvan. Als de machinenaam bijvoorbeeld <ph name="MACHINE_NAME_EXAMPLE" /> is, wordt <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> vervangen door de vier tekens vanaf de zesde positie, oftewel <ph name="MACHINE_NAME_PART_EXAMPLE" />. Houd er rekening mee dat de positie op nul is gebaseerd.
-      </translation>
 <translation id="2294382669900758280">Er wordt geen rekening gehouden met het afspelen van video in Android-apps, zelfs niet wanneer dit beleid is ingesteld op <ph name="TRUE" /> (Waar).</translation>
 <translation id="2299220924812062390">Een lijst met ingeschakelde plug-ins specificeren</translation>
 <translation id="2303795211377219696">Automatisch aanvullen inschakelen voor creditcards</translation>
@@ -1413,6 +1399,7 @@
       Als dit beleid is ingesteld op DeveloperToolsAllowed (waarde 1), zijn de Developer Tools en de JavaScript-console toegankelijk en bruikbaar in elke context, inclusief de context van extensies die zijn geïnstalleerd op basis van het bedrijfsbeleid.
       Als dit beleid is ingesteld op DeveloperToolsDisallowed (waarde 2), zijn de Developer Tools niet toegankelijk en kunnen de website-elementen niet meer worden geïnspecteerd. De sneltoetsen en items van menu's of contextmenu's waarmee de Developer Tools of de JavaScript-console kunnen worden geopend, zijn uitgeschakeld.</translation>
 <translation id="3547954654003013442">Proxyinstellingen</translation>
+<translation id="3550875587920006460">Hiermee kan een custom planning worden ingesteld om te controleren op updates. Dit is van toepassing op alle gebruikers en op alle interfaces op het apparaat. Nadat de planning is ingesteld, controleert het apparaat op updates in overeenstemming met de planning. Het beleid moet worden verwijderd om meer geplande updatecontroles te annuleren.</translation>
 <translation id="355118380775352753">Websites die worden geopend in de alternatieve browser</translation>
 <translation id="3554984410014457319">De Google Assistent laten luisteren naar de spraakactiveringszin</translation>
 <translation id="356579196325389849">Gebruikers kunnen het releasekanaal voor Chrome OS configureren.</translation>
@@ -1444,7 +1431,6 @@
 <translation id="3709266154059827597">Zwarte lijst voor het installeren van extensies configureren</translation>
 <translation id="3711895659073496551">Onderbreken</translation>
 <translation id="3715569262675717862">Verificatie op basis van clientcertificaten</translation>
-<translation id="3734995764843493369">Het wachtwoord moet elke dag (24 uur) worden opgegeven</translation>
 <translation id="3736879847913515635">'Persoon toevoegen' inschakelen in gebruikersbeheer</translation>
 <translation id="3738723882663496016">Met dit beleid wordt de <ph name="PLUGIN_VM_NAME" />-licentiecode voor dit apparaat opgegeven.</translation>
 <translation id="3748900290998155147">Geeft aan of wake locks zijn toegestaan. Wake locks kunnen door extensies worden aangevraagd via de API voor de stroombeheerextensie en door ARC-apps.
@@ -1649,6 +1635,21 @@
       Als dit beleid is ingesteld op 'True' of niet wordt ingesteld, kunnen gebruikers aanbiedingen inwisselen via registratie van Chrome OS.
 
       Als dit beleid is ingesteld op 'False' kunnen gebruikers geen aanbiedingen inwisselen.</translation>
+<translation id="4008233182078913897">Hiermee wordt een lijst opgegeven met apps en extensies die zonder gebruikersinteractie op de achtergrond worden geïnstalleerd en die niet kunnen worden verwijderd of uitgeschakeld door de gebruiker. Alle rechten die worden aangevraagd door de apps/extensies, worden impliciet zonder gebruikersinteractie verleend, inclusief aanvullende rechten die worden aangevraagd door toekomstige versies van de app/extensie. Bovendien worden rechten verleend voor de API's van de enterprise.deviceAttributes- en enterprise.platformKeys-extensie. (Deze twee API's zijn niet beschikbaar voor apps/extensies die niet gedwongen zijn geïnstalleerd.)
+
+          Dit beleid krijgt voorrang boven een potentieel conflicterend <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />-beleid. Als een app of extensie die eerder gedwongen is geïnstalleerd, uit deze lijst wordt verwijderd, wordt de app of extensie automatisch verwijderd door <ph name="PRODUCT_NAME" />.
+
+          Voor Windows-instanties die niet zijn gekoppeld aan een <ph name="MS_AD_NAME" />-domein, is gedwongen installatie beperkt tot apps en extensies die worden vermeld in de Chrome Web Store.
+
+          Houd er rekening mee dat gebruikers de broncode van een extensie kunnen wijzigen via de ontwikkelaarstools (waardoor de extensie mogelijk niet meer functioneert). Als je je hierover zorgen maakt, moet het <ph name="DEVELOPER_TOOLS_POLICY_NAME" />-beleid worden ingesteld.
+
+          Elk lijstitem van het beleid is een tekenreeks die een extensie-ID en optioneel een update-URL bevat, gescheiden door een puntkomma (<ph name="SEMICOLON" />). De extensie-ID is de tekenreeks van 32 letters die bijvoorbeeld op <ph name="CHROME_EXTENSIONS_LINK" /> kan worden gevonden wanneer de ontwikkelaarsmodus actief is. De update-URL, indien opgegeven, moet verwijzen naar een XML-updatedocument voor het manifest, zoals beschreven op <ph name="LINK_TO_EXTENSION_DOC1" />. Standaard wordt de update-URL van de Chrome Web Store gebruikt (momenteel https://clients2.google.com/service/update2/crx). Houd er rekening mee dat de update-URL die in dit beleid is ingesteld, alleen voor de eerste installatie wordt gebruikt. Daaropvolgende updates van de extensie gebruiken de update-URL die in het manifest van de extensie wordt aangegeven. Houd er ook rekening mee dat het expliciet opgeven van de update-URL verplicht was in <ph name="PRODUCT_NAME" />-versie tot en met 67.
+
+          Met <ph name="EXTENSION_POLICY_EXAMPLE" /> wordt de app met ID <ph name="EXTENSION_ID_SAMPLE" /> bijvoorbeeld geïnstalleerd via de standaard update-URL van de Chrome Web Store. Raadpleeg voor meer informatie over de hosting van extensies de volgende link: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Als dit beleid niet wordt ingesteld, worden er geen apps en extensies automatisch geïnstalleerd en kan de gebruiker elke app of extensie in <ph name="PRODUCT_NAME" /> verwijderen.
+
+          Houd er rekening mee dat dit beleid niet van toepassing is op de incognitomodus.</translation>
 <translation id="4008507541867797979">Als dit beleid is ingesteld op 'True' of niet is geconfigureerd, worden op het inlogscherm van <ph name="PRODUCT_OS_NAME" /> bestaande gebruikers weergegeven die kunnen worden geselecteerd.
 
       Als dit beleid is ingesteld op 'False', worden op het inlogscherm van <ph name="PRODUCT_OS_NAME" /> geen bestaande gebruikers weergegeven. In dat geval wordt het normale inlogscherm (waar de gebruiker om een e-mailadres en wachtwoord of telefoonnummer wordt gevraagd) of het SAML-interstitial-scherm (indien ingeschakeld via het <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />-beleid) weergegeven, tenzij er een beheerde sessie is ingesteld. Wanneer er een beheerde sessie is ingesteld, worden alleen de accounts voor de beheerde sessie weergegeven en kun je alleen een van deze accounts selecteren.
@@ -2625,6 +2626,12 @@ Anders dan bij <ph name="URL_LIST_POLICY_NAME" /> kunnen regels in twee richting
 <translation id="5897913798715600338">Batterij snel opladen.</translation>
 <translation id="5898486742390981550">Wanneer meerdere gebruikers zijn ingelogd, kunnen Android-apps alleen worden gebruikt door de primaire gebruiker.</translation>
 <translation id="5901427587865226597">Alleen dubbelzijdig afdrukken</translation>
+<translation id="5903898512448364160">
+      Als het beleid is ingesteld op 'true', krijgt het cloudbeleid voorrang bij een conflict met het platformbeleid.
+      Als het beleid is ingesteld op 'false' of niet is geconfigureerd, krijgt het platformbeleid voorrang bij een conflict met het cloudbeleid.
+
+      Dit beleid is alleen beschikbaar als verplicht machineplatformbeleid en is alleen van toepassing op cloudbeleid op machineniveau.
+      </translation>
 <translation id="5905473632148429217">Online OCSP/CRL-controles inschakelen</translation>
 <translation id="5906199912611534122">Hiermee kan netwerkbeperking worden in- of uitgeschakeld.
       Dit is van toepassing op alle gebruikers en op alle interfaces op het apparaat. Zodra de beperking is ingesteld,
@@ -2651,6 +2658,7 @@ Anders dan bij <ph name="URL_LIST_POLICY_NAME" /> kunnen regels in twee richting
 
       Als je deze instelling uitschakelt of geen waarde instelt, wordt SafeSearch Zoeken niet afgedwongen voor Google Zoeken.</translation>
 <translation id="5946082169633555022">Bètakanaal</translation>
+<translation id="5946329690214660966">Custom planning instellen om te controleren op updates</translation>
 <translation id="5950205771952201658">Omdat soft-fail online certificaatintrekkingscontroles de veiligheid niet aantoonbaar verhogen, worden deze standaard uitgeschakeld in versie 19 en hoger van <ph name="PRODUCT_NAME" />. Als dit beleid op 'True' wordt ingesteld, wordt het eerdere gedrag hersteld en worden online OCSP/CRL-controles uitgevoerd.
 
       Als het beleid niet is ingesteld, of is ingesteld op 'False', voert <ph name="PRODUCT_NAME" /> geen online intrekkingscontroles uit in <ph name="PRODUCT_NAME" /> 19 en hoger.</translation>
@@ -2717,6 +2725,7 @@ Anders dan bij <ph name="URL_LIST_POLICY_NAME" /> kunnen regels in twee richting
 <translation id="6034341625190551415">Beheert accounttypen voor openbare sessies en kiosken.</translation>
 <translation id="6034603289689965535">Hiermee wordt toegestaan dat een pagina pop-upvensters weergeeft tijdens het unloaden</translation>
 <translation id="6036523166753287175">Firewallpassage vanaf host voor externe toegang inschakelen</translation>
+<translation id="605475635122964053">Beperkt de modus voor afdrukken met pincode. Als er geen beleid is ingesteld, gelden er geen beperkingen. Als de modus niet beschikbaar is, wordt dit beleid genegeerd. Houd er rekening mee dat de functie voor afdrukken met pincode alleen is ingeschakeld voor printers die het IPPS-, USB- of IPP-over-USB-protocol gebruiken. </translation>
 <translation id="6070667616071269965">Toetsenbordindelingen voor inlogscherm van apparaat</translation>
 <translation id="6074963268421707432">Niet toestaan dat sites bureaubladmeldingen weergeven</translation>
 <translation id="6074964551275531965">De periode voor updatemeldingen instellen</translation>
@@ -3422,6 +3431,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Als dit beleid is ingesteld op 'RemoveLRUIfDormant', blijft de automatische opschoonfunctie gebruikers verwijderen die ten minste drie maanden niet zijn ingelogd (waarbij gegevens van gebruikers die het minst recentelijk hebben ingelogd het eerste worden verwijderd) totdat er voldoende schijfruimte is.
 
       Als dit beleid niet wordt ingesteld, gebruikt de automatische opschoonfunctie de standaard ingebouwde strategie. Momenteel is dit de strategie'RemoveLRUIfDormant'.</translation>
+<translation id="7334274148831027933">Gedockt vergrootglas inschakelen</translation>
 <translation id="7336785017449297672">Beheert instellingen voor de klok en tijdzone.</translation>
 <translation id="7336878834592315572">Cookies bewaren voor de duur van de sessie</translation>
 <translation id="7339315111520512972">Afdwingen dat netwerkcode wordt uitgevoerd in het browserproces</translation>

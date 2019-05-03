@@ -752,21 +752,6 @@
       Rašybą tikrinti vis tiek galima naudojant atsisiųstą žodyną; taikant šią politiką valdomas tik internetinės paslaugos naudojimas.
 
       Jei šis nustatymas nesukonfigūruotas, naudotojai gali pasirinkti, ar turėtų būti naudojama rašybos tikrinimo paslauga.</translation>
-<translation id="2294283832646774959">Konfigūruojamas spausdintuvų sąrašas.
-
-      Taikant šią politiką leidžiama administratoriams teikti spausdintuvo konfigūracijas
-      naudotojams.
-
-      „<ph name="PRINTER_DISPLAY_NAME" />“ ir „<ph name="PRINTER_DESCRIPTION" />“ yra laisvos formos eilutės, kurias galima tinkinti, kad būtų lengviau pasirinkti spausdintuvą. „<ph name="PRINTER_MANUFACTURER" />“ ir „<ph name="PRINTER_MODEL" />“ naudojamos siekiant palengvinti spausdintuvo identifikavimą galutiniams naudotojams. Jos nurodo spausdintuvo gamintoją ir modelį. „<ph name="PRINTER_URI" />“ turėtų būti adresas, kurį galima pasiekti iš kliento kompiuterio, įskaitant „<ph name="URI_SCHEME" />“, „<ph name="URI_PORT" />“ ir „<ph name="URI_QUEUE" />“. „<ph name="PRINTER_UUID" />“ yra pasirenkama. Jei nurodyta, ji naudojama siekiant panaikinti pasikartojančius „<ph name="ZEROCONF_DISCOVERY" />“ spausdintuvus.
-
-      „<ph name="PRINTER_EFFECTIVE_MODEL" />“ turi atitikti vieną iš eilučių, nurodančių „<ph name="PRODUCT_NAME" />“ palaikomą spausdintuvą. Eilutė bus naudojama siekiant identifikuoti ir įdiegti tinkamą spausdintuvo PPD. Daugiau informacijos galima rasti adresu https://support.google.com/chrome?p=noncloudprint.
-
-      Spausdintuvo sąranka užbaigiama pirmą kartą panaudojus spausdintuvą. PPD neatsisiunčiami, kol spausdintuvas nenaudojamas. Paskui dažnai naudojami PPD saugomi talpykloje.
-
-      Ši politika neturi įtakos tam, ar naudotojai gali konfigūruoti spausdintuvus atskiruose įrenginiuose. Ji skirta papildyti atskirų naudotojų spausdintuvų konfigūraciją.
-
-      Jei naudojami „Active Directory“ tvarkomi įrenginiai, ši politika palaiko „Active Directory“ įrenginio pavadinimo „<ph name="MACHINE_NAME_VARIABLE" />“ arba jo poeilučio plėtinį. Pavyzdžiui, jei įrenginio pavadinimas yra „<ph name="MACHINE_NAME_EXAMPLE" />“, tada „<ph name="MACHINE_NAME_VARIABLE_EXAMPLE" />“ turėtų būti pakeistas 4 simboliais nuo 6-osios pozicijos, pvz., „<ph name="MACHINE_NAME_PART_EXAMPLE" />“. Atminkite, kad pozicija nustatoma nuo nulio.
-      </translation>
 <translation id="2294382669900758280">Į vaizdo įrašų leidimą „Android“ programose neatsižvelgiama, net jei ši politika nustatyta į „<ph name="TRUE" />“.</translation>
 <translation id="2299220924812062390">Nurodyti įgalintų papildinių sąrašą</translation>
 <translation id="2303795211377219696">Kredito kortelių automatinio pildymo funkcijos įgalinimas</translation>
@@ -1419,6 +1404,7 @@
       Jei ši politika nustatyta kaip „DeveloperToolsAllowed“ (1 vertė), kūrėjo įrankius ir „JavaScript“ pultą galima pasiekti ir naudoti esant bet kokiam kontekstui, įskaitant tuos atvejus, kai naudojami pagal įmonės politiką įdiegti plėtiniai.
       Jei ši politika nustatyta kaip „DeveloperToolsDisallowed“ (2 vertė), kūrėjo įrankių negalima pasiekti ir nebegalima tikrinti svetainės elementų. Bus išjungti visi spartieji klavišai ir meniu ar kontekstinių meniu įrašai, skirti kūrėjo įrankiams ar „JavaScript“ pultui atidaryti.</translation>
 <translation id="3547954654003013442">Įgaliotojo serverio nustatymai</translation>
+<translation id="3550875587920006460">Leidžia nustatyti tinkintą tikrinimo, ar yra naujinių, tvarkaraštį. Tai taikoma visiems naudotojams ir visoms sąsajoms įrenginyje. Nustačius tvarkaraštį, įrenginys jo laikydamasis tikrins, ar yra naujinių. Norint atšaukti tolesnį tikrinimą, ar yra naujinių, pagal tvarkaraštį, reikės pašalinti šią politiką.</translation>
 <translation id="355118380775352753">Svetainės, skirtos atidaryti alternatyvioje naršyklėje</translation>
 <translation id="3554984410014457319">Leiskite „Google“ padėjėjui klausytis suaktyvinimo balsu frazės</translation>
 <translation id="356579196325389849">Naudotojai gali konfigūruoti „Chrome“ OS leidimo kanalą</translation>
@@ -1450,7 +1436,6 @@
 <translation id="3709266154059827597">Konfigūruoti plėtinių diegimo juodąjį sąrašą</translation>
 <translation id="3711895659073496551">Laikinai sustabdyti</translation>
 <translation id="3715569262675717862">Autentifikavimas atsižvelgiant į klientų sertifikatus</translation>
-<translation id="3734995764843493369">Slaptažodį reikia įvesti kasdien (24 val.)</translation>
 <translation id="3736879847913515635">Asmens pridėjimo naudotojų tvarkytuvėje įgalinimas</translation>
 <translation id="3738723882663496016">Ši politika nurodo „<ph name="PLUGIN_VM_NAME" />“ licencijos kodą, skirtą šiam įrenginiui.</translation>
 <translation id="3748900290998155147">Nurodoma, ar leidžiami pažadinimo užraktai. Pažadinimo užraktų užklausas gali teikti plėtiniai, naudodami energijos tvarkymo plėtinio API, ir ARC programos.
@@ -1656,6 +1641,29 @@
       Jei ši politika galioja arba nėra nustatyta, naudotojai galės išpirkti pasiūlymus vykdydami „Chrome“ OS registraciją.
 
       Jei ši politika negalioja, naudotojas negalės išpirkti pasiūlymų.</translation>
+<translation id="4008233182078913897">Nurodomas programų ir plėtinių, kurie įdiegiami automatiškai,
+          naudotojui neatliekant jokių veiksmų, ir kurių naudotojas negali pašalinti ar
+          išjungti, sąrašas. Visi programų / plėtinių prašomi
+          leidimai suteikiami netiesiogiai, naudotojui neatliekant jokių veiksmų,
+          įskaitant visus papildomus leidimus, kurių bus prašoma naudojant būsimos versijos
+          programą / plėtinį. Be to, leidimai suteikiami plėtinių API
+          „enterprise.deviceAttributes“ ir „enterprise.platformKeys“.
+          (Abi šios API nepasiekiamos programoms / plėtiniams, kurie
+          nėra priverstinai įdiegiami.)
+
+          Šiai politikai teikiama pirmenybė prieš potencialiai nesuderinamą politiką „<ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />“. Jei programa ar plėtinys, kuris anksčiau buvo priverstinai įdiegtas, pašalinamas iš šio sąrašo, „<ph name="PRODUCT_NAME" />“ jį automatiškai pašalina.
+
+          „Windows“ objektų, kurie neprijungti prie „<ph name="MS_AD_NAME" />“ domeno, priverstinis diegimas ribojamas naudojant programas ir plėtinius, nurodytus „Chrome“ internetinėje parduotuvėje.
+
+          Atminkite, kad naudotojai gali keisti bet kurio plėtinio šaltinio kodą, naudodami kūrėjo įrankius (tai gali sutrikdyti plėtinio pateikimą). Jei tai kelia rūpesčių, reikia nustatyti politiką „<ph name="DEVELOPER_TOOLS_POLICY_NAME" />“.
+
+          Kiekvienas politikos sąrašo elementas yra eilutė, kurioje yra plėtinio ID ir „naujinio“ URL, atskirti kabliataškiu (<ph name="SEMICOLON" />). Plėtinio ID yra 32 raidžių eilutė, aptinkama, pvz. <ph name="CHROME_EXTENSIONS_LINK" />, dirbant kūrėjo režimu. „Naujinio“ URL (jei nurodytas) turėtų nurodyti naujinio aprašo XML dokumentą, kaip aprašyta <ph name="LINK_TO_EXTENSION_DOC1" />. Pagal numatytuosius nustatymus naudojamas „Chrome“ internetinės parduotuvės naujinio URL (kuris šiuo metu yra „https://clients2.google.com/service/update2/crx“). Atminkite, kad šioje politikoje nustatytas „naujinio“ URL naudojamas tik atliekant pirminį diegimą. Tolesni plėtinio naujiniai naudos naujinio URL, nurodytą plėtinio apraše. Be to, atminkite, kad buvo būtina aiškiai nurodyti „naujinio“ URL 67 ir ankstesnių versijų „<ph name="PRODUCT_NAME" />“.
+
+          Pavyzdžiui, <ph name="EXTENSION_POLICY_EXAMPLE" /> įdiegia plėtinį, kurio ID <ph name="EXTENSION_ID_SAMPLE" />, iš standartinio „Chrome“ internetinės parduotuvės „naujinio“ URL. Jei reikia daugiau informacijos apie plėtinių priglobimą, žr. <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Nenustačius šios politikos, jokios programos ar plėtiniai neįdiegiami automatiškai, o naudotojas gali pašalinti bet kurią programą ar plėtinį naudodamas „<ph name="PRODUCT_NAME" />“.
+
+          Atminkite, kad ši politika netaikoma inkognito režimu.</translation>
 <translation id="4008507541867797979">Jei ši politika nustatyta kaip „Tiesa“ arba nesukonfigūruota, „<ph name="PRODUCT_OS_NAME" />“ rodomi esami naudotojai prisijungimo ekrane ir leidžiama juos pasirinkti.
 
       Jei ši politika nustatyta kaip „Netiesa“, „<ph name="PRODUCT_OS_NAME" />“ nerodomi esami naudotojais prisijungimo ekrane. Bus rodomas įprastas prisijungimo ekranas (kuriame bus raginama įvesti naudotojo el. pašto adresą ir slaptažodį arba telefono numerį) arba SAML tarpinio puslapio ekranas (jei įgalinta taikant „<ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />“ politiką), nebent sukonfigūruota valdoma sesija. Kai sukonfigūruota valdoma sesija, rodomos tik valdomos sesijos paskyros, leidžiant pasirinkti vieną iš jų.
@@ -2633,6 +2641,12 @@
 <translation id="5897913798715600338">Akumuliatoriaus įkrovimas naudojant greitojo įkrovimo technologijas.</translation>
 <translation id="5898486742390981550">Kai keli naudotojai yra prisijungę, tik pagrindinis naudotojas gali naudoti „Android“ programas.</translation>
 <translation id="5901427587865226597">Tik dvipusis spausdinimas</translation>
+<translation id="5903898512448364160">
+      Jei politika nustatyta kaip „Tiesa“, debesies politikai yra teikiama pirmenybė, jei ji prieštarauja platformos politikai.
+      Jei politika nustatyta kaip „Netiesa“ arba nėra sukonfigūruota, platformos politikai teikiama pirmenybė, jei ji prieštarauja debesies politikai.
+
+      Ši politika pasiekiama tik kaip privaloma įrenginio platformos politika ir taikoma tik įrenginio debesies politikai.
+      </translation>
 <translation id="5905473632148429217">Internetinių OCSP / CRL patikrų įgalinimas</translation>
 <translation id="5906199912611534122">Leidžiama įgalinti arba išjungti tinklo reguliavimą.
       Tai taikoma visiems naudotojams ir visoms sąsajoms įrenginyje. Nustačius
@@ -2658,6 +2672,7 @@
 
       Jei šio nustatymo neleisite arba nenustatysite vertės, saugi paieška „Google“ paieškoje nebus vykdoma.</translation>
 <translation id="5946082169633555022">Beta versijos kanalas</translation>
+<translation id="5946329690214660966">Tinkintas tikrinimo, ar yra naujinių, tvarkaraštis</translation>
 <translation id="5950205771952201658">Jei įvyksta laikinoji klaida, atlikus internetinius panaikinimo patikrinimus sauga nėra užtikrinama efektyviai, todėl jie išjungiami pagal numatytuosius nustatymus naudojant 19 ar naujesnę „<ph name="PRODUCT_NAME" />“ versiją. Nustačius šios politikos reikšmę į „true“, atkuriama ankstesnė elgsena ir internete atliekami OCSP / CRL patikrinimai.
 
       Jei politika nenustatyta arba jos reikšmė nustatyta kaip „false“, „<ph name="PRODUCT_NAME" />“ neatliks internetinių panaikinimo patikrinimų 19 ar naujesnės versijos „<ph name="PRODUCT_NAME" />“.</translation>
@@ -2724,6 +2739,7 @@
 <translation id="6034341625190551415">Valdoma viešoji sesija ir viešojo terminalo sąskaitų tipai.</translation>
 <translation id="6034603289689965535">Leidžiama puslapiui rodyti iššokančiuosius langus jį iškeliant</translation>
 <translation id="6036523166753287175">Įgalinkite užkardos apėjimą iš nuotolinės prieigos prieglobos</translation>
+<translation id="605475635122964053">Ribojamas spausdinimo naudojant PIN kodą režimas. Jei politika nenustatyta, netaikomi jokie apribojimai. Jei režimas nepasiekiamas, šios politikos nepaisoma. Atminkite, kad spausdinimo naudojant PIN kodą funkcija įgalinama tik spausdintuvams, naudojantiems IPPS, USB arba IPP per USB protokolą </translation>
 <translation id="6070667616071269965">Įrenginio prisijungimo ekrano klaviatūros išdėstymai</translation>
 <translation id="6074963268421707432">Neleisti jokioje svetainėje rodyti darbalaukio pranešimų</translation>
 <translation id="6074964551275531965">Atnaujinimo pranešimų laikotarpio nustatymas</translation>
@@ -3448,6 +3464,7 @@
       Jei ši politika nustatyta į „RemoveLRUIfDormant“, automatinis išvalymas šalins naudotojus, kurie neprisijungė bent 3 mėnesius (pagal seniausiai prisijungusiųjų tvarką), kol liks pakankamai laisvos vietos.
 
       Jei ši politika nenustatyta, automatinis išvalymas naudos numatytąją įdiegtą strategiją. Šiuo metu tai strategija „RemoveLRUIfDormant“.</translation>
+<translation id="7334274148831027933">Įgalinti prie doko prijungtą didintuvą</translation>
 <translation id="7336785017449297672">Valdomi laikrodžio ir laiko juostos nustatymai.</translation>
 <translation id="7336878834592315572">Išsaugoti slapukus vykstant sesijai</translation>
 <translation id="7339315111520512972">Priverstinis darbo tinkle kodo vykdymas naršyklės procese</translation>

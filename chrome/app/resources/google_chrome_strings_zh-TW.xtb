@@ -25,6 +25,7 @@
 <translation id="1585657529869845941">請點選 [確定切換] (如有顯示)<ph name="BEGIN_BOLD" /><ph name="END_BOLD" /></translation>
 <translation id="1587223624401073077">Google Chrome 正在使用你的攝影機。</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> 並不安全，因此遭到 Chrome 封鎖。</translation>
+<translation id="1590588151039584890">這台電腦上的 Chrome 必須停止執行，才能進行更新。這可能會導致其他登入這台電腦的使用者遺失尚未儲存的變更。</translation>
 <translation id="1619887657840448962">為了讓 Chrome 的安全性更有保障，我們停用了以下這個未列在「<ph name="IDS_EXTENSION_WEB_STORE_TITLE" />」中的擴充功能 (它可能是在您不知情的情況下加入瀏覽器)。</translation>
 <translation id="1628000112320670027">前往 Chrome 說明頁面</translation>
 <translation id="1662639173275167396">Chrome 作業系統藉助了其他<ph name="BEGIN_LINK_CROS_OSS" />開放原始碼軟體<ph name="END_LINK_CROS_OSS" />的相關技術才得以問世，<ph name="BEGIN_LINK_LINUX_OSS" />Linux (測試版)<ph name="END_LINK_LINUX_OSS" /> 也是如此。</translation>
@@ -166,6 +167,7 @@
 
 Google Chrome 無法復原你的設定。</translation>
 <translation id="5483595757826856374">{0,plural, =0{Chrome 將立即重新啟動}=1{Chrome 將於 1 秒後重新啟動}other{Chrome 將於 # 秒後重新啟動}}</translation>
+<translation id="5543953544073077331">有其他 Chrome 瀏覽器正在執行中。如要更新，請關閉這些瀏覽器。</translation>
 <translation id="556024056938947818">Google Chrome 即將顯示密碼。</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> 可能不安全，因此遭到 Chrome 封鎖。</translation>
@@ -226,6 +228,7 @@ Google Chrome 無法復原你的設定。</translation>
 <translation id="7473136999113284234">Chrome 會自動更新，隨時讓你使用最新版本。</translation>
 <translation id="7486227612705979895">Chrome 將存取你的雲端硬碟，並在網址列提供建議</translation>
 <translation id="748945194546522577">這個檔案不安全，因此遭到 Chrome 封鎖。你已啟用進階保護功能。</translation>
+<translation id="7531671357096394523">請關閉所有 Chrome 瀏覽器。</translation>
 <translation id="7535429826459677826">Google Chrome 開發人員版</translation>
 <translation id="7552219221109926349">將 Chrome 作業系統的介面文字設為這種語言</translation>
 <translation id="7561940363513215021">{0,plural, =1{Chrome 將於 1 分鐘後重新啟動}other{Chrome 將於 # 分鐘後重新啟動}}</translation>

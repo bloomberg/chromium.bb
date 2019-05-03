@@ -71,7 +71,6 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">ดูข้อมูลเพิ่มเติมเกี่ยวกับอัปเดตล่าสุดของ <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1995660704900986789">ปิดเครื่อง</translation>
-<translation id="1999763610967697511">ลากและวาง</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">พิมพ์ข้อความ</translation>
 <translation id="2050339315714019657">แนวตั้ง</translation>
@@ -200,6 +199,7 @@
 <translation id="394485226368336402">การตั้งค่าเสียง</translation>
 <translation id="3962859241508114581">แทร็กก่อนหน้า</translation>
 <translation id="397105322502079400">กำลังคำนวณ...</translation>
+<translation id="3977512764614765090">แบตเตอรี่เหลือ <ph name="PERCENTAGE" />% และกำลังชาร์จ</translation>
 <translation id="3995138139523574647">อุปกรณ์ USB-C (พอร์ตด้านหลังขวา)</translation>
 <translation id="4017989525502048489">ตัวชี้เลเซอร์</translation>
 <translation id="4042660782729322247">คุณกำลังแชร์หน้าจอ</translation>
@@ -217,6 +217,7 @@
 <translation id="4279490309300973883">กำลังแสดงผล</translation>
 <translation id="4281007048406351813">เพิ่มเวลาตัวจับเวลาอีก 1 นาที</translation>
 <translation id="4292681942966152062">กำลังเปิดใช้งาน<ph name="NETWORK_NAME" /></translation>
+<translation id="4296136865091727875">ล้างการแจ้งเตือนทั้งหมด <ph name="COUNT" /> รายการ</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">คุณกดแป้นพิมพ์ลัดสำหรับคอนทราสต์สูง จะเปิดคอนทราสต์สูงไหม</translation>
 <translation id="4331809312908958774">Chrome OS
@@ -502,6 +503,7 @@
 <translation id="8877788021141246043">ตั้งการช่วยเตือน</translation>
 <translation id="8878886163241303700">กำลังขยายหน้าจอ</translation>
 <translation id="890616557918890486">เปลี่ยนแหล่งที่มา</translation>
+<translation id="8909138438987180327">แบตเตอรี่เหลือ <ph name="PERCENTAGE" /> เปอร์เซ็นต์</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google Assistant ยังพูดภาษานี้ไม่ได้</translation>
 <translation id="8938800817013097409">อุปกรณ์ USB-C (พอร์ตด้านหลังขวา)</translation>
@@ -513,6 +515,7 @@
 <translation id="9029474291399787231">มีอัปเดต Adobe Flash Player พร้อมใช้งาน</translation>
 <translation id="9056839673611986238">อุปกรณ์จะได้รับการคืนค่าสถานะ</translation>
 <translation id="9070640332319875144">การตั้งค่า Assistant</translation>
+<translation id="9072519059834302790">อีก <ph name="TIME_LEFT" />แบตเตอรี่จะหมด</translation>
 <translation id="9074739597929991885">บลูทูธ</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">ใช้ไมโครโฟนอยู่</translation>
@@ -524,6 +527,7 @@
 <translation id="9193626018745640770">กำลังแคสต์ไปยังเครื่องรับที่ไม่รู้จัก</translation>
 <translation id="9194617393863864469">ลงชื่อเข้าใช้ด้วยชื่อผู้ใช้อื่น...</translation>
 <translation id="9210037371811586452">กำลังออกจากโหมดเดสก์ท็อปแบบรวมหลายหน้าจอ</translation>
+<translation id="9211681782751733685">อีก <ph name="TIME_REMAINING" />จะชาร์จเต็ม</translation>
 <translation id="9215934040295798075">ตั้งค่าวอลเปเปอร์</translation>
 <translation id="921989828232331238">ผู้ปกครองล็อกอุปกรณ์ของคุณไว้ทั้งวัน</translation>
 <translation id="923686485342484400">กด Control Shift Q 2 ครั้งเพื่อออกจากระบบ</translation>

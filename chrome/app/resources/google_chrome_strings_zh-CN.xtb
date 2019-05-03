@@ -25,6 +25,7 @@
 <translation id="1585657529869845941">请点击<ph name="BEGIN_BOLD" />确定切换<ph name="END_BOLD" />（如果显示该按钮的话）</translation>
 <translation id="1587223624401073077">Google Chrome 正在使用您的摄像头。</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> 存在危险，因此 Chrome 已将其拦截。</translation>
+<translation id="1590588151039584890">若要更新，Chrome 需停止在此计算机上运行。这可能会导致已登录此计算机的其他用户丢失未保存的更改。</translation>
 <translation id="1619887657840448962">为了提高 Chrome 的安全性，我们停用了以下扩展程序（该扩展程序未列在<ph name="IDS_EXTENSION_WEB_STORE_TITLE" />中，并且可能是在您不知情的情况下添加的）。</translation>
 <translation id="1628000112320670027">获取有关 Chrome 的帮助</translation>
 <translation id="1662639173275167396">Chrome 操作系统是借助了其他<ph name="BEGIN_LINK_CROS_OSS" />开放源代码软件<ph name="END_LINK_CROS_OSS" />才得以问世，<ph name="BEGIN_LINK_LINUX_OSS" />Linux（测试版）<ph name="END_LINK_LINUX_OSS" />也是如此。</translation>
@@ -165,6 +166,7 @@
 <translation id="5386244825306882791">它还能够控制您启动Chrome后或通过多功能框进行搜索时系统显示的页面。</translation>
 <translation id="5430073640787465221">您的偏好设置文件已损坏或无效。Google Chrome 浏览器无法恢复您的设置。</translation>
 <translation id="5483595757826856374">{0,plural, =0{Chrome 将会立即重新启动}=1{Chrome 将会在 1 秒后重新启动}other{Chrome 将会在 # 秒后重新启动}}</translation>
+<translation id="5543953544073077331">正在运行 Chrome 的其他副本。若要更新，请先关闭它们。</translation>
 <translation id="556024056938947818">Google Chrome 正尝试显示密码。</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> 可能存在危险，因此 Chrome 已将其拦截。</translation>
@@ -225,6 +227,7 @@
 <translation id="7473136999113284234">Chrome会自动更新，因此您使用的始终都是最新版本。</translation>
 <translation id="7486227612705979895">Chrome 将访问您的云端硬盘，以在地址栏提供建议</translation>
 <translation id="748945194546522577">此文件含有危险因素，所以 Chrome 已拦截它。您已注册“高级保护”计划，因此受其保护。</translation>
+<translation id="7531671357096394523">退出 Chrome 的所有副本。</translation>
 <translation id="7535429826459677826">Google Chrome 开发者版</translation>
 <translation id="7552219221109926349">以这种语言显示 Chrome 操作系统</translation>
 <translation id="7561940363513215021">{0,plural, =1{Chrome 将会在 1 分钟后重新启动}other{Chrome 将会在 # 分钟后重新启动}}</translation>

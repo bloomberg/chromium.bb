@@ -796,6 +796,7 @@
 <translation id="2241053333139545397">Læse og redigere dine data på en række websites</translation>
 <translation id="2241634353105152135">Kun én gang</translation>
 <translation id="2242687258748107519">Filoplysninger</translation>
+<translation id="2246549592927364792">Vil du hente billedbeskrivelser fra Google?</translation>
 <translation id="224940702122312781">Denne side bruger mange data.</translation>
 <translation id="2249605167705922988">f.eks. 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">Åbn med standardvisningsprogram</translation>
@@ -1102,6 +1103,7 @@
 <translation id="271033894570825754">Nyt</translation>
 <translation id="2714393097308983682">Google Play Butik</translation>
 <translation id="2715751256863167692">Denne opgradering nulstiller din Chromebook og fjerner aktuelle brugerdata.</translation>
+<translation id="2716986496990888774">Denne indstilling administreres af en forælder.</translation>
 <translation id="2718395828230677721">Nattelys</translation>
 <translation id="2718998670920917754">Antivirussoftwaren har fundet en virus.</translation>
 <translation id="2719936478972253983">Følgende cookies blev blokeret</translation>
@@ -1152,7 +1154,6 @@
 <translation id="2783829359200813069">Vælg krypteringstyper</translation>
 <translation id="2783952358106015700">Brug din sikkerhedsnøgle med <ph name="APP_NAME" /></translation>
 <translation id="2784407158394623927">Aktiverer din mobildatatjeneste</translation>
-<translation id="2785008241190445880">Bogmærket er udskiftet</translation>
 <translation id="2785873697295365461">Filbeskrivelser</translation>
 <translation id="2787354132612937472">–</translation>
 <translation id="2788135150614412178">+</translation>
@@ -1213,6 +1214,7 @@
 <translation id="2874939134665556319">Forrige nummer</translation>
 <translation id="2875698561019555027">(Chrome-fejlsider)</translation>
 <translation id="2876336351874743617">Finger 2</translation>
+<translation id="2876369937070532032">Sender webadresser på nogle sider, som du besøger, til Google, når din sikkerhed er truet</translation>
 <translation id="288042212351694283">Får adgang til dine Universal 2nd Factor-enheder</translation>
 <translation id="2881076733170862447">Når du klikker på udvidelsen</translation>
 <translation id="2881966438216424900">Sidst åbnet:</translation>
@@ -1395,6 +1397,7 @@
 <translation id="3170072451822350649">Du kan også springe login over og <ph name="LINK_START" />anvende som gæst<ph name="LINK_END" />.</translation>
 <translation id="3172045848207518317">Et website har adgang til videoinput</translation>
 <translation id="3177909033752230686">Sidens sprog:</translation>
+<translation id="3181954750937456830">Beskyttet browsing (beskytter dig og din enhed mod farlige websites)</translation>
 <translation id="3182749001423093222">Stavekontrol</translation>
 <translation id="3183139917765991655">Profilimport</translation>
 <translation id="3188465121994729530">Glidende gennemsnit</translation>
@@ -1700,6 +1703,7 @@
 <translation id="3664511988987167893">Udvidelsesikon</translation>
 <translation id="3665589677786828986">Chrome har registreret, at nogle af dine indstillinger er blevet ændret af et andet program, og har derfor gendannet standardindstillingerne.</translation>
 <translation id="3668570675727296296">Sprogindstillinger</translation>
+<translation id="366867565525278777">Installationen mislykkedes på grund af manglende lagerplads. Der kræves mindst <ph name="INSTALL_SIZE" /> ledig plads. Slet filer fra lageret på din enhed for at frigøre plads.</translation>
 <translation id="3668801437375206837">Googlere kan medtage yderligere Bluetooth-logfiler i deres feedbackrapporter for at forbedre diagnosticeringen af Bluetooth-problemer. Når denne mulighed er valgt, omfatter din rapport btsnoop- og HCI-logfiler fra din nuværende session. Disse er renset for at fjerne så mange personhenførbare oplysninger som muligt. Det er kun administratorer af Chrome OS-produktgruppen i Listnr, der har adgang til disse. Logfiler ryddes efter 90 dage.</translation>
 <translation id="3668823961463113931">Håndtering</translation>
 <translation id="3670113805793654926">Enheder fra alle leverandører</translation>
@@ -4008,6 +4012,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7289225569524511578">Åbn baggrundsappen</translation>
 <translation id="7290242001003353852">Denne logintjeneste, som hostes af <ph name="SAML_DOMAIN" />, har adgang til dit kamera.</translation>
 <translation id="7290594223351252791">Bekræft registrering</translation>
+<translation id="7295614427631867477">Bemærk! Android, Play og tilknyttede apps er underlagt deres egne politikker for dataindsamling og brug.</translation>
 <translation id="729583233778673644">Tillad AES- og RC4-kryptering. Du løber en større risiko, hvis du vælger denne mulighed, da RC4-krypteringsalgoritmerne er usikre.</translation>
 <translation id="7296774163727375165">Vilkår for <ph name="DOMAIN" /></translation>
 <translation id="7297443947353982503">Brugernavn/adgangskode er forkert, eller også mislykkedes EAP-godkendelsen</translation>
@@ -4284,6 +4289,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7732111077498238432">Netværket er underlagt politikker</translation>
 <translation id="7737238973539693982">Fjern Linux (beta)</translation>
 <translation id="7740996059027112821">Standard</translation>
+<translation id="7746457520633464754">Chrome sender webadresser på nogle sider, du besøger, begrænsede systemoplysninger og noget sideindhold til Google med henblik på at registrere farlige apps og websites.</translation>
 <translation id="7750228210027921155">Integreret billede</translation>
 <translation id="7751260505918304024">Vis alle</translation>
 <translation id="7754704193130578113">Spørg, hvor hver enkelt fil skal gemmes, inden download begynder</translation>
@@ -4934,7 +4940,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8732212173949624846">Læs og rediger din browserhistorik på alle enheder, hvor du er logget ind</translation>
 <translation id="8732844209475700754">Flere indstillinger vedrørende privatliv, sikkerhed og dataindsamling</translation>
 <translation id="8734073480934656039">Ved at aktivere denne indstilling tillader du, at terminalapplikationer åbnes automatisk under opstart.</translation>
-<translation id="8734671092194994316">Dette medfører, at dit besøg på <ph name="WEBSITE" /> registreres på din sikkerhedsnøgle.</translation>
 <translation id="873545264931343897">Når <ph name="PLUGIN_NAME" /> er opdateret, skal du aktivere det ved at genindlæse siden.</translation>
 <translation id="8736288397686080465">Dette website er blevet opdateret i baggrunden.</translation>
 <translation id="8737685506611670901">Åbne <ph name="PROTOCOL" />-links i stedet for <ph name="REPLACED_HANDLER_TITLE" /></translation>
@@ -4968,6 +4973,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8780123805589053431">Hent billedbeskrivelser fra Google</translation>
 <translation id="8780443667474968681">Talesøgning er deaktiveret.</translation>
 <translation id="878069093594050299">Dette certifikat er blevet bekræftet til følgende brug:</translation>
+<translation id="8781470833671194250">Stabilisering af klikposition</translation>
 <translation id="8781980678064919987">Luk ned, når låget er lukket</translation>
 <translation id="8782565991310229362">Start af kioskapplikationen blev annulleret.</translation>
 <translation id="8783093612333542422">&lt;Strong&gt;<ph name="SENDER" />&lt;/ Strong&gt; vil dele en printer &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/ Strong&gt; med dig.</translation>

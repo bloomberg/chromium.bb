@@ -37,7 +37,7 @@
 <translation id="1201402288615127009">अगला</translation>
 <translation id="1206619573307042055">मार्की</translation>
 <translation id="1213216066620407844">ChromeVox - Chrome को ध्‍वनि देना</translation>
-<translation id="1225437811932752266">बधाई हो! आपने ChromeVox का उपयोग करने की ज़रूरी बातें सीख ली हैं. याद रखें कि आप Search+Period दबाकर किसी भी समय ChromeVox का निर्देश मेन्यू खोल सकते हैं. ChromeVox और Chrome OS के बारे में और भी ज़्यादा जानने के लिए, नीचे दिए गए लेखों पर जाएं.
+<translation id="1225437811932752266">बधाई हो! आपने ChromeVox का इस्तेमाल करने की ज़रूरी बातें सीख ली हैं. याद रखें कि आप Search+Period दबाकर किसी भी समय ChromeVox का निर्देश मेन्यू खोल सकते हैं. ChromeVox और Chrome OS के बारे में और भी ज़्यादा जानने के लिए, नीचे दिए गए लेखों पर जाएं.
 अगर आपने ट्यूटोरियल पूरा कर लिया है, तो ChromeVox का इस्तेमाल करके 'बंद करें' बटन पर जाएं और उस पर क्लिक करें.</translation>
 <translation id="1225969361094801578">गहरा स्लेटी</translation>
 <translation id="1229276918471378188">पिछला बटन</translation>
@@ -64,7 +64,7 @@
 <translation id="1346748346194534595">दाएं</translation>
 <translation id="135978014023467274">आपको ChromeVox 63 में अपडेट किया गया है!</translation>
 <translation id="1360699455582016846">रूटिंग कुंजी <ph name="ROUTING_KEY_NUMBER" /> में आइटम पर क्लिक करें</translation>
-<translation id="136718599399906424">अगली तालिका पंक्ति</translation>
+<translation id="136718599399906424">अगली टेबल पंक्ति</translation>
 <translation id="1377925789329510816">यह आखिरी शीर्षक है. पहले शीर्षक पर जाने के लिए Search+H दबाएं या इस पेज के दूसरे शीर्षक पर जाने के लिए Search+Shift+H दबाएं.</translation>
 <translation id="138218114945450791">हल्का नीला</translation>
 <translation id="1383876407941801731">खोजें</translation>
@@ -495,7 +495,7 @@
 <translation id="4471074325120394300">कोई लिंक नहीं.</translation>
 <translation id="4476183483923481720">नई पंक्ति</translation>
 <translation id="4479068155583208887">फ़ायर ब्रिक</translation>
-<translation id="4482330759234983253">पिछली तालिका</translation>
+<translation id="4482330759234983253">पिछली टेबल</translation>
 <translation id="4491109536499578614">इमेज</translation>
 <translation id="4505167975768625962">डालना</translation>
 <translation id="4511186779140817916">मटमैला</translation>
@@ -525,7 +525,7 @@
 <translation id="4693675773662933727">पिछला लैंडमार्क</translation>
 <translation id="4696413482802371445">कोई अगला लेवल 5 का शीर्षक नहीं.</translation>
 <translation id="4710166929009737753">एक उंगली से दाईं ओर स्वाइप करें</translation>
-<translation id="4729095194763193578">पिछली तालिका पंक्ति</translation>
+<translation id="4729095194763193578">पिछली टेबल पंक्ति</translation>
 <translation id="4736221692378411923">अगस्त</translation>
 <translation id="4740661827607246557">सहायता आदेश</translation>
 <translation id="4755857887974653209">ChromeVox को बंद करें</translation>
@@ -681,7 +681,7 @@
 <translation id="5703716265115423771">वॉल्‍यूम कम करें</translation>
 <translation id="5709192780268610569">कोई बड़ा विवरण नहीं</translation>
 <translation id="5712244464475377681">popbtn</translation>
-<translation id="5712338278108304766">अगला तालिका स्‍तंभ</translation>
+<translation id="5712338278108304766">अगला टेबल कॉलम</translation>
 <translation id="571866080859340309">समूहों को एक्सप्लोर कर रहा है</translation>
 <translation id="5725079927589231571">हल्का स्लेटी नीला</translation>
 <translation id="5728409797179002635">कोई टेबल नहीं मिली.</translation>
@@ -799,7 +799,7 @@
 <translation id="6609828810966525877">'जानें मोड' और Chromebook सहायता केंद्र में हाथ के जेस्चर (स्पर्श) के बारे में ज़्यादा बेहतर जानें</translation>
 <translation id="6615602925644411249">पेज में ढूंढें.</translation>
 <translation id="6628427060004938651">भाग</translation>
-<translation id="6633350132811819843">कोई अगली तालिका नहीं.</translation>
+<translation id="6633350132811819843">कोई अगली टेबल नहीं.</translation>
 <translation id="6637586476836377253">लॉग</translation>
 <translation id="6657128831881431364">प्रगति बार</translation>
 <translation id="6659594942844771486">टैब</translation>
@@ -938,7 +938,7 @@
 <translation id="7609363189280667021">ब्रेल कैप्शन टॉगल करें</translation>
 <translation id="761303759119251275">क्रेडिट</translation>
 <translation id="762020119231868829">वर्तमान में चल रहे सभी मीडिया विजेट को रोकता है</translation>
-<translation id="7625690649919402823">अगली तालिका</translation>
+<translation id="7625690649919402823">अगली टेबल</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), ग्रेड <ph name="GRADE" /></translation>
 <translation id="763535765081585392">अंडरलाइन दिखाएं:</translation>
 <translation id="7639968568612851608">गहरा धूसर</translation>

@@ -799,6 +799,7 @@
 <translation id="2241053333139545397">Membaca dan mengubah data Anda di sejumlah situs web</translation>
 <translation id="2241634353105152135">Hanya sekali</translation>
 <translation id="2242687258748107519">Info File</translation>
+<translation id="2246549592927364792">Dapatkan deskripsi gambar dari Google?</translation>
 <translation id="224940702122312781">Halaman ini akan menggunakan banyak data.</translation>
 <translation id="2249605167705922988">misal: 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">Buka menggunakan penampil sistem</translation>
@@ -1104,6 +1105,7 @@
 <translation id="271033894570825754">Baru</translation>
 <translation id="2714393097308983682">Google Play Store</translation>
 <translation id="2715751256863167692">Upgrade ini menyetel ulang Chromebook dan menghapus data pengguna saat ini.</translation>
+<translation id="2716986496990888774">Setelan ini dikelola oleh orang tua.</translation>
 <translation id="2718395828230677721">Cahaya Malam</translation>
 <translation id="2718998670920917754">Software antivirus mendeteksi virus.</translation>
 <translation id="2719936478972253983">Cookie berikut diblokir</translation>
@@ -1154,7 +1156,6 @@
 <translation id="2783829359200813069">Pilih jenis enkripsi</translation>
 <translation id="2783952358106015700">Gunakan kunci keamanan dengan <ph name="APP_NAME" /></translation>
 <translation id="2784407158394623927">Mengaktifkan layanan data seluler Anda</translation>
-<translation id="2785008241190445880">Bookmark diganti</translation>
 <translation id="2785873697295365461">Deskriptor file</translation>
 <translation id="2787354132612937472">—</translation>
 <translation id="2788135150614412178">+</translation>
@@ -1215,6 +1216,7 @@
 <translation id="2874939134665556319">Lagu sebelumnya</translation>
 <translation id="2875698561019555027">(Halaman kesalahan Chrome)</translation>
 <translation id="2876336351874743617">Jari 2</translation>
+<translation id="2876369937070532032">Mengirimkan URL beberapa halaman yang Anda kunjungi ke Google, jika keamanan Anda berisiko</translation>
 <translation id="288042212351694283">Akses perangkat Universal 2nd Factor Anda</translation>
 <translation id="2881076733170862447">Saat Anda Mengklik Ekstensi</translation>
 <translation id="2881966438216424900">Terakhir diakses:</translation>
@@ -1395,6 +1397,7 @@
 <translation id="3170072451822350649">Anda juga dapat melewati proses masuk dan <ph name="LINK_START" />menjelajah sebagai tamu<ph name="LINK_END" />.</translation>
 <translation id="3172045848207518317">Satu situs sedang mengakses masukan video</translation>
 <translation id="3177909033752230686">Bahasa Halaman:</translation>
+<translation id="3181954750937456830">Safe Browsing (melindungi Anda dan perangkat dari situs berbahaya)</translation>
 <translation id="3182749001423093222">Periksa ejaan</translation>
 <translation id="3183139917765991655">Pengimpor Profil</translation>
 <translation id="3188465121994729530">Rata-rata Perpindahan</translation>
@@ -1700,6 +1703,7 @@
 <translation id="3664511988987167893">Ikon Ekstensi</translation>
 <translation id="3665589677786828986">Chrome mendeteksi bahwa beberapa setelan Anda dirusak oleh program lain dan menyetelnya ulang ke setelan default aslinya.</translation>
 <translation id="3668570675727296296">Setelan bahasa</translation>
+<translation id="366867565525278777">Gagal menginstal karena ruang penyimpanan tidak cukup. Diperlukan ruang kosong minimal sebesar <ph name="INSTALL_SIZE" />. Untuk mengosongkan ruang, hapus file dari penyimpanan perangkat.</translation>
 <translation id="3668801437375206837">Untuk mendiagnosis masalah Bluetooth dengan lebih baik, Googler dapat menyertakan log Bluetooth tambahan dengan laporan umpannya. Jika opsi ini dicentang, laporan Anda akan menyertakan log HCI dan btsnoop dari sesi Anda saat ini, yang dihapus untuk membuang PII sebanyak mungkin. Akses ke log ini akan dibatasi pada pengelola grup produk Chrome OS di Listnr. Log akan dihapus setelah 90 hari.</translation>
 <translation id="3668823961463113931">Penangan</translation>
 <translation id="3670113805793654926">Perangkat dari semua vendor</translation>
@@ -2242,6 +2246,7 @@
 <translation id="4524832533047962394">Mode pendaftaran yang disediakan tidak didukung oleh versi sistem operasi ini. Pastikan Anda menjalankan versi terbaru.</translation>
 <translation id="4525382759303819021">Dapatkan informasi dan rekomendasi terbaru di aplikasi Play Store</translation>
 <translation id="4530494379350999373">Asal</translation>
+<translation id="4532646538815530781">Situs ini menggunakan sensor gerakan.</translation>
 <translation id="4533846798469727141">Sekarang ucapkan "Hai Google"</translation>
 <translation id="4533985347672295764">Waktu CPU</translation>
 <translation id="4534661889221639075">Coba lagi.</translation>
@@ -2476,6 +2481,7 @@
 <translation id="4892229439761351791">Situs dapat menggunakan Bluetooth</translation>
 <translation id="4893336867552636863">Tindakan ini akan menghapus data penjelajahan Anda dari perangkat ini secara permanen.</translation>
 <translation id="4893522937062257019">Di layar kunci</translation>
+<translation id="489454699928748701">Izinkan situs menggunakan sensor gerakan</translation>
 <translation id="4898011734382862273">Sertifikat "<ph name="CERTIFICATE_NAME" />" mewakili Otoritas Sertifikasi</translation>
 <translation id="489985760463306091">Untuk menyelesaikan proses penghapusan software berbahaya, nyalakan ulang komputer Anda</translation>
 <translation id="4900392736118574277">Halaman awal diubah menjadi <ph name="URL" />.</translation>
@@ -2939,6 +2945,7 @@
 <translation id="5620568081365989559">DevTools meminta akses penuh ke <ph name="FOLDER_PATH" />. Pastikan Anda tidak memiliki informasi penting apa pun.</translation>
 <translation id="5620612546311710611">statistik penggunaan</translation>
 <translation id="5620655347161642930">Ekspor sandi...</translation>
+<translation id="5623282979409330487">Situs ini sedang mengakses sensor gerakan.</translation>
 <translation id="5623842676595125836">Log</translation>
 <translation id="5624120631404540903">Kelola sandi</translation>
 <translation id="5626134646977739690">Nama:</translation>
@@ -3432,6 +3439,7 @@
 <translation id="6390994422085833176">Tinjau fitur sinkronisasi dan personalisasi setelah penyiapan</translation>
 <translation id="6393156038355142111">Sarankan sandi yang kuat</translation>
 <translation id="6395423953133416962">Kirim <ph name="BEGIN_LINK1" />informasi sistem<ph name="END_LINK1" /> dan <ph name="BEGIN_LINK2" />metrik<ph name="END_LINK2" /></translation>
+<translation id="6396988158856674517">Blokir situs agar tidak menggunakan sensor gerakan</translation>
 <translation id="6397094776139756010">Opsi sinkronisasi dan personalisasi</translation>
 <translation id="6398715114293939307">Hapus Google Play Store</translation>
 <translation id="6398765197997659313">Keluar dari tampilan layar penuh</translation>
@@ -3526,6 +3534,7 @@
 <translation id="6531282281159901044">Simpan file berbahaya</translation>
 <translation id="6532101170117367231">Simpan ke Google Drive</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Catatan:<ph name="END_BOLD" /> Hanya aktif jika Anda tahu sedang melakukan apa atau jika ditanyai untuk melakukan hal tersebut, karena koleksi data dapat mengurangi kinerja.</translation>
+<translation id="6541638731489116978">Situs ini telah diblokir agar tidak dapat mengakses sensor gerakan.</translation>
 <translation id="654233263479157500">Gunakan layanan web untuk membantu mengatasi kesalahan navigasi</translation>
 <translation id="6544215763872433504">Browser web dari Google, untuk Anda</translation>
 <translation id="6545665334409411530">Tingkat pengulangan</translation>
@@ -4007,6 +4016,7 @@
 <translation id="7289225569524511578">Buka aplikasi wallpaper</translation>
 <translation id="7290242001003353852">Layanan masuk ini, dihosting oleh <ph name="SAML_DOMAIN" /> dan sedang mengakses kamera Anda.</translation>
 <translation id="7290594223351252791">Konfirmasi pendaftaran</translation>
+<translation id="7295614427631867477">Perhatikan bahwa Android, Play, dan aplikasi terkait diatur oleh kebijakan pengumpulan dan penggunaan datanya sendiri.</translation>
 <translation id="729583233778673644">Izinkan enkripsi AES dan RC4. Penggunaan opsi ini akan meningkatkan risiko, karena cipher RC4 tidak aman.</translation>
 <translation id="7296774163727375165">Persyaratan <ph name="DOMAIN" /></translation>
 <translation id="7297443947353982503">Nama pengguna/sandi salah atau autentikasi EAP gagal</translation>
@@ -4263,6 +4273,7 @@
 <translation id="7704628569466676326">Sambungkan kunci keamanan ke perangkat ini agar dapat digunakan untuk login ke akun Anda</translation>
 <translation id="7705276765467986571">Tidak dapat memuat model bookmark.</translation>
 <translation id="7705524343798198388">VPN</translation>
+<translation id="7707108266051544351">Situs ini telah diblokir agar tidak dapat mengakses sensor gerakan.</translation>
 <translation id="7707922173985738739">Gunakan data seluler</translation>
 <translation id="7709152031285164251">Gagal - <ph name="INTERRUPT_REASON" /></translation>
 <translation id="7710568461918838723">&amp;Cast...</translation>
@@ -4283,6 +4294,7 @@
 <translation id="7732111077498238432">Jaringan dikontrol oleh kebijakan</translation>
 <translation id="7737238973539693982">Hapus Linux (Beta)</translation>
 <translation id="7740996059027112821">Standar</translation>
+<translation id="7746457520633464754">Untuk mendeteksi aplikasi dan situs berbahaya, Chrome mengirimkan URL beberapa halaman yang Anda kunjungi, informasi sistem terbatas, dan beberapa konten halaman ke Google</translation>
 <translation id="7750228210027921155">Picture-in-picture</translation>
 <translation id="7751260505918304024">Tampilkan semua</translation>
 <translation id="7754704193130578113">Tanyakan lokasi penyimpanan setiap file sebelum mendownload</translation>
@@ -4350,7 +4362,7 @@
       <ph name="LIST_ITEM" />Menyetel sandi login dev dan root system ke nilai kustom agar Anda dapat secara manual melakukan SSH ke perangkat
     <ph name="END_LIST" />
     <ph name="BR" />
-    Setelah diaktifkan, sebagian besar fitur debug akan tetap aktif setelah melakukan powerwash atau wipe data di perangkat yang dikelola oleh perusahaan.  Untuk menonaktifkan semua fitur debug sepenuhnya, selesaikan proses pemulihan Chrome OS (https://support.google.com/chromebook/answer/1080595).
+    Setelah diaktifkan, sebagian besar fitur debug akan tetap aktif setelah melakukan powerwash atau penghapusan total data di perangkat yang dikelola oleh perusahaan.  Untuk menonaktifkan semua fitur debug sepenuhnya, selesaikan proses pemulihan Chrome OS (https://support.google.com/chromebook/answer/1080595).
     <ph name="BR" />
     <ph name="BR" />
     Untuk informasi selengkapnya tentang fitur debug, lihat:<ph name="BR" />
@@ -4934,7 +4946,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8732212173949624846">Membaca dan mengubah histori penjelajahan Anda di semua perangkat tempat Anda masuk</translation>
 <translation id="8732844209475700754">Setelan lain yang berkaitan dengan privasi, keamanan, dan pengumpulan data</translation>
 <translation id="8734073480934656039">Dengan mengaktifkan setelan ini, Anda memungkinkan aplikasi kios diluncurkan secara otomatis saat memulai.</translation>
-<translation id="8734671092194994316">Tindakan ini akan meninggalkan data kunjungan Anda ke <ph name="WEBSITE" /> pada kunci keamanan.</translation>
 <translation id="873545264931343897">Setelah <ph name="PLUGIN_NAME" /> selesai diperbarui, muat ulang halaman untuk mengaktifkannya</translation>
 <translation id="8736288397686080465">Situs ini diperbarui di latar belakang.</translation>
 <translation id="8737685506611670901">Membuka link <ph name="PROTOCOL" /> sebagai ganti <ph name="REPLACED_HANDLER_TITLE" /></translation>
@@ -4967,6 +4978,7 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8780123805589053431">Dapatkan deskripsi gambar dari Google</translation>
 <translation id="8780443667474968681">Penelusuran suara telah dinonaktifkan.</translation>
 <translation id="878069093594050299">Sertifikat ini telah diverifikasikan untuk penggunaan berikut:</translation>
+<translation id="8781470833671194250">Stabilisasi posisi klik</translation>
 <translation id="8781980678064919987">Matikan saat penutup ditutup</translation>
 <translation id="8782565991310229362">Peluncuran aplikasi kios dibatalkan.</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; ingin berbagi printer &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; dengan Anda.</translation>

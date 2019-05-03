@@ -223,6 +223,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">Kartu</translation>
 <translation id="2114841414352855701">Diabaikan karena diganti dengan <ph name="POLICY_NAME" />.</translation>
+<translation id="2129079103035905234">Sensor Gerakan</translation>
 <translation id="213826338245044447">Bookmark Seluler</translation>
 <translation id="214556005048008348">Batalkan pembayaran</translation>
 <translation id="2147827593068025794">Sinkronisasi Latar Belakang</translation>
@@ -616,6 +617,7 @@
 <translation id="4265872034478892965">Diizinkan oleh administrator</translation>
 <translation id="4275830172053184480">Mulai ulang perangkat Anda</translation>
 <translation id="4277028893293644418">Setel ulang sandi</translation>
+<translation id="4279811152705618813"><ph name="DEVICE_TYPE" /> Anda dikelola oleh <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Kartu ini telah disimpan di Akun Google Anda}other{Kartu-kartu ini telah disimpan di Akun Google Anda}}</translation>
 <translation id="42981349822642051">Luaskan</translation>
 <translation id="4302965934281694568">Chou3 (Envelope)</translation>

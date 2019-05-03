@@ -71,7 +71,6 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">详细了解最新的 <ph name="SYSTEM_APP_NAME" />更新</translation>
 <translation id="1995660704900986789">关机</translation>
-<translation id="1999763610967697511">拖放</translation>
 <translation id="2012624427112548395">Ctrl+搜索键+H</translation>
 <translation id="2016340657076538683">请输入消息</translation>
 <translation id="2050339315714019657">纵向</translation>
@@ -200,6 +199,7 @@
 <translation id="394485226368336402">音频设置</translation>
 <translation id="3962859241508114581">上一曲</translation>
 <translation id="397105322502079400">正在计算...</translation>
+<translation id="3977512764614765090">当前的电池电量为 <ph name="PERCENTAGE" />%，正在充电。</translation>
 <translation id="3995138139523574647">USB-C 设备（右侧后端端口）</translation>
 <translation id="4017989525502048489">激光笔</translation>
 <translation id="4042660782729322247">您正在共享屏幕</translation>
@@ -217,6 +217,7 @@
 <translation id="4279490309300973883">正在镜像</translation>
 <translation id="4281007048406351813">给定时器加 1 分钟</translation>
 <translation id="4292681942966152062">正在启用<ph name="NETWORK_NAME" /></translation>
+<translation id="4296136865091727875">清除所有的 <ph name="COUNT" /> 条通知</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">您按下了高对比度的键盘快捷键。要开启这项功能吗？</translation>
 <translation id="4331809312908958774">Chrome OS
@@ -502,6 +503,7 @@
 <translation id="8877788021141246043">设置提醒</translation>
 <translation id="8878886163241303700">正在扩展屏幕</translation>
 <translation id="890616557918890486">更改来源</translation>
+<translation id="8909138438987180327">剩余的电池电量为 <ph name="PERCENTAGE" />%。</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google 助理不支持此语言。</translation>
 <translation id="8938800817013097409">USB-C 设备（背面右侧端口）</translation>
@@ -513,6 +515,7 @@
 <translation id="9029474291399787231">有可用的 Adobe Flash Player 更新</translation>
 <translation id="9056839673611986238">设备将被回滚</translation>
 <translation id="9070640332319875144">Google 助理设置</translation>
+<translation id="9072519059834302790">电池电量将在 <ph name="TIME_LEFT" />后耗尽</translation>
 <translation id="9074739597929991885">蓝牙</translation>
 <translation id="9079731690316798640">Wi-Fi：<ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">麦克风目前处于使用状态。</translation>
@@ -524,6 +527,7 @@
 <translation id="9193626018745640770">正在投射至不明接收器</translation>
 <translation id="9194617393863864469">登录其他用户帐号…</translation>
 <translation id="9210037371811586452">正在退出统一桌面模式</translation>
+<translation id="9211681782751733685">电池电量将在 <ph name="TIME_REMAINING" />后充满。</translation>
 <translation id="9215934040295798075">设置壁纸</translation>
 <translation id="921989828232331238">您的家长已全天锁定您的设备</translation>
 <translation id="923686485342484400">连按两次Ctrl+Shift+Q即可退出。</translation>

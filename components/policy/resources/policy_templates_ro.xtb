@@ -729,21 +729,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Totuși, verificarea ortografiei se poate face cu un dicționar descărcat; această politică afectează numai utilizarea serviciului web.
 
       Dacă această setare nu este configurată, atunci utilizatorii pot alege dacă se va utiliza sau nu serviciul de verificare a ortografiei.</translation>
-<translation id="2294283832646774959">Configurează o listă de imprimante.
-
-      Această politică permite administratorilor să ofere utilizatorilor configurații ale
-      imprimantelor.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> și <ph name="PRINTER_DESCRIPTION" /> sunt șiruri cu formă liberă care pot fi personalizate pentru a selecta mai ușor o imprimantă. <ph name="PRINTER_MANUFACTURER" /> și <ph name="PRINTER_MODEL" /> sunt folosite pentru a simplifica identificarea imprimantei de către utilizatorii finali. Acestea reprezintă producătorul și modelul imprimantei. <ph name="PRINTER_URI" /> trebuie să fie o adresă care poate fi accesată de pe computerul unui client, inclusiv <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> și <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> este opțional. Dacă este specificat, acesta este folosit pentru a deduplica imprimantele <ph name="ZEROCONF_DISCOVERY" />.
-
-      <ph name="PRINTER_EFFECTIVE_MODEL" /> trebuie să corespundă unuia dintre șirurile care reprezintă o imprimantă <ph name="PRODUCT_NAME" /> compatibilă. Șirul va fi folosit pentru a identifica și instala PPD-ul corespunzător imprimantei. Mai multe informații sunt disponibile la https://support.google.com/chrome?p=noncloudprint.
-
-      Configurarea imprimantei este finalizată la prima folosire a acesteia. PPD-urile nu sunt descărcate înainte de folosirea imprimantei. După aceea, PPD-urile folosite frecvent sunt stocate în memoria cache.
-
-      Această politică nu afectează opțiunea utilizatorilor de a configura imprimantele pe dispozitive individuale. Este menită să fie suplimentară față de configurarea imprimantelor de către utilizatori individuali.
-
-      Pentru dispozitivele gestionate cu Active Directory, această politică acceptă extinderea <ph name="MACHINE_NAME_VARIABLE" /> la numele computerului cu Active Directory sau la un subșir al acestuia. De exemplu, dacă numele computerului este <ph name="MACHINE_NAME_EXAMPLE" />, <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> va fi înlocuit de cele 4 caractere care urmează după cea de-a 6-a poziție, adică <ph name="MACHINE_NAME_PART_EXAMPLE" />. Reține că poziția începe de la zero.
-      </translation>
 <translation id="2294382669900758280">Redarea videoclipurilor în aplicațiile Android nu este luată în considerare, chiar dacă politica este setată la <ph name="TRUE" />.</translation>
 <translation id="2299220924812062390">Specifică o listă de pluginuri activate</translation>
 <translation id="2303795211377219696">Activează completarea automată pentru cardurile de credit</translation>
@@ -1380,6 +1365,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Dacă această politică este setată la „DeveloperToolsAllowed” (valoarea 1), Instrumentele pentru dezvoltatori și consola JavaScript pot fi accesate și folosite în orice context, inclusiv în contextul extensiilor instalate pe baza politicii de companie.
       Dacă această politică este setată la „DeveloperToolsDisallowed” (valoarea 2), Instrumentele pentru dezvoltatori nu pot fi accesate și elementele site-urilor nu mai pot fi inspectate. Comenzile rapide de la tastatură și intrările din meniuri sau din meniurile contextuale pentru deschiderea Instrumentelor pentru dezvoltatori sau a consolei JavaScript vor fi dezactivate.</translation>
 <translation id="3547954654003013442">Setări proxy</translation>
+<translation id="3550875587920006460">Permite setarea unui program personalizat pentru a căuta actualizări. Se aplică pentru toți utilizatorii și toate interfețele de pe dispozitiv. Odată setat, dispozitivul va căuta actualizări în funcție de program. Politica trebuie să fie eliminată pentru a anula alte căutări de actualizări programate.</translation>
 <translation id="355118380775352753">Site-uri care vor fi deschise în browserul secundar</translation>
 <translation id="3554984410014457319">Permite Asistentului Google să asculte expresia de activare vocală</translation>
 <translation id="356579196325389849">Utilizatorii pot configura canalul de lansare Chrome OS</translation>
@@ -1411,7 +1397,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="3709266154059827597">Configurează lista neagră pentru instalarea extensiilor</translation>
 <translation id="3711895659073496551">Suspendați</translation>
 <translation id="3715569262675717862">Autentificare pe baza certificatelor de client</translation>
-<translation id="3734995764843493369">Introducerea parolei este necesară în fiecare zi (24 de ore)</translation>
 <translation id="3736879847913515635">Activează adăugarea de persoane în managerul de utilizatori</translation>
 <translation id="3738723882663496016">Această politică arată cheia de licență <ph name="PLUGIN_VM_NAME" /> pentru acest dispozitiv.</translation>
 <translation id="3748900290998155147">Indică dacă stările de activare sunt permise. Stările de activare pot fi solicitate de extensii prin API-ul extensiei de gestionare a consumului de energie și prin aplicațiile ARC.
@@ -1615,6 +1600,29 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Dacă politica este activată sau nu este configurată, utilizatorii pot valorifica oferte prin înregistrarea sistemului de operare Chrome.
 
       Dacă politica nu este activată, utilizatorii nu vor putea valorifica oferte.</translation>
+<translation id="4008233182078913897">Specifică o listă de aplicații și extensii instalate în fundal,
+          fără intervenția utilizatorului și care nu pot fi dezinstalate sau
+          dezactivate de acesta. Toate permisiunile solicitate de
+          aplicații/extensii sunt acordate în mod prestabilit, fără intervenția utilizatorului,
+          inclusiv orice permisiune suplimentară solicitată de viitoarele versiuni ale
+          aplicației/extensiei. În plus, permisiunile sunt acordate pentru
+          API-urile extensiei
+          enterprise.deviceAttributes și enterprise.platformKeys. (Aceste două API-uri nu sunt disponibile pentru aplicațiile/extensiile care
+          nu sunt instalate forțat.)
+
+          Această politică are prioritate față de o politică <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> care poate crea conflicte. Dacă o aplicație sau o extensie care a fost instalată forțat anterior este eliminată din listă, aceasta este dezinstalată automat de <ph name="PRODUCT_NAME" />.
+
+          Pentru instanțele Windows neasociate unui domeniu <ph name="MS_AD_NAME" />, instalarea forțată se limitează la aplicațiile și extensiile afișate în Magazinul web Chrome.
+
+          Reține că utilizatorii pot să modifice codul sursă al oricărei extensii cu ajutorul Developer Tools (ceea ce poate face extensia nefuncțională). Dacă acest aspect creează probleme, trebuie să se seteze politica <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+          Fiecare element din lista politicii este un șir care include un ID al extensiei și, opțional, o adresă URL de „actualizare”, separate prin punct și virgulă (<ph name="SEMICOLON" />). ID-ul extensiei este un șir alcătuit din 32 de litere și se găsește, de exemplu, la <ph name="CHROME_EXTENSIONS_LINK" /> în modul pentru dezvoltatori. Adresa URL de „actualizare”, dacă este specificată, trebuie să trimită la un document XML cu manifestul de actualizare, conform descrierii de la <ph name="LINK_TO_EXTENSION_DOC1" />. În mod prestabilit, se folosește adresa URL de actualizare a Magazinului web Chrome (care acum este „https://clients2.google.com/service/update2/crx”). Reține că adresa URL de „actualizare” setată în această politică este folosită numai la instalarea inițială. Actualizările ulterioare ale extensiei vor folosi adresa URL de actualizare indicată în manifestul extensiei. Reține și că specificarea explicită a adresei URL de „actualizare” era obligatorie în versiunile <ph name="PRODUCT_NAME" /> de până la 67, inclusiv.
+
+          De exemplu, <ph name="EXTENSION_POLICY_EXAMPLE" /> instalează aplicația <ph name="EXTENSION_ID_SAMPLE" /> de la adresa URL standard de „actualizare” din Magazinul web Chrome. Pentru mai multe informații despre găzduirea extensiilor, accesează <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Dacă politica nu este setată, nicio aplicație sau extensie nu va fi instalată automat, iar utilizatorul poate dezinstala orice aplicație sau extensie din <ph name="PRODUCT_NAME" />.
+
+          Reține că politica nu se aplică modului incognito.</translation>
 <translation id="4008507541867797979">Dacă această politică este activată sau nu este configurată, <ph name="PRODUCT_OS_NAME" /> va afișa utilizatorii existenți pe ecranul de conectare și va permite alegerea unuia.
 
       Dacă politica este dezactivată, <ph name="PRODUCT_OS_NAME" /> nu va afișa utilizatorii existenți pe ecranul de conectare. Se va afișa ecranul de conectare normal (care solicită adresa de e-mail și parola sau numărul de telefon al utilizatorului) sau ecranul interstițial SAML (dacă este activat prin politica <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />), cu excepția cazului în care s-a configurat o sesiune gestionată, caz în care se vor afișa numai conturile pentru sesiuni gestionate și se va permite alegerea unuia.
@@ -2556,6 +2564,12 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="5897913798715600338">Încarcă bateria folosind tehnologia de încărcare rapidă.</translation>
 <translation id="5898486742390981550">Când sunt conectați mai mulți utilizatori, numai utilizatorul principal poate folosi aplicațiile Android.</translation>
 <translation id="5901427587865226597">Numai printare duplex</translation>
+<translation id="5903898512448364160">
+      Când politica este activată, politica în cloud are prioritate dacă este în conflict cu politica platformei.
+      Când politica este dezactivată sau nu este configurată, politica platformei are prioritate dacă este în conflict cu politica în cloud.
+
+      Politica este disponibilă numai ca politică obligatorie a platformei dispozitivului și stabilește numai politicile în cloud privind aria de acoperire a dispozitivului.
+      </translation>
 <translation id="5905473632148429217">Activează verificările OCSP/CRL online</translation>
 <translation id="5906199912611534122">Permite activarea sau dezactivarea limitării rețelei.
       Se aplică tuturor utilizatorilor și tuturor interfețelor de pe acest dispozitiv. După ce este configurată,
@@ -2582,6 +2596,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Dacă dezactivați această setare sau nu configurați nicio valoare, nu se va impune Căutarea sigură din Căutarea Google.</translation>
 <translation id="5946082169633555022">Canal în versiune beta</translation>
+<translation id="5946329690214660966">Setează programul personalizat pentru a căuta actualizări</translation>
 <translation id="5950205771952201658">Deoarece verificările de revocare online care tolerează erorile temporare nu oferă avantaje de securitate clare, acestea sunt dezactivate în mod prestabilit în <ph name="PRODUCT_NAME" /> versiunea 19 și în versiunile ulterioare. Prin activarea acestei politici, comportamentul anterior este restabilit și sunt efectuate verificări OCSP/CRL online.
 
       Dacă politica nu este configurată sau este dezactivată, <ph name="PRODUCT_NAME" /> nu va efectua verificări de revocare online în <ph name="PRODUCT_NAME" /> versiunea 19 și în versiunile ulterioare.</translation>
@@ -2648,6 +2663,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="6034341625190551415">Controlează sesiunile publice și tipurile de cont kiosk.</translation>
 <translation id="6034603289689965535">Permite unei pagini să afișeze pop-upuri în timpul unloadingului</translation>
 <translation id="6036523166753287175">Activați trecerea prin firewall de la gazda de acces la distanță</translation>
+<translation id="605475635122964053">Limitează modul de printare cu PIN. Politica nesetată este tratată ca lipsa oricărei restricții. Dacă modul nu este disponibil, politica este ignorată. Reține că funcția de printare cu PIN este activată numai pentru imprimantele care folosesc unul dintre protocoalele: IPPS, USB sau IPP prin USB </translation>
 <translation id="6070667616071269965">Aspectele tastaturii de pe ecranul de conectare al dispozitivului</translation>
 <translation id="6074963268421707432">Nu permite niciunui site să afișeze notificări pe desktop</translation>
 <translation id="6074964551275531965">Setează perioada pentru notificările privind actualizările</translation>
@@ -3352,6 +3368,7 @@ nu poate fi stabilit de utilizator din setările browserului.
       Dacă politica este setată la „RemoveLRUIfDormant”, curățarea automată va continua să elimine utilizatorii care nu s-au conectat în ultimele 3 luni, începând cu cei care s-au conectat de cele mai puține ori recent, până când există suficient spațiu liber.
 
       Dacă politica nu este setată, curățarea automată utilizează strategia încorporată în mod prestabilit. În prezent, aceasta este strategia „RemoveLRUIfDormant”.</translation>
+<translation id="7334274148831027933">Activează lupa andocată</translation>
 <translation id="7336785017449297672">Controlează setările de ceas și fus orar.</translation>
 <translation id="7336878834592315572">Păstrați cookie-urile pe durata sesiunii</translation>
 <translation id="7339315111520512972">Forțează codul de rețea să ruleze în procesul browserului</translation>

@@ -71,7 +71,6 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">తాజా <ph name="SYSTEM_APP_NAME" /> అప్‌డేట్ గురించి మరింత తెలుసుకోండి</translation>
 <translation id="1995660704900986789">పవర్ ఆఫ్ చేయి</translation>
-<translation id="1999763610967697511">లాగి, వదలండి</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">సందేశాన్ని టైప్ చేయండి</translation>
 <translation id="2050339315714019657">పోర్ట్రెయిట్</translation>
@@ -201,6 +200,7 @@
 <translation id="394485226368336402">ఆడియో సెట్టింగ్‌‍లు</translation>
 <translation id="3962859241508114581">మునుపటి ట్రాక్</translation>
 <translation id="397105322502079400">గణిస్తోంది...</translation>
+<translation id="3977512764614765090">బ్యాటరీ <ph name="PERCENTAGE" />% ఉంది. ఛార్జ్ అవుతోంది.</translation>
 <translation id="3995138139523574647">USB-C పరికరం (కుడివైపు వెనుక పోర్ట్)</translation>
 <translation id="4017989525502048489">లేజర్ పాయింటర్</translation>
 <translation id="4042660782729322247">మీరు మీ స్క్రీన్‌ను షేర్ చేస్తున్నారు</translation>
@@ -218,6 +218,7 @@
 <translation id="4279490309300973883">మిర్రరింగ్</translation>
 <translation id="4281007048406351813">టైమర్‌కు 1 నిమి జోడించు</translation>
 <translation id="4292681942966152062"><ph name="NETWORK_NAME" /> యాక్టివేట్ చేయబడుతోంది</translation>
+<translation id="4296136865091727875">మొత్తం <ph name="COUNT" /> నోటిఫికేషన్‌లను క్లియర్ చేస్తుంది</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">మీరు అధిక కాంట్రాస్ట్‌ కోసం కీబోర్డ్ షార్ట్‌కట్‌ను నొక్కారు. మీరు దీన్ని ఆన్ చేయాలనుకుంటున్నారా?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -502,6 +503,7 @@
 <translation id="8877788021141246043">రిమైండర్‌ సెట్ చేయి</translation>
 <translation id="8878886163241303700">స్క్రీన్ విస్తరించబడుతోంది</translation>
 <translation id="890616557918890486">మూలాధారాన్ని మార్చు</translation>
+<translation id="8909138438987180327">బ్యాటరీ ఛార్జ్ <ph name="PERCENTAGE" /> శాతం ఉంది.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google సహాయకం ఈ భాషను మాట్లాడదు.</translation>
 <translation id="8938800817013097409">USB-C పరికరం (వెనుక భాగంలో కుడి పోర్ట్)</translation>
@@ -513,6 +515,7 @@
 <translation id="9029474291399787231">Adobe Flash Player అప్‌డేట్ అందుబాటులో ఉంది</translation>
 <translation id="9056839673611986238">పరికరం ఉపసంహరించబడుతుంది</translation>
 <translation id="9070640332319875144">అసిస్టెంట్ సెట్టింగ్‌లు</translation>
+<translation id="9072519059834302790">బ్యాటరీ ఛార్జ్ <ph name="TIME_LEFT" />లో ఖాళీ అవుతుంది.</translation>
 <translation id="9074739597929991885">బ్లూటూత్</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">మైక్రోఫోన్ ఉపయోగంలో ఉంది.</translation>
@@ -524,6 +527,7 @@
 <translation id="9193626018745640770">తెలియని రిసీవర్‌లో ప్రసారం చేస్తోంది</translation>
 <translation id="9194617393863864469">మరొక వినియోగదారుగా సైన్ ఇన్ చేయండి...</translation>
 <translation id="9210037371811586452">ఏకీకృత డెస్క్‌టాప్ మోడ్ నుండి ఎగ్జిట్ అవుతోంది</translation>
+<translation id="9211681782751733685">బ్యాటరీ పూర్తిగా ఛార్జ్ కావడానికి పట్టే సమయం, <ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">వాల్‌పేపర్‌ను సెట్ చేయండి</translation>
 <translation id="921989828232331238">మీ తల్లి/తండ్రి ఈ రోజుకి మీ పరికరాన్ని లాక్ చేసి ఉంచారు</translation>
 <translation id="923686485342484400">సైన్ అవుట్ చేయడానికి Control Shift Qను రెండుసార్లు నొక్కండి.</translation>

@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
-<translation id="1001338328714563407"><ph name="ENROLLMENT_DOMAIN" /> 기기 및 계정의 관리자로서</translation>
+<translation id="1001338328714563407">기기 및 계정의 관리자로서 <ph name="ENROLLMENT_DOMAIN" />은(는) 다음을 할 수 있습니다.</translation>
 <translation id="1008557486741366299">나중에 하기</translation>
 <translation id="1010200102790553230">페이지 나중에 로드하기</translation>
 <translation id="1015730422737071372">추가 세부정보 제공</translation>
@@ -384,7 +384,7 @@
 <translation id="3005723025932146533">저장된 사본 표시</translation>
 <translation id="3008447029300691911"><ph name="CREDIT_CARD" /> 카드의 CVC를 입력하세요. 카드를 확인하면 카드 세부정보가 이 사이트와 공유됩니다.</translation>
 <translation id="3010559122411665027">목록 항목 '<ph name="ENTRY_INDEX" />': <ph name="ERROR" /></translation>
-<translation id="3014389611820813634"><ph name="ENROLLMENT_DOMAIN" /> 기기의 관리자로서</translation>
+<translation id="3014389611820813634">기기의 관리자로서 <ph name="ENROLLMENT_DOMAIN" />은(는) 다음을 할 수 있습니다.</translation>
 <translation id="301521992641321250">자동으로 차단됨</translation>
 <translation id="3023071826883856138">You4(봉투)</translation>
 <translation id="3024663005179499861">잘못된 정책 유형</translation>
@@ -617,6 +617,7 @@
 <translation id="4265872034478892965">관리자가 허용함</translation>
 <translation id="4275830172053184480">기기 다시 시작</translation>
 <translation id="4277028893293644418">비밀번호 재설정</translation>
+<translation id="4279811152705618813"><ph name="ENROLLMENT_DOMAIN" />에서 <ph name="DEVICE_TYPE" />을(를) 관리합니다</translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{다음 카드가 Google 계정에 저장되었습니다.}other{다음 카드가 Google 계정에 저장되었습니다.}}</translation>
 <translation id="42981349822642051">펼치기</translation>
 <translation id="4302965934281694568">Chou3(봉투)</translation>
@@ -1085,7 +1086,7 @@
 <translation id="7062635574500127092">청록색</translation>
 <translation id="7064851114919012435">연락처 정보</translation>
 <translation id="7079718277001814089">이 사이트에 멀웨어가 있습니다.</translation>
-<translation id="7081564429925484109">경고: 이 정책은 목록에 포함되어 있지 않으므로 PolicyListMultipleSourceMergeList 정책에 명시된 대로 병합되지 않았습니다.</translation>
+<translation id="7081564429925484109">경고: 이 정책은 목록이 아니므로 PolicyListMultipleSourceMergeList 정책에 명시된 대로 병합되지 않았습니다.</translation>
 <translation id="7087282848513945231">카운티</translation>
 <translation id="7090678807593890770">Google에서 <ph name="LINK" /> 검색</translation>
 <translation id="7108338896283013870">숨기기</translation>
@@ -1248,7 +1249,7 @@
 <translation id="780301667611848630">아니요, 괜찮습니다.</translation>
 <translation id="7805768142964895445">상태</translation>
 <translation id="7806344367022510803">Chrome에서 검색엔진 설정을 변경하세요.</translation>
-<translation id="7810209002420871817"><ph name="ACCOUNT_DOMAIN" /> 계정의 관리자로서</translation>
+<translation id="7810209002420871817">계정의 관리자로서 <ph name="ACCOUNT_DOMAIN" />은(는) 다음을 할 수 있습니다.</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Chrome에서 추천검색어를 삭제하시겠습니까?</translation>
 <translation id="7815407501681723534">'<ph name="SEARCH_STRING" />'에 대해 <ph name="SEARCH_RESULTS" /> <ph name="NUMBER_OF_RESULTS" />개의 검색 결과를 찾았습니다.</translation>

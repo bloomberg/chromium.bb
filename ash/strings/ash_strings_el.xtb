@@ -71,7 +71,6 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">Μάθετε περισσότερα σχετικά με την πιο πρόσφατη ενημέρωση της εφαρμογής <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1995660704900986789">Απενεργοποίηση</translation>
-<translation id="1999763610967697511">Μεταφορά και απόθεση</translation>
 <translation id="2012624427112548395">Ctrl+Πλήκτρο αναζήτησης+H</translation>
 <translation id="2016340657076538683">Πληκτρολογήστε ένα μήνυμα</translation>
 <translation id="2050339315714019657">Κάθετα</translation>
@@ -200,6 +199,7 @@
 <translation id="394485226368336402">Ρυθμίσεις ήχου</translation>
 <translation id="3962859241508114581">Προηγούμενο κομμάτι</translation>
 <translation id="397105322502079400">Υπολογισμός…</translation>
+<translation id="3977512764614765090">Η μπαταρία είναι στο <ph name="PERCENTAGE" />% και φορτίζει.</translation>
 <translation id="3995138139523574647">Συσκευή USB-C (πίσω δεξιά θύρα)</translation>
 <translation id="4017989525502048489">Δείκτης λέιζερ</translation>
 <translation id="4042660782729322247">Μοιράζεστε την οθόνη σας</translation>
@@ -217,6 +217,7 @@
 <translation id="4279490309300973883">Κατοπτρισμός</translation>
 <translation id="4281007048406351813">Προσθήκη ενός λεπτού στο χρονόμετρο</translation>
 <translation id="4292681942966152062">Ενεργοποίηση δικτύου <ph name="NETWORK_NAME" /></translation>
+<translation id="4296136865091727875">Διαγραφή και των <ph name="COUNT" /> ειδοποιήσεων</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">Πατήσατε τη συντόμευση πληκτρολογίου για την υψηλή αντίθεση. Θέλετε να την ενεργοποιήσετε;</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -501,6 +502,7 @@
 <translation id="8877788021141246043">Ορισμός υπενθύμισης</translation>
 <translation id="8878886163241303700">Επέκταση οθόνης</translation>
 <translation id="890616557918890486">Αλλαγή πηγής</translation>
+<translation id="8909138438987180327">Η μπαταρία βρίσκεται στο <ph name="PERCENTAGE" /> τοις εκατό.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Ο Βοηθός Google δεν είναι διαθέσιμος σε αυτήν τη γλώσσα.</translation>
 <translation id="8938800817013097409">Συσκευή USB-C (πίσω δεξιά θύρα)</translation>
@@ -512,6 +514,7 @@
 <translation id="9029474291399787231">Υπάρχει διαθέσιμη ενημέρωση για το Adobe Flash Player</translation>
 <translation id="9056839673611986238">Θα γίνει επαναφορά της συσκευής</translation>
 <translation id="9070640332319875144">Ρυθμίσεις Βοηθού</translation>
+<translation id="9072519059834302790"><ph name="TIME_LEFT" /> μέχρι την εξάντληση της μπαταρίας.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Το μικρόφωνο χρησιμοποιείται.</translation>
@@ -523,6 +526,7 @@
 <translation id="9193626018745640770">Μετάδοση σε άγνωστο δέκτη</translation>
 <translation id="9194617393863864469">Σύνδεση με άλλον χρήστη...</translation>
 <translation id="9210037371811586452">Έξοδος από λειτουργία ενοποιημένης επιφάνειας εργασίας</translation>
+<translation id="9211681782751733685">Απομένουν <ph name="TIME_REMAINING" /> έως την πλήρη φόρτιση της μπαταρίας.</translation>
 <translation id="9215934040295798075">Ορισμός ταπετσαρίας</translation>
 <translation id="921989828232331238">Ο γονέας σας κλείδωσε τη συσκευή σας για σήμερα</translation>
 <translation id="923686485342484400">Πατήστε Ctrl + Shift + Q δύο φορές για να αποσυνδεθείτε.</translation>

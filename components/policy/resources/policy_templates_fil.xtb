@@ -750,21 +750,6 @@
       Maisasagawa pa rin ang pag-spell check gamit ang isang na-download na diksyunaryo; ang paggamit ng online na serbisyo lang ang kinokontrol ng patakarang ito.
 
       Kung hindi na-configure ang setting na ito, mapipili ng mga user kung dapat gamitin ang serbisyo ng pag-spell check o hindi.</translation>
-<translation id="2294283832646774959">Nagko-configure ng listahan ng mga printer.
-
-      Binibigyang-daan ng patakarang ito ang mga administrator na magbigay ng mga configuration ng printer para sa
-      kanilang mga user.
-
-      Ang <ph name="PRINTER_DISPLAY_NAME" /> at <ph name="PRINTER_DESCRIPTION" /> ay mga free form na string na maaaring i-customize para sa mas madaling pagpili ng printer. Pinapadali ng <ph name="PRINTER_MANUFACTURER" /> at <ph name="PRINTER_MODEL" /> ang pagtukoy ng printer ng mga end user. Kinakatawan ng mga ito ang manufacturer at modelo ng printer. Ang <ph name="PRINTER_URI" /> ay dapat isang address na mapupuntahan mula sa isang client na computer kabilang ang <ph name="URI_SCHEME" />, <ph name="URI_PORT" />, at <ph name="URI_QUEUE" />. Opsyonal ang <ph name="PRINTER_UUID" />. Kung ibibigay, gagamitin ito para makatulong na mag-deduplicate ng mga printer sa <ph name="ZEROCONF_DISCOVERY" />.
-
-      Tumutugma dapat ang <ph name="PRINTER_EFFECTIVE_MODEL" /> sa isa sa mga string na kumakatawan sa isang printer na sinusuportahan ng <ph name="PRODUCT_NAME" />. Gagamitin ang string para tukuyin at i-install ang naaangkop na PPD para sa printer. Makakahanap ng higit pang impormasyon sa https://support.google.com/chrome?p=noncloudprint.
-
-      Makukumpleto ang pag-set up ng printer sa unang paggamit ng printer. Hindi mada-download ang mga PPD hanggang magamit ang printer. Pagkatapos ng oras na iyon, maka-cache ang mga PPD na madalas gamitin.
-
-      Walang epekto ang patakarang ito sa kung maaaring mag-configure ng mga printer ang mga user sa mga indibidwal na device. Nilalayon itong maging karagdagan sa configuration ng mga printer ng mga indibidwal na user.
-
-      Para sa mga device na pinapamahalaan ng Active Directory, sinusuportahan ng patakarang ito ang pag-expand ng <ph name="MACHINE_NAME_VARIABLE" /> sa pangalan ng machine ng Active Directory o isang substring nito. Halimbawa, kung ang pangalan ng machine ay <ph name="MACHINE_NAME_EXAMPLE" />, mapapalitan ang <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> ng 4 na character simula pagkatapos ng ika-6 na posisyon, ibig sabihin, ang <ph name="MACHINE_NAME_PART_EXAMPLE" />. Tandaang ang posisyon ay zero-based.
-      </translation>
 <translation id="2294382669900758280">Hindi isinasaalang-alang ang pag-play ng Video sa mga Android app, kahit nakatakda ang patakarang ito sa <ph name="TRUE" />.</translation>
 <translation id="2299220924812062390">Tukuyin ang isang listahan ng mga pinapaganang plugin</translation>
 <translation id="2303795211377219696">I-enable ang AutoFill para sa mga credit card</translation>
@@ -1419,6 +1404,7 @@
       Kung itatakda ang patakarang ito sa 'DeveloperToolsAllowed' (value 1), ang Mga Tool ng Developer at JavaScript console ay maa-access at magagamit sa lahat ng konteksto, kabilang ang konteksto ng mga extension na na-install ng patakaran ng enterprise.
       Kung itatakda ang patakarang ito sa 'DeveloperToolsDisallowed' (value 2), ang Mga Tool ng Developer ay hindi maa-access at ang mga elemento ng website ay hindi na masisiyasat. Ang anumang keyboard shortcut at anumang menu o entry sa menu ng konteksto para buksan ang Mga Tool ng Developer o JavaScript Console ay madi-disable.</translation>
 <translation id="3547954654003013442">Mga setting ng proxy</translation>
+<translation id="3550875587920006460">Pinapayagan ang pagtatakda ng custom na iskedyul para tingnan kung may mga update. Nalalapat ito sa lahat ng user at sa lahat ng interface sa device. Kapag naitakda, titingnan ng device kung may mga update batay sa iskedyul. Dapat alisin ang patakaran para kanselahin ang anumang nakaiskedyul na pagtingin ng update</translation>
 <translation id="355118380775352753">Mga website na bubuksan sa alternatibong browser</translation>
 <translation id="3554984410014457319">Payagan ang Google Assistant na makinig sa parirala para sa pag-activate gamit ang boses</translation>
 <translation id="356579196325389849">Puwedeng i-configure ng mga user ang channel ng release ng Chrome OS</translation>
@@ -1450,7 +1436,6 @@
 <translation id="3709266154059827597">I-configure ang blacklist ng pag-install ng extension</translation>
 <translation id="3711895659073496551">Suspendihin</translation>
 <translation id="3715569262675717862">Pag-authenticate batay sa mga certificate ng kliyente</translation>
-<translation id="3734995764843493369">Kinakailangan ang paglalagay ng password araw-araw (24 na oras)</translation>
 <translation id="3736879847913515635">I-enable ang magdagdag ng tao sa user manager</translation>
 <translation id="3738723882663496016">Tinutukoy ng patakarang ito ang key ng lisensya ng <ph name="PLUGIN_VM_NAME" /> para sa device na ito.</translation>
 <translation id="3748900290998155147">Tumutukoy kung pinapayagan ang mga wake lock. Maaaring humiling ng mga wake lock ang mga extension sa pamamagitan ng power management extension API at sa pamamagitan ng mga ARC app.
@@ -1656,6 +1641,29 @@
       Kung itinakda sa true o iniwang hindi nakatakda ang patakarang ito, makakakuha ng mga alok ang mga user sa pamamagitan ng Pagpaparehistro ng Chrome OS.
 
       Kung itinakda sa false ang patakarang ito, hindi makakakuha ng mga alok ang user.</translation>
+<translation id="4008233182078913897">Tumutukoy ng listahan ng mga app at extension na na-install nang hindi napapansin,
+          nang walang pakikipag-ugnayan sa user, at hindi maa-uninstall o 
+          madi-disable ng user. Ang lahat ng pahintulot
+          na hiniling ng mga app/extension ay ibinibigay nang hindi hayagan, nang walang pakikipag-ugnayan sa user,
+          kabilang ang anumang karagdagang pahintulot na hiniling ng mga bersyon sa
+          hinaharap ng app/extension. Bukod pa rito, ibinibigay ang mga pahintulot para sa
+          enterprise.deviceAttributes at enterprise.platformKeys na extension
+          API. (Hindi available ang dalawang API na ito sa mga app/extension na
+          hindi sapilitang na-install.)
+
+          Mangingibabaw ang patakarang ito sa posibleng salungat na patakarang <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Kung may inalis na app o extension sa listahang ito na kamakailang sapilitang na-install, awtomatiko itong ia-uninstall ng <ph name="PRODUCT_NAME" />.
+
+          Para sa mga sitwasyon ng Windows na hindi kasali sa isang <ph name="MS_AD_NAME" /> na domain, para lang sa mga app at extension na nakalista sa Chrome Web Store ang sapilitang pag-install.
+
+          Tandaang puwedeng mabago ng mga user ang source code ng anumang extension sa pamamagitan ng Mga Tool ng Developer (na maaaring humantong sa maling paggana ng extension). Kung isa itong alalahanin, dapat itakda ang patakarang <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+          Ang bawat item sa listahan ng patakaran ay isang string na may extension ID at, bilang opsyon, isang URL ng "update" na hinihiwalay ng semicolon (<ph name="SEMICOLON" />). Ang extension ID ay ang 32 titik na string na makikita halimbawa sa <ph name="CHROME_EXTENSIONS_LINK" /> kapag nasa developer mode. Dapat ay nakadirekta ang URL ng "update," kung tutukuyin, sa isang dokumentong Update Manifest XML gaya ng nakasaad sa <ph name="LINK_TO_EXTENSION_DOC1" />. Bilang default, ginagamit ang URL ng update ng Chrome Web Store (na kasalukuyang "https://clients2.google.com/service/update2/crx"). Tandaang ginagamit lang ang nakatakdang URL ng "update" sa patakarang ito para sa paunang pag-install; gagamitin ng mga susunod na pag-update ng extension ang URL ng update na nakasaad sa manifest ng extension. Tandaan ding mandatoryo ang hayagang pagtukoy sa URL ng "update" sa mga bersyon ng <ph name="PRODUCT_NAME" /> hanggang sa at kabilang ang 67.
+
+          Halimbawa, ini-install ng <ph name="EXTENSION_POLICY_EXAMPLE" /> ang extension na may id na <ph name="EXTENSION_ID_SAMPLE" /> mula sa karaniwang URL ng "update" ng Chrome Web Store. Para sa higit pang impormasyon tungkol sa pag-host ng mga extension, tingnan ang: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Kung hahayaang hindi nakatakda ang patakarang ito, walang app o extension ang awtomatikong ii-install at makakapag-uninstall ng anumang app o extension ang user sa <ph name="PRODUCT_NAME" />.
+
+          Tandaang hindi nalalapat sa incognito mode ang patakarang ito.</translation>
 <translation id="4008507541867797979">Kung itatakda sa true o hindi naka-configure ang patakarang ito, ipapakita ng <ph name="PRODUCT_OS_NAME" /> sa screen ng pag-log in ang mga kasalukuyang user at papayag itong pumili ng isa.
 
       Kung itatakda sa false ang patakarang ito, hindi ipapakita ng <ph name="PRODUCT_OS_NAME" /> sa screen ng pag-log in ang mga kasalukuyang user. Ipapakita ang karaniwang screen ng pag-sign in (na nagpo-prompt para sa email at password o telepono ng user) o ang interstitial na screen ng SAML (kung ie-enable sa pamamagitan ng patakaran ng <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />), maliban na lang kung may naka-configure na Pinapamahalaang Session. Kapag may naka-configure na Pinapamahalaang Session, ang mga Pinapamahalaang Account lang ang ipapakita na nagbibigay-daang makapili ng isa sa mga ito.
@@ -2630,6 +2638,12 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="5897913798715600338">I-charge ang baterya gamit ang teknolohiyang mabilis na pag-charge.</translation>
 <translation id="5898486742390981550">Kapag maraming user ang naka-log in, ang pangunahing user lang ang maaaring gumamit ng mga Android app.</translation>
 <translation id="5901427587865226597">Duplex na pag-print lang</translation>
+<translation id="5903898512448364160">
+      Kung itatakda sa true ang patakaran, mangingibabaw ang patakaran ng cloud kung sumasalungat ito sa patakaran ng platform.
+      Kung itatakda sa false o hindi iko-configure ang patakaran, mangingibabaw ang patakaran ng platform kung sumasalungat ito sa patakaran ng cloud.
+
+      Available lang ang patakarang ito bilang kinakailangang patakaran sa machine platform at nakakaapekto lang ito sa mga patakaran ng cloud ng saklaw ng machine.
+      </translation>
 <translation id="5905473632148429217">I-enable ang mga online na pagsusuri sa OCSP/CRL</translation>
 <translation id="5906199912611534122">Pinapayagan ang pag-enable o pag-disable ng pag-throttle ng network.
       Naaangkop ito sa lahat ng user, at sa lahat ng interface sa device. Kapag naitakda na,
@@ -2656,6 +2670,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Kung hindi mo papaganahin ang setting na ito o hindi magtatakda ng halaga, hindi ipapatupad ang SafeSearch sa Paghahanap sa Google.</translation>
 <translation id="5946082169633555022">Beta channel</translation>
+<translation id="5946329690214660966">Itakda ang custom na iskedyul para tingnan kung may mga update</translation>
 <translation id="5950205771952201658">Dahil sa hindi nagbibigay ang mga soft-fail, online na pagsusuri sa pagbawi ng anumang benepisyo ng kaligtasan, dini-disable ang mga ito bilang default sa bersyon 19 ng <ph name="PRODUCT_NAME" /> at mas bago. Sa pamamagitan ng pagtatakda sa patakarang ito sa true, naibabalik ang nakaraang gawi at maisasagawa ang mga online na pagsusuri sa OCSP/CRL.
 
       Kung hindi nakatakda ang patakaran, o kung nakatakda sa false, ang <ph name="PRODUCT_NAME" /> ay hindi magsasagawa ng mga online na pagsusuri sa pagbawi sa <ph name="PRODUCT_NAME" /> 19 at mas bago.</translation>
@@ -2722,6 +2737,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="6034341625190551415">Nagkokontrol sa pampublikong session at mga uri ng account ng kiosk.</translation>
 <translation id="6034603289689965535">Nagbibigay-daan sa isang page na magpakita ng mga popup habang nag-a-unload ito</translation>
 <translation id="6036523166753287175">Paganahin ang firewall traversal mula sa host ng malayuang pag-access</translation>
+<translation id="605475635122964053">Naghihigpit sa PIN printing mode. Itinuturing na walang paghihigpit kung hindi nakatakda ang patakaran. Kung hindi available ang mode, babalewalain ang patakarang ito. Tandaang naka-enable lang ang feature na pag-print gamit ang PIN sa mga printer na gumagamit ng isa sa mga IPPS, USB, o IPP-over-USB protocol </translation>
 <translation id="6070667616071269965">Mga layout ng keyboard sa screen ng pag-sign in ng device</translation>
 <translation id="6074963268421707432">Huwag payagan ang anumang site na magpakita ng mga notification sa desktop</translation>
 <translation id="6074964551275531965">Itakda ang yugto ng panahon para sa mga notification sa pag-update</translation>
@@ -3448,6 +3464,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung itinakda ang patakarang ito sa 'RemoveLRUIfDormant', patuloy na aalisin ng awtomatikong pag-clean-up ang mga user na hindi nag-log in sa nakalipas na tatlong buwan na nakaayos ayon sa pinakamatagal nang pag-log-in hanggang magkaroon ng sapat na espasyo sa disk.
 
       Kung hindi itinakda ang patakarang ito, gagamiting ng awtomatikong pag-clean-up ang default na built-in na diskarte. Sa kasalukuyan, ito ay ang 'RemoveLRUIfDormant' na diskarte.</translation>
+<translation id="7334274148831027933">I-enable ang naka-dock na magnifier</translation>
 <translation id="7336785017449297672">Nagkokontrol sa mga setting ng clock at time zone.</translation>
 <translation id="7336878834592315572">Panatilihin ang cookies para sa kabuuan ng session</translation>
 <translation id="7339315111520512972">Sapilitang paganahin ang networking code sa proseso ng browser</translation>

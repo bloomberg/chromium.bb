@@ -51,6 +51,7 @@
 <translation id="2718390899429598676">Radi dodatne sigurnosti Chromium će šifrirati vaše podatke.</translation>
 <translation id="2770231113462710648">Promijeni zadani preglednik na:</translation>
 <translation id="2799223571221894425">Pokreni ponovo</translation>
+<translation id="2838154144102149890">Chromium se radi ažuriranja mora zaustaviti na ovom računalu. Drugi korisnici koji su prijavljeni na računalu mogli bi zbog toga izgubiti promjene koje nisu spremljene.</translation>
 <translation id="2847479871509788944">Ukloni iz Chromiuma...</translation>
 <translation id="2886012850691518054">Dodatno: pomognite nam da poboljšamo Chromium automatskim slanjem statistike o upotrebi i izvješća o padu programa Googleu.</translation>
 <translation id="2898082584336937987">Instalirajte Chromium na telefon. Poslat ćemo vam SMS na telefon: <ph name="PHONE_NUMBER" /></translation>
@@ -187,6 +188,7 @@ Neke su značajke možda nedostupne. Navedite neki drugi direktorij profila ili 
 <translation id="6810143991807788455">Doprinesite poboljšanju Chromiuma prijavljivanjem trenutačnih postavki</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (kopirano na Chromium)</translation>
+<translation id="6868056391275687737">Pokrenuti su drugi primjerci Chromiuma. Zatvorite ih radi ažuriranja.</translation>
 <translation id="6893813176749746474">Chromium je ažuriran, ali vi ga niste upotrebljavali najmanje 30 dana.</translation>
 <translation id="6964305034639999644">Otvori vezu u ano&amp;nimnom prozoru Chromiuma</translation>
 <translation id="6970811910055250180">Ažuriranje uređaja...</translation>
@@ -257,6 +259,7 @@ Daljnje upute poslali smo vam na e-adresu <ph name="ACCOUNT_EMAIL" />.</translat
 <translation id="8697124171261953979">Upravlja i time koja se stranica prikazuje prilikom pokretanja Chromiuma ili pretraživanja putem višenamjenskog okvira.</translation>
 <translation id="8704119203788522458">To je vaš Chromium</translation>
 <translation id="8704255848199359374">Upotrebljava istu provjeru pravopisa koja se upotrebljava na Google pretraživanju. Tekst koji unesete u preglednik šalje se Googleu. To ponašanje možete promijeniti u postavkama kad god želite.</translation>
+<translation id="8748383401829947534">Zatvorite sve primjerke Chromiuma.</translation>
 <translation id="8796602469536043152">Chromium treba dopuštenje za pristup kameri i mikrofonu za ovu web-lokaciju</translation>
 <translation id="8803635938069941624">Uvjeti OS-a Chromium</translation>
 <translation id="8821041990367117597">Chromium nije mogao sinkronizirati podatke vašeg računa jer su pojedinosti prijave na račun zastarjele.</translation>

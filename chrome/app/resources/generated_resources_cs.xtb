@@ -799,6 +799,7 @@
 <translation id="2241053333139545397">Čtení a úprava dat na různých webech</translation>
 <translation id="2241634353105152135">Pouze jednou</translation>
 <translation id="2242687258748107519">Informace o souboru</translation>
+<translation id="2246549592927364792">Získávat popisy obrázků z Googlu?</translation>
 <translation id="224940702122312781">Tato stránka využije velké množství dat</translation>
 <translation id="2249605167705922988">např. 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">Otevřít pomocí systémového prohlížeče</translation>
@@ -1103,6 +1104,7 @@
 <translation id="271033894570825754">Nové</translation>
 <translation id="2714393097308983682">Obchod Google Play</translation>
 <translation id="2715751256863167692">Tento upgrade váš Chromebook resetuje a odstraní z něj uživatelská data.</translation>
+<translation id="2716986496990888774">Toto nastavení spravuje rodič.</translation>
 <translation id="2718395828230677721">Noční režim</translation>
 <translation id="2718998670920917754">Antivirový software nalezl virus.</translation>
 <translation id="2719936478972253983">Následující soubory cookie byly zablokovány</translation>
@@ -1153,7 +1155,6 @@
 <translation id="2783829359200813069">Vyberte typy šifrování</translation>
 <translation id="2783952358106015700">Použijte pro aplikaci <ph name="APP_NAME" /> svůj bezpečnostní klíč</translation>
 <translation id="2784407158394623927">Aktivace mobilní datové služby</translation>
-<translation id="2785008241190445880">Záložka byla nahrazena</translation>
 <translation id="2785873697295365461">Deskriptory souborů</translation>
 <translation id="2787354132612937472">–</translation>
 <translation id="2788135150614412178">+</translation>
@@ -1214,6 +1215,7 @@
 <translation id="2874939134665556319">Předchozí skladba</translation>
 <translation id="2875698561019555027">(Chybové stránky Chromu)</translation>
 <translation id="2876336351874743617">Prst 2</translation>
+<translation id="2876369937070532032">Když je ohrožena vaše bezpečnost, odesílá adresy URL některých navštívených stránek do Googlu</translation>
 <translation id="288042212351694283">Přístup k zařízením s univerzálním druhým faktorem</translation>
 <translation id="2881076733170862447">Když kliknete na rozšíření</translation>
 <translation id="2881966438216424900">Poslední přístup:</translation>
@@ -1396,6 +1398,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="3170072451822350649">Také můžete přihlášení přeskočit a <ph name="LINK_START" />prohlížet v roli hosta<ph name="LINK_END" />.</translation>
 <translation id="3172045848207518317">Web používá obrazový vstup</translation>
 <translation id="3177909033752230686">Jazyk stránky:</translation>
+<translation id="3181954750937456830">Bezpečné prohlížení (chrání vás a vaše zařízení před nebezpečnými weby)</translation>
 <translation id="3182749001423093222">Kontrola pravopisu</translation>
 <translation id="3183139917765991655">Nástroj na import profilů</translation>
 <translation id="3188465121994729530">Plovoucí průměr</translation>
@@ -1699,6 +1702,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="3664511988987167893">Ikona rozšíření</translation>
 <translation id="3665589677786828986">Prohlížeč Chrome zjistil, že některá z vašich nastavení byla upravena jiným programem, a obnovil je na původní výchozí hodnoty.</translation>
 <translation id="3668570675727296296">Nastavení jazyka</translation>
+<translation id="366867565525278777">Instalace se nezdařila z důvodu nedostatku místa v úložišti. Je potřeba alespoň <ph name="INSTALL_SIZE" /> volného místa. Místo uvolníte smazáním souborů z úložiště zařízení.</translation>
 <translation id="3668801437375206837">Pro lepší diagnostiku problémů s rozhraním Bluetooth mohou zaměstnanci společnosti Google ke zpětné vazbě přiložit protokoly rozhraní Bluetooth. Když je tato možnost zaškrtnutá, bude hlášení zahrnovat protokoly btsnoop a HCI z aktuální návštěvy, z nichž bylo odstraněno co nejvíc údajů umožňujících zjištění totožnosti. K těmto protokolům budou mít přístup pouze správci skupiny produktů Chrome OS v nástroji Listnr. Po 90 dnech budou protokoly trvale odstraněny.</translation>
 <translation id="3668823961463113931">Obslužné nástroje</translation>
 <translation id="3670113805793654926">Zařízení od libovolného dodavatele</translation>
@@ -4005,6 +4009,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="7289225569524511578">Spustit aplikaci tapety</translation>
 <translation id="7290242001003353852">Přihlašovací služba hostovaná doménou <ph name="SAML_DOMAIN" /> požádala o přístup ke kameře.</translation>
 <translation id="7290594223351252791">Potvrzení registrace</translation>
+<translation id="7295614427631867477">Upozorňujeme, že systém Android, služba Play a přidružené aplikace se řídí vlastními zásadami shromažďování a používání dat.</translation>
 <translation id="729583233778673644">Povolit šifrování AES a RC4. Použití této možnosti zvyšuje riziko, protože šifry RC4 nejsou bezpečné.</translation>
 <translation id="7296774163727375165">Smluvní podmínky domény <ph name="DOMAIN" /></translation>
 <translation id="7297443947353982503">Neplatné uživatelské jméno/heslo nebo neúspěšná autorizace EAP</translation>
@@ -4279,6 +4284,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="7732111077498238432">Síť podléhá zásadám</translation>
 <translation id="7737238973539693982">Vymazat Linux (beta)</translation>
 <translation id="7740996059027112821">Standardně</translation>
+<translation id="7746457520633464754">Kvůli detekci nebezpečných aplikací a webů odesílá Chrome do Googlu adresy URL některých navštívených stránek, omezené informace o systému a část obsahu stránek</translation>
 <translation id="7750228210027921155">Obraz v obraze</translation>
 <translation id="7751260505918304024">Zobrazit vše</translation>
 <translation id="7754704193130578113">Před stažením se vždy zeptat na místo uložení každého souboru</translation>
@@ -4929,7 +4935,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8732212173949624846">Číst a upravovat historii procházení ve všech přihlášených zařízeních</translation>
 <translation id="8732844209475700754">Další nastavení související s ochranou soukromí, zabezpečením a shromažďováním dat</translation>
 <translation id="8734073480934656039">Aktivací tohoto nastavení umožníte aplikacím veřejného terminálu, aby se automaticky spouštěly při spuštění počítače.</translation>
-<translation id="8734671092194994316">Je možné, že na bezpečnostním klíči zůstane záznam o návštěvě webu <ph name="WEBSITE" />.</translation>
 <translation id="873545264931343897">Po dokončení aktualizace pluginu <ph name="PLUGIN_NAME" /> stránku znovu načtěte. Plugin se tím aktivuje.</translation>
 <translation id="8736288397686080465">Tento web byl na pozadí aktualizován.</translation>
 <translation id="8737685506611670901">Otevírat odkazy <ph name="PROTOCOL" /> namísto aplikace <ph name="REPLACED_HANDLER_TITLE" /></translation>
@@ -4962,6 +4967,7 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8780123805589053431">Získat popisy obrázků z Googlu</translation>
 <translation id="8780443667474968681">Hlasové vyhledávání bylo vypnuto.</translation>
 <translation id="878069093594050299">Tento certifikát byl ověřen pro následující použití:</translation>
+<translation id="8781470833671194250">Stabilizace polohy při kliknutí</translation>
 <translation id="8781980678064919987">Při zavření víka vypnout</translation>
 <translation id="8782565991310229362">Spouštění aplikací pro režim veřejného terminálu bylo zrušeno.</translation>
 <translation id="8783093612333542422">Uživatel &lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; s vámi chce sdílet tiskárnu &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt;.</translation>

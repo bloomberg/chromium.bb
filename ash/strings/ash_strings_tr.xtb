@@ -71,7 +71,6 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">En yeni <ph name="SYSTEM_APP_NAME" /> güncellemesi ile ilgili daha fazla bilgi edinin</translation>
 <translation id="1995660704900986789">Kapat</translation>
-<translation id="1999763610967697511">Sürükleme ve bırakma</translation>
 <translation id="2012624427112548395">Ctrl+Arama+H</translation>
 <translation id="2016340657076538683">Mesaj yazın</translation>
 <translation id="2050339315714019657">Dikey</translation>
@@ -200,6 +199,7 @@
 <translation id="394485226368336402">Ses ayarları</translation>
 <translation id="3962859241508114581">Önceki Parça</translation>
 <translation id="397105322502079400">Hesaplanııyor...</translation>
+<translation id="3977512764614765090">Pil %<ph name="PERCENTAGE" /> dolu ve şarj oluyor.</translation>
 <translation id="3995138139523574647">USB-C cihaz (sağ arka bağlantı noktası)</translation>
 <translation id="4017989525502048489">Lazer işaretçi</translation>
 <translation id="4042660782729322247">Ekranınızı paylaşıyorsunuz</translation>
@@ -217,6 +217,7 @@
 <translation id="4279490309300973883">Yansıtılıyor</translation>
 <translation id="4281007048406351813">Zamanlayıcıya 1 dakika ekle</translation>
 <translation id="4292681942966152062"><ph name="NETWORK_NAME" /> etkinleştiriliyor</translation>
+<translation id="4296136865091727875"><ph name="COUNT" /> bildirimini tümünü temizle</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">Yüksek kontrast kısayoluna bastınız. Bu özelliği açmak istiyor musunuz?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -502,6 +503,7 @@
 <translation id="8877788021141246043">Hatırlatıcı oluştur</translation>
 <translation id="8878886163241303700">Genişletilmiş ekran</translation>
 <translation id="890616557918890486">Kaynağı değiştir</translation>
+<translation id="8909138438987180327">Pil yüzde <ph name="PERCENTAGE" /> dolu.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google Asistan bu dili konuşmuyor.</translation>
 <translation id="8938800817013097409">USB-C cihaz (arkadaki sağ bağlantı noktası)</translation>
@@ -513,6 +515,7 @@
 <translation id="9029474291399787231">Adobe Flash Player güncellemesi mevcut</translation>
 <translation id="9056839673611986238">Cihaz ilk haline döndürülecek</translation>
 <translation id="9070640332319875144">Asistan Ayarları</translation>
+<translation id="9072519059834302790">Şarjın bitmesine <ph name="TIME_LEFT" /> kaldı.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Kablosuz: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Mikrofon kullanımda.</translation>
@@ -524,6 +527,7 @@
 <translation id="9193626018745640770">Bilinmeyen bir alıcıya yayınlanıyor</translation>
 <translation id="9194617393863864469">Başka bir kullanıcı olarak oturum aç...</translation>
 <translation id="9210037371811586452">Birleşik masaüstü modundan çıkılıyor</translation>
+<translation id="9211681782751733685">Pilin tam olarak şarj olmasına <ph name="TIME_REMAINING" /> kaldı.</translation>
 <translation id="9215934040295798075">Duvar kağıdını ayarla</translation>
 <translation id="921989828232331238">Ebeveyniniz cihazınızı bugün için kilitledi</translation>
 <translation id="923686485342484400">Oturumu kapatmak için Control ÜstKrktr Q tuşlarına iki defa basın.</translation>

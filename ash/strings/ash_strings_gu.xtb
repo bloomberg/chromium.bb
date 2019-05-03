@@ -71,7 +71,6 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">નવીનતમ <ph name="SYSTEM_APP_NAME" /> અપડેટ વિશે વધુ જાણો</translation>
 <translation id="1995660704900986789">પાવર બંધ કરો</translation>
-<translation id="1999763610967697511">ખેંચો અને છોડો</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">એક સંદેશ લખો</translation>
 <translation id="2050339315714019657">પોર્ટ્રેટ</translation>
@@ -200,6 +199,7 @@
 <translation id="394485226368336402">ઑડિઓ સેટિંગ્સ</translation>
 <translation id="3962859241508114581">પાછલું ટ્રૅક</translation>
 <translation id="397105322502079400">ગણના કરી રહ્યું છે...</translation>
+<translation id="3977512764614765090">બૅટરી <ph name="PERCENTAGE" />% પર છે અને ચાર્જ થઈ રહી છે.</translation>
 <translation id="3995138139523574647">USB-C ડિવાઇસ (જમણી બાજુનું પાછળનું પોર્ટ)</translation>
 <translation id="4017989525502048489">લેઝર પૉઇન્ટર</translation>
 <translation id="4042660782729322247">તમે તમારી સ્ક્રીન શેર કરી રહ્યા છો</translation>
@@ -217,6 +217,7 @@
 <translation id="4279490309300973883">પ્રતિબિંબત થઈ રહ્યું છે</translation>
 <translation id="4281007048406351813">ટાઇમરમાં 1 મિનિટ ઉમેરો</translation>
 <translation id="4292681942966152062"><ph name="NETWORK_NAME" /> સક્રિય થઈ રહ્યું છે</translation>
+<translation id="4296136865091727875">બધા <ph name="COUNT" /> નોટિફિકેશન સાફ કરો</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">તમે હાઇ કૉન્ટ્રાસ્ટ માટેનો કીબોર્ડ શૉર્ટકટ દબાવેલ છે. શું તમે તેને ચાલુ કરવા માગો છો?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -501,6 +502,7 @@
 <translation id="8877788021141246043">રિમાઇન્ડર સેટ કરો</translation>
 <translation id="8878886163241303700">સ્ક્રીનને વિસ્તૃત કરી રહ્યું છે</translation>
 <translation id="890616557918890486">સ્રોત બદલો</translation>
+<translation id="8909138438987180327">બૅટરી <ph name="PERCENTAGE" /> ટકા પર છે.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google સહાયક આ ભાષા બોલતું નથી.</translation>
 <translation id="8938800817013097409">USB-C ડિવાઇસ (પાછળની બાજુએ જમણું પોર્ટ)</translation>
@@ -512,6 +514,7 @@
 <translation id="9029474291399787231">Adobe Flash Player અપડેટ ઉપલબ્ધ છે</translation>
 <translation id="9056839673611986238">ઉપકરણ રોલ બૅક કરવામાં આવશે</translation>
 <translation id="9070640332319875144">આસિસ્ટંટ સેટિંગ</translation>
+<translation id="9072519059834302790">બૅટરી ખલાસ થવામાં <ph name="TIME_LEFT" /> બાકી છે.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">વાઇ-ફાઇ: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">માઇકોફોન ઉપયોગમાં છે.</translation>
@@ -523,6 +526,7 @@
 <translation id="9193626018745640770">અજાણ્યા પ્રાપ્તકર્તા પર કાસ્ટ કરી રહ્યાં છીએ</translation>
 <translation id="9194617393863864469">અન્ય વપરાશકર્તા સાઇન ઇન કરો...</translation>
 <translation id="9210037371811586452">એકીકૃત ડેસ્કટૉપ મોડથી બહાર નીકળે છે</translation>
+<translation id="9211681782751733685">બૅટરી સંપૂર્ણપણે ચાર્જ થવામાં <ph name="TIME_REMAINING" /> બાકી છે.</translation>
 <translation id="9215934040295798075">વૉલપેપર સેટ કરો</translation>
 <translation id="921989828232331238">તમારા માતાપિતાએ તમારા ડિવાઇસને આજના માટે લૉક કર્યું છે</translation>
 <translation id="923686485342484400">સાઇન આઉટ કરવા માટે બે વાર Control Shift Q દબાવો.</translation>

@@ -55,7 +55,7 @@
 
       If this policy is set, the sign-in screen will always be displayed in the locale which is given by the first value of this policy (the policy is defined as a list for forward compatibility).  If this policy is not set or is set to an empty list, the sign-in screen will be displayed in the locale of the last user session.  If this policy is set to a value which is not a valid locale, the sign-in screen will be displayed in a fallback locale (currently, en-US).</translation>
 <translation id="1052499923181221200">This policy has no effect unless SamlInSessionPasswordChangeEnabled is true.
-      If that policy is true, and this policy is set to (for example) 14, that means SAML users will be notified 14 days in advance that their password is due to expire on a certain date.
+      If that policy is true, and this policy is set to (for example) 14, that means that SAML users will be notified 14 days in advance that their password is due to expire on a certain date.
       Then they can deal with this immediately by doing an in-session password change and updating their password before it expires.
       But these notifications will only be shown if password expiry information is sent to the device by the SAML identity provider during the SAML login flow.
       Setting this policy to zero means that the users will not be notified in advance – they will only be notified once the password has already expired.
@@ -358,6 +358,11 @@
       When this policy is set to False, extensions and plug-in data are not gathered.
 
       This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME" /> is enabled, and the machine is enrolled with <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="1560205870554624777">Controls whether the Kerberos functionality is enabled. Kerberos is an authentication protocol that can be used to authenticate to web apps and file shares.
+
+          If this policy is enabled, Kerberos functionality is enabled. Kerberos accounts can be added either through the 'Configure Kerberos accounts' policy or through the Kerberos accounts settings in the People settings page.
+
+          If this policy is disabled or not set, the Kerberos accounts settings are disabled. No Kerberos accounts can be added and Kerberos authentication cannot be used. All existing Kerberos accounts are deleted, and all stored passwords are deleted.</translation>
 <translation id="1561424797596341174">Policy overrides for Debug builds of the remote access host</translation>
 <translation id="1561967320164410511">U2F plus extensions for individual attestation</translation>
 <translation id="1574554504290354326">This setting is deprecated – use SafeBrowsingExtendedReportingEnabled instead. Enabling or disabling SafeBrowsingExtendedReportingEnabled is equivalent to setting SafeBrowsingExtendedReportingOptInAllowed to False.
@@ -444,6 +449,12 @@
 
       The policy should be set to a URL from which <ph name="PRODUCT_OS_NAME" /> can download the Terms of Service. The Terms of Service must be plain text, served as MIME type text/plain. No markup is allowed.</translation>
 <translation id="1750315445671978749">Block all downloads</translation>
+<translation id="1762072363876276024">
+      This policy applies to the sign-in screen. Please see also the <ph name="SITE_PER_PROCESS_POLICY_NAME" /> policy which applies to the user session. It is recommended to set both policies to the same value. If the values don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
+      This setting, DeviceLoginScreenSitePerProcess, may be used to disallow users from opting out of the default behaviour of isolating all sites. Note that the DeviceLoginScreenIsolateOrigins policy may also be useful for isolating additional, finer-grained origins.
+      If the policy is enabled, users will be unable to opt out of the default behaviour where each site runs in its own process.
+      If the policy is not configured or disabled, the user will be able to change this setting (e.g. using 'Disable site isolation' entry in chrome://flags).
+      </translation>
 <translation id="1781356041596378058">This policy also controls access to Android Developer Options. If you set this policy to true, users cannot access Developer Options. If you set this policy to false or leave it unset, users can access Developer Options by tapping seven times on the build number in the Android settings app.</translation>
 <translation id="1793346220873697538">Disable PIN printing by default</translation>
 <translation id="1797233582739332495">Show a recurring prompt to the user indicating that a relaunch is required</translation>
@@ -746,21 +757,6 @@
       Spell checking can still be performed using a downloaded dictionary; this policy only controls the usage of the online service.
 
       If this setting is not configured then users can choose whether the spell checking service should be used or not.</translation>
-<translation id="2294283832646774959">Configures a list of printers.
-
-      This policy allows administrators to provide printer configurations for
-      their users.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> and <ph name="PRINTER_DESCRIPTION" /> are free-form strings that can be customised for ease of printer selection. <ph name="PRINTER_MANUFACTURER" /> and <ph name="PRINTER_MODEL" /> serve to ease printer identification by end users. They represent the manufacturer and model of the printer. <ph name="PRINTER_URI" /> should be an address reachable from a client computer including the <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> and <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> is optional. If provided, it is used to help de-duplicate <ph name="ZEROCONF_DISCOVERY" /> printers.
-
-      <ph name="PRINTER_EFFECTIVE_MODEL" /> must match one of the strings which represent a <ph name="PRODUCT_NAME" />-supported printer. The string will be used to identify and install the appropriate PPD for the printer. More information can be found at https://support.google.com/chrome?p=noncloudprint.
-
-      Printer setup is completed upon the first use of a printer. PPDs are not downloaded until the printer is used. After that time, frequently used PPDs are cached.
-
-      This policy has no effect on whether users can configure printers on individual devices. It is intended to be supplementary to the configuration of printers by individual users.
-
-      For Active Directory managed devices this policy supports expansion of <ph name="MACHINE_NAME_VARIABLE" /> to the Active Directory machine name or a substring of it. For example, if the machine name is <ph name="MACHINE_NAME_EXAMPLE" />, then <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> would be replaced by the 4 characters starting after the 6th position, i.e. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Note that the position is zero-based.
-      </translation>
 <translation id="2294382669900758280">Video playing in Android apps is not taken into consideration, even if this policy is set to <ph name="TRUE" />.</translation>
 <translation id="2299220924812062390">Specify a list of enabled plug-ins</translation>
 <translation id="2303795211377219696">Enable AutoFill for credit cards</translation>
@@ -891,6 +887,11 @@
 
       If this policy is left not set, the data compression proxy feature will be available for the user to choose whether to use it or not.</translation>
 <translation id="257788512393330403">Password entry is required every six hours</translation>
+<translation id="2586162458524426376">
+      This policy applies to the sign-in screen. Please see also the <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> policy which applies to the user session.
+      If the policy is enabled, each of the named origins in a comma-separated list will run in its own process. This will also isolate origins named by sub-domains; e.g. specifying https://example.com/ will also cause https://foo.example.com/ to be isolated as part of the https://example.com/ site.
+      If the policy is not configured or disabled, the platform default site isolation settings will be used for the sign-in screen.
+      </translation>
 <translation id="2587719089023392205">Set <ph name="PRODUCT_NAME" /> as Default Browser</translation>
 <translation id="2592091433672667839">Duration of inactivity before the screen saver is shown on the sign-in screen in retail mode</translation>
 <translation id="2592162121850992309">If this policy is set to true or left unset, hardware acceleration will be enabled unless a certain GPU feature is blacklisted.
@@ -901,6 +902,7 @@
           All recent versions of Samba and Windows servers support NTLMv2. This should only be disabled for backwards compatibility and reduces the security of authentication.
 
           If this policy is not set, the default is true and NTLMv2 is enabled.</translation>
+<translation id="26023406105317310">Configure Kerberos accounts</translation>
 <translation id="2604182581880595781">Configure Network File Shares-related policies.</translation>
 <translation id="2623014935069176671">Wait for initial user activity</translation>
 <translation id="262740370354162807">Enable submission of documents to <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1235,6 +1237,7 @@
 <translation id="3159375329008977062">User is enabled to export/import Crostini containers via the UI</translation>
 <translation id="3165808775394012744">These policies are included here to make them easy to remove.</translation>
 <translation id="316778957754360075">This setting has been retired as of <ph name="PRODUCT_NAME" /> version 29. The recommended way to set up organisation-hosted extension/app collections is to include the site hosting the CRX packages in ExtensionInstallSources and put direct download links to the packages on a web page. A launcher for that web page can be created using the ExtensionInstallForcelist policy.</translation>
+<translation id="3168968618972302728">Policies related to Kerberos authentication.</translation>
 <translation id="3171369832001535378">Device network hostname template</translation>
 <translation id="3172512016079904926">Enables user-level installation of Native Messaging hosts.
 
@@ -1412,6 +1415,7 @@
       If this policy is set to 'DeveloperToolsAllowed' (value 1), the Developer Tools and the JavaScript console can be accessed and used in all contexts, including the context of extensions installed by enterprise policy.
       If this policy is set to 'DeveloperToolsDisallowed' (value 2), the Developer Tools cannot be accessed and website elements can no longer be inspected. Any keyboard shortcuts and any menu or context menu entries to open the Developer Tools or the JavaScript Console will be disabled.</translation>
 <translation id="3547954654003013442">Proxy settings</translation>
+<translation id="3550875587920006460">Allows setting a custom schedule to check for updates. This applies to all users, and to all interfaces on the device. Once set, the device will check for updates according to the schedule. The policy must be removed to cancel any more scheduled update checks.</translation>
 <translation id="355118380775352753">Websites to open in alternative browser</translation>
 <translation id="3554984410014457319">Allow Google Assistant to listen for the voice activation phrase</translation>
 <translation id="356579196325389849">Users may configure the Chrome OS release channel</translation>
@@ -1428,6 +1432,7 @@
 <translation id="3631099945620529777">If set to false, the 'End process' button is disabled in the Task Manager.
 
       If set to true or not configured, the user can end processes in the Task Manager.</translation>
+<translation id="3643284063603988867">Enable 'Remember password' feature</translation>
 <translation id="3646859102161347133">Set screen magnifier type</translation>
 <translation id="3653237928288822292">Default search provider icon</translation>
 <translation id="3660510274595679517">
@@ -1443,7 +1448,6 @@
 <translation id="3709266154059827597">Configure extension installation blacklist</translation>
 <translation id="3711895659073496551">Suspend</translation>
 <translation id="3715569262675717862">Authentication based on client certificates</translation>
-<translation id="3734995764843493369">Password entry is required every day (24 hours)</translation>
 <translation id="3736879847913515635">Enable add person in user manager</translation>
 <translation id="3738723882663496016">This policy specifies <ph name="PLUGIN_VM_NAME" /> licence key for this device.</translation>
 <translation id="3748900290998155147">Specifies whether wake locks are allowed. Wake locks can be requested by extensions via the power management extension API and by ARC apps.
@@ -1649,6 +1653,29 @@
       If this policy is set to true or left not set, users will be able to redeem offers through Chrome OS Registration.
 
       If this policy is set to false, user will not be able to redeem offers.</translation>
+<translation id="4008233182078913897">Specifies a list of apps and extensions that are installed silently,
+          without user interaction, and which cannot be uninstalled nor
+          disabled by the user. All permissions requested by the
+          apps/extensions are granted implicitly, without user interaction,
+          including any additional permissions requested by future versions of
+          the app/extension. Furthermore, permissions are granted for the
+          enterprise.deviceAttributes and enterprise.platformKeys extension
+          APIs. (These two APIs are not available to apps/extensions that are
+          not force-installed.)
+
+          This policy takes precedence over a potentially conflicting <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> policy. If an app or extension that previously had been force-installed is removed from this list, it is automatically uninstalled by <ph name="PRODUCT_NAME" />.
+
+          For Windows, instances that are not joined to a <ph name="MS_AD_NAME" /> domain, forced installation is limited to apps and extensions listed in the Chrome Web Store.
+
+          Note that the source code of any extension may be altered by users via Developer Tools (potentially rendering the extension dysfunctional). If this is a concern, the <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> policy should be set.
+
+          Each list item of the policy is a string that contains an extension ID and, optionally, an 'update' URL separated by a semicolon (<ph name="SEMICOLON" />). The extension ID is the 32-letter string found e.g. on <ph name="CHROME_EXTENSIONS_LINK" /> when in developer mode. The 'update' URL, if specified, should point to an Update Manifest XML document as described at <ph name="LINK_TO_EXTENSION_DOC1" />. By default, the Chrome Web Store's update URL is used (which currently is "https://clients2.google.com/service/update2/crx"). Note that the 'update' URL set in this policy is only used for the initial installation; subsequent updates of the extension employ the update URL indicated in the extension's manifest. Note: Specifying the 'update' URL explicitly was mandatory in <ph name="PRODUCT_NAME" /> versions up to and including 67.
+
+          For example, <ph name="EXTENSION_POLICY_EXAMPLE" /> installs the extension with ID <ph name="EXTENSION_ID_SAMPLE" /> from the standard Chrome Web Store 'update' URL. For more information about hosting extensions, see: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          If this policy is left not set, no apps or extensions are installed automatically and the user can uninstall any app or extension in <ph name="PRODUCT_NAME" />.
+
+          Note that this policy doesn't apply to incognito mode.</translation>
 <translation id="4008507541867797979">If this policy is set to true or not configured, <ph name="PRODUCT_OS_NAME" /> will show existing users on the login screen and allow to pick one.
 
       If this policy is set to false, <ph name="PRODUCT_OS_NAME" /> will not show existing users on the login screen. The normal sign-in screen (prompting for the user email and password or phone) or the SAML interstitial screen (if enabled via the <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" /> policy) will be shown, unless a Managed Session is configured. When a Managed Session is configured, only the Managed Session accounts will be shown, allowing to pick one of them.
@@ -1761,6 +1788,15 @@
           This setting will override RemoteAccessHostClientDomain, if present.
 
           See also RemoteAccessHostDomainList.</translation>
+<translation id="4164601239783385546">Enable the sticky keys accessibility feature.
+
+          If this policy is set to true, the sticky keys will always be enabled.
+
+          If this policy is set to false, the sticky keys will always be disabled.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, the sticky keys is disabled initially but can be enabled by the user at any time.</translation>
 <translation id="4183229833636799228">Default <ph name="FLASH_PLUGIN_NAME" /> setting</translation>
 <translation id="4192388905594723944">URL for validating remote access client authentication token</translation>
 <translation id="4197038214024763371">If this policy is not set or enabled, the user is allowed to use spellcheck.
@@ -1955,6 +1991,7 @@
 <translation id="4578912515887794133">If this setting is enabled, then the remote access host compares the name of the local user (that the host is associated with) and the name of the Google Account registered as the host owner (i.e. 'johndoe' if the host is owned by 'johndoe@example.com'Google Account).  The remote access host will not start if the name of the host owner is different from the name of the local user that the host is associated with.  RemoteAccessHostMatchUsername policy should be used together with RemoteAccessHostDomain to also enforce that the Google Account of the host owner is associated with a specific domain (i.e. 'example.com').
 
           If this setting is disabled or not set, then the remote access host can be associated with any local user.</translation>
+<translation id="4591366717022345234">Provide users with Quick Fix Build</translation>
 <translation id="4600786265870346112">Enable large cursor</translation>
 <translation id="4604931264910482931">Configure native messaging blacklist</translation>
 <translation id="4613508646038788144">If the policy is set to false then third-party software will be allowed to inject executable code into Chrome's processes. If the policy is unset or set to true then third-party software will be prevented from injecting executable code into Chrome's processes.</translation>
@@ -2041,6 +2078,7 @@
 <translation id="487460824085252184">Migrate automatically, don’t ask for user consent.</translation>
 <translation id="4874982543810021567">Block WebUSB on these sites</translation>
 <translation id="4876805738539874299">Maximum SSL version enabled</translation>
+<translation id="4887274746092315609">Enables a page for in-session change of password for SAML users</translation>
 <translation id="4897928009230106190">Specifies the parameters used when doing suggestion search with POST. It consists of comma-separated name/value pairs. If a value is a template parameter, like {searchTerms} in above example, it will be replaced with real search terms data.
 
           This policy is optional. If not set, suggest search request will be sent using the GET method.
@@ -2263,6 +2301,7 @@
       If the policy is set to 'Legacy', only the RC4 encryption type is allowed. This option is insecure and should only be needed in very specific circumstances.
 
       See also https://wiki.samba.org/index.php/Samba_4.6_Features_added/changed#Kerberos_client_encryption_types.</translation>
+<translation id="5249453807420671499">Users can add Kerberos accounts</translation>
 <translation id="5255162913209987122">Can be Recommended</translation>
 <translation id="527237119693897329">Allows you to specify which native messaging hosts should not be loaded.
 
@@ -2402,6 +2441,7 @@
       When the value of this policy is set and is not 0 then the currently logged in demo user will be logged out automatically after an inactivity time of the specified duration has elapsed.
 
       The policy value should be specified in milliseconds.</translation>
+<translation id="5508307164752647432">Enable Kerberos functionality</translation>
 <translation id="5511702823008968136">Enable Bookmark Bar</translation>
 <translation id="5512418063782665071">Home page URL</translation>
 <translation id="551639594034811656">This policy defines a list of percentages that will define the fraction of <ph name="PRODUCT_OS_NAME" /> devices in the OU to update per day starting from the day that the update is first discovered. The discovery time is later than the update published time, since it could be a while after the update publishing until the device checks for updates.
@@ -2423,6 +2463,7 @@
       Note that if the platform supports policy notifications, the refresh delay will be set to 24 hours (ignoring all defaults and the value of this policy) because it is expected that policy notifications will force a refresh automatically whenever policy changes, making more frequent refreshes unnecessary.</translation>
 <translation id="5530347722229944744">Block potentially dangerous downloads</translation>
 <translation id="5535973522252703021">Kerberos delegation server whitelist</translation>
+<translation id="554903022911579950">Kerberos</translation>
 <translation id="555077880566103058">Allow all sites to automatically run the <ph name="FLASH_PLUGIN_NAME" /> plug-in</translation>
 <translation id="5559079916187891399">This policy has no effect on Android apps.</translation>
 <translation id="5560039246134246593">Add a parameter to the fetching of the Variations seed in <ph name="PRODUCT_NAME" />.
@@ -2534,6 +2575,12 @@
 
       If this policy is set, the user cannot change or override it.</translation>
 <translation id="5708969689202733975">Configure allowed quick unlock modes</translation>
+<translation id="5711016543513883877">
+      If the policy is enabled, each of the named origins in a comma-separated list will run in its own process. This will also isolate origins named by sub-domains; e.g. specifying https://example.com/ will also cause https://foo.example.com/ to be isolated as part of the https://example.com/ site.
+      If the policy is not configured or disabled, the user will be able to change this setting.
+
+      NOTE: This policy does not apply on Android. To enable IsolateOrigins on Android, use the IsolateOriginsAndroid policy setting.
+      </translation>
 <translation id="572155275267014074">Android settings</translation>
 <translation id="5722934961007828462">When this setting is enabled, <ph name="PRODUCT_NAME" /> will always perform revocation checking for server certificates that successfully validate and are signed by locally-installed CA certificates.
 
@@ -2621,6 +2668,12 @@
 <translation id="5897913798715600338">Charge battery using fast charging technology.</translation>
 <translation id="5898486742390981550">When multiple users are logged in, only the primary user can use Android apps.</translation>
 <translation id="5901427587865226597">Duplex printing only</translation>
+<translation id="5903898512448364160">
+      If the policy is set to true, cloud policy takes precedence if it conflicts with platform policy.
+      If the policy is set to false or not configured, platform policy takes precedence if it conflicts with cloud policy.
+
+      This policy is only available as a mandatory machine platform policy and it only affects machine scope cloud policies.
+      </translation>
 <translation id="5905473632148429217">Enable online OCSP/CRL checks</translation>
 <translation id="5906199912611534122">Allows enabling or disabling network throttling.
       This applies to all users, and to all interfaces on the device. Once set,
@@ -2647,6 +2700,7 @@
 
       If you disable this setting or do not set a value, SafeSearch in Google Search is not enforced.</translation>
 <translation id="5946082169633555022">Beta channel</translation>
+<translation id="5946329690214660966">Set custom schedule to check for updates</translation>
 <translation id="5950205771952201658">In light of the fact that soft-fail, online revocation checks provide no effective security benefit, they are disabled by default in <ph name="PRODUCT_NAME" /> version 19 and later. By setting this policy to true, the previous behaviour is restored and online OCSP/CRL checks will be performed.
 
       If the policy is not set, or is set to false, then <ph name="PRODUCT_NAME" /> will not perform online revocation checks in <ph name="PRODUCT_NAME" /> 19 and later.</translation>
@@ -2713,6 +2767,7 @@
 <translation id="6034341625190551415">Controls public session and kiosk account types.</translation>
 <translation id="6034603289689965535">Allows a page to show pop-ups during its unloading</translation>
 <translation id="6036523166753287175">Enable firewall traversal from remote access host</translation>
+<translation id="605475635122964053">Restricts PIN printing mode. Unset policy is treated as no restriction. If the mode is unavailable this policy is ignored. Note that PIN printing feature is enabled only for printers that use one of IPPS, USB or IPP-over-USB protocols </translation>
 <translation id="6070667616071269965">Device sign-in screen keyboard layouts</translation>
 <translation id="6074963268421707432">Do not allow any site to show desktop notifications</translation>
 <translation id="6074964551275531965">Set the time period for update notifications</translation>
@@ -3058,7 +3113,7 @@
       The string can contain variables ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR}, ${MACHINE_NAME} that would be replaced with values on the device before using as a hostname. Resulting substitution should be a valid hostname (per RFC 1035, section 3.1).
 
       If this policy is not set, or the value after substitution is not a valid hostname, no hostname will be set in DHCP request. </translation>
-<translation id="6833988859168635883">Startup, Homepage and New Tab page</translation>
+<translation id="6833988859168635883">Startup, Home page and New Tab page</translation>
 <translation id="6835883744948188639">Show a recurring prompt to the user indicating that a relaunch is recommended</translation>
 <translation id="6837480141980366278">Controls whether the built-in DNS client is used in <ph name="PRODUCT_NAME" />.
 
@@ -3174,7 +3229,7 @@
       If this policy is set to True or left not set, the smart dim model will be enabled and allowed to extend the time until the screen is dimmed. If this policy is set to False, the smart dim model will not influence screen dimming.</translation>
 <translation id="6967394885063085697">Enable the advanced battery charge mode power management policy.
 
-          Advanced Battery Charging Mode allows the user to maximise the battery health. In Advanced Charging Mode, the system will use standard charging algorithm and other techniques during non-work hours to maximise battery health. During work hours, an express charge is used. This express charge allows the battery to be charged faster; therefore, the battery is at full charge sooner. For each day, the time in which the system will be most heavily used is specified by the start time and the duration.
+          Advanced Battery Charging Mode allows the user to maximise the battery health. In Advanced Charging Mode the system will use standard charging algorithm and other techniques during non-work hours to maximise battery health. During work hours, an express charge is used. This express charge allows the battery to be charged faster; therefore, the battery is at full charge sooner. For each day, the time in which the system will be most heavily used is specified by the start time and the duration.
 
           If this policy is set to true, and DeviceAdvancedBatteryChargeModeDayConfig is set, then advanced battery charge mode will always be enabled if supported on the device.
 
@@ -3434,6 +3489,7 @@
       If this policy is set to 'RemoveLRUIfDormant', the automatic clean-up will keep removing users who have not logged in for at least 3 months in least-recently-logged-in order until there is enough free space.
 
       If this policy is not set, automatic clean-up uses the default built-in strategy. Currently, it is the 'RemoveLRUIfDormant' strategy.</translation>
+<translation id="7334274148831027933">Enable docked magnifier</translation>
 <translation id="7336785017449297672">Controls clock and time zone settings.</translation>
 <translation id="7336878834592315572">Keep cookies for the duration of the session.</translation>
 <translation id="7339315111520512972">Force networking code to run in the browser process</translation>
@@ -3458,6 +3514,11 @@
 <translation id="7433714841194914373">Enable Instant</translation>
 <translation id="7434202861148928348">Configure the required domain names for remote access clients</translation>
 <translation id="7443616896860707393">Cross-origin HTTP Basic Auth prompts</translation>
+<translation id="7454519673779830548">Adds pre-filled Kerberos accounts. If the Kerberos credentials match the login credentials, an account can be configured to reuse the login credentials by specifying '${{LOGIN_EMAIL}}' and '${{PASSWORD}}' for principal and password, respectively, so that the Kerberos ticket can be retrieved automatically unless two-factor authentication is configured. Users cannot modify accounts added via this policy.
+
+          If this policy is enabled, the list of accounts defined by the policy is added to the Kerberos accounts settings.
+
+          If this policy is disabled or not set, no accounts are added to the Kerberos accounts settings and all accounts previously added with this policy are removed. Users may still add accounts manually if the 'Users can add Kerberos accounts' policy is enabled.</translation>
 <translation id="7458437477941640506">Do not roll back to target version if OS version is newer than target. Updates are also disabled.</translation>
 <translation id="7464991223784276288">Limit cookies from matching URLs to the current session</translation>
 <translation id="7469554574977894907">Enable search suggestions</translation>
@@ -3596,6 +3657,11 @@
 <translation id="7687943045976362719">If this policy is set, the specified content types are handled by <ph name="PRODUCT_FRAME_NAME" />.
 
           If this policy is not set, the default renderer is used for all sites. (The <ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" /> policy may be used to configure the default renderer.)</translation>
+<translation id="7694245791806617022">Controls whether the 'Remember password' feature is enabled in the Kerberos authentication dialogue. Passwords are stored encrypted on disk, only accessible to the Kerberos system daemon and during a user session.
+
+          If this policy is enabled or not set, users can decide whether Kerberos passwords are remembered, so that they do not have to be entered again. Kerberos tickets are automatically fetched unless additional authentication is required (two-factor authentication).
+
+          If this policy is disabled, passwords are never remembered and all previously stored passwords are removed. Users have to enter their password every time that they need to authenticate with the Kerberos system. Depending on server settings, this usually happens between every 8 hours to several months.</translation>
 <translation id="7694807474048279351">Schedule an automatic reboot after a <ph name="PRODUCT_OS_NAME" /> update has been applied.
 
       When this policy is set to true, an automatic reboot is scheduled when a <ph name="PRODUCT_OS_NAME" /> update has been applied and a reboot is required to complete the update process. The reboot is scheduled immediately but may be delayed on the device by up to 24 hours if a user is currently using the device.
@@ -3629,6 +3695,15 @@
       This policy is intended to give enterprises a chance to migrate existing servers off HTTP/0.9, and will be removed in the future.
 
       If this policy is not set, HTTP/0.9 will be disabled on non-default ports.</translation>
+<translation id="7726421241038987229">
+      This setting, SitePerProcess, may be used to disallow users from opting out of the default behaviour of isolating all sites. Note that the IsolateOrigins policy may also be useful for isolating additional, finer-grained origins.
+      If the policy is enabled, users will be unable to opt out of the default behaviour where each site runs in its own process.
+      If the policy is not configured or disabled, the user will be able to opt out of site isolation
+      (e.g. using 'Disable site isolation' entry in chrome://flags).  Setting the policy to disabled and/or not configuring the policy does not turn off Site Isolation.
+      On <ph name="PRODUCT_OS_NAME" />, it is recommended to also set the <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> device policy to the same value. If the values specified by the two policies don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
+
+      NOTE: This policy does not apply on Android. To enable SitePerProcess on Android, use the SitePerProcessAndroid policy setting.
+      </translation>
 <translation id="7747447585227954402">Allow devices to use a <ph name="PLUGIN_VM_NAME" /> on <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="7749402620209366169">Enables two-factor authentication for remote access hosts instead of a user-specified PIN.
 
@@ -3694,6 +3769,11 @@
       Determines the id of the extension to be used as a screen saver on the sign-in screen. The extension must be part of the AppPack that is configured for this domain through the DeviceAppPack policy.</translation>
 <translation id="7882857838942884046">Disabling Google Sync will cause Android Backup and Restore to not function properly.</translation>
 <translation id="7882890448959833986">Suppress the unsupported OS warning</translation>
+<translation id="7889788745439330797">Controls whether users may add Kerberos accounts.
+
+          If this policy is enabled or not set, users may add Kerberos accounts via the Kerberos accounts settings in the People settings page. Users have full control over accounts that they added and may modify or remove them.
+
+          If this policy is disabled, users may not add Kerberos accounts. Accounts can only be added via the 'Configure Kerberos accounts' policy. This is an effective way to lock down accounts.</translation>
 <translation id="7895553628261067384">Remote access</translation>
 <translation id="7902255855035461275">Patterns in this list will be matched against the security
       origin of the requesting URL. If a match is found, access to video
@@ -3708,9 +3788,9 @@
 <translation id="7937491150792971922">Merge extension install list policies from multiple sources</translation>
 <translation id="7937766917976512374">Allow or deny video capture</translation>
 <translation id="7941975817681987555">Do not predict network actions on any network connection</translation>
-<translation id="7952007677054834789">Configure the pages to load on startup, the default homepage and the default new tab page in <ph name="PRODUCT_NAME" /> and prevents users from changing them.
+<translation id="7952007677054834789">Configure the pages to load on startup, the default home page and the default new tab page in <ph name="PRODUCT_NAME" /> and prevents users from changing them.
 
-      The user's homepage settings are only completely locked down if you either select the homepage to be the new tab page, or set it to be a URL and specify a homepage URL. If you don't specify the homepage URL, then the user is still able to set the homepage to the new tab page by specifying 'chrome://newtab'.
+      The user's home page settings are only completely locked down if you either select the home page to be the new tab page, or set it to be a URL and specify a home page URL. If you don't specify the home page URL, then the user is still able to set the home page to the new tab page by specifying 'chrome://newtab'.
 
       The policy 'URLs to open on startup' is ignored unless you select 'Open a list of URLs' in 'Action on startup'.</translation>
 <translation id="7952958573604504839">This policy is deprecated in M48 in favour of <ph name="NETWORK_PREDICTION_OPTIONS_POLICY_NAME" />, and removed in M54.

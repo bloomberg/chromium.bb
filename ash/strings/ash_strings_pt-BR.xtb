@@ -71,7 +71,6 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">Saiba mais sobre a última atualização do <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1995660704900986789">Desligar</translation>
-<translation id="1999763610967697511">Arrastar e soltar</translation>
 <translation id="2012624427112548395">Ctrl+Pesquisa+H</translation>
 <translation id="2016340657076538683">Digite uma mensagem</translation>
 <translation id="2050339315714019657">Retrato</translation>
@@ -200,6 +199,7 @@
 <translation id="394485226368336402">Configurações de áudio</translation>
 <translation id="3962859241508114581">Faixa anterior</translation>
 <translation id="397105322502079400">Calculando...</translation>
+<translation id="3977512764614765090">Bateria em <ph name="PERCENTAGE" />% e carregando.</translation>
 <translation id="3995138139523574647">Dispositivo USB-C (porta traseira da direita)</translation>
 <translation id="4017989525502048489">Apontador laser</translation>
 <translation id="4042660782729322247">Você está compartilhando sua tela</translation>
@@ -217,6 +217,7 @@
 <translation id="4279490309300973883">Espelhamento</translation>
 <translation id="4281007048406351813">Adicionar 1 min ao timer</translation>
 <translation id="4292681942966152062">Ativando <ph name="NETWORK_NAME" /></translation>
+<translation id="4296136865091727875">Limpar todas as <ph name="COUNT" /> notificações</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">Você pressionou o atalho de teclado para o alto contraste. Gostaria de ativá-lo?</translation>
 <translation id="4331809312908958774">Chrome OS
@@ -375,7 +376,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="683971173229319003">Pesquisa+L</translation>
 <translation id="6857811139397017780">Ativar <ph name="NETWORKSERVICE" /></translation>
 <translation id="6910714959251846841">Esta atualização requer o powerwash do seu dispositivo. Saiba mais sobre a última atualização do <ph name="SYSTEM_APP_NAME" />.</translation>
-<translation id="6911468394164995108">Conectar-se a outra...</translation>
+<translation id="6911468394164995108">Conectar a outra...</translation>
 <translation id="6972754398087986839">Primeiros passos</translation>
 <translation id="6981982820502123353">Acessibilidade</translation>
 <translation id="698231206551913481">Todos os arquivos e dados locais associados a este usuário serão excluídos permanentemente quando o usuário for removido.</translation>
@@ -503,6 +504,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="8877788021141246043">Definir um lembrete</translation>
 <translation id="8878886163241303700">Tela ampla</translation>
 <translation id="890616557918890486">Alterar origem</translation>
+<translation id="8909138438987180327">Bateria em <ph name="PERCENTAGE" /> por cento.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">O Google Assistente não fala esse idioma.</translation>
 <translation id="8938800817013097409">Dispositivo USB-C (porta traseira da direita)</translation>
@@ -514,6 +516,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="9029474291399787231">Atualização do Adobe Flash Player disponível</translation>
 <translation id="9056839673611986238">O dispositivo será revertido</translation>
 <translation id="9070640332319875144">Configurações do Google Assistente</translation>
+<translation id="9072519059834302790">Tempo restante de bateria: <ph name="TIME_LEFT" />.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">O microfone está sendo usado.</translation>
@@ -525,6 +528,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="9193626018745640770">Transmitindo para um destinatário desconhecido</translation>
 <translation id="9194617393863864469">Fazer login com outro usuário...</translation>
 <translation id="9210037371811586452">Saindo do modo de área de trabalho unificada</translation>
+<translation id="9211681782751733685">Tempo restante até que a bateria esteja totalmente carregada: <ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">Definir plano de fundo</translation>
 <translation id="921989828232331238">Seu pai/mãe bloqueou o dispositivo por hoje</translation>
 <translation id="923686485342484400">Pressione Control+Shift+Q duas vezes para sair.</translation>

@@ -799,6 +799,7 @@
 <translation id="2241053333139545397">Adatainak olvasása és módosítása bizonyos webhelyeken</translation>
 <translation id="2241634353105152135">Csak egyszer</translation>
 <translation id="2242687258748107519">Fájlinformáció</translation>
+<translation id="2246549592927364792">Szeretne képleírásokat kérni a Google-tól?</translation>
 <translation id="224940702122312781">Ez az oldal nagy adatforgalmat fog generálni.</translation>
 <translation id="2249605167705922988">pl. 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">Megnyitás a rendszer megtekintőjével</translation>
@@ -1105,6 +1106,7 @@
 <translation id="271033894570825754">Új</translation>
 <translation id="2714393097308983682">Google Play Áruház</translation>
 <translation id="2715751256863167692">Ez a frissítés visszaállítja a Chromebookot, és eltávolítja a jelenlegi felhasználói adatokat.</translation>
+<translation id="2716986496990888774">Ezt a beállítást szülő kezeli.</translation>
 <translation id="2718395828230677721">Éjszakai fény</translation>
 <translation id="2718998670920917754">A vírusirtó program vírust észlelt.</translation>
 <translation id="2719936478972253983">A következő cookie-k le vannak tiltva</translation>
@@ -1155,7 +1157,6 @@
 <translation id="2783829359200813069">Titkosítási típusok kiválasztása</translation>
 <translation id="2783952358106015700">Biztonsági hardverkulcs használata a következő alkalmazással: <ph name="APP_NAME" /></translation>
 <translation id="2784407158394623927">A mobil adatátviteli szolgáltatás aktiválása</translation>
-<translation id="2785008241190445880">Könyvjelző lecserélve</translation>
 <translation id="2785873697295365461">Fájlleírók</translation>
 <translation id="2787354132612937472">–</translation>
 <translation id="2788135150614412178">+</translation>
@@ -1216,6 +1217,7 @@
 <translation id="2874939134665556319">Előző szám</translation>
 <translation id="2875698561019555027">(Chrome-hibaoldalak)</translation>
 <translation id="2876336351874743617">2. ujj</translation>
+<translation id="2876369937070532032">Elküldi egyes felkeresett oldalak URL-jét a Google-nak, ha veszélyben van az Ön biztonsága</translation>
 <translation id="288042212351694283">U2F (Universal 2nd Factor) eszközökhöz való hozzáférés</translation>
 <translation id="2881076733170862447">Amikor a bővítményre kattint</translation>
 <translation id="2881966438216424900">Utolsó hozzáférés ideje:</translation>
@@ -1398,6 +1400,7 @@
 <translation id="3170072451822350649">Ki is hagyhatja a bejelentkezést, és <ph name="LINK_START" />böngészhet vendégként<ph name="LINK_END" />.</translation>
 <translation id="3172045848207518317">Az egyik webhely jelenleg használja a videobemenetet</translation>
 <translation id="3177909033752230686">Az oldal nyelve</translation>
+<translation id="3181954750937456830">Biztonságos Böngészés (megvédi Önt és eszközét a veszélyes webhelyekkel szemben)</translation>
 <translation id="3182749001423093222">Helyesírás-ellenőrzés</translation>
 <translation id="3183139917765991655">Profilimportáló</translation>
 <translation id="3188465121994729530">Mozgás átlaga</translation>
@@ -1703,6 +1706,7 @@
 <translation id="3664511988987167893">Bővítmény ikonja</translation>
 <translation id="3665589677786828986">A Chrome azt észlelte, hogy egy másik program miatt megsérült néhány beállítás, ezért visszaállítja őket az eredeti alapértelmezett értékekre.</translation>
 <translation id="3668570675727296296">Nyelvi beállítások</translation>
+<translation id="366867565525278777">A telepítés tárhelyhiány miatt nem sikerült. Legalább <ph name="INSTALL_SIZE" /> szabad helyre van szükség. Tárhely felszabadításához töröljön fájlokat az eszközről.</translation>
 <translation id="3668801437375206837">A Bluetooth-problémák hatékonyabb elemzése érdekében a Google-alkalmazottak kiegészítő Bluetooth-naplókat is csatolhatnak visszajelzéseikhez. Ha be van jelölve ez a beállítás, a jelentés tartalmazni fogja az aktuális munkamenet btsnoop és HCI naplóit, kitörölve belőlük a lehető legtöbb személyazonosításra alkalmas adatot. Ezekhez a naplókhoz kizárólag a Chrome OS termékcsalád vezetői férhetnek hozzá a Listnr szolgáltatásban. A naplók törlése 90 nap múlva megtörténik.</translation>
 <translation id="3668823961463113931">Kezelők</translation>
 <translation id="3670113805793654926">Bármely gyártó eszközei</translation>
@@ -2011,6 +2015,7 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="409579654357498729">Hozzáadás a Cloud Printhez</translation>
 <translation id="4096508467498758490">A fejlesztői módban futó bővítmények kikapcsolása</translation>
 <translation id="4096824249111507322">A biztonsági modul előkészítése folyamatban van (és néhány percig is eltarthat) – kérjük, várjon…</translation>
+<translation id="4097560579602855702">Keresés a Google-on</translation>
 <translation id="4099060993766194518">Visszaállítja az alapértelmezett keresőmotort?</translation>
 <translation id="4099874310852108874">Hálózati hiba történt.</translation>
 <translation id="4100733287846229632">Az eszköz nagyon kevés szabad tárhellyel rendelkezik</translation>
@@ -4010,6 +4015,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="7289225569524511578">Nyissa meg a háttérkép alkalmazást</translation>
 <translation id="7290242001003353852">Ez a bejelentkezési szolgáltatás, amelyet a(z) <ph name="SAML_DOMAIN" /> üzemeltet, hozzáfér a kamerához.</translation>
 <translation id="7290594223351252791">Regisztráció megerősítése</translation>
+<translation id="7295614427631867477">Ne feledje, hogy az Androidra, a Playre és a kapcsolódó alkalmazásokra saját adatgyűjtési és -használati irányelveik vonatkoznak.</translation>
 <translation id="729583233778673644">Az AES és RC4 titkosítás engedélyezése. A beállítás használata növeli a kockázatot, mivel az RC4-kódok nem biztonságosak.</translation>
 <translation id="7296774163727375165">A(z) <ph name="DOMAIN" /> feltételei</translation>
 <translation id="7297443947353982503">Helytelen a felhasználónév vagy a jelszó, vagy nem sikerült az EAP-hitelesítés</translation>
@@ -4286,6 +4292,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="7732111077498238432">A hálózatot házirend szabályozza</translation>
 <translation id="7737238973539693982">A Linux (béta) eltávolítása</translation>
 <translation id="7740996059027112821">Szokásos</translation>
+<translation id="7746457520633464754">A veszélyes alkalmazások és webhelyek észlelésének érdekében a Chrome az egyes felkeresett oldalak URL-jét, valamint korlátozott rendszer-információkat és bizonyos oldaltartalmakat továbbít a Google-nak.</translation>
 <translation id="7750228210027921155">Kép a képben</translation>
 <translation id="7751260505918304024">Összes megjelenítése</translation>
 <translation id="7754704193130578113">A letöltés előtt kérdezze meg, hová mentse az adott fájlokat</translation>
@@ -4937,7 +4944,6 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="8732212173949624846">Böngészési előzmények olvasása és módosítása az összes bejelentkezett eszközén</translation>
 <translation id="8732844209475700754">Az adatvédelemre, biztonságra és adatgyűjtésre vonatkozó további beállítások</translation>
 <translation id="8734073480934656039">E beállítás engedélyezésével a kioszkalkalmazások automatikusan elindulhatnak az indításkor.</translation>
-<translation id="8734671092194994316">A biztonsági hardverkulcs tárolni fogja, hogy Ön felkereste a(z) <ph name="WEBSITE" /> webhelyet.</translation>
 <translation id="873545264931343897">A(z) <ph name="PLUGIN_NAME" /> frissítésének befejezését követően töltse be újra az oldalt a beépülő modul aktiválásához</translation>
 <translation id="8736288397686080465">Ez a webhely frissült a háttérben.</translation>
 <translation id="8737685506611670901"><ph name="PROTOCOL" /> linkek megnyitása a(z) <ph name="REPLACED_HANDLER_TITLE" /> helyett</translation>
@@ -4970,6 +4976,7 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="8780123805589053431">Képleírások lekérése a Google-tól</translation>
 <translation id="8780443667474968681">A hangalapú keresés ki van kapcsolva.</translation>
 <translation id="878069093594050299">Ezt a tanúsítványt a következő célokra lehet felhasználni:</translation>
+<translation id="8781470833671194250">Kattintási pozíció stabilizálása</translation>
 <translation id="8781980678064919987">Kikapcsolás, ha le van zárva a fedél</translation>
 <translation id="8782565991310229362">Kiosk-alkalmazás indítása visszavonva.</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; szeretné megosztani Önnel a(z) &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; nyomtatót.</translation>

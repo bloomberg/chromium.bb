@@ -799,6 +799,7 @@
 <translation id="2241053333139545397">čitati i mijenjati vaše podatke na više web-lokacija</translation>
 <translation id="2241634353105152135">Samo jednom</translation>
 <translation id="2242687258748107519">Informacije o datoteci</translation>
+<translation id="2246549592927364792">Želite li dohvatiti opise slika s Googlea?</translation>
 <translation id="224940702122312781">Ova stranica troši veliku količinu podataka.</translation>
 <translation id="2249605167705922988">npr. 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">Otvori u pregledniku sustava</translation>
@@ -1104,6 +1105,7 @@
 <translation id="271033894570825754">Novo</translation>
 <translation id="2714393097308983682">Trgovina Google Play</translation>
 <translation id="2715751256863167692">Ovom nadogradnjom Chromebook se vraća na zadano, a trenutačni korisnički podaci se uklanjaju.</translation>
+<translation id="2716986496990888774">Tom postavkom upravlja roditelj.</translation>
 <translation id="2718395828230677721">Noćno svjetlo</translation>
 <translation id="2718998670920917754">Antivirusni softver otkrio je virus.</translation>
 <translation id="2719936478972253983">Sljedeći su kolačići blokirani</translation>
@@ -1154,7 +1156,6 @@
 <translation id="2783829359200813069">Odabir vrsta enkripcije</translation>
 <translation id="2783952358106015700">Upotreba sigurnosnog ključa s aplikacijom <ph name="APP_NAME" /></translation>
 <translation id="2784407158394623927">Aktiviranje vaše mobilne podatkovne usluge</translation>
-<translation id="2785008241190445880">Oznaka je zamijenjena</translation>
 <translation id="2785873697295365461">Deskriptori datoteke</translation>
 <translation id="2787354132612937472">–</translation>
 <translation id="2788135150614412178">+</translation>
@@ -1215,6 +1216,7 @@
 <translation id="2874939134665556319">Prethodna pjesma</translation>
 <translation id="2875698561019555027">(Chromeove stranice pogrešaka)</translation>
 <translation id="2876336351874743617">Drugi prst</translation>
+<translation id="2876369937070532032">Googleu šalje URL-ove nekih stranica koje posjećujete kada je ugrožena vaša sigurnost</translation>
 <translation id="288042212351694283">Pristupite svojim Universal 2nd Factor uređajima</translation>
 <translation id="2881076733170862447">Kada kliknete proširenje</translation>
 <translation id="2881966438216424900">Posljednji pristup:</translation>
@@ -1397,6 +1399,7 @@
 <translation id="3170072451822350649">Možete također preskočiti prijavu i <ph name="LINK_START" />pregledavati kao gost<ph name="LINK_END" />.</translation>
 <translation id="3172045848207518317">Web-lokacija pristupa videoulazu</translation>
 <translation id="3177909033752230686">Jezik stranice:</translation>
+<translation id="3181954750937456830">Sigurno pregledavanje (štiti vas i vaš uređaj od opasnih web-lokacija)</translation>
 <translation id="3182749001423093222">Provjera pravopisa</translation>
 <translation id="3183139917765991655">Uvoz profila</translation>
 <translation id="3188465121994729530">Klizni prosjek</translation>
@@ -1702,6 +1705,7 @@
 <translation id="3664511988987167893">Ikona proširenja</translation>
 <translation id="3665589677786828986">Chrome je otkrio da je neki drugi program promijenio vaše postavke, pa ih je vratio na izvorne zadane vrijednosti.</translation>
 <translation id="3668570675727296296">Postavke jezika</translation>
+<translation id="366867565525278777">Instaliranje nije uspjelo jer nema dovoljno prostora za pohranu. Potrebno je najmanje <ph name="INSTALL_SIZE" /> slobodnog prostora. Da biste oslobodili prostor, izbrišite datoteke iz pohrane uređaja.</translation>
 <translation id="3668801437375206837">Kako bi lakše dijagnosticirali poteškoće s Bluetoothom, Googleovi zaposlenici mogu uključiti dodatne Bluetooth zapisnike u svoja izvješća s povratnim informacijama. Kada se stavi kvačica u okvir te opcije, u vaše će izvješće biti uključeni btsnoop i HCI zapisnici iz vaše trenutačne sesije, a iz njih će u najvećoj mogućoj mjeri biti uklonjeni podaci koji otkrivaju identitet. Pristup tim zapisnicima bit će ograničen na upravitelje grupe proizvoda OS-a Chrome u Listnru. Zapisnici će se nepovratno ukloniti nakon 90 dana.</translation>
 <translation id="3668823961463113931">Rukovatelji</translation>
 <translation id="3670113805793654926">Uređaji bilo kojeg dobavljača</translation>
@@ -4009,6 +4013,7 @@
 <translation id="7289225569524511578">Otvori aplikaciju pozadine</translation>
 <translation id="7290242001003353852">Usluga prijave, koju hostira <ph name="SAML_DOMAIN" />, pristupa vašoj kameri.</translation>
 <translation id="7290594223351252791">Potvrda registracije</translation>
+<translation id="7295614427631867477">Napominjemo da su Android, Play i povezane aplikacije regulirani vlastitim pravilima o prikupljanju i upotrebi podataka.</translation>
 <translation id="729583233778673644">Dopuštanje AES i RC4 šifriranja. Upotreba te opcije izlaže vas većoj opasnosti jer RC4 šifre nisu sigurne.</translation>
 <translation id="7296774163727375165">Uvjeti domene <ph name="DOMAIN" /></translation>
 <translation id="7297443947353982503">Netočno korisničko ime/zaporka ili neuspjela EAP autentifikacija</translation>
@@ -4285,6 +4290,7 @@
 <translation id="7732111077498238432">Mreža je kontrolirana pravilima</translation>
 <translation id="7737238973539693982">Brisanje Linuxa (Beta)</translation>
 <translation id="7740996059027112821">Standardno</translation>
+<translation id="7746457520633464754">Radi otkrivanja opasnih aplikacija i web-lokacija Chrome šalje Googleu URL-ove nekih stranica koje posjećujete, ograničene podatke o sustavu i dio sadržaja web-stranica</translation>
 <translation id="7750228210027921155">Slika u slici</translation>
 <translation id="7751260505918304024">Prikaži sve</translation>
 <translation id="7754704193130578113">Pitaj gdje spremiti svaku datoteku prije preuzimanja</translation>
@@ -4937,7 +4943,6 @@ Osobe sa sporom vezom možda neće vidjeti vaš sadržaj.</translation>
 <translation id="8732212173949624846">pročitati i promijeniti vašu povijest pregledavanja na svim uređajima na kojima ste prijavljeni</translation>
 <translation id="8732844209475700754">Više postavki koje se odnose na privatnost, sigurnost i prikupljanje podataka</translation>
 <translation id="8734073480934656039">Omogućivanjem ove postavke aplikacije kioska mogu se automatski pokrenuti prilikom pokretanja zaslona.</translation>
-<translation id="8734671092194994316">Na sigurnosnom ključu evidentirat će se vaš posjet web-lokaciji <ph name="WEBSITE" />.</translation>
 <translation id="873545264931343897">Kada dodatak <ph name="PLUGIN_NAME" /> završi s ažuriranjem, ponovo učitajte stranicu da biste ga aktivirali</translation>
 <translation id="8736288397686080465">Web-lokacija se ažurirala u pozadini.</translation>
 <translation id="8737685506611670901">otvoriti veze za protokol <ph name="PROTOCOL" /> umjesto <ph name="REPLACED_HANDLER_TITLE" /></translation>
@@ -4970,6 +4975,7 @@ Osobe sa sporom vezom možda neće vidjeti vaš sadržaj.</translation>
 <translation id="8780123805589053431">Dohvati opise slika s Googlea</translation>
 <translation id="8780443667474968681">Glasovno je pretraživanje isključeno.</translation>
 <translation id="878069093594050299">Ovaj je certifikat potvrđen za sljedeće korištenje:</translation>
+<translation id="8781470833671194250">Stabilizacija položaja klika</translation>
 <translation id="8781980678064919987">Isključi računalo kada se zatvori poklopac</translation>
 <translation id="8782565991310229362">Pokretanje aplikacije kioska otkazano je.</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; želi dijeliti pisač &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; s vama.</translation>

@@ -71,7 +71,6 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">Weitere Informationen zum aktuellen <ph name="SYSTEM_APP_NAME" />-Update</translation>
 <translation id="1995660704900986789">Ausschalten</translation>
-<translation id="1999763610967697511">Drag-and-drop</translation>
 <translation id="2012624427112548395">Strg + Suche + H</translation>
 <translation id="2016340657076538683">Nachricht eingeben</translation>
 <translation id="2050339315714019657">Hochformat</translation>
@@ -200,6 +199,7 @@
 <translation id="394485226368336402">Audioeinstellungen</translation>
 <translation id="3962859241508114581">Vorheriger Titel</translation>
 <translation id="397105322502079400">Wird berechnet...</translation>
+<translation id="3977512764614765090">Der Akkustand ist <ph name="PERCENTAGE" /> %. Der Akku wird aufgeladen.</translation>
 <translation id="3995138139523574647">USB-C-Gerät (Port hinten rechts)</translation>
 <translation id="4017989525502048489">Laserpointer</translation>
 <translation id="4042660782729322247">Sie geben Ihren Bildschirm frei</translation>
@@ -217,6 +217,7 @@
 <translation id="4279490309300973883">Spiegelung</translation>
 <translation id="4281007048406351813">Timer um 1 Min. verlängern</translation>
 <translation id="4292681942966152062"><ph name="NETWORK_NAME" /> wird aktiviert</translation>
+<translation id="4296136865091727875">Alle <ph name="COUNT" /> Benachrichtigungen löschen</translation>
 <translation id="4321179778687042513">Strg</translation>
 <translation id="4321776623976362024">Sie haben die Tastenkombination für den Modus "Hoher Kontrast" gedrückt. Möchten Sie ihn aktivieren?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -501,6 +502,7 @@
 <translation id="8877788021141246043">Erinnerungen einrichten</translation>
 <translation id="8878886163241303700">Bildschirmerweiterung</translation>
 <translation id="890616557918890486">Quelle ändern</translation>
+<translation id="8909138438987180327">Akkustand: <ph name="PERCENTAGE" />.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google Assistant spricht diese Sprache nicht.</translation>
 <translation id="8938800817013097409">USB-C-Gerät (rechter Port hinten)</translation>
@@ -512,6 +514,7 @@
 <translation id="9029474291399787231">Update für den Adobe Flash Player verfügbar</translation>
 <translation id="9056839673611986238">Das Gerät wird zurückgesetzt</translation>
 <translation id="9070640332319875144">Assistant-Einstellungen</translation>
+<translation id="9072519059834302790">Noch <ph name="TIME_LEFT" />, bis der Akku leer ist.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">WLAN: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Mikrofon wird verwendet.</translation>
@@ -523,6 +526,7 @@
 <translation id="9193626018745640770">Streaming an unbekannten Empfänger</translation>
 <translation id="9194617393863864469">Anderen Nutzer anmelden...</translation>
 <translation id="9210037371811586452">Unified Desktop-Modus wird beendet</translation>
+<translation id="9211681782751733685">Noch <ph name="TIME_REMAINING" />, bis der Akku vollständig geladen ist.</translation>
 <translation id="9215934040295798075">Hintergrund festlegen</translation>
 <translation id="921989828232331238">Deine Eltern haben dein Gerät für heute gesperrt</translation>
 <translation id="923686485342484400">Drücken Sie zum Abmelden zweimal Steuerung - Umschalttaste - Q.</translation>

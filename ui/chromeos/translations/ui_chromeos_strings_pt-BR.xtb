@@ -506,6 +506,7 @@
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6990081529015358884">Não há espaço suficiente</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> pastas selecionadas</translation>
+<translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">Falha na instalação.</translation>
 <translation id="7040138676081995583">Abrir com...</translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> itens selecionados</translation>

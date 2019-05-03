@@ -71,7 +71,6 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">Lue lisää uusimmasta <ph name="SYSTEM_APP_NAME" /> ‑päivityksestä.</translation>
 <translation id="1995660704900986789">Virta pois</translation>
-<translation id="1999763610967697511">Vedä ja pudota</translation>
 <translation id="2012624427112548395">Ctrl + haku + H</translation>
 <translation id="2016340657076538683">Kirjoita viesti</translation>
 <translation id="2050339315714019657">Pystysuunta</translation>
@@ -200,6 +199,7 @@
 <translation id="394485226368336402">Ääniasetukset</translation>
 <translation id="3962859241508114581">Edellinen kappale</translation>
 <translation id="397105322502079400">Lasketaan...</translation>
+<translation id="3977512764614765090">Akkua ladataan, varaus nyt <ph name="PERCENTAGE" /> %</translation>
 <translation id="3995138139523574647">C-tyypin USB-laite (oikean sivun taaimmainen portti)</translation>
 <translation id="4017989525502048489">Laserosoitin</translation>
 <translation id="4042660782729322247">Jaat näyttösi</translation>
@@ -217,6 +217,7 @@
 <translation id="4279490309300973883">Peilaus päällä</translation>
 <translation id="4281007048406351813">Lisää 1 min ajastimeen</translation>
 <translation id="4292681942966152062">Aktivoidaan <ph name="NETWORK_NAME" /></translation>
+<translation id="4296136865091727875">Poista kaikki <ph name="COUNT" /> ilmoitusta</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">Painoit suuren kontrastin pikanäppäintä. Haluatko ottaa sen käyttöön?</translation>
 <translation id="4331809312908958774">Chrome OS
@@ -504,6 +505,7 @@
 <translation id="8877788021141246043">Aseta muistutus</translation>
 <translation id="8878886163241303700">Laajennettu näyttö</translation>
 <translation id="890616557918890486">Vaihda lähdettä</translation>
+<translation id="8909138438987180327">Akun varaus on <ph name="PERCENTAGE" /> prosenttia.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google Assistant ei ole käytettävissä tällä kielellä.</translation>
 <translation id="8938800817013097409">C-tyypin USB-laite (oikeanpuoleinen takaportti)</translation>
@@ -515,6 +517,7 @@
 <translation id="9029474291399787231">Adobe Flash Playerin päivitys saatavilla</translation>
 <translation id="9056839673611986238">Laite palautetaan</translation>
 <translation id="9070640332319875144">Assistantin asetukset</translation>
+<translation id="9072519059834302790">Akku loppuu <ph name="TIME_LEFT" /> päästä</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Mikrofoni on käytössä.</translation>
@@ -526,6 +529,7 @@
 <translation id="9193626018745640770">Suoratoistetaan tuntemattomaan vastaanottimeen</translation>
 <translation id="9194617393863864469">Kirjaa sisään toinen käyttäjä…</translation>
 <translation id="9210037371811586452">Poistutaan yhtenäisen työpöydän tilasta</translation>
+<translation id="9211681782751733685">Akku on ladattu täyteen <ph name="TIME_REMAINING" /> kuluttua.</translation>
 <translation id="9215934040295798075">Aseta taustakuva</translation>
 <translation id="921989828232331238">Vanhempasi lukitsi laitteen loppupäivän ajaksi</translation>
 <translation id="923686485342484400">Kirjaudu ulos painamalla Control Shift Q kahdesti.</translation>

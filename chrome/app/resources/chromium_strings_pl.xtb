@@ -51,6 +51,7 @@
 <translation id="2718390899429598676">Dla większego bezpieczeństwa Chromium szyfruje dane.</translation>
 <translation id="2770231113462710648">Zmień przeglądarkę domyślną na:</translation>
 <translation id="2799223571221894425">Uruchom ponownie</translation>
+<translation id="2838154144102149890">Aby można było przeprowadzić aktualizację, musisz wyłączyć Chromium na tym komputerze. Wskutek tego inni zalogowani na tym komputerze użytkownicy mogą utracić niezapisane dane.</translation>
 <translation id="2847479871509788944">Usuń z Chromium...</translation>
 <translation id="2886012850691518054">Opcjonalnie: pomóż nam udoskonalać Chromium, wysyłając do Google statystyki użytkowania i raporty o awariach.</translation>
 <translation id="2898082584336937987">Zainstaluj Chromium na telefonie. Wyślemy SMS-a na Twój telefon: <ph name="PHONE_NUMBER" /></translation>
@@ -185,6 +186,7 @@ Niektóre funkcje mogą być niedostępne. Podaj inny katalog z profilem lub uż
 <translation id="6810143991807788455">Pomóż ulepszyć Chromium, zgłaszając bieżące ustawienia</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (skopiowana do Chromium)</translation>
+<translation id="6868056391275687737">Są uruchomione inne kopie Chromium. Zamknij je, by przeprowadzić aktualizację.</translation>
 <translation id="6893813176749746474">Przeglądarka Chromium została zaktualizowana, ale nie była przez Ciebie używana przez co najmniej 30 dni.</translation>
 <translation id="6964305034639999644">Otwórz link w oknie inco&amp;gnito Chromium</translation>
 <translation id="6970811910055250180">Aktualizowanie urządzenia...</translation>
@@ -255,6 +257,7 @@ Więcej instrukcji znajdziesz w e-mailu wysłanym na adres <ph name="ACCOUNT_EM
 <translation id="8697124171261953979">Kontroluje także to, jaka strona wyświetla się po uruchomieniu Chromium lub wyszukiwaniu w omniboksie.</translation>
 <translation id="8704119203788522458">Oto Twoja przeglądarka Chromium</translation>
 <translation id="8704255848199359374">Będzie stosowany ten sam mechanizm sprawdzania pisowni, który jest używany w wyszukiwarce Google. Tekst wpisywany w przeglądarce jest wysyłany do Google. Zawsze możesz to zmienić w ustawieniach.</translation>
+<translation id="8748383401829947534">Zamknij wszystkie kopie Chromium.</translation>
 <translation id="8796602469536043152">Chromium potrzebuje uprawnień dostępu do aparatu i mikrofonu na tej stronie</translation>
 <translation id="8803635938069941624">Warunki korzystania z systemu operacyjnego Chromium</translation>
 <translation id="8821041990367117597">Chromium nie może zsynchronizować danych, ponieważ dane logowania na Twoje konto są nieaktualne.</translation>

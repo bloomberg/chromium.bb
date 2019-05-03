@@ -223,6 +223,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">Παιχνίδια με κάρτες</translation>
 <translation id="2114841414352855701">Αγνοήθηκε επειδή αντικαταστάθηκε από την πολιτική <ph name="POLICY_NAME" />.</translation>
+<translation id="2129079103035905234">Αισθητήρες κίνησης</translation>
 <translation id="213826338245044447">Σελιδοδείκτες κινητής συσκευής</translation>
 <translation id="214556005048008348">Ακύρωση πληρωμής</translation>
 <translation id="2147827593068025794">Συγχρ. παρασκηνίου</translation>
@@ -618,6 +619,7 @@
 <translation id="4265872034478892965">Επιτρέπεται από τον διαχειριστή σας</translation>
 <translation id="4275830172053184480">Επανεκκινήστε τη συσκευή σας</translation>
 <translation id="4277028893293644418">Επαναφορά κωδικού πρόσβασης</translation>
+<translation id="4279811152705618813">Η συσκευή σας <ph name="DEVICE_TYPE" /> διαχειρίζεται από το <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Αυτή η κάρτα αποθηκεύτηκε στον Λογαριασμό σας Google}other{Αυτές οι κάρτες αποθηκεύτηκαν στον Λογαριασμό σας Google}}</translation>
 <translation id="42981349822642051">Επέκταση</translation>
 <translation id="4302965934281694568">Chou3 (Φάκελος)</translation>

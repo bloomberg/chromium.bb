@@ -623,7 +623,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="5349770431644471053">Enlace de retroceso</translation>
 <translation id="536031132345979795">Retrocede durante una lectura continua</translation>
 <translation id="5368000168321181111">Sonido desactivado</translation>
-<translation id="5368505757342402527">Se ha completado un <ph name="PROGRESS" />​% de la descarga de <ph name="FILE_NAME" />. Quedan <ph name="TIME" /> <ph name="UNITS" /> aproximadamente.</translation>
+<translation id="5368505757342402527">Se ha completado un <ph name="PROGRESS" />​% de la descarga de <ph name="FILE_NAME" />. Tiempo restante para la descarga: <ph name="TIME" /> <ph name="UNITS" /></translation>
 <translation id="5374320867641260420">No hay ningún botón posterior.</translation>
 <translation id="5376407118396657359">Pulsa la tecla de búsqueda + Ctrl + Alt con las flechas para desplazarte por las celdas.</translation>
 <translation id="5382299583965267720">No hay ningún título de nivel 1 posterior.</translation>

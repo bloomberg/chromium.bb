@@ -71,7 +71,6 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">সাম্প্রতিক <ph name="SYSTEM_APP_NAME" /> আপডেট সম্পর্কে আরও জানুন</translation>
 <translation id="1995660704900986789">পাওয়ার বন্ধ করুন</translation>
-<translation id="1999763610967697511">ড্র্যাগ করে ড্রপ করুন</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">একটি মেসেজ লিখুন</translation>
 <translation id="2050339315714019657">প্রতিকৃতি</translation>
@@ -200,6 +199,7 @@
 <translation id="394485226368336402">অডিও সেটিংস</translation>
 <translation id="3962859241508114581">আগের ট্র্যাক চালান</translation>
 <translation id="397105322502079400">গণনা করা হচ্ছে...</translation>
+<translation id="3977512764614765090">ব্যাটারি <ph name="PERCENTAGE" /> শতাংশ চার্জ করা হয়েছে এবং এখনও চার্জ করা চলছে।</translation>
 <translation id="3995138139523574647">USB-C ডিভাইস (ডান দিকের পিছনের পোর্ট)</translation>
 <translation id="4017989525502048489">লেজার পয়েন্টার</translation>
 <translation id="4042660782729322247">আপনার স্ক্রিন শেয়ার করছেন</translation>
@@ -217,6 +217,7 @@
 <translation id="4279490309300973883">অনুকরণ করা হচ্ছে</translation>
 <translation id="4281007048406351813">টাইমারে ১ মিনিট যোগ করুন</translation>
 <translation id="4292681942966152062"><ph name="NETWORK_NAME" /> চালু করা হচ্ছে</translation>
+<translation id="4296136865091727875"><ph name="COUNT" />টি বিজ্ঞপ্তি মুছে ফেলুন</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">উচ্চ কনট্রাস্টের জন্য আপনি কীবোর্ড শর্টকাট টিপেছেন। আপনি কি এটি চালু করতে চান?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -327,7 +328,7 @@
 <translation id="6106745654298855237"><ph name="POWER_SOURCE" /> চার্জ হচ্ছে</translation>
 <translation id="615957422585914272">অন-স্ক্রিন কীবোর্ড প্রদর্শন করুন</translation>
 <translation id="6164005077879661055">একবার এই তত্ত্বাবধানে থাকা ব্যবহারকারী সরানো হলে এর সঙ্গে সংশ্লিষ্ট সমস্ত ফাইল এবং
-স্থানীয় ডেটা স্থায়ীভাবে মুছে ফেলা হবে৷ এই তত্ত্বাবধানে থাকা ব্যবহারকারীর জন্য ভিজিট করা ওয়েবসাইট এবং সেটিংস <ph name="MANAGEMENT_URL" />-এ পরিচালকের কাছে এখনো দৃশ্যমান হতে পারে৷</translation>
+স্থানীয় ডেটা স্থায়ীভাবে মুছে ফেলা হবে৷ এই তত্ত্বাবধানে থাকা ব্যবহারকারীর জন্য পরিদর্শিত এবং সেটিংস <ph name="MANAGEMENT_URL" />-এ পরিচালকের কাছে এখনো দৃশ্যমান হতে পারে৷</translation>
 <translation id="6165508094623778733">আরও জানুন</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">স্ক্রিনটি ল্যান্ডস্কেপ মোডে লক করা আছে</translation>
@@ -425,7 +426,7 @@
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{১টি বিজ্ঞপ্তি}one{#টি বিজ্ঞপ্তি}other{#টি বিজ্ঞপ্তি}}</translation>
 <translation id="776344839111254542">আপডেটের বিশদ বিবরণ জানার জন্য ক্লিক করুন</translation>
 <translation id="7780159184141939021">স্ক্রিন ঘোরান</translation>
-<translation id="7796353162336583443">একটি নোট, স্ক্রিনশট নিতে, Google অ্যাসিস্ট্যান্ট, লেজার পয়েন্টার বা আতশ কাচ ব্যবহারের জন্য শেলফের স্টাইলাস বোতামটি ট্যাপ করুন।</translation>
+<translation id="7796353162336583443">একটি নোট, স্ক্রিনশট নিতে, Google অ্যাসিস্ট্যান্ট, লেজার পয়েন্টার বা ম্যাগনিফিকেশনের কাচ ব্যবহার করার জন্য শেলফের স্টাইলাস বোতামটি ট্যাপ করুন।</translation>
 <translation id="7798302898096527229">Search টিপুন বা বাতিল করতে Shift টিপুন</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> এবং <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">জোরালো সিগন্যাল</translation>
@@ -502,6 +503,7 @@
 <translation id="8877788021141246043">রিমাইন্ডার সেট করুন</translation>
 <translation id="8878886163241303700">স্ক্রিন সম্প্রসারণ করা হচ্ছে</translation>
 <translation id="890616557918890486">সোর্স পরিবর্তন করুন</translation>
+<translation id="8909138438987180327">ব্যাটারিতে <ph name="PERCENTAGE" /> শতাংশ চার্জ আছে।</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google অ্যাসিস্ট্যান্ট এই ভাষায় কথা বলে না।</translation>
 <translation id="8938800817013097409">USB-C ডিভাইস (পিছনের ডান পোর্ট)</translation>
@@ -513,6 +515,7 @@
 <translation id="9029474291399787231">Adobe Flash Player-এর আপডেট উপলভ্য</translation>
 <translation id="9056839673611986238">ডিভাইস রোল ব্যাক করা হবে</translation>
 <translation id="9070640332319875144">অ্যাসিস্ট্যান্ট সেটিংস</translation>
+<translation id="9072519059834302790"><ph name="TIME_LEFT" /> পরে ব্যাটারির চার্জ শেষ হয়ে যাবে।</translation>
 <translation id="9074739597929991885">ব্লুটুথ</translation>
 <translation id="9079731690316798640">ওয়াই ফাই: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">মাইক্রোফোন ব্যবহার করা হচ্ছে।</translation>
@@ -524,6 +527,7 @@
 <translation id="9193626018745640770">অজানা ডিভাইসে কাস্ট করা হচ্ছে</translation>
 <translation id="9194617393863864469">অন্য ব্যবহারকারীকে সাইন-ইন করান...</translation>
 <translation id="9210037371811586452">সমন্বিত ডেস্কটপ মোড থেকে প্রস্থান করছে</translation>
+<translation id="9211681782751733685">ব্যাটারি পুরো চার্জ হতে <ph name="TIME_REMAINING" /> বাকি আছে।</translation>
 <translation id="9215934040295798075">ওয়ালপেপার সেট করুন</translation>
 <translation id="921989828232331238">আপনার অভিভাবক এই ডিভাইসটি আজকের জন্য লক করে দিয়েছেন</translation>
 <translation id="923686485342484400">সাইন-আউট করার জন্য দু'বার Control Shift Q টিপুন৷</translation>

@@ -71,7 +71,6 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">ስለቅርብ ጊዜው የ<ph name="SYSTEM_APP_NAME" /> ዝማኔ የበለጠ ይረዱ</translation>
 <translation id="1995660704900986789">ኃይል አጥፋ</translation>
-<translation id="1999763610967697511">ይጎትቱና ጣል ያድርጉ</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">መልዕክት ይተይቡ</translation>
 <translation id="2050339315714019657">በቁመት</translation>
@@ -200,6 +199,7 @@
 <translation id="394485226368336402">የድምጽ ቅንብሮች</translation>
 <translation id="3962859241508114581">ቀዳሚ ትራክ</translation>
 <translation id="397105322502079400">በማስላት ላይ...</translation>
+<translation id="3977512764614765090">በ <ph name="PERCENTAGE" />% ላይ ባትሪ እና ኃይል እየሞላ ነው።</translation>
 <translation id="3995138139523574647">የUSB-C መሣሪያ (የቀኝ ጎን የኋላ ወደብ)</translation>
 <translation id="4017989525502048489">የሌዘር ጨረር</translation>
 <translation id="4042660782729322247">ማያ ገጽዎን እያጋሩ ነው</translation>
@@ -217,6 +217,7 @@
 <translation id="4279490309300973883">በማንጸባረቅ ላይ</translation>
 <translation id="4281007048406351813">ወደ ጊዜ ቆጣሪው 1 ደቂቃ ያክሉ</translation>
 <translation id="4292681942966152062"><ph name="NETWORK_NAME" />ን በማግበር ላይ</translation>
+<translation id="4296136865091727875">ሁሉንም <ph name="COUNT" /> ማሳወቂያዎች አጽዳ</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">የከፍተኛ ንጽጽር የቁልፍ ሰሌዳ አቋራጩን ተጭነዋል። ሊያበሩት ይፈልጋሉ?</translation>
 <translation id="4331809312908958774">Chrome ስርዓተ ክወና</translation>
@@ -501,6 +502,7 @@
 <translation id="8877788021141246043">አስታዋሽ አዘጋጅ</translation>
 <translation id="8878886163241303700">ማያ ገጽ በማስቀጠል ላይ</translation>
 <translation id="890616557918890486">ምንጭ ይለውጡ</translation>
+<translation id="8909138438987180327">ባትሪ <ph name="PERCENTAGE" /> መቶኛ ላይ።</translation>
 <translation id="8921554779039049422">ኤች+</translation>
 <translation id="8921624153894383499">የGoogle ረዳቱ ይህን ቋንቋ አይናገርም።</translation>
 <translation id="8938800817013097409">USB-C መሣሪያ (የቀኝ ወደብ ከኋላ በኩል)</translation>
@@ -512,6 +514,7 @@
 <translation id="9029474291399787231">የAdobe Flash Player ዝማኔ ይገኛል</translation>
 <translation id="9056839673611986238">መሣሪያ ይቀነሳል</translation>
 <translation id="9070640332319875144">የረዳት ቅንብሮች</translation>
+<translation id="9072519059834302790"><ph name="TIME_LEFT" /> ባትሪ ባዶ እስከሚሆን ድረስ።</translation>
 <translation id="9074739597929991885">ብሉቱዝ</translation>
 <translation id="9079731690316798640">Wi-Fi፦ <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">ማይክሮፎን ስራ ላይ ነው።</translation>
@@ -523,6 +526,7 @@
 <translation id="9193626018745640770">በማይታወቅ ተቀባይ ላይ Cast በማድረግ ላይ</translation>
 <translation id="9194617393863864469">ሌላ ተጠቃሚ በመለያ አስገባ...</translation>
 <translation id="9210037371811586452">ከተዋሃደ የዴስክቶፕ ሁነታ በመውጣት ላይ</translation>
+<translation id="9211681782751733685">ባትሪ ሙሉ በሙሉ ኃይል እስኪሞላ ድረስ <ph name="TIME_REMAINING" /> ይቀራል።</translation>
 <translation id="9215934040295798075">ልጣፍ ያዘጋጁ</translation>
 <translation id="921989828232331238">የእርስዎ ወላጅ ለቀኑ መሣሪያውን ቆልፈውታል</translation>
 <translation id="923686485342484400">ዘግተው ለመውጣት Ctrl Shift Qን ሁለቴ ይጫኑ።</translation>

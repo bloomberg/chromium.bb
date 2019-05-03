@@ -71,7 +71,6 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">Подробнее о последнем обновлении <ph name="SYSTEM_APP_NAME" />…</translation>
 <translation id="1995660704900986789">Выключить</translation>
-<translation id="1999763610967697511">Перетаскивание</translation>
 <translation id="2012624427112548395">CTRL + ПОИСК + H</translation>
 <translation id="2016340657076538683">Введите сообщение</translation>
 <translation id="2050339315714019657">Книжная</translation>
@@ -200,6 +199,7 @@
 <translation id="394485226368336402">Настройки звука</translation>
 <translation id="3962859241508114581">Предыдущий трек</translation>
 <translation id="397105322502079400">Вычисление…</translation>
+<translation id="3977512764614765090">Батарея заряжена на <ph name="PERCENTAGE" /> % и подключена к источнику питания.</translation>
 <translation id="3995138139523574647">Устройство USB-C (дальний порт справа)</translation>
 <translation id="4017989525502048489">Лазерная указка</translation>
 <translation id="4042660782729322247">Вы открыли доступ к своему экрану</translation>
@@ -217,6 +217,7 @@
 <translation id="4279490309300973883">Отражение</translation>
 <translation id="4281007048406351813">Добавить к таймеру 1 мин.</translation>
 <translation id="4292681942966152062">Активация сети "<ph name="NETWORK_NAME" />"</translation>
+<translation id="4296136865091727875">Удалить все уведомления: <ph name="COUNT" /></translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">Вы нажали сочетание клавиш для включения режима высокой контрастности. Выполнить это действие?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -501,6 +502,7 @@
 <translation id="8877788021141246043">Создать напоминание</translation>
 <translation id="8878886163241303700">Раскрытый экран</translation>
 <translation id="890616557918890486">Изменить источник</translation>
+<translation id="8909138438987180327">Уровень заряда батареи: <ph name="PERCENTAGE" />.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google Ассистент не говорит на этом языке</translation>
 <translation id="8938800817013097409">Устройство USB-C (порт справа на задней панели)</translation>
@@ -512,6 +514,7 @@
 <translation id="9029474291399787231">Доступно обновление для Adobe Flash Player</translation>
 <translation id="9056839673611986238">Система на устройстве будет возвращена к предыдущей версии</translation>
 <translation id="9070640332319875144">Настройки Ассистента</translation>
+<translation id="9072519059834302790">Оставшееся время работы от батареи: <ph name="TIME_LEFT" />.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Микрофон используется</translation>
@@ -523,6 +526,7 @@
 <translation id="9193626018745640770">Трансляция на неизвестное устройство</translation>
 <translation id="9194617393863864469">Войти в другой аккаунт...</translation>
 <translation id="9210037371811586452">Выход из режима единого рабочего стола…</translation>
+<translation id="9211681782751733685">Оставшееся время до полной зарядки батареи: <ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">Выбрать обои</translation>
 <translation id="921989828232331238">Ваш родитель заблокировал это устройство на целый день.</translation>
 <translation id="923686485342484400">Чтобы выйти, дважды нажмите Control+Shift+Q.</translation>

@@ -25,6 +25,7 @@
 <translation id="1585657529869845941">Dă clic pe <ph name="BEGIN_BOLD" />Comută oricum<ph name="END_BOLD" />, dacă apare</translation>
 <translation id="1587223624401073077">Google Chrome utilizează camera foto.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> este periculos, așadar Chrome l-a blocat.</translation>
+<translation id="1590588151039584890">Pentru a se actualiza, Chrome trebuie să nu mai ruleze pe acest computer. Din acest motiv, alți utilizatori conectați la acest computer pot pierde modificări nesalvate.</translation>
 <translation id="1619887657840448962">Pentru mai multă siguranță în Chrome, am dezactivat următoarea extensie care nu este inclusă în <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> și care este posibil să fi fost adăugată fără știrea ta.</translation>
 <translation id="1628000112320670027">Obține ajutor privind Chrome</translation>
 <translation id="1662639173275167396">Sistemul de operare Chrome este posibil datorită unui <ph name="BEGIN_LINK_CROS_OSS" />software open source<ph name="END_LINK_CROS_OSS" /> suplimentar, cum ar fi <ph name="BEGIN_LINK_LINUX_OSS" />Linux (Beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
@@ -164,6 +165,7 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="5386244825306882791">Stabilește și ce pagină se afișează când porniți Chrome sau când căutați din caseta polivalentă.</translation>
 <translation id="5430073640787465221">Fișierul dvs. de preferințe este fie deteriorat, fie nevalid. Google Chrome nu poate recupera setările dvs.</translation>
 <translation id="5483595757826856374">{0,plural, =0{Chrome se va relansa acum}=1{Chrome se va relansa într-o secundă}few{Chrome se va relansa în # secunde}other{Chrome se va relansa în # de secunde}}</translation>
+<translation id="5543953544073077331">Alte copii de Chrome rulează acum. Pentru a actualiza, închide-le.</translation>
 <translation id="556024056938947818">Google Chrome încearcă să afișeze parolele.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598">Este posibil ca <ph name="FILE_NAME" /> să fie periculos, așadar Chrome l-a blocat.</translation>
@@ -224,6 +226,7 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="7473136999113284234">Chrome se actualizează automat, deci vei avea întotdeauna cea mai recentă versiune.</translation>
 <translation id="7486227612705979895">Chrome îți va accesa spațiul de stocare Drive pentru a face sugestii în bara de adrese</translation>
 <translation id="748945194546522577">Fișierul este periculos, așadar Chrome l-a blocat. Te apără Protecția avansată.</translation>
+<translation id="7531671357096394523">Închide toate copiile de Chrome.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Afișează sistemul de operare Chrome în această limbă</translation>
 <translation id="7561940363513215021">{0,plural, =1{Chrome se va relansa într-un minut}few{Chrome se va relansa în # minute}other{Chrome se va relansa în # de minute}}</translation>

@@ -798,6 +798,7 @@
 <translation id="2241053333139545397">Läs och ändra dina uppgifter på ett antal webbplatser</translation>
 <translation id="2241634353105152135">Bara en gång</translation>
 <translation id="2242687258748107519">Filinformation</translation>
+<translation id="2246549592927364792">Vill du hämta bildbeskrivningar från Google?</translation>
 <translation id="224940702122312781">Den här sidan använder mycket data.</translation>
 <translation id="2249605167705922988">till exempel 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">Öppna med systemvisningsprogrammet</translation>
@@ -1103,6 +1104,7 @@
 <translation id="271033894570825754">Ny</translation>
 <translation id="2714393097308983682">Google Play Butik</translation>
 <translation id="2715751256863167692">Med den här uppgraderingen återställs Chromebook och nuvarande användardata tas bort.</translation>
+<translation id="2716986496990888774">Den här inställningen hanteras av en förälder.</translation>
 <translation id="2718395828230677721">Nattljus</translation>
 <translation id="2718998670920917754">Antivirusprogrammet har identifierat ett virus.</translation>
 <translation id="2719936478972253983">Följande cookies blockerades</translation>
@@ -1153,7 +1155,6 @@
 <translation id="2783829359200813069">Välj krypteringstyper</translation>
 <translation id="2783952358106015700">Använd säkerhetsnyckeln med <ph name="APP_NAME" /></translation>
 <translation id="2784407158394623927">Den mobila datatjänsten aktiveras</translation>
-<translation id="2785008241190445880">Bokmärket har ersatts</translation>
 <translation id="2785873697295365461">Filbeskrivningar</translation>
 <translation id="2787354132612937472">–</translation>
 <translation id="2788135150614412178">+</translation>
@@ -1214,6 +1215,7 @@
 <translation id="2874939134665556319">Föregående spår</translation>
 <translation id="2875698561019555027">(Felsidor i Chrome)</translation>
 <translation id="2876336351874743617">Finger 2</translation>
+<translation id="2876369937070532032">Webbadresser till vissa sidor som du besöker skickas till Google när din säkerhet är utsatt för risk.</translation>
 <translation id="288042212351694283">Åtkomst till dina Universal 2nd Factor-enheter</translation>
 <translation id="2881076733170862447">När du klickar på tillägget</translation>
 <translation id="2881966438216424900">Senast öppnad:</translation>
@@ -1396,6 +1398,7 @@
 <translation id="3170072451822350649">Du kan även hoppa över inloggningen och <ph name="LINK_START" />surfa som gäst<ph name="LINK_END" />.</translation>
 <translation id="3172045848207518317">En webbplats tar emot videoindata</translation>
 <translation id="3177909033752230686">Sidans språk:</translation>
+<translation id="3181954750937456830">Säker webbsökning (skyddar dig och enheten från skadliga webbplatser)</translation>
 <translation id="3182749001423093222">Stavningskontroll</translation>
 <translation id="3183139917765991655">Profilimportör</translation>
 <translation id="3188465121994729530">Glidande medelvärde</translation>
@@ -1701,6 +1704,7 @@
 <translation id="3664511988987167893">Tilläggsikon</translation>
 <translation id="3665589677786828986">Chrome har upptäckt att visa av inställningarna har skadats av ett annat program och återställer dem till standardinställningarna.</translation>
 <translation id="3668570675727296296">Språkinställningar</translation>
+<translation id="366867565525278777">Installationen misslyckades eftersom det inte finns tillräckligt med lagringsutrymme. Minst <ph name="INSTALL_SIZE" /> ledigt utrymme krävs. Frigör utrymme genom att ta bort filer från lagringsutrymmet på enheten.</translation>
 <translation id="3668801437375206837">Anställda hos Google kan inkludera ytterligare Bluetooth-loggar i sina feedbackrapporter för att underlätta diagnosticeringen av problem med Bluetooth. När alternativet är markerat ingår HCI-loggar i btsnoop-format från den nuvarande sessionen i din rapport. Dessa loggar rensas på så mycket personligt identifierande information som möjligt. Åtkomsten till loggarna begränsas till ansvariga i produktgruppen för Chrome OS på Listnr. Loggarna raderas permanent efter 90 dagar.</translation>
 <translation id="3668823961463113931">Hanterare</translation>
 <translation id="3670113805793654926">Enheter från alla leverantörer</translation>
@@ -2010,6 +2014,7 @@
 <translation id="409579654357498729">Lägg till i Cloud Print</translation>
 <translation id="4096508467498758490">Inaktivera tillägg i utvecklarläge</translation>
 <translation id="4096824249111507322">Vänta medan den säkra modulen förbereds (det kan ta några minuter) …</translation>
+<translation id="4097560579602855702">Sök på Google</translation>
 <translation id="4099060993766194518">Vill du återställa standardinställningen för sökmotorn?</translation>
 <translation id="4099874310852108874">Ett nätverksfel uppstod.</translation>
 <translation id="4100733287846229632">Mycket ont om utrymme på enheten</translation>
@@ -4007,6 +4012,7 @@
 <translation id="7289225569524511578">Öppna bakgrundsappen</translation>
 <translation id="7290242001003353852">Inloggningstjänsten som tillhandahålls av <ph name="SAML_DOMAIN" /> använder din kamera.</translation>
 <translation id="7290594223351252791">Bekräfta registrering</translation>
+<translation id="7295614427631867477">Observera att Android, Play och kopplade appar omfattas av sina egna policyer för insamling och användning av data.</translation>
 <translation id="729583233778673644">Tillåt AES- och RC4-kryptering. Det här alternativet är mer riskabelt eftersom RC4-chiffer är osäkra.</translation>
 <translation id="7296774163727375165">Villkor för <ph name="DOMAIN" /></translation>
 <translation id="7297443947353982503">Användarnamnet eller lösenordet är felaktigt, eller så misslyckades EAP-auktoriseringen</translation>
@@ -4283,6 +4289,7 @@
 <translation id="7732111077498238432">Nätverket styrs av en princip</translation>
 <translation id="7737238973539693982">Radera Linux (beta)</translation>
 <translation id="7740996059027112821">Standard</translation>
+<translation id="7746457520633464754">För att kunna upptäcka farliga appar och webbplatser skickar Chrome webbadresser till vissa sidor som du besöker, vissa systemuppgifter och visst sidinnehåll till Google</translation>
 <translation id="7750228210027921155">Bild-i-bild</translation>
 <translation id="7751260505918304024">Visa alla</translation>
 <translation id="7754704193130578113">Fråga var filerna ska sparas före nedladdning</translation>
@@ -4934,7 +4941,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8732212173949624846">Läsa och ändra webbhistoriken på alla enheter där du är inloggad</translation>
 <translation id="8732844209475700754">Fler inställningar som rör sekretess, säkerhet och datainsamling</translation>
 <translation id="8734073480934656039">Om du aktiverar den här inställningen kan kioskappar startas automatiskt när du startar datorn.</translation>
-<translation id="8734671092194994316">Besöket på <ph name="WEBSITE" /> registreras på din säkerhetsnyckel.</translation>
 <translation id="873545264931343897">När <ph name="PLUGIN_NAME" /> har uppdaterats läser du in sidan igen för att aktivera det.</translation>
 <translation id="8736288397686080465">Den här webbplatsen har uppdaterats i bakgrunden.</translation>
 <translation id="8737685506611670901">Öppna <ph name="PROTOCOL" />-länkar i stället för <ph name="REPLACED_HANDLER_TITLE" /></translation>
@@ -4967,6 +4973,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8780123805589053431">Hämta bildbeskrivningar från Google</translation>
 <translation id="8780443667474968681">Röstsökning har inaktiverats.</translation>
 <translation id="878069093594050299">Certifikatet har verifierats för följande användningsområden:</translation>
+<translation id="8781470833671194250">Stabilisering av klickposition</translation>
 <translation id="8781980678064919987">Stäng av när locket stängs</translation>
 <translation id="8782565991310229362">Starten av kioskappen avbröts.</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; vill dela skrivaren &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; med dig.</translation>

@@ -98,6 +98,7 @@
 <translation id="2320166752086256636">Skjul tastaturet</translation>
 <translation id="2339560363438331454">Synkronisering og Google-tjenester</translation>
 <translation id="2351097562818989364">Dine oversættelsesindstillinger er nulstillet.</translation>
+<translation id="2359043044084662842">Oversæt</translation>
 <translation id="2359808026110333948">Fortsæt</translation>
 <translation id="2360196772093551345">Anmod om mobilversion</translation>
 <translation id="2381405137052800939">Grundlæggende</translation>
@@ -122,7 +123,7 @@
 <translation id="2712127207578915686">Filen kan ikke åbnes</translation>
 <translation id="2718352093833049315">Kun på Wi-Fi</translation>
 <translation id="2747003861858887689">Forrige felt</translation>
-<translation id="2780046210906776326">Ingen e-mailkonti</translation>
+<translation id="2780046210906776326">Ingen mailkonti</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Luk Faneskift</translation>
 <translation id="2830972654601096923">Administrer adresser...</translation>
@@ -208,7 +209,7 @@
 <translation id="408404951701638773">Nu er det nemmere at bruge søgefeltet</translation>
 <translation id="411254640334432676">Download mislykkedes.</translation>
 <translation id="4112644173421521737">Søg</translation>
-<translation id="4121993058175073134">For at sende oplysninger om nettoeksporten skal du konfigurere din e-mailkonto i appen Indstillinger.</translation>
+<translation id="4121993058175073134">For at sende oplysninger om nettoeksporten skal du konfigurere din mailkonto i appen Indstillinger.</translation>
 <translation id="4124987746317609294">Tidsinterval</translation>
 <translation id="4172051516777682613">Vis altid</translation>
 <translation id="418156467088430727">Se offlineversion på en ny fane</translation>
@@ -292,6 +293,7 @@ Handoff skal være aktiveret i afsnittet Generelt i Indstillinger, og dine enhed
 <translation id="5659593005791499971">Mail</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Version <ph name="PRODUCT_VERSION" /></translation>
+<translation id="5711039611392265845">Du kan finde flere indstillinger vedrørende privatliv, sikkerhed og dataindsamling ved at gå til <ph name="BEGIN_LINK" />Synkronisering og Google-tjenester<ph name="END_LINK" /></translation>
 <translation id="5728700505257787410">Der var et problem med at logge ind på din konto.</translation>
 <translation id="5737974891429562743">Loginoplysningerne for kontoen er forældede. Opdater dem for at påbegynde synkroniseringen.</translation>
 <translation id="5738887413654608789">Dette giver dig mulighed for at opdage relevante websider baseret på dine omgivelser.</translation>

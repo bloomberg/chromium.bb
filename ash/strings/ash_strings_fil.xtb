@@ -71,7 +71,6 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">Matuto pa tungkol sa pinakabagong update sa <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1995660704900986789">I-off</translation>
-<translation id="1999763610967697511">Mag-drag at drop</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">Mag-type ng mensahe</translation>
 <translation id="2050339315714019657">Portrait</translation>
@@ -200,6 +199,7 @@
 <translation id="394485226368336402">Mga setting ng audio</translation>
 <translation id="3962859241508114581">Nakaraang Track</translation>
 <translation id="397105322502079400">Kinakalkula...</translation>
+<translation id="3977512764614765090">Nasa <ph name="PERCENTAGE" />% ang baterya at nagcha-charge.</translation>
 <translation id="3995138139523574647">USB-C device (port sa kanang bahagi sa likod)</translation>
 <translation id="4017989525502048489">Laser pointer</translation>
 <translation id="4042660782729322247">Ibinabahagi mo ang iyong screen</translation>
@@ -217,6 +217,7 @@
 <translation id="4279490309300973883">Nagmi-mirror</translation>
 <translation id="4281007048406351813">Magdagdag ng 1 minuto sa timer</translation>
 <translation id="4292681942966152062">Ina-activate ang <ph name="NETWORK_NAME" /></translation>
+<translation id="4296136865091727875">I-clear ang lahat ng <ph name="COUNT" /> (na) notification</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">Napindot mo ang keyboard shortcut para sa mataas na contrast. Gusto mo ba itong i-on?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -501,6 +502,7 @@
 <translation id="8877788021141246043">Magtakda ng paalala</translation>
 <translation id="8878886163241303700">Pinapalawak ang screen</translation>
 <translation id="890616557918890486">Baguhin ang source</translation>
+<translation id="8909138438987180327">Nasa <ph name="PERCENTAGE" /> porsyento ang baterya.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Hindi nagsasalita ng ganitong wika ang Google Assistant.</translation>
 <translation id="8938800817013097409">USB-C device (kanang port sa likod)</translation>
@@ -512,6 +514,7 @@
 <translation id="9029474291399787231">Available ang update sa Adobe Flash Player</translation>
 <translation id="9056839673611986238">Iro-roll back ang device</translation>
 <translation id="9070640332319875144">Mga Setting ng Assistant</translation>
+<translation id="9072519059834302790"><ph name="TIME_LEFT" /> bago maubos ang baterya.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Ginagamit ang mikropono.</translation>
@@ -523,6 +526,7 @@
 <translation id="9193626018745640770">Nagka-cast sa isang hindi pa natutukoy na tagatanggap</translation>
 <translation id="9194617393863864469">Mag-sign in ng isa pang user...</translation>
 <translation id="9210037371811586452">Lumalabas sa unified desktop mode</translation>
+<translation id="9211681782751733685"><ph name="TIME_REMAINING" /> ang natitira bago ma-charge nang kumpleto ang baterya.</translation>
 <translation id="9215934040295798075">Magtakda ng wallpaper</translation>
 <translation id="921989828232331238">Ni-lock ng iyong magulang ang device mo para sa araw na ito</translation>
 <translation id="923686485342484400">Pindutin ang Control Shift Q nang dalawang beses upang mag-sign out.</translation>

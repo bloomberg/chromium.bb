@@ -723,21 +723,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Stavekontrol kan stadig udføres ved hjælp af den downloadede ordbog. Denne politik kontrollerer kun brugen af onlinetjenesten.
 
       Hvis denne indstilling ikke er konfigureret, kan brugerne vælge, om stavekontrol skal aktiveres eller ej.</translation>
-<translation id="2294283832646774959">Konfigurerer en liste over printere.
-
-      Denne politik giver administratorer mulighed for at angive printerkonfigurationer
-      for deres brugere.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> og <ph name="PRINTER_DESCRIPTION" /> er strenge i frit format, der kan tilpasses, så valg af printer bliver nemmere. <ph name="PRINTER_MANUFACTURER" /> og <ph name="PRINTER_MODEL" /> gør det nemmere for slutbrugerne at identificere printere. De repræsenterer printerproducenten og -modellen. <ph name="PRINTER_URI" /> skal være en adresse, der er tilgængelig fra en klientcomputer, bl.a. <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> og <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> er valgfri. Hvis den angives, bruges den som en hjælp til at deduplikere <ph name="ZEROCONF_DISCOVERY" />-printere.
-
-      <ph name="PRINTER_EFFECTIVE_MODEL" /> skal stemme overens med en af de strenge, der repræsenterer en <ph name="PRODUCT_NAME" />-understøttet printer. Strengen bruges til at identificere og installere den relevante PPD-fil til printeren. Du kan finde flere oplysninger på https://support.google.com/chrome?p=noncloudprint.
-
-      Printerkonfigurationen fuldføres, første gang printeren tages i brug.  PPD-filer downloades ikke, før printeren benyttes.  Derefter gemmes ofte anvendte PPD-filer i cachen.
-
-      Denne politik påvirker ikke, om brugerne kan konfigurere printere på individuelle enheder.  Den er beregnet til at fungere som supplement til den enkelte brugers konfiguration af printere.
-
-      For enheder, der administreres med Active Directory, understøtter denne politik udvidelse af <ph name="MACHINE_NAME_VARIABLE" /> til Active Directory-enhedsnavnet eller en af dets understrenge. Hvis enhedsnavnet f.eks. er <ph name="MACHINE_NAME_EXAMPLE" />, erstattes <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> af de fire tegn, der kommer efter den sjette position, dvs. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Bemærk! Positionen er nulbaseret.
-      </translation>
 <translation id="2294382669900758280">Videoafspilning i Android-apps tages ikke med i betragtning, selv hvis denne politik angives som <ph name="TRUE" />.</translation>
 <translation id="2299220924812062390">Angiv en liste over aktiverede plugins</translation>
 <translation id="2303795211377219696">Aktivér AutoFyld for betalingskort</translation>
@@ -1371,6 +1356,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hvis denne politik er indstillet til "DeveloperToolsAllowed" (værdi 1), kan Udviklerværktøjer og JavaScript-konsollen åbnes og bruges i alle sammenhænge – også i forbindelse med udvidelser, der er installeret af en virksomhedspolitik.
       Hvis denne politik er indstillet til "DeveloperToolsDisallowed" (værdi 2), kan der ikke opnås adgang til Udviklerværktøjer, og elementer på websites kan ikke længere inspiceres. Alle tastaturgenveje samt menuer eller genvejsmenuer, der åbner Udviklerværktøjer eller JavaScript-konsollen, deaktiveres.</translation>
 <translation id="3547954654003013442">Proxyindstillinger</translation>
+<translation id="3550875587920006460">Tillader, at der angives en tilpasset tidsplan for søgning efter opdateringer. Politikken gælder for alle brugere og på alle enhedens grænseflader. Når den er angivet, søger enheden efter opdateringer i overensstemmelse med tidsplanen. Hvis du vil annullere planlagte søgninger efter opdateringer, er du nødt til at fjerne politikken.</translation>
 <translation id="355118380775352753">Websites, der skal åbnes i en alternativ browser</translation>
 <translation id="3554984410014457319">Giv Google Assistent tilladelse til at lytte efter den stemmestyrede aktiveringssætning</translation>
 <translation id="356579196325389849">Brugerne kan konfigurere udgivelseskanalen for Chrome OS</translation>
@@ -1402,7 +1388,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="3709266154059827597">Konfigurer sortliste for installation af udvidelser</translation>
 <translation id="3711895659073496551">Suspender</translation>
 <translation id="3715569262675717862">Godkendelse på baggrund af klientcertifikater</translation>
-<translation id="3734995764843493369">Adgangskoden skal angives en gang om dagen (24 timer)</translation>
 <translation id="3736879847913515635">Aktivér tilføjelse af personer i brugeradministration</translation>
 <translation id="3738723882663496016">Denne politik angiver <ph name="PLUGIN_VM_NAME" />-licensnøglen til denne enhed.</translation>
 <translation id="3748900290998155147">Angiver, om aktiveringslåse er tilladt. Udvidelser kan anmode om aktiveringslåse via Power Management Extension API og ARC-apps.
@@ -1606,6 +1591,29 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hvis denne politik er angivet til Sand eller ikke er angivet, kan brugerne indløse kampagnetilbud via Chrome OS-registrering.
 
       Hvis denne politik er angivet til Falsk, kan brugerne ikke indløse kampagnetilbud.</translation>
+<translation id="4008233182078913897">Angiver en liste over apps og udvidelser, der installeres uovervåget.
+          Dette foregår uden brugerinteraktion, og hverken apps eller udvidelser kan
+          afinstalleres eller deaktiveres af brugeren. Alle tilladelser, som apps/udvidelser
+          anmoder om, gives implicit og uden brugerinteraktion, herunder
+          eventuelle ekstra tilladelser, der anmodes om af fremtidige
+          versioner af appen/udvidelsen. Derudover gives der tilladelser til
+          udvidelses-API'erne enterprise.deviceAttributes og enterprise.platformKeys.
+          (Disse to API'er er ikke tilgængelige for apps/udvidelser, der ikke
+          fjerninstalleres).
+
+          Denne politik har forrang, hvis der er uoverensstemmelse med en <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />-politik. Hvis en app eller udvidelse, som tidligere er blevet fjerninstalleret, fjernes fra denne liste, afinstalleres den automatisk af <ph name="PRODUCT_NAME" />.
+
+          I forbindelse med Windows-forekomster, som ikke er knyttet til et <ph name="MS_AD_NAME" />-domæne, er fjerninstallation begrænset til apps og udvidelser, som fås i Chrome Webshop.
+
+          Bemærk, at kildekoden i alle udvidelser kan ændres af brugere via Udviklerværktøjer (hvilket kan medføre, at udvidelsen ikke fungerer). Hvis du vil undgå dette, skal politikken <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> angives.
+
+          Hvert listepunkt i politikken er en streng, som indeholder et udvidelses-id og en "opdateringswebadresse" adskilt af et semikolon (<ph name="SEMICOLON" />). Udvidelses-id'et er den streng på 32 bogstaver, som f.eks. kan findes på <ph name="CHROME_EXTENSIONS_LINK" />, når udviklertilstanden bruges. Hvis den er angivet, skal "opdateringswebadressen" pege på et XML-dokument med et opdateringsmanifest som beskrevet i <ph name="LINK_TO_EXTENSION_DOC1" />. Som standard anvendes Chrome Webshops opdateringswebadresse (som i øjeblikket er "https://clients2.google.com/service/update2/crx") Bemærk, at "Opdateringswebadressen", der angives i denne politik, kun bruges til den første installation. Efterfølgende opdateringer af udvidelsen anvender den opdateringswebadresse, som er angivet i udvidelsens manifest. Bemærk også, at det var påkrævet eksplicit at angive "opdateringswebadressen" i <ph name="PRODUCT_NAME" />-versioner op til og med 67.
+
+          <ph name="EXTENSION_POLICY_EXAMPLE" /> installerer f.eks. udvidelsen med id'et <ph name="EXTENSION_ID_SAMPLE" /> fra "standardopdateringswebadressen" fra Chrome Webshop. Du kan få flere oplysninger om hosting af udvidelser her: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Hvis denne politik ikke angives, installeres ingen apps eller udvidelser automatisk, og brugeren kan afinstallere alle apps og udvidelser i <ph name="PRODUCT_NAME" />.
+
+          Bemærk, at denne politik ikke gælder for inkognitotilstand.</translation>
 <translation id="4008507541867797979">Hvis denne politik er angivet som Sand eller ikke konfigureret, viser <ph name="PRODUCT_OS_NAME" /> eksisterende brugere på loginskærmen og giver mulighed for at vælge en.
 
       Hvis politikken er angivet som Falsk, viser <ph name="PRODUCT_OS_NAME" /> ikke eksisterende brugere på loginskærmen. Den almindelige loginskærm (der beder om brugerens mailadresse og adgangskode eller telefonnummer) eller den mellemliggende SAML-skærm (hvis denne er aktiveret via politikken <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />) vises, medmindre der er konfigureret en administreret session. Når der er konfigureret en administreret session, vises kun konti i den administrerede session, og der kan vælges én af dem.
@@ -2535,6 +2543,12 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 <translation id="5897913798715600338">Oplad batteriet ved hjælp af lynopladningsteknologi.</translation>
 <translation id="5898486742390981550">Når flere brugere er logget ind, er det kun den primære bruger, der kan bruge Android-apps.</translation>
 <translation id="5901427587865226597">Kun duplex-udskrivning</translation>
+<translation id="5903898512448364160">
+      Hvis politikken er angivet som sand, har skypolitikken forrang, hvis den ikke stemmer overens med platformspolitikken.
+      Hvis politikken er angivet som falsk eller ikke er konfigureret, har platformspolitikken forrang, hvis den ikke stemmer overens med skypolitikken.
+
+      Denne politik er kun tilgængelig som en obligatorisk platformspolitik for computere, og den påvirker kun cloud-politikker vedrørende omfang for computere.
+      </translation>
 <translation id="5905473632148429217">Aktivér online OCSP/CRL-kontrol</translation>
 <translation id="5906199912611534122">Gør det muligt at aktivere eller deaktivere netværksbegrænsning.
       Dette gælder for alle brugere og for alle grænseflader på enheden. Når denne indstilling er valgt,
@@ -2561,6 +2575,7 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 
       Hvis du deaktiverer denne indstilling eller ikke konfigurerer en værdi, håndhæves Beskyttet søgning i Google Søgning ikke.</translation>
 <translation id="5946082169633555022">Betakanal</translation>
+<translation id="5946329690214660966">Angiv en tilpasset tidsplan for søgning efter opdateringer</translation>
 <translation id="5950205771952201658">Set i lyset af, at ikke-omfattende tilbagekaldskontroller på nettet ikke giver nogen effektiv form for sikkerhed, er disse deaktiveret som standard i <ph name="PRODUCT_NAME" /> version 19 og nyere. Ved at angive denne politik til Sand gendannes de tidligere indstillinger, så der udføres OCSP/CRL-kontroller på nettet.
 
       Hvis politikken ikke er angivet eller er angivet til Falsk, udfører <ph name="PRODUCT_NAME" /> ikke tilbagekaldskontroller på nettet i <ph name="PRODUCT_NAME" /> 19 og nyere.</translation>
@@ -2627,6 +2642,7 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 <translation id="6034341625190551415">Styrer offentlige kontotyper og terminalkontotyper.</translation>
 <translation id="6034603289689965535">Tillader, at en side viser pop op-vinduer under indlæsning</translation>
 <translation id="6036523166753287175">Aktiver gennemgang af firewall fra vært for fjernadgang</translation>
+<translation id="605475635122964053">Begrænser tilstanden for udskrivning med pinkode En ikke-angivet politik behandles som ingen begrænsning. Hvis tilstanden ikke er tilgængelig, ignoreres politikken. Bemærk! Funktionen til udskrivning med pinkode kun er aktiveret for printere, som anvender en af protokollerne IPPS, USB eller IPP-over-USB </translation>
 <translation id="6070667616071269965">Tastaturlayouts for loginskærme på enheder</translation>
 <translation id="6074963268421707432">Tillad ikke, at websites viser skrivebordsunderretninger</translation>
 <translation id="6074964551275531965">Angiv tidsrummet for notifikationer om opdateringer</translation>
@@ -3332,6 +3348,7 @@ Hvis denne politik er angivet som sand eller ikke angives, aktiveres den smarte 
       Hvis denne politik er angivet til "RemoveLRUIfDormant", vil den automatiske oprydningsfunktion fortsætte med at fjerne brugere, der ikke har været logget ind i minimum tre måneder, startende med den bruger, der ikke har været logget ind i længst tid, indtil der er tilstrækkelig ledig plads.
 
       Hvis denne politik ikke er indstillet, anvender den automatiske oprydningsfunktion standardstrategien. Denne strategi er i øjeblikket "RemoveLRUIfDormant".</translation>
+<translation id="7334274148831027933">Aktivér fastgjort lupvindue</translation>
 <translation id="7336785017449297672">Styrer indstillingerne for tidszone</translation>
 <translation id="7336878834592315572">Behold cookies under sessionen</translation>
 <translation id="7339315111520512972">Tving netværkskoden til at køre i browserprocessen</translation>
@@ -3747,7 +3764,7 @@ Hvis du aktiverer denne indstilling eller ikke konfigurerer en værdi, forbliver
 
       Hvis denne politik er indstillet, bruger loginskærmen den angivne streng i den billedbaserede loginvælger for den tilsvarende enhedslokale konto.
 
-      Hvis politikken ikke er indstillet, bruger <ph name="PRODUCT_OS_NAME" /> den enhedslokale kontos e-mailkonto-id som det viste navn på loginskærmen.
+      Hvis politikken ikke er indstillet, bruger <ph name="PRODUCT_OS_NAME" /> den enhedslokale kontos mailkonto-id som det viste navn på loginskærmen.
 
       Denne politik ignoreres for almindelige brugerkonti.</translation>
 <translation id="8259375588339409826">Både Chromium og Google Chrome understøtter den samme række politikker. Bemærk, at dette dokument kan indeholde politikker, der ikke er udgivet (dvs. angivelsen af "understøttes på" henviser til en ikke-udgivet version af <ph name="PRODUCT_NAME" />), som kan ændres eller fjernes uden varsel, og for hvilke ingen garantier stilles, herunder garantier vedrørende deres sikkerheds- og privatlivsegenskaber.

@@ -799,6 +799,7 @@
 <translation id="2241053333139545397">여러 웹사이트의 데이터를 읽고 변경</translation>
 <translation id="2241634353105152135">한 번만</translation>
 <translation id="2242687258748107519">파일 정보</translation>
+<translation id="2246549592927364792">Google에서 이미지 설명을 가져올까요?</translation>
 <translation id="224940702122312781">이 페이지는 많은 양의 데이터를 사용합니다.</translation>
 <translation id="2249605167705922988">예: 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">시스템 뷰어로 열기</translation>
@@ -1104,6 +1105,7 @@
 <translation id="271033894570825754">새 파일</translation>
 <translation id="2714393097308983682">Google Play 스토어</translation>
 <translation id="2715751256863167692">이 업그레이드를 설치하면 Chromebook이 재설정되며, 현재 사용자 데이터가 삭제됩니다.</translation>
+<translation id="2716986496990888774">보호자가 관리하는 설정입니다.</translation>
 <translation id="2718395828230677721">야간 조명</translation>
 <translation id="2718998670920917754">바이러스 백신 소프트웨어가 바이러스를 감지했습니다.</translation>
 <translation id="2719936478972253983">다음 쿠키가 차단됨</translation>
@@ -1154,7 +1156,6 @@
 <translation id="2783829359200813069">암호화 유형 선택</translation>
 <translation id="2783952358106015700"><ph name="APP_NAME" /> 앱에서 보안 키 사용</translation>
 <translation id="2784407158394623927">모바일 데이터 서비스 활성화 중</translation>
-<translation id="2785008241190445880">북마크가 변경됨</translation>
 <translation id="2785873697295365461">파일 설명자</translation>
 <translation id="2787354132612937472">—</translation>
 <translation id="2788135150614412178">+</translation>
@@ -1215,6 +1216,7 @@
 <translation id="2874939134665556319">이전 트랙</translation>
 <translation id="2875698561019555027">(Chrome 오류 페이지)</translation>
 <translation id="2876336351874743617">손가락 2</translation>
+<translation id="2876369937070532032">보안상의 위험이 있을 때 일부 방문 페이지의 URL을 Google로 전송함</translation>
 <translation id="288042212351694283">Universal 2nd Factor 기기에 액세스</translation>
 <translation id="2881076733170862447">확장 프로그램을 클릭할 경우</translation>
 <translation id="2881966438216424900">마지막 액세스 날짜:</translation>
@@ -1397,6 +1399,7 @@
 <translation id="3170072451822350649">로그인을 건너뛰고 <ph name="LINK_START" />게스트로 로그인<ph name="LINK_END" />할 수도 있습니다.</translation>
 <translation id="3172045848207518317">사이트에서 동영상 입력을 공유하는 중입니다.</translation>
 <translation id="3177909033752230686">페이지 언어:</translation>
+<translation id="3181954750937456830">세이프 브라우징(사용자와 사용자의 기기를 위험한 사이트로부터 보호)</translation>
 <translation id="3182749001423093222">맞춤법 검사</translation>
 <translation id="3183139917765991655">프로필 가져오기 도구</translation>
 <translation id="3188465121994729530">이동 평균</translation>
@@ -1702,6 +1705,7 @@
 <translation id="3664511988987167893">확장 프로그램 아이콘</translation>
 <translation id="3665589677786828986">Chrome에서 다른 프로그램이 브라우저 설정을 일부 손상시키고 원래 기본값으로 재설정했음을 감지했습니다.</translation>
 <translation id="3668570675727296296">언어 설정</translation>
+<translation id="366867565525278777">저장공간이 부족하여 설치할 수 없습니다. 최소 <ph name="INSTALL_SIZE" />의 여유 공간이 필요합니다. 여유 공간을 확보하려면 기기에서 파일을 삭제하세요.</translation>
 <translation id="3668801437375206837">블루투스 문제를 더 효과적으로 진단하기 위해 Google 직원이 의견 보고서에 추가 블루투스 로그를 포함할 수 있습니다. 이 옵션을 선택하면 보고서에 현재 세션의 btsnoop 및 HCI 로그가 포함됩니다. 이 로그는 개인 식별 정보가 가능한 한 적게 포함되도록 정리되며, Listnr의 Chrome OS 제품 그룹 관리자만 액세스할 수 있습니다. 해당 로그는 90일 후에 삭제됩니다.</translation>
 <translation id="3668823961463113931">핸들러</translation>
 <translation id="3670113805793654926">모든 공급업체의 기기</translation>
@@ -2009,6 +2013,7 @@
 <translation id="409579654357498729">클라우드 프린트에 추가</translation>
 <translation id="4096508467498758490">개발자 모드 확장 프로그램 사용 중지</translation>
 <translation id="4096824249111507322">보안 모듈을 준비 중입니다. 잠시 기다려 주세요. 몇 분 정도 걸릴 수 있습니다...</translation>
+<translation id="4097560579602855702">Google 검색</translation>
 <translation id="4099060993766194518">기본 검색엔진을 복원하시겠습니까?</translation>
 <translation id="4099874310852108874">네트워크 오류가 발생했습니다.</translation>
 <translation id="4100733287846229632">기기 저장 공간 매우 부족</translation>
@@ -4006,6 +4011,7 @@
 <translation id="7289225569524511578">배경화면 앱 열기</translation>
 <translation id="7290242001003353852"><ph name="SAML_DOMAIN" />에서 호스팅하는 이 로그인 서비스는 카메라에 액세스합니다.</translation>
 <translation id="7290594223351252791">등록 확인</translation>
+<translation id="7295614427631867477">Android, Play 및 관련 앱은 각자의 데이터 수집 및 이용 정책을 따릅니다.</translation>
 <translation id="729583233778673644">AES 및 RC4 암호화를 허용합니다. RC4 암호화는 안전하지 않으므로 이 옵션을 사용하면 보안 위험도가 높아집니다.</translation>
 <translation id="7296774163727375165"><ph name="DOMAIN" /> 약관</translation>
 <translation id="7297443947353982503">사용자 이름 또는 비밀번호가 잘못되었거나 EAP 인증에 실패했습니다.</translation>
@@ -4282,6 +4288,7 @@
 <translation id="7732111077498238432">네트워크는 정책을 통해 제어됩니다</translation>
 <translation id="7737238973539693982">Linux(베타) 삭제</translation>
 <translation id="7740996059027112821">표준</translation>
+<translation id="7746457520633464754">Chrome은 위험한 앱 및 사이트를 감지하기 위해 일부 방문 페이지의 URL, 제한적인 시스템 정보, 페이지 콘텐츠 일부를 Google로 전송합니다.</translation>
 <translation id="7750228210027921155">PIP 모드</translation>
 <translation id="7751260505918304024">전체 보기</translation>
 <translation id="7754704193130578113">다운로드 전에 각 파일의 저장 위치 확인</translation>
@@ -4665,7 +4672,7 @@
 <translation id="8286036467436129157">로그인</translation>
 <translation id="8286963743045814739">시크릿 창을 사용하면 비공개로 탐색할 수 있습니다.</translation>
 <translation id="8287902281644548111">API 호출/URL로 검색</translation>
-<translation id="8288032458496410887"><ph name="APP" /> 제거 중...</translation>
+<translation id="8288032458496410887"><ph name="APP" /> 제거...</translation>
 <translation id="8291967909914612644">홈 공급자 국가</translation>
 <translation id="8294431847097064396">출처</translation>
 <translation id="8297006494302853456">약함</translation>
@@ -4933,7 +4940,6 @@
 <translation id="8732212173949624846">로그인한 모든 기기의 인터넷 사용 기록 조회 및 변경</translation>
 <translation id="8732844209475700754">개인정보 보호, 보안, 데이터 수집과 관련된 설정 더보기</translation>
 <translation id="8734073480934656039">이 설정을 사용하면 시작 시 키오스크 애플리케이션이 자동으로 실행됩니다.</translation>
-<translation id="8734671092194994316">보안 키에 <ph name="WEBSITE" />에 방문한 기록이 남습니다.</translation>
 <translation id="873545264931343897"><ph name="PLUGIN_NAME" /> 업데이트가 완료되면 페이지를 새로고침하여 활성화하세요.</translation>
 <translation id="8736288397686080465">이 사이트는 백그라운드에서 업데이트되었습니다.</translation>
 <translation id="8737685506611670901"><ph name="REPLACED_HANDLER_TITLE" /> 대신 <ph name="PROTOCOL" /> 링크 열기</translation>
@@ -4966,6 +4972,7 @@
 <translation id="8780123805589053431">Google에서 이미지 설명 가져오기</translation>
 <translation id="8780443667474968681">음성 검색이 사용 중지되었습니다.</translation>
 <translation id="878069093594050299">이 인증서는 다음 용도로 확인되었습니다.</translation>
+<translation id="8781470833671194250">클릭 위치 안정화</translation>
 <translation id="8781980678064919987">덮개가 닫히면 종료</translation>
 <translation id="8782565991310229362">키오스크 애플리케이션 실행이 취소되었습니다.</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt;님이 프린터(&lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt;) 공유를 요청했습니다.</translation>

@@ -25,6 +25,7 @@
 <translation id="1585657529869845941">Klik på <ph name="BEGIN_BOLD" />Skift alligevel<ph name="END_BOLD" />, hvis denne mulighed vises</translation>
 <translation id="1587223624401073077">Google Chrome bruger dit kamera.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> er skadelig, så Chrome har blokeret den.</translation>
+<translation id="1590588151039584890">Chrome skal standses på denne computer, før du kan opdatere. Det kan medføre, at andre brugere, som er logget ind på computeren, mister ændringer, der ikke er gemt.</translation>
 <translation id="1619887657840448962">For at gøre Chrome mere sikker har vi deaktiveret følgende udvidelse, som ikke er anført i <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> og muligvis er blevet tilføjet, uden at du vidste det.</translation>
 <translation id="1628000112320670027">Få hjælp til Chrome</translation>
 <translation id="1662639173275167396">Chrome OS er realiseret ved hjælp af yderligere <ph name="BEGIN_LINK_CROS_OSS" />open source-software<ph name="END_LINK_CROS_OSS" /> ligesom <ph name="BEGIN_LINK_LINUX_OSS" />Linux (Beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
@@ -164,6 +165,7 @@ Gå til din mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejlednin
 <translation id="5386244825306882791">Den styrer også, hvilken side der vises, når du åbner Chrome eller søger via omnifeltet.</translation>
 <translation id="5430073640787465221">Din præferencefil er beskadiget eller ugyldig. Google Chrome kan ikke gendanne dine præferencer.</translation>
 <translation id="5483595757826856374">{0,plural, =0{Chrome genstarter nu}=1{Chrome genstarter om 1 sekund}one{Chrome genstarter om # sekund}other{Chrome genstarter om # sekunder}}</translation>
+<translation id="5543953544073077331">Der kører andre kopier af Chrome. Luk dem for at opdatere.</translation>
 <translation id="556024056938947818">Google Chrome forsøger at vise adgangskoder.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> kan være skadelig, så Chrome har blokeret den.</translation>
@@ -224,6 +226,7 @@ Gå til din mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejlednin
 <translation id="7473136999113284234">Chrome opdateres automatisk, så du altid har den nyeste version.</translation>
 <translation id="7486227612705979895">Chrome har adgang til Drev, så der kan vises forslag i adresselinjen</translation>
 <translation id="748945194546522577">Denne fil er skadelig, så Chrome har blokeret den. Du beskyttes af Avanceret beskyttelse.</translation>
+<translation id="7531671357096394523">Luk alle kopier af Chrome.</translation>
 <translation id="7535429826459677826">Udviklerversionen af Chrome</translation>
 <translation id="7552219221109926349">Vis Chrome OS på dette sprog</translation>
 <translation id="7561940363513215021">{0,plural, =1{Chrome genstarter om 1 minut}one{Chrome genstarter om # minut}other{Chrome genstarter om # minutter}}</translation>

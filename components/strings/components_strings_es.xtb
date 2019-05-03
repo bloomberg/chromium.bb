@@ -609,6 +609,7 @@
 <translation id="4265872034478892965">Permitido por el administrador</translation>
 <translation id="4275830172053184480">Reiniciar tu dispositivo</translation>
 <translation id="4277028893293644418">Cambiar contraseña</translation>
+<translation id="4279811152705618813">Tu <ph name="DEVICE_TYPE" /> lo gestiona <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Se ha guardado esta tarjeta en tu cuenta de Google}other{Se han guardado estas tarjetas en tu cuenta de Google}}</translation>
 <translation id="42981349822642051">Mostrar</translation>
 <translation id="4302965934281694568">Chou3 (sobre)</translation>

@@ -71,7 +71,6 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">Докладніше про останнє оновлення додатка <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1995660704900986789">Вимкнути</translation>
-<translation id="1999763610967697511">Перетягнути</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">Введіть повідомлення</translation>
 <translation id="2050339315714019657">Портретна</translation>
@@ -200,6 +199,7 @@
 <translation id="394485226368336402">Налаштування звуку</translation>
 <translation id="3962859241508114581">Попередня композиція</translation>
 <translation id="397105322502079400">Обчислення...</translation>
+<translation id="3977512764614765090">Акумулятор заряджений на <ph name="PERCENTAGE" />% і продовжує заряджатися.</translation>
 <translation id="3995138139523574647">пристрій, під’єднаний до порту USB-C (праворуч на задній панелі)</translation>
 <translation id="4017989525502048489">Лазерний вказівник</translation>
 <translation id="4042660782729322247">Ви ділитеся екраном</translation>
@@ -217,6 +217,7 @@
 <translation id="4279490309300973883">Дзеркальне відображення</translation>
 <translation id="4281007048406351813">Додати 1 хвилину до таймера</translation>
 <translation id="4292681942966152062">Активується мережа: <ph name="NETWORK_NAME" /></translation>
+<translation id="4296136865091727875">Видаліть усі сповіщення (<ph name="COUNT" />)</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">Ви натиснули комбінацію клавіш для високого контрасту. Увімкнути?</translation>
 <translation id="4331809312908958774">ОС Chrome</translation>
@@ -501,6 +502,7 @@
 <translation id="8877788021141246043">Налаштуй нагадування</translation>
 <translation id="8878886163241303700">Розширення екрана</translation>
 <translation id="890616557918890486">Змінити джерело</translation>
+<translation id="8909138438987180327">Акумулятор заряджено на <ph name="PERCENTAGE" />.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google Асистент не підтримує цю мову.</translation>
 <translation id="8938800817013097409">Пристрій, під’єднаний до порту USB-C (праворуч на задній панелі)</translation>
@@ -512,6 +514,7 @@
 <translation id="9029474291399787231">Доступне оновлення Adobe Flash Player</translation>
 <translation id="9056839673611986238">Пристрій буде відновлено до попереднього стану</translation>
 <translation id="9070640332319875144">Налаштування Асистента</translation>
+<translation id="9072519059834302790">Акумулятор розрядиться повністю через <ph name="TIME_LEFT" />.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Мікрофон використовується.</translation>
@@ -523,6 +526,7 @@
 <translation id="9193626018745640770">Трансляція на невідомий пристрій</translation>
 <translation id="9194617393863864469">Увійти як інший користувач…</translation>
 <translation id="9210037371811586452">Вихід з уніфікованого режиму робочого стола</translation>
+<translation id="9211681782751733685">До повного зарядження акумулятора залишилося <ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">Вибрати фоновий малюнок</translation>
 <translation id="921989828232331238">Батьки заблокували твій пристрій на весь день</translation>
 <translation id="923686485342484400">Щоб вийти, двічі натисніть Control Shift Q.</translation>

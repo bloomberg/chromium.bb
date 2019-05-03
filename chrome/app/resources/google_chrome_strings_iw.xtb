@@ -21,10 +21,11 @@
 <translation id="1434626383986940139">‏אפליקציות Chrome – קאנארי</translation>
 <translation id="1457721931618994305">‏מעדכן את Google Chrome...</translation>
 <translation id="1469002951682717133">‏מרכז האפליקציות של Chrome</translation>
-<translation id="1553358976309200471">‏עדכן את Chrome</translation>
+<translation id="1553358976309200471">‏כדאי לעדכן את Chrome</translation>
 <translation id="1585657529869845941">אם הלחצן <ph name="BEGIN_BOLD" />אני רוצה להחליף בכל מקרה<ph name="END_BOLD" /> מופיע, צריך ללחוץ עליו</translation>
 <translation id="1587223624401073077">‏Google Chrome משתמש במצלמה שלך.</translation>
 <translation id="1587325591171447154">‏<ph name="FILE_NAME" /> מסוכן, ולכן Chrome חסם אותו.</translation>
+<translation id="1590588151039584890">‏כדי לעדכן יש לסגור את Chrome במחשב הזה. הסגירה עשויה לגרום למשתמשים אחרים המחוברים למחשב לאבד שינויים שלא נשמרו.</translation>
 <translation id="1619887657840448962">‏כדי לשפר את האבטחה של Chrome, השבתנו את התוסף הבא שאינו רשום ב-<ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> וייתכן שנוסף ללא ידיעתך.</translation>
 <translation id="1628000112320670027">‏קבל עזרה בנושא Chrome</translation>
 <translation id="1662639173275167396">‏הפיתוח של Chrome OS אפשרי בזכות <ph name="BEGIN_LINK_CROS_OSS" />תוכנות קוד פתוח<ph name="END_LINK_CROS_OSS" /> נוספות, כמו <ph name="BEGIN_LINK_LINUX_OSS" />Linux (בטא)<ph name="END_LINK_LINUX_OSS" />.</translation>
@@ -164,6 +165,7 @@
 <translation id="5386244825306882791">‏הגדרה זו גם קובעת איזה דף מוצג כשאתה מפעיל את Chrome או מבצע חיפוש  מסרגל הכתובות.</translation>
 <translation id="5430073640787465221">‏קובץ ההעדפות שלך פגום או לא חוקי. Google Chrome לא יכול לשחזר את ההגדרות שלך.</translation>
 <translation id="5483595757826856374">{0,plural, =0{‏Chrome יופעל מחדש עכשיו}=1{‏Chrome יופעל מחדש בעוד שנייה}two{‏Chrome יופעל מחדש בעוד שתי שניות}many{‏Chrome יופעל מחדש בעוד # שניות}other{‏Chrome יופעל מחדש בעוד # שניות}}</translation>
+<translation id="5543953544073077331">‏חלונות אחרים של Chrome פועלים. כדי לעדכן צריך לסגור אותם.</translation>
 <translation id="556024056938947818">‏Google Chrome מנסה להציג סיסמאות.</translation>
 <translation id="5566025111015594046">‏Google Chrome‏ (mDNS-In)</translation>
 <translation id="565744775970812598">‏<ph name="FILE_NAME" /> עלול להיות מסוכן, ולכן Chrome חסם אותו.</translation>
@@ -184,7 +186,7 @@
 <translation id="6113794647360055231">‏Chrome השתפר</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="6173637689840186878">‏<ph name="PAGE_TITLE" /> - Google Chrome בגירסת ביטא</translation>
-<translation id="61852838583753520">‏עדכן את מערכת ההפעלה של Chrome&amp;</translation>
+<translation id="61852838583753520">‏יש לעדכן את מערכת ההפעלה של Chrome&amp;</translation>
 <translation id="6235018212288296708">‏כלל נכנס עבור Google Chrome על מנת לאפשר תנועת mDNS.</translation>
 <translation id="6291089322031436445">‏אפליקציות לגרסת הפיתוח של Chrome</translation>
 <translation id="6291549208091401781">‏Google Chrome כבר מותקן במחשב ונגיש לכל המשתמשים.</translation>
@@ -224,6 +226,7 @@
 <translation id="7473136999113284234">‏Chrome מתעדכן באופן אוטומטי, כך שתמיד נמצאת ברשותך הגרסה העדכנית ביותר.</translation>
 <translation id="7486227612705979895">‏Chrome ייגש ל-Drive שלך כדי להציג הצעות בשורת כתובת האתר</translation>
 <translation id="748945194546522577">‏Chrome‏ חסם את הקובץ הזה כי הוא מסוכן. ההגנה המתקדמת שומרת עליך.</translation>
+<translation id="7531671357096394523">‏יש לסגור את כל החלונות של Chrome.</translation>
 <translation id="7535429826459677826">‏גרסת הפיתוח של Google Chrome</translation>
 <translation id="7552219221109926349">‏הצג את מערכת ההפעלה של Chrome בשפה זו</translation>
 <translation id="7561940363513215021">{0,plural, =1{‏Chrome יופעל מחדש בעוד דקה}two{‏Chrome יופעל מחדש בעוד שתי דקות}many{‏Chrome יופעל מחדש בעוד # דקות}other{‏Chrome יופעל מחדש בעוד # דקות}}</translation>
@@ -279,7 +282,7 @@
 <translation id="8667808506758191620">ה-<ph name="DEVICE_TYPE" /> שלך מעודכן.</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">‏הגדרה זו גם קובעת איזה דף מוצג כשאתה מפעיל את Chrome.</translation>
-<translation id="870251953148363156">‏עדכן את Google Chrome&amp;</translation>
+<translation id="870251953148363156">‏יש לעדכן את Google Chrome&amp;</translation>
 <translation id="8704255848199359374">‏התכונה משתמשת בבדיקת האיות שבה נעשה שימוש בחיפוש Google. הטקסט המוקלד בדפדפן נשלח אל Google. אפשר לשנות תמיד את ההתנהגות הזאת בהגדרות.</translation>
 <translation id="873133009373065397">‏Google Chrome אינו יכול לקבוע או להגדיר את דפדפן ברירת המחדל</translation>
 <translation id="8736674169840206667">‏לפי דרישת מנהל המערכת, יש להפעיל מחדש את Chrome כדי להחיל עדכון</translation>
@@ -294,7 +297,7 @@
 <translation id="909149346112452267">{0,plural, =1{‏Chrome OS תופעל מחדש בעוד שעה אחת}two{‏Chrome OS תופעל מחדש בעוד שעתיים}many{‏Chrome OS תופעל מחדש בעוד # שעות}other{‏Chrome OS תופעל מחדש בעוד # שעות}}</translation>
 <translation id="911206726377975832">למחוק גם את נתוני הגלישה שלך?</translation>
 <translation id="9138603949443464873">‏כדי להחיל את השינויים שביצעת, יש להפעיל מחדש את Chrome</translation>
-<translation id="919706545465235479">‏עדכן את Chrome כדי להתחיל את הסנכרון</translation>
+<translation id="919706545465235479">‏יש לעדכן את Chrome כדי להתחיל את הסנכרון</translation>
 <translation id="924447568950697217">‏הגדר את Chrome בתור דפדפן ברירת המחדל</translation>
 <translation id="989369509083708165">‏Google Chrome הוא דפדפן ברירת המחדל</translation>
 </translationbundle>

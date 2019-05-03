@@ -11,7 +11,7 @@
 <translation id="1025074108959230262">സ്റ്റിക്കി മോഡ് പ്രവർത്തനരഹിതമാക്കി</translation>
 <translation id="1031961866430398710">തുടർന്ന്</translation>
 <translation id="1038643060055067718">ലൈനുകൾ:</translation>
-<translation id="1038795173450935438">ഒരു പേജിലെ ഇനങ്ങളിലൂടെ മുന്നോട്ട് നീക്കാൻ, തിരയൽ + വലത് അമ്പടയാളം അമർത്തുകയോ തിരികെ മടങ്ങാൻ തിരയൽ + ഇടത് അമ്പടയാളം അമർത്തുകയോ ചെയ്യുക. അടുത്ത വരിയിലേക്ക് പോകാൻ തിരയൽ + താഴേക്കുള്ള അമ്പടയാളം അമർത്തുക. മുമ്പത്തെ വരിയിലേക്ക് പോകാൻ തിരയൽ + മുകളിലേക്കുള്ള അമ്പടയാളം ഉപയോഗിക്കുക. നിങ്ങൾക്ക് ക്ലിക്കുചെയ്യേണ്ട ഒരിനത്തിൽ എത്തുകയാണെങ്കിൽ, തിരയൽ + സ്‌പെയ്‌സ് അമർത്തുക.</translation>
+<translation id="1038795173450935438">ഒരു പേജിലെ ഇനങ്ങളിലൂടെ മുന്നോട്ട് നീക്കാൻ, തിരയൽ + വലത് അമ്പടയാളം അമർത്തുകയോ തിരികെ മടങ്ങാൻ തിരയൽ + ഇടത് അമ്പടയാളം അമർത്തുകയോ ചെയ്യുക. അടുത്ത വരിയിലേക്ക് പോകാൻ തിരയൽ + താഴേക്കുള്ള അമ്പടയാളം അമർത്തുക. മുമ്പത്തെ വരിയിലേക്ക് പോകാൻ തിരയൽ + മുകളിലേക്കുള്ള അമ്പടയാളം ഉപയോഗിക്കുക. നിങ്ങൾക്ക് ക്ലിക്ക് ചെയ്യേണ്ട ഒരിനത്തിൽ എത്തുകയാണെങ്കിൽ, തിരയൽ + സ്‌പെയ്‌സ് അമർത്തുക.</translation>
 <translation id="1044777062731150180">തലക്കെട്ടൊന്നുമില്ല</translation>
 <translation id="106222400312645156">rwhdr</translation>
 <translation id="1065552602950927991">അസാധുവായ ഇന്‍‌പുട്ട്</translation>
@@ -58,16 +58,16 @@
 <translation id="1331702245475014624"><ph name="INDEX" /> / <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">പ്രതീക, പദ എക്കോ</translation>
 <translation id="1334570596456017464">സബ്‌സ്‌ക്രി‌പ്‌റ്റ്</translation>
-<translation id="1339428534620983148">മുൻ പട്ടിക നിര</translation>
+<translation id="1339428534620983148">മുൻ പട്ടിക കോളം</translation>
 <translation id="1342835525016946179">ലേഖനം</translation>
 <translation id="1346059596910821859">നുറുങ്ങ്</translation>
 <translation id="1346748346194534595">ശരി</translation>
 <translation id="135978014023467274">നിങ്ങൾ ChromeVox 63-ലേക്ക് അപ്‌ഡേറ്റ് ചെയ്‌തിരിക്കുന്നു!</translation>
 <translation id="1360699455582016846"><ph name="ROUTING_KEY_NUMBER" /> റൂട്ടിംഗ് കീയ്ക്ക് ചുവടെയുള്ള ഇനം ക്ലിക്ക് ചെയ്യുക</translation>
-<translation id="136718599399906424">അടുത്ത പട്ടിക നിര</translation>
+<translation id="136718599399906424">അടുത്ത പട്ടിക വരി</translation>
 <translation id="1377925789329510816">ഇത് അവസാനത്തെ തലക്കെട്ടാണ്. ഈ പേജിലെ ആദ്യ തലക്കെട്ട് റാപ്പ് ചെയ്യാൻ തിരയൽ+H അമർത്തുക അല്ലെങ്കിൽ രണ്ടാമത്തെ തലക്കെട്ടിലേക്ക് പോകാൻ തിരയൽ+Shift+H അമർത്തുക.</translation>
 <translation id="138218114945450791">ഇളം നീല</translation>
-<translation id="1383876407941801731">തിരയൂ</translation>
+<translation id="1383876407941801731">തിരയുക</translation>
 <translation id="1385214448885562192">അംഗീകരിക്കുന്നതിന് എന്ററും റദ്ദാക്കുന്നതിന് എസ്‌കേപ്പും അടുത്തതിനായി താഴേക്കും മുമ്പത്തേതിനായി മുകളിലേക്കും അമർത്തുക.</translation>
 <translation id="1396114365388024581">tablst</translation>
 <translation id="1405567553485452995">ഇളം പച്ച</translation>
@@ -79,7 +79,7 @@
 <translation id="1467432559032391204">ഇടത്</translation>
 <translation id="1474557363159888097">മുൻ ആങ്കർ ഒന്നുമില്ല.</translation>
 <translation id="1480046233931937785">ക്രെഡിറ്റുകൾ</translation>
-<translation id="1487494366197411587">Chromebook-ൽ, ഇടത് ഷിഫ്‌റ്റ് കീയുടെ തൊട്ടുമുകളിലുള്ളതാണ് തിരയൽ കീ.</translation>
+<translation id="1487494366197411587">Chromebook-ൽ, ഇടത് Shift കീയുടെ തൊട്ടുമുകളിലുള്ളതാണ് തിരയൽ കീ.</translation>
 <translation id="1499041187027566160">വോളിയം കൂട്ടുക</translation>
 <translation id="1502086903961450562">മുൻ ഗ്രാഫിക്</translation>
 <translation id="1506187449813838456">പിച്ച് വർദ്ധിപ്പിക്കുക</translation>
@@ -118,13 +118,13 @@
 <translation id="1756785467854861272">കടും മജന്ത</translation>
 <translation id="1765245556747822181">ഒരു വിരൽ ഉപയോഗിച്ച് മുകളിലോട്ട് സ്വൈ‌പ്പ് ചെയ്യുക</translation>
 <translation id="1781173782405573156">പാസ് ത്രൂ കീ</translation>
-<translation id="1787176709638001873">പാസ്‌വേഡിനായി വാചകം എഡിറ്റുചെയ്യുക</translation>
+<translation id="1787176709638001873">പാസ്‌വേഡിനായി വാചകം എഡിറ്റ് ചെയ്യുക</translation>
 <translation id="1802710350767629429">അപ്‌ഡേറ്റ് കുറിപ്പുകൾ കാണിക്കുക</translation>
 <translation id="1810107444790159527">പട്ടിക ബോക്സ്</translation>
 <translation id="1812527064848182527">ലാൻഡ്‌സ്‌കേപ്പ്</translation>
 <translation id="1828385960365606039">മേയ്</translation>
 <translation id="1834891354138622109">നിര</translation>
-<translation id="1845944666972354496">സജീവമാക്കാൻ രണ്ട് തവണ ടാപ്പ് ചെയ്യുക</translation>
+<translation id="1845944666972354496">സജ്ജീവമാക്കാൻ ഡബിൾ ടാപ്പ് ചെയ്യുക</translation>
 <translation id="1846771122725914429">Bluetooth ബ്രെയ്‌ലി ഡിസ്‌പ്ലേ</translation>
 <translation id="1865601187525349519">വാചകത്തിന്റെ അവസാനം</translation>
 <translation id="1876229593313240038">doc</translation>
@@ -154,14 +154,14 @@
 <translation id="2089387485033699258">ml</translation>
 <translation id="2091933974477985526">എഡിറ്റ് ചെയ്യാൻ കഴിയുന്ന മുമ്പത്തെ വാചക ഏരിയ</translation>
 <translation id="2100350898815792233">എല്ലാ വിരാമചിഹ്നങ്ങളും</translation>
-<translation id="2110480898214777136">ഒരു പേജിനോ ഡയലോഗിനോ മറ്റ് കണ്ടെയ്‌നറിനോ ഉള്ളിൽ നിന്ന് ആദ്യം മുതൽ അവസാനം വരെയോ അവസാനം മുതൽ ആദ്യം വരെയോ റാപ്പുചെയ്യുക</translation>
+<translation id="2110480898214777136">ഒരു പേജിനോ ഡയലോഗിനോ മറ്റ് കണ്ടെയ്‌നറിനോ ഉള്ളിൽ നിന്ന് ആദ്യം മുതൽ അവസാനം വരെയോ അവസാനം മുതൽ ആദ്യം വരെയോ റാപ്പ് ചെയ്യുക</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">ആക്‌സസ് കീ:<ph name="KEY" /></translation>
 <translation id="2127747486437921899">ഇറ്റാലിക്ക്</translation>
 <translation id="2138345533858834403">സ്‌ക്രീനിന്റെ മുകൾഭാഗത്തുള്ള ChromeVox പാനലിൽ പുതുക്കാവുന്ന ബ്രെയ്‌ലി ഡിസ്‌പ്ലേ ഔട്ട്പുട്ട് സൃ‌ഷ്‌ടിക്കുന്നു.</translation>
 <translation id="2163782704988363449">സംശോധന പട്ടിക</translation>
-<translation id="2169714232367507776">നിലവിലെ ഇനത്തിൽ ക്ലിക്കുചെയ്യുക</translation>
-<translation id="2179452035581866348">നിങ്ങൾക്ക് പ്രധാനപ്പെട്ട കൂടുതൽ വിവരങ്ങൾ നൽകാൻ ChromeVox ശബ്‌ദങ്ങൾ ഉപയോഗിക്കുന്നു. ഓരോ ശബ്‌ദത്തിന്റെയും അർത്ഥം മനസ്സിലാക്കി കൂടുതൽ വേഗത്തിൽ നാവിഗേറ്റുചെയ്യാൻ നിങ്ങൾക്ക് ഈ ശബ്‌ദങ്ങൾ ഉപയോഗിക്കാം. കൂടുതൽ പരിചിതമായ ശേഷം, സംഭാഷണത്തിലെ വെർബോസ് വിവരണങ്ങൾ ഓഫാക്കി, പേജിനെ കുറിച്ചുള്ള സുപ്രധാന വിവരങ്ങൾക്ക് അവയെ ആശ്രയിക്കാം. ശബ്‌ദങ്ങളുടെ പൂർണ്ണമായ ലിസ്‌റ്റും അവയുടെ അർത്ഥവും ഇവിടെ കാണാം.</translation>
+<translation id="2169714232367507776">നിലവിലെ ഇനത്തിൽ ക്ലിക്ക് ചെയ്യുക</translation>
+<translation id="2179452035581866348">നിങ്ങൾക്ക് പ്രധാനപ്പെട്ട കൂടുതൽ വിവരങ്ങൾ നൽകാൻ ChromeVox ശബ്‌ദങ്ങൾ ഉപയോഗിക്കുന്നു. ഓരോ ശബ്‌ദത്തിന്റെയും അർത്ഥം മനസ്സിലാക്കി കൂടുതൽ വേഗത്തിൽ നാവിഗേറ്റ് ചെയ്യാൻ നിങ്ങൾക്ക് ഈ ശബ്‌ദങ്ങൾ ഉപയോഗിക്കാം. കൂടുതൽ പരിചിതമായ ശേഷം, സംഭാഷണത്തിലെ വെർബോസ് വിവരണങ്ങൾ ഓഫാക്കി, പേജിനെ കുറിച്ചുള്ള സുപ്രധാന വിവരങ്ങൾക്ക് അവയെ ആശ്രയിക്കാം. ശബ്‌ദങ്ങളുടെ പൂർണ്ണമായ ലിസ്‌റ്റും അവയുടെ അർത്ഥവും ഇവിടെ കാണാം.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{ക്ലോസ് പരാന്തിസിസ്}other{# ക്ലോസ് പരാന്തിസിസുകൾ}}</translation>
 <translation id="2197863150503783129">സാഡിൽ ബ്രൗൺ</translation>
 <translation id="2199994615414171367">മുമ്പത്തെ മാത്ത്</translation>
@@ -324,7 +324,7 @@
 <translation id="3299925995433437805">സന്ദർശിച്ച അടുത്ത ലിങ്കൊന്നുമില്ല.</translation>
 <translation id="3300348286427369683">റിച്ച് ടെക്‌സ്റ്റ് പിന്തുണ. ജംബ് കമാൻഡുകളും ബ്രെയിലി കഴ്‌സർ റൂട്ടിംഗും തിരഞ്ഞെടുപ്പും മറ്റും ഉൾപ്പെടെ, റിച്ച് ടെക്‌സ്റ്റ് ഫീൽഡുകളെ ChromeVox ഇപ്പോൾ പിന്തുണയ്ക്കുന്നു.</translation>
 <translation id="3304756947457041303">റിച്ച് ടെക്‌സ്‌റ്റ് സൂചന ഇഷ്‌ടാനുസൃതമാക്കുക</translation>
-<translation id="3307886118343381874">പട്ടികയുടെ അവസാനം പോകുക</translation>
+<translation id="3307886118343381874">പട്ടികയുടെ അവസാനത്തിലേക്ക് പോകുക</translation>
 <translation id="3311969765485641742">അലേർട്ടുകൾ അവലോകനം ചെയ്യാൻ Alt+Shift+A അമർത്തുക</translation>
 <translation id="3312997241656799641">സന്ദർശിച്ച അടുത്ത ലിങ്ക്</translation>
 <translation id="3313245066383501820">ChromeVox മോഡിഫയർ കീ</translation>
@@ -359,7 +359,7 @@
 <translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{ചോദ്യചിഹ്നം}other{# ചോദ്യചിഹ്നങ്ങൾ}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{കാരറ്റ്}other{# കാരറ്റുകൾ}}</translation>
-<translation id="352577523970648069">എഡിറ്റുചെയ്യാവുന്ന ഒരു ടെക്‌സ്‌റ്റ് ഫീൽഡ്</translation>
+<translation id="352577523970648069">എഡിറ്റ് ചെയ്യാവുന്ന ഒരു ടെക്‌സ്‌റ്റ് ഫീൽഡ്</translation>
 <translation id="3549141990712742152"><ph name="TEXT" /> മുറിക്കുക.</translation>
 <translation id="3549680091535286226">സംസാരിക്കുന്നത് താൽക്കാലികമായി നിർത്താൻ രണ്ട് വിരലുകൾ ഉപയോഗിച്ച് ടാപ്പ് ചെയ്യുക</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, ചെക്ക്‌ബോക്സ് ചെക്ക് ചെയ്‌തിട്ടില്ല</translation>
@@ -428,7 +428,7 @@
 <translation id="4053520724192563562">ലൈം ഗ്രീൻ</translation>
 <translation id="4054936709456751127">sts</translation>
 <translation id="4058278702844053247">പേജ് ലോഡ് ചെയ്യൽ പുരോഗതിയിലാണ്</translation>
-<translation id="4065205963140826639">'അടുത്തത്' ബട്ടൺ കണ്ടെത്താൻ ഇപ്പോൾ തിരയൽ + വലത് അമ്പടയാളം ഉപയോഗിച്ച് പരീക്ഷിച്ചുനോക്കൂ, തുടർന്ന് അതിൽ ക്ലിക്കുചെയ്യാൻ തിരയൽ + സ്‌പെയ്‌സ് അമർത്തുക.</translation>
+<translation id="4065205963140826639">'അടുത്തത്' ബട്ടൺ കണ്ടെത്താൻ ഇപ്പോൾ തിരയൽ + വലത് അമ്പടയാളം ഉപയോഗിച്ച് പരീക്ഷിച്ചുനോക്കൂ, തുടർന്ന് അതിൽ ക്ലിക്ക് ചെയ്യാൻ തിരയൽ + സ്‌പെയ്‌സ് അമർത്തുക.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{ടിൽഡ്}other{# ടിൽഡുകൾ}}</translation>
 <translation id="4086311032171418648">'അറിയുക മോഡ്' നിർത്തുന്നു.</translation>
 <translation id="409334809956508737">മുമ്പത്തെ ഒബ്‌ജക്റ്റ്</translation>
@@ -443,7 +443,7 @@
 <translation id="4159784952369912983">പര്‍പ്പിള്‍</translation>
 <translation id="4161104397932142764">{COUNT,plural, =1{സെക്കൻഡ്}other{സെക്കൻഡ്}}</translation>
 <translation id="4161663686871496107">ChromeVox സംഭാഷണ ഫീഡ്‌ബാക്ക് തയ്യാറാണ്</translation>
-<translation id="4173994908659439270">എഡിറ്റുചെയ്യാൻ കഴിയുന്ന അടുത്ത വാചക ഫീൽഡ് ഒന്നുമില്ല.</translation>
+<translation id="4173994908659439270">എഡിറ്റ് ചെയ്യാൻ കഴിയുന്ന അടുത്ത വാചക ഫീൽഡ് ഒന്നുമില്ല.</translation>
 <translation id="4176463684765177261">അപ്രാപ്‌തമാക്കി</translation>
 <translation id="4187322598335821254">ലൈൻ അനുസരിച്ച് നീക്കുന്നതിന് മുകളിലേക്കോ താഴേക്കോ സ്വൈപ്പ് ചെയ്യുക</translation>
 <translation id="4188530942454211480">മുമ്പത്തെ വാക്യം</translation>
@@ -549,8 +549,8 @@
 <translation id="4850023505158945298">മുൻ സമാന ഘടകം.</translation>
 <translation id="4862744964787595316">ബോൾഡ് അല്ല</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
-<translation id="4867316986324544967">TTS ലോഗിംഗ് പ്രവർത്തനക്ഷമമാക്കുക</translation>
-<translation id="4877261390094455813">ഒരു തിരയൽ ചോദ്യം നൽകുക.</translation>
+<translation id="4867316986324544967">TTS ലോഗിൻ പ്രവർത്തനക്ഷമമാക്കുക</translation>
+<translation id="4877261390094455813">തിരയൽ പദം നൽകുക.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="4892105484979139179">കടും സിയാൻ</translation>
 <translation id="489907760999452556">ആന്തരിക ലിങ്ക്</translation>
@@ -587,7 +587,7 @@
 <translation id="5085453135206054947">പെയിൽ വയലറ്റ് റെഡ്</translation>
 <translation id="5087864757604726239">തിരികെ</translation>
 <translation id="5098541983634824365">ഗ്രിഡ് ഉപേക്ഷിക്കുന്നു.</translation>
-<translation id="5102981729317424850">ഉപകരണ ബാർ</translation>
+<translation id="5102981729317424850">ടൂൾ ബാർ</translation>
 <translation id="5105050547967751155">rq</translation>
 <translation id="5106547198195128110">ഈ പുതിയ റിലീസിൽ ആവേശകരമായ ചില മാറ്റങ്ങൾ ഞങ്ങൾ ഉൾപ്പെടുത്തിയിരിക്കുന്നു; പുതിയത് എന്തൊക്കെയെന്ന് കാണുക:</translation>
 <translation id="5110983769041734144">മുൻ ഫോം ഫീൽഡ് ഒന്നുമില്ല.</translation>
@@ -641,7 +641,7 @@
 <translation id="5485036206801896268">മുൻ ഗ്രാഫിക് ഒന്നുമില്ല.</translation>
 <translation id="5486947920110100234">അടുത്ത ജംപ് പോയിന്റ് ഒന്നുമില്ല.</translation>
 <translation id="549602578321198708">പദം</translation>
-<translation id="5500932716852106146">എഡിറ്റുചെയ്യാൻ കഴിയുന്ന മുൻ വാചക ഫീൽഡ് ഒന്നുമില്ല.</translation>
+<translation id="5500932716852106146">എഡിറ്റ് ചെയ്യാൻ കഴിയുന്ന മുൻ വാചക ഫീൽഡ് ഒന്നുമില്ല.</translation>
 <translation id="5502713021410870035">സെപ്റ്റംബർ</translation>
 <translation id="5507663321906818013">ബെഞ്ച്മാർക്ക് ഡീബഗ് ചെയ്യുക</translation>
 <translation id="551361796444814639">മീഡിയം ബ്ലൂ</translation>
@@ -655,12 +655,12 @@
 <translation id="5562645715554321347">hdnggrp</translation>
 <translation id="5574412348552378458">ChromeVox "അറിയുക" മോഡ്</translation>
 <translation id="5583640892426849032">ബാക്ക്‌സ്പെയ്‌സ്</translation>
-<translation id="5585044216466955529">വാചകം എഡിറ്റ് ചെയ്യുക, ഇമെയിൽ എൻട്രി</translation>
+<translation id="5585044216466955529">വാചകം എഡിറ്റുചെയ്യുക, ഇമെയിൽ എൻട്രി</translation>
 <translation id="5586942249556966598">ഒന്നും ചെയ്യരുത്</translation>
 <translation id="5597170376237141345">അടുത്ത ചെക്ക്ബോക്സ്</translation>
 <translation id="5597933780944041114">അടുത്ത ശീർഷകം ഒന്നുമില്ല.</translation>
 <translation id="5598905979683743333"><ph name="NAME" />, റേഡിയോ ബട്ടൺ തിരഞ്ഞെടുത്തത് മാറ്റി</translation>
-<translation id="5601172225407283979">സ്ഥിര പ്രവർത്തനം നിർവഹിക്കുക</translation>
+<translation id="5601172225407283979">ഡിഫോൾട്ട് പ്രവർത്തനം നിറവേറ്റുക</translation>
 <translation id="5608798115546226984">യാന്ത്രികപൂർത്തീകരണം ഇൻലൈൻ</translation>
 <translation id="561939826962581046">സമയം</translation>
 <translation id="5623778242535476823">rbtn</translation>
@@ -680,14 +680,14 @@
 <translation id="5703716265115423771">വോളിയം കുറയ്‌ക്കുക</translation>
 <translation id="5709192780268610569">ദൈർഘ്യമേറിയ വിവരണങ്ങളൊന്നുമില്ല</translation>
 <translation id="5712244464475377681">popbtn</translation>
-<translation id="5712338278108304766">അടുത്ത പട്ടിക നിര</translation>
+<translation id="5712338278108304766">അടുത്ത പട്ടിക കോളം</translation>
 <translation id="571866080859340309">പര്യവേക്ഷണ ഗ്രൂപ്പുകൾ</translation>
 <translation id="5725079927589231571">ഇളം സ്‌റ്റീൽ ബ്ലൂ</translation>
 <translation id="5728409797179002635">പട്ടികയൊന്നും കണ്ടെത്തിയില്ല.</translation>
 <translation id="5729047866208036762">ഗണിതം അടുത്തറിയാൻ മുകളിലേക്കോ താഴേക്കോ ഇടത്തോട്ടോ വലത്തോട്ടോ അമർത്തുക.</translation>
 <translation id="5732189279857692565">ഇത് രണ്ടാമത്തെ തലക്കെട്ടാണ്. തുടരൂ; തിരയൽ+H അല്ലെങ്കിൽ തിരയൽ+Shift+H അമർത്തുക</translation>
 <translation id="5748623122140342504">മുൻ നില 5 ശീർഷകം</translation>
-<translation id="5750633686117194034">മോഡിഫയർ ഒന്നും അമർത്തിയില്ല; ഒന്നോ അതിലധികമോ മോഡിഫയറുകൾ അമർത്തിപ്പിടിക്കുക; പൂർത്തിയാക്കിക്കഴിഞ്ഞാൽ വിരലുകൾ എടുക്കുക, തുടർന്ന് നിങ്ങൾ സജ്ജമാക്കിയ കീകൾ കേൾക്കും. പുറത്തുകടക്കാൻ ടാബ് അമർത്തുക.</translation>
+<translation id="5750633686117194034">മോഡിഫയർ ഒന്നും അമർത്തിയില്ല; ഒന്നോ അതിലധികമോ മോഡിഫയറുകൾ അമർത്തിപ്പിടിക്കുക; പൂർത്തിയാകുമ്പോൾ വിരലുകൾ എടുക്കുക, തുടർന്ന് നിങ്ങൾ സജ്ജമാക്കിയ കീകൾ കേൾക്കും. പുറത്തുകടക്കാൻ ടാബ് അമർത്തുക.</translation>
 <translation id="5760594853119905566">അനുബന്ധം</translation>
 <translation id="5788275253279308023">അദൃശ്യ വിൻഡോ <ph name="TITLE" /> ടാബ്</translation>
 <translation id="5805940204952508776">രണ്ട് വിരലുകൾ ഉപയോഗിച്ച് ടാപ്പ് ചെയ്യുക</translation>
@@ -774,7 +774,7 @@
 <translation id="6417265370957905582">Google അസിസ്‌റ്റന്റ്</translation>
 <translation id="641759969622533235">{COUNT,plural, =1{കോളൻ}other{# കോളനുകൾ}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />, മെനു</translation>
-<translation id="6444046323172968959">അലേർട്ട് ഡയലോഗ്</translation>
+<translation id="6444046323172968959">മുന്നറിയിപ്പ് ഡയലോഗ്</translation>
 <translation id="6452403590345320472">ഉള്ളടക്ക പട്ടിക</translation>
 <translation id="6454456397828627257">വശങ്ങളിലായി</translation>
 <translation id="6459511626086141404">ഫ്ലാറ്റ് കീമാപ്പ്</translation>
@@ -916,9 +916,9 @@ Chrome ബ്രൗസർ മെനു തുറക്കാൻ, ആൾട്ട
 <translation id="7408482676469142474">tbl</translation>
 <translation id="7420313809195758138">മറ്റ് കാര്യങ്ങൾക്ക് (പേര് പോലുള്ള) മുമ്പ് ഒരു ഇനത്തെക്കുറിച്ചുള്ള വിവരങ്ങൾ ദൃശ്യമാക്കുക.</translation>
 <translation id="7425395583360211003">മടങ്ങുക</translation>
-<translation id="7434509671034404296">വികാസകന്‍</translation>
+<translation id="7434509671034404296">ഡെവലപ്പർ</translation>
 <translation id="743783356331413498">ഉദാഹരണം</translation>
-<translation id="7439060726180460871">ഡയറക്‌ടറി</translation>
+<translation id="7439060726180460871">ഡയറക്‌റ്ററി</translation>
 <translation id="744163271241493234">pwded</translation>
 <translation id="7491962110804786152">ടാബ്</translation>
 <translation id="7492049978501397201">ഡയലോഗ് നൽകി</translation>
@@ -947,7 +947,7 @@ Chrome ബ്രൗസർ മെനു തുറക്കാൻ, ആൾട്ട
 <translation id="7668307052366682650">{COUNT,plural, =1{മണിക്കൂർ}other{മണിക്കൂർ}}</translation>
 <translation id="7674576868851035240">അടുത്ത ലിങ്ക്</translation>
 <translation id="7674768236845044097">അടയാളപ്പെടുത്തുക</translation>
-<translation id="7684431668231950609">വാചകം എഡിറ്റ് ചെയ്യുക, URL എൻട്രി</translation>
+<translation id="7684431668231950609">വാചകം എഡിറ്റുചെയ്യുക, URL എൻട്രി</translation>
 <translation id="7685589220304187312">tlbar</translation>
 <translation id="7693840228159394336">മുൻ റേഡിയോ ബട്ടൺ</translation>
 <translation id="769900455782717361">ടെക്‌സ്റ്റ് ഫോർമാറ്റിംഗ്.
@@ -963,7 +963,7 @@ Chrome ബ്രൗസർ മെനു തുറക്കാൻ, ആൾട്ട
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, പാസ്‌വേഡ് വാചക ബോക്സ്</translation>
 <translation id="7776293189010177726">ChromeVox മെനുകൾ തുറക്കുക</translation>
 <translation id="7800558923657349506">ഉപസംഹാരം</translation>
-<translation id="7805247615045262757">സ്ഥിര നാവിഗേഷൻ</translation>
+<translation id="7805247615045262757">ഡിഫോൾട്ട് നാവിഗേഷൻ</translation>
 <translation id="7805768142964895445">നില</translation>
 <translation id="7810781339813764006">അടുത്ത ഗ്രൂപ്പ്</translation>
 <translation id="7819187121850078213">വിൻഡോ <ph name="TITLE" /> ടാബ്</translation>
@@ -992,7 +992,7 @@ Chrome ബ്രൗസർ മെനു തുറക്കാൻ, ആൾട്ട
 <translation id="8033827949643255796">തിരഞ്ഞെടുത്തു</translation>
 <translation id="8035962149453661158">പരമാവധി:<ph name="X" /></translation>
 <translation id="8037651341025652929">നിഗമനം</translation>
-<translation id="8042761080832772327">വാചകം എഡിറ്റുചെയ്യുക, തിരയൽ എൻട്രി</translation>
+<translation id="8042761080832772327">വാചകം എഡിറ്റ് ചെയ്യുക, തിരയൽ എൻട്രി</translation>
 <translation id="8049189770492311300">ടൈമർ</translation>
 <translation id="8056782883599416672">{"ar": "അറബിക്",
         "as": "അസമീസ്",
@@ -1143,7 +1143,7 @@ Chrome ബ്രൗസർ മെനു തുറക്കാൻ, ആൾട്ട
 <translation id="8638532244051952400">നിലവിലെ സെൽ കോർഡിനേറ്റുകൾ അറിയിക്കുക</translation>
 <translation id="8640369214276455272">വൈറ്റ് സ്‌മോക്ക്</translation>
 <translation id="8650576015643545550">മുൻ ലിസ്റ്റ് ഒന്നുമില്ല.</translation>
-<translation id="8651481478098336970">വോളിയം മ്യൂട്ടുചെയ്യുക</translation>
+<translation id="8651481478098336970">വോളിയം മ്യൂട്ട് ചെയ്യുക</translation>
 <translation id="8653646212587894517">ലിങ്കുകളുടെ ലിസ്റ്റ് കാണിക്കുക</translation>
 <translation id="8656888282555543604">ബ്രെയിലി ലോഗിംഗ് പ്രവർത്തനക്ഷമമാക്കുക</translation>
 <translation id="8664519043722036194">സെക്കന്‍ഡുകള്‍</translation>
@@ -1208,7 +1208,7 @@ Chrome ബ്രൗസർ മെനു തുറക്കാൻ, ആൾട്ട
 <translation id="9153606228985488238"><ph name="PERCENT" /> ശതമാനം ആവൃത്തി</translation>
 <translation id="9160096769946561184">നിലവിലെ നിരയുടെ അവസാനം പോകുക</translation>
 <translation id="9173115498289768110"><ph name="PERCENT" /> ശതമാനം ശബ്‌ദം</translation>
-<translation id="9178973770513562274">ബ്രൗസുചെയ്യുന്നതിന് മുകളിലേക്കും താഴേക്കുമുള്ള കീകൾ ഉപയോഗിക്കുക അല്ലെങ്കിൽ തിരയുന്നതിന് ടൈപ്പുചെയ്യുക.</translation>
+<translation id="9178973770513562274">ബ്രൗസ് ചെയ്യുന്നതിന് മുകളിലേക്കും താഴേക്കുമുള്ള കീകൾ ഉപയോഗിക്കുക അല്ലെങ്കിൽ തിരയുന്നതിന് ടൈപ്പ് ചെയ്യുക.</translation>
 <translation id="9192904702577636854">മാർക്യൂ</translation>
 <translation id="9208241857935108694">ആൻ്റിക് വൈറ്റ്</translation>
 <translation id="9212322457209634662">അടുത്ത വിഭാഗങ്ങളൊന്നുമില്ല.</translation>

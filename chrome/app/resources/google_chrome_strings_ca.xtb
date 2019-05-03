@@ -25,6 +25,7 @@
 <translation id="1585657529869845941">Si es mostra l'opció <ph name="BEGIN_BOLD" />Canvia igualment<ph name="END_BOLD" />, fes-hi clic</translation>
 <translation id="1587223624401073077">Google Chrome està utilitzant la càmera.</translation>
 <translation id="1587325591171447154">Chrome ha bloquejat <ph name="FILE_NAME" /> perquè és perillós.</translation>
+<translation id="1590588151039584890">Per fer l'actualització, cal que Chrome deixi d'executar-se en aquest ordinador. Com a conseqüència, és possible que altres usuaris que hagin iniciat la sessió en aquest ordinador perdin els canvis que no hagin desat.</translation>
 <translation id="1619887657840448962">Per tal que Chrome sigui més segur, hem desactivat algunes de les extensions que no figuren a <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> i que és possible que s'hagin afegit sense que ho sapigueu.</translation>
 <translation id="1628000112320670027">Obtén ajuda per a Chrome</translation>
 <translation id="1662639173275167396">Chrome OS és possible gràcies a <ph name="BEGIN_LINK_CROS_OSS" />programari lliure<ph name="END_LINK_CROS_OSS" /> addicional, com ara <ph name="BEGIN_LINK_LINUX_OSS" />Linux (versió beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
@@ -164,6 +165,7 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="5386244825306882791">També controla la pàgina que es mostra quan inicieu Chrome o quan feu una cerca des de l'omnibox.</translation>
 <translation id="5430073640787465221">El fitxer de preferències està malmès o no és vàlid. Google Chrome no pot recuperar la configuració.</translation>
 <translation id="5483595757826856374">{0,plural, =0{Chrome es reiniciarà ara}=1{Chrome es reiniciarà d'aquí a 1 segon}other{Chrome es reiniciarà d'aquí a # segons}}</translation>
+<translation id="5543953544073077331">S'estan executant altres còpies de Chrome. Tanca-les per poder fer l'actualització.</translation>
 <translation id="556024056938947818">Google Chrome està provant de mostrar les contrasenyes.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598">Chrome ha bloquejat <ph name="FILE_NAME" /> perquè pot ser perillós.</translation>
@@ -224,6 +226,7 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="7473136999113284234">Chrome s'actualitza automàticament perquè en tingueu sempre la versió més recent.</translation>
 <translation id="7486227612705979895">Chrome accedirà a Drive per fer suggeriments a la barra d'adreces</translation>
 <translation id="748945194546522577">Chrome ha bloquejat aquest fitxer perquè és perillós. La Protecció avançada et protegeix.</translation>
+<translation id="7531671357096394523">Tanca totes les còpies de Chrome.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Mostra Chrome OS en aquest idioma</translation>
 <translation id="7561940363513215021">{0,plural, =1{Chrome es reiniciarà d'aquí a 1 minut}other{Chrome es reiniciarà d'aquí a # minuts}}</translation>

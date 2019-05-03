@@ -71,7 +71,6 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">Ketahui lebih lanjut tentang kemas kini <ph name="SYSTEM_APP_NAME" /> yang terbaharu</translation>
 <translation id="1995660704900986789">Matikan kuasa</translation>
-<translation id="1999763610967697511">Seret dan lepas</translation>
 <translation id="2012624427112548395">Ctrl+Cari+H</translation>
 <translation id="2016340657076538683">Taip mesej</translation>
 <translation id="2050339315714019657">Potret</translation>
@@ -201,6 +200,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="394485226368336402">Tetapan audio</translation>
 <translation id="3962859241508114581">Lagu Sebelumnya</translation>
 <translation id="397105322502079400">Mengira...</translation>
+<translation id="3977512764614765090">Kuasa bateri pada tahap <ph name="PERCENTAGE" />% dan sedang dicas.</translation>
 <translation id="3995138139523574647">Peranti USB-C (port belakang sebelah kanan)</translation>
 <translation id="4017989525502048489">Penuding laser</translation>
 <translation id="4042660782729322247">Anda berkongsi skrin anda</translation>
@@ -218,6 +218,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="4279490309300973883">Pencerminan</translation>
 <translation id="4281007048406351813">Tambah 1 min pada pemasa</translation>
 <translation id="4292681942966152062">Mengaktifkan <ph name="NETWORK_NAME" /></translation>
+<translation id="4296136865091727875">Kosongkan kesemua <ph name="COUNT" /> pemberitahuan</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">Anda menekan pintasan papan kekunci untuk kontras tinggi. Adakah anda ingin menghidupkannya?</translation>
 <translation id="4331809312908958774">OS Chrome</translation>
@@ -502,6 +503,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="8877788021141246043">Tetapkan peringatan</translation>
 <translation id="8878886163241303700">Meluaskan skrin</translation>
 <translation id="890616557918890486">Tukar sumber</translation>
+<translation id="8909138438987180327">Kuasa bateri pada tahap <ph name="PERCENTAGE" /> peratus.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google Assistant tidak bertutur dalam bahasa ini.</translation>
 <translation id="8938800817013097409">Peranti USB-C (port kanan di belakang)</translation>
@@ -513,6 +515,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="9029474291399787231">Kemas kini Adobe Flash Player tersedia</translation>
 <translation id="9056839673611986238">Peranti akan dibalikkan</translation>
 <translation id="9070640332319875144">Tetapan Pembantu</translation>
+<translation id="9072519059834302790"><ph name="TIME_LEFT" /> sehingga kuasa bateri habis.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Mikrofon sedang digunakan.</translation>
@@ -524,6 +527,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="9193626018745640770">Menghantar pada penerima yang tidak diketahui</translation>
 <translation id="9194617393863864469">Log masuk pengguna lain...</translation>
 <translation id="9210037371811586452">Keluar daripada mod desktop bersatu</translation>
+<translation id="9211681782751733685">Tinggal <ph name="TIME_REMAINING" /> sehingga bateri dicas sepenuhnya.</translation>
 <translation id="9215934040295798075">Tetapkan kertas dinding</translation>
 <translation id="921989828232331238">Ibu/bapa anda mengunci peranti untuk hari ini</translation>
 <translation id="923686485342484400">Tekan Tekan Shift Q dua kali untuk keluar.</translation>

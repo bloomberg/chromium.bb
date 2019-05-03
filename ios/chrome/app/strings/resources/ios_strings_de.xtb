@@ -98,6 +98,7 @@
 <translation id="2320166752086256636">Tastatur ausblenden</translation>
 <translation id="2339560363438331454">Synchronisierung und Google-Dienste</translation>
 <translation id="2351097562818989364">Übersetzungseinstellungen zurückgesetzt</translation>
+<translation id="2359043044084662842">Übersetzen</translation>
 <translation id="2359808026110333948">Weiter</translation>
 <translation id="2360196772093551345">Mobile Version anfordern</translation>
 <translation id="2381405137052800939">Grundeinstellungen</translation>
@@ -292,6 +293,7 @@ Handoff muss auch im Abschnitt "Allgemein" Ihrer Einstellungen aktiviert sein un
 <translation id="5659593005791499971">E-Mail-Adresse</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Version <ph name="PRODUCT_VERSION" /></translation>
+<translation id="5711039611392265845">Weitere Einstellungen in Verbindung mit Datenschutz, Sicherheit und der Erhebung von Daten finden Sie unter <ph name="BEGIN_LINK" />Synchronisierung und Google-Dienste<ph name="END_LINK" />.</translation>
 <translation id="5728700505257787410">Beim Anmelden in Ihrem Konto ist ein Fehler aufgetreten.</translation>
 <translation id="5737974891429562743">Die Anmeldeinformationen für das Konto sind veraltet. Aktualisieren Sie sie zur Synchronisierung.</translation>
 <translation id="5738887413654608789">Dann können Sie relevante Webseiten zu Objekten in Ihrer Umgebung entdecken.</translation>

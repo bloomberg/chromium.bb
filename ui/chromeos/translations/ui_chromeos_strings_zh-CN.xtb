@@ -501,6 +501,7 @@
 <translation id="6979158407327259162">Google 云端硬盘</translation>
 <translation id="6990081529015358884">空间不足</translation>
 <translation id="6998711733709403587">已选择 <ph name="SELCTED_FOLDERS_COUNT" /> 个文件夹</translation>
+<translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">安装失败。</translation>
 <translation id="7040138676081995583">打开方式...</translation>
 <translation id="7100897339030255923">已选择 <ph name="COUNT" /> 项</translation>

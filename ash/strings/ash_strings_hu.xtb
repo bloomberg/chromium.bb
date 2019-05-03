@@ -71,7 +71,6 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">További információ a legújabb <ph name="SYSTEM_APP_NAME" />-frissítésről</translation>
 <translation id="1995660704900986789">Kikapcsolás</translation>
-<translation id="1999763610967697511">Húzás</translation>
 <translation id="2012624427112548395">Ctrl+Keresés+H</translation>
 <translation id="2016340657076538683">Írja be az üzenetet</translation>
 <translation id="2050339315714019657">Álló</translation>
@@ -201,6 +200,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="394485226368336402">Hangbeállítások</translation>
 <translation id="3962859241508114581">Előző szám</translation>
 <translation id="397105322502079400">Számítás…</translation>
+<translation id="3977512764614765090">Az akkumulátor töltöttsége <ph name="PERCENTAGE" />%, és a töltés jelenleg is folyamatban van.</translation>
 <translation id="3995138139523574647">C típusú USB-vel kompatibilis eszköz (jobb hátsó port)</translation>
 <translation id="4017989525502048489">Lézermutató</translation>
 <translation id="4042660782729322247">Jelenleg megosztja a képernyőt</translation>
@@ -218,6 +218,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="4279490309300973883">Tükrözés</translation>
 <translation id="4281007048406351813">1 perc hozzáadása az időzítőhöz</translation>
 <translation id="4292681942966152062"><ph name="NETWORK_NAME" /> aktiválása</translation>
+<translation id="4296136865091727875">Az összes (<ph name="COUNT" />) értesítés törlése</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">Lenyomta a nagy kontraszt billentyűparancsát. Bekapcsolja a funkciót?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -502,6 +503,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="8877788021141246043">Emlékeztető beállítása</translation>
 <translation id="8878886163241303700">Kibővített képernyő</translation>
 <translation id="890616557918890486">Forrás módosítása</translation>
+<translation id="8909138438987180327">Az akkumulátor töltöttsége <ph name="PERCENTAGE" /> százalék.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">A Google Segéd nem beszél ezen a nyelven.</translation>
 <translation id="8938800817013097409">C típusú USB-vel kompatibilis eszköz (jobb hátsó port)</translation>
@@ -513,6 +515,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="9029474291399787231">Rendelkezésre áll az Adobe Flash Player frissítése</translation>
 <translation id="9056839673611986238">Az eszköz korábbi állapotra áll vissza</translation>
 <translation id="9070640332319875144">A Segéd beállításai</translation>
+<translation id="9072519059834302790">Akkumulátor lemerüléséig hátralévő idő: <ph name="TIME_LEFT" />.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">A mikrofon használatban van.</translation>
@@ -524,6 +527,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="9193626018745640770">Átküldés ismeretlen fogadó eszközre</translation>
 <translation id="9194617393863864469">Bejelentkezés másik felhasználóként…</translation>
 <translation id="9210037371811586452">Kilépés az Egységes asztali módból</translation>
+<translation id="9211681782751733685">Akkumulátor teljes feltöltéséig hátralévő idő: <ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">Háttérkép beállítása</translation>
 <translation id="921989828232331238">A szülőd zárolta az eszközt mára</translation>
 <translation id="923686485342484400">Nyomja meg a Ctrl Shift Q billentyűkombinációt kétszer a kijelentkezéshez.</translation>
