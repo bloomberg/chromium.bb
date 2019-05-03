@@ -48,16 +48,15 @@ const TestVideoParam kTestVectors[] = {
   { "park_joy_90p_8_420.y4m", 8, AOM_IMG_FMT_I420, AOM_BITS_8, 0 },
 };
 
-// Speed settings tested
-const int kCpuUsedVectors[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8 };
-
 class RTEndToEndTest
-    : public ::libaom_test::CodecTestWith2Params<TestVideoParam, int>,
+    : public ::libaom_test::CodecTestWith3Params<TestVideoParam, int,
+                                                 unsigned int>,
       public ::libaom_test::EncoderTest {
  protected:
   RTEndToEndTest()
       : EncoderTest(GET_PARAM(0)), test_video_param_(GET_PARAM(1)),
-        cpu_used_(GET_PARAM(2)), psnr_(0.0), nframes_(0) {}
+        cpu_used_(GET_PARAM(2)), psnr_(0.0), nframes_(0),
+        aq_mode_(GET_PARAM(3)) {}
 
   virtual ~RTEndToEndTest() {}
 
@@ -89,6 +88,7 @@ class RTEndToEndTest
       encoder->Control(AV1E_SET_TILE_COLUMNS, 1);
       encoder->Control(AOME_SET_CPUUSED, cpu_used_);
       encoder->Control(AV1E_SET_TUNE_CONTENT, AOM_CONTENT_DEFAULT);
+      encoder->Control(AV1E_SET_AQ_MODE, aq_mode_);
     }
   }
 
@@ -124,6 +124,7 @@ class RTEndToEndTest
  private:
   double psnr_;
   unsigned int nframes_;
+  unsigned int aq_mode_;
 };
 
 class RTEndToEndTestLarge : public RTEndToEndTest {};
@@ -134,8 +135,10 @@ TEST_P(RTEndToEndTest, EndtoEndPSNRTest) { DoTest(); }
 
 AV1_INSTANTIATE_TEST_CASE(RTEndToEndTestLarge,
                           ::testing::ValuesIn(kTestVectors),
-                          ::testing::ValuesIn(kCpuUsedVectors));
+                          ::testing::Range(0, 7),
+                          ::testing::Range<unsigned int>(0, 4));
 
 AV1_INSTANTIATE_TEST_CASE(RTEndToEndTest, ::testing::Values(kTestVectors[0]),
-                          ::testing::Values(kCpuUsedVectors[8]));
+                          ::testing::Range(7, 9),
+                          ::testing::Range<unsigned int>(0, 4));
 }  // namespace
