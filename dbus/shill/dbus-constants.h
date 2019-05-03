@@ -95,7 +95,6 @@ const char kWifiHexSsid[] = "WiFi.HexSSID";
 const char kWifiFrequency[] = "WiFi.Frequency";
 const char kWifiHiddenSsid[] = "WiFi.HiddenSSID";
 const char kWifiPhyMode[] = "WiFi.PhyMode";
-const char kWifiAuthMode[] = "WiFi.AuthMode";
 const char kWifiChannelProperty[] = "WiFi.Channel";
 const char kWifiPreferredDeviceProperty[] = "WiFi.PreferredDevice";
 const char kWifiRoamThresholdProperty[] = "WiFi.RoamThreshold";
