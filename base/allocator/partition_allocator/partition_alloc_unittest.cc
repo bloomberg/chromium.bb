@@ -2226,6 +2226,63 @@ TEST_F(PartitionAllocTest, Bug_897585) {
   PartitionFree(ptr);
 }
 
+TEST_F(PartitionAllocTest, OverrideHooks) {
+  constexpr size_t kOverriddenSize = 1234;
+  constexpr const char* kOverriddenType = "Overridden type";
+  constexpr unsigned char kOverriddenChar = 'A';
+
+  // Marked static so that we can use them in non-capturing lambdas below.
+  // (Non-capturing lambdas convert directly to function pointers.)
+  static volatile bool free_called = false;
+  static void* overridden_allocation = malloc(kOverriddenSize);
+  memset(overridden_allocation, kOverriddenChar, kOverriddenSize);
+
+  PartitionAllocHooks::SetOverrideHooks(
+      [](void** out, int flags, size_t size, const char* type_name) -> bool {
+        if (size == kOverriddenSize && type_name == kOverriddenType) {
+          *out = overridden_allocation;
+          return true;
+        }
+        return false;
+      },
+      [](void* address) -> bool {
+        if (address == overridden_allocation) {
+          free_called = true;
+          return true;
+        }
+        return false;
+      },
+      [](size_t* out, void* address) -> bool {
+        if (address == overridden_allocation) {
+          *out = kOverriddenSize;
+          return true;
+        }
+        return false;
+      });
+
+  void* ptr = PartitionAllocGenericFlags(generic_allocator.root(),
+                                         PartitionAllocReturnNull,
+                                         kOverriddenSize, kOverriddenType);
+  ASSERT_EQ(ptr, overridden_allocation);
+
+  PartitionFree(ptr);
+  EXPECT_TRUE(free_called);
+
+  // overridden_allocation has not actually been freed so we can now immediately
+  // realloc it.
+  free_called = false;
+  ptr = PartitionReallocGenericFlags(generic_allocator.root(),
+                                     PartitionAllocReturnNull, ptr, 1, nullptr);
+  ASSERT_NE(ptr, nullptr);
+  EXPECT_NE(ptr, overridden_allocation);
+  EXPECT_TRUE(free_called);
+  EXPECT_EQ(*(char*)ptr, kOverriddenChar);
+  PartitionFree(ptr);
+
+  PartitionAllocHooks::SetOverrideHooks(nullptr, nullptr, nullptr);
+  free(overridden_allocation);
+}
+
 }  // namespace internal
 }  // namespace base
 
