@@ -509,6 +509,33 @@ TEST(NetLogTest, NetLogNumberValue) {
             SerializedNetLogUint64(std::numeric_limits<uint64_t>::max()));
 }
 
+// Tests that serializing a NetLogEntry with empty parameters omits a value for
+// "params".
+TEST(NetLogTest, NetLogEntryToValueEmptyParams) {
+  // NetLogEntry with a null parameters callback.
+  NetLogEntryData entry_data1(NetLogEventType::REQUEST_ALIVE, NetLogSource(),
+                              NetLogEventPhase::BEGIN, base::TimeTicks(),
+                              nullptr);
+  NetLogEntry entry1(&entry_data1, NetLogCaptureMode::Default());
+
+  // NetLogEntry with a parameters callback that returns a NONE value.
+  NetLogParametersCallback callback2 =
+      base::BindRepeating([](NetLogCaptureMode) { return base::Value(); });
+  NetLogEntryData entry_data2(NetLogEventType::REQUEST_ALIVE, NetLogSource(),
+                              NetLogEventPhase::BEGIN, base::TimeTicks(),
+                              &callback2);
+  NetLogEntry entry2(&entry_data2, NetLogCaptureMode::Default());
+
+  ASSERT_FALSE(entry_data1.parameters_callback);
+  ASSERT_TRUE(entry_data2.parameters_callback);
+
+  ASSERT_TRUE(entry1.ParametersToValue().is_none());
+  ASSERT_TRUE(entry2.ParametersToValue().is_none());
+
+  ASSERT_FALSE(entry1.ToValue().FindKey("params"));
+  ASSERT_FALSE(entry2.ToValue().FindKey("params"));
+}
+
 }  // namespace
 
 }  // namespace net

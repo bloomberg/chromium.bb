@@ -28,9 +28,9 @@ base::Value NetLogEntry::ToValue() const {
   entry_dict.SetInteger("phase", static_cast<int>(data_->phase));
 
   // Set the event-specific parameters.
-  if (data_->parameters_callback) {
-    entry_dict.SetKey("params", data_->parameters_callback->Run(capture_mode_));
-  }
+  base::Value params = ParametersToValue();
+  if (!params.is_none())
+    entry_dict.SetKey("params", std::move(params));
 
   return std::move(entry_dict);
 }
