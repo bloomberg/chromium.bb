@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <map>
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -17,6 +18,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "components/offline_pages/core/client_policy_controller.h"
+#include "components/offline_pages/core/model/delete_page_task.h"
 #include "components/offline_pages/core/offline_page_client_policy.h"
 #include "components/offline_pages/core/offline_page_metadata_store.h"
 #include "components/offline_pages/core/offline_store_utils.h"
@@ -172,14 +174,6 @@ bool DeleteArchiveSync(const base::FilePath& file_path) {
   return base::DeleteFile(file_path, false);
 }
 
-// Deletes a page from the store by |offline_id|.
-bool DeletePageEntryByOfflineIdSync(sql::Database* db, int64_t offline_id) {
-  static const char kSql[] = "DELETE FROM offlinepages_v1 WHERE offline_id = ?";
-  sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
-  statement.BindInt64(0, offline_id);
-  return statement.Run();
-}
-
 std::pair<size_t, DeletePageResult> ClearPagesSync(
     std::map<std::string, LifetimePolicy> temp_namespace_policy_map,
     const base::Time& start_time,
@@ -192,7 +186,7 @@ std::pair<size_t, DeletePageResult> ClearPagesSync(
   for (const auto& page_info : *page_infos) {
     if (!base::PathExists(page_info.file_path) ||
         DeleteArchiveSync(page_info.file_path)) {
-      if (DeletePageEntryByOfflineIdSync(db, page_info.offline_id)) {
+      if (DeletePageTask::DeletePageFromDbSync(page_info.offline_id, db)) {
         pages_cleared++;
         // Reports the time since creation in minutes.
         base::TimeDelta time_since_creation =

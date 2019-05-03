@@ -40,11 +40,10 @@ class PreviewsOfflineHelperTest : public ChromeRenderViewHostTestHarness {
     return item;
   }
 
-  offline_pages::OfflinePageModel::DeletedPageInfo MakeDeletedPageInfo(
-      const std::string& url) {
-    offline_pages::OfflinePageModel::DeletedPageInfo info;
-    info.url = GURL(url);
-    return info;
+  offline_pages::OfflinePageItem MakeDeletedPageItem(const std::string& url) {
+    offline_pages::OfflinePageItem item;
+    item.url = GURL(url);  // Only |url| is needed.
+    return item;
   }
 
  private:
@@ -201,7 +200,7 @@ TEST_F(PreviewsOfflineHelperTest, TestAddRemovePages) {
           MakeAddedPageItem(fresh_page, test_case.original_url, fresh));
     }
     for (const std::string& deleted_page : test_case.delete_pages) {
-      helper->OfflinePageDeleted(MakeDeletedPageInfo(deleted_page));
+      helper->OfflinePageDeleted(MakeDeletedPageItem(deleted_page));
     }
 
     EXPECT_EQ(test_prefs.GetDictionary(kDictKey)->size(),

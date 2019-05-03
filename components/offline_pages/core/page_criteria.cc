@@ -4,6 +4,7 @@
 
 #include "components/offline_pages/core/page_criteria.h"
 
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/offline_pages/core/client_policy_controller.h"
 #include "components/offline_pages/core/offline_page_client_policy.h"
@@ -33,18 +34,14 @@ bool MeetsCriteria(const ClientPolicyController& policy_controller,
     if (client_id.id != tab_id_str)
       return false;
   }
-  if (!criteria.client_ids.empty()) {
-    if (std::find(criteria.client_ids.begin(), criteria.client_ids.end(),
-                  client_id) == criteria.client_ids.end()) {
-      return false;
-    }
+  if (criteria.client_ids &&
+      !base::ContainsValue(criteria.client_ids.value(), client_id)) {
+    return false;
   }
-  if (!criteria.client_namespaces.empty()) {
-    if (std::find(criteria.client_namespaces.begin(),
-                  criteria.client_namespaces.end(),
-                  client_id.name_space) == criteria.client_namespaces.end()) {
-      return false;
-    }
+  if (criteria.client_namespaces &&
+      !base::ContainsValue(criteria.client_namespaces.value(),
+                           client_id.name_space)) {
+    return false;
   }
   if (criteria.supported_by_downloads &&
       !policy_controller.IsSupportedByDownload(client_id.name_space)) {
@@ -82,7 +79,12 @@ bool MeetsCriteria(const ClientPolicyController& policy_controller,
     return false;
   }
 
-  if (criteria.offline_id && criteria.offline_id.value() != item.offline_id)
+  if (criteria.offline_ids &&
+      !base::ContainsValue(criteria.offline_ids.value(), item.offline_id)) {
+    return false;
+  }
+
+  if (criteria.additional_criteria && !criteria.additional_criteria.Run(item))
     return false;
 
   return true;
@@ -93,12 +95,9 @@ std::vector<std::string> PotentiallyMatchingNamespaces(
     const PageCriteria& criteria) {
   std::vector<std::string> matching_namespaces;
   if (criteria.supported_by_downloads || criteria.removed_on_cache_reset) {
-    std::vector<std::string> allowed_namespaces;
-    if (criteria.client_namespaces.empty()) {
-      allowed_namespaces = policy_controller.GetAllNamespaces();
-    } else {
-      allowed_namespaces = criteria.client_namespaces;
-    }
+    std::vector<std::string> allowed_namespaces =
+        criteria.client_namespaces ? criteria.client_namespaces.value()
+                                   : policy_controller.GetAllNamespaces();
     std::vector<std::string> filtered;
     for (const std::string& name_space : allowed_namespaces) {
       if (criteria.supported_by_downloads &&
@@ -111,8 +110,8 @@ std::vector<std::string> PotentiallyMatchingNamespaces(
       }
       matching_namespaces.push_back(name_space);
     }
-  } else if (!criteria.client_namespaces.empty()) {
-    matching_namespaces = criteria.client_namespaces;
+  } else if (criteria.client_namespaces) {
+    matching_namespaces = criteria.client_namespaces.value();
   }
   // no filter otherwise.
 

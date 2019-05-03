@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/optional.h"
 #include "components/offline_pages/core/client_id.h"
 #include "url/gurl.h"
@@ -25,6 +26,11 @@ struct PageCriteria {
   ~PageCriteria();
   PageCriteria(const PageCriteria&);
   PageCriteria(PageCriteria&&);
+
+  enum Order {
+    kDescendingCreationTime,
+    kAscendingAccessTime,
+  };
 
   // If non-empty, the page must match this URL. The provided URL
   // is matched both against the original and the actual URL fields (they
@@ -45,18 +51,24 @@ struct PageCriteria {
   base::Optional<int64_t> file_size;
   // If non-empty, the page's digest must match.
   std::string digest;
-  // If non-empty, the page's namespace must match.
-  std::vector<std::string> client_namespaces;
-  // If non-empty, the page's client_id must match one of these.
-  std::vector<ClientId> client_ids;
+  // If set, the page's namespace must match.
+  base::Optional<std::vector<std::string>> client_namespaces;
+  // If set, the page's client_id must match one of these.
+  base::Optional<std::vector<ClientId>> client_ids;
   // If non-empty, the page's client_id.id must match this.
   std::string guid;
-  // If > 0, returns at most this many pages.
-  size_t maximum_matches = 0;
   // If non-empty, the page's request_origin must match.
   std::string request_origin;
   // If set, the page's offline_id must match.
-  base::Optional<int64_t> offline_id;
+  base::Optional<std::vector<int64_t>> offline_ids;
+  // If non-null, this function is executed for each matching item. If it
+  // returns false, the item will not be returned.
+  base::RepeatingCallback<bool(const OfflinePageItem&)> additional_criteria;
+  // If > 0, returns at most this many pages.
+  size_t maximum_matches = 0;
+  // The order results are returned. Affects which results are dropped with
+  // |maximum_matches|.
+  Order result_order = kDescendingCreationTime;
 };
 
 // Returns true if an offline page with |client_id| could potentially match

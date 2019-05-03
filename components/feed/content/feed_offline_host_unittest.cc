@@ -394,10 +394,10 @@ TEST_F(FeedOfflineHostTest, OfflinePageDeleted) {
   host()->GetOfflineStatus({kUrl1}, base::BindOnce(&IgnoreStatus));
   RunUntilIdle();
   EXPECT_EQ(host()->GetOfflineId(kUrl1).value(), 4);
-  OfflinePageModel::DeletedPageInfo page_info;
-  page_info.url = GURL(kUrl1);
+  OfflinePageItem page_item;
+  page_item.url = GURL(kUrl1);
 
-  host()->OfflinePageDeleted(page_info);
+  host()->OfflinePageDeleted(page_item);
 
   EXPECT_EQ(1U, get_status_notifications().size());
   EXPECT_EQ(kUrl1, get_status_notifications()[0].first);

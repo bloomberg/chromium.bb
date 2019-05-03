@@ -30,7 +30,6 @@ const OfflinePageClientPolicy MakePolicy(const std::string& name_space,
 }  // namespace
 
 ClientPolicyController::ClientPolicyController() {
-  policies_.clear();
   // Manually defining client policies for bookmark and last_n.
   policies_.emplace(
       kBookmarkNamespace,
@@ -122,12 +121,8 @@ ClientPolicyController::ClientPolicyController() {
     const std::string& name = policy_item.first;
     if (policy_item.second.feature_policy.is_removed_on_cache_reset)
       cache_reset_namespaces_.push_back(name);
-    if (policy_item.second.feature_policy.is_supported_by_download)
-      download_namespaces_.push_back(name);
     if (policy_item.second.feature_policy.is_user_requested_download)
       user_requested_download_namespaces_.push_back(name);
-    if (policy_item.second.feature_policy.is_supported_by_recent_tabs)
-      recent_tab_namespaces_.push_back(name);
   }
 }
 
@@ -171,11 +166,6 @@ ClientPolicyController::GetNamespacesRemovedOnCacheReset() const {
 }
 
 const std::vector<std::string>&
-ClientPolicyController::GetNamespacesSupportedByDownload() const {
-  return download_namespaces_;
-}
-
-const std::vector<std::string>&
 ClientPolicyController::GetNamespacesForUserRequestedDownload() const {
   return user_requested_download_namespaces_;
 }
@@ -183,11 +173,6 @@ ClientPolicyController::GetNamespacesForUserRequestedDownload() const {
 bool ClientPolicyController::IsShownAsRecentlyVisitedSite(
     const std::string& name_space) const {
   return GetPolicy(name_space).feature_policy.is_supported_by_recent_tabs;
-}
-
-const std::vector<std::string>&
-ClientPolicyController::GetNamespacesShownAsRecentlyVisitedSite() const {
-  return recent_tab_namespaces_;
 }
 
 bool ClientPolicyController::IsRestrictedToTabFromClientId(

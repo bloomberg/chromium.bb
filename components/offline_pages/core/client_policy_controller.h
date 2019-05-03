@@ -35,7 +35,6 @@ class ClientPolicyController {
 
   // Returns whether pages for |name_space| are shown in Download UI.
   bool IsSupportedByDownload(const std::string& name_space) const;
-  const std::vector<std::string>& GetNamespacesSupportedByDownload() const;
 
   // Returns whether pages for |name_space| are explicitly offlined due to user
   // action.
@@ -45,8 +44,6 @@ class ClientPolicyController {
   // Returns whether pages for |name_space| are shown in recent tabs UI,
   // currently only available on NTP.
   bool IsShownAsRecentlyVisitedSite(const std::string& name_space) const;
-  const std::vector<std::string>& GetNamespacesShownAsRecentlyVisitedSite()
-      const;
 
   // Returns whether pages for |name_space| should only be opened in a
   // specifically assigned tab.
@@ -70,9 +67,7 @@ class ClientPolicyController {
   std::map<std::string, OfflinePageClientPolicy> policies_;
 
   std::vector<std::string> cache_reset_namespaces_;
-  std::vector<std::string> download_namespaces_;
   std::vector<std::string> user_requested_download_namespaces_;
-  std::vector<std::string> recent_tab_namespaces_;
 };
 
 }  // namespace offline_pages

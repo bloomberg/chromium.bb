@@ -194,12 +194,15 @@ void JNI_OfflineTestUtil_DeletePagesByOfflineId(
     const JavaParamRef<jlongArray>& j_offline_ids_array,
     const JavaParamRef<jobject>& j_callback_obj) {
   ScopedJavaGlobalRef<jobject> j_callback_ref(env, j_callback_obj);
+
   std::vector<int64_t> offline_ids;
   base::android::JavaLongArrayToInt64Vector(env, j_offline_ids_array,
                                             &offline_ids);
-  GetOfflinePageModel()->DeletePagesByOfflineId(
-      offline_ids,
-      base::BindOnce(&OnDeletePageDone, std::move(j_callback_ref)));
+
+  PageCriteria criteria;
+  criteria.offline_ids = std::move(offline_ids);
+  GetOfflinePageModel()->DeletePagesWithCriteria(
+      criteria, base::BindOnce(&OnDeletePageDone, std::move(j_callback_ref)));
 }
 
 JNI_EXPORT void JNI_OfflineTestUtil_StartRequestCoordinatorProcessing(

@@ -99,8 +99,7 @@ class FeedOfflineHost : public offline_pages::SuggestionsProvider,
       offline_pages::OfflinePageModel* model,
       const offline_pages::OfflinePageItem& added_page) override;
   void OfflinePageDeleted(
-      const offline_pages::OfflinePageModel::DeletedPageInfo& page_info)
-      override;
+      const offline_pages::OfflinePageItem& deleted_page) override;
 
  private:
   // Stores the given record in |url_hash_to_id_|. If there's a conflict, the

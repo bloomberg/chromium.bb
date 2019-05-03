@@ -229,8 +229,10 @@ void RecentTabHelper::DidFinishNavigation(
            last_n_latest_saved_snapshot_info_->request_id)) {
     DVLOG(1) << " - Deleting previous last_n snapshot with offline_id "
              << last_n_latest_saved_snapshot_info_->request_id;
-    std::vector<int64_t> id{last_n_latest_saved_snapshot_info_->request_id};
-    page_model_->DeletePagesByOfflineId(id, DeletePageCallback());
+    PageCriteria criteria;
+    criteria.offline_ids =
+        std::vector<int64_t>{last_n_latest_saved_snapshot_info_->request_id};
+    page_model_->DeletePagesWithCriteria(criteria, base::DoNothing());
     last_n_latest_saved_snapshot_info_.reset();
   }
 
@@ -446,9 +448,11 @@ void RecentTabHelper::ContinueSnapshotWithIdsToPurge(
 
   DVLOG_IF(1, !page_ids.empty()) << "Deleting " << page_ids.size()
                                  << " offline pages...";
-  page_model_->DeletePagesByOfflineId(
-      page_ids, base::Bind(&RecentTabHelper::ContinueSnapshotAfterPurge,
-                           weak_ptr_factory_.GetWeakPtr(), snapshot_info));
+  PageCriteria criteria;
+  criteria.offline_ids = page_ids;
+  page_model_->DeletePagesWithCriteria(
+      criteria, base::BindOnce(&RecentTabHelper::ContinueSnapshotAfterPurge,
+                               weak_ptr_factory_.GetWeakPtr(), snapshot_info));
 }
 
 void RecentTabHelper::ContinueSnapshotAfterPurge(

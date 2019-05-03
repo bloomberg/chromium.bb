@@ -81,14 +81,8 @@ class OfflinePageModelTaskified : public OfflinePageModel,
                 SavePageCallback callback) override;
   void AddPage(const OfflinePageItem& page, AddPageCallback callback) override;
   void MarkPageAccessed(int64_t offline_id) override;
-
-  void DeletePagesByOfflineId(const std::vector<int64_t>& offline_ids,
-                              DeletePageCallback callback) override;
-  void DeletePagesByClientIds(const std::vector<ClientId>& client_ids,
-                              DeletePageCallback callback) override;
-  void DeletePagesByClientIdsAndOrigin(const std::vector<ClientId>& client_ids,
-                                       const std::string& origin,
-                                       DeletePageCallback callback) override;
+  void DeletePagesWithCriteria(const PageCriteria& criteria,
+                               DeletePageCallback callback) override;
   void DeleteCachedPagesByURLPredicate(const UrlPredicate& predicate,
                                        DeletePageCallback callback) override;
 
@@ -159,10 +153,9 @@ class OfflinePageModelTaskified : public OfflinePageModel,
                      AddPageResult result);
 
   // Callbacks for deleting pages.
-  void OnDeleteDone(
-      DeletePageCallback callback,
-      DeletePageResult result,
-      const std::vector<OfflinePageModel::DeletedPageInfo>& infos);
+  void OnDeleteDone(DeletePageCallback callback,
+                    DeletePageResult result,
+                    const std::vector<OfflinePageItem>& deleted_items);
 
   void OnStoreThumbnailDone(int64_t offline_id,
                             bool success,

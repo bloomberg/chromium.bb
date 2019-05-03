@@ -93,10 +93,10 @@ void OfflineInternalsUIMessageHandler::HandleDeleteSelectedPages(
   std::string callback_id;
   CHECK(args->GetString(0, &callback_id));
 
-  std::vector<int64_t> offline_ids;
   const base::ListValue* offline_ids_from_arg;
   args->GetList(1, &offline_ids_from_arg);
 
+  std::vector<int64_t> offline_ids;
   for (size_t i = 0; i < offline_ids_from_arg->GetSize(); i++) {
     std::string value;
     offline_ids_from_arg->GetString(i, &value);
@@ -105,8 +105,10 @@ void OfflineInternalsUIMessageHandler::HandleDeleteSelectedPages(
     offline_ids.push_back(int_value);
   }
 
-  offline_page_model_->DeletePagesByOfflineId(
-      offline_ids,
+  offline_pages::PageCriteria criteria;
+  criteria.offline_ids = std::move(offline_ids);
+  offline_page_model_->DeletePagesWithCriteria(
+      criteria,
       base::Bind(&OfflineInternalsUIMessageHandler::HandleDeletedPagesCallback,
                  weak_ptr_factory_.GetWeakPtr(), callback_id));
 }

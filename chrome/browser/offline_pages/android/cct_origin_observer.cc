@@ -40,12 +40,11 @@ void CctOriginObserver::OfflinePageAdded(OfflinePageModel* model,
       ConvertUTF8ToJavaString(env, added_page.url.spec()));
 }
 
-void CctOriginObserver::OfflinePageDeleted(
-    const OfflinePageModel::DeletedPageInfo& page_info) {
+void CctOriginObserver::OfflinePageDeleted(const OfflinePageItem& item) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_CctOfflinePageModelObserver_onPageChanged(
-      env, ConvertUTF8ToJavaString(env, page_info.request_origin), false,
-      ConvertUTF8ToJavaString(env, page_info.url.spec()));
+      env, ConvertUTF8ToJavaString(env, item.request_origin), false,
+      ConvertUTF8ToJavaString(env, item.url.spec()));
 }
 
 }  // namespace offline_pages

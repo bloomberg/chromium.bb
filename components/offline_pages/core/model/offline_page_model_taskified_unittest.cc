@@ -97,8 +97,7 @@ class OfflinePageModelTaskifiedTest : public testing::Test,
   void OfflinePageModelLoaded(OfflinePageModel* model) override;
   void OfflinePageAdded(OfflinePageModel* model,
                         const OfflinePageItem& added_page) override;
-  void OfflinePageDeleted(
-      const OfflinePageModel::DeletedPageInfo& page_info) override;
+  void OfflinePageDeleted(const OfflinePageItem& item) override;
   MOCK_METHOD3(ThumbnailAdded,
                void(OfflinePageModel* model,
                     int64_t offline_id,
@@ -172,9 +171,7 @@ class OfflinePageModelTaskifiedTest : public testing::Test,
   bool observer_add_page_called() { return observer_add_page_called_; }
   const OfflinePageItem& last_added_page() { return last_added_page_; }
   bool observer_delete_page_called() { return observer_delete_page_called_; }
-  const OfflinePageModel::DeletedPageInfo& last_deleted_page_info() {
-    return last_deleted_page_info_;
-  }
+  const OfflinePageItem& last_deleted_page() { return last_deleted_page_; }
   base::Time last_maintenance_tasks_schedule_time() {
     return model_->last_maintenance_tasks_schedule_time_;
   }
@@ -197,7 +194,7 @@ class OfflinePageModelTaskifiedTest : public testing::Test,
   bool observer_add_page_called_;
   OfflinePageItem last_added_page_;
   bool observer_delete_page_called_;
-  OfflinePageModel::DeletedPageInfo last_deleted_page_info_;
+  OfflinePageItem last_deleted_page_;
 };
 
 OfflinePageModelTaskifiedTest::OfflinePageModelTaskifiedTest()
@@ -284,9 +281,9 @@ void OfflinePageModelTaskifiedTest::OfflinePageAdded(
 }
 
 void OfflinePageModelTaskifiedTest::OfflinePageDeleted(
-    const OfflinePageModel::DeletedPageInfo& page_info) {
+    const OfflinePageItem& item) {
   observer_delete_page_called_ = true;
-  last_deleted_page_info_ = page_info;
+  last_deleted_page_ = item;
 }
 
 void OfflinePageModelTaskifiedTest::SetLastPathCreatedByArchiver(
@@ -848,7 +845,7 @@ TEST_F(OfflinePageModelTaskifiedTest, DISABLED_DeleteMultiplePages) {}
 // These newly added tests are testing the API instead of results, which
 // should be covered in DeletePagesTaskTest.
 
-TEST_F(OfflinePageModelTaskifiedTest, DeletePagesByOfflineId) {
+TEST_F(OfflinePageModelTaskifiedTest, DeletePagesWithCriteria) {
   page_generator()->SetArchiveDirectory(temporary_dir_path());
   page_generator()->SetNamespace(kDefaultNamespace);
   OfflinePageItem page1 = page_generator()->CreateItemWithTempFile();
@@ -863,12 +860,14 @@ TEST_F(OfflinePageModelTaskifiedTest, DeletePagesByOfflineId) {
   EXPECT_CALL(callback, Run(A<DeletePageResult>()));
   CheckTaskQueueIdle();
 
-  model()->DeletePagesByOfflineId({page1.offline_id}, callback.Get());
+  PageCriteria criteria;
+  criteria.offline_ids = std::vector<int64_t>{page1.offline_id};
+  model()->DeletePagesWithCriteria(criteria, callback.Get());
   EXPECT_TRUE(task_queue()->HasRunningTask());
 
   PumpLoop();
   EXPECT_TRUE(observer_delete_page_called());
-  EXPECT_EQ(last_deleted_page_info().offline_id, page1.offline_id);
+  EXPECT_EQ(last_deleted_page().offline_id, page1.offline_id);
   EXPECT_EQ(1UL, test_utils::GetFileCountInDirectory(temporary_dir_path()));
   EXPECT_EQ(1LL, store_test_util()->GetPageCount());
   EXPECT_EQ(page1.system_download_id,
@@ -918,7 +917,7 @@ TEST_F(OfflinePageModelTaskifiedTest, DeletePagesByUrlPredicate) {
 
   PumpLoop();
   EXPECT_TRUE(observer_delete_page_called());
-  EXPECT_EQ(last_deleted_page_info().offline_id, page1.offline_id);
+  EXPECT_EQ(last_deleted_page().offline_id, page1.offline_id);
   EXPECT_EQ(1UL, test_utils::GetFileCountInDirectory(temporary_dir_path()));
   EXPECT_EQ(1LL, store_test_util()->GetPageCount());
   histogram_tester()->ExpectUniqueSample(
@@ -1062,48 +1061,6 @@ TEST_F(OfflinePageModelTaskifiedTest, GetOfflineIdsForClientId) {
   EXPECT_TRUE(task_queue()->HasRunningTask());
 
   PumpLoop();
-}
-
-TEST_F(OfflinePageModelTaskifiedTest, DeletePagesByClientIds) {
-  page_generator()->SetArchiveDirectory(temporary_dir_path());
-  page_generator()->SetNamespace(kTestClientId1.name_space);
-  page_generator()->SetId(kTestClientId1.id);
-  OfflinePageItem page1 = page_generator()->CreateItemWithTempFile();
-  page_generator()->SetId(kTestClientId2.id);
-  OfflinePageItem page2 = page_generator()->CreateItemWithTempFile();
-  InsertPageIntoStore(page1);
-  InsertPageIntoStore(page2);
-  EXPECT_EQ(2UL, test_utils::GetFileCountInDirectory(temporary_dir_path()));
-  EXPECT_EQ(2LL, store_test_util()->GetPageCount());
-
-  base::MockCallback<DeletePageCallback> callback;
-  EXPECT_CALL(callback, Run(testing::A<DeletePageResult>()));
-  CheckTaskQueueIdle();
-
-  model()->DeletePagesByClientIds({page1.client_id}, callback.Get());
-  EXPECT_TRUE(task_queue()->HasRunningTask());
-
-  PumpLoop();
-  EXPECT_TRUE(observer_delete_page_called());
-  EXPECT_EQ(last_deleted_page_info().client_id, page1.client_id);
-  EXPECT_EQ(1UL, test_utils::GetFileCountInDirectory(temporary_dir_path()));
-  EXPECT_EQ(1LL, store_test_util()->GetPageCount());
-  histogram_tester()->ExpectUniqueSample(
-      "OfflinePages.DeletePageCount",
-      static_cast<int>(
-          model_utils::ToNamespaceEnum(page1.client_id.name_space)),
-      1);
-  histogram_tester()->ExpectUniqueSample(
-      "OfflinePages.DeletePageResult",
-      static_cast<int>(DeletePageResult::SUCCESS), 1);
-  histogram_tester()->ExpectTotalCount(
-      model_utils::AddHistogramSuffix(kTestClientId1.name_space,
-                                      "OfflinePages.PageLifetime"),
-      1);
-  histogram_tester()->ExpectTotalCount(
-      model_utils::AddHistogramSuffix(kTestClientId1.name_space,
-                                      "OfflinePages.AccessCount"),
-      1);
 }
 
 // This test is affected by https://crbug.com/725685, which only affects windows

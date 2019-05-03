@@ -260,10 +260,9 @@ void FeedOfflineHost::OfflinePageAdded(OfflinePageModel* model,
   notify_status_change_.Run(url, true);
 }
 
-void FeedOfflineHost::OfflinePageDeleted(
-    const OfflinePageModel::DeletedPageInfo& page_info) {
+void FeedOfflineHost::OfflinePageDeleted(const OfflinePageItem& deleted_page) {
   DCHECK(!notify_status_change_.is_null());
-  const std::string& url = page_info.url.spec();
+  const std::string& url = deleted_page.url.spec();
   EvictOfflinePageUrl(url);
   notify_status_change_.Run(url, false);
 }

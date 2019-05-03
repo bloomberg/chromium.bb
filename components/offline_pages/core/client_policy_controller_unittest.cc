@@ -64,12 +64,6 @@ void ClientPolicyControllerTest::ExpectRemovedOnCacheReset(
 
 void ClientPolicyControllerTest::ExpectDownloadSupport(std::string name_space,
                                                        bool expectation) {
-  EXPECT_EQ(expectation,
-            base::ContainsValue(
-                controller()->GetNamespacesSupportedByDownload(), name_space))
-      << "Namespace " << name_space
-      << " had incorrect download support when getting namespaces supported by"
-         " download.";
   EXPECT_EQ(expectation, controller()->IsSupportedByDownload(name_space))
       << "Namespace " << name_space
       << " had incorrect download support when directly checking if supported"
@@ -94,13 +88,6 @@ void ClientPolicyControllerTest::ExpectUserRequestedDownloadSupport(
 
 void ClientPolicyControllerTest::ExpectRecentTab(std::string name_space,
                                                  bool expectation) {
-  EXPECT_EQ(
-      expectation,
-      base::ContainsValue(
-          controller()->GetNamespacesShownAsRecentlyVisitedSite(), name_space))
-      << "Namespace " << name_space
-      << " had incorrect recent tab support when getting namespaces shown as a"
-         " recently visited site.";
   EXPECT_EQ(expectation, controller()->IsShownAsRecentlyVisitedSite(name_space))
       << "Namespace " << name_space
       << " had incorrect recent tab support when directly checking if shown as"

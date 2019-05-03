@@ -42,6 +42,14 @@ class GetPagesTask : public Task {
   // Task implementation:
   void Run() override;
 
+  // Reads and returns all pages matching |criteria|. This function reads
+  // from the database and should be called from within an
+  // |SqlStoreBase::Execute()| call.
+  static ReadResult ReadPagesWithCriteriaSync(
+      const ClientPolicyController* policy_controller,
+      const PageCriteria& criteria,
+      sql::Database* db);
+
  private:
   void CompleteWithResult(ReadResult result);
 

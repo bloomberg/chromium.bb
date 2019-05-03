@@ -29,6 +29,9 @@ const char kTestNamespace[] = "test_namespace";
 class GetPagesTaskTest : public ModelTaskTestBase {
  public:
   const std::set<OfflinePageItem>& task_result() const { return task_result_; }
+  const std::vector<OfflinePageItem>& ordered_task_result() const {
+    return ordered_task_result_;
+  }
 
   void InsertItems(std::vector<OfflinePageItem> items) {
     for (auto& item : items) {
@@ -45,6 +48,7 @@ class GetPagesTaskTest : public ModelTaskTestBase {
 
  private:
   void OnGetPagesDone(const std::vector<OfflinePageItem>& result) {
+    ordered_task_result_ = result;
     task_result_.clear();
     task_result_.insert(result.begin(), result.end());
     // Verify there were no identical items, to ensure the set contains the
@@ -55,6 +59,7 @@ class GetPagesTaskTest : public ModelTaskTestBase {
  protected:
   ClientPolicyController policy_controller_;
   std::set<OfflinePageItem> task_result_;
+  std::vector<OfflinePageItem> ordered_task_result_;
 };
 
 TEST_F(GetPagesTaskTest, GetAllPages) {
@@ -69,7 +74,7 @@ TEST_F(GetPagesTaskTest, GetAllPages) {
   EXPECT_EQ(std::set<OfflinePageItem>({item_1, item_2, item_3}), task_result());
 }
 
-TEST_F(GetPagesTaskTest, MultipleClientIds) {
+TEST_F(GetPagesTaskTest, ClientId) {
   generator()->SetNamespace(kTestNamespace);
   OfflinePageItem item_1 = generator()->CreateItem();
   OfflinePageItem item_2 = generator()->CreateItem();
@@ -77,10 +82,15 @@ TEST_F(GetPagesTaskTest, MultipleClientIds) {
   InsertItems({item_1, item_2, item_3});
 
   PageCriteria criteria;
-  criteria.client_ids = {item_1.client_id, item_2.client_id};
-  RunTask(CreateTask(criteria));
 
+  criteria.client_ids =
+      std::vector<ClientId>{item_1.client_id, item_2.client_id};
+  RunTask(CreateTask(criteria));
   EXPECT_EQ(std::set<OfflinePageItem>({item_1, item_2}), task_result());
+
+  criteria.client_ids = std::vector<ClientId>();
+  RunTask(CreateTask(criteria));
+  EXPECT_EQ(std::set<OfflinePageItem>(), task_result());
 }
 
 TEST_F(GetPagesTaskTest, Namespace) {
@@ -93,10 +103,14 @@ TEST_F(GetPagesTaskTest, Namespace) {
   InsertItems({item_1, item_2, item_3});
 
   PageCriteria criteria;
-  criteria.client_namespaces.push_back(kTestNamespace);
-  RunTask(CreateTask(criteria));
 
+  criteria.client_namespaces = std::vector<std::string>{kTestNamespace};
+  RunTask(CreateTask(criteria));
   EXPECT_EQ(std::set<OfflinePageItem>({item_1, item_2}), task_result());
+
+  criteria.client_namespaces = std::vector<std::string>{};
+  RunTask(CreateTask(criteria));
+  EXPECT_EQ(std::set<OfflinePageItem>(), task_result());
 }
 
 TEST_F(GetPagesTaskTest, RequestOrigin) {
@@ -163,10 +177,14 @@ TEST_F(GetPagesTaskTest, OfflineId) {
   InsertItems({item_1, item_2, item_3});
 
   PageCriteria criteria;
-  criteria.offline_id = item_1.offline_id;
-  RunTask(CreateTask(criteria));
 
+  criteria.offline_ids = std::vector<int64_t>{item_1.offline_id};
+  RunTask(CreateTask(criteria));
   EXPECT_EQ(std::set<OfflinePageItem>({item_1}), task_result());
+
+  criteria.offline_ids = std::vector<int64_t>{};
+  RunTask(CreateTask(criteria));
+  EXPECT_EQ(std::set<OfflinePageItem>({}), task_result());
 }
 
 TEST_F(GetPagesTaskTest, Guid) {
@@ -272,7 +290,8 @@ TEST_F(GetPagesTaskTest, SupportedByDownloads) {
   {
     PageCriteria criteria;
     criteria.supported_by_downloads = true;
-    criteria.client_namespaces = {kCCTNamespace, kNTPSuggestionsNamespace};
+    criteria.client_namespaces =
+        std::vector<std::string>{kCCTNamespace, kNTPSuggestionsNamespace};
     RunTask(CreateTask(criteria));
 
     EXPECT_EQ(std::set<OfflinePageItem>({ntp_suggestion_item}), task_result());
@@ -293,6 +312,43 @@ TEST_F(GetPagesTaskTest, RemovedOnCacheReset) {
   RunTask(CreateTask(criteria));
 
   EXPECT_EQ(std::set<OfflinePageItem>({cct_item}), task_result());
+}
+
+TEST_F(GetPagesTaskTest, OrderDescendingCreationTime) {
+  generator()->SetNamespace(kCCTNamespace);
+  OfflinePageItem item1 = generator()->CreateItem();
+  OfflinePageItem item2 = generator()->CreateItem();
+  item2.creation_time = item1.creation_time + base::TimeDelta::FromSeconds(2);
+  OfflinePageItem item3 = generator()->CreateItem();
+  item3.creation_time = item1.creation_time + base::TimeDelta::FromSeconds(1);
+
+  InsertItems({item1, item2, item3});
+
+  PageCriteria criteria;
+  // kDescendingCreationTime is default.
+  RunTask(CreateTask(criteria));
+
+  EXPECT_EQ(std::vector<OfflinePageItem>({item2, item3, item1}),
+            ordered_task_result());
+}
+
+TEST_F(GetPagesTaskTest, OrderAscendingAccessTime) {
+  generator()->SetNamespace(kCCTNamespace);
+  OfflinePageItem item1 = generator()->CreateItem();
+  item1.last_access_time = base::Time();
+  OfflinePageItem item2 = generator()->CreateItem();
+  item2.last_access_time = base::Time() + base::TimeDelta::FromSeconds(2);
+  OfflinePageItem item3 = generator()->CreateItem();
+  item3.last_access_time = base::Time() + base::TimeDelta::FromSeconds(1);
+
+  InsertItems({item1, item2, item3});
+
+  PageCriteria criteria;
+  criteria.result_order = PageCriteria::kAscendingAccessTime;
+  RunTask(CreateTask(criteria));
+
+  EXPECT_EQ(std::vector<OfflinePageItem>({item1, item3, item2}),
+            ordered_task_result());
 }
 
 }  // namespace offline_pages

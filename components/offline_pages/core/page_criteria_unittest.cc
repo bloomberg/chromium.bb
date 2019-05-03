@@ -156,7 +156,7 @@ TEST_F(PageCriteriaTest, MeetsCriteria_Digest) {
 
 TEST_F(PageCriteriaTest, MeetsCriteria_Namespaces) {
   PageCriteria criteria;
-  criteria.client_namespaces = {"namespace1"};
+  criteria.client_namespaces = std::vector<std::string>{"namespace1"};
 
   OfflinePageItem item;
   item.client_id.name_space = "namespace1";
@@ -174,7 +174,8 @@ TEST_F(PageCriteriaTest, MeetsCriteria_Namespaces) {
 
 TEST_F(PageCriteriaTest, MeetsCriteria_MultipleNamespaces) {
   PageCriteria criteria;
-  criteria.client_namespaces = {"namespace1", "foobar1"};
+  criteria.client_namespaces =
+      std::vector<std::string>{"namespace1", "foobar1"};
 
   OfflinePageItem item;
   item.client_id.name_space = "namespace1";
@@ -195,7 +196,7 @@ TEST_F(PageCriteriaTest, MeetsCriteria_MultipleNamespaces) {
 
 TEST_F(PageCriteriaTest, MeetsCriteria_ClientId) {
   PageCriteria criteria;
-  criteria.client_ids = {ClientId("namespace1", "id")};
+  criteria.client_ids = std::vector<ClientId>{ClientId("namespace1", "id")};
 
   OfflinePageItem item;
   item.client_id = ClientId("namespace1", "id");
@@ -213,9 +214,9 @@ TEST_F(PageCriteriaTest, MeetsCriteria_ClientId) {
 
 TEST_F(PageCriteriaTest, MeetsCriteria_MultipleClientId) {
   PageCriteria criteria;
-  criteria.client_ids = {ClientId("namespace1", "id"),
-                         ClientId("namespace2", "id"),
-                         ClientId("namespace3", "id3")};
+  criteria.client_ids = std::vector<ClientId>{ClientId("namespace1", "id"),
+                                              ClientId("namespace2", "id"),
+                                              ClientId("namespace3", "id3")};
 
   OfflinePageItem item;
   item.client_id = ClientId("namespace1", "id");
@@ -275,7 +276,20 @@ TEST_F(PageCriteriaTest, MeetsCriteria_RequestOrigin) {
 
 TEST_F(PageCriteriaTest, MeetsCriteria_OfflineId) {
   PageCriteria criteria;
-  criteria.offline_id = 5;
+  criteria.offline_ids = std::vector<int64_t>{1, 5};
+
+  OfflinePageItem item;
+  item.offline_id = 5;
+  EXPECT_TRUE(MeetsCriteria(policy_controller_, criteria, item));
+
+  item.offline_id = 4;
+  EXPECT_FALSE(MeetsCriteria(policy_controller_, criteria, item));
+}
+
+TEST_F(PageCriteriaTest, MeetsCriteria_AdditionalCriteria) {
+  PageCriteria criteria;
+  criteria.additional_criteria = base::BindRepeating(
+      [](const OfflinePageItem& item) { return item.offline_id == 5; });
 
   OfflinePageItem item;
   item.offline_id = 5;

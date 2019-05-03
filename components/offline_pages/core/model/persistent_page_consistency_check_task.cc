@@ -5,6 +5,7 @@
 #include "components/offline_pages/core/model/persistent_page_consistency_check_task.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -13,6 +14,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "components/offline_pages/core/archive_manager.h"
 #include "components/offline_pages/core/client_policy_controller.h"
+#include "components/offline_pages/core/model/delete_page_task.h"
 #include "components/offline_pages/core/offline_page_client_policy.h"
 #include "components/offline_pages/core/offline_page_metadata_store.h"
 #include "components/offline_pages/core/offline_store_utils.h"
@@ -61,20 +63,6 @@ std::vector<PageInfo> GetPageInfosByNamespaces(
   }
 
   return result;
-}
-
-bool DeletePagesByOfflineIds(const std::vector<int64_t>& offline_ids,
-                             sql::Database* db) {
-  static const char kSql[] =
-      "DELETE FROM " OFFLINE_PAGES_TABLE_NAME " WHERE offline_id = ?";
-
-  for (const auto& offline_id : offline_ids) {
-    sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
-    statement.BindInt64(0, offline_id);
-    if (!statement.Run())
-      return false;
-  }
-  return true;
 }
 
 bool MarkPagesAsMissing(const std::vector<int64_t>& ids_of_missing_pages,
@@ -148,7 +136,7 @@ PersistentPageConsistencyCheckSync(
     }
   }
 
-  if (!DeletePagesByOfflineIds(page_ids_to_delete, db) ||
+  if (!DeletePageTask::DeletePagesFromDbSync(page_ids_to_delete, db) ||
       !MarkPagesAsMissing(pages_found_missing, check_time, db) ||
       !MarkPagesAsReappeared(pages_reappeared, db)) {
     return {SyncOperationResult::DB_OPERATION_ERROR,

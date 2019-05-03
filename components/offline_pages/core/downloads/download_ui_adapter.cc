@@ -148,14 +148,12 @@ void DownloadUIAdapter::OfflinePageAdded(OfflinePageModel* model,
 }
 
 // OfflinePageModel::Observer
-void DownloadUIAdapter::OfflinePageDeleted(
-    const OfflinePageModel::DeletedPageInfo& page_info) {
-  if (!delegate_->IsVisibleInUI(page_info.client_id))
+void DownloadUIAdapter::OfflinePageDeleted(const OfflinePageItem& item) {
+  if (!delegate_->IsVisibleInUI(item.client_id))
     return;
 
   for (auto& observer : observers_) {
-    observer.OnItemRemoved(
-        ContentId(kOfflinePageNamespace, page_info.client_id.id));
+    observer.OnItemRemoved(ContentId(kOfflinePageNamespace, item.client_id.id));
   }
 }
 
@@ -437,16 +435,12 @@ void DownloadUIAdapter::OnPageGetForOpenItem(
 }
 
 void DownloadUIAdapter::RemoveItem(const ContentId& id) {
-  std::vector<ClientId> client_ids;
-  auto* policy_controller = model_->GetPolicyController();
-  for (const auto& name_space :
-       policy_controller->GetNamespacesSupportedByDownload()) {
-    client_ids.push_back(ClientId(name_space, id.id));
-  }
-
-  model_->DeletePagesByClientIds(
-      client_ids, base::BindRepeating(&DownloadUIAdapter::OnDeletePagesDone,
-                                      weak_ptr_factory_.GetWeakPtr()));
+  PageCriteria criteria;
+  criteria.supported_by_downloads = true;
+  criteria.guid = id.id;
+  model_->DeletePagesWithCriteria(
+      criteria, base::BindRepeating(&DownloadUIAdapter::OnDeletePagesDone,
+                                    weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DownloadUIAdapter::CancelDownload(const ContentId& id) {

@@ -544,10 +544,10 @@ void BackgroundLoaderOffliner::OnPageSaved(SavePageResult save_result,
 
   if (save_state_ == DELETE_AFTER_SAVE) {
     // Delete the saved page off disk and from the OPM.
-    std::vector<int64_t> offline_ids;
-    offline_ids.push_back(offline_id);
-    offline_page_model_->DeletePagesByOfflineId(
-        offline_ids,
+    PageCriteria criteria;
+    criteria.offline_ids = std::vector<int64_t>{offline_id};
+    offline_page_model_->DeletePagesWithCriteria(
+        criteria,
         base::Bind(&BackgroundLoaderOffliner::DeleteOfflinePageCallback,
                    weak_ptr_factory_.GetWeakPtr(), request));
     save_state_ = NONE;

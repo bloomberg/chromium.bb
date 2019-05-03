@@ -201,11 +201,11 @@ void PreviewsOfflineHelper::OfflinePageAdded(
 }
 
 void PreviewsOfflineHelper::OfflinePageDeleted(
-    const offline_pages::OfflinePageModel::DeletedPageInfo& page_info) {
+    const offline_pages::OfflinePageItem& deleted_page) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Has no effect if the url was never in the dictionary.
-  available_pages_->RemoveKey(HashURL(page_info.url));
+  available_pages_->RemoveKey(HashURL(deleted_page.url));
 
   RemoveStaleOfflinePageEntries(available_pages_.get());
   UpdatePref();
