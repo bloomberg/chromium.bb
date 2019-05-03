@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/process/process_metrics.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
@@ -28,22 +29,23 @@ namespace gwp_asan {
 namespace internal {
 
 using GetMetadataReturnType = AllocatorState::GetMetadataReturnType;
-using GwpAsanCrashAnalysisResult = CrashAnalyzer::GwpAsanCrashAnalysisResult;
 
-GwpAsanCrashAnalysisResult CrashAnalyzer::GetExceptionInfo(
+bool CrashAnalyzer::GetExceptionInfo(
     const crashpad::ProcessSnapshot& process_snapshot,
     gwp_asan::Crash* proto) {
   crashpad::VMAddress gpa_ptr = GetAllocatorAddress(process_snapshot);
   // If the annotation wasn't present, GWP-ASan wasn't enabled.
   if (!gpa_ptr)
-    return GwpAsanCrashAnalysisResult::kUnrelatedCrash;
+    return false;
 
   const crashpad::ExceptionSnapshot* exception = process_snapshot.Exception();
   if (!exception)
-    return GwpAsanCrashAnalysisResult::kUnrelatedCrash;
+    return false;
 
-  if (!exception->Context())
-    return GwpAsanCrashAnalysisResult::kErrorNullCpuContext;
+  if (!exception->Context()) {
+    ReportHistogram(GwpAsanCrashAnalysisResult::kErrorNullCpuContext);
+    return false;
+  }
 
 #if defined(ARCH_CPU_64_BITS)
   constexpr bool is_64_bit = true;
@@ -53,11 +55,15 @@ GwpAsanCrashAnalysisResult CrashAnalyzer::GetExceptionInfo(
 
   // TODO(vtsyrklevich): Look at using crashpad's process_types to read the GPA
   // state bitness-independently.
-  if (exception->Context()->Is64Bit() != is_64_bit)
-    return GwpAsanCrashAnalysisResult::kErrorMismatchedBitness;
+  if (exception->Context()->Is64Bit() != is_64_bit) {
+    ReportHistogram(GwpAsanCrashAnalysisResult::kErrorMismatchedBitness);
+    return false;
+  }
 
-  if (!process_snapshot.Memory())
-    return GwpAsanCrashAnalysisResult::kErrorNullProcessMemory;
+  if (!process_snapshot.Memory()) {
+    ReportHistogram(GwpAsanCrashAnalysisResult::kErrorNullProcessMemory);
+    return false;
+  }
 
   return AnalyzeCrashedAllocator(*process_snapshot.Memory(), *exception,
                                  gpa_ptr, proto);
@@ -88,7 +94,7 @@ crashpad::VMAddress CrashAnalyzer::GetAllocatorAddress(
   return 0;
 }
 
-GwpAsanCrashAnalysisResult CrashAnalyzer::AnalyzeCrashedAllocator(
+bool CrashAnalyzer::AnalyzeCrashedAllocator(
     const crashpad::ProcessMemory& memory,
     const crashpad::ExceptionSnapshot& exception,
     crashpad::VMAddress gpa_addr,
@@ -96,12 +102,15 @@ GwpAsanCrashAnalysisResult CrashAnalyzer::AnalyzeCrashedAllocator(
   AllocatorState unsafe_state;
   if (!memory.Read(gpa_addr, sizeof(unsafe_state), &unsafe_state)) {
     DLOG(ERROR) << "Failed to read AllocatorState from process.";
-    return GwpAsanCrashAnalysisResult::kErrorFailedToReadAllocator;
+    ReportHistogram(GwpAsanCrashAnalysisResult::kErrorFailedToReadAllocator);
+    return false;
   }
 
   if (!unsafe_state.IsValid()) {
     DLOG(ERROR) << "Allocator sanity check failed!";
-    return GwpAsanCrashAnalysisResult::kErrorAllocatorFailedSanityCheck;
+    ReportHistogram(
+        GwpAsanCrashAnalysisResult::kErrorAllocatorFailedSanityCheck);
+    return false;
   }
   const AllocatorState& valid_state = unsafe_state;
 
@@ -112,7 +121,7 @@ GwpAsanCrashAnalysisResult CrashAnalyzer::AnalyzeCrashedAllocator(
     exception_addr = valid_state.free_invalid_address;
 
   if (!exception_addr || !valid_state.PointerIsMine(exception_addr))
-    return GwpAsanCrashAnalysisResult::kUnrelatedCrash;
+    return false;
   // All errors that occur below happen for an exception known to be related to
   // GWP-ASan so we fill out the protobuf on error as well and include an error
   // string.
@@ -133,7 +142,8 @@ GwpAsanCrashAnalysisResult CrashAnalyzer::AnalyzeCrashedAllocator(
           sizeof(AllocatorState::SlotMetadata) * valid_state.num_metadata,
           metadata_arr.get())) {
     proto->set_internal_error("Failed to read metadata.");
-    return GwpAsanCrashAnalysisResult::kErrorFailedToReadSlotMetadata;
+    ReportHistogram(GwpAsanCrashAnalysisResult::kErrorFailedToReadSlotMetadata);
+    return true;
   }
 
   // Read the allocator's slot_to_metadata mapping.
@@ -144,7 +154,9 @@ GwpAsanCrashAnalysisResult CrashAnalyzer::AnalyzeCrashedAllocator(
           sizeof(AllocatorState::MetadataIdx) * valid_state.total_pages,
           slot_to_metadata.get())) {
     proto->set_internal_error("Failed to read slot_to_metadata.");
-    return GwpAsanCrashAnalysisResult::kErrorFailedToReadSlotMetadataMapping;
+    ReportHistogram(
+        GwpAsanCrashAnalysisResult::kErrorFailedToReadSlotMetadataMapping);
+    return true;
   }
 
   AllocatorState::MetadataIdx metadata_idx;
@@ -152,14 +164,16 @@ GwpAsanCrashAnalysisResult CrashAnalyzer::AnalyzeCrashedAllocator(
   auto ret = valid_state.GetMetadataForAddress(
       exception_addr, metadata_arr.get(), slot_to_metadata.get(), &metadata_idx,
       &error);
-  if (!error.empty())
-    proto->set_internal_error(error);
   if (ret == GetMetadataReturnType::kErrorBadSlot)
-    return GwpAsanCrashAnalysisResult::kErrorBadSlot;
+    ReportHistogram(GwpAsanCrashAnalysisResult::kErrorBadSlot);
   if (ret == GetMetadataReturnType::kErrorBadMetadataIndex)
-    return GwpAsanCrashAnalysisResult::kErrorBadMetadataIndex;
+    ReportHistogram(GwpAsanCrashAnalysisResult::kErrorBadMetadataIndex);
   if (ret == GetMetadataReturnType::kErrorOutdatedMetadataIndex)
-    return GwpAsanCrashAnalysisResult::kErrorOutdatedMetadataIndex;
+    ReportHistogram(GwpAsanCrashAnalysisResult::kErrorOutdatedMetadataIndex);
+  if (!error.empty()) {
+    proto->set_internal_error(error);
+    return true;
+  }
 
   if (ret == GetMetadataReturnType::kGwpAsanCrash) {
     SlotMetadata& metadata = metadata_arr[metadata_idx];
@@ -180,7 +194,7 @@ GwpAsanCrashAnalysisResult CrashAnalyzer::AnalyzeCrashedAllocator(
                          metadata.dealloc, proto->mutable_deallocation());
   }
 
-  return GwpAsanCrashAnalysisResult::kGwpAsanCrash;
+  return true;
 }
 
 void CrashAnalyzer::ReadAllocationInfo(
@@ -216,6 +230,10 @@ void CrashAnalyzer::ReadAllocationInfo(
   uint64_t* output = proto_info->mutable_stack_trace()->mutable_data();
   for (size_t i = 0; i < unpacked_len; i++)
     output[i] = unpacked_stack_trace[i];
+}
+
+void CrashAnalyzer::ReportHistogram(GwpAsanCrashAnalysisResult result) {
+  UMA_HISTOGRAM_ENUMERATION(kCrashAnalysisHistogram, result);
 }
 
 }  // namespace internal

@@ -10,7 +10,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/metrics/histogram_macros.h"
 #include "components/gwp_asan/crash_handler/crash.pb.h"
 #include "components/gwp_asan/crash_handler/crash_analyzer.h"
 #include "third_party/crashpad/crashpad/minidump/minidump_user_extension_stream_data_source.h"
@@ -19,8 +18,6 @@
 namespace gwp_asan {
 namespace internal {
 namespace {
-
-using GwpAsanCrashAnalysisResult = CrashAnalyzer::GwpAsanCrashAnalysisResult;
 
 // Return a serialized protobuf using a wrapper interface that
 // crashpad::UserStreamDataSource expects us to return.
@@ -79,10 +76,7 @@ const char* ErrorToString(Crash_ErrorType type) {
 std::unique_ptr<crashpad::MinidumpUserExtensionStreamDataSource>
 HandleException(const crashpad::ProcessSnapshot& snapshot) {
   gwp_asan::Crash proto;
-  auto result = CrashAnalyzer::GetExceptionInfo(snapshot, &proto);
-  if (result != GwpAsanCrashAnalysisResult::kUnrelatedCrash)
-    UMA_HISTOGRAM_ENUMERATION("GwpAsan.CrashAnalysisResult", result);
-
+  CrashAnalyzer::GetExceptionInfo(snapshot, &proto);
   // The missing_metadata field is always set for all exceptions.
   if (!proto.has_missing_metadata())
     return nullptr;

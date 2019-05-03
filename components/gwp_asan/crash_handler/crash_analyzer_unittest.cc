@@ -6,9 +6,11 @@
 
 #include "base/debug/stack_trace.h"
 #include "base/test/gtest_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "components/gwp_asan/client/guarded_page_allocator.h"
 #include "components/gwp_asan/common/allocator_state.h"
 #include "components/gwp_asan/crash_handler/crash.pb.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/crashpad/crashpad/snapshot/test/test_exception_snapshot.h"
 #include "third_party/crashpad/crashpad/test/process_type.h"
@@ -32,10 +34,12 @@ TEST(CrashAnalyzerTest, StackTraceCollection) {
   crashpad::test::TestExceptionSnapshot exception_snapshot;
   gpa.state_.double_free_address = reinterpret_cast<uintptr_t>(ptr);
 
+  base::HistogramTester histogram_tester;
   gwp_asan::Crash proto;
-  auto result = CrashAnalyzer::AnalyzeCrashedAllocator(
+  CrashAnalyzer::AnalyzeCrashedAllocator(
       memory, exception_snapshot, reinterpret_cast<uintptr_t>(&gpa), &proto);
-  EXPECT_EQ(result, CrashAnalyzer::GwpAsanCrashAnalysisResult::kGwpAsanCrash);
+
+  histogram_tester.ExpectTotalCount(CrashAnalyzer::kCrashAnalysisHistogram, 0);
 
   ASSERT_TRUE(proto.has_allocation());
   ASSERT_TRUE(proto.has_deallocation());
@@ -92,11 +96,17 @@ TEST(CrashAnalyzerTest, InternalError) {
   // single entry slot/metadata entry.
   gpa.slot_to_metadata_idx_[0] = 5;
 
+  base::HistogramTester histogram_tester;
   gwp_asan::Crash proto;
-  auto result = CrashAnalyzer::AnalyzeCrashedAllocator(
+  CrashAnalyzer::AnalyzeCrashedAllocator(
       memory, exception_snapshot, reinterpret_cast<uintptr_t>(&gpa), &proto);
-  EXPECT_EQ(result,
-            CrashAnalyzer::GwpAsanCrashAnalysisResult::kErrorBadMetadataIndex);
+
+  int result = static_cast<int>(
+      CrashAnalyzer::GwpAsanCrashAnalysisResult::kErrorBadMetadataIndex);
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(CrashAnalyzer::kCrashAnalysisHistogram),
+      testing::ElementsAre(base::Bucket(result, 1)));
+
   EXPECT_TRUE(proto.has_internal_error());
   ASSERT_TRUE(proto.has_missing_metadata());
   EXPECT_TRUE(proto.missing_metadata());
