@@ -168,8 +168,71 @@ void GamepadControllerBindings::SetDualRumbleVibrationActuator(int index,
     controller_->SetDualRumbleVibrationActuator(index, enabled);
 }
 
-GamepadController::GamepadController()
-    : observer_(nullptr), binding_(this), weak_factory_(this) {
+GamepadController::MonitorImpl::MonitorImpl(
+    GamepadController* controller,
+    device::mojom::GamepadMonitorRequest request)
+    : controller_(controller), binding_(this), observer_(nullptr) {
+  binding_.Bind(std::move(request));
+}
+
+GamepadController::MonitorImpl::~MonitorImpl() = default;
+
+bool GamepadController::MonitorImpl::HasPendingConnect(int index) {
+  return missed_dispatches_.test(index);
+}
+
+void GamepadController::MonitorImpl::GamepadStartPolling(
+    GamepadStartPollingCallback callback) {
+  std::move(callback).Run(controller_->GetSharedMemoryRegion());
+}
+
+void GamepadController::MonitorImpl::GamepadStopPolling(
+    GamepadStopPollingCallback callback) {
+  std::move(callback).Run();
+}
+
+void GamepadController::MonitorImpl::SetObserver(
+    device::mojom::GamepadObserverPtr observer) {
+  observer_ = std::move(observer);
+  observer_.set_connection_error_handler(
+      base::BindOnce(&GamepadController::OnConnectionError,
+                     base::Unretained(controller_), base::Unretained(this)));
+
+  // Notify the new observer of any GamepadConnected RPCs that it missed because
+  // the SetObserver RPC wasn't processed in time. This happens during layout
+  // tests because SetObserver is async, so the test can continue to the
+  // DispatchConnected call before the SetObserver RPC was processed. This isn't
+  // an issue in the real implementation because the 'gamepadconnected' event
+  // doesn't fire until user input is detected, so even if a GamepadConnected
+  // event is missed, another will be picked up after the next user input.
+  controller_->NotifyForMissedDispatches(this);
+  missed_dispatches_.reset();
+}
+
+void GamepadController::MonitorImpl::DispatchConnected(
+    int index,
+    const device::Gamepad& pad) {
+  if (observer_) {
+    observer_->GamepadConnected(index, pad);
+  } else {
+    // Record that there wasn't an observer to get the GamepadConnected RPC so
+    // we can send it when SetObserver gets called.
+    missed_dispatches_.set(index);
+  }
+}
+
+void GamepadController::MonitorImpl::DispatchDisconnected(
+    int index,
+    const device::Gamepad& pad) {
+  if (observer_)
+    observer_->GamepadDisconnected(index, pad);
+}
+
+void GamepadController::MonitorImpl::Reset() {
+  missed_dispatches_.reset();
+}
+
+GamepadController::GamepadController() {
   size_t buffer_size = sizeof(device::GamepadHardwareBuffer);
   // Use mojo to delegate the creation of shared memory to the broker process.
   mojo::ScopedSharedBufferHandle mojo_buffer =
@@ -191,7 +254,8 @@ GamepadController::~GamepadController() {}
 
 void GamepadController::Reset() {
   memset(gamepads_, 0, sizeof(*gamepads_));
-  missed_dispatches_.reset();
+  for (auto& monitor : monitors_)
+    monitor->Reset();
 }
 
 void GamepadController::Install(blink::WebLocalFrame* frame) {
@@ -211,38 +275,27 @@ void GamepadController::Install(blink::WebLocalFrame* frame) {
 
 void GamepadController::OnInterfaceRequest(
     mojo::ScopedMessagePipeHandle handle) {
-  binding_.Bind(device::mojom::GamepadMonitorRequest(std::move(handle)));
-  observer_ = nullptr;
+  monitors_.insert(std::make_unique<MonitorImpl>(
+      this, device::mojom::GamepadMonitorRequest(std::move(handle))));
 }
 
-void GamepadController::GamepadStartPolling(
-    GamepadStartPollingCallback callback) {
-  std::move(callback).Run(shared_memory_region_.Duplicate());
+base::ReadOnlySharedMemoryRegion GamepadController::GetSharedMemoryRegion()
+    const {
+  return shared_memory_region_.Duplicate();
 }
 
-void GamepadController::GamepadStopPolling(
-    GamepadStopPollingCallback callback) {
-  std::move(callback).Run();
+void GamepadController::OnConnectionError(
+    GamepadController::MonitorImpl* monitor) {
+  monitors_.erase(monitors_.find(monitor));
 }
 
-void GamepadController::SetObserver(
-    device::mojom::GamepadObserverPtr observer) {
-  observer_ = std::move(observer);
-
-  // Notify the new observer of any GamepadConnected RPCs that it missed because
-  // the SetObserver RPC wasn't processed in time. This happens during layout
-  // tests because SetObserver is async, so the test can continue to the
-  // DispatchConnected call before the SetObserver RPC was processed. This isn't
-  // an issue in the real implementation because the 'gamepadconnected' event
-  // doesn't fire until user input is detected, so even if a GamepadConnected
-  // event is missed, another will be picked up after the next user input.
+void GamepadController::NotifyForMissedDispatches(
+    GamepadController::MonitorImpl* monitor) {
   gamepads_->seqlock.WriteBegin();
   for (size_t index = 0; index < Gamepads::kItemsLengthCap; index++) {
-    if (missed_dispatches_.test(index)) {
-      observer_->GamepadConnected(index, gamepads_->data.items[index]);
-    }
+    if (monitor->HasPendingConnect(index))
+      monitor->DispatchConnected(index, gamepads_->data.items[index]);
   }
-  missed_dispatches_.reset();
   gamepads_->seqlock.WriteEnd();
 }
 
@@ -258,18 +311,14 @@ void GamepadController::Connect(int index) {
 }
 
 void GamepadController::DispatchConnected(int index) {
-  if (index < 0 || index >= static_cast<int>(Gamepads::kItemsLengthCap) ||
-      !gamepads_->data.items[index].connected)
+  if (index < 0 || index >= static_cast<int>(Gamepads::kItemsLengthCap))
+    return;
+  const Gamepad& pad = gamepads_->data.items[index];
+  if (!pad.connected)
     return;
   gamepads_->seqlock.WriteBegin();
-  const Gamepad& pad = gamepads_->data.items[index];
-  if (observer_) {
-    observer_->GamepadConnected(index, pad);
-  } else {
-    // Record that there wasn't an observer to get the GamepadConnected RPC so
-    // we can send it when SetObserver gets called.
-    missed_dispatches_.set(index);
-  }
+  for (auto& monitor : monitors_)
+    monitor->DispatchConnected(index, pad);
   gamepads_->seqlock.WriteEnd();
 }
 
@@ -281,8 +330,8 @@ void GamepadController::Disconnect(int index) {
   Gamepad& pad = gamepads_->data.items[index];
   pad.connected = false;
   pad.timestamp = now;
-  if (observer_)
-    observer_->GamepadDisconnected(index, pad);
+  for (auto& monitor : monitors_)
+    monitor->DispatchDisconnected(index, pad);
   gamepads_->seqlock.WriteEnd();
 }
 

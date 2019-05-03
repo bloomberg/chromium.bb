@@ -225,7 +225,7 @@ NavigatorGamepad::NavigatorGamepad(Navigator& navigator)
 NavigatorGamepad::~NavigatorGamepad() = default;
 
 void NavigatorGamepad::RegisterWithDispatcher() {
-  gamepad_dispatcher_->AddController(this);
+  gamepad_dispatcher_->AddController(this, GetFrame());
 }
 
 void NavigatorGamepad::UnregisterWithDispatcher() {

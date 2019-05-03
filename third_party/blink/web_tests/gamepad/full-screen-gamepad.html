@@ -37,6 +37,7 @@
         console.log("This test requires User Activation V2.");
         endTest();
     } else {
+        waitForEvent(window, 'gamepadconnected', gamepadConnected, false, true);
         if (window.gamepadController) {
             // Simulate pressing a button on a connected gamepad. A gamepad
             // button press should be treated as a user activation for the
@@ -47,6 +48,5 @@
             gamepadController.setButtonData(0, 0, 1);
             gamepadController.dispatchConnected(0);
         }
-        waitForEvent(window, 'gamepadconnected', gamepadConnected, false, true);
     }
 </script>

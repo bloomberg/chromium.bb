@@ -83,9 +83,7 @@ void GamepadDispatcher::DispatchDidConnectOrDisconnectGamepad(
 
 void GamepadDispatcher::StartListening(LocalFrame* frame) {
   if (!reader_) {
-    // TODO(crbug.com/850619): ensure a valid frame is passed
-    if (!frame)
-      return;
+    DCHECK(frame);
     reader_ = std::make_unique<GamepadSharedMemoryReader>(*frame);
   }
   reader_->Start(this);
