@@ -17,6 +17,12 @@ namespace metadata {
 /***** String Conversions *****/
 
 template <>
+base::string16 ConvertToString<base::string16>(
+    const base::string16& source_value) {
+  return source_value;
+}
+
+template <>
 base::string16 ConvertToString<int8_t>(const int8_t& source_value) {
   return base::NumberToString16(source_value);
 }

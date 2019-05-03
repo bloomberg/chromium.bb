@@ -40,6 +40,10 @@ template <typename TSource>
 base::string16 ConvertToString(const TSource& source_value) = delete;
 
 template <>
+VIEWS_EXPORT base::string16 ConvertToString<base::string16>(
+    const base::string16& source_value);
+
+template <>
 VIEWS_EXPORT base::string16 ConvertToString<int8_t>(const int8_t& source_value);
 
 template <>
@@ -84,6 +88,16 @@ class TypeConverter<TSource, base::string16> {
  public:
   static base::string16 Convert(const TSource& source_val) {
     return ConvertToString<TSource>(source_val);
+  }
+};
+
+// A specialization used for string16 conversions. Since it simply passes
+// the value, it is used for both converting to and from a string16 value.
+template <>
+class TypeConverter<base::string16, base::string16> {
+ public:
+  static base::string16 Convert(const base::string16& source_val) {
+    return ConvertToString<base::string16>(source_val);
   }
 };
 

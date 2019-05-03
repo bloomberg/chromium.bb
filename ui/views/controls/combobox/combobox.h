@@ -77,6 +77,7 @@ class VIEWS_EXPORT Combobox : public View,
 
   // Set the accessible name of the combobox.
   void SetAccessibleName(const base::string16& name);
+  base::string16 GetAccessibleName() const;
 
   // Visually marks the combobox as having an invalid value selected.
   // When invalid, it paints with white text on a red background.

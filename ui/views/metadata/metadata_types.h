@@ -144,7 +144,10 @@ class VIEWS_EXPORT MemberMetaDataBase {
 // (so it will trigger things like property changed notifications).
 template <typename TClass,
           typename TValue,
-          void (TClass::*Set)(const TValue value),
+          void (TClass::*Set)(
+              typename std::conditional<std::is_fundamental<TValue>::value,
+                                        TValue,
+                                        const TValue&>::type),
           TValue (TClass::*Get)() const>
 class ClassPropertyMetaData : public MemberMetaDataBase {
  public:

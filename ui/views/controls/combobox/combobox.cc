@@ -309,6 +309,10 @@ void Combobox::SetAccessibleName(const base::string16& name) {
   accessible_name_ = name;
 }
 
+base::string16 Combobox::GetAccessibleName() const {
+  return accessible_name_;
+}
+
 void Combobox::SetInvalid(bool invalid) {
   if (invalid == invalid_)
     return;
@@ -661,6 +665,7 @@ BEGIN_METADATA(Combobox)
 METADATA_PARENT_CLASS(View)
 ADD_PROPERTY_METADATA(Combobox, int, SelectedIndex)
 ADD_PROPERTY_METADATA(Combobox, bool, Invalid)
+ADD_PROPERTY_METADATA(Combobox, base::string16, AccessibleName)
 END_METADATA()
 
 }  // namespace views
