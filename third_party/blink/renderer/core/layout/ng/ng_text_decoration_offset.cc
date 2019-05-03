@@ -20,7 +20,6 @@ int NGTextDecorationOffset::ComputeUnderlineOffsetForUnder(
   FontBaseline baseline_type = style.GetFontBaseline();
 
   if (decorating_box_) {
-    // TODO(eae): Replace with actual baseline once available.
     NGBaselineRequest baseline_request = {
         NGBaselineAlgorithmType::kAtomicInline,
         FontBaseline::kIdeographicBaseline};

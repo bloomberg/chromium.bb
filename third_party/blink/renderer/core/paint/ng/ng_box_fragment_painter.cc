@@ -1225,8 +1225,6 @@ bool NGBoxFragmentPainter::HitTestChildren(
           result, *child, location_in_container, child_physical_offset, action);
 
     } else if (fragment.Type() == NGPhysicalFragment::kFragmentText) {
-      // TODO(eae): Should this hit test on the text itself or the containing
-      // node?
       stop_hit_testing = HitTestTextFragment(
           result, *child, location_in_container, child_physical_offset, action);
     }
