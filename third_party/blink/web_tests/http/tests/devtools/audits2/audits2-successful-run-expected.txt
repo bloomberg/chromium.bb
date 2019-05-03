@@ -271,7 +271,7 @@ Generating results...
 
 =============== Lighthouse Results ===============
 URL: http://127.0.0.1:8000/devtools/resources/inspected-page.html
-Version: 4.3.0
+Version: 4.3.1
 
 
 accesskeys: notApplicable
