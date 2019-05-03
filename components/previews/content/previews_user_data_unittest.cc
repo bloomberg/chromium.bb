@@ -43,8 +43,6 @@ TEST(PreviewsUserDataTest, DeepCopy) {
 
   PreviewsUserData data_copy(*data);
   EXPECT_EQ(id, data_copy.page_id());
-  EXPECT_EQ(data->random_coin_flip_for_navigation(),
-            data_copy.random_coin_flip_for_navigation());
   EXPECT_EQ(123, data_copy.data_savings_inflation_percent());
   EXPECT_TRUE(data_copy.cache_control_no_transform_directive());
   EXPECT_EQ(previews::PreviewsType::NOSCRIPT,
