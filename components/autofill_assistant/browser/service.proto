@@ -517,8 +517,7 @@ enum ProcessedActionStatusProto {
   // Failed to get a stable position for the element, usually to click on it.
   ELEMENT_UNSTABLE = 14;
 
-  // A selector included into the current action is invalid.
-  INVALID_SELECTOR = 15;
+  reserved 15;
 
   // The value passed to the select option action does not exist in the element.
   // This is usually a scripting error.
@@ -539,6 +538,9 @@ enum ProcessedActionStatusProto {
   // that this doesn't include page load errors, which are reported as
   // TIMED_OUT.
   NAVIGATION_ERROR = 19;
+
+  // A selector included into the current action is invalid.
+  INVALID_SELECTOR = 20;
 }
 
 // The pseudo type values come from
