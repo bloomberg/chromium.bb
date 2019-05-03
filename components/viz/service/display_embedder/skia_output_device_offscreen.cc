@@ -33,7 +33,8 @@ void SkiaOutputDeviceOffscreen::Reshape(const gfx::Size& size,
   // kRGBA_8888_SkColorType instead and initialize surface to opaque alpha.
   image_info_ =
       SkImageInfo::Make(size.width(), size.height(), kRGBA_8888_SkColorType,
-                        has_alpha_ ? kPremul_SkAlphaType : kOpaque_SkAlphaType);
+                        has_alpha_ ? kPremul_SkAlphaType : kOpaque_SkAlphaType,
+                        color_space.ToSkColorSpace());
   draw_surface_ = SkSurface::MakeRenderTarget(
       gr_context_, SkBudgeted::kNo, image_info_, 0 /* sampleCount */,
       capabilities_.flipped_output_surface ? kTopLeft_GrSurfaceOrigin
