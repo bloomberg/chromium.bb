@@ -69,8 +69,11 @@ a:visited {
   position: static;
   /* This align correctly for both LTR and RTL */
   text-align: -webkit-auto;
-  transition: opacity 300ms;
   user-select: none;
+}
+
+html:not(.no-initial-fade) :-webkit-any(#mv-tiles, .mv-tiles-old) {
+  transition: opacity 300ms;
 }
 
 .mv-tiles-old {

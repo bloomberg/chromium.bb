@@ -5,9 +5,11 @@
 #include "chrome/browser/search/most_visited_iframe_source.h"
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/memory/ref_counted_memory.h"
 #include "build/build_config.h"
 #include "chrome/browser/search/local_files_ntp_source.h"
+#include "chrome/browser/search/ntp_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/local_ntp_resources.h"
@@ -78,7 +80,11 @@ void MostVisitedIframeSource::StartDataRequest(
 #endif
 
   if (path == kSingleHTMLPath) {
-    SendResource(IDR_MOST_VISITED_SINGLE_HTML, callback);
+    ui::TemplateReplacements replacements;
+    bool disable_fade = base::FeatureList::IsEnabled(
+        features::kDisableInitialMostVisitedFadeIn);
+    replacements["noInitialFade"] = disable_fade ? "no-initial-fade" : "";
+    SendResource(IDR_MOST_VISITED_SINGLE_HTML, callback, &replacements);
   } else if (path == kSingleCSSPath) {
     SendResource(IDR_MOST_VISITED_SINGLE_CSS, callback);
   } else if (path == kSingleJSPath) {

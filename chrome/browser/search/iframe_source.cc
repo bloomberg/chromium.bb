@@ -72,11 +72,15 @@ bool IframeSource::GetOrigin(
 
 void IframeSource::SendResource(
     int resource_id,
-    const content::URLDataSource::GotDataCallback& callback) {
-  scoped_refptr<base::RefCountedMemory> response(
-      ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
-          resource_id));
-  callback.Run(response.get());
+    const content::URLDataSource::GotDataCallback& callback,
+    const ui::TemplateReplacements* replacements) {
+  base::StringPiece resource =
+      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
+  std::string response =
+      replacements != nullptr
+          ? ui::ReplaceTemplateExpressions(resource, *replacements)
+          : resource.as_string();
+  callback.Run(base::RefCountedString::TakeString(&response));
 }
 
 void IframeSource::SendJSWithOrigin(
