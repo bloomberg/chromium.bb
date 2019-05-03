@@ -22,6 +22,11 @@
   (global-name "com.apple.windowserver.active")
 )
 
+; Needed for metal decoding - https://crbug.com/957217
+(if (>= os-version 1014)
+  (allow mach-lookup (xpc-service-name "com.apple.MTLCompilerService"))
+)
+
 ; Needed for WebGL - https://crbug.com/75343
 (allow iokit-open
   (iokit-connection "IOAccelerator")
