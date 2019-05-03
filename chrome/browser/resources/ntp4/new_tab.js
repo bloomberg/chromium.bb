@@ -158,7 +158,7 @@ cr.define('ntp', function() {
     }  // Ignore buttons other than left and middle.
     chrome.send(
         'recordAppLaunchByURL',
-        [encodeURIComponent(this.href), ntp.APP_LAUNCH.NTP_WEBSTORE_FOOTER]);
+        [this.href, ntp.APP_LAUNCH.NTP_WEBSTORE_FOOTER]);
   }
 
   /**
