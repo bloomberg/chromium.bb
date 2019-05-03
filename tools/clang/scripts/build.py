@@ -335,8 +335,6 @@ def main():
     return 1
 
   if args.llvm_force_head_revision:
-    # Always run tests for ToT builds.
-    args.run_tests = True
     # Don't build fuchsia runtime on ToT bots at all.
     args.with_fuchsia = False
 
@@ -770,7 +768,7 @@ def main():
                fuchsia_lib_dst_dir)
 
   # Run tests.
-  if args.run_tests:
+  if args.run_tests or args.force_head_revision:
     os.chdir(LLVM_BUILD_DIR)
     RunCommand(['ninja', 'cr-check-all'], msvc_arch='x64')
   if args.run_tests:
