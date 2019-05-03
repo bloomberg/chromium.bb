@@ -9,39 +9,39 @@
 
 // Expose for testing.
 /** @type {adapter_broker.AdapterBroker} */
-var adapterBroker = null;
+let adapterBroker = null;
 /** @type {device_collection.DeviceCollection} */
-var devices = null;
+let devices = null;
 /** @type {sidebar.Sidebar} */
-var sidebarObj = null;
+let sidebarObj = null;
 
 cr.define('bluetooth_internals', function() {
-  /** @const */ var AdapterPage = adapter_page.AdapterPage;
-  /** @const */ var DeviceDetailsPage = device_details_page.DeviceDetailsPage;
-  /** @const */ var DevicesPage = devices_page.DevicesPage;
-  /** @const */ var PageManager = cr.ui.pageManager.PageManager;
-  /** @const */ var Snackbar = snackbar.Snackbar;
-  /** @const */ var SnackbarType = snackbar.SnackbarType;
+  const AdapterPage = adapter_page.AdapterPage;
+  const DeviceDetailsPage = device_details_page.DeviceDetailsPage;
+  const DevicesPage = devices_page.DevicesPage;
+  const PageManager = cr.ui.pageManager.PageManager;
+  const Snackbar = snackbar.Snackbar;
+  const SnackbarType = snackbar.SnackbarType;
 
   devices = new device_collection.DeviceCollection([]);
 
   /** @type {adapter_page.AdapterPage} */
-  var adapterPage = null;
+  let adapterPage = null;
   /** @type {devices_page.DevicesPage} */
-  var devicesPage = null;
+  let devicesPage = null;
 
   /** @type {bluetooth.mojom.DiscoverySessionProxy} */
-  var discoverySession = null;
+  let discoverySession = null;
 
   /** @type {boolean} */
-  var userRequestedScanStop = false;
+  let userRequestedScanStop = false;
 
   /**
    * Observer for page changes. Used to update page title header.
    * @constructor
    * @extends {cr.ui.pageManager.PageManager.Observer}
    */
-  var PageObserver = function() {};
+  const PageObserver = function() {};
 
   PageObserver.prototype = {
     __proto__: PageManager.Observer.prototype,
@@ -66,10 +66,10 @@ cr.define('bluetooth_internals', function() {
    * @param {string} address
    */
   function removeDeviceDetailsPage(address) {
-    var id = 'devices/' + address.toLowerCase();
+    const id = 'devices/' + address.toLowerCase();
     sidebarObj.removeItem(id);
 
-    var deviceDetailsPage = PageManager.registeredPages[id];
+    const deviceDetailsPage = PageManager.registeredPages[id];
     assert(deviceDetailsPage, 'Device Details page must exist');
 
     deviceDetailsPage.disconnect();
@@ -92,13 +92,13 @@ cr.define('bluetooth_internals', function() {
    * @return {!device_details_page.DeviceDetailsPage}
    */
   function makeDeviceDetailsPage(deviceInfo) {
-    var deviceDetailsPageId = 'devices/' + deviceInfo.address.toLowerCase();
-    var deviceDetailsPage = PageManager.registeredPages[deviceDetailsPageId];
+    const deviceDetailsPageId = 'devices/' + deviceInfo.address.toLowerCase();
+    let deviceDetailsPage = PageManager.registeredPages[deviceDetailsPageId];
     if (deviceDetailsPage) {
       return deviceDetailsPage;
     }
 
-    var pageSection = document.createElement('section');
+    const pageSection = document.createElement('section');
     pageSection.hidden = true;
     pageSection.id = deviceDetailsPageId;
     $('page-container').appendChild(pageSection);
@@ -140,8 +140,8 @@ cr.define('bluetooth_internals', function() {
    * @param {string} address
    */
   function updateDeviceDetailsPage(address) {
-    var detailPageId = 'devices/' + address.toLowerCase();
-    var page = PageManager.registeredPages[detailPageId];
+    const detailPageId = 'devices/' + address.toLowerCase();
+    const page = PageManager.registeredPages[detailPageId];
     if (page) {
       page.redraw();
     }
@@ -195,7 +195,7 @@ cr.define('bluetooth_internals', function() {
     devicesPage.setDevices(devices);
 
     devicesPage.pageDiv.addEventListener('inspectpressed', function(event) {
-      var detailsPage =
+      const detailsPage =
           makeDeviceDetailsPage(devices.getByAddress(event.detail.address));
       PageManager.showPageByName(detailsPage.name);
     });
@@ -262,7 +262,7 @@ cr.define('bluetooth_internals', function() {
     // Set up hash-based navigation.
     window.addEventListener('hashchange', function() {
       // If a user navigates and the page doesn't exist, do nothing.
-      var pageName = window.location.hash.substr(1);
+      const pageName = window.location.hash.substr(1);
       if ($(pageName)) {
         PageManager.showPageByName(pageName);
       }

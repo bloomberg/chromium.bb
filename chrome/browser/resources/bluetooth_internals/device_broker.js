@@ -14,7 +14,7 @@
  * @type {?Map<string,
  *     !bluetooth.mojom.DeviceProxy|!Promise<!bluetooth.mojom.DeviceProxy>>}
  */
-var connectedDevices = null;
+let connectedDevices = null;
 
 cr.define('device_broker', function() {
   connectedDevices = new Map();
@@ -28,12 +28,12 @@ cr.define('device_broker', function() {
    * @return {!Promise<!bluetooth.mojom.DeviceProxy>}
    */
   function connectToDevice(address) {
-    var deviceOrPromise = connectedDevices.get(address) || null;
+    const deviceOrPromise = connectedDevices.get(address) || null;
     if (deviceOrPromise !== null) {
       return Promise.resolve(deviceOrPromise);
     }
 
-    var promise = /** @type {!Promise<!bluetooth.mojom.DeviceProxy>} */ (
+    const promise = /** @type {!Promise<!bluetooth.mojom.DeviceProxy>} */ (
         adapter_broker.getAdapterBroker()
             .then(function(adapterBroker) {
               return adapterBroker.connectToDevice(address);

@@ -9,15 +9,15 @@
  */
 
 cr.define('device_details_page', function() {
-  /** @const */ var Page = cr.ui.pageManager.Page;
-  /** @const */ var Snackbar = snackbar.Snackbar;
-  /** @const */ var SnackbarType = snackbar.SnackbarType;
+  const Page = cr.ui.pageManager.Page;
+  const Snackbar = snackbar.Snackbar;
+  const SnackbarType = snackbar.SnackbarType;
 
   /**
    * Property names that will be displayed in the ObjectFieldSet which contains
    * the DeviceInfo object.
    */
-  var PROPERTY_NAMES = {
+  const PROPERTY_NAMES = {
     name: 'Name',
     address: 'Address',
     isGattConnected: 'GATT Connected',
@@ -143,7 +143,7 @@ cr.define('device_details_page', function() {
 
     /** Redraws the contents of the page with the current |deviceInfo|. */
     redraw() {
-      var isConnected = this.deviceInfo.isGattConnected;
+      const isConnected = this.deviceInfo.isGattConnected;
 
       // Update status if connection has changed.
       if (isConnected) {
@@ -152,22 +152,22 @@ cr.define('device_details_page', function() {
         this.disconnect();
       }
 
-      var connectedText = isConnected ? 'Connected' : 'Not Connected';
+      const connectedText = isConnected ? 'Connected' : 'Not Connected';
 
-      var rssi = this.deviceInfo.rssi || {};
-      var services = this.services;
+      const rssi = this.deviceInfo.rssi || {};
+      const services = this.services;
 
-      var rssiValue = 'Unknown';
+      let rssiValue = 'Unknown';
       if (rssi.value != null && rssi.value <= 0) {
         rssiValue = rssi.value;
       }
 
-      var serviceCount = 'Unknown';
+      let serviceCount = 'Unknown';
       if (services != null && services.length >= 0) {
         serviceCount = services.length;
       }
 
-      var deviceViewObj = {
+      const deviceViewObj = {
         name: this.deviceInfo.nameForDisplay,
         address: this.deviceInfo.address,
         isGattConnected: connectedText,
