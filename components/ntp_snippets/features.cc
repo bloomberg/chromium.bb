@@ -71,7 +71,7 @@ const char kNotificationsDailyLimit[] = "daily_limit";
 const char kNotificationsIgnoredLimitParam[] = "ignored_limit";
 
 const base::Feature kKeepPrefetchedContentSuggestions{
-    "KeepPrefetchedContentSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
+    "KeepPrefetchedContentSuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kContentSuggestionsDebugLog{
     "ContentSuggestionsDebugLog", base::FEATURE_DISABLED_BY_DEFAULT};
