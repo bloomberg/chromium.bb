@@ -356,6 +356,58 @@ TEST_F(ThemeServiceTest, GetColorForToolbarButton) {
       ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON));
 }
 
+TEST_F(ThemeServiceTest, NTPLogoAlternate) {
+  ThemeService* theme_service =
+      ThemeServiceFactory::GetForProfile(profile_.get());
+  theme_service->UseDefaultTheme();
+  // Let the ThemeService uninstall unused themes.
+  base::RunLoop().RunUntilIdle();
+
+  const ui::ThemeProvider& theme_provider =
+      ThemeService::GetThemeProviderForProfile(profile_.get());
+  {
+    base::ScopedTempDir temp_dir;
+    ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+    LoadUnpackedTheme(temp_dir.GetPath(),
+                      "extensions/theme_grey_ntp/manifest.json");
+    // When logo alternate is not specified and ntp is grey, logo should be
+    // colorful.
+    EXPECT_EQ(0, theme_provider.GetDisplayProperty(
+                     ThemeProperties::NTP_LOGO_ALTERNATE));
+  }
+
+  {
+    base::ScopedTempDir temp_dir;
+    ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+    LoadUnpackedTheme(temp_dir.GetPath(),
+                      "extensions/theme_grey_ntp_white_logo/manifest.json");
+    // Logo alternate should match what is specified in the manifest.
+    EXPECT_EQ(1, theme_provider.GetDisplayProperty(
+                     ThemeProperties::NTP_LOGO_ALTERNATE));
+  }
+
+  {
+    base::ScopedTempDir temp_dir;
+    ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+    LoadUnpackedTheme(temp_dir.GetPath(),
+                      "extensions/theme_color_ntp_white_logo/manifest.json");
+    // When logo alternate is not specified and ntp is colorful, logo should be
+    // white.
+    EXPECT_EQ(1, theme_provider.GetDisplayProperty(
+                     ThemeProperties::NTP_LOGO_ALTERNATE));
+  }
+
+  {
+    base::ScopedTempDir temp_dir;
+    ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+    LoadUnpackedTheme(temp_dir.GetPath(),
+                      "extensions/theme_color_ntp_colorful_logo/manifest.json");
+    // Logo alternate should match what is specified in the manifest.
+    EXPECT_EQ(0, theme_provider.GetDisplayProperty(
+                     ThemeProperties::NTP_LOGO_ALTERNATE));
+  }
+}
+
 namespace {
 
 // NotificationObserver which emulates an infobar getting destroyed when the

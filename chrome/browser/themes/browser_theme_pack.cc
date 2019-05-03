@@ -60,7 +60,7 @@ constexpr int kTallestFrameHeight = kTallestTabHeight + 19;
 // change default theme assets, if you need themes to recreate their generated
 // images (which are cached), or if you changed how missing values are
 // generated.
-const int kThemePackVersion = 65;
+const int kThemePackVersion = 66;
 
 // IDs that are in the DataPack won't clash with the positive integer
 // uint16_t. kHeaderID should always have the maximum value because we want the
@@ -1163,8 +1163,6 @@ void BrowserThemePack::InitDisplayProperties() {
     display_properties_[i].id = -1;
     display_properties_[i].property = 0;
   }
-  display_properties_[0].id = TP::NTP_LOGO_ALTERNATE;
-  display_properties_[0].property = 1;
 }
 
 void BrowserThemePack::InitSourceImages() {
