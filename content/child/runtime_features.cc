@@ -487,6 +487,9 @@ void SetIndividualRuntimeFeatures(
 
   WebRuntimeFeatures::EnableStaleWhileRevalidate(
       base::FeatureList::IsEnabled(features::kStaleWhileRevalidate));
+
+  WebRuntimeFeatures::EnableSkipTouchEventFilter(
+      base::FeatureList::IsEnabled(features::kSkipTouchEventFilter));
 }
 
 }  // namespace

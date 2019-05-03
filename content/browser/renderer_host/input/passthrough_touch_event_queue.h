@@ -60,8 +60,8 @@ class CONTENT_EXPORT PassthroughTouchEventQueue {
               base::TimeDelta::FromMilliseconds(1000)),
           touch_ack_timeout_supported(false),
           skip_touch_filter(
-              base::FeatureList::IsEnabled(features::kSkipBrowserTouchFilter)),
-          events_to_always_forward(kSkipBrowserTouchFilterType.Get()) {}
+              base::FeatureList::IsEnabled(features::kSkipTouchEventFilter)),
+          events_to_always_forward(kSkipTouchEventFilterType.Get()) {}
 
     // Touch ack timeout delay for desktop sites. If zero, timeout behavior
     // is disabled for such sites. Defaults to 200ms.
@@ -242,7 +242,7 @@ class CONTENT_EXPORT PassthroughTouchEventQueue {
   const bool skip_touch_filter_;
   // What events types are allowed to bypass the filter.
   const std::string events_to_always_forward_;
-  static const base::FeatureParam<std::string> kSkipBrowserTouchFilterType;
+  static const base::FeatureParam<std::string> kSkipTouchEventFilterType;
 
   DISALLOW_COPY_AND_ASSIGN(PassthroughTouchEventQueue);
 };

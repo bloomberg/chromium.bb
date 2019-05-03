@@ -44,10 +44,10 @@ bool HasPointChanged(const WebTouchPoint& point_1,
 
 // static
 const base::FeatureParam<std::string>
-    PassthroughTouchEventQueue::kSkipBrowserTouchFilterType{
-        &features::kSkipBrowserTouchFilter,
-        features::kSkipBrowserTouchFilterTypeParamName,
-        features::kSkipBrowserTouchFilterTypeParamValueDiscrete};
+    PassthroughTouchEventQueue::kSkipTouchEventFilterType{
+        &features::kSkipTouchEventFilter,
+        features::kSkipTouchEventFilterTypeParamName,
+        features::kSkipTouchEventFilterTypeParamValueDiscrete};
 
 PassthroughTouchEventQueue::TouchEventWithLatencyInfoAndAckState::
     TouchEventWithLatencyInfoAndAckState(const TouchEventWithLatencyInfo& event)
@@ -322,13 +322,13 @@ PassthroughTouchEventQueue::FilterBeforeForwarding(const WebTouchEvent& event) {
 
 bool PassthroughTouchEventQueue::ShouldFilterForEvent(
     const blink::WebTouchEvent& event) {
-  // Always run all filtering if the SkipBrowserTouchFilter is disabled.
+  // Always run all filtering if the SkipTouchEventFilter is disabled.
   if (!skip_touch_filter_)
     return true;
   // If the experiment is enabled and all events are forwarded, always skip
   // filtering.
   if (events_to_always_forward_ ==
-      features::kSkipBrowserTouchFilterTypeParamValueAll)
+      features::kSkipTouchEventFilterTypeParamValueAll)
     return false;
   // If the experiment is enabled and only discrete events are forwarded,
   // always run filtering for touchmove events only.
@@ -356,7 +356,7 @@ PassthroughTouchEventQueue::FilterBeforeForwardingImpl(
     drop_remaining_touches_in_sequence_ = false;
     if (!has_handlers_) {
       drop_remaining_touches_in_sequence_ = true;
-      // If the SkipBrowserTouchFilter experiment is running, drop through to
+      // If the SkipTouchEventFilter experiment is running, drop through to
       // the loop that filters events with no nonstationary pointers below.
       if (ShouldFilterForEvent(event))
         return PreFilterResult::kFilteredNoPageHandlers;
@@ -365,7 +365,7 @@ PassthroughTouchEventQueue::FilterBeforeForwardingImpl(
 
   if (drop_remaining_touches_in_sequence_ &&
       event.GetType() != WebInputEvent::kTouchCancel &&
-      // If the SkipBrowserTouchFilter experiment is running, drop through to
+      // If the SkipTouchEventFilter experiment is running, drop through to
       // the loop that filters events with no nonstationary pointers below.
       ShouldFilterForEvent(event))
     return PreFilterResult::kFilteredNoPageHandlers;
@@ -373,7 +373,7 @@ PassthroughTouchEventQueue::FilterBeforeForwardingImpl(
   if (event.GetType() == WebInputEvent::kTouchStart) {
     if (has_handlers_ || maybe_has_handler_for_current_sequence_)
       return PreFilterResult::kUnfiltered;
-    // If the SkipBrowserTouchFilter experiment is running, drop through to
+    // If the SkipTouchEventFilter experiment is running, drop through to
     // the loop that filters events with no nonstationary pointers below.
     else if (ShouldFilterForEvent(event))
       return PreFilterResult::kFilteredNoPageHandlers;

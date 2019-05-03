@@ -184,19 +184,19 @@ InputHandlerProxy::InputHandlerProxy(cc::InputHandler* input_handler,
   scroll_predictor_ = std::make_unique<ScrollPredictor>(
       base::FeatureList::IsEnabled(features::kResamplingScrollEvents));
 
-  if (base::FeatureList::IsEnabled(features::kSkipBrowserTouchFilter) &&
+  if (base::FeatureList::IsEnabled(features::kSkipTouchEventFilter) &&
       GetFieldTrialParamValueByFeature(
-          features::kSkipBrowserTouchFilter,
-          features::kSkipBrowserTouchFilterFilteringProcessParamName) ==
+          features::kSkipTouchEventFilter,
+          features::kSkipTouchEventFilterFilteringProcessParamName) ==
           features::
-              kSkipBrowserTouchFilterFilteringProcessParamValueBrowserAndRenderer) {
+              kSkipTouchEventFilterFilteringProcessParamValueBrowserAndRenderer) {
     // Skipping filtering for touch events on renderer process is enabled.
     // Always skip filtering discrete events.
     skip_touch_filter_discrete_ = true;
     if (GetFieldTrialParamValueByFeature(
-            features::kSkipBrowserTouchFilter,
-            features::kSkipBrowserTouchFilterTypeParamName) ==
-        features::kSkipBrowserTouchFilterTypeParamValueAll) {
+            features::kSkipTouchEventFilter,
+            features::kSkipTouchEventFilterTypeParamName) ==
+        features::kSkipTouchEventFilterTypeParamValueAll) {
       // The experiment config also specifies to skip touchmove events.
       skip_touch_filter_all_ = true;
     }
