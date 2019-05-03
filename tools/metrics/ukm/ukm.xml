@@ -5542,6 +5542,15 @@ be describing additional metrics about the same event.
       Set to 1 when a user is shown a client lo-fi image in a page load.
     </summary>
   </metric>
+  <metric name="coin_flip_result">
+    <summary>
+      Set to 0 if there was no attempted preview for this page load, or the coin
+      flip holdback is disabled in this session. Set to 1 if a preview was
+      attempted and was allowed to proceed by the coin flip. Set to 2 if a
+      preview would have been attempted but was held back by the coin flip. Note
+      that a non-zero value in this field implies previews_likely.
+    </summary>
+  </metric>
   <metric name="lite_page">
     <summary>
       Set to 1 when a user is shown a lite page in page load.
@@ -5583,6 +5592,14 @@ be describing additional metrics about the same event.
       response. This is a directive from the origin to not perform any
       transformation so in the context of the Previews feature, it is an opt-out
       by the origin site (rather than the user).
+    </summary>
+  </metric>
+  <metric name="previews_likely">
+    <summary>
+      Set to 1 when a preview will be attempted for this page load. Otherwise
+      this is not set. This does not imply that a preview will be committed,
+      only that one will be attempted. This is set to 1 even if this page load
+      is impacted by the coin flip holdback.
     </summary>
   </metric>
   <metric name="resource_loading_hints">
