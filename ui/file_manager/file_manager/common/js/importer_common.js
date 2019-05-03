@@ -726,12 +726,9 @@ importer.Logger.prototype.catcher;
  * @implements {importer.Logger}
  * @final
  *
- * @param {!Promise<!FileEntry>} fileEntryPromise
  */
 importer.RuntimeLogger = class {
   /**
-   * @implements {importer.Logger}
-   *
    * @param {!Promise<!FileEntry>} fileEntryPromise
    */
   constructor(fileEntryPromise) {
