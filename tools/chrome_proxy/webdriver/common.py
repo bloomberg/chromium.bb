@@ -599,6 +599,21 @@ class TestDriver:
     self._logger.debug('Got %s histogram=%s', histogram, string_response)
     return json.loads(string_response)
 
+  def GetBrowserHistogram(self, histogram, timeout=30):
+    """Gets a Chrome histogram as a dictionary object from browser process.
+
+    Args:
+      histogram: the name of the histogram to fetch
+      timeout: timeout for the underlying Javascript query.
+
+    Returns:
+      A dictionary object containing information about the histogram.
+    """
+    js_query = 'statsCollectionController.getBrowserHistogram("%s")' % histogram
+    string_response = self.ExecuteJavascriptStatement(js_query, timeout)
+    self._logger.debug('Got %s histogram=%s', histogram, string_response)
+    return json.loads(string_response)
+
   def WaitForJavascriptExpression(self, expression, timeout, min_poll=0.1,
       max_poll=1):
     """Waits for the given Javascript expression to evaluate to True within the
@@ -693,14 +708,14 @@ class TestDriver:
     Returns:
       Whether the histogram exists
     """
-    histogram = {}
-    while(not histogram and sleep_intervals > 0):
-      histogram = self.GetHistogram(histogram_name, 5)
-      if (not histogram):
-        time.sleep(1)
-        sleep_intervals -= 1
+    while (sleep_intervals > 0):
+      if (self.GetHistogram(histogram_name, 3) or
+          self.GetBrowserHistogram(histogram_name, 3)):
+        return True
+      time.sleep(1)
+      sleep_intervals -= 1
 
-    return bool(histogram)
+    return False
 
   def GetHTTPResponses(self, include_favicon=False, skip_domainless_pages=True,
       override_has_logs=False):

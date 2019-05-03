@@ -34,7 +34,7 @@ class Fallback(IntegrationTest):
       self.assertNotEqual(0, len(responses))
       # Verify that DataReductionProxy.ProbeURL histogram has one entry in
       # FAILED_PROXY_DISABLED, which is bucket=1.
-      histogram = test_driver.GetHistogram('DataReductionProxy.ProbeURL')
+      histogram = test_driver.GetBrowserHistogram('DataReductionProxy.ProbeURL')
       self.assertEqual(histogram['count'], 1)
       self.assertEqual(histogram['buckets'][0]['low'], 1)
       for response in responses:
