@@ -31,7 +31,13 @@ SyncSessionsRouterTabHelper::SyncSessionsRouterTabHelper(
     SyncSessionsWebContentsRouter* router)
     : content::WebContentsObserver(web_contents),
       router_(router),
-      source_tab_id_(SessionID::InvalidValue()) {}
+      source_tab_id_(SessionID::InvalidValue()) {
+  chrome_translate_client_ =
+      ChromeTranslateClient::FromWebContents(web_contents);
+  // A translate client is not always attached to web contents (e.g. tests).
+  if (chrome_translate_client_)
+    chrome_translate_client_->translate_driver().AddObserver(this);
+}
 
 SyncSessionsRouterTabHelper::~SyncSessionsRouterTabHelper() {}
 
@@ -47,6 +53,8 @@ void SyncSessionsRouterTabHelper::TitleWasSet(content::NavigationEntry* entry) {
 
 void SyncSessionsRouterTabHelper::WebContentsDestroyed() {
   NotifyRouter();
+  if (chrome_translate_client_)
+    chrome_translate_client_->translate_driver().RemoveObserver(this);
 }
 
 void SyncSessionsRouterTabHelper::DidFinishLoad(
@@ -68,6 +76,12 @@ void SyncSessionsRouterTabHelper::DidOpenRequestedURL(
     bool started_from_context_menu,
     bool renderer_initiated) {
   SetSourceTabIdForChild(new_contents);
+}
+
+void SyncSessionsRouterTabHelper::OnLanguageDetermined(
+    const translate::LanguageDetectionDetails& details) {
+  // TODO (crbug.com/957657): NotifyRouter() when language is synced on
+  // notification.
 }
 
 void SyncSessionsRouterTabHelper::SetSourceTabIdForChild(
