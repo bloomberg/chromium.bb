@@ -3654,11 +3654,7 @@ if (enable_java_templates) {
             java_sources_file = _java_sources_file
           }
           output_jar_path = _final_jar_path
-          if (_has_sources) {
-            deps = _accumulated_public_deps  # compile & build_config
-          } else {
-            deps = _accumulated_deps + _accumulated_public_deps
-          }
+          deps = _accumulated_deps + _accumulated_public_deps
         }
         _accumulated_public_deps += [ ":$_process_prebuilt_target_name" ]
 
