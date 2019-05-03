@@ -33,6 +33,11 @@ void GFX_EXPORT ParseFontLinkEntry(const std::string& entry,
 void GFX_EXPORT ParseFontFamilyString(const std::string& family,
                                      std::vector<std::string>* font_names);
 
+// Exposed for unittest.
+bool GFX_EXPORT GetUniscribeFallbackFont(const Font& font,
+                                         const wchar_t* text,
+                                         int text_length,
+                                         Font* result);
 }  // namespace internal
 
 }  // namespace gfx

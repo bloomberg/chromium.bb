@@ -189,33 +189,126 @@ CachedFontLinkSettings::CachedFontLinkSettings() {
 CachedFontLinkSettings::~CachedFontLinkSettings() {
 }
 
+struct MetaFileEnumState {
+  DWORD current_font_handle = 0;
+  std::map<DWORD, std::string> font_handle_map;
+  base::StringPiece16 expected_text;
+  std::string fallback_font_name;
+  bool found_fallback = false;
+};
+
 // Callback to |EnumEnhMetaFile()| to intercept font creation.
 int CALLBACK MetaFileEnumProc(HDC hdc,
                               HANDLETABLE* table,
                               CONST ENHMETARECORD* record,
                               int table_entries,
-                              LPARAM log_font) {
+                              LPARAM param_state) {
+  // The MetaFileEnumProc() is called for every record produced in the metafile.
+  // The following code is processing the records and keep track of active
+  // objects in MetaFileEnumState struct. The state machine recognizes fonts
+  // creation, select object, delete object and text output. The fallback font
+  // is the active font when the expected text is outputted.
+  MetaFileEnumState* state = reinterpret_cast<MetaFileEnumState*>(param_state);
   if (record->iType == EMR_EXTCREATEFONTINDIRECTW) {
     const EMREXTCREATEFONTINDIRECTW* create_font_record =
         reinterpret_cast<const EMREXTCREATEFONTINDIRECTW*>(record);
-    *reinterpret_cast<LOGFONT*>(log_font) = create_font_record->elfw.elfLogFont;
+    DWORD handle = create_font_record->ihFont;
+    if (create_font_record->elfw.elfLogFont.lfFaceName[0]) {
+      state->font_handle_map[handle] =
+          base::UTF16ToUTF8(create_font_record->elfw.elfLogFont.lfFaceName);
+    } else {
+      // The font has no name. Removing the object from the set of known
+      // objects to avoid reporting the previous object has the fallback font.
+      DCHECK(!create_font_record->elfw.elfFullName[0]);
+      state->font_handle_map.erase(handle);
+    }
+  } else if (record->iType == EMR_SELECTOBJECT) {
+    const EMRSELECTOBJECT* select_record =
+        reinterpret_cast<const EMRSELECTOBJECT*>(record);
+    state->current_font_handle = select_record->ihObject;
+  } else if (record->iType == EMR_DELETEOBJECT) {
+    const EMRSELECTOBJECT* delete_record =
+        reinterpret_cast<const EMRDELETEOBJECT*>(record);
+    state->font_handle_map.erase(delete_record->ihObject);
+  } else if (record->iType == EMR_EXTTEXTOUTW) {
+    const EMREXTTEXTOUTW* textout_record =
+        reinterpret_cast<const EMREXTTEXTOUTW*>(record);
+
+    // Retrieve the text displayed. The outputted text can be retrieved after
+    // the record structure; the record contains a bytes offset to the beginning
+    // of the text.
+    const wchar_t* raw_chars = reinterpret_cast<const wchar_t*>(
+        reinterpret_cast<const uint8_t*>(textout_record) +
+        textout_record->emrtext.offString);
+    const int text_length = textout_record->emrtext.nChars;
+    base::StringPiece16 text(raw_chars, text_length);
+
+    if (text == state->expected_text) {
+      // The expected text is displayed. Collect the current font information.
+      auto it = state->font_handle_map.find(state->current_font_handle);
+      if (it != state->font_handle_map.end())
+        state->fallback_font_name = it->second;
+      state->found_fallback = !state->fallback_font_name.empty();
+    } else if (text != L" ") {
+      // Output of a space may be used for text alignment. If any other text is
+      // outputted, the code returns a failure and stop processing records.
+      return 0;
+    }
   }
+
+  // This function must return a nonzero value to continue enumeration; to stop
+  // enumeration, it must return zero.
   return 1;
 }
 
+}  // namespace
+
+namespace internal {
+
+// The |GetUniscribeFallbackFont| try to find fallback font by using the Windows
+// uniscribe API.
+//
+// Adapted from WebKit's |FontCache::GetFontDataForCharacters()|.
+// Uniscribe doesn't expose a method to query fallback fonts, so this works by
+// drawing the text to an EMF object with Uniscribe's ScriptStringOut and then
+// inspecting the EMF object to figure out which font Uniscribe used.
+//
+// DirectWrite in Windows 8.1 provides a cleaner alternative:
+// http://msdn.microsoft.com/en-us/library/windows/desktop/dn280480.aspx
+//
+// Example of a EMR script:
+//   EMR_HEADER
+//   EMR_EXTCREATEFONTINDIRECTW ID:1 (Set Font Segoe UI)
+//   EMR_SELECTOBJECT ID:1
+//   EMR_EXTCREATEFONTINDIRECTW ID:2  (Set Font Gadugi)
+//   EMR_SELECTOBJECT ID:2
+//   EMR_SELECTOBJECT ID:1
+//   EMR_DELETEOBJECT ID:2
+//   EMR_EXTCREATEFONTINDIRECTW ID:2 (Set Font Gadugi)
+//   EMR_SELECTOBJECT ID:2
+//   EMR_SELECTOBJECT ID:1
+//   EMR_EXTTEXTOUTW " "
+//   EMR_SETTEXTALIGN
+//   EMR_SETBKMODE
+//   EMR_MOVETOEX
+//   EMR_SETTEXTALIGN
+//   EMR_SELECTOBJECT ID:2
+//   EMR_EXTTEXTOUTW "..."
+//   EMR_SELECTOBJECT ID:1
+//   EMR_MOVETOEX
+//   EMR_SETTEXTALIGN
+//   MR_SETBKMODE
+//   EMR_DELETEOBJECT ID:2
+//   EMR_EOF
 bool GetUniscribeFallbackFont(const Font& font,
                               const wchar_t* text,
                               int text_length,
                               Font* result) {
-  // Adapted from WebKit's |FontCache::GetFontDataForCharacters()|.
-  // Uniscribe doesn't expose a method to query fallback fonts, so this works by
-  // drawing the text to an EMF object with Uniscribe's ScriptStringOut and then
-  // inspecting the EMF object to figure out which font Uniscribe used.
-  //
-  // DirectWrite in Windows 8.1 provides a cleaner alternative:
-  // http://msdn.microsoft.com/en-us/library/windows/desktop/dn280480.aspx
-
   static HDC hdc = CreateCompatibleDC(NULL);
+
+  // The length passed to |ScriptStringAnalyse| must be at least 1.
+  if (text_length <= 0)
+    return false;
 
   // Use a meta file to intercept the fallback font chosen by Uniscribe.
   HDC meta_file_dc = CreateEnhMetaFile(hdc, NULL, NULL, NULL);
@@ -249,26 +342,41 @@ bool GetUniscribeFallbackFont(const Font& font,
     ScriptStringFree(&script_analysis);
   }
 
-  bool found_fallback = false;
+  MetaFileEnumState state;
+  state.expected_text = base::StringPiece16(text, text_length);
+
   HENHMETAFILE meta_file = CloseEnhMetaFile(meta_file_dc);
   if (SUCCEEDED(hresult)) {
-    LOGFONT log_font;
-    log_font.lfFaceName[0] = 0;
-    EnumEnhMetaFile(0, meta_file, MetaFileEnumProc, &log_font, NULL);
-    if (log_font.lfFaceName[0]) {
-      *result =
-          Font(base::UTF16ToUTF8(log_font.lfFaceName), font.GetFontSize());
-      found_fallback = true;
+    BOOL eumeration_success =
+        EnumEnhMetaFile(0, meta_file, MetaFileEnumProc, &state, NULL);
+    // If the enumeration didn't succeed, we are assuming there are unknown
+    // command and the fallback font can't be determined.
+    if (eumeration_success != TRUE) {
+      state.fallback_font_name = "";
+      state.found_fallback = false;
     }
   }
   DeleteEnhMetaFile(meta_file);
 
-  return found_fallback;
+  // Same font, no fallback font required.
+  if (state.fallback_font_name == font.GetFontName()) {
+    state.fallback_font_name.clear();
+    state.found_fallback = false;
+  }
+
+  // The uniscribe code is selecting the 'Microsoft Sans Serif' as a last-resort
+  // font when it's unable to determine a valid fallback font.
+  if (state.fallback_font_name == "Microsoft Sans Serif") {
+    state.fallback_font_name.clear();
+    state.found_fallback = false;
+  }
+
+  // Create the resulting fallback font.
+  if (state.found_fallback)
+    *result = Font(state.fallback_font_name, font.GetFontSize());
+
+  return state.found_fallback;
 }
-
-}  // namespace
-
-namespace internal {
 
 void ParseFontLinkEntry(const std::string& entry,
                         std::string* filename,
@@ -292,8 +400,8 @@ void ParseFontFamilyString(const std::string& family,
   // followed optionally by the font family name and a pair of integer scaling
   // factors.
   // TODO(asvitkine): Should we support these scaling factors?
-  *font_names = base::SplitString(
-      family, "&", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  *font_names = base::SplitString(family, "&", base::TRIM_WHITESPACE,
+                                  base::SPLIT_WANT_ALL);
   if (!font_names->empty()) {
     const size_t index = font_names->back().find('(');
     if (index != std::string::npos) {
@@ -337,7 +445,7 @@ bool GetFallbackFont(const Font& font,
   factory.CopyTo(factory2.GetAddressOf());
   if (!factory2) {
     // IDWriteFactory2 is not available before Win8.1
-    return GetUniscribeFallbackFont(font, text, text_length, result);
+    return internal::GetUniscribeFallbackFont(font, text, text_length, result);
   }
 
   Microsoft::WRL::ComPtr<IDWriteFontFallback> fallback;
