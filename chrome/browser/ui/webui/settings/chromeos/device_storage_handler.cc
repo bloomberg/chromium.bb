@@ -34,7 +34,9 @@
 #include "chromeos/cryptohome/cryptohome_util.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
+#include "components/arc/session/arc_bridge_service.h"
 #include "components/browsing_data/content/conditional_cache_counting_helper.h"
 #include "components/drive/chromeos/file_system_interface.h"
 #include "components/user_manager/user_manager.h"
@@ -77,10 +79,15 @@ StorageHandler::StorageHandler(Profile* profile)
       updating_android_size_(false),
       updating_crostini_size_(false),
       updating_other_users_size_(false),
+      is_android_running_(false),
       profile_(profile),
       weak_ptr_factory_(this) {}
 
 StorageHandler::~StorageHandler() {
+  arc::ArcServiceManager::Get()
+      ->arc_bridge_service()
+      ->storage_manager()
+      ->RemoveObserver(this);
 }
 
 void StorageHandler::RegisterMessages() {
@@ -103,9 +110,27 @@ void StorageHandler::RegisterMessages() {
                           base::Unretained(this)));
 }
 
+void StorageHandler::OnJavascriptAllowed() {
+  // Start observing the mojo connection UpdateAndroidSize() relies on. Note
+  // that OnConnectionReady() will be called immediately if the connection has
+  // already been established.
+  arc::ArcServiceManager::Get()
+      ->arc_bridge_service()
+      ->storage_manager()
+      ->AddObserver(this);
+}
+
 void StorageHandler::OnJavascriptDisallowed() {
   // Ensure that pending callbacks do not complete and cause JS to be evaluated.
   weak_ptr_factory_.InvalidateWeakPtrs();
+
+  // Stop observing the mojo connection so that OnConnectionReady() and
+  // OnConnectionClosed() that use FireWebUIListener() won't be called while JS
+  // is disabled.
+  arc::ArcServiceManager::Get()
+      ->arc_bridge_service()
+      ->storage_manager()
+      ->RemoveObserver(this);
 }
 
 void StorageHandler::HandleUpdateStorageInfo(const base::ListValue* args) {
@@ -294,15 +319,12 @@ void StorageHandler::OnGetBrowsingDataSize(bool is_site_data, int64_t size) {
 }
 
 void StorageHandler::UpdateAndroidSize() {
-  if (!arc::IsArcPlayStoreEnabledForProfile(profile_))
+  if (!is_android_running_)
     return;
 
   if (updating_android_size_)
     return;
   updating_android_size_ = true;
-
-  // Shows the item "Android apps and cache" and starts calculating size.
-  FireWebUIListener("storage-android-enabled-changed", base::Value(true));
 
   bool success = false;
   auto* arc_storage_manager =
@@ -393,6 +415,17 @@ void StorageHandler::OnGetOtherUserSize(
     FireWebUIListener("storage-other-users-size-changed",
                       base::Value(size_string));
   }
+}
+
+void StorageHandler::OnConnectionReady() {
+  is_android_running_ = true;
+  FireWebUIListener("storage-android-enabled-changed", base::Value(true));
+  UpdateAndroidSize();
+}
+
+void StorageHandler::OnConnectionClosed() {
+  is_android_running_ = false;
+  FireWebUIListener("storage-android-enabled-changed", base::Value(false));
 }
 
 }  // namespace settings

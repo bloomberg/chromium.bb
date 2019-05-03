@@ -16,6 +16,8 @@
 #include "chrome/browser/browsing_data/site_data_size_collector.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
+#include "components/arc/common/storage_manager.mojom.h"
+#include "components/arc/session/connection_observer.h"
 #include "components/arc/storage_manager/arc_storage_manager.h"
 #include "components/user_manager/user.h"
 
@@ -28,7 +30,9 @@ enum class CrostiniResult;
 namespace chromeos {
 namespace settings {
 
-class StorageHandler : public ::settings::SettingsPageUIHandler {
+class StorageHandler
+    : public ::settings::SettingsPageUIHandler,
+      public arc::ConnectionObserver<arc::mojom::StorageManagerInstance> {
  public:
   // Enumeration for device state about remaining space. These values must be
   // kept in sync with settings.StorageSpaceState in JS code.
@@ -41,10 +45,14 @@ class StorageHandler : public ::settings::SettingsPageUIHandler {
   explicit StorageHandler(Profile* profile);
   ~StorageHandler() override;
 
-  // SettingsPageUIHandler implementation.
+  // ::settings::SettingsPageUIHandler:
   void RegisterMessages() override;
-  void OnJavascriptAllowed() override {}
+  void OnJavascriptAllowed() override;
   void OnJavascriptDisallowed() override;
+
+  // arc::ConnectionObserver<arc::mojom::StorageManagerInstance>:
+  void OnConnectionReady() override;
+  void OnConnectionClosed() override;
 
  private:
   // Handlers of JS messages.
@@ -131,6 +139,10 @@ class StorageHandler : public ::settings::SettingsPageUIHandler {
   bool updating_android_size_;
   bool updating_crostini_size_;
   bool updating_other_users_size_;
+
+  // A flag for keeping track of the mojo connection status to the ARC
+  // container.
+  bool is_android_running_;
 
   Profile* const profile_;
   base::WeakPtrFactory<StorageHandler> weak_ptr_factory_;
