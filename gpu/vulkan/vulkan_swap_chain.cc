@@ -340,7 +340,6 @@ void VulkanSwapChain::DestroySwapImages() {
   begin_write_semaphore_ = VK_NULL_HANDLE;
   end_write_semaphore_ = VK_NULL_HANDLE;
   images_.clear();
-  fence_helper->GenerateCleanupFence();
 }
 
 void VulkanSwapChain::BeginWriteCurrentImage(VkImage* image,
