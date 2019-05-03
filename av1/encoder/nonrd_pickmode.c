@@ -1050,6 +1050,7 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
   // initialize mode decisions
   av1_invalid_rd_stats(&best_rdc);
+  av1_invalid_rd_stats(&this_rdc);
   av1_invalid_rd_stats(rd_cost);
   mi->sb_type = bsize;
   mi->ref_frame[0] = NONE_FRAME;
