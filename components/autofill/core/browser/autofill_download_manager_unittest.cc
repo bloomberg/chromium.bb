@@ -52,6 +52,7 @@
 #include "services/network/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/re2/src/re2/re2.h"
 #include "url/third_party/mozilla/url_parse.h"
 
 using base::UTF8ToUTF16;
@@ -116,6 +117,54 @@ bool GetUploadRequestProtoFromRequest(
   }
   return true;
 }
+
+bool GetAutofillPageResourceQueryRequestFromRequest(
+    network::TestURLLoaderFactory::PendingRequest* loader_request,
+    AutofillPageResourceQueryRequest* query_request) {
+  if (loader_request->request.request_body == nullptr) {
+    return false;
+  }
+
+  std::string request_body_content = GetStringFromDataElements(
+      loader_request->request.request_body->elements());
+  if (!query_request->ParseFromString(request_body_content)) {
+    return false;
+  }
+  return true;
+}
+
+bool DeserializeAutofillPageQueryRequest(base::StringPiece serialized_content,
+                                         AutofillPageQueryRequest* request) {
+  std::string decoded_content;
+  if (!base::Base64UrlDecode(serialized_content,
+                             base::Base64UrlDecodePolicy::REQUIRE_PADDING,
+                             &decoded_content)) {
+    return false;
+  }
+  if (!request->ParseFromString(decoded_content)) {
+    return false;
+  }
+  return true;
+}
+
+class AutofillDownloadManagerWithCustomPayloadSize
+    : public AutofillDownloadManager {
+ public:
+  ~AutofillDownloadManagerWithCustomPayloadSize() override {}
+  AutofillDownloadManagerWithCustomPayloadSize(AutofillDriver* driver,
+                                               Observer* observer,
+                                               const std::string& api_key,
+                                               size_t length)
+      : AutofillDownloadManager(driver, observer, api_key), length_(length) {}
+
+ protected:
+  size_t GetPayloadLength(base::StringPiece payload) const override {
+    return length_;
+  }
+
+ private:
+  size_t length_;
+};
 
 }  // namespace
 
@@ -499,22 +548,151 @@ TEST_F(AutofillDownloadManagerTest, QueryAPITest) {
   // Inspect the request that the test URL loader sent.
   network::TestURLLoaderFactory::PendingRequest* request =
       test_url_loader_factory_.GetPendingRequest(0);
-  // This is the URL we expect to query the API. The sub-path right after
-  // "/page" corresponds to the serialized AutofillPageQueryRequest proto (that
-  // we filled forms in) encoded in base64. The Autofill
-  // https://clients1.google.com/ domain URL corresponds to the default domain
-  // used by the download manager.
-  const std::string expected_url = {
-      "https://clients1.google.com/v1/pages/"
-      "Chc2LjEuMTcxNS4xNDQyL2VuIChHR0xMKRIlCU9O84MyjH9NEgsNeu"
-      "FP4BIAGgAiABILDZxOStASABoAIgAaAA==?"
-      "alt=proto"};
-  EXPECT_EQ(request->request.url, expected_url);
-  std::string api_key_header_value;
-  EXPECT_TRUE(request->request.headers.GetHeader("X-Goog-Api-Key",
-                                                 &api_key_header_value));
-  EXPECT_EQ(api_key_header_value, "dummykey");
 
+  // Verify request URL and the data payload it carries.
+  {
+    // This is the URL we expect to query the API. The sub-path right after
+    // "/page" corresponds to the serialized AutofillPageQueryRequest proto
+    // (that we filled forms in) encoded in base64. The Autofill
+    // https://clients1.google.com/ domain URL corresponds to the default domain
+    // used by the download manager, which is invalid, but good for testing.
+    const std::string expected_url =
+        R"(https://clients1.google.com/v1/pages/(.+)\?alt=proto)";
+    std::string encoded_request;
+    ASSERT_TRUE(re2::RE2::FullMatch(request->request.url.spec(), expected_url,
+                                    &encoded_request));
+    AutofillPageQueryRequest request_content;
+    ASSERT_TRUE(
+        DeserializeAutofillPageQueryRequest(encoded_request, &request_content));
+    // Verify form content.
+    ASSERT_EQ(request_content.forms().size(), 1);
+    EXPECT_EQ(request_content.forms(0).signature(),
+              form_structures[0]->form_signature());
+    // Verify field content.
+    ASSERT_EQ(request_content.forms(0).fields().size(), 2);
+    EXPECT_EQ(request_content.forms(0).fields(0).signature(),
+              form_structures[0]->field(0)->GetFieldSignature());
+    EXPECT_EQ(request_content.forms(0).fields(1).signature(),
+              form_structures[0]->field(1)->GetFieldSignature());
+  }
+
+  // Verify API key header.
+  {
+    std::string header_value;
+    EXPECT_TRUE(
+        request->request.headers.GetHeader("X-Goog-Api-Key", &header_value));
+    EXPECT_EQ(header_value, "dummykey");
+  }
+  // Verify binary response header.
+  {
+    std::string header_value;
+    ASSERT_TRUE(request->request.headers.GetHeader(
+        "X-Goog-Encode-Response-If-Executable", &header_value));
+    EXPECT_EQ(header_value, "base64");
+  }
+
+  // Verify response.
+  test_url_loader_factory_.SimulateResponseWithoutRemovingFromPendingList(
+      request, "dummy response");
+  // Upon reception of a suggestions query, we expect OnLoadedServerPredictions
+  // to be called back from the observer and some histograms be incremented.
+  EXPECT_EQ(1U, responses_.size());
+  EXPECT_EQ(responses_.front().type_of_response,
+            AutofillDownloadManagerTest::QUERY_SUCCESSFULL);
+  histogram.ExpectBucketCount("Autofill.Query.WasInCache", CACHE_MISS, 1);
+  histogram.ExpectBucketCount("Autofill.Query.HttpResponseOrErrorCode",
+                              net::HTTP_OK, 1);
+}
+
+TEST_F(AutofillDownloadManagerTest, QueryAPITestWhenTooLongUrl) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      // Enabled
+      // We want to query the API rather than the legacy server.
+      {features::kAutofillUseApi},
+      // Disabled
+      {});
+
+  // Build the form structures that we want to query.
+  FormData form;
+  FormFieldData field;
+  // Fill a really long field that will bust the request URL size limit of 10
+  // KiB. This is not a lot of memory, hence this should not cause problems for
+  // machines running this test. This will force the fallback to POST.
+  field.name_attribute = base::string16(kMaxAPIQueryGetSize, 'a');
+  field.form_control_type = "text";
+  form.fields.push_back(field);
+
+  std::vector<std::unique_ptr<FormStructure>> form_structures;
+  {
+    auto form_structure = std::make_unique<FormStructure>(form);
+    form_structure->set_is_rich_query_enabled(true);
+    form_structures.push_back(std::move(form_structure));
+  }
+
+  AutofillDownloadManagerWithCustomPayloadSize download_manager(
+      &driver_, this, "dummykey", kMaxAPIQueryGetSize);
+
+  // Start the query request and look if it is successful. No response was
+  // received yet.
+  base::HistogramTester histogram;
+  EXPECT_TRUE(
+      download_manager.StartQueryRequest(ToRawPointerVector(form_structures)));
+
+  // Verify request.
+  // Verify if histograms are right.
+  histogram.ExpectUniqueSample("Autofill.ServerQueryResponse",
+                               AutofillMetrics::QUERY_SENT, 1);
+  // Verify that the logged method is POST.
+  histogram.ExpectUniqueSample("Autofill.Query.Method", METHOD_POST, 1);
+
+  // Get the latest request that the test URL loader sent.
+  network::TestURLLoaderFactory::PendingRequest* request =
+      test_url_loader_factory_.GetPendingRequest(0);
+  // Verify that the POST URL is used when request data too large.
+  const std::string expected_url = {
+      "https://clients1.google.com/v1/pages:get?alt=proto"};
+  // Verify API key header.
+  EXPECT_EQ(request->request.url, expected_url);
+  {
+    std::string header_value;
+    EXPECT_TRUE(
+        request->request.headers.GetHeader("X-Goog-Api-Key", &header_value));
+    EXPECT_EQ(header_value, "dummykey");
+  }
+  // Verify Content-Type header.
+  {
+    std::string header_value;
+    ASSERT_TRUE(
+        request->request.headers.GetHeader("Content-Type", &header_value));
+    EXPECT_EQ(header_value, "application/x-protobuf");
+  }
+  // Verify binary response header.
+  {
+    std::string header_value;
+    ASSERT_TRUE(request->request.headers.GetHeader(
+        "X-Goog-Encode-Response-If-Executable", &header_value));
+    EXPECT_EQ(header_value, "base64");
+  }
+  // Verify content of the POST body data.
+  {
+    AutofillPageResourceQueryRequest query_request;
+    ASSERT_TRUE(GetAutofillPageResourceQueryRequestFromRequest(request,
+                                                               &query_request));
+    AutofillPageQueryRequest request_content;
+    ASSERT_TRUE(DeserializeAutofillPageQueryRequest(
+        query_request.serialized_request(), &request_content));
+    // Verify form content.
+    ASSERT_EQ(request_content.forms().size(), 1);
+    EXPECT_EQ(request_content.forms(0).signature(),
+              form_structures[0]->form_signature());
+    // Verify field content.
+    ASSERT_EQ(request_content.forms(0).fields().size(), 1);
+    EXPECT_EQ(request_content.forms(0).fields(0).signature(),
+              form_structures[0]->field(0)->GetFieldSignature());
+  }
+
+  // Verify response.
   test_url_loader_factory_.SimulateResponseWithoutRemovingFromPendingList(
       request, "dummy response");
   // Upon reception of a suggestions query, we expect OnLoadedServerPredictions
