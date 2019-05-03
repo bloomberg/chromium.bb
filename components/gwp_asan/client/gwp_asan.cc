@@ -21,7 +21,7 @@
 #include "components/gwp_asan/client/guarded_page_allocator.h"
 
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
-#include "components/gwp_asan/client/sampling_allocator_shims.h"
+#include "components/gwp_asan/client/sampling_malloc_shims.h"
 #endif  // BUILDFLAG(USE_ALLOCATOR_SHIM)
 
 namespace gwp_asan {
@@ -177,8 +177,8 @@ bool EnableForMalloc(bool is_canary_dev, bool is_browser_process) {
   if (!SampleProcess(is_canary_dev, is_browser_process))
     return false;
 
-  InstallAllocatorHooks(max_allocations, max_metadata, total_pages,
-                        alloc_sampling_freq);
+  InstallMallocHooks(max_allocations, max_metadata, total_pages,
+                     alloc_sampling_freq);
   return true;
 }
 #endif  // BUILDFLAG(USE_ALLOCATOR_SHIM)

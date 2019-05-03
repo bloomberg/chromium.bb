@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/gwp_asan/client/sampling_allocator_shims.h"
+#include "components/gwp_asan/client/sampling_malloc_shims.h"
 
 #include <algorithm>
 
@@ -244,14 +244,14 @@ AllocatorDispatch g_allocator_dispatch = {
 }  // namespace
 
 // We expose the allocator singleton for unit tests.
-GWP_ASAN_EXPORT GuardedPageAllocator& GetGpaForTesting() {
+GWP_ASAN_EXPORT GuardedPageAllocator& GetMallocGpaForTesting() {
   return *gpa;
 }
 
-void InstallAllocatorHooks(size_t max_allocated_pages,
-                           size_t num_metadata,
-                           size_t total_pages,
-                           size_t sampling_frequency) {
+void InstallMallocHooks(size_t max_allocated_pages,
+                        size_t num_metadata,
+                        size_t total_pages,
+                        size_t sampling_frequency) {
   static crash_reporter::CrashKeyString<24> malloc_crash_key(kGpaCrashKey);
   gpa = new GuardedPageAllocator();
   gpa->Init(max_allocated_pages, num_metadata, total_pages);
@@ -262,7 +262,7 @@ void InstallAllocatorHooks(size_t max_allocated_pages,
 
 }  // namespace internal
 
-bool IsGwpAsanAllocation(const void* ptr) {
+bool IsGwpAsanMallocAllocation(const void* ptr) {
   return internal::gpa && internal::gpa->PointerIsMine(ptr);
 }
 

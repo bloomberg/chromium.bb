@@ -22,8 +22,8 @@ component("client") {
 
   if (use_allocator_shim) {
     sources += [
-      "sampling_allocator_shims.cc",
-      "sampling_allocator_shims.h",
+      "sampling_malloc_shims.cc",
+      "sampling_malloc_shims.h",
     ]
   }
 
@@ -44,7 +44,7 @@ source_set("unit_tests") {
   ]
 
   if (use_allocator_shim) {
-    sources += [ "sampling_allocator_shims_unittest.cc" ]
+    sources += [ "sampling_malloc_shims_unittest.cc" ]
   }
 
   deps = [

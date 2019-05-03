@@ -22,7 +22,7 @@
 #include "components/gwp_asan/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_GWP_ASAN_MALLOC)
-#include "components/gwp_asan/client/sampling_allocator_shims.h"  // nogncheck
+#include "components/gwp_asan/client/sampling_malloc_shims.h"  // nogncheck
 #endif
 
 // Deallocated objects are re-classed as |CrZombie|.  No superclass
@@ -99,7 +99,7 @@ void ZombieDealloc(id self, SEL _cmd) {
   // Use the original |-dealloc| if the object doesn't wish to be
   // zombied or GWP-ASan is the backing allocator.
 #if BUILDFLAG(ENABLE_GWP_ASAN_MALLOC)
-  bool gwp_asan_allocation = gwp_asan::IsGwpAsanAllocation(self);
+  bool gwp_asan_allocation = gwp_asan::IsGwpAsanMallocAllocation(self);
 #else
   bool gwp_asan_allocation = false;
 #endif
