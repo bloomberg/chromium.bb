@@ -161,6 +161,12 @@ public class GlobalNightModeStateController implements NightModeStateProvider,
         AppCompatDelegate.setDefaultNightMode(
                 mNightModeOn ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
         for (Observer observer : mObservers) observer.onNightModeStateChanged();
+
+        NightModeMetrics.recordNightModeState(mNightModeOn);
+        NightModeMetrics.recordThemePreferencesState(themeSetting);
+        if (mNightModeOn) {
+            NightModeMetrics.recordNightModeEnabledReason(themeSetting, mPowerSaveModeOn);
+        }
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)

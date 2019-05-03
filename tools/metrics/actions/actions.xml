@@ -1563,6 +1563,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Android.DarkTheme.Preference">
+  <owner>huayinz@chromium.org</owner>
+  <owner>chrome-android-app@chromium.org</owner>
+  <description>
+    User changed preference to use system default, light, or dark theme.
+  </description>
+</action>
+
 <action name="Android.Download.InfoBar.Accelerated">
   <owner>shaktisahu@chromium.org</owner>
   <description>
@@ -21890,6 +21898,14 @@ should be able to be added at any place in this file.
       label="Users tapped the currently selected tab in tab group bottom
              sheet."/>
   <affected-action name="MobileTabReturnedToCurrentTab"/>
+</action-suffix>
+
+<action-suffix separator="." ordering="suffix">
+  <suffix name="Dark" label="Users selected dark theme preference."/>
+  <suffix name="Light" label="Users selected light theme preference."/>
+  <suffix name="SystemDefault"
+      label="Users selected system default theme preference."/>
+  <affected-action name="Android.DarkTheme.Preference"/>
 </action-suffix>
 
 </actions>

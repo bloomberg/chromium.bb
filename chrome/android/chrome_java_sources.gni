@@ -960,6 +960,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/nfc/BeamController.java",
   "java/src/org/chromium/chrome/browser/nfc/BeamProvider.java",
   "java/src/org/chromium/chrome/browser/night_mode/GlobalNightModeStateController.java",
+  "java/src/org/chromium/chrome/browser/night_mode/NightModeMetrics.java",
   "java/src/org/chromium/chrome/browser/night_mode/NightModeStateProvider.java",
   "java/src/org/chromium/chrome/browser/night_mode/NightModeUtils.java",
   "java/src/org/chromium/chrome/browser/night_mode/SystemNightModeMonitor.java",
