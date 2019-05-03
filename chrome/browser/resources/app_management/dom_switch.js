@@ -75,6 +75,8 @@ Polymer({
     },
   },
 
+  firstRenderForTesting_: new PromiseResolver(),
+
   attached: function() {
     const template = this.getContentChildren()[0];
     this.templatize(template);
@@ -111,6 +113,7 @@ Polymer({
     }
 
     this.selectedChild_ = newSelectedChild;
+    this.firstRenderForTesting_.resolve();
   },
 
   /**

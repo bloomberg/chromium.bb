@@ -41,6 +41,7 @@ Polymer({
     this.watch('apps_', state => state.apps);
     this.watch('notificationAppIds_', state => state.notifications.allowedIds);
     this.updateFromStore();
+    this.onAppsChanged_();
   },
 
   /**
