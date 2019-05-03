@@ -1085,7 +1085,8 @@ config("compiler_deterministic") {
   }
 
   # Makes builds independent of absolute file path.
-  if (symbol_level != 0 && is_clang && strip_absolute_paths_from_debug_symbols) {
+  if (symbol_level != 0 && is_clang &&
+      strip_absolute_paths_from_debug_symbols) {
     # If debug option is given, clang includes $cwd in debug info by default.
     # For such build, this flag generates reproducible obj files even we use
     # different build directory like "out/feature_a" and "out/feature_b" if
@@ -1173,7 +1174,8 @@ config("compiler_arm") {
 config("assembler_debug_dir") {
   # TODO(thakis): Once openmax_dl no longer uses -fno-integrated-as, move
   # this behind the -fdebug-compilation-dir cflags in the "compiler" config.
-  if (symbol_level != 0 && is_clang && strip_absolute_paths_from_debug_symbols) {
+  if (symbol_level != 0 && is_clang &&
+      strip_absolute_paths_from_debug_symbols) {
     if (!is_win) {
       # We don't use clang -cc1as on Windows (yet? https://crbug.com/762167)
       asmflags = [ "-Wa,-fdebug-compilation-dir,." ]
@@ -1241,9 +1243,6 @@ config("default_warnings") {
   if (is_win) {
     if (treat_warnings_as_errors) {
       cflags += [ "/WX" ]
-    }
-    if (fatal_linker_warnings) {
-      ldflags += [ "/WX" ]
     }
 
     cflags += [
@@ -1506,6 +1505,14 @@ config("default_warnings") {
         }
       }
     }
+  }
+}
+
+config("fatal_linker_warnings_win") {
+  # TODO(thakis): Move this back into default_warnings once
+  # https://crbug.com/958955 is resolved.
+  if (is_win && fatal_linker_warnings) {
+    ldflags = [ "/WX" ]
   }
 }
 

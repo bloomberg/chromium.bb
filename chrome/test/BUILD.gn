@@ -4552,6 +4552,7 @@ test("unit_tests") {
     if (llvm_force_head_revision) {
       # TODO(https://crbug.com/958955): Fix dupes and remove this flag.
       ldflags += [ "/FORCE:MultipleRes" ]
+      configs -= [ "//build/config/compiler:fatal_linker_warnings_win" ]
     }
 
     if (is_chrome_branded) {
@@ -5779,6 +5780,7 @@ if (!is_android && !is_fuchsia) {
       if (llvm_force_head_revision) {
         # TODO(https://crbug.com/958955): Fix dupes and remove this flag.
         ldflags = [ "/FORCE:MultipleRes" ]
+        configs -= [ "//build/config/compiler:fatal_linker_warnings_win" ]
       }
     } else {
       sources -= [ "../app/chrome_version.rc.version" ]

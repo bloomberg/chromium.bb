@@ -55,5 +55,6 @@ test("gcp_unittests") {
   if (is_win && llvm_force_head_revision) {
     # TODO(https://crbug.com/958955): Fix dupes and remove this flag.
     ldflags = [ "/FORCE:MultipleRes" ]
+    configs -= [ "//build/config/compiler:fatal_linker_warnings_win" ]
   }
 }
