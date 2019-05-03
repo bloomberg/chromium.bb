@@ -3,7 +3,7 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<org.chromium.chrome.browser.explore_sites.ExploreSitesCategoryCardView
+<org.chromium.chrome.browser.touchless.TouchlessExploreSitesCategoryCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -35,4 +35,4 @@
         app:minHorizontalSpacing="@dimen/explore_sites_category_grid_minimum_spacing"
         android:paddingTop="@dimen/explore_sites_category_title_spacing_condensed" />
 
-</org.chromium.chrome.browser.explore_sites.ExploreSitesCategoryCardView>
+</org.chromium.chrome.browser.touchless.TouchlessExploreSitesCategoryCardView>

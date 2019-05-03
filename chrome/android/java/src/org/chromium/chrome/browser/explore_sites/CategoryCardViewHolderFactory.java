@@ -13,7 +13,7 @@ import org.chromium.chrome.R;
 import org.chromium.ui.modelutil.RecyclerViewAdapter;
 
 /** Factory to create CategoryCardViewHolder objects. */
-class CategoryCardViewHolderFactory implements RecyclerViewAdapter.ViewHolderFactory<
+public class CategoryCardViewHolderFactory implements RecyclerViewAdapter.ViewHolderFactory<
         CategoryCardViewHolderFactory.CategoryCardViewHolder> {
     /** View holder for the recycler view. */
     public static class CategoryCardViewHolder extends RecyclerView.ViewHolder {

@@ -4,8 +4,11 @@
 
 package org.chromium.chrome.browser.touchless;
 
+import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.support.annotation.DrawableRes;
+import android.support.annotation.StringRes;
 import android.view.View;
 import android.view.View.OnClickListener;
 
@@ -26,6 +29,26 @@ import java.util.ArrayList;
  * ContextMenuManager and Delegate to select items to show and lookup their labels.
  */
 public class TouchlessContextMenuManager extends ContextMenuManager {
+    /**
+     * Delegate for touchless-specific context menu items.
+     */
+    public interface Delegate extends ContextMenuManager.Delegate {
+        /**
+         * @return Activity associated with this delegate. Used to display prompts.
+         */
+        Activity getActivity();
+
+        /**
+         * @return Title associated with this delegate.
+         */
+        String getTitle();
+
+        /**
+         * @return Icon associated with this delegate. Used to populate touchless shortcuts.
+         */
+        Bitmap getIconBitmap();
+    }
+
     private PropertyModel mTouchlessMenuModel;
     private ModalDialogManager mModalDialogManager;
 
@@ -43,8 +66,8 @@ public class TouchlessContextMenuManager extends ContextMenuManager {
      * @param delegate Delegate defines filter for displayed menu items and behavior for selects
      *                 item.
      */
-    public void showTouchlessContextMenu(
-            ModalDialogManager modalDialogManager, Context context, Delegate delegate) {
+    public void showTouchlessContextMenu(ModalDialogManager modalDialogManager, Context context,
+            ContextMenuManager.Delegate delegate) {
         ArrayList<PropertyModel> menuItems = new ArrayList();
         for (@ContextMenuItemId int itemId = 0; itemId < ContextMenuItemId.NUM_ENTRIES; itemId++) {
             if (!shouldShowItem(itemId, delegate)) continue;
@@ -68,7 +91,32 @@ public class TouchlessContextMenuManager extends ContextMenuManager {
     }
 
     @Override
-    protected boolean shouldShowItem(@ContextMenuItemId int itemId, Delegate delegate) {
+    protected @StringRes int getResourceIdForMenuItem(@ContextMenuItemId int id) {
+        if (id == ContextMenuItemId.ADD_TO_MY_APPS) {
+            return R.string.menu_add_to_apps;
+        }
+
+        return super.getResourceIdForMenuItem(id);
+    }
+
+    @Override
+    protected boolean handleMenuItemClick(
+            @ContextMenuItemId int itemId, ContextMenuManager.Delegate delegate) {
+        if (itemId == ContextMenuItemId.ADD_TO_MY_APPS) {
+            Delegate touchlessDelegate = (Delegate) delegate;
+            TouchlessAddToHomescreenManager touchlessAddToHomescreenManager =
+                    new TouchlessAddToHomescreenManager(touchlessDelegate.getActivity(),
+                            touchlessDelegate.getUrl(), touchlessDelegate.getTitle(),
+                            touchlessDelegate.getIconBitmap());
+            touchlessAddToHomescreenManager.start();
+            return false;
+        }
+        return super.handleMenuItemClick(itemId, delegate);
+    }
+
+    @Override
+    protected boolean shouldShowItem(
+            @ContextMenuItemId int itemId, ContextMenuManager.Delegate delegate) {
         // Here we filter out any item IDs that don't make sense in touchless.
         switch (itemId) {
             case ContextMenuItemId.REMOVE:
@@ -83,6 +131,8 @@ public class TouchlessContextMenuManager extends ContextMenuManager {
                 // fall through
             case ContextMenuItemId.OPEN_IN_NEW_WINDOW:
                 return false;
+            case ContextMenuItemId.ADD_TO_MY_APPS:
+                return delegate.isItemSupported(itemId);
         }
 
         assert false : "Encountered unexpected touchless context menu item type";
@@ -139,6 +189,8 @@ public class TouchlessContextMenuManager extends ContextMenuManager {
                 return R.drawable.ic_remove_circle_outline_24dp;
             case ContextMenuItemId.LEARN_MORE:
                 return R.drawable.ic_help_outline_24dp;
+            case ContextMenuItemId.ADD_TO_MY_APPS:
+                return R.drawable.ic_add_circle_outline_24dp;
             default:
                 return 0;
         }
@@ -149,10 +201,11 @@ public class TouchlessContextMenuManager extends ContextMenuManager {
     }
 
     private class TouchlessItemClickListener implements OnClickListener {
-        private final Delegate mDelegate;
+        private final ContextMenuManager.Delegate mDelegate;
         private final @ContextMenuItemId int mItemId;
 
-        public TouchlessItemClickListener(Delegate delegate, @ContextMenuItemId int itemId) {
+        public TouchlessItemClickListener(
+                ContextMenuManager.Delegate delegate, @ContextMenuItemId int itemId) {
             mDelegate = delegate;
             mItemId = itemId;
         }

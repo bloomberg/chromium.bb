@@ -33,7 +33,8 @@ import java.lang.annotation.RetentionPolicy;
 public class ContextMenuManager implements OnCloseContextMenuListener {
     @IntDef({ContextMenuItemId.OPEN_IN_NEW_WINDOW, ContextMenuItemId.OPEN_IN_NEW_TAB,
             ContextMenuItemId.OPEN_IN_INCOGNITO_TAB, ContextMenuItemId.SAVE_FOR_OFFLINE,
-            ContextMenuItemId.REMOVE, ContextMenuItemId.LEARN_MORE})
+            ContextMenuItemId.ADD_TO_MY_APPS, ContextMenuItemId.REMOVE,
+            ContextMenuItemId.LEARN_MORE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ContextMenuItemId {
         // The order of the items will be based on the value of their ID. So if new items are added,
@@ -43,10 +44,11 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
         int OPEN_IN_NEW_TAB = 1;
         int OPEN_IN_INCOGNITO_TAB = 2;
         int SAVE_FOR_OFFLINE = 3;
-        int REMOVE = 4;
-        int LEARN_MORE = 5;
+        int ADD_TO_MY_APPS = 4;
+        int REMOVE = 5;
+        int LEARN_MORE = 6;
 
-        int NUM_ENTRIES = 6;
+        int NUM_ENTRIES = 7;
     }
 
     private final NativePageNavigationDelegate mNavigationDelegate;
@@ -206,6 +208,8 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
                 return true;
             case ContextMenuItemId.LEARN_MORE:
                 return true;
+            case ContextMenuItemId.ADD_TO_MY_APPS:
+                return false;
             default:
                 assert false;
                 return false;

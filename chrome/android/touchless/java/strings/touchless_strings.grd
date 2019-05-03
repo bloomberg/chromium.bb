@@ -131,6 +131,10 @@
       <message name="IDS_MORE_ARTICLES" desc="Message at the bottom of a list of news items prompting the user to load more.">
         More articles
       </message>
+      <!-- TODO(crbug.com/957789): Remove this from downstream. -->
+      <message name="IDS_MENU_ADD_TO_APPS" desc="Text to accompany icon that will navigate to a page showing a categorized view of different applications or sites">
+        Add to My apps
+      </message>
     </messages>
   </release>
 </grit>

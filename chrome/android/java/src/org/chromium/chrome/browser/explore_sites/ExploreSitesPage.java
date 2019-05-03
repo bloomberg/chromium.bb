@@ -31,7 +31,6 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
@@ -162,9 +161,7 @@ public class ExploreSitesPage extends BasicNativePage {
         mView.setNavigationDelegate(host.createHistoryNavigationDelegate());
         mRecyclerView = mView.findViewById(R.id.explore_sites_category_recycler);
 
-        CategoryCardViewHolderFactory factory = FeatureUtilities.isNoTouchModeEnabled()
-                ? new CondensedCategoryCardViewHolderFactory()
-                : new CategoryCardViewHolderFactory();
+        CategoryCardViewHolderFactory factory = createCategoryCardViewHolderFactory();
         RecyclerViewAdapter<CategoryCardViewHolderFactory.CategoryCardViewHolder, Void> adapter =
                 new RecyclerViewAdapter<>(adapterDelegate, factory);
 
@@ -374,5 +371,9 @@ public class ExploreSitesPage extends BasicNativePage {
         }
 
         return RecyclerView.NO_POSITION;
+    }
+
+    protected CategoryCardViewHolderFactory createCategoryCardViewHolderFactory() {
+        return new CategoryCardViewHolderFactory();
     }
 }
