@@ -2568,7 +2568,9 @@ void WebLocalFrameImpl::PerformMediaPlayerAction(
       DCHECK(media_element->IsHTMLVideoElement());
       if (action.enable) {
         PictureInPictureController::From(node->GetDocument())
-            .EnterPictureInPicture(ToHTMLVideoElement(media_element), nullptr);
+            .EnterPictureInPicture(ToHTMLVideoElement(media_element),
+                                   nullptr /* promise */,
+                                   nullptr /* options */);
       } else {
         PictureInPictureController::From(node->GetDocument())
             .ExitPictureInPicture(ToHTMLVideoElement(media_element), nullptr);

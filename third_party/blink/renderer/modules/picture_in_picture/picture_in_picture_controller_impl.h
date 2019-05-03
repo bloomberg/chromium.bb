@@ -15,6 +15,7 @@
 namespace blink {
 
 class HTMLVideoElement;
+class PictureInPictureOptions;
 class PictureInPictureWindow;
 class TreeScope;
 struct WebSize;
@@ -71,10 +72,13 @@ class MODULES_EXPORT PictureInPictureControllerImpl
   // Implementation of PictureInPictureController.
   void EnterPictureInPicture(HTMLVideoElement*,
                              ScriptPromiseResolver*) override;
+  void EnterPictureInPicture(HTMLElement*,
+                             PictureInPictureOptions*,
+                             ScriptPromiseResolver*) override;
   void ExitPictureInPicture(HTMLVideoElement*, ScriptPromiseResolver*) override;
   void AddToAutoPictureInPictureElementsList(HTMLVideoElement*) override;
   void RemoveFromAutoPictureInPictureElementsList(HTMLVideoElement*) override;
-  Status IsElementAllowed(const HTMLVideoElement&) const override;
+  Status IsElementAllowed(const HTMLElement&) const override;
   bool IsPictureInPictureElement(const Element*) const override;
   void OnPictureInPictureStateChange() override;
 

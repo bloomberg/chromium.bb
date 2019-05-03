@@ -1119,6 +1119,11 @@
       status: {"Android": "", "default": "stable"},
     },
     {
+      name: "PictureInPictureV2",
+      depends_on: ["PictureInPictureAPI"],
+      settable_from_internals: true,
+    },
+    {
       name: "PointerRawUpdate",
       status: "experimental",
     },

@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/modules/picture_in_picture/enter_picture_in_picture_event.h"
 #include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_window.h"
@@ -29,6 +30,13 @@ namespace {
 bool ShouldShowPlayPauseButton(const HTMLVideoElement& element) {
   return element.GetLoadType() != WebMediaPlayer::kLoadTypeMediaStream &&
          element.duration() != std::numeric_limits<double>::infinity();
+}
+
+bool IsVideoElement(const Element& element) {
+  if (!element.IsMediaElement())
+    return false;
+
+  return static_cast<const HTMLMediaElement&>(element).IsHTMLVideoElement();
 }
 
 }  // namespace
@@ -79,18 +87,24 @@ PictureInPictureControllerImpl::IsDocumentAllowed() const {
 
 PictureInPictureController::Status
 PictureInPictureControllerImpl::IsElementAllowed(
-    const HTMLVideoElement& element) const {
+    const HTMLElement& element) const {
   PictureInPictureController::Status status = IsDocumentAllowed();
   if (status != Status::kEnabled)
     return status;
 
-  if (element.getReadyState() == HTMLMediaElement::kHaveNothing)
+  if (!IsVideoElement(element))
+    return Status::kEnabled;
+
+  const HTMLVideoElement* video_element =
+      static_cast<const HTMLVideoElement*>(&element);
+
+  if (video_element->getReadyState() == HTMLMediaElement::kHaveNothing)
     return Status::kMetadataNotLoaded;
 
-  if (!element.HasVideo())
+  if (!video_element->HasVideo())
     return Status::kVideoTrackNotAvailable;
 
-  if (element.FastHasAttribute(html_names::kDisablepictureinpictureAttr))
+  if (video_element->FastHasAttribute(html_names::kDisablepictureinpictureAttr))
     return Status::kDisabledByAttribute;
 
   return Status::kEnabled;
@@ -124,6 +138,16 @@ void PictureInPictureControllerImpl::EnterPictureInPicture(
       WTF::Bind(&PictureInPictureControllerImpl::OnEnteredPictureInPicture,
                 WrapPersistent(this), WrapPersistent(element),
                 WrapPersistent(resolver)));
+}
+
+void PictureInPictureControllerImpl::EnterPictureInPicture(
+    HTMLElement* element,
+    PictureInPictureOptions* options,
+    ScriptPromiseResolver* resolver) {
+  DCHECK(!IsVideoElement(*element));
+
+  // TODO(https://crbug.com/953957): Support element level pip.
+  resolver->Resolve();
 }
 
 void PictureInPictureControllerImpl::OnEnteredPictureInPicture(
@@ -307,7 +331,7 @@ void PictureInPictureControllerImpl::PageVisibilityChanged() {
   // If page becomes hidden and entering Auto Picture-in-Picture is allowed,
   // enter Picture-in-Picture.
   if (GetSupplementable()->hidden() && IsEnterAutoPictureInPictureAllowed()) {
-    EnterPictureInPicture(AutoPictureInPictureElement(), nullptr);
+    EnterPictureInPicture(AutoPictureInPictureElement(), nullptr /* promise */);
   }
 }
 
