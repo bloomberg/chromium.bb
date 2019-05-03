@@ -147,7 +147,7 @@ IN_PROC_BROWSER_TEST_F(QueryableDataBindingsTest, VariousTypes) {
   frame_->GetNavigationController(controller.NewRequest());
   frame_->SetJavaScriptLogLevel(fuchsia::web::ConsoleLogLevel::INFO);
   EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      &controller, fuchsia::web::LoadUrlParams(), test_url_.spec()));
+      controller.get(), fuchsia::web::LoadUrlParams(), test_url_.spec()));
   navigation_listener_.RunUntilUrlEquals(test_url_);
 
   EXPECT_EQ(CallQueryPlatformValue("string"), "\"foo\"");
@@ -166,7 +166,7 @@ IN_PROC_BROWSER_TEST_F(QueryableDataBindingsTest, NoValues) {
   frame_->GetNavigationController(controller.NewRequest());
   frame_->SetJavaScriptLogLevel(fuchsia::web::ConsoleLogLevel::INFO);
   EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      &controller, fuchsia::web::LoadUrlParams(), test_url_.spec()));
+      controller.get(), fuchsia::web::LoadUrlParams(), test_url_.spec()));
   navigation_listener_.RunUntilUrlEquals(test_url_);
 
   EXPECT_EQ(CallQueryPlatformValue("string"), "null");
@@ -186,7 +186,7 @@ IN_PROC_BROWSER_TEST_F(QueryableDataBindingsTest, AtPageRuntime) {
   frame_->GetNavigationController(controller.NewRequest());
   frame_->SetJavaScriptLogLevel(fuchsia::web::ConsoleLogLevel::INFO);
   EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      &controller, fuchsia::web::LoadUrlParams(), test_url_.spec()));
+      controller.get(), fuchsia::web::LoadUrlParams(), test_url_.spec()));
   navigation_listener_.RunUntilUrlEquals(test_url_);
 
   SynchronizeWithPage();
@@ -224,7 +224,7 @@ IN_PROC_BROWSER_TEST_F(QueryableDataBindingsTest, AtPageLoad) {
   frame_->GetNavigationController(controller.NewRequest());
   frame_->SetJavaScriptLogLevel(fuchsia::web::ConsoleLogLevel::INFO);
   EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      &controller, fuchsia::web::LoadUrlParams(), test_url_.spec()));
+      controller.get(), fuchsia::web::LoadUrlParams(), test_url_.spec()));
   navigation_listener_.RunUntilUrlEquals(test_url_);
 
   SynchronizeWithPage();

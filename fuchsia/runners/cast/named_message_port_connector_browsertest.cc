@@ -85,7 +85,7 @@ IN_PROC_BROWSER_TEST_F(NamedMessagePortConnectorTest,
                           base::Unretained(&message_port)),
       frame_.get());
   EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      &controller, fuchsia::web::LoadUrlParams(), test_url.spec()));
+      controller.get(), fuchsia::web::LoadUrlParams(), test_url.spec()));
   navigation_listener_.RunUntilUrlEquals(test_url);
 
   receive_port_run_loop.Run();
@@ -122,7 +122,7 @@ IN_PROC_BROWSER_TEST_F(NamedMessagePortConnectorTest,
       run_loop.Quit();
     });
     EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-        &controller, fuchsia::web::LoadUrlParams(), "about:blank"));
+        controller.get(), fuchsia::web::LoadUrlParams(), "about:blank"));
     run_loop.Run();
   }
 
