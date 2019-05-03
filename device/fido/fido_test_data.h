@@ -50,6 +50,11 @@ constexpr uint8_t kClientDataHash[] = {
 
 constexpr uint8_t kUserId[] = {0x10, 0x98, 0x23, 0x72, 0x35, 0x40, 0x98, 0x72};
 
+// "allowedCredential" encoded as uint8_t array
+constexpr uint8_t kCredentialId[] = {0x61, 0x6C, 0x6C, 0x6F, 0x77, 0x65,
+                                     0x64, 0x43, 0x72, 0x65, 0x64, 0x65,
+                                     0x6E, 0x74, 0x69, 0x61, 0x6C};
+
 constexpr char kRelyingPartyId[] = "acme.com";
 constexpr char kAppId[] = "acme.com/";
 

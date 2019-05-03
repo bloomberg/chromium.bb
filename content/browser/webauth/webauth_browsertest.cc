@@ -15,6 +15,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/webauth/authenticator_impl.h"
@@ -46,6 +47,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
+
+#if defined(OS_WIN)
+#include "device/fido/win/fake_webauthn_api.h"
+#endif
 
 namespace content {
 
@@ -156,8 +161,9 @@ constexpr char kGetPublicKeyTemplate[] =
     "  timeout: 1000,"
     "  userVerification: '$1',"
     "  $2}"
-    "}).catch(c => window.domAutomationController.send("
-    "                  'webauth: ' + c.toString()));";
+    "}).then(c => window.domAutomationController.send('webauth: OK'),"
+    "        e => window.domAutomationController.send("
+    "                  'webauth: ' + e.toString()));";
 
 // Default values for kGetPublicKeyTemplate.
 struct GetParameters {
@@ -1007,6 +1013,84 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
     ASSERT_TRUE(prompt_callback_was_invoked);
   }
 }
+
+#if defined(OS_WIN)
+IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest, WinMakeCredential) {
+  NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/title1.html"));
+
+  device::ScopedFakeWinWebAuthnApi fake_api;
+  fake_api.set_available(true);
+  fake_api.set_is_uvpaa(true);
+  fake_api.set_hresult(S_OK);
+  fake_api.enable_fake_attestation();
+
+  base::Optional<std::string> result = ExecuteScriptAndExtractPrefixedString(
+      shell()->web_contents(),
+      BuildCreateCallWithParameters(CreateParameters()), "webauth: ");
+  ASSERT_TRUE(result);
+  ASSERT_EQ("webauth: OK", *result);
+}
+
+IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
+                       WinMakeCredentialReturnCodeFailure) {
+  NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/title1.html"));
+
+  device::ScopedFakeWinWebAuthnApi fake_api;
+  fake_api.set_available(true);
+  fake_api.set_is_uvpaa(true);
+  fake_api.set_hresult(E_FAIL);
+  fake_api.enable_fake_attestation();
+
+  // The authenticator response was good but the return code indicated failure.
+  base::Optional<std::string> result = ExecuteScriptAndExtractPrefixedString(
+      shell()->web_contents(),
+      BuildCreateCallWithParameters(CreateParameters()), "webauth: ");
+  ASSERT_TRUE(result);
+  ASSERT_EQ(kTimeoutErrorMessage, *result);
+}
+
+IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest, WinGetAssertion) {
+  NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/title1.html"));
+
+  device::ScopedFakeWinWebAuthnApi fake_api;
+  fake_api.set_available(true);
+  fake_api.set_is_uvpaa(true);
+  fake_api.set_hresult(S_OK);
+  fake_api.enable_fake_assertion();
+
+  base::Optional<std::string> result = ExecuteScriptAndExtractPrefixedString(
+      shell()->web_contents(), BuildGetCallWithParameters(GetParameters()),
+      "webauth: ");
+  ASSERT_TRUE(result);
+  ASSERT_EQ("webauth: OK", *result);
+
+  // The authenticator response was good but the return code indicated failure.
+  fake_api.set_hresult(E_FAIL);
+  result = ExecuteScriptAndExtractPrefixedString(
+      shell()->web_contents(), BuildGetCallWithParameters(GetParameters()),
+      "webauth: ");
+  ASSERT_TRUE(result);
+  ASSERT_EQ(kTimeoutErrorMessage, *result);
+}
+
+IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
+                       WinGetAssertionReturnCodeFailure) {
+  NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/title1.html"));
+
+  device::ScopedFakeWinWebAuthnApi fake_api;
+  fake_api.set_available(true);
+  fake_api.set_is_uvpaa(true);
+  fake_api.set_hresult(E_FAIL);
+  fake_api.enable_fake_assertion();
+
+  // The authenticator response was good but the return code indicated failure.
+  base::Optional<std::string> result = ExecuteScriptAndExtractPrefixedString(
+      shell()->web_contents(), BuildGetCallWithParameters(GetParameters()),
+      "webauth: ");
+  ASSERT_TRUE(result);
+  ASSERT_EQ(kTimeoutErrorMessage, *result);
+}
+#endif
 
 // WebAuthBrowserCtapTest ----------------------------------------------
 

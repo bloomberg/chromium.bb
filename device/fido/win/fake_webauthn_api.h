@@ -20,6 +20,13 @@ class FakeWinWebAuthnApi : public WinWebAuthnApi {
 
   // Inject the return value for WinWebAuthnApi::IsAvailable().
   void set_available(bool available) { is_available_ = available; }
+
+  void enable_fake_attestation() { attestation_ = MakePackedAttestation(); }
+
+  void enable_fake_assertion() { assertion_ = MakeAssertion(); }
+
+  void set_hresult(HRESULT result) { result_ = result; }
+
   // Inject the return value for
   // WinWebAuthnApi::IsUserverifyingPlatformAuthenticatorAvailable().
   void set_is_uvpaa(bool is_uvpaa) { is_uvpaa_ = is_uvpaa; }
@@ -48,8 +55,14 @@ class FakeWinWebAuthnApi : public WinWebAuthnApi {
   void FreeAssertion(PWEBAUTHN_ASSERTION pWebAuthNAssertion) override;
 
  private:
+  WEBAUTHN_CREDENTIAL_ATTESTATION MakePackedAttestation();
+  WEBAUTHN_ASSERTION MakeAssertion();
+
   bool is_available_ = true;
   bool is_uvpaa_ = false;
+  WEBAUTHN_CREDENTIAL_ATTESTATION attestation_;
+  WEBAUTHN_ASSERTION assertion_;
+  HRESULT result_ = S_OK;
 };
 
 // ScopedFakeWinWebAuthnApi overrides the value returned

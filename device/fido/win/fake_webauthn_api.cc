@@ -6,6 +6,8 @@
 
 #include "base/logging.h"
 #include "base/optional.h"
+#include "device/fido/fido_parsing_utils.h"
+#include "device/fido/fido_test_data.h"
 
 namespace device {
 
@@ -31,7 +33,8 @@ HRESULT FakeWinWebAuthnApi::AuthenticatorMakeCredential(
     PCWEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS options,
     PWEBAUTHN_CREDENTIAL_ATTESTATION* credential_attestation_ptr) {
   DCHECK(is_available_);
-  return E_NOTIMPL;
+  *credential_attestation_ptr = &attestation_;
+  return result_;
 }
 
 HRESULT FakeWinWebAuthnApi::AuthenticatorGetAssertion(
@@ -41,7 +44,8 @@ HRESULT FakeWinWebAuthnApi::AuthenticatorGetAssertion(
     PCWEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS options,
     PWEBAUTHN_ASSERTION* assertion_ptr) {
   DCHECK(is_available_);
-  return E_NOTIMPL;
+  *assertion_ptr = &assertion_;
+  return result_;
 }
 
 HRESULT FakeWinWebAuthnApi::CancelCurrentOperation(GUID* cancellation_id) {
@@ -58,6 +62,48 @@ void FakeWinWebAuthnApi::FreeCredentialAttestation(
     PWEBAUTHN_CREDENTIAL_ATTESTATION) {}
 
 void FakeWinWebAuthnApi::FreeAssertion(PWEBAUTHN_ASSERTION pWebAuthNAssertion) {
+}
+
+WEBAUTHN_CREDENTIAL_ATTESTATION FakeWinWebAuthnApi::MakePackedAttestation() {
+  WEBAUTHN_CREDENTIAL_ATTESTATION attestation = {};
+  attestation.dwVersion = WEBAUTHN_CREDENTIAL_ATTESTATION_VERSION_1;
+  attestation.cbAuthenticatorData =
+      sizeof(test_data::kCtap2MakeCredentialAuthData);
+  attestation.pbAuthenticatorData = reinterpret_cast<PBYTE>(
+      const_cast<uint8_t*>(device::test_data::kCtap2MakeCredentialAuthData));
+  attestation.cbAttestation =
+      sizeof(test_data::kPackedAttestationStatementCBOR);
+  attestation.pbAttestation = reinterpret_cast<PBYTE>(
+      const_cast<uint8_t*>(device::test_data::kPackedAttestationStatementCBOR));
+  attestation.cbAttestationObject = 0;
+  attestation.cbCredentialId = 0;
+  attestation.pwszFormatType = L"packed";
+  attestation.dwAttestationDecodeType = 0;
+  return attestation;
+}
+
+WEBAUTHN_ASSERTION FakeWinWebAuthnApi::MakeAssertion() {
+  WEBAUTHN_CREDENTIAL credential = {};
+  // No constant macro available because 1 is the current version
+  credential.dwVersion = 1;
+  credential.cbId = sizeof(test_data::kCredentialId);
+  credential.pbId =
+      reinterpret_cast<PBYTE>(const_cast<uint8_t*>(test_data::kCredentialId));
+  credential.pwszCredentialType = L"public-key";
+
+  WEBAUTHN_ASSERTION assertion = {};
+  // No constant macro available because 1 is the current version
+  assertion.dwVersion = 1;
+  assertion.cbAuthenticatorData = sizeof(test_data::kTestSignAuthenticatorData);
+  assertion.pbAuthenticatorData = reinterpret_cast<PBYTE>(
+      const_cast<uint8_t*>(test_data::kTestSignAuthenticatorData));
+  assertion.cbSignature = sizeof(test_data::kCtap2GetAssertionSignature);
+  assertion.pbSignature = reinterpret_cast<PBYTE>(
+      const_cast<uint8_t*>(test_data::kCtap2GetAssertionSignature));
+  assertion.Credential = credential;
+  assertion.pbUserId = NULL;
+  assertion.cbUserId = 0;
+  return assertion;
 }
 
 ScopedFakeWinWebAuthnApi::ScopedFakeWinWebAuthnApi() : FakeWinWebAuthnApi() {
