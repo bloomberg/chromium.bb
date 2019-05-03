@@ -282,6 +282,31 @@ int FtpNetworkTransaction::Start(
 
   DetectTypecode();
 
+  if (request_->url.has_path()) {
+    std::string gurl_path(request_->url.path());
+
+    // Get rid of the typecode, see RFC 1738 section 3.2.2. FTP url-path.
+    std::string::size_type pos = gurl_path.rfind(';');
+    if (pos != std::string::npos)
+      gurl_path.resize(pos);
+
+    // If the path contains characters not considered safe to unescape, fail the
+    // request.
+    std::set<unsigned char> illegal_encoded_bytes{'/', '\\'};
+    // Null shouldn't be needed, since GURLs with nulls in the path aren't
+    // considered valid, but can't hurt. Note that this range includes CRs and
+    // LFs.
+    for (char c = '\x00'; c < '\x20'; ++c) {
+      illegal_encoded_bytes.insert(c);
+    }
+    if (ContainsEncodedBytes(gurl_path, illegal_encoded_bytes))
+      return ERR_INVALID_URL;
+
+    // This may unescape to non-ASCII characters, but we allow that. See the
+    // comment for IsValidFTPCommandSubstring.
+    unescaped_path_ = UnescapeBinaryURLComponent(gurl_path);
+  }
+
   next_state_ = STATE_CTRL_RESOLVE_HOST;
   int rv = DoLoop(OK);
   if (rv == ERR_IO_PENDING)
@@ -498,27 +523,12 @@ int FtpNetworkTransaction::SendFtpCommand(const std::string& command,
 
 std::string FtpNetworkTransaction::GetRequestPathForFtpCommand(
     bool is_directory) const {
-  std::string path(current_remote_directory_);
-  if (request_->url.has_path()) {
-    std::string gurl_path(request_->url.path());
+  std::string path(current_remote_directory_ + unescaped_path_);
 
-    // Get rid of the typecode, see RFC 1738 section 3.2.2. FTP url-path.
-    std::string::size_type pos = gurl_path.rfind(';');
-    if (pos != std::string::npos)
-      gurl_path.resize(pos);
-
-    path.append(gurl_path);
-  }
   // Make sure that if the path is expected to be a file, it won't end
   // with a trailing slash.
   if (!is_directory && path.length() > 1 && path.back() == '/')
     path.erase(path.length() - 1);
-  UnescapeRule::Type unescape_rules =
-      UnescapeRule::SPACES |
-      UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS;
-  // This may unescape to non-ASCII characters, but we allow that. See the
-  // comment for IsValidFTPCommandSubstring.
-  path = UnescapeURLComponent(path, unescape_rules);
 
   if (system_type_ == SYSTEM_TYPE_VMS) {
     if (is_directory)
