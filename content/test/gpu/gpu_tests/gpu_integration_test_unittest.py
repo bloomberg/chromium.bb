@@ -127,10 +127,6 @@ class MockAbstractGpuTestClass(gpu_integration_test.GpuIntegrationTest):
   def RunActualGpuTest(self, test_path, *args):
     pass
 
-  @classmethod
-  def _CreateExpectations(cls):
-    pass
-
 
 class MockTestCaseWithoutExpectationsFile(MockAbstractGpuTestClass):
   pass
@@ -537,15 +533,20 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
   def testSimpleIntegrationTest(self):
     self._RunIntegrationTest(
       'simple_integration_unittest',
-      ['unittest_data.integration_tests.SimpleTest.unexpected_error',
-       'unittest_data.integration_tests.SimpleTest.unexpected_failure'],
-      ['unittest_data.integration_tests.SimpleTest.expected_flaky',
-       'unittest_data.integration_tests.SimpleTest.expected_failure'],
-      ['unittest_data.integration_tests.SimpleTest.expected_skip'],
-      [])
+      ['unexpected_error',
+       'unexpected_failure'],
+      ['expected_flaky',
+       'expected_failure'],
+      ['expected_skip'],
+      ['--retry-only-retry-on-failure', '--retry-limit=3',
+      '--test-name-prefix=unittest_data.integration_tests.SimpleTest.'])
     # It might be nice to be more precise about the order of operations
-    # with these browser restarts, but this is at least a start.
-    self.assertEquals(self._test_state['num_browser_starts'], 6)
+    # with these browser restarts, but this is at least a start. The
+    # num_browser_starts count consistes of each StartBrowser call which happens
+    # before run of each set of tests, which also includes each retry set.
+    # Also this count includes the number of calls to RestartBrowser which
+    # happens after every test failure.
+    self.assertEquals(self._test_state['num_browser_starts'], 8)
 
   def testIntegrationTesttWithBrowserFailure(self):
     self._RunIntegrationTest(
@@ -621,16 +622,17 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
       ['--repeat=3'])
     self.assertEquals(self._test_state['num_test_runs'], 3)
 
+  @unittest.skip('Re-enable test after pushing crrev.com/c/1594012')
   def testAlsoRunDisabledTests(self):
     self._RunIntegrationTest(
       'test_also_run_disabled_tests',
-      ['unittest_data.integration_tests.TestAlsoRunDisabledTests.skip',
-       'unittest_data.integration_tests.TestAlsoRunDisabledTests.flaky'],
+      ['skip', 'flaky'],
       # Tests that are expected to fail and do fail are treated as test passes
-      [('unittest_data.integration_tests.'
-        'TestAlsoRunDisabledTests.expected_failure')],
+      ['expected_failure'],
       [],
-      ['--also-run-disabled-tests'])
+      ['--all', '--test-name-prefix',
+      'unittest_data.integration_tests.TestAlsoRunDisabledTests.',
+      '--retry-limit=3', '--retry-only-retry-on-failure'])
     self.assertEquals(self._test_state['num_flaky_test_runs'], 4)
     self.assertEquals(self._test_state['num_test_runs'], 6)
 

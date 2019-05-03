@@ -6,11 +6,9 @@ import logging
 import os
 import sys
 
+from gpu_tests import gpu_helper
 from gpu_tests import gpu_integration_test
-from gpu_tests import gpu_test_expectations
 from gpu_tests import path_util
-from gpu_tests import webgl_conformance_expectations
-from gpu_tests import webgl2_conformance_expectations
 from gpu_tests import webgl_test_util
 
 conformance_harness_script = r"""
@@ -211,8 +209,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     # Verify that Chrome's GL backend matches if a specific one was requested
     if self._gl_backend:
       if (self._gl_backend == 'angle' and
-          gpu_test_expectations.GpuTestExpectations. \
-          GetANGLERenderer(gpu_info) == 'no_angle'):
+          gpu_helper.GetANGLERenderer(gpu_info) == 'no_angle'):
         self.fail('requested GL backend (' + self._gl_backend + ')' +
                   ' had no effect on the browser: ' +
                   self._GetGPUInfoErrorString(gpu_info))
@@ -230,8 +227,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         'opengles': 'gles',
         'vulkan': 'vulkan',
       }
-      current_angle_backend = gpu_test_expectations.GpuTestExpectations. \
-          GetANGLERenderer(gpu_info)
+      current_angle_backend = gpu_helper.GetANGLERenderer(gpu_info)
       if (current_angle_backend not in known_backend_flag_map or
           known_backend_flag_map[current_angle_backend] != \
           self._angle_backend):
@@ -249,8 +245,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         'passthrough': 'passthrough',
         'no_passthrough': 'validating',
       }
-      current_command_decoder = gpu_test_expectations.GpuTestExpectations. \
-          GetCommandDecoder(gpu_info)
+      current_command_decoder = gpu_helper.GetCommandDecoder(gpu_info)
       if (current_command_decoder not in known_command_decoder_flag_map or
           known_command_decoder_flag_map[current_command_decoder] != \
           self._command_decoder):
@@ -373,16 +368,6 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     else:
       browser_args += [builtin_js_flags]
     cls.CustomizeBrowserArgs(browser_args)
-
-  @classmethod
-  def _CreateExpectations(cls):
-    assert cls._webgl_version == 1 or cls._webgl_version == 2
-    clz = None
-    if cls._webgl_version == 1:
-      clz = webgl_conformance_expectations.WebGLConformanceExpectations
-    else:
-      clz = webgl2_conformance_expectations.WebGL2ConformanceExpectations
-    return clz(is_asan=cls._is_asan)
 
   @classmethod
   def SetUpProcess(cls):

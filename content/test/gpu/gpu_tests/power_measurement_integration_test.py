@@ -27,7 +27,6 @@ This script is tested and works fine with the following video sites:
 from gpu_tests import gpu_integration_test
 from gpu_tests import ipg_utils
 from gpu_tests import path_util
-from gpu_tests.gpu_test_expectations import GpuTestExpectations
 
 import logging
 import os
@@ -204,11 +203,6 @@ _VIDEO_TEST_SCRIPT = r"""
   }
 """
 
-# There are no expectations for power_measurement
-class PowerMeasurementExpectations(GpuTestExpectations):
-  def SetExpectations(self):
-    pass
-
 class PowerMeasurementIntegrationTest(gpu_integration_test.GpuIntegrationTest):
 
   _url_mode = None
@@ -324,10 +318,6 @@ class PowerMeasurementIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     assert test_params is not None and 'test_func' in test_params
     prefixed_test_func_name = '_RunTest_%s' % test_params['test_func']
     getattr(self, prefixed_test_func_name)(test_path, test_params)
-
-  @classmethod
-  def _CreateExpectations(cls):
-    return PowerMeasurementExpectations()
 
   @staticmethod
   def _AddDefaultArgs(browser_args):

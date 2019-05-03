@@ -9,7 +9,6 @@ from telemetry.util import screenshot
 from typ import json_results
 
 from gpu_tests import exception_formatter
-from gpu_tests import gpu_test_expectations
 from gpu_tests import gpu_helper
 
 _START_BROWSER_RETRIES = 3
@@ -58,11 +57,6 @@ class GpuIntegrationTest(
 
     Subclasses overriding this method must invoke the superclass's
     version!"""
-    parser.add_option(
-      '--also-run-disabled-tests',
-      dest='also_run_disabled_tests',
-      action='store_true', default=False,
-      help='Run disabled tests, ignoring Skip expectations')
     parser.add_option(
       '--disable-log-uploads',
       dest='disable_log_uploads',
@@ -122,7 +116,6 @@ class GpuIntegrationTest(
 
   @classmethod
   def GenerateTestCases__RunGpuTest(cls, options):
-    cls._also_run_disabled_tests = options.also_run_disabled_tests
     cls._disable_log_uploads = options.disable_log_uploads
     for test_name, url, args in cls.GenerateGpuTests(options):
       yield test_name, (url, test_name, args)
@@ -167,7 +160,7 @@ class GpuIntegrationTest(
     cls.SetBrowserOptions(cls._finder_options)
     cls.StartBrowser()
 
-  def _RunGpuTestWithExpectationsFiles(self, url, test_name, *args):
+  def _RunGpuTest(self, url, test_name, *args):
     expected_results, should_retry_on_failure = (
         self.GetExpectationsForTest())
     try:
@@ -214,90 +207,6 @@ class GpuIntegrationTest(
       if ResultType.Failure in expected_results:
         logging.warning(
           '%s was expected to fail, but passed.\n', test_name)
-
-  def _RunGpuTest(self, url, test_name, *args):
-    cls = self.__class__
-    if cls.ExpectationsFiles():
-      self._RunGpuTestWithExpectationsFiles(url, test_name, *args)
-      return
-    expectations = cls.GetExpectations()
-    expectation = expectations.GetExpectationForTest(
-      self.browser, url, test_name)
-    if expectation == 'skip':
-      if self.__class__._also_run_disabled_tests:
-        # Ignore test expectations if the user has requested it.
-        expectation = 'pass'
-      else:
-        # skipTest in Python's unittest harness raises an exception, so
-        # aborts the control flow here.
-        self.skipTest('SKIPPING TEST due to test expectations')
-    try:
-      # TODO(nednguyen): For some reason the arguments are getting wrapped
-      # in another tuple sometimes (like in the WebGL extension tests).
-      # Perhaps only if multiple arguments are yielded in the test
-      # generator?
-      if len(args) == 1 and isinstance(args[0], tuple):
-        args = args[0]
-      self.RunActualGpuTest(url, *args)
-    except Exception:
-      if expectation == 'pass':
-        # This is not an expected exception or test failure, so print
-        # the detail to the console.
-        exception_formatter.PrintFormattedException()
-        # Symbolize any crash dump (like from the GPU process) that
-        # might have happened but wasn't detected above. Note we don't
-        # do this for either 'fail' or 'flaky' expectations because
-        # there are still quite a few flaky failures in the WebGL test
-        # expectations, and since minidump symbolization is slow
-        # (upwards of one minute on a fast laptop), symbolizing all the
-        # stacks could slow down the tests' running time unacceptably.
-        self.browser.LogSymbolizedUnsymbolizedMinidumps(logging.ERROR)
-        # This failure might have been caused by a browser or renderer
-        # crash, so restart the browser to make sure any state doesn't
-        # propagate to the next test iteration.
-        self._RestartBrowser('unexpected test failure')
-        raise
-      elif expectation == 'fail':
-        msg = 'Expected exception while running %s' % test_name
-        exception_formatter.PrintFormattedException(msg=msg)
-        # Even though this is a known failure, the browser might still
-        # be in a bad state; for example, certain kinds of timeouts
-        # will affect the next test. Restart the browser to prevent
-        # these kinds of failures propagating to the next test.
-        self._RestartBrowser('expected test failure')
-        return
-      if expectation != 'flaky':
-        logging.warning(
-          'Unknown expectation %s while handling exception for %s',
-          expectation, test_name)
-        raise
-      # Flaky tests are handled here.
-      num_retries = expectations.GetFlakyRetriesForTest(
-        self.browser, url, test_name)
-      if not num_retries:
-        # Re-raise the exception.
-        raise
-      # Re-run the test up to |num_retries| times.
-      for ii in xrange(0, num_retries):
-        print 'FLAKY TEST FAILURE, retrying: ' + test_name
-        try:
-          # For robustness, shut down the browser and restart it
-          # between flaky test failures, to make sure any state
-          # doesn't propagate to the next iteration.
-          self._RestartBrowser('flaky test failure')
-          self.RunActualGpuTest(url, *args)
-          break
-        except Exception:
-          # Squelch any exceptions from any but the last retry.
-          if ii == num_retries - 1:
-            # Restart the browser after the last failure to make sure
-            # any state doesn't propagate to the next iteration.
-            self._RestartBrowser('excessive flaky test failures')
-            raise
-    else:
-      if expectation == 'fail':
-        logging.warning(
-            '%s was expected to fail, but passed.\n', test_name)
 
   @classmethod
   def GenerateGpuTests(cls, options):
@@ -355,24 +264,6 @@ class GpuIntegrationTest(
         if gpu_device_id in _SUPPORTED_WIN_INTEL_GPUS_WITH_NV12_OVERLAYS:
           config['overlay_cap_nv12'] = 'SCALING'
     return config
-
-  @classmethod
-  def GetExpectations(cls):
-    if not cls._cached_expectations:
-      cls._cached_expectations = cls._CreateExpectations()
-    if not isinstance(cls._cached_expectations,
-                      gpu_test_expectations.GpuTestExpectations):
-      raise Exception(
-          'gpu_integration_test requires use of GpuTestExpectations')
-    return cls._cached_expectations
-
-  @classmethod
-  def _CreateExpectations(cls):
-    # Subclasses **must** override this in order to provide their test
-    # expectations to the harness.
-    #
-    # Do not call this directly. Call GetExpectations where necessary.
-    raise NotImplementedError
 
   @classmethod
   def GenerateTags(cls, finder_options, possible_browser):

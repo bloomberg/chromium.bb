@@ -184,10 +184,6 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       getattr(self, prefixed_func_name)(category, event_iter, other_args)
 
   @classmethod
-  def _CreateExpectations(cls):
-    raise NotImplementedError
-
-  @classmethod
   def SetUpProcess(cls):
     super(TraceIntegrationTest, cls).SetUpProcess()
     path_util.SetupTelemetryPaths()

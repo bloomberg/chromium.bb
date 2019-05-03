@@ -43,10 +43,6 @@ class HardwareAcceleratedFeatureIntegrationTest(
     cls.StartBrowser()
     cls.SetStaticServerDirs([])
 
-  @classmethod
-  def _CreateExpectations(cls):
-    raise NotImplementedError
-
   def _Navigate(self, url):
     # It's crucial to use the action_runner, rather than the tab's
     # Navigate method directly. It waits for the document ready state

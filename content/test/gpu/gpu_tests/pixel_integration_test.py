@@ -110,10 +110,6 @@ class PixelIntegrationTest(
            'Meant for testing locally instead of on the bots.')
 
   @classmethod
-  def _CreateExpectations(cls):
-    raise NotImplementedError
-
-  @classmethod
   def GenerateGpuTests(cls, options):
     cls.SetParsedCommandLineOptions(options)
     namespace = pixel_test_pages.PixelTestPages
