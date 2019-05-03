@@ -19,7 +19,7 @@
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 
 // This file uses the deprecated NSObject accessibility interface.
-// TODO(crbug.com/921109): Migrate to the new NSAccessibility interface.
+// TODO(crbug.com/948844): Migrate to the new NSAccessibility interface.
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 
@@ -118,7 +118,7 @@ std::unique_ptr<base::Value> StringForBrowserAccessibility(
 
   // Include the description, title, or value - the first one not empty.
   id title = [obj title];
-  id description = [obj description];
+  id description = [obj descriptionForAccessibility];
   id value = [obj value];
   if (description && ![description isEqual:@""]) {
     [tokens addObject:description];

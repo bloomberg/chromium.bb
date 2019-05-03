@@ -53,10 +53,11 @@ struct DidOverscrollParams;
 // when it's removed from the view system.
 // TODO(ccameron): Hide this interface behind RenderWidgetHostNSViewBridge.
 @interface RenderWidgetHostViewCocoa
-    : ToolTipBaseView<CommandDispatcherTarget,
-                      RenderWidgetHostNSViewClientOwner,
-                      NSCandidateListTouchBarItemDelegate,
-                      NSTextInputClient> {
+    : ToolTipBaseView <CommandDispatcherTarget,
+                       RenderWidgetHostNSViewClientOwner,
+                       NSCandidateListTouchBarItemDelegate,
+                       NSTextInputClient,
+                       NSAccessibility> {
  @private
   // The communications channel to the RenderWidgetHostViewMac. This pointer is
   // always valid. When the original client disconnects, |client_| is changed to

@@ -1412,53 +1412,6 @@ void ExtractUnderlines(NSAttributedString* string,
   accessibilityParent_.reset(accessibilityParent, base::scoped_policy::RETAIN);
 }
 
-// TODO(crbug.com/921109): Migrate from the NSObject accessibility API to the
-// NSAccessibility API, then remove this suppression.
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-
-- (NSArray*)accessibilityArrayAttributeValues:(NSString*)attribute
-                                        index:(NSUInteger)index
-                                     maxCount:(NSUInteger)maxCount {
-  NSArray* fullArray = [self accessibilityAttributeValue:attribute];
-  NSUInteger totalLength = [fullArray count];
-  if (index >= totalLength)
-    return nil;
-  NSUInteger length = MIN(totalLength - index, maxCount);
-  return [fullArray subarrayWithRange:NSMakeRange(index, length)];
-}
-
-- (NSUInteger)accessibilityArrayAttributeCount:(NSString*)attribute {
-  NSArray* fullArray = [self accessibilityAttributeValue:attribute];
-  return [fullArray count];
-}
-
-- (id)accessibilityAttributeValue:(NSString*)attribute {
-  id root_element = clientHelper_->GetRootBrowserAccessibilityElement();
-  // Contents specifies document view of RenderWidgetHostViewCocoa provided by
-  // BrowserAccessibilityManager. Children includes all subviews in addition to
-  // contents. Currently we do not have subviews besides the document view.
-  if (([attribute isEqualToString:NSAccessibilityChildrenAttribute] ||
-       [attribute isEqualToString:NSAccessibilityContentsAttribute]) &&
-      root_element) {
-    return [NSArray arrayWithObjects:root_element, nil];
-  } else if ([attribute isEqualToString:NSAccessibilityParentAttribute] &&
-             accessibilityParent_) {
-    return NSAccessibilityUnignoredAncestor(accessibilityParent_);
-  } else if ([attribute isEqualToString:NSAccessibilityRoleAttribute]) {
-    return NSAccessibilityScrollAreaRole;
-  }
-  id ret = [super accessibilityAttributeValue:attribute];
-  return ret;
-}
-
-- (NSArray*)accessibilityAttributeNames {
-  NSMutableArray* ret = [[[NSMutableArray alloc] init] autorelease];
-  [ret addObject:NSAccessibilityContentsAttribute];
-  [ret addObjectsFromArray:[super accessibilityAttributeNames]];
-  return ret;
-}
-
 - (id)accessibilityHitTest:(NSPoint)point {
   id root_element = clientHelper_->GetRootBrowserAccessibilityElement();
   if (!root_element)
@@ -1471,26 +1424,32 @@ void ExtractUnderlines(NSAttributedString* string,
   return obj;
 }
 
-- (BOOL)accessibilityIsIgnored {
-  id root_element = clientHelper_->GetRootBrowserAccessibilityElement();
-  return !root_element;
-}
-
-- (NSUInteger)accessibilityGetIndexOf:(id)child {
-  id root_element = clientHelper_->GetRootBrowserAccessibilityElement();
-  // Only child is root.
-  if (root_element == child) {
-    return 0;
-  } else {
-    return NSNotFound;
-  }
-}
-
 - (id)accessibilityFocusedUIElement {
   return clientHelper_->GetFocusedBrowserAccessibilityElement();
 }
 
-#pragma clang diagnostic pop
+// NSAccessibility formal protocol:
+
+- (NSArray*)accessibilityChildren {
+  id root = clientHelper_->GetRootBrowserAccessibilityElement();
+  if (root)
+    return @[ root ];
+  return nil;
+}
+
+- (NSArray*)accessibilityContents {
+  return self.accessibilityChildren;
+}
+
+- (id)accessibilityParent {
+  if (accessibilityParent_)
+    return NSAccessibilityUnignoredAncestor(accessibilityParent_);
+  return [super accessibilityParent];
+}
+
+- (NSAccessibilityRole)accessibilityRole {
+  return NSAccessibilityScrollAreaRole;
+}
 
 // Below is our NSTextInputClient implementation.
 //

@@ -21,11 +21,6 @@
 #include "testing/gtest_mac.h"
 #include "url/gurl.h"
 
-// This file uses the deprecated NSObject accessibility APIs:
-// https://crbug.com/921109
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-
 namespace content {
 
 namespace {
@@ -103,24 +98,16 @@ IN_PROC_BROWSER_TEST_F(BrowserAccessibilityCocoaBrowserTest,
   // Test AXCellForColumnAndRow for four coordinates
   for (unsigned col = 0; col < 2; col++) {
     for (unsigned row = 0; row < 2; row++) {
-      id parameter = [[[NSMutableArray alloc] initWithCapacity:2] autorelease];
-      [parameter addObject:[NSNumber numberWithInt:col]];
-      [parameter addObject:[NSNumber numberWithInt:row]];
       base::scoped_nsobject<BrowserAccessibilityCocoa> cell(
-          [[cocoa_table accessibilityAttributeValue:@"AXCellForColumnAndRow"
-                                       forParameter:parameter] retain]);
+          [[cocoa_table accessibilityCellForColumn:col row:row] retain]);
 
       // It should be a cell.
-      EXPECT_NSEQ(@"AXCell", [cell role]);
+      EXPECT_NSEQ(@"AXCell", [cell accessibilityRole]);
 
       // The column index and row index of the cell should match what we asked
       // for.
-      EXPECT_EQ(col, [[cell accessibilityAttributeValue:@"AXColumnIndexRange"]
-                         rangeValue]
-                         .location);
-      EXPECT_EQ(row, [[cell accessibilityAttributeValue:@"AXRowIndexRange"]
-                         rangeValue]
-                         .location);
+      EXPECT_NSEQ(NSMakeRange(col, 1), [cell accessibilityColumnIndexRange]);
+      EXPECT_NSEQ(NSMakeRange(row, 1), [cell accessibilityRowIndexRange]);
     }
   }
 }
@@ -266,10 +253,8 @@ IN_PROC_BROWSER_TEST_F(BrowserAccessibilityCocoaBrowserTest,
         [ToBrowserAccessibilityCocoa(child) retain]);
 
     EXPECT_NSEQ(base::SysUTF8ToNSString(expected_descriptions[child_index]),
-                [child_obj description]);
+                [child_obj descriptionForAccessibility]);
   }
 }
 
 }  // namespace content
-
-#pragma clang diagnostic pop

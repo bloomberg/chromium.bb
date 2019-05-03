@@ -2258,11 +2258,6 @@ TEST_F(RenderWidgetHostViewMacTest, TransformToRootWithParentLayer) {
   EXPECT_EQ(point, gfx::PointF(105, 310));
 }
 
-// This test uses deprecated NSObject accessibility APIs - see
-// https://crbug.com/921109.
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-
 TEST_F(RenderWidgetHostViewMacTest, AccessibilityParentTest) {
   NSView* view = rwhv_mac_->cocoa_view();
 
@@ -2277,19 +2272,15 @@ TEST_F(RenderWidgetHostViewMacTest, AccessibilityParentTest) {
   [[window contentView] addSubview:accessibility_parent];
 
   [parent_view addSubview:view];
-  EXPECT_NSEQ([view accessibilityAttributeValue:NSAccessibilityParentAttribute],
-              parent_view);
+  EXPECT_NSEQ([view accessibilityParent], parent_view);
 
   rwhv_mac_->SetParentAccessibilityElement(accessibility_parent);
-  EXPECT_NSEQ([view accessibilityAttributeValue:NSAccessibilityParentAttribute],
+  EXPECT_NSEQ([view accessibilityParent],
               NSAccessibilityUnignoredAncestor(accessibility_parent));
-  EXPECT_NE([view accessibilityAttributeValue:NSAccessibilityParentAttribute],
-            nil);
+  EXPECT_NSNE(nil, [view accessibilityParent]);
 
   rwhv_mac_->SetParentAccessibilityElement(nil);
-  EXPECT_NSEQ([view accessibilityAttributeValue:NSAccessibilityParentAttribute],
-              parent_view);
+  EXPECT_NSEQ([view accessibilityParent], parent_view);
 }
-#pragma clang diagnostic pop
 
 }  // namespace content

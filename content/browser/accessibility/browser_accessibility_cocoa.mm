@@ -602,7 +602,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
       {NSAccessibilityColumnHeaderUIElementsAttribute, @"columnHeaders"},
       {NSAccessibilityColumnIndexRangeAttribute, @"columnIndexRange"},
       {NSAccessibilityContentsAttribute, @"contents"},
-      {NSAccessibilityDescriptionAttribute, @"description"},
+      {NSAccessibilityDescriptionAttribute, @"descriptionForAccessibility"},
       {NSAccessibilityDisclosingAttribute, @"disclosing"},
       {NSAccessibilityDisclosedByRowAttribute, @"disclosedByRow"},
       {NSAccessibilityDisclosureLevelAttribute, @"disclosureLevel"},
@@ -937,7 +937,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   return table;
 }
 
-- (NSString*)description {
+- (NSString*)descriptionForAccessibility {
   if (![self instanceActive])
     return nil;
 
@@ -2892,49 +2892,6 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 
   return actions;
 }
-
-// TODO(crbug.com/921109): Migrate from the NSObject accessibility interface to
-// the NSAccessibility one, then remove this suppression.
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-
-// Returns a sub-array of values for the given attribute value, starting at
-// index, with up to maxCount items.  If the given index is out of bounds,
-// or there are no values for the given attribute, it will return nil.
-// This method is used for querying subsets of values, without having to
-// return a large set of data, such as elements with a large number of
-// children.
-- (NSArray*)accessibilityArrayAttributeValues:(NSString*)attribute
-                                        index:(NSUInteger)index
-                                     maxCount:(NSUInteger)maxCount {
-  if (![self instanceActive])
-    return nil;
-
-  NSArray* fullArray = [self accessibilityAttributeValue:attribute];
-  if (!fullArray)
-    return nil;
-  NSUInteger arrayCount = [fullArray count];
-  if (index >= arrayCount)
-    return nil;
-  NSRange subRange;
-  if ((index + maxCount) > arrayCount) {
-    subRange = NSMakeRange(index, arrayCount - index);
-  } else {
-    subRange = NSMakeRange(index, maxCount);
-  }
-  return [fullArray subarrayWithRange:subRange];
-}
-
-// Returns the count of the specified accessibility array attribute.
-- (NSUInteger)accessibilityArrayAttributeCount:(NSString*)attribute {
-  if (![self instanceActive])
-    return 0;
-
-  NSArray* fullArray = [self accessibilityAttributeValue:attribute];
-  return [fullArray count];
-}
-
-#pragma clang diagnostic pop
 
 // Returns the list of accessibility attributes that this object supports.
 - (NSArray*)accessibilityAttributeNames {
