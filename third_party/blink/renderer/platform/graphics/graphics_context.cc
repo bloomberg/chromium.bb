@@ -79,7 +79,6 @@ class GraphicsContext::DarkModeFlags final {
   }
 
   operator const PaintFlags&() const { return *flags_; }
-
  private:
   const PaintFlags* flags_;
   base::Optional<PaintFlags> dark_mode_flags_;

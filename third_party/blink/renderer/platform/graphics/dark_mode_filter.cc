@@ -35,6 +35,7 @@ void DarkModeFilter::UpdateSettings(const DarkModeSettings& new_settings) {
   settings_ = new_settings;
 
   SkHighContrastConfig config;
+  transformer_ = base::nullopt;
   switch (settings_.mode) {
     case DarkMode::kOff:
       default_filter_.reset(nullptr);
@@ -58,6 +59,10 @@ void DarkModeFilter::UpdateSettings(const DarkModeSettings& new_settings) {
     case DarkMode::kInvertLightness:
       config.fInvertStyle = SkHighContrastConfig::InvertStyle::kInvertLightness;
       break;
+    case DarkMode::kInvertLightnessLAB:
+      transformer_ = LabColorSpace::RGBLABTransformer();
+      config.fInvertStyle = SkHighContrastConfig::InvertStyle::kInvertLightness;
+      break;
   }
 
   config.fGrayscale = settings_.grayscale;
@@ -75,7 +80,10 @@ void DarkModeFilter::UpdateSettings(const DarkModeSettings& new_settings) {
 Color DarkModeFilter::ApplyIfNeeded(const Color& color) {
   if (!default_filter_)
     return color;
-  return Color(default_filter_->filterColor(color.Rgb()));
+  if (!transformer_)
+    return Color(default_filter_->filterColor(color.Rgb()));
+
+  return InvertColor(color);
 }
 
 // TODO(gilmanmh): Investigate making |image| a const reference. This code
@@ -102,10 +110,25 @@ base::Optional<cc::PaintFlags> DarkModeFilter::ApplyToFlagsIfNeeded(
   if (flags.HasShader()) {
     dark_mode_flags.setColorFilter(default_filter_);
   } else {
-    dark_mode_flags.setColor(default_filter_->filterColor(flags.getColor()));
+    auto invertedColor = ApplyIfNeeded(flags.getColor());
+    dark_mode_flags.setColor(
+        SkColorSetRGB(invertedColor.Red(), invertedColor.Green(), invertedColor.Blue()));
   }
 
   return base::make_optional<cc::PaintFlags>(std::move(dark_mode_flags));
+}
+
+Color DarkModeFilter::InvertColor(const Color& color) const {
+  blink::FloatPoint3D rgb = {color.Red() / 255.0f, color.Green() / 255.0f,
+                             color.Blue() / 255.0f};
+  blink::FloatPoint3D lab = transformer_->sRGBToLab(rgb);
+  float invertedL = std::min(110.0f - lab.X(), 100.0f);
+  lab.SetX(invertedL);
+  rgb = transformer_->LabToSRGB(lab);
+
+  return Color(static_cast<unsigned int>(rgb.X() * 255 + 0.5),
+               static_cast<unsigned int>(rgb.Y() * 255 + 0.5),
+               static_cast<unsigned int>(rgb.Z() * 255 + 0.5), color.Alpha());
 }
 
 }  // namespace blink
