@@ -10,8 +10,6 @@
 (function() {
 'use strict';
 
-const CARRIER_VERIZON = 'Verizon Wireless';
-
 Polymer({
   is: 'settings-internet-detail-page',
 
@@ -760,13 +758,9 @@ Polymer({
       return false;
     }
 
-    // Only show if online payment URL is provided or the carrier is Verizon.
-    const carrier = CrOnc.getActiveValue(networkProperties.Cellular.Carrier);
-    if (carrier != CARRIER_VERIZON) {
-      const paymentPortal = networkProperties.Cellular.PaymentPortal;
-      if (!paymentPortal || !paymentPortal.Url) {
-        return false;
-      }
+    const paymentPortal = networkProperties.Cellular.PaymentPortal;
+    if (!paymentPortal || !paymentPortal.Url) {
+      return false;
     }
 
     // Only show for connected networks or LTE networks with a valid MDN.
@@ -1307,7 +1301,7 @@ Polymer({
     }
     if (type == CrOnc.Type.CELLULAR && !!this.networkProperties_.Cellular) {
       fields.push(
-          'Cellular.Carrier', 'Cellular.Family', 'Cellular.NetworkTechnology',
+          'Cellular.Family', 'Cellular.NetworkTechnology',
           'Cellular.ServingOperator.Code');
     } else if (type == CrOnc.Type.WI_FI) {
       fields.push(

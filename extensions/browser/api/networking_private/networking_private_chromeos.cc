@@ -515,33 +515,9 @@ void NetworkingPrivateChromeOS::StartActivate(
     return;
   }
 
-  std::string carrier(specified_carrier);
-  if (carrier.empty()) {
-    const chromeos::DeviceState* device =
-        GetStateHandler()->GetDeviceState(network->device_path());
-    if (device)
-      carrier = device->carrier();
-  }
-  if (carrier != shill::kCarrierSprint) {
-    // Only Sprint is directly activated. For other carriers, show the
-    // account details page.
-    if (ui_delegate())
-      ui_delegate()->ShowAccountDetails(guid);
-    success_callback.Run();
-    return;
-  }
-
-  if (!network->RequiresActivation()) {
-    // If no activation is required, show the account details page.
-    if (ui_delegate())
-      ui_delegate()->ShowAccountDetails(guid);
-    success_callback.Run();
-    return;
-  }
-
-  NetworkHandler::Get()->network_activation_handler()->Activate(
-      network->path(), carrier, success_callback,
-      base::Bind(&NetworkHandlerFailureCallback, failure_callback));
+  if (ui_delegate())
+    ui_delegate()->ShowAccountDetails(guid);
+  success_callback.Run();
 }
 
 void NetworkingPrivateChromeOS::SetWifiTDLSEnabledState(

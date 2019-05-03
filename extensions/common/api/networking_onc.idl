@@ -425,8 +425,6 @@ namespace networking.onc {
     ActivationStateType? ActivationState;
     // Whether roaming is allowed for the network.
     boolean? AllowRoaming;
-    // The name of the carrier for which the cellular device is configured.
-    DOMString? Carrier;
     // Cellular device technology family - <code>CDMA</code> or
     // <code>GSM</code>.
     DOMString? Family;
@@ -477,8 +475,6 @@ namespace networking.onc {
     ActivationStateType? ActivationState;
     // See $(ref:CellularProperties.AllowRoaming).
     boolean? AllowRoaming;
-    // See $(ref:CellularProperties.Carrier).
-    ManagedDOMString? Carrier;
     // See $(ref:CellularProperties.Family).
     DOMString? Family;
     // See $(ref:CellularProperties.FirmwareRevision).

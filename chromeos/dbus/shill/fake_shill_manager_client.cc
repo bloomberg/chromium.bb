@@ -225,7 +225,6 @@ const char FakeShillManagerClient::kFakeEthernetNetworkGuid[] = "eth1_guid";
 
 FakeShillManagerClient::FakeShillManagerClient()
     : interactive_delay_(0),
-      cellular_carrier_(shill::kCarrierSprint),
       cellular_technology_(shill::kNetworkTechnologyGsm),
       weak_ptr_factory_(this) {
   ParseCommandLineSwitch();
@@ -845,8 +844,6 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
     AddTechnology(shill::kTypeCellular, enabled);
     devices->AddDevice("/device/cellular1", shill::kTypeCellular,
                        "stub_cellular_device1");
-    SetInitialDeviceProperty("/device/cellular1", shill::kCarrierProperty,
-                             base::Value(cellular_carrier_));
     if (roaming_state_ == kRoamingRequired) {
       SetInitialDeviceProperty("/device/cellular1",
                                shill::kProviderRequiresRoamingProperty,
@@ -1173,9 +1170,6 @@ bool FakeShillManagerClient::ParseOption(const std::string& arg0,
       base::StringToInt(arg1, &s_tdls_busy_count);
     else
       s_tdls_busy_count = 1;
-    return true;
-  } else if (arg0 == "carrier") {
-    cellular_carrier_ = arg1;
     return true;
   } else if (arg0 == "olp") {
     cellular_olp_ = arg1;

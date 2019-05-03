@@ -71,7 +71,6 @@ void AddOncLocalizedStrings(content::WebUIDataSource* html_source) {
        IDS_ONC_CELLULAR_ACTIVATION_STATE_NOT_ACTIVATED},
       {"OncCellular-ActivationState_PartiallyActivated",
        IDS_ONC_CELLULAR_ACTIVATION_STATE_PARTIALLY_ACTIVATED},
-      {"OncCellular-Carrier", IDS_ONC_CELLULAR_CARRIER},
       {"OncCellular-Family", IDS_ONC_CELLULAR_FAMILY},
       {"OncCellular-FirmwareRevision", IDS_ONC_CELLULAR_FIRMWARE_REVISION},
       {"OncCellular-HardwareRevision", IDS_ONC_CELLULAR_HARDWARE_REVISION},

@@ -577,7 +577,6 @@ var availableTests = [
             ActivationState: ActivationStateType.NOT_ACTIVATED,
             AllowRoaming: false,
             AutoConnect: true,
-            Carrier: 'Cellular1_Carrier',
             Family: 'GSM',
             HomeProvider: {
               Code: '000000',
@@ -611,7 +610,6 @@ var availableTests = [
         assertEq({
           Cellular: {
             AllowRoaming: false,
-            Carrier: 'Cellular1_Carrier',
             ESN: "test_esn",
             Family: 'GSM',
             HomeProvider: {

@@ -48,7 +48,6 @@
         "password": "test-password3"
       }
     ],
-    "Cellular.Carrier": "cellular_provider",
     "Cellular.HomeProvider": {
       "country": "us",
       "name": "cellular_provider"

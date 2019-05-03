@@ -43,7 +43,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) DeviceState : public ManagedState {
   bool provider_requires_roaming() const { return provider_requires_roaming_; }
   bool support_network_scan() const { return support_network_scan_; }
   const std::string& technology_family() const { return technology_family_; }
-  const std::string& carrier() const { return carrier_; }
   bool sim_present() const { return sim_present_; }
   const std::string& sim_lock_type() const { return sim_lock_type_; }
   int sim_retries_left() const { return sim_retries_left_; }
@@ -98,7 +97,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) DeviceState : public ManagedState {
   bool support_network_scan_;
   bool scanning_;
   std::string technology_family_;
-  std::string carrier_;
   std::string sim_lock_type_;
   int sim_retries_left_;
   bool sim_lock_enabled_;

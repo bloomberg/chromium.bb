@@ -515,7 +515,6 @@ namespace networkingPrivate {
     DOMString? ActivationType;
     ActivationStateType? ActivationState;
     boolean? AllowRoaming;
-    DOMString? Carrier;
     DOMString? ESN;
     DOMString? Family;
     DOMString? FirmwareRevision;
@@ -549,7 +548,6 @@ namespace networkingPrivate {
     DOMString? ActivationType;
     ActivationStateType? ActivationState;
     boolean? AllowRoaming;
-    ManagedDOMString? Carrier;
     DOMString? ESN;
     DOMString? Family;
     DOMString? FirmwareRevision;

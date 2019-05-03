@@ -2150,9 +2150,6 @@
     <message name="IDS_ONC_CELLULAR_APN_AUTHENTICATION" desc="ONC Property label for APN-Authentication">
       Authentication
     </message>
-    <message name="IDS_ONC_CELLULAR_CARRIER" desc="ONC Property label for Cellular.Carrier">
-      Carrier
-    </message>
     <message name="IDS_ONC_CELLULAR_FAMILY" desc="ONC Property label for Cellular.Family">
       Family
     </message>
