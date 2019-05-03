@@ -718,3 +718,24 @@ testcase.fileDisplayDownloadsWithBlockedFileTaskRunner = async () => {
   await fileDisplay(RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET);
   await sendTestMessage({name: 'unblockFileTaskRunner'});
 };
+
+/**
+ * Tests to make sure check-select mode enables when selecting one item
+ */
+testcase.fileDisplayCheckSelectWithFakeItemSelected = async () => {
+  // Open files app on Downloads containing ENTRIES.hello.
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.hello], []);
+
+  // Select ENTRIES.hello.
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('selectFile', appId, ['hello.txt']));
+
+  // Select all.
+  const ctrlA = ['#file-list', 'a', true, false, false];
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, ctrlA));
+
+  // Make sure check-select is enabled.
+  await remoteCall.waitForElement(appId, 'body.check-select');
+};

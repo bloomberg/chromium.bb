@@ -29,6 +29,17 @@ class FileListSelectionModel extends cr.ui.ListSelectionModel {
     this.isCheckSelectMode_ = enabled;
   }
 
+  selectAll() {
+    super.selectAll();
+    // Force change event when selecting all but with only 1 item, to update the
+    // UI with select mode.
+    if (this.isCheckSelectMode_ && this.selectedIndexes.length == 1) {
+      const e = new Event('change');
+      e.changes = [];
+      this.dispatchEvent(e);
+    }
+  }
+
   /**
    * Gets the check-select mode.
    * @return {boolean} True if check-select mode is enabled.
