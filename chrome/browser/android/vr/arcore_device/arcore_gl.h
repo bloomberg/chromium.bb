@@ -165,6 +165,7 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
   gfx::Transform uv_transform_;
   gfx::Transform webxr_transform_;
   gfx::Transform projection_;
+  gfx::Transform inverse_projection_;
   // The first run of ProduceFrame should set uv_transform_ and projection_
   // using the default settings in ArCore.
   bool should_recalculate_uvs_ = true;

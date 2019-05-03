@@ -291,7 +291,9 @@ void ArCoreGl::GetFrameData(
   }
 
   // Check if the frame_size and display_rotation updated last frame. If yes,
-  // apply the update for this frame.
+  // apply the update for this frame. In the current implementation, this should
+  // only happen once per session since we don't support mid-session rotation or
+  // resize.
   if (should_recalculate_uvs_) {
     // Get the UV transform matrix from ArCore's UV transform.
     std::vector<float> uvs_transformed =
@@ -309,6 +311,11 @@ void ArCoreGl::GetFrameData(
     float right = depth_near * (m.get(2, 0) + 1.f) / m.get(0, 0);
     float bottom = depth_near * (m.get(2, 1) - 1.f) / m.get(1, 1);
     float top = depth_near * (m.get(2, 1) + 1.f) / m.get(1, 1);
+
+    // Also calculate the inverse projection which is needed for converting
+    // screen touches to world rays.
+    bool has_inverse = projection_.GetInverse(&inverse_projection_);
+    DCHECK(has_inverse);
 
     // VRFieldOfView wants positive angles.
     mojom::VRFieldOfViewPtr field_of_view = mojom::VRFieldOfView::New();
@@ -653,8 +660,57 @@ mojom::XRInputSourceStatePtr ArCoreGl::GetInputSourceState() {
   // Controller doesn't have a measured position.
   state->description->emulated_position = true;
 
-  // TODO(klausw): fill in state->grip and state->description->pointer_offset
-  // by unprojecting the screen coordinates into a world space ray.
+  // The Renderer code ignores state->grip for TAPPING (screen-based) target ray
+  // mode, so we don't bother filling it in here. If this does get used at
+  // some point in the future, this should be set to the inverse of the
+  // pose rigid transform.
+
+  // Get a viewer-space ray from screen-space coordinates by applying the
+  // inverse of the projection matrix. Z coordinate of -1 means the point will
+  // be projected onto the projection matrix near plane. See also
+  // third_party/blink/renderer/modules/xr/xr_view.cc's UnprojectPointer.
+  gfx::Point3F touch_point(
+      screen_last_touch_.x() / transfer_size_.width() * 2.f - 1.f,
+      (1.f - screen_last_touch_.y() / transfer_size_.height()) * 2.f - 1.f,
+      -1.f);
+  DVLOG(3) << __func__ << ": touch_point=" << touch_point.ToString();
+  inverse_projection_.TransformPoint(&touch_point);
+  DVLOG(3) << __func__ << ": unprojected=" << touch_point.ToString();
+
+  // Ray points along -Z in ray space, so we need to flip it to get
+  // the +Z axis unit vector.
+  gfx::Vector3dF ray_backwards(-touch_point.x(), -touch_point.y(),
+                               -touch_point.z());
+  gfx::Vector3dF new_z;
+  bool can_normalize = ray_backwards.GetNormalized(&new_z);
+  DCHECK(can_normalize);
+
+  // Complete the ray-space basis by adding X and Y unit
+  // vectors based on cross products.
+  const gfx::Vector3dF kUp(0.f, 1.f, 0.f);
+  gfx::Vector3dF new_x(kUp);
+  new_x.Cross(new_z);
+  new_x.GetNormalized(&new_x);
+  gfx::Vector3dF new_y(new_z);
+  new_y.Cross(new_x);
+  new_y.GetNormalized(&new_y);
+
+  // Fill in the transform matrix in column-major order. The first three columns
+  // contain the basis vectors, the fourth column the position offset.
+  gfx::Transform from_ray_space(
+      new_x.x(), new_x.y(), new_x.z(), 0,  // X basis vector
+      new_y.x(), new_y.y(), new_y.z(), 0,  // Y basis vector
+      new_z.x(), new_z.y(), new_z.z(), 0,  // Z basis vector
+      touch_point.x(), touch_point.y(), touch_point.z(), 1);
+  DVLOG(3) << __func__ << ": from_ray_space=" << from_ray_space.ToString();
+
+  // We now have a transform from ray space to viewer space, but the mojo
+  // matrices go in the opposite direction, in this case it expects a transform
+  // from grip matrix (== viewer space) to ray space, so we need to invert it.
+  gfx::Transform to_ray_space;
+  bool can_invert = from_ray_space.GetInverse(&to_ray_space);
+  state->description->pointer_offset = to_ray_space;
+  DCHECK(can_invert);
 
   return state;
 }
