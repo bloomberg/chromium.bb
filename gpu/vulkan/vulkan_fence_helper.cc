@@ -19,7 +19,7 @@ VulkanFenceHelper::FenceHandle& VulkanFenceHelper::FenceHandle::operator=(
     const FenceHandle& other) = default;
 
 VulkanFenceHelper::VulkanFenceHelper(VulkanDeviceQueue* device_queue)
-    : device_queue_(device_queue) {}
+    : device_queue_(device_queue), weak_factory_(this) {}
 
 VulkanFenceHelper::~VulkanFenceHelper() {
   DCHECK(tasks_pending_fence_.empty());
@@ -79,18 +79,26 @@ void VulkanFenceHelper::ProcessCleanupTasks() {
   VkDevice device = device_queue_->GetVulkanDevice();
 
   // Iterate over our pending cleanup fences / tasks, advancing
-  // |current_generation_| as far as possible. This assumes that fences pass in
-  // order, which isn't a hard API guarantee, but should be close enough /
-  // efficient enough for the purpose or processing cleanup tasks.
+  // |current_generation_| as far as possible.
   for (const auto& tasks_for_fence : cleanup_tasks_) {
-    VkResult result = vkGetFenceStatus(device, tasks_for_fence.handle.fence_);
+    // If we're already ahead of this task (callback modified |generation_id_|),
+    // continue.
+    if (tasks_for_fence.generation_id <= current_generation_)
+      continue;
+
+    // Callback based tasks have no actual fence to wait on, keep checking
+    // future fences, as a callback may be delayed.
+    if (tasks_for_fence.UsingCallback())
+      continue;
+
+    VkResult result = vkGetFenceStatus(device, tasks_for_fence.fence);
     if (result == VK_NOT_READY)
       break;
     if (result != VK_SUCCESS) {
       PerformImmediateCleanup();
       return;
     }
-    current_generation_ = tasks_for_fence.handle.generation_id_;
+    current_generation_ = tasks_for_fence.generation_id;
   }
 
   // Runs any cleanup tasks for generations that have passed. Create a temporary
@@ -98,11 +106,12 @@ void VulkanFenceHelper::ProcessCleanupTasks() {
   std::vector<CleanupTask> tasks_to_run;
   while (!cleanup_tasks_.empty()) {
     TasksForFence& tasks_for_fence = cleanup_tasks_.front();
-    if (tasks_for_fence.handle.generation_id_ > current_generation_)
+    if (tasks_for_fence.generation_id > current_generation_)
       break;
-    DCHECK_EQ(vkGetFenceStatus(device, tasks_for_fence.handle.fence_),
-              VK_SUCCESS);
-    vkDestroyFence(device, tasks_for_fence.handle.fence_, nullptr);
+    if (tasks_for_fence.fence != VK_NULL_HANDLE) {
+      DCHECK_EQ(vkGetFenceStatus(device, tasks_for_fence.fence), VK_SUCCESS);
+      vkDestroyFence(device, tasks_for_fence.fence, nullptr);
+    }
     tasks_to_run.insert(tasks_to_run.end(),
                         std::make_move_iterator(tasks_for_fence.tasks.begin()),
                         std::make_move_iterator(tasks_for_fence.tasks.end()));
@@ -131,6 +140,42 @@ VulkanFenceHelper::FenceHandle VulkanFenceHelper::GenerateCleanupFence() {
   }
 
   return EnqueueFence(fence);
+}
+
+void VulkanFenceHelper::EnqueueExternalCallback(
+    ExternalCallback* callback,
+    ExternalCallbackContext* context) {
+  // No need to do callback tracking if there are no cleanup tasks to run.
+  if (tasks_pending_fence_.empty())
+    return;
+
+  // Get a generaiton ID for this callback and associate existing cleanup
+  // tasks.
+  uint64_t generation_id = next_generation_++;
+  cleanup_tasks_.emplace_back(generation_id, std::move(tasks_pending_fence_));
+  tasks_pending_fence_ = std::vector<CleanupTask>();
+
+  // Populate |callback| and |context|.
+  struct ExternalCallbackData {
+    base::WeakPtr<VulkanFenceHelper> fence_helper;
+    uint64_t generation_id;
+  };
+  // As we must pass a void* which may outlive this class, use "new" here. We
+  // will delete |context| in the callback below.
+  *context =
+      new ExternalCallbackData{weak_factory_.GetWeakPtr(), generation_id};
+  *callback = [](ExternalCallbackContext context) {
+    auto* callback_data = static_cast<ExternalCallbackData*>(context);
+    if (auto* fence_helper = callback_data->fence_helper.get()) {
+      // If |current_generation_| is ahead of the callback's |generation_id|,
+      // the callback came late. Ignore it.
+      if (callback_data->generation_id > fence_helper->current_generation_) {
+        fence_helper->current_generation_ = callback_data->generation_id;
+        fence_helper->ProcessCleanupTasks();
+      }
+    }
+    delete callback_data;
+  };
 }
 
 void VulkanFenceHelper::EnqueueSemaphoreCleanupForSubmittedWork(
@@ -175,7 +220,14 @@ void VulkanFenceHelper::EnqueueImageCleanupForSubmittedWork(
 }
 
 void VulkanFenceHelper::PerformImmediateCleanup() {
-  // Rather than caring about fences, just wait for queue idle if possible.
+  if (cleanup_tasks_.empty() && tasks_pending_fence_.empty())
+    return;
+
+  // We want to run all tasks immediately, so just use vkQueueWaitIdle which
+  // ensures that all fences have passed.
+  // Even if exclusively using callbacks, the callbacks use WeakPtr and will
+  // not keep this class alive, so it's important to wait / run all cleanup
+  // immediately.
   VkResult result = vkQueueWaitIdle(device_queue_->GetVulkanQueue());
   // Wait can only fail for three reasons - device loss, host OOM, device OOM.
   // If we hit an OOM, treat this as a crash. There isn't a great way to
@@ -190,8 +242,8 @@ void VulkanFenceHelper::PerformImmediateCleanup() {
   std::vector<CleanupTask> tasks_to_run;
   while (!cleanup_tasks_.empty()) {
     auto& tasks_for_fence = cleanup_tasks_.front();
-    vkDestroyFence(device_queue_->GetVulkanDevice(),
-                   tasks_for_fence.handle.fence_, nullptr);
+    vkDestroyFence(device_queue_->GetVulkanDevice(), tasks_for_fence.fence,
+                   nullptr);
     tasks_to_run.insert(tasks_to_run.end(),
                         std::make_move_iterator(tasks_for_fence.tasks.begin()),
                         std::make_move_iterator(tasks_for_fence.tasks.end()));
@@ -207,12 +259,14 @@ void VulkanFenceHelper::PerformImmediateCleanup() {
 
 VulkanFenceHelper::TasksForFence::TasksForFence(FenceHandle handle,
                                                 std::vector<CleanupTask> tasks)
-    : handle(handle), tasks(std::move(tasks)) {}
+    : fence(handle.fence_),
+      generation_id(handle.generation_id_),
+      tasks(std::move(tasks)) {}
+VulkanFenceHelper::TasksForFence::TasksForFence(uint64_t generation_id,
+                                                std::vector<CleanupTask> tasks)
+    : generation_id(generation_id), tasks(std::move(tasks)) {}
 VulkanFenceHelper::TasksForFence::~TasksForFence() = default;
 VulkanFenceHelper::TasksForFence::TasksForFence(TasksForFence&& other) =
     default;
-VulkanFenceHelper::TasksForFence&
-VulkanFenceHelper::TasksForFence::TasksForFence::operator=(
-    TasksForFence&& other) = default;
 
 }  // namespace gpu

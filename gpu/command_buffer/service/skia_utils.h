@@ -7,6 +7,8 @@
 
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/gpu_gles2_export.h"
+#include "third_party/skia/include/core/SkSurface.h"
+#include "third_party/skia/include/gpu/GrTypes.h"
 
 // Forwardly declare a few GL types to avoid including GL header files.
 typedef int GLint;
@@ -23,6 +25,10 @@ namespace gl {
 struct GLVersionInfo;
 }  // namespace gl
 
+namespace viz {
+class VulkanContextProvider;
+}  // namespace viz
+
 namespace gpu {
 // Creates a GrBackendTexture from a service ID. Skia does not take ownership.
 // Returns true on success.
@@ -32,6 +38,12 @@ GPU_GLES2_EXPORT bool GetGrBackendTexture(const gl::GLVersionInfo* version_info,
                                           GLuint service_id,
                                           viz::ResourceFormat resource_format,
                                           GrBackendTexture* gr_texture);
+
+// Helper which associates cleanup callbacks with a Skia GrFlushInfo's callback.
+// Is a no-op if |context_provider| is null.
+GPU_GLES2_EXPORT void CreateCleanupCallbackForSkiaFlush(
+    viz::VulkanContextProvider* context_provider,
+    GrFlushInfo* flush_info);
 
 }  // namespace gpu
 

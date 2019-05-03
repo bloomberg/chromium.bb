@@ -464,6 +464,8 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
         .fSignalSemaphores =
             scoped_promise_image_access.end_semaphores().data(),
     };
+    gpu::CreateCleanupCallbackForSkiaFlush(vulkan_context_provider_,
+                                           &flush_info);
     auto result = output_sk_surface()->flush(
         SkSurface::BackendSurfaceAccess::kPresent, flush_info);
     if (result != GrSemaphoresSubmitted::kYes &&
@@ -562,7 +564,8 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
         .fSignalSemaphores =
             scoped_promise_image_access.end_semaphores().data(),
     };
-
+    gpu::CreateCleanupCallbackForSkiaFlush(vulkan_context_provider_,
+                                           &flush_info);
     auto result = offscreen.surface()->flush(
         SkSurface::BackendSurfaceAccess::kNoAccess, flush_info);
     if (result != GrSemaphoresSubmitted::kYes &&

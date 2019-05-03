@@ -774,6 +774,8 @@ void RasterDecoderImpl::Destroy(bool have_context) {
           .fNumSemaphores = end_semaphores_.size(),
           .fSignalSemaphores = end_semaphores_.data(),
       };
+      CreateCleanupCallbackForSkiaFlush(
+          shared_context_state_->vk_context_provider(), &flush_info);
       auto result = sk_surface_->flush(
           SkSurface::BackendSurfaceAccess::kPresent, flush_info);
       DCHECK(result == GrSemaphoresSubmitted::kYes || end_semaphores_.empty());
@@ -2207,6 +2209,8 @@ void RasterDecoderImpl::DoEndRasterCHROMIUM() {
         .fNumSemaphores = end_semaphores_.size(),
         .fSignalSemaphores = end_semaphores_.data(),
     };
+    CreateCleanupCallbackForSkiaFlush(
+        shared_context_state_->vk_context_provider(), &flush_info);
     auto result = sk_surface_->flush(SkSurface::BackendSurfaceAccess::kPresent,
                                      flush_info);
     DCHECK(result == GrSemaphoresSubmitted::kYes || end_semaphores_.empty());
