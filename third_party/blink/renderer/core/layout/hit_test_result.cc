@@ -202,8 +202,8 @@ void HitTestResult::SetInnerNode(Node* n) {
     return;
   }
   inner_possibly_pseudo_node_ = n;
-  if (n->IsPseudoElement())
-    n = ToPseudoElement(n)->InnerNodeForHitTesting();
+  if (auto* pseudo_element = DynamicTo<PseudoElement>(n))
+    n = pseudo_element->InnerNodeForHitTesting();
   inner_node_ = n;
   if (HTMLAreaElement* area = ImageAreaForImage()) {
     inner_node_ = area;

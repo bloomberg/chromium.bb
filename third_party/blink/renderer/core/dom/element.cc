@@ -2567,9 +2567,9 @@ StyleRecalcChange Element::RecalcOwnStyle(const StyleRecalcChange change) {
 
   if (LayoutObject* layout_object = GetLayoutObject()) {
     DCHECK(new_style);
-    if (IsPseudoElement() && new_style->Display() == EDisplay::kContents) {
-      new_style =
-          ToPseudoElement(this)->LayoutStyleForDisplayContents(*new_style);
+    auto* this_element = DynamicTo<PseudoElement>(this);
+    if (this_element && new_style->Display() == EDisplay::kContents) {
+      new_style = this_element->LayoutStyleForDisplayContents(*new_style);
     }
     // kEqual means that the computed style didn't change, but there are
     // additional flags in ComputedStyle which may have changed. For instance,

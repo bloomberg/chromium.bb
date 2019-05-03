@@ -143,9 +143,10 @@ base::Optional<PositionWithAffinity> PositionForPointInChild(
 
 // ::before, ::after and ::first-letter can be hit test targets.
 bool CanBeHitTestTargetPseudoNode(const Node& node) {
-  if (!node.IsPseudoElement())
+  auto* pseudo_element = DynamicTo<PseudoElement>(node);
+  if (!pseudo_element)
     return false;
-  switch (ToPseudoElement(node).GetPseudoId()) {
+  switch (pseudo_element->GetPseudoId()) {
     case kPseudoIdBefore:
     case kPseudoIdAfter:
     case kPseudoIdFirstLetter:

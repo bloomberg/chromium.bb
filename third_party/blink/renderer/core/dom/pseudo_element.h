@@ -29,6 +29,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -78,7 +79,15 @@ const QualifiedName& PseudoElementTagName();
 
 bool PseudoElementLayoutObjectIsNeeded(const ComputedStyle*);
 
-DEFINE_ELEMENT_TYPE_CASTS(PseudoElement, IsPseudoElement());
+template <>
+inline bool IsElementOfType<const PseudoElement>(const Node& node) {
+  return node.IsPseudoElement();
+}
+
+template <>
+struct DowncastTraits<PseudoElement> {
+  static bool AllowFrom(const Node& node) { return node.IsPseudoElement(); }
+};
 
 }  // namespace blink
 

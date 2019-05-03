@@ -253,9 +253,8 @@ std::unique_ptr<protocol::DictionaryValue> BuildElementInfo(Element* element) {
   std::unique_ptr<protocol::DictionaryValue> element_info =
       protocol::DictionaryValue::create();
   Element* real_element = element;
-  PseudoElement* pseudo_element = nullptr;
-  if (element->IsPseudoElement()) {
-    pseudo_element = ToPseudoElement(element);
+  auto* pseudo_element = DynamicTo<PseudoElement>(element);
+  if (pseudo_element) {
     real_element = element->ParentOrShadowHostElement();
   }
   bool is_xhtml = real_element->GetDocument().IsXHTMLDocument();
