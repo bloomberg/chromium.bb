@@ -285,8 +285,8 @@ enum {
 static INLINE void init_best_pickmode(BEST_PICKMODE *bp) {
   bp->best_mode = NEARESTMV;
   bp->best_ref_frame = LAST_FRAME;
-  bp->best_tx_size = TX_SIZES;
-  bp->best_intra_tx_size = TX_SIZES;
+  bp->best_tx_size = TX_8X8;
+  bp->best_intra_tx_size = TX_8X8;
   bp->best_pred_filter = EIGHTTAP_REGULAR;
   bp->best_mode_skip_txfm = 0;
   bp->best_second_ref_frame = NONE_FRAME;
@@ -1055,9 +1055,6 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   mi->ref_frame[0] = NONE_FRAME;
   mi->ref_frame[1] = NONE_FRAME;
 
-  x->source_variance =
-      av1_get_sby_perpixel_variance(cpi, &x->plane[0].src, bsize);
-
 // TODO(kyslov) Refine logic of selecting REF FRAME SET.
 // For now only LAST_FRAME is used
 #if 0
@@ -1140,10 +1137,6 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       continue;
 
     if (!(cpi->ref_frame_flags & flag_list[ref_frame])) continue;
-
-    if (x->source_variance == 0 && frame_mv[this_mode][ref_frame].as_int != 0) {
-      continue;
-    }
 
     if (!(inter_mode_mask[bsize] & (1 << this_mode))) continue;
 
