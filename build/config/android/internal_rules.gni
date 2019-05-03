@@ -2147,6 +2147,10 @@ if (enable_java_templates) {
   #     found in the AndroidManifest.xml. Does not affect the package name
   #     used in AndroidManifest.xml.
   #
+  #   resource_ids_provider_dep: (optional)
+  #     Use resource IDs provided by another APK target when compiling resources
+  #     (via. "aapt2 link --stable-ids")
+  #
   # Output variables:
   #   arsc_output: Path to output .ap_ file (optional).
   #
