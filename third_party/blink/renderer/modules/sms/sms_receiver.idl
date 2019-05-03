@@ -11,7 +11,7 @@
   Constructor(optional SMSReceiverOptions options),
   ConstructorCallWith=ScriptState,
   RaisesException=Constructor,
-  RuntimeEnabled=SmsRetrieval
+  RuntimeEnabled=SmsReceiver
 ] interface SMSReceiver : EventTarget {
   readonly attribute SMS sms;
   attribute EventHandler onchange;

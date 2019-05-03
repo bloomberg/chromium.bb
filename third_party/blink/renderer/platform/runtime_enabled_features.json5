@@ -1359,7 +1359,7 @@
       status: "stable",
     },
     {
-      name: "SmsRetrieval",
+      name: "SmsReceiver",
       status: "experimental",
     },
     {
