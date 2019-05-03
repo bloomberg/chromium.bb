@@ -22,10 +22,13 @@
 namespace {
 
 class DatarateTestLarge
-    : public ::libaom_test::CodecTestWith2Params<libaom_test::TestMode, int>,
+    : public ::libaom_test::CodecTestWith3Params<libaom_test::TestMode, int,
+                                                 unsigned int>,
       public ::libaom_test::EncoderTest {
  public:
-  DatarateTestLarge() : EncoderTest(GET_PARAM(0)) {}
+  DatarateTestLarge()
+      : EncoderTest(GET_PARAM(0)), set_cpu_used_(GET_PARAM(2)),
+        aq_mode_(GET_PARAM(3)) {}
 
  protected:
   virtual ~DatarateTestLarge() {}
@@ -33,7 +36,6 @@ class DatarateTestLarge
   virtual void SetUp() {
     InitializeConfig();
     SetMode(GET_PARAM(1));
-    set_cpu_used_ = GET_PARAM(2);
     ResetModel();
   }
 
@@ -124,6 +126,7 @@ class DatarateTestLarge
   int denoiser_on_;
   int denoiser_offon_test_;
   int denoiser_offon_period_;
+  unsigned int aq_mode_;
 };
 
 // Check basic rate targeting for VBR mode.
@@ -248,8 +251,17 @@ TEST_P(DatarateTestLarge, ChangingDropFrameThresh) {
   }
 }
 
+class DatarateTest : public DatarateTestLarge {};
+
 AV1_INSTANTIATE_TEST_CASE(DatarateTestLarge,
                           ::testing::Values(::libaom_test::kOnePassGood,
                                             ::libaom_test::kRealTime),
-                          ::testing::Values(2, 5));
+                          ::testing::Range(2, 7),
+                          ::testing::Range<unsigned int>(0, 4));
+
+AV1_INSTANTIATE_TEST_CASE(DatarateTest,
+                          ::testing::Values(::libaom_test::kRealTime),
+                          ::testing::Range(7, 9),
+                          ::testing::Range<unsigned int>(0, 4));
+
 }  // namespace
