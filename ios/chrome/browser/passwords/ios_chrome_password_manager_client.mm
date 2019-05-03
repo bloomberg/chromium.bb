@@ -14,6 +14,7 @@
 #include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_manager.h"
+#include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/password_manager/core/browser/password_manager_internals_service.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_requirements_service.h"
@@ -181,6 +182,11 @@ bool IOSChromePasswordManagerClient::IsSavingAndFillingEnabled(
   return *saving_passwords_enabled_ && !IsIncognito() &&
          !net::IsCertStatusError(GetMainFrameCertStatus()) &&
          IsFillingEnabled(url);
+}
+
+bool IOSChromePasswordManagerClient::IsFillingEnabled(const GURL& url) const {
+  return url.GetOrigin() !=
+         GURL(password_manager::kPasswordManagerAccountDashboardURL);
 }
 
 const GURL& IOSChromePasswordManagerClient::GetLastCommittedEntryURL() const {

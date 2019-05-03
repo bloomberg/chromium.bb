@@ -53,6 +53,7 @@ class WebState;
 @end
 
 // An iOS implementation of password_manager::PasswordManagerClient.
+// TODO(crbug.com/958833): write unit tests for this class.
 class IOSChromePasswordManagerClient
     : public password_manager::PasswordManagerClient,
       public password_manager::PasswordManagerClientHelperDelegate {
@@ -96,6 +97,7 @@ class IOSChromePasswordManagerClient
       const autofill::PasswordForm& form) override;
   void NotifyStorePasswordCalled() override;
   bool IsSavingAndFillingEnabled(const GURL& url) const override;
+  bool IsFillingEnabled(const GURL& url) const override;
   const GURL& GetLastCommittedEntryURL() const override;
   std::string GetPageLanguage() const override;
   const password_manager::CredentialsFilter* GetStoreResultFilter()
