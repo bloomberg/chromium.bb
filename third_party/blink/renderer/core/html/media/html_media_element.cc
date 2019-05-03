@@ -2597,9 +2597,22 @@ void HTMLMediaElement::setVolume(double vol, ExceptionState& exception_state) {
 
   volume_ = vol;
 
+  ScheduleEvent(event_type_names::kVolumechange);
+
+  // If it setting volume to audible and AutoplayPolicy doesn't want the
+  // playback to continue, pause the playback.
+  if (EffectiveMediaVolume() && !autoplay_policy_->RequestAutoplayUnmute())
+    pause();
+
+  // If playback was not paused by the autoplay policy and got audible, the
+  // element is marked as being allowed to play unmuted.
+  if (EffectiveMediaVolume() && PotentiallyPlaying())
+    was_always_muted_ = false;
+
   if (GetWebMediaPlayer())
     GetWebMediaPlayer()->SetVolume(EffectiveMediaVolume());
-  ScheduleEvent(event_type_names::kVolumechange);
+
+  autoplay_policy_->StopAutoplayMutedWhenVisible();
 }
 
 bool HTMLMediaElement::muted() const {
@@ -2618,12 +2631,12 @@ void HTMLMediaElement::setMuted(bool muted) {
 
   // If it is unmute and AutoplayPolicy doesn't want the playback to continue,
   // pause the playback.
-  if (!muted_ && !autoplay_policy_->RequestAutoplayUnmute())
+  if (EffectiveMediaVolume() && !autoplay_policy_->RequestAutoplayUnmute())
     pause();
 
   // If playback was not paused by the autoplay policy and got unmuted, the
   // element is marked as being allowed to play unmuted.
-  if (!muted_ && PotentiallyPlaying())
+  if (EffectiveMediaVolume() && PotentiallyPlaying())
     was_always_muted_ = false;
 
   // This is called at the end to make sure the WebMediaPlayer has the right
