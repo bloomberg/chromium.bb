@@ -118,12 +118,14 @@ static void ConsiderForBestCandidate(SpatialNavigationDirection direction,
             .HitTestResultAtLocation(
                 location, HitTestRequest::kReadOnly | HitTestRequest::kActive |
                               HitTestRequest::kIgnoreClipping);
-    if (candidate.visible_node->contains(result.InnerNode())) {
+    if (candidate.visible_node->ContainsIncludingHostElements(
+            *result.InnerNode())) {
       *best_candidate = candidate;
       *best_distance = distance;
       return;
     }
-    if (best_candidate->visible_node->contains(result.InnerNode()))
+    if (best_candidate->visible_node->ContainsIncludingHostElements(
+            *result.InnerNode()))
       return;
   }
 
