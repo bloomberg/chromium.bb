@@ -46,6 +46,10 @@ const CGFloat kImageHeight = 30;
     image = [UIImage imageNamed:self.imageName];
   }
   [cell setImage:image];
+  if (self.checkedBackgroundColor) {
+    // Overrides |styler|'s cellBackgroundColor (if set in the call to super).
+    cell.backgroundColor = self.checked ? self.checkedBackgroundColor : nil;
+  }
   cell.textLabel.text = self.text;
   cell.detailTextLabel.text = self.detailText;
   cell.optionalTextLabel.text = self.optionalText;

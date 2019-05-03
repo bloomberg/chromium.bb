@@ -21,6 +21,10 @@ enum class BrowsingDataRemoveMask;
 // Whether or not the cell should show a checkmark.
 @property(nonatomic, assign) BOOL checked;
 
+// If not nil, specified color will be cell's backgroundColor
+// when self.checked == YES
+@property(nonatomic, strong) UIColor* checkedBackgroundColor;
+
 // Mask of the data to be cleared.
 @property(nonatomic, assign) BrowsingDataRemoveMask dataTypeMask;
 

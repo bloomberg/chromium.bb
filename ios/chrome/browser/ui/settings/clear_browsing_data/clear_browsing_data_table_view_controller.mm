@@ -26,7 +26,6 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_link_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
-#include "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -34,11 +33,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-namespace {
-const CGFloat kCellHightlightColorAlpha = 0.05;
-const int kCellHighlightColorRgb = 0x4285F4;
-}  // namespace
 
 @interface ClearBrowsingDataTableViewController () <
     TableViewTextLinkCellDelegate,
@@ -132,8 +126,6 @@ const int kCellHighlightColorRgb = 0x4285F4;
   [super viewDidLoad];
   if (IsNewClearBrowsingDataUIEnabled()) {
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-    self.styler.cellHighlightColor =
-        UIColorFromRGB(kCellHighlightColorRgb, kCellHightlightColorAlpha);
   }
   self.styler.tableViewBackgroundColor = UIColor.whiteColor;
   self.tableView.accessibilityIdentifier =
@@ -264,6 +256,12 @@ const int kCellHighlightColorRgb = 0x4285F4;
     case ItemTypeDataTypeCache:
     case ItemTypeDataTypeSavedPasswords:
     case ItemTypeDataTypeAutofill:
+      // For these cells the selection style application is specified in the
+      // corresponding item definition.
+      if (IsNewClearBrowsingDataUIEnabled()) {
+        cellToReturn.selectionStyle = UITableViewCellSelectionStyleNone;
+      }
+      break;
     default:
       break;
   }

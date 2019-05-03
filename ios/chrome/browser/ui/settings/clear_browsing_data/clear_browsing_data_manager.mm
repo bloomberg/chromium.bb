@@ -64,6 +64,9 @@ namespace {
 const int kMaxTimesHistoryNoticeShown = 1;
 // The tableView button red background color.
 const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
+// Highlighted background color for cells in the Data Types section.
+const CGFloat kCellHightlightedColorAlpha = 0.05;
+const int kCellHighlightedColorRGB = 0x4285F4;
 
 // List of flags that have corresponding counters.
 const std::vector<BrowsingDataRemoveMask> _browsingDataRemoveFlags = {
@@ -491,6 +494,8 @@ static NSDictionary* _imageNamesByItemTypes = @{
     tableViewClearDataItem.prefName = prefName;
     if (IsNewClearBrowsingDataUIEnabled()) {
       tableViewClearDataItem.useCustomSeparator = YES;
+      tableViewClearDataItem.checkedBackgroundColor =
+          UIColorFromRGB(kCellHighlightedColorRGB, kCellHightlightedColorAlpha);
       tableViewClearDataItem.imageName = [_imageNamesByItemTypes
           objectForKey:[NSNumber numberWithInteger:itemType]];
       if (itemType == ItemTypeDataTypeCookiesSiteData) {
