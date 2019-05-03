@@ -89,6 +89,7 @@
 
     'android_specific_chromium_gtests': {
       'android_webview_unittests': {},
+      'breakpad_unittests': {},
       'content_shell_test_apk': {
         'swarming': {
           'shards': 3,
@@ -2231,7 +2232,6 @@
     },
 
     'chromium_gtests_for_linux_and_chromeos_only': {
-      'breakpad_unittests': {},
       'dbus_unittests': {},
       'mojo_core_unittests': {},
       'nacl_helper_nonsfi_unittests': {},

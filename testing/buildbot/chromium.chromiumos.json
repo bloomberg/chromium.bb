@@ -818,21 +818,6 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
-        },
-        "test": "breakpad_unittests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-14.04"
-            }
           ],
           "shards": 21
         },
@@ -2410,21 +2395,6 @@
           ]
         },
         "test": "boringssl_ssl_tests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-14.04"
-            }
-          ]
-        },
-        "test": "breakpad_unittests"
       },
       {
         "merge": {
