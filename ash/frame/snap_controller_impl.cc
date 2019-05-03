@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/frame/ash_frame_caption_controller.h"
+#include "ash/frame/snap_controller_impl.h"
 
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
@@ -13,16 +13,16 @@
 
 namespace ash {
 
-AshFrameCaptionController::AshFrameCaptionController() = default;
-AshFrameCaptionController::~AshFrameCaptionController() = default;
+SnapControllerImpl::SnapControllerImpl() = default;
+SnapControllerImpl::~SnapControllerImpl() = default;
 
-bool AshFrameCaptionController::CanSnap(aura::Window* window) {
+bool SnapControllerImpl::CanSnap(aura::Window* window) {
   return wm::GetWindowState(window)->CanSnap();
 }
 
-void AshFrameCaptionController::ShowSnapPreview(aura::Window* window,
-                                                mojom::SnapDirection snap) {
-  if (snap == mojom::SnapDirection::kNone) {
+void SnapControllerImpl::ShowSnapPreview(aura::Window* window,
+                                         SnapDirection snap) {
+  if (snap == SnapDirection::kNone) {
     phantom_window_controller_.reset();
     return;
   }
@@ -33,21 +33,20 @@ void AshFrameCaptionController::ShowSnapPreview(aura::Window* window,
         std::make_unique<PhantomWindowController>(window);
   }
   gfx::Rect phantom_bounds_in_screen =
-      (snap == mojom::SnapDirection::kLeft)
+      (snap == SnapDirection::kLeft)
           ? wm::GetDefaultLeftSnappedWindowBoundsInParent(window)
           : wm::GetDefaultRightSnappedWindowBoundsInParent(window);
   ::wm::ConvertRectToScreen(window->parent(), &phantom_bounds_in_screen);
   phantom_window_controller_->Show(phantom_bounds_in_screen);
 }
 
-void AshFrameCaptionController::CommitSnap(aura::Window* window,
-                                           mojom::SnapDirection snap) {
+void SnapControllerImpl::CommitSnap(aura::Window* window, SnapDirection snap) {
   phantom_window_controller_.reset();
-  if (snap == mojom::SnapDirection::kNone)
+  if (snap == SnapDirection::kNone)
     return;
 
   wm::WindowState* window_state = wm::GetWindowState(window);
-  const wm::WMEvent snap_event(snap == mojom::SnapDirection::kLeft
+  const wm::WMEvent snap_event(snap == SnapDirection::kLeft
                                    ? wm::WM_EVENT_SNAP_LEFT
                                    : wm::WM_EVENT_SNAP_RIGHT);
   window_state->OnWMEvent(&snap_event);

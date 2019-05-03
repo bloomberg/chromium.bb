@@ -5,7 +5,6 @@
 #ifndef ASH_WS_ASH_WINDOW_MANAGER_H_
 #define ASH_WS_ASH_WINDOW_MANAGER_H_
 
-#include "ash/frame/ash_frame_caption_controller.h"
 #include "ash/public/cpp/menu_utils.h"
 #include "ash/public/interfaces/ash_window_manager.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
@@ -32,8 +31,6 @@ class AshWindowManager : public mojom::AshWindowManager,
 
   // mojom::AshWindowManager:
   void AddWindowToTabletMode(ws::Id window_id) override;
-  void ShowSnapPreview(ws::Id window_id, mojom::SnapDirection snap) override;
-  void CommitSnap(ws::Id window_id, mojom::SnapDirection snap) override;
   void MaximizeWindowByCaptionClick(ws::Id window_id,
                                     ui::mojom::PointerKind pointer) override;
   void BounceWindow(ws::Id window_id) override;
@@ -44,8 +41,6 @@ class AshWindowManager : public mojom::AshWindowManager,
  private:
   ws::WindowTree* window_tree_;
   mojo::AssociatedBinding<mojom::AshWindowManager> binding_;
-
-  AshFrameCaptionController caption_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(AshWindowManager);
 };

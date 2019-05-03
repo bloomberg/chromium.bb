@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/frame/ash_frame_caption_controller.h"
 #include "ash/public/cpp/frame_header.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_delegate.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
@@ -125,8 +124,6 @@ class ASH_EXPORT HeaderView : public views::View,
 
   // The widget that the caption buttons act on.
   views::Widget* target_widget_;
-
-  AshFrameCaptionController caption_controller_;
 
   // Helper for painting the header. The exact type of FrameHeader will depend
   // on the type of window: In Mash, Chrome Browser windows use

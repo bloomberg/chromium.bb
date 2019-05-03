@@ -32,7 +32,7 @@ using DefaultFrameHeaderTest = AshTestBase;
 TEST_F(DefaultFrameHeaderTest, TitleIconAlignment) {
   std::unique_ptr<Widget> widget = CreateTestWidget(
       nullptr, desks_util::GetActiveDeskContainerId(), gfx::Rect(1, 2, 3, 4));
-  FrameCaptionButtonContainerView container(widget.get(), nullptr);
+  FrameCaptionButtonContainerView container(widget.get());
   views::StaticSizedView window_icon(gfx::Size(16, 16));
   window_icon.SetBounds(0, 0, 16, 16);
   widget->SetBounds(gfx::Rect(0, 0, 500, 500));
@@ -50,7 +50,7 @@ TEST_F(DefaultFrameHeaderTest, TitleIconAlignment) {
 TEST_F(DefaultFrameHeaderTest, BackButtonAlignment) {
   std::unique_ptr<Widget> widget = CreateTestWidget(
       nullptr, desks_util::GetActiveDeskContainerId(), gfx::Rect(1, 2, 3, 4));
-  FrameCaptionButtonContainerView container(widget.get(), nullptr);
+  FrameCaptionButtonContainerView container(widget.get());
   FrameBackButton back;
 
   DefaultFrameHeader frame_header(
@@ -68,7 +68,7 @@ TEST_F(DefaultFrameHeaderTest, MinimumHeaderWidthRTL) {
   base::test::ScopedRestoreICUDefaultLocale restore_locale;
   std::unique_ptr<Widget> widget = CreateTestWidget(
       nullptr, desks_util::GetActiveDeskContainerId(), gfx::Rect(1, 2, 3, 4));
-  FrameCaptionButtonContainerView container(widget.get(), nullptr);
+  FrameCaptionButtonContainerView container(widget.get());
 
   DefaultFrameHeader frame_header(
       widget.get(), widget->non_client_view()->frame_view(), &container);
@@ -84,7 +84,7 @@ TEST_F(DefaultFrameHeaderTest, MinimumHeaderWidthRTL) {
 TEST_F(DefaultFrameHeaderTest, FrameColors) {
   std::unique_ptr<Widget> widget = CreateTestWidget(
       nullptr, desks_util::GetActiveDeskContainerId(), gfx::Rect(1, 2, 3, 4));
-  FrameCaptionButtonContainerView container(widget.get(), nullptr);
+  FrameCaptionButtonContainerView container(widget.get());
   views::StaticSizedView window_icon(gfx::Size(16, 16));
   window_icon.SetBounds(0, 0, 16, 16);
   widget->SetBounds(gfx::Rect(0, 0, 500, 500));

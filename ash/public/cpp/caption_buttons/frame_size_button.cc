@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/public/cpp/caption_buttons/snap_controller.h"
 #include "ash/public/cpp/window_properties.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/user_metrics.h"
@@ -41,14 +42,13 @@ bool HitTestButton(const views::FrameCaptionButton* button,
   return expanded_bounds_in_screen.Contains(location_in_screen);
 }
 
-mojom::SnapDirection GetSnapDirection(
-    const views::FrameCaptionButton* to_hover) {
+SnapDirection GetSnapDirection(const views::FrameCaptionButton* to_hover) {
   if (to_hover) {
     switch (to_hover->icon()) {
       case views::CAPTION_BUTTON_ICON_LEFT_SNAPPED:
-        return mojom::SnapDirection::kLeft;
+        return SnapDirection::kLeft;
       case views::CAPTION_BUTTON_ICON_RIGHT_SNAPPED:
-        return mojom::SnapDirection::kRight;
+        return SnapDirection::kRight;
       case views::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE:
       case views::CAPTION_BUTTON_ICON_MINIMIZE:
       case views::CAPTION_BUTTON_ICON_CLOSE:
@@ -62,7 +62,7 @@ mojom::SnapDirection GetSnapDirection(
     }
   }
 
-  return mojom::SnapDirection::kNone;
+  return SnapDirection::kNone;
 }
 
 }  // namespace
@@ -248,7 +248,7 @@ void FrameSizeButton::UpdateSnapPreview(const ui::LocatedEvent& event) {
   }
 
   const views::FrameCaptionButton* to_hover = GetButtonToHover(event);
-  mojom::SnapDirection snap = GetSnapDirection(to_hover);
+  SnapDirection snap = GetSnapDirection(to_hover);
 
   gfx::Point event_location_in_screen(event.location());
   views::View::ConvertPointToScreen(this, &event_location_in_screen);
@@ -282,13 +282,13 @@ const views::FrameCaptionButton* FrameSizeButton::GetButtonToHover(
 
 bool FrameSizeButton::CommitSnap(const ui::LocatedEvent& event) {
   snapping_window_observer_.reset();
-  mojom::SnapDirection snap = GetSnapDirection(GetButtonToHover(event));
+  SnapDirection snap = GetSnapDirection(GetButtonToHover(event));
   delegate_->CommitSnap(snap);
   delegate_->SetHoveredAndPressedButtons(nullptr, nullptr);
 
-  if (snap == mojom::SnapDirection::kLeft) {
+  if (snap == SnapDirection::kLeft) {
     base::RecordAction(base::UserMetricsAction("MaxButton_MaxLeft"));
-  } else if (snap == mojom::SnapDirection::kRight) {
+  } else if (snap == SnapDirection::kRight) {
     base::RecordAction(base::UserMetricsAction("MaxButton_MaxRight"));
   } else {
     SetButtonsToNormalMode(FrameSizeButtonDelegate::ANIMATE_YES);
@@ -301,7 +301,7 @@ bool FrameSizeButton::CommitSnap(const ui::LocatedEvent& event) {
 
 void FrameSizeButton::CancelSnap() {
   snapping_window_observer_.reset();
-  delegate_->CommitSnap(mojom::SnapDirection::kNone);
+  delegate_->CommitSnap(SnapDirection::kNone);
   delegate_->SetHoveredAndPressedButtons(nullptr, nullptr);
   SetButtonsToNormalMode(FrameSizeButtonDelegate::ANIMATE_YES);
 }

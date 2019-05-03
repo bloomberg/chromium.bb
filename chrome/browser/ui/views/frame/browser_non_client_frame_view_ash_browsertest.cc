@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/frame/browser_non_client_frame_view_ash.h"
-
 #include <string>
 
 #include "ash/public/cpp/ash_constants.h"
@@ -51,6 +49,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/browser_actions_bar_browsertest.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
+#include "chrome/browser/ui/views/frame/browser_non_client_frame_view_ash.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
 #include "chrome/browser/ui/views/frame/hosted_app_menu_button.h"
@@ -89,7 +88,6 @@
 #include "ui/base/class_property.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/test/material_design_controller_test_api.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
@@ -138,18 +136,7 @@ void ExitFullscreenModeAndWait(BrowserView* browser_view) {
 }
 
 void ToggleOverview() {
-  if (features::IsUsingWindowService()) {
-    ash::mojom::ShellTestApiPtr shell_test_api;
-    content::ServiceManagerConnection::GetForProcess()
-        ->GetConnector()
-        ->BindInterface(ash::mojom::kServiceName, &shell_test_api);
-    base::RunLoop run_loop;
-    shell_test_api->ToggleOverviewMode(run_loop.QuitClosure());
-    run_loop.Run();
-    aura::test::WaitForAllChangesToComplete();
-  } else {
     ash::Shell::Get()->overview_controller()->ToggleOverview();
-  }
 }
 
 bool IsShelfVisible() {
@@ -699,13 +686,6 @@ IN_PROC_BROWSER_TEST_P(ImmersiveModeBrowserViewTest,
   // Set locked fullscreen state.
   browser()->window()->GetNativeWindow()->SetProperty(
       ash::kWindowPinTypeKey, ash::mojom::WindowPinType::TRUSTED_PINNED);
-  // In Mash, there may be several notifications due to ordering of the
-  // various window property (kWindowPinTypeKey, kShowStateKey) change
-  // notifications, but we should eventually land on fullscreen.
-  if (features::IsUsingWindowService()) {
-    while (!browser_view->GetWidget()->IsFullscreen())
-      FullscreenNotificationObserver().Wait();
-  }
 
   // We're fullscreen, immersive is disabled in locked fullscreen, and while
   // we're at it, also make sure that the shelf is hidden.
@@ -1314,47 +1294,6 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
       ws::mojom::kResizeBehaviorCanMaximize |
           ws::mojom::kResizeBehaviorCanResize);
 
-  if (features::IsUsingWindowService()) {
-    // Test that when one browser window is snapped, the header is visible for
-    // the snapped browser window, but invisible for the browser window still in
-    // overview mode.
-    ToggleOverview();
-
-    ash::mojom::ShellTestApiPtr shell_test_api;
-    content::ServiceManagerConnection::GetForProcess()
-        ->GetConnector()
-        ->BindInterface(ash::mojom::kServiceName, &shell_test_api);
-
-    {
-      base::RunLoop run_loop;
-      shell_test_api->SnapWindowInSplitView(content::mojom::kBrowserServiceName,
-                                            frame_view->GetServerWindowId(),
-                                            true, run_loop.QuitClosure());
-      run_loop.Run();
-    }
-
-    EXPECT_TRUE(frame_view->caption_button_container_->visible());
-    EXPECT_FALSE(frame_view2->caption_button_container_->visible());
-
-    // When both browser windows are snapped, the headers are both visible.
-    {
-      base::RunLoop run_loop;
-      shell_test_api->SnapWindowInSplitView(content::mojom::kBrowserServiceName,
-                                            frame_view2->GetServerWindowId(),
-                                            false, run_loop.QuitClosure());
-      run_loop.Run();
-    }
-
-    EXPECT_TRUE(frame_view->caption_button_container_->visible());
-    EXPECT_TRUE(frame_view2->caption_button_container_->visible());
-
-    // Toggle overview mode while splitview mode is active. Test that the header
-    // is visible for the snapped browser window but not for the other browser
-    // window in overview mode.
-    ToggleOverview();
-    EXPECT_TRUE(frame_view->caption_button_container_->visible());
-    EXPECT_FALSE(frame_view2->caption_button_container_->visible());
-  } else {
     // Test that when one browser window is snapped, the header is visible for
     // the snapped browser window, but invisible for the browser window still in
     // overview mode.
@@ -1397,7 +1336,6 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
 
     EXPECT_TRUE(frame_view->caption_button_container_->visible());
     EXPECT_FALSE(frame_view2->caption_button_container_->visible());
-  }
 }
 
 // Regression test for https://crbug.com/879851.

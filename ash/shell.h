@@ -188,6 +188,7 @@ class ShellObserver;
 class ShellState;
 class ShutdownController;
 class SmsObserver;
+class SnapController;
 class SplitViewController;
 class StickyKeysController;
 class SystemGestureEventFilter;
@@ -877,6 +878,8 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   // The split view controller for Chrome OS in tablet mode.
   std::unique_ptr<SplitViewController> split_view_controller_;
+
+  std::unique_ptr<SnapController> snap_controller_;
 
   // |native_cursor_manager_| is owned by |cursor_manager_|, but we keep a
   // pointer to vend to test code.

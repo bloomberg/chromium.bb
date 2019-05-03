@@ -9,6 +9,7 @@
 
 #include "ash/public/cpp/caption_buttons/caption_button_model.h"
 #include "ash/public/cpp/caption_buttons/frame_size_button.h"
+#include "ash/public/cpp/caption_buttons/snap_controller.h"
 #include "ash/public/cpp/gesture_action_type.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/window_properties.h"
@@ -150,10 +151,8 @@ const char FrameCaptionButtonContainerView::kViewClassName[] =
     "FrameCaptionButtonContainerView";
 
 FrameCaptionButtonContainerView::FrameCaptionButtonContainerView(
-    views::Widget* frame,
-    FrameCaptionDelegate* delegate)
+    views::Widget* frame)
     : frame_(frame),
-      delegate_(delegate),
       model_(std::make_unique<DefaultCaptionButtonModel>(frame)) {
   auto layout =
       std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal);
@@ -500,16 +499,15 @@ aura::Window* FrameCaptionButtonContainerView::GetFrameWindow() {
 }
 
 bool FrameCaptionButtonContainerView::CanSnap() {
-  return delegate_->CanSnap(frame_->GetNativeWindow());
+  return SnapController::Get()->CanSnap(frame_->GetNativeWindow());
 }
 
-void FrameCaptionButtonContainerView::ShowSnapPreview(
-    mojom::SnapDirection snap) {
-  delegate_->ShowSnapPreview(frame_->GetNativeWindow(), snap);
+void FrameCaptionButtonContainerView::ShowSnapPreview(SnapDirection snap) {
+  SnapController::Get()->ShowSnapPreview(frame_->GetNativeWindow(), snap);
 }
 
-void FrameCaptionButtonContainerView::CommitSnap(mojom::SnapDirection snap) {
-  delegate_->CommitSnap(frame_->GetNativeWindow(), snap);
+void FrameCaptionButtonContainerView::CommitSnap(SnapDirection snap) {
+  SnapController::Get()->CommitSnap(frame_->GetNativeWindow(), snap);
 }
 
 }  // namespace ash

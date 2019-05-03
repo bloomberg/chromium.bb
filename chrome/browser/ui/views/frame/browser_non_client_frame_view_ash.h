@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "ash/public/interfaces/ash_window_manager.mojom.h"
 #include "ash/public/interfaces/split_view.mojom.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -20,7 +19,6 @@
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/tab_icon_view_model.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/ws/common/types.h"
 #include "ui/aura/window_observer.h"
 
 class Browser;
@@ -33,7 +31,6 @@ class ProfileIndicatorIcon;
 class TabIconView;
 
 namespace ash {
-class AshFrameCaptionController;
 class FrameCaptionButtonContainerView;
 }  // namespace ash
 
@@ -49,7 +46,6 @@ class BrowserNonClientFrameViewAsh
       public TabIconViewModel,
       public CommandObserver,
       public ash::mojom::SplitViewObserver,
-      public ash::FrameCaptionDelegate,
       public aura::WindowObserver,
       public ImmersiveModeController::Observer {
  public:
@@ -90,8 +86,6 @@ class BrowserNonClientFrameViewAsh
   gfx::Size GetMinimumSize() const override;
   void OnThemeChanged() override;
   void ChildPreferredSizeChanged(views::View* child) override;
-  bool OnMousePressed(const ui::MouseEvent& event) override;
-  void OnGestureEvent(ui::GestureEvent* event) override;
 
   // BrowserFrameHeaderAsh::AppearanceProvider:
   SkColor GetTitleColor() override;
@@ -113,13 +107,6 @@ class BrowserNonClientFrameViewAsh
   // ash::mojom::SplitViewObserver:
   void OnSplitViewStateChanged(
       ash::mojom::SplitViewState current_state) override;
-
-  // ash::FrameCaptionDelegate:
-  bool CanSnap(aura::Window* window) override;
-  void ShowSnapPreview(aura::Window* window,
-                       ash::mojom::SnapDirection snap) override;
-  void CommitSnap(aura::Window* window,
-                  ash::mojom::SnapDirection snap) override;
 
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
@@ -211,8 +198,6 @@ class BrowserNonClientFrameViewAsh
 
   void LayoutProfileIndicator();
 
-  ws::Id GetServerWindowId() const;
-
   // Returns whether this window is currently in the overview list.
   bool IsInOverviewMode() const;
 
@@ -234,9 +219,6 @@ class BrowserNonClientFrameViewAsh
   // Helper class for painting the header.
   std::unique_ptr<ash::FrameHeader> frame_header_;
 
-  // A helper for controlling the window frame; only used in !Mash.
-  std::unique_ptr<ash::AshFrameCaptionController> caption_controller_;
-
   // Ash's mojom::SplitViewController.
   ash::mojom::SplitViewControllerPtr split_view_controller_;
 
@@ -248,9 +230,6 @@ class BrowserNonClientFrameViewAsh
   // Maintains the current split view state.
   ash::mojom::SplitViewState split_view_state_ =
       ash::mojom::SplitViewState::NO_SNAP;
-
-  // Only used in mash.
-  ash::mojom::AshWindowManagerAssociatedPtr ash_window_manager_;
 
   base::WeakPtrFactory<BrowserNonClientFrameViewAsh> weak_ptr_factory_{this};
 

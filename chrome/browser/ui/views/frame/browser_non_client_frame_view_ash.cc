@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "ash/frame/ash_frame_caption_controller.h"  // mash-ok
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_switches.h"
@@ -14,12 +13,12 @@
 #include "ash/public/cpp/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/public/cpp/default_frame_header.h"
 #include "ash/public/cpp/frame_utils.h"
-#include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/touch_uma.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/interfaces/split_view.mojom.h"
 #include "ash/public/interfaces/window_state_type.mojom.h"
-#include "ash/wm/window_util.h"  // mash-ok
+#include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
@@ -56,7 +55,6 @@
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/layout.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
@@ -120,15 +118,7 @@ BrowserNonClientFrameViewAsh::BrowserNonClientFrameViewAsh(
     BrowserFrame* frame,
     BrowserView* browser_view)
     : BrowserNonClientFrameView(frame, browser_view) {
-  if (features::IsUsingWindowService()) {
-    ash_window_manager_ =
-        views::MusClient::Get()
-            ->window_tree_client()
-            ->BindWindowManagerInterface<ash::mojom::AshWindowManager>();
-  } else {
-    ash::wm::InstallResizeHandleWindowTargeterForWindow(
-        frame->GetNativeWindow());
-  }
+  ash::wm::InstallResizeHandleWindowTargeterForWindow(frame->GetNativeWindow());
 
   // The ServiceManagerConnection may be nullptr in tests.
   if (content::ServiceManagerConnection::GetForProcess()) {
@@ -155,14 +145,7 @@ BrowserNonClientFrameViewAsh::~BrowserNonClientFrameViewAsh() {
 }
 
 void BrowserNonClientFrameViewAsh::Init() {
-  ash::FrameCaptionDelegate* caption_delegate = this;
-  if (!features::IsUsingWindowService()) {
-    caption_controller_ = std::make_unique<ash::AshFrameCaptionController>();
-    caption_delegate = caption_controller_.get();
-  }
-
-  caption_button_container_ =
-      new ash::FrameCaptionButtonContainerView(frame(), caption_delegate);
+  caption_button_container_ = new ash::FrameCaptionButtonContainerView(frame());
   caption_button_container_->UpdateCaptionButtonState(false /*=animate*/);
   AddChildView(caption_button_container_);
 
@@ -179,13 +162,10 @@ void BrowserNonClientFrameViewAsh::Init() {
   UpdateProfileIcons();
 
   aura::Window* window = frame()->GetNativeWindow();
-  // For Mash, this property is set in BrowserFrameMash as an init property.
-  if (!features::IsUsingWindowService()) {
-    window->SetProperty(
-        aura::client::kAppType,
-        static_cast<int>(browser->is_app() ? ash::AppType::CHROME_APP
-                                           : ash::AppType::BROWSER));
-  }
+  window->SetProperty(
+      aura::client::kAppType,
+      static_cast<int>(browser->is_app() ? ash::AppType::CHROME_APP
+                                         : ash::AppType::BROWSER));
 
   window_observer_.Add(GetFrameWindow());
 
@@ -468,45 +448,6 @@ void BrowserNonClientFrameViewAsh::ChildPreferredSizeChanged(
   }
 }
 
-bool BrowserNonClientFrameViewAsh::OnMousePressed(const ui::MouseEvent& event) {
-  if (!features::IsUsingWindowService())
-    return false;
-
-  if (event.IsOnlyLeftMouseButton()) {
-    if (event.flags() & ui::EF_IS_DOUBLE_CLICK) {
-      ash_window_manager_->MaximizeWindowByCaptionClick(
-          GetServerWindowId(), ui::mojom::PointerKind::MOUSE);
-    }
-
-    // Return true for single clicks to receive subsequent drag events.
-    return true;
-  }
-
-  return false;
-}
-
-void BrowserNonClientFrameViewAsh::OnGestureEvent(ui::GestureEvent* event) {
-  if (!features::IsUsingWindowService())
-    return;
-
-  switch (event->type()) {
-    case ui::ET_GESTURE_TAP:
-      if (event->details().tap_count() == 2) {
-        ash_window_manager_->MaximizeWindowByCaptionClick(
-            GetServerWindowId(), ui::mojom::PointerKind::TOUCH);
-        base::RecordAction(
-            base::UserMetricsAction("Caption_GestureTogglesMaximize"));
-        ash::TouchUMA::RecordGestureAction(ash::GESTURE_MAXIMIZE_DOUBLETAP);
-      } else {
-        ash::TouchUMA::RecordGestureAction(ash::GESTURE_FRAMEVIEW_TAP);
-      }
-      break;
-
-    default:
-      break;
-  }
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // ash::BrowserFrameHeaderAsh::AppearanceProvider:
 
@@ -611,27 +552,6 @@ void BrowserNonClientFrameViewAsh::OnSplitViewStateChanged(
     ash::mojom::SplitViewState current_state) {
   split_view_state_ = current_state;
   OnOverviewOrSplitviewModeChanged();
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// ash::FrameCaptionDelegate:
-
-bool BrowserNonClientFrameViewAsh::CanSnap(aura::Window* window) {
-  DCHECK_EQ(window, GetWidget()->GetNativeWindow());
-  return true;
-}
-
-void BrowserNonClientFrameViewAsh::ShowSnapPreview(
-    aura::Window* window,
-    ash::mojom::SnapDirection snap) {
-  DCHECK_EQ(window, GetWidget()->GetNativeWindow());
-  ash_window_manager_->ShowSnapPreview(GetServerWindowId(), snap);
-}
-
-void BrowserNonClientFrameViewAsh::CommitSnap(aura::Window* window,
-                                              ash::mojom::SnapDirection snap) {
-  DCHECK_EQ(window, GetWidget()->GetNativeWindow());
-  ash_window_manager_->CommitSnap(GetServerWindowId(), snap);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -893,11 +813,6 @@ void BrowserNonClientFrameViewAsh::LayoutProfileIndicator() {
   DCHECK_LE(profile_indicator_icon_->height(), frame_height);
 }
 
-ws::Id BrowserNonClientFrameViewAsh::GetServerWindowId() const {
-  DCHECK(features::IsUsingWindowService());
-  return aura::WindowMus::Get(GetFrameWindow())->server_id();
-}
-
 bool BrowserNonClientFrameViewAsh::IsInOverviewMode() const {
   return GetFrameWindow()->GetProperty(ash::kIsShowingInOverviewKey);
 }
@@ -907,6 +822,5 @@ const aura::Window* BrowserNonClientFrameViewAsh::GetFrameWindow() const {
 }
 
 aura::Window* BrowserNonClientFrameViewAsh::GetFrameWindow() {
-  aura::Window* window = frame()->GetNativeWindow();
-  return features::IsUsingWindowService() ? window->GetRootWindow() : window;
+  return frame()->GetNativeWindow();
 }

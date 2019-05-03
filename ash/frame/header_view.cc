@@ -62,7 +62,7 @@ HeaderView::HeaderView(views::Widget* target_widget)
   AddChildView(header_content_view_);
 
   caption_button_container_ =
-      new FrameCaptionButtonContainerView(target_widget_, &caption_controller_);
+      new FrameCaptionButtonContainerView(target_widget_);
   caption_button_container_->UpdateCaptionButtonState(false /*=animate*/);
   AddChildView(caption_button_container_);
 
