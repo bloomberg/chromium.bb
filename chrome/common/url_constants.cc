@@ -160,7 +160,11 @@ const char kLegacySupervisedUserManagementURL[] =
     "https://www.chrome.com/manage";
 
 const char kManagedUiLearnMoreUrl[] =
+#if defined(OS_CHROMEOS)
     "https://support.google.com/chromebook/?p=is_chrome_managed";
+#else
+    "https://support.google.com/chrome/?p=is_chrome_managed";
+#endif
 
 const char kMyActivityUrlInClearBrowsingData[] =
     "https://myactivity.google.com/myactivity/?utm_source=chrome_cbd";
