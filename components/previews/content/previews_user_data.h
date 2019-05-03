@@ -126,7 +126,8 @@ class PreviewsUserData {
     offline_preview_used_ = offline_preview_used;
   }
 
-  // The PreviewsState that was allowed for the navigation.
+  // The PreviewsState that was allowed for the navigation. This should be used
+  // for metrics only.
   content::PreviewsState allowed_previews_state() const {
     return allowed_previews_state_;
   }
