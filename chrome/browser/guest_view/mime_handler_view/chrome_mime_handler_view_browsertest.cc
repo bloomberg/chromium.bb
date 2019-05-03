@@ -555,12 +555,6 @@ IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewBrowserPluginScrollTest,
 
 IN_PROC_BROWSER_TEST_P(ChromeMimeHandlerViewCrossProcessTest,
                        UMA_SameOriginResource) {
-#if defined(OS_CHROMEOS)
-  // TODO(ekaramad): This test started timing out on ChromeOS (https://
-  // crbug.com/949565).
-  if (GetParam())
-    return;
-#endif
   auto url = embedded_test_server()->GetURL("a.com", "/testPostMessageUMA.csv");
   auto page_url = embedded_test_server()->GetURL(
       "a.com",
@@ -588,12 +582,6 @@ IN_PROC_BROWSER_TEST_P(ChromeMimeHandlerViewCrossProcessTest,
 
 IN_PROC_BROWSER_TEST_P(ChromeMimeHandlerViewCrossProcessTest,
                        UMA_CrossOriginResource) {
-#if defined(OS_CHROMEOS)
-  // TODO(ekaramad): This test started timing out on ChromeOS (https://
-  // crbug.com/949565).
-  if (GetParam())
-    return;
-#endif
   auto url = embedded_test_server()->GetURL("b.com", "/testPostMessageUMA.csv");
   auto page_url = embedded_test_server()->GetURL(
       "a.com",
