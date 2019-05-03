@@ -4024,7 +4024,8 @@ bool Texture::CompatibleWithSamplerUniformType(
       level_info->format == GL_DEPTH_STENCIL ||
       level_info->format == GL_LUMINANCE_ALPHA ||
       level_info->format == GL_LUMINANCE || level_info->format == GL_ALPHA ||
-      level_info->format == GL_BGRA_EXT || level_info->format == GL_SRGB_EXT;
+      level_info->format == GL_BGRA_EXT || level_info->format == GL_SRGB_EXT ||
+      level_info->format == GL_SRGB_ALPHA_EXT;
   if (normalized) {
     // All normalized texture formats are sampled as float.
     return category == SAMPLER_FLOAT;
