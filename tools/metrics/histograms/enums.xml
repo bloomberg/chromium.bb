@@ -9912,30 +9912,91 @@ Called by update_net_error_codes.py.-->
   <int value="1094926916" label="ACBD (Sand)"/>
   <int value="1094926917" label="ACBE (Santa)"/>
   <int value="1094926918" label="ACBF (Bruce)"/>
+  <int value="1094993739" label="ADGK (Laser14)"/>
+  <int value="1095520840" label="ALRH (Sion)"/>
+  <int value="1095716933" label="AOPE (Jax)"/>
+  <int value="1095784537" label="APXY (Wukong)"/>
   <int value="1095909961" label="ARBI (Soraka)"/>
   <int value="1095980364" label="ASUL (Cave)"/>
   <int value="1095980366" label="ASUN (Basking)"/>
   <int value="1095980367" label="ASUO (Bob)"/>
+  <int value="1111707468" label="BCOL (Ampton)"/>
+  <int value="1111771479" label="BDIW (Sparky360)"/>
+  <int value="1128420697" label="CBUY (Pantheon)"/>
+  <int value="1129075526" label="CLSF (Alan)"/>
   <int value="1129336916" label="CPPT (Nasher)"/>
   <int value="1129597253" label="CTIE (Astronaut)"/>
+  <int value="1129927505" label="CYSQ (Phaser360)"/>
+  <int value="1145193796" label="DBED (Wukong)"/>
   <int value="1145389384" label="DEAH (Asuka)"/>
   <int value="1146640980" label="DXZT (Scarlet)"/>
+  <int value="1162826827" label="EOTK (Wukong)"/>
+  <int value="1178752080" label="FBTP (Blacktip360)"/>
+  <int value="1179734090" label="FQPJ (Karma)"/>
+  <int value="1179736649" label="FQZI (Bigdaddy)"/>
+  <int value="1179862873" label="FSGY (Meep)"/>
+  <int value="1180128843" label="FWVK (Bobba360)"/>
+  <int value="1196055126" label="GJZV (Syndra)"/>
+  <int value="1196378965" label="GOKU (Babymega)"/>
+  <int value="1212568135" label="HFRG (Sona)"/>
+  <int value="1212699214" label="HHRN (Careena)"/>
+  <int value="1213156680" label="HOMH (Sparky)"/>
+  <int value="1213159245" label="HOWM (Nospike)"/>
   <int value="1213225551" label="HPZO (Snappy)"/>
   <int value="1213225554" label="HPZR (Chell)"/>
   <int value="1213352282" label="HRIZ (Whitetip)"/>
+  <int value="1229478471" label="IHZG (Mimrock)"/>
   <int value="1229870420" label="INUT (Nasher360)"/>
+  <int value="1230326865" label="IULQ (Whitetip)"/>
+  <int value="1246124610" label="JFZB (Liara)"/>
+  <int value="1247369291" label="JYXK (Bluebird)"/>
   <int value="1262568010" label="KABJ (Robo360)"/>
+  <int value="1263291223" label="KLKW (Fleex)"/>
+  <int value="1279349582" label="LASN (Phaser)"/>
   <int value="1279607114" label="LEAJ (Sentry)"/>
   <int value="1279607118" label="LEAN (Pyro)"/>
   <int value="1280264001" label="LOGA (Gru)"/>
   <int value="1280264007" label="LOGG (Poppy)"/>
+  <int value="1280264008" label="LOGH (Whitetip)"/>
+  <int value="1296254030" label="MCDN (Dumo)"/>
+  <int value="1296256847" label="MCOO (Sarien)"/>
+  <int value="1297634649" label="MXUY (Aleena)"/>
+  <int value="1312969043" label="NBQS (Nocturne)"/>
+  <int value="1313819972" label="NOMD (Shyvana)"/>
+  <int value="1313883459" label="NPEC (Vayne)"/>
   <int value="1314212940" label="NULL (not yet assigned)"/>
+  <int value="1330008133" label="OFPE (Kasumi360)"/>
+  <int value="1346851142" label="PGQF (Grabbiter)"/>
+  <int value="1346918722" label="PHYB (Teemo)"/>
+  <int value="1347961935" label="PXDO (Barla)"/>
   <int value="1364874584" label="QZUX (Robo)"/>
+  <int value="1380535111" label="RIKG (Blacktip)"/>
+  <int value="1381388877" label="RVRM (Abra)"/>
   <int value="1397244238" label="SHAN (Lava)"/>
   <int value="1397571914" label="SMAJ (Kevin)"/>
+  <int value="1397571916" label="SMAL (NautilusLTE)"/>
+  <int value="1397703489" label="SOCA (Akali360)"/>
+  <int value="1413829460" label="TEST (testing label)"/>
+  <int value="1414219090" label="TKER (Orbatrix)"/>
+  <int value="1414353733" label="TMSE (Wukong)"/>
+  <int value="1414547534" label="TPHN (Whitetip)"/>
+  <int value="1414943322" label="TVRZ (Blacktip360)"/>
+  <int value="1430733145" label="UGAY (Kasumi)"/>
+  <int value="1431460420" label="URZD (Whitetip)"/>
+  <int value="1447581000" label="VHUH (Bobba)"/>
   <int value="1448498499" label="VVUC (blue)"/>
+  <int value="1464686165" label="WMVU (Epaulette)"/>
+  <int value="1465408071" label="WXZG (Blacktip)"/>
+  <int value="1482053969" label="XVYQ (Apel)"/>
+  <int value="1482115653" label="XWJE (atlas)"/>
+  <int value="1497913685" label="YHYU (Arcada)"/>
+  <int value="1498238293" label="YMMU (DruWL)"/>
+  <int value="1498432325" label="YPCE (Rabbid)"/>
+  <int value="1498956363" label="YXBK (Kench)"/>
+  <int value="1498957124" label="YXED (Babytiger)"/>
   <int value="1515408205" label="ZSKM (Nautilus)"/>
   <int value="1515864390" label="ZZAF (Eve)"/>
+  <int value="1515864914" label="ZZCR (Early prod samples)"/>
 </enum>
 
 <enum name="CrashExitCodes">
@@ -55384,6 +55445,7 @@ Full version information for the fingerprint enum values:
   <int value="91664959" label="CROS Cr50 0.0.16"/>
   <int value="113099773" label="CROS Cr50 0.0.23 Eve Flags 0x7f00(prod)"/>
   <int value="157181839" label="IFX 9655 rev 41 fw 4.34 build 03f2"/>
+  <int value="228456405" label="CROS Cr50 0.3.11"/>
   <int value="230386903" label="CROS Cr50 0.0.24 Eve Flags 0x7f00(prod)"/>
   <int value="276176597" label="CROS Cr50 0.1.0 Flags 0x10(pre-pvt)"/>
   <int value="305524852" label="IFX 9655 rev 41 fw 4.32 build 036f"/>
@@ -55400,25 +55462,35 @@ Full version information for the fingerprint enum values:
   <int value="847042924" label="IFX 9645 rev 78 fw 133.33 build 00e3"/>
   <int value="893364096" label="CROS Cr50 0.3.3"/>
   <int value="928190862" label="CROS Cr50 0.0.17"/>
+  <int value="969849518" label="CROS Cr50 0.4.9 Flags 0x10(pre-pvt)"/>
   <int value="987235505" label="CROS Cr50 0.0.20"/>
   <int value="987973414" label="IFX 9670 rev 15 fw 6.40 build 00be"/>
+  <int value="1001367086" label="CROS Cr50 0.3.15"/>
   <int value="1013730596" label="CROS Cr50 0.0.26 Flags 0x10(pre-pvt)"/>
+  <int value="1039624416" label="CROS Cr50 0.3.10"/>
   <int value="1065916186" label="CROS Cr50 0.0.19"/>
   <int value="1123680979" label="CROS Cr50 0.3.4"/>
   <int value="1190683265" label="CROS Cr50 0.0.14"/>
+  <int value="1290177221" label="CROS Cr50 0.4.6 Flags 0x10(pre-pvt)"/>
   <int value="1311411160" label="WEC 345"/>
   <int value="1353576267" label="IFX 9635 fw 3.18 build 0009"/>
+  <int value="1395572841" label="CROS Cr50 0.4.15 Flags 0x10(pre-pvt)"/>
   <int value="1437720528" label="IFX 9645 rev 78 fw 133.32 build 0050"/>
   <int value="1451134301" label="IFX 9635 147.18 build 000f"/>
   <int value="1490841853" label="IFX 9645 rev 49 fw 133.32 build 0050"/>
+  <int value="1521866659" label="CROS Cr50 0.4.13 Flags 0x10(pre-pvt)"/>
+  <int value="1607230944" label="CROS Cr50 0.4.5 Flags 0x10(pre-pvt)"/>
   <int value="1632371059" label="CROS Cr50 0.0.22"/>
   <int value="1716634300" label="IFX 9645 rev 45 fw 133.32 build 0050"/>
+  <int value="1717226620" label="CROS Cr50 0.4.14 Flags 0x10(pre-pvt)"/>
   <int value="1733077393" label="IFX 9645 rev 49 fw 133.33 build 00e3"/>
   <int value="1774347833" label="CROS Cr50 0.0.15"/>
   <int value="1828625721" label="IFX 9655 rev 32 fw 4.31 build 02c2"/>
+  <int value="1848357394" label="CROS Cr50 0.4.11 Flags 0x10(pre-pvt)"/>
   <int value="1861735666" label="CROS Cr50 0.2.1 Flags 0x10(pre-pvt)"/>
   <int value="1865292977" label="CROS Cr50 0.0.24 aka 0.3.0"/>
   <int value="1887455524" label="CROS Cr50 0.0.21"/>
+  <int value="1903933708" label="CROS Cr50 0.4.3 Flags 0x10(pre-pvt)"/>
   <int value="1941011596" label="IFX 9655 rev 35 fw 4.34 build 03f2"/>
   <int value="1953654937" label="IFX 9645 rev 45 fw 133.33 build 00e3"/>
   <int value="2024714959" label="IFX 9655 rev 32 fw 4.34 build 03f2"/>
