@@ -5,23 +5,13 @@
 #ifndef UI_VIEWS_MUS_MUS_CLIENT_TEST_API_H_
 #define UI_VIEWS_MUS_MUS_CLIENT_TEST_API_H_
 
-#include <memory>
-#include <utility>
-
 #include "base/macros.h"
-#include "ui/views/mus/ax_remote_host.h"
 #include "ui/views/mus/mus_client.h"
 
 namespace views {
 
-class AXRemoteHost;
-
 class MusClientTestApi {
  public:
-  static void SetAXRemoteHost(std::unique_ptr<AXRemoteHost> client) {
-    MusClient::Get()->ax_remote_host_ = std::move(client);
-  }
-
   static ScreenMus* screen() { return MusClient::Get()->screen_.get(); }
 
  private:

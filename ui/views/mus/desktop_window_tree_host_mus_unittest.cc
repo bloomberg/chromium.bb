@@ -32,8 +32,6 @@
 #include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/events/gestures/gesture_recognizer_observer.h"
 #include "ui/gfx/geometry/dip_util.h"
-#include "ui/views/accessibility/view_accessibility.h"
-#include "ui/views/mus/ax_remote_host.h"
 #include "ui/views/mus/mus_client.h"
 #include "ui/views/mus/mus_client_test_api.h"
 #include "ui/views/mus/screen_mus.h"
@@ -75,11 +73,6 @@ class DesktopWindowTreeHostMusTest : public ViewsTestBase,
     return widget;
   }
 
-  AXAuraObjCache* CreateAXAuraObjCache() {
-    ax_aura_obj_cache_ = std::make_unique<AXAuraObjCache>();
-    return ax_aura_obj_cache_.get();
-  }
-
   const Widget* widget_activated() const { return widget_activated_; }
   const Widget* widget_deactivated() const { return widget_deactivated_; }
 
@@ -96,7 +89,6 @@ class DesktopWindowTreeHostMusTest : public ViewsTestBase,
 
   Widget* widget_activated_ = nullptr;
   Widget* widget_deactivated_ = nullptr;
-  std::unique_ptr<AXAuraObjCache> ax_aura_obj_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopWindowTreeHostMusTest);
 };
@@ -621,21 +613,6 @@ TEST_F(DesktopWindowTreeHostMusTest, WindowTitle) {
   widget->UpdateWindowTitle();
   EXPECT_TRUE(window->GetProperty(aura::client::kTitleShownKey));
   EXPECT_EQ(title2, window->GetTitle());
-}
-
-TEST_F(DesktopWindowTreeHostMusTest, Accessibility) {
-  // Pretend we're using the remote AX service, like shortcut_viewer.
-  AXAuraObjCache* cache = CreateAXAuraObjCache();
-  MusClientTestApi::SetAXRemoteHost(std::make_unique<AXRemoteHost>(cache));
-
-  std::unique_ptr<Widget> widget = CreateWidget();
-  // Widget frame views do not participate in accessibility node hierarchy
-  // because the frame is provided by the window manager.
-  views::NonClientView* non_client_view = widget->non_client_view();
-  EXPECT_TRUE(non_client_view->GetViewAccessibility().IsIgnored());
-  EXPECT_TRUE(
-      non_client_view->frame_view()->GetViewAccessibility().IsIgnored());
-  EXPECT_TRUE(widget->client_view()->GetViewAccessibility().IsIgnored());
 }
 
 TEST_F(DesktopWindowTreeHostMusTest,

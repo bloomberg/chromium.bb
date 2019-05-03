@@ -43,8 +43,6 @@ class InputDeviceClient;
 
 namespace views {
 
-class AXAuraObjCache;
-class AXRemoteHost;
 class DesktopNativeWidgetAura;
 class MusClientObserver;
 class MusPropertyMirror;
@@ -80,10 +78,6 @@ class VIEWS_MUS_EXPORT MusClient : public aura::WindowTreeClientDelegate,
     // Must outlive MusClient.
     aura::WindowTreeClient* window_tree_client = nullptr;
 
-    // Connect to the accessibility host service in the browser (e.g. to support
-    // ChromeVox).
-    bool use_accessibility_host = false;
-
     // Set to true if the WindowService is running in the same process and on
     // the same thread as MusClient.
     bool running_in_ws_process = false;
@@ -114,8 +108,6 @@ class VIEWS_MUS_EXPORT MusClient : public aura::WindowTreeClientDelegate,
     return property_converter_.get();
   }
 
-  bool use_remote_accessibility_host() const { return !!ax_remote_host_; }
-
   aura::WindowTreeClient* window_tree_client() { return window_tree_client_; }
 
   // Creates DesktopNativeWidgetAura with DesktopWindowTreeHostMus. This is
@@ -123,7 +115,6 @@ class VIEWS_MUS_EXPORT MusClient : public aura::WindowTreeClientDelegate,
   //  NativeWidget has not been explicitly set.
   NativeWidget* CreateNativeWidget(const Widget::InitParams& init_params,
                                    internal::NativeWidgetDelegate* delegate);
-  void OnWidgetInitDone(Widget* widget);
 
   // Called when the capture client has been set or unset for a window.
   void OnCaptureClientSet(aura::client::CaptureClient* capture_client);
@@ -190,15 +181,6 @@ class VIEWS_MUS_EXPORT MusClient : public aura::WindowTreeClientDelegate,
 
   // Gives services transparent remote access the InputDeviceManager.
   std::unique_ptr<ws::InputDeviceClient> input_device_client_;
-
-  // Forwards accessibility events to extensions in the browser. Can be null for
-  // apps that do not need accessibility support and for the browser itself
-  // under OopAsh.
-  std::unique_ptr<AXRemoteHost> ax_remote_host_;
-
-  // A cache keeping track of ids for accessibility. Used in conjunction with
-  // the above remote host.
-  std::unique_ptr<views::AXAuraObjCache> ax_aura_obj_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(MusClient);
 };

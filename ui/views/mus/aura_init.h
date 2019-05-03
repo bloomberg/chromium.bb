@@ -46,10 +46,6 @@ class VIEWS_MUS_EXPORT AuraInit {
     std::string resource_file_200;
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner = nullptr;
     bool register_path_provider = true;
-    // When true the client application will connect to the accessibility host
-    // in the browser to supply AX node trees and handle AX actions (e.g. to
-    // support ChromeVox).
-    bool use_accessibility_host = false;
   };
 
   // Returns an AuraInit if initialization can be completed successfully,

@@ -49,7 +49,6 @@ bool AuraInit::Init(const InitParams& params) {
   mus_params.identity = params.identity;
   mus_params.io_task_runner = params.io_task_runner;
   mus_params.create_wm_state = true;
-  mus_params.use_accessibility_host = params.use_accessibility_host;
   mus_client_ = std::make_unique<MusClient>(mus_params);
   ui::MaterialDesignController::Initialize();
 

@@ -25,7 +25,6 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/mojo/clipboard_client.h"
 #include "ui/views/mus/aura_init.h"
-#include "ui/views/mus/ax_remote_host.h"
 #include "ui/views/mus/desktop_window_tree_host_mus.h"
 #include "ui/views/mus/mus_property_mirror.h"
 #include "ui/views/mus/screen_mus.h"
@@ -109,13 +108,6 @@ MusClient::MusClient(const InitParams& params) : identity_(params.identity) {
     connector->BindInterface(ws::mojom::kServiceName, &clipboard_host_ptr);
     ui::Clipboard::SetClipboardForCurrentThread(
         std::make_unique<ui::ClipboardClient>(std::move(clipboard_host_ptr)));
-
-    if (params.use_accessibility_host) {
-      ax_aura_obj_cache_ = std::make_unique<AXAuraObjCache>();
-      ax_remote_host_ =
-          std::make_unique<AXRemoteHost>(ax_aura_obj_cache_.get());
-      ax_remote_host_->Init(connector);
-    }
   }
 
   ViewsDelegate::GetInstance()->set_native_widget_factory(base::BindRepeating(
@@ -126,10 +118,6 @@ MusClient::MusClient(const InitParams& params) : identity_(params.identity) {
 }
 
 MusClient::~MusClient() {
-  // Tear down accessibility before WindowTreeClient to ensure window tree
-  // cleanup doesn't trigger accessibility events.
-  ax_remote_host_.reset();
-
   // ~WindowTreeClient calls back to us (we're its delegate), destroy it while
   // we are still valid.
   owned_window_tree_client_.reset();
@@ -271,12 +259,6 @@ NativeWidget* MusClient::CreateNativeWidget(
         CreateDesktopWindowTreeHost(init_params, delegate, native_widget));
   }
   return native_widget;
-}
-
-void MusClient::OnWidgetInitDone(Widget* widget) {
-  // Start tracking the widget for accessibility.
-  if (ax_remote_host_)
-    ax_remote_host_->StartMonitoringWidget(widget);
 }
 
 void MusClient::OnCaptureClientSet(

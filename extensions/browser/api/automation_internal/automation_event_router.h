@@ -8,7 +8,6 @@
 #include <set>
 #include <vector>
 
-#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "content/public/browser/ax_event_notification_details.h"
@@ -73,9 +72,6 @@ class AutomationEventRouter : public ui::AXEventBundleSink,
       bool result,
       content::BrowserContext* browser_context = nullptr) override;
 
-  void SetTreeDestroyedCallbackForTest(
-      base::RepeatingCallback<void(ui::AXTreeID)> cb);
-
   // Notify the source extension of the result to getTextLocation.
   void DispatchGetTextLocationDataResult(const ui::AXActionData& data,
                                          const base::Optional<gfx::Rect>& rect);
@@ -128,8 +124,6 @@ class AutomationEventRouter : public ui::AXEventBundleSink,
   std::vector<AutomationListener> listeners_;
 
   content::BrowserContext* active_context_;
-
-  base::RepeatingCallback<void(ui::AXTreeID)> tree_destroyed_callback_for_test_;
 
   friend struct base::DefaultSingletonTraits<AutomationEventRouter>;
 

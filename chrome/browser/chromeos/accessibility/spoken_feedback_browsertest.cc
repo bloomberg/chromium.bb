@@ -47,12 +47,10 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
-#include "extensions/browser/api/automation_internal/automation_event_router.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/process_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/test/ui_controls.h"
-#include "ui/views/mus/ax_remote_host.h"
 #include "ui/views/widget/widget.h"
 
 namespace chromeos {

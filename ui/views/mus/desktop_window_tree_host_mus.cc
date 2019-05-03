@@ -27,7 +27,6 @@
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/gfx/image/image_skia_operations.h"
-#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/mus/cursor_manager_owner.h"
 #include "ui/views/mus/mus_client.h"
@@ -51,11 +50,6 @@ class ClientSideNonClientFrameView : public NonClientFrameView,
                                      public aura::WindowObserver {
  public:
   explicit ClientSideNonClientFrameView(Widget* widget) : widget_(widget) {
-    // Not part of the accessibility node hierarchy because the window frame is
-    // provided by the window manager.
-    if (MusClient::Get()->use_remote_accessibility_host())
-      GetViewAccessibility().OverrideIsIgnored(true);
-
     observed_.Add(window());
   }
   ~ClientSideNonClientFrameView() override = default;
@@ -436,18 +430,6 @@ void DesktopWindowTreeHostMus::OnWidgetInitDone() {
 
   MusClient::Get()->OnCaptureClientSet(
       aura::client::GetCaptureClient(window()));
-
-  // These views are not part of the accessibility node hierarchy because the
-  // window frame is provided by the window manager.
-  Widget* widget = native_widget_delegate_->AsWidget();
-  if (MusClient::Get()->use_remote_accessibility_host()) {
-    if (widget->non_client_view())
-      widget->non_client_view()->GetViewAccessibility().OverrideIsIgnored(true);
-    if (widget->client_view())
-      widget->client_view()->GetViewAccessibility().OverrideIsIgnored(true);
-  }
-
-  MusClient::Get()->OnWidgetInitDone(widget);
 }
 
 std::unique_ptr<corewm::Tooltip> DesktopWindowTreeHostMus::CreateTooltip() {

@@ -1132,15 +1132,12 @@ test("views_unittests") {
 
   if (enable_mus) {
     sources += [
-      "mus/ax_remote_host_unittest.cc",
-      "mus/ax_tree_source_mus_unittest.cc",
       "mus/desktop_window_tree_host_mus_unittest.cc",
       "mus/screen_mus_unittest.cc",
     ]
 
     deps += [
       "//services/ws/test_ws:mojom",
-      "//ui/accessibility/mojom",
       "//ui/views/mus",
       "//ui/views/mus/remote_view:tests",
     ]

@@ -121,9 +121,6 @@ void AutomationEventRouter::DispatchTreeDestroyedEvent(
       api::automation_internal::OnAccessibilityTreeDestroyed::kEventName,
       std::move(args), browser_context);
   EventRouter::Get(browser_context)->BroadcastEvent(std::move(event));
-
-  if (tree_destroyed_callback_for_test_)
-    tree_destroyed_callback_for_test_.Run(tree_id);
 }
 
 void AutomationEventRouter::DispatchActionResult(
@@ -145,11 +142,6 @@ void AutomationEventRouter::DispatchActionResult(
       active_context_);
   EventRouter::Get(active_context_)
       ->DispatchEventToExtension(data.source_extension_id, std::move(event));
-}
-
-void AutomationEventRouter::SetTreeDestroyedCallbackForTest(
-    base::RepeatingCallback<void(ui::AXTreeID)> cb) {
-  tree_destroyed_callback_for_test_ = cb;
 }
 
 void AutomationEventRouter::DispatchGetTextLocationDataResult(
