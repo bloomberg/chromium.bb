@@ -6,16 +6,13 @@
 
 #include <memory>
 
-// This file is only instantiated in classic ash/mus. It is never used in mash.
-// See native_browser_frame_factory_chromeos.cc switches on
-// features::IsUsingWindowService().
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
-#include "ash/shell.h"                     // mash-ok
-#include "ash/wm/window_properties.h"      // mash-ok
-#include "ash/wm/window_state.h"           // mash-ok
-#include "ash/wm/window_state_delegate.h"  // mash-ok
-#include "ash/wm/window_util.h"            // mash-ok
+#include "ash/shell.h"
+#include "ash/wm/window_properties.h"
+#include "ash/wm/window_state.h"
+#include "ash/wm/window_state_delegate.h"
+#include "ash/wm/window_util.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -24,7 +21,6 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/views/view.h"
 
 namespace {
@@ -63,7 +59,6 @@ BrowserFrameAsh::BrowserFrameAsh(BrowserFrame* browser_frame,
                                  BrowserView* browser_view)
     : views::NativeWidgetAura(browser_frame),
       browser_view_(browser_view) {
-  DCHECK(!features::IsUsingWindowService());
   GetNativeWindow()->SetName("BrowserFrameAsh");
   Browser* browser = browser_view->browser();
 

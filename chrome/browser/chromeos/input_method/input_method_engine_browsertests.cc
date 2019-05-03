@@ -10,7 +10,6 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -35,7 +34,6 @@
 #include "ui/base/ime/ime_engine_handler_interface.h"
 #include "ui/base/ime/mock_ime_input_context_handler.h"
 #include "ui/base/ime/text_input_flags.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/chromeos/ime/input_method_menu_item.h"
 #include "ui/chromeos/ime/input_method_menu_manager.h"
 #include "ui/events/event.h"
@@ -59,7 +57,6 @@ enum TestType {
   kTestTypeNormal = 0,
   kTestTypeIncognito = 1,
   kTestTypeComponent = 2,
-  kTestTypeMojoImf = 3,
 };
 
 class InputMethodEngineBrowserTest
@@ -68,14 +65,6 @@ class InputMethodEngineBrowserTest
  public:
   InputMethodEngineBrowserTest() : extensions::ExtensionBrowserTest() {}
   virtual ~InputMethodEngineBrowserTest() {}
-
-  void SetUpInProcessBrowserTestFixture() override {
-    if (GetParam() == kTestTypeMojoImf) {
-      scoped_feature_list_.InitWithFeatures(
-          {features::kSingleProcessMash, features::kMojoIMF}, {});
-    }
-    extensions::ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
-  }
 
   void TearDownInProcessBrowserTestFixture() override { extension_ = NULL; }
 
@@ -122,7 +111,6 @@ class InputMethodEngineBrowserTest
       const std::string& extension_name, TestType type) {
     switch (type) {
       case kTestTypeNormal:
-      case kTestTypeMojoImf:
         return LoadExtension(test_data_dir_.AppendASCII(extension_name));
       case kTestTypeIncognito:
         return LoadExtensionIncognito(
@@ -136,7 +124,6 @@ class InputMethodEngineBrowserTest
   }
 
   const extensions::Extension* extension_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InputMethodEngineBrowserTest);
@@ -195,9 +182,6 @@ INSTANTIATE_TEST_SUITE_P(InputMethodEngineIncognitoBrowserTest,
 INSTANTIATE_TEST_SUITE_P(InputMethodEngineComponentExtensionBrowserTest,
                          InputMethodEngineBrowserTest,
                          ::testing::Values(kTestTypeComponent));
-INSTANTIATE_TEST_SUITE_P(MojoImfBrowserTest,
-                         InputMethodEngineBrowserTest,
-                         ::testing::Values(kTestTypeMojoImf));
 
 IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
                        BasicScenarioTest) {
@@ -284,14 +268,10 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
                        APIArgumentTest) {
-  // This test doesn't support Mojo-based IMF.
   // TODO(crbug.com/956825): Makes real end to end test without mocking the
   // input context handler. The test should mock the TextInputClient instance
   // hooked up with InputMethodChromeOS, or even using the real TextInputClient
   // if possible.
-  if (features::IsMojoImfEnabled())
-    return;
-
   LoadTestInputMethod();
 
   InputMethodManager::Get()->GetActiveIMEState()->ChangeInputMethod(

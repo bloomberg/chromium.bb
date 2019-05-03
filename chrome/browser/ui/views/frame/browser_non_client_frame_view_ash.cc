@@ -109,6 +109,14 @@ const views::WindowManagerFrameValues& frame_values() {
   return views::WindowManagerFrameValues::instance();
 }
 
+// Returns true if the header should be painted so that it looks the same as
+// the header used for packaged apps.
+bool UsePackagedAppHeaderStyle(const Browser* browser) {
+  // Use for non tabbed trusted source windows, e.g. Settings, as well as apps.
+  return (!browser->is_type_tabbed() && browser->is_trusted_source()) ||
+         browser->is_app();
+}
+
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -609,14 +617,6 @@ void BrowserNonClientFrameViewAsh::OnImmersiveRevealEnded() {
 
 void BrowserNonClientFrameViewAsh::OnImmersiveFullscreenExited() {
   OnImmersiveRevealEnded();
-}
-
-// static
-bool BrowserNonClientFrameViewAsh::UsePackagedAppHeaderStyle(
-    const Browser* browser) {
-  // Use for non tabbed trusted source windows, e.g. Settings, as well as apps.
-  return (!browser->is_type_tabbed() && browser->is_trusted_source()) ||
-         browser->is_app();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

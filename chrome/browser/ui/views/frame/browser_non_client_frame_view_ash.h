@@ -21,8 +21,6 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/aura/window_observer.h"
 
-class Browser;
-
 namespace {
 class HostedAppNonClientFrameViewAshTest;
 }
@@ -118,10 +116,6 @@ class BrowserNonClientFrameViewAsh
   void OnImmersiveRevealStarted() override;
   void OnImmersiveRevealEnded() override;
   void OnImmersiveFullscreenExited() override;
-
-  // Returns true if the header should be painted so that it looks the same as
-  // the header used for packaged apps.
-  static bool UsePackagedAppHeaderStyle(const Browser* browser);
 
  protected:
   // BrowserNonClientFrameView:

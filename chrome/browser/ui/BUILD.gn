@@ -1512,8 +1512,6 @@ jumbo_split_static_library("ui") {
       "views/frame/browser_frame_ash.h",
       "views/frame/browser_frame_header_ash.cc",
       "views/frame/browser_frame_header_ash.h",
-      "views/frame/browser_frame_mash.cc",
-      "views/frame/browser_frame_mash.h",
       "views/frame/browser_non_client_frame_view_ash.cc",
       "views/frame/browser_non_client_frame_view_ash.h",
       "views/frame/immersive_mode_controller_ash.cc",
