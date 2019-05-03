@@ -16,12 +16,11 @@
 #include "chrome/common/media_router/providers/cast/cast_media_source.h"
 #include "components/cast_channel/cast_socket.h"
 #include "components/cast_channel/enum_table.h"
-#include "components/cast_channel/proto/cast_channel.pb.h"
 #include "net/base/escape.h"
 
 namespace cast_util {
 
-using namespace media_router;
+using media_router::CastInternalMessage;
 
 template <>
 const EnumTable<CastInternalMessage::Type>

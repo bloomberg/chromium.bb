@@ -5,7 +5,6 @@
 #include "chrome/browser/media/router/providers/cast/cast_activity_record.h"
 
 #include <memory>
-#include <sstream>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -81,8 +80,6 @@ class MockCastSessionClient : public CastSessionClientBase {
                void(blink::mojom::PresentationConnectionCloseReason reason));
 };
 
-using NewClientCallback = base::RepeatingCallback<void(MockCastSessionClient&)>;
-
 class MockCastActivityManager : public CastActivityManagerBase {
  public:
   MOCK_METHOD2(MakeResultCallbackForRoute,
@@ -93,7 +90,8 @@ class MockCastActivityManager : public CastActivityManagerBase {
 
 }  // namespace
 
-class CastActivityRecordTest : public testing::Test, CastSessionClientFactory {
+class CastActivityRecordTest : public testing::Test,
+                               public CastSessionClientFactoryForTest {
  public:
   CastActivityRecordTest() {}
 
@@ -140,7 +138,7 @@ class CastActivityRecordTest : public testing::Test, CastSessionClientFactory {
     CastActivityRecord::SetClientFactoryForTest(nullptr);
   }
 
-  std::unique_ptr<CastSessionClientBase> MakeClient(
+  std::unique_ptr<CastSessionClientBase> MakeClientForTest(
       const std::string& client_id,
       const url::Origin& origin,
       int tab_id) override {
@@ -317,7 +315,8 @@ TEST_F(CastActivityRecordTest, SendStopSessionMessageToReceiver) {
                             RouteRequestResult::INCOGNITO_MISMATCH));
 
   SetUpSession();
-  record_->SendStopSessionMessageToReceiver(client_id, callback.Get());
+  record_->SendStopSessionMessageToReceiver(client_id, "dummyHashToken",
+                                            callback.Get());
 }
 
 TEST_F(CastActivityRecordTest, HandleLeaveSession) {

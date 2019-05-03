@@ -23,7 +23,7 @@
 
 namespace media_router {
 
-class CastActivityRecord;
+class CastActivityRecordBase;
 class DataDecoder;
 
 // TODO(jrw): Rename
@@ -98,9 +98,9 @@ class CastSessionClientBase : public blink::mojom::PresentationConnection {
   int tab_id_;
 };
 
-class CastSessionClientFactory {
+class CastSessionClientFactoryForTest {
  public:
-  virtual std::unique_ptr<CastSessionClientBase> MakeClient(
+  virtual std::unique_ptr<CastSessionClientBase> MakeClientForTest(
       const std::string& client_id,
       const url::Origin& origin,
       int tab_id) = 0;
@@ -117,7 +117,7 @@ class CastSessionClient : public CastSessionClientBase {
                     int tab_id,
                     AutoJoinPolicy auto_join_policy,
                     DataDecoder* data_decoder,
-                    CastActivityRecord* activity);
+                    CastActivityRecordBase* activity);
   ~CastSessionClient() override;
 
   // CastSessionClientBase implementation
@@ -161,7 +161,7 @@ class CastSessionClient : public CastSessionClientBase {
   const AutoJoinPolicy auto_join_policy_;
 
   DataDecoder* const data_decoder_;
-  CastActivityRecord* const activity_;
+  CastActivityRecordBase* const activity_;
 
   // The maximum number of pending media requests, used to prevent memory leaks.
   // Normally the number of pending requests should be fairly small, but each
