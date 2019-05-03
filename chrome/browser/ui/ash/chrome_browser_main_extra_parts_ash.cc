@@ -46,7 +46,6 @@
 #include "chrome/browser/ui/ash/volume_controller.h"
 #include "chrome/browser/ui/ash/vpn_list_forwarder.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
-#include "chrome/browser/ui/views/frame/immersive_context_mus.h"
 #include "chrome/browser/ui/views/ime_driver/ime_driver_mus.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension_factory.h"
@@ -219,9 +218,6 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
       LOG(WARNING) << "Chrome cannot access Ash and mojo app UIs in Mash.";
     }
   }
-
-  if (features::IsUsingWindowService())
-    immersive_context_ = std::make_unique<ImmersiveContextMus>();
 
   screen_orientation_delegate_ =
       std::make_unique<ScreenOrientationDelegateChromeos>();

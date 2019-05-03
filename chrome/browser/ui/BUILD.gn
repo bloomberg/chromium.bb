@@ -1518,8 +1518,6 @@ jumbo_split_static_library("ui") {
       "views/frame/browser_frame_mash.h",
       "views/frame/browser_non_client_frame_view_ash.cc",
       "views/frame/browser_non_client_frame_view_ash.h",
-      "views/frame/immersive_context_mus.cc",
-      "views/frame/immersive_context_mus.h",
       "views/frame/immersive_mode_controller_ash.cc",
       "views/frame/immersive_mode_controller_ash.h",
       "views/frame/native_browser_frame_factory_chromeos.cc",

@@ -424,7 +424,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   ImeEngineFactoryRegistry* ime_engine_factory_registry() {
     return ime_engine_factory_registry_.get();
   }
-  ImmersiveContext* immersive_context() { return immersive_context_.get(); }
   KeyAccessibilityEnabler* key_accessibility_enabler() {
     return key_accessibility_enabler_.get();
   }

@@ -65,8 +65,7 @@ class NonClientFrameViewAshImmersiveHelper : public wm::WindowStateObserver,
     Shell::Get()->tablet_mode_controller()->AddObserver(this);
 
     immersive_fullscreen_controller_ =
-        std::make_unique<ImmersiveFullscreenController>(
-            Shell::Get()->immersive_context());
+        std::make_unique<ImmersiveFullscreenController>();
     custom_frame_view->InitImmersiveFullscreenControllerForView(
         immersive_fullscreen_controller_.get());
   }

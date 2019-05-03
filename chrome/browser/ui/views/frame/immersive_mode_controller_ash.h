@@ -21,12 +21,6 @@ namespace aura {
 class Window;
 }
 
-namespace ui {
-class EventRewriter;
-}
-
-// See ash/mus/frame/README.md for description of how immersive mode works in
-// mash. This code works with both classic ash, and mash.
 class ImmersiveModeControllerAsh
     : public ImmersiveModeController,
       public ash::ImmersiveFullscreenControllerDelegate,
@@ -36,7 +30,7 @@ class ImmersiveModeControllerAsh
   ImmersiveModeControllerAsh();
   ~ImmersiveModeControllerAsh() override;
 
-  ash::ImmersiveFullscreenController* controller() { return controller_.get(); }
+  ash::ImmersiveFullscreenController* controller() { return &controller_; }
 
   // ImmersiveModeController overrides:
   void Init(BrowserView* browser_view) override;
@@ -57,10 +51,6 @@ class ImmersiveModeControllerAsh
   // Updates the browser root view's layout including window caption controls.
   void LayoutBrowserRootView();
 
-  // See LocatedEventRetargeter.
-  void InstallEventRewriter();
-  void UninstallEventRewriter();
-
   // ImmersiveFullscreenController::Delegate overrides:
   void OnImmersiveRevealStarted() override;
   void OnImmersiveRevealEnded() override;
@@ -80,7 +70,7 @@ class ImmersiveModeControllerAsh
                                intptr_t old) override;
   void OnWindowDestroying(aura::Window* window) override;
 
-  std::unique_ptr<ash::ImmersiveFullscreenController> controller_;
+  ash::ImmersiveFullscreenController controller_;
 
   BrowserView* browser_view_ = nullptr;
 
@@ -91,9 +81,6 @@ class ImmersiveModeControllerAsh
   // The fraction of the TopContainerView's height which is visible. Zero when
   // the top-of-window views are not revealed.
   double visible_fraction_ = 1.0;
-
-  // See comment above LocatedEventRetargeter.
-  std::unique_ptr<ui::EventRewriter> event_rewriter_;
 
   content::NotificationRegistrar registrar_;
 

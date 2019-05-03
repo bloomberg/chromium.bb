@@ -257,9 +257,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
   ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(false));
   EXPECT_FALSE(controller()->IsEnabled());
 
-  // TODO(estade): make kTopviewInset work in mash.
-  if (!features::IsUsingWindowService())
-    EXPECT_GT(aura_window->GetProperty(aura::client::kTopViewInset), 0);
+  EXPECT_GT(aura_window->GetProperty(aura::client::kTopViewInset), 0);
 }
 
 // Verify that the frame layout is as expected when using immersive mode in

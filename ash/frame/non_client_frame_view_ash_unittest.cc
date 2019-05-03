@@ -710,7 +710,7 @@ TEST_F(NonClientFrameViewAshTest, WideFrame) {
   EXPECT_TRUE(wide_header_view->should_paint());
 
   // Test immersive.
-  ImmersiveFullscreenController controller(Shell::Get()->immersive_context());
+  ImmersiveFullscreenController controller;
   wide_frame_view->Init(&controller);
   EXPECT_FALSE(wide_header_view->in_immersive_mode());
   EXPECT_FALSE(header_view->in_immersive_mode());

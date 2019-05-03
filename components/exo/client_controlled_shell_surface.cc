@@ -680,8 +680,7 @@ ClientControlledShellSurface::CreateNonClientFrameView(views::Widget* widget) {
       static_cast<ash::NonClientFrameViewAsh*>(
           ShellSurfaceBase::CreateNonClientFrameView(widget));
   immersive_fullscreen_controller_ =
-      std::make_unique<ash::ImmersiveFullscreenController>(
-          ash::Shell::Get()->immersive_context());
+      std::make_unique<ash::ImmersiveFullscreenController>();
   frame_view->InitImmersiveFullscreenControllerForView(
       immersive_fullscreen_controller_.get());
   return frame_view;

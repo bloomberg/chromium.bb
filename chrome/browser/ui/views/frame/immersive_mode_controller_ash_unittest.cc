@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view_ash.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/frame/immersive_context_mus.h"
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/fullscreen_control/fullscreen_control_host.h"
@@ -101,9 +100,6 @@ class ImmersiveModeControllerAshTest : public TestWithBrowserView {
   ImmersiveModeController* controller() { return controller_; }
 
  private:
-  // Not used in non-Mash, but harmless.
-  ImmersiveContextMus immersive_context_;
-
   // Not owned.
   ImmersiveModeController* controller_;
 

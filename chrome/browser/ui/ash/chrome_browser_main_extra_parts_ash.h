@@ -37,7 +37,6 @@ class AshShellInit;
 class CastConfigClientMediaRouter;
 class ChromeNewWindowClient;
 class ImeControllerClient;
-class ImmersiveContextMus;
 class KioskNextShellClient;
 class LoginScreenClient;
 class MediaClient;
@@ -87,7 +86,6 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
   std::unique_ptr<AshShellInit> ash_shell_init_;
 
   // Initialized in PreProfileInit if ash config == MASH:
-  std::unique_ptr<ImmersiveContextMus> immersive_context_;
   std::unique_ptr<aura::UserActivityForwarder> user_activity_forwarder_;
   std::unique_ptr<ui::UserActivityDetector> user_activity_detector_;
 
