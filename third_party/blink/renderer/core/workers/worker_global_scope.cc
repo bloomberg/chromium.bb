@@ -50,7 +50,6 @@
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_script_url.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_type_policy_factory.h"
@@ -156,11 +155,10 @@ void WorkerGlobalScope::importScripts(
     ExceptionState& exception_state) {
   Vector<String> string_urls;
   for (const StringOrTrustedScriptURL& stringOrUrl : urls) {
-    // TODO(vogelheim): Re-implement Trusted Types logic when supported by
-    // workers.
-    String string_url = stringOrUrl.IsString()
-                            ? stringOrUrl.GetAsString()
-                            : stringOrUrl.GetAsTrustedScriptURL()->toString();
+    String string_url = GetStringFromTrustedScriptURL(
+        stringOrUrl, GetExecutionContext(), exception_state);
+    if (exception_state.HadException())
+      return;
     string_urls.push_back(string_url);
   }
   ImportScriptsInternal(string_urls, exception_state);

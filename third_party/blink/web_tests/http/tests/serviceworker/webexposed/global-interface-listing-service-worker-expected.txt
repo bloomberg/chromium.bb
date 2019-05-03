@@ -3580,6 +3580,7 @@ interface WritableStream
     attribute console
     attribute globalThis
     attribute internals
+    getter TrustedTypes
     getter clients
     getter cookieStore
     getter onabortpayment

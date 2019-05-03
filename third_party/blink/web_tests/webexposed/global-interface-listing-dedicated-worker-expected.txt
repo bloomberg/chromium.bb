@@ -3691,6 +3691,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute console
 [Worker]     attribute globalThis
 [Worker]     attribute internals
+[Worker]     getter TrustedTypes
 [Worker]     getter name
 [Worker]     getter onmessage
 [Worker]     getter onmessageerror
