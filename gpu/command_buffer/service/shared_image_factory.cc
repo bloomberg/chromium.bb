@@ -108,7 +108,9 @@ SharedImageFactory::SharedImageFactory(
 
 #if defined(OS_WIN)
   // For Windows
-  swap_chain_factory_ = std::make_unique<SwapChainFactoryDXGI>();
+  bool use_passthrough = gpu_preferences.use_passthrough_cmd_decoder &&
+                         gles2::PassthroughCommandDecoderSupported();
+  swap_chain_factory_ = std::make_unique<SwapChainFactoryDXGI>(use_passthrough);
 #endif  // OS_WIN
 }
 

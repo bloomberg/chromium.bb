@@ -1,15 +1,16 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef GPU_COMMAND_BUFFER_SERVICE_SWAP_CHAIN_FACTORY_DXGI_H_
 #define GPU_COMMAND_BUFFER_SERVICE_SWAP_CHAIN_FACTORY_DXGI_H_
 
+#include <windows.h>
+#include <dxgi1_2.h>
+#include <wrl/client.h>
 #include <memory>
 
-#include "base/memory/scoped_refptr.h"
 #include "components/viz/common/resources/resource_format.h"
-#include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/gpu_gles2_export.h"
 #include "ui/gl/gl_bindings.h"
 
@@ -24,7 +25,7 @@ struct Mailbox;
 
 class GPU_GLES2_EXPORT SwapChainFactoryDXGI {
  public:
-  SwapChainFactoryDXGI();
+  explicit SwapChainFactoryDXGI(bool use_passthrough);
   ~SwapChainFactoryDXGI();
 
   struct SwapChainBackings {
@@ -51,6 +52,20 @@ class GPU_GLES2_EXPORT SwapChainFactoryDXGI {
                                     uint32_t usage);
 
  private:
+  // Wraps the swap chain buffer (front buffer/back buffer) into GLimage and
+  // creates a GL texture and stores it as gles2::Texture or as
+  // gles2::TexturePassthrough in the backing that is created.
+  std::unique_ptr<SharedImageBacking> MakeBacking(
+      const Mailbox& mailbox,
+      viz::ResourceFormat format,
+      const gfx::Size& size,
+      const gfx::ColorSpace& color_space,
+      uint32_t usage,
+      const Microsoft::WRL::ComPtr<IDXGISwapChain1>& swap_chain,
+      int buffer_index);
+  // Whether we're using the passthrough command decoder and should generate
+  // passthrough textures.
+  bool use_passthrough_ = false;
   DISALLOW_COPY_AND_ASSIGN(SwapChainFactoryDXGI);
 };
 
