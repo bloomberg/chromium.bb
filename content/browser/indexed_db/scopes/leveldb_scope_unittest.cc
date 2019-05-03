@@ -34,18 +34,14 @@ class LevelDBScopeTest : public LevelDBScopesTestBase {
       ScopesLockManager* lock_manager,
       base::flat_set<ScopesLockManager::ScopeLockRequest> lock_requests) {
     base::RunLoop loop;
-    auto quit = loop.QuitClosure();
-    std::vector<ScopeLock> locks_out;
+    ScopesLocksHolder locks_receiver;
     bool success = lock_manager->AcquireLocks(
-        lock_requests, base::BindLambdaForTesting(
-                           [&locks_out, quit](std::vector<ScopeLock> locks) {
-                             locks_out = std::move(locks);
-                             quit.Run();
-                           }));
+        lock_requests, locks_receiver.AsWeakPtr(),
+        base::BindLambdaForTesting([&loop]() { loop.Quit(); }));
     EXPECT_TRUE(success);
     if (success)
       loop.Run();
-    return locks_out;
+    return std::move(locks_receiver.locks);
   }
 
   std::string CreateKey(int key_num) {

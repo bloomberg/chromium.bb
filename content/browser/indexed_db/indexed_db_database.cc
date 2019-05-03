@@ -210,7 +210,7 @@ class IndexedDBDatabase::OpenRequest
           {kDatabaseRangeLockLevel, GetDatabaseLockRange(db_->metadata_.id),
            ScopesLockManager::LockType::kExclusive}};
       db_->lock_manager_->AcquireLocks(
-          std::move(lock_requests),
+          std::move(lock_requests), lock_receiver_.weak_factory.GetWeakPtr(),
           base::BindOnce(&IndexedDBDatabase::OpenRequest::StartUpgrade,
                          weak_factory_.GetWeakPtr()));
       return;
@@ -250,7 +250,7 @@ class IndexedDBDatabase::OpenRequest
         {kDatabaseRangeLockLevel, GetDatabaseLockRange(db_->metadata_.id),
          ScopesLockManager::LockType::kExclusive}};
     db_->lock_manager_->AcquireLocks(
-        std::move(lock_requests),
+        std::move(lock_requests), lock_receiver_.weak_factory.GetWeakPtr(),
         base::BindOnce(&IndexedDBDatabase::OpenRequest::StartUpgrade,
                        weak_factory_.GetWeakPtr()));
   }
@@ -258,7 +258,8 @@ class IndexedDBDatabase::OpenRequest
   // Initiate the upgrade. The bulk of the work actually happens in
   // IndexedDBDatabase::VersionChangeOperation in order to kick the
   // transaction into the correct state.
-  void StartUpgrade(std::vector<ScopeLock> locks) {
+  void StartUpgrade() {
+    DCHECK(!lock_receiver_.locks.empty());
     connection_ = db_->CreateConnection(pending_->database_callbacks,
                                         pending_->child_process_id);
     DCHECK_EQ(db_->connections_.count(connection_.get()), 1UL);
@@ -277,7 +278,8 @@ class IndexedDBDatabase::OpenRequest
     transaction->ScheduleTask(
         base::BindOnce(&IndexedDBDatabase::VersionChangeOperation, db_,
                        pending_->version, pending_->callbacks));
-    transaction->Start(std::move(locks));
+    transaction->locks_receiver()->locks = std::move(lock_receiver_.locks);
+    transaction->Start();
   }
 
   // Called when the upgrade transaction has started executing.
@@ -311,6 +313,8 @@ class IndexedDBDatabase::OpenRequest
   }
 
  private:
+  ScopesLocksHolder lock_receiver_;
+
   std::unique_ptr<IndexedDBPendingConnection> pending_;
 
   // If an upgrade is needed, holds the pending connection until ownership is
@@ -1896,6 +1900,7 @@ void IndexedDBDatabase::RegisterAndScheduleTransaction(
   }
   lock_manager_->AcquireLocks(
       std::move(lock_requests),
+      transaction->locks_receiver()->weak_factory.GetWeakPtr(),
       base::BindOnce(&IndexedDBTransaction::Start, transaction->AsWeakPtr()));
 }
 

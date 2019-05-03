@@ -94,8 +94,6 @@ class CONTENT_EXPORT LevelDBScopes {
       const leveldb::ReadOptions& read_options,
       const leveldb::WriteOptions& write_options);
 
-  void QueueStartupRollbackTask(int64_t scope_id, std::vector<ScopeLock> locks);
-
   void Rollback(int64_t scope_id, std::vector<ScopeLock> locks);
 
   void OnCleanupTaskResult(leveldb::Status result);

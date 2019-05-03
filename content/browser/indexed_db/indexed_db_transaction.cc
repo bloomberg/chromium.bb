@@ -243,7 +243,7 @@ void IndexedDBTransaction::Abort(const IndexedDBDatabaseError& error) {
   // Transactions must also be marked as completed before the
   // front-end is notified, as the transaction completion unblocks
   // operations like closing connections.
-  locks_.clear();
+  locks_receiver_.locks.clear();
 
   if (callbacks_.get())
     callbacks_->OnAbort(*this, error);
@@ -273,11 +273,10 @@ void IndexedDBTransaction::UnregisterOpenCursor(IndexedDBCursor* cursor) {
   open_cursors_.erase(cursor);
 }
 
-void IndexedDBTransaction::Start(std::vector<ScopeLock> locks) {
-  // TransactionCoordinator has started this transaction.
+void IndexedDBTransaction::Start() {
   DCHECK_EQ(CREATED, state_);
   state_ = STARTED;
-  locks_ = std::move(locks);
+  DCHECK(!locks_receiver_.locks.empty());
   diagnostics_.start_time = base::Time::Now();
 
   if (!used_) {
@@ -457,7 +456,7 @@ leveldb::Status IndexedDBTransaction::CommitPhaseTwo() {
   // Transactions must also be marked as completed before the
   // front-end is notified, as the transaction completion unblocks
   // operations like closing connections.
-  locks_.clear();
+  locks_receiver_.locks.clear();
 
   if (committed) {
     abort_task_stack_.clear();

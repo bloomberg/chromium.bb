@@ -142,11 +142,10 @@ leveldb::Status LevelDBScopes::Initialize() {
       lock_requests.emplace(lock.level(), range,
                             ScopesLockManager::LockType::kExclusive);
     }
-    size_t revert_queue_size = startup_scopes_to_revert_.size();
+    ScopesLocksHolder receiver;
     bool locks_acquired = lock_manager_->AcquireLocks(
-        std::move(lock_requests),
-        base::BindOnce(&LevelDBScopes::QueueStartupRollbackTask,
-                       weak_factory_.GetWeakPtr(), scope_id));
+        std::move(lock_requests), receiver.weak_factory.GetWeakPtr(),
+        base::DoNothing());
     if (UNLIKELY(!locks_acquired))
       return leveldb::Status::Corruption("Invalid locks on disk.");
 
@@ -154,8 +153,10 @@ leveldb::Status LevelDBScopes::Initialize() {
     // 1. There should be no locks acquired before calling this method, and
     // 2. All locks that were are being loaded from disk were previously 'held'
     //    by this system. If they conflict, this is an invalid state on disk.
-    if (UNLIKELY(startup_scopes_to_revert_.size() != revert_queue_size + 1))
+    if (UNLIKELY(receiver.locks.empty()))
       return leveldb::Status::Corruption("Invalid lock ranges on disk.");
+
+    startup_scopes_to_revert_.emplace_back(scope_id, std::move(receiver.locks));
   }
   if (LIKELY(iterator->status().ok()))
     recovery_finished_ = true;
@@ -247,12 +248,6 @@ leveldb::Status LevelDBScopes::Commit(std::unique_ptr<LevelDBScope> scope) {
                        weak_factory_.GetWeakPtr()));
   }
   return s;
-}
-
-void LevelDBScopes::QueueStartupRollbackTask(int64_t scope_id,
-                                             std::vector<ScopeLock> locks) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  startup_scopes_to_revert_.emplace_back(scope_id, std::move(locks));
 }
 
 void LevelDBScopes::Rollback(int64_t scope_id, std::vector<ScopeLock> locks) {

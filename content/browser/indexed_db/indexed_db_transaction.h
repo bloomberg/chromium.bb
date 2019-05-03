@@ -71,8 +71,8 @@ class CONTENT_EXPORT IndexedDBTransaction {
   // This object is destroyed by this method.
   void Abort(const IndexedDBDatabaseError& error);
 
-  // Called by the transaction coordinator when this transaction is unblocked.
-  void Start(std::vector<ScopeLock> locks);
+  // Called by the scopes lock manager when this transaction is unblocked.
+  void Start();
 
   blink::mojom::IDBTransactionMode mode() const { return mode_; }
   const std::set<int64_t>& scope() const { return object_store_ids_; }
@@ -139,6 +139,8 @@ class CONTENT_EXPORT IndexedDBTransaction {
     return ptr_factory_.GetWeakPtr();
   }
 
+  ScopesLocksHolder* locks_receiver() { return &locks_receiver_; }
+
  protected:
   // Test classes may derive, but most creation should be done via
   // IndexedDBClassFactory.
@@ -202,7 +204,7 @@ class CONTENT_EXPORT IndexedDBTransaction {
 
   bool used_ = false;
   State state_ = CREATED;
-  std::vector<ScopeLock> locks_;
+  ScopesLocksHolder locks_receiver_;
   bool is_commit_pending_ = false;
   // We are owned by the connection object, but during force closes sometimes
   // there are issues if there is a pending OpenRequest. So use a WeakPtr.

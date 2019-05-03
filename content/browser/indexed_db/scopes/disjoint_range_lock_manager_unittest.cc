@@ -29,13 +29,6 @@ std::string IntegerKey(size_t num) {
   return base::StringPrintf("%010zd", num);
 }
 
-void StoreLocks(std::vector<ScopeLock>* locks_out,
-                base::OnceClosure done,
-                std::vector<ScopeLock> locks) {
-  (*locks_out) = std::move(locks);
-  std::move(done).Run();
-}
-
 class DisjointRangeLockManagerTest : public testing::Test {
  public:
   DisjointRangeLockManagerTest() = default;
@@ -53,10 +46,8 @@ TEST_F(DisjointRangeLockManagerTest, BasicAcquisition) {
   EXPECT_EQ(0ll, lock_manager.RequestsWaitingForTesting());
 
   base::RunLoop loop;
-  std::vector<ScopeLock> locks1;
-  std::vector<ScopeLock> locks2;
-  std::vector<ScopeLock> locks;
-  locks.resize(kTotalLocks);
+  ScopesLocksHolder holder1;
+  ScopesLocksHolder holder2;
   {
     BarrierBuilder barrier(loop.QuitClosure());
 
@@ -66,9 +57,8 @@ TEST_F(DisjointRangeLockManagerTest, BasicAcquisition) {
       locks1_requests.emplace_back(0, std::move(range),
                                    ScopesLockManager::LockType::kExclusive);
     }
-    EXPECT_TRUE(lock_manager.AcquireLocks(
-        locks1_requests,
-        base::BindOnce(StoreLocks, &locks1, barrier.AddClosure())));
+    EXPECT_TRUE(lock_manager.AcquireLocks(locks1_requests, holder1.AsWeakPtr(),
+                                          barrier.AddClosure()));
 
     // Now acquire kTotalLocks/2 locks starting at (kTotalLocks-1) to verify
     // they acquire in the correct order.
@@ -78,35 +68,34 @@ TEST_F(DisjointRangeLockManagerTest, BasicAcquisition) {
       locks2_requests.emplace_back(0, std::move(range),
                                    ScopesLockManager::LockType::kExclusive);
     }
-    EXPECT_TRUE(lock_manager.AcquireLocks(
-        locks2_requests,
-        base::BindOnce(StoreLocks, &locks2, barrier.AddClosure())));
+    EXPECT_TRUE(lock_manager.AcquireLocks(locks2_requests, holder2.AsWeakPtr(),
+                                          barrier.AddClosure()));
   }
   loop.Run();
   EXPECT_EQ(static_cast<int64_t>(kTotalLocks),
             lock_manager.LocksHeldForTesting());
   EXPECT_EQ(0ll, lock_manager.RequestsWaitingForTesting());
   // All locks should be acquired.
-  for (const auto& lock : locks1) {
+  for (const auto& lock : holder1.locks) {
     EXPECT_TRUE(lock.is_locked());
   }
-  for (const auto& lock : locks2) {
+  for (const auto& lock : holder2.locks) {
     EXPECT_TRUE(lock.is_locked());
   }
 
   // Release locks manually
-  for (auto& lock : locks1) {
+  for (auto& lock : holder1.locks) {
     lock.Release();
     EXPECT_FALSE(lock.is_locked());
   }
-  for (auto& lock : locks2) {
+  for (auto& lock : holder2.locks) {
     lock.Release();
     EXPECT_FALSE(lock.is_locked());
   }
 
   EXPECT_EQ(0ll, lock_manager.LocksHeldForTesting());
-  locks1.clear();
-  locks2.clear();
+  holder1.locks.clear();
+  holder2.locks.clear();
 }
 
 TEST_F(DisjointRangeLockManagerTest, Shared) {
@@ -116,23 +105,23 @@ TEST_F(DisjointRangeLockManagerTest, Shared) {
 
   ScopeLockRange range = {IntegerKey(0), IntegerKey(1)};
 
-  std::vector<ScopeLock> locks1;
-  std::vector<ScopeLock> locks2;
+  ScopesLocksHolder locks_holder1;
+  ScopesLocksHolder locks_holder2;
   base::RunLoop loop;
   {
     BarrierBuilder barrier(loop.QuitClosure());
     EXPECT_TRUE(lock_manager.AcquireLocks(
         {{0, range, ScopesLockManager::LockType::kShared}},
-        base::BindOnce(StoreLocks, &locks1, barrier.AddClosure())));
+        locks_holder1.AsWeakPtr(), barrier.AddClosure()));
     EXPECT_TRUE(lock_manager.AcquireLocks(
         {{0, range, ScopesLockManager::LockType::kShared}},
-        base::BindOnce(StoreLocks, &locks2, barrier.AddClosure())));
+        locks_holder2.AsWeakPtr(), barrier.AddClosure()));
   }
   loop.Run();
   EXPECT_EQ(2ll, lock_manager.LocksHeldForTesting());
 
-  EXPECT_TRUE(locks1.begin()->is_locked());
-  EXPECT_TRUE(locks2.begin()->is_locked());
+  EXPECT_TRUE(locks_holder1.locks.begin()->is_locked());
+  EXPECT_TRUE(locks_holder2.locks.begin()->is_locked());
 }
 
 TEST_F(DisjointRangeLockManagerTest, SharedAndExclusiveQueuing) {
@@ -142,10 +131,10 @@ TEST_F(DisjointRangeLockManagerTest, SharedAndExclusiveQueuing) {
 
   ScopeLockRange range = {IntegerKey(0), IntegerKey(1)};
 
-  std::vector<ScopeLock> shared_lock1;
-  std::vector<ScopeLock> shared_lock2;
-  std::vector<ScopeLock> exclusive_lock3;
-  std::vector<ScopeLock> shared_lock3;
+  ScopesLocksHolder shared_lock1_holder;
+  ScopesLocksHolder shared_lock2_holder;
+  ScopesLocksHolder exclusive_lock3_holder;
+  ScopesLocksHolder shared_lock3_holder;
 
   {
     base::RunLoop loop;
@@ -153,10 +142,10 @@ TEST_F(DisjointRangeLockManagerTest, SharedAndExclusiveQueuing) {
       BarrierBuilder barrier(loop.QuitClosure());
       EXPECT_TRUE(lock_manager.AcquireLocks(
           {{0, range, ScopesLockManager::LockType::kShared}},
-          base::BindOnce(StoreLocks, &shared_lock1, barrier.AddClosure())));
+          shared_lock1_holder.AsWeakPtr(), barrier.AddClosure()));
       EXPECT_TRUE(lock_manager.AcquireLocks(
           {{0, range, ScopesLockManager::LockType::kShared}},
-          base::BindOnce(StoreLocks, &shared_lock2, barrier.AddClosure())));
+          shared_lock2_holder.AsWeakPtr(), barrier.AddClosure()));
     }
     loop.Run();
   }
@@ -167,10 +156,10 @@ TEST_F(DisjointRangeLockManagerTest, SharedAndExclusiveQueuing) {
   // line, then the shared lock will come after it.
   EXPECT_TRUE(lock_manager.AcquireLocks(
       {{0, range, ScopesLockManager::LockType::kExclusive}},
-      base::BindOnce(StoreLocks, &exclusive_lock3, base::DoNothing::Once())));
+      exclusive_lock3_holder.AsWeakPtr(), base::DoNothing::Once()));
   EXPECT_TRUE(lock_manager.AcquireLocks(
       {{0, range, ScopesLockManager::LockType::kShared}},
-      base::BindOnce(StoreLocks, &shared_lock3, base::DoNothing::Once())));
+      shared_lock3_holder.AsWeakPtr(), base::DoNothing::Once()));
   // Flush the task queue.
   {
     base::RunLoop loop;
@@ -178,16 +167,14 @@ TEST_F(DisjointRangeLockManagerTest, SharedAndExclusiveQueuing) {
                                                      loop.QuitClosure());
     loop.Run();
   }
-  EXPECT_TRUE(exclusive_lock3.empty());
-  EXPECT_TRUE(shared_lock3.empty());
+  EXPECT_TRUE(exclusive_lock3_holder.locks.empty());
+  EXPECT_TRUE(shared_lock3_holder.locks.empty());
   EXPECT_EQ(2ll, lock_manager.LocksHeldForTesting());
   EXPECT_EQ(2ll, lock_manager.RequestsWaitingForTesting());
 
   // Release the shared locks.
-  shared_lock1.clear();
-  shared_lock2.clear();
-  EXPECT_TRUE(shared_lock1.empty());
-  EXPECT_TRUE(shared_lock2.empty());
+  shared_lock1_holder.locks.clear();
+  shared_lock2_holder.locks.clear();
 
   // Flush the task queue to propagate the lock releases and grant the exclusive
   // lock.
@@ -197,13 +184,12 @@ TEST_F(DisjointRangeLockManagerTest, SharedAndExclusiveQueuing) {
                                                      loop.QuitClosure());
     loop.Run();
   }
-  EXPECT_FALSE(exclusive_lock3.empty());
-  EXPECT_TRUE(shared_lock3.empty());
+  EXPECT_FALSE(exclusive_lock3_holder.locks.empty());
+  EXPECT_TRUE(shared_lock3_holder.locks.empty());
   EXPECT_EQ(1ll, lock_manager.LocksHeldForTesting());
   EXPECT_EQ(1ll, lock_manager.RequestsWaitingForTesting());
 
-  exclusive_lock3.clear();
-  EXPECT_TRUE(exclusive_lock3.empty());
+  exclusive_lock3_holder.locks.clear();
 
   // Flush the task queue to propagate the lock releases and grant the exclusive
   // lock.
@@ -213,7 +199,7 @@ TEST_F(DisjointRangeLockManagerTest, SharedAndExclusiveQueuing) {
                                                      loop.QuitClosure());
     loop.Run();
   }
-  EXPECT_FALSE(shared_lock3.empty());
+  EXPECT_FALSE(shared_lock3_holder.locks.empty());
   EXPECT_EQ(1ll, lock_manager.LocksHeldForTesting());
   EXPECT_EQ(0ll, lock_manager.RequestsWaitingForTesting());
 }
@@ -221,57 +207,57 @@ TEST_F(DisjointRangeLockManagerTest, SharedAndExclusiveQueuing) {
 TEST_F(DisjointRangeLockManagerTest, LevelsOperateSeparately) {
   DisjointRangeLockManager lock_manager(2);
   base::RunLoop loop;
-  std::vector<ScopeLock> l0_lock;
-  std::vector<ScopeLock> l1_lock;
+  ScopesLocksHolder l0_lock_holder;
+  ScopesLocksHolder l1_lock_holder;
   {
     BarrierBuilder barrier(loop.QuitClosure());
     ScopeLockRange range = {IntegerKey(0), IntegerKey(1)};
     EXPECT_TRUE(lock_manager.AcquireLocks(
         {{0, range, ScopesLockManager::LockType::kExclusive}},
-        base::BindOnce(StoreLocks, &l0_lock, barrier.AddClosure())));
+        l0_lock_holder.AsWeakPtr(), barrier.AddClosure()));
     EXPECT_TRUE(lock_manager.AcquireLocks(
         {{1, range, ScopesLockManager::LockType::kExclusive}},
-        base::BindOnce(StoreLocks, &l1_lock, barrier.AddClosure())));
+        l1_lock_holder.AsWeakPtr(), barrier.AddClosure()));
   }
   loop.Run();
-  EXPECT_FALSE(l0_lock.empty());
-  EXPECT_FALSE(l1_lock.empty());
+  EXPECT_FALSE(l0_lock_holder.locks.empty());
+  EXPECT_FALSE(l1_lock_holder.locks.empty());
   EXPECT_EQ(2ll, lock_manager.LocksHeldForTesting());
   EXPECT_EQ(0ll, lock_manager.RequestsWaitingForTesting());
-  l0_lock.clear();
-  l1_lock.clear();
+  l0_lock_holder.locks.clear();
+  l1_lock_holder.locks.clear();
   EXPECT_EQ(0ll, lock_manager.LocksHeldForTesting());
 }
 
 TEST_F(DisjointRangeLockManagerTest, InvalidRequests) {
   DisjointRangeLockManager lock_manager(2);
-  std::vector<ScopeLock> locks;
+  ScopesLocksHolder locks_holder;
   ScopeLockRange range1 = {IntegerKey(0), IntegerKey(2)};
   ScopeLockRange range2 = {IntegerKey(1), IntegerKey(3)};
   EXPECT_FALSE(lock_manager.AcquireLocks(
       {{0, range1, ScopesLockManager::LockType::kShared},
        {0, range2, ScopesLockManager::LockType::kShared}},
-      base::BindOnce(StoreLocks, &locks, base::DoNothing::Once())));
-  EXPECT_TRUE(locks.empty());
+      locks_holder.AsWeakPtr(), base::DoNothing::Once()));
+  EXPECT_TRUE(locks_holder.locks.empty());
   EXPECT_EQ(0ll, lock_manager.LocksHeldForTesting());
   EXPECT_EQ(0ll, lock_manager.RequestsWaitingForTesting());
   EXPECT_FALSE(lock_manager.AcquireLocks(
       {{-1, range1, ScopesLockManager::LockType::kShared}},
-      base::BindOnce(StoreLocks, &locks, base::DoNothing::Once())));
-  EXPECT_TRUE(locks.empty());
+      locks_holder.AsWeakPtr(), base::DoNothing::Once()));
+  EXPECT_TRUE(locks_holder.locks.empty());
   EXPECT_EQ(0ll, lock_manager.LocksHeldForTesting());
   EXPECT_EQ(0ll, lock_manager.RequestsWaitingForTesting());
   EXPECT_FALSE(lock_manager.AcquireLocks(
       {{4, range1, ScopesLockManager::LockType::kShared}},
-      base::BindOnce(StoreLocks, &locks, base::DoNothing::Once())));
-  EXPECT_TRUE(locks.empty());
+      locks_holder.AsWeakPtr(), base::DoNothing::Once()));
+  EXPECT_TRUE(locks_holder.locks.empty());
   EXPECT_EQ(0ll, lock_manager.LocksHeldForTesting());
   EXPECT_EQ(0ll, lock_manager.RequestsWaitingForTesting());
   ScopeLockRange range3 = {IntegerKey(2), IntegerKey(1)};
   EXPECT_FALSE(lock_manager.AcquireLocks(
       {{0, range1, ScopesLockManager::LockType::kShared}},
-      base::BindOnce(StoreLocks, &locks, base::DoNothing::Once())));
-  EXPECT_TRUE(locks.empty());
+      locks_holder.AsWeakPtr(), base::DoNothing::Once()));
+  EXPECT_TRUE(locks_holder.locks.empty());
   EXPECT_EQ(0ll, lock_manager.LocksHeldForTesting());
   EXPECT_EQ(0ll, lock_manager.RequestsWaitingForTesting());
 }

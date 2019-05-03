@@ -53,6 +53,7 @@ class CONTENT_EXPORT DisjointRangeLockManager : public ScopesLockManager {
   // * range disjoint from other lock ranges (which is an implementation
   //   invariant).
   bool AcquireLocks(base::flat_set<ScopeLockRequest> lock_requests,
+                    base::WeakPtr<ScopesLocksHolder> locks_receiever,
                     LocksAquiredCallback callback) override;
 
   // Remove the given lock range at the given level. The lock range must not be

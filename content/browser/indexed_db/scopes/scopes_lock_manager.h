@@ -19,11 +19,33 @@
 
 namespace content {
 
+// Used to receive and hold locks from a ScopesLockManager. This struct enables
+// the ScopeLock objects to always live in the destination of the caller's
+// choosing (as opposed to having the locks be an argument in the callback,
+// where they could be owned by the task scheduler).
+// This class must be used and destructed on the same sequence as the
+// ScopesLockManager.
+struct CONTENT_EXPORT ScopesLocksHolder {
+ public:
+  ScopesLocksHolder();
+  ~ScopesLocksHolder();
+
+  base::WeakPtr<ScopesLocksHolder> AsWeakPtr() {
+    return weak_factory.GetWeakPtr();
+  }
+
+  std::vector<ScopeLock> locks;
+  base::WeakPtrFactory<ScopesLocksHolder> weak_factory{this};
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScopesLocksHolder);
+};
+
 // Generic two-level lock management system based on ranges. Granted locks are
 // represented by the |ScopeLock| class.
 class CONTENT_EXPORT ScopesLockManager {
  public:
-  using LocksAquiredCallback = base::OnceCallback<void(std::vector<ScopeLock>)>;
+  using LocksAquiredCallback = base::OnceClosure;
 
   // Shared locks can share access to a lock range, while exclusive locks
   // require that they are the only lock for their range.
@@ -46,6 +68,7 @@ class CONTENT_EXPORT ScopesLockManager {
     LockType type;
   };
   virtual bool AcquireLocks(base::flat_set<ScopeLockRequest> lock_requests,
+                            base::WeakPtr<ScopesLocksHolder> locks_receiever,
                             LocksAquiredCallback callback) = 0;
 
  private:

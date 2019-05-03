@@ -102,10 +102,10 @@ TEST_F(LevelDBScopesStartupTest, RevertWithLocksOnRecoveryWithNoCleanup) {
 
   // Verify that the lock was grabbed.
   bool lock_grabbed = false;
+  ScopesLocksHolder locks_receiver;
   lock_manager.AcquireLocks(
-      {CreateSimpleExclusiveLock()},
-      base::BindLambdaForTesting(
-          [&](std::vector<ScopeLock> locks) { lock_grabbed = true; }));
+      {CreateSimpleExclusiveLock()}, locks_receiver.AsWeakPtr(),
+      base::BindLambdaForTesting([&]() { lock_grabbed = true; }));
 
   scopes.StartRecoveryAndCleanupTasks();
 
