@@ -22,6 +22,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/base/locale_util.h"
+#include "chrome/browser/chromeos/child_accounts/parent_access_code/parent_access_service.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/input_method/input_method_syncer.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
@@ -960,10 +961,12 @@ void Preferences::ApplyPreferences(ApplyReason reason,
       reason != REASON_PREF_CHANGED) {
     const base::Value* value =
         prefs_->GetDictionary(prefs::kParentAccessCodeConfig);
-    if (value && prefs_->IsManagedPreference(prefs::kParentAccessCodeConfig)) {
+    if (value && prefs_->IsManagedPreference(prefs::kParentAccessCodeConfig) &&
+        user_->IsChild()) {
       user_manager::known_user::SetPref(user_->GetAccountId(),
                                         prefs::kKnownUserParentAccessCodeConfig,
                                         value->Clone());
+      parent_access::ParentAccessService::Get().LoadConfigForUser(user_);
     } else {
       user_manager::known_user::RemovePref(
           user_->GetAccountId(), prefs::kKnownUserParentAccessCodeConfig);

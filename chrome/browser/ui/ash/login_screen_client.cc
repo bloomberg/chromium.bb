@@ -8,6 +8,7 @@
 
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
+#include "chrome/browser/chromeos/child_accounts/parent_access_code/parent_access_service.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
@@ -66,11 +67,6 @@ LoginScreenClient* LoginScreenClient::Get() {
 
 void LoginScreenClient::SetDelegate(Delegate* delegate) {
   delegate_ = delegate;
-}
-
-void LoginScreenClient::SetParentAccessDelegate(
-    ParentAccessDelegate* delegate) {
-  parent_access_delegate_ = delegate;
 }
 
 void LoginScreenClient::AddSystemTrayFocusObserver(
@@ -145,13 +141,9 @@ void LoginScreenClient::ValidateParentAccessCode(
     const AccountId& account_id,
     const std::string& access_code,
     ValidateParentAccessCodeCallback callback) {
-  if (!parent_access_delegate_) {
-    LOG(ERROR) << "Cannot validate parent access code - no delegate";
-    std::move(callback).Run(false);
-    return;
-  }
-  parent_access_delegate_->ValidateParentAccessCode(access_code,
-                                                    std::move(callback));
+  bool result = chromeos::parent_access::ParentAccessService::Get()
+                    .ValidateParentAccessCode(account_id, access_code);
+  std::move(callback).Run(result);
 }
 
 void LoginScreenClient::HardlockPod(const AccountId& account_id) {

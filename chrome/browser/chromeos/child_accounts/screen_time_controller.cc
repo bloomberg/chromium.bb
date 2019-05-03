@@ -10,13 +10,11 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
-#include "base/optional.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/child_accounts/consumer_status_reporting_service.h"
 #include "chrome/browser/chromeos/child_accounts/consumer_status_reporting_service_factory.h"
-#include "chrome/browser/chromeos/child_accounts/parent_access_code/policy_config_source.h"
 #include "chrome/browser/chromeos/child_accounts/time_limit_override.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -77,11 +75,14 @@ ScreenTimeController::ScreenTimeController(content::BrowserContext* context)
       prefs::kUsageTimeLimit,
       base::BindRepeating(&ScreenTimeController::OnPolicyChanged,
                           base::Unretained(this)));
+
+  if (base::FeatureList::IsEnabled(features::kParentAccessCode))
+    parent_access::ParentAccessService::Get().AddObserver(this);
 }
 
 ScreenTimeController::~ScreenTimeController() {
-  if (parent_access_service_)
-    parent_access_service_->SetDelegate(nullptr);
+  if (base::FeatureList::IsEnabled(features::kParentAccessCode))
+    parent_access::ParentAccessService::Get().RemoveObserver(this);
 
   session_manager::SessionManager::Get()->RemoveObserver(this);
   if (base::FeatureList::IsEnabled(features::kUsageTimeStateNotifier))
@@ -104,25 +105,6 @@ void ScreenTimeController::RemoveObserver(Observer* observer) {
 base::TimeDelta ScreenTimeController::GetScreenTimeDuration() {
   return ConsumerStatusReportingServiceFactory::GetForBrowserContext(context_)
       ->GetChildScreenTime();
-}
-
-void ScreenTimeController::OnAccessCodeValidation(bool result) {
-  if (!result)
-    return;
-
-  if (!session_manager::SessionManager::Get()->IsScreenLocked())
-    return;
-
-  usage_time_limit::TimeLimitOverride local_override(
-      usage_time_limit::TimeLimitOverride::Action::kUnlock, clock_->Now(),
-      base::nullopt);
-  // Replace previous local override stored in pref, because PAC can only be
-  // entered if previous override is not active anymore.
-  pref_service_->Set(prefs::kTimeLimitLocalOverride,
-                     local_override.ToDictionary());
-  pref_service_->CommitPendingWrite();
-
-  CheckTimeLimit("OnAccessCodeValidation");
 }
 
 void ScreenTimeController::SetClocksForTesting(
@@ -243,6 +225,31 @@ void ScreenTimeController::ForceScreenLockByPolicy() {
   }
 
   chromeos::SessionManagerClient::Get()->RequestLockScreen();
+}
+
+void ScreenTimeController::OnAccessCodeValidation(
+    bool result,
+    base::Optional<AccountId> account_id) {
+  AccountId current_user_id =
+      chromeos::ProfileHelper::Get()
+          ->GetUserByProfile(Profile::FromBrowserContext(context_))
+          ->GetAccountId();
+  if (!result || !account_id || account_id.value() != current_user_id)
+    return;
+
+  if (!session_manager::SessionManager::Get()->IsScreenLocked())
+    return;
+
+  usage_time_limit::TimeLimitOverride local_override(
+      usage_time_limit::TimeLimitOverride::Action::kUnlock, clock_->Now(),
+      base::nullopt);
+  // Replace previous local override stored in pref, because PAC can only be
+  // entered if previous override is not active anymore.
+  pref_service_->Set(prefs::kTimeLimitLocalOverride,
+                     local_override.ToDictionary());
+  pref_service_->CommitPendingWrite();
+
+  CheckTimeLimit("OnAccessCodeValidation");
 }
 
 void ScreenTimeController::OnScreenLockByPolicy(
@@ -498,18 +505,6 @@ ScreenTimeController::ConvertPolicyType(
   }
 }
 
-void ScreenTimeController::InitializeParentAccessServiceIfNeeded() {
-  if (base::FeatureList::IsEnabled(features::kParentAccessCode) &&
-      !parent_access_service_) {
-    auto config_source =
-        std::make_unique<parent_access::PolicyConfigSource>(pref_service_);
-    parent_access_service_ =
-        std::make_unique<parent_access::ParentAccessService>(
-            std::move(config_source));
-    parent_access_service_->SetDelegate(this);
-  }
-}
-
 void ScreenTimeController::OnSessionStateChanged() {
   session_manager::SessionState session_state =
       session_manager::SessionManager::Get()->session_state();
@@ -517,7 +512,6 @@ void ScreenTimeController::OnSessionStateChanged() {
     base::Optional<usage_time_limit::State> last_state = GetLastStateFromPref();
     if (session_state == session_manager::SessionState::LOCKED && last_state &&
         last_state->is_locked) {
-      InitializeParentAccessServiceIfNeeded();
       OnScreenLockByPolicy(last_state->active_policy,
                            last_state->next_unlock_time);
     }
@@ -525,7 +519,6 @@ void ScreenTimeController::OnSessionStateChanged() {
   }
 
   if (session_state == session_manager::SessionState::LOCKED) {
-    InitializeParentAccessServiceIfNeeded();
     base::Optional<usage_time_limit::State> last_state = GetLastStateFromPref();
     if (last_state && last_state->is_locked) {
       OnScreenLockByPolicy(last_state->active_policy,
