@@ -41,6 +41,10 @@ void Commit(wl_client* client, wl_resource* resource) {
   GetUserDataAs<MockSurface>(resource)->Commit();
 }
 
+void SetBufferScale(wl_client* client, wl_resource* resource, int32_t scale) {
+  GetUserDataAs<MockSurface>(resource)->SetBufferScale(scale);
+}
+
 }  // namespace
 
 const struct wl_surface_interface kMockSurfaceImpl = {
@@ -52,7 +56,7 @@ const struct wl_surface_interface kMockSurfaceImpl = {
     SetInputRegion,   // set_input_region
     Commit,           // commit
     nullptr,          // set_buffer_transform
-    nullptr,          // set_buffer_scale
+    SetBufferScale,   // set_buffer_scale
     nullptr,          // damage_buffer
 };
 

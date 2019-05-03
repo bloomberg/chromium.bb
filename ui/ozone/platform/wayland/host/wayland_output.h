@@ -36,12 +36,15 @@ class WaylandOutput {
 
   uint32_t output_id() const { return output_id_; }
   bool has_output(wl_output* output) const { return output_.get() == output; }
+  int32_t scale_factor() const { return scale_factor_; }
 
   // Tells if the output has already received physical screen dimensions in the
   // global compositor space.
   bool is_ready() const { return !rect_in_physical_pixels_.IsEmpty(); }
 
  private:
+  static constexpr int32_t kDefaultScaleFactor = 1;
+
   // Callback functions used for setting geometric properties of the output
   // and available modes.
   static void OutputHandleGeometry(void* data,
@@ -54,7 +57,6 @@ class WaylandOutput {
                                    const char* make,
                                    const char* model,
                                    int32_t output_transform);
-
   static void OutputHandleMode(void* data,
                                wl_output* wl_output,
                                uint32_t flags,
@@ -68,7 +70,7 @@ class WaylandOutput {
 
   const uint32_t output_id_ = 0;
   wl::Object<wl_output> output_;
-  float device_scale_factor_;
+  int32_t scale_factor_ = kDefaultScaleFactor;
   gfx::Rect rect_in_physical_pixels_;
 
   Delegate* delegate_ = nullptr;

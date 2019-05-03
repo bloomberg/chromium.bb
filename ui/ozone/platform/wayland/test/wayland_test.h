@@ -27,6 +27,8 @@ class MockSurface;
 
 namespace ui {
 
+class WaylandScreen;
+
 const uint32_t kXdgShellV5 = 5;
 const uint32_t kXdgShellV6 = 6;
 
@@ -51,6 +53,7 @@ class WaylandTest : public ::testing::TestWithParam<uint32_t> {
   MockPlatformWindowDelegate delegate_;
   std::unique_ptr<WaylandConnectionProxy> connection_proxy_;
   std::unique_ptr<WaylandConnection> connection_;
+  std::unique_ptr<WaylandScreen> screen_;
   std::unique_ptr<WaylandWindow> window_;
   gfx::AcceleratedWidget widget_ = gfx::kNullAcceleratedWidget;
 

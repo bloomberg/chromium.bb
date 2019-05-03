@@ -36,6 +36,7 @@ class MockSurface : public ServerObject {
   MOCK_METHOD4(Damage,
                void(int32_t x, int32_t y, int32_t width, int32_t height));
   MOCK_METHOD0(Commit, void());
+  MOCK_METHOD1(SetBufferScale, void(int32_t scale));
 
   void set_xdg_surface(std::unique_ptr<MockXdgSurface> xdg_surface) {
     xdg_surface_ = std::move(xdg_surface);

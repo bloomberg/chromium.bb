@@ -126,7 +126,7 @@ TEST(WebCursorTest, CursorScaleFactor) {
   WebCursor cursor(info);
 
   display::Display display;
-  display.set_device_scale_factor(4.2f);
+  display.SetDeviceScaleFactor(4.2f);
   cursor.SetDisplayInfo(display);
 
 #if defined(USE_OZONE)
@@ -171,7 +171,7 @@ void ScaleCursor(float scale, int hotspot_x, int hotspot_y) {
   WebCursor cursor(info);
 
   display::Display display;
-  display.set_device_scale_factor(scale);
+  display.SetDeviceScaleFactor(scale);
   cursor.SetDisplayInfo(display);
 
   HCURSOR windows_cursor_handle = cursor.GetNativeCursor().platform();

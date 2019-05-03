@@ -166,7 +166,7 @@ void BrowserCompositorMac::UpdateSurfaceFromChild(
     const viz::LocalSurfaceIdAllocation& child_local_surface_id_allocation) {
   if (dfh_local_surface_id_allocator_.UpdateFromChild(
           child_local_surface_id_allocation)) {
-    dfh_display_.set_device_scale_factor(new_device_scale_factor);
+    dfh_display_.SetDeviceScaleFactor(new_device_scale_factor);
     dfh_size_dip_ = gfx::ConvertSizeToDIP(dfh_display_.device_scale_factor(),
                                           new_size_in_pixels);
     dfh_size_pixels_ = new_size_in_pixels;
@@ -402,7 +402,7 @@ void BrowserCompositorMac::SetParentUiLayer(ui::Layer* new_parent_ui_layer) {
 
 bool BrowserCompositorMac::ForceNewSurfaceForTesting() {
   display::Display new_display(dfh_display_);
-  new_display.set_device_scale_factor(new_display.device_scale_factor() * 2.0f);
+  new_display.SetDeviceScaleFactor(new_display.device_scale_factor() * 2.0f);
   return UpdateSurfaceFromNSView(dfh_size_dip_, new_display);
 }
 

@@ -72,7 +72,9 @@ void WaylandTouch::Down(void* data,
   WaylandTouch* touch = static_cast<WaylandTouch*>(data);
   DCHECK(touch);
   touch->connection_->set_serial(serial);
-  WaylandWindow::FromSurface(surface)->set_touch_focus(true);
+  auto* window = WaylandWindow::FromSurface(surface);
+  DCHECK(window);
+  window->set_touch_focus(true);
 
   // Make sure this touch point wasn't present before.
   if (touch->current_points_.find(id) != touch->current_points_.end()) {

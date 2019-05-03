@@ -166,6 +166,8 @@ gfx::Rect GetAnchorRect(MenuType menu_type,
       break;
   }
 
+  if (anchor_rect.width() == 0)
+    anchor_rect.set_width(1);
   return anchor_rect;
 }
 
@@ -257,8 +259,10 @@ zxdg_positioner_v6* XDGPopupWrapperV6::CreatePositioner(
     menu_type = MenuType::TYPE_3DOT_PARENT_MENU;
 
   // Place anchor to the end of the possible position.
-  gfx::Rect anchor_rect =
-      GetAnchorRect(menu_type, bounds, parent_window->GetBounds());
+  gfx::Rect anchor_rect = GetAnchorRect(
+      menu_type, bounds,
+      gfx::ScaleToRoundedRect(parent_window->GetBounds(),
+                              1.0 / parent_window->buffer_scale()));
 
   zxdg_positioner_v6_set_anchor_rect(positioner, anchor_rect.x(),
                                      anchor_rect.y(), anchor_rect.width(),
@@ -284,11 +288,10 @@ void XDGPopupWrapperV6::Configure(void* data,
   // Wayland requires doing so in respect to parent window's origin. To properly
   // place windows, the bounds are translated and adjusted according to the
   // Wayland compositor needs during WaylandWindow::CreateXdgPopup call.
-  gfx::Rect new_bounds(x, y, width, height);
   WaylandWindow* window =
       static_cast<XDGPopupWrapperV6*>(data)->wayland_window_;
   DCHECK(window);
-  window->HandlePopupConfigure(new_bounds);
+  window->HandlePopupConfigure({x, y, width, height});
 }
 
 // static

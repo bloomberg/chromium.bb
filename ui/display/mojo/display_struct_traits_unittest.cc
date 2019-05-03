@@ -132,7 +132,7 @@ TEST(DisplayStructTraitsTest, SetAllDisplayValues) {
 
   Display input(246345234, bounds);
   input.set_work_area(work_area);
-  input.set_device_scale_factor(2.0f);
+  input.SetDeviceScaleFactor(2.0f);
   input.set_rotation(Display::ROTATE_270);
   input.set_touch_support(Display::TouchSupport::AVAILABLE);
   input.set_accelerometer_support(Display::AccelerometerSupport::UNAVAILABLE);

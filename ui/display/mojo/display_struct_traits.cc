@@ -126,7 +126,7 @@ bool StructTraits<display::mojom::DisplayDataView, display::Display>::Read(
   if (!data.ReadWorkArea(&out->work_area_))
     return false;
 
-  out->set_device_scale_factor(data.device_scale_factor());
+  out->SetDeviceScaleFactor(data.device_scale_factor());
 
   if (!data.ReadRotation(&out->rotation_))
     return false;
