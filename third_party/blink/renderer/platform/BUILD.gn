@@ -1955,9 +1955,6 @@ if (current_cpu == "x86" || current_cpu == "x64") {
       ":blink_platform_implementation",
       "//third_party/blink/renderer:non_test_config",
     ]
-    public_deps = [
-      ":blink_platform_public_deps",
-    ]
     if (is_win) {
       cflags = [ "/arch:AVX" ]
     } else {

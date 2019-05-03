@@ -32,7 +32,6 @@ static_library("channel_getter") {
   deps = [
     ":version_constants_bridge_jni",
     "..:channel",
-    "//base",  # for jni_generator_helper.h
   ]
 }
 
