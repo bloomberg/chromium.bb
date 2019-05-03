@@ -264,6 +264,7 @@ CupsPrintersHandler::CupsPrintersHandler(
       ppd_provider_(ppd_provider),
       printer_configurer_(std::move(printer_configurer)),
       printers_manager_(printers_manager),
+      endpoint_resolver_(std::make_unique<local_discovery::EndpointResolver>()),
       printers_manager_observer_(this),
       weak_factory_(this) {}
 

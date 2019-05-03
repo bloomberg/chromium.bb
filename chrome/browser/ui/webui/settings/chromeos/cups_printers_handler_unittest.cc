@@ -100,7 +100,11 @@ class FakePpdProvider : public PpdProvider {
 
 class CupsPrintersHandlerTest : public testing::Test {
  public:
-  CupsPrintersHandlerTest() = default;
+  CupsPrintersHandlerTest()
+      : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD),
+        profile_(),
+        web_ui_(),
+        printers_handler_() {}
   ~CupsPrintersHandlerTest() override = default;
 
   void SetUp() override {
