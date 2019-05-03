@@ -1780,9 +1780,9 @@ WebInputEventResult WebViewImpl::HandleInputEvent(
     }
   }
 
-  // Skip the pointerrawmove for mouse capture case.
+  // Skip the pointerrawupdate for mouse capture case.
   if (mouse_capture_element_ &&
-      input_event.GetType() == WebInputEvent::kPointerRawMove)
+      input_event.GetType() == WebInputEvent::kPointerRawUpdate)
     return WebInputEventResult::kHandledSystem;
 
   if (mouse_capture_element_ &&
@@ -1816,9 +1816,9 @@ WebInputEventResult WebViewImpl::HandleCapturedMouseEvent(
     case WebInputEvent::kMouseMove:
       event_type = event_type_names::kMousemove;
       break;
-    case WebInputEvent::kPointerRawMove:
-      // There will be no mouse event for raw move events.
-      event_type = event_type_names::kPointerrawmove;
+    case WebInputEvent::kPointerRawUpdate:
+      // There will be no mouse event for rawupdate events.
+      event_type = event_type_names::kPointerrawupdate;
       break;
     case WebInputEvent::kMouseLeave:
       event_type = event_type_names::kMouseout;

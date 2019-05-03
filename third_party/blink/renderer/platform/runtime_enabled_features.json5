@@ -1119,7 +1119,7 @@
       status: {"Android": "", "default": "stable"},
     },
     {
-      name: "PointerRawMove",
+      name: "PointerRawUpdate",
       status: "experimental",
     },
     {

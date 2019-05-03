@@ -215,7 +215,7 @@
     "pointermove",
     "pointerout",
     "pointerover",
-    "pointerrawmove",
+    "pointerrawupdate",
     "pointerup",
     "popstate",
     "portalactivate",

@@ -43,7 +43,8 @@ size_t ToPointerTypeIndex(WebPointerProperties::PointerType t) {
 }
 bool HasPointerEventListener(const EventHandlerRegistry& registry) {
   return registry.HasEventHandlers(EventHandlerRegistry::kPointerEvent) ||
-         registry.HasEventHandlers(EventHandlerRegistry::kPointerRawMoveEvent);
+         registry.HasEventHandlers(
+             EventHandlerRegistry::kPointerRawUpdateEvent);
 }
 
 const AtomicString& MouseEventNameForPointerEventInputType(
@@ -532,10 +533,10 @@ WebInputEventResult PointerEventManager::HandlePointerEvent(
     const WebPointerEvent& event,
     const Vector<WebPointerEvent>& coalesced_events,
     const Vector<WebPointerEvent>& predicted_events) {
-  if (event.GetType() == WebInputEvent::Type::kPointerRawMove) {
-    if (!RuntimeEnabledFeatures::PointerRawMoveEnabled() ||
+  if (event.GetType() == WebInputEvent::Type::kPointerRawUpdate) {
+    if (!RuntimeEnabledFeatures::PointerRawUpdateEnabled() ||
         !frame_->GetEventHandlerRegistry().HasEventHandlers(
-            EventHandlerRegistry::kPointerRawMoveEvent))
+            EventHandlerRegistry::kPointerRawUpdateEvent))
       return WebInputEventResult::kHandledSystem;
 
     // If the page has pointer lock active and the event was from
@@ -733,14 +734,14 @@ WebInputEventResult PointerEventManager::SendMousePointerEvent(
   if ((event_type == WebInputEvent::kPointerDown ||
        event_type == WebInputEvent::kPointerUp) &&
       pointer_event->type() == event_type_names::kPointermove &&
-      RuntimeEnabledFeatures::PointerRawMoveEnabled() &&
+      RuntimeEnabledFeatures::PointerRawUpdateEnabled() &&
       frame_->GetEventHandlerRegistry().HasEventHandlers(
-          EventHandlerRegistry::kPointerRawMoveEvent)) {
+          EventHandlerRegistry::kPointerRawUpdateEvent)) {
     // This is a chorded button move event. We need to also send a
-    // pointerrawmove for it.
+    // pointerrawupdate for it.
     DispatchPointerEvent(
         effective_target,
-        pointer_event_factory_.CreatePointerRawMoveEvent(pointer_event));
+        pointer_event_factory_.CreatePointerRawUpdateEvent(pointer_event));
   }
   WebInputEventResult result =
       DispatchPointerEvent(effective_target, pointer_event);

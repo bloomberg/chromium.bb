@@ -41,8 +41,9 @@ class CORE_EXPORT EventHandlerRegistry final
     kTouchStartOrMoveEventPassive,
     kTouchEndOrCancelEventBlocking,
     kTouchEndOrCancelEventPassive,
-    kPointerEvent,  // This includes all pointerevents excluding pointerrawmove.
-    kPointerRawMoveEvent,
+    kPointerEvent,  // This includes all pointerevents excluding
+                    // pointerrawupdate.
+    kPointerRawUpdateEvent,
 #if DCHECK_IS_ON()
     // Additional event categories for verifying handler tracking logic.
     kEventsForTesting,

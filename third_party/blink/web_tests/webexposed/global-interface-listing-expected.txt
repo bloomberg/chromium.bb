@@ -1638,7 +1638,7 @@ interface Document : Node
     getter onpointermove
     getter onpointerout
     getter onpointerover
-    getter onpointerrawmove
+    getter onpointerrawupdate
     getter onpointerup
     getter onprogress
     getter onratechange
@@ -1828,7 +1828,7 @@ interface Document : Node
     setter onpointermove
     setter onpointerout
     setter onpointerover
-    setter onpointerrawmove
+    setter onpointerrawupdate
     setter onpointerup
     setter onprogress
     setter onratechange
@@ -2785,7 +2785,7 @@ interface HTMLElement : Element
     getter onpointermove
     getter onpointerout
     getter onpointerover
-    getter onpointerrawmove
+    getter onpointerrawupdate
     getter onpointerup
     getter onprogress
     getter onratechange
@@ -2891,7 +2891,7 @@ interface HTMLElement : Element
     setter onpointermove
     setter onpointerout
     setter onpointerover
-    setter onpointerrawmove
+    setter onpointerrawupdate
     setter onpointerup
     setter onprogress
     setter onratechange
@@ -6315,7 +6315,7 @@ interface SVGElement : Element
     getter onpointermove
     getter onpointerout
     getter onpointerover
-    getter onpointerrawmove
+    getter onpointerrawupdate
     getter onpointerup
     getter onprogress
     getter onratechange
@@ -6407,7 +6407,7 @@ interface SVGElement : Element
     setter onpointermove
     setter onpointerout
     setter onpointerover
-    setter onpointerrawmove
+    setter onpointerrawupdate
     setter onpointerup
     setter onprogress
     setter onratechange
@@ -11015,7 +11015,7 @@ interface webkitURL
     getter onpointermove
     getter onpointerout
     getter onpointerover
-    getter onpointerrawmove
+    getter onpointerrawupdate
     getter onpointerup
     getter onpopstate
     getter onportalactivate
@@ -11212,7 +11212,7 @@ interface webkitURL
     setter onpointermove
     setter onpointerout
     setter onpointerover
-    setter onpointerrawmove
+    setter onpointerrawupdate
     setter onpointerup
     setter onpopstate
     setter onportalactivate

@@ -224,7 +224,7 @@
     "onpointermove",
     "onpointerout",
     "onpointerover",
-    "onpointerrawmove",
+    "onpointerrawupdate",
     "onpointerup",
     "onpopstate",
     "onportalactivate",

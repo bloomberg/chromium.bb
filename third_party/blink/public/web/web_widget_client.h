@@ -170,8 +170,8 @@ class WebWidgetClient {
   // or navigate.
   virtual void SetOverscrollBehavior(const cc::OverscrollBehavior&) {}
 
-  // Called to update if pointerrawmove events should be sent.
-  virtual void HasPointerRawMoveEventHandlers(bool) {}
+  // Called to update if pointerrawupdate events should be sent.
+  virtual void HasPointerRawUpdateEventHandlers(bool) {}
 
   // Called to update if touch events should be sent.
   virtual void HasTouchEventHandlers(bool) {}

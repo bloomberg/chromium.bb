@@ -177,7 +177,7 @@ WebInputEventResult PageWidgetDelegate::HandleInputEvent(
     case WebInputEvent::kPointerDown:
     case WebInputEvent::kPointerUp:
     case WebInputEvent::kPointerMove:
-    case WebInputEvent::kPointerRawMove:
+    case WebInputEvent::kPointerRawUpdate:
     case WebInputEvent::kPointerCancel:
     case WebInputEvent::kPointerCausedUaAction:
       if (!root || !root->View())

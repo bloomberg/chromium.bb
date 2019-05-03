@@ -146,7 +146,7 @@ PASS oldChildWindow.onpointerleave is newChildWindow.onpointerleave
 PASS oldChildWindow.onpointermove is newChildWindow.onpointermove
 PASS oldChildWindow.onpointerout is newChildWindow.onpointerout
 PASS oldChildWindow.onpointerover is newChildWindow.onpointerover
-PASS oldChildWindow.onpointerrawmove is newChildWindow.onpointerrawmove
+PASS oldChildWindow.onpointerrawupdate is newChildWindow.onpointerrawupdate
 PASS oldChildWindow.onpointerup is newChildWindow.onpointerup
 PASS oldChildWindow.onpopstate is newChildWindow.onpopstate
 PASS oldChildWindow.onportalactivate is newChildWindow.onportalactivate

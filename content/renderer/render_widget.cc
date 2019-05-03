@@ -3227,9 +3227,9 @@ cc::ManagedMemoryPolicy RenderWidget::GetGpuMemoryPolicy(
   return actual;
 }
 
-void RenderWidget::HasPointerRawMoveEventHandlers(bool has_handlers) {
+void RenderWidget::HasPointerRawUpdateEventHandlers(bool has_handlers) {
   if (input_event_queue_)
-    input_event_queue_->HasPointerRawMoveEventHandlers(has_handlers);
+    input_event_queue_->HasPointerRawUpdateEventHandlers(has_handlers);
 }
 
 void RenderWidget::HasTouchEventHandlers(bool has_handlers) {

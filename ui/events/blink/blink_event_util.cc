@@ -266,7 +266,7 @@ WebInputEvent::DispatchType MergeDispatchTypes(
 bool CanCoalesce(const WebPointerEvent& event_to_coalesce,
                  const WebPointerEvent& event) {
   return (event.GetType() == WebInputEvent::kPointerMove ||
-          event.GetType() == WebInputEvent::kPointerRawMove) &&
+          event.GetType() == WebInputEvent::kPointerRawUpdate) &&
          event.GetType() == event_to_coalesce.GetType() &&
          event.id == event_to_coalesce.id &&
          event.pointer_type == event_to_coalesce.pointer_type;

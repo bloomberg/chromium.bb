@@ -40,8 +40,8 @@ class CORE_EXPORT PointerEventFactory {
   PointerEvent* CreatePointerCancelEvent(const PointerId pointer_id,
                                          TimeTicks platfrom_time_stamp);
 
-  // For creating raw move events in chorded button case.
-  PointerEvent* CreatePointerRawMoveEvent(PointerEvent*);
+  // For creating raw update events in chorded button case.
+  PointerEvent* CreatePointerRawUpdateEvent(PointerEvent*);
 
   // For creating capture events (i.e got/lostpointercapture).
   PointerEvent* CreatePointerCaptureEvent(PointerEvent*, const AtomicString&);

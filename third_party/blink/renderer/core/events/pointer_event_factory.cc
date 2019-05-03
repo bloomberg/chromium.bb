@@ -63,8 +63,8 @@ const AtomicString& PointerEventNameForEventType(WebInputEvent::Type type) {
       return event_type_names::kPointerup;
     case WebInputEvent::kPointerMove:
       return event_type_names::kPointermove;
-    case WebInputEvent::kPointerRawMove:
-      return event_type_names::kPointerrawmove;
+    case WebInputEvent::kPointerRawUpdate:
+      return event_type_names::kPointerrawupdate;
     case WebInputEvent::kPointerCancel:
       return event_type_names::kPointercancel;
     default:
@@ -96,7 +96,7 @@ void UpdateCommonPointerEventInit(const WebPointerEvent& web_pointer_event,
       web_pointer_event_in_root_frame, dom_window, pointer_event_init);
   if (RuntimeEnabledFeatures::MovementXYInBlinkEnabled() &&
       web_pointer_event.GetType() == WebInputEvent::kPointerMove) {
-    // TODO(eirage): pointerrawmove event's movements are not calculated.
+    // TODO(eirage): pointerrawupdate event's movements are not calculated.
     pointer_event_init->setMovementX(web_pointer_event.PositionInScreen().x -
                                      last_global_position.X());
     pointer_event_init->setMovementY(web_pointer_event.PositionInScreen().y -
@@ -243,7 +243,7 @@ void PointerEventFactory::SetEventSpecificFields(
       type != event_type_names::kPointerenter &&
       type != event_type_names::kPointerleave &&
       type != event_type_names::kPointercancel &&
-      type != event_type_names::kPointerrawmove &&
+      type != event_type_names::kPointerrawupdate &&
       type != event_type_names::kGotpointercapture &&
       type != event_type_names::kLostpointercapture);
 
@@ -260,7 +260,7 @@ PointerEvent* PointerEventFactory::Create(
   DCHECK(event_type == WebInputEvent::kPointerDown ||
          event_type == WebInputEvent::kPointerUp ||
          event_type == WebInputEvent::kPointerMove ||
-         event_type == WebInputEvent::kPointerRawMove ||
+         event_type == WebInputEvent::kPointerRawUpdate ||
          event_type == WebInputEvent::kPointerCancel);
 
   PointerEventInit* pointer_event_init =
@@ -305,7 +305,7 @@ PointerEvent* PointerEventFactory::Create(
   HeapVector<Member<PointerEvent>> coalesced_pointer_events,
       predicted_pointer_events;
   if (type == event_type_names::kPointermove ||
-      type == event_type_names::kPointerrawmove) {
+      type == event_type_names::kPointerrawupdate) {
     coalesced_pointer_events = CreateEventSequence(
         web_pointer_event, pointer_event_init, coalesced_events, view);
   }
@@ -402,9 +402,9 @@ PointerEvent* PointerEventFactory::CreatePointerEventFrom(
                               pointer_event->PlatformTimeStamp());
 }
 
-PointerEvent* PointerEventFactory::CreatePointerRawMoveEvent(
+PointerEvent* PointerEventFactory::CreatePointerRawUpdateEvent(
     PointerEvent* pointer_event) {
-  // This function is for creating pointerrawmove event from a pointerdown/up
+  // This function is for creating pointerrawupdate event from a pointerdown/up
   // event that caused by chorded buttons and hence its type is changed to
   // pointermove.
   DCHECK(pointer_event->type() == event_type_names::kPointermove &&
@@ -414,7 +414,7 @@ PointerEvent* PointerEventFactory::CreatePointerRawMoveEvent(
          pointer_event->button() != 0);
 
   return CreatePointerEventFrom(pointer_event,
-                                event_type_names::kPointerrawmove,
+                                event_type_names::kPointerrawupdate,
                                 pointer_event->relatedTarget());
 }
 

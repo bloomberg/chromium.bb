@@ -108,7 +108,7 @@ PASS childWindow.onpointerleave is null
 PASS childWindow.onpointermove is null
 PASS childWindow.onpointerout is null
 PASS childWindow.onpointerover is null
-PASS childWindow.onpointerrawmove is null
+PASS childWindow.onpointerrawupdate is null
 PASS childWindow.onpointerup is null
 PASS childWindow.onpopstate is null
 PASS childWindow.onportalactivate is null
