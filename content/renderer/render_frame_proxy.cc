@@ -499,11 +499,11 @@ void RenderFrameProxy::OnViewChanged(
   crashed_ = false;
   // The same ParentLocalSurfaceIdAllocator cannot provide LocalSurfaceIds for
   // two different frame sinks, so recreate it here.
-  if (frame_sink_id_ != *params.frame_sink_id) {
+  if (frame_sink_id_ != params.frame_sink_id) {
     parent_local_surface_id_allocator_ =
         std::make_unique<viz::ParentLocalSurfaceIdAllocator>();
   }
-  frame_sink_id_ = *params.frame_sink_id;
+  frame_sink_id_ = params.frame_sink_id;
 
   // Resend the FrameRects and allocate a new viz::LocalSurfaceId when the view
   // changes.

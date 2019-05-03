@@ -22,7 +22,6 @@
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/mojom/messaging/transferable_message.mojom.h"
 #include "ui/accessibility/ax_mode.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/gfx/ipc/skia/gfx_skia_param_traits.h"
 
@@ -230,8 +229,7 @@ void ParamTraits<scoped_refptr<storage::BlobHandle>>::Log(const param_type& p,
 void ParamTraits<content::FrameMsg_ViewChanged_Params>::Write(
     base::Pickle* m,
     const param_type& p) {
-  DCHECK(features::IsMultiProcessMash() ||
-         (p.frame_sink_id.has_value() && p.frame_sink_id->is_valid()));
+  DCHECK(p.frame_sink_id.is_valid());
   WriteParam(m, p.frame_sink_id);
 }
 
@@ -241,8 +239,7 @@ bool ParamTraits<content::FrameMsg_ViewChanged_Params>::Read(
     param_type* r) {
   if (!ReadParam(m, iter, &(r->frame_sink_id)))
     return false;
-  if (!features::IsMultiProcessMash() &&
-      (!r->frame_sink_id || !r->frame_sink_id->is_valid())) {
+  if (!r->frame_sink_id.is_valid()) {
     NOTREACHED();
     return false;
   }
