@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -115,10 +116,7 @@ void ParsePathAndImageSpec(const GURL& url,
                            std::string* path,
                            float* scale_factor,
                            int* frame_index) {
-  *path = net::UnescapeURLComponent(
-      url.path().substr(1),
-      net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS |
-          net::UnescapeRule::SPACES);
+  *path = net::UnescapeBinaryURLComponent(url.path_piece().substr(1));
   if (scale_factor)
     *scale_factor = 1.0f;
   if (frame_index)
