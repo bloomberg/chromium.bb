@@ -12,9 +12,13 @@ from core import bot_platforms
 _VALID_SWARMING_DIMENSIONS = {
     'gpu', 'device_ids', 'os', 'pool', 'perf_tests', 'perf_tests_with_args',
     'device_os', 'device_type', 'device_os_flavor', 'id'}
-_VALID_PERF_POOLS = {
+_DEFAULT_VALID_PERF_POOLS = {
     'chrome.tests.perf', 'chrome.tests.perf-webview',
     'chrome.tests.perf-fyi', 'chrome.tests.perf-webview-fyi'}
+_VALID_PERF_POOLS = {
+    'android-builder-perf': {'chrome.tests'},
+    'android_arm64-builder-perf': {'chrome.tests'},
+}
 
 
 def _ValidateSwarmingDimension(builder_name, swarming_dimensions):
@@ -23,7 +27,8 @@ def _ValidateSwarmingDimension(builder_name, swarming_dimensions):
       if k not in _VALID_SWARMING_DIMENSIONS:
         raise ValueError('Invalid swarming dimension in %s: %s' % (
             builder_name, k))
-      if k == 'pool' and v not in _VALID_PERF_POOLS:
+      if k == 'pool' and v not in _VALID_PERF_POOLS.get(
+          builder_name, _DEFAULT_VALID_PERF_POOLS):
         raise ValueError('Invalid perf pool %s in %s' % (v, builder_name))
       if k == 'os' and v == 'Android':
         if (not 'device_type' in dimension.keys() or
@@ -161,8 +166,8 @@ def ValidatePerfConfigFile(file_handle, is_main_perf_waterfall):
         'in core.bot_platforms. Please update the platforms in '
         'bot_platforms.py.\nPlatforms should be aded to core.bot_platforms:%s'
         '\nPlatforms should be removed from core.bot_platforms:%s' % (
-          perf_testing_builder_names - bot_platforms.ALL_PLATFORM_NAMES,
-          bot_platforms.ALL_PLATFORM_NAMES - perf_testing_builder_names))
+          perf_testing_builder_names - bot_platforms.ALL_PERF_PLATFORM_NAMES,
+          bot_platforms.ALL_PERF_PLATFORM_NAMES - perf_testing_builder_names))
 
 
 def main(args):

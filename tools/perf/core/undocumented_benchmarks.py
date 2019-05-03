@@ -26,7 +26,6 @@ UNDOCUMENTED_BENCHMARKS = {
   'performance_browser_tests',
   'rasterize_and_record_micro.partial_invalidation',
   'rasterize_and_record_micro.top_25',
-  'resource_sizes',
   'sizes (mac)',
   'sizes (win)',
   'speedometer',

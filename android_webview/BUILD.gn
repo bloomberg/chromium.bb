@@ -5,6 +5,7 @@
 import("//android_webview/system_webview_apk_tmpl.gni")
 import("//android_webview/variables.gni")
 import("//android_webview/webview_repack_locales.gni")
+import("//build/android/resource_sizes.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 import("//build/config/locales.gni")
@@ -1109,6 +1110,13 @@ if (public_android_sdk) {
     android_manifest_dep = ":system_webview_manifest"
     deps = upstream_only_webview_deps
     apk_name = "SystemWebView"
+  }
+
+  android_resource_sizes_test("resource_sizes_system_webview_apk") {
+    apk_name = "SystemWebView"
+    data_deps = [
+      ":system_webview_apk",
+    ]
   }
 
   system_webview_apk_tmpl("trichrome_webview_apk") {

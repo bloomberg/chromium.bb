@@ -129,6 +129,16 @@ WIN_7_GPU = PerfPlatform(
 
 # Android
 
+ANDROID_ARM_BUILDER = PerfPlatform(
+    'android-builder-perf',
+    'Static analysis of 32-bit ARM Android build products',
+    num_shards=1)
+
+ANDROID_ARM64_BUILDER = PerfPlatform(
+    'android_arm64-builder-perf',
+    'Static analysis of 64-bit ARM Android build products.',
+    num_shards=1)
+
 _ANDROID_GO_BENCHMARK_NAMES = {
     'memory.top_10_mobile',
     'system_health.memory_mobile',
@@ -140,7 +150,6 @@ _ANDROID_GO_BENCHMARK_NAMES = {
     'speedometer',
     'speedometer2'
 }
-
 
 ANDROID_GO = PerfPlatform(
     'android-go-perf', 'Android O (gobo)',

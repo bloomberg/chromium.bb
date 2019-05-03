@@ -63,8 +63,8 @@ class PerfDataGeneratorTest(unittest.TestCase):
     }
     test = {
         'isolate': 'angle_perftest',
-        'telemetry': False,
-        'num_shards': 1
+        'num_shards': 1,
+        'type': perf_data_generator.TEST_TYPES.GTEST,
     }
     returned_test = perf_data_generator.generate_performance_test(
         test_config, test)
@@ -201,10 +201,12 @@ class PerfDataGeneratorTest(unittest.TestCase):
 class TestIsPerfBenchmarksSchedulingValid(unittest.TestCase):
   def setUp(self):
     self.maxDiff = None
-    self.original_NON_TELEMETRY_BENCHMARKS = copy.deepcopy(
-        perf_data_generator.NON_TELEMETRY_BENCHMARKS)
+    self.original_GTEST_BENCHMARKS = copy.deepcopy(
+        perf_data_generator.GTEST_BENCHMARKS)
     self.original_TELEMETRY_PERF_BENCHMARKS = copy.deepcopy(
-        perf_data_generator.NON_TELEMETRY_BENCHMARKS)
+        perf_data_generator.TELEMETRY_PERF_BENCHMARKS)
+    self.original_OTHER_BENCHMARKS = copy.deepcopy(
+        perf_data_generator.OTHER_BENCHMARKS)
     self.test_stream = cStringIO.StringIO()
     self.mock_get_telemetry_benchmarks = mock.patch(
         'core.perf_data_generator.get_telemetry_tests_in_performance_test_suite'
@@ -219,8 +221,10 @@ class TestIsPerfBenchmarksSchedulingValid(unittest.TestCase):
   def tearDown(self):
     perf_data_generator.TELEMETRY_PERF_BENCHMARKS = (
         self.original_TELEMETRY_PERF_BENCHMARKS)
-    perf_data_generator.NON_TELEMETRY_BENCHMARKS = (
-        self.original_NON_TELEMETRY_BENCHMARKS)
+    perf_data_generator.GTEST_BENCHMARKS = (
+        self.original_GTEST_BENCHMARKS)
+    perf_data_generator.OTHER_BENCHMARKS = (
+        self.original_OTHER_BENCHMARKS)
     self.mock_get_telemetry_benchmarks.stop()
     self.mock_get_non_telemetry_benchmarks.stop()
 
@@ -232,9 +236,10 @@ class TestIsPerfBenchmarksSchedulingValid(unittest.TestCase):
         't_foo': BenchmarkMetadata('t@foo.com'),
         't_bar': BenchmarkMetadata('t@bar.com'),
     }
-    perf_data_generator.NON_TELEMETRY_BENCHMARKS = {
+    perf_data_generator.GTEST_BENCHMARKS = {
         'honda': BenchmarkMetadata('baz@foo.com'),
     }
+    perf_data_generator.OTHER_BENCHMARKS = {}
     valid = perf_data_generator.is_perf_benchmarks_scheduling_valid(
         'dummy', self.test_stream)
 
@@ -250,9 +255,10 @@ class TestIsPerfBenchmarksSchedulingValid(unittest.TestCase):
         'darth.vader': BenchmarkMetadata('death@star.com'),
         't_bar': BenchmarkMetadata('t@bar.com'),
     }
-    perf_data_generator.NON_TELEMETRY_BENCHMARKS = {
+    perf_data_generator.GTEST_BENCHMARKS = {
         'honda': BenchmarkMetadata('baz@foo.com'),
     }
+    perf_data_generator.OTHER_BENCHMARKS = {}
     valid = perf_data_generator.is_perf_benchmarks_scheduling_valid(
         'dummy', self.test_stream)
 
@@ -267,10 +273,11 @@ class TestIsPerfBenchmarksSchedulingValid(unittest.TestCase):
     perf_data_generator.TELEMETRY_PERF_BENCHMARKS = {
         't_bar': BenchmarkMetadata('t@bar.com'),
     }
-    perf_data_generator.NON_TELEMETRY_BENCHMARKS = {
+    perf_data_generator.GTEST_BENCHMARKS = {
         'honda': BenchmarkMetadata('baz@foo.com'),
         'toyota': BenchmarkMetadata('baz@foo.com'),
     }
+    perf_data_generator.OTHER_BENCHMARKS = {}
     valid = perf_data_generator.is_perf_benchmarks_scheduling_valid(
         'dummy', self.test_stream)
 
@@ -286,9 +293,10 @@ class TestIsPerfBenchmarksSchedulingValid(unittest.TestCase):
     perf_data_generator.TELEMETRY_PERF_BENCHMARKS = {
         't_bar': BenchmarkMetadata('t@bar.com'),
     }
-    perf_data_generator.NON_TELEMETRY_BENCHMARKS = {
+    perf_data_generator.GTEST_BENCHMARKS = {
         'honda': BenchmarkMetadata('baz@foo.com'),
     }
+    perf_data_generator.OTHER_BENCHMARKS = {}
     valid = perf_data_generator.is_perf_benchmarks_scheduling_valid(
         'dummy', self.test_stream)
 
@@ -303,9 +311,10 @@ class TestIsPerfBenchmarksSchedulingValid(unittest.TestCase):
     perf_data_generator.TELEMETRY_PERF_BENCHMARKS = {
         't_bar': BenchmarkMetadata('t@bar.com'),
     }
-    perf_data_generator.NON_TELEMETRY_BENCHMARKS = {
+    perf_data_generator.GTEST_BENCHMARKS = {
         'honda': BenchmarkMetadata('baz@foo.com'),
     }
+    perf_data_generator.OTHER_BENCHMARKS = {}
     valid = perf_data_generator.is_perf_benchmarks_scheduling_valid(
         'dummy', self.test_stream)
 
