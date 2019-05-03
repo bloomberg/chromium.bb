@@ -1088,11 +1088,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-font-cache-scaling",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-fs-nosymfollow",
     "owners": [ "mortonm@chromium.org" ],
     "expiry_milestone": 76
@@ -2616,7 +2611,7 @@
   },
   {
     "name": "omnibox-zero-suggestions-on-ntp",
-    "omners": [ "chrome-android-omnibox-team@google.com" ],
+    "owners": [ "chrome-android-omnibox-team@google.com" ],
     "expiry_milestone": 81
   },
   {
