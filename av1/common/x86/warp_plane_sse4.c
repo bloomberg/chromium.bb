@@ -198,40 +198,53 @@ DECLARE_ALIGNED(8, const int8_t,
 // in an SSE register into two sequences:
 // 0, 2, 2, 4, ..., 12, 12, 14, <don't care>
 // 1, 3, 3, 5, ..., 13, 13, 15, <don't care>
-static const uint8_t even_mask[16] = { 0, 2,  2,  4,  4,  6,  6,  8,
-                                       8, 10, 10, 12, 12, 14, 14, 0 };
-static const uint8_t odd_mask[16] = { 1, 3,  3,  5,  5,  7,  7,  9,
-                                      9, 11, 11, 13, 13, 15, 15, 0 };
+DECLARE_ALIGNED(16, static const uint8_t,
+                even_mask[16]) = { 0, 2,  2,  4,  4,  6,  6,  8,
+                                   8, 10, 10, 12, 12, 14, 14, 0 };
 
-static const uint8_t shuffle_alpha0_mask01[16] = { 0, 1, 0, 1, 0, 1, 0, 1,
-                                                   0, 1, 0, 1, 0, 1, 0, 1 };
+DECLARE_ALIGNED(16, static const uint8_t,
+                odd_mask[16]) = { 1, 3,  3,  5,  5,  7,  7,  9,
+                                  9, 11, 11, 13, 13, 15, 15, 0 };
 
-static const uint8_t shuffle_alpha0_mask23[16] = { 2, 3, 2, 3, 2, 3, 2, 3,
-                                                   2, 3, 2, 3, 2, 3, 2, 3 };
+DECLARE_ALIGNED(16, static const uint8_t,
+                shuffle_alpha0_mask01[16]) = { 0, 1, 0, 1, 0, 1, 0, 1,
+                                               0, 1, 0, 1, 0, 1, 0, 1 };
 
-static const uint8_t shuffle_alpha0_mask45[16] = { 4, 5, 4, 5, 4, 5, 4, 5,
-                                                   4, 5, 4, 5, 4, 5, 4, 5 };
+DECLARE_ALIGNED(16, static const uint8_t,
+                shuffle_alpha0_mask23[16]) = { 2, 3, 2, 3, 2, 3, 2, 3,
+                                               2, 3, 2, 3, 2, 3, 2, 3 };
 
-static const uint8_t shuffle_alpha0_mask67[16] = { 6, 7, 6, 7, 6, 7, 6, 7,
-                                                   6, 7, 6, 7, 6, 7, 6, 7 };
+DECLARE_ALIGNED(16, static const uint8_t,
+                shuffle_alpha0_mask45[16]) = { 4, 5, 4, 5, 4, 5, 4, 5,
+                                               4, 5, 4, 5, 4, 5, 4, 5 };
 
-static const uint8_t shuffle_gamma0_mask0[16] = { 0, 1, 2, 3, 0, 1, 2, 3,
-                                                  0, 1, 2, 3, 0, 1, 2, 3 };
-static const uint8_t shuffle_gamma0_mask1[16] = { 4, 5, 6, 7, 4, 5, 6, 7,
-                                                  4, 5, 6, 7, 4, 5, 6, 7 };
-static const uint8_t shuffle_gamma0_mask2[16] = { 8, 9, 10, 11, 8, 9, 10, 11,
-                                                  8, 9, 10, 11, 8, 9, 10, 11 };
-static const uint8_t shuffle_gamma0_mask3[16] = { 12, 13, 14, 15, 12, 13,
-                                                  14, 15, 12, 13, 14, 15,
-                                                  12, 13, 14, 15 };
+DECLARE_ALIGNED(16, static const uint8_t,
+                shuffle_alpha0_mask67[16]) = { 6, 7, 6, 7, 6, 7, 6, 7,
+                                               6, 7, 6, 7, 6, 7, 6, 7 };
+
+DECLARE_ALIGNED(16, static const uint8_t,
+                shuffle_gamma0_mask0[16]) = { 0, 1, 2, 3, 0, 1, 2, 3,
+                                              0, 1, 2, 3, 0, 1, 2, 3 };
+
+DECLARE_ALIGNED(16, static const uint8_t,
+                shuffle_gamma0_mask1[16]) = { 4, 5, 6, 7, 4, 5, 6, 7,
+                                              4, 5, 6, 7, 4, 5, 6, 7 };
+
+DECLARE_ALIGNED(16, static const uint8_t,
+                shuffle_gamma0_mask2[16]) = { 8, 9, 10, 11, 8, 9, 10, 11,
+                                              8, 9, 10, 11, 8, 9, 10, 11 };
+
+DECLARE_ALIGNED(16, static const uint8_t,
+                shuffle_gamma0_mask3[16]) = { 12, 13, 14, 15, 12, 13, 14, 15,
+                                              12, 13, 14, 15, 12, 13, 14, 15 };
 
 static INLINE void filter_src_pixels(__m128i src, __m128i *tmp, __m128i *coeff,
                                      const int offset_bits_horiz,
                                      const int reduce_bits_horiz, int k) {
   const __m128i src_even =
-      _mm_shuffle_epi8(src, _mm_loadu_si128((__m128i *)even_mask));
+      _mm_shuffle_epi8(src, _mm_load_si128((__m128i *)even_mask));
   const __m128i src_odd =
-      _mm_shuffle_epi8(src, _mm_loadu_si128((__m128i *)odd_mask));
+      _mm_shuffle_epi8(src, _mm_load_si128((__m128i *)odd_mask));
   // The pixel order we need for 'src' is:
   // 0 2 2 4 4 6 6 8 1 3 3 5 5 7 7 9
   const __m128i src_02 = _mm_unpacklo_epi64(src_even, src_odd);
@@ -322,17 +335,17 @@ static INLINE void prepare_horizontal_filter_coeff_alpha0(int sx,
       _mm_loadl_epi64((__m128i *)&filter_8bit[sx >> WARPEDDIFF_PREC_BITS]);
 
   // Coeffs 0 2 for pixels 0 2 4 6 1 3 5 7
-  coeff[0] = _mm_shuffle_epi8(
-      tmp_0, _mm_loadu_si128((__m128i *)shuffle_alpha0_mask01));
+  coeff[0] =
+      _mm_shuffle_epi8(tmp_0, _mm_load_si128((__m128i *)shuffle_alpha0_mask01));
   // Coeffs 4 6 for pixels 0 2 4 6 1 3 5 7
-  coeff[1] = _mm_shuffle_epi8(
-      tmp_0, _mm_loadu_si128((__m128i *)shuffle_alpha0_mask23));
+  coeff[1] =
+      _mm_shuffle_epi8(tmp_0, _mm_load_si128((__m128i *)shuffle_alpha0_mask23));
   // Coeffs 1 3 for pixels 0 2 4 6 1 3 5 7
-  coeff[2] = _mm_shuffle_epi8(
-      tmp_0, _mm_loadu_si128((__m128i *)shuffle_alpha0_mask45));
+  coeff[2] =
+      _mm_shuffle_epi8(tmp_0, _mm_load_si128((__m128i *)shuffle_alpha0_mask45));
   // Coeffs 5 7 for pixels 0 2 4 6 1 3 5 7
-  coeff[3] = _mm_shuffle_epi8(
-      tmp_0, _mm_loadu_si128((__m128i *)shuffle_alpha0_mask67));
+  coeff[3] =
+      _mm_shuffle_epi8(tmp_0, _mm_load_si128((__m128i *)shuffle_alpha0_mask67));
 }
 
 static INLINE void horizontal_filter(__m128i src, __m128i *tmp, int sx,
@@ -504,13 +517,13 @@ static INLINE void prepare_vertical_filter_coeffs_gamma0(int sy,
 
   // even coeffs
   coeffs[0] =
-      _mm_shuffle_epi8(tmp_0, _mm_loadu_si128((__m128i *)shuffle_gamma0_mask0));
+      _mm_shuffle_epi8(tmp_0, _mm_load_si128((__m128i *)shuffle_gamma0_mask0));
   coeffs[1] =
-      _mm_shuffle_epi8(tmp_0, _mm_loadu_si128((__m128i *)shuffle_gamma0_mask1));
+      _mm_shuffle_epi8(tmp_0, _mm_load_si128((__m128i *)shuffle_gamma0_mask1));
   coeffs[2] =
-      _mm_shuffle_epi8(tmp_0, _mm_loadu_si128((__m128i *)shuffle_gamma0_mask2));
+      _mm_shuffle_epi8(tmp_0, _mm_load_si128((__m128i *)shuffle_gamma0_mask2));
   coeffs[3] =
-      _mm_shuffle_epi8(tmp_0, _mm_loadu_si128((__m128i *)shuffle_gamma0_mask3));
+      _mm_shuffle_epi8(tmp_0, _mm_load_si128((__m128i *)shuffle_gamma0_mask3));
 
   // odd coeffs
   coeffs[4] = coeffs[0];

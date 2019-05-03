@@ -13,63 +13,65 @@
 #include "config/av1_rtcd.h"
 #include "av1/common/warped_motion.h"
 
-static const uint8_t shuffle_alpha0_mask01_avx2[32] = {
+DECLARE_ALIGNED(32, static const uint8_t, shuffle_alpha0_mask01_avx2[32]) = {
   0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1,
   0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1
 };
 
-static const uint8_t shuffle_alpha0_mask23_avx2[32] = {
+DECLARE_ALIGNED(32, static const uint8_t, shuffle_alpha0_mask23_avx2[32]) = {
   2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3,
   2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3
 };
 
-static const uint8_t shuffle_alpha0_mask45_avx2[32] = {
+DECLARE_ALIGNED(32, static const uint8_t, shuffle_alpha0_mask45_avx2[32]) = {
   4, 5, 4, 5, 4, 5, 4, 5, 4, 5, 4, 5, 4, 5, 4, 5,
   4, 5, 4, 5, 4, 5, 4, 5, 4, 5, 4, 5, 4, 5, 4, 5
 };
 
-static const uint8_t shuffle_alpha0_mask67_avx2[32] = {
+DECLARE_ALIGNED(32, static const uint8_t, shuffle_alpha0_mask67_avx2[32]) = {
   6, 7, 6, 7, 6, 7, 6, 7, 6, 7, 6, 7, 6, 7, 6, 7,
   6, 7, 6, 7, 6, 7, 6, 7, 6, 7, 6, 7, 6, 7, 6, 7
 };
 
-static const uint8_t shuffle_gamma0_mask0_avx2[32] = { 0, 1, 2, 3, 0, 1, 2, 3,
-                                                       0, 1, 2, 3, 0, 1, 2, 3,
-                                                       0, 1, 2, 3, 0, 1, 2, 3,
-                                                       0, 1, 2, 3, 0, 1, 2, 3 };
+DECLARE_ALIGNED(32, static const uint8_t, shuffle_gamma0_mask0_avx2[32]) = {
+  0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3,
+  0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3
+};
 
-static const uint8_t shuffle_gamma0_mask1_avx2[32] = { 4, 5, 6, 7, 4, 5, 6, 7,
-                                                       4, 5, 6, 7, 4, 5, 6, 7,
-                                                       4, 5, 6, 7, 4, 5, 6, 7,
-                                                       4, 5, 6, 7, 4, 5, 6, 7 };
+DECLARE_ALIGNED(32, static const uint8_t, shuffle_gamma0_mask1_avx2[32]) = {
+  4, 5, 6, 7, 4, 5, 6, 7, 4, 5, 6, 7, 4, 5, 6, 7,
+  4, 5, 6, 7, 4, 5, 6, 7, 4, 5, 6, 7, 4, 5, 6, 7
+};
 
-static const uint8_t shuffle_gamma0_mask2_avx2[32] = {
+DECLARE_ALIGNED(32, static const uint8_t, shuffle_gamma0_mask2_avx2[32]) = {
   8, 9, 10, 11, 8, 9, 10, 11, 8, 9, 10, 11, 8, 9, 10, 11,
   8, 9, 10, 11, 8, 9, 10, 11, 8, 9, 10, 11, 8, 9, 10, 11
 };
 
-static const uint8_t shuffle_gamma0_mask3_avx2[32] = {
+DECLARE_ALIGNED(32, static const uint8_t, shuffle_gamma0_mask3_avx2[32]) = {
   12, 13, 14, 15, 12, 13, 14, 15, 12, 13, 14, 15, 12, 13, 14, 15,
   12, 13, 14, 15, 12, 13, 14, 15, 12, 13, 14, 15, 12, 13, 14, 15
 };
 
-static const uint8_t shuffle_src0[32] = { 0, 2, 2, 4, 4, 6, 6, 8, 1, 3, 3,
-                                          5, 5, 7, 7, 9, 0, 2, 2, 4, 4, 6,
-                                          6, 8, 1, 3, 3, 5, 5, 7, 7, 9 };
+DECLARE_ALIGNED(32, static const uint8_t,
+                shuffle_src0[32]) = { 0, 2, 2, 4, 4, 6, 6, 8, 1, 3, 3,
+                                      5, 5, 7, 7, 9, 0, 2, 2, 4, 4, 6,
+                                      6, 8, 1, 3, 3, 5, 5, 7, 7, 9 };
 
-static const uint8_t shuffle_src1[32] = { 4, 6, 6, 8, 8, 10, 10, 12,
-                                          5, 7, 7, 9, 9, 11, 11, 13,
-                                          4, 6, 6, 8, 8, 10, 10, 12,
-                                          5, 7, 7, 9, 9, 11, 11, 13 };
+DECLARE_ALIGNED(32, static const uint8_t,
+                shuffle_src1[32]) = { 4,  6,  6,  8,  8,  10, 10, 12, 5,  7, 7,
+                                      9,  9,  11, 11, 13, 4,  6,  6,  8,  8, 10,
+                                      10, 12, 5,  7,  7,  9,  9,  11, 11, 13 };
 
-static const uint8_t shuffle_src2[32] = { 1, 3, 3, 5, 5,  7, 7, 9, 2, 4, 4,
-                                          6, 6, 8, 8, 10, 1, 3, 3, 5, 5, 7,
-                                          7, 9, 2, 4, 4,  6, 6, 8, 8, 10 };
+DECLARE_ALIGNED(32, static const uint8_t,
+                shuffle_src2[32]) = { 1, 3, 3, 5, 5,  7, 7, 9, 2, 4, 4,
+                                      6, 6, 8, 8, 10, 1, 3, 3, 5, 5, 7,
+                                      7, 9, 2, 4, 4,  6, 6, 8, 8, 10 };
 
-static const uint8_t shuffle_src3[32] = { 5, 7, 7, 9,  9,  11, 11, 13,
-                                          6, 8, 8, 10, 10, 12, 12, 14,
-                                          5, 7, 7, 9,  9,  11, 11, 13,
-                                          6, 8, 8, 10, 10, 12, 12, 14 };
+DECLARE_ALIGNED(32, static const uint8_t,
+                shuffle_src3[32]) = { 5,  7,  7,  9,  9,  11, 11, 13, 6,  8, 8,
+                                      10, 10, 12, 12, 14, 5,  7,  7,  9,  9, 11,
+                                      11, 13, 6,  8,  8,  10, 10, 12, 12, 14 };
 
 static INLINE void filter_src_pixels_avx2(const __m256i src, __m256i *horz_out,
                                           __m256i *coeff,
@@ -215,13 +217,13 @@ static INLINE void prepare_horizontal_filter_coeff_alpha0_avx2(int beta, int sx,
       _mm256_inserti128_si256(_mm256_castsi128_si256(tmp_0), tmp_1, 0x1);
 
   coeff[0] = _mm256_shuffle_epi8(
-      res_0, _mm256_loadu_si256((__m256i *)shuffle_alpha0_mask01_avx2));
+      res_0, _mm256_load_si256((__m256i *)shuffle_alpha0_mask01_avx2));
   coeff[1] = _mm256_shuffle_epi8(
-      res_0, _mm256_loadu_si256((__m256i *)shuffle_alpha0_mask23_avx2));
+      res_0, _mm256_load_si256((__m256i *)shuffle_alpha0_mask23_avx2));
   coeff[2] = _mm256_shuffle_epi8(
-      res_0, _mm256_loadu_si256((__m256i *)shuffle_alpha0_mask45_avx2));
+      res_0, _mm256_load_si256((__m256i *)shuffle_alpha0_mask45_avx2));
   coeff[3] = _mm256_shuffle_epi8(
-      res_0, _mm256_loadu_si256((__m256i *)shuffle_alpha0_mask67_avx2));
+      res_0, _mm256_load_si256((__m256i *)shuffle_alpha0_mask67_avx2));
 }
 
 static INLINE void horizontal_filter_avx2(const __m256i src, __m256i *horz_out,
@@ -564,13 +566,13 @@ static INLINE void prepare_vertical_filter_coeffs_gamma0_avx2(int delta, int sy,
       _mm256_inserti128_si256(_mm256_castsi128_si256(filt_0), filt_1, 0x1);
 
   coeffs[0] = _mm256_shuffle_epi8(
-      res_0, _mm256_loadu_si256((__m256i *)shuffle_gamma0_mask0_avx2));
+      res_0, _mm256_load_si256((__m256i *)shuffle_gamma0_mask0_avx2));
   coeffs[1] = _mm256_shuffle_epi8(
-      res_0, _mm256_loadu_si256((__m256i *)shuffle_gamma0_mask1_avx2));
+      res_0, _mm256_load_si256((__m256i *)shuffle_gamma0_mask1_avx2));
   coeffs[2] = _mm256_shuffle_epi8(
-      res_0, _mm256_loadu_si256((__m256i *)shuffle_gamma0_mask2_avx2));
+      res_0, _mm256_load_si256((__m256i *)shuffle_gamma0_mask2_avx2));
   coeffs[3] = _mm256_shuffle_epi8(
-      res_0, _mm256_loadu_si256((__m256i *)shuffle_gamma0_mask3_avx2));
+      res_0, _mm256_load_si256((__m256i *)shuffle_gamma0_mask3_avx2));
 
   coeffs[4] = coeffs[0];
   coeffs[5] = coeffs[1];
@@ -1031,10 +1033,10 @@ void av1_warp_affine_avx2(const int32_t *mat, const uint8_t *ref, int width,
   const int16_t const5 = (1 << (FILTER_BITS - reduce_bits_horiz));
 
   __m256i shuffle_src[4];
-  shuffle_src[0] = _mm256_loadu_si256((__m256i *)shuffle_src0);
-  shuffle_src[1] = _mm256_loadu_si256((__m256i *)shuffle_src1);
-  shuffle_src[2] = _mm256_loadu_si256((__m256i *)shuffle_src2);
-  shuffle_src[3] = _mm256_loadu_si256((__m256i *)shuffle_src3);
+  shuffle_src[0] = _mm256_load_si256((__m256i *)shuffle_src0);
+  shuffle_src[1] = _mm256_load_si256((__m256i *)shuffle_src1);
+  shuffle_src[2] = _mm256_load_si256((__m256i *)shuffle_src2);
+  shuffle_src[3] = _mm256_load_si256((__m256i *)shuffle_src3);
 
   for (i = 0; i < p_height; i += 8) {
     for (j = 0; j < p_width; j += 8) {
