@@ -46,7 +46,6 @@ class HTMLFormElement;
 class ImageCandidate;
 class ExceptionState;
 class ShadowRoot;
-class USVStringOrTrustedURL;
 
 class CORE_EXPORT HTMLImageElement final
     : public HTMLElement,
@@ -104,11 +103,6 @@ class CORE_EXPORT HTMLImageElement final
   void SetLoadingImageDocument() { GetImageLoader().SetLoadingImageDocument(); }
 
   void setHeight(unsigned);
-
-  KURL Src() const;
-  void SetSrc(const String&);
-  void SetSrc(const USVStringOrTrustedURL&, ExceptionState&);
-
   void setWidth(unsigned);
 
   IntSize GetOverriddenIntrinsicSize() const;

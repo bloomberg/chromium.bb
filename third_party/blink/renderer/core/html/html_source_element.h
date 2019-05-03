@@ -33,8 +33,6 @@
 
 namespace blink {
 
-class USVStringOrTrustedURL;
-class ExceptionState;
 class HTMLSourceElement final : public HTMLElement {
   DEFINE_WRAPPERTYPEINFO();
 
@@ -48,8 +46,6 @@ class HTMLSourceElement final : public HTMLElement {
   const AttrNameToTrustedType& GetCheckedAttributeTypes() const override;
 
   const AtomicString& type() const;
-  void SetSrc(const String&);
-  void SetSrc(const USVStringOrTrustedURL&, ExceptionState&);
   void setType(const AtomicString&);
 
   void ScheduleErrorEvent();

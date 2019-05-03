@@ -98,7 +98,7 @@ void MediaDocumentParser::CreateDocumentStructure() {
   media->setAttribute(kNameAttr, "media");
 
   auto* source = MakeGarbageCollected<HTMLSourceElement>(*GetDocument());
-  source->SetSrc(GetDocument()->Url());
+  source->setAttribute(kSrcAttr, AtomicString(GetDocument()->Url()));
 
   if (DocumentLoader* loader = GetDocument()->Loader())
     source->setType(loader->MimeType());

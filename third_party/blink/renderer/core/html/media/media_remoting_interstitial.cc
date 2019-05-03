@@ -35,7 +35,8 @@ MediaRemotingInterstitial::MediaRemotingInterstitial(
   background_image_ = MakeGarbageCollected<HTMLImageElement>(GetDocument());
   background_image_->SetShadowPseudoId(
       AtomicString("-internal-media-interstitial-background-image"));
-  background_image_->SetSrc(videoElement.getAttribute(html_names::kPosterAttr));
+  background_image_->setAttribute(
+      html_names::kSrcAttr, videoElement.getAttribute(html_names::kPosterAttr));
   AppendChild(background_image_);
 
   cast_icon_ = MakeGarbageCollected<HTMLDivElement>(GetDocument());
@@ -145,7 +146,8 @@ void MediaRemotingInterstitial::DidMoveToNewDocument(Document& old_document) {
 }
 
 void MediaRemotingInterstitial::OnPosterImageChanged() {
-  background_image_->SetSrc(
+  background_image_->setAttribute(
+      html_names::kSrcAttr,
       GetVideoElement().getAttribute(html_names::kPosterAttr));
 }
 

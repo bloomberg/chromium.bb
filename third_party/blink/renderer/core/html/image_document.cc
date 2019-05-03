@@ -267,7 +267,7 @@ void ImageDocument::CreateDocumentStructure() {
   image_element_ = MakeGarbageCollected<HTMLImageElement>(*this);
   UpdateImageStyle();
   image_element_->SetLoadingImageDocument();
-  image_element_->SetSrc(Url().GetString());
+  image_element_->setAttribute(kSrcAttr, AtomicString(Url().GetString()));
   body->AppendChild(image_element_.Get());
   if (Loader() && image_element_->CachedImageResourceForImageDocument()) {
     image_element_->CachedImageResourceForImageDocument()->ResponseReceived(

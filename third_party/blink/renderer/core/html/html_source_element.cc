@@ -26,7 +26,6 @@
 #include "third_party/blink/renderer/core/html/html_source_element.h"
 
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/renderer/bindings/core/v8/usv_string_or_trusted_url.h"
 #include "third_party/blink/renderer/core/css/media_list.h"
 #include "third_party/blink/renderer/core/css/media_query_list.h"
 #include "third_party/blink/renderer/core/css/media_query_matcher.h"
@@ -127,15 +126,6 @@ void HTMLSourceElement::RemoveMediaQueryListListener() {
 void HTMLSourceElement::AddMediaQueryListListener() {
   if (media_query_list_)
     media_query_list_->AddListener(listener_);
-}
-
-void HTMLSourceElement::SetSrc(const String& url) {
-  setAttribute(kSrcAttr, AtomicString(url));
-}
-
-void HTMLSourceElement::SetSrc(const USVStringOrTrustedURL& usvStringOrURL,
-                               ExceptionState& exception_state) {
-  setAttribute(kSrcAttr, usvStringOrURL, exception_state);
 }
 
 const AtomicString& HTMLSourceElement::type() const {

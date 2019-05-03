@@ -611,19 +611,6 @@ IntSize HTMLImageElement::GetOverriddenIntrinsicSize() const {
   return overridden_intrinsic_size_;
 }
 
-KURL HTMLImageElement::Src() const {
-  return GetDocument().CompleteURL(getAttribute(kSrcAttr));
-}
-
-void HTMLImageElement::SetSrc(const String& value) {
-  setAttribute(kSrcAttr, AtomicString(value));
-}
-
-void HTMLImageElement::SetSrc(const USVStringOrTrustedURL& value,
-                              ExceptionState& exception_state) {
-  setAttribute(kSrcAttr, value, exception_state);
-}
-
 void HTMLImageElement::setWidth(unsigned value) {
   SetUnsignedIntegralAttribute(kWidthAttr, value);
 }
