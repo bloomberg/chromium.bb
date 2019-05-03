@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
+#include "chrome/browser/ui/webui/chromeos/login/enable_debugging_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -193,7 +194,7 @@ class EnableDebuggingTest : public LoginManagerTest {
 
   void InvokeEnableDebuggingScreen() {
     test::ExecuteOobeJS("cr.ui.Oobe.handleAccelerator('debugging');");
-    OobeScreenWaiter(OobeScreen::SCREEN_OOBE_ENABLE_DEBUGGING).Wait();
+    OobeScreenWaiter(EnableDebuggingScreenView::kScreenId).Wait();
   }
 
   void CloseEnableDebuggingScreen() {
@@ -402,12 +403,12 @@ class EnableDebuggingRequestedTest : public EnableDebuggingTest {
 
 // Setup screen is automatically shown when the feature is requested.
 IN_PROC_BROWSER_TEST_F(EnableDebuggingRequestedTest, AutoShowSetup) {
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_ENABLE_DEBUGGING).Wait();
+  OobeScreenWaiter(EnableDebuggingScreenView::kScreenId).Wait();
 }
 
 // Canceling auto shown setup screen should close it.
 IN_PROC_BROWSER_TEST_F(EnableDebuggingRequestedTest, CancelAutoShowSetup) {
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_ENABLE_DEBUGGING).Wait();
+  OobeScreenWaiter(EnableDebuggingScreenView::kScreenId).Wait();
   CloseEnableDebuggingScreen();
   test::OobeJS().ExpectHidden("debugging");
 }

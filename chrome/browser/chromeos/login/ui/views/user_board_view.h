@@ -27,8 +27,7 @@ class UserSelectionScreen;
 // or Views one.
 class UserBoardView {
  public:
-  constexpr static StaticOobeScreenId kScreenId =
-      OobeScreen::SCREEN_USER_SELECTION;
+  constexpr static StaticOobeScreenId kScreenId{"userBoard"};
 
   virtual ~UserBoardView() {}
 

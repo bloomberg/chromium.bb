@@ -189,7 +189,7 @@ bool IsProxyError(NetworkStateInformer::State state,
 }
 
 bool IsSigninScreen(const OobeScreenId screen) {
-  return screen == OobeScreen::SCREEN_GAIA_SIGNIN ||
+  return screen == GaiaView::kScreenId ||
          screen == OobeScreen::SCREEN_ACCOUNT_PICKER;
 }
 
@@ -569,7 +569,7 @@ void SigninScreenHandler::UpdateUIState(UIState ui_state) {
   switch (ui_state) {
     case UI_STATE_GAIA_SIGNIN:
       ui_state_ = UI_STATE_GAIA_SIGNIN;
-      ShowScreen(OobeScreen::SCREEN_GAIA_SIGNIN);
+      ShowScreen(GaiaView::kScreenId);
       break;
     case UI_STATE_ACCOUNT_PICKER:
       ui_state_ = UI_STATE_ACCOUNT_PICKER;
@@ -770,9 +770,9 @@ void SigninScreenHandler::SetupAndShowOfflineMessage(
   error_screen_->AllowGuestSignin(guest_signin_allowed);
   error_screen_->AllowOfflineLogin(offline_login_allowed);
 
-  if (GetCurrentScreen() != OobeScreen::SCREEN_ERROR_MESSAGE) {
+  if (GetCurrentScreen() != ErrorScreenView::kScreenId) {
     error_screen_->SetUIState(NetworkError::UI_STATE_SIGNIN);
-    error_screen_->SetParentScreen(OobeScreen::SCREEN_GAIA_SIGNIN);
+    error_screen_->SetParentScreen(GaiaView::kScreenId);
     error_screen_->Show();
     histogram_helper_->OnErrorShow(error_screen_->GetErrorState());
   }
@@ -1446,7 +1446,7 @@ bool SigninScreenHandler::IsGaiaHiddenByError() const {
 }
 
 bool SigninScreenHandler::IsSigninScreenHiddenByError() const {
-  return (GetCurrentScreen() == OobeScreen::SCREEN_ERROR_MESSAGE) &&
+  return (GetCurrentScreen() == ErrorScreenView::kScreenId) &&
          (IsSigninScreen(error_screen_->GetParentScreen()));
 }
 

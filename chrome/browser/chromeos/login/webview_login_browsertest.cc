@@ -33,6 +33,7 @@
 #include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/ui/login/login_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
@@ -530,8 +531,8 @@ class WebviewClientCertsLoginTest : public WebviewLoginTest {
   }
 
   void ShowEulaScreen() {
-    LoginDisplayHost::default_host()->StartWizard(OobeScreen::SCREEN_OOBE_EULA);
-    OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
+    LoginDisplayHost::default_host()->StartWizard(EulaView::kScreenId);
+    OobeScreenWaiter(EulaView::kScreenId).Wait();
   }
 
  protected:

@@ -119,7 +119,7 @@ class RecommendAppsScreenTest : public InProcessBrowserTest {
     // will bind to the handler.
     WizardController::default_controller()
         ->screen_manager()
-        ->DeleteScreenForTesting(OobeScreen::SCREEN_RECOMMEND_APPS);
+        ->DeleteScreenForTesting(RecommendAppsScreenView::kScreenId);
     auto recommend_apps_screen = std::make_unique<RecommendAppsScreen>(
         GetOobeUI()->GetView<RecommendAppsScreenHandler>(),
         base::BindRepeating(&RecommendAppsScreenTest::HandleScreenExit,
@@ -235,7 +235,7 @@ class RecommendAppsScreenTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, BasicSelection) {
   recommend_apps_screen_->Show();
 
-  OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_RECOMMEND_APPS);
+  OobeScreenWaiter screen_waiter(RecommendAppsScreenView::kScreenId);
   screen_waiter.set_assert_next_screen();
   screen_waiter.Wait();
 
@@ -302,7 +302,7 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, BasicSelection) {
 IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, SelectionChange) {
   recommend_apps_screen_->Show();
 
-  OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_RECOMMEND_APPS);
+  OobeScreenWaiter screen_waiter(RecommendAppsScreenView::kScreenId);
   screen_waiter.set_assert_next_screen();
   screen_waiter.Wait();
 
@@ -370,7 +370,7 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, SelectionChange) {
 IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, SkipWithSelectedApps) {
   recommend_apps_screen_->Show();
 
-  OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_RECOMMEND_APPS);
+  OobeScreenWaiter screen_waiter(RecommendAppsScreenView::kScreenId);
   screen_waiter.set_assert_next_screen();
   screen_waiter.Wait();
 
@@ -432,7 +432,7 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, SkipWithSelectedApps) {
 IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, SkipWithNoAppsSelected) {
   recommend_apps_screen_->Show();
 
-  OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_RECOMMEND_APPS);
+  OobeScreenWaiter screen_waiter(RecommendAppsScreenView::kScreenId);
   screen_waiter.set_assert_next_screen();
   screen_waiter.Wait();
 
@@ -500,7 +500,7 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, SkipWithNoAppsSelected) {
 IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, InstallWithNoAppsSelected) {
   recommend_apps_screen_->Show();
 
-  OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_RECOMMEND_APPS);
+  OobeScreenWaiter screen_waiter(RecommendAppsScreenView::kScreenId);
   screen_waiter.set_assert_next_screen();
   screen_waiter.Wait();
 
@@ -542,7 +542,7 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, InstallWithNoAppsSelected) {
 IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, NoRecommendedApps) {
   recommend_apps_screen_->Show();
 
-  OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_RECOMMEND_APPS);
+  OobeScreenWaiter screen_waiter(RecommendAppsScreenView::kScreenId);
   screen_waiter.set_assert_next_screen();
   screen_waiter.Wait();
 
@@ -585,7 +585,7 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, NoRecommendedApps) {
 IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, ParseError) {
   recommend_apps_screen_->Show();
 
-  OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_RECOMMEND_APPS);
+  OobeScreenWaiter screen_waiter(RecommendAppsScreenView::kScreenId);
   screen_waiter.set_assert_next_screen();
   screen_waiter.Wait();
 
@@ -603,7 +603,7 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, ParseError) {
 IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, SkipOnLoadError) {
   recommend_apps_screen_->Show();
 
-  OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_RECOMMEND_APPS);
+  OobeScreenWaiter screen_waiter(RecommendAppsScreenView::kScreenId);
   screen_waiter.set_assert_next_screen();
   screen_waiter.Wait();
 
@@ -645,7 +645,7 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, SkipOnLoadError) {
 IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, RetryOnLoadError) {
   recommend_apps_screen_->Show();
 
-  OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_RECOMMEND_APPS);
+  OobeScreenWaiter screen_waiter(RecommendAppsScreenView::kScreenId);
   screen_waiter.set_assert_next_screen();
   screen_waiter.Wait();
 

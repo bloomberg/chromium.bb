@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/login/test/network_portal_detector_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
+#include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_screen_handler.h"
@@ -173,11 +174,11 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateCheckDoneBeforeShow) {
   EXPECT_EQ(UpdateScreen::Result::UPDATE_NOT_REQUIRED,
             last_screen_result_.value());
 
-  ASSERT_NE(GetOobeUI()->current_screen(), OobeScreen::SCREEN_OOBE_UPDATE);
+  ASSERT_NE(GetOobeUI()->current_screen(), UpdateView::kScreenId);
 
   // Show another screen, and verify the Update screen in not shown before it.
   GetOobeUI()->GetView<NetworkScreenHandler>()->Show();
-  OobeScreenWaiter network_screen_waiter(OobeScreen::SCREEN_OOBE_NETWORK);
+  OobeScreenWaiter network_screen_waiter(NetworkScreenView::kScreenId);
   network_screen_waiter.set_assert_next_screen();
   network_screen_waiter.Wait();
 }
@@ -197,7 +198,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateNotFoundAfterScreenShow) {
   // If show is called explicitly, the update screen is expected to be shown.
   update_screen_->Show();
 
-  OobeScreenWaiter update_screen_waiter(OobeScreen::SCREEN_OOBE_UPDATE);
+  OobeScreenWaiter update_screen_waiter(UpdateView::kScreenId);
   update_screen_waiter.set_assert_next_screen();
   update_screen_waiter.Wait();
 
@@ -232,7 +233,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateAvailable) {
 
   update_screen_->Show();
 
-  OobeScreenWaiter update_screen_waiter(OobeScreen::SCREEN_OOBE_UPDATE);
+  OobeScreenWaiter update_screen_waiter(UpdateView::kScreenId);
   update_screen_waiter.set_assert_next_screen();
   update_screen_waiter.Wait();
 
@@ -457,7 +458,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestTemporaryPortalNetwork) {
   fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
 
   // Verify that update screen is showing checking for update UI.
-  OobeScreenWaiter update_screen_waiter(OobeScreen::SCREEN_OOBE_UPDATE);
+  OobeScreenWaiter update_screen_waiter(UpdateView::kScreenId);
   update_screen_waiter.set_assert_next_screen();
   update_screen_waiter.Wait();
 
@@ -489,10 +490,9 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestTwoOfflineNetworks) {
   update_screen_->GetErrorMessageTimerForTesting()->FireNow();
   EXPECT_FALSE(update_screen_->GetErrorMessageTimerForTesting()->IsRunning());
 
-  ASSERT_EQ(OobeScreen::SCREEN_OOBE_UPDATE.AsId(),
-            error_screen_->GetParentScreen());
+  ASSERT_EQ(UpdateView::kScreenId.AsId(), error_screen_->GetParentScreen());
 
-  OobeScreenWaiter error_screen_waiter(OobeScreen::SCREEN_ERROR_MESSAGE);
+  OobeScreenWaiter error_screen_waiter(ErrorScreenView::kScreenId);
   error_screen_waiter.set_assert_next_screen();
   error_screen_waiter.Wait();
 
@@ -529,12 +529,11 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestVoidNetwork) {
   network_portal_detector_.SimulateNoNetwork();
 
   EXPECT_FALSE(update_screen_->GetErrorMessageTimerForTesting()->IsRunning());
-  ASSERT_EQ(OobeScreen::SCREEN_OOBE_UPDATE.AsId(),
-            error_screen_->GetParentScreen());
+  ASSERT_EQ(UpdateView::kScreenId.AsId(), error_screen_->GetParentScreen());
 
   // Second portal detection also returns NULL network and undefined
   // results.  In this case, offline message should be displayed.
-  OobeScreenWaiter error_screen_waiter(OobeScreen::SCREEN_ERROR_MESSAGE);
+  OobeScreenWaiter error_screen_waiter(ErrorScreenView::kScreenId);
   error_screen_waiter.set_assert_next_screen();
   error_screen_waiter.Wait();
 
@@ -557,10 +556,9 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestAPReselection) {
   // Force timer expiration.
   EXPECT_TRUE(update_screen_->GetErrorMessageTimerForTesting()->IsRunning());
   update_screen_->GetErrorMessageTimerForTesting()->FireNow();
-  ASSERT_EQ(OobeScreen::SCREEN_OOBE_UPDATE.AsId(),
-            error_screen_->GetParentScreen());
+  ASSERT_EQ(UpdateView::kScreenId.AsId(), error_screen_->GetParentScreen());
 
-  OobeScreenWaiter error_screen_waiter(OobeScreen::SCREEN_ERROR_MESSAGE);
+  OobeScreenWaiter error_screen_waiter(ErrorScreenView::kScreenId);
   error_screen_waiter.set_assert_next_screen();
   error_screen_waiter.Wait();
 
@@ -571,7 +569,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestAPReselection) {
   ASSERT_EQ(OobeScreen::SCREEN_UNKNOWN.AsId(),
             error_screen_->GetParentScreen());
 
-  OobeScreenWaiter update_screen_waiter(OobeScreen::SCREEN_OOBE_UPDATE);
+  OobeScreenWaiter update_screen_waiter(UpdateView::kScreenId);
   update_screen_waiter.set_assert_next_screen();
   update_screen_waiter.Wait();
 
@@ -590,7 +588,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, UpdateOverCellularAccepted) {
   fake_update_engine_client_->set_default_status(status);
   fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
 
-  OobeScreenWaiter update_screen_waiter(OobeScreen::SCREEN_OOBE_UPDATE);
+  OobeScreenWaiter update_screen_waiter(UpdateView::kScreenId);
   update_screen_waiter.set_assert_next_screen();
   update_screen_waiter.Wait();
 
@@ -632,7 +630,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, UpdateOverCellularRejected) {
   fake_update_engine_client_->set_default_status(status);
   fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
 
-  OobeScreenWaiter update_screen_waiter(OobeScreen::SCREEN_OOBE_UPDATE);
+  OobeScreenWaiter update_screen_waiter(UpdateView::kScreenId);
   update_screen_waiter.set_assert_next_screen();
   update_screen_waiter.Wait();
 

@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/login/auth/user_context.h"
@@ -204,13 +205,13 @@ void LoginDisplayHostMojo::OnStartSignInScreen(
   // TODO(tbarzic): Reassess when https://crbug.com/943720 is fixed.
   PrefService* local_state = g_browser_process->local_state();
   if (local_state->GetBoolean(prefs::kFactoryResetRequested)) {
-    StartWizard(OobeScreen::SCREEN_OOBE_RESET);
+    StartWizard(ResetView::kScreenId);
     start_delayed_for_oobe_dialog_ = true;
     return;
   }
 
   if (local_state->GetBoolean(prefs::kDebuggingFeaturesRequested)) {
-    StartWizard(OobeScreen::SCREEN_OOBE_ENABLE_DEBUGGING);
+    StartWizard(EnableDebuggingScreenView::kScreenId);
     start_delayed_for_oobe_dialog_ = true;
     return;
   }

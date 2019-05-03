@@ -18,7 +18,7 @@ constexpr char kUserActionClose[] = "fingerprint-setup-done";
 FingerprintSetupScreen::FingerprintSetupScreen(
     FingerprintSetupScreenView* view,
     const base::RepeatingClosure& exit_callback)
-    : BaseScreen(OobeScreen::SCREEN_FINGERPRINT_SETUP),
+    : BaseScreen(FingerprintSetupScreenView::kScreenId),
       view_(view),
       exit_callback_(exit_callback) {
   DCHECK(view_);

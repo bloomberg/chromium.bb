@@ -21,6 +21,8 @@
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/ui/webui/chromeos/login/device_disabled_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
@@ -49,8 +51,9 @@ bool DeviceDisabledScreenShown() {
   WizardController* const wizard_controller =
       WizardController::default_controller();
   EXPECT_TRUE(wizard_controller);
-  return wizard_controller && wizard_controller->current_screen() ==
-         wizard_controller->GetScreen(OobeScreen::SCREEN_DEVICE_DISABLED);
+  return wizard_controller &&
+         wizard_controller->current_screen() ==
+             wizard_controller->GetScreen(DeviceDisabledScreenView::kScreenId);
 }
 
 }  // namespace
@@ -172,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(DeviceDisablingTest, DisableWithEphemeralUsers) {
   WizardController* wizard_controller = WizardController::default_controller();
   ASSERT_TRUE(wizard_controller);
   wizard_controller->SkipToLoginForTesting(LoginScreenContext());
-  OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
 
   // Mark the device as disabled and wait until cros settings update.
   MarkDisabledAndWaitForPolicyFetch();
@@ -196,7 +199,7 @@ IN_PROC_BROWSER_TEST_F(DeviceDisablingTest, DisableWithEphemeralUsers) {
 
   // Verify that the login screen was not shown and the device disabled screen
   // is still being shown instead.
-  EXPECT_EQ(OobeScreen::SCREEN_DEVICE_DISABLED.name,
+  EXPECT_EQ(DeviceDisabledScreenView::kScreenId.name,
             GetCurrentScreenName(web_contents));
 
   // Disconnect from the fake Ethernet network.
@@ -219,7 +222,7 @@ IN_PROC_BROWSER_TEST_F(DeviceDisablingTest, DisableWithEphemeralUsers) {
 
   // Verify that the offline error screen was not shown and the device disabled
   // screen is still being shown instead.
-  EXPECT_EQ(OobeScreen::SCREEN_DEVICE_DISABLED.name,
+  EXPECT_EQ(DeviceDisabledScreenView::kScreenId.name,
             GetCurrentScreenName(web_contents));
 }
 

@@ -14,8 +14,7 @@ class AppDownloadingScreen;
 
 class AppDownloadingScreenView {
  public:
-  constexpr static StaticOobeScreenId kScreenId =
-      OobeScreen::SCREEN_APP_DOWNLOADING;
+  constexpr static StaticOobeScreenId kScreenId{"app-downloading"};
 
   virtual ~AppDownloadingScreenView() = default;
 

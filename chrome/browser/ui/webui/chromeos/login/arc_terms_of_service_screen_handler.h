@@ -47,8 +47,7 @@ class ArcTermsOfServiceScreenViewObserver {
 
 class ArcTermsOfServiceScreenView {
  public:
-  constexpr static StaticOobeScreenId kScreenId =
-      OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE;
+  constexpr static StaticOobeScreenId kScreenId{"arc-tos"};
 
   virtual ~ArcTermsOfServiceScreenView() = default;
 

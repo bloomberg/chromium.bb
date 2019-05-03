@@ -16,8 +16,7 @@ class DemoPreferencesScreen;
 // Interface of the demo mode preferences screen view.
 class DemoPreferencesScreenView {
  public:
-  constexpr static StaticOobeScreenId kScreenId =
-      OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES;
+  constexpr static StaticOobeScreenId kScreenId{"demo-preferences"};
 
   virtual ~DemoPreferencesScreenView();
 

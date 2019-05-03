@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/hid_detection_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "services/device/public/cpp/hid/fake_input_service_linux.h"
@@ -44,12 +45,12 @@ class HIDDetectionScreenTest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    ShowLoginWizard(OobeScreen::SCREEN_OOBE_HID_DETECTION);
+    ShowLoginWizard(HIDDetectionView::kScreenId);
     ASSERT_TRUE(WizardController::default_controller());
 
     hid_detection_screen_ = static_cast<HIDDetectionScreen*>(
         WizardController::default_controller()->GetScreen(
-            OobeScreen::SCREEN_OOBE_HID_DETECTION));
+            HIDDetectionView::kScreenId));
     ASSERT_TRUE(hid_detection_screen_);
     ASSERT_EQ(WizardController::default_controller()->current_screen(),
               hid_detection_screen_);
@@ -135,7 +136,7 @@ IN_PROC_BROWSER_TEST_F(HIDDetectionScreenTest, MouseKeyboardStates) {
 // Test that if there is any Bluetooth device connected on HID screen, the
 // Bluetooth adapter should not be disabled after advancing to the next screen.
 IN_PROC_BROWSER_TEST_F(HIDDetectionScreenTest, BluetoothDeviceConnected) {
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_HID_DETECTION).Wait();
+  OobeScreenWaiter(HIDDetectionView::kScreenId).Wait();
   EXPECT_TRUE(adapter()->IsPowered());
 
   // Add a pair of USB mouse/keyboard so that |pointing_device_connect_type_|
@@ -150,7 +151,7 @@ IN_PROC_BROWSER_TEST_F(HIDDetectionScreenTest, BluetoothDeviceConnected) {
 
   // Simulate the user's click on "Continue" button.
   hid_detection_screen()->OnContinueButtonClicked();
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_WELCOME).Wait();
+  OobeScreenWaiter(WelcomeView::kScreenId).Wait();
 
   // The adapter should not be powered off at this moment.
   EXPECT_TRUE(adapter()->IsPowered());
@@ -159,7 +160,7 @@ IN_PROC_BROWSER_TEST_F(HIDDetectionScreenTest, BluetoothDeviceConnected) {
 // Test that if there is no Bluetooth device connected on HID screen, the
 // Bluetooth adapter should be disabled after advancing to the next screen.
 IN_PROC_BROWSER_TEST_F(HIDDetectionScreenTest, NoBluetoothDeviceConnected) {
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_HID_DETECTION).Wait();
+  OobeScreenWaiter(HIDDetectionView::kScreenId).Wait();
   EXPECT_TRUE(adapter()->IsPowered());
 
   AddDeviceToService(true, device::mojom::InputDeviceType::TYPE_USB);
@@ -167,7 +168,7 @@ IN_PROC_BROWSER_TEST_F(HIDDetectionScreenTest, NoBluetoothDeviceConnected) {
 
   // Simulate the user's click on "Continue" button.
   hid_detection_screen()->OnContinueButtonClicked();
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_WELCOME).Wait();
+  OobeScreenWaiter(WelcomeView::kScreenId).Wait();
 
   // The adapter should be powered off at this moment.
   EXPECT_FALSE(adapter()->IsPowered());

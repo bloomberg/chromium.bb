@@ -83,7 +83,7 @@ class AppDownloadingScreenTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(AppDownloadingScreenTest, NoAppsSelected) {
   app_downloading_screen_->Show();
 
-  OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_APP_DOWNLOADING);
+  OobeScreenWaiter screen_waiter(AppDownloadingScreenView::kScreenId);
   screen_waiter.set_assert_next_screen();
   screen_waiter.Wait();
 
@@ -115,7 +115,7 @@ IN_PROC_BROWSER_TEST_F(AppDownloadingScreenTest, SingleAppSelected) {
 
   app_downloading_screen_->Show();
 
-  OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_APP_DOWNLOADING);
+  OobeScreenWaiter screen_waiter(AppDownloadingScreenView::kScreenId);
   screen_waiter.set_assert_next_screen();
   screen_waiter.Wait();
 
@@ -149,7 +149,7 @@ IN_PROC_BROWSER_TEST_F(AppDownloadingScreenTest, MultipleAppsSelected) {
 
   app_downloading_screen_->Show();
 
-  OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_APP_DOWNLOADING);
+  OobeScreenWaiter screen_waiter(AppDownloadingScreenView::kScreenId);
   screen_waiter.set_assert_next_screen();
   screen_waiter.Wait();
 

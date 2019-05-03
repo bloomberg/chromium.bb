@@ -102,6 +102,8 @@
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/discover_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/modules/discover_module_pin_setup.h"
+#include "chrome/browser/ui/webui/chromeos/login/supervision_transition_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_features.h"
@@ -1707,14 +1709,14 @@ bool UserSessionManager::InitializeUserSession(Profile* profile) {
       if (!StartupUtils::IsDeviceRegistered())
         StartupUtils::MarkDeviceRegistered(base::Closure());
 
-      ActivateWizard(OobeScreen::SCREEN_TERMS_OF_SERVICE);
+      ActivateWizard(TermsOfServiceScreenView::kScreenId);
       return false;
     } else if (base::FeatureList::IsEnabled(
                    chromeos::features::kEnableSupervisionTransitionScreens) &&
                !user_manager->IsCurrentUserNew() &&
                arc::GetSupervisionTransition(profile) !=
                    arc::ArcSupervisionTransition::NO_TRANSITION) {
-      ActivateWizard(OobeScreen::SCREEN_SUPERVISION_TRANSITION);
+      ActivateWizard(SupervisionTransitionScreenView::kScreenId);
       return false;
     }
   }

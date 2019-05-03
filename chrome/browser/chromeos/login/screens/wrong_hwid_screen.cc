@@ -11,7 +11,7 @@ namespace chromeos {
 
 WrongHWIDScreen::WrongHWIDScreen(WrongHWIDScreenView* view,
                                  const base::RepeatingClosure& exit_callback)
-    : BaseScreen(OobeScreen::SCREEN_WRONG_HWID),
+    : BaseScreen(WrongHWIDScreenView::kScreenId),
       view_(view),
       exit_callback_(exit_callback) {
   DCHECK(view_);
