@@ -3890,6 +3890,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillPruneSuggestionsDescription, kOsAll,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillPruneSuggestions)},
 
+    {"allow-popups-during-page-unload",
+     flag_descriptions::kAllowPopupsDuringPageUnloadName,
+     flag_descriptions::kAllowPopupsDuringPageUnloadDescription, kOsAll,
+     SINGLE_VALUE_TYPE(switches::kAllowPopupsDuringPageUnload)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
