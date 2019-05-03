@@ -94,11 +94,11 @@
         attr-for-selected="href" on-iron-activate="onSelectorActivate_"
         role="navigation" on-click="onLinkClick_">
 <if expr="chromeos">
-      <a href="/internet">
+      <a href="/internet" hidden="[[!pageVisibility.internet]]">
         <iron-icon icon="settings:network-wifi"></iron-icon>
         $i18n{internetPageTitle}
       </a>
-      <a href="/bluetooth">
+      <a href="/bluetooth" hidden="[[!pageVisibility.bluetooth]]">
         <iron-icon icon="cr:bluetooth"></iron-icon>
         $i18n{bluetoothPageTitle}
       </a>
@@ -124,7 +124,7 @@
         $i18n{appearancePageTitle}
       </a>
 <if expr="chromeos">
-      <a href="/device">
+      <a href="/device" hidden="[[!pageVisibility.device]]">
         <iron-icon icon="settings:laptop-chromebook"></iron-icon>
         $i18n{devicePageTitle}
       </a>
