@@ -17,7 +17,6 @@ source_set("testing") {
     "../../../platform",
     "../discovery/mdns:mdns_interface",
   ]
-  configs += [ "../../..:root_config_overrides" ]
 }
 
 source_set("fakes_unittests") {
@@ -32,5 +31,4 @@ source_set("fakes_unittests") {
     "../../../third_party/abseil",
     "../../../third_party/googletest:gtest",
   ]
-  configs += [ "../../..:root_config_overrides" ]
 }

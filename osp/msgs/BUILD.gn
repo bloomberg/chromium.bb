@@ -16,11 +16,13 @@ source_set("msgs") {
     "../../third_party/abseil",
     "../../third_party/tinycbor",
   ]
-  configs += [ "../..:root_config_overrides" ]
+
+  public_configs = [ ":cddl_gen_config" ]
+  configs += [ "../../build:allow_build_from_embedder" ]
 }
 
 config("cddl_gen_config") {
-  include_dirs = [ "$root_gen_dir" ]
+  include_dirs = [ "$root_gen_dir" + "/" + rebase_path("../..", "//") ]
 }
 
 action("cddl_gen") {
@@ -37,7 +39,6 @@ action("cddl_gen") {
   foreach(o, outputs_src) {
     outputs += [ root_gen_dir + "/" + o ]
   }
-  public_configs = [ ":cddl_gen_config" ]
 
   args = [
            "--header",
@@ -66,5 +67,4 @@ source_set("unittests") {
     ":msgs",
     "../../third_party/googletest:gtest",
   ]
-  configs += [ "../..:root_config_overrides" ]
 }

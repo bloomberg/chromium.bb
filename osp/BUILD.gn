@@ -11,6 +11,7 @@ source_set("osp") {
   deps = [
     "impl",
   ]
+  configs += [ "../build:allow_build_from_embedder" ]
 }
 
 if (use_chromium_quic) {
@@ -53,7 +54,6 @@ source_set("osp_unittests") {
     "public",
     "public:test_support",
   ]
-  configs += [ "..:root_config_overrides" ]
 
   if (use_mdns_responder) {
     sources += [ "impl/mdns_responder_service_unittest.cc" ]

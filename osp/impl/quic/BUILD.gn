@@ -19,7 +19,6 @@ source_set("quic") {
     "../../../platform",
     "../../public",
   ]
-  configs += [ "../../..:root_config_overrides" ]
 }
 
 source_set("test_support") {
@@ -39,5 +38,4 @@ source_set("test_support") {
     "../../../third_party/googletest:gmock",
     "../../msgs",
   ]
-  configs += [ "../../..:root_config_overrides" ]
 }

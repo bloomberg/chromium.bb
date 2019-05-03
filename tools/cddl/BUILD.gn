@@ -19,5 +19,4 @@ executable("cddl") {
     "../../platform",
     "../../third_party/abseil",
   ]
-  configs += [ "../..:root_config_overrides" ]
 }

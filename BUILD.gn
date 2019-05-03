@@ -5,12 +5,6 @@
 import("//build_overrides/build.gni")
 import("osp/build/config/services.gni")
 
-config("root_config_overrides") {
-  if (build_with_chromium) {
-    include_dirs = [ "." ]
-  }
-}
-
 # All compilable non-test targets in the repository (both executables and
 # source_sets).
 group("gn_all") {

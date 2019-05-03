@@ -5,8 +5,6 @@
 import("//build_overrides/build.gni")
 
 source_set("platform") {
-  defines = []
-
   sources = [
     "api/event_waiter.cc",
     "api/event_waiter.h",
@@ -14,25 +12,21 @@ source_set("platform") {
     "api/logging.h",
     "api/network_interface.cc",
     "api/network_interface.h",
-    "api/socket.h.",
+    "api/socket.h",
     "api/task_runner.h",
     "api/task_runner_factory.h",
     "api/time.h",
     "base/time.cc",
   ]
 
-  deps = []
   public_deps = [
     "../osp_base",
     "../third_party/abseil",
   ]
-  configs += [ "..:root_config_overrides" ]
   allow_circular_includes_from = [ "../osp_base" ]
+  configs += [ "../build:allow_build_from_embedder" ]
 
-  if (build_with_chromium) {
-    deps += [ ":chromium" ]
-    public_deps += [ "//base" ]
-  } else {  # !build_with_chromium
+  if (!build_with_chromium) {
     sources += [
       "base/event_loop.cc",
       "base/event_loop.h",
@@ -45,7 +39,7 @@ source_set("platform") {
     if (is_linux) {
       sources += [ "linux/network_interface.cc" ]
     } else if (is_mac) {
-      defines += [
+      defines = [
         # Required, to use the new IPv6 Sockets options introduced by RFC 3542.
         "__APPLE_USE_RFC_3542",
       ]
@@ -60,21 +54,6 @@ source_set("platform") {
         "posix/socket.h",
       ]
     }
-  }
-}
-
-if (build_with_chromium) {
-  source_set("chromium") {
-    sources = [
-      "chromium/logging.cc",
-    ]
-
-    deps = [
-      "../third_party/abseil",
-      "//base",
-    ]
-
-    configs += [ "..:root_config_overrides" ]
   }
 }
 
@@ -98,6 +77,4 @@ source_set("platform_unittests") {
     ":platform",
     "../third_party/googletest:gtest",
   ]
-
-  configs += [ "..:root_config_overrides" ]
 }

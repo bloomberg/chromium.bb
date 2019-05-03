@@ -9,8 +9,5 @@ source_set("mdns") {
     "mdns_constants.h",
   ]
 
-  if (build_with_chromium) {
-    configs -= [ "//build/config/compiler:default_include_dirs" ]
-  }
-  configs += [ "../../../:root_config_overrides" ]
+  configs += [ "../../../build:allow_build_from_embedder" ]
 }

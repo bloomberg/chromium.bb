@@ -28,7 +28,6 @@ source_set("common") {
     "ssrc.h",
   ]
 
-  configs += [ "../..:root_config_overrides" ]
   public_deps = [
     "../../third_party/abseil",
     "../../third_party/boringssl",
@@ -75,7 +74,6 @@ source_set("cast_unittests") {
     "ssrc_unittest.cc",
   ]
 
-  configs += [ "../..:root_config_overrides" ]
   deps = [
     ":receiver",
     ":sender",

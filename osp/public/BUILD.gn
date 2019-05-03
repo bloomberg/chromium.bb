@@ -44,10 +44,6 @@ source_set("public") {
     "../../osp_base",
     "../../platform",
   ]
-  if (build_with_chromium) {
-    configs -= [ "//build/config/compiler:default_include_dirs" ]
-  }
-  configs += [ "../..:root_config_overrides" ]
 }
 
 source_set("test_support") {
