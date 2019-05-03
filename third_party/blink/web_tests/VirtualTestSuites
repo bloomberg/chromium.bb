@@ -1048,11 +1048,6 @@
              "--enable-spatial-navigation"]
   },
   {
-    "prefix": "bidi-caret-affinity",
-    "base": "editing/selection/modify_move",
-    "args": ["--enable-blink-features=BidiCaretAffinity,EditingNG"]
-  },
-  {
     "prefix": "passive-fingerprinting",
     "base": "http/tests/navigation/useragent.php",
     "args": ["--enable-features=FreezeUserAgent"]

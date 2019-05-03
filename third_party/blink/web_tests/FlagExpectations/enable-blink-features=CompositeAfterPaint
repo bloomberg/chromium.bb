@@ -5,7 +5,6 @@ Bug(none) scrollingcoordinator/ [ Skip ]
 
 Bug(none) virtual/disable-blink-gen-property-trees/ [ Skip ]
 
-Bug(none) virtual/bidi-caret-affinity/ [ Skip ]
 Bug(none) virtual/gpu/fast/canvas/ [ Skip ]
 Bug(none) virtual/layout_ng/ [ Skip ]
 Bug(none) virtual/layout_ng_experimental/ [ Skip ]
