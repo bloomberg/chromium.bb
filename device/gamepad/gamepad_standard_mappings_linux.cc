@@ -714,6 +714,8 @@ constexpr struct MappingData {
     {GamepadId::kMicrosoftProduct02fd, MapperXboxOneS2016Firmware},
     // Xbox 360 Wireless
     {GamepadId::kMicrosoftProduct0719, MapperXInputStyleGamepad},
+    // Xbox Adaptive Controller
+    {GamepadId::kMicrosoftProduct0b0a, MapperXInputStyleGamepad},
     // Logitech F310 D-mode
     {GamepadId::kLogitechProductc216, MapperLogitechDInput},
     // Logitech F510 D-mode

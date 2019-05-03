@@ -40,7 +40,10 @@ XboxDataFetcher::PendingController::PendingController(
     std::unique_ptr<XboxControllerMac> controller)
     : fetcher(fetcher), controller(std::move(controller)) {}
 
-XboxDataFetcher::PendingController::~PendingController() = default;
+XboxDataFetcher::PendingController::~PendingController() {
+  if (controller)
+    controller->Shutdown();
+}
 
 XboxDataFetcher::XboxDataFetcher() = default;
 
@@ -219,6 +222,13 @@ bool XboxDataFetcher::RegisterForNotifications() {
           &xbox_360_device_added_iter_, &xbox_360_device_removed_iter_))
     return false;
 
+  if (!RegisterForDeviceNotifications(
+          XboxControllerMac::kVendorMicrosoft,
+          XboxControllerMac::kProductXboxAdaptiveController,
+          &xbox_adaptive_device_added_iter_,
+          &xbox_adaptive_device_removed_iter_))
+    return false;
+
   return true;
 }
 
@@ -298,6 +308,7 @@ XboxControllerMac* XboxDataFetcher::ControllerForLocation(UInt32 location_id) {
 }
 
 void XboxDataFetcher::AddController(XboxControllerMac* controller) {
+  DCHECK(controller);
   DCHECK(!ControllerForLocation(controller->location_id()))
       << "Controller with location ID " << controller->location_id()
       << " already exists in the set of controllers.";
@@ -325,12 +336,13 @@ void XboxDataFetcher::AddController(XboxControllerMac* controller) {
   state->axis_mask = 0;
   state->button_mask = 0;
 
-  // Assume all Xbox gamepads support vibration effects.
   state->data.vibration_actuator.type = GamepadHapticActuatorType::kDualRumble;
-  state->data.vibration_actuator.not_null = true;
+  state->data.vibration_actuator.not_null = controller->SupportsVibration();
 }
 
 void XboxDataFetcher::RemoveController(XboxControllerMac* controller) {
+  DCHECK(controller);
+  controller->Shutdown();
   controllers_.erase(controller);
   delete controller;
 }
