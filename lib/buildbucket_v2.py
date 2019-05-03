@@ -14,6 +14,7 @@ from __future__ import print_function
 
 from ssl import SSLError
 import ast
+import socket
 
 from google.protobuf import field_mask_pb2
 
@@ -209,6 +210,7 @@ class BuildbucketV2(object):
       self.client = Client(BBV2_URL_ENDPOINT_PROD, BuildsServiceDescription)
 
   @retry_util.WithRetry(max_retry=3, sleep=0.2, exception=SSLError)
+  @retry_util.WithRetry(max_retry=3, sleep=0.2, exception=socket.error)
   def GetBuild(self, buildbucket_id, properties=None):
     """GetBuild call of a specific build with buildbucket_id.
 
@@ -371,6 +373,7 @@ class BuildbucketV2(object):
     return build_status
 
   @retry_util.WithRetry(max_retry=3, sleep=0.2, exception=SSLError)
+  @retry_util.WithRetry(max_retry=3, sleep=0.2, exception=socket.error)
   def SearchBuild(self, build_predicate, fields=None, page_size=100):
     """SearchBuild RPC call wrapping function.
 
