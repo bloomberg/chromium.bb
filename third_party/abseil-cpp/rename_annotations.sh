@@ -1,14 +1,15 @@
 #!/bin/bash
 
 # This script renames all the functions and the macros defined in
-# absl/base/dynamic_annotations.{h,cc}.
+# absl/base/dynamic_annotations.{h,cc} and absl/base/thread_annotations.h.
 #
 # Chromium's dynamic_annotations live in //base/third_party/dynamic_annotations
-# and the are in conflict with Abseil's dynamic_annotations (ODR violations and
-# macro clashing).
+# and its //base contains a copy of thread_annotations.h which conflict with
+# Abseil's versions (ODR violations and macro clashing).
 # In order to avoid problems in Chromium, this copy of Abseil has its own
-# dynamic_annotations renamed.
+# dynamic_annotations and thread_annotations renamed.
 
+# -------------------------- dynamic_annotations -------------------------
 for w in \
   AnnotateBarrierDestroy \
   AnnotateBarrierInit \
@@ -122,6 +123,43 @@ for w in \
   DYNAMIC_ANNOTATIONS_PREFIX \
   DYNAMIC_ANNOTATIONS_PROVIDE_RUNNING_ON_VALGRIND \
   DYNAMIC_ANNOTATIONS_WANT_ATTRIBUTE_WEAK \
+; do
+  find absl/ -type f -exec sed -i "s/\b$w\b/ABSL_$w/g" {} \;
+done
+
+# -------------------------- thread_annotations -------------------------
+
+for w in \
+  ts_unchecked_read \
+; do
+  find absl/ -type f -exec sed -i "s/\b$w\b/absl_$w/g" {} \;
+done
+
+for w in \
+  THREAD_ANNOTATION_ATTRIBUTE__ \
+  GUARDED_BY \
+  PT_GUARDED_BY \
+  ACQUIRED_AFTER \
+  ACQUIRED_BEFORE \
+  EXCLUSIVE_LOCKS_REQUIRED \
+  SHARED_LOCKS_REQUIRED \
+  LOCKS_EXCLUDED \
+  LOCK_RETURNED \
+  LOCKABLE \
+  SCOPED_LOCKABLE \
+  EXCLUSIVE_LOCK_FUNCTION \
+  SHARED_LOCK_FUNCTION \
+  UNLOCK_FUNCTION \
+  EXCLUSIVE_TRYLOCK_FUNCTION \
+  SHARED_TRYLOCK_FUNCTION \
+  ASSERT_EXCLUSIVE_LOCK \
+  ASSERT_SHARED_LOCK \
+  NO_THREAD_SAFETY_ANALYSIS \
+  TS_UNCHECKED \
+  TS_FIXME \
+  NO_THREAD_SAFETY_ANALYSIS_FIXME \
+  GUARDED_BY_FIXME \
+  TS_UNCHECKED_READ \
 ; do
   find absl/ -type f -exec sed -i "s/\b$w\b/ABSL_$w/g" {} \;
 done

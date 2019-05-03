@@ -425,10 +425,10 @@ TEST(Mutex, CondVarWaitSignalsAwait) {
   // Use a struct so the lock annotations apply.
   struct {
     absl::Mutex barrier_mu;
-    bool barrier GUARDED_BY(barrier_mu) = false;
+    bool barrier ABSL_GUARDED_BY(barrier_mu) = false;
 
     absl::Mutex release_mu;
-    bool release GUARDED_BY(release_mu) = false;
+    bool release ABSL_GUARDED_BY(release_mu) = false;
     absl::CondVar released_cv;
   } state;
 
@@ -466,10 +466,10 @@ TEST(Mutex, CondVarWaitWithTimeoutSignalsAwait) {
   // Use a struct so the lock annotations apply.
   struct {
     absl::Mutex barrier_mu;
-    bool barrier GUARDED_BY(barrier_mu) = false;
+    bool barrier ABSL_GUARDED_BY(barrier_mu) = false;
 
     absl::Mutex release_mu;
-    bool release GUARDED_BY(release_mu) = false;
+    bool release ABSL_GUARDED_BY(release_mu) = false;
     absl::CondVar released_cv;
   } state;
 
@@ -770,7 +770,7 @@ static void GetReadLock(ReaderDecrementBugStruct *x) {
 
 // Test for reader counter being decremented incorrectly by waiter
 // with false condition.
-TEST(Mutex, MutexReaderDecrementBug) NO_THREAD_SAFETY_ANALYSIS {
+TEST(Mutex, MutexReaderDecrementBug) ABSL_NO_THREAD_SAFETY_ANALYSIS {
   ReaderDecrementBugStruct x;
   x.cond = false;
   x.waiting_on_cond = false;
@@ -815,7 +815,7 @@ TEST(Mutex, MutexReaderDecrementBug) NO_THREAD_SAFETY_ANALYSIS {
 
 // Test that we correctly handle the situation when a lock is
 // held and then destroyed (w/o unlocking).
-TEST(Mutex, LockedMutexDestructionBug) NO_THREAD_SAFETY_ANALYSIS {
+TEST(Mutex, LockedMutexDestructionBug) ABSL_NO_THREAD_SAFETY_ANALYSIS {
   for (int i = 0; i != 10; i++) {
     // Create, lock and destroy 10 locks.
     const int kNumLocks = 10;
@@ -1087,11 +1087,11 @@ TEST(Mutex, DeadlockDetectorBazelWarning) {
   absl::SetMutexDeadlockDetectionMode(absl::OnDeadlockCycle::kAbort);
 }
 
-// This test is tagged with NO_THREAD_SAFETY_ANALYSIS because the
+// This test is tagged with ABSL_NO_THREAD_SAFETY_ANALYSIS because the
 // annotation-based static thread-safety analysis is not currently
 // predicate-aware and cannot tell if the two for-loops that acquire and
 // release the locks have the same predicates.
-TEST(Mutex, DeadlockDetectorStessTest) NO_THREAD_SAFETY_ANALYSIS {
+TEST(Mutex, DeadlockDetectorStessTest) ABSL_NO_THREAD_SAFETY_ANALYSIS {
   // Stress test: Here we create a large number of locks and use all of them.
   // If a deadlock detector keeps a full graph of lock acquisition order,
   // it will likely be too slow for this test to pass.
@@ -1109,7 +1109,7 @@ TEST(Mutex, DeadlockDetectorStessTest) NO_THREAD_SAFETY_ANALYSIS {
   }
 }
 
-TEST(Mutex, DeadlockIdBug) NO_THREAD_SAFETY_ANALYSIS {
+TEST(Mutex, DeadlockIdBug) ABSL_NO_THREAD_SAFETY_ANALYSIS {
   // Test a scenario where a cached deadlock graph node id in the
   // list of held locks is not invalidated when the corresponding
   // mutex is deleted.
