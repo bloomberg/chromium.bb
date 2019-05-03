@@ -104,6 +104,8 @@
       base::SysUTF16ToNSString(self.passwordInfoBarDelegate->GetButtonLabel(
           ConfirmInfoBarDelegate::BUTTON_CANCEL));
   self.modalViewController.URL = self.passwordInfoBarDelegate->GetURLHostText();
+  self.modalViewController.currentCredentialsSaved =
+      self.passwordInfoBarDelegate->IsCurrentPasswordSaved();
 }
 
 - (void)dismissBannerWhenInteractionIsFinished {

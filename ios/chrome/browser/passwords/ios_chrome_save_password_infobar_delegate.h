@@ -48,6 +48,10 @@ class IOSChromeSavePasswordInfoBarDelegate
   // created.
   bool IsPasswordUpdate() const;
 
+  // true if the current set of credentials has already been saved at the moment
+  // the InfobarModal is created.
+  bool IsCurrentPasswordSaved() const;
+
   // The title for the InfobarModal being presented.
   NSString* GetInfobarModalTitleText() const;
 
@@ -58,6 +62,10 @@ class IOSChromeSavePasswordInfoBarDelegate
   // true if password is being updated at the moment the InfobarModal is
   // created.
   bool password_update_ = false;
+
+  // true if the current set of credentials has already been saved at the moment
+  // the InfobarModal is created.
+  bool current_password_saved = false;
 
   DISALLOW_COPY_AND_ASSIGN(IOSChromeSavePasswordInfoBarDelegate);
 };

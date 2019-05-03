@@ -60,9 +60,7 @@ base::string16 IOSChromeSavePasswordInfoBarDelegate::GetMessageText() const {
 NSString* IOSChromeSavePasswordInfoBarDelegate::GetInfobarModalTitleText()
     const {
   DCHECK(IsInfobarUIRebootEnabled());
-  return l10n_util::GetNSString(
-      IsPasswordUpdate() ? IDS_IOS_PASSWORD_MANAGER_UPDATE_PASSWORD_TITLE
-                         : IDS_IOS_PASSWORD_MANAGER_SAVE_PASSWORD_TITLE);
+  return l10n_util::GetNSString(IDS_IOS_PASSWORD_MANAGER_SAVE_PASSWORD_TITLE);
 }
 
 base::string16 IOSChromeSavePasswordInfoBarDelegate::GetButtonLabel(
@@ -95,6 +93,7 @@ bool IOSChromeSavePasswordInfoBarDelegate::Accept() {
   form_to_save()->Save();
   set_infobar_response(password_manager::metrics_util::CLICKED_SAVE);
   password_update_ = true;
+  current_password_saved = true;
   return true;
 }
 
@@ -124,4 +123,9 @@ void IOSChromeSavePasswordInfoBarDelegate::UpdateCredentials(
 bool IOSChromeSavePasswordInfoBarDelegate::IsPasswordUpdate() const {
   DCHECK(IsInfobarUIRebootEnabled());
   return password_update_;
+}
+
+bool IOSChromeSavePasswordInfoBarDelegate::IsCurrentPasswordSaved() const {
+  DCHECK(IsInfobarUIRebootEnabled());
+  return current_password_saved;
 }

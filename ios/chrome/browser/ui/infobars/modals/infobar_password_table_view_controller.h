@@ -30,6 +30,8 @@
 @property(nonatomic, copy) NSString* saveButtonText;
 // The text used for the cancel button.
 @property(nonatomic, copy) NSString* cancelButtonText;
+// YES if the current set of credentials has already been saved.
+@property(nonatomic, assign) BOOL currentCredentialsSaved;
 
 @end
 

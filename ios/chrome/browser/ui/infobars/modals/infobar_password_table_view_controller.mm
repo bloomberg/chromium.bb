@@ -14,7 +14,7 @@
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
-#include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -47,6 +47,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // Item that holds the cancel Button for this Infobar. e.g. "Never Save for this
 // site".
 @property(nonatomic, strong) TableViewTextButtonItem* cancelInfobarItem;
+// Username at the time the InfobarModal is presented.
+@property(nonatomic, copy) NSString* originalUsername;
 @end
 
 @implementation InfobarPasswordTableViewController
@@ -102,12 +104,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
   URLItem.textFieldValue = self.URL;
   [model addItem:URLItem toSectionWithIdentifier:SectionIdentifierContent];
 
+  self.originalUsername = self.username;
   self.usernameItem =
       [[TableViewTextEditItem alloc] initWithType:ItemTypeUsername];
   self.usernameItem.textFieldName =
       l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_USERNAME);
   self.usernameItem.textFieldValue = self.username;
-  self.usernameItem.textFieldEnabled = YES;
+  self.usernameItem.textFieldEnabled = !self.currentCredentialsSaved;
   self.usernameItem.autoCapitalizationType = UITextAutocapitalizationTypeNone;
   [model addItem:self.usernameItem
       toSectionWithIdentifier:SectionIdentifierContent];
@@ -125,6 +128,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   self.saveCredentialsItem.textAlignment = NSTextAlignmentNatural;
   self.saveCredentialsItem.text = self.detailsTextMessage;
   self.saveCredentialsItem.buttonText = self.saveButtonText;
+  self.saveCredentialsItem.enabled = !self.currentCredentialsSaved;
   self.saveCredentialsItem.disableButtonIntrinsicWidth = YES;
   [model addItem:self.saveCredentialsItem
       toSectionWithIdentifier:SectionIdentifierContent];
@@ -192,6 +196,18 @@ typedef NS_ENUM(NSInteger, ItemType) {
   BOOL newButtonState = [self.passwordItem.textFieldValue length] ? YES : NO;
   if (currentButtonState != newButtonState) {
     self.saveCredentialsItem.enabled = newButtonState;
+    [self reconfigureCellsForItems:@[ self.saveCredentialsItem ]];
+  }
+
+  // TODO(crbug.com/945478):Ideally the InfobarDelegate should update the button
+  // text. Once we have a consumer protocol we should be able to create a
+  // delegate that asks the InfobarDelegate for the correct text.
+  NSString* buttonText =
+      [self.usernameItem.textFieldValue isEqualToString:self.originalUsername]
+          ? self.saveButtonText
+          : l10n_util::GetNSString(IDS_IOS_PASSWORD_MANAGER_SAVE_BUTTON);
+  if (![self.saveCredentialsItem.buttonText isEqualToString:buttonText]) {
+    self.saveCredentialsItem.buttonText = buttonText;
     [self reconfigureCellsForItems:@[ self.saveCredentialsItem ]];
   }
 }
