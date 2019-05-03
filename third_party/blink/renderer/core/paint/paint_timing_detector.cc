@@ -105,8 +105,6 @@ void PaintTimingDetector::NotifyImagePaint(
     return;
   if (!cached_image)
     return;
-  if (!object.HasNonZeroEffectiveOpacity())
-    return;
   PaintTimingDetector& detector = frame_view->GetPaintTimingDetector();
   if (detector.GetImagePaintTimingDetector()) {
     detector.GetImagePaintTimingDetector()->RecordImage(

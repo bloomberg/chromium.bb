@@ -228,6 +228,57 @@ TEST_F(ImagePaintTimingDetectorTest, LargestImagePaint_OpacityZero) {
   EXPECT_FALSE(record);
 }
 
+TEST_F(ImagePaintTimingDetectorTest, LargestImagePaint_VisibilityHidden) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    img {
+      visibility: hidden;
+    }
+    </style>
+    <img id="target"></img>
+  )HTML");
+  SetImageAndPaint("target", 5, 5);
+  UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
+  EXPECT_EQ(CountVisibleImageRecords(), 0u);
+  EXPECT_EQ(CountVisibleBackgroundImageRecords(), 0u);
+  ImageRecord* record = FindLargestPaintCandidate();
+  EXPECT_FALSE(record);
+}
+
+TEST_F(ImagePaintTimingDetectorTest, LargestImagePaint_DisplayNone) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    img {
+      display: none;
+    }
+    </style>
+    <img id="target"></img>
+  )HTML");
+  SetImageAndPaint("target", 5, 5);
+  UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
+  EXPECT_EQ(CountVisibleImageRecords(), 0u);
+  EXPECT_EQ(CountVisibleBackgroundImageRecords(), 0u);
+  ImageRecord* record = FindLargestPaintCandidate();
+  EXPECT_FALSE(record);
+}
+
+TEST_F(ImagePaintTimingDetectorTest, LargestImagePaint_OpacityNonZero) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    img {
+      opacity: 0.01;
+    }
+    </style>
+    <img id="target"></img>
+  )HTML");
+  SetImageAndPaint("target", 5, 5);
+  UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
+  EXPECT_EQ(CountVisibleImageRecords(), 1u);
+  EXPECT_EQ(CountVisibleBackgroundImageRecords(), 0u);
+  ImageRecord* record = FindLargestPaintCandidate();
+  EXPECT_TRUE(record);
+}
+
 TEST_F(ImagePaintTimingDetectorTest,
        IgnoreImageUntilInvalidatedRectSizeNonZero) {
   SetBodyInnerHTML(R"HTML(
