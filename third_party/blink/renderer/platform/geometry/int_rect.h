@@ -67,7 +67,8 @@ class PLATFORM_EXPORT IntRect {
 
   constexpr explicit IntRect(const gfx::Rect& r)
       : IntRect(r.x(), r.y(), r.width(), r.height()) {}
-  explicit IntRect(SkIRect& r) : IntRect(r.x(), r.y(), r.width(), r.height()) {}
+  explicit IntRect(const SkIRect& r)
+      : IntRect(r.x(), r.y(), r.width(), r.height()) {}
 
   constexpr IntPoint Location() const { return location_; }
   constexpr IntSize Size() const { return size_; }

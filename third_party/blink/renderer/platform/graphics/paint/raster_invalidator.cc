@@ -272,8 +272,7 @@ void RasterInvalidator::IncrementallyInvalidateChunk(
   SkRegion diff(old_chunk_info.bounds_in_layer);
   diff.op(new_chunk_info.bounds_in_layer, SkRegion::kXOR_Op);
   for (SkRegion::Iterator it(diff); !it.done(); it.next()) {
-    const SkIRect& r = it.rect();
-    AddRasterInvalidation(IntRect(r.x(), r.y(), r.width(), r.height()), client,
+    AddRasterInvalidation(IntRect(it.rect()), client,
                           PaintInvalidationReason::kIncremental, kClientIsNew);
   }
 }
