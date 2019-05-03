@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "remoting/protocol/input_event_tracker.h"
 #include "remoting/protocol/input_stub.h"
+#include "ui/events/event.h"
 
 namespace remoting {
 
@@ -24,10 +25,10 @@ class RemoteInputFilter : public protocol::InputStub {
   explicit RemoteInputFilter(protocol::InputEventTracker* event_tracker);
   ~RemoteInputFilter() override;
 
-  // Informs the filter that local mouse activity has been detected.  If the
-  // activity does not match events we injected then we assume that it is local,
-  // and block remote input for a short while.
-  void LocalMouseMoved(const webrtc::DesktopVector& mouse_pos);
+  // Informs the filter that local mouse or touch activity has been detected.
+  // If the activity does not match events we injected then we assume that it
+  // is local, and block remote input for a short while.
+  void LocalPointerMoved(const webrtc::DesktopVector& pos, ui::EventType type);
 
   // Informs the filter that injecting input causes an echo.
   void SetExpectLocalEcho(bool expect_local_echo);

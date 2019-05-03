@@ -436,9 +436,10 @@ void ClientSession::DisconnectSession(protocol::ErrorCode error) {
   connection_->Disconnect(error);
 }
 
-void ClientSession::OnLocalMouseMoved(const webrtc::DesktopVector& position) {
+void ClientSession::OnLocalPointerMoved(const webrtc::DesktopVector& position,
+                                        ui::EventType type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  remote_input_filter_.LocalMouseMoved(position);
+  remote_input_filter_.LocalPointerMoved(position, type);
 }
 
 void ClientSession::SetDisableInputs(bool disable_inputs) {

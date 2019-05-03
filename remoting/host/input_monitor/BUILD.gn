@@ -23,11 +23,11 @@ source_set("input_monitor") {
     "local_keyboard_input_monitor_mac.mm",
     "local_keyboard_input_monitor_win.cc",
     "local_keyboard_input_monitor_x11.cc",
-    "local_mouse_input_monitor.h",
-    "local_mouse_input_monitor_chromeos.cc",
     "local_mouse_input_monitor_mac.mm",
     "local_mouse_input_monitor_win.cc",
     "local_mouse_input_monitor_x11.cc",
+    "local_pointer_input_monitor.h",
+    "local_pointer_input_monitor_chromeos.cc",
   ]
 
   deps = [

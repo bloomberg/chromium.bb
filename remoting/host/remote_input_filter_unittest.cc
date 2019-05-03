@@ -12,6 +12,7 @@
 #include "remoting/protocol/test_event_matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/event.h"
 
 using ::testing::_;
 using ::testing::ExpectationSet;
@@ -80,11 +81,26 @@ TEST(RemoteInputFilterTest, MismatchedLocalActivity) {
   for (int i = 0; i < 10; ++i) {
     input_filter.InjectMouseEvent(MouseMoveEvent(0, 0));
     if (i == 4)
-      input_filter.LocalMouseMoved(webrtc::DesktopVector(1, 1));
+      input_filter.LocalPointerMoved(webrtc::DesktopVector(1, 1),
+                                     ui::ET_MOUSE_MOVED);
   }
 }
 
-// Verify that echos of injected events don't block activity.
+// Verify that touch events are not considered as echoes.
+TEST(RemoteInputFilterTest, TouchEventsAreNotCheckedForEcho) {
+  MockInputStub mock_stub;
+  InputEventTracker input_tracker(&mock_stub);
+  RemoteInputFilter input_filter(&input_tracker);
+
+  EXPECT_CALL(mock_stub, InjectMouseEvent(_));
+
+  input_filter.InjectMouseEvent(MouseMoveEvent(0, 0));
+  input_filter.LocalPointerMoved(webrtc::DesktopVector(0, 0),
+                                 ui::ET_TOUCH_MOVED);
+  input_filter.InjectMouseEvent(MouseMoveEvent(1, 1));
+}
+
+// Verify that echos of injected mouse events don't block activity.
 TEST(RemoteInputFilterTest, LocalEchoesOfRemoteActivity) {
   MockInputStub mock_stub;
   InputEventTracker input_tracker(&mock_stub);
@@ -94,7 +110,8 @@ TEST(RemoteInputFilterTest, LocalEchoesOfRemoteActivity) {
 
   for (int i = 0; i < 10; ++i) {
     input_filter.InjectMouseEvent(MouseMoveEvent(0, 0));
-    input_filter.LocalMouseMoved(webrtc::DesktopVector(0, 0));
+    input_filter.LocalPointerMoved(webrtc::DesktopVector(0, 0),
+                                   ui::ET_MOUSE_MOVED);
   }
 }
 
@@ -108,9 +125,11 @@ TEST(RemoteInputFilterTest, LocalEchosAndLocalActivity) {
 
   for (int i = 0; i < 10; ++i) {
     input_filter.InjectMouseEvent(MouseMoveEvent(0, 0));
-    input_filter.LocalMouseMoved(webrtc::DesktopVector(0, 0));
+    input_filter.LocalPointerMoved(webrtc::DesktopVector(0, 0),
+                                   ui::ET_MOUSE_MOVED);
     if (i == 4)
-      input_filter.LocalMouseMoved(webrtc::DesktopVector(1, 1));
+      input_filter.LocalPointerMoved(webrtc::DesktopVector(1, 1),
+                                     ui::ET_MOUSE_MOVED);
   }
 }
 
@@ -138,9 +157,11 @@ TEST(RemoteInputFilterTest, LocalActivityReleasesAll) {
 
   for (int i = 0; i < 10; ++i) {
     input_filter.InjectMouseEvent(MouseMoveEvent(0, 0));
-    input_filter.LocalMouseMoved(webrtc::DesktopVector(0, 0));
+    input_filter.LocalPointerMoved(webrtc::DesktopVector(0, 0),
+                                   ui::ET_MOUSE_MOVED);
     if (i == 4)
-      input_filter.LocalMouseMoved(webrtc::DesktopVector(1, 1));
+      input_filter.LocalPointerMoved(webrtc::DesktopVector(1, 1),
+                                     ui::ET_MOUSE_MOVED);
   }
 }
 

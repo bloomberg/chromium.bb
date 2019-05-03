@@ -32,15 +32,18 @@ RemoteInputFilter::RemoteInputFilter(protocol::InputEventTracker* event_tracker)
 
 RemoteInputFilter::~RemoteInputFilter() = default;
 
-void RemoteInputFilter::LocalMouseMoved(
-    const webrtc::DesktopVector& mouse_pos) {
+void RemoteInputFilter::LocalPointerMoved(const webrtc::DesktopVector& pos,
+                                          ui::EventType type) {
   // If this is a genuine local input event (rather than an echo of a remote
   // input event that we've just injected), then ignore remote inputs for a
   // short time.
-  if (expect_local_echo_) {
+  //
+  // Note that no platforms both inject and monitor for touch events, so echo
+  // suppression is only applied to mouse input.
+  if (expect_local_echo_ && type == ui::ET_MOUSE_MOVED) {
     auto found_position = injected_mouse_positions_.begin();
     while (found_position != injected_mouse_positions_.end() &&
-           !mouse_pos.equals(*found_position)) {
+           !pos.equals(*found_position)) {
       ++found_position;
     }
     if (found_position != injected_mouse_positions_.end()) {

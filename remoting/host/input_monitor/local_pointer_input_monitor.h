@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_INPUT_MONITOR_LOCAL_MOUSE_INPUT_MONITOR_H_
-#define REMOTING_HOST_INPUT_MONITOR_LOCAL_MOUSE_INPUT_MONITOR_H_
+#ifndef REMOTING_HOST_INPUT_MONITOR_LOCAL_POINTER_INPUT_MONITOR_H_
+#define REMOTING_HOST_INPUT_MONITOR_LOCAL_POINTER_INPUT_MONITOR_H_
 
 #include <memory>
 
@@ -19,24 +19,24 @@ class SingleThreadTaskRunner;
 namespace remoting {
 
 // Monitors the local input and sends a notification via the callback passed in
-// for every mouse move event received.
-class LocalMouseInputMonitor {
+// for every mouse or touch move event received.
+class LocalPointerInputMonitor {
  public:
-  virtual ~LocalMouseInputMonitor() = default;
+  virtual ~LocalPointerInputMonitor() = default;
 
-  // Creates a platform-specific instance of LocalMouseInputMonitor.
+  // Creates a platform-specific instance of LocalPointerInputMonitor.
   // Callbacks are called on the |caller_task_runner| thread.
-  // |on_mouse_move| is called for each mouse movement detected.
+  // |pointer_event_callback| is called for each pointer event detected.
   // |disconnect_callback| is called if monitoring cannot be started.
-  static std::unique_ptr<LocalMouseInputMonitor> Create(
+  static std::unique_ptr<LocalPointerInputMonitor> Create(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-      LocalInputMonitor::MouseMoveCallback mouse_move_callback,
+      LocalInputMonitor::PointerMoveCallback pointer_move_callback,
       base::OnceClosure disconnect_callback);
 
  protected:
-  LocalMouseInputMonitor() = default;
+  LocalPointerInputMonitor() = default;
 };
 
 }  // namespace remoting

@@ -27,6 +27,7 @@
 #include "remoting/host/input_monitor/local_input_monitor.h"
 #include "remoting/host/win/core_resource.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
+#include "ui/events/event.h"
 
 namespace remoting {
 
@@ -103,7 +104,8 @@ class DisconnectWindowWin : public HostWindow {
   void StopAutoHideBehavior();
 
   // Called when local mouse event is seen and shows the dialog (if hidden).
-  void OnLocalMouseEvent(const webrtc::DesktopVector& mouse_position);
+  void OnLocalMouseEvent(const webrtc::DesktopVector& mouse_position,
+                         ui::EventType type);
 
   // Called when local keyboard event is seen and shows the dialog (if hidden).
   void OnLocalKeyboardEvent();
@@ -385,7 +387,8 @@ void DisconnectWindowWin::StopAutoHideBehavior() {
 }
 
 void DisconnectWindowWin::OnLocalMouseEvent(
-    const webrtc::DesktopVector& position) {
+    const webrtc::DesktopVector& position,
+    ui::EventType type) {
   // Don't show the dialog if the position changes by ~1px in any direction.
   // This will prevent the dialog from being reshown due to small movements
   // caused by hardware/software issues which cause cursor drift or small

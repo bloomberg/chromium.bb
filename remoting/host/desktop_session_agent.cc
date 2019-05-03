@@ -276,11 +276,12 @@ void DesktopSessionAgent::DisconnectSession(protocol::ErrorCode error) {
       std::make_unique<ChromotingDesktopNetworkMsg_DisconnectSession>(error));
 }
 
-void DesktopSessionAgent::OnLocalMouseMoved(
-    const webrtc::DesktopVector& new_pos) {
+void DesktopSessionAgent::OnLocalPointerMoved(
+    const webrtc::DesktopVector& new_pos,
+    ui::EventType type) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  remote_input_filter_->LocalMouseMoved(new_pos);
+  remote_input_filter_->LocalPointerMoved(new_pos, type);
 }
 
 void DesktopSessionAgent::SetDisableInputs(bool disable_inputs) {

@@ -37,6 +37,7 @@
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
+#include "ui/events/event.h"
 
 namespace remoting {
 
@@ -450,14 +451,16 @@ TEST_F(ClientSessionTest, LocalInputTest) {
 
 #if !defined(OS_WIN)
   // The OS echoes the injected event back.
-  client_session_->OnLocalMouseMoved(webrtc::DesktopVector(100, 101));
+  client_session_->OnLocalPointerMoved(webrtc::DesktopVector(100, 101),
+                                       ui::ET_MOUSE_MOVED);
 #endif  // !defined(OS_WIN)
 
   // This one should get throught as well.
   connection_->input_stub()->InjectMouseEvent(MakeMouseMoveEvent(200, 201));
 
   // Now this is a genuine local event.
-  client_session_->OnLocalMouseMoved(webrtc::DesktopVector(100, 101));
+  client_session_->OnLocalPointerMoved(webrtc::DesktopVector(100, 101),
+                                       ui::ET_MOUSE_MOVED);
 
   // This one should be blocked because of the previous local input event.
   connection_->input_stub()->InjectMouseEvent(MakeMouseMoveEvent(300, 301));
