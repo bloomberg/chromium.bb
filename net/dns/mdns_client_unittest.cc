@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -12,10 +13,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/simple_test_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/timer/mock_timer.h"
+#include "base/timer/timer.h"
 #include "net/base/address_family.h"
 #include "net/base/completion_repeating_callback.h"
 #include "net/base/ip_address.h"
@@ -616,6 +619,36 @@ TEST_F(MDnsTest, CacheCleanupWithShortTTL) {
   EXPECT_CALL(*timer, StartObserver(_, base::TimeDelta()));
 
   timer->Fire();
+}
+
+TEST_F(MDnsTest, StopListening) {
+  ASSERT_TRUE(test_client_->IsListening());
+
+  test_client_->StopListening();
+  EXPECT_FALSE(test_client_->IsListening());
+}
+
+TEST_F(MDnsTest, StopListening_CacheCleanupScheduled) {
+  base::SimpleTestClock clock;
+  // Use a nonzero starting time as a base.
+  clock.SetNow(base::Time() + base::TimeDelta::FromSeconds(1));
+  auto cleanup_timer = std::make_unique<base::MockOneShotTimer>();
+  base::OneShotTimer* cleanup_timer_ptr = cleanup_timer.get();
+
+  test_client_ =
+      std::make_unique<MDnsClientImpl>(&clock, std::move(cleanup_timer));
+  ASSERT_THAT(test_client_->StartListening(&socket_factory_), test::IsOk());
+  ASSERT_TRUE(test_client_->IsListening());
+
+  // Receive one record (privet) with TTL=1s to schedule cleanup.
+  SimulatePacketReceive(kSamplePacket3, sizeof(kSamplePacket3));
+  ASSERT_TRUE(cleanup_timer_ptr->IsRunning());
+
+  test_client_->StopListening();
+  EXPECT_FALSE(test_client_->IsListening());
+
+  // Expect cleanup unscheduled.
+  EXPECT_FALSE(cleanup_timer_ptr->IsRunning());
 }
 
 TEST_F(MDnsTest, MalformedPacket) {

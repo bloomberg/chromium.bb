@@ -202,11 +202,17 @@ void MDnsConnection::OnDatagramReceived(
 MDnsClientImpl::Core::Core(base::Clock* clock, base::OneShotTimer* timer)
     : clock_(clock),
       cleanup_timer_(timer),
-      connection_(new MDnsConnection(this)) {}
+      connection_(new MDnsConnection(this)) {
+  DCHECK(cleanup_timer_);
+  DCHECK(!cleanup_timer_->IsRunning());
+}
 
-MDnsClientImpl::Core::~Core() = default;
+MDnsClientImpl::Core::~Core() {
+  cleanup_timer_->Stop();
+}
 
 int MDnsClientImpl::Core::Init(MDnsSocketFactory* socket_factory) {
+  CHECK(!cleanup_timer_->IsRunning());
   return connection_->Init(socket_factory);
 }
 
@@ -425,7 +431,9 @@ MDnsClientImpl::MDnsClientImpl(base::Clock* clock,
                                std::unique_ptr<base::OneShotTimer> timer)
     : clock_(clock), cleanup_timer_(std::move(timer)) {}
 
-MDnsClientImpl::~MDnsClientImpl() = default;
+MDnsClientImpl::~MDnsClientImpl() {
+  StopListening();
+}
 
 int MDnsClientImpl::StartListening(MDnsSocketFactory* socket_factory) {
   DCHECK(!core_.get());
