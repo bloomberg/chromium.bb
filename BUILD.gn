@@ -219,7 +219,7 @@ group("gn_all") {
       ":d8_fuchsia",
       "//build/fuchsia/fidlgen_js:fidlgen_js_unittests",
       "//fuchsia:gn_all",
-      "//headless",
+      "//headless:headless_non_renderer",
     ]
   }
 
@@ -747,7 +747,7 @@ group("gn_all") {
 
   if (is_linux && use_ozone) {
     deps += [
-      "//headless",
+      "//headless:headless_non_renderer",
       "//headless:headless_tests",
     ]
   }

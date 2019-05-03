@@ -66,6 +66,9 @@ const base::Feature kVirtualTime{"VirtualTime",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
 }
 
+const base::FilePath::CharType kDefaultProfileName[] =
+    FILE_PATH_LITERAL("Default");
+
 namespace {
 // Keep in sync with content/common/content_constants_internal.h.
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
@@ -86,10 +89,20 @@ const char kHeadlessCrashKey[] = "headless";
 
 HeadlessContentMainDelegate::HeadlessContentMainDelegate(
     std::unique_ptr<HeadlessBrowserImpl> browser)
-    : browser_(std::move(browser)),
-      headless_crash_key_(base::debug::AllocateCrashKeyString(
-          kHeadlessCrashKey,
-          base::debug::CrashKeySize::Size32)) {
+    : browser_(std::move(browser)) {
+  Init();
+}
+
+HeadlessContentMainDelegate::HeadlessContentMainDelegate(
+    HeadlessBrowser::Options options)
+    : options_(std::make_unique<HeadlessBrowser::Options>(std::move(options))) {
+  Init();
+}
+
+void HeadlessContentMainDelegate::Init() {
+  headless_crash_key_ = base::debug::AllocateCrashKeyString(
+      kHeadlessCrashKey, base::debug::CrashKeySize::Size32);
+
   DCHECK(!g_current_headless_content_main_delegate);
   g_current_headless_content_main_delegate = this;
 
@@ -109,13 +122,13 @@ bool HeadlessContentMainDelegate::BasicStartupComplete(int* exit_code) {
   if (!command_line->HasSwitch(::switches::kHeadless))
     command_line->AppendSwitch(::switches::kHeadless);
 
-  if (browser_->options()->single_process_mode)
+  if (options()->single_process_mode)
     command_line->AppendSwitch(::switches::kSingleProcess);
 
-  if (browser_->options()->disable_sandbox)
+  if (options()->disable_sandbox)
     command_line->AppendSwitch(service_manager::switches::kNoSandbox);
 
-  if (!browser_->options()->enable_resource_scheduler)
+  if (!options()->enable_resource_scheduler)
     command_line->AppendSwitch(::switches::kDisableResourceScheduler);
 
 #if defined(USE_OZONE)
@@ -134,9 +147,9 @@ bool HeadlessContentMainDelegate::BasicStartupComplete(int* exit_code) {
       command_line->AppendSwitch(::switches::kDisableGpuCompositing);
     }
   } else {
-    if (!browser_->options()->gl_implementation.empty()) {
+    if (!options()->gl_implementation.empty()) {
       command_line->AppendSwitchASCII(::switches::kUseGL,
-                                      browser_->options()->gl_implementation);
+                                      options()->gl_implementation);
     } else {
       command_line->AppendSwitch(::switches::kDisableGpu);
     }
@@ -195,8 +208,8 @@ void HeadlessContentMainDelegate::InitLogging(
 
 // In release builds we should log into the user profile directory.
 #ifdef NDEBUG
-  if (!browser_->options()->user_data_dir.empty()) {
-    log_path = browser_->options()->user_data_dir;
+  if (!options()->user_data_dir.empty()) {
+    log_path = options()->user_data_dir;
     log_path = log_path.Append(kDefaultProfileName);
     base::CreateDirectory(log_path);
     log_path = log_path.Append(log_filename);
@@ -241,12 +254,12 @@ void HeadlessContentMainDelegate::InitCrashReporter(
       command_line.GetSwitchValueASCII(::switches::kProcessType);
   crash_reporter::SetCrashReporterClient(g_headless_crash_client.Pointer());
   g_headless_crash_client.Pointer()->set_crash_dumps_dir(
-      browser_->options()->crash_dumps_dir);
+      options()->crash_dumps_dir);
 
   crash_reporter::InitializeCrashKeys();
 
 #if defined(HEADLESS_USE_BREAKPAD)
-  if (!browser_->options()->enable_crash_reporter) {
+  if (!options()->enable_crash_reporter) {
     DCHECK(!breakpad::IsCrashReporterEnabled());
     return;
   }
@@ -353,6 +366,12 @@ HeadlessContentMainDelegate* HeadlessContentMainDelegate::GetInstance() {
   return g_current_headless_content_main_delegate;
 }
 
+HeadlessBrowser::Options* HeadlessContentMainDelegate::options() {
+  if (browser_)
+    return browser_->options();
+  return options_.get();
+}
+
 // static
 void HeadlessContentMainDelegate::InitializeResourceBundle() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -433,8 +452,8 @@ HeadlessContentMainDelegate::CreateContentRendererClient() {
 
 content::ContentUtilityClient*
 HeadlessContentMainDelegate::CreateContentUtilityClient() {
-  utility_client_ = std::make_unique<HeadlessContentUtilityClient>(
-      browser_->options()->user_agent);
+  utility_client_ =
+      std::make_unique<HeadlessContentUtilityClient>(options()->user_agent);
   return utility_client_.get();
 }
 #endif  // !defined(CHROME_MULTIPLE_DLL_BROWSER)
