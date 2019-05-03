@@ -5,6 +5,7 @@
 <resources>
     <dimen name="touchless_new_tab_view_top_margin">12dp</dimen>
     <dimen name="touchless_new_tab_view_padding_horizontal">8dp</dimen>
+    <dimen name="touchless_new_tab_recycler_view_over_scroll">24dp</dimen>
 
     <dimen name="notouch_tooltip_padding">8dp</dimen>
     <dimen name="notouch_tooltip_margin_bottom">16dp</dimen>
@@ -36,7 +37,6 @@
     <!-- 6dp chosen so that the icon is large in the inner 3 positions and small in
          the outer two positions. -->
     <dimen name="most_likely_quantized_icon_margin">6dp</dimen>
-
 
     <!-- Article specific dimensions. -->
     <dimen name="touchless_snippets_padding">12dp</dimen>

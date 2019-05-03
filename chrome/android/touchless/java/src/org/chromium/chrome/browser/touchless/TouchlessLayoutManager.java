@@ -5,11 +5,13 @@
 package org.chromium.chrome.browser.touchless;
 
 import android.content.Context;
+import android.graphics.Rect;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
 import org.chromium.base.Callback;
+import org.chromium.chrome.touchless.R;
 
 /**
  * Normally views can simply call {@link View#requestFocus()}. However, this turns out to be
@@ -59,7 +61,24 @@ public class TouchlessLayoutManager extends LinearLayoutManager {
     }
 
     @Override
-    public void scrollToPositionWithOffset(int index, int offset) {
-        super.scrollToPositionWithOffset(index, offset);
+    public boolean requestChildRectangleOnScreen(RecyclerView parent, View child, Rect rect,
+            boolean immediate, boolean focusedChildVisible) {
+        int overScroll = parent.getResources().getDimensionPixelSize(
+                R.dimen.touchless_new_tab_recycler_view_over_scroll);
+        // The origin for top/bottom is the top edge of view. Subtract overScroll to scroll higher,
+        // add to scroll lower. Min/max with the edges of the rect to ensure the entire direct child
+        // is focused. This is especially important for the above the fold view, we want the entire
+        // section to be visible when any element inside it is focused.
+        int newTop = Math.min(0, rect.top) - overScroll;
+        int newBottom = Math.max(child.getHeight(), rect.bottom) + overScroll;
+        Rect withPadding = new Rect(rect.left, newTop, rect.right, newBottom);
+        return super.requestChildRectangleOnScreen(
+                parent, child, withPadding, immediate, focusedChildVisible);
+    }
+
+    @Override
+    public boolean requestChildRectangleOnScreen(
+            RecyclerView parent, View child, Rect rect, boolean immediate) {
+        return requestChildRectangleOnScreen(parent, child, rect, immediate, false);
     }
 }
