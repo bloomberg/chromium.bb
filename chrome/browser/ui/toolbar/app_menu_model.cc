@@ -82,6 +82,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chromeos/constants/chromeos_switches.h"
 #endif
 
@@ -785,8 +786,21 @@ void AppMenuModel::Build() {
   }
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableDomDistiller))
+          switches::kEnableDomDistiller)) {
     AddItemWithStringId(IDC_DISTILL_PAGE, IDS_DISTILL_PAGE);
+  }
+
+#if defined(OS_CHROMEOS)
+  // Always show this option if we're in tablet mode on Chrome OS.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableRequestTabletSite) ||
+      (TabletModeClient::Get() &&
+       TabletModeClient::Get()->tablet_mode_enabled())) {
+    AddCheckItemWithStringId(IDC_TOGGLE_REQUEST_TABLET_SITE,
+                             IDS_TOGGLE_REQUEST_TABLET_SITE);
+  }
+#endif
+
   tools_menu_model_.reset(new ToolsMenuModel(this, browser_));
   AddSubMenuWithStringId(
       IDC_MORE_TOOLS_MENU, IDS_MORE_TOOLS_MENU, tools_menu_model_.get());
@@ -804,12 +818,6 @@ void AppMenuModel::Build() {
                          help_menu_model_.get());
 #else
   AddItem(IDC_ABOUT, l10n_util::GetStringUTF16(IDS_ABOUT));
-#endif
-#if defined(OS_CHROMEOS)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableRequestTabletSite))
-    AddCheckItemWithStringId(IDC_TOGGLE_REQUEST_TABLET_SITE,
-                             IDS_TOGGLE_REQUEST_TABLET_SITE);
 #endif
 
   if (browser_defaults::kShowExitMenuItem) {
