@@ -24,6 +24,7 @@
 #include "chromeos/dbus/system_clock/system_clock_client.h"
 #include "chromeos/system/factory_ping_embargo_check.h"
 #include "chromeos/system/statistics_provider.h"
+#include "components/device_event_log/device_event_log.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -125,6 +126,25 @@ std::string FRERequirementToString(
 
   NOTREACHED();
   return std::string();
+}
+
+std::string AutoenrollmentStateToString(policy::AutoEnrollmentState state) {
+  switch (state) {
+    case policy::AutoEnrollmentState::AUTO_ENROLLMENT_STATE_IDLE:
+      return "Not started";
+    case policy::AutoEnrollmentState::AUTO_ENROLLMENT_STATE_PENDING:
+      return "Pending";
+    case policy::AutoEnrollmentState::AUTO_ENROLLMENT_STATE_CONNECTION_ERROR:
+      return "Connection error";
+    case policy::AutoEnrollmentState::AUTO_ENROLLMENT_STATE_SERVER_ERROR:
+      return "Server error";
+    case policy::AutoEnrollmentState::AUTO_ENROLLMENT_STATE_TRIGGER_ENROLLMENT:
+      return "Trigger enrollment";
+    case policy::AutoEnrollmentState::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT:
+      return "No enrollment";
+    case policy::AutoEnrollmentState::AUTO_ENROLLMENT_STATE_TRIGGER_ZERO_TOUCH:
+      return "Zero-touch enrollment";
+  }
 }
 
 // Returns true if this is an official build and the device has Chrome firmware.
@@ -535,7 +555,7 @@ AutoEnrollmentController::GetInitialEnrollmentRequirement() {
 void AutoEnrollmentController::DetermineAutoEnrollmentCheckType() {
   // Skip everything if neither FRE nor Initial Enrollment are enabled.
   if (!IsEnabled()) {
-    VLOG(1) << "Auto-enrollment disabled";
+    LOGIN_LOG(EVENT) << "Auto-enrollment disabled";
     auto_enrollment_check_type_ = AutoEnrollmentCheckType::kNone;
     return;
   }
@@ -543,29 +563,29 @@ void AutoEnrollmentController::DetermineAutoEnrollmentCheckType() {
   // Skip everything if GAIA is disabled.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDisableGaiaServices)) {
-    VLOG(1) << "Auto-enrollment disabled: command line (gaia).";
+    LOGIN_LOG(EVENT) << "Auto-enrollment disabled: command line (gaia).";
     auto_enrollment_check_type_ = AutoEnrollmentCheckType::kNone;
     return;
   }
 
   // Skip everything if the device was in consumer mode previously.
   fre_requirement_ = GetFRERequirement();
-  VLOG(1) << FRERequirementToString(fre_requirement_);
+  LOGIN_LOG(EVENT) << FRERequirementToString(fre_requirement_);
   if (fre_requirement_ == FRERequirement::kExplicitlyNotRequired) {
-    VLOG(1) << "Auto-enrollment disabled: VPD";
+    LOGIN_LOG(EVENT) << "Auto-enrollment disabled: VPD";
     auto_enrollment_check_type_ = AutoEnrollmentCheckType::kNone;
     return;
   }
 
   if (ShouldDoFRECheck(command_line, fre_requirement_)) {
     // FRE has precedence over Initial Enrollment.
-    VLOG(1) << "Proceeding with FRE check";
+    LOGIN_LOG(EVENT) << "Proceeding with FRE check";
     auto_enrollment_check_type_ = AutoEnrollmentCheckType::kFRE;
     return;
   }
 
   if (ShouldDoInitialEnrollmentCheck()) {
-    VLOG(1) << "Proceeding with Initial Enrollment check";
+    LOGIN_LOG(EVENT) << "Proceeding with Initial Enrollment check";
     auto_enrollment_check_type_ = AutoEnrollmentCheckType::kInitialEnrollment;
     return;
   }
@@ -580,13 +600,13 @@ bool AutoEnrollmentController::ShouldDoFRECheck(
   // Skip FRE check if modulus configuration is not present.
   if (!command_line->HasSwitch(switches::kEnterpriseEnrollmentInitialModulus) &&
       !command_line->HasSwitch(switches::kEnterpriseEnrollmentModulusLimit)) {
-    VLOG(1) << "FRE disabled: command line (config)";
+    LOGIN_LOG(EVENT) << "FRE disabled: command line (config)";
     return false;
   }
 
   // Skip FRE check if it is not enabled by command-line switches.
   if (!IsFREEnabled()) {
-    VLOG(1) << "FRE disabled";
+    LOGIN_LOG(EVENT) << "FRE disabled";
     return false;
   }
 
@@ -639,7 +659,8 @@ void AutoEnrollmentController::OnOwnershipStatusCheckDone(
       }
       return;
     case DeviceSettingsService::OWNERSHIP_TAKEN:
-      VLOG(1) << "Device already owned, skipping auto-enrollment check.";
+      LOGIN_LOG(EVENT)
+          << "Device already owned, skipping auto-enrollment check.";
       UpdateState(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT);
       return;
     case DeviceSettingsService::OWNERSHIP_UNKNOWN:
@@ -689,7 +710,7 @@ void AutoEnrollmentController::StartClientForFRE(
           ->GetSharedURLLoaderFactory(),
       state_keys.front(), power_initial, power_limit);
 
-  VLOG(1) << "Starting auto-enrollment client for FRE.";
+  LOGIN_LOG(EVENT) << "Starting auto-enrollment client for FRE.";
   client_->Start();
 }
 
@@ -730,13 +751,14 @@ void AutoEnrollmentController::StartClientForInitialEnrollment() {
       serial_number, rlz_brand_code, power_initial, power_limit,
       kInitialEnrollmentModulusPowerOutdatedServer);
 
-  VLOG(1) << "Starting auto-enrollment client for Initial Enrollment.";
+  LOGIN_LOG(EVENT) << "Starting auto-enrollment client for Initial Enrollment.";
   client_->Start();
 }
 
 void AutoEnrollmentController::UpdateState(
     policy::AutoEnrollmentState new_state) {
-  VLOG(1) << "New auto-enrollment state: " << new_state;
+  LOGIN_LOG(EVENT) << "New auto-enrollment state: "
+                   << AutoenrollmentStateToString(new_state);
   state_ = new_state;
 
   // Stop the safeguard timer once a result comes in.
