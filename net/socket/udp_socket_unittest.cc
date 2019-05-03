@@ -316,7 +316,7 @@ TEST_F(UDPSocketTest, PartialRecv) {
 // - Android: devices attached to testbots don't have default network, so
 // broadcasting to 255.255.255.255 returns error -109 (Address not reachable).
 // crbug.com/139144.
-// - Fuchsia: TODO(fuchsia): broadcast support is not implemented yet.
+// - Fuchsia: TODO(crbug.com/959314): broadcast support is not implemented yet.
 #define MAYBE_LocalBroadcast DISABLED_LocalBroadcast
 #else
 #define MAYBE_LocalBroadcast LocalBroadcast
@@ -410,14 +410,7 @@ TEST_F(UDPSocketTest, ConnectRandomBind) {
   }
 }
 
-#if defined(OS_FUCHSIA)
-// Currently the test fails on Fuchsia because netstack allows to connect IPv4
-// socket to IPv6 address. This issue is tracked by NET-596.
-#define MAYBE_ConnectFail DISABLED_ConnectFail
-#else
-#define MAYBE_ConnectFail ConnectFail
-#endif
-TEST_F(UDPSocketTest, MAYBE_ConnectFail) {
+TEST_F(UDPSocketTest, ConnectFail) {
   UDPSocket socket(DatagramSocket::DEFAULT_BIND, nullptr, NetLogSource());
 
   EXPECT_THAT(socket.Open(ADDRESS_FAMILY_IPV4), IsOk());
@@ -566,13 +559,7 @@ TEST_F(UDPSocketTest, ServerGetPeerAddress) {
   EXPECT_EQ(rv, ERR_SOCKET_NOT_CONNECTED);
 }
 
-#if defined(OS_FUCHSIA)
-// TODO(crbug.com/945590): Re-enable after the breaking SDK change has landed.
-#define MAYBE_ClientSetDoNotFragment DISABLED_ClientSetDoNotFragment
-#else
-#define MAYBE_ClientSetDoNotFragment ClientSetDoNotFragment
-#endif
-TEST_F(UDPSocketTest, MAYBE_ClientSetDoNotFragment) {
+TEST_F(UDPSocketTest, ClientSetDoNotFragment) {
   for (std::string ip : {"127.0.0.1", "::1"}) {
     UDPClientSocket client(DatagramSocket::DEFAULT_BIND, nullptr,
                            NetLogSource());
@@ -595,13 +582,7 @@ TEST_F(UDPSocketTest, MAYBE_ClientSetDoNotFragment) {
   }
 }
 
-#if defined(OS_FUCHSIA)
-// TODO(crbug.com/945590): Re-enable after the breaking SDK change has landed.
-#define MAYBE_ServerSetDoNotFragment DISABLED_ServerSetDoNotFragment
-#else
-#define MAYBE_ServerSetDoNotFragment ServerSetDoNotFragment
-#endif
-TEST_F(UDPSocketTest, MAYBE_ServerSetDoNotFragment) {
+TEST_F(UDPSocketTest, ServerSetDoNotFragment) {
   for (std::string ip : {"127.0.0.1", "::1"}) {
     IPEndPoint bind_address;
     ASSERT_TRUE(CreateUDPAddress(ip, 0, &bind_address));
@@ -657,17 +638,6 @@ TEST_F(UDPSocketTest, JoinMulticastGroup) {
 
   UDPSocket socket(DatagramSocket::DEFAULT_BIND, nullptr, NetLogSource());
   EXPECT_THAT(socket.Open(bind_address.GetFamily()), IsOk());
-
-#if defined(OS_FUCHSIA)
-  // Fuchsia currently doesn't support automatic interface selection for
-  // multicast, so interface index needs to be set explicitly.
-  // See https://fuchsia.atlassian.net/browse/NET-195 .
-  NetworkInterfaceList interfaces;
-  ASSERT_TRUE(GetNetworkList(&interfaces, 0));
-  ASSERT_FALSE(interfaces.empty());
-  EXPECT_THAT(socket.SetMulticastInterface(interfaces[0].interface_index),
-              IsOk());
-#endif  // defined(OS_FUCHSIA)
 
   EXPECT_THAT(socket.Bind(bind_address), IsOk());
   EXPECT_THAT(socket.JoinGroup(group_ip), IsOk());
