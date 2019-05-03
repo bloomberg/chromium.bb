@@ -194,15 +194,10 @@ bool RTCIceTransport::HasConsumer() const {
   return consumer_;
 }
 
-bool RTCIceTransport::IsFromPeerConnection() const {
-  return peer_connection_;
-}
-
 IceTransportProxy* RTCIceTransport::ConnectConsumer(
     RTCQuicTransport* consumer) {
   DCHECK(consumer);
   DCHECK(proxy_);
-  DCHECK(!peer_connection_);
   if (!consumer_) {
     consumer_ = consumer;
   } else {
