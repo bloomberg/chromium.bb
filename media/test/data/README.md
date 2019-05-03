@@ -750,25 +750,8 @@ The frame sizes change between 1080p and 720p every 24 frames.
 
 ### VEA test files:
 
-#### bear_128x96_40frames.yuv
-First 40 raw i420 frames of bear-1280x720.mp4 scaled down to 128x96 for
-video_encode_accelerator_unittest. This is the size that could be encoded
-with the lowest H264 level 1.0 in 30 fps.
-
 #### bear_320x192_40frames.yuv
 First 40 raw i420 frames of bear-1280x720.mp4 scaled down to 320x192 for
-video_encode_accelerator_unittest.
-
-#### bear_320x192_40frames.nv12.yuv
-First 40 raw nv12 frames of bear-1280x720.mp4 scaled down to 320x192 for
-video_encode_accelerator_unittest.
-
-#### bear_320x192_40frames.nv21.yuv
-First 40 raw nv21 frames of bear-1280x720.mp4 scaled down to 320x192 for
-video_encode_accelerator_unittest.
-
-#### bear_320x192_40frames.yv12.yuv
-First 40 raw yv12 frames of bear-1280x720.mp4 scaled down to 320x192 for
 video_encode_accelerator_unittest.
 
 ### ImageProcessor Test Files
