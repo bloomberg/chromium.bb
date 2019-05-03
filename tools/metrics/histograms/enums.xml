@@ -24447,6 +24447,79 @@ Called by update_net_error_codes.py.-->
   <int value="642" label="NSFileWriteVolumeReadOnlyError"/>
 </enum>
 
+<enum name="FoundationPopularErrorCode">
+  <int value="-3007" label="NSURLErrorDownloadDecodingFailedToComplete"/>
+  <int value="-3006" label="NSURLErrorDownloadDecodingFailedMidStream"/>
+  <int value="-3005" label="NSURLErrorCannotMoveFile"/>
+  <int value="-3004" label="NSURLErrorCannotRemoveFile"/>
+  <int value="-3003" label="NSURLErrorCannotWriteToFile"/>
+  <int value="-3002" label="NSURLErrorCannotCloseFile"/>
+  <int value="-3001" label="NSURLErrorCannotOpenFile"/>
+  <int value="-3000" label="NSURLErrorCannotCreateFile"/>
+  <int value="-2000" label="NSURLErrorCannotLoadFromNetwork"/>
+  <int value="-1206" label="NSURLErrorClientCertificateRequired"/>
+  <int value="-1205" label="NSURLErrorClientCertificateRejected"/>
+  <int value="-1204" label="NSURLErrorServerCertificateNotYetValid"/>
+  <int value="-1203" label="NSURLErrorServerCertificateHasUnknownRoot"/>
+  <int value="-1202" label="NSURLErrorServerCertificateUntrusted"/>
+  <int value="-1201" label="NSURLErrorServerCertificateHasBadDate"/>
+  <int value="-1200" label="NSURLErrorSecureConnectionFailed"/>
+  <int value="-1104" label="NSURLErrorFileOutsideSafeArea"/>
+  <int value="-1103" label="NSURLErrorDataLengthExceedsMaximum"/>
+  <int value="-1102" label="NSURLErrorNoPermissionsToReadFile"/>
+  <int value="-1101" label="NSURLErrorFileIsDirectory"/>
+  <int value="-1100" label="NSURLErrorFileDoesNotExist"/>
+  <int value="-1022"
+      label="NSURLErrorAppTransportSecurityRequiresSecureConnection"/>
+  <int value="-1021" label="NSURLErrorRequestBodyStreamExhausted"/>
+  <int value="-1020" label="NSURLErrorDataNotAllowed"/>
+  <int value="-1019" label="NSURLErrorCallIsActive"/>
+  <int value="-1018" label="NSURLErrorInternationalRoamingOff"/>
+  <int value="-1017" label="NSURLErrorCannotParseResponse"/>
+  <int value="-1016" label="NSURLErrorCannotDecodeContentData"/>
+  <int value="-1015" label="NSURLErrorCannotDecodeRawData"/>
+  <int value="-1014" label="NSURLErrorZeroByteResource"/>
+  <int value="-1013" label="NSURLErrorUserAuthenticationRequired"/>
+  <int value="-1012" label="NSURLErrorUserCancelledAuthentication"/>
+  <int value="-1011" label="NSURLErrorBadServerResponse"/>
+  <int value="-1010" label="NSURLErrorRedirectToNonExistentLocation"/>
+  <int value="-1009" label="NSURLErrorNotConnectedToInternet"/>
+  <int value="-1008" label="NSURLErrorResourceUnavailable"/>
+  <int value="-1007" label="NSURLErrorHTTPTooManyRedirects"/>
+  <int value="-1006" label="NSURLErrorDNSLookupFailed"/>
+  <int value="-1005" label="NSURLErrorNetworkConnectionLost"/>
+  <int value="-1004" label="NSURLErrorCannotConnectToHost"/>
+  <int value="-1003" label="NSURLErrorCannotFindHost"/>
+  <int value="-1002" label="NSURLErrorUnsupportedURL"/>
+  <int value="-1001" label="NSURLErrorTimedOut"/>
+  <int value="-1000" label="NSURLErrorBadURL"/>
+  <int value="-999" label="NSURLErrorCancelled"/>
+  <int value="-997" label="NSURLErrorBackgroundSessionWasDisconnected"/>
+  <int value="-996" label="NSURLErrorBackgroundSessionInUseByAnotherProcess"/>
+  <int value="-995" label="NSURLErrorBackgroundSessionRequiresSharedContainer"/>
+  <int value="-1" label="NSURLErrorUnknown"/>
+  <int value="0" label="NSNoError"/>
+  <int value="4" label="NSFileNoSuchFileError"/>
+  <int value="255" label="NSFileLockingError"/>
+  <int value="256" label="NSFileReadUnknownError"/>
+  <int value="257" label="NSFileReadNoPermissionError"/>
+  <int value="258" label="NSFileReadInvalidFileNameError"/>
+  <int value="259" label="NSFileReadCorruptFileError"/>
+  <int value="260" label="NSFileReadNoSuchFileError"/>
+  <int value="261" label="NSFileReadInapplicableStringEncodingError"/>
+  <int value="262" label="NSFileReadUnsupportedSchemeError"/>
+  <int value="263" label="NSFileReadTooLargeError"/>
+  <int value="264" label="NSFileReadUnknownStringEncodingError"/>
+  <int value="512" label="NSFileWriteUnknownError"/>
+  <int value="513" label="NSFileWriteNoPermissionError"/>
+  <int value="514" label="NSFileWriteInvalidFileNameError"/>
+  <int value="516" label="NSFileWriteFileExistsError"/>
+  <int value="517" label="NSFileWriteInapplicableStringEncodingError"/>
+  <int value="518" label="NSFileWriteUnsupportedSchemeError"/>
+  <int value="640" label="NSFileWriteOutOfSpaceError"/>
+  <int value="642" label="NSFileWriteVolumeReadOnlyError"/>
+</enum>
+
 <enum name="FramebustInterventionOutcome">
   <int value="0" label="Accepted"/>
   <int value="1" label="Declined and navigated"/>

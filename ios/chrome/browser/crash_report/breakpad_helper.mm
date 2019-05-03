@@ -15,6 +15,7 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
@@ -112,6 +113,11 @@ bool FatalMessageHandler(int severity,
   return false;
 }
 
+// Called after Breakpad finishes uploading each report.
+void UploadResultHandler(NSString* report_id, NSError* error) {
+  base::UmaHistogramSparse("CrashReport.BreakpadIOSUploadOutcome", error.code);
+}
+
 }  // namespace
 
 void Start(const std::string& channel_name) {
@@ -153,6 +159,13 @@ void SetEnabled(bool enabled) {
 void SetBreakpadUploadingEnabled(bool enabled) {
   if (!g_crash_reporter_enabled)
     return;
+  if (enabled) {
+    static dispatch_once_t once_token;
+    dispatch_once(&once_token, ^{
+      [[BreakpadController sharedInstance]
+          setUploadCallback:UploadResultHandler];
+    });
+  }
   [[BreakpadController sharedInstance] setUploadingEnabled:enabled];
 }
 
