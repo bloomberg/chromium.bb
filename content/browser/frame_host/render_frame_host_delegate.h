@@ -251,9 +251,6 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // Gets the GeolocationContext associated with this delegate.
   virtual device::mojom::GeolocationContext* GetGeolocationContext();
 
-  // Gets the WakeLock that serves wake lock requests from the renderer.
-  virtual device::mojom::WakeLock* GetRendererWakeLock();
-
 #if defined(OS_ANDROID)
   // Gets an NFC implementation within the context of this delegate.
   virtual void GetNFC(device::mojom::NFCRequest request);

@@ -3209,23 +3209,6 @@ device::mojom::WakeLockContext* WebContentsImpl::GetWakeLockContext() {
   return wake_lock_context_host_->GetWakeLockContext();
 }
 
-device::mojom::WakeLock* WebContentsImpl::GetRendererWakeLock() {
-  // WebContents creates a long-lived connection to one WakeLock.
-  // All the frames' requests will be added into the BindingSet of
-  // WakeLock via this connection.
-  if (!renderer_wake_lock_) {
-    device::mojom::WakeLockContext* wake_lock_context = GetWakeLockContext();
-    if (!wake_lock_context) {
-      return nullptr;
-    }
-    wake_lock_context->GetWakeLock(
-        device::mojom::WakeLockType::kPreventDisplaySleep,
-        device::mojom::WakeLockReason::kOther, "Wake Lock API",
-        mojo::MakeRequest(&renderer_wake_lock_));
-  }
-  return renderer_wake_lock_.get();
-}
-
 #if defined(OS_ANDROID)
 void WebContentsImpl::GetNFC(device::mojom::NFCRequest request) {
   if (!nfc_host_)

@@ -95,10 +95,6 @@ RenderFrameHostDelegate::GetGeolocationContext() {
   return nullptr;
 }
 
-device::mojom::WakeLock* RenderFrameHostDelegate::GetRendererWakeLock() {
-  return nullptr;
-}
-
 #if defined(OS_ANDROID)
 void RenderFrameHostDelegate::GetNFC(device::mojom::NFCRequest request) {}
 #endif

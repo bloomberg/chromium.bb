@@ -4004,9 +4004,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
     }
   }
 
-  registry_->AddInterface<device::mojom::WakeLock>(base::Bind(
-      &RenderFrameHostImpl::BindWakeLockRequest, base::Unretained(this)));
-
 #if defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(features::kWebNfc)) {
     registry_->AddInterface<device::mojom::NFC>(base::Bind(
@@ -5779,14 +5776,6 @@ void RenderFrameHostImpl::CreateDedicatedWorkerHostFactory(
 void RenderFrameHostImpl::OnMediaInterfaceFactoryConnectionError() {
   DCHECK(media_interface_proxy_);
   media_interface_proxy_.reset();
-}
-
-void RenderFrameHostImpl::BindWakeLockRequest(
-    device::mojom::WakeLockRequest request) {
-  device::mojom::WakeLock* renderer_wake_lock =
-      delegate_ ? delegate_->GetRendererWakeLock() : nullptr;
-  if (renderer_wake_lock)
-    renderer_wake_lock->AddClient(std::move(request));
 }
 
 #if defined(OS_ANDROID)

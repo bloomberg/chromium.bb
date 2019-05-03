@@ -245,7 +245,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "device.mojom.SensorProvider",
                   "device.mojom.VibrationManager",
                   "device.mojom.VRService",
-                  "device.mojom.WakeLock",
                   "discardable_memory.mojom.DiscardableSharedMemoryManager",
                   "media.mojom.ImageCapture",
                   "media.mojom.InterfaceFactory",

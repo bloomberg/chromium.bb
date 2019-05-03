@@ -7227,12 +7227,10 @@ interface Screen
     getter availWidth
     getter colorDepth
     getter height
-    getter keepAwake
     getter orientation
     getter pixelDepth
     getter width
     method constructor
-    setter keepAwake
 interface ScreenOrientation : EventTarget
     attribute @@toStringTag
     getter angle

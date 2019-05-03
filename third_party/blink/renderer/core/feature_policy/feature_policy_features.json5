@@ -240,7 +240,7 @@
     {
       name: "WakeLock",
       feature_policy_name: "wake-lock",
-      depends_on: ["WakeLock"],
+      depends_on: ["WakeLockNavigator"],
     },
     // The feature is added manually in feature_policy_helper.cc.
     // {

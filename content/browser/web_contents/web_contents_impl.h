@@ -56,7 +56,6 @@
 #include "net/http/http_response_headers.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/device/public/mojom/geolocation_context.mojom.h"
-#include "services/device/public/mojom/wake_lock.mojom.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/mojom/choosers/color_chooser.mojom.h"
 #include "third_party/blink/public/mojom/page/display_cutout.mojom.h"
@@ -539,7 +538,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       int browser_plugin_instance_id) override;
   device::mojom::GeolocationContext* GetGeolocationContext() override;
   device::mojom::WakeLockContext* GetWakeLockContext() override;
-  device::mojom::WakeLock* GetRendererWakeLock() override;
 #if defined(OS_ANDROID)
   void GetNFC(device::mojom::NFCRequest request) override;
 #endif
@@ -1730,8 +1728,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   device::mojom::GeolocationContextPtr geolocation_context_;
 
   std::unique_ptr<WakeLockContextHost> wake_lock_context_host_;
-
-  device::mojom::WakeLockPtr renderer_wake_lock_;
 
   service_manager::BinderRegistry registry_;
 

@@ -8,8 +8,6 @@ blink_modules_sources("wake_lock") {
   sources = [
     "navigator_wake_lock.cc",
     "navigator_wake_lock.h",
-    "screen_wake_lock.cc",
-    "screen_wake_lock.h",
     "wake_lock.cc",
     "wake_lock.h",
     "wake_lock_request.cc",
