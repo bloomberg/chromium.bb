@@ -260,11 +260,9 @@ static const UChar32 kIsHangulRanges[] = {
 
 static const UChar32 kIsHangulArray[] = {};
 
-#if !defined(USING_SYSTEM_ICU)
 // Freezed trie tree, see character_property_data_generator.cc.
 extern const int32_t kSerializedCharacterDataSize;
 extern const uint8_t kSerializedCharacterData[];
-#endif
 
 }  // namespace blink
 

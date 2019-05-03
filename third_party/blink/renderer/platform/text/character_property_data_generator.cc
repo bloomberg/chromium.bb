@@ -4,24 +4,18 @@
 
 #include "third_party/blink/renderer/platform/text/character_property_data.h"
 
-#include "base/logging.h"
-
 #include <stdio.h>
 #include <cassert>
 #include <cstring>
 #include <memory>
-#include "third_party/blink/renderer/platform/text/character_property.h"
-#if !defined(USING_SYSTEM_ICU)
 #include <unicode/ucptrie.h>
 #include <unicode/umutablecptrie.h>
-#endif
+
+#include "base/logging.h"
+#include "third_party/blink/renderer/platform/text/character_property.h"
 
 namespace blink {
 namespace {
-
-#if defined(USING_SYSTEM_ICU)
-static void GenerateCharacterPropertyData(FILE*) {}
-#else
 
 const UChar32 kMaxCodepoint = 0x10FFFF;
 #define ARRAY_LENGTH(a) (sizeof(a) / sizeof((a)[0]))
@@ -131,7 +125,6 @@ static void GenerateCharacterPropertyData(FILE* fp) {
 
   GenerateUTrieSerialized(fp, serialized_size, serialized.get());
 }
-#endif
 
 }  // namespace
 }  // namespace blink

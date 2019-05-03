@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/platform/text/character.h"
 
+#include <unicode/ucptrie.h>
 #include <unicode/uobject.h>
 #include <unicode/uscript.h>
 #include <algorithm>
@@ -40,38 +41,9 @@
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
-#if defined(USING_SYSTEM_ICU)
-#include <unicode/uniset.h>
-#else
-#include <unicode/ucptrie.h>
-#endif
 
 namespace blink {
 
-#if defined(USING_SYSTEM_ICU)
-static icu::UnicodeSet* createUnicodeSet(const UChar32* characters,
-                                         size_t charactersCount,
-                                         const UChar32* ranges,
-                                         size_t rangesCount) {
-  icu::UnicodeSet* unicodeSet = new icu::UnicodeSet();
-  for (size_t i = 0; i < charactersCount; i++)
-    unicodeSet->add(characters[i]);
-  for (size_t i = 0; i < rangesCount; i += 2)
-    unicodeSet->add(ranges[i], ranges[i + 1]);
-  unicodeSet->freeze();
-  return unicodeSet;
-}
-
-#define CREATE_UNICODE_SET(name)                                       \
-  createUnicodeSet(name##Array, base::size(name##Array), name##Ranges, \
-                   base::size(name##Ranges))
-
-#define RETURN_HAS_PROPERTY(c, name)            \
-  static icu::UnicodeSet* unicodeSet = nullptr; \
-  if (!unicodeSet)                              \
-    unicodeSet = CREATE_UNICODE_SET(name);      \
-  return unicodeSet->contains(c);
-#else
 static UCPTrie* CreateTrie() {
   // Create a Trie from the value array.
   ICUError error;
@@ -90,38 +62,25 @@ static bool HasProperty(UChar32 c, CharacterProperty property) {
          static_cast<CharacterPropertyType>(property);
 }
 
-#define RETURN_HAS_PROPERTY(c, name) \
-  return HasProperty(c, CharacterProperty::name);
-#endif
-
-// Takes a flattened list of closed intervals
-template <class T, size_t size>
-bool ValueInIntervalList(const T (&interval_list)[size], const T& value) {
-  const T* bound =
-      std::upper_bound(&interval_list[0], &interval_list[size], value);
-  if ((bound - interval_list) % 2 == 1)
-    return true;
-  return bound > interval_list && *(bound - 1) == value;
-}
-
 bool Character::IsUprightInMixedVertical(UChar32 character) {
-  RETURN_HAS_PROPERTY(character, kIsUprightInMixedVertical)
+  return HasProperty(character, CharacterProperty::kIsUprightInMixedVertical);
 }
 
 bool Character::IsCJKIdeographOrSymbolSlow(UChar32 c) {
-  RETURN_HAS_PROPERTY(c, kIsCJKIdeographOrSymbol)
+  return HasProperty(c, CharacterProperty::kIsCJKIdeographOrSymbol);
 }
 
 bool Character::IsPotentialCustomElementNameChar(UChar32 character) {
-  RETURN_HAS_PROPERTY(character, kIsPotentialCustomElementNameChar);
+  return HasProperty(character,
+                     CharacterProperty::kIsPotentialCustomElementNameChar);
 }
 
 bool Character::IsBidiControl(UChar32 character) {
-  RETURN_HAS_PROPERTY(character, kIsBidiControl);
+  return HasProperty(character, CharacterProperty::kIsBidiControl);
 }
 
 bool Character::IsHangulSlow(UChar32 character) {
-  RETURN_HAS_PROPERTY(character, kIsHangul);
+  return HasProperty(character, CharacterProperty::kIsHangul);
 }
 
 unsigned Character::ExpansionOpportunityCount(
