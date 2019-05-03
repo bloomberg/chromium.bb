@@ -386,6 +386,24 @@ message DiskImageStatusResponse {
   uint32 progress = 4;
 }
 
+// Request to cancel image import or export command that is being
+// executed.
+message CancelDiskImageRequest {
+  // Command identifier.
+  string command_uuid = 1;
+}
+
+// Response to CancelDiskImageRequest.
+message CancelDiskImageResponse {
+  // If true, the request was successfully canceled. The request will
+  // fail if it is unknown, or if it has already completed (successfully
+  // or unsuccessfully).
+  bool success = 1;
+
+  // The failure reason if the command could not be completed.
+  string failure_reason = 2;
+}
+
 // Request to list all VM disk images in the given storage area.
 message ListVmDisksRequest {
   // The cryptohome id for the user's encrypted storage.

@@ -20,6 +20,7 @@ const char kCreateDiskImageMethod[] = "CreateDiskImage";
 const char kDestroyDiskImageMethod[] = "DestroyDiskImage";
 const char kExportDiskImageMethod[] = "ExportDiskImage";
 const char kImportDiskImageMethod[] = "ImportDiskImage";
+const char kCancelDiskImageMethod[] = "CancelDiskImageOperation";
 const char kDiskImageStatusMethod[] = "DiskImageStatus";
 const char kListVmDisksMethod[] = "ListVmDisks";
 const char kStartContainerMethod[] = "StartContainer";
