@@ -38,13 +38,10 @@ class ArcVmClientAdapter : public ArcClientAdapter {
 
   // ArcClientAdapter overrides:
   void StartMiniArc(const StartArcMiniContainerRequest& request,
-                    StartMiniArcCallback callback) override {
+                    chromeos::VoidDBusMethodCallback callback) override {
     // TODO(yusukes): Support mini ARC.
     VLOG(2) << "Mini ARC instance is not supported yet.";
-    base::PostTask(
-        FROM_HERE,
-        base::BindOnce(&ArcVmClientAdapter::OnArcMiniInstanceStarted,
-                       weak_factory_.GetWeakPtr(), std::move(callback)));
+    base::PostTask(FROM_HERE, base::BindOnce(std::move(callback), true));
   }
 
   void UpgradeArc(const UpgradeArcContainerRequest& request,
@@ -79,11 +76,6 @@ class ArcVmClientAdapter : public ArcClientAdapter {
   }
 
  private:
-  void OnArcMiniInstanceStarted(StartMiniArcCallback callback) {
-    current_instance_id_ = base::GenerateGUID();
-    std::move(callback).Run(current_instance_id_);
-  }
-
   void OnArcInstanceUpgraded(base::OnceClosure success_callback,
                              UpgradeErrorCallback error_callback,
                              bool result) {
@@ -99,13 +91,8 @@ class ArcVmClientAdapter : public ArcClientAdapter {
     if (!result)
       LOG(WARNING) << "Failed to stop arcvm. Instance not running?";
     for (auto& observer : observer_list_)
-      observer.ArcInstanceStopped(kDummyReason, current_instance_id_);
-    if (result)
-      current_instance_id_.clear();
+      observer.ArcInstanceStopped(kDummyReason);
   }
-
-  // A unique ID associated with the current Upstart job.
-  std::string current_instance_id_;
 
   // For callbacks.
   base::WeakPtrFactory<ArcVmClientAdapter> weak_factory_;

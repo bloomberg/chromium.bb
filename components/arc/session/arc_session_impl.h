@@ -180,7 +180,7 @@ class ArcSessionImpl : public ArcSession, public ArcClientAdapter::Observer {
 
  private:
   // D-Bus callback for StartArcMiniContainer().
-  void OnMiniInstanceStarted(base::Optional<std::string> container_instance_id);
+  void OnMiniInstanceStarted(bool result);
 
   // Sends a D-Bus message to upgrade to a full instance.
   void DoUpgrade();
@@ -205,8 +205,7 @@ class ArcSessionImpl : public ArcSession, public ArcClientAdapter::Observer {
   void StopArcInstance();
 
   // ArcClientAdapter::Observer:
-  void ArcInstanceStopped(ArcContainerStopReason stop_reason,
-                          const std::string& container_instance_id) override;
+  void ArcInstanceStopped(ArcContainerStopReason stop_reason) override;
 
   // Completes the termination procedure. Note that calling this may end up with
   // deleting |this| because the function calls observers' OnSessionStopped().
@@ -233,10 +232,6 @@ class ArcSessionImpl : public ArcSession, public ArcClientAdapter::Observer {
 
   // Whether the full container has been requested
   bool upgrade_requested_ = false;
-
-  // Container instance id passed from session_manager.
-  // Should be available only after On{Mini,Full}InstanceStarted().
-  std::string container_instance_id_;
 
   // In CONNECTING_MOJO state, this is set to the write side of the pipe
   // to notify cancelling of the procedure.

@@ -445,19 +445,16 @@ void ArcSessionImpl::RequestUpgrade(UpgradeParams params) {
   }
 }
 
-void ArcSessionImpl::OnMiniInstanceStarted(
-    base::Optional<std::string> container_instance_id) {
+void ArcSessionImpl::OnMiniInstanceStarted(bool result) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_EQ(state_, State::STARTING_MINI_INSTANCE);
 
-  if (!container_instance_id) {
+  if (!result) {
     OnStopped(GetArcStopReason(false, stop_requested_));
     return;
   }
 
-  container_instance_id_ = std::move(*container_instance_id);
-  VLOG(2) << "ARC mini instance is successfully started: "
-          << container_instance_id_;
+  VLOG(2) << "ARC mini container has been successfully started.";
 
   if (stop_requested_) {
     // The ARC instance has started to run. Request to stop.
@@ -663,21 +660,10 @@ void ArcSessionImpl::StopArcInstance() {
   client_->StopArcInstance();
 }
 
-void ArcSessionImpl::ArcInstanceStopped(
-    ArcContainerStopReason stop_reason,
-    const std::string& container_instance_id) {
+void ArcSessionImpl::ArcInstanceStopped(ArcContainerStopReason stop_reason) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   VLOG(1) << "Notified that ARC instance is stopped "
           << static_cast<uint32_t>(stop_reason);
-
-  if (container_instance_id != container_instance_id_) {
-    VLOG(1) << "Container instance id mismatch. Do nothing."
-            << container_instance_id << " vs " << container_instance_id_;
-    return;
-  }
-
-  // Release |container_instance_id_| to avoid duplicate invocation situation.
-  container_instance_id_.clear();
 
   // In case that crash happens during before the Mojo channel is connected,
   // unlock the ThreadPool's thread.

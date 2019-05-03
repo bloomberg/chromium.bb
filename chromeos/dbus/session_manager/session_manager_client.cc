@@ -402,7 +402,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
 
   void StartArcMiniContainer(
       const login_manager::StartArcMiniContainerRequest& request,
-      StartArcMiniContainerCallback callback) override {
+      VoidDBusMethodCallback callback) override {
     DCHECK(!callback.is_null());
     dbus::MethodCall method_call(
         login_manager::kSessionManagerInterface,
@@ -413,7 +413,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
 
     session_manager_proxy_->CallMethod(
         &method_call, kStartArcTimeout,
-        base::BindOnce(&SessionManagerClientImpl::OnStartArcMiniContainer,
+        base::BindOnce(&SessionManagerClientImpl::OnVoidMethod,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
@@ -739,13 +739,8 @@ class SessionManagerClientImpl : public SessionManagerClient {
       return;
     }
 
-    std::string container_instance_id;
-    if (!reader.PopString(&container_instance_id)) {
-      LOG(ERROR) << "Invalid signal: " << signal->ToString();
-      return;
-    }
     for (auto& observer : observers_)
-      observer.ArcInstanceStopped(reason, container_instance_id);
+      observer.ArcInstanceStopped(reason);
   }
 
   // Called when the object is connected to the signal.
@@ -798,23 +793,6 @@ class SessionManagerClientImpl : public SessionManagerClient {
     }
 
     std::move(callback).Run(base::TimeTicks::FromInternalValue(ticks));
-  }
-
-  void OnStartArcMiniContainer(StartArcMiniContainerCallback callback,
-                               dbus::Response* response) {
-    if (!response) {
-      std::move(callback).Run(base::nullopt);
-      return;
-    }
-
-    dbus::MessageReader reader(response);
-    std::string container_instance_id;
-    if (!reader.PopString(&container_instance_id)) {
-      LOG(ERROR) << "Invalid response: " << response->ToString();
-      std::move(callback).Run(base::nullopt);
-      return;
-    }
-    std::move(callback).Run(std::move(container_instance_id));
   }
 
   void OnUpgradeArcContainer(base::OnceClosure success_callback,

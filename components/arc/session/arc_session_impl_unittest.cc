@@ -553,34 +553,13 @@ TEST_F(ArcSessionImplTest, ArcStopInstance) {
 
   // Deliver the ArcInstanceStopped D-Bus signal.
   chromeos::FakeSessionManagerClient::Get()->NotifyArcInstanceStopped(
-      login_manager::ArcContainerStopReason::CRASH,
-      chromeos::FakeSessionManagerClient::Get()->container_instance_id());
+      login_manager::ArcContainerStopReason::CRASH);
 
   EXPECT_EQ(ArcSessionImpl::State::STOPPED, arc_session->GetStateForTesting());
   ASSERT_TRUE(observer.on_session_stopped_args().has_value());
   EXPECT_EQ(ArcStopReason::CRASH, observer.on_session_stopped_args()->reason);
   EXPECT_TRUE(observer.on_session_stopped_args()->was_running);
   EXPECT_TRUE(observer.on_session_stopped_args()->upgrade_requested);
-}
-
-// ArcStopInstance for the *previous* ARC container may be reported
-// to the current instance in very racy timing.
-// Unrelated ArcStopInstance signal should be ignored.
-TEST_F(ArcSessionImplTest, ArcStopInstance_WrongContainerInstanceId) {
-  auto arc_session = CreateArcSession();
-  arc_session->StartMiniInstance();
-  arc_session->RequestUpgrade(DefaultUpgradeParams());
-  base::RunLoop().RunUntilIdle();
-  ASSERT_EQ(ArcSessionImpl::State::RUNNING_FULL_INSTANCE,
-            arc_session->GetStateForTesting());
-
-  // Deliver the ArcInstanceStopped D-Bus signal.
-  chromeos::FakeSessionManagerClient::Get()->NotifyArcInstanceStopped(
-      login_manager::ArcContainerStopReason::CRASH, "dummy instance id");
-
-  // The signal should be ignored.
-  EXPECT_EQ(ArcSessionImpl::State::RUNNING_FULL_INSTANCE,
-            arc_session->GetStateForTesting());
 }
 
 struct PackagesCacheModeState {

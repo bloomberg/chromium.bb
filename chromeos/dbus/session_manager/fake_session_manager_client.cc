@@ -34,7 +34,6 @@ using RetrievePolicyResponseType =
 
 namespace {
 
-constexpr char kFakeContainerInstanceId[] = "0123456789ABCDEF";
 constexpr char kStubDevicePolicyFileNamePrefix[] = "stub_device_policy";
 constexpr char kStubPerAccountPolicyFileNamePrefix[] = "stub_policy";
 constexpr char kStubStateKeysFileName[] = "stub_state_keys";
@@ -564,16 +563,16 @@ void FakeSessionManagerClient::GetServerBackedStateKeys(
 
 void FakeSessionManagerClient::StartArcMiniContainer(
     const login_manager::StartArcMiniContainerRequest& request,
-    StartArcMiniContainerCallback callback) {
+    VoidDBusMethodCallback callback) {
   last_start_arc_mini_container_request_ = request;
 
   if (!arc_available_) {
-    PostReply(FROM_HERE, std::move(callback), base::nullopt);
+    PostReply(FROM_HERE, std::move(callback), false);
     return;
   }
   // This is starting a new container.
-  base::Base64Encode(kFakeContainerInstanceId, &container_instance_id_);
-  PostReply(FROM_HERE, std::move(callback), container_instance_id_);
+  container_running_ = true;
+  PostReply(FROM_HERE, std::move(callback), true);
 }
 
 void FakeSessionManagerClient::UpgradeArcContainer(
@@ -591,8 +590,7 @@ void FakeSessionManagerClient::UpgradeArcContainer(
         FROM_HERE,
         base::BindOnce(&FakeSessionManagerClient::NotifyArcInstanceStopped,
                        weak_ptr_factory_.GetWeakPtr(),
-                       login_manager::ArcContainerStopReason::LOW_DISK_SPACE,
-                       std::move(container_instance_id_)));
+                       login_manager::ArcContainerStopReason::LOW_DISK_SPACE));
     PostReply(FROM_HERE, std::move(error_callback), true);
     return;
   }
@@ -602,7 +600,7 @@ void FakeSessionManagerClient::UpgradeArcContainer(
 
 void FakeSessionManagerClient::StopArcInstance(
     VoidDBusMethodCallback callback) {
-  if (!arc_available_ || container_instance_id_.empty()) {
+  if (!arc_available_ || !container_running_) {
     PostReply(FROM_HERE, std::move(callback), false /* result */);
     return;
   }
@@ -613,9 +611,8 @@ void FakeSessionManagerClient::StopArcInstance(
       FROM_HERE,
       base::BindOnce(&FakeSessionManagerClient::NotifyArcInstanceStopped,
                      weak_ptr_factory_.GetWeakPtr(),
-                     login_manager::ArcContainerStopReason::USER_REQUEST,
-                     std::move(container_instance_id_)));
-  container_instance_id_.clear();
+                     login_manager::ArcContainerStopReason::USER_REQUEST));
+  container_running_ = false;
 }
 
 void FakeSessionManagerClient::SetArcCpuRestriction(
@@ -638,10 +635,9 @@ void FakeSessionManagerClient::GetArcStartTime(
 }
 
 void FakeSessionManagerClient::NotifyArcInstanceStopped(
-    login_manager::ArcContainerStopReason reason,
-    const std::string& container_instance_id) {
+    login_manager::ArcContainerStopReason reason) {
   for (auto& observer : observers_)
-    observer.ArcInstanceStopped(reason, container_instance_id);
+    observer.ArcInstanceStopped(reason);
 }
 
 bool FakeSessionManagerClient::GetFlagsForUser(

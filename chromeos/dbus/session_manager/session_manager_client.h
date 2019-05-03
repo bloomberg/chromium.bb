@@ -75,11 +75,9 @@ class COMPONENT_EXPORT(SESSION_MANAGER) SessionManagerClient {
     // Called when the ARC instance is stopped after it had already started.
     // |clean| is true if the instance was stopped as a result of an explicit
     // request, false if it died unexpectedly.
-    // |container_instance_id| is the identifier of the container instance.
     // See details for StartArcInstanceCallback.
     virtual void ArcInstanceStopped(
-        login_manager::ArcContainerStopReason reason,
-        const std::string& container_instance_id) {}
+        login_manager::ArcContainerStopReason reason) {}
   };
 
   // Interface for performing actions on behalf of the stub implementation.
@@ -335,15 +333,10 @@ class COMPONENT_EXPORT(SESSION_MANAGER) SessionManagerClient {
   virtual void GetServerBackedStateKeys(StateKeysCallback callback) = 0;
 
   // StartArcMiniContainer starts a container with only a handful of ARC
-  // processes for Chrome OS login screen.  In case of success, callback will be
-  // called with |container_instance_id| set to a string.  The ID is passed to
-  // ArcInstanceStopped() to identify which instance is stopped. In case of
-  // error, |container_instance_id| will be nullopt.
-  using StartArcMiniContainerCallback =
-      DBusMethodCallback<std::string /* container_instance_id */>;
+  // processes for Chrome OS login screen.
   virtual void StartArcMiniContainer(
       const login_manager::StartArcMiniContainerRequest& request,
-      StartArcMiniContainerCallback callback) = 0;
+      VoidDBusMethodCallback callback) = 0;
 
   // UpgradeArcContainer upgrades a mini-container to a full ARC container. In
   // case of success, success_callback is called. In case of error,

@@ -30,8 +30,7 @@ class ArcClientAdapter {
   class Observer {
    public:
     virtual ~Observer() = default;
-    virtual void ArcInstanceStopped(ArcContainerStopReason stop_reason,
-                                    const std::string& instance_id) = 0;
+    virtual void ArcInstanceStopped(ArcContainerStopReason stop_reason) = 0;
   };
 
   // Creates a default instance of ArcClientAdapter.
@@ -39,14 +38,9 @@ class ArcClientAdapter {
   virtual ~ArcClientAdapter();
 
   // StartMiniArc starts ARC with only a handful of ARC processes for Chrome OS
-  // login screen.  In case of success, callback will be called with
-  // |instance_id| set to a string.  The ID is passed to ArcInstanceStopped()
-  // to identify which instance is stopped. In case of error, |instance_id| will
-  // be nullopt.
-  using StartMiniArcCallback =
-      base::OnceCallback<void(base::Optional<std::string> instance_id)>;
+  // login screen.
   virtual void StartMiniArc(const StartArcMiniContainerRequest& request,
-                            StartMiniArcCallback callback) = 0;
+                            chromeos::VoidDBusMethodCallback callback) = 0;
 
   // UpgradeArc upgrades a mini ARC instance to a full ARC instance. In case of
   // success, success_callback is called. In case of error, |error_callback|

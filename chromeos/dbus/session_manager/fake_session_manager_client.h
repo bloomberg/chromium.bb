@@ -109,7 +109,7 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
 
   void StartArcMiniContainer(
       const login_manager::StartArcMiniContainerRequest& request,
-      StartArcMiniContainerCallback callback) override;
+      VoidDBusMethodCallback callback) override;
   void UpgradeArcContainer(
       const login_manager::UpgradeArcContainerRequest& request,
       base::OnceClosure success_callback,
@@ -123,8 +123,7 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
   void GetArcStartTime(DBusMethodCallback<base::TimeTicks> callback) override;
 
   // Notifies observers as if ArcInstanceStopped signal is received.
-  void NotifyArcInstanceStopped(login_manager::ArcContainerStopReason,
-                                const std::string& conainer_instance_id);
+  void NotifyArcInstanceStopped(login_manager::ArcContainerStopReason);
 
   // Returns true if flags for |cryptohome_id| have been set. If the return
   // value is |true|, |*out_flags_for_user| is filled with the flags passed to
@@ -241,10 +240,6 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
     force_state_keys_missing_ = force_state_keys_missing;
   }
 
-  const std::string& container_instance_id() const {
-    return container_instance_id_;
-  }
-
   bool session_stopped() const { return session_stopped_; }
 
   const SessionManagerClient::ActiveSessionsMap& user_sessions() const {
@@ -292,8 +287,7 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
   base::TimeTicks arc_start_time_;
 
   bool low_disk_ = false;
-  // Pseudo running container id. If not running, empty.
-  std::string container_instance_id_;
+  bool container_running_ = false;
 
   // Contains last request passed to StartArcMiniContainer
   login_manager::StartArcMiniContainerRequest
