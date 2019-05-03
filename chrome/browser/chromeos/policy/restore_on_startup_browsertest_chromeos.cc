@@ -5,6 +5,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/public/cpp/ash_switches.h"
 #include "base/macros.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -35,6 +36,7 @@ class RestoreOnStartupTestChromeOS : public LoginPolicyTestBase {
 
   // LoginPolicyTestBase:
   void GetMandatoryPoliciesValue(base::DictionaryValue* policy) const override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
 
   void LogInAndVerifyStartUpURLs();
 
@@ -53,6 +55,12 @@ void RestoreOnStartupTestChromeOS::GetMandatoryPoliciesValue(
   urls->AppendString(kStartUpURL1);
   urls->AppendString(kStartUpURL2);
   policy->Set(key::kRestoreOnStartupURLs, std::move(urls));
+}
+
+void RestoreOnStartupTestChromeOS::SetUpCommandLine(
+    base::CommandLine* command_line) {
+  LoginPolicyTestBase::SetUpCommandLine(command_line);
+  command_line->AppendSwitch(ash::switches::kShowWebUiLogin);
 }
 
 void RestoreOnStartupTestChromeOS::LogInAndVerifyStartUpURLs() {

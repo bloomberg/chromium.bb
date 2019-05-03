@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/public/cpp/ash_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
@@ -51,6 +52,7 @@ class DeviceIDTest : public OobeBaseTest,
   void SetUpCommandLine(base::CommandLine* command_line) override {
     OobeBaseTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kOobeSkipPostLogin);
+    command_line->AppendSwitch(ash::switches::kShowWebUiLogin);
   }
 
   void SetUpOnMainThread() override {

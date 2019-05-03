@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/shell.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -47,6 +48,11 @@ class ForceMaximizeOnFirstRunTest : public LoginPolicyTestBase {
     Profile* const profile =
         chromeos::ProfileHelper::Get()->GetProfileByUser(user);
     return CreateBrowser(profile);
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    LoginPolicyTestBase::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(ash::switches::kShowWebUiLogin);
   }
 
  private:

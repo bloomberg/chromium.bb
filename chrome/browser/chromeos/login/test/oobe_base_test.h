@@ -35,12 +35,6 @@ class OobeBaseTest : public MixinBasedInProcessBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpOnMainThread() override;
 
-  // If this returns true (default), the |ash::switches::kShowWebUiLogin|
-  // command-line switch is passed to force the Web Ui Login.
-  // If this returns false, the switch is omitted so the views-based login may
-  // be used.
-  virtual bool ShouldForceWebUiLogin();
-
   // If this returns true (default), then SetUpOnMainThread would wait for
   // Oobe UI to start up before initializing all mix-ins.
   virtual bool ShouldWaitForOobeUI();

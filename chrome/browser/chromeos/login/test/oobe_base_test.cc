@@ -53,8 +53,6 @@ void OobeBaseTest::SetUp() {
 }
 
 void OobeBaseTest::SetUpCommandLine(base::CommandLine* command_line) {
-  if (ShouldForceWebUiLogin())
-    command_line->AppendSwitch(ash::switches::kShowWebUiLogin);
   command_line->AppendSwitch(chromeos::switches::kLoginManager);
   command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
   if (!needs_background_networking_)
@@ -81,10 +79,6 @@ void OobeBaseTest::SetUpOnMainThread() {
     WaitForOobeUI();
   }
   MixinBasedInProcessBrowserTest::SetUpOnMainThread();
-}
-
-bool OobeBaseTest::ShouldForceWebUiLogin() {
-  return true;
 }
 
 bool OobeBaseTest::ShouldWaitForOobeUI() {

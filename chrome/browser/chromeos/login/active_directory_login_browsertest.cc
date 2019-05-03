@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "ash/public/cpp/ash_switches.h"
 #include "base/base_paths.h"
 #include "base/environment.h"
 #include "base/path_service.h"
@@ -232,8 +233,23 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, PasswordChange_UIErrors) {
   ad_login_.TestPasswordChangeOldPasswordError();
 }
 
+class ActiveDirectoryWebUILoginTest : public ActiveDirectoryLoginTest {
+ public:
+  ActiveDirectoryWebUILoginTest() = default;
+  ~ActiveDirectoryWebUILoginTest() override = default;
+
+  // chromeos::ActiveDirectoryLoginTest:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(ash::switches::kShowWebUiLogin);
+    chromeos::ActiveDirectoryLoginTest::SetUpCommandLine(command_line);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ActiveDirectoryWebUILoginTest);
+};
+
 // Test reopening Active Directory password change screen clears errors.
-IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest,
+IN_PROC_BROWSER_TEST_F(ActiveDirectoryWebUILoginTest,
                        PasswordChange_ReopenClearErrors) {
   OobeBaseTest::WaitForSigninScreen();
   ASSERT_TRUE(InstallAttributes::Get()->IsActiveDirectoryManaged());

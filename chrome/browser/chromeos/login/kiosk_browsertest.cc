@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "apps/test/app_window_waiter.h"
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/interfaces/login_screen_test_api.test-mojom-test-utils.h"
 #include "ash/public/interfaces/wallpaper.mojom.h"
 #include "base/bind.h"
@@ -1391,6 +1392,11 @@ class KioskUpdateTest : public KioskTest {
     disks::DiskMountManager::InitializeForTesting(fake_disk_mount_manager_);
 
     KioskTest::SetUp();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(ash::switches::kShowWebUiLogin);
+    KioskTest::SetUpCommandLine(command_line);
   }
 
   void TearDown() override {
