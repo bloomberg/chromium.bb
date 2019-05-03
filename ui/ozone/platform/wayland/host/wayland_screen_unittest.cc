@@ -223,8 +223,9 @@ TEST_P(WaylandScreenTest, OutputPropertyChanges) {
   EXPECT_EQ(observer.GetAndClearChangedMetrics(), changed_values);
   EXPECT_EQ(observer.GetDisplay().bounds(), new_rect);
 
-  const int32_t new_scale_value = 2;
-  output_->SetScale(new_scale_value);
+  const float new_scale_value = 2.0f;
+  wl_output_send_scale(output_->resource(), new_scale_value);
+  wl_output_send_done(output_->resource());
 
   Sync();
 
@@ -577,23 +578,6 @@ TEST_P(WaylandScreenTest, GetCursorScreenPoint) {
   Sync();
 
   EXPECT_EQ(gfx::Point(1912, 1071), platform_screen_->GetCursorScreenPoint());
-}
-
-// Checks that the surface that backs the window receives new scale of the
-// output that it is in.
-TEST_P(WaylandScreenTest, SetBufferScale) {
-  // Place the window onto the output.
-  wl_surface_send_enter(surface_->resource(), output_->resource());
-
-  // Change the scale of the output.  Windows looking into that output must get
-  // the new scale and update scale of their buffers.
-  const int32_t kNewScale = 3;
-  EXPECT_CALL(*surface_, SetBufferScale(kNewScale));
-  output_->SetScale(kNewScale);
-
-  Sync();
-
-  EXPECT_EQ(window_->buffer_scale(), kNewScale);
 }
 
 INSTANTIATE_TEST_SUITE_P(XdgVersionV5Test,

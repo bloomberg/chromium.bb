@@ -26,7 +26,10 @@ void WaylandOutputManager::AddWaylandOutput(const uint32_t output_id,
   // Make sure an output with |output_id| has not been added yet. It's very
   // unlikely to happen, unless a compositor has a bug in the numeric names
   // representation of global objects.
-  auto output_it = GetOutputItById(output_id);
+  auto output_it = std::find_if(output_list_.begin(), output_list_.end(),
+                                [output_id](const auto& output) {
+                                  return output->output_id() == output_id;
+                                });
   DCHECK(output_it == output_list_.end());
   auto wayland_output = std::make_unique<WaylandOutput>(output_id, output);
   WaylandOutput* wayland_output_ptr = wayland_output.get();
@@ -41,7 +44,10 @@ void WaylandOutputManager::AddWaylandOutput(const uint32_t output_id,
 }
 
 void WaylandOutputManager::RemoveWaylandOutput(const uint32_t output_id) {
-  auto output_it = GetOutputItById(output_id);
+  auto output_it = std::find_if(output_list_.begin(), output_list_.end(),
+                                [output_id](const auto& output) {
+                                  return output->output_id() == output_id;
+                                });
 
   // Check the comment in the WaylandConnetion::GlobalRemove.
   if (output_it == output_list_.end())
@@ -83,13 +89,6 @@ uint32_t WaylandOutputManager::GetIdForOutput(wl_output* output) const {
   return output_it->get()->output_id();
 }
 
-WaylandOutput* WaylandOutputManager::GetOutput(uint32_t id) const {
-  auto output_it = GetOutputItById(id);
-  // This is unlikely to happen, but better to be explicit here.
-  DCHECK(output_it != output_list_.end());
-  return output_it->get();
-}
-
 void WaylandOutputManager::OnWaylandOutputAdded(uint32_t output_id) {
   if (wayland_screen_)
     wayland_screen_->OnOutputAdded(output_id);
@@ -106,13 +105,6 @@ void WaylandOutputManager::OnOutputHandleMetrics(uint32_t output_id,
   if (wayland_screen_)
     wayland_screen_->OnOutputMetricsChanged(output_id, new_bounds,
                                             scale_factor);
-}
-
-WaylandOutputManager::OutputList::const_iterator
-WaylandOutputManager::GetOutputItById(uint32_t id) const {
-  return std::find_if(
-      output_list_.begin(), output_list_.end(),
-      [id](const auto& item) { return item->output_id() == id; });
 }
 
 }  // namespace ui

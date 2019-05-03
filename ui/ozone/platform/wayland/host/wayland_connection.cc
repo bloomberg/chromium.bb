@@ -158,16 +158,6 @@ WaylandWindow* WaylandConnection::GetCurrentKeyboardFocusedWindow() const {
   return nullptr;
 }
 
-std::vector<WaylandWindow*> WaylandConnection::GetWindowsOnDisplay(
-    uint32_t display_id) {
-  std::vector<WaylandWindow*> result;
-  for (auto entry : window_map_) {
-    if (entry.second->GetEnteredOutputsIds().count(display_id) > 0)
-      result.push_back(entry.second);
-  }
-  return result;
-}
-
 void WaylandConnection::AddWindow(gfx::AcceleratedWidget widget,
                                   WaylandWindow* window) {
   window_map_[widget] = window;

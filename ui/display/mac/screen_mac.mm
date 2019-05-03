@@ -79,7 +79,7 @@ Display BuildDisplayForScreen(NSScreen* screen) {
   CGFloat scale = [screen backingScaleFactor];
   if (Display::HasForceDeviceScaleFactor())
     scale = Display::GetForcedDeviceScaleFactor();
-  display.SetDeviceScaleFactor(scale);
+  display.set_device_scale_factor(scale);
 
   // Compute the color profile.
   gfx::ICCProfile icc_profile;

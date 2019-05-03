@@ -24,7 +24,6 @@
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/compositor/compositor_observer.h"
-#include "ui/display/display.h"
 #include "ui/display/display_observer.h"
 #include "ui/events/event_source.h"
 #include "ui/events/platform_event.h"
@@ -35,7 +34,7 @@ class Point;
 class Rect;
 class Size;
 class Transform;
-}  // namespace gfx
+}
 
 namespace ui {
 class Compositor;
@@ -44,7 +43,7 @@ class EventSink;
 class InputMethod;
 class ViewProp;
 struct PlatformWindowInitProperties;
-}  // namespace ui
+}
 
 namespace aura {
 
@@ -256,9 +255,6 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   friend class TestScreen;  // TODO(beng): see if we can remove/consolidate.
 
   explicit WindowTreeHost(std::unique_ptr<Window> window = nullptr);
-
-  // Gets the display that this window tree host resides at.
-  display::Display GetDisplay() const;
 
   // Set the cached display device scale factor. This should only be called
   // during subclass initialization, when the value is needed before InitHost().

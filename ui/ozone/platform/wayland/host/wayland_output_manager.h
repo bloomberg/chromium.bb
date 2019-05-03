@@ -39,9 +39,6 @@ class WaylandOutputManager : public WaylandOutput::Delegate {
       WaylandConnection* connection);
 
   uint32_t GetIdForOutput(wl_output* output) const;
-  WaylandOutput* GetOutput(uint32_t id) const;
-
-  WaylandScreen* wayland_screen() const { return wayland_screen_.get(); }
 
  private:
   void OnWaylandOutputAdded(uint32_t output_id);
@@ -52,11 +49,7 @@ class WaylandOutputManager : public WaylandOutput::Delegate {
                              const gfx::Rect& new_bounds,
                              int32_t scale_factor) override;
 
-  using OutputList = std::vector<std::unique_ptr<WaylandOutput>>;
-
-  OutputList::const_iterator GetOutputItById(uint32_t id) const;
-
-  OutputList output_list_;
+  std::vector<std::unique_ptr<WaylandOutput>> output_list_;
 
   // Non-owned wayland screen instance.
   base::WeakPtr<WaylandScreen> wayland_screen_;

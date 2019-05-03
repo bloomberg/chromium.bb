@@ -28,6 +28,7 @@
 #include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer.h"
+#include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/gfx/geometry/insets.h"
@@ -107,7 +108,9 @@ WindowTreeHost* WindowTreeHost::GetForAcceleratedWidget(
 }
 
 void WindowTreeHost::InitHost() {
-  device_scale_factor_ = GetDisplay().device_scale_factor();
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(window());
+  device_scale_factor_ = display.device_scale_factor();
 
   UpdateRootWindowSizeInPixels();
   InitCompositor();
@@ -275,7 +278,7 @@ ui::EventSink* WindowTreeHost::GetEventSink() {
 }
 
 int64_t WindowTreeHost::GetDisplayId() {
-  return GetDisplay().id();
+  return display::Screen::GetScreen()->GetDisplayNearestWindow(window()).id();
 }
 
 void WindowTreeHost::Show() {
@@ -348,11 +351,8 @@ WindowTreeHost::WindowTreeHost(std::unique_ptr<Window> window)
   if (!window_)
     window_ = new Window(nullptr);
   display::Screen::GetScreen()->AddObserver(this);
-  device_scale_factor_ = GetDisplay().device_scale_factor();
-}
-
-display::Display WindowTreeHost::GetDisplay() const {
-  return display::Screen::GetScreen()->GetDisplayNearestWindow(window_);
+  auto display = display::Screen::GetScreen()->GetDisplayNearestWindow(window_);
+  device_scale_factor_ = display.device_scale_factor();
 }
 
 void WindowTreeHost::IntializeDeviceScaleFactor(float device_scale_factor) {
@@ -379,7 +379,7 @@ void WindowTreeHost::DestroyDispatcher() {
   // ~Window, but by that time any calls to virtual methods overriden here (such
   // as GetRootWindow()) result in Window's implementation. By destroying here
   // we ensure GetRootWindow() still returns this.
-  // window()->RemoveOrDestroyChildren();
+  //window()->RemoveOrDestroyChildren();
 }
 
 void WindowTreeHost::CreateCompositor(
@@ -420,7 +420,8 @@ void WindowTreeHost::InitCompositor() {
                                window()->GetLocalSurfaceIdAllocation());
   compositor_->SetRootLayer(window()->layer());
 
-  display::Display display = GetDisplay();
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(window());
   compositor_->SetDisplayColorSpace(display.color_space(),
                                     display.sdr_white_level());
 }
@@ -445,7 +446,9 @@ void WindowTreeHost::OnHostResizedInPixels(
     const viz::LocalSurfaceIdAllocation& new_local_surface_id_allocation) {
   // TODO(jonross) Unify all OnHostResizedInPixels to have both
   // viz::LocalSurfaceId and allocation time as optional parameters.
-  device_scale_factor_ = GetDisplay().device_scale_factor();
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(window());
+  device_scale_factor_ = display.device_scale_factor();
   UpdateRootWindowSizeInPixels();
 
   // Allocate a new LocalSurfaceId for the new state.
@@ -476,7 +479,8 @@ void WindowTreeHost::OnHostWorkspaceChanged() {
 void WindowTreeHost::OnHostDisplayChanged() {
   if (!compositor_)
     return;
-  display::Display display = GetDisplay();
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(window());
   compositor_->SetDisplayColorSpace(display.color_space(),
                                     display.sdr_white_level());
 }
@@ -531,8 +535,11 @@ void WindowTreeHost::MoveCursorToInternal(const gfx::Point& root_location,
   last_cursor_request_position_in_host_ = host_location;
   MoveCursorToScreenLocationInPixels(host_location);
   client::CursorClient* cursor_client = client::GetCursorClient(window());
-  if (cursor_client)
-    cursor_client->SetDisplay(GetDisplay());
+  if (cursor_client) {
+    const display::Display& display =
+        display::Screen::GetScreen()->GetDisplayNearestWindow(window());
+    cursor_client->SetDisplay(display);
+  }
   dispatcher()->OnCursorMovedToRootLocation(root_location);
 }
 

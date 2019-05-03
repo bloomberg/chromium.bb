@@ -23,12 +23,14 @@ WaylandScreen::WaylandScreen(WaylandConnection* connection)
 WaylandScreen::~WaylandScreen() = default;
 
 void WaylandScreen::OnOutputAdded(uint32_t output_id) {
-  display_list_.AddDisplay(display::Display(output_id),
+  display::Display new_display(output_id);
+  display_list_.AddDisplay(std::move(new_display),
                            display::DisplayList::Type::NOT_PRIMARY);
 }
 
 void WaylandScreen::OnOutputRemoved(uint32_t output_id) {
-  if (output_id == GetPrimaryDisplay().id()) {
+  display::Display primary_display = GetPrimaryDisplay();
+  if (primary_display.id() == output_id) {
     // First, set a new primary display as required by the |display_list_|. It's
     // safe to set any of the displays to be a primary one. Once the output is
     // completely removed, Wayland updates geometry of other displays. And a
@@ -47,9 +49,9 @@ void WaylandScreen::OnOutputRemoved(uint32_t output_id) {
 
 void WaylandScreen::OnOutputMetricsChanged(uint32_t output_id,
                                            const gfx::Rect& new_bounds,
-                                           int32_t output_scale) {
+                                           float device_pixel_ratio) {
   display::Display changed_display(output_id);
-  changed_display.SetDeviceScaleFactor(output_scale);
+  changed_display.set_device_scale_factor(device_pixel_ratio);
   changed_display.set_bounds(new_bounds);
   changed_display.set_work_area(new_bounds);
 
@@ -79,9 +81,6 @@ void WaylandScreen::OnOutputMetricsChanged(uint32_t output_id,
   display_list_.UpdateDisplay(
       changed_display, is_primary ? display::DisplayList::Type::PRIMARY
                                   : display::DisplayList::Type::NOT_PRIMARY);
-
-  for (auto* window : connection_->GetWindowsOnDisplay(output_id))
-    window->UpdateBufferScale(true);
 }
 
 base::WeakPtr<WaylandScreen> WaylandScreen::GetWeakPtr() {
@@ -100,14 +99,13 @@ display::Display WaylandScreen::GetPrimaryDisplay() const {
 
 display::Display WaylandScreen::GetDisplayForAcceleratedWidget(
     gfx::AcceleratedWidget widget) const {
-  auto* window = connection_->GetWindow(widget);
+  auto* wayland_window = connection_->GetWindow(widget);
   // A window might be destroyed by this time on shutting down the browser.
-  if (!window)
+  if (!wayland_window)
     return GetPrimaryDisplay();
 
-  const auto* parent_window = window->parent_window();
-
-  const std::set<uint32_t> entered_outputs_ids = window->GetEnteredOutputsIds();
+  const std::set<uint32_t> entered_outputs_ids =
+      wayland_window->GetEnteredOutputsIds();
   // Although spec says a surface receives enter/leave surface events on
   // create/move/resize actions, this might be called right after a window is
   // created, but it has not been configured by a Wayland compositor and it has
@@ -116,19 +114,14 @@ display::Display WaylandScreen::GetDisplayForAcceleratedWidget(
   // events immediately, which can result in empty container of entered ids
   // (check comments in WaylandWindow::RemoveEnteredOutputId). In this case,
   // it's also safe to return the primary display.
-  // A child window will most probably enter the same display than its parent
-  // so we return the parent's display if there is a parent.
-  if (entered_outputs_ids.empty()) {
-    if (parent_window)
-      return GetDisplayForAcceleratedWidget(parent_window->GetWidget());
+  if (entered_outputs_ids.empty())
     return GetPrimaryDisplay();
-  }
 
   DCHECK(!display_list_.displays().empty());
 
   // A widget can be located on two or more displays. It would be better if the
-  // most in DIP occupied display was returned, but it's impossible to do so in
-  // Wayland. Thus, return the one that was used the earliest.
+  // most in pixels occupied display was returned, but it's impossible to do in
+  // Wayland. Thus, return the one, which was the very first used.
   for (const auto& display : display_list_.displays()) {
     if (display.id() == *entered_outputs_ids.begin())
       return display;

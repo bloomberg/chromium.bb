@@ -290,6 +290,7 @@ void WindowTreeHostPlatform::OnAcceleratedWidgetDestroyed() {
   widget_ = gfx::kNullAcceleratedWidget;
 }
 
-void WindowTreeHostPlatform::OnActivationChanged(bool active) {}
+void WindowTreeHostPlatform::OnActivationChanged(bool active) {
+}
 
 }  // namespace aura

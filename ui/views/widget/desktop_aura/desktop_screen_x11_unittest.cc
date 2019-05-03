@@ -440,25 +440,25 @@ TEST_F(DesktopScreenX11Test, DeviceScaleFactorChange) {
   NotifyDisplaysChanged(displays);
   ResetDisplayChanges();
 
-  displays[0].SetDeviceScaleFactor(2.5f);
+  displays[0].set_device_scale_factor(2.5f);
   NotifyDisplaysChanged(displays);
   EXPECT_EQ(1u, changed_display_.size());
   EXPECT_EQ(2.5f, gfx::GetFontRenderParamsDeviceScaleFactor());
 
-  displays[1].SetDeviceScaleFactor(2.5f);
+  displays[1].set_device_scale_factor(2.5f);
   NotifyDisplaysChanged(displays);
   EXPECT_EQ(2u, changed_display_.size());
 
-  displays[0].SetDeviceScaleFactor(2.5f);
+  displays[0].set_device_scale_factor(2.5f);
   NotifyDisplaysChanged(displays);
   EXPECT_EQ(2u, changed_display_.size());
 
-  displays[1].SetDeviceScaleFactor(2.5f);
+  displays[1].set_device_scale_factor(2.5f);
   NotifyDisplaysChanged(displays);
   EXPECT_EQ(2u, changed_display_.size());
 
-  displays[0].SetDeviceScaleFactor(1.f);
-  displays[1].SetDeviceScaleFactor(1.f);
+  displays[0].set_device_scale_factor(1.f);
+  displays[1].set_device_scale_factor(1.f);
   NotifyDisplaysChanged(displays);
   EXPECT_EQ(4u, changed_display_.size());
   EXPECT_EQ(1.f, gfx::GetFontRenderParamsDeviceScaleFactor());

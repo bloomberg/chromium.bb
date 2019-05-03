@@ -118,9 +118,6 @@ class WaylandConnection : public PlatformEventSource,
   WaylandWindow* GetWindowWithLargestBounds() const;
   WaylandWindow* GetCurrentFocusedWindow() const;
   WaylandWindow* GetCurrentKeyboardFocusedWindow() const;
-  // TODO(adunaev) remove this in favor of targeted subscription of windows to
-  // their displays.
-  std::vector<WaylandWindow*> GetWindowsOnDisplay(uint32_t display_id);
   void AddWindow(gfx::AcceleratedWidget widget, WaylandWindow* window);
   void RemoveWindow(gfx::AcceleratedWidget widget);
 
@@ -232,7 +229,7 @@ class WaylandConnection : public PlatformEventSource,
   // xdg_shell_listener
   static void Ping(void* data, xdg_shell* shell, uint32_t serial);
 
-  base::flat_map<gfx::AcceleratedWidget, WaylandWindow*> window_map_;
+  std::map<gfx::AcceleratedWidget, WaylandWindow*> window_map_;
 
   wl::Object<wl_display> display_;
   wl::Object<wl_registry> registry_;

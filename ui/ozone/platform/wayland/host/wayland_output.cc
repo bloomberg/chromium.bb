@@ -11,10 +11,14 @@
 
 namespace ui {
 
+namespace {
+constexpr float kDefaultScaleFactor = 1.0f;
+}
+
 WaylandOutput::WaylandOutput(const uint32_t output_id, wl_output* output)
     : output_id_(output_id),
       output_(output),
-      scale_factor_(kDefaultScaleFactor),
+      device_scale_factor_(kDefaultScaleFactor),
       rect_in_physical_pixels_(gfx::Rect()) {}
 
 WaylandOutput::~WaylandOutput() = default;
@@ -34,7 +38,7 @@ void WaylandOutput::Initialize(Delegate* delegate) {
 void WaylandOutput::TriggerDelegateNotification() const {
   DCHECK(!rect_in_physical_pixels_.IsEmpty());
   delegate_->OnOutputHandleMetrics(output_id_, rect_in_physical_pixels_,
-                                   scale_factor_);
+                                   device_scale_factor_);
 }
 
 // static
@@ -78,7 +82,7 @@ void WaylandOutput::OutputHandleScale(void* data,
                                       int32_t factor) {
   WaylandOutput* wayland_output = static_cast<WaylandOutput*>(data);
   if (wayland_output)
-    wayland_output->scale_factor_ = factor;
+    wayland_output->device_scale_factor_ = factor;
 }
 
 }  // namespace ui

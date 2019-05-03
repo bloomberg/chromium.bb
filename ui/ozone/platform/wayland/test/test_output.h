@@ -20,8 +20,6 @@ class TestOutput : public GlobalObject {
   const gfx::Rect GetRect() { return rect_; }
   void OnBind() override;
 
-  void SetScale(int32_t factor);
-
  private:
   gfx::Rect rect_;
 

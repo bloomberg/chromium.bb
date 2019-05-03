@@ -90,7 +90,7 @@ uint32_t DisplayList::UpdateDisplay(const Display& display, Type type) {
     changed_values |= DisplayObserver::DISPLAY_METRIC_ROTATION;
   }
   if (local_display->device_scale_factor() != display.device_scale_factor()) {
-    local_display->SetDeviceScaleFactor(display.device_scale_factor());
+    local_display->set_device_scale_factor(display.device_scale_factor());
     changed_values |= DisplayObserver::DISPLAY_METRIC_DEVICE_SCALE_FACTOR;
   }
   if (local_display->color_space() != display.color_space() ||

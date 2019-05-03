@@ -172,7 +172,7 @@ Display CreateDisplayFromDisplayInfo(const DisplayInfo& display_info,
                                      bool hdr_enabled) {
   Display display(display_info.id());
   float scale_factor = display_info.device_scale_factor();
-  display.SetDeviceScaleFactor(scale_factor);
+  display.set_device_scale_factor(scale_factor);
   display.set_work_area(
       gfx::ScaleToEnclosingRect(display_info.screen_work_rect(),
                                 1.0f / scale_factor));
