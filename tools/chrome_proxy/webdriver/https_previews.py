@@ -34,6 +34,10 @@ class HttpsPreviewsBaseClass():
     t.EnableChromeFeature('Previews')
     t.EnableChromeFeature('LitePageServerPreviews')
 
+    # RLH and NoScript may disable use of LitePageRedirect Previews.
+    t.DisableChromeFeature('ResourceLoadingHints')
+    t.DisableChromeFeature('NoScriptPreviews')
+
     if version == NAV_THROTTLE_VERSION:
       # No additional flags here, but explicitly check it given the else below.
       pass
@@ -44,15 +48,10 @@ class HttpsPreviewsBaseClass():
 
     t.AddChromeArg('--enable-spdy-proxy-auth')
     t.AddChromeArg('--dont-require-litepage-redirect-infobar')
-    t.AddChromeArg('--ignore-previews-blocklist')
+    t.AddChromeArg('--ignore-previews-blacklist')
     t.AddChromeArg('--force-effective-connection-type=2G')
     t.AddChromeArg('--ignore-litepage-redirect-optimization-blacklist')
     t.SetExperiment('external_chrome_integration_test')
-
-    # Start Chrome and wait for initialization.
-    t.LoadURL('data:,')
-    t.SleepUntilHistogramHasEntry(
-        'DataReductionProxy.ConfigService.FetchResponseCode')
 
   def _AssertShowingLitePage(self, t, expectedText, expectedImages):
     """Asserts that Chrome has loaded a Lite Page from the litepages server.
@@ -103,7 +102,8 @@ class HttpsPreviewsBaseClass():
         self.assertEqual(expectedStatus, response.status)
         html_responses += 1
 
-    bypass_count = t.GetHistogram('Previews.ServerLitePage.ServerResponse', 2)
+    bypass_count = t.GetBrowserHistogram(
+      'Previews.ServerLitePage.ServerResponse', 2)
     self.assertEqual(1, html_responses)
     self.assertEqual(expectedBypassCount, bypass_count['count'])
     self.assertPreviewNotShownViaHistogram(t, 'LitePageRedirect')
@@ -168,9 +168,9 @@ class HttpsPreviewsBaseClass():
 
       t.SleepUntilHistogramHasEntry("DataReductionProxy.Pingback.Succeeded")
       # Verify one pingback attempt that was successful.
-      attempted = t.GetHistogram('DataReductionProxy.Pingback.Attempted')
+      attempted = t.GetBrowserHistogram('DataReductionProxy.Pingback.Attempted')
       self.assertEqual(1, attempted['count'])
-      succeeded = t.GetHistogram('DataReductionProxy.Pingback.Succeeded')
+      succeeded = t.GetBrowserHistogram('DataReductionProxy.Pingback.Succeeded')
       self.assertEqual(1, succeeded['count'])
 
   # Verifies that a Lite Page is served when the main frame response is a
@@ -194,8 +194,8 @@ class HttpsPreviewsBaseClass():
       # BadSSL onterstitials are not actually shown in webdriver tests (they
       # seem to be clicked through automatically). This histogram is incremented
       # after an interstitial has been clicked.
-      histogram = t.GetHistogram('interstitial.ssl.visited_site_after_warning',
-                                 1)
+      histogram = t.GetBrowserHistogram(
+        'interstitial.ssl.visited_site_after_warning', 1)
       self.assertEqual(1, histogram['count'])
 
   # Verifies that a safebrowsing interstitial is shown (instead of a Lite Page)
@@ -210,7 +210,7 @@ class HttpsPreviewsBaseClass():
         t.LoadURL('https://testsafebrowsing.appspot.com/s/malware.html')
         self.fail('expected timeout')
       except TimeoutException:
-        histogram = t.GetHistogram('SB2.ResourceTypes2.Unsafe')
+        histogram = t.GetBrowserHistogram('SB2.ResourceTypes2.Unsafe')
         self.assertEqual(1, histogram['count'])
 
 
@@ -241,7 +241,11 @@ class HttpsPreviewsBaseClass():
       # Collect IDs of expected reporting requests.
       report_request_id = []
       for event in events:
-        if not "params" in event or not "headers" in event["params"]:
+        if "params" not in event:
+          continue
+        if event.get("params") is None:
+          continue
+        if "headers" not in event.get("params"):
           continue
 
         header = event["params"]["headers"]

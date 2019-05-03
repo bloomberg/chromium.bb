@@ -318,10 +318,12 @@ class TestDriver:
         chrome_options.add_experimental_option('mobileEmulation',
           {'deviceName': 'Pixel 2'})
 
-    self._chrome_args.add(
-      '--enable-features=%s' % ','.join(self._enable_features))
-    self._chrome_args.add(
-      '--disable-features=%s' % ','.join(self._disable_features))
+    if len(self._enable_features) > 0:
+      self._chrome_args.add(
+        '--enable-features=%s' % ','.join(self._enable_features))
+    if len(self._disable_features) > 0:
+      self._chrome_args.add(
+        '--disable-features=%s' % ','.join(self._disable_features))
     for arg in self._chrome_args:
       chrome_options.add_argument(arg)
     self._logger.info('Starting Chrome with these flags: %s',
@@ -650,6 +652,7 @@ class TestDriver:
     if self._driver:
       self._StopDriver()
       # Give a moment for Chrome to close and finish writing the netlog.
+      time.sleep(5)
     if not self._net_log:
       raise Exception('GetParsedNetLog() cannot be called before UseNetLog()')
     temp_file = self._net_log
@@ -703,8 +706,7 @@ class TestDriver:
 
     Args:
       histogram_name: The name of the histogram to wait for
-      sleep_intervals: The number of polling intervals, each polling cycle takes
-      no more than 6 seconds.
+      sleep_intervals: The number of polling intervals, each polling cycle is 1s
     Returns:
       Whether the histogram exists
     """
