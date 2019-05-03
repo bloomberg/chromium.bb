@@ -45,36 +45,6 @@ enum VAType {
   TEST_VA = 1;
 }
 
-message CreateGoogleAttestedKeyRequest {
-  // An arbitrary label which can be used to reference the key later.
-  optional string key_label = 1;
-  optional KeyType key_type = 2;
-  optional KeyUsage key_usage = 3;
-  // Describes the certificate to be requested of the CA.
-  optional CertificateProfile certificate_profile = 4;
-  // Provided if the new key should be accessible only by a particular user. If
-  // this field is not set or is the empty string, the key will be accessible
-  // system-wide.
-  optional string username = 5;
-  // If the |certificate_profile| is intended to be bound to a particular origin
-  // this field specifies the origin. For most profiles this is not required.
-  optional string origin = 6;
-  // What kind of ACA to use.
-  optional ACAType aca_type = 7;
-}
-
-message CreateGoogleAttestedKeyReply {
-  optional AttestationStatus status = 1;
-  // More information about a server-side error. This only exists
-  // if status=REQUEST_DENIED_BY_CA.
-  optional string server_error = 2;
-  // A PEM-encoded list of X.509 certificates starting with the requested
-  // certificate issued by the CA and followed by certificates for any
-  // intermediate authorities, in order. The Google Attestation CA root
-  // certificate is well-known and not included.
-  optional string certificate_chain = 3;
-}
-
 message GetKeyInfoRequest {
   optional string key_label = 1;
   optional string username = 2;
