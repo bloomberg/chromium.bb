@@ -609,6 +609,7 @@ class NewTabPageBindings : public gin::Wrappable<NewTabPageBindings> {
   static void ResetCustomLinks();
   static std::string FixupAndValidateUrl(const std::string& url);
   static void LogEvent(int event);
+  static void LogSuggestionEventWithValue(int event, int data);
   static void LogMostVisitedImpression(
       int position,
       int tile_title_source,
@@ -678,6 +679,8 @@ gin::ObjectTemplateBuilder NewTabPageBindings::GetObjectTemplateBuilder(
       .SetMethod("fixupAndValidateUrl",
                  &NewTabPageBindings::FixupAndValidateUrl)
       .SetMethod("logEvent", &NewTabPageBindings::LogEvent)
+      .SetMethod("logSuggestionEventWithValue",
+                 &NewTabPageBindings::LogSuggestionEventWithValue)
       .SetMethod("logMostVisitedImpression",
                  &NewTabPageBindings::LogMostVisitedImpression)
       .SetMethod("logMostVisitedNavigation",
@@ -937,6 +940,18 @@ void NewTabPageBindings::LogEvent(int event) {
   }
   if (event <= NTP_EVENT_TYPE_LAST)
     search_box->LogEvent(static_cast<NTPLoggingEventType>(event));
+}
+
+// static
+void NewTabPageBindings::LogSuggestionEventWithValue(int event, int data) {
+  SearchBox* search_box = GetSearchBoxForCurrentContext();
+  if (!search_box) {
+    return;
+  }
+  if (event <= static_cast<int>(NTPSuggestionsLoggingEventType::kMaxValue)) {
+    search_box->LogSuggestionEventWithValue(
+        static_cast<NTPSuggestionsLoggingEventType>(event), data);
+  }
 }
 
 // static

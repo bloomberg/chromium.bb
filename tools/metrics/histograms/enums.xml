@@ -40869,7 +40869,7 @@ Called by update_net_trust_anchors.py.-->
 
 <enum name="NTPSearchSuggestionsRequestStatus">
   <int value="0" label="Unknown Error"/>
-  <int value="1" label="Sent"/>
+  <int value="1" label="ReceivedResponse"/>
   <int value="2" label="SignedOut"/>
   <int value="3" label="OptedOut"/>
   <int value="4" label="ImpressionCap"/>

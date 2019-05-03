@@ -439,6 +439,26 @@ void NTPUserDataLogger::LogEvent(NTPLoggingEventType event,
   }
 }
 
+void NTPUserDataLogger::LogSuggestionEventWithValue(
+    NTPSuggestionsLoggingEventType event,
+    int data,
+    base::TimeDelta time) {
+  // Only logged on the Google NTP.
+  if (!DefaultSearchProviderIsGoogle()) {
+    return;
+  }
+
+  switch (event) {
+    case NTPSuggestionsLoggingEventType::kShownCount:
+      UMA_HISTOGRAM_COUNTS_100("NewTabPage.SearchSuggestions.ShownCount", data);
+      break;
+    case NTPSuggestionsLoggingEventType::kIndexClicked:
+      UMA_HISTOGRAM_COUNTS_100("NewTabPage.SearchSuggestions.IndexClicked",
+                               data);
+      break;
+  }
+}
+
 void NTPUserDataLogger::LogMostVisitedImpression(
     const ntp_tiles::NTPTileImpression& impression) {
   if ((impression.index >= kNumMostVisited) ||

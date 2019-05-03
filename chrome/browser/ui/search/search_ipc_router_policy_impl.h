@@ -39,6 +39,7 @@ class SearchIPCRouterPolicyImpl : public SearchIPCRouter::Policy {
   bool ShouldProcessUndoCustomLinkAction() override;
   bool ShouldProcessResetCustomLinks() override;
   bool ShouldProcessLogEvent() override;
+  bool ShouldProcessLogSuggestionEventWithValue() override;
   bool ShouldProcessPasteIntoOmnibox(bool is_active_tab) override;
   bool ShouldProcessChromeIdentityCheck() override;
   bool ShouldProcessHistorySyncCheck() override;

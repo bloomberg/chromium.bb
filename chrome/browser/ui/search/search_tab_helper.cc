@@ -345,6 +345,14 @@ void SearchTabHelper::OnLogEvent(NTPLoggingEventType event,
       ->LogEvent(event, time);
 }
 
+void SearchTabHelper::OnLogSuggestionEventWithValue(
+    NTPSuggestionsLoggingEventType event,
+    int data,
+    base::TimeDelta time) {
+  NTPUserDataLogger::GetOrCreateFromWebContents(web_contents())
+      ->LogSuggestionEventWithValue(event, data, time);
+}
+
 void SearchTabHelper::OnLogMostVisitedImpression(
     const ntp_tiles::NTPTileImpression& impression) {
   NTPUserDataLogger::GetOrCreateFromWebContents(web_contents())

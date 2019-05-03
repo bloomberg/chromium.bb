@@ -281,6 +281,20 @@ void SearchIPCRouter::LogEvent(int page_seq_no,
   delegate_->OnLogEvent(event, time);
 }
 
+void SearchIPCRouter::LogSuggestionEventWithValue(
+    int page_seq_no,
+    NTPSuggestionsLoggingEventType event,
+    int data,
+    base::TimeDelta time) {
+  if (page_seq_no != commit_counter_)
+    return;
+
+  if (!policy_->ShouldProcessLogSuggestionEventWithValue())
+    return;
+
+  delegate_->OnLogSuggestionEventWithValue(event, data, time);
+}
+
 void SearchIPCRouter::LogMostVisitedImpression(
     int page_seq_no,
     const ntp_tiles::NTPTileImpression& impression) {
