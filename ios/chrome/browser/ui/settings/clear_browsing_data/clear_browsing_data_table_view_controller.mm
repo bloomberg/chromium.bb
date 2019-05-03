@@ -36,8 +36,6 @@
 #endif
 
 namespace {
-// Separation space between sections.
-const CGFloat kSeparationSpaceBetweenSections = 9;
 const CGFloat kCellHightlightColorAlpha = 0.05;
 const int kCellHighlightColorRgb = 0x4285F4;
 }  // namespace
@@ -133,6 +131,7 @@ const int kCellHighlightColorRgb = 0x4285F4;
 - (void)viewDidLoad {
   [super viewDidLoad];
   if (IsNewClearBrowsingDataUIEnabled()) {
+    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     self.styler.cellHighlightColor =
         UIColorFromRGB(kCellHighlightColorRgb, kCellHightlightColorAlpha);
   }
@@ -349,26 +348,6 @@ const int kCellHighlightColorRgb = 0x4285F4;
       break;
   }
   [self updateToolbarButtons];
-}
-
-- (CGFloat)tableView:(UITableView*)tableView
-    heightForHeaderInSection:(NSInteger)section {
-  if (IsNewClearBrowsingDataUIEnabled() &&
-      section == [self.tableViewModel
-                     sectionForSectionIdentifier:SectionIdentifierDataTypes]) {
-    return 0;
-  }
-  return kSeparationSpaceBetweenSections;
-}
-
-- (CGFloat)tableView:(UITableView*)tableView
-    heightForFooterInSection:(NSInteger)section {
-  if (IsNewClearBrowsingDataUIEnabled() &&
-      section == [self.tableViewModel
-                     sectionForSectionIdentifier:SectionIdentifierTimeRange]) {
-    return 0;
-  }
-  return kSeparationSpaceBetweenSections;
 }
 
 #pragma mark - TableViewTextLinkCellDelegate

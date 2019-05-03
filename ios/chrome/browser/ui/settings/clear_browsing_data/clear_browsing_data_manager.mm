@@ -194,6 +194,7 @@ static NSDictionary* _imageNamesByItemTypes = @{
       DCHECK(self.listType == ClearBrowsingDataListType::kListTypeTableView);
       self.tableViewTimeRangeItem =
           base::mac::ObjCCastStrict<TableViewDetailIconItem>(timeRangeItem);
+      self.tableViewTimeRangeItem.useCustomSeparator = YES;
     }
   }
 
@@ -489,6 +490,7 @@ static NSDictionary* _imageNamesByItemTypes = @{
     tableViewClearDataItem.dataTypeMask = mask;
     tableViewClearDataItem.prefName = prefName;
     if (IsNewClearBrowsingDataUIEnabled()) {
+      tableViewClearDataItem.useCustomSeparator = YES;
       tableViewClearDataItem.imageName = [_imageNamesByItemTypes
           objectForKey:[NSNumber numberWithInteger:itemType]];
       if (itemType == ItemTypeDataTypeCookiesSiteData) {
