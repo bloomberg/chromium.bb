@@ -88,6 +88,7 @@ crbug.com/591099 external/wpt/css/css-multicol/multicol-span-all-list-item-002.h
 crbug.com/933054 external/wpt/css/css-position/position-absolute-container-dynamic-002.html [ Pass ]
 crbug.com/952644 external/wpt/css/css-position/position-absolute-crash-chrome-006.html [ Pass ]
 crbug.com/591099 external/wpt/css/css-position/position-absolute-in-inline-001.html [ Pass ]
+crbug.com/591099 external/wpt/css/css-position/position-absolute-in-inline-002.html [ Pass ]
 crbug.com/591099 external/wpt/css/css-position/static-position/htb-ltr-rtl.tentative.html [ Pass ]
 crbug.com/591099 external/wpt/css/css-position/static-position/htb-rtl-ltr.tentative.html [ Pass ]
 crbug.com/591099 external/wpt/css/css-position/static-position/htb-rtl-rtl.html [ Pass ]

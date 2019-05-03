@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 
+#include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_static_position.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 
@@ -25,14 +26,19 @@ namespace blink {
 struct CORE_EXPORT NGOutOfFlowPositionedDescendant {
   NGBlockNode node;
   NGStaticPosition static_position;
-  const LayoutObject* inline_container;
+  // Continuation root of the optional inline container.
+  const LayoutInline* inline_container;
+
   NGOutOfFlowPositionedDescendant(
       NGBlockNode node,
       NGStaticPosition static_position,
-      const LayoutObject* inline_container = nullptr)
+      const LayoutInline* inline_container = nullptr)
       : node(node),
         static_position(static_position),
-        inline_container(inline_container) {}
+        inline_container(inline_container) {
+    DCHECK(!inline_container ||
+           inline_container == inline_container->ContinuationRoot());
+  }
 };
 
 }  // namespace blink

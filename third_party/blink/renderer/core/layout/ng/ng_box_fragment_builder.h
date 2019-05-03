@@ -103,7 +103,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
 
   void AddOutOfFlowLegacyCandidate(NGBlockNode,
                                    const NGStaticPosition&,
-                                   LayoutObject* inline_container);
+                                   const LayoutInline* inline_container);
 
   // Set how much of the block size we've used so far for this box.
   NGBoxFragmentBuilder& SetUsedBlockSize(LayoutUnit used_block_size) {
@@ -228,7 +228,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
       HashMap<const LayoutObject*,
               base::Optional<InlineContainingBlockGeometry>>;
   void ComputeInlineContainerFragments(
-      InlineContainingBlockMap* inline_container_fragments);
+      InlineContainingBlockMap* inline_containing_block_map);
 
  private:
   scoped_refptr<const NGLayoutResult> ToBoxFragment(WritingMode);

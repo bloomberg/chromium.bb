@@ -116,8 +116,7 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
       LayoutBoxUtils::ComputeStaticPositionFromLegacy(*this);
   // Set correct container for inline containing blocks.
   container_builder.AddOutOfFlowLegacyCandidate(
-      NGBlockNode(this), static_position,
-      css_container->IsBox() ? nullptr : css_container);
+      NGBlockNode(this), static_position, ToLayoutInlineOrNull(css_container));
 
   base::Optional<LogicalSize> initial_containing_block_fixed_size;
   if (container->IsLayoutView() && !GetDocument().Printing()) {

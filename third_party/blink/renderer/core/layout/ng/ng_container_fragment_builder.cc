@@ -227,17 +227,18 @@ void NGContainerFragmentBuilder::GetAndClearOutOfFlowDescendantCandidates(
     //
     // This checks if the object creating this box will be the container for
     // the given descendant.
-    const LayoutObject* inline_container =
+    const LayoutInline* inline_container =
         candidate.descendant.inline_container;
     if (!inline_container && layout_object_ &&
         layout_object_->IsLayoutInline() &&
         layout_object_->CanContainOutOfFlowPositionedElement(
             candidate.descendant.node.Style().GetPosition()))
-      inline_container = layout_object_;
+      inline_container = ToLayoutInline(layout_object_);
 
     descendant_candidates->push_back(NGOutOfFlowPositionedDescendant(
         candidate.descendant.node, builder_relative_position,
-        inline_container));
+        inline_container ? ToLayoutInline(inline_container->ContinuationRoot())
+                         : nullptr));
     LogicalOffset container_offset =
         builder_relative_position.offset.ConvertToLogical(
             GetWritingMode(), Direction(), builder_physical_size,

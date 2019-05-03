@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_flexible_box.h"
+#include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_box_utils.h"
@@ -36,7 +37,7 @@ bool IsAnonymousContainer(const LayoutObject* layout_object) {
 //  - NG uses the anonymous' parent block, that contains all the anonymous
 //    continuations.
 // This function finds the correct anonymous parent block.
-LayoutBoxModelObject* GetOOFContainingBlockFromAnonymous(
+const LayoutInline* GetOOFContainingBlockFromAnonymous(
     const LayoutObject* anonymous_block,
     EPosition child_position) {
   DCHECK(IsAnonymousContainer(anonymous_block));
@@ -59,8 +60,7 @@ LayoutBoxModelObject* GetOOFContainingBlockFromAnonymous(
   }
   DCHECK(absolute_containing_block->IsLayoutInline());
   // Make absolute_containing_block continuation root.
-  return ToLayoutBoxModelObject(
-      absolute_containing_block->GetNode()->GetLayoutObject());
+  return ToLayoutInline(absolute_containing_block->ContinuationRoot());
 }
 
 }  // namespace
@@ -130,11 +130,11 @@ void NGOutOfFlowLayoutPart::Run(const LayoutBox* only_layout) {
   // See "Special case: oof css container" comment for detailed description.
   if (descendant_candidates.size() > 0 && current_container && !only_layout &&
       IsAnonymousContainer(current_container)) {
-    LayoutBoxModelObject* absolute_containing_block =
+    const LayoutInline* absolute_containing_block =
         contains_absolute_ ? GetOOFContainingBlockFromAnonymous(
                                  current_container, EPosition::kAbsolute)
                            : nullptr;
-    LayoutBoxModelObject* fixed_containing_block =
+    const LayoutInline* fixed_containing_block =
         contains_fixed_ ? GetOOFContainingBlockFromAnonymous(current_container,
                                                              EPosition::kFixed)
                         : nullptr;
@@ -219,14 +219,14 @@ bool NGOutOfFlowLayoutPart::SweepLegacyDescendants(
         LayoutBoxUtils::ComputeStaticPositionFromLegacy(*layout_box,
                                                         container_builder_);
 
-    LayoutObject* css_container = layout_box->Container();
+    const LayoutObject* css_container = layout_box->Container();
     if (IsAnonymousContainer(css_container)) {
       css_container = GetOOFContainingBlockFromAnonymous(
           css_container, layout_box->Style()->GetPosition());
     }
     container_builder_->AddOutOfFlowLegacyCandidate(
         NGBlockNode(layout_box), static_position,
-        css_container->IsBox() ? nullptr : css_container);
+        ToLayoutInlineOrNull(css_container));
   }
   return true;
 }
@@ -236,9 +236,8 @@ NGOutOfFlowLayoutPart::GetContainingBlockInfo(
     const NGOutOfFlowPositionedDescendant& descendant) const {
   if (descendant.inline_container) {
     const auto it = containing_blocks_map_.find(descendant.inline_container);
-    // TODO(atotic): Make this if-condition a DCHECK.
-    if (it != containing_blocks_map_.end())
-      return it->value;
+    DCHECK(it != containing_blocks_map_.end());
+    return it->value;
   }
   return default_containing_block_;
 }
@@ -270,126 +269,116 @@ void NGOutOfFlowLayoutPart::ComputeInlineContainingBlocks(
     LogicalOffset container_offset;
     PhysicalOffset physical_container_offset;
 
-    if (!block_info.value.has_value()) {
-      // This happens when Legacy block is the default container.
-      // In this case, container builder does not have any fragments because
-      // ng layout algorithm did not run.
-      DCHECK(block_info.key->IsLayoutInline());
-      NOTIMPLEMENTED()
-          << "Inline containing block might need geometry information";
-      // TODO(atotic) ContainingBlockInfo geometry
-      // must be computed from Legacy algorithm
-    } else {
-      DCHECK(inline_cb_style);
-      NGBoxStrut inline_cb_borders = ComputeBordersForInline(*inline_cb_style);
+    DCHECK(block_info.value.has_value());
+    DCHECK(inline_cb_style);
+    NGBoxStrut inline_cb_borders = ComputeBordersForInline(*inline_cb_style);
 
-      // The calculation below determines the size of the inline containing
-      // block rect.
-      //
-      // To perform this calculation we:
-      // 1. Determine the start_offset "^", this is at the logical-start (wrt.
-      //    default containing block), of the start fragment rect.
-      // 2. Determine the end_offset "$", this is at the logical-end (wrt.
-      //    default containing block), of the end  fragment rect.
-      // 3. Determine the logical rectangle defined by these two offsets.
-      //
-      // Case 1a: Same direction, overlapping fragments.
-      //      +---------------
-      // ---> |^*****-------->
-      //      +*----*---------
-      //       *    *
-      // ------*----*+
-      // ----> *****$| --->
-      // ------------+
-      //
-      // Case 1b: Different direction, overlapping fragments.
-      //      +---------------
-      // ---> ^******* <-----|
-      //      *------*--------
-      //      *      *
-      // -----*------*
-      // |<-- *******$ --->
-      // ------------+
-      //
-      // Case 2a: Same direction, non-overlapping fragments.
-      //             +--------
-      // --------->  |^ ----->
-      //             +*-------
-      //              *
-      // --------+    *
-      // ------->|    $ --->
-      // --------+
-      //
-      // Case 2b: Same direction, non-overlapping fragments.
-      //             +--------
-      // --------->  ^ <-----|
-      //             *--------
-      //             *
-      // --------+   *
-      // | <------   $  --->
-      // --------+
-      //
-      // Note in cases [1a, 2a] we need to account for the inline borders of
-      // the rectangles, where-as in [1b, 2b] we do not. This is handled by the
-      // is_same_direction check(s).
-      //
-      // Note in cases [2a, 2b] we don't allow a "negative" containing block
-      // size, we clamp negative sizes to zero.
-      WritingMode container_writing_mode =
-          default_containing_block_.style->GetWritingMode();
-      TextDirection container_direction =
-          default_containing_block_.style->Direction();
+    // The calculation below determines the size of the inline containing block
+    // rect.
+    //
+    // To perform this calculation we:
+    // 1. Determine the start_offset "^", this is at the logical-start (wrt.
+    //    default containing block), of the start fragment rect.
+    // 2. Determine the end_offset "$", this is at the logical-end (wrt.
+    //    default containing block), of the end  fragment rect.
+    // 3. Determine the logical rectangle defined by these two offsets.
+    //
+    // Case 1a: Same direction, overlapping fragments.
+    //      +---------------
+    // ---> |^*****-------->
+    //      +*----*---------
+    //       *    *
+    // ------*----*+
+    // ----> *****$| --->
+    // ------------+
+    //
+    // Case 1b: Different direction, overlapping fragments.
+    //      +---------------
+    // ---> ^******* <-----|
+    //      *------*--------
+    //      *      *
+    // -----*------*
+    // |<-- *******$ --->
+    // ------------+
+    //
+    // Case 2a: Same direction, non-overlapping fragments.
+    //             +--------
+    // --------->  |^ ----->
+    //             +*-------
+    //              *
+    // --------+    *
+    // ------->|    $ --->
+    // --------+
+    //
+    // Case 2b: Same direction, non-overlapping fragments.
+    //             +--------
+    // --------->  ^ <-----|
+    //             *--------
+    //             *
+    // --------+   *
+    // | <------   $  --->
+    // --------+
+    //
+    // Note in cases [1a, 2a] we need to account for the inline borders of the
+    // rectangles, where-as in [1b, 2b] we do not. This is handled by the
+    // is_same_direction check(s).
+    //
+    // Note in cases [2a, 2b] we don't allow a "negative" containing block size,
+    // we clamp negative sizes to zero.
+    WritingMode container_writing_mode =
+        default_containing_block_.style->GetWritingMode();
+    TextDirection container_direction =
+        default_containing_block_.style->Direction();
 
-      bool is_same_direction =
-          container_direction == inline_cb_style->Direction();
+    bool is_same_direction =
+        container_direction == inline_cb_style->Direction();
 
-      // Step 1 - determine the start_offset.
-      const PhysicalRect& start_rect =
-          block_info.value->start_fragment_union_rect;
-      LogicalOffset start_offset = start_rect.offset.ConvertToLogical(
-          container_writing_mode, container_direction,
-          container_builder_physical_size, start_rect.size);
+    // Step 1 - determine the start_offset.
+    const PhysicalRect& start_rect =
+        block_info.value->start_fragment_union_rect;
+    LogicalOffset start_offset = start_rect.offset.ConvertToLogical(
+        container_writing_mode, container_direction,
+        container_builder_physical_size, start_rect.size);
 
-      // Make sure we add the inline borders, we don't need to do this in the
-      // inline direction if the blocks are in opposite directions.
-      start_offset.block_offset += inline_cb_borders.block_start;
-      if (is_same_direction)
-        start_offset.inline_offset += inline_cb_borders.inline_start;
+    // Make sure we add the inline borders, we don't need to do this in the
+    // inline direction if the blocks are in opposite directions.
+    start_offset.block_offset += inline_cb_borders.block_start;
+    if (is_same_direction)
+      start_offset.inline_offset += inline_cb_borders.inline_start;
 
-      // Step 2 - determine the end_offset.
-      const PhysicalRect& end_rect = block_info.value->end_fragment_union_rect;
-      LogicalOffset end_offset = end_rect.offset.ConvertToLogical(
-          container_writing_mode, container_direction,
-          container_builder_physical_size, end_rect.size);
+    // Step 2 - determine the end_offset.
+    const PhysicalRect& end_rect = block_info.value->end_fragment_union_rect;
+    LogicalOffset end_offset = end_rect.offset.ConvertToLogical(
+        container_writing_mode, container_direction,
+        container_builder_physical_size, end_rect.size);
 
-      // Add in the size of the fragment to get the logical end of the fragment.
-      end_offset += end_rect.size.ConvertToLogical(container_writing_mode);
+    // Add in the size of the fragment to get the logical end of the fragment.
+    end_offset += end_rect.size.ConvertToLogical(container_writing_mode);
 
-      // Make sure we substract the inline borders, we don't need to do this in
-      // the inline direction if the blocks are in opposite directions.
-      end_offset.block_offset -= inline_cb_borders.block_end;
-      if (is_same_direction)
-        end_offset.inline_offset -= inline_cb_borders.inline_end;
+    // Make sure we subtract the inline borders, we don't need to do this in the
+    // inline direction if the blocks are in opposite directions.
+    end_offset.block_offset -= inline_cb_borders.block_end;
+    if (is_same_direction)
+      end_offset.inline_offset -= inline_cb_borders.inline_end;
 
-      // Make sure we don't end up with a rectangle with "negative" size.
-      end_offset.inline_offset =
-          std::max(end_offset.inline_offset, start_offset.inline_offset);
+    // Make sure we don't end up with a rectangle with "negative" size.
+    end_offset.inline_offset =
+        std::max(end_offset.inline_offset, start_offset.inline_offset);
 
-      // Step 3 - determine the logical rectange.
+    // Step 3 - determine the logical rectangle.
 
-      // Determine the logical size of the containing block.
-      inline_cb_size = {end_offset.inline_offset - start_offset.inline_offset,
-                        end_offset.block_offset - start_offset.block_offset};
-      DCHECK_GE(inline_cb_size.inline_size, LayoutUnit());
-      DCHECK_GE(inline_cb_size.block_size, LayoutUnit());
+    // Determine the logical size of the containing block.
+    inline_cb_size = {end_offset.inline_offset - start_offset.inline_offset,
+                      end_offset.block_offset - start_offset.block_offset};
+    DCHECK_GE(inline_cb_size.inline_size, LayoutUnit());
+    DCHECK_GE(inline_cb_size.block_size, LayoutUnit());
 
-      // Determine the container offsets.
-      container_offset = start_offset;
-      physical_container_offset = container_offset.ConvertToPhysical(
-          container_writing_mode, container_direction,
-          container_builder_physical_size,
-          ToPhysicalSize(inline_cb_size, container_writing_mode));
-    }
+    // Determine the container offsets.
+    container_offset = start_offset;
+    physical_container_offset = container_offset.ConvertToPhysical(
+        container_writing_mode, container_direction,
+        container_builder_physical_size,
+        ToPhysicalSize(inline_cb_size, container_writing_mode));
     containing_blocks_map_.insert(
         block_info.key,
         ContainingBlockInfo{inline_cb_style, inline_cb_size, inline_cb_size,

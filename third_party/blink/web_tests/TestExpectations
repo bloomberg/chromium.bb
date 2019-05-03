@@ -398,6 +398,7 @@ crbug.com/711807 external/wpt/css/CSS2/normal-flow/replaced-intrinsic-002.xht [ 
 crbug.com/933054 external/wpt/css/css-position/position-absolute-container-dynamic-002.html [ Failure ]
 crbug.com/952644 external/wpt/css/css-position/position-absolute-crash-chrome-006.html [ Crash ]
 crbug.com/935805 external/wpt/css/css-position/position-absolute-in-inline-001.html [ Failure ]
+crbug.com/935805 external/wpt/css/css-position/position-absolute-in-inline-002.html [ Failure ]
 crbug.com/752022 external/wpt/css/css-position/position-sticky-offset-overflow.html [ Failure ]
 crbug.com/702927 external/wpt/css/css-position/position-sticky-table-tr-top.html [ Failure ]
 crbug.com/702927 external/wpt/css/css-position/position-sticky-table-tr-bottom.html [ Failure ]

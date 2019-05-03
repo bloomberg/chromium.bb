@@ -4833,8 +4833,7 @@ void LayoutBlockFlow::AddOutlineRects(
     // FIXME: This is wrong for vertical writing-modes.
     // https://bugs.webkit.org/show_bug.cgi?id=46781
     bool prev_inline_has_line_box =
-        ToLayoutInline(
-            inline_element_continuation->GetNode()->GetLayoutObject())
+        ToLayoutInline(inline_element_continuation->ContinuationRoot())
             ->FirstLineBox();
     LayoutUnit top_margin =
         prev_inline_has_line_box ? CollapsedMarginBefore() : LayoutUnit();

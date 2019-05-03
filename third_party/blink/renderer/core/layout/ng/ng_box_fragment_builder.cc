@@ -17,13 +17,17 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_positioned_float.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 
 namespace blink {
 
 namespace {
 
+// std::pair.first points to the start linebox fragment.
+// std::pair.second points to the end linebox fragment.
 using LineBoxPair = std::pair<const NGPhysicalLineBoxFragment*,
                               const NGPhysicalLineBoxFragment*>;
+
 void GatherInlineContainerFragmentsFromLinebox(
     NGBoxFragmentBuilder::InlineContainingBlockMap* inline_containing_block_map,
     HashMap<const LayoutObject*, LineBoxPair>* containing_linebox_map,
@@ -32,10 +36,10 @@ void GatherInlineContainerFragmentsFromLinebox(
   for (auto& descendant : NGInlineFragmentTraversal::DescendantsOf(*linebox)) {
     if (!descendant.fragment->IsBox())
       continue;
-    LayoutObject* key = descendant.fragment->GetLayoutObject();
+    const LayoutObject* key = descendant.fragment->GetLayoutObject();
     // Key for inline is the continuation root if it exists.
     if (key->IsLayoutInline() && key->GetNode())
-      key = key->GetNode()->GetLayoutObject();
+      key = key->ContinuationRoot();
     auto it = inline_containing_block_map->find(key);
     if (it == inline_containing_block_map->end()) {
       // Default case, not one of the blocks we are looking for.
@@ -162,12 +166,14 @@ NGBoxFragmentBuilder& NGBoxFragmentBuilder::PropagateBreak(
 void NGBoxFragmentBuilder::AddOutOfFlowLegacyCandidate(
     NGBlockNode node,
     const NGStaticPosition& static_position,
-    LayoutObject* inline_container) {
+    const LayoutInline* inline_container) {
   DCHECK_GE(InlineSize(), LayoutUnit());
   DCHECK_GE(BlockSize(), LayoutUnit());
 
-  NGOutOfFlowPositionedDescendant descendant{node, static_position,
-                                             inline_container};
+  NGOutOfFlowPositionedDescendant descendant(
+      node, static_position,
+      inline_container ? ToLayoutInline(inline_container->ContinuationRoot())
+                       : nullptr);
   // Need 0,0 physical coordinates as child offset. Because offset
   // is stored as logical, must convert physical 0,0 to logical.
   LogicalOffset zero_offset;
@@ -274,13 +280,13 @@ void NGBoxFragmentBuilder::ComputeInlineContainerFragments(
   // and will break if this changes.
   DCHECK_GE(InlineSize(), LayoutUnit());
   DCHECK_GE(BlockSize(), LayoutUnit());
+#if DCHECK_IS_ON()
+  // Make sure all entries are continuation root.
+  for (const auto& entry : *inline_containing_block_map)
+    DCHECK_EQ(entry.key, entry.key->ContinuationRoot());
+#endif
 
-  // std::pair.first points to the start linebox fragment.
-  // std::pair.second points to the end linebox fragment.
-  using LineBoxPair = std::pair<const NGPhysicalLineBoxFragment*,
-                                const NGPhysicalLineBoxFragment*>;
   HashMap<const LayoutObject*, LineBoxPair> containing_linebox_map;
-
   for (wtf_size_t i = 0; i < children_.size(); i++) {
     if (children_[i]->IsLineBox()) {
       const auto* linebox = To<NGPhysicalLineBoxFragment>(children_[i].get());

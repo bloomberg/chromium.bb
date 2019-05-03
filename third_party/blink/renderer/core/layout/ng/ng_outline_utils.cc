@@ -31,7 +31,7 @@ bool NGOutlineUtils::IsInlineOutlineNonpaintingFragment(
   if (layout_object->IsElementContinuation()) {
     // If continuation root did generate a fragment,
     // this fragment should not paint.
-    if (layout_object->GetNode()->GetLayoutObject()->FirstInlineFragment())
+    if (layout_object->ContinuationRoot()->FirstInlineFragment())
       return true;
   }
   if (!layout_object->FirstInlineFragment())

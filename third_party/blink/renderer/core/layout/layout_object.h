@@ -873,6 +873,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
            !IsListMarker() && !IsLayoutFlowThread() &&
            !IsLayoutMultiColumnSet();
   }
+  // If node has been split into continuations, it returns the first layout
+  // object generated for the node.
+  const LayoutObject* ContinuationRoot() const {
+    return GetNode() ? GetNode()->GetLayoutObject() : this;
+  }
   bool IsElementContinuation() const {
     return GetNode() && GetNode()->GetLayoutObject() != this;
   }
