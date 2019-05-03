@@ -65,11 +65,10 @@ cca.views.camera.Layout.cssStyle_ = function(selector) {
 
 /**
  * Updates the video element size for previewing in the window.
- * @param {boolean} fullWindow Whether the window is maximized or fullscreen..
  * @return {Array<number>} Letterbox size in [width, height].
  * @private
  */
-cca.views.camera.Layout.prototype.updatePreviewSize_ = function(fullWindow) {
+cca.views.camera.Layout.prototype.updatePreviewSize_ = function() {
   // Make video content keeps its aspect ratio inside the window's inner-bounds;
   // it may fill up the window or be letterboxed when fullscreen/maximized.
   // Don't use app-window.innerBounds' width/height properties during resizing
@@ -102,8 +101,13 @@ cca.views.camera.Layout.prototype.updatePreviewSize_ = function(fullWindow) {
  */
 cca.views.camera.Layout.prototype.update = function() {
   var fullWindow = cca.util.isWindowFullSize();
+  var tall = window.innerHeight > window.innerWidth;
+  var tabletLandscape = fullWindow && !tall;
+  cca.state.set('tablet-landscape', tabletLandscape);
+  cca.state.set('max-wnd', fullWindow);
+  cca.state.set('tall', tall);
 
-  var [letterboxW, letterboxH] = this.updatePreviewSize_(fullWindow);
+  var [letterboxW, letterboxH] = this.updatePreviewSize_();
   var isLetterboxW = letterboxH < letterboxW;
 
   cca.state.set('w-letterbox', isLetterboxW);
