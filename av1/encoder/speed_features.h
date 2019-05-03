@@ -712,6 +712,9 @@ typedef struct SPEED_FEATURES {
   // and only perform a full MV search on the motion vectors that performed
   // well.
   int prune_mode_search_simple_translation;
+
+  // Use compound reference for non-RD mode.
+  int use_comp_ref_nonrd;
 } SPEED_FEATURES;
 
 struct AV1_COMP;

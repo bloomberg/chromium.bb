@@ -466,6 +466,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
   sf->use_fast_nonrd_pick_mode = 0;
   sf->reuse_inter_pred_nonrd = 0;
   sf->estimate_motion_for_var_based_partition = 1;
+  sf->use_comp_ref_nonrd = 1;
 
   if (speed >= 1) {
     sf->gm_erroradv_type = GM_ERRORADV_TR_1;
@@ -591,11 +592,10 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
   }
 
   if (speed >= 6) {
-    int i;
     sf->optimize_coefficients = NO_TRELLIS_OPT;
     sf->mv.search_method = HEX;
     sf->disable_filter_search_var_thresh = 500;
-    for (i = 0; i < TX_SIZES; ++i) {
+    for (int i = 0; i < TX_SIZES; ++i) {
       sf->intra_y_mode_mask[i] = INTRA_DC;
       sf->intra_uv_mode_mask[i] = UV_INTRA_DC_CFL;
     }
@@ -617,6 +617,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     // and disabled TX64
     if (!cpi->oxcf.enable_tx64) sf->tx_size_search_method = USE_FAST_RD;
     sf->use_nonrd_pick_mode = 1;
+    sf->use_comp_ref_nonrd = 0;
     sf->inter_mode_rd_model_estimation = 2;
   }
   if (speed >= 8) {
