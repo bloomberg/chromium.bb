@@ -36,6 +36,8 @@ class Clock;
 
 namespace send_tab_to_self {
 
+struct TargetDeviceInfo;
+
 // Interface for a persistence layer for send tab to self.
 // All interface methods have to be called on main thread.
 class SendTabToSelfBridge : public syncer::ModelTypeSyncBridge,
@@ -79,7 +81,7 @@ class SendTabToSelfBridge : public syncer::ModelTypeSyncBridge,
   void DeleteEntry(const std::string& guid) override;
   void DismissEntry(const std::string& guid) override;
   bool IsReady() override;
-  std::map<std::string, std::string> GetTargetDeviceNameToCacheGuidMap()
+  std::map<std::string, TargetDeviceInfo> GetTargetDeviceNameToCacheInfoMap()
       override;
 
   // history::HistoryServiceObserver:
@@ -89,7 +91,7 @@ class SendTabToSelfBridge : public syncer::ModelTypeSyncBridge,
   // For testing only.
   static std::unique_ptr<syncer::ModelTypeStore> DestroyAndStealStoreForTest(
       std::unique_ptr<SendTabToSelfBridge> bridge);
-  bool ShouldUpdateTargetDeviceNameToCacheGuidMapForTest();
+  bool ShouldUpdateTargetDeviceNameToCacheInfoMapForTest();
 
  private:
   using SendTabToSelfEntries =
@@ -129,10 +131,10 @@ class SendTabToSelfBridge : public syncer::ModelTypeSyncBridge,
   void DoGarbageCollection();
 
   // Returns whether the target device name to cache guid map should be updated.
-  bool ShouldUpdateTargetDeviceNameToCacheGuidMap() const;
+  bool ShouldUpdateTargetDeviceNameToCacheInfoMap() const;
 
   // Sets the target device name to cache guid map.
-  void SetTargetDeviceNameToCacheGuidMap();
+  void SetTargetDeviceNameToCacheInfoMap();
 
   // |entries_| is keyed by GUIDs.
   SendTabToSelfEntries entries_;
@@ -155,8 +157,8 @@ class SendTabToSelfBridge : public syncer::ModelTypeSyncBridge,
   // A pointer to the most recently used entry used for deduplication.
   const SendTabToSelfEntry* mru_entry_;
 
-  // A map of target devices names to their associated cache guid.
-  std::map<std::string, std::string> target_device_name_to_cache_guid_;
+  // A map of target devices names to their associated cache information.
+  std::map<std::string, TargetDeviceInfo> target_device_name_to_cache_info_;
 
   // The following two variables are used to determine whether we should update
   // the target device name to cache guid map.

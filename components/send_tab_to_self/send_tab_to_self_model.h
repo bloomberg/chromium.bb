@@ -16,6 +16,8 @@
 
 namespace send_tab_to_self {
 
+struct TargetDeviceInfo;
+
 // The send tab to self model contains a list of entries of shared urls.
 // This object should only be accessed from one thread, which is usually the
 // main thread.
@@ -69,8 +71,8 @@ class SendTabToSelfModel {
   // Returns a map of the name of possible target devices for the send tab to
   // self feature to their cache guid. This is a thin layer on top of
   // DeviceInfoTracker.
-  virtual std::map<std::string, std::string>
-  GetTargetDeviceNameToCacheGuidMap() = 0;
+  virtual std::map<std::string, TargetDeviceInfo>
+  GetTargetDeviceNameToCacheInfoMap() = 0;
 
  protected:
   // The observers.

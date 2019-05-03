@@ -17,6 +17,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/send_tab_to_self/features.h"
 #include "components/send_tab_to_self/proto/send_tab_to_self.pb.h"
+#include "components/send_tab_to_self/target_device_info.h"
 #include "components/sync/device_info/device_info.h"
 #include "components/sync/device_info/device_info_tracker.h"
 #include "components/sync/model/entity_change.h"
@@ -627,7 +628,7 @@ TEST_F(SendTabToSelfBridgeTest,
 // Tests that only the most recent device's guid is returned when multiple
 // devices have the same name.
 TEST_F(SendTabToSelfBridgeTest,
-       GetTargetDeviceNameToCacheGuidMap_OneDevicePerName) {
+       GetTargetDeviceNameToCacheInfoMap_OneDevicePerName) {
   const std::string kRecentGuid = "guid1";
   const std::string kOldGuid = "guid2";
   const std::string kOlderGuid = "guid3";
@@ -662,14 +663,17 @@ TEST_F(SendTabToSelfBridgeTest,
   ON_CALL(*processor(), GetEntityModificationTime(kOlderGuid))
       .WillByDefault(Return(clock()->Now() - base::TimeDelta::FromDays(5)));
 
-  EXPECT_THAT(bridge()->GetTargetDeviceNameToCacheGuidMap(),
-              ElementsAre(Pair("device_name", kRecentGuid)));
+  TargetDeviceInfo device_info_for_ui(kRecentGuid,
+                                      sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
+
+  EXPECT_THAT(bridge()->GetTargetDeviceNameToCacheInfoMap(),
+              ElementsAre(Pair("device_name", device_info_for_ui)));
 }
 
 // Tests that only devices that have the send tab to self receiving feature
 // enabled are returned.
 TEST_F(SendTabToSelfBridgeTest,
-       GetTargetDeviceNameToCacheGuidMap_OnlyReceivingEnabled) {
+       GetTargetDeviceNameToCacheInfoMap_OnlyReceivingEnabled) {
   InitializeBridge();
 
   syncer::DeviceInfo enabled_device(
@@ -690,13 +694,16 @@ TEST_F(SendTabToSelfBridgeTest,
   ON_CALL(*processor(), GetEntityModificationTime("disabled_guid"))
       .WillByDefault(Return(clock()->Now() - base::TimeDelta::FromDays(1)));
 
-  EXPECT_THAT(bridge()->GetTargetDeviceNameToCacheGuidMap(),
-              ElementsAre(Pair("enabled_device_name", "enabled_guid")));
+  TargetDeviceInfo device_info_for_ui("enabled_guid",
+                                      sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
+
+  EXPECT_THAT(bridge()->GetTargetDeviceNameToCacheInfoMap(),
+              ElementsAre(Pair("enabled_device_name", device_info_for_ui)));
 }
 
 // Tests that only devices that are not expired are returned.
 TEST_F(SendTabToSelfBridgeTest,
-       GetTargetDeviceNameToCacheGuidMap_NoExpiredDevices) {
+       GetTargetDeviceNameToCacheInfoMap_NoExpiredDevices) {
   InitializeBridge();
 
   syncer::DeviceInfo expired_device(
@@ -717,13 +724,16 @@ TEST_F(SendTabToSelfBridgeTest,
   ON_CALL(*processor(), GetEntityModificationTime("valid_guid"))
       .WillByDefault(Return(clock()->Now() - base::TimeDelta::FromDays(1)));
 
-  EXPECT_THAT(bridge()->GetTargetDeviceNameToCacheGuidMap(),
-              ElementsAre(Pair("valid_device_name", "valid_guid")));
+  TargetDeviceInfo device_info_for_ui("valid_guid",
+                                      sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
+
+  EXPECT_THAT(bridge()->GetTargetDeviceNameToCacheInfoMap(),
+              ElementsAre(Pair("valid_device_name", device_info_for_ui)));
 }
 
 // Tests that the local device is not returned.
 TEST_F(SendTabToSelfBridgeTest,
-       GetTargetDeviceNameToCacheGuidMap_NoLocalDevice) {
+       GetTargetDeviceNameToCacheInfoMap_NoLocalDevice) {
   InitializeBridge();
 
   syncer::DeviceInfo local_device(
@@ -744,13 +754,16 @@ TEST_F(SendTabToSelfBridgeTest,
   ON_CALL(*processor(), GetEntityModificationTime("other_guid"))
       .WillByDefault(Return(clock()->Now() - base::TimeDelta::FromDays(1)));
 
-  EXPECT_THAT(bridge()->GetTargetDeviceNameToCacheGuidMap(),
-              ElementsAre(Pair("other_device_name", "other_guid")));
+  TargetDeviceInfo device_info_for_ui("other_guid",
+                                      sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
+
+  EXPECT_THAT(bridge()->GetTargetDeviceNameToCacheInfoMap(),
+              ElementsAre(Pair("other_device_name", device_info_for_ui)));
 }
 
 // Tests that the local device is not returned.
 TEST_F(SendTabToSelfBridgeTest,
-       GetTargetDeviceNameToCacheGuidMap_Updated_DeviceExpired) {
+       GetTargetDeviceNameToCacheInfoMap_Updated_DeviceExpired) {
   InitializeBridge();
 
   // Set a device that is about to expire and a more recent device.
@@ -772,22 +785,27 @@ TEST_F(SendTabToSelfBridgeTest,
   ON_CALL(*processor(), GetEntityModificationTime("recent_guid"))
       .WillByDefault(Return(clock()->Now() - base::TimeDelta::FromDays(1)));
 
+  TargetDeviceInfo device_info_1("older_guid",
+                                 sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
+  TargetDeviceInfo device_info_2("recent_guid",
+                                 sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
+
   // Set the map by calling it. Make sure it has the 2 devices.
-  EXPECT_THAT(bridge()->GetTargetDeviceNameToCacheGuidMap(),
-              UnorderedElementsAre(Pair("older_name", "older_guid"),
-                                   Pair("recent_name", "recent_guid")));
+  EXPECT_THAT(bridge()->GetTargetDeviceNameToCacheInfoMap(),
+              UnorderedElementsAre(Pair("older_name", device_info_1),
+                                   Pair("recent_name", device_info_2)));
 
   // Advance the time so that the older device expires.
   clock()->Advance(base::TimeDelta::FromDays(5));
 
   // Make sure only the recent device is in the map.
-  EXPECT_THAT(bridge()->GetTargetDeviceNameToCacheGuidMap(),
-              ElementsAre(Pair("recent_name", "recent_guid")));
+  EXPECT_THAT(bridge()->GetTargetDeviceNameToCacheInfoMap(),
+              ElementsAre(Pair("recent_name", device_info_2)));
 }
 
 // Tests that the local device is not returned.
 TEST_F(SendTabToSelfBridgeTest,
-       GetTargetDeviceNameToCacheGuidMap_Updated_NewEntries) {
+       GetTargetDeviceNameToCacheInfoMap_Updated_NewEntries) {
   InitializeBridge();
 
   // Set a valid device.
@@ -800,8 +818,11 @@ TEST_F(SendTabToSelfBridgeTest,
       .WillByDefault(Return(clock()->Now() - base::TimeDelta::FromDays(1)));
 
   // Set the map by calling it. Make sure it has the device.
-  EXPECT_THAT(bridge()->GetTargetDeviceNameToCacheGuidMap(),
-              ElementsAre(Pair("name", "guid")));
+  TargetDeviceInfo device_info_1("guid",
+                                 sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
+
+  EXPECT_THAT(bridge()->GetTargetDeviceNameToCacheInfoMap(),
+              ElementsAre(Pair("name", device_info_1)));
 
   // Add a new device.
   syncer::DeviceInfo new_device("new_guid", "new_name", "72", "agent",
@@ -813,9 +834,12 @@ TEST_F(SendTabToSelfBridgeTest,
       .WillByDefault(Return(clock()->Now() - base::TimeDelta::FromDays(1)));
 
   // Make sure both devices are in the map.
-  EXPECT_THAT(
-      bridge()->GetTargetDeviceNameToCacheGuidMap(),
-      UnorderedElementsAre(Pair("name", "guid"), Pair("new_name", "new_guid")));
+  TargetDeviceInfo device_info_2("new_guid",
+                                 sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
+
+  EXPECT_THAT(bridge()->GetTargetDeviceNameToCacheInfoMap(),
+              UnorderedElementsAre(Pair("name", device_info_1),
+                                   Pair("new_name", device_info_2)));
 }
 
 }  // namespace

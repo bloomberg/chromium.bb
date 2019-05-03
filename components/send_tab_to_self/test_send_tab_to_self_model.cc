@@ -33,8 +33,8 @@ bool TestSendTabToSelfModel::IsReady() {
   return false;
 }
 
-std::map<std::string, std::string>
-TestSendTabToSelfModel::GetTargetDeviceNameToCacheGuidMap() {
+std::map<std::string, TargetDeviceInfo>
+TestSendTabToSelfModel::GetTargetDeviceNameToCacheInfoMap() {
   return {};
 }
 
