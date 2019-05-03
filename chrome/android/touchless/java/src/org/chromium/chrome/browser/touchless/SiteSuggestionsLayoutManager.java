@@ -134,6 +134,7 @@ class SiteSuggestionsLayoutManager extends RecyclerView.LayoutManager {
     public void onLayoutCompleted(RecyclerView.State state) {
         super.onLayoutCompleted(state);
         if (mShouldFocusAfterLayout) {
+            mShouldFocusAfterLayout = false;
             mFocusView.requestFocus();
         }
     }
@@ -258,7 +259,7 @@ class SiteSuggestionsLayoutManager extends RecyclerView.LayoutManager {
     }
 
     boolean focusCenterItem(int direction, Rect previouslyFocusedRect) {
-        if (mRecyclerView.isComputingLayout() || mFocusView == null) {
+        if (mRecyclerView == null || mRecyclerView.isComputingLayout() || mFocusView == null) {
             mShouldFocusAfterLayout = true;
             return true;
         }
