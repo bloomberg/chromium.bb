@@ -213,6 +213,7 @@ class MockPatch(mock.MagicMock):
         'CRVW': '2',
         'VRIF': '1',
         'COMR': '1',
+        'LCQ': '1',
     }
 
   def HasApproval(self, field, allowed):
@@ -559,7 +560,7 @@ class MasterCQSyncTestCase(BaseCQTestCase):
     """
     self.PatchObject(
         validation_pool.ValidationPool,
-        '_FilterNonCrosProjects',
+        '_FilterNonLcqProjects',
         side_effect=lambda x, _: (x, []))
     return self.PerformSync(changes=changes, **kwargs)
 
@@ -1084,7 +1085,7 @@ pre-cq-configs: grunt-pre-cq
     # Mark a change as trybot ready, but not approved. It should also be tried
     # by the pre-cq.
     for change in changes[2:5]:
-      change.flags = {'TRY': '1'}
+      change.flags = {'TRY': '1', 'LCQ': '1'}
       change.IsMergeable = lambda: False
 
     self.mockLaunchTrybots(
@@ -1134,7 +1135,7 @@ pre-cq-configs: grunt-pre-cq
 
     # Failed CLs that are marked ready should be tried again, and changes that
     # aren't ready shouldn't be launched.
-    changes[4].flags = {'CRVW': '2'}
+    changes[4].flags = {'CRVW': '2', 'LCQ': '1'}
     changes[4].HasReadyFlag = lambda: False
 
     self.PerformSync(pre_cq_status=None, changes=changes, patch_objects=False)

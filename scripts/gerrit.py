@@ -42,6 +42,7 @@ GERRIT_APPROVAL_MAP = {
     'CRVW': ['CR', 'Code Review    ',],
     'SUBM': ['S ', 'Submitted      ',],
     'VRIF': ['V ', 'Verified       ',],
+    'LCQ': ['L ', 'Legacy         ',],
 }
 
 # Order is important -- matches the web ui.  This also controls the short

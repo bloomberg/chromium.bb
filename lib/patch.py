@@ -2167,6 +2167,7 @@ FOOTER_TAGS_BY_APPROVAL_TYPE = {
     'COMR': 'Commit-Ready',
     'TRY': None,
     'SUBM': 'Submitted-by',
+    'LCQ': 'Legacy-Commit-Queue',
 }
 
 

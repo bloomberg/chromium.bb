@@ -372,7 +372,7 @@ class ValidationPool(object):
 
       # Start by filtering to only CrOS changes, so that we don't try to update
       # Chromium browser CLs.
-      changes, non_manifest_changes = ValidationPool._FilterNonCrosProjects(
+      changes, non_manifest_changes = ValidationPool._FilterNonLcqProjects(
           changes, git.ManifestCheckout.Cached(self.build_root))
 
       # Tell users to publish drafts/privates before marking them commit ready.
@@ -561,8 +561,8 @@ class ValidationPool(object):
     return False
 
   @staticmethod
-  def _FilterNonCrosProjects(changes, manifest):
-    """Filters changes to a tuple of relevant changes.
+  def _FilterNonLcqProjects(changes, manifest):
+    """Filters changes not handled by the Legacy CQ; returns relevant changes.
 
     There are many code reviews that are not part of Chromium OS and/or
     only relevant on a different branch. This method returns a tuple of (
@@ -586,6 +586,13 @@ class ValidationPool(object):
 
     # First we filter to only Chromium OS repositories.
     changes = [c for c in changes if IsCrosReview(c)]
+
+    # Next, filter out Parallel CQ CL's that aren't delegated to us
+    changes = [
+        c for c in changes
+        if c.project not in constants.WHITELISTED_PARALLEL_CQ_PROJECTS or
+        c.HasApproval('LCQ', ('1'))
+    ]
 
     changes_in_manifest = []
     changes_not_in_manifest = []
