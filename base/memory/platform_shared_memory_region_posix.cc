@@ -8,6 +8,7 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 
+#include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -229,11 +230,10 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Create(Mode mode,
   if (!GetShmemTempDir(false /* executable */, &directory))
     return {};
 
-  ScopedFD fd;
   FilePath path;
-  fd.reset(CreateAndOpenFdForTemporaryFileInDir(directory, &path));
+  File shm_file(CreateAndOpenFdForTemporaryFileInDir(directory, &path));
 
-  if (!fd.is_valid()) {
+  if (!shm_file.IsValid()) {
     PLOG(ERROR) << "Creating shared memory in " << path.value() << " failed";
     FilePath dir = path.DirName();
     if (access(dir.value().c_str(), W_OK | X_OK) < 0) {
@@ -261,24 +261,12 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Create(Mode mode,
     }
   }
 
-#if defined(OS_LINUX)
-  // Unlike ftruncate(), fallocate() always allocates disk space, so we get an
-  // error if the disk is full. https://crbug.com/951431
-  if (HANDLE_EINTR(fallocate(fd.get(), 0, 0, size)) != 0) {
-    PLOG(ERROR) << "Failed to reserve " << size << " bytes for shared memory.";
+  if (!AllocateFileRegion(&shm_file, 0, size))
     return {};
-  }
-#else
-  // fallocate() is a Linux-specific syscall, fallback to ftruncate().
-  if (HANDLE_EINTR(ftruncate(fd.get(), size)) != 0) {
-    DPLOG(ERROR) << "ftruncate() failed";
-    return {};
-  }
-#endif
 
   if (readonly_fd.is_valid()) {
     struct stat stat = {};
-    if (fstat(fd.get(), &stat) != 0) {
+    if (fstat(shm_file.GetPlatformFile(), &stat) != 0) {
       DPLOG(ERROR) << "fstat(fd) failed";
       return {};
     }
@@ -296,8 +284,9 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Create(Mode mode,
     }
   }
 
-  return PlatformSharedMemoryRegion({std::move(fd), std::move(readonly_fd)},
-                                    mode, size, UnguessableToken::Create());
+  return PlatformSharedMemoryRegion(
+      {ScopedFD(shm_file.TakePlatformFile()), std::move(readonly_fd)}, mode,
+      size, UnguessableToken::Create());
 #endif  // !defined(OS_NACL)
 }
 

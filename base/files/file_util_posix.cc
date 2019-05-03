@@ -22,6 +22,7 @@
 #include <unistd.h>
 
 #include "base/base_switches.h"
+#include "base/bits.h"
 #include "base/command_line.h"
 #include "base/containers/stack.h"
 #include "base/environment.h"
@@ -865,6 +866,78 @@ bool WriteFileDescriptor(const int fd, const char* data, int size) {
                            size - bytes_written_total));
     if (bytes_written_partial < 0)
       return false;
+  }
+
+  return true;
+}
+
+bool AllocateFileRegion(File* file, int64_t offset, size_t size) {
+  DCHECK(file);
+
+  // Explicitly extend |file| to the maximum size. Zeros will fill the new
+  // space. It is assumed that the existing file is fully realized as
+  // otherwise the entire file would have to be read and possibly written.
+  const int64_t original_file_len = file->GetLength();
+  if (original_file_len < 0) {
+    DPLOG(ERROR) << "fstat " << file->GetPlatformFile();
+    return false;
+  }
+
+  // Increase the actual length of the file, if necessary. This can fail if
+  // the disk is full and the OS doesn't support sparse files.
+  const int64_t new_file_len = offset + size;
+  if (!file->SetLength(std::max(original_file_len, new_file_len))) {
+    DPLOG(ERROR) << "ftruncate " << file->GetPlatformFile();
+    return false;
+  }
+
+  // Realize the extent of the file so that it can't fail (and crash) later
+  // when trying to write to a memory page that can't be created. This can
+  // fail if the disk is full and the file is sparse.
+
+  // First try the more effective platform-specific way of allocating the disk
+  // space. It can fail because the filesystem doesn't support it. In that case,
+  // use the manual method below.
+
+#if defined(OS_LINUX)
+  if (HANDLE_EINTR(fallocate(file->GetPlatformFile(), 0, offset, size)) != -1)
+    return true;
+  DPLOG(ERROR) << "fallocate";
+#elif defined(OS_MACOSX)
+  // MacOS doesn't support fallocate even though their new APFS filesystem
+  // does support sparse files. It does, however, have the functionality
+  // available via fcntl.
+  // See also: https://openradar.appspot.com/32720223
+  fstore_t params = {F_ALLOCATEALL, F_PEOFPOSMODE, offset, size, 0};
+  if (fcntl(file->GetPlatformFile(), F_PREALLOCATE, &params) != -1)
+    return true;
+  DPLOG(ERROR) << "F_PREALLOCATE";
+#endif
+
+  // Manually realize the extended file by writing bytes to it at intervals.
+  int64_t block_size = 512;  // Start with something safe.
+  struct stat statbuf;
+  if (fstat(file->GetPlatformFile(), &statbuf) == 0 && statbuf.st_blksize > 0 &&
+      base::bits::IsPowerOfTwo(statbuf.st_blksize)) {
+    block_size = statbuf.st_blksize;
+  }
+
+  // Write starting at the next block boundary after the old file length.
+  const int64_t extension_start =
+      base::bits::Align(original_file_len, block_size);
+  for (int64_t i = extension_start; i < new_file_len; i += block_size) {
+    char existing_byte;
+    if (HANDLE_EINTR(pread(file->GetPlatformFile(), &existing_byte, 1, i)) !=
+        1) {
+      return false;  // Can't read? Not viable.
+    }
+    if (existing_byte != 0) {
+      continue;  // Block has data so must already exist.
+    }
+    if (HANDLE_EINTR(pwrite(file->GetPlatformFile(), &existing_byte, 1, i)) !=
+        1) {
+      return false;  // Can't write? Not viable.
+    }
   }
 
   return true;
