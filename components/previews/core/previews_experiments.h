@@ -50,6 +50,20 @@ enum class PreviewsType {
   LAST = 9,
 };
 
+enum class CoinFlipHoldbackResult {
+  // Either the page load was not eligible for any previews, or the coin flip
+  // holdback experiment was disabled.
+  kNotSet = 0,
+
+  // A preview was likely for the page load, and a random coin flip allowed the
+  // preview to be shown to the user.
+  kAllowed = 1,
+
+  // A preview was likely for the page load, and a random coin flip did not
+  // allow the preview to be shown to the user.
+  kHoldback = 2,
+};
+
 typedef std::vector<std::pair<PreviewsType, int>> PreviewsTypeList;
 
 // Gets the string representation of |type|.
@@ -194,6 +208,9 @@ int ResourceLoadingHintsPreviewsInflationPercent();
 // For estimating ResourceLoadingHints data savings, this is the number of
 // bytes to for inflating the original_bytes count.
 int ResourceLoadingHintsPreviewsInflationBytes();
+
+// Forces the coin flip holdback, if enabled, to always come up "holdback".
+bool ShouldOverrideCoinFlipHoldbackResult();
 
 }  // namespace params
 

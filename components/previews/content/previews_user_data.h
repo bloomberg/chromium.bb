@@ -52,6 +52,11 @@ class PreviewsUserData {
   // A session unique ID related to this navigation.
   uint64_t page_id() const { return page_id_; }
 
+  // A random bool that is used in the coin flip holdback logic.
+  bool random_coin_flip_for_navigation() const {
+    return random_coin_flip_for_navigation_;
+  }
+
   // The effective connection type value for the navigation.
   net::EffectiveConnectionType navigation_ect() const {
     return navigation_ect_;
@@ -112,6 +117,9 @@ class PreviewsUserData {
   // Sets the committed previews type for testing. Can be called multiple times.
   void SetCommittedPreviewsTypeForTesting(previews::PreviewsType previews_type);
 
+  // Sets |random_coin_flip_for_navigation_| for testing;
+  void SetRandomCoinFlipForNavigationForTesting(bool decision);
+
   bool offline_preview_used() const { return offline_preview_used_; }
   // Whether an offline preview is being served.
   void set_offline_preview_used(bool offline_preview_used) {
@@ -136,6 +144,15 @@ class PreviewsUserData {
     committed_previews_state_ = committed_previews_state;
   }
 
+  // The result of a coin flip (if present) for this page load.
+  CoinFlipHoldbackResult coin_flip_holdback_result() {
+    return coin_flip_holdback_result_;
+  }
+  void set_coin_flip_holdback_result(
+      CoinFlipHoldbackResult coin_flip_holdback_result) {
+    coin_flip_holdback_result_ = coin_flip_holdback_result;
+  }
+
   // Metadata for an attempted or committed Lite Page Redirect preview.
   ServerLitePageInfo* server_lite_page_info() {
     return server_lite_page_info_.get();
@@ -147,6 +164,10 @@ class PreviewsUserData {
  private:
   // A session unique ID related to this navigation.
   const uint64_t page_id_;
+
+  // A random bool that is set once for a navigation and used in the coin flip
+  // holdback logic.
+  bool random_coin_flip_for_navigation_;
 
   // The effective connection type at the time of navigation. This is the value
   // to compare to the preview's triggering ect threshold.
@@ -178,6 +199,10 @@ class PreviewsUserData {
 
   // The PreviewsState that was committed for the navigation.
   content::PreviewsState committed_previews_state_ = content::PREVIEWS_OFF;
+
+  // The state of a random coin flip holdback, if any.
+  CoinFlipHoldbackResult coin_flip_holdback_result_ =
+      CoinFlipHoldbackResult::kNotSet;
 
   // Metadata for an attempted or committed Lite Page Redirect preview. See
   // struct comments for more detail.

@@ -569,6 +569,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::PreviewsState initial_state,
       content::NavigationHandle* navigation_handle,
       const net::HttpResponseHeaders* response_headers) override;
+
   void LogWebFeatureForCurrentPage(content::RenderFrameHost* render_frame_host,
                                    blink::mojom::WebFeature feature) override;
 
@@ -592,6 +593,16 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 
   base::flat_set<std::string> GetMimeHandlerViewMimeTypes(
       content::ResourceContext* resource_context) override;
+
+  content::PreviewsState DetermineAllowedPreviewsWithoutHoldback(
+      content::PreviewsState initial_state,
+      content::NavigationHandle* navigation_handle,
+      const GURL& current_navigation_url);
+
+  content::PreviewsState DetermineCommittedPreviewsWithoutHoldback(
+      content::PreviewsState initial_state,
+      content::NavigationHandle* navigation_handle,
+      const net::HttpResponseHeaders* response_headers);
 
   // Determines the committed previews state for the passed in params.
   static content::PreviewsState DetermineCommittedPreviewsForURL(

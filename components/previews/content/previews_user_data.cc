@@ -4,6 +4,8 @@
 
 #include "components/previews/content/previews_user_data.h"
 
+#include "base/rand_util.h"
+
 namespace previews {
 
 const void* const kPreviewsUserDataKey = &kPreviewsUserDataKey;
@@ -15,6 +17,7 @@ PreviewsUserData::~PreviewsUserData() {}
 
 PreviewsUserData::PreviewsUserData(const PreviewsUserData& other)
     : page_id_(other.page_id_),
+      random_coin_flip_for_navigation_(base::RandInt(0, 1)),
       navigation_ect_(other.navigation_ect_),
       data_savings_inflation_percent_(other.data_savings_inflation_percent_),
       cache_control_no_transform_directive_(
@@ -23,7 +26,8 @@ PreviewsUserData::PreviewsUserData(const PreviewsUserData& other)
       black_listed_for_lite_page_(other.black_listed_for_lite_page_),
       committed_previews_type_(other.committed_previews_type_),
       allowed_previews_state_(other.allowed_previews_state_),
-      committed_previews_state_(other.committed_previews_state_) {
+      committed_previews_state_(other.committed_previews_state_),
+      coin_flip_holdback_result_(other.coin_flip_holdback_result_) {
   if (other.server_lite_page_info_) {
     server_lite_page_info_ =
         std::make_unique<ServerLitePageInfo>(*other.server_lite_page_info_);
@@ -39,6 +43,10 @@ void PreviewsUserData::SetCommittedPreviewsType(
 void PreviewsUserData::SetCommittedPreviewsTypeForTesting(
     previews::PreviewsType previews_type) {
   committed_previews_type_ = previews_type;
+}
+
+void PreviewsUserData::SetRandomCoinFlipForNavigationForTesting(bool decision) {
+  random_coin_flip_for_navigation_ = decision;
 }
 
 }  // namespace previews
