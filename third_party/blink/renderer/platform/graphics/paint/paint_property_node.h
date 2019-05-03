@@ -138,6 +138,14 @@ class PaintPropertyNode : public RefCounted<NodeType> {
 #endif
   }
 
+  int CcNodeId(int sequence_number) const {
+    return cc_sequence_number_ == sequence_number ? cc_node_id_ : -1;
+  }
+  void SetCcNodeId(int sequence_number, int id) const {
+    cc_sequence_number_ = sequence_number;
+    cc_node_id_ = id;
+  }
+
 #if DCHECK_IS_ON()
   String ToTreeString() const;
 
@@ -176,6 +184,11 @@ class PaintPropertyNode : public RefCounted<NodeType> {
   friend class ObjectPaintProperties;
 
   scoped_refptr<const NodeType> parent_;
+
+  // Caches the id of the associated cc property node. It's valid only when
+  // cc_sequence_number_ matches the sequence number of the cc property tree.
+  mutable int cc_node_id_ = -1;
+  mutable int cc_sequence_number_ = 0;
 
   // Indicates whether this node is an alias for its parent. Parent aliases are
   // nodes that do not affect rendering and are ignored for the purposes of

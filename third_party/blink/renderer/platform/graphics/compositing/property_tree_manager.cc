@@ -43,17 +43,12 @@ PropertyTreeManager::PropertyTreeManager(PropertyTreeManagerClient& client)
     : client_(client) {}
 
 void PropertyTreeManager::Initialize(cc::PropertyTrees* property_trees,
-                                     LayerListBuilder* layer_list_builder) {
+                                     LayerListBuilder* layer_list_builder,
+                                     int new_sequence_number) {
   DCHECK(root_layer_);
   property_trees_ = property_trees;
   layer_list_builder_ = layer_list_builder;
-
-  // If we're initializing the manager again, it means that we will be
-  // rebuilding everything. Clear the current maps.
-  transform_node_map_.clear();
-  clip_node_map_.clear();
-  scroll_node_map_.clear();
-  effect_node_map_.clear();
+  new_sequence_number_ = new_sequence_number;
 
   SetupRootTransformNode();
   SetupRootClipNode();
@@ -72,7 +67,6 @@ void PropertyTreeManager::Finalize() {
   property_trees_ = nullptr;
   layer_list_builder_ = nullptr;
 #if DCHECK_IS_ON()
-  effect_nodes_converted_.clear();
   DCHECK(initialized_);
   initialized_ = false;
 #endif
@@ -81,10 +75,8 @@ void PropertyTreeManager::Finalize() {
 bool PropertyTreeManager::DirectlyUpdateCompositedOpacityValue(
     cc::PropertyTrees* property_trees,
     const EffectPaintPropertyNode& effect) {
-  auto it = effect_node_map_.find(&effect);
-  if (it == effect_node_map_.end())
-    return false;
-  auto* cc_effect = property_trees->effect_tree.Node(it->value);
+  auto* cc_effect = property_trees->effect_tree.Node(
+      effect.CcNodeId(property_trees->sequence_number));
   if (!cc_effect)
     return false;
 
@@ -107,17 +99,14 @@ bool PropertyTreeManager::DirectlyUpdateScrollOffsetTransform(
   if (!scroll_node)
     return false;
 
-  auto scroll_it = scroll_node_map_.find(scroll_node);
-  if (scroll_it == scroll_node_map_.end())
+  auto* cc_scroll_node = property_trees->scroll_tree.Node(
+      scroll_node->CcNodeId(property_trees->sequence_number));
+  if (!cc_scroll_node)
     return false;
-  auto* cc_scroll_node = property_trees->scroll_tree.Node(scroll_it->value);
 
-  auto transform_it = transform_node_map_.find(&transform);
-  if (transform_it == transform_node_map_.end())
-    return false;
-  auto* cc_transform = property_trees->transform_tree.Node(transform_it->value);
-
-  if (!cc_scroll_node || !cc_transform)
+  auto* cc_transform = property_trees->transform_tree.Node(
+      transform.CcNodeId(property_trees->sequence_number));
+  if (!cc_transform)
     return false;
 
   DCHECK(!cc_transform->is_currently_animating);
@@ -140,10 +129,8 @@ bool PropertyTreeManager::DirectlyUpdateTransform(
   // DirectlyUpdateScrollOffsetTransform().
   DCHECK(!transform.ScrollNode());
 
-  auto transform_it = transform_node_map_.find(&transform);
-  if (transform_it == transform_node_map_.end())
-    return false;
-  auto* cc_transform = property_trees->transform_tree.Node(transform_it->value);
+  auto* cc_transform = property_trees->transform_tree.Node(
+      transform.CcNodeId(property_trees->sequence_number));
   if (!cc_transform)
     return false;
 
@@ -164,10 +151,8 @@ bool PropertyTreeManager::DirectlyUpdatePageScaleTransform(
     const TransformPaintPropertyNode& transform) {
   DCHECK(!transform.ScrollNode());
 
-  auto transform_it = transform_node_map_.find(&transform);
-  if (transform_it == transform_node_map_.end())
-    return false;
-  auto* cc_transform = property_trees->transform_tree.Node(transform_it->value);
+  auto* cc_transform = property_trees->transform_tree.Node(
+      transform.CcNodeId(property_trees->sequence_number));
   if (!cc_transform)
     return false;
 
@@ -223,8 +208,8 @@ void PropertyTreeManager::SetupRootTransformNode() {
   transform_tree.SetFromScreen(kRealRootNodeId, from_screen);
   transform_tree.set_needs_update(true);
 
-  transform_node_map_.Set(&TransformPaintPropertyNode::Root(),
-                          transform_node.id);
+  TransformPaintPropertyNode::Root().SetCcNodeId(new_sequence_number_,
+                                                 transform_node.id);
   root_layer_->SetTransformTreeIndex(transform_node.id);
 }
 
@@ -245,7 +230,7 @@ void PropertyTreeManager::SetupRootClipNode() {
       gfx::SizeF(root_layer_->layer_tree_host()->device_viewport_size()));
   clip_node.transform_id = kRealRootNodeId;
 
-  clip_node_map_.Set(&ClipPaintPropertyNode::Root(), clip_node.id);
+  ClipPaintPropertyNode::Root().SetCcNodeId(new_sequence_number_, clip_node.id);
   root_layer_->SetClipTreeIndex(clip_node.id);
 }
 
@@ -267,6 +252,8 @@ void PropertyTreeManager::SetupRootEffectNode() {
   effect_node.render_surface_reason = cc::RenderSurfaceReason::kRoot;
   root_layer_->SetEffectTreeIndex(effect_node.id);
 
+  EffectPaintPropertyNode::Root().SetCcNodeId(new_sequence_number_,
+                                              effect_node.id);
   SetCurrentEffectState(effect_node, CcEffectType::kEffect,
                         EffectPaintPropertyNode::Root(),
                         ClipPaintPropertyNode::Root());
@@ -281,7 +268,8 @@ void PropertyTreeManager::SetupRootScrollNode() {
   DCHECK_EQ(scroll_node.id, kSecondaryRootNodeId);
   scroll_node.transform_id = kSecondaryRootNodeId;
 
-  scroll_node_map_.Set(&ScrollPaintPropertyNode::Root(), scroll_node.id);
+  ScrollPaintPropertyNode::Root().SetCcNodeId(new_sequence_number_,
+                                              scroll_node.id);
   root_layer_->SetScrollTreeIndex(scroll_node.id);
 }
 
@@ -349,13 +337,15 @@ void PropertyTreeManager::SetCurrentEffectRenderSurfaceReason(
 int PropertyTreeManager::EnsureCompositorTransformNode(
     const TransformPaintPropertyNode& transform_node_arg) {
   const auto& transform_node = transform_node_arg.Unalias();
-  auto it = transform_node_map_.find(&transform_node);
-  if (it != transform_node_map_.end())
-    return it->value;
+  int id = transform_node.CcNodeId(new_sequence_number_);
+  if (id != kInvalidNodeId) {
+    DCHECK(GetTransformTree().Node(id));
+    return id;
+  }
 
   DCHECK(transform_node.Parent());
   int parent_id = EnsureCompositorTransformNode(*transform_node.Parent());
-  int id = GetTransformTree().Insert(cc::TransformNode(), parent_id);
+  id = GetTransformTree().Insert(cc::TransformNode(), parent_id);
 
   cc::TransformNode& compositor_node = *GetTransformTree().Node(id);
   compositor_node.source_node_id = parent_id;
@@ -435,8 +425,7 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
         cc::RenderSurfaceReason::k3dTransformFlattening);
   }
 
-  auto result = transform_node_map_.Set(&transform_node, id);
-  DCHECK(result.is_new_entry);
+  transform_node.SetCcNodeId(new_sequence_number_, id);
   GetTransformTree().set_needs_update(true);
 
   return id;
@@ -517,13 +506,15 @@ void PropertyTreeManager::SetTransformTreePageScaleFactor(
 int PropertyTreeManager::EnsureCompositorClipNode(
     const ClipPaintPropertyNode& clip_node_arg) {
   const auto& clip_node = clip_node_arg.Unalias();
-  auto it = clip_node_map_.find(&clip_node);
-  if (it != clip_node_map_.end())
-    return it->value;
+  int id = clip_node.CcNodeId(new_sequence_number_);
+  if (id != kInvalidNodeId) {
+    DCHECK(GetClipTree().Node(id));
+    return id;
+  }
 
   DCHECK(clip_node.Parent());
   int parent_id = EnsureCompositorClipNode(*clip_node.Parent());
-  int id = GetClipTree().Insert(cc::ClipNode(), parent_id);
+  id = GetClipTree().Insert(cc::ClipNode(), parent_id);
 
   cc::ClipNode& compositor_node = *GetClipTree().Node(id);
 
@@ -532,8 +523,7 @@ int PropertyTreeManager::EnsureCompositorClipNode(
       EnsureCompositorTransformNode(clip_node.LocalTransformSpace());
   compositor_node.clip_type = cc::ClipNode::ClipType::APPLIES_LOCAL_CLIP;
 
-  auto result = clip_node_map_.Set(&clip_node, id);
-  DCHECK(result.is_new_entry);
+  clip_node.SetCcNodeId(new_sequence_number_, id);
   GetClipTree().set_needs_update(true);
   return id;
 }
@@ -541,14 +531,13 @@ int PropertyTreeManager::EnsureCompositorClipNode(
 void PropertyTreeManager::CreateCompositorScrollNode(
     const ScrollPaintPropertyNode& scroll_node,
     const cc::TransformNode& scroll_offset_translation) {
-  DCHECK(!scroll_node_map_.Contains(&scroll_node));
+  DCHECK(!GetScrollTree().Node(scroll_node.CcNodeId(new_sequence_number_)));
 
-  auto parent_it = scroll_node_map_.find(scroll_node.Parent());
+  int parent_id = scroll_node.Parent()->CcNodeId(new_sequence_number_);
   // Compositor transform nodes up to scroll_offset_translation must exist.
   // Scrolling uses the transform tree for scroll offsets so this means all
   // ancestor scroll nodes must also exist.
-  DCHECK(parent_it != scroll_node_map_.end());
-  int parent_id = parent_it->value;
+  DCHECK(GetScrollTree().Node(parent_id));
   int id = GetScrollTree().Insert(cc::ScrollNode(), parent_id);
 
   cc::ScrollNode& compositor_node = *GetScrollTree().Node(id);
@@ -585,8 +574,7 @@ void PropertyTreeManager::CreateCompositorScrollNode(
 
   // TODO(pdr): Set the scroll node's non_fast_scrolling_region value.
 
-  auto result = scroll_node_map_.Set(&scroll_node, id);
-  DCHECK(result.is_new_entry);
+  scroll_node.SetCcNodeId(new_sequence_number_, id);
 
   GetScrollTree().SetScrollOffset(compositor_element_id,
                                   scroll_offset_translation.scroll_offset);
@@ -598,9 +586,9 @@ int PropertyTreeManager::EnsureCompositorScrollNode(
   const auto* scroll_node = scroll_offset_translation.ScrollNode();
   DCHECK(scroll_node);
   EnsureCompositorTransformNode(scroll_offset_translation);
-  auto it = scroll_node_map_.find(scroll_node);
-  DCHECK(it != scroll_node_map_.end());
-  return it->value;
+  int id = scroll_node->CcNodeId(new_sequence_number_);
+  DCHECK(GetScrollTree().Node(id));
+  return id;
 }
 
 void PropertyTreeManager::EmitClipMaskLayer() {
@@ -907,10 +895,9 @@ void PropertyTreeManager::BuildEffectNodesRecursively(
   DCHECK_EQ(&next_effect.Parent()->Unalias(), current_.effect);
 
 #if DCHECK_IS_ON()
-  DCHECK(!effect_nodes_converted_.Contains(&next_effect))
+  DCHECK(!GetEffectTree().Node(next_effect.CcNodeId(new_sequence_number_)))
       << "Malformed paint artifact. Paint chunks under the same effect should "
          "be contiguous.";
-  effect_nodes_converted_.insert(&next_effect);
 #endif
 
   // If we don't have an output clip, then we'll use the clip of the last
@@ -930,7 +917,7 @@ void PropertyTreeManager::BuildEffectNodesRecursively(
   int effect_node_id =
       GetEffectTree().Insert(cc::EffectNode(), current_.effect_id);
   auto& effect_node = *GetEffectTree().Node(effect_node_id);
-  effect_node_map_.Set(&next_effect, effect_node_id);
+  next_effect.SetCcNodeId(new_sequence_number_, effect_node_id);
 
   PopulateCcEffectNode(effect_node, next_effect, output_clip_id, blend_mode);
 

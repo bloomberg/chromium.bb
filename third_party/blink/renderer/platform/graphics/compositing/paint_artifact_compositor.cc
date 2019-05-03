@@ -916,8 +916,8 @@ void PaintArtifactCompositor::Update(
 
   LayerListBuilder layer_list_builder;
 
-  property_tree_manager_.Initialize(host->property_trees(),
-                                    &layer_list_builder);
+  property_tree_manager_.Initialize(host->property_trees(), &layer_list_builder,
+                                    g_s_property_tree_sequence_number);
   CollectPendingLayers(*paint_artifact, settings);
 
   UpdateCompositorViewportProperties(viewport_properties,

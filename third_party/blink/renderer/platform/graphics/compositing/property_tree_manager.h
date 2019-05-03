@@ -56,7 +56,8 @@ class PropertyTreeManager {
   }
 
   void Initialize(cc::PropertyTrees* property_trees,
-                  LayerListBuilder* layer_list_builder);
+                  LayerListBuilder* layer_list_builder,
+                  int new_sequence_number);
 
   void SetRootLayer(cc::Layer* root_layer) {
     DCHECK(!root_layer_) << "We can only set root layer once.";
@@ -225,12 +226,7 @@ class PropertyTreeManager {
 
   LayerListBuilder* layer_list_builder_ = nullptr;
 
-  // Maps from Blink-side property tree nodes to cc property node indices.
-  HashMap<scoped_refptr<const TransformPaintPropertyNode>, int>
-      transform_node_map_;
-  HashMap<scoped_refptr<const ClipPaintPropertyNode>, int> clip_node_map_;
-  HashMap<scoped_refptr<const ScrollPaintPropertyNode>, int> scroll_node_map_;
-  HashMap<scoped_refptr<const EffectPaintPropertyNode>, int> effect_node_map_;
+  int new_sequence_number_ = -1;
 
   struct EffectState {
     // The cc effect node that has the corresponding drawing state to the
@@ -284,7 +280,6 @@ class PropertyTreeManager {
   HashSet<int> pending_synthetic_mask_layers_;
 
 #if DCHECK_IS_ON()
-  HashSet<const EffectPaintPropertyNode*> effect_nodes_converted_;
   bool initialized_ = false;
 #endif
 
