@@ -168,9 +168,6 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1176
     'ChromeDriverTests.clientLogShouldBeEnabledByDefault',
 
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1119
-    'CombinedInputActionsTest.testCanClickOnLinksWithAnOffset',
-    'CombinedInputActionsTest.testMouseMovementWorksWhenNavigatingToAnotherPage',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1005
     'WindowTest.*',
 
