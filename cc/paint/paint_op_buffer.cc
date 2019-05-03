@@ -1219,6 +1219,7 @@ void DrawImageOp::RasterWithFlags(const DrawImageOp* op,
     DCHECK(IsScaleAdjustmentIdentity(op->scale_adjustment));
     SkAutoCanvasRestore save_restore(canvas, true);
     canvas->translate(op->left, op->top);
+    DCHECK(result && result.paint_record());
     result.paint_record()->Playback(canvas, params);
     return;
   }
@@ -1277,6 +1278,7 @@ void DrawImageRectOp::RasterWithFlags(const DrawImageRectOp* op,
     canvas->concat(
         SkMatrix::MakeRectToRect(op->src, op->dst, SkMatrix::kFill_ScaleToFit));
     canvas->clipRect(op->src);
+    DCHECK(result && result.paint_record());
     result.paint_record()->Playback(canvas, params);
     return;
   }

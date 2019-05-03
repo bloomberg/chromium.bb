@@ -74,6 +74,8 @@ void PaintWorkletImageCache::PaintImageInTask(const PaintImage& paint_image) {
   // matches the PaintGeneratedImage::Draw.
   sk_sp<PaintRecord> record =
       painter_->Paint(paint_image.paint_worklet_input());
+  if (!record)
+    return;
   {
     base::AutoLock hold(records_lock_);
     // It is possible for two or more threads to both pass through the first
