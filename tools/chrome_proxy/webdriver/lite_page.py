@@ -27,21 +27,11 @@ class LitePage(IntegrationTest):
         in common.ParseFlags().browser_args):
       self.skipTest('This test cannot be run with other experiments.')
     with TestDriver() as test_driver:
-      test_driver.AddChromeArg('--enable-spdy-proxy-auth')
-      test_driver.EnableChromeFeature(
-        'NetworkQualityEstimator<NetworkQualityEstimator')
       test_driver.EnableChromeFeature('Previews')
       test_driver.EnableChromeFeature('DataReductionProxyDecidesTransform')
-      test_driver.AddChromeArg(
-          '--force-fieldtrial-params=NetworkQualityEstimator.Enabled:'
-          'force_effective_connection_type/2G,'
-          'DataReductionProxyServerExperiments.IgnoreCountryBlacklist:'
-          'exp/ignore_preview_blacklist')
-      # The previous argument implicitly sets the experiment.
-      test_driver.SetExperiment(None)
-      test_driver.AddChromeArg(
-          '--force-fieldtrials=NetworkQualityEstimator/Enabled/'
-          'DataReductionProxyServerExperiments/IgnoreCountryBlacklist')
+      test_driver.SetExperiment('ignore_preview_blacklist')
+      test_driver.AddChromeArg('--enable-spdy-proxy-auth')
+      test_driver.AddChromeArg('--force-effective-connection-type=2G')
 
       test_driver.LoadURL('http://check.googlezip.net/test.html')
 

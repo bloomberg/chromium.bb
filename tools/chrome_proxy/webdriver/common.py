@@ -948,8 +948,10 @@ class IntegrationTest(unittest.TestCase):
     infobar_histogram_name = 'Previews.InfoBarAction.%s' % preview_type
     android_histogram_name = 'Previews.OmniboxAction.%s' % preview_type
 
-    infobar_histogram = test_driver.GetHistogram(infobar_histogram_name, 5)
-    android_histogram = test_driver.GetHistogram(android_histogram_name, 5)
+    infobar_histogram = test_driver.GetBrowserHistogram(
+      infobar_histogram_name, 5)
+    android_histogram = test_driver.GetBrowserHistogram(
+      android_histogram_name, 5)
 
     count = (infobar_histogram.get('count', 0)
              + android_histogram.get('count', 0))
