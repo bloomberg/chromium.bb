@@ -6,12 +6,12 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_FILE_SYSTEM_WRITER_H_
 
 #include "third_party/blink/public/mojom/filesystem/file_writer.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view_or_blob_or_usv_string.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
 
 class Blob;
-class BlobOrReadableStream;
 class ExceptionState;
 class FetchDataLoader;
 class ReadableStream;
@@ -27,7 +27,7 @@ class FileSystemWriter final : public ScriptWrappable {
 
   ScriptPromise write(ScriptState*,
                       uint64_t position,
-                      const BlobOrReadableStream& data,
+                      const ArrayBufferOrArrayBufferViewOrBlobOrUSVString& data,
                       ExceptionState&);
   ScriptPromise truncate(ScriptState*, uint64_t size);
   ScriptPromise close(ScriptState*);
