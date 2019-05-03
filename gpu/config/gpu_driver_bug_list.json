@@ -3304,7 +3304,23 @@
         "value": "24"
       },
       "features": [
-        "disable_nv12_dynamic_textures"
+          "disable_nv12_dynamic_textures"
+      ]
+    },
+    {
+      "id": 304,
+      "cr_bugs": [911349],
+      "description": "Video processor blit to swap chain results in column of black pixels on older NVIDIA drivers at certain scaling factors",
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x10de",
+      "driver_version": {
+        "op": "<",
+        "value": "419"
+      },
+      "features": [
+        "disable_direct_composition_layers"
       ]
     }
   ]
