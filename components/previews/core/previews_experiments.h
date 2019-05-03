@@ -214,7 +214,10 @@ int ResourceLoadingHintsPreviewsInflationBytes();
 size_t OfflinePreviewsHelperMaxPrefSize();
 
 // Forces the coin flip holdback, if enabled, to always come up "holdback".
-bool ShouldOverrideCoinFlipHoldbackResult();
+bool ShouldOverrideNavigationCoinFlipToHoldback();
+
+// Forces the coin flip holdback, if enabled, to always come up "allowed".
+bool ShouldOverrideNavigationCoinFlipToAllowed();
 
 }  // namespace params
 

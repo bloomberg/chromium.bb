@@ -18,6 +18,7 @@ extern const char kFetchHintsOverride[];
 extern const char kOptimizationGuideServiceURL[];
 extern const char kOptimizationGuideServiceAPIKey[];
 extern const char kPurgeHintCacheStore[];
+extern const char kLitePageRedirectOverridesPageHints[];
 
 }  // namespace switches
 }  // namespace previews

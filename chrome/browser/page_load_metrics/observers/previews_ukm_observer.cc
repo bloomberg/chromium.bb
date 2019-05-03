@@ -78,8 +78,8 @@ PreviewsUKMObserver::OnCommit(content::NavigationHandle* navigation_handle,
   content::PreviewsState previews_state =
       previews_user_data->committed_previews_state();
 
-  if (coin_flip_result_ != CoinFlipHoldbackResult::kNotSet)
-    DCHECK(previews_likely_);
+  DCHECK(coin_flip_result_ == CoinFlipHoldbackResult::kNotSet ||
+         previews_likely_);
 
   if (navigation_handle->GetWebContents()->GetContentsMimeType() ==
       kOfflinePreviewsMimeType) {

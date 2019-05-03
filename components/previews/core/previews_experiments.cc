@@ -199,6 +199,10 @@ bool LitePagePreviewsTriggerOnLocalhost() {
 }
 
 bool LitePagePreviewsOverridePageHints() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kLitePageRedirectOverridesPageHints)) {
+    return true;
+  }
   return base::GetFieldTrialParamByFeatureAsBool(
       features::kLitePageServerPreviews, "override_pagehints", false);
 }
@@ -393,9 +397,14 @@ size_t OfflinePreviewsHelperMaxPrefSize() {
       100);
 }
 
-bool ShouldOverrideCoinFlipHoldbackResult() {
+bool ShouldOverrideNavigationCoinFlipToHoldback() {
   return base::GetFieldTrialParamByFeatureAsBool(
       features::kCoinFlipHoldback, "force_coin_flip_always_holdback", false);
+}
+
+bool ShouldOverrideNavigationCoinFlipToAllowed() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      features::kCoinFlipHoldback, "force_coin_flip_always_allow", false);
 }
 
 }  // namespace params

@@ -5700,6 +5700,7 @@ ChromeContentBrowserClient::DetermineCommittedPreviewsWithoutHoldback(
   DCHECK(!previews_user_data->cache_control_no_transform_directive() ||
          !previews::HasEnabledPreviews(committed_state));
 
+  // TODO(robertogden): Consider moving this to after the holdback logic.
   previews_user_data->set_committed_previews_state(committed_state);
 
   previews::PreviewsType committed_type =

@@ -47,8 +47,14 @@ void PreviewsUserData::SetCommittedPreviewsTypeForTesting(
   committed_previews_type_ = previews_type;
 }
 
-void PreviewsUserData::SetRandomCoinFlipForNavigationForTesting(bool decision) {
-  random_coin_flip_for_navigation_ = decision;
+bool PreviewsUserData::CoinFlipForNavigation() const {
+  if (params::ShouldOverrideNavigationCoinFlipToHoldback())
+    return true;
+
+  if (params::ShouldOverrideNavigationCoinFlipToAllowed())
+    return false;
+
+  return random_coin_flip_for_navigation_;
 }
 
 }  // namespace previews

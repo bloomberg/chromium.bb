@@ -52,10 +52,8 @@ class PreviewsUserData {
   // A session unique ID related to this navigation.
   uint64_t page_id() const { return page_id_; }
 
-  // A random bool that is used in the coin flip holdback logic.
-  bool random_coin_flip_for_navigation() const {
-    return random_coin_flip_for_navigation_;
-  }
+  // The bool that is used in the coin flip holdback logic.
+  bool CoinFlipForNavigation() const;
 
   // The effective connection type value for the navigation.
   net::EffectiveConnectionType navigation_ect() const {
@@ -116,9 +114,6 @@ class PreviewsUserData {
   void SetCommittedPreviewsType(previews::PreviewsType previews_type);
   // Sets the committed previews type for testing. Can be called multiple times.
   void SetCommittedPreviewsTypeForTesting(previews::PreviewsType previews_type);
-
-  // Sets |random_coin_flip_for_navigation_| for testing;
-  void SetRandomCoinFlipForNavigationForTesting(bool decision);
 
   bool offline_preview_used() const { return offline_preview_used_; }
   // Whether an offline preview is being served.

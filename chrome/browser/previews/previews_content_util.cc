@@ -455,8 +455,7 @@ content::PreviewsState MaybeCoinFlipHoldbackBeforeCommit(
   if (!HasEnabledPreviews(initial_state & kPreCommitPreviews))
     return initial_state;
 
-  if (previews_data->random_coin_flip_for_navigation() ||
-      params::ShouldOverrideCoinFlipHoldbackResult()) {
+  if (previews_data->CoinFlipForNavigation()) {
     // Holdback all previews. It is possible that some number of client previews
     // will also be held back here. However, since a before-commit preview was
     // likely, we turn off all of them to make analysis simpler and this code
@@ -487,12 +486,10 @@ content::PreviewsState MaybeCoinFlipHoldbackAfterCommit(
   if (!previews_data)
     return initial_state;
 
-  if (!HasEnabledPreviews(initial_state)) {
+  if (!HasEnabledPreviews(initial_state))
     return initial_state;
-  }
 
-  if (previews_data->random_coin_flip_for_navigation() ||
-      params::ShouldOverrideCoinFlipHoldbackResult()) {
+  if (previews_data->CoinFlipForNavigation()) {
     // No pre-commit previews should be set, since such a preview would have
     // already committed and we don't want to incorrectly clear that state. If
     // it did, at least make everything functionally correct.

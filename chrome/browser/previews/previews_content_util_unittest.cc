@@ -590,7 +590,6 @@ TEST_F(PreviewsContentSimulatedNavigationTest, TestCoinFlipBeforeCommit) {
     bool enable_feature;
     // True maps to previews::CoinFlipHoldbackResult::kHoldback.
     bool set_random_coin_flip_for_navigation;
-    bool set_coin_flip_override;
     previews::CoinFlipHoldbackResult want_coin_flip_result;
     content::PreviewsState initial_state;
     content::PreviewsState want_returned;
@@ -600,7 +599,6 @@ TEST_F(PreviewsContentSimulatedNavigationTest, TestCoinFlipBeforeCommit) {
           .msg = "Feature disabled, no affect, heads",
           .enable_feature = false,
           .set_random_coin_flip_for_navigation = true,
-          .set_coin_flip_override = false,
           .want_coin_flip_result = previews::CoinFlipHoldbackResult::kNotSet,
           .initial_state = content::CLIENT_LOFI_ON,
           .want_returned = content::CLIENT_LOFI_ON,
@@ -609,16 +607,6 @@ TEST_F(PreviewsContentSimulatedNavigationTest, TestCoinFlipBeforeCommit) {
           .msg = "Feature disabled, no affect, tails",
           .enable_feature = false,
           .set_random_coin_flip_for_navigation = false,
-          .set_coin_flip_override = false,
-          .want_coin_flip_result = previews::CoinFlipHoldbackResult::kNotSet,
-          .initial_state = content::CLIENT_LOFI_ON,
-          .want_returned = content::CLIENT_LOFI_ON,
-      },
-      {
-          .msg = "Feature disabled, no affect, forced override",
-          .enable_feature = false,
-          .set_random_coin_flip_for_navigation = false,
-          .set_coin_flip_override = true,
           .want_coin_flip_result = previews::CoinFlipHoldbackResult::kNotSet,
           .initial_state = content::CLIENT_LOFI_ON,
           .want_returned = content::CLIENT_LOFI_ON,
@@ -628,17 +616,6 @@ TEST_F(PreviewsContentSimulatedNavigationTest, TestCoinFlipBeforeCommit) {
                  "on true coin flip",
           .enable_feature = true,
           .set_random_coin_flip_for_navigation = true,
-          .set_coin_flip_override = false,
-          .want_coin_flip_result = previews::CoinFlipHoldbackResult::kNotSet,
-          .initial_state = content::CLIENT_LOFI_ON,
-          .want_returned = content::CLIENT_LOFI_ON,
-      },
-      {
-          .msg = "After-commit decided previews are not affected before commit "
-                 "on forced override",
-          .enable_feature = true,
-          .set_random_coin_flip_for_navigation = false,
-          .set_coin_flip_override = true,
           .want_coin_flip_result = previews::CoinFlipHoldbackResult::kNotSet,
           .initial_state = content::CLIENT_LOFI_ON,
           .want_returned = content::CLIENT_LOFI_ON,
@@ -648,7 +625,6 @@ TEST_F(PreviewsContentSimulatedNavigationTest, TestCoinFlipBeforeCommit) {
                  "on false coin flip",
           .enable_feature = true,
           .set_random_coin_flip_for_navigation = false,
-          .set_coin_flip_override = false,
           .want_coin_flip_result = previews::CoinFlipHoldbackResult::kNotSet,
           .initial_state = content::CLIENT_LOFI_ON,
           .want_returned = content::CLIENT_LOFI_ON,
@@ -658,17 +634,6 @@ TEST_F(PreviewsContentSimulatedNavigationTest, TestCoinFlipBeforeCommit) {
               "Before-commit decided previews are affected on true coin flip",
           .enable_feature = true,
           .set_random_coin_flip_for_navigation = true,
-          .set_coin_flip_override = false,
-          .want_coin_flip_result = previews::CoinFlipHoldbackResult::kHoldback,
-          .initial_state = content::OFFLINE_PAGE_ON,
-          .want_returned = content::PREVIEWS_OFF,
-      },
-      {
-          .msg =
-              "Before-commit decided previews are affected on forced override",
-          .enable_feature = true,
-          .set_random_coin_flip_for_navigation = false,
-          .set_coin_flip_override = true,
           .want_coin_flip_result = previews::CoinFlipHoldbackResult::kHoldback,
           .initial_state = content::OFFLINE_PAGE_ON,
           .want_returned = content::PREVIEWS_OFF,
@@ -677,7 +642,6 @@ TEST_F(PreviewsContentSimulatedNavigationTest, TestCoinFlipBeforeCommit) {
           .msg = "Before-commit decided previews are logged on false coin flip",
           .enable_feature = true,
           .set_random_coin_flip_for_navigation = false,
-          .set_coin_flip_override = false,
           .want_coin_flip_result = previews::CoinFlipHoldbackResult::kAllowed,
           .initial_state = content::OFFLINE_PAGE_ON,
           .want_returned = content::OFFLINE_PAGE_ON,
@@ -688,18 +652,6 @@ TEST_F(PreviewsContentSimulatedNavigationTest, TestCoinFlipBeforeCommit) {
               "both exist",
           .enable_feature = true,
           .set_random_coin_flip_for_navigation = true,
-          .set_coin_flip_override = false,
-          .want_coin_flip_result = previews::CoinFlipHoldbackResult::kHoldback,
-          .initial_state = content::OFFLINE_PAGE_ON | content::CLIENT_LOFI_ON,
-          .want_returned = content::PREVIEWS_OFF,
-      },
-      {
-          .msg =
-              "Forced override impacts both pre and post commit previews when "
-              "both exist",
-          .enable_feature = true,
-          .set_random_coin_flip_for_navigation = false,
-          .set_coin_flip_override = true,
           .want_coin_flip_result = previews::CoinFlipHoldbackResult::kHoldback,
           .initial_state = content::OFFLINE_PAGE_ON | content::CLIENT_LOFI_ON,
           .want_returned = content::PREVIEWS_OFF,
@@ -709,7 +661,6 @@ TEST_F(PreviewsContentSimulatedNavigationTest, TestCoinFlipBeforeCommit) {
                  "both exist",
           .enable_feature = true,
           .set_random_coin_flip_for_navigation = false,
-          .set_coin_flip_override = false,
           .want_coin_flip_result = previews::CoinFlipHoldbackResult::kAllowed,
           .initial_state = content::OFFLINE_PAGE_ON | content::CLIENT_LOFI_ON,
           .want_returned = content::OFFLINE_PAGE_ON | content::CLIENT_LOFI_ON,
@@ -724,15 +675,15 @@ TEST_F(PreviewsContentSimulatedNavigationTest, TestCoinFlipBeforeCommit) {
     // So don't enable the feature until afterwards.
     content::NavigationHandle* handle = StartNavigation();
 
-    GetPreviewsUserData(handle)->SetRandomCoinFlipForNavigationForTesting(
-        test_case.set_random_coin_flip_for_navigation);
-
     base::test::ScopedFeatureList scoped_feature_list;
     if (test_case.enable_feature) {
       scoped_feature_list.InitAndEnableFeatureWithParameters(
           previews::features::kCoinFlipHoldback,
           {{"force_coin_flip_always_holdback",
-            test_case.set_coin_flip_override ? "true" : "false"}});
+            test_case.set_random_coin_flip_for_navigation ? "true" : "false"},
+           {"force_coin_flip_always_allow",
+            !test_case.set_random_coin_flip_for_navigation ? "true"
+                                                           : "false"}});
     } else {
       scoped_feature_list.InitAndDisableFeature(
           previews::features::kCoinFlipHoldback);
@@ -752,7 +703,6 @@ TEST_F(PreviewsContentSimulatedNavigationTest, TestCoinFlipAfterCommit) {
     std::string msg;
     bool enable_feature;
     bool set_random_coin_flip_for_navigation;
-    bool set_coin_flip_override;
     previews::CoinFlipHoldbackResult want_coin_flip_result;
     content::PreviewsState initial_state;
     content::PreviewsState want_returned;
@@ -762,7 +712,6 @@ TEST_F(PreviewsContentSimulatedNavigationTest, TestCoinFlipAfterCommit) {
           .msg = "Feature disabled, no affect, heads",
           .enable_feature = false,
           .set_random_coin_flip_for_navigation = true,
-          .set_coin_flip_override = false,
           .want_coin_flip_result = previews::CoinFlipHoldbackResult::kNotSet,
           .initial_state = content::CLIENT_LOFI_ON,
           .want_returned = content::CLIENT_LOFI_ON,
@@ -771,16 +720,6 @@ TEST_F(PreviewsContentSimulatedNavigationTest, TestCoinFlipAfterCommit) {
           .msg = "Feature disabled, no affect, tails",
           .enable_feature = false,
           .set_random_coin_flip_for_navigation = false,
-          .set_coin_flip_override = false,
-          .want_coin_flip_result = previews::CoinFlipHoldbackResult::kNotSet,
-          .initial_state = content::CLIENT_LOFI_ON,
-          .want_returned = content::CLIENT_LOFI_ON,
-      },
-      {
-          .msg = "Feature disabled, no affect, forced override",
-          .enable_feature = false,
-          .set_random_coin_flip_for_navigation = false,
-          .set_coin_flip_override = true,
           .want_coin_flip_result = previews::CoinFlipHoldbackResult::kNotSet,
           .initial_state = content::CLIENT_LOFI_ON,
           .want_returned = content::CLIENT_LOFI_ON,
@@ -789,16 +728,6 @@ TEST_F(PreviewsContentSimulatedNavigationTest, TestCoinFlipAfterCommit) {
           .msg = "Holdback enabled previews",
           .enable_feature = true,
           .set_random_coin_flip_for_navigation = true,
-          .set_coin_flip_override = false,
-          .want_coin_flip_result = previews::CoinFlipHoldbackResult::kHoldback,
-          .initial_state = content::CLIENT_LOFI_ON,
-          .want_returned = content::PREVIEWS_OFF,
-      },
-      {
-          .msg = "Holdback enabled previews via override",
-          .enable_feature = true,
-          .set_random_coin_flip_for_navigation = false,
-          .set_coin_flip_override = true,
           .want_coin_flip_result = previews::CoinFlipHoldbackResult::kHoldback,
           .initial_state = content::CLIENT_LOFI_ON,
           .want_returned = content::PREVIEWS_OFF,
@@ -807,7 +736,6 @@ TEST_F(PreviewsContentSimulatedNavigationTest, TestCoinFlipAfterCommit) {
           .msg = "Log enabled previews",
           .enable_feature = true,
           .set_random_coin_flip_for_navigation = false,
-          .set_coin_flip_override = false,
           .want_coin_flip_result = previews::CoinFlipHoldbackResult::kAllowed,
           .initial_state = content::CLIENT_LOFI_ON,
           .want_returned = content::CLIENT_LOFI_ON,
@@ -822,15 +750,15 @@ TEST_F(PreviewsContentSimulatedNavigationTest, TestCoinFlipAfterCommit) {
     // So don't enable the feature until afterwards.
     content::NavigationHandle* handle = StartNavigationAndReadyCommit();
 
-    GetPreviewsUserData(handle)->SetRandomCoinFlipForNavigationForTesting(
-        test_case.set_random_coin_flip_for_navigation);
-
     base::test::ScopedFeatureList scoped_feature_list;
     if (test_case.enable_feature) {
       scoped_feature_list.InitAndEnableFeatureWithParameters(
           previews::features::kCoinFlipHoldback,
           {{"force_coin_flip_always_holdback",
-            test_case.set_coin_flip_override ? "true" : "false"}});
+            test_case.set_random_coin_flip_for_navigation ? "true" : "false"},
+           {"force_coin_flip_always_allow",
+            !test_case.set_random_coin_flip_for_navigation ? "true"
+                                                           : "false"}});
     } else {
       scoped_feature_list.InitAndDisableFeature(
           previews::features::kCoinFlipHoldback);
