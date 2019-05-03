@@ -1233,11 +1233,10 @@ void ThreadState::SafePoint(BlinkGC::StackState stack_state) {
   RunScheduledGC(stack_state);
 }
 
-// TODO(haraken): The first void* pointer is unused. Remove it.
-using PushAllRegistersCallback = void (*)(void*, ThreadState*, intptr_t*);
-extern "C" void PushAllRegisters(void*, ThreadState*, PushAllRegistersCallback);
+using PushAllRegistersCallback = void (*)(ThreadState*, intptr_t*);
+extern "C" void PushAllRegisters(ThreadState*, PushAllRegistersCallback);
 
-static void DidPushRegisters(void*, ThreadState* state, intptr_t* stack_end) {
+static void DidPushRegisters(ThreadState* state, intptr_t* stack_end) {
   state->RecordStackEnd(stack_end);
 }
 
@@ -1245,7 +1244,7 @@ void ThreadState::PushRegistersAndVisitStack() {
   DCHECK(CheckThread());
   DCHECK(IsGCForbidden());
   DCHECK_EQ(current_gc_data_.stack_state, BlinkGC::kHeapPointersOnStack);
-  PushAllRegisters(nullptr, this, DidPushRegisters);
+  PushAllRegisters(this, DidPushRegisters);
   VisitStack(static_cast<MarkingVisitor*>(CurrentVisitor()));
 }
 

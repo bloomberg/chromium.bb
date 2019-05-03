@@ -64,8 +64,8 @@
   %define PRIVATE :private_extern
 %endif
 
-;; typedef void (*PushAllRegistersCallback)(SafePointBarrier*, ThreadState*, intptr_t*);
-;; extern "C" void PushAllRegisters(SafePointBarrier*, ThreadState*, PushAllRegistersCallback)
+;; typedef void (*PushAllRegistersCallback)(ThreadState*, intptr_t*);
+;; extern "C" void PushAllRegisters(ThreadState*, PushAllRegistersCallback)
 
         global mangle(PushAllRegisters) PRIVATE
 
@@ -85,11 +85,11 @@ mangle(PushAllRegisters):
         push r13
         push r14
         push r15
-        ;; Pass the two first arguments unchanged (rdi, rsi)
+        ;; Pass the first argument unchanged (rdi)
         ;; and the stack pointer after pushing callee-saved
         ;; registers to the callback.
-        mov r8, rdx
-        mov rdx, rsp
+        mov r8, rsi
+        mov rsi, rsp
         call r8
         ;; Pop the callee-saved registers. None of them were
         ;; modified so no restoring is needed.
@@ -113,11 +113,11 @@ mangle(PushAllRegisters):
         push r13
         push r14
         push r15
-        ;; Pass the two first arguments unchanged (rcx, rdx)
+        ;; Pass the first argument unchanged (rcx)
         ;; and the stack pointer after pushing callee-saved
         ;; registers to the callback.
-        mov r9, r8
-        mov r8, rsp
+        mov r9, rdx
+        mov rdx, rsp
         call r9
         ;; Pop the callee-saved registers. None of them were
         ;; modified so no restoring is needed.
@@ -137,18 +137,17 @@ mangle(PushAllRegisters):
         push ebp
         push esi
         push edi
-        ;; Pass the two first arguments unchanged and the
+        ;; Pass the first argument unchanged and the
         ;; stack pointer after pushing callee-save registers
         ;; to the callback.
-        mov ecx, [esp + 28]
+        mov ecx, [esp + 24]
         push esp
-        push dword [esp + 28]
-        push dword [esp + 28]
+        push dword [esp + 24]
         call ecx
         ;; Pop arguments and the callee-saved registers.
         ;; None of the callee-saved registers were modified
         ;; so we do not need to restore them.
-        add esp, 28
+        add esp, 24
         ret
 
 
