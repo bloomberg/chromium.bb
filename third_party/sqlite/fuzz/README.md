@@ -1,3 +1,5 @@
+# Fuzzing sqlite
+
 "[Clusterfuzz](https://google.github.io/clusterfuzz/) is a scalable fuzzing
 infrastructure which finds security and stabilty issues in software". Chromium
 uses Clusterfuzz to find bugs in sqlite, among others.
@@ -26,11 +28,10 @@ stack trace will be displayed in the "Detailed report".
 
 # Local repro using clusterfuzz testcase id
 If the fuzzer that identified this bug is public (ex. dbfuzz2), reproduce
-locally.
+locally using the [Reproduce Tool](https://github.com/google/clusterfuzz-tools).
 1. Set ${TESTCASE_ID}, where TESTCASE_ID is the ID at the end of the clusterfuzz
 link (ex. `export TESTCASE_ID=5756437473656832`).
 2. `/google/data/ro/teams/clusterfuzz-tools/releases/clusterfuzz reproduce --current --skip-deps ${TESTCASE_ID}`,
-For more information, see the [Reproduce Tool on Github](https://github.com/google/clusterfuzz-tools).
 
 # Local repro using clusterfuzz testcase
 If the fuzzer is not public (ex. LPM-based fuzzers, including fts_lpm), or if
@@ -39,16 +40,17 @@ To build the target, first set .gn args to match those in the clusterfuzz link,
 then build and run the fuzzer.
 
 1. `export FUZZER_NAME=sqlite3_fts3_lpm_fuzzer  # FUZZER_NAME is listed in the crbug as the Fuzz target binary`
-2. Download the clusterfuzz minimized testcase and set it's path to CLUSTERFUZZ_TESTCASE using `export CLUSTERFUZZ_TESTCASE=./clusterfuzz-testcase-minimized-sqlite3_fts3_lpm_fuzzer-5756437473656832`
-3. `gn gen args out/Fuzzer  # Set arguments to matches those in the clusterfuzz"Detailed report"'s "GN CONFIG (ARGS.GN)" section`
+2. Download the clusterfuzz minimized testcase.
+3. `export CLUSTERFUZZ_TESTCASE=./clusterfuzz-testcase-minimized-sqlite3_fts3_lpm_fuzzer-5756437473656832  # Set the clusterfuzz testcase path to CLUSTERFUZZ_TESTCASE`
+3. `gn args out/Fuzzer  # Set arguments to matches those in the clusterfuzz "Detailed report"'s "GN CONFIG (ARGS.GN)" section`
 4. `autoninja -C out/Fuzzer/ ${FUZZER_NAME}  # Build the fuzzer target`
-5. `./out/Fuzzer/${FUZZER_NAME} ${CLUSTERFUZZ_TESTCASE}  # Verify repro by running fuzzer`
+5. `./out/Fuzzer/${FUZZER_NAME} ${CLUSTERFUZZ_TESTCASE}  # Verify repro by running fuzzer (for memory leaks, try setting "ASAN_OPTIONS=detect_leaks=1")`
 6. `LPM_DUMP_NATIVE_INPUT=1 SQL_SKIP_QUERIES=AlterTable ./out/Fuzzer/${FUZZER_NAME} ${CLUSTERFUZZ_TESTCASE}  # Try using different args to get SQL statements that will repro the bug`
-7. Optionally, take output from (6) into a repro.sql file for further testing.
+7. Optionally, take output from (7) into a repro.sql file for further testing.
 To do so, either copy the SQL query in the output from (6) into a .sql file, or
-run the final command in (6) with a `> repro.sql` at the end, and filter out
+run the final command in (7) with a `> repro.sql` at the end, and filter out
 non-sql content afterwards. Either way, ensure that the case continues to repro
-given filters placed in (6).
+given filters placed in (7).
 
 # Local repro using SQL commands
 Please have a SQL query ready, preferably in .sql format. For this context,
