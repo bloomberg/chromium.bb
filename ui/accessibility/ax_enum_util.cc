@@ -118,6 +118,8 @@ const char* ToString(ax::mojom::Event event) {
       return "windowActivated";
     case ax::mojom::Event::kWindowDeactivated:
       return "windowDeactivated";
+    case ax::mojom::Event::kWindowMinimizedStateChanged:
+      return "windowMinimizedStateChanged";
     case ax::mojom::Event::kTreeChanged:
       return "treeChanged";
     case ax::mojom::Event::kValueChanged:
@@ -238,6 +240,8 @@ ax::mojom::Event ParseEvent(const char* event) {
     return ax::mojom::Event::kWindowActivated;
   if (0 == strcmp(event, "windowDeactivated"))
     return ax::mojom::Event::kWindowDeactivated;
+  if (0 == strcmp(event, "windowMinimizedStateChanged"))
+    return ax::mojom::Event::kWindowMinimizedStateChanged;
   if (0 == strcmp(event, "treeChanged"))
     return ax::mojom::Event::kTreeChanged;
   if (0 == strcmp(event, "valueChanged"))

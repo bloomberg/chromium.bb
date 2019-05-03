@@ -11,6 +11,22 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 
+namespace {
+
+void WaitForStateChangeEvent(AtkObject* object) {
+  base::RunLoop loop_runner;
+  gulong handler_id =
+      g_signal_connect(object, "state-change",
+                       G_CALLBACK(+[](AtkObject*, gchar* /* state_changed */,
+                                      gboolean /* new_value */,
+                                      base::RunLoop* loop) { loop->Quit(); }),
+                       &loop_runner);
+  loop_runner.Run();
+  g_signal_handler_disconnect(object, handler_id);
+}
+
+}  // namespace
+
 class AuraLinuxAccessibilityInProcessBrowserTest : public InProcessBrowserTest {
  protected:
   AuraLinuxAccessibilityInProcessBrowserTest() {}
@@ -88,4 +104,32 @@ IN_PROC_BROWSER_TEST_F(AuraLinuxAccessibilityInProcessBrowserTest,
   ASSERT_EQ(target, window);
 
   g_object_unref(relations);
+}
+
+IN_PROC_BROWSER_TEST_F(AuraLinuxAccessibilityInProcessBrowserTest,
+                       MinimizationState) {
+  BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
+  AtkObject* frame = FindParentFrame(browser_view->GetNativeViewAccessible());
+  CHECK(frame);
+
+  AtkStateSet* state_set = atk_object_ref_state_set(frame);
+  ASSERT_FALSE(atk_state_set_contains_state(state_set, ATK_STATE_ICONIFIED));
+  g_object_unref(state_set);
+
+  browser_view->Minimize();
+  WaitForStateChangeEvent(frame);
+
+  state_set = atk_object_ref_state_set(frame);
+  ASSERT_TRUE(atk_state_set_contains_state(state_set, ATK_STATE_ICONIFIED));
+  g_object_unref(state_set);
+
+  // Restore and show both seem to be necessary to restore and remap the window
+  // after minimization.
+  browser_view->Restore();
+  browser_view->Show();
+  WaitForStateChangeEvent(frame);
+
+  state_set = atk_object_ref_state_set(frame);
+  ASSERT_FALSE(atk_state_set_contains_state(state_set, ATK_STATE_ICONIFIED));
+  g_object_unref(state_set);
 }

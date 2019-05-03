@@ -1485,6 +1485,51 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkWindowActive) {
   g_object_unref(root_atk_object);
 }
 
+//
+// AtkWindow interface and iconified state
+//
+TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkWindowMinimized) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kWindow;
+  Init(root);
+
+  AtkObject* root_atk_object(GetRootAtkObject());
+  EXPECT_TRUE(ATK_IS_OBJECT(root_atk_object));
+  g_object_ref(root_atk_object);
+
+  EXPECT_TRUE(ATK_IS_WINDOW(root_atk_object));
+
+  AtkStateSet* state_set = atk_object_ref_state_set(root_atk_object);
+  EXPECT_TRUE(ATK_IS_STATE_SET(state_set));
+  EXPECT_FALSE(atk_state_set_contains_state(state_set, ATK_STATE_ICONIFIED));
+  g_object_unref(state_set);
+
+  GetRootWrapper()->set_minimized(true);
+
+  state_set = atk_object_ref_state_set(root_atk_object);
+  EXPECT_TRUE(ATK_IS_STATE_SET(state_set));
+  EXPECT_TRUE(atk_state_set_contains_state(state_set, ATK_STATE_ICONIFIED));
+  g_object_unref(state_set);
+
+  bool saw_state_change = false;
+  g_signal_connect(root_atk_object, "state-change",
+                   G_CALLBACK(+[](AtkObject* atkobject, gchar* state_changed,
+                                  gboolean new_value, bool* flag) {
+                     if (!g_strcmp0(state_changed, "iconified"))
+                       *flag = true;
+                   }),
+                   &saw_state_change);
+
+  AXPlatformNodeAuraLinux* root_node = GetRootPlatformNode();
+  static_cast<AXPlatformNodeAuraLinux*>(root_node)->NotifyAccessibilityEvent(
+      ax::mojom::Event::kWindowMinimizedStateChanged);
+
+  EXPECT_TRUE(saw_state_change);
+
+  g_object_unref(root_atk_object);
+}
+
 TEST_F(AXPlatformNodeAuraLinuxTest, TestFocusTriggersAtkWindowActive) {
   AXNodeData root;
   root.id = 1;

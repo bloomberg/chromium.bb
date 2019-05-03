@@ -321,6 +321,10 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   // See DesktopWindowTreeHost::ShouldUseDesktopNativeCursorManager().
   bool use_desktop_native_cursor_manager_ = false;
 
+  // Tracks whether or not this window was minimized in order to send proper
+  // native accessibility events.
+  bool was_minimized_ = false;
+
   // The following factory is used for calls to close the NativeWidgetAura
   // instance.
   base::WeakPtrFactory<DesktopNativeWidgetAura> close_widget_factory_;

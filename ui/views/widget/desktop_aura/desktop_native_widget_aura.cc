@@ -1080,6 +1080,12 @@ void DesktopNativeWidgetAura::OnWindowDestroyed(aura::Window* window) {
 }
 
 void DesktopNativeWidgetAura::OnWindowTargetVisibilityChanged(bool visible) {
+  bool is_minimized = IsMinimized();
+  if (is_minimized == was_minimized_)
+    return;
+
+  was_minimized_ = is_minimized;
+  NotifyAccessibilityEvent(ax::mojom::Event::kWindowMinimizedStateChanged);
 }
 
 bool DesktopNativeWidgetAura::HasHitTestMask() const {

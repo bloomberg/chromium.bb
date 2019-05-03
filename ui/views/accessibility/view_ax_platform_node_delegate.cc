@@ -388,6 +388,11 @@ bool ViewAXPlatformNodeDelegate::IsOffscreen() const {
   return false;
 }
 
+bool ViewAXPlatformNodeDelegate::IsMinimized() const {
+  Widget* widget = view()->GetWidget();
+  return widget && widget->IsMinimized();
+}
+
 const ui::AXUniqueId& ViewAXPlatformNodeDelegate::GetUniqueId() const {
   return ViewAccessibility::GetUniqueId();
 }
