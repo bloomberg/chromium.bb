@@ -380,6 +380,7 @@ android_library("chrome_java") {
   deps += feed_deps
 
   srcjar_deps = [
+    ":browser_build_config",
     ":chrome_android_java_enums_srcjar",
     ":chrome_android_java_switches_srcjar",
     ":chrome_android_java_google_api_keys_srcjar",
@@ -553,6 +554,18 @@ java_cpp_strings("chrome_android_java_switches_srcjar") {
     "//chrome/common/chrome_switches.cc",
   ]
   template = "//chrome/android/java_templates/ChromeSwitches.java.tmpl"
+}
+
+java_cpp_template("browser_build_config") {
+  sources = [
+    "//chrome/android/java_templates/BuildConfig.template",
+  ]
+  package_path = "org/chromium/chrome/browser"
+
+  defines = []
+  if (enable_offline_pages) {
+    defines += [ "_ENABLE_OFFLINE_PAGES" ]
+  }
 }
 
 proto_java_library("document_tab_model_info_proto_java") {
