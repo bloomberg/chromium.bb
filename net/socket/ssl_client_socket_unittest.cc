@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include <algorithm>
+#include <tuple>
 #include <utility>
 
 #include "base/bind.h"
@@ -924,17 +925,100 @@ class SSLClientSocketTest : public PlatformTest,
   AddressList addr_;
 };
 
-// If GetParam(), try ReadIfReady() and fall back to Read() if needed.
-class SSLClientSocketReadTest : public SSLClientSocketTest,
-                                public ::testing::WithParamInterface<bool> {
- protected:
-  SSLClientSocketReadTest()
-      : SSLClientSocketTest(), read_if_ready_enabled_(GetParam()) {}
+enum ReadIfReadyTransport {
+  // ReadIfReady() is implemented by the underlying transport.
+  READ_IF_READY_SUPPORTED,
+  // ReadIfReady() is not implemented by the underlying transport.
+  READ_IF_READY_NOT_SUPPORTED,
+};
 
-  void SetUp() override {
-    if (!read_if_ready_enabled()) {
-      scoped_feature_list_.InitAndDisableFeature(
-          Socket::kReadIfReadyExperiment);
+enum ReadIfReadySSL {
+  // Test reads by calling ReadIfReady() on the SSL socket.
+  TEST_SSL_READ_IF_READY,
+  // Test reads by calling Read() on the SSL socket.
+  TEST_SSL_READ,
+};
+
+class StreamSocketWithoutReadIfReady : public WrappedStreamSocket {
+ public:
+  explicit StreamSocketWithoutReadIfReady(
+      std::unique_ptr<StreamSocket> transport)
+      : WrappedStreamSocket(std::move(transport)) {}
+
+  int ReadIfReady(IOBuffer* buf,
+                  int buf_len,
+                  CompletionOnceCallback callback) override {
+    return ERR_READ_IF_READY_NOT_IMPLEMENTED;
+  }
+
+  int CancelReadIfReady() override { return ERR_READ_IF_READY_NOT_IMPLEMENTED; }
+};
+
+class ClientSocketFactoryWithoutReadIfReady : public ClientSocketFactory {
+ public:
+  explicit ClientSocketFactoryWithoutReadIfReady(ClientSocketFactory* factory)
+      : factory_(factory) {}
+
+  std::unique_ptr<DatagramClientSocket> CreateDatagramClientSocket(
+      DatagramSocket::BindType bind_type,
+      NetLog* net_log,
+      const NetLogSource& source) override {
+    return factory_->CreateDatagramClientSocket(bind_type, net_log, source);
+  }
+
+  std::unique_ptr<TransportClientSocket> CreateTransportClientSocket(
+      const AddressList& addresses,
+      std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher,
+      NetLog* net_log,
+      const NetLogSource& source) override {
+    return factory_->CreateTransportClientSocket(
+        addresses, std::move(socket_performance_watcher), net_log, source);
+  }
+
+  std::unique_ptr<SSLClientSocket> CreateSSLClientSocket(
+      std::unique_ptr<StreamSocket> stream_socket,
+      const HostPortPair& host_and_port,
+      const SSLConfig& ssl_config,
+      const SSLClientSocketContext& context) override {
+    stream_socket = std::make_unique<StreamSocketWithoutReadIfReady>(
+        std::move(stream_socket));
+    return factory_->CreateSSLClientSocket(std::move(stream_socket),
+                                           host_and_port, ssl_config, context);
+  }
+
+  std::unique_ptr<ProxyClientSocket> CreateProxyClientSocket(
+      std::unique_ptr<StreamSocket> stream_socket,
+      const std::string& user_agent,
+      const HostPortPair& endpoint,
+      const ProxyServer& proxy_server,
+      HttpAuthController* http_auth_controller,
+      bool tunnel,
+      bool using_spdy,
+      NextProto negotiated_protocol,
+      ProxyDelegate* proxy_delegate,
+      const NetworkTrafficAnnotationTag& traffic_annotation) override {
+    return factory_->CreateProxyClientSocket(
+        std::move(stream_socket), user_agent, endpoint, proxy_server,
+        http_auth_controller, tunnel, using_spdy, negotiated_protocol,
+        proxy_delegate, traffic_annotation);
+  }
+
+ private:
+  ClientSocketFactory* const factory_;
+};
+
+// If GetParam(), try ReadIfReady() and fall back to Read() if needed.
+class SSLClientSocketReadTest
+    : public SSLClientSocketTest,
+      public ::testing::WithParamInterface<
+          std::tuple<ReadIfReadyTransport, ReadIfReadySSL>> {
+ protected:
+  SSLClientSocketReadTest() : SSLClientSocketTest() {
+    if (!read_if_ready_supported()) {
+      wrapped_socket_factory_ =
+          std::make_unique<ClientSocketFactoryWithoutReadIfReady>(
+              socket_factory_);
+      socket_factory_ = wrapped_socket_factory_.get();
     }
   }
 
@@ -944,7 +1028,7 @@ class SSLClientSocketReadTest : public SSLClientSocketTest,
            IOBuffer* buf,
            int buf_len,
            CompletionOnceCallback callback) {
-    if (read_if_ready_enabled())
+    if (test_ssl_read_if_ready())
       return socket->ReadIfReady(buf, buf_len, std::move(callback));
     return socket->Read(buf, buf_len, std::move(callback));
   }
@@ -955,7 +1039,7 @@ class SSLClientSocketReadTest : public SSLClientSocketTest,
                             int buf_len,
                             TestCompletionCallback* callback,
                             int rv) {
-    if (!read_if_ready_enabled())
+    if (!test_ssl_read_if_ready())
       return callback->GetResult(rv);
     while (rv == ERR_IO_PENDING) {
       rv = callback->GetResult(rv);
@@ -975,16 +1059,24 @@ class SSLClientSocketReadTest : public SSLClientSocketTest,
     return WaitForReadCompletion(socket, buf, buf_len, &callback, rv);
   }
 
-  bool read_if_ready_enabled() const { return read_if_ready_enabled_; }
+  bool test_ssl_read_if_ready() const {
+    return std::get<1>(GetParam()) == TEST_SSL_READ_IF_READY;
+  }
+
+  bool read_if_ready_supported() const {
+    return std::get<0>(GetParam()) == READ_IF_READY_SUPPORTED;
+  }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-  const bool read_if_ready_enabled_;
+  std::unique_ptr<ClientSocketFactory> wrapped_socket_factory_;
 };
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
-                         SSLClientSocketReadTest,
-                         ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    SSLClientSocketReadTest,
+    ::testing::Combine(
+        ::testing::Values(READ_IF_READY_SUPPORTED, READ_IF_READY_NOT_SUPPORTED),
+        ::testing::Values(TEST_SSL_READ_IF_READY, TEST_SSL_READ)));
 
 // Verifies the correctness of GetSSLCertRequestInfo.
 class SSLClientSocketCertRequestInfoTest : public SSLClientSocketTest {
@@ -1941,7 +2033,7 @@ TEST_P(SSLClientSocketReadTest, Read_DeleteWhilePendingFullDuplex) {
   // |read_callback| deletes |sock| so if ReadIfReady() is used, we will get OK
   // asynchronously but can't continue reading because the socket is gone.
   rv = read_callback.WaitForResult();
-  if (read_if_ready_enabled()) {
+  if (test_ssl_read_if_ready()) {
     EXPECT_THAT(rv, IsOk());
   } else {
     EXPECT_THAT(rv, IsError(ERR_CONNECTION_RESET));
@@ -4697,7 +4789,7 @@ TEST_P(SSLClientSocketReadTest, DumpMemoryStats) {
   StreamSocket::SocketMemoryStats stats2;
   sock_->DumpMemoryStats(&stats2);
 
-  if (read_if_ready_enabled()) {
+  if (read_if_ready_supported()) {
     EXPECT_EQ(0u, stats2.buffer_size);
     EXPECT_EQ(stats.cert_size, stats2.total_size);
   } else {

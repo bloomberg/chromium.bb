@@ -9,7 +9,6 @@
 #include <algorithm>
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -123,15 +122,12 @@ int SocketBIOAdapter::BIORead(char* out, int len) {
     DCHECK(!read_buffer_);
     DCHECK_EQ(0, read_offset_);
     read_buffer_ = base::MakeRefCounted<IOBuffer>(read_buffer_capacity_);
-    int result = ERR_READ_IF_READY_NOT_IMPLEMENTED;
-    if (base::FeatureList::IsEnabled(Socket::kReadIfReadyExperiment)) {
-      result = socket_->ReadIfReady(
-          read_buffer_.get(), read_buffer_capacity_,
-          base::Bind(&SocketBIOAdapter::OnSocketReadIfReadyComplete,
-                     weak_factory_.GetWeakPtr()));
-      if (result == ERR_IO_PENDING)
-        read_buffer_ = nullptr;
-    }
+    int result = socket_->ReadIfReady(
+        read_buffer_.get(), read_buffer_capacity_,
+        base::BindOnce(&SocketBIOAdapter::OnSocketReadIfReadyComplete,
+                       weak_factory_.GetWeakPtr()));
+    if (result == ERR_IO_PENDING)
+      read_buffer_ = nullptr;
     if (result == ERR_READ_IF_READY_NOT_IMPLEMENTED) {
       result = socket_->Read(read_buffer_.get(), read_buffer_capacity_,
                              read_callback_);

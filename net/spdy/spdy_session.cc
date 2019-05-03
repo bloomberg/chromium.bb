@@ -11,7 +11,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
@@ -2239,25 +2238,22 @@ int SpdySession::DoRead() {
 
   CHECK(socket_);
   read_state_ = READ_STATE_DO_READ_COMPLETE;
-  int rv = ERR_READ_IF_READY_NOT_IMPLEMENTED;
   read_buffer_ = base::MakeRefCounted<IOBuffer>(kReadBufferSize);
-  if (base::FeatureList::IsEnabled(Socket::kReadIfReadyExperiment)) {
-    rv = socket_->ReadIfReady(
-        read_buffer_.get(), kReadBufferSize,
-        base::Bind(&SpdySession::PumpReadLoop, weak_factory_.GetWeakPtr(),
-                   READ_STATE_DO_READ));
-    if (rv == ERR_IO_PENDING) {
-      read_buffer_ = nullptr;
-      read_state_ = READ_STATE_DO_READ;
-      return rv;
-    }
+  int rv = socket_->ReadIfReady(
+      read_buffer_.get(), kReadBufferSize,
+      base::BindOnce(&SpdySession::PumpReadLoop, weak_factory_.GetWeakPtr(),
+                     READ_STATE_DO_READ));
+  if (rv == ERR_IO_PENDING) {
+    read_buffer_ = nullptr;
+    read_state_ = READ_STATE_DO_READ;
+    return rv;
   }
   if (rv == ERR_READ_IF_READY_NOT_IMPLEMENTED) {
     // Fallback to regular Read().
     return socket_->Read(
         read_buffer_.get(), kReadBufferSize,
-        base::Bind(&SpdySession::PumpReadLoop, weak_factory_.GetWeakPtr(),
-                   READ_STATE_DO_READ_COMPLETE));
+        base::BindOnce(&SpdySession::PumpReadLoop, weak_factory_.GetWeakPtr(),
+                       READ_STATE_DO_READ_COMPLETE));
   }
   return rv;
 }

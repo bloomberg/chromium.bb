@@ -6109,12 +6109,10 @@ TEST_F(SpdySessionTest, GreaseFrameType) {
 }
 
 enum ReadIfReadySupport {
-  // ReadIfReady() field trial is enabled, and ReadIfReady() is implemented.
-  READ_IF_READY_ENABLED_SUPPORTED,
-  // ReadIfReady() field trial is enabled, but ReadIfReady() is unimplemented.
-  READ_IF_READY_ENABLED_NOT_SUPPORTED,
-  // ReadIfReady() field trial is disabled.
-  READ_IF_READY_DISABLED,
+  // ReadIfReady() is implemented by the underlying transport.
+  READ_IF_READY_SUPPORTED,
+  // ReadIfReady() is unimplemented by the underlying transport.
+  READ_IF_READY_NOT_SUPPORTED,
 };
 
 class SpdySessionReadIfReadyTest
@@ -6122,24 +6120,17 @@ class SpdySessionReadIfReadyTest
       public testing::WithParamInterface<ReadIfReadySupport> {
  public:
   void SetUp() override {
-    if (GetParam() == READ_IF_READY_DISABLED) {
-      scoped_feature_list_.InitAndDisableFeature(
-          Socket::kReadIfReadyExperiment);
-    } else if (GetParam() == READ_IF_READY_ENABLED_SUPPORTED) {
+    if (GetParam() == READ_IF_READY_SUPPORTED) {
       session_deps_.socket_factory->set_enable_read_if_ready(true);
     }
     SpdySessionTest::SetUp();
   }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 INSTANTIATE_TEST_SUITE_P(/* no prefix */,
                          SpdySessionReadIfReadyTest,
-                         testing::Values(READ_IF_READY_ENABLED_SUPPORTED,
-                                         READ_IF_READY_ENABLED_NOT_SUPPORTED,
-                                         READ_IF_READY_DISABLED));
+                         testing::Values(READ_IF_READY_SUPPORTED,
+                                         READ_IF_READY_NOT_SUPPORTED));
 
 // Tests basic functionality of ReadIfReady() when it is enabled or disabled.
 TEST_P(SpdySessionReadIfReadyTest, ReadIfReady) {

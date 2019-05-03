@@ -4832,26 +4832,6 @@
             ]
         }
     ],
-    "SocketReadIfReady": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "ios",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SocketReadIfReady"
-                    ]
-                }
-            ]
-        }
-    ],
     "SqlTempStoreMemory": [
         {
             "platforms": [
