@@ -10,13 +10,14 @@
 
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/browser/extension_registry.h"
 #include "url/gurl.h"
 
 namespace web_app {
@@ -133,10 +134,10 @@ std::vector<GURL> ExtensionIdsMap::GetInstalledAppUrls(
     if (!v || !v->is_string()) {
       continue;
     }
-    auto* extension =
-        extensions::ExtensionRegistry::Get(profile)->GetExtensionById(
-            v->GetString(), extensions::ExtensionRegistry::EVERYTHING);
-    if (!extension) {
+
+    auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile);
+    DCHECK(provider);
+    if (!provider->registrar().IsInstalled(v->GetString())) {
       continue;
     }
 
