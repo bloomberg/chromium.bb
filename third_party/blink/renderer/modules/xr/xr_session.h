@@ -39,6 +39,7 @@ class XRRenderState;
 class XRRenderStateInit;
 class XRView;
 class XRViewerSpace;
+class XRWorldInformation;
 class XRWorldTrackingState;
 class XRWorldTrackingStateInit;
 
@@ -67,7 +68,7 @@ class XRSession final : public EventTargetWithInlineData,
   XR* xr() const { return xr_; }
   const String& environmentBlendMode() const { return blend_mode_string_; }
   XRRenderState* renderState() const { return render_state_; }
-  XRWorldTrackingState* worldTrackingState() { return nullptr; }
+  XRWorldTrackingState* worldTrackingState() { return world_tracking_state_; }
   XRSpace* viewerSpace() const;
 
   bool immersive() const;
@@ -81,7 +82,9 @@ class XRSession final : public EventTargetWithInlineData,
   DEFINE_ATTRIBUTE_EVENT_LISTENER(selectend, kSelectend)
 
   void updateRenderState(XRRenderStateInit*, ExceptionState&);
-  void updateWorldTrackingState(XRWorldTrackingStateInit*) {}
+  void updateWorldTrackingState(
+      XRWorldTrackingStateInit* worldTrackingStateInit,
+      ExceptionState& exception_state);
   ScriptPromise requestReferenceSpace(ScriptState*,
                                       const XRReferenceSpaceOptions*);
 
@@ -126,9 +129,12 @@ class XRSession final : public EventTargetWithInlineData,
   const AtomicString& InterfaceName() const override;
 
   void OnFocusChanged();
-  void OnFrame(double timestamp,
-               std::unique_ptr<TransformationMatrix>,
-               const base::Optional<gpu::MailboxHolder>& output_mailbox_holder);
+  void OnFrame(
+      double timestamp,
+      std::unique_ptr<TransformationMatrix>,
+      const base::Optional<gpu::MailboxHolder>& output_mailbox_holder,
+      const base::Optional<WTF::Vector<device::mojom::blink::XRPlaneDataPtr>>&
+          detected_planes);
   void OnInputStateChange(
       int16_t frame_id,
       const WTF::Vector<device::mojom::blink::XRInputSourceStatePtr>&);
@@ -213,6 +219,8 @@ class XRSession final : public EventTargetWithInlineData,
   const bool environment_integration_;
   String blend_mode_string_;
   Member<XRRenderState> render_state_;
+  Member<XRWorldTrackingState> world_tracking_state_;
+  Member<XRWorldInformation> world_information_;
   Member<XRViewerSpace> viewer_space_;
   HeapVector<Member<XRRenderStateInit>> pending_render_state_;
   HeapVector<Member<XRView>> views_;

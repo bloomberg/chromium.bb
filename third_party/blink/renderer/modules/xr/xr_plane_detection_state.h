@@ -7,13 +7,23 @@
 
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+
 namespace blink {
+
+class XRPlaneDetectionStateInit;
 
 class XRPlaneDetectionState : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  bool enabled() const { return false; }
+  XRPlaneDetectionState(
+      XRPlaneDetectionStateInit* plane_detection_state_init = nullptr);
+
+  bool enabled() const { return enabled_; }
+
+ private:
+  bool enabled_;
 };
 
 }  // namespace blink

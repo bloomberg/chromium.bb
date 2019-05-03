@@ -14,10 +14,12 @@
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/modules/xr/xr.h"
+#include "third_party/blink/renderer/modules/xr/xr_plane_detection_state.h"
 #include "third_party/blink/renderer/modules/xr/xr_presentation_context.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
 #include "third_party/blink/renderer/modules/xr/xr_viewport.h"
 #include "third_party/blink/renderer/modules/xr/xr_webgl_layer.h"
+#include "third_party/blink/renderer/modules/xr/xr_world_tracking_state.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/xr_frame_transport.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
@@ -128,7 +130,7 @@ void XRFrameProvider::OnFocusChanged() {
   // to schedule immersive frames when focus is acquired.
   if (focus && !last_has_focus_ && requesting_sessions_.size() > 0 &&
       !immersive_session_) {
-    ScheduleNonImmersiveFrame();
+    ScheduleNonImmersiveFrame(nullptr);
   }
   last_has_focus_ = focus;
 }
@@ -161,7 +163,7 @@ void XRFrameProvider::OnImmersiveSessionEnded() {
   // outstanding frames that were requested while the immersive session was
   // active.
   if (requesting_sessions_.size() > 0)
-    ScheduleNonImmersiveFrame();
+    ScheduleNonImmersiveFrame(nullptr);
 }
 
 // Schedule a session to be notified when the next XR frame is available.
@@ -169,9 +171,12 @@ void XRFrameProvider::RequestFrame(XRSession* session) {
   TRACE_EVENT0("gpu", __FUNCTION__);
   DCHECK(session);
 
+  auto options = device::mojom::blink::XRFrameDataRequestOptions::New(
+      session->worldTrackingState()->planeDetectionState()->enabled());
+
   // Immersive frame logic.
   if (session->immersive()) {
-    ScheduleImmersiveFrame();
+    ScheduleImmersiveFrame(std::move(options));
     return;
   }
 
@@ -184,10 +189,11 @@ void XRFrameProvider::RequestFrame(XRSession* session) {
   if (immersive_session_)
     return;
 
-  ScheduleNonImmersiveFrame();
+  ScheduleNonImmersiveFrame(std::move(options));
 }
 
-void XRFrameProvider::ScheduleImmersiveFrame() {
+void XRFrameProvider::ScheduleImmersiveFrame(
+    device::mojom::blink::XRFrameDataRequestOptionsPtr options) {
   TRACE_EVENT0("gpu", __FUNCTION__);
   if (pending_immersive_vsync_)
     return;
@@ -195,11 +201,14 @@ void XRFrameProvider::ScheduleImmersiveFrame() {
   pending_immersive_vsync_ = true;
 
   immersive_data_provider_->GetFrameData(
-      nullptr, WTF::Bind(&XRFrameProvider::OnImmersiveFrameData,
-                         WrapWeakPersistent(this)));
+      std::move(options), WTF::Bind(&XRFrameProvider::OnImmersiveFrameData,
+                                    WrapWeakPersistent(this)));
 }
 
-void XRFrameProvider::ScheduleNonImmersiveFrame() {
+// TODO(lincolnfrog): add a ScheduleNonImmersiveARFrame, if we want camera RAF
+// alignment instead of doc RAF alignment.
+void XRFrameProvider::ScheduleNonImmersiveFrame(
+    device::mojom::blink::XRFrameDataRequestOptionsPtr options) {
   TRACE_EVENT0("gpu", __FUNCTION__);
   DCHECK(!immersive_session_)
       << "Scheduling should be done via the exclusive session if present.";
@@ -228,8 +237,8 @@ void XRFrameProvider::ScheduleNonImmersiveFrame() {
   // ProcessScheduledFrame handles it appropriately.
   if (xr_->xrMagicWindowProviderPtr()) {
     xr_->xrMagicWindowProviderPtr()->GetFrameData(
-        nullptr, WTF::Bind(&XRFrameProvider::OnNonImmersiveFrameData,
-                           WrapWeakPersistent(this)));
+        std::move(options), WTF::Bind(&XRFrameProvider::OnNonImmersiveFrameData,
+                                      WrapWeakPersistent(this)));
   } else {
     frame_pose_ = nullptr;
   }
@@ -389,8 +398,14 @@ void XRFrameProvider::ProcessScheduledFrame(
     if (frame_data && frame_data->stage_parameters_updated) {
       immersive_session_->UpdateStageParameters(frame_data->stage_parameters);
     }
-    immersive_session_->OnFrame(high_res_now_ms, std::move(pose_matrix),
-                                buffer_mailbox_holder_);
+    if (frame_data) {
+      immersive_session_->OnFrame(high_res_now_ms, std::move(pose_matrix),
+                                  buffer_mailbox_holder_,
+                                  frame_data->detected_planes);
+    } else {
+      immersive_session_->OnFrame(high_res_now_ms, std::move(pose_matrix),
+                                  buffer_mailbox_holder_, base::nullopt);
+    }
   } else {
     // In the process of fulfilling the frame requests for each session they are
     // extremely likely to request another frame. Work off of a separate list
@@ -413,7 +428,13 @@ void XRFrameProvider::ProcessScheduledFrame(
 
       std::unique_ptr<TransformationMatrix> pose_matrix =
           getPoseMatrix(frame_pose_);
-      session->OnFrame(high_res_now_ms, std::move(pose_matrix), base::nullopt);
+      if (frame_data) {
+        session->OnFrame(high_res_now_ms, std::move(pose_matrix), base::nullopt,
+                         frame_data->detected_planes);
+      } else {
+        session->OnFrame(high_res_now_ms, std::move(pose_matrix), base::nullopt,
+                         base::nullopt);
+      }
     }
 
     processing_sessions_.clear();

@@ -5,7 +5,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_PLANE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_PLANE_H_
 
+#include <memory>
+
+#include "base/optional.h"
+#include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "third_party/blink/renderer/core/geometry/dom_point_read_only.h"
+#include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -17,10 +22,29 @@ class XRPlane : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  XRPose* getPose(XRSpace*) const { return nullptr; }
+  enum Orientation { kHorizontal, kVertical };
 
-  String orientation() const { return {}; }
-  HeapVector<Member<DOMPointReadOnly>> polygon() const { return {}; }
+  explicit XRPlane(const device::mojom::blink::XRPlaneDataPtr& plane_data);
+  XRPlane(const base::Optional<Orientation>& orientation,
+          const TransformationMatrix& pose_matrix,
+          const HeapVector<Member<DOMPointReadOnly>>& polygon);
+
+  // Returns a pose expressed in passed in reference space.
+  XRPose* getPose(XRSpace*) const;
+  String orientation() const;
+  HeapVector<Member<DOMPointReadOnly>> polygon() const;
+
+  // Updates plane data from passed in |plane_data|. The resulting instance
+  // should be equivalent to the instance that would be create by calling
+  // XRPlane(plane_data).
+  void Update(const device::mojom::blink::XRPlaneDataPtr& plane_data);
+
+  void Trace(blink::Visitor* visitor) override;
+
+ private:
+  HeapVector<Member<DOMPointReadOnly>> polygon_;
+  base::Optional<Orientation> orientation_;
+  TransformationMatrix pose_matrix_;
 };
 
 }  // namespace blink

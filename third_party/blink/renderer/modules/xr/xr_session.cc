@@ -36,6 +36,9 @@
 #include "third_party/blink/renderer/modules/xr/xr_view.h"
 #include "third_party/blink/renderer/modules/xr/xr_viewer_space.h"
 #include "third_party/blink/renderer/modules/xr/xr_webgl_layer.h"
+#include "third_party/blink/renderer/modules/xr/xr_world_information.h"
+#include "third_party/blink/renderer/modules/xr/xr_world_tracking_state.h"
+#include "third_party/blink/renderer/modules/xr/xr_world_tracking_state_init.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 
 namespace blink {
@@ -116,6 +119,8 @@ XRSession::XRSession(
     : xr_(xr),
       mode_(mode),
       environment_integration_(mode == kModeImmersiveAR),
+      world_tracking_state_(MakeGarbageCollected<XRWorldTrackingState>()),
+      world_information_(MakeGarbageCollected<XRWorldInformation>()),
       client_binding_(this, std::move(client_request)),
       callback_collection_(
           MakeGarbageCollected<XRFrameRequestCallbackCollection>(
@@ -195,6 +200,21 @@ void XRSession::updateRenderState(XRRenderStateInit* init,
   }
 
   pending_render_state_.push_back(init);
+}
+
+void XRSession::updateWorldTrackingState(
+    XRWorldTrackingStateInit* world_tracking_state_init,
+    ExceptionState& exception_state) {
+  DVLOG(3) << __func__;
+
+  if (ended_) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kSessionEnded);
+    return;
+  }
+
+  world_tracking_state_ =
+      MakeGarbageCollected<XRWorldTrackingState>(world_tracking_state_init);
 }
 
 void XRSession::UpdateEyeParameters(
@@ -632,7 +652,9 @@ void XRSession::ApplyPendingRenderState() {
 void XRSession::OnFrame(
     double timestamp,
     std::unique_ptr<TransformationMatrix> base_pose_matrix,
-    const base::Optional<gpu::MailboxHolder>& output_mailbox_holder) {
+    const base::Optional<gpu::MailboxHolder>& output_mailbox_holder,
+    const base::Optional<WTF::Vector<device::mojom::blink::XRPlaneDataPtr>>&
+        detected_planes) {
   TRACE_EVENT0("gpu", __FUNCTION__);
   DVLOG(2) << __FUNCTION__;
   // Don't process any outstanding frames once the session is ended.
@@ -643,6 +665,8 @@ void XRSession::OnFrame(
 
   // If there are pending render state changes, apply them now.
   ApplyPendingRenderState();
+
+  world_information_->ProcessPlaneInformation(detected_planes);
 
   if (pending_frame_) {
     pending_frame_ = false;
@@ -697,7 +721,8 @@ void XRSession::LogGetPose() const {
 }
 
 XRFrame* XRSession::CreatePresentationFrame() {
-  XRFrame* presentation_frame = MakeGarbageCollected<XRFrame>(this);
+  XRFrame* presentation_frame =
+      MakeGarbageCollected<XRFrame>(this, world_information_);
   if (base_pose_matrix_) {
     presentation_frame->SetBasePoseMatrix(*base_pose_matrix_);
   }
@@ -999,6 +1024,8 @@ bool XRSession::HasPendingActivity() const {
 void XRSession::Trace(blink::Visitor* visitor) {
   visitor->Trace(xr_);
   visitor->Trace(render_state_);
+  visitor->Trace(world_tracking_state_);
+  visitor->Trace(world_information_);
   visitor->Trace(viewer_space_);
   visitor->Trace(pending_render_state_);
   visitor->Trace(views_);

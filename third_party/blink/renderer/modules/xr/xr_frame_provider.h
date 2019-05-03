@@ -53,8 +53,12 @@ class XRFrameProvider final
   void OnImmersiveFrameData(device::mojom::blink::XRFrameDataPtr data);
   void OnNonImmersiveFrameData(device::mojom::blink::XRFrameDataPtr data);
 
-  void ScheduleImmersiveFrame();
-  void ScheduleNonImmersiveFrame();
+  // TODO(https://crbug.com/955819): options should be removed from those
+  // methods as they'll no longer be passed on a per-frame basis.
+  void ScheduleImmersiveFrame(
+      device::mojom::blink::XRFrameDataRequestOptionsPtr options);
+  void ScheduleNonImmersiveFrame(
+      device::mojom::blink::XRFrameDataRequestOptionsPtr options);
 
   void OnPresentationProviderConnectionError();
   void ProcessScheduledFrame(device::mojom::blink::XRFrameDataPtr frame_data,

@@ -7,15 +7,29 @@
 
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+
 namespace blink {
 
 class XRPlaneDetectionState;
+class XRWorldTrackingStateInit;
 
 class XRWorldTrackingState : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  XRPlaneDetectionState* planeDetectionState() const { return nullptr; }
+  XRWorldTrackingState(
+      XRWorldTrackingStateInit* world_tracking_state_init = nullptr);
+
+  XRPlaneDetectionState* planeDetectionState() const {
+    return plane_detection_state_;
+  }
+
+  void Trace(blink::Visitor* visitor) override;
+
+ private:
+  Member<XRPlaneDetectionState> plane_detection_state_;
 };
 
 }  // namespace blink

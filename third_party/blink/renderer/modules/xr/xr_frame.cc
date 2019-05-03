@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
 #include "third_party/blink/renderer/modules/xr/xr_view.h"
 #include "third_party/blink/renderer/modules/xr/xr_viewer_pose.h"
+#include "third_party/blink/renderer/modules/xr/xr_world_information.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
@@ -27,7 +28,8 @@ const char kSessionMismatch[] = "XRSpace and XRFrame sessions do not match.";
 
 }  // namespace
 
-XRFrame::XRFrame(XRSession* session) : session_(session) {}
+XRFrame::XRFrame(XRSession* session, XRWorldInformation* world_information)
+    : world_information_(world_information), session_(session) {}
 
 std::unique_ptr<TransformationMatrix> XRFrame::CloneBasePoseMatrix() const {
   if (!base_pose_matrix_) {
@@ -115,6 +117,7 @@ void XRFrame::Deactivate() {
 
 void XRFrame::Trace(blink::Visitor* visitor) {
   visitor->Trace(session_);
+  visitor->Trace(world_information_);
   ScriptWrappable::Trace(visitor);
 }
 

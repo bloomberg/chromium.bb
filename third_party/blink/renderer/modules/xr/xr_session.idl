@@ -48,7 +48,7 @@ enum XREnvironmentBlendMode {
   // Configures a session with real-world understanding capabilities.
   // More details can be found here:
   // https://github.com/immersive-web/real-world-geometry/blob/master/plane-detection-explainer.md
-  [RuntimeEnabled=WebXRPlaneDetection] void updateWorldTrackingState(optional XRWorldTrackingStateInit state);
+  [RuntimeEnabled=WebXRPlaneDetection, RaisesException] void updateWorldTrackingState(optional XRWorldTrackingStateInit state);
 
   [CallWith=ScriptState] Promise<void> end();
 };

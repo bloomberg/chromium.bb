@@ -3,3 +3,61 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/modules/xr/xr_plane.h"
+#include "third_party/blink/renderer/modules/xr/type_converters.h"
+
+namespace blink {
+
+XRPlane::XRPlane(const device::mojom::blink::XRPlaneDataPtr& plane_data)
+    : XRPlane(mojo::ConvertTo<base::Optional<blink::XRPlane::Orientation>>(
+                  plane_data->orientation),
+              mojo::ConvertTo<blink::TransformationMatrix>(plane_data->pose),
+              mojo::ConvertTo<HeapVector<Member<DOMPointReadOnly>>>(
+                  plane_data->polygon)) {}
+
+XRPlane::XRPlane(const base::Optional<Orientation>& orientation,
+                 const TransformationMatrix& pose_matrix,
+                 const HeapVector<Member<DOMPointReadOnly>>& polygon)
+    : polygon_(polygon), orientation_(orientation), pose_matrix_(pose_matrix) {
+  DVLOG(3) << __func__;
+}
+
+XRPose* XRPlane::getPose(XRSpace*) const {
+  return nullptr;
+}
+
+String XRPlane::orientation() const {
+  if (orientation_.has_value()) {
+    switch (orientation_.value()) {
+      case Orientation::kHorizontal:
+        return "Horizontal";
+      case Orientation::kVertical:
+        return "Vertical";
+    }
+  }
+  return "";
+}
+
+HeapVector<Member<DOMPointReadOnly>> XRPlane::polygon() const {
+  // Returns copy of a vector - by design. This way, JavaScript code could
+  // store the state of the plane's polygon in frame N just by storing the
+  // array (`let polygon = plane.polygon`) - the stored array won't be affected
+  // by the changes to the plane that could happen in frames >N.
+  return polygon_;
+}
+
+void XRPlane::Update(const device::mojom::blink::XRPlaneDataPtr& plane_data) {
+  DVLOG(3) << __func__;
+
+  orientation_ = mojo::ConvertTo<base::Optional<blink::XRPlane::Orientation>>(
+      plane_data->orientation);
+  pose_matrix_ = mojo::ConvertTo<blink::TransformationMatrix>(plane_data->pose);
+  polygon_ = mojo::ConvertTo<HeapVector<Member<DOMPointReadOnly>>>(
+      plane_data->polygon);
+}
+
+void XRPlane::Trace(blink::Visitor* visitor) {
+  visitor->Trace(polygon_);
+  ScriptWrappable::Trace(visitor);
+}
+
+}  // namespace blink

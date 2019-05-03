@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_WORLD_INFORMATION_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_WORLD_INFORMATION_H_
 
+#include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "third_party/blink/renderer/modules/xr/xr_plane.h"
 
 namespace blink {
@@ -13,10 +14,27 @@ class XRWorldInformation : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  HeapVector<Member<XRPlane>> detectedPlanes(bool& is_null) const {
-    is_null = true;
-    return {};
-  }
+  XRWorldInformation();
+
+  // Returns vector containing detected planes, |is_null| will be set to true
+  // if plane detection is not enabled.
+  HeapVector<Member<XRPlane>> detectedPlanes(bool& is_null) const;
+
+  void Trace(blink::Visitor* visitor) override;
+
+  // Applies changes to the stored plane information based on the contents of
+  // the received frame data. This will update the contents of
+  // plane_ids_to_planes_.
+  void ProcessPlaneInformation(
+      const base::Optional<WTF::Vector<device::mojom::blink::XRPlaneDataPtr>>&
+          detected_planes);
+
+ private:
+  // Signifies if we should return null from `detectedPlanes()`.
+  // This is the case if we have a freshly constructed instance, or if our
+  // last `ProcessPlaneInformation()` was called with base::nullopt.
+  bool is_detected_planes_null_ = true;
+  HeapHashMap<int32_t, Member<XRPlane>> plane_ids_to_planes_;
 };
 
 }  // namespace blink

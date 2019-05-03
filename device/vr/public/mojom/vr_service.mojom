@@ -237,7 +237,31 @@ struct XRPresentationTransportOptions {
   bool wait_for_gpu_fence;
 };
 
+enum XRPlaneOrientation {
+  UNKNOWN = 0,
+  HORIZONTAL = 1,
+  VERTICAL = 2
+};
+
+struct XRPlanePointData {
+  float x;
+  float z;
+};
+
 struct XRPlaneData {
+  // Unique (per session) identifier of the plane.
+  int32 id;
+
+  // Plane orientation relative to gravity.
+  XRPlaneOrientation orientation;
+
+  // Pose of the plane's center. Defines new coordinate space.
+  // Y axis of the coordinate space describes plane's normal, the rotation of
+  // X and Z around the Y axis is arbitrary.
+  VRPose pose;
+
+  // Vertices of 2D convex polygon approximating the plane.
+  array<XRPlanePointData> polygon;
 };
 
 // The data needed for each animation frame of an XRSession.

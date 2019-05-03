@@ -6,6 +6,8 @@ import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("xr") {
   sources = [
+    "type_converters.cc",
+    "type_converters.h",
     "xr.cc",
     "xr.h",
     "xr_bounded_reference_space.cc",
