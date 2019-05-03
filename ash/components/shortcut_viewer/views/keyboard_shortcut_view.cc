@@ -138,14 +138,14 @@ KeyboardShortcutView::~KeyboardShortcutView() {
 }
 
 // static
-views::Widget* KeyboardShortcutView::Toggle(base::TimeTicks start_time,
-                                            aura::Window* context) {
+views::Widget* KeyboardShortcutView::Toggle(aura::Window* context) {
   if (g_ksv_view) {
     if (g_ksv_view->GetWidget()->IsActive())
       g_ksv_view->GetWidget()->Close();
     else
       g_ksv_view->GetWidget()->Activate();
   } else {
+    const base::TimeTicks start_time = base::TimeTicks::Now();
     TRACE_EVENT0("shortcut_viewer", "CreateWidget");
     base::RecordAction(
         base::UserMetricsAction("KeyboardShortcutViewer.CreateWindow"));
@@ -608,3 +608,11 @@ KSVSearchBoxView* KeyboardShortcutView::GetSearchBoxViewForTesting() {
 }
 
 }  // namespace keyboard_shortcut_viewer
+
+namespace ash {
+
+void ToggleKeyboardShortcutViewer() {
+  keyboard_shortcut_viewer::KeyboardShortcutView::Toggle(nullptr);
+}
+
+}  // namespace ash

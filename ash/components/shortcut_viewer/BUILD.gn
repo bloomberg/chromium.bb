@@ -10,8 +10,6 @@ source_set("shortcut_viewer") {
     "keyboard_shortcut_viewer_metadata.cc",
     "keyboard_shortcut_viewer_metadata.h",
     "ksv_export.h",
-    "shortcut_viewer.cc",
-    "shortcut_viewer.h",
     "views/bubble_view.cc",
     "views/bubble_view.h",
     "views/keyboard_shortcut_item_list_view.cc",

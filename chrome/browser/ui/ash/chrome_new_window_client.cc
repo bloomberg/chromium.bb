@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/keyboard_shortcut_viewer.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
@@ -23,7 +24,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/ui/ash/ksv/keyboard_shortcut_viewer_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -388,7 +388,7 @@ void ChromeNewWindowClient::RestoreTab() {
 }
 
 void ChromeNewWindowClient::ShowKeyboardShortcutViewer() {
-  keyboard_shortcut_viewer_util::ToggleKeyboardShortcutViewer();
+  ash::ToggleKeyboardShortcutViewer();
 }
 
 void ChromeNewWindowClient::ShowTaskManager() {

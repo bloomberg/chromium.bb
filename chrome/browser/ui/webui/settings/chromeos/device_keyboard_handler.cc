@@ -4,12 +4,12 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/device_keyboard_handler.h"
 
+#include "ash/public/cpp/keyboard_shortcut_viewer.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/new_window.mojom.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/values.h"
-#include "chrome/browser/ui/ash/ksv/keyboard_shortcut_viewer_util.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/services/assistant/public/features.h"
@@ -105,7 +105,7 @@ void KeyboardHandler::HandleInitialize(const base::ListValue* args) {
 
 void KeyboardHandler::HandleShowKeyboardShortcutViewer(
     const base::ListValue* args) const {
-  keyboard_shortcut_viewer_util::ToggleKeyboardShortcutViewer();
+  ash::ToggleKeyboardShortcutViewer();
 }
 
 void KeyboardHandler::HandleKeyboardChange(const base::ListValue* args) {

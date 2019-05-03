@@ -8,7 +8,7 @@ include_rules = [
 specific_include_rules = {
   ".*test.*": [
    "!ash",
-   "+ash/components/shortcut_viewer/public",
+   "+ash/components/shortcut_viewer",
    "+ash/public",
   ],
   # AshShellInit supports classic (non-mash) mode so allow ash/ includes.

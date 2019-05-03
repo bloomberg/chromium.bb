@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
+#include "ash/public/cpp/keyboard_shortcut_viewer.h"
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "base/bind.h"
@@ -25,7 +26,6 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/extension_app_utils.h"
-#include "chrome/browser/ui/ash/ksv/keyboard_shortcut_viewer_util.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
@@ -281,7 +281,7 @@ void OpenInternalApp(const std::string& app_id,
                      Profile* profile,
                      int event_flags) {
   if (app_id == kInternalAppIdKeyboardShortcutViewer) {
-    keyboard_shortcut_viewer_util::ToggleKeyboardShortcutViewer();
+    ash::ToggleKeyboardShortcutViewer();
   } else if (app_id == kInternalAppIdSettings) {
     chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(profile);
   } else if (app_id == kInternalAppIdCamera) {
