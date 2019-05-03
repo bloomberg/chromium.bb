@@ -166,13 +166,6 @@ class PropertyTreeManager {
   // scale node.
   void SetTransformTreePageScaleFactor(cc::TransformTree*,
                                        cc::TransformNode* page_scale_node);
-  // Move the local translation into the scroll_offset field of the compositor
-  // transform node. The compositor uses a speical scroll_offset field instead
-  // of the local matrix for scroll nodes, whereas
-  // blink::TransformPaintPropertyNode represents this as a 2d translation.
-  void SetCcTransformNodeScrollToTransformTranslation(
-      cc::TransformNode&,
-      const TransformPaintPropertyNode&);
 
   bool IsCurrentCcEffectSynthetic() const { return current_.effect_type; }
   bool IsCurrentCcEffectSyntheticForNonTrivialClip() const {

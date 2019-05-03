@@ -112,11 +112,9 @@ bool PropertyTreeManager::DirectlyUpdateScrollOffsetTransform(
   DCHECK(!cc_transform->is_currently_animating);
 
   UpdateCcTransformLocalMatrix(*cc_transform, transform);
-  SetCcTransformNodeScrollToTransformTranslation(*cc_transform, transform);
   property_trees->scroll_tree.SetScrollOffset(
       scroll_node->GetCompositorElementId(), cc_transform->scroll_offset);
 
-  cc_transform->transform_changed = true;
   property_trees->transform_tree.set_needs_update(true);
   property_trees->scroll_tree.set_needs_update(true);
   return true;
@@ -141,7 +139,6 @@ bool PropertyTreeManager::DirectlyUpdateTransform(
   // flag, we should clear it to let the compositor respect the new value.
   cc_transform->is_currently_animating = false;
 
-  cc_transform->transform_changed = true;
   property_trees->transform_tree.set_needs_update(true);
   return true;
 }
@@ -158,7 +155,6 @@ bool PropertyTreeManager::DirectlyUpdatePageScaleTransform(
 
   UpdateCcTransformLocalMatrix(*cc_transform, transform);
   AdjustPageScaleToUsePostLocal(*cc_transform);
-  cc_transform->transform_changed = true;
 
   SetTransformTreePageScaleFactor(&property_trees->transform_tree,
                                   cc_transform);
@@ -351,7 +347,6 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
   compositor_node.source_node_id = parent_id;
 
   UpdateCcTransformLocalMatrix(compositor_node, transform_node);
-  compositor_node.transform_changed = true;
   compositor_node.flattens_inherited_transform =
       transform_node.FlattensInheritedTransform();
   compositor_node.sorting_context_id = transform_node.RenderingContextId();
@@ -402,12 +397,8 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
   // compositor scroll property node and adjust the compositor transform node's
   // scroll offset.
   if (auto* scroll_node = transform_node.ScrollNode()) {
-    // Blink creates a 2d transform node just for scroll offset whereas cc's
-    // transform node has a special scroll offset field. To handle this we
-    // adjust cc's transform node to remove the 2d scroll translation and
-    // instead set the scroll_offset field.
-    SetCcTransformNodeScrollToTransformTranslation(compositor_node,
-                                                   transform_node);
+    compositor_node.scrolls = true;
+    compositor_node.should_be_snapped = true;
     CreateCompositorScrollNode(*scroll_node, compositor_node);
   }
 
@@ -434,33 +425,43 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
 void PropertyTreeManager::UpdateCcTransformLocalMatrix(
     cc::TransformNode& compositor_node,
     const TransformPaintPropertyNode& transform_node) {
-  FloatPoint3D origin = transform_node.Origin();
-  compositor_node.pre_local.matrix().setTranslate(-origin.X(), -origin.Y(),
-                                                  -origin.Z());
-  // The sticky offset on the blink transform node is pre-computed and stored
-  // to the local matrix. Cc applies sticky offset dynamically on top of the
-  // local matrix. We should not set the local matrix on cc node if it is a
-  // sticky node because the sticky offset would be applied twice otherwise.
-  if (!transform_node.GetStickyConstraint()) {
+  if (transform_node.GetStickyConstraint()) {
+    // The sticky offset on the blink transform node is pre-computed and stored
+    // to the local matrix. Cc applies sticky offset dynamically on top of the
+    // local matrix. We should not set the local matrix on cc node if it is a
+    // sticky node because the sticky offset would be applied twice otherwise.
+    DCHECK(compositor_node.local.IsIdentity());
+    DCHECK(compositor_node.pre_local.IsIdentity());
+    DCHECK(compositor_node.post_local.IsIdentity());
+  } else if (transform_node.IsIdentityOr2DTranslation()) {
+    auto translation = transform_node.Translation2D();
+    if (transform_node.ScrollNode()) {
+      // Blink creates a 2d transform node just for scroll offset whereas cc's
+      // transform node has a special scroll offset field.
+      compositor_node.scroll_offset =
+          gfx::ScrollOffset(-translation.Width(), -translation.Height());
+      DCHECK(compositor_node.local.IsIdentity());
+      DCHECK(compositor_node.pre_local.IsIdentity());
+      DCHECK(compositor_node.post_local.IsIdentity());
+    } else {
+      compositor_node.local.matrix().setTranslate(translation.Width(),
+                                                  translation.Height(), 0);
+      DCHECK_EQ(FloatPoint3D(), transform_node.Origin());
+      compositor_node.pre_local.matrix().setIdentity();
+      compositor_node.post_local.matrix().setIdentity();
+    }
+  } else {
+    DCHECK(!transform_node.ScrollNode());
+    FloatPoint3D origin = transform_node.Origin();
+    compositor_node.pre_local.matrix().setTranslate(-origin.X(), -origin.Y(),
+                                                    -origin.Z());
     compositor_node.local.matrix() =
-        TransformationMatrix::ToSkMatrix44(transform_node.SlowMatrix());
+        TransformationMatrix::ToSkMatrix44(transform_node.Matrix());
+    compositor_node.post_local.matrix().setTranslate(origin.X(), origin.Y(),
+                                                     origin.Z());
   }
-  compositor_node.post_local.matrix().setTranslate(origin.X(), origin.Y(),
-                                                   origin.Z());
   compositor_node.needs_local_transform_update = true;
-}
-
-void PropertyTreeManager::SetCcTransformNodeScrollToTransformTranslation(
-    cc::TransformNode& cc_transform,
-    const TransformPaintPropertyNode& transform) {
-  auto scroll_offset_size = transform.Translation2D();
-  auto scroll_offset = gfx::ScrollOffset(-scroll_offset_size.Width(),
-                                         -scroll_offset_size.Height());
-  DCHECK(cc_transform.local.IsIdentityOr2DTranslation());
-  cc_transform.scroll_offset = scroll_offset;
-  cc_transform.local.MakeIdentity();
-  cc_transform.scrolls = true;
-  cc_transform.should_be_snapped = true;
+  compositor_node.transform_changed = true;
 }
 
 int PropertyTreeManager::EnsureCompositorPageScaleTransformNode(
@@ -470,7 +471,6 @@ int PropertyTreeManager::EnsureCompositorPageScaleTransformNode(
   DCHECK(GetTransformTree().Node(id));
   cc::TransformNode& compositor_node = *GetTransformTree().Node(id);
   AdjustPageScaleToUsePostLocal(compositor_node);
-  compositor_node.transform_changed = true;
 
   SetTransformTreePageScaleFactor(&GetTransformTree(), &compositor_node);
   GetTransformTree().set_needs_update(true);
@@ -487,6 +487,7 @@ void PropertyTreeManager::AdjustPageScaleToUsePostLocal(
   page_scale.post_local.matrix() = page_scale.local.matrix();
   page_scale.pre_local.matrix().setIdentity();
   page_scale.local.matrix().setIdentity();
+  page_scale.transform_changed = true;
 }
 
 void PropertyTreeManager::SetTransformTreePageScaleFactor(
