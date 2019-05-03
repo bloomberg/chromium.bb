@@ -719,13 +719,7 @@ std::unique_ptr<UiElement> CreateWebVrIndicator(Model* model,
 
   std::unique_ptr<UiElement> description_element;
   if (spec.is_url) {
-    auto url_text = Create<UrlText>(
-        kNone, phase, kWebVrPermissionFontHeight,
-        base::BindRepeating(&UiBrowserInterface::OnUnsupportedMode,
-                            base::Unretained(browser),
-                            UiUnsupportedMode::kUnhandledCodePoint)
-
-    );
+    auto url_text = Create<UrlText>(kNone, phase, kWebVrPermissionFontHeight);
     url_text->SetFieldWidth(kWebVrPermissionTextWidth);
     url_text->AddBinding(VR_BIND_FUNC(GURL, Model, model,
                                       model->location_bar_state.gurl, UrlText,
@@ -2292,11 +2286,8 @@ void UiSceneCreator::CreateUrlBar() {
           base::Unretained(security_button.get()))));
   scene_->AddUiElement(kUrlBarSecurityButtonRegion, std::move(security_button));
 
-  auto url_text = Create<UrlText>(
-      kUrlBarUrlText, kPhaseForeground, kUrlBarFontHeightDMM,
-      base::BindRepeating(&UiBrowserInterface::OnUnsupportedMode,
-                          base::Unretained(browser_),
-                          UiUnsupportedMode::kUnhandledCodePoint));
+  auto url_text =
+      Create<UrlText>(kUrlBarUrlText, kPhaseForeground, kUrlBarFontHeightDMM);
   url_text->SetFieldWidth(kUrlBarUrlWidthDMM);
   url_text->AddBinding(VR_BIND_FUNC(GURL, Model, model_,
                                     model->location_bar_state.gurl, UrlText,
