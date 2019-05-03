@@ -5,17 +5,19 @@
 #ifndef IOS_CHROME_BROWSER_OVERLAYS_OVERLAY_PRESENTER_H_
 #define IOS_CHROME_BROWSER_OVERLAYS_OVERLAY_PRESENTER_H_
 
+#include "base/memory/weak_ptr.h"
 #import "ios/chrome/browser/overlays/overlay_request_queue_impl_observer.h"
 #import "ios/chrome/browser/overlays/public/overlay_modality.h"
+#import "ios/chrome/browser/overlays/public/overlay_ui_delegate.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer.h"
 
 class OverlayUIDelegate;
 
 // OverlayPresenter is responsible for triggering the presentation of overlay UI
-// at a given modality.  It observes OverlayRequestQueue modifications for the
-// active WebState and triggers the presentation for added requests using the UI
-// delegate.  Additionally, the presenter will manage hiding and showing
-// overlays when the foreground tab is updated.
+// at a given modality.  The presenter:
+// - observes OverlayRequestQueue modifications for the active WebState and
+//   triggers the presentation for added requests using the UI delegate.
+// - manages hiding and showing overlays for active WebState changes.
 class OverlayPresenter : public OverlayRequestQueueImplObserver,
                          public WebStateListObserver {
  public:
@@ -31,13 +33,39 @@ class OverlayPresenter : public OverlayRequestQueueImplObserver,
   void Disconnect();
 
  private:
-  // Fetches the request queue for |web_state|, creating it if necessary.
-  OverlayRequestQueueImpl* GetQueueForWebState(web::WebState* web_state);
+  // Setter for the active WebState.  Setting to a new value will hide any
+  // presented overlays and show the next overlay for the new active WebState.
+  void SetActiveWebState(web::WebState* web_state,
+                         WebStateListObserver::ChangeReason reason);
 
-  // Starts and stops observing |web_state_list_| and its WebStates request
-  // queues.
-  void StartObserving();
-  void StopObserving();
+  // Fetches the request queue for |web_state|, creating it if necessary.
+  OverlayRequestQueueImpl* GetQueueForWebState(web::WebState* web_state) const;
+
+  // Returns the request queue for the active WebState.
+  OverlayRequestQueueImpl* GetActiveQueue() const;
+
+  // Returns the front request for the active queue.
+  OverlayRequest* GetActiveRequest() const;
+
+  // Triggers the presentation of the overlay UI for the active request.  Does
+  // nothing if there is no active request or if there is no UI delegate.  Must
+  // only be called when |presenting_| is false.
+  void PresentOverlayForActiveRequest();
+
+  // Notifies this object that |ui_delegate| has finished dismissing the
+  // overlay UI corresponding with |request| in |queue| for |reason|.  This
+  // function is called when the OverlayDismissalCallback provided to the UI
+  // delegate is excuted.
+  void OverlayWasDismissed(OverlayUIDelegate* ui_delegate,
+                           OverlayRequest* request,
+                           OverlayRequestQueueImpl* queue,
+                           OverlayDismissalReason reason);
+
+  // Cancels all overlays for |web_state|.
+  void CancelOverlayUIForWebState(web::WebState* web_state);
+
+  // Cancels all overlays for the Browser.
+  void CancelAllOverlayUI();
 
   // OverlayRequestQueueImplObserver:
   void OnRequestAdded(OverlayRequestQueueImpl* queue,
@@ -63,7 +91,11 @@ class OverlayPresenter : public OverlayRequestQueueImplObserver,
 
   OverlayModality modality_;
   WebStateList* web_state_list_ = nullptr;
+  web::WebState* active_web_state_ = nullptr;
   OverlayUIDelegate* ui_delegate_ = nullptr;
+  bool presenting_ = false;
+  bool detaching_active_web_state_ = false;
+  base::WeakPtrFactory<OverlayPresenter> weak_factory_;
 };
 
 #endif  // IOS_CHROME_BROWSER_OVERLAYS_OVERLAY_PRESENTER_H_

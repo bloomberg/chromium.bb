@@ -43,6 +43,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "overlay_manager_impl_unittest.mm",
+    "overlay_presenter_unittest.mm",
     "overlay_request_impl_unittest.cc",
     "overlay_request_queue_impl_unittest.mm",
     "overlay_request_unittest.cc",
