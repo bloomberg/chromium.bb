@@ -484,6 +484,9 @@ void SetIndividualRuntimeFeatures(
 
   if (!base::FeatureList::IsEnabled(features::kIdleDetection))
     WebRuntimeFeatures::EnableIdleDetection(false);
+
+  WebRuntimeFeatures::EnableStaleWhileRevalidate(
+      base::FeatureList::IsEnabled(features::kStaleWhileRevalidate));
 }
 
 }  // namespace

@@ -115,6 +115,7 @@ CONTENT_EXPORT extern const char
     kSkipBrowserTouchFilterTypeParamValueDiscrete[];
 CONTENT_EXPORT extern const char kSkipBrowserTouchFilterTypeParamValueAll[];
 CONTENT_EXPORT extern const base::Feature kSpareRendererForSitePerProcess;
+CONTENT_EXPORT extern const base::Feature kStaleWhileRevalidate;
 CONTENT_EXPORT extern const base::Feature kSyntheticPointerActions;
 CONTENT_EXPORT extern const base::Feature kTimerThrottlingForHiddenFrames;
 CONTENT_EXPORT extern const base::Feature kTouchpadAsyncPinchEvents;

@@ -656,4 +656,8 @@ void WebRuntimeFeatures::EnableIdleDetection(bool enable) {
   RuntimeEnabledFeatures::SetIdleDetectionEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableStaleWhileRevalidate(bool enable) {
+  RuntimeEnabledFeatures::SetStaleWhileRevalidateEnabled(enable);
+}
+
 }  // namespace blink
