@@ -1970,9 +1970,12 @@
           "board_name": "grunt",
           "name": "careena",
           "test_suites": [
+            "sanity",
             "bvt-inline",
             "bvt-tast-cq",
+            "bvt-installer",
             "bvt-arc",
+            "au",
             "bvt-cq",
             "bvt-perbuild",
             "bvt-tast-informational"
@@ -2626,6 +2629,12 @@
       "builder": "RELEASE",
       "experimental": false,
       "models": [
+        {
+          "board_name": "rammus",
+          "name": "leona",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
         {
           "board_name": "rammus",
           "name": "shyvana",
