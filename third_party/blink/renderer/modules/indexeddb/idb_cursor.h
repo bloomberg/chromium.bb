@@ -72,6 +72,7 @@ class IDBCursor : public ScriptWrappable {
   ScriptValue key(ScriptState*);
   ScriptValue primaryKey(ScriptState*);
   ScriptValue value(ScriptState*);
+  IDBRequest* request() { return request_.Get(); }
   void source(Source&) const;
 
   IDBRequest* update(ScriptState*, const ScriptValue&, ExceptionState&);

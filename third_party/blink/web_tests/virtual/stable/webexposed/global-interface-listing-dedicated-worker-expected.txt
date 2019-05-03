@@ -487,6 +487,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter direction
 [Worker]     getter key
 [Worker]     getter primaryKey
+[Worker]     getter request
 [Worker]     getter source
 [Worker]     method advance
 [Worker]     method constructor
