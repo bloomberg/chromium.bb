@@ -249,9 +249,9 @@ public class ChromePreferenceManager {
     private static final String FAILURE_UPLOAD_SUFFIX = "_crash_failure_upload";
 
     /**
-     * Whether or not Sole integration is enabled.
-     * Default value is true.
+     * Deprecated in M76. This value may still exist in the shared preferences file. Do not reuse.
      */
+    @Deprecated
     public static final String SOLE_INTEGRATION_ENABLED_KEY = "sole_integration_enabled";
 
     /**

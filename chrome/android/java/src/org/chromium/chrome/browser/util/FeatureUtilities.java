@@ -72,7 +72,6 @@ public class FeatureUtilities {
     private static Boolean sHasGoogleAccountAuthenticator;
     private static Boolean sHasRecognitionIntentHandler;
 
-    private static Boolean sIsSoleEnabled;
     private static Boolean sIsHomePageButtonForceEnabled;
     private static Boolean sIsHomepageTileEnabled;
     private static Boolean sIsNewTabPageButtonEnabled;
@@ -194,7 +193,6 @@ public class FeatureUtilities {
      * Caches flags that must take effect on startup but are set via native code.
      */
     public static void cacheNativeFlags() {
-        cacheSoleEnabled();
         cacheCommandLineOnNonRootedEnabled();
         FirstRunUtils.cacheFirstRunPrefs();
         cacheHomePageButtonForceEnabled();
@@ -537,33 +535,6 @@ public class FeatureUtilities {
      */
     public static boolean isDownloadProgressInfoBarEnabled() {
         return ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_PROGRESS_INFOBAR);
-    }
-
-    /**
-     * Cache whether or not Sole integration is enabled.
-     */
-    public static void cacheSoleEnabled() {
-        boolean featureEnabled = ChromeFeatureList.isEnabled(ChromeFeatureList.SOLE_INTEGRATION);
-        ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
-        boolean prefEnabled =
-                prefManager.readBoolean(ChromePreferenceManager.SOLE_INTEGRATION_ENABLED_KEY, true);
-        if (featureEnabled == prefEnabled) return;
-
-        prefManager.writeBoolean(
-                ChromePreferenceManager.SOLE_INTEGRATION_ENABLED_KEY, featureEnabled);
-    }
-
-    /**
-     * @return Whether or not Sole integration is enabled.
-     */
-    public static boolean isSoleEnabled() {
-        if (sIsSoleEnabled == null) {
-            ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
-
-            sIsSoleEnabled = prefManager.readBoolean(
-                    ChromePreferenceManager.SOLE_INTEGRATION_ENABLED_KEY, true);
-        }
-        return sIsSoleEnabled;
     }
 
     /**

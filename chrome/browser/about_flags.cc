@@ -2919,12 +2919,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop, FEATURE_VALUE_TYPE(device::kWebAuthPINSupport)},
 #endif  // !defined(OS_ANDROID)
 
-#if defined(OS_ANDROID)
-    {"enable-sole-integration", flag_descriptions::kSoleIntegrationName,
-     flag_descriptions::kSoleIntegrationDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kSoleIntegration)},
-#endif  // defined(OS_ANDROID)
-
     {"enable-viz-display-compositor",
      flag_descriptions::kVizDisplayCompositorName,
      flag_descriptions::kVizDisplayCompositorDescription, kOsAndroid | kOsCrOS,

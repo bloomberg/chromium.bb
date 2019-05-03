@@ -95,7 +95,6 @@ extern const base::Feature kSearchReadyOmniboxFeature;
 extern const base::Feature kServiceManagerForBackgroundPrefetch;
 extern const base::Feature kServiceManagerForDownload;
 extern const base::Feature kShoppingAssist;
-extern const base::Feature kSoleIntegration;
 extern const base::Feature kSpannableInlineAutocomplete;
 extern const base::Feature kSpecialLocaleWrapper;
 extern const base::Feature kSpecialUserDecision;
