@@ -304,8 +304,9 @@ AudioDecoderForMixer::BufferStatus AudioDecoderForMixer::PushBuffer(
     task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&AudioDecoderForMixer::OnBufferDecoded,
                                   weak_factory_.GetWeakPtr(), input_bytes,
-                                  CastAudioDecoder::Status::kDecodeOk, config_,
-                                  buffer_base));
+                                  false /* has_config */,
+                                  CastAudioDecoder::Status::kDecodeOk,
+                                  AudioConfig(), buffer_base));
     return MediaPipelineBackend::kBufferPending;
   }
 
@@ -313,7 +314,8 @@ AudioDecoderForMixer::BufferStatus AudioDecoderForMixer::PushBuffer(
   // Decode the buffer.
   decoder_->Decode(std::move(buffer_base),
                    base::BindOnce(&AudioDecoderForMixer::OnBufferDecoded,
-                                  base::Unretained(this), input_bytes));
+                                  base::Unretained(this), input_bytes,
+                                  true /* has_config */));
   return MediaPipelineBackend::kBufferPending;
 }
 
@@ -445,6 +447,7 @@ void AudioDecoderForMixer::OnDecoderInitialized(bool success) {
 
 void AudioDecoderForMixer::OnBufferDecoded(
     uint64_t input_bytes,
+    bool has_config,
     CastAudioDecoder::Status status,
     const AudioConfig& config,
     scoped_refptr<DecoderBufferBase> decoded) {
@@ -472,7 +475,7 @@ void AudioDecoderForMixer::OnBufferDecoded(
   delta.decoded_bytes = input_bytes;
   UpdateStatistics(delta);
 
-  if (config.samples_per_second != config_.samples_per_second) {
+  if (has_config && config.samples_per_second != config_.samples_per_second) {
     LOG(INFO) << "Input sample rate changed from " << config_.samples_per_second
               << " to " << config.samples_per_second;
     // Sample rate from actual stream doesn't match supposed sample rate from

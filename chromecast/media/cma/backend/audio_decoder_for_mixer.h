@@ -91,6 +91,7 @@ class AudioDecoderForMixer : public MediaPipelineBackend::AudioDecoder,
 
   void OnDecoderInitialized(bool success);
   void OnBufferDecoded(uint64_t input_bytes,
+                       bool has_config,
                        CastAudioDecoder::Status status,
                        const AudioConfig& config,
                        scoped_refptr<DecoderBufferBase> decoded);
