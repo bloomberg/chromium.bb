@@ -170,7 +170,7 @@ declare_args() {
 
 declare_args() {
   # Set to true to use lld, the LLVM linker.
-  use_lld = is_clang && (is_win || is_fuchsia || is_android || is_linux)
+  use_lld = is_clang && (!is_ios && !is_mac)
 }
 
 declare_args() {
