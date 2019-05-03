@@ -89,7 +89,6 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/idleness_detector.h"
-#include "third_party/blink/renderer/core/loader/navigation_scheduler.h"
 #include "third_party/blink/renderer/core/loader/previews_resource_loading_hints_receiver_impl.h"
 #include "third_party/blink/renderer/core/page/drag_controller.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
@@ -300,7 +299,6 @@ void LocalFrame::Trace(blink::Visitor* visitor) {
   visitor->Trace(idleness_detector_);
   visitor->Trace(inspector_trace_events_);
   visitor->Trace(loader_);
-  visitor->Trace(navigation_scheduler_);
   visitor->Trace(view_);
   visitor->Trace(dom_window_);
   visitor->Trace(page_popup_owner_);
@@ -925,7 +923,6 @@ inline LocalFrame::LocalFrame(LocalFrameClient* client,
           IsMainFrame() ? FrameScheduler::FrameType::kMainFrame
                         : FrameScheduler::FrameType::kSubframe)),
       loader_(this),
-      navigation_scheduler_(MakeGarbageCollected<NavigationScheduler>(this)),
       script_controller_(MakeGarbageCollected<ScriptController>(
           *this,
           *static_cast<LocalWindowProxyManager*>(GetWindowProxyManager()))),

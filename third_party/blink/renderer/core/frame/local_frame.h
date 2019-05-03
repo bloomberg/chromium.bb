@@ -90,7 +90,6 @@ class LayoutView;
 class LocalDOMWindow;
 class LocalWindowProxy;
 class LocalFrameClient;
-class NavigationScheduler;
 class Node;
 class NodeTraversal;
 class PerformanceMonitor;
@@ -176,7 +175,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
   EventHandler& GetEventHandler() const;
   EventHandlerRegistry& GetEventHandlerRegistry() const;
   FrameLoader& Loader() const;
-  NavigationScheduler& GetNavigationScheduler() const;
   FrameSelection& Selection() const;
   InputMethodController& GetInputMethodController() const;
   TextSuggestionController& GetTextSuggestionController() const;
@@ -490,7 +488,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
       pause_handle_bindings_;
 
   mutable FrameLoader loader_;
-  Member<NavigationScheduler> navigation_scheduler_;
 
   // Cleared by LocalFrame::detach(), so as to keep the observable lifespan
   // of LocalFrame::view().
@@ -570,11 +567,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
 inline FrameLoader& LocalFrame::Loader() const {
   return loader_;
-}
-
-inline NavigationScheduler& LocalFrame::GetNavigationScheduler() const {
-  DCHECK(navigation_scheduler_);
-  return *navigation_scheduler_.Get();
 }
 
 inline LocalFrameView* LocalFrame::View() const {

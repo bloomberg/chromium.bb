@@ -237,8 +237,6 @@ class CORE_EXPORT FrameLoader final {
 
   // Returns whether we should continue with new navigation.
   bool CancelProvisionalLoaderForNewNavigation(
-      bool cancel_scheduled_navigations,
-      bool is_starting_blank_navigation,
       bool is_form_submission);
 
   void RestoreScrollPositionAndViewState(WebFrameLoadType,

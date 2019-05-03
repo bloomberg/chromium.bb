@@ -76,7 +76,6 @@
 #include "third_party/blink/renderer/core/loader/form_submission.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
-#include "third_party/blink/renderer/core/loader/navigation_scheduler.h"
 #include "third_party/blink/renderer/core/loader/progress_tracker.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/frame_tree.h"
@@ -227,8 +226,6 @@ void FrameLoader::SetDefersLoading(bool defers) {
     document_loader_->SetDefersLoading(defers);
   if (provisional_document_loader_)
     provisional_document_loader_->SetDefersLoading(defers);
-  if (!defers)
-    frame_->GetNavigationScheduler().StartTimer();
 }
 
 void FrameLoader::SaveScrollAnchor() {
@@ -906,8 +903,6 @@ void FrameLoader::CommitNavigation(
   RecordLatestRequiredCSP();
 
   if (!CancelProvisionalLoaderForNewNavigation(
-          false /* cancel_scheduled_navigations */,
-          DocumentLoader::WillLoadUrlAsEmpty(navigation_params->url),
           false /* is_form_submission */)) {
     return;
   }
@@ -954,11 +949,8 @@ void FrameLoader::CommitNavigation(
 bool FrameLoader::CreatePlaceholderDocumentLoader(
     const WebNavigationInfo& info,
     std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
-  if (!CancelProvisionalLoaderForNewNavigation(
-          true /* cancel_scheduled_navigations */,
-          false /* is_starting_blank_navigation */, !info.form.IsNull())) {
+  if (!CancelProvisionalLoaderForNewNavigation(!info.form.IsNull()))
     return false;
-  }
 
   progress_tracker_->ProgressStarted();
 
@@ -998,7 +990,6 @@ void FrameLoader::StopAllLoaders() {
   if (document_loader_)
     document_loader_->StopLoading();
   DetachDocumentLoader(provisional_document_loader_);
-  frame_->GetNavigationScheduler().Cancel();
   DidFinishNavigation();
 
   TakeObjectSnapshot();
@@ -1101,18 +1092,6 @@ void FrameLoader::CommitProvisionalLoad() {
     return;
 
   Client()->TransitionToCommittedForNewPage();
-
-  // If this is an about:blank navigation committing asynchronously, don't
-  // cancel scheduled navigations, so that the scheduled navigation still goes
-  // through. This handles the case where a navigation is scheduled between the
-  // about:blank navigation starting and finishing, where previously it would
-  // have happened after about:blank completed.
-  // TODO(japhet): This is an atrocious hack. Get rid of NavigationScheduler
-  // so it isn't needed.
-  if (!state_machine_.CommittedFirstRealDocumentLoad() ||
-      !DocumentLoader::WillLoadUrlAsEmpty(document_loader_->Url())) {
-    frame_->GetNavigationScheduler().Cancel();
-  }
 }
 
 void FrameLoader::RestoreScrollPositionAndViewState() {
@@ -1244,7 +1223,6 @@ void FrameLoader::Detach() {
     provisional_document_loader_->SetSentDidFinishLoad();
     DetachDocumentLoader(provisional_document_loader_);
   }
-  frame_->GetNavigationScheduler().Cancel();
   DidFinishNavigation();
 
   if (progress_tracker_) {
@@ -1419,8 +1397,6 @@ bool FrameLoader::ShouldReuseDefaultView(const KURL& url,
 }
 
 bool FrameLoader::CancelProvisionalLoaderForNewNavigation(
-    bool cancel_scheduled_navigations,
-    bool is_starting_blank_navigation,
     bool is_form_submission) {
   bool had_placeholder_client_document_loader =
       provisional_document_loader_ && !provisional_document_loader_->DidStart();
@@ -1446,24 +1422,6 @@ bool FrameLoader::CancelProvisionalLoaderForNewNavigation(
   // can be used to detach this frame.
   if (!frame_->GetPage())
     return false;
-
-  // If this is an about:blank navigation committing asynchronously, don't
-  // cancel scheduled navigations, so that the scheduled navigation still goes
-  // through. This handles the case where a navigation is scheduled between the
-  // about:blank navigation starting and finishing, where previously it would
-  // have happened after about:blank completed.
-  // TODO(japhet): This is an atrocious hack. Get rid of NavigationScheduler
-  // so it isn't needed.
-  bool skip_cancel_for_about_blank =
-      state_machine_.CommittedFirstRealDocumentLoad() &&
-      is_starting_blank_navigation;
-  // We need to ensure that script initiated navigations are honored.
-  if (!skip_cancel_for_about_blank &&
-      (!had_placeholder_client_document_loader ||
-       cancel_scheduled_navigations)) {
-    frame_->GetNavigationScheduler().Cancel();
-  }
-
   return true;
 }
 

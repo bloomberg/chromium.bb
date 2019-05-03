@@ -224,9 +224,9 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_fetch_context.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
+#include "third_party/blink/renderer/core/loader/http_refresh_scheduler.h"
 #include "third_party/blink/renderer/core/loader/idleness_detector.h"
 #include "third_party/blink/renderer/core/loader/interactive_detector.h"
-#include "third_party/blink/renderer/core/loader/navigation_scheduler.h"
 #include "third_party/blink/renderer/core/loader/prerenderer_client.h"
 #include "third_party/blink/renderer/core/loader/progress_tracker.h"
 #include "third_party/blink/renderer/core/loader/text_resource_decoder_builder.h"
@@ -617,6 +617,7 @@ Document::Document(const DocumentInit& initializer,
       imports_controller_(initializer.ImportsController()),
       context_document_(initializer.ContextDocument()),
       context_features_(ContextFeatures::DefaultSwitch()),
+      http_refresh_scheduler_(MakeGarbageCollected<HttpRefreshScheduler>(this)),
       well_formed_(false),
       printing_(kNotPrinting),
       compatibility_mode_(kNoQuirksMode),
@@ -3081,14 +3082,13 @@ void Document::open() {
   // want to treat ongoing navigation and queued navigation the same way.
   // However, we don't want to consider navigations scheduled too much into the
   // future through Refresh headers or a <meta> refresh pragma to be a current
-  // navigation. Thus, we cut it off with IsNavigationScheduledWithin(0).
+  // navigation. Thus, we cut it off with IsHttpRefreshScheduledWithin(0).
   //
   // This also prevents window.open(url) -- eg window.open("about:blank") --
   // from blowing away results from a subsequent window.document.open /
   // window.document.write call.
-  if (frame_ &&
-      (frame_->Loader().HasProvisionalNavigation() ||
-       frame_->GetNavigationScheduler().IsNavigationScheduledWithin(0))) {
+  if (frame_ && (frame_->Loader().HasProvisionalNavigation() ||
+                 IsHttpRefreshScheduledWithin(0))) {
     frame_->Loader().StopAllLoaders();
     // Navigations handled by the client should also be cancelled.
     if (frame_ && frame_->Client())
@@ -3138,6 +3138,7 @@ void Document::CancelParsing() {
   if (!LoadEventFinished())
     load_event_progress_ = kLoadEventCompleted;
   CancelPendingJavaScriptUrls();
+  http_refresh_scheduler_->Cancel();
 }
 
 DocumentParser* Document::OpenForNavigation(
@@ -3509,7 +3510,7 @@ bool Document::CheckCompletedInternal() {
   // The readystatechanged or load event may have disconnected this frame.
   if (!frame_ || !frame_->IsAttached())
     return false;
-  frame_->GetNavigationScheduler().StartTimer();
+  http_refresh_scheduler_->MaybeStartTimer();
   View()->HandleLoadCompleted();
   // The document itself is complete, but if a child frame was restarted due to
   // an event, this document is still considered to be in progress.
@@ -4199,8 +4200,11 @@ void Document::MaybeHandleHttpRefresh(const String& content,
   if (http_refresh_type == kHttpRefreshFromHeader) {
     UseCounter::Count(this, WebFeature::kRefreshHeader);
   }
-  frame_->GetNavigationScheduler().ScheduleRedirect(delay, refresh_url,
-                                                    http_refresh_type);
+  http_refresh_scheduler_->Schedule(delay, refresh_url, http_refresh_type);
+}
+
+bool Document::IsHttpRefreshScheduledWithin(double interval_in_seconds) {
+  return http_refresh_scheduler_->IsScheduledWithin(interval_in_seconds);
 }
 
 // https://w3c.github.io/webappsec-referrer-policy/#determine-requests-referrer
@@ -7670,6 +7674,7 @@ void Document::Trace(Visitor* visitor) {
   visitor->Trace(fetcher_);
   visitor->Trace(parser_);
   visitor->Trace(context_features_);
+  visitor->Trace(http_refresh_scheduler_);
   visitor->Trace(style_sheet_list_);
   visitor->Trace(document_timing_);
   visitor->Trace(media_query_matcher_);

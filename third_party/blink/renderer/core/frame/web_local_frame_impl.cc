@@ -228,7 +228,6 @@
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/loader/history_item.h"
 #include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
-#include "third_party/blink/renderer/core/loader/navigation_scheduler.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/page/context_menu_controller.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
@@ -2195,9 +2194,8 @@ bool WebLocalFrameImpl::IsLoading() const {
 
 bool WebLocalFrameImpl::IsNavigationScheduledWithin(
     double interval_in_seconds) const {
-  return GetFrame() &&
-         GetFrame()->GetNavigationScheduler().IsNavigationScheduledWithin(
-             interval_in_seconds);
+  return GetFrame() && GetFrame()->GetDocument()->IsHttpRefreshScheduledWithin(
+                           interval_in_seconds);
 }
 
 void WebLocalFrameImpl::SetCommittedFirstRealLoad() {

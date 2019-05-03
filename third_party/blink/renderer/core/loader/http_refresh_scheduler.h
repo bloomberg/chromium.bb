@@ -29,59 +29,62 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_NAVIGATION_SCHEDULER_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_NAVIGATION_SCHEDULER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_HTTP_REFRESH_SCHEDULER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_HTTP_REFRESH_SCHEDULER_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/scoped_refptr.h"
-#include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/loader/frame_loader_types.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
-#include "third_party/blink/renderer/platform/wtf/hash_map.h"
-#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
-class LocalFrame;
-class ScheduledNavigation;
-
-class CORE_EXPORT NavigationScheduler final
-    : public GarbageCollectedFinalized<NavigationScheduler> {
+class CORE_EXPORT HttpRefreshScheduler final
+    : public GarbageCollectedFinalized<HttpRefreshScheduler> {
  public:
-  explicit NavigationScheduler(LocalFrame*);
-  ~NavigationScheduler();
+  explicit HttpRefreshScheduler(Document*);
+  ~HttpRefreshScheduler() = default;
 
-  bool IsNavigationScheduledWithin(double interval_in_seconds) const;
-
-  void ScheduleRedirect(double delay, const KURL&, Document::HttpRefreshType);
-
-  void StartTimer();
+  bool IsScheduledWithin(double interval_in_seconds) const;
+  void Schedule(double delay, const KURL&, Document::HttpRefreshType);
+  void MaybeStartTimer();
   void Cancel();
 
   void Trace(blink::Visitor*);
 
  private:
-  bool ShouldScheduleNavigation(const KURL&) const;
-
   void NavigateTask();
-  void Schedule(ScheduledNavigation*);
 
-  base::TimeTicks InputTimestamp();
-
-  Member<LocalFrame> frame_;
+  Member<Document> document_;
   TaskHandle navigate_task_handle_;
-  Member<ScheduledNavigation> redirect_;
 
-  DISALLOW_COPY_AND_ASSIGN(NavigationScheduler);
+  struct ScheduledHttpRefresh {
+   public:
+    ScheduledHttpRefresh(double delay,
+                         const KURL& url,
+                         ClientNavigationReason reason,
+                         base::TimeTicks input_timestamp)
+        : delay(delay),
+          url(url),
+          reason(reason),
+          input_timestamp(input_timestamp) {}
+
+    double delay;
+    KURL url;
+    ClientNavigationReason reason;
+    base::TimeTicks input_timestamp;
+  };
+  std::unique_ptr<ScheduledHttpRefresh> refresh_;
+
+  DISALLOW_COPY_AND_ASSIGN(HttpRefreshScheduler);
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_NAVIGATION_SCHEDULER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_HTTP_REFRESH_SCHEDULER_H_

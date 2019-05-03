@@ -137,6 +137,7 @@ class HTMLImportsController;
 class HTMLLinkElement;
 class HTMLScriptElementOrSVGScriptElement;
 class HitTestRequest;
+class HttpRefreshScheduler;
 class IdleRequestOptions;
 class IntersectionObserverController;
 class LayoutPoint;
@@ -1289,6 +1290,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   enum HttpRefreshType { kHttpRefreshFromHeader, kHttpRefreshFromMetaTag };
   void MaybeHandleHttpRefresh(const String&, HttpRefreshType);
+  bool IsHttpRefreshScheduledWithin(double interval_in_seconds);
 
   void UpdateSecurityOrigin(scoped_refptr<SecurityOrigin>);
 
@@ -1515,7 +1517,6 @@ class CORE_EXPORT Document : public ContainerNode,
   void IncrementNumberOfCanvases();
 
   void ProcessJavaScriptUrl(const KURL&, ContentSecurityPolicyDisposition);
-  void CancelPendingJavaScriptUrls();
 
   // Functions to keep count of display locks in this document.
   void AddActivationBlockingDisplayLock();
@@ -1641,6 +1642,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void ExecuteScriptsWaitingForResources();
   void ExecuteJavaScriptUrls();
+  void CancelPendingJavaScriptUrls();
 
   void LoadEventDelayTimerFired(TimerBase*);
   void PluginLoadingTimerFired(TimerBase*);
@@ -1722,6 +1724,7 @@ class CORE_EXPORT Document : public ContainerNode,
   Member<ResourceFetcher> fetcher_;
   Member<DocumentParser> parser_;
   Member<ContextFeatures> context_features_;
+  Member<HttpRefreshScheduler> http_refresh_scheduler_;
 
   bool well_formed_;
 
