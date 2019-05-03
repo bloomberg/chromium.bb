@@ -2038,7 +2038,11 @@ void PersonalDataManager::NotifyPersonalDataObserver() {
   bool profile_changes_are_ongoing = ProfileChangesAreOngoing();
   for (PersonalDataManagerObserver& observer : observers_) {
     observer.OnPersonalDataChanged();
-    if (!profile_changes_are_ongoing) {
+  }
+  if (!profile_changes_are_ongoing) {
+    // Call OnPersonalDataFinishedProfileTasks in a separate loop as
+    // the observers might have removed themselves in OnPersonalDataChanged
+    for (PersonalDataManagerObserver& observer : observers_) {
       observer.OnPersonalDataFinishedProfileTasks();
     }
   }

@@ -7853,4 +7853,46 @@ TEST_F(PersonalDataManagerTest, OnUserAcceptedUpstreamOffer) {
   }
 }
 
+namespace {
+
+class OneTimeObserver : public PersonalDataManagerObserver {
+ public:
+  OneTimeObserver(PersonalDataManager* manager) : manager_(manager) {}
+
+  ~OneTimeObserver() override {
+    if (manager_)
+      manager_->RemoveObserver(this);
+  }
+
+  void OnPersonalDataChanged() override {
+    ASSERT_TRUE(manager_) << "Callback called after RemoveObserver()";
+    manager_->RemoveObserver(this);
+    manager_ = nullptr;
+  }
+
+  void OnPersonalDataFinishedProfileTasks() override {
+    EXPECT_TRUE(manager_) << "Callback called after RemoveObserver()";
+  }
+
+  bool IsConnected() { return manager_; }
+
+ private:
+  PersonalDataManager* manager_;
+};
+
+}  // namespace
+
+TEST_F(PersonalDataManagerTest, RemoveObserverInOnPersonalDataChanged) {
+  OneTimeObserver observer(personal_data_.get());
+
+  personal_data_->AddObserver(&observer);
+
+  // Do something to trigger a data change
+  personal_data_->AddProfile(test::GetFullProfile());
+
+  WaitForOnPersonalDataChanged();
+
+  EXPECT_FALSE(observer.IsConnected()) << "Observer not called";
+}
+
 }  // namespace autofill
