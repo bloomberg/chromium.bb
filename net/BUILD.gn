@@ -459,7 +459,6 @@ component("net") {
       "base/ip_pattern.h",
       "base/layered_network_delegate.cc",
       "base/layered_network_delegate.h",
-      "base/linked_hash_map.h",
       "base/load_flags.h",
       "base/load_flags_list.h",
       "base/load_states.h",
@@ -1057,6 +1056,9 @@ component("net") {
       "quic/quic_stream_factory.h",
       "quic/quic_utils_chromium.cc",
       "quic/quic_utils_chromium.h",
+      "quiche/common/platform/impl/quiche_logging_impl.h",
+      "quiche/common/platform/impl/quiche_ptr_util_impl.h",
+      "quiche/common/platform/impl/quiche_unordered_containers_impl.h",
       "socket/client_socket_factory.cc",
       "socket/client_socket_factory.h",
       "socket/client_socket_pool.cc",
@@ -1208,7 +1210,6 @@ component("net") {
       "third_party/mozilla_security_manager/nsPKCS12Blob.h",
       "third_party/quiche/src/common/platform/api/quiche_logging.h",
       "third_party/quiche/src/common/platform/api/quiche_ptr_util.h",
-      "third_party/quiche/src/common/platform/api/quiche_test.h",
       "third_party/quiche/src/common/platform/api/quiche_unordered_containers.h",
       "third_party/quiche/src/common/simple_linked_hash_map.h",
       "third_party/quiche/src/http2/decoder/decode_buffer.cc",
@@ -3263,6 +3264,18 @@ source_set("spdy_test_tools") {
   ]
 }
 
+source_set("quiche_test_tools") {
+  testonly = true
+  sources = [
+    "quiche/common/platform/impl/quiche_test_impl.h",
+    "third_party/quiche/src/common/platform/api/quiche_test.h",
+  ]
+  deps = [
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}
+
 source_set("quic_test_tools") {
   testonly = true
   sources = [
@@ -5213,6 +5226,7 @@ test("net_unittests") {
     "test/run_all_unittests.cc",
     "test/tcp_socket_proxy_unittest.cc",
     "third_party/nist-pkits/pkits_testcases-inl.h",
+    "third_party/quiche/src/common/simple_linked_hash_map_test.cc",
     "third_party/quiche/src/http2/decoder/decode_buffer_test.cc",
     "third_party/quiche/src/http2/decoder/decode_http2_structures_test.cc",
     "third_party/quiche/src/http2/decoder/frame_decoder_state_test_util.cc",
@@ -5544,6 +5558,7 @@ test("net_unittests") {
   deps = [
     ":net",
     ":quic_test_tools",
+    ":quiche_test_tools",
     ":simple_quic_tools",
     ":spdy_test_tools",
     ":test_support",

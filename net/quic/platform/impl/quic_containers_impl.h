@@ -13,7 +13,7 @@
 #include "base/containers/queue.h"
 #include "base/containers/small_map.h"
 #include "net/base/interval_set.h"
-#include "net/base/linked_hash_map.h"
+#include "net/third_party/quiche/src/common/simple_linked_hash_map.h"
 
 namespace quic {
 
@@ -43,7 +43,7 @@ using QuicUnorderedSetImpl = std::unordered_set<Key, Hash, Eq, Alloc>;
 
 // A map which offers insertion-ordered iteration.
 template <typename Key, typename Value, typename Hash>
-using QuicLinkedHashMapImpl = net::linked_hash_map<Key, Value, Hash>;
+using QuicLinkedHashMapImpl = quiche::SimpleLinkedHashMap<Key, Value, Hash>;
 
 // A map which is faster than (for example) hash_map for a certain number of
 // unique key-value-pair elements, and upgrades itself to unordered_map when
