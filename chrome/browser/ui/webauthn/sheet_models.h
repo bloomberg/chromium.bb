@@ -439,6 +439,8 @@ class AuthenticatorGenericErrorSheetModel : public AuthenticatorSheetModelBase {
   static std::unique_ptr<AuthenticatorGenericErrorSheetModel>
   ForMissingUserVerificationSupport(
       AuthenticatorRequestDialogModel* dialog_model);
+  static std::unique_ptr<AuthenticatorGenericErrorSheetModel> ForStorageFull(
+      AuthenticatorRequestDialogModel* dialog_model);
 
  private:
   AuthenticatorGenericErrorSheetModel(

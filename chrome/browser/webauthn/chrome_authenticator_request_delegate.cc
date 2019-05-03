@@ -155,6 +155,9 @@ bool ChromeAuthenticatorRequestDelegate::DoesBlockRequestOnFailure(
     case InterestingFailureReason::kAuthenticatorMissingUserVerification:
       weak_dialog_model_->OnAuthenticatorMissingUserVerification();
       break;
+    case InterestingFailureReason::kStorageFull:
+      weak_dialog_model_->OnAuthenticatorStorageFull();
+      break;
   }
   return true;
 }

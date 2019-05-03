@@ -87,6 +87,9 @@ class FidoRequestHandler : public FidoRequestHandlerBase {
       case CtapDeviceResponseCode::kCtap2ErrOperationDenied:
         return FidoReturnCode::kUserConsentDenied;
 
+      case CtapDeviceResponseCode::kCtap2ErrKeyStoreFull:
+        return FidoReturnCode::kStorageFull;
+
       // This error is returned by some authenticators (e.g. the "Yubico FIDO
       // 2" CTAP2 USB keys) during GetAssertion **before the user interacted
       // with the device**. The authenticator does this to avoid blinking (and

@@ -1050,6 +1050,11 @@ void AuthenticatorCommon::OnRegisterResponse(
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr,
           Focus::kDoCheck);
       return;
+    case device::FidoReturnCode::kStorageFull:
+      SignalFailureToRequestDelegate(
+          AuthenticatorRequestClientDelegate::InterestingFailureReason::
+              kStorageFull);
+      return;
     case device::FidoReturnCode::kSuccess:
       DCHECK(response_data.has_value());
 
@@ -1243,6 +1248,12 @@ void AuthenticatorCommon::OnSignResponse(
           std::move(get_assertion_response_callback_),
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
+    case device::FidoReturnCode::kStorageFull:
+      NOTREACHED() << "Should not be possible for assertions.";
+      SignalFailureToRequestDelegate(
+          AuthenticatorRequestClientDelegate::InterestingFailureReason::
+              kStorageFull);
+      return;
     case device::FidoReturnCode::kSuccess:
       DCHECK(response_data.has_value());
 
@@ -1313,6 +1324,10 @@ void AuthenticatorCommon::SignalFailureToRequestDelegate(
       break;
     case AuthenticatorRequestClientDelegate::InterestingFailureReason::
         kAuthenticatorMissingUserVerification:
+      status = blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
+      break;
+    case AuthenticatorRequestClientDelegate::InterestingFailureReason::
+        kStorageFull:
       status = blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
       break;
   }

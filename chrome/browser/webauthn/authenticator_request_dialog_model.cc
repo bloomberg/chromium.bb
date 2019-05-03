@@ -410,6 +410,10 @@ void AuthenticatorRequestDialogModel::OnAuthenticatorMissingUserVerification() {
   SetCurrentStep(Step::kMissingUserVerification);
 }
 
+void AuthenticatorRequestDialogModel::OnAuthenticatorStorageFull() {
+  SetCurrentStep(Step::kStorageFull);
+}
+
 void AuthenticatorRequestDialogModel::OnBluetoothPoweredStateChanged(
     bool powered) {
   transport_availability_.is_ble_powered = powered;

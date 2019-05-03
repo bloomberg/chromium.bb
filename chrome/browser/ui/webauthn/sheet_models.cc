@@ -951,6 +951,16 @@ AuthenticatorGenericErrorSheetModel::ForMissingResidentKeysSupport(
 
 // static
 std::unique_ptr<AuthenticatorGenericErrorSheetModel>
+AuthenticatorGenericErrorSheetModel::ForStorageFull(
+    AuthenticatorRequestDialogModel* dialog_model) {
+  return base::WrapUnique(new AuthenticatorGenericErrorSheetModel(
+      dialog_model,
+      l10n_util::GetStringUTF16(IDS_WEBAUTHN_ERROR_MISSING_CAPABILITY_TITLE),
+      l10n_util::GetStringUTF16(IDS_WEBAUTHN_STORAGE_FULL_DESC)));
+}
+
+// static
+std::unique_ptr<AuthenticatorGenericErrorSheetModel>
 AuthenticatorGenericErrorSheetModel::ForMissingUserVerificationSupport(
     AuthenticatorRequestDialogModel* dialog_model) {
   return base::WrapUnique(new AuthenticatorGenericErrorSheetModel(

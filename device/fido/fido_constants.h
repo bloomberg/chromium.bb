@@ -38,6 +38,9 @@ enum class FidoReturnCode : uint8_t {
   // the authenticator supports UV, but there's no UI support for collecting
   // a PIN. This could be clearer.
   kAuthenticatorMissingUserVerification,
+  // kStorageFull indicates that a resident credential could not be created
+  // because the authenticator has insufficient storage.
+  kStorageFull,
 };
 
 enum class ProtocolVersion {

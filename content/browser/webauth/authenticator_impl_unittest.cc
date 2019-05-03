@@ -3288,10 +3288,12 @@ class ResidentKeyTestAuthenticatorRequestDelegate
   ResidentKeyTestAuthenticatorRequestDelegate(
       std::string expected_accounts,
       std::vector<uint8_t> selected_user_id,
-      bool* might_create_resident_credential)
+      bool* might_create_resident_credential,
+      base::Optional<InterestingFailureReason>* failure_reason)
       : expected_accounts_(expected_accounts),
         selected_user_id_(selected_user_id),
-        might_create_resident_credential_(might_create_resident_credential) {}
+        might_create_resident_credential_(might_create_resident_credential),
+        failure_reason_(failure_reason) {}
 
   bool SupportsPIN() const override { return true; }
 
@@ -3343,10 +3345,17 @@ class ResidentKeyTestAuthenticatorRequestDelegate
     *might_create_resident_credential_ = v;
   }
 
+  bool DoesBlockRequestOnFailure(InterestingFailureReason reason) override {
+    *failure_reason_ = reason;
+    return AuthenticatorRequestClientDelegate::DoesBlockRequestOnFailure(
+        reason);
+  }
+
  private:
   const std::string expected_accounts_;
   const std::vector<uint8_t> selected_user_id_;
   bool* const might_create_resident_credential_;
+  base::Optional<InterestingFailureReason>* const failure_reason_;
   DISALLOW_COPY_AND_ASSIGN(ResidentKeyTestAuthenticatorRequestDelegate);
 };
 
@@ -3358,12 +3367,15 @@ class ResidentKeyTestAuthenticatorContentBrowserClient
       RenderFrameHost* render_frame_host,
       const std::string& relying_party_id) override {
     return std::make_unique<ResidentKeyTestAuthenticatorRequestDelegate>(
-        expected_accounts, selected_user_id, &might_create_resident_credential);
+        expected_accounts, selected_user_id, &might_create_resident_credential,
+        &failure_reason);
   }
 
   std::string expected_accounts;
   std::vector<uint8_t> selected_user_id;
   bool might_create_resident_credential = false;
+  base::Optional<AuthenticatorRequestClientDelegate::InterestingFailureReason>
+      failure_reason;
 };
 
 class ResidentKeyAuthenticatorImplTest : public UVAuthenticatorImplTest {
@@ -3452,7 +3464,32 @@ TEST_F(ResidentKeyAuthenticatorImplTest, MakeCredential) {
   }
 }
 
-// TODO(agl): test resident-key storage exhaustion.
+TEST_F(ResidentKeyAuthenticatorImplTest, StorageFull) {
+  TestServiceManagerContext smc;
+  AuthenticatorPtr authenticator = ConnectToAuthenticator();
+
+  device::VirtualCtap2Device::Config config;
+  config.resident_key_support = true;
+  config.internal_uv_support = true;
+  config.resident_credential_storage = 1;
+  virtual_device_.SetCtap2Config(config);
+  virtual_device_.mutable_state()->fingerprints_enrolled = true;
+
+  // Add a resident key to fill the authenticator.
+  ASSERT_TRUE(virtual_device_.mutable_state()->InjectResidentKey(
+      /*credential_id=*/{{4, 3, 2, 1}}, kTestRelyingPartyId,
+      /*user_id=*/{{1, 1, 1, 1}}, "test@example.com", "Test User"));
+
+  TestMakeCredentialCallback callback_receiver;
+  authenticator->MakeCredential(make_credential_options(),
+                                callback_receiver.callback());
+  callback_receiver.WaitForCallback();
+  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
+  ASSERT_TRUE(test_client_.failure_reason.has_value());
+  EXPECT_EQ(AuthenticatorRequestClientDelegate::InterestingFailureReason::
+                kStorageFull,
+            test_client_.failure_reason);
+}
 
 TEST_F(ResidentKeyAuthenticatorImplTest, GetAssertionSingle) {
   ASSERT_TRUE(virtual_device_.mutable_state()->InjectResidentKey(

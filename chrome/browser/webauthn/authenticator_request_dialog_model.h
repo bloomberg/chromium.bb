@@ -61,6 +61,7 @@ class AuthenticatorRequestDialogModel {
     kKeyAlreadyRegistered,
     kMissingResidentKeys,
     kMissingUserVerification,
+    kStorageFull,
 
     // The request is completed, and the dialog should be closed.
     kClosed,
@@ -312,6 +313,10 @@ class AuthenticatorRequestDialogModel {
   // To be called when the selected authenticator doesn't have the requested
   // user verification capability.
   void OnAuthenticatorMissingUserVerification();
+
+  // To be called when the selected authenticator cannot create a resident
+  // credential because of insufficient storage.
+  void OnAuthenticatorStorageFull();
 
   // To be called when the Bluetooth adapter powered state changes.
   void OnBluetoothPoweredStateChanged(bool powered);

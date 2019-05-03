@@ -9616,6 +9616,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_WEBAUTHN_MISSING_USER_VERIFICATION_DESC" desc="The description on a dialog informing the user that the security key (an external physical device for user authentication) that they selected does not support any methods of identifying its owner, e.g. a fingerprint reader or a secret code (PIN).">
         <ph name="WEBSITE"><ex>accounts.google.com</ex>$1</ph> may require a newer or different kind of security key
       </message>
+      <message name="IDS_WEBAUTHN_STORAGE_FULL_DESC" desc="The description on a dialog informing the user that the security key (an external physical device for user authentication) that they selected does not have enough storage capacity to create the requested account.">
+        Your security key does not have enough free space for any more accounts.
+      </message>
       <message name="IDS_WEBAUTHN_REQUEST_ATTESTATION_PERMISSION_TITLE" desc="Title of a dialog informing the user that the website wants to see information that identifies the user's Security Key, such as make and model number. The 'make' of a device is the brand name of the manufacturer, e.g. Yubikey is a make of Security Key. The 'model' of a device is the specific product, e.g. Yubikey Neo is a model of Security Key.">
         Allow this site to see your security key?
       </message>
