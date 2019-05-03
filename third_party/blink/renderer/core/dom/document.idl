@@ -204,7 +204,7 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
     attribute EventHandler onfreeze;
     attribute EventHandler onresume;
     attribute EventHandler onsearch;
-    [RuntimeEnabled=ExperimentalContentSecurityPolicyFeatures] attribute EventHandler onsecuritypolicyviolation;
+    attribute EventHandler onsecuritypolicyviolation;
     attribute EventHandler onvisibilitychange;
 };
 

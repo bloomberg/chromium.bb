@@ -1335,6 +1335,7 @@ interface Document : Node
     getter onresume
     getter onscroll
     getter onsearch
+    getter onsecuritypolicyviolation
     getter onseeked
     getter onseeking
     getter onselect
@@ -1516,6 +1517,7 @@ interface Document : Node
     setter onresume
     setter onscroll
     setter onsearch
+    setter onsecuritypolicyviolation
     setter onseeked
     setter onseeking
     setter onselect
