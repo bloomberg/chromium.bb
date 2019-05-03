@@ -3517,11 +3517,16 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
 
   ### Master release configs.
   master_config = _CreateMasterConfig('master-release')
+  # pylint: disable=unused-variable
   lakitu_master_config = _CreateMasterConfig('master-lakitu-release')
 
   def _AssignToMaster(config):
     """Add |config| as a slave config to the appropriate master config."""
-    master = lakitu_master_config if _IsLakituConfig(config) else master_config
+    # TODO: uncomment the following line when we figure out a solution for
+    # conflicts caused by two master release builders.
+    # master = (lakitu_master_config if _IsLakituConfig(config) else
+    # master_config)
+    master = master_config
     master.AddSlave(config)
 
   ### Release configs.
@@ -4378,9 +4383,11 @@ def BranchScheduleConfig():
     branch_builds.append([branch, 'master-release',
                           config_lib.DISPLAY_LABEL_RELEASE,
                           schedule, None])
+    # TODO: change the schedule variable back when we figure out a solution
+    # for conflicts caused by two master release builders.
     branch_builds.append([branch, 'master-lakitu-release',
                           config_lib.DISPLAY_LABEL_RELEASE,
-                          schedule, None])
+                          None, None])
     branch_builds.extend([[branch, pfq,
                            config_lib.DISPLAY_LABEL_RELEASE,
                            android_schedule, None]
