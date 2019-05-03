@@ -3058,10 +3058,6 @@ test("unit_tests") {
     if (enable_widevine) {
       sources += [ "../browser/media/widevine_hardware_caps_win_unittest.cc" ]
     }
-    if (llvm_force_head_revision) {
-      # TODO(https://crbug.com/958955): Fix dupes and remove this flag.
-      ldflags = [ "/FORCE:MultipleRes" ]
-    }
   }
 
   if (!is_android) {
@@ -4550,6 +4546,10 @@ test("unit_tests") {
       "/DELAYLOAD:api-ms-win-core-winrt-l1-1-0.dll",
       "/DELAYLOAD:api-ms-win-core-winrt-string-l1-1-0.dll",
     ]
+    if (llvm_force_head_revision) {
+      # TODO(https://crbug.com/958955): Fix dupes and remove this flag.
+      ldflags += [ "/FORCE:MultipleRes" ]
+    }
 
     if (is_chrome_branded) {
       sources += [
