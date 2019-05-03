@@ -167,9 +167,7 @@ bool IsNativeUILanguage(const std::string& locale) {
   std::string resolved_locale = locale;
 
   // The locale is a UI locale or can be converted to a UI locale.
-  if (base::FeatureList::IsEnabled(translate::kRegionalLocalesAsDisplayUI))
-    return language::ConvertToActualUILocale(&resolved_locale);
-  return language::ConvertToFallbackUILocale(&resolved_locale);
+  return language::ConvertToActualUILocale(&resolved_locale);
 }
 
 void RemoveDisallowedLanguagesFromPreferred(PrefService* prefs) {

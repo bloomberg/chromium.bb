@@ -76,9 +76,6 @@ const char TranslatePrefs::kPrefExplicitLanguageAskShown[] =
 // * translate_too_often_denied
 // * translate_language_blacklist
 
-const base::Feature kRegionalLocalesAsDisplayUI{
-    "RegionalLocalesAsDisplayUI", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kTranslateRecentTarget{"TranslateRecentTarget",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
