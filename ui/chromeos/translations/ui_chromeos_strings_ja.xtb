@@ -506,6 +506,7 @@
 <translation id="6979158407327259162">Google ドライブ</translation>
 <translation id="6990081529015358884">空き容量が不足しています</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> 個のフォルダを選択しました</translation>
+<translation id="7012943028104619157"><ph name="ROOT_TITLE" />（<ph name="ROOT_SUMMARY" />）</translation>
 <translation id="7014174261166285193">インストールできませんでした。</translation>
 <translation id="7040138676081995583">アプリケーションで開く...</translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> 個のアイテムが選択されています</translation>

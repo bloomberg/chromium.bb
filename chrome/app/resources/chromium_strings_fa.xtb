@@ -51,6 +51,7 @@
 <translation id="2718390899429598676">‏برای امنیت بیشتر، Chromium داده‌های شما را رمزگذاری می‌کند.</translation>
 <translation id="2770231113462710648">تغییر مرورگر پیش‌فرض به:</translation>
 <translation id="2799223571221894425">راه‌اندازی مجدد</translation>
+<translation id="2838154144102149890">‏برای به‌روزرسانی، Chromium باید در این رایانه متوقف شود. این کار ممکن است باعث شود سایر کاربرانی که در این رایانه به سیستم وارد شده‌اند، تغییرات ذخیره‌نشده‌شان را از دست بدهند.</translation>
 <translation id="2847479871509788944">‏حذف از Chromium...</translation>
 <translation id="2886012850691518054">‏اختیاری: با ارسال خودکار آمار کاربرد و گزارش‌های خرابی برنامه به Chromium، به پیشرفت Chrome کمک کنید.</translation>
 <translation id="2898082584336937987">‏Chromium را در تلفنتان نصب کنید. پیامکی به تلفن شما ارسال خواهیم کرد: <ph name="PHONE_NUMBER" /></translation>
@@ -186,6 +187,7 @@
 <translation id="6810143991807788455">‏با گزارش تنظیمات کنونی، به بهتر شدن Chromium کمک کنید</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">‏Google Pay (در Chromium کپی شد)</translation>
+<translation id="6868056391275687737">‏سایر نسخه‌های Chromium درحال اجرا هستند. برای به‌روزرسانی، آن‌ها را ببندید.</translation>
 <translation id="6893813176749746474">‏Chromium به‌روز شده است اما حداقل ۳۰ روز از آن استفاده نکرده‌اید.</translation>
 <translation id="6964305034639999644">‏باز کردن پیوند در پنجره &amp;ناشناس Chromium</translation>
 <translation id="6970811910055250180">درحال به‌روزرسانی دستگاه شما…</translation>
@@ -255,6 +257,7 @@ Chromium قادر به بازیابی تنظیمات شما نیست.</translati
 <translation id="8697124171261953979">‏این برنامه همچنین صفحه‌ای را که هنگام راه‌اندازی Chromium یا جستجو از Omnibox نشان داده می‌شود، کنترل می‌کند.</translation>
 <translation id="8704119203788522458">‏این Chromium شماست</translation>
 <translation id="8704255848199359374">‏این مورد از همان غلط‌گیر املایی‌ای استفاده می‌کند که در جستجوی Google استفاده می‌شود. نوشتاری که در مرورگر تایپ کرده‌اید برای Google ارسال می‌شود. هروقت بخواهید می‌توانید این رفتار را در تنظیمات تغییر دهید.</translation>
+<translation id="8748383401829947534">‏از همه نسخه‌های Chromium خارج شوید.</translation>
 <translation id="8796602469536043152">‏Chromium به مجوز دسترسی به دوربین و میکروفون برای این سایت نیاز دارد</translation>
 <translation id="8803635938069941624">‏شرایط Chromium OS</translation>
 <translation id="8821041990367117597">‏Chromium قادر به همگام‌سازی داده‌های شما نبود زیرا جزئیات ورود به حساب شما به‌روز نیست.</translation>

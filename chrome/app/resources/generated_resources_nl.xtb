@@ -801,6 +801,7 @@
 <translation id="2241053333139545397">Je gegevens lezen en wijzigen op een aantal websites</translation>
 <translation id="2241634353105152135">Slechts één keer</translation>
 <translation id="2242687258748107519">Bestandsinformatie</translation>
+<translation id="2246549592927364792">Afbeeldingsbeschrijvingen ophalen van Google?</translation>
 <translation id="224940702122312781">Deze pagina gebruikt veel data.</translation>
 <translation id="2249605167705922988">bijv. 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">Openen met systeemviewer</translation>
@@ -1106,6 +1107,7 @@
 <translation id="271033894570825754">Nieuw</translation>
 <translation id="2714393097308983682">Google Play Store</translation>
 <translation id="2715751256863167692">Met deze upgrade wordt je Chromebook gereset en worden huidige gebruikersgegevens verwijderd.</translation>
+<translation id="2716986496990888774">Deze instelling wordt beheerd door een ouder.</translation>
 <translation id="2718395828230677721">Nachtverlichting</translation>
 <translation id="2718998670920917754">De antivirussoftware heeft een virus gedetecteerd.</translation>
 <translation id="2719936478972253983">De volgende cookies zijn geblokkeerd</translation>
@@ -1217,6 +1219,7 @@
 <translation id="2874939134665556319">Vorig nummer</translation>
 <translation id="2875698561019555027">(Chrome-foutpagina's)</translation>
 <translation id="2876336351874743617">Vinger 2</translation>
+<translation id="2876369937070532032">Hiermee worden URL's van bepaalde pagina's die je bezoekt, naar Google verzonden wanneer je beveiliging risico loopt</translation>
 <translation id="288042212351694283">Toegang tot je Universal 2nd Factor-apparaten</translation>
 <translation id="2881076733170862447">Wanneer je op de extensie klikt</translation>
 <translation id="2881966438216424900">Laatst geopend:</translation>
@@ -1399,6 +1402,7 @@
 <translation id="3170072451822350649">Je kunt het inloggen ook overslaan en <ph name="LINK_START" />browsen als gast<ph name="LINK_END" />.</translation>
 <translation id="3172045848207518317">Een site heeft toegang tot video-invoer</translation>
 <translation id="3177909033752230686">Brontaal:</translation>
+<translation id="3181954750937456830">Safe Browsing (hiermee worden jij en je apparaat beschermd tegen gevaarlijke sites)</translation>
 <translation id="3182749001423093222">Spellingcontrole</translation>
 <translation id="3183139917765991655">Profile Importer</translation>
 <translation id="3188465121994729530">Voortschrijdend gemiddelde</translation>
@@ -1704,6 +1708,7 @@
 <translation id="3664511988987167893">Extensiepictogram</translation>
 <translation id="3665589677786828986">Chrome heeft gedetecteerd dat sommige van je instellingen zijn beschadigd door een ander programma en heeft de instellingen teruggezet naar de oorspronkelijke standaardwaarden.</translation>
 <translation id="3668570675727296296">Taalinstellingen</translation>
+<translation id="366867565525278777">De installatie is mislukt vanwege onvoldoende opslagruimte. Er is ten minste <ph name="INSTALL_SIZE" /> vrije ruimte vereist. Verwijder bestanden uit de opslag van je apparaat om ruimte vrij te maken.</translation>
 <translation id="3668801437375206837">Googlers kunnen aanvullende Bluetooth-logboeken toevoegen aan hun feedbackrapporten om Bluetooth-problemen beter te analyseren. Als deze optie is aangevinkt, bevat je rapport btsnoop- en HCI-logboeken van je huidige sessie die zijn opgeschoond om zo veel mogelijk PII te verwijderen. Toegang tot deze logboeken is beperkt tot beheerders van de productgroep Chrome OS in Listnr. Logboeken worden na negentig dagen verwijderd.</translation>
 <translation id="3668823961463113931">Handlers</translation>
 <translation id="3670113805793654926">Apparaten van elke leverancier</translation>
@@ -4014,6 +4019,7 @@
 <translation id="7289225569524511578">De achtergrond-app openen</translation>
 <translation id="7290242001003353852">Deze inlogservice wordt gehost door <ph name="SAML_DOMAIN" /> en heeft toegang tot je camera.</translation>
 <translation id="7290594223351252791">Registratie bevestigen</translation>
+<translation id="7295614427631867477">Houd er rekening mee dat Android, Play en bijbehorende apps zijn onderworpen aan hun eigen beleid voor gegevensverzameling en -gebruik.</translation>
 <translation id="729583233778673644">AES- en RC4-versleuteling toestaan. Als je deze optie gebruikt, loop je meer risico, aangezien RC4-codering onbeveiligd is.</translation>
 <translation id="7296774163727375165">Voorwaarden voor <ph name="DOMAIN" /></translation>
 <translation id="7297443947353982503">Gebruikersnaam/wachtwoord onjuist of EAP-verificatie mislukt</translation>
@@ -4290,6 +4296,7 @@
 <translation id="7732111077498238432">Netwerk wordt beheerd op basis van beleid</translation>
 <translation id="7737238973539693982">Linux (bèta) verwijderen</translation>
 <translation id="7740996059027112821">Standaard</translation>
+<translation id="7746457520633464754">Chrome verzendt de URL's van sommige pagina's die je bezoekt, beperkte systeemgegevens en bepaalde paginacontent naar Google om gevaarlijke apps en sites te detecteren</translation>
 <translation id="7750228210027921155">Scherm-in-scherm</translation>
 <translation id="7751260505918304024">Alles weergeven</translation>
 <translation id="7754704193130578113">Voorafgaand aan een download vragen waar een bestand moet worden opgeslagen</translation>
@@ -4974,6 +4981,7 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8780123805589053431">Afbeeldingsbeschrijvingen ophalen van Google</translation>
 <translation id="8780443667474968681">Gesproken zoekopdracht is uitgeschakeld.</translation>
 <translation id="878069093594050299">Dit certificaat is geverifieerd voor de volgende certificaatdoeleinden:</translation>
+<translation id="8781470833671194250">Stabilisatie van klikpositie</translation>
 <translation id="8781980678064919987">Uitschakelen wanneer de klep wordt gesloten</translation>
 <translation id="8782565991310229362">Starten van kiosk-app geannuleerd.</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; wil een printer &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; met je delen.</translation>

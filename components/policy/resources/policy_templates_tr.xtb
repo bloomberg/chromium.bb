@@ -1412,6 +1412,7 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
       Bu politika "DeveloperToolsAllowed" (1 değeri) olarak ayarlanırsa, Geliştirici Araçları ve JavaScript konsoluna erişilebilir ve bunlar kurumsal politikaya göre yüklenen uzantılar bağlamı dahil tüm bağlamlarda kullanılabilir.
       Bu politika "DeveloperToolsDisallowed" (2 değeri) olarak ayarlanırsa Geliştirici Araçları'na erişilemez ve web sitesi öğeleri bundan sonra incelenemez. Geliştirici Araçları veya JavaScript Konsolu'nu açmaya yönelik klavye kısayolları ve menü ya da içerik menüsü girişleri devre dışı bırakılır.</translation>
 <translation id="3547954654003013442">Proxy ayarları</translation>
+<translation id="3550875587920006460">Güncellemeleri kontrol etmek için özel bir programın belirlenmesini sağlar. Bu, tüm kullanıcılar ve cihazdaki tüm arayüzler için geçerlidir. Bu belirlendikten sonra cihaz, güncellemeleri programa göre kontrol edecektir. Programlanmış diğer güncelleme kontrollerini iptal etmek için politikanın ortadan kaldırılması gereklidir.</translation>
 <translation id="355118380775352753">Alternatif tarayıcıda açılacak web siteleri</translation>
 <translation id="3554984410014457319">Google Asistan'ın sesli etkinleştirme ifadesini dinlemesine izin ver</translation>
 <translation id="356579196325389849">Kullanıcılar Chrome OS sürümü kanalını yapılandırabilir</translation>
@@ -1655,6 +1656,28 @@ False (yanlış) olarak ayarlanırsa veya hiç ayarlanmazsa, hiçbir sertifika o
       Bu politika doğru seçeneğine ayarlanırsa veya ayarlanmadan bırakılırsa kullanıcılar Chrome OS Kaydı aracılığıyla tekliflerden yararlanabilirler.
 
       Bu politika yanlış seçeneğine ayarlanırsa kullanıcılar tekliflerden yararlanamazlar.</translation>
+<translation id="4008233182078913897">Kullanıcı müdahalesi olmadan, sessiz şekilde yüklenecek ve
+          kullanıcı tarafından kaldırılamayacak uygulamaların ve uzantıların
+          listesini belirler. Uygulamalar/uzantılar tarafından istenen tüm
+          izinler ve uygulamanın/uzantının gelecekteki sürümleri tarafından
+          istenecek diğer izinler kullanıcı etkileşimi olmadan, örtülü olarak verilir.
+          Ayrıca, enterprise.deviceAttributes ve enterprise.platformKeys uzantı
+          API'leri için izinler verilir. (Bu iki API zorunlu olarak yüklenmemiş
+          uygulamalar/uzantılar tarafından kullanılamaz.)
+
+          Bu politika, kendisiyle çakışabilecek bir <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> politikasına göre önceliklidir. Daha önce zorunlu olarak yüklenmiş bir uygulama veya uzantı bu listeden kaldırılırsa <ph name="PRODUCT_NAME" /> tarafından da yüklemesi otomatik olarak kaldırılır.
+
+          <ph name="MS_AD_NAME" /> alan adına katılmamış Windows örnekleri için, zorunlu olarak yüklenen uygulamalar ve uzantılar yalnızca Chrome Web Mağazası'nda listelenenlerle sınırlıdır.
+
+          Bir uzantının kaynak kodunun kullanıcılar tarafından Geliştirici Araçları kullanılarak (uzantının işlevselliğini devre dışı bırakabilecek şekilde) değiştirilebileceğini unutmayın. Böyle bir endişe olması durumunda <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> politikası ayarlanmalıdır.
+
+          Politikaya ait her liste öğesi, noktalı virgülle (<ph name="SEMICOLON" />) ayrılmış bir uzantı kimliği ve isteğe bağlı bir "güncelleme" URL'si içeren bir dizedir. Uzantı kimliği, örneğin geliştirici modundayken <ph name="CHROME_EXTENSIONS_LINK" /> bağlantısında bulunabilen 32 harfli bir dizedir. "Güncelleme" URL'si (belirtilmişse) <ph name="LINK_TO_EXTENSION_DOC1" /> dokümanında açıklandığı gibi bir Güncelleme Manifest XML dokümanına işaret etmelidir. Varsayılan olarak Chrome Web Mağazası'nın güncelleme URL'si kullanılır (şu anda "https://clients2.google.com/service/update2/crx" şeklindedir). Bu politikada ayarlanan "güncelleme" URL'sinin sadece ilk yükleme için kullanıldığına, uzantının sonraki güncellemelerinde ise uzantının manifest dosyasında belirtilen güncelleme URL'sinin kullanıldığına dikkat edin. "Güncelleme" URL'sinin açıkça belirtilmesinin <ph name="PRODUCT_NAME" /> ürününün 67. ve önceki sürümlerinde zorunlu olduğunu da unutmayın.
+
+          Örneğin, <ph name="EXTENSION_POLICY_EXAMPLE" />, standart Chrome Web Mağazası "güncelleme" URL'sinden <ph name="EXTENSION_ID_SAMPLE" /> kimliğine sahip uzantıyı yükler. Uzantıların barındırılması hakkında daha fazla bilgi için <ph name="LINK_TO_EXTENSION_DOC2" /> dokümanına bakın.
+
+          Bu politika ayarlanmadan bırakılırsa, hiçbir uygulama veya uzantı otomatik olarak yüklenmez ve kullanıcı <ph name="PRODUCT_NAME" /> ürünündeki uygulama veya uzantıların yüklemesini kaldırabilir.
+
+          Bu politikanın gizli mod için geçerli olmadığını unutmayın.</translation>
 <translation id="4008507541867797979">Bu politika true (doğru) değerine ayarlanırsa veya yapılandırılmazsa, <ph name="PRODUCT_OS_NAME" /> mevcut kullanıcıları giriş ekranında gösterir ve birinin seçilmesine izin verir.
 
       Bu politika false (yanlış) değerine ayarlanırsa, <ph name="PRODUCT_OS_NAME" /> mevcut kullanıcıları giriş ekranında göstermez. Yönetilen Oturum yapılandırılmadığı takdirde normal oturum açma ekranı (kullanıcı e-postasını ve şifresini veya telefonunu ister) veya SAML geçiş ekranı (<ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" /> politikası tarafından etkinleştirilmişse) gösterilir. Yönetilen Oturum yapılandırıldığında yalnızca Yönetilen Oturum hesapları gösterilir ve birinin seçilmesine izin verilir.
@@ -2635,6 +2658,12 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
       Bu politika yapılandırılmazsa oturum açma ekranı için platformun varsayılan site izolasyonu ayarları kullanılır.
       </translation>
 <translation id="5901427587865226597">Yalnızca dupleks yazdır</translation>
+<translation id="5903898512448364160">
+      Bu politika true (doğru) değerine ayarlanırsa, platform politikasıyla çelişmesi halinde bulut politikası öncelikli olur.
+      Bu politika false (yanlış) değerine ayarlanırsa veya yapılandırılmazsa, bulut politikasıyla çelişmesi halinde platform politikası öncelikli olur.
+
+      Bu politika yalnızca zorunlu makine platformu politikası olarak mevcuttur ve yalnızca makine kapsamı bulut politikaları için geçerlidir.
+      </translation>
 <translation id="5905473632148429217">Online OCSP/CRL denetimlerini etkinleştir</translation>
 <translation id="5906199912611534122">Ağ daraltma işlemini etkinleştirmeye veya devre dışı bırakmaya izin verir.
       Bu, tüm kullanıcılar ve cihazdaki tüm arayüzler için geçerlidir. Ayarlandığında, politika bu özelliği devre dışı bırakacak şekilde değiştirilmedikçe daraltma devam eder.
@@ -2660,6 +2689,7 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
 
       Bu ayarı devre dışı bırakırsanız veya bir değer ayarlamazsanız, Google Arama'da Güvenli Arama uygulanmaz.</translation>
 <translation id="5946082169633555022">Beta kanalı</translation>
+<translation id="5946329690214660966">Güncellemeleri kontrol etmek için özel bir program belirleyin</translation>
 <translation id="5950205771952201658">Kısmi çökme bağlamında, çevrimiçi iptal denetimleri güvenlik açısından etkili yararlar sağlamaz. Bunlar <ph name="PRODUCT_NAME" /> 19 ve sonraki sürümlerde varsayılan olarak devre dışı bırakılmıştır. Bu politika doğru değerine ayarlandığında, önceki çalışma biçimi geri yüklenir ve çevrimiçi OCSP/CRL denetimleri yapılır.
 
       Politika ayarlanmazsa veya yanlış seçeneğine ayarlanırsa <ph name="PRODUCT_NAME" />, çevrimiçi iptal denetimlerini <ph name="PRODUCT_NAME" /> 19 ve sonraki sürümlerinde yapmaz.</translation>
@@ -2726,6 +2756,7 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
 <translation id="6034341625190551415">Herkese açık oturum ve kiosk hesap türlerini kontrol eder.</translation>
 <translation id="6034603289689965535">Sayfanın yüklemesi kaldırılırken pop-up göstermesine olanak tanır</translation>
 <translation id="6036523166753287175">Uzaktan erişim ana makinesinden güvenlik duvarı geçişini etkinleştir</translation>
+<translation id="605475635122964053">PIN ile yazdırma modunu kısıtlar. Politika ayarlanmazsa herhangi bir kısıtlama uygulanmaz. Mod kullanılamıyorsa bu politika yoksayılır. PIN yazdırma özelliğinin yalnızca USB protokolleri üzerinden IPPS, USB veya IPP özelliklerinden bir tanesini kullanan yazıcılar için geçerli olduğunu unutmayın. </translation>
 <translation id="6070667616071269965">Cihaz oturum açma ekranı klavye düzenleri</translation>
 <translation id="6074963268421707432">Hiçbir sitenin masaüstü bildirimi göstermesine izin verme</translation>
 <translation id="6074964551275531965">Güncelleme bildirimlerinin dönemini ayarla</translation>

@@ -25,6 +25,7 @@
 <translation id="1585657529869845941">Klikk på <ph name="BEGIN_BOLD" />Bytt likevel<ph name="END_BOLD" /> (hvis knappen vises)</translation>
 <translation id="1587223624401073077">Google Chrome bruker kameraet ditt.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> er farlig, så Chrome har blokkert den.</translation>
+<translation id="1590588151039584890">For å oppdateres må Chrome slutte å kjøre på denne datamaskinen. Dette kan medføre at andre brukere som er logget på datamaskinen, mister endringer som ikke er lagret.</translation>
 <translation id="1619887657840448962">For å gjøre Chrome tryggere har vi slått av følgende utvidelse som ikke finnes i <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />, og som kan ha blitt lagt til uten at du vet det.</translation>
 <translation id="1628000112320670027">Få hjelp med Chrome</translation>
 <translation id="1662639173275167396">Chrome OS er basert på <ph name="BEGIN_LINK_CROS_OSS" />tilleggsprogramvare med åpen kildekode<ph name="END_LINK_CROS_OSS" />, i likhet med <ph name="BEGIN_LINK_LINUX_OSS" />Linux (Beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
@@ -164,6 +165,7 @@ Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjo
 <translation id="5386244825306882791">Den styrer også hvilken side som vises når du starter Chrome eller søker fra multifunksjonsfeltet.</translation>
 <translation id="5430073640787465221">Innstillingsfilen er skadet eller ugyldig. Google Chrome kan ikke gjenopprette innstillingene dine.</translation>
 <translation id="5483595757826856374">{0,plural, =0{Chrome starter på nytt nå}=1{Chrome starter på nytt om 1 sekund}other{Chrome starter på nytt om # sekunder}}</translation>
+<translation id="5543953544073077331">Andre kopier av Chrome kjører. For å oppdatere, lukk dem.</translation>
 <translation id="556024056938947818">Google Chrome prøver å vise passord.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-Inn)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> kan være farlig, så Chrome har blokkert den.</translation>
@@ -224,6 +226,7 @@ Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjo
 <translation id="7473136999113284234">Chrome oppdateres automatisk, sånn at du alltid har den nyeste versjonen.</translation>
 <translation id="7486227612705979895">Chrome får tilgang til Disk-lagringen din for å kunne gi deg forslag i adressefeltet</translation>
 <translation id="748945194546522577">Denne filen er farlig, så Chrome har blokkert den. Du er beskyttet av Avansert beskyttelse.</translation>
+<translation id="7531671357096394523">Avslutt alle kopier av Chrome.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Vis Chrome OS på dette språket</translation>
 <translation id="7561940363513215021">{0,plural, =1{Chrome starter på nytt om 1 minutt}other{Chrome starter på nytt om # minutter}}</translation>

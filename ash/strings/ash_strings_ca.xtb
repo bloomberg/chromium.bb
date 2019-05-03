@@ -47,7 +47,7 @@
 <translation id="1570871743947603115">Activa o desactiva el Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Accedir a tota la teva activitat d'aquesta sessió.</translation>
 <translation id="1608626060424371292">Suprimeix aquest usuari</translation>
-<translation id="1621499497873603021">Temps que queda fins que no s'esgoti la bateria: <ph name="TIME_LEFT" /></translation>
+<translation id="1621499497873603021">Temps restant perquè s'esgoti la bateria: <ph name="TIME_LEFT" />.</translation>
 <translation id="1654477262762802994">Inicia una consulta per veu</translation>
 <translation id="1658406695958299976">Encara no s'ha pogut verificar la contrasenya. Nota: si fa poc que has canviat la contrasenya, la nova s'aplicarà un cop hagis tancat la sessió. Fes servir la contrasenya anterior aquí.</translation>
 <translation id="1677472565718498478">Temps restant: <ph name="TIME" /></translation>
@@ -139,7 +139,7 @@
 <translation id="2996462380875591307">La lupa acoblada està activada. Torna a prémer Ctrl+Cerca+D per desactivar-la.</translation>
 <translation id="3000461861112256445">Àudio mono</translation>
 <translation id="3009178788565917040">Sortida</translation>
-<translation id="3019353588588144572">Temps restant fins que la bateria no estigui totalment carregada: <ph name="TIME_REMAINING" /></translation>
+<translation id="3019353588588144572">Temps restant perquè es carregui totalment la bateria: <ph name="TIME_REMAINING" /></translation>
 <translation id="3051128274746680507">El perfil del teu usuari supervisat se suprimirà aviat. Inicia la sessió per obtenir més informació.</translation>
 <translation id="3055162170959710888">Avui has fet servir aquest dispositiu durant <ph name="USED_TIME" /></translation>
 <translation id="3077734595579995578">maj</translation>

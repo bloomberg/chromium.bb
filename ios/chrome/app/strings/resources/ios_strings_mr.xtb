@@ -92,12 +92,13 @@
 <translation id="2239626343334228536">ब्राउझिंग डेटा साफ करत आहे...</translation>
 <translation id="2256128224215992540">शोध आणि साइट सूचना</translation>
 <translation id="2267753748892043616">खाते जोडा</translation>
-<translation id="2268044343513325586">परिष्कृत करा</translation>
+<translation id="2268044343513325586">सुधारित करा</translation>
 <translation id="2273327106802955778">अधिक मेनू</translation>
 <translation id="2316709634732130529">सुचवलेला पासवर्ड वापरा</translation>
 <translation id="2320166752086256636">कीबोर्ड लपवा</translation>
 <translation id="2339560363438331454">सिंक आणि Google सेवा</translation>
 <translation id="2351097562818989364">आपल्या भाषांतर सेटिंग्ज रीसेट करण्यात आल्या आहेत.</translation>
+<translation id="2359043044084662842">भाषांतर</translation>
 <translation id="2359808026110333948">सुरू ठेवा</translation>
 <translation id="2360196772093551345">मोबाइल साइटची विनंती करा</translation>
 <translation id="2381405137052800939">मूलतत्त्वे</translation>
@@ -149,7 +150,7 @@
 <translation id="3175081911749765310">वेब सेवा</translation>
 <translation id="3207960819495026254">बुकमार्क केलेली</translation>
 <translation id="3224641773458703735">पासवर्ड एक्सपोर्ट करण्यासाठी, तुम्ही प्रथम तुमच्या डिव्हाइसवर पासकोड सेट करणे आवश्यक आहे.</translation>
-<translation id="3240426699337459095">लिंक कॉपी केली</translation>
+<translation id="3240426699337459095">लिंक कॉपी केला</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="NUM_SUGGESTIONS" /> पैकी <ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /></translation>
 <translation id="3268451620468152448">उघडे Tabs</translation>
@@ -253,7 +254,7 @@
 <translation id="4860895144060829044">कॉल करा</translation>
 <translation id="4881695831933465202">उघडा</translation>
 <translation id="4904877109095351937">वाचले चिन्हांकित करा</translation>
-<translation id="4930268273022498155">विद्यमान डेटा हटवा. <ph name="USER_EMAIL1" /> वर परत स्विच करून तुम्ही तो पुनर्प्राप्त करू शकता.</translation>
+<translation id="4930268273022498155">सद्य डेटा हटवा. <ph name="USER_EMAIL1" /> वर परत स्विच करून तुम्ही तो रिट्रीव्ह करू शकता.</translation>
 <translation id="4941089862236492464">क्षमस्व, तुमचा आयटम शेअर करताना समस्या आली.</translation>
 <translation id="4979397965658815378">आपल्या सर्व डिव्हाइसेसवर तुमचे बुकमार्क, पासवर्ड, इतिहास आणि अन्य सेटिंग्ज प्राप्त करण्यासाठी आपल्या Google खात्यासह साइन इन करा</translation>
 <translation id="5005498671520578047">पासवर्ड कॉपी करा</translation>
@@ -292,6 +293,7 @@
 <translation id="5659593005791499971">ईमेल</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">आवृत्ती <ph name="PRODUCT_VERSION" /></translation>
+<translation id="5711039611392265845">गोपनीयता, सुरक्षितता आणि डेटा संकलनाशी संबंधित अधिक सेटिंग्जसाठी, <ph name="BEGIN_LINK" />सिंक आणि Google सेवा<ph name="END_LINK" /> पाहा.</translation>
 <translation id="5728700505257787410">क्षमस्व, आपल्या खात्यामध्ये साइन इन करताना काहीतरी समस्या आली.</translation>
 <translation id="5737974891429562743">खाते साइन-इन तपशील कालबाह्य झाले आहेत. सिंक सुरू करण्यासाठी अपडेट करा.</translation>
 <translation id="5738887413654608789">हे तुम्हाला आपल्या सभोवतालच्या गोष्टींवर आधारित संबंधित वेब पेज शोधू देते.</translation>
@@ -383,7 +385,6 @@
 <translation id="6903907808598579934">संकालन चालू करा</translation>
 <translation id="6914583639806229067">तुम्ही कॉपी केलेली इमेज शोधा</translation>
 <translation id="6914783257214138813">एक्सपोर्ट करण्यात आलेली फाइल दिसणार्‍या प्रत्येकाला, तुमचा पासवर्ड दिसेल.</translation>
-<translation id="692898627499215142">सुरुवातीचे सिंक सेट करणे पूर्ण झाले नाही. सिंक सुरू करण्यासाठी, सिंक टॉगल सुरू करा.</translation>
 <translation id="6944369514868857500">दुसरे खाते निवडा</translation>
 <translation id="6945221475159498467">निवडा</translation>
 <translation id="6973630695168034713">फोल्डर</translation>
@@ -407,7 +408,7 @@
 <translation id="7192050974311852563">लॉग इन करणे सुरू करा</translation>
 <translation id="7203585745079012652">उत्तरे वाचून सांगा</translation>
 <translation id="722055596168483966">Google सेवा पर्सनलाइझ करा</translation>
-<translation id="7272437679830969316">तुमच्या ओळखीची पडताळणी करता आली नाही. पासवर्ड कॉपी केला नाही.</translation>
+<translation id="7272437679830969316">तुमच्या ओळखीची पडताळणी करू शकत नाही. पासवर्ड कॉपी केला नाही.</translation>
 <translation id="7280856130494094142">सिंक सुरू करण्यासाठी पासफ्रेझ एंटर करा</translation>
 <translation id="7285236536143823449">होय, मी तयार आहे</translation>
 <translation id="7291368939935408496">पासवर्ड तयार करत आहे…</translation>

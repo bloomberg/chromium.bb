@@ -226,7 +226,7 @@
 <translation id="3741243925913727067">‏يمكنك نسخ الصور والفيديوهات بجهاز الوسائط احتياطيًا على Google Drive.</translation>
 <translation id="3749289110408117711">اسم الملف</translation>
 <translation id="3780536599611287598">ليس لديك إذن لنقل الملفات إلى '<ph name="FOLDER_NAME" />'.</translation>
-<translation id="3786301125658655746">أنت غير متصل</translation>
+<translation id="3786301125658655746">أنت غير متصل بالإنترنت.</translation>
 <translation id="3789841737615482174">تثبيت</translation>
 <translation id="3798449238516105146">الإصدار</translation>
 <translation id="3801082500826908679">الفاروية</translation>
@@ -506,6 +506,7 @@
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6990081529015358884">لقد نفدت المساحة</translation>
 <translation id="6998711733709403587">تم تحديد <ph name="SELCTED_FOLDERS_COUNT" /> من المجلدات</translation>
+<translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">تعذّر التثبيت.</translation>
 <translation id="7040138676081995583">فتح باستخدام...</translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> من العناصر المحددة</translation>

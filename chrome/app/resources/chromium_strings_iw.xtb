@@ -51,6 +51,7 @@
 <translation id="2718390899429598676">‏לשיפור האבטחה, Chromium יצפין את הנתונים.</translation>
 <translation id="2770231113462710648">שנה את דפדפן ברירת המחדל ל:</translation>
 <translation id="2799223571221894425">הפעל מחדש</translation>
+<translation id="2838154144102149890">‏כדי לעדכן יש לסגור את Chromium במחשב הזה. הסגירה עשויה לגרום למשתמשים אחרים המחוברים למחשב לאבד שינויים שלא נשמרו.</translation>
 <translation id="2847479871509788944">‏הסר מ-Chromium...</translation>
 <translation id="2886012850691518054">‏אופציונלי: עזור לנו לשפר את Chromium באמצעות שליחת נתוני שימוש ודוחות קריסה אל Google באופן אוטומטי.</translation>
 <translation id="2898082584336937987">‏יש להתקין את Chromium בטלפון שלך, ולאחר מכן נשלח הודעת SMS למספר: <ph name="PHONE_NUMBER" /></translation>
@@ -148,7 +149,7 @@
 <translation id="5877064549588274448">הערוץ שונה. הפעל מחדש את המכשיר להחלת השינויים.</translation>
 <translation id="5895138241574237353">הפעל מחדש</translation>
 <translation id="5906655207909574370">העדכון כמעט הושלם! הפעל מחדש את המכשיר כדי לסיים את העדכון.</translation>
-<translation id="5987687638152509985">‏עדכן את Chromium כדי להתחיל את הסנכרון</translation>
+<translation id="5987687638152509985">‏יש לעדכן את Chromium כדי להתחיל את הסנכרון</translation>
 <translation id="6013050204643758987">‏הפיתוח של מערכת ההפעלה Chromium אפשרי בזכות <ph name="BEGIN_LINK_CROS_OSS" />תוכנות קוד פתוח<ph name="END_LINK_CROS_OSS" /> נוספות, כמו <ph name="BEGIN_LINK_LINUX_OSS" />Linux (בטא)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="6040143037577758943">סגור</translation>
 <translation id="6055895534982063517">‏גרסה חדשה של Chromium זמינה, והיא מהירה יותר מאי פעם.</translation>
@@ -185,11 +186,12 @@
 <translation id="6810143991807788455">‏עזור לשפר את Chromium על ידי דיווח ההגדרות הנוכחיות</translation>
 <translation id="6857782730669500492">‏Chromium‏ - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">‏Google Pay (‏הועתק ל-Chromium)</translation>
+<translation id="6868056391275687737">‏חלונות אחרים של Chromium פועלים. כדי לעדכן צריך לסגור אותם.</translation>
 <translation id="6893813176749746474">‏Chromium עודכן, אך לא השתמשת בו לפחות 30 ימים.</translation>
 <translation id="6964305034639999644">‏פתח את הקישור בחלון &amp;גלישה בסתר של Chromium</translation>
 <translation id="6970811910055250180">מעדכן את המכשיר שלך...</translation>
 <translation id="6990124437352146030">‏Chromium זקוק להרשאת גישה למיקרופון בשביל האתר הזה</translation>
-<translation id="705851970750939768">‏עדכן את Chromium‏</translation>
+<translation id="705851970750939768">‏יש לעדכן את Chromium‏</translation>
 <translation id="7066436765290594559">‏מערכת ההפעלה של Chromium לא הצליחה לסנכרן את הנתונים שלך. עדכן את משפט הסיסמה לסנכרון.</translation>
 <translation id="7067091210845072982">‏אם אין לתמונה תיאור מועיל, Chromium ינסה לספק לך תיאור. כדי ליצור תיאורים, התמונות נשלחות אל Google.</translation>
 <translation id="7196312274710523067">‏לא ניתן היה להפעיל את Chromium. יש לנסות שוב.</translation>
@@ -255,6 +257,7 @@ Chromium לא יכול לשחזר את ההגדרות שלך.</translation>
 <translation id="8697124171261953979">‏הגדרה זו גם קובעת איזה דף מוצג כשאתה מפעיל את Chromium או מבצע חיפוש מסרגל הכתובות.</translation>
 <translation id="8704119203788522458">‏זהו ה-Chromium שלך</translation>
 <translation id="8704255848199359374">‏התכונה משתמשת בבדיקת האיות שבה נעשה שימוש בחיפוש Google. הטקסט המוקלד בדפדפן נשלח אל Google. אפשר לשנות תמיד את ההתנהגות הזאת בהגדרות.</translation>
+<translation id="8748383401829947534">‏סגירת כל החלונות של Chromium.</translation>
 <translation id="8796602469536043152">‏Chromium זקוק להרשאת גישה אל המצלמה והמיקרופון בשביל האתר הזה</translation>
 <translation id="8803635938069941624">‏תנאים עבור מערכת ההפעלה של Chromium</translation>
 <translation id="8821041990367117597">‏Chromium לא הצליח לסנכרן את הנתונים שלך מפני שפרטי הכניסה של חשבונך אינם מעודכנים.</translation>

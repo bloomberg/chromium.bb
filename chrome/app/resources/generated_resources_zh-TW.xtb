@@ -801,6 +801,7 @@
 <translation id="2241053333139545397">讀取及變更你在多個網站上的資料</translation>
 <translation id="2241634353105152135">只有這一次</translation>
 <translation id="2242687258748107519">檔案資訊</translation>
+<translation id="2246549592927364792">要從 Google 取得圖片說明嗎？</translation>
 <translation id="224940702122312781">這個網頁會耗用許多數據流量。</translation>
 <translation id="2249605167705922988">例如：1-5、8、11-13</translation>
 <translation id="2251218783371366160">使用系統檢視器開啟</translation>
@@ -1105,6 +1106,7 @@
 <translation id="271033894570825754">新</translation>
 <translation id="2714393097308983682">Google Play 商店</translation>
 <translation id="2715751256863167692">這項升級作業會重設你的 Chromebook 並移除目前的使用者資料。</translation>
+<translation id="2716986496990888774">這項設定是由家長管理。</translation>
 <translation id="2718395828230677721">夜燈</translation>
 <translation id="2718998670920917754">防毒軟體偵測到病毒。</translation>
 <translation id="2719936478972253983">系統已封鎖下列 Cookie</translation>
@@ -1216,6 +1218,7 @@
 <translation id="2874939134665556319">上一首曲目</translation>
 <translation id="2875698561019555027">(Chrome 錯誤頁面)</translation>
 <translation id="2876336351874743617">手指 2</translation>
+<translation id="2876369937070532032">當網站具有安全性風險時，Chrome 會將你造訪的部分網頁網址傳送給 Google</translation>
 <translation id="288042212351694283">存取你的 Universal 2nd Factor 裝置</translation>
 <translation id="2881076733170862447">當你點選擴充功能時</translation>
 <translation id="2881966438216424900">最後存取日期；</translation>
@@ -1398,6 +1401,7 @@
 <translation id="3170072451822350649">你也可以略過登入程序，<ph name="LINK_START" />以訪客身分瀏覽<ph name="LINK_END" />。</translation>
 <translation id="3172045848207518317">有某個網站正在存取視訊輸入內容</translation>
 <translation id="3177909033752230686">網頁語言：</translation>
+<translation id="3181954750937456830">安全瀏覽 (保護你和你的裝置不受危險網站攻擊)</translation>
 <translation id="3182749001423093222">拼字檢查</translation>
 <translation id="3183139917765991655">設定檔匯入工具</translation>
 <translation id="3188465121994729530">移動平均</translation>
@@ -1703,6 +1707,7 @@
 <translation id="3664511988987167893">擴充功能圖示</translation>
 <translation id="3665589677786828986">Chrome 偵測到另一個程式竄改了部分瀏覽器設定，現已將這些設定重設為原始預設值。</translation>
 <translation id="3668570675727296296">語言設定</translation>
+<translation id="366867565525278777">儲存空間不足，因此無法完成安裝。安裝作業至少需要 <ph name="INSTALL_SIZE" /> 的可用空間。如要釋出空間，請刪除裝置儲存空間內的檔案。</translation>
 <translation id="3668801437375206837">為了進一步診斷藍牙問題，Google 員工可在意見回饋報告額外納入藍牙記錄。勾選這個選項後，你的報告就會納入你目前工作階段的 btsnoop 和 HCI 記錄；這些記錄會經過處理，儘可能移除個人識別資訊 (PII)。這些記錄只有 Listnr 的 Chrome 作業系統產品小組主管可以存取，且會在 90 天後遭到清除。</translation>
 <translation id="3668823961463113931">處理常式</translation>
 <translation id="3670113805793654926">來自任何供應商的裝置</translation>
@@ -4012,6 +4017,7 @@
 <translation id="7289225569524511578">開啟桌布應用程式</translation>
 <translation id="7290242001003353852">這項登入服務 (由 <ph name="SAML_DOMAIN" /> 代管) 正在存取您的攝影機。</translation>
 <translation id="7290594223351252791">確認註冊</translation>
+<translation id="7295614427631867477">請注意，Android、Google Play 以及相關聯的應用程式受各自的資料收集政策和使用政策規範。</translation>
 <translation id="729583233778673644">允許執行 AES 和 RC4 加密。由於 RC4 加密不安全，使用這個加密選項會提高風險。</translation>
 <translation id="7296774163727375165"><ph name="DOMAIN" /> 條款</translation>
 <translation id="7297443947353982503">使用者名稱/密碼錯誤或 EAP 驗證失敗</translation>
@@ -4287,6 +4293,7 @@
 <translation id="7732111077498238432">網路受到政策控制</translation>
 <translation id="7737238973539693982">刪除 Linux (測試版)</translation>
 <translation id="7740996059027112821">標準</translation>
+<translation id="7746457520633464754">為了偵測危險的應用程式和網站，Chrome 會將你造訪的部分網頁網址、部分系統資訊以及部分網頁內容傳送給 Google</translation>
 <translation id="7750228210027921155">子母畫面</translation>
 <translation id="7751260505918304024">全部顯示</translation>
 <translation id="7754704193130578113">下載每個檔案前先詢問儲存位置</translation>
@@ -4970,6 +4977,7 @@
 <translation id="8780123805589053431">從 Google 取得圖片說明</translation>
 <translation id="8780443667474968681">語音搜尋功能已停用。</translation>
 <translation id="878069093594050299">此憑證已驗證可用於下列用途：</translation>
+<translation id="8781470833671194250">點擊位置穩定功能</translation>
 <translation id="8781980678064919987">蓋上機蓋時關機</translation>
 <translation id="8782565991310229362">Kiosk 應用程式已取消執行。</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; 想要與你共用印表機 &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt;。</translation>

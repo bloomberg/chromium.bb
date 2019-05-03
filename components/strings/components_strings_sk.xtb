@@ -606,6 +606,7 @@
 <translation id="4265872034478892965">Povolené správcom</translation>
 <translation id="4275830172053184480">Reštart zariadenia</translation>
 <translation id="4277028893293644418">Obnoviť heslo</translation>
+<translation id="4279811152705618813">Vaše zariadenie <ph name="DEVICE_TYPE" /> spravuje doména <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="4280429058323657511">, dátum vypršania platnosti: <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Táto karta sa uložila do vášho účtu Google}few{Tieto karty sa uložili do vášho účtu Google}many{Tieto karty sa uložili do vášho účtu Google}other{Tieto karty sa uložili do vášho účtu Google}}</translation>
 <translation id="42981349822642051">Rozbaliť</translation>

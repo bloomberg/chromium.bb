@@ -51,6 +51,7 @@
 <translation id="2718390899429598676">‏لمزيد من الأمان، سيشفر Chromium بياناتك</translation>
 <translation id="2770231113462710648">تغيير المتصفح التلقائي إلى:</translation>
 <translation id="2799223571221894425">إعادة تشغيل</translation>
+<translation id="2838154144102149890">‏للتحديث، على Chromium التوقف عن العمل على جهاز الكمبيوتر هذا. قد يتسبب هذا في فقد المستخدمين الآخرين الذين سجَّلوا الدخول إلى جهاز الكمبيوتر هذا التغييرات غير المحفوظة.</translation>
 <translation id="2847479871509788944">‏إزالة من Chromium</translation>
 <translation id="2886012850691518054">‏اختياري: ساعد في تحسين Chromium عن طريق إرسال إحصائيات الاستخدام وتقارير الأعطال إلى Google تلقائيًا.</translation>
 <translation id="2898082584336937987">‏بادِر بتثبيت Chromium على هاتفك. سنرسل رسالة قصيرة SMS إلى هاتفك: <ph name="PHONE_NUMBER" /></translation>
@@ -187,6 +188,7 @@
 <translation id="6810143991807788455">‏ساعد في تحسين Chromium بالإبلاغ عن الإعدادات الحالية</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">‏Google Pay (تم النسخ إلى Chromium)</translation>
+<translation id="6868056391275687737">‏هناك نُسخ أخرى من Chromium قيد التشغيل. يُرجى إغلاقها للتحديث.</translation>
 <translation id="6893813176749746474">‏تم تحديث متصفح Chromium، ولكنك لم تستخدمه منذ أكثر من 30 يومًا.</translation>
 <translation id="6964305034639999644">‏فتح الرابط في نافذة تصفح متخفٍ في Chromium</translation>
 <translation id="6970811910055250180">جارٍ تحديث الجهاز...</translation>
@@ -257,6 +259,7 @@
 <translation id="8697124171261953979">‏كما أنها تتحكم في الصفحة التي تظهر عند تشغيل Chromium أو إجراء بحث من المربع متعدد الاستخدامات.</translation>
 <translation id="8704119203788522458">‏هذا هو Chromium الخاص بك</translation>
 <translation id="8704255848199359374">‏يستخدم هذا المتصفِّح المدقق الإملائي نفسه الذي يتم استخدامه في "بحث Google". يتم إرسال النص الذي تكتبه في المتصفِّح إلى Google. يمكنك دائمًا تغيير هذا السلوك في الإعدادات.</translation>
+<translation id="8748383401829947534">‏الخروج من جميع نُسخ Chromium.</translation>
 <translation id="8796602469536043152">‏يحتاج Chromium إلى إذن للوصول إلى الكاميرا والميكروفون من أجل موقع الويب هذا.</translation>
 <translation id="8803635938069941624">‏بنود نظام تشغيل Chromium</translation>
 <translation id="8821041990367117597">‏تعذر على Chromium مزامنة البيانات نظرًا لأن تفاصيل تسجيل الدخول إلى حسابك قديمة.</translation>

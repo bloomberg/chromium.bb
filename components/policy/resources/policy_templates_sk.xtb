@@ -1401,6 +1401,7 @@ Vzory webových adries v tomto pravidle by nemali byť v konflikte s tými, k
       Ak toto pravidlo nastavíte na hodnotu „DeveloperToolsAllowed“ (hodnota 1), nástroje pre vývojárov a konzola Javascriptu sa budú môcť používať vo všetkých kontextoch vrátane kontextu rozšírení nainštalovaných podnikovým pravidlom.
       Ak toto pravidlo nastavíte na možnosť „DeveloperToolsDisallowed“ (hodnota 2), nástroje pre vývojárov nebude možné používať ani nebude možné kontrolovať prvky webov. Zakázané budú tiež všetky klávesové skratky a položky klasických či kontextových ponúk, pomocou ktorých je možné otvoriť nástroje pre vývojárov alebo konzolu JavaScriptu.</translation>
 <translation id="3547954654003013442">Nastavenia servera proxy</translation>
+<translation id="3550875587920006460">Umožňuje nastaviť vlastný plán kontroly dostupnosti aktualizácií. Platí pre všetkých používateľov a rozhrania v zariadení. Po nastavení bude zariadenie kontrolovať dostupnosť aktualizácie podľa tohto plánu. Ak chcete zrušiť všetky ďalšie naplánované kontroly dostupnosti aktualizácií, toto pravidlo musíte odstrániť.</translation>
 <translation id="355118380775352753">Weby, ktoré sa majú otvárať v alternatívnom prehliadači</translation>
 <translation id="3554984410014457319">Povoliť Asistentovi Google počúvať frázy aktivácie hlasom</translation>
 <translation id="356579196325389849">Používatelia môžu konfigurovať kanál verzií systému Chrome OS</translation>
@@ -1650,6 +1651,22 @@ Vzory webových adries v tomto pravidle by nemali byť v konflikte s tými, k
       Ak je toto pravidlo nastavené na hodnotu true alebo je ponechané bez nastavenia, používatelia si pri registrácii OS Chrome budú môcť uplatniť ponuky.
 
       Ak je toto pravidlo nastavené na hodnotu false, používatelia si nebudú môcť uplatniť ponuky.</translation>
+<translation id="4008233182078913897">Umožňuje určiť zoznam aplikácií a rozšírení, ktoré sa inštalujú potichu bez interakcie používateľa a používateľ ich nemôže odinštalovať ani zakázať. Všetky povolenia vyžadované aplikáciami alebo rozšíreniami sú bezpodmienečne udelené bez interakcie s používateľom, a to vrátane všetkých ďalších povolení vyžiadaných budúcimi verziami daných aplikácií alebo rozšírení. 
+Ďalej sa udeľujú povolenia pre rozhrania API rozšírení enterprise.deviceAttributes a enterprise.platformKeys. (Tieto dve rozhrania sú k dispozícii iba pre aplikácie alebo rozšírenia, ktorých inštalácia bola vynútená.)
+
+          Toto pravidlo má prednosť v prípade potenciálneho konfliktu s pravidlom <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Ak je z tohto zoznamu odstránená aplikácia alebo rozšírenie, ktorého inštalácia bola v minulosti vynútená, <ph name="PRODUCT_NAME" /> ich automaticky odinštaluje.
+
+          V prípade inštancií systému Windows nepripojených k doméne <ph name="MS_AD_NAME" /> sa vynucuje iba inštalácia aplikácií a rozšírení uvedených v Internetovom obchode Chrome.
+
+          Všimnite si, že zdrojový kód jednotlivých rozšírení je možné pozmeniť pomocou nástrojov pre vývojárov (t. j. potenciálne tým znefunkčniť dané rozšírenie). Ak sa toho obávate, nastavte pravidlo <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+          Každá položka zoznamu je reťazec s identifikátorom rozšírenia a webovou adresou aktualizácie oddelenou bodkočiarkou (<ph name="SEMICOLON" />). Identifikátor rozšírenia je reťazec pozostávajúci z 32 písmen a nájdete ho napríklad v adrese <ph name="CHROME_EXTENSIONS_LINK" />, keď prejdete do režimu pre vývojárov. Ak je určená webová adresa aktualizácie, mala by odkazovať na dokument XML manifestu aktualizácie tak, ako je to uvedené na <ph name="LINK_TO_EXTENSION_DOC1" />. Predvolene sa použije webová adresa aktualizácie z Internetového obchodu Chrome (ktorá je momentálne https://clients2.google.com/service/update2/crx). Upozorňujeme, že webová adresa aktualizácie nastavená v tomto pravidle sa použije iba pri prvej inštalácii. Následné inštalácie rozšírenia používajú webovú adresu aktualizácie uvedenú v manifeste príslušného rozšírenia. Zreteľné uvedenie webovej adresy aktualizácie bolo v prehliadači <ph name="PRODUCT_NAME" /> do verzie 67 (vrátane) povinné.
+
+          <ph name="EXTENSION_POLICY_EXAMPLE" /> napríklad nainštaluje aplikáciu <ph name="EXTENSION_ID_SAMPLE" /> zo štandardnej webovej adresy aktualizácie v Internetovom obchode Chrome. Ďalšie informácie o hostení rozšírení nájdete na <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Ak toto pravidlo nenastavíte, nebudú sa automaticky inštalovať žiadne aplikácie ani rozšírenia a používateľ môže odinštalovať ľubovoľnú aplikáciu alebo rozšírenie v prehliadači <ph name="PRODUCT_NAME" />.
+
+          Upozorňujeme, že toto pravidlo neplatí v režime inkognito.</translation>
 <translation id="4008507541867797979">Ak toto pravidlo nastavíte na hodnotu true alebo ho nenakonfigurujete, <ph name="PRODUCT_OS_NAME" /> bude zobrazovať existujúcich používateľov na prihlasovacej obrazovke a umožní jedného z nich vybrať.
 
       Ak ho nastavíte na hodnotu false, <ph name="PRODUCT_OS_NAME" /> nebude zobrazovať existujúcich používateľov na prihlasovacej obrazovke. Zobrazí sa normálna prihlasovacia obrazovka (s výzvou na zadanie e‑mailu a hesla či telefónu používateľa) alebo intersticiálna obrazovka SAML (ak je povolená pravidlom <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />). Nezobrazí sa, ak nakonfigurujete spravovanú reláciu. Keď ju nakonfigurujete, budú sa zobrazovať iba účty spravovanej relácie, pričom bude možné vybrať jeden z nich.
@@ -2619,6 +2636,12 @@ Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť 
       Ak toto pravidlo nenakonfigurujete, predvolené nastavenia izolácie webov v platforme sa použijú pre prihlasovaciu obrazovku.
       </translation>
 <translation id="5901427587865226597">Iba obojstranná tlač</translation>
+<translation id="5903898512448364160">
+      Ak toto pravidlo nastavíte na hodnotu true, pravidlá používania cloudu budú uprednostnené, ak sa dostanú do konfliktu s pravidlami platformy.
+      Ak ho nastavíte na hodnotu false alebo ho nenakonfigurujete, pravidlá platformy budú uprednostnené, ak sa dostanú do konfliktu s pravidlami používania cloudu.
+
+      Je k dispozícii iba ako povinné pravidlo počítačovej platformy a ovplyvňuje iba pravidlá rozsahu používania cloudu v počítači.
+      </translation>
 <translation id="5905473632148429217">Povoliť online kontroly OCSP/CRL</translation>
 <translation id="5906199912611534122">Umožňuje aktivovať alebo deaktivovať obmedzenie rýchlosti siete.
       Platí pre všetkých používateľov a rozhrania na zariadení. Po nastavení tohto pravidla
@@ -2645,6 +2668,7 @@ Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť 
 
       Ak toto nastavenie zakážete alebo nenastavíte žiadnu hodnotu, Bezpečné vyhľadávanie vo Vyhľadávaní Google vynucované nebude.</translation>
 <translation id="5946082169633555022">Verzia beta</translation>
+<translation id="5946329690214660966">Nastavenie vlastného plánu kontroly dostupnosti aktualizácií</translation>
 <translation id="5950205771952201658">Vzhľadom na to, že kontroly online odvolania s príznakom soft-fail neposkytujú žiadne účinné bezpečnostné výhody, sú v predvolenom nastavení aplikácie <ph name="PRODUCT_NAME" /> verzie 19 alebo vyššej deaktivované. Ak toto pravidlo nastavíte na hodnotu true, predchádzajúce správanie sa obnoví a budú sa vykonávať kontroly online OCSP/CRL.
 
       Ak toto pravidlo nie je nastavené alebo je nastavené na hodnotu false, <ph name="PRODUCT_NAME" /> nebude v aplikácii <ph name="PRODUCT_NAME" /> verzie 19 alebo novšej vykonávať kontroly online odvolania.</translation>
@@ -2711,6 +2735,7 @@ Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť 
 <translation id="6034341625190551415">Ovláda typy účtov verejných relácií a verejných terminálov.</translation>
 <translation id="6034603289689965535">Povoľuje stránke zobrazovať vyskakovacie okná počas rušenia jej načítania</translation>
 <translation id="6036523166753287175">Povoliť prechod cez bránu firewall v smere od hostiteľa vzdialeného prístupu</translation>
+<translation id="605475635122964053">Obmedzí režim tlače s kódom PIN. Ak toto pravidlo nenastavíte, nepoužijú sa žiadne obmedzenia. Ak tento režim nie je k dispozícii, toto pravidlo sa bude ignorovať. Upozorňujeme, že funkcia tlače s kódom PIN je povolená iba pre tlačiarne, ktoré používajú protokol IPPS, USB alebo IPP-over-USB. </translation>
 <translation id="6070667616071269965">Rozloženie klávesnice na prihlasovacej obrazovke zariadenia</translation>
 <translation id="6074963268421707432">Nepovoliť žiadnym stránkam zobrazovať upozornenia na pracovnej ploche</translation>
 <translation id="6074964551275531965">Nastaviť časové obdobie upozornení na aktualizáciu</translation>

@@ -618,6 +618,7 @@
 <translation id="4265872034478892965">依據管理員的設定允許</translation>
 <translation id="4275830172053184480">重新啟動裝置</translation>
 <translation id="4277028893293644418">重設密碼</translation>
+<translation id="4279811152705618813">你的 <ph name="DEVICE_TYPE" /> 是由 <ph name="ENROLLMENT_DOMAIN" /> 管理</translation>
 <translation id="4280429058323657511">，到期日：<ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{這張卡片已儲存到你的 Google 帳戶}other{這些卡片已儲存到你的 Google 帳戶}}</translation>
 <translation id="42981349822642051">展開</translation>

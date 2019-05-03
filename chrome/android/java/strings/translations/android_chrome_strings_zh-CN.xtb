@@ -193,6 +193,7 @@
 <translation id="2359808026110333948">继续</translation>
 <translation id="2369533728426058518">打开的标签页</translation>
 <translation id="2387895666653383613">文字大小</translation>
+<translation id="2394602618534698961">您下载的文件会显示在此处</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2410754283952462441">选择帐号</translation>
 <translation id="2414886740292270097">深色调</translation>
@@ -204,6 +205,7 @@
 <translation id="2450083983707403292">要重新开始下载 <ph name="FILE_NAME" /> 吗？</translation>
 <translation id="2476578072172137802">网站设置</translation>
 <translation id="2482878487686419369">通知</translation>
+<translation id="2490684707762498678">由 <ph name="APP_NAME" /> 管理</translation>
 <translation id="2494974097748878569">Chrome 中的 Google 助理</translation>
 <translation id="2496180316473517155">浏览记录</translation>
 <translation id="2498359688066513246">帮助和反馈</translation>
@@ -256,6 +258,7 @@
 <translation id="2845873210977809562">已关闭“已打开的标签页”工作表</translation>
 <translation id="2870560284913253234">网站</translation>
 <translation id="2874939134665556319">上一曲</translation>
+<translation id="2876369937070532032">当您面临安全风险时，将您所访问的部分网页的网址发送给 Google</translation>
 <translation id="2876764156902388290">Chrome 向您显示此网页时消耗的数据流量更少</translation>
 <translation id="2888126860611144412">关于 Chrome</translation>
 <translation id="2891154217021530873">停止加载网页</translation>
@@ -291,6 +294,7 @@
 <translation id="3148434565183091099">要将您的书签同步到您所有的设备上，请登录 Chrome。</translation>
 <translation id="3157842584138209013">通过“更多选项”按钮查看您已节省多少数据流量</translation>
 <translation id="3166827708714933426">标签页和窗口快捷键</translation>
+<translation id="3181954750937456830">安全浏览（保护您和您的设备不受危险网站的侵害）</translation>
 <translation id="3190152372525844641">在 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />中为 Chrome 启用这些权限。</translation>
 <translation id="3198916472715691905">已存储 <ph name="STORAGE_AMOUNT" /> 数据</translation>
 <translation id="3205824638308738187">即将完成！</translation>
@@ -607,6 +611,7 @@
 <translation id="5512137114520586844">该帐号由 <ph name="PARENT_NAME" /> 管理。</translation>
 <translation id="5514904542973294328">已被此设备的管理员停用</translation>
 <translation id="5515439363601853141">需解锁才能查看您的密码</translation>
+<translation id="5516455585884385570">打开通知设置</translation>
 <translation id="5517095782334947753">您有来自 <ph name="FROM_ACCOUNT" /> 的书签、历史记录、密码及其他设置。</translation>
 <translation id="5524843473235508879">已禁止重定向。</translation>
 <translation id="5527082711130173040">Chrome 需要拥有位置信息使用权才能扫描设备。请<ph name="BEGIN_LINK1" />更新权限<ph name="END_LINK1" />。<ph name="BEGIN_LINK2" />此设备的位置信息使用权也已被停用<ph name="END_LINK2" />。</translation>
@@ -622,6 +627,7 @@
 <translation id="5581519193887989363">您始终可在<ph name="BEGIN_LINK1" />设置<ph name="END_LINK1" />中选择要同步的内容。</translation>
 <translation id="5595485650161345191">修改地址</translation>
 <translation id="5596627076506792578">更多选项</translation>
+<translation id="5599455543593328020">无痕模式</translation>
 <translation id="5620928963363755975">通过“更多选项”按钮在“下载内容”中查找您的文件和网页</translation>
 <translation id="5626134646977739690">名字：</translation>
 <translation id="5639724618331995626">允许访问所有网站</translation>
@@ -918,11 +924,13 @@
 <translation id="7649070708921625228">帮助</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="7665369617277396874">添加帐号</translation>
+<translation id="766587987807204883">预提取的报道会显示在此处，即使在离线状态下也可供阅读</translation>
 <translation id="7682724950699840886">请尝试按以下提示操作：确保您的设备上有足够的空间，然后重新尝试导出。</translation>
 <translation id="7698359219371678927">在 <ph name="APP_NAME" /> 中创建电子邮件</translation>
 <translation id="7704317875155739195">自动填充搜索字词和网址</translation>
 <translation id="773466115871691567">一律翻译<ph name="SOURCE_LANGUAGE" />网页</translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" />（<ph name="SPACE_OTHER" />）</translation>
+<translation id="7746457520633464754">为了检测危险应用和网站，Chrome 会将您所访问的部分网页的网址、有限的系统信息以及部分网页内容发送给 Google</translation>
 <translation id="7762668264895820836">SD 卡 <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">添加地址</translation>
 <translation id="7765158879357617694">移动</translation>

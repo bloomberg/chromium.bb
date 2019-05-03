@@ -465,6 +465,7 @@
 <translation id="1711401317189798723">Práve sa zálohuje kontajner <ph name="CONTAINER_ID" />.</translation>
 <translation id="1712349894969001173">Uložte si toto heslo na svojom zariadení iPhone</translation>
 <translation id="1712552549805331520"><ph name="URL" /> chce natrvalo ukladať dáta v miestnom počítači</translation>
+<translation id="1717218214683051432">Senzory pohybu</translation>
 <translation id="1718835860248848330">Posledná hodina</translation>
 <translation id="1719312230114180055">Poznámka: Odtlačok môže byť menej bezpečný ako silné heslo alebo kód PIN.</translation>
 <translation id="1720318856472900922">Overenie WWW servera protokolom TLS</translation>
@@ -801,6 +802,7 @@
 <translation id="2241053333139545397">Čítanie a úprava údajov na rôznych weboch</translation>
 <translation id="2241634353105152135">Iba raz</translation>
 <translation id="2242687258748107519">Informácie o súbore</translation>
+<translation id="2246549592927364792">Chcete získať popisy obrázkov z Googlu?</translation>
 <translation id="224940702122312781">Táto stránka spotrebuje veľké množstvo dát.</translation>
 <translation id="2249605167705922988">napr. 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">Otvoriť pomocou systémového zobrazovača</translation>
@@ -1104,6 +1106,7 @@
 <translation id="271033894570825754">Nové</translation>
 <translation id="2714393097308983682">Obchod Google Play</translation>
 <translation id="2715751256863167692">Táto inovácia resetuje Chromebook a odstráni aktuálne dáta používateľa.</translation>
+<translation id="2716986496990888774">Toto nastavenie spravuje rodič.</translation>
 <translation id="2718395828230677721">Nočný režim</translation>
 <translation id="2718998670920917754">Antivírusový softvér našiel vírus.</translation>
 <translation id="2719936478972253983">Boli zablokované nasledujúce súbory cookie:</translation>
@@ -1215,6 +1218,7 @@
 <translation id="2874939134665556319">Predchádzajúca skladba</translation>
 <translation id="2875698561019555027">(Chybové stránky prehliadača Chrome)</translation>
 <translation id="2876336351874743617">2. prst</translation>
+<translation id="2876369937070532032">Pri ohrození zabezpečenia odosiela Googlu webové adresy niektorých navštívených stránok</translation>
 <translation id="288042212351694283">Prístup k vašim zariadeniam so štandardom Universal 2nd Factor</translation>
 <translation id="2881076733170862447">Keď kliknete na rozšírenie</translation>
 <translation id="2881966438216424900">Dátum posledného prístupu:</translation>
@@ -1397,6 +1401,7 @@
 <translation id="3170072451822350649">Môžete tiež preskočiť prihlásenie a <ph name="LINK_START" />prehliadať ako hosť<ph name="LINK_END" />.</translation>
 <translation id="3172045848207518317">Nejaký web má prístup k vstupu videa</translation>
 <translation id="3177909033752230686">Jazyk stránky:</translation>
+<translation id="3181954750937456830">Bezpečné prehliadanie (chráni vás aj zariadenie pred nebezpečnými webmi)</translation>
 <translation id="3182749001423093222">Kontrola pravopisu</translation>
 <translation id="3183139917765991655">Profile Importer</translation>
 <translation id="3188465121994729530">Kĺzavý priemer</translation>
@@ -1702,6 +1707,7 @@
 <translation id="3664511988987167893">Ikona rozšírenia</translation>
 <translation id="3665589677786828986">Chrome zistil, že niektoré nastavenia boli poškodené iným programom, a preto obnovil pôvodné predvolené nastavenia.</translation>
 <translation id="3668570675727296296">Nastavenia jazyka</translation>
+<translation id="366867565525278777">Nepodarilo sa stiahnuť pre nedostatok miesta v úložisku. Vyžaduje sa minimálne <ph name="INSTALL_SIZE" /> voľného miesta. Miesto uvoľníte odstránením súborov z úložiska zariadenia.</translation>
 <translation id="3668801437375206837">Zamestnanci Googlu môžu do svojich hlásení so spätnou väzbou zahrnúť ďalšie denníky rozhrania Bluetooth, aby bolo možné lepšie diagnostikovať problémy s rozhraním Bluetooth. Keď začiarknete túto možnosť, hlásenie bude obsahovať denníky btsnoop a HCI aktuálnej relácie, z ktorých boli odstránené všetky informácie umožňujúce identifikáciu osôb. Prístup k týmto denníkom bude obmedzený na správcov skupiny produktov so systémom Chrome OS v nástroji Listnr. Denníky budú vyčistené po 90 dňoch.</translation>
 <translation id="3668823961463113931">Obslužné nástroje</translation>
 <translation id="3670113805793654926">Zariadenia od ľubovoľného dodávateľa</translation>
@@ -2011,6 +2017,7 @@
 <translation id="409579654357498729">Pridať do služby Cloud Print</translation>
 <translation id="4096508467498758490">Zakázanie rozšírení spustených v režime vývojára</translation>
 <translation id="4096824249111507322">Bezpečný modul sa pripravuje, čakajte (môže to trvať niekoľko minút)...</translation>
+<translation id="4097560579602855702">Vyhľadať na Googli</translation>
 <translation id="4099060993766194518">Obnoviť predvolený vyhľadávač?</translation>
 <translation id="4099874310852108874">Vyskytla sa chyba siete.</translation>
 <translation id="4100733287846229632">V zariadení je kriticky málo miesta</translation>
@@ -2043,6 +2050,7 @@
 <translation id="4146026355784316281">Vždy otvárať pomocou systémového zobrazovača</translation>
 <translation id="4146785383423576110">Resetovať a vyčistiť</translation>
 <translation id="4147911968024186208">Skúste to znova. Ak sa vám znova zobrazí táto chyba, kontaktujte zástupcu podpory.</translation>
+<translation id="4150125039112138020">|</translation>
 <translation id="4150201353443180367">Displej</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 karta}few{# karty}many{# karty}other{# kariet}}</translation>
 <translation id="4154664944169082762">Odtlačky</translation>
@@ -4011,6 +4019,7 @@
 <translation id="7289225569524511578">Otvoriť aplikáciu tapety</translation>
 <translation id="7290242001003353852">Prihlasovacia služba hostená doménou <ph name="SAML_DOMAIN" /> pristupuje k vášmu fotoaparátu.</translation>
 <translation id="7290594223351252791">Potvrdenie registrácie</translation>
+<translation id="7295614427631867477">Upozorňujeme, že Android, Play a spojené aplikácie sa riadia vlastnými pravidlami zhromažďovania údajov a používania.</translation>
 <translation id="729583233778673644">Povoľte šifrovania AES a RC4. Šifry RC4 sú nezabezpečené, takže použitím tejto možnosti zvýšite riziko.</translation>
 <translation id="7296774163727375165"><ph name="DOMAIN" /> – Zmluvné podmienky</translation>
 <translation id="7297443947353982503">Používateľské meno alebo heslo je nesprávne alebo zlyhalo overenie EAP-auth</translation>
@@ -4287,6 +4296,7 @@
 <translation id="7732111077498238432">Sieť je riadená pravidlami</translation>
 <translation id="7737238973539693982">Odstrániť Linux (beta)</translation>
 <translation id="7740996059027112821">Štandardne</translation>
+<translation id="7746457520633464754">Chrome odosiela Googlu webové adresy niektorých navštívených stránok, obmedzené informácie o systéme a obsah niektorých stránok na účely rozpoznávania nebezpečných aplikácií a webov.</translation>
 <translation id="7750228210027921155">Obraz v obraze</translation>
 <translation id="7751260505918304024">Zobraziť všetky</translation>
 <translation id="7754704193130578113">Pred každým sťahovaním sa spýtať, kam uložiť súbor</translation>
@@ -4970,6 +4980,7 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8780123805589053431">Získať popisy obrázka z Googlu</translation>
 <translation id="8780443667474968681">Hlasové vyhľadávanie bolo vypnuté</translation>
 <translation id="878069093594050299">Tento certifikát bol overený pre nasledujúce typy použitia:</translation>
+<translation id="8781470833671194250">Stabilizácia miesta kliknutia</translation>
 <translation id="8781980678064919987">Pri zavretí krytu vypnúť</translation>
 <translation id="8782565991310229362">Spustenie aplikácie pre režim kiosku sa zrušilo.</translation>
 <translation id="8783093612333542422">Používateľ &lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; chce s vami zdieľať tlačiareň &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt;.</translation>

@@ -98,6 +98,7 @@
 <translation id="2320166752086256636">Ocultar teclado</translation>
 <translation id="2339560363438331454">Serviços do Google e de sincronização</translation>
 <translation id="2351097562818989364">As configurações de tradução foram redefinidas.</translation>
+<translation id="2359043044084662842">Traduzir</translation>
 <translation id="2359808026110333948">Continuar</translation>
 <translation id="2360196772093551345">Solicitar um site para dispositivos móveis</translation>
 <translation id="2381405137052800939">Conceitos básicos</translation>
@@ -127,6 +128,7 @@
 <translation id="2800683595868705743">Sair do alternador de guias</translation>
 <translation id="2830972654601096923">Gerenciar endereços…</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
+<translation id="2840687315230832938">Configuração de sincronização inicial não concluída</translation>
 <translation id="2843803966603263712">Redefinir Tradutor</translation>
 <translation id="2858204748079866344">Para proteger sua privacidade, o Chrome não preencherá sua senha automaticamente neste campo.</translation>
 <translation id="285960592395650245">Tentar fazer o download novamente</translation>
@@ -291,6 +293,7 @@ A "Transição" também deve ser ativada na seção "Geral" das configurações.
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Versão <ph name="PRODUCT_VERSION" /></translation>
+<translation id="5711039611392265845">Para ver mais configurações relacionadas à privacidade, segurança e coleta de dados, acesse <ph name="BEGIN_LINK" />Serviços do Google e de sincronização<ph name="END_LINK" />.</translation>
 <translation id="5728700505257787410">Houve um problema durante o login em sua conta.</translation>
 <translation id="5737974891429562743">Os detalhes de login da conta estão desatualizados. Atualize-os para iniciar a sincronização.</translation>
 <translation id="5738887413654608789">Isso permite que você descubra páginas da Web relevantes com base nos seus arredores.</translation>
@@ -382,7 +385,6 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="6903907808598579934">Ativar a sincronização</translation>
 <translation id="6914583639806229067">Pesquisar imagem que você copiou</translation>
 <translation id="6914783257214138813">Suas senhas ficarão visíveis para qualquer pessoa que tiver acesso ao arquivo exportado.</translation>
-<translation id="692898627499215142">A configuração de sincronização inicial não foi concluída. Para iniciar a sincronização, ative essa opção.</translation>
 <translation id="6944369514868857500">Escolher outra conta</translation>
 <translation id="6945221475159498467">Selecionar</translation>
 <translation id="6973630695168034713">Pastas</translation>
@@ -410,6 +412,7 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="7280856130494094142">Informe a senha para iniciar a sincronização</translation>
 <translation id="7285236536143823449">SIM, VAMOS LÁ</translation>
 <translation id="7291368939935408496">Preparando senhas…</translation>
+<translation id="7293171162284876153">Para iniciar a sincronização, ative a opção "Sincronizar seus dados do Chrome".</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> por cento baixados</translation>
 <translation id="7346909386216857016">Ok, entendi.</translation>
 <translation id="7348502496356775519">Adicionar aos favoritos</translation>

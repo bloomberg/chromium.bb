@@ -1420,6 +1420,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu đặt chính sách này thành 'DeveloperToolsAllowed' (giá trị 1), thì bạn có thể truy cập cũng như sử dụng Công cụ dành cho nhà phát triển và Bảng điều khiển JavaScript trong tất cả các ngữ cảnh, bao gồm cả ngữ cảnh đã cài đặt các tiện ích theo chính sách doanh nghiệp.
       Nếu đặt chính sách này thành 'DeveloperToolsDisallowed' (giá trị 2), thì bạn không thể truy cập vào Công cụ dành cho nhà phát triển, cũng như không thể kiểm tra các phần tử của trang web được nữa. Mọi phím tắt và mọi menu hoặc các mục menu ngữ cảnh để mở Công cụ dành cho nhà phát triển hoặc Bảng điều khiển JavaScript đều bị tắt.</translation>
 <translation id="3547954654003013442">Cài đặt proxy</translation>
+<translation id="3550875587920006460">Cho phép đặt một lịch biểu tùy chỉnh để kiểm tra bản cập nhật. Tùy chọn này áp dụng cho mọi người dùng và tất cả giao diện trên thiết bị. Sau khi ban đặt, thiết bị sẽ kiểm tra bản cập nhật theo lịch biểu. Bạn phải xóa chính sách này để hủy bất kỳ hoạt động kiểm tra bản cập nhật theo lịch biểu nào khác.</translation>
 <translation id="355118380775352753">Các trang web sẽ mở trong trình duyệt thay thế</translation>
 <translation id="3554984410014457319">Cho phép Trợ lý Google nghe cụm từ kích hoạt bằng giọng nói</translation>
 <translation id="356579196325389849">Người dùng có thể định cấu hình kênh phát hành Chrome OS</translation>
@@ -1666,6 +1667,29 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu chính sách này được đặt thành true hoặc không được đặt, người dùng sẽ có thể đổi phiếu mua hàng thông qua Đăng ký Chrome OS.
 
       Nếu chính sách này được đặt thành false, người dùng sẽ không thể đổi phiếu mua hàng.</translation>
+<translation id="4008233182078913897">Chỉ định danh sách các ứng dụng và tiện ích được cài đặt tự động mà không
+          có sự tương tác của người dùng, cũng như các ứng dụng và tiện ích mà người dùng không thể gỡ cài đặt
+          hoặc vô hiệu hóa. Tất cả các quyền truy cập do ứng dụng/tiện ích
+          yêu cầu được cấp trực tiếp mà không có sự tương tác của
+          người dùng, kể cả mọi quyền truy cập bổ sung mà các phiên bản trong tương lai
+          của ứng dụng/tiện ích đó yêu cầu. Ngoài ra, các quyền truy cập được cấp
+          cho các API tiện ích enterprise.deviceAttributes và 
+          enterprise.platformKeys. (Không sử dụng được 2 API này cho các
+          ứng dụng/tiện ích không buộc cài đặt.)
+
+          Chính sách này được ưu tiên hơn trong trường hợp xung đột với chính sách <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Nếu một ứng dụng hoặc tiện ích bị buộc cài đặt trước đây hiện đã bị xóa khỏi danh sách này, thì <ph name="PRODUCT_NAME" /> sẽ tự động gỡ cài đặt ứng dụng hoặc tiện ích đó.
+
+          Đối với các phiên bản Windows không tham gia miền <ph name="MS_AD_NAME" />, thì việc buộc cài đặt sẽ bị giới hạn ở các ứng dụng và tiện ích trong Cửa hàng Chrome trực tuyến.
+
+          Xin lưu ý rằng người dùng có thể thay đổi mã nguồn của bất cứ tiện ích nào thông qua Công cụ dành cho nhà phát triển (điều này có thể khiến tiện ích hoạt động không chính xác). Nếu bạn lo ngại về điều này thì cần phải đặt chính sách <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+          Mỗi mục danh sách của chính sách là một chuỗi chứa một mã tiện ích và một URL "cập nhật" (không bắt buộc) phân tách bằng dấu chấm phẩy (<ph name="SEMICOLON" />). Mã tiện ích là một chuỗi gồm 32 chữ cái, chẳng hạn như trên <ph name="CHROME_EXTENSIONS_LINK" /> khi ở chế độ nhà phát triển. URL "cập nhật", nếu được chỉ định, phải trỏ tới tài liệu XML của tệp kê khai cập nhật như mô tả tại <ph name="LINK_TO_EXTENSION_DOC1" />. Theo mặc định, URL cập nhật của Cửa hàng Chrome trực tuyến sẽ được sử dụng (hiện là "https://clients2.google.com/service/update2/crx"). Xin lưu ý rằng URL "cập nhật" được đặt trong chính sách này chỉ dùng cho lần cài đặt ban đầu; các lần cập nhật tiện ích tiếp theo sẽ sử dụng URL cập nhật nêu trong tệp kê khai của tiện ích. Ngoài ra, xin lưu ý rằng việc chỉ định URL "cập nhật" một cách rõ ràng là bắt buộc trong các phiên bản <ph name="PRODUCT_NAME" /> bao gồm cả phiên bản 67.
+
+          Ví dụ: <ph name="EXTENSION_POLICY_EXAMPLE" /> cài đặt tiện ích có mã <ph name="EXTENSION_ID_SAMPLE" /> từ URL "cập nhật" tiêu chuẩn của Cửa hàng Chrome trực tuyến. Để biết thêm thông tin về việc lưu trữ tiện ích, hãy xem: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Nếu bạn không đặt chính sách này, thì sẽ không có ứng dụng hoặc tiện ích nào được cài đặt tự động và người dùng có thể gỡ cài đặt mọi ứng dụng hoặc tiện ích trong <ph name="PRODUCT_NAME" />.
+
+          Xin lưu ý rằng chính sách này không áp dụng cho chế độ ẩn danh.</translation>
 <translation id="4008507541867797979">Nếu đặt chính sách này thành true hoặc không định cấu hình chính sách này, thì <ph name="PRODUCT_OS_NAME" /> sẽ hiển thị người dùng hiện có trên màn hình đăng nhập và cho phép chọn một người dùng.
 
       Nếu đặt chính sách này thành false, <ph name="PRODUCT_OS_NAME" /> sẽ không hiển thị người dùng hiện có trên màn hình đăng nhập. Thay vào đó, màn hình đăng nhập thông thường (nhắc người dùng nhập email và mật khẩu hoặc số điện thoại) hoặc màn hình SAML xem kẽ (nếu đã bật qua chính sách <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />) sẽ hiển thị, trừ khi đã định cấu hình phiên được quản lý. Khi đã định cấu hình phiên được quản lý, thì chỉ có các tài khoản của phiên được quản lý hiển thị, cho phép bạn chọn một trong số các tài khoản đó.
@@ -2644,6 +2668,12 @@ Không giống như <ph name="URL_LIST_POLICY_NAME" />, các quy tắc áp dụn
       Nếu bạn không định cấu hình chính sách này, thì tùy chọn cài đặt cách ly trang web mặc định của nền tảng sẽ được sử dụng cho màn hình đăng nhập.
       </translation>
 <translation id="5901427587865226597">Chỉ in hai mặt</translation>
+<translation id="5903898512448364160">
+      Nếu bạn đặt chính sách này thành true, thì chính sách đám mây sẽ được ưu tiên trong trường hợp xung đột với chính sách nền tảng.
+      Nếu bạn đặt chính sách này thành false hoặc không định cấu hình chính sách này, thì chính sách nền tảng sẽ được ưu tiên trong trường hợp xung đột với chính sách đám mây.
+
+      Chính sách này chỉ có ở dạng chính sách nền tảng bắt buộc trên máy và chỉ ảnh hưởng đến chính sách đám mây trong phạm vi máy.
+      </translation>
 <translation id="5905473632148429217">Bật kiểm tra OCSP/CRL trực tuyến</translation>
 <translation id="5906199912611534122">Cho phép bật hoặc tắt điều chỉnh mạng.
       Tùy chọn này áp dụng cho tất cả người dùng và tất cả giao diện trên thiết bị. Sau khi được đặt,
@@ -2670,6 +2700,7 @@ Không giống như <ph name="URL_LIST_POLICY_NAME" />, các quy tắc áp dụn
 
       Nếu bạn tắt cài đặt này hoặc không đặt một giá trị, Tìm kiếm an toàn trong Google Tìm kiếm sẽ không hoạt động.</translation>
 <translation id="5946082169633555022">Kênh beta</translation>
+<translation id="5946329690214660966">Đặt lịch biểu tùy chỉnh để kiểm tra bản cập nhật</translation>
 <translation id="5950205771952201658">Vì các kiểm tra lỗi phần mềm, thu hồi trực tuyến không mang lại lợi ích bảo mật hiệu quả nên chúng bị tắt theo mặc định trong <ph name="PRODUCT_NAME" /> phiên bản 19 trở lên. Bằng cách đặt chính sách này thành true, hoạt động trước đó được khôi phục và các kiểm tra OCSP/CRL trực tuyến sẽ được thực hiện.
 
       Nếu chính sách không được đặt hoặc được đặt thành false, khi đó <ph name="PRODUCT_NAME" /> sẽ không thực hiện các kiểm tra thu hồi trực tuyến trong <ph name="PRODUCT_NAME" /> 19 và cao hơn.</translation>
@@ -2736,6 +2767,7 @@ Không giống như <ph name="URL_LIST_POLICY_NAME" />, các quy tắc áp dụn
 <translation id="6034341625190551415">Kiểm soát phiên công khai và loại tài khoản kiosk.</translation>
 <translation id="6034603289689965535">Cho phép trang hiển thị cửa sổ bật lên khi đang hủy tải trang</translation>
 <translation id="6036523166753287175">Bật tính năng chặn tường lửa từ máy chủ truy cập từ xa</translation>
+<translation id="605475635122964053">Hạn chế chế độ in mã PIN. Khi bạn không đặt chính sách này, tức là không có hạn chế. Nếu không có chế độ này thì chính sách này sẽ bị bỏ qua. Xin lưu ý rằng tính năng in mã PIN chỉ được bật cho các máy in sử dụng một trong các giao thức IPPS, USB hoặc IPP-over-USB </translation>
 <translation id="6070667616071269965">Bố cục bàn phím màn hình đăng nhập thiết bị</translation>
 <translation id="6074963268421707432">Không cho phép bất kỳ trang web nào hiển thị thông báo trên màn hình</translation>
 <translation id="6074964551275531965">Đặt khoảng thời gian cho thông báo cập nhật</translation>

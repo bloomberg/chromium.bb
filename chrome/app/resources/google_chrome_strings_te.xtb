@@ -25,6 +25,7 @@
 <translation id="1585657529869845941">ఇది కనిపిస్తే, <ph name="BEGIN_BOLD" />అయిన కూడా మార్చు<ph name="END_BOLD" />ను క్లిక్ చేయండి</translation>
 <translation id="1587223624401073077">Google Chrome మీ కెమెరాను ఉపయోగిస్తోంది.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> హానికరం, కావున Chrome దాన్ని బ్లాక్ చేసింది.</translation>
+<translation id="1590588151039584890">అప్‌డేట్ చేయడానికి, ఈ కంప్యూటర్‌లో Chromeను అమలు చేయనీయకుండా ఆపివేయాలి. దీని వలన ఈ కంప్యూటర్‌లో లాగిన్ చేసిన ఇతర వినియోగదారులు సేవ్ చేయని మార్పులను కోల్పోయే అవకాశం ఉంది.</translation>
 <translation id="1619887657840448962">Chromeని సురక్షితం చేయడానికి, మేము క్రింది పొడిగింపుని నిలిపివేసాము, ఇది <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />లో జాబితా చేయబడలేదు మరియు మీకు తెలియకుండా జోడించబడి ఉండవచ్చు.</translation>
 <translation id="1628000112320670027">Chrome గురించి సహాయం పొందండి</translation>
 <translation id="1662639173275167396"><ph name="BEGIN_LINK_LINUX_OSS" /> Linux (బీటా) <ph name="END_LINK_LINUX_OSS" /> లాగానే, Chrome OS కూడా అదనపు <ph name="BEGIN_LINK_CROS_OSS" /> ఓపెన్ సోర్స్ సాఫ్ట్‌వేర్‌ <ph name="END_LINK_CROS_OSS" />పై ఎంతగానో ఆధారపడుతుంది.</translation>
@@ -164,6 +165,7 @@
 <translation id="5386244825306882791">ఇది మీరు Chromeను ప్రారంభించేటప్పుడు లేదా ఓమ్నిబాక్స్ నుండి వెతికేటప్పుడు చూపబడే పేజీని కూడా నియంత్రిస్తుంది.</translation>
 <translation id="5430073640787465221">మీ ప్రాధాన్యతల ఫైల్ పాడైంది లేదా చెల్లదు. Google Chrome మీ సెట్టింగ్‌లను తిరిగి పొందలేకపోయింది.</translation>
 <translation id="5483595757826856374">{0,plural, =0{ఇప్పుడు Chrome తిరిగి ప్రారంభించబడుతుంది}=1{1 సెకనులో Chrome తిరిగి ప్రారంభించబడుతుంది}other{# సెకన్లలో Chrome తిరిగి ప్రారంభించబడుతుంది}}</translation>
+<translation id="5543953544073077331">Chrome యొక్క ఇతర కాపీలు అమలు అవుతున్నాయి. అప్‌డేట్ చేయడానికి, వాటిని మూసివేయండి.</translation>
 <translation id="556024056938947818">Google Chrome పాస్‌వర్డ్‌లను చూపడానికి ప్రయత్నిస్తోంది.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> హానికరం కావచ్చు, కావున Chrome దాన్ని బ్లాక్ చేసింది.</translation>
@@ -224,6 +226,7 @@
 <translation id="7473136999113284234">Chrome ఆటోమేటిక్‌గా అప్‌డేట్ అవుతుంది కాబట్టి మీ వద్ద ఎప్పుడూ తాజా వెర్షన్ ఉంటుంది.</translation>
 <translation id="7486227612705979895">చిరునామా బార్‌లో సూచనలను చేయడానికి Chrome మీ డిస్క్‌ను యాక్సెస్ చేస్తుంది</translation>
 <translation id="748945194546522577">ఈ ఫైల్ ప్రమాదకరమైనది, కాబట్టి Chrome దీన్ని బ్లాక్ చేసింది. మీరు అధునాతన రక్షణ ద్వారా సంరక్షించబడ్డారు.</translation>
+<translation id="7531671357096394523">Chrome యొక్క అన్ని కాపీల నుండి నిష్క్రమించండి.</translation>
 <translation id="7535429826459677826">Google Chrome డెవలపర్</translation>
 <translation id="7552219221109926349">Chrome OSను ఈ భాషలో ప్రదర్శించు</translation>
 <translation id="7561940363513215021">{0,plural, =1{1 నిమిషంలో Chrome తిరిగి ప్రారంభించబడుతుంది}other{# నిమిషాల్లో Chrome తిరిగి ప్రారంభించబడుతుంది}}</translation>

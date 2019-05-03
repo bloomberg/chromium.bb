@@ -27,6 +27,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="1585657529869845941">Jei bus rodomas, spustelėkite mygtuką <ph name="BEGIN_BOLD" />Vis tiek perjungti<ph name="END_BOLD" /></translation>
 <translation id="1587223624401073077">„Google Chrome“ naudoja jūsų fotoaparatą.</translation>
 <translation id="1587325591171447154">Failas „<ph name="FILE_NAME" />“ pavojingas, todėl „Chrome“ jį užblokavo.</translation>
+<translation id="1590588151039584890">Norint atnaujinti „Chrome“, programa šiame kompiuteryje turi būti sustabdyta. Todėl kiti naudotojai, prisijungę prie šio kompiuterio, gali prarasti neišsaugotus pakeitimus.</translation>
 <translation id="1619887657840448962">Kad „Chrome“ būtų saugesnė, išjungėme toliau nurodytą plėtinį, kuris nepateiktas <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> sąraše ir tikriausiai buvo pridėtas be jūsų žinios.</translation>
 <translation id="1628000112320670027">Gaukite pagalbos dėl „Chrome“</translation>
 <translation id="1662639173275167396">„Chrome“ OS pasiekiama naudojant papildomą <ph name="BEGIN_LINK_CROS_OSS" />atvirojo šaltinio programinę įrangą<ph name="END_LINK_CROS_OSS" /> (kaip ir <ph name="BEGIN_LINK_LINUX_OSS" />„Linux“ (beta versija)<ph name="END_LINK_LINUX_OSS" />).</translation>
@@ -173,6 +174,7 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 
 „Google Chrome“ negali atkurti nustatymų.</translation>
 <translation id="5483595757826856374">{0,plural, =0{„Chrome“ bus paleista iš naujo dabar}=1{„Chrome“ bus paleista iš naujo po 1 sekundės}one{„Chrome“ bus paleista iš naujo po # sekundės}few{„Chrome“ bus paleista iš naujo po # sekundžių}many{„Chrome“ bus paleista iš naujo po # sekundės}other{„Chrome“ bus paleista iš naujo po # sekundžių}}</translation>
+<translation id="5543953544073077331">Veikia kitos „Chrome“ kopijos. Norėdami atnaujinti, jas uždarykite.</translation>
 <translation id="556024056938947818">„Google Chrome“ bando rodyti slaptažodžius.</translation>
 <translation id="5566025111015594046">„Google Chrome“ (mDNS-In)</translation>
 <translation id="565744775970812598">Failas „<ph name="FILE_NAME" />“ gali būti pavojingas, todėl „Chrome“ jį užblokavo.</translation>
@@ -233,6 +235,7 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="7473136999113284234">„Chrome“ atnaujinama automatiškai, todėl visada naudojatės naujausia versija.</translation>
 <translation id="7486227612705979895">„Chrome“ turės prieigą prie Disko, kad galėtų teikti pasiūlymus adreso juostoje</translation>
 <translation id="748945194546522577">Šis failas pavojingas, todėl „Chrome“ jį užblokavo. Jus saugo Papildomos apsaugos programa.</translation>
+<translation id="7531671357096394523">Uždarykite visas „Chrome“ kopijas.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Pateikti „Chrome“ OS šia kalba</translation>
 <translation id="7561940363513215021">{0,plural, =1{„Chrome“ bus paleista iš naujo po 1 minutės}one{„Chrome“ bus paleista iš naujo po # minutės}few{„Chrome“ bus paleista iš naujo po # minučių}many{„Chrome“ bus paleista iš naujo po # minutės}other{„Chrome“ bus paleista iš naujo po # minučių}}</translation>

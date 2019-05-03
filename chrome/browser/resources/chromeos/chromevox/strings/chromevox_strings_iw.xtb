@@ -289,7 +289,7 @@
 <translation id="3084806535845658316">ללא הד הקלדה</translation>
 <translation id="3086746722712840547">note</translation>
 <translation id="308895241372589742">אין עוד ביטוי מתמטי.</translation>
-<translation id="3090227230165225418">הכרזה על הודעות הורדה</translation>
+<translation id="3090227230165225418">הכרזה על התראות הורדה</translation>
 <translation id="3090532668523289635">grp</translation>
 <translation id="3093176084511590672">ציון הדרך הבא</translation>
 <translation id="3096671415663099226">cbo</translation>
@@ -623,7 +623,7 @@
 <translation id="5349770431644471053">קישור לאחור</translation>
 <translation id="536031132345979795">דלג אחורה בזמן קריאה רציפה</translation>
 <translation id="5368000168321181111">‏Earcons כבוי</translation>
-<translation id="5368505757342402527">‏הושלמו ‎<ph name="PROGRESS" />%‎ מההורדה של <ph name="FILE_NAME" />. נותרו עוד <ph name="TIME" /> <ph name="UNITS" />.</translation>
+<translation id="5368505757342402527">‏הושלמו ‎<ph name="PROGRESS" />%‎ מההורדה של <ph name="FILE_NAME" />. נותרו עוד כ-<ph name="TIME" /> <ph name="UNITS" />.</translation>
 <translation id="5374320867641260420">אין עוד לחצן.</translation>
 <translation id="5376407118396657359">‏כדי לנווט לפי תא, יש להקיש על חיפוש+Ctrl+‏Alt ביחד עם מקשי החיצים.</translation>
 <translation id="5382299583965267720">אין עוד כותרת ברמה 1.</translation>

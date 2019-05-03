@@ -193,6 +193,7 @@
 <translation id="2359808026110333948">Dalej</translation>
 <translation id="2369533728426058518">otwarte karty</translation>
 <translation id="2387895666653383613">Skalowanie tekstu</translation>
+<translation id="2394602618534698961">Tutaj pojawią się pobrane pliki</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2410754283952462441">Wybierz konto</translation>
 <translation id="2414886740292270097">Ciemny</translation>
@@ -204,6 +205,7 @@
 <translation id="2450083983707403292">Czy chcesz jeszcze raz rozpocząć pobieranie pliku <ph name="FILE_NAME" />?</translation>
 <translation id="2476578072172137802">Ustawienia witryn</translation>
 <translation id="2482878487686419369">Powiadomienia</translation>
+<translation id="2490684707762498678">Zarządzane przez <ph name="APP_NAME" /></translation>
 <translation id="2494974097748878569">Asystent Google w Chrome</translation>
 <translation id="2496180316473517155">Historia przeglądania</translation>
 <translation id="2498359688066513246">Pomoc i opinie</translation>
@@ -256,6 +258,7 @@
 <translation id="2845873210977809562">Otwarte karty – zamknięto</translation>
 <translation id="2870560284913253234">Witryna</translation>
 <translation id="2874939134665556319">Poprzedni utwór</translation>
+<translation id="2876369937070532032">Gdy Twoje bezpieczeństwo jest zagrożone, wysyła do Google adresy URL odwiedzanych stron</translation>
 <translation id="2876764156902388290">Chrome wyświetla tę stronę przy użyciu mniejszej ilości danych</translation>
 <translation id="2888126860611144412">Chrome – informacje</translation>
 <translation id="2891154217021530873">Zatrzymaj wczytywanie strony</translation>
@@ -291,6 +294,7 @@
 <translation id="3148434565183091099">Aby korzystać ze swoich zakładek na wszystkich urządzeniach, zaloguj się w Chrome.</translation>
 <translation id="3157842584138209013">Sprawdź ilość zaoszczędzonych danych, używając przycisku Więcej opcji</translation>
 <translation id="3166827708714933426">Skróty kart i okien</translation>
+<translation id="3181954750937456830">Bezpieczne przeglądanie (chroni Ciebie i Twoje urządzenie przed niebezpiecznymi witrynami)</translation>
 <translation id="3190152372525844641">Przyznaj Chrome uprawnienia w <ph name="BEGIN_LINK" />ustawieniach Androida<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> zapisanych danych</translation>
 <translation id="3205824638308738187">Prawie gotowe!</translation>
@@ -607,6 +611,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5512137114520586844">Tym kontem zarządza <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Wyłączone przez administratora tego urządzenia</translation>
 <translation id="5515439363601853141">Odblokuj, by wyświetlić hasło</translation>
+<translation id="5516455585884385570">Otwórz ustawienia powiadomień</translation>
 <translation id="5517095782334947753">Masz zakładki, historię, hasła i inne ustawienia z konta <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5524843473235508879">Przekierowanie zostało zablokowane.</translation>
 <translation id="5527082711130173040">Aby wyszukać urządzenia, Chrome potrzebuje dostępu do lokalizacji. <ph name="BEGIN_LINK1" />Zwiększ uprawnienia<ph name="END_LINK1" />. Dostęp do lokalizacji jest <ph name="BEGIN_LINK2" />wyłączony na tym urządzeniu<ph name="END_LINK2" />.</translation>
@@ -622,6 +627,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5581519193887989363">W <ph name="BEGIN_LINK1" />ustawieniach<ph name="END_LINK1" /> możesz wybrać, co chcesz synchronizować.</translation>
 <translation id="5595485650161345191">Edytuj adres</translation>
 <translation id="5596627076506792578">Więcej opcji</translation>
+<translation id="5599455543593328020">Tryb incognito</translation>
 <translation id="5620928963363755975">Znajdź pliki i strony w Pobranych plikach, używając przycisku Więcej opcji</translation>
 <translation id="5626134646977739690">Nazwa:</translation>
 <translation id="5639724618331995626">Pozwól na otwieranie wszystkich stron</translation>
@@ -918,11 +924,13 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7649070708921625228">Pomoc</translation>
 <translation id="7658239707568436148">Anuluj</translation>
 <translation id="7665369617277396874">Dodaj konto</translation>
+<translation id="766587987807204883">Tutaj pojawiają się artykuły, które możesz czytać, nawet gdy jesteś offline</translation>
 <translation id="7682724950699840886">Skorzystaj z tych wskazówek: upewnij się, że masz wystarczająco dużo miejsca na urządzeniu, i ponownie spróbuj wyeksportować hasła.</translation>
 <translation id="7698359219371678927">Utwórz e-maila w aplikacji <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Autouzupełniaj wyszukiwania i adresy URL</translation>
 <translation id="773466115871691567">Zawsze tłumacz strony, których językiem jest <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
+<translation id="7746457520633464754">Aby wykrywać niebezpieczne aplikacje i witryny, Chrome wysyła do Google adresy URL i część zawartości niektórych odwiedzanych przez Ciebie stron, a także niektóre informacje o systemie.</translation>
 <translation id="7762668264895820836">Karta SD <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Dodaj adres</translation>
 <translation id="7765158879357617694">Przenieś</translation>

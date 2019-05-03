@@ -798,6 +798,7 @@
 <translation id="2241053333139545397">خواندن و تغییر داده‌هایتان در تعدادی از وب‌سایت‌ها</translation>
 <translation id="2241634353105152135">فقط یک بار</translation>
 <translation id="2242687258748107519">اطلاعات فایل</translation>
+<translation id="2246549592927364792">‏توضیحات تصویر از Google دریافت شود؟</translation>
 <translation id="224940702122312781">این صفحه داده زیادی مصرف می‌کند.</translation>
 <translation id="2249605167705922988">برای مثال 5-1، 8، 13-11</translation>
 <translation id="2251218783371366160">بازکردن با نظاره‌گر سیستم</translation>
@@ -1102,6 +1103,7 @@
 <translation id="271033894570825754">جدید</translation>
 <translation id="2714393097308983682">‏فروشگاه Google Play</translation>
 <translation id="2715751256863167692">‏این ارتقا Chromebook را بازنشانی می‌کند و داده‌های کاربر کنونی را برمی‌دارد.</translation>
+<translation id="2716986496990888774">این تنظیم توسط والدین مدیریت می‌شود.</translation>
 <translation id="2718395828230677721">نور شب</translation>
 <translation id="2718998670920917754">نرم‌افزار آنتی‌ویروس یک ویروس را شناسایی کرد.</translation>
 <translation id="2719936478972253983">کوکی‌های زیر مسدود شدند</translation>
@@ -1213,6 +1215,7 @@
 <translation id="2874939134665556319">آهنگ قبلی</translation>
 <translation id="2875698561019555027">‏(صفحه‌های خطای Chrome)</translation>
 <translation id="2876336351874743617">انگشت ۲</translation>
+<translation id="2876369937070532032">‏اگر امنیتتان درخطر باشد، نشانی وب برخی از صفحه‌هایی را که بازدید می‌کنید به Google می‌فرستد</translation>
 <translation id="288042212351694283">‏دسترسی به دستگاه‌های Universal 2nd Factor شما</translation>
 <translation id="2881076733170862447">وقتی روی افزونه کلیک می‌کنید</translation>
 <translation id="2881966438216424900">آخرین دسترسی:</translation>
@@ -1395,6 +1398,7 @@
 <translation id="3170072451822350649">همچنین می‌توانید از ورود به سیستم صرف‌نظر کرده، <ph name="LINK_START" />به عنوان مهمان مرور کنید<ph name="LINK_END" />.</translation>
 <translation id="3172045848207518317">سایتی درحال دسترسی به ورودی ویدیویی است</translation>
 <translation id="3177909033752230686">زبان صفحه:</translation>
+<translation id="3181954750937456830">مرور ایمن (از شما و دستگاهتان درمقابل سایت‌های خطرناک محافظت می‌کند)</translation>
 <translation id="3182749001423093222">غلط‌گیر املا</translation>
 <translation id="3183139917765991655">واردکننده نمایه</translation>
 <translation id="3188465121994729530">میانگین متحرک</translation>
@@ -1700,6 +1704,7 @@
 <translation id="3664511988987167893">نماد افزونه</translation>
 <translation id="3665589677786828986">‏Chrome تشخیص داد که برنامه دیگری برخی از تنظیمات شما را خراب کرده است و این تنظیمات را به پیش‌فرض‌های اولیه آن‌ها بازنشانی کرد.</translation>
 <translation id="3668570675727296296">تنظیمات زبان</translation>
+<translation id="366867565525278777">به‌دلیل نبودن فضای ذخیره‌سازی، نصب انجام نشد. حداقل <ph name="INSTALL_SIZE" /> فضای آزاد لازم است. برای آزاد کردن فضا، فایل‌ها را در حافظه دستگاه حذف کنید.</translation>
 <translation id="3668801437375206837">‏برای بهبود رفع مشکلات بلوتوث، کارمندان Google می‌توانند گزارش‌های بلوتوث اضافی‌ای را با گزارش‌های بازخورد شما همراه کنند. وقتی این گزینه انتخاب شود، گزارشتان شامل گزارش‌های btsnoop و HCI جلسهٔ اخیرتان نیز می‌شود، که با برداشتن اطلاعات قابل‌شناسایی شخصی (PII) تا جای ممکن پاک‌سازی شده است. فقط مدیران گروه محصول سیستم‌عامل Chrome در Listnr به این گزارش‌ها دسترسی دارند. گزارش‌ها پس از ۹۰ روز حذف دائم می‌شود.</translation>
 <translation id="3668823961463113931">کنترل‌کننده‌ها</translation>
 <translation id="3670113805793654926">دستگاه‌های همه فروشنده‌ها</translation>
@@ -4010,6 +4015,7 @@
 <translation id="7289225569524511578">باز کردن برنامه کاغذ دیواری</translation>
 <translation id="7290242001003353852">این سرویس ورود به سیستم با میزبانی <ph name="SAML_DOMAIN" /> در حال دسترسی به دوربین شما است.</translation>
 <translation id="7290594223351252791">تأیید ثبت</translation>
+<translation id="7295614427631867477">‏توجه داشته باشید که Android، ‏Play و برنامه‌های مرتبط تحت خط‌مشی‌های جمع‌آوری و استفاده داده خودشان کنترل می‌شوند.</translation>
 <translation id="729583233778673644">‏مجاز کردن رمزگذاری AES و RC4. استفاده از این گزینه احتمال خطر را بالا می‌برد، زیرا رمزهای RC4 امن نیست.</translation>
 <translation id="7296774163727375165">شرایط <ph name="DOMAIN" /></translation>
 <translation id="7297443947353982503">‏نام کاربری/گذرواژه نادرست است یا احراز هویت EAP ناموفق بود</translation>
@@ -4286,6 +4292,7 @@
 <translation id="7732111077498238432">شبکه توسط خط‌مشی کنترل می‌شود</translation>
 <translation id="7737238973539693982">‏حذف Linux (بتا)</translation>
 <translation id="7740996059027112821">استاندارد</translation>
+<translation id="7746457520633464754">‏برای حذف برنامه‌ها و سایت‌های خطرناک، Chrome نشانی‌های وب برخی از صفحه‌هایی را که بازدید می‌کنید، اطلاعات سیستم محدود و برخی از محتوای صفحه را به Google می‌فرستد.</translation>
 <translation id="7750228210027921155">تصویردرتصویر</translation>
 <translation id="7751260505918304024">نمایش همه</translation>
 <translation id="7754704193130578113">قبل از بارگیری هر فایل، درباره مکان ذخیره سؤال شود</translation>
@@ -4970,6 +4977,7 @@
 <translation id="8780123805589053431">‏دریافت توضیحات تصویر از Google</translation>
 <translation id="8780443667474968681">جستجوی گفتاری خاموش شده است.</translation>
 <translation id="878069093594050299">این گواهی برای استفاده‌های زیر تأیید شده است:</translation>
+<translation id="8781470833671194250">بررسی تثبیت موقعیت</translation>
 <translation id="8781980678064919987">خاموش شدن، وقتی دستگاه بسته می‌شود</translation>
 <translation id="8782565991310229362">راه‌اندازی برنامه کاربردی کیوسک لغو شد.</translation>
 <translation id="8783093612333542422">‏&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; می‌خواهد چاپگر &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; را با شما به اشتراک بگذارد.</translation>

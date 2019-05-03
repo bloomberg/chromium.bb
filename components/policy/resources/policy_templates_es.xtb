@@ -1287,7 +1287,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Si se inhabilita esta opción, los usuarios no podrán habilitar el proxy y el ordenador no podrá compartir las impresoras conectadas con <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="3312206664202507568">Habilita una página en chrome://password-change que permite a los usuarios de SAML cambiar sus contraseñas de SAML mientras tienen la sesión iniciada. De esta manera, se asegura que la contraseña de SAML y la contraseña de bloqueo de pantalla del dispositivo estén sincronizadas.
 
-      Esta política también habilita las notificaciones que avisan a los usuarios de SAML de que sus contraseñas de SAML está a punto de caducar y que pueden realizar inmediatamente un cambio de contraseña con la sesión iniciada.
+      Esta política también habilita las notificaciones que avisan a los usuarios de SAML de que sus contraseñas de SAML están a punto de caducar y de que pueden realizar inmediatamente un cambio de contraseña con la sesión iniciada.
       Estas notificaciones solo se mostrarán si el proveedor de identidades de SAML envía la información sobre la caducidad de la contraseña al dispositivo durante el flujo de inicio de sesión de SAML.
 
       Si se asigna un valor a esta política, el usuario no podrá cambiarlo ni anularlo.</translation>
@@ -1421,6 +1421,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Si se asigna a esta política el valor "DeveloperToolsDisallowed" (el valor 2), no se podrá acceder a las herramientas para desarrolladores y no se podrán inspeccionar los elementos de los sitios web. También se inhabilitarán las combinaciones de teclas y las entradas de menús o menús contextuales que permiten abrir las herramientas para desarrolladores y la consola de JavaScript.
       Si se asigna el valor "True" a la antigua política DeveloperToolsDisabled, el valor de esta política se ignorará y las herramientas para desarrolladores se inhabilitarán.</translation>
 <translation id="3547954654003013442">Configuración de proxy</translation>
+<translation id="3550875587920006460">Permite definir una programación personalizada para buscar actualizaciones. Se aplica a todos los usuarios y a todas las interfaces del dispositivo. Una vez definida la programación, el dispositivo se basará en ella para buscar actualizaciones. Se debe eliminar esta política para cancelar el resto de búsquedas de actualizaciones programadas.</translation>
 <translation id="355118380775352753">Sitios web que se abren en el navegador alternativo</translation>
 <translation id="3554984410014457319">Permite que el Asistente de Google escuche la frase de activación</translation>
 <translation id="356579196325389849">Los usuarios pueden configurar el canal de lanzamiento de Chrome​OS</translation>
@@ -1630,7 +1631,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 
           Si se utiliza el valor false o no se establece la política, los usuarios podrán transferir archivos a Google Drive.</translation>
 <translation id="3915395663995367577">URL de un archivo .pac de proxy</translation>
-<translation id="3920892052017026701">Establece un porcentaje personalizado de inicio de carga de la batería
+<translation id="3920892052017026701">Establece un porcentaje personalizado de inicio de carga de la batería.
 
           La batería empezará a cargarse cuando alcance el valor personalizado de inicio de carga.
 
@@ -1666,6 +1667,29 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 Si esta política se establece en True o no se establece, los usuarios podrán canjear ofertas a través del servicio de registro de Chrome OS.
 
 Si esta política se establece en False, el usuario no podrá canjear ofertas.</translation>
+<translation id="4008233182078913897">Especifica una lista de aplicaciones y extensiones que se instalan de forma automática,
+          sin la intervención del usuario y que el usuario no puede inhabilitar ni
+          desinstalar. Los permisos solicitados por las
+          aplicaciones o las extensiones se conceden de forma implícita, sin la interacción del usuario,
+          incluidos los permisos que soliciten las próximas versiones de
+          la aplicación o extensión. Además, se conceden permisos para las API de las extensiones
+          enterprise.deviceAttributes y enterprise.platformKeys.
+          Estas dos API no están disponibles para las aplicaciones o extensiones que
+          no se hayan instalado de manera forzada.
+
+          Esta política prevalece frente a una política <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> que pueda ser conflictiva. Si una aplicación o extensión que se haya instalado anteriormente de manera forzada se elimina de esta lista, <ph name="PRODUCT_NAME" /> la desinstalará automáticamente.
+
+          Para las instancias de Windows que no se hayan unido a un dominio de <ph name="MS_AD_NAME" />, la instalación forzada se limitará a las aplicaciones y extensiones disponibles en Chrome Web Store.
+
+          Ten en cuenta que es posible que los usuarios modifiquen el código fuente de las extensiones mediante las herramientas para desarrolladores (lo que puede provocar problemas de funcionamiento). Si te preocupa, configura la política <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+          Cada elemento de lista de la política es una cadena que contiene un ID de extensión y, opcionalmente, una URL de "actualización" separados por punto y coma (<ph name="SEMICOLON" />). El ID de extensión es la cadena de 32 letras que aparece, por ejemplo, en <ph name="CHROME_EXTENSIONS_LINK" /> cuando está habilitado el modo desarrollador. La URL de "actualización", si se especifica, debe dirigir a un documento XML de un archivo de manifiesto de actualización, como se describe en <ph name="LINK_TO_EXTENSION_DOC1" />. De forma predeterminada, se utiliza la URL de actualización de Chrome Web Store, que actualmente es "https://clients2.google.com/service/update2/crx". Ten en cuenta que la URL de "actualización" definida en esta política solo se usa en la instalación inicial. Las actualizaciones posteriores de la extensión usarán la URL de actualización indicada en el archivo de manifiesto de la extensión. Ten en cuenta también que era obligatorio especificar la URL de "actualización" en las versiones de <ph name="PRODUCT_NAME" /> hasta la 67.
+
+          Por ejemplo, <ph name="EXTENSION_POLICY_EXAMPLE" /> instala la extensión con ID <ph name="EXTENSION_ID_SAMPLE" /> desde la URL de "actualización" estándar de Chrome Web Store. Para obtener más información sobre cómo alojar extensiones, consulta <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Si no se configura esta política, no se instalará ninguna aplicación ni extensión automáticamente y el usuario podrá desinstalar cualquier aplicación o extensión de <ph name="PRODUCT_NAME" />.
+
+          Ten en cuenta que esta política no se aplica al modo de incógnito.</translation>
 <translation id="4008507541867797979">Si esta política no se establece o el valor correspondiente se establece en "True", <ph name="PRODUCT_OS_NAME" /> mostrará los usuarios existentes en la pantalla de inicio de sesión y permitirá seleccionar uno de ellos.
 
       Si el valor correspondiente a esta política se establece en "False", <ph name="PRODUCT_OS_NAME" /> no mostrará a los usuarios existentes en la pantalla de inicio de sesión. Se mostrará la pantalla de inicio de sesión normal, en la que solicita la dirección de correo electrónico del usuario y su contraseña o teléfono, o la pantalla intersticial SAML (si se ha activado mediante la política <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />), a menos que se configure una sesión administrada. Si se ha configurado una sesión administrada, solo se mostrarán las cuentas de dicha sesión, lo que permite seleccionar una de ellas.
@@ -2524,7 +2548,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="5630352020869108293">Restaurar la última sesión</translation>
 <translation id="5643906875497889108">Controla qué tipos de aplicaciones y extensiones pueden instalarse y limita el acceso en tiempo de ejecución.
 
-          Esta opción añade a la lista blanca los tipos de extensiones y aplicaciones que pueden instalarse en <ph name="PRODUCT_NAME" /> y con qué hosts pueden interactuar. El valor es una lista de cadenas. Cada cadena debe ser de uno de los tipos siguientes: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app" o "platform_app". Consulta la documentación de las extensiones de <ph name="PRODUCT_NAME" /> para obtener más información sobre estos tipos.
+          Esta opción añade a la lista blanca los tipos de extensiones y aplicaciones que pueden instalarse en <ph name="PRODUCT_NAME" /> y con qué hosts pueden interactuar. El valor es una lista de cadenas. Cada cadena debe ser de uno de los siguientes tipos: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app" o "platform_app". Consulta la documentación de las extensiones de <ph name="PRODUCT_NAME" /> para obtener más información sobre estos tipos.
 
           Ten en cuenta que esta política también afecta a las extensiones y aplicaciones que se deban instalar de forma forzada mediante ExtensionInstallForcelist.
 
@@ -2649,6 +2673,12 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       Si no se configura la política, se usará la configuración predeterminada de la plataforma de aislamiento de sitios web en la pantalla de inicio.
       </translation>
 <translation id="5901427587865226597">Solo impresión por las dos caras</translation>
+<translation id="5903898512448364160">
+      Si se asigna el valor "True" a esta política, la política de la nube prevalecerá si entra en conflicto con la política de la plataforma.
+      Si se le asigna el valor "False" o no se configura esta política, la política de la plataforma prevalecerá si entra en conflicto con la política de la nube.
+
+      Esta política solo está disponible como política obligatoria de la plataforma del equipo y solo afecta a las políticas de permisos de nube.
+      </translation>
 <translation id="5905473632148429217">Habilita las comprobaciones de OCSP/CRL online</translation>
 <translation id="5906199912611534122">Permite habilitar o inhabilitar la limitación de ancho de banda.
       Se aplica a todos los usuarios y todas las interfaces del dispositivo. Una vez que se establezca la limitación,
@@ -2675,6 +2705,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
       Si esta opción se inhabilita o no se establece un valor, no se aplicará Búsqueda Segura en la Búsqueda web de Google.</translation>
 <translation id="5946082169633555022">Canal beta</translation>
+<translation id="5946329690214660966">Definir programación personalizada para buscar actualizaciones</translation>
 <translation id="5950205771952201658">Debido a que las comprobaciones de revocaciones online "soft-fail" no proporcionan una seguridad efectiva, están inhabilitadas de forma predeterminada en la versión 19 y en las versiones posteriores de <ph name="PRODUCT_NAME" />. Si esta política se establece en true, se restaurará el comportamiento anterior y se realizarán comprobaciones de OCSP y CRL online.
 
       Si no se establece la política o se establece en false, <ph name="PRODUCT_NAME" /> no realizará comprobaciones de revocaciones online en <ph name="PRODUCT_NAME" /> 19 ni en versiones posteriores.</translation>
@@ -2741,6 +2772,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="6034341625190551415">Controla los tipos de cuenta de sesión pública y de kiosko.</translation>
 <translation id="6034603289689965535">Permite que una página muestre ventanas emergentes mientras se descarga</translation>
 <translation id="6036523166753287175">Habilita que se pueda pasar a través de un cortafuegos desde un host de acceso remoto.</translation>
+<translation id="605475635122964053">Restringe el modo de impresión con PIN. Si no se configura esta política, no se aplicará ninguna restricción. Si este modo no está disponible, se ignorará esta política. Ten en cuenta que la función de impresión con PIN solo está habilitada para impresoras que utilicen uno de los protocolos IPPS, USB o IPP por USB. </translation>
 <translation id="6070667616071269965">Diseños de teclado para la pantalla de inicio de sesión del dispositivo</translation>
 <translation id="6074963268421707432">No permitir que ningún sitio muestre notificaciones de escritorio</translation>
 <translation id="6074964551275531965">Establece el periodo de tiempo para notificaciones de actualización</translation>
@@ -3290,7 +3322,7 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
       Independientemente de que habilites o inhabilites esta opción, los usuarios no podrán modificarla ni anularla.
 
       Si no se establece esta política, los usuarios podrán decidir si quieren que sea necesaria una contraseña para volver a activar el dispositivo o no.</translation>
-<translation id="7107148737865880402">Habilita la política de gestión de potencia compartida por USB.
+<translation id="7107148737865880402">Habilita la política de gestión de energía compartida por USB.
 
           Algunos dispositivos tienen un puerto USB específico marcado con un icono de rayo o de batería, que puede usarse para cargar dispositivos (por ejemplo, un teléfono móvil) usando la batería del sistema. Esta política afecta al comportamiento de carga de este puerto cuando el sistema está en modo de suspensión o apagado. Esta política no afecta a los otros puertos USB ni al comportamiento de carga mientras el sistema está activo.
 
@@ -3739,7 +3771,7 @@ NOTA: Hasta la versión 45, esta política solo se admitía en modo kiosco.</tr
 <translation id="7941975817681987555">No predecir las acciones de red en ninguna conexión de red</translation>
 <translation id="7952007677054834789">Permite configurar las páginas que se cargan al abrir el navegador, la página principal predeterminada y la página Nueva pestaña predeterminada en <ph name="PRODUCT_NAME" /> e impide que los usuarios las cambien.
 
-      Para bloquear completamente la configuración de la página de inicio del usuario, es necesario definirla como la página Nueva pestaña o definirla como URL y especificar una URL de página de inicio. Si no se especifica la URL de la página de inicio, el usuario podrá definir la página Nueva pestaña como página de inicio especificando "chrome://newtab".
+      Para bloquear completamente la configuración de la página de inicio del usuario, es necesario definirla como la página Nueva pestaña o definirla como URL y especificar una URL de página principal. Si no se especifica la URL de la página principal, el usuario podrá definir la página Nueva pestaña como página principal especificando "chrome://newtab".
 
       Si no se selecciona la opción "Abrir una lista de URLs" en la política "Acción al iniciar", se ignorará la política "URLs que se deben abrir al inicio".</translation>
 <translation id="7952958573604504839">Esta política está obsoleta en M48 y cambia a <ph name="NETWORK_PREDICTION_OPTIONS_POLICY_NAME" />; se ha eliminado de M54.
@@ -4265,7 +4297,7 @@ Los usuarios no pueden cambiar ni anular esta opción.</translation>
 
       Si se habilita esta política, las extensiones incluidas en las listas mencionadas anteriormente (si ya están instaladas en el equipo) se eliminarán del equipo completamente (incluidos los datos locales del usuario).
 
-      Si se inhabilita esta política, las extensiones incluidas en las listas mencionadas anteriormente (si ya están instaladas en el equipo y están incluidas en la lista negra <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />) se inhabilitarán en el equipo pero no se desinstalarán.</translation>
+      Si se inhabilita esta política, las extensiones incluidas en las listas mencionadas anteriormente (si ya están instaladas en el equipo y están incluidas en la lista negra <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />) se inhabilitarán en el equipo, pero no se desinstalarán.</translation>
 <translation id="9027787254195333560">Esta política permite configurar la imagen del avatar que representa al usuario en la pantalla de inicio de sesión. La política se establece especificando la URL desde la que <ph name="PRODUCT_OS_NAME" /> puede descargar la imagen del avatar y un hash criptográfico que se utiliza para verificar la integridad de la descarga. La imagen debe tener formato JPEG y un tamaño no superior a 512 KB. Se debe poder acceder a la URL sin autenticación.
 
       La imagen del avatar se descarga y se almacena en caché. Se volverá a descargar si se cambian la URL o el hash.

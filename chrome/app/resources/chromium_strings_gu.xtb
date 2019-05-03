@@ -53,6 +53,7 @@
 <translation id="2718390899429598676">ઉમેરેલી સુરક્ષા માટે, Chromium તમારા ડેટાને એન્ક્રિપ્ટ કરશે.</translation>
 <translation id="2770231113462710648">ડિફૉલ્ટ બ્રાઉઝરને આના પર બદલો:</translation>
 <translation id="2799223571221894425">ફરીથી લોંચ કરો</translation>
+<translation id="2838154144102149890">અપડેટ થવા માટે, આ કમ્પ્યુટર પર Chromium ચાલતું બંધ થવું જરૂરી છે. આના કારણે, આ કમ્પ્યુટરમાં લૉગ ઇન થયેલા બીજા વપરાશકર્તાઓના સાચવ્યા વિનાના ફેરફારો ગુમ થઈ શકે છે.</translation>
 <translation id="2847479871509788944">Chromium માંથી દૂર કરો...</translation>
 <translation id="2886012850691518054">વૈકલ્પિક: ઉપયોગનાં આંકડાઓ અને ક્રૅશ રીપોર્ટ્સ ઑટોમૅટિક રીતે Googleને મોકલીને Chromium ને વધુ સારું બનાવવમાં સહાય કરો.</translation>
 <translation id="2898082584336937987">તમારા ફોન પર Chromium ઇન્સ્ટૉલ કરો. અમે તમારા ફોન પર એક SMS મોકલીશું: <ph name="PHONE_NUMBER" /></translation>
@@ -189,6 +190,7 @@
 <translation id="6810143991807788455">વર્તમાન સેટિંગ્સની જાણ કરીને Chromium ને વધુ સારું બનાવવામાં સહાય કરો</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (Chromium પર કૉપિ કરેલું છે)</translation>
+<translation id="6868056391275687737">Chromiumની બીજી કૉપિ ચાલી રહી છે. અપડેટ કરવા માટે, એ કૉપિ બંધ કરો.</translation>
 <translation id="6893813176749746474">Chromium અપડેટ કરવામાં આવ્યું હતું, પણ તમે તેનો 30 દિવસ સુધી ઉપયોગ કર્યો નથી.</translation>
 <translation id="6964305034639999644">Chromium છુ&amp;પી વિંડોમાં લિંક ખોલો</translation>
 <translation id="6970811910055250180">તમારા ઉપકરણને અપડેટ કરી રહ્યાં છે...</translation>
@@ -259,6 +261,7 @@ Chromium તમારી સેટિંગ્સને પુનઃપ્રા
 <translation id="8697124171261953979">જ્યારે તમે Chromium શરૂ કરો અથવા ઑમ્નિબૉક્સ પરથી શોધ કરો ત્યારે કયું પૃષ્ઠ બતાવવામાં આવે તે તેનું પણ નિયંત્રણ કરે છે.</translation>
 <translation id="8704119203788522458">આ તમારું Chromium છે</translation>
 <translation id="8704255848199359374">આ પણ Google શોધમાં જે જોડણી તપાસનારનો ઉપયોગ થાય છે તેનો જ ઉપયોગ કરે છે. તમે બાઉઝરમાં ટાઇપ કરો છો તે ટેક્સ્ટ Googleને મોકલવામાં આવે છે. તમે સેટિંગમાં આ વર્તણૂકને હંમેશાં બદલી શકો છો.</translation>
+<translation id="8748383401829947534">Chromiumની બધી કૉપિ બંધ કરો.</translation>
 <translation id="8796602469536043152">Chromiumને આ સાઇટ માટે તમારા કૅમેરા અને માઇક્રોફોનના ઍક્સેસની પરવાનગીની જરૂર પડે છે</translation>
 <translation id="8803635938069941624">Chromium OS શરતો</translation>
 <translation id="8821041990367117597">સાઇન ઇન વિગતો જૂની હોવાને કારણે Chromium તમારા ડેટાને સિંક કરી શક્યું નથી.</translation>

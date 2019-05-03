@@ -797,6 +797,7 @@
 <translation id="2241053333139545397">ઘણી બધી વેબસાઇટ્સ પર તમારો ડેટા વાંચો અને બદલો</translation>
 <translation id="2241634353105152135">માત્ર એક વખત</translation>
 <translation id="2242687258748107519">ફાઇલ માહિતી</translation>
+<translation id="2246549592927364792">Google તરફથી છબીનાં વર્ણનો મેળવીએ?</translation>
 <translation id="224940702122312781">આ પેજ ઘણા બધા ડેટાનો ઉપયોગ કરશે.</translation>
 <translation id="2249605167705922988">ઉદા. ત. 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">સિસ્ટમ દર્શક સાથે ખોલો</translation>
@@ -1102,6 +1103,7 @@
 <translation id="271033894570825754">નવું</translation>
 <translation id="2714393097308983682">Google Play સ્ટોર</translation>
 <translation id="2715751256863167692">આ અપગ્રેડ તમારી Chromebookને રીસેટ કરે છે અને હાલનો વપરાશકર્તા ડેટા કાઢી નાખે છે.</translation>
+<translation id="2716986496990888774">આ સેટિંગને માતાપિતા મેનેજ કરે છે.</translation>
 <translation id="2718395828230677721">રાત્રિ પ્રકાશ</translation>
 <translation id="2718998670920917754">એન્ટી-વાયરસ સૉફ્ટવેરને એક વાયરસ મળ્યો છે.</translation>
 <translation id="2719936478972253983">નીચેની કુકી બ્લૉક કરેલી હતી</translation>
@@ -1213,6 +1215,7 @@
 <translation id="2874939134665556319">પાછલું ટ્રૅક</translation>
 <translation id="2875698561019555027">(Chrome ભૂલ પૃષ્ઠો)</translation>
 <translation id="2876336351874743617">આંગળી 2</translation>
+<translation id="2876369937070532032">તમારી સુરક્ષા જોખમમાં હોય ત્યારે, તમે મુલાકાત લેતા હો તે કેટલાક પેજના URLs Googleને મોકલે છે</translation>
 <translation id="288042212351694283">તમારા યુનિવર્સલ 2જા ફેક્ટરના ઉપકરણોની ઍક્સેસ</translation>
 <translation id="2881076733170862447">તમે એક્સ્ટેંશનને ક્લિક કરો ત્યારે</translation>
 <translation id="2881966438216424900">છેલ્લે ઍક્સેસ કર્યું:</translation>
@@ -1395,6 +1398,7 @@
 <translation id="3170072451822350649">તમે સાઇન ઇન કરવાનું છોડી અને <ph name="LINK_START" />અતિથિ તરીકે બ્રાઉઝ<ph name="LINK_END" /> પણ કરી શકો છો.</translation>
 <translation id="3172045848207518317">સાઇટ વીડિયો ઇનપુટને ઍક્સેસ કરી રહી છે</translation>
 <translation id="3177909033752230686">પૃષ્ઠ ભાષા:</translation>
+<translation id="3181954750937456830">Safe Browsing (તમારું અને તમારા ડિવાઇસનું જોખમી સાઇટથી રક્ષણ કરે છે)</translation>
 <translation id="3182749001423093222">જોડણીની તપાસ</translation>
 <translation id="3183139917765991655">પ્રોફાઇલ આયાતકાર</translation>
 <translation id="3188465121994729530">ચલ સરેરાશ</translation>
@@ -1700,6 +1704,7 @@
 <translation id="3664511988987167893">એક્સ્ટેંશન આઇકન</translation>
 <translation id="3665589677786828986">Chrome ને જાણ થઈ છે કે તમારી કેટલીક સેટિંગ્સ બીજા પ્રોગ્રામ દ્વારા દૂષિત કરવામાં આવેલી અને તેમને તેમના મૂળ ડિફોલ્ટ્સ પર ફરીથી સેટ કરી છે.</translation>
 <translation id="3668570675727296296">ભાષા સેટિંગ્સ</translation>
+<translation id="366867565525278777">સ્ટોરેજ સ્પેસના અભાવના કારણે ઇન્સ્ટૉલ કરવું નિષ્ફળ થયું. ઓછામાં ઓછી <ph name="INSTALL_SIZE" /> સ્પેસ ખાલી હોવી જરૂરી છે. સ્પેસ ખાલી કરવા માટે, ડ્રાઇવ સ્ટોરેજમાંથી ફાઇલો ડિલીટ કરો.</translation>
 <translation id="3668801437375206837">બ્લૂટૂથ સમસ્યાઓ અંગે વધુ સારી તપાસ કરવા માટે, Googleનાં કર્મચારીઓ તેમના પ્રતિસાદમાં વધારાના બ્લૂટૂથ લૉગનો સમાવેશ કરી શકે છે. જ્યારે આ વિકલ્પને ચેક કરેલ હોય, ત્યારે તમારા રિપોર્ટમાં તમારા વર્તમાન સત્રમાંથી btsnoop અને HCI લૉગનો સમાવેશ થશે અને તેમાંથી શક્ય હોય તેટલાં PIIને દૂર કરવામાં આવશે. આ લૉગ સુધીના ઍક્સેસને Listnrમાં Chrome OS પ્રોડક્ટ જૂથના મેનેજરો સુધી જ નિયંત્રિત રાખવામાં આવશે. એ બધા લૉગ 90 દિવસ બાદ કાઢી નાખવામાં આવશે.</translation>
 <translation id="3668823961463113931">હેન્ડલર્સ</translation>
 <translation id="3670113805793654926">કોઈ પણ વિક્રેતા પાસે ઉપલબ્ધ ડિવાઇસની શ્રેણી</translation>
@@ -2009,6 +2014,7 @@
 <translation id="409579654357498729">ક્લાઉડ પ્રિન્ટ પર ઉમેરો</translation>
 <translation id="4096508467498758490">ડેવલપર મોડ એક્સ્ટેન્શન બંધ કરો</translation>
 <translation id="4096824249111507322">સુરક્ષિત મોડ્યુલ તૈયાર કરવામાં આવી રહ્યું છે, કૃપા કરીને રાહ જુઓ (તેમાં થોડીક મિનિટ લાગી શકે છે)…</translation>
+<translation id="4097560579602855702">Google પર શોધો</translation>
 <translation id="4099060993766194518">ડિફૉલ્ટ શોધ એંજિન પુનઃસ્થાપિત કરીએ?</translation>
 <translation id="4099874310852108874">નેટવર્ક ભૂલ આવી.</translation>
 <translation id="4100733287846229632">ઉપકરણ સ્થાન અત્યંત ઓછું છે</translation>
@@ -4011,6 +4017,7 @@ USB ડિવાઇસ</translation>
 <translation id="7289225569524511578">વૉલપેપર ઍપ્લિકેશન ખોલો</translation>
 <translation id="7290242001003353852"><ph name="SAML_DOMAIN" /> દ્વારા હોસ્ટ થયેલ સાઇન-ઇન સેવા, તમારા કૅમેરાને ઍક્સેસ કરી રહી છે.</translation>
 <translation id="7290594223351252791">નોંધણીની પુષ્ટિ કરો</translation>
+<translation id="7295614427631867477">નોંધ લો કે Android, Play અને સંબંધિત ઍપ ડેટા એકત્ર કરવાની અને તેનો ઉપયોગ કરવાની તેમની પોતાની નીતિઓ પ્રમાણે સંચાલિત થાય છે.</translation>
 <translation id="729583233778673644">AES અને RC4 એન્ક્રિપ્શનની મંજૂરી આપો. આનાથી વિકલ્પનો ઉપયોગ કરવાનું તમારું જોખમ વધે છે, કારણ કે RC4 સાઇફર અસુરક્ષિત હોય છે.</translation>
 <translation id="7296774163727375165"><ph name="DOMAIN" /> શરતો</translation>
 <translation id="7297443947353982503">વપરાશકર્તાનામ/પાસવર્ડ ખોટો છે અથવા EAP-auth નિષ્ફળ થયું</translation>
@@ -4287,6 +4294,7 @@ USB ડિવાઇસ</translation>
 <translation id="7732111077498238432">નેટવર્ક નીતિ દ્વારા નિયંત્રિત છે</translation>
 <translation id="7737238973539693982">Linux (બીટા) ડિલીટ કરો</translation>
 <translation id="7740996059027112821">માનક</translation>
+<translation id="7746457520633464754">જોખમી ઍપ અને સાઇટ શોધી કાઢવા માટે, Chrome તમે મુલાકાત લો તે કેટલાક પેજના URLs, સિસ્ટમ વિશેની સીમિત માહિતી અને પેજનું કેટલુંક કન્ટેન્ટ Googleને મોકલે છે</translation>
 <translation id="7750228210027921155">ચિત્રમાં ચિત્ર</translation>
 <translation id="7751260505918304024">બધું બતાવો</translation>
 <translation id="7754704193130578113">ડાઉનલોડ કરતાં પહેલાં પ્રત્યેક ફાઇલને ક્યાં સાચવવી છે તે જણાવો</translation>
@@ -4965,6 +4973,7 @@ USB ડિવાઇસ</translation>
 <translation id="8780123805589053431">Google તરફથી છબીનાં વર્ણનો મેળવો</translation>
 <translation id="8780443667474968681">વૉઇસ શોધ સેવા બંધ કરવામાં આવી છે.</translation>
 <translation id="878069093594050299">આ પ્રમાણપત્ર નીચેના ઉપયોગો માટે ચકાસવામાં આવ્યું છે:</translation>
+<translation id="8781470833671194250">સ્થિતિની સ્થિરતા પર ક્લિક કરો</translation>
 <translation id="8781980678064919987">લિડ બંધ કરવામાં આવે, ત્યારે શટ ડાઉન કરો</translation>
 <translation id="8782565991310229362">કિઓસ્ક ઍપ્લિકેશન લોન્ચ રદ કર્યું.</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt;, તમારી સાથે એક &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; પ્રિન્ટર શેર કરવા માગે છે.</translation>

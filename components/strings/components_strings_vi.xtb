@@ -618,6 +618,7 @@
 <translation id="4265872034478892965">Được quản trị viên cho phép</translation>
 <translation id="4275830172053184480">Khởi động lại thiết bị của bạn</translation>
 <translation id="4277028893293644418">Đặt lại mật khẩu</translation>
+<translation id="4279811152705618813"><ph name="DEVICE_TYPE" /> của bạn do <ph name="ENROLLMENT_DOMAIN" /> quản lý</translation>
 <translation id="4280429058323657511">, hết hạn <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Đã lưu thẻ này vào Tài khoản Google của bạn}other{Đã lưu các thẻ này vào Tài khoản Google của bạn}}</translation>
 <translation id="42981349822642051">Mở rộng</translation>

@@ -1340,6 +1340,7 @@
       如果此政策设为“DeveloperToolsAllowed”（值为 1），那么无论在什么情况下（包括在运行由企业政策安装的扩展程序的情况下），用户都可以访问和使用开发者工具以及 JavaScript 控制台。
       如果此政策设为“DeveloperToolsDisallowed”（值为 2），用户便无法再访问开发者工具和查看网站元素。用于打开开发者工具或 JavaScript 控制台的任何键盘快捷键以及任何菜单（或上下文菜单）条目都会被停用。</translation>
 <translation id="3547954654003013442">代理设置</translation>
+<translation id="3550875587920006460">允许设定自定义时间表以检查是否有更新。这适用于所有用户以及相应设备上的所有界面。一旦设定了时间表，相应设备便会按照它来检查是否有更新。必须移除此政策，才能取消其他已排定的更新检查。</translation>
 <translation id="355118380775352753">要在替代浏览器中打开的网站</translation>
 <translation id="3554984410014457319">允许 Google 助理听取语音启动词组</translation>
 <translation id="356579196325389849">用户可以配置 Chrome 操作系统发布版本</translation>
@@ -1579,6 +1580,21 @@
       如果此政策设为true或未设置，用户将能够通过注册Chrome操作系统兑换优惠。
 
       如果此政策设为false，用户将不能兑换优惠。</translation>
+<translation id="4008233182078913897">以列表形式指定无需用户干预即会自动静默安装且无法被用户卸载或停用的应用或扩展程序。此类应用/扩展程序所请求的所有权限（包括相应应用/扩展程序的后续版本所请求的任何其他权限）均由系统默认授予（无需用户干预）。此外，系统还会向 enterprise.deviceAttributes 和 enterprise.platformKeys 扩展程序 API 授予相关权限（这两个 API 不适用于非强制安装的应用/扩展程序）。
+
+          此政策优先于可能会与其冲突的 <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> 政策。如果从此列表中移除了先前强制安装的某个应用或扩展程序，<ph name="PRODUCT_NAME" /> 便会自动卸载该应用或扩展程序。
+
+          对于未加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，强制安装仅限于 Chrome 网上应用店中所列的应用和扩展程序。
+
+          请注意，用户可通过开发者工具更改任何扩展程序的源代码（此类更改可能会导致相应扩展程序无法正常运行）。如果您不希望用户进行此类更改，则应设置 <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> 政策。
+
+          此政策的每个列表项都是一个字符串，其中包含一个扩展程序 ID 和一个可选的“更新”网址（这两者之间以英文分号 (<ph name="SEMICOLON" />) 分隔）。扩展程序 ID 是一个由 32 个字母构成的字符串；若想查看示例，请在开发者模式下前往 <ph name="CHROME_EXTENSIONS_LINK" />。“更新”网址（若指定）应指向一个更新清单 XML 文档，如 <ph name="LINK_TO_EXTENSION_DOC1" /> 中所述。默认情况下，系统会使用 Chrome 网上应用店的更新网址（目前为“https://clients2.google.com/service/update2/crx”）。请注意，此政策中设置的“更新”网址仅用于初次安装；相应扩展程序的后续更新将会使用该扩展程序的清单中指定的更新网址。另请注意，在 <ph name="PRODUCT_NAME" /> 67 及更低版本中，明确指定“更新”网址是一项强制性要求。
+
+          例如，<ph name="EXTENSION_POLICY_EXAMPLE" /> 会从标准的 Chrome 网上应用店“更新”网址安装 ID 为 <ph name="EXTENSION_ID_SAMPLE" /> 的扩展程序。要详细了解如何托管扩展程序，请访问 <ph name="LINK_TO_EXTENSION_DOC2" />。
+
+          如果未设置此政策，系统便不会自动安装任何应用或扩展程序，而且用户可在 <ph name="PRODUCT_NAME" /> 中卸载任何应用或扩展程序。
+
+          请注意，此政策不适用于无痕模式。</translation>
 <translation id="4008507541867797979">如果此政策设为 true 或未配置，<ph name="PRODUCT_OS_NAME" />将会在登录屏幕上显示现有用户并允许选择其一。
 
       如果此政策设为 false，<ph name="PRODUCT_OS_NAME" />将不会在登录屏幕上显示现有用户。除非配置了受管理自助服务终端，否则系统将会显示标准登录屏幕（提示用户输入电子邮件地址和密码/手机号码）或 SAML 插页式屏幕（若已通过 <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" /> 政策启用的话）。如果配置了受管理自助服务终端，系统将仅会显示受管理自助服务终端帐号并允许选择其一。
@@ -2509,6 +2525,12 @@
       如果此政策未配置，系统将为登录屏幕使用平台默认的网站隔离设置。
       </translation>
 <translation id="5901427587865226597">仅限双面打印</translation>
+<translation id="5903898512448364160">
+      如果此政策设为 true，当云政策与平台政策冲突时，即会以云政策为准。
+      如果此政策设为 false 或未配置，当平台政策与云政策冲突时，就会以平台政策为准。
+
+      此政策仅可作为强制性的机器平台政策使用，且仅会影响机器范围内的云政策。
+      </translation>
 <translation id="5905473632148429217">启用在线 OCSP/CRL 检查</translation>
 <translation id="5906199912611534122">允许启用或停用网络节流功能。
       这适用于所有用户以及设备上的所有界面。节流功能一经启用便会一直有效，除非通过更改此政策停用该功能。
@@ -2534,6 +2556,7 @@
 
       如果您停用此设置或未设置值，将不会执行 Google 搜索中的安全搜索。</translation>
 <translation id="5946082169633555022">测试版</translation>
+<translation id="5946329690214660966">设定自定义时间表以检查是否有更新</translation>
 <translation id="5950205771952201658">鉴于软故障在线撤消检查并不具备有效的安全优势，在 19 版及更高版本的 <ph name="PRODUCT_NAME" /> 中，这些功能默认处于停用状态。此政策设为 true 时，系统会恢复先前的行为并执行在线 OCSP/CRL 检查。
 
       如果此政策未设置或设为 false，在 19 版及更高版本的 <ph name="PRODUCT_NAME" /> 中，<ph name="PRODUCT_NAME" /> 将不会执行在线撤消检查。</translation>
@@ -2600,6 +2623,7 @@
 <translation id="6034341625190551415">控制公用自助终端和自助服务终端帐号类型。</translation>
 <translation id="6034603289689965535">允许页面在取消加载的过程中显示弹出式窗口</translation>
 <translation id="6036523166753287175">支持通过远程访问主机穿越防火墙</translation>
+<translation id="605475635122964053">限制 PIN 码打印模式。如果此政策未设置，则会被视为无限制。如果这种模式不适用，系统会忽略此政策。请注意，只有那些使用 IPPS 协议、USB 协议或 USB 型 IPP 协议的打印机才能启用 PIN 码打印功能。 </translation>
 <translation id="6070667616071269965">设备登录屏幕键盘布局</translation>
 <translation id="6074963268421707432">不允许任何网站显示桌面通知</translation>
 <translation id="6074964551275531965">设置一个时间段以用于显示更新通知</translation>

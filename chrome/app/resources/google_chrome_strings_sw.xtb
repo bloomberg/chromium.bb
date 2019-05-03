@@ -27,6 +27,7 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="1585657529869845941">Bofya kitufe cha <ph name="BEGIN_BOLD" />Badilisha tu<ph name="END_BOLD" />, kama kinaonekana</translation>
 <translation id="1587223624401073077">Google Chrome inatumia kamera yako.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> ni hatari, kwa hivyo Chromium imeizuia.</translation>
+<translation id="1590588151039584890">Ili usasishe, unahitaji kuacha kutumia Chrome kwenye kompyuta hii. Hali hii inaweza kusababisha watumiaji wengine walioingia katika akaunti kwenye kompyuta hii kupoteza mabadiliko ambayo hawajahifadhi.</translation>
 <translation id="1619887657840448962">Ili kufanya Chrome salama zaidi, tumezima kiendelezi kinachofuata ambacho hakijaorodheshwa katika <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> na huenda kimeongezwa bila ridhaa yako.</translation>
 <translation id="1628000112320670027">Pata usaidizi wa kutumia Chrome</translation>
 <translation id="1662639173275167396">Mfumo wa uendeshaji wa Chrome unawezeshwa na <ph name="BEGIN_LINK_CROS_OSS" />programu huria<ph name="END_LINK_CROS_OSS" /> za ziada, jinsi ilivyo katika <ph name="BEGIN_LINK_LINUX_OSS" />Linux (Beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
@@ -172,6 +173,7 @@ Huenda baadhi ya vipengele visipatikane. Tafadhali bainisha saraka tofauti ya wa
 
 Google Chrome haiwezi kufufua mipangilio yako.</translation>
 <translation id="5483595757826856374">{0,plural, =0{Chrome itafunguka upya sasa hivi}=1{Chrome itafunguka upya baada ya sekunde 1}other{Chrome itafunguka upya baada ya sekunde #}}</translation>
+<translation id="5543953544073077331">Nakala nyingine za Chrome zinatumika. Zifunge ili usasishe.</translation>
 <translation id="556024056938947818">Google Chrome inajaribu kuonyesha manenosiri.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598">Huenda <ph name="FILE_NAME" /> ni hatari, kwa hivyo Chromium imeizuia.</translation>
@@ -232,6 +234,7 @@ Google Chrome haiwezi kufufua mipangilio yako.</translation>
 <translation id="7473136999113284234">Chrome husasisha kiotomatiki ili uwe na toleo jipya zaidi wakati wowote.</translation>
 <translation id="7486227612705979895">Chrome itafikia Hifadhi yako ili kutoa mapendekezo kwenye sehemu ya anwani</translation>
 <translation id="748945194546522577">Faili hii ni hatari, kwa hivyo Chrome imeizuia. Unalindwa kupitia mipangilio ya Ulinzi wa Hali ya Juu.</translation>
+<translation id="7531671357096394523">Funga nakala zote za Chrome.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Onyesha Mfumo wa Uendeshaji wa Chrome katika lugha hii</translation>
 <translation id="7561940363513215021">{0,plural, =1{Chrome itafunguka upya baada ya dakika 1}other{Chrome itafunguka upya baada ya dakika #}}</translation>

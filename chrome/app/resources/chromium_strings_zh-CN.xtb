@@ -51,6 +51,7 @@
 <translation id="2718390899429598676">为了提高安全性，Chromium 将对您的数据进行加密。</translation>
 <translation id="2770231113462710648">将默认浏览器更改为：</translation>
 <translation id="2799223571221894425">重新启动</translation>
+<translation id="2838154144102149890">若要更新，Chromium 需停止在此计算机上运行。这可能会导致已登录此计算机的其他用户丢失未保存的更改。</translation>
 <translation id="2847479871509788944">从Chromium中移除…</translation>
 <translation id="2886012850691518054">可选：将使用情况统计信息和崩溃报告自动发送给 Google，帮助我们完善 Chromium。</translation>
 <translation id="2898082584336937987">请在您的手机上安装 Chromium。我们会将一条短信发送到您的手机：<ph name="PHONE_NUMBER" /></translation>
@@ -187,6 +188,7 @@
 <translation id="6810143991807788455">报告当前设置，帮助我们完善 Chromium</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay（已复制到 Chromium）</translation>
+<translation id="6868056391275687737">正在运行 Chromium 的其他副本。若要更新，请先关闭它们。</translation>
 <translation id="6893813176749746474">Chromium 已更新，但您已经至少 30 天未使用它了。</translation>
 <translation id="6964305034639999644">在 Chromium 无痕式窗口中打开链接(&amp;G)</translation>
 <translation id="6970811910055250180">正在更新设备...</translation>
@@ -257,6 +259,7 @@ Chromium 无法恢复您的设置。</translation>
 <translation id="8697124171261953979">它还能够控制您启动Chromium后或通过多功能框进行搜索时系统显示的页面。</translation>
 <translation id="8704119203788522458">这是您的专属Chromium</translation>
 <translation id="8704255848199359374">这项服务会使用 Google 搜索所用的拼写检查工具。您在浏览器中输入的文字会被发送给 Google。您随时可在“设置”中更改此行为。</translation>
+<translation id="8748383401829947534">退出 Chromium 的所有副本。</translation>
 <translation id="8796602469536043152">Chromium 需要获得相应权限，才能允许此网站使用您的摄像头和麦克风</translation>
 <translation id="8803635938069941624">Chromium操作系统条款</translation>
 <translation id="8821041990367117597">由于您的帐号登录详细信息已过期，Chromium无法同步您的数据。</translation>

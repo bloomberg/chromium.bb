@@ -25,6 +25,7 @@
 <translation id="1585657529869845941">Klikkaa <ph name="BEGIN_BOLD" />Vaihda joka tapauksessa<ph name="END_BOLD" /> ‑painiketta, jos se tulee näkyviin.</translation>
 <translation id="1587223624401073077">Google Chrome käyttää kameraasi.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> on vaarallinen, joten Chrome on estänyt sen.</translation>
+<translation id="1590588151039584890">Päivittämistä varten Chrome on suljettava tällä tietokoneella. Tämän takia muut tietokoneelle kirjautuneet voivat menettää tallentamattomat muutokset.</translation>
 <translation id="1619887657840448962">Paransimme Chromen turvallisuutta poistamalla käytöstä sovelluksia, joita <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ei tarjoa ja jotka on voitu lisätä ilman lupaasi.</translation>
 <translation id="1628000112320670027">Ohjeita Chromen käyttöön</translation>
 <translation id="1662639173275167396">Toinen <ph name="BEGIN_LINK_CROS_OSS" />avoimen lähdekoodin ohjelmisto<ph name="END_LINK_CROS_OSS" /> tukee Chrome-käyttöjärjestelmää, kuten myös <ph name="BEGIN_LINK_LINUX_OSS" />Linuxia (beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
@@ -165,6 +166,7 @@ Lähetimme lisäohjeita sähköpostiisi osoitteeseen <ph name="ACCOUNT_EMAIL" />
 <translation id="5386244825306882791">Määrittää myös Chromen ja omnibox-hakujen aloitussivun.</translation>
 <translation id="5430073640787465221">Asetustiedostosi on virheellinen. Google Chrome ei voi palauttaa asetuksiasi.</translation>
 <translation id="5483595757826856374">{0,plural, =0{Chrome käynnistetään uudelleen nyt}=1{Chrome käynnistetään uudelleen 1 sekunnin kuluttua}other{Chrome käynnistetään uudelleen # sekunnin kuluttua}}</translation>
+<translation id="5543953544073077331">Chromen muita kopioita on käynnissä. Sulje ne päivittämistä varten.</translation>
 <translation id="556024056938947818">Google Chrome yrittää näyttää salasanoja.</translation>
 <translation id="5566025111015594046">Google Chrome (saapuva mDNS)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> voi olla vaarallinen, joten Chrome on estänyt sen.</translation>
@@ -225,6 +227,7 @@ Lähetimme lisäohjeita sähköpostiisi osoitteeseen <ph name="ACCOUNT_EMAIL" />
 <translation id="7473136999113284234">Chrome päivitetään automaattisesti, joten käytössäsi on aina uusin versio</translation>
 <translation id="7486227612705979895">Chrome käyttää Drivea antaakseen ehdotuksia osoitepalkissa</translation>
 <translation id="748945194546522577">Tämä tiedosto on vaarallinen, joten Chrome on estänyt sen. Lisäsuojaus pitää puoliasi.</translation>
+<translation id="7531671357096394523">Lopeta kaikki Chrome-kopiot</translation>
 <translation id="7535429826459677826">Google Chromen kehittäjäversio</translation>
 <translation id="7552219221109926349">Näytä Chrome-käyttöjärjestelmä tällä kielellä</translation>
 <translation id="7561940363513215021">{0,plural, =1{Chrome käynnistetään uudelleen 1 minuutin kuluttua}other{Chrome käynnistetään uudelleen # minuutin kuluttua}}</translation>

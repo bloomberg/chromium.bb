@@ -25,6 +25,7 @@
 <translation id="1585657529869845941">Görünürse <ph name="BEGIN_BOLD" />Yine de değiştir<ph name="END_BOLD" />'i tıklayın</translation>
 <translation id="1587223624401073077">Google Chrome kameranızı kullanıyor.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> tehlikeli olduğu için Chrome tarafından engellendi.</translation>
+<translation id="1590588151039584890">Güncellemek için Chrome'un bu bilgisayarda kapatılması gereklidir. Bu durum, bilgisayara giriş yapmış diğer kullanıcıların kaydedilmemiş bilgilerinin silinmesine yol açabilir.</translation>
 <translation id="1619887657840448962">Chrome'u daha güvenli bir hale getirmek için <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> altında listelenmeyen ve bilginiz dışında eklenmiş olabilecek aşağıdaki uzantıyı devre dışı bıraktık.</translation>
 <translation id="1628000112320670027">Chrome'la ilgili yardım alın</translation>
 <translation id="1662639173275167396">Chrome OS, <ph name="BEGIN_LINK_LINUX_OSS" />Linux'ta (Beta)<ph name="END_LINK_LINUX_OSS" /> olduğu gibi ek <ph name="BEGIN_LINK_CROS_OSS" />açık kaynak yazılımlardan<ph name="END_LINK_CROS_OSS" /> yararlanılarak geliştirilmiştir.</translation>
@@ -167,6 +168,7 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="5386244825306882791">Ayrıca, Chrome'u başlattığınızda veya Çok Amaçlı Adres Çubuğu'ndan arama yaptığınızda gösterilecek sayfayı da denetler.</translation>
 <translation id="5430073640787465221">Tercih dosyanız bozuk veya geçersiz. Google Chrome, ayarlarınızı kurtaramıyor.</translation>
 <translation id="5483595757826856374">{0,plural, =0{Chrome şimdi yeniden başlatılacak}=1{Chrome 1 saniye içinde yeniden başlatılacak}other{Chrome # saniye içinde yeniden başlatılacak}}</translation>
+<translation id="5543953544073077331">Chrome'un açık olan kopyaları var. Güncellemek için bunları kapatın.</translation>
 <translation id="556024056938947818">Google Chrome şifreleri göstermeyi deniyor.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> tehlikeli olabileceği için Chrome tarafından engellendi.</translation>
@@ -227,6 +229,7 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="7473136999113284234">Chrome otomatik olarak güncellenir, böylece her zaman en yeni sürüme sahip olursunuz.</translation>
 <translation id="7486227612705979895">Chrome, adres çubuğunda öneriler göstermek için Drive'ınıza erişecektir</translation>
 <translation id="748945194546522577">Bu dosya tehlikeli olduğu için Chrome tarafından engellendi. Güvenliğiniz Gelişmiş Koruma tarafından sağlanıyor.</translation>
+<translation id="7531671357096394523">Tüm Chrome kopyalarından çık.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Chrome OS'yi bu dilde görüntüle</translation>
 <translation id="7561940363513215021">{0,plural, =1{Chrome 1 dakika içinde yeniden başlatılacak}other{Chrome # dakika içinde yeniden başlatılacak}}</translation>

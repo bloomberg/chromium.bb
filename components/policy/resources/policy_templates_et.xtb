@@ -1428,6 +1428,7 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
       Kui reegel on seatud väärtusele „DeveloperToolsAllowed” (väärtus 1), on arendaja tööriistad ja JavaScripti konsool juurdepääsetavad ja kasutamiseks saadaval igas kontekstis, sealhulgas ettevõtte reegli alusel installitud laienduste puhul.
       Kui reegel on seatud väärtusele „DeveloperToolsDisallowed” (väärtus 2), ei ole arendaja tööriistad saadaval ja veebisaitide elemente ei saa enam uurida. Kõik arendaja tööriistade või JavaScripti konsooli avamiseks kasutatavad klaviatuuri otseteed ning menüü- ja kontekstimenüükirjed keelatakse.</translation>
 <translation id="3547954654003013442">Puhverserveri seaded</translation>
+<translation id="3550875587920006460">Lubab värskenduste kontrollimiseks kohandatud ajakava määramise. See kehtib seadme kõigi kasutajate ja liideste puhul. Kui see on määratud, otsib seade värskendusi selle ajakava järgi. See reegel tuleb eemaldada, et ajastatud värskenduste otsimine tühistada.</translation>
 <translation id="355118380775352753">Alternatiivses brauseris avatavad veebisaidid</translation>
 <translation id="3554984410014457319">Google'i assistendile loa andmine kuulata häälega aktiveerimise fraasi</translation>
 <translation id="356579196325389849">Kasutajad saavad Chrome OS-i väljalaskekanalit seadistada</translation>
@@ -1674,6 +1675,26 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
       Kui see reegel määratakse tõeseks või seda ei määrata, saavad kasutajad pakkumisi lunastada Chrome OS-i registreerimise abil.
 
       Kui see reegel määratakse valeks, ei saa kasutajad pakkumisi lunastada.</translation>
+<translation id="4008233182078913897">Määrab loendi rakendustest ja laiendustest, mis installitakse vaikimisi
+          ning kasutajaga suhtlemata ja mida kasutaja ei saa desinstallida
+          ega keelata. Kõik rakenduste/laienduste taotletud
+          load antakse vaikimisi ning kasutajaga suhtlemata
+          (sh kõik lisaload, mida rakenduse/laienduse tulevased versioonid
+          taotlevad). Load antakse ka laienduste API-dele enterprise.deviceAttributes
+          ja enterprise.platformKeys. (Need kaks API-t pole saadaval
+          rakendustele/laiendustele, mis pole sundinstallitud.)
+
+          See reegel seatakse ettepoole potentsiaalselt konfliktsest reeglist <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Kui rakendus või laiendus, mis varem sundinstalliti, sellest loendist eemaldatakse, siis desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
+
+          Windowsi eksemplaride puhul, mis ei ole ühendatud domeeniga <ph name="MS_AD_NAME" />, saab sundinstallida vaid Chrome’i veebipoes olevaid rakendusi ja laiendusi.
+
+          Pange tähele, et arendaja tööriistadega saavad kasutajad muuta iga laienduse lähtekoodi (mis võib põhjustada laienduse väärtalitlust). Kui see on probleem, tuleb määrata reegel <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+          Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d ja „värskenduse” URL-i, mis on eraldatud semikooloniga (<ph name="SEMICOLON" />). Laienduse ID on 32-täheline string, mis kuvatakse näiteks arendajarežiimis aadressil <ph name="CHROME_EXTENSIONS_LINK" />. „Värskenduse” URL peab viitama XML-dokumendi värskendusmanifestile, nagu on kirjeldatud jaotises <ph name="LINK_TO_EXTENSION_DOC1" />. Vaikimisi kasutatakse Chrome'i veebipoe värskenduse URL-i (praegu „https://clients2.google.com/service/update2/crx”). Pange tähele, et reeglis määratud „värskenduse” URL-i kasutatakse vaid algsel installimisel ja laienduse tulevased värskendused kasutavad laienduse manifestis märgitud värskenduse URL-i. Samuti pange tähele, et selgesõnalise „värskenduse” URL-i määramine oli kuni rakenduse <ph name="PRODUCT_NAME" /> 67. versioonini kohustuslik.
+
+          Näiteks reegel <ph name="EXTENSION_POLICY_EXAMPLE" /> installib laienduse ID-ga <ph name="EXTENSION_ID_SAMPLE" /> standardselt Chrome’i veebipoe „värskenduse” URL-ilt. Lisateavet laienduste hostimise kohta leiate siit: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Kui see reegel jäetakse määramata, ei installita automaatselt mitte ühtegi rakendust ega laiendust ja kasutaja saab iga rakenduse või laienduse desinstallida teenuses <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4008507541867797979">Kui reegel on määratud väärtusele Tõene või seadistamata, kuvab <ph name="PRODUCT_OS_NAME" /> olemasolevad kasutajad sisselogimiskuval ja võimaldab ühe neist valida.
 
       Kui reegel on määratud väärtusele Väär, ei kuva <ph name="PRODUCT_OS_NAME" /> sisselogimiskuval olemasolevaid kasutajaid. Kuvatakse tavapärane sisselogimisekraan (kus palutakse kasutajal sisestada e-posti aadress ja parool või telefoninumber) või SAML-i vaheekraan (kui see on reegliga <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" /> lubatud), v.a juhul, kui hallatud seanss on seadistatud. Kui hallatud seanss on seadistatud, kuvatakse ainult hallatud seansi kontod, mille hulgast saab valida soovitud konto.
@@ -2654,6 +2675,12 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli IsolateOr
       Kui reegel on seadistamata, kasutatakse sisselogimiskuval platvormi saitide isoleerimise vaikeseadeid.
       </translation>
 <translation id="5901427587865226597">Ainult dupleksprintimine</translation>
+<translation id="5903898512448364160">
+      Kui reegel on seatud väärtusele Tõene, alistavad pilvereeglid konflikti puhul platvormireeglid.
+      Kui reegli väärtuseks on määratud Väär või see jäetakse määramata, alistavad platvormireeglid konflikti puhul pilvereeglid.
+
+      Reegel on saadaval ainult seadme kohustusliku platvormireeglina ja see mõjutab ainult seadme ulatuses pilvereegleid.
+      </translation>
 <translation id="5905473632148429217">Luba veebipõhised OCSP-/CRL-i kontrollid</translation>
 <translation id="5906199912611534122">Võimaldab lubada või keelata võrguühenduse piiramise.
       See kehtib kõigi kasutajate ja seadme kõigi liideste puhul. Pärast määramist
@@ -2680,6 +2707,7 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli IsolateOr
 
       Kui keelate seade või ei määra väärtust, ei jõustata Google'i otsingus SafeSearchi kasutamist.</translation>
 <translation id="5946082169633555022">Beetakanal</translation>
+<translation id="5946329690214660966">Kohandatud ajakava määramine värskenduste otsimiseks</translation>
 <translation id="5950205771952201658">Kuna veebipõhised softfail-tühistamiskontrollid ei suurenda turvalisust, keelatakse need vaikimisi toote <ph name="PRODUCT_NAME" /> 19. versioonis ja hilisemates versioonides. Kui seate reegli olekuks Tõene, taastatakse varasem käitumine ja kasutatakse veebipõhiseid OCSP-/CRL-kontrolle.
 
       Kui jätate reegli määramata või seate selle olekuks Väär, ei tee <ph name="PRODUCT_NAME" /> 19. versioonis ja hilisemates versioonides toote <ph name="PRODUCT_NAME" /> veebipõhiseid tühistamiskontrolle.</translation>
@@ -2746,6 +2774,7 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli IsolateOr
 <translation id="6034341625190551415">Haldab avalikku seanssi ja kioski kontotüüpe.</translation>
 <translation id="6034603289689965535">Lubab lehel mahalaadimise ajal kuvada hüpikaknaid</translation>
 <translation id="6036523166753287175">Luba tulemüüri läbimine kaugjuurdepääsu hostist</translation>
+<translation id="605475635122964053">Piirab PIN-koodiga printimise režiimi. Määramata reeglit tõlgendatakse piirangu puudumisena. Reeglit eiratakse, kui režiim ei ole saadaval. Pange tähele, et PIN-koodiga printimise funktsioon on lubatud ainult printerites, mis kasutavad üht järgmistest protokollidest: IPPS, USB või IPP USB kaudu </translation>
 <translation id="6070667616071269965">Seadme sisselogimisekraani klaviatuuripaigutused</translation>
 <translation id="6074963268421707432">Keela kõigil saitidel töölaua märguannete kuvamine</translation>
 <translation id="6074964551275531965">Värskendusmärguannete ajavahemiku määramine</translation>

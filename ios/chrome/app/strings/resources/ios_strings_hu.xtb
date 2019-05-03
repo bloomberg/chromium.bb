@@ -98,6 +98,7 @@
 <translation id="2320166752086256636">Billentyűzet elrejtése</translation>
 <translation id="2339560363438331454">Szinkronizálás és Google</translation>
 <translation id="2351097562818989364">A fordítási beállítások visszaállítása megtörtént.</translation>
+<translation id="2359043044084662842">Fordítás</translation>
 <translation id="2359808026110333948">Tovább</translation>
 <translation id="2360196772093551345">Mobilwebhely kérése</translation>
 <translation id="2381405137052800939">Alapok</translation>
@@ -291,6 +292,7 @@ Az Átadást engedélyezni kell a Beállítások általános részében is, és 
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Verzió: <ph name="PRODUCT_VERSION" /></translation>
+<translation id="5711039611392265845">A <ph name="BEGIN_LINK" />Szinkronizálás és Google<ph name="END_LINK" /> részben további beállításokat talál az adatvédelemre, biztonságra és adatgyűjtésre vonatkozóan.</translation>
 <translation id="5728700505257787410">A fiókjába történő bejelentkezés során hiba történt.</translation>
 <translation id="5737974891429562743">A fiók bejelentkezési adatai elavultak. Frissítsen a szinkronizálás megkezdéséhez.</translation>
 <translation id="5738887413654608789">Lehetővé teszi a felhasználó számára, hogy közvetlen környezete alapján fedezzen fel releváns weboldalakat.</translation>
@@ -382,7 +384,6 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="6903907808598579934">Szinkronizálás bekapcsolása</translation>
 <translation id="6914583639806229067">Vágólapra másolt kép keresése</translation>
 <translation id="6914783257214138813">Jelszavai mindenki számára láthatók lesznek, aki hozzáfér az exportált fájlhoz.</translation>
-<translation id="692898627499215142">A szinkronizálás kezdeti beállítása nem fejeződött be. A szinkronizálás indításához kapcsolja be a Szinkronizálás kapcsolót.</translation>
 <translation id="6944369514868857500">Másik fiók választása</translation>
 <translation id="6945221475159498467">Kiválasztás</translation>
 <translation id="6973630695168034713">Mappák</translation>

@@ -51,6 +51,7 @@
 <translation id="2718390899429598676">Para maior segurança, o Chromium criptografará seus dados.</translation>
 <translation id="2770231113462710648">Alterar navegador padrão para:</translation>
 <translation id="2799223571221894425">Reiniciar</translation>
+<translation id="2838154144102149890">Para atualizar, é necessário interromper o Chromium neste computador. Essa ação pode causar perda de dados não salvos de outros usuários conectados a este computador.</translation>
 <translation id="2847479871509788944">Remover do Chromium</translation>
 <translation id="2886012850691518054">Opcional: Ajude a tornar o Chromium melhor enviando automaticamente as estatísticas de uso e os relatórios de erros ao Google.</translation>
 <translation id="2898082584336937987">Instale o Chromium no seu smartphone. Enviaremos um SMS para seu número: <ph name="PHONE_NUMBER" /></translation>
@@ -183,6 +184,7 @@
 <translation id="6810143991807788455">Ajude a melhorar o Chromium informando as configurações atuais</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (copiado para o Chromium)</translation>
+<translation id="6868056391275687737">Outras cópias do Chromium estão em execução. Para atualizar, feche-as.</translation>
 <translation id="6893813176749746474">O Chromium foi atualizado, mas não é utilizado há pelo menos 30 dias.</translation>
 <translation id="6964305034639999644">Abrir link na janela &amp;sem rastros do Chromium</translation>
 <translation id="6970811910055250180">Atualizando o dispositivo...</translation>
@@ -252,6 +254,7 @@ Verifique seu e-mail em <ph name="ACCOUNT_EMAIL" /> para ver mais instruções.<
 <translation id="8697124171261953979">Controla também qual página deve ser exibida quando você inicia o Chromium ou faz uma pesquisa na Omnibox.</translation>
 <translation id="8704119203788522458">Este é seu Chromium</translation>
 <translation id="8704255848199359374">Esta opção usa o mesmo recurso de verificação ortográfica da Pesquisa Google. O texto digitado no navegador é enviado para o Google. É possível alterar esse comportamento nas configurações a qualquer momento.</translation>
+<translation id="8748383401829947534">Saia de todas as cópias do Chromium.</translation>
 <translation id="8796602469536043152">O Chromium precisa de permissão para este site acessar sua câmera e seu microfone</translation>
 <translation id="8803635938069941624">Termos do Chromium OS</translation>
 <translation id="8821041990367117597">O Chromium não pôde sincronizar seus dados, pois os detalhes de login da sua conta estão desatualizados.</translation>

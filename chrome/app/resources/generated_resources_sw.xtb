@@ -798,6 +798,7 @@
 <translation id="2241053333139545397">Kusoma na kubadilisha data yako kwenye tovuti kadhaa</translation>
 <translation id="2241634353105152135">Mara moja tu</translation>
 <translation id="2242687258748107519">Maelezo ya Faili</translation>
+<translation id="2246549592927364792">Je, ungependa kupata ufafanuzi wa picha kutoka Google?</translation>
 <translation id="224940702122312781">Ukurasa huu utatumia data nyingi.</translation>
 <translation id="2249605167705922988">k.m. 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">Fungua kwa kitazamaji cha mfumo</translation>
@@ -1102,6 +1103,7 @@
 <translation id="271033894570825754">Mpya</translation>
 <translation id="2714393097308983682">Duka la Google Play</translation>
 <translation id="2715751256863167692">Sasisho hili litabadilisha mipangilio ya Chromebook yako na kuondoa data ya mtumiaji iliyopo.</translation>
+<translation id="2716986496990888774">Mipangilio hii inadhibitiwa na mzazi.</translation>
 <translation id="2718395828230677721">Mwanga wa Usiku</translation>
 <translation id="2718998670920917754">Programu ya kingavirusi imegundua kirusi.</translation>
 <translation id="2719936478972253983">Vidakuzi vifuatavyo vilizuiwa</translation>
@@ -1213,6 +1215,7 @@
 <translation id="2874939134665556319">Wimbo uliotangulia</translation>
 <translation id="2875698561019555027">(Kurasa za hitilafu kwenye Chrome)</translation>
 <translation id="2876336351874743617">Kidole cha 2</translation>
+<translation id="2876369937070532032">Hutuma kwa Google URL za baadhi ya kurasa ambazo umetembelea wakati usalama wako uko hatarini</translation>
 <translation id="288042212351694283">Fikia vifaa vyako vya Ubia wa Hatua mbili</translation>
 <translation id="2881076733170862447">Unapobofya Kiendelezi</translation>
 <translation id="2881966438216424900">Ilitumiwa mwisho:</translation>
@@ -1395,6 +1398,7 @@
 <translation id="3170072451822350649">Pia unaweza kuruka kuingia na <ph name="LINK_START" />uvinjari kama Mgeni<ph name="LINK_END" />.</translation>
 <translation id="3172045848207518317">Tovuti inafikia data ya video</translation>
 <translation id="3177909033752230686">Lugha ya Ukurasa:</translation>
+<translation id="3181954750937456830">Kuvinjari Salama (hukulinda wewe na kifaa chako dhidi ya tovuti hatari)</translation>
 <translation id="3182749001423093222">Kikagua maendelezo</translation>
 <translation id="3183139917765991655">Kiletaji cha Wasifu</translation>
 <translation id="3188465121994729530">Wastani Unaosonga</translation>
@@ -1697,6 +1701,7 @@
 <translation id="3664511988987167893">Aikoni ya Kiendelezi</translation>
 <translation id="3665589677786828986">Chrome imegundua kuwa baadhi ya mipangilio yako ilivurugwa na programu nyingine na ikairejesha kwenye mipangilio yake iliyotoka nayo kiwandani.</translation>
 <translation id="3668570675727296296">Mipangilio ya lugha</translation>
+<translation id="366867565525278777">Imeshindwa kusakinisha kwa sababu nafasi ya hifadhi haitoshi. Unahitaji nafasi ya hifadhi ya angalau <ph name="INSTALL_SIZE" /> ambazo hujatumia. Ili kupata nafasi, futa faili kutoka kwenye hifadhi ya kifaa.</translation>
 <translation id="3668801437375206837">Ili kutambua matatizo ya Bluetooth vyema zaidi, WanaGoogle wanaweza kujumuisha kumbukumbu za ziada za Bluetooth kwenye ripoti zao za maoni. Wakati umeteua chaguo hili, ripoti yako itajumuisha kumbukumbu za btsnoop na HCI kuanzia kipindi chako cha sasa, zilizosafishwa ili kuondoa PII nyingi kadri iwezekanavyo. Wasimamizi wa kundi la bidhaa ya Chrome OS katika Listnr ndio tu wataweza kufikia kumbukumbu hizi. Kumbukumbu zitaondolewa kabisa baada ya siku 90.</translation>
 <translation id="3668823961463113931">Vishikilizi</translation>
 <translation id="3670113805793654926">Vifaa kutoka muuzaji yeyote</translation>
@@ -4005,6 +4010,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7289225569524511578">Fungua programu ya mandhari</translation>
 <translation id="7290242001003353852">Huduma hii ya kuingia katika akaunti, inayopangishwa na <ph name="SAML_DOMAIN" />, ina idhini ya kufikia kamera yako.</translation>
 <translation id="7290594223351252791">Thibitisha usajili</translation>
+<translation id="7295614427631867477">Kumbuka kwamba, Google Play na programu zinazohusiana zinaoongozwa na sera zake za ukusanyaji na matumizi ya data.</translation>
 <translation id="729583233778673644">Ruhusu usimbaji wa AES na RC4. Kutumia chaguo hili huongeza uwezekano wa hatari, kwa kuwa misimbo ya RC45 si salama.</translation>
 <translation id="7296774163727375165"><ph name="DOMAIN" /> Masharti</translation>
 <translation id="7297443947353982503">Jina la mtumiaji/nenosiri sio sahihi au EAP-auth imeshindwa</translation>
@@ -4281,6 +4287,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7732111077498238432">Mtandao unadhibitiwa na sera</translation>
 <translation id="7737238973539693982">Futa Linux (Beta)</translation>
 <translation id="7740996059027112821">Wastani</translation>
+<translation id="7746457520633464754">Ili kutambua programu na tovuti hatari, Chrome hutuma URL za baadhi ya kurasa unazotembelea. maelezo machache ya mfumo na maudhui ya ukurasa kwa Google</translation>
 <translation id="7750228210027921155">Picha ndani ya picha</translation>
 <translation id="7751260505918304024">Onyesha zote</translation>
 <translation id="7754704193130578113">Uliza mahali pa kuhifadhi kila faili kabla ya kuipakua.</translation>
@@ -4968,6 +4975,7 @@ Huenda watu wengine wenye miunganisho ya polepole hawataona maudhui yako.</trans
 <translation id="8780123805589053431">Pata ufafanuzi wa picha kutoka Google</translation>
 <translation id="8780443667474968681">Kipengele cha kutafuta kwa kutamka kimezimwa.</translation>
 <translation id="878069093594050299">Cheti hiki kimethibitishwa kwa matumizi yafuatayo:</translation>
+<translation id="8781470833671194250">Uthabiti wa nafasi ya kubofya</translation>
 <translation id="8781980678064919987">Zima kifuniko kikiwa kimefungwa</translation>
 <translation id="8782565991310229362">Uzinduzi wa programu ya kioski umeghairiwa.</translation>
 <translation id="8783093612333542422">&lt;Strong&gt; <ph name="SENDER" /> &lt;/ Strong&gt; anataka kushiriki printa &lt;strong&gt; <ph name="PRINTER_NAME" /> &lt;/ Strong&gt; na wewe.</translation>

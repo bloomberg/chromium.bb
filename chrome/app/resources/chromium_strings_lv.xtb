@@ -51,6 +51,7 @@
 <translation id="2718390899429598676">Papildu drošības nolūkos Chromium šifrēs jūsu datus.</translation>
 <translation id="2770231113462710648">Mainīt noklusējuma pārlūkprogrammu uz:</translation>
 <translation id="2799223571221894425">Restartēt</translation>
+<translation id="2838154144102149890">Lai varētu atjaunināt pārlūku Chromium, pārlūkam šajā datorā jāpārtrauc darboties. Citi lietotāji, kas ir pieteikušies šajā datorā, var zaudēt nesaglabātās izmaiņas.</translation>
 <translation id="2847479871509788944">Noņemšana no pārlūka Chromium...</translation>
 <translation id="2886012850691518054">Izvēles: palīdziet uzlabot Chromium, automātiski nosūtot lietojuma statistiku un avārijas pārskatus uzņēmumam Google.</translation>
 <translation id="2898082584336937987">Instalējiet pārlūku Chromium savā tālrunī. Mēs nosūtīsim īsziņu uz jūsu tālruņa numuru: <ph name="PHONE_NUMBER" />.</translation>
@@ -187,6 +188,7 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai iz
 <translation id="6810143991807788455">Palīdziet uzlabot pārlūku Chromium, ziņojot par pašreizējiem iestatījumiem.</translation>
 <translation id="6857782730669500492">Chromium — <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (kopēts pārlūkā Chromium)</translation>
+<translation id="6868056391275687737">Darbojas citas Chromium kopijas. Lai veiktu atjaunināšanu, aizveriet tās.</translation>
 <translation id="6893813176749746474">Pārlūks Chromium ir atjaunināts, bet jūs neesat to izmantojis vismaz 30 dienas.</translation>
 <translation id="6964305034639999644">Atvērt saiti inko&amp;gnito režīma logā</translation>
 <translation id="6970811910055250180">Notiek ierīces atjaunināšana...</translation>
@@ -255,6 +257,7 @@ Papildu norādījumus skatiet e-pasta ziņojumā šeit: <ph name="ACCOUNT_EMAIL"
 <translation id="8697124171261953979">Tas nosaka arī to, kāda lapa tiks rādīta, kad atvērsiet pārlūku Chromium vai meklēsiet, izmantojot universālo lodziņu.</translation>
 <translation id="8704119203788522458">Šis ir jūsu Chromium</translation>
 <translation id="8704255848199359374">Šeit tiek izmantota tā pati pareizrakstības pārbaude, kāda tiek izmantota Google meklēšanā. Pārlūkprogrammā ievadītais teksts tiek nosūtīts Google serveriem. Jebkurā brīdī varat mainīt šo darbību iestatījumos.</translation>
+<translation id="8748383401829947534">Aizveriet visas Chromium kopijas.</translation>
 <translation id="8796602469536043152">Pārlūkam Chromium ir nepieciešama atļauja piekļūt jūsu kamerai un mikrofonam šajā vietnē.</translation>
 <translation id="8803635938069941624">Chromium OS noteikumi</translation>
 <translation id="8821041990367117597">Chromium nevarēja sinhronizēt jūsu datus, jo jūsu konta pierakstīšanās informācija ir novecojusi.</translation>

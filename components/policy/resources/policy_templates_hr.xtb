@@ -1384,6 +1384,7 @@
       Ako se to pravilo postavi na "DeveloperToolsAllowed" (vrijednost 1, Alatima za razvojne programere i konzoli JavaScript može se pristupiti i može ih se upotrebljavati u svim kontekstima, uključujući kontekst proširenja instaliranih prema pravilima organizacije.
       Ako se to pravilo postavi na "DeveloperToolsDisallowed" (vrijednost 2), Alatima za razvojne programere neće se moći pristupiti, a elementi web-lokacije više se neće moći pregledavati. Onemogućit će se svi tipkovni prečaci i svi unosi izbornika ili kontekstnih izbornika za otvaranje Alata za razvojne programere ili konzole JavaScript:</translation>
 <translation id="3547954654003013442">Proxy postavke</translation>
+<translation id="3550875587920006460">Omogućuje postavljanje prilagođenog rasporeda za traženje ažuriranja. Primjenjuje se na sve korisnike i sva sučelja na uređaju. Kada se postavi, uređaj će provjeravati ima li ažuriranja prema tom rasporedu. Pravilo se mora ukloniti da bi se otkazala daljnja primjena rasporeda za traženje ažuriranja.</translation>
 <translation id="355118380775352753">Web-lokacije koje se trebaju otvoriti u zamjenskom pregledniku</translation>
 <translation id="3554984410014457319">Dopustite Google asistentu da osluškuje izraze za glasovnu aktivaciju.</translation>
 <translation id="356579196325389849">Korisnici mogu konfigurirati kanal izdanja OS-a Chrome</translation>
@@ -1628,6 +1629,29 @@
       Ako je ovo pravilo postavljeno na istinito ili ako nije postavljeno, korisnici će moći iskoristiti ponude registracijom OS-a Chrome.
 
       Ako je pravilo postavljeno na neistinito, korisnici neće moći iskoristiti ponude.</translation>
+<translation id="4008233182078913897">Određuje popis aplikacija i proširenja koja se instaliraju u pozadini,
+          bez interakcije s korisnikom, i koje korisnik ne može deinstalirati
+          niti onemogućiti. Sva dopuštenja koje aplikacije/proširenja
+          zahtijevaju dodjeljuju se implicitno, bez interakcije s korisnikom,
+          uključujući sva dodatna dopuštenja koja bi buduće verzije
+          aplikacije/proširenja mogle tražiti. Osim toga, dopuštenja se dodjeljuju
+          za API-je proširenja enterprise.deviceAttributes i enterprise.platformKeys extension.
+          (Ta dva API-ja nisu dostupna aplikacijama/proširenjima koji nisu prisilno
+          instalirani.)
+
+          To pravilo ima prednost pred pravilom <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> s kojim potencijalno može biti u sukobu. Ako se s popisa ukloni aplikacija ili proširenje koje su prethodno bili prisilno instalirani, <ph name="PRODUCT_NAME" /> automatski će ih deinstalirati.
+
+          Za instance Windowsa koje nisu pridružene domeni <ph name="MS_AD_NAME" /> prisilna instalacija ograničena je na aplikacije i proširenja navedene u Chrome web-trgovini.
+
+          Korisnici mogu izmijeniti izvorni kôd proširenja pomoću Alata za razvojne programere (zbog čega proširenje može prestati funkcionirati). Ako to predstavlja problem, postavite pravilo <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+          Svaka stavka pravila niz je koji sadrži ID proširenja i URL za "ažuriranje" odvojene točkom sa zarezom (<ph name="SEMICOLON" />). ID proširenja niz je od 32 slova koji se primjerice može pronaći na <ph name="CHROME_EXTENSIONS_LINK" /> u načinu rada razvojnog programera. URL za "ažuriranje", ako se navede, treba usmjeravati na XML dokument manifesta ažuriranja kako je opisano u dokumentu <ph name="LINK_TO_EXTENSION_DOC1" />. Prema zadanim postavkama, upotrebljava se URL za ažuriranje Chrome web-trgovine (koji je trenutačno "https://clients2.google.com/service/update2/crx"). URL za "ažuriranje" postavljen u ovom pravilu upotrebljava se samo za prvo instaliranje, dok će se za daljnja ažuriranja proširenja upotrebljavati URL ažuriranja naveden u manifestu proširenja. Napominjemo i da je eksplicitno navođenje URL-a za "ažuriranje" bilo obavezno u verzijama preglednika <ph name="PRODUCT_NAME" /> zaključno s verzijom 67.
+
+          Na primjer, <ph name="EXTENSION_POLICY_EXAMPLE" /> instalira proširenje s ID-om <ph name="EXTENSION_ID_SAMPLE" /> sa standardnog URL-a za "ažuriranje" Chrome web-trgovine. Više informacija o hostingu proširenja potražite ovdje: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Ako se to pravilo ne postavi, aplikacije ili proširenja neće se instalirati automatski i korisnik može deinstalirati bilo koju aplikaciju ili proširenje u pregledniku <ph name="PRODUCT_NAME" />.
+
+          To se pravilo ne primjenjuje u anonimnom načinu.</translation>
 <translation id="4008507541867797979">Ako se to pravilo postavi na True ili se ne konfigurira, sustav <ph name="PRODUCT_OS_NAME" /> na zaslonu za prijavu prikazivat će postojeće korisnike i omogućivati odabir korisnika.
 
       Ako se pravilo postavi na False, <ph name="PRODUCT_OS_NAME" /> neće prikazivati postojeće korisnike na zaslonu za prijavu. Prikazivat će se obični zaslon za prijavu (na kojem se unose korisnička e-adresa i zaporka ili telefon) ili SAML međuprostorni zaslon (ako se omogući pravilom <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />) osim ako se konfigurira upravljana sesija. Ako se konfigurira upravljana sesija, prikazivat će se samo računi upravljane sesije od kojih je moguće odabrati jedan.
@@ -2572,6 +2596,12 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
       Ako se pravilo ne konfigurira, za zaslon za prijavu koristit će se zadane postavke platforme za izolaciju web-lokacija.
       </translation>
 <translation id="5901427587865226597">Samo dvostrani ispis</translation>
+<translation id="5903898512448364160">
+      Ako se pravilo postavi na true, pravilo oblaka imat će prednost u slučaju sukoba s pravilom platforme.
+      Ako se pravilo postavi na false ili se ne konfigurira, pravilo platforme imat će prednost ako je u sukobu pravilom oblaka.
+
+      To je pravilo dostupno samo kao obavezno pravilo platforme računala i utječe samo na pravila oblaka koja se odnose na računalo.
+      </translation>
 <translation id="5905473632148429217">Omogući online OCSP/CRL provjere</translation>
 <translation id="5906199912611534122">Dopušta omogućivanje ili onemogućivanje usporavanja mreže.
       Primjenjuje se na sve korisnike i sva sučelja na uređaju. Kada se postavi,
@@ -2598,6 +2628,7 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 
       Ako onemogućite tu postavku ili ne odredite njenu vrijednost, Sigurno pretraživanje u Google pretraživanju neće biti primijenjeno.</translation>
 <translation id="5946082169633555022">Beta kanal</translation>
+<translation id="5946329690214660966">Postavite prilagođeni raspored za traženje ažuriranja</translation>
 <translation id="5950205771952201658">Budući da "soft-fail", mrežne provjere opoziva ne pružaju učinkovitu zaštitu sigurnosti, onemogućuju se prema zadanim postavkama u pregledniku <ph name="PRODUCT_NAME" /> verzije 19 i novijih verzija. Postavljanjem tog pravila na točno prethodno se ponašanje vraća i izvršit će se mrežne provjere OCSP/CRL.
 
       Ako to pravilo nije postavljeno ili je postavljeno na netočno, <ph name="PRODUCT_NAME" /> neće vršiti mrežne provjere opoziva u pregledniku <ph name="PRODUCT_NAME" /> 19 i novijim verzijama.</translation>
@@ -2664,6 +2695,7 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 <translation id="6034341625190551415">Upravlja javnom sesijom i vrstama računa za kiosk.</translation>
 <translation id="6034603289689965535">Omogućuje stranici da prikazuje skočne prozore tijekom unloadinga</translation>
 <translation id="6036523166753287175">Omogući prijelaz vatrozida iz hosta za daljinski pristup</translation>
+<translation id="605475635122964053">Ograničava način ispisa s PIN-om. Ako se pravilo ne postavi, smatra se da nema ograničenja. Pravilo se zanemaruje ako način nije dostupan. Značajka ispisa s PIN-om omogućena je samo za pisače koji upotrebljavaju protokole IPPS, USB ili IPP putem USB-a </translation>
 <translation id="6070667616071269965">Rasporedi tipkovnice za zaslon za prijavu na uređaju</translation>
 <translation id="6074963268421707432">Nemoj dopustiti nijednoj web-lokaciji da prikazuje obavijesti radne površine</translation>
 <translation id="6074964551275531965">Postavi razdoblje za obavijesti o ažuriranjima</translation>

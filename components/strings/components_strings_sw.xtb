@@ -618,6 +618,7 @@
 <translation id="4265872034478892965">Imeruhusiwa na msimamizi wako</translation>
 <translation id="4275830172053184480">Washa upya kifaa chako</translation>
 <translation id="4277028893293644418">Badilisha nenosiri</translation>
+<translation id="4279811152705618813"><ph name="DEVICE_TYPE" /> yako inadhibitiwa na <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="4280429058323657511">, muda wa kutumika utakwisha <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Kadi hii imehifadhiwa kwenye Akaunti yako ya Google}other{Kadi hizi zimehifadhiwa kwenye Akaunti yako ya Google}}</translation>
 <translation id="42981349822642051">Panua</translation>

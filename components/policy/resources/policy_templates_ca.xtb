@@ -1254,6 +1254,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
       Si aquesta política s'estableix en "DeveloperToolsAllowed" (valor 1), es podrà accedir en qualsevol context a les Eines per a desenvolupadors i a la Consola de JavaScript, i es podran utilitzar en tots els contextos, fins i tot en extensions instal·lades per la política d'empresa.
       Si aquesta política s'estableix en "DeveloperToolsDisallowed" (valor 2), no es podrà accedir a les Eines per a desenvolupadors i ja no es podran inspeccionar els elements del lloc web. Es desactivaran totes les dreceres de teclat i les entrades de menú o de menú contextual que obrin les Eines per a desenvolupadors o la Consola de JavaScript.</translation>
 <translation id="3547954654003013442">Configuració del servidor intermediari</translation>
+<translation id="3550875587920006460">Permet definir una programació personalitzada per comprovar si hi ha actualitzacions. S'aplica a tots els usuaris i a totes les interfícies del dispositiu. Un cop definida, el dispositiu comprovarà si hi ha actualitzacions segons la programació. Cal suprimir la política per cancel·lar les comprovacions d'actualitzacions programades.</translation>
 <translation id="355118380775352753">Llocs web que s'obriran al navegador alternatiu</translation>
 <translation id="3554984410014457319">Permet que l'Assistent de Google escolti la frase d'activació per veu</translation>
 <translation id="356579196325389849">Els usuaris poden configurar el canal de versió de Chrome OS</translation>
@@ -1487,6 +1488,21 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
       Si aquesta política es configura com a "true" o si no es configura, els usuaris podran bescanviar ofertes mitjançant el registre de Chrome OS.
 
       Si aquesta política es configura com a "false", l'usuari no podrà bescanviar ofertes.</translation>
+<translation id="4008233182078913897">Especifica una llista d'aplicacions i d'extensions que s'instal·len silenciosament, sense la interacció de l'usuari, i que l'usuari no pot desinstal·lar ni desactivar. Tots els permisos que les aplicacions o les extensions sol·liciten es concedeixen de manera implícita, sense cap interacció de l'usuari, inclosos els permisos addicionals que sol·licitin les versions futures de l'aplicació o l'extensió. A més, es concedeixen permisos a les API de les extensions enterprise.deviceAttributes i enterprise.platformKeys. Aquestes dues API no estan disponibles per a les aplicacions ni les extensions que no s'instal·lin a la força.
+
+          Aquesta política preval sobre una política <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> amb què pugui entrar en conflicte. Si se suprimeix d'aquesta llista una aplicació o una extensió que prèviament s'havia instal·lat a la força, <ph name="PRODUCT_NAME" /> la desinstal·larà automàticament.
+
+          En les instàncies de Windows que no formin part d'un domini que pertanyi a <ph name="MS_AD_NAME" />, la instal·lació forçada es limita a les aplicacions i les extensions incloses a Chrome Web Store.
+
+          Tingues en compte que els usuaris poden modificar el codi font de qualsevol extensió amb les Eines per a desenvolupadors (la qual cosa podria provocar problemes de funcionament de l'extensió). Si et preocupa aquesta possibilitat, defineix la política <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+          Cada element de la llista de la política és una cadena que conté un identificador d'extensió i, opcionalment, un URL d'actualització separats per punt i coma (<ph name="SEMICOLON" />). L'identificador d'extensió és la cadena de 32 lletres que, per exemple, es troba a <ph name="CHROME_EXTENSIONS_LINK" /> quan el mode de desenvolupador està activat. L'URL d'actualització, si s'especifica, ha de dirigir a un document XML de manifest d'actualització, tal com es descriu a <ph name="LINK_TO_EXTENSION_DOC1" />. De manera predeterminada, s'utilitza l'URL d'actualització de Chrome Web Store, que actualment és "https://clients2.google.com/service/update2/crx". Tingues en compte que l'URL d'actualització definit en aquesta política només s'utilitza per a la instal·lació inicial; les properes actualitzacions de l'extensió faran servir l'URL d'actualització indicat al fitxer de manifest de l'extensió. Recorda que, fins a la versió 67 (inclosa) de <ph name="PRODUCT_NAME" />, també calia especificar de manera obligatòria i explícita l'URL d'actualització.
+
+          Per exemple, <ph name="EXTENSION_POLICY_EXAMPLE" /> instal·la l'extensió amb l'identificador <ph name="EXTENSION_ID_SAMPLE" /> des de l'URL d'actualització de Chrome Web Store estàndard. Per obtenir més informació sobre com s'allotgen les extensions, consulta: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Si aquesta política es deixa sense establir, no s'instal·larà automàticament cap aplicació ni cap extensió i l'usuari podrà desinstal·lar-ne qualsevol a <ph name="PRODUCT_NAME" />.
+
+          Tingues en compte que aquesta política no s'aplica al mode d'incògnit.</translation>
 <translation id="4008507541867797979">Si aquesta política s'estableix en "true" o no es configura, <ph name="PRODUCT_OS_NAME" /> mostrarà els usuaris existents a la pantalla d'inici de sessió i permetrà triar-ne un.
 
       Si aquesta política s'estableix en "false", <ph name="PRODUCT_OS_NAME" /> no mostrarà els usuaris existents a la pantalla d'inici de sessió. Es mostrarà la pantalla d'inici de sessió normal (on es demana el telèfon o l'adreça electrònica i la contrasenya de l'usuari) o la intersticial SAML (si s'activa mitjançant la política <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />), tret que es configuri una sessió gestionada. En aquest últim cas, només es mostraran els comptes de sessió gestiona i es permetrà triar-ne un.
@@ -2298,6 +2314,12 @@ Si la política no es defineix, els usuaris podran triar si el prestatge s'ha d'
       Si la política no es configura, a la pantalla d'inici de sessió s'utilitzarà la configuració d'aïllament del lloc web predeterminada a la plataforma.
       </translation>
 <translation id="5901427587865226597">Només impressió a doble cara</translation>
+<translation id="5903898512448364160">
+      Si la política s'estableix en "true", la política per al núvol té prioritat si entra en conflicte amb la política de la plataforma.
+      Si la política s'estableix en "false" o no es configura, la política de la plataforma té prioritat si entra en conflicte amb la política per al núvol.
+
+      Aquesta política només està disponible com una política obligatòria de la plataforma de l'equip i tan sols afecta les polítiques per al núvol de l'equip.
+      </translation>
 <translation id="5905473632148429217">Permet les comprovacions OCSP/CRL en línia</translation>
 <translation id="5906199912611534122">Permet activar o desactivar la limitació de l'amplada de banda de la xarxa.
       S'aplica a tots els usuaris i a totes les interfícies del dispositiu. Un cop establerta, la limitació continua fins que la política es canvia per desactivar-la.
@@ -2323,6 +2345,7 @@ Si activeu aquest paràmetre, SafeSearch de Cerca de Google sempre estarà activ
 
 Si desactiveu aquest paràmetre o si no definiu cap valor, SafeSearch de Cerca de Google no s'executarà.</translation>
 <translation id="5946082169633555022">Canal beta</translation>
+<translation id="5946329690214660966">Defineix una programació personalitzada per comprovar si hi ha actualitzacions</translation>
 <translation id="5950205771952201658">Com que les comprovacions de revocació en línia "soft-fail" no proporcionen cap avantatge concret en termes de seguretat, estan desactivades de manera predeterminada a <ph name="PRODUCT_NAME" /> versió 19 i versions posteriors. En establir aquesta política en true, es restaurarà el comportament anterior i es realitzaran les comprovacions OCSP/CRL en línia.
 
       Si la política no s'estableix o si s'estableix en false, <ph name="PRODUCT_NAME" /> no realitzarà cap comprovació de revocació en línia a <ph name="PRODUCT_NAME" /> 19 ni versions posteriors.</translation>
@@ -2389,6 +2412,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6034341625190551415">Controla els tipus de compte de sessió pública i de quiosc.</translation>
 <translation id="6034603289689965535">Permet que una pàgina mostri finestres emergents mentre es desactiva</translation>
 <translation id="6036523166753287175">Activa que es pugui travessar el tallafoc des d'un amfitrió d'accés remot</translation>
+<translation id="605475635122964053">Restringeix el mode d'impressió amb PIN. Si la política no s'estableix, no s'aplica cap restricció. Si el mode no està disponible, aquesta política s'ignora. Tingues en compte que la funció d'impressió amb PIN només està activada per a impressores que utilitzen un dels protocols següents: IPPS, USB o IPP per USB. </translation>
 <translation id="6070667616071269965">Dissenys de teclat de la pantalla d'inici de sessió del dispositiu</translation>
 <translation id="6074963268421707432">No permetis que cap lloc mostri notificacions d'escriptori</translation>
 <translation id="6074964551275531965">Estableix el període de temps per a les notificacions d'actualització</translation>
@@ -3751,7 +3775,7 @@ per donar prioritat a OverrideSecurityRestrictionsOnInsecureOrigin. Si totes due
 <translation id="9035964157729712237">ID de les extensions que s'han d'excloure de la llista negra</translation>
 <translation id="9038058011835642205">Especifica una llista de llocs web que s'instal·len silenciosament, sense la interacció de l'usuari, i que l'usuari no pot desinstal·lar ni desactivar.
 
-      Cada element de la llista de la política és un objecte amb un membre obligatori ("url") i dos membres opcionals ("default_launch_container" i "create_desktop_shortcut"). "url" ha de ser l'URL de l'aplicació web que cal instal·lar, "launch_container" ha de ser "window" (finestra) o "tab" (pestanya) per indicar com s'obrirà l'aplicació web un cop instal·lada i "create_desktop_shortcut" ha de ser "true" si cal crear una drecera de l'escriptori a Linux i Windows. Si "default_launch_container" s'omet, l'aplicació s'obrirà en una pestanya de manera predeterminada. Independentment del valor de "default_launch_container", els usuaris poden canviar el contenidor en què s'obrirà l'aplicació. Si "create_desktop_shortcuts" s'omet, no es crearà cap drecera de l'escriptori.</translation>
+      Cada element de la política inclòs a la llista és un objecte amb un membre obligatori ("url") i dos membres opcionals ("default_launch_container" i "create_desktop_shortcut"). "url" ha de ser l'URL de l'aplicació web que cal instal·lar, "launch_container" ha de ser "window" (finestra) o "tab" (pestanya) per indicar com s'obrirà l'aplicació web un cop instal·lada i "create_desktop_shortcut" ha de ser "true" si cal crear una drecera de l'escriptori a Linux i Windows. Si "default_launch_container" s'omet, l'aplicació s'obrirà en una pestanya de manera predeterminada. Independentment del valor de "default_launch_container", els usuaris poden canviar el contenidor en què s'obrirà l'aplicació. Si "create_desktop_shortcuts" s'omet, no es crearà cap drecera de l'escriptori.</translation>
 <translation id="9038839118379817310">Activa la Wi-Fi</translation>
 <translation id="9042911395677044526">Permet aplicar la configuració de la xarxa per usuari a un dispositiu <ph name="PRODUCT_OS_NAME" />. La configuració de la xarxa és una cadena en format JSON, segons la definició del format de la configuració de xarxa oberta que apareix a <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9050853837490399534">Aquesta política controla si el dispositiu s'ha d'actualitzar o no a una compilació de correcció ràpida.

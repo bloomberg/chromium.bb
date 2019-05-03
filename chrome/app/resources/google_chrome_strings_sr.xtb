@@ -27,6 +27,7 @@
 <translation id="1585657529869845941">Кликните на дугме <ph name="BEGIN_BOLD" />Ипак промени<ph name="END_BOLD" /> ако се појави</translation>
 <translation id="1587223624401073077">Google Chrome користи камеру.</translation>
 <translation id="1587325591171447154">Датотека <ph name="FILE_NAME" /> је опасна, па ју је Chrome блокирао.</translation>
+<translation id="1590588151039584890">Chrome треба да престане са радом на овом рачунару да бисте га ажурирали. Због тога ће други корисници пријављени на овом рачунару можда изгубити несачуване промене.</translation>
 <translation id="1619887657840448962">Да бисмо учинили Chrome безбеднијим, онемогућили смо следећи додатак који <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> не наводи и који је можда додат без вашег знања.</translation>
 <translation id="1628000112320670027">Пронађите помоћ за Chrome</translation>
 <translation id="1662639173275167396">Chrome ОС је омогућен захваљујући додатном <ph name="BEGIN_LINK_CROS_OSS" />софтверу са отвореним кодом<ph name="END_LINK_CROS_OSS" />, као што је <ph name="BEGIN_LINK_LINUX_OSS" />Linux (бета)<ph name="END_LINK_LINUX_OSS" />.</translation>
@@ -172,6 +173,7 @@
 
 Google Chrome не може да врати подешавања.</translation>
 <translation id="5483595757826856374">{0,plural, =0{Поново ћемо покренути Chrome}=1{Поново ћемо покренути Chrome за 1 секунду}one{Поново ћемо покренути Chrome за # секунду}few{Поново ћемо покренути Chrome за # секунде}other{Поново ћемо покренути Chrome за # секунди}}</translation>
+<translation id="5543953544073077331">Друге копије Chrome-а су активне. Затворите их да бисте га ажурирали.</translation>
 <translation id="556024056938947818">Google Chrome покушава да прикаже лозинке.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598">Датотека <ph name="FILE_NAME" /> је можда опасна, па ју је Chrome блокирао.</translation>
@@ -232,6 +234,7 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="7473136999113284234">Chrome се аутоматски ажурира, па увек имате најновију верзију.</translation>
 <translation id="7486227612705979895">Chrome ће приступати Диску да би приказивао предлоге на траци за адресу</translation>
 <translation id="748945194546522577">Ова датотека је опасна, па ју је Chrome блокирао. Штити вас напредна заштита.</translation>
+<translation id="7531671357096394523">Затворите све копије Chrome-а.</translation>
 <translation id="7535429826459677826">Програмерска верзија Google Chrome-а</translation>
 <translation id="7552219221109926349">Приказуј Chrome ОС на овом језику</translation>
 <translation id="7561940363513215021">{0,plural, =1{Поново ћемо покренути Chrome за 1 минут}one{Поново ћемо покренути Chrome за # минут}few{Поново ћемо покренути Chrome за # минута}other{Поново ћемо покренути Chrome за # минута}}</translation>

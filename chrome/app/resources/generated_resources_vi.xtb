@@ -801,6 +801,7 @@
 <translation id="2241053333139545397">Đọc và thay đổi dữ liệu của bạn trên một số trang web</translation>
 <translation id="2241634353105152135">Chỉ một lần</translation>
 <translation id="2242687258748107519">Thông tin tệp</translation>
+<translation id="2246549592927364792">Tải nội dung mô tả hình ảnh của Google?</translation>
 <translation id="224940702122312781">Trang này sẽ sử dụng nhiều dữ liệu.</translation>
 <translation id="2249605167705922988">ví dụ: 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">Mở bằng trình xem hệ thống</translation>
@@ -1106,6 +1107,7 @@
 <translation id="271033894570825754">Mới</translation>
 <translation id="2714393097308983682">Cửa hàng Google Play</translation>
 <translation id="2715751256863167692">Bản nâng cấp này sẽ đặt lại Chromebook và xóa dữ liệu người dùng hiện tại.</translation>
+<translation id="2716986496990888774">Tùy chọn cài đặt này do cha mẹ quản lý.</translation>
 <translation id="2718395828230677721">Ánh sáng đêm</translation>
 <translation id="2718998670920917754">Phần mềm chống vi-rút đã phát hiện thấy một vi-rút.</translation>
 <translation id="2719936478972253983">Các cookie sau đã bị chặn</translation>
@@ -1217,6 +1219,7 @@
 <translation id="2874939134665556319">Bản nhạc trước</translation>
 <translation id="2875698561019555027">(Các trang lỗi của Chrome)</translation>
 <translation id="2876336351874743617">Ngón tay số 2</translation>
+<translation id="2876369937070532032">Gửi URL của một số trang mà bạn truy cập cho Google khi bạn gặp rủi ro về bảo mật</translation>
 <translation id="288042212351694283">Truy cập thiết bị Universal 2nd Factor</translation>
 <translation id="2881076733170862447">Khi bạn nhấp vào tiện ích</translation>
 <translation id="2881966438216424900">Truy cập lần cuối:</translation>
@@ -1399,6 +1402,7 @@
 <translation id="3170072451822350649">Bạn cũng có thể bỏ qua việc đăng nhập và <ph name="LINK_START" />duyệt với tư cách khách<ph name="LINK_END" />.</translation>
 <translation id="3172045848207518317">Một trang web đang truy cập vào đầu vào video</translation>
 <translation id="3177909033752230686">Ngôn ngữ trang:</translation>
+<translation id="3181954750937456830">Duyệt web an toàn (bảo vệ bạn cũng như thiết bị của bạn khỏi các trang web nguy hiểm)</translation>
 <translation id="3182749001423093222">Kiểm tra chính tả</translation>
 <translation id="3183139917765991655">Trình nhập hồ sơ</translation>
 <translation id="3188465121994729530">Trung bình động</translation>
@@ -1704,6 +1708,7 @@
 <translation id="3664511988987167893">Biểu tượng tiện ích</translation>
 <translation id="3665589677786828986">Chrome phát hiện thấy rằng một số cài đặt của bạn đã bị lỗi do một chương trình khác gây ra và đặt lại các cài đặt đó về giá trị mặc định ban đầu.</translation>
 <translation id="3668570675727296296">Cài đặt ngôn ngữ</translation>
+<translation id="366867565525278777">Cài đặt không thành công do thiếu dung lượng bộ nhớ. Cần có tối thiểu <ph name="INSTALL_SIZE" /> dung lượng trống. Để giải phóng dung lượng, hãy xóa các tệp khỏi bộ nhớ thiết bị.</translation>
 <translation id="3668801437375206837">Để chẩn đoán chính xác hơn các vấn đề về Bluetooth, nhân viên Google có thể đưa thêm nhật ký Bluetooth vào báo cáo phản hồi của họ. Khi bạn chọn tùy chọn này, báo cáo của bạn sẽ bao gồm cả nhật ký btsnoop và HCI từ phiên hoạt động hiện tại, trong đó đã loại bỏ nhiều thông tin nhận dạng cá nhân nhất có thể. Chỉ người quản lý nhóm sản phẩm Chrome OS trong Listnr mới có quyền truy cập vào các nhật ký này. Nhật ký sẽ bị xóa hoàn toàn sau 90 ngày.</translation>
 <translation id="3668823961463113931">Trình xử lý</translation>
 <translation id="3670113805793654926">Thiết bị của nhà cung cấp bất kỳ</translation>
@@ -4014,6 +4019,7 @@
 <translation id="7289225569524511578">Mở ứng dụng hình nền</translation>
 <translation id="7290242001003353852">Dịch vụ đăng nhập này, do <ph name="SAML_DOMAIN" /> lưu trữ, đang truy cập vào máy ảnh của bạn.</translation>
 <translation id="7290594223351252791">Xác nhận đăng ký</translation>
+<translation id="7295614427631867477">Xin lưu ý rằng Android, Play và các ứng dụng liên kết chịu sự điều chỉnh của những chính sách thu thập và sử dụng dữ liệu riêng.</translation>
 <translation id="729583233778673644">Cho phép mã hóa AES và RC4. Việc sử dụng tùy chọn này sẽ làm gia tăng rủi ro vì các thuật toán mã hóa RC4 là không an toàn.</translation>
 <translation id="7296774163727375165">Điều khoản dành cho <ph name="DOMAIN" /></translation>
 <translation id="7297443947353982503">Tên người dùng/mật khẩu không đúng hoặc xác thực EAP không thành công</translation>
@@ -4290,6 +4296,7 @@
 <translation id="7732111077498238432">Mạng được kiểm soát bằng chính sách</translation>
 <translation id="7737238973539693982">Xóa Linux (Beta)</translation>
 <translation id="7740996059027112821">Chuẩn</translation>
+<translation id="7746457520633464754">Để phát hiện các ứng dụng và trang web nguy hiểm, Chrome sẽ gửi URL của một số trang mà bạn truy cập, thông tin hệ thống giới hạn và một số nội dung trang cho Google</translation>
 <translation id="7750228210027921155">Hình trong hình</translation>
 <translation id="7751260505918304024">Hiển thị tất cả</translation>
 <translation id="7754704193130578113">Hỏi vị trí lưu từng tệp trước khi tải xuống</translation>
@@ -4974,6 +4981,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8780123805589053431">Tải nội dung mô tả hình ảnh của Google</translation>
 <translation id="8780443667474968681">Tính năng tìm kiếm bằng giọng nói đã bị tắt.</translation>
 <translation id="878069093594050299">Chứng chỉ này đã được xác minh cho các mục đích sử dụng sau:</translation>
+<translation id="8781470833671194250">Ổn định vị trí nhấp</translation>
 <translation id="8781980678064919987">Tắt máy khi đóng nắp</translation>
 <translation id="8782565991310229362">Đã hủy chạy ứng dụng kiosk.</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; muốn chia sẻ máy in &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; với bạn.</translation>

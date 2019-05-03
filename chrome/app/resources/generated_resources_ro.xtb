@@ -801,6 +801,7 @@
 <translation id="2241053333139545397">Citește și modifică datele de pe o serie de site-uri</translation>
 <translation id="2241634353105152135">Numai o singură dată</translation>
 <translation id="2242687258748107519">Informații fișier</translation>
+<translation id="2246549592927364792">Descarci descrierile imaginii de la Google?</translation>
 <translation id="224940702122312781">Această pagină va folosi multe date.</translation>
 <translation id="2249605167705922988">de ex., 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">Deschideți cu Utilitarul de vizualizare al sistemului</translation>
@@ -1106,6 +1107,7 @@
 <translation id="271033894570825754">Nou</translation>
 <translation id="2714393097308983682">Magazinul Google Play</translation>
 <translation id="2715751256863167692">Acest upgrade resetează Chromebookul și elimină datele actuale ale utilizatorului.</translation>
+<translation id="2716986496990888774">Această setare este gestionată de un părinte.</translation>
 <translation id="2718395828230677721">Lumină de noapte</translation>
 <translation id="2718998670920917754">Software-ul antivirus a detectat un virus.</translation>
 <translation id="2719936478972253983">Următoarele cookie-uri au fost blocate</translation>
@@ -1217,6 +1219,7 @@
 <translation id="2874939134665556319">Melodia anterioară</translation>
 <translation id="2875698561019555027">(pagini de erori Chrome)</translation>
 <translation id="2876336351874743617">Deget 2</translation>
+<translation id="2876369937070532032">Trimite la Google adrese URL ale unor pagini pe care le accesezi, când securitatea este în pericol</translation>
 <translation id="288042212351694283">Accesează dispozitivele Universal 2nd Factor</translation>
 <translation id="2881076733170862447">Când dai clic pe extensie</translation>
 <translation id="2881966438216424900">Ultima accesare:</translation>
@@ -1399,6 +1402,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3170072451822350649">De asemenea, puteți să omiteți conectarea și să <ph name="LINK_START" />navigați ca invitat<ph name="LINK_END" />.</translation>
 <translation id="3172045848207518317">Un site accesează intrarea video</translation>
 <translation id="3177909033752230686">Limba paginii:</translation>
+<translation id="3181954750937456830">Navigare sigură (protecție împotriva site-urilor periculoase)</translation>
 <translation id="3182749001423093222">Verificarea ortografiei</translation>
 <translation id="3183139917765991655">Instrument de import al profilurilor</translation>
 <translation id="3188465121994729530">Medie mobilă</translation>
@@ -1704,6 +1708,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3664511988987167893">Pictograma extensiei</translation>
 <translation id="3665589677786828986">Chrome a detectat că unele dintre setări au fost deteriorate de alt program și le-a resetat la valorile inițiale.</translation>
 <translation id="3668570675727296296">Setări de limbă</translation>
+<translation id="366867565525278777">Instalarea nu a reușit din cauza spațiului de stocare insuficient. Este necesar un spațiu liber de cel puțin <ph name="INSTALL_SIZE" />. Pentru a elibera spațiu, șterge fișiere din stocarea dispozitivului.</translation>
 <translation id="3668801437375206837">Pentru o mai bună diagnosticare a problemelor cu funcția Bluetooth, angajații Google pot include jurnale Bluetooth suplimentare în rapoartele de feedback. Dacă această opțiune este selectată, raportul va include jurnalele btsnoop și HCI din sesiunea actuală curățate, pentru a elimina cât mai multe informații de identificare personală. Accesul la aceste jurnale va fi limitat la administratorii grupului de produse Chrome OS din Listnr. Jurnalele vor fi șterse după 90 de zile.</translation>
 <translation id="3668823961463113931">Handlere</translation>
 <translation id="3670113805793654926">Dispozitive de la orice furnizor</translation>
@@ -2013,6 +2018,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="409579654357498729">Adăugați la Cloud Print</translation>
 <translation id="4096508467498758490">Dezactivați extensiile care rulează în modul pentru dezvoltatori</translation>
 <translation id="4096824249111507322">Se pregătește modulul securizat. Așteaptă (poate dura câteva minute)...</translation>
+<translation id="4097560579602855702">Caută pe Google</translation>
 <translation id="4099060993766194518">Restabilești motorul de căutare prestabilit?</translation>
 <translation id="4099874310852108874">A apărut o eroare de rețea.</translation>
 <translation id="4100733287846229632">Spațiul de pe dispozitiv este foarte redus</translation>
@@ -4013,6 +4019,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7289225569524511578">Deschide aplicația pentru imaginea de fundal</translation>
 <translation id="7290242001003353852">Acest serviciu de conectare, găzduit de <ph name="SAML_DOMAIN" />, îți accesează camera foto.</translation>
 <translation id="7290594223351252791">Confirmarea înregistrării</translation>
+<translation id="7295614427631867477">Reține că Android, Play și aplicațiile asociate sunt guvernate de propriile politici privind colectarea și utilizarea datelor.</translation>
 <translation id="729583233778673644">Permite criptarea AES și RC4. Folosirea acestei opțiuni îți mărește riscul, deoarece suitele de codificare RC4 sunt nesecurizate.</translation>
 <translation id="7296774163727375165">Termenii și condițiile <ph name="DOMAIN" /></translation>
 <translation id="7297443947353982503">Numele de utilizator sau parola sunt incorecte sau autentificarea EAP nu a reușit</translation>
@@ -4289,6 +4296,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7732111077498238432">Rețeaua este controlată de politică</translation>
 <translation id="7737238973539693982">Șterge Linux (Beta)</translation>
 <translation id="7740996059027112821">Standard</translation>
+<translation id="7746457520633464754">Pentru a detecta aplicațiile și site-urile periculoase, Chrome trimite la Google adresele URL ale unor pagini pe care le accesezi, informații de sistem limitate și o parte din conținutul paginii</translation>
 <translation id="7750228210027921155">Picture-in-picture</translation>
 <translation id="7751260505918304024">Afișați-le pe toate</translation>
 <translation id="7754704193130578113">Întreabă-mă unde se salvează fiecare fișier înainte de a-l descărca</translation>
@@ -4973,6 +4981,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8780123805589053431">Descarcă descrierile imaginii de la Google</translation>
 <translation id="8780443667474968681">Căutarea vocală a fost dezactivată.</translation>
 <translation id="878069093594050299">Acest certificat a fost confirmat pentru următoarele utilizări:</translation>
+<translation id="8781470833671194250">Stabilizarea poziției clicului</translation>
 <translation id="8781980678064919987">Când capacul este închis: oprire</translation>
 <translation id="8782565991310229362">Lansarea aplicațiilor de tip chioșc a fost anulată.</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; dorește să îți permită accesul la o imprimantă &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt;.</translation>

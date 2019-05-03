@@ -25,6 +25,7 @@
 <translation id="1585657529869845941">Kliknij przycisk <ph name="BEGIN_BOLD" />Przełącz mimo to<ph name="END_BOLD" />, jeśli jest widoczny</translation>
 <translation id="1587223624401073077">Google Chrome używa Twojej kamery.</translation>
 <translation id="1587325591171447154">Plik <ph name="FILE_NAME" /> jest niebezpieczny, dlatego został zablokowany przez Chrome.</translation>
+<translation id="1590588151039584890">Aby można było przeprowadzić aktualizację, musisz wyłączyć Chrome na tym komputerze. Wskutek tego inni zalogowani na tym komputerze użytkownicy mogą utracić niezapisane dane.</translation>
 <translation id="1619887657840448962">Aby poprawić bezpieczeństwo Chrome, wyłączyliśmy to rozszerzenie. Nie jest ono dostępne w <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> i mogło zostać dodane bez Twojej wiedzy.</translation>
 <translation id="1628000112320670027">Pomoc do Chrome</translation>
 <translation id="1662639173275167396">Opracowanie systemu operacyjnego Chrome było możliwe dzięki dodatkowemu <ph name="BEGIN_LINK_CROS_OSS" />oprogramowaniu open source<ph name="END_LINK_CROS_OSS" />. To samo dotyczy funkcji <ph name="BEGIN_LINK_LINUX_OSS" />Linux (Beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
@@ -165,6 +166,7 @@ Więcej instrukcji znajdziesz w e-mailu wysłanym na adres <ph name="ACCOUNT_EM
 <translation id="5386244825306882791">Kontroluje także to, jaka strona wyświetla się po uruchomieniu Chrome lub wyszukiwaniu w omniboksie.</translation>
 <translation id="5430073640787465221">Plik ustawień jest uszkodzony lub nieprawidłowy. Google Chrome nie może odzyskać ustawień.</translation>
 <translation id="5483595757826856374">{0,plural, =0{Chrome uruchomi się ponownie teraz}=1{Chrome uruchomi się ponownie za 1 sekundę}few{Chrome uruchomi się ponownie za # sekundy}many{Chrome uruchomi się ponownie za # sekund}other{Chrome uruchomi się ponownie za # sekundy}}</translation>
+<translation id="5543953544073077331">Są uruchomione inne kopie Chrome. Zamknij je, by przeprowadzić aktualizację.</translation>
 <translation id="556024056938947818">Google Chrome próbuje pokazać hasła.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598">Plik <ph name="FILE_NAME" /> może być niebezpieczny, dlatego został zablokowany przez Chrome.</translation>
@@ -225,6 +227,7 @@ Więcej instrukcji znajdziesz w e-mailu wysłanym na adres <ph name="ACCOUNT_EM
 <translation id="7473136999113284234">Chrome aktualizuje się automatycznie, więc zawsze masz najnowszą wersję.</translation>
 <translation id="7486227612705979895">Chrome będzie mieć dostęp do Dysku, by wyświetlać podpowiedzi na pasku adresu</translation>
 <translation id="748945194546522577">Ten plik jest niebezpieczny, dlatego został zablokowany przez Chrome. O Twoje bezpieczeństwo dba Ochrona zaawansowana.</translation>
+<translation id="7531671357096394523">Zamknij wszystkie kopie Chrome.</translation>
 <translation id="7535429826459677826">Wersja deweloperska Google Chrome</translation>
 <translation id="7552219221109926349">Wyświetlaj system operacyjny Chrome w tym języku</translation>
 <translation id="7561940363513215021">{0,plural, =1{Chrome uruchomi się ponownie za 1 minutę}few{Chrome uruchomi się ponownie za # minuty}many{Chrome uruchomi się ponownie za # minut}other{Chrome uruchomi się ponownie za # minuty}}</translation>

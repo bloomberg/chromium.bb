@@ -618,6 +618,7 @@
 <translation id="4265872034478892965">Dozwolone przez administratora</translation>
 <translation id="4275830172053184480">Zrestartuj urządzenie</translation>
 <translation id="4277028893293644418">Resetuj hasło</translation>
+<translation id="4279811152705618813">Twoim urządzeniem (<ph name="DEVICE_TYPE" />) zarządza domena <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="4280429058323657511">, ważna do: <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Ta karta została zapisana na Twoim koncie Google}few{Te karty zostały zapisane na Twoim koncie Google}many{Te karty zostały zapisane na Twoim koncie Google}other{Te karty zostały zapisane na Twoim koncie Google}}</translation>
 <translation id="42981349822642051">Rozwiń</translation>

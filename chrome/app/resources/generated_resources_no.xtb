@@ -798,6 +798,7 @@
 <translation id="2241053333139545397">lese og endre opplysningene dine på mange nettsteder</translation>
 <translation id="2241634353105152135">Bare én gang</translation>
 <translation id="2242687258748107519">Filinformasjon</translation>
+<translation id="2246549592927364792">Vil du få bildebeskrivelser fra Google?</translation>
 <translation id="224940702122312781">Denne siden bruker mye data.</translation>
 <translation id="2249605167705922988">f.eks. 1–5, 8, 11–13</translation>
 <translation id="2251218783371366160">Åpne med visningsprogrammet for systemet</translation>
@@ -1102,6 +1103,7 @@
 <translation id="271033894570825754">Ny</translation>
 <translation id="2714393097308983682">Google Play Butikk</translation>
 <translation id="2715751256863167692">Oppgraderingen tilbakestiller Chromebooken og fjerner gjeldende brukerdata.</translation>
+<translation id="2716986496990888774">Denne innstillingen administreres av en forelder.</translation>
 <translation id="2718395828230677721">Nattlys</translation>
 <translation id="2718998670920917754">Anti-virusprogramvaren oppdaget et virus.</translation>
 <translation id="2719936478972253983">Følgende informasjonskapsler er blokkert</translation>
@@ -1213,6 +1215,7 @@
 <translation id="2874939134665556319">Forrige spor</translation>
 <translation id="2875698561019555027">(Chrome-feilsider)</translation>
 <translation id="2876336351874743617">Finger 2</translation>
+<translation id="2876369937070532032">Sender Google nettadressene til noen av sidene du besøker, når sikkerheten din står i fare</translation>
 <translation id="288042212351694283">Tilgang til de universelle annenfaktorenhetene dine</translation>
 <translation id="2881076733170862447">Når du klikker på utvidelsen</translation>
 <translation id="2881966438216424900">Sist åpnet:</translation>
@@ -1395,6 +1398,7 @@
 <translation id="3170072451822350649">Du kan også hoppe over påloggingen og <ph name="LINK_START" />surfe som gjest<ph name="LINK_END" />.</translation>
 <translation id="3172045848207518317">Et nettsted har tilgang til videoinndata</translation>
 <translation id="3177909033752230686">Språket siden er på:</translation>
+<translation id="3181954750937456830">Safe Browsing (beskytter deg og enheten din mot farlige nettsteder)</translation>
 <translation id="3182749001423093222">Stavekontroll</translation>
 <translation id="3183139917765991655">Profile Importer</translation>
 <translation id="3188465121994729530">Glidende gjennomsnitt</translation>
@@ -1699,6 +1703,7 @@
 <translation id="3664511988987167893">Utvidelsesikon</translation>
 <translation id="3665589677786828986">Chrome har oppdaget at noen av innstillingene ble ødelagt av et annet program og tilbakestille dem til originalinnstillingene.</translation>
 <translation id="3668570675727296296">Språkinnstillinger</translation>
+<translation id="366867565525278777">Installasjonen mislyktes på grunn av mangel på lagringsplass. Minst <ph name="INSTALL_SIZE" /> ledig plass kreves. For å frigjøre plass, slett filer fra enhetslagringen.</translation>
 <translation id="3668801437375206837">For å diagnostisere Bluetooth-problemer kan Googlere inkludere flere Bluetooth-logger i tilbakemeldingsrapportene sine. Når dette alternativet er avmerket, inkluderer rapporten din btsnoop- and HCI-logger fra den gjeldende økten din. Disse er anonymisert for å fjerne så mye personlig identifiserende informasjon (PII) som mulig. Tilgang til disse loggene blir begrenset til administratorer av Chrome OS-produktgruppen i Listnr. Logger slettes permanent etter 90 dager.</translation>
 <translation id="3668823961463113931">Behandlere</translation>
 <translation id="3670113805793654926">Enheter fra alle leverandører</translation>
@@ -2006,6 +2011,7 @@
 <translation id="409579654357498729">Legg til Cloud Print</translation>
 <translation id="4096508467498758490">Deaktiver utvidelser for utviklermodus</translation>
 <translation id="4096824249111507322">Den sikre modulen klargjøres. Vent litt – dette kan ta noen få minutter.</translation>
+<translation id="4097560579602855702">Søk på Google</translation>
 <translation id="4099060993766194518">Vil du gjenopprette standardsøkemotoren?</translation>
 <translation id="4099874310852108874">Det oppsto en nettverksfeil.</translation>
 <translation id="4100733287846229632">Det er kritisk lite plass på enheten</translation>
@@ -4006,6 +4012,7 @@
 <translation id="7289225569524511578">Åpne bakgrunnsappen</translation>
 <translation id="7290242001003353852">Denne påloggingstjenesten, som driftes av <ph name="SAML_DOMAIN" />, har tilgang til kameraet ditt</translation>
 <translation id="7290594223351252791">Bekreft registrering</translation>
+<translation id="7295614427631867477">Merk at Android, Play og tilknyttede apper er styrt av sine egne retningslinjer for datainnsamling og bruk.</translation>
 <translation id="729583233778673644">Tillat AES- og RC4-kryptering. Hvis du bruker dette alternativet, øker risikoen, ettersom RC4-chiffere ikke er sikre.</translation>
 <translation id="7296774163727375165"><ph name="DOMAIN" />-vilkår</translation>
 <translation id="7297443947353982503">Brukernavn/passord er galt, eller så mislyktes EAP-autorisasjonen</translation>
@@ -4280,6 +4287,7 @@
 <translation id="7732111077498238432">Nettverket er kontrollert av regler</translation>
 <translation id="7737238973539693982">Slett Linux (beta)</translation>
 <translation id="7740996059027112821">Standard</translation>
+<translation id="7746457520633464754">For å oppdage farlige apper og nettsteder sender Chrome nettadressene til noen av sidene du besøker, begrenset systeminformasjon og noe sideinnhold til Google.</translation>
 <translation id="7750228210027921155">Bilde i bilde</translation>
 <translation id="7751260505918304024">Vis alle</translation>
 <translation id="7754704193130578113">Spør før nedlasting hvor hver fil skal lagres</translation>
@@ -4964,6 +4972,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8780123805589053431">Få bildebeskrivelser fra Google</translation>
 <translation id="8780443667474968681">Talesøk er slått av.</translation>
 <translation id="878069093594050299">Dette sertifikatet er verifisert for følgende bruksområder:</translation>
+<translation id="8781470833671194250">Stabilisering av klikkposisjon</translation>
 <translation id="8781980678064919987">Slå av maskinen når den lukkes</translation>
 <translation id="8782565991310229362">Oppstart av kiosk-appen er avbrutt.</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; vil dele skriveren &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; med deg.</translation>

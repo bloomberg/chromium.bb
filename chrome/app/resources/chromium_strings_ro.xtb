@@ -51,6 +51,7 @@
 <translation id="2718390899429598676">Pentru un plus de securitate, Chromium îți va cripta datele.</translation>
 <translation id="2770231113462710648">Schimbă browserul prestabilit la:</translation>
 <translation id="2799223571221894425">Repornește</translation>
+<translation id="2838154144102149890">Pentru a se actualiza, Chromium trebuie să nu mai ruleze pe acest computer. Din acest motiv, alți utilizatori conectați la acest computer pot pierde modificări nesalvate.</translation>
 <translation id="2847479871509788944">Elimină din Chromium...</translation>
 <translation id="2886012850691518054">Opțional: contribuie la îmbunătățirea Chromium prin trimiterea automată de statistici privind utilizarea și rapoarte de blocare la Google.</translation>
 <translation id="2898082584336937987">Instalează Chromium pe telefon. Vom trimite un SMS pe telefonul tău: <ph name="PHONE_NUMBER" /></translation>
@@ -187,6 +188,7 @@ Este posibil ca unele funcții să nu fie disponibile. Specificați un director 
 <translation id="6810143991807788455">Contribuie la îmbunătățirea browserului Chromium raportând setările actuale</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (copiat în Chromium)</translation>
+<translation id="6868056391275687737">Alte copii de Chromium rulează acum. Pentru a actualiza, închide-le.</translation>
 <translation id="6893813176749746474">Chromium a fost actualizat, dar nu l-ați utilizat de cel puțin 30 de zile.</translation>
 <translation id="6964305034639999644">Deschide linkul într-o fereastră Chromium inco&amp;gnito</translation>
 <translation id="6970811910055250180">Se actualizează dispozitivul...</translation>
@@ -257,6 +259,7 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="8697124171261953979">Stabilește și ce pagină se afișează când porniți Chromium sau când căutați din caseta polivalentă.</translation>
 <translation id="8704119203788522458">Acesta este browserul dvs. Chromium</translation>
 <translation id="8704255848199359374">Folosește același verificator ortografic folosit în Căutarea Google. Textul pe care îl introduci în browser este trimis la Google. Poți schimba acest comportament în setări.</translation>
+<translation id="8748383401829947534">Închideți toate copiile de Chromium.</translation>
 <translation id="8796602469536043152">Chromium are nevoie de permisiune ca să acceseze camera foto și microfonul pentru acest site</translation>
 <translation id="8803635938069941624">Termeni pentru sistemul de operare Chromium</translation>
 <translation id="8821041990367117597">Chromium nu a putut sincroniza datele, deoarece detaliile de conectare pentru contul dvs. nu sunt actualizate.</translation>

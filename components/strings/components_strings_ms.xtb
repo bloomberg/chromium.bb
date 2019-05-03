@@ -218,6 +218,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">Kad</translation>
 <translation id="2114841414352855701">Diabaikan kerana ia telah diatasi oleh <ph name="POLICY_NAME" />.</translation>
+<translation id="2129079103035905234">Penderia Gerakan</translation>
 <translation id="213826338245044447">Penanda Halaman Mudah Alih</translation>
 <translation id="214556005048008348">Batalkan pembayaran</translation>
 <translation id="2147827593068025794">Penyegerakan Latar Belakang</translation>
@@ -612,6 +613,7 @@
 <translation id="4265872034478892965">Dibenarkan oleh pentadbir anda</translation>
 <translation id="4275830172053184480">Mulakan semula peranti anda</translation>
 <translation id="4277028893293644418">Tetapkan semula kata laluan</translation>
+<translation id="4279811152705618813"><ph name="DEVICE_TYPE" /> anda diurus oleh <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="4280429058323657511">, tamat tempoh <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Kad ini telah disimpan ke Akaun Google anda}other{Kad ini telah disimpan ke Akaun Google anda}}</translation>
 <translation id="42981349822642051">Kembangkan</translation>

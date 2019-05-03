@@ -27,6 +27,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="1585657529869845941">Klicka på <ph name="BEGIN_BOLD" />Byt ändå<ph name="END_BOLD" /> om det visas</translation>
 <translation id="1587223624401073077">Google Chrome använder din kamera.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> är skadlig och har blockerats av Chrome.</translation>
+<translation id="1590588151039584890">Chrome måste sluta att köras på datorn för att uppdateras. Detta kan innebära att andra användare som är inloggade på datorn förlorar ändringar som inte har sparats.</translation>
 <translation id="1619887657840448962">Vi har gjort Chromium säkrare genom att inaktivera följande tillägg som inte anges i <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> och som kan ha lagts till utan att du vet om det.</translation>
 <translation id="1628000112320670027">Få hjälp med Chrome</translation>
 <translation id="1662639173275167396">Chrome OS fungerar tack vare <ph name="BEGIN_LINK_CROS_OSS" />program med öppen källkod<ph name="END_LINK_CROS_OSS" />, liksom <ph name="BEGIN_LINK_LINUX_OSS" />Linux (beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
@@ -172,6 +173,7 @@ Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog om d
 
 Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="5483595757826856374">{0,plural, =0{Chrome startas om nu}=1{Om en sekund startas Chrome om}other{Om # sekunder startas Chrome om}}</translation>
+<translation id="5543953544073077331">Andra kopior av Chrome körs. Stäng dem om du vill uppdatera.</translation>
 <translation id="556024056938947818">Google Chrome försöker visa lösenord.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> kan vara skadlig och har blockerats av Chrome.</translation>
@@ -232,6 +234,7 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="7473136999113284234">Chrome uppdateras automatiskt så att du alltid har den senaste versionen.</translation>
 <translation id="7486227612705979895">Chrome får åtkomst till din Drive så att du kan få förslag därifrån i adressfältet</translation>
 <translation id="748945194546522577">Filen är farlig och har blockerats av Chrome. Du skyddas med Avancerat skydd.</translation>
+<translation id="7531671357096394523">Stäng alla kopior av Chrome.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Visa Chrome OS på det här språket.</translation>
 <translation id="7561940363513215021">{0,plural, =1{Om en minut startas Chrome om}other{Om # minuter startas Chrome om}}</translation>

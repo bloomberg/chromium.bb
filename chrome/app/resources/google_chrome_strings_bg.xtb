@@ -25,6 +25,7 @@
 <translation id="1585657529869845941">Кликнете върху бутона <ph name="BEGIN_BOLD" />Превключване въпреки това<ph name="END_BOLD" />, ако се показва</translation>
 <translation id="1587223624401073077">Google Chrome използва камерата ви.</translation>
 <translation id="1587325591171447154">Chrome блокира „<ph name="FILE_NAME" />“, тъй като файлът е опасен.</translation>
+<translation id="1590588151039584890">За да се извърши актуализацията, Chrome трябва да спре работа на този компютър. Това може да доведе до изтриване на незапазените промени на други потребители, които са влезли в профила си на този компютър.</translation>
 <translation id="1619887657840448962">За да направим Chrome по-безопасен, деактивирахме следното разширение, което липсва от <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> и може да е било добавено без ваше знание.</translation>
 <translation id="1628000112320670027">Получаване на помощ за Chrome</translation>
 <translation id="1662639173275167396">Chrome OS е възможна благодарение на допълнителен <ph name="BEGIN_LINK_CROS_OSS" />софтуер с отворен код<ph name="END_LINK_CROS_OSS" />. Това се отнася и за <ph name="BEGIN_LINK_LINUX_OSS" />Linux (бета)<ph name="END_LINK_LINUX_OSS" />.</translation>
@@ -166,6 +167,7 @@
 <translation id="5386244825306882791">То също контролира коя страница се показва при стартиране на Chrome или при търсене от полето за всичко.</translation>
 <translation id="5430073640787465221">Файлът с предпочитанията ви е повреден или невалиден. Google Chrome не може да възстанови настройките ви.</translation>
 <translation id="5483595757826856374">{0,plural, =0{Chrome ще се стартира отново сега}=1{Chrome ще се стартира отново след 1 секунда}other{Chrome ще се стартира отново след # секунди}}</translation>
+<translation id="5543953544073077331">Изпълняват се други копия на Chrome. Затворете ги, за да актуализирате.</translation>
 <translation id="556024056938947818">Google Chrome опитва да покаже паролите.</translation>
 <translation id="5566025111015594046">Google Chrome (входящ трафик за mDNS)</translation>
 <translation id="565744775970812598">Chrome блокира „<ph name="FILE_NAME" />“, тъй като файлът може да е опасен.</translation>
@@ -226,6 +228,7 @@
 <translation id="7473136999113284234">Chrome се актуализира автоматично, така че винаги да имате най-новата версия.</translation>
 <translation id="7486227612705979895">Chrome ще осъществява достъп до хранилището ви в Диск, за да извежда предложения в адресната лента</translation>
 <translation id="748945194546522577">Chrome блокира този файл, тъй като е опасен. Функцията за разширена защита се грижи за безопасността ви.</translation>
+<translation id="7531671357096394523">Затваряне на всички копия на Chrome.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Показване на Chrome OS на този език</translation>
 <translation id="7561940363513215021">{0,plural, =1{Chrome ще се стартира отново след 1 минута}other{Chrome ще се стартира отново след # минути}}</translation>

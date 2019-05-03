@@ -1380,6 +1380,7 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
       Se esta política for definida como "DeveloperToolsAllowed" (valor 1), as Ferramentas para Desenvolvedores e o Console JavaScript poderão ser acessados e usados em todos os contextos, incluindo extensões instaladas por uma política corporativa.
       Se esta política for definida como "DeveloperToolsDisallowed" (valor 2), as Ferramentas para Desenvolvedores não poderão ser acessadas, e os elementos do site não poderão mais ser inspecionados. Todos os atalhos do teclado e quaisquer entradas de menus e de menus de contexto para abrir as Ferramentas para Desenvolvedores ou o Console JavaScript serão desativados.</translation>
 <translation id="3547954654003013442">Configurações de proxy</translation>
+<translation id="3550875587920006460">Permite configurar uma programação personalizada para verificar se há atualizações. Isso se aplica a todos os usuários e a todas as interfaces no dispositivo. Depois de configurada, o dispositivo verificará se há atualizações de acordo com a programação. A política precisa ser removida para cancelar outras verificações de atualização programadas.</translation>
 <translation id="355118380775352753">Sites que serão abertos no navegador alternativo</translation>
 <translation id="3554984410014457319">Permitir que a frase de ativação por voz seja ouvida pelo Google Assistente</translation>
 <translation id="356579196325389849">Os usuários podem configurar o canal de lançamento do Chrome OS</translation>
@@ -1624,6 +1625,21 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
       Se essa política for definida como "true" ou não for definida, os usuários terão permissão para resgatar ofertas por meio do registro do Chrome OS.
 
       Se essa política for definida como "false", os usuários não terão permissão para resgatar ofertas.</translation>
+<translation id="4008233182078913897">Especifica uma lista de apps e extensões que são instalados silenciosamente, sem interação do usuário e que não podem ser desinstalados ou desativados pelo usuário. Todas as permissões solicitadas pelos apps/extensões são concedidas implicitamente, sem interação do usuário, incluindo permissões extras solicitadas por futuras versões do app/extensão. Além disso, são concedidas permissões para as APIs de extensão enterprise.deviceAttributes e enterprise.platformKeys. Essas duas APIs não estão disponíveis para apps/extensões que não tenham sido instalados forçadamente.
+
+          Esta política tem precedência sobre uma política <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> potencialmente conflitante. Se um app ou extensão anteriormente instalado de modo forçado for removido dessa lista, ele será automaticamente desinstalado pelo <ph name="PRODUCT_NAME" />.
+
+          Em instâncias do Windows não vinculadas a um domínio do <ph name="MS_AD_NAME" />, a instalação forçada limita-se a apps e extensões listados na Chrome Web Store.
+
+          Observe que o código-fonte de qualquer extensão pode ser alterado pelos usuários por meio das Ferramentas para Desenvolvedores (possivelmente tornando a extensão defeituosa). Se essa preocupação existir, será preciso definir a política <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+          Cada item da lista da política é uma string que contém um código de extensão e, opcionalmente, um URL de "atualização" separados por ponto e vírgula (<ph name="SEMICOLON" />). O código da extensão é a string de 32 letras encontrada, por exemplo, em <ph name="CHROME_EXTENSIONS_LINK" /> no modo de desenvolvedor. O URL de "atualização", se especificado, precisa apontar para um documento XML de manifesto de atualização, conforme descrito em <ph name="LINK_TO_EXTENSION_DOC1" />. Por padrão, é usado o URL de "atualização" da Chrome Web Store (atualmente, "https://clients2.google.com/service/update2/crx"). Observe que o URL de "atualização" definido nesta política só é usado na instalação inicial. As atualizações subsequentes da extensão empregam o URL de atualização indicado no manifesto da extensão. Observe também que especificar o URL de "atualização" era uma etapa obrigatória nas versões do <ph name="PRODUCT_NAME" /> até a 67.
+
+          Por exemplo, <ph name="EXTENSION_POLICY_EXAMPLE" /> instala a extensão com código <ph name="EXTENSION_ID_SAMPLE" /> por meio do URL de "atualização" padrão da Chrome Web Store. Para ver mais informações sobre extensões de hospedagem, consulte: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Se esta política não for definida, nenhum app ou extensão será instalado automaticamente, e o usuário poderá desinstalar apps ou extensões no <ph name="PRODUCT_NAME" />.
+
+          Observe que esta política não se aplica ao modo de navegação anônima.</translation>
 <translation id="4008507541867797979">Se esta política for definida como verdadeira ou não for configurada, o <ph name="PRODUCT_OS_NAME" /> mostrará os usuários existentes na tela de login, permitindo escolher um deles.
 
       Se esta política for definida como falsa, o <ph name="PRODUCT_OS_NAME" /> não mostrará os usuários existentes na tela de login. A tela de login normal (que solicita o e-mail e a senha ou o número de telefone do usuário) ou a tela intersticial SAML (se tiver sido ativada por meio da política <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />) será mostrada, a menos que uma sessão gerenciada tenha sido configurada. Se uma sessão gerenciada tiver sido configurada, apenas as contas da sessão gerenciada serão mostradas, permitindo escolher uma delas.
@@ -2556,6 +2572,12 @@ Se esta política não for definida, qualquer plug-in que corresponder aos padr�
       Se a política não estiver configurada, as configurações padrão de isolamento de sites da plataforma serão usadas para a tela de login.
       </translation>
 <translation id="5901427587865226597">Apenas impressão duplex</translation>
+<translation id="5903898512448364160">
+      Se a política for definida como verdadeira, a política da nuvem terá precedência caso haja conflito com a da plataforma.
+      Se a política for definida como falsa ou não for configurada, a política da plataforma terá precedência caso haja conflito com a política da nuvem.
+
+      Esta política está disponível apenas como uma política de plataforma de máquina obrigatória e afeta as políticas da nuvem no escopo da máquina.
+      </translation>
 <translation id="5905473632148429217">Ativar verificações OCSP/CRL on-line</translation>
 <translation id="5906199912611534122">Permite ativar ou desativar a limitação da rede.
       Essa opção se aplica a todos os usuários e todas as interfaces no dispositivo. Depois que a política é definida,
@@ -2582,6 +2604,7 @@ Se esta política não for definida, qualquer plug-in que corresponder aos padr�
 
       Se você desativar esta configuração ou não definir nenhum valor, o SafeSearch não será aplicado na Pesquisa Google.</translation>
 <translation id="5946082169633555022">Canal Beta</translation>
+<translation id="5946329690214660966">Definir programação personalizada para verificar se há atualizações</translation>
 <translation id="5950205771952201658">Considerando que as verificações de revogação on-line de sistemas tolerantes a falhas (soft-fail) não fornecem benefícios de segurança efetivos, elas são desativadas por padrão nas versões 19 e posteriores do <ph name="PRODUCT_NAME" />. Quando essa política é configurada como "true", o comportamento anterior é restaurado, e as verificações on-line de OCSP/CRL são realizadas.
 
       Se a política não é definida ou é definida como "false", o <ph name="PRODUCT_NAME" /> não realiza verificações de revogação on-line no <ph name="PRODUCT_NAME" /> 19 e versões posteriores.</translation>
@@ -2648,6 +2671,7 @@ Se esta política não for definida, qualquer plug-in que corresponder aos padr�
 <translation id="6034341625190551415">Controla sessões públicas e tipos de conta de quiosque.</translation>
 <translation id="6034603289689965535">Permite que uma página mostre pop-ups ao fazer unload</translation>
 <translation id="6036523166753287175">Habilitar passagem de firewall a partir do host de acesso remoto</translation>
+<translation id="605475635122964053">Restringe o modo de impressão com PIN. Se esta política não for definida, não haverá restrição. Se o modo não estiver disponível, a política será ignorada. O recurso de impressão com PIN está disponível somente para impressoras que usam um dos protocolos IPPS, USB ou IPP-over-USB </translation>
 <translation id="6070667616071269965">Layouts de teclado da tela de login do dispositivo</translation>
 <translation id="6074963268421707432">Não permitir que nenhum site exiba notificações da área de trabalho</translation>
 <translation id="6074964551275531965">Define o período para notificações de atualização</translation>

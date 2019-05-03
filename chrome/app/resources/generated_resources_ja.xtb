@@ -801,6 +801,7 @@
 <translation id="2241053333139545397">多数のウェブサイト上にある自分のデータの読み取りと変更</translation>
 <translation id="2241634353105152135">一回限り</translation>
 <translation id="2242687258748107519">ファイル情報</translation>
+<translation id="2246549592927364792">Google から画像の説明を取得しますか？</translation>
 <translation id="224940702122312781">このページでは大量のデータが使用されます。</translation>
 <translation id="2249605167705922988">例 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">システム ビューアで開く</translation>
@@ -1106,6 +1107,7 @@
 <translation id="271033894570825754">新しいファイル</translation>
 <translation id="2714393097308983682">Google Play ストア</translation>
 <translation id="2715751256863167692">このアップグレードを行うと、Chromebook がリセットされ、現在のユーザーデータは削除されます。</translation>
+<translation id="2716986496990888774">この設定は保護者によって管理されています。</translation>
 <translation id="2718395828230677721">夜間モード</translation>
 <translation id="2718998670920917754">ウイルス対策ソフトウェアでウイルスが検出されました。</translation>
 <translation id="2719936478972253983">以下の Cookie がブロックされました</translation>
@@ -1217,6 +1219,7 @@
 <translation id="2874939134665556319">前のトラック</translation>
 <translation id="2875698561019555027">（Chrome エラーページ）</translation>
 <translation id="2876336351874743617">指 2</translation>
+<translation id="2876369937070532032">セキュリティ上のリスクがある場合に、アクセスした一部のページの URL を Google に送信します</translation>
 <translation id="288042212351694283">U2F（Universal 2nd Factor）デバイスにアクセスできませんでした。</translation>
 <translation id="2881076733170862447">拡張機能をクリックしたとき</translation>
 <translation id="2881966438216424900">最終アクセス日:</translation>
@@ -1399,6 +1402,7 @@
 <translation id="3170072451822350649">ログインせずに<ph name="LINK_START" />ゲストとしてブラウジング<ph name="LINK_END" />することもできます。</translation>
 <translation id="3172045848207518317">サイトがビデオ入力にアクセスしています</translation>
 <translation id="3177909033752230686">ページの言語:</translation>
+<translation id="3181954750937456830">セーフ ブラウジング（危険なサイトからユーザーとデバイスを保護します）</translation>
 <translation id="3182749001423093222">スペルチェック</translation>
 <translation id="3183139917765991655">プロフィール インポーター</translation>
 <translation id="3188465121994729530">移動平均</translation>
@@ -1704,6 +1708,7 @@
 <translation id="3664511988987167893">拡張機能アイコン</translation>
 <translation id="3665589677786828986">設定の一部が別のプログラムによって変更されていたため、元のデフォルト設定に戻しました。</translation>
 <translation id="3668570675727296296">言語設定</translation>
+<translation id="366867565525278777">ストレージの空き容量が不足しているため、インストールできませんでした。少なくとも <ph name="INSTALL_SIZE" /> の空き容量が必要です。空き領域を確保するために、デバイスのストレージからファイルを削除してください。</translation>
 <translation id="3668801437375206837">Bluetooth の問題の診断に向けて、Google 社員はフィードバック レポートに追加の Bluetooth ログを含めることができます。このオプションのチェックボックスがオンになっている場合、レポートには現在のセッションの btsnoop ログと HCI ログが含められます。その際、個人を特定できる情報は可能な限り削除されます。これらのログへのアクセスは、Listnr での Chrome OS プロダクト グループのマネージャーのみに制限されます。ログは 90 日経過後に消去されます。</translation>
 <translation id="3668823961463113931">ハンドラ</translation>
 <translation id="3670113805793654926">任意のベンダーのデバイス</translation>
@@ -2013,6 +2018,7 @@
 <translation id="409579654357498729">クラウド プリントに追加</translation>
 <translation id="4096508467498758490">デベロッパー モードの拡張機能を無効にする</translation>
 <translation id="4096824249111507322">セキュア モジュールを準備しています。しばらくお待ちください。これには数分かかることがあります。</translation>
+<translation id="4097560579602855702">Google で検索</translation>
 <translation id="4099060993766194518">既定の検索エンジンに戻しますか？</translation>
 <translation id="4099874310852108874">ネットワークエラーが発生しました。</translation>
 <translation id="4100733287846229632">デバイスの空き領域が非常に少なくなっています</translation>
@@ -4013,6 +4019,7 @@
 <translation id="7289225569524511578">壁紙アプリを開きます</translation>
 <translation id="7290242001003353852">このログイン サービスは <ph name="SAML_DOMAIN" /> でホストされており、カメラにアクセスしています。</translation>
 <translation id="7290594223351252791">登録の確認</translation>
+<translation id="7295614427631867477">なお、Android、Play、および関連付けられているアプリには、それぞれ独自のデータ収集と使用のポリシーが適用されます。</translation>
 <translation id="729583233778673644">AES 暗号化と RC4 暗号化を許可します。なお RC4 暗号は安全でないため、このオプションを使用するとリスクが高まります。</translation>
 <translation id="7296774163727375165"><ph name="DOMAIN" /> 利用規約</translation>
 <translation id="7297443947353982503">ユーザー名/パスワードが正しくないか、EAP 認証に失敗しました</translation>
@@ -4290,6 +4297,7 @@
 <translation id="7732111077498238432">ネットワークはポリシーによって管理されています</translation>
 <translation id="7737238973539693982">Linux（ベータ版）の削除</translation>
 <translation id="7740996059027112821">標準</translation>
+<translation id="7746457520633464754">危険なアプリやサイトを検出するために、アクセスした一部のページの URL と限定的なシステム情報、一部のページ コンテンツが Chrome から Google に送信されます</translation>
 <translation id="7750228210027921155">ピクチャー イン ピクチャー</translation>
 <translation id="7751260505918304024">すべて表示</translation>
 <translation id="7754704193130578113">ダウンロード前に各ファイルの保存場所を確認する</translation>
@@ -4974,6 +4982,7 @@
 <translation id="8780123805589053431">Google から画像の説明を取得</translation>
 <translation id="8780443667474968681">音声検索がオフになっています。</translation>
 <translation id="878069093594050299">この証明書は、以下の用途に使用できることが確認されています:</translation>
+<translation id="8781470833671194250">クリック位置のブレ補正</translation>
 <translation id="8781980678064919987">ディスプレイを閉じたときにシャットダウンする</translation>
 <translation id="8782565991310229362">キオスク アプリケーションの起動がキャンセルされました。</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; さんがあなたと &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; プリンタを共有をすることを希望しています。</translation>

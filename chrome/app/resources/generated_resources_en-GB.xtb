@@ -465,6 +465,7 @@
 <translation id="1711401317189798723">Backup currently in progress for <ph name="CONTAINER_ID" /></translation>
 <translation id="1712349894969001173">Get this password on your iPhone</translation>
 <translation id="1712552549805331520"><ph name="URL" /> wants to permanently store data on your local computer</translation>
+<translation id="1717218214683051432">Motion sensors</translation>
 <translation id="1718835860248848330">Last hour</translation>
 <translation id="1719312230114180055">Note: Your fingerprint may be less secure than a strong password or PIN.</translation>
 <translation id="1720318856472900922">TLS WWW Server Authentication</translation>
@@ -801,6 +802,7 @@
 <translation id="2241053333139545397">Read and change your data on a number of websites</translation>
 <translation id="2241634353105152135">Just once</translation>
 <translation id="2242687258748107519">File Info</translation>
+<translation id="2246549592927364792">Get image descriptions from Google?</translation>
 <translation id="224940702122312781">This page will use a lot of data.</translation>
 <translation id="2249605167705922988">e.g. 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">Open with system viewer</translation>
@@ -1105,6 +1107,7 @@
 <translation id="271033894570825754">New</translation>
 <translation id="2714393097308983682">Google Play Store</translation>
 <translation id="2715751256863167692">This upgrade resets your Chromebook and removes current user data.</translation>
+<translation id="2716986496990888774">This setting is managed by a parent.</translation>
 <translation id="2718395828230677721">Night Light</translation>
 <translation id="2718998670920917754">Anti-virus software detected a virus.</translation>
 <translation id="2719936478972253983">The following cookies were blocked</translation>
@@ -1216,6 +1219,7 @@
 <translation id="2874939134665556319">Previous track</translation>
 <translation id="2875698561019555027">(Chrome error pages)</translation>
 <translation id="2876336351874743617">Finger 2</translation>
+<translation id="2876369937070532032">Sends URLs of some pages that you visit to Google, when your security is at risk</translation>
 <translation id="288042212351694283">Access your Universal 2nd Factor devices</translation>
 <translation id="2881076733170862447">When you click the extension</translation>
 <translation id="2881966438216424900">Last accessed:</translation>
@@ -1398,6 +1402,7 @@
 <translation id="3170072451822350649">You may also skip signing in and <ph name="LINK_START" />browse as Guest<ph name="LINK_END" />.</translation>
 <translation id="3172045848207518317">A site is accessing video input</translation>
 <translation id="3177909033752230686">Page language:</translation>
+<translation id="3181954750937456830">Safe Browsing (protects you and your device from dangerous sites)</translation>
 <translation id="3182749001423093222">Spell check</translation>
 <translation id="3183139917765991655">Profile Importer</translation>
 <translation id="3188465121994729530">Moving Average</translation>
@@ -1703,6 +1708,7 @@
 <translation id="3664511988987167893">Extension Icon</translation>
 <translation id="3665589677786828986">Chrome detected that some of your settings were corrupted by another program and reset them to their original defaults.</translation>
 <translation id="3668570675727296296">Language settings</translation>
+<translation id="366867565525278777">Installation failed due to lack of storage space. At least <ph name="INSTALL_SIZE" /> of free space is required. To free up space, delete files from device storage.</translation>
 <translation id="3668801437375206837">To better diagnose Bluetooth issues, Googlers can include additional Bluetooth logs with their feedback reports. When this option is ticked, your report will include btsnoop and HCI logs from your current session, sanitised to remove as much PII as possible. Access to these logs will be restricted to managers of the Chrome OS product group in Listnr. Logs will be purged after 90 days.</translation>
 <translation id="3668823961463113931">Handlers</translation>
 <translation id="3670113805793654926">Devices from any vendor</translation>
@@ -2045,6 +2051,7 @@
 <translation id="4146026355784316281">Always Open With System Viewer</translation>
 <translation id="4146785383423576110">Reset and clean up</translation>
 <translation id="4147911968024186208">Please retry. If you see this error again, please contact your support representative.</translation>
+<translation id="4150125039112138020">|</translation>
 <translation id="4150201353443180367">Display</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 tab}other{# tabs}}</translation>
 <translation id="4154664944169082762">Fingerprints</translation>
@@ -2246,6 +2253,7 @@
 <translation id="4524832533047962394">The supplied enrolment mode is not supported by this version of the operating system. Please make sure that you are running the newest version.</translation>
 <translation id="4525382759303819021">Get the latest updates and recommendations on Play Store apps</translation>
 <translation id="4530494379350999373">Origin</translation>
+<translation id="4532646538815530781">This site is using motion sensors.</translation>
 <translation id="4533846798469727141">Now say "Hey Google"</translation>
 <translation id="4533985347672295764">CPU Time</translation>
 <translation id="4534661889221639075">Try again.</translation>
@@ -2480,6 +2488,7 @@
 <translation id="4892229439761351791">Site can use Bluetooth</translation>
 <translation id="4893336867552636863">This will permanently delete your browsing data from this device.</translation>
 <translation id="4893522937062257019">On the lock screen</translation>
+<translation id="489454699928748701">Allow sites to use motion sensors</translation>
 <translation id="4898011734382862273">The certificate '<ph name="CERTIFICATE_NAME" />' represents a Certification Authority</translation>
 <translation id="489985760463306091">To finish removing harmful software, restart your computer</translation>
 <translation id="4900392736118574277">Your start-up page was changed to <ph name="URL" />.</translation>
@@ -2943,6 +2952,7 @@
 <translation id="5620568081365989559">DevTools requests full access to <ph name="FOLDER_PATH" />. Make sure that you do not expose any sensitive information.</translation>
 <translation id="5620612546311710611">usage statistics</translation>
 <translation id="5620655347161642930">Export passwords…</translation>
+<translation id="5623282979409330487">This site is accessing your motion sensors.</translation>
 <translation id="5623842676595125836">Log</translation>
 <translation id="5624120631404540903">Manage passwords</translation>
 <translation id="5626134646977739690">Name:</translation>
@@ -3436,6 +3446,7 @@
 <translation id="6390994422085833176">Review sync and personalisation features following setup</translation>
 <translation id="6393156038355142111">Suggest strong password</translation>
 <translation id="6395423953133416962">Send <ph name="BEGIN_LINK1" />system information<ph name="END_LINK1" /> and <ph name="BEGIN_LINK2" />metrics<ph name="END_LINK2" /></translation>
+<translation id="6396988158856674517">Block sites from using motion sensors</translation>
 <translation id="6397094776139756010">Sync and personalisation options</translation>
 <translation id="6398715114293939307">Remove Google Play Store</translation>
 <translation id="6398765197997659313">Exit full screen</translation>
@@ -3530,6 +3541,7 @@
 <translation id="6531282281159901044">Keep dangerous file</translation>
 <translation id="6532101170117367231">Save to Google Drive</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Note:<ph name="END_BOLD" /> Only enable if you know what you are doing or if you have been asked to do so, as collection of data may reduce performance.</translation>
+<translation id="6541638731489116978">This site has been blocked from accessing your motion sensors.</translation>
 <translation id="654233263479157500">Use a web service to help resolve navigation errors</translation>
 <translation id="6544215763872433504">The web browser by Google, for you</translation>
 <translation id="6545665334409411530">Repeat rate</translation>
@@ -4013,6 +4025,7 @@
 <translation id="7289225569524511578">Open the wallpaper app</translation>
 <translation id="7290242001003353852">This sign-in service, hosted by <ph name="SAML_DOMAIN" />, is accessing your camera.</translation>
 <translation id="7290594223351252791">Confirm registration</translation>
+<translation id="7295614427631867477">Note that Android, Play and associated apps are governed by their own data collection and use policies.</translation>
 <translation id="729583233778673644">Allow AES and RC4 encryption. Using this option increases your risk, as the RC4 ciphers are insecure.</translation>
 <translation id="7296774163727375165"><ph name="DOMAIN" /> Terms</translation>
 <translation id="7297443947353982503">Username/password incorrect or EAP-auth failed</translation>
@@ -4269,6 +4282,7 @@
 <translation id="7704628569466676326">Pair your security key to this device so that you can use it to sign into your account</translation>
 <translation id="7705276765467986571">Could not load bookmark model.</translation>
 <translation id="7705524343798198388">VPN</translation>
+<translation id="7707108266051544351">This site has been blocked from using motion sensors.</translation>
 <translation id="7707922173985738739">Use mobile data</translation>
 <translation id="7709152031285164251">Failed - <ph name="INTERRUPT_REASON" /></translation>
 <translation id="7710568461918838723">&amp;Cast...</translation>
@@ -4289,6 +4303,7 @@
 <translation id="7732111077498238432">Network is policy controlled</translation>
 <translation id="7737238973539693982">Delete Linux (Beta)</translation>
 <translation id="7740996059027112821">Standard</translation>
+<translation id="7746457520633464754">To detect dangerous apps and sites, Chrome sends URLs of some pages that you visit, limited system information and some page content to Google</translation>
 <translation id="7750228210027921155">Picture-in-picture</translation>
 <translation id="7751260505918304024">Show all</translation>
 <translation id="7754704193130578113">Ask where to save each file before downloading</translation>
@@ -4973,6 +4988,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8780123805589053431">Get image descriptions from Google</translation>
 <translation id="8780443667474968681">Voice search has been turned off.</translation>
 <translation id="878069093594050299">This certificate has been verified for the following usages:</translation>
+<translation id="8781470833671194250">Click position stabilisation</translation>
 <translation id="8781980678064919987">Shut down when lid is closed</translation>
 <translation id="8782565991310229362">Kiosk application launch cancelled.</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; wants to share a printer &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; with you.</translation>

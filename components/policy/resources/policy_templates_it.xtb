@@ -111,7 +111,7 @@ Per ulteriori informazioni sui contesti sicuri, visita il sito https://www.w3.or
       Se questa norma viene impostata, l'utente potrà scegliere soltanto uno dei metodi di immissione specificati al suo interno. Se la norma non viene impostata o viene impostato un elenco vuoto, l'utente potrà selezionare tutti i metodi di immissione supportati. Se il metodo di immissione corrente non è consentito da questa norma, verrà sostituito dal layout della tastiera hardware (se consentito) o dalla prima voce valida di questo elenco. Tutti i metodi di immissione non validi o non supportati di questo elenco verranno ignorati.</translation>
 <translation id="1138294736309071213">Questa norma è attiva soltanto in modalità retail.
 
-      Consente di stabilire il periodo di tempo che deve trascorrere prima della visualizzazione dello screensaver nella schermata di accesso dei dispositivi in modalità retail.
+      Consente di stabilire il periodo di tempo che deve trascorrere prima della visualizzazione del salvaschermo nella schermata di accesso dei dispositivi in modalità retail.
 
       Il valore della norma deve essere specificato in millisecondi.</translation>
 <translation id="1141767714195601945">Questa norma consente di gestire i parametri della riga di comando di Chrome da Internet Explorer.
@@ -853,7 +853,7 @@ Se attivi o disattivi questa impostazione, gli utenti non potranno cambiarla o i
 Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o meno la funzione proxy di compressione dei dati.</translation>
 <translation id="257788512393330403">Richiedi inserimento della password ogni sei ore</translation>
 <translation id="2587719089023392205">Imposta <ph name="PRODUCT_NAME" /> come browser predefinito</translation>
-<translation id="2592091433672667839">Durata inattività prima della visualizzazione dello screensaver nella schermata di accesso in modalità retail</translation>
+<translation id="2592091433672667839">Durata inattività prima della visualizzazione del salvaschermo nella schermata di accesso in modalità retail</translation>
 <translation id="2592162121850992309">Se questa norma è impostata su true o non è impostata, verrà attivata l'accelerazione hardware a meno che una determinata funzione della GPU non sia stata inserita nella lista nera.
 
       Se la norma è impostata su false, l'accelerazione hardware verrà disattivata.</translation>
@@ -1150,7 +1150,7 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
       Se questa norma è impostata su false, l'ottimizzazione WPAD viene disattivata, aumentando così i tempi di attesa da parte di <ph name="PRODUCT_NAME" /> dei server WPAD basati su DNS. Se questa norma non è impostata oppure se è attiva, l'ottimizzazione WPAD è abilitata.
 
       Indipendentemente da se o come questa norma è impostata, l'utente non può modificare l'impostazione di ottimizzazione di WPAD.</translation>
-<translation id="3072045631333522102">Screensaver da utilizzare nella schermata di accesso in modalità retail</translation>
+<translation id="3072045631333522102">Salvaschermo da utilizzare nella schermata di accesso in modalità retail</translation>
 <translation id="3072847235228302527">Imposta i Termini di servizio di un account locale del dispositivo</translation>
 <translation id="3077183141551274418">Abilita o disabilita i cicli di vita delle schede</translation>
 <translation id="3079417254871857650">Consente di specificare l'azione che deve essere eseguita quando la home directory dell'utente è stata creata con la crittografia ecryptfs.
@@ -1364,6 +1364,7 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
       Se questa norma viene impostata su "DeveloperToolsAllowed" (valore 1), gli Strumenti per sviluppatori e la console JavaScript saranno accessibili e utilizzabili in tutti i contesti, incluso il contesto delle estensioni installate in base a norme aziendali.
       Se questa norma viene impostata su "DeveloperToolsDisallowed" (valore 2), gli Strumenti per sviluppatori non saranno accessibili e non sarà più possibile esaminare gli elementi del sito web. Le eventuali scorciatoie da tastiera e le voci dei menu contestuali o di altri menu che consentono di aprire gli Strumenti per sviluppatori o la console JavaScript verranno disattivate.</translation>
 <translation id="3547954654003013442">Impostazioni proxy</translation>
+<translation id="3550875587920006460">Permette di impostare un programma personalizzato per il controllo degli aggiornamenti. La scelta è valida per tutti gli utenti e per tutte le interfacce sul dispositivo. Dopo aver impostato il criterio, il dispositivo controllerà la presenza di aggiornamenti in base al programma. Il criterio deve essere rimosso per annullare ulteriori controlli degli aggiornamenti programmati.</translation>
 <translation id="355118380775352753">Siti web da aprire in un browser alternativo</translation>
 <translation id="3554984410014457319">Consente all'Assistente Google di ascoltare la frase di attivazione vocale</translation>
 <translation id="356579196325389849">Gli utenti possono configurare il canale di rilascio di Chrome OS</translation>
@@ -1603,6 +1604,29 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
       Se questa norma viene impostata su true o non viene impostata, gli utenti potranno utilizzare le offerte tramite la registrazione a Chrome OS.
 
       Se questa norma viene impostata su false, gli utenti non potranno utilizzare le offerte.</translation>
+<translation id="4008233182078913897">Consente di specificare un elenco di app ed estensioni che vengono installate automaticamente,
+          senza l'interazione dell'utente, e che non possono essere disinstallate né
+          disattivate dall'utente. Tutte le autorizzazioni richieste dalle 
+          app/estensioni vengono concesse implicitamente, senza interazione dell'utente,
+          comprese le eventuali autorizzazioni aggiuntive richieste dalle future versioni delle 
+          app/estensioni. Inoltre, le autorizzazioni sono concesse
+          per le API delle estensioni enterprise.deviceAttributes ed enterprise.platformKeys.
+          (Queste due API non sono disponibili per le app/estensioni
+          prive di installazione forzata).
+
+          Questo criterio ha precedenza su un criterio <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> potenzialmente in conflitto. Se un'app o un'estensione con installazione forzata viene rimossa da questo elenco, tale app o estensione viene disinstallata automaticamente da <ph name="PRODUCT_NAME" />.
+
+          Per le istanze di Windows che non fanno parte di un dominio <ph name="MS_AD_NAME" />, l'installazione forzata è limitata alle app e alle estensioni elencate nel Chrome Web Store.
+
+          Tieni presente che il codice sorgente delle estensioni può essere modificato dagli utenti tramite Strumenti per sviluppatori (causando potenzialmente il malfunzionamento dell'estensione). Per evitare un problema di questo tipo, è consigliabile impostare il criterio<ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+          Ogni voce del criterio è una stringa contenente un ID estensione e un URL "di aggiornamento" separati da punto e virgola (<ph name="SEMICOLON" />). L'ID estensione è la stringa di 32 lettere che si trova, ad esempio, all'indirizzo <ph name="CHROME_EXTENSIONS_LINK" /> quando è attivata la modalità sviluppatore. L'URL "di aggiornamento", se specificato, deve indirizzare a un documento XML Manifest di aggiornamento, come descritto all'indirizzo <ph name="LINK_TO_EXTENSION_DOC1" />. Per impostazione predefinita, viene utilizzato l'URL di aggiornamento del Chrome Web Store (che attualmente è "https://clients2.google.com/service/update2/crx"). Tieni presente che l'URL "di aggiornamento" impostato in questo criterio viene utilizzato esclusivamente per l'installazione iniziale; per i successivi aggiornamenti dell'estensione viene utilizzato l'URL di aggiornamento indicato nel file manifest dell'estensione. Inoltre, specificare l'URL "di aggiornamento" in modo esplicito era obbligatorio nelle versioni di <ph name="PRODUCT_NAME" /> fino alla 67 inclusa.
+
+          Ad esempio, <ph name="EXTENSION_POLICY_EXAMPLE" /> installa l'estensione con id <ph name="EXTENSION_ID_SAMPLE" /> dall'URL "di aggiornamento" del Chrome Web Store standard. Informazioni sulle estensioni in hosting sono disponibili all'indirizzo <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Se questo criterio non è impostato, le app e le estensioni non vengono installate automaticamente e l'utente può disinstallare qualsiasi app o estensione in <ph name="PRODUCT_NAME" />.
+
+          Tieni presente che questo criterio non si applica alla modalità di navigazione in incognito.</translation>
 <translation id="4008507541867797979">Se questa norma viene impostata su True o non viene configurata, nella schermata di accesso di <ph name="PRODUCT_OS_NAME" /> verranno visualizzati gli utenti esistenti tra cui sarà possibile selezionare un utente.
 
       Se la norma è impostata su False, nella schermata di accesso di <ph name="PRODUCT_OS_NAME" /> non verranno visualizzati gli utenti esistenti. Verrà visualizzata la normale schermata di accesso (richiesta di email utente e password o telefono) o la schermata interstiziale SAML (se attivata tramite la norma <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />), a meno che non sia stata configurata una sessione gestita. Quando viene configurata una sessione gestita, verranno visualizzati solo gli account della sessione gestita, consentendo di selezionarne uno.
@@ -2531,6 +2555,12 @@ Se la norma non viene impostata, la lettura vocale viene disattivata alla prima 
       Se il criterio è disattivato, le funzionalità IsolateOrigins e SitePerProcess saranno entrambe disattivate. Gli utenti potranno ancora attivare IsolateOrigins manualmente, tramite flag da riga di comando.
       Se il criterio non è configurato, per la schermata di accesso verranno usate le impostazioni di isolamento dei siti predefinite della piattaforma.</translation>
 <translation id="5901427587865226597">Solo stampa fronte/retro</translation>
+<translation id="5903898512448364160">
+      Se il criterio è impostato su true, in caso di conflitto il criterio relativo al cloud prevale sul criterio relativo alla piattaforma.
+      Se il criterio è impostato su false o non è configurato, in caso di conflitto il criterio relativo alla piattaforma prevale sul criterio relativo al cloud.
+
+      Questo criterio è disponibile solo come criterio obbligatorio relativo alla piattaforma del computer e interessa unicamente i criteri relativi al cloud in ambito computer.
+      </translation>
 <translation id="5905473632148429217">Attiva controlli OCSP/CRL online</translation>
 <translation id="5906199912611534122">Consente di attivare o disattivare la limitazione della larghezza di banda.
       La scelta è valida per tutti gli utenti e per tutte le interfacce sul dispositivo. Una volta impostata, la limitazione rimane valida fino alla modifica della norma per disattivarla.
@@ -2556,6 +2586,7 @@ Se la norma non viene impostata, il puntatore grande viene disattivato alla prim
 
       Se disattivi l'impostazione o non imposti un valore, l'utilizzo di SafeSearch non viene forzato in Ricerca Google.</translation>
 <translation id="5946082169633555022">Canale Beta</translation>
+<translation id="5946329690214660966">Imposta un programma personalizzato per verificare la presenza di aggiornamenti</translation>
 <translation id="5950205771952201658">Alla luce del fatto che i controlli della revoca online soft-fail non offrono un effettivo vantaggio per la sicurezza, sono disattivati per impostazione predefinita nella versione 19 e nelle versioni successive di <ph name="PRODUCT_NAME" />. Se questa norma viene impostata su true, viene ripristinato il comportamento precedente e vengono effettuati controlli OCSP/CRL online.
 
       Se la norma non viene impostata o viene impostata su false, <ph name="PRODUCT_NAME" /> non effettuerà controlli della revoca online in <ph name="PRODUCT_NAME" /> 19 e nelle versioni successive.</translation>
@@ -2622,6 +2653,7 @@ Se la norma non viene impostata, il puntatore grande viene disattivato alla prim
 <translation id="6034341625190551415">Consente di controllare tipi di account kiosk e sessioni pubbliche.</translation>
 <translation id="6034603289689965535">Consente a una pagina di mostrare i popup durante l'unload.</translation>
 <translation id="6036523166753287175">Abilita attraversamento firewall da host di accesso remoto</translation>
+<translation id="605475635122964053">Consente di limitare la modalità di stampa PIN. Se il criterio non viene impostato non vengono applicate limitazioni. Se la modalità non è disponibile, questo criterio viene ignorato. Tieni presente che la funzionalità di stampa PIN è attiva solo per le stampanti che usano uno dei protocolli IPPS, USB o IPP-over-USB </translation>
 <translation id="6070667616071269965">Layout da tastiera della schermata di accesso del dispositivo</translation>
 <translation id="6074963268421707432">Non consentire la visualizzazione di notifiche desktop da parte dei siti</translation>
 <translation id="6074964551275531965">Imposta il periodo di tempo per le notifiche relative agli aggiornamenti</translation>
@@ -3568,7 +3600,7 @@ Se questa norma non viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà il v
       Se viene impostata su CopyCaCerts, per le app ARC saranno disponibili tutti i certificati CA installati su ONC con <ph name="WEB_TRUSTED_BIT" />.</translation>
 <translation id="7882585827992171421">Questa norma è attiva soltanto in modalità retail.
 
-      Consente di stabilire l'ID dell'estensione da utilizzare come screensaver nella schermata di accesso. L'estensione deve far parte dell'AppPack configurato per il dominio tramite la norma DeviceAppPack.</translation>
+      Consente di stabilire l'ID dell'estensione da utilizzare come salvaschermo nella schermata di accesso. L'estensione deve far parte dell'AppPack configurato per il dominio tramite la norma DeviceAppPack.</translation>
 <translation id="7882857838942884046">Se Google Sync viene disattivato, le funzioni di backup e ripristino di Android non funzionano correttamente.</translation>
 <translation id="7882890448959833986">Elimina l'avviso di sistema operativo non supportato</translation>
 <translation id="7895553628261067384">Accesso remoto</translation>

@@ -619,6 +619,7 @@
 <translation id="4265872034478892965">Leidžia jūsų administratorius</translation>
 <translation id="4275830172053184480">Iš naujo paleisti įrenginį</translation>
 <translation id="4277028893293644418">Iš naujo nustatyti slaptažodį</translation>
+<translation id="4279811152705618813">Jūsų „<ph name="DEVICE_TYPE" />“ tvarko <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="4280429058323657511">, gal. pab. <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Ši kortelė išsaugota jūsų „Google“ paskyroje}one{Šios kortelės išsaugotos jūsų „Google“ paskyroje}few{Šios kortelės išsaugotos jūsų „Google“ paskyroje}many{Šios kortelės išsaugotos jūsų „Google“ paskyroje}other{Šios kortelės išsaugotos jūsų „Google“ paskyroje}}</translation>
 <translation id="42981349822642051">Išskleisti</translation>

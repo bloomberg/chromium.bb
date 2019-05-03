@@ -1395,6 +1395,7 @@
       Ha a házirend beállítása „DeveloperToolsAllowed” (az érték 1, amely az alapértelmezett érték nem felügyelt felhasználók esetében), akkor a Fejlesztői eszközök és a JavaScript konzolja minden esetben hozzáférhető és használható, beleértve a vállalati házirendek által telepített bővítmények esetét is.
       Ha a házirend beállítása „DeveloperToolsDisallowed” (az érték 2), akkor a Fejlesztői eszközökhöz nem lehet hozzáférni, és a webhelyek elemeit nem lehet megvizsgálni. Minden olyan billentyűparancs, menü és helyi menü le lesz tiltva, amellyel a Fejlesztői eszközöket vagy a JavaScript-konzolt meg lehet nyitni.</translation>
 <translation id="3547954654003013442">Proxybeállítások</translation>
+<translation id="3550875587920006460">Segítségével egyéni ütemezés állítható be frissítések kereséséhez. Minden felhasználóra és az eszköz minden felületére vonatkozik. Beállítása után az eszköz az ütemezésnek megfelelően keres majd frissítéseket. A további ütemezett frissítéskeresések leállításához el kell távolítani a házirendet.</translation>
 <translation id="355118380775352753">Az alternatív böngészőben megnyíló webhelyek</translation>
 <translation id="3554984410014457319">A Google Segéd figyelheti a hangalapú aktiválásra szolgáló kifejezést</translation>
 <translation id="356579196325389849">A felhasználók konfigurálhatják a Chrome OS kiadási csatornáját</translation>
@@ -1636,6 +1637,29 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha a házirend értéke igaz, vagy ha nincs beállítva, a felhasználók beválthatnak ajánlatokat Chrome OS-regisztráció útján.
 
       Ha a házirend értéke hamis, a felhasználók nem válthatnak be ajánlatokat.</translation>
+<translation id="4008233182078913897">Azon alkalmazások és bővítmények listája, melyek telepítése a háttérben,
+          felhasználói beavatkozás nélkül történik, és melyeket a felhasználó
+          nem távolíthat el és tilthat le. A rendszer implicit módon, felhasználói
+          beavatkozás nélkül megadja az alkalmazások/bővítmények által kért
+          összes engedélyt, beleértve az alkalmazás/bővítmény jövőbeli verziói
+          által kért további engedélyeket is. Ezenkívül megkapják az engedélyeket
+          az enterprise.deviceAttributes és az enterprise.platformKeys bővítmény-
+          API-k is. (Ez a két API nem áll rendelkezésre a nem kényszerítve
+          telepített alkalmazások és bővítmények esetében.)
+
+          Ez a házirend elsőbbséget élvez az esetlegesen ütköző <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> házirenddel szemben. Ha egy korábban kényszerítve telepített alkalmazást vagy bővítményt töröl erről a listáról, a <ph name="PRODUCT_NAME" /> automatikusan eltávolítja.
+
+          Azon Windows-példányokon, amelyek nem csatlakoztak valamely <ph name="MS_AD_NAME" />-domainhez, a kényszerített telepítés csak a Chrome Internetes áruházban megtalálható alkalmazások és bővítmények esetében alkalmazható.
+
+          Felhívjuk figyelmét, hogy a felhasználók bármelyik bővítmény forráskódját módosíthatják a fejlesztői eszközök segítségével (és esetleg működésképtelenné tehetik a bővítményt). Ha ez problémát jelent, állítsa be a <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> házirendet.
+
+          A házirend listájában lévő összes elem olyan karakterlánc, amely egy bővítményazonosítót és tetszőlegesen egy pontosvesszővel (<ph name="SEMICOLON" />) elválasztott „frissítési” URL-t tartalmaz. A bővítményazonosító az a 32 betűből álló karakterlánc, amelyet például itt tekinthet meg fejlesztői módban: <ph name="CHROME_EXTENSIONS_LINK" />. Ha megadja a „frissítési” URL-t, annak frissítési manifest XML-dokumentumra kell mutatnia, melynek leírását itt találja: <ph name="LINK_TO_EXTENSION_DOC1" />. A böngésző alapértelmezés szerint a Chrome Internetes áruház frissítési URL-jét használja (jelenleg: „https://clients2.google.com/service/update2/crx”). Felhívjuk figyelmét, hogy a jelen házirendben megadott „frissítési” URL csak az első telepítéshez használatos; a bővítmény további frissítései a bővítmény manifestfájljában feltüntetett URL-en keresztül történnek. A „frissítési” URL kifejezett megadása a <ph name="PRODUCT_NAME" /> 67-es verziójáig bezárólag volt kötelező.
+
+          Például a(z) <ph name="EXTENSION_POLICY_EXAMPLE" /> karakterlánc a(z) <ph name="EXTENSION_ID_SAMPLE" /> azonosítójú bővítményt telepíti a Chrome Internetes áruház általános „frissítési” URL-jéről. A bővítmények tárolásával kapcsolatban itt talál további információt: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Ha a házirend nincs beállítva, akkor a rendszer egyetlen alkalmazást vagy bővítményt sem telepít automatikusan, a felhasználó pedig törölheti a <ph name="PRODUCT_NAME" /> bármely telepített alkalmazását és bővítményét.
+
+          Fontos, hogy ez a házirend nem vonatkozik az inkognitómódra.</translation>
 <translation id="4008507541867797979">Ha házirend nincs beállítva, vagy értéke igaz, akkor a <ph name="PRODUCT_OS_NAME" /> megjeleníti a meglévő felhasználókat a bejelentkezési képernyőn, és lehetővé teszi a választást közülük.
 
       Ha a házirend értéke hamis, akkor a <ph name="PRODUCT_OS_NAME" /> nem jeleníti meg a meglévő felhasználókat a bejelentkezési képernyőn. A szokványos bejelentkezési képernyő (e-mail-cím és jelszó, vagy telefonszám) vagy a SAML közbeiktatott képernyő (ha engedélyezve van: <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" /> házirend) jelenik meg, kivéve felügyelt munkamenet esetén. Felügyelt munkamenet beállításakor csak a felügyelt munkamenethez tartozó fiókok jelennek meg választási lehetőségekként.
@@ -2579,6 +2603,12 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha nem állítja be a házirendet, a platform alapértelmezett webhely-elszigetelési beállításai lépnek érvénybe a bejelentkezési képernyőnél.
       </translation>
 <translation id="5901427587865226597">Csak kétoldalas nyomtatás</translation>
+<translation id="5903898512448364160">
+      Ha a házirend igaz értékre van beállítva, ütközés esetén a felhőbeli házirend előnyt élvez az operációs rendszer házirendjével szemben.
+      Ha a házirend hamis értékre van beállítva, vagy beállítatlanul marad, az operációs rendszer házirendje élvez előnyt, amennyiben ütközik a felhőbeli házirenddel.
+
+      Ez a házirend csak gépi platformok kötelező házirendjeként áll rendelkezésre, és csak a gépek hatókörére érvényes, felhővel kapcsolatos házirendekre vonatkozik.
+      </translation>
 <translation id="5905473632148429217">Online OCSP/CRL-ellenőrzések engedélyezése</translation>
 <translation id="5906199912611534122">Lehetővé teszi a hálózatszabályozás engedélyezését és letiltását.
       Minden felhasználóra és az eszköz minden felületére vonatkozik. A beállítást
@@ -2606,6 +2636,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
       Ha letiltja ezt a beállítást, vagy nem állít be hozzá értéket, akkor a Google Keresésben a Biztonságos Keresést nem kényszeríti ki a rendszer.</translation>
 <translation id="5946082169633555022">Béta csatorna</translation>
+<translation id="5946329690214660966">Egyéni ütemezés beállítása frissítések kereséséhez</translation>
 <translation id="5950205771952201658">Tekintettel arra, hogy a hibatűrő, online visszavonási ellenőrzések nem nyújtanak biztonsági előnyöket, a <ph name="PRODUCT_NAME" /> 19-es és újabb verzióiban ezek alapértelmezés szerint ki vannak kapcsolva. A házirend igaz értékre állításával visszaállítható a korábbi viselkedés, és a böngésző online OCSP-/CRL-ellenőrzéseket végez.
 
       Ha a házirend értéke hamis, vagy ha nincs beállítva, akkor a <ph name="PRODUCT_NAME" /> nem végez online visszavonási ellenőrzéseket a <ph name="PRODUCT_NAME" /> 19-es és újabb verzióiban.</translation>
@@ -2672,6 +2703,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="6034341625190551415">A nyilvános munkamenetű és kioszk típusú fiókok szabályozására szolgál.</translation>
 <translation id="6034603289689965535">Lehetővé teszi, hogy az oldal előugró ablakokat jelenítsen meg az unload művelet végrehajtása során</translation>
 <translation id="6036523166753287175">Engedélyezze a tűzfalon való átjárást a távoli elérésű szerverekről</translation>
+<translation id="605475635122964053">Korlátozza a PIN-kóddal történő nyomtatást. Ha nincs beállítva a házirend, akkor nincs korlátozás erre vonatkozóan. Ha nem áll rendelkezésre ez a nyomtatási mód, a rendszer figyelmen kívül hagyja a házirendet. A PIN-kóddal történő nyomtatás funkció csak olyan nyomtatóknál engedélyezett, amelyek a következő protokollok egyikét használják: IPPS, USB vagy IPP-over-USB. </translation>
 <translation id="6070667616071269965">Billentyűzetelrendezések az eszköz bejelentkezési képernyőjén</translation>
 <translation id="6074963268421707432">Egy webhely sem jeleníthet meg asztali értesítéseket</translation>
 <translation id="6074964551275531965">A frissítési értesítések időtartamának beállítása</translation>

@@ -98,6 +98,7 @@
 <translation id="2320166752086256636">Slėpti klaviatūrą</translation>
 <translation id="2339560363438331454">Sinchron. ir „Google“ paslaugos</translation>
 <translation id="2351097562818989364">Vertimo nustatymai buvo nustatyti iš naujo.</translation>
+<translation id="2359043044084662842">Versti</translation>
 <translation id="2359808026110333948">Tęskite</translation>
 <translation id="2360196772093551345">Pateikti užklausą dėl svetainės mobiliesiems</translation>
 <translation id="2381405137052800939">Pagrindiniai</translation>
@@ -291,6 +292,7 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="5659593005791499971">El. paštas</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783"><ph name="PRODUCT_VERSION" /> versija</translation>
+<translation id="5711039611392265845">Daugiau nustatymų, susijusių su privatumu, sauga ir duomenų rinkimu, žr. skiltyje <ph name="BEGIN_LINK" />„Sinchronizavimas ir „Google“ paslaugos“<ph name="END_LINK" />.</translation>
 <translation id="5728700505257787410">Apgailestaujame, prisijungiant prie paskyros kilo problema.</translation>
 <translation id="5737974891429562743">Išsami paskyros prisijungimo informacija pasenusi. Atnaujinkite, kad pradėtumėte sinchronizuoti.</translation>
 <translation id="5738887413654608789">Tai naudodami galite atrasti aktualių tinklalapių, kurie teikiami atsižvelgiant į aplinką.</translation>
@@ -382,7 +384,6 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="6903907808598579934">Įjungti sinchronizavimą</translation>
 <translation id="6914583639806229067">Ieškoti nukopijuoto vaizdo</translation>
 <translation id="6914783257214138813">Jūsų slaptažodžiai bus matomi visiems, kurie gali peržiūrėti eksportuotą failą.</translation>
-<translation id="692898627499215142">Pradinis sinchronizavimo nustatymas nebaigtas. Norint pradėti sinchronizuoti, įgalintas sinchronizavimo perjungimas.</translation>
 <translation id="6944369514868857500">Pasirinkti kitą paskyrą</translation>
 <translation id="6945221475159498467">Pasirinkti</translation>
 <translation id="6973630695168034713">Aplankai</translation>

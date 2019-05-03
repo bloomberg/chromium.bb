@@ -801,6 +801,7 @@
 <translation id="2241053333139545397">Lasīt un mainīt jūsu datus vairākās vietnēs</translation>
 <translation id="2241634353105152135">Tikai vienreiz</translation>
 <translation id="2242687258748107519">Faila informācija</translation>
+<translation id="2246549592927364792">Vai vēlaties iegūt attēlu aprakstus no Google?</translation>
 <translation id="224940702122312781">Šī lapa patērēs daudz datu.</translation>
 <translation id="2249605167705922988">piem., 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">Atvēršana, izmantojot sistēmas skatītāju</translation>
@@ -1106,6 +1107,7 @@
 <translation id="271033894570825754">Jauns</translation>
 <translation id="2714393097308983682">Google Play veikals</translation>
 <translation id="2715751256863167692">Šis jauninājums atiestata jūsu Chromebook datoru un noņem pašreizējos lietotāju datus.</translation>
+<translation id="2716986496990888774">Šo iestatījumu pārvalda viens no vecākiem.</translation>
 <translation id="2718395828230677721">Nakts režīms</translation>
 <translation id="2718998670920917754">Pretvīrusu programmatūrā tika konstatēts vīruss.</translation>
 <translation id="2719936478972253983">Tika bloķēti tālāk norādītie sīkfaili.</translation>
@@ -1217,6 +1219,7 @@
 <translation id="2874939134665556319">Iepriekšējais ieraksts</translation>
 <translation id="2875698561019555027">(Chrome kļūdu lapas)</translation>
 <translation id="2876336351874743617">2. pirksts</translation>
+<translation id="2876369937070532032">Nosūta Google serveriem dažu apmeklēto lapu vietrāžus URL, ja jūsu drošība ir apdraudēta</translation>
 <translation id="288042212351694283">Piekļūstiet savām Universal 2nd Factor ierīcēm</translation>
 <translation id="2881076733170862447">Kad noklikšķināt uz paplašinājuma</translation>
 <translation id="2881966438216424900">Pēdējoreiz piekļūts:</translation>
@@ -1399,6 +1402,7 @@ Servera ziņojums: <ph name="SERVER_MSG" /></translation>
 <translation id="3170072451822350649">Varat arī izlaist pierakstīšanos un <ph name="LINK_START" />veikt pārlūkošanu kā viesis<ph name="LINK_END" />.</translation>
 <translation id="3172045848207518317">Vietne piekļūst jūsu video ievadei</translation>
 <translation id="3177909033752230686">Lapas valoda:</translation>
+<translation id="3181954750937456830">Droša pārlūkošana (aizsargā jūs un ierīci pret bīstamām vietnēm)</translation>
 <translation id="3182749001423093222">Pareizrakstības pārbaude</translation>
 <translation id="3183139917765991655">Profilu importētājs</translation>
 <translation id="3188465121994729530">Pārvietotais vidējais</translation>
@@ -1704,6 +1708,7 @@ Servera ziņojums: <ph name="SERVER_MSG" /></translation>
 <translation id="3664511988987167893">Paplašinājuma ikona</translation>
 <translation id="3665589677786828986">Pārlūkā Chrome tika konstatēts, ka daži jūsu iestatījumi tika bojāti citā programmā, tāpēc šie iestatījumi tika atiestatīti uz sākotnējiem noklusējuma iestatījumiem.</translation>
 <translation id="3668570675727296296">Valodas iestatījumi</translation>
+<translation id="366867565525278777">Instalēšana neizdevās, jo trūkst krātuves vietas. Nepieciešama brīva vieta vismaz <ph name="INSTALL_SIZE" /> apjomā. Lai atbrīvotu vietu, izdzēsiet failus no šīs ierīces.</translation>
 <translation id="3668801437375206837">Lai precīzāk noteiktu problēmas ar Bluetooth savienojumu, Google darbinieki atsauksmju ziņojumam var pievienot papildu Bluetooth žurnālus. Ja šī opcija ir atzīmēta, ziņojumā būs iekļauti pašreizējās sesijas btsnoop un HCI žurnāli, kuros maksimāli noņemta personu identificējoša informācija. Šiem žurnāliem varēs piekļūt tikai Chrome OS produktu grupas pārvaldnieki ierīcē Listnr. Žurnāli tiks dzēsti pēc 90 dienām.</translation>
 <translation id="3668823961463113931">Apdarinātāji</translation>
 <translation id="3670113805793654926">Ierīces no jebkura pakalpojumu sniedzēja</translation>
@@ -2013,6 +2018,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="409579654357498729">Pievienot mākoņdrukai</translation>
 <translation id="4096508467498758490">Izstrādātāja režīma paplašinājumu atspējošana</translation>
 <translation id="4096824249111507322">Notiek drošības moduļa sagatavošana. Lūdzu, uzgaidiet (tas var ilgt dažas minūtes)...</translation>
+<translation id="4097560579602855702">Meklēt Google tīklā</translation>
 <translation id="4099060993766194518">Vai atjaunot noklusējuma meklētājprogrammu?</translation>
 <translation id="4099874310852108874">Radās tīkla kļūda.</translation>
 <translation id="4100733287846229632">Ierīces diskā gandrīz nav vietas</translation>
@@ -4013,6 +4019,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="7289225569524511578">Atvērt fona tapešu lietotni</translation>
 <translation id="7290242001003353852">Šis domēnā <ph name="SAML_DOMAIN" /> mitinātais pierakstīšanās pakalpojums piekļūst jūsu kamerai.</translation>
 <translation id="7290594223351252791">Reģistrācijas apstiprināšana</translation>
+<translation id="7295614427631867477">Ņemiet vērā, ka operētājsistēmu Android, veikalu Play un saistītās lietotnes pārvalda atsevišķas datu apkopošanas un lietošanas politikas.</translation>
 <translation id="729583233778673644">Atļaut AES un RC4 šifrēšanu. Ja izmantosiet šo opciju, palielināsies risks, jo RC4 šifri nav droši.</translation>
 <translation id="7296774163727375165">Vietnes <ph name="DOMAIN" /> noteikumi</translation>
 <translation id="7297443947353982503">Lietotājvārds/parole nav pareiza vai arī EAP autentifikācija neizdevās</translation>
@@ -4289,6 +4296,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="7732111077498238432">Tīklu pārvalda politika</translation>
 <translation id="7737238973539693982">Linux (Beta) dzēšana</translation>
 <translation id="7740996059027112821">Standarta</translation>
+<translation id="7746457520633464754">Lai noteiktu bīstamas lietotnes un vietnes, pārlūkā Chrome dažu jūsu apmeklēto lapu saturs, ierobežots sistēmas informācijas apjoms un daļa lapu satura tiek nosūtīta uzņēmumam Google</translation>
 <translation id="7750228210027921155">Attēls attēlā</translation>
 <translation id="7751260505918304024">Rādīt visu</translation>
 <translation id="7754704193130578113">Jautāt, kur saglabāt ikvienu failu pirms lejuplādēšanas</translation>
@@ -4973,6 +4981,7 @@ Citas personas ar lēnu savienojumu, iespējams, neredzēs jūsu saturu.</transl
 <translation id="8780123805589053431">Iegūt attēlu aprakstus no Google</translation>
 <translation id="8780443667474968681">Meklēšana ar balsi ir izslēgta.</translation>
 <translation id="878069093594050299">Pārbaudīti šādi sertifikāta izmantošanas veidi:</translation>
+<translation id="8781470833671194250">Klikšķa pozīcijas stabilizācija</translation>
 <translation id="8781980678064919987">Izslēgt, kad vāks tiek aizvērts</translation>
 <translation id="8782565991310229362">Kioska lietojumprogrammas palaišana tika atcelta.</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; vēlas koplietot printeri &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; ar jums.</translation>

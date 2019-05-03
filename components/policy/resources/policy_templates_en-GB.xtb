@@ -55,7 +55,7 @@
 
       If this policy is set, the sign-in screen will always be displayed in the locale which is given by the first value of this policy (the policy is defined as a list for forward compatibility).  If this policy is not set or is set to an empty list, the sign-in screen will be displayed in the locale of the last user session.  If this policy is set to a value which is not a valid locale, the sign-in screen will be displayed in a fallback locale (currently, en-US).</translation>
 <translation id="1052499923181221200">This policy has no effect unless SamlInSessionPasswordChangeEnabled is true.
-      If that policy is true, and this policy is set to (for example) 14, that means SAML users will be notified 14 days in advance that their password is due to expire on a certain date.
+      If that policy is true, and this policy is set to (for example) 14, that means that SAML users will be notified 14 days in advance that their password is due to expire on a certain date.
       Then they can deal with this immediately by doing an in-session password change and updating their password before it expires.
       But these notifications will only be shown if password expiry information is sent to the device by the SAML identity provider during the SAML login flow.
       Setting this policy to zero means that the users will not be notified in advance – they will only be notified once the password has already expired.
@@ -1419,6 +1419,7 @@
       If this policy is set to 'DeveloperToolsAllowed' (value 1), the Developer Tools and the JavaScript console can be accessed and used in all contexts, including the context of extensions installed by enterprise policy.
       If this policy is set to 'DeveloperToolsDisallowed' (value 2), the Developer Tools cannot be accessed and website elements can no longer be inspected. Any keyboard shortcuts and any menu or context menu entries to open the Developer Tools or the JavaScript Console will be disabled.</translation>
 <translation id="3547954654003013442">Proxy settings</translation>
+<translation id="3550875587920006460">Allows setting a custom schedule to check for updates. This applies to all users, and to all interfaces on the device. Once set, the device will check for updates according to the schedule. The policy must be removed to cancel any more scheduled update checks.</translation>
 <translation id="355118380775352753">Websites to open in alternative browser</translation>
 <translation id="3554984410014457319">Allow Google Assistant to listen for the voice activation phrase</translation>
 <translation id="356579196325389849">Users may configure the Chrome OS release channel</translation>
@@ -1665,6 +1666,29 @@
       If this policy is set to true or left not set, users will be able to redeem offers through Chrome OS Registration.
 
       If this policy is set to false, user will not be able to redeem offers.</translation>
+<translation id="4008233182078913897">Specifies a list of apps and extensions that are installed silently,
+          without user interaction, and which cannot be uninstalled nor
+          disabled by the user. All permissions requested by the
+          apps/extensions are granted implicitly, without user interaction,
+          including any additional permissions requested by future versions of
+          the app/extension. Furthermore, permissions are granted for the
+          enterprise.deviceAttributes and enterprise.platformKeys extension
+          APIs. (These two APIs are not available to apps/extensions that are
+          not force-installed.)
+
+          This policy takes precedence over a potentially conflicting <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> policy. If an app or extension that previously had been force-installed is removed from this list, it is automatically uninstalled by <ph name="PRODUCT_NAME" />.
+
+          For Windows, instances that are not joined to a <ph name="MS_AD_NAME" /> domain, forced installation is limited to apps and extensions listed in the Chrome Web Store.
+
+          Note that the source code of any extension may be altered by users via Developer Tools (potentially rendering the extension dysfunctional). If this is a concern, the <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> policy should be set.
+
+          Each list item of the policy is a string that contains an extension ID and, optionally, an 'update' URL separated by a semicolon (<ph name="SEMICOLON" />). The extension ID is the 32-letter string found e.g. on <ph name="CHROME_EXTENSIONS_LINK" /> when in developer mode. The 'update' URL, if specified, should point to an Update Manifest XML document as described at <ph name="LINK_TO_EXTENSION_DOC1" />. By default, the Chrome Web Store's update URL is used (which currently is "https://clients2.google.com/service/update2/crx"). Note that the 'update' URL set in this policy is only used for the initial installation; subsequent updates of the extension employ the update URL indicated in the extension's manifest. Note: Specifying the 'update' URL explicitly was mandatory in <ph name="PRODUCT_NAME" /> versions up to and including 67.
+
+          For example, <ph name="EXTENSION_POLICY_EXAMPLE" /> installs the extension with ID <ph name="EXTENSION_ID_SAMPLE" /> from the standard Chrome Web Store 'update' URL. For more information about hosting extensions, see: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          If this policy is left not set, no apps or extensions are installed automatically and the user can uninstall any app or extension in <ph name="PRODUCT_NAME" />.
+
+          Note that this policy doesn't apply to incognito mode.</translation>
 <translation id="4008507541867797979">If this policy is set to true or not configured, <ph name="PRODUCT_OS_NAME" /> will show existing users on the login screen and allow to pick one.
 
       If this policy is set to false, <ph name="PRODUCT_OS_NAME" /> will not show existing users on the login screen. The normal sign-in screen (prompting for the user email and password or phone) or the SAML interstitial screen (if enabled via the <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" /> policy) will be shown, unless a Managed Session is configured. When a Managed Session is configured, only the Managed Session accounts will be shown, allowing to pick one of them.
@@ -2643,6 +2667,12 @@
       If the policy is not configured, the platform default site isolation settings will be used for the sign-in screen.
       </translation>
 <translation id="5901427587865226597">Duplex printing only</translation>
+<translation id="5903898512448364160">
+      If the policy is set to true, cloud policy takes precedence if it conflicts with platform policy.
+      If the policy is set to false or not configured, platform policy takes precedence if it conflicts with cloud policy.
+
+      This policy is only available as a mandatory machine platform policy and it only affects machine scope cloud policies.
+      </translation>
 <translation id="5905473632148429217">Enable online OCSP/CRL checks</translation>
 <translation id="5906199912611534122">Allows enabling or disabling network throttling.
       This applies to all users, and to all interfaces on the device. Once set,
@@ -2669,6 +2699,7 @@
 
       If you disable this setting or do not set a value, SafeSearch in Google Search is not enforced.</translation>
 <translation id="5946082169633555022">Beta channel</translation>
+<translation id="5946329690214660966">Set custom schedule to check for updates</translation>
 <translation id="5950205771952201658">In light of the fact that soft-fail, online revocation checks provide no effective security benefit, they are disabled by default in <ph name="PRODUCT_NAME" /> version 19 and later. By setting this policy to true, the previous behaviour is restored and online OCSP/CRL checks will be performed.
 
       If the policy is not set, or is set to false, then <ph name="PRODUCT_NAME" /> will not perform online revocation checks in <ph name="PRODUCT_NAME" /> 19 and later.</translation>
@@ -2735,6 +2766,7 @@
 <translation id="6034341625190551415">Controls public session and kiosk account types.</translation>
 <translation id="6034603289689965535">Allows a page to show pop-ups during its unloading</translation>
 <translation id="6036523166753287175">Enable firewall traversal from remote access host</translation>
+<translation id="605475635122964053">Restricts PIN printing mode. Unset policy is treated as no restriction. If the mode is unavailable this policy is ignored. Note that PIN printing feature is enabled only for printers that use one of IPPS, USB or IPP-over-USB protocols </translation>
 <translation id="6070667616071269965">Device sign-in screen keyboard layouts</translation>
 <translation id="6074963268421707432">Do not allow any site to show desktop notifications</translation>
 <translation id="6074964551275531965">Set the time period for update notifications</translation>
@@ -3080,7 +3112,7 @@
       The string can contain variables ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR}, ${MACHINE_NAME} that would be replaced with values on the device before using as a hostname. Resulting substitution should be a valid hostname (per RFC 1035, section 3.1).
 
       If this policy is not set, or the value after substitution is not a valid hostname, no hostname will be set in DHCP request. </translation>
-<translation id="6833988859168635883">Startup, Homepage and New Tab page</translation>
+<translation id="6833988859168635883">Startup, Home page and New Tab page</translation>
 <translation id="6835883744948188639">Show a recurring prompt to the user indicating that a relaunch is recommended</translation>
 <translation id="6837480141980366278">Controls whether the built-in DNS client is used in <ph name="PRODUCT_NAME" />.
 
@@ -3196,7 +3228,7 @@
       If this policy is set to True or left not set, the smart dim model will be enabled and allowed to extend the time until the screen is dimmed. If this policy is set to False, the smart dim model will not influence screen dimming.</translation>
 <translation id="6967394885063085697">Enable the advanced battery charge mode power management policy.
 
-          Advanced Battery Charging Mode allows the user to maximise the battery health. In Advanced Charging Mode, the system will use standard charging algorithm and other techniques during non-work hours to maximise battery health. During work hours, an express charge is used. This express charge allows the battery to be charged faster; therefore, the battery is at full charge sooner. For each day, the time in which the system will be most heavily used is specified by the start time and the duration.
+          Advanced Battery Charging Mode allows the user to maximise the battery health. In Advanced Charging Mode the system will use standard charging algorithm and other techniques during non-work hours to maximise battery health. During work hours, an express charge is used. This express charge allows the battery to be charged faster; therefore, the battery is at full charge sooner. For each day, the time in which the system will be most heavily used is specified by the start time and the duration.
 
           If this policy is set to true, and DeviceAdvancedBatteryChargeModeDayConfig is set, then advanced battery charge mode will always be enabled if supported on the device.
 
@@ -3731,9 +3763,9 @@
 <translation id="7937491150792971922">Merge extension install list policies from multiple sources</translation>
 <translation id="7937766917976512374">Allow or deny video capture</translation>
 <translation id="7941975817681987555">Do not predict network actions on any network connection</translation>
-<translation id="7952007677054834789">Configure the pages to load on startup, the default homepage and the default new tab page in <ph name="PRODUCT_NAME" /> and prevents users from changing them.
+<translation id="7952007677054834789">Configure the pages to load on startup, the default home page and the default new tab page in <ph name="PRODUCT_NAME" /> and prevents users from changing them.
 
-      The user's homepage settings are only completely locked down if you either select the homepage to be the new tab page, or set it to be a URL and specify a homepage URL. If you don't specify the homepage URL, then the user is still able to set the homepage to the new tab page by specifying 'chrome://newtab'.
+      The user's home page settings are only completely locked down if you either select the home page to be the new tab page, or set it to be a URL and specify a home page URL. If you don't specify the home page URL, then the user is still able to set the home page to the new tab page by specifying 'chrome://newtab'.
 
       The policy 'URLs to open on startup' is ignored unless you select 'Open a list of URLs' in 'Action on startup'.</translation>
 <translation id="7952958573604504839">This policy is deprecated in M48 in favour of <ph name="NETWORK_PREDICTION_OPTIONS_POLICY_NAME" />, and removed in M54.

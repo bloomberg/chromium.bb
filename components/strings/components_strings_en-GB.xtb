@@ -218,6 +218,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">Card</translation>
 <translation id="2114841414352855701">Ignored because it was overridden by <ph name="POLICY_NAME" />.</translation>
+<translation id="2129079103035905234">Motion Sensors</translation>
 <translation id="213826338245044447">Mobile Bookmarks</translation>
 <translation id="214556005048008348">Cancel payment</translation>
 <translation id="2147827593068025794">Background Sync</translation>
@@ -610,6 +611,7 @@
 <translation id="4265872034478892965">Allowed by your administrator</translation>
 <translation id="4275830172053184480">Restart your device</translation>
 <translation id="4277028893293644418">Reset password</translation>
+<translation id="4279811152705618813">Your <ph name="DEVICE_TYPE" /> is managed by <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="4280429058323657511">, exp <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{This card has been saved in your Google Account}other{These cards have been saved in your Google Account}}</translation>
 <translation id="42981349822642051">Expand</translation>

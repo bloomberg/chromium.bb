@@ -801,6 +801,7 @@
 <translation id="2241053333139545397">Branje in spreminjanje vaših podatkov na več spletnih mestih</translation>
 <translation id="2241634353105152135">Samo enkrat</translation>
 <translation id="2242687258748107519">Podatki o datoteki</translation>
+<translation id="2246549592927364792">Želite pridobivati opise slik iz Googla?</translation>
 <translation id="224940702122312781">Ta stran bo prenesla večje količine podatkov.</translation>
 <translation id="2249605167705922988">npr. 1–5, 8, 11–13</translation>
 <translation id="2251218783371366160">Odpri s sistemskim pregledovalnikom</translation>
@@ -1106,6 +1107,7 @@
 <translation id="271033894570825754">Novo</translation>
 <translation id="2714393097308983682">Trgovina Google Play</translation>
 <translation id="2715751256863167692">S to nadgradnjo bo ponastavljen Chromebook in odstranjeni bodo trenutni uporabniški podatki.</translation>
+<translation id="2716986496990888774">To nastavitev upravlja starš.</translation>
 <translation id="2718395828230677721">Nočna svetloba</translation>
 <translation id="2718998670920917754">Protivirusna programska oprema je zaznala virus.</translation>
 <translation id="2719936478972253983">Ti piškotki so blokirani</translation>
@@ -1217,6 +1219,7 @@
 <translation id="2874939134665556319">Prejšnja skladba</translation>
 <translation id="2875698561019555027">(Chromove strani z napakami)</translation>
 <translation id="2876336351874743617">Prst 2</translation>
+<translation id="2876369937070532032">Googlu pošlje URL-je nekaterih strani, ki jih obiščete, kadar je ogrožena vaša varnost</translation>
 <translation id="288042212351694283">Dostop do naprav z univerzalnim drugim dejavnikom</translation>
 <translation id="2881076733170862447">Ko kliknete razširitev</translation>
 <translation id="2881966438216424900">Zadnji dostop:</translation>
@@ -1399,6 +1402,7 @@
 <translation id="3170072451822350649">Prijavo lahko tudi preskočite in <ph name="LINK_START" />brskate kot gost<ph name="LINK_END" />.</translation>
 <translation id="3172045848207518317">Spletno mesto dostopa do vhoda za sliko</translation>
 <translation id="3177909033752230686">Jezik strani:</translation>
+<translation id="3181954750937456830">Varno brskanje (ščiti vas in napravo pred nevarnimi spletnimi mesti)</translation>
 <translation id="3182749001423093222">Preverjanje črkovanja</translation>
 <translation id="3183139917765991655">Uvoznik profilov</translation>
 <translation id="3188465121994729530">Drseče povprečje</translation>
@@ -1704,6 +1708,7 @@
 <translation id="3664511988987167893">Ikona razširitve</translation>
 <translation id="3665589677786828986">Chrome je zaznal, da je drug program spremenil nastavitve, in jih ponastavil na prvotne privzete nastavitve.</translation>
 <translation id="3668570675727296296">Jezikovne nastavitve</translation>
+<translation id="366867565525278777">Namestitev ni uspela zaradi pomanjkanja prostora za shranjevanje. Potrebujete najmanj <ph name="INSTALL_SIZE" /> prostega prostora. Če želite sprostiti prostor, izbrišite datoteke iz shrambe v napravi.</translation>
 <translation id="3668801437375206837">Googlovi uporabniki lahko za boljše diagnosticiranje težav z Bluetoothom v poročila s povratnimi informacijami vključijo dodatne dnevnike za Bluetooth. Če je označena ta možnost, bosta v vašem poročilu vključena dnevnika btsnoop in HCI iz trenutne seje, in sicer prečiščena tako, da je odstranjenih čim več podatkov, ki omogočajo osebno prepoznavo. Dostop do teh dnevnikov bo omejen na skrbnike skupine izdelkov OS Chrome za Listnr. Dnevniki bodo trajno odstranjeni po 90 dneh.</translation>
 <translation id="3668823961463113931">Kontrolniki</translation>
 <translation id="3670113805793654926">Naprave katerega koli ponudnika</translation>
@@ -4016,6 +4021,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7289225569524511578">Odprite aplikacijo za ozadje</translation>
 <translation id="7290242001003353852">Prijavna storitev, ki jo gosti <ph name="SAML_DOMAIN" />, dostopa do vaše kamere.</translation>
 <translation id="7290594223351252791">Potrditev registracije</translation>
+<translation id="7295614427631867477">Upoštevajte, da Android, Google Play in povezane aplikacije urejajo njihovi pravilniki za zbiranje in uporabo podatkov.</translation>
 <translation id="729583233778673644">Dovoli šifriranje AES in RC4. Če uporabite to možnosti, je tveganje večje, saj šifriranje RC4 ni varno.</translation>
 <translation id="7296774163727375165">Pogoji za <ph name="DOMAIN" /></translation>
 <translation id="7297443947353982503">Napačno uporabniško ime/geslo ali preverjanje pristnosti EAP ni uspelo</translation>
@@ -4292,6 +4298,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7732111077498238432">Omrežje je upravljano s pravilniki</translation>
 <translation id="7737238973539693982">Izbris Linuxa (beta)</translation>
 <translation id="7740996059027112821">Standardno</translation>
+<translation id="7746457520633464754">Zaradi zaznavanja nevarnih aplikacij in spletnih mest Chrome Googlu pošlje URL-je nekaterih strani, ki jih obiščete, omejene podatke o sistemu in vsebino nekaterih strani</translation>
 <translation id="7750228210027921155">Slika v sliki</translation>
 <translation id="7751260505918304024">Prikaži vse</translation>
 <translation id="7754704193130578113">Pred prenosom vprašaj, kam želim shraniti vsako datoteko</translation>
@@ -4976,6 +4983,7 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8780123805589053431">Pridobivanje opisov slik iz Googla</translation>
 <translation id="8780443667474968681">Glasovno iskanje je izklopljeno.</translation>
 <translation id="878069093594050299">Potrdilo je bilo preverjeno za te uporabe:</translation>
+<translation id="8781470833671194250">Stabilizacija položaja klika</translation>
 <translation id="8781980678064919987">Zaustavitev, ko je pokrov zaprt</translation>
 <translation id="8782565991310229362">Zagon aplikacije Kiosk je preklican.</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; želi z vami souporabljati tiskalnik &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt;.</translation>

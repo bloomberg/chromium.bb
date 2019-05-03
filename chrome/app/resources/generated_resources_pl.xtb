@@ -801,6 +801,7 @@
 <translation id="2241053333139545397">Odczytywanie i modyfikowanie Twoich danych na wielu stronach</translation>
 <translation id="2241634353105152135">Tylko raz</translation>
 <translation id="2242687258748107519">Informacje o pliku</translation>
+<translation id="2246549592927364792">Pobierać opisy obrazów z Google?</translation>
 <translation id="224940702122312781">Ta strona będzie przesyłać bardzo dużo danych.</translation>
 <translation id="2249605167705922988">np. 1–5, 8, 11–13</translation>
 <translation id="2251218783371366160">Otwórz w przeglądarce systemowej</translation>
@@ -1106,6 +1107,7 @@
 <translation id="271033894570825754">Nowy</translation>
 <translation id="2714393097308983682">Sklep Google Play</translation>
 <translation id="2715751256863167692">Ta aktualizacja resetuje Chromebooka i usuwa dane bieżącego użytkownika.</translation>
+<translation id="2716986496990888774">Tym ustawieniem zarządza rodzic.</translation>
 <translation id="2718395828230677721">Podświetlenie nocne</translation>
 <translation id="2718998670920917754">Oprogramowanie antywirusowe wykryło wirusa.</translation>
 <translation id="2719936478972253983">Te pliki cookie zostały zablokowane</translation>
@@ -1217,6 +1219,7 @@
 <translation id="2874939134665556319">Poprzedni utwór</translation>
 <translation id="2875698561019555027">(Strony błędów Chrome)</translation>
 <translation id="2876336351874743617">Palec 2</translation>
+<translation id="2876369937070532032">Gdy Twoje bezpieczeństwo jest zagrożone, wysyła do Google adresy URL odwiedzanych stron</translation>
 <translation id="288042212351694283">Dostęp do urządzeń Universal 2nd Factor</translation>
 <translation id="2881076733170862447">Gdy klikniesz rozszerzenie</translation>
 <translation id="2881966438216424900">Ostatni dostęp:</translation>
@@ -1399,6 +1402,7 @@
 <translation id="3170072451822350649">Możesz też pominąć logowanie i <ph name="LINK_START" />przeglądać internet jako gość<ph name="LINK_END" />.</translation>
 <translation id="3172045848207518317">Strona ma dostęp do wejścia wideo</translation>
 <translation id="3177909033752230686">Język strony:</translation>
+<translation id="3181954750937456830">Bezpieczne przeglądanie (chroni Ciebie i Twoje urządzenie przed niebezpiecznymi witrynami)</translation>
 <translation id="3182749001423093222">Sprawdzanie pisowni</translation>
 <translation id="3183139917765991655">Importer profilów</translation>
 <translation id="3188465121994729530">Średnia krocząca</translation>
@@ -1704,6 +1708,7 @@
 <translation id="3664511988987167893">Ikona rozszerzenia</translation>
 <translation id="3665589677786828986">Przeglądarka Chrome wykryła, że niektóre z jej ustawień zostały zmodyfikowane przez inny program, i przywróciła im pierwotne wartości domyślne.</translation>
 <translation id="3668570675727296296">Ustawienia języka</translation>
+<translation id="366867565525278777">Instalacja nie udała się z powodu braku miejsca. Potrzeba co najmniej <ph name="INSTALL_SIZE" /> wolnego miejsca. Aby zwolnić miejsce, usuń pliki z pamięci urządzenia.</translation>
 <translation id="3668801437375206837">Aby lepiej diagnozować problemy z Bluetoothem, pracownicy Google mogą dołączać do raportów z opiniami dodatkowe dzienniki dotyczące działania Bluetootha. Jeśli ta opcja jest zaznaczona, Twój raport będzie zawierał dzienniki btsnoop i HCI z bieżącej sesji, przy czym zostanie usuniętych możliwie najwięcej informacji umożliwiających identyfikację. Dostęp do tych dzienników zostanie ograniczony do menedżerów grupy produktów Chrome OS w Listnr. Dzienniki zostaną usunięte po 90 dniach.</translation>
 <translation id="3668823961463113931">Moduły obsługi</translation>
 <translation id="3670113805793654926">Urządzenia od dowolnego dostawcy</translation>
@@ -4014,6 +4019,7 @@
 <translation id="7289225569524511578">Otwórz aplikację tapety</translation>
 <translation id="7290242001003353852">Ta usługa logowania, pochodząca z domeny <ph name="SAML_DOMAIN" />, ma dostęp do kamery.</translation>
 <translation id="7290594223351252791">Potwierdź rejestrację</translation>
+<translation id="7295614427631867477">Pamiętaj, że Android, Play i powiązane aplikacje mogą podlegać własnym zasadom zbierania i wykorzystywania danych.</translation>
 <translation id="729583233778673644">Zezwala na szyfrowanie AES i RC4. Używanie tej opcji jest ryzykowne, ponieważ szyfrowanie RC4 nie zapewnia bezpieczeństwa.</translation>
 <translation id="7296774163727375165"><ph name="DOMAIN" /> – warunki</translation>
 <translation id="7297443947353982503">Niepoprawna nazwa użytkownika lub hasło albo uwierzytelnianie EAP nie powiodło się</translation>
@@ -4290,6 +4296,7 @@
 <translation id="7732111077498238432">W sieci obowiązują zasady</translation>
 <translation id="7737238973539693982">Usuń Linuksa (Beta)</translation>
 <translation id="7740996059027112821">Standardowa</translation>
+<translation id="7746457520633464754">Aby wykrywać niebezpieczne aplikacje i witryny, Chrome wysyła do Google adresy URL i część zawartości niektórych odwiedzanych przez Ciebie stron, a także niektóre informacje o systemie.</translation>
 <translation id="7750228210027921155">Obraz w obrazie</translation>
 <translation id="7751260505918304024">Pokaż wszystkie</translation>
 <translation id="7754704193130578113">Pytaj przed pobraniem, gdzie zapisać każdy plik</translation>
@@ -4975,6 +4982,7 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="8780123805589053431">Pobieraj opisy obrazów z Google</translation>
 <translation id="8780443667474968681">Wyszukiwanie głosowe zostało wyłączone.</translation>
 <translation id="878069093594050299">Ten certyfikat został zweryfikowany na potrzeby następujących zastosowań:</translation>
+<translation id="8781470833671194250">Stabilizacja pozycji kliknięcia</translation>
 <translation id="8781980678064919987">Wyłącz, gdy pokrywa jest zamknięta</translation>
 <translation id="8782565991310229362">Uruchamianie aplikacji kiosku zostało anulowane.</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; chce udostępnić Ci drukarkę &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt;.</translation>

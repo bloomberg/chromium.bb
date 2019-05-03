@@ -98,6 +98,7 @@
 <translation id="2320166752086256636">কীবোর্ড লুকান</translation>
 <translation id="2339560363438331454">সিঙ্ক এবং Google পরিষেবাগুলি</translation>
 <translation id="2351097562818989364">আপনার অনুবাদ সেটিংস রিসেট করা হয়েছে৷</translation>
+<translation id="2359043044084662842">অনুবাদ করুন</translation>
 <translation id="2359808026110333948">চালিয়ে যান</translation>
 <translation id="2360196772093551345">মোবাইল সাইটের জন্য অনুরোধ করুন</translation>
 <translation id="2381405137052800939">প্রাথমিক বিষয়াদি</translation>
@@ -178,7 +179,7 @@
 <translation id="3533436815740441613">নতুন ট্যাব খুলুন</translation>
 <translation id="3551320343578183772">ট্যাব বন্ধ করুন</translation>
 <translation id="3588820906588687999">নতুন ট্যাবে ইমেজ খুলুন</translation>
-<translation id="3603009562372709545">লিঙ্ক URL কপি করুন</translation>
+<translation id="3603009562372709545">লিঙ্ক ইউআরএল কপি করুন</translation>
 <translation id="3607167657931203000">ডেটা স্বতঃপূর্ণ করুন</translation>
 <translation id="3609785682760573515">সিঙ্ক হচ্ছে...</translation>
 <translation id="3638472932233958418">পূর্বলোড ওয়েবপৃষ্ঠা</translation>
@@ -292,6 +293,7 @@
 <translation id="5659593005791499971">ইমেল আইডি</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">ভার্সন <ph name="PRODUCT_VERSION" /></translation>
+<translation id="5711039611392265845">আপনার গোপনীয়তা, নিরাপত্তা এবং ডেটা সংগ্রহের সাথে সম্পর্কিত আরও সেটিংসের জন্য <ph name="BEGIN_LINK" />সিঙ্ক এবং Google পরিষেবাগুলি<ph name="END_LINK" /> বিকল্পটি দেখুন।</translation>
 <translation id="5728700505257787410">দুঃখিত, আপনার অ্যাকাউন্টে সাইন-ইন করার সময় একটি সমস্যা হয়েছে৷</translation>
 <translation id="5737974891429562743">অ্যাকাউন্ট সাইন-ইনের বিবরণ পুরনো হয়ে গেছে। সিঙ্ক শুরু করার জন্য আপডেট করুন।</translation>
 <translation id="5738887413654608789">এই আদেশটি আপনার পারিপার্শ্বিক পরিবেশের উপর নির্ভর করে ওয়েব পৃষ্ঠার খোঁজ করতে দেয়।</translation>
@@ -383,7 +385,6 @@
 <translation id="6903907808598579934">সিঙ্ক চালু করুন</translation>
 <translation id="6914583639806229067">আপনার কপি করা ছবি সার্চ করুন</translation>
 <translation id="6914783257214138813">এক্সপোর্ট করা ফাইল যারা দেখতে পান তারা আপনার পাসওয়ার্ডগুলিও দেখতে পাবেন।</translation>
-<translation id="692898627499215142">সিঙ্কের প্রাথমিক সেট-আপ সম্পূর্ণ হয়নি। সিঙ্ক চালু করতে, সেটি টগল করুন।</translation>
 <translation id="6944369514868857500">অন্য অ্যাকাউন্ট বেছে নিন</translation>
 <translation id="6945221475159498467">নির্বাচন</translation>
 <translation id="6973630695168034713">ফোল্ডারগুলি</translation>

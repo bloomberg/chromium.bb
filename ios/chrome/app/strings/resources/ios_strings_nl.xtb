@@ -98,6 +98,7 @@
 <translation id="2320166752086256636">Toetsenbord verbergen</translation>
 <translation id="2339560363438331454">Synchronisatie en Google-services</translation>
 <translation id="2351097562818989364">Je vertaalinstellingen zijn opnieuw ingesteld.</translation>
+<translation id="2359043044084662842">Vertalen</translation>
 <translation id="2359808026110333948">Doorgaan</translation>
 <translation id="2360196772093551345">Mobiele site opvragen</translation>
 <translation id="2381405137052800939">Basisinstellingen</translation>
@@ -127,6 +128,7 @@
 <translation id="2800683595868705743">Tabbladschakelaar verlaten</translation>
 <translation id="2830972654601096923">Adressen beheren...</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
+<translation id="2840687315230832938">Eerste synchronisatieconfiguratie niet voltooid</translation>
 <translation id="2843803966603263712">Vertaalinstellingen opnieuw instellen</translation>
 <translation id="2858204748079866344">Ter bescherming van je privacy wordt je wachtwoord niet automatisch in dit veld ingevuld door Chrome.</translation>
 <translation id="285960592395650245">Download opnieuw proberen</translation>
@@ -291,6 +293,7 @@ Handoff moet ook zijn ingeschakeld in het gedeelte 'Algemeen' van 'Instellingen'
 <translation id="5659593005791499971">E-mailadres</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Versie <ph name="PRODUCT_VERSION" /></translation>
+<translation id="5711039611392265845">Bekijk <ph name="BEGIN_LINK" />Synchronisatie en Google-services<ph name="END_LINK" /> voor meer instellingen die verband houden met privacy, beveiliging en gegevensverzameling.</translation>
 <translation id="5728700505257787410">Er is een probleem opgetreden met het inloggen op je account.</translation>
 <translation id="5737974891429562743">De inloggegevens voor het account zijn verouderd. Voer een update uit om te synchroniseren.</translation>
 <translation id="5738887413654608789">Hiermee kun je relevante webpagina's vinden op basis van je omgeving.</translation>
@@ -382,7 +385,6 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="6903907808598579934">Synchronisatie inschakelen</translation>
 <translation id="6914583639806229067">Zoeken naar gekopieerde afbeelding</translation>
 <translation id="6914783257214138813">Je wachtwoorden zijn zichtbaar voor iedereen die het geëxporteerde bestand kan bekijken.</translation>
-<translation id="692898627499215142">Aanvankelijke synchronisatie-instelling is niet voltooid. Schakel Synchronisatie in om te beginnen met synchroniseren.</translation>
 <translation id="6944369514868857500">Een ander account kiezen</translation>
 <translation id="6945221475159498467">Selecteren</translation>
 <translation id="6973630695168034713">Mappen</translation>
@@ -410,6 +412,7 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="7280856130494094142">Geef de wachtwoordzin op om de synchronisatie te starten</translation>
 <translation id="7285236536143823449">JA, INSCHAKELEN</translation>
 <translation id="7291368939935408496">Wachtwoorden voorbereiden...</translation>
+<translation id="7293171162284876153">Schakel 'Je Chrome-gegevens synchroniseren' in om de synchronisatie te starten.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> procent gedownload</translation>
 <translation id="7346909386216857016">OK, begrepen</translation>
 <translation id="7348502496356775519">Bladwijzer maken</translation>

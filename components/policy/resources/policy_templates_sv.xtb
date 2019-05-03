@@ -1428,6 +1428,7 @@
       Om DeveloperToolsAllowed (värde 1) anges för principen går det att öppna utvecklarverktygen och JavaScript-konsolen i alla sammanhang, även i samband med tillägg som har installerats via en företagsprincip.
       Om DeveloperToolsDisallowed (värde 2) anges för principen går det inte att använda utvecklarverktygen eller att granska webbplatselement. Kortkommandon och alternativ för att öppna utvecklarverktygen eller JavaScript-konsolen på menyer och snabbmenyer inaktiveras.</translation>
 <translation id="3547954654003013442">Proxyinställningar</translation>
+<translation id="3550875587920006460">Tillåter inställning av anpassat schema för att söka efter uppdateringar. Detta gäller alla användare och alla gränssnitt på enheten. Om principen anges söker enheten efter uppdateringar efter detta schema. Principen måste tas bort för att avbryta framtida schemalagda sökningar efter uppdateringar.</translation>
 <translation id="355118380775352753">Webbplatser som ska öppnas i alternativa webbläsare</translation>
 <translation id="3554984410014457319">Tillåt Google-assistenten att lyssna efter röstaktiveringsfrasen</translation>
 <translation id="356579196325389849">Användare kan konfigurera lanseringskanalen för Chrome OS</translation>
@@ -1674,6 +1675,28 @@
       Om policyn är inställd på sant eller inte är inställd kan användarna utnyttja erbjudanden via registrering i Chrome OS.
 
       Om policyn är inställd på falskt kan användarna inte utnyttja erbjudanden.</translation>
+<translation id="4008233182078913897">Anger en lista med appar och tillägg som installeras tyst, utan att
+          användaren gör något, och som användaren inte kan avinstallera
+          eller inaktivera. Alla behörigheter som apparna eller tilläggen behöver
+          beviljas implicit utan att användaren blir tillfrågad. Det gäller även nya
+          behörigheter som tillkommer i framtida versioner av appen eller tillägget.
+          Dessutom beviljas behörighet för tilläggs-API:erna
+          enterprise.deviceAttributes och enterprise.platformKeys. (Dessa API:er
+          är inte tillgängliga för appar eller tillägg som inte tvångsinstallerats.)
+
+          Den här principen har företräde framför <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> vid en eventuell konflikt. Om en app eller ett tillägg som tidigare har tvångsinstallerats tas bort från den här listan avinstalleras den/det automatiskt i <ph name="PRODUCT_NAME" />.
+
+          På Windows-domäner som inte har anslutits till en <ph name="MS_AD_NAME" />-domän kan bara appar och tillägg som finns på Chrome Web Store tvångsinstalleras.
+
+          Observera att användarna kan ändra i källkoden till vilket tillägg som helst med hjälp av verktygen för utvecklare (vilket kan leda till att tillägget slutar fungera). Om detta är ett problem bör principen <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> ställas in.
+
+          Varje listpost i principen är en sträng med ett tilläggs-id och eventuellt en ”uppdateringsadress” med semikolon (<ph name="SEMICOLON" />) som avgränsare. Tilläggs-id:t är den sträng med 32 tecken som visas exempelvis på <ph name="CHROME_EXTENSIONS_LINK" /> i utvecklarläget. Om en ”uppdateringsadress” anges ska den peka på ett uppdateringsmanifest i XML-format enligt beskrivningen på <ph name="LINK_TO_EXTENSION_DOC1" />. Som standard används uppdateringsadressen på Chrome Web Store (som för närvarande är https://clients2.google.com/service/update2/crx). Observera att den ”uppdateringsadress” som anges i den här principen bara används vid den första installationen. För senare uppdateringar av tillägget används uppdateringsadressen i tilläggets manifestfil. Observera även att det var obligatoriskt att ange ”uppdateringsadressen” explicit i version 67 och äldre versioner av <ph name="PRODUCT_NAME" />.
+
+          Med <ph name="EXTENSION_POLICY_EXAMPLE" /> installeras t.ex. tillägget med id <ph name="EXTENSION_ID_SAMPLE" /> från den vanliga ”uppdateringsadressen” på Chrome Web Store. Mer information om att stå värd för tillägg finns här: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Om den här principen lämnas utan inställning installeras inga appar eller tillägg automatiskt och användaren får avinstallera alla appar och tillägg i <ph name="PRODUCT_NAME" />.
+
+         Observera att principen inte gäller i inkognitoläge.</translation>
 <translation id="4008507541867797979">Om den här principen är inställd på sant eller har lämnats utan inställning visas befintliga användare på inloggningsskärmen i <ph name="PRODUCT_OS_NAME" /> och det går att välja en.
 
       Om principen är inställd på falskt visas befintliga användare inte på inloggningsskärmen i <ph name="PRODUCT_OS_NAME" />. Den vanliga inloggningsskärmen (där användaren uppmanas att ange e-postadress och lösenord eller telefonnummer) eller mellansidan för SAML (om detta har aktiverats via principen <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />) visas, såvida inte en hanterad session har konfigurerats. Om en hanterad session har konfigurerats visas bara kontona för den hanterade sessionen och användaren kan välja ett av dem.
@@ -2657,6 +2680,12 @@
       Om principen inte konfigureras används plattformens standardinställningar för webbplatsisolering på inloggningsskärmen.
       </translation>
 <translation id="5901427587865226597">Endast dubbelsidig utskrift</translation>
+<translation id="5903898512448364160">
+      Om den här principen är inställd på sant har molnprinciper företräde om de står i konflikt med plattformens principer.
+      Om den här principen är inställd på falskt eller inte är konfigurerad har plattformens principer företräde om de står i konflikt med molnprinciper.
+
+      Denna princip är endast tillgänglig som en obligatorisk plattformsprincip för datorn, och den påverkar endast datorns principer för molnhantering.
+      </translation>
 <translation id="5905473632148429217">Aktivera OCSP/CRL-onlinekontroller</translation>
 <translation id="5906199912611534122">Gör det möjligt att aktivera eller inaktivera begränsad överföringshastighet i nätverket.
       Detta gäller alla användare och alla gränssnitt på enheten. När principen
@@ -2684,6 +2713,7 @@
 
       Om du inaktiverar den här inställningen eller inte anger ett värde tvingas inte användningen av SafeSearch i Sök på Google fram.</translation>
 <translation id="5946082169633555022">Betakanal</translation>
+<translation id="5946329690214660966">Ställ in ett anpassat schema för att söka efter uppdateringar</translation>
 <translation id="5950205771952201658">Eftersom återkallelsekontroller online vid programfel inte ger någon effektiv säkerhetsfördel är de inaktiverade som standard i <ph name="PRODUCT_NAME" /> version 19 och senare. Om du aktiverar den här principen återställs den tidigare inställningen och OCSP/CRL-onlinekontroller utförs.
 
      Om ingen inställning görs för principen eller om den ställs in på falskt görs ingen återkallelsekontroll online i <ph name="PRODUCT_NAME" /> från och med <ph name="PRODUCT_NAME" /> 19.</translation>
@@ -2750,6 +2780,7 @@
 <translation id="6034341625190551415">Styr offentliga sessioner och konton för offentlig miljö.</translation>
 <translation id="6034603289689965535">Tillåter att en sida visar popup-fönster när den tas bort</translation>
 <translation id="6036523166753287175">Aktivera brandväggspassage från fjärråtkomstsvärd</translation>
+<translation id="605475635122964053">Begränsar PIN-utskriftsläge. Om principen saknar inställning räknas det som ingen begränsning. Om läget inte är tillgängligt ignoreras den här principen. Observera att funktionen PIN-utskriftsläge endast är aktiverad för skrivare med protokollen IPPS, USB eller IPP-over-USB. </translation>
 <translation id="6070667616071269965">Tangentbordslayouter för enhetens inloggningsskärm</translation>
 <translation id="6074963268421707432">Tillåt inte att någon webbplats visar aviseringar på skrivbordet</translation>
 <translation id="6074964551275531965">Ange tidsperiod för aviseringar om uppdatering</translation>

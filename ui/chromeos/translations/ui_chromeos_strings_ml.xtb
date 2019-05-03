@@ -37,10 +37,10 @@
 <translation id="1351692861129622852"><ph name="FILE_COUNT" /> ഫയലുകൾ ഇമ്പോർട്ടുചെയ്യുന്നു...</translation>
 <translation id="1352103415082130575">തായ് കീബോർഡ് (പറ്റച്ചോട്ടെ)</translation>
 <translation id="1358032944105037487">ജാപ്പനീസ്‌ കീബോര്‍ഡ്</translation>
-<translation id="1358735829858566124">ഫയലോ ഡയറക്‌ടറിയോ ഉപയോഗിക്കാൻ കഴിയുന്നതല്ല.</translation>
+<translation id="1358735829858566124">ഫയലോ ഡയറക്‌റ്ററിയോ ഉപയോഗക്ഷമമല്ല.</translation>
 <translation id="1363028406613469049">ട്രാക്കുചെയ്യുക</translation>
 <translation id="1378727793141957596">Google ഡ്രൈവിലേക്ക് സ്വാഗതം!</translation>
-<translation id="1383876407941801731">തിരയൂ</translation>
+<translation id="1383876407941801731">തിരയുക</translation>
 <translation id="1395262318152388157">സീക്ക് സ്ലൈഡർ</translation>
 <translation id="1399648040768741453">തെലുങ്ക് കീബോർഡ് (സ്വരസൂചകം)</translation>
 <translation id="1430915738399379752">അച്ചടിക്കുക</translation>
@@ -140,7 +140,7 @@
 <translation id="2638942478653899953">Google ഡ്രൈവിൽ പ്രവേശിക്കാനായില്ല. <ph name="BEGIN_LINK" />ലോഗ് ഔട്ട്<ph name="END_LINK" /> ചെയ്‌ത ശേഷം തിരികെ ലോഗ് ഇൻ ചെയ്യുക.</translation>
 <translation id="2649120831653069427">റെയിൻബോഫിഷ്</translation>
 <translation id="2661146741306740526">16x9</translation>
-<translation id="2672394958563893062">ഒരു പിശക് സംഭവിച്ചു. തുടക്കത്തിൽ നിന്ന് പുനരാരംഭിക്കുന്നതിന് ക്ലിക്കുചെയ്യുക.</translation>
+<translation id="2672394958563893062">ഒരു പിശക് സംഭവിച്ചു. തുടക്കത്തിൽ നിന്ന് പുനരാരംഭിക്കുന്നതിന് ക്ലിക്ക് ചെയ്യുക.</translation>
 <translation id="2676946222714718093">ഇതിൽ പ്ലേ ചെയ്യുന്നു</translation>
 <translation id="2735698359135166290">റൊമാനിയൻ അടിസ്ഥാന കീബോർഡ്</translation>
 <translation id="2771816809568414714">ചീസ്</translation>
@@ -148,7 +148,7 @@
 <translation id="2782104745158847185">Linux ആപ്ലിക്കേഷൻ ഇൻസ്‌റ്റാൾ ചെയ്യുന്നതിൽ പിഴവ്</translation>
 <translation id="2787047795752739979">യഥാർത്ഥമായതിനെ പുനരാലേഖനം ചെയ്യുക</translation>
 <translation id="2790805296069989825">റഷ്യന്‍ കീബോര്‍ഡ്</translation>
-<translation id="2843806747483486897">സ്ഥിരസ്ഥിതി മാറ്റുക...</translation>
+<translation id="2843806747483486897">ഡിഫോൾട്ട് മാറ്റുക...</translation>
 <translation id="2850124913210091882">ബാക്കപ്പെടുക്കുക</translation>
 <translation id="2870836398458454343">ലിപ്യന്തരണം (marhaban ← مرحبا)</translation>
 <translation id="288024221176729610">ചെക്ക്</translation>
@@ -172,7 +172,7 @@
 <translation id="3003633581067744647">ലഘുചിത്ര കാഴ്ച്ചയിലേക്ക് മാറുക</translation>
 <translation id="3007214526293698309">അനുപാതം ക്രമീകരിക്കുക</translation>
 <translation id="303198083543495566">ഭൂമിശാസ്‌ത്രം</translation>
-<translation id="3057861065630527966">നിങ്ങളുടെ ഫോട്ടോകളും വീഡിയോകളും ബാക്കപ്പുചെയ്യുക</translation>
+<translation id="3057861065630527966">നിങ്ങളുടെ ഫോട്ടോകളും വീഡിയോകളും ബാക്കപ്പ് ചെയ്യുക</translation>
 <translation id="3064388234319122767">ലിപ്യന്തരണം (zdravo → здраво)</translation>
 <translation id="3078461028045006476"><ph name="EXTENSION_NAME" /> എന്നതുമായി പങ്കിടുക</translation>
 <translation id="3088034400796962477">ലിപ്യന്തരണം (salam ← سلام)</translation>
@@ -183,13 +183,13 @@
 <translation id="3187212781151025377">ഹിബ്രു കീബോര്‍ഡ്</translation>
 <translation id="3188257591659621405">എൻ്റെ ഫയലുകൾ</translation>
 <translation id="3197563288998582412">യുകെ ദ്വരോക്ക്</translation>
-<translation id="3202131003361292969">പാത്ത്</translation>
+<translation id="3202131003361292969">പാത</translation>
 <translation id="3224239078034945833">കനേഡിയൻ മൾട്ടിലിംഗ്വൽ</translation>
 <translation id="3236289833370040187">ഉടമസ്ഥാവകാശം <ph name="DESTINATION_DOMAIN" /> എന്നതിലേക്ക് കൈമാറ്റം ചെയ്യുന്നതാണ്.</translation>
 <translation id="3241720467332021590">ഐറിഷ്</translation>
 <translation id="3245321423178950146">അറിയപ്പെടാത്ത കലാകാരൻ</translation>
 <translation id="3252266817569339921">ഫ്രഞ്ച്</translation>
-<translation id="3254434849914415189"><ph name="FILE_TYPE" /> ഫയലുകൾക്കായി സ്ഥിരസ്ഥിതി ആപ്പ് തിരഞ്ഞെടുക്കുക:</translation>
+<translation id="3254434849914415189"><ph name="FILE_TYPE" /> ഫയലുകൾക്കായി ഡിഫോൾട്ട് ആപ്പ് തിരഞ്ഞെടുക്കുക:</translation>
 <translation id="3264582393905923483">സന്ദർഭം</translation>
 <translation id="3280431534455935878">തയ്യാറെടുക്കുന്നു</translation>
 <translation id="3280987981688031357">വിനൈൽ റെക്കോർഡ്</translation>
@@ -201,7 +201,7 @@
 <translation id="3399597614303179694">മാസിഡോണിയൻ കീബോർഡ്</translation>
 <translation id="3414856743105198592">നീക്കം ചെയ്യാവുന്ന മീഡിയയിലെ ഫോർമാറ്റിംഗ് എല്ലാ ഡാറ്റയും മായ്‍ക്കും. തുടരാൻ നിങ്ങൾ ആഗ്രഹിക്കുന്നുണ്ടോ?</translation>
 <translation id="3437801641691368414">സൃഷ്‌ടിച്ച സമയം</translation>
-<translation id="3466147780910026086">നിങ്ങളുടെ മീഡിയ ഉപകരണം സ്‌‌കാൻ ചെയ്യുന്നു...</translation>
+<translation id="3466147780910026086">നിങ്ങളുടെ മീഡിയാ ഉപകരണം സ്‌‌കാൻ ചെയ്യുന്നു...</translation>
 <translation id="3468522857997926824"><ph name="FILE_COUNT" /> ഫോട്ടോകൾ <ph name="BEGIN_LINK" />Google ഡ്രൈവിലേക്ക്<ph name="END_LINK" /> ബാക്കപ്പുചെയ്‌തു</translation>
 <translation id="3470502288861289375">പകർത്തുന്നു...</translation>
 <translation id="3475447146579922140">Google സ്‌പ്രെഡ്‌ഷീറ്റ്</translation>
@@ -223,7 +223,7 @@
 <translation id="3678559383040232393">മാൾട്ടീസ് കീബോർഡ്</translation>
 <translation id="3685122418104378273">മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കുമ്പോൾ, സാധാരണയായി Google ഡ്രൈവ് സമന്വയം പ്രവർത്തനരഹിതമാകുന്നു.</translation>
 <translation id="3726463242007121105">ഈ ഉപകരണത്തിന്റെ ഫയൽസിസ്റ്റം പിന്തുണയ്ക്കാത്തതിനാൽ ഇത് തുറക്കാനായില്ല.</translation>
-<translation id="3741243925913727067">Google ഡ്രൈവിലേക്ക് നിങ്ങളുടെ മീഡിയ ഉപകരണത്തിന്റെ ഫോട്ടോകളും വീഡിയോകളും ബാക്കപ്പുചെയ്യുക.</translation>
+<translation id="3741243925913727067">Google ഡ്രൈവിലേക്ക് നിങ്ങളുടെ മീഡിയാ ഉപകരണത്തിന്റെ ഫോട്ടോകളും വീഡിയോകളും ബാക്കപ്പെടുക്കുക.</translation>
 <translation id="3749289110408117711">ഫയല്‍ നാമം</translation>
 <translation id="3780536599611287598">'<ph name="FOLDER_NAME" />'-ലേക്ക് ഫയലുകൾ നീക്കാൻ നിങ്ങൾക്ക് അനുമതിയില്ല.</translation>
 <translation id="3786301125658655746">നിങ്ങൾ ഓഫ്‌ലൈനിലാണ്</translation>
@@ -346,7 +346,7 @@
 <translation id="5158593464696388225">ചിത്രം സംരക്ഷിക്കുന്നത് പരാജയപ്പെട്ടു</translation>
 <translation id="5159383109919732130"><ph name="BEGIN_BOLD" />നിങ്ങളുടെ ഉപകരണം ഇപ്പോൾ നീക്കം ചെയ്യരുത്!<ph name="END_BOLD" />
    <ph name="LINE_BREAKS" />
-   ഉപയോഗത്തിലിരിക്കുന്ന നിങ്ങളുടെ ഉപകരണം നീക്കംചെയ്യുന്നത് ഡാറ്റ നഷ്‌ടത്തിന് കാരണമാകാം. പ്രവർത്തനം പൂർത്തിയാകുന്നതുവരെ കാത്തിരിക്കുക, തുടർന്ന് ഫയൽ ആപ്പ് ഉപയോഗിച്ച് ഉപകരണം ഒഴിവാക്കുക.</translation>
+   ഉപയോഗത്തിലിരിക്കുന്ന നിങ്ങളുടെ ഉപകരണം നീക്കംചെയ്യുന്നത് ഡാറ്റ നഷ്‌ടത്തിന് കാരണമാകാം. പ്രവർത്തനം പൂർത്തിയാകുന്നതുവരെ കാത്തിരിക്കുക, തുടർന്ന് ഫയലുകളുടെ ആപ്പ് ഉപയോഗിച്ച് ഉപകരണം ഒഴിവാക്കുക.</translation>
 <translation id="5163869187418756376">പങ്കിടൽ പരാജയപ്പെട്ടു. നിങ്ങളുടെ കണക്ഷൻ പരിശോധിച്ച് പിന്നീട് വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="516592729076796170">യുഎസ് പ്രോഗ്രാമർ ഡൊറാക്ക്</translation>
 <translation id="5167131699331641907">നെതർലാൻഡ്‌സ് കീബോർഡ്</translation>
@@ -404,7 +404,7 @@
 <translation id="5752453871435543420">Chrome OS ക്ലൗഡ് ബാക്കപ്പ്</translation>
 <translation id="5756666464756035725">ഹംഗേറിയൻ ക്വെർട്ടി</translation>
 <translation id="5771585441665576801">ലിപ്യന്തരണം (geia → γεια)</translation>
-<translation id="57838592816432529">മ്യൂട്ടുചെയ്യുക</translation>
+<translation id="57838592816432529">മ്യൂട്ട് ചെയ്യുക</translation>
 <translation id="5788127256798019331">Play ഫയലുകൾ</translation>
 <translation id="5790193330357274855">കസാഖ്</translation>
 <translation id="5817397429773072584">ചൈനീസ് പരമ്പരാഗതം</translation>
@@ -506,6 +506,7 @@
 <translation id="6979158407327259162">Google ഡ്രൈവ്</translation>
 <translation id="6990081529015358884">നിങ്ങൾക്ക് മാതിയായ ഇടമില്ല</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> ഫോൾഡറുകൾ തിരഞ്ഞെടുത്തു</translation>
+<translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">ഇന്‍സ്റ്റാളേഷന്‍ പരാജയപ്പെട്ടു.</translation>
 <translation id="7040138676081995583">ഇത് ഉപയോഗിച്ച് തുറക്കുക...</translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> ഇനങ്ങൾ തിരഞ്ഞെടുത്തു</translation>
@@ -585,7 +586,7 @@
 <translation id="7925686952655276919">സമന്വയത്തിനായി മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കരുത്</translation>
 <translation id="7928710562641958568">ഉപകരണം നീക്കംചെയ്യുക</translation>
 <translation id="7943385054491506837">യുഎസ് കോൾമാക്ക്</translation>
-<translation id="7953739707111622108">ഈ ഉപകരണത്തിന്റെ ഫയൽസിസ്റ്റം അംഗീകൃതമല്ലാത്തതിനാൽ ഇത് തുറക്കാനായില്ല.</translation>
+<translation id="7953739707111622108">ഈ ഉപകരണത്തിന്റെ ഫയൽ സിസ്റ്റം അംഗീകൃതമല്ലാത്തതിനാൽ ഇത് തുറക്കാനായില്ല.</translation>
 <translation id="7969525169268594403">സ്ലോവേനിയന്‍</translation>
 <translation id="7982283708762922719">ഉയരം</translation>
 <translation id="7987485481246785146">സൊറാനി കുർദ്ദിഷ് അറബിക് അധിഷ്‌ഠിത കീബോർഡ്</translation>
@@ -596,7 +597,7 @@
 <translation id="8028993641010258682">വലുപ്പം</translation>
 <translation id="8031722894461705849">സ്ലോവാക് കീബോർഡ്</translation>
 <translation id="803771048473350947">ഫയല്‍</translation>
-<translation id="8038111231936746805">(സ്ഥിരസ്ഥിതി)</translation>
+<translation id="8038111231936746805">(ഡിഫോൾട്ട്)</translation>
 <translation id="8042602468072383151"><ph name="AUDIO_TYPE" /> ഓഡിയോ</translation>
 <translation id="8045462269890919536">റുമാനിയന്‍</translation>
 <translation id="8052887694493382350">ഈ ഫയൽ, Windows സോഫ്‌റ്റ്‌വെയർ ഉപയോഗിക്കുന്ന PC-‌യ്ക്കായി രൂപകൽപ്പന ചെയ്‌തതാണ്. ഇത് Chrome OS റൺ ചെയ്യുന്ന നിങ്ങളുടെ ഉപകരണത്തിന് അനുയോജ്യമല്ല. <ph name="BEGIN_LINK_HELP" />കൂടുതലറിയുക<ph name="END_LINK_HELP" /></translation>
@@ -627,7 +628,7 @@
 <translation id="8329978297633540474">പ്ലെയിന്‍ വാചകം</translation>
 <translation id="8336153091935557858">ഇന്നലെ <ph name="YESTERDAY_DAYTIME" /></translation>
 <translation id="8336579025507394412">ഐസ്‌ലാൻഡിക് കീബോർഡ്</translation>
-<translation id="8342318071240498787">സമാന പേരിലുള്ള ഒരു ഫയൽ അല്ലെങ്കിൽ ഡയറക്‌ടറി ഇതിനകം നിലവിലുണ്ട്.</translation>
+<translation id="8342318071240498787">സമാന പേരിലുള്ള ഫയൽ അല്ലെങ്കിൽ ഡയറക്‌റ്ററി ഇതിനകം നിലവിലുണ്ട്.</translation>
 <translation id="8391950649760071442">ലിപ്യന്തരണം (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">തലങ്ങൾ</translation>
 <translation id="8400874747056634633">Plugin VM ഉപയോഗിച്ച് പങ്കിടൽ മാനേജ് ചെയ്യുക</translation>
@@ -689,7 +690,7 @@
 <translation id="9219103736887031265">ചിത്രങ്ങൾ‌</translation>
 <translation id="9219908252191632183">ലൂണാർ</translation>
 <translation id="939736085109172342">പുതിയ ഫോള്‍ഡര്‍</translation>
-<translation id="942954117721265519">ഈ ഡയറക്‌ടറിയിൽ ചിത്രങ്ങളൊന്നുമില്ല.</translation>
+<translation id="942954117721265519">ഈ ഡയറക്റ്ററിയിൽ ചിത്രങ്ങളൊന്നുമില്ല.</translation>
 <translation id="943972244133411984">പരിഷ്‌ക്കരിച്ചത്</translation>
 <translation id="945522503751344254">ഫീഡ്ബാക്ക് അയയ്ക്കുക</translation>
 <translation id="981121421437150478">ഓഫ്‌ലൈൻ</translation>

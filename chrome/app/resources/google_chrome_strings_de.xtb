@@ -25,6 +25,7 @@
 <translation id="1585657529869845941">Klicken Sie auf <ph name="BEGIN_BOLD" />Trotzdem wechseln<ph name="END_BOLD" />, falls die Schaltfläche angezeigt wird</translation>
 <translation id="1587223624401073077">Google Chrome verwendet Ihre Kamera.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> ist schädlich und wurde daher von Chrome blockiert.</translation>
+<translation id="1590588151039584890">Zum Aktualisieren muss Chrome auf diesem Computer geschlossen werden. Andere Nutzer, die an diesem Computer angemeldet sind, verlieren dann eventuell nicht gespeicherte Änderungen.</translation>
 <translation id="1619887657840448962">Um Chrome sicherer zu machen, haben wir die folgende Erweiterung deaktiviert. Sie ist nicht im <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> aufgeführt und wurde möglicherweise ohne Ihr Wissen hinzugefügt.</translation>
 <translation id="1628000112320670027">Hilfe für Chrome aufrufen</translation>
 <translation id="1662639173275167396">Chrome OS und <ph name="BEGIN_LINK_LINUX_OSS" />Linux (Beta)<ph name="END_LINK_LINUX_OSS" /> werden durch zusätzliche <ph name="BEGIN_LINK_CROS_OSS" />Open-Source-Software<ph name="END_LINK_CROS_OSS" /> möglich gemacht.</translation>
@@ -164,6 +165,7 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="5386244825306882791">Die Erweiterung legt auch fest, welche Seite beim Start von Chrome oder bei der Suche über die Omnibox angezeigt wird.</translation>
 <translation id="5430073640787465221">Ihre Einstellungsdatei ist beschädigt oder ungültig. Google Chrome kann Ihre Einstellungen nicht wiederherstellen.</translation>
 <translation id="5483595757826856374">{0,plural, =0{Chrome wird jetzt neu gestartet}=1{Chrome wird in 1 Sekunde neu gestartet}other{Chrome wird in # Sekunden neu gestartet}}</translation>
+<translation id="5543953544073077331">Andere Instanzen von Chrome werden ausgeführt. Bitte schließen Sie diese, um zu aktualisieren.</translation>
 <translation id="556024056938947818">Google Chrome versucht, Passwörter anzuzeigen.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> ist möglicherweise schädlich und wurde daher von Chrome blockiert.</translation>
@@ -224,6 +226,7 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="7473136999113284234">Chrome wird automatisch aktualisiert, sodass Sie immer über die neueste Version verfügen.</translation>
 <translation id="7486227612705979895">Chrome greift auf Google Drive zu, um in der Adressleiste Vorschläge zu machen</translation>
 <translation id="748945194546522577">Diese Datei ist schädlich und wurde von Chrome blockiert. Sie werden durch das erweiterte Sicherheitsprogramm geschützt.</translation>
+<translation id="7531671357096394523">Alle Instanzen von Chrome schließen.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Chrome OS in dieser Sprache anzeigen</translation>
 <translation id="7561940363513215021">{0,plural, =1{Chrome wird in 1 Minute neu gestartet}other{Chrome wird in # Minuten neu gestartet}}</translation>

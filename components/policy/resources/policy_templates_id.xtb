@@ -307,11 +307,11 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
 
           Saat dok terhubung ke model perangkat tertentu, alamat MAC dok yang ditetapkan untuk perangkat akan digunakan untuk mengidentifikasi perangkat di Ethernet secara default. Kebijakan ini memungkinkan administrator untuk mengubah sumber alamat MAC saat dipasang ke dok.
 
-          Jika 'DeviceDockMacAddress' dipilih atau kebijakan ini tidak ditetapkan, alamat MAC dok yang ditetapkan untuk perangkat akan digunakan.
+          Jika  'DeviceDockMacAddress' dipilih atau kebijakan ini tidak ditetapkan, alamat MAC dok yang ditetapkan untuk perangkat akan digunakan.
 
-          Jika 'DeviceNicMacAddress' dipilih, alamat MAC NIC (pengontrol antarmuka jaringan) perangkat akan digunakan.
+          Jika  'DeviceNicMacAddress' dipilih, alamat MAC NIC (pengontrol antarmuka jaringan) perangkat akan digunakan.
 
-          Jika 'DockNicMacAddress' dipilih, alamat MAC NIC dok akan digunakan.
+          Jika  'DockNicMacAddress' dipilih, alamat MAC NIC dok akan digunakan.
 
           Setelan ini tidak dapat diubah oleh pengguna.</translation>
 <translation id="1507957856411744193">Jika kebijakan ini disetel ke true, <ph name="PRODUCT_NAME" /> akan terhubung ke perangkat Cast di semua alamat IP, bukan hanya alamat pribadi RFC1918/RFC4913.
@@ -1371,6 +1371,7 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
       Jika kebijakan ini disetel ke 'DeveloperToolsAllowed' (nilai 1), Developer Tools dan konsol JavaScript dapat diakses dan digunakan dalam semua konteks, termasuk dalam konteks ekstensi yang diinstal oleh kebijakan perusahaan.
       Jika kebijakan ini disetel ke 'DeveloperToolsDisallowed' (nilai 2), Developer Tools tidak dapat diakses dan elemen situs tidak dapat diperiksa lagi. Semua pintasan keyboard dan semua menu atau entri menu konteks untuk membuka Developer Tools atau Konsol JavaScript akan dinonaktifkan.</translation>
 <translation id="3547954654003013442">Setelan proxy</translation>
+<translation id="3550875587920006460">Memungkinkan penyetelan jadwal kustom untuk memeriksa update. Berlaku untuk semua pengguna dan semua antarmuka pada perangkat. Setelah ditetapkan, perangkat akan memeriksa update menurut jadwal. Kebijakan ini harus dihapus untuk membatalkan semua pemeriksaan update terjadwal lainnya.</translation>
 <translation id="355118380775352753">Situs yang akan dibuka di browser alternatif</translation>
 <translation id="3554984410014457319">Mengizinkan Asisten Google mendengarkan frasa aktivasi suara</translation>
 <translation id="356579196325389849">Pengguna dapat mengonfigurasi saluran rilis Chrome OS</translation>
@@ -1616,6 +1617,28 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
       Jika kebijakan ini disetel ke true atau tidak disetel, pengguna akan dapat menukarkan penawaran melalui Pendaftaran Chrome OS.
 
       Jika kebijakan ini disetel ke false, pengguna tidak akan dapat menukarkan penawaran.</translation>
+<translation id="4008233182078913897">Menentukan daftar aplikasi dan ekstensi yang diinstal secara otomatis,
+          tanpa interaksi pengguna, dan yang tidak dapat di-uninstal atau
+          dinonaktifkan oleh pengguna. Semua izin yang diminta oleh
+          aplikasi/ekstensi diberikan secara implisit, tanpa interaksi pengguna,
+          termasuk izin tambahan apa pun yang diminta oleh versi berikutnya dari
+          aplikasi/ekstensi tersebut. Selain itu, izin diberikan untuk API ekstensi enterprise.deviceAttributes dan enterprise.platformKeys.
+          (Kedua API ini tidak tersedia untuk aplikasi/ekstensi yang
+          tidak diinstal paksa.)
+
+          Kebijakan ini lebih diutamakan daripada kebijakan <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> yang berpotensi bentrok. Jika aplikasi atau ekstensi yang sebelumnya diinstal paksa telah dihapus dari daftar ini, aplikasi/ekstensi tersebut akan otomatis di-uninstal oleh <ph name="PRODUCT_NAME" />.
+
+          Untuk instance Windows yang tidak tergabung dalam domain <ph name="MS_AD_NAME" />, penginstalan paksa dibatasi untuk aplikasi dan ekstensi yang tercantum di Chrome Web Store.
+
+          Perlu diperhatikan bahwa kode sumber untuk ekstensi apa pun dapat diubah oleh pengguna melalui Developer Tools (namun berpotensi membuat ekstensi tidak berfungsi lagi). Jika hal ini menjadi masalah, kebijakan <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> sebaiknya ditetapkan.
+
+          Setiap item daftar kebijakan merupakan string yang memuat ID ekstensi dan, terkadang, URL "update" yang dipisahkan titik koma (<ph name="SEMICOLON" />). ID ekstensi adalah string 32 huruf yang ditemukan misalnya di <ph name="CHROME_EXTENSIONS_LINK" /> saat dalam mode developer. URL "update", jika ditentukan, semestinya mengarah ke dokumen XML Manifes Update seperti yang dijelaskan di <ph name="LINK_TO_EXTENSION_DOC1" />. Secara default, URL update Chrome Web Store digunakan (yang saat ini adalah "https://clients2.google.com/service/update2/crx"). Perhatikan bahwa URL "update" yang ditetapkan dalam kebijakan ini hanya digunakan untuk penginstalan awal; update ekstensi berikutnya akan menggunakan URL update yang ditunjukkan dalam manifes ekstensi. Perhatikan juga bahwa penetapan URL "update" secara eksplisit diwajibkan pada versi <ph name="PRODUCT_NAME" /> hingga dan termasuk 67.
+
+          Misalnya, <ph name="EXTENSION_POLICY_EXAMPLE" /> menginstal aplikasi <ph name="EXTENSION_ID_SAMPLE" /> dari URL "update" Chrome Web Store standar. Untuk mendapatkan informasi selengkapnya tentang ekstensi hosting, lihat: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Jika kebijakan ini tidak ditetapkan, tidak ada aplikasi atau ekstensi yang otomatis diinstal dan pengguna dapat meng-uninstal aplikasi atau ekstensi apa pun di <ph name="PRODUCT_NAME" />.
+
+          Perlu diperhatikan bahwa kebijakan ini tidak berlaku untuk mode penyamaran.</translation>
 <translation id="4008507541867797979">Jika kebijakan ini ditetapkan ke true atau tidak dikonfigurasi, <ph name="PRODUCT_OS_NAME" /> akan menampilkan pengguna yang ada di layar login dan diizinkan untuk memilih salah satu.
 
       Jika kebijakan ini ditetapkan ke false, <ph name="PRODUCT_OS_NAME" /> tidak akan menampilkan pengguna yang ada di layar login. Layar login normal (yang meminta email dan sandi atau ponsel pengguna) atau layar interstisial SAML (jika diaktifkan melalui kebijakan <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />) akan ditampilkan, kecuali jika Sesi Terkelola dikonfigurasi. Jika Sesi Terkelola dikonfigurasi, hanya akun Sesi Terkelola yang akan ditampilkan, sehingga memungkinkan untuk memilih salah satu akun.
@@ -1992,7 +2015,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="4826326557828204741">Tindakan yang diperlukan saat penundaan nganggur tercapai ketika menjalankan daya baterai</translation>
 <translation id="4832852360828533362">Pelaporan perangkat dan pengguna</translation>
 <translation id="4834526953114077364">Pengguna yang paling jarang digunakan yang belum masuk dalam 3 bulan terakhir dihapus sampai terdapat cukup ruang kosong</translation>
-<translation id="4835622243021053389">Aktifkan autentikasi NTLMv2.</translation>
+<translation id="4835622243021053389">Mengaktifkan autentikasi NTLMv2.</translation>
 <translation id="4858735034935305895">Izinkan mode layar penuh</translation>
 <translation id="4861767323695239729">Mengonfigurasi metode masukan yang diizinkan dalam sesi pengguna</translation>
 <translation id="487460824085252184">Migrasi otomatis, jangan tanya persetujuan pengguna.</translation>
@@ -2544,7 +2567,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="5893553533827140852">Jika setelan ini diaktifkan, permintaan autentikasi gnubby akan dilakukan melalui proxy lewat sambungan hosting jarak jauh.
 
           Jika setelan ini dinonaktifkan atau tidak dikonfigurasi, permintaan autentikasi gnubby tidak akan dilakukan melalui proxy.</translation>
-<translation id="5897913798715600338">Isi daya baterai menggunakan teknologi pengisian daya cepat.</translation>
+<translation id="5897913798715600338">Mengisi daya baterai menggunakan teknologi pengisian daya cepat.</translation>
 <translation id="5898486742390981550">Ketika beberapa pengguna masuk, hanya pengguna utama yang dapat menggunakan aplikasi Android.</translation>
 <translation id="5900196529149231477">
       Kebijakan ini berlaku untuk layar login. Lihat juga kebijakan <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> yang berlaku untuk sesi pengguna. Sebaiknya setel kedua kebijakan ke nilai yang sama. Jika nilai tidak cocok, mungkin terjadi penundaan saat memasuki sesi pengguna, sementara nilai yang ditentukan oleh kebijakan pengguna sedang diterapkan.
@@ -2553,6 +2576,12 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Jika kebijakan ini tidak dikonfigurasi, setelan isolasi situs default platform akan digunakan untuk layar login.
       </translation>
 <translation id="5901427587865226597">Khusus pencetakan dupleks</translation>
+<translation id="5903898512448364160">
+      Jika kebijakan ini ditetapkan ke true, kebijakan cloud akan lebih diutamakan jika terjadi bentrok dengan kebijakan platform.
+      Jika kebijakan ini ditetapkan ke false atau tidak dikonfigurasi, kebijakan platform akan lebih diutamakan jika terjadi bentrok dengan kebijakan cloud.
+
+      Kebijakan ini hanya tersedia sebagai kebijakan platform perangkat wajib dan hanya akan memengaruhi kebijakan cloud lingkup perangkat.
+      </translation>
 <translation id="5905473632148429217">Mengaktifkan pemeriksaan OCSP/CRL online</translation>
 <translation id="5906199912611534122">Mengizinkan pengaktifan atau pe-nonaktifan pembatasan jaringan.
       Kebijakan ini berlaku untuk semua pengguna, dan untuk semua antarmuka di perangkat. Setelah disetel,
@@ -2579,6 +2608,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
       Jika Anda menonaktifkan setelan ini atau tidak menyetel suatu nilai, SafeSearch di Google Penelusuran tidak akan diterapkan.</translation>
 <translation id="5946082169633555022">Saluran beta</translation>
+<translation id="5946329690214660966">Menetapkan jadwal kustom untuk memeriksa update</translation>
 <translation id="5950205771952201658">Mengingat pemeriksaan pembatalan online kegagalan-lunak tidak memberikan manfaat keamanan yang efektif, pemeriksaan tersebut dinonaktifkan secara default di <ph name="PRODUCT_NAME" /> versi 19 dan yang lebih baru. Dengan menyetel kebijakan ini ke true, perilaku sebelumnya akan dipulihkan dan akan dilakukan pemeriksaan OCSP/CRL online.
 
       Jika kebijakan tidak disetel, atau disetel ke false, <ph name="PRODUCT_NAME" /> tidak akan melakukan pemeriksaan pembatalan online di <ph name="PRODUCT_NAME" /> versi 19 dan yang lebih baru.</translation>
@@ -2645,6 +2675,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="6034341625190551415">Mengontrol sesi publik dan jenis akun kios.</translation>
 <translation id="6034603289689965535">Mengizinkan halaman menampilkan pop-up saat kontennya dibuka</translation>
 <translation id="6036523166753287175">Mengaktifkan firewall traversal dari host akses jarak jauh</translation>
+<translation id="605475635122964053">Membatasi mode pencetakan PIN. Kebijakan yang tidak disetel dianggap sebagai tidak ada batasan. Jika mode ini tidak tersedia, kebijakan ini akan diabaikan. Perhatikan bahwa fitur pencetakan PIN hanya diaktifkan untuk printer yang menggunakan salah satu dari protokol IPPS, USB, atau IPP-over-USB. </translation>
 <translation id="6070667616071269965">Tata letak keyboard layar login perangkat</translation>
 <translation id="6074963268421707432">Jangan izinkan situs apa pun menampilkan pemberitahuan desktop</translation>
 <translation id="6074964551275531965">Setel periode waktu untuk notifikasi update</translation>
@@ -3750,7 +3781,7 @@ Cara yang disarankan untuk mengonfigurasi kebijakan di Windows adalah melalui GP
 <translation id="8259592978873597235">Jika kebijakan ini ditetapkan ke True atau tidak ditetapkan, pengguna tidak dianggap menganggur selama video diputar. Hal ini mencegah tercapainya waktu tunggu penundaan menganggur, penundaan peredupan layar, penundaan penonaktifan layar, dan penundaan penguncian layar, serta mencegah diambilnya tindakan yang terkait.
 
           Jika kebijakan ini ditetapkan ke False, aktivitas video tidak mencegah pengguna untuk dianggap menganggur.</translation>
-<translation id="8274603902181597201">Me-wipe direktori beranda ecryptfs pengguna dan memulai direktori beranda yang dienkripsi ext4.</translation>
+<translation id="8274603902181597201">Menghapus total direktori beranda ecryptfs pengguna dan memulai direktori beranda yang dienkripsi ext4.</translation>
 <translation id="8285435910062771358">Lup layar penuh diaktifkan</translation>
 <translation id="8288199156259560552">Mengaktifkan Layanan Lokasi Google Android</translation>
 <translation id="8292322992383748446">Melaporkan statistik hardware untuk komponen SoC.

@@ -254,7 +254,7 @@
 <translation id="287383510823843610">برتقالي داكن</translation>
 <translation id="2879867157561757640">التمرير السريع بثلاثة أصابع إلى الأسفل</translation>
 <translation id="288178314850623291">‏استخدم أوامر الانتقال السريع للتخطي إلى أنواع محددة من العناصر. للانتقال السريع للأمام بين العناوين، اضغط على بحث + H، أو للانتقال السريع للخلف، اضغط على بحث + Shift + H.</translation>
-<translation id="2885764457467528513">{COUNT,plural, =1{دقيقة واحدة}zero{دقائق}two{دقيقتان}few{دقائق}many{دقائق}other{دقائق}}</translation>
+<translation id="2885764457467528513">{COUNT,plural, =1{دقيقة واحدة}zero{دقائق}two{دقيقتان}few{دقائق}many{دقيقةً}other{دقيقة}}</translation>
 <translation id="2894654529758326923">المعلومات</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{قوس كبير أيسر واحد}zero{# left braces}two{قوسان كبيران أيسران (#)}few{# أقواس كبيرة يسرى}many{# قوسًا كبيرًا أيسرًا}other{# من الأقواس الكبيرة اليسرى}}</translation>
 <translation id="2911433807131383493">‏فتح برنامج ChromeVox التعليمي</translation>
@@ -442,7 +442,7 @@
 <translation id="4148180433151187540">{COUNT,plural, =1{قوس كبير أيمن واحد}zero{# right braces}two{قوسان كبيران أيمنان (#)}few{# أقواس كبيرة يمنى}many{# قوسًا كبيرًا أيمنًا}other{# من الأقواس الكبيرة اليمنى}}</translation>
 <translation id="4158704014418536539">حساس لحالة الأحرف.</translation>
 <translation id="4159784952369912983">أرجواني</translation>
-<translation id="4161104397932142764">{COUNT,plural, =1{ثانية واحدة}zero{ثوانٍ}two{ثانيتان}few{ثوانٍ}many{ثوانٍ}other{ثوانٍ}}</translation>
+<translation id="4161104397932142764">{COUNT,plural, =1{ثانية واحدة}zero{ثوانٍ}two{ثانيتان}few{ثوانٍ}many{ثانيةً}other{ثانية}}</translation>
 <translation id="4161663686871496107">‏تعليقات ChromeVox المنطوقة جاهزة</translation>
 <translation id="4173994908659439270">ليس هناك حقل تالٍ قابل للتعديل.</translation>
 <translation id="4176463684765177261">غير مفعّل</translation>
@@ -945,7 +945,7 @@
 <translation id="7641134354185483015">ليس هناك عنوان سابق من المستوى الثالث.</translation>
 <translation id="7659376057562985921">مربع نص <ph name="NAME" />، بالقيمة <ph name="VALUE" /></translation>
 <translation id="7663318257180412551">العنوان الثاني</translation>
-<translation id="7668307052366682650">{COUNT,plural, =1{ساعة واحدة}zero{ساعة}two{ساعتان}few{ساعات}many{ساعات}other{ساعات}}</translation>
+<translation id="7668307052366682650">{COUNT,plural, =1{ساعة واحدة}zero{ساعة}two{ساعتان}few{ساعات}many{ساعةً}other{ساعة}}</translation>
 <translation id="7674576868851035240">الرابط التالي</translation>
 <translation id="7674768236845044097">علامة</translation>
 <translation id="7684431668231950609">‏تعديل النص، إدخال عنوان URL</translation>

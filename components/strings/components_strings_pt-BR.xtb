@@ -36,7 +36,7 @@
 <translation id="1152921474424827756">Acessar uma <ph name="BEGIN_LINK" />cópia em cache<ph name="END_LINK" /> de <ph name="URL" /></translation>
 <translation id="1156303062776767266">Você está vendo um arquivo local ou compartilhado</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> encerrou a conexão inesperadamente.</translation>
-<translation id="1161325031994447685">Conectar-se à rede Wi-Fi novamente</translation>
+<translation id="1161325031994447685">Conectar à rede Wi-Fi novamente</translation>
 <translation id="1165039591588034296">Erro</translation>
 <translation id="1175364870820465910">&amp;Imprimir...</translation>
 <translation id="1181037720776840403">Remover</translation>
@@ -512,7 +512,7 @@
 <translation id="3709599264800900598">Texto que você copiou</translation>
 <translation id="3712624925041724820">Licenças esgotadas</translation>
 <translation id="3714780639079136834">Ativar os dados da rede celular ou o Wi-Fi</translation>
-<translation id="3715597595485130451">Conectar-se ao Wi-Fi</translation>
+<translation id="3715597595485130451">Conectar ao Wi-Fi</translation>
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />Verificar a configuração de DNS, proxy e firewall<ph name="END_LINK" /></translation>
 <translation id="372429172604983730">Entre os apps que podem causar esse erro estão antivírus, firewall e softwares de filtros ou proxy da Web.</translation>
 <translation id="373042150751172459">B4 (Envelope)</translation>
@@ -618,6 +618,7 @@
 <translation id="4265872034478892965">Permitido pelo administrador</translation>
 <translation id="4275830172053184480">Reiniciar seu dispositivo</translation>
 <translation id="4277028893293644418">Redefinir senha</translation>
+<translation id="4279811152705618813">Seu <ph name="DEVICE_TYPE" /> é gerenciado por <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="4280429058323657511">, validade <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Esse cartão foi adicionado à sua Conta do Google}one{Esse cartão foi adicionado à sua Conta do Google}other{Esses cartões foram adicionados à sua Conta do Google}}</translation>
 <translation id="42981349822642051">Expandir</translation>
@@ -784,7 +785,7 @@
 <translation id="5230733896359313003">Endereço de entrega</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="5233045608889518621">12x19</translation>
-<translation id="5250209940322997802">"Conectar-se à rede"</translation>
+<translation id="5250209940322997802">"Conectar à rede"</translation>
 <translation id="5251803541071282808">Nuvem</translation>
 <translation id="5252000469029418751">C7 (Envelope)</translation>
 <translation id="5254958791078852567">E1</translation>
@@ -796,7 +797,7 @@
 <translation id="5288108484102287882">A validação dos valores da política gerou alguns avisos</translation>
 <translation id="5299298092464848405">Política de análise de erros</translation>
 <translation id="5300589172476337783">Mostrar</translation>
-<translation id="5308380583665731573">Conectar-se</translation>
+<translation id="5308380583665731573">Conectar</translation>
 <translation id="5308689395849655368">O relatório de erros está desativado.</translation>
 <translation id="5317780077021120954">Salvar</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> de <ph name="NUM_MATCHES" /></translation>
@@ -1467,7 +1468,7 @@ Mais detalhes:
 incomuns e incorretas. Isso pode acontecer quando um invasor está fingindo ser <ph name="SITE" /> ou quando uma tela de login por Wi-Fi interrompeu a conexão. Suas informações ainda estão protegidas, porque o Chromium interrompeu a conexão antes que os dados fossem trocados.</translation>
 <translation id="9106062320799175032">Adicione um Endereço de Faturamento</translation>
 <translation id="9114524666733003316">Confirmando cartão…</translation>
-<translation id="9128870381267983090">Conectar-se à rede</translation>
+<translation id="9128870381267983090">Conectar à rede</translation>
 <translation id="9137013805542155359">Mostrar original</translation>
 <translation id="9137248913990643158">Inicie e faça login no Chrome antes de usar este app.</translation>
 <translation id="9148088599418889305">Escolher método de envio</translation>
