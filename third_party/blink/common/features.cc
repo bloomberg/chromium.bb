@@ -62,6 +62,11 @@ const base::Feature kJankTrackingSweepLine{"JankTrackingSweepLine",
 const base::Feature kBlinkGenPropertyTrees{"BlinkGenPropertyTrees",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enable applying rounded corner masks via a GL shader rather than
+// a mask layer.
+const base::Feature kFastBorderRadius{"FastBorderRadius",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable LayoutNG.
 const base::Feature kLayoutNG{"LayoutNG", base::FEATURE_DISABLED_BY_DEFAULT};
 

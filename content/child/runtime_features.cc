@@ -230,6 +230,10 @@ void SetIndividualRuntimeFeatures(
       base::FeatureList::IsEnabled(blink::features::kBlinkGenPropertyTrees) ||
           enable_experimental_web_platform_features);
 
+  WebRuntimeFeatures::EnableFeatureFromString(
+      "FastBorderRadius",
+      base::FeatureList::IsEnabled(blink::features::kFastBorderRadius));
+
   WebRuntimeFeatures::EnablePassiveDocumentEventListeners(
       base::FeatureList::IsEnabled(features::kPassiveDocumentEventListeners));
 
