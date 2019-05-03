@@ -549,12 +549,7 @@
         <item name="android:includeFontPadding">false</item>
         <item name="android:requiresFadingEdge">horizontal</item>
         <item name="android:singleLine">true</item>
-        <item name="android:textAppearance">
-            @style/TextAppearance.ContextualSearchContextTextView</item>
-    </style>
-    <style name="TextAppearance.ContextualSearchContextTextView">
-        <item name="android:textColor">#CCC</item>
-        <item name="android:textSize">@dimen/text_size_large</item>
+        <item name="android:textAppearance">@style/TextAppearance.BlackHint1</item>
     </style>
     <style name="ContextualSearchCaptionTextView">
         <item name="android:layout_width">match_parent</item>
