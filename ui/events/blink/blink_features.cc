@@ -30,4 +30,17 @@ const base::Feature kFallbackCursorMode{"FallbackCursorMode",
 
 const base::Feature kDontSendKeyEventsToJavascript{
     "DontSendKeyEventsToJavascript", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kSkipBrowserTouchFilter{"SkipBrowserTouchFilter",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+const char kSkipBrowserTouchFilterTypeParamName[] = "type";
+const char kSkipBrowserTouchFilterTypeParamValueDiscrete[] = "discrete";
+const char kSkipBrowserTouchFilterTypeParamValueAll[] = "all";
+const char kSkipBrowserTouchFilterFilteringProcessParamName[] =
+    "skip_filtering_process";
+const char kSkipBrowserTouchFilterFilteringProcessParamValueBrowser[] =
+    "browser";
+const char
+    kSkipBrowserTouchFilterFilteringProcessParamValueBrowserAndRenderer[] =
+        "browser_and_renderer";
 }
