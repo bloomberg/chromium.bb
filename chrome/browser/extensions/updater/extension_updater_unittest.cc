@@ -536,10 +536,7 @@ static std::map<std::string, ParamsMap> GetPingDataFromURL(
 
     // We've found "x=<something>", now unescape <something> and look for
     // the "id=<id>&ping=<ping_value>" parameters within.
-    std::string unescaped = net::UnescapeURLComponent(
-        param.second,
-        net::UnescapeRule::PATH_SEPARATORS |
-            net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
+    std::string unescaped = net::UnescapeBinaryURLComponent(param.second);
     base::StringPairs extension_params;
     base::SplitStringIntoKeyValuePairs(unescaped, '=', '&', &extension_params);
     std::multimap<std::string, std::string> param_map;
@@ -551,10 +548,8 @@ static std::map<std::string, ParamsMap> GetPingDataFromURL(
 
       // Pull the key=value pairs out of the ping parameter for this id and
       // put into the result.
-      std::string ping = net::UnescapeURLComponent(
-          param_map.find("ping")->second,
-          net::UnescapeRule::PATH_SEPARATORS |
-              net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
+      std::string ping =
+          net::UnescapeBinaryURLComponent(param_map.find("ping")->second);
       base::StringPairs ping_params;
       base::SplitStringIntoKeyValuePairs(ping, '=', '&', &ping_params);
       for (const auto& ping_param : ping_params) {
@@ -582,10 +577,7 @@ static void VerifyQueryAndExtractParameters(
   }
 
   EXPECT_EQ(1U, params.count("x"));
-  std::string decoded = net::UnescapeURLComponent(
-      params["x"],
-      net::UnescapeRule::PATH_SEPARATORS |
-          net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
+  std::string decoded = net::UnescapeBinaryURLComponent(params["x"]);
   ExtractParameters(decoded, result);
 }
 
