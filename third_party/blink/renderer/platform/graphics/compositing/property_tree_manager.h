@@ -129,6 +129,8 @@ class PropertyTreeManager {
                                            const TransformPaintPropertyNode&);
   bool DirectlyUpdateTransform(cc::PropertyTrees*,
                                const TransformPaintPropertyNode&);
+  bool DirectlyUpdatePageScaleTransform(cc::PropertyTrees*,
+                                        const TransformPaintPropertyNode&);
 
  private:
   void SetupRootTransformNode();
@@ -154,6 +156,14 @@ class PropertyTreeManager {
 
   void UpdateCcTransformLocalMatrix(cc::TransformNode&,
                                     const TransformPaintPropertyNode&);
+  // Move the page scale from the local matrix to the post_local matrix. The
+  // compositor has an assumption that the page scale is in the post_local
+  // matrix but |UpdateCcTransformLocalMatrix| uses the local matrix.
+  void AdjustPageScaleToUsePostLocal(cc::TransformNode&);
+  // Move the local translation into the scroll_offset field of the compositor
+  // transform node. The compositor uses a speical scroll_offset field instead
+  // of the local matrix for scroll nodes, whereas
+  // blink::TransformPaintPropertyNode represents this as a 2d translation.
   void SetCcTransformNodeScrollToTransformTranslation(
       cc::TransformNode&,
       const TransformPaintPropertyNode&);

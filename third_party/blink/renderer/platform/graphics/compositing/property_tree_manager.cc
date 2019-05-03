@@ -147,6 +147,25 @@ bool PropertyTreeManager::DirectlyUpdateTransform(
   return true;
 }
 
+bool PropertyTreeManager::DirectlyUpdatePageScaleTransform(
+    cc::PropertyTrees* property_trees,
+    const TransformPaintPropertyNode& transform) {
+  DCHECK(!transform.ScrollNode());
+
+  auto transform_it = transform_node_map_.find(&transform);
+  if (transform_it == transform_node_map_.end())
+    return false;
+  auto* cc_transform = property_trees->transform_tree.Node(transform_it->value);
+  if (!cc_transform)
+    return false;
+
+  UpdateCcTransformLocalMatrix(*cc_transform, transform);
+  AdjustPageScaleToUsePostLocal(*cc_transform);
+  cc_transform->transform_changed = true;
+  property_trees->transform_tree.set_needs_update(true);
+  return true;
+}
+
 cc::TransformTree& PropertyTreeManager::GetTransformTree() {
   return property_trees_->transform_tree;
 }
@@ -422,17 +441,22 @@ int PropertyTreeManager::EnsureCompositorPageScaleTransformNode(
   int id = EnsureCompositorTransformNode(node);
   DCHECK(GetTransformTree().Node(id));
   cc::TransformNode& compositor_node = *GetTransformTree().Node(id);
+  AdjustPageScaleToUsePostLocal(compositor_node);
+  compositor_node.transform_changed = true;
+  GetTransformTree().set_needs_update(true);
+  return id;
+}
 
+void PropertyTreeManager::AdjustPageScaleToUsePostLocal(
+    cc::TransformNode& page_scale) {
   // The page scale node is special because its transform matrix is assumed to
   // be in the post_local matrix by the compositor. There should be no
   // translation from the origin so we clear the other matrices.
-  DCHECK_EQ(node.Origin(), FloatPoint3D());
-  compositor_node.post_local.matrix() = compositor_node.local.matrix();
-  compositor_node.pre_local.matrix().setIdentity();
-  compositor_node.local.matrix().setIdentity();
-  compositor_node.transform_changed = true;
-
-  return id;
+  DCHECK(page_scale.local.IsScale2d());
+  DCHECK(page_scale.pre_local.IsIdentity());
+  page_scale.post_local.matrix() = page_scale.local.matrix();
+  page_scale.pre_local.matrix().setIdentity();
+  page_scale.local.matrix().setIdentity();
 }
 
 int PropertyTreeManager::EnsureCompositorClipNode(

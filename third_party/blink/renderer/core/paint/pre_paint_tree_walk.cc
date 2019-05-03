@@ -50,9 +50,14 @@ void PrePaintTreeWalk::WalkTree(LocalFrameView& root_frame_view) {
   if (needs_tree_builder_context_update)
     GeometryMapper::ClearCache();
 
-  VisualViewportPaintPropertyTreeBuilder::Update(
+  auto property_changed = VisualViewportPaintPropertyTreeBuilder::Update(
       root_frame_view.GetPage()->GetVisualViewport(),
       *context_storage_.back().tree_builder_context);
+
+  if (property_changed >
+      PaintPropertyChangeType::kChangedOnlyCompositedValues) {
+    root_frame_view.SetPaintArtifactCompositorNeedsUpdate();
+  }
 
   Walk(root_frame_view);
   paint_invalidator_.ProcessPendingDelayedPaintInvalidations();

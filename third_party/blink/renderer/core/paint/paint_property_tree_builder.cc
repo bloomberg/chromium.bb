@@ -80,7 +80,7 @@ PaintPropertyTreeBuilderContext::PaintPropertyTreeBuilderContext()
       has_svg_hidden_container_ancestor(false),
       supports_composited_raster_invalidation(true) {}
 
-void VisualViewportPaintPropertyTreeBuilder::Update(
+PaintPropertyChangeType VisualViewportPaintPropertyTreeBuilder::Update(
     VisualViewport& visual_viewport,
     PaintPropertyTreeBuilderContext& full_context) {
   if (full_context.fragments.IsEmpty())
@@ -88,7 +88,8 @@ void VisualViewportPaintPropertyTreeBuilder::Update(
 
   PaintPropertyTreeBuilderFragmentContext& context = full_context.fragments[0];
 
-  visual_viewport.UpdatePaintPropertyNodesIfNeeded(context);
+  auto property_changed =
+      visual_viewport.UpdatePaintPropertyNodesIfNeeded(context);
 
   context.current.transform = visual_viewport.GetScrollTranslationNode();
   context.absolute_position.transform =
@@ -102,6 +103,7 @@ void VisualViewportPaintPropertyTreeBuilder::Update(
 #if DCHECK_IS_ON()
   paint_property_tree_printer::UpdateDebugNames(visual_viewport);
 #endif
+  return property_changed;
 }
 
 void PaintPropertyTreeBuilder::SetupContextForFrame(

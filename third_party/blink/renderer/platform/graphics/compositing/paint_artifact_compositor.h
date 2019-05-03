@@ -141,6 +141,7 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   bool DirectlyUpdateCompositedOpacityValue(const EffectPaintPropertyNode&);
   bool DirectlyUpdateScrollOffsetTransform(const TransformPaintPropertyNode&);
   bool DirectlyUpdateTransform(const TransformPaintPropertyNode&);
+  bool DirectlyUpdatePageScaleTransform(const TransformPaintPropertyNode&);
 
   // The root layer of the tree managed by this object.
   cc::Layer* RootLayer() const { return root_layer_.get(); }
