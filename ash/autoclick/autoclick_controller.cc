@@ -96,7 +96,7 @@ void AutoclickController::SetEnabled(bool enabled) {
   enabled_ = enabled;
 
   if (enabled_) {
-    Shell::Get()->AddPreTargetHandler(this);
+    Shell::Get()->AddPreTargetHandler(this, ui::EventTarget::Priority::kSystem);
 
     // Only create the bubble controller when needed. Most users will not enable
     // automatic clicks, so there's no need to use these unless the feature
@@ -409,6 +409,8 @@ void AutoclickController::RecordUserAction(
 
 void AutoclickController::OnMouseEvent(ui::MouseEvent* event) {
   DCHECK(event->target());
+  if (event->type() == ui::ET_MOUSE_CAPTURE_CHANGED)
+    return;
   gfx::Point point_in_screen = event->target()->GetScreenLocation(*event);
   if (!(event->flags() & ui::EF_IS_SYNTHESIZED) &&
       (event->type() == ui::ET_MOUSE_MOVED ||
