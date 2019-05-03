@@ -8,19 +8,12 @@
 
 namespace gfx {
 
-static const int kDefaultThrobDurationMS = 400;
-
 ThrobAnimation::ThrobAnimation(AnimationDelegate* target)
-    : SlideAnimation(target),
-      slide_duration_(GetSlideDuration()),
-      throb_duration_(kDefaultThrobDurationMS),
-      cycles_remaining_(0),
-      throbbing_(false) {
-}
+    : SlideAnimation(target) {}
 
 void ThrobAnimation::StartThrobbing(int cycles_til_stop) {
-  cycles_til_stop = cycles_til_stop >= 0 ? cycles_til_stop :
-                                           std::numeric_limits<int>::max();
+  if (cycles_til_stop < 0)
+    cycles_til_stop = std::numeric_limits<int>::max();
   cycles_remaining_ = cycles_til_stop;
   throbbing_ = true;
   SlideAnimation::SetSlideDuration(throb_duration_);
@@ -31,25 +24,20 @@ void ThrobAnimation::StartThrobbing(int cycles_til_stop) {
     SlideAnimation::Hide();
   else
     SlideAnimation::Show();
-  cycles_remaining_ = cycles_til_stop;
-}
-
-void ThrobAnimation::Reset() {
-  Reset(0);
 }
 
 void ThrobAnimation::Reset(double value) {
-  ResetForSlide();
+  StopThrobbing();
   SlideAnimation::Reset(value);
 }
 
 void ThrobAnimation::Show() {
-  ResetForSlide();
+  StopThrobbing();
   SlideAnimation::Show();
 }
 
 void ThrobAnimation::Hide() {
-  ResetForSlide();
+  StopThrobbing();
   SlideAnimation::Hide();
 }
 
@@ -76,7 +64,7 @@ void ThrobAnimation::Step(base::TimeTicks time_now) {
   }
 }
 
-void ThrobAnimation::ResetForSlide() {
+void ThrobAnimation::StopThrobbing() {
   SlideAnimation::SetSlideDuration(slide_duration_);
   cycles_remaining_ = 0;
   throbbing_ = false;
