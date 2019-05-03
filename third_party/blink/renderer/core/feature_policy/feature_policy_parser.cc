@@ -1,7 +1,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/feature_policy/feature_policy.h"
+#include "third_party/blink/renderer/core/feature_policy/feature_policy_parser.h"
 
 #include <algorithm>
 #include <map>
@@ -22,89 +22,26 @@
 
 namespace blink {
 
-namespace {
-
-// TODO(loonybear): once the new syntax is implemented, use this method to
-// parse the policy value for each parameterized feature, and for non
-// parameterized feature (i.e. boolean-type policy value).
-PolicyValue GetFallbackValueForFeature(mojom::FeaturePolicyFeature feature) {
-  if (feature == mojom::FeaturePolicyFeature::kOversizedImages) {
-    return PolicyValue(2.0);
-  }
-  if (feature == mojom::FeaturePolicyFeature::kUnoptimizedLossyImages) {
-    // Lossy images default to at most 0.5 bytes per pixel.
-    return PolicyValue(0.5);
-  }
-  if (feature == mojom::FeaturePolicyFeature::kUnoptimizedLosslessImages ||
-      feature ==
-          mojom::FeaturePolicyFeature::kUnoptimizedLosslessImagesStrict) {
-    // Lossless images default to at most 1 byte per pixel.
-    return PolicyValue(1.0);
-  }
-
-  return PolicyValue(false);
-}
-
-PolicyValue ParseValueForType(mojom::PolicyValueType feature_type,
-                              const String& value_string,
-                              bool* ok) {
-  *ok = false;
-  PolicyValue value;
-  switch (feature_type) {
-    case mojom::PolicyValueType::kBool:
-      // recognize true, false
-      if (value_string.LowerASCII() == "true") {
-        value = PolicyValue(true);
-        *ok = true;
-      } else if (value_string.LowerASCII() == "false") {
-        value = PolicyValue(false);
-        *ok = true;
-      }
-      break;
-    case mojom::PolicyValueType::kDecDouble: {
-      if (value_string.LowerASCII() == "inf") {
-        value = PolicyValue::CreateMaxPolicyValue(feature_type);
-        *ok = true;
-      } else {
-        double parsed_value = value_string.ToDouble(ok);
-        if (*ok && parsed_value >= 0.0f) {
-          value = PolicyValue(parsed_value);
-        } else {
-          *ok = false;
-        }
-      }
-      break;
-    }
-    default:
-      NOTREACHED();
-  }
-  if (!*ok)
-    return PolicyValue();
-  return value;
-}
-
-}  // namespace
-
-ParsedFeaturePolicy ParseFeaturePolicyHeader(
+ParsedFeaturePolicy FeaturePolicyParser::ParseHeader(
     const String& policy,
     scoped_refptr<const SecurityOrigin> origin,
     Vector<String>* messages,
     ExecutionContext* execution_context) {
-  return ParseFeaturePolicy(policy, origin, nullptr, messages,
-                            GetDefaultFeatureNameMap(), execution_context);
+  return Parse(policy, origin, nullptr, messages, GetDefaultFeatureNameMap(),
+               execution_context);
 }
 
-ParsedFeaturePolicy ParseFeaturePolicyAttribute(
+ParsedFeaturePolicy FeaturePolicyParser::ParseAttribute(
     const String& policy,
     scoped_refptr<const SecurityOrigin> self_origin,
     scoped_refptr<const SecurityOrigin> src_origin,
     Vector<String>* messages,
     Document* document) {
-  return ParseFeaturePolicy(policy, self_origin, src_origin, messages,
-                            GetDefaultFeatureNameMap(), document);
+  return Parse(policy, self_origin, src_origin, messages,
+               GetDefaultFeatureNameMap(), document);
 }
 
-ParsedFeaturePolicy ParseFeaturePolicy(
+ParsedFeaturePolicy FeaturePolicyParser::Parse(
     const String& policy,
     scoped_refptr<const SecurityOrigin> self_origin,
     scoped_refptr<const SecurityOrigin> src_origin,
@@ -306,6 +243,67 @@ ParsedFeaturePolicy ParseFeaturePolicy(
     }
   }
   return allowlists;
+}
+
+// TODO(loonybear): once the new syntax is implemented, use this method to
+// parse the policy value for each parameterized feature, and for non
+// parameterized feature (i.e. boolean-type policy value).
+PolicyValue FeaturePolicyParser::GetFallbackValueForFeature(
+    mojom::FeaturePolicyFeature feature) {
+  if (feature == mojom::FeaturePolicyFeature::kOversizedImages) {
+    return PolicyValue(2.0);
+  }
+  if (feature == mojom::FeaturePolicyFeature::kUnoptimizedLossyImages) {
+    // Lossy images default to at most 0.5 bytes per pixel.
+    return PolicyValue(0.5);
+  }
+  if (feature == mojom::FeaturePolicyFeature::kUnoptimizedLosslessImages ||
+      feature ==
+          mojom::FeaturePolicyFeature::kUnoptimizedLosslessImagesStrict) {
+    // Lossless images default to at most 1 byte per pixel.
+    return PolicyValue(1.0);
+  }
+
+  return PolicyValue(false);
+}
+
+PolicyValue FeaturePolicyParser::ParseValueForType(
+    mojom::PolicyValueType feature_type,
+    const String& value_string,
+    bool* ok) {
+  *ok = false;
+  PolicyValue value;
+  switch (feature_type) {
+    case mojom::PolicyValueType::kBool:
+      // recognize true, false
+      if (value_string.LowerASCII() == "true") {
+        value = PolicyValue(true);
+        *ok = true;
+      } else if (value_string.LowerASCII() == "false") {
+        value = PolicyValue(false);
+        *ok = true;
+      }
+      break;
+    case mojom::PolicyValueType::kDecDouble: {
+      if (value_string.LowerASCII() == "inf") {
+        value = PolicyValue::CreateMaxPolicyValue(feature_type);
+        *ok = true;
+      } else {
+        double parsed_value = value_string.ToDouble(ok);
+        if (*ok && parsed_value >= 0.0f) {
+          value = PolicyValue(parsed_value);
+        } else {
+          *ok = false;
+        }
+      }
+      break;
+    }
+    default:
+      NOTREACHED();
+  }
+  if (!*ok)
+    return PolicyValue();
+  return value;
 }
 
 bool IsFeatureDeclared(mojom::FeaturePolicyFeature feature,

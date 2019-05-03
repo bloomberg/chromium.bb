@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,10 +17,13 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   static blink::BlinkFuzzerTestSupport test_support =
       blink::BlinkFuzzerTestSupport();
   WTF::Vector<WTF::String> messages;
-  // TODO(csharrison): Be smarter about parsing this origin for performance.
-  scoped_refptr<const blink::SecurityOrigin> origin =
+  // TODO(csharrison): Be smarter about parsing these origins for performance.
+  scoped_refptr<const blink::SecurityOrigin> parent_origin =
       blink::SecurityOrigin::CreateFromString("https://example.com/");
-  blink::FeaturePolicyParser::ParseHeader(WTF::String(data, size), origin.get(),
-                                          &messages);
+  scoped_refptr<const blink::SecurityOrigin> child_origin =
+      blink::SecurityOrigin::CreateFromString("https://example.net/");
+  blink::FeaturePolicyParser::ParseAttribute(WTF::String(data, size),
+                                             parent_origin.get(),
+                                             child_origin.get(), &messages);
   return 0;
 }

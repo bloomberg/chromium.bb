@@ -9,7 +9,7 @@
 #include "third_party/blink/public/common/origin_trials/trial_token.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/feature_policy/feature_policy.h"
+#include "third_party/blink/renderer/core/feature_policy/feature_policy_parser.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/html_head_element.h"
 #include "third_party/blink/renderer/core/html/html_meta_element.h"
@@ -245,8 +245,8 @@ TEST_F(OriginTrialContextTest, FeaturePolicy) {
       SecurityOrigin::CreateFromString(kFrobulateEnabledOrigin);
   Vector<String> messages;
   ParsedFeaturePolicy result;
-  result = ParseFeaturePolicy("frobulate", security_origin, nullptr, &messages,
-                              feature_map, document);
+  result = FeaturePolicyParser::Parse("frobulate", security_origin, nullptr,
+                                      &messages, feature_map, document);
   EXPECT_TRUE(messages.IsEmpty());
   ASSERT_EQ(1u, result.size());
   EXPECT_EQ(mojom::FeaturePolicyFeature::kFrobulate, result[0].feature);

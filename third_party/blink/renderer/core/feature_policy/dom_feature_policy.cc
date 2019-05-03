@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/feature_policy/dom_feature_policy.h"
 
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/feature_policy/feature_policy.h"
+#include "third_party/blink/renderer/core/feature_policy/feature_policy_parser.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"

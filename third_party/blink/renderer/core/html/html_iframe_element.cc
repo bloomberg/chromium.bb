@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/feature_policy/feature_policy_parser.h"
 #include "third_party/blink/renderer/core/feature_policy/iframe_policy.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/sandbox_flags.h"
@@ -282,7 +283,7 @@ ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy(
       GetDocument().GetSecurityOrigin();
 
   // Start with the allow attribute
-  ParsedFeaturePolicy container_policy = ParseFeaturePolicyAttribute(
+  ParsedFeaturePolicy container_policy = FeaturePolicyParser::ParseAttribute(
       allow_, self_origin, src_origin, messages, &GetDocument());
 
   // Next, process sandbox flags. These all only take effect if a corresponding

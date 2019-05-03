@@ -145,6 +145,7 @@
 #include "third_party/blink/renderer/core/events/visual_viewport_resize_event.h"
 #include "third_party/blink/renderer/core/events/visual_viewport_scroll_event.h"
 #include "third_party/blink/renderer/core/feature_policy/document_policy.h"
+#include "third_party/blink/renderer/core/feature_policy/feature_policy_parser.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/dom_timer.h"
 #include "third_party/blink/renderer/core/frame/dom_visual_viewport.h"
@@ -6224,7 +6225,7 @@ void Document::ApplyFeaturePolicyFromHeader(
   if (!feature_policy_header.IsEmpty())
     UseCounter::Count(*this, WebFeature::kFeaturePolicyHeader);
   Vector<String> messages;
-  auto declared_policy = ParseFeaturePolicyHeader(
+  auto declared_policy = FeaturePolicyParser::ParseHeader(
       feature_policy_header, GetSecurityOrigin(), &messages, this);
   for (auto& message : messages) {
     AddConsoleMessage(
@@ -6305,8 +6306,9 @@ void Document::ApplyReportOnlyFeaturePolicyFromHeader(
 
   UseCounter::Count(*this, WebFeature::kFeaturePolicyReportOnlyHeader);
   Vector<String> messages;
-  const ParsedFeaturePolicy& report_only_policy = ParseFeaturePolicyHeader(
-      feature_policy_report_only_header, GetSecurityOrigin(), &messages, this);
+  const ParsedFeaturePolicy& report_only_policy =
+      FeaturePolicyParser::ParseHeader(feature_policy_report_only_header,
+                                       GetSecurityOrigin(), &messages, this);
   for (auto& message : messages) {
     AddConsoleMessage(ConsoleMessage::Create(
         mojom::ConsoleMessageSource::kSecurity,

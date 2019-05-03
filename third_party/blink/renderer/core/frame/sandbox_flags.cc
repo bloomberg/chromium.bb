@@ -27,7 +27,7 @@
 #include "third_party/blink/renderer/core/frame/sandbox_flags.h"
 
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
-#include "third_party/blink/renderer/core/feature_policy/feature_policy.h"
+#include "third_party/blink/renderer/core/feature_policy/feature_policy_parser.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"

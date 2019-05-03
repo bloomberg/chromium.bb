@@ -24,13 +24,13 @@
 
 #include "third_party/blink/renderer/core/script/script_loader.h"
 
+#include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/scriptable_document_parser.h"
 #include "third_party/blink/renderer/core/dom/text.h"
-#include "third_party/blink/renderer/core/feature_policy/feature_policy.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
