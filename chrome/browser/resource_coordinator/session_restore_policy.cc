@@ -357,8 +357,10 @@ void SessionRestorePolicy::NotifyAllTabsScored() {
   // can be canceled as conditions change.
   if (notification_state_ != NotificationState::kEnRoute)
     return;
-  notify_tab_score_changed_callback_.Run(nullptr, 0.0);
   notification_state_ = NotificationState::kDelivered;
+  // This callback can indirectly cause our parent to release us, so make it the
+  // last thing we do to avoid a use after free. crbug.com/946863
+  notify_tab_score_changed_callback_.Run(nullptr, 0.0);
 }
 
 void SessionRestorePolicy::OnDataLoaded(content::WebContents* contents) {
