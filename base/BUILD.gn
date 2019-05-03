@@ -214,13 +214,6 @@ jumbo_component("base") {
     "cpu.h",
     "critical_closure.h",
     "critical_closure_internal_ios.mm",
-    "observer_list_internal.cc",
-    "observer_list_internal.h",
-    "observer_list_types.cc",
-    "observer_list_types.h",
-
-    # This file depends on files from the "debug/allocator" target,
-    # but this target does not depend on "debug/allocator".
     "debug/activity_analyzer.cc",
     "debug/activity_analyzer.h",
     "debug/activity_tracker.cc",
@@ -315,6 +308,8 @@ jumbo_component("base") {
     "hash/hash.h",
     "hash/md5.cc",
     "hash/md5.h",
+    "hash/sha1.cc",
+    "hash/sha1.h",
     "ios/block_types.h",
     "ios/crb_protocol_observers.h",
     "ios/crb_protocol_observers.mm",
@@ -547,8 +542,12 @@ jumbo_component("base") {
     "native_library_win.cc",
     "no_destructor.h",
     "observer_list.h",
+    "observer_list_internal.cc",
+    "observer_list_internal.h",
     "observer_list_threadsafe.cc",
     "observer_list_threadsafe.h",
+    "observer_list_types.cc",
+    "observer_list_types.h",
     "one_shot_event.cc",
     "one_shot_event.h",
     "optional.h",
@@ -594,37 +593,23 @@ jumbo_component("base") {
     "process/process.h",
     "process/process_handle.cc",
     "process/process_handle.h",
-
-    #"process/process_handle_freebsd.cc",  # Unused in Chromium build.
     "process/process_handle_linux.cc",
     "process/process_handle_mac.cc",
-
-    #"process/process_handle_openbsd.cc",  # Unused in Chromium build.
     "process/process_handle_win.cc",
     "process/process_info.h",
     "process/process_info_win.cc",
     "process/process_iterator.cc",
     "process/process_iterator.h",
-
-    #"process/process_iterator_freebsd.cc",  # Unused in Chromium build.
     "process/process_iterator_linux.cc",
     "process/process_iterator_mac.cc",
-
-    #"process/process_iterator_openbsd.cc",  # Unused in Chromium build.
     "process/process_iterator_win.cc",
     "process/process_linux.cc",
     "process/process_mac.cc",
     "process/process_metrics.cc",
     "process/process_metrics.h",
-
-    #"process/process_metrics_freebsd.cc",  # Unused in Chromium build.
     "process/process_metrics_ios.cc",
     "process/process_metrics_linux.cc",
     "process/process_metrics_mac.cc",
-
-    #"process/process_metrics_openbsd.cc",  # Unused in Chromium build.
-    "hash/sha1.cc",
-    "hash/sha1.h",
     "process/process_metrics_win.cc",
     "process/process_win.cc",
     "profiler/frame.cc",
@@ -743,14 +728,11 @@ jumbo_component("base") {
     "synchronization/waitable_event_watcher_win.cc",
     "synchronization/waitable_event_win.cc",
     "sys_byteorder.h",
+    "syslog_logging.cc",
+    "syslog_logging.h",
     "system/sys_info.cc",
     "system/sys_info.h",
     "system/sys_info_internal.h",
-
-    #"system/sys_info_freebsd.cc",  # Unused in Chromium build.
-    #"system/sys_info_openbsd.cc",  # Unused in Chromium build.
-    "syslog_logging.cc",
-    "syslog_logging.h",
     "system/system_monitor.cc",
     "system/system_monitor.h",
     "task/cancelable_task_tracker.cc",
@@ -1125,6 +1107,20 @@ jumbo_component("base") {
     "win/wmi.h",
     "win/wrapped_window_proc.cc",
     "win/wrapped_window_proc.h",
+  ]
+
+  # Various files that are unused in the Chromium build, but presumably here to
+  # make downstream's life easier. They are not included in the main sources
+  # list to avoid breaking GN formatting's auto-sorting.
+  sources += [
+    #"process/process_handle_freebsd.cc",
+    #"process/process_iterator_freebsd.cc",
+    #"process/process_metrics_freebsd.cc",
+    #"system/sys_info_freebsd.cc",
+    #"process/process_iterator_openbsd.cc",
+    #"process/process_handle_openbsd.cc",
+    #"process/process_metrics_openbsd.cc",
+    #"system/sys_info_openbsd.cc",
   ]
 
   if (is_posix) {
