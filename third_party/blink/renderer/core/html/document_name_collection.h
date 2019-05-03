@@ -12,6 +12,13 @@ namespace blink {
 
 class DocumentNameCollection final : public HTMLNameCollection {
  public:
+  static DocumentNameCollection* Create(ContainerNode& document,
+                                        CollectionType type,
+                                        const AtomicString& name) {
+    DCHECK_EQ(type, kDocumentNamedItems);
+    return MakeGarbageCollected<DocumentNameCollection>(document, name);
+  }
+
   DocumentNameCollection(ContainerNode& document, const AtomicString& name);
   DocumentNameCollection(ContainerNode& document,
                          CollectionType type,

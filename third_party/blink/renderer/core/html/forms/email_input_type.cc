@@ -159,6 +159,10 @@ bool EmailInputType::IsValidEmailAddress(const ScriptRegexp& regexp,
 EmailInputType::EmailInputType(HTMLInputElement& element)
     : BaseTextInputType(element) {}
 
+InputType* EmailInputType::Create(HTMLInputElement& element) {
+  return MakeGarbageCollected<EmailInputType>(element);
+}
+
 void EmailInputType::CountUsage() {
   CountUsageIfVisible(WebFeature::kInputTypeEmail);
   bool has_max_length =

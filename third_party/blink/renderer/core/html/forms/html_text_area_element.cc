@@ -80,6 +80,10 @@ HTMLTextAreaElement::HTMLTextAreaElement(Document& document)
   EnsureUserAgentShadowRoot();
 }
 
+HTMLTextAreaElement* HTMLTextAreaElement::Create(Document& document) {
+  return MakeGarbageCollected<HTMLTextAreaElement>(document);
+}
+
 void HTMLTextAreaElement::DidAddUserAgentShadowRoot(ShadowRoot& root) {
   root.AppendChild(CreateInnerEditorElement());
 }

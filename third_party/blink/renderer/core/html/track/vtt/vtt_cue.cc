@@ -794,7 +794,7 @@ VTTCueBox* VTTCue::GetDisplayTree() {
   DCHECK(track() && track()->IsRendered() && IsActive());
 
   if (!display_tree_) {
-    display_tree_ = MakeGarbageCollected<VTTCueBox>(GetDocument());
+    display_tree_ = VTTCueBox::Create(GetDocument());
     display_tree_->AppendChild(cue_background_box_);
   }
 

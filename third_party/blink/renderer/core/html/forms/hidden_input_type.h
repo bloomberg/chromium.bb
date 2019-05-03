@@ -40,6 +40,8 @@ class HiddenInputType final : public InputType, private InputTypeView {
   USING_GARBAGE_COLLECTED_MIXIN(HiddenInputType);
 
  public:
+  static InputType* Create(HTMLInputElement&);
+
   HiddenInputType(HTMLInputElement& element)
       : InputType(element), InputTypeView(element) {}
 

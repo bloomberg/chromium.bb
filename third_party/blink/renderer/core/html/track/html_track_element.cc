@@ -33,7 +33,6 @@
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/track/loadable_text_track.h"
 #include "third_party/blink/renderer/core/html_names.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 
 #define TRACK_LOG_LEVEL 3
 
@@ -218,7 +217,7 @@ void HTMLTrackElement::LoadTimerFired(TimerBase*) {
   if (loader_)
     loader_->CancelLoad();
 
-  loader_ = MakeGarbageCollected<TextTrackLoader>(*this, GetDocument());
+  loader_ = TextTrackLoader::Create(*this, GetDocument());
   if (!loader_->Load(url_, GetCrossOriginAttributeValue(cors_mode)))
     DidCompleteLoad(kFailure);
 }

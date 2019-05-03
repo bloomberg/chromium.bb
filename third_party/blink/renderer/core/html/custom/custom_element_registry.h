@@ -34,6 +34,8 @@ class CORE_EXPORT CustomElementRegistry final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static CustomElementRegistry* Create(const LocalDOMWindow*);
+
   CustomElementRegistry(const LocalDOMWindow*);
   ~CustomElementRegistry() override = default;
 

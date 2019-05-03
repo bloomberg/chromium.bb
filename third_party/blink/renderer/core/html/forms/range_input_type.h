@@ -43,7 +43,9 @@ class RangeInputType final : public InputType, public InputTypeView {
   USING_GARBAGE_COLLECTED_MIXIN(RangeInputType);
 
  public:
-  explicit RangeInputType(HTMLInputElement&);
+  static InputType* Create(HTMLInputElement&);
+
+  RangeInputType(HTMLInputElement&);
 
   void Trace(Visitor*) override;
   using InputType::GetElement;

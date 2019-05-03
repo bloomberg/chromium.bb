@@ -41,9 +41,9 @@
 
 namespace blink {
 
-SubmitInputType::SubmitInputType(HTMLInputElement& element)
-    : BaseButtonInputType(element) {
+InputType* SubmitInputType::Create(HTMLInputElement& element) {
   UseCounter::Count(element.GetDocument(), WebFeature::kInputTypeSubmit);
+  return MakeGarbageCollected<SubmitInputType>(element);
 }
 
 const AtomicString& SubmitInputType::FormControlType() const {

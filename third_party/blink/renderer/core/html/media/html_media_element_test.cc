@@ -16,7 +16,6 @@
 #include "third_party/blink/renderer/core/html/track/video_track_list.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 #include "third_party/blink/renderer/platform/testing/empty_web_media_player.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
@@ -92,12 +91,10 @@ class HTMLMediaElementTest : public testing::TestWithParam<MediaTestParam> {
             std::move(mock_media_player)),
         nullptr);
 
-    if (GetParam() == MediaTestParam::kAudio) {
-      media_ = MakeGarbageCollected<HTMLAudioElement>(
-          dummy_page_holder_->GetDocument());
-    } else {
+    if (GetParam() == MediaTestParam::kAudio)
+      media_ = HTMLAudioElement::Create(dummy_page_holder_->GetDocument());
+    else
       media_ = HTMLVideoElement::Create(dummy_page_holder_->GetDocument());
-    }
   }
 
   HTMLMediaElement* Media() const { return media_.Get(); }

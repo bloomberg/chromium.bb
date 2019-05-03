@@ -45,6 +45,7 @@ class ColorInputType final : public InputType,
   USING_GARBAGE_COLLECTED_MIXIN(ColorInputType);
 
  public:
+  static InputType* Create(HTMLInputElement&);
   explicit ColorInputType(HTMLInputElement&);
   ~ColorInputType() override;
   void Trace(Visitor*) override;

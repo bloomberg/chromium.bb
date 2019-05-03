@@ -49,6 +49,10 @@ static const int kDateTimeLocalDefaultStep = 60;
 static const int kDateTimeLocalDefaultStepBase = 0;
 static const int kDateTimeLocalStepScaleFactor = 1000;
 
+InputType* DateTimeLocalInputType::Create(HTMLInputElement& element) {
+  return MakeGarbageCollected<DateTimeLocalInputType>(element);
+}
+
 void DateTimeLocalInputType::CountUsage() {
   CountUsageIfVisible(WebFeature::kInputTypeDateTimeLocal);
 }

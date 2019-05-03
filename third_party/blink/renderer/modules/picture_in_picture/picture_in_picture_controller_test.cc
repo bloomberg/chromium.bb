@@ -14,7 +14,6 @@
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/core/testing/wait_for_event.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/testing/empty_web_media_player.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
@@ -129,7 +128,7 @@ class PictureInPictureControllerTest : public PageTestBase {
         WTF::BindRepeating(&MockPictureInPictureService::Bind,
                            WTF::Unretained(&mock_service_)));
 
-    video_ = MakeGarbageCollected<HTMLVideoElement>(GetDocument());
+    video_ = HTMLVideoElement::Create(GetDocument());
     video_->SetReadyState(HTMLMediaElement::ReadyState::kHaveMetadata);
     layer_ = cc::Layer::Create();
     video_->SetCcLayerForTesting(layer_.get());

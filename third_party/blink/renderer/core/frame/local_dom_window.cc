@@ -108,7 +108,6 @@
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -1257,7 +1256,7 @@ CustomElementRegistry* LocalDOMWindow::customElements(
 
 CustomElementRegistry* LocalDOMWindow::customElements() const {
   if (!custom_elements_ && document_)
-    custom_elements_ = MakeGarbageCollected<CustomElementRegistry>(this);
+    custom_elements_ = CustomElementRegistry::Create(this);
   return custom_elements_;
 }
 

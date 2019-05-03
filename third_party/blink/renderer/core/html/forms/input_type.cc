@@ -84,70 +84,27 @@ using InputTypeFactoryMap = HashMap<AtomicString, InputTypeFactoryFunction>;
 static std::unique_ptr<InputTypeFactoryMap> CreateInputTypeFactoryMap() {
   std::unique_ptr<InputTypeFactoryMap> map =
       std::make_unique<InputTypeFactoryMap>();
-  map->insert(input_type_names::kButton,
-              reinterpret_cast<InputTypeFactoryFunction>(
-                  MakeGarbageCollected<ButtonInputType, HTMLInputElement&>));
-  map->insert(input_type_names::kCheckbox,
-              reinterpret_cast<InputTypeFactoryFunction>(
-                  MakeGarbageCollected<CheckboxInputType, HTMLInputElement&>));
-  map->insert(input_type_names::kColor,
-              reinterpret_cast<InputTypeFactoryFunction>(
-                  MakeGarbageCollected<ColorInputType, HTMLInputElement&>));
-  map->insert(input_type_names::kDate,
-              reinterpret_cast<InputTypeFactoryFunction>(
-                  MakeGarbageCollected<DateInputType, HTMLInputElement&>));
-  map->insert(
-      input_type_names::kDatetimeLocal,
-      reinterpret_cast<InputTypeFactoryFunction>(
-          MakeGarbageCollected<DateTimeLocalInputType, HTMLInputElement&>));
-  map->insert(input_type_names::kEmail,
-              reinterpret_cast<InputTypeFactoryFunction>(
-                  MakeGarbageCollected<EmailInputType, HTMLInputElement&>));
-  map->insert(input_type_names::kFile,
-              reinterpret_cast<InputTypeFactoryFunction>(
-                  MakeGarbageCollected<FileInputType, HTMLInputElement&>));
-  map->insert(input_type_names::kHidden,
-              reinterpret_cast<InputTypeFactoryFunction>(
-                  MakeGarbageCollected<HiddenInputType, HTMLInputElement&>));
-  map->insert(input_type_names::kImage,
-              reinterpret_cast<InputTypeFactoryFunction>(
-                  MakeGarbageCollected<ImageInputType, HTMLInputElement&>));
-  map->insert(input_type_names::kMonth,
-              reinterpret_cast<InputTypeFactoryFunction>(
-                  MakeGarbageCollected<MonthInputType, HTMLInputElement&>));
-  map->insert(input_type_names::kNumber,
-              reinterpret_cast<InputTypeFactoryFunction>(
-                  MakeGarbageCollected<NumberInputType, HTMLInputElement&>));
-  map->insert(input_type_names::kPassword,
-              reinterpret_cast<InputTypeFactoryFunction>(
-                  MakeGarbageCollected<PasswordInputType, HTMLInputElement&>));
-  map->insert(input_type_names::kRadio,
-              reinterpret_cast<InputTypeFactoryFunction>(
-                  MakeGarbageCollected<RadioInputType, HTMLInputElement&>));
-  map->insert(input_type_names::kRange,
-              reinterpret_cast<InputTypeFactoryFunction>(
-                  MakeGarbageCollected<RangeInputType, HTMLInputElement&>));
-  map->insert(input_type_names::kReset,
-              reinterpret_cast<InputTypeFactoryFunction>(
-                  MakeGarbageCollected<ResetInputType, HTMLInputElement&>));
-  map->insert(input_type_names::kSearch,
-              reinterpret_cast<InputTypeFactoryFunction>(
-                  MakeGarbageCollected<SearchInputType, HTMLInputElement&>));
-  map->insert(input_type_names::kSubmit,
-              reinterpret_cast<InputTypeFactoryFunction>(
-                  MakeGarbageCollected<SubmitInputType, HTMLInputElement&>));
-  map->insert(input_type_names::kTel,
-              reinterpret_cast<InputTypeFactoryFunction>(
-                  MakeGarbageCollected<TelephoneInputType, HTMLInputElement&>));
-  map->insert(input_type_names::kTime,
-              reinterpret_cast<InputTypeFactoryFunction>(
-                  MakeGarbageCollected<TimeInputType, HTMLInputElement&>));
-  map->insert(input_type_names::kUrl,
-              reinterpret_cast<InputTypeFactoryFunction>(
-                  MakeGarbageCollected<URLInputType, HTMLInputElement&>));
-  map->insert(input_type_names::kWeek,
-              reinterpret_cast<InputTypeFactoryFunction>(
-                  MakeGarbageCollected<WeekInputType, HTMLInputElement&>));
+  map->insert(input_type_names::kButton, ButtonInputType::Create);
+  map->insert(input_type_names::kCheckbox, CheckboxInputType::Create);
+  map->insert(input_type_names::kColor, ColorInputType::Create);
+  map->insert(input_type_names::kDate, DateInputType::Create);
+  map->insert(input_type_names::kDatetimeLocal, DateTimeLocalInputType::Create);
+  map->insert(input_type_names::kEmail, EmailInputType::Create);
+  map->insert(input_type_names::kFile, FileInputType::Create);
+  map->insert(input_type_names::kHidden, HiddenInputType::Create);
+  map->insert(input_type_names::kImage, ImageInputType::Create);
+  map->insert(input_type_names::kMonth, MonthInputType::Create);
+  map->insert(input_type_names::kNumber, NumberInputType::Create);
+  map->insert(input_type_names::kPassword, PasswordInputType::Create);
+  map->insert(input_type_names::kRadio, RadioInputType::Create);
+  map->insert(input_type_names::kRange, RangeInputType::Create);
+  map->insert(input_type_names::kReset, ResetInputType::Create);
+  map->insert(input_type_names::kSearch, SearchInputType::Create);
+  map->insert(input_type_names::kSubmit, SubmitInputType::Create);
+  map->insert(input_type_names::kTel, TelephoneInputType::Create);
+  map->insert(input_type_names::kTime, TimeInputType::Create);
+  map->insert(input_type_names::kUrl, URLInputType::Create);
+  map->insert(input_type_names::kWeek, WeekInputType::Create);
   // No need to register "text" because it is the default type.
   return map;
 }

@@ -36,6 +36,8 @@ class CORE_EXPORT HTMLTextAreaElement final : public TextControlElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static HTMLTextAreaElement* Create(Document&);
+
   explicit HTMLTextAreaElement(Document&);
 
   unsigned cols() const { return cols_; }

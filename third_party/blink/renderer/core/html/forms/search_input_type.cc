@@ -46,12 +46,16 @@ namespace blink {
 
 using namespace html_names;
 
-SearchInputType::SearchInputType(HTMLInputElement& element)
+inline SearchInputType::SearchInputType(HTMLInputElement& element)
     : BaseTextInputType(element),
       search_event_timer_(
           element.GetDocument().GetTaskRunner(TaskType::kUserInteraction),
           this,
           &SearchInputType::SearchEventTimerFired) {}
+
+InputType* SearchInputType::Create(HTMLInputElement& element) {
+  return MakeGarbageCollected<SearchInputType>(element);
+}
 
 void SearchInputType::CountUsage() {
   CountUsageIfVisible(WebFeature::kInputTypeSearch);

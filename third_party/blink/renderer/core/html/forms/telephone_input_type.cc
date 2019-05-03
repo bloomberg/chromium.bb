@@ -35,6 +35,10 @@
 
 namespace blink {
 
+InputType* TelephoneInputType::Create(HTMLInputElement& element) {
+  return MakeGarbageCollected<TelephoneInputType>(element);
+}
+
 void TelephoneInputType::CountUsage() {
   CountUsageIfVisible(WebFeature::kInputTypeTel);
 }

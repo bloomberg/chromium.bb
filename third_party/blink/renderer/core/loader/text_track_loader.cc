@@ -29,7 +29,6 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/raw_resource.h"
@@ -77,7 +76,7 @@ void TextTrackLoader::DataReceived(Resource* resource,
     return;
 
   if (!cue_parser_)
-    cue_parser_ = MakeGarbageCollected<VTTParser>(this, GetDocument());
+    cue_parser_ = VTTParser::Create(this, GetDocument());
 
   cue_parser_->ParseBytes(data, length);
 }

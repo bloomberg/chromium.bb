@@ -46,10 +46,15 @@ class TextTrackLoaderClient : public GarbageCollectedMixin {
 
 class TextTrackLoader final : public GarbageCollectedFinalized<TextTrackLoader>,
                               public RawResourceClient,
-                              public VTTParserClient {
+                              private VTTParserClient {
   USING_GARBAGE_COLLECTED_MIXIN(TextTrackLoader);
 
  public:
+  static TextTrackLoader* Create(TextTrackLoaderClient& client,
+                                 Document& document) {
+    return MakeGarbageCollected<TextTrackLoader>(client, document);
+  }
+
   TextTrackLoader(TextTrackLoaderClient&, Document&);
   ~TextTrackLoader() override;
 

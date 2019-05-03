@@ -27,7 +27,6 @@
 
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -71,12 +70,16 @@ VTTElement::VTTElement(VTTNodeType node_type, Document* document)
       is_past_node_(0),
       web_vtt_node_type_(node_type) {}
 
+VTTElement* VTTElement::Create(VTTNodeType node_type, Document* document) {
+  return MakeGarbageCollected<VTTElement>(node_type, document);
+}
+
 Element& VTTElement::CloneWithoutAttributesAndChildren(
     Document& factory) const {
-  auto* clone = MakeGarbageCollected<VTTElement>(
-      static_cast<VTTNodeType>(web_vtt_node_type_), &factory);
-  clone->SetLanguage(language_);
-  return *clone;
+  VTTElement& clone =
+      *Create(static_cast<VTTNodeType>(web_vtt_node_type_), &factory);
+  clone.SetLanguage(language_);
+  return clone;
 }
 
 HTMLElement* VTTElement::CreateEquivalentHTMLElement(Document& document) {

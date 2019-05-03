@@ -28,7 +28,6 @@
 #include "third_party/blink/renderer/modules/device_orientation/device_orientation_data.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
 #include "third_party/blink/renderer/modules/screen_orientation/screen_orientation_controller_impl.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/testing/empty_web_media_player.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
@@ -251,7 +250,7 @@ TEST_F(MediaControlsRotateToFullscreenDelegateTest, DelegateRequiresFlag) {
 }
 
 TEST_F(MediaControlsRotateToFullscreenDelegateTest, DelegateRequiresVideo) {
-  auto* audio = MakeGarbageCollected<HTMLAudioElement>(GetDocument());
+  HTMLAudioElement* audio = HTMLAudioElement::Create(GetDocument());
   GetDocument().body()->AppendChild(audio);
   EXPECT_FALSE(HasDelegate(*audio->GetMediaControls()));
 }

@@ -37,8 +37,9 @@ namespace blink {
 
 class ResetInputType final : public BaseButtonInputType {
  public:
-  explicit ResetInputType(HTMLInputElement& element)
-      : BaseButtonInputType(element) {}
+  static InputType* Create(HTMLInputElement&);
+
+  ResetInputType(HTMLInputElement& element) : BaseButtonInputType(element) {}
 
  private:
   void CountUsage() override;

@@ -70,6 +70,10 @@ class VTTParser final : public GarbageCollectedFinalized<VTTParser> {
     kBadCue
   };
 
+  static VTTParser* Create(VTTParserClient* client, Document& document) {
+    return MakeGarbageCollected<VTTParser>(client, document);
+  }
+
   VTTParser(VTTParserClient*, Document&);
   ~VTTParser() = default;
 

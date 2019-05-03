@@ -16,6 +16,9 @@ namespace test {
 // WebMediaPlayerimplementation.
 class MediaStubLocalFrameClient : public EmptyLocalFrameClient {
  public:
+  // Creates a LocalFrameClient that will use the given media player.
+  static MediaStubLocalFrameClient* Create(std::unique_ptr<WebMediaPlayer>);
+
   explicit MediaStubLocalFrameClient(std::unique_ptr<WebMediaPlayer>);
 
   std::unique_ptr<WebMediaPlayer> CreateWebMediaPlayer(

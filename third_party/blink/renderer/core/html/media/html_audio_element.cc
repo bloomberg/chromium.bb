@@ -38,6 +38,10 @@ HTMLAudioElement::HTMLAudioElement(Document& document)
   UpdateStateIfNeeded();
 }
 
+HTMLAudioElement* HTMLAudioElement::Create(Document& document) {
+  return MakeGarbageCollected<HTMLAudioElement>(document);
+}
+
 HTMLAudioElement* HTMLAudioElement::CreateForJSConstructor(
     Document& document,
     const AtomicString& src) {

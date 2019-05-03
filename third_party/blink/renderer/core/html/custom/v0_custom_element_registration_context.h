@@ -45,6 +45,10 @@ class CustomElementRegistry;
 class V0CustomElementRegistrationContext final
     : public GarbageCollectedFinalized<V0CustomElementRegistrationContext> {
  public:
+  static V0CustomElementRegistrationContext* Create() {
+    return MakeGarbageCollected<V0CustomElementRegistrationContext>();
+  }
+
   V0CustomElementRegistrationContext();
   ~V0CustomElementRegistrationContext() = default;
   void DocumentWasDetached() { registry_.DocumentWasDetached(); }

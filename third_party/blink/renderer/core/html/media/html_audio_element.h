@@ -38,6 +38,7 @@ class CORE_EXPORT HTMLAudioElement final : public HTMLMediaElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static HTMLAudioElement* Create(Document&);
   static HTMLAudioElement* CreateForJSConstructor(
       Document&,
       const AtomicString& src = g_null_atom);

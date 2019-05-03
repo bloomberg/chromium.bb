@@ -46,6 +46,10 @@ HTMLInputElement* NextInputElement(const HTMLInputElement& element,
 
 }  // namespace
 
+InputType* RadioInputType::Create(HTMLInputElement& element) {
+  return MakeGarbageCollected<RadioInputType>(element);
+}
+
 void RadioInputType::CountUsage() {
   CountUsageIfVisible(WebFeature::kInputTypeRadio);
 }

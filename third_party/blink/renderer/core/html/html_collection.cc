@@ -191,6 +191,12 @@ HTMLCollection::HTMLCollection(ContainerNode& owner_node,
   GetDocument().RegisterNodeList(this);
 }
 
+HTMLCollection* HTMLCollection::Create(ContainerNode& base,
+                                       CollectionType type) {
+  return MakeGarbageCollected<HTMLCollection>(base, type,
+                                              kDoesNotOverrideItemAfter);
+}
+
 HTMLCollection::~HTMLCollection() = default;
 
 void HTMLCollection::InvalidateCache(Document* old_document) const {

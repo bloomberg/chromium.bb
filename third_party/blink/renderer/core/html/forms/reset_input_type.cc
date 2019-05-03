@@ -40,6 +40,10 @@
 
 namespace blink {
 
+InputType* ResetInputType::Create(HTMLInputElement& element) {
+  return MakeGarbageCollected<ResetInputType>(element);
+}
+
 void ResetInputType::CountUsage() {
   CountUsageIfVisible(WebFeature::kInputTypeReset);
 }

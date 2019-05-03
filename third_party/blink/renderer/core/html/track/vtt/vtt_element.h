@@ -45,6 +45,8 @@ enum VTTNodeType {
 
 class VTTElement final : public Element {
  public:
+  static VTTElement* Create(const VTTNodeType, Document*);
+  static VTTElement* Create(const QualifiedName&, Document*);
   HTMLElement* CreateEquivalentHTMLElement(Document&);
 
   VTTElement(const QualifiedName&, Document*);
