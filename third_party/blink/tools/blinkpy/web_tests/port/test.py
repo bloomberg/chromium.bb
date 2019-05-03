@@ -34,6 +34,7 @@ from blinkpy.common.system.crash_logs import CrashLogs
 from blinkpy.web_tests.models.test_configuration import TestConfiguration
 from blinkpy.web_tests.port.base import Port, VirtualTestSuite
 from blinkpy.web_tests.port.driver import DeviceFailure, Driver, DriverOutput
+from blinkpy.w3c.wpt_manifest import BASE_MANIFEST_NAME
 
 
 # Here we use a non-standard location for the web tests, to ensure that
@@ -228,9 +229,11 @@ layer at (0,0) size 800x34
     tests.add_reftest('passes/xhtreftest.xht', 'passes/xhtreftest-expected.html')
     tests.add_reftest('passes/phpreftest.php', 'passes/phpreftest-expected-mismatch.svg', same_image=False)
     tests.add_reftest('failures/expected/reftest.html', 'failures/expected/reftest-expected.html', same_image=False)
-    tests.add_reftest('failures/unexpected/reftest-with-matching-text.html', 'failures/unexpected/reftest-with-matching-text-expected.html',
+    tests.add_reftest('failures/unexpected/reftest-with-matching-text.html',
+                      'failures/unexpected/reftest-with-matching-text-expected.html',
                       same_image=False, actual_text='reftest', expected_text='reftest')
-    tests.add_reftest('failures/unexpected/reftest-with-mismatching-text.html', 'failures/unexpected/reftest-with-mismatching-text-expected.html',
+    tests.add_reftest('failures/unexpected/reftest-with-mismatching-text.html',
+                      'failures/unexpected/reftest-with-mismatching-text-expected.html',
                       actual_text='reftest', expected_text='reftest-different')
     tests.add_reftest('failures/expected/mismatch.html', 'failures/expected/mismatch-expected-mismatch.html')
     tests.add_reftest('failures/unexpected/crash-reftest.html', 'failures/unexpected/crash-reftest-expected.html', crash=True)
@@ -335,6 +338,11 @@ Bug(test) failures/expected/device_failure.html [ WontFix ]
 
     filesystem.write_text_file(filesystem.join(WEB_TEST_DIR, 'virtual', 'virtual_passes',
                                                'passes', 'args-expected.txt'), 'args-txt --virtual-arg')
+
+    filesystem.maybe_make_directory(filesystem.join(WEB_TEST_DIR, 'external', 'wpt'))
+    filesystem.write_text_file(filesystem.join(WEB_TEST_DIR, 'external', BASE_MANIFEST_NAME),
+                               '{"manifest": "base"}')
+
     # Clear the list of written files so that we can watch what happens during testing.
     filesystem.clear_written_files()
 
@@ -411,7 +419,7 @@ class TestPort(Port):
             'linux': ['precise', 'trusty']
         }
 
-    def _path_to_driver(self):
+    def _path_to_driver(self, target=None):
         # This routine shouldn't normally be called, but it is called by
         # the mock_drt Driver. We return something, but make sure it's useless.
         return 'MOCK _path_to_driver'
@@ -520,6 +528,8 @@ class TestDriver(Driver):
     """Test/Dummy implementation of the driver interface."""
     next_pid = 1
 
+    # pylint: disable=protected-access
+
     def __init__(self, *args, **kwargs):
         super(TestDriver, self).__init__(*args, **kwargs)
         self.started = False
@@ -608,5 +618,5 @@ class TestDriver(Driver):
                             test_time=time.time() - start_time, timeout=test.timeout, error=test.error, pid=self.pid,
                             leak=test.leak)
 
-    def stop(self):
+    def stop(self, timeout_secs=0.0):
         self.started = False

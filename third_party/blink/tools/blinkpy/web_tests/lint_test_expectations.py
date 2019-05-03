@@ -36,7 +36,6 @@ from blinkpy.common.host import Host
 from blinkpy.common.system.log_utils import configure_logging
 from blinkpy.web_tests.models import test_expectations
 from blinkpy.web_tests.port.factory import platform_options
-from blinkpy.w3c.wpt_manifest import WPTManifest
 
 _log = logging.getLogger(__name__)
 
@@ -194,10 +193,6 @@ def main(argv, stderr, host=None):
         configure_logging(logging_level=logging.INFO, stream=stderr, include_time=False)
 
     try:
-        # Need to generate MANIFEST.json since some expectations correspond to WPT
-        # tests that aren't files and only exist in the manifest.
-        _log.debug('Generating MANIFEST.json for web-platform-tests ...')
-        WPTManifest.ensure_manifest(host)
         exit_status = run_checks(host, options)
     except KeyboardInterrupt:
         exit_status = exit_codes.INTERRUPTED_EXIT_STATUS

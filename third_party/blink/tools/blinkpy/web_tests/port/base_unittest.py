@@ -479,8 +479,40 @@ class PortTest(LoggingTestCase):
         tests = port.tests(['userscripts/resources'])
         self.assertEqual(tests, [])
 
+    def test_update_manifest_once_by_default(self):
+        # pylint: disable=protected-access
+        port = self.make_port(with_tests=True)
+        port._wpt_manifest('external/wpt')
+        port._wpt_manifest('external/wpt')
+        self.assertEqual(len(port.host.filesystem.written_files), 1)
+        self.assertEqual(len(port.host.executive.calls), 1)
+
+    def test_no_manifest_update_with_existing_manifest(self):
+        # pylint: disable=protected-access
+        port = self.make_port(with_tests=True)
+        port.set_option_default('manifest_update', False)
+        filesystem = port.host.filesystem
+        filesystem.write_text_file(WEB_TEST_DIR + '/external/wpt/MANIFEST.json', '{}')
+        filesystem.clear_written_files()
+
+        port._wpt_manifest('external/wpt')
+        self.assertEqual(len(port.host.filesystem.written_files), 0)
+        self.assertEqual(len(port.host.executive.calls), 0)
+
+    def test_no_manifest_update_without_existing_manifest(self):
+        # pylint: disable=protected-access
+        port = self.make_port(with_tests=True)
+        port.set_option_default('manifest_update', False)
+
+        port._wpt_manifest('external/wpt')
+        self.assertEqual(len(port.host.filesystem.written_files), 1)
+        self.assertEqual(len(port.host.executive.calls), 1)
+
     @staticmethod
-    def _add_manifest_to_mock_file_system(filesystem):
+    def _add_manifest_to_mock_file_system(port):
+        # Disable manifest update otherwise they'll be overwritten.
+        port.set_option_default('manifest_update', False)
+        filesystem = port.host.filesystem
         filesystem.write_text_file(WEB_TEST_DIR + '/external/wpt/MANIFEST.json', json.dumps({
             'items': {
                 'testharness': {
@@ -532,19 +564,19 @@ class PortTest(LoggingTestCase):
 
     def test_find_none_if_not_in_manifest(self):
         port = self.make_port(with_tests=True)
-        PortTest._add_manifest_to_mock_file_system(port.host.filesystem)
+        PortTest._add_manifest_to_mock_file_system(port)
         self.assertNotIn('external/wpt/common/blank.html', port.tests([]))
         self.assertNotIn('external/wpt/console/console-is-a-namespace.any.js', port.tests([]))
 
     def test_find_one_if_in_manifest(self):
         port = self.make_port(with_tests=True)
-        PortTest._add_manifest_to_mock_file_system(port.host.filesystem)
+        PortTest._add_manifest_to_mock_file_system(port)
         self.assertIn('external/wpt/dom/ranges/Range-attributes.html', port.tests([]))
         self.assertIn('external/wpt/console/console-is-a-namespace.any.html', port.tests([]))
 
     def test_wpt_tests_paths(self):
         port = self.make_port(with_tests=True)
-        PortTest._add_manifest_to_mock_file_system(port.host.filesystem)
+        PortTest._add_manifest_to_mock_file_system(port)
         all_wpt = [
             'external/wpt/console/console-is-a-namespace.any.html',
             'external/wpt/console/console-is-a-namespace.any.worker.html',
@@ -587,7 +619,7 @@ class PortTest(LoggingTestCase):
 
     def test_virtual_wpt_tests_paths(self):
         port = self.make_port(with_tests=True)
-        PortTest._add_manifest_to_mock_file_system(port.host.filesystem)
+        PortTest._add_manifest_to_mock_file_system(port)
         all_wpt = [
             'virtual/virtual_wpt/external/wpt/console/console-is-a-namespace.any.html',
             'virtual/virtual_wpt/external/wpt/console/console-is-a-namespace.any.worker.html',
@@ -663,7 +695,7 @@ class PortTest(LoggingTestCase):
 
     def test_is_slow_wpt_test(self):
         port = self.make_port(with_tests=True)
-        PortTest._add_manifest_to_mock_file_system(port.host.filesystem)
+        PortTest._add_manifest_to_mock_file_system(port)
 
         self.assertFalse(port.is_slow_wpt_test('external/wpt/dom/ranges/Range-attributes.html'))
         self.assertTrue(port.is_slow_wpt_test('external/wpt/dom/ranges/Range-attributes-slow.html'))
@@ -671,7 +703,7 @@ class PortTest(LoggingTestCase):
 
     def test_is_slow_wpt_test_with_variations(self):
         port = self.make_port(with_tests=True)
-        PortTest._add_manifest_to_mock_file_system(port.host.filesystem)
+        PortTest._add_manifest_to_mock_file_system(port)
 
         self.assertFalse(port.is_slow_wpt_test('external/wpt/console/console-is-a-namespace.any.html'))
         self.assertTrue(port.is_slow_wpt_test('external/wpt/console/console-is-a-namespace.any.worker.html'))
@@ -680,14 +712,14 @@ class PortTest(LoggingTestCase):
 
     def test_is_slow_wpt_test_takes_virtual_tests(self):
         port = self.make_port(with_tests=True)
-        PortTest._add_manifest_to_mock_file_system(port.host.filesystem)
+        PortTest._add_manifest_to_mock_file_system(port)
 
         self.assertFalse(port.is_slow_wpt_test('virtual/virtual_wpt/external/wpt/dom/ranges/Range-attributes.html'))
         self.assertTrue(port.is_slow_wpt_test('virtual/virtual_wpt/external/wpt/dom/ranges/Range-attributes-slow.html'))
 
     def test_is_slow_wpt_test_returns_false_for_illegal_paths(self):
         port = self.make_port(with_tests=True)
-        PortTest._add_manifest_to_mock_file_system(port.host.filesystem)
+        PortTest._add_manifest_to_mock_file_system(port)
 
         self.assertFalse(port.is_slow_wpt_test('dom/ranges/Range-attributes.html'))
         self.assertFalse(port.is_slow_wpt_test('dom/ranges/Range-attributes-slow.html'))
@@ -705,7 +737,7 @@ class PortTest(LoggingTestCase):
 
     def test_reference_files_from_manifest(self):
         port = self.make_port(with_tests=True)
-        PortTest._add_manifest_to_mock_file_system(port.host.filesystem)
+        PortTest._add_manifest_to_mock_file_system(port)
 
         self.assertEqual(port.reference_files('external/wpt/html/dom/elements/global-attributes/dir_auto-EN-L.html'),
                          [('==', port.web_tests_dir() +

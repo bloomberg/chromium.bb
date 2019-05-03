@@ -12,7 +12,6 @@ from blinkpy.common.net.git_cl import GitCL, TryJobStatus
 from blinkpy.common.path_finder import PathFinder
 from blinkpy.tool.commands.rebaseline import AbstractParallelRebaselineCommand
 from blinkpy.tool.commands.rebaseline import TestBaselineSet
-from blinkpy.w3c.wpt_manifest import WPTManifest
 
 
 _log = logging.getLogger(__name__)
@@ -77,11 +76,6 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
             _log.error('Aborted: Cannot combine --test-name-file and '
                        'positional parameters.')
             return 1
-
-        # The WPT manifest is required when iterating through tests
-        # TestBaselineSet if there are any tests in web-platform-tests.
-        # TODO(crbug.com/698294): Consider calling ensure_manifest in BlinkTool.
-        WPTManifest.ensure_manifest(tool)
 
         if not self.check_ok_to_run():
             return 1

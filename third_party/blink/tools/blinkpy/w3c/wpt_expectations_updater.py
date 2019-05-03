@@ -19,7 +19,6 @@ from blinkpy.common.net.git_cl import GitCL
 from blinkpy.common.path_finder import PathFinder
 from blinkpy.common.system.executive import ScriptError
 from blinkpy.common.system.log_utils import configure_logging
-from blinkpy.w3c.wpt_manifest import WPTManifest
 
 _log = logging.getLogger(__name__)
 
@@ -74,9 +73,6 @@ class WPTExpectationsUpdater(object):
         _log.debug('Latest try jobs: %r', build_to_status)
         if not build_to_status:
             raise ScriptError('No try job information was collected.')
-
-        # The manifest may be used below to do check which tests are reference tests.
-        WPTManifest.ensure_manifest(self.host)
 
         # Here we build up a dict of failing test results for all platforms.
         test_expectations = {}

@@ -458,7 +458,7 @@ class Port(object):
         # diff. To account for variances when the tests are ran on an actual
         # GPU.
         if self.get_option('fuzzy_diff'):
-          command.append('--fuzzy-diff')
+            command.append('--fuzzy-diff')
 
         result = None
         err_str = None
@@ -806,9 +806,9 @@ class Port(object):
         # Convert '/' to the platform-specific separator.
         path = self._filesystem.normpath(path)
         manifest_path = self._filesystem.join(self.web_tests_dir(), path, MANIFEST_NAME)
-        if not self._filesystem.exists(manifest_path):
-            _log.error('Manifest not found at %s. Remove the --no-manifest-update argument to generate it.', manifest_path)
-            return WPTManifest('{}')
+        if not self._filesystem.exists(manifest_path) or self.get_option('manifest_update', True):
+            _log.debug('Generating MANIFEST.json for %s...', path)
+            WPTManifest.ensure_manifest(self, path)
         return WPTManifest(self._filesystem.read_text_file(manifest_path))
 
     def is_slow_wpt_test(self, test_file):

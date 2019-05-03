@@ -14,6 +14,7 @@ from blinkpy.common.net.web_test_results import WebTestResult, WebTestResults
 from blinkpy.common.system.executive import ScriptError
 from blinkpy.common.system.log_testing import LoggingTestCase
 from blinkpy.w3c.wpt_expectations_updater import WPTExpectationsUpdater, SimpleTestResult, MARKER_COMMENT
+from blinkpy.w3c.wpt_manifest import BASE_MANIFEST_NAME
 from blinkpy.web_tests.builder_list import BuilderList
 from blinkpy.web_tests.port.factory_mock import MockPortFactory
 
@@ -61,7 +62,7 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
 
         # Write a dummy manifest file, describing what tests exist.
         host.filesystem.write_text_file(
-            host.port_factory.get().web_tests_dir() + '/external/wpt/MANIFEST.json',
+            host.port_factory.get().web_tests_dir() + '/external/' + BASE_MANIFEST_NAME,
             json.dumps({
                 'items': {
                     'reftest': {
