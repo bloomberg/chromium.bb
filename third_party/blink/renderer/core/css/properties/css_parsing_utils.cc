@@ -253,12 +253,13 @@ CSSBasicShapeEllipseValue* ConsumeBasicShapeEllipse(
   auto* shape = MakeGarbageCollected<CSSBasicShapeEllipseValue>();
   WebFeature feature = WebFeature::kBasicShapeEllipseNoRadius;
   if (CSSValue* radius_x = ConsumeShapeRadius(args, context.Mode())) {
-    shape->SetRadiusX(radius_x);
-    feature = WebFeature::kBasicShapeEllipseOneRadius;
-    if (CSSValue* radius_y = ConsumeShapeRadius(args, context.Mode())) {
-      shape->SetRadiusY(radius_y);
-      feature = WebFeature::kBasicShapeEllipseTwoRadius;
+    CSSValue* radius_y = ConsumeShapeRadius(args, context.Mode());
+    if (!radius_y) {
+      return nullptr;
     }
+    shape->SetRadiusX(radius_x);
+    shape->SetRadiusY(radius_y);
+    feature = WebFeature::kBasicShapeEllipseTwoRadius;
   }
   if (css_property_parser_helpers::ConsumeIdent<CSSValueID::kAt>(args)) {
     CSSValue* center_x = nullptr;

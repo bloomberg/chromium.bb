@@ -317,13 +317,6 @@ TEST(CSSPropertyParserTest, ClipPathEllipse) {
       UseCounter::IsCounted(*doc, WebFeature::kBasicShapeEllipseTwoRadius));
 
   EXPECT_FALSE(
-      UseCounter::IsCounted(*doc, WebFeature::kBasicShapeEllipseOneRadius));
-  CSSParser::ParseSingleValue(CSSPropertyID::kClipPath, "ellipse(1px)",
-                              context);
-  EXPECT_TRUE(
-      UseCounter::IsCounted(*doc, WebFeature::kBasicShapeEllipseOneRadius));
-
-  EXPECT_FALSE(
       UseCounter::IsCounted(*doc, WebFeature::kBasicShapeEllipseNoRadius));
   CSSParser::ParseSingleValue(CSSPropertyID::kClipPath, "ellipse()", context);
   EXPECT_TRUE(

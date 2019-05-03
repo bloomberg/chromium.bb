@@ -191,25 +191,24 @@ String CSSBasicShapeEllipseValue::CustomCSSText() const {
   String radius_x;
   String radius_y;
   if (radius_x_) {
+    DCHECK(radius_y_);
+
     auto* radius_x_identifier_value =
         DynamicTo<CSSIdentifierValue>(radius_x_.Get());
-    bool should_serialize_radius_x_value =
-        !(radius_x_identifier_value &&
-          radius_x_identifier_value->GetValueID() == CSSValueID::kClosestSide);
-    bool should_serialize_radius_y_value = false;
+    bool radius_x_closest_side =
+        (radius_x_identifier_value &&
+         radius_x_identifier_value->GetValueID() == CSSValueID::kClosestSide);
 
-    if (radius_y_) {
-      auto* radius_y_identifier_value =
-          DynamicTo<CSSIdentifierValue>(radius_y_.Get());
-      should_serialize_radius_y_value = !(
-          radius_y_identifier_value &&
-          radius_y_identifier_value->GetValueID() == CSSValueID::kClosestSide);
-      if (should_serialize_radius_y_value)
-        radius_y = radius_y_->CssText();
-    }
-    if (should_serialize_radius_x_value ||
-        (!should_serialize_radius_x_value && should_serialize_radius_y_value))
+    auto* radius_y_identifier_value =
+        DynamicTo<CSSIdentifierValue>(radius_y_.Get());
+    bool radius_y_closest_side =
+        (radius_y_identifier_value &&
+         radius_y_identifier_value->GetValueID() == CSSValueID::kClosestSide);
+
+    if (!radius_x_closest_side || !radius_y_closest_side) {
       radius_x = radius_x_->CssText();
+      radius_y = radius_y_->CssText();
+    }
   }
 
   return BuildEllipseString(

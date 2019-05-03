@@ -22448,7 +22448,7 @@ Called by update_net_error_codes.py.-->
   <int value="2324" label="InputTypeFileSecureOriginOpenChooser"/>
   <int value="2325" label="InputTypeFileInsecureOriginOpenChooser"/>
   <int value="2326" label="BasicShapeEllipseNoRadius"/>
-  <int value="2327" label="BasicShapeEllipseOneRadius"/>
+  <int value="2327" label="OBSOLETE_BasicShapeEllipseOneRadius"/>
   <int value="2328" label="BasicShapeEllipseTwoRadius"/>
   <int value="2329" label="TemporalInputTypeChooserByTrustedClick"/>
   <int value="2330" label="TemporalInputTypeChooserByUntrustedClick"/>

@@ -1761,7 +1761,6 @@ enum WebFeature {
   kInputTypeFileSecureOriginOpenChooser = 2324,
   kInputTypeFileInsecureOriginOpenChooser = 2325,
   kBasicShapeEllipseNoRadius = 2326,
-  kBasicShapeEllipseOneRadius = 2327,
   kBasicShapeEllipseTwoRadius = 2328,
   kTemporalInputTypeChooserByTrustedClick = 2329,
   kTemporalInputTypeChooserByUntrustedClick = 2330,
