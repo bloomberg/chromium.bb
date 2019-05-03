@@ -405,7 +405,7 @@ void MathService::Divide(int32_t dividend,
                          int32_t divisor,
                          DivideCallback callback) {
   // Respond with the quotient!
-  callback.Run(dividend / divisor);
+  std::move(callback).Run(dividend / divisor);
 }
 
 }  // namespace math
@@ -525,7 +525,7 @@ GetChromePackagedServiceManifests() {
 ```
 
 And don't forget to add a GN dependency from
-`//chrome/app:packaged_service_manifests` onto
+[`//chrome/app:chrome_packaged_service_manifests`](https://cs.chromium.org/chromium/src/chrome/app/BUILD.gn?l=564&rcl=a77d5ba9c4621cfe14e7e1cd03bbae16904f269e) onto
 `//chrome/services/math/public/cpp:manifest`!
 
 We're almost done with service setup. The last step is to teach Chromium (and
@@ -634,6 +634,12 @@ connector->BindInterface(math::mojom::kServiceName,
 divider->Divide(
     42, 6, base::BindOnce([](int32_t quotient) { LOG(INFO) << quotient; }));
 ```
+*** aside
+NOTE: To ensure the execution of the response callback, the DividerPtr
+object must be kept alive (see
+[this section](/mojo/public/cpp/bindings/README.md#A-Note-About-Endpoint-Lifetime-and-Callbacks)
+and [this note from an earlier section](#sending-a-message)).
+***
 
 This should successfully spawn a new process to run the `math` service if it's
 not already running, then ask it to do a division, and ultimately log the result
