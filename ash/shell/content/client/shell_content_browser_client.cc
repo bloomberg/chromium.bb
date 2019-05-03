@@ -8,8 +8,6 @@
 #include <utility>
 
 #include "ash/ash_service.h"
-#include "ash/components/tap_visualizer/public/cpp/manifest.h"
-#include "ash/components/tap_visualizer/public/mojom/tap_visualizer.mojom.h"
 #include "ash/public/cpp/manifest.h"
 #include "ash/public/cpp/test_manifest.h"
 #include "ash/public/cpp/window_properties.h"
@@ -46,8 +44,6 @@ const service_manager::Manifest& GetAshShellBrowserOverlayManifest() {
   static base::NoDestructor<service_manager::Manifest> manifest{
       service_manager::ManifestBuilder()
           .RequireCapability(device::mojom::kServiceName, "device:fingerprint")
-          .RequireCapability(tap_visualizer::mojom::kServiceName,
-                             tap_visualizer::mojom::kShowUiCapability)
           .Build()};
   return *manifest;
 }
@@ -57,7 +53,6 @@ const service_manager::Manifest& GetAshShellPackagedServicesOverlayManifest() {
       service_manager::ManifestBuilder()
           .PackageService(service_manager::Manifest(ash::GetManifest())
                               .Amend(ash::GetManifestOverlayForTesting()))
-          .PackageService(tap_visualizer::GetManifest())
           .PackageService(test_ime_driver::GetManifest())
           .Build()};
   return *manifest;
@@ -99,8 +94,6 @@ ShellContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
 
 void ShellContentBrowserClient::RegisterOutOfProcessServices(
     OutOfProcessServiceMap* services) {
-  (*services)[tap_visualizer::mojom::kServiceName] = base::BindRepeating(
-      &base::ASCIIToUTF16, tap_visualizer::mojom::kServiceName);
   (*services)[test_ime_driver::mojom::kServiceName] = base::BindRepeating(
       &base::ASCIIToUTF16, test_ime_driver::mojom::kServiceName);
 }

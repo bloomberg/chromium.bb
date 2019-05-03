@@ -151,8 +151,6 @@ static_library("utility") {
     ]
     deps += [
       "//ash",
-      "//ash/components/tap_visualizer:lib",
-      "//ash/components/tap_visualizer/public/mojom",
       "//chrome/services/file_util:lib",
       "//chromeos/assistant:buildflags",
       "//chromeos/services/ime:lib",

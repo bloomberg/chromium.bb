@@ -4,8 +4,6 @@
 
 #include "ash/shell/content/client/shell_main_delegate.h"
 
-#include "ash/components/tap_visualizer/public/mojom/tap_visualizer.mojom.h"
-#include "ash/components/tap_visualizer/tap_visualizer_app.h"
 #include "ash/shell/content/client/shell_content_browser_client.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -28,12 +26,6 @@ void TerminateThisProcess() {
   content::UtilityThread::Get()->ReleaseProcess();
 }
 
-std::unique_ptr<service_manager::Service> CreateTapVisualizer(
-    service_manager::mojom::ServiceRequest request) {
-  logging::SetLogPrefix("tap");
-  return std::make_unique<tap_visualizer::TapVisualizerApp>(std::move(request));
-}
-
 std::unique_ptr<service_manager::Service> CreateTestImeDriver(
     service_manager::mojom::ServiceRequest request) {
   return std::make_unique<ws::test::TestIMEApplication>(std::move(request));
@@ -51,8 +43,6 @@ class ShellContentUtilityClient : public content::ContentUtilityClient {
     std::unique_ptr<service_manager::Service> service;
     if (service_name == test_ime_driver::mojom::kServiceName)
       service = CreateTestImeDriver(std::move(request));
-    else if (service_name == tap_visualizer::mojom::kServiceName)
-      service = CreateTapVisualizer(std::move(request));
 
     if (service) {
       service_manager::Service::RunAsyncUntilTermination(

@@ -23,7 +23,6 @@
 #include "ash/assistant/assistant_controller.h"
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/cast_config_controller.h"
-#include "ash/components/tap_visualizer/public/mojom/tap_visualizer.mojom.h"
 #include "ash/custom_tab/arc_custom_tab_controller.h"
 #include "ash/dbus/ash_dbus_helper.h"
 #include "ash/dbus/ash_dbus_services.h"
@@ -1284,18 +1283,6 @@ void Shell::Init(
   // order to create mirror window. Run it after the main message loop
   // is started.
   display_manager_->CreateMirrorWindowAsyncIfAny();
-
-  // |connector_| is null in unit tests.
-  if (connector_ &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kShowTaps)) {
-    // The show taps feature is a separate service.
-    // TODO(jamescook): Make this work in ash_shell_with_content.
-    tap_visualizer::mojom::TapVisualizerPtr tap_visualizer_ptr;
-    connector_->BindInterface(service_manager::ServiceFilter::ByName(
-                                  tap_visualizer::mojom::kServiceName),
-                              mojo::MakeRequest(&tap_visualizer_ptr));
-    tap_visualizer_ptr->Show();
-  }
 
   if (!::features::IsMultiProcessMash()) {
     ime_focus_handler_ = std::make_unique<ImeFocusHandler>(

@@ -22,7 +22,6 @@
 #include "services/service_manager/public/cpp/manifest_builder.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/components/tap_visualizer/public/cpp/manifest.h"
 #include "ash/public/cpp/manifest.h"
 #include "chrome/browser/chromeos/prefs/ash_pref_connector_manifest.h"
 #include "chrome/services/cups_ipp_parser/public/cpp/manifest.h"  // nogncheck
@@ -167,7 +166,6 @@ GetChromePackagedServiceManifests() {
       GetProfileImportManifest(),
 #endif
 #if defined(OS_CHROMEOS)
-      tap_visualizer::GetManifest(),
       ash::GetManifest(),
       GetAshPrefConnectorManifest(),
       GetCupsIppParserManifest(),

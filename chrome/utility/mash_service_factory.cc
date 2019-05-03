@@ -7,8 +7,6 @@
 #include <memory>
 
 #include "ash/ash_service.h"
-#include "ash/components/tap_visualizer/public/mojom/tap_visualizer.mojom.h"
-#include "ash/components/tap_visualizer/tap_visualizer_app.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
 #include "base/logging.h"
@@ -21,10 +19,10 @@ namespace {
 // numeric values should never be reused.
 enum class MashService {
   kAsh = 0,
-  kAutoclickDeprecated = 1,    // Deleted Aug 2018, https://crbug.com/876115
-  kQuickLaunchDeprecated = 2,  // Deleted Feb 2019.
-  kShortcutViewer = 3,         // Deleted May 2019, https://crbug.com/958073
-  kTapVisualizer = 4,
+  kAutoclickDeprecated = 1,       // Deleted Aug 2018, https://crbug.com/876115
+  kQuickLaunchDeprecated = 2,     // Deleted Feb 2019.
+  kShortcutViewerDeprecated = 3,  // Deleted May 2019, https://crbug.com/958073
+  kTapVisualizerDeprecated = 4,   // Deleted May 2019.
   kFontDeprecated = 5,  // Font Service is not in use for mash, but run
                         // in-process in the browser
                         // process. https://crbug.com/862553
@@ -43,13 +41,6 @@ std::unique_ptr<service_manager::Service> CreateAshService(
   return std::make_unique<ash::AshService>(std::move(request));
 }
 
-std::unique_ptr<service_manager::Service> CreateTapVisualizerApp(
-    service_manager::mojom::ServiceRequest request) {
-  RecordMashServiceLaunch(MashService::kTapVisualizer);
-  logging::SetLogPrefix("tap");
-  return std::make_unique<tap_visualizer::TapVisualizerApp>(std::move(request));
-}
-
 }  // namespace
 
 MashServiceFactory::MashServiceFactory() = default;
@@ -62,8 +53,6 @@ MashServiceFactory::HandleServiceRequest(
     service_manager::mojom::ServiceRequest request) {
   if (service_name == ash::mojom::kServiceName)
     return CreateAshService(std::move(request));
-  if (service_name == tap_visualizer::mojom::kServiceName)
-    return CreateTapVisualizerApp(std::move(request));
 
   return nullptr;
 }

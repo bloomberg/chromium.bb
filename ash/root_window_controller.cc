@@ -40,6 +40,8 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/unified/unified_system_tray.h"
+#include "ash/touch/touch_hud_debug.h"
+#include "ash/touch/touch_hud_projection.h"
 #include "ash/touch/touch_observer_hud.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/window_factory.h"
@@ -687,7 +689,11 @@ void RootWindowController::InitTouchHuds() {
   // Enable touch debugging features when each display is initialized.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kAshTouchHud))
-    set_touch_observer_hud(new TouchObserverHUD(GetRootWindow()));
+    set_touch_hud_debug(new TouchHudDebug(GetRootWindow()));
+
+  // TouchHudProjection manages its own lifetime.
+  if (command_line->HasSwitch(switches::kShowTaps))
+    touch_hud_projection_ = new TouchHudProjection(GetRootWindow());
 }
 
 aura::Window* RootWindowController::GetWindowForFullscreenMode() {

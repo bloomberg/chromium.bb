@@ -5,7 +5,6 @@
 #include "chrome/browser/ash_service_registry.h"
 
 #include "ash/ash_service.h"
-#include "ash/components/tap_visualizer/public/mojom/tap_visualizer.mojom.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/window_properties.mojom.h"
@@ -32,11 +31,6 @@ struct Service {
   int display_name_id;  // Resource ID for the display name.
 };
 
-// Services shared between mash and non-mash configs.
-constexpr Service kCommonServices[] = {
-    {tap_visualizer::mojom::kServiceName, IDS_ASH_TAP_VISUALIZER_APP_NAME},
-};
-
 // Services unique to mash. Note that the non-mash case also has an Ash service,
 // it's just handled differently (see HandleServiceRequest()).
 constexpr Service kMashServices[] = {
@@ -60,8 +54,6 @@ void RegisterOutOfProcessServicesImpl(
 
 void RegisterOutOfProcessServices(
     ContentBrowserClient::OutOfProcessServiceMap* services) {
-  RegisterOutOfProcessServicesImpl(kCommonServices, base::size(kCommonServices),
-                                   services);
   if (features::IsMultiProcessMash()) {
     RegisterOutOfProcessServicesImpl(kMashServices, base::size(kMashServices),
                                      services);
@@ -85,10 +77,6 @@ std::unique_ptr<service_manager::Service> HandleServiceRequest(
 
 bool IsAshRelatedServiceName(const std::string& name) {
   for (const Service& service : kMashServices) {
-    if (name == service.name)
-      return true;
-  }
-  for (const Service& service : kCommonServices) {
     if (name == service.name)
       return true;
   }

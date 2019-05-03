@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "ash/components/tap_visualizer/public/mojom/tap_visualizer.mojom.h"
 #include "ash/keyboard/test_keyboard_ui.h"
 #include "ash/login_status.h"
 #include "ash/public/cpp/mus_property_mirror_ash.h"
@@ -152,11 +151,9 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 
   ash::Shell::GetPrimaryRootWindow()->GetHost()->Show();
 
-  // TODO(https://crbug.com/904148): These should not use |WarmService()|.
+  // TODO(https://crbug.com/904148): This should not use |WarmService()|.
   connector->WarmService(service_manager::ServiceFilter::ByName(
       test_ime_driver::mojom::kServiceName));
-  connector->WarmService(service_manager::ServiceFilter::ByName(
-      tap_visualizer::mojom::kServiceName));
   ash::Shell::Get()->InitWaylandServer(nullptr);
 }
 

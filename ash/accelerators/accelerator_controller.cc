@@ -55,7 +55,7 @@
 #include "ash/system/toast/toast_manager.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/unified/unified_system_tray.h"
-#include "ash/touch/touch_observer_hud.h"
+#include "ash/touch/touch_hud_debug.h"
 #include "ash/utility/screenshot_controller.h"
 #include "ash/voice_interaction/voice_interaction_controller.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -1010,17 +1010,17 @@ void HandleActiveMagnifierZoom(int delta_index) {
 }
 
 bool CanHandleTouchHud() {
-  return RootWindowController::ForTargetRootWindow()->touch_observer_hud();
+  return RootWindowController::ForTargetRootWindow()->touch_hud_debug();
 }
 
 void HandleTouchHudClear() {
-  RootWindowController::ForTargetRootWindow()->touch_observer_hud()->Clear();
+  RootWindowController::ForTargetRootWindow()->touch_hud_debug()->Clear();
 }
 
 void HandleTouchHudModeChange() {
-  RootWindowController::ForTargetRootWindow()
-      ->touch_observer_hud()
-      ->ChangeToNextMode();
+  RootWindowController* controller =
+      RootWindowController::ForTargetRootWindow();
+  controller->touch_hud_debug()->ChangeToNextMode();
 }
 
 }  // namespace
