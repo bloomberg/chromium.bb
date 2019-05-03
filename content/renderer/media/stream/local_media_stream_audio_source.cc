@@ -37,10 +37,17 @@ LocalMediaStreamAudioSource::LocalMediaStreamAudioSource(
         (device.input.sample_rate() * blink::kFallbackAudioLatencyMs) / 1000;
   }
 
-  SetFormat(media::AudioParameters(
-      media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-      device.input.channel_layout(), device.input.sample_rate(),
-      frames_per_buffer));
+  // Set audio format and take into account the special case where a discrete
+  // channel layout is reported since it will result in an invalid channel
+  // count (=0) if only default constructions is used.
+  media::AudioParameters params(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                                device.input.channel_layout(),
+                                device.input.sample_rate(), frames_per_buffer);
+  if (device.input.channel_layout() == media::CHANNEL_LAYOUT_DISCRETE) {
+    DCHECK_LE(device.input.channels(), 2);
+    params.set_channels_for_discrete(device.input.channels());
+  }
+  SetFormat(params);
 }
 
 LocalMediaStreamAudioSource::~LocalMediaStreamAudioSource() {
