@@ -42,9 +42,10 @@ SavePageRequest TestRequest(ClientId client_id = TestClientId()) {
 
 class MockDelegate : public OfflinePageAutoFetcherService::Delegate {
  public:
-  MOCK_METHOD4(ShowAutoFetchCompleteNotification,
+  MOCK_METHOD5(ShowAutoFetchCompleteNotification,
                void(const base::string16& pageTitle,
-                    const std::string& url,
+                    const std::string& original_url,
+                    const std::string& final_url,
                     int android_tab_id,
                     int64_t offline_id));
 };
@@ -235,7 +236,7 @@ TEST_F(OfflinePageAutoFetcherServiceTest, NotifyOnAutoFetchCompleted) {
       .WillOnce(testing::Return(&returned_item));
   EXPECT_CALL(delegate_, ShowAutoFetchCompleteNotification(
                              returned_item.title, kTestRequest.url().spec(),
-                             kTabId, kOfflineId));
+                             kTestRequest.url().spec(), kTabId, kOfflineId));
   service_->OnCompleted(kTestRequest,
                         RequestNotifier::BackgroundSavePageResult::SUCCESS);
   thread_bundle_.RunUntilIdle();

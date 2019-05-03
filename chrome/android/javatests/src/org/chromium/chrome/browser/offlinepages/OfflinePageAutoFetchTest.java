@@ -98,13 +98,18 @@ public class OfflinePageAutoFetchTest {
         }
     }
 
+    private static final String DEFAULT_BODY = "<html><title>MyTestPage</title>Hello World!</html>";
     private void startWebServer() throws Exception {
         Assert.assertTrue(mWebServer == null);
         mWebServer = new WebServer(0, false);
+        useDefaultWebServerResponse();
+    }
+
+    private void useDefaultWebServerResponse() {
+        Assert.assertTrue(mWebServer != null);
         mWebServer.setRequestHandler((HTTPRequest request, OutputStream stream) -> {
             try {
-                WebServer.writeResponse(stream, WebServer.STATUS_OK,
-                        "<html><title>MyTestPage</title>Hello World!</html>".getBytes());
+                WebServer.writeResponse(stream, WebServer.STATUS_OK, DEFAULT_BODY.getBytes());
             } catch (IOException e) {
             }
         });
@@ -112,10 +117,25 @@ public class OfflinePageAutoFetchTest {
 
     private void useAlternateWebServerResponse() {
         Assert.assertTrue(mWebServer != null);
+        String body = "<html><title>A Different Page</title>Alternate page!</html>";
         mWebServer.setRequestHandler((HTTPRequest request, OutputStream stream) -> {
             try {
-                WebServer.writeResponse(stream, WebServer.STATUS_OK,
-                        "<html><title>A Different Page</title>Alternate page!</html>".getBytes());
+                WebServer.writeResponse(stream, WebServer.STATUS_OK, body.getBytes());
+            } catch (IOException e) {
+            }
+        });
+    }
+
+    private void useRedirectWebServerResponse() {
+        Assert.assertTrue(mWebServer != null);
+        String redirectBody =
+                "<html><meta http-equiv=\"refresh\" content=\"0; url=/redirect_target\">"
+                + "<title>RedirectingFromHere</title>redirect</html>";
+        mWebServer.setRequestHandler((HTTPRequest request, OutputStream stream) -> {
+            try {
+                String body =
+                        request.getURI().endsWith("redirect_from") ? redirectBody : DEFAULT_BODY;
+                WebServer.writeResponse(stream, WebServer.STATUS_OK, body.getBytes());
             } catch (IOException e) {
             }
         });
@@ -210,6 +230,54 @@ public class OfflinePageAutoFetchTest {
         // A new tab should open, and it should load the offline page.
         pollInstrumentationThread(() -> {
             return getCurrentTabModel().getCount() == 2
+                    && getCurrentTab().getTitle().equals("MyTestPage");
+        });
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"OfflineAutoFetch"})
+    public void testAutoFetchWithRedirect() throws Exception {
+        startWebServer();
+        useRedirectWebServerResponse();
+        final String testUrl = mWebServer.getBaseUrl() + "/redirect_from";
+
+        // Make |testUrl| return an offline error and attempt to load the page.
+        // This should trigger an auto-fetch request.
+        OfflineTestUtil.interceptWithOfflineError(testUrl);
+        attemptLoadPage(testUrl);
+        waitForRequestCount(1);
+
+        // Navigate away from the page, so that the auto-fetch request is allowed to complete,
+        // and go back online.
+        attemptLoadPage(UrlConstants.ABOUT_URL);
+        // The tab no longer has the requested URL active, so the in-progress notification should
+        // appear.
+        waitForInProgressNotification();
+        OfflineTestUtil.clearIntercepts();
+        forceConnectivityState(true);
+        OfflineTestUtil.startRequestCoordinatorProcessing();
+
+        // Wait for the background request to complete.
+        waitForPageAdded();
+        Assert.assertTrue(mAddedPage != null);
+        waitForHistogram("OfflinePages.AutoFetch.CompleteNotificationAction:SHOWN", 1);
+
+        // Navigate back to testUrl, this time there is no redirect.
+        useDefaultWebServerResponse();
+        attemptLoadPage(testUrl);
+
+        // Simulate click on the complete notification, and ensure the offline page loads by
+        // swapping out the live page contents.
+        useAlternateWebServerResponse();
+        sendBroadcast(mLastCompleteClickIntent);
+
+        waitForHistogram("OfflinePages.AutoFetch.CompleteNotificationAction:TAPPED", 1);
+
+        pollInstrumentationThread(() -> {
+            // No new tab is opened, because the URL of the tab matches the original URL.
+            return getCurrentTabModel().getCount() == 1
+                    // The title matches the original page, not the 'AlternativeWebServerResponse'.
                     && getCurrentTab().getTitle().equals("MyTestPage");
         });
     }

@@ -303,12 +303,16 @@ public class IntentHandler {
         // Opens a new incognito tab.
         int OPEN_NEW_INCOGNITO_TAB = 5;
         // Tab is reused only if the tab ID exists (tab ID is specified with the integer extra
-        // REUSE_TAB_MATCHING_ID_STRING), and if the tab matches the requested URL.
-        // Otherwise, the URL is opened in a new tab.
+        // REUSE_TAB_MATCHING_ID_STRING), and if the tab matches either the requested URL, or
+        // the URL provided in the REUSE_TAB_ORIGINAL_URL_STRING extra.
+        // Otherwise, the URL is opened in a new tab. REUSE_TAB_ORIGINAL_URL_STRING can be used if
+        // the intent url is a result of a redirect, so that a tab pointing at the original URL can
+        // be reused.
         int REUSE_TAB_MATCHING_ID_ELSE_NEW_TAB = 6;
 
         String BRING_TAB_TO_FRONT_STRING = "BRING_TAB_TO_FRONT";
         String REUSE_TAB_MATCHING_ID_STRING = "REUSE_TAB_MATCHING_ID";
+        String REUSE_TAB_ORIGINAL_URL_STRING = "REUSE_TAB_ORIGINAL_URL";
     }
 
     /**
