@@ -10,7 +10,7 @@
     android:paddingVertical="@dimen/most_likely_carousel_edge_spacer"
     android:gravity="center_horizontal">
 
-    <android.support.v7.widget.RecyclerView
+    <org.chromium.chrome.browser.touchless.SiteSuggestionsRecyclerView
         android:id="@+id/most_likely_launcher_recycler"
         android:background="@color/modern_primary_color"
         android:scrollbars="none"

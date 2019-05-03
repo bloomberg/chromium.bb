@@ -215,7 +215,7 @@ class SiteSuggestionsAdapter extends ForwardingListObservable<PropertyKey>
             }
         } else if (propertyKey == SHOULD_FOCUS_VIEW && mModel.get(SHOULD_FOCUS_VIEW)
                 && mModel.get(ASYNC_FOCUS_DELEGATE) != null) {
-            mModel.get(ASYNC_FOCUS_DELEGATE).onResult(mRecyclerView);
+            mLayoutManager.focusCenterItem();
             mModel.set(SHOULD_FOCUS_VIEW, false);
         } else if (propertyKey == INITIAL_INDEX_KEY) {
             mLayoutManager.scrollToPosition(mModel.get(INITIAL_INDEX_KEY));

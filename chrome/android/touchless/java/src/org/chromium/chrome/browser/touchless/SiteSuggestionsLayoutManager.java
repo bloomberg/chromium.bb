@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.touchless;
 
 import android.content.Context;
-import android.support.v7.widget.LinearLayoutManager;
+import android.graphics.Rect;
 import android.support.v7.widget.RecyclerView;
 import android.util.SparseArray;
 import android.view.View;
@@ -18,7 +18,7 @@ import org.chromium.chrome.touchless.R;
  * layout such that items at the edges are smaller than the center item and keeping focus
  * to the middle of the view.
  */
-class SiteSuggestionsLayoutManager extends LinearLayoutManager {
+class SiteSuggestionsLayoutManager extends RecyclerView.LayoutManager {
     private static final float[] SCALE_FACTORS = {0.8f, 0.9f, 1f, 0.9f, 0.8f};
     private static final float SUM_FACTORS;
     // Initialize SUM_FACTORS to be sum of scale factors.
@@ -32,16 +32,19 @@ class SiteSuggestionsLayoutManager extends LinearLayoutManager {
     private static final int MAX_TILES = 5;
 
     private int mFocusPosition;
+    private View mFocusView;
+    private boolean mShouldFocusAfterLayout;
     private boolean mNeedRebind;
     private Context mContext;
+    private RecyclerView mRecyclerView;
 
     SiteSuggestionsLayoutManager(Context context) {
-        super(context);
-        setReverseLayout(false);
-        setOrientation(LinearLayoutManager.HORIZONTAL);
+        setAutoMeasureEnabled(true);
         mContext = context;
         mFocusPosition = 0;
         mNeedRebind = false;
+        mFocusView = null;
+        mShouldFocusAfterLayout = false;
     }
 
     @Override
@@ -113,6 +116,9 @@ class SiteSuggestionsLayoutManager extends LinearLayoutManager {
                 viewCache.remove(i);
                 attachView(child);
             }
+            if (i == mFocusPosition) {
+                mFocusView = child;
+            }
         }
 
         resizeViews();
@@ -121,6 +127,14 @@ class SiteSuggestionsLayoutManager extends LinearLayoutManager {
         for (int i = 0; i < viewCache.size(); i++) {
             removeDetachedView(viewCache.valueAt(i));
             recycler.recycleView(viewCache.valueAt(i));
+        }
+    }
+
+    @Override
+    public void onLayoutCompleted(RecyclerView.State state) {
+        super.onLayoutCompleted(state);
+        if (mShouldFocusAfterLayout) {
+            mFocusView.requestFocus();
         }
     }
 
@@ -175,7 +189,6 @@ class SiteSuggestionsLayoutManager extends LinearLayoutManager {
     /**
      * Returns what the first visible item position should be. Might not be accurate during layout.
      */
-    @Override
     public int findFirstVisibleItemPosition() {
         return Math.max(0, mFocusPosition - 2);
     }
@@ -183,7 +196,6 @@ class SiteSuggestionsLayoutManager extends LinearLayoutManager {
     /**
      * Returns what the last visible item position should be. Might not be accurate during layout.
      */
-    @Override
     public int findLastVisibleItemPosition() {
         int lastVisiblePosition = mFocusPosition + 2;
         if (lastVisiblePosition < 0 || lastVisiblePosition == Integer.MAX_VALUE) {
@@ -220,6 +232,18 @@ class SiteSuggestionsLayoutManager extends LinearLayoutManager {
         requestFullRebind();
     }
 
+    @Override
+    public void onAttachedToWindow(RecyclerView view) {
+        super.onAttachedToWindow(view);
+        mRecyclerView = view;
+    }
+
+    @Override
+    public void onDetachedFromWindow(RecyclerView view, RecyclerView.Recycler recycler) {
+        super.onDetachedFromWindow(view, recycler);
+        mRecyclerView = null;
+    }
+
     /**
      * Requests layout such that it forces rebind of all visible items with
      * updated data from the adapter.
@@ -227,6 +251,18 @@ class SiteSuggestionsLayoutManager extends LinearLayoutManager {
     private void requestFullRebind() {
         mNeedRebind = true;
         requestLayout();
+    }
+
+    void focusCenterItem() {
+        focusCenterItem(View.FOCUS_DOWN, null);
+    }
+
+    boolean focusCenterItem(int direction, Rect previouslyFocusedRect) {
+        if (mRecyclerView.isComputingLayout() || mFocusView == null) {
+            mShouldFocusAfterLayout = true;
+            return true;
+        }
+        return mFocusView.requestFocus(direction, previouslyFocusedRect);
     }
 
     /**
