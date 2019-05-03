@@ -38,6 +38,13 @@ TEST_F(ArcSystemStatCollectorTest, Parse) {
                             mem_values));
   EXPECT_EQ(8058940, mem_values[0]);
   EXPECT_EQ(2714260, mem_values[1]);
+
+  int64_t gem_values[2];
+  EXPECT_TRUE(ParseStatFile(GetPath("gem_objects"),
+                            ArcSystemStatCollector::kGemInfoColumns,
+                            gem_values));
+  EXPECT_EQ(853, gem_values[0]);
+  EXPECT_EQ(458256384, gem_values[1]);
 }
 
 }  // namespace arc

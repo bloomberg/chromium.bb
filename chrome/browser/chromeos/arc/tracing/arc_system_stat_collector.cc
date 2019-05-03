@@ -10,6 +10,7 @@
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 #include "chrome/browser/chromeos/arc/tracing/arc_system_model.h"
 #include "chrome/browser/chromeos/arc/tracing/arc_value_event_trimmer.h"
 
@@ -42,6 +43,8 @@ struct ArcSystemStatCollector::Sample {
   int swap_waiting_time_ms = 0;
   int mem_total_kb = 0;
   int mem_used_kb = 0;
+  int gem_objects = 0;
+  int gem_size_kb = 0;
 };
 
 // static
@@ -49,6 +52,9 @@ constexpr int ArcSystemStatCollector::kZramStatColumns[];
 
 // static
 constexpr int ArcSystemStatCollector::kMemInfoColumns[];
+
+// static
+constexpr int ArcSystemStatCollector::kGemInfoColumns[];
 
 ArcSystemStatCollector::ArcSystemStatCollector() : weak_ptr_factory_(this) {}
 
@@ -88,6 +94,10 @@ void ArcSystemStatCollector::Flush(const base::TimeTicks& min_timestamp,
                                  ArcValueEvent::Type::kMemTotal);
   ArcValueEventTrimmer mem_used(&system_model->memory_events(),
                                 ArcValueEvent::Type::kMemUsed);
+  ArcValueEventTrimmer gem_objects(&system_model->memory_events(),
+                                   ArcValueEvent::Type::kGemObjects);
+  ArcValueEventTrimmer gem_size(&system_model->memory_events(),
+                                ArcValueEvent::Type::kGemSize);
   ArcValueEventTrimmer swap_read(&system_model->memory_events(),
                                  ArcValueEvent::Type::kSwapRead);
   ArcValueEventTrimmer swap_write(&system_model->memory_events(),
@@ -105,10 +115,19 @@ void ArcSystemStatCollector::Flush(const base::TimeTicks& min_timestamp,
         (sample.timestamp - base::TimeTicks()).InMicroseconds();
     mem_total.MaybeAdd(timestamp, sample.mem_total_kb);
     mem_used.MaybeAdd(timestamp, sample.mem_used_kb);
+    gem_objects.MaybeAdd(timestamp, sample.gem_objects);
+    gem_size.MaybeAdd(timestamp, sample.gem_size_kb);
     swap_read.MaybeAdd(timestamp, sample.swap_sectors_read);
     swap_write.MaybeAdd(timestamp, sample.swap_sectors_write);
     swap_wait.MaybeAdd(timestamp, sample.swap_waiting_time_ms);
   }
+  // Trimmer may break time sequence for events of different types. However
+  // time sequence of events of the same type should be preserved.
+  std::sort(system_model->memory_events().begin(),
+            system_model->memory_events().end(),
+            [](const auto& lhs, const auto& rhs) {
+              return lhs.timestamp < rhs.timestamp;
+            });
 }
 
 void ArcSystemStatCollector::ScheduleSystemStatUpdate() {
@@ -143,6 +162,7 @@ ArcSystemStatCollector::ReadSystemStatOnBackgroundThread() {
       error_reported = true;
     }
   }
+
   if (!ParseStatFile(mem_info_path, kMemInfoColumns, current_frame.mem_info)) {
     memset(current_frame.mem_info, 0, sizeof(current_frame.mem_info));
     static bool error_reported = false;
@@ -151,6 +171,23 @@ ArcSystemStatCollector::ReadSystemStatOnBackgroundThread() {
       error_reported = true;
     }
   }
+
+#if defined(ARCH_CPU_ARM_FAMILY)
+  const base::FilePath gem_info_path(
+      FILE_PATH_LITERAL("/run/debugfs_gpu/exynos_gem_objects"));
+#else
+  const base::FilePath gem_info_path(
+      FILE_PATH_LITERAL("/run/debugfs_gpu/i915_gem_objects"));
+#endif
+  if (!ParseStatFile(gem_info_path, kGemInfoColumns, current_frame.gem_info)) {
+    memset(current_frame.gem_info, 0, sizeof(current_frame.gem_info));
+    static bool error_reported = false;
+    if (!error_reported) {
+      LOG(ERROR) << "Failed to read gem info file: " << gem_info_path.value();
+      error_reported = true;
+    }
+  }
+
   return current_frame;
 }
 
@@ -165,6 +202,9 @@ void ArcSystemStatCollector::UpdateSystemStatOnUiThread(
   // Total - available.
   current_sample.mem_used_kb =
       current_frame.mem_info[0] - current_frame.mem_info[1];
+  current_sample.gem_objects = current_frame.gem_info[0];
+  current_sample.gem_size_kb = current_frame.gem_info[1] / 1024;
+
   // We calculate delta, so ignore first update.
   if (write_index_) {
     current_sample.swap_sectors_read =
