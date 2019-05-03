@@ -151,9 +151,9 @@ def main():
 
   test_executable = os.path.abspath(
       os.path.join(os.path.dirname(__file__), GetTestExecutable()))
-  subprocess.call(
+  sys.exit(subprocess.call(
       [test_executable, '--run-through-xr-wrapper-script'] +
-      tracing_args + rest_args)
+      tracing_args + rest_args))
 
 if __name__ == '__main__':
   main()
