@@ -288,8 +288,7 @@ extern const char kCookiesWithoutSameSiteMustBeSecureName[] =
 extern const char kCookiesWithoutSameSiteMustBeSecureDescription[] =
     "If enabled, cookies without SameSite restrictions must also be Secure. If "
     "a cookie without SameSite restrictions is set without the Secure "
-    "attribute, it will be treated as Secure (if set from a secure URL), or "
-    "rejected (if set from an insecure URL). This flag only has an effect if "
+    "attribute, it will be rejected. This flag only has an effect if "
     "\"SameSite by default cookies\" is also enabled.";
 
 const char kCreditCardAssistName[] = "Credit Card Assisted Filling";

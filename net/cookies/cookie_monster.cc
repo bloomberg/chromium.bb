@@ -1210,25 +1210,18 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
 
   // If both SameSiteByDefaultCookies and CookiesWithoutSameSiteMustBeSecure
   // are enabled, non-SameSite cookies without the Secure attribute will be
-  // treated as secure if set from a secure context, or rejected if set from an
-  // insecure context.
+  // rejected.
   if (base::FeatureList::IsEnabled(features::kSameSiteByDefaultCookies) &&
       base::FeatureList::IsEnabled(
           features::kCookiesWithoutSameSiteMustBeSecure) &&
       cc->GetEffectiveSameSite() == CookieSameSite::NO_RESTRICTION &&
       !cc->IsSecure()) {
-    if (!secure_source) {
-      DVLOG(net::cookie_util::kVlogSetCookies)
-          << "SetCookie() rejecting insecure cookie with SameSite=None.";
-      status = CanonicalCookie::CookieInclusionStatus::
-          EXCLUDE_SAMESITE_NONE_INSECURE;
-      MaybeRunCookieCallback(std::move(callback), status);
-      return;
-    }
     DVLOG(net::cookie_util::kVlogSetCookies)
-        << "SetCookie() treating cookie without SameSite restrictions as "
-           "secure.";
-    cc->SetSecure(true);
+        << "SetCookie() rejecting insecure cookie with SameSite=None.";
+    status =
+        CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_NONE_INSECURE;
+    MaybeRunCookieCallback(std::move(callback), status);
+    return;
   }
 
   const std::string key(GetKey(cc->Domain()));

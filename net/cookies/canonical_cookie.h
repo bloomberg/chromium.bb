@@ -166,7 +166,6 @@ class NET_EXPORT CanonicalCookie {
   // '/login' and '/' do not match '/login/en').
   bool IsEquivalentForSecureCookieMatching(const CanonicalCookie& ecc) const;
 
-  void SetSecure(bool is_secure) { secure_ = is_secure; }
   void SetLastAccessDate(const base::Time& date) {
     last_access_date_ = date;
   }
