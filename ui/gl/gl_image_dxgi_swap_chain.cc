@@ -16,7 +16,7 @@ namespace gl {
 
 namespace {
 
-bool SupportedBindFormat(gfx::BufferFormat format) {
+bool SwapChainSupportedBindFormat(gfx::BufferFormat format) {
   switch (format) {
     case gfx::BufferFormat::RGBA_8888:
     case gfx::BufferFormat::RGBX_8888:
@@ -27,8 +27,8 @@ bool SupportedBindFormat(gfx::BufferFormat format) {
   };
 }
 
-bool HasAlpha(gfx::BufferFormat format) {
-  DCHECK(SupportedBindFormat(format));
+bool SwapChainHasAlpha(gfx::BufferFormat format) {
+  DCHECK(SwapChainSupportedBindFormat(format));
   switch (format) {
     case gfx::BufferFormat::RGBA_8888:
     case gfx::BufferFormat::RGBA_F16:
@@ -42,13 +42,14 @@ bool HasAlpha(gfx::BufferFormat format) {
 }
 
 EGLConfig ChooseCompatibleConfig(gfx::BufferFormat format, EGLDisplay display) {
-  DCHECK(SupportedBindFormat(format));
+  DCHECK(SwapChainSupportedBindFormat(format));
 
   const EGLint color_bits = format == gfx::BufferFormat::RGBA_F16 ? 16 : 8;
-  const EGLint buffer_bind_to_texture =
-      HasAlpha(format) ? EGL_BIND_TO_TEXTURE_RGBA : EGL_BIND_TO_TEXTURE_RGB;
+  const EGLint buffer_bind_to_texture = SwapChainHasAlpha(format)
+                                            ? EGL_BIND_TO_TEXTURE_RGBA
+                                            : EGL_BIND_TO_TEXTURE_RGB;
   const EGLint buffer_size =
-      color_bits * 3 + (HasAlpha(format) ? color_bits : 0);
+      color_bits * 3 + (SwapChainHasAlpha(format) ? color_bits : 0);
 
   std::vector<EGLint> attrib_list = {
       EGL_RED_SIZE,           color_bits, EGL_GREEN_SIZE,   color_bits,
@@ -90,7 +91,7 @@ EGLConfig ChooseCompatibleConfig(gfx::BufferFormat format, EGLDisplay display) {
       continue;
     }
 
-    if (HasAlpha(format) &&
+    if (SwapChainHasAlpha(format) &&
         (!eglGetConfigAttrib(display, config, EGL_ALPHA_SIZE, &bits) ||
          bits != color_bits)) {
       continue;
@@ -106,7 +107,7 @@ EGLSurface CreatePbuffer(const Microsoft::WRL::ComPtr<ID3D11Texture2D>& texture,
                          EGLConfig config,
                          EGLDisplay display,
                          unsigned target) {
-  DCHECK(SupportedBindFormat(format));
+  DCHECK(SwapChainSupportedBindFormat(format));
 
   D3D11_TEXTURE2D_DESC desc;
   texture->GetDesc(&desc);
@@ -121,7 +122,7 @@ EGLSurface CreatePbuffer(const Microsoft::WRL::ComPtr<ID3D11Texture2D>& texture,
       EGL_TEXTURE_TARGET,
       EGL_TEXTURE_2D,
       EGL_TEXTURE_FORMAT,
-      HasAlpha(format) ? EGL_TEXTURE_RGBA : EGL_TEXTURE_RGB,
+      SwapChainHasAlpha(format) ? EGL_TEXTURE_RGBA : EGL_TEXTURE_RGB,
       EGL_NONE};
 
   return eglCreatePbufferFromClientBuffer(
@@ -180,7 +181,7 @@ bool GLImageDXGISwapChain::CopyTexSubImage(unsigned target,
 void GLImageDXGISwapChain::Flush() {}
 
 unsigned GLImageDXGISwapChain::GetInternalFormat() {
-  return HasAlpha(buffer_format_) ? GL_RGBA : GL_RGB;
+  return SwapChainHasAlpha(buffer_format_) ? GL_RGBA : GL_RGB;
 }
 
 gfx::Size GLImageDXGISwapChain::GetSize() {
