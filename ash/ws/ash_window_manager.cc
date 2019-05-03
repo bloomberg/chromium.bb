@@ -66,24 +66,4 @@ void AshWindowManager::BounceWindow(ws::Id window_id) {
   ::wm::AnimateWindow(window, ::wm::WINDOW_ANIMATION_TYPE_BOUNCE);
 }
 
-void AshWindowManager::SetWindowFrameMenuItems(
-    ws::Id window_id,
-    menu_utils::MenuItemList menu_item_list,
-    mojom::MenuDelegatePtr delegate) {
-  aura::Window* window = window_tree_->GetWindowByTransportId(window_id);
-  if (!window) {
-    DVLOG(1) << "SetWindowFrameMenuItems passed invalid window, id="
-             << window_id;
-    return;
-  }
-
-  NonClientFrameViewAsh* frame_view = NonClientFrameViewAsh::Get(window);
-  if (!frame_view) {
-    DVLOG(1) << "SetWindowFrameMenuItems called on frameless window";
-    return;
-  }
-
-  frame_view->SetWindowFrameMenuItems(menu_item_list, std::move(delegate));
-}
-
 }  // namespace ash

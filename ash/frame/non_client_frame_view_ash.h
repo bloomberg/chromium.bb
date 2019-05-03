@@ -9,16 +9,11 @@
 
 #include "ash/ash_export.h"
 #include "ash/frame/header_view.h"
-#include "ash/public/cpp/menu_utils.h"
-#include "ash/public/interfaces/menu.mojom.h"
 #include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/base/models/simple_menu_model.h"
-#include "ui/views/context_menu_controller.h"
-#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/window/non_client_view.h"
 
 namespace views {
@@ -41,9 +36,7 @@ class NonClientFrameViewAshImmersiveHelper;
 // BrowserNonClientFrameViewAsh.
 class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView,
                                          public OverviewObserver,
-                                         public SplitViewController::Observer,
-                                         public views::ContextMenuController,
-                                         public ui::SimpleMenuModel::Delegate {
+                                         public SplitViewController::Observer {
  public:
   // Internal class name.
   static const char kViewClassName[];
@@ -84,12 +77,6 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView,
   gfx::Rect GetClientBoundsForWindowBounds(
       const gfx::Rect& window_bounds) const;
 
-  // Sets the menu items to show in the context menu. If |menu_item_list| is
-  // empty, no context menu will be shown. Menu item activation is dispatched to
-  // |delegate|.
-  void SetWindowFrameMenuItems(const menu_utils::MenuItemList& menu_item_list,
-                               mojom::MenuDelegatePtr delegate);
-
   // views::NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override;
   gfx::Rect GetWindowBoundsForClientBounds(
@@ -123,16 +110,6 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView,
   // SplitViewController::Observer:
   void OnSplitViewStateChanged(SplitViewController::State previous_state,
                                SplitViewController::State state) override;
-
-  // views::ContextMenuController:
-  void ShowContextMenuForViewImpl(View* source,
-                                  const gfx::Point& point,
-                                  ui::MenuSourceType source_type) override;
-
-  // ui::SimpleMenuModel::Delegate:
-  bool IsCommandIdChecked(int command_id) const override;
-  bool IsCommandIdEnabled(int command_id) const override;
-  void ExecuteCommand(int command_id, int event_flags) override;
 
   const views::View* GetAvatarIconViewForTest() const;
 
@@ -182,12 +159,6 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView,
   // Shell::Get()->overview_controller()->IsSelecting() because the
   // later actually may be still be false after overview mode has started.
   bool in_overview_ = false;
-
-  // Helpers for the context menu users will see when right-clicking on
-  // |header_view_|.
-  std::unique_ptr<ui::SimpleMenuModel> menu_model_;
-  std::unique_ptr<views::MenuRunner> menu_runner_;
-  mojom::MenuDelegatePtr menu_delegate_;
 
   std::unique_ptr<NonClientFrameViewAshImmersiveHelper> immersive_helper_;
 

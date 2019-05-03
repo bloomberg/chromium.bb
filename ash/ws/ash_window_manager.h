@@ -5,7 +5,6 @@
 #ifndef ASH_WS_ASH_WINDOW_MANAGER_H_
 #define ASH_WS_ASH_WINDOW_MANAGER_H_
 
-#include "ash/public/cpp/menu_utils.h"
 #include "ash/public/interfaces/ash_window_manager.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "services/ws/common/types.h"
@@ -34,9 +33,6 @@ class AshWindowManager : public mojom::AshWindowManager,
   void MaximizeWindowByCaptionClick(ws::Id window_id,
                                     ui::mojom::PointerKind pointer) override;
   void BounceWindow(ws::Id window_id) override;
-  void SetWindowFrameMenuItems(ws::Id window_id,
-                               menu_utils::MenuItemList menu_item_list,
-                               mojom::MenuDelegatePtr delegate) override;
 
  private:
   ws::WindowTree* window_tree_;

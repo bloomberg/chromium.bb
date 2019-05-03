@@ -31,7 +31,6 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/view.h"
 #include "ui/views/view_targeter.h"
 #include "ui/views/widget/widget.h"
@@ -307,23 +306,6 @@ gfx::Rect NonClientFrameViewAsh::GetClientBoundsForWindowBounds(
   return client_bounds;
 }
 
-void NonClientFrameViewAsh::SetWindowFrameMenuItems(
-    const menu_utils::MenuItemList& menu_item_list,
-    mojom::MenuDelegatePtr delegate) {
-  if (menu_item_list.empty()) {
-    menu_model_.reset();
-    menu_delegate_.reset();
-  } else {
-    menu_model_ = std::make_unique<ui::SimpleMenuModel>(this);
-    menu_utils::PopulateMenuFromMojoMenuItems(menu_model_.get(), nullptr,
-                                              menu_item_list, nullptr);
-    menu_delegate_ = std::move(delegate);
-  }
-
-  header_view_->set_context_menu_controller(menu_item_list.empty() ? nullptr
-                                                                   : this);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // NonClientFrameViewAsh, views::NonClientFrameView overrides:
 
@@ -487,33 +469,6 @@ void NonClientFrameViewAsh::OnSplitViewStateChanged(
     SplitViewController::State /* previous_state */,
     SplitViewController::State /* current_state */) {
   UpdateHeaderView();
-}
-
-void NonClientFrameViewAsh::ShowContextMenuForViewImpl(
-    views::View* source,
-    const gfx::Point& point,
-    ui::MenuSourceType source_type) {
-  DCHECK_EQ(header_view_, source);
-  DCHECK(menu_model_);
-
-  menu_runner_ = std::make_unique<views::MenuRunner>(
-      menu_model_.get(),
-      views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU);
-  menu_runner_->RunMenuAt(GetWidget(), nullptr,
-                          gfx::Rect(point, gfx::Size(0, 0)),
-                          views::MenuAnchorPosition::kTopLeft, source_type);
-}
-
-bool NonClientFrameViewAsh::IsCommandIdChecked(int command_id) const {
-  return false;
-}
-
-bool NonClientFrameViewAsh::IsCommandIdEnabled(int command_id) const {
-  return true;
-}
-
-void NonClientFrameViewAsh::ExecuteCommand(int command_id, int event_flags) {
-  menu_delegate_->MenuItemActivated(command_id);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
