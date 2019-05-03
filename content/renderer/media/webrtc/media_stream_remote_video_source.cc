@@ -123,8 +123,7 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
       break;
     }
     case webrtc::VideoFrameBuffer::Type::kI420: {
-      rtc::scoped_refptr<webrtc::I420BufferInterface> yuv_buffer =
-          buffer->ToI420();
+      const webrtc::I420BufferInterface* yuv_buffer = buffer->GetI420();
       video_frame = media::VideoFrame::WrapExternalYuvData(
           media::PIXEL_FORMAT_I420, size, gfx::Rect(size), size,
           yuv_buffer->StrideY(), yuv_buffer->StrideU(), yuv_buffer->StrideV(),
@@ -134,7 +133,7 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
       break;
     }
     case webrtc::VideoFrameBuffer::Type::kI444: {
-      webrtc::I444BufferInterface* yuv_buffer = buffer->GetI444();
+      const webrtc::I444BufferInterface* yuv_buffer = buffer->GetI444();
       video_frame = media::VideoFrame::WrapExternalYuvData(
           media::PIXEL_FORMAT_I444, size, gfx::Rect(size), size,
           yuv_buffer->StrideY(), yuv_buffer->StrideU(), yuv_buffer->StrideV(),
@@ -144,7 +143,7 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
       break;
     }
     case webrtc::VideoFrameBuffer::Type::kI010: {
-      webrtc::I010BufferInterface* yuv_buffer = buffer->GetI010();
+      const webrtc::I010BufferInterface* yuv_buffer = buffer->GetI010();
       // WebRTC defines I010 data as uint16 whereas Chromium uses uint8 for all
       // video formats, so conversion and cast is needed.
       video_frame = media::VideoFrame::WrapExternalYuvData(
