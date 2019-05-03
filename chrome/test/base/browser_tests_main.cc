@@ -23,6 +23,13 @@ int main(int argc, char** argv) {
   }
 
 #if defined(OS_WIN)
+  // Many tests validate code that requires user32.dll to be loaded. Loading it,
+  // however, cannot be done on the main thread loop because it is a blocking
+  // call, and all the test code runs on the main thread loop. Instead, just
+  // load and pin the module early on in startup before the blocking becomes an
+  // issue.
+  base::win::PinUser32();
+
   // Enable high-DPI for interactive tests where the user is expected to
   // manually verify results.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(

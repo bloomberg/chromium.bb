@@ -37,6 +37,9 @@ struct _tagpropertykey;
 typedef _tagpropertykey PROPERTYKEY;
 
 namespace base {
+
+struct NativeLibraryLoadError;
+
 namespace win {
 
 inline uint32_t HandleToUint32(HANDLE h) {
@@ -160,9 +163,17 @@ BASE_EXPORT bool IsDeviceRegisteredWithManagement();
 
 // Returns true if the current process can make USER32 or GDI32 calls such as
 // CreateWindow and CreateDC. Windows 8 and above allow the kernel component
-// of these calls to be disabled which can cause undefined behaviour such as
-// crashes. This function can be used to guard areas of code using these calls
-// and provide a fallback path if necessary.
+// of these calls to be disabled (also known as win32k lockdown) which can
+// cause undefined behaviour such as crashes. This function can be used to
+// guard areas of code using these calls and provide a fallback path if
+// necessary.
+// Because they are not always needed (and not needed at all in processes that
+// have the win32k lockdown), USER32 and GDI32 are delayloaded. Attempts to
+// load them in those processes will cause a crash. Any code which uses USER32
+// or GDI32 and may run in a locked-down process MUST be guarded using this
+// method. Before the dlls were delayloaded, method calls into USER32 and GDI32
+// did not work, so adding calls to this method to guard them simply avoids
+// unnecessary method calls.
 BASE_EXPORT bool IsUser32AndGdi32Available();
 
 // Takes a snapshot of the modules loaded in the |process|. The returned
@@ -186,6 +197,21 @@ BASE_EXPORT void EnableHighDPISupport();
 
 // Returns a string representation of |rguid|.
 BASE_EXPORT string16 String16FromGUID(REFGUID rguid);
+
+// Attempts to pin user32.dll to ensure it remains loaded. If it isn't loaded
+// yet, the module will first be loaded and then the pin will be attempted. If
+// pinning is successful, returns true. If the module cannot be loaded and/or
+// pinned, |error| is set and the method returns false.
+BASE_EXPORT bool PinUser32(NativeLibraryLoadError* error = nullptr);
+
+// Gets a pointer to a function within user32.dll, if available. If user32.dll
+// cannot be loaded or the function cannot be found, this function returns
+// nullptr and sets |error|. Once loaded, user32.dll is pinned, and therefore
+// the function pointer returned by this function will never change and can be
+// cached.
+BASE_EXPORT void* GetUser32FunctionPointer(
+    const char* function_name,
+    NativeLibraryLoadError* error = nullptr);
 
 // Allows changing the domain enrolled state for the life time of the object.
 // The original state is restored upon destruction.

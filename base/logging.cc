@@ -107,6 +107,10 @@ typedef pthread_mutex_t* MutexHandle;
 #include "base/threading/platform_thread.h"
 #include "base/vlog.h"
 
+#if defined(OS_WIN)
+#include "base/win/win_util.h"
+#endif
+
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
 #include "base/posix/safe_strerror.h"
 #endif
@@ -550,8 +554,12 @@ void DisplayDebugMessageInDialog(const std::string& str) {
 #if defined(OS_WIN)
   // We intentionally don't implement a dialog on other platforms.
   // You can just look at stderr.
-  MessageBoxW(nullptr, base::UTF8ToUTF16(str).c_str(), L"Fatal error",
-              MB_OK | MB_ICONHAND | MB_TOPMOST);
+  if (base::win::IsUser32AndGdi32Available()) {
+    MessageBoxW(nullptr, base::as_wcstr(base::UTF8ToUTF16(str)), L"Fatal error",
+                MB_OK | MB_ICONHAND | MB_TOPMOST);
+  } else {
+    OutputDebugStringW(base::as_wcstr(base::UTF8ToUTF16(str)));
+  }
 #endif  // defined(OS_WIN)
 }
 #endif  // !defined(NDEBUG)

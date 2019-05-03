@@ -330,16 +330,10 @@ ScreenWin::~ScreenWin() {
 // static
 int ScreenWin::GetSystemMetricsForScaleFactor(float scale_factor, int metric) {
   if (base::win::IsProcessPerMonitorDpiAware()) {
-    static auto get_metric_for_dpi_func = []() {
-      using GetSystemMetricsForDpiPtr = decltype(::GetSystemMetricsForDpi)*;
-      HMODULE user32_dll = ::LoadLibrary(L"user32.dll");
-      if (user32_dll) {
-        return reinterpret_cast<GetSystemMetricsForDpiPtr>(
-            ::GetProcAddress(user32_dll, "GetSystemMetricsForDpi"));
-      }
-      return static_cast<GetSystemMetricsForDpiPtr>(nullptr);
-    }();
-
+    using GetSystemMetricsForDpiPtr = decltype(::GetSystemMetricsForDpi)*;
+    static const auto get_metric_for_dpi_func =
+        reinterpret_cast<GetSystemMetricsForDpiPtr>(
+            base::win::GetUser32FunctionPointer("GetSystemMetricsForDpi"));
     if (get_metric_for_dpi_func) {
       return get_metric_for_dpi_func(metric,
                                      GetDPIFromScalingFactor(scale_factor));

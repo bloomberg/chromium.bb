@@ -92,7 +92,13 @@ shared_library("chrome_elf") {
   ldflags = [
     "/DELAYLOAD:advapi32.dll",
     "/DELAYLOAD:dbghelp.dll",
+    "/DELAYLOAD:ole32.dll",
+    "/DELAYLOAD:oleaut32.dll",
+    "/DELAYLOAD:propsys.dll",
     "/DELAYLOAD:rpcrt4.dll",
+    "/DELAYLOAD:shell32.dll",
+    "/DELAYLOAD:shlwapi.dll",
+    "/DELAYLOAD:user32.dll",
     "/DELAYLOAD:winmm.dll",
   ]
   if (current_cpu == "x86") {

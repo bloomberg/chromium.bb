@@ -2100,6 +2100,8 @@ component("net") {
       "urlmon.lib",
       "winhttp.lib",
     ]
+
+    ldflags = [ "/DELAYLOAD:urlmon.dll" ]
   }
 
   if (!is_nacl) {

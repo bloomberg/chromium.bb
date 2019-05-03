@@ -23,6 +23,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/scoped_gdi_object.h"
+#include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/accessibility/accessibility_switches.h"
@@ -422,18 +423,15 @@ void HWNDMessageHandler::Init(HWND parent, const gfx::Rect& bounds) {
   // Create the window.
   WindowImpl::Init(parent, bounds);
 
-  if (!called_enable_non_client_dpi_scaling_ &&
-      delegate_->HasFrame() &&
+  if (!called_enable_non_client_dpi_scaling_ && delegate_->HasFrame() &&
       base::win::IsProcessPerMonitorDpiAware()) {
-    static auto enable_child_window_dpi_message_func = []() {
-      // Derived signature; not available in headers.
-      // This call gets Windows to scale the non-client area when WM_DPICHANGED
-      // is fired.
-      using EnableChildWindowDpiMessagePtr = LRESULT (WINAPI*)(HWND, BOOL);
-      return reinterpret_cast<EnableChildWindowDpiMessagePtr>(
-                 GetProcAddress(GetModuleHandle(L"user32.dll"),
-                                "EnableChildWindowDpiMessage"));
-    }();
+    // Derived signature; not available in headers.
+    // This call gets Windows to scale the non-client area when
+    // WM_DPICHANGED is fired.
+    using EnableChildWindowDpiMessagePtr = LRESULT(WINAPI*)(HWND, BOOL);
+    static const auto enable_child_window_dpi_message_func =
+        reinterpret_cast<EnableChildWindowDpiMessagePtr>(
+            base::win::GetUser32FunctionPointer("EnableChildWindowDpiMessage"));
     if (enable_child_window_dpi_message_func)
       enable_child_window_dpi_message_func(hwnd(), TRUE);
   }
@@ -1920,11 +1918,12 @@ LRESULT HWNDMessageHandler::OnPointerActivate(UINT message,
   using GetPointerTypeFn = BOOL(WINAPI*)(UINT32, POINTER_INPUT_TYPE*);
   UINT32 pointer_id = GET_POINTERID_WPARAM(w_param);
   POINTER_INPUT_TYPE pointer_type;
-  static GetPointerTypeFn get_pointer_type = reinterpret_cast<GetPointerTypeFn>(
-      GetProcAddress(GetModuleHandleA("user32.dll"), "GetPointerType"));
+  static const auto get_pointer_type = reinterpret_cast<GetPointerTypeFn>(
+      base::win::GetUser32FunctionPointer("GetPointerType"));
   if (get_pointer_type && get_pointer_type(pointer_id, &pointer_type) &&
-      pointer_type == PT_TOUCHPAD)
+      pointer_type == PT_TOUCHPAD) {
     return PA_NOACTIVATE;
+  }
   SetMsgHandled(FALSE);
   return -1;
 }
@@ -1941,8 +1940,8 @@ LRESULT HWNDMessageHandler::OnPointerEvent(UINT message,
   UINT32 pointer_id = GET_POINTERID_WPARAM(w_param);
   using GetPointerTypeFn = BOOL(WINAPI*)(UINT32, POINTER_INPUT_TYPE*);
   POINTER_INPUT_TYPE pointer_type;
-  static GetPointerTypeFn get_pointer_type = reinterpret_cast<GetPointerTypeFn>(
-      GetProcAddress(GetModuleHandleA("user32.dll"), "GetPointerType"));
+  static const auto get_pointer_type = reinterpret_cast<GetPointerTypeFn>(
+      base::win::GetUser32FunctionPointer("GetPointerType"));
   // If the WM_POINTER messages are not sent from a stylus device, then we do
   // not handle them to make sure we do not change the current behavior of
   // touch and mouse inputs.
@@ -1959,9 +1958,10 @@ LRESULT HWNDMessageHandler::OnPointerEvent(UINT message,
         return HandlePointerEventTypeTouch(message, w_param, l_param);
       FALLTHROUGH;
     default:
-      SetMsgHandled(FALSE);
-      return -1;
+      break;
   }
+  SetMsgHandled(FALSE);
+  return -1;
 }
 
 void HWNDMessageHandler::OnMove(const gfx::Point& point) {
@@ -2130,11 +2130,10 @@ LRESULT HWNDMessageHandler::OnNCCalcSize(BOOL mode, LPARAM l_param) {
 LRESULT HWNDMessageHandler::OnNCCreate(LPCREATESTRUCT lpCreateStruct) {
   SetMsgHandled(FALSE);
   if (delegate_->HasFrame() && base::win::IsProcessPerMonitorDpiAware()) {
-    static auto enable_non_client_dpi_scaling_func = []() {
-      return reinterpret_cast<decltype(::EnableNonClientDpiScaling)*>(
-                 GetProcAddress(GetModuleHandle(L"user32.dll"),
-                                "EnableNonClientDpiScaling"));
-    }();
+    using EnableNonClientDpiScalingPtr = decltype(::EnableNonClientDpiScaling)*;
+    static const auto enable_non_client_dpi_scaling_func =
+        reinterpret_cast<EnableNonClientDpiScalingPtr>(
+            base::win::GetUser32FunctionPointer("EnableNonClientDpiScaling"));
     called_enable_non_client_dpi_scaling_ =
         !!(enable_non_client_dpi_scaling_func &&
            enable_non_client_dpi_scaling_func(hwnd()));
@@ -2960,9 +2959,9 @@ LRESULT HWNDMessageHandler::HandlePointerEventTypeTouch(UINT message,
   UINT32 pointer_id = GET_POINTERID_WPARAM(w_param);
   using GetPointerTouchInfoFn = BOOL(WINAPI*)(UINT32, POINTER_TOUCH_INFO*);
   POINTER_TOUCH_INFO pointer_touch_info;
-  static GetPointerTouchInfoFn get_pointer_touch_info =
-      reinterpret_cast<GetPointerTouchInfoFn>(GetProcAddress(
-          GetModuleHandleA("user32.dll"), "GetPointerTouchInfo"));
+  static const auto get_pointer_touch_info =
+      reinterpret_cast<GetPointerTouchInfoFn>(
+          base::win::GetUser32FunctionPointer("GetPointerTouchInfo"));
   if (!get_pointer_touch_info ||
       !get_pointer_touch_info(pointer_id, &pointer_touch_info)) {
     SetMsgHandled(FALSE);
@@ -3060,9 +3059,9 @@ LRESULT HWNDMessageHandler::HandlePointerEventTypePen(UINT message,
   UINT32 pointer_id = GET_POINTERID_WPARAM(w_param);
   using GetPointerPenInfoFn = BOOL(WINAPI*)(UINT32, POINTER_PEN_INFO*);
   POINTER_PEN_INFO pointer_pen_info;
-  static GetPointerPenInfoFn get_pointer_pen_info =
+  static const auto get_pointer_pen_info =
       reinterpret_cast<GetPointerPenInfoFn>(
-          GetProcAddress(GetModuleHandleA("user32.dll"), "GetPointerPenInfo"));
+          base::win::GetUser32FunctionPointer("GetPointerPenInfo"));
   if (!get_pointer_pen_info ||
       !get_pointer_pen_info(pointer_id, &pointer_pen_info)) {
     SetMsgHandled(FALSE);
@@ -3080,13 +3079,12 @@ LRESULT HWNDMessageHandler::HandlePointerEventTypePen(UINT message,
   // window, so use the weak ptr to check if destruction occured or not.
   base::WeakPtr<HWNDMessageHandler> ref(msg_handler_weak_factory_.GetWeakPtr());
   if (event) {
-    if (event->IsTouchEvent()) {
+    if (event->IsTouchEvent())
       delegate_->HandleTouchEvent(event->AsTouchEvent());
-    } else if (event->IsMouseEvent()) {
+    else if (event->IsMouseEvent())
       delegate_->HandleMouseEvent(event->AsMouseEvent());
-    } else {
+    else
       NOTREACHED();
-    }
     last_touch_or_pen_message_time_ = ::GetMessageTime();
   }
 

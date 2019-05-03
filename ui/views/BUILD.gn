@@ -582,7 +582,12 @@ jumbo_component("views") {
       "oleacc.lib",
       "uiautomationcore.lib",
     ]
-    ldflags = [ "/DELAYLOAD:user32.dll" ]
+    ldflags = [
+      "/DELAYLOAD:dwmapi.dll",
+      "/DELAYLOAD:imm32.dll",
+      "/DELAYLOAD:oleacc.dll",
+      "/DELAYLOAD:user32.dll",
+    ]
     deps += [
       "//third_party/iaccessible2",
       "//third_party/wtl",

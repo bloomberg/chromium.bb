@@ -99,16 +99,19 @@ POWER_PLATFORM_ROLE GetPlatformRole() {
 // Windows versions GetProcAddress will return null and report failure so that
 // callers can fall back on the deprecated SetProcessDPIAware.
 bool SetProcessDpiAwarenessWrapper(PROCESS_DPI_AWARENESS value) {
-  decltype(&::SetProcessDpiAwareness) set_process_dpi_awareness_func =
-      reinterpret_cast<decltype(&::SetProcessDpiAwareness)>(GetProcAddress(
-          GetModuleHandle(L"user32.dll"), "SetProcessDpiAwarenessInternal"));
+  if (!IsUser32AndGdi32Available())
+    return false;
+
+  static const auto set_process_dpi_awareness_func =
+      reinterpret_cast<decltype(&::SetProcessDpiAwareness)>(
+          GetUser32FunctionPointer("SetProcessDpiAwarenessInternal"));
   if (set_process_dpi_awareness_func) {
     HRESULT hr = set_process_dpi_awareness_func(value);
     if (SUCCEEDED(hr))
       return true;
     DLOG_IF(ERROR, hr == E_ACCESSDENIED)
-        << "Access denied error from SetProcessDpiAwarenessInternal. Function "
-           "called twice, or manifest was used.";
+        << "Access denied error from SetProcessDpiAwarenessInternal. "
+           "Function called twice, or manifest was used.";
     NOTREACHED()
         << "SetProcessDpiAwarenessInternal failed with unexpected error: "
         << hr;
@@ -127,11 +130,12 @@ bool SetProcessDpiAwarenessWrapper(PROCESS_DPI_AWARENESS value) {
 // available (i.e., prior to Windows 10 1703) or fails, returns false.
 // https://docs.microsoft.com/en-us/windows/desktop/hidpi/dpi-awareness-context
 bool EnablePerMonitorV2() {
-  decltype(
-      &::SetProcessDpiAwarenessContext) set_process_dpi_awareness_context_func =
+  if (!IsUser32AndGdi32Available())
+    return false;
+
+  static const auto set_process_dpi_awareness_context_func =
       reinterpret_cast<decltype(&::SetProcessDpiAwarenessContext)>(
-          ::GetProcAddress(::GetModuleHandle(L"user32.dll"),
-                           "SetProcessDpiAwarenessContext"));
+          GetUser32FunctionPointer("SetProcessDpiAwarenessContext"));
   if (set_process_dpi_awareness_context_func) {
     return set_process_dpi_awareness_context_func(
         DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
@@ -172,6 +176,15 @@ bool* GetRegisteredWithManagementStateStorage() {
   }();
 
   return &state;
+}
+
+NativeLibrary PinUser32Internal(NativeLibraryLoadError* error) {
+  static NativeLibraryLoadError load_error;
+  static const NativeLibrary user32_module =
+      PinSystemLibrary(FILE_PATH_LITERAL("user32.dll"), &load_error);
+  if (!user32_module && error)
+    error->code = load_error.code;
+  return user32_module;
 }
 
 }  // namespace
@@ -273,11 +286,8 @@ bool IsKeyboardPresentOnSlate(std::string* reason, HWND hwnd) {
   //    if we find ACPI\* or HID\VID* keyboards.
 
   typedef BOOL (WINAPI* GetAutoRotationState)(PAR_STATE state);
-
-  GetAutoRotationState get_rotation_state =
-      reinterpret_cast<GetAutoRotationState>(::GetProcAddress(
-          GetModuleHandle(L"user32.dll"), "GetAutoRotationState"));
-
+  static const auto get_rotation_state = reinterpret_cast<GetAutoRotationState>(
+      GetUser32FunctionPointer("GetAutoRotationState"));
   if (get_rotation_state) {
     AR_STATE auto_rotation_state = AR_ENABLED;
     get_rotation_state(&auto_rotation_state);
@@ -287,8 +297,8 @@ bool IsKeyboardPresentOnSlate(std::string* reason, HWND hwnd) {
       // the current configuration, then we can assume that this is a desktop
       // or a traditional laptop.
       if (reason) {
-        *reason += (auto_rotation_state & AR_NOSENSOR) ? "AR_NOSENSOR\n" :
-                                                         "AR_NOT_SUPPORTED\n";
+        *reason += (auto_rotation_state & AR_NOSENSOR) ? "AR_NOSENSOR\n"
+                                                       : "AR_NOT_SUPPORTED\n";
         result = true;
       } else {
         return true;
@@ -552,10 +562,9 @@ bool IsDeviceUsedAsATablet(std::string* reason) {
   // See
   // https://msdn.microsoft.com/en-us/library/windows/desktop/dn629263(v=vs.85).aspx
   typedef decltype(GetAutoRotationState)* GetAutoRotationStateType;
-  GetAutoRotationStateType get_auto_rotation_state_func =
-      reinterpret_cast<GetAutoRotationStateType>(GetProcAddress(
-          GetModuleHandle(L"user32.dll"), "GetAutoRotationState"));
-
+  static const auto get_auto_rotation_state_func =
+      reinterpret_cast<GetAutoRotationStateType>(
+          GetUser32FunctionPointer("GetAutoRotationState"));
   if (get_auto_rotation_state_func) {
     AR_STATE rotation_state = AR_ENABLED;
     if (get_auto_rotation_state_func(&rotation_state) &&
@@ -703,13 +712,16 @@ bool IsProcessPerMonitorDpiAware() {
 }
 
 void EnableHighDPISupport() {
+  if (!IsUser32AndGdi32Available())
+    return;
+
   // Enable per-monitor V2 if it is available (Win10 1703 or later).
   if (EnablePerMonitorV2())
     return;
 
-  // Fall back to per-monitor DPI for older versions of Win10 instead of Win8.1
-  // since Win8.1 does not have EnableChildWindowDpiMessage, necessary for
-  // correct non-client area scaling across monitors.
+  // Fall back to per-monitor DPI for older versions of Win10 instead of
+  // Win8.1 since Win8.1 does not have EnableChildWindowDpiMessage,
+  // necessary for correct non-client area scaling across monitors.
   PROCESS_DPI_AWARENESS process_dpi_awareness =
       GetVersion() >= Version::WIN10 ? PROCESS_PER_MONITOR_DPI_AWARE
                                      : PROCESS_SYSTEM_DPI_AWARE;
@@ -734,6 +746,18 @@ string16 String16FromGUID(REFGUID rguid) {
       rguid.Data4[3], rguid.Data4[4], rguid.Data4[5], rguid.Data4[6],
       rguid.Data4[7])));
   return string16(as_u16cstr(guid_string), kGuidStringCharacters - 1);
+}
+
+bool PinUser32(NativeLibraryLoadError* error) {
+  return PinUser32Internal(error) != nullptr;
+}
+
+void* GetUser32FunctionPointer(const char* function_name,
+                               NativeLibraryLoadError* error) {
+  NativeLibrary user32_module = PinUser32Internal(error);
+  if (user32_module)
+    return GetFunctionPointerFromNativeLibrary(user32_module, function_name);
+  return nullptr;
 }
 
 ScopedDomainStateForTesting::ScopedDomainStateForTesting(bool state)

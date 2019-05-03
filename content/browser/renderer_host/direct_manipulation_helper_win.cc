@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/win/window_event_target.h"
@@ -234,8 +235,8 @@ void DirectManipulationHelper::OnPointerHitTest(WPARAM w_param) {
   using GetPointerTypeFn = BOOL(WINAPI*)(UINT32, POINTER_INPUT_TYPE*);
   UINT32 pointer_id = GET_POINTERID_WPARAM(w_param);
   POINTER_INPUT_TYPE pointer_type;
-  static GetPointerTypeFn get_pointer_type = reinterpret_cast<GetPointerTypeFn>(
-      GetProcAddress(GetModuleHandleA("user32.dll"), "GetPointerType"));
+  static const auto get_pointer_type = reinterpret_cast<GetPointerTypeFn>(
+      base::win::GetUser32FunctionPointer("GetPointerType"));
   if (get_pointer_type && get_pointer_type(pointer_id, &pointer_type) &&
       pointer_type == PT_TOUCHPAD) {
     HRESULT hr = viewport_->SetContact(pointer_id);

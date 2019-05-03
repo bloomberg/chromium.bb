@@ -46,6 +46,7 @@
 #include <windows.h>
 
 #include "base/win/process_startup_helper.h"
+#include "base/win/win_util.h"
 #include "ui/base/win/atl_module.h"
 #endif
 
@@ -132,9 +133,11 @@ void CommonSubprocessInit() {
   // HACK: Let Windows know that we have started.  This is needed to suppress
   // the IDC_APPSTARTING cursor from being displayed for a prolonged period
   // while a subprocess is starting.
-  PostThreadMessage(GetCurrentThreadId(), WM_NULL, 0, 0);
-  MSG msg;
-  PeekMessage(&msg, NULL, 0, 0, PM_REMOVE);
+  if (base::win::IsUser32AndGdi32Available()) {
+    PostThreadMessage(GetCurrentThreadId(), WM_NULL, 0, 0);
+    MSG msg;
+    PeekMessage(&msg, NULL, 0, 0, PM_REMOVE);
+  }
 #endif
 
 #if !defined(OFFICIAL_BUILD) && defined(OS_WIN)

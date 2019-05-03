@@ -23,6 +23,7 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
+#include "base/win/win_util.h"
 #elif defined(OS_MACOSX)
 #include <CoreFoundation/CoreFoundation.h>
 #endif
@@ -707,10 +708,11 @@ bool FilePath::ReadFromPickle(PickleIterator* iter) {
 
 int FilePath::CompareIgnoreCase(StringPieceType string1,
                                 StringPieceType string2) {
-  static decltype(::CharUpperW)* const char_upper_api =
-      reinterpret_cast<decltype(::CharUpperW)*>(
-          ::GetProcAddress(::GetModuleHandle(L"user32.dll"), "CharUpperW"));
-  CHECK(char_upper_api);
+  // CharUpperW within user32 is used here because it will provide unicode
+  // conversions regardless of locale. The STL alternative, towupper, has a
+  // locale consideration that prevents it from converting all characters by
+  // default.
+  CHECK(win::IsUser32AndGdi32Available());
   // Perform character-wise upper case comparison rather than using the
   // fully Unicode-aware CompareString(). For details see:
   // http://blogs.msdn.com/michkap/archive/2005/10/17/481600.aspx
@@ -720,9 +722,9 @@ int FilePath::CompareIgnoreCase(StringPieceType string1,
   StringPieceType::const_iterator string2end = string2.end();
   for ( ; i1 != string1end && i2 != string2end; ++i1, ++i2) {
     wchar_t c1 =
-        (wchar_t)LOWORD(char_upper_api((LPWSTR)(DWORD_PTR)MAKELONG(*i1, 0)));
+        (wchar_t)LOWORD(::CharUpperW((LPWSTR)(DWORD_PTR)MAKELONG(*i1, 0)));
     wchar_t c2 =
-        (wchar_t)LOWORD(char_upper_api((LPWSTR)(DWORD_PTR)MAKELONG(*i2, 0)));
+        (wchar_t)LOWORD(::CharUpperW((LPWSTR)(DWORD_PTR)MAKELONG(*i2, 0)));
     if (c1 < c2)
       return -1;
     if (c1 > c2)
