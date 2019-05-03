@@ -134,14 +134,14 @@ Node* FlatTreeTraversal::V0ResolveDistributionStartingAt(
                       : sibling->previousSibling())) {
     if (!IsActiveV0InsertionPoint(*sibling))
       return const_cast<Node*>(sibling);
-    const auto* insertion_point = To<V0InsertionPoint>(sibling);
+    const auto& insertion_point = To<V0InsertionPoint>(*sibling);
     if (Node* found = (direction == kTraversalDirectionForward
-                           ? insertion_point->FirstDistributedNode()
-                           : insertion_point->LastDistributedNode()))
+                           ? insertion_point.FirstDistributedNode()
+                           : insertion_point.LastDistributedNode()))
       return found;
-    DCHECK(IsHTMLShadowElement(*insertion_point) ||
-           (IsHTMLContentElement(*insertion_point) &&
-            !insertion_point->HasChildren()));
+    DCHECK(IsHTMLShadowElement(insertion_point) ||
+           (IsHTMLContentElement(insertion_point) &&
+            !insertion_point.HasChildren()));
   }
   return nullptr;
 }
