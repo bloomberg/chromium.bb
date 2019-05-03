@@ -588,6 +588,7 @@ public class CustomTabActivityTest {
         Assert.assertNotNull(menu.findItem(R.id.find_in_page_id));
         Assert.assertNotNull(menu.findItem(R.id.add_to_homescreen_id));
         Assert.assertNotNull(menu.findItem(R.id.request_desktop_site_row_menu_id));
+        Assert.assertNotNull(menu.findItem(R.id.translate_id));
     }
 
     /**

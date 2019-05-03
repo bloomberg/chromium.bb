@@ -289,7 +289,7 @@ public class AppMenuPropertiesDelegate {
     /**
      * Sets the visibility of the "Translate" menu item.
      */
-    private void prepareTranslateMenuItem(Menu menu, Tab currentTab) {
+    protected void prepareTranslateMenuItem(Menu menu, Tab currentTab) {
         boolean isTranslateVisible = isTranslateMenuItemVisible(currentTab);
         if (ChromeFeatureList.isInitialized()
                 && ChromeFeatureList.isEnabled(

@@ -160,6 +160,8 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
                 bookmarkItem.setVisible(false);
             }
 
+            prepareTranslateMenuItem(menu, currentTab);
+
             MenuItem openInChromeItem = menu.findItem(R.id.open_in_browser_id);
             if (openInChromeItemVisible) {
                 String title = mIsIncognito ?
