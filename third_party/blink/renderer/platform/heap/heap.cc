@@ -388,14 +388,10 @@ void ThreadHeap::Compact() {
 
   // Compact the hash table backing store arena first, it usually has
   // higher fragmentation and is larger.
-  //
-  // TODO: implement bail out wrt any overall deadline, not compacting
-  // the remaining arenas if the time budget has been exceeded.
-  Compaction()->StartThreadCompaction();
   for (int i = BlinkGC::kHashTableArenaIndex; i >= BlinkGC::kVector1ArenaIndex;
        --i)
     static_cast<NormalPageArena*>(arenas_[i])->SweepAndCompact();
-  Compaction()->FinishThreadCompaction();
+  Compaction()->Finish();
 }
 
 void ThreadHeap::PrepareForSweep() {

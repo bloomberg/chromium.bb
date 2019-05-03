@@ -88,17 +88,17 @@ class PLATFORM_EXPORT HeapCompact final {
                                     MovingObjectCallback,
                                     void* callback_data);
 
-  // Thread signalling that a compaction pass is starting or has
-  // completed.
-  //
-  // A thread participating in a heap GC will wait on the completion
-  // of compaction across all threads. No thread can be allowed to
-  // potentially access another thread's heap arenas while they're
-  // still being compacted.
-  void StartThreadCompaction();
-  void FinishThreadCompaction();
+  // Slots that are not contained within live objects are filtered. This can
+  // happen when the write barrier for in-payload objects triggers but the outer
+  // backing store does not survive the marking phase because all its referents
+  // die before being reached by the marker.
+  void FilterNonLiveSlots();
 
-  void CancelCompaction();
+  // Finishes compaction and clears internal state.
+  void Finish();
+
+  // Cancels compaction after slots may have been recorded already.
+  void Cancel();
 
   // Perform any relocation post-processing after having completed compacting
   // the given arena. The number of pages that were freed together with the

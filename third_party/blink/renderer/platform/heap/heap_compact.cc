@@ -43,27 +43,31 @@ class HeapCompact::MovableObjectFixups final {
     relocatable_pages_.insert(page);
   }
 
-  void Add(MovableReference* slot) {
+  void AddOrFilter(MovableReference* slot) {
     MovableReference value = *slot;
     CHECK(value);
 
     // All slots and values are part of Oilpan's heap.
+    // - Slots may be contained within dead objects if e.g. the write barrier
+    //   registered the slot while the out backing itself has not been marked
+    //   live in time. Slots in dead objects are filtered below.
+    // - Values may only be contained in or point to live objects.
+
+    // Slots handling.
     BasePage* const slot_page =
         heap_->LookupPageForAddress(reinterpret_cast<Address>(slot));
     CHECK(slot_page);
-    if (slot_page->IsLargeObjectPage()) {
-      CHECK(
-          static_cast<LargeObjectPage*>(slot_page)->ObjectHeader()->IsMarked());
-    } else {
-      HeapObjectHeader* const header =
-          static_cast<NormalPage*>(slot_page)->FindHeaderFromAddress(
-              reinterpret_cast<Address>(slot));
-      CHECK(header);
-      CHECK(slot_page->Arena()->ArenaIndex() ==
-                BlinkGC::kEagerSweepArenaIndex ||
-            header->IsMarked());
-    }
+    HeapObjectHeader* const header =
+        slot_page->IsLargeObjectPage()
+            ? static_cast<LargeObjectPage*>(slot_page)->ObjectHeader()
+            : static_cast<NormalPage*>(slot_page)->FindHeaderFromAddress(
+                  reinterpret_cast<Address>(slot));
+    CHECK(header);
+    // Filter the slot since the object that contains the slot is dead.
+    if (!header->IsMarked())
+      return;
 
+    // Value handling.
     BasePage* const value_page =
         heap_->LookupPageForAddress(reinterpret_cast<Address>(value));
     CHECK(value_page);
@@ -80,7 +84,6 @@ class HeapCompact::MovableObjectFixups final {
     // have already been processed. |value| usually points to a separate
     // backing store but can also point to inlined storage which is why the
     // dynamic header lookup is required.
-    CHECK(value_page->Arena()->ArenaIndex() != BlinkGC::kEagerSweepArenaIndex);
     HeapObjectHeader* const value_header =
         static_cast<NormalPage*>(value_page)
             ->FindHeaderFromAddress(reinterpret_cast<Address>(value));
@@ -95,9 +98,6 @@ class HeapCompact::MovableObjectFixups final {
       CHECK_EQ(slot, fixup_it->second);
       return;
     }
-
-    // References must always point to live objects at this point.
-    // Slots must reside in live objects
 
     // Add regular fixup.
     fixups_.insert({value, slot});
@@ -479,22 +479,21 @@ void HeapCompact::Relocate(Address from, Address to) {
   Fixups().Relocate(from, to);
 }
 
-void HeapCompact::StartThreadCompaction() {
+void HeapCompact::FilterNonLiveSlots() {
   if (!do_compact_)
     return;
 
-  // The mapping between the slots and the backing stores are created
   last_fixup_count_for_testing_ = 0;
   for (auto** slot : traced_slots_) {
     if (*slot) {
-      Fixups().Add(slot);
+      Fixups().AddOrFilter(slot);
       last_fixup_count_for_testing_++;
     }
   }
   traced_slots_.clear();
 }
 
-void HeapCompact::FinishThreadCompaction() {
+void HeapCompact::Finish() {
   if (!do_compact_)
     return;
 
@@ -506,7 +505,7 @@ void HeapCompact::FinishThreadCompaction() {
   do_compact_ = false;
 }
 
-void HeapCompact::CancelCompaction() {
+void HeapCompact::Cancel() {
   if (!do_compact_)
     return;
 

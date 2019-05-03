@@ -1888,5 +1888,72 @@ TEST(IncrementalMarkingTest, IncrementalMarkingShrinkingBackingCompaction) {
   driver.FinishGC();
 }
 
+TEST(IncrementalMarkingTest,
+     InPayloadWriteBarrierRegistersInvalidSlotForCompaction) {
+  // Regression test: https://crbug.com/918064
+
+  using Nested = HeapVector<HeapVector<Member<Object>>>;
+  IncrementalMarkingTestDriver driver(ThreadState::Current());
+  ThreadState::Current()->Heap().Compaction()->ScheduleCompactionGCForTesting(
+      true);
+  // Allocate a vector and reserve a buffer to avoid triggering the write
+  // barrier during incremental marking.
+  Nested* nested = MakeGarbageCollected<Nested>();
+  nested->ReserveCapacity(32);
+  driver.Start();
+  // Initialize the inner vector, triggering tracing and slots registration.
+  // This could be an object using DISALLOW_NEW() but HeapVector is easier to
+  // test.
+  nested->emplace_back(1);
+  // Use the inner vector as otherwise the slot would not be registered due to
+  // not having a backing store itself.
+  nested->at(0).emplace_back(MakeGarbageCollected<Object>());
+  driver.FinishSteps();
+  // GCs here are without stack. This is just to show that we don't want this
+  // object marked.
+  CHECK(!HeapObjectHeader::FromPayload(nested)->IsMarked());
+  nested = nullptr;
+  driver.FinishGC();
+}
+
+namespace {
+
+class EagerlySweptWithVectorWithInlineStorage
+    : public GarbageCollected<EagerlySweptWithVectorWithInlineStorage> {
+  EAGERLY_FINALIZE();
+
+ public:
+  virtual void Trace(Visitor* visitor) { visitor->Trace(nested_); }
+
+  HeapVector<HeapVector<Member<Object>>, 2>& nested() { return nested_; }
+
+ private:
+  HeapVector<HeapVector<Member<Object>>, 2> nested_;
+};
+
+TEST(IncrementalMarkingTest,
+     InPayloadWriteBarrierInEagerlyFinalizedRegistersInvalidSlotForCompaction) {
+  // Regression test: https://crbug.com/918064
+  //
+  // Same as InPayloadWriteBarrierRegistersInvalidSlotForCompaction with the
+  // addition that the object is marked as EAGERLY_FINALIZE(). This requires
+  // that slots filtering happens before any eager sweep phase.
+
+  IncrementalMarkingTestDriver driver(ThreadState::Current());
+  ThreadState::Current()->Heap().Compaction()->ScheduleCompactionGCForTesting(
+      true);
+  EagerlySweptWithVectorWithInlineStorage* eagerly =
+      MakeGarbageCollected<EagerlySweptWithVectorWithInlineStorage>();
+  driver.Start();
+  eagerly->nested().emplace_back(1);
+  eagerly->nested().at(0).emplace_back(MakeGarbageCollected<Object>());
+  driver.FinishSteps();
+  CHECK(!HeapObjectHeader::FromPayload(eagerly)->IsMarked());
+  eagerly = nullptr;
+  driver.FinishGC();
+}
+
+}  // namespace
+
 }  // namespace incremental_marking_test
 }  // namespace blink

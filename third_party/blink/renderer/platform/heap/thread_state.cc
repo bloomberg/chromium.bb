@@ -893,6 +893,15 @@ void ThreadState::AtomicPauseEpilogue(BlinkGC::MarkingType marking_type,
   // a dead object gets resurrected.
   InvokePreFinalizers();
 
+  // Slots filtering requires liveness information which is only present before
+  // sweeping any arena.
+  {
+    ThreadHeapStatsCollector::Scope stats_scope(
+        Heap().stats_collector(),
+        ThreadHeapStatsCollector::kAtomicPhaseCompaction);
+    Heap().Compaction()->FilterNonLiveSlots();
+  }
+
   EagerSweep();
 
   // Any sweep compaction must happen after pre-finalizers and eager
@@ -1624,7 +1633,7 @@ void ThreadState::AtomicPausePrologue(BlinkGC::StackState stack_state,
   // Compaction needs to be canceled when incremental marking ends with a
   // conservative GC.
   if (stack_state == BlinkGC::kHeapPointersOnStack)
-    Heap().Compaction()->CancelCompaction();
+    Heap().Compaction()->Cancel();
 
   if (IsMarkingInProgress()) {
     // Incremental marking is already in progress. Only update the state
