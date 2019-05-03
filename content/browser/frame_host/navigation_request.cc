@@ -1319,6 +1319,8 @@ void NavigationRequest::OnResponseStarted(
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
                                "OnResponseStarted");
   state_ = RESPONSE_STARTED;
+  response_ = response;
+  ssl_info_ = response->head.ssl_info;
 
   // Check if the response should be sent to a renderer.
   response_should_be_rendered_ =
@@ -1430,11 +1432,8 @@ void NavigationRequest::OnResponseStarted(
           common_params_.previews_state, navigation_handle_.get(),
           response->head.headers.get());
 
-  // Store the response and the URLLoaderClient endpoints until checks have been
-  // processed.
-  response_ = response;
+  // Store the URLLoaderClient endpoints until checks have been processed.
   url_loader_client_endpoints_ = std::move(url_loader_client_endpoints);
-  ssl_info_ = response->head.ssl_info;
 
   subresource_loader_params_ = std::move(subresource_loader_params);
 
