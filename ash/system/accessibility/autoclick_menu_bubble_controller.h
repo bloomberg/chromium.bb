@@ -5,6 +5,7 @@
 #ifndef ASH_SYSTEM_ACCESSIBILITY_AUTOCLICK_MENU_BUBBLE_CONTROLLER_H_
 #define ASH_SYSTEM_ACCESSIBILITY_AUTOCLICK_MENU_BUBBLE_CONTROLLER_H_
 
+#include "ash/public/cpp/ash_constants.h"
 #include "ash/system/accessibility/autoclick_menu_view.h"
 #include "ash/system/tray/tray_bubble_view.h"
 
@@ -44,6 +45,7 @@ class AutoclickMenuBubbleController : public TrayBubbleView::Delegate {
   // Owned by views hierarchy.
   AutoclickMenuBubbleView* bubble_view_ = nullptr;
   AutoclickMenuView* menu_view_ = nullptr;
+  mojom::AutoclickMenuPosition position_ = kDefaultAutoclickMenuPosition;
 
   views::Widget* bubble_widget_ = nullptr;
 
