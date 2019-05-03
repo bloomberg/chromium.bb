@@ -178,11 +178,7 @@ bool ExtractTargetURL(const GURL& restore_session_url, GURL* target_url) {
   if (success) {
     std::string encoded_target_url = restore_session_url.ref().substr(
         strlen(kRestoreSessionTargetUrlHashPrefix));
-    net::UnescapeRule::Type unescape_rules =
-        net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS |
-        net::UnescapeRule::SPACES | net::UnescapeRule::PATH_SEPARATORS;
-    *target_url =
-        GURL(net::UnescapeURLComponent(encoded_target_url, unescape_rules));
+    *target_url = GURL(net::UnescapeBinaryURLComponent(encoded_target_url));
   }
 
   return success;

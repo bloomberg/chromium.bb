@@ -115,10 +115,7 @@ class WKBasedNavigationManagerTest : public PlatformTest {
 
   // Returns the value of the "#session=" URL hash component from |url|.
   static std::string ExtractRestoredSession(const GURL& url) {
-    std::string decoded = net::UnescapeURLComponent(
-        url.ref(), net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS |
-                       net::UnescapeRule::SPACES |
-                       net::UnescapeRule::PATH_SEPARATORS);
+    std::string decoded = net::UnescapeBinaryURLComponent(url.ref());
     return decoded.substr(
         strlen(wk_navigation_util::kRestoreSessionSessionHashPrefix));
   }

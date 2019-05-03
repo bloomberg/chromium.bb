@@ -48,14 +48,13 @@ base::JSONReader::ValueWithError ExtractSessionDict(GURL restore_session_url) {
   NSString* fragment = net::NSURLWithGURL(restore_session_url).fragment;
   NSString* encoded_session =
       [fragment substringFromIndex:strlen(kRestoreSessionSessionHashPrefix)];
-  std::string session_json = net::UnescapeURLComponent(
-      base::SysNSStringToUTF8(encoded_session),
-      net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
-
+  std::string session_json =
+      net::UnescapeBinaryURLComponent(base::SysNSStringToUTF8(encoded_session));
   return base::JSONReader::ReadAndReturnValueWithError(session_json,
                                                        base::JSON_PARSE_RFC);
 }
-}
+
+}  // namespace
 
 typedef PlatformTest WKNavigationUtilTest;
 
@@ -84,11 +83,8 @@ TEST_F(WKNavigationUtilTest, CreateRestoreSessionUrl) {
   ASSERT_EQ(0, first_index);
   ASSERT_TRUE(IsRestoreSessionUrl(restore_session_url));
 
-  net::UnescapeRule::Type unescape_rules =
-      net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS |
-      net::UnescapeRule::SPACES | net::UnescapeRule::PATH_SEPARATORS;
   std::string session_json =
-      net::UnescapeURLComponent(restore_session_url.ref(), unescape_rules);
+      net::UnescapeBinaryURLComponent(restore_session_url.ref());
 
   EXPECT_EQ("session={\"offset\":-2,\"titles\":[\"Test Website 0\",\"\",\"\"],"
             "\"urls\":[\"http://www.0.com/\",\"http://www.1.com/\","
@@ -163,8 +159,8 @@ TEST_F(WKNavigationUtilTest, CreateRestoreSessionUrlForExtraLargeForwardList) {
   ASSERT_TRUE(urls_value);
   ASSERT_TRUE(urls_value->is_list());
   ASSERT_EQ(static_cast<size_t>(kMaxSessionSize), urls_value->GetList().size());
-  ASSERT_EQ("http:%2F%2Fwww.0.com%2F", urls_value->GetList()[0].GetString());
-  ASSERT_EQ("http:%2F%2Fwww.74.com%2F",
+  ASSERT_EQ("http://www.0.com/", urls_value->GetList()[0].GetString());
+  ASSERT_EQ("http://www.74.com/",
             urls_value->GetList()[kMaxSessionSize - 1].GetString());
 
   // Verify the offset is correct.
@@ -208,8 +204,8 @@ TEST_F(WKNavigationUtilTest, CreateRestoreSessionUrlForExtraLargeBackList) {
   ASSERT_TRUE(urls_value);
   ASSERT_TRUE(urls_value->is_list());
   ASSERT_EQ(static_cast<size_t>(kMaxSessionSize), urls_value->GetList().size());
-  ASSERT_EQ("http:%2F%2Fwww.150.com%2F", urls_value->GetList()[0].GetString());
-  ASSERT_EQ("http:%2F%2Fwww.224.com%2F",
+  ASSERT_EQ("http://www.150.com/", urls_value->GetList()[0].GetString());
+  ASSERT_EQ("http://www.224.com/",
             urls_value->GetList()[kMaxSessionSize - 1].GetString());
 
   // Verify the offset is correct.
@@ -253,8 +249,8 @@ TEST_F(WKNavigationUtilTest,
   ASSERT_TRUE(urls_value);
   ASSERT_TRUE(urls_value->is_list());
   ASSERT_EQ(static_cast<size_t>(kMaxSessionSize), urls_value->GetList().size());
-  ASSERT_EQ("http:%2F%2Fwww.38.com%2F", urls_value->GetList()[0].GetString());
-  ASSERT_EQ("http:%2F%2Fwww.112.com%2F",
+  ASSERT_EQ("http://www.38.com/", urls_value->GetList()[0].GetString());
+  ASSERT_EQ("http://www.112.com/",
             urls_value->GetList()[kMaxSessionSize - 1].GetString());
 
   // Verify the offset is correct.
