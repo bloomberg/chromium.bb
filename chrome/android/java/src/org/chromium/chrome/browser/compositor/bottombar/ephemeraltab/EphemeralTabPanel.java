@@ -9,13 +9,12 @@ import android.graphics.RectF;
 import android.view.MotionEvent;
 
 import org.chromium.base.SysUtils;
+import org.chromium.base.TimeUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentDelegate;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
-import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
-import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContent;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager.PanelPriority;
@@ -44,8 +43,17 @@ public class EphemeralTabPanel extends OverlayPanel {
     /** The compositor layer used for drawing the panel. */
     private EphemeralTabSceneLayer mSceneLayer;
 
+    /** Remembers whether the panel was opened to the peeking state. */
+    private boolean mDidRecordFirstPeek;
+
+    /** The timestamp when the panel entered the peeking state for the first time. */
+    private long mPanelPeekedNanoseconds;
+
     /** Remembers whether the panel was opened beyond the peeking state. */
-    private boolean mWasPanelOpened;
+    private boolean mDidRecordFirstOpen;
+
+    /** The timestamp when the panel entered the opened state for the first time. */
+    private long mPanelOpenedNanoseconds;
 
     /** True if the Tab from which the panel is opened is in incognito mode. */
     private boolean mIsIncognito;
@@ -172,13 +180,12 @@ public class EphemeralTabPanel extends OverlayPanel {
     @Override
     public void setPanelState(@PanelState int toState, @StateChangeReason int reason) {
         super.setPanelState(toState, reason);
-        if (toState == PanelState.CLOSED) {
-            RecordHistogram.recordBooleanHistogram("EphemeralTab.Ctr", mWasPanelOpened);
-            RecordHistogram.recordEnumeratedHistogram(
-                    "EphemeralTab.CloseReason", reason, StateChangeReason.MAX_VALUE + 1);
-            mWasPanelOpened = false;
+        if (toState == PanelState.PEEKED) {
+            recordMetricsForPeeked();
+        } else if (toState == PanelState.CLOSED) {
+            recordMetricsForClosed(reason);
         } else if (toState == PanelState.EXPANDED || toState == PanelState.MAXIMIZED) {
-            mWasPanelOpened = true;
+            recordMetricsForOpened();
         }
     }
 
@@ -305,6 +312,72 @@ public class EphemeralTabPanel extends OverlayPanel {
         if (mEphemeralTabBarControl != null) {
             mEphemeralTabBarControl.destroy();
             mEphemeralTabBarControl = null;
+        }
+    }
+
+    //--------
+    // METRICS
+    //--------
+    /** Records metrics for the peeked panel state. */
+    private void recordMetricsForPeeked() {
+        startPeekTimer();
+        // Could be returning to Peek from Open.
+        finishOpenTimer();
+    }
+
+    /** Records metrics when the panel has been fully opened. */
+    private void recordMetricsForOpened() {
+        startOpenTimer();
+        finishPeekTimer();
+    }
+
+    /** Records metrics when the panel has been closed. */
+    private void recordMetricsForClosed(@StateChangeReason int stateChangeReason) {
+        finishPeekTimer();
+        finishOpenTimer();
+        RecordHistogram.recordBooleanHistogram("EphemeralTab.Ctr", mDidRecordFirstOpen);
+        RecordHistogram.recordEnumeratedHistogram(
+                "EphemeralTab.CloseReason", stateChangeReason, StateChangeReason.MAX_VALUE + 1);
+        resetTimers();
+    }
+
+    /** Resets the metrics used by the timers. */
+    private void resetTimers() {
+        mDidRecordFirstPeek = false;
+        mPanelPeekedNanoseconds = 0;
+        mDidRecordFirstOpen = false;
+        mPanelOpenedNanoseconds = 0;
+    }
+
+    /** Starts timing the peek state if it's not already been started. */
+    private void startPeekTimer() {
+        if (mPanelPeekedNanoseconds == 0) mPanelPeekedNanoseconds = System.nanoTime();
+    }
+
+    /** Finishes timing metrics for the first peek state, unless that has already been done. */
+    private void finishPeekTimer() {
+        if (!mDidRecordFirstPeek && mPanelPeekedNanoseconds != 0) {
+            mDidRecordFirstPeek = true;
+            int durationPeeking = (int) ((System.nanoTime() - mPanelPeekedNanoseconds)
+                    / TimeUtils.NANOSECONDS_PER_MILLISECOND);
+            RecordHistogram.recordMediumTimesHistogram(
+                    "EphemeralTab.DurationPeeked", durationPeeking);
+        }
+    }
+
+    /** Starts timing the open state if it's not already been started. */
+    private void startOpenTimer() {
+        if (mPanelOpenedNanoseconds == 0) mPanelOpenedNanoseconds = System.nanoTime();
+    }
+
+    /** Finishes timing metrics for the first open state, unless that has already been done. */
+    private void finishOpenTimer() {
+        if (!mDidRecordFirstOpen && mPanelOpenedNanoseconds != 0) {
+            mDidRecordFirstOpen = true;
+            int durationOpened = (int) ((System.nanoTime() - mPanelOpenedNanoseconds)
+                    / TimeUtils.NANOSECONDS_PER_MILLISECOND);
+            RecordHistogram.recordMediumTimesHistogram(
+                    "EphemeralTab.DurationOpened", durationOpened);
         }
     }
 }
