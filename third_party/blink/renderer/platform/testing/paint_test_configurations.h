@@ -15,19 +15,22 @@ enum {
   kBlinkGenPropertyTrees = 1 << 0,
   kCompositeAfterPaint = 1 << 1,
   kUnderInvalidationChecking = 1 << 2,
+  kFastBorderRadius = 1 << 3,
 };
 
 class PaintTestConfigurations
     : public testing::WithParamInterface<unsigned>,
       private ScopedBlinkGenPropertyTreesForTest,
       private ScopedCompositeAfterPaintForTest,
-      private ScopedPaintUnderInvalidationCheckingForTest {
+      private ScopedPaintUnderInvalidationCheckingForTest,
+      private ScopedFastBorderRadiusForTest {
  public:
   PaintTestConfigurations()
       : ScopedBlinkGenPropertyTreesForTest(GetParam() & kBlinkGenPropertyTrees),
         ScopedCompositeAfterPaintForTest(GetParam() & kCompositeAfterPaint),
-        ScopedPaintUnderInvalidationCheckingForTest(
-            GetParam() & kUnderInvalidationChecking) {}
+        ScopedPaintUnderInvalidationCheckingForTest(GetParam() &
+                                                    kUnderInvalidationChecking),
+        ScopedFastBorderRadiusForTest(GetParam() & kFastBorderRadius) {}
   ~PaintTestConfigurations() {
     // Must destruct all objects before toggling back feature flags.
     WebHeap::CollectAllGarbageForTesting();
@@ -45,11 +48,12 @@ class PaintTestConfigurations
       All, test_class,                           \
       ::testing::Values(kBlinkGenPropertyTrees | kCompositeAfterPaint))
 
-#define INSTANTIATE_LAYER_LIST_TEST_SUITE_P(test_class) \
-  INSTANTIATE_TEST_SUITE_P(                             \
-      All, test_class,                                  \
-      ::testing::Values(kBlinkGenPropertyTrees,         \
-                        kBlinkGenPropertyTrees | kCompositeAfterPaint))
+#define INSTANTIATE_LAYER_LIST_TEST_SUITE_P(test_class)                \
+  INSTANTIATE_TEST_SUITE_P(                                            \
+      All, test_class,                                                 \
+      ::testing::Values(kBlinkGenPropertyTrees,                        \
+                        kBlinkGenPropertyTrees | kCompositeAfterPaint, \
+                        kBlinkGenPropertyTrees | kFastBorderRadius))
 
 }  // namespace blink
 

@@ -761,20 +761,19 @@ static bool IsNodeOnAncestorChain(const ClipPaintPropertyNode& find,
   return false;
 }
 
-base::Optional<PropertyTreeManager::CcEffectType>
-PropertyTreeManager::NeedsSyntheticEffect(
+PropertyTreeManager::CcEffectType PropertyTreeManager::SyntheticEffectType(
     const ClipPaintPropertyNode& clip) const {
+  unsigned effect_type = CcEffectType::kEffect;
   if (clip.ClipRect().IsRounded() || clip.ClipPath())
-    return CcEffectType::kSyntheticForNonTrivialClip;
+    effect_type |= CcEffectType::kSyntheticForNonTrivialClip;
 
   // Cc requires that a rectangluar clip is 2d-axis-aligned with the render
   // surface to correctly apply the clip.
   if (current_.may_be_2d_axis_misaligned_to_render_surface |
       TransformsMayBe2dAxisMisaligned(clip.LocalTransformSpace(),
                                       current_.Transform()))
-    return CcEffectType::kSyntheticFor2dAxisAlignment;
-
-  return base::nullopt;
+    effect_type |= CcEffectType::kSyntheticFor2dAxisAlignment;
+  return static_cast<CcEffectType>(effect_type);
 }
 
 SkBlendMode PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
@@ -821,8 +820,8 @@ SkBlendMode PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
   Vector<PendingClip> pending_clips;
   for (; target_clip && target_clip != current_.clip;
        target_clip = SafeUnalias(target_clip->Parent())) {
-    if (auto type = NeedsSyntheticEffect(*target_clip))
-      pending_clips.emplace_back(PendingClip{target_clip, *type});
+    if (auto type = SyntheticEffectType(*target_clip))
+      pending_clips.emplace_back(PendingClip{target_clip, type});
   }
 
   if (!target_clip) {
@@ -844,7 +843,7 @@ SkBlendMode PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
     // surface which is axis-aligned with the clip.
     cc::EffectNode& synthetic_effect = *GetEffectTree().Node(
         GetEffectTree().Insert(cc::EffectNode(), current_.effect_id));
-    if (pending_clip.type == CcEffectType::kSyntheticForNonTrivialClip) {
+    if (pending_clip.type & CcEffectType::kSyntheticForNonTrivialClip) {
       synthetic_effect.clip_id = EnsureCompositorClipNode(*pending_clip.clip);
       // For non-trivial clip, isolation_effect.stable_id will be assigned later
       // when the effect is closed. For now the default value INVALID_STABLE_ID
@@ -863,22 +862,22 @@ SkBlendMode PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
     synthetic_effect.transform_id = EnsureCompositorTransformNode(transform);
     synthetic_effect.double_sided = !transform.IsBackfaceHidden();
 
-    if (RuntimeEnabledFeatures::FastBorderRadiusEnabled()) {
-      synthetic_effect.rounded_corner_bounds =
-          gfx::RRectF(pending_clip.clip->ClipRect());
-      synthetic_effect.is_fast_rounded_corner = true;
-    } else {
-      if (pending_clip.type == CcEffectType::kSyntheticForNonTrivialClip) {
+    if (pending_clip.type & CcEffectType::kSyntheticForNonTrivialClip) {
+      if (RuntimeEnabledFeatures::FastBorderRadiusEnabled()) {
+        synthetic_effect.rounded_corner_bounds =
+            gfx::RRectF(pending_clip.clip->ClipRect());
+        synthetic_effect.is_fast_rounded_corner = true;
+      } else {
         synthetic_effect.render_surface_reason =
             pending_clip.clip->ClipRect().IsRounded()
                 ? cc::RenderSurfaceReason::kRoundedCorner
                 : cc::RenderSurfaceReason::kClipPath;
-      } else {
-        synthetic_effect.render_surface_reason =
-            cc::RenderSurfaceReason::kClipAxisAlignment;
       }
-
       pending_synthetic_mask_layers_.insert(synthetic_effect.id);
+    }
+    if (pending_clip.type & CcEffectType::kSyntheticFor2dAxisAlignment) {
+      synthetic_effect.render_surface_reason =
+          cc::RenderSurfaceReason::kClipAxisAlignment;
     }
 
     // Clip and kDstIn do not commute. This shall never be reached because

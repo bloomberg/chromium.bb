@@ -173,31 +173,28 @@ class PropertyTreeManager {
       cc::TransformNode&,
       const TransformPaintPropertyNode&);
 
-  bool IsCurrentCcEffectSynthetic() const {
-    return current_.effect_type != CcEffectType::kEffect;
-  }
+  bool IsCurrentCcEffectSynthetic() const { return current_.effect_type; }
   bool IsCurrentCcEffectSyntheticForNonTrivialClip() const {
-    return current_.effect_type == CcEffectType::kSyntheticForNonTrivialClip;
+    return current_.effect_type & CcEffectType::kSyntheticForNonTrivialClip;
   }
 
   // The type of operation the current cc effect node applies.
-  enum class CcEffectType {
+  enum CcEffectType {
     // The cc effect corresponds to a Blink effect node.
-    kEffect,
+    kEffect = 0,
     // The cc effect is synthetic for a blink clip node that has to be
     // rasterized because the clip is non-trivial.
-    kSyntheticForNonTrivialClip,
+    kSyntheticForNonTrivialClip = 1 << 0,
     // The cc effect is synthetic to create a render surface that is
     // 2d-axis-aligned with a blink clip node that is non-2d-axis-aligned
     // in the the original render surface. Cc requires a rectangular clip to be
     // 2d-axis-aligned with the render surface to correctly apply the clip.
     // TODO(crbug.com/504464): This will be changed when we move render surface
     // decision logic into the cc compositor thread.
-    kSyntheticFor2dAxisAlignment,
+    kSyntheticFor2dAxisAlignment = 1 << 1
   };
 
-  base::Optional<CcEffectType> NeedsSyntheticEffect(
-      const ClipPaintPropertyNode&) const;
+  CcEffectType SyntheticEffectType(const ClipPaintPropertyNode&) const;
 
   void SetCurrentEffectState(const cc::EffectNode&,
                              CcEffectType,
