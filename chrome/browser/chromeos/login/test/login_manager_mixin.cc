@@ -17,14 +17,13 @@
 #include "chrome/browser/chromeos/login/session/user_session_manager_test_api.h"
 #include "chrome/browser/chromeos/login/signin_specifics.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/stub_authenticator_builder.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/session_manager/core/session_manager.h"
-#include "components/session_manager/core/session_manager_observer.h"
 #include "components/user_manager/fake_user_manager.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -78,45 +77,6 @@ class TestUserRegistrationMainExtra : public ChromeBrowserMainExtraParts {
   const std::vector<LoginManagerMixin::TestUserInfo> users_;
 
   DISALLOW_COPY_AND_ASSIGN(TestUserRegistrationMainExtra);
-};
-
-// Used to wait for session manager to get into a specific session state.
-class SessionStateWaiter : public session_manager::SessionManagerObserver {
- public:
-  explicit SessionStateWaiter(session_manager::SessionState target_state)
-      : target_state_(target_state) {}
-  ~SessionStateWaiter() override = default;
-
-  void Wait() {
-    if (session_manager::SessionManager::Get()->session_state() ==
-        target_state_) {
-      return;
-    }
-    session_observer_.Add(session_manager::SessionManager::Get());
-
-    base::RunLoop run_loop;
-    session_state_callback_ = run_loop.QuitClosure();
-    run_loop.Run();
-
-    session_observer_.RemoveAll();
-  }
-
-  // session_manager::SessionManagerObserver:
-  void OnSessionStateChanged() override {
-    if (session_manager::SessionManager::Get()->session_state() ==
-            target_state_ &&
-        session_state_callback_) {
-      std::move(session_state_callback_).Run();
-    }
-  }
-
- private:
-  session_manager::SessionState target_state_;
-  base::OnceClosure session_state_callback_;
-  ScopedObserver<session_manager::SessionManager, SessionStateWaiter>
-      session_observer_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(SessionStateWaiter);
 };
 
 }  // namespace
