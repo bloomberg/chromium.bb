@@ -33,6 +33,7 @@ suite('cr-checkbox', function() {
 
   function assertDisabled() {
     assertTrue(checkbox.disabled);
+    assertFalse(checkbox.hasAttribute('tabindex'));
     assertEquals('-1', checkbox.$.checkbox.getAttribute('tabindex'));
     assertTrue(checkbox.hasAttribute('disabled'));
     assertEquals('true', checkbox.$.checkbox.getAttribute('aria-disabled'));
@@ -41,6 +42,7 @@ suite('cr-checkbox', function() {
 
   function assertNotDisabled() {
     assertFalse(checkbox.disabled);
+    assertFalse(checkbox.hasAttribute('tabindex'));
     assertEquals('0', checkbox.$.checkbox.getAttribute('tabindex'));
     assertFalse(checkbox.hasAttribute('disabled'));
     assertEquals('false', checkbox.$.checkbox.getAttribute('aria-disabled'));
@@ -161,9 +163,9 @@ suite('cr-checkbox', function() {
 
     // Should not override tabindex if it is initialized.
     assertEquals(-1, checkbox.tabIndex);
+    assertFalse(checkbox.hasAttribute('tabindex'));
     assertEquals('-1', checkbox.$.checkbox.getAttribute('tabindex'));
   });
-
 
   test('InitializingWithDisabled', function() {
     PolymerTest.clearBody();
@@ -175,6 +177,18 @@ suite('cr-checkbox', function() {
 
     // Initializing with disabled should make tabindex="-1".
     assertEquals(-1, checkbox.tabIndex);
+    assertFalse(checkbox.hasAttribute('tabindex'));
     assertEquals('-1', checkbox.$.checkbox.getAttribute('tabindex'));
+  });
+
+  test('tabindex attribute is controlled by tabIndex', () => {
+    PolymerTest.clearBody();
+    document.body.innerHTML = `
+      <cr-checkbox id="checkbox" tabindex="-1"></cr-checkbox>
+    `;
+    checkbox = document.querySelector('cr-checkbox');
+    assertEquals(0, checkbox.tabIndex);
+    assertFalse(checkbox.hasAttribute('tabindex'));
+    assertEquals('0', checkbox.$.checkbox.getAttribute('tabindex'));
   });
 });

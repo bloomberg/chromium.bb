@@ -42,6 +42,7 @@ Polymer({
     tabIndex: {
       type: Number,
       value: 0,
+      observer: 'onTabIndexChanged_',
     },
   },
 
@@ -137,6 +138,12 @@ Polymer({
     }
 
     this.click();
+  },
+
+  /** @private */
+  onTabIndexChanged_: function() {
+    // :host shouldn't have a tabindex because it's set on #checkbox.
+    this.removeAttribute('tabindex');
   },
 
   // customize the element's ripple
