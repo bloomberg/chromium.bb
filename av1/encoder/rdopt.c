@@ -13998,7 +13998,8 @@ static void calc_target_weighted_pred(const AV1_COMMON *cm, const MACROBLOCK *x,
    2 * (src)[(i) + (stride) * ((j) + 1)] -  /* NOLINT */ \
    (src)[((i) + 1) + (stride) * ((j) + 1)]) /* NOLINT */
 
-sobel_xy sobel(const uint8_t *input, int stride, int i, int j, bool high_bd) {
+sobel_xy av1_sobel(const uint8_t *input, int stride, int i, int j,
+                   bool high_bd) {
   int16_t s_x;
   int16_t s_y;
   if (high_bd) {
@@ -14018,8 +14019,8 @@ sobel_xy sobel(const uint8_t *input, int stride, int i, int j, bool high_bd) {
 DECLARE_ALIGNED(16, static const int16_t, gauss_filter[8]) = { 2,  12, 30, 40,
                                                                30, 12, 2,  0 };
 
-void gaussian_blur(const uint8_t *src, int src_stride, int w, int h,
-                   uint8_t *dst, bool high_bd, int bd) {
+void av1_gaussian_blur(const uint8_t *src, int src_stride, int w, int h,
+                       uint8_t *dst, bool high_bd, int bd) {
   ConvolveParams conv_params = get_conv_params(0, 0, bd);
   InterpFilterParams filter = { .filter_ptr = gauss_filter,
                                 .taps = 8,
@@ -14051,7 +14052,7 @@ static EdgeInfo edge_probability(const uint8_t *input, int w, int h,
   // Ignore the 1 pixel border around the image for the computation.
   for (int j = 1; j < h - 1; ++j) {
     for (int i = 1; i < w - 1; ++i) {
-      sobel_xy g = sobel(input, w, i, j, high_bd);
+      sobel_xy g = av1_sobel(input, w, i, j, high_bd);
       // Scale down to 8-bit to get same output regardless of bit depth.
       int16_t g_x = g.x >> (bd - 8);
       int16_t g_y = g.y >> (bd - 8);
@@ -14080,7 +14081,7 @@ EdgeInfo av1_edge_exists(const uint8_t *src, int src_stride, int w, int h,
   } else {
     blurred = (uint8_t *)aom_memalign(32, sizeof(uint8_t) * w * h);
   }
-  gaussian_blur(src, src_stride, w, h, blurred, high_bd, bd);
+  av1_gaussian_blur(src, src_stride, w, h, blurred, high_bd, bd);
   // Skip the non-maximum suppression step in Canny edge detection. We just
   // want a probability of an edge existing in the buffer, which is determined
   // by the strongest edge in it -- we don't need to eliminate the weaker

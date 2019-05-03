@@ -162,8 +162,8 @@ EdgeInfo av1_edge_exists(const uint8_t *src, int src_stride, int w, int h,
 /** Applies a Gaussian blur with sigma = 1.3. Used by av1_edge_exists and
  * tests.
  */
-void gaussian_blur(const uint8_t *src, int src_stride, int w, int h,
-                   uint8_t *dst, bool high_bd, int bd);
+void av1_gaussian_blur(const uint8_t *src, int src_stride, int w, int h,
+                       uint8_t *dst, bool high_bd, int bd);
 
 /* Applies standard 3x3 Sobel matrix. */
 typedef struct {
@@ -171,7 +171,8 @@ typedef struct {
   int16_t y;
 } sobel_xy;
 
-sobel_xy sobel(const uint8_t *input, int stride, int i, int j, bool high_bd);
+sobel_xy av1_sobel(const uint8_t *input, int stride, int i, int j,
+                   bool high_bd);
 
 void av1_inter_mode_data_init(struct TileDataEnc *tile_data);
 void av1_inter_mode_data_fit(TileDataEnc *tile_data, int rdmult);
