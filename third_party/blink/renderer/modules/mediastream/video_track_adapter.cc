@@ -25,6 +25,9 @@
 #include "media/base/video_util.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/web/modules/mediastream/video_track_adapter_settings.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 
 namespace blink {
@@ -115,6 +118,16 @@ bool MaybeUpdateFrameRate(ComputedSettings* settings) {
 }
 
 }  // anonymous namespace
+
+// Template specialization of [1], needed to be able to pass WTF callbacks
+// that have VideoTrackAdapterSettings parameters across threads.
+//
+// [1] third_party/blink/renderer/platform/cross_thread_copier.h.
+template <>
+struct CrossThreadCopier<VideoTrackAdapterSettings>
+    : public CrossThreadCopierPassThrough<VideoTrackAdapterSettings> {
+  STATIC_ONLY(CrossThreadCopier);
+};
 
 // VideoFrameResolutionAdapter is created on and lives on the IO-thread. It does
 // the resolution adaptation and delivers frames to all registered tracks on the
@@ -331,8 +344,8 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::DeliverFrame(
               kResolutionAdapterWrappingFrameForCroppingFailed);
       return;
     }
-    video_frame->AddDestructionObserver(
-        base::BindOnce(&TrackReleaseOriginalFrame, frame));
+    video_frame->AddDestructionObserver(ConvertToBaseCallback(
+        CrossThreadBind(&TrackReleaseOriginalFrame, frame)));
 
     DVLOG(3) << "desired size  " << desired_size.ToString()
              << " output natural size "
@@ -469,8 +482,8 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::ResetFrameRate() {
 void VideoTrackAdapter::VideoFrameResolutionAdapter::
     PostFrameDroppedToMainTaskRunner(
         media::VideoCaptureFrameDropReason reason) {
-  renderer_task_runner_->PostTask(FROM_HERE,
-                                  base::BindOnce(frame_dropped_cb_, reason));
+  PostCrossThreadTask(*renderer_task_runner_, FROM_HERE,
+                      CrossThreadBind(frame_dropped_cb_, reason));
 }
 
 VideoTrackAdapter::VideoTrackAdapter(
@@ -532,9 +545,10 @@ void VideoTrackAdapter::AddTrackOnIO(
 
 void VideoTrackAdapter::RemoveTrack(const MediaStreamVideoTrack* track) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  io_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&VideoTrackAdapter::RemoveTrackOnIO, this, track));
+  PostCrossThreadTask(
+      *io_task_runner_, FROM_HERE,
+      CrossThreadBind(&VideoTrackAdapter::RemoveTrackOnIO, WrapRefCounted(this),
+                      CrossThreadUnretained(track)));
 }
 
 void VideoTrackAdapter::ReconfigureTrack(
@@ -542,9 +556,10 @@ void VideoTrackAdapter::ReconfigureTrack(
     const VideoTrackAdapterSettings& settings) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  io_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&VideoTrackAdapter::ReconfigureTrackOnIO, this,
-                                track, settings));
+  PostCrossThreadTask(*io_task_runner_, FROM_HERE,
+                      CrossThreadBind(&VideoTrackAdapter::ReconfigureTrackOnIO,
+                                      WrapRefCounted(this),
+                                      CrossThreadUnretained(track), settings));
 }
 
 void VideoTrackAdapter::StartFrameMonitoring(
@@ -563,16 +578,18 @@ void VideoTrackAdapter::StartFrameMonitoring(
 
 void VideoTrackAdapter::StopFrameMonitoring() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  io_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&VideoTrackAdapter::StopFrameMonitoringOnIO, this));
+  PostCrossThreadTask(
+      *io_task_runner_, FROM_HERE,
+      CrossThreadBind(&VideoTrackAdapter::StopFrameMonitoringOnIO,
+                      WrapRefCounted(this)));
 }
 
 void VideoTrackAdapter::SetSourceFrameSize(const IntSize& source_frame_size) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  io_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&VideoTrackAdapter::SetSourceFrameSizeOnIO,
-                                this, source_frame_size));
+  PostCrossThreadTask(
+      *io_task_runner_, FROM_HERE,
+      CrossThreadBind(&VideoTrackAdapter::SetSourceFrameSizeOnIO,
+                      WrapRefCounted(this), source_frame_size));
 }
 
 bool VideoTrackAdapter::CalculateDesiredSize(
