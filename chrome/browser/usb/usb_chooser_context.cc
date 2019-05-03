@@ -203,6 +203,26 @@ void UsbChooserContext::SetUpDeviceManagerConnection() {
                                         weak_factory_.GetWeakPtr()));
 }
 
+#if defined(OS_ANDROID)
+void UsbChooserContext::OnDeviceInfoRefreshed(
+    device::mojom::UsbDeviceManager::RefreshDeviceInfoCallback callback,
+    device::mojom::UsbDeviceInfoPtr device_info) {
+  if (!device_info) {
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
+  auto it = devices_.find(device_info->guid);
+  if (it == devices_.end()) {
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
+  it->second = std::move(device_info);
+  std::move(callback).Run(it->second->Clone());
+}
+#endif
+
 UsbChooserContext::~UsbChooserContext() {
   OnDeviceManagerConnectionError();
 }
@@ -476,6 +496,17 @@ const device::mojom::UsbDeviceInfo* UsbChooserContext::GetDeviceInfo(
   auto it = devices_.find(guid);
   return it == devices_.end() ? nullptr : it->second.get();
 }
+
+#if defined(OS_ANDROID)
+void UsbChooserContext::RefreshDeviceInfo(
+    const std::string& guid,
+    device::mojom::UsbDeviceManager::RefreshDeviceInfoCallback callback) {
+  EnsureConnectionWithDeviceManager();
+  device_manager_->RefreshDeviceInfo(
+      guid, base::BindOnce(&UsbChooserContext::OnDeviceInfoRefreshed,
+                           weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+#endif
 
 void UsbChooserContext::AddObserver(DeviceObserver* observer) {
   EnsureConnectionWithDeviceManager();

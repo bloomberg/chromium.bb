@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/permissions/chooser_context_base.h"
 #include "chrome/browser/usb/usb_policy_allowed_devices.h"
 #include "device/usb/public/mojom/device_manager.mojom.h"
@@ -71,6 +72,11 @@ class UsbChooserContext : public ChooserContextBase,
   void GetDevice(const std::string& guid,
                  device::mojom::UsbDeviceRequest device_request,
                  device::mojom::UsbDeviceClientPtr device_client);
+#if defined(OS_ANDROID)
+  void RefreshDeviceInfo(
+      const std::string& guid,
+      device::mojom::UsbDeviceManager::RefreshDeviceInfoCallback callback);
+#endif
 
   // This method should only be called when you are sure that |devices_| has
   // been initialized. It will return nullptr if the guid cannot be found.
@@ -96,6 +102,11 @@ class UsbChooserContext : public ChooserContextBase,
   void OnDeviceManagerConnectionError();
   void EnsureConnectionWithDeviceManager();
   void SetUpDeviceManagerConnection();
+#if defined(OS_ANDROID)
+  void OnDeviceInfoRefreshed(
+      device::mojom::UsbDeviceManager::RefreshDeviceInfoCallback callback,
+      device::mojom::UsbDeviceInfoPtr device_info);
+#endif
 
   bool is_incognito_;
   bool is_initialized_ = false;
