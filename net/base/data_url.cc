@@ -96,25 +96,23 @@ bool DataURL::Parse(const GURL& url,
   // (Spaces in a data URL should be escaped, which is handled below, so any
   // spaces now are wrong. People expect to be able to enter them in the URL
   // bar for text, and it can't hurt, so we allow it.)
-  std::string temp_data = std::string(comma + 1, end);
+  //
+  // TODO(mmenke): Is removing all spaces reasonable? GURL removes trailing
+  // spaces itself, anyways. Should we just trim leading spaces instead?
+  // Allowing random intermediary spaces seems unnecessary.
+
+  base::StringPiece raw_body(comma + 1, end);
 
   // For base64, we may have url-escaped whitespace which is not part
   // of the data, and should be stripped. Otherwise, the escaped whitespace
   // could be part of the payload, so don't strip it.
-  if (base64_encoded)
-    temp_data = UnescapeBinaryURLComponent(temp_data);
-
-  // Strip whitespace.
-  if (base64_encoded || !(mime_type->compare(0, 5, "text/") == 0 ||
-                          mime_type->find("xml") != std::string::npos)) {
-    base::EraseIf(temp_data, base::IsAsciiWhitespace<wchar_t>);
-  }
-
-  if (!base64_encoded)
-    temp_data = UnescapeBinaryURLComponent(temp_data);
-
   if (base64_encoded) {
-    size_t length = temp_data.length();
+    std::string unescaped_body = UnescapeBinaryURLComponent(raw_body);
+
+    // Strip spaces, which aren't allowed in Base64 encoding.
+    base::EraseIf(unescaped_body, base::IsAsciiWhitespace<char>);
+
+    size_t length = unescaped_body.length();
     size_t padding_needed = 4 - (length % 4);
     // If the input wasn't padded, then we pad it as necessary until we have a
     // length that is a multiple of 4 as required by our decoder. We don't
@@ -122,13 +120,22 @@ bool DataURL::Parse(const GURL& url,
     // then the input isn't well formed and decoding will fail with or without
     // padding.
     if ((padding_needed == 1 || padding_needed == 2) &&
-        temp_data[length - 1] != '=') {
-      temp_data.resize(length + padding_needed, '=');
+        unescaped_body[length - 1] != '=') {
+      unescaped_body.resize(length + padding_needed, '=');
     }
-    return base::Base64Decode(temp_data, data);
+    return base::Base64Decode(unescaped_body, data);
   }
 
-  temp_data.swap(*data);
+  // Strip whitespace for non-text MIME types.
+  std::string temp;
+  if (!(mime_type->compare(0, 5, "text/") == 0 ||
+        mime_type->find("xml") != std::string::npos)) {
+    temp = raw_body.as_string();
+    base::EraseIf(temp, base::IsAsciiWhitespace<char>);
+    raw_body = temp;
+  }
+
+  *data = UnescapeBinaryURLComponent(raw_body);
   return true;
 }
 
