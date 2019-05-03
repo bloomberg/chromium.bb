@@ -84,6 +84,7 @@ class ResourceFetcher;
 class SecurityContext;
 class SecurityOrigin;
 class ScriptState;
+class TrustedTypePolicyFactory;
 
 enum class TaskType : unsigned char;
 
@@ -185,6 +186,7 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   virtual ResourceFetcher* Fetcher() const = 0;
 
   virtual SecurityContext& GetSecurityContext() = 0;
+  virtual const SecurityContext& GetSecurityContext() const = 0;
 
   // https://tc39.github.io/ecma262/#sec-agent-clusters
   virtual const base::UnguessableToken& GetAgentClusterID() const = 0;
@@ -291,6 +293,8 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   InterfaceInvalidator* GetInterfaceInvalidator() { return invalidator_.get(); }
 
   v8::Isolate* GetIsolate() const { return isolate_; }
+
+  virtual TrustedTypePolicyFactory* GetTrustedTypes() const { return nullptr; }
 
  protected:
   explicit ExecutionContext(v8::Isolate* isolate);

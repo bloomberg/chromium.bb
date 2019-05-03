@@ -126,6 +126,7 @@ class CORE_EXPORT WorkerGlobalScope
 
   DOMTimerCoordinator* Timers() final { return &timers_; }
   SecurityContext& GetSecurityContext() final { return *this; }
+  const SecurityContext& GetSecurityContext() const final { return *this; }
   void AddConsoleMessage(ConsoleMessage*) final;
   bool IsSecureContext(String& error_message) const override;
   service_manager::InterfaceProvider* GetInterfaceProvider() final;
@@ -193,7 +194,7 @@ class CORE_EXPORT WorkerGlobalScope
     return animation_frame_provider_;
   }
 
-  TrustedTypePolicyFactory* trustedTypes();
+  TrustedTypePolicyFactory* GetTrustedTypes() const override;
 
  protected:
   WorkerGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
@@ -237,7 +238,7 @@ class CORE_EXPORT WorkerGlobalScope
 
   mutable Member<WorkerLocation> location_;
   mutable Member<WorkerNavigator> navigator_;
-  Member<TrustedTypePolicyFactory> trusted_types_;
+  mutable Member<TrustedTypePolicyFactory> trusted_types_;
 
   WorkerThread* thread_;
 

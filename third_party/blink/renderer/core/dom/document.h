@@ -1551,6 +1551,8 @@ class CORE_EXPORT Document : public ContainerNode,
   // inside a cross-process frame (MimeHandlerView).
   void SetShowBeforeUnloadDialog(bool show_dialog);
 
+  TrustedTypePolicyFactory* GetTrustedTypes() const override;
+
  protected:
   void DidUpdateSecurityOrigin() final;
 
@@ -1588,6 +1590,7 @@ class CORE_EXPORT Document : public ContainerNode,
   void InitSecurityContext(const DocumentInit&);
   void InitSecureContextState();
   SecurityContext& GetSecurityContext() final { return *this; }
+  const SecurityContext& GetSecurityContext() const final { return *this; }
 
   bool HasPendingVisualUpdate() const {
     return lifecycle_.GetState() == DocumentLifecycle::kVisualUpdatePending;

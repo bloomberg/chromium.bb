@@ -7977,6 +7977,10 @@ void Document::SetShowBeforeUnloadDialog(bool show_dialog) {
       show_dialog);
 }
 
+TrustedTypePolicyFactory* Document::GetTrustedTypes() const {
+  return ExecutingWindow() ? ExecutingWindow()->trustedTypes() : nullptr;
+}
+
 template class CORE_TEMPLATE_EXPORT Supplement<Document>;
 
 }  // namespace blink

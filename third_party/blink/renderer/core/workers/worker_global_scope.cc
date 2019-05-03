@@ -537,9 +537,10 @@ void WorkerGlobalScope::SetWorkerSettings(
       worker_settings_->GetGenericFontFamilySettings());
 }
 
-TrustedTypePolicyFactory* WorkerGlobalScope::trustedTypes() {
+TrustedTypePolicyFactory* WorkerGlobalScope::GetTrustedTypes() const {
   if (!trusted_types_) {
-    trusted_types_ = MakeGarbageCollected<TrustedTypePolicyFactory>(this);
+    trusted_types_ =
+        MakeGarbageCollected<TrustedTypePolicyFactory>(GetExecutionContext());
   }
   return trusted_types_.Get();
 }

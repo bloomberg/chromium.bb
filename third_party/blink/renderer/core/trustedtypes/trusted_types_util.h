@@ -10,7 +10,7 @@
 
 namespace blink {
 
-class Document;
+class ExecutionContext;
 class ExceptionState;
 class StringOrTrustedHTML;
 class StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL;
@@ -27,7 +27,7 @@ enum class SpecificTrustedType {
 
 String CORE_EXPORT GetStringFromTrustedType(
     const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL&,
-    const Document*,
+    const ExecutionContext*,
     ExceptionState&);
 
 String CORE_EXPORT GetStringFromTrustedTypeWithoutCheck(
@@ -36,27 +36,27 @@ String CORE_EXPORT GetStringFromTrustedTypeWithoutCheck(
 String CORE_EXPORT GetStringFromSpecificTrustedType(
     const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL&,
     SpecificTrustedType,
-    const Document*,
+    const ExecutionContext*,
     ExceptionState&);
 
 String CORE_EXPORT GetStringFromTrustedHTML(StringOrTrustedHTML,
-                                            const Document*,
+                                            const ExecutionContext*,
                                             ExceptionState&);
 
 String GetStringFromTrustedHTML(const String&,
-                                const Document*,
+                                const ExecutionContext*,
                                 ExceptionState&);
 
 String CORE_EXPORT GetStringFromTrustedScript(StringOrTrustedScript,
-                                              const Document*,
+                                              const ExecutionContext*,
                                               ExceptionState&);
 
 String CORE_EXPORT GetStringFromTrustedScriptURL(StringOrTrustedScriptURL,
-                                                 const Document*,
+                                                 const ExecutionContext*,
                                                  ExceptionState&);
 
 String CORE_EXPORT GetStringFromTrustedURL(USVStringOrTrustedURL,
-                                           const Document*,
+                                           const ExecutionContext*,
                                            ExceptionState&);
 }  // namespace blink
 
