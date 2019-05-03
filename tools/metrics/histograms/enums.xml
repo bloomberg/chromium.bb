@@ -1727,6 +1727,25 @@ Unknown properties are collapsed to zero. -->
   <int value="4" label="Undos Dismissed (Action) (Deprecated)"/>
 </enum>
 
+<enum name="AndroidWebViewClientSafeBrowsingThreatType">
+  <int value="0" label="SAFE_BROWSING_THREAT_UNKNOWN">
+    The resource was blocked for a reason other than the ones provided here.
+  </int>
+  <int value="1" label="SAFE_BROWSING_THREAT_MALWARE">
+    The resource was blocked because it contains malware.
+  </int>
+  <int value="2" label="SAFE_BROWSING_THREAT_PHISHING">
+    The resource was blocked because it contains deceptive content.
+  </int>
+  <int value="3" label="SAFE_BROWSING_THREAT_UNWANTED_SOFTWARE">
+    The resource was blocked because it contains unwanted software.
+  </int>
+  <int value="4" label="SAFE_BROWSING_THREAT_BILLING">
+    The resource was blocked because it may trick the user into a billing
+    agreement.
+  </int>
+</enum>
+
 <enum name="AndroidWebViewVariationsEnableState">
   <int value="0" label="DEFAULT_ENABLED"/>
   <int value="1" label="CONTROL_DISABLED"/>
