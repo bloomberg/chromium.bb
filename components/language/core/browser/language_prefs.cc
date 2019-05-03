@@ -113,4 +113,13 @@ size_t LanguagePrefs::NumFluentLanguages() const {
   return fluents->GetList().size();
 }
 
+void ResetLanguagePrefs(PrefService* prefs) {
+  prefs->ClearPref(language::prefs::kAcceptLanguages);
+  prefs->ClearPref(language::prefs::kFluentLanguages);
+#if defined(OS_CHROMEOS)
+  prefs->ClearPref(language::prefs::kPreferredLanguages);
+  prefs->ClearPref(language::prefs::kPreferredLanguagesSyncable);
+#endif
+}
+
 }  // namespace language

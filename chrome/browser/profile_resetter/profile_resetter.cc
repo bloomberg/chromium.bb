@@ -24,6 +24,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -33,6 +34,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/browser/website_settings_info.h"
 #include "components/content_settings/core/browser/website_settings_registry.h"
+#include "components/language/core/browser/language_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/search_engines/search_engines_pref_names.h"
@@ -131,6 +133,7 @@ void ProfileResetter::Reset(
       {PINNED_TABS, &ProfileResetter::ResetPinnedTabs},
       {SHORTCUTS, &ProfileResetter::ResetShortcuts},
       {NTP_CUSTOMIZATIONS, &ProfileResetter::ResetNtpCustomizations},
+      {LANGUAGES, &ProfileResetter::ResetLanguages},
   };
 
   ResettableFlags reset_triggered_for_flags = 0;
@@ -340,6 +343,19 @@ void ProfileResetter::ResetShortcuts() {
 void ProfileResetter::ResetNtpCustomizations() {
   ntp_service_->ResetToDefault();
   MarkAsDone(NTP_CUSTOMIZATIONS);
+}
+
+void ProfileResetter::ResetLanguages() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  PrefService* prefs = profile_->GetPrefs();
+  DCHECK(prefs);
+
+  auto translate_prefs = ChromeTranslateClient::CreateTranslatePrefs(prefs);
+  translate_prefs->ResetToDefaults();
+
+  language::ResetLanguagePrefs(prefs);
+
+  MarkAsDone(LANGUAGES);
 }
 
 void ProfileResetter::OnTemplateURLServiceLoaded() {
