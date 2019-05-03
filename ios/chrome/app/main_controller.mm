@@ -147,7 +147,6 @@
 #include "ios/chrome/common/app_group/app_group_field_trial_version.h"
 #include "ios/chrome/common/app_group/app_group_utils.h"
 #include "ios/net/cookies/cookie_store_ios.h"
-#import "ios/net/crn_http_protocol_handler.h"
 #import "ios/net/empty_nsurlcache.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/distribution/app_distribution_provider.h"
@@ -597,7 +596,6 @@ enum class EnterTabSwitcherSnapshotResult {
 }
 
 - (void)dealloc {
-  net::HTTPProtocolHandlerDelegate::SetInstance(nullptr);
   net::RequestTracker::SetRequestTrackerFactory(nullptr);
   [NSObject cancelPreviousPerformRequestsWithTarget:self];
 }
