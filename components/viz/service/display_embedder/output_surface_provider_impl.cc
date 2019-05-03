@@ -105,7 +105,7 @@ std::unique_ptr<OutputSurface> OutputSurfaceProviderImpl::CreateOutputSurface(
         CreateSoftwareOutputDeviceForPlatform(surface_handle, display_client));
   } else if (renderer_settings.use_skia_renderer ||
              renderer_settings.use_skia_renderer_non_ddl) {
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MACOSX)
     // TODO(penghuang): Support SkiaRenderer for all platforms.
     NOTIMPLEMENTED();
     return nullptr;
