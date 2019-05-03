@@ -309,6 +309,23 @@ class Mirror(object):
                            '$GIT_CACHE_PATH is set.')
       return ret
 
+  @staticmethod
+  def _GetMostRecentCacheDirectory(ls_out_set):
+    ready_file_pattern = re.compile(r'.*/(\d+).ready$')
+    ready_dirs = []
+
+    for name in ls_out_set:
+      m = ready_file_pattern.match(name)
+      # Given <path>/<number>.ready,
+      # we are interested in <path>/<number> directory
+      if m and (name[:-len('.ready')] + '/') in ls_out_set:
+        ready_dirs.append((int(m.group(1)), name[:-len('.ready')]))
+
+    if not ready_dirs:
+      return None
+
+    return max(ready_dirs)[1]
+
   def Rename(self, src, dst):
     # This is somehow racy on Windows.
     # Catching OSError because WindowsError isn't portable and
@@ -384,26 +401,14 @@ class Mirror(object):
     # The .ready file is only uploaded when an entire directory has been
     # uploaded to GS.
     _, ls_out, ls_err = gsutil.check_call('ls', self._gs_path)
+    ls_out_set = set(ls_out.strip().splitlines())
+    latest_dir = self._GetMostRecentCacheDirectory(ls_out_set)
 
-    ready_file_pattern = re.compile(r'.*/(\d+).ready$')
-
-    objects = set(ls_out.strip().splitlines())
-    ready_dirs = []
-
-    for name in objects:
-      m = ready_file_pattern.match(name)
-      # Given <path>/<number>.ready,
-      # we are interested in <path>/<number> directory
-
-      if m and (name[:-len('.ready')] + '/') in objects:
-        ready_dirs.append((int(m.group(1)), name[:-len('.ready')]))
-
-    if not ready_dirs:
+    if not latest_dir:
       self.print('No bootstrap file for %s found in %s, stderr:\n  %s' %
                  (self.mirror_path, self.bootstrap_bucket,
                 '  '.join((ls_err or '').splitlines(True))))
       return False
-    latest_dir = max(ready_dirs)[1]
 
     try:
       # create new temporary directory locally
@@ -573,37 +578,48 @@ class Mirror(object):
     gsutil = Gsutil(path=self.gsutil_exe, boto_path=None)
 
     src_name = self.mirror_path
-    dest_name = '%s/%s' % (self._gs_path, gen_number)
+    dest_prefix = '%s/%s' % (self._gs_path, gen_number)
 
-    # check to see if folder already exists in gs
-    _, ls_out, ls_err = gsutil.check_call('ls', dest_name)
-    _, ls_out_ready, ls_err_ready = (
-      gsutil.check_call('ls', dest_name + '.ready'))
+    # ls_out lists contents in the format: gs://blah/blah/123...
+    _, ls_out, _ = gsutil.check_call('ls', self._gs_path)
 
-    # only printing out errors because the folder/ready file
-    # might not exist yet, so it will error no matter what
-    if ls_err:
-      print('Failed to check GS:\n%s' % (ls_err))
-    if ls_err_ready:
-      print('Failed to check GS:\n%s' % (ls_err_ready))
-
-    if not (ls_out == '' and ls_out_ready == ''):
-      print('Cache %s already exists' % dest_name)
+    # Check to see if folder already exists in gs
+    ls_out_set = set(ls_out.strip().splitlines())
+    if (dest_prefix + '/' in ls_out_set and
+        dest_prefix + '.ready' in ls_out_set):
+      print('Cache %s already exists.' % dest_prefix)
       return
 
     # Run Garbage Collect to compress packfile.
     self.RunGit(['gc', '--prune=all'])
 
-    gsutil.call('-m', 'cp', '-r', src_name, dest_name)
+    gsutil.call('-m', 'cp', '-r', src_name, dest_prefix)
 
-    #TODO(karenqian): prune old caches
-
-    # create .ready file and upload
+    # Create .ready file and upload
     _, ready_file_name =  tempfile.mkstemp(suffix='.ready')
     try:
-      gsutil.call('cp', ready_file_name, '%s.ready' % (dest_name))
+      gsutil.call('cp', ready_file_name, '%s.ready' % (dest_prefix))
     finally:
       os.remove(ready_file_name)
+
+    # remove all other directory/.ready files in the same gs_path
+    # except for the directory/.ready file previously created
+    # which can be used for bootstrapping while the current one is
+    # being uploaded
+    if not prune:
+      return
+    prev_dest_prefix = self._GetMostRecentCacheDirectory(ls_out_set)
+    if not prev_dest_prefix:
+      return
+    for path in ls_out_set:
+      if (path == prev_dest_prefix + '/' or
+          path == prev_dest_prefix + '.ready'):
+        continue
+      if path.endswith('.ready'):
+        gsutil.call('rm', path)
+        continue
+      gsutil.call('-m', 'rm', '-r', path)
+
 
   @staticmethod
   def DeleteTmpPackFiles(path):
