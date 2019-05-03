@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "cc/base/math_util.h"
 #include "cc/input/scrollbar.h"
 #include "cc/input/scrollbar_controller.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -65,8 +66,23 @@ gfx::ScrollOffset ScrollbarController::GetScrollStateBasedOnHitTest(
       static_cast<const ScrollbarLayerImplBase*>(scrollbar_layer_impl);
   const ScrollbarOrientation orientation = scrollbar_layer->orientation();
 
-  ScrollbarPart scrollbar_part =
-      scrollbar_layer->IdentifyScrollbarPart(position_in_widget);
+  // position_in_widget needs to be transformed and made relative to the
+  // scrollbar layer because hit testing assumes layer relative coordinates.
+  ScrollbarPart scrollbar_part = ScrollbarPart::NO_PART;
+  gfx::Transform inverse_screen_space_transform(
+      gfx::Transform::kSkipInitialization);
+  if (scrollbar_layer_impl->ScreenSpaceTransform().GetInverse(
+          &inverse_screen_space_transform)) {
+    bool clipped;
+    gfx::PointF scroller_relative_position(MathUtil::ProjectPoint(
+        inverse_screen_space_transform, position_in_widget, &clipped));
+
+    if (clipped)
+      return gfx::ScrollOffset(0, 0);
+
+    scrollbar_part =
+        scrollbar_layer->IdentifyScrollbarPart(scroller_relative_position);
+  }
 
   float scroll_delta =
       layer_tree_host_impl_->active_tree()->device_scale_factor() *

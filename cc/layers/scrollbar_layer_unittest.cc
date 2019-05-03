@@ -414,10 +414,13 @@ TEST_F(ScrollbarLayerTest, UpdatePropertiesOfScrollBarWhenThumbRemoved) {
   root_layer->SetScrollOffset(gfx::ScrollOffset(0, 0));
   scrollbar_layer->SetBounds(gfx::Size(70, 10));
   scrollbar_layer->SetScrollElementId(root_layer->element_id());
+
+  // The track_rect should be relative to the scrollbar's origin.
   scrollbar_layer->fake_scrollbar()->set_location(gfx::Point(20, 10));
-  scrollbar_layer->fake_scrollbar()->set_track_rect(gfx::Rect(30, 10, 50, 10));
+  scrollbar_layer->fake_scrollbar()->set_track_rect(gfx::Rect(10, 10, 50, 10));
   scrollbar_layer->fake_scrollbar()->set_thumb_thickness(10);
   scrollbar_layer->fake_scrollbar()->set_thumb_length(4);
+
   LayerImpl* root_layer_impl = nullptr;
   PaintedScrollbarLayerImpl* scrollbar_layer_impl = nullptr;
 
@@ -452,10 +455,13 @@ TEST_F(ScrollbarLayerTest, ThumbRect) {
   root_layer->SetScrollOffset(gfx::ScrollOffset(0, 0));
   scrollbar_layer->SetBounds(gfx::Size(70, 10));
   scrollbar_layer->SetScrollElementId(root_layer->element_id());
+
+  // The track_rect should be relative to the scrollbar's origin.
   scrollbar_layer->fake_scrollbar()->set_location(gfx::Point(20, 10));
-  scrollbar_layer->fake_scrollbar()->set_track_rect(gfx::Rect(30, 10, 50, 10));
+  scrollbar_layer->fake_scrollbar()->set_track_rect(gfx::Rect(10, 10, 50, 10));
   scrollbar_layer->fake_scrollbar()->set_thumb_thickness(10);
   scrollbar_layer->fake_scrollbar()->set_thumb_length(4);
+
   layer_tree_host_->UpdateLayers();
   LayerImpl* root_layer_impl = nullptr;
   PaintedScrollbarLayerImpl* scrollbar_layer_impl = nullptr;
@@ -493,7 +499,7 @@ TEST_F(ScrollbarLayerTest, ThumbRect) {
   // Shrink the scrollbar layer to cover only the track.
   scrollbar_layer->SetBounds(gfx::Size(50, 10));
   scrollbar_layer->fake_scrollbar()->set_location(gfx::Point(30, 10));
-  scrollbar_layer->fake_scrollbar()->set_track_rect(gfx::Rect(30, 10, 50, 10));
+  scrollbar_layer->fake_scrollbar()->set_track_rect(gfx::Rect(0, 10, 50, 10));
 
   UPDATE_AND_EXTRACT_LAYER_POINTERS();
   EXPECT_EQ(gfx::Rect(44, 0, 6, 4).ToString(),
@@ -502,7 +508,7 @@ TEST_F(ScrollbarLayerTest, ThumbRect) {
   // Shrink the track in the non-scrolling dimension so that it only covers the
   // middle third of the scrollbar layer (this does not affect the thumb
   // position).
-  scrollbar_layer->fake_scrollbar()->set_track_rect(gfx::Rect(30, 12, 50, 6));
+  scrollbar_layer->fake_scrollbar()->set_track_rect(gfx::Rect(0, 12, 50, 6));
 
   UPDATE_AND_EXTRACT_LAYER_POINTERS();
   EXPECT_EQ(gfx::Rect(44, 0, 6, 4).ToString(),

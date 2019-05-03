@@ -73,10 +73,10 @@ void PaintedOverlayScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
   scrollbar_layer->SetThumbThickness(thumb_thickness_);
   scrollbar_layer->SetThumbLength(thumb_length_);
   if (scrollbar_->Orientation() == HORIZONTAL) {
-    scrollbar_layer->SetTrackStart(track_rect_.x() - location_.x());
+    scrollbar_layer->SetTrackStart(track_rect_.x());
     scrollbar_layer->SetTrackLength(track_rect_.width());
   } else {
-    scrollbar_layer->SetTrackStart(track_rect_.y() - location_.y());
+    scrollbar_layer->SetTrackStart(track_rect_.y());
     scrollbar_layer->SetTrackLength(track_rect_.height());
   }
 

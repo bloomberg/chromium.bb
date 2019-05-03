@@ -81,15 +81,23 @@ int ScrollbarLayerDelegate::ThumbLength() const {
 }
 
 gfx::Rect ScrollbarLayerDelegate::TrackRect() const {
-  return theme_.TrackRect(*scrollbar_);
+  IntRect track_rect = theme_.TrackRect(*scrollbar_);
+  track_rect.MoveBy(-scrollbar_->Location());
+  return track_rect;
 }
 
 gfx::Rect ScrollbarLayerDelegate::BackButtonRect() const {
-  return theme_.BackButtonRect(*scrollbar_, blink::kBackButtonStartPart);
+  IntRect back_button_rect =
+      theme_.BackButtonRect(*scrollbar_, blink::kBackButtonStartPart);
+  back_button_rect.MoveBy(-scrollbar_->Location());
+  return back_button_rect;
 }
 
 gfx::Rect ScrollbarLayerDelegate::ForwardButtonRect() const {
-  return theme_.ForwardButtonRect(*scrollbar_, blink::kForwardButtonEndPart);
+  IntRect forward_button_rect =
+      theme_.ForwardButtonRect(*scrollbar_, blink::kForwardButtonEndPart);
+  forward_button_rect.MoveBy(-scrollbar_->Location());
+  return forward_button_rect;
 }
 
 float ScrollbarLayerDelegate::ThumbOpacity() const {
