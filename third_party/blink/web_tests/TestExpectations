@@ -2133,6 +2133,7 @@ crbug.com/626703 external/wpt/css/css-text/word-break/word-break-normal-my-000.h
 crbug.com/626703 [ Linux ] external/wpt/css/css-text/word-break/word-break-normal-lo-000.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-text/word-break/word-break-normal-lo-000.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/word-break/word-break-normal-tdd-000.html [ Failure ]
+crbug.com/952254 external/wpt/css/css-text/white-space/break-spaces-008.html [ Failure ]
 crbug.com/40634 external/wpt/css/css-text/white-space/trailing-space-before-br-001.html [ Failure ]
 
 # The 'line-break: anywhere' feature is not implemented yet
@@ -3135,7 +3136,6 @@ crbug.com/626703 external/wpt/css/css-animations/animationevent-marker-pseudoele
 crbug.com/626703 external/wpt/css/css-text/line-breaking/line-breaking-016.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-pseudo/marker-content-010.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-scroll-snap/scroll-target-padding-002.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/white-space/break-spaces-008.html [ Failure ]
 crbug.com/626703 [ Win7 ] external/wpt/upgrade-insecure-requests/image-redirect-upgrade.https.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-text/line-breaking/line-breaking-atomic-005.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/line-breaking/line-breaking-atomic-008.html [ Failure ]
