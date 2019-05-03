@@ -5776,7 +5776,6 @@ crbug.com/919559 [ Win ] virtual/outofblink-cors/http/tests/fetch/window/thoroug
 crbug.com/919587 [ Linux ] virtual/threaded/fast/idle-callback/idle_periods.html [ Pass Failure ]
 
 # WebRTC Unified Plan
-crbug.com/920979 external/wpt/webrtc/RTCRtpTransceiver.https.html [ Timeout ]
 crbug.com/923244 external/wpt/webrtc/RTCDTMFSender-ontonechange.https.html [ Failure Pass ]
 # WebRTC Plan B
 crbug.com/920979 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-remote-track-mute.https.html [ Timeout ]
