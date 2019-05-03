@@ -125,7 +125,7 @@ class AuthenticatorRequestDialogModel {
     virtual void OnCancelRequest() {}
   };
 
-  AuthenticatorRequestDialogModel(const std::string& relying_party_id);
+  explicit AuthenticatorRequestDialogModel(const std::string& relying_party_id);
   ~AuthenticatorRequestDialogModel();
 
   void SetCurrentStep(Step step);
