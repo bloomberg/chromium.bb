@@ -81,20 +81,20 @@ void TabManager::ResourceCoordinatorSignalObserver::
 content::WebContents*
 TabManager::ResourceCoordinatorSignalObserver::GetContentsForDispatch(
     const base::WeakPtr<TabManager>& tab_manager,
-    const base::WeakPtr<WebContentsProxy>& contents_proxy,
+    const WebContentsProxy& contents_proxy,
     int64_t navigation_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!tab_manager.get() || !contents_proxy.get() ||
-      contents_proxy.get()->LastNavigationId() != navigation_id) {
+  if (!tab_manager.get() || !contents_proxy.Get() ||
+      contents_proxy.LastNavigationId() != navigation_id) {
     return nullptr;
   }
-  return contents_proxy.get()->GetWebContents();
+  return contents_proxy.Get();
 }
 
 // static
 void TabManager::ResourceCoordinatorSignalObserver::OnPageAlmostIdleOnUi(
     const base::WeakPtr<TabManager>& tab_manager,
-    const base::WeakPtr<WebContentsProxy>& contents_proxy,
+    const WebContentsProxy& contents_proxy,
     int64_t navigation_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (auto* contents =
@@ -108,7 +108,7 @@ void TabManager::ResourceCoordinatorSignalObserver::OnPageAlmostIdleOnUi(
 void TabManager::ResourceCoordinatorSignalObserver::
     OnExpectedTaskQueueingDurationSampleOnUi(
         const base::WeakPtr<TabManager>& tab_manager,
-        const base::WeakPtr<WebContentsProxy>& contents_proxy,
+        const WebContentsProxy& contents_proxy,
         int64_t navigation_id,
         base::TimeDelta duration) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

@@ -83,6 +83,17 @@ struct TestNodeWrapper<FrameNodeImpl>::Factory {
   }
 };
 
+// A specialized factory function for page nodes that helps fill out some
+// common values.
+template <>
+struct TestNodeWrapper<PageNodeImpl>::Factory {
+  static std::unique_ptr<PageNodeImpl> Create(
+      GraphImpl* graph,
+      const WebContentsProxy& wc_proxy = WebContentsProxy()) {
+    return std::make_unique<PageNodeImpl>(graph, wc_proxy);
+  }
+};
+
 // static
 template <typename NodeClass>
 template <typename... Args>

@@ -12,7 +12,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/performance_manager/web_contents_proxy.h"
+#include "chrome/browser/performance_manager/web_contents_proxy_impl.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -31,7 +31,7 @@ class PerformanceManager;
 class PerformanceManagerTabHelper
     : public content::WebContentsObserver,
       public content::WebContentsUserData<PerformanceManagerTabHelper>,
-      public WebContentsProxy {
+      public WebContentsProxyImpl {
  public:
   // Detaches all instances from their WebContents and destroys them.
   static void DetachAndDestroyAll();
@@ -58,7 +58,7 @@ class PerformanceManagerTabHelper
       const std::string& interface_name,
       mojo::ScopedMessagePipeHandle* interface_pipe) override;
 
-  // WebContentsProxy overrides.
+  // WebContentsProxyImpl overrides.
   content::WebContents* GetWebContents() const override;
   int64_t LastNavigationId() const override;
 
@@ -66,7 +66,7 @@ class PerformanceManagerTabHelper
 
  private:
   friend class content::WebContentsUserData<PerformanceManagerTabHelper>;
-  friend class WebContentsProxy;
+  friend class WebContentsProxyImpl;
 
   explicit PerformanceManagerTabHelper(content::WebContents* web_contents);
 

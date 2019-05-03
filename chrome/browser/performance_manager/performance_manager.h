@@ -16,7 +16,7 @@
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/performance_manager/graph/graph_impl.h"
 #include "chrome/browser/performance_manager/performance_manager.h"
-#include "chrome/browser/performance_manager/web_contents_proxy.h"
+#include "chrome/browser/performance_manager/public/web_contents_proxy.h"
 #include "chrome/browser/performance_manager/webui_graph_dump_impl.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
@@ -82,7 +82,7 @@ class PerformanceManager {
       const base::UnguessableToken& dev_tools_token,
       FrameNodeCreationCallback creation_callback);
   std::unique_ptr<PageNodeImpl> CreatePageNode(
-      const base::WeakPtr<WebContentsProxy>& contents_proxy);
+      const WebContentsProxy& contents_proxy);
   std::unique_ptr<ProcessNodeImpl> CreateProcessNode();
 
   // Destroys a node returned from the creation functions above.

@@ -12,7 +12,7 @@
 #include "chrome/browser/performance_manager/graph/graph_impl.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/performance_manager.h"
-#include "chrome/browser/performance_manager/web_contents_proxy.h"
+#include "chrome/browser/performance_manager/public/web_contents_proxy.h"
 #include "chrome/browser/resource_coordinator/discard_metrics_lifecycle_unit_observer.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_source_observer.h"
 #include "chrome/browser/resource_coordinator/resource_coordinator_parts.h"
@@ -79,16 +79,13 @@ class TabLifecycleStateObserver : public performance_manager::GraphObserver {
   }
 
   static void OnLifecycleStateChangedImpl(
-      const base::WeakPtr<WebContentsProxy>& contents_proxy,
+      const WebContentsProxy& contents_proxy,
       mojom::LifecycleState state) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     // If the web contents is still alive then dispatch to the actual
     // implementation in TabLifecycleUnitSource.
-    if (contents_proxy.get()) {
-      DCHECK(contents_proxy.get()->GetWebContents());
-      TabLifecycleUnitSource::OnLifecycleStateChanged(
-          contents_proxy.get()->GetWebContents(), state);
-    }
+    if (auto* contents = contents_proxy.Get())
+      TabLifecycleUnitSource::OnLifecycleStateChanged(contents, state);
   }
 
   void OnLifecycleStateChanged(PageNodeImpl* page_node) override {

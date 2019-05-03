@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/performance_manager/web_contents_proxy.h"
+#include "chrome/browser/performance_manager/public/web_contents_proxy.h"
 
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
@@ -34,11 +34,9 @@ TEST_F(WebContentsProxyTest, EndToEnd) {
   content::WebContents* proxy_contents = nullptr;
 
   auto deref_proxy = base::BindLambdaForTesting(
-      [&proxy_contents](const base::WeakPtr<WebContentsProxy>& proxy,
+      [&proxy_contents](const WebContentsProxy& proxy,
                         base::RepeatingClosure quit_loop) {
-        proxy_contents = nullptr;
-        if (proxy)
-          proxy_contents = proxy.get()->GetWebContents();
+        proxy_contents = proxy.Get();
         quit_loop.Run();
       });
 

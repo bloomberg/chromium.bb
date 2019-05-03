@@ -104,7 +104,7 @@ std::unique_ptr<FrameNodeImpl> PerformanceManager::CreateFrameNode(
 }
 
 std::unique_ptr<PageNodeImpl> PerformanceManager::CreatePageNode(
-    const base::WeakPtr<WebContentsProxy>& contents_proxy) {
+    const WebContentsProxy& contents_proxy) {
   return CreateNodeImpl<PageNodeImpl>(base::OnceCallback<void(PageNodeImpl*)>(),
                                       contents_proxy);
 }

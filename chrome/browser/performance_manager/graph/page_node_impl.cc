@@ -44,9 +44,9 @@ void ForFrameAndDescendents(FrameNodeImpl* frame_node,
 }  // namespace
 
 PageNodeImpl::PageNodeImpl(GraphImpl* graph,
-                           const base::WeakPtr<WebContentsProxy>& weak_contents)
+                           const WebContentsProxy& contents_proxy)
     : TypedNodeBase(graph),
-      contents_proxy_(weak_contents),
+      contents_proxy_(contents_proxy),
       visibility_change_time_(PerformanceManagerClock::NowTicks()) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
@@ -55,7 +55,7 @@ PageNodeImpl::~PageNodeImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-const base::WeakPtr<WebContentsProxy>& PageNodeImpl::contents_proxy() const {
+const WebContentsProxy& PageNodeImpl::contents_proxy() const {
   return contents_proxy_;
 }
 

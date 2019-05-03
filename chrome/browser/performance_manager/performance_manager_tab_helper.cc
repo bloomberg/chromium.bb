@@ -33,7 +33,8 @@ PerformanceManagerTabHelper::PerformanceManagerTabHelper(
     : content::WebContentsObserver(web_contents),
       performance_manager_(PerformanceManager::GetInstance()),
       weak_factory_(this) {
-  page_node_ = performance_manager_->CreatePageNode(weak_factory_.GetWeakPtr());
+  page_node_ = performance_manager_->CreatePageNode(
+      WebContentsProxy(weak_factory_.GetWeakPtr()));
 
   // Make sure to set the visibility property when we create
   // |page_resource_coordinator_|.

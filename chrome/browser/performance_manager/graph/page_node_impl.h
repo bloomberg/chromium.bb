@@ -14,7 +14,7 @@
 #include "chrome/browser/performance_manager/graph/node_attached_data.h"
 #include "chrome/browser/performance_manager/graph/node_base.h"
 #include "chrome/browser/performance_manager/observers/graph_observer.h"
-#include "chrome/browser/performance_manager/web_contents_proxy.h"
+#include "chrome/browser/performance_manager/public/web_contents_proxy.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "url/gurl.h"
 
@@ -30,13 +30,13 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
   static constexpr NodeTypeEnum Type() { return NodeTypeEnum::kPage; }
 
   explicit PageNodeImpl(GraphImpl* graph,
-                        const base::WeakPtr<WebContentsProxy>& contents_proxy);
+                        const WebContentsProxy& contents_proxy);
   ~PageNodeImpl() override;
 
   // Returns the web contents associated with this page node. It is valid to
   // call this function on any thread but the weak pointer must only be
   // dereferenced on the UI thread.
-  const base::WeakPtr<WebContentsProxy>& contents_proxy() const;
+  const WebContentsProxy& contents_proxy() const;
 
   void SetIsLoading(bool is_loading);
   void SetIsVisible(bool is_visible);
@@ -160,8 +160,8 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
   template <typename MapFunction>
   void ForAllFrameNodes(MapFunction map_function) const;
 
-  // A weak pointer to the WebContentsProxy associated with this page.
-  const base::WeakPtr<WebContentsProxy> contents_proxy_;
+  // The WebContentsProxy associated with this page.
+  const WebContentsProxy contents_proxy_;
 
   // The main frame nodes of this page. There can be more than one main frame
   // in a page, among other reasons because during main frame navigation, the

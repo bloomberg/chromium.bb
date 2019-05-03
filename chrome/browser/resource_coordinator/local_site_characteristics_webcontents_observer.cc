@@ -11,7 +11,7 @@
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/observers/graph_observer.h"
 #include "chrome/browser/performance_manager/performance_manager.h"
-#include "chrome/browser/performance_manager/web_contents_proxy.h"
+#include "chrome/browser/performance_manager/public/web_contents_proxy.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_store_factory.h"
 #include "chrome/browser/resource_coordinator/tab_helper.h"
@@ -50,7 +50,7 @@ class LocalSiteCharacteristicsWebContentsObserver::GraphObserver
 
  private:
   static void DispatchNonPersistentNotificationCreated(
-      base::WeakPtr<WebContentsProxy> contents_proxy,
+      WebContentsProxy contents_proxy,
       int64_t navigation_id);
 
   // Binds to the task runner where the object is constructed.
@@ -336,13 +336,15 @@ namespace {
 
 // Return the WCO if notification is not late, and it's available.
 LocalSiteCharacteristicsWebContentsObserver* MaybeGetWCO(
-    base::WeakPtr<performance_manager::WebContentsProxy> contents_proxy,
+    performance_manager::WebContentsProxy contents_proxy,
     int64_t navigation_id) {
   // Bail if this is a late notification.
-  if (!contents_proxy || contents_proxy->LastNavigationId() != navigation_id)
+  if (contents_proxy.LastNavigationId() != navigation_id)
     return nullptr;
 
-  content::WebContents* web_contents = contents_proxy->GetWebContents();
+  // The proxy is guaranteed to dereference if the navigation ID above was
+  // valid.
+  content::WebContents* web_contents = contents_proxy.Get();
   DCHECK(web_contents);
 
   // The L41r is not itself WebContentsUserData, but rather stored on
@@ -359,9 +361,8 @@ LocalSiteCharacteristicsWebContentsObserver* MaybeGetWCO(
 
 // static
 void LocalSiteCharacteristicsWebContentsObserver::GraphObserver::
-    DispatchNonPersistentNotificationCreated(
-        base::WeakPtr<WebContentsProxy> contents_proxy,
-        int64_t navigation_id) {
+    DispatchNonPersistentNotificationCreated(WebContentsProxy contents_proxy,
+                                             int64_t navigation_id) {
   if (auto* wco = MaybeGetWCO(contents_proxy, navigation_id))
     wco->OnNonPersistentNotificationCreated();
 }

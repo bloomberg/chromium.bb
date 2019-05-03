@@ -46,7 +46,7 @@ class FrozenFrameAggregatorTest : public GraphTestHarness {
     ffa_ = std::make_unique<FrozenFrameAggregator>();
     graph()->RegisterObserver(ffa_.get());
     process_node_ = CreateNode<ProcessNodeImpl>();
-    page_node_ = CreateNode<PageNodeImpl>(nullptr);
+    page_node_ = CreateNode<PageNodeImpl>();
   }
 
   void TearDown() override { graph()->UnregisterObserver(ffa_.get()); }
@@ -116,7 +116,7 @@ TEST_F(FrozenFrameAggregatorTest, ProcessAggregation) {
 
   // Create another process and another page.
   auto proc2 = CreateNode<ProcessNodeImpl>();
-  auto page2 = CreateNode<PageNodeImpl>(nullptr);
+  auto page2 = CreateNode<PageNodeImpl>();
   ExpectProcessData(1, 1);
 
   // Create a child frame for the first page hosted in the second process.
