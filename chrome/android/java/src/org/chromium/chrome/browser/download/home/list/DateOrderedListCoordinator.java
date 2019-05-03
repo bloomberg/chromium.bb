@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.download.home.list;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
-import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -180,7 +179,6 @@ public class DateOrderedListCoordinator implements ToolbarCoordinator.ToolbarLis
 
     @Override
     public void setSearchQuery(String query) {
-        mEmptyCoordinator.setInSearchMode(!TextUtils.isEmpty(query));
         mMediator.onFilterStringChanged(query);
     }
 
