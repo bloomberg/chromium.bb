@@ -82,22 +82,6 @@ class CORE_EXPORT NavigationScheduler final
   DISALLOW_COPY_AND_ASSIGN(NavigationScheduler);
 };
 
-class NavigationDisablerForBeforeUnload {
-  DISALLOW_COPY_AND_ASSIGN(NavigationDisablerForBeforeUnload);
-  STACK_ALLOCATED();
-
- public:
-  NavigationDisablerForBeforeUnload() { navigation_disable_count_++; }
-  ~NavigationDisablerForBeforeUnload() {
-    DCHECK(navigation_disable_count_);
-    navigation_disable_count_--;
-  }
-  static bool IsNavigationAllowed() { return !navigation_disable_count_; }
-
- private:
-  static unsigned navigation_disable_count_;
-};
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_NAVIGATION_SCHEDULER_H_

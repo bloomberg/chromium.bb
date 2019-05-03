@@ -1333,7 +1333,7 @@ bool FrameLoader::ShouldClose(bool is_reload) {
   }
 
   {
-    NavigationDisablerForBeforeUnload navigation_disabler;
+    FrameNavigationDisabler navigation_disabler(*frame_);
     bool did_allow_navigation = false;
 
     // https://html.spec.whatwg.org/C/browsing-the-web.html#prompt-to-unload-a-document

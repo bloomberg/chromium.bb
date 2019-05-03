@@ -62,8 +62,6 @@
 
 namespace blink {
 
-unsigned NavigationDisablerForBeforeUnload::navigation_disable_count_ = 0;
-
 class ScheduledRedirect final : public ScheduledNavigation {
  public:
   ScheduledRedirect(double delay,
@@ -128,9 +126,7 @@ bool NavigationScheduler::IsNavigationScheduledWithin(double interval) const {
 
 inline bool NavigationScheduler::ShouldScheduleNavigation(
     const KURL& url) const {
-  return frame_->GetPage() && frame_->IsNavigationAllowed() &&
-         (url.ProtocolIsJavaScript() ||
-          NavigationDisablerForBeforeUnload::IsNavigationAllowed());
+  return frame_->GetPage() && frame_->IsNavigationAllowed();
 }
 
 void NavigationScheduler::ScheduleRedirect(

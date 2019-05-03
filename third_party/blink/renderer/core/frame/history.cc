@@ -188,7 +188,7 @@ void History::go(ScriptState* script_state,
   if (!active_document->GetFrame() ||
       !active_document->GetFrame()->CanNavigate(*GetFrame()) ||
       !active_document->GetFrame()->IsNavigationAllowed() ||
-      !NavigationDisablerForBeforeUnload::IsNavigationAllowed()) {
+      !GetFrame()->IsNavigationAllowed()) {
     return;
   }
 
