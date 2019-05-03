@@ -21,10 +21,12 @@
 #include "chrome/browser/ui/app_list/search/arc/arc_app_reinstall_app_result.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/common/url_icon_source.h"
+#include "chrome/common/pref_names.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "extensions/grit/extensions_browser_resources.h"
 
@@ -255,6 +257,19 @@ void ArcAppReinstallSearchProvider::StartFetch() {
   if (app_instance == nullptr)
     return;
 
+  if (profile_->GetPrefs()->IsManagedPreference(
+          prefs::kAppReinstallRecommendationEnabled) &&
+      !profile_->GetPrefs()->GetBoolean(
+          prefs::kAppReinstallRecommendationEnabled)) {
+    // This user profile is managed, and the app reinstall recommendation is
+    // switched off. This is updated dynamically, usually, so we need to update
+    // the loaded value and return.
+    OnGetAppReinstallCandidates(base::Time::UnixEpoch(),
+                                arc::mojom::AppReinstallState::REQUEST_SUCCESS,
+                                {});
+    return;
+  }
+
   app_instance->GetAppReinstallCandidates(base::BindOnce(
       &ArcAppReinstallSearchProvider::OnGetAppReinstallCandidates,
       weak_ptr_factory_.GetWeakPtr(), base::Time::Now()));
@@ -265,10 +280,12 @@ void ArcAppReinstallSearchProvider::OnGetAppReinstallCandidates(
     arc::mojom::AppReinstallState state,
     std::vector<arc::mojom::AppReinstallCandidatePtr> results) {
   RecordUmaResponseParseResult(state);
-  DCHECK_NE(start_time, base::Time::UnixEpoch());
-  UMA_HISTOGRAM_TIMES(kAppListLatency, base::Time::Now() - start_time);
-  UMA_HISTOGRAM_COUNTS_100(kAppListCounts, results.size());
 
+  // fake result insertion is indicated by unix epoch start time.
+  if (start_time != base::Time::UnixEpoch()) {
+    UMA_HISTOGRAM_TIMES(kAppListLatency, base::Time::Now() - start_time);
+    UMA_HISTOGRAM_COUNTS_100(kAppListCounts, results.size());
+  }
   if (state != arc::mojom::AppReinstallState::REQUEST_SUCCESS) {
     LOG(ERROR) << "Failed to get reinstall candidates: " << state;
     return;

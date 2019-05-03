@@ -968,7 +968,8 @@
         'ArcGoogleLocationServicesEnabled',
         'ArcCertificatesSyncMode',
         'ArcBackupRestoreEnabled',
-        'ArcLocationServiceEnabled'
+        'ArcLocationServiceEnabled',
+        'AppRecommendationZeroStateEnabled',
       ]
     },
     {
@@ -5669,6 +5670,29 @@
       If this setting is left not set the user can decide to use this function or not.
 
       This setting has been removed from <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 29 and higher versions.''',
+    },
+    {
+      'name': 'AppRecommendationZeroStateEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:75-'],
+      'features': {
+        'per_profile': True,
+        'dynamic_refresh': True
+      },
+      'example_value': True,
+      'id': 563,
+      'caption': '''Enable App Recommendations in Zero State of Search Box''',
+      'tags': [],
+      'desc': '''Enable App Recommendation in Zero State of search box in launcher.
+
+          If this policy is set to true, App recommendations may appear in the zero state search.
+
+          If this policy is set to false, App recommendations will not appear in the zero state search.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, the default is False for managed devices.'''
     },
     {
       'name': 'TranslateEnabled',
@@ -16619,5 +16643,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used':  562
+  'highest_id_currently_used':  563
 }

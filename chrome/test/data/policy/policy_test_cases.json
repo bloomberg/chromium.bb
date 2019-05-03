@@ -2054,7 +2054,14 @@
       }
     ]
   },
-
+  "AppRecommendationZeroStateEnabled": {
+    "os:": ["chromeos"],
+    "test_policy": { "AppRecommendationZeroStateEnabled": false },
+    "pref_mappings": [
+      { "pref": "zero_state_app_install_recommendation.enabled"
+      }
+    ]
+  },
   "AllowOutdatedPlugins": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "AllowOutdatedPlugins": true },

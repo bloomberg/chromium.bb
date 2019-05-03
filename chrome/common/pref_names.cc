@@ -928,6 +928,11 @@ const char kKerberosAddAccountsAllowed[] = "kerberos.add_accounts_allowed";
 // Dictionary specifying a pre-set list of Kerberos accounts.
 const char kKerberosAccounts[] = "kerberos.accounts";
 
+// A boolean pref for enabling/disabling App reinstall recommendations in Zero
+// State Launcher by policy.
+const char kAppReinstallRecommendationEnabled[] =
+    "zero_state_app_install_recommendation.enabled";
+
 #endif  // defined(OS_CHROMEOS)
 
 // A boolean pref set to true if a Home button to open the Home pages should be

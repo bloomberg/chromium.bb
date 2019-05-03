@@ -236,6 +236,8 @@ void Preferences::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
   registry->RegisterBooleanPref(prefs::kLabsMediaplayerEnabled, false);
   registry->RegisterBooleanPref(prefs::kLabsAdvancedFilesystemEnabled, false);
+  registry->RegisterBooleanPref(prefs::kAppReinstallRecommendationEnabled,
+                                false);
 
   // TODO(jamescook): Move ownership and registration into ash. This will need
   // changes to policy::RecommendationRestorer which requires that prefs are
