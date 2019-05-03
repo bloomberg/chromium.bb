@@ -70,15 +70,16 @@ class WelcomeScreen : public BaseScreen,
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  // BaseScreen implementation:
+  void Show() override;
+  void Hide() override;
+  void OnUserAction(const std::string& action_id) override;
+
  protected:
   // Exposes exit callback to test overrides.
   base::RepeatingClosure* exit_callback() { return &exit_callback_; }
 
  private:
-  // BaseScreen implementation:
-  void Show() override;
-  void Hide() override;
-  void OnUserAction(const std::string& action_id) override;
 
   // InputMethodManager::Observer implementation:
   void InputMethodChanged(input_method::InputMethodManager* manager,

@@ -1891,6 +1891,7 @@ test("browser_tests") {
         "../browser/chromeos/login/screens/recommend_apps_screen_browsertest.cc",
         "../browser/chromeos/login/screens/update_screen_browsertest.cc",
         "../browser/chromeos/login/screens/user_selection_screen_browsertest.cc",
+        "../browser/chromeos/login/screens/welcome_screen_browsertest.cc",
         "../browser/chromeos/login/session/chrome_session_manager_browsertest.cc",
         "../browser/chromeos/login/session_login_browsertest.cc",
         "../browser/chromeos/login/signin/device_id_browsertest.cc",

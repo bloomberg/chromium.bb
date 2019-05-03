@@ -60,6 +60,7 @@
     <oobe-welcome-dialog id="welcomeScreen" role="dialog"
         aria-label$="[[i18nDynamic(locale, 'welcomeScreenGreeting')]]"
         current-language="[[currentLanguage]]"
+        current-keyboard="[[currentKeyboard]]"
         on-language-button-clicked="onWelcomeSelectLanguageButtonClicked_"
         on-accessibility-button-clicked="onWelcomeAccessibilityButtonClicked_"
         on-timezone-button-clicked="onWelcomeTimezoneButtonClicked_"
@@ -76,11 +77,11 @@
           icon1x="oobe-welcome-32:language" icon2x="oobe-welcome-64:language">
       </hd-iron-icon>
       <h1 slot="title">[[i18nDynamic(locale, 'languageSectionTitle')]]</h1>
-      <div slot="footer" class="layout vertical">
+      <div id="setup-container" slot="footer" class="layout vertical">
         <div id="languageDropdownContainer"
             class="flex layout center horizontal justified
                 language-selection-entry">
-          <div class=
+          <div id="language-dropdown" class=
               "language-selection-title layout vertical center-justified">
             [[i18nDynamic(locale, 'languageDropdownTitle')]]
           </div>
@@ -93,7 +94,7 @@
         <div id="keyboardDropdownContainer"
             class="flex layout center horizontal justified
                language-selection-entry">
-          <div class=
+          <div  id="keyboard-dropdown" class=
               "language-selection-title layout vertical center-justified">
             [[i18nDynamic(locale, 'keyboardDropdownTitle')]]
           </div>
@@ -105,7 +106,8 @@
         </div>
       </div>
       <div slot="bottom-buttons" class="layout horizontal end-justified">
-        <oobe-text-button inverse on-tap="closeLanguageSection_">
+        <oobe-text-button id="ok-button-language"
+        inverse on-tap="closeLanguageSection_">
           <div>[[i18nDynamic(locale, 'oobeOKButtonText')]]</div>
         </oobe-text-button>
       </div>
@@ -123,7 +125,8 @@
         [[i18nDynamic(locale, 'accessibilitySectionHint')]]
       </div>
       <div slot="footer" class="layout vertical scroll">
-        <oobe-a11y-option checked="[[a11yStatus.spokenFeedbackEnabled]]"
+        <oobe-a11y-option id="accessibility-spoken-feedback"
+        checked="[[a11yStatus.spokenFeedbackEnabled]]"
             on-change="onA11yOptionChanged_"
             chrome-message="enableSpokenFeedback"
             label-for-aria="[[i18nDynamic(locale, 'spokenFeedbackOption')]]"
@@ -138,7 +141,8 @@
             [[i18nDynamic(locale, 'a11ySettingToggleOptionOff')]]
           </span>
         </oobe-a11y-option>
-        <oobe-a11y-option checked="[[a11yStatus.largeCursorEnabled]]"
+        <oobe-a11y-option id="accessibility-large-cursor"
+            checked="[[a11yStatus.largeCursorEnabled]]"
             on-change="onA11yOptionChanged_" chrome-message="enableLargeCursor"
             label-for-aria="[[i18nDynamic(locale, 'largeCursorOption')]]">
           <span slot="title">
@@ -151,7 +155,8 @@
             [[i18nDynamic(locale, 'largeCursorOptionOff')]]
           </span>
         </oobe-a11y-option>
-        <oobe-a11y-option checked="[[a11yStatus.highContrastEnabled]]"
+        <oobe-a11y-option id="accessibility-high-contrast"
+            checked="[[a11yStatus.highContrastEnabled]]"
             on-change="onA11yOptionChanged_" chrome-message="enableHighContrast"
             label-for-aria="[[i18nDynamic(locale, 'highContrastOption')]]">
           <span slot="title">
@@ -164,7 +169,8 @@
             [[i18nDynamic(locale, 'a11ySettingToggleOptionOff')]]
           </span>
         </oobe-a11y-option>
-        <oobe-a11y-option checked="[[a11yStatus.screenMagnifierEnabled]]"
+        <oobe-a11y-option id="accessibility-screen-magnifier"
+            checked="[[a11yStatus.screenMagnifierEnabled]]"
             on-change="onA11yOptionChanged_"
             chrome-message="enableScreenMagnifier"
             label-for-aria="[[i18nDynamic(locale, 'screenMagnifierOption')]]">
@@ -178,7 +184,8 @@
             [[i18nDynamic(locale, 'a11ySettingToggleOptionOff')]]
           </span>
         </oobe-a11y-option>
-        <oobe-a11y-option checked="[[a11yStatus.selectToSpeakEnabled]]"
+        <oobe-a11y-option id="accessibility-select-to-speak"
+            checked="[[a11yStatus.selectToSpeakEnabled]]"
             on-change="onA11yOptionChanged_"
             chrome-message="enableSelectToSpeak"
             label-for-aria="[[i18nDynamic(locale, 'selectToSpeakOption')]]"
@@ -193,7 +200,8 @@
             [[i18nDynamic(locale, 'a11ySettingToggleOptionOff')]]
           </span>
         </oobe-a11y-option>
-        <oobe-a11y-option checked="[[a11yStatus.dockedMagnifierEnabled]]"
+        <oobe-a11y-option id="accessibility-screen-docked-magnifier"
+            checked="[[a11yStatus.dockedMagnifierEnabled]]"
             on-change="onA11yOptionChanged_"
             chrome-message="enableDockedMagnifier"
             label-for-aria="[[i18nDynamic(locale, 'dockedMagnifierOption')]]"
@@ -225,7 +233,8 @@
         </oobe-a11y-option>
       </div>
       <div slot="bottom-buttons" class="layout horizontal end-justified">
-        <oobe-text-button inverse on-tap="closeAccessibilitySection_">
+        <oobe-text-button id="ok-button-accessibility"
+        inverse on-tap="closeAccessibilitySection_">
           <div>[[i18nDynamic(locale, 'oobeOKButtonText')]]</div>
         </oobe-text-button>
       </div>
@@ -251,7 +260,8 @@
         </div>
       </div>
       <div slot="bottom-buttons" class="layout horizontal end-justified">
-        <oobe-text-button inverse on-tap="closeTimezoneSection_">
+        <oobe-text-button id="ok-button-timezone"
+        inverse on-tap="closeTimezoneSection_">
           <div>[[i18nDynamic(locale, 'oobeOKButtonText')]]</div>
         </oobe-text-button>
       </div>
@@ -289,7 +299,8 @@
         </div>
       </div>
       <div slot="bottom-buttons" class="layout horizontal end-justified">
-        <oobe-text-button inverse on-tap="closeAdvancedOptionsSection_">
+        <oobe-text-button  id="ok-button-advanced-options"
+        inverse on-tap="closeAdvancedOptionsSection_">
           <div>[[i18nDynamic(locale, 'oobeOKButtonText')]]</div>
         </oobe-text-button>
       </div>
