@@ -14,6 +14,13 @@ if (current_cpu == "arm") {
 }
 
 declare_args() {
+  # If true, use PFFFT for WebAudio FFT support.  This can be used for
+  # any Android architecture and also Linux and Windows.  We only use
+  # it on Android.
+  use_webaudio_pffft = is_android
+}
+
+declare_args() {
   # DEPRECATED: Use blink_symbol_level=0. https://crbug.com/943869
   remove_webcore_debug_symbols = false
 
@@ -31,8 +38,8 @@ declare_args() {
   # If true, defaults image interpolation to low quality.
   use_low_quality_image_interpolation = is_android
 
-  # If true, ffmpeg will be used for decoding audio.
-  use_webaudio_ffmpeg = !is_mac && !is_android
+  # If true, ffmpeg will be used for computing FFTs for WebAudio
+  use_webaudio_ffmpeg = !is_mac && !is_android && !use_webaudio_pffft
 
   # If true, webgl2-compute context will be supported.
   support_webgl2_compute_context = !is_android
@@ -44,12 +51,13 @@ assert(!remove_webcore_debug_symbols,
            "https://crbug.com/943869")
 
 # Whether Android build uses OpenMAX DL FFT. Currently supported only on
-# ARMv7+, ARM64, x86 or x64 without webview. Also enables WebAudio support.
-# Whether WebAudio is actually available depends on runtime settings and flags.
-use_openmax_dl_fft =
-    is_android && (current_cpu == "x86" || current_cpu == "x64" ||
-                   (current_cpu == "arm" && arm_version >= 7) ||
-                   current_cpu == "arm64" || current_cpu == "mipsel")
+# ARMv7+, ARM64, x86 or x64 without webview.
+# TODO(crbug.com/917355): Remove support for openmax_dl FFT in favor
+# of PFFFT
+use_openmax_dl_fft = !use_webaudio_pffft && is_android &&
+                     (current_cpu == "x86" || current_cpu == "x64" ||
+                      (current_cpu == "arm" && arm_version >= 7) ||
+                      current_cpu == "arm64" || current_cpu == "mipsel")
 
 # feature_defines_list ---------------------------------------------------------
 
@@ -73,6 +81,10 @@ if (support_webgl2_compute_context) {
 
 if (use_openmax_dl_fft) {
   feature_defines_list += [ "WTF_USE_WEBAUDIO_OPENMAX_DL_FFT=1" ]
+}
+
+if (use_webaudio_pffft) {
+  feature_defines_list += [ "WTF_USE_WEBAUDIO_PFFFT=1" ]
 }
 
 if (use_default_render_theme) {

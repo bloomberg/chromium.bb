@@ -44,6 +44,8 @@
 #include <dl/sp/api/omxSP.h>
 #elif defined(WTF_USE_WEBAUDIO_FFMPEG)
 struct RDFTContext;
+#elif defined(WTF_USE_WEBAUDIO_PFFFT)
+#include "third_party/pffft/src/pffft.h"
 #endif
 
 namespace blink {
@@ -100,6 +102,32 @@ class PLATFORM_EXPORT FFTFrame {
 
   unsigned fft_size_;
   unsigned log2fft_size_;
+  // These two arrays contain the transformed data.  Instead of a single array
+  // of complex numbers, we split the complex data into an array of the real
+  // part and the imaginary part.
+  //
+  // Let the forward transform, X[k], of the real signal x[n] be defined by
+  //
+  //   X[k] = sum(x[n]*W^(k*n)) for n = 0 to N-1
+  //
+  // where W = exp(-2*pi*i/N), and N is the FFT size.
+  //
+  // Since x[n] is assumed to be real, X[k] has complex conjugate symmetry with
+  // X[N-k] = conj(X[k]).  Thus, we only need to keep X[k] for k = 0 to N/2.
+  // But since X[0] is purely real and X[N/2] is also purely real, so we could
+  // place the real part of X[N/2] in the imaginary part of X[0].  Thus
+  // for k = 1 to N/2:
+  //
+  //   real_data[k] = Re(X[k])
+  //   imag_data[k] = Im(X[k])
+  //
+  // and
+  //
+  //   real_data[0] = Re(X[0]);
+  //   imag_data[0] = Re(X[N/2])
+  //
+  // The routine |DoFFT| must produce transformed data in this format, and the
+  // routine |DoInverseFFT| must expect transformed data in this format.
   AudioFloatArray real_data_;
   AudioFloatArray imag_data_;
 
@@ -121,6 +149,23 @@ class PLATFORM_EXPORT FFTFrame {
   OMXFFTSpec_R_F32* forward_context_;
   OMXFFTSpec_R_F32* inverse_context_;
   AudioFloatArray complex_data_;
+#elif defined(WTF_USE_WEBAUDIO_PFFFT)
+  // Create and return the setup data for an FFT (forward or ivnerse) of the
+  // given size.
+  static PFFFT_Setup* ContextForSize(unsigned fft_size);
+
+  // The context can be used for both forward and inverse transforms.
+  // TODO(rtoy): Consider using an array to hold the possible contexts since the
+  // contexts are read-only after creation and can be shared between FFTFrame
+  // objects.
+  PFFFT_Setup* context_;
+
+  // Work array for converting PFFFT results to and from the format expected in
+  // |real_data_| and |imag_datra_|.
+  AudioFloatArray complex_data_;
+
+  // Work array used by the PFFFT transform routines.
+  AudioFloatArray pffft_work_;
 #endif
 };
 

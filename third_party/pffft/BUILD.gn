@@ -13,7 +13,9 @@ config("common_config") {
       "_USE_MATH_DEFINES",
     ]
   }
-  if (current_cpu == "arm" && !arm_use_neon) {
+
+  # PFFFT doesn't support SIMD on mipsel, so build a scalar version.
+  if ((current_cpu == "arm" && !arm_use_neon) || current_cpu == "mipsel") {
     defines = [ "PFFFT_SIMD_DISABLE" ]
   }
 }

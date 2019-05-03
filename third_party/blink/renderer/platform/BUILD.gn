@@ -394,6 +394,7 @@ jumbo_component("platform") {
     "audio/multi_channel_resampler.h",
     "audio/panner.cc",
     "audio/panner.h",
+    "audio/pffft/fft_frame_pffft.cc",
     "audio/push_pull_fifo.cc",
     "audio/push_pull_fifo.h",
     "audio/reverb.cc",
@@ -1554,6 +1555,10 @@ jumbo_component("platform") {
   if (use_openmax_dl_fft) {
     include_dirs += [ "//third_party/openmax_dl" ]
     deps += [ "//third_party/openmax_dl/dl" ]
+  }
+  if (use_webaudio_pffft) {
+    include_dirs += [ "//third_party/pffft/src" ]
+    deps += [ "//third_party/pffft" ]
   }
 
   configs -= [ "//build/config/compiler:default_symbols" ]
