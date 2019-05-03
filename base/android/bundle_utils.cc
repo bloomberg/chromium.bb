@@ -14,6 +14,11 @@ namespace base {
 namespace android {
 
 // static
+bool BundleUtils::IsBundle() {
+  return Java_BundleUtils_isBundle(base::android::AttachCurrentThread());
+}
+
+// static
 void* BundleUtils::DlOpenModuleLibrary(const std::string& libary_name) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> java_path = Java_BundleUtils_getNativeLibraryPath(

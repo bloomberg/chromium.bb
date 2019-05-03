@@ -24,6 +24,7 @@ public class BundleUtils {
     }
 
     /* Returns true if the current build is a bundle. */
+    @CalledByNative
     public static boolean isBundle() {
         return sIsBundle;
     }

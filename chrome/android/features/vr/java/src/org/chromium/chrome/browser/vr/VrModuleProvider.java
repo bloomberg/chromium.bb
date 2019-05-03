@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.vr;
 
+import org.chromium.base.BundleUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
@@ -44,6 +45,7 @@ public class VrModuleProvider implements ModuleInstallUi.FailureUiListener {
      */
     public static void maybeRequestModuleIfDaydreamReady() {
         if (!VrBuildConfig.IS_VR_ENABLED) return;
+        if (!BundleUtils.isBundle()) return;
         if (VrModule.isInstalled()) return;
         if (!getDelegate().isDaydreamReadyDevice()) return;
 

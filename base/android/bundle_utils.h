@@ -15,6 +15,9 @@ namespace android {
 // Utils to help working with android app bundles.
 class BASE_EXPORT BundleUtils {
  public:
+  // Returns true if the current build is a bundle.
+  static bool IsBundle();
+
   // dlopen variant that works for native libraries in dynamic feature modules.
   static void* DlOpenModuleLibrary(const std::string& libary_name);
 };
