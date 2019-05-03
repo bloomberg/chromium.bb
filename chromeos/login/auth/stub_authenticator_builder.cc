@@ -23,6 +23,8 @@ scoped_refptr<Authenticator> StubAuthenticatorBuilder::Create(
     authenticator->data_recovery_notifier_ = data_recovery_notifier_;
   authenticator->has_incomplete_encryption_migration_ =
       has_incomplete_encryption_migration_;
+  if (auth_action_ == StubAuthenticator::AuthAction::kAuthFailure)
+    authenticator->failure_reason_ = failure_reason_;
   return authenticator;
 }
 
@@ -40,6 +42,13 @@ void StubAuthenticatorBuilder::SetUpOldEncryption(
   DCHECK_EQ(auth_action_, StubAuthenticator::AuthAction::kAuthSuccess);
   auth_action_ = StubAuthenticator::AuthAction::kOldEncryption;
   has_incomplete_encryption_migration_ = has_incomplete_migration;
+}
+
+void StubAuthenticatorBuilder::SetUpAuthFailure(
+    AuthFailure::FailureReason failure_reason) {
+  DCHECK_EQ(auth_action_, StubAuthenticator::AuthAction::kAuthSuccess);
+  auth_action_ = StubAuthenticator::AuthAction::kAuthFailure;
+  failure_reason_ = failure_reason;
 }
 
 }  // namespace chromeos

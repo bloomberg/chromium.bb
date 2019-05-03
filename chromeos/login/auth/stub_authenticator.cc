@@ -47,6 +47,11 @@ void StubAuthenticator::AuthenticateToLogin(content::BrowserContext* context,
         task_runner_->PostTask(
             FROM_HERE, base::BindOnce(&StubAuthenticator::OnAuthSuccess, this));
         break;
+      case AuthAction::kAuthFailure:
+        task_runner_->PostTask(
+            FROM_HERE, base::BindOnce(&StubAuthenticator::OnAuthFailure, this,
+                                      AuthFailure(failure_reason_)));
+        break;
       case AuthAction::kPasswordChange:
         task_runner_->PostTask(
             FROM_HERE,

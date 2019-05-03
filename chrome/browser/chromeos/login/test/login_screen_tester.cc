@@ -76,6 +76,12 @@ bool LoginScreenTester::ClickGuestButton() {
   return success;
 }
 
+void LoginScreenTester::SubmitPassword(const AccountId& account_id,
+                                       const std::string& password) {
+  ash::mojom::LoginScreenTestApiAsyncWaiter login_screen(test_api_.get());
+  login_screen.SubmitPassword(account_id, password);
+}
+
 bool LoginScreenTester::WaitForUiUpdate(int64_t previous_update_count) {
   ash::mojom::LoginScreenTestApiAsyncWaiter login_screen(test_api_.get());
   bool success;

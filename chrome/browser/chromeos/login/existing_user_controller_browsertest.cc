@@ -25,6 +25,10 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager_test_api.h"
+#include "chrome/browser/chromeos/login/test/js_checker.h"
+#include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
+#include "chrome/browser/chromeos/login/test/login_screen_tester.h"
+#include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/mock_login_display.h"
 #include "chrome/browser/chromeos/login/ui/mock_login_display_host.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
@@ -41,10 +45,14 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/auth_policy/fake_auth_policy_client.h"
+#include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/mock_url_fetchers.h"
+#include "chromeos/login/auth/stub_authenticator_builder.h"
 #include "chromeos/login/auth/user_context.h"
+#include "chromeos/network/network_state_test_helper.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/cros_settings_provider.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -1070,6 +1078,120 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerSavePasswordHashTest,
       content::Details<Profile>(profile_prepared_observer.details()).ptr();
   EXPECT_TRUE(profile->GetPrefs()->HasPrefPath(
       password_manager::prefs::kPasswordHashDataList));
+}
+
+// Tests different auth failures for an existing user login attempts.
+class ExistingUserControllerAuthFailureTest
+    : public MixinBasedInProcessBrowserTest {
+ public:
+  ExistingUserControllerAuthFailureTest() = default;
+  ~ExistingUserControllerAuthFailureTest() override = default;
+
+  void SetUpStubAuthenticatorAndAttemptLogin(
+      AuthFailure::FailureReason failure_reason) {
+    const UserContext user_context =
+        LoginManagerMixin::CreateDefaultUserContext(test_user_);
+
+    auto authenticator_builder =
+        std::make_unique<StubAuthenticatorBuilder>(user_context);
+    if (failure_reason != AuthFailure::NONE)
+      authenticator_builder->SetUpAuthFailure(failure_reason);
+
+    test::UserSessionManagerTestApi(UserSessionManager::GetInstance())
+        .InjectAuthenticatorBuilder(std::move(authenticator_builder));
+
+    // Some auth failure tests verify that error bubble is shown in the login
+    // UI. Given that login UI ignores auth failures, unless it attempted a
+    // login, the login attempt cannot be shortcut by login manager mixin API -
+    // it has to go through login UI.
+    const std::string& password = user_context.GetKey()->GetSecret();
+    test::LoginScreenTester().SubmitPassword(test_user_.account_id, password);
+  }
+
+  void SetUpStubAuthenticatorAndAttemptLoginWithWrongPassword() {
+    const UserContext user_context =
+        LoginManagerMixin::CreateDefaultUserContext(test_user_);
+    auto authenticator_builder =
+        std::make_unique<StubAuthenticatorBuilder>(user_context);
+    test::UserSessionManagerTestApi(UserSessionManager::GetInstance())
+        .InjectAuthenticatorBuilder(std::move(authenticator_builder));
+
+    test::LoginScreenTester().SubmitPassword(test_user_.account_id,
+                                             "wrong!!!!!");
+  }
+
+  // Waits for auth error message to be shown in login UI. It runs
+  // LoginScreenTester::WaitForUiUpdate until
+  // LoginScreenTester::IsAuthErrorBubbleShown returns true.
+  void WaitForAuthErrorMessage() {
+    test::LoginScreenTester login_tester;
+
+    int ui_version = login_tester.GetUiUpdateCount();
+
+    while (!login_tester.IsAuthErrorBubbleShown()) {
+      ASSERT_TRUE(login_tester.WaitForUiUpdate(ui_version));
+      ui_version = login_tester.GetUiUpdateCount();
+    }
+  }
+
+ protected:
+  const LoginManagerMixin::TestUserInfo test_user_{
+      AccountId::FromUserEmailGaiaId("user@gmail.com", "user")};
+  LoginManagerMixin login_manager_{&mixin_host_, {test_user_}};
+};
+
+IN_PROC_BROWSER_TEST_F(ExistingUserControllerAuthFailureTest,
+                       CryptohomeMissing) {
+  SetUpStubAuthenticatorAndAttemptLogin(AuthFailure::MISSING_CRYPTOHOME);
+
+  OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->FindUser(test_user_.account_id);
+  ASSERT_TRUE(user);
+  EXPECT_TRUE(user->force_online_signin());
+}
+
+IN_PROC_BROWSER_TEST_F(ExistingUserControllerAuthFailureTest, TpmError) {
+  SetUpStubAuthenticatorAndAttemptLogin(AuthFailure::TPM_ERROR);
+
+  OobeScreenWaiter(OobeScreen::SCREEN_TPM_ERROR).Wait();
+
+  EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
+
+  test::OobeJS().ExpectVisiblePath({"tpm-error-message"});
+  test::OobeJS().ExpectVisiblePath({"reboot-button"});
+  test::OobeJS().Evaluate("document.getElementById('reboot-button').click()");
+
+  EXPECT_EQ(1, FakePowerManagerClient::Get()->num_request_restart_calls());
+}
+
+IN_PROC_BROWSER_TEST_F(ExistingUserControllerAuthFailureTest, OwnerRequired) {
+  SetUpStubAuthenticatorAndAttemptLogin(AuthFailure::OWNER_REQUIRED);
+  WaitForAuthErrorMessage();
+}
+
+IN_PROC_BROWSER_TEST_F(ExistingUserControllerAuthFailureTest, WrongPassword) {
+  SetUpStubAuthenticatorAndAttemptLoginWithWrongPassword();
+  WaitForAuthErrorMessage();
+}
+
+IN_PROC_BROWSER_TEST_F(ExistingUserControllerAuthFailureTest,
+                       WrongPasswordWhileOffline) {
+  chromeos::NetworkStateTestHelper network_state_test_helper(
+      false /*use_default_devices_and_services*/);
+  network_state_test_helper.ClearServices();
+
+  SetUpStubAuthenticatorAndAttemptLoginWithWrongPassword();
+  WaitForAuthErrorMessage();
+}
+
+IN_PROC_BROWSER_TEST_F(ExistingUserControllerAuthFailureTest,
+                       CryptohomeUnavailable) {
+  FakeCryptohomeClient::Get()->SetServiceIsAvailable(false);
+  SetUpStubAuthenticatorAndAttemptLogin(AuthFailure::NONE);
+
+  FakeCryptohomeClient::Get()->ReportServiceIsNotAvailable();
+  WaitForAuthErrorMessage();
 }
 
 }  // namespace chromeos

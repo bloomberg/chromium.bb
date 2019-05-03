@@ -239,6 +239,10 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) FakeCryptohomeClient
   // pending callbacks if is_available is true.
   void SetServiceIsAvailable(bool is_available);
 
+  // Runs pending availability callbacks reporting that the service is
+  // unavailable. Expects service not to be available when called.
+  void ReportServiceIsNotAvailable();
+
   // Sets the unmount result of Unmount() call.
   void set_unmount_result(bool result) { unmount_result_ = result; }
 
@@ -390,6 +394,9 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) FakeCryptohomeClient
       const std::string& label);
 
   bool service_is_available_;
+  // If set, WaitForServiceToBeAvailable will run the callback, even if service
+  // is not available (instead of adding the callback to pending callback list).
+  bool service_reported_not_available_;
   base::ObserverList<Observer>::Unchecked observer_list_;
 
   int remove_firmware_management_parameters_from_tpm_call_count_;
