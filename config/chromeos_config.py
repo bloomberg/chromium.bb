@@ -2006,6 +2006,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'amd64-generic',
       'arm-generic',
       'arm64-generic',
+      'atlas',
       'auron_paine',
       'auron_yuna',
       'beaglebone',
@@ -2120,7 +2121,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # The definition of what paladins run HW tests are in the
   # _paladin_hwtest_assignments table further down this script.
   _paladin_new_boards = frozenset([
-      'atlas',
       'samus-kernelnext',
       'zork',
   ])
