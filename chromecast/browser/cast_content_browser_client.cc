@@ -174,11 +174,10 @@ static void CreateMediaService(CastContentBrowserClient* browser_client,
 #endif  // BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
 
 #if defined(OS_ANDROID) && !BUILDFLAG(USE_CHROMECAST_CDMS)
-void CreateOriginId(
-    base::OnceCallback<void(const base::UnguessableToken&)> callback) {
+void CreateOriginId(cdm::MediaDrmStorageImpl::OriginIdObtainedCB callback) {
   // TODO(crbug.com/917527): Update this to actually get a pre-provisioned
   // origin ID.
-  std::move(callback).Run(base::UnguessableToken::Create());
+  std::move(callback).Run(true, base::UnguessableToken::Create());
 }
 
 void AllowEmptyOriginIdCB(base::OnceCallback<void(bool)> callback) {
