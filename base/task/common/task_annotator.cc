@@ -8,9 +8,7 @@
 
 #include "base/debug/activity_tracker.h"
 #include "base/debug/alias.h"
-#include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
-#include "base/pending_task.h"
 #include "base/threading/thread_local.h"
 #include "base/trace_event/trace_event.h"
 
@@ -20,36 +18,40 @@ namespace {
 
 TaskAnnotator::ObserverForTesting* g_task_annotator_observer = nullptr;
 
-// Information about the context in which a PendingTask is currently being
-// executed.
-struct TaskAnnotatorThreadInfo {
-  // The pending task currently being executed.
-  const PendingTask* pending_task = nullptr;
-  // The pending task that was being executed when the |ipc_program_counter|
-  // was set. This is used to detect a nested message loop, in which case the
-  // global IPC decoration should not be applied.
-  const PendingTask* ipc_message_handler_task = nullptr;
-  // The program counter of the currently executing IPC message handler, if
-  // there is one.
-  const void* ipc_program_counter = nullptr;
-};
+// Used as a sentinel to determine if a TLS-stored PendingTask is a dummy one.
+static constexpr int kSentinelSequenceNum =
+    static_cast<int>(0xF00DBAADF00DBAAD);
 
 // Returns the TLS slot that stores the PendingTask currently in progress on
 // each thread. Used to allow creating a breadcrumb of program counters on the
 // stack to help identify a task's origin in crashes.
-TaskAnnotatorThreadInfo* GetTLSForCurrentPendingTask() {
-  static NoDestructor<ThreadLocalOwnedPointer<TaskAnnotatorThreadInfo>>
-      instance;
-  if (!instance->Get())
-    instance->Set(WrapUnique(new TaskAnnotatorThreadInfo));
-  auto* tls_info = instance->Get();
-  return tls_info;
+ThreadLocalPointer<PendingTask>* GetTLSForCurrentPendingTask() {
+  static NoDestructor<ThreadLocalPointer<PendingTask>> instance;
+  return instance.get();
+}
+
+// Determines whether or not the given |task| is a dummy pending task that has
+// been injected by ScopedSetIpcProgramCounter solely for the purposes of
+// tracking IPC context.
+bool IsDummyPendingTask(const PendingTask* task) {
+  if (task->sequence_num == kSentinelSequenceNum &&
+      !task->posted_from.has_source_info() &&
+      !task->posted_from.program_counter()) {
+    return true;
+  }
+  return false;
 }
 
 }  // namespace
 
 const PendingTask* TaskAnnotator::CurrentTaskForThread() {
-  return GetTLSForCurrentPendingTask()->pending_task;
+  auto* current_task = GetTLSForCurrentPendingTask()->Get();
+
+  // Don't return "dummy" current tasks that are only used for storing IPC
+  // context.
+  if (current_task && IsDummyPendingTask(current_task))
+    return nullptr;
+  return current_task;
 }
 
 TaskAnnotator::TaskAnnotator() = default;
@@ -73,21 +75,11 @@ void TaskAnnotator::WillQueueTask(const char* trace_event_name,
   if (pending_task->task_backtrace[0])
     return;
 
-  // Inherit the currently executing IPC handler context only if not in a nested
-  // message loop.
-  const auto* tls_info = GetTLSForCurrentPendingTask();
-  if (tls_info->ipc_message_handler_task == tls_info->pending_task)
-    pending_task->ipc_program_counter = tls_info->ipc_program_counter;
-
-  const auto* parent_task = tls_info->pending_task;
+  const auto* parent_task = CurrentTaskForThread();
   if (!parent_task)
     return;
 
-  // If an IPC message handler context wasn't explicitly set, then inherit the
-  // context from the parent task.
-  if (!pending_task->ipc_program_counter)
-    pending_task->ipc_program_counter = parent_task->ipc_program_counter;
-
+  pending_task->ipc_program_counter = parent_task->ipc_program_counter;
   pending_task->task_backtrace[0] = parent_task->posted_from.program_counter();
   std::copy(parent_task->task_backtrace.begin(),
             parent_task->task_backtrace.end() - 1,
@@ -139,15 +131,15 @@ void TaskAnnotator::RunTask(const char* trace_event_name,
       pending_task->ipc_program_counter;
   debug::Alias(&task_backtrace);
 
-  auto* tls_info = GetTLSForCurrentPendingTask();
-  const auto* previous_pending_task = tls_info->pending_task;
-  tls_info->pending_task = pending_task;
+  auto* tls = GetTLSForCurrentPendingTask();
+  auto* previous_pending_task = tls->Get();
+  tls->Set(pending_task);
 
   if (g_task_annotator_observer)
     g_task_annotator_observer->BeforeRunTask(pending_task);
   std::move(pending_task->task).Run();
 
-  tls_info->pending_task = previous_pending_task;
+  tls->Set(previous_pending_task);
 }
 
 uint64_t TaskAnnotator::GetTaskTraceID(const PendingTask& task) const {
@@ -169,17 +161,30 @@ void TaskAnnotator::ClearObserverForTesting() {
 
 TaskAnnotator::ScopedSetIpcProgramCounter::ScopedSetIpcProgramCounter(
     const void* program_counter) {
-  auto* tls_info = GetTLSForCurrentPendingTask();
-  old_ipc_message_handler_task_ = tls_info->ipc_message_handler_task;
-  old_ipc_program_counter_ = tls_info->ipc_program_counter;
-  tls_info->ipc_message_handler_task = tls_info->pending_task;
-  tls_info->ipc_program_counter = program_counter;
+  // We store the IPC context in the currently running task. If there is none
+  // then introduce a dummy task.
+  auto* tls = GetTLSForCurrentPendingTask();
+  auto* current_task = tls->Get();
+  if (!current_task) {
+    dummy_pending_task_ = std::make_unique<PendingTask>();
+    dummy_pending_task_->sequence_num = kSentinelSequenceNum;
+    current_task = dummy_pending_task_.get();
+    tls->Set(current_task);
+  }
+
+  old_ipc_program_counter_ = current_task->ipc_program_counter;
+  current_task->ipc_program_counter = program_counter;
 }
 
 TaskAnnotator::ScopedSetIpcProgramCounter::~ScopedSetIpcProgramCounter() {
-  auto* tls_info = GetTLSForCurrentPendingTask();
-  tls_info->ipc_message_handler_task = old_ipc_message_handler_task_;
-  tls_info->ipc_program_counter = old_ipc_program_counter_;
+  auto* tls = GetTLSForCurrentPendingTask();
+  auto* current_task = tls->Get();
+  DCHECK(current_task);
+  if (current_task == dummy_pending_task_.get()) {
+    tls->Set(nullptr);
+  } else {
+    current_task->ipc_program_counter = old_ipc_program_counter_;
+  }
 }
 
 }  // namespace base

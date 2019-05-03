@@ -7,11 +7,13 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/base_export.h"
 #include "base/macros.h"
+#include "base/pending_task.h"
 
 namespace base {
-struct PendingTask;
 
 // Implements common debug annotations for posted tasks. This includes data
 // such as task origins, IPC message contexts, queueing durations and memory
@@ -70,7 +72,7 @@ class BASE_EXPORT TaskAnnotator::ScopedSetIpcProgramCounter {
   ~ScopedSetIpcProgramCounter();
 
  private:
-  const PendingTask* old_ipc_message_handler_task_ = nullptr;
+  std::unique_ptr<PendingTask> dummy_pending_task_;
   const void* old_ipc_program_counter_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedSetIpcProgramCounter);
