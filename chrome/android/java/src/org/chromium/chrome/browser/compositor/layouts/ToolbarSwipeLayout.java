@@ -154,22 +154,26 @@ public class ToolbarSwipeLayout extends Layout {
                                                                            : fromIndex + 1;
         int leftIndex = dragFromLeftEdge ? toIndex : fromIndex;
         int rightIndex = !dragFromLeftEdge ? toIndex : fromIndex;
+        int leftTabId = Tab.INVALID_TAB_ID;
+        int rightTabId = Tab.INVALID_TAB_ID;
 
-        List<Integer> visibleTabs = new ArrayList<Integer>();
         if (0 <= leftIndex && leftIndex < model.getCount()) {
-            int leftTabId = model.getTabAt(leftIndex).getId();
+            leftTabId = model.getTabAt(leftIndex).getId();
             mLeftTab = createLayoutTab(leftTabId, model.isIncognito(), NO_CLOSE_BUTTON, NEED_TITLE);
             prepareLayoutTabForSwipe(mLeftTab, leftIndex != fromIndex);
-            visibleTabs.add(leftTabId);
         }
         if (0 <= rightIndex && rightIndex < model.getCount()) {
-            int rightTabId = model.getTabAt(rightIndex).getId();
+            rightTabId = model.getTabAt(rightIndex).getId();
             mRightTab =
                     createLayoutTab(rightTabId, model.isIncognito(), NO_CLOSE_BUTTON, NEED_TITLE);
             prepareLayoutTabForSwipe(mRightTab, rightIndex != fromIndex);
-            visibleTabs.add(rightTabId);
         }
-
+        // Prioritize toTabId because fromTabId likely has a live layer.
+        int fromTabId = dragFromLeftEdge ? rightTabId : leftTabId;
+        int toTabId = !dragFromLeftEdge ? rightTabId : leftTabId;
+        List<Integer> visibleTabs = new ArrayList<Integer>();
+        if (toTabId != Tab.INVALID_TAB_ID) visibleTabs.add(toTabId);
+        if (fromTabId != Tab.INVALID_TAB_ID) visibleTabs.add(fromTabId);
         updateCacheVisibleIds(visibleTabs);
 
         mToTab = null;
