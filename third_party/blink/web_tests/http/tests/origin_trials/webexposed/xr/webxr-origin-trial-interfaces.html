@@ -5,12 +5,14 @@
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../../resources/origin-trials-helper.js"></script>
 <script>
-
-let properties_to_check = {'Navigator': ['xr']};
+let properties_to_check = {
+  'Navigator': ['xr']
+};
 
 // The WebXR APIs should not be present without the token.
 test(t => {
-  OriginTrialsHelper.check_properties_missing_unless_runtime_flag(this, properties_to_check, 'webXREnabled');
+  OriginTrialsHelper.check_properties_missing_unless_runtime_flag(
+    this, properties_to_check, 'webXREnabled');
 }, "WebXR's entrypoint properties are not available without a token.");
 
 // Add the token, which was generated with the following command:
@@ -24,18 +26,59 @@ test(t => {
 }, "WebXR's entrypoint properties are available with origin trial token.");
 
 
-// Ensure that Gamepad Extensions are NOT enabled by the origin trial token.
+// Ensure Gamepad Extensions are NOT enabled by the WebXR origin trial token.
 test(t => {
-    webvr_gamepad_properties = {
+  webvr_gamepad_properties = {
     'Gamepad': ['pose', 'hand', 'displayId'],
   };
-    OriginTrialsHelper.check_properties_missing_unless_runtime_flag(this, webvr_gamepad_properties, 'webVREnabled');
-}, "WebVR-specific Gamepad properties are not available with a token.");
-
+  OriginTrialsHelper.check_properties_missing_unless_runtime_flag(
+    this, webvr_gamepad_properties, 'webVREnabled');
+}, "WebVR-specific Gamepad properties are not available with a WebXR token.");
 test(t => {
   webvr_gamepad_interfaces = [
     'GamepadPose'
   ];
-    OriginTrialsHelper.check_interfaces_missing_unless_runtime_flag(this, webvr_gamepad_interfaces, 'webVREnabled');
-}, "WebVR-specific Gamepad interfaces are not available with a token.");
+  OriginTrialsHelper.check_interfaces_missing_unless_runtime_flag(
+    this, webvr_gamepad_interfaces, 'webVREnabled');
+}, "WebVR-specific Gamepad interfaces are not available with a WebXR token.");
+
+
+// Ensure that APIs that are not part of the core WebXR set are NOT enabled by
+// the WebXR origin trial token.
+
+test(t => {
+  let hittest_properties = {
+    'XRSession': ['requestHitTest']
+  };
+  OriginTrialsHelper.check_properties_missing_unless_runtime_flag(
+    this, hittest_properties, 'webXRHitTestEnabled');
+}, "Hit-test properties are not available with a WebXR token.");
+test(t => {
+  let hittest_interfaces = [
+    'XRHitResult'/*,
+    TODO(https://crbug.com/958561): Uncomment after resolving the issue.
+    'XRRay'*/
+  ];
+  OriginTrialsHelper.check_interfaces_missing_unless_runtime_flag(
+    this, hittest_interfaces, 'webXRHitTestEnabled');
+}, "Hit-test interfaces are not available with a WebXR token.");
+
+test(t => {
+  let planes_properties = {
+    'XRFrame': ['worldInformation'],
+    'XRSession': ['worldTrackingState', 'updateWorldTrackingState']
+  };
+  OriginTrialsHelper.check_properties_missing_unless_runtime_flag(
+    this, planes_properties, 'webXRPlaneDetectionEnabled');
+}, "Plane properties are not available with a WebXR token.");
+test(t => {
+  let planes_interfaces = [
+    'XRPlane',
+    'XRPlaneDetectionState',
+    'XRWorldInformation',
+    'XRWorldTrackingState'
+  ];
+  OriginTrialsHelper.check_interfaces_missing_unless_runtime_flag(
+    this, planes_interfaces, 'webXRPlaneDetectionEnabled');
+}, "Plane interfaces are not available with a WebXR token.");
 </script>
