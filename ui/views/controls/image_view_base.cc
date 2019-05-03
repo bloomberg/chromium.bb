@@ -104,31 +104,32 @@ void ImageViewBase::UpdateImageOrigin() {
   // horizontal alignment is set to trailing, then we'll use left alignment for
   // the image instead of right alignment if the UI layout is RTL.
   Alignment actual_horizontal_alignment = horizontal_alignment_;
-  if (base::i18n::IsRTL() && (horizontal_alignment_ != CENTER)) {
-    actual_horizontal_alignment =
-        (horizontal_alignment_ == LEADING) ? TRAILING : LEADING;
+  if (base::i18n::IsRTL() && (horizontal_alignment_ != Alignment::kCenter)) {
+    actual_horizontal_alignment = (horizontal_alignment_ == Alignment::kLeading)
+                                      ? Alignment::kTrailing
+                                      : Alignment::kLeading;
   }
   switch (actual_horizontal_alignment) {
-    case LEADING:
+    case Alignment::kLeading:
       x = insets.left();
       break;
-    case TRAILING:
+    case Alignment::kTrailing:
       x = width() - insets.right() - image_size.width();
       break;
-    case CENTER:
+    case Alignment::kCenter:
       x = (width() - insets.width() - image_size.width()) / 2 + insets.left();
       break;
   }
 
   int y = 0;
   switch (vertical_alignment_) {
-    case LEADING:
+    case Alignment::kLeading:
       y = insets.top();
       break;
-    case TRAILING:
+    case Alignment::kTrailing:
       y = height() - insets.bottom() - image_size.height();
       break;
-    case CENTER:
+    case Alignment::kCenter:
       y = (height() - insets.height() - image_size.height()) / 2 + insets.top();
       break;
   }

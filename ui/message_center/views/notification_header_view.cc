@@ -172,8 +172,8 @@ NotificationHeaderView::NotificationHeaderView(views::ButtonListener* listener)
   app_icon_view_ = new views::ImageView();
   app_icon_view_->SetImageSize(gfx::Size(kSmallImageSizeMD, kSmallImageSizeMD));
   app_icon_view_->SetBorder(views::CreateEmptyBorder(kAppIconPadding));
-  app_icon_view_->SetVerticalAlignment(views::ImageView::LEADING);
-  app_icon_view_->SetHorizontalAlignment(views::ImageView::LEADING);
+  app_icon_view_->SetVerticalAlignment(views::ImageView::Alignment::kLeading);
+  app_icon_view_->SetHorizontalAlignment(views::ImageView::Alignment::kLeading);
   DCHECK_EQ(kInnerHeaderHeight, app_icon_view_->GetPreferredSize().height());
   AddChildView(app_icon_view_);
 
@@ -224,8 +224,8 @@ NotificationHeaderView::NotificationHeaderView(views::ButtonListener* listener)
   // Expand button view
   expand_button_ = new ExpandButton();
   expand_button_->SetBorder(views::CreateEmptyBorder(kExpandIconViewPadding));
-  expand_button_->SetVerticalAlignment(views::ImageView::LEADING);
-  expand_button_->SetHorizontalAlignment(views::ImageView::LEADING);
+  expand_button_->SetVerticalAlignment(views::ImageView::Alignment::kLeading);
+  expand_button_->SetHorizontalAlignment(views::ImageView::Alignment::kLeading);
   expand_button_->SetImageSize(gfx::Size(kExpandIconSize, kExpandIconSize));
   DCHECK_EQ(kInnerHeaderHeight, expand_button_->GetPreferredSize().height());
   AddChildView(expand_button_);

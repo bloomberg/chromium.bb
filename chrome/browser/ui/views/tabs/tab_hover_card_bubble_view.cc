@@ -220,10 +220,11 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
   AddChildView(domain_label_);
 
   if (AreHoverCardImagesEnabled()) {
+    using Alignment = views::ImageView::Alignment;
     preview_image_ = new views::ImageView();
     preview_image_->SetVisible(AreHoverCardImagesEnabled());
-    preview_image_->SetHorizontalAlignment(views::ImageViewBase::CENTER);
-    preview_image_->SetVerticalAlignment(views::ImageViewBase::CENTER);
+    preview_image_->SetHorizontalAlignment(Alignment::kCenter);
+    preview_image_->SetVerticalAlignment(Alignment::kCenter);
     preview_image_->SetImageSize(GetTabHoverCardPreviewImageSize());
     preview_image_->SetPreferredSize(GetTabHoverCardPreviewImageSize());
     AddChildView(preview_image_);

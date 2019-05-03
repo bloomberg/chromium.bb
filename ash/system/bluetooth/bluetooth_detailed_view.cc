@@ -84,7 +84,7 @@ views::View* CreateDisabledPanel() {
   views::ImageView* image_view = new views::ImageView;
   image_view->SetImage(gfx::CreateVectorIcon(kSystemMenuBluetoothDisabledIcon,
                                              style.GetIconColor()));
-  image_view->SetVerticalAlignment(views::ImageView::TRAILING);
+  image_view->SetVerticalAlignment(views::ImageView::Alignment::kTrailing);
   container->AddChildView(image_view);
 
   views::Label* label = new views::Label(

@@ -161,7 +161,7 @@ class SelectionButtonView : public LoginButton {
     AddChildView(icon_container);
 
     icon_ = new views::ImageView;
-    icon_->SetVerticalAlignment(views::ImageView::CENTER);
+    icon_->SetVerticalAlignment(views::ImageView::Alignment::kCenter);
     icon_->SetPreferredSize(
         gfx::Size(kDropDownIconSizeDp, kDropDownIconSizeDp));
 

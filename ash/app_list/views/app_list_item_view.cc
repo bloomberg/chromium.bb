@@ -125,7 +125,7 @@ class AppListItemView::IconImageView : public views::ImageView {
  public:
   IconImageView() {
     set_can_process_events_within_subtree(false);
-    SetVerticalAlignment(views::ImageView::LEADING);
+    SetVerticalAlignment(views::ImageView::Alignment::kLeading);
   }
   ~IconImageView() override = default;
 
@@ -222,7 +222,7 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
     // shadow is behind the icon.
     icon_shadow_ = new views::ImageView;
     icon_shadow_->set_can_process_events_within_subtree(false);
-    icon_shadow_->SetVerticalAlignment(views::ImageView::LEADING);
+    icon_shadow_->SetVerticalAlignment(views::ImageView::Alignment::kLeading);
     AddChildView(icon_shadow_);
   }
 

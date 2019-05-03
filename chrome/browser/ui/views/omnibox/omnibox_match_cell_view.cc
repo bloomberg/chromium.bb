@@ -200,10 +200,11 @@ OmniboxMatchCellView::OmniboxMatchCellView(OmniboxResultView* result_view) {
   AddChildView(description_view_ = new OmniboxTextView(result_view));
   AddChildView(separator_view_ = new OmniboxTextView(result_view));
 
-  icon_view_->SetHorizontalAlignment(views::ImageView::CENTER);
-  icon_view_->SetVerticalAlignment(views::ImageView::CENTER);
-  answer_image_view_->SetHorizontalAlignment(views::ImageView::CENTER);
-  answer_image_view_->SetVerticalAlignment(views::ImageView::CENTER);
+  using Alignment = views::ImageView::Alignment;
+  icon_view_->SetHorizontalAlignment(Alignment::kCenter);
+  icon_view_->SetVerticalAlignment(Alignment::kCenter);
+  answer_image_view_->SetHorizontalAlignment(Alignment::kCenter);
+  answer_image_view_->SetVerticalAlignment(Alignment::kCenter);
 
   const base::string16 separator = l10n_util::GetStringUTF16(
       base::FeatureList::IsEnabled(

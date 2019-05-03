@@ -125,7 +125,7 @@ void LocalCardMigrationBubbleViews::AddedToWidget() {
 #endif
   views::ImageView* icon_view = new views::ImageView();
   icon_view->SetImage(image);
-  icon_view->SetHorizontalAlignment(views::ImageView::LEADING);
+  icon_view->SetHorizontalAlignment(views::ImageView::Alignment::kLeading);
   icon_view->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_GOOGLE_PAY_LOGO_ACCESSIBLE_NAME));
   title_container->AddChildView(icon_view);

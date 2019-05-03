@@ -108,7 +108,7 @@ PluginVmLauncherView::PluginVmLauncherView(Profile* profile)
   logo_image->SetImage(
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           IDR_LOGO_PLUGIN_VM_DEFAULT_32));
-  logo_image->SetHorizontalAlignment(views::ImageView::LEADING);
+  logo_image->SetHorizontalAlignment(views::ImageView::Alignment::kLeading);
   upper_container_view->AddChildView(logo_image);
 
   big_message_label_ = new views::Label(GetBigMessage(), {kTitleFont});

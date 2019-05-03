@@ -17,7 +17,7 @@ namespace views {
 
 class VIEWS_EXPORT ImageViewBase : public View {
  public:
-  enum Alignment { LEADING, CENTER, TRAILING };
+  enum class Alignment { kLeading, kCenter, kTrailing };
 
   ImageViewBase();
   ~ImageViewBase() override;
@@ -75,10 +75,10 @@ class VIEWS_EXPORT ImageViewBase : public View {
   gfx::Point image_origin_;
 
   // Horizontal alignment.
-  Alignment horizontal_alignment_ = Alignment::CENTER;
+  Alignment horizontal_alignment_ = Alignment::kCenter;
 
   // Vertical alignment.
-  Alignment vertical_alignment_ = Alignment::CENTER;
+  Alignment vertical_alignment_ = Alignment::kCenter;
 
   // The current tooltip text.
   base::string16 tooltip_text_;

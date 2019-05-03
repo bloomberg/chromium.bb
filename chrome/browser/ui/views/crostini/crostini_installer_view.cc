@@ -521,7 +521,7 @@ CrostiniInstallerView::CrostiniInstallerView(Profile* profile)
   logo_image_->SetImage(
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           IDR_LOGO_CROSTINI_DEFAULT_32));
-  logo_image_->SetHorizontalAlignment(views::ImageView::LEADING);
+  logo_image_->SetHorizontalAlignment(views::ImageView::Alignment::kLeading);
   upper_container_view->AddChildView(logo_image_);
 
   const base::string16 device_type = ui::GetChromeOSDeviceName();

@@ -88,7 +88,7 @@ class ImageViewTest : public ViewsTestBase,
 // Test the image origin of the internal ImageSkia is correct when it is
 // center-aligned (both horizontally and vertically).
 TEST_P(ImageViewTest, CenterAlignment) {
-  image_view()->SetHorizontalAlignment(ImageView::CENTER);
+  image_view()->SetHorizontalAlignment(ImageView::Alignment::kCenter);
 
   constexpr int kImageSkiaSize = 4;
   SkBitmap bitmap;
@@ -128,7 +128,7 @@ TEST_P(ImageViewTest, CenterAlignment) {
 
 TEST_P(ImageViewTest, ImageOriginForCustomViewBounds) {
   gfx::Rect image_view_bounds(10, 10, 80, 80);
-  image_view()->SetHorizontalAlignment(ImageView::CENTER);
+  image_view()->SetHorizontalAlignment(ImageView::Alignment::kCenter);
   image_view()->SetBoundsRect(image_view_bounds);
 
   SkBitmap bitmap;

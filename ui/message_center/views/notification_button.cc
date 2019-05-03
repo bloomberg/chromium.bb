@@ -43,8 +43,8 @@ void NotificationButton::SetIcon(const gfx::ImageSkia& image) {
     icon_->SetImageSize(
         gfx::Size(kNotificationButtonIconSize, kNotificationButtonIconSize));
     icon_->SetImage(image);
-    icon_->SetHorizontalAlignment(views::ImageView::LEADING);
-    icon_->SetVerticalAlignment(views::ImageView::LEADING);
+    icon_->SetHorizontalAlignment(views::ImageView::Alignment::kLeading);
+    icon_->SetVerticalAlignment(views::ImageView::Alignment::kLeading);
     icon_->SetBorder(views::CreateEmptyBorder(kButtonIconTopPadding, 0, 0, 0));
     AddChildViewAt(icon_, 0);
   }

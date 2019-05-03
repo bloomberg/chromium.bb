@@ -315,8 +315,8 @@ ShelfAppButton::ShelfAppButton(ShelfView* shelf_view)
   // the ink drop ripple.
   icon_view_->SetPaintToLayer();
   icon_view_->layer()->SetFillsBoundsOpaquely(false);
-  icon_view_->SetHorizontalAlignment(views::ImageView::CENTER);
-  icon_view_->SetVerticalAlignment(views::ImageView::LEADING);
+  icon_view_->SetHorizontalAlignment(views::ImageView::Alignment::kCenter);
+  icon_view_->SetVerticalAlignment(views::ImageView::Alignment::kLeading);
   // Do not make this interactive, so that events are sent to ShelfView.
   icon_view_->set_can_process_events_within_subtree(false);
 
@@ -709,12 +709,12 @@ void ShelfAppButton::UpdateState() {
                           state_ & STATE_ACTIVE));
   indicator_->SetHorizontalShelf(is_horizontal_shelf);
 
-  icon_view_->SetHorizontalAlignment(is_horizontal_shelf
-                                         ? views::ImageView::CENTER
-                                         : views::ImageView::LEADING);
+  icon_view_->SetHorizontalAlignment(
+      is_horizontal_shelf ? views::ImageView::Alignment::kCenter
+                          : views::ImageView::Alignment::kLeading);
   icon_view_->SetVerticalAlignment(is_horizontal_shelf
-                                       ? views::ImageView::LEADING
-                                       : views::ImageView::CENTER);
+                                       ? views::ImageView::Alignment::kLeading
+                                       : views::ImageView::Alignment::kCenter);
   SchedulePaint();
 }
 

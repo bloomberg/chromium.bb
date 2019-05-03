@@ -37,8 +37,8 @@ class DropTargetView::PlusIconView : public views::ImageView {
     SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
     set_can_process_events_within_subtree(false);
-    SetVerticalAlignment(views::ImageView::CENTER);
-    SetHorizontalAlignment(views::ImageView::CENTER);
+    SetVerticalAlignment(views::ImageView::Alignment::kCenter);
+    SetHorizontalAlignment(views::ImageView::Alignment::kCenter);
   }
   ~PlusIconView() override = default;
 

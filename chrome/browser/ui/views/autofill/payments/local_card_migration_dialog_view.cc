@@ -203,7 +203,8 @@ std::unique_ptr<views::View> CreateTip(
       dialog_view->GetNativeTheme()->SystemDarkModeEnabled()
           ? gfx::kGoogleYellow300
           : gfx::kGoogleYellow700));
-  lightbulb_outline_image->SetVerticalAlignment(views::ImageView::LEADING);
+  lightbulb_outline_image->SetVerticalAlignment(
+      views::ImageView::Alignment::kLeading);
   tip_text_container->AddChildView(lightbulb_outline_image);
 
   auto* tip = new views::Label(tip_message, CONTEXT_BODY_TEXT_SMALL,

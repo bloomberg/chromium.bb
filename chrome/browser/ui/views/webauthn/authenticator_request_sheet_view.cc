@@ -93,7 +93,7 @@ AuthenticatorRequestSheetView::CreateIllustrationWithOverlays() {
   step_illustration_ = image_view.get();
   UpdateIconImageFromModel();
   image_view->SetSize(illustration_size);
-  image_view->SetVerticalAlignment(views::ImageView::LEADING);
+  image_view->SetVerticalAlignment(views::ImageView::Alignment::kLeading);
   image_with_overlays->AddChildView(image_view.release());
 
   if (model()->IsActivityIndicatorVisible()) {
