@@ -32,7 +32,7 @@
 */
 /* clang-format off */
 DECLARE_ALIGNED(8, const int8_t,
-                filter_8bit[WARPEDPIXEL_PREC_SHIFTS * 3 + 1][8]) = {
+                av1_filter_8bit[WARPEDPIXEL_PREC_SHIFTS * 3 + 1][8]) = {
 #if WARPEDPIXEL_PREC_BITS == 6
   // [-1, 0)
   { 0, 127,   0, 0,   0,   1, 0, 0}, { 0, 127,   0, 0,  -1,   2, 0, 0},
@@ -284,21 +284,21 @@ static INLINE void prepare_horizontal_filter_coeff(int alpha, int sx,
                                                    __m128i *coeff) {
   // Filter even-index pixels
   const __m128i tmp_0 = _mm_loadl_epi64(
-      (__m128i *)&filter_8bit[(sx + 0 * alpha) >> WARPEDDIFF_PREC_BITS]);
+      (__m128i *)&av1_filter_8bit[(sx + 0 * alpha) >> WARPEDDIFF_PREC_BITS]);
   const __m128i tmp_1 = _mm_loadl_epi64(
-      (__m128i *)&filter_8bit[(sx + 1 * alpha) >> WARPEDDIFF_PREC_BITS]);
+      (__m128i *)&av1_filter_8bit[(sx + 1 * alpha) >> WARPEDDIFF_PREC_BITS]);
   const __m128i tmp_2 = _mm_loadl_epi64(
-      (__m128i *)&filter_8bit[(sx + 2 * alpha) >> WARPEDDIFF_PREC_BITS]);
+      (__m128i *)&av1_filter_8bit[(sx + 2 * alpha) >> WARPEDDIFF_PREC_BITS]);
   const __m128i tmp_3 = _mm_loadl_epi64(
-      (__m128i *)&filter_8bit[(sx + 3 * alpha) >> WARPEDDIFF_PREC_BITS]);
+      (__m128i *)&av1_filter_8bit[(sx + 3 * alpha) >> WARPEDDIFF_PREC_BITS]);
   const __m128i tmp_4 = _mm_loadl_epi64(
-      (__m128i *)&filter_8bit[(sx + 4 * alpha) >> WARPEDDIFF_PREC_BITS]);
+      (__m128i *)&av1_filter_8bit[(sx + 4 * alpha) >> WARPEDDIFF_PREC_BITS]);
   const __m128i tmp_5 = _mm_loadl_epi64(
-      (__m128i *)&filter_8bit[(sx + 5 * alpha) >> WARPEDDIFF_PREC_BITS]);
+      (__m128i *)&av1_filter_8bit[(sx + 5 * alpha) >> WARPEDDIFF_PREC_BITS]);
   const __m128i tmp_6 = _mm_loadl_epi64(
-      (__m128i *)&filter_8bit[(sx + 6 * alpha) >> WARPEDDIFF_PREC_BITS]);
+      (__m128i *)&av1_filter_8bit[(sx + 6 * alpha) >> WARPEDDIFF_PREC_BITS]);
   const __m128i tmp_7 = _mm_loadl_epi64(
-      (__m128i *)&filter_8bit[(sx + 7 * alpha) >> WARPEDDIFF_PREC_BITS]);
+      (__m128i *)&av1_filter_8bit[(sx + 7 * alpha) >> WARPEDDIFF_PREC_BITS]);
 
   // Coeffs 0 2 0 2 4 6 4 6 1 3 1 3 5 7 5 7 for pixels 0 2
   const __m128i tmp_8 = _mm_unpacklo_epi16(tmp_0, tmp_2);
@@ -332,7 +332,7 @@ static INLINE void prepare_horizontal_filter_coeff_alpha0(int sx,
                                                           __m128i *coeff) {
   // Filter even-index pixels
   const __m128i tmp_0 =
-      _mm_loadl_epi64((__m128i *)&filter_8bit[sx >> WARPEDDIFF_PREC_BITS]);
+      _mm_loadl_epi64((__m128i *)&av1_filter_8bit[sx >> WARPEDDIFF_PREC_BITS]);
 
   // Coeffs 0 2 for pixels 0 2 4 6 1 3 5 7
   coeff[0] =
