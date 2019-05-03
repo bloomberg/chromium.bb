@@ -36534,6 +36534,14 @@ Called by update_use_counter_css.py.-->
   <int value="3" label="Low and High confidence."/>
 </enum>
 
+<enum name="MdnsResponderServiceError">
+  <int value="0" label="Fail to start manager"/>
+  <int value="1" label="Fail to create responder"/>
+  <int value="2" label="Fatal socket handler error"/>
+  <int value="3" label="Invalid IP to register name"/>
+  <int value="4" label="Conflicting name resolution"/>
+</enum>
+
 <enum name="MediaCommand">
   <int value="0" label="Resume"/>
   <int value="1" label="Pause"/>

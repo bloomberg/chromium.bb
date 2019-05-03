@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -45,6 +46,8 @@
 // 3) Support parsing the authority section of a query in the wire format to
 // correctly implement the detection of probe queries.
 namespace {
+
+using MdnsResponderServiceError = network::MdnsResponderManager::ServiceError;
 
 // RFC 6762, Section 6.
 //
@@ -189,6 +192,10 @@ bool IsProbeQuery(const net::DnsQuery& query) {
   //
   // Currently DnsQuery does not support the Authority section. Fix it.
   return query.qtype() == net::dns_protocol::kTypeANY;
+}
+
+void ReportServiceError(MdnsResponderServiceError error) {
+  UMA_HISTOGRAM_ENUMERATION("NetworkService.MdnsResponder.ServiceError", error);
 }
 
 }  // namespace
@@ -646,7 +653,8 @@ void MdnsResponderManager::Start() {
   size_t num_started_socket_handlers = socket_handler_by_id_.size();
   if (socket_handler_by_id_.empty()) {
     start_result_ = SocketHandlerStartResult::ALL_FAILURE;
-    LOG(ERROR) << "mDNS responder manager failed to started.";
+    LOG(ERROR) << "mDNS responder manager failed to start.";
+    ReportServiceError(MdnsResponderServiceError::kFailToStartManager);
     return;
   }
 
@@ -663,6 +671,7 @@ void MdnsResponderManager::CreateMdnsResponder(
   if (start_result_ == SocketHandlerStartResult::UNSPECIFIED ||
       start_result_ == SocketHandlerStartResult::ALL_FAILURE) {
     LOG(ERROR) << "The mDNS responder manager is not started yet.";
+    ReportServiceError(MdnsResponderServiceError::kFailToCreateResponder);
     request = nullptr;
     return;
   }
@@ -746,6 +755,7 @@ void MdnsResponderManager::OnSocketHandlerReadError(uint16_t socket_handler_id,
   if (socket_handler_by_id_.empty()) {
     LOG(ERROR)
         << "All socket handlers failed. Restarting the mDNS responder manager.";
+    ReportServiceError(MdnsResponderServiceError::kFatalSocketHandlerError);
     start_result_ = MdnsResponderManager::SocketHandlerStartResult::UNSPECIFIED;
     Start();
   }
@@ -810,6 +820,7 @@ void MdnsResponder::CreateNameForAddress(
   DCHECK(address.IsValid() || address.empty());
   if (!address.IsValid()) {
     LOG(ERROR) << "Invalid IP address to create a name for";
+    ReportServiceError(MdnsResponderServiceError::kInvalidIpToRegisterName);
     binding_.Close();
     manager_->OnMojoConnectionError(this);
     return;
@@ -932,6 +943,7 @@ bool MdnsResponder::HasConflictWithExternalResolution(
   }
 
   LOG(ERROR) << "Received conflicting resolution for name: " << name;
+  ReportServiceError(MdnsResponderServiceError::kConflictingNameResolution);
   return true;
 }
 
