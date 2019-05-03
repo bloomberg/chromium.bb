@@ -184,10 +184,6 @@ bool PreviewsOptimizationGuide::IsBlacklisted(const GURL& url,
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
   if (type == PreviewsType::LITE_PAGE_REDIRECT) {
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kIgnoreLitePageRedirectOptimizationBlacklist)) {
-      return false;
-    }
 
     if (!hints_)
       return true;

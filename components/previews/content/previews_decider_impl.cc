@@ -411,6 +411,11 @@ PreviewsDeciderImpl::ShouldAllowPreviewPerOptimizationHints(
   // We allow all other Optimization Hint previews in the hopes that the missing
   // state will load in before commit.
   if (type == PreviewsType::LITE_PAGE_REDIRECT) {
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kIgnoreLitePageRedirectOptimizationBlacklist)) {
+      return PreviewsEligibilityReason::ALLOWED;
+    }
+
     if (!previews_opt_guide_ || !previews_opt_guide_->has_hints())
       return PreviewsEligibilityReason::OPTIMIZATION_HINTS_NOT_AVAILABLE;
     passed_reasons->push_back(
