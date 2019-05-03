@@ -768,7 +768,7 @@ def main():
                fuchsia_lib_dst_dir)
 
   # Run tests.
-  if args.run_tests or args.force_head_revision:
+  if args.run_tests or args.llvm_force_head_revision:
     os.chdir(LLVM_BUILD_DIR)
     RunCommand(['ninja', 'cr-check-all'], msvc_arch='x64')
   if args.run_tests:
