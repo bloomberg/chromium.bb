@@ -425,13 +425,6 @@ class PrefetchDispatcherTest : public PrefetchRequestTestBase {
   PrefetchService* prefetch_service() { return taco_->prefetch_service(); }
   TestDownloadService* download_service() { return taco_->download_service(); }
 
-  // Asserts that there exists a single item in the database, and returns it.
-  PrefetchItem GetSingleItem() {
-    std::set<PrefetchItem> items;
-    EXPECT_EQ(1ul, store_util_.GetAllItems(&items));
-    return *items.begin();
-  }
-
  protected:
   // Owned by |taco_|.
   MockOfflinePageModel* offline_model_;
@@ -979,6 +972,11 @@ TEST_F(PrefetchDispatcherTest,
 TEST_F(PrefetchDispatcherTest, ZinePrefetchItemFlow) {
   Configure(PrefetchServiceTestTaco::kContentSuggestions);
 
+  auto get_item = [&]() {
+    std::set<PrefetchItem> items;
+    EXPECT_EQ(1ul, store_util_.GetAllItems(&items));
+    return *items.begin();
+  };
   // The page should be added to the offline model. Return success through the
   // callback, and store the page to added_page.
   OfflinePageItem added_page;
@@ -1002,17 +1000,13 @@ TEST_F(PrefetchDispatcherTest, ZinePrefetchItemFlow) {
 
   // Run the pipeline to completion.
   RunUntilIdle();
-  PrefetchItem state1 = GetSingleItem();
+  PrefetchItem state1 = get_item();
   BeginBackgroundTask();
   RunUntilIdle();
-  PrefetchItem state2 = GetSingleItem();
+  PrefetchItem state2 = get_item();
   BeginBackgroundTask();
   RunUntilIdle();
-  PrefetchItem state3 = GetSingleItem();
-  // Trigger MetricsFinalizationTask.
-  dispatcher()->AddCandidatePrefetchURLs(kSuggestedArticlesNamespace, {});
-  RunUntilIdle();
-  PrefetchItem state4 = GetSingleItem();
+  PrefetchItem state3 = get_item();
 
   // Check progression of item state. Log the states to help explain any failed
   // expectations.
@@ -1033,11 +1027,8 @@ TEST_F(PrefetchDispatcherTest, ZinePrefetchItemFlow) {
   EXPECT_EQ(kBodyLength, state2.file_size);
 
   // State 3.
-  EXPECT_EQ(PrefetchItemState::FINISHED, state3.state);
+  EXPECT_EQ(PrefetchItemState::ZOMBIE, state3.state);
   EXPECT_EQ(PrefetchItemErrorCode::SUCCESS, state3.error_code);
-
-  // State 4.
-  EXPECT_EQ(PrefetchItemState::ZOMBIE, state4.state);
 }
 
 // This is the same as PrefetchItemFlow, but with the Feed configuration.
@@ -1066,21 +1057,16 @@ TEST_F(PrefetchDispatcherTest, FeedPrefetchItemFlow) {
   RunUntilIdle();
   BeginBackgroundTask();
   RunUntilIdle();
-  const PrefetchItem item_state_1 = GetSingleItem();
 
-  dispatcher()->AddCandidatePrefetchURLs(kSuggestedArticlesNamespace, {});
-  RunUntilIdle();
-  const PrefetchItem item_state_2 = GetSingleItem();
+  std::set<PrefetchItem> items;
+  store_util_.GetAllItems(&items);
+  EXPECT_EQ(1ul, items.size());
+  const PrefetchItem item = *items.begin();
 
-  // State 1.
-  EXPECT_EQ(PrefetchItemState::FINISHED, item_state_1.state);
-
-  // State 2.
-  EXPECT_EQ(base::UTF8ToUTF16(TestSuggestion1().article_title),
-            item_state_2.title);
-  EXPECT_EQ(TestSuggestion1().article_url, item_state_2.url);
-  EXPECT_EQ(PrefetchItemState::ZOMBIE, item_state_2.state);
-  EXPECT_EQ(PrefetchItemErrorCode::SUCCESS, item_state_2.error_code);
+  EXPECT_EQ(base::UTF8ToUTF16(TestSuggestion1().article_title), item.title);
+  EXPECT_EQ(TestSuggestion1().article_url, item.url);
+  EXPECT_EQ(PrefetchItemState::ZOMBIE, item.state);
+  EXPECT_EQ(PrefetchItemErrorCode::SUCCESS, item.error_code);
 }
 
 }  // namespace offline_pages
