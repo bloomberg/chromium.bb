@@ -287,8 +287,7 @@ TEST_P(ScopedTaskEnvironmentTest, SingleThreadShouldNotInitializeThreadPool) {
 #if defined(OS_POSIX)
 TEST_F(ScopedTaskEnvironmentTest, SupportsFileDescriptorWatcherOnIOMainThread) {
   ScopedTaskEnvironment scoped_task_environment(
-      ScopedTaskEnvironment::MainThreadType::IO,
-      ScopedTaskEnvironment::ThreadPoolExecutionMode::ASYNC);
+      ScopedTaskEnvironment::MainThreadType::IO);
 
   int pipe_fds_[2];
   ASSERT_EQ(0, pipe(pipe_fds_));
@@ -300,6 +299,32 @@ TEST_F(ScopedTaskEnvironmentTest, SupportsFileDescriptorWatcherOnIOMainThread) {
       pipe_fds_[1], run_loop.QuitClosure());
 
   // This will hang if the notification doesn't occur as expected.
+  run_loop.Run();
+}
+
+TEST_F(ScopedTaskEnvironmentTest,
+       SupportsFileDescriptorWatcherOnIOMockTimeMainThread) {
+  ScopedTaskEnvironment scoped_task_environment(
+      ScopedTaskEnvironment::MainThreadType::IO_MOCK_TIME);
+
+  int pipe_fds_[2];
+  ASSERT_EQ(0, pipe(pipe_fds_));
+
+  RunLoop run_loop;
+
+  ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, BindLambdaForTesting([&]() {
+        int64_t x = 1;
+        auto ret = write(pipe_fds_[1], &x, sizeof(x));
+        ASSERT_EQ(static_cast<size_t>(ret), sizeof(x));
+      }),
+      TimeDelta::FromHours(1));
+
+  auto controller = FileDescriptorWatcher::WatchReadable(
+      pipe_fds_[0], run_loop.QuitClosure());
+
+  // This will hang if the notification doesn't occur as expected (Run() should
+  // fast-forward-time when idle).
   run_loop.Run();
 }
 #endif  // defined(OS_POSIX)

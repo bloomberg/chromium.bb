@@ -416,7 +416,8 @@ void ScopedTaskEnvironment::InitializeThreadPool() {
 
 void ScopedTaskEnvironment::CompleteInitialization() {
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
-  if (main_thread_type() == MainThreadType::IO) {
+  if (main_thread_type() == MainThreadType::IO ||
+      main_thread_type() == MainThreadType::IO_MOCK_TIME) {
     file_descriptor_watcher_ =
         std::make_unique<FileDescriptorWatcher>(GetMainThreadTaskRunner());
   }
