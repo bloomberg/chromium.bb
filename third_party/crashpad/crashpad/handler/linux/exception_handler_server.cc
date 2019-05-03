@@ -32,6 +32,8 @@
 #include "build/build_config.h"
 #include "util/file/file_io.h"
 #include "util/file/filesystem.h"
+#include "util/linux/proc_task_reader.h"
+#include "util/linux/socket.h"
 #include "util/misc/as_underlying_type.h"
 
 namespace crashpad {
@@ -122,20 +124,61 @@ bool SendMessageToClient(
   return LoggingWriteFile(client_sock, &message, sizeof(message));
 }
 
+int tgkill(pid_t pid, pid_t tid, int signo) {
+  return syscall(SYS_tgkill, pid, tid, signo);
+}
+
+void SendSIGCONT(pid_t pid, pid_t tid) {
+  if (tid > 0) {
+    if (tgkill(pid, tid, ExceptionHandlerProtocol::kDumpDoneSignal) != 0) {
+      PLOG(ERROR) << "tgkill";
+    }
+    return;
+  }
+
+  std::vector<pid_t> threads;
+  if (!ReadThreadIDs(pid, &threads)) {
+    return;
+  }
+  for (const auto& thread : threads) {
+    if (tgkill(pid, thread, ExceptionHandlerProtocol::kDumpDoneSignal) != 0) {
+      PLOG(ERROR) << "tgkill";
+    }
+  }
+}
+
+bool SendCredentials(int client_sock) {
+  ExceptionHandlerProtocol::ServerToClientMessage message = {};
+  message.type =
+      ExceptionHandlerProtocol::ServerToClientMessage::kTypeCredentials;
+  return UnixCredentialSocket::SendMsg(
+             client_sock, &message, sizeof(message)) == 0;
+}
+
 class PtraceStrategyDeciderImpl : public PtraceStrategyDecider {
  public:
   PtraceStrategyDeciderImpl() : PtraceStrategyDecider() {}
   ~PtraceStrategyDeciderImpl() = default;
 
-  Strategy ChooseStrategy(int sock, const ucred& client_credentials) override {
+  Strategy ChooseStrategy(int sock,
+                          bool multiple_clients,
+                          const ucred& client_credentials) override {
+    if (client_credentials.pid <= 0) {
+      LOG(ERROR) << "invalid credentials";
+      return Strategy::kNoPtrace;
+    }
+
     switch (GetPtraceScope()) {
       case PtraceScope::kClassic:
-        if (getuid() == client_credentials.uid) {
+        if (getuid() == client_credentials.uid || HaveCapSysPtrace()) {
           return Strategy::kDirectPtrace;
         }
-        return TryForkingBroker(sock);
+        return multiple_clients ? Strategy::kNoPtrace : TryForkingBroker(sock);
 
       case PtraceScope::kRestricted:
+        if (multiple_clients) {
+          return Strategy::kDirectPtrace;
+        }
         if (!SendMessageToClient(sock,
                                  ExceptionHandlerProtocol::
                                      ServerToClientMessage::kTypeSetPtracer)) {
@@ -196,12 +239,6 @@ class PtraceStrategyDeciderImpl : public PtraceStrategyDecider {
 
 }  // namespace
 
-struct ExceptionHandlerServer::Event {
-  enum class Type { kShutdown, kClientMessage } type;
-
-  ScopedFileHandle fd;
-};
-
 ExceptionHandlerServer::ExceptionHandlerServer()
     : clients_(),
       shutdown_event_(),
@@ -217,7 +254,8 @@ void ExceptionHandlerServer::SetPtraceStrategyDecider(
   strategy_decider_ = std::move(decider);
 }
 
-bool ExceptionHandlerServer::InitializeWithClient(ScopedFileHandle sock) {
+bool ExceptionHandlerServer::InitializeWithClient(ScopedFileHandle sock,
+                                                  bool multiple_clients) {
   INITIALIZATION_STATE_SET_INITIALIZING(initialized_);
 
   pollfd_.reset(epoll_create1(EPOLL_CLOEXEC));
@@ -245,7 +283,9 @@ bool ExceptionHandlerServer::InitializeWithClient(ScopedFileHandle sock) {
     return false;
   }
 
-  if (!InstallClientSocket(std::move(sock))) {
+  if (!InstallClientSocket(std::move(sock),
+                           multiple_clients ? Event::Type::kSharedSocketMessage
+                                            : Event::Type::kClientMessage)) {
     return false;
   }
 
@@ -287,8 +327,8 @@ void ExceptionHandlerServer::Stop() {
 }
 
 void ExceptionHandlerServer::HandleEvent(Event* event, uint32_t event_type) {
-  DCHECK_EQ(AsUnderlyingType(event->type),
-            AsUnderlyingType(Event::Type::kClientMessage));
+  DCHECK_NE(AsUnderlyingType(event->type),
+            AsUnderlyingType(Event::Type::kShutdown));
 
   if (event_type & EPOLLERR) {
     LogSocketError(event->fd.get());
@@ -312,7 +352,8 @@ void ExceptionHandlerServer::HandleEvent(Event* event, uint32_t event_type) {
   return;
 }
 
-bool ExceptionHandlerServer::InstallClientSocket(ScopedFileHandle socket) {
+bool ExceptionHandlerServer::InstallClientSocket(ScopedFileHandle socket,
+                                                 Event::Type type) {
   // The handler may not have permission to set SO_PASSCRED on the socket, but
   // it doesn't need to if the client has already set it.
   // https://bugs.chromium.org/p/crashpad/issues/detail?id=252
@@ -334,7 +375,7 @@ bool ExceptionHandlerServer::InstallClientSocket(ScopedFileHandle socket) {
   }
 
   auto event = std::make_unique<Event>();
-  event->type = Event::Type::kClientMessage;
+  event->type = type;
   event->fd.reset(socket.release());
 
   Event* eventp = event.get();
@@ -375,56 +416,23 @@ bool ExceptionHandlerServer::UninstallClientSocket(Event* event) {
 
 bool ExceptionHandlerServer::ReceiveClientMessage(Event* event) {
   ExceptionHandlerProtocol::ClientToServerMessage message;
-  iovec iov;
-  iov.iov_base = &message;
-  iov.iov_len = sizeof(message);
-
-  msghdr msg;
-  msg.msg_name = nullptr;
-  msg.msg_namelen = 0;
-  msg.msg_iov = &iov;
-  msg.msg_iovlen = 1;
-
-  char cmsg_buf[CMSG_SPACE(sizeof(ucred))];
-  msg.msg_control = cmsg_buf;
-  msg.msg_controllen = sizeof(cmsg_buf);
-  msg.msg_flags = 0;
-
-  int res = HANDLE_EINTR(recvmsg(event->fd.get(), &msg, 0));
-  if (res < 0) {
-    PLOG(ERROR) << "recvmsg";
-    return false;
-  }
-  if (res == 0) {
-    // The client had an orderly shutdown.
+  ucred creds;
+  if (!UnixCredentialSocket::RecvMsg(
+          event->fd.get(), &message, sizeof(message), &creds)) {
     return false;
   }
 
-  if (msg.msg_name != nullptr || msg.msg_namelen != 0) {
-    LOG(ERROR) << "unexpected msg name";
-    return false;
-  }
+  switch (message.type) {
+    case ExceptionHandlerProtocol::ClientToServerMessage::kTypeCheckCredentials:
+      return SendCredentials(event->fd.get());
 
-  if (msg.msg_iovlen != 1) {
-    LOG(ERROR) << "unexpected iovlen";
-    return false;
-  }
-
-  if (msg.msg_iov[0].iov_len !=
-      sizeof(ExceptionHandlerProtocol::ClientToServerMessage)) {
-    LOG(ERROR) << "unexpected message size " << msg.msg_iov[0].iov_len;
-    return false;
-  }
-  auto client_msg =
-      reinterpret_cast<ExceptionHandlerProtocol::ClientToServerMessage*>(
-          msg.msg_iov[0].iov_base);
-
-  switch (client_msg->type) {
-    case ExceptionHandlerProtocol::ClientToServerMessage::kCrashDumpRequest:
-      return HandleCrashDumpRequest(msg,
-                                    client_msg->client_info,
-                                    client_msg->requesting_thread_stack_address,
-                                    event->fd.get());
+    case ExceptionHandlerProtocol::ClientToServerMessage::kTypeCrashDumpRequest:
+      return HandleCrashDumpRequest(
+          creds,
+          message.client_info,
+          message.requesting_thread_stack_address,
+          event->fd.get(),
+          event->type == Event::Type::kSharedSocketMessage);
   }
 
   DCHECK(false);
@@ -433,50 +441,46 @@ bool ExceptionHandlerServer::ReceiveClientMessage(Event* event) {
 }
 
 bool ExceptionHandlerServer::HandleCrashDumpRequest(
-    const msghdr& msg,
+    const ucred& creds,
     const ExceptionHandlerProtocol::ClientInformation& client_info,
     VMAddress requesting_thread_stack_address,
-    int client_sock) {
-  cmsghdr* cmsg = CMSG_FIRSTHDR(&msg);
-  if (cmsg == nullptr) {
-    LOG(ERROR) << "missing credentials";
-    return false;
-  }
+    int client_sock,
+    bool multiple_clients) {
+  pid_t client_process_id = creds.pid;
+  pid_t requesting_thread_id = -1;
 
-  if (cmsg->cmsg_level != SOL_SOCKET) {
-    LOG(ERROR) << "unexpected cmsg_level " << cmsg->cmsg_level;
-    return false;
-  }
-
-  if (cmsg->cmsg_type != SCM_CREDENTIALS) {
-    LOG(ERROR) << "unexpected cmsg_type " << cmsg->cmsg_type;
-    return false;
-  }
-
-  if (cmsg->cmsg_len != CMSG_LEN(sizeof(ucred))) {
-    LOG(ERROR) << "unexpected cmsg_len " << cmsg->cmsg_len;
-    return false;
-  }
-
-  ucred* client_credentials = reinterpret_cast<ucred*>(CMSG_DATA(cmsg));
-  pid_t client_process_id = client_credentials->pid;
-
-  switch (strategy_decider_->ChooseStrategy(client_sock, *client_credentials)) {
+  switch (
+      strategy_decider_->ChooseStrategy(client_sock, multiple_clients, creds)) {
     case PtraceStrategyDecider::Strategy::kError:
+      if (multiple_clients) {
+        SendSIGCONT(client_process_id, requesting_thread_id);
+      }
       return false;
 
     case PtraceStrategyDecider::Strategy::kNoPtrace:
+      if (multiple_clients) {
+        SendSIGCONT(client_process_id, requesting_thread_id);
+        return true;
+      }
       return SendMessageToClient(
           client_sock,
           ExceptionHandlerProtocol::ServerToClientMessage::
               kTypeCrashDumpFailed);
 
-    case PtraceStrategyDecider::Strategy::kDirectPtrace:
-      delegate_->HandleException(
-          client_process_id, client_info, requesting_thread_stack_address);
+    case PtraceStrategyDecider::Strategy::kDirectPtrace: {
+      delegate_->HandleException(client_process_id,
+                                 client_info,
+                                 requesting_thread_stack_address,
+                                 &requesting_thread_id);
+      if (multiple_clients) {
+        SendSIGCONT(client_process_id, requesting_thread_id);
+        return true;
+      }
       break;
+    }
 
     case PtraceStrategyDecider::Strategy::kUseBroker:
+      DCHECK(!multiple_clients);
       delegate_->HandleExceptionWithBroker(
           client_process_id, client_info, client_sock);
       break;

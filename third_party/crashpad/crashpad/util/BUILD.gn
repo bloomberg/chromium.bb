@@ -137,6 +137,7 @@ static_library("util") {
     "numeric/in_range_cast.h",
     "numeric/int128.h",
     "numeric/safe_assignment.h",
+    "process/process_id.h",
     "process/process_memory.cc",
     "process/process_memory.h",
     "process/process_memory_native.h",
@@ -294,6 +295,8 @@ static_library("util") {
       "linux/memory_map.h",
       "linux/proc_stat_reader.cc",
       "linux/proc_stat_reader.h",
+      "linux/proc_task_reader.cc",
+      "linux/proc_task_reader.h",
       "linux/ptrace_broker.cc",
       "linux/ptrace_broker.h",
       "linux/ptrace_client.cc",
@@ -307,6 +310,8 @@ static_library("util") {
       "linux/scoped_pr_set_ptracer.h",
       "linux/scoped_ptrace_attach.cc",
       "linux/scoped_ptrace_attach.h",
+      "linux/socket.cc",
+      "linux/socket.h",
       "linux/thread_info.cc",
       "linux/thread_info.h",
       "linux/traits.h",
@@ -469,6 +474,10 @@ static_library("util") {
   if (crashpad_is_fuchsia) {
     public_deps += [ "../third_party/fuchsia" ]
   }
+
+  if (crashpad_is_android || crashpad_is_linux) {
+    deps += [ "../third_party/lss" ]
+  }
 }
 
 if (crashpad_use_boringssl_for_http_transport_socket) {
@@ -619,9 +628,11 @@ source_set("util_test") {
       "linux/auxiliary_vector_test.cc",
       "linux/memory_map_test.cc",
       "linux/proc_stat_reader_test.cc",
+      "linux/proc_task_reader_test.cc",
       "linux/ptrace_broker_test.cc",
       "linux/ptracer_test.cc",
       "linux/scoped_ptrace_attach_test.cc",
+      "linux/socket_test.cc",
       "misc/capture_context_test_util_linux.cc",
     ]
   }
@@ -666,6 +677,10 @@ source_set("util_test") {
     "../third_party/mini_chromium:base",
     "../third_party/zlib",
   ]
+
+  if (crashpad_is_android || crashpad_is_linux) {
+    deps += [ "../third_party/lss" ]
+  }
 
   if (!crashpad_is_android) {
     data_deps = [

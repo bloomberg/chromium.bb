@@ -134,7 +134,7 @@ class SandboxedHandler {
 
       ScopedPrSetDumpable set_dumpable(/* may_log= */ false);
 
-      ExceptionHandlerClient handler_client(connection.get());
+      ExceptionHandlerClient handler_client(connection.get(), false);
       handler_client.SetCanSetPtracer(false);
       handler_client.RequestCrashDump(info);
     }
@@ -670,7 +670,7 @@ bool DumpWithoutCrashingForClient(CrashReporterClient* client) {
 
   crashpad::ScopedPrSetDumpable set_dumpable(/* may_log= */ false);
 
-  crashpad::ExceptionHandlerClient handler_client(connection.get());
+  crashpad::ExceptionHandlerClient handler_client(connection.get(), false);
   return handler_client.RequestCrashDump(info) == 0;
 }
 

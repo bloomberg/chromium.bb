@@ -16,6 +16,7 @@
 #define CRASHPAD_UTIL_LINUX_EXCEPTION_HANDLER_PROTOCOL_H_
 
 #include <errno.h>
+#include <signal.h>
 #include <stdint.h>
 #include <sys/types.h>
 
@@ -51,6 +52,13 @@ class ExceptionHandlerProtocol {
     VMAddress sanitization_information_address;
   };
 
+  //! \brief The signal used to indicate a crash dump is complete.
+  //!
+  //! When multiple clients share a single socket connection with the handler,
+  //! the handler sends this signal to the dump requestor to indicate when the
+  //! the dump is either done or has failed and the client may continue.
+  static constexpr int kDumpDoneSignal = SIGCONT;
+
   //! \brief The message passed from client to server.
   struct ClientToServerMessage {
     static constexpr int32_t kVersion = 1;
@@ -61,13 +69,18 @@ class ExceptionHandlerProtocol {
     //! \brief Indicates what message version is being used.
     int32_t version;
 
+    enum Type : uint32_t {
+      //! \brief Request that the server respond with its credentials.
+      kTypeCheckCredentials,
+
+      //! \brief Used to request a crash dump for the sending client.
+      kTypeCrashDumpRequest
+    };
+
+    Type type;
+
     //! \brief A stack address of the thread sending the message.
     VMAddress requesting_thread_stack_address;
-
-    enum Type : uint32_t {
-      //! \brief Used to request a crash dump for the sending client.
-      kCrashDumpRequest
-    } type;
 
     union {
       //! \brief Valid for type == kCrashDumpRequest
@@ -78,6 +91,9 @@ class ExceptionHandlerProtocol {
   //! \brief The message passed from server to client.
   struct ServerToClientMessage {
     enum Type : uint32_t {
+      //! \brief Used to pass credentials with `SCM_CREDENTIALS`.
+      kTypeCredentials,
+
       //! \brief Indicates that the client should fork a PtraceBroker process.
       kTypeForkBroker,
 
@@ -92,7 +108,9 @@ class ExceptionHandlerProtocol {
       //! \brief Indicicates that the handler was unable to produce a crash
       //!     dump.
       kTypeCrashDumpFailed
-    } type;
+    };
+
+    Type type;
 
     //! \brief The handler's process ID. Valid for kTypeSetPtracer.
     pid_t pid;
