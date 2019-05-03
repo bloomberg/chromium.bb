@@ -53,7 +53,7 @@ class DrmWindowHost : public PlatformWindow,
 
   void Initialize();
 
-  gfx::AcceleratedWidget GetAcceleratedWidget();
+  gfx::AcceleratedWidget GetAcceleratedWidget() const;
 
   gfx::Rect GetCursorConfinedBounds() const;
 

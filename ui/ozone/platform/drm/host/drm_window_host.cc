@@ -57,7 +57,7 @@ void DrmWindowHost::Initialize() {
   delegate_->OnAcceleratedWidgetAvailable(widget_);
 }
 
-gfx::AcceleratedWidget DrmWindowHost::GetAcceleratedWidget() {
+gfx::AcceleratedWidget DrmWindowHost::GetAcceleratedWidget() const {
   return widget_;
 }
 

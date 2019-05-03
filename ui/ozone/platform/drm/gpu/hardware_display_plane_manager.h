@@ -117,7 +117,7 @@ class HardwareDisplayPlaneManager {
   virtual bool ValidatePrimarySize(const DrmOverlayPlane& primary,
                                    const drmModeModeInfo& mode) = 0;
 
-  const std::vector<std::unique_ptr<HardwareDisplayPlane>>& planes() {
+  const std::vector<std::unique_ptr<HardwareDisplayPlane>>& planes() const {
     return planes_;
   }
 
@@ -131,7 +131,8 @@ class HardwareDisplayPlaneManager {
   // Returns all formats which can be scanned out by this PlaneManager.
   const std::vector<uint32_t>& GetSupportedFormats() const;
 
-  std::vector<uint64_t> GetFormatModifiers(uint32_t crtc_id, uint32_t format);
+  std::vector<uint64_t> GetFormatModifiers(uint32_t crtc_id,
+                                           uint32_t format) const;
 
  protected:
   struct CrtcProperties {

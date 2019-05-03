@@ -42,7 +42,7 @@ class GbmPixmap : public gfx::NativePixmap {
                             std::unique_ptr<gfx::GpuFence> gpu_fence) override;
   gfx::NativePixmapHandle ExportHandle() override;
 
-  GbmBuffer* buffer() { return buffer_.get(); }
+  GbmBuffer* buffer() const { return buffer_.get(); }
   const scoped_refptr<DrmFramebuffer>& framebuffer() const {
     return framebuffer_;
   }

@@ -127,7 +127,7 @@ class HardwareDisplayController {
 
   // Return the supported modifiers for |fourcc_format| for this
   // controller.
-  std::vector<uint64_t> GetFormatModifiers(uint32_t fourcc_format);
+  std::vector<uint64_t> GetFormatModifiers(uint32_t fourcc_format) const;
 
   // Return the supported modifiers for |fourcc_format| for this
   // controller to be used for modeset buffers. Currently, this only exists
@@ -135,7 +135,7 @@ class HardwareDisplayController {
   // See https://crbug.com/852675
   // TODO: Remove this.
   std::vector<uint64_t> GetFormatModifiersForModesetting(
-      uint32_t fourcc_format);
+      uint32_t fourcc_format) const;
 
   // Moves the hardware cursor to |location|.
   void MoveCursor(const gfx::Point& location);

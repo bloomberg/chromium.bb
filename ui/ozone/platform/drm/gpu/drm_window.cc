@@ -50,11 +50,11 @@ void DrmWindow::Shutdown() {
   device_manager_->RemoveDrmDevice(widget_);
 }
 
-gfx::AcceleratedWidget DrmWindow::GetAcceleratedWidget() {
+gfx::AcceleratedWidget DrmWindow::GetAcceleratedWidget() const {
   return widget_;
 }
 
-HardwareDisplayController* DrmWindow::GetController() {
+HardwareDisplayController* DrmWindow::GetController() const {
   return controller_;
 }
 
@@ -134,7 +134,7 @@ std::vector<OverlayCheckReturn_Params> DrmWindow::TestPageFlip(
                                           last_submitted_planes_);
 }
 
-const DrmOverlayPlane* DrmWindow::GetLastModesetBuffer() {
+const DrmOverlayPlane* DrmWindow::GetLastModesetBuffer() const {
   return DrmOverlayPlane::GetPrimaryPlane(last_submitted_planes_);
 }
 

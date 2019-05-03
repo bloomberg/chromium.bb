@@ -213,7 +213,7 @@ const std::vector<uint32_t>& HardwareDisplayPlaneManager::GetSupportedFormats()
 
 std::vector<uint64_t> HardwareDisplayPlaneManager::GetFormatModifiers(
     uint32_t crtc_id,
-    uint32_t format) {
+    uint32_t format) const {
   int crtc_index = LookupCrtcIndex(crtc_id);
 
   for (const auto& plane : planes_) {

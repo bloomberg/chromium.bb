@@ -49,30 +49,32 @@ class DrmFramebuffer : public base::RefCountedThreadSafe<DrmFramebuffer> {
                  const gfx::Size& size);
 
   // ID allocated by the KMS API when the buffer is registered (via the handle).
-  uint32_t framebuffer_id() { return framebuffer_id_; }
+  uint32_t framebuffer_id() const { return framebuffer_id_; }
 
   // ID allocated if the buffer is also registered with a different pixel format
   // so that it can be scheduled as an opaque buffer.
-  uint32_t opaque_framebuffer_id() {
+  uint32_t opaque_framebuffer_id() const {
     return opaque_framebuffer_id_ ? opaque_framebuffer_id_ : framebuffer_id_;
   }
 
   // Returns FourCC format representing the way pixel data has been encoded in
   // memory for the registered framebuffer. This can be used to check if frame
   // buffer is compatible with a given hardware plane.
-  uint32_t framebuffer_pixel_format() { return framebuffer_pixel_format_; }
+  uint32_t framebuffer_pixel_format() const {
+    return framebuffer_pixel_format_;
+  }
 
   // Returns FourCC format that should be used to schedule this buffer for
   // scanout when used as an opaque buffer.
-  uint32_t opaque_framebuffer_pixel_format() {
+  uint32_t opaque_framebuffer_pixel_format() const {
     return opaque_framebuffer_pixel_format_;
   }
 
   // Returns format modifier for buffer.
-  uint64_t format_modifier() { return format_modifier_; }
+  uint64_t format_modifier() const { return format_modifier_; }
 
   // Size of the buffer.
-  gfx::Size size() { return size_; }
+  gfx::Size size() const { return size_; }
 
   // Device on which the buffer was created.
   const scoped_refptr<DrmDevice>& drm_device() const { return drm_device_; }

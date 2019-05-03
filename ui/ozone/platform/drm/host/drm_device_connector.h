@@ -58,7 +58,7 @@ class DrmDeviceConnector : public GpuPlatformSupportHost {
   bool BindableNow() const { return !!connector_; }
 
  private:
-  bool am_running_in_ws_mode() { return !!ws_runner_; }
+  bool am_running_in_ws_mode() const { return !!ws_runner_; }
 
   // This will be present if the Viz host has a service manager.
   service_manager::Connector* const connector_;
