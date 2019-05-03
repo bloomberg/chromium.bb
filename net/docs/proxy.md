@@ -2,7 +2,8 @@
 
 ## Implicit bypass rules
 
-Requests to certain hosts will not be sent through a proxy, and will instead be sent directly.
+Requests to certain hosts will not be sent through a proxy, and will instead be
+sent directly.
 
 We call these the _implicit bypass rules_. The implicit bypass rules match URLs
 whose host portion is either a localhost name or a link-local IP literal.
@@ -38,7 +39,8 @@ Historical support in Chrome:
 * Prior to M71 there were no implicit proxy bypass rules (except if using
   `--winhttp-proxy-resolver`)
 * In M71 Chrome applied implicit proxy bypass rules to PAC scripts
-* In M72 Chrome generalized the implicit proxy bypass rules to manually configured proxies
+* In M72 Chrome generalized the implicit proxy bypass rules to manually
+  configured proxies
 
 ## Overriding the implicit bypass rules
 
@@ -79,8 +81,8 @@ we have a choice of 3 separate proxies, each of different type?
 
 Initially, Chrome will try the proxies in order. This means first attempting the
 request through the HTTP WebProxy `proxy1`. If that "fails", the request is
-next attempted through the HTTPS proxy `proxy2`. Lastly if that fails, the request is
-attempted through the SOCKSv5 proxy `proxy3`.
+next attempted through the HTTPS proxy `proxy2`. Lastly if that fails, the
+request is attempted through the SOCKSv5 proxy `proxy3`.
 
 This process is referred to as _proxy fallback_. What constitutes a
 "failure" is described later.
@@ -88,7 +90,8 @@ This process is referred to as _proxy fallback_. What constitutes a
 Proxy fallback is stateful. The actual order of proxy attempts made be Chrome
 is influenced by the past responsiveness of proxy servers.
 
-Let's say we request `http://www.example.com/`. Per the PAC script this resolves to:
+Let's say we request `http://www.example.com/`. Per the PAC script this
+resolves to:
 
 ```
 "PROXY proxy1; HTTPS proxy2; SOCKS5 proxy3"
@@ -99,8 +102,8 @@ left-to-right order (`proxy1`, `proxy2`, `proxy3`).
 
 Let's say that the attempt through `proxy1` fails, but then the attempt through
 `proxy2` succeeds. Chrome will mark `proxy1` as _bad_ for the next 5 minutes.
-Being marked as _bad_ means that `proxy1` is de-prioritized with respect to other
-proxies options (including DIRECT) that are not marked as bad.
+Being marked as _bad_ means that `proxy1` is de-prioritized with respect to
+other proxies options (including DIRECT) that are not marked as bad.
 
 That means the next time `http://www.example.com/` is requested, the effective
 order for proxies to attempt will be:
@@ -156,3 +159,56 @@ button on
 [chrome://net-internals/#proxy](chrome://net-internals/#proxy). Note the UI
 will not give feedback that the bad proxies were cleared, however capturing a
 new NetLog dump can confirm it was cleared.
+
+## Arguments are passed to `FindProxyForURL(url, host)` in PAC scripts
+
+PAC scripts in Chrome are expected to define a JavaScript function
+`FindProxyForURL`.
+
+The historical signature for this function is:
+
+```
+function FindProxyForURL(url, host) {
+  ...
+}
+```
+
+Scripts can expect to be called with string arguments `url` and `host` such
+that:
+
+* `url` is a *sanitized* version of the request's URL
+* `host` is the unbracketed host portion of the origin.
+
+Sanitization of the URL means that the path, query, fragment, and identity
+portions of the URL are stripped. Effectively `url` will be
+limited to a `scheme://host:port/` style URL
+
+Examples of how `FindProxyForURL()` will be called:
+
+```
+// Actual URL:   https://www.google.com/Foo
+FindProxyForURL('https://www.google.com/', 'www.google.com')
+
+// Actual URL:   https://[dead::beef]/foo?bar
+FindProxyForURL('https://[dead::beef]/', 'dead::beef')
+
+// Actual URL:   https://www.example.com:8080#search
+FindProxyForURL('https://www.example.com:8080/', 'example.com')
+
+// Actual URL:   https://username:password@www.example.com
+FindProxyForURL('https://www.example.com/', 'example.com')
+```
+
+Stripping the path and query from the `url` is a departure from the original
+Netscape implementation of PAC. It was introduced in Chrome 52 for [security
+reasons](https://bugs.chromium.org/p/chromium/issues/detail?id=593759).
+
+There is currently no option to turn off sanitization of URLs passed to PAC
+scripts (removed in Chrome 75).
+
+The sanitization of http:// URLs currently has a different policy, and does not
+strip query and path portions of the URL. That said, users are advised not to
+depend on reading the query/path portion of any URL
+type, since future versions of Chrome may [deprecate that
+capability](https://bugs.chromium.org/p/chromium/issues/detail?id=882536) in
+favor of a consistent policy.
