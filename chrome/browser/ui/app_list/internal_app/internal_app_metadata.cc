@@ -16,6 +16,7 @@
 #include "base/no_destructor.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
@@ -379,8 +380,11 @@ bool HasRecommendableForeignTab(
         if (latest_timestamp < tab->timestamp) {
           has_recommendation = true;
           latest_timestamp = tab->timestamp;
-          if (title)
-            *title = navigation.title();
+          if (title) {
+            *title = navigation.title().empty()
+                         ? base::UTF8ToUTF16(virtual_url.spec())
+                         : navigation.title();
+          }
 
           if (url)
             *url = virtual_url;

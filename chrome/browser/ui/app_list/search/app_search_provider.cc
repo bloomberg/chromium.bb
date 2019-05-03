@@ -756,9 +756,14 @@ void AppSearchProvider::UpdateRecommendedResults(
 
     base::string16 title = app->name();
     if (app->id() == kInternalAppIdContinueReading) {
-      if (HasRecommendableForeignTab(profile_, &title, /*url=*/nullptr,
+      base::string16 navigation_title;
+      if (HasRecommendableForeignTab(profile_, &navigation_title,
+                                     /*url=*/nullptr,
                                      open_tabs_ui_delegate_for_testing())) {
-        app->AddSearchableText(title);
+        if (!navigation_title.empty()) {
+          title = navigation_title;
+          app->AddSearchableText(title);
+        }
       } else {
         continue;
       }
