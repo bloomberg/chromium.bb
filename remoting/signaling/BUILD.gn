@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/grpc/grpc_library.gni")
-
 static_library("signaling") {
   sources = [
     "delegating_signal_strategy.cc",
@@ -53,8 +51,8 @@ static_library("signaling") {
   ]
 
   public_deps = [
-    ":ftl_grpc_library",
     "//remoting/proto",
+    "//remoting/proto/ftl/v1:ftl_grpc_library",
     "//third_party/libjingle_xmpp",
     "//third_party/webrtc_overrides",
   ]
@@ -93,16 +91,8 @@ static_library("signaling") {
       "//remoting/base/grpc_support",
       "//third_party/grpc:grpcpp",
     ]
-    public_deps -= [ ":ftl_grpc_library" ]
+    public_deps -= [ "//remoting/proto/ftl/v1:ftl_grpc_library" ]
   }
-}
-
-cc_grpc_library("ftl_grpc_library") {
-  sources = [
-    "chromoting_message.proto",
-    "ftl.proto",
-    "ftl_services.proto",
-  ]
 }
 
 static_library("test_support") {

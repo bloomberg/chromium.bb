@@ -6,7 +6,7 @@
 #define REMOTING_SIGNALING_FTL_DEVICE_ID_PROVIDER_H_
 
 #include "base/macros.h"
-#include "remoting/signaling/ftl.pb.h"
+#include "remoting/proto/ftl/v1/ftl_messages.pb.h"
 
 namespace remoting {
 

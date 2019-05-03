@@ -11,8 +11,8 @@
 #include "base/callback_forward.h"
 #include "base/callback_list.h"
 #include "base/macros.h"
-#include "remoting/signaling/chromoting_message.pb.h"
-#include "remoting/signaling/ftl_services.grpc.pb.h"
+#include "remoting/proto/ftl/v1/chromoting_message.pb.h"
+#include "remoting/proto/ftl/v1/ftl_services.grpc.pb.h"
 
 namespace remoting {
 

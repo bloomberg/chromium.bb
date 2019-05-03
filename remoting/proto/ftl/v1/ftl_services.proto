@@ -10,7 +10,7 @@ option optimize_for = LITE_RUNTIME;
 // the FTL server.
 package google.internal.communications.instantmessaging.v1;
 
-import "ftl.proto";
+import "ftl_messages.proto";
 
 service PeerToPeer {
   rpc GetICEServer(remoting.ftl.GetICEServerRequest)

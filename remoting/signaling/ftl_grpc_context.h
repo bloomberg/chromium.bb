@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "net/base/backoff_entry.h"
 #include "remoting/base/grpc_support/grpc_channel.h"
-#include "remoting/signaling/ftl.pb.h"
+#include "remoting/proto/ftl/v1/ftl_messages.pb.h"
 
 namespace grpc {
 class ClientContext;

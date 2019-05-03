@@ -20,7 +20,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "remoting/base/grpc_support/grpc_test_util.h"
 #include "remoting/base/grpc_support/scoped_grpc_server_stream.h"
-#include "remoting/signaling/ftl.pb.h"
+#include "remoting/proto/ftl/v1/ftl_messages.pb.h"
 #include "remoting/signaling/ftl_grpc_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

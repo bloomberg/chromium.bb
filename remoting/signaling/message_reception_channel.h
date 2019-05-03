@@ -10,7 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "remoting/signaling/ftl.pb.h"
+#include "remoting/proto/ftl/v1/ftl_messages.pb.h"
 #include "third_party/grpc/src/include/grpcpp/support/status.h"
 
 namespace remoting {
