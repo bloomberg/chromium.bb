@@ -41,6 +41,11 @@ class CC_ANIMATION_EXPORT ScrollTimeline {
   // compositor.
   std::unique_ptr<ScrollTimeline> CreateImplInstance() const;
 
+  // ScrollTimeline is active if the scroll node exists in active or pending
+  // scroll tree.
+  virtual bool IsActive(const ScrollTree& scroll_tree,
+                        bool is_active_tree) const;
+
   // Calculate the current time of the ScrollTimeline. This is either a
   // base::TimeTicks value or base::nullopt if the current time is unresolved.
   // The internal calculations are performed using doubles and the result is

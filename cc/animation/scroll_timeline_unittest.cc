@@ -181,8 +181,8 @@ TEST_F(ScrollTimelineTest, ActiveTimeIsSetOnlyAfterPromotion) {
                                base::nullopt, base::nullopt, 100,
                                KeyframeModel::FillMode::NONE);
 
-  // Now create an impl version of the ScrollTimeline. Initilly this should only
-  // have a pending scroller id, as the active tree may not yet have the
+  // Now create an impl version of the ScrollTimeline. Initially this should
+  // only have a pending scroller id, as the active tree may not yet have the
   // scroller in it (as in this case).
   std::unique_ptr<ScrollTimeline> impl_timeline =
       main_timeline.CreateImplInstance();
@@ -377,6 +377,43 @@ TEST_F(ScrollTimelineTest, CurrentTimeHandlesFillMode) {
       time_range, fill_both_timeline.CurrentTime(scroll_tree(), false));
   EXPECT_SCROLL_TIMELINE_TIME_NEAR(
       time_range, fill_auto_timeline.CurrentTime(scroll_tree(), false));
+}
+
+TEST_F(ScrollTimelineTest, Activeness) {
+  // ScrollTimeline with zero scroller id is inactive.
+  ScrollTimeline inactive_timeline1(base::nullopt, ScrollTimeline::ScrollDown,
+                                    base::nullopt, base::nullopt, 100,
+                                    KeyframeModel::FillMode::NONE);
+  EXPECT_FALSE(
+      inactive_timeline1.IsActive(scroll_tree(), false /*is_active_tree*/));
+  EXPECT_FALSE(
+      inactive_timeline1.IsActive(scroll_tree(), true /*is_active_tree*/));
+
+  // ScrollTimeline with a scroller that is not in the scroll tree is
+  // inactive.
+  ScrollTimeline inactive_timeline2(ElementId(2), ScrollTimeline::ScrollDown,
+                                    base::nullopt, base::nullopt, 100,
+                                    KeyframeModel::FillMode::NONE);
+  EXPECT_FALSE(
+      inactive_timeline2.IsActive(scroll_tree(), false /*is_active_tree*/));
+  // Activate the scroll tree.
+  inactive_timeline2.PromoteScrollTimelinePendingToActive();
+  EXPECT_FALSE(
+      inactive_timeline2.IsActive(scroll_tree(), true /*is_active_tree*/));
+
+  ScrollTimeline active_timeline(scroller_id(), ScrollTimeline::ScrollDown,
+                                 base::nullopt, base::nullopt, 100,
+                                 KeyframeModel::FillMode::NONE);
+  EXPECT_TRUE(
+      active_timeline.IsActive(scroll_tree(), false /*is_active_tree*/));
+  EXPECT_FALSE(
+      active_timeline.IsActive(scroll_tree(), true /*is_active_tree*/));
+
+  // Activate the scroll tree.
+  active_timeline.PromoteScrollTimelinePendingToActive();
+  EXPECT_TRUE(
+      active_timeline.IsActive(scroll_tree(), false /*is_active_tree*/));
+  EXPECT_TRUE(active_timeline.IsActive(scroll_tree(), true /*is_active_tree*/));
 }
 
 }  // namespace cc

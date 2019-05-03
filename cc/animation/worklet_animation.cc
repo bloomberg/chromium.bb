@@ -103,11 +103,14 @@ void WorkletAnimation::UpdateInputState(MutatorInputState* input_state,
                                         base::TimeTicks monotonic_time,
                                         const ScrollTree& scroll_tree,
                                         bool is_active_tree) {
+  bool is_timeline_active = IsTimelineActive(scroll_tree, is_active_tree);
   // Record the monotonic time to be the start time first time state is
   // generated. This time is used as the origin for computing the current time.
   // The start time of scroll-linked animations is always initialized to zero.
   // See: https://github.com/w3c/csswg-drafts/issues/2075
-  if (!start_time_.has_value())
+  // To stay consistent with blink::WorkletAnimation, record start time only
+  // when the timeline becomes active.
+  if (!start_time_.has_value() && is_timeline_active)
     start_time_ = scroll_timeline_ ? base::TimeTicks() : monotonic_time;
 
   // Skip running worklet animations with unchanged input time and reuse
@@ -115,11 +118,13 @@ void WorkletAnimation::UpdateInputState(MutatorInputState* input_state,
   if (!NeedsUpdate(monotonic_time, scroll_tree, is_active_tree))
     return;
 
+  DCHECK(is_timeline_active || state_ == State::REMOVED);
+  // When the timeline is inactive we apply last current time to the animation.
   double current_time =
-      CurrentTime(monotonic_time, scroll_tree, is_active_tree);
-  // TODO(yigu): If current_time becomes newly unresolved and last_current_time_
-  // is resolved, we apply the last current time to the animation if the scroll
-  // timeline becomes newly inactive. See https://crbug.com/906050.
+      is_timeline_active
+          ? CurrentTime(monotonic_time, scroll_tree, is_active_tree)
+          : last_current_time_.value_or(
+                std::numeric_limits<double>::quiet_NaN());
   last_current_time_ = current_time;
 
   switch (state_) {
@@ -178,6 +183,7 @@ void WorkletAnimation::UpdatePlaybackRate(double playback_rate) {
 double WorkletAnimation::CurrentTime(base::TimeTicks monotonic_time,
                                      const ScrollTree& scroll_tree,
                                      bool is_active_tree) {
+  DCHECK(IsTimelineActive(scroll_tree, is_active_tree));
   base::TimeTicks timeline_time;
   if (scroll_timeline_) {
     base::Optional<base::TimeTicks> scroll_monotonic_time =
@@ -195,19 +201,24 @@ double WorkletAnimation::CurrentTime(base::TimeTicks monotonic_time,
 bool WorkletAnimation::NeedsUpdate(base::TimeTicks monotonic_time,
                                    const ScrollTree& scroll_tree,
                                    bool is_active_tree) {
-  // If we don't have a start time it means that an update was never sent to
-  // the worklet therefore we need one.
-  if (!start_time_.has_value())
-    return true;
-
-  DCHECK(state_ == State::PENDING || last_current_time_.has_value());
   if (state_ == State::REMOVED)
     return true;
+
+  // When the timeline is inactive we apply the last current time to the
+  // animation.
+  if (!IsTimelineActive(scroll_tree, is_active_tree))
+    return false;
 
   double current_time =
       CurrentTime(monotonic_time, scroll_tree, is_active_tree);
   bool needs_update = last_current_time_ != current_time;
   return needs_update;
+}
+
+bool WorkletAnimation::IsTimelineActive(const ScrollTree& scroll_tree,
+                                        bool is_active_tree) const {
+  return !scroll_timeline_ ||
+         scroll_timeline_->IsActive(scroll_tree, is_active_tree);
 }
 
 void WorkletAnimation::UpdateScrollTimeline(

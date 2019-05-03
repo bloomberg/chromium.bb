@@ -121,6 +121,9 @@ class CC_ANIMATION_EXPORT WorkletAnimation final
   // Called by the UI thread WorletAnimation instance during commit.
   void SetPlaybackRate(double playback_rate);
 
+  bool IsTimelineActive(const ScrollTree& scroll_tree,
+                        bool is_active_tree) const;
+
   WorkletAnimationId worklet_animation_id_;
   std::string name_;
 
@@ -149,8 +152,8 @@ class CC_ANIMATION_EXPORT WorkletAnimation final
   base::Optional<base::TimeDelta> local_time_;
 
   base::Optional<base::TimeTicks> start_time_;
-  // Last current time used for updatig. We use this to skip updating if current
-  // time has not changed since last update.
+  // Last current time used for updating. We use this to skip updating if
+  // current time has not changed since last update.
   base::Optional<double> last_current_time_;
 
   State state_;
