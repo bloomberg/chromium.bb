@@ -288,7 +288,7 @@ bool PNGImageReader::ProgressivelyDecodeFirstFrame(
 }
 
 void PNGImageReader::ProcessFdatChunkAsIdat(png_uint_32 fdat_length) {
-  // An fdAT chunk is build up as follows:
+  // An fdAT chunk is built as follows:
   // - |length| (4B)
   // - fdAT tag (4B)
   // - sequence number (4B)
@@ -300,7 +300,8 @@ void PNGImageReader::ProcessFdatChunkAsIdat(png_uint_32 fdat_length) {
   // - change the tag to IDAT.
   // - omit the sequence number from the data part of the chunk.
   png_byte chunk_idat[] = {0, 0, 0, 0, 'I', 'D', 'A', 'T'};
-  png_save_uint_32(chunk_idat, fdat_length - 4);
+  DCHECK_GE(fdat_length, 4u);
+  png_save_uint_32(chunk_idat, fdat_length - 4u);
   // The CRC is incorrect when applied to the modified fdAT.
   png_set_crc_action(png_, PNG_CRC_QUIET_USE, PNG_CRC_QUIET_USE);
   png_process_data(png_, info_, chunk_idat, 8);
@@ -409,11 +410,11 @@ bool PNGImageReader::Parse(SegmentReader& data, ParseQuery query) {
     if (idat && !expect_idats_)
       return false;
 
-    const bool fd_at = IsChunk(chunk, "fdAT");
-    if (fd_at && expect_idats_)
+    const bool fdat = IsChunk(chunk, "fdAT");
+    if (fdat && expect_idats_)
       return false;
 
-    if (fd_at || (idat && idat_is_part_of_animation_)) {
+    if (fdat || (idat && idat_is_part_of_animation_)) {
       fctl_needs_dat_chunk_ = false;
       if (!new_frame_.start_offset) {
         // Beginning of a new frame's data.
@@ -427,7 +428,13 @@ bool PNGImageReader::Parse(SegmentReader& data, ParseQuery query) {
         }
       }
 
-      if (fd_at) {
+      if (fdat) {
+        if (length < 4) {
+          // The sequence number requires 4 bytes. Further,
+          // ProcessFdatChunkAsIdat expects to be able to create an IDAT with
+          // |newLength| = length - 4. Prevent underflow in that calculation.
+          return false;
+        }
         if (reader.size() < read_offset_ + 8 + 4)
           return true;
         const png_byte* sequence_position =

@@ -575,6 +575,40 @@ TEST(AnimatedPNGTests, IdatSizeMismatch) {
   ExpectStatic(decoder.get());
 }
 
+TEST(AnimatedPNGTests, EmptyFdatFails) {
+  const char* png_file =
+      "/images/resources/"
+      "png-animated-idat-part-of-animation.png";
+  scoped_refptr<SharedBuffer> data = ReadFile(png_file);
+  ASSERT_FALSE(data->IsEmpty());
+
+  // Modify the third fdAT to be empty.
+  constexpr size_t kOffsetThirdFdat = 352;
+  scoped_refptr<SharedBuffer> modified_data =
+      SharedBuffer::Create(data->Data(), kOffsetThirdFdat);
+  png_byte four_bytes[4u];
+  WriteUint32(0, four_bytes);
+  modified_data->Append(reinterpret_cast<char*>(four_bytes), 4u);
+
+  // fdAT tag
+  modified_data->Append(data->Data() + kOffsetThirdFdat + 4u, 4u);
+
+  // crc computed from modified fdAT chunk
+  WriteUint32(4122214294, four_bytes);
+  modified_data->Append(reinterpret_cast<char*>(four_bytes), 4u);
+
+  // IEND
+  constexpr size_t kIENDOffset = 422u;
+  modified_data->Append(data->Data() + kIENDOffset, 12u);
+
+  auto decoder = CreatePNGDecoder();
+  decoder->SetData(std::move(modified_data), true);
+  for (size_t i = 0; i < decoder->FrameCount(); i++) {
+    decoder->DecodeFrameBufferAtIndex(i);
+  }
+  ASSERT_TRUE(decoder->Failed());
+}
+
 // Originally, the third frame has an offset of (1,2) and a size of (3,2). By
 // changing the offset to (4,4), the frame rect is no longer within the image
 // size of 5x5. This results in a failure.
@@ -714,11 +748,11 @@ TEST(AnimatedPNGTests, MixedDataChunks) {
       SharedBuffer::Create(full_data->Data(), kPostIDAT);
   const size_t kFcTLSize = 38u;
   const size_t kFdATSize = 31u;
-  png_byte fd_at[kFdATSize];
-  memcpy(fd_at, full_data->Data() + kPostIDAT + kFcTLSize, kFdATSize);
+  png_byte fdat[kFdATSize];
+  memcpy(fdat, full_data->Data() + kPostIDAT + kFcTLSize, kFdATSize);
   // Modify the sequence number
-  WriteUint32(1u, fd_at + 8);
-  data->Append((const char*)fd_at, kFdATSize);
+  WriteUint32(1u, fdat + 8);
+  data->Append((const char*)fdat, kFdATSize);
   const size_t kIENDOffset = 422u;
   data->Append(full_data->Data() + kIENDOffset,
                full_data->size() - kIENDOffset);
