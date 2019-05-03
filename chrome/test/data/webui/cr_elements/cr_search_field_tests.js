@@ -79,7 +79,7 @@ suite('cr-search-field', function() {
     field.setValue('foo');
 
     field.setValue('');
-    assertEquals(['query1', '', 'query2', 'foo', ''].join(), searches.join());
+    assertDeepEquals(['query1', '', 'query2', 'foo', ''], searches);
   });
 
   test('does not notify on setValue with noEvent=true', function() {
@@ -87,6 +87,24 @@ suite('cr-search-field', function() {
     field.setValue('foo', true);
     field.setValue('bar');
     field.setValue('baz', true);
-    assertEquals(['bar'].join(), searches.join());
+    assertDeepEquals(['bar'], searches);
+  });
+
+  test('setValue will return early if the query has not changed', () => {
+    // Need a space at the end, since the effective query will strip the spaces
+    // at the beginning, but not at the end of the query.
+    const value = 'test ';
+    assertNotEquals(value, field.getValue());
+    let calledSetValue = false;
+    field.onSearchTermInput = () => {
+      if (!calledSetValue) {
+        calledSetValue = true;
+        field.setValue(value);
+      }
+    };
+    field.setValue(value, true);
+    field.setValue(`  ${value}  `);
+    assertTrue(calledSetValue);
+    assertEquals(0, searches.length);
   });
 });
