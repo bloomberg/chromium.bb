@@ -1094,7 +1094,7 @@ TEST_F(DesktopWidgetTestInteractive, WindowModalWindowDestroyedActivationTest) {
 // Disabled on Mac. Desktop Mac doesn't have system modal windows since Carbon
 // was deprecated. It does have application modal windows, but only Ash requests
 // those.
-#if defined(OS_MACOSX) && !defined(USE_AURA)
+#if defined(OS_MACOSX)
 #define MAYBE_SystemModalWindowReleasesCapture \
   DISABLED_SystemModalWindowReleasesCapture
 #elif defined(OS_CHROMEOS)
@@ -1345,7 +1345,7 @@ TEST_F(WidgetTestInteractive, InactiveWidgetDoesNotGrabActivation) {
 // currently only Desktop widgets and fullscreen changes have to coordinate with
 // the OS. See BridgedNativeWidgetUITest for native Mac fullscreen tests.
 // Maximize on mac is also (intentionally) a no-op.
-#if defined(OS_MACOSX) && !defined(USE_AURA)
+#if defined(OS_MACOSX)
 #define MAYBE_ExitFullscreenRestoreState DISABLED_ExitFullscreenRestoreState
 #else
 #define MAYBE_ExitFullscreenRestoreState ExitFullscreenRestoreState
@@ -1821,7 +1821,7 @@ TEST_F(WidgetCaptureTest, SetCaptureToNonToplevel) {
   child->AddObserver(&observer);
   child->Show();
 
-#if defined(OS_MACOSX) && !defined(USE_AURA)
+#if defined(OS_MACOSX)
   // On Mac, activation is asynchronous. A single trip to the runloop should be
   // sufficient. On Aura platforms, note that since the child widget isn't top-
   // level, the aura window manager gets asked whether the widget is active, not

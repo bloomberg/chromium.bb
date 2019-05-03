@@ -20,7 +20,7 @@ class NSString;
 
 namespace ui {
 
-#if defined(OS_MACOSX) && !defined(USE_AURA)
+#if defined(OS_MACOSX)
 COMPONENT_EXPORT(BASE_CLIPBOARD_TYPES)
 extern NSString* const kWebCustomDataPboardType;
 #endif

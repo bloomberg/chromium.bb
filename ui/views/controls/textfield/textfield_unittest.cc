@@ -3197,7 +3197,7 @@ TEST_F(TextfieldTouchSelectionTest, TouchSelectionInUnfocusableTextfield) {
 }
 
 // No touch on desktop Mac. Tracked in http://crbug.com/445520.
-#if defined(OS_MACOSX) && !defined(USE_AURA)
+#if defined(OS_MACOSX)
 #define MAYBE_TapOnSelection DISABLED_TapOnSelection
 #else
 #define MAYBE_TapOnSelection TapOnSelection

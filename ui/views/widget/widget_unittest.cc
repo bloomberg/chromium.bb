@@ -2350,7 +2350,7 @@ TEST_F(WidgetTest, NoCrashOnWidgetDeleteWithPendingEvents) {
   generator.MoveMouseTo(10, 10);
 
 // No touch on desktop Mac. Tracked in http://crbug.com/445520.
-#if defined(OS_MACOSX) && !defined(USE_AURA)
+#if defined(OS_MACOSX)
   generator.ClickLeftButton();
 #else
   generator.PressTouch();
@@ -3941,7 +3941,7 @@ class WidgetShadowTest : public WidgetTest {
 };
 
 // Disabled on Mac: All drop shadows are managed out of process for now.
-#if defined(OS_MACOSX) && !defined(USE_AURA)
+#if defined(OS_MACOSX)
 #define MAYBE_ShadowsInRootWindow DISABLED_ShadowsInRootWindow
 #else
 #define MAYBE_ShadowsInRootWindow ShadowsInRootWindow
