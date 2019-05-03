@@ -824,6 +824,7 @@
     },
     {
       name: "MediaQueryPrefersColorScheme",
+      status: "stable",
     },
     {
       name: "MediaQueryShape",
