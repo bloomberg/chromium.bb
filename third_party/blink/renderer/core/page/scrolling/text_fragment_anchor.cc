@@ -127,6 +127,10 @@ void TextFragmentAnchor::DidFindMatch(const EphemeralRangeInFlatTree& range) {
 
     LayoutRect bounding_box = LayoutRect(ComputeTextRect(range));
 
+    // Set the bounding box height to zero because we want to center the top of
+    // the text range.
+    bounding_box.SetHeight(LayoutUnit());
+
     DCHECK(range.Nodes().begin() != range.Nodes().end());
 
     Node& node = *range.Nodes().begin();
@@ -136,7 +140,7 @@ void TextFragmentAnchor::DidFindMatch(const EphemeralRangeInFlatTree& range) {
     node.GetLayoutObject()->ScrollRectToVisible(
         bounding_box,
         WebScrollIntoViewParams(ScrollAlignment::kAlignCenterIfNeeded,
-                                ScrollAlignment::kAlignToEdgeIfNeeded,
+                                ScrollAlignment::kAlignCenterIfNeeded,
                                 kProgrammaticScroll));
   }
   EphemeralRange dom_range =
@@ -145,7 +149,7 @@ void TextFragmentAnchor::DidFindMatch(const EphemeralRangeInFlatTree& range) {
   // TODO(nburris): Determine what we should do with overlapping text matches.
   // Currently, AddTextMatchMarker will crash when adding an overlapping marker.
   frame_->GetDocument()->Markers().AddTextMatchMarker(
-      dom_range, TextMatchMarker::MatchStatus::kActive);
+      dom_range, TextMatchMarker::MatchStatus::kInactive);
   frame_->GetEditor().SetMarkedTextMatchesAreHighlighted(true);
 }
 
