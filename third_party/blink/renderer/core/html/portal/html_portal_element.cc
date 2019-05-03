@@ -6,6 +6,7 @@
 
 #include <utility>
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_event_listener.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/post_message_helper.h"
@@ -13,6 +14,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/event_type_names.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -327,8 +329,26 @@ void HTMLPortalElement::ParseAttribute(
     const AttributeModificationParams& params) {
   HTMLFrameOwnerElement::ParseAttribute(params);
 
-  if (params.name == html_names::kSrcAttr)
+  if (params.name == html_names::kSrcAttr) {
     Navigate();
+    return;
+  }
+
+  struct {
+    const QualifiedName& name;
+    const AtomicString& event_name;
+  } event_handler_attributes[] = {
+      {html_names::kOnmessageAttr, event_type_names::kMessage},
+      {html_names::kOnmessageerrorAttr, event_type_names::kMessageerror},
+  };
+  for (const auto& attribute : event_handler_attributes) {
+    if (params.name == attribute.name) {
+      SetAttributeEventListener(
+          attribute.event_name,
+          CreateAttributeEventListener(this, attribute.name, params.new_value));
+      return;
+    }
+  }
 }
 
 LayoutObject* HTMLPortalElement::CreateLayoutObject(const ComputedStyle& style,
