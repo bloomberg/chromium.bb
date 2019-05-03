@@ -20,6 +20,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -596,6 +597,9 @@ class LocalNtpSource::SearchConfigurationProvider
           "showFakeboxPlaceholderOnFocus",
           base::FeatureList::IsEnabled(
               omnibox::kUIExperimentShowPlaceholderWhenCaretShowing));
+      config_data.SetBoolean(
+          "richerPicker",
+          base::FeatureList::IsEnabled(features::kNtpCustomizationMenuV2));
     }
 
     // Serialize the dictionary.
@@ -955,6 +959,13 @@ void LocalNtpSource::StartDataRequest(
     // TODO(dbeam): why is this needed? How does it interact with
     // URLDataSource::GetContentSecurityPolicy*() methods?
     replacements["contentSecurityPolicy"] = GetContentSecurityPolicy();
+
+    replacements["customizeMenuTitle"] = base::UTF16ToUTF8(
+        l10n_util::GetStringUTF16(IDS_NTP_CUSTOM_BG_CUSTOMIZE_NTP_LABEL));
+    replacements["cancelButton"] =
+        base::UTF16ToUTF8(l10n_util::GetStringUTF16(IDS_NTP_CUSTOM_BG_CANCEL));
+    replacements["doneButton"] =
+        base::UTF16ToUTF8(l10n_util::GetStringUTF16(IDS_NTP_CUSTOM_LINKS_DONE));
 
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
     base::StringPiece html = bundle.GetRawDataResource(IDR_LOCAL_NTP_HTML);

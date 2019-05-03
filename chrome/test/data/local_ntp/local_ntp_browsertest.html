@@ -160,6 +160,38 @@
       </div>
     </dialog>
 
+    <dialog id="customization-menu" class="customize-dialog">
+      <div id="menu-header">
+        <div id="menu-title">$i18n{customizeMenuTitle}</div>
+      </div>
+      <div id="menu-nav-panel">
+        <div class="menu-option" tabindex="0">
+          <div class="menu-option-icon-wrapper">
+            <div class="menu-option-icon" id="backgrounds-icon"></div>
+          </div>
+          <div class="menu-option-label" id="backgrounds-button">Backgrounds</div>
+        </div>
+        <div class="menu-option" tabindex="0">
+          <div class="menu-option-icon-wrapper">
+            <div class="menu-option-icon" id="shortcuts-icon"></div>
+          </div>
+          <div class="menu-option-label" id="shortcuts-button">Shortcuts</div>
+        </div>
+        <div class="menu-option" tabindex="0">
+          <div class="menu-option-icon-wrapper">
+            <div class="menu-option-icon" id="colors-icon"></div>
+          </div>
+          <div class="menu-option-label" id="colors-button">Color and themes</div>
+        </div>
+      </div>
+      <div id="menu-footer">
+          <button id="menu-cancel" class="bg-sel-footer-button paper secondary
+                                   ripple">$i18n{cancelButton}</button>
+          <button id="menu-done" class="bg-sel-footer-button paper primary ripple"
+                                 >$i18n{doneButton}</button>
+      </div>
+    </dialog>
+
     <dialog id="voice-overlay-dialog" class="overlay-dialog">
       <div id="voice-overlay" class="overlay-hidden">
         <button id="voice-close-button" class="close-button">&times;</button>

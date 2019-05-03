@@ -837,3 +837,117 @@ html[darkmode=true] body:not(.light-chip) #promo > div > img {
 #user-content {
   z-index: -1;
 }
+
+#customization-menu {
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px 0 rgba(var(--GG800-rgb), .3),
+              0 4px 8px 3px rgba(var(--GG800-rgb), .15);
+  height: 528px;
+  padding: 0;
+  width: 800px;
+}
+
+#menu-nav-panel {
+  height: 384px;
+  left: 0;
+  width: 192px;
+}
+
+.menu-option {
+  border-radius: 0 16px 16px 0;
+  font-size: 14px;
+  height: 32px;
+  left: 0;
+  line-height: 32px;
+  margin-bottom: 16px;
+  outline: none;
+  user-select: none;
+  width: 192px;
+}
+
+html[dir=rtl] .menu-option {
+  border-radius: 16px 0 0 16px;
+}
+
+.menu-option:hover,
+.menu-option:focus {
+  background-color: rgba(var(--GB900-rgb), .1);
+}
+
+.menu-option:active {
+  background-color: rgb(232, 240, 254);
+  color: rgb(var(--GB600-rgb));
+}
+
+.menu-option-icon-wrapper {
+  display: inline-block;
+  height: 20px;
+  margin-inline-start: 24px;
+  width: 20px;
+}
+
+.menu-option-icon {
+  -webkit-mask-image: url(icons/icon_pencil.svg);
+  -webkit-mask-position-x: center;
+  -webkit-mask-position-y: center;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 20px;
+  background-color: black;
+  background-size: 20px 20px;
+  height: 20px;
+  margin-top: 6px;
+  width: 20px;
+}
+
+.menu-option:active .menu-option-icon-wrapper .menu-option-icon {
+  background-color: rgb(var(--GB600-rgb));
+}
+
+.menu-option-label {
+  display: inline-block;
+  height: 32px;
+  line-height: 32px;
+  margin-inline-start: 16px;
+  text-align: center;
+  user-select: none;
+}
+
+#menu-header {
+  font-size: 16px;
+  height: 80px;
+}
+
+#menu-title {
+  height: 48px;
+  line-height: 48px;
+  margin-bottom: 8px;
+  margin-inline-start: 235px;
+  margin-top: 24px;
+  user-select: none;
+}
+
+#menu-footer {
+  border-top: 1px solid rgb(var(--GG200-rgb));
+  bottom: 0;
+  color: rgb(var(--GG800-rgb));
+  height: 64px;
+  left: 0;
+  padding-inline-start: 0;
+  position: absolute;
+  text-align: end;
+  user-select: none;
+  width: 100%;
+}
+
+#menu-done {
+  height: 32px;
+  line-height: 32px;
+  margin-inline-end: 16px;
+}
+
+#menu-cancel {
+  height: 32px;
+  line-height: 32px;
+  margin-inline-end: 8px;
+}

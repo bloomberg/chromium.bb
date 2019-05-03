@@ -75,6 +75,7 @@ customBackgrounds.IDS = {
   BACK: 'bg-sel-back',
   BACK_CIRCLE: 'bg-sel-back-circle',
   CANCEL: 'bg-sel-footer-cancel',
+  CUSTOMIZATION_MENU: 'customization-menu',
   CUSTOM_LINKS_RESTORE_DEFAULT: 'custom-links-restore-default',
   CUSTOM_LINKS_RESTORE_DEFAULT_TEXT: 'custom-links-restore-default-text',
   DEFAULT_WALLPAPERS: 'edit-bg-default-wallpapers',
@@ -86,6 +87,7 @@ customBackgrounds.IDS = {
   EDIT_BG_ICON: 'edit-bg-icon',
   EDIT_BG_MENU: 'edit-bg-menu',
   EDIT_BG_TEXT: 'edit-bg-text',
+  MENU_CANCEL: 'menu-cancel',
   MSG_BOX: 'message-box',
   MSG_BOX_MSG: 'message-box-message',
   MSG_BOX_LINK: 'message-box-link',
@@ -804,12 +806,21 @@ customBackgrounds.init = function(
 
   // Edit gear icon interaction events.
   const editBackgroundInteraction = function() {
-    editDialog.showModal();
+    if (configData.richerPicker) {
+      $(customBackgrounds.IDS.CUSTOMIZATION_MENU).showModal();
+    } else {
+      editDialog.showModal();
+    }
   };
   $(customBackgrounds.IDS.EDIT_BG).onclick = function(event) {
     editDialog.classList.add(customBackgrounds.CLASSES.MOUSE_NAV);
     editBackgroundInteraction();
   };
+
+  $(customBackgrounds.IDS.MENU_CANCEL).onclick = function(event) {
+    $(customBackgrounds.IDS.CUSTOMIZATION_MENU).close();
+  };
+
 
   // Find the first menu option that is not hidden or disabled.
   const findFirstMenuOption = () => {
