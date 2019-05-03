@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_WEB_STATE_UI_CRW_WK_NAVIGATION_STATES_H_
-#define IOS_WEB_WEB_STATE_UI_CRW_WK_NAVIGATION_STATES_H_
+#ifndef IOS_WEB_NAVIGATION_CRW_WK_NAVIGATION_STATES_H_
+#define IOS_WEB_NAVIGATION_CRW_WK_NAVIGATION_STATES_H_
 
 #include <memory>
 
@@ -106,4 +106,4 @@ enum class WKNavigationState : int {
 
 @end
 
-#endif  // IOS_WEB_WEB_STATE_UI_CRW_WK_NAVIGATION_STATES_H_
+#endif  // IOS_WEB_NAVIGATION_CRW_WK_NAVIGATION_STATES_H_
