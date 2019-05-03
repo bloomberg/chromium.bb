@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/encryption_migration_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/constants/dbus_paths.h"
@@ -255,7 +256,7 @@ class EncryptionMigrationTest : public MixinBasedInProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(EncryptionMigrationTest, SkipWithNoPolicySet) {
   SetUpStubAuthenticatorAndAttemptLogin(false /* has_incomplete_migration */);
-  OobeScreenWaiter(OobeScreen::SCREEN_ENCRYPTION_MIGRATION).Wait();
+  OobeScreenWaiter(EncryptionMigrationScreenView::kScreenId).Wait();
 
   WaitForElementCreation("ready-dialog");
   VerifyUiElementVisible("ready-dialog");
@@ -280,7 +281,7 @@ IN_PROC_BROWSER_TEST_F(EncryptionMigrationTest, SkipWithNoPolicySet) {
 
 IN_PROC_BROWSER_TEST_F(EncryptionMigrationTest, MigrateWithNoUserPolicySet) {
   SetUpStubAuthenticatorAndAttemptLogin(false /* has_incomplete_migration */);
-  OobeScreenWaiter(OobeScreen::SCREEN_ENCRYPTION_MIGRATION).Wait();
+  OobeScreenWaiter(EncryptionMigrationScreenView::kScreenId).Wait();
 
   WaitForElementCreation("ready-dialog");
   VerifyUiElementVisible("ready-dialog");
@@ -305,7 +306,7 @@ IN_PROC_BROWSER_TEST_F(EncryptionMigrationTest, MigrateWithNoUserPolicySet) {
 IN_PROC_BROWSER_TEST_F(EncryptionMigrationTest,
                        ResumeMigrationWithNoUserPolicySet) {
   SetUpStubAuthenticatorAndAttemptLogin(true /* has_incomplete_migration */);
-  OobeScreenWaiter(OobeScreen::SCREEN_ENCRYPTION_MIGRATION).Wait();
+  OobeScreenWaiter(EncryptionMigrationScreenView::kScreenId).Wait();
 
   // Migration is expected to continue immediately.
   RunFullMigrationFlowTest();
@@ -316,7 +317,7 @@ IN_PROC_BROWSER_TEST_F(EncryptionMigrationTest, MigratePolicy) {
       arc::policy_util::EcryptfsMigrationAction::kMigrate);
 
   SetUpStubAuthenticatorAndAttemptLogin(false /* has_incomplete_migration */);
-  OobeScreenWaiter(OobeScreen::SCREEN_ENCRYPTION_MIGRATION).Wait();
+  OobeScreenWaiter(EncryptionMigrationScreenView::kScreenId).Wait();
 
   // With kMigrate policy, the migration should start immediately.
   RunFullMigrationFlowTest();
@@ -328,7 +329,7 @@ IN_PROC_BROWSER_TEST_F(EncryptionMigrationTest,
       arc::policy_util::EcryptfsMigrationAction::kMigrate);
 
   SetUpStubAuthenticatorAndAttemptLogin(true /* has_incomplete_migration */);
-  OobeScreenWaiter(OobeScreen::SCREEN_ENCRYPTION_MIGRATION).Wait();
+  OobeScreenWaiter(EncryptionMigrationScreenView::kScreenId).Wait();
 
   RunFullMigrationFlowTest();
 }
@@ -340,7 +341,7 @@ IN_PROC_BROWSER_TEST_F(EncryptionMigrationTest, AskUserPolicy) {
       arc::policy_util::EcryptfsMigrationAction::kAskUser);
 
   SetUpStubAuthenticatorAndAttemptLogin(false /* has_incomplete_migration */);
-  OobeScreenWaiter(OobeScreen::SCREEN_ENCRYPTION_MIGRATION).Wait();
+  OobeScreenWaiter(EncryptionMigrationScreenView::kScreenId).Wait();
 
   // Verify that ready dialog is not shown, and that the migration started
   // without ask user for confirmation.
@@ -359,7 +360,7 @@ IN_PROC_BROWSER_TEST_F(EncryptionMigrationTest, MinimalMigration) {
       arc::policy_util::EcryptfsMigrationAction::kMinimalMigrate);
 
   SetUpStubAuthenticatorAndAttemptLogin(false /* has_incomplete_migration */);
-  OobeScreenWaiter(OobeScreen::SCREEN_ENCRYPTION_MIGRATION).Wait();
+  OobeScreenWaiter(EncryptionMigrationScreenView::kScreenId).Wait();
 
   WaitForElementCreation("minimal-migration-dialog");
   VerifyUiElementVisible("minimal-migration-dialog");
@@ -389,7 +390,7 @@ IN_PROC_BROWSER_TEST_F(EncryptionMigrationTest, MinimalMigrationWithTimeout) {
       arc::policy_util::EcryptfsMigrationAction::kMinimalMigrate);
 
   SetUpStubAuthenticatorAndAttemptLogin(false /* has_incomplete_migration */);
-  OobeScreenWaiter(OobeScreen::SCREEN_ENCRYPTION_MIGRATION).Wait();
+  OobeScreenWaiter(EncryptionMigrationScreenView::kScreenId).Wait();
 
   WaitForElementCreation("minimal-migration-dialog");
   VerifyUiElementVisible("minimal-migration-dialog");
@@ -414,7 +415,7 @@ IN_PROC_BROWSER_TEST_F(EncryptionMigrationTest, MinimalMigrationWithTimeout) {
       cryptohome::DIRCRYPTO_MIGRATION_SUCCESS, 5 /*current*/, 5 /*total*/);
   EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
 
-  OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
 }
 
 IN_PROC_BROWSER_TEST_F(EncryptionMigrationTest,
@@ -423,7 +424,7 @@ IN_PROC_BROWSER_TEST_F(EncryptionMigrationTest,
       arc::policy_util::EcryptfsMigrationAction::kMigrate);
 
   SetUpStubAuthenticatorAndAttemptLogin(false /* has_incomplete_migration */);
-  OobeScreenWaiter(OobeScreen::SCREEN_ENCRYPTION_MIGRATION).Wait();
+  OobeScreenWaiter(EncryptionMigrationScreenView::kScreenId).Wait();
 
   WaitForElementCreation("migrating-dialog");
 }
@@ -436,7 +437,7 @@ IN_PROC_BROWSER_TEST_F(EncryptionMigrationTest,
       arc::policy_util::EcryptfsMigrationAction::kMinimalMigrate);
 
   SetUpStubAuthenticatorAndAttemptLogin(true /* has_incomplete_migration */);
-  OobeScreenWaiter(OobeScreen::SCREEN_ENCRYPTION_MIGRATION).Wait();
+  OobeScreenWaiter(EncryptionMigrationScreenView::kScreenId).Wait();
 
   RunFullMigrationFlowTest();
 }
@@ -446,7 +447,7 @@ IN_PROC_BROWSER_TEST_F(EncryptionMigrationTest, PRE_ResumeMinimalMigration) {
       arc::policy_util::EcryptfsMigrationAction::kMinimalMigrate);
 
   SetUpStubAuthenticatorAndAttemptLogin(false /* has_incomplete_migration */);
-  OobeScreenWaiter(OobeScreen::SCREEN_ENCRYPTION_MIGRATION).Wait();
+  OobeScreenWaiter(EncryptionMigrationScreenView::kScreenId).Wait();
 
   WaitForElementCreation("minimal-migration-dialog");
 }
@@ -456,7 +457,7 @@ IN_PROC_BROWSER_TEST_F(EncryptionMigrationTest, ResumeMinimalMigration) {
       arc::policy_util::EcryptfsMigrationAction::kMigrate);
 
   SetUpStubAuthenticatorAndAttemptLogin(true /* has_incomplete_migration */);
-  OobeScreenWaiter(OobeScreen::SCREEN_ENCRYPTION_MIGRATION).Wait();
+  OobeScreenWaiter(EncryptionMigrationScreenView::kScreenId).Wait();
 
   WaitForElementCreation("minimal-migration-dialog");
   VerifyUiElementVisible("minimal-migration-dialog");
@@ -494,7 +495,7 @@ IN_PROC_BROWSER_TEST_F(EncryptionMigrationTest, WipeMigrationActionPolicy) {
   SetUpStubAuthenticatorAndAttemptLogin(false /* has_incomplete_migration */);
 
   // Wipe is expected to wipe the cryptohome, and force online login.
-  OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
 
   EXPECT_FALSE(FakeCryptohomeClient::Get()
                    ->get_id_for_disk_migrated_to_dircrypto()
@@ -506,7 +507,7 @@ IN_PROC_BROWSER_TEST_F(EncryptionMigrationTest,
   set_free_space(5 * 1000 * 1000);
 
   SetUpStubAuthenticatorAndAttemptLogin(false /* has_incomplete_migration */);
-  OobeScreenWaiter(OobeScreen::SCREEN_ENCRYPTION_MIGRATION).Wait();
+  OobeScreenWaiter(EncryptionMigrationScreenView::kScreenId).Wait();
 
   WaitForElementCreation("insufficient-space-dialog");
   VerifyUiElementVisible("insufficient-space-dialog");
@@ -533,7 +534,7 @@ IN_PROC_BROWSER_TEST_F(EncryptionMigrationTest, MigrateWithInsuficientSpace) {
       arc::policy_util::EcryptfsMigrationAction::kMigrate);
 
   SetUpStubAuthenticatorAndAttemptLogin(false /* has_incomplete_migration */);
-  OobeScreenWaiter(OobeScreen::SCREEN_ENCRYPTION_MIGRATION).Wait();
+  OobeScreenWaiter(EncryptionMigrationScreenView::kScreenId).Wait();
 
   WaitForElementCreation("insufficient-space-dialog");
   VerifyUiElementVisible("insufficient-space-dialog");
@@ -561,7 +562,7 @@ IN_PROC_BROWSER_TEST_F(EncryptionMigrationTest, InsuficientSpaceOnResume) {
       arc::policy_util::EcryptfsMigrationAction::kMigrate);
 
   SetUpStubAuthenticatorAndAttemptLogin(true /* has_incomplete_migration */);
-  OobeScreenWaiter(OobeScreen::SCREEN_ENCRYPTION_MIGRATION).Wait();
+  OobeScreenWaiter(EncryptionMigrationScreenView::kScreenId).Wait();
 
   WaitForElementCreation("insufficient-space-dialog");
   VerifyUiElementVisible("insufficient-space-dialog");
@@ -588,7 +589,7 @@ IN_PROC_BROWSER_TEST_F(EncryptionMigrationTest, MigrationFailure) {
       arc::policy_util::EcryptfsMigrationAction::kMigrate);
 
   SetUpStubAuthenticatorAndAttemptLogin(false /* has_incomplete_migration */);
-  OobeScreenWaiter(OobeScreen::SCREEN_ENCRYPTION_MIGRATION).Wait();
+  OobeScreenWaiter(EncryptionMigrationScreenView::kScreenId).Wait();
 
   WaitForElementCreation("migrating-dialog");
 
@@ -621,7 +622,7 @@ IN_PROC_BROWSER_TEST_F(EncryptionMigrationTest, LowBattery) {
       arc::policy_util::EcryptfsMigrationAction::kMigrate);
 
   SetUpStubAuthenticatorAndAttemptLogin(false /* has_incomplete_migration */);
-  OobeScreenWaiter(OobeScreen::SCREEN_ENCRYPTION_MIGRATION).Wait();
+  OobeScreenWaiter(EncryptionMigrationScreenView::kScreenId).Wait();
 
   WaitForElementCreation("ready-dialog");
   VerifyUiElementVisible("ready-dialog");
@@ -654,7 +655,7 @@ IN_PROC_BROWSER_TEST_F(EncryptionMigrationTest,
       arc::policy_util::EcryptfsMigrationAction::kMigrate);
 
   SetUpStubAuthenticatorAndAttemptLogin(true /* has_incomplete_migration */);
-  OobeScreenWaiter(OobeScreen::SCREEN_ENCRYPTION_MIGRATION).Wait();
+  OobeScreenWaiter(EncryptionMigrationScreenView::kScreenId).Wait();
 
   WaitForElementCreation("ready-dialog");
   VerifyUiElementVisible("ready-dialog");
@@ -679,7 +680,7 @@ IN_PROC_BROWSER_TEST_F(EncryptionMigrationTest,
       arc::policy_util::EcryptfsMigrationAction::kMigrate);
 
   SetUpStubAuthenticatorAndAttemptLogin(false /* has_incomplete_migration */);
-  OobeScreenWaiter(OobeScreen::SCREEN_ENCRYPTION_MIGRATION).Wait();
+  OobeScreenWaiter(EncryptionMigrationScreenView::kScreenId).Wait();
 
   WaitForElementCreation("ready-dialog");
   VerifyUiElementVisible("ready-dialog");

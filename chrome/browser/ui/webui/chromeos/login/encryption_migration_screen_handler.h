@@ -37,8 +37,7 @@ class EncryptionMigrationScreenView {
   using ContinueLoginCallback = base::OnceCallback<void(const UserContext&)>;
   using RestartLoginCallback = base::OnceCallback<void(const UserContext&)>;
 
-  constexpr static StaticOobeScreenId kScreenId =
-      OobeScreen::SCREEN_ENCRYPTION_MIGRATION;
+  constexpr static StaticOobeScreenId kScreenId{"encryption-migration"};
 
   virtual ~EncryptionMigrationScreenView() {}
 

@@ -57,7 +57,7 @@ namespace chromeos {
 HIDDetectionScreen::HIDDetectionScreen(
     HIDDetectionView* view,
     const base::RepeatingClosure& exit_callback)
-    : BaseScreen(OobeScreen::SCREEN_OOBE_HID_DETECTION),
+    : BaseScreen(HIDDetectionView::kScreenId),
       view_(view),
       exit_callback_(exit_callback),
       binding_(this),

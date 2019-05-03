@@ -54,7 +54,7 @@ class WelcomeScreenBrowserTest : public InProcessBrowserTest {
 
     WizardController::default_controller()
         ->screen_manager()
-        ->DeleteScreenForTesting(OobeScreen::SCREEN_OOBE_WELCOME);
+        ->DeleteScreenForTesting(WelcomeView::kScreenId);
     auto welcome_screen = std::make_unique<WelcomeScreen>(
         GetOobeUI()->GetView<WelcomeScreenHandler>(),
         base::BindRepeating(&WelcomeScreenBrowserTest::OnWelcomeScreenExit,
@@ -91,7 +91,7 @@ class WelcomeScreenBrowserTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest, WelcomeScreenElements) {
   welcome_screen_->Show();
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_WELCOME).Wait();
+  OobeScreenWaiter(WelcomeView::kScreenId).Wait();
 
   test::OobeJS().ExpectVisiblePath({"connect", "welcomeScreen"});
   test::OobeJS().ExpectHiddenPath({"connect", "accessibilityScreen"});
@@ -107,7 +107,7 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest, WelcomeScreenElements) {
 
 IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest, WelcomeScreenNext) {
   welcome_screen_->Show();
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_WELCOME).Wait();
+  OobeScreenWaiter(WelcomeView::kScreenId).Wait();
   test::OobeJS().TapOnPath({"connect", "welcomeScreen", "welcomeNextButton"});
   WaitForScreenExit();
 }
@@ -115,7 +115,7 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest, WelcomeScreenNext) {
 // Set of browser tests for Welcome Screen Language options.
 IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest, WelcomeScreenLanguageFlow) {
   welcome_screen_->Show();
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_WELCOME).Wait();
+  OobeScreenWaiter(WelcomeView::kScreenId).Wait();
   test::OobeJS().TapOnPath(
       {"connect", "welcomeScreen", "languageSelectionButton"});
 
@@ -127,7 +127,7 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest, WelcomeScreenLanguageFlow) {
 IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
                        WelcomeScreenLanguageElements) {
   welcome_screen_->Show();
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_WELCOME).Wait();
+  OobeScreenWaiter(WelcomeView::kScreenId).Wait();
   test::OobeJS().TapOnPath(
       {"connect", "welcomeScreen", "languageSelectionButton"});
 
@@ -140,7 +140,7 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
 IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
                        WelcomeScreenLanguageSelection) {
   welcome_screen_->Show();
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_WELCOME).Wait();
+  OobeScreenWaiter(WelcomeView::kScreenId).Wait();
 
   test::OobeJS().TapOnPath(
       {"connect", "welcomeScreen", "languageSelectionButton"});
@@ -167,7 +167,7 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
 IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
                        WelcomeScreenKeyboardSelection) {
   welcome_screen_->Show();
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_WELCOME).Wait();
+  OobeScreenWaiter(WelcomeView::kScreenId).Wait();
   test::OobeJS().TapOnPath(
       {"connect", "welcomeScreen", "languageSelectionButton"});
 
@@ -194,7 +194,7 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
 IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
                        WelcomeScreenAccessibilityFlow) {
   welcome_screen_->Show();
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_WELCOME).Wait();
+  OobeScreenWaiter(WelcomeView::kScreenId).Wait();
   test::OobeJS().TapOnPath(
       {"connect", "welcomeScreen", "accessibilitySettingsButton"});
 
@@ -206,7 +206,7 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
 IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
                        WelcomeScreenAccessibilitySpokenFeedback) {
   welcome_screen_->Show();
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_WELCOME).Wait();
+  OobeScreenWaiter(WelcomeView::kScreenId).Wait();
   test::OobeJS().TapOnPath(
       {"connect", "welcomeScreen", "accessibilitySettingsButton"});
 
@@ -221,7 +221,7 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
 IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
                        WelcomeScreenAccessibilityLargeCursor) {
   welcome_screen_->Show();
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_WELCOME).Wait();
+  OobeScreenWaiter(WelcomeView::kScreenId).Wait();
   test::OobeJS().TapOnPath(
       {"connect", "welcomeScreen", "accessibilitySettingsButton"});
 
@@ -236,7 +236,7 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
 IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
                        WelcomeScreenAccessibilityHighContrast) {
   welcome_screen_->Show();
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_WELCOME).Wait();
+  OobeScreenWaiter(WelcomeView::kScreenId).Wait();
   test::OobeJS().TapOnPath(
       {"connect", "welcomeScreen", "accessibilitySettingsButton"});
 
@@ -251,7 +251,7 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
 IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
                        WelcomeScreenAccessibilitySelectToSpeak) {
   welcome_screen_->Show();
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_WELCOME).Wait();
+  OobeScreenWaiter(WelcomeView::kScreenId).Wait();
   test::OobeJS().TapOnPath(
       {"connect", "welcomeScreen", "accessibilitySettingsButton"});
 
@@ -266,7 +266,7 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
 IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
                        WelcomeScreenAccessibilityScreenMagnifier) {
   welcome_screen_->Show();
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_WELCOME).Wait();
+  OobeScreenWaiter(WelcomeView::kScreenId).Wait();
   test::OobeJS().TapOnPath(
       {"connect", "welcomeScreen", "accessibilitySettingsButton"});
 

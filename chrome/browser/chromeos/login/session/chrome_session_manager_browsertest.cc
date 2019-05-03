@@ -92,7 +92,7 @@ class ChromeSessionManagerTest : public LoginManagerTest {
         WizardController::default_controller();
     ASSERT_TRUE(wizard_controller);
     wizard_controller->SkipToLoginForTesting(LoginScreenContext());
-    OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
+    OobeScreenWaiter(GaiaView::kScreenId).Wait();
   }
 
  protected:

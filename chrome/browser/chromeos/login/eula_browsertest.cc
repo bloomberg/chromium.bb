@@ -120,9 +120,9 @@ class EulaTest : public OobeBaseTest {
   }
 
   void ShowEulaScreen() {
-    LoginDisplayHost::default_host()->StartWizard(OobeScreen::SCREEN_OOBE_EULA);
+    LoginDisplayHost::default_host()->StartWizard(EulaView::kScreenId);
     OverrideOnlineEulaUrl();
-    OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
+    OobeScreenWaiter(EulaView::kScreenId).Wait();
   }
 
   std::string GetLoadedEulaAsText() {

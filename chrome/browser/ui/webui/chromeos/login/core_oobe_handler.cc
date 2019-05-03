@@ -34,7 +34,10 @@
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
+#include "chrome/browser/ui/webui/chromeos/login/demo_setup_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
@@ -75,11 +78,10 @@ void LaunchResetScreen() {
   WizardController* const wizard_controller =
       WizardController::default_controller();
   if (wizard_controller && !wizard_controller->login_screen_started()) {
-    wizard_controller->AdvanceToScreen(OobeScreen::SCREEN_OOBE_RESET);
+    wizard_controller->AdvanceToScreen(ResetView::kScreenId);
   } else {
     DCHECK(LoginDisplayHost::default_host());
-    LoginDisplayHost::default_host()->StartWizard(
-        OobeScreen::SCREEN_OOBE_RESET);
+    LoginDisplayHost::default_host()->StartWizard(ResetView::kScreenId);
   }
 }
 
@@ -246,8 +248,7 @@ void CoreOobeHandler::ShowEnableDebuggingScreen() {
   // Don't recreate WizardController if it already exists.
   WizardController* wizard_controller = WizardController::default_controller();
   if (wizard_controller && !wizard_controller->login_screen_started()) {
-    wizard_controller->AdvanceToScreen(
-        OobeScreen::SCREEN_OOBE_ENABLE_DEBUGGING);
+    wizard_controller->AdvanceToScreen(EnableDebuggingScreenView::kScreenId);
   }
 }
 
@@ -329,7 +330,7 @@ void CoreOobeHandler::HandleUpdateCurrentScreen(
   connection->GetConnector()->BindInterface(ash::mojom::kServiceName,
                                             &event_rewriter_controller_ptr);
   event_rewriter_controller_ptr->SetArrowToTabRewritingEnabled(
-      screen == OobeScreen::SCREEN_OOBE_EULA);
+      screen == EulaView::kScreenId);
 }
 
 void CoreOobeHandler::HandleEnableHighContrast(bool enabled) {
@@ -659,7 +660,7 @@ void CoreOobeHandler::HandleStartDemoModeSetupForTesting(
   WizardController* wizard_controller = WizardController::default_controller();
   if (wizard_controller && !wizard_controller->login_screen_started()) {
     wizard_controller->SimulateDemoModeSetupForTesting(config);
-    wizard_controller->AdvanceToScreen(OobeScreen::SCREEN_OOBE_DEMO_SETUP);
+    wizard_controller->AdvanceToScreen(DemoSetupScreenView::kScreenId);
   }
 }
 

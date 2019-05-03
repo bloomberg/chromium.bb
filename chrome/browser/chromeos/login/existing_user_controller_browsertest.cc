@@ -41,6 +41,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -269,7 +271,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, DISABLED_ExistingUserLogin) {
   session_manager_test_api.InjectStubUserContext(user_context);
   EXPECT_CALL(*mock_login_display_, SetUIEnabled(true)).Times(1);
   EXPECT_CALL(*mock_login_display_host_,
-              StartWizard(OobeScreenId(OobeScreen::SCREEN_TERMS_OF_SERVICE)))
+              StartWizard(TermsOfServiceScreenView::kScreenId.AsId()))
       .Times(0);
 
   content::WindowedNotificationObserver profile_prepared_observer(
@@ -435,7 +437,7 @@ class ExistingUserControllerPublicSessionTest
     // There may be in-session oobe or an initial login screen created from
     // --login-manager.
     EXPECT_CALL(*mock_login_display_host_,
-                StartWizard(OobeScreen::SCREEN_TERMS_OF_SERVICE.AsId()))
+                StartWizard(TermsOfServiceScreenView::kScreenId.AsId()))
         .Times(AnyNumber());
     EXPECT_CALL(*mock_login_display_, SetUIEnabled(false)).Times(AnyNumber());
     EXPECT_CALL(*mock_login_display_, SetUIEnabled(true)).Times(AnyNumber());
@@ -1144,7 +1146,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerAuthFailureTest,
                        CryptohomeMissing) {
   SetUpStubAuthenticatorAndAttemptLogin(AuthFailure::MISSING_CRYPTOHOME);
 
-  OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
   const user_manager::User* user =
       user_manager::UserManager::Get()->FindUser(test_user_.account_id);
   ASSERT_TRUE(user);

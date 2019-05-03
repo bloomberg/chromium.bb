@@ -97,7 +97,7 @@ IN_PROC_BROWSER_TEST_F(OobeTest, Accelerator) {
                             false,   // shift
                             true,    // alt
                             false);  // command
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_ENROLLMENT).Wait();
+  OobeScreenWaiter(EnrollmentScreenView::kScreenId).Wait();
 }
 
 }  // namespace chromeos

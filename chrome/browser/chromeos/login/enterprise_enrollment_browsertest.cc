@@ -168,8 +168,8 @@ class EnterpriseEnrollmentTestBase : public LoginManagerTest {
   void ShowEnrollmentScreen() {
     LoginDisplayHost* host = LoginDisplayHost::default_host();
     ASSERT_TRUE(host != nullptr);
-    host->StartWizard(OobeScreen::SCREEN_OOBE_ENROLLMENT);
-    OobeScreenWaiter(OobeScreen::SCREEN_OOBE_ENROLLMENT).Wait();
+    host->StartWizard(EnrollmentScreenView::kScreenId);
+    OobeScreenWaiter(EnrollmentScreenView::kScreenId).Wait();
     ASSERT_TRUE(enrollment_screen() != nullptr);
     ASSERT_TRUE(WizardController::default_controller() != nullptr);
     ASSERT_FALSE(StartupUtils::IsOobeCompleted());

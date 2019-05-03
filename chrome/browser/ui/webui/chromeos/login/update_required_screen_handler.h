@@ -21,8 +21,7 @@ class UpdateRequiredScreen;
 
 class UpdateRequiredView {
  public:
-  constexpr static StaticOobeScreenId kScreenId =
-      OobeScreen::SCREEN_UPDATE_REQUIRED;
+  constexpr static StaticOobeScreenId kScreenId{"update-required"};
 
   virtual ~UpdateRequiredView() {}
 

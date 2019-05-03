@@ -21,9 +21,6 @@ class UpdateRequiredView;
 // Controller for the update required screen.
 class UpdateRequiredScreen : public BaseScreen {
  public:
-  constexpr static StaticOobeScreenId kScreenId =
-      OobeScreen::SCREEN_UPDATE_REQUIRED;
-
   explicit UpdateRequiredScreen(UpdateRequiredView* view);
   ~UpdateRequiredScreen() override;
 

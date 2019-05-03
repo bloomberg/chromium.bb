@@ -36,8 +36,7 @@ class SigninScreenHandler;
 
 class GaiaView {
  public:
-  constexpr static StaticOobeScreenId kScreenId =
-      OobeScreen::SCREEN_GAIA_SIGNIN;
+  constexpr static StaticOobeScreenId kScreenId{"gaia-signin"};
 
   GaiaView() = default;
   virtual ~GaiaView() = default;

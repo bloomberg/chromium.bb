@@ -17,6 +17,13 @@
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/ui/webui/chromeos/login/demo_preferences_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/demo_setup_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/hid_detection_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/update_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
@@ -163,13 +170,13 @@ class OobeConfigurationEnrollmentTest : public OobeConfigurationTest {
 // Check that configuration lets correctly pass Welcome screen.
 IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, TestLeaveWelcomeScreen) {
   LoadConfiguration();
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
+  OobeScreenWaiter(NetworkScreenView::kScreenId).Wait();
 }
 
 // Check that language and input methods are set correctly.
 IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, TestSwitchLanguageIME) {
   LoadConfiguration();
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
+  OobeScreenWaiter(NetworkScreenView::kScreenId).Wait();
 
   chromeos::input_method::InputMethodManager* imm =
       chromeos::input_method::InputMethodManager::Get();
@@ -191,38 +198,38 @@ IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, TestSwitchLanguageIME) {
 // Check that configuration lets correctly start Demo mode setup.
 IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, TestEnableDemoMode) {
   LoadConfiguration();
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES).Wait();
+  OobeScreenWaiter(DemoPreferencesScreenView::kScreenId).Wait();
 }
 
 // Check that configuration lets correctly pass through demo preferences.
 IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, TestDemoModePreferences) {
   LoadConfiguration();
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
+  OobeScreenWaiter(NetworkScreenView::kScreenId).Wait();
 }
 
 // Check that configuration lets correctly use offline demo mode on network
 // screen.
 IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, TestDemoModeOfflineNetwork) {
   LoadConfiguration();
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES).Wait();
+  OobeScreenWaiter(DemoPreferencesScreenView::kScreenId).Wait();
   SimulateOfflineEnvironment();
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
+  OobeScreenWaiter(EulaView::kScreenId).Wait();
 }
 
 // Check that configuration lets correctly use offline demo mode on EULA
 // screen.
 IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, TestDemoModeAcceptEula) {
   LoadConfiguration();
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES).Wait();
+  OobeScreenWaiter(DemoPreferencesScreenView::kScreenId).Wait();
   SimulateOfflineEnvironment();
-  OobeScreenWaiter(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE).Wait();
+  OobeScreenWaiter(ArcTermsOfServiceScreenView::kScreenId).Wait();
 }
 
 // Check that configuration lets correctly use offline demo mode on ARC++ ToS
 // screen.
 IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, TestDemoModeAcceptArcTos) {
   LoadConfiguration();
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES).Wait();
+  OobeScreenWaiter(DemoPreferencesScreenView::kScreenId).Wait();
   SimulateOfflineEnvironment();
 
   test::OobeJS().Evaluate(
@@ -232,26 +239,26 @@ IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, TestDemoModeAcceptArcTos) {
       "$('demo-preferences-content').$$('oobe-dialog')."
       "querySelector('oobe-text-button').click();");
 
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_SETUP).Wait();
+  OobeScreenWaiter(DemoSetupScreenView::kScreenId).Wait();
 }
 
 // Check that configuration lets correctly select a network by GUID.
 IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, TestSelectNetwork) {
   LoadConfiguration();
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
+  OobeScreenWaiter(EulaView::kScreenId).Wait();
 }
 
 // Check that configuration would proceed if there is a connected network.
 IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, TestSelectConnectedNetwork) {
   LoadConfiguration();
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
+  OobeScreenWaiter(EulaView::kScreenId).Wait();
 }
 
 // Check that configuration would not proceed with connected network if
 // welcome screen is not automated.
 IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, TestConnectedNetworkNoWelcome) {
   LoadConfiguration();
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_WELCOME).Wait();
+  OobeScreenWaiter(WelcomeView::kScreenId).Wait();
 }
 
 // Check that when configuration has ONC and EULA, we get to update screen.
@@ -262,14 +269,14 @@ IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, TestAcceptEula) {
   fake_update_engine_client_->set_default_status(status);
 
   LoadConfiguration();
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_UPDATE).Wait();
+  OobeScreenWaiter(UpdateView::kScreenId).Wait();
 }
 
 // Check that when configuration has requisition, it gets applied at the
 // beginning.
 IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, TestDeviceRequisition) {
   LoadConfiguration();
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
+  OobeScreenWaiter(EulaView::kScreenId).Wait();
   auto* policy_manager = g_browser_process->platform_part()
                              ->browser_policy_connector_chromeos()
                              ->GetDeviceCloudPolicyManager();
@@ -280,7 +287,7 @@ IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, TestDeviceRequisition) {
 // screen.
 IN_PROC_BROWSER_TEST_F(OobeConfigurationEnrollmentTest, TestSkipUpdate) {
   LoadConfiguration();
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_ENROLLMENT).Wait();
+  OobeScreenWaiter(EnrollmentScreenView::kScreenId).Wait();
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSignin);
 }
 
@@ -292,7 +299,7 @@ IN_PROC_BROWSER_TEST_F(OobeConfigurationEnrollmentTest, TestEnrollUsingToken) {
   policy_server_.ExpectTokenEnrollment("00000000-1111-2222-3333-444444444444",
                                        FakeGaiaMixin::kEnterpriseUser1);
   LoadConfiguration();
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_ENROLLMENT).Wait();
+  OobeScreenWaiter(EnrollmentScreenView::kScreenId).Wait();
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
 }
 
@@ -300,14 +307,14 @@ IN_PROC_BROWSER_TEST_F(OobeConfigurationEnrollmentTest, TestEnrollUsingToken) {
 // configuration.
 IN_PROC_BROWSER_TEST_F(OobeConfigurationTestNoHID, TestLeaveWelcomeScreen) {
   LoadConfiguration();
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_HID_DETECTION).Wait();
+  OobeScreenWaiter(HIDDetectionView::kScreenId).Wait();
 }
 
 // Check that HID detection screen is really skipped and rest of configuration
 // is applied.
 IN_PROC_BROWSER_TEST_F(OobeConfigurationTestNoHID, TestSkipHIDDetection) {
   LoadConfiguration();
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
+  OobeScreenWaiter(NetworkScreenView::kScreenId).Wait();
 }
 
 }  // namespace chromeos

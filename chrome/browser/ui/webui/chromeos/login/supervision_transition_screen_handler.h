@@ -23,8 +23,7 @@ class SupervisionTransitionScreen;
 // and its WebUI representation.
 class SupervisionTransitionScreenView {
  public:
-  constexpr static StaticOobeScreenId kScreenId =
-      OobeScreen::SCREEN_SUPERVISION_TRANSITION;
+  constexpr static StaticOobeScreenId kScreenId{"supervision-transition"};
 
   virtual ~SupervisionTransitionScreenView() {}
 

@@ -21,7 +21,7 @@ namespace chromeos {
 
 DemoSetupScreen::DemoSetupScreen(DemoSetupScreenView* view,
                                  const ScreenExitCallback& exit_callback)
-    : BaseScreen(OobeScreen::SCREEN_OOBE_DEMO_SETUP),
+    : BaseScreen(DemoSetupScreenView::kScreenId),
       view_(view),
       exit_callback_(exit_callback),
       weak_ptr_factory_(this) {

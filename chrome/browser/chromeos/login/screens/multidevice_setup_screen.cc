@@ -27,7 +27,7 @@ constexpr const char kDeclinedSetupUserAction[] = "setup-declined";
 MultiDeviceSetupScreen::MultiDeviceSetupScreen(
     MultiDeviceSetupScreenView* view,
     const base::RepeatingClosure& exit_callback)
-    : BaseScreen(OobeScreen::SCREEN_MULTIDEVICE_SETUP),
+    : BaseScreen(MultiDeviceSetupScreenView::kScreenId),
       view_(view),
       exit_callback_(exit_callback) {
   DCHECK(view_);

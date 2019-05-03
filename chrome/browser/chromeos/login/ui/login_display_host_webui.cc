@@ -55,9 +55,11 @@
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
+#include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -1188,7 +1190,7 @@ void ShowLoginWizard(OobeScreenId first_screen) {
   session_manager::SessionManager::Get()->SetSessionState(session_state);
 
   bool show_app_launch_splash_screen =
-      (first_screen == OobeScreen::SCREEN_APP_LAUNCH_SPLASH);
+      (first_screen == AppLaunchSplashScreenView::kScreenId);
   if (show_app_launch_splash_screen) {
     const std::string& auto_launch_app_id =
         KioskAppManager::Get()->GetAutoLaunchApp();
@@ -1213,7 +1215,7 @@ void ShowLoginWizard(OobeScreenId first_screen) {
     // Shows networks screen instead of enrollment screen to resume the
     // interrupted auto start enrollment flow because enrollment screen does
     // not handle flaky network. See http://crbug.com/332572
-    display_host->StartWizard(OobeScreen::SCREEN_OOBE_WELCOME);
+    display_host->StartWizard(WelcomeView::kScreenId);
     return;
   }
 

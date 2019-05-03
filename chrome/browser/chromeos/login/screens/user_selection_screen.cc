@@ -365,7 +365,7 @@ class UserSelectionScreen::DircryptoMigrationChecker {
 };
 
 UserSelectionScreen::UserSelectionScreen(const std::string& display_type)
-    : BaseScreen(OobeScreen::SCREEN_USER_SELECTION),
+    : BaseScreen(UserBoardView::kScreenId),
       display_type_(display_type),
       weak_factory_(this) {}
 

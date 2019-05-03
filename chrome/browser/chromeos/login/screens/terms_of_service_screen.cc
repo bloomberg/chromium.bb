@@ -32,7 +32,7 @@ namespace chromeos {
 TermsOfServiceScreen::TermsOfServiceScreen(
     TermsOfServiceScreenView* view,
     const ScreenExitCallback& exit_callback)
-    : BaseScreen(OobeScreen::SCREEN_TERMS_OF_SERVICE),
+    : BaseScreen(TermsOfServiceScreenView::kScreenId),
       view_(view),
       exit_callback_(exit_callback) {
   DCHECK(view_);

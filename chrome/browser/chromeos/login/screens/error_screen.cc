@@ -74,9 +74,7 @@ constexpr const char ErrorScreen::kUserActionShowCaptivePortalClicked[] =
     "show-captive-portal";
 
 ErrorScreen::ErrorScreen(ErrorScreenView* view)
-    : BaseScreen(OobeScreen::SCREEN_ERROR_MESSAGE),
-      view_(view),
-      weak_factory_(this) {
+    : BaseScreen(ErrorScreenView::kScreenId), view_(view), weak_factory_(this) {
   network_state_informer_ = new NetworkStateInformer();
   network_state_informer_->Init();
   NetworkHandler::Get()->network_connection_handler()->AddObserver(this);
