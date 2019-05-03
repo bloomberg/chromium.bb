@@ -618,36 +618,38 @@ HRESULT WASAPIAudioInputStream::SetCaptureDevice() {
   // Retrieve the IMMDevice by using the specified role or the specified
   // unique endpoint device-identification string.
 
-  if (device_id_ == AudioDeviceDescription::kDefaultDeviceId) {
-    // Retrieve the default capture audio endpoint for the specified role.
-    // Note that, in Windows Vista, the MMDevice API supports device roles
-    // but the system-supplied user interface programs do not.
-    hr = enumerator->GetDefaultAudioEndpoint(eCapture, eConsole,
-                                             endpoint_device_.GetAddressOf());
-  } else if (device_id_ == AudioDeviceDescription::kCommunicationsDeviceId) {
-    hr = enumerator->GetDefaultAudioEndpoint(eCapture, eCommunications,
-                                             endpoint_device_.GetAddressOf());
-  } else if (device_id_ == AudioDeviceDescription::kLoopbackWithMuteDeviceId) {
-    // Capture the default playback stream.
-    hr = enumerator->GetDefaultAudioEndpoint(eRender, eConsole,
-                                             endpoint_device_.GetAddressOf());
-
-    if (SUCCEEDED(hr)) {
-      endpoint_device_->Activate(__uuidof(IAudioEndpointVolume), CLSCTX_ALL,
-                                 NULL, &system_audio_volume_);
-    }
-  } else if (device_id_ == AudioDeviceDescription::kLoopbackInputDeviceId) {
-    // Capture the default playback stream.
-    hr = enumerator->GetDefaultAudioEndpoint(eRender, eConsole,
-                                             endpoint_device_.GetAddressOf());
+  // To open a stream in loopback mode, the client must obtain an IMMDevice
+  // interface for the rendering endpoint device. Make that happen if needed;
+  // otherwise use default capture data-flow direction.
+  const EDataFlow data_flow =
+      AudioDeviceDescription::IsLoopbackDevice(device_id_) ? eRender : eCapture;
+  // Determine selected role to be used if the device is a default device.
+  const ERole role = AudioDeviceDescription::IsCommunicationsDevice(device_id_)
+                         ? eCommunications
+                         : eConsole;
+  if (AudioDeviceDescription::IsDefaultDevice(device_id_) ||
+      AudioDeviceDescription::IsCommunicationsDevice(device_id_) ||
+      AudioDeviceDescription::IsLoopbackDevice(device_id_)) {
+    hr =
+        enumerator->GetDefaultAudioEndpoint(data_flow, role, &endpoint_device_);
   } else {
     hr = enumerator->GetDevice(base::UTF8ToUTF16(device_id_).c_str(),
                                endpoint_device_.GetAddressOf());
   }
-
   if (FAILED(hr)) {
     open_result_ = OPEN_RESULT_NO_ENDPOINT;
     return hr;
+  }
+
+  // If loopback device with muted system audio is requested, get the volume
+  // interface for the endpoint.
+  if (device_id_ == AudioDeviceDescription::kLoopbackWithMuteDeviceId) {
+    hr = endpoint_device_->Activate(__uuidof(IAudioEndpointVolume), CLSCTX_ALL,
+                                    nullptr, &system_audio_volume_);
+    if (FAILED(hr)) {
+      open_result_ = OPEN_RESULT_ACTIVATION_FAILED;
+      return hr;
+    }
   }
 
   // Verify that the audio endpoint device is active, i.e., the audio
@@ -807,7 +809,7 @@ HRESULT WASAPIAudioInputStream::InitializeAudioEngine() {
       100 * 1000 * 10,  // Buffer duration, 100 ms expressed in 100-ns units.
       0,                // Device period, n/a for shared mode.
       reinterpret_cast<const WAVEFORMATEX*>(&input_format_),
-      device_id_ == AudioDeviceDescription::kCommunicationsDeviceId
+      AudioDeviceDescription::IsCommunicationsDevice(device_id_)
           ? &kCommunicationsSessionId
           : nullptr);
 
@@ -887,7 +889,10 @@ HRESULT WASAPIAudioInputStream::InitializeAudioEngine() {
     hr = audio_render_client_for_loopback_->Initialize(
         AUDCLNT_SHAREMODE_SHARED,
         AUDCLNT_STREAMFLAGS_EVENTCALLBACK | AUDCLNT_STREAMFLAGS_NOPERSIST, 0, 0,
-        reinterpret_cast<const WAVEFORMATEX*>(&input_format_), NULL);
+        reinterpret_cast<const WAVEFORMATEX*>(&input_format_),
+        AudioDeviceDescription::IsCommunicationsDevice(device_id_)
+            ? &kCommunicationsSessionId
+            : nullptr);
     if (FAILED(hr)) {
       open_result_ = OPEN_RESULT_LOOPBACK_INIT_FAILED;
       return hr;

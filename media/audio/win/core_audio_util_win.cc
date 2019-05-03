@@ -443,6 +443,27 @@ ComPtr<IMMDevice> CreateDeviceInternal(const std::string& device_id,
                                        ERole role,
                                        const UMALogCallback& uma_log_cb) {
   ComPtr<IMMDevice> endpoint_device;
+  // In loopback mode, a client of WASAPI can capture the audio stream that
+  // is being played by a rendering endpoint device.
+  // See https://crbug.com/956526 for why we use both a DCHECK and then deal
+  // with the error here and below.
+  DCHECK(!(AudioDeviceDescription::IsLoopbackDevice(device_id) &&
+           data_flow != eCapture));
+  if (AudioDeviceDescription::IsLoopbackDevice(device_id) &&
+      data_flow != eCapture) {
+    LOG(WARNING) << "Loopback device must be an input device";
+    return endpoint_device;
+  }
+
+  // Usage of AudioDeviceDescription::kCommunicationsDeviceId as |device_id|
+  // is not allowed. Instead, set |device_id| to kDefaultDeviceId and select
+  // between default device and default communication device by using different
+  // |role| values (eConsole or eCommunications).
+  DCHECK(!AudioDeviceDescription::IsCommunicationsDevice(device_id));
+  if (AudioDeviceDescription::IsCommunicationsDevice(device_id)) {
+    LOG(WARNING) << "Invalid device identifier";
+    return endpoint_device;
+  }
 
   // Create the IMMDeviceEnumerator interface.
   ComPtr<IMMDeviceEnumerator> device_enum(
@@ -455,9 +476,8 @@ ComPtr<IMMDevice> CreateDeviceInternal(const std::string& device_id,
     hr =
         device_enum->GetDefaultAudioEndpoint(data_flow, role, &endpoint_device);
   } else if (AudioDeviceDescription::IsLoopbackDevice(device_id)) {
-    // Obtain an IMMDevice interface for the rendering endpoint device since
-    // loopback mode is selected.
-    // TODO(http://crbug/956526): clean up code related to loopback mode.
+    // To open a stream in loopback mode, the client must obtain an IMMDevice
+    // interface for the *rendering* endpoint device.
     hr = device_enum->GetDefaultAudioEndpoint(eRender, role, &endpoint_device);
   } else {
     hr = device_enum->GetDevice(base::UTF8ToUTF16(device_id).c_str(),
@@ -1070,6 +1090,15 @@ HRESULT CoreAudioUtil::GetPreferredAudioParameters(const std::string& device_id,
   UMALogCallback uma_log_cb(
       is_output_device ? base::BindRepeating(&LogUMAPreferredOutputParams)
                        : base::BindRepeating(&LogUMAEmptyCb));
+
+  // Loopback audio streams must be input streams.
+  DCHECK(!(AudioDeviceDescription::IsLoopbackDevice(device_id) &&
+           is_output_device));
+  if (AudioDeviceDescription::IsLoopbackDevice(device_id) && is_output_device) {
+    LOG(WARNING) << "Loopback device must be an input device";
+    return E_FAIL;
+  }
+
   ComPtr<IMMDevice> device(
       CreateDeviceByID(device_id, is_output_device, uma_log_cb));
   if (!device.Get())
@@ -1103,7 +1132,10 @@ HRESULT CoreAudioUtil::GetPreferredAudioParameters(const std::string& device_id,
 
 ChannelConfig CoreAudioUtil::GetChannelConfig(const std::string& device_id,
                                               EDataFlow data_flow) {
-  ComPtr<IAudioClient> client(CreateClient(device_id, data_flow, eConsole));
+  const ERole role = AudioDeviceDescription::IsCommunicationsDevice(device_id)
+                         ? eCommunications
+                         : eConsole;
+  ComPtr<IAudioClient> client(CreateClient(device_id, data_flow, role));
 
   WAVEFORMATEXTENSIBLE mix_format;
   if (!client.Get() ||
