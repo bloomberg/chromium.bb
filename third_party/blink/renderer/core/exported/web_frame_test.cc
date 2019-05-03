@@ -2303,38 +2303,6 @@ TEST_F(WebFrameTest, SetForceZeroLayoutHeightWithWideViewportQuirk) {
                    .Height());
 }
 
-TEST_F(WebFrameTest, WideViewportAndWideContentWithInitialScale) {
-  RegisterMockedHttpURLLoad("wide_document_width_viewport.html");
-  RegisterMockedHttpURLLoad("white-1x1.png");
-
-  FixedLayoutTestWebViewClient client;
-  client.screen_info_.device_scale_factor = 1;
-  int viewport_width = 600;
-  int viewport_height = 800;
-
-  frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.InitializeAndLoad("about:blank", nullptr, &client, nullptr,
-                                    ConfigureAndroid);
-  web_view_helper.GetWebView()->GetSettings()->SetWideViewportQuirkEnabled(
-      true);
-  web_view_helper.GetWebView()->GetSettings()->SetUseWideViewport(true);
-  web_view_helper.GetWebView()->GetSettings()->SetViewportMetaLayoutSizeQuirk(
-      true);
-  web_view_helper.Resize(WebSize(viewport_width, viewport_height));
-
-  frame_test_helpers::LoadFrame(
-      web_view_helper.GetWebView()->MainFrameImpl(),
-      base_url_ + "wide_document_width_viewport.html");
-  web_view_helper.Resize(WebSize(viewport_width, viewport_height));
-
-  int wide_document_width = 800;
-  float minimum_page_scale_factor = viewport_width / (float)wide_document_width;
-  EXPECT_EQ(minimum_page_scale_factor,
-            web_view_helper.GetWebView()->PageScaleFactor());
-  EXPECT_EQ(minimum_page_scale_factor,
-            web_view_helper.GetWebView()->MinimumPageScaleFactor());
-}
-
 TEST_F(WebFrameTest, WideViewportQuirkClobbersHeight) {
   RegisterMockedHttpURLLoad("viewport-height-1000.html");
 
@@ -2349,8 +2317,6 @@ TEST_F(WebFrameTest, WideViewportQuirkClobbersHeight) {
   web_view_helper.GetWebView()->GetSettings()->SetWideViewportQuirkEnabled(
       true);
   web_view_helper.GetWebView()->GetSettings()->SetUseWideViewport(false);
-  web_view_helper.GetWebView()->GetSettings()->SetViewportMetaLayoutSizeQuirk(
-      true);
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
 
   frame_test_helpers::LoadFrame(web_view_helper.GetWebView()->MainFrameImpl(),
@@ -2363,124 +2329,6 @@ TEST_F(WebFrameTest, WideViewportQuirkClobbersHeight) {
                      ->GetLayoutSize()
                      .Height());
   EXPECT_EQ(1, web_view_helper.GetWebView()->PageScaleFactor());
-}
-
-TEST_F(WebFrameTest, LayoutSize320Quirk) {
-  RegisterMockedHttpURLLoad("viewport/viewport-30.html");
-
-  FixedLayoutTestWebViewClient client;
-  client.screen_info_.device_scale_factor = 1;
-  int viewport_width = 600;
-  int viewport_height = 800;
-
-  frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.InitializeAndLoad("about:blank", nullptr, &client, nullptr,
-                                    ConfigureAndroid);
-  web_view_helper.GetWebView()->GetSettings()->SetWideViewportQuirkEnabled(
-      true);
-  web_view_helper.GetWebView()->GetSettings()->SetUseWideViewport(true);
-  web_view_helper.GetWebView()->GetSettings()->SetViewportMetaLayoutSizeQuirk(
-      true);
-  web_view_helper.Resize(WebSize(viewport_width, viewport_height));
-
-  frame_test_helpers::LoadFrame(web_view_helper.GetWebView()->MainFrameImpl(),
-                                base_url_ + "viewport/viewport-30.html");
-  web_view_helper.Resize(WebSize(viewport_width, viewport_height));
-
-  EXPECT_EQ(600, web_view_helper.GetWebView()
-                     ->MainFrameImpl()
-                     ->GetFrameView()
-                     ->GetLayoutSize()
-                     .Width());
-  EXPECT_EQ(800, web_view_helper.GetWebView()
-                     ->MainFrameImpl()
-                     ->GetFrameView()
-                     ->GetLayoutSize()
-                     .Height());
-  EXPECT_EQ(1, web_view_helper.GetWebView()->PageScaleFactor());
-
-  // The magic number to snap to device-width is 320, so test that 321 is
-  // respected.
-  ViewportData& viewport =
-      To<LocalFrame>(web_view_helper.GetWebView()->GetPage()->MainFrame())
-          ->GetDocument()
-          ->GetViewportData();
-  ViewportDescription description = viewport.GetViewportDescription();
-  description.min_width = Length::Fixed(321);
-  description.max_width = Length::Fixed(321);
-  viewport.SetViewportDescription(description);
-  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
-  EXPECT_EQ(321, web_view_helper.GetWebView()
-                     ->MainFrameImpl()
-                     ->GetFrameView()
-                     ->GetLayoutSize()
-                     .Width());
-
-  description.min_width = Length::Fixed(320);
-  description.max_width = Length::Fixed(320);
-  viewport.SetViewportDescription(description);
-  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
-  EXPECT_EQ(600, web_view_helper.GetWebView()
-                     ->MainFrameImpl()
-                     ->GetFrameView()
-                     ->GetLayoutSize()
-                     .Width());
-
-  description = viewport.GetViewportDescription();
-  description.max_height = Length::Fixed(1000);
-  viewport.SetViewportDescription(description);
-  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
-  EXPECT_EQ(1000, web_view_helper.GetWebView()
-                      ->MainFrameImpl()
-                      ->GetFrameView()
-                      ->GetLayoutSize()
-                      .Height());
-
-  description.max_height = Length::Fixed(320);
-  viewport.SetViewportDescription(description);
-  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
-  EXPECT_EQ(800, web_view_helper.GetWebView()
-                     ->MainFrameImpl()
-                     ->GetFrameView()
-                     ->GetLayoutSize()
-                     .Height());
-}
-
-TEST_F(WebFrameTest, ZeroValuesQuirk) {
-  RegisterMockedHttpURLLoad("viewport-zero-values.html");
-
-  FixedLayoutTestWebViewClient client;
-  client.screen_info_.device_scale_factor = 1;
-  int viewport_width = 640;
-  int viewport_height = 480;
-
-  frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.Initialize(nullptr, &client, nullptr, ConfigureAndroid);
-  web_view_helper.GetWebView()->GetSettings()->SetViewportMetaZeroValuesQuirk(
-      true);
-  web_view_helper.GetWebView()->GetSettings()->SetWideViewportQuirkEnabled(
-      true);
-  web_view_helper.GetWebView()->GetSettings()->SetViewportMetaLayoutSizeQuirk(
-      true);
-  frame_test_helpers::LoadFrame(web_view_helper.GetWebView()->MainFrameImpl(),
-                                base_url_ + "viewport-zero-values.html");
-  web_view_helper.Resize(WebSize(viewport_width, viewport_height));
-
-  EXPECT_EQ(viewport_width, web_view_helper.GetWebView()
-                                ->MainFrameImpl()
-                                ->GetFrameView()
-                                ->GetLayoutSize()
-                                .Width());
-  EXPECT_EQ(1.0f, web_view_helper.GetWebView()->PageScaleFactor());
-
-  web_view_helper.GetWebView()->GetSettings()->SetUseWideViewport(true);
-  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
-  EXPECT_EQ(viewport_width, web_view_helper.GetWebView()
-                                ->MainFrameImpl()
-                                ->GetFrameView()
-                                ->GetLayoutSize()
-                                .Width());
-  EXPECT_EQ(1.0f, web_view_helper.GetWebView()->PageScaleFactor());
 }
 
 TEST_F(WebFrameTest, OverflowHiddenDisablesScrolling) {

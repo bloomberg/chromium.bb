@@ -45,7 +45,6 @@ WebSettingsImpl::WebSettingsImpl(Settings* settings,
       render_v_sync_notification_enabled_(false),
       auto_zoom_focused_node_to_legible_scale_(false),
       support_deprecated_target_density_dpi_(false),
-      viewport_meta_layout_size_quirk_(false),
       viewport_meta_non_user_scalable_quirk_(false),
       clobber_user_agent_initial_scale_quirk_(false) {
   DCHECK(settings);
@@ -181,11 +180,6 @@ void WebSettingsImpl::SetSupportDeprecatedTargetDensityDPI(
     bool support_deprecated_target_density_dpi) {
   support_deprecated_target_density_dpi_ =
       support_deprecated_target_density_dpi;
-}
-
-void WebSettingsImpl::SetViewportMetaLayoutSizeQuirk(
-    bool viewport_meta_layout_size_quirk) {
-  viewport_meta_layout_size_quirk_ = viewport_meta_layout_size_quirk;
 }
 
 void WebSettingsImpl::SetViewportMetaMergeContentQuirk(

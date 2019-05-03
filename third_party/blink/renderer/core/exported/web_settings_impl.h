@@ -186,7 +186,6 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetValidationMessageTimerMagnification(int) override;
   void SetViewportEnabled(bool) override;
   void SetViewportMetaEnabled(bool) override;
-  void SetViewportMetaLayoutSizeQuirk(bool) override;
   void SetViewportMetaMergeContentQuirk(bool) override;
   void SetViewportMetaNonUserScalableQuirk(bool) override;
   void SetViewportMetaZeroValuesQuirk(bool) override;
@@ -229,9 +228,6 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
     return support_deprecated_target_density_dpi_;
   }
   bool ViewportMetaEnabled() const;
-  bool ViewportMetaLayoutSizeQuirk() const {
-    return viewport_meta_layout_size_quirk_;
-  }
   bool ViewportMetaNonUserScalableQuirk() const {
     return viewport_meta_non_user_scalable_quirk_;
   }
@@ -248,10 +244,6 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   bool render_v_sync_notification_enabled_;
   bool auto_zoom_focused_node_to_legible_scale_;
   bool support_deprecated_target_density_dpi_;
-  // This quirk is to maintain compatibility with Android apps built on
-  // the Android SDK prior to and including version 18. Presumably, this
-  // can be removed any time after 2015. See http://crbug.com/277369.
-  bool viewport_meta_layout_size_quirk_;
   // This quirk is to maintain compatibility with Android apps built on
   // the Android SDK prior to and including version 18. Presumably, this
   // can be removed any time after 2015. See http://crbug.com/312691.

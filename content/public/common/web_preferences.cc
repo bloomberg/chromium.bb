@@ -194,7 +194,6 @@ WebPreferences::WebPreferences()
       wide_viewport_quirk(false),
       use_wide_viewport(true),
       force_zero_layout_height(false),
-      viewport_meta_layout_size_quirk(false),
       viewport_meta_merge_content_quirk(false),
       viewport_meta_non_user_scalable_quirk(false),
       viewport_meta_zero_values_quirk(false),

@@ -264,7 +264,6 @@ class WebSettings {
   virtual void SetValidationMessageTimerMagnification(int) = 0;
   virtual void SetViewportEnabled(bool) = 0;
   virtual void SetViewportMetaEnabled(bool) = 0;
-  virtual void SetViewportMetaLayoutSizeQuirk(bool) = 0;
   virtual void SetViewportMetaMergeContentQuirk(bool) = 0;
   virtual void SetViewportMetaNonUserScalableQuirk(bool) = 0;
   virtual void SetViewportMetaZeroValuesQuirk(bool) = 0;
