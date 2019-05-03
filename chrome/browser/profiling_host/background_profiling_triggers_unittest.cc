@@ -37,12 +37,13 @@ OSMemDumpPtr GetFakeOSMemDump(uint32_t resident_set_kb,
                               uint32_t private_footprint_kb,
                               uint32_t shared_footprint_kb) {
   return memory_instrumentation::mojom::OSMemDump::New(
-      resident_set_kb, private_footprint_kb, shared_footprint_kb
+      resident_set_kb, resident_set_kb /* peak_resident_set_kb */,
+      private_footprint_kb, shared_footprint_kb
 #if defined(OS_LINUX) || defined(OS_ANDROID)
       ,
       0
 #endif
-      );
+  );
 }
 
 void PopulateMetrics(GlobalMemoryDumpPtr* global_dump,

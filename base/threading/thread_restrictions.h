@@ -185,6 +185,9 @@ class AudioInputDevice;
 class AudioOutputDevice;
 class BlockingUrlProtocol;
 }
+namespace memory_instrumentation {
+class OSMetrics;
+}
 namespace midi {
 class TaskService;  // https://crbug.com/796830
 }
@@ -338,6 +341,7 @@ class BASE_EXPORT ScopedAllowBlocking {
   friend class content::WebContentsViewMac;
   friend class cronet::CronetPrefsManager;
   friend class cronet::CronetURLRequestContext;
+  friend class memory_instrumentation::OSMetrics;
   friend class mojo::CoreLibraryInitializer;
   friend class resource_coordinator::TabManagerDelegate;  // crbug.com/778703
   friend class ui::MaterialDesignController;

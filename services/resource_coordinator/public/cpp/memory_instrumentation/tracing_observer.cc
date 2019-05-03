@@ -31,6 +31,11 @@ void OsDumpAsValueInto(TracedValue* value, const mojom::OSMemDump& os_dump) {
       base::StringPrintf(
           "%" PRIx64,
           static_cast<uint64_t>(os_dump.private_footprint_kb) * 1024));
+  value->SetString(
+      "peak_resident_set_size",
+      base::StringPrintf(
+          "%" PRIx64,
+          static_cast<uint64_t>(os_dump.peak_resident_set_kb) * 1024));
 }
 
 std::string ApplyPathFiltering(const std::string& file,

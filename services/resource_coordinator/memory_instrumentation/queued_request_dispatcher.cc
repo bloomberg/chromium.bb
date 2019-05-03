@@ -147,6 +147,7 @@ memory_instrumentation::mojom::OSMemDumpPtr CreatePublicOSDump(
   mojom::OSMemDumpPtr os_dump = mojom::OSMemDump::New();
 
   os_dump->resident_set_kb = internal_os_dump.resident_set_kb;
+  os_dump->peak_resident_set_kb = internal_os_dump.peak_resident_set_kb;
   os_dump->private_footprint_kb =
       CalculatePrivateFootprintKb(internal_os_dump, shared_resident_kb);
 #if defined(OS_LINUX) || defined(OS_ANDROID)

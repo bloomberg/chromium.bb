@@ -139,6 +139,9 @@ struct PlatformPrivateFootprint {
 
 struct RawOSMemDump {
   uint32 resident_set_kb = 0;
+  // peak_resident_set_kb is an experimental field. Please do not use it until
+  // crbug.com/957978 reaches to a conclusion.
+  uint32 peak_resident_set_kb = 0;
   PlatformPrivateFootprint platform_private_footprint;
   array<VmRegion> memory_maps;
 
@@ -151,6 +154,11 @@ struct RawOSMemDump {
 
 struct OSMemDump {
   uint32 resident_set_kb = 0;
+
+  // The peak resident set size as observed by the kernel. This is currently
+  // reported on Linux and Android only. Also, this is an experimental field.
+  // Please do not use it until crbug.com/957978 reaches to a conclusion.
+  uint32 peak_resident_set_kb = 0;
 
   // This is roughly private, anonymous, non-discardable, resident or swapped
   // memory in kilobytes. For more details, see https://goo.gl/3kPb9S.

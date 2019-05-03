@@ -118,12 +118,13 @@ OSMemDumpPtr GetFakeOSMemDump(uint32_t resident_set_kb,
   using memory_instrumentation::mojom::VmRegion;
 
   return memory_instrumentation::mojom::OSMemDump::New(
-      resident_set_kb, private_footprint_kb, shared_footprint_kb
+      resident_set_kb, resident_set_kb /* peak_resident_set_kb */,
+      private_footprint_kb, shared_footprint_kb
 #if defined(OS_LINUX) || defined(OS_ANDROID)
       ,
       private_swap_footprint_kb
 #endif
-      );
+  );
 }
 
 void PopulateBrowserMetrics(GlobalMemoryDumpPtr& global_dump,
