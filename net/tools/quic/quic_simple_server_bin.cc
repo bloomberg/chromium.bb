@@ -93,11 +93,11 @@ int main(int argc, char* argv[]) {
     FLAGS_quic_mode = line->GetSwitchValueASCII("mode");
   }
   if (FLAGS_quic_mode.compare("cache") == 0) {
+    quic_simple_server_backend =
+        std::make_unique<quic::QuicMemoryCacheBackend>();
     if (line->HasSwitch("quic_response_cache_dir")) {
       FLAGS_quic_response_cache_dir =
           line->GetSwitchValueASCII("quic_response_cache_dir");
-      quic_simple_server_backend =
-          std::make_unique<quic::QuicMemoryCacheBackend>();
       if (FLAGS_quic_response_cache_dir.empty() ||
           quic_simple_server_backend->InitializeBackend(
               FLAGS_quic_response_cache_dir) != true) {
@@ -122,6 +122,7 @@ int main(int argc, char* argv[]) {
     LOG(ERROR) << "unknown --mode. cache is a valid mode of operation";
     return 1;
   }
+  DCHECK(quic_simple_server_backend);
 
   if (line->HasSwitch("port")) {
     if (!base::StringToInt(line->GetSwitchValueASCII("port"), &FLAGS_port)) {
