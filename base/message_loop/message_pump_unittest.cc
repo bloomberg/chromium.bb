@@ -44,7 +44,7 @@ bool PumpTypeUsesDoSomeWork(MessageLoop::Type type) {
       // iOS uses a MessagePumpDefault for UI in unit tests, ref.
       // test_support_ios.mm::CreateMessagePumpForUIForTests().
       return true;
-#elif defined(OS_WIN) || defined(OS_ANDROID)
+#elif defined(OS_WIN) || defined(OS_ANDROID) || defined(USE_GLIB)
       return true;
 #elif defined(OS_POSIX) && !defined(OS_NACL_SFI)
       // MessagePumpLibevent was migrated (ref. message_pump_for_ui.h and

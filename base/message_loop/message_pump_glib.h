@@ -56,9 +56,6 @@ class BASE_EXPORT MessagePumpGlib : public MessagePump {
   // dispatched.
   GMainContext* context_;
 
-  // This is the time when we need to do delayed work.
-  TimeTicks delayed_work_time_;
-
   // The work source.  It is shared by all calls to Run and destroyed when
   // the message pump is destroyed.
   GSource* work_source_;
