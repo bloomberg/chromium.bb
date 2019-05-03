@@ -207,14 +207,31 @@ const CGFloat kBannerOverlapWithOmnibox = 5.0;
     // Deselect infobar badge in parallel with modal dismissal.
     [self.badgeDelegate infobarModalWillDismiss];
     __weak __typeof(self) weakSelf = self;
-    [self.baseViewController
-        dismissViewControllerAnimated:animated
-                           completion:^{
-                             weakSelf.modalTransitionDriver = nil;
-                             [weakSelf infobarWasDismissed];
-                             if (completion)
-                               completion();
-                           }];
+    ProceduralBlock modalCleanUp = ^{
+      weakSelf.modalTransitionDriver = nil;
+      [weakSelf infobarWasDismissed];
+    };
+
+    // If the Modal is being presented by the Banner, call dismiss on it.
+    // This way the modal dismissal will animate correctly and the completion
+    // block cleans up the banner correctly.
+    if (self.bannerViewController.presentedViewController) {
+      [self.bannerViewController
+          dismissViewControllerAnimated:animated
+                             completion:^{
+                               modalCleanUp();
+                               [weakSelf
+                                   dismissInfobarBannerAnimated:NO
+                                                     completion:completion];
+                             }];
+    } else {
+      [self.baseViewController dismissViewControllerAnimated:animated
+                                                  completion:^{
+                                                    modalCleanUp();
+                                                    if (completion)
+                                                      completion();
+                                                  }];
+    }
   } else {
     if (completion)
       completion();
