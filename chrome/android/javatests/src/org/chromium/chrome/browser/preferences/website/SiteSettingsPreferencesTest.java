@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.preferences.website;
 
-import android.content.Intent;
-import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
@@ -32,7 +30,6 @@ import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.LocationSettings;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
-import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
@@ -74,8 +71,8 @@ public class SiteSettingsPreferencesTest {
 
     private void setAllowLocation(final boolean enabled) {
         LocationSettingsTestUtil.setSystemLocationSettingEnabled(true);
-        final Preferences preferenceActivity =
-                startSiteSettingsCategory(SiteSettingsCategory.Type.DEVICE_LOCATION);
+        final Preferences preferenceActivity = SiteSettingsTestUtils.startSiteSettingsCategory(
+                SiteSettingsCategory.Type.DEVICE_LOCATION);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             SingleCategoryPreferences websitePreferences =
@@ -145,34 +142,6 @@ public class SiteSettingsPreferencesTest {
         Assert.assertTrue(mActivityTestRule.getInfoBars().isEmpty());
     }
 
-    private Preferences startSiteSettingsMenu(String category) {
-        Bundle fragmentArgs = new Bundle();
-        fragmentArgs.putString(SingleCategoryPreferences.EXTRA_CATEGORY, category);
-        Intent intent = PreferencesLauncher.createIntentForSettingsPage(
-                InstrumentationRegistry.getTargetContext(), SiteSettingsPreferences.class.getName(),
-                fragmentArgs);
-        return (Preferences) InstrumentationRegistry.getInstrumentation().startActivitySync(intent);
-    }
-
-    private Preferences startSiteSettingsCategory(@SiteSettingsCategory.Type int type) {
-        Bundle fragmentArgs = new Bundle();
-        fragmentArgs.putString(
-                SingleCategoryPreferences.EXTRA_CATEGORY, SiteSettingsCategory.preferenceKey(type));
-        Intent intent = PreferencesLauncher.createIntentForSettingsPage(
-                InstrumentationRegistry.getTargetContext(),
-                SingleCategoryPreferences.class.getName(), fragmentArgs);
-        return (Preferences) InstrumentationRegistry.getInstrumentation().startActivitySync(intent);
-    }
-
-    private Preferences startSingleWebsitePreferences(Website site) {
-        Bundle fragmentArgs = new Bundle();
-        fragmentArgs.putSerializable(SingleWebsitePreferences.EXTRA_SITE, site);
-        Intent intent = PreferencesLauncher.createIntentForSettingsPage(
-                InstrumentationRegistry.getTargetContext(),
-                SingleWebsitePreferences.class.getName(), fragmentArgs);
-        return (Preferences) InstrumentationRegistry.getInstrumentation().startActivitySync(intent);
-    }
-
     private void setCookiesEnabled(final Preferences preferenceActivity, final boolean enabled) {
         TestThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -219,7 +188,8 @@ public class SiteSettingsPreferencesTest {
 
     private void setGlobalToggleForCategory(
             final @SiteSettingsCategory.Type int type, final boolean enabled) {
-        final Preferences preferenceActivity = startSiteSettingsCategory(type);
+        final Preferences preferenceActivity =
+                SiteSettingsTestUtils.startSiteSettingsCategory(type);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             SingleCategoryPreferences preferences =
@@ -260,7 +230,8 @@ public class SiteSettingsPreferencesTest {
      */
     private void checkPreferencesForCategory(
             final @SiteSettingsCategory.Type int type, String[] expectedKeys) {
-        final Preferences preferenceActivity = startSiteSettingsCategory(type);
+        final Preferences preferenceActivity =
+                SiteSettingsTestUtils.startSiteSettingsCategory(type);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             PreferenceFragment preferenceFragment =
@@ -295,7 +266,7 @@ public class SiteSettingsPreferencesTest {
     @Feature({"Preferences"})
     public void testThirdPartyCookieToggleGetsDisabled() throws Exception {
         Preferences preferenceActivity =
-                startSiteSettingsCategory(SiteSettingsCategory.Type.COOKIES);
+                SiteSettingsTestUtils.startSiteSettingsCategory(SiteSettingsCategory.Type.COOKIES);
         setCookiesEnabled(preferenceActivity, true);
         setThirdPartyCookiesEnabled(preferenceActivity, false);
         setThirdPartyCookiesEnabled(preferenceActivity, true);
@@ -311,7 +282,7 @@ public class SiteSettingsPreferencesTest {
     @Feature({"Preferences"})
     public void testCookiesNotBlocked() throws Exception {
         Preferences preferenceActivity =
-                startSiteSettingsCategory(SiteSettingsCategory.Type.COOKIES);
+                SiteSettingsTestUtils.startSiteSettingsCategory(SiteSettingsCategory.Type.COOKIES);
         setCookiesEnabled(preferenceActivity, true);
         preferenceActivity.finish();
 
@@ -338,7 +309,7 @@ public class SiteSettingsPreferencesTest {
     @Feature({"Preferences"})
     public void testCookiesBlocked() throws Exception {
         Preferences preferenceActivity =
-                startSiteSettingsCategory(SiteSettingsCategory.Type.COOKIES);
+                SiteSettingsTestUtils.startSiteSettingsCategory(SiteSettingsCategory.Type.COOKIES);
         setCookiesEnabled(preferenceActivity, false);
         preferenceActivity.finish();
 
@@ -403,7 +374,8 @@ public class SiteSettingsPreferencesTest {
 
     private void resetSite(WebsiteAddress address) {
         Website website = new Website(address, address);
-        final Preferences preferenceActivity = startSingleWebsitePreferences(website);
+        final Preferences preferenceActivity =
+                SiteSettingsTestUtils.startSingleWebsitePreferences(website);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             SingleWebsitePreferences websitePreferences =
                     (SingleWebsitePreferences) preferenceActivity.getFragmentForTest();
@@ -454,7 +426,7 @@ public class SiteSettingsPreferencesTest {
     @SmallTest
     @Feature({"Preferences"})
     public void testSiteSettingsMenu() throws Exception {
-        final Preferences preferenceActivity = startSiteSettingsMenu("");
+        final Preferences preferenceActivity = SiteSettingsTestUtils.startSiteSettingsMenu("");
         preferenceActivity.finish();
     }
 
@@ -467,7 +439,7 @@ public class SiteSettingsPreferencesTest {
     @Feature({"Preferences"})
     public void testMediaMenu() throws Exception {
         final Preferences preferenceActivity =
-                startSiteSettingsMenu(SiteSettingsPreferences.MEDIA_KEY);
+                SiteSettingsTestUtils.startSiteSettingsMenu(SiteSettingsPreferences.MEDIA_KEY);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             SiteSettingsPreferences siteSettings =
                     (SiteSettingsPreferences) preferenceActivity.getFragmentForTest();
