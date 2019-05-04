@@ -150,8 +150,8 @@ suite('AllSites', function() {
           Polymer.dom.flush();
           const siteEntries =
               testElement.$.listContainer.querySelectorAll('site-entry');
-          const hiddenSiteEntries = Polymer.dom(testElement.root)
-                                        .querySelectorAll('site-entry[hidden]');
+          const hiddenSiteEntries =
+              testElement.shadowRoot.querySelectorAll('site-entry[hidden]');
           assertEquals(1, siteEntries.length - hiddenSiteEntries.length);
 
           for (let i = 0; i < siteEntries; ++i) {

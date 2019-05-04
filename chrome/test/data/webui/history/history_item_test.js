@@ -79,7 +79,7 @@ suite('<history-item> integration test', function() {
     return PolymerTest.flushTasks().then(function() {
       Polymer.dom.flush();
       // Check that the correct number of time gaps are inserted.
-      const items = Polymer.dom(element.root).querySelectorAll('history-item');
+      const items = element.shadowRoot.querySelectorAll('history-item');
 
       assertTrue(items[0].hasTimeGap);
       assertTrue(items[1].hasTimeGap);
@@ -96,7 +96,7 @@ suite('<history-item> integration test', function() {
 
     return PolymerTest.flushTasks().then(function() {
       Polymer.dom.flush();
-      const items = Polymer.dom(element.root).querySelectorAll('history-item');
+      const items = element.shadowRoot.querySelectorAll('history-item');
 
       assertTrue(items[0].hasTimeGap);
       assertFalse(items[1].hasTimeGap);
@@ -108,7 +108,7 @@ suite('<history-item> integration test', function() {
     element.addNewResults(TEST_HISTORY_RESULTS);
     return PolymerTest.flushTasks().then(function() {
       Polymer.dom.flush();
-      const items = Polymer.dom(element.root).querySelectorAll('history-item');
+      const items = element.shadowRoot.querySelectorAll('history-item');
 
       element.removeItemsByIndex_([3]);
       assertEquals(5, element.historyData_.length);
@@ -132,8 +132,7 @@ suite('<history-item> integration test', function() {
           return PolymerTest.flushTasks();
         })
         .then(function() {
-
-          items = Polymer.dom(element.root).querySelectorAll('history-item');
+          items = element.shadowRoot.querySelectorAll('history-item');
 
           items[1].$$('#bookmark-star').focus();
           MockInteractions.tap(items[1].$$('#bookmark-star'));

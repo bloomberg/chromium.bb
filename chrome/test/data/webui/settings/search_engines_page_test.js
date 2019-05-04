@@ -340,14 +340,13 @@ cr.define('settings_search_engines_page', function() {
         // if IronList.items instead of the child nodes.
         Polymer.dom.flush();
         const defaultsList = searchEnginesLists[0];
-        const defaultsEntries = Polymer.dom(defaultsList.shadowRoot)
-                                    .querySelector('iron-list')
-                                    .items;
+        const defaultsEntries =
+            defaultsList.shadowRoot.querySelector('iron-list').items;
         assertEquals(searchEnginesInfo.defaults.length, defaultsEntries.length);
 
         const othersList = searchEnginesLists[1];
         const othersEntries =
-            Polymer.dom(othersList.shadowRoot).querySelector('iron-list').items;
+            othersList.shadowRoot.querySelector('iron-list').items;
         assertEquals(searchEnginesInfo.others.length, othersEntries.length);
 
         // Ensure that the search engines have reverse alphabetical order in the
@@ -360,7 +359,7 @@ cr.define('settings_search_engines_page', function() {
         assertEquals(searchEnginesInfo.others[0].name, othersEntries[1].name);
 
         const extensionEntries =
-            Polymer.dom(page.shadowRoot).querySelector('iron-list').items;
+            page.shadowRoot.querySelector('iron-list').items;
         assertEquals(
             searchEnginesInfo.extensions.length, extensionEntries.length);
       });

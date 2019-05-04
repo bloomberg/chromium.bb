@@ -166,7 +166,7 @@ Polymer({
     this.activeAddress = /** @type {!chrome.autofillPrivate.AddressEntry} */ (
         Object.assign({}, item));
 
-    const dotsButton = /** @type {!HTMLElement} */ (Polymer.dom(e).localTarget);
+    const dotsButton = /** @type {!HTMLElement} */ (e.target);
     /** @type {!CrActionMenuElement} */ (this.$.addressSharedMenu)
         .showAt(dotsButton);
     this.activeDialogAnchor_ = dotsButton;

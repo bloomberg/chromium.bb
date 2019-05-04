@@ -228,7 +228,7 @@ suite('SiteDetails', function() {
     const api =
         document.createElement('mock-website-usage-private-api-storage');
     testElement.$.usageApi = api;
-    Polymer.dom(parent).appendChild(api);
+    parent.appendChild(api);
     Polymer.dom.flush();
 
     // Call onOriginChanged_() manually to simulate a new navigation.
@@ -272,7 +272,7 @@ suite('SiteDetails', function() {
     const api =
         document.createElement('mock-website-usage-private-api-cookies');
     testElement.$.usageApi = api;
-    Polymer.dom(parent).appendChild(api);
+    parent.appendChild(api);
     Polymer.dom.flush();
 
     // Call onOriginChanged_() manually to simulate a new navigation.
@@ -394,7 +394,7 @@ suite('SiteDetails', function() {
     });
     let api = document.createElement('mock1-website-usage-private-api');
     testElement.$.usageApi = api;
-    Polymer.dom(parent).appendChild(api);
+    parent.appendChild(api);
     Polymer.dom.flush();
 
     // Check both cancelling and accepting the dialog closes it.

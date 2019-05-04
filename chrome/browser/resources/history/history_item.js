@@ -209,7 +209,7 @@ cr.define('history', function() {
      */
     onMenuButtonTap_: function(e) {
       this.fire('open-menu', {
-        target: Polymer.dom(e).localTarget,
+        target: e.target,
         index: this.index,
         item: this.item,
       });

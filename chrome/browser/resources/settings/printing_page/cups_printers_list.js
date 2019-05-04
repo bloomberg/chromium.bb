@@ -46,8 +46,7 @@ Polymer({
     this.activePrinter = e.model.item;
     const menu =
         /** @type {!CrActionMenuElement} */ (this.$$('cr-action-menu'));
-    menu.showAt(/** @type {!Element} */ (
-        Polymer.dom(/** @type {!Event} */ (e)).localTarget));
+    menu.showAt(/** @type {!Element} */ (/** @type {!Event} */ (e).target));
   },
 
   /**

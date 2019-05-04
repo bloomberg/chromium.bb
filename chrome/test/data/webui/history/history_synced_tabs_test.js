@@ -43,8 +43,7 @@ suite('<history-synced-device-manager>', function() {
       const card = element.$$('history-synced-device-card');
       assertEquals(
           'http://www.google.com',
-          Polymer.dom(card.root)
-              .querySelectorAll('.website-title')[0]
+          card.shadowRoot.querySelectorAll('.website-title')[0]
               .textContent.trim());
       assertEquals(2, card.tabs.length);
     });
@@ -108,8 +107,8 @@ suite('<history-synced-device-manager>', function() {
           // Check that the actual link changes.
           assertEquals(
               'http://crbug.com/new',
-              Polymer.dom(cards[0].root)
-                  .querySelectorAll('.website-title')[1]
+              cards[0]
+                  .shadowRoot.querySelectorAll('.website-title')[1]
                   .textContent.trim());
         });
   });
@@ -156,8 +155,8 @@ suite('<history-synced-device-manager>', function() {
           // Ensure the title text is rendered during searches.
           assertEquals(
               'http://www.google.com',
-              Polymer.dom(cards[0].root)
-                  .querySelectorAll('.website-title')[0]
+              cards[0]
+                  .shadowRoot.querySelectorAll('.website-title')[0]
                   .textContent.trim());
 
           element.searchTerm = 'Sans';
