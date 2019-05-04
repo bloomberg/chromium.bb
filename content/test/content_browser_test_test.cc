@@ -52,7 +52,7 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, MANUAL_RendererCrash) {
       shell()->web_contents()->GetMainFrame()->GetProcess(),
       content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
 
-  NavigateToURL(shell(), GURL("chrome:crash"));
+  NavigateToURL(shell(), GetWebUIURL("crash"));
   renderer_shutdown_observer.Wait();
 
   EXPECT_FALSE(renderer_shutdown_observer.did_exit_normally());

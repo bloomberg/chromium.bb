@@ -5088,7 +5088,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigatePopupToIllegalURL) {
   EXPECT_EQ(popup_url, popup->web_contents()->GetLastCommittedURL());
   EXPECT_TRUE(
       base::MatchPattern(console_delegate.message(),
-                         "Not allowed to load local resource: chrome:*"));
+                         std::string("Not allowed to load local resource: ") +
+                             kChromeUIScheme + ":*"));
 }
 
 // Verify that named frames are discoverable from their opener's ancestors.

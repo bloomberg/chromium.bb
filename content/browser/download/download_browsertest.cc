@@ -3799,7 +3799,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, FetchErrorResponseBodyResumption) {
 
 // Verify WebUI download will success with an associated renderer process.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadFromWebUI) {
-  GURL webui_url("chrome://resources/images/apps/blue_button.png");
+  GURL webui_url(GetWebUIURL("resources/images/apps/blue_button.png"));
   NavigateToURL(shell(), webui_url);
   SetupEnsureNoPendingDownloads();
 

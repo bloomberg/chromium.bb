@@ -1770,7 +1770,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, WebViewRendererKillReload) {
   notification_registrar.Add(&crash_observer,
                              content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
                              content::NotificationService::AllSources());
-  NavigateToURLBlockUntilNavigationsComplete(web_contents, GURL("chrome:crash"),
+  NavigateToURLBlockUntilNavigationsComplete(web_contents, GetWebUIURL("crash"),
                                              1);
 
   // Wait for navigation in new WebContents to finish.

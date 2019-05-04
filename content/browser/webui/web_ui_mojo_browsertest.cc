@@ -34,6 +34,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/data/web_ui_test_mojo_bindings.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -264,10 +265,8 @@ class WebUIMojoTest : public ContentBrowserTest {
   void NavigateWithNewWebUI(const std::string& path) {
     // Load a dummy WebUI URL first so that a new WebUI is set up when we load
     // the URL we're actually interested in.
-    EXPECT_TRUE(NavigateToURL(shell(), GURL("chrome://dummy-web-ui")));
-
-    constexpr char kChromeUIMojoWebUIOrigin[] = "chrome://mojo-web-ui/";
-    EXPECT_TRUE(NavigateToURL(shell(), GURL(kChromeUIMojoWebUIOrigin + path)));
+    EXPECT_TRUE(NavigateToURL(shell(), GetWebUIURL("dummy-web-ui")));
+    EXPECT_TRUE(NavigateToURL(shell(), GetWebUIURL("mojo-web-ui/" + path)));
   }
 
   // Run |script| and return a boolean result.
@@ -308,7 +307,7 @@ IN_PROC_BROWSER_TEST_F(WebUIMojoTest, EndToEndPing) {
   g_got_message = false;
   base::RunLoop run_loop;
   factory()->set_run_loop(&run_loop);
-  GURL test_url("chrome://mojo-web-ui/web_ui_mojo.html?ping");
+  GURL test_url(GetWebUIURL("mojo-web-ui/web_ui_mojo.html?ping"));
   NavigateToURL(shell(), test_url);
   // RunLoop is quit when message received from page.
   run_loop.Run();

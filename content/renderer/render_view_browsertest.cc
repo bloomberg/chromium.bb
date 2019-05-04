@@ -722,8 +722,7 @@ TEST_F(RenderViewImplTest, BeginNavigation) {
 
   // Verify that form posts to WebUI URLs will be sent to the browser process.
   auto form_navigation_info = std::make_unique<blink::WebNavigationInfo>();
-  form_navigation_info->url_request =
-      blink::WebURLRequest(GURL("chrome://foo"));
+  form_navigation_info->url_request = blink::WebURLRequest(GetWebUIURL("foo"));
   form_navigation_info->url_request.SetHttpMethod("POST");
   form_navigation_info->url_request.SetRequestorOrigin(requestor_origin);
   form_navigation_info->frame_type =
@@ -738,10 +737,9 @@ TEST_F(RenderViewImplTest, BeginNavigation) {
       FrameHostMsg_OpenURL::ID));
 
   // Verify that popup links to WebUI URLs also are sent to browser.
-  blink::WebURLRequest popup_request(GURL("chrome://foo"));
+  blink::WebURLRequest popup_request(GetWebUIURL("foo"));
   auto popup_navigation_info = std::make_unique<blink::WebNavigationInfo>();
-  popup_navigation_info->url_request =
-      blink::WebURLRequest(GURL("chrome://foo"));
+  popup_navigation_info->url_request = blink::WebURLRequest(GetWebUIURL("foo"));
   popup_navigation_info->url_request.SetRequestorOrigin(requestor_origin);
   popup_navigation_info->frame_type =
       network::mojom::RequestContextFrameType::kAuxiliary;
@@ -808,8 +806,7 @@ TEST_F(RenderViewImplTest, BeginNavigationForWebUI) {
 
   // Navigations to WebUI URLs will also be sent to browser process.
   auto webui_navigation_info = std::make_unique<blink::WebNavigationInfo>();
-  webui_navigation_info->url_request =
-      blink::WebURLRequest(GURL("chrome://foo"));
+  webui_navigation_info->url_request = blink::WebURLRequest(GetWebUIURL("foo"));
   webui_navigation_info->url_request.SetRequestorOrigin(requestor_origin);
   webui_navigation_info->frame_type =
       network::mojom::RequestContextFrameType::kTopLevel;

@@ -452,6 +452,7 @@ if (enable_extensions) {
       "//base/test:test_support",
       "//components/crx_file",
       "//components/version_info:version_info",
+      "//content/test:test_support",
       "//device/usb/public/cpp:test_support",
       "//extensions:extensions_resources",
 

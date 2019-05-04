@@ -214,7 +214,7 @@ class NetworkServiceBrowserTest : public ContentBrowserTest {
 
 // Verifies that WebUI pages with WebUI bindings can't make network requests.
 IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest, WebUIBindingsNoHttp) {
-  GURL test_url("chrome://webui/");
+  GURL test_url(GetWebUIURL("webui/"));
   NavigateToURL(shell(), test_url);
   RenderProcessKilledObserver killed_observer(shell()->web_contents());
   ASSERT_FALSE(CheckCanLoadHttp());
@@ -224,7 +224,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest, WebUIBindingsNoHttp) {
 
 // Verifies that WebUI pages without WebUI bindings can make network requests.
 IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest, NoWebUIBindingsHttp) {
-  GURL test_url("chrome://webui/nobinding/");
+  GURL test_url(GetWebUIURL("webui/nobinding/"));
   NavigateToURL(shell(), test_url);
   ASSERT_TRUE(CheckCanLoadHttp());
 }
@@ -233,7 +233,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest, NoWebUIBindingsHttp) {
 // ChildProcessSecurityPolicyImpl::CanRequestURL is properly rejected.
 IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest,
                        FileSystemBindingsCorrectOrigin) {
-  GURL test_url("chrome://webui/nobinding/");
+  GURL test_url(GetWebUIURL("webui/nobinding/"));
   NavigateToURL(shell(), test_url);
 
   // Note: must be filesystem scheme (obviously).

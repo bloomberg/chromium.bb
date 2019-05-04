@@ -467,7 +467,7 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
   EXPECT_DOUBLE_EQ(0.5, GetEngagementScore(origin));
 
   std::string url = web_contents->GetLastCommittedURL().spec();
-  ASSERT_EQ("chrome://settings/content/notifications", url);
+  ASSERT_EQ(content::GetWebUIURLString("settings/content/notifications"), url);
 }
 #endif
 

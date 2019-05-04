@@ -552,7 +552,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, OpenURLSubframe) {
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
                        AppendingFrameInWebUIDoesNotCrash) {
-  const GURL kWebUIUrl("chrome://tracing");
+  const GURL kWebUIUrl(GetWebUIURL("tracing"));
   const char kJSCodeForAppendingFrame[] =
       "document.body.appendChild(document.createElement('iframe'));";
 
@@ -873,7 +873,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 
   // Kill the renderer process so when the navigate again, it will be a fresh
   // renderer with an empty in-memory cache.
-  NavigateToURL(shell(), GURL("chrome:crash"));
+  NavigateToURL(shell(), GetWebUIURL("crash"));
 
   // Reload that URL, the subresource should be served from the network cache.
   before = base::TimeTicks::Now();
@@ -999,7 +999,7 @@ class WebContentsSplitCacheBrowserTest : public WebContentsImplBrowserTest {
   // valid and return if the script was cached or not.
   bool TestResourceLoad(const GURL& url, const GURL& sub_frame) {
     // Kill the renderer to clear the in-memory cache.
-    NavigateToURL(shell(), GURL("chrome:crash"));
+    NavigateToURL(shell(), GetWebUIURL("crash"));
 
     // Observe network requests.
     ResourceLoadObserver observer(shell());
@@ -1200,7 +1200,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
       observer.resource_load_infos()[1]->network_info->network_accessed);
   observer.Reset();
 
-  NavigateToURL(shell(), GURL("chrome://gpu"));
+  NavigateToURL(shell(), GetWebUIURL("gpu"));
   ASSERT_LE(1U, observer.resource_load_infos().size());
   for (const mojom::ResourceLoadInfoPtr& resource_load_info :
        observer.resource_load_infos()) {
@@ -1679,8 +1679,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 
 // Test that view source mode for a webui page can be opened.
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, ViewSourceWebUI) {
-  const std::string kUrl =
-      "view-source:chrome://" + std::string(kChromeUIGpuHost);
+  const std::string kUrl = "view-source:" + GetWebUIURLString(kChromeUIGpuHost);
   const GURL kGURL(kUrl);
   NavigateToURL(shell(), kGURL);
   EXPECT_EQ(base::ASCIIToUTF16(kUrl), shell()->web_contents()->GetTitle());
