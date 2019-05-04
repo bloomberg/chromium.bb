@@ -6,7 +6,7 @@
 [
     SecureContext,
     Exposed=Window,
-    RuntimeEnabled=WebXR,
+    RuntimeEnabled=WebXRHitTest,
     Constructor(),
     Constructor(DOMPointInit origin),
     Constructor(DOMPointInit origin, DOMPointInit direction),

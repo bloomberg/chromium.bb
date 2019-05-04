@@ -55,9 +55,8 @@ test(t => {
 }, "Hit-test properties are not available with a WebXR token.");
 test(t => {
   let hittest_interfaces = [
-    'XRHitResult'/*,
-    TODO(https://crbug.com/958561): Uncomment after resolving the issue.
-    'XRRay'*/
+    'XRHitResult',
+    'XRRay'
   ];
   OriginTrialsHelper.check_interfaces_missing_unless_runtime_flag(
     this, hittest_interfaces, 'webXRHitTestEnabled');
