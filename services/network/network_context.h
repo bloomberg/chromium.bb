@@ -395,6 +395,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // Reports and gather CORS preflight cache size metric.
   size_t ReportAndGatherCorsPreflightCacheSizeMetric();
 
+  // Gather active URLLoader count.
+  size_t GatherActiveLoaderCount();
+
  private:
   class ContextNetworkDelegate;
 
