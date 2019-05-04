@@ -315,11 +315,16 @@ void PropertyTreeManager::SetCurrentEffectState(
   if (cc_effect_node.HasRenderSurface()) {
     current_.may_be_2d_axis_misaligned_to_render_surface =
         EffectState::kAligned;
-  } else if (current_.may_be_2d_axis_misaligned_to_render_surface ==
-                 EffectState::kAligned &&
-             previous_transform != &current_.Transform()) {
-    current_.may_be_2d_axis_misaligned_to_render_surface =
-        EffectState::kUnknown;
+    current_.contained_by_non_render_surface_synthetic_rounded_clip = false;
+  } else {
+    if (current_.may_be_2d_axis_misaligned_to_render_surface ==
+            EffectState::kAligned &&
+        previous_transform != &current_.Transform()) {
+      current_.may_be_2d_axis_misaligned_to_render_surface =
+          EffectState::kUnknown;
+    }
+    current_.contained_by_non_render_surface_synthetic_rounded_clip |=
+        (effect_type & CcEffectType::kSyntheticForNonTrivialClip);
   }
 }
 
@@ -795,6 +800,14 @@ PropertyTreeManager::CcEffectType PropertyTreeManager::SyntheticEffectType(
   return static_cast<CcEffectType>(effect_type);
 }
 
+void PropertyTreeManager::ForceRenderSurfaceIfSyntheticRoundedCornerClip(
+    PropertyTreeManager::EffectState& state) {
+  if (state.effect_type & CcEffectType::kSyntheticForNonTrivialClip) {
+    auto& effect_node = *GetEffectTree().Node(state.effect_id);
+    effect_node.render_surface_reason = cc::RenderSurfaceReason::kRoundedCorner;
+  }
+}
+
 SkBlendMode PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
     const ClipPaintPropertyNode& target_clip_arg,
     SkBlendMode delegated_blend) {
@@ -886,6 +899,20 @@ SkBlendMode PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
         synthetic_effect.rounded_corner_bounds =
             gfx::RRectF(pending_clip.clip->ClipRect());
         synthetic_effect.is_fast_rounded_corner = true;
+
+        // Nested rounded corner clips need to force render surfaces for
+        // clips other than the leaf ones, because the compositor doesn't
+        // know how to apply two rounded clips to the same draw quad.
+        if (current_.contained_by_non_render_surface_synthetic_rounded_clip) {
+          ForceRenderSurfaceIfSyntheticRoundedCornerClip(current_);
+          for (auto effect_it = effect_stack_.rbegin();
+               effect_it != effect_stack_.rend(); ++effect_it) {
+            auto& effect_node = *GetEffectTree().Node(effect_it->effect_id);
+            if (effect_node.HasRenderSurface())
+              break;
+            ForceRenderSurfaceIfSyntheticRoundedCornerClip(*effect_it);
+          }
+        }
       } else {
         synthetic_effect.render_surface_reason =
             pending_clip.clip->ClipRect().IsRounded()

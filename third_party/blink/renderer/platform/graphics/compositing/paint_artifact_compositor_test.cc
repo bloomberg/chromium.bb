@@ -2586,8 +2586,7 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipSimple) {
 
   if (RuntimeEnabledFeatures::FastBorderRadiusEnabled()) {
     // Expectation in effect stack diagram:
-    //           l1
-    // l0
+    //          l0
     // [ mask_isolation_0 ]
     // [        e0        ]
     // One content layer.
@@ -2615,6 +2614,7 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipSimple) {
     EXPECT_TRUE(mask_isolation_0.is_fast_rounded_corner);
     EXPECT_EQ(gfx::RRectF(50, 50, 300, 200, 5),
               mask_isolation_0.rounded_corner_bounds);
+    EXPECT_FALSE(mask_isolation_0.HasRenderSurface());
     return;
   }
 
@@ -2644,6 +2644,7 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipSimple) {
       *GetPropertyTrees().effect_tree.Node(mask_isolation_0_id);
   ASSERT_EQ(e0_id, mask_isolation_0.parent_id);
   EXPECT_EQ(SkBlendMode::kSrcOver, mask_isolation_0.blend_mode);
+  EXPECT_TRUE(mask_isolation_0.HasRenderSurface());
 
   EXPECT_EQ(SynthesizedClipLayerAt(0), clip_mask0);
   EXPECT_EQ(gfx::Size(300, 200), clip_mask0->bounds());
@@ -2657,6 +2658,111 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipSimple) {
   // The masks DrawsContent because it has content that it masks which also
   // DrawsContent.
   EXPECT_TRUE(clip_mask0->DrawsContent());
+}
+
+TEST_P(PaintArtifactCompositorTest, SynthesizedClipNested) {
+  // This tests the simplist case that a single layer needs to be clipped
+  // by a single composited rounded clip.
+  if (!RuntimeEnabledFeatures::FastBorderRadiusEnabled())
+    return;
+
+  FloatSize corner(5, 5);
+  FloatRoundedRect rrect(FloatRect(50, 50, 300, 200), corner, corner, corner,
+                         corner);
+  auto c1 = CreateClip(c0(), t0(), rrect);
+  auto c2 = CreateClip(*c1, t0(), rrect);
+  auto c3 = CreateClip(*c2, t0(), rrect);
+  auto t1 = CreateTransform(t0(), TransformationMatrix(), FloatPoint3D(),
+                            CompositingReason::kWillChangeTransform);
+  CompositorFilterOperations filter_operations;
+  filter_operations.AppendBlurFilter(5);
+  auto filter = CreateFilterEffect(e0(), t0(), c1.get(), filter_operations);
+
+  TestPaintArtifact artifact;
+  artifact.Chunk(t0(), *c1, *filter)
+      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
+  artifact.Chunk(*t1, *c3, *filter)
+      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
+  Update(artifact.Build());
+
+  // Expectation in effect stack diagram:
+  //            l0
+  //    [ mask_isolation_2 ]
+  // l1 [ mask_isolation_1 ]
+  // [       filter        ]
+  // [  mask_isolation_0   ]
+  // [         e0          ]
+  // Two content layers.
+  ///
+  // mask_isolation_1 will have a render surface. mask_isolation_2 will not
+  // because non-leaf synthetic rounded clips must have a render surface.
+  // mask_isolation_0 will not because it is a leaf synthetic rounded clip
+  // in the render surface created by the filter.
+
+  ASSERT_EQ(2u, RootLayer()->children().size());
+  ASSERT_EQ(2u, ContentLayerCount());
+  // There is still a "synthesized layer" but it's null.
+  ASSERT_EQ(3u, SynthesizedClipLayerCount());
+  EXPECT_FALSE(SynthesizedClipLayerAt(0));
+  EXPECT_FALSE(SynthesizedClipLayerAt(1));
+  EXPECT_FALSE(SynthesizedClipLayerAt(2));
+
+  const cc::Layer* content0 = RootLayer()->children()[0].get();
+  EXPECT_EQ(ContentLayerAt(0), content0);
+  const cc::Layer* content1 = RootLayer()->children()[1].get();
+  EXPECT_EQ(ContentLayerAt(1), content1);
+
+  constexpr int c0_id = 1;
+  constexpr int c1_id = 2;
+  constexpr int e0_id = 1;
+  constexpr int e1_id = 2;
+
+  int c3_id = content1->clip_tree_index();
+  const cc::ClipNode& cc_c3 = *GetPropertyTrees().clip_tree.Node(c3_id);
+  EXPECT_EQ(gfx::RectF(50, 50, 300, 200), cc_c3.clip);
+  const cc::ClipNode& cc_c2 =
+      *GetPropertyTrees().clip_tree.Node(cc_c3.parent_id);
+  EXPECT_EQ(gfx::RectF(50, 50, 300, 200), cc_c2.clip);
+  ASSERT_EQ(c1_id, cc_c2.parent_id);
+  const cc::ClipNode& cc_c1 = *GetPropertyTrees().clip_tree.Node(c1_id);
+  EXPECT_EQ(c1_id, content0->clip_tree_index());
+  EXPECT_EQ(gfx::RectF(50, 50, 300, 200), cc_c1.clip);
+  ASSERT_EQ(c0_id, cc_c1.parent_id);
+
+  int mask_isolation_2_id = content1->effect_tree_index();
+  const cc::EffectNode& mask_isolation_2 =
+      *GetPropertyTrees().effect_tree.Node(mask_isolation_2_id);
+  const cc::EffectNode& mask_isolation_1 =
+      *GetPropertyTrees().effect_tree.Node(mask_isolation_2.parent_id);
+  const cc::EffectNode& cc_filter =
+      *GetPropertyTrees().effect_tree.Node(mask_isolation_1.parent_id);
+  const cc::EffectNode& mask_isolation_0 =
+      *GetPropertyTrees().effect_tree.Node(cc_filter.parent_id);
+
+  ASSERT_EQ(e0_id, mask_isolation_0.parent_id);
+  EXPECT_EQ(SkBlendMode::kSrcOver, mask_isolation_0.blend_mode);
+  EXPECT_TRUE(mask_isolation_0.is_fast_rounded_corner);
+  EXPECT_EQ(gfx::RRectF(50, 50, 300, 200, 5),
+            mask_isolation_0.rounded_corner_bounds);
+  EXPECT_FALSE(mask_isolation_0.HasRenderSurface());
+
+  ASSERT_EQ(e1_id, cc_filter.parent_id);
+  EXPECT_EQ(cc_filter.id, content0->effect_tree_index());
+  EXPECT_EQ(SkBlendMode::kSrcOver, cc_filter.blend_mode);
+  EXPECT_FALSE(cc_filter.is_fast_rounded_corner);
+  EXPECT_TRUE(cc_filter.HasRenderSurface());
+
+  EXPECT_EQ(SkBlendMode::kSrcOver, mask_isolation_1.blend_mode);
+  EXPECT_TRUE(mask_isolation_1.is_fast_rounded_corner);
+  EXPECT_EQ(gfx::RRectF(50, 50, 300, 200, 5),
+            mask_isolation_1.rounded_corner_bounds);
+  EXPECT_TRUE(mask_isolation_1.HasRenderSurface());
+
+  EXPECT_EQ(SkBlendMode::kSrcOver, mask_isolation_2.blend_mode);
+  EXPECT_TRUE(mask_isolation_2.is_fast_rounded_corner);
+  EXPECT_EQ(gfx::RRectF(50, 50, 300, 200, 5),
+            mask_isolation_2.rounded_corner_bounds);
+  EXPECT_FALSE(mask_isolation_2.HasRenderSurface());
 }
 
 TEST_P(PaintArtifactCompositorTest, SynthesizedClipIsNotDrawable) {
@@ -2794,6 +2900,7 @@ TEST_P(PaintArtifactCompositorTest,
     EXPECT_TRUE(mask_isolation_0.is_fast_rounded_corner);
     EXPECT_EQ(gfx::RRectF(50, 50, 300, 200, 0),
               mask_isolation_0.rounded_corner_bounds);
+    EXPECT_FALSE(mask_isolation_0.HasRenderSurface());
     return;
   }
 
@@ -2900,6 +3007,7 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipContiguous) {
     EXPECT_TRUE(mask_isolation_0.is_fast_rounded_corner);
     EXPECT_EQ(gfx::RRectF(50, 50, 300, 200, 5),
               mask_isolation_0.rounded_corner_bounds);
+    EXPECT_FALSE(mask_isolation_0.HasRenderSurface());
     return;
   }
 
@@ -3009,6 +3117,7 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipDiscontiguous) {
     EXPECT_TRUE(mask_isolation_0.is_fast_rounded_corner);
     EXPECT_EQ(gfx::RRectF(50, 50, 300, 200, 5),
               mask_isolation_0.rounded_corner_bounds);
+    EXPECT_FALSE(mask_isolation_0.HasRenderSurface());
 
     EXPECT_EQ(ContentLayerAt(1), content1);
     int t1_id = content1->transform_tree_index();
@@ -3030,6 +3139,7 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipDiscontiguous) {
     EXPECT_TRUE(mask_isolation_1.is_fast_rounded_corner);
     EXPECT_EQ(gfx::RRectF(50, 50, 300, 200, 5),
               mask_isolation_1.rounded_corner_bounds);
+    EXPECT_FALSE(mask_isolation_1.HasRenderSurface());
     return;
   }
 
@@ -3064,6 +3174,7 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipDiscontiguous) {
       *GetPropertyTrees().effect_tree.Node(mask_isolation_0_id);
   ASSERT_EQ(e0_id, mask_isolation_0.parent_id);
   EXPECT_EQ(SkBlendMode::kSrcOver, mask_isolation_0.blend_mode);
+  EXPECT_TRUE(mask_isolation_0.HasRenderSurface());
 
   EXPECT_EQ(SynthesizedClipLayerAt(0), clip_mask0);
   EXPECT_EQ(gfx::Size(300, 200), clip_mask0->bounds());
@@ -3092,6 +3203,7 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipDiscontiguous) {
   EXPECT_NE(mask_isolation_0_id, mask_isolation_1_id);
   ASSERT_EQ(e0_id, mask_isolation_1.parent_id);
   EXPECT_EQ(SkBlendMode::kSrcOver, mask_isolation_1.blend_mode);
+  EXPECT_TRUE(mask_isolation_1.HasRenderSurface());
 
   EXPECT_EQ(SynthesizedClipLayerAt(1), clip_mask1);
   EXPECT_EQ(gfx::Size(300, 200), clip_mask1->bounds());
@@ -3153,6 +3265,7 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipAcrossChildEffect) {
         *GetPropertyTrees().effect_tree.Node(mask_isolation_0_id);
     ASSERT_EQ(e0_id, mask_isolation_0.parent_id);
     EXPECT_EQ(SkBlendMode::kSrcOver, mask_isolation_0.blend_mode);
+    EXPECT_FALSE(mask_isolation_0.HasRenderSurface());
 
     EXPECT_EQ(ContentLayerAt(1), content1);
     EXPECT_EQ(c1_id, content1->clip_tree_index());
@@ -3169,7 +3282,6 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipAcrossChildEffect) {
     EXPECT_TRUE(cc_e2.is_fast_rounded_corner);
     EXPECT_EQ(gfx::RRectF(50, 50, 300, 200, 5),
               mask_isolation_0.rounded_corner_bounds);
-
     return;
   }
 
@@ -3201,6 +3313,7 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipAcrossChildEffect) {
       *GetPropertyTrees().effect_tree.Node(mask_isolation_0_id);
   ASSERT_EQ(e0_id, mask_isolation_0.parent_id);
   EXPECT_EQ(SkBlendMode::kSrcOver, mask_isolation_0.blend_mode);
+  EXPECT_TRUE(mask_isolation_0.HasRenderSurface());
 
   EXPECT_EQ(ContentLayerAt(1), content1);
   EXPECT_EQ(c1_id, content1->clip_tree_index());
@@ -3281,6 +3394,7 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipRespectOutputClip) {
     EXPECT_TRUE(mask_isolation_0.is_fast_rounded_corner);
     EXPECT_EQ(gfx::RRectF(50, 50, 300, 200, 5),
               mask_isolation_0.rounded_corner_bounds);
+    EXPECT_FALSE(mask_isolation_0.HasRenderSurface());
 
     EXPECT_EQ(ContentLayerAt(1), content1);
     EXPECT_EQ(c1_id, content1->clip_tree_index());
@@ -3295,6 +3409,7 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipRespectOutputClip) {
     EXPECT_TRUE(mask_isolation_1.is_fast_rounded_corner);
     EXPECT_EQ(gfx::RRectF(50, 50, 300, 200, 5),
               mask_isolation_1.rounded_corner_bounds);
+    EXPECT_FALSE(mask_isolation_1.HasRenderSurface());
 
     EXPECT_EQ(ContentLayerAt(2), content2);
     EXPECT_EQ(c1_id, content2->clip_tree_index());
@@ -3308,6 +3423,7 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipRespectOutputClip) {
     EXPECT_TRUE(mask_isolation_2.is_fast_rounded_corner);
     EXPECT_EQ(gfx::RRectF(50, 50, 300, 200, 5),
               mask_isolation_2.rounded_corner_bounds);
+    EXPECT_FALSE(mask_isolation_2.HasRenderSurface());
     return;
   }
 

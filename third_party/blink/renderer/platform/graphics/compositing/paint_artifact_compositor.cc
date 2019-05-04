@@ -1132,7 +1132,12 @@ static cc::RenderSurfaceReason GetRenderSurfaceCandidateReason(
       blink_effects[effect.id] &&
       blink_effects[effect.id]->HasActiveOpacityAnimation())
     return cc::RenderSurfaceReason::kOpacityAnimation;
-  if (effect.is_fast_rounded_corner)
+  // Applying a rounded corner clip to more than one layer descendant
+  // with highest quality requires a render surface, due to the possibility
+  // of antialiasing issues on the rounded corner edges.
+  // is_fast_rounded_corner means to intentionally prefer faster compositing
+  // and less memory over highest quality.
+  if (!effect.rounded_corner_bounds.IsEmpty() && !effect.is_fast_rounded_corner)
     return cc::RenderSurfaceReason::kRoundedCorner;
   return cc::RenderSurfaceReason::kNone;
 }

@@ -140,7 +140,71 @@ class PropertyTreeManager {
   void SetupRootEffectNode();
   void SetupRootScrollNode();
 
+  // The type of operation the current cc effect node applies.
+  enum CcEffectType {
+    // The cc effect corresponds to a Blink effect node.
+    kEffect = 0,
+    // The cc effect is synthetic for a blink clip node that has to be
+    // rasterized because the clip is non-trivial.
+    kSyntheticForNonTrivialClip = 1 << 0,
+    // The cc effect is synthetic to create a render surface that is
+    // 2d-axis-aligned with a blink clip node that is non-2d-axis-aligned
+    // in the the original render surface. Cc requires a rectangular clip to be
+    // 2d-axis-aligned with the render surface to correctly apply the clip.
+    // TODO(crbug.com/504464): This will be changed when we move render surface
+    // decision logic into the cc compositor thread.
+    kSyntheticFor2dAxisAlignment = 1 << 1
+  };
+
+  struct EffectState {
+    // The cc effect node that has the corresponding drawing state to the
+    // effect and clip state from the last
+    // SwitchToEffectNodeWithSynthesizedClip.
+    int effect_id;
+
+    CcEffectType effect_type;
+
+    // The effect state of the cc effect node. It's never nullptr.
+    const EffectPaintPropertyNode* effect;
+
+    // The clip state of the cc effect node. This value may be shallower than
+    // the one passed into SwitchToEffectNodeWithSynthesizedClip because not
+    // every clip needs to be synthesized as cc effect. Is set to output clip of
+    // the effect if the type is kEffect, or set to the synthesized clip node.
+    // It's never nullptr.
+    const ClipPaintPropertyNode* clip;
+
+    // Whether the transform space of this state may be 2d axis misaligned to
+    // the containing render surface. As there may be new render surfaces
+    // created between this state and the current known ancestor render surface
+    // after this state is created, we must conservatively accumulate this flag
+    // from the known render surface instead of checking if the combined
+    // transform is 2d axis aligned, in case of:
+    //  Effect1 (Current known render surface)
+    //  Rotate(45deg)
+    //  Effect2 (Not known now, but may become render surface later)
+    //  Rotate(-45deg)
+    //  Clip (Would be mistakenly treated as 2d axis aligned if we used
+    //
+    // It's lazily computed if it can't be trivially known when we create this
+    // EffectState.
+    enum {
+      kAligned,
+      kMisaligned,
+      kUnknown,
+    } may_be_2d_axis_misaligned_to_render_surface;
+
+    // Whether this effect or an ancestor has a synthetic rounded clip between
+    // self and the next render surface. This is used to force a render surface
+    // for all ancestor synthetic rounded clips if a descendant is found.
+    bool contained_by_non_render_surface_synthetic_rounded_clip;
+
+    // The transform space of the state.
+    const TransformPaintPropertyNode& Transform() const;
+  };
+
   void BuildEffectNodesRecursively(const EffectPaintPropertyNode& next_effect);
+  void ForceRenderSurfaceIfSyntheticRoundedCornerClip(EffectState& state);
   SkBlendMode SynthesizeCcEffectsForClipsIfNeeded(
       const ClipPaintPropertyNode& target_clip,
       SkBlendMode delegated_blend);
@@ -172,23 +236,6 @@ class PropertyTreeManager {
     return current_.effect_type & CcEffectType::kSyntheticForNonTrivialClip;
   }
 
-  // The type of operation the current cc effect node applies.
-  enum CcEffectType {
-    // The cc effect corresponds to a Blink effect node.
-    kEffect = 0,
-    // The cc effect is synthetic for a blink clip node that has to be
-    // rasterized because the clip is non-trivial.
-    kSyntheticForNonTrivialClip = 1 << 0,
-    // The cc effect is synthetic to create a render surface that is
-    // 2d-axis-aligned with a blink clip node that is non-2d-axis-aligned
-    // in the the original render surface. Cc requires a rectangular clip to be
-    // 2d-axis-aligned with the render surface to correctly apply the clip.
-    // TODO(crbug.com/504464): This will be changed when we move render surface
-    // decision logic into the cc compositor thread.
-    kSyntheticFor2dAxisAlignment = 1 << 1
-  };
-
-  struct EffectState;
   bool EffectStateMayBe2dAxisMisalignedToRenderSurface(EffectState&,
                                                        size_t index);
   bool CurrentEffectMayBe2dAxisMisalignedToRenderSurface();
@@ -224,49 +271,6 @@ class PropertyTreeManager {
   LayerListBuilder* layer_list_builder_ = nullptr;
 
   int new_sequence_number_ = -1;
-
-  struct EffectState {
-    // The cc effect node that has the corresponding drawing state to the
-    // effect and clip state from the last
-    // SwitchToEffectNodeWithSynthesizedClip.
-    int effect_id;
-
-    CcEffectType effect_type;
-
-    // The effect state of the cc effect node. It's never nullptr.
-    const EffectPaintPropertyNode* effect;
-
-    // The clip state of the cc effect node. This value may be shallower than
-    // the one passed into SwitchToEffectNodeWithSynthesizedClip because not
-    // every clip needs to be synthesized as cc effect. Is set to output clip of
-    // the effect if the type is kEffect, or set to the synthesized clip node.
-    // It's never nullptr.
-    const ClipPaintPropertyNode* clip;
-
-    // Whether the transform space of this state may be 2d axis misaligned to
-    // the containing render surface. As there may be new render surfaces
-    // created between this state and the current known ancestor render surface
-    // after this state is created, we must conservatively accumulate this flag
-    // from the known render surface instead of checking if the combined
-    // transform is 2d axis aligned, in case of:
-    //  Effect1 (Current known render surface)
-    //  Rotate(45deg)
-    //  Effect2 (Not known now, but may become render surface later)
-    //  Rotate(-45deg)
-    //  Clip (Would be mistakenly treated as 2d axis aligned if we used
-    //        accumulated transform from the clip to the known render surface.)
-    //
-    // It's lazily computed if it can't be trivially known when we create this
-    // EffectState.
-    enum {
-      kAligned,
-      kMisaligned,
-      kUnknown,
-    } may_be_2d_axis_misaligned_to_render_surface;
-
-    // The transform space of the state.
-    const TransformPaintPropertyNode& Transform() const;
-  };
 
   // The current effect state. Virtually it's the top of the effect stack if
   // it and effect_stack_ are treated as a whole stack.
