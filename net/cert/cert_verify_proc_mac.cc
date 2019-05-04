@@ -1048,6 +1048,9 @@ int CertVerifyProcMac::VerifyInternal(
     verify_result->cert_status |= CERT_STATUS_IS_EV;
   }
 
+  LogNameNormalizationMetrics(".Mac", verify_result->verified_cert.get(),
+                              verify_result->is_issued_by_known_root);
+
   return OK;
 }
 

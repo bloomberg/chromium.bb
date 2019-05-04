@@ -1151,6 +1151,10 @@ int CertVerifyProcWin::VerifyInternal(
       CheckEV(chain_context, rev_checking_enabled, ev_policy_oid)) {
     verify_result->cert_status |= CERT_STATUS_IS_EV;
   }
+
+  LogNameNormalizationMetrics(".Win", verify_result->verified_cert.get(),
+                              verify_result->is_issued_by_known_root);
+
   return OK;
 }
 

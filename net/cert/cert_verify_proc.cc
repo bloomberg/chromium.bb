@@ -29,6 +29,7 @@
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/crl_set.h"
 #include "net/cert/internal/ocsp.h"
+#include "net/cert/internal/parse_certificate.h"
 #include "net/cert/internal/signature_algorithm.h"
 #include "net/cert/known_roots.h"
 #include "net/cert/ocsp_revocation_status.h"
@@ -36,6 +37,7 @@
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
 #include "net/der/encode_values.h"
+#include "third_party/boringssl/src/include/openssl/pool.h"
 #include "url/url_canon.h"
 
 #if defined(USE_NSS_CERTS)
@@ -607,6 +609,72 @@ int CertVerifyProc::Verify(X509Certificate* cert,
   }
 
   return rv;
+}
+
+// static
+void CertVerifyProc::LogNameNormalizationResult(
+    const std::string& histogram_suffix,
+    NameNormalizationResult result) {
+  base::UmaHistogramEnumeration(
+      std::string("Net.CertVerifier.NameNormalizationPrivateRoots") +
+          histogram_suffix,
+      result);
+}
+
+// static
+void CertVerifyProc::LogNameNormalizationMetrics(
+    const std::string& histogram_suffix,
+    X509Certificate* verified_cert,
+    bool is_issued_by_known_root) {
+  if (is_issued_by_known_root)
+    return;
+
+  if (verified_cert->intermediate_buffers().empty()) {
+    LogNameNormalizationResult(histogram_suffix,
+                               NameNormalizationResult::kChainLengthOne);
+    return;
+  }
+
+  std::vector<CRYPTO_BUFFER*> der_certs;
+  der_certs.push_back(verified_cert->cert_buffer());
+  for (const auto& buf : verified_cert->intermediate_buffers())
+    der_certs.push_back(buf.get());
+
+  ParseCertificateOptions options;
+  options.allow_invalid_serial_numbers = true;
+
+  std::vector<der::Input> subjects;
+  std::vector<der::Input> issuers;
+
+  for (auto* buf : der_certs) {
+    der::Input tbs_certificate_tlv;
+    der::Input signature_algorithm_tlv;
+    der::BitString signature_value;
+    ParsedTbsCertificate tbs;
+    if (!ParseCertificate(
+            der::Input(CRYPTO_BUFFER_data(buf), CRYPTO_BUFFER_len(buf)),
+            &tbs_certificate_tlv, &signature_algorithm_tlv, &signature_value,
+            nullptr /* errors*/) ||
+        !ParseTbsCertificate(tbs_certificate_tlv, options, &tbs,
+                             nullptr /*errors*/)) {
+      LogNameNormalizationResult(histogram_suffix,
+                                 NameNormalizationResult::kError);
+      return;
+    }
+    subjects.push_back(tbs.subject_tlv);
+    issuers.push_back(tbs.issuer_tlv);
+  }
+
+  for (size_t i = 0; i < subjects.size() - 1; ++i) {
+    if (issuers[i] != subjects[i + 1]) {
+      LogNameNormalizationResult(histogram_suffix,
+                                 NameNormalizationResult::kNormalized);
+      return;
+    }
+  }
+
+  LogNameNormalizationResult(histogram_suffix,
+                             NameNormalizationResult::kByteEqual);
 }
 
 // CheckNameConstraints verifies that every name in |dns_names| is in one of

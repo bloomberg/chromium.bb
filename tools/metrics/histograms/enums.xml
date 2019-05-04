@@ -38771,6 +38771,13 @@ Called by update_use_counter_css.py.-->
   <int value="3" label="NO_ENTRY"/>
 </enum>
 
+<enum name="NetCertificateNameNormalization">
+  <int value="0" label="Error parsing certificate chain"/>
+  <int value="1" label="Byte equal Names"/>
+  <int value="2" label="Normalized Names"/>
+  <int value="3" label="Chain contained only one certificate"/>
+</enum>
+
 <enum name="NetConnectivityProtocolStatus">
   <int value="0" label="SUCCESS"/>
   <int value="1" label="IP_STRING_PARSE_FAILED"/>

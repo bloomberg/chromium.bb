@@ -331,6 +331,9 @@ int CertVerifyProcIOS::VerifyInternal(
   if (IsCertStatusError(verify_result->cert_status))
     return MapCertStatusToNetError(verify_result->cert_status);
 
+  LogNameNormalizationMetrics(".IOS", verify_result->verified_cert.get(),
+                              verify_result->is_issued_by_known_root);
+
   return OK;
 }
 

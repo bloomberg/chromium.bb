@@ -10938,7 +10938,7 @@ class HTTPSOCSPTest : public HTTPSRequestTest {
 
     scoped_refptr<X509Certificate> root_cert =
         ImportCertFromFile(GetTestCertsDirectory(), "ocsp-test-root.pem");
-    CHECK_NE(static_cast<X509Certificate*>(nullptr), root_cert.get());
+    ASSERT_TRUE(root_cert);
     test_root_.reset(new ScopedTestRoot(root_cert.get()));
 
 #if defined(USE_NSS_CERTS)

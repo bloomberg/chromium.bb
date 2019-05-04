@@ -661,9 +661,14 @@ int CertVerifyProcBuiltin::VerifyInternal(
   }
 
   // Write the results to |*verify_result|.
-  return AssignVerifyResult(input_cert, hostname, result, verification_type,
-                            checked_revocation_for_some_path,
-                            ssl_trust_store.get(), verify_result);
+  int error = AssignVerifyResult(
+      input_cert, hostname, result, verification_type,
+      checked_revocation_for_some_path, ssl_trust_store.get(), verify_result);
+  if (error == OK) {
+    LogNameNormalizationMetrics(".Builtin", verify_result->verified_cert.get(),
+                                verify_result->is_issued_by_known_root);
+  }
+  return error;
 }
 
 }  // namespace
