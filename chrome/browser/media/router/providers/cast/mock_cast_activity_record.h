@@ -5,10 +5,7 @@
 #ifndef CHROME_BROWSER_MEDIA_ROUTER_PROVIDERS_CAST_MOCK_CAST_ACTIVITY_RECORD_H_
 #define CHROME_BROWSER_MEDIA_ROUTER_PROVIDERS_CAST_MOCK_CAST_ACTIVITY_RECORD_H_
 
-#include <string>
-
 #include "chrome/browser/media/router/providers/cast/cast_activity_record.h"
-#include "chrome/browser/media/router/providers/cast/cast_internal_message_util.h"
 #include "chrome/browser/media/router/providers/cast/cast_session_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -36,10 +33,9 @@ class MockCastActivityRecord : public CastActivityRecordBase {
   MOCK_METHOD2(SendSetVolumeRequestToReceiver,
                void(const CastInternalMessage& cast_message,
                     cast_channel::ResultCallback callback));
-  MOCK_METHOD3(
+  MOCK_METHOD2(
       SendStopSessionMessageToReceiver,
       void(const base::Optional<std::string>& client_id,
-           const std::string& hash_token,
            mojom::MediaRouteProvider::TerminateRouteCallback callback));
   MOCK_METHOD1(HandleLeaveSession, void(const std::string& client_id));
   MOCK_METHOD3(

@@ -32,13 +32,14 @@ mojom::RoutePresentationConnectionPtr CastActivityRecord::AddClient(
     int tab_id) {
   const std::string& client_id = source.client_id();
   DCHECK(!base::ContainsKey(connected_clients_, client_id));
-  std::unique_ptr<CastSessionClientBase> client =
-      client_factory_for_test_
-          ? client_factory_for_test_->MakeClientForTest(client_id, origin,
-                                                        tab_id)
-          : std::make_unique<CastSessionClient>(client_id, origin, tab_id,
-                                                source.auto_join_policy(),
-                                                data_decoder_, this);
+  std::unique_ptr<CastSessionClientBase> client;
+  if (client_factory_) {
+    client = client_factory_->MakeClient(client_id, origin, tab_id);
+  } else {
+    client = std::make_unique<CastSessionClient>(client_id, origin, tab_id,
+                                                 source.auto_join_policy(),
+                                                 data_decoder_, this);
+  }
   auto presentation_connection = client->Init();
   connected_clients_.emplace(client_id, std::move(client));
 
@@ -122,21 +123,13 @@ void CastActivityRecord::SendSetVolumeRequestToReceiver(
       cast_message.client_id(), std::move(callback));
 }
 
-// TODO(jrw): Revise the name of this method.
 void CastActivityRecord::SendStopSessionMessageToReceiver(
     const base::Optional<std::string>& client_id,
-    const std::string& hash_token,
     mojom::MediaRouteProvider::TerminateRouteCallback callback) {
   const std::string& sink_id = route_.media_sink_id();
   const MediaSinkInternal* sink = media_sink_service_->GetSinkById(sink_id);
   DCHECK(sink);
   DCHECK(session_id_);
-
-  // TODO(jrw): Add test for this loop.
-  for (const auto& client : connected_clients()) {
-    client.second->SendMessageToClient(
-        CreateReceiverActionStopMessage(client.first, *sink, hash_token));
-  }
 
   message_handler_->StopSession(
       sink->cast_data().cast_channel_id, *session_id_, client_id,
@@ -173,13 +166,6 @@ void CastActivityRecord::SendMessageToClient(
     return;
   }
   it->second->SendMessageToClient(std::move(message));
-}
-
-void CastActivityRecord::SendMediaStatusToClients(
-    const base::Value& media_status,
-    base::Optional<int> request_id) {
-  for (auto& client : connected_clients())
-    client.second->SendMediaStatusToClient(media_status, request_id);
 }
 
 void CastActivityRecord::ClosePresentationConnections(
@@ -230,7 +216,6 @@ int CastActivityRecord::GetCastChannelId() {
   return sink->cast_data().cast_channel_id;
 }
 
-CastSessionClientFactoryForTest* CastActivityRecord::client_factory_for_test_ =
-    nullptr;
+CastSessionClientFactory* CastActivityRecord::client_factory_ = nullptr;
 
 }  // namespace media_router

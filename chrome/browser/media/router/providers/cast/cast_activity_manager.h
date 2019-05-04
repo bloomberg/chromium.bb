@@ -19,6 +19,7 @@
 #include "chrome/browser/media/router/providers/cast/cast_session_tracker.h"
 #include "chrome/common/media_router/mojo/media_router.mojom.h"
 #include "chrome/common/media_router/providers/cast/cast_media_source.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "url/origin.h"
 
 namespace cast_channel {

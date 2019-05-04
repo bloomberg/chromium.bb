@@ -20,14 +20,14 @@ namespace media_router {
 
 class CastActivityManagerBase;
 class CastActivityRecord;
+class CastSessionClientFactory;
 class CastInternalMessage;
 class CastSession;
 class CastSessionClientBase;
-class CastSessionClientFactoryForTest;
+class CastSessionClientFactory;
 class CastSessionTracker;
 class DataDecoder;
 class MediaSinkServiceBase;
-class MediaRoute;
 
 // TODO(jrw): Rename
 //   CastActivityRecordBase -> CastActivityRecord
@@ -65,7 +65,6 @@ class CastActivityRecordBase {
 
   virtual void SendStopSessionMessageToReceiver(
       const base::Optional<std::string>& client_id,
-      const std::string& hash_token,
       mojom::MediaRouteProvider::TerminateRouteCallback callback) = 0;
 
   // Called when the client given by |client_id| requests to leave the session.
@@ -99,8 +98,6 @@ class CastActivityRecordBase {
   virtual void SendMessageToClient(
       const std::string& client_id,
       blink::mojom::PresentationConnectionMessagePtr message) = 0;
-  virtual void SendMediaStatusToClients(const base::Value& media_status,
-                                        base::Optional<int> request_id) = 0;
 
   // Closes / Terminates the PresentationConnections of all clients connected
   // to this activity.
@@ -119,7 +116,7 @@ class CastActivityRecordBase {
 
 class CastActivityRecordFactory {
  public:
-  virtual std::unique_ptr<CastActivityRecordBase> MakeCastActivityRecord(
+  virtual CastActivityRecordBase* MakeCastActivityRecord(
       const MediaRoute& route,
       const std::string& app_id) = 0;
 };
@@ -144,7 +141,6 @@ class CastActivityRecord : public CastActivityRecordBase {
       cast_channel::ResultCallback callback) override;
   void SendStopSessionMessageToReceiver(
       const base::Optional<std::string>& client_id,
-      const std::string& hash_token,
       mojom::MediaRouteProvider::TerminateRouteCallback callback) override;
   void HandleLeaveSession(const std::string& client_id) override;
   mojom::RoutePresentationConnectionPtr AddClient(const CastMediaSource& source,
@@ -157,19 +153,12 @@ class CastActivityRecord : public CastActivityRecordBase {
   void SendMessageToClient(
       const std::string& client_id,
       blink::mojom::PresentationConnectionMessagePtr message) override;
-
-  void SendMediaStatusToClients(const base::Value& media_status,
-                                base::Optional<int> request_id) override;
-
-  // Closes / Terminates the PresentationConnections of all clients connected
-  // to this activity.
   void ClosePresentationConnections(
       blink::mojom::PresentationConnectionCloseReason close_reason) override;
   void TerminatePresentationConnections() override;
 
-  static void SetClientFactoryForTest(
-      CastSessionClientFactoryForTest* factory) {
-    client_factory_for_test_ = factory;
+  static void SetClientFactoryForTest(CastSessionClientFactory* factory) {
+    client_factory_ = factory;
   }
 
  private:
@@ -194,7 +183,7 @@ class CastActivityRecord : public CastActivityRecordBase {
     return it == connected_clients_.end() ? nullptr : it->second.get();
   }
 
-  static CastSessionClientFactoryForTest* client_factory_for_test_;
+  static CastSessionClientFactory* client_factory_;
 
   MediaSinkServiceBase* const media_sink_service_;
   // TODO(https://crbug.com/809249): Consider wrapping CastMessageHandler with

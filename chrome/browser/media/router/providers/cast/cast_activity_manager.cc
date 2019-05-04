@@ -14,7 +14,6 @@
 #include "chrome/browser/media/router/providers/cast/cast_activity_record.h"
 #include "chrome/browser/media/router/providers/cast/cast_session_client.h"
 #include "chrome/common/media_router/media_source_helper.h"
-#include "chrome/common/media_router/mojo/media_router.mojom.h"
 #include "url/origin.h"
 
 using blink::mojom::PresentationConnectionCloseReason;
@@ -360,9 +359,14 @@ void CastActivityManager::TerminateSession(
   const MediaSinkInternal* sink = media_sink_service_->GetSinkByRoute(route);
   CHECK(sink);
 
+  for (auto& client : activity->connected_clients()) {
+    client.second->SendMessageToClient(
+        CreateReceiverActionStopMessage(client.first, *sink, hash_token_));
+  }
+
   activity->SendStopSessionMessageToReceiver(
       base::nullopt,  // TODO(jrw): Get the real client ID.
-      hash_token_, std::move(callback));
+      std::move(callback));
 }
 
 CastActivityManager::ActivityMap::iterator
@@ -390,7 +394,8 @@ CastActivityRecordBase* CastActivityManager::AddActivityRecord(
     const std::string& app_id) {
   std::unique_ptr<CastActivityRecordBase> activity;
   if (activity_record_factory_) {
-    activity = activity_record_factory_->MakeCastActivityRecord(route, app_id);
+    activity.reset(
+        activity_record_factory_->MakeCastActivityRecord(route, app_id));
   } else {
     activity.reset(new CastActivityRecord(route, app_id, media_sink_service_,
                                           message_handler_, session_tracker_,
@@ -494,7 +499,8 @@ void CastActivityManager::OnMediaStatusUpdated(const MediaSinkInternal& sink,
                                                base::Optional<int> request_id) {
   auto it = FindActivityBySink(sink);
   if (it != activities_.end()) {
-    it->second->SendMediaStatusToClients(media_status, request_id);
+    for (auto& client : it->second->connected_clients())
+      client.second->SendMediaStatusToClient(media_status, request_id);
   }
 }
 
