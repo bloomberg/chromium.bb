@@ -234,16 +234,6 @@ if (is_cros_chrome_sdk) {
     # To disable a specific test, add it the following list.
     tast_disabled_tests = []
   }
-  tast_test("chrome_kevin_tast_tests") {
-    # Tests that fail on Kevin devices.
-    tast_disabled_tests = [
-      # Disabled due to misleading USE flags on full boards. crbug.com/916367
-      "arc.Boot",
-      "arc.BuildProperties",
-      "security.NetworkListenersARC",
-      "video.WebRTCPeerConnCameraVP8",  # crbug.com/923061
-    ]
-  }
 
   group("cros_chrome_deploy") {
     # The following run-time dependencies are needed to deploy chrome to a

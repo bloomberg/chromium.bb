@@ -567,7 +567,7 @@
           ],
           "idempotent": false
         },
-        "test": "chrome_kevin_tast_tests",
+        "test": "chrome_all_tast_tests",
         "trigger_script": {
           "script": "//testing/trigger_scripts/chromeos_device_trigger.py"
         }

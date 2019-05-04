@@ -568,13 +568,6 @@
     "label": "//chrome/android:chrome_junit_tests",
     "type": "junit_test",
   },
-  "chrome_kevin_tast_tests": {
-    "args": [
-      "--vm-logs-dir=${ISOLATED_OUTDIR}",
-    ],
-    "label": "//chromeos:chrome_kevin_tast_tests",
-    "type": "raw",
-  },
   "chrome_login_tast_tests": {
     "args": [
       "--vm-logs-dir=${ISOLATED_OUTDIR}",

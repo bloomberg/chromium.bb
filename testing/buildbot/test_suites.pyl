@@ -316,7 +316,7 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.base_unittests.filter',
         ],
       },
-      'chrome_kevin_tast_tests': {
+      'chrome_all_tast_tests': {
         'swarming': {
           'idempotent': False,  # https://crbug.com/923426#c27
         },
