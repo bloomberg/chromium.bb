@@ -10,7 +10,7 @@
   </outputs>
   <release seq="1">
     <includes>
-      <part file="chromeos/kiosk_next_home/internal/kiosk_next_resources_internal.grdp" />
+      <include name="IDR_KIOSK_NEXT_INTENT_CONFIG_JSON" file="chromeos/kiosk_next_home/internal/intent_config.json" type="BINDATA" />
     </includes>
   </release>
 </grit>
