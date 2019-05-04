@@ -116,13 +116,6 @@ bool IsResumeBackgroundVideosEnabled() {
   return base::FeatureList::IsEnabled(kResumeBackgroundVideo);
 }
 
-bool IsBackgroundVideoTrackOptimizationEnabled(
-    WebMediaPlayer::LoadType load_type) {
-  // Background video track optimization is always enabled for MSE videos.
-  return load_type == WebMediaPlayer::LoadType::kLoadTypeMediaSource ||
-         base::FeatureList::IsEnabled(kBackgroundSrcVideoTrackOptimization);
-}
-
 bool IsBackgroundVideoPauseOptimizationEnabled() {
   return base::FeatureList::IsEnabled(kBackgroundVideoPauseOptimization);
 }
@@ -3222,8 +3215,7 @@ bool WebMediaPlayerImpl::ShouldDisableVideoWhenHidden() const {
   // video. MSE video track switching on hide has gone through a field test.
   // TODO(tmathmeyer): Passing load_type_ won't be needed after src= field
   // testing is finished. see: http://crbug.com/709302
-  if (!is_background_video_track_optimization_supported_ ||
-      !IsBackgroundVideoTrackOptimizationEnabled(load_type_))
+  if (!is_background_video_track_optimization_supported_)
     return false;
 
   // Disable video track only for players with audio that match the criteria for

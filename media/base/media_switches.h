@@ -97,7 +97,6 @@ MEDIA_EXPORT extern const base::Feature kAudioFocusDuckFlash;
 MEDIA_EXPORT extern const base::Feature kAutoplayIgnoreWebAudio;
 MEDIA_EXPORT extern const base::Feature kAutoplayDisableSettings;
 MEDIA_EXPORT extern const base::Feature kAutoplayWhitelistSettings;
-MEDIA_EXPORT extern const base::Feature kBackgroundSrcVideoTrackOptimization;
 MEDIA_EXPORT extern const base::Feature kBackgroundVideoPauseOptimization;
 MEDIA_EXPORT extern const base::Feature kD3D11VideoDecoder;
 MEDIA_EXPORT extern const base::Feature kD3D11VideoDecoderIgnoreWorkarounds;

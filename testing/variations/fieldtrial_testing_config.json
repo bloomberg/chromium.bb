@@ -1136,31 +1136,6 @@
             ]
         }
     ],
-    "BackgroundVideoOptimizations": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows",
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "BackgroundSrcVideoTrackOptimization"
-                    ]
-                },
-                {
-                    "name": "Control",
-                    "disable_features": [
-                        "BackgroundSrcVideoTrackOptimization"
-                    ]
-                }
-            ]
-        }
-    ],
     "BlinkGenPropertyTrees": [
         {
             "platforms": [

@@ -1746,18 +1746,17 @@ TEST_F(WebMediaPlayerImplTest, PictureInPictureStateChange) {
 class WebMediaPlayerImplBackgroundBehaviorTest
     : public WebMediaPlayerImplTest,
       public ::testing::WithParamInterface<
-          std::tuple<bool, bool, int, int, bool, bool, bool, bool, bool>> {
+          std::tuple<bool, int, int, bool, bool, bool, bool, bool>> {
  public:
   // Indices of the tuple parameters.
   static const int kIsMediaSuspendEnabled = 0;
-  static const int kIsBackgroundOptimizationEnabled = 1;
-  static const int kDurationSec = 2;
-  static const int kAverageKeyframeDistanceSec = 3;
-  static const int kIsResumeBackgroundVideoEnabled = 4;
-  static const int kIsMediaSource = 5;
-  static const int kIsBackgroundPauseEnabled = 6;
-  static const int kIsPictureInPictureEnabled = 7;
-  static const int kIsBackgroundVideoPlaybackEnabled = 8;
+  static const int kDurationSec = 1;
+  static const int kAverageKeyframeDistanceSec = 2;
+  static const int kIsResumeBackgroundVideoEnabled = 3;
+  static const int kIsMediaSource = 4;
+  static const int kIsBackgroundPauseEnabled = 5;
+  static const int kIsPictureInPictureEnabled = 6;
+  static const int kIsBackgroundVideoPlaybackEnabled = 7;
 
   void SetUp() override {
     WebMediaPlayerImplTest::SetUp();
@@ -1766,11 +1765,6 @@ class WebMediaPlayerImplBackgroundBehaviorTest
 
     std::string enabled_features;
     std::string disabled_features;
-    if (IsBackgroundOptimizationOn()) {
-      enabled_features += kBackgroundSrcVideoTrackOptimization.name;
-    } else {
-      disabled_features += kBackgroundSrcVideoTrackOptimization.name;
-    }
 
     if (IsBackgroundPauseOn()) {
       if (!enabled_features.empty())
@@ -1821,10 +1815,6 @@ class WebMediaPlayerImplBackgroundBehaviorTest
 
   bool IsMediaSuspendOn() {
     return std::get<kIsMediaSuspendEnabled>(GetParam());
-  }
-
-  bool IsBackgroundOptimizationOn() {
-    return std::get<kIsBackgroundOptimizationEnabled>(GetParam());
   }
 
   bool IsResumeBackgroundVideoEnabled() {
@@ -1915,8 +1905,7 @@ TEST_P(WebMediaPlayerImplBackgroundBehaviorTest, AudioVideo) {
        (GetAverageKeyframeDistanceSec() < GetMaxKeyframeDistanceSec()));
 
   EXPECT_EQ(matches_requirements, IsBackgroundOptimizationCandidate());
-  EXPECT_EQ(IsBackgroundOptimizationOn() && matches_requirements,
-            ShouldDisableVideoWhenHidden());
+  EXPECT_EQ(matches_requirements, ShouldDisableVideoWhenHidden());
 
   // Only pause audible videos if both media suspend and resume background
   // videos is on and background video playback is disabled. Background video
@@ -1926,8 +1915,8 @@ TEST_P(WebMediaPlayerImplBackgroundBehaviorTest, AudioVideo) {
                 (IsMediaSuspendOn() && IsResumeBackgroundVideoEnabled()),
             ShouldPausePlaybackWhenHidden());
 
-  if (!IsBackgroundOptimizationOn() || !matches_requirements ||
-      !ShouldDisableVideoWhenHidden() || IsMediaSuspendOn()) {
+  if (!matches_requirements || !ShouldDisableVideoWhenHidden() ||
+      IsMediaSuspendOn()) {
     return;
   }
 
@@ -1951,7 +1940,6 @@ INSTANTIATE_TEST_SUITE_P(
     BackgroundBehaviorTestInstances,
     WebMediaPlayerImplBackgroundBehaviorTest,
     ::testing::Combine(
-        ::testing::Bool(),
         ::testing::Bool(),
         ::testing::Values(
             WebMediaPlayerImpl::kMaxKeyframeDistanceToDisableBackgroundVideoMs /
