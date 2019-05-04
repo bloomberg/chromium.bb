@@ -312,8 +312,7 @@ public class MediaDrmBridge {
             Log.d(TAG, "Not provisioned during openSession()");
 
             if (!sMediaCryptoDeferrer.isProvisioning()) {
-                startProvisioning();
-                return true;
+                return startProvisioning();
             }
 
             // Cannot provision. Defer MediaCrypto creation and try again later.
@@ -607,7 +606,10 @@ public class MediaDrmBridge {
             nativeOnProvisioningComplete(mNativeMediaDrmBridge, true);
 
         } catch (android.media.NotProvisionedException e) {
-            startProvisioning();
+            if (!startProvisioning()) {
+                // Indicate that provisioning failed.
+                nativeOnProvisioningComplete(mNativeMediaDrmBridge, false);
+            }
         }
     }
 
@@ -1133,22 +1135,39 @@ public class MediaDrmBridge {
         return mMediaDrm.getPropertyString(SECURITY_LEVEL);
     }
 
-    private void startProvisioning() {
+    /**
+     * Start provisioning. Returns true if a provisioning request can be
+     * generated and has been forwarded to C++ code for handling, false
+     * otherwise.
+     */
+    private boolean startProvisioning() {
         Log.d(TAG, "startProvisioning");
         assert !mProvisioningPending;
         mProvisioningPending = true;
         assert mMediaDrm != null;
 
         if (!isNativeMediaDrmBridgeValid()) {
-            return;
+            return false;
         }
 
         if (mRequiresMediaCrypto) {
             sMediaCryptoDeferrer.onProvisionStarted();
         }
 
-        MediaDrm.ProvisionRequest request = mMediaDrm.getProvisionRequest();
+        // getProvisionRequest() may fail with android.media.MediaDrm.MediaDrmStateException or
+        // android.media.MediaDrmResetException, both of which extend IllegalStateException. As
+        // these specific exceptions are only available in API 21 and 23 respectively, using the
+        // base exception so that this will work for all API versions.
+        MediaDrm.ProvisionRequest request;
+        try {
+            request = mMediaDrm.getProvisionRequest();
+        } catch (java.lang.IllegalStateException e) {
+            Log.e(TAG, "Failed to get provisioning request", e);
+            return false;
+        }
+
         nativeOnProvisionRequest(mNativeMediaDrmBridge, request.getDefaultUrl(), request.getData());
+        return true;
     }
 
     /**
