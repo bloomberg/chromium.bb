@@ -504,6 +504,9 @@ if (is_win) {
         "//third_party/blink/public:blink",
         "//gin",
         "//v8",
+
+        # Ditto for PDFium.
+        "//third_party/pdfium",
       ]
     } else {
       deps += [
@@ -1511,6 +1514,9 @@ group("browser_dependencies") {
         # V8/Gin should not be used in the browser DLL on Windows.
         "//gin",
         "//v8",
+
+        # Ditto for PDFium.
+        "//third_party/pdfium",
       ]
     }
   }
