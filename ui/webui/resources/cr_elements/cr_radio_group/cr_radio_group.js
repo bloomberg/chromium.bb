@@ -164,7 +164,12 @@
         // If nothing selected, start from the first radio then add |delta|.
         const lastSelection = enabledRadios.findIndex(radio => radio.checked);
         selectedIndex = Math.max(0, lastSelection) + delta;
-        selectedIndex = Math.min(max, Math.max(0, selectedIndex));
+        // Wrap the selection, if needed.
+        if (selectedIndex > max) {
+          selectedIndex = 0;
+        } else if (selectedIndex < 0) {
+          selectedIndex = max;
+        }
       } else {
         return;
       }

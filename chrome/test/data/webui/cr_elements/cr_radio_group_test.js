@@ -96,11 +96,15 @@ suite('cr-radio-group', () => {
     // Check for decrement.
     checkPressed(['Home', 'PageUp', 'ArrowUp', 'ArrowLeft'], 2, 1);
     // No change when reached first selected.
-    checkPressed(['Home', 'PageUp', 'ArrowUp', 'ArrowLeft'], 1, 1);
+    checkPressed(['Home'], 1, 1);
+    // Wraps when decrementing when first selected.
+    checkPressed(['PageUp', 'ArrowUp', 'ArrowLeft'], 1, 3);
     // Check for increment.
     checkPressed(['End', 'ArrowRight', 'PageDown', 'ArrowDown'], 2, 3);
     // No change when reached last selected.
-    checkPressed(['End', 'ArrowRight', 'PageDown', 'ArrowDown'], 3, 3);
+    checkPressed(['End'], 3, 3);
+    // Wraps when incrementing when last selected.
+    checkPressed(['ArrowRight', 'PageDown', 'ArrowDown'], 3, 1);
   });
 
   test('mouse event', () => {
