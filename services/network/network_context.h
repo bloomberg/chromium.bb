@@ -392,6 +392,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // consulting NetworkContextClient.OnCanSendReportingReports()
   bool SkipReportingPermissionCheck() const;
 
+  // Reports and gather CORS preflight cache size metric.
+  size_t ReportAndGatherCorsPreflightCacheSizeMetric();
+
  private:
   class ContextNetworkDelegate;
 

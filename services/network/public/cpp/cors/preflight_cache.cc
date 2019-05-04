@@ -6,7 +6,6 @@
 
 #include <iterator>
 
-#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/time/time.h"
@@ -36,11 +35,7 @@ void ReportCacheMetric(CacheMetric metric) {
 
 }  // namespace
 
-PreflightCache::PreflightCache() {
-  timer_.Start(FROM_HERE, base::TimeDelta::FromHours(1), this,
-               &PreflightCache::ReportMetrics);
-}
-
+PreflightCache::PreflightCache() = default;
 PreflightCache::~PreflightCache() = default;
 
 void PreflightCache::AppendEntry(
@@ -100,6 +95,12 @@ bool PreflightCache::CheckIfRequestCanSkipPreflight(
   return false;
 }
 
+size_t PreflightCache::ReportAndGatherSizeMetric() {
+  size_t entries = CountEntries();
+  UMA_HISTOGRAM_COUNTS_10000("Net.Cors.PreflightCacheEntries", entries);
+  return entries;
+}
+
 size_t PreflightCache::CountOriginsForTesting() const {
   return cache_.size();
 }
@@ -132,11 +133,6 @@ void PreflightCache::MayPurge(size_t max_entries) {
                  base::RandInt(0, target_origin_cache->second.size() - 1));
     target_origin_cache->second.erase(target_cache_entry);
   }
-}
-
-void PreflightCache::ReportMetrics() {
-  base::UmaHistogramCounts10000("Net.Cors.PreflightCacheEntries",
-                                CountEntries());
 }
 
 }  // namespace cors
