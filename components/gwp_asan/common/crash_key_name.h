@@ -8,9 +8,9 @@
 namespace gwp_asan {
 namespace internal {
 
-// The name of the crash key used to convey the address of the
-// AllocatorBaseState to the crash handler.
-const char kGpaCrashKey[] = "allocator-base-state-address";
+// The name of the crash key used to convey the address of the AllocatorState
+// for the malloc hooks to the crash handler.
+const char kMallocCrashKey[] = "gwp-asan-malloc";
 
 }  // namespace internal
 }  // namespace gwp_asan

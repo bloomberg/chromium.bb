@@ -87,7 +87,7 @@ MULTIPROCESS_TEST_MAIN(CrashingProcess) {
 
   std::string gpa_addr = gpa->GetCrashKey();
   static crashpad::Annotation gpa_annotation(
-      crashpad::Annotation::Type::kString, kGpaCrashKey,
+      crashpad::Annotation::Type::kString, kMallocCrashKey,
       const_cast<char*>(gpa_addr.c_str()));
   gpa_annotation.SetSize(gpa_addr.size());
 

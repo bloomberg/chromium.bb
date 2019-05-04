@@ -229,7 +229,7 @@ TEST_F(SamplingMallocShimsTest, Calloc) {
 MULTIPROCESS_TEST_MAIN_WITH_SETUP(
     CrashKey,
     SamplingMallocShimsTest::multiprocessTestSetup) {
-  if (crash_reporter::GetCrashKeyValue(kGpaCrashKey) !=
+  if (crash_reporter::GetCrashKeyValue(kMallocCrashKey) !=
       GetMallocGpaForTesting().GetCrashKey()) {
     return kFailure;
   }

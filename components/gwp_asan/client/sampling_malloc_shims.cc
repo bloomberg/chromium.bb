@@ -252,7 +252,7 @@ void InstallMallocHooks(size_t max_allocated_pages,
                         size_t num_metadata,
                         size_t total_pages,
                         size_t sampling_frequency) {
-  static crash_reporter::CrashKeyString<24> malloc_crash_key(kGpaCrashKey);
+  static crash_reporter::CrashKeyString<24> malloc_crash_key(kMallocCrashKey);
   gpa = new GuardedPageAllocator();
   gpa->Init(max_allocated_pages, num_metadata, total_pages);
   malloc_crash_key.Set(gpa->GetCrashKey());

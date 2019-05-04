@@ -73,7 +73,7 @@ crashpad::VMAddress CrashAnalyzer::GetAllocatorAddress(
     const crashpad::ProcessSnapshot& process_snapshot) {
   for (auto* module : process_snapshot.Modules()) {
     for (auto annotation : module->AnnotationObjects()) {
-      if (annotation.name != kGpaCrashKey)
+      if (annotation.name != kMallocCrashKey)
         continue;
 
       if (annotation.type !=
