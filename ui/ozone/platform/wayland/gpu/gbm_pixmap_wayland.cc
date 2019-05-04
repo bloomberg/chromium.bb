@@ -100,7 +100,7 @@ int GbmPixmapWayland::GetDmaBufOffset(size_t plane) const {
   return gbm_bo_->GetPlaneOffset(plane);
 }
 
-uint64_t GbmPixmapWayland::GetDmaBufModifier(size_t plane) const {
+uint64_t GbmPixmapWayland::GetBufferFormatModifier() const {
   return gbm_bo_->GetFormatModifier();
 }
 
@@ -149,9 +149,9 @@ gfx::NativePixmapHandle GbmPixmapWayland::ExportHandle() {
   }
 
   for (size_t i = 0; i < num_planes; ++i) {
-    handle.planes.emplace_back(GetDmaBufPitch(i), GetDmaBufOffset(i),
-                               gbm_bo_->GetPlaneSize(i),
-                               std::move(scoped_fds[i]), GetDmaBufModifier(i));
+    handle.planes.emplace_back(
+        GetDmaBufPitch(i), GetDmaBufOffset(i), gbm_bo_->GetPlaneSize(i),
+        std::move(scoped_fds[i]), GetBufferFormatModifier());
   }
   return handle;
 }

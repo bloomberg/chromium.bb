@@ -28,7 +28,7 @@ class NativePixmapDmaBufTest
       const int stride = (i + 1) * image_size.width();
       const int offset = i * image_size.width() * image_size.height();
       const uint64_t size = stride * image_size.height();
-      const uint64_t modifiers = 1 << i;
+      const uint64_t modifiers = 1;
       base::ScopedFD fd(open("/dev/zero", O_RDONLY));
       EXPECT_TRUE(fd.is_valid());
 
@@ -68,7 +68,7 @@ TEST_P(NativePixmapDmaBufTest, Convert) {
               handle_clone.planes[i].stride);
     EXPECT_EQ(native_pixmap_dmabuf->GetDmaBufOffset(i),
               handle_clone.planes[i].offset);
-    EXPECT_EQ(native_pixmap_dmabuf->GetDmaBufModifier(i),
+    EXPECT_EQ(native_pixmap_dmabuf->GetBufferFormatModifier(),
               handle_clone.planes[i].modifier);
   }
 }

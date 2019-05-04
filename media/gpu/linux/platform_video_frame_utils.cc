@@ -47,7 +47,11 @@ scoped_refptr<VideoFrame> CreateVideoFrameOzone(VideoPixelFormat pixel_format,
   for (size_t i = 0; i < num_planes; ++i) {
     planes[i].stride = pixmap->GetDmaBufPitch(i);
     planes[i].offset = pixmap->GetDmaBufOffset(i);
-    planes[i].modifier = pixmap->GetDmaBufModifier(i);
+    // TODO(crbug.com/957381): Move the modifier variable to NativePixmapHandle
+    // from NativePixmapPlane.
+    // TODO(crbug.com/914700): Move the modifier vairable from
+    // VideoFrameLayout::Plane to VideoFrameLayout.
+    planes[i].modifier = pixmap->GetBufferFormatModifier();
     buffer_sizes[i] = planes[i].offset +
                       planes[i].stride * VideoFrame::Rows(i, pixel_format,
                                                           coded_size.height());

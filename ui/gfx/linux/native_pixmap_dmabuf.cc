@@ -43,9 +43,12 @@ int NativePixmapDmaBuf::GetDmaBufOffset(size_t plane) const {
   return planes_[plane].offset;
 }
 
-uint64_t NativePixmapDmaBuf::GetDmaBufModifier(size_t plane) const {
-  DCHECK_LT(plane, planes_.size());
-  return planes_[plane].modifier;
+uint64_t NativePixmapDmaBuf::GetBufferFormatModifier() const {
+  // Modifiers must be the same on all the planes. Return the modifier of the
+  // first plane.
+  // TODO(crbug.com/957381): Move modifier variable to NativePixmapHandle from
+  // NativePixmapPlane.
+  return planes_[0].modifier;
 }
 
 gfx::BufferFormat NativePixmapDmaBuf::GetBufferFormat() const {

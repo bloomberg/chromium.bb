@@ -184,9 +184,9 @@ bool GLImageNativePixmap::Initialize(scoped_refptr<gfx::NativePixmap> pixmap) {
       attrs.push_back(pixmap->GetDmaBufOffset(pixmap_plane));
       attrs.push_back(EGL_DMA_BUF_PLANE0_PITCH_EXT + attrs_plane * 3);
       attrs.push_back(pixmap->GetDmaBufPitch(pixmap_plane));
+      uint64_t modifier = pixmap->GetBufferFormatModifier();
       if (has_dma_buf_import_modifier &&
-          pixmap->GetDmaBufModifier(0) != gfx::NativePixmapPlane::kNoModifier) {
-        uint64_t modifier = pixmap->GetDmaBufModifier(pixmap_plane);
+          modifier != gfx::NativePixmapPlane::kNoModifier) {
         DCHECK(attrs_plane < base::size(kLinuxDrmModifiers));
         attrs.push_back(kLinuxDrmModifiers[attrs_plane]);
         attrs.push_back(modifier & 0xffffffff);
