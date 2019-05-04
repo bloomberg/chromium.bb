@@ -35,6 +35,10 @@ SearchModel* AppListTestViewDelegate::GetSearchModel() {
   return search_model_.get();
 }
 
+bool AppListTestViewDelegate::KeyboardTraversalEngaged() {
+  return true;
+}
+
 void AppListTestViewDelegate::OpenSearchResult(
     const std::string& result_id,
     int event_flags,

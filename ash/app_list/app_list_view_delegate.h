@@ -153,6 +153,10 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
       ui::GestureEvent* event,
       const gfx::Point& screen_location) = 0;
 
+  // Returns True if the last event passing through app list was a key event.
+  // This is stored in the controller and managed by the presenter.
+  virtual bool KeyboardTraversalEngaged() = 0;
+
   // Checks if we are allowed to process events on the app list main view and
   // its descendants.
   virtual bool CanProcessEventsOnApplistViews() = 0;

@@ -5,6 +5,7 @@
 #include "ash/app_list/app_list_presenter_delegate_impl.h"
 
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/app_list/app_list_util.h"
 #include "ash/app_list/presenter/app_list_presenter_impl.h"
 #include "ash/app_list/views/app_list_main_view.h"
 #include "ash/app_list/views/app_list_view.h"
@@ -29,6 +30,7 @@
 #include "ui/aura/window.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/events/event.h"
+#include "ui/events/keycodes/keyboard_codes_posix.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -268,15 +270,36 @@ void AppListPresenterDelegateImpl::ProcessLocatedEvent(
 // AppListPresenterDelegateImpl, aura::EventFilter implementation:
 
 void AppListPresenterDelegateImpl::OnMouseEvent(ui::MouseEvent* event) {
+  // Moving the mouse shouldn't hide focus rings.
+  if (event->IsAnyButton())
+    controller_->SetKeyboardTraversalMode(false);
+
   if (event->type() == ui::ET_MOUSE_PRESSED)
     ProcessLocatedEvent(event);
 }
 
 void AppListPresenterDelegateImpl::OnGestureEvent(ui::GestureEvent* event) {
+  controller_->SetKeyboardTraversalMode(false);
+
   if (event->type() == ui::ET_GESTURE_TAP ||
       event->type() == ui::ET_GESTURE_TWO_FINGER_TAP ||
       event->type() == ui::ET_GESTURE_LONG_PRESS) {
     ProcessLocatedEvent(event);
+  }
+}
+
+void AppListPresenterDelegateImpl::OnKeyEvent(ui::KeyEvent* event) {
+  if (controller_->KeyboardTraversalEngaged())
+    return;
+
+  // When in tablet mode, all events hit this function, so we must ensure that
+  // the home launcher is visible before setting an event handled.
+  if ((app_list::IsUnhandledArrowKeyEvent(*event) ||
+       event->key_code() == ui::VKEY_TAB) &&
+      (!IsTabletMode() || presenter_->home_launcher_shown())) {
+    // Handle the first arrow key event to just show the focus rings.
+    event->SetHandled();
+    controller_->SetKeyboardTraversalMode(true);
   }
 }
 
