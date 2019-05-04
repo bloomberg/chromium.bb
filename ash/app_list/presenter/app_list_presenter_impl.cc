@@ -332,6 +332,11 @@ void AppListPresenterImpl::ScheduleDismissAnimation() {
   views::Widget* widget = view_->GetWidget();
   ui::Layer* layer = GetLayer(widget);
   layer->GetAnimator()->StopAnimating();
+
+  // Reset animation metrics reporter for AppListView when the animation is
+  // interrupted.
+  view_->ResetTransitionMetricsReporter();
+
   aura::Window* root_window = widget->GetNativeView()->GetRootWindow();
   const gfx::Vector2d offset =
       delegate_->GetVisibilityAnimationOffset(root_window);

@@ -51,6 +51,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
@@ -247,6 +248,40 @@ TEST_F(AppListPresenterDelegateZeroStateTest, RightClickSearchBoxInPeeking) {
   generator->PressRightButton();
   EXPECT_EQ(app_list_bounds, app_list_view->GetBoundsInScreen());
   EXPECT_EQ(mojom::AppListViewState::kPeeking, app_list_view->app_list_state());
+}
+
+// Verifies that clicking on the search box in tablet mode with animation and
+// zero state enabled should not bring Chrome crash (https://crbug.com/958267).
+TEST_F(AppListPresenterDelegateZeroStateTest, ClickSearchBoxInTabletMode) {
+  // Necessary for AppListView::StateAnimationMetricsReporter::Report being
+  // called when animation ends.
+  ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+  app_list::AppListView::SetShortAnimationForTesting(false);
+
+  EnableTabletMode(true);
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckState(
+      ash::mojom::AppListViewState::kFullscreenAllApps);
+  ui::test::EventGenerator* generator = GetEventGenerator();
+
+  // Click on the search box.
+  generator->MoveMouseTo(GetPointInsideSearchbox());
+  generator->ClickLeftButton();
+
+  // Wait until animation finishes. Verifies AppListView's state.
+  base::RunLoop().RunUntilIdle();
+  GetAppListTestHelper()->CheckState(
+      ash::mojom::AppListViewState::kFullscreenSearch);
+
+  // Click on the area out of search box.
+  generator->MoveMouseTo(GetPointOutsideSearchbox());
+  generator->ClickLeftButton();
+
+  // Wait until animation finishes. Verifies AppListView's state.
+  base::RunLoop().RunUntilIdle();
+  GetAppListTestHelper()->CheckState(
+      ash::mojom::AppListViewState::kFullscreenAllApps);
 }
 
 TEST_F(PopulatedAppListTest, TappingAppsGridClosesVirtualKeyboard) {

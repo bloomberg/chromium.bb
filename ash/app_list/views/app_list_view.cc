@@ -294,6 +294,18 @@ void AppListView::StateAnimationMetricsReporter::RecordMetricsInTablet(
           "Apps.HomeLauncherTransition.AnimationSmoothness.ExitOverview",
           value);
       break;
+    case TabletModeAnimationTransition::kEnterFullscreenAllApps:
+      UMA_HISTOGRAM_PERCENTAGE(
+          "Apps.HomeLauncherTransition.AnimationSmoothness."
+          "EnterFullscreenAllApps",
+          value);
+      break;
+    case TabletModeAnimationTransition::kEnterFullscreenSearch:
+      UMA_HISTOGRAM_PERCENTAGE(
+          "Apps.HomeLauncherTransition.AnimationSmoothness."
+          "EnterFullscreenSearch",
+          value);
+      break;
   }
 }
 
@@ -1485,14 +1497,31 @@ void AppListView::StartAnimationForState(
 
   ui::LayerAnimator* animator = layer->GetAnimator();
   animator->StopAnimating();
+
+  // Reset animation metrics reporter when animation is interrupted.
+  ResetTransitionMetricsReporter();
+
   ui::ScopedLayerAnimationSettings settings(animator);
   settings.SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(animation_duration));
   settings.SetTweenType(gfx::Tween::EASE_OUT);
   settings.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-  state_animation_metrics_reporter_->SetTargetState(target_state);
-  settings.SetAnimationMetricsReporter(state_animation_metrics_reporter_.get());
+
+  if (!is_tablet_mode_) {
+    state_animation_metrics_reporter_->SetTargetState(target_state);
+  } else {
+    DCHECK(target_state == ash::mojom::AppListViewState::kFullscreenAllApps ||
+           target_state == ash::mojom::AppListViewState::kFullscreenSearch);
+    TabletModeAnimationTransition transition_type =
+        target_state == ash::mojom::AppListViewState::kFullscreenAllApps
+            ? TabletModeAnimationTransition::kEnterFullscreenAllApps
+            : TabletModeAnimationTransition::kEnterFullscreenSearch;
+    state_animation_metrics_reporter_->SetTabletModeAnimationTransition(
+        transition_type);
+  }
+
+  settings.SetAnimationMetricsReporter(GetStateTransitionMetricsReporter());
   settings.AddObserver(transition_animation_observer_.get());
 
   layer->SetTransform(gfx::Transform());

@@ -245,7 +245,13 @@ enum TabletModeAnimationTransition {
   kEnterOverviewMode,
 
   // Exit the overview mode in tablet
-  kExitOverviewMode
+  kExitOverviewMode,
+
+  // Enter the kFullscreenAllApps state (usually by deactivating the search box)
+  kEnterFullscreenAllApps,
+
+  // Enter the kFullscreenSearch state (usually by activating the search box).
+  kEnterFullscreenSearch
 };
 
 void RecordFolderShowHideAnimationSmoothness(int actual_frames,
