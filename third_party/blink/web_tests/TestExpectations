@@ -5571,7 +5571,6 @@ crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/selection-aut
 crbug.com/874162 [ Mac ] virtual/user-activation-v2/fast/events/selection-autoscroll-borderbelt.html [ Skip ]
 
 # Flaky
-crbug.com/957916 fullscreen/rendering/backdrop-object.html [ Timeout Pass ]
 crbug.com/894077 virtual/android/fullscreen/video-fixed-background.html [ Pass Failure ]
 
 # Failures on 32-bit Android when using GPU instead of software rendering
