@@ -162,6 +162,9 @@ abstract class OverlayPanelBase {
         return mContext;
     }
 
+    /** Tracks whether the panel has been hidden. {@See #showPanel, #hidePanel}.  */
+    protected boolean mPanelHidden;
+
     /**
      * Animates the Overlay Panel to its closed state.
      * @param reason The reason for the change of panel state.
@@ -174,6 +177,12 @@ abstract class OverlayPanelBase {
      * @param reason The reason the panel is closing.
      */
     protected abstract void onClosed(@StateChangeReason int reason);
+
+    /** Temporarily hides a peeking panel for the given reason.  Does nothing if not peeking. */
+    public abstract void hidePanel(@StateChangeReason int reason);
+
+    /** Shows a previously hidden panel again.  {@See #hidePanel}. */
+    public abstract void showPanel(@StateChangeReason int reason);
 
     /**
      * TODO(mdjones): This method should be removed from this class.
@@ -587,6 +596,8 @@ abstract class OverlayPanelBase {
      * @param reason The reason for a change in the panel's state.
      */
     protected void setPanelState(@PanelState int state, @StateChangeReason int reason) {
+        if (mPanelHidden) return;
+
         if (state == PanelState.CLOSED) {
             mHeight = 0;
             onClosed(reason);

@@ -2174,6 +2174,13 @@ const char kContextualSearchDefinitionsDescription[] =
     "Enables tap-activated contextual definitions of words on a page to be "
     "presented in the caption of the Tap to Search Bar.";
 
+const char kContextualSearchLongpressResolveName[] =
+    "Contextual Search long-press Resolves";
+const char kContextualSearchLongpressResolveDescription[] =
+    "Enables communicating with Google servers when a long-press gesture is "
+    "recognized under some privacy-limited conditions.  The page context data "
+    " sent to Google is potentially privacy sensitive!";
+
 const char kContextualSearchMlTapSuppressionName[] =
     "Contextual Search ML tap suppression";
 const char kContextualSearchMlTapSuppressionDescription[] =

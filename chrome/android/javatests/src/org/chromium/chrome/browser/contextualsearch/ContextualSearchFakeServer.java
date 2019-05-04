@@ -310,7 +310,7 @@ class ContextualSearchFakeServer
             mManagerTest.clickNode(getNodeId());
             mManagerTest.waitForSelectionToBe(getSearchTerm());
 
-            if (mPolicy.shouldPreviousTapResolve()) {
+            if (mPolicy.shouldPreviousGestureResolve()) {
                 // Now wait for the Search Term Resolution to start.
                 mManagerTest.waitForSearchTermResolutionToStart(this);
 
@@ -422,7 +422,7 @@ class ContextualSearchFakeServer
             mManagerTest.clickNode(getNodeId());
             mManagerTest.waitForSelectionToBe(getSearchTerm());
 
-            if (mPolicy.shouldPreviousTapResolve()) {
+            if (mPolicy.shouldPreviousGestureResolve()) {
                 // Now wait for the Search Term Resolution to start.
                 mManagerTest.waitForSearchTermResolutionToStart(this);
             } else {
@@ -619,7 +619,7 @@ class ContextualSearchFakeServer
     //============================================================================================
 
     @Override
-    public void startSearchTermResolutionRequest(String selection) {
+    public void startSearchTermResolutionRequest(String selection, boolean isRestrictedResolve) {
         mLoadedUrl = null;
         mSearchTermRequested = selection;
 

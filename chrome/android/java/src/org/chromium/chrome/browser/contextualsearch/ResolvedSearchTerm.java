@@ -239,7 +239,7 @@ public class ResolvedSearchTerm {
         return TextUtils.join(", ", sections);
     }
 
-    List<String> buildTextSections() {
+    private List<String> buildTextSections() {
         List<String> sections = new ArrayList<String>();
         if (mIsNetworkUnavailable) {
             sections.add("Network unavailable!");
@@ -247,8 +247,9 @@ public class ResolvedSearchTerm {
             sections.add("ResponseCode:" + mResponseCode);
         } else {
             if (mDoPreventPreload) sections.add("Preventing preload!");
-            if (!TextUtils.isEmpty(mSearchTerm)) sections.add("Search for '" + mSearchTerm);
-            if (!TextUtils.isEmpty(mDisplayText)) sections.add("displayed as '" + mDisplayText);
+            if (!TextUtils.isEmpty(mSearchTerm)) sections.add("Search for '" + mSearchTerm + "'");
+            if (!TextUtils.isEmpty(mDisplayText))
+                sections.add("displayed as '" + mDisplayText + "'");
             if (!TextUtils.isEmpty(mMid)) sections.add("MID:'" + mMid);
             if (mSelectionStartAdjust != 0 || mSelectionEndAdjust != 0) {
                 sections.add(

@@ -32902,6 +32902,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1473878093" label="HideArcMediaNotifications:disabled"/>
   <int value="-1473668019" label="token-binding:disabled"/>
   <int value="-1473136627" label="enable-web-payments"/>
+  <int value="-1472825316" label="ContextualSearchLongpressResolve:enabled"/>
   <int value="-1471021059"
       label="OmniboxUIExperimentShowSuggestionFavicons:disabled"/>
   <int value="-1469536698" label="ChromeHomeDoodle:enabled"/>
@@ -33952,6 +33953,7 @@ from previous Chrome versions.
   <int value="92327255" label="DisplayMoveWindowAccels:disabled"/>
   <int value="93832899" label="NtpCustomizationMenuV2:enabled"/>
   <int value="98134240" label="material-design-ink-drop-animation-speed"/>
+  <int value="98218116" label="ContextualSearchLongpressResolve:disabled"/>
   <int value="99177659" label="OmniboxUICuesForSearchHistoryMatches:disabled"/>
   <int value="103932290" label="show-autofill-type-predictions"/>
   <int value="105046382" label="ParallelDownloading:disabled"/>

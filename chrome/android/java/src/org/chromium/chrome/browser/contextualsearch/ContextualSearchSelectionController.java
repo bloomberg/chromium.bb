@@ -12,6 +12,7 @@ import org.chromium.base.Log;
 import org.chromium.base.TimeUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial.ContextualSearchSetting;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial.ContextualSearchSwitch;
@@ -39,6 +40,7 @@ public class ContextualSearchSelectionController {
         int UNDETERMINED = 0;
         int TAP = 1;
         int LONG_PRESS = 2;
+        int RESOLVING_LONG_PRESS = 3;
     }
 
     private static final String TAG = "ContextualSearch";
@@ -93,15 +95,29 @@ public class ContextualSearchSelectionController {
     // The duration of the last tap gesture in milliseconds, or 0 if not set.
     private int mTapDurationMs = INVALID_DURATION;
 
+    /** Tracks whether we're currently clearing the selection to prevent recursion. */
+    private boolean mClearingSelection;
+
+    /**
+     * Whether the current selection has been adjusted or not.  If it has been adjusted we must
+     * request a resolve for this exact term rather than anything that overlaps as we get with
+     * normal expanding resolves.
+     */
+    private boolean mIsAdjustedSelection;
+
+    /** Whether the selection handles are currently showing. */
+    private boolean mAreSelectionHandlesShown;
+
     private class ContextualSearchGestureStateListener implements GestureStateListener {
         @Override
         public void onScrollStarted(int scrollOffsetY, int scrollExtentY) {
-            mHandler.handleScroll();
+            mHandler.handleScrollStart();
         }
 
         @Override
         public void onScrollEnded(int scrollOffsetY, int scrollExtentY) {
             mLastScrollTimeNs = System.nanoTime();
+            mHandler.handleScrollEnd();
         }
 
         @Override
@@ -224,12 +240,27 @@ public class ContextualSearchSelectionController {
     }
 
     /**
+     * Returns whether the current selection has been adjusted or not.
+     * If it has been adjusted we must request a resolve for this exact term rather than anything
+     * that overlaps as is the behavior with normal expanding resolves.
+     * @return Whether an exact word match is required in the resolve.
+     */
+    boolean isAdjustedSelection() {
+        return mIsAdjustedSelection;
+    }
+
+    /**
      * Clears the selection.
      */
     void clearSelection() {
+        if (mClearingSelection) return;
+
+        mClearingSelection = true;
         SelectionPopupController controller = getSelectionPopupController();
         if (controller != null) controller.clearSelection();
+        mHandler.handleSelectionCleared();
         resetSelectionStates();
+        mClearingSelection = false;
     }
 
     /**
@@ -285,27 +316,35 @@ public class ContextualSearchSelectionController {
         boolean shouldHandleSelection = false;
         switch (eventType) {
             case SelectionEventType.SELECTION_HANDLES_SHOWN:
+                mAreSelectionHandlesShown = true;
                 mWasTapGestureDetected = false;
-                mSelectionType = SelectionType.LONG_PRESS;
+                mSelectionType = ChromeFeatureList.isEnabled(
+                                         ChromeFeatureList.CONTEXTUAL_SEARCH_LONGPRESS_RESOLVE)
+                        ? SelectionType.RESOLVING_LONG_PRESS
+                        : SelectionType.LONG_PRESS;
                 shouldHandleSelection = true;
                 SelectionPopupController controller = getSelectionPopupController();
                 if (controller != null) mSelectedText = controller.getSelectedText();
+                mIsAdjustedSelection = false;
                 break;
             case SelectionEventType.SELECTION_HANDLES_CLEARED:
+                mAreSelectionHandlesShown = false;
                 mHandler.handleSelectionDismissal();
+                clearSelection();
                 resetAllStates();
                 break;
             case SelectionEventType.SELECTION_HANDLE_DRAG_STOPPED:
                 shouldHandleSelection = mShouldHandleSelectionModification;
+                mIsAdjustedSelection = true;
                 break;
             default:
         }
 
+        mX = posXPix;
+        mY = posYPix;
         if (shouldHandleSelection) {
             if (mSelectedText != null) {
-                mX = posXPix;
-                mY = posYPix;
-                handleSelection(mSelectedText, SelectionType.LONG_PRESS);
+                handleSelection(mSelectedText, mSelectionType);
             }
         }
     }
@@ -344,6 +383,8 @@ public class ContextualSearchSelectionController {
         mSelectedText = null;
 
         mWasTapGestureDetected = false;
+        mIsAdjustedSelection = false;
+        mAreSelectionHandlesShown = false;
     }
 
     /**
@@ -409,7 +450,8 @@ public class ContextualSearchSelectionController {
         // been suppressed if each of the heuristics were satisfied.
         mHandler.handleMetricsForWouldSuppressTap(tapHeuristics);
 
-        boolean shouldSuppressTapBasedOnHeuristics = tapHeuristics.shouldSuppressTap();
+        boolean shouldSuppressTapBasedOnHeuristics =
+                tapHeuristics.shouldSuppressTap() || mAreSelectionHandlesShown;
         boolean shouldOverrideMlTapSuppression = tapHeuristics.shouldOverrideMlTapSuppression();
 
         // Make sure Tap Suppression features are consistent.

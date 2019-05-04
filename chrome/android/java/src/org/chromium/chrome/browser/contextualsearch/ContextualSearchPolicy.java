@@ -13,6 +13,7 @@ import android.text.format.DateUtils;
 
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
@@ -133,26 +134,34 @@ class ContextualSearchPolicy {
             return false;
         }
 
-        // We never preload on long-press so users can cut & paste without hitting the servers.
-        return mSelectionController.getSelectionType() == SelectionType.TAP;
+        // We never preload on a regular long-press so users can cut & paste without hitting the
+        // servers.
+        return mSelectionController.getSelectionType() == SelectionType.TAP
+                || mSelectionController.getSelectionType() == SelectionType.RESOLVING_LONG_PRESS;
     }
 
     /**
-     * Returns whether the previous tap (the tap last counted) should resolve.
-     * @return Whether the previous tap should resolve.
+     * @return Whether the previous gesture should resolve.
      */
-    boolean shouldPreviousTapResolve() {
+    boolean shouldPreviousGestureResolve() {
         if (isMandatoryPromoAvailable()
                 || ContextualSearchFieldTrial.getSwitch(
                         ContextualSearchSwitch.IS_SEARCH_TERM_RESOLUTION_DISABLED)) {
             return false;
         }
 
+        if (isPrivacyAggressiveResolveEnabled()) return true;
+
         return (isPromoAvailable()
                        || (mContextualSearchPreferenceHelper != null
                                   && mContextualSearchPreferenceHelper.canThrottle()))
                 ? isBasePageHTTP(mNetworkCommunicator.getBasePageUrl())
                 : true;
+    }
+
+    /** @return Whether a long-press gesture can resolve. */
+    boolean canResolveLongpress() {
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SEARCH_LONGPRESS_RESOLVE);
     }
 
     /**
@@ -250,11 +259,29 @@ class ContextualSearchPolicy {
      *         is no exiting request.
      */
     boolean shouldCreateVerbatimRequest() {
+        if (isPrivacyAggressiveResolveEnabled()) return false;
+
         @SelectionType
         int selectionType = mSelectionController.getSelectionType();
         return (mSelectionController.getSelectedText() != null
                 && (selectionType == SelectionType.LONG_PRESS
-                || (selectionType == SelectionType.TAP && !shouldPreviousTapResolve())));
+                        || (selectionType == SelectionType.TAP
+                                && !shouldPreviousGestureResolve())));
+    }
+
+    /**
+     * Returns whether doing a privacy aggressive resolve is enabled (as opposed to privacy
+     * conservative).  When this is enabled, the selection is sent to the server immediately instead
+     * of waiting for the panel to be opened.  This allows the server to resolve the selection which
+     * will recognize entities, etc. and display those attributes in the Bar.
+     * @return Whether the privacy-aggressive behavior of immediately sending the selection to the
+     *         server is enabled.
+     */
+    boolean isPrivacyAggressiveResolveEnabled() {
+        return ContextualSearchFieldTrial.LONGPRESS_RESOLVE_PRIVACY_AGGRESSIVE.equals(
+                ChromeFeatureList.getFieldTrialParamByFeature(
+                        ChromeFeatureList.CONTEXTUAL_SEARCH_LONGPRESS_RESOLVE,
+                        ContextualSearchFieldTrial.LONGPRESS_RESOLVE_PARAM_NAME));
     }
 
     /**

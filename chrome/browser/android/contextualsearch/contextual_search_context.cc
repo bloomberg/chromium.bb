@@ -149,6 +149,17 @@ int ContextualSearchContext::GetEndOffset() const {
   return end_offset;
 }
 
+void ContextualSearchContext::RestrictResolve(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  // TODO(donnd): improve on this cheap implementation by sending this bit to
+  // the server instead of destroying our valuable context!
+  int start = this->start_offset;
+  int end = this->end_offset;
+  SetSelectionSurroundings(0, end - start,
+                           this->surrounding_text.substr(start, end - start));
+}
+
 base::android::ScopedJavaLocalRef<jstring>
 ContextualSearchContext::DetectLanguage(
     JNIEnv* env,

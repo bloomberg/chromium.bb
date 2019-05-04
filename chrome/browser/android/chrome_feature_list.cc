@@ -119,6 +119,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kCommandLineOnNonRooted,
     &kContentSuggestionsScrollToLoad,
     &kContextualSearchDefinitions,
+    &kContextualSearchLongpressResolve,
     &kContextualSearchMlTapSuppression,
     &kContextualSearchSecondTap,
     &kContextualSearchSimplifiedServer,
@@ -333,6 +334,9 @@ const base::Feature kContentSuggestionsScrollToLoad{
 
 const base::Feature kContextualSearchDefinitions{
     "ContextualSearchDefinitions", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kContextualSearchLongpressResolve{
+    "ContextualSearchLongpressResolve", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kContextualSearchMlTapSuppression{
     "ContextualSearchMlTapSuppression", base::FEATURE_DISABLED_BY_DEFAULT};

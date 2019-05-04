@@ -92,6 +92,11 @@ struct ContextualSearchContext {
   int64_t GetPreviousEventId() const;
   int GetPreviousEventResults() const;
 
+  // Causes the next resolve request to be for an exact match instead of an
+  // expandable term.
+  void RestrictResolve(JNIEnv* env,
+                       const base::android::JavaParamRef<jobject>& obj);
+
   // Detects the language of the context using CLD from the translate utility.
   base::android::ScopedJavaLocalRef<jstring> DetectLanguage(
       JNIEnv* env,

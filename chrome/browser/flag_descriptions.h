@@ -1306,6 +1306,9 @@ extern const char kContentSuggestionsDebugLogDescription[];
 extern const char kContextualSearchDefinitionsName[];
 extern const char kContextualSearchDefinitionsDescription[];
 
+extern const char kContextualSearchLongpressResolveName[];
+extern const char kContextualSearchLongpressResolveDescription[];
+
 extern const char kContextualSearchMlTapSuppressionName[];
 extern const char kContextualSearchMlTapSuppressionDescription[];
 

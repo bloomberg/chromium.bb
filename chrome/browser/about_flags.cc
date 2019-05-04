@@ -899,6 +899,19 @@ const FeatureEntry::FeatureParam kSimplifiedServerAllCocaCards = {
     contextual_search::kContextualCardsSimplifiedServerWithDiagnosticChar};
 const FeatureEntry::FeatureVariation kSimplifiedServerVariations[] = {
     {"and allow all CoCa cards", &kSimplifiedServerAllCocaCards, 1, nullptr}};
+
+const FeatureEntry::FeatureParam kLongpressResolveHideOnScroll = {
+    contextual_search::kLongpressResolveParamName,
+    contextual_search::kLongpressResolveHideOnScroll};
+const FeatureEntry::FeatureParam kLongpressResolvePrivacyAggressive = {
+    contextual_search::kLongpressResolveParamName,
+    contextual_search::kLongpressResolvePrivacyAggressive};
+const FeatureEntry::FeatureVariation kLongpressResolveVariations[] = {
+    {"and hide on scroll", &kLongpressResolveHideOnScroll, 1, nullptr},
+    {"and allow privacy-aggressive behavior",
+     &kLongpressResolvePrivacyAggressive, 1, nullptr},
+};
+
 #endif  // defined(OS_ANDROID)
 
 const FeatureEntry::FeatureParam kResamplingInputEventsLSQEnabled[] = {
@@ -1091,6 +1104,16 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContextualSearchDefinitionsName,
      flag_descriptions::kContextualSearchDefinitionsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kContextualSearchDefinitions)},
+
+    {"contextual-search-longpress-resolve",
+     flag_descriptions::kContextualSearchLongpressResolveName,
+     flag_descriptions::kContextualSearchLongpressResolveDescription,
+     kOsAndroid,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         chrome::android::kContextualSearchLongpressResolve,
+         kLongpressResolveVariations,
+         "ContextualSearchLongpressResolve")},
+
     {"contextual-search-ml-tap-suppression",
      flag_descriptions::kContextualSearchMlTapSuppressionName,
      flag_descriptions::kContextualSearchMlTapSuppressionDescription,
@@ -1104,6 +1127,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContextualSearchSecondTapName,
      flag_descriptions::kContextualSearchSecondTapDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kContextualSearchSecondTap)},
+
     {"contextual-search-simplified-server",
      flag_descriptions::kContextualSearchSimplifiedServerName,
      flag_descriptions::kContextualSearchSimplifiedServerDescription,
@@ -1112,6 +1136,7 @@ const FeatureEntry kFeatureEntries[] = {
          chrome::android::kContextualSearchSimplifiedServer,
          kSimplifiedServerVariations,
          "ContextualSearchSimplifiedServer")},
+
     {"contextual-search-translation-model",
      flag_descriptions::kContextualSearchTranslationModelName,
      flag_descriptions::kContextualSearchTranslationModelDescription,

@@ -185,7 +185,10 @@ public abstract class ContextualSearchContext {
             analyzeTap(startOffset);
         }
         // Notify of an initial selection if it's not empty.
-        if (endOffset > startOffset) onSelectionChanged();
+        if (endOffset > startOffset) {
+            updateInitialSelectedWord();
+            onSelectionChanged();
+        }
         if (setNative) {
             nativeSetContent(getNativePointer(), mSurroundingText, mSelectionStartOffset,
                     mSelectionEndOffset);
@@ -273,6 +276,16 @@ public abstract class ContextualSearchContext {
     }
 
     /**
+     * Specifies that this resolve must return a non-expanding result.
+     */
+    void setRestrictedResolve() {
+        mSurroundingText = mInitialSelectedWord;
+        mSelectionStartOffset = 0;
+        mSelectionEndOffset = mSurroundingText.length();
+        nativeRestrictResolve(mNativePointer);
+    }
+
+    /**
      * Notifies of an adjustment that has been applied to the start and end of the selection.
      * @param startAdjust A signed value indicating the direction of the adjustment to the start of
      *        the selection (typically a negative value when the selection expands).
@@ -283,6 +296,14 @@ public abstract class ContextualSearchContext {
         // Fully track the selection as it changes.
         mSelectionStartOffset += startAdjust;
         mSelectionEndOffset += endAdjust;
+        updateInitialSelectedWord();
+        nativeAdjustSelection(getNativePointer(), startAdjust, endAdjust);
+        // Notify of changes.
+        onSelectionChanged();
+    }
+
+    /** Updates the initial selected word if it has not yet been set. */
+    private void updateInitialSelectedWord() {
         if (TextUtils.isEmpty(mInitialSelectedWord) && !TextUtils.isEmpty(mSurroundingText)) {
             // TODO(donnd): investigate the root cause of crbug.com/725027 that requires this
             // additional validation to prevent this substring call from crashing!
@@ -290,13 +311,9 @@ public abstract class ContextualSearchContext {
                     || mSelectionEndOffset > mSurroundingText.length()) {
                 return;
             }
-
             mInitialSelectedWord =
                     mSurroundingText.substring(mSelectionStartOffset, mSelectionEndOffset);
         }
-        nativeAdjustSelection(getNativePointer(), startAdjust, endAdjust);
-        // Notify of changes.
-        onSelectionChanged();
     }
 
     /** @return the current selection, or an empty string if data is invalid or nothing selected. */
@@ -568,4 +585,6 @@ public abstract class ContextualSearchContext {
             int selectionStart, int selectionEnd);
     @VisibleForTesting
     protected native String nativeDetectLanguage(long nativeContextualSearchContext);
+    @VisibleForTesting
+    protected native void nativeRestrictResolve(long nativeContextualSearchContext);
 }
