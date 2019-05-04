@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Darwin Huang <huangdarwin@chromium.org>
 Date: Wed, 1 May 2019 14:47:06 -0700
-Subject: [PATCH 4/4] Fix use-after-free xDestroy error
+Subject: [PATCH 4/6] Fix use-after-free xDestroy error
 
 This backports https://www.sqlite.org/src/info/1dbbb0101e8213b9
 
