@@ -33,9 +33,10 @@ class MockCastActivityRecord : public CastActivityRecordBase {
   MOCK_METHOD2(SendSetVolumeRequestToReceiver,
                void(const CastInternalMessage& cast_message,
                     cast_channel::ResultCallback callback));
-  MOCK_METHOD2(
+  MOCK_METHOD3(
       SendStopSessionMessageToReceiver,
       void(const base::Optional<std::string>& client_id,
+           const std::string& hash_token,
            mojom::MediaRouteProvider::TerminateRouteCallback callback));
   MOCK_METHOD1(HandleLeaveSession, void(const std::string& client_id));
   MOCK_METHOD3(

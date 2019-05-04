@@ -93,7 +93,8 @@ class MockCastActivityManager : public CastActivityManagerBase {
 
 }  // namespace
 
-class CastActivityRecordTest : public testing::Test, CastSessionClientFactory {
+class CastActivityRecordTest : public testing::Test,
+                               CastSessionClientFactoryForTest {
  public:
   CastActivityRecordTest() {}
 
@@ -140,7 +141,7 @@ class CastActivityRecordTest : public testing::Test, CastSessionClientFactory {
     CastActivityRecord::SetClientFactoryForTest(nullptr);
   }
 
-  std::unique_ptr<CastSessionClientBase> MakeClient(
+  std::unique_ptr<CastSessionClientBase> MakeClientForTest(
       const std::string& client_id,
       const url::Origin& origin,
       int tab_id) override {
@@ -317,7 +318,8 @@ TEST_F(CastActivityRecordTest, SendStopSessionMessageToReceiver) {
                             RouteRequestResult::INCOGNITO_MISMATCH));
 
   SetUpSession();
-  record_->SendStopSessionMessageToReceiver(client_id, callback.Get());
+  record_->SendStopSessionMessageToReceiver(client_id, "dummyHashToken",
+                                            callback.Get());
 }
 
 TEST_F(CastActivityRecordTest, HandleLeaveSession) {

@@ -119,6 +119,7 @@ class CastActivityManager : public CastActivityManagerBase,
       mojom::MediaRouteProvider::TerminateRouteCallback callback) override;
 
  private:
+  friend class CastActivityManagerTest;
   using ActivityMap =
       base::flat_map<MediaRoute::Id, std::unique_ptr<CastActivityRecordBase>>;
 

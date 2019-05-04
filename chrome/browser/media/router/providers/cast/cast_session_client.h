@@ -98,9 +98,9 @@ class CastSessionClientBase : public blink::mojom::PresentationConnection {
   int tab_id_;
 };
 
-class CastSessionClientFactory {
+class CastSessionClientFactoryForTest {
  public:
-  virtual std::unique_ptr<CastSessionClientBase> MakeClient(
+  virtual std::unique_ptr<CastSessionClientBase> MakeClientForTest(
       const std::string& client_id,
       const url::Origin& origin,
       int tab_id) = 0;
