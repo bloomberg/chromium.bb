@@ -4095,6 +4095,14 @@ HRESULT AXPlatformNodeWin::GetTextAttributeValue(TEXTATTRIBUTEID attribute_id,
       V_VT(result) = VT_BSTR;
       V_BSTR(result) = GetFontNameAttributeAsBSTR();
       break;
+    case UIA_FontSizeAttributeId:
+      V_VT(result) = VT_R8;
+      V_R8(result) = GetFloatAttribute(ax::mojom::FloatAttribute::kFontSize);
+      break;
+    case UIA_FontWeightAttributeId:
+      V_VT(result) = VT_I4;
+      V_I4(result) = GetFloatAttribute(ax::mojom::FloatAttribute::kFontWeight);
+      break;
     case UIA_ForegroundColorAttributeId:
       V_VT(result) = VT_I4;
       V_I4(result) = GetIntAttributeAsCOLORREF(ax::mojom::IntAttribute::kColor);

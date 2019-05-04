@@ -2186,6 +2186,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   text_data.id = 2;
   text_data.role = ax::mojom::Role::kStaticText;
   text_data.AddStringAttribute(ax::mojom::StringAttribute::kFontFamily, "sans");
+  text_data.AddFloatAttribute(ax::mojom::FloatAttribute::kFontSize, 16);
   text_data.AddFloatAttribute(ax::mojom::FloatAttribute::kFontWeight, 300);
   text_data.AddIntAttribute(ax::mojom::IntAttribute::kTextOverlineStyle, 1);
   text_data.AddIntAttribute(ax::mojom::IntAttribute::kTextStrikethroughStyle,
@@ -2366,6 +2367,11 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   base::string16 font_name = base::UTF8ToUTF16("sans");
   expected_variant.Set(SysAllocString(font_name.c_str()));
   EXPECT_UIA_TEXTATTRIBUTE_EQ(text_range_provider, UIA_FontNameAttributeId,
+                              expected_variant);
+  expected_variant.Reset();
+
+  expected_variant.Set(16.0f);
+  EXPECT_UIA_TEXTATTRIBUTE_EQ(text_range_provider, UIA_FontSizeAttributeId,
                               expected_variant);
   expected_variant.Reset();
 
