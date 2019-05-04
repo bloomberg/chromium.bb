@@ -746,8 +746,7 @@ bool HTMLPlugInElement::UseFallbackContent() const {
 }
 
 void HTMLPlugInElement::ReattachOnPluginChangeIfNeeded() {
-  if (UseFallbackContent() || !NeedsPluginUpdate() || !GetLayoutObject() ||
-      IsImageType())
+  if (UseFallbackContent() || !NeedsPluginUpdate() || !GetLayoutObject())
     return;
 
   SetNeedsStyleRecalc(
