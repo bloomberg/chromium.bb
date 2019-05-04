@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/strings/string16.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
+#include "components/password_manager/core/browser/password_store.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace autofill {
@@ -27,7 +28,6 @@ class NetworkContext;
 namespace password_manager {
 class PasswordManagerDriver;
 class PasswordManagerClient;
-class PasswordStore;
 }
 
 namespace syncer {
@@ -136,6 +136,14 @@ void FindBestMatches(
 const autofill::PasswordForm* GetMatchForUpdating(
     const autofill::PasswordForm& submitted_form,
     const std::map<base::string16, const autofill::PasswordForm*>& credentials);
+
+// This method creates a blacklisted form with |digests|'s scheme, signon_realm
+// and origin. This is done to avoid storing PII and to have a normalized unique
+// key. Furthermore it attempts to normalize the origin by stripping path
+// components. In case this fails (e.g. for non-standard origins like Android
+// credentials), the original origin is kept.
+autofill::PasswordForm MakeNormalizedBlacklistedForm(
+    password_manager::PasswordStore::FormDigest digest);
 
 }  // namespace password_manager_util
 

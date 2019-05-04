@@ -5885,6 +5885,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Needs to be duplications cleared"/>
 </enum>
 
+<enum name="BooleanNeedsNormalization">
+  <int value="0" label="Doesn't need normalization"/>
+  <int value="1" label="Needs normalization"/>
+</enum>
+
 <enum name="BooleanNetworkQuietBeforeSwap">
   <int value="0" label="FMP OK, network not yet quiet"/>
   <int value="1" label="FMP not OK, network was already quiet"/>

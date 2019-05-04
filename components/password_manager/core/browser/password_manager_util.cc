@@ -17,6 +17,8 @@
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_generation_util.h"
+#include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
+#include "components/password_manager/core/browser/blacklisted_credentials_cleaner.h"
 #include "components/password_manager/core/browser/credentials_cleaner.h"
 #include "components/password_manager/core/browser/credentials_cleaner_runner.h"
 #include "components/password_manager/core/browser/http_credentials_cleaner.h"
@@ -188,6 +190,10 @@ void RemoveUselessCredentials(
   }
 #endif  // !defined(OS_IOS)
 
+  cleaning_tasks_runner->MaybeAddCleaningTask(
+      std::make_unique<password_manager::BlacklistedCredentialsCleaner>(store,
+                                                                        prefs));
+
   if (cleaning_tasks_runner->HasPendingTasks()) {
     // The runner will delete itself once the clearing tasks are done, thus we
     // are releasing ownership here.
@@ -292,6 +298,28 @@ const PasswordForm* GetMatchForUpdating(
   // Last try. The submitted form had no username but a password. Assume that
   // it's an existing credential.
   return credentials.empty() ? nullptr : credentials.begin()->second;
+}
+
+autofill::PasswordForm MakeNormalizedBlacklistedForm(
+    password_manager::PasswordStore::FormDigest digest) {
+  autofill::PasswordForm result;
+  result.blacklisted_by_user = true;
+  result.scheme = std::move(digest.scheme);
+  result.signon_realm = std::move(digest.signon_realm);
+  // In case |digest| corresponds to an Android credential copy the origin as
+  // is, otherwise clear out the path by calling GetOrigin().
+  if (password_manager::FacetURI::FromPotentiallyInvalidSpec(
+          digest.origin.spec())
+          .IsValidAndroidFacetURI()) {
+    result.origin = std::move(digest.origin);
+  } else {
+    // GetOrigin() will return an empty GURL if the origin is not valid or
+    // standard. DCHECK that this will not happen.
+    DCHECK(digest.origin.is_valid());
+    DCHECK(digest.origin.IsStandard());
+    result.origin = digest.origin.GetOrigin();
+  }
+  return result;
 }
 
 }  // namespace password_manager_util

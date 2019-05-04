@@ -10,6 +10,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -50,16 +51,9 @@ FormSaverImpl::FormSaverImpl(PasswordStore* store) : store_(store) {
 FormSaverImpl::~FormSaverImpl() = default;
 
 void FormSaverImpl::PermanentlyBlacklist(PasswordForm* observed) {
-  observed->preferred = false;
-  observed->blacklisted_by_user = true;
-  observed->username_value.clear();
-  observed->username_element.clear();
-  observed->password_value.clear();
-  observed->password_element.clear();
-  observed->other_possible_usernames.clear();
+  *observed = password_manager_util::MakeNormalizedBlacklistedForm(
+      PasswordStore::FormDigest(*observed));
   observed->date_created = base::Time::Now();
-  observed->origin = observed->origin.GetOrigin();
-
   store_->AddLogin(*observed);
 }
 

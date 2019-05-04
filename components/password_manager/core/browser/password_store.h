@@ -189,6 +189,11 @@ class PasswordStore : protected PasswordStoreSync,
   // The request will be cancelled if the consumer is destroyed.
   virtual void GetAutofillableLogins(PasswordStoreConsumer* consumer);
 
+  // Gets the complete list of PasswordForms that are blacklist entries and
+  // notifies |consumer| on completion. The request will be cancelled if the
+  // consumer is destroyed.
+  virtual void GetBlacklistLogins(PasswordStoreConsumer* consumer);
+
   // Gets the complete list of PasswordForms (regardless of their blacklist
   // status) and notify |consumer| on completion. The request will be cancelled
   // if the consumer is destroyed.
@@ -553,6 +558,9 @@ class PasswordStore : protected PasswordStoreSync,
   // Finds all non-blacklist PasswordForms and returns the result.
   std::vector<std::unique_ptr<autofill::PasswordForm>>
   GetAutofillableLoginsImpl();
+
+  // Finds all blacklist PasswordForms and returns the result.
+  std::vector<std::unique_ptr<autofill::PasswordForm>> GetBlacklistLoginsImpl();
 
   // Finds all PasswordForms and returns the result.
   std::vector<std::unique_ptr<autofill::PasswordForm>> GetAllLoginsImpl();

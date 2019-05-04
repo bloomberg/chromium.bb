@@ -50,8 +50,22 @@ TestPasswordStore::CreateBackgroundTaskRunner() const {
 PasswordStoreChangeList TestPasswordStore::AddLoginImpl(
     const autofill::PasswordForm& form) {
   PasswordStoreChangeList changes;
-  stored_passwords_[form.signon_realm].push_back(form);
-  changes.push_back(PasswordStoreChange(PasswordStoreChange::ADD, form));
+  auto& passwords_for_signon_realm = stored_passwords_[form.signon_realm];
+  auto iter = std::find_if(
+      passwords_for_signon_realm.begin(), passwords_for_signon_realm.end(),
+      [&form](const auto& password) {
+        return ArePasswordFormUniqueKeyEqual(form, password);
+      });
+
+  if (iter != passwords_for_signon_realm.end()) {
+    changes.emplace_back(PasswordStoreChange::REMOVE, *iter);
+    changes.emplace_back(PasswordStoreChange::ADD, form);
+    *iter = form;
+    return changes;
+  }
+
+  changes.emplace_back(PasswordStoreChange::ADD, form);
+  passwords_for_signon_realm.push_back(form);
   return changes;
 }
 

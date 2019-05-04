@@ -1548,7 +1548,6 @@ TEST_F(CredentialManagerImplTest, BlacklistPasswordCredential) {
   blacklisted.blacklisted_by_user = true;
   blacklisted.origin = form_.origin;
   blacklisted.signon_realm = form_.signon_realm;
-  blacklisted.type = autofill::PasswordForm::TYPE_API;
   blacklisted.date_created = passwords[form_.signon_realm][0].date_created;
   EXPECT_THAT(passwords[form_.signon_realm], testing::ElementsAre(blacklisted));
 }
@@ -1577,7 +1576,6 @@ TEST_F(CredentialManagerImplTest, BlacklistFederatedCredential) {
   blacklisted.blacklisted_by_user = true;
   blacklisted.origin = form_.origin;
   blacklisted.signon_realm = blacklisted.origin.spec();
-  blacklisted.type = autofill::PasswordForm::TYPE_API;
   blacklisted.date_created =
       passwords[blacklisted.signon_realm][0].date_created;
   EXPECT_THAT(passwords[blacklisted.signon_realm],
