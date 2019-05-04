@@ -3,7 +3,6 @@
 # HTML imports feature turned off, before the Blink team disables the feature by
 # default.
 
-CrExtensionsOptionsPageTest.*
 PrintPreviewButtonStripInteractiveTest.*
 PrintPreviewDestinationDialogInteractiveTest.*
 PrintPreviewNumberSettingsSectionInteractiveTest.BlurResetsEmptyInput

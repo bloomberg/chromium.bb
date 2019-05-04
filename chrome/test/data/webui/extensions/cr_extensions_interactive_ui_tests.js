@@ -27,11 +27,6 @@ const CrExtensionsInteractiveUITest = class extends PolymerInteractiveUITest {
       '../settings/test_util.js',
     ];
   }
-
-  /** @override */
-  get loaderFile() {
-    return 'subpage_loader.html';
-  }
 };
 
 
@@ -47,12 +42,6 @@ CrExtensionsOptionsPageTest = class extends CrExtensionsInteractiveUITest {
     return super.extraLibraries.concat([
       'extension_options_dialog_test.js',
     ]);
-  }
-
-  /** @override */
-  get customElementName() {
-    // Wait for the manager since this test is loading the main page.
-    return 'extensions-manager';
   }
 
   /** @override */
