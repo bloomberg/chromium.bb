@@ -46,12 +46,18 @@ INFORMATIONAL_PREFIX = 'informational: '
 
 # Name of JSON file containing individual tests' results written by the tast
 # command to the results dir.
+# TODO(derat): Consider reading streamed_results.jsonl instead since it contains
+# partial results if the "tast run" command did not finish.
 RESULTS_FILENAME = 'results.json'
 
 # Names of properties in test objects from results JSON files.
 RESULTS_NAME_KEY = 'name'
 RESULTS_ERRORS_KEY = 'errors'
 RESULTS_ATTR_KEY = 'attr'
+RESULTS_END_KEY = 'end'
+
+# Go's zero value for time.Time values.
+ZERO_TIME = '0001-01-01T00:00:00Z'
 
 # Attribute used to label informational tests.
 RESULTS_INFORMATIONAL_ATTR = 'informational'
@@ -254,7 +260,8 @@ class TastVMTestStage(generic_stages.BoardSpecificBuilderStage,
       try:
         with open(results_path, 'r') as f:
           for test in json.load(f):
-            if test[RESULTS_ERRORS_KEY]:
+            # Report the test as failed if it didn't finish or had errors.
+            if test[RESULTS_END_KEY] == ZERO_TIME or test[RESULTS_ERRORS_KEY]:
               name = test[RESULTS_NAME_KEY]
               informational = (RESULTS_INFORMATIONAL_ATTR in
                                test.get(RESULTS_ATTR_KEY, []))
