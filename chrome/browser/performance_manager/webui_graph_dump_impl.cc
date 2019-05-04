@@ -19,23 +19,20 @@ WebUIGraphDumpImpl::WebUIGraphDumpImpl(GraphImpl* graph)
 
 WebUIGraphDumpImpl::~WebUIGraphDumpImpl() {}
 
-void WebUIGraphDumpImpl::Bind(
-    resource_coordinator::mojom::WebUIGraphDumpRequest request,
-    base::OnceClosure error_handler) {
+void WebUIGraphDumpImpl::Bind(mojom::WebUIGraphDumpRequest request,
+                              base::OnceClosure error_handler) {
   binding_.Bind(std::move(request));
   binding_.set_connection_error_handler(std::move(error_handler));
 }
 
 void WebUIGraphDumpImpl::GetCurrentGraph(GetCurrentGraphCallback callback) {
-  resource_coordinator::mojom::WebUIGraphPtr graph =
-      resource_coordinator::mojom::WebUIGraph::New();
+  mojom::WebUIGraphPtr graph = mojom::WebUIGraph::New();
 
   {
     auto processes = graph_->GetAllProcessNodes();
     graph->processes.reserve(processes.size());
     for (auto* process : processes) {
-      resource_coordinator::mojom::WebUIProcessInfoPtr process_info =
-          resource_coordinator::mojom::WebUIProcessInfo::New();
+      mojom::WebUIProcessInfoPtr process_info = mojom::WebUIProcessInfo::New();
 
       process_info->id = NodeBase::GetSerializationId(process);
       process_info->pid = process->process_id();
@@ -50,8 +47,7 @@ void WebUIGraphDumpImpl::GetCurrentGraph(GetCurrentGraphCallback callback) {
     auto frames = graph_->GetAllFrameNodes();
     graph->frames.reserve(frames.size());
     for (auto* frame : frames) {
-      resource_coordinator::mojom::WebUIFrameInfoPtr frame_info =
-          resource_coordinator::mojom::WebUIFrameInfo::New();
+      mojom::WebUIFrameInfoPtr frame_info = mojom::WebUIFrameInfo::New();
 
       frame_info->id = NodeBase::GetSerializationId(frame);
 
@@ -61,7 +57,7 @@ void WebUIGraphDumpImpl::GetCurrentGraph(GetCurrentGraphCallback callback) {
       auto* process = frame->process_node();
       frame_info->process_id = NodeBase::GetSerializationId(process);
 
-      frame_info->url = frame->url().spec();
+      frame_info->url = frame->url();
 
       graph->frames.push_back(std::move(frame_info));
     }
@@ -71,11 +67,10 @@ void WebUIGraphDumpImpl::GetCurrentGraph(GetCurrentGraphCallback callback) {
     auto pages = graph_->GetAllPageNodes();
     graph->pages.reserve(pages.size());
     for (auto* page : pages) {
-      resource_coordinator::mojom::WebUIPageInfoPtr page_info =
-          resource_coordinator::mojom::WebUIPageInfo::New();
+      mojom::WebUIPageInfoPtr page_info = mojom::WebUIPageInfo::New();
 
       page_info->id = NodeBase::GetSerializationId(page);
-      page_info->main_frame_url = page->main_frame_url().spec();
+      page_info->main_frame_url = page->main_frame_url();
 
       auto* main_frame = page->GetMainFrameNode();
       page_info->main_frame_id = NodeBase::GetSerializationId(main_frame);

@@ -5,10 +5,11 @@
 // This file exposes an interface to the chrome://discards Web UI to allow
 // viewing and exploring the CU graph.
 
-module resource_coordinator.mojom;
+module performance_manager.mojom;
 
 import "mojo/public/mojom/base/process_id.mojom";
 import "mojo/public/mojom/base/time.mojom";
+import "url/mojom/url.mojom";
 
 // Represents the momentary state of a Page CU.
 struct WebUIPageInfo {
@@ -16,7 +17,7 @@ struct WebUIPageInfo {
 
   int64 main_frame_id;
 
-  string main_frame_url;
+  url.mojom.Url main_frame_url;
 
   // TODO(siggi): Estimate data.
 };
@@ -25,11 +26,7 @@ struct WebUIPageInfo {
 struct WebUIFrameInfo {
   int64 id;
 
-  // TODO(chrisha): This should use url.mojom.Url, but that currently creates a
-  // cyclic dependency on blink/renderer/platform, which contains the KURL impl.
-  // Either break this cycle ourselves, or wait for KURL to be moved.
-  // crbug.com/768298
-  string url;
+  url.mojom.Url url;
   int64 parent_frame_id;
   int64 process_id;
 };

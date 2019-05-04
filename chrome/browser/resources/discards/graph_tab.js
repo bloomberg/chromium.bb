@@ -8,7 +8,7 @@ Polymer({
   /**
    * The Mojo graph data source.
    *
-   * @private {resourceCoordinator.mojom.WebUIGraphDumpProxy}
+   * @private {performanceManager.mojom.WebUIGraphDumpProxy}
    */
   graphDump_: null,
 
@@ -17,7 +17,7 @@ Polymer({
 
   /** @override */
   ready: function() {
-    this.graphDump_ = resourceCoordinator.mojom.WebUIGraphDump.getProxy();
+    this.graphDump_ = performanceManager.mojom.WebUIGraphDump.getProxy();
   },
 
   /** @override */

@@ -79,8 +79,8 @@
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)
+#include "chrome/browser/performance_manager/webui_graph_dump.mojom.h"  // nogncheck
 #include "chrome/browser/ui/webui/discards/discards.mojom.h"
-#include "services/resource_coordinator/public/mojom/webui_graph_dump.mojom.h"  // nogncheck
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -256,7 +256,7 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)
                     mojom::DiscardsDetailsProvider,
-                    resource_coordinator::mojom::WebUIGraphDump,
+                    performance_manager::mojom::WebUIGraphDump,
 #endif
                     mojom::BluetoothInternalsHandler,
                     mojom::InterventionsInternalsPageHandler,

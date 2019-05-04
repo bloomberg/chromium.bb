@@ -102,17 +102,18 @@ class GraphNode {
 }
 
 class PageNode extends GraphNode {
-  /** @param {!resourceCoordinator.mojom.WebUIPageInfo} page */
+  /** @param {!performanceManager.mojom.WebUIPageInfo} page */
   constructor(page) {
     super(page.id);
-    /** @type {!resourceCoordinator.mojom.WebUIPageInfo} */
+    /** @type {!performanceManager.mojom.WebUIPageInfo} */
     this.page = page;
     this.y = kPageNodesTargetY;
   }
 
   /** override */
   get title() {
-    return this.page.mainFrameUrl.length > 0 ? this.page.mainFrameUrl : 'Page';
+    return this.page.mainFrameUrl.url.length > 0 ? this.page.mainFrameUrl.url :
+                                                   'Page';
   }
 
   /** @override */
@@ -137,17 +138,17 @@ class PageNode extends GraphNode {
 }
 
 class FrameNode extends GraphNode {
-  /** @param {!resourceCoordinator.mojom.WebUIFrameInfo} frame */
+  /** @param {!performanceManager.mojom.WebUIFrameInfo} frame */
   constructor(frame) {
     super(frame.id);
-    /** @type {!resourceCoordinator.mojom.WebUIFrameInfo} frame */
+    /** @type {!performanceManager.mojom.WebUIFrameInfo} frame */
     this.frame = frame;
     this.color = this.selectColor(frame.processId);
   }
 
   /** override */
   get title() {
-    return this.frame.url.length > 0 ? this.frame.url : 'Frame';
+    return this.frame.url.url.length > 0 ? this.frame.url.url : 'Frame';
   }
 
   /** override */
@@ -167,10 +168,10 @@ class FrameNode extends GraphNode {
 }
 
 class ProcessNode extends GraphNode {
-  /** @param {!resourceCoordinator.mojom.WebUIProcessInfo} process */
+  /** @param {!performanceManager.mojom.WebUIProcessInfo} process */
   constructor(process) {
     super(process.id);
-    /** @type {!resourceCoordinator.mojom.WebUIProcessInfo} */
+    /** @type {!performanceManager.mojom.WebUIProcessInfo} */
     this.process = process;
 
     this.color = this.selectColor(process.id);
@@ -391,7 +392,7 @@ class Graph {
 
   /**
    * @param {!Map<number, !GraphNode>} oldNodes
-   * @param {resourceCoordinator.mojom.WebUIPageInfo} page
+   * @param {performanceManager.mojom.WebUIPageInfo} page
    * @private
    */
   addOrUpdatePage_(oldNodes, page) {
@@ -411,7 +412,7 @@ class Graph {
 
   /**
    * @param {!Map<number, !GraphNode>} oldNodes
-   * @param {resourceCoordinator.mojom.WebUIFrameInfo} frame
+   * @param {performanceManager.mojom.WebUIFrameInfo} frame
    * @private
    */
   addOrUpdateFrame_(oldNodes, frame) {
@@ -431,7 +432,7 @@ class Graph {
 
   /**
    * @param {!Map<number, !GraphNode>} oldNodes
-   * @param {resourceCoordinator.mojom.WebUIProcessInfo} process
+   * @param {performanceManager.mojom.WebUIProcessInfo} process
    * @private
    */
   addOrUpdateProcess_(oldNodes, process) {
@@ -462,7 +463,7 @@ class Graph {
   }
 
   /**
-   * @param {resourceCoordinator.mojom.WebUIGraph} graph An updated graph from
+   * @param {performanceManager.mojom.WebUIGraph} graph An updated graph from
    *     the WebUI.
    * @private
    */

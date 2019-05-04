@@ -283,7 +283,7 @@ void PerformanceManager::BindInterfaceImpl(
 }
 
 void PerformanceManager::BindWebUIGraphDump(
-    resource_coordinator::mojom::WebUIGraphDumpRequest request,
+    mojom::WebUIGraphDumpRequest request,
     const service_manager::BindSourceInfo& source_info) {
   std::unique_ptr<WebUIGraphDumpImpl> graph_dump =
       std::make_unique<WebUIGraphDumpImpl>(&graph_);

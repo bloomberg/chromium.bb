@@ -11,6 +11,7 @@ if (is_win || is_mac || is_desktop_linux || is_chromeos) {
     ]
 
     public_deps = [
+      "//chrome/browser/performance_manager:mojo_bindings",
       "//chrome/browser/resource_coordinator:mojo_bindings",
     ]
   }

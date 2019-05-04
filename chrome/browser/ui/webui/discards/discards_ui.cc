@@ -451,7 +451,7 @@ void DiscardsUI::BindDiscardsDetailsProvider(
 }
 
 void DiscardsUI::BindWebUIGraphDumpProvider(
-    resource_coordinator::mojom::WebUIGraphDumpRequest request) {
+    performance_manager::mojom::WebUIGraphDumpRequest request) {
   performance_manager::PerformanceManager* performance_manager =
       performance_manager::PerformanceManager::GetInstance();
   if (performance_manager) {
