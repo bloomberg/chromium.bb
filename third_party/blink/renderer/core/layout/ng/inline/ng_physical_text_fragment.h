@@ -142,15 +142,6 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
                          unsigned end_offset,
                          scoped_refptr<const ShapeResultView> shape_result);
 
-  struct RareData {
-    USING_FAST_MALLOC(RareData);
-
-   public:
-    PhysicalRect self_ink_overflow_;
-    scoped_refptr<const ComputedStyle> style_;  // Used only for ellipsis.
-  };
-  RareData* EnsureRareData() const;
-
   LayoutUnit InlinePositionForOffset(unsigned offset,
                                      LayoutUnit (*round)(float),
                                      AdjustMidCluster) const;
@@ -172,7 +163,8 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
   // Fragments are immutable but allow certain expensive data, specifically ink
   // overflow, to be cached as long as it is guaranteed to always recompute to
   // the same value.
-  mutable std::unique_ptr<RareData> rare_data_;
+  mutable PhysicalRect self_ink_overflow_;
+  scoped_refptr<const ComputedStyle> style_;  // Used only for ellipsis.
 };
 
 template <>

@@ -22,6 +22,7 @@ namespace {
 struct SameSizeAsNGPhysicalTextFragment : NGPhysicalFragment {
   void* pointers[3];
   unsigned offsets[2];
+  PhysicalRect rect;
 };
 
 static_assert(sizeof(NGPhysicalTextFragment) ==
@@ -75,7 +76,7 @@ NGPhysicalTextFragment::NGPhysicalTextFragment(
   DCHECK_GE(start_offset_, source.StartOffset());
   DCHECK_LE(end_offset_, source.EndOffset());
   DCHECK(shape_result_ || IsFlowControl()) << ToString();
-  DCHECK(!source.rare_data_ || !source.rare_data_->style_);
+  DCHECK(!source.style_);
   line_orientation_ = source.line_orientation_;
   is_anonymous_text_ = source.is_anonymous_text_;
   ink_overflow_computed_ = false;
@@ -92,7 +93,7 @@ NGPhysicalTextFragment::NGPhysicalTextFragment(NGTextFragmentBuilder* builder)
       static_cast<unsigned>(ToLineOrientation(builder->GetWritingMode()));
 
   if (UNLIKELY(StyleVariant() == NGStyleVariant::kEllipsis)) {
-    EnsureRareData()->style_ = std::move(builder->style_);
+    style_ = std::move(builder->style_);
     is_anonymous_text_ = true;
   } else {
     is_anonymous_text_ =
@@ -102,21 +103,14 @@ NGPhysicalTextFragment::NGPhysicalTextFragment(NGTextFragmentBuilder* builder)
   ink_overflow_computed_ = false;
 }
 
-NGPhysicalTextFragment::RareData* NGPhysicalTextFragment::EnsureRareData()
-    const {
-  if (!rare_data_)
-    rare_data_ = std::make_unique<RareData>();
-  return rare_data_.get();
-}
-
 const ComputedStyle& NGPhysicalTextFragment::Style() const {
   switch (StyleVariant()) {
     case NGStyleVariant::kStandard:
     case NGStyleVariant::kFirstLine:
       return NGPhysicalFragment::Style();
     case NGStyleVariant::kEllipsis:
-      DCHECK(rare_data_ && rare_data_->style_);
-      return *rare_data_->style_;
+      DCHECK(style_);
+      return *style_;
   }
   NOTREACHED();
   return NGPhysicalFragment::Style();
@@ -213,12 +207,11 @@ PhysicalRect NGPhysicalTextFragment::LocalRect(unsigned start_offset,
 PhysicalRect NGPhysicalTextFragment::SelfInkOverflow() const {
   if (!ink_overflow_computed_)
     ComputeSelfInkOverflow();
-  return UNLIKELY(rare_data_) ? rare_data_->self_ink_overflow_ : LocalRect();
+  return self_ink_overflow_;
 }
 
 void NGPhysicalTextFragment::ClearSelfInkOverflow() const {
-  if (UNLIKELY(rare_data_))
-    rare_data_->self_ink_overflow_ = LocalRect();
+  self_ink_overflow_ = LocalRect();
 }
 
 void NGPhysicalTextFragment::ComputeSelfInkOverflow() const {
@@ -275,12 +268,12 @@ void NGPhysicalTextFragment::ComputeSelfInkOverflow() const {
   PhysicalRect local_ink_overflow = ConvertToLocal(ink_overflow);
   PhysicalRect local_rect = LocalRect();
   if (local_rect.Contains(local_ink_overflow)) {
-    ClearSelfInkOverflow();
+    self_ink_overflow_ = local_rect;
     return;
   }
   local_ink_overflow.Unite(local_rect);
   local_ink_overflow.ExpandEdgesToPixelBoundaries();
-  EnsureRareData()->self_ink_overflow_ = local_ink_overflow;
+  self_ink_overflow_ = local_ink_overflow;
 }
 
 scoped_refptr<const NGPhysicalFragment> NGPhysicalTextFragment::TrimText(
