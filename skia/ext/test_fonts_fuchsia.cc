@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "skia/ext/test_fonts.h"
+#include "skia/ext/test_fonts_fuchsia.h"
 
 #include <fuchsia/fonts/cpp/fidl.h>
 #include <fuchsia/io/cpp/fidl.h>
@@ -14,20 +14,14 @@
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "skia/ext/fontmgr_default.h"
+#include "skia/ext/test_fonts.h"
 #include "third_party/skia/include/core/SkFontMgr.h"
 #include "third_party/skia/include/ports/SkFontMgr_fuchsia.h"
 
 namespace skia {
 
-void ConfigureTestFont() {
-  // ComponentController for the font provider service started below. It's a
-  // static field to keep the service running until the test process is
-  // destroyed.
-  static base::NoDestructor<
-      fidl::InterfaceHandle<fuchsia::sys::ComponentController>>
-      test_font_provider_controller;
-  DCHECK(!*test_font_provider_controller);
-
+fuchsia::fonts::ProviderSyncPtr RunTestProviderWithTestFonts(
+    fidl::InterfaceHandle<fuchsia::sys::ComponentController>* controller_out) {
   // Start a fuchsia.fonts.Provider instance and configure it to load the test
   // fonts, which must be bundled in the calling process' package.
   fuchsia::sys::LaunchInfo launch_info;
@@ -53,14 +47,26 @@ void ConfigureTestFont() {
       base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
           ->ConnectToServiceSync<fuchsia::sys::Launcher>();
   launcher->CreateComponent(std::move(launch_info),
-                            test_font_provider_controller->NewRequest());
+                            controller_out->NewRequest());
 
   base::fuchsia::ServiceDirectoryClient font_provider_services_client(
       std::move(font_provider_services_dir));
 
+  return font_provider_services_client
+      .ConnectToServiceSync<fuchsia::fonts::Provider>();
+}
+
+void ConfigureTestFont() {
+  // ComponentController for the font provider service started below. It's a
+  // static field to keep the service running until the test process is
+  // destroyed.
+  static base::NoDestructor<
+      fidl::InterfaceHandle<fuchsia::sys::ComponentController>>
+      test_font_provider_controller;
+  DCHECK(!*test_font_provider_controller);
+
   skia::OverrideDefaultSkFontMgr(SkFontMgr_New_Fuchsia(
-      font_provider_services_client
-          .ConnectToServiceSync<fuchsia::fonts::Provider>()));
+      RunTestProviderWithTestFonts(test_font_provider_controller.get())));
 }
 
 }  // namespace skia

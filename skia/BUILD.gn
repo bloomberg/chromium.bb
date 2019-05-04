@@ -821,7 +821,10 @@ source_set("test_fonts") {
     sources += [ "ext/test_fonts_android.cc" ]
   }
   if (is_fuchsia) {
-    sources += [ "ext/test_fonts_fuchsia.cc" ]
+    sources += [
+      "ext/test_fonts_fuchsia.cc",
+      "ext/test_fonts_fuchsia.h",
+    ]
   }
   if (is_linux) {
     sources += [ "ext/test_fonts_linux.cc" ]
@@ -854,6 +857,7 @@ test("skia_unittests") {
 
   deps = [
     ":skia",
+    ":test_fonts",
     "//base",
     "//base/test:test_support",
     "//mojo/core/test:run_all_unittests",
