@@ -1753,6 +1753,9 @@ extern const char kAshEnablePersistentWindowBoundsDescription[];
 extern const char kAshEnablePipRoundedCornersName[];
 extern const char kAshEnablePipRoundedCornersDescription[];
 
+extern const char kAshSwapSideVolumeButtonsForOrientationName[];
+extern const char kAshSwapSideVolumeButtonsForOrientationDescription[];
+
 extern const char kAshEnableUnifiedDesktopName[];
 extern const char kAshEnableUnifiedDesktopDescription[];
 

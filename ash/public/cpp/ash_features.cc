@@ -78,6 +78,9 @@ const base::Feature kNotificationStackingBarRedesign{
 const base::Feature kSystemTrayFeaturePodsPagination{
     "SystemTrayFeaturePodsPagination", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kSwapSideVolumeButtonsForOrientation{
+    "SwapSideVolumeButtonsForOrientation", base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsHideArcMediaNotificationsEnabled() {
   return base::FeatureList::IsEnabled(kMediaSessionNotification) &&
          base::FeatureList::IsEnabled(kHideArcMediaNotifications);
@@ -145,6 +148,10 @@ bool IsNotificationStackingBarRedesignEnabled() {
 
 bool IsSystemTrayFeaturePodsPaginationEnabled() {
   return base::FeatureList::IsEnabled(kSystemTrayFeaturePodsPagination);
+}
+
+bool IsSwapSideVolumeButtonsForOrientationEnabled() {
+  return base::FeatureList::IsEnabled(kSwapSideVolumeButtonsForOrientation);
 }
 
 }  // namespace features

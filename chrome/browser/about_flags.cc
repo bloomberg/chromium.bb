@@ -3487,6 +3487,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAshEnablePipRoundedCornersName,
      flag_descriptions::kAshEnablePipRoundedCornersDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kPipRoundedCorners)},
+
+    {"ash-swap-side-volume-buttons-for-orientation",
+     flag_descriptions::kAshSwapSideVolumeButtonsForOrientationName,
+     flag_descriptions::kAshSwapSideVolumeButtonsForOrientationDescription,
+     kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kSwapSideVolumeButtonsForOrientation)},
 #endif  // defined(OS_CHROMEOS)
     {"google-password-manager", flag_descriptions::kGooglePasswordManagerName,
      flag_descriptions::kGooglePasswordManagerDescription, kOsAll,

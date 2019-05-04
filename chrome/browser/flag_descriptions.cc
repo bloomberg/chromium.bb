@@ -2917,6 +2917,13 @@ const char kAshEnablePipRoundedCornersName[] =
 const char kAshEnablePipRoundedCornersDescription[] =
     "Enable rounded corners on the Picture-in-Picture window.";
 
+const char kAshSwapSideVolumeButtonsForOrientationName[] =
+    "Swap side volume buttons to match screen orientation.";
+const char kAshSwapSideVolumeButtonsForOrientationDescription[] =
+    "Make the side volume button that's closer to the top/right always "
+    "increase the volume and the button that's closer to the bottom/left "
+    "always decrease the volume.";
+
 const char kAshEnableUnifiedDesktopName[] = "Unified desktop mode";
 const char kAshEnableUnifiedDesktopDescription[] =
     "Enable unified desktop mode which allows a window to span multiple "

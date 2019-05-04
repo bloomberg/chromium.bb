@@ -20,6 +20,7 @@
 #include "ash/magnifier/docked_magnifier_controller.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/media/media_controller.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/interfaces/ime_info.mojom.h"
@@ -1114,6 +1115,8 @@ class SideVolumeButtonAcceleratorTest
     ws::InputDeviceClientTestApi().SetUncategorizedDevices({ui::InputDevice(
         kSideVolumeButtonId, ui::InputDeviceType::INPUT_DEVICE_INTERNAL,
         "cros_ec_buttons")});
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kSwapSideVolumeButtonsForOrientation);
   }
 
   bool IsLeftOrRightSide() const {
@@ -1127,6 +1130,7 @@ class SideVolumeButtonAcceleratorTest
 
  private:
   std::string region_, side_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(SideVolumeButtonAcceleratorTest);
 };

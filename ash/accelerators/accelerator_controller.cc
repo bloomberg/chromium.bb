@@ -1902,7 +1902,8 @@ bool AcceleratorController::IsValidSideVolumeButtonLocation() const {
 
 bool AcceleratorController::ShouldSwapSideVolumeButtons(
     int source_device_id) const {
-  if (!Shell::Get()
+  if (!features::IsSwapSideVolumeButtonsForOrientationEnabled() ||
+      !Shell::Get()
            ->tablet_mode_controller()
            ->IsTabletModeWindowManagerEnabled() ||
       !IsSideVolumeButton(source_device_id)) {

@@ -181,6 +181,11 @@
     "expiry_milestone": 75
   },
   {
+    "name": "ash-swap-side-volume-buttons-for-orientation",
+    "owners": [ "minch" ],
+    "expiry_milestone": 78
+  },
+  {
     "name": "auto-fetch-on-net-error-page",
     "owners": [ "harringtond", "offline-dev" ],
     "expiry_milestone": 82

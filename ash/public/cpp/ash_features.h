@@ -95,6 +95,12 @@ ASH_PUBLIC_EXPORT extern const base::Feature kNotificationStackingBarRedesign;
 // Enables pagination for feature pod buttons in the system tray
 ASH_PUBLIC_EXPORT extern const base::Feature kSystemTrayFeaturePodsPagination;
 
+// Enables side volume button control based on screen orientation feature.
+// TODO(https://crbug.com/937907): Remove this after the feature is fully
+// launched.
+ASH_PUBLIC_EXPORT extern const base::Feature
+    kSwapSideVolumeButtonsForOrientation;
+
 ASH_PUBLIC_EXPORT bool IsHideArcMediaNotificationsEnabled();
 
 ASH_PUBLIC_EXPORT bool IsKeyboardShortcutViewerAppEnabled();
@@ -126,6 +132,8 @@ ASH_PUBLIC_EXPORT bool ShouldUseShaderRoundedCorner();
 ASH_PUBLIC_EXPORT bool IsNotificationStackingBarRedesignEnabled();
 
 ASH_PUBLIC_EXPORT bool IsSystemTrayFeaturePodsPaginationEnabled();
+
+ASH_PUBLIC_EXPORT bool IsSwapSideVolumeButtonsForOrientationEnabled();
 
 }  // namespace features
 }  // namespace ash
