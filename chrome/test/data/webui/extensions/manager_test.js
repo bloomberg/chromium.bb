@@ -30,7 +30,7 @@ cr.define('extension_manager_tests', function() {
 
     /** @param {string} viewElement */
     function assertViewActive(tagName) {
-      expectTrue(!!manager.$.viewManager.querySelector(`${tagName}.active`));
+      assertTrue(!!manager.$.viewManager.querySelector(`${tagName}.active`));
     }
 
     setup(function() {
