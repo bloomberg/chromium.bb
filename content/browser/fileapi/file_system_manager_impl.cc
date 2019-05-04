@@ -124,17 +124,17 @@ struct FileSystemManagerImpl::ReadDirectorySyncCallbackEntry {
 FileSystemManagerImpl::FileSystemManagerImpl(
     int process_id,
     int frame_id,
-    storage::FileSystemContext* file_system_context,
+    scoped_refptr<storage::FileSystemContext> file_system_context,
     scoped_refptr<ChromeBlobStorageContext> blob_storage_context)
     : process_id_(process_id),
       frame_id_(frame_id),
-      context_(file_system_context),
+      context_(std::move(file_system_context)),
       security_policy_(ChildProcessSecurityPolicyImpl::GetInstance()),
-      blob_storage_context_(blob_storage_context),
+      blob_storage_context_(std::move(blob_storage_context)),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(context_);
-  DCHECK(blob_storage_context);
+  DCHECK(blob_storage_context_);
   bindings_.set_connection_error_handler(base::BindRepeating(
       &FileSystemManagerImpl::OnConnectionError, base::Unretained(this)));
 }
@@ -566,8 +566,7 @@ void FileSystemManagerImpl::GetPlatformPath(const GURL& path,
   context_->default_file_task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&FileSystemManagerImpl::GetPlatformPathOnFileThread, path,
-                     process_id_, base::Unretained(context_), GetWeakPtr(),
-                     std::move(callback)));
+                     process_id_, context_, GetWeakPtr(), std::move(callback)));
 }
 
 void FileSystemManagerImpl::CreateWriter(const GURL& file_path,
@@ -831,13 +830,13 @@ void FileSystemManagerImpl::DidGetPlatformPath(GetPlatformPathCallback callback,
 void FileSystemManagerImpl::GetPlatformPathOnFileThread(
     const GURL& path,
     int process_id,
-    storage::FileSystemContext* context,
+    scoped_refptr<storage::FileSystemContext> context,
     base::WeakPtr<FileSystemManagerImpl> file_system_manager,
     GetPlatformPathCallback callback) {
   DCHECK(context->default_file_task_runner()->RunsTasksInCurrentSequence());
 
   SyncGetPlatformPath(
-      context, process_id, path,
+      context.get(), process_id, path,
       base::BindOnce(
           [](base::WeakPtr<FileSystemManagerImpl> file_system_manager,
              GetPlatformPathCallback callback,
@@ -854,7 +853,7 @@ void FileSystemManagerImpl::GetPlatformPathOnFileThread(
 base::Optional<base::File::Error> FileSystemManagerImpl::ValidateFileSystemURL(
     const storage::FileSystemURL& url) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!FileSystemURLIsValid(context_, url))
+  if (!FileSystemURLIsValid(context_.get(), url))
     return base::File::FILE_ERROR_INVALID_URL;
 
   // Deny access to files in PluginPrivate FileSystem from JavaScript.
