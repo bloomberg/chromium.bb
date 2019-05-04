@@ -313,12 +313,13 @@ void PropertyTreeManager::SetCurrentEffectState(
   current_.clip = &clip;
 
   if (cc_effect_node.HasRenderSurface()) {
-    current_.may_be_2d_axis_misaligned_to_render_surface = 0;
-  } else if (previous_transform &&
-             !current_.may_be_2d_axis_misaligned_to_render_surface) {
-    current_.may_be_2d_axis_misaligned_to_render_surface |=
-        TransformsMayBe2dAxisMisaligned(*previous_transform,
-                                        current_.Transform());
+    current_.may_be_2d_axis_misaligned_to_render_surface =
+        EffectState::kAligned;
+  } else if (current_.may_be_2d_axis_misaligned_to_render_surface ==
+                 EffectState::kAligned &&
+             previous_transform != &current_.Transform()) {
+    current_.may_be_2d_axis_misaligned_to_render_surface =
+        EffectState::kUnknown;
   }
 }
 
@@ -750,15 +751,44 @@ static bool IsNodeOnAncestorChain(const ClipPaintPropertyNode& find,
   return false;
 }
 
+bool PropertyTreeManager::EffectStateMayBe2dAxisMisalignedToRenderSurface(
+    EffectState& state,
+    size_t index) {
+  if (state.may_be_2d_axis_misaligned_to_render_surface ==
+      EffectState::kUnknown) {
+    // The root effect has render surface, so it's always kAligned.
+    DCHECK_NE(0u, index);
+    if (EffectStateMayBe2dAxisMisalignedToRenderSurface(
+            effect_stack_[index - 1], index - 1)) {
+      state.may_be_2d_axis_misaligned_to_render_surface =
+          EffectState::kMisaligned;
+    } else {
+      state.may_be_2d_axis_misaligned_to_render_surface =
+          TransformsMayBe2dAxisMisaligned(effect_stack_[index - 1].Transform(),
+                                          current_.Transform())
+              ? EffectState::kMisaligned
+              : EffectState::kAligned;
+    }
+  }
+  return state.may_be_2d_axis_misaligned_to_render_surface ==
+         EffectState::kMisaligned;
+}
+
+bool PropertyTreeManager::CurrentEffectMayBe2dAxisMisalignedToRenderSurface() {
+  // |current_| is virtually the top of effect_stack_.
+  return EffectStateMayBe2dAxisMisalignedToRenderSurface(current_,
+                                                         effect_stack_.size());
+}
+
 PropertyTreeManager::CcEffectType PropertyTreeManager::SyntheticEffectType(
-    const ClipPaintPropertyNode& clip) const {
+    const ClipPaintPropertyNode& clip) {
   unsigned effect_type = CcEffectType::kEffect;
   if (clip.ClipRect().IsRounded() || clip.ClipPath())
     effect_type |= CcEffectType::kSyntheticForNonTrivialClip;
 
   // Cc requires that a rectangluar clip is 2d-axis-aligned with the render
   // surface to correctly apply the clip.
-  if (current_.may_be_2d_axis_misaligned_to_render_surface |
+  if (CurrentEffectMayBe2dAxisMisalignedToRenderSurface() ||
       TransformsMayBe2dAxisMisaligned(clip.LocalTransformSpace(),
                                       current_.Transform()))
     effect_type |= CcEffectType::kSyntheticFor2dAxisAlignment;

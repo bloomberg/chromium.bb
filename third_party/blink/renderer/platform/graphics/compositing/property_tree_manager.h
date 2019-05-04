@@ -188,7 +188,11 @@ class PropertyTreeManager {
     kSyntheticFor2dAxisAlignment = 1 << 1
   };
 
-  CcEffectType SyntheticEffectType(const ClipPaintPropertyNode&) const;
+  struct EffectState;
+  bool EffectStateMayBe2dAxisMisalignedToRenderSurface(EffectState&,
+                                                       size_t index);
+  bool CurrentEffectMayBe2dAxisMisalignedToRenderSurface();
+  CcEffectType SyntheticEffectType(const ClipPaintPropertyNode&);
 
   void SetCurrentEffectState(const cc::EffectNode&,
                              CcEffectType,
@@ -251,7 +255,14 @@ class PropertyTreeManager {
     //  Rotate(-45deg)
     //  Clip (Would be mistakenly treated as 2d axis aligned if we used
     //        accumulated transform from the clip to the known render surface.)
-    bool may_be_2d_axis_misaligned_to_render_surface;
+    //
+    // It's lazily computed if it can't be trivially known when we create this
+    // EffectState.
+    enum {
+      kAligned,
+      kMisaligned,
+      kUnknown,
+    } may_be_2d_axis_misaligned_to_render_surface;
 
     // The transform space of the state.
     const TransformPaintPropertyNode& Transform() const;
