@@ -45,7 +45,8 @@ public class ProvidedByWebApkSplashDelegate implements SplashDelegate {
     }
 
     @Override
-    public void onSplashHidden(Tab tab) {
+    public void onSplashHidden(Tab tab, @SplashController.SplashHidesReason int reason,
+            long startTimestamp, long endTimestamp) {
         // TODO(pkotwicz) implement.
     }
 

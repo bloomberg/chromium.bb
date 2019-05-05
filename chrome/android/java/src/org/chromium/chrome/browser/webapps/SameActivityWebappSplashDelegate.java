@@ -15,6 +15,7 @@ import android.widget.FrameLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
@@ -29,6 +30,9 @@ import org.chromium.webapk.lib.common.splash.SplashLayout;
  * activity).
  */
 public class SameActivityWebappSplashDelegate implements SplashDelegate, NativeInitObserver {
+    public static final String HISTOGRAM_SPLASHSCREEN_DURATION = "Webapp.Splashscreen.Duration";
+    public static final String HISTOGRAM_SPLASHSCREEN_HIDES = "Webapp.Splashscreen.Hides";
+
     private Activity mActivity;
     private ActivityLifecycleDispatcher mLifecycleDispatcher;
     private TabObserverRegistrar mTabObserverRegistrar;
@@ -98,13 +102,16 @@ public class SameActivityWebappSplashDelegate implements SplashDelegate, NativeI
     }
 
     @Override
-    public void onSplashHidden(Tab tab) {
+    public void onSplashHidden(Tab tab, @SplashController.SplashHidesReason int reason,
+            long startTimestamp, long endTimestamp) {
         if (mWebApkNetworkErrorObserver != null) {
             mTabObserverRegistrar.unregisterTabObserver(mWebApkNetworkErrorObserver);
             tab.removeObserver(mWebApkNetworkErrorObserver);
             mWebApkNetworkErrorObserver = null;
         }
         mLifecycleDispatcher.unregister(SameActivityWebappSplashDelegate.this);
+
+        recordSplashHiddenUma(reason, startTimestamp, endTimestamp);
 
         mActivity = null;
     }
@@ -139,6 +146,16 @@ public class SameActivityWebappSplashDelegate implements SplashDelegate, NativeI
 
         recordUma(resources, webappInfo, selectedIconClassification, selectedIcon,
                 (splashImage != null));
+    }
+
+    /** Called once the splash screen is hidden to record UMA metrics. */
+    private void recordSplashHiddenUma(@SplashController.SplashHidesReason int reason,
+            long startTimestamp, long endTimestamp) {
+        RecordHistogram.recordEnumeratedHistogram(HISTOGRAM_SPLASHSCREEN_HIDES, reason,
+                SplashController.SplashHidesReason.NUM_ENTRIES);
+
+        RecordHistogram.recordMediumTimesHistogram(
+                HISTOGRAM_SPLASHSCREEN_DURATION, endTimestamp - startTimestamp);
     }
 
     /**

@@ -12,29 +12,22 @@ import org.chromium.chrome.browser.webapps.SplashscreenObserver;
  */
 public class WebApkSplashscreenMetrics implements SplashscreenObserver {
     private final long mShellApkLaunchTimeMs;
-    private long mSplashScreenShownTimeMs = -1;
 
     public WebApkSplashscreenMetrics(long shellApkLaunchTimeMs) {
         mShellApkLaunchTimeMs = shellApkLaunchTimeMs;
     }
 
     @Override
-    public void onSplashscreenHidden(long timestamp) {
+    public void onSplashscreenHidden(long startTimestamp, long endTimestamp) {
         if (mShellApkLaunchTimeMs == -1) return;
 
         if (UmaUtils.hasComeToForeground() && !UmaUtils.hasComeToBackground()) {
             // commit both shown/hidden histograms here because native may not be loaded when the
             // splashscreen is shown.
             WebApkUma.recordShellApkLaunchToSplashscreenVisible(
-                    mSplashScreenShownTimeMs - mShellApkLaunchTimeMs);
-            WebApkUma.recordShellApkLaunchToSplashscreenHidden(timestamp - mShellApkLaunchTimeMs);
+                    startTimestamp - mShellApkLaunchTimeMs);
+            WebApkUma.recordShellApkLaunchToSplashscreenHidden(
+                    endTimestamp - mShellApkLaunchTimeMs);
         }
-    }
-
-    @Override
-    public void onSplashscreenShown(long timestamp) {
-        assert mSplashScreenShownTimeMs == -1;
-        if (mShellApkLaunchTimeMs == -1) return;
-        mSplashScreenShownTimeMs = timestamp;
     }
 }

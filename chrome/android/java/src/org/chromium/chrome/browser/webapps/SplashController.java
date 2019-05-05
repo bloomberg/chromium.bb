@@ -13,7 +13,6 @@ import android.view.ViewTreeObserver;
 import org.chromium.base.ObserverList;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.compositor.CompositorView;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -62,9 +61,6 @@ public class SplashController extends EmptyTabObserver {
         int NUM_ENTRIES = 4;
     }
 
-    public static final String HISTOGRAM_SPLASHSCREEN_DURATION = "Webapp.Splashscreen.Duration";
-    public static final String HISTOGRAM_SPLASHSCREEN_HIDES = "Webapp.Splashscreen.Hides";
-
     private final TabObserverRegistrar mTabObserverRegistrar;
 
     private SplashDelegate mDelegate;
@@ -97,8 +93,6 @@ public class SplashController extends EmptyTabObserver {
 
         mSplashView = mDelegate.buildSplashView(webappInfo);
         mParentView.addView(mSplashView);
-
-        notifySplashscreenVisible(mSplashShownTimestamp);
     }
 
     /**
@@ -179,22 +173,12 @@ public class SplashController extends EmptyTabObserver {
         long splashHiddenTimestamp = SystemClock.elapsedRealtime();
         recordTraceEventsFinishedHidingSplash();
 
-        mDelegate.onSplashHidden(tab);
-        recordSplashHiddenUma(reason, splashHiddenTimestamp);
-        notifySplashscreenHidden(splashHiddenTimestamp);
+        assert mSplashShownTimestamp != 0;
+        mDelegate.onSplashHidden(tab, reason, mSplashShownTimestamp, splashHiddenTimestamp);
+        notifySplashscreenHidden(mSplashShownTimestamp, splashHiddenTimestamp);
 
         mDelegate = null;
         mSplashView = null;
-    }
-
-    /** Called once the splash screen is hidden to record UMA metrics. */
-    private void recordSplashHiddenUma(@SplashHidesReason int reason, long splashHiddenTimestamp) {
-        RecordHistogram.recordEnumeratedHistogram(
-                HISTOGRAM_SPLASHSCREEN_HIDES, reason, SplashHidesReason.NUM_ENTRIES);
-
-        assert mSplashShownTimestamp != 0;
-        RecordHistogram.recordMediumTimesHistogram(
-                HISTOGRAM_SPLASHSCREEN_DURATION, splashHiddenTimestamp - mSplashShownTimestamp);
     }
 
     /**
@@ -205,21 +189,15 @@ public class SplashController extends EmptyTabObserver {
     }
 
     /**
-     * Deegister an observer for the splashscreen hidden/visible events.
+     * Deregister an observer for the splashscreen hidden/visible events.
      */
     public void removeObserver(SplashscreenObserver observer) {
         mObservers.removeObserver(observer);
     }
 
-    private void notifySplashscreenVisible(long timestamp) {
+    private void notifySplashscreenHidden(long startTimestamp, long endTimestmap) {
         for (SplashscreenObserver observer : mObservers) {
-            observer.onSplashscreenShown(timestamp);
-        }
-    }
-
-    private void notifySplashscreenHidden(long timestamp) {
-        for (SplashscreenObserver observer : mObservers) {
-            observer.onSplashscreenHidden(timestamp);
+            observer.onSplashscreenHidden(startTimestamp, endTimestmap);
         }
         mObservers.clear();
     }

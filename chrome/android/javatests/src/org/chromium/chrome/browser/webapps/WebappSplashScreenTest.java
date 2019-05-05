@@ -206,10 +206,11 @@ public class WebappSplashScreenTest {
                         SameActivityWebappUmaCache.HISTOGRAM_SPLASHSCREEN_ICON_SIZE, 50));
 
         // DURATION and HIDES UMA should not have been recorded yet.
-        Assert.assertFalse(
-                hasHistogramEntry(SplashController.HISTOGRAM_SPLASHSCREEN_DURATION, 3000));
+        Assert.assertFalse(hasHistogramEntry(
+                SameActivityWebappSplashDelegate.HISTOGRAM_SPLASHSCREEN_DURATION, 3000));
         Assert.assertEquals(0,
-                getHistogramTotalCountFor(SplashController.HISTOGRAM_SPLASHSCREEN_HIDES,
+                getHistogramTotalCountFor(
+                        SameActivityWebappSplashDelegate.HISTOGRAM_SPLASHSCREEN_HIDES,
                         SplashController.SplashHidesReason.NUM_ENTRIES));
     }
 
@@ -225,10 +226,11 @@ public class WebappSplashScreenTest {
         mActivityTestRule.waitUntilSplashscreenHides();
 
         // DURATION and HIDES should now have a value.
-        Assert.assertTrue(
-                hasHistogramEntry(SplashController.HISTOGRAM_SPLASHSCREEN_DURATION, 10000));
+        Assert.assertTrue(hasHistogramEntry(
+                SameActivityWebappSplashDelegate.HISTOGRAM_SPLASHSCREEN_DURATION, 10000));
         Assert.assertEquals(1,
-                getHistogramTotalCountFor(SplashController.HISTOGRAM_SPLASHSCREEN_HIDES,
+                getHistogramTotalCountFor(
+                        SameActivityWebappSplashDelegate.HISTOGRAM_SPLASHSCREEN_HIDES,
                         SplashController.SplashHidesReason.NUM_ENTRIES));
 
         // The other UMA records should not have changed.

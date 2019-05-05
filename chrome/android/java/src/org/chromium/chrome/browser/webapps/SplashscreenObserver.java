@@ -9,14 +9,9 @@ package org.chromium.chrome.browser.webapps;
  */
 public interface SplashscreenObserver {
     /**
-     * Called when the splashscreen is shown.
-     * @param timestamp Time that the splash screen was shown.
+     * Called when the splash screen is hidden.
+     * @param startTimestamp Time that the splash screen was shown.
+     * @param endTimestap Time that the splash screen was hidden.
      */
-    void onSplashscreenShown(long timestamp);
-
-    /**
-     * Called when the splashscreen is hidden.
-     * @param timestamp Time that the splash screen was hidden.
-     */
-    void onSplashscreenHidden(long timestamp);
+    void onSplashscreenHidden(long startTimestamp, long endTimestamp);
 }
