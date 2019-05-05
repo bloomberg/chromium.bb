@@ -7,7 +7,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/read_only_shared_memory_region.h"
+#include "base/memory/shared_memory_mapping.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
@@ -210,27 +211,26 @@ bool PixelTest::PixelsMatchReference(const base::FilePath& ref_file,
       *result_bitmap_, test_data_dir.Append(ref_file), comparator);
 }
 
-std::unique_ptr<base::SharedMemory> PixelTest::AllocateSharedBitmapMemory(
+base::WritableSharedMemoryMapping PixelTest::AllocateSharedBitmapMemory(
     const viz::SharedBitmapId& id,
     const gfx::Size& size) {
-  std::unique_ptr<base::SharedMemory> shm =
-      viz::bitmap_allocation::AllocateMappedBitmap(size, viz::RGBA_8888);
+  base::MappedReadOnlyRegion mapped_region =
+      viz::bitmap_allocation::AllocateSharedBitmap(size, viz::RGBA_8888);
   this->shared_bitmap_manager_->ChildAllocatedSharedBitmap(
-      viz::bitmap_allocation::DuplicateAndCloseMappedBitmap(shm.get(), size,
-                                                            viz::RGBA_8888),
+      viz::bitmap_allocation::ToMojoHandle(std::move(mapped_region.region)),
       id);
-  return shm;
+  return std::move(mapped_region.mapping);
 }
 
 viz::ResourceId PixelTest::AllocateAndFillSoftwareResource(
     const gfx::Size& size,
     const SkBitmap& source) {
   viz::SharedBitmapId shared_bitmap_id = viz::SharedBitmap::GenerateId();
-  std::unique_ptr<base::SharedMemory> shm =
+  base::WritableSharedMemoryMapping mapping =
       AllocateSharedBitmapMemory(shared_bitmap_id, size);
 
   SkImageInfo info = SkImageInfo::MakeN32Premul(size.width(), size.height());
-  source.readPixels(info, shm->memory(), info.minRowBytes(), 0, 0);
+  source.readPixels(info, mapping.memory(), info.minRowBytes(), 0, 0);
 
   return child_resource_provider_->ImportResource(
       viz::TransferableResource::MakeSoftware(shared_bitmap_id, size,

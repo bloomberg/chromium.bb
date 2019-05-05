@@ -12,7 +12,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/no_destructor.h"
 #include "base/strings/stringprintf.h"
 #include "cc/layers/texture_layer.h"
@@ -277,15 +277,15 @@ void TestPlugin::UpdateGeometry(
     shared_bitmap_ = nullptr;
   } else {
     viz::SharedBitmapId id = viz::SharedBitmap::GenerateId();
-    std::unique_ptr<base::SharedMemory> shm =
-        viz::bitmap_allocation::AllocateMappedBitmap(gfx::Rect(rect_).size(),
+    base::MappedReadOnlyRegion shm =
+        viz::bitmap_allocation::AllocateSharedBitmap(gfx::Rect(rect_).size(),
                                                      viz::RGBA_8888);
     shared_bitmap_ = base::MakeRefCounted<cc::CrossThreadSharedBitmap>(
         id, std::move(shm), gfx::Rect(rect_).size(), viz::RGBA_8888);
     // The |shared_bitmap_|'s id will be registered when being given to the
     // compositor.
 
-    DrawSceneSoftware(shared_bitmap_->shared_memory()->memory());
+    DrawSceneSoftware(shared_bitmap_->memory());
   }
 
   content_changed_ = true;

@@ -94,8 +94,8 @@ void ExpandToMinSize(gfx::Rect* rect, int min_size) {
 
 FuzzedBitmap::FuzzedBitmap(SharedBitmapId id,
                            gfx::Size size,
-                           std::unique_ptr<base::SharedMemory> shared_memory)
-    : id(id), size(size), shared_memory(std::move(shared_memory)) {}
+                           base::ReadOnlySharedMemoryRegion shared_region)
+    : id(id), size(size), shared_region(std::move(shared_region)) {}
 FuzzedBitmap::~FuzzedBitmap() = default;
 FuzzedBitmap::FuzzedBitmap(FuzzedBitmap&& other) noexcept = default;
 
@@ -346,16 +346,16 @@ FuzzedBitmap* FuzzedCompositorFrameBuilder::AllocateFuzzedBitmap(
     const gfx::Size& size,
     SkColor color) {
   SharedBitmapId shared_bitmap_id = SharedBitmap::GenerateId();
-  std::unique_ptr<base::SharedMemory> shared_memory =
-      bitmap_allocation::AllocateMappedBitmap(size, RGBA_8888);
+  base::MappedReadOnlyRegion shm =
+      bitmap_allocation::AllocateSharedBitmap(size, RGBA_8888);
 
   SkBitmap bitmap;
   SkImageInfo info = SkImageInfo::MakeN32Premul(size.width(), size.height());
-  bitmap.installPixels(info, shared_memory->memory(), info.minRowBytes());
+  bitmap.installPixels(info, shm.mapping.memory(), info.minRowBytes());
   bitmap.eraseColor(color);
 
   data_.allocated_bitmaps.push_back(
-      {shared_bitmap_id, size, std::move(shared_memory)});
+      {shared_bitmap_id, size, std::move(shm.region)});
 
   return &data_.allocated_bitmaps.back();
 }

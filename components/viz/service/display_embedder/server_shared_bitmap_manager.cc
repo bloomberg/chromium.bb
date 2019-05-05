@@ -10,11 +10,14 @@
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/shared_memory_mapping.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/process_memory_dump.h"
+#include "components/viz/common/resources/bitmap_allocation.h"
 #include "components/viz/common/resources/resource_sizes.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/gfx/geometry/size.h"
@@ -23,13 +26,18 @@ namespace viz {
 
 class BitmapData : public base::RefCounted<BitmapData> {
  public:
-  explicit BitmapData(size_t buffer_size) : buffer_size(buffer_size) {}
-  std::unique_ptr<base::SharedMemory> memory;
-  size_t buffer_size;
+  explicit BitmapData(base::ReadOnlySharedMemoryMapping mapping)
+      : mapping_(std::move(mapping)) {}
+
+  size_t size() const { return mapping_.size(); }
+  const base::UnguessableToken& mapped_id() const { return mapping_.guid(); }
+  const void* memory() const { return mapping_.memory(); }
 
  private:
   friend class base::RefCounted<BitmapData>;
   ~BitmapData() {}
+
+  base::ReadOnlySharedMemoryMapping mapping_;
   DISALLOW_COPY_AND_ASSIGN(BitmapData);
 };
 
@@ -40,8 +48,12 @@ namespace {
 // alive.
 class ServerSharedBitmap : public SharedBitmap {
  public:
+  // NOTE: bitmap_data->memory() is read-only but SharedBitmap expects a
+  // uint8_t* pointer, even though all instances returned by a
+  // SharedBitmapManager will be used read-only.
   explicit ServerSharedBitmap(scoped_refptr<BitmapData> bitmap_data)
-      : SharedBitmap(static_cast<uint8_t*>(bitmap_data->memory->memory())),
+      : SharedBitmap(
+            static_cast<uint8_t*>(const_cast<void*>(bitmap_data->memory()))),
         bitmap_data_(std::move(bitmap_data)) {}
 
   ~ServerSharedBitmap() override {
@@ -74,10 +86,10 @@ std::unique_ptr<SharedBitmap> ServerSharedBitmapManager::GetSharedBitmapFromId(
 
   size_t bitmap_size;
   if (!ResourceSizes::MaybeSizeInBytes(size, format, &bitmap_size) ||
-      bitmap_size > data->buffer_size)
+      bitmap_size > data->size())
     return nullptr;
 
-  if (!data->memory->memory()) {
+  if (!data->memory()) {
     return nullptr;
   }
 
@@ -91,7 +103,7 @@ ServerSharedBitmapManager::GetSharedBitmapTracingGUIDFromId(
   if (it == handle_map_.end())
     return {};
   BitmapData* data = it->second.get();
-  return data->memory->mapped_id();
+  return data->mapped_id();
 }
 
 bool ServerSharedBitmapManager::ChildAllocatedSharedBitmap(
@@ -103,25 +115,21 @@ bool ServerSharedBitmapManager::ChildAllocatedSharedBitmap(
   if (base::ContainsKey(handle_map_, id))
     return false;
 
-  base::SharedMemoryHandle memory_handle;
-  size_t buffer_size;
-  MojoResult result = mojo::UnwrapSharedMemoryHandle(
-      std::move(buffer), &memory_handle, &buffer_size, nullptr);
+  base::ReadOnlySharedMemoryRegion region =
+      bitmap_allocation::FromMojoHandle(std::move(buffer));
 
   // This function handles public API requests, so verify we unwrapped a shared
   // memory handle before trying to use the handle.
-  if (result != MOJO_RESULT_OK)
+  if (!region.IsValid())
     return false;
 
-  auto data = base::MakeRefCounted<BitmapData>(buffer_size);
-  data->memory = std::make_unique<base::SharedMemory>(memory_handle, false);
-  // Map the memory to get a pointer to it, then close it to free up the fd so
-  // it can be reused. This doesn't unmap the memory. Some OS have a very
-  // limited number of fds and this avoids consuming them all.
-  data->memory->Map(data->buffer_size);
-  data->memory->Close();
+  base::ReadOnlySharedMemoryMapping mapping = region.Map();
+  if (!mapping.IsValid())
+    return false;
 
-  handle_map_[id] = std::move(data);
+  handle_map_[id] = base::MakeRefCounted<BitmapData>(std::move(mapping));
+
+  // Note: |region| will be destroyed at scope exit, releasing the fd.
   return true;
 }
 
@@ -149,11 +157,11 @@ bool ServerSharedBitmapManager::OnMemoryDump(
 
     dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                     base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                    data->buffer_size);
+                    data->size());
 
     // This GUID is the same returned by GetSharedBitmapTracingGUIDFromId() so
     // other components use a consistent GUID for a given SharedBitmapId.
-    base::UnguessableToken shared_memory_guid = data->memory->mapped_id();
+    base::UnguessableToken shared_memory_guid = data->mapped_id();
     DCHECK(!shared_memory_guid.is_empty());
     pmd->CreateSharedMemoryOwnershipEdge(dump->guid(), shared_memory_guid,
                                          0 /* importance*/);

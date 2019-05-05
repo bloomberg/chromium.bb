@@ -13,7 +13,8 @@
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/bit_cast.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/shared_memory_mapping.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -279,14 +280,13 @@ class VideoResourceUpdater::SoftwarePlaneResource
     DCHECK(shared_bitmap_reporter_);
 
     // Allocate SharedMemory and notify display compositor of the allocation.
-    shared_memory_ = viz::bitmap_allocation::AllocateMappedBitmap(
-        resource_size(), viz::ResourceFormat::RGBA_8888);
-    mojo::ScopedSharedBufferHandle handle =
-        viz::bitmap_allocation::DuplicateAndCloseMappedBitmap(
-            shared_memory_.get(), resource_size(),
-            viz::ResourceFormat::RGBA_8888);
-    shared_bitmap_reporter_->DidAllocateSharedBitmap(std::move(handle),
-                                                     shared_bitmap_id_);
+    base::MappedReadOnlyRegion shm =
+        viz::bitmap_allocation::AllocateSharedBitmap(
+            resource_size(), viz::ResourceFormat::RGBA_8888);
+    shared_mapping_ = std::move(shm.mapping);
+    shared_bitmap_reporter_->DidAllocateSharedBitmap(
+        viz::bitmap_allocation::ToMojoHandle(std::move(shm.region)),
+        shared_bitmap_id_);
   }
   ~SoftwarePlaneResource() override {
     shared_bitmap_reporter_->DidDeleteSharedBitmap(shared_bitmap_id_);
@@ -295,17 +295,17 @@ class VideoResourceUpdater::SoftwarePlaneResource
   const viz::SharedBitmapId& shared_bitmap_id() const {
     return shared_bitmap_id_;
   }
-  void* pixels() { return shared_memory_->memory(); }
+  void* pixels() { return shared_mapping_.memory(); }
 
   // Returns a memory dump GUID consistent across processes.
   base::UnguessableToken GetSharedMemoryGuid() const {
-    return shared_memory_->mapped_id();
+    return shared_mapping_.guid();
   }
 
  private:
   viz::SharedBitmapReporter* const shared_bitmap_reporter_;
   const viz::SharedBitmapId shared_bitmap_id_;
-  std::unique_ptr<base::SharedMemory> shared_memory_;
+  base::WritableSharedMemoryMapping shared_mapping_;
 
   DISALLOW_COPY_AND_ASSIGN(SoftwarePlaneResource);
 };

@@ -110,15 +110,9 @@ void TextureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
 
   LayerTreeFrameSink* sink = layer_tree_impl()->layer_tree_frame_sink();
   for (const auto& pair : to_register_bitmaps_) {
-    // Because we may want to notify a display compositor about this
-    // base::SharedMemory more than one time, we need to be able to keep
-    // making handles to share with it, so we can't close the
-    // base::SharedMemory.
-    mojo::ScopedSharedBufferHandle handle =
-        viz::bitmap_allocation::DuplicateWithoutClosingMappedBitmap(
-            pair.second->shared_memory(), pair.second->size(),
-            pair.second->format());
-    sink->DidAllocateSharedBitmap(std::move(handle), pair.first);
+    sink->DidAllocateSharedBitmap(viz::bitmap_allocation::ToMojoHandle(
+                                      pair.second->shared_region().Duplicate()),
+                                  pair.first);
   }
   // All |to_register_bitmaps_| have been registered above, so we can move them
   // all to the |registered_bitmaps_|.

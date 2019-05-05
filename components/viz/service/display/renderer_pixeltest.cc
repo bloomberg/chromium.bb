@@ -4,12 +4,15 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <algorithm>
 #include <memory>
 #include <tuple>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/aligned_memory.h"
+#include "base/memory/read_only_shared_memory_region.h"
+#include "base/memory/shared_memory_mapping.h"
 #include "build/build_config.h"
 #include "cc/base/math_util.h"
 #include "cc/paint/paint_flags.h"
@@ -62,17 +65,15 @@ base::span<const uint8_t> MakePixelSpan(const SkBitmap& bitmap) {
                          bitmap.computeByteSize());
 }
 
-std::unique_ptr<base::SharedMemory> AllocateAndRegisterSharedBitmapMemory(
+base::WritableSharedMemoryMapping AllocateAndRegisterSharedBitmapMemory(
     const SharedBitmapId& id,
     const gfx::Size& size,
     SharedBitmapManager* shared_bitmap_manager) {
-  std::unique_ptr<base::SharedMemory> shm =
-      bitmap_allocation::AllocateMappedBitmap(size, RGBA_8888);
+  base::MappedReadOnlyRegion shm =
+      bitmap_allocation::AllocateSharedBitmap(size, RGBA_8888);
   shared_bitmap_manager->ChildAllocatedSharedBitmap(
-      bitmap_allocation::DuplicateAndCloseMappedBitmap(shm.get(), size,
-                                                       RGBA_8888),
-      id);
-  return shm;
+      bitmap_allocation::ToMojoHandle(std::move(shm.region)), id);
+  return std::move(shm.mapping);
 }
 
 void DeleteSharedImage(scoped_refptr<ContextProvider> context_provider,
@@ -247,7 +248,7 @@ void CreateTestTwoColoredTextureDrawQuad(
         RGBA_8888, gfx::ColorSpace(), MakePixelSpan(pixels));
   } else {
     SharedBitmapId shared_bitmap_id = SharedBitmap::GenerateId();
-    std::unique_ptr<base::SharedMemory> shm =
+    base::WritableSharedMemoryMapping mapping =
         AllocateAndRegisterSharedBitmapMemory(shared_bitmap_id, rect.size(),
                                               shared_bitmap_manager);
     resource = child_resource_provider->ImportResource(
@@ -255,8 +256,8 @@ void CreateTestTwoColoredTextureDrawQuad(
                                            RGBA_8888),
         SingleReleaseCallback::Create(base::DoNothing()));
 
-    for (int i = 0; i < rect.size().GetArea(); ++i)
-      static_cast<uint32_t*>(shm->memory())[i] = pixels[i];
+    auto span = mapping.GetMemoryAsSpan<uint32_t>(pixels.size());
+    std::copy(pixels.begin(), pixels.end(), span.begin());
   }
 
   // Return the mapped resource id.
@@ -308,7 +309,7 @@ void CreateTestTextureDrawQuad(
         RGBA_8888, gfx::ColorSpace(), MakePixelSpan(pixels));
   } else {
     SharedBitmapId shared_bitmap_id = SharedBitmap::GenerateId();
-    std::unique_ptr<base::SharedMemory> shm =
+    base::WritableSharedMemoryMapping mapping =
         AllocateAndRegisterSharedBitmapMemory(shared_bitmap_id, rect.size(),
                                               shared_bitmap_manager);
     resource = child_resource_provider->ImportResource(
@@ -316,8 +317,8 @@ void CreateTestTextureDrawQuad(
                                            RGBA_8888),
         SingleReleaseCallback::Create(base::DoNothing()));
 
-    for (int i = 0; i < rect.size().GetArea(); ++i)
-      static_cast<uint32_t*>(shm->memory())[i] = pixels[i];
+    auto span = mapping.GetMemoryAsSpan<uint32_t>(pixels.size());
+    std::copy(pixels.begin(), pixels.end(), span.begin());
   }
 
   // Return the mapped resource id.

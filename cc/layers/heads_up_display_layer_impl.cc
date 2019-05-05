@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/memory/shared_memory_mapping.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
@@ -156,12 +157,12 @@ class HudSoftwareBacking : public ResourcePool::SoftwareBacking {
       const base::trace_event::MemoryAllocatorDumpGuid& buffer_dump_guid,
       uint64_t tracing_process_id,
       int importance) const override {
-    pmd->CreateSharedMemoryOwnershipEdge(
-        buffer_dump_guid, shared_memory->mapped_id(), importance);
+    pmd->CreateSharedMemoryOwnershipEdge(buffer_dump_guid,
+                                         shared_mapping.guid(), importance);
   }
 
   LayerTreeFrameSink* layer_tree_frame_sink;
-  std::unique_ptr<base::SharedMemory> shared_memory;
+  base::WritableSharedMemoryMapping shared_mapping;
 };
 
 bool HeadsUpDisplayLayerImpl::WillDraw(
@@ -320,15 +321,14 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
       auto backing = std::make_unique<HudSoftwareBacking>();
       backing->layer_tree_frame_sink = layer_tree_frame_sink;
       backing->shared_bitmap_id = viz::SharedBitmap::GenerateId();
-      backing->shared_memory = viz::bitmap_allocation::AllocateMappedBitmap(
-          pool_resource.size(), pool_resource.format());
+      base::MappedReadOnlyRegion mapped_region =
+          viz::bitmap_allocation::AllocateSharedBitmap(pool_resource.size(),
+                                                       pool_resource.format());
+      backing->shared_mapping = std::move(mapped_region.mapping);
 
-      mojo::ScopedSharedBufferHandle handle =
-          viz::bitmap_allocation::DuplicateAndCloseMappedBitmap(
-              backing->shared_memory.get(), pool_resource.size(),
-              pool_resource.format());
-      layer_tree_frame_sink->DidAllocateSharedBitmap(std::move(handle),
-                                                     backing->shared_bitmap_id);
+      layer_tree_frame_sink->DidAllocateSharedBitmap(
+          viz::bitmap_allocation::ToMojoHandle(std::move(mapped_region.region)),
+          backing->shared_bitmap_id);
 
       pool_resource.set_software_backing(std::move(backing));
     }
@@ -443,7 +443,7 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
     auto* backing =
         static_cast<HudSoftwareBacking*>(pool_resource.software_backing());
     sk_sp<SkSurface> surface = SkSurface::MakeRasterDirect(
-        info, backing->shared_memory->memory(), info.minRowBytes());
+        info, backing->shared_mapping.memory(), info.minRowBytes());
 
     SkiaPaintCanvas canvas(surface->getCanvas());
     DrawHudContents(&canvas);

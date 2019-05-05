@@ -18,8 +18,9 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/shared_memory_mapping.h"
 #include "build/build_config.h"
 #include "cc/test/render_pass_test_utils.h"
 #include "cc/test/resource_provider_test_utils.h"
@@ -70,14 +71,13 @@ static SharedBitmapId CreateAndFillSharedBitmap(SharedBitmapManager* manager,
                                                 uint32_t value) {
   SharedBitmapId shared_bitmap_id = SharedBitmap::GenerateId();
 
-  std::unique_ptr<base::SharedMemory> shm =
-      bitmap_allocation::AllocateMappedBitmap(size, RGBA_8888);
+  base::MappedReadOnlyRegion shm =
+      bitmap_allocation::AllocateSharedBitmap(size, RGBA_8888);
   manager->ChildAllocatedSharedBitmap(
-      bitmap_allocation::DuplicateAndCloseMappedBitmap(shm.get(), size,
-                                                       RGBA_8888),
-      shared_bitmap_id);
+      bitmap_allocation::ToMojoHandle(std::move(shm.region)), shared_bitmap_id);
 
-  std::fill_n(static_cast<uint32_t*>(shm->memory()), size.GetArea(), value);
+  auto* memory = static_cast<uint32_t*>(shm.mapping.memory());
+  std::fill_n(memory, size.GetArea(), value);
   return shared_bitmap_id;
 }
 

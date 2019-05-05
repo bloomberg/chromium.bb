@@ -38,4 +38,8 @@ specific_include_rules = {
   "features.cc" : [
     "+gpu/config/gpu_finch_features.h",
   ],
+  "bitmap_allocation.cc" : [
+    # Only used to pass Mojo handles, not to communicate with the viz service.
+    "+mojo/public/cpp/base/shared_memory_utils.h",
+  ],
 }

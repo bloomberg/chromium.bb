@@ -18,6 +18,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/containers/flat_map.h"
 #include "base/memory/memory_pressure_listener.h"
+#include "base/memory/shared_memory_mapping.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "cc/base/synced_property.h"
@@ -219,7 +220,7 @@ class CC_EXPORT LayerTreeHostImpl
 
     // Backing for software compositing.
     viz::SharedBitmapId shared_bitmap_id;
-    std::unique_ptr<base::SharedMemory> shared_memory;
+    base::WritableSharedMemoryMapping shared_mapping;
     // Backing for gpu compositing.
     gpu::Mailbox mailbox;
 

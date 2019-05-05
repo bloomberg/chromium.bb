@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-#include "base/memory/shared_memory.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/resources/bitmap_allocation.h"
 #include "components/viz/service/compositor_frame_fuzzer/compositor_frame_fuzzer.pb.h"
@@ -18,7 +18,7 @@ namespace viz {
 struct FuzzedBitmap {
   FuzzedBitmap(SharedBitmapId id,
                gfx::Size size,
-               std::unique_ptr<base::SharedMemory> shared_memory);
+               base::ReadOnlySharedMemoryRegion shared_region);
   ~FuzzedBitmap();
 
   FuzzedBitmap(FuzzedBitmap&& other) noexcept;
@@ -26,10 +26,7 @@ struct FuzzedBitmap {
 
   SharedBitmapId id;
   gfx::Size size;
-
-  // TODO(kylechar): base::SharedMemory is deprecated, change to
-  // base::WritableSharedMemoryRegion.
-  std::unique_ptr<base::SharedMemory> shared_memory;
+  base::ReadOnlySharedMemoryRegion shared_region;
 
   DISALLOW_COPY(FuzzedBitmap);
 };

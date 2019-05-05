@@ -5,6 +5,8 @@
 #include "third_party/blink/renderer/platform/graphics/canvas_resource.h"
 
 #include <utility>
+
+#include "base/memory/read_only_shared_memory_region.h"
 #include "components/viz/common/resources/bitmap_allocation.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/single_release_callback.h"
@@ -561,21 +563,20 @@ CanvasResourceSharedBitmap::CanvasResourceSharedBitmap(
     SkFilterQuality filter_quality)
     : CanvasResource(std::move(provider), filter_quality, color_params),
       size_(size) {
-  shared_memory_ = viz::bitmap_allocation::AllocateMappedBitmap(
+  base::MappedReadOnlyRegion shm = viz::bitmap_allocation::AllocateSharedBitmap(
       gfx::Size(Size()), ColorParams().TransferableResourceFormat());
 
-  if (!IsValid())
+  if (!shm.IsValid())
     return;
 
+  shared_mapping_ = std::move(shm.mapping);
   shared_bitmap_id_ = viz::SharedBitmap::GenerateId();
 
   CanvasResourceDispatcher* resource_dispatcher =
       Provider() ? Provider()->ResourceDispatcher() : nullptr;
   if (resource_dispatcher) {
     resource_dispatcher->DidAllocateSharedBitmap(
-        viz::bitmap_allocation::DuplicateAndCloseMappedBitmap(
-            shared_memory_.get(), gfx::Size(Size()),
-            ColorParams().TransferableResourceFormat()),
+        viz::bitmap_allocation::ToMojoHandle(std::move(shm.region)),
         SharedBitmapIdToGpuMailboxPtr(shared_bitmap_id_));
   }
 }
@@ -585,7 +586,7 @@ CanvasResourceSharedBitmap::~CanvasResourceSharedBitmap() {
 }
 
 bool CanvasResourceSharedBitmap::IsValid() const {
-  return !!shared_memory_;
+  return shared_mapping_.IsValid();
 }
 
 IntSize CanvasResourceSharedBitmap::Size() const {
@@ -602,7 +603,7 @@ scoped_refptr<StaticBitmapImage> CanvasResourceSharedBitmap::Bitmap() {
   SkImageInfo image_info = SkImageInfo::Make(
       Size().Width(), Size().Height(), ColorParams().GetSkColorType(),
       ColorParams().GetSkAlphaType(), ColorParams().GetSkColorSpace());
-  SkPixmap pixmap(image_info, shared_memory_->memory(),
+  SkPixmap pixmap(image_info, shared_mapping_.memory(),
                   image_info.minRowBytes());
   this->AddRef();
   sk_sp<SkImage> sk_image = SkImage::MakeFromRaster(
@@ -633,11 +634,11 @@ void CanvasResourceSharedBitmap::TearDown() {
     resource_dispatcher->DidDeleteSharedBitmap(
         SharedBitmapIdToGpuMailboxPtr(shared_bitmap_id_));
   }
-  shared_memory_ = nullptr;
+  shared_mapping_ = {};
 }
 
 void CanvasResourceSharedBitmap::Abandon() {
-  shared_memory_ = nullptr;
+  shared_mapping_ = {};
 }
 
 const gpu::Mailbox& CanvasResourceSharedBitmap::GetOrCreateGpuMailbox(
@@ -656,7 +657,7 @@ void CanvasResourceSharedBitmap::TakeSkImage(sk_sp<SkImage> image) {
       ColorParams().GetSkColorSpaceForSkSurfaces());
 
   bool read_pixels_successful = image->readPixels(
-      image_info, shared_memory_->memory(), image_info.minRowBytes(), 0, 0);
+      image_info, shared_mapping_.memory(), image_info.minRowBytes(), 0, 0);
   DCHECK(read_pixels_successful);
 }
 

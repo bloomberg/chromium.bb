@@ -249,6 +249,7 @@ viz_component("common") {
     "//gpu/command_buffer/client:raster",
     "//gpu/command_buffer/client:raster_interface",
     "//gpu/vulkan:buildflags",
+    "//mojo/public/cpp/base",
     "//mojo/public/cpp/system",
     "//third_party/libyuv",
     "//ui/gfx",

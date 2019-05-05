@@ -9,6 +9,7 @@
 
 #include <algorithm>
 
+#include "base/memory/shared_memory_mapping.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
@@ -32,12 +33,12 @@ class BitmapSoftwareBacking : public ResourcePool::SoftwareBacking {
       const base::trace_event::MemoryAllocatorDumpGuid& buffer_dump_guid,
       uint64_t tracing_process_id,
       int importance) const override {
-    pmd->CreateSharedMemoryOwnershipEdge(
-        buffer_dump_guid, shared_memory->mapped_id(), importance);
+    pmd->CreateSharedMemoryOwnershipEdge(buffer_dump_guid, mapping.guid(),
+                                         importance);
   }
 
   LayerTreeFrameSink* frame_sink;
-  std::unique_ptr<base::SharedMemory> shared_memory;
+  base::WritableSharedMemoryMapping mapping;
 };
 
 class BitmapRasterBufferImpl : public RasterBuffer {
@@ -107,14 +108,12 @@ BitmapRasterBufferProvider::AcquireBufferForRaster(
     auto backing = std::make_unique<BitmapSoftwareBacking>();
     backing->frame_sink = frame_sink_;
     backing->shared_bitmap_id = viz::SharedBitmap::GenerateId();
-    backing->shared_memory =
-        viz::bitmap_allocation::AllocateMappedBitmap(size, viz::RGBA_8888);
-
-    mojo::ScopedSharedBufferHandle handle =
-        viz::bitmap_allocation::DuplicateAndCloseMappedBitmap(
-            backing->shared_memory.get(), size, viz::RGBA_8888);
-    frame_sink_->DidAllocateSharedBitmap(std::move(handle),
-                                         backing->shared_bitmap_id);
+    base::MappedReadOnlyRegion mapped_region =
+        viz::bitmap_allocation::AllocateSharedBitmap(size, viz::RGBA_8888);
+    backing->mapping = std::move(mapped_region.mapping);
+    frame_sink_->DidAllocateSharedBitmap(
+        viz::bitmap_allocation::ToMojoHandle(std::move(mapped_region.region)),
+        backing->shared_bitmap_id);
 
     resource.set_software_backing(std::move(backing));
   }
@@ -122,7 +121,7 @@ BitmapRasterBufferProvider::AcquireBufferForRaster(
       static_cast<BitmapSoftwareBacking*>(resource.software_backing());
 
   return std::make_unique<BitmapRasterBufferImpl>(
-      size, color_space, backing->shared_memory->memory(), resource_content_id,
+      size, color_space, backing->mapping.memory(), resource_content_id,
       previous_content_id);
 }
 

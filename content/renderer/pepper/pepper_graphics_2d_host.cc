@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/numerics/checked_math.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -741,15 +742,15 @@ bool PepperGraphics2DHost::PrepareTransferableResource(
   }
   if (!shared_bitmap) {
     viz::SharedBitmapId id = viz::SharedBitmap::GenerateId();
-    std::unique_ptr<base::SharedMemory> shm =
-        viz::bitmap_allocation::AllocateMappedBitmap(pixel_image_size,
+    base::MappedReadOnlyRegion shm =
+        viz::bitmap_allocation::AllocateSharedBitmap(pixel_image_size,
                                                      viz::RGBA_8888);
     shared_bitmap = base::MakeRefCounted<cc::CrossThreadSharedBitmap>(
         id, std::move(shm), pixel_image_size, viz::RGBA_8888);
     registration = bitmap_registrar->RegisterSharedBitmapId(id, shared_bitmap);
   }
   void* src = image_data_->Map();
-  memcpy(shared_bitmap->shared_memory()->memory(), src,
+  memcpy(shared_bitmap->memory(), src,
          viz::ResourceSizes::CheckedSizeInBytes<size_t>(pixel_image_size,
                                                         viz::RGBA_8888));
   image_data_->Unmap();

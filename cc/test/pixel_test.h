@@ -6,6 +6,7 @@
 #define CC_TEST_PIXEL_TEST_H_
 
 #include "base/files/file_util.h"
+#include "base/memory/shared_memory_mapping.h"
 #include "base/single_thread_task_runner.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/trees/layer_tree_settings.h"
@@ -79,7 +80,7 @@ class PixelTest : public testing::Test {
 
   // Allocates a SharedMemory bitmap and registers it with the display
   // compositor's SharedBitmapManager.
-  std::unique_ptr<base::SharedMemory> AllocateSharedBitmapMemory(
+  base::WritableSharedMemoryMapping AllocateSharedBitmapMemory(
       const viz::SharedBitmapId& id,
       const gfx::Size& size);
   // Uses AllocateSharedBitmapMemory() then registers a ResourceId with the

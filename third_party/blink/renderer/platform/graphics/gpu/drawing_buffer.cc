@@ -34,6 +34,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/numerics/checked_math.h"
 #include "build/build_config.h"
 #include "cc/layers/texture_layer.h"
@@ -291,9 +292,8 @@ DrawingBuffer::RegisteredBitmap DrawingBuffer::CreateOrRecycleBitmap(
   viz::ResourceFormat format = viz::RGBA_8888;
   if (use_half_float_storage_)
     format = viz::RGBA_F16;
-  std::unique_ptr<base::SharedMemory> shm =
-      viz::bitmap_allocation::AllocateMappedBitmap(
-          static_cast<gfx::Size>(size_), format);
+  base::MappedReadOnlyRegion shm = viz::bitmap_allocation::AllocateSharedBitmap(
+      static_cast<gfx::Size>(size_), format);
   auto bitmap = base::MakeRefCounted<cc::CrossThreadSharedBitmap>(
       id, std::move(shm), static_cast<gfx::Size>(size_), format);
   RegisteredBitmap registered = {
@@ -358,8 +358,8 @@ void DrawingBuffer::FinishPrepareTransferableResourceSoftware(
 
   // Read the framebuffer into |bitmap|.
   {
-    unsigned char* pixels = static_cast<unsigned char*>(
-        registered.bitmap->shared_memory()->memory());
+    unsigned char* pixels =
+        static_cast<unsigned char*>(registered.bitmap->memory());
     DCHECK(pixels);
     bool need_premultiply = want_alpha_channel_ && !premultiplied_alpha_;
     WebGLImageConversion::AlphaOp op =

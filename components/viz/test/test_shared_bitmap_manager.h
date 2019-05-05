@@ -8,12 +8,9 @@
 #include <map>
 #include <set>
 
+#include "base/memory/shared_memory_mapping.h"
 #include "base/sequence_checker.h"
 #include "components/viz/service/display/shared_bitmap_manager.h"
-
-namespace base {
-class SharedMemory;
-}  // namespace base
 
 namespace viz {
 
@@ -36,8 +33,7 @@ class TestSharedBitmapManager : public SharedBitmapManager {
  private:
   SEQUENCE_CHECKER(sequence_checker_);
 
-  std::map<SharedBitmapId, base::SharedMemory*> bitmap_map_;
-  std::map<SharedBitmapId, std::unique_ptr<base::SharedMemory>> owned_map_;
+  std::map<SharedBitmapId, base::ReadOnlySharedMemoryMapping> mapping_map_;
   std::set<SharedBitmapId> notified_set_;
 };
 

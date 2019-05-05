@@ -8,7 +8,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/read_only_shared_memory_region.h"
+#include "base/memory/shared_memory_mapping.h"
 #include "base/run_loop.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/fake_output_surface_client.h"
@@ -77,16 +78,15 @@ class SoftwareRendererTest : public testing::Test {
 
   ResourceId AllocateAndFillSoftwareResource(const gfx::Size& size,
                                              const SkBitmap& source) {
-    std::unique_ptr<base::SharedMemory> shm =
-        bitmap_allocation::AllocateMappedBitmap(size, RGBA_8888);
+    base::MappedReadOnlyRegion shm =
+        bitmap_allocation::AllocateSharedBitmap(size, RGBA_8888);
     SkImageInfo info = SkImageInfo::MakeN32Premul(size.width(), size.height());
-    source.readPixels(info, shm->memory(), info.minRowBytes(), 0, 0);
+    source.readPixels(info, shm.mapping.memory(), info.minRowBytes(), 0, 0);
 
     // Registers the SharedBitmapId in the display compositor.
     SharedBitmapId shared_bitmap_id = SharedBitmap::GenerateId();
     shared_bitmap_manager_->ChildAllocatedSharedBitmap(
-        bitmap_allocation::DuplicateAndCloseMappedBitmap(shm.get(), size,
-                                                         RGBA_8888),
+        bitmap_allocation::ToMojoHandle(std::move(shm.region)),
         shared_bitmap_id);
 
     // Makes a resource id that refers to the registered SharedBitmapId.

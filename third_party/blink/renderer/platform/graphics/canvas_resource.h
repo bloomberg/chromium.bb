@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
+#include "base/memory/shared_memory_mapping.h"
 #include "base/memory/weak_ptr.h"
 #include "components/viz/common/resources/shared_bitmap.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -23,12 +24,6 @@ namespace gfx {
 class GpuMemoryBuffer;
 
 }  // namespace gfx
-
-namespace base {
-
-class SharedMemory;
-
-}  // namespace base
 
 namespace viz {
 
@@ -305,7 +300,7 @@ class PLATFORM_EXPORT CanvasResourceSharedBitmap final : public CanvasResource {
                              SkFilterQuality);
 
   viz::SharedBitmapId shared_bitmap_id_;
-  std::unique_ptr<base::SharedMemory> shared_memory_;
+  base::WritableSharedMemoryMapping shared_mapping_;
   IntSize size_;
   bool is_origin_clean_ = true;
 };

@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/surface_draw_quad.h"
+#include "components/viz/common/resources/bitmap_allocation.h"
 #include "components/viz/common/surfaces/surface_range.h"
 
 namespace viz {
@@ -57,11 +58,10 @@ void FuzzerBrowserProcess::EmbedFuzzedCompositorFrame(
                                                 sink_client.BindInterfacePtr());
 
   for (auto& fuzzed_bitmap : allocated_bitmaps) {
-    mojo::ScopedSharedBufferHandle handle =
-        bitmap_allocation::DuplicateAndCloseMappedBitmap(
-            fuzzed_bitmap.shared_memory.get(), fuzzed_bitmap.size,
-            ResourceFormat::RGBA_8888);
-    sink_ptr->DidAllocateSharedBitmap(std::move(handle), fuzzed_bitmap.id);
+    sink_ptr->DidAllocateSharedBitmap(
+        bitmap_allocation::ToMojoHandle(
+            fuzzed_bitmap.shared_region.Duplicate()),
+        fuzzed_bitmap.id);
   }
 
   lsi_allocator_.GenerateId();

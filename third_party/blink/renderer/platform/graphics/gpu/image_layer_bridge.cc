@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/gpu/image_layer_bridge.h"
 
+#include "base/memory/read_only_shared_memory_region.h"
 #include "cc/layers/texture_layer.h"
 #include "cc/resources/cross_thread_shared_bitmap.h"
 #include "components/viz/common/resources/bitmap_allocation.h"
@@ -150,7 +151,7 @@ bool ImageLayerBridge::PrepareTransferableResource(
     SkImageInfo dst_info =
         SkImageInfo::Make(size.width(), size.height(), sk_image->colorType(),
                           kPremul_SkAlphaType, sk_image->refColorSpace());
-    void* pixels = registered.bitmap->shared_memory()->memory();
+    void* pixels = registered.bitmap->memory();
 
     // Copy from SkImage into SharedMemory owned by |registered|.
     if (!sk_image->readPixels(dst_info, pixels, dst_info.minRowBytes(), 0, 0))
@@ -195,8 +196,8 @@ ImageLayerBridge::RegisteredBitmap ImageLayerBridge::CreateOrRecycleBitmap(
 
   // There are no bitmaps to recycle so allocate a new one.
   viz::SharedBitmapId id = viz::SharedBitmap::GenerateId();
-  std::unique_ptr<base::SharedMemory> shm =
-      viz::bitmap_allocation::AllocateMappedBitmap(size, format);
+  base::MappedReadOnlyRegion shm =
+      viz::bitmap_allocation::AllocateSharedBitmap(size, format);
 
   RegisteredBitmap registered;
   registered.bitmap = base::MakeRefCounted<cc::CrossThreadSharedBitmap>(
