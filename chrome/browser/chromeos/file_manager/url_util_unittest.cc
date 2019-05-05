@@ -23,9 +23,7 @@ namespace {
 
 // Parse a JSON query string into a base::Value.
 base::Value ParseJsonQueryString(const std::string& query) {
-  const std::string json = net::UnescapeURLComponent(
-      query, net::UnescapeRule::SPACES | net::UnescapeRule::PATH_SEPARATORS |
-                 net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
+  const std::string json = net::UnescapeBinaryURLComponent(query);
   std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(json);
   return value ? std::move(*value) : base::Value();
 }
