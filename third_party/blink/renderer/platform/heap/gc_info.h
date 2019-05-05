@@ -30,7 +30,6 @@ struct GCInfo {
   const TraceCallback trace;
   const FinalizationCallback finalize;
   const NameCallback name;
-  const bool non_trivial_finalizer;
   const bool has_v_table;
 };
 
@@ -102,9 +101,10 @@ struct GCInfoAtBaseType {
   static uint32_t Index() {
     static_assert(sizeof(T), "T must be fully defined");
     static const GCInfo kGcInfo = {
-        TraceTrait<T>::Trace, FinalizerTrait<T>::Finalize,
-        NameTrait<T>::GetName, FinalizerTrait<T>::kNonTrivialFinalizer,
-        std::is_polymorphic<T>::value};
+        TraceTrait<T>::Trace,
+        FinalizerTrait<T>::kNonTrivialFinalizer ? FinalizerTrait<T>::Finalize
+                                                : nullptr,
+        NameTrait<T>::GetName, std::is_polymorphic<T>::value};
     // This is more complicated than using threadsafe initialization, but this
     // is instantiated many times (once for every GC type).
     static std::atomic_uint32_t gc_info_index{0};

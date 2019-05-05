@@ -697,7 +697,7 @@ Address ThreadHeap::Reallocate(void* previous, size_t size) {
   // TODO(haraken): We don't support reallocate() for finalizable objects.
   DCHECK(!GCInfoTable::Get()
               .GCInfoFromIndex(previous_header->GcInfoIndex())
-              ->non_trivial_finalizer);
+              ->finalize);
   DCHECK_EQ(previous_header->GcInfoIndex(), gc_info_index);
   HeapAllocHooks::FreeHookIfEnabled(static_cast<Address>(previous));
   Address address;

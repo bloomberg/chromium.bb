@@ -99,7 +99,7 @@ void HeapObjectHeader::ZapMagic() {
 void HeapObjectHeader::Finalize(Address object, size_t object_size) {
   HeapAllocHooks::FreeHookIfEnabled(object);
   const GCInfo* gc_info = GCInfoTable::Get().GCInfoFromIndex(GcInfoIndex());
-  if (gc_info->non_trivial_finalizer)
+  if (gc_info->finalize)
     gc_info->finalize(object);
 
   ASAN_RETIRE_CONTAINER_ANNOTATION(object, object_size);
