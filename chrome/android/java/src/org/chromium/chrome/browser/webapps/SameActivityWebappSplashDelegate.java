@@ -30,6 +30,7 @@ import org.chromium.webapk.lib.common.splash.SplashLayout;
  * activity).
  */
 public class SameActivityWebappSplashDelegate implements SplashDelegate, NativeInitObserver {
+    public static final int HIDE_ANIMATION_DURATION_MS = 300;
     public static final String HISTOGRAM_SPLASHSCREEN_DURATION = "Webapp.Splashscreen.Duration";
     public static final String HISTOGRAM_SPLASHSCREEN_HIDES = "Webapp.Splashscreen.Hides";
 
@@ -114,6 +115,11 @@ public class SameActivityWebappSplashDelegate implements SplashDelegate, NativeI
         recordSplashHiddenUma(reason, startTimestamp, endTimestamp);
 
         mActivity = null;
+    }
+
+    @Override
+    public int getSplashHideAnimationDurationMs() {
+        return HIDE_ANIMATION_DURATION_MS;
     }
 
     @Override

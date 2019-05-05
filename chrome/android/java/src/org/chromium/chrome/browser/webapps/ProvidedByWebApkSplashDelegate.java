@@ -51,6 +51,12 @@ public class ProvidedByWebApkSplashDelegate implements SplashDelegate {
     }
 
     @Override
+    public int getSplashHideAnimationDurationMs() {
+        // TODO(pkotwicz) implement.
+        return 0;
+    }
+
+    @Override
     public boolean shouldWaitForSubsequentPageLoadToHideSplash() {
         return false;
     }

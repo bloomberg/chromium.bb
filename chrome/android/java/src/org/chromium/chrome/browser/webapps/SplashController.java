@@ -164,7 +164,14 @@ public class SplashController extends EmptyTabObserver {
 
         recordTraceEventsStartedHidingSplash();
 
-        mSplashView.animate().alpha(0f).withEndAction(() -> { hideSplashNow(tab, reason); });
+        int animationDurationMs = mDelegate.getSplashHideAnimationDurationMs();
+        if (animationDurationMs == 0) {
+            hideSplashNow(tab, reason);
+            return;
+        }
+        mSplashView.animate().alpha(0f).setDuration(animationDurationMs).withEndAction(() -> {
+            hideSplashNow(tab, reason);
+        });
     }
 
     private void hideSplashNow(Tab tab, @SplashHidesReason int reason) {
