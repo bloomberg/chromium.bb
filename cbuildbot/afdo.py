@@ -113,6 +113,22 @@ _RELEASE_CWP_MERGE_WEIGHT = 75
 # Filename pattern of CWP profiles for Chrome
 CWP_CHROME_PROFILE_NAME_PATTERN = r'R%s-%s.%s-%s' + AFDO_SUFFIX + '.xz'
 
+BENCHMARK_PROFILE_NAME_RE = re.compile(
+    r'''
+       ^chromeos-chrome-amd64-
+       (\d+)\.                    # Major
+       (\d+)\.                    # Minor
+       (\d+)\.                    # Build
+       (\d+)                      # Patch
+       (?:_rc)?-r(\d+)            # Revision
+       (-merged)?\.
+       afdo\.bz2$
+     ''', re.VERBOSE)
+
+BenchmarkProfileVersion = collections.namedtuple(
+    'BenchmarkProfileVersion',
+    ['major', 'minor', 'build', 'patch', 'revision', 'is_merged'])
+
 
 class MissingAFDOData(failures_lib.StepFailure):
   """Exception thrown when necessary AFDO data is missing."""
@@ -360,6 +376,18 @@ def _EnumerateMostRecentCWPProfiles(gs_context, milestones):
                                       parse_profile_name)
 
 
+def _ParseBenchmarkProfileName(profile_name):
+  match = BENCHMARK_PROFILE_NAME_RE.match(profile_name)
+  if not match:
+    raise ValueError('Unparseable benchmark profile name: %s' % profile_name)
+
+  groups = match.groups()
+  version_groups = groups[:-1]
+  is_merged = groups[-1]
+  return BenchmarkProfileVersion(
+      *[int(x) for x in version_groups], is_merged=bool(is_merged))
+
+
 def _EnumerateMostRecentBenchmarkProfiles(gs_context, milestones):
   """Enumerates the most recent benchmark AFDO profiles for Chrome releases.
 
@@ -368,29 +396,11 @@ def _EnumerateMostRecentBenchmarkProfiles(gs_context, milestones):
   profile_suffix = AFDO_SUFFIX + COMPRESSION_SUFFIX
   glob_url = os.path.join(GSURL_BASE_BENCH, '*' + profile_suffix)
 
-  profile_name_re = re.compile(
-      r'''
-         ^chromeos-chrome-amd64-
-         (\d+)\.                    # Major
-         (\d+)\.                    # Minor
-         (\d+)\.                    # Build
-         (\d+)                      # Patch
-         (?:_rc)?-r(\d+)\.          # Revision
-         afdo\.bz2$
-       ''', re.VERBOSE)
-
-  ProfileVersion = collections.namedtuple(
-      'ProfileVersion', ['major', 'minor', 'build', 'patch', 'revision'])
-
   def parse_profile_name(url_basename):
+    parsed = _ParseBenchmarkProfileName(url_basename)
     # We don't want to merge a merged profile; merged profiles are primarily
     # for stability, and we have CWP to provide us that.
-    if url_basename.endswith('-merged' + profile_suffix):
-      return None
-    match = profile_name_re.match(url_basename)
-    if not match:
-      raise ValueError('Unparseable benchmark profile name: %s' % url_basename)
-    return ProfileVersion(*[int(x) for x in match.groups()])
+    return None if parsed.is_merged else parsed
 
   return _EnumerateMostRecentProfiles(gs_context, milestones, glob_url,
                                       parse_profile_name)
@@ -579,21 +589,17 @@ def CreateAndUploadMergedAFDOProfile(gs_context,
   _, work_dir, chroot_work_dir = _BuildrootToWorkDirs(buildroot)
   profile_suffix = AFDO_SUFFIX + COMPRESSION_SUFFIX
   merged_suffix = '-merged'
-  merged_profile_suffix = merged_suffix + profile_suffix
 
   glob_url = os.path.join(GSURL_BASE_BENCH, '*' + profile_suffix)
   benchmark_listing = gs_context.List(glob_url, details=True)
 
+  unmerged_version = _ParseBenchmarkProfileName(unmerged_name)
+
   def is_merge_candidate(x):
-    url = x.url
-
-    # We don't want merged profiles to merge into merged profiles.
-    if url.endswith(merged_profile_suffix):
-      return False
-
-    url_base = os.path.basename(url)
-    uncompressed = url_base[:-len(COMPRESSION_SUFFIX)]
-    return unmerged_name >= uncompressed
+    version = _ParseBenchmarkProfileName(os.path.basename(x.url))
+    # Exclude merged profiles, because merging merged profiles into merged
+    # profiles is likely bad.
+    return unmerged_version >= version and not version.is_merged
 
   benchmark_profiles = [p for p in benchmark_listing if is_merge_candidate(p)]
 
@@ -603,6 +609,7 @@ def CreateAndUploadMergedAFDOProfile(gs_context,
     return None, False
 
   latest_profile = benchmark_profiles[-1]
+
   base_time = latest_profile.creation_time
   time_cutoff = base_time - datetime.timedelta(days=max_age_days)
   merge_candidates = [
