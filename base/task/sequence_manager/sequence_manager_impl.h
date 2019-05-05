@@ -138,7 +138,6 @@ class BASE_EXPORT SequenceManagerImpl
   void SetTaskRunner(scoped_refptr<SingleThreadTaskRunner> task_runner);
   // TODO(alexclarke): Remove this as part of https://crbug.com/825327.
   scoped_refptr<SingleThreadTaskRunner> GetTaskRunner();
-  std::string GetThreadName() const;
   bool IsBoundToCurrentThread() const;
   MessagePump* GetMessagePump() const;
   bool IsType(MessageLoop::Type type) const;

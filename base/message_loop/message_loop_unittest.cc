@@ -2238,22 +2238,6 @@ TEST_F(MessageLoopTest, DeleteUnboundLoop) {
   EXPECT_EQ(loop.task_runner(), ThreadTaskRunnerHandle::Get());
 }
 
-TEST_F(MessageLoopTest, ThreadName) {
-  {
-    std::string kThreadName("foo");
-    MessageLoop loop;
-    PlatformThread::SetName(kThreadName);
-    EXPECT_EQ(kThreadName, loop.GetThreadName());
-  }
-
-  {
-    std::string kThreadName("bar");
-    base::Thread thread(kThreadName);
-    ASSERT_TRUE(thread.StartAndWaitForTesting());
-    EXPECT_EQ(kThreadName, thread.thread_name());
-  }
-}
-
 // Verify that tasks posted to and code running in the scope of the same
 // MessageLoop access the same SequenceLocalStorage values.
 TEST_F(MessageLoopTest, SequenceLocalStorageSetGet) {

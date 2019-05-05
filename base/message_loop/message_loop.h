@@ -152,13 +152,6 @@ class BASE_EXPORT MessageLoop {
   // Returns the type passed to the constructor.
   Type type() const { return type_; }
 
-  // Returns the name of the thread this message loop is bound to. This function
-  // is only valid when this message loop is running, BindToCurrentThread has
-  // already been called and has an "happens-before" relationship with this call
-  // (this relationship is obtained implicitly by the MessageLoop's task posting
-  // system unless calling this very early).
-  std::string GetThreadName() const;
-
   // Sets a new TaskRunner for this message loop. If the message loop was
   // already bound, this must be called on the thread to which it is bound.
   void SetTaskRunner(scoped_refptr<SingleThreadTaskRunner> task_runner);

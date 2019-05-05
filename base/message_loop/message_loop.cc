@@ -208,10 +208,6 @@ void MessageLoop::SetTimerSlack(TimerSlack timer_slack) {
   sequence_manager_->SetTimerSlack(timer_slack);
 }
 
-std::string MessageLoop::GetThreadName() const {
-  return sequence_manager_->GetThreadName();
-}
-
 scoped_refptr<SingleThreadTaskRunner> MessageLoop::task_runner() const {
   return sequence_manager_->GetTaskRunner();
 }

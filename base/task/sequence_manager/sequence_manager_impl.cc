@@ -1019,14 +1019,6 @@ scoped_refptr<SingleThreadTaskRunner> SequenceManagerImpl::GetTaskRunner() {
   return controller_->GetDefaultTaskRunner();
 }
 
-std::string SequenceManagerImpl::GetThreadName() const {
-  Optional<PlatformThreadId> thread_id = associated_thread_->GetBoundThreadId();
-  DCHECK(thread_id)
-      << "GetThreadName() must only be called after BindToCurrentThread()'s "
-      << "side-effects have been synchronized with this thread.";
-  return ThreadIdNameManager::GetInstance()->GetName(*thread_id);
-}
-
 bool SequenceManagerImpl::IsBoundToCurrentThread() const {
   return associated_thread_->IsBoundToCurrentThread();
 }

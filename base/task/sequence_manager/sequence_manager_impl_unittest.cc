@@ -4289,12 +4289,6 @@ TEST_P(SequenceManagerTest, OnSystemIdleTimeDomainNotification) {
   RunLoop().RunUntilIdle();
 }
 
-TEST_P(SequenceManagerTest, ThreadName) {
-  std::string kThreadName1("foo");
-  PlatformThread::SetName(kThreadName1);
-  EXPECT_EQ(kThreadName1, sequence_manager()->GetThreadName());
-}
-
 TEST_P(SequenceManagerTest, CreateTaskQueue) {
   scoped_refptr<TaskQueue> task_queue =
       sequence_manager()->CreateTaskQueue(TaskQueue::Spec("test"));

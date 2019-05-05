@@ -105,9 +105,6 @@ class BASE_EXPORT MessageLoopCurrent {
   // DestructionObserver is receiving a notification callback.
   void RemoveDestructionObserver(DestructionObserver* destruction_observer);
 
-  // Returns the name for the thread associated with this object.
-  std::string GetThreadName() const;
-
   // Forwards to MessageLoop::task_runner().
   // DEPRECATED(https://crbug.com/616447): Use ThreadTaskRunnerHandle::Get()
   // instead of MessageLoopCurrent::Get()->task_runner().
