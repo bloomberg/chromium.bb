@@ -74,27 +74,35 @@ int RetryForHistogramUntilCountReached(
   }
 }
 
+enum class HintsFetcherRemoteResponseType {
+  kSuccessful = 0,
+  kUnsuccessful = 1,
+  kMalformed = 2,
+};
+
 }  // namespace
 
 // This test class sets up everything but does not enable any features.
-class OptimizationGuideServiceNoHintsFetcherBrowserTest
-    : public InProcessBrowserTest {
+class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
  public:
-  OptimizationGuideServiceNoHintsFetcherBrowserTest() = default;
-  ~OptimizationGuideServiceNoHintsFetcherBrowserTest() override = default;
+  HintsFetcherDisabledBrowserTest() = default;
+  ~HintsFetcherDisabledBrowserTest() override = default;
 
   void SetUp() override {
     https_server_.reset(
         new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
     https_server_->ServeFilesFromSourceDirectory("chrome/test/data/previews");
-    https_server_->RegisterRequestMonitor(
-        base::BindRepeating(&OptimizationGuideServiceNoHintsFetcherBrowserTest::
-                                MonitorResourceRequest,
-                            base::Unretained(this)));
+    https_server_->RegisterRequestMonitor(base::BindRepeating(
+        &HintsFetcherDisabledBrowserTest::MonitorResourceRequest,
+        base::Unretained(this)));
+    https_server_->RegisterRequestHandler(base::BindRepeating(
+        &HintsFetcherDisabledBrowserTest::HandleGetHintsRequest,
+        base::Unretained(this)));
+
     ASSERT_TRUE(https_server_->Start());
 
     https_url_ = https_server_->GetURL("/hint_setup.html");
-    ASSERT_TRUE(https_url_.SchemeIs(url::kHttpsScheme));
+    ASSERT_TRUE(https_url().SchemeIs(url::kHttpsScheme));
 
     InProcessBrowserTest::SetUp();
   }
@@ -170,14 +178,51 @@ class OptimizationGuideServiceNoHintsFetcherBrowserTest
  protected:
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
+  HintsFetcherRemoteResponseType response_type_ =
+      HintsFetcherRemoteResponseType::kSuccessful;
 
  private:
   // Called by |https_server_|.
   void MonitorResourceRequest(const net::test_server::HttpRequest& request) {
     // The request by HintsFetcher request should happen and be a POST request.
     EXPECT_EQ(request.method, net::test_server::METHOD_POST);
-    // TODO(mcrouse): Test server returns 404 for now as HintsFetcher does not
-    // currently handle responses.
+  }
+
+  std::unique_ptr<net::test_server::HttpResponse> HandleGetHintsRequest(
+      const net::test_server::HttpRequest& request) {
+    std::unique_ptr<net::test_server::BasicHttpResponse> response;
+
+    if (response_type_ == HintsFetcherRemoteResponseType::kSuccessful) {
+      response.reset(new net::test_server::BasicHttpResponse);
+      response->set_code(net::HTTP_OK);
+
+      optimization_guide::proto::GetHintsResponse get_hints_response;
+
+      optimization_guide::proto::Hint* hint = get_hints_response.add_hints();
+      hint->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+      hint->set_key("host.domain.org");
+      optimization_guide::proto::PageHint* page_hint = hint->add_page_hints();
+      page_hint->set_page_pattern("page pattern");
+
+      std::string serialized_request;
+      get_hints_response.SerializeToString(&serialized_request);
+      response->set_content(serialized_request);
+    } else if (response_type_ ==
+               HintsFetcherRemoteResponseType::kUnsuccessful) {
+      response.reset(new net::test_server::BasicHttpResponse);
+      response->set_code(net::HTTP_NOT_FOUND);
+
+    } else if (response_type_ == HintsFetcherRemoteResponseType::kMalformed) {
+      response.reset(new net::test_server::BasicHttpResponse);
+      response->set_code(net::HTTP_OK);
+
+      std::string serialized_request = "Not a proto";
+      response->set_content(serialized_request);
+    } else {
+      NOTREACHED();
+    }
+
+    return std::move(response);
   }
 
   void TearDownOnMainThread() override {
@@ -193,16 +238,15 @@ class OptimizationGuideServiceNoHintsFetcherBrowserTest
   optimization_guide::testing::TestHintsComponentCreator
       test_hints_component_creator_;
 
-  DISALLOW_COPY_AND_ASSIGN(OptimizationGuideServiceNoHintsFetcherBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(HintsFetcherDisabledBrowserTest);
 };
 
 // This test class enables OnePlatform Hints.
-class OptimizationGuideServiceHintsFetcherBrowserTest
-    : public OptimizationGuideServiceNoHintsFetcherBrowserTest {
+class HintsFetcherBrowserTest : public HintsFetcherDisabledBrowserTest {
  public:
-  OptimizationGuideServiceHintsFetcherBrowserTest() = default;
+  HintsFetcherBrowserTest() = default;
 
-  ~OptimizationGuideServiceHintsFetcherBrowserTest() override = default;
+  ~HintsFetcherBrowserTest() override = default;
 
   void SetUp() override {
     // Enable OptimizationHintsFetching with |kOptimizationHintsFetching|.
@@ -212,11 +256,32 @@ class OptimizationGuideServiceHintsFetcherBrowserTest
         {});
 
     // Call to inherited class to match same set up with feature flags added.
-    OptimizationGuideServiceNoHintsFetcherBrowserTest::SetUp();
+    HintsFetcherDisabledBrowserTest::SetUp();
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(OptimizationGuideServiceHintsFetcherBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(HintsFetcherBrowserTest);
+};
+
+// This test class enables OnePlatform Hints and configures the test remote
+// Optimization Guide Service to return a malformed GetHintsResponse. This
+// is for fault testing.
+class HintsFetcherWithResponseBrowserTest
+    : public ::testing::WithParamInterface<HintsFetcherRemoteResponseType>,
+      public HintsFetcherBrowserTest {
+ public:
+  HintsFetcherWithResponseBrowserTest() = default;
+
+  ~HintsFetcherWithResponseBrowserTest() override = default;
+
+  void SetUp() override {
+    response_type_ = GetParam();
+    // Call to inherited class to match same set up with feature flags added.
+    HintsFetcherBrowserTest::SetUp();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(HintsFetcherWithResponseBrowserTest);
 };
 
 // Issues with multiple profiles likely cause the site enagement service-based
@@ -233,8 +298,8 @@ class OptimizationGuideServiceHintsFetcherBrowserTest
 // histograms for the total number of TopEngagementSites and
 // the total number of sites returned controlled by the experiments flag
 // |max_oneplatform_update_hosts|.
-IN_PROC_BROWSER_TEST_F(OptimizationGuideServiceHintsFetcherBrowserTest,
-                       OptimizationGuideServiceHintsFetcher) {
+IN_PROC_BROWSER_TEST_F(HintsFetcherBrowserTest,
+                       DISABLE_ON_WIN_MAC_CHROMESOS(HintsFetcherEnabled)) {
   const base::HistogramTester* histogram_tester = GetHistogramTester();
 
   // Whitelist NoScript for https_url()'s' host.
@@ -246,10 +311,19 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideServiceHintsFetcherBrowserTest,
                 histogram_tester,
                 "Previews.HintsFetcher.GetHintsRequest.HostCount", 1),
             1);
+
+  EXPECT_GE(
+      RetryForHistogramUntilCountReached(
+          histogram_tester, "Previews.HintsFetcher.GetHintsRequest.Status", 1),
+      1);
+
+  histogram_tester->ExpectBucketCount(
+      "Previews.HintsFetcher.GetHintsRequest.Status", net::HTTP_OK, 1);
+  histogram_tester->ExpectBucketCount(
+      "Previews.HintsFetcher.GetHintsRequest.NetErrorCode", net::OK, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(OptimizationGuideServiceNoHintsFetcherBrowserTest,
-                       OptimizationGuideServiceNoHintsFetcher) {
+IN_PROC_BROWSER_TEST_F(HintsFetcherDisabledBrowserTest, HintsFetcherDisabled) {
   const base::HistogramTester* histogram_tester = GetHistogramTester();
 
   // Expect that the histogram for HintsFetcher to be 0 because the OnePlatform
@@ -265,7 +339,7 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideServiceNoHintsFetcherBrowserTest,
 // logged when the GetHintsRequest is made to the remote Optimization Guide
 // Service.
 IN_PROC_BROWSER_TEST_F(
-    OptimizationGuideServiceHintsFetcherBrowserTest,
+    HintsFetcherBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(PreviewsTopHostProviderHTTPSOnly)) {
   const base::HistogramTester* histogram_tester = GetHistogramTester();
 
@@ -289,3 +363,57 @@ IN_PROC_BROWSER_TEST_F(
   histogram_tester->ExpectBucketCount(
       "Previews.HintsFetcher.GetHintsRequest.HostCount", 2, 1);
 }
+
+IN_PROC_BROWSER_TEST_P(
+    HintsFetcherWithResponseBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(HintsFetcherWithResponses)) {
+  const base::HistogramTester* histogram_tester = GetHistogramTester();
+  const HintsFetcherRemoteResponseType response_type = GetParam();
+
+  // Whitelist NoScript for https_url()'s' host.
+  SetUpComponentUpdateHints(https_url());
+
+  // Expect that the browser initialization will record at least one sample
+  // in each of the follow histograms as One Platform Hints are enabled.
+  EXPECT_GE(RetryForHistogramUntilCountReached(
+                histogram_tester,
+                "Previews.HintsFetcher.GetHintsRequest.HostCount", 1),
+            1);
+
+  // Wait until histograms have been updated before performing checks for
+  // correct behavior based on the response.
+  EXPECT_GE(
+      RetryForHistogramUntilCountReached(
+          histogram_tester, "Previews.HintsFetcher.GetHintsRequest.Status", 1),
+      1);
+  if (response_type == HintsFetcherRemoteResponseType::kSuccessful) {
+    histogram_tester->ExpectBucketCount(
+        "Previews.HintsFetcher.GetHintsRequest.Status", net::HTTP_OK, 1);
+    histogram_tester->ExpectBucketCount(
+        "Previews.HintsFetcher.GetHintsRequest.NetErrorCode", net::OK, 1);
+  } else if (response_type == HintsFetcherRemoteResponseType::kUnsuccessful) {
+    histogram_tester->ExpectBucketCount(
+        "Previews.HintsFetcher.GetHintsRequest.Status", net::HTTP_NOT_FOUND, 1);
+  } else if (response_type == HintsFetcherRemoteResponseType::kMalformed) {
+    // A malformed GetHintsResponse will still register as successful fetch with
+    // respect to the network.
+    histogram_tester->ExpectBucketCount(
+        "Previews.HintsFetcher.GetHintsRequest.Status", net::HTTP_OK, 1);
+    histogram_tester->ExpectBucketCount(
+        "Previews.HintsFetcher.GetHintsRequest.NetErrorCode", net::OK, 1);
+
+    // TODO(mcrouse): Once hints are stored, validiation
+    // will be  done to show that nothing has been added to the store and hints
+    // can still be used. Current unittests cover this behavior but needed here
+    // for fault tests.
+  } else {
+    NOTREACHED();
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    HintsFetcherWithResponses,
+    HintsFetcherWithResponseBrowserTest,
+    ::testing::Values(HintsFetcherRemoteResponseType::kSuccessful,
+                      HintsFetcherRemoteResponseType::kUnsuccessful,
+                      HintsFetcherRemoteResponseType::kMalformed));
