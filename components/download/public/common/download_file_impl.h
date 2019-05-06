@@ -84,6 +84,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
       const std::string& mime_type,
       const RenameCompletionCallback& callback) override;
   void PublishDownload(const RenameCompletionCallback& callback) override;
+  base::FilePath GetDisplayName() override;
 #endif  // defined(OS_ANDROID)
 
   // Wrapper of a ByteStreamReader or ScopedDataPipeConsumerHandle, and the meta
@@ -345,6 +346,10 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
 
   // TaskRunner to post updates to the |observer_|.
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+
+#if defined(OS_ANDROID)
+  base::FilePath display_name_;
+#endif  // defined(OS_ANDROID)
 
   SEQUENCE_CHECKER(sequence_checker_);
 

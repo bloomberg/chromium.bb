@@ -331,8 +331,12 @@ void DownloadFileImpl::CreateIntermediateUriForPublish(
       DownloadCollectionBridge::CreateIntermediateUriForPublish(
           original_url, referrer_url, file_name, mime_type);
   DownloadInterruptReason reason = DOWNLOAD_INTERRUPT_REASON_FILE_FAILED;
-  if (!content_path.empty())
+  if (!content_path.empty()) {
     reason = file_.Rename(content_path);
+    display_name_ = DownloadCollectionBridge::GetDisplayName(content_path);
+  }
+  if (display_name_.empty())
+    display_name_ = file_name;
   OnRenameComplete(reason, content_path, callback);
 }
 
@@ -340,6 +344,10 @@ void DownloadFileImpl::PublishDownload(
     const RenameCompletionCallback& callback) {
   DownloadInterruptReason reason = file_.PublishDownload();
   OnRenameComplete(reason, file_.full_path(), callback);
+}
+
+base::FilePath DownloadFileImpl::GetDisplayName() {
+  return display_name_;
 }
 #endif  // defined(OS_ANDROID)
 

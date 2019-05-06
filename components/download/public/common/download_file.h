@@ -121,6 +121,9 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFile {
   // Publishes the download to public. Once completes, |callback| is called with
   // the final content URI.
   virtual void PublishDownload(const RenameCompletionCallback& callback) = 0;
+
+  // Returns the suggested file path from the system.
+  virtual base::FilePath GetDisplayName() = 0;
 #endif  // defined(OS_ANDROID)
 };
 
