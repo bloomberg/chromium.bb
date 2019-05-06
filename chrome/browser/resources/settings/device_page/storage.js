@@ -44,7 +44,7 @@ Polymer({
     },
 
     /** @private */
-    androidEnabled_: {
+    androidRunning_: {
       type: Boolean,
       value: false,
     },
@@ -112,8 +112,8 @@ Polymer({
         'storage-drive-enabled-changed',
         this.handleDriveEnabledChanged_.bind(this));
     this.addWebUIListener(
-        'storage-android-enabled-changed',
-        this.handleAndroidEnabledChanged_.bind(this));
+        'storage-android-running-changed',
+        this.handleAndroidRunningChanged_.bind(this));
   },
 
   /**
@@ -234,7 +234,7 @@ Polymer({
    * @private
    */
   handleAndroidSizeChanged_: function(size) {
-    if (this.androidEnabled_) {
+    if (this.androidRunning_) {
       this.$$('#androidSize').subLabel = size;
     }
   },
@@ -269,11 +269,11 @@ Polymer({
   },
 
   /**
-   * @param {boolean} enabled True if Android Play Store is enabled.
+   * @param {boolean} running True if Android (ARC) is running.
    * @private
    */
-  handleAndroidEnabledChanged_: function(enabled) {
-    this.androidEnabled_ = enabled;
+  handleAndroidRunningChanged_: function(running) {
+    this.androidRunning_ = running;
   },
 
   /**

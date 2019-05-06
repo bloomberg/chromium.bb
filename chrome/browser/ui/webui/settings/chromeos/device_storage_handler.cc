@@ -419,13 +419,13 @@ void StorageHandler::OnGetOtherUserSize(
 
 void StorageHandler::OnConnectionReady() {
   is_android_running_ = true;
-  FireWebUIListener("storage-android-enabled-changed", base::Value(true));
+  FireWebUIListener("storage-android-running-changed", base::Value(true));
   UpdateAndroidSize();
 }
 
 void StorageHandler::OnConnectionClosed() {
   is_android_running_ = false;
-  FireWebUIListener("storage-android-enabled-changed", base::Value(false));
+  FireWebUIListener("storage-android-running-changed", base::Value(false));
 }
 
 }  // namespace settings
