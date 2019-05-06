@@ -1065,9 +1065,8 @@ IN_PROC_BROWSER_TEST_F(MultiProfileDownloadNotificationTest,
   AddAllUsers();
 }
 
-// TODO(crbug.com/933963): Flaky with network service.
 IN_PROC_BROWSER_TEST_F(MultiProfileDownloadNotificationTest,
-                       DISABLED_DownloadMultipleFiles) {
+                       DownloadMultipleFiles) {
   AddAllUsers();
 
   GURL url(SlowDownloadInterceptor::kUnknownSizeUrl);
