@@ -42,7 +42,7 @@ NGBaseLayoutAlgorithmTest::RunBlockLayoutAlgorithm(
           {node, fragment_geometry, space, To<NGBlockBreakToken>(break_token)})
           .Layout();
 
-  return To<NGPhysicalBoxFragment>(result->PhysicalFragment());
+  return To<NGPhysicalBoxFragment>(&result->PhysicalFragment());
 }
 
 std::pair<scoped_refptr<const NGPhysicalBoxFragment>, NGConstraintSpace>
@@ -56,7 +56,7 @@ NGBaseLayoutAlgorithmTest::RunBlockLayoutAlgorithmForElement(Element* element) {
 
   scoped_refptr<const NGLayoutResult> result =
       NGBlockLayoutAlgorithm({node, fragment_geometry, space}).Layout();
-  return std::make_pair(To<NGPhysicalBoxFragment>(result->PhysicalFragment()),
+  return std::make_pair(To<NGPhysicalBoxFragment>(&result->PhysicalFragment()),
                         std::move(space));
 }
 

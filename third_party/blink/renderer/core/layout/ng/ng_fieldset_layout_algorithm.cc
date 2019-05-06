@@ -58,9 +58,9 @@ scoped_refptr<const NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {
     auto legend_space =
         CreateConstraintSpaceForLegend(legend, content_box_size);
     auto result = legend.Layout(legend_space, BreakToken());
+    const auto& physical_fragment = result->PhysicalFragment();
     NGBoxStrut legend_margins =
         ComputeMarginsFor(legend_space, legend.Style(), ConstraintSpace());
-    NGFragment logical_fragment(writing_mode, *result->PhysicalFragment());
     // If the margin box of the legend is at least as tall as the fieldset
     // block-start border width, it will start at the block-start border edge of
     // the fieldset. As a paint effect, the block-start border will be pushed so
@@ -71,7 +71,8 @@ scoped_refptr<const NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {
         border_padding_.inline_start + legend_margins.inline_start,
         legend_margins.block_start);
     LayoutUnit legend_margin_box_block_size =
-        logical_fragment.BlockSize() + legend_margins.BlockSum();
+        NGFragment(writing_mode, physical_fragment).BlockSize() +
+        legend_margins.BlockSum();
     LayoutUnit space_left = borders.block_start - legend_margin_box_block_size;
     if (space_left > LayoutUnit()) {
       // If the border is the larger one, though, it will stay put at the
@@ -103,10 +104,11 @@ scoped_refptr<const NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {
     auto child_space =
         CreateConstraintSpaceForFieldsetContent(adjusted_padding_box_size);
     auto result = fieldset_content.Layout(child_space, BreakToken());
+    const auto& physical_fragment = result->PhysicalFragment();
     container_builder_.AddChild(*result, borders_with_legend.StartOffset());
 
-    NGFragment logical_fragment(writing_mode, *result->PhysicalFragment());
-    intrinsic_block_size += logical_fragment.BlockSize();
+    intrinsic_block_size +=
+        NGFragment(writing_mode, physical_fragment).BlockSize();
   } else {
     // There was no anonymous child to provide the padding, so we have to add it
     // ourselves.

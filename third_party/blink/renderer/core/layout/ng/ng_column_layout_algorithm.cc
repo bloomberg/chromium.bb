@@ -131,8 +131,7 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
           {Node(), fragment_geometry, child_space, break_token.get()});
       child_algorithm.SetBoxType(NGPhysicalFragment::kColumnBox);
       scoped_refptr<const NGLayoutResult> result = child_algorithm.Layout();
-      const auto* column =
-          To<NGPhysicalBoxFragment>(result->PhysicalFragment());
+      const auto& column = result->PhysicalFragment();
 
       LogicalOffset logical_offset(column_inline_offset, column_block_offset);
       container_builder_.AddChild(*result, logical_offset);
@@ -150,14 +149,12 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
         separate_leading_margins = false;
       }
 
-      LayoutUnit block_size =
-          NGBoxFragment(writing_mode, ConstraintSpace().Direction(), *column)
-              .BlockSize();
+      LayoutUnit block_size = NGFragment(writing_mode, column).BlockSize();
       intrinsic_block_size =
           std::max(intrinsic_block_size, column_block_offset + block_size);
 
       column_inline_offset += column_inline_progression;
-      break_token = To<NGBlockBreakToken>(column->BreakToken());
+      break_token = To<NGBlockBreakToken>(column.BreakToken());
 
       // If we're participating in an outer fragmentation context, we'll only
       // allow as many columns as the used value of column-count, so that we
@@ -326,8 +323,9 @@ LayoutUnit NGColumnLayoutAlgorithm::CalculateBalancedColumnBlockSize(
 
   // TODO(mstensho): This is where the fun begins. We need to examine the entire
   // fragment tree, not just the root.
-  NGFragment fragment(space.GetWritingMode(), *result->PhysicalFragment());
-  LayoutUnit single_strip_block_size = fragment.BlockSize();
+  LayoutUnit single_strip_block_size =
+      NGFragment(space.GetWritingMode(), result->PhysicalFragment())
+          .BlockSize();
 
   // Some extra care is required the division here. We want a the resulting
   // LayoutUnit value to be large enough to prevent overflowing columns. Use

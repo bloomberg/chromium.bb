@@ -91,7 +91,7 @@ inline bool IsEmptyBlock(bool is_new_fc, const NGLayoutResult& layout_result) {
 
 #if DCHECK_IS_ON()
   const NGPhysicalFragment& physical_fragment =
-      *layout_result.PhysicalFragment();
+      layout_result.PhysicalFragment();
   // This just checks that the fragments block size is actually zero. We can
   // assume that its in the same writing mode as its parent, as a different
   // writing mode child will be caught by the is_new_fc check.
@@ -1008,9 +1008,9 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
         {child_origin_line_offset, child_bfc_offset_estimate},
         /* abort_if_cleared */ false);
   }
-  DCHECK(layout_result->PhysicalFragment());
-  const auto& physical_fragment = *layout_result->PhysicalFragment();
-  NGFragment fragment(ConstraintSpace().GetWritingMode(), physical_fragment);
+
+  NGFragment fragment(ConstraintSpace().GetWritingMode(),
+                      layout_result->PhysicalFragment());
 
   // Auto-margins are applied within the layout opportunity which fits. We'll
   // pretend that computed margins are 0 here, as they have already been
@@ -1171,9 +1171,8 @@ NGBlockLayoutAlgorithm::LayoutNewFormattingContext(
     // should be returned.
     DCHECK(layout_result->ExclusionSpace().IsEmpty());
 
-    DCHECK(layout_result->PhysicalFragment());
     NGFragment fragment(ConstraintSpace().GetWritingMode(),
-                        *layout_result->PhysicalFragment());
+                        layout_result->PhysicalFragment());
 
     // Now we can check if the fragment will fit in this layout opportunity.
     if ((opportunity.rect.InlineSize() >= fragment.InlineSize() ||
@@ -1426,9 +1425,7 @@ bool NGBlockLayoutAlgorithm::FinishInflow(
       container_builder_.SetIsPushedByFloats();
   }
 
-  // We must have an actual fragment at this stage.
-  DCHECK(layout_result->PhysicalFragment());
-  const auto& physical_fragment = *layout_result->PhysicalFragment();
+  const auto& physical_fragment = layout_result->PhysicalFragment();
   NGFragment fragment(ConstraintSpace().GetWritingMode(), physical_fragment);
 
   LogicalOffset logical_offset = CalculateLogicalOffset(
@@ -1476,8 +1473,7 @@ bool NGBlockLayoutAlgorithm::FinishInflow(
       empty_block_affected_by_clearance);
 
   *previous_inline_break_token =
-      child.IsInline() ? To<NGInlineBreakToken>(
-                             layout_result->PhysicalFragment()->BreakToken())
+      child.IsInline() ? To<NGInlineBreakToken>(physical_fragment.BreakToken())
                        : nullptr;
 
   return true;
@@ -1763,7 +1759,7 @@ bool NGBlockLayoutAlgorithm::BreakBeforeChild(
     // Calculate space shortage: Figure out how much more space would have been
     // sufficient to make the child fit right here in the current fragment.
     NGFragment fragment(ConstraintSpace().GetWritingMode(),
-                        *layout_result.PhysicalFragment());
+                        layout_result.PhysicalFragment());
     LayoutUnit space_left = space_available - block_offset;
     space_shortage = fragment.BlockSize() - space_left;
   } else {
@@ -1887,7 +1883,7 @@ NGBlockLayoutAlgorithm::BreakType NGBlockLayoutAlgorithm::BreakTypeBeforeChild(
     return NoBreak;
 
   const NGPhysicalFragment& physical_fragment =
-      *layout_result.PhysicalFragment();
+      layout_result.PhysicalFragment();
 
   // If we haven't used any space at all in the fragmentainer yet, we cannot
   // break, or there'd be no progress. We'd end up creating an infinite number
@@ -2275,12 +2271,14 @@ void NGBlockLayoutAlgorithm::PositionPendingFloats(
         replaced_child_percentage_size_, origin_bfc_offset, &unpositioned_float,
         ConstraintSpace(), Style(), &exclusion_space_);
 
-    NGFragment child_fragment(
-        ConstraintSpace().GetWritingMode(),
-        *positioned_float.layout_result->PhysicalFragment());
+    const auto& physical_fragment =
+        positioned_float.layout_result->PhysicalFragment();
+    LayoutUnit float_inline_size =
+        NGFragment(ConstraintSpace().GetWritingMode(), physical_fragment)
+            .InlineSize();
 
     LogicalOffset logical_offset = LogicalFromBfcOffsets(
-        positioned_float.bfc_offset, bfc_offset, child_fragment.InlineSize(),
+        positioned_float.bfc_offset, bfc_offset, float_inline_size,
         container_builder_.Size().inline_size, ConstraintSpace().Direction());
 
     container_builder_.AddChild(*positioned_float.layout_result,
@@ -2344,7 +2342,7 @@ void NGBlockLayoutAlgorithm::PositionOrPropagateListMarker(
     container_builder_.SetUnpositionedListMarker(NGUnpositionedListMarker());
   }
   if (list_marker.AddToBox(ConstraintSpace(), Style().GetFontBaseline(),
-                           *layout_result.PhysicalFragment(), content_offset,
+                           layout_result.PhysicalFragment(), content_offset,
                            &container_builder_, border_scrollbar_padding_))
     return;
 

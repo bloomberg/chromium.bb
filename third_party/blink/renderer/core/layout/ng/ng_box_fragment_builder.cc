@@ -145,7 +145,7 @@ NGBoxFragmentBuilder& NGBoxFragmentBuilder::PropagateBreak(
   if (LIKELY(!has_block_fragmentation_))
     return *this;
   if (!did_break_)
-    PropagateBreak(*child_layout_result.PhysicalFragment());
+    PropagateBreak(child_layout_result.PhysicalFragment());
   if (child_layout_result.HasForcedBreak())
     SetHasForcedBreak();
   else

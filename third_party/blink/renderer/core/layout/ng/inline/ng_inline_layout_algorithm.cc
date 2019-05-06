@@ -469,7 +469,7 @@ void NGInlineLayoutAlgorithm::PlaceLayoutResult(NGInlineItemResult* item_result,
   NGBoxFragment fragment(ConstraintSpace().GetWritingMode(),
                          ConstraintSpace().Direction(),
                          To<NGPhysicalBoxFragment>(
-                             *item_result->layout_result->PhysicalFragment()));
+                             item_result->layout_result->PhysicalFragment()));
   NGLineHeightMetrics metrics = fragment.BaselineMetrics(
       {NGBaselineAlgorithmType::kAtomicInline, baseline_type_},
       ConstraintSpace());
@@ -590,7 +590,7 @@ void NGInlineLayoutAlgorithm::PlaceFloatingObjects(
 
     // Skip any children which aren't positioned floats.
     if (!child.layout_result ||
-        !child.layout_result->PhysicalFragment()->IsFloating())
+        !child.layout_result->PhysicalFragment().IsFloating())
       continue;
 
     LayoutUnit block_offset =
@@ -598,9 +598,8 @@ void NGInlineLayoutAlgorithm::PlaceFloatingObjects(
 
     // We need to manually account for the flipped-lines writing mode here :(.
     if (IsFlippedLinesWritingMode(ConstraintSpace().GetWritingMode())) {
-      NGFragment fragment(
-          ConstraintSpace().GetWritingMode(),
-          To<NGPhysicalBoxFragment>(*child.layout_result->PhysicalFragment()));
+      NGFragment fragment(ConstraintSpace().GetWritingMode(),
+                          child.layout_result->PhysicalFragment());
 
       block_offset = -fragment.BlockSize() - block_offset;
     }

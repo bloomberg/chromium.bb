@@ -62,7 +62,7 @@ void LayoutNGTableCaption::UpdateBlockLayout(bool relayout_children) {
   scoped_refptr<const NGLayoutResult> result =
       NGBlockNode(this).Layout(constraint_space);
 
-  CalculateAndSetMargins(constraint_space, *result->PhysicalFragment());
+  CalculateAndSetMargins(constraint_space, result->PhysicalFragment());
 
   // Tell legacy layout there were abspos descendents we couldn't place. We know
   // we have to pass up to legacy here because this method is legacy's entry
@@ -78,7 +78,7 @@ void LayoutNGTableCaption::UpdateBlockLayout(bool relayout_children) {
   // NGBoxFragmentPainter::Paint will have to handle it until table layout is
   // implemented in NG, in which case that algorithm will set each child's
   // offsets. See https://crbug.com/788590 for more info.
-  DCHECK(!result->PhysicalFragment()->IsPlacedByLayoutNG())
+  DCHECK(!result->PhysicalFragment().IsPlacedByLayoutNG())
       << "Only a table should be placing table caption fragments and the ng "
          "table algorithm doesn't exist yet!";
 }

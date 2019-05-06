@@ -50,17 +50,15 @@ scoped_refptr<const NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
     NGBlockLayoutAlgorithm child_algorithm(
         {Node(), fragment_geometry, child_space, break_token.get()});
     scoped_refptr<const NGLayoutResult> result = child_algorithm.Layout();
-    const auto* page = To<NGPhysicalBoxFragment>(result->PhysicalFragment());
+    const auto& page = result->PhysicalFragment();
 
     container_builder_.AddChild(*result, page_offset);
 
-    NGBoxFragment logical_fragment(writing_mode, ConstraintSpace().Direction(),
-                                   *page);
-    intrinsic_block_size =
-        std::max(intrinsic_block_size,
-                 page_offset.block_offset + logical_fragment.BlockSize());
+    LayoutUnit page_block_size = NGFragment(writing_mode, page).BlockSize();
+    intrinsic_block_size = std::max(intrinsic_block_size,
+                                    page_offset.block_offset + page_block_size);
     page_offset += page_progression;
-    break_token = To<NGBlockBreakToken>(page->BreakToken());
+    break_token = To<NGBlockBreakToken>(page.BreakToken());
   } while (break_token && !break_token->IsFinished());
 
   container_builder_.SetIntrinsicBlockSize(intrinsic_block_size);

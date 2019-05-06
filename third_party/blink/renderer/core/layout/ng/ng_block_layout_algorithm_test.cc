@@ -110,7 +110,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, Caching) {
 
   scoped_refptr<const NGLayoutResult> result(node.Layout(space, nullptr));
   EXPECT_EQ(PhysicalSize(LayoutUnit(30), LayoutUnit(40)),
-            result->PhysicalFragment()->Size());
+            result->PhysicalFragment().Size());
 
   // Test pointer-equal constraint space.
   result = RunCachedLayoutResult(space, node);
@@ -160,7 +160,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, MinInlineSizeCaching) {
 
   scoped_refptr<const NGLayoutResult> result(node.Layout(space, nullptr));
   EXPECT_EQ(PhysicalSize(LayoutUnit(30), LayoutUnit(40)),
-            result->PhysicalFragment()->Size());
+            result->PhysicalFragment().Size());
 
   // Test pointer-equal constraint space.
   result = RunCachedLayoutResult(space, node);

@@ -134,9 +134,9 @@ class NGInlineNodeTest : public NGLayoutTest {
                                 nullptr /* break_token */, &context)
             .Layout();
 
-    const auto* line =
+    const auto& line =
         To<NGPhysicalLineBoxFragment>(result->PhysicalFragment());
-    for (const auto& child : line->Children()) {
+    for (const auto& child : line.Children()) {
       fragments_out->push_back(To<NGPhysicalTextFragment>(child.get()));
     }
   }

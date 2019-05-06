@@ -145,13 +145,13 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
        result->OutOfFlowPositionedDescendants())
     descendant.node.UseLegacyOutOfFlowPositioning();
 
-  const auto* fragment = To<NGPhysicalBoxFragment>(result->PhysicalFragment());
-  DCHECK_GT(fragment->Children().size(), 0u);
+  const auto& fragment = result->PhysicalFragment();
+  DCHECK_GT(fragment.Children().size(), 0u);
   // Copy sizes of all child fragments to Legacy.
   // There could be multiple fragments, when this node has descendants whose
   // container is this node's container.
   // Example: fixed descendant of fixed element.
-  for (auto& child : fragment->Children()) {
+  for (auto& child : fragment.Children()) {
     const NGPhysicalFragment* child_fragment = child.get();
     DCHECK(child_fragment->GetLayoutObject()->IsBox());
     LayoutBox* child_legacy_box =
@@ -165,7 +165,7 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
     }
     child_legacy_box->SetY(child_offset.top);
   }
-  DCHECK_EQ(fragment->Children()[0]->GetLayoutObject(), this);
+  DCHECK_EQ(fragment.Children()[0]->GetLayoutObject(), this);
   SetIsLegacyInitiatedOutOfFlowLayout(true);
 }
 

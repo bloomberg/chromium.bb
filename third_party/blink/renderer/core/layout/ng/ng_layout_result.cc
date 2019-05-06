@@ -15,7 +15,7 @@
 namespace blink {
 
 NGLayoutResult::NGLayoutResult(
-    scoped_refptr<const NGPhysicalFragment> physical_fragment,
+    scoped_refptr<const NGPhysicalContainerFragment> physical_fragment,
     NGBoxFragmentBuilder* builder)
     : NGLayoutResult(builder, /* cache_space */ true) {
   is_initial_block_size_indefinite_ =
@@ -31,7 +31,7 @@ NGLayoutResult::NGLayoutResult(
 }
 
 NGLayoutResult::NGLayoutResult(
-    scoped_refptr<const NGPhysicalFragment> physical_fragment,
+    scoped_refptr<const NGPhysicalContainerFragment> physical_fragment,
     NGLineBoxFragmentBuilder* builder)
     : NGLayoutResult(builder, /* cache_space */ false) {
   physical_fragment_ = std::move(physical_fragment);

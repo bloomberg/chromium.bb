@@ -46,9 +46,8 @@ bool ContentShrinkToFitMayChange(const ComputedStyle& style,
       std::max(LayoutUnit(),
                new_space.AvailableSize().inline_size - margins.InlineSum());
 
-  DCHECK(layout_result.PhysicalFragment());
   LayoutUnit inline_size =
-      NGFragment(style.GetWritingMode(), *layout_result.PhysicalFragment())
+      NGFragment(style.GetWritingMode(), layout_result.PhysicalFragment())
           .InlineSize();
 
   // If the previous fragment was at its min-content size (indicated by the old
@@ -240,7 +239,7 @@ NGLayoutCacheStatus CalculateSizeBasedLayoutCacheStatusWithGeometry(
   const ComputedStyle& style = node.Style();
   NGBoxFragment fragment(
       style.GetWritingMode(), style.Direction(),
-      To<NGPhysicalBoxFragment>(*layout_result.PhysicalFragment()));
+      To<NGPhysicalBoxFragment>(layout_result.PhysicalFragment()));
 
   if (fragment_geometry.border_box_size.inline_size != fragment.InlineSize())
     return NGLayoutCacheStatus::kNeedsLayout;
@@ -346,12 +345,11 @@ bool IntrinsicSizeWillChange(
   if (!*fragment_geometry)
     *fragment_geometry = CalculateInitialFragmentGeometry(new_space, node);
 
-  NGBoxFragment fragment(
-      style.GetWritingMode(), style.Direction(),
-      To<NGPhysicalBoxFragment>(*cached_layout_result.PhysicalFragment()));
+  LayoutUnit inline_size = NGFragment(style.GetWritingMode(),
+                                      cached_layout_result.PhysicalFragment())
+                               .InlineSize();
 
-  if ((*fragment_geometry)->border_box_size.inline_size !=
-      fragment.InlineSize())
+  if ((*fragment_geometry)->border_box_size.inline_size != inline_size)
     return true;
 
   return false;

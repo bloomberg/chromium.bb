@@ -47,7 +47,7 @@ scoped_refptr<const NGLayoutResult> NGUnpositionedListMarker::Layout(
   scoped_refptr<const NGLayoutResult> marker_layout_result =
       marker_node.LayoutAtomicInline(parent_space, parent_style, baseline_type,
                                      parent_space.UseFirstLineStyle());
-  DCHECK(marker_layout_result && marker_layout_result->PhysicalFragment());
+  DCHECK(marker_layout_result);
   return marker_layout_result;
 }
 
@@ -90,9 +90,9 @@ bool NGUnpositionedListMarker::AddToBox(
   // Layout the list marker.
   scoped_refptr<const NGLayoutResult> marker_layout_result =
       Layout(space, container_builder->Style(), baseline_type);
-  DCHECK(marker_layout_result && marker_layout_result->PhysicalFragment());
+  DCHECK(marker_layout_result);
   const NGPhysicalBoxFragment& marker_physical_fragment =
-      To<NGPhysicalBoxFragment>(*marker_layout_result->PhysicalFragment());
+      To<NGPhysicalBoxFragment>(marker_layout_result->PhysicalFragment());
 
   // Compute the inline offset of the marker.
   NGBoxFragment marker_fragment(space.GetWritingMode(), space.Direction(),
@@ -128,9 +128,9 @@ LayoutUnit NGUnpositionedListMarker::AddToBoxWithoutLineBoxes(
   // Layout the list marker.
   scoped_refptr<const NGLayoutResult> marker_layout_result =
       Layout(space, container_builder->Style(), baseline_type);
-  DCHECK(marker_layout_result && marker_layout_result->PhysicalFragment());
+  DCHECK(marker_layout_result);
   const NGPhysicalBoxFragment& marker_physical_fragment =
-      To<NGPhysicalBoxFragment>(*marker_layout_result->PhysicalFragment());
+      To<NGPhysicalBoxFragment>(marker_layout_result->PhysicalFragment());
 
   // When there are no line boxes, marker is top-aligned to the list item.
   // https://github.com/w3c/csswg-drafts/issues/2417

@@ -23,7 +23,7 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
   const auto& out_of_flow_descendants = child.OutOfFlowPositionedDescendants();
   if (!out_of_flow_descendants.IsEmpty()) {
     LogicalOffset top_left_offset;
-    PhysicalSize child_size = child.PhysicalFragment()->Size();
+    PhysicalSize child_size = child.PhysicalFragment().Size();
     switch (GetWritingMode()) {
       case WritingMode::kHorizontalTb:
         top_left_offset =
@@ -62,7 +62,7 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
     // TODO(layout-dev): This code should eventually be removed once we handle
     // relative positioned objects directly in the fragment tree.
     if (LayoutBox* child_box =
-            ToLayoutBoxOrNull(child.PhysicalFragment()->GetLayoutObject())) {
+            ToLayoutBoxOrNull(child.PhysicalFragment().GetLayoutObject())) {
       top_left_offset += PhysicalOffset(child_box->OffsetForInFlowPosition())
                              .ConvertToLogical(GetWritingMode(), Direction(),
                                                PhysicalSize(), PhysicalSize());
@@ -82,14 +82,14 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
   // percentage resolution block-size. OOF-positioned children resolve their
   // percentages against the "final" size of their parent.
   if (child.DependsOnPercentageBlockSize() &&
-      !child.PhysicalFragment()->IsOutOfFlowPositioned())
+      !child.PhysicalFragment().IsOutOfFlowPositioned())
     has_descendant_that_depends_on_percentage_block_size_ = true;
 
   if (child.MayHaveDescendantAboveBlockStart() &&
-      !child.PhysicalFragment()->IsBlockFormattingContextRoot())
+      !child.PhysicalFragment().IsBlockFormattingContextRoot())
     may_have_descendant_above_block_start_ = true;
 
-  return AddChild(child.PhysicalFragment(), child_offset);
+  return AddChild(&child.PhysicalFragment(), child_offset);
 }
 
 NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(

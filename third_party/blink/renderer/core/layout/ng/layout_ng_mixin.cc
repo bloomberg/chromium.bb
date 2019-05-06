@@ -83,7 +83,7 @@ const NGPhysicalBoxFragment* LayoutNGMixin<Base>::CurrentFragment() const {
   if (!cached_layout_result)
     return nullptr;
 
-  return To<NGPhysicalBoxFragment>(cached_layout_result->PhysicalFragment());
+  return &To<NGPhysicalBoxFragment>(cached_layout_result->PhysicalFragment());
 }
 
 template <typename Base>

@@ -509,9 +509,8 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
         GenerateFragment(node, container_content_size_in_child_writing_mode,
                          block_estimate, node_position);
 
-    DCHECK(layout_result->PhysicalFragment());
     NGFragment fragment(descendant_writing_mode,
-                        *layout_result->PhysicalFragment());
+                        layout_result->PhysicalFragment());
 
     block_estimate = fragment.BlockSize();
   }
@@ -551,7 +550,7 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
   offset.block_offset += inset.block_start;
 
   base::Optional<LayoutUnit> y = ComputeAbsoluteDialogYPosition(
-      *node.GetLayoutBox(), layout_result->PhysicalFragment()->Size().height);
+      *node.GetLayoutBox(), layout_result->PhysicalFragment().Size().height);
   if (y.has_value()) {
     if (IsHorizontalWritingMode(container_writing_mode))
       offset.block_offset = *y;

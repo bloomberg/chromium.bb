@@ -211,11 +211,10 @@ LayoutUnit ComputeMarginBoxInlineSizeForUnpositionedFloat(
       parent_style, unpositioned_float);
   DCHECK(unpositioned_float->layout_result);
 
-  const auto* fragment = unpositioned_float->layout_result->PhysicalFragment();
-  DCHECK(fragment);
-  DCHECK(!fragment->BreakToken() || fragment->BreakToken()->IsFinished());
+  const auto& fragment = unpositioned_float->layout_result->PhysicalFragment();
+  DCHECK(!fragment.BreakToken() || fragment.BreakToken()->IsFinished());
 
-  return (NGFragment(parent_space.GetWritingMode(), *fragment).InlineSize() +
+  return (NGFragment(parent_space.GetWritingMode(), fragment).InlineSize() +
           unpositioned_float->margins.InlineSum())
       .ClampNegativeToZero();
 }
@@ -265,15 +264,14 @@ NGPositionedFloat PositionFloat(
                                      unpositioned_float->token.get()))
       fragment_margins.block_start = LayoutUnit();
     if (const NGBreakToken* break_token =
-            layout_result->PhysicalFragment()->BreakToken()) {
+            layout_result->PhysicalFragment().BreakToken()) {
       if (!break_token->IsFinished())
         fragment_margins.block_end = LayoutUnit();
     }
   }
 
-  DCHECK(layout_result->PhysicalFragment());
   NGFragment float_fragment(parent_space.GetWritingMode(),
-                            *layout_result->PhysicalFragment());
+                            layout_result->PhysicalFragment());
 
   // Find a layout opportunity that will fit our float.
   NGLayoutOpportunity opportunity = FindLayoutOpportunityForFloat(

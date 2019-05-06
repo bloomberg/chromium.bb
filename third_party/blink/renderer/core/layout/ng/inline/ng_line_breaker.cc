@@ -1117,10 +1117,9 @@ void NGLineBreaker::HandleAtomicInline(
             .LayoutAtomicInline(constraint_space_, node_.Style(),
                                 line_info->LineStyle().GetFontBaseline(),
                                 line_info->UseFirstLineStyle());
-    DCHECK(item_result->layout_result->PhysicalFragment());
     item_result->inline_size =
         NGFragment(constraint_space_.GetWritingMode(),
-                   *item_result->layout_result->PhysicalFragment())
+                   item_result->layout_result->PhysicalFragment())
             .InlineSize();
     item_result->margins =
         ComputeLineMarginsForVisualContainer(constraint_space_, style);

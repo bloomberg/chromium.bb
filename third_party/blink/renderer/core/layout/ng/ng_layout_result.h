@@ -14,7 +14,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_floats_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_link.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_positioned_descendant.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_container_fragment.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -49,8 +49,10 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
                  base::Optional<LayoutUnit> bfc_block_offset);
   ~NGLayoutResult();
 
-  const NGPhysicalFragment* PhysicalFragment() const {
-    return physical_fragment_.get();
+  const NGPhysicalContainerFragment& PhysicalFragment() const {
+    DCHECK(physical_fragment_);
+    DCHECK_EQ(NGLayoutResultStatus::kSuccess, Status());
+    return *physical_fragment_;
   }
 
   const Vector<NGOutOfFlowPositionedDescendant>&
@@ -181,11 +183,13 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   friend class MutableForOutOfFlow;
 
   // This constructor requires a non-null fragment and sets a success status.
-  NGLayoutResult(scoped_refptr<const NGPhysicalFragment> physical_fragment,
-                 NGBoxFragmentBuilder*);
+  NGLayoutResult(
+      scoped_refptr<const NGPhysicalContainerFragment> physical_fragment,
+      NGBoxFragmentBuilder*);
   // This constructor requires a non-null fragment and sets a success status.
-  NGLayoutResult(scoped_refptr<const NGPhysicalFragment> physical_fragment,
-                 NGLineBoxFragmentBuilder*);
+  NGLayoutResult(
+      scoped_refptr<const NGPhysicalContainerFragment> physical_fragment,
+      NGLineBoxFragmentBuilder*);
   // This constructor is for a non-success status.
   NGLayoutResult(NGLayoutResultStatus, NGBoxFragmentBuilder*);
 
@@ -208,7 +212,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   // as indicated by |has_valid_space_|.
   const NGConstraintSpace space_;
 
-  scoped_refptr<const NGPhysicalFragment> physical_fragment_;
+  scoped_refptr<const NGPhysicalContainerFragment> physical_fragment_;
   Vector<NGOutOfFlowPositionedDescendant> oof_positioned_descendants_;
 
   // This is the final position of an OOF-positioned object in its parent's

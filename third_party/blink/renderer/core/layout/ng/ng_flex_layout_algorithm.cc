@@ -104,7 +104,7 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
     scoped_refptr<const NGLayoutResult> layout_result =
         child.Layout(child_space, nullptr /*break token*/);
     NGFragment fragment_in_child_writing_mode(
-        child_style.GetWritingMode(), *layout_result->PhysicalFragment());
+        child_style.GetWritingMode(), layout_result->PhysicalFragment());
 
     LayoutUnit flex_base_border_box;
     const Length& specified_length_in_main_axis =
@@ -301,8 +301,8 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
           flex_item.ng_input_node.Layout(child_space, nullptr /*break token*/);
       flex_item.cross_axis_size =
           is_horizontal_flow
-              ? flex_item.layout_result->PhysicalFragment()->Size().height
-              : flex_item.layout_result->PhysicalFragment()->Size().width;
+              ? flex_item.layout_result->PhysicalFragment().Size().height
+              : flex_item.layout_result->PhysicalFragment().Size().width;
     }
     // cross_axis_offset is updated in each iteration of the loop, for passing
     // in to the next iteration.

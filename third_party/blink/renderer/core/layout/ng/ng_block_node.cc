@@ -339,24 +339,23 @@ void NGBlockNode::FinishLayout(
   if (!IsBlockLayoutComplete(constraint_space, *layout_result))
     return;
 
-  DCHECK(layout_result->PhysicalFragment());
-
   box_->SetCachedLayoutResult(*layout_result, break_token);
   if (block_flow) {
     NGLayoutInputNode first_child = FirstChild();
     bool has_inline_children = first_child && first_child.IsInline();
     if (has_inline_children) {
+      const auto& physical_fragment =
+          To<NGPhysicalBoxFragment>(layout_result->PhysicalFragment());
       CopyFragmentDataToLayoutBoxForInlineChildren(
-          To<NGPhysicalBoxFragment>(*layout_result->PhysicalFragment()),
-          layout_result->PhysicalFragment()->Size().width,
+          physical_fragment, physical_fragment.Size().width,
           Style().IsFlippedBlocksWritingMode());
       block_flow->SetPaintFragment(To<NGBlockBreakToken>(break_token),
-                                   layout_result->PhysicalFragment());
+                                   &physical_fragment);
     } else if (UNLIKELY(box_->IsLayoutNGFieldset())) {
       // TODO(kojii): NGFieldset should not create PaintFragment.
       block_flow->ClearNGInlineNodeData();
       block_flow->SetPaintFragment(To<NGBlockBreakToken>(break_token),
-                                   layout_result->PhysicalFragment());
+                                   &layout_result->PhysicalFragment());
     } else {
       // We still need to clear paint fragments in case it had inline children,
       // and thus had NGPaintFragment.
@@ -406,7 +405,7 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
     NGBoxFragment fragment(
         container_writing_mode,
         TextDirection::kLtr,  // irrelevant here
-        To<NGPhysicalBoxFragment>(*layout_result->PhysicalFragment()));
+        To<NGPhysicalBoxFragment>(layout_result->PhysicalFragment()));
     sizes.min_size = sizes.max_size = fragment.Size().inline_size;
     if (input.size_type == NGMinMaxSizeType::kContentBoxSize) {
       sizes -= fragment.Borders().InlineSum() + fragment.Padding().InlineSum() +
@@ -439,11 +438,9 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
   // Have to synthesize this value.
   scoped_refptr<const NGLayoutResult> layout_result =
       Layout(zero_constraint_space);
-  NGBoxFragment min_fragment(
-      container_writing_mode,
-      TextDirection::kLtr,  // irrelevant here
-      To<NGPhysicalBoxFragment>(*layout_result->PhysicalFragment()));
-  sizes.min_size = min_fragment.Size().inline_size;
+  sizes.min_size =
+      NGFragment(container_writing_mode, layout_result->PhysicalFragment())
+          .InlineSize();
 
   // Now, redo with infinite space for max_content
   NGConstraintSpace infinite_constraint_space =
@@ -456,7 +453,7 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
   NGBoxFragment max_fragment(
       container_writing_mode,
       TextDirection::kLtr,  // irrelevant here
-      To<NGPhysicalBoxFragment>(*layout_result->PhysicalFragment()));
+      To<NGPhysicalBoxFragment>(layout_result->PhysicalFragment()));
   sizes.max_size = max_fragment.Size().inline_size;
 
   if (input.size_type == NGMinMaxSizeType::kContentBoxSize) {
@@ -562,12 +559,11 @@ String NGBlockNode::ToString() const {
 void NGBlockNode::CopyFragmentDataToLayoutBox(
     const NGConstraintSpace& constraint_space,
     const NGLayoutResult& layout_result) {
-  DCHECK(layout_result.PhysicalFragment());
   if (UNLIKELY(constraint_space.IsIntermediateLayout()))
     return;
 
   const auto& physical_fragment =
-      To<NGPhysicalBoxFragment>(*layout_result.PhysicalFragment());
+      To<NGPhysicalBoxFragment>(layout_result.PhysicalFragment());
 
   NGBoxFragment fragment(constraint_space.GetWritingMode(),
                          constraint_space.Direction(), physical_fragment);
@@ -1013,8 +1009,7 @@ void NGBlockNode::UpdateShapeOutsideInfoIfNeeded(
 
   // The box_ may not have a valid size yet (due to an intermediate layout),
   // use the fragment's size instead.
-  DCHECK(layout_result.PhysicalFragment());
-  LayoutSize box_size = layout_result.PhysicalFragment()->Size().ToLayoutSize();
+  LayoutSize box_size = layout_result.PhysicalFragment().Size().ToLayoutSize();
 
   // TODO(ikilpatrick): Ideally this should be moved to a NGLayoutResult
   // computing the shape area. There may be an issue with the new fragmentation
