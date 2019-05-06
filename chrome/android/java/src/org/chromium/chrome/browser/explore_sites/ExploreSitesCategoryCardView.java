@@ -136,8 +136,13 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
         @Override
         public void onFocusChange(View v, boolean hasFocus) {
             if (hasFocus) {
-                getParent().requestChildRectangleOnScreen(
-                        ExploreSitesCategoryCardView.this, new Rect(), true);
+                // Ensures the whole category card is scrolled to view when a child site has focus.
+                // Immediate should be false so scrolling will not interfere with any existing
+                // scrollers running to make the view visible.
+                getParent().requestChildRectangleOnScreen(ExploreSitesCategoryCardView.this,
+                        new Rect(/* left= */ 0, /* top= */ 0, /* right= */ getWidth(),
+                                /* bottom= */ getHeight()),
+                        /* immediate= */ false);
             }
         }
     }
