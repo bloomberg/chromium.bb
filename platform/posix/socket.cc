@@ -429,5 +429,27 @@ Error UdpSocket::SendMessage(const void* data,
   return Error::Code::kNone;
 }
 
+Error UdpSocket::SetDscp(UdpSocket::DscpMode state) {
+  auto* const socket = UdpSocketPosix::From(this);
+
+  constexpr auto kSettingLevel = IPPROTO_IP;
+  uint8_t code_array[1] = {static_cast<uint8_t>(state)};
+  auto code = setsockopt(socket->fd, kSettingLevel, IP_TOS, code_array,
+                         sizeof(uint8_t));
+
+  if (code == EBADF || code == ENOTSOCK || code == EFAULT) {
+    OSP_VLOG << "BAD SOCKET PROVIDED. CODE: " << code;
+    return Error::Code::kSocketOptionSettingFailure;
+  } else if (code == EINVAL) {
+    OSP_VLOG << "INVALID DSCP INFO PROVIDED";
+    return Error::Code::kSocketOptionSettingFailure;
+  } else if (code == ENOPROTOOPT) {
+    OSP_VLOG << "INVALID DSCP SETTING LEVEL PROVIDED: " << kSettingLevel;
+    return Error::Code::kSocketOptionSettingFailure;
+  }
+
+  return Error::Code::kNone;
+}
+
 }  // namespace platform
 }  // namespace openscreen
