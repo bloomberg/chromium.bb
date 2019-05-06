@@ -46,14 +46,6 @@ class SwitchAccessInterface {
   hasCommand(command) {}
 
   /**
-   * Return the default key code for a command.
-   *
-   * @param {!SAConstants.Command} command
-   * @return {number}
-   */
-  getDefaultKeyCodeFor(command) {}
-
-  /**
    * Forwards keycodes received from keyPress events to |callback|.
    * @param {function(number)} callback
    */
@@ -93,7 +85,7 @@ class SwitchAccessInterface {
 
   /**
    * Get the boolean value for the given key. Will throw a type error if the
-   * value associated with |key| is not a boolean.
+   * value associated with |key| is not a boolean, or undefined.
    *
    * @param  {SAConstants.Preference} key
    * @return {boolean}
@@ -102,12 +94,20 @@ class SwitchAccessInterface {
 
   /**
    * Get the number value for the given key. Will throw a type error if the
-   * value associated with |key| is not a number.
+   * value associated with |key| is not a number, or undefined.
    *
    * @param  {SAConstants.Preference} key
    * @return {number}
    */
   getNumberPreference(key) {}
+
+  /**
+   * Get the number value for the given key, or |null| if none exists.
+   *
+   * @param  {SAConstants.Preference} key
+   * @return {number|null}
+   */
+  getNumberPreferenceIfDefined(key) {}
 
   /**
    * Returns true if |keyCode| is already used to run a command from the

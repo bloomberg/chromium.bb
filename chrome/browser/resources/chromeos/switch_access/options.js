@@ -37,8 +37,9 @@ class SwitchAccessOptions {
     for (const command of this.switchAccess_.getCommands()) {
       // All commands are preferences (see switch_access_constants.js).
       const pref = /** @type {SAConstants.Preference} */ (command);
-      document.getElementById(command).value =
-          String.fromCharCode(this.switchAccess_.getNumberPreference(pref));
+      const keyCode = this.switchAccess_.getNumberPreferenceIfDefined(pref);
+      if (keyCode)
+        document.getElementById(command).value = String.fromCharCode(keyCode);
     }
   }
 
@@ -66,14 +67,23 @@ class SwitchAccessOptions {
         }
         break;
       default:
-        if (this.switchAccess_.getCommands().includes(input.id)) {
+        if (this.switchAccess_.hasCommand(input.id)) {
+          // If the input is empty, remove any existing key-mapping.
+          if (!input.value) {
+            chrome.storage.sync.remove(input.id);
+            break;
+          }
           const keyCode = input.value.toUpperCase().charCodeAt(0);
           if (this.isValidKeyCode_(keyCode)) {
             input.value = input.value.toUpperCase();
             this.switchAccess_.setPreference(input.id, keyCode);
           } else {
-            const oldKeyCode = this.switchAccess_.getNumberPreference(input.id);
-            input.value = String.fromCharCode(oldKeyCode);
+            const oldKeyCode =
+                this.switchAccess_.getNumberPreferenceIfDefined(input.id);
+            if (oldKeyCode)
+              input.value = String.fromCharCode(oldKeyCode);
+            else
+              input.value = '';
           }
         }
     }
@@ -123,8 +133,12 @@ class SwitchAccessOptions {
           document.getElementById(key).value = newValue / 1000;
           break;
         default:
-          if (this.switchAccess_.hasCommand(key))
+          if (!this.switchAccess_.hasCommand(key))
+            break;
+          if (newValue)
             document.getElementById(key).value = String.fromCharCode(newValue);
+          else
+            document.getElementById(key).value = '';
       }
     }
   }

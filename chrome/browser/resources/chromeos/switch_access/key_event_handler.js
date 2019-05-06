@@ -47,9 +47,12 @@ class KeyEventHandler {
     let keyCodes = [];
     for (const command of this.switchAccess_.getCommands()) {
       const keyCode = this.keyCodeFor_(command);
+      if (!keyCode)
+        continue;
       if ((keyCode >= '0'.charCodeAt(0) && keyCode <= '9'.charCodeAt(0)) ||
-          (keyCode >= 'A'.charCodeAt(0) && keyCode <= 'Z'.charCodeAt(0)))
+          (keyCode >= 'A'.charCodeAt(0) && keyCode <= 'Z'.charCodeAt(0))) {
         keyCodes.push(keyCode);
+      }
     }
     chrome.accessibilityPrivate.setSwitchAccessKeys(keyCodes);
   }
@@ -93,11 +96,11 @@ class KeyEventHandler {
    * Return the key code that |command| maps to.
    *
    * @param {SAConstants.Command} command
-   * @return {number}
+   * @return {number|null}
    */
   keyCodeFor_(command) {
     // All commands are preferences (see switch_access_constants.js).
     const preference = /** @type {SAConstants.Preference} */ (command);
-    return this.switchAccess_.getNumberPreference(preference);
+    return this.switchAccess_.getNumberPreferenceIfDefined(preference);
   }
 }

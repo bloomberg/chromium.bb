@@ -140,16 +140,6 @@ class SwitchAccess {
   }
 
   /**
-   * Return the default key code for a command.
-   * @override
-   * @param {!SAConstants.Command} command
-   * @return {number}
-   */
-  getDefaultKeyCodeFor(command) {
-    return this.commands_.getDefaultKeyCodeFor(command);
-  }
-
-  /**
    * Forwards the keycodes received from keyPressed events to |callback|.
    * @param {function(number)} callback
    */
@@ -217,7 +207,7 @@ class SwitchAccess {
 
   /**
    * Get the boolean value for the given key. Will throw a type error if the
-   * value associated with |key| is not a boolean.
+   * value associated with |key| is not a boolean, or undefined.
    *
    * @override
    * @param  {SAConstants.Preference} key
@@ -229,7 +219,7 @@ class SwitchAccess {
 
   /**
    * Get the number value for the given key. Will throw a type error if the
-   * value associated with |key| is not a number.
+   * value associated with |key| is not a number, or undefined.
    *
    * @override
    * @param  {SAConstants.Preference} key
@@ -237,6 +227,17 @@ class SwitchAccess {
    */
   getNumberPreference(key) {
     return this.switchAccessPreferences_.getNumberPreference(key);
+  }
+
+  /**
+   * Get the number value for the given key, or |null| if none exists.
+   *
+   * @override
+   * @param  {SAConstants.Preference} key
+   * @return {number|null}
+   */
+  getNumberPreferenceIfDefined(key) {
+    return this.switchAccessPreferences_.getNumberPreferenceIfDefined(key);
   }
 
   /**
