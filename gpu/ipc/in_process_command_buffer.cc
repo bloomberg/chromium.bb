@@ -353,7 +353,6 @@ gpu::ContextResult InProcessCommandBuffer::Initialize(
     bool is_offscreen,
     SurfaceHandle surface_handle,
     const ContextCreationAttribs& attribs,
-    InProcessCommandBuffer* share_group,
     GpuMemoryBufferManager* gpu_memory_buffer_manager,
     ImageFactory* image_factory,
     GpuChannelManagerDelegate* gpu_channel_manager_delegate,
@@ -361,7 +360,6 @@ gpu::ContextResult InProcessCommandBuffer::Initialize(
     gpu::raster::GrShaderCache* gr_shader_cache,
     GpuProcessActivityFlags* activity_flags) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
-  DCHECK(!share_group || task_executor_ == share_group->task_executor_);
   TRACE_EVENT0("gpu", "InProcessCommandBuffer::Initialize")
 
   is_offscreen_ = is_offscreen;
@@ -385,8 +383,8 @@ gpu::ContextResult InProcessCommandBuffer::Initialize(
 
   Capabilities capabilities;
   InitializeOnGpuThreadParams params(surface_handle, attribs, &capabilities,
-                                     share_group, image_factory,
-                                     gr_shader_cache, activity_flags);
+                                     image_factory, gr_shader_cache,
+                                     activity_flags);
 
   base::OnceCallback<gpu::ContextResult(void)> init_task =
       base::BindOnce(&InProcessCommandBuffer::InitializeOnGpuThread,
@@ -422,41 +420,36 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
   GpuDriverBugWorkarounds workarounds(
       task_executor_->gpu_feature_info().enabled_gpu_driver_bug_workarounds);
 
-  if (params.share_command_buffer) {
-    context_group_ = params.share_command_buffer->context_group_;
-  } else {
-    std::unique_ptr<MemoryTracker> memory_tracker;
-    // Android WebView won't have a memory tracker.
-    if (task_executor_->ShouldCreateMemoryTracker()) {
-      const uint64_t client_tracing_id =
-          base::trace_event::MemoryDumpManager::GetInstance()
-              ->GetTracingProcessId();
-      memory_tracker = std::make_unique<GpuCommandBufferMemoryTracker>(
-          kInProcessCommandBufferClientId, client_tracing_id,
-          command_buffer_id_.GetUnsafeValue(), params.attribs.context_type,
-          base::ThreadTaskRunnerHandle::Get());
-    }
-
-    gpu::GpuFeatureInfo gpu_feature_info = task_executor_->gpu_feature_info();
-    if (params.attribs.backed_by_surface_texture) {
-      gpu_feature_info.status_values[GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL] =
-          kGpuFeatureStatusDisabled;
-    }
-    auto feature_info =
-        base::MakeRefCounted<gles2::FeatureInfo>(workarounds, gpu_feature_info);
-    context_group_ = base::MakeRefCounted<gles2::ContextGroup>(
-        task_executor_->gpu_preferences(),
-        gles2::PassthroughCommandDecoderSupported(),
-        task_executor_->mailbox_manager(), std::move(memory_tracker),
-        task_executor_->shader_translator_cache(),
-        task_executor_->framebuffer_completeness_cache(), feature_info,
-        params.attribs.bind_generates_resource, task_executor_->image_manager(),
-        params.image_factory, nullptr /* progress_reporter */,
-        task_executor_->gpu_feature_info(),
-        task_executor_->discardable_manager(),
-        task_executor_->passthrough_discardable_manager(),
-        task_executor_->shared_image_manager());
+  std::unique_ptr<MemoryTracker> memory_tracker;
+  // Android WebView won't have a memory tracker.
+  if (task_executor_->ShouldCreateMemoryTracker()) {
+    const uint64_t client_tracing_id =
+        base::trace_event::MemoryDumpManager::GetInstance()
+            ->GetTracingProcessId();
+    memory_tracker = std::make_unique<GpuCommandBufferMemoryTracker>(
+        kInProcessCommandBufferClientId, client_tracing_id,
+        command_buffer_id_.GetUnsafeValue(), params.attribs.context_type,
+        base::ThreadTaskRunnerHandle::Get());
   }
+
+  gpu::GpuFeatureInfo gpu_feature_info = task_executor_->gpu_feature_info();
+  if (params.attribs.backed_by_surface_texture) {
+    gpu_feature_info.status_values[GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL] =
+        kGpuFeatureStatusDisabled;
+  }
+  auto feature_info =
+      base::MakeRefCounted<gles2::FeatureInfo>(workarounds, gpu_feature_info);
+  context_group_ = base::MakeRefCounted<gles2::ContextGroup>(
+      task_executor_->gpu_preferences(),
+      gles2::PassthroughCommandDecoderSupported(),
+      task_executor_->mailbox_manager(), std::move(memory_tracker),
+      task_executor_->shader_translator_cache(),
+      task_executor_->framebuffer_completeness_cache(), feature_info,
+      params.attribs.bind_generates_resource, task_executor_->image_manager(),
+      params.image_factory, nullptr /* progress_reporter */,
+      task_executor_->gpu_feature_info(), task_executor_->discardable_manager(),
+      task_executor_->passthrough_discardable_manager(),
+      task_executor_->shared_image_manager());
 
 #if defined(OS_MACOSX)
   // Virtualize PreferIntegratedGpu contexts by default on OS X to prevent
@@ -559,13 +552,9 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
           task_sequence_->GetSequenceId());
 
   if (context_group_->use_passthrough_cmd_decoder()) {
-    // When using the passthrough command decoder, only share with other
-    // contexts in the explicitly requested share group.
-    if (params.share_command_buffer) {
-      gl_share_group_ = params.share_command_buffer->gl_share_group_;
-    } else {
-      gl_share_group_ = base::MakeRefCounted<gl::GLShareGroup>();
-    }
+    // When using the passthrough command decoder, never share with other
+    // contexts.
+    gl_share_group_ = base::MakeRefCounted<gl::GLShareGroup>();
   } else {
     // When using the validating command decoder, always use the global share
     // group.

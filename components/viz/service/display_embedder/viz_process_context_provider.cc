@@ -237,8 +237,7 @@ void VizProcessContextProvider::InitializeContext(
       GURL("chrome://gpu/VizProcessContextProvider::InitializeContext"));
   context_result_ = command_buffer_->Initialize(
       /*surface=*/nullptr, is_offscreen, surface_handle, attributes_,
-      /*share_command_buffer=*/nullptr, gpu_memory_buffer_manager,
-      image_factory, gpu_channel_manager_delegate,
+      gpu_memory_buffer_manager, image_factory, gpu_channel_manager_delegate,
       base::ThreadTaskRunnerHandle::Get(), nullptr, nullptr);
   if (context_result_ != gpu::ContextResult::kSuccess) {
     DLOG(ERROR) << "Failed to initialize InProcessCommmandBuffer";

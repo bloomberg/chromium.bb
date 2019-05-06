@@ -99,7 +99,6 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
       bool is_offscreen,
       SurfaceHandle surface_handle,
       const ContextCreationAttribs& attribs,
-      InProcessCommandBuffer* share_group,
       GpuMemoryBufferManager* gpu_memory_buffer_manager,
       ImageFactory* image_factory,
       GpuChannelManagerDelegate* gpu_channel_manager_delegate,
@@ -198,7 +197,6 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
     SurfaceHandle surface_handle;
     const ContextCreationAttribs& attribs;
     Capabilities* capabilities;  // Ouptut.
-    InProcessCommandBuffer* share_command_buffer;
     ImageFactory* image_factory;
     gpu::raster::GrShaderCache* gr_shader_cache;
     GpuProcessActivityFlags* activity_flags;
@@ -206,14 +204,12 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
     InitializeOnGpuThreadParams(SurfaceHandle surface_handle,
                                 const ContextCreationAttribs& attribs,
                                 Capabilities* capabilities,
-                                InProcessCommandBuffer* share_command_buffer,
                                 ImageFactory* image_factory,
                                 gpu::raster::GrShaderCache* gr_shader_cache,
                                 GpuProcessActivityFlags* activity_flags)
         : surface_handle(surface_handle),
           attribs(attribs),
           capabilities(capabilities),
-          share_command_buffer(share_command_buffer),
           image_factory(image_factory),
           gr_shader_cache(gr_shader_cache),
           activity_flags(activity_flags) {}

@@ -65,9 +65,9 @@ ContextResult RasterInProcessContext::Initialize(
       std::make_unique<InProcessCommandBuffer>(task_executor, GURL());
   auto result = command_buffer_->Initialize(
       nullptr /* surface */, true /* is_offscreen */, kNullSurfaceHandle,
-      attribs, nullptr /* share_command_buffer */, gpu_memory_buffer_manager,
-      image_factory, gpu_channel_manager_delegate, client_task_runner_,
-      gr_shader_cache, activity_flags);
+      attribs, gpu_memory_buffer_manager, image_factory,
+      gpu_channel_manager_delegate, client_task_runner_, gr_shader_cache,
+      activity_flags);
   if (result != ContextResult::kSuccess) {
     DLOG(ERROR) << "Failed to initialize InProcessCommmandBuffer";
     return result;
