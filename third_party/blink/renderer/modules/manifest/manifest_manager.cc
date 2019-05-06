@@ -11,10 +11,11 @@
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
-#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/html/html_link_element.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/modules/manifest/manifest_change_notifier.h"
 #include "third_party/blink/renderer/modules/manifest/manifest_fetcher.h"
 #include "third_party/blink/renderer/modules/manifest/manifest_parser.h"
 #include "third_party/blink/renderer/modules/manifest/manifest_type_converters.h"
@@ -52,6 +53,8 @@ ManifestManager::ManifestManager(LocalFrame& frame)
       may_have_manifest_(false),
       manifest_dirty_(true) {
   if (frame.IsMainFrame()) {
+    manifest_change_notifier_ =
+        MakeGarbageCollected<ManifestChangeNotifier>(frame);
     frame.GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
         &ManifestManager::BindToRequest, WrapWeakPersistent(this)));
   }
@@ -132,6 +135,8 @@ void ManifestManager::DidChangeManifest() {
   manifest_dirty_ = true;
   manifest_url_ = KURL();
   manifest_debug_info_ = nullptr;
+  if (manifest_change_notifier_)
+    manifest_change_notifier_->DidChangeManifest();
 }
 
 void ManifestManager::DidCommitLoad() {
@@ -147,17 +152,16 @@ void ManifestManager::FetchManifest() {
     return;
   }
 
-  Document& document = *(GetSupplementable()->GetDocument());
-  manifest_url_ = document.ManifestURL();
-
+  manifest_url_ = ManifestURL();
   if (manifest_url_.IsEmpty()) {
     ManifestUmaUtil::FetchFailed(ManifestUmaUtil::FETCH_EMPTY_URL);
     ResolveCallbacks(ResolveStateFailure);
     return;
   }
 
+  Document& document = *GetSupplementable()->GetDocument();
   fetcher_ = MakeGarbageCollected<ManifestFetcher>(manifest_url_);
-  fetcher_->Start(document, document.ManifestUseCredentials(),
+  fetcher_->Start(document, ManifestUseCredentials(),
                   WTF::Bind(&ManifestManager::OnManifestFetchComplete,
                             WrapWeakPersistent(this), document.Url()));
 }
@@ -185,8 +189,7 @@ void ManifestManager::OnManifestFetchComplete(const KURL& document_url,
 
   for (const auto& error : manifest_debug_info_->errors) {
     auto location = std::make_unique<SourceLocation>(
-        GetSupplementable()->GetDocument()->ManifestURL().GetString(),
-        error->line, error->column, nullptr, 0);
+        ManifestURL().GetString(), error->line, error->column, nullptr, 0);
 
     GetSupplementable()->Console().AddMessage(ConsoleMessage::Create(
         mojom::ConsoleMessageSource::kOther,
@@ -228,6 +231,24 @@ void ManifestManager::ResolveCallbacks(ResolveState state) {
   }
 }
 
+KURL ManifestManager::ManifestURL() const {
+  HTMLLinkElement* link_element =
+      GetSupplementable()->GetDocument()->LinkManifest();
+  if (!link_element)
+    return KURL();
+  return link_element->Href();
+}
+
+bool ManifestManager::ManifestUseCredentials() const {
+  HTMLLinkElement* link_element =
+      GetSupplementable()->GetDocument()->LinkManifest();
+  if (!link_element)
+    return false;
+  return EqualIgnoringASCIICase(
+      link_element->FastGetAttribute(html_names::kCrossoriginAttr),
+      "use-credentials");
+}
+
 void ManifestManager::BindToRequest(
     mojom::blink::ManifestManagerRequest request) {
   bindings_.AddBinding(this, std::move(request));
@@ -249,6 +270,7 @@ void ManifestManager::Dispose() {
 
 void ManifestManager::Trace(blink::Visitor* visitor) {
   visitor->Trace(fetcher_);
+  visitor->Trace(manifest_change_notifier_);
   Supplement<LocalFrame>::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
 }

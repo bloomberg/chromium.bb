@@ -23,7 +23,6 @@ class BLINK_EXPORT WebManifestManager {
   virtual ~WebManifestManager() = default;
 
   virtual void RequestManifest(WebCallback callback) = 0;
-  virtual bool CanFetchManifest() = 0;
 };
 
 }  // namespace blink

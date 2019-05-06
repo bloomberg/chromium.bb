@@ -116,7 +116,6 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   virtual void WillReleaseScriptContext(v8::Local<v8::Context> context,
                                         int world_id) {}
   virtual void DidClearWindowObject() {}
-  virtual void DidChangeManifest() {}
   virtual void DidChangeScrollOffset() {}
   virtual void WillSendSubmitEvent(const blink::WebFormElement& form) {}
   virtual void WillSubmitForm(const blink::WebFormElement& form) {}

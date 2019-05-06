@@ -13,12 +13,15 @@
 #include "third_party/blink/public/mojom/manifest/manifest_manager.mojom-blink.h"
 #include "third_party/blink/public/web/web_manifest_manager.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 
-class LocalFrame;
+class ManifestChangeNotifier;
+class ManifestManagerTest;
 class ManifestFetcher;
 class ResourceResponse;
 
@@ -27,11 +30,12 @@ class ResourceResponse;
 // the ManifestParser in order to do so.
 //
 // Consumers should use the mojo ManifestManager interface to use this class.
-class ManifestManager : public GarbageCollectedFinalized<ManifestManager>,
-                        public WebManifestManager,
-                        public Supplement<LocalFrame>,
-                        public mojom::blink::ManifestManager,
-                        public ContextLifecycleObserver {
+class MODULES_EXPORT ManifestManager
+    : public GarbageCollectedFinalized<ManifestManager>,
+      public WebManifestManager,
+      public Supplement<LocalFrame>,
+      public mojom::blink::ManifestManager,
+      public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(ManifestManager);
 
  public:
@@ -41,17 +45,18 @@ class ManifestManager : public GarbageCollectedFinalized<ManifestManager>,
 
   static void ProvideTo(LocalFrame&);
 
-  static bool CanFetchManifest(LocalFrame* frame);
-
   explicit ManifestManager(LocalFrame&);
   ~ManifestManager() override;
 
   void DidChangeManifest();
   void DidCommitLoad();
+  bool CanFetchManifest();
+
+  KURL ManifestURL() const;
+  bool ManifestUseCredentials() const;
 
   // WebManifestManager
   void RequestManifest(WebCallback callback) override;
-  bool CanFetchManifest() override;
 
   void Trace(blink::Visitor*) override;
 
@@ -83,7 +88,10 @@ class ManifestManager : public GarbageCollectedFinalized<ManifestManager>,
 
   void Dispose();
 
+  friend class ManifestManagerTest;
+
   Member<ManifestFetcher> fetcher_;
+  Member<ManifestChangeNotifier> manifest_change_notifier_;
 
   // Whether the LocalFrame may have an associated Manifest. If true, the frame
   // may have a manifest, if false, it can't have one. This boolean is true when

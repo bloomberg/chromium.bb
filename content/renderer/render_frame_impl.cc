@@ -118,7 +118,6 @@
 #include "content/renderer/loader/web_url_request_util.h"
 #include "content/renderer/loader/web_worker_fetch_context_impl.h"
 #include "content/renderer/low_memory_mode_controller.h"
-#include "content/renderer/manifest/manifest_change_notifier.h"
 #include "content/renderer/media/audio/audio_device_factory.h"
 #include "content/renderer/media/audio/audio_output_ipc_factory.h"
 #include "content/renderer/media/audio/audio_renderer_sink_cache.h"
@@ -1824,14 +1823,6 @@ RenderFrameImpl::RenderFrameImpl(CreateParams params)
   // Manages its own lifetime.
   plugin_power_saver_helper_ = new PluginPowerSaverHelper(this);
 #endif
-
-  // TODO(ajwong): This always returns true as is_main_frame_ gets initialized
-  // later in RenderFrameImpl::Initialize(). Should the conditional be in
-  // RenderFrameImpl::Initialize()?  https://crbug.com/840533
-  if (IsMainFrame()) {
-    // Manages its own lifetime.
-    new ManifestChangeNotifier(this);
-  }
 }
 
 mojom::FrameHost* RenderFrameImpl::GetFrameHost() {
@@ -5625,11 +5616,6 @@ void RenderFrameImpl::HandleAccessibilityFindInPageResult(
         identifier, match_index, blink::WebAXObject::FromWebNode(start_node),
         start_offset, blink::WebAXObject::FromWebNode(end_node), end_offset);
   }
-}
-
-void RenderFrameImpl::DidChangeManifest() {
-  for (auto& observer : observers_)
-    observer.DidChangeManifest();
 }
 
 void RenderFrameImpl::EnterFullscreen(

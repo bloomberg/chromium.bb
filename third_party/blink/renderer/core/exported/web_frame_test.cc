@@ -8561,32 +8561,6 @@ TEST_F(WebFrameTest, HasVisibleContentOnHiddenFrames) {
   }
 }
 
-class ManifestChangeWebFrameClient
-    : public frame_test_helpers::TestWebFrameClient {
- public:
-  ManifestChangeWebFrameClient() : manifest_change_count_(0) {}
-  ~ManifestChangeWebFrameClient() override = default;
-
-  // frame_test_helpers::TestWebFrameClient:
-  void DidChangeManifest() override { ++manifest_change_count_; }
-
-  int ManifestChangeCount() { return manifest_change_count_; }
-
- private:
-  int manifest_change_count_;
-};
-
-TEST_F(WebFrameTest, NotifyManifestChange) {
-  RegisterMockedHttpURLLoad("link-manifest-change.html");
-
-  ManifestChangeWebFrameClient web_frame_client;
-  frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.InitializeAndLoad(base_url_ + "link-manifest-change.html",
-                                    &web_frame_client);
-
-  EXPECT_EQ(14, web_frame_client.ManifestChangeCount());
-}
-
 static Resource* FetchManifest(Document* document, const KURL& url) {
   FetchParameters fetch_parameters{ResourceRequest(url)};
   fetch_parameters.SetRequestContext(mojom::RequestContextType::MANIFEST);

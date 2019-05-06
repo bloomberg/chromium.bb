@@ -1013,8 +1013,6 @@ LocalFrameClientImpl::CreateApplicationCacheHost(
 
 void LocalFrameClientImpl::DispatchDidChangeManifest() {
   CoreInitializer::GetInstance().DidChangeManifest(*web_frame_->GetFrame());
-  if (web_frame_->Client())
-    web_frame_->Client()->DidChangeManifest();
 }
 
 unsigned LocalFrameClientImpl::BackForwardLength() {

@@ -66,6 +66,7 @@ mojom("mojom_platform") {
     "manifest/display_mode.mojom",
     "manifest/manifest.mojom",
     "manifest/manifest_manager.mojom",
+    "manifest/manifest_observer.mojom",
     "mediastream/media_devices.mojom",
     "mediastream/media_stream.mojom",
     "mime/mime_registry.mojom",

@@ -6208,22 +6208,6 @@ HTMLLinkElement* Document::LinkCanonical() const {
   });
 }
 
-KURL Document::ManifestURL() const {
-  HTMLLinkElement* link_element = LinkManifest();
-  if (!link_element)
-    return KURL();
-  return link_element->Href();
-}
-
-bool Document::ManifestUseCredentials() const {
-  HTMLLinkElement* link_element = LinkManifest();
-  if (!link_element)
-    return false;
-  return EqualIgnoringASCIICase(
-      link_element->FastGetAttribute(html_names::kCrossoriginAttr),
-      "use-credentials");
-}
-
 void Document::ApplyFeaturePolicyFromHeader(
     const String& feature_policy_header) {
   if (!feature_policy_header.IsEmpty())

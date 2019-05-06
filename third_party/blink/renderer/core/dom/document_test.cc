@@ -495,58 +495,6 @@ TEST_F(DocumentTest, LinkManifest) {
   EXPECT_EQ(link, GetDocument().LinkManifest());
 }
 
-TEST_F(DocumentTest, ManifestURL) {
-  // Test the default result.
-  EXPECT_EQ(nullptr, GetDocument().LinkManifest());
-
-  // Check that we use the first manifest with <link rel=manifest>
-  auto* link_manifest = MakeGarbageCollected<HTMLLinkElement>(
-      GetDocument(), CreateElementFlags());
-  link_manifest->setAttribute(blink::html_names::kRelAttr, "manifest");
-  GetDocument().head()->AppendChild(link_manifest);
-  EXPECT_EQ(link_manifest, GetDocument().LinkManifest());
-
-  // No href attribute was set.
-  EXPECT_EQ(KURL(), GetDocument().ManifestURL());
-
-  // Set to some absolute url.
-  link_manifest->setAttribute(html_names::kHrefAttr,
-                              "http://example.com/manifest.json");
-  ASSERT_EQ(link_manifest->Href(), GetDocument().ManifestURL());
-
-  // Set to some relative url.
-  link_manifest->setAttribute(html_names::kHrefAttr, "static/manifest.json");
-  ASSERT_EQ(link_manifest->Href(), GetDocument().ManifestURL());
-}
-
-TEST_F(DocumentTest, ManifestUseCredentials) {
-  // Test the default result.
-  EXPECT_EQ(nullptr, GetDocument().LinkManifest());
-
-  // Check that we use the first manifest with <link rel=manifest>
-  auto* link_manifest = MakeGarbageCollected<HTMLLinkElement>(
-      GetDocument(), CreateElementFlags());
-  link_manifest->setAttribute(blink::html_names::kRelAttr, "manifest");
-  GetDocument().head()->AppendChild(link_manifest);
-  EXPECT_EQ(link_manifest, GetDocument().LinkManifest());
-
-  // No crossorigin attribute was set so credentials shouldn't be used.
-  ASSERT_FALSE(link_manifest->FastHasAttribute(html_names::kCrossoriginAttr));
-  ASSERT_FALSE(GetDocument().ManifestUseCredentials());
-
-  // Crossorigin set to a random string shouldn't trigger using credentials.
-  link_manifest->setAttribute(html_names::kCrossoriginAttr, "foobar");
-  ASSERT_FALSE(GetDocument().ManifestUseCredentials());
-
-  // Crossorigin set to 'anonymous' shouldn't trigger using credentials.
-  link_manifest->setAttribute(html_names::kCrossoriginAttr, "anonymous");
-  ASSERT_FALSE(GetDocument().ManifestUseCredentials());
-
-  // Crossorigin set to 'use-credentials' should trigger using credentials.
-  link_manifest->setAttribute(html_names::kCrossoriginAttr, "use-credentials");
-  ASSERT_TRUE(GetDocument().ManifestUseCredentials());
-}
-
 TEST_F(DocumentTest, referrerPolicyParsing) {
   EXPECT_EQ(network::mojom::ReferrerPolicy::kDefault,
             GetDocument().GetReferrerPolicy());

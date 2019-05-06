@@ -1052,9 +1052,6 @@ class CORE_EXPORT Document : public ContainerNode,
   // there is no such element.
   HTMLLinkElement* LinkCanonical() const;
 
-  KURL ManifestURL() const;
-  bool ManifestUseCredentials() const;
-
   void UpdateFocusAppearanceAfterLayout();
   void CancelFocusAppearanceUpdate();
   // Return true after UpdateFocusAppearanceAfterLayout() call and before

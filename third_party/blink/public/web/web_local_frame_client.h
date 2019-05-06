@@ -484,9 +484,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   // WARNING: This method may be called very frequently.
   virtual void DidUpdateCurrentHistoryItem() {}
 
-  // The frame's manifest has changed.
-  virtual void DidChangeManifest() {}
-
   // The frame's theme color has changed.
   virtual void DidChangeThemeColor() {}
 

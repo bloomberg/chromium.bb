@@ -307,6 +307,7 @@ jumbo_source_set("unit_tests") {
     "indexeddb/web_idb_cursor_impl_unittest.cc",
     "indexeddb/web_idb_transaction_impl_unittest.cc",
     "manifest/image_resource_type_converters_test.cc",
+    "manifest/manifest_manager_unittest.cc",
     "manifest/manifest_parser_unittest.cc",
     "media_controls/elements/media_control_animated_arrow_container_element_test.cc",
     "media_controls/elements/media_control_display_cutout_fullscreen_button_element_test.cc",
