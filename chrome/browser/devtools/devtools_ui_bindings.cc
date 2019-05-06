@@ -276,10 +276,8 @@ std::string SanitizeRemoteBase(const std::string& value) {
 }
 
 std::string SanitizeRemoteFrontendURL(const std::string& value) {
-  GURL url(net::UnescapeURLComponent(value,
-      net::UnescapeRule::SPACES | net::UnescapeRule::PATH_SEPARATORS |
-      net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS |
-      net::UnescapeRule::REPLACE_PLUS_WITH_SPACE));
+  GURL url(net::UnescapeBinaryURLComponent(
+      value, net::UnescapeRule::REPLACE_PLUS_WITH_SPACE));
   std::string path = url.path();
   std::vector<std::string> parts = base::SplitString(
       path, "/", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);

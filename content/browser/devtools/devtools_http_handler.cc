@@ -604,9 +604,7 @@ void DevToolsHttpHandler::OnJsonRequest(
   }
 
   if (command == "new") {
-    GURL url(net::UnescapeURLComponent(
-        query, net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS |
-                   net::UnescapeRule::PATH_SEPARATORS));
+    GURL url(net::UnescapeBinaryURLComponent(query));
     if (!url.is_valid())
       url = GURL(url::kAboutBlankURL);
     scoped_refptr<DevToolsAgentHost> agent_host = nullptr;
