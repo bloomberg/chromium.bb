@@ -251,9 +251,7 @@ void HeadlessShell::OnGotURLs(const std::vector<GURL>& urls) {
   }
 }
 
-void HeadlessShell::Shutdown() {
-  if (!web_contents_)
-    return;
+void HeadlessShell::Detach() {
   if (!RemoteDebuggingEnabled()) {
     devtools_client_->GetEmulation()->GetExperimental()->RemoveObserver(this);
     devtools_client_->GetInspector()->GetExperimental()->RemoveObserver(this);
@@ -264,6 +262,11 @@ void HeadlessShell::Shutdown() {
   }
   web_contents_->RemoveObserver(this);
   web_contents_ = nullptr;
+}
+
+void HeadlessShell::Shutdown() {
+  if (web_contents_)
+    Detach();
   browser_context_->Close();
   browser_->Shutdown();
 }
@@ -332,8 +335,16 @@ void HeadlessShell::DevToolsTargetReady() {
                        weak_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(timeout_ms));
   }
-
   // TODO(skyostil): Implement more features to demonstrate the devtools API.
+}
+
+void HeadlessShell::HeadlessWebContentsDestroyed() {
+  // Detach now, but defer shutdown till the HeadlessWebContents
+  // removal is complete.
+  Detach();
+  browser_->BrowserMainThread()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&HeadlessShell::Shutdown, weak_factory_.GetWeakPtr()));
 }
 #endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
 

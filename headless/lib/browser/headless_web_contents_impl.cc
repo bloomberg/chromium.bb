@@ -306,6 +306,8 @@ HeadlessWebContentsImpl::HeadlessWebContentsImpl(
 }
 
 HeadlessWebContentsImpl::~HeadlessWebContentsImpl() {
+  for (auto& observer : observers_)
+    observer.HeadlessWebContentsDestroyed();
   agent_host_->RemoveObserver(this);
   if (render_process_host_)
     render_process_host_->RemoveObserver(this);

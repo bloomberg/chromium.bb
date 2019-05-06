@@ -33,7 +33,7 @@ class HeadlessShell : public HeadlessWebContents::Observer,
   HeadlessShell();
   ~HeadlessShell() override;
 
-  virtual void OnStart(HeadlessBrowser* browser);
+  void OnStart(HeadlessBrowser* browser);
 
   HeadlessDevToolsClient* devtools_client() const {
     return devtools_client_.get();
@@ -43,6 +43,7 @@ class HeadlessShell : public HeadlessWebContents::Observer,
   // HeadlessWebContents::Observer implementation:
   void DevToolsTargetReady() override;
   void OnTargetCrashed(const inspector::TargetCrashedParams& params) override;
+  void HeadlessWebContentsDestroyed() override;
 
   // emulation::Observer implementation:
   void OnVirtualTimeBudgetExpired(
@@ -51,7 +52,8 @@ class HeadlessShell : public HeadlessWebContents::Observer,
   // page::Observer implementation:
   void OnLoadEventFired(const page::LoadEventFiredParams& params) override;
 
-  virtual void Shutdown();
+  void Detach();
+  void Shutdown();
 
   void FetchTimeout();
 
