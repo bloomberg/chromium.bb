@@ -19,6 +19,7 @@ namespace blink {
 
 class Document;
 class KURL;
+class TextResourceDecoder;
 
 // Helper class to download a Web Manifest. When an instance is created, the
 // caller need to call Start() and wait for the passed callback to be executed.
@@ -56,6 +57,7 @@ class ManifestFetcher final : public GarbageCollectedFinalized<ManifestFetcher>,
   bool completed_;
   ManifestFetcher::Callback callback_;
   ResourceResponse response_;
+  std::unique_ptr<TextResourceDecoder> decoder_;
   StringBuilder data_;
   Member<ThreadableLoader> loader_;
 
