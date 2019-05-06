@@ -7,7 +7,7 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/assistant/assistant_controller.h"
 #include "ash/home_screen/home_screen_controller.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shelf/app_list_button.h"
 #include "ash/shelf/assistant_overlay.h"
 #include "ash/shelf/shelf.h"

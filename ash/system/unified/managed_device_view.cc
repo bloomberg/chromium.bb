@@ -5,7 +5,7 @@
 #include "ash/system/unified/managed_device_view.h"
 
 #include "ash/resources/vector_icons/vector_icons.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/enterprise/enterprise_domain_observer.h"
@@ -42,7 +42,7 @@ void ManagedDeviceView::OnEnterpriseDomainChanged() {
 }
 
 void ManagedDeviceView::Update() {
-  SessionController* session = Shell::Get()->session_controller();
+  SessionControllerImpl* session = Shell::Get()->session_controller();
   if (session->IsUserPublicAccount()) {
     image_view()->SetImage(gfx::CreateVectorIcon(
         kSystemTrayManagedIcon,

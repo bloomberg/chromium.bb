@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/session_controller_client.h"
+#include "chrome/browser/ui/ash/session_controller_client_impl.h"
 
 #include <algorithm>
 #include <memory>
@@ -70,7 +70,7 @@ const int kSessionLengthLimitMinMs = 30 * 1000;  // 30 seconds.
 // The maximum session length limit that can be set.
 const int kSessionLengthLimitMaxMs = 24 * 60 * 60 * 1000;  // 24 hours.
 
-SessionControllerClient* g_session_controller_client_instance = nullptr;
+SessionControllerClientImpl* g_session_controller_client_instance = nullptr;
 
 // Returns the session id of a given user or 0 if user has no session.
 uint32_t GetSessionId(const User& user) {
@@ -171,7 +171,7 @@ struct EqualsTraits<gfx::ImageSkia> {
 
 }  // namespace mojo
 
-SessionControllerClient::SessionControllerClient()
+SessionControllerClientImpl::SessionControllerClientImpl()
     : binding_(this), weak_ptr_factory_(this) {
   SessionManager::Get()->AddObserver(this);
   UserManager::Get()->AddSessionStateObserver(this);
@@ -187,12 +187,12 @@ SessionControllerClient::SessionControllerClient()
   local_state_registrar_->Init(g_browser_process->local_state());
   local_state_registrar_->Add(
       prefs::kSessionStartTime,
-      base::Bind(&SessionControllerClient::SendSessionLengthLimit,
-                 base::Unretained(this)));
+      base::BindRepeating(&SessionControllerClientImpl::SendSessionLengthLimit,
+                          base::Unretained(this)));
   local_state_registrar_->Add(
       prefs::kSessionLengthLimit,
-      base::Bind(&SessionControllerClient::SendSessionLengthLimit,
-                 base::Unretained(this)));
+      base::BindRepeating(&SessionControllerClientImpl::SendSessionLengthLimit,
+                          base::Unretained(this)));
   chromeos::DeviceSettingsService::Get()
       ->device_off_hours_controller()
       ->AddObserver(this);
@@ -200,7 +200,7 @@ SessionControllerClient::SessionControllerClient()
   g_session_controller_client_instance = this;
 }
 
-SessionControllerClient::~SessionControllerClient() {
+SessionControllerClientImpl::~SessionControllerClientImpl() {
   DCHECK_EQ(this, g_session_controller_client_instance);
   g_session_controller_client_instance = nullptr;
 
@@ -218,7 +218,7 @@ SessionControllerClient::~SessionControllerClient() {
       ->RemoveObserver(this);
 }
 
-void SessionControllerClient::Init() {
+void SessionControllerClientImpl::Init() {
   ConnectToSessionController();
   ash::mojom::SessionControllerClientPtr client;
   binding_.Bind(mojo::MakeRequest(&client));
@@ -230,51 +230,52 @@ void SessionControllerClient::Init() {
 }
 
 // static
-SessionControllerClient* SessionControllerClient::Get() {
+SessionControllerClientImpl* SessionControllerClientImpl::Get() {
   return g_session_controller_client_instance;
 }
 
-void SessionControllerClient::PrepareForLock(base::OnceClosure callback) {
+void SessionControllerClientImpl::PrepareForLock(base::OnceClosure callback) {
   session_controller_->PrepareForLock(std::move(callback));
 }
 
-void SessionControllerClient::StartLock(StartLockCallback callback) {
+void SessionControllerClientImpl::StartLock(StartLockCallback callback) {
   session_controller_->StartLock(std::move(callback));
 }
 
-void SessionControllerClient::NotifyChromeLockAnimationsComplete() {
+void SessionControllerClientImpl::NotifyChromeLockAnimationsComplete() {
   session_controller_->NotifyChromeLockAnimationsComplete();
 }
 
-void SessionControllerClient::RunUnlockAnimation(
+void SessionControllerClientImpl::RunUnlockAnimation(
     base::OnceClosure animation_finished_callback) {
   session_controller_->RunUnlockAnimation(
       std::move(animation_finished_callback));
 }
 
-void SessionControllerClient::ShowTeleportWarningDialog(
+void SessionControllerClientImpl::ShowTeleportWarningDialog(
     base::OnceCallback<void(bool, bool)> on_accept) {
   session_controller_->ShowTeleportWarningDialog(std::move(on_accept));
 }
 
-void SessionControllerClient::RequestLockScreen() {
+void SessionControllerClientImpl::RequestLockScreen() {
   DoLockScreen();
 }
 
-void SessionControllerClient::RequestSignOut() {
+void SessionControllerClientImpl::RequestSignOut() {
   chrome::AttemptUserExit();
 }
 
-void SessionControllerClient::SwitchActiveUser(const AccountId& account_id) {
+void SessionControllerClientImpl::SwitchActiveUser(
+    const AccountId& account_id) {
   DoSwitchActiveUser(account_id);
 }
 
-void SessionControllerClient::CycleActiveUser(
+void SessionControllerClientImpl::CycleActiveUser(
     ash::CycleUserDirection direction) {
   DoCycleActiveUser(direction);
 }
 
-void SessionControllerClient::ShowMultiProfileLogin() {
+void SessionControllerClientImpl::ShowMultiProfileLogin() {
   if (!IsMultiProfileAvailable())
     return;
 
@@ -306,14 +307,14 @@ void SessionControllerClient::ShowMultiProfileLogin() {
     }
     if (show_intro) {
       session_controller_->ShowMultiprofilesIntroDialog(
-          base::Bind(&OnAcceptMultiprofilesIntroDialog));
+          base::BindOnce(&OnAcceptMultiprofilesIntroDialog));
     } else {
       chromeos::UserAddingScreen::Get()->Start();
     }
   }
 }
 
-void SessionControllerClient::EmitAshInitialized() {
+void SessionControllerClientImpl::EmitAshInitialized() {
   // Emit the ash-initialized upstart signal to start Chrome OS tasks that
   // expect that Ash is listening to D-Bus signals they emit. For example,
   // hammerd, which handles detachable base state, communicates the base state
@@ -324,7 +325,7 @@ void SessionControllerClient::EmitAshInitialized() {
 }
 
 // static
-bool SessionControllerClient::IsMultiProfileAvailable() {
+bool SessionControllerClientImpl::IsMultiProfileAvailable() {
   if (!profiles::IsMultipleProfilesEnabled() || !UserManager::IsInitialized())
     return false;
   size_t users_logged_in = UserManager::Get()->GetLoggedInUsers().size();
@@ -334,7 +335,7 @@ bool SessionControllerClient::IsMultiProfileAvailable() {
   return (users_logged_in + users_available_to_add) > 1;
 }
 
-void SessionControllerClient::ActiveUserChanged(const User* active_user) {
+void SessionControllerClientImpl::ActiveUserChanged(const User* active_user) {
   SendSessionInfoIfChanged();
 
   // UserAddedToSession is not called for the primary user session so its meta
@@ -354,22 +355,22 @@ void SessionControllerClient::ActiveUserChanged(const User* active_user) {
   SendUserSessionOrder();
 }
 
-void SessionControllerClient::UserAddedToSession(const User* added_user) {
+void SessionControllerClientImpl::UserAddedToSession(const User* added_user) {
   SendSessionInfoIfChanged();
   SendUserSession(*added_user);
 }
 
-void SessionControllerClient::OnUserImageChanged(const User& user) {
+void SessionControllerClientImpl::OnUserImageChanged(const User& user) {
   SendUserSession(user);
 }
 
 // static
-bool SessionControllerClient::CanLockScreen() {
+bool SessionControllerClientImpl::CanLockScreen() {
   return !UserManager::Get()->GetUnlockUsers().empty();
 }
 
 // static
-bool SessionControllerClient::ShouldLockScreenAutomatically() {
+bool SessionControllerClientImpl::ShouldLockScreenAutomatically() {
   // TODO(xiyuan): Observe ash::prefs::kEnableAutoScreenLock and update ash.
   // Tracked in http://crbug.com/670423
   const UserList logged_in_users = UserManager::Get()->GetLoggedInUsers();
@@ -384,7 +385,8 @@ bool SessionControllerClient::ShouldLockScreenAutomatically() {
 }
 
 // static
-ash::AddUserSessionPolicy SessionControllerClient::GetAddUserSessionPolicy() {
+ash::AddUserSessionPolicy
+SessionControllerClientImpl::GetAddUserSessionPolicy() {
   UserManager* const user_manager = UserManager::Get();
   if (user_manager->GetUsersAllowedForMultiProfile().empty())
     return ash::AddUserSessionPolicy::ERROR_NO_ELIGIBLE_USERS;
@@ -402,32 +404,34 @@ ash::AddUserSessionPolicy SessionControllerClient::GetAddUserSessionPolicy() {
 }
 
 // static
-void SessionControllerClient::DoLockScreen() {
+void SessionControllerClientImpl::DoLockScreen() {
   if (!CanLockScreen())
     return;
 
-  VLOG(1) << "Requesting screen lock from SessionControllerClient";
+  VLOG(1) << "Requesting screen lock from SessionControllerClientImpl";
   chromeos::SessionManagerClient::Get()->RequestLockScreen();
 }
 
 // static
-void SessionControllerClient::DoSwitchActiveUser(const AccountId& account_id) {
+void SessionControllerClientImpl::DoSwitchActiveUser(
+    const AccountId& account_id) {
   // Disallow switching to an already active user since that might crash.
   if (account_id == UserManager::Get()->GetActiveUser()->GetAccountId())
     return;
 
   // |client| may be null in tests.
-  SessionControllerClient* client = SessionControllerClient::Get();
+  SessionControllerClientImpl* client = SessionControllerClientImpl::Get();
   if (client) {
-    SessionControllerClient::Get()->session_controller_->CanSwitchActiveUser(
-        base::Bind(&DoSwitchUser, account_id));
+    SessionControllerClientImpl::Get()
+        ->session_controller_->CanSwitchActiveUser(
+            base::BindOnce(&DoSwitchUser, account_id));
   } else {
     DoSwitchUser(account_id, true);
   }
 }
 
 // static
-void SessionControllerClient::DoCycleActiveUser(
+void SessionControllerClientImpl::DoCycleActiveUser(
     ash::CycleUserDirection direction) {
   const UserList& logged_in_users = UserManager::Get()->GetLoggedInUsers();
   if (logged_in_users.size() <= 1)
@@ -465,11 +469,11 @@ void SessionControllerClient::DoCycleActiveUser(
 }
 
 // static
-void SessionControllerClient::FlushForTesting() {
+void SessionControllerClientImpl::FlushForTesting() {
   g_session_controller_client_instance->session_controller_.FlushForTesting();
 }
 
-void SessionControllerClient::OnSessionStateChanged() {
+void SessionControllerClientImpl::OnSessionStateChanged() {
   // Sent the primary user metadata and user session order that are deferred
   // from ActiveUserChanged before update session state.
   if (!primary_user_session_sent_ &&
@@ -495,7 +499,7 @@ void SessionControllerClient::OnSessionStateChanged() {
   SendSessionInfoIfChanged();
 }
 
-void SessionControllerClient::OnCustodianInfoChanged() {
+void SessionControllerClientImpl::OnCustodianInfoChanged() {
   DCHECK(supervised_user_profile_);
   User* user = chromeos::ProfileHelper::Get()->GetUserByProfile(
       supervised_user_profile_);
@@ -503,11 +507,11 @@ void SessionControllerClient::OnCustodianInfoChanged() {
     SendUserSession(*user);
 }
 
-void SessionControllerClient::LoggedInStateChanged() {
+void SessionControllerClientImpl::LoggedInStateChanged() {
   SendUserSession(*UserManager::Get()->GetActiveUser());
 }
 
-void SessionControllerClient::Observe(
+void SessionControllerClientImpl::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
@@ -526,7 +530,7 @@ void SessionControllerClient::Observe(
   }
 }
 
-void SessionControllerClient::OnLoginUserProfilePrepared(Profile* profile) {
+void SessionControllerClientImpl::OnLoginUserProfilePrepared(Profile* profile) {
   const User* user = chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
   DCHECK(user);
 
@@ -540,9 +544,9 @@ void SessionControllerClient::OnLoginUserProfilePrepared(Profile* profile) {
         ->AddObserver(this);
   }
 
-  base::Closure session_info_changed_closure =
-      base::Bind(&SessionControllerClient::SendSessionInfoIfChanged,
-                 weak_ptr_factory_.GetWeakPtr());
+  base::RepeatingClosure session_info_changed_closure = base::BindRepeating(
+      &SessionControllerClientImpl::SendSessionInfoIfChanged,
+      weak_ptr_factory_.GetWeakPtr());
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar =
       std::make_unique<PrefChangeRegistrar>();
   pref_change_registrar->Init(profile->GetPrefs());
@@ -556,28 +560,28 @@ void SessionControllerClient::OnLoginUserProfilePrepared(Profile* profile) {
   // which is needed in UserToUserSession().
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(&SessionControllerClient::SendUserSessionForProfile,
+      base::BindOnce(&SessionControllerClientImpl::SendUserSessionForProfile,
                      weak_ptr_factory_.GetWeakPtr(), profile));
 }
 
-void SessionControllerClient::OnOffHoursEndTimeChanged() {
+void SessionControllerClientImpl::OnOffHoursEndTimeChanged() {
   SendSessionLengthLimit();
 }
 
-void SessionControllerClient::SendUserSessionForProfile(Profile* profile) {
+void SessionControllerClientImpl::SendUserSessionForProfile(Profile* profile) {
   DCHECK(profile);
   const User* user = chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
   DCHECK(user);
   SendUserSession(*user);
 }
 
-void SessionControllerClient::ConnectToSessionController() {
+void SessionControllerClientImpl::ConnectToSessionController() {
   content::ServiceManagerConnection::GetForProcess()
       ->GetConnector()
       ->BindInterface(ash::mojom::kServiceName, &session_controller_);
 }
 
-void SessionControllerClient::SendSessionInfoIfChanged() {
+void SessionControllerClientImpl::SendSessionInfoIfChanged() {
   SessionManager* const session_manager = SessionManager::Get();
 
   ash::mojom::SessionInfoPtr info = ash::mojom::SessionInfo::New();
@@ -595,7 +599,7 @@ void SessionControllerClient::SendSessionInfoIfChanged() {
   }
 }
 
-void SessionControllerClient::SendUserSession(const User& user) {
+void SessionControllerClientImpl::SendUserSession(const User& user) {
   ash::mojom::UserSessionPtr user_session = UserToUserSession(user);
 
   // Bail if the user has no session. Currently the only code path that hits
@@ -611,7 +615,7 @@ void SessionControllerClient::SendUserSession(const User& user) {
   }
 }
 
-void SessionControllerClient::SendUserSessionOrder() {
+void SessionControllerClientImpl::SendUserSessionOrder() {
   UserManager* const user_manager = UserManager::Get();
 
   const UserList logged_in_users = user_manager->GetLoggedInUsers();
@@ -625,7 +629,7 @@ void SessionControllerClient::SendUserSessionOrder() {
   session_controller_->SetUserSessionOrder(user_session_ids);
 }
 
-void SessionControllerClient::SendSessionLengthLimit() {
+void SessionControllerClientImpl::SendSessionLengthLimit() {
   const PrefService* local_state = local_state_registrar_->prefs();
   base::TimeDelta session_length_limit;
   if (local_state->HasPrefPath(prefs::kSessionLengthLimit)) {

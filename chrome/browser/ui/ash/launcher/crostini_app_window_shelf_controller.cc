@@ -25,7 +25,7 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
-#include "chrome/browser/ui/ash/session_controller_client.h"
+#include "chrome/browser/ui/ash/session_controller_client_impl.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -275,7 +275,7 @@ void CrostiniAppWindowShelfController::RegisterAppWindow(
 
   // Only add an app to the shelf if it's associated with the currently active
   // user (which should always be the primary user at this time).
-  if (SessionControllerClient::IsMultiProfileAvailable() &&
+  if (SessionControllerClientImpl::IsMultiProfileAvailable() &&
       user_manager::UserManager::Get()->GetActiveUser()->GetAccountId() !=
           MultiUserWindowManagerHelper::GetWindowManager()->GetWindowOwner(
               window))

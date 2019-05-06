@@ -10,7 +10,7 @@
 
 #include "ash/login_status.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/shell_observer.h"
 #include "ash/system/session/logout_confirmation_dialog.h"

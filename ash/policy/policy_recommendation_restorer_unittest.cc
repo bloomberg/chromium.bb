@@ -5,7 +5,7 @@
 #include "ash/policy/policy_recommendation_restorer.h"
 
 #include "ash/public/cpp/ash_pref_names.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -44,7 +44,8 @@ class PolicyRecommendationRestorerTest : public NoSessionAshTestBase {
   }
 
   void ConnectToSigninPrefService() {
-    SessionController* session_controller = Shell::Get()->session_controller();
+    SessionControllerImpl* session_controller =
+        Shell::Get()->session_controller();
     session_controller->SetSigninScreenPrefServiceForTest(
         base::WrapUnique(prefs_));
     ASSERT_EQ(session_controller->GetSigninScreenPrefService(), prefs_);

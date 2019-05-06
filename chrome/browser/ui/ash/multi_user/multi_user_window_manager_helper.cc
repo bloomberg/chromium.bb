@@ -6,7 +6,7 @@
 
 #include "chrome/browser/ui/ash/multi_user/multi_profile_support.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_stub.h"
-#include "chrome/browser/ui/ash/session_controller_client.h"
+#include "chrome/browser/ui/ash/session_controller_client_impl.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_info.h"
 #include "components/user_manager/user_manager.h"
@@ -31,7 +31,7 @@ ash::MultiUserWindowManager* MultiUserWindowManagerHelper::GetWindowManager() {
 // static
 MultiUserWindowManagerHelper* MultiUserWindowManagerHelper::CreateInstance() {
   DCHECK(!g_multi_user_window_manager_instance);
-  if (SessionControllerClient::IsMultiProfileAvailable()) {
+  if (SessionControllerClientImpl::IsMultiProfileAvailable()) {
     g_multi_user_window_manager_instance = new MultiUserWindowManagerHelper(
         user_manager::UserManager::Get()->GetActiveUser()->GetAccountId());
   } else {

@@ -10,7 +10,7 @@
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/media/media_controller.h"
 #include "ash/public/cpp/ash_switches.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/power/power_button_controller_test_api.h"
 #include "ash/system/power/power_button_menu_item_view.h"
@@ -101,7 +101,7 @@ class PowerButtonControllerTest : public PowerButtonTestBase {
 
   bool GetLockedState() {
     // LockScreen is an async mojo call.
-    SessionController* const session_controller =
+    SessionControllerImpl* const session_controller =
         Shell::Get()->session_controller();
     session_controller->FlushMojoForTest();
     return session_controller->IsScreenLocked();

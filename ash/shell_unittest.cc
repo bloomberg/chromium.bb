@@ -16,7 +16,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/scoped_root_window_for_new_windows.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -245,7 +245,7 @@ class ShellTest : public AshTestBase {
 
     // Simulate real screen locker to change session state to LOCKED
     // when it is shown.
-    SessionController* controller = Shell::Get()->session_controller();
+    SessionControllerImpl* controller = Shell::Get()->session_controller();
     controller->LockScreenAndFlushForTest();
 
     EXPECT_TRUE(controller->IsScreenLocked());
@@ -435,7 +435,7 @@ TEST_F(ShellTest, CreateLockScreenModalWindow) {
 }
 
 TEST_F(ShellTest, IsScreenLocked) {
-  SessionController* controller = Shell::Get()->session_controller();
+  SessionControllerImpl* controller = Shell::Get()->session_controller();
   controller->LockScreenAndFlushForTest();
   EXPECT_TRUE(controller->IsScreenLocked());
   GetSessionControllerClient()->UnlockScreen();

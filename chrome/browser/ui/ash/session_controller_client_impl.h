@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ASH_SESSION_CONTROLLER_CLIENT_H_
-#define CHROME_BROWSER_UI_ASH_SESSION_CONTROLLER_CLIENT_H_
+#ifndef CHROME_BROWSER_UI_ASH_SESSION_CONTROLLER_CLIENT_IMPL_H_
+#define CHROME_BROWSER_UI_ASH_SESSION_CONTROLLER_CLIENT_IMPL_H_
 
 #include <vector>
 
@@ -35,7 +35,7 @@ class User;
 // Updates session state etc to ash via SessionController interface and handles
 // session related calls from ash.
 // TODO(xiyuan): Update when UserSessionStateObserver is gone.
-class SessionControllerClient
+class SessionControllerClientImpl
     : public ash::mojom::SessionControllerClient,
       public user_manager::UserManager::UserSessionStateObserver,
       public user_manager::UserManager::Observer,
@@ -45,12 +45,12 @@ class SessionControllerClient
       public content::NotificationObserver,
       public policy::off_hours::DeviceOffHoursController::Observer {
  public:
-  SessionControllerClient();
-  ~SessionControllerClient() override;
+  SessionControllerClientImpl();
+  ~SessionControllerClientImpl() override;
 
   void Init();
 
-  static SessionControllerClient* Get();
+  static SessionControllerClientImpl* Get();
 
   // Calls SessionController to prepare locking ash.
   void PrepareForLock(base::OnceClosure callback);
@@ -121,13 +121,14 @@ class SessionControllerClient
   static void FlushForTesting();
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(SessionControllerClientTest, CyclingThreeUsers);
-  FRIEND_TEST_ALL_PREFIXES(SessionControllerClientTest, SendUserSession);
-  FRIEND_TEST_ALL_PREFIXES(SessionControllerClientTest, SupervisedUser);
-  FRIEND_TEST_ALL_PREFIXES(SessionControllerClientTest, UserPrefsChange);
-  FRIEND_TEST_ALL_PREFIXES(SessionControllerClientTest, SessionLengthLimit);
-  FRIEND_TEST_ALL_PREFIXES(SessionControllerClientTest, DeviceOwner);
-  FRIEND_TEST_ALL_PREFIXES(SessionControllerClientTest, UserBecomesDeviceOwner);
+  FRIEND_TEST_ALL_PREFIXES(SessionControllerClientImplTest, CyclingThreeUsers);
+  FRIEND_TEST_ALL_PREFIXES(SessionControllerClientImplTest, SendUserSession);
+  FRIEND_TEST_ALL_PREFIXES(SessionControllerClientImplTest, SupervisedUser);
+  FRIEND_TEST_ALL_PREFIXES(SessionControllerClientImplTest, UserPrefsChange);
+  FRIEND_TEST_ALL_PREFIXES(SessionControllerClientImplTest, SessionLengthLimit);
+  FRIEND_TEST_ALL_PREFIXES(SessionControllerClientImplTest, DeviceOwner);
+  FRIEND_TEST_ALL_PREFIXES(SessionControllerClientImplTest,
+                           UserBecomesDeviceOwner);
 
   // Called when the login profile is ready.
   void OnLoginUserProfilePrepared(Profile* profile);
@@ -184,9 +185,9 @@ class SessionControllerClient
   ash::mojom::SessionInfoPtr last_sent_session_info_;
   ash::mojom::UserSessionPtr last_sent_user_session_;
 
-  base::WeakPtrFactory<SessionControllerClient> weak_ptr_factory_;
+  base::WeakPtrFactory<SessionControllerClientImpl> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(SessionControllerClient);
+  DISALLOW_COPY_AND_ASSIGN(SessionControllerClientImpl);
 };
 
-#endif  // CHROME_BROWSER_UI_ASH_SESSION_CONTROLLER_CLIENT_H_
+#endif  // CHROME_BROWSER_UI_ASH_SESSION_CONTROLLER_CLIENT_IMPL_H_

@@ -27,7 +27,7 @@
 #include "chrome/browser/chromeos/login/screens/chrome_user_selection_screen.h"
 #include "chrome/browser/chromeos/login/user_board_view_mojo.h"
 #include "chrome/browser/chromeos/system/system_clock.h"
-#include "chrome/browser/ui/ash/session_controller_client.h"
+#include "chrome/browser/ui/ash/session_controller_client_impl.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
@@ -148,7 +148,7 @@ void ViewsScreenLocker::ClearErrors() {
 }
 
 void ViewsScreenLocker::OnAshLockAnimationFinished() {
-  SessionControllerClient::Get()->NotifyChromeLockAnimationsComplete();
+  SessionControllerClientImpl::Get()->NotifyChromeLockAnimationsComplete();
 }
 
 void ViewsScreenLocker::SetFingerprintState(
@@ -235,7 +235,7 @@ void ViewsScreenLocker::HandleOnFocusPod(const AccountId& account_id) {
       user_manager::UserManager::Get()->FindUser(account_id);
   // |user| may be null in kiosk mode or unit tests.
   if (user && user->is_logged_in() && !user->is_active()) {
-    SessionControllerClient::DoSwitchActiveUser(account_id);
+    SessionControllerClientImpl::DoSwitchActiveUser(account_id);
   } else {
     lock_screen_utils::SetUserInputMethod(account_id.GetUserEmail(),
                                           ime_state_.get());

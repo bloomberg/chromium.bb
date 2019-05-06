@@ -10,7 +10,7 @@
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/first_run/desktop_cleaner.h"
 #include "ash/root_window_controller.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shelf/app_list_button.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"

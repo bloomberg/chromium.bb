@@ -5,7 +5,7 @@
 #include "ash/kiosk_next/kiosk_next_shell_test_util.h"
 
 #include "ash/public/cpp/ash_pref_names.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "components/prefs/pref_service.h"

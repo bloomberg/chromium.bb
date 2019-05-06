@@ -12,7 +12,7 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shelf/app_list_button.h"
 #include "ash/shelf/login_shelf_view.h"
 #include "ash/shelf/overflow_bubble.h"

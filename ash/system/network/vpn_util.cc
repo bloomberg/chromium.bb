@@ -4,7 +4,7 @@
 
 #include "ash/system/network/vpn_util.h"
 
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/network/vpn_list.h"
 #include "chromeos/network/network_state.h"

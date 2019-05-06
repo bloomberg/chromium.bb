@@ -6,7 +6,7 @@
 
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/interfaces/session_controller.mojom.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/message_center/ash_message_center_lock_screen_controller.h"
 #include "ash/system/unified/notification_hidden_view.h"
@@ -27,7 +27,8 @@ namespace {
 void SetSessionState(const session_manager::SessionState& state) {
   mojom::SessionInfoPtr info_ptr = mojom::SessionInfo::New();
   info_ptr->state = state;
-  SessionController* session_controller = Shell::Get()->session_controller();
+  SessionControllerImpl* session_controller =
+      Shell::Get()->session_controller();
   session_controller->SetSessionInfo(std::move(info_ptr));
 }
 

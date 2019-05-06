@@ -10,7 +10,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/scoped_animation_disabler.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wallpaper/wallpaper_view.h"
@@ -286,7 +286,8 @@ bool OverviewController::CanSelect() {
   // Don't allow a window overview if the user session is not active (e.g.
   // locked or in user-adding screen) or a modal dialog is open or running in
   // kiosk app session.
-  SessionController* session_controller = Shell::Get()->session_controller();
+  SessionControllerImpl* session_controller =
+      Shell::Get()->session_controller();
   return session_controller->GetSessionState() ==
              session_manager::SessionState::ACTIVE &&
          !Shell::IsSystemModalWindowOpen() &&

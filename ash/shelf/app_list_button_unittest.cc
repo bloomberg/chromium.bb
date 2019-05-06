@@ -17,7 +17,7 @@
 #include "ash/kiosk_next/mock_kiosk_next_shell_client.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/root_window_controller.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_view.h"

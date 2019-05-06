@@ -6,7 +6,7 @@
 
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/supervised/supervised_icon_string.h"
@@ -43,7 +43,8 @@ void SupervisedNotificationController::OnUserSessionAdded(
 
 void SupervisedNotificationController::OnUserSessionUpdated(
     const AccountId& account_id) {
-  SessionController* session_controller = Shell::Get()->session_controller();
+  SessionControllerImpl* session_controller =
+      Shell::Get()->session_controller();
   if (!session_controller->IsUserSupervised())
     return;
 

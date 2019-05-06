@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #include "ash/public/cpp/ash_pref_names.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/stl_util.h"
@@ -207,7 +207,7 @@ display::DisplayManager* GetDisplayManager() {
 // Returns true id the current user can write display preferences to
 // Local State.
 bool UserCanSaveDisplayPreference() {
-  SessionController* controller = Shell::Get()->session_controller();
+  SessionControllerImpl* controller = Shell::Get()->session_controller();
   auto user_type = controller->GetUserType();
   if (!user_type)
     return false;

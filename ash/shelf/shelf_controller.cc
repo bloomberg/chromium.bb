@@ -12,7 +12,7 @@
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_prefs.h"
 #include "ash/root_window_controller.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shelf/home_button_delegate.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
@@ -52,7 +52,8 @@ void SetShelfAutoHideFromPrefs() {
   // TODO(jamescook): The session state check should not be necessary, but
   // otherwise this wrongly tries to set the alignment on a secondary display
   // during login before the ShelfLockingManager is created.
-  SessionController* session_controller = Shell::Get()->session_controller();
+  SessionControllerImpl* session_controller =
+      Shell::Get()->session_controller();
   PrefService* prefs = session_controller->GetLastActiveUserPrefService();
   if (!prefs || !session_controller->IsActiveUserSessionStarted())
     return;
@@ -73,7 +74,8 @@ void SetShelfAlignmentFromPrefs() {
   // TODO(jamescook): The session state check should not be necessary, but
   // otherwise this wrongly tries to set the alignment on a secondary display
   // during login before the ShelfLockingManager is created.
-  SessionController* session_controller = Shell::Get()->session_controller();
+  SessionControllerImpl* session_controller =
+      Shell::Get()->session_controller();
   PrefService* prefs = session_controller->GetLastActiveUserPrefService();
   if (!prefs || !session_controller->IsActiveUserSessionStarted())
     return;

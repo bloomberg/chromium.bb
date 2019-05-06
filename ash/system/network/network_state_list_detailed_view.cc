@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "ash/metrics/user_metrics_recorder.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/model/system_tray_model.h"
@@ -53,7 +53,8 @@ constexpr int kBubbleMargin = 8;
 constexpr int kBubbleShadowElevation = 2;
 
 bool IsSecondaryUser() {
-  SessionController* session_controller = Shell::Get()->session_controller();
+  SessionControllerImpl* session_controller =
+      Shell::Get()->session_controller();
   return session_controller->IsActiveUserSessionStarted() &&
          !session_controller->IsUserPrimary();
 }

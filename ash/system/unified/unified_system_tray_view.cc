@@ -7,7 +7,7 @@
 #include <numeric>
 
 #include "ash/public/cpp/app_list/app_list_features.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/message_center/ash_message_center_lock_screen_controller.h"
 #include "ash/system/message_center/unified_message_center_view.h"
@@ -239,7 +239,8 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
-  SessionController* session_controller = Shell::Get()->session_controller();
+  SessionControllerImpl* session_controller =
+      Shell::Get()->session_controller();
 
   AddChildView(message_center_view_);
   layout->SetFlexForView(message_center_view_, 1);

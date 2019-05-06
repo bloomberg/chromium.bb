@@ -5,7 +5,7 @@
 #include <memory>
 
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -32,7 +32,7 @@ namespace {
 // test lock screen widget.
 class LockScreenSessionControllerClient : public TestSessionControllerClient {
  public:
-  explicit LockScreenSessionControllerClient(SessionController* controller)
+  explicit LockScreenSessionControllerClient(SessionControllerImpl* controller)
       : TestSessionControllerClient(controller) {
     InitializeAndBind();
     CreatePredefinedUserSessions(1);

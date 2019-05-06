@@ -11,7 +11,7 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_switches.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/i18n/time_formatting.h"
@@ -542,7 +542,7 @@ void NightLightController::StoreCachedGeoposition(
     const mojom::SimpleGeopositionPtr& position) {
   DCHECK(position);
 
-  const SessionController* session_controller =
+  const SessionControllerImpl* session_controller =
       Shell::Get()->session_controller();
   for (const auto& user_session : session_controller->GetUserSessions()) {
     PrefService* pref_service = session_controller->GetUserPrefServiceForUser(

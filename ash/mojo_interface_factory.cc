@@ -36,7 +36,7 @@
 #include "ash/note_taking_controller.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"

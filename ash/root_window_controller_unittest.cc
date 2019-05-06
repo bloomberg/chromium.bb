@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
@@ -430,7 +430,8 @@ TEST_F(RootWindowControllerTest, ModalContainerNotLoggedInLoggedIn) {
   UpdateDisplay("600x600");
 
   // Configure login screen environment.
-  SessionController* session_controller = Shell::Get()->session_controller();
+  SessionControllerImpl* session_controller =
+      Shell::Get()->session_controller();
   ClearLogin();
   EXPECT_EQ(0, session_controller->NumberOfLoggedInUsers());
   EXPECT_FALSE(session_controller->IsActiveUserSessionStarted());

@@ -9,7 +9,7 @@
 
 #include "ash/login_status.h"
 #include "ash/public/cpp/session_types.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
@@ -41,7 +41,7 @@ void TestSessionControllerClient::DisableAutomaticallyProvideSigninPref() {
 }
 
 TestSessionControllerClient::TestSessionControllerClient(
-    SessionController* controller)
+    SessionControllerImpl* controller)
     : controller_(controller), binding_(this) {
   DCHECK(controller_);
   Reset();

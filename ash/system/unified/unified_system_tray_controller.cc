@@ -6,7 +6,7 @@
 
 #include "ash/metrics/user_metrics_action.h"
 #include "ash/metrics/user_metrics_recorder.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/accessibility/accessibility_feature_pod_controller.h"
 #include "ash/system/accessibility/unified_accessibility_detailed_view_controller.h"

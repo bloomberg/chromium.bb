@@ -14,7 +14,7 @@
 #include "ash/public/cpp/multi_user_window_manager.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_helper.h"
@@ -43,7 +43,7 @@
 #include "chrome/browser/ui/ash/multi_user/multi_profile_support.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
-#include "chrome/browser/ui/ash/session_controller_client.h"
+#include "chrome/browser/ui/ash/session_controller_client_impl.h"
 #include "chrome/browser/ui/ash/session_util.h"
 #include "chrome/browser/ui/ash/test_wallpaper_controller.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
@@ -241,7 +241,8 @@ class MultiProfileSupportTest : public ChromeAshTestBase {
   // manager. This function gets the current user from it and also sets it to
   // the multi user window manager.
   AccountId GetAndValidateCurrentUserFromSessionStateObserver() {
-    SessionController* session_controller = Shell::Get()->session_controller();
+    SessionControllerImpl* session_controller =
+        Shell::Get()->session_controller();
     session_controller->FlushMojoForTest();
     return session_controller->GetUserSessions()[0]->user_info->account_id;
   }

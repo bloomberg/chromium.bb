@@ -4,7 +4,7 @@
 
 #include "ash/system/supervised/supervised_notification_controller.h"
 
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -47,7 +47,7 @@ message_center::Notification* SupervisedNotificationControllerTest::GetPopup() {
 // Verifies that when a supervised user logs in that a warning notification is
 // shown and ash does not crash.
 TEST_F(SupervisedNotificationControllerTest, SupervisedUserHasNotification) {
-  SessionController* session = Shell::Get()->session_controller();
+  SessionControllerImpl* session = Shell::Get()->session_controller();
   ASSERT_EQ(LoginStatus::NOT_LOGGED_IN, session->login_status());
   ASSERT_FALSE(session->IsActiveUserSessionStarted());
 

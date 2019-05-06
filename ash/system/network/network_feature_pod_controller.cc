@@ -5,7 +5,7 @@
 #include "ash/system/network/network_feature_pod_controller.h"
 
 #include "ash/resources/vector_icons/vector_icons.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/network/network_feature_pod_button.h"
@@ -89,7 +89,8 @@ SystemTrayItemUmaType NetworkFeaturePodController::GetUmaType() const {
 
 void NetworkFeaturePodController::UpdateButton() {
   // Network setting is always immutable in lock screen.
-  SessionController* session_controller = Shell::Get()->session_controller();
+  SessionControllerImpl* session_controller =
+      Shell::Get()->session_controller();
   button_->SetEnabled(!session_controller->IsScreenLocked());
 }
 

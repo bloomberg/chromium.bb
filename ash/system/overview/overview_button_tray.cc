@@ -6,7 +6,7 @@
 
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/resources/vector_icons/vector_icons.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -172,7 +172,8 @@ void OverviewButtonTray::UpdateIconVisibility() {
   // OverviewController::CanSelect. The visibility of the button should
   // not change during transient times in which CanSelect is false. Such as when
   // a modal dialog is present.
-  SessionController* session_controller = Shell::Get()->session_controller();
+  SessionControllerImpl* session_controller =
+      Shell::Get()->session_controller();
   SetVisible(Shell::Get()
                  ->tablet_mode_controller()
                  ->AreInternalInputDeviceEventsBlocked() &&

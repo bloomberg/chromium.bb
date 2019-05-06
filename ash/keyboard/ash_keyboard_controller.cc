@@ -7,7 +7,7 @@
 #include "ash/keyboard/ash_keyboard_ui.h"
 #include "ash/keyboard/virtual_keyboard_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "base/command_line.h"
@@ -44,7 +44,7 @@ class AshKeyboardUIFactory : public keyboard::KeyboardUIFactory {
 }  // namespace
 
 AshKeyboardController::AshKeyboardController(
-    SessionController* session_controller)
+    SessionControllerImpl* session_controller)
     : session_controller_(session_controller),
       keyboard_controller_(std::make_unique<keyboard::KeyboardController>()) {
   if (session_controller_)  // May be null in tests.

@@ -11,7 +11,7 @@
 #include "ash/app_list/model/app_list_item.h"
 #include "ash/app_list/model/search/search_result.h"
 #include "ash/public/interfaces/constants.mojom.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/shell/example_factory.h"
 #include "ash/shell/toplevel_window.h"

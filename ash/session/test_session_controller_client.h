@@ -21,7 +21,7 @@ class AccountId;
 namespace ash {
 
 enum class AddUserSessionPolicy;
-class SessionController;
+class SessionControllerImpl;
 
 // Implement SessionControllerClient mojo interface to simulate chrome behavior
 // in tests. This breaks the ash/chrome dependency to allow testing ash code in
@@ -32,7 +32,7 @@ class SessionController;
 // not run BrowserMain, e.g. testing::Test based test.
 class TestSessionControllerClient : public ash::mojom::SessionControllerClient {
  public:
-  explicit TestSessionControllerClient(SessionController* controller);
+  explicit TestSessionControllerClient(SessionControllerImpl* controller);
   ~TestSessionControllerClient() override;
 
   static void DisableAutomaticallyProvideSigninPref();
@@ -94,7 +94,7 @@ class TestSessionControllerClient : public ash::mojom::SessionControllerClient {
   void EmitAshInitialized() override;
 
  private:
-  SessionController* const controller_;
+  SessionControllerImpl* const controller_;
 
   // Binds to the client interface.
   mojo::Binding<ash::mojom::SessionControllerClient> binding_;

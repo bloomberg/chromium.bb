@@ -16,7 +16,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/interfaces/accessibility_controller.mojom-shared.h"
 #include "ash/public/interfaces/window_state_type.mojom.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
@@ -97,7 +97,7 @@ bool IsArcKioskModeActive() {
 // Returns true if there is an active user and their session isn't currently
 // locked.
 bool IsUserActive() {
-  SessionController* session = Shell::Get()->session_controller();
+  SessionControllerImpl* session = Shell::Get()->session_controller();
   return session->IsActiveUserSessionStarted() && !session->IsScreenLocked();
 }
 

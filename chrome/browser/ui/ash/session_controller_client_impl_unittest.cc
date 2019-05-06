@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/session_controller_client.h"
+#include "chrome/browser/ui/ash/session_controller_client_impl.h"
 
 #include <memory>
 #include <string>
@@ -103,13 +103,12 @@ class TestChromeUserManager : public FakeChromeUserManager {
   DISALLOW_COPY_AND_ASSIGN(TestChromeUserManager);
 };
 
-
 }  // namespace
 
-class SessionControllerClientTest : public testing::Test {
+class SessionControllerClientImplTest : public testing::Test {
  protected:
-  SessionControllerClientTest() {}
-  ~SessionControllerClientTest() override {}
+  SessionControllerClientImplTest() {}
+  ~SessionControllerClientImplTest() override {}
 
   void SetUp() override {
     testing::Test::SetUp();
@@ -205,25 +204,26 @@ class SessionControllerClientTest : public testing::Test {
   std::unique_ptr<chromeos::ScopedCrosSettingsTestHelper>
       cros_settings_test_helper_;
 
-  DISALLOW_COPY_AND_ASSIGN(SessionControllerClientTest);
+  DISALLOW_COPY_AND_ASSIGN(SessionControllerClientImplTest);
 };
 
 // Make sure that cycling one user does not cause any harm.
-TEST_F(SessionControllerClientTest, CyclingOneUser) {
+TEST_F(SessionControllerClientImplTest, CyclingOneUser) {
   UserAddedToSession(
       AccountId::FromUserEmailGaiaId("firstuser@test.com", "1111111111"));
 
   EXPECT_EQ("firstuser@test.com", GetActiveUserEmail());
-  SessionControllerClient::DoCycleActiveUser(ash::CycleUserDirection::NEXT);
+  SessionControllerClientImpl::DoCycleActiveUser(ash::CycleUserDirection::NEXT);
   EXPECT_EQ("firstuser@test.com", GetActiveUserEmail());
-  SessionControllerClient::DoCycleActiveUser(ash::CycleUserDirection::PREVIOUS);
+  SessionControllerClientImpl::DoCycleActiveUser(
+      ash::CycleUserDirection::PREVIOUS);
   EXPECT_EQ("firstuser@test.com", GetActiveUserEmail());
 }
 
 // Cycle three users forwards and backwards to see that it works.
-TEST_F(SessionControllerClientTest, CyclingThreeUsers) {
+TEST_F(SessionControllerClientImplTest, CyclingThreeUsers) {
   // Create an object to test and connect it to our test interface.
-  SessionControllerClient client;
+  SessionControllerClientImpl client;
   TestSessionController session_controller;
   client.Init();
 
@@ -237,59 +237,59 @@ TEST_F(SessionControllerClientTest, CyclingThreeUsers) {
   UserAddedToSession(second_user);
   UserAddedToSession(third_user);
   user_manager()->SwitchActiveUser(first_user);
-  SessionControllerClient::FlushForTesting();
+  SessionControllerClientImpl::FlushForTesting();
 
   // Cycle forward.
   const ash::CycleUserDirection forward = ash::CycleUserDirection::NEXT;
   EXPECT_EQ("firstuser@test.com", GetActiveUserEmail());
-  SessionControllerClient::DoCycleActiveUser(forward);
-  SessionControllerClient::FlushForTesting();
+  SessionControllerClientImpl::DoCycleActiveUser(forward);
+  SessionControllerClientImpl::FlushForTesting();
   EXPECT_EQ("seconduser@test.com", GetActiveUserEmail());
-  SessionControllerClient::DoCycleActiveUser(forward);
-  SessionControllerClient::FlushForTesting();
+  SessionControllerClientImpl::DoCycleActiveUser(forward);
+  SessionControllerClientImpl::FlushForTesting();
   EXPECT_EQ("thirduser@test.com", GetActiveUserEmail());
-  SessionControllerClient::DoCycleActiveUser(forward);
-  SessionControllerClient::FlushForTesting();
+  SessionControllerClientImpl::DoCycleActiveUser(forward);
+  SessionControllerClientImpl::FlushForTesting();
   EXPECT_EQ("firstuser@test.com", GetActiveUserEmail());
 
   // Cycle backwards.
   const ash::CycleUserDirection backward = ash::CycleUserDirection::PREVIOUS;
-  SessionControllerClient::DoCycleActiveUser(backward);
-  SessionControllerClient::FlushForTesting();
+  SessionControllerClientImpl::DoCycleActiveUser(backward);
+  SessionControllerClientImpl::FlushForTesting();
   EXPECT_EQ("thirduser@test.com", GetActiveUserEmail());
-  SessionControllerClient::DoCycleActiveUser(backward);
-  SessionControllerClient::FlushForTesting();
+  SessionControllerClientImpl::DoCycleActiveUser(backward);
+  SessionControllerClientImpl::FlushForTesting();
   EXPECT_EQ("seconduser@test.com", GetActiveUserEmail());
-  SessionControllerClient::DoCycleActiveUser(backward);
-  SessionControllerClient::FlushForTesting();
+  SessionControllerClientImpl::DoCycleActiveUser(backward);
+  SessionControllerClientImpl::FlushForTesting();
   EXPECT_EQ("firstuser@test.com", GetActiveUserEmail());
 }
 
 // Make sure MultiProfile disabled by primary user policy.
-TEST_F(SessionControllerClientTest, MultiProfileDisallowedByUserPolicy) {
+TEST_F(SessionControllerClientImplTest, MultiProfileDisallowedByUserPolicy) {
   TestingProfile* user_profile = InitForMultiProfile();
   EXPECT_EQ(ash::AddUserSessionPolicy::ALLOWED,
-            SessionControllerClient::GetAddUserSessionPolicy());
+            SessionControllerClientImpl::GetAddUserSessionPolicy());
   const AccountId account_id(
       AccountId::FromUserEmailGaiaId(kUser, kUserGaiaId));
   user_manager()->LoginUser(account_id);
   EXPECT_EQ(ash::AddUserSessionPolicy::ERROR_NO_ELIGIBLE_USERS,
-            SessionControllerClient::GetAddUserSessionPolicy());
+            SessionControllerClientImpl::GetAddUserSessionPolicy());
 
   user_manager()->AddUser(
       AccountId::FromUserEmailGaiaId("bb@b.b", "4444444444"));
   EXPECT_EQ(ash::AddUserSessionPolicy::ALLOWED,
-            SessionControllerClient::GetAddUserSessionPolicy());
+            SessionControllerClientImpl::GetAddUserSessionPolicy());
 
   user_profile->GetPrefs()->SetString(
       prefs::kMultiProfileUserBehavior,
       chromeos::MultiProfileUserController::kBehaviorNotAllowed);
   EXPECT_EQ(ash::AddUserSessionPolicy::ERROR_NOT_ALLOWED_PRIMARY_USER,
-            SessionControllerClient::GetAddUserSessionPolicy());
+            SessionControllerClientImpl::GetAddUserSessionPolicy());
 }
 
 // Make sure MultiProfile disabled by primary user policy certificates.
-TEST_F(SessionControllerClientTest,
+TEST_F(SessionControllerClientImplTest,
        MultiProfileDisallowedByPolicyCertificates) {
   InitForMultiProfile();
   user_manager()->AddUser(
@@ -299,18 +299,18 @@ TEST_F(SessionControllerClientTest,
       AccountId::FromUserEmailGaiaId(kUser, kUserGaiaId));
   user_manager()->LoginUser(account_id);
   EXPECT_EQ(ash::AddUserSessionPolicy::ALLOWED,
-            SessionControllerClient::GetAddUserSessionPolicy());
+            SessionControllerClientImpl::GetAddUserSessionPolicy());
   policy::PolicyCertServiceFactory::SetUsedPolicyCertificates(
       account_id.GetUserEmail());
   EXPECT_EQ(ash::AddUserSessionPolicy::ERROR_NOT_ALLOWED_PRIMARY_USER,
-            SessionControllerClient::GetAddUserSessionPolicy());
+            SessionControllerClientImpl::GetAddUserSessionPolicy());
 
   // Flush tasks posted to IO.
   base::RunLoop().RunUntilIdle();
 }
 
 // Make sure MultiProfile disabled by primary user certificates in memory.
-TEST_F(SessionControllerClientTest,
+TEST_F(SessionControllerClientImplTest,
        MultiProfileDisallowedByPrimaryUserCertificatesInMemory) {
   TestingProfile* user_profile = InitForMultiProfile();
   user_manager()->AddUser(
@@ -320,7 +320,7 @@ TEST_F(SessionControllerClientTest,
       AccountId::FromUserEmailGaiaId(kUser, kUserGaiaId));
   user_manager()->LoginUser(account_id);
   EXPECT_EQ(ash::AddUserSessionPolicy::ALLOWED,
-            SessionControllerClient::GetAddUserSessionPolicy());
+            SessionControllerClientImpl::GetAddUserSessionPolicy());
   cert_verifier_.reset(
       new network::CertVerifierWithTrustAnchors(base::Closure()));
   g_policy_cert_verifier_for_factory = cert_verifier_.get();
@@ -340,7 +340,7 @@ TEST_F(SessionControllerClientTest,
       certificates /* trust_anchors */);
   EXPECT_TRUE(service->has_policy_certificates());
   EXPECT_EQ(ash::AddUserSessionPolicy::ERROR_NOT_ALLOWED_PRIMARY_USER,
-            SessionControllerClient::GetAddUserSessionPolicy());
+            SessionControllerClientImpl::GetAddUserSessionPolicy());
 
   // Flush tasks posted to IO.
   base::RunLoop().RunUntilIdle();
@@ -348,12 +348,12 @@ TEST_F(SessionControllerClientTest,
 
 // Make sure adding users to multiprofiles disabled by reaching maximum
 // number of users in sessions.
-TEST_F(SessionControllerClientTest,
+TEST_F(SessionControllerClientImplTest,
        AddUserToMultiprofileDisallowedByMaximumUsers) {
   InitForMultiProfile();
 
   EXPECT_EQ(ash::AddUserSessionPolicy::ALLOWED,
-            SessionControllerClient::GetAddUserSessionPolicy());
+            SessionControllerClientImpl::GetAddUserSessionPolicy());
   AccountId account_id(AccountId::FromUserEmailGaiaId(kUser, kUserGaiaId));
   user_manager()->LoginUser(account_id);
   while (user_manager()->GetLoggedInUsers().size() <
@@ -363,32 +363,32 @@ TEST_F(SessionControllerClientTest,
     user_manager()->LoginUser(account_id);
   }
   EXPECT_EQ(ash::AddUserSessionPolicy::ERROR_MAXIMUM_USERS_REACHED,
-            SessionControllerClient::GetAddUserSessionPolicy());
+            SessionControllerClientImpl::GetAddUserSessionPolicy());
 }
 
 // Make sure adding users to multiprofiles disabled by logging in all possible
 // users.
-TEST_F(SessionControllerClientTest,
+TEST_F(SessionControllerClientImplTest,
        AddUserToMultiprofileDisallowedByAllUsersLogged) {
   InitForMultiProfile();
 
   EXPECT_EQ(ash::AddUserSessionPolicy::ALLOWED,
-            SessionControllerClient::GetAddUserSessionPolicy());
+            SessionControllerClientImpl::GetAddUserSessionPolicy());
   const AccountId account_id(
       AccountId::FromUserEmailGaiaId(kUser, kUserGaiaId));
   user_manager()->LoginUser(account_id);
   UserAddedToSession(AccountId::FromUserEmailGaiaId("bb@b.b", "4444444444"));
   EXPECT_EQ(ash::AddUserSessionPolicy::ERROR_NO_ELIGIBLE_USERS,
-            SessionControllerClient::GetAddUserSessionPolicy());
+            SessionControllerClientImpl::GetAddUserSessionPolicy());
 }
 
 // Make sure adding users to multiprofiles disabled by primary user policy.
-TEST_F(SessionControllerClientTest,
+TEST_F(SessionControllerClientImplTest,
        AddUserToMultiprofileDisallowedByPrimaryUserPolicy) {
   TestingProfile* user_profile = InitForMultiProfile();
 
   EXPECT_EQ(ash::AddUserSessionPolicy::ALLOWED,
-            SessionControllerClient::GetAddUserSessionPolicy());
+            SessionControllerClientImpl::GetAddUserSessionPolicy());
   const AccountId account_id(
       AccountId::FromUserEmailGaiaId(kUser, kUserGaiaId));
   user_manager()->LoginUser(account_id);
@@ -398,15 +398,15 @@ TEST_F(SessionControllerClientTest,
   user_manager()->AddUser(
       AccountId::FromUserEmailGaiaId("bb@b.b", "4444444444"));
   EXPECT_EQ(ash::AddUserSessionPolicy::ERROR_NOT_ALLOWED_PRIMARY_USER,
-            SessionControllerClient::GetAddUserSessionPolicy());
+            SessionControllerClientImpl::GetAddUserSessionPolicy());
 }
 
-TEST_F(SessionControllerClientTest, SendUserSession) {
+TEST_F(SessionControllerClientImplTest, SendUserSession) {
   // Create an object to test and connect it to our test interface.
-  SessionControllerClient client;
+  SessionControllerClientImpl client;
   TestSessionController session_controller;
   client.Init();
-  SessionControllerClient::FlushForTesting();
+  SessionControllerClientImpl::FlushForTesting();
 
   // No user session sent yet.
   EXPECT_EQ(0, session_controller.update_user_session_count());
@@ -422,7 +422,7 @@ TEST_F(SessionControllerClientTest, SendUserSession) {
           account_id.GetUserEmail()),
       false);
   session_manager_.SetSessionState(SessionState::ACTIVE);
-  SessionControllerClient::FlushForTesting();
+  SessionControllerClientImpl::FlushForTesting();
 
   // User session was sent.
   EXPECT_EQ(1, session_controller.update_user_session_count());
@@ -433,18 +433,18 @@ TEST_F(SessionControllerClientTest, SendUserSession) {
 
   // Simulate a request for an update where nothing changed.
   client.SendUserSession(*user_manager()->GetLoggedInUsers()[0]);
-  SessionControllerClient::FlushForTesting();
+  SessionControllerClientImpl::FlushForTesting();
 
   // Session was not updated because nothing changed.
   EXPECT_EQ(1, session_controller.update_user_session_count());
 }
 
-TEST_F(SessionControllerClientTest, SupervisedUser) {
+TEST_F(SessionControllerClientImplTest, SupervisedUser) {
   // Create an object to test and connect it to our test interface.
-  SessionControllerClient client;
+  SessionControllerClientImpl client;
   TestSessionController session_controller;
   client.Init();
-  SessionControllerClient::FlushForTesting();
+  SessionControllerClientImpl::FlushForTesting();
 
   // Simulate the login screen. No user session yet.
   session_manager_.SetSessionState(SessionState::LOGIN_PRIMARY);
@@ -464,7 +464,7 @@ TEST_F(SessionControllerClientTest, SupervisedUser) {
           "child@test.com"),
       false);
   session_manager_.SetSessionState(SessionState::ACTIVE);
-  SessionControllerClient::FlushForTesting();
+  SessionControllerClientImpl::FlushForTesting();
 
   // The session controller received session info and user session.
   EXPECT_LT(0u, session_controller.last_user_session()->session_id);
@@ -494,16 +494,16 @@ TEST_F(SessionControllerClientTest, SupervisedUser) {
   // Simulate an update to the custodian information.
   prefs->SetString(prefs::kSupervisedUserCustodianEmail, "parent3@test.com");
   client.OnCustodianInfoChanged();
-  SessionControllerClient::FlushForTesting();
+  SessionControllerClientImpl::FlushForTesting();
 
   // The updated custodian was sent over the mojo interface.
   EXPECT_EQ("parent3@test.com",
             session_controller.last_user_session()->custodian_email);
 }
 
-TEST_F(SessionControllerClientTest, DeviceOwner) {
+TEST_F(SessionControllerClientImplTest, DeviceOwner) {
   // Create an object to test and connect it to our test interface.
-  SessionControllerClient client;
+  SessionControllerClientImpl client;
   TestSessionController session_controller;
   client.Init();
 
@@ -513,42 +513,42 @@ TEST_F(SessionControllerClientTest, DeviceOwner) {
       AccountId::FromUserEmailGaiaId("user@test.com", "2222222222");
   user_manager()->SetOwnerId(owner);
   UserAddedToSession(owner);
-  SessionControllerClient::FlushForTesting();
+  SessionControllerClientImpl::FlushForTesting();
   EXPECT_TRUE(
       session_controller.last_user_session()->user_info->is_device_owner);
 
   UserAddedToSession(normal_user);
-  SessionControllerClient::FlushForTesting();
+  SessionControllerClientImpl::FlushForTesting();
   EXPECT_FALSE(
       session_controller.last_user_session()->user_info->is_device_owner);
 }
 
-TEST_F(SessionControllerClientTest, UserBecomesDeviceOwner) {
+TEST_F(SessionControllerClientImplTest, UserBecomesDeviceOwner) {
   // Create an object to test and connect it to our test interface.
-  SessionControllerClient client;
+  SessionControllerClientImpl client;
   TestSessionController session_controller;
   client.Init();
 
   const AccountId owner =
       AccountId::FromUserEmailGaiaId("owner@test.com", "1111111111");
   UserAddedToSession(owner);
-  SessionControllerClient::FlushForTesting();
+  SessionControllerClientImpl::FlushForTesting();
   // The device owner is empty, the current session shouldn't be the owner.
   EXPECT_FALSE(
       session_controller.last_user_session()->user_info->is_device_owner);
 
   user_manager()->SetOwnerId(owner);
-  SessionControllerClient::FlushForTesting();
+  SessionControllerClientImpl::FlushForTesting();
   EXPECT_TRUE(
       session_controller.last_user_session()->user_info->is_device_owner);
 }
 
-TEST_F(SessionControllerClientTest, UserPrefsChange) {
+TEST_F(SessionControllerClientImplTest, UserPrefsChange) {
   // Create an object to test and connect it to our test interface.
-  SessionControllerClient client;
+  SessionControllerClientImpl client;
   TestSessionController session_controller;
   client.Init();
-  SessionControllerClient::FlushForTesting();
+  SessionControllerClientImpl::FlushForTesting();
 
   // Simulate login.
   const AccountId account_id(
@@ -560,7 +560,7 @@ TEST_F(SessionControllerClientTest, UserPrefsChange) {
           account_id.GetUserEmail()),
       false);
   session_manager_.SetSessionState(SessionState::ACTIVE);
-  SessionControllerClient::FlushForTesting();
+  SessionControllerClientImpl::FlushForTesting();
 
   // Simulate the notification that the profile is ready.
   TestingProfile* const user_profile = CreateTestingProfile(user);
@@ -570,27 +570,27 @@ TEST_F(SessionControllerClientTest, UserPrefsChange) {
   PrefService* const user_prefs = user_profile->GetPrefs();
 
   user_prefs->SetBoolean(ash::prefs::kAllowScreenLock, true);
-  SessionControllerClient::FlushForTesting();
+  SessionControllerClientImpl::FlushForTesting();
   EXPECT_TRUE(session_controller.last_session_info()->can_lock_screen);
   user_prefs->SetBoolean(ash::prefs::kAllowScreenLock, false);
-  SessionControllerClient::FlushForTesting();
+  SessionControllerClientImpl::FlushForTesting();
   EXPECT_FALSE(session_controller.last_session_info()->can_lock_screen);
   user_prefs->SetBoolean(ash::prefs::kEnableAutoScreenLock, true);
-  SessionControllerClient::FlushForTesting();
+  SessionControllerClientImpl::FlushForTesting();
   EXPECT_TRUE(
       session_controller.last_session_info()->should_lock_screen_automatically);
   user_prefs->SetBoolean(ash::prefs::kEnableAutoScreenLock, false);
-  SessionControllerClient::FlushForTesting();
+  SessionControllerClientImpl::FlushForTesting();
   EXPECT_FALSE(
       session_controller.last_session_info()->should_lock_screen_automatically);
 }
 
-TEST_F(SessionControllerClientTest, SessionLengthLimit) {
+TEST_F(SessionControllerClientImplTest, SessionLengthLimit) {
   // Create an object to test and connect it to our test interface.
-  SessionControllerClient client;
+  SessionControllerClientImpl client;
   TestSessionController session_controller;
   client.Init();
-  SessionControllerClient::FlushForTesting();
+  SessionControllerClientImpl::FlushForTesting();
 
   // By default there is no session length limit.
   EXPECT_TRUE(session_controller.last_session_length_limit().is_zero());
@@ -603,7 +603,7 @@ TEST_F(SessionControllerClientTest, SessionLengthLimit) {
   local_state->SetInteger(prefs::kSessionLengthLimit,
                           length_limit.InMilliseconds());
   local_state->SetInt64(prefs::kSessionStartTime, start_time.ToInternalValue());
-  SessionControllerClient::FlushForTesting();
+  SessionControllerClientImpl::FlushForTesting();
   EXPECT_EQ(length_limit, session_controller.last_session_length_limit());
   EXPECT_EQ(start_time, session_controller.last_session_start_time());
 }

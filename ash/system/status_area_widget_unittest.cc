@@ -7,7 +7,7 @@
 #include "ash/focus_cycler.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/system_tray_focus_observer.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/system/ime_menu/ime_menu_tray.h"
@@ -129,7 +129,7 @@ class StatusAreaWidgetFocusTest : public AshTestBase {
 // TODO(crbug.com/934939): Failing on trybot.
 TEST_F(StatusAreaWidgetFocusTest, DISABLED_FocusOutObserverUnified) {
   // Set session state to LOCKED.
-  SessionController* session = Shell::Get()->session_controller();
+  SessionControllerImpl* session = Shell::Get()->session_controller();
   ASSERT_TRUE(session->IsActiveUserSessionStarted());
   TestSessionControllerClient* client = GetSessionControllerClient();
   client->SetSessionState(SessionState::LOCKED);

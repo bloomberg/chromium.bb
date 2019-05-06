@@ -11,7 +11,7 @@
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/shutdown_reason.h"
 #include "ash/system/power/power_button_display_controller.h"
@@ -273,7 +273,7 @@ void PowerButtonController::OnLockButtonEvent(
   if (power_button_down_)
     return;
 
-  const SessionController* const session_controller =
+  const SessionControllerImpl* const session_controller =
       Shell::Get()->session_controller();
   if (!session_controller->CanLockScreen() ||
       session_controller->IsScreenLocked() ||
@@ -473,7 +473,7 @@ void PowerButtonController::InitTabletPowerButtonMembers() {
 }
 
 void PowerButtonController::LockScreenIfRequired() {
-  const SessionController* session_controller =
+  const SessionControllerImpl* session_controller =
       Shell::Get()->session_controller();
   if (session_controller->ShouldLockScreenAutomatically() &&
       session_controller->CanLockScreen() &&

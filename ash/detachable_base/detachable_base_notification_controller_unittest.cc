@@ -8,7 +8,7 @@
 
 #include "ash/detachable_base/detachable_base_handler.h"
 #include "ash/public/interfaces/user_info.mojom.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -65,7 +65,7 @@ class DetachableBaseNotificationControllerTest : public NoSessionAshTestBase {
     return Shell::Get()->detachable_base_handler();
   }
 
-  SessionController* session_controller() {
+  SessionControllerImpl* session_controller() {
     return Shell::Get()->session_controller();
   }
 

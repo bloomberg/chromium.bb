@@ -5,7 +5,7 @@
 #include "ash/metrics/login_metrics_recorder.h"
 
 #include "ash/login/ui/lock_screen.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"

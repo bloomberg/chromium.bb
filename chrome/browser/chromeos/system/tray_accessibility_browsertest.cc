@@ -17,7 +17,7 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/ash/session_controller_client.h"
+#include "chrome/browser/ui/ash/session_controller_client_impl.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
@@ -483,7 +483,7 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, KeepMenuVisibilityOnLockScreen) {
   EXPECT_TRUE(IsMenuButtonVisible());
 
   // Locks the screen.
-  SessionControllerClient::Get()->RequestLockScreen();
+  SessionControllerClientImpl::Get()->RequestLockScreen();
   // Resets binding because UnifiedSystemTray is recreated.
   BindTestApi();
   EXPECT_TRUE(IsMenuButtonVisible());

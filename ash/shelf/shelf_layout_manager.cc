@@ -22,7 +22,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/rotator/screen_rotation_animator.h"
 #include "ash/screen_util.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
@@ -450,7 +450,7 @@ void ShelfLayoutManager::RemoveObserver(ShelfLayoutManagerObserver* observer) {
 bool ShelfLayoutManager::ProcessGestureEvent(
     const ui::GestureEvent& event_in_screen) {
   // The gestures are disabled in the lock/login screen.
-  SessionController* controller = Shell::Get()->session_controller();
+  SessionControllerImpl* controller = Shell::Get()->session_controller();
   if (!controller->NumberOfLoggedInUsers() || controller->IsScreenLocked())
     return false;
 

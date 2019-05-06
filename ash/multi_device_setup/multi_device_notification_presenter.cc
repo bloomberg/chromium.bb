@@ -10,7 +10,7 @@
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/public/interfaces/session_controller.mojom.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/model/system_tray_model.h"
@@ -214,7 +214,7 @@ void MultiDeviceNotificationPresenter::ObserveMultiDeviceSetupIfPossible() {
   if (multidevice_setup_ptr_)
     return;
 
-  const SessionController* session_controller =
+  const SessionControllerImpl* session_controller =
       Shell::Get()->session_controller();
 
   // If no active user is logged in, there is nothing to do.

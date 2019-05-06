@@ -9,7 +9,7 @@
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/pre_target_accelerator_handler.h"
 #include "ash/app_list/test/app_list_test_helper.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test_screenshot_delegate.h"
@@ -133,7 +133,7 @@ TEST_F(AcceleratorFilterTest, CanConsumeSystemKeys) {
 }
 
 TEST_F(AcceleratorFilterTest, SearchKeyShortcutsAreAlwaysHandled) {
-  SessionController* const session_controller =
+  SessionControllerImpl* const session_controller =
       Shell::Get()->session_controller();
   EXPECT_FALSE(session_controller->IsScreenLocked());
 

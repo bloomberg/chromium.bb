@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 
 #include <memory>
 #include <string>
@@ -94,14 +94,14 @@ void FillDefaultSessionInfo(mojom::SessionInfo* info) {
   info->state = SessionState::LOGIN_PRIMARY;
 }
 
-class SessionControllerTest : public testing::Test {
+class SessionControllerImplTest : public testing::Test {
  public:
-  SessionControllerTest() = default;
-  ~SessionControllerTest() override = default;
+  SessionControllerImplTest() = default;
+  ~SessionControllerImplTest() override = default;
 
   // testing::Test:
   void SetUp() override {
-    controller_ = std::make_unique<SessionController>(nullptr);
+    controller_ = std::make_unique<SessionControllerImpl>(nullptr);
     controller_->AddObserver(&observer_);
   }
 
@@ -134,18 +134,18 @@ class SessionControllerTest : public testing::Test {
     return emails;
   }
 
-  SessionController* controller() { return controller_.get(); }
+  SessionControllerImpl* controller() { return controller_.get(); }
   const TestSessionObserver* observer() const { return &observer_; }
 
  private:
-  std::unique_ptr<SessionController> controller_;
+  std::unique_ptr<SessionControllerImpl> controller_;
   TestSessionObserver observer_;
 
-  DISALLOW_COPY_AND_ASSIGN(SessionControllerTest);
+  DISALLOW_COPY_AND_ASSIGN(SessionControllerImplTest);
 };
 
 // Tests that the simple session info is reflected properly.
-TEST_F(SessionControllerTest, SimpleSessionInfo) {
+TEST_F(SessionControllerImplTest, SimpleSessionInfo) {
   mojom::SessionInfo info;
   FillDefaultSessionInfo(&info);
   SetSessionInfo(info);
@@ -174,7 +174,7 @@ TEST_F(SessionControllerTest, SimpleSessionInfo) {
   EXPECT_TRUE(controller()->IsRunningInAppMode());
 }
 
-TEST_F(SessionControllerTest, OnFirstSessionStarted) {
+TEST_F(SessionControllerImplTest, OnFirstSessionStarted) {
   // Simulate chrome starting a user session.
   mojom::SessionInfo info;
   FillDefaultSessionInfo(&info);
@@ -187,7 +187,7 @@ TEST_F(SessionControllerTest, OnFirstSessionStarted) {
 }
 
 // Tests that the CanLockScreen is only true with an active user session.
-TEST_F(SessionControllerTest, CanLockScreen) {
+TEST_F(SessionControllerImplTest, CanLockScreen) {
   mojom::SessionInfo info;
   FillDefaultSessionInfo(&info);
   ASSERT_TRUE(info.can_lock_screen);  // Check can_lock_screen default to true.
@@ -203,7 +203,7 @@ TEST_F(SessionControllerTest, CanLockScreen) {
 }
 
 // Tests that AddUserSessionPolicy is set properly.
-TEST_F(SessionControllerTest, AddUserPolicy) {
+TEST_F(SessionControllerImplTest, AddUserPolicy) {
   const AddUserSessionPolicy kTestCases[] = {
       AddUserSessionPolicy::ALLOWED,
       AddUserSessionPolicy::ERROR_NOT_ALLOWED_PRIMARY_USER,
@@ -222,7 +222,7 @@ TEST_F(SessionControllerTest, AddUserPolicy) {
 }
 
 // Tests that session state can be set and reflected properly.
-TEST_F(SessionControllerTest, SessionState) {
+TEST_F(SessionControllerImplTest, SessionState) {
   const struct {
     SessionState state;
     bool expected_is_screen_locked;
@@ -256,7 +256,7 @@ TEST_F(SessionControllerTest, SessionState) {
 }
 
 // Tests that LoginStatus is computed correctly for most session states.
-TEST_F(SessionControllerTest, GetLoginStatus) {
+TEST_F(SessionControllerImplTest, GetLoginStatus) {
   const struct {
     SessionState state;
     LoginStatus expected_status;
@@ -280,7 +280,7 @@ TEST_F(SessionControllerTest, GetLoginStatus) {
 }
 
 // Tests that LoginStatus is computed correctly for active sessions.
-TEST_F(SessionControllerTest, GetLoginStateForActiveSession) {
+TEST_F(SessionControllerImplTest, GetLoginStateForActiveSession) {
   // Simulate an active user session.
   mojom::SessionInfo info;
   FillDefaultSessionInfo(&info);
@@ -316,7 +316,7 @@ TEST_F(SessionControllerTest, GetLoginStateForActiveSession) {
   }
 }
 
-TEST_F(SessionControllerTest, GetLoginStateForOwner) {
+TEST_F(SessionControllerImplTest, GetLoginStateForOwner) {
   // Simulate an active user session.
   mojom::SessionInfo info;
   FillDefaultSessionInfo(&info);
@@ -337,7 +337,7 @@ TEST_F(SessionControllerTest, GetLoginStateForOwner) {
 }
 
 // Tests that user sessions can be set and updated.
-TEST_F(SessionControllerTest, UserSessions) {
+TEST_F(SessionControllerImplTest, UserSessions) {
   EXPECT_FALSE(controller()->IsActiveUserSessionStarted());
 
   UpdateSession(1u, "user1@test.com");
@@ -360,7 +360,7 @@ TEST_F(SessionControllerTest, UserSessions) {
 }
 
 // Tests that user sessions can be ordered.
-TEST_F(SessionControllerTest, ActiveSession) {
+TEST_F(SessionControllerImplTest, ActiveSession) {
   UpdateSession(1u, "user1@test.com");
   UpdateSession(2u, "user2@test.com");
   EXPECT_EQ("user1@test.com",
@@ -391,7 +391,8 @@ TEST_F(SessionControllerTest, ActiveSession) {
 // Tests that user session is unblocked with a running unlock animation so that
 // focus rules can find a correct activatable window after screen lock is
 // dismissed.
-TEST_F(SessionControllerTest, UserSessionUnblockedWithRunningUnlockAnimation) {
+TEST_F(SessionControllerImplTest,
+       UserSessionUnblockedWithRunningUnlockAnimation) {
   mojom::SessionInfo info;
   FillDefaultSessionInfo(&info);
 
@@ -401,7 +402,7 @@ TEST_F(SessionControllerTest, UserSessionUnblockedWithRunningUnlockAnimation) {
   EXPECT_TRUE(controller()->IsUserSessionBlocked());
 
   // Mark a running unlock animation unblocks user session.
-  controller()->RunUnlockAnimation(base::Closure());
+  controller()->RunUnlockAnimation(base::OnceClosure());
   EXPECT_FALSE(controller()->IsUserSessionBlocked());
 
   const struct {
@@ -419,7 +420,7 @@ TEST_F(SessionControllerTest, UserSessionUnblockedWithRunningUnlockAnimation) {
     SetSessionInfo(info);
 
     // Mark a running unlock animation.
-    controller()->RunUnlockAnimation(base::Closure());
+    controller()->RunUnlockAnimation(base::OnceClosure());
 
     EXPECT_EQ(test_case.expected_is_user_session_blocked,
               controller()->IsUserSessionBlocked())
@@ -427,7 +428,7 @@ TEST_F(SessionControllerTest, UserSessionUnblockedWithRunningUnlockAnimation) {
   }
 }
 
-TEST_F(SessionControllerTest, IsUserSupervised) {
+TEST_F(SessionControllerImplTest, IsUserSupervised) {
   mojom::UserSessionPtr session = mojom::UserSession::New();
   session->session_id = 1u;
   session->user_info = mojom::UserInfo::New();
@@ -437,7 +438,7 @@ TEST_F(SessionControllerTest, IsUserSupervised) {
   EXPECT_TRUE(controller()->IsUserSupervised());
 }
 
-TEST_F(SessionControllerTest, IsUserChild) {
+TEST_F(SessionControllerImplTest, IsUserChild) {
   mojom::UserSessionPtr session = mojom::UserSession::New();
   session->session_id = 1u;
   session->user_info = mojom::UserInfo::New();
@@ -450,17 +451,17 @@ TEST_F(SessionControllerTest, IsUserChild) {
   EXPECT_TRUE(controller()->IsUserSupervised());
 }
 
-using SessionControllerPrefsTest = NoSessionAshTestBase;
+using SessionControllerImplPrefsTest = NoSessionAshTestBase;
 
 // Verifies that ShellObserver is notified for PrefService changes.
-TEST_F(SessionControllerPrefsTest, Observer) {
+TEST_F(SessionControllerImplPrefsTest, Observer) {
   constexpr char kUser1[] = "user1@test.com";
   constexpr char kUser2[] = "user2@test.com";
   const AccountId kUserAccount1 = AccountId::FromUserEmail(kUser1);
   const AccountId kUserAccount2 = AccountId::FromUserEmail(kUser2);
 
   TestSessionObserver observer;
-  SessionController* controller = Shell::Get()->session_controller();
+  SessionControllerImpl* controller = Shell::Get()->session_controller();
   controller->AddObserver(&observer);
 
   // Setup 2 users.
@@ -522,7 +523,7 @@ TEST_F(SessionControllerPrefsTest, Observer) {
   controller->RemoveObserver(&observer);
 }
 
-TEST_F(SessionControllerTest, GetUserType) {
+TEST_F(SessionControllerImplTest, GetUserType) {
   // Child accounts
   mojom::UserSessionPtr session = mojom::UserSession::New();
   session->session_id = 1u;
@@ -540,7 +541,7 @@ TEST_F(SessionControllerTest, GetUserType) {
   EXPECT_EQ(user_manager::USER_TYPE_REGULAR, controller()->GetUserType());
 }
 
-TEST_F(SessionControllerTest, IsUserPrimary) {
+TEST_F(SessionControllerImplTest, IsUserPrimary) {
   controller()->ClearUserSessionsForTest();
 
   // The first added user is a primary user
@@ -562,7 +563,7 @@ TEST_F(SessionControllerTest, IsUserPrimary) {
   EXPECT_FALSE(controller()->IsUserPrimary());
 }
 
-TEST_F(SessionControllerTest, IsUserFirstLogin) {
+TEST_F(SessionControllerImplTest, IsUserFirstLogin) {
   mojom::UserSessionPtr session = mojom::UserSession::New();
   session->session_id = 1u;
   session->user_info = mojom::UserInfo::New();
@@ -636,8 +637,8 @@ class CanSwitchUserTest : public AshTestBase {
   void SwitchUser(ActionType action) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&CloseMessageBox, action));
-    Shell::Get()->session_controller()->CanSwitchActiveUser(
-        base::Bind(&CanSwitchUserTest::SwitchCallback, base::Unretained(this)));
+    Shell::Get()->session_controller()->CanSwitchActiveUser(base::BindOnce(
+        &CanSwitchUserTest::SwitchCallback, base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -813,18 +814,18 @@ TEST_F(CanSwitchUserTest, OverviewModeDismissed) {
   EXPECT_EQ(1, switch_callback_hit_count());
 }
 
-using SessionControllerUnblockTest = NoSessionAshTestBase;
+using SessionControllerImplUnblockTest = NoSessionAshTestBase;
 
-TEST_F(SessionControllerUnblockTest, ActiveWindowAfterUnblocking) {
+TEST_F(SessionControllerImplUnblockTest, ActiveWindowAfterUnblocking) {
   EXPECT_TRUE(Shell::Get()->session_controller()->IsUserSessionBlocked());
   auto widget = CreateTestWidget();
-  // |widget| should not be active as it is blocked by SessionController.
+  // |widget| should not be active as it is blocked by SessionControllerImpl.
   EXPECT_FALSE(widget->IsActive());
   SimulateUserLogin("user@test.com");
   EXPECT_FALSE(Shell::Get()->session_controller()->IsUserSessionBlocked());
 
-  // |widget| should now be active as SessionController no longer is blocking
-  // windows from becoming active.
+  // |widget| should now be active as SessionControllerImpl no longer is
+  // blocking windows from becoming active.
   EXPECT_TRUE(widget->IsActive());
 }
 

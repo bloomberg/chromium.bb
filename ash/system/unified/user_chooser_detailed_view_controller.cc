@@ -5,7 +5,7 @@
 #include "ash/system/unified/user_chooser_detailed_view_controller.h"
 
 #include "ash/multi_profile_uma.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ash/system/unified/user_chooser_view.h"
@@ -27,7 +27,7 @@ bool UserChooserDetailedViewController::IsUserChooserEnabled() {
     return false;
 
   // Don't allow at login, lock or when adding a multi-profile user.
-  SessionController* session = Shell::Get()->session_controller();
+  SessionControllerImpl* session = Shell::Get()->session_controller();
   if (session->IsUserSessionBlocked())
     return false;
 
@@ -44,7 +44,7 @@ void UserChooserDetailedViewController::TransitionToMainView() {
 
 void UserChooserDetailedViewController::HandleUserSwitch(int user_index) {
   // Do not switch users when the log screen is presented.
-  SessionController* controller = Shell::Get()->session_controller();
+  SessionControllerImpl* controller = Shell::Get()->session_controller();
   if (controller->IsUserSessionBlocked())
     return;
 

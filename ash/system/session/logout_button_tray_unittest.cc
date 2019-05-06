@@ -6,7 +6,7 @@
 
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/root_window_controller.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/system/session/logout_confirmation_controller.h"
@@ -83,7 +83,7 @@ TEST_F(LogoutButtonTrayTest, ButtonPressed) {
                                      ->logout_button_tray_for_testing();
   ASSERT_TRUE(tray);
   views::MdTextButton* const button = tray->button_for_test();
-  SessionController* const session_controller =
+  SessionControllerImpl* const session_controller =
       Shell::Get()->session_controller();
   TestSessionControllerClient* const session_client =
       GetSessionControllerClient();

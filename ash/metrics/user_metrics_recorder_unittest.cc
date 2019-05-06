@@ -9,7 +9,7 @@
 #include "ash/login_status.h"
 #include "ash/metrics/user_metrics_recorder_test_api.h"
 #include "ash/public/cpp/shelf_model.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -59,7 +59,7 @@ class UserMetricsRecorderTest : public NoSessionAshTestBase {
 // Verifies the return value of IsUserInActiveDesktopEnvironment() for the
 // different login status values.
 TEST_F(UserMetricsRecorderTest, VerifyIsUserInActiveDesktopEnvironmentValues) {
-  SessionController* session = Shell::Get()->session_controller();
+  SessionControllerImpl* session = Shell::Get()->session_controller();
 
   // Environment is not active before login.
   ASSERT_FALSE(session->IsActiveUserSessionStarted());

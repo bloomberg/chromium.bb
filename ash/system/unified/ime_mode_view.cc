@@ -5,7 +5,7 @@
 #include "ash/system/unified/ime_mode_view.h"
 
 #include "ash/ime/ime_controller.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/model/system_tray_model.h"

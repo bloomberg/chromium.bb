@@ -68,7 +68,7 @@
 #include "chrome/browser/ui/ash/multi_user/multi_profile_support.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
-#include "chrome/browser/ui/ash/session_controller_client.h"
+#include "chrome/browser/ui/ash/session_controller_client_impl.h"
 #include "chrome/browser/ui/ash/test_wallpaper_controller.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/browser/ui/browser.h"
@@ -1243,7 +1243,7 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
 
     // Ensure there are multiple profiles. User 0 is created during setup.
     CreateMultiUserProfile("user1");
-    ASSERT_TRUE(SessionControllerClient::IsMultiProfileAvailable());
+    ASSERT_TRUE(SessionControllerClientImpl::IsMultiProfileAvailable());
   }
 
   void TearDown() override {

@@ -11,7 +11,7 @@
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/new_window_controller.h"
 #include "ash/public/cpp/ash_pref_names.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/utility/screenshot_controller.h"
 #include "ash/voice_interaction/voice_interaction_controller.h"

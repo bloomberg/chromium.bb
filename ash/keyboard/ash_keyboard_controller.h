@@ -26,7 +26,7 @@ class KeyboardUIFactory;
 
 namespace ash {
 
-class SessionController;
+class SessionControllerImpl;
 class VirtualKeyboardController;
 
 // Contains and observes a keyboard::KeyboardController instance. Ash specific
@@ -39,7 +39,7 @@ class ASH_EXPORT AshKeyboardController
       public SessionObserver {
  public:
   // |session_controller| is expected to outlive AshKeyboardController.
-  explicit AshKeyboardController(SessionController* session_controller);
+  explicit AshKeyboardController(SessionControllerImpl* session_controller);
   ~AshKeyboardController() override;
 
   // Called from RegisterInterfaces to bind this to the Ash service.
@@ -110,7 +110,7 @@ class ASH_EXPORT AshKeyboardController
       override;
   void OnKeyboardEnabledChanged(bool is_enabled) override;
 
-  SessionController* session_controller_;  // unowned
+  SessionControllerImpl* session_controller_;  // unowned
   std::unique_ptr<keyboard::KeyboardController> keyboard_controller_;
   std::unique_ptr<VirtualKeyboardController> virtual_keyboard_controller_;
   mojo::BindingSet<mojom::KeyboardController> bindings_;

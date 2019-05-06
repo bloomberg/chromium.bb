@@ -39,7 +39,7 @@
 #include "chrome/browser/ui/ash/network/network_connect_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/network/network_portal_notification_controller.h"
 #include "chrome/browser/ui/ash/screen_orientation_delegate_chromeos.h"
-#include "chrome/browser/ui/ash/session_controller_client.h"
+#include "chrome/browser/ui/ash/session_controller_client_impl.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/ash/tab_scrubber.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
@@ -235,7 +235,7 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
       chromeos::input_method::InputMethodManager::Get());
   ime_controller_client_->Init();
 
-  session_controller_client_ = std::make_unique<SessionControllerClient>();
+  session_controller_client_ = std::make_unique<SessionControllerClientImpl>();
   session_controller_client_->Init();
 
   system_tray_client_ = std::make_unique<SystemTrayClient>();

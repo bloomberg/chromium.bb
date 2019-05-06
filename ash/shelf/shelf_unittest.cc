@@ -6,7 +6,7 @@
 
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/root_window_controller.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shelf/overflow_button.h"
 #include "ash/shelf/shelf.h"

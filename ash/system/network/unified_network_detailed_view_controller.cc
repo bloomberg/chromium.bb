@@ -4,7 +4,7 @@
 
 #include "ash/system/network/unified_network_detailed_view_controller.h"
 
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/network/network_list.h"
 #include "ash/system/tray/detailed_view_delegate.h"

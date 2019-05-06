@@ -45,7 +45,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
-#include "chrome/browser/ui/ash/session_controller_client.h"
+#include "chrome/browser/ui/ash/session_controller_client_impl.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
@@ -217,7 +217,7 @@ void ScreenLocker::Init() {
   views_screen_locker_->Init();
 
   // Start locking on ash side.
-  SessionControllerClient::Get()->StartLock(base::BindOnce(
+  SessionControllerClientImpl::Get()->StartLock(base::BindOnce(
       &ScreenLocker::OnStartLockCallback, weak_factory_.GetWeakPtr()));
 }
 
@@ -543,7 +543,7 @@ void ScreenLocker::Show() {
   }
 
   if (!screen_locker_) {
-    SessionControllerClient::Get()->PrepareForLock(base::Bind([]() {
+    SessionControllerClientImpl::Get()->PrepareForLock(base::BindOnce([]() {
       ScreenLocker* locker =
           new ScreenLocker(user_manager::UserManager::Get()->GetUnlockUsers());
       VLOG(1) << "Created ScreenLocker " << locker;
@@ -566,7 +566,7 @@ void ScreenLocker::Hide() {
   }
 
   DCHECK(screen_locker_);
-  SessionControllerClient::Get()->RunUnlockAnimation(base::BindOnce([]() {
+  SessionControllerClientImpl::Get()->RunUnlockAnimation(base::BindOnce([]() {
     session_manager::SessionManager::Get()->SetSessionState(
         session_manager::SessionState::ACTIVE);
     ScreenLocker::ScheduleDeletion();

@@ -10,7 +10,7 @@
 #include "ash/media/media_notification_item.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/notification_utils.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"

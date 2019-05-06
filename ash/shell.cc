@@ -82,7 +82,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/screenshot_delegate.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_controller.h"
 #include "ash/shelf/shelf_window_watcher.h"
@@ -657,7 +657,7 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
       locale_update_controller_(std::make_unique<LocaleUpdateController>()),
       media_controller_(std::make_unique<MediaController>(connector)),
       new_window_controller_(std::make_unique<NewWindowController>()),
-      session_controller_(std::make_unique<SessionController>(connector)),
+      session_controller_(std::make_unique<SessionControllerImpl>(connector)),
       note_taking_controller_(std::make_unique<NoteTakingController>()),
       shell_delegate_(std::move(shell_delegate)),
       shell_state_(std::make_unique<ShellState>()),

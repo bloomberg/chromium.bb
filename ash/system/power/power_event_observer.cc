@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "ash/root_window_controller.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/model/clock_model.h"
 #include "ash/system/model/system_tray_model.h"
@@ -36,7 +36,7 @@ void OnSuspendDisplaysCompleted(base::UnguessableToken token, bool status) {
 
 // Returns whether the screen should be locked when device is suspended.
 bool ShouldLockOnSuspend() {
-  SessionController* controller = ash::Shell::Get()->session_controller();
+  SessionControllerImpl* controller = ash::Shell::Get()->session_controller();
 
   return controller->ShouldLockScreenAutomatically() &&
          controller->CanLockScreen();

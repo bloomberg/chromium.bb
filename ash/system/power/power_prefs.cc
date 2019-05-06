@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "ash/public/cpp/ash_pref_names.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -63,7 +63,7 @@ chromeos::PowerPolicyController::Action GetPowerPolicyAction(
 // used: if more-restrictive power-related prefs are set by policy, it's most
 // likely to be on this profile.
 PrefService* GetPrefService() {
-  ash::SessionController* controller = Shell::Get()->session_controller();
+  ash::SessionControllerImpl* controller = Shell::Get()->session_controller();
   PrefService* prefs = controller->GetPrimaryUserPrefService();
   return prefs ? prefs : controller->GetActivePrefService();
 }

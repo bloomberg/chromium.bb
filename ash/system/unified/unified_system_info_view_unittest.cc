@@ -4,7 +4,7 @@
 
 #include "ash/system/unified/unified_system_info_view.h"
 
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/system/model/enterprise_domain_model.h"
@@ -81,7 +81,7 @@ TEST_F(UnifiedSystemInfoViewNoSessionTest, SupervisedVisible) {
   std::unique_ptr<UnifiedSystemTrayController> controller_ =
       std::make_unique<UnifiedSystemTrayController>(model_.get());
 
-  SessionController* session = Shell::Get()->session_controller();
+  SessionControllerImpl* session = Shell::Get()->session_controller();
   ASSERT_FALSE(session->IsActiveUserSessionStarted());
 
   // Before login the supervised user view is invisible.

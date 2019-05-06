@@ -12,7 +12,7 @@
 #include "ash/public/cpp/multi_user_window_manager_delegate.h"
 #include "ash/public/cpp/multi_user_window_manager_observer.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/auto_reset.h"
@@ -64,7 +64,8 @@ mojom::WallpaperUserInfoPtr WallpaperUserInfoForAccount(
   DCHECK(account_id.is_valid());
   mojom::WallpaperUserInfoPtr wallpaper_user_info =
       mojom::WallpaperUserInfo::New();
-  SessionController* session_controller = Shell::Get()->session_controller();
+  SessionControllerImpl* session_controller =
+      Shell::Get()->session_controller();
   for (const mojom::UserSessionPtr& user_session :
        session_controller->GetUserSessions()) {
     if (user_session->user_info->account_id == account_id) {

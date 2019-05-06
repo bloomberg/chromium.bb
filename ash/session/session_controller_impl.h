@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SESSION_SESSION_CONTROLLER_H_
-#define ASH_SESSION_SESSION_CONTROLLER_H_
+#ifndef ASH_SESSION_SESSION_CONTROLLER_IMPL_H_
+#define ASH_SESSION_SESSION_CONTROLLER_IMPL_H_
 
 #include <stdint.h>
 
@@ -35,14 +35,14 @@ class SessionObserver;
 // Implements mojom::SessionController to cache session related info such as
 // session state, meta data about user sessions to support synchronous
 // queries for ash.
-class ASH_EXPORT SessionController : public mojom::SessionController {
+class ASH_EXPORT SessionControllerImpl : public mojom::SessionController {
  public:
   // |connector| is used to connect to other services for connecting to per-user
   // PrefServices. If |connector| is null, no per-user PrefService instances
   // will be created. In tests, ProvideUserPrefServiceForTest() can be used to
   // inject a PrefService for a user when |connector| is null.
-  explicit SessionController(service_manager::Connector* connector);
-  ~SessionController() override;
+  explicit SessionControllerImpl(service_manager::Connector* connector);
+  ~SessionControllerImpl() override;
 
   base::TimeDelta session_length_limit() const { return session_length_limit_; }
   base::TimeTicks session_start_time() const { return session_start_time_; }
@@ -326,11 +326,11 @@ class ASH_EXPORT SessionController : public mojom::SessionController {
   std::map<AccountId, std::unique_ptr<PrefService>> per_user_prefs_;
   PrefService* last_active_user_prefs_ = nullptr;
 
-  base::WeakPtrFactory<SessionController> weak_ptr_factory_;
+  base::WeakPtrFactory<SessionControllerImpl> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(SessionController);
+  DISALLOW_COPY_AND_ASSIGN(SessionControllerImpl);
 };
 
 }  // namespace ash
 
-#endif  // ASH_SESSION_SESSION_CONTROLLER_H_
+#endif  // ASH_SESSION_SESSION_CONTROLLER_IMPL_H_

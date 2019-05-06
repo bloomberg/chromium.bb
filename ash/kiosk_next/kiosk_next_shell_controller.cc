@@ -12,7 +12,7 @@
 #include "ash/kiosk_next/kiosk_next_shell_observer.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_registry_simple.h"

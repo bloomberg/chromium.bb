@@ -15,7 +15,7 @@
 #include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/ui/ash/accessibility/fake_accessibility_controller.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
-#include "chrome/browser/ui/ash/session_controller_client.h"
+#include "chrome/browser/ui/ash/session_controller_client_impl.h"
 #include "chrome/browser/ui/ash/test_login_screen.h"
 #include "chrome/browser/ui/ash/test_session_controller.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -58,10 +58,11 @@ class ScreenLockerUnitTest : public testing::Test {
     // MojoSystemInfoDispatcher dependency:
     bluez::BluezDBusManager::GetSetterForTesting();
 
-    // Initialize SessionControllerClient and dependencies:
+    // Initialize SessionControllerClientImpl and dependencies:
     LoginState::Initialize();
     CHECK(testing_profile_manager_.SetUp());
-    session_controller_client_ = std::make_unique<SessionControllerClient>();
+    session_controller_client_ =
+        std::make_unique<SessionControllerClientImpl>();
     session_controller_client_->Init();
 
     // Initialize AccessibilityManager and dependencies:
@@ -125,7 +126,7 @@ class ScreenLockerUnitTest : public testing::Test {
   session_manager::SessionManager session_manager_;
   TestLoginScreen test_login_screen_;
   LoginScreenClient login_screen_client_;
-  // * SessionControllerClient dependencies:
+  // * SessionControllerClientImpl dependencies:
   FakeChromeUserManager* fake_user_manager_{new FakeChromeUserManager()};
   user_manager::ScopedUserManager scoped_user_manager_{
       base::WrapUnique(fake_user_manager_)};
@@ -133,7 +134,7 @@ class ScreenLockerUnitTest : public testing::Test {
       TestingBrowserProcess::GetGlobal()};
   ScopedDeviceSettingsTestHelper device_settings_test_helper_;
   TestSessionController test_session_controller_;
-  std::unique_ptr<SessionControllerClient> session_controller_client_;
+  std::unique_ptr<SessionControllerClientImpl> session_controller_client_;
 
   std::unique_ptr<audio::TestObserver> observer_;
   DISALLOW_COPY_AND_ASSIGN(ScreenLockerUnitTest);

@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "ash/public/cpp/ash_features.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/message_center/ash_message_center_lock_screen_controller.h"
@@ -426,7 +426,8 @@ void UnifiedMessageCenterView::SetNotificationRectBelowScroll(
 }
 
 void UnifiedMessageCenterView::UpdateVisibility() {
-  SessionController* session_controller = Shell::Get()->session_controller();
+  SessionControllerImpl* session_controller =
+      Shell::Get()->session_controller();
   SetVisible(available_height_ >= kUnifiedNotificationMinimumHeight &&
              message_list_view_->GetPreferredSize().height() > 0 &&
              session_controller->ShouldShowNotificationTray() &&

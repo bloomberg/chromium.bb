@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "ash/root_window_controller.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/power/power_event_observer_test_api.h"
 #include "ash/test/ash_test_base.h"
@@ -54,7 +54,7 @@ class PowerEventObserverTest : public AshTestBase {
 
   bool GetLockedState() {
     // LockScreen is an async mojo call.
-    SessionController* const session_controller =
+    SessionControllerImpl* const session_controller =
         Shell::Get()->session_controller();
     session_controller->FlushMojoForTest();
     return session_controller->IsScreenLocked();

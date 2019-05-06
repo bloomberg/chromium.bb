@@ -10,7 +10,7 @@
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/resources/vector_icons/vector_icons.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/model/system_tray_model.h"
@@ -85,7 +85,7 @@ bool VpnProviderMatchesNetwork(const VPNProvider& provider,
 // controlled by policy. If multiple users are logged in, the more restrictive
 // policy is most likely in the primary user.
 PrefService* GetPrefService() {
-  SessionController* controller = Shell::Get()->session_controller();
+  SessionControllerImpl* controller = Shell::Get()->session_controller();
   PrefService* prefs = controller->GetPrimaryUserPrefService();
   return prefs ? prefs : controller->GetActivePrefService();
 }

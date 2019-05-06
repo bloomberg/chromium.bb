@@ -23,7 +23,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shelf/app_list_button.h"
 #include "ash/shelf/back_button.h"
 #include "ash/shelf/overflow_bubble.h"

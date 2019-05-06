@@ -4,7 +4,7 @@
 //
 #include "ash/system/network/unified_vpn_detailed_view_controller.h"
 
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/network/vpn_list_view.h"
 #include "ash/system/tray/detailed_view_delegate.h"

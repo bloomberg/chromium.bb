@@ -8,7 +8,7 @@
 #include <string>
 #include <utility>
 
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/bluetooth/bluetooth_detailed_view.h"
 #include "ash/system/bluetooth/tray_bluetooth_helper.h"

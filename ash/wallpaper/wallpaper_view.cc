@@ -8,7 +8,7 @@
 #include "ash/public/cpp/wallpaper_types.h"
 #include "ash/public/cpp/window_animation_types.h"
 #include "ash/root_window_controller.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"

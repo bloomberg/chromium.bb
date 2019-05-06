@@ -6,7 +6,7 @@
 
 #include "ash/media/media_notification_constants.h"
 #include "ash/media/media_notification_view.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/session/session_observer.h"
 #include "ash/shell.h"
 #include "base/bind.h"
@@ -40,7 +40,7 @@ class MediaNotificationBlocker : public message_center::NotificationBlocker,
                                  public SessionObserver {
  public:
   MediaNotificationBlocker(message_center::MessageCenter* message_center,
-                           SessionController* session_controller)
+                           SessionControllerImpl* session_controller)
       : message_center::NotificationBlocker(message_center),
         locked_(session_controller->IsScreenLocked()),
         session_controller_(session_controller) {
@@ -87,7 +87,7 @@ class MediaNotificationBlocker : public message_center::NotificationBlocker,
  private:
   bool locked_;
 
-  SessionController* const session_controller_;
+  SessionControllerImpl* const session_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaNotificationBlocker);
 };

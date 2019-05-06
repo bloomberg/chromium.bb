@@ -11,7 +11,7 @@
 #include "ash/magnifier/docked_magnifier_controller.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_pref_names.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/test/ash_test_base.h"
@@ -485,7 +485,7 @@ TEST_P(AccessibilityControllerSigninTest, EnableOnLoginScreenAndLogin) {
   DockedMagnifierController* docked_magnifier =
       Shell::Get()->docked_magnifier_controller();
 
-  SessionController* session = Shell::Get()->session_controller();
+  SessionControllerImpl* session = Shell::Get()->session_controller();
   EXPECT_EQ(session_manager::SessionState::LOGIN_PRIMARY,
             session->GetSessionState());
   EXPECT_FALSE(accessibility->large_cursor_enabled());

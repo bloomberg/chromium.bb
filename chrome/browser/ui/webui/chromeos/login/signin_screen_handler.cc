@@ -64,7 +64,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/ui/ash/ime_controller_client.h"
-#include "chrome/browser/ui/ash/session_controller_client.h"
+#include "chrome/browser/ui/ash/session_controller_client_impl.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
@@ -1323,7 +1323,7 @@ void SigninScreenHandler::HandleFocusPod(const AccountId& account_id,
       user_manager::UserManager::Get()->FindUser(account_id);
   // |user| may be nullptr in kiosk mode or unit tests.
   if (user && user->is_logged_in() && !user->is_active()) {
-    SessionControllerClient::DoSwitchActiveUser(account_id);
+    SessionControllerClientImpl::DoSwitchActiveUser(account_id);
   } else {
     lock_screen_utils::SetUserInputMethod(account_id.GetUserEmail(),
                                           ime_state_.get());

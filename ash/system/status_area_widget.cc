@@ -4,7 +4,7 @@
 
 #include "ash/system/status_area_widget.h"
 
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/accessibility/dictation_button_tray.h"

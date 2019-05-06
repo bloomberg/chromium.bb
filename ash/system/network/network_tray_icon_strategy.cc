@@ -4,7 +4,7 @@
 
 #include "ash/system/network/network_tray_icon_strategy.h"
 
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/network/active_network_icon.h"

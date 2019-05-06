@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "ash/resources/vector_icons/vector_icons.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/bluetooth/tray_bluetooth_helper.h"
@@ -74,7 +74,8 @@ void BluetoothFeaturePodController::UpdateButton() {
   // * the active user is the primary user, and
   // * the session is not in lock screen
   // The changes will affect the primary user's preferences.
-  SessionController* session_controller = Shell::Get()->session_controller();
+  SessionControllerImpl* session_controller =
+      Shell::Get()->session_controller();
   button_->SetEnabled(!session_controller->IsActiveUserSessionStarted() ||
                       (session_controller->IsUserPrimary() &&
                        !session_controller->IsScreenLocked()));

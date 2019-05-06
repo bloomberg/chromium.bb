@@ -4,7 +4,7 @@
 
 #include "ash/system/model/clock_model.h"
 
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/model/clock_observer.h"
 #include "ash/system/model/system_tray_model.h"

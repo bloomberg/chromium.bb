@@ -12,7 +12,7 @@
 #include "ash/cancel_mode.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/interfaces/shutdown.mojom.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shutdown_controller.h"

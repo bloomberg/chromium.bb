@@ -30,7 +30,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/interfaces/app_list_view.mojom.h"
 #include "ash/root_window_controller.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/voice_interaction/voice_interaction_controller.h"
@@ -124,7 +124,8 @@ AppListControllerImpl::AppListControllerImpl()
       presenter_(std::make_unique<AppListPresenterDelegateImpl>(this)) {
   model_->AddObserver(this);
 
-  SessionController* session_controller = Shell::Get()->session_controller();
+  SessionControllerImpl* session_controller =
+      Shell::Get()->session_controller();
   session_controller->AddObserver(this);
 
   // In case of crash-and-restart case where session state starts with ACTIVE
