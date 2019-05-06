@@ -8,6 +8,7 @@
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_com_win.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
@@ -82,6 +83,31 @@ class AXPlatformNodeWinBrowserTest : public ContentBrowserTest {
   BrowserAccessibility* FindNode(ax::mojom::Role role,
                                  const std::string& name_or_value) {
     return FindNodeInSubtree(*GetRootAndAssertNonNull(), role, name_or_value);
+  }
+
+  template <typename T>
+  ComPtr<T> QueryInterfaceFromNode(
+      BrowserAccessibility* browser_accessibility) {
+    ComPtr<T> result;
+    EXPECT_HRESULT_SUCCEEDED(
+        browser_accessibility->GetNativeViewAccessible()->QueryInterface(
+            __uuidof(T), &result));
+    return result;
+  }
+
+  ComPtr<IAccessible> IAccessibleFromNode(
+      BrowserAccessibility* browser_accessibility) {
+    return QueryInterfaceFromNode<IAccessible>(browser_accessibility);
+  }
+
+  ComPtr<IAccessible2> ToIAccessible2(ComPtr<IAccessible> accessible) {
+    CHECK(accessible);
+    ComPtr<IServiceProvider> service_provider;
+    accessible.As(&service_provider);
+    ComPtr<IAccessible2> result;
+    CHECK(SUCCEEDED(service_provider->QueryService(IID_IAccessible2,
+                                                   IID_PPV_ARGS(&result))));
+    return result;
   }
 
   void UIAGetPropertyValueFlowsFromBrowserTestTemplate(
@@ -188,6 +214,45 @@ class AXPlatformNodeWinBrowserTest : public ContentBrowserTest {
     return nullptr;
   }
 };
+
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeWinBrowserTest,
+                       IA2ScrollToPointIframeText) {
+  LoadInitialAccessibilityTreeFromHtmlFilePath(
+      "/accessibility/scrolling/iframe-text.html");
+  WaitForAccessibilityTreeToContainNodeWithName(
+      shell()->web_contents(),
+      "Game theory is \"the study of Mathematical model mathematical models of "
+      "conflict and cooperation between intelligent rational decision-makers."
+      "\"");
+
+  BrowserAccessibility* browser_accessibility =
+      GetRootAndAssertNonNull()->PlatformDeepestLastChild();
+  ASSERT_NE(nullptr, browser_accessibility);
+  ASSERT_EQ(ax::mojom::Role::kStaticText, browser_accessibility->GetRole());
+
+  BrowserAccessibility* iframe_browser_accessibility =
+      browser_accessibility->manager()->GetRoot();
+  ASSERT_NE(nullptr, iframe_browser_accessibility);
+  ASSERT_EQ(ax::mojom::Role::kRootWebArea,
+            iframe_browser_accessibility->GetRole());
+
+  gfx::Rect iframe_screen_bounds = iframe_browser_accessibility->GetBoundsRect(
+      ui::AXCoordinateSystem::kScreen, ui::AXClippingBehavior::kUnclipped);
+
+  AccessibilityNotificationWaiter location_changed_waiter(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ax::mojom::Event::kLocationChanged);
+  ComPtr<IAccessible2> root_iaccessible2 =
+      ToIAccessible2(IAccessibleFromNode(browser_accessibility));
+  ASSERT_EQ(S_OK, root_iaccessible2->scrollToPoint(
+                      IA2_COORDTYPE_SCREEN_RELATIVE, iframe_screen_bounds.x(),
+                      iframe_screen_bounds.y()));
+  location_changed_waiter.WaitForNotification();
+
+  gfx::Rect bounds = browser_accessibility->GetBoundsRect(
+      ui::AXCoordinateSystem::kScreen, ui::AXClippingBehavior::kUnclipped);
+  ASSERT_EQ(iframe_screen_bounds.y(), bounds.y());
+}
 
 IN_PROC_BROWSER_TEST_F(AXPlatformNodeWinBrowserTest,
                        UIAGetPropertyValueFlowsFromNone) {

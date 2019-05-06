@@ -1516,12 +1516,11 @@ bool BrowserAccessibility::AccessibilityPerformAction(
       manager_->SetFocus(*this);
       return true;
     case ax::mojom::Action::kScrollToPoint: {
-      // target_point is in screen coordinates.  We need to convert this to
-      // frame coordinates because that's what BrowserAccessiblity cares about.
+      // Convert the target point from screen coordinates to frame coordinates.
       gfx::Point target =
-          data.target_point -
-          manager_->GetRootManager()->GetViewBounds().OffsetFromOrigin();
-
+          data.target_point - manager_->GetRoot()
+                                  ->GetUnclippedScreenBoundsRect()
+                                  .OffsetFromOrigin();
       manager_->ScrollToPoint(*this, target);
       return true;
     }
