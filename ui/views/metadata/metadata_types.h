@@ -18,6 +18,15 @@
 namespace views {
 namespace metadata {
 
+enum class PropertyFlags {
+  // By default, properties are read/write. This flag indicates that the given
+  // property metadata instance needs no special attention.
+  kEmpty = 0x00,
+  // Property metadata instance should be treated as read-only. Calling
+  // SetValueAsString() will trigger a NOTREACHED() error under debug.
+  kReadOnly = 0x01,
+};
+
 // Interface for classes that provide ClassMetaData (via macros in
 // metadata_macros.h).  GetClassMetaData() is automatically overridden and
 // implemented in the relevant macros, so a class must merely have
@@ -123,7 +132,10 @@ class VIEWS_EXPORT MemberMetaDataBase {
   // Set the value of this member through a string on a specified object.
   // |obj| is the instance on which to set the value of the property this
   // metadata represents.
-  virtual void SetValueAsString(void* obj, const base::string16& new_value) = 0;
+  virtual void SetValueAsString(void* obj, const base::string16& new_value);
+
+  // Return various information flags about the property.
+  virtual PropertyFlags GetPropertyFlags() const = 0;
 
   void SetMemberName(const char* name) { member_name_ = name; }
   void SetMemberType(const char* type) { member_type_ = type; }
@@ -137,8 +149,28 @@ class VIEWS_EXPORT MemberMetaDataBase {
   DISALLOW_COPY_AND_ASSIGN(MemberMetaDataBase);
 };  // class MemberMetaDataBase
 
+// Represents meta data for a specific read-only property member of class
+// |TClass|, with underlying type |TValue|, as the type of the actual member.
+template <typename TClass, typename TValue, TValue (TClass::*Get)() const>
+class ClassPropertyReadOnlyMetaData : public MemberMetaDataBase {
+ public:
+  ClassPropertyReadOnlyMetaData() {}
+  ~ClassPropertyReadOnlyMetaData() override = default;
+
+  base::string16 GetValueAsString(void* obj) const override {
+    return Convert<TValue, base::string16>((static_cast<TClass*>(obj)->*Get)());
+  }
+
+  PropertyFlags GetPropertyFlags() const override {
+    return PropertyFlags::kReadOnly;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ClassPropertyReadOnlyMetaData);
+};
+
 // Represents meta data for a specific property member of class |TClass|, with
-// underlying type |TValue|, where the type of the actual member.
+// underlying type |TValue|, as the type of the actual member.
 // Allows for interaction with the property as if it were the underlying data
 // type (|TValue|), but still uses the Property's functionality under the hood
 // (so it will trigger things like property changed notifications).
@@ -149,18 +181,19 @@ template <typename TClass,
                                         TValue,
                                         const TValue&>::type),
           TValue (TClass::*Get)() const>
-class ClassPropertyMetaData : public MemberMetaDataBase {
+class ClassPropertyMetaData
+    : public ClassPropertyReadOnlyMetaData<TClass, TValue, Get> {
  public:
   ClassPropertyMetaData() {}
-  virtual ~ClassPropertyMetaData() = default;
-
-  base::string16 GetValueAsString(void* obj) const override {
-    return Convert<TValue, base::string16>((static_cast<TClass*>(obj)->*Get)());
-  }
+  ~ClassPropertyMetaData() override = default;
 
   void SetValueAsString(void* obj, const base::string16& new_value) override {
     (static_cast<TClass*>(obj)->*Set)(
         Convert<base::string16, TValue>(new_value));
+  }
+
+  PropertyFlags GetPropertyFlags() const override {
+    return PropertyFlags::kEmpty;
   }
 
  private:

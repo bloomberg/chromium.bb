@@ -89,5 +89,10 @@ void ClassMetaData::SetTypeName(const std::string& type_name) {
   type_name_ = type_name;
 }
 
+void MemberMetaDataBase::SetValueAsString(void* obj,
+                                          const base::string16& new_value) {
+  NOTREACHED();
+}
+
 }  // namespace metadata
 }  // namespace views

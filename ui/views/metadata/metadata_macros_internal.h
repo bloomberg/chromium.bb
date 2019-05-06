@@ -39,4 +39,9 @@
                                          &class_name::Set##property_name, \
                                          &class_name::Get##property_name>
 
+#define METADATA_READONLY_PROPERTY_TYPE_INTERNAL(class_name, property_type, \
+                                                 property_name)             \
+  views::metadata::ClassPropertyReadOnlyMetaData<                           \
+      class_name, property_type, &class_name::Get##property_name>
+
 #endif  // UI_VIEWS_METADATA_METADATA_MACROS_INTERNAL_H_

@@ -12,7 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/views/views_export.h"
 
 namespace views {
@@ -82,6 +82,10 @@ VIEWS_EXPORT base::string16 ConvertToString<double>(const double& source_value);
 
 template <>
 VIEWS_EXPORT base::string16 ConvertToString<bool>(const bool& source_value);
+
+template <>
+VIEWS_EXPORT base::string16 ConvertToString<gfx::Size>(
+    const gfx::Size& source_value);
 
 template <typename TSource>
 class TypeConverter<TSource, base::string16> {

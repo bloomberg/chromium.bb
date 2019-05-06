@@ -52,4 +52,17 @@
   property_name##_prop->SetMemberType(#property_type);                         \
   AddMemberData(std::move(property_name##_prop));
 
+// This will fail to compile if the property accessor isn't in the form of
+// GetXXXX.
+#define ADD_READONLY_PROPERTY_METADATA(class_name, property_type,    \
+                                       property_name)                \
+  std::unique_ptr<METADATA_READONLY_PROPERTY_TYPE_INTERNAL(          \
+      class_name, property_type, property_name)>                     \
+      property_name##_prop =                                         \
+          std::make_unique<METADATA_READONLY_PROPERTY_TYPE_INTERNAL( \
+              class_name, property_type, property_name)>();          \
+  property_name##_prop->SetMemberName(#property_name);               \
+  property_name##_prop->SetMemberType(#property_type);               \
+  AddMemberData(std::move(property_name##_prop));
+
 #endif  // UI_VIEWS_METADATA_METADATA_MACROS_H_

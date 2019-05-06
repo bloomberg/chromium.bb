@@ -79,6 +79,12 @@ base::string16 ConvertToString<bool>(const bool& source_value) {
 }
 
 template <>
+base::string16 ConvertToString<gfx::Size>(const gfx::Size& source_value) {
+  return base::ASCIIToUTF16(base::StringPrintf("{%i, %i}", source_value.width(),
+                                               source_value.height()));
+}
+
+template <>
 int8_t ConvertFromString<int8_t>(const base::string16& source_value) {
   int32_t ret = 0;
   if (base::StringToInt(source_value, &ret))

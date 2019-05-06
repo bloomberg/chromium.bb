@@ -2714,6 +2714,8 @@ bool View::DoDrag(const ui::LocatedEvent& event,
 BEGIN_METADATA(View)
 ADD_PROPERTY_METADATA(View, bool, Enabled)
 ADD_PROPERTY_METADATA(View, bool, Visible)
+ADD_READONLY_PROPERTY_METADATA(View, gfx::Size, MinimumSize)
+ADD_READONLY_PROPERTY_METADATA(View, gfx::Size, MaximumSize)
 END_METADATA()
 
 }  // namespace views
