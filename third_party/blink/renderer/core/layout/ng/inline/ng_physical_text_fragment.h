@@ -19,6 +19,7 @@ namespace blink {
 
 struct PhysicalRect;
 class NGTextFragmentBuilder;
+class NGPhysicalTextFragment;
 
 enum class AdjustMidCluster;
 
@@ -111,8 +112,9 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
 
   // Create a new fragment that has part of the text of this fragment.
   // All other properties are the same as this fragment.
-  scoped_refptr<const NGPhysicalFragment> TrimText(unsigned start_offset,
-                                                   unsigned end_offset) const;
+  scoped_refptr<const NGPhysicalTextFragment> TrimText(
+      unsigned start_offset,
+      unsigned end_offset) const;
 
   scoped_refptr<const NGPhysicalFragment> CloneWithoutOffset() const;
 

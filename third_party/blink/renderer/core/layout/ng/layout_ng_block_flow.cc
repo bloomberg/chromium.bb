@@ -46,7 +46,7 @@ void LayoutNGBlockFlow::UpdateBlockLayout(bool relayout_children) {
       NGBlockNode(this).Layout(constraint_space);
 
   for (const NGOutOfFlowPositionedDescendant& descendant :
-       result->OutOfFlowPositionedDescendants())
+       result->PhysicalFragment().OutOfFlowPositionedDescendants())
     descendant.node.UseLegacyOutOfFlowPositioning();
 }
 
@@ -142,7 +142,7 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
       container_builder.ToBoxFragment();
   // These are the unpositioned OOF descendants of the current OOF block.
   for (const NGOutOfFlowPositionedDescendant& descendant :
-       result->OutOfFlowPositionedDescendants())
+       result->PhysicalFragment().OutOfFlowPositionedDescendants())
     descendant.node.UseLegacyOutOfFlowPositioning();
 
   const auto& fragment = result->PhysicalFragment();

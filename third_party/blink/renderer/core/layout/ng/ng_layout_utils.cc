@@ -196,7 +196,7 @@ bool SizeMayChange(const NGBlockNode& node,
       return true;
     // We only need to check if the PercentageResolutionBlockSizes match if the
     // layout result has explicitly marked itself as dependent.
-    if (layout_result.DependsOnPercentageBlockSize()) {
+    if (layout_result.PhysicalFragment().DependsOnPercentageBlockSize()) {
       if (new_space.PercentageResolutionBlockSize() !=
           old_space.PercentageResolutionBlockSize())
         return true;
@@ -254,7 +254,7 @@ NGLayoutCacheStatus CalculateSizeBasedLayoutCacheStatusWithGeometry(
     // Due to this we can't use cached |NGLayoutResult::IntrinsicBlockSize|
     // value, as the following |block_size| calculation would be incorrect.
     if (node.IsFlexibleBox() && style.IsColumnFlexDirection() &&
-        layout_result.DependsOnPercentageBlockSize()) {
+        layout_result.PhysicalFragment().DependsOnPercentageBlockSize()) {
       if (new_space.PercentageResolutionBlockSize() !=
           old_space.PercentageResolutionBlockSize())
         return NGLayoutCacheStatus::kNeedsLayout;
@@ -303,16 +303,16 @@ NGLayoutCacheStatus CalculateSizeBasedLayoutCacheStatusWithGeometry(
     // At this point we know that either we have the same block-size for our
     // fragment, or our initial block-size was indefinite.
     //
-    // The |NGLayoutResult::DependsOnPercentageBlockSize| flag will returns true
-    // if we are in quirks mode, and have a descendant that depends on a
-    // percentage block-size, however it will also return true if the node
-    // itself depends on the %-block-size.
+    // The |NGPhysicalContainerFragment::DependsOnPercentageBlockSize| flag
+    // will returns true if we are in quirks mode, and have a descendant that
+    // depends on a percentage block-size, however it will also return true if
+    // the node itself depends on the %-block-size.
     //
     // As we only care about the quirks-mode %-block-size behaviour we remove
     // this false-positive by checking if we have an initial indefinite
     // block-size.
     if (is_new_initial_block_size_indefinite &&
-        layout_result.DependsOnPercentageBlockSize()) {
+        layout_result.PhysicalFragment().DependsOnPercentageBlockSize()) {
       DCHECK(is_old_initial_block_size_indefinite);
       if (new_space.PercentageResolutionBlockSize() !=
           old_space.PercentageResolutionBlockSize())
@@ -465,7 +465,8 @@ bool MaySkipLayoutWithinBlockFormattingContext(
   // edge. We abort if either the old or new space has floats, as we don't keep
   // track of how far above the child could be. This case is relatively rare,
   // and only occurs with negative margins.
-  if (cached_layout_result.MayHaveDescendantAboveBlockStart() &&
+  if (cached_layout_result.PhysicalFragment()
+          .MayHaveDescendantAboveBlockStart() &&
       (old_space.HasFloats() || new_space.HasFloats()))
     return false;
 

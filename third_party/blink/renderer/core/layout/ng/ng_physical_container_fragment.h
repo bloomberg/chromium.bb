@@ -15,6 +15,7 @@
 namespace blink {
 
 class NGContainerFragmentBuilder;
+struct NGOutOfFlowPositionedDescendant;
 enum class NGOutlineType;
 
 class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
@@ -41,11 +42,32 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
     const NGLinkStorage* buffer_;
   };
 
+  ~NGPhysicalContainerFragment();
+
   ChildLinkList Children() const {
     return ChildLinkList(num_children_, buffer_);
   }
 
   bool HasFloatingDescendants() const { return has_floating_descendants_; }
+
+  bool HasOrthogonalFlowRoots() const { return has_orthogonal_flow_roots_; }
+
+  // Returns true if we have a descendant within this formatting context, which
+  // is potentially above our block-start edge.
+  bool MayHaveDescendantAboveBlockStart() const {
+    return may_have_descendant_above_block_start_;
+  }
+
+  // Returns true if we aren't able to re-use this fragment if the
+  // |NGConstraintSpace::PercentageResolutionBlockSize| changes.
+  bool DependsOnPercentageBlockSize() const {
+    return depends_on_percentage_block_size_;
+  }
+
+  const Vector<NGOutOfFlowPositionedDescendant>&
+  OutOfFlowPositionedDescendants() const {
+    return oof_positioned_descendants_;
+  }
 
  protected:
   // block_or_line_writing_mode is used for converting the child offsets.
@@ -66,6 +88,10 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
       const LayoutPoint& additional_offset,
       NGOutlineType outline_type,
       const LayoutBoxModelObject* containing_block) const;
+
+  static bool DependsOnPercentageBlockSize(const NGContainerFragmentBuilder&);
+
+  Vector<NGOutOfFlowPositionedDescendant> oof_positioned_descendants_;
 
   // Because flexible arrays need to be the last member in a class, the actual
   // storage is in the subclass and we just keep a pointer to it here.

@@ -37,11 +37,6 @@ void NGLineBoxFragmentBuilder::SetIsEmptyLineBox() {
   line_box_type_ = NGPhysicalLineBoxFragment::kEmptyLineBox;
 }
 
-bool NGLineBoxFragmentBuilder::HasPropagatedDescendants() const {
-  return has_floating_descendants_ || !oof_positioned_descendants_.IsEmpty() ||
-         unpositioned_list_marker_;
-}
-
 NGLineBoxFragmentBuilder::Child*
 NGLineBoxFragmentBuilder::ChildList::FirstInFlowChild() {
   for (auto& child : *this) {
@@ -89,7 +84,7 @@ void NGLineBoxFragmentBuilder::AddChildren(ChildList& children) {
   for (auto& child : children) {
     if (child.layout_result) {
       DCHECK(!child.fragment);
-      AddChild(*child.layout_result, child.offset);
+      AddChild(child.layout_result->PhysicalFragment(), child.offset);
       child.layout_result.reset();
     } else if (child.fragment) {
       AddChild(std::move(child.fragment), child.offset);

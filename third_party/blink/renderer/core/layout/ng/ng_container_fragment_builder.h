@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/layout/ng/exclusions/ng_exclusion_space.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_margin_strut.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/list/ng_unpositioned_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_floats_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment_builder.h"
@@ -24,7 +25,6 @@
 namespace blink {
 
 class NGExclusionSpace;
-class NGLayoutResult;
 class NGPhysicalFragment;
 
 class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
@@ -76,13 +76,15 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
     return *this;
   }
 
-  NGContainerFragmentBuilder& AddChild(const NGLayoutResult&,
+  NGContainerFragmentBuilder& AddChild(const NGPhysicalContainerFragment&,
                                        const LogicalOffset&);
 
-  // This version of AddChild will not propagate floats/out_of_flow.
-  // Use the AddChild(NGLayoutResult) variant if NGLayoutResult is available.
-  NGContainerFragmentBuilder& AddChild(scoped_refptr<const NGPhysicalFragment>,
-                                       const LogicalOffset&);
+  NGContainerFragmentBuilder& AddChild(
+      scoped_refptr<const NGPhysicalTextFragment> child,
+      const LogicalOffset& offset) {
+    AddChildInternal(child, offset);
+    return *this;
+  }
 
   const ChildrenVector& Children() const { return children_; }
 
@@ -152,8 +154,6 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   }
   bool IsPushedByFloats() const { return is_pushed_by_floats_; }
 
-  bool HasFloatingDescendants() const { return has_floating_descendants_; }
-
   NGContainerFragmentBuilder& ResetAdjoiningFloatTypes() {
     adjoining_floats_ = kFloatTypeNone;
     return *this;
@@ -211,6 +211,9 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
       : NGFragmentBuilder(std::move(style), writing_mode, direction),
         node_(node),
         space_(space) {}
+
+  void AddChildInternal(scoped_refptr<const NGPhysicalFragment>,
+                        const LogicalOffset&);
 
   NGLayoutInputNode node_;
   const NGConstraintSpace* space_;

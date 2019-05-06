@@ -89,7 +89,7 @@ scoped_refptr<const NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {
       block_start_padding_edge = legend_margin_box_block_size;
     }
 
-    container_builder_.AddChild(*result, legend_offset);
+    container_builder_.AddChild(physical_fragment, legend_offset);
   }
 
   NGBoxStrut borders_with_legend = borders;
@@ -105,7 +105,8 @@ scoped_refptr<const NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {
         CreateConstraintSpaceForFieldsetContent(adjusted_padding_box_size);
     auto result = fieldset_content.Layout(child_space, BreakToken());
     const auto& physical_fragment = result->PhysicalFragment();
-    container_builder_.AddChild(*result, borders_with_legend.StartOffset());
+    container_builder_.AddChild(physical_fragment,
+                                borders_with_legend.StartOffset());
 
     intrinsic_block_size +=
         NGFragment(writing_mode, physical_fragment).BlockSize();

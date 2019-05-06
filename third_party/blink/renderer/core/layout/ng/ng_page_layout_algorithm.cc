@@ -52,7 +52,7 @@ scoped_refptr<const NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
     scoped_refptr<const NGLayoutResult> result = child_algorithm.Layout();
     const auto& page = result->PhysicalFragment();
 
-    container_builder_.AddChild(*result, page_offset);
+    container_builder_.AddChild(page, page_offset);
 
     LayoutUnit page_block_size = NGFragment(writing_mode, page).BlockSize();
     intrinsic_block_size = std::max(intrinsic_block_size,

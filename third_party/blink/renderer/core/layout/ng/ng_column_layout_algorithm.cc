@@ -134,7 +134,7 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
       const auto& column = result->PhysicalFragment();
 
       LogicalOffset logical_offset(column_inline_offset, column_block_offset);
-      container_builder_.AddChild(*result, logical_offset);
+      container_builder_.AddChild(column, logical_offset);
 
       LayoutUnit space_shortage = result->MinimalSpaceShortage();
       if (space_shortage > LayoutUnit()) {

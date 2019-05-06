@@ -244,7 +244,7 @@ void NGPhysicalTextFragment::ComputeSelfInkOverflow() const {
   self_ink_overflow_ = local_ink_overflow;
 }
 
-scoped_refptr<const NGPhysicalFragment> NGPhysicalTextFragment::TrimText(
+scoped_refptr<const NGPhysicalTextFragment> NGPhysicalTextFragment::TrimText(
     unsigned new_start_offset,
     unsigned new_end_offset) const {
   DCHECK(shape_result_);

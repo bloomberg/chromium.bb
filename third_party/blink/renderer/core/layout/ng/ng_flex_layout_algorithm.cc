@@ -385,7 +385,7 @@ void NGFlexLayoutAlgorithm::GiveLinesAndItemsFinalPositionAndSize() {
       // non-horizontal flexboxes, like
       // LayoutFlexibleBox::SetFlowAwareLocationForChild does?
       container_builder_.AddChild(
-          *flex_item.layout_result,
+          flex_item.layout_result->PhysicalFragment(),
           {flex_item.desired_location.X(), flex_item.desired_location.Y()});
     }
   }

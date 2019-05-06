@@ -767,7 +767,7 @@ const NGInlineBreakToken* NGBlockLayoutAlgorithm::TryReuseFragmentsFromCache(
     LogicalOffset logical_offset = child->Offset().ConvertToLogical(
         writing_mode, direction, outer_size, line->Size());
     container_builder_.AddChild(
-        line, {logical_offset.inline_offset, used_block_size});
+        *line, {logical_offset.inline_offset, used_block_size});
     used_block_size += line->Size().ConvertToLogical(writing_mode).block_size;
   }
   if (!last_break_token)
@@ -1070,7 +1070,8 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
 
   PositionOrPropagateListMarker(*layout_result, &logical_offset);
 
-  container_builder_.AddChild(*layout_result, logical_offset);
+  container_builder_.AddChild(layout_result->PhysicalFragment(),
+                              logical_offset);
   container_builder_.PropagateBreak(*layout_result);
 
   // The margins we store will be used by e.g. getComputedStyle().
@@ -1448,7 +1449,7 @@ bool NGBlockLayoutAlgorithm::FinishInflow(
         layout_result->AdjoiningFloatTypes());
   }
 
-  container_builder_.AddChild(*layout_result, logical_offset);
+  container_builder_.AddChild(physical_fragment, logical_offset);
   if (child.IsBlock())
     container_builder_.PropagateBreak(*layout_result);
 
@@ -2281,8 +2282,7 @@ void NGBlockLayoutAlgorithm::PositionPendingFloats(
         positioned_float.bfc_offset, bfc_offset, float_inline_size,
         container_builder_.Size().inline_size, ConstraintSpace().Direction());
 
-    container_builder_.AddChild(*positioned_float.layout_result,
-                                logical_offset);
+    container_builder_.AddChild(physical_fragment, logical_offset);
     container_builder_.PropagateBreak(*positioned_float.layout_result);
   }
 

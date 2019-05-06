@@ -255,24 +255,27 @@ class CORE_EXPORT NGPhysicalFragment
   const unsigned sub_type_ : 3;  // NGBoxType, NGTextType, or NGLineBoxType
   const unsigned style_variant_ : 2;  // NGStyleVariant
 
-  // The following bitfield is only to be used by NGPhysicalContainerFragment
+  // The following bitfields are only to be used by NGPhysicalContainerFragment
   // (it's defined here to save memory, since that class has no bitfields).
   unsigned has_floating_descendants_ : 1;
+  unsigned has_orthogonal_flow_roots_ : 1;
+  unsigned may_have_descendant_above_block_start_ : 1;
+  unsigned depends_on_percentage_block_size_ : 1;
 
   // The following bitfields are only to be used by NGPhysicalLineBoxFragment
   // (it's defined here to save memory, since that class has no bitfields).
   unsigned has_propagated_descendants_ : 1;
   unsigned base_direction_ : 1;  // TextDirection
 
-  // The following bitfields are only to be used by NGPhysicalBoxFragment (it's
-  // defined here to save memory, since that class has no bitfields).
+  // The following bitfields are only to be used by NGPhysicalBoxFragment
+  // (it's defined here to save memory, since that class has no bitfields).
   unsigned children_inline_ : 1;
   unsigned is_fieldset_container_ : 1;
   unsigned is_legacy_layout_root_ : 1;
   unsigned border_edge_ : 4;  // NGBorderEdges::Physical
 
-  // The following bitfields are only to be used by NGPhysicalTextFragment (it's
-  // defined here to save memory, since that class has no bitfields).
+  // The following bitfields are only to be used by NGPhysicalTextFragment
+  // (it's defined here to save memory, since that class has no bitfields).
   unsigned line_orientation_ : 2;  // NGLineOrientation
   unsigned is_generated_text_ : 1;
   mutable unsigned ink_overflow_computed_ : 1;

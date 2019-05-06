@@ -13,7 +13,6 @@
 #include "third_party/blink/renderer/core/layout/ng/list/ng_unpositioned_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_floats_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_link.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_positioned_descendant.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_container_fragment.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -53,11 +52,6 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     DCHECK(physical_fragment_);
     DCHECK_EQ(NGLayoutResultStatus::kSuccess, Status());
     return *physical_fragment_;
-  }
-
-  const Vector<NGOutOfFlowPositionedDescendant>&
-  OutOfFlowPositionedDescendants() const {
-    return oof_positioned_descendants_;
   }
 
   LogicalOffset OutOfFlowPositionedOffset() const {
@@ -115,18 +109,10 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   // the block, and the block will fail to clear).
   NGFloatTypes AdjoiningFloatTypes() const { return adjoining_floats_; }
 
-  bool HasOrthogonalFlowRoots() const { return has_orthogonal_flow_roots_; }
-
   // Returns true if the initial (pre-layout) block-size of this fragment was
   // indefinite. (e.g. it has "height: auto").
   bool IsInitialBlockSizeIndefinite() const {
     return is_initial_block_size_indefinite_;
-  }
-
-  // Returns true if we aren't able to re-use this layout result if the
-  // PercentageResolutionBlockSize changes.
-  bool DependsOnPercentageBlockSize() const {
-    return depends_on_percentage_block_size_;
   }
 
   // Returns true if there is a descendant that depends on percentage
@@ -136,12 +122,6 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   // block-size on them).
   bool HasDescendantThatDependsOnPercentageBlockSize() const {
     return has_descendant_that_depends_on_percentage_block_size_;
-  }
-
-  // Returns true if we have a descendant within this formatting context, which
-  // is potentially above our block-start edge.
-  bool MayHaveDescendantAboveBlockStart() const {
-    return may_have_descendant_above_block_start_;
   }
 
   // Returns true if the space stored with this layout result, is valid.
@@ -200,8 +180,6 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   // Delegate constructor that sets up what it can, based on the builder.
   NGLayoutResult(NGContainerFragmentBuilder* builder, bool cache_space);
 
-  static bool DependsOnPercentageBlockSize(const NGContainerFragmentBuilder&);
-
   static NGExclusionSpace MergeExclusionSpaces(
       const NGLayoutResult& other,
       const NGExclusionSpace& new_input_exclusion_space,
@@ -213,7 +191,6 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   const NGConstraintSpace space_;
 
   scoped_refptr<const NGPhysicalContainerFragment> physical_fragment_;
-  Vector<NGOutOfFlowPositionedDescendant> oof_positioned_descendants_;
 
   // This is the final position of an OOF-positioned object in its parent's
   // writing-mode. This is set by the |NGOutOfFlowLayoutPart| while generating
@@ -239,9 +216,6 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   unsigned adjoining_floats_ : 2;  // NGFloatTypes
 
   unsigned is_initial_block_size_indefinite_ : 1;
-  unsigned has_orthogonal_flow_roots_ : 1;
-  unsigned may_have_descendant_above_block_start_ : 1;
-  unsigned depends_on_percentage_block_size_ : 1;
   unsigned has_descendant_that_depends_on_percentage_block_size_ : 1;
 
   unsigned status_ : 1;

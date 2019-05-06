@@ -920,7 +920,9 @@ const NGPaintFragment* NGInlineNode::ReusableLineBoxContainer(
     return nullptr;
 
   // Propagating OOF needs re-layout.
-  if (!cached_layout_result->OutOfFlowPositionedDescendants().IsEmpty())
+  if (!cached_layout_result->PhysicalFragment()
+           .OutOfFlowPositionedDescendants()
+           .IsEmpty())
     return nullptr;
 
   // Cached fragments are not for intermediate layout.

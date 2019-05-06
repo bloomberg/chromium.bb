@@ -908,7 +908,8 @@ static inline bool ObjectIsRelayoutBoundary(const LayoutObject* object) {
     // parent. Therefore, we must mark parent chain for layout.
     if (layout_box->GetCachedLayoutResult() &&
         layout_box->GetCachedLayoutResult()
-                ->OutOfFlowPositionedDescendants()
+                ->PhysicalFragment()
+                .OutOfFlowPositionedDescendants()
                 .size() > 0)
       return false;
   }

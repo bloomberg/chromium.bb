@@ -416,7 +416,7 @@ void NGInlineLayoutAlgorithm::PlaceControlItem(const NGInlineItem& item,
 // Place a generated content that does not exist in DOM nor in LayoutObject
 // tree.
 void NGInlineLayoutAlgorithm::PlaceGeneratedContent(
-    scoped_refptr<const NGPhysicalFragment> fragment,
+    scoped_refptr<const NGPhysicalTextFragment> fragment,
     UBiDiLevel bidi_level,
     NGInlineBoxState* box) {
   LayoutUnit inline_size = IsHorizontalWritingMode() ? fragment->Size().width

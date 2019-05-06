@@ -70,7 +70,7 @@ void LayoutNGTableCaption::UpdateBlockLayout(bool relayout_children) {
   // UpdateBlockLayout, it would have packaged this LayoutObject into
   // NGBlockNode and called Layout on that.
   for (NGOutOfFlowPositionedDescendant descendant :
-       result->OutOfFlowPositionedDescendants())
+       result->PhysicalFragment().OutOfFlowPositionedDescendants())
     descendant.node.UseLegacyOutOfFlowPositioning();
 
   // The parent table sometimes changes the caption's position after laying it

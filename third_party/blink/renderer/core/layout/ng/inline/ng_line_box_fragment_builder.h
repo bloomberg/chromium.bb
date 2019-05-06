@@ -10,8 +10,10 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_height_metrics.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_container_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_container_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_positioned_float.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
@@ -19,7 +21,6 @@ namespace blink {
 
 class ComputedStyle;
 class NGInlineBreakToken;
-class NGPhysicalFragment;
 
 class CORE_EXPORT NGLineBoxFragmentBuilder final
     : public NGContainerFragmentBuilder {
@@ -52,9 +53,6 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
   // Mark this line box is an "empty" line box. See NGLineBoxType.
   void SetIsEmptyLineBox();
 
-  // True if descendants were propagated to outside of this fragment.
-  bool HasPropagatedDescendants() const;
-
   const NGLineHeightMetrics& Metrics() const { return metrics_; }
   void SetMetrics(const NGLineHeightMetrics& metrics) { metrics_ = metrics; }
 
@@ -74,7 +72,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
     DISALLOW_NEW();
 
     scoped_refptr<const NGLayoutResult> layout_result;
-    scoped_refptr<const NGPhysicalFragment> fragment;
+    scoped_refptr<const NGPhysicalTextFragment> fragment;
     LayoutObject* out_of_flow_positioned_box = nullptr;
     LayoutObject* unpositioned_float = nullptr;
     // The offset of the border box, initially in this child coordinate system.
@@ -110,8 +108,8 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
           offset(offset),
           inline_size(inline_size),
           bidi_level(bidi_level) {}
-    // Create an in-flow |NGPhysicalFragment|.
-    Child(scoped_refptr<const NGPhysicalFragment> fragment,
+    // Create an in-flow |NGPhysicalTextFragment|.
+    Child(scoped_refptr<const NGPhysicalTextFragment> fragment,
           LogicalOffset offset,
           LayoutUnit inline_size,
           UBiDiLevel bidi_level)
@@ -119,7 +117,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
           offset(offset),
           inline_size(inline_size),
           bidi_level(bidi_level) {}
-    Child(scoped_refptr<const NGPhysicalFragment> fragment,
+    Child(scoped_refptr<const NGPhysicalTextFragment> fragment,
           LayoutUnit block_offset,
           LayoutUnit inline_size,
           UBiDiLevel bidi_level)
@@ -161,8 +159,9 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
     bool HasBidiLevel() const { return bidi_level != 0xff; }
     bool IsPlaceholder() const { return !HasFragment() && !HasBidiLevel(); }
     const NGPhysicalFragment* PhysicalFragment() const {
-      return layout_result ? &layout_result->PhysicalFragment()
-                           : fragment.get();
+      if (layout_result)
+        return &layout_result->PhysicalFragment();
+      return fragment.get();
     }
   };
 

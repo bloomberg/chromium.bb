@@ -27,7 +27,6 @@ NGLayoutResult::NGLayoutResult(
   has_forced_break_ = builder->has_forced_break_;
   DCHECK(physical_fragment) << "Use the other constructor for aborting layout";
   physical_fragment_ = std::move(physical_fragment);
-  oof_positioned_descendants_ = std::move(builder->oof_positioned_descendants_);
 }
 
 NGLayoutResult::NGLayoutResult(
@@ -35,14 +34,12 @@ NGLayoutResult::NGLayoutResult(
     NGLineBoxFragmentBuilder* builder)
     : NGLayoutResult(builder, /* cache_space */ false) {
   physical_fragment_ = std::move(physical_fragment);
-  oof_positioned_descendants_ = std::move(builder->oof_positioned_descendants_);
 }
 
 NGLayoutResult::NGLayoutResult(NGLayoutResultStatus status,
                                NGBoxFragmentBuilder* builder)
     : NGLayoutResult(builder, /* cache_space */ false) {
   adjoining_floats_ = kFloatTypeNone;
-  depends_on_percentage_block_size_ = false;
   has_descendant_that_depends_on_percentage_block_size_ = false;
   status_ = status;
   DCHECK_NE(status, kSuccess)
@@ -55,7 +52,6 @@ NGLayoutResult::NGLayoutResult(const NGLayoutResult& other,
                                base::Optional<LayoutUnit> bfc_block_offset)
     : space_(new_space),
       physical_fragment_(other.physical_fragment_),
-      oof_positioned_descendants_(other.oof_positioned_descendants_),
       unpositioned_list_marker_(other.unpositioned_list_marker_),
       exclusion_space_(MergeExclusionSpaces(other,
                                             space_.ExclusionSpace(),
@@ -74,11 +70,6 @@ NGLayoutResult::NGLayoutResult(const NGLayoutResult& other,
       adjoining_floats_(other.adjoining_floats_),
       is_initial_block_size_indefinite_(
           other.is_initial_block_size_indefinite_),
-      has_orthogonal_flow_roots_(other.has_orthogonal_flow_roots_),
-      may_have_descendant_above_block_start_(
-          other.may_have_descendant_above_block_start_),
-      depends_on_percentage_block_size_(
-          other.depends_on_percentage_block_size_),
       has_descendant_that_depends_on_percentage_block_size_(
           other.has_descendant_that_depends_on_percentage_block_size_),
       status_(other.status_) {}
@@ -98,10 +89,6 @@ NGLayoutResult::NGLayoutResult(NGContainerFragmentBuilder* builder,
       is_pushed_by_floats_(builder->is_pushed_by_floats_),
       adjoining_floats_(builder->adjoining_floats_),
       is_initial_block_size_indefinite_(false),
-      has_orthogonal_flow_roots_(builder->has_orthogonal_flow_roots_),
-      may_have_descendant_above_block_start_(
-          builder->may_have_descendant_above_block_start_),
-      depends_on_percentage_block_size_(DependsOnPercentageBlockSize(*builder)),
       has_descendant_that_depends_on_percentage_block_size_(
           builder->has_descendant_that_depends_on_percentage_block_size_),
       status_(kSuccess) {}
@@ -109,44 +96,6 @@ NGLayoutResult::NGLayoutResult(NGContainerFragmentBuilder* builder,
 // Define the destructor here, so that we can forward-declare more in the
 // header.
 NGLayoutResult::~NGLayoutResult() = default;
-
-bool NGLayoutResult::DependsOnPercentageBlockSize(
-    const NGContainerFragmentBuilder& builder) {
-  NGLayoutInputNode node = builder.node_;
-
-  if (!node || node.IsInline())
-    return builder.has_descendant_that_depends_on_percentage_block_size_;
-
-  // NOTE: If an element is OOF positioned, and has top/bottom constraints
-  // which are percentage based, this function will return false.
-  //
-  // This is fine as the top/bottom constraints are computed *before* layout,
-  // and the result is set as a fixed-block-size constraint. (And the caching
-  // logic will never check the result of this function).
-  //
-  // The result of this function still may be used for an OOF positioned
-  // element if it has a percentage block-size however, but this will return
-  // the correct result from below.
-
-  if ((builder.has_descendant_that_depends_on_percentage_block_size_ ||
-       builder.is_legacy_layout_root_) &&
-      node.UseParentPercentageResolutionBlockSizeForChildren()) {
-    // Quirks mode has different %-block-size behaviour, than standards mode.
-    // An arbitrary descendant may depend on the percentage resolution
-    // block-size given.
-    // If this is also an anonymous block we need to mark ourselves dependent
-    // if we have a dependent child.
-    return true;
-  }
-
-  const ComputedStyle& style = builder.Style();
-  if (style.LogicalHeight().IsPercentOrCalc() ||
-      style.LogicalMinHeight().IsPercentOrCalc() ||
-      style.LogicalMaxHeight().IsPercentOrCalc())
-    return true;
-
-  return false;
-}
 
 NGExclusionSpace NGLayoutResult::MergeExclusionSpaces(
     const NGLayoutResult& other,

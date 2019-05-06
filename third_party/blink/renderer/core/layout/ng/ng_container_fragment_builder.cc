@@ -7,7 +7,6 @@
 #include "third_party/blink/renderer/core/layout/ng/exclusions/ng_exclusion_space.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
@@ -15,7 +14,7 @@
 namespace blink {
 
 NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
-    const NGLayoutResult& child,
+    const NGPhysicalContainerFragment& child,
     const LogicalOffset& child_offset) {
   // Collect the child's out of flow descendants.
   // child_offset is offset of inline_start/block_start vertex.
@@ -23,7 +22,7 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
   const auto& out_of_flow_descendants = child.OutOfFlowPositionedDescendants();
   if (!out_of_flow_descendants.IsEmpty()) {
     LogicalOffset top_left_offset;
-    PhysicalSize child_size = child.PhysicalFragment().Size();
+    PhysicalSize child_size = child.Size();
     switch (GetWritingMode()) {
       case WritingMode::kHorizontalTb:
         top_left_offset =
@@ -61,8 +60,7 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
     // </div>
     // TODO(layout-dev): This code should eventually be removed once we handle
     // relative positioned objects directly in the fragment tree.
-    if (LayoutBox* child_box =
-            ToLayoutBoxOrNull(child.PhysicalFragment().GetLayoutObject())) {
+    if (LayoutBox* child_box = ToLayoutBoxOrNull(child.GetLayoutObject())) {
       top_left_offset += PhysicalOffset(child_box->OffsetForInFlowPosition())
                              .ConvertToLogical(GetWritingMode(), Direction(),
                                                PhysicalSize(), PhysicalSize());
@@ -75,29 +73,45 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
     }
   }
 
-  if (child.HasOrthogonalFlowRoots())
+  // For the |has_orthogonal_flow_roots_| flag, we don't care about the type of
+  // child (OOF-positioned, etc), it is for *any* descendant.
+  if (child.HasOrthogonalFlowRoots() ||
+      !IsParallelWritingMode(child.Style().GetWritingMode(),
+                             Style().GetWritingMode()))
     has_orthogonal_flow_roots_ = true;
 
   // We only need to report if inflow or floating elements depend on the
   // percentage resolution block-size. OOF-positioned children resolve their
   // percentages against the "final" size of their parent.
-  if (child.DependsOnPercentageBlockSize() &&
-      !child.PhysicalFragment().IsOutOfFlowPositioned())
+  if (child.DependsOnPercentageBlockSize() && !child.IsOutOfFlowPositioned())
     has_descendant_that_depends_on_percentage_block_size_ = true;
 
-  if (child.MayHaveDescendantAboveBlockStart() &&
-      !child.PhysicalFragment().IsBlockFormattingContextRoot())
+  // The |may_have_descendant_above_block_start_| flag is used to determine if
+  // a fragment can be re-used when floats are present. We only are about:
+  //  - Inflow children who are positioned above our block-start edge.
+  //  - Any inflow descendants (within the same formatting-context) that *may*
+  //    be positioned above our block-start edge.
+  if ((child_offset.block_offset < LayoutUnit() &&
+       !child.IsOutOfFlowPositioned()) ||
+      (!child.IsBlockFormattingContextRoot() &&
+       child.MayHaveDescendantAboveBlockStart()))
     may_have_descendant_above_block_start_ = true;
 
-  return AddChild(&child.PhysicalFragment(), child_offset);
-}
+  // Compute |has_floating_descendants_| to optimize tree traversal in paint.
+  if (!has_floating_descendants_) {
+    if (child.IsFloating()) {
+      has_floating_descendants_ = true;
+    } else {
+      if (!child.IsBlockFormattingContextRoot() &&
+          child.HasFloatingDescendants())
+        has_floating_descendants_ = true;
+    }
+  }
 
-NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
-    scoped_refptr<const NGPhysicalFragment> child,
-    const LogicalOffset& child_offset) {
-  NGBreakToken* child_break_token = child->BreakToken();
+  // Collect any (block) break tokens.
+  NGBreakToken* child_break_token = child.BreakToken();
   if (child_break_token && has_block_fragmentation_) {
-    switch (child->Type()) {
+    switch (child.Type()) {
       case NGPhysicalFragment::kFragmentBox:
       case NGPhysicalFragment::kFragmentRenderedLegend:
         if (To<NGBlockBreakToken>(child_break_token)->HasLastResortBreak())
@@ -117,29 +131,15 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
     }
   }
 
-  // Compute |has_floating_descendants_| to optimize tree traversal in paint.
-  if (!has_floating_descendants_) {
-    if (child->IsFloating()) {
-      has_floating_descendants_ = true;
-    } else {
-      auto* child_container = DynamicTo<NGPhysicalContainerFragment>(*child);
-      if (child_container && !child->IsBlockFormattingContextRoot() &&
-          child_container->HasFloatingDescendants())
-        has_floating_descendants_ = true;
-    }
-  }
+  AddChildInternal(&child, child_offset);
+  return *this;
+}
 
-  if (child_offset.block_offset < LayoutUnit() &&
-      !child->IsOutOfFlowPositioned())
-    may_have_descendant_above_block_start_ = true;
-
-  if (!IsParallelWritingMode(child->Style().GetWritingMode(),
-                             Style().GetWritingMode()))
-    has_orthogonal_flow_roots_ = true;
-
+void NGContainerFragmentBuilder::AddChildInternal(
+    scoped_refptr<const NGPhysicalFragment> child,
+    const LogicalOffset& child_offset) {
   children_.emplace_back(std::move(child));
   offsets_.push_back(child_offset);
-  return *this;
 }
 
 LogicalOffset NGContainerFragmentBuilder::GetChildOffset(

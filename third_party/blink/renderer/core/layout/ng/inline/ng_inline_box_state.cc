@@ -595,7 +595,8 @@ NGInlineLayoutStateStack::BoxData::CreateBoxFragment(
   for (unsigned i = fragment_start; i < fragment_end; i++) {
     NGLineBoxFragmentBuilder::Child& child = (*line_box)[i];
     if (child.layout_result) {
-      box.AddChild(*child.layout_result, child.offset - offset);
+      box.AddChild(child.layout_result->PhysicalFragment(),
+                   child.offset - offset);
       child.layout_result.reset();
     } else if (child.fragment) {
       box.AddChild(std::move(child.fragment), child.offset - offset);

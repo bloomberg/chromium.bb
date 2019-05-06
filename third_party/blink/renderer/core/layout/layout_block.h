@@ -34,6 +34,7 @@ namespace blink {
 
 struct PaintInfo;
 class LineLayoutBox;
+class NGBlockNode;
 class WordMeasurement;
 
 typedef WTF::ListHashSet<LayoutBox*, 16> TrackedLayoutBoxListHashSet;

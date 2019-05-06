@@ -17,6 +17,7 @@ namespace blink {
 namespace {
 
 struct SameSizeAsNGPhysicalContainerFragment : NGPhysicalFragment {
+  Vector<NGOutOfFlowPositionedDescendant> oof_positioned_descendants_;
   void* pointer;
   wtf_size_t size;
 };
@@ -34,9 +35,15 @@ NGPhysicalContainerFragment::NGPhysicalContainerFragment(
     NGFragmentType type,
     unsigned sub_type)
     : NGPhysicalFragment(builder, type, sub_type),
+      oof_positioned_descendants_(
+          std::move(builder->oof_positioned_descendants_)),
       buffer_(buffer),
       num_children_(builder->children_.size()) {
-  has_floating_descendants_ = builder->HasFloatingDescendants();
+  has_floating_descendants_ = builder->has_floating_descendants_;
+  has_orthogonal_flow_roots_ = builder->has_orthogonal_flow_roots_;
+  may_have_descendant_above_block_start_ =
+      builder->may_have_descendant_above_block_start_;
+  depends_on_percentage_block_size_ = DependsOnPercentageBlockSize(*builder);
 
   DCHECK_EQ(builder->children_.size(), builder->offsets_.size());
   // Because flexible arrays need to be the last member in a class, we need to
@@ -52,6 +59,8 @@ NGPhysicalContainerFragment::NGPhysicalContainerFragment(
     ++i;
   }
 }
+
+NGPhysicalContainerFragment::~NGPhysicalContainerFragment() = default;
 
 void NGPhysicalContainerFragment::AddOutlineRectsForNormalChildren(
     Vector<LayoutRect>* outline_rects,
@@ -156,6 +165,44 @@ void NGPhysicalContainerFragment::AddOutlineRectsForDescendant(
       }
     }
   }
+}
+
+bool NGPhysicalContainerFragment::DependsOnPercentageBlockSize(
+    const NGContainerFragmentBuilder& builder) {
+  NGLayoutInputNode node = builder.node_;
+
+  if (!node || node.IsInline())
+    return builder.has_descendant_that_depends_on_percentage_block_size_;
+
+  // NOTE: If an element is OOF positioned, and has top/bottom constraints
+  // which are percentage based, this function will return false.
+  //
+  // This is fine as the top/bottom constraints are computed *before* layout,
+  // and the result is set as a fixed-block-size constraint. (And the caching
+  // logic will never check the result of this function).
+  //
+  // The result of this function still may be used for an OOF positioned
+  // element if it has a percentage block-size however, but this will return
+  // the correct result from below.
+
+  if ((builder.has_descendant_that_depends_on_percentage_block_size_ ||
+       builder.is_legacy_layout_root_) &&
+      node.UseParentPercentageResolutionBlockSizeForChildren()) {
+    // Quirks mode has different %-block-size behaviour, than standards mode.
+    // An arbitrary descendant may depend on the percentage resolution
+    // block-size given.
+    // If this is also an anonymous block we need to mark ourselves dependent
+    // if we have a dependent child.
+    return true;
+  }
+
+  const ComputedStyle& style = builder.Style();
+  if (style.LogicalHeight().IsPercentOrCalc() ||
+      style.LogicalMinHeight().IsPercentOrCalc() ||
+      style.LogicalMaxHeight().IsPercentOrCalc())
+    return true;
+
+  return false;
 }
 
 }  // namespace blink

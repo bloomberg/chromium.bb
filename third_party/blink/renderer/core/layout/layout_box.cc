@@ -2332,11 +2332,14 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
   if (!cached_layout_result)
     return nullptr;
 
+  const NGPhysicalContainerFragment& physical_fragment =
+      cached_layout_result->PhysicalFragment();
+
   // If we have an orthogonal flow root descendant, we don't attempt to cache
   // our layout result. This is because the initial containing block size may
   // have changed, having a high likelihood of changing the size of the
   // orthogonal flow root.
-  if (cached_layout_result->HasOrthogonalFlowRoots())
+  if (physical_fragment.HasOrthogonalFlowRoots())
     return nullptr;
 
   NGBlockNode node(this);
@@ -2371,7 +2374,7 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
       new_space.ExclusionSpace() == old_space.ExclusionSpace();
 
   bool is_new_formatting_context =
-      cached_layout_result->PhysicalFragment().IsBlockFormattingContextRoot();
+      physical_fragment.IsBlockFormattingContextRoot();
 
   // If a node *doesn't* establish a new formatting context it may be affected
   // by floats, or clearance.

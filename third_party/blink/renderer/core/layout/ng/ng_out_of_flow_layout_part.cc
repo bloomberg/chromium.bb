@@ -397,7 +397,7 @@ void NGOutOfFlowLayoutPart::LayoutDescendantCandidates(
           (!only_layout || candidate.node.GetLayoutBox() == only_layout)) {
         scoped_refptr<const NGLayoutResult> result =
             LayoutDescendant(candidate, only_layout);
-        container_builder_->AddChild(*result,
+        container_builder_->AddChild(result->PhysicalFragment(),
                                      result->OutOfFlowPositionedOffset());
         placed_objects->insert(candidate.node.GetLayoutBox());
         if (candidate.node.GetLayoutBox() != only_layout)
