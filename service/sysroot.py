@@ -90,7 +90,7 @@ class BuildPackagesRunConfig(object):
   """Value object to hold build packages run configs."""
 
   def __init__(self, event_file=None, usepkg=True, install_debug_symbols=False,
-               packages=None):
+               packages=None, use_flags=None):
     """Init method.
 
     Args:
@@ -101,11 +101,13 @@ class BuildPackagesRunConfig(object):
         packages.
       packages (list[str]|None): The list of packages to install, by default
         install all packages for the target.
+      use_flags (list[str]|None): A list of use flags to set.
     """
     self.event_file = event_file
     self.usepkg = usepkg
     self.install_debug_symbols = install_debug_symbols
     self.packages = packages
+    self.use_flags = use_flags
 
   def GetBuildPackagesArgs(self):
     """Get the build_packages script arguments."""
@@ -129,6 +131,23 @@ class BuildPackagesRunConfig(object):
       args.extend(self.packages)
 
     return args
+
+  def HasUseFlags(self):
+    """Check if we have use flags."""
+    return len(self.use_flags) > 0
+
+  def GetUseFlags(self):
+    """Get the use flags as a single string."""
+    use_flags = self.use_flags
+    if use_flags:
+      # We have use flags to set, but we need to append them to any existing
+      # use flags rather than overwrite them completely.
+      # TODO(saklein) Add config for whether to extend or overwrite?
+      existing_flags = os.environ.get('USE', '').split()
+      existing_flags.extend(use_flags)
+      use_flags = existing_flags
+
+    return ' '.join(use_flags)
 
 
 def SetupBoard(target, accept_licenses=None, run_configs=None):
@@ -276,6 +295,7 @@ def BuildPackages(target, sysroot, run_configs):
   with osutils.TempDir(base_dir='/tmp') as tempdir:
     status_file = os.path.join(tempdir, 'status_file')
     extra_env = {constants.PARALLEL_EMERGE_STATUS_FILE_ENVVAR: status_file}
+
 
     try:
       cros_build_lib.RunCommand(cmd, enter_chroot=True, extra_env=extra_env)

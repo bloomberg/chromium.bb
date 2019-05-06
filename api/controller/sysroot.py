@@ -93,9 +93,10 @@ def InstallPackages(input_proto, output_proto):
   if not target_sysroot.IsToolchainInstalled():
     cros_build_lib.Die('Toolchain must first be installed.')
 
+  use_flags = [u.flag for u in input_proto.use_flags]
   build_packages_config = sysroot.BuildPackagesRunConfig(
       event_file=event_file, usepkg=not compile_source,
-      install_debug_symbols=True, packages=packages)
+      install_debug_symbols=True, packages=packages, use_flags=use_flags)
 
   try:
     sysroot.BuildPackages(build_target, target_sysroot, build_packages_config)

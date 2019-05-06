@@ -282,6 +282,7 @@ class Router(object):
     chroot_args = []
     chroot_path = constants.DEFAULT_CHROOT_PATH
     chroot_field_name = None
+    chroot_extra_env = None
     # Find the Chroot field. Search for the field by type to prevent it being
     # tied to a naming convention.
     for descriptor in input_msg.DESCRIPTOR.fields:
@@ -291,6 +292,7 @@ class Router(object):
         chroot = field
         chroot_path = chroot.path or chroot_path
         chroot_args.extend(self._GetChrootArgs(chroot))
+        chroot_extra_env = self._GetChrootEnv(chroot)
         break
 
     base_dir = os.path.join(chroot_path, 'tmp')
@@ -310,27 +312,11 @@ class Router(object):
       cmd = ['build_api', '%s/%s' % (service_name, method_name),
              '--input-json', chroot_input, '--output-json', chroot_output]
 
-      extra_env = {
-          'FEATURES': 'separatedebug',
-      }
-
-      # TODO(crbug.com/959931): arm64-generic blows up on InstallPackages if
-      #  given the USE flag chrome_internal. Avoid adding the flag for
-      #  arm64-generic. Hack!!! This should be handled by config.
-      build_target = None
-      for descriptor in input_msg.DESCRIPTOR.fields:
-        field = getattr(input_msg, descriptor.name)
-        if isinstance(field, sysroot_pb2.Sysroot):
-          build_target = field.build_target.name
-          break
-      if not build_target == 'arm64-generic':
-        extra_env['USE'] = 'chrome_internal'
-
       try:
         result = cros_build_lib.RunCommand(cmd, enter_chroot=True,
                                            chroot_args=chroot_args,
                                            error_code_ok=True,
-                                           extra_env=extra_env)
+                                           extra_env=chroot_extra_env)
       except cros_build_lib.RunCommandError:
         # A non-zero return code will not result in an error, but one is still
         # thrown when the command cannot be run in the first place. This is
@@ -361,6 +347,20 @@ class Router(object):
       args.extend(['--cache-dir', chroot.cache_dir])
 
     return args
+
+  def _GetChrootEnv(self, chroot):
+    """Get chroot environment variables that need to be set."""
+    use_flags = [u.flag for u in chroot.env.use_flags]
+    features = [f.feature for f in chroot.env.features]
+
+    env = {}
+    if use_flags:
+      env['USE'] = ' '.join(use_flags)
+    if features:
+      # TODO(saklein) Remove the default when fully integrated in recipes.
+      env['FEATURES'] = ' '.join(features) or 'separatedebug'
+
+    return env
 
   def _GetMethod(self, module_name, method_name):
     """Get the implementation of the method for the service module.
