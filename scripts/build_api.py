@@ -312,8 +312,20 @@ class Router(object):
 
       extra_env = {
           'FEATURES': 'separatedebug',
-          'USE': 'chrome_internal',
       }
+
+      # TODO(crbug.com/959931): arm64-generic blows up on InstallPackages if
+      #  given the USE flag chrome_internal. Avoid adding the flag for
+      #  arm64-generic. Hack!!! This should be handled by config.
+      build_target = None
+      for descriptor in input_msg.DESCRIPTOR.fields:
+        field = getattr(input_msg, descriptor.name)
+        if isinstance(field, sysroot_pb2.Sysroot):
+          build_target = field.build_target.name
+          break
+      if not build_target == 'arm64-generic':
+        extra_env['USE'] = 'chrome_internal'
+
       try:
         result = cros_build_lib.RunCommand(cmd, enter_chroot=True,
                                            chroot_args=chroot_args,
