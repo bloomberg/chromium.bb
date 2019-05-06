@@ -152,7 +152,9 @@ public class WebApkActivity extends WebappActivity {
     }
 
     @Override
-    protected void showSplash() {
+    protected void initSplash() {
+        super.initSplash();
+
         // Decide whether to record startup UMA histograms. This is a similar check to the one done
         // in ChromeTabbedActivity.performPreInflationStartup refer to the comment there for why.
         if (!LibraryLoader.getInstance().isInitialized()) {
@@ -166,7 +168,5 @@ public class WebApkActivity extends WebappActivity {
                 addSplashscreenObserver(new WebApkSplashscreenMetrics(shellLaunchTimestampMs));
             }
         }
-
-        super.showSplash();
     }
 }

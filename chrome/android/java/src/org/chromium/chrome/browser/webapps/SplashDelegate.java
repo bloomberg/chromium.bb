@@ -11,7 +11,7 @@ import org.chromium.chrome.browser.tab.Tab;
 /** Delegate for {@link SplashController}. */
 interface SplashDelegate {
     /** Builds the splash view. */
-    View buildSplashView(WebappInfo webappInfo);
+    View buildSplashView();
 
     /**
      * Called when splash screen has been hidden.

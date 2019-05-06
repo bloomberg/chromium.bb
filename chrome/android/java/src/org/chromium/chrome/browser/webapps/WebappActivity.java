@@ -25,7 +25,6 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
-import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -139,7 +138,8 @@ public class WebappActivity extends SingleTabActivity {
         mWebappInfo = createWebappInfo(null);
         mDirectoryManager = new WebappDirectoryManager();
         mTabObserverRegistrar = new TabObserverRegistrar(getLifecycleDispatcher());
-        mSplashController = new SplashController(mTabObserverRegistrar);
+        mSplashController =
+                new SplashController(this, getLifecycleDispatcher(), mTabObserverRegistrar);
         mDisclosureSnackbarController = new WebappDisclosureSnackbarController();
     }
 
@@ -311,7 +311,7 @@ public class WebappActivity extends SingleTabActivity {
             enterImmersiveMode();
         }
 
-        showSplash();
+        initSplash();
     }
 
     @Override
@@ -885,17 +885,14 @@ public class WebappActivity extends SingleTabActivity {
         return false;
     }
 
-    /** Shows the splash screen. */
-    protected void showSplash() {
-        try (TraceEvent te = TraceEvent.scoped("WebappActivity.showSplash")) {
-            ViewGroup contentView = (ViewGroup) findViewById(android.R.id.content);
-            SplashDelegate delegate = mWebappInfo.isSplashProvidedByWebApk()
-                    ? new ProvidedByWebApkSplashDelegate()
-                    : new SameActivityWebappSplashDelegate(
-                            this, getLifecycleDispatcher(), mTabObserverRegistrar);
-
-            mSplashController.showSplash(delegate, contentView, mWebappInfo);
-        }
+    /** Inits the splash screen */
+    protected void initSplash() {
+        SplashDelegate delegate = mWebappInfo.isSplashProvidedByWebApk()
+                ? new ProvidedByWebApkSplashDelegate(mWebappInfo)
+                : new SameActivityWebappSplashDelegate(
+                        this, getLifecycleDispatcher(), mTabObserverRegistrar, mWebappInfo);
+        // Splash screen is shown after preInflationStartup() is run and the delegate is set.
+        mSplashController.setDelegate(delegate);
     }
 
     /**

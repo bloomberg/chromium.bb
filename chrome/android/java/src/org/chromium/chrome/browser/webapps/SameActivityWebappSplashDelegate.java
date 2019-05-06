@@ -49,18 +49,17 @@ public class SameActivityWebappSplashDelegate implements SplashDelegate, NativeI
 
     public SameActivityWebappSplashDelegate(Activity activity,
             ActivityLifecycleDispatcher lifecycleDispatcher,
-            TabObserverRegistrar tabObserverRegistrar) {
+            TabObserverRegistrar tabObserverRegistrar, WebappInfo webappInfo) {
         mActivity = activity;
         mLifecycleDispatcher = lifecycleDispatcher;
         mTabObserverRegistrar = tabObserverRegistrar;
+        mWebappInfo = webappInfo;
 
         mLifecycleDispatcher.register(this);
     }
 
     @Override
-    public View buildSplashView(WebappInfo webappInfo) {
-        mWebappInfo = webappInfo;
-
+    public View buildSplashView() {
         if (mWebappInfo.isForWebApk()) {
             mWebApkNetworkErrorObserver =
                     new WebApkSplashNetworkErrorObserver(mActivity, mWebappInfo.name());
@@ -68,29 +67,29 @@ public class SameActivityWebappSplashDelegate implements SplashDelegate, NativeI
         }
 
         Context context = ContextUtils.getApplicationContext();
-        final int backgroundColor = ColorUtils.getOpaqueColor(webappInfo.backgroundColor(
+        final int backgroundColor = ColorUtils.getOpaqueColor(mWebappInfo.backgroundColor(
                 ApiCompatibilityUtils.getColor(context.getResources(), R.color.webapp_default_bg)));
 
         ViewGroup splashScreen = new FrameLayout(context);
         splashScreen.setBackgroundColor(backgroundColor);
 
-        if (webappInfo.isForWebApk()) {
-            initializeLayout(webappInfo, splashScreen, backgroundColor,
-                    ((WebApkInfo) webappInfo).splashIcon());
+        if (mWebappInfo.isForWebApk()) {
+            initializeLayout(
+                    splashScreen, backgroundColor, ((WebApkInfo) mWebappInfo).splashIcon());
             return splashScreen;
         }
 
         WebappDataStorage storage =
-                WebappRegistry.getInstance().getWebappDataStorage(webappInfo.id());
+                WebappRegistry.getInstance().getWebappDataStorage(mWebappInfo.id());
         if (storage == null) {
-            initializeLayout(webappInfo, splashScreen, backgroundColor, null);
+            initializeLayout(splashScreen, backgroundColor, null);
             return splashScreen;
         }
 
         storage.getSplashScreenImage(new WebappDataStorage.FetchCallback<Bitmap>() {
             @Override
             public void onDataRetrieved(Bitmap splashImage) {
-                initializeLayout(webappInfo, splashScreen, backgroundColor, splashImage);
+                initializeLayout(splashScreen, backgroundColor, splashImage);
             }
         });
         return splashScreen;
@@ -129,8 +128,7 @@ public class SameActivityWebappSplashDelegate implements SplashDelegate, NativeI
     }
 
     /** Sets the splash screen layout and sets the splash screen's title and icon. */
-    private void initializeLayout(WebappInfo webappInfo, ViewGroup splashScreen,
-            int backgroundColor, Bitmap splashImage) {
+    private void initializeLayout(ViewGroup splashScreen, int backgroundColor, Bitmap splashImage) {
         Context context = ContextUtils.getApplicationContext();
         Resources resources = context.getResources();
 
@@ -138,20 +136,19 @@ public class SameActivityWebappSplashDelegate implements SplashDelegate, NativeI
         boolean selectedIconGenerated = false;
         boolean selectedIconAdaptive = false;
         if (selectedIcon == null) {
-            selectedIcon = webappInfo.icon();
-            selectedIconGenerated = webappInfo.isIconGenerated();
-            selectedIconAdaptive = webappInfo.isIconAdaptive();
+            selectedIcon = mWebappInfo.icon();
+            selectedIconGenerated = mWebappInfo.isIconGenerated();
+            selectedIconAdaptive = mWebappInfo.isIconAdaptive();
         }
         @SplashLayout.IconClassification
         int selectedIconClassification = SplashLayout.classifyIcon(
                 context.getResources(), selectedIcon, selectedIconGenerated);
 
         SplashLayout.createLayout(context, splashScreen, selectedIcon, selectedIconAdaptive,
-                selectedIconClassification, webappInfo.name(),
+                selectedIconClassification, mWebappInfo.name(),
                 ColorUtils.shouldUseLightForegroundOnBackground(backgroundColor));
 
-        recordUma(resources, webappInfo, selectedIconClassification, selectedIcon,
-                (splashImage != null));
+        recordUma(resources, selectedIconClassification, selectedIcon, (splashImage != null));
     }
 
     /** Called once the splash screen is hidden to record UMA metrics. */
@@ -167,20 +164,19 @@ public class SameActivityWebappSplashDelegate implements SplashDelegate, NativeI
     /**
      * Records splash screen UMA metrics.
      * @param resources
-     * @param webappInfo
      * @param selectedIconClassification.
      * @param selectedIcon The icon used on the splash screen.
      * @param usingDedicatedIcon Whether the PWA provides different icons for the splash screen and
      *                           for the app icon.
      */
-    private void recordUma(Resources resources, WebappInfo webappInfo,
+    private void recordUma(Resources resources,
             @SplashLayout.IconClassification int selectedIconClassification, Bitmap selectedIcon,
             boolean usingDedicatedIcon) {
         mUmaCache = new SameActivityWebappUmaCache();
-        mUmaCache.recordSplashscreenBackgroundColor(webappInfo.hasValidBackgroundColor()
+        mUmaCache.recordSplashscreenBackgroundColor(mWebappInfo.hasValidBackgroundColor()
                         ? SameActivityWebappUmaCache.SplashColorStatus.CUSTOM
                         : SameActivityWebappUmaCache.SplashColorStatus.DEFAULT);
-        mUmaCache.recordSplashscreenThemeColor(webappInfo.hasValidThemeColor()
+        mUmaCache.recordSplashscreenThemeColor(mWebappInfo.hasValidThemeColor()
                         ? SameActivityWebappUmaCache.SplashColorStatus.CUSTOM
                         : SameActivityWebappUmaCache.SplashColorStatus.DEFAULT);
 

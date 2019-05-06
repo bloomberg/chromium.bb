@@ -21,12 +21,18 @@ import org.chromium.webapk.lib.common.WebApkCommonUtils;
 
 /** Delegate which uses splash screen screenshot from the WebAPK's content provider. */
 public class ProvidedByWebApkSplashDelegate implements SplashDelegate {
+    private WebappInfo mWebappInfo;
+
+    public ProvidedByWebApkSplashDelegate(WebappInfo webappInfo) {
+        mWebappInfo = webappInfo;
+    }
+
     @Override
-    public View buildSplashView(WebappInfo webappInfo) {
+    public View buildSplashView() {
         Context appContext = ContextUtils.getApplicationContext();
         ImageView splashView = new ImageView(appContext);
-        int backgroundColor =
-                ColorUtils.getOpaqueColor(webappInfo.backgroundColor(ApiCompatibilityUtils.getColor(
+        int backgroundColor = ColorUtils.getOpaqueColor(
+                mWebappInfo.backgroundColor(ApiCompatibilityUtils.getColor(
                         appContext.getResources(), R.color.webapp_default_bg)));
         splashView.setBackgroundColor(backgroundColor);
 
@@ -34,7 +40,7 @@ public class ProvidedByWebApkSplashDelegate implements SplashDelegate {
         try (StrictModeContext smc = StrictModeContext.allowDiskReads()) {
             splashBitmap = FileUtils.queryBitmapFromContentProvider(appContext,
                     Uri.parse(WebApkCommonUtils.generateSplashContentProviderUri(
-                            webappInfo.webApkPackageName())));
+                            mWebappInfo.webApkPackageName())));
         }
         if (splashBitmap != null) {
             splashView.setScaleType(ImageView.ScaleType.FIT_CENTER);

@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.webapps;
 
+import android.app.Activity;
 import android.os.SystemClock;
 import android.support.annotation.IntDef;
 import android.view.View;
@@ -15,6 +16,8 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.compositor.CompositorView;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserverRegistrar;
@@ -23,7 +26,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /** Shows and hides splash screen. */
-public class SplashController extends EmptyTabObserver {
+public class SplashController extends EmptyTabObserver implements InflationObserver {
     private static class SingleShotOnDrawListener implements ViewTreeObserver.OnDrawListener {
         private final View mView;
         private final Runnable mAction;
@@ -61,7 +64,10 @@ public class SplashController extends EmptyTabObserver {
         int NUM_ENTRIES = 4;
     }
 
+    private final ActivityLifecycleDispatcher mLifecycleDispatcher;
     private final TabObserverRegistrar mTabObserverRegistrar;
+
+    private final Activity mActivity;
 
     private SplashDelegate mDelegate;
 
@@ -69,6 +75,8 @@ public class SplashController extends EmptyTabObserver {
     private ViewGroup mParentView;
 
     private View mSplashView;
+
+    private boolean mDidPreInflationStartup;
 
     /** Whether the splash hide animation was started. */
     private boolean mWasSplashHideAnimationStarted;
@@ -78,21 +86,22 @@ public class SplashController extends EmptyTabObserver {
 
     private ObserverList<SplashscreenObserver> mObservers;
 
-    public SplashController(TabObserverRegistrar tabObserverRegistrar) {
+    public SplashController(Activity activity, ActivityLifecycleDispatcher lifecycleDispatcher,
+            TabObserverRegistrar tabObserverRegistrar) {
+        mActivity = activity;
+        mLifecycleDispatcher = lifecycleDispatcher;
         mTabObserverRegistrar = tabObserverRegistrar;
-        mTabObserverRegistrar.registerTabObserver(this);
         mObservers = new ObserverList<>();
+
+        mLifecycleDispatcher.register(this);
+        mTabObserverRegistrar.registerTabObserver(this);
     }
 
-    /** Shows the splash screen. */
-    public void showSplash(
-            SplashDelegate delegate, ViewGroup parentView, final WebappInfo webappInfo) {
+    public void setDelegate(SplashDelegate delegate) {
         mDelegate = delegate;
-        mParentView = parentView;
-        mSplashShownTimestamp = SystemClock.elapsedRealtime();
-
-        mSplashView = mDelegate.buildSplashView(webappInfo);
-        mParentView.addView(mSplashView);
+        if (mDidPreInflationStartup) {
+            showSplash();
+        }
     }
 
     /**
@@ -110,6 +119,17 @@ public class SplashController extends EmptyTabObserver {
     View getSplashScreenForTests() {
         return mSplashView;
     }
+
+    @Override
+    public void onPreInflationStartup() {
+        mDidPreInflationStartup = true;
+        if (mDelegate != null) {
+            showSplash();
+        }
+    }
+
+    @Override
+    public void onPostInflationStartup() {}
 
     @Override
     public void didFirstVisuallyNonEmptyPaint(Tab tab) {
@@ -137,7 +157,16 @@ public class SplashController extends EmptyTabObserver {
         hideSplash(tab, SplashHidesReason.CRASH);
     }
 
-    protected boolean canHideSplashScreen() {
+    private void showSplash() {
+        mSplashShownTimestamp = SystemClock.elapsedRealtime();
+        try (TraceEvent te = TraceEvent.scoped("SplashScreen.build")) {
+            mSplashView = mDelegate.buildSplashView();
+        }
+        mParentView = (ViewGroup) mActivity.findViewById(android.R.id.content);
+        mParentView.addView(mSplashView);
+    }
+
+    private boolean canHideSplashScreen() {
         return !mDelegate.shouldWaitForSubsequentPageLoadToHideSplash();
     }
 
@@ -183,6 +212,8 @@ public class SplashController extends EmptyTabObserver {
         assert mSplashShownTimestamp != 0;
         mDelegate.onSplashHidden(tab, reason, mSplashShownTimestamp, splashHiddenTimestamp);
         notifySplashscreenHidden(mSplashShownTimestamp, splashHiddenTimestamp);
+
+        mLifecycleDispatcher.unregister(this);
 
         mDelegate = null;
         mSplashView = null;
