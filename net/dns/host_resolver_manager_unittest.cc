@@ -4939,6 +4939,20 @@ TEST_F(HostResolverManagerDnsTest,
               testing::ElementsAre(CreateExpected("192.168.0.3", 80)));
 }
 
+// When explicitly requesting source=DNS, no fallback allowed, so doing so with
+// DnsClient disabled should result in an error.
+TEST_F(HostResolverManagerDnsTest, DnsCallsWithDisabledDnsClient) {
+  resolver_->SetDnsClientEnabled(false);
+
+  HostResolver::ResolveHostParameters params;
+  params.source = HostResolverSource::DNS;
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("host", 80), NetLogWithSource(), params,
+      request_context_.get(), host_cache_.get()));
+
+  EXPECT_THAT(response.result_error(), IsError(ERR_FAILED));
+}
+
 TEST_F(HostResolverManagerDnsTest, NoIPv6OnWifi) {
   // CreateSerialResolver will destroy the current resolver_ which will attempt
   // to remove itself from the NetworkChangeNotifier. If this happens after a

@@ -1019,7 +1019,6 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
         num_completed_transactions_(0),
         tick_clock_(tick_clock),
         task_start_time_(tick_clock_->NowTicks()) {
-    DCHECK(client);
     DCHECK(delegate_);
   }
 
@@ -1034,6 +1033,7 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
   }
 
   void StartFirstTransaction() {
+    DCHECK(client_);
     DCHECK_EQ(0u, num_completed_transactions_);
     DCHECK(!transaction1_);
 
@@ -1047,6 +1047,7 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
   }
 
   void StartSecondTransaction() {
+    DCHECK(client_);
     DCHECK(needs_another_transaction());
     transaction2_ = CreateTransaction(DnsQueryType::AAAA);
     transaction2_->Start();
@@ -1061,6 +1062,7 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
 
   std::unique_ptr<DnsTransaction> CreateTransaction(
       DnsQueryType dns_query_type) {
+    DCHECK(client_);
     DCHECK_NE(DnsQueryType::UNSPECIFIED, dns_query_type);
     SecureDnsMode secure_dns_mode = SecureDnsMode::AUTOMATIC;
     // Downgrade to OFF mode if the query name for this attempt matches one of
