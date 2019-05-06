@@ -5,13 +5,9 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/files/file_path.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/optional.h"
-#include "base/path_service.h"
 #include "base/strings/string_piece.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
@@ -20,13 +16,13 @@
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/chromeos/login/test/user_policy_mixin.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/encryption_migration_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/dbus/constants/dbus_paths.h"
 #include "chromeos/dbus/cryptohome/account_identifier_operators.h"
 #include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
@@ -35,7 +31,6 @@
 #include "chromeos/login/auth/stub_authenticator_builder.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/account_id/account_id.h"
-#include "components/policy/core/common/cloud/policy_builder.h"
 #include "third_party/cros_system_api/dbus/cryptohome/dbus-constants.h"
 
 namespace chromeos {
@@ -61,20 +56,10 @@ class EncryptionMigrationTest : public MixinBasedInProcessBrowserTest {
                                     "officially-supported");
   }
 
-  void SetUpInProcessBrowserTestFixture() override {
-    // SessionManagerClient has to be in-memory to support setting sessionless
-    // user policy blob.
-    chromeos::SessionManagerClient::InitializeFakeInMemory();
-
-    MixinBasedInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
-  }
-
   void SetUpOnMainThread() override {
     MixinBasedInProcessBrowserTest::SetUpOnMainThread();
 
     FakeCryptohomeClient::Get()->set_run_default_dircrypto_migration(false);
-
-    InitializeTestUserPolicyKey();
 
     // Initialize OOBE UI, and configure encryption migration screen handler for
     // test.
@@ -107,21 +92,10 @@ class EncryptionMigrationTest : public MixinBasedInProcessBrowserTest {
 
   void SetUpEncryptionMigrationActionPolicy(
       arc::policy_util::EcryptfsMigrationAction action) {
-    policy_builder_.payload().mutable_ecryptfsmigrationstrategy()->set_value(
+    std::unique_ptr<UserPolicyMixin::ScopedPolicyUpdate> updater =
+        user_policy_mixin_.RequestCachedPolicyUpdate();
+    updater->policy_payload()->mutable_ecryptfsmigrationstrategy()->set_value(
         static_cast<int>(action));
-    policy_builder_.policy_data().set_username(
-        test_user_.account_id.GetUserEmail());
-    policy_builder_.policy_data().set_gaia_id(
-        test_user_.account_id.GetGaiaId());
-    policy_builder_.Build();
-
-    // The pre-login policy fetcher will first check the cached policy, and then
-    // the policy server. If not set up, the server request will fail by
-    // default, and the policy fetcher will fall back to the cached policy -
-    // this is good enough for these tests, so not bothering setting up the
-    // policy test server.
-    FakeSessionManagerClient::Get()->set_user_policy_without_session(
-        GetTestCryptohomeId(), policy_builder_.GetBlob());
   }
 
   // Verifies that an element within "encryption-migration-element" DOM is
@@ -219,39 +193,16 @@ class EncryptionMigrationTest : public MixinBasedInProcessBrowserTest {
  private:
   int64_t GetFreeSpace() const { return free_space_; }
 
-  // Creates and stores the test user's policy key blob.
-  void InitializeTestUserPolicyKey() {
-    base::FilePath policy_key_dir;
-    ASSERT_TRUE(base::PathService::Get(
-        chromeos::dbus_paths::DIR_USER_POLICY_KEYS, &policy_key_dir));
-    const std::string sanitized_username =
-        chromeos::CryptohomeClient::GetStubSanitizedUsername(
-            GetTestCryptohomeId());
-    base::FilePath user_policy_key_path =
-        policy_key_dir.AppendASCII(sanitized_username)
-            .AppendASCII("policy.pub");
-
-    std::string public_key = policy_builder_.GetPublicSigningKeyAsString();
-    {
-      base::ScopedAllowBlockingForTesting allow_blocking;
-      ASSERT_TRUE(base::CreateDirectory(user_policy_key_path.DirName()));
-      ASSERT_EQ(static_cast<int>(public_key.size()),
-                base::WriteFile(user_policy_key_path, public_key.data(),
-                                public_key.size()));
-    }
-  }
-
   // Encryption migration requires at least 50 MB - set the default reported
   // free space to an arbitrary amount above that limit.
   int64_t free_space_ = 200 * 1024 * 1024;
 
   base::SimpleTestTickClock tick_clock_;
 
-  policy::UserPolicyBuilder policy_builder_;
-
   const LoginManagerMixin::TestUserInfo test_user_{
       AccountId::FromUserEmailGaiaId("user@gmail.com", "user")};
   LoginManagerMixin login_manager_{&mixin_host_, {test_user_}};
+  UserPolicyMixin user_policy_mixin_{&mixin_host_, test_user_.account_id};
 };
 
 IN_PROC_BROWSER_TEST_F(EncryptionMigrationTest, SkipWithNoPolicySet) {

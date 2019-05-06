@@ -1931,6 +1931,8 @@ test("browser_tests") {
         "../browser/chromeos/login/test/session_flags_manager.h",
         "../browser/chromeos/login/test/session_manager_state_waiter.cc",
         "../browser/chromeos/login/test/session_manager_state_waiter.h",
+        "../browser/chromeos/login/test/user_policy_mixin.cc",
+        "../browser/chromeos/login/test/user_policy_mixin.h",
         "../browser/chromeos/login/ui/captive_portal_window_browsertest.cc",
         "../browser/chromeos/login/ui/login_feedback_browsertest.cc",
         "../browser/chromeos/login/ui/login_web_dialog_browsertest.cc",

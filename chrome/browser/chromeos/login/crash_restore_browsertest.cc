@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager_test_api.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
+#include "chrome/browser/chromeos/login/test/user_policy_mixin.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -29,17 +30,14 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/dbus/constants/dbus_paths.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/account_id/account_id.h"
-#include "components/policy/core/common/cloud/policy_builder.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
-#include "content/public/test/test_launcher.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -270,44 +268,11 @@ class CrashRestoreChildUserTest : public MixinBasedInProcessBrowserTest {
   ~CrashRestoreChildUserTest() override = default;
 
   // MixinBasedInProcessBrowserTest:
-  void SetUpInProcessBrowserTestFixture() override {
-    // SessionManagerClient has to be in-memory to support setting sessionless
-    // user policy blob.
-    chromeos::SessionManagerClient::InitializeFakeInMemory();
-    MixinBasedInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
-  }
-
-  void CreatedBrowserMainParts(
-      content::BrowserMainParts* browser_main_parts) override {
-    MixinBasedInProcessBrowserTest::CreatedBrowserMainParts(browser_main_parts);
-
-    base::FilePath user_keys_dir;
-    ASSERT_TRUE(base::PathService::Get(
-        chromeos::dbus_paths::DIR_USER_POLICY_KEYS, &user_keys_dir));
-    std::string sanitized_username =
-        chromeos::CryptohomeClient::GetStubSanitizedUsername(
-            cryptohome::CreateAccountIdentifierFromAccountId(
-                test_user_.account_id));
-
-    base::FilePath user_key_file =
-        user_keys_dir.AppendASCII(sanitized_username).AppendASCII("policy.pub");
-
-    const std::string user_key_bits =
-        user_policy_.GetPublicSigningKeyAsString();
-    ASSERT_FALSE(user_key_bits.empty());
-    ASSERT_TRUE(base::CreateDirectory(user_key_file.DirName()));
-    ASSERT_EQ(base::checked_cast<int>(user_key_bits.length()),
-              base::WriteFile(user_key_file, user_key_bits.data(),
-                              user_key_bits.length()));
-
-    user_policy_.policy_data().set_username(
-        test_user_.account_id.GetUserEmail());
-    user_policy_.policy_data().set_gaia_id(test_user_.account_id.GetGaiaId());
-    user_policy_.Build();
-
-    FakeSessionManagerClient::Get()->set_user_policy(
-        cryptohome::CreateAccountIdentifierFromAccountId(test_user_.account_id),
-        user_policy_.GetBlob());
+  void SetUp() override {
+    // Child users require a user policy, set up an empty one so the user can
+    // get through login.
+    ASSERT_TRUE(user_policy_mixin_.RequestCachedPolicyUpdate());
+    MixinBasedInProcessBrowserTest::SetUp();
   }
 
   const LoginManagerMixin::TestUserInfo test_user_{
@@ -315,8 +280,7 @@ class CrashRestoreChildUserTest : public MixinBasedInProcessBrowserTest {
       user_manager::USER_TYPE_CHILD};
 
   LoginManagerMixin login_manager_{&mixin_host_, {test_user_}};
-
-  policy::UserPolicyBuilder user_policy_;
+  UserPolicyMixin user_policy_mixin_{&mixin_host_, test_user_.account_id};
 };
 
 IN_PROC_BROWSER_TEST_F(CrashRestoreChildUserTest, PRE_SessionRestore) {
