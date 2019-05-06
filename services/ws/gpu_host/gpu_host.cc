@@ -27,7 +27,6 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/cpp/system/platform_handle.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "services/viz/privileged/interfaces/viz_main.mojom.h"
 #include "services/viz/public/interfaces/constants.mojom.h"
 #include "services/ws/gpu_host/gpu_host_delegate.h"
@@ -91,7 +90,6 @@ GpuClientDelegate::GetGpuMemoryBufferManager() {
 }  // namespace
 
 GpuHost::GpuHost(GpuHostDelegate* delegate,
-                 service_manager::Connector* connector,
                  discardable_memory::DiscardableSharedMemoryManager*
                      discardable_shared_memory_manager)
     : delegate_(delegate),
@@ -104,25 +102,16 @@ GpuHost::GpuHost(GpuHostDelegate* delegate,
   viz::GpuHostImpl::InitFontRenderParams(
       gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), nullptr));
 
-  bool in_process = !connector || !features::IsMashOopVizEnabled();
-
   viz::mojom::VizMainPtr viz_main_ptr;
-  if (in_process) {
-    // TODO(crbug.com/912221): This goes away after the gpu process split in
-    // mash.
-    gpu_thread_.Start();
-    gpu_thread_.task_runner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&GpuHost::InitializeVizMain, base::Unretained(this),
-                       base::Passed(MakeRequest(&viz_main_ptr))));
-  } else {
-    connector->BindInterface(viz::mojom::kVizServiceName,
-                             MakeRequest(&viz_main_ptr));
-  }
+  gpu_thread_.Start();
+  gpu_thread_.task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&GpuHost::InitializeVizMain, base::Unretained(this),
+                     base::Passed(MakeRequest(&viz_main_ptr))));
 
   viz::GpuHostImpl::InitParams params;
   params.restart_id = viz::BeginFrameSource::kNotRestartableId + 1;
-  params.in_process = in_process;
+  params.in_process = true;
   params.disable_gpu_shader_disk_cache =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableGpuShaderDiskCache);

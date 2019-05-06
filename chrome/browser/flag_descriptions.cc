@@ -3169,11 +3169,6 @@ const char kLockScreenNotificationName[] = "Lock screen notification";
 const char kLockScreenNotificationDescription[] =
     "Enable notifications on the lock screen.";
 
-const char kMashOopVizName[] = "Out-of-process viz for mash";
-const char kMashOopVizDescription[] =
-    "Runs viz in a separate process when mash is enabled (otherwise viz would "
-    "run in ash process)";
-
 const char kMediaSessionNotificationsName[] = "Media session notifications";
 const char kMediaSessionNotificationsDescription[] =
     "Shows notifications for media sessions showing the currently playing "
@@ -3231,12 +3226,6 @@ const char kShowTouchHudDescription[] =
     "Shows a trail of colored dots for the last few touch points. Pressing "
     "Ctrl-Alt-I shows a heads-up display view in the top-left corner. Helps "
     "debug hardware issues that generate spurious touch events.";
-
-const char kSingleProcessMashName[] =
-    "In-process window service (SingleProcessMash)";
-const char kSingleProcessMashDescription[] =
-    "Runs the system UI (ash) as a mojo service, but inside the browser "
-    "process. The browser uses the mojo window service (ws) APIs.";
 
 const char kMojoImfName[] = "Mojo-based IMF to bridge the client and IME";
 const char kMojoImfDescription[] =
@@ -3305,11 +3294,6 @@ const char kUsbguardDescription[] =
     "Prevents newly connected USB devices from operating at the lock screen"
     " until Chrome OS is unlocked to protect against malicious USB devices."
     " Already connected USB devices will continue to function.";
-
-const char kUseMashName[] = "Out-of-process system UI (mash)";
-const char kUseMashDescription[] =
-    "Runs the mojo UI service (mus) and the ash window manager and system UI "
-    "in a separate process.";
 
 const char kUserActivityPredictionMlServiceName[] =
     "ML Service Smart Dim model";

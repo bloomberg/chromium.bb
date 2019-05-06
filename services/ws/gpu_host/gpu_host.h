@@ -29,10 +29,6 @@ namespace gpu {
 class ShaderCacheFactory;
 }
 
-namespace service_manager {
-class Connector;
-}
-
 namespace viz {
 class GpuClient;
 class GpuHostImpl;
@@ -49,7 +45,6 @@ class GpuHostDelegate;
 class GpuHost : public viz::GpuHostImpl::Delegate {
  public:
   GpuHost(GpuHostDelegate* delegate,
-          service_manager::Connector* connector,
           discardable_memory::DiscardableSharedMemoryManager*
               discardable_shared_memory_manager);
   ~GpuHost() override;

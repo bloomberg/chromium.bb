@@ -140,7 +140,7 @@ void GpuHostTest::ShutdownHost() {
 
 void GpuHostTest::SetUp() {
   testing::Test::SetUp();
-  gpu_host_ = std::make_unique<GpuHost>(&gpu_host_delegate_, nullptr,
+  gpu_host_ = std::make_unique<GpuHost>(&gpu_host_delegate_,
                                         &discardable_memory_manager_);
   viz::mojom::GpuServicePtr gpu_service_ptr;
   gpu_service_->Bind(mojo::MakeRequest(&gpu_service_ptr));

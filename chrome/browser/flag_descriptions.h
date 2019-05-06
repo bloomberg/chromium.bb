@@ -1911,9 +1911,6 @@ extern const char kListAllDisplayModesDescription[];
 extern const char kLockScreenNotificationName[];
 extern const char kLockScreenNotificationDescription[];
 
-extern const char kMashOopVizName[];
-extern const char kMashOopVizDescription[];
-
 extern const char kMediaSessionNotificationsName[];
 extern const char kMediaSessionNotificationsDescription[];
 
@@ -1949,9 +1946,6 @@ extern const char kShowTapsDescription[];
 
 extern const char kShowTouchHudName[];
 extern const char kShowTouchHudDescription[];
-
-extern const char kSingleProcessMashName[];
-extern const char kSingleProcessMashDescription[];
 
 extern const char kSmartTextSelectionName[];
 extern const char kSmartTextSelectionDescription[];
@@ -1989,9 +1983,6 @@ extern const char kUnfilteredBluetoothDevicesDescription[];
 
 extern const char kUsbguardName[];
 extern const char kUsbguardDescription[];
-
-extern const char kUseMashName[];
-extern const char kUseMashDescription[];
 
 extern const char kUseMonitorColorSpaceName[];
 extern const char kUseMonitorColorSpaceDescription[];

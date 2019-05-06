@@ -234,8 +234,7 @@ void TestWindowService::CreateGpuHost() {
       std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();
 
   gpu_host_ = std::make_unique<gpu_host::GpuHost>(
-      this, service_binding_.GetConnector(),
-      discardable_shared_memory_manager_.get());
+      this, discardable_shared_memory_manager_.get());
 
   gpu_interface_provider_ = std::make_unique<TestGpuInterfaceProvider>(
       gpu_host_.get(), discardable_shared_memory_manager_.get());

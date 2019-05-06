@@ -2223,16 +2223,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "mash",
-    "owners": [ "mustash-team@google.com" ],
-    "expiry_milestone": 79
-  },
-  {
-    "name": "mash-oop-viz",
-    "owners": [ "mustash-team@google.com" ],
-    "expiry_milestone": 74
-  },
-  {
     "name": "media-router-cast-allow-all-ips",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
@@ -2822,11 +2812,6 @@
   {
     "name": "simplify-https-indicator",
     "owners": [ "cthomp", "estark" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "single-process-mash",
-    "owners": [ "mustash-team@google.com" ],
     "expiry_milestone": 76
   },
   {

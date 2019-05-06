@@ -699,11 +699,6 @@ ServiceManagerContext::ServiceManagerContext(
 #endif  // BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 #endif
 
-  if (features::IsMultiProcessMash() && features::IsMashOopVizEnabled()) {
-    out_of_process_services[viz::mojom::kVizServiceName] =
-        base::BindRepeating(&base::ASCIIToUTF16, "Visuals Service");
-  }
-
   for (const auto& service : out_of_process_services) {
     packaged_services_connection_->AddServiceRequestHandlerWithCallback(
         service.first,
