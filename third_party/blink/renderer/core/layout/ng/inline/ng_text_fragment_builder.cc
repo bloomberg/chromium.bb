@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_text_fragment_builder.h"
 
+#include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item_result.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_height_metrics.h"
@@ -56,6 +57,21 @@ void NGTextFragmentBuilder::SetText(
   shape_result_ = std::move(shape_result);
   layout_object_ = layout_object;
   end_effect_ = NGTextEndEffect::kNone;
+}
+
+bool NGTextFragmentBuilder::IsGeneratedText() const {
+  if (UNLIKELY(style_variant_ == NGStyleVariant::kEllipsis ||
+               text_type_ == NGPhysicalTextFragment::kGeneratedText))
+    return true;
+
+  DCHECK(layout_object_);
+  if (const auto* layout_text_fragment =
+          ToLayoutTextFragmentOrNull(layout_object_)) {
+    return !layout_text_fragment->AssociatedTextNode();
+  }
+
+  const Node* node = layout_object_->GetNode();
+  return !node || node->IsPseudoElement();
 }
 
 scoped_refptr<const NGPhysicalTextFragment>

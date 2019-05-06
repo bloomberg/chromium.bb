@@ -13,29 +13,6 @@
 
 namespace blink {
 
-namespace {
-
-// Create the style to use for the ellipsis characters.
-//
-// The ellipsis is styled according to the line style.
-// https://drafts.csswg.org/css-ui/#ellipsing-details
-scoped_refptr<const ComputedStyle> CreateEllipsisStyle(
-    scoped_refptr<const ComputedStyle> line_style) {
-  if (line_style->TextDecorationsInEffect() == TextDecoration::kNone)
-    return line_style;
-
-  // Ellipsis should not have text decorations. Reset if it's set.
-  // This is not defined, but 4 impls do this.
-  scoped_refptr<ComputedStyle> ellipsis_style =
-      ComputedStyle::CreateAnonymousStyleWithDisplay(*line_style,
-                                                     EDisplay::kInline);
-  ellipsis_style->ResetTextDecoration();
-  ellipsis_style->ClearAppliedTextDecorations();
-  return ellipsis_style;
-}
-
-}  // namespace
-
 NGLineTruncator::NGLineTruncator(NGInlineNode& node,
                                  const NGLineInfo& line_info)
     : node_(node),
@@ -47,8 +24,9 @@ LayoutUnit NGLineTruncator::TruncateLine(
     LayoutUnit line_width,
     NGLineBoxFragmentBuilder::ChildList* line_box) {
   // Shape the ellipsis and compute its inline size.
-  scoped_refptr<const ComputedStyle> ellipsis_style =
-      CreateEllipsisStyle(line_style_);
+  // The ellipsis is styled according to the line style.
+  // https://drafts.csswg.org/css-ui/#ellipsing-details
+  const ComputedStyle* ellipsis_style = line_style_.get();
   const Font& font = ellipsis_style->GetFont();
   const SimpleFontData* font_data = font.PrimaryFont();
   DCHECK(font_data);

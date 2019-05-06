@@ -282,7 +282,16 @@ const ComputedStyle& NGPhysicalFragment::Style() const {
       DCHECK(GetLayoutObject());
       return *GetLayoutObject()->FirstLineStyle();
     case NGStyleVariant::kEllipsis:
-      return To<NGPhysicalTextFragment>(this)->Style();
+      DCHECK_EQ(Type(), kFragmentText);
+      DCHECK_EQ(StyleVariant(), NGStyleVariant::kEllipsis);
+      DCHECK(GetLayoutObject());
+      // The ellipsis is styled according to the line style.
+      // https://drafts.csswg.org/css-ui/#ellipsing-details
+      // Use first-line style if exists since most cases it is the first line.
+      // TODO(kojii): Should determine if it's really in the first line.
+      if (LayoutObject* block = GetLayoutObject()->ContainingBlock())
+        return block->FirstLineStyleRef();
+      return GetLayoutObject()->FirstLineStyleRef();
   }
   NOTREACHED();
   return *GetLayoutObject()->Style();

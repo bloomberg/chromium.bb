@@ -20,7 +20,7 @@ namespace blink {
 namespace {
 
 struct SameSizeAsNGPhysicalTextFragment : NGPhysicalFragment {
-  void* pointers[3];
+  void* pointers[2];
   unsigned offsets[2];
   PhysicalRect rect;
 };
@@ -28,16 +28,6 @@ struct SameSizeAsNGPhysicalTextFragment : NGPhysicalFragment {
 static_assert(sizeof(NGPhysicalTextFragment) ==
                   sizeof(SameSizeAsNGPhysicalTextFragment),
               "NGPhysicalTextFragment should stay small");
-
-inline bool IsPhysicalTextFragmentAnonymousText(
-    const LayoutObject* layout_object) {
-  if (!layout_object)
-    return false;
-  if (layout_object->IsText() && ToLayoutText(layout_object)->IsTextFragment())
-    return !ToLayoutTextFragment(layout_object)->AssociatedTextNode();
-  const Node* node = layout_object->GetNode();
-  return !node || node->IsPseudoElement();
-}
 
 NGLineOrientation ToLineOrientation(WritingMode writing_mode) {
   switch (writing_mode) {
@@ -76,9 +66,8 @@ NGPhysicalTextFragment::NGPhysicalTextFragment(
   DCHECK_GE(start_offset_, source.StartOffset());
   DCHECK_LE(end_offset_, source.EndOffset());
   DCHECK(shape_result_ || IsFlowControl()) << ToString();
-  DCHECK(!source.style_);
   line_orientation_ = source.line_orientation_;
-  is_anonymous_text_ = source.is_anonymous_text_;
+  is_generated_text_ = source.is_generated_text_;
   ink_overflow_computed_ = false;
 }
 
@@ -91,29 +80,8 @@ NGPhysicalTextFragment::NGPhysicalTextFragment(NGTextFragmentBuilder* builder)
   DCHECK(shape_result_ || IsFlowControl()) << ToString();
   line_orientation_ =
       static_cast<unsigned>(ToLineOrientation(builder->GetWritingMode()));
-
-  if (UNLIKELY(StyleVariant() == NGStyleVariant::kEllipsis)) {
-    style_ = std::move(builder->style_);
-    is_anonymous_text_ = true;
-  } else {
-    is_anonymous_text_ =
-        builder->text_type_ == kGeneratedText ||
-        IsPhysicalTextFragmentAnonymousText(builder->layout_object_);
-  }
+  is_generated_text_ = builder->IsGeneratedText();
   ink_overflow_computed_ = false;
-}
-
-const ComputedStyle& NGPhysicalTextFragment::Style() const {
-  switch (StyleVariant()) {
-    case NGStyleVariant::kStandard:
-    case NGStyleVariant::kFirstLine:
-      return NGPhysicalFragment::Style();
-    case NGStyleVariant::kEllipsis:
-      DCHECK(style_);
-      return *style_;
-  }
-  NOTREACHED();
-  return NGPhysicalFragment::Style();
 }
 
 // Convert logical cooridnate to local physical coordinate.

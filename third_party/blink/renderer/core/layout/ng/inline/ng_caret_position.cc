@@ -97,7 +97,7 @@ CaretPositionResolution TryResolveCaretPositionInTextFragment(
     TextAffinity affinity) {
   const auto& fragment =
       To<NGPhysicalTextFragment>(paint_fragment.PhysicalFragment());
-  if (fragment.IsAnonymousText())
+  if (fragment.IsGeneratedText())
     return CaretPositionResolution();
 
   const NGOffsetMapping& mapping =

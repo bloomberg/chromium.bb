@@ -400,7 +400,10 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
     // Paint text decorations except line-through.
     DecorationInfo decoration_info;
     bool has_line_through_decoration = false;
-    if (style.TextDecorationsInEffect() != TextDecoration::kNone) {
+    if (style.TextDecorationsInEffect() != TextDecoration::kNone &&
+        // Ellipsis should not have text decorations. This is not defined, but 4
+        // impls do this.
+        !text_fragment.IsEllipsis()) {
       LayoutPoint local_origin = LayoutPoint(box_origin);
       LayoutUnit width = box_rect.Width();
       const NGPhysicalBoxFragment* decorating_box = nullptr;

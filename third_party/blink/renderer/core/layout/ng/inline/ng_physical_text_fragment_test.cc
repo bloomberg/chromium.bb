@@ -128,7 +128,7 @@ TEST_F(NGPhysicalTextFragmentTest, NormalTextIsNotAnonymousText) {
   ASSERT_EQ(1u, text_fragments.size());
 
   const NGPhysicalTextFragment& text = *text_fragments[0];
-  EXPECT_FALSE(text.IsAnonymousText());
+  EXPECT_FALSE(text.IsGeneratedText());
 }
 
 TEST_F(NGPhysicalTextFragmentTest, FirstLetterIsNotAnonymousText) {
@@ -141,8 +141,8 @@ TEST_F(NGPhysicalTextFragmentTest, FirstLetterIsNotAnonymousText) {
 
   const NGPhysicalTextFragment& first_letter = *text_fragments[0];
   const NGPhysicalTextFragment& remaining_text = *text_fragments[1];
-  EXPECT_FALSE(first_letter.IsAnonymousText());
-  EXPECT_FALSE(remaining_text.IsAnonymousText());
+  EXPECT_FALSE(first_letter.IsGeneratedText());
+  EXPECT_FALSE(remaining_text.IsGeneratedText());
 }
 
 TEST_F(NGPhysicalTextFragmentTest, BeforeAndAfterAreAnonymousText) {
@@ -156,9 +156,9 @@ TEST_F(NGPhysicalTextFragmentTest, BeforeAndAfterAreAnonymousText) {
   const NGPhysicalTextFragment& before = *text_fragments[0];
   const NGPhysicalTextFragment& text = *text_fragments[1];
   const NGPhysicalTextFragment& after = *text_fragments[2];
-  EXPECT_TRUE(before.IsAnonymousText());
-  EXPECT_FALSE(text.IsAnonymousText());
-  EXPECT_TRUE(after.IsAnonymousText());
+  EXPECT_TRUE(before.IsGeneratedText());
+  EXPECT_FALSE(text.IsGeneratedText());
+  EXPECT_TRUE(after.IsGeneratedText());
 }
 
 TEST_F(NGPhysicalTextFragmentTest, Ellipsis) {
@@ -181,15 +181,13 @@ TEST_F(NGPhysicalTextFragmentTest, Ellipsis) {
   const NGPhysicalTextFragment& ellipsis = *text_fragments[1];
   EXPECT_EQ(NGPhysicalTextFragment::kNormalText, abcdef.TextType());
   EXPECT_FALSE(abcdef.IsGeneratedText());
-  EXPECT_FALSE(abcdef.IsAnonymousText());
   EXPECT_EQ(u8"abc", GetText(abcdef));
   EXPECT_EQ(NGPhysicalTextFragment::kGeneratedText, ellipsis.TextType());
   EXPECT_TRUE(ellipsis.IsGeneratedText());
-  EXPECT_TRUE(ellipsis.IsAnonymousText());
   EXPECT_EQ(u8"\u2026", GetText(ellipsis));
 }
 
-TEST_F(NGPhysicalTextFragmentTest, ListMarkerIsAnonymousText) {
+TEST_F(NGPhysicalTextFragmentTest, ListMarkerIsGeneratedText) {
   SetBodyInnerHTML(
       "<ol style='list-style-position:inside'>"
       "<li id=list>text</li>"
@@ -200,8 +198,8 @@ TEST_F(NGPhysicalTextFragmentTest, ListMarkerIsAnonymousText) {
 
   const NGPhysicalTextFragment& marker = *text_fragments[0];
   const NGPhysicalTextFragment& text = *text_fragments[1];
-  EXPECT_TRUE(marker.IsAnonymousText());
-  EXPECT_FALSE(text.IsAnonymousText());
+  EXPECT_TRUE(marker.IsGeneratedText());
+  EXPECT_FALSE(text.IsGeneratedText());
 }
 
 TEST_F(NGPhysicalTextFragmentTest, SoftHyphen) {
@@ -222,17 +220,14 @@ TEST_F(NGPhysicalTextFragmentTest, SoftHyphen) {
   const NGPhysicalTextFragment& shy = *text_fragments[1];
   const NGPhysicalTextFragment& def = *text_fragments[2];
   EXPECT_EQ(NGPhysicalTextFragment::kNormalText, abc.TextType());
-  EXPECT_FALSE(abc.IsGeneratedText());
   // Note: ShapeResult::RunInfo.width_ == 0 for U+00AD
   EXPECT_EQ(u8"abc\u00AD", GetText(abc));
   EXPECT_EQ(NGPhysicalTextFragment::kGeneratedText, shy.TextType());
-  EXPECT_TRUE(shy.IsGeneratedText());
   // Note: |ComputedStyle::HypenString()| returns "-" or U+2010 based on
   // glyph availability.
   if (GetText(shy) != "-")
     EXPECT_EQ(u8"\u2010", GetText(shy));
   EXPECT_EQ(NGPhysicalTextFragment::kNormalText, def.TextType());
-  EXPECT_FALSE(def.IsGeneratedText());
 }
 
 TEST_F(NGPhysicalTextFragmentTest, QuotationMarksAreAnonymousText) {
@@ -244,9 +239,9 @@ TEST_F(NGPhysicalTextFragmentTest, QuotationMarksAreAnonymousText) {
   const NGPhysicalTextFragment& open_quote = *text_fragments[0];
   const NGPhysicalTextFragment& text = *text_fragments[1];
   const NGPhysicalTextFragment& closed_quote = *text_fragments[2];
-  EXPECT_TRUE(open_quote.IsAnonymousText());
-  EXPECT_FALSE(text.IsAnonymousText());
-  EXPECT_TRUE(closed_quote.IsAnonymousText());
+  EXPECT_TRUE(open_quote.IsGeneratedText());
+  EXPECT_FALSE(text.IsGeneratedText());
+  EXPECT_TRUE(closed_quote.IsGeneratedText());
 }
 
 TEST_F(NGPhysicalTextFragmentTest, TextOffsetForPointForTabulation) {

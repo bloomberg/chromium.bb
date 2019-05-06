@@ -859,7 +859,7 @@ PhysicalRect NGPaintFragment::ComputeLocalSelectionRectForReplaced() const {
 PositionWithAffinity NGPaintFragment::PositionForPointInText(
     const PhysicalOffset& point) const {
   const auto& text_fragment = To<NGPhysicalTextFragment>(PhysicalFragment());
-  if (text_fragment.IsAnonymousText())
+  if (text_fragment.IsGeneratedText())
     return PositionWithAffinity();
   const unsigned text_offset = text_fragment.TextOffsetForPoint(point);
   const NGCaretPosition unadjusted_position{
