@@ -20,18 +20,15 @@ found in the LICENSE file.
       this.length = buffer.byteLength;
     }
 
-    process(resolve) {
+    process() {
       this.memory = Module._malloc(this.length);
       if (!this.memory)
         throw new Error('image malloc failure');
 
-      this.callback = Module.addFunction((result) => {
-        resolve(this.result = result);
-      }, 'vi');
-
-      // Process the image: blocks until |callback| is called.
       Module.HEAP8.set(this.source, this.memory);
-      Module._image(this.memory, this.length, this.callback);
+      this.result = Module.image(this.memory, this.length);
+
+      return this.result;
     }
 
     preview() {
@@ -74,7 +71,6 @@ found in the LICENSE file.
     }
 
     close() {
-      Module.removeFunction(this.callback);
       Module._free(this.memory);
     }
   }
@@ -254,7 +250,7 @@ found in the LICENSE file.
 
     // Extract the preview|thumbnail images, render them.
     return new Promise((resolve) => {
-      imageBuffer.process(resolve);
+      resolve(imageBuffer.process());
     }).then((result) => {
       let preview = imageBuffer.preview();
       let thumb = imageBuffer.thumbnail();

@@ -6,6 +6,7 @@
 
 #include <assert.h>
 #include <emscripten.h>
+#include <emscripten/bind.h>
 #include <emscripten/val.h>
 #include <stdint.h>
 #include <string.h>
@@ -35,8 +36,8 @@ class PiexStreamReader : public piex::StreamInterface {
 
 class PiexReader {
  public:
-  static void ReadImage(const char* data, size_t size, int callback) {
-    assert(data && callback);
+  static emscripten::val ReadImage(const char* data, size_t size) {
+    assert(data);
 
     auto result = emscripten::val::object();
     PiexStreamReader reader(data, size);
@@ -57,20 +58,10 @@ class PiexReader {
         break;
     }
 
-    CallbackResult(callback, result);
+    return result;
   }
 
  private:
-  static void CallbackResult(int callback, const emscripten::val& result) {
-    const int index = callback - 1;
-
-    auto callbacks = emscripten::val::global("functionPointers");
-    assert(callbacks.as<bool>());
-
-    auto context = emscripten::val::undefined();
-    callbacks[index].call<void>("call", context, result);
-  }
-
   static emscripten::val GetProperties(const piex::PreviewImageData& image) {
     auto result = emscripten::val::object();
 
@@ -132,10 +123,10 @@ class PiexReader {
   }
 };
 
-extern "C" {
-
-void EMSCRIPTEN_KEEPALIVE image(const char* data, size_t size, int callback) {
-  PiexReader::ReadImage(data, size, callback);
+emscripten::val image(int data, size_t size) {
+  return PiexReader::ReadImage(reinterpret_cast<char*>(data), size);
 }
 
-}  // extern "C"
+EMSCRIPTEN_BINDINGS(PiexWasmModule) {
+  emscripten::function("image", &image);
+}

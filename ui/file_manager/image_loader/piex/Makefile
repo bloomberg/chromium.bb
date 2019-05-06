@@ -9,7 +9,7 @@ PSRC = $(PIEX)/src/piex.cc \
        $(PIEX)/src/binary_parse/range_checked_byte_ptr.cc \
        $(PIEX)/src/binary_parse/cached_paged_byte_array.cc
 
-WAPI = ["cwrap", "addFunction", "removeFunction"]
+WAPI = ["cwrap"]
 
 INCS = -I $(PIEX) -I .
 WASM = -s WASM=1 -fno-exceptions -Wall
@@ -20,7 +20,6 @@ WOPT = -Os --llvm-opts 3 \
   -s ENVIRONMENT='web' \
   -s NO_DYNAMIC_EXECUTION=1 \
   -s EXTRA_EXPORTED_RUNTIME_METHODS='$(WAPI)' \
-  -s RESERVED_FUNCTION_POINTERS=$(shell echo $$((10*2))) \
   -s TOTAL_STACK=$(shell echo $$((8*1024)))
 
 .PHONY: all clean release
