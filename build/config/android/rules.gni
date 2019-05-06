@@ -1943,6 +1943,10 @@ if (enable_java_templates) {
         defines += [ "_IS_UBSAN" ]
       }
 
+      if (is_chrome_branded) {
+        defines += [ "_IS_CHROME_BRANDED" ]
+      }
+
       if (invoker.use_final_fields) {
         forward_variables_from(invoker,
                                [

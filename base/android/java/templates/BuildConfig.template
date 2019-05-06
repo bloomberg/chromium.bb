@@ -46,6 +46,12 @@ public class BuildConfig {
     public static MAYBE_FINAL boolean IS_UBSAN MAYBE_FALSE;
 #endif
 
+#if defined(_IS_CHROME_BRANDED)
+    public static MAYBE_FINAL boolean IS_CHROME_BRANDED = true;
+#else
+    public static MAYBE_FINAL boolean IS_CHROME_BRANDED MAYBE_FALSE;
+#endif
+
     // Sorted list of locales that have a compressed .pak within assets.
     // Stored as an array because AssetManager.list() is slow.
 #if defined(COMPRESSED_LOCALE_LIST)

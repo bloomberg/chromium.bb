@@ -25,6 +25,9 @@ public class BuildInfo {
     private static PackageInfo sBrowserPackageInfo;
     private static boolean sInitialized;
 
+    /** Not a member variable to avoid creating the instance early (it is set early in start up). */
+    private static String sFirebaseAppId = "";
+
     /** The application name (e.g. "Chrome"). For WebView, this is name of the embedding app. */
     public final String hostPackageLabel;
     /** By default: same as versionCode. For WebView: versionCode of the embedding app. */
@@ -75,7 +78,7 @@ public class BuildInfo {
                 buildInfo.gmsVersionCode,
                 buildInfo.installerPackageName,
                 buildInfo.abiString,
-                BuildConfig.FIREBASE_APP_ID,
+                sFirebaseAppId,
                 buildInfo.customThemes,
                 buildInfo.resourcesVersion,
                 buildInfo.extractedFileSuffix,
@@ -210,6 +213,15 @@ public class BuildInfo {
         return isAtLeastQ()
                 && ContextUtils.getApplicationContext().getApplicationInfo().targetSdkVersion
                 == Build.VERSION_CODES.CUR_DEVELOPMENT;
+    }
+
+    public static void setFirebaseAppId(String id) {
+        assert sFirebaseAppId.equals("");
+        sFirebaseAppId = id;
+    }
+
+    public static String getFirebaseAppId() {
+        return sFirebaseAppId;
     }
 
     // End:BuildCompat
