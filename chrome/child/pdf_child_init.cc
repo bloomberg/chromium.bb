@@ -66,15 +66,24 @@ void InitializePDF() {
   // Need to patch a few functions for font loading to work correctly. This can
   // be removed once we switch PDF to use Skia
   // (https://bugs.chromium.org/p/pdfium/issues/detail?id=11).
-  HMODULE current_module = CURRENT_MODULE();
+#if defined(COMPONENT_BUILD)
+  HMODULE module = ::GetModuleHandleA("pdfium.dll");
+
+  // TODO(thomasanderson): Replace this condition with DCHECK(module) once
+  // PDFium is switched to a component.
+  if (!module)
+    module = CURRENT_MODULE();
+#else
+  HMODULE module = CURRENT_MODULE();
+#endif  // defined(COMPONENT_BUILD)
 
   static base::NoDestructor<base::win::IATPatchFunction> patch_createdca;
-  patch_createdca->PatchFromModule(current_module, "gdi32.dll", "CreateDCA",
+  patch_createdca->PatchFromModule(module, "gdi32.dll", "CreateDCA",
                                    reinterpret_cast<void*>(CreateDCAPatch));
 
   static base::NoDestructor<base::win::IATPatchFunction> patch_get_font_data;
   patch_get_font_data->PatchFromModule(
-      current_module, "gdi32.dll", "GetFontData",
+      module, "gdi32.dll", "GetFontData",
       reinterpret_cast<void*>(GetFontDataPatch));
   g_original_get_font_data = reinterpret_cast<GetFontDataPtr>(
       patch_get_font_data->original_function());
