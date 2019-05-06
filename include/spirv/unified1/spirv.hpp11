@@ -1687,6 +1687,8 @@ inline void HasResultAndType(Op opcode, bool *hasResult, bool *hasResultType) {
     case Op::OpGroupSMaxNonUniformAMD: *hasResult = true; *hasResultType = true; break;
     case Op::OpFragmentMaskFetchAMD: *hasResult = true; *hasResultType = true; break;
     case Op::OpFragmentFetchAMD: *hasResult = true; *hasResultType = true; break;
+    case Op::OpImageSampleFootprintNV: *hasResult = true; *hasResultType = true; break;
+    case Op::OpGroupNonUniformPartitionNV: *hasResult = true; *hasResultType = true; break;
     case Op::OpWritePackedPrimitiveIndices4x8NV: *hasResult = false; *hasResultType = false; break;
     case Op::OpReportIntersectionNV: *hasResult = true; *hasResultType = true; break;
     case Op::OpIgnoreIntersectionNV: *hasResult = false; *hasResultType = false; break;
@@ -1694,6 +1696,11 @@ inline void HasResultAndType(Op opcode, bool *hasResult, bool *hasResultType) {
     case Op::OpTraceNV: *hasResult = false; *hasResultType = false; break;
     case Op::OpTypeAccelerationStructureNV: *hasResult = true; *hasResultType = false; break;
     case Op::OpExecuteCallableNV: *hasResult = false; *hasResultType = false; break;
+    case Op::OpTypeCooperativeMatrixNV: *hasResult = true; *hasResultType = false; break;
+    case Op::OpCooperativeMatrixLoadNV: *hasResult = true; *hasResultType = true; break;
+    case Op::OpCooperativeMatrixStoreNV: *hasResult = false; *hasResultType = false; break;
+    case Op::OpCooperativeMatrixMulAddNV: *hasResult = true; *hasResultType = true; break;
+    case Op::OpCooperativeMatrixLengthNV: *hasResult = true; *hasResultType = true; break;
     case Op::OpSubgroupShuffleINTEL: *hasResult = true; *hasResultType = true; break;
     case Op::OpSubgroupShuffleDownINTEL: *hasResult = true; *hasResultType = true; break;
     case Op::OpSubgroupShuffleUpINTEL: *hasResult = true; *hasResultType = true; break;
@@ -1704,6 +1711,8 @@ inline void HasResultAndType(Op opcode, bool *hasResult, bool *hasResultType) {
     case Op::OpSubgroupImageBlockWriteINTEL: *hasResult = false; *hasResultType = false; break;
     case Op::OpSubgroupImageMediaBlockReadINTEL: *hasResult = true; *hasResultType = true; break;
     case Op::OpSubgroupImageMediaBlockWriteINTEL: *hasResult = false; *hasResultType = false; break;
+    case Op::OpDecorateStringGOOGLE: *hasResult = false; *hasResultType = false; break;
+    case Op::OpMemberDecorateStringGOOGLE: *hasResult = false; *hasResultType = false; break;
     case Op::OpVmeImageINTEL: *hasResult = true; *hasResultType = true; break;
     case Op::OpTypeVmeImageINTEL: *hasResult = true; *hasResultType = false; break;
     case Op::OpTypeAvcImePayloadINTEL: *hasResult = true; *hasResultType = false; break;
@@ -1822,15 +1831,6 @@ inline void HasResultAndType(Op opcode, bool *hasResult, bool *hasResultType) {
     case Op::OpSubgroupAvcSicGetPackedSkcLumaCountThresholdINTEL: *hasResult = true; *hasResultType = true; break;
     case Op::OpSubgroupAvcSicGetPackedSkcLumaSumThresholdINTEL: *hasResult = true; *hasResultType = true; break;
     case Op::OpSubgroupAvcSicGetInterRawSadsINTEL: *hasResult = true; *hasResultType = true; break;
-    case Op::OpDecorateStringGOOGLE: *hasResult = false; *hasResultType = false; break;
-    case Op::OpMemberDecorateStringGOOGLE: *hasResult = false; *hasResultType = false; break;
-    case Op::OpGroupNonUniformPartitionNV: *hasResult = true; *hasResultType = true; break;
-    case Op::OpImageSampleFootprintNV: *hasResult = true; *hasResultType = true; break;
-    case Op::OpTypeCooperativeMatrixNV: *hasResult = true; *hasResultType = false; break;
-    case Op::OpCooperativeMatrixLoadNV: *hasResult = true; *hasResultType = true; break;
-    case Op::OpCooperativeMatrixStoreNV: *hasResult = false; *hasResultType = false; break;
-    case Op::OpCooperativeMatrixMulAddNV: *hasResult = true; *hasResultType = true; break;
-    case Op::OpCooperativeMatrixLengthNV: *hasResult = true; *hasResultType = true; break;
     }
 }
 #endif /* SPV_ENABLE_UTILITY_CODE */

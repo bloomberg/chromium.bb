@@ -3824,6 +3824,34 @@
       "version" : "None"
     },
     {
+      "opname" : "OpImageSampleFootprintNV",
+      "opcode" : 5283,
+      "operands" : [
+        { "kind" : "IdResultType" },
+        { "kind" : "IdResult" },
+        { "kind" : "IdRef", "name" : "'Sampled Image'" },
+        { "kind" : "IdRef", "name" : "'Coordinate'" },
+        { "kind" : "IdRef", "name" : "'Granularity'" },
+        { "kind" : "IdRef", "name" : "'Coarse'" },
+        { "kind" : "ImageOperands", "quantifier" : "?" }
+      ],
+      "capabilities" : [ "ImageFootprintNV" ],
+      "extensions" : [ "SPV_NV_shader_image_footprint" ],
+      "version" : "None"
+    },
+    {
+      "opname" : "OpGroupNonUniformPartitionNV",
+      "opcode" : 5296,
+      "operands" : [
+        { "kind" : "IdResultType" },
+        { "kind" : "IdResult" },
+        { "kind" : "IdRef", "name" : "'Value'" }
+      ],
+      "capabilities" : [ "GroupNonUniformPartitionedNV" ],
+      "extensions" : [ "SPV_NV_shader_subgroup_partitioned" ],
+      "version" : "None"
+    },
+    {
       "opname" : "OpWritePackedPrimitiveIndices4x8NV",
       "opcode" : 5299,
       "operands" : [
@@ -3899,6 +3927,75 @@
       ],
       "capabilities" : [ "RayTracingNV" ],
       "extensions" : [ "SPV_NV_ray_tracing" ]
+    },
+    {
+      "opname" : "OpTypeCooperativeMatrixNV",
+      "opcode" : 5358,
+      "operands" : [
+        { "kind" : "IdResult" },
+        { "kind" : "IdRef",        "name" : "'Component Type'" },
+        { "kind" : "IdScope",      "name" : "'Execution'" },
+        { "kind" : "IdRef",        "name" : "'Rows'" },
+        { "kind" : "IdRef",        "name" : "'Columns'" }
+      ],
+      "capabilities" : [ "CooperativeMatrixNV" ],
+      "extensions" : [ "SPV_NV_cooperative_matrix" ],
+      "version" : "None"
+    },
+    {
+      "opname" : "OpCooperativeMatrixLoadNV",
+      "opcode" : 5359,
+      "operands" : [
+        { "kind" : "IdResultType" },
+        { "kind" : "IdResult" },
+        { "kind" : "IdRef",             "name" : "'Pointer'" },
+        { "kind" : "IdRef",             "name" : "'Stride'" },
+        { "kind" : "IdRef",             "name" : "'Column Major'" },
+        { "kind" : "MemoryAccess",      "quantifier" : "?" }
+      ],
+      "capabilities" : [ "CooperativeMatrixNV" ],
+      "extensions" : [ "SPV_NV_cooperative_matrix" ],
+      "version" : "None"
+    },
+    {
+      "opname" : "OpCooperativeMatrixStoreNV",
+      "opcode" : 5360,
+      "operands" : [
+        { "kind" : "IdRef",             "name" : "'Pointer'" },
+        { "kind" : "IdRef",             "name" : "'Object'" },
+        { "kind" : "IdRef",             "name" : "'Stride'" },
+        { "kind" : "IdRef",             "name" : "'Column Major'" },
+        { "kind" : "MemoryAccess",      "quantifier" : "?" }
+      ],
+      "capabilities" : [ "CooperativeMatrixNV" ],
+      "extensions" : [ "SPV_NV_cooperative_matrix" ],
+      "version" : "None"
+    },
+    {
+      "opname" : "OpCooperativeMatrixMulAddNV",
+      "opcode" : 5361,
+      "operands" : [
+        { "kind" : "IdResultType" },
+        { "kind" : "IdResult" },
+        { "kind" : "IdRef",             "name" : "'A'" },
+        { "kind" : "IdRef",             "name" : "'B'" },
+        { "kind" : "IdRef",             "name" : "'C'" }
+      ],
+      "capabilities" : [ "CooperativeMatrixNV" ],
+      "extensions" : [ "SPV_NV_cooperative_matrix" ],
+      "version" : "None"
+    },
+    {
+      "opname" : "OpCooperativeMatrixLengthNV",
+      "opcode" : 5362,
+      "operands" : [
+        { "kind" : "IdResultType" },
+        { "kind" : "IdResult" },
+        { "kind" : "IdRef",        "name" : "'Type'" }
+      ],
+      "capabilities" : [ "CooperativeMatrixNV" ],
+      "extensions" : [ "SPV_NV_cooperative_matrix" ],
+      "version" : "None"
     },
     {
       "opname" : "OpSubgroupShuffleINTEL",
@@ -4019,6 +4116,27 @@
         { "kind" : "IdRef", "name" : "'Data'" }
       ],
       "capabilities" : [ "SubgroupImageMediaBlockIOINTEL" ],
+      "version" : "None"
+    },
+    {
+      "opname" : "OpDecorateStringGOOGLE",
+      "opcode" : 5632,
+      "operands" : [
+        { "kind" : "IdRef",         "name" : "'Target'" },
+        { "kind" : "Decoration" }
+      ],
+      "extensions" : [ "SPV_GOOGLE_decorate_string", "SPV_GOOGLE_hlsl_functionality1" ],
+      "version" : "None"
+    },
+    {
+      "opname" : "OpMemberDecorateStringGOOGLE",
+      "opcode" : 5633,
+      "operands" : [
+        { "kind" : "IdRef",          "name" : "'Struct Type'" },
+        { "kind" : "LiteralInteger", "name" : "'Member'" },
+        { "kind" : "Decoration" }
+      ],
+      "extensions" : [ "SPV_GOOGLE_decorate_string", "SPV_GOOGLE_hlsl_functionality1" ],
       "version" : "None"
     },
     {
@@ -5419,124 +5537,6 @@
       ],
       "capabilities" : [ "SubgroupAvcMotionEstimationINTEL" ],
       "version" : "None"
-    },	
-    {
-      "opname" : "OpDecorateStringGOOGLE",
-      "opcode" : 5632,
-      "operands" : [
-        { "kind" : "IdRef",         "name" : "'Target'" },
-        { "kind" : "Decoration" }
-      ],
-      "extensions" : [ "SPV_GOOGLE_decorate_string", "SPV_GOOGLE_hlsl_functionality1" ],
-      "version" : "None"
-    },
-    {
-      "opname" : "OpMemberDecorateStringGOOGLE",
-      "opcode" : 5633,
-      "operands" : [
-        { "kind" : "IdRef",          "name" : "'Struct Type'" },
-        { "kind" : "LiteralInteger", "name" : "'Member'" },
-        { "kind" : "Decoration" }
-      ],
-      "extensions" : [ "SPV_GOOGLE_decorate_string", "SPV_GOOGLE_hlsl_functionality1" ],
-      "version" : "None"
-    },
-    {
-      "opname" : "OpGroupNonUniformPartitionNV",
-      "opcode" : 5296,
-      "operands" : [
-        { "kind" : "IdResultType" },
-        { "kind" : "IdResult" },
-        { "kind" : "IdRef", "name" : "'Value'" }
-      ],
-      "capabilities" : [ "GroupNonUniformPartitionedNV" ],
-      "extensions" : [ "SPV_NV_shader_subgroup_partitioned" ],
-      "version" : "None"
-    },
-	{
-      "opname" : "OpImageSampleFootprintNV",
-      "opcode" : 5283,
-      "operands" : [
-        { "kind" : "IdResultType" },
-        { "kind" : "IdResult" },
-        { "kind" : "IdRef", "name" : "'Sampled Image'" },
-        { "kind" : "IdRef", "name" : "'Coordinate'" },
-        { "kind" : "IdRef", "name" : "'Granularity'" },
-        { "kind" : "IdRef", "name" : "'Coarse'" },
-        { "kind" : "ImageOperands", "quantifier" : "?" }
-      ],
-      "capabilities" : [ "ImageFootprintNV" ],
-      "extensions" : [ "SPV_NV_shader_image_footprint" ],
-      "version" : "None"
-    },
-    {
-      "opname" : "OpTypeCooperativeMatrixNV",
-      "opcode" : 5358,
-      "operands" : [
-        { "kind" : "IdResult" },
-        { "kind" : "IdRef",        "name" : "'Component Type'" },
-        { "kind" : "IdScope",      "name" : "'Execution'" },
-        { "kind" : "IdRef",        "name" : "'Rows'" },
-        { "kind" : "IdRef",        "name" : "'Columns'" }
-      ],
-      "capabilities" : [ "CooperativeMatrixNV" ],
-      "extensions" : [ "SPV_NV_cooperative_matrix" ],
-      "version" : "None"
-    },
-    {
-      "opname" : "OpCooperativeMatrixLoadNV",
-      "opcode" : 5359,
-      "operands" : [
-        { "kind" : "IdResultType" },
-        { "kind" : "IdResult" },
-        { "kind" : "IdRef",             "name" : "'Pointer'" },
-        { "kind" : "IdRef",             "name" : "'Stride'" },
-        { "kind" : "IdRef",             "name" : "'Column Major'" },
-        { "kind" : "MemoryAccess",      "quantifier" : "?" }
-      ],
-      "capabilities" : [ "CooperativeMatrixNV" ],
-      "extensions" : [ "SPV_NV_cooperative_matrix" ],
-      "version" : "None"
-    },
-    {
-      "opname" : "OpCooperativeMatrixStoreNV",
-      "opcode" : 5360,
-      "operands" : [
-        { "kind" : "IdRef",             "name" : "'Pointer'" },
-        { "kind" : "IdRef",             "name" : "'Object'" },
-        { "kind" : "IdRef",             "name" : "'Stride'" },
-        { "kind" : "IdRef",             "name" : "'Column Major'" },
-        { "kind" : "MemoryAccess",      "quantifier" : "?" }
-      ],
-      "capabilities" : [ "CooperativeMatrixNV" ],
-      "extensions" : [ "SPV_NV_cooperative_matrix" ],
-      "version" : "None"
-    },
-    {
-      "opname" : "OpCooperativeMatrixMulAddNV",
-      "opcode" : 5361,
-      "operands" : [
-        { "kind" : "IdResultType" },
-        { "kind" : "IdResult" },
-        { "kind" : "IdRef",             "name" : "'A'" },
-        { "kind" : "IdRef",             "name" : "'B'" },
-        { "kind" : "IdRef",             "name" : "'C'" }
-      ],
-      "capabilities" : [ "CooperativeMatrixNV" ],
-      "extensions" : [ "SPV_NV_cooperative_matrix" ],
-      "version" : "None"
-    },
-    {
-      "opname" : "OpCooperativeMatrixLengthNV",
-      "opcode" : 5362,
-      "operands" : [
-        { "kind" : "IdResultType" },
-        { "kind" : "IdResult" },
-        { "kind" : "IdRef",        "name" : "'Type'" }
-      ],
-      "capabilities" : [ "CooperativeMatrixNV" ],
-      "extensions" : [ "SPV_NV_cooperative_matrix" ],
-      "version" : "None"
     }
   ],
   "operand_kinds" : [
@@ -6287,7 +6287,7 @@
 {
           "enumerant" : "DenormPreserve",
           "value" : 4459,
-          "capabilities" : [ "DenormPreserve"],
+          "capabilities" : [ "DenormPreserve" ],
           "extensions" : [ "SPV_KHR_float_controls" ],
           "parameters" : [
             { "kind" : "LiteralInteger", "name" : "'Target Width'" }
@@ -6297,7 +6297,7 @@
         {
           "enumerant" : "DenormFlushToZero",
           "value" : 4460,
-          "capabilities" : [ "DenormFlushToZero"],
+          "capabilities" : [ "DenormFlushToZero" ],
           "extensions" : [ "SPV_KHR_float_controls" ],
           "parameters" : [
             { "kind" : "LiteralInteger", "name" : "'Target Width'" }
@@ -6307,7 +6307,7 @@
         {
           "enumerant" : "SignedZeroInfNanPreserve",
           "value" : 4461,
-          "capabilities" : [ "SignedZeroInfNanPreserve"],
+          "capabilities" : [ "SignedZeroInfNanPreserve" ],
           "extensions" : [ "SPV_KHR_float_controls" ],
           "parameters" : [
             { "kind" : "LiteralInteger", "name" : "'Target Width'" }
@@ -6317,7 +6317,7 @@
         {
           "enumerant" : "RoundingModeRTE",
           "value" : 4462,
-          "capabilities" : [ "RoundingModeRTE"],
+          "capabilities" : [ "RoundingModeRTE" ],
           "extensions" : [ "SPV_KHR_float_controls" ],
           "parameters" : [
             { "kind" : "LiteralInteger", "name" : "'Target Width'" }
@@ -6327,7 +6327,7 @@
         {
           "enumerant" : "RoundingModeRTZ",
           "value" : 4463,
-          "capabilities" : [ "RoundingModeRTZ"],
+          "capabilities" : [ "RoundingModeRTZ" ],
           "extensions" : [ "SPV_KHR_float_controls" ],
           "parameters" : [
             { "kind" : "LiteralInteger", "name" : "'Target Width'" }
