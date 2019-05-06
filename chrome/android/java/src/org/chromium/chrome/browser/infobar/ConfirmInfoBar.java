@@ -6,9 +6,15 @@ package org.chromium.chrome.browser.infobar;
 
 import android.graphics.Bitmap;
 import android.support.annotation.ColorRes;
+import android.text.TextUtils;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ResourceId;
+import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties;
+import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties.DialogListItemProperties;
+import org.chromium.ui.modelutil.PropertyModel;
+
+import java.util.ArrayList;
 
 /**
  * An infobar that presents the user with several buttons.
@@ -57,6 +63,40 @@ public class ConfirmInfoBar extends InfoBar {
     public void onButtonClicked(final boolean isPrimaryButton) {
         int action = isPrimaryButton ? ActionType.OK : ActionType.CANCEL;
         onButtonClicked(action);
+    }
+
+    @Override
+    public boolean supportsTouchlessMode() {
+        // Only allow whitelisted implementations of the confirm infobar.
+        return getInfoBarIdentifier() == InfoBarIdentifier.POPUP_BLOCKED_INFOBAR_DELEGATE_MOBILE;
+    }
+
+    @Override
+    public PropertyModel createModel() {
+        PropertyModel model = super.createModel();
+
+        ArrayList<PropertyModel> options = new ArrayList<>();
+        if (!TextUtils.isEmpty(mPrimaryButtonText)) {
+            options.add(new PropertyModel.Builder(DialogListItemProperties.ALL_KEYS)
+                                .with(DialogListItemProperties.TEXT, mPrimaryButtonText)
+                                .with(DialogListItemProperties.CLICK_LISTENER,
+                                        (v) -> onButtonClicked(true))
+                                .build());
+        }
+
+        if (!TextUtils.isEmpty(mSecondaryButtonText)) {
+            options.add(new PropertyModel.Builder(DialogListItemProperties.ALL_KEYS)
+                                .with(DialogListItemProperties.TEXT, mSecondaryButtonText)
+                                .with(DialogListItemProperties.CLICK_LISTENER,
+                                        (v) -> onButtonClicked(false))
+                                .build());
+        }
+
+        PropertyModel[] optionModels = new PropertyModel[options.size()];
+        options.toArray(optionModels);
+        model.set(TouchlessDialogProperties.LIST_MODELS, optionModels);
+
+        return model;
     }
 
     /**
