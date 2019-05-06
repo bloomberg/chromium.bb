@@ -14,7 +14,6 @@ assert(!is_ios, "Chromium/iOS shouldn't use anything in //chrome")
 if (closure_compile) {
   group("closure_compile") {
     deps = [
-      "cryptotoken:closure_compile",
       "engagement:closure_compile",
     ]
     if (is_linux || is_win || is_mac) {

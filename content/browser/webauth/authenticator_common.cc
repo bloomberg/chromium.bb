@@ -129,9 +129,9 @@ bool OriginIsCryptoTokenExtension(const url::Origin& origin) {
 bool HasValidEffectiveDomain(url::Origin caller_origin) {
   // For calls originating in the CryptoToken U2F extension, allow CryptoToken
   // to validate domain.
-  if (OriginIsCryptoTokenExtension(caller_origin) &&
-      base::FeatureList::IsEnabled(device::kWebAuthProxyCryptotoken))
+  if (OriginIsCryptoTokenExtension(caller_origin)) {
     return true;
+  }
 
   return !caller_origin.opaque() &&
          !url::HostIsIPAddress(caller_origin.host()) &&
@@ -151,9 +151,9 @@ bool HasValidEffectiveDomain(url::Origin caller_origin) {
 // https://html.spec.whatwg.org/multipage/origin.html#is-a-registrable-domain-suffix-of-or-is-equal-to.
 bool IsRelyingPartyIdValid(const std::string& relying_party_id,
                            url::Origin caller_origin) {
-  if (OriginIsCryptoTokenExtension(caller_origin) &&
-      base::FeatureList::IsEnabled(device::kWebAuthProxyCryptotoken))
+  if (OriginIsCryptoTokenExtension(caller_origin)) {
     return true;
+  }
 
   if (relying_party_id.empty())
     return false;
@@ -189,8 +189,7 @@ base::Optional<std::string> ProcessAppIdExtension(std::string appid,
                                                   const url::Origin& origin) {
   // The CryptoToken U2F extension checks the appid before calling the WebAuthn
   // API so there is no need to validate it here.
-  if (OriginIsCryptoTokenExtension(origin) &&
-      base::FeatureList::IsEnabled(device::kWebAuthProxyCryptotoken)) {
+  if (OriginIsCryptoTokenExtension(origin)) {
     if (!GURL(appid).is_valid()) {
       DCHECK(false) << "cryptotoken request did not set a valid App ID";
       return base::nullopt;
