@@ -87,20 +87,11 @@ def RunGsutil(args):
   return subprocess.call([sys.executable, GetGsutilPath()] + args)
 
 
-def GsutilArchiveExists(archive_name, platform):
-  gsutil_args = ['-q', 'stat',
-                 'gs://chromium-browser-clang-staging/%s/%s.tgz' %
-                 (platform, archive_name)]
-  return RunGsutil(gsutil_args) == 0
-
-
-def MaybeUpload(args, archive_name, platform):
-  gsutil_args = ['cp', '-a', 'public-read',
-                  '%s.tgz' % archive_name,
-                  'gs://chromium-browser-clang-staging/%s/%s.tgz' %
-                 (platform, archive_name)]
-  if args.upload:
-    print 'Uploading %s to Google Cloud Storage...' % archive_name
+def MaybeUpload(do_upload, filename, platform, extra_gsutil_args=[]):
+  gsutil_args = ['cp'] + extra_gsutil_args + ['-a', 'public-read', filename,
+      'gs://chromium-browser-clang-staging/%s/%s' % (platform, filename)]
+  if do_upload:
+    print 'Uploading %s to Google Cloud Storage...' % filename
     exit_code = RunGsutil(gsutil_args)
     if exit_code != 0:
       print "gsutil failed, exit_code: %s" % exit_code
@@ -419,18 +410,20 @@ def main():
     shutil.copytree(os.path.join(LLVM_BOOTSTRAP_INSTALL_DIR, 'include', 'c++'),
                     os.path.join(pdir, 'include', 'c++'))
 
-  # Copy buildlog over.
-  shutil.copy('buildlog.txt', pdir)
-
-  # Create archive.
-  tar_entries = ['bin', 'lib', 'buildlog.txt']
+  # Create main archive.
+  tar_entries = ['bin', 'lib' ]
   if sys.platform == 'darwin':
     tar_entries += ['include']
   with tarfile.open(pdir + '.tgz', 'w:gz') as tar:
     for entry in tar_entries:
       tar.add(os.path.join(pdir, entry), arcname=entry, filter=PrintTarProgress)
+  MaybeUpload(args.upload, pdir + '.tgz', platform)
 
-  MaybeUpload(args, pdir, platform)
+  # Upload build log next to it.
+  os.rename('buildlog.txt', pdir + '-buildlog.txt')
+  MaybeUpload(args.upload, pdir + '-buildlog.txt', platform,
+              extra_gsutil_args=['-z', 'txt'])
+  os.remove(pdir + '-buildlog.txt')
 
   # Zip up llvm-code-coverage for code coverage.
   code_coverage_dir = 'llvm-code-coverage-' + stamp
@@ -442,7 +435,7 @@ def main():
   with tarfile.open(code_coverage_dir + '.tgz', 'w:gz') as tar:
     tar.add(os.path.join(code_coverage_dir, 'bin'), arcname='bin',
             filter=PrintTarProgress)
-  MaybeUpload(args, code_coverage_dir, platform)
+  MaybeUpload(args.upload, code_coverage_dir + '.tgz', platform)
 
   # Zip up llvm-objdump and related tools for sanitizer coverage and Supersize.
   objdumpdir = 'llvmobjdump-' + stamp
@@ -464,7 +457,7 @@ def main():
             filter=PrintTarProgress)
     tar.add(llvmobjdump_stamp_file, arcname=llvmobjdump_stamp_file_base,
             filter=PrintTarProgress)
-  MaybeUpload(args, objdumpdir, platform)
+  MaybeUpload(args.upload, objdumpdir + '.tgz', platform)
 
   # On Mac, lld isn't part of the main zip.  Upload it in a separate zip.
   if sys.platform == 'darwin':
@@ -480,7 +473,7 @@ def main():
     with tarfile.open(llddir + '.tgz', 'w:gz') as tar:
       tar.add(os.path.join(llddir, 'bin'), arcname='bin',
               filter=PrintTarProgress)
-    MaybeUpload(args, llddir, platform)
+    MaybeUpload(args.upload, llddir + '.tgz', platform)
 
     # dsymutil isn't part of the main zip either, and it gets periodically
     # deployed to CIPD (manually, not as part of clang rolls) for use in the
@@ -493,7 +486,7 @@ def main():
     with tarfile.open(dsymdir + '.tgz', 'w:gz') as tar:
       tar.add(os.path.join(dsymdir, 'bin'), arcname='bin',
               filter=PrintTarProgress)
-    MaybeUpload(args, dsymdir, platform)
+    MaybeUpload(args.upload, dsymdir + '.tgz', platform)
 
   # Zip up the translation_unit tool.
   translation_unit_dir = 'translation_unit-' + stamp
@@ -505,7 +498,7 @@ def main():
   with tarfile.open(translation_unit_dir + '.tgz', 'w:gz') as tar:
     tar.add(os.path.join(translation_unit_dir, 'bin'), arcname='bin',
             filter=PrintTarProgress)
-  MaybeUpload(args, translation_unit_dir, platform)
+  MaybeUpload(args.upload, translation_unit_dir + '.tgz', platform)
 
   if sys.platform == 'win32' and args.upload:
     UploadPDBToSymbolServer()
