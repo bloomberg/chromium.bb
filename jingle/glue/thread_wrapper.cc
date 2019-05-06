@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -13,7 +14,7 @@
 #include "base/stl_util.h"
 #include "base/threading/thread_local.h"
 #include "base/trace_event/trace_event.h"
-#include "third_party/webrtc/rtc_base/null_socket_server.h"
+#include "third_party/webrtc/rtc_base/physical_socket_server.h"
 
 namespace jingle_glue {
 
@@ -64,7 +65,8 @@ JingleThreadWrapper* JingleThreadWrapper::current() {
 
 JingleThreadWrapper::JingleThreadWrapper(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : task_runner_(task_runner),
+    : Thread(std::make_unique<rtc::PhysicalSocketServer>()),
+      task_runner_(task_runner),
       send_allowed_(false),
       last_task_id_(0),
       pending_send_event_(base::WaitableEvent::ResetPolicy::MANUAL,
