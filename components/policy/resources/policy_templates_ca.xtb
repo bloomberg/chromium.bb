@@ -305,6 +305,11 @@
       Si aquesta política s'estableix en "false", no es recullen dades sobre extensions i connectors.
 
       Aquesta política només funciona quan l'extensió <ph name="CHROME_REPORTING_EXTENSION_NAME" /> està activada i l'ordinador està inscrit amb <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="1560205870554624777">Controla si la funcionalitat de Kerberos està activada. Kerberos és un protocol d'autenticació que es pot fer servir per autenticar-se en aplicacions web i fitxers compartits.
+
+          Si aquesta política s'activa, la funcionalitat de Kerberos estarà activada. Els comptes de Kerberos es poden afegir a través de la política "Configura els comptes de Kerberos" o mitjançant la configuració dels comptes de Kerberos a la pàgina de configuració Usuaris.
+
+          Si aquesta política es desactiva o no s'estableix, la configuració dels comptes de Kerberos es desactivarà. No es pot afegir cap compte de Kerberos i no es pot fer servir l'autenticació de Kerberos. Tots els comptes de Kerberos existents i totes les contrasenyes emmagatzemades se suprimiran.</translation>
 <translation id="1561424797596341174">La política substitueix les compilacions de depuració de l'amfitrió d'accés remot</translation>
 <translation id="1561967320164410511">U2F més extensions per al testimoni individual</translation>
 <translation id="1574554504290354326">Aquesta opció de configuració està obsoleta, però pots utilitzar SafeBrowsingExtendedReportingEnabled. Activar o desactivar aquesta política és el mateix que establir SafeBrowsingExtendedReportingOptInAllowed en "false".
@@ -382,6 +387,12 @@
 
       La política s'ha de definir en un URL del qual <ph name="PRODUCT_OS_NAME" /> pugui baixar els Termes i condicions, que han de trobar-se com a text sense format proporcionat com a text/sense format de tipus MIME. No es permet l'etiquetatge.</translation>
 <translation id="1750315445671978749">Bloqueja totes les baixades</translation>
+<translation id="1762072363876276024">
+      Aquesta política s'aplica a la pantalla d'inici de sessió. Consulta també la política <ph name="SITE_PER_PROCESS_POLICY_NAME" />, que s'aplica a la sessió de l'usuari. Es recomana que les dues polítiques tinguin el mateix valor. Si els valors no coincideixen, es pot produir un retard en entrar en una sessió d'usuari mentre s'apliqui el valor especificat per la política de l'usuari.
+      Aquesta configuració, DeviceLoginScreenSitePerProcess, es pot utilitzar per impedir que els usuaris desactivin el comportament predeterminat de l'aïllament de tots els llocs web. Tingues en compte que la política DeviceLoginScreenIsolateOrigins també pot ser útil per aïllar altres orígens amb més precisió.
+      Si la política s'activa, els usuaris no podran desactivar el comportament predeterminat quan cada lloc web s'executi en el seu propi procés.
+      Si la política no es configura o es desactiva, l'usuari podrà canviar aquesta configuració (per exemple, utilitzant l'entrada "Desactiva l'aïllament de lloc web" a chrome://flags).
+      </translation>
 <translation id="1781356041596378058">Aquesta política també controla l'accés a les Opcions per a desenvolupadors d'Android. Si l'estableixes en "true", els usuaris no hi poden accedir. Si l'estableixes en "false" o la deixes sense establir, els usuaris hi poden accedir tocant set vegades el número de compilació que hi ha a l'aplicació de configuració d'Android.</translation>
 <translation id="1793346220873697538">Desactiva el mode d'impressió amb PIN de manera predeterminada</translation>
 <translation id="1797233582739332495">Mostra una sol·licitud periòdica a l'usuari per indicar-li que cal reiniciar el navegador</translation>
@@ -765,6 +776,11 @@ Deixar aquesta política sense establir és igual que activar l'opció, amb el f
       Si activeu o desactiveu aquesta política, els usuaris no la podran canviar ni anul·lar.
 
       Si no configureu aquesta política, els usuaris podran triar si volen fer servir la funció del servidor intermediari de compressió de dades.</translation>
+<translation id="2586162458524426376">
+      Aquesta política s'aplica a la pantalla d'inici de sessió. Consulta també la política <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, que s'aplica a la sessió de l'usuari.
+      Si la política s'activa, cadascun dels orígens indicats en una llista separada per comes s'executarà amb el seu propi procés. Així mateix, s'aïllaran els orígens indicats per subdominis (per exemple, en especificar https://example.com/, l'adreça https://foo.example.com/ també s'aïllarà com a part del lloc web https://example.com/).
+      Si la política no es configura o es desactiva, s'utilitzarà la configuració de l'aïllament del lloc web predeterminada per la plataforma a la pantalla d'inici de sessió.
+      </translation>
 <translation id="2587719089023392205">Estableix <ph name="PRODUCT_NAME" /> com a navegador predeterminat</translation>
 <translation id="2592091433672667839">La durada de la inactivitat abans no es mostri l'estalvi de pantalla es mostra a la pantalla d'inici de sessió en mode botiga</translation>
 <translation id="2596260130957832043">Controla si l'autenticació NTLMv2 està activada.
@@ -772,6 +788,7 @@ Deixar aquesta política sense establir és igual que activar l'opció, amb el f
           Totes les versions recents dels servidors de Samba i de Windows admeten NTLMv2. Aquesta política només s'ha de desactivar per permetre la compatibilitat amb versions anteriors i això redueix la seguretat de l'autenticació.
 
           Si aquesta política no s'estableix, l'opció predeterminada és "true" i s'activa l'autenticació NTLMv2.</translation>
+<translation id="26023406105317310">Configura els comptes de Kerberos</translation>
 <translation id="2604182581880595781">Configura les polítiques relacionades amb la funció Ús compartit dels fitxers de la xarxa.</translation>
 <translation id="2623014935069176671">Espereu que hi hagi una activitat inicial de l'usuari.</translation>
 <translation id="262740370354162807">Activa l'enviament de documents a <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1085,6 +1102,7 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
 <translation id="3159375329008977062">L'usuari té permís per exportar i importar contenidors de Crostini a través de la IU</translation>
 <translation id="3165808775394012744">Aquestes polítiques s'inclouen aquí perquè sigui fàcil suprimir-les.</translation>
 <translation id="316778957754360075">Aquesta versió no està disponible des de la versió 29 de <ph name="PRODUCT_NAME" />. La manera recomanada de definir col·leccions d'aplicacions/extensions allotjades per una organització és incloure el lloc que allotja els paquets CRX a ExtensionInstallSources i col·locar enllaços de baixada directa als paquets en una pàgina web. Es pot crear un menú d'aplicacions per a la pàgina web mitjançant la política ExtensionInstallForcelist.</translation>
+<translation id="3168968618972302728">Polítiques relacionades amb l'autenticació de Kerberos.</translation>
 <translation id="3171369832001535378">Plantilla per al nom d'amfitrió de la xarxa del dispositiu</translation>
 <translation id="3177802893484440532">Requereix comprovacions OCSP/CRL en línia per a ancoratges de confiança locals</translation>
 <translation id="3185009703220253572">des de la versió <ph name="SINCE_VERSION" /></translation>
@@ -1247,6 +1265,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="3591584750136265240">Configura el comportament de l'autenticació d'inici de sessió</translation>
 <translation id="3627678165642179114">Activació o desactivació del servei web de correcció ortogràfica</translation>
 <translation id="3628480121685794414">Permet la impressió per una cara</translation>
+<translation id="3643284063603988867">Activa la funció "Recorda la contrasenya"</translation>
 <translation id="3646859102161347133">Defineix el tipus de lupa</translation>
 <translation id="3653237928288822292">Icona del proveïdor de cerca predeterminat</translation>
 <translation id="3660510274595679517">
@@ -1550,6 +1569,15 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="4157003184375321727">Informació del SO i de la versió de microprogramari</translation>
 <translation id="4157594634940419685">Permet l'accés a impressores CUPS natives</translation>
 <translation id="4160962198980004898">Font de l'adreça MAC del dispositiu quan està connectat</translation>
+<translation id="4164601239783385546">Activa la funció d'accessibilitat de les tecles permanents.
+
+          Si aquesta política s'estableix en "true", les tecles permanents estaran sempre activades.
+
+          Si aquesta política s'estableix en "false", les tecles permanents estaran sempre desactivades.
+
+          Si estableixes aquesta política, els usuaris no la podran canviar ni substituir.
+
+          Si aquesta política no s'estableix, les tecles permanents es desactivaran d'entrada, però l'usuari les podrà activar en qualsevol moment.</translation>
 <translation id="4183229833636799228">Configuració predeterminada del connector <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">URL per validar el testimoni d'autenticació del client per a l'accés remot</translation>
 <translation id="4197038214024763371">Si aquesta política no s'estableix o no s'activa, l'usuari podrà fer servir el corrector ortogràfic.
@@ -1721,6 +1749,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="4557134566541205630">URL de la pestanya nova del proveïdor de cerca predeterminat</translation>
 <translation id="4567137030726189378">Permet l'ús de les Eines per a desenvolupadors</translation>
 <translation id="4578265298946081589">No reiniciïs el dispositiu quan l'usuari tanqui la sessió.</translation>
+<translation id="4591366717022345234">Proporciona als usuaris una compilació de correcció ràpida</translation>
 <translation id="4600786265870346112">Activa el cursor gran</translation>
 <translation id="4604931264910482931">Configura la llista negra de missatgeria nativa</translation>
 <translation id="4613508646038788144">Si la política es defineix com "false", el programari de tercers podrà injectar codi executable als processos de Chrome. Si la política no es defineix o es defineix com "true", el programari de tercers no podrà introduir codi executable als processos de Chrome.</translation>
@@ -1807,6 +1836,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="487460824085252184">Migra les dades automàticament sense demanar el consentiment de l'usuari.</translation>
 <translation id="4874982543810021567">Bloqueja WebUSB en aquests llocs web</translation>
 <translation id="4876805738539874299">Versió SSL màxima activada</translation>
+<translation id="4887274746092315609">Permet que els usuaris de SAML canviïn la contrasenya en una pàgina durant una sessió</translation>
 <translation id="4897928009230106190">Especifica els paràmetres utilitzats en fer una cerca suggerida amb POST. Consisteix en parelles de nom/valor separades per comes. Si un valor és un paràmetre de plantilla, com ara {searchTerms} a l'exemple anterior, se substituirà per dades de termes de cerca reals.
 
           Aquesta política és opcional. Si no es defineix, la sol·licitud de cerca suggerida s'enviarà mitjançant el mètode GET.
@@ -1992,6 +2022,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
       Si la política es defineix en "Legacy", només es permet el tipus d'encriptació RC4. Aquesta opció no és segura i s'ha d'utilitzar només en circumstàncies molt específiques.
 
       Consulta també https://wiki.samba.org/index.php/Samba_4.6_Features_added/changed#Kerberos_client_encryption_types.</translation>
+<translation id="5249453807420671499">Els usuaris poden afegir comptes de Kerberos</translation>
 <translation id="5255162913209987122">Es pot recomanar</translation>
 <translation id="527237119693897329">Us permet especificar els amfitrions de missatgeria nativa que no s'han de carregar.
 
@@ -2100,6 +2131,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
       Si s'estableix el valor d'aquesta política en un valor diferent a 0, la sessió de l'usuari de la demostració que tingui iniciada la sessió actualment es tancarà automàticament després d'un període d'inactivitat d'una durada determinada.
 
       El valor de la política s'ha d'especificar en mil·lisegons.</translation>
+<translation id="5508307164752647432">Activa la funcionalitat de Kerberos</translation>
 <translation id="5511702823008968136">Activa la barra d'adreces d'interès</translation>
 <translation id="5512418063782665071">URL de la pàgina d'inici</translation>
 <translation id="551639594034811656">Aquesta política defineix una llista de percentatges que determinen quina part dels dispositius <ph name="PRODUCT_OS_NAME" /> de l'UO cal actualitzar diàriament a partir del dia en què l'actualització es detecta per primer cop. El moment de detecció és posterior al de publicació, ja que pot passar una estona des que es publica l'actualització fins que el dispositiu comprova si hi ha actualitzacions.
@@ -2121,6 +2153,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
       Tingues en compte que, si la plataforma admet notificacions sobre polítiques, el retard d'actualització s'establirà en 24 hores (i s'ignoraran tots els valors predeterminats i el valor d'aquesta política), ja que es preveu que aquestes notificacions forcin una actualització automàtica cada vegada que canviï la política. Per tant, serà innecessari fer actualitzacions més freqüents.</translation>
 <translation id="5530347722229944744">Bloqueja baixades potencialment perilloses</translation>
 <translation id="5535973522252703021">Llista blanca del servidor de delegacions Kerberos</translation>
+<translation id="554903022911579950">Kerberos</translation>
 <translation id="555077880566103058">Permet que tots els llocs web executin el connector <ph name="FLASH_PLUGIN_NAME" /> automàticament</translation>
 <translation id="5559079916187891399">Aquesta política no té cap efecte a les aplicacions per a Android.</translation>
 <translation id="5560039246134246593">Afegeix un paràmetre a l'obtenció del valor seed de les variacions a <ph name="PRODUCT_NAME" />.
@@ -2202,6 +2235,12 @@ Si la política no es defineix, els usuaris podran triar si el prestatge s'ha d'
       Si aquesta política s'estableix en "true" o es deixa sense establir, la sessió de convidat gestionada funcionarà com una sessió gestionada i se suprimiran moltes de les restriccions de les sessions públiques normals.
 
       Si aquesta política s'estableix, l'usuari no la podrà canviar ni substituir.</translation>
+<translation id="5711016543513883877">
+      Si la política s'activa, cadascun dels orígens indicats en una llista separada per comes s'executarà en el seu propi procés. Així mateix, s'aïllaran els orígens indicats per subdominis (per exemple, en especificar https://example.com/, l'adreça https://foo.example.com/ també s'aïllarà com a part del lloc web https://example.com/).
+      Si la política no es configura o es desactiva, l'usuari podrà canviar aquesta configuració.
+
+      NOTA: aquesta política no s'aplica a Android. Per activar IsolateOrigins a Android, fes servir la configuració de la política IsolateOriginsAndroid.
+      </translation>
 <translation id="572155275267014074">Configuració d'Android</translation>
 <translation id="5722934961007828462">Si aquesta configuració està activada, <ph name="PRODUCT_NAME" /> comprovarà sempre la revocació per als certificats del servidor que estiguin correctament validats i signats per certificats de CA instal·lats localment.
 
@@ -3059,6 +3098,11 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Si la política no s'estableix o s'estableix en false, s'activarà <ph name="TLS_FALSE_START" />. Si s'estableix en true, <ph name="TLS_FALSE_START" /> es desactivarà.</translation>
 <translation id="7433714841194914373">Activa Instant</translation>
 <translation id="7443616896860707393">Línies d'ordre d'autenticació bàsica HTTP de diversos orígens</translation>
+<translation id="7454519673779830548">Afegeix comptes de Kerberos emplenats automàticament. Si les credencials de Kerberos coincideixen amb les credencials d'inici de sessió, es pot configurar un compte perquè recuperi les credencials d'inici de sessió especificant "${{LOGIN_EMAIL}}" i "${{PASSWORD}}" per a l'adreça electrònica principal i la contrasenya, respectivament, de manera que el tiquet de Kerberos es pugui recuperar automàticament tret que es configuri l'autenticació de dos factors. Els usuaris no podran modificar els comptes afegits amb aquesta política.
+
+          Si aquesta política s'activa, la llista de comptes definits per la política s'afegirà a la configuració dels comptes de Kerberos.
+
+          Si aquesta política es desactiva o no s'estableix, no s'afegirà cap compte a la configuració dels comptes de Kerberos i se suprimiran tots els comptes afegits anteriorment amb aquesta política. Els usuaris poden continuar afegint comptes manualment si s'activa la política "Els usuaris poden afegir comptes de Kerberos".</translation>
 <translation id="7458437477941640506">No torna a la versió de destinació si la versió del sistema operatiu és més recent que la de destinació. Les actualitzacions també estan desactivades.</translation>
 <translation id="7464991223784276288">Limita que les galetes coincideixin amb URL de la sessió actual</translation>
 <translation id="7469554574977894907">Activa els suggeriments de cerca</translation>
@@ -3182,6 +3226,11 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
           Si la política RestoreOnStartup s'estableix en restaurar els URL de sessions prèvies, aquesta política no es respectarà i s'emmagatzemaran permanentment galetes per a aquests llocs web.</translation>
 <translation id="7683777542468165012">Actualització de la política dinàmica</translation>
+<translation id="7694245791806617022">Controla si la funció "Recorda la contrasenya" està activada al diàleg d'autenticació de Kerberos. Les contrasenyes s'emmagatzemen encriptades en un disc al qual només pot accedir el dimoni del sistema Kerberos durant una sessió de l'usuari.
+
+          Si aquesta política s'activa o no s'estableix, els usuaris poden decidir si volen que es recordin les contrasenyes de Kerberos perquè no les hagin de tornar a introduir. Els tiquets de Kerberos es recuperen automàticament tret que es requereixi una autenticació addicional (autenticació de dos factors).
+
+          Si aquesta política es desactiva, les contrasenyes no es recordaran mai i totes les contrasenyes emmagatzemades anteriorment se suprimiran. Els usuaris hauran d'introduir la contrasenya cada vegada que s'hagin d'autenticar al sistema Kerberos. En funció de la configuració del servidor, això acostuma a passar des de cada 8 hores fins a cada certs mesos.</translation>
 <translation id="7694807474048279351">Programa un reinici automàtic un cop s'hagi aplicat una actualització de <ph name="PRODUCT_OS_NAME" />.
 
       Si el valor d'aquesta política s'estableix com a vertader, es programa un reinici automàtic quan l'actualització de <ph name="PRODUCT_OS_NAME" /> s'ha aplicat i es necessita un reinici per completar el procés d'actualització. El reinici es programa immediatament, però es podria aplaçar al dispositiu fins a 24 hores si un usuari està fent servir el dispositiu actualment.
@@ -3215,6 +3264,14 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Aquesta política està dissenyada perquè les empreses puguin migrar els servidors que ja tenen a HTTP/0.9. Se suprimirà en el futur.
 
       Si no s'estableix cap valor, es desactivarà la compatibilitat amb HTTP/0.9 en tots els ports no predeterminats.</translation>
+<translation id="7726421241038987229">
+      Aquesta configuració, SitePerProcess, es pot utilitzar per impedir que els usuaris desactivin el comportament predeterminat de l'aïllament de tots els llocs web. Tingues en compte que la política IsolateOrigins també pot ser útil per aïllar altres orígens amb més precisió.
+      Si la política s'activa, els usuaris no podran desactivar el comportament predeterminat quan cada lloc web s'executi en el seu propi procés.
+      Si la política no es configura o es desactiva, l'usuari podrà desactivar l'aïllament de lloc web (per exemple, utilitzant l'entrada "Desactiva l'aïllament de lloc web" a chrome://flags).  Si la política es desactiva o no es configura, l'aïllament de lloc web no es desactivarà.
+      A <ph name="PRODUCT_OS_NAME" />, també es recomana establir la política <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> del dispositiu en el mateix valor. Si els valors especificats per les dues polítiques no coincideixen, es pot produir un retard en entrar en una sessió d'usuari mentre s'apliqui el valor especificat per la política de l'usuari.
+
+      NOTA: aquesta política no s'aplica a Android. Per activar SitePerProcess a Android, fes servir la configuració de la política SitePerProcessAndroid.
+      </translation>
 <translation id="7747447585227954402">Permet que els dispositius utilitzin un connector <ph name="PLUGIN_VM_NAME" /> a <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="7749402620209366169">Activa l'autenticació de dos factors per als amfitrions d'accés remot en lloc d'un PIN especificat per l'usuari.
 
@@ -3274,6 +3331,11 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Determina l'identificador de l'extensió que s'ha d'utilitzar com a estalvi de pantalla a la pantalla d'inici de sessió. L'extensió ha de formar part de l'AppPack, que està configurat per a aquest domini a través de la política DeviceAppPack.</translation>
 <translation id="7882857838942884046">Si desactives Google Sync, l'opció Còpia de seguretat i restauració d'Android no funcionarà correctament.</translation>
 <translation id="7882890448959833986">Suprimeix l'advertiment de sistema operatiu no compatible</translation>
+<translation id="7889788745439330797">Controla si els usuaris poden afegir comptes de Kerberos.
+
+          Si aquesta política s'activa o no s'estableix, els usuaris podran afegir comptes de Kerberos des de la configuració dels comptes de Kerberos a la pàgina de configuració Usuaris. Els usuaris tenen un control complet dels comptes que han afegit i poden modificar-los o suprimir-los.
+
+          Si aquesta política es desactiva, els usuaris no podran afegir comptes de Kerberos. Els comptes només es poden afegir a través de la política "Configura comptes de Kerberos". Aquesta és una manera eficaç de bloquejar els comptes.</translation>
 <translation id="7895553628261067384">Accés remot</translation>
 <translation id="7902255855035461275">Els patrons d'aquesta llista es compararan amb l'origen de seguretat
       de l'URL que has sol·licitat. Si es troba alguna coincidència, es permetrà l'accés

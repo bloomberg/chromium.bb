@@ -356,6 +356,11 @@
       Ha a házirend értéke hamis, akkor nem történik meg a bővítmények és a beépülő modulok adatainak begyűjtése.
 
       A házirend csak bekapcsolt <ph name="CHROME_REPORTING_EXTENSION_NAME" /> mellett és a <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> nevű tokent felhasználva érvényes.</translation>
+<translation id="1560205870554624777">Azt vezérli, hogy engedélyezve vannak-e a Kerberos-funkciók. A Kerberos egy hitelesítési protokoll, amely lehetővé teszi a hitelesítést webes alkalmazásoknál és fájlmegosztásoknál.
+
+          Ha a házirend engedélyezett, a Kerberos-funkciók is engedélyezettek. Kerberos-fiókok vagy a „Kerberos-fiókok konfigurálása” házirenden, vagy a beállítások Személy szakaszában, a Kerberos-fiókbeállításokon keresztül adhatók hozzá.
+
+          Ha a házirend le van tiltva, vagy nincs beállítva, a Kerberos-fiókbeállítások le vannak tiltva. Ebben az esetben nem lehetséges a Kerberos-fiókok hozzáadása, és nem használható Kerberos-hitelesítés. A rendszer az összes meglévő Kerberos-fiókot törli, az összes tárolt jelszóval együtt.</translation>
 <translation id="1561424797596341174">A házirend felülírja a távoli elérésű gazdagép hibakeresés végzésére szolgáló buildjeit</translation>
 <translation id="1561967320164410511">U2F plusz bővítmények az egyéni hitelesítéshez</translation>
 <translation id="1574554504290354326">A beállítást megszüntettük; használja helyette a SafeBrowsingExtendedReportingEnabled házirendet. A SafeBrowsingExtendedReportingEnabled engedélyezése vagy letiltása a SafeBrowsingExtendedReportingOptInAllowed hamis értékre állításával egyezik meg.
@@ -442,6 +447,12 @@
 
       A házirend beállításánál egy URL-t kell megadni, amelyről a(z) <ph name="PRODUCT_OS_NAME" /> letöltheti az Általános Szerződési Feltételeket. Az Általános Szerződési Feltételek egyszerű szöveg formátumban legyenek, amelyet text/plain MIME típusként kell megjeleníteni. HTML-kódok nem engedélyezettek.</translation>
 <translation id="1750315445671978749">Az összes letöltés letiltása</translation>
+<translation id="1762072363876276024">
+      Ez a házirend a bejelentkezési képernyőre vonatkozik. Lásd még az <ph name="SITE_PER_PROCESS_POLICY_NAME" /> házirendet is, amely a felhasználói munkamenetre vonatkozik. Javasolt mindkét házirendet ugyanarra az értékre állítani. Ha az értékek nem egyeznek, az késést okozhat a felhasználói munkamenetbe való belépés során, miközben a böngésző éppen alkalmazni próbálja a felhasználói házirend által meghatározott értéket.
+      Ez a DeviceLoginScreenSitePerProcess beállítás használható annak letiltására, hogy a felhasználók kikapcsolhassák az összes webhelyet izoláló alapértelmezett viselkedést. Ne feledje, hogy a DeviceLoginScreenIsolateOrigins házirend is hasznos lehet további, pontosabb eredetek izolálására.
+      Ha a házirend engedélyezett, a felhasználók nem tudják kikapcsolni az alapértelmezett viselkedést, amelynél minden webhely saját folyamatként fut.
+      Ha a házirend nincs beállítva, vagy le van tiltva, a felhasználók módosíthatják ezt a beállítást (pl. a chrome://flags oldalon található „Disable site isolation” [Webhely-elszigetelés letiltása] beállítás használatával).
+      </translation>
 <translation id="1781356041596378058">A házirend meghatározza az Android fejlesztői beállításokhoz való hozzáférést is. Ha igaz értékre állítja ezt a házirendet, akkor a felhasználók nem férhetnek hozzá a fejlesztői beállításokhoz. Ha hamis értékre állítja a házirendet, illetve nem ad meg beállítást, akkor a felhasználók hozzáférhetnek a fejlesztői beállításokhoz, ha hétszer a build számára koppintanak az Android Beállítások alkalmazásában.</translation>
 <translation id="1793346220873697538">PIN-kóddal való nyomtatás alapértelmezett letiltása</translation>
 <translation id="1797233582739332495">Ismétlődő értesítés megjelenítése a felhasználónak arról, hogy újraindításra van szükség</translation>
@@ -863,6 +874,11 @@
 
       Ha a szabály nincs beállítva, a felhasználó eldöntheti, hogy használja-e a rendelkezésre álló adattömörítő proxyfunkciót.</translation>
 <translation id="257788512393330403">A jelszót hatóránként meg kell adni</translation>
+<translation id="2586162458524426376">
+      Ez a házirend a bejelentkezési képernyőre vonatkozik. Lásd még az <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> házirendet is, amely a felhasználói munkamenetre vonatkozik.
+      Ha a házirend engedélyezett, a vesszővel tagolt listában szereplő összes megnevezett eredet önálló folyamatként fut majd. Ez aldomainek szerint is letiltja a megnevezett eredeteket; pl. a https://example.com/ megadása a https://foo.example.com/ webhely izolálását is eredményezi, mert ez a https://example.com/ webhely része.
+      Ha a házirend nincs beállítva, vagy le van tiltva, akkor a rendszer az operációs rendszer alapértelmezett webhely-elszigetelési beállításait fogja használni a bejelentkezési képernyőn.
+      </translation>
 <translation id="2587719089023392205">A <ph name="PRODUCT_NAME" /> legyen az alapértelmezett böngészőm</translation>
 <translation id="2592091433672667839">Inaktivitás időtartama, mielőtt megjelenne a képernyőkímélő a bejelentkezési képernyőn kiállító módban</translation>
 <translation id="2592162121850992309">Ha a házirend beállítása igaz, vagy ha nincs beállítva, a hardveres gyorsítás engedélyezve lesz, amennyiben a GPU adott funkciója nincs tiltólistán.
@@ -873,6 +889,7 @@
           A Samba- és Windows-szerverek összes újabb verziója támogatja az NTLMv2 hitelesítést. Ennek kikapcsolása csökkenti a hitelesítés biztonságát, és csak az előző verziókkal való kompatibilitáshoz ajánlott.
 
           Amennyiben a házirend nincs beállítva, az alapértelmezett értéke „igaz”, és az NTLMv2 engedélyezett.</translation>
+<translation id="26023406105317310">Kerberos-fiókok konfigurálása</translation>
 <translation id="2604182581880595781">A Hálózati fájlmegosztásokra vonatkozó házirendek konfigurálása.</translation>
 <translation id="2623014935069176671">Várakozás a kezdeti felhasználói tevékenységre</translation>
 <translation id="262740370354162807">A dokumentumok <ph name="CLOUD_PRINT_NAME" /> szolgáltatás részére való benyújtásának engedélyezése</translation>
@@ -1199,6 +1216,7 @@
 <translation id="3159375329008977062">A felhasználó számára engedélyezett a Crostini-tárolók exportálása és importálása a kezelőfelületen keresztül</translation>
 <translation id="3165808775394012744">Ezek a házirendek azért kerültek ide, hogy egyszerűen el lehessen őket távolítani.</translation>
 <translation id="316778957754360075">Ez a házirend többé nincs jelen a <ph name="PRODUCT_NAME" /> 29-es verziójától kezdve. A szervezet által tárolt bővítmény- és alkalmazásgyűjtemények beállításához azt javasoljuk, hogy a CRX-csomagokat tartalmazó webhelyet vegye fel az ExtensionInstallSources házirendbe, és helyezzen el a csomagokra mutató közvetlen letöltési linkeket egy weboldalon. A weboldalhoz az ExtensionInstallForcelist házirend használatával lehet indítót létrehozni.</translation>
+<translation id="3168968618972302728">Kerberos-hitelesítéssel kapcsolatos házirendek.</translation>
 <translation id="3171369832001535378">Eszköz hálózatának gazdagépnévsablonja</translation>
 <translation id="3172512016079904926">Engedélyezi a natív üzenetváltási gazdagépek felhasználói szintű telepítését.
 
@@ -1390,6 +1408,7 @@
 <translation id="3631099945620529777">Hamis érték esetén a „Folyamat leállítása” gomb le van tiltva a Feladatkezelőben.
 
       Igaz érték esetén, vagy ha nincs konfigurálva, akkor a felhasználó leállíthatja a folyamatokat a Feladatkezelőben.</translation>
+<translation id="3643284063603988867">A „Jelszómegjegyzés” funkció engedélyezése</translation>
 <translation id="3646859102161347133">Nagyító típusának beállítása</translation>
 <translation id="3653237928288822292">Alapértelmezett keresési szolgáltató ikonja</translation>
 <translation id="3660510274595679517">
@@ -1738,6 +1757,15 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
           Ez a beállítás felülbírálja a RemoteAccessHostClientDomain házirendet (ha ez utóbbi be van állítva).
 
           Lásd még: RemoteAccessHostDomainList.</translation>
+<translation id="4164601239783385546">Engedélyezi a beragadó billentyűk kisegítő lehetőségeit.
+
+          Ha a házirend igaz értékre van beállítva, a beragadó billentyűk mindig engedélyezve lesznek.
+
+          Ha a házirend hamis értékre van beállítva, a beragadó billentyűk mindig le lesznek tiltva.
+
+          Ha beállítja ezt a házirendet, a felhasználók nem módosíthatják vagy bírálhatják felül.
+
+          Ha nem állítja be a házirendet, akkor a beragadó billentyűk kezdetben le vannak tiltva, de a felhasználó bármikor engedélyezheti őket.</translation>
 <translation id="4183229833636799228">Alapértelmezett <ph name="FLASH_PLUGIN_NAME" />-beállítás</translation>
 <translation id="4192388905594723944">URL a távoli hozzáférésű kliens hitelesítési tokenjének ellenőrzéséhez</translation>
 <translation id="4197038214024763371">Ha a házirend nincs beállítva, illetve engedélyezve van, a felhasználó használhatja a helyesírás-ellenőrzés funkciót.
@@ -1924,6 +1952,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="4578912515887794133">Ha a beállítás engedélyezve van, a távoli hozzáférésű gazdagép összeveti a helyi felhasználó (akihez a gazdagép társítva van) nevét és a gazdagép tulajdonosaként regisztrált Google-fiók nevét (amely „johndoe”, ha a gazdagép tulajdonosa a „johndoe@example.com” Google-fiók).  A távoli hozzáférésű gazdagép nem indul el, ha a gazdagép tulajdonosának neve eltér annak a helyi felhasználónak a nevétől, akihez a gazdagép társítva van.  A RemoteAccessHostMatchUsername házirendet a RemoteAccessHostDomain házirenddel együtt használva kényszeríthető az is, hogy a gazdagép tulajdonosának Google-fiókja egy meghatározott domainhez (pl. „example.com”) legyen társítva.
 
           Ha ez a beállítás le van tiltva, illetve nincs megadva, akkor a távoli hozzáférésű gazdagép bármely helyi felhasználóhoz társítható.</translation>
+<translation id="4591366717022345234">A felhasználók számára Quick Fix Buildet biztosít</translation>
 <translation id="4600786265870346112">Nagy egérmutató engedélyezése</translation>
 <translation id="4604931264910482931">Natív üzenetkezelő tiltólista konfigurálása</translation>
 <translation id="4613508646038788144">Ha a házirend értéke „hamis”, akkor a harmadik felek szoftverei számára engedélyezve lesz a futtatható kódok Chrome-folyamatokba történő beszúrása. Ha a házirend nincs beállítva, vagy értéke „igaz”, akkor a harmadik felek szoftverei nem tudnak beszúrni futtatható kódot a Chrome-folyamatokba.</translation>
@@ -2010,6 +2039,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="487460824085252184">Automatikus áttelepítés, felhasználói beleegyezés kérése nélkül.</translation>
 <translation id="4874982543810021567">WebUSB letiltása ezeken a webhelyeken</translation>
 <translation id="4876805738539874299">Engedélyezi a legmagasabb SSL-verziót</translation>
+<translation id="4887274746092315609">Lehetővé teszi az oldalak számára a munkameneten belüli jelszómódosítást SAML-felhasználók esetében</translation>
 <translation id="4897928009230106190">Megadja a javaslatok POST segítségével történő keresésekor használt paramétereket. Vesszővel elválasztott név–érték párokat tartalmaz. Ha az egyik érték egy sablonparaméter, ami a fenti példában a {searchTerms}, valódi keresési kifejezések kerülnek a helyére.
 
           Ez egy opcionális házirend. Ha nincs beállítva, a javasolt keresési kérelmet a rendszer a GET metódus segítségével továbbítja.
@@ -2217,6 +2247,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha a házirendet „Régi” módra állítja, csak az RC4 titkosítási típus engedélyezett. Ez a lehetőség nem biztonságos, és csak nagyon speciális esetben lehet rá szükség.
 
       Lásd még: https://wiki.samba.org/index.php/Samba_4.6_Features_added/changed#Kerberos_client_encryption_types.</translation>
+<translation id="5249453807420671499">A felhasználók hozzáadhatnak Kerberos-fiókokat</translation>
 <translation id="5255162913209987122">Ajánlható</translation>
 <translation id="527237119693897329">Lehetővé teszi annak meghatározását, hogy mely natív üzenetkezelő gazdagépeket ne töltse be a rendszer.
 
@@ -2352,6 +2383,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
        Amikor a házirend be van állítva, és az értéke nem 0, akkor az aktuális bejelentkezett bemutatófelhasználót a rendszer meghatározott idő elteltével automatikusan kijelentkezteti.
 
        A házirend értékét ezredmásodpercben kell megadni.</translation>
+<translation id="5508307164752647432">Kerberos-funkciók engedélyezése</translation>
 <translation id="5511702823008968136">Könyvjelzősáv engedélyezése</translation>
 <translation id="5512418063782665071">Kezdőoldal URL-je</translation>
 <translation id="551639594034811656">Ez a házirend megadja azon százalékok listáját, amelyek meghatározzák, hogy a szervezeti egység (SZE) <ph name="PRODUCT_OS_NAME" />-eszközeinek mekkora része frissül naponta a frissítés első észlelésétől kezdődően. Az észlelés ideje későbbi, mint a frissítés közzététele, mivel a közzététel után eltarthat bizonyos ideig, mire az eszköz frissítéseket keres.
@@ -2373,6 +2405,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Felhívjuk figyelmét, hogy ha az operációs rendszer támogatja a házirendekkel kapcsolatos értesítéseket, akkor a frissítési időszak 24 órás lesz (azaz a böngésző nem veszi figyelembe sem az alapértelmezett, sem a beállított értékeket), ugyanis a házirenddel kapcsolatos értesítéseknek automatikusan ki kell kényszeríteniük a frissítést, amikor egy házirend megváltozik, így szükségtelen gyakrabban frissíteni.</translation>
 <translation id="5530347722229944744">Potenciálisan veszélyes letöltések letiltása</translation>
 <translation id="5535973522252703021">Kerberos felhatalmazási szerver kivétellistája</translation>
+<translation id="554903022911579950">Kerberos</translation>
 <translation id="555077880566103058">A(z) <ph name="FLASH_PLUGIN_NAME" /> beépülő modul automatikus futtatásának engedélyezése minden webhelyen</translation>
 <translation id="5559079916187891399">A házirend nem vonatkozik az Android-alkalmazásokra.</translation>
 <translation id="5560039246134246593">Paraméter hozzáadása a Variations seed lekéréséhez a(z) <ph name="PRODUCT_NAME" /> termékben.
@@ -2484,6 +2517,16 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
       A felhasználó nem képes a beállított házirend módosítására és felülbírálására.</translation>
 <translation id="5708969689202733975">Engedélyezett gyorsfeloldási módok konfigurálása</translation>
+<translation id="5711016543513883877">
+      Ha a házirend engedélyezett, a vesszővel tagolt listában szereplő összes
+      megnevezett eredet önálló folyamatként fut majd. Ez aldomainek szerint is
+      letiltja a megnevezett eredeteket; pl. a https://example.com/ megadása
+      a https://foo.example.com/ webhely izolálását is eredményezi, mert ez a
+      https://example.com/ webhely része.
+      Ha a házirend nincs beállítva, vagy le van tiltva, a felhasználók módosíthatják ezt a beállítást.
+
+      MEGJEGYZÉS: Ez a házirend nem alkalmazható Android rendszeren. Ha engedélyezni szeretné az IsolateOrigins házirendet Androidon, használja az IsolateOriginsAndroid házirend-beállítást.
+      </translation>
 <translation id="572155275267014074">Android-beállítások</translation>
 <translation id="5722934961007828462">Ha engedélyezve van ez a beállítás, a <ph name="PRODUCT_NAME" /> mindig végez visszavonási ellenőrzést azon szervertanúsítványok esetén, amelyeknek sikeres a hitelesítése, és amelyeket helyileg telepített CA-tanúsítványokkal írták alá.
 
@@ -2566,8 +2609,8 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="5898486742390981550">Ha több felhasználó van bejelentkezve, csak az elsődleges felhasználó használhat Android-alkalmazásokat.</translation>
 <translation id="5901427587865226597">Csak kétoldalas nyomtatás</translation>
 <translation id="5903898512448364160">
-      Ha a házirend igaz értékre van beállítva, ütközés esetén a felhőbeli házirend előnyt élvez az operációs rendszer házirendjével szemben.
-      Ha a házirend hamis értékre van beállítva, vagy beállítatlanul marad, az operációs rendszer házirendje élvez előnyt, amennyiben ütközik a felhőbeli házirenddel.
+      Ha a házirend igaz értékre van beállítva, ütközés esetén a felhőbeli házirend előnyt élvez a platform házirendjével szemben.
+      Ha a házirend hamis értékre van beállítva, vagy beállítatlanul marad, ütközés esetén a platform házirendje előnyt élvez a felhőbeli házirenddel szemben.
 
       Ez a házirend csak gépi platformok kötelező házirendjeként áll rendelkezésre, és csak a gépek hatókörére érvényes, felhővel kapcsolatos házirendekre vonatkozik.
       </translation>
@@ -3396,6 +3439,11 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
 <translation id="7433714841194914373">Az Instant funkció engedélyezése</translation>
 <translation id="7434202861148928348">A kötelező domainnevek konfigurálása a távoli hozzáférésű ügyfeleknél</translation>
 <translation id="7443616896860707393">Cross-origin HTTP Basic Auth-kérdés</translation>
+<translation id="7454519673779830548">Előre kitöltött Kerberos-fiókok hozzáadása. Ha a Kerberos hitelesítési adatok megegyeznek a bejelentkezési adatokkal, a fiók beállítható úgy, hogy újra felhasználja a bejelentkezési adatokat a „${{LOGIN_EMAIL}}” (bejelentkezési e-mail-cím) és „${{PASSWORD}}” (jelszó) mezők megadásával, így a rendszer automatikusan lekérheti a Kerberos-jegyet, kivéve ha be van állítva kétlépcsős azonosítás. A felhasználók nem módosíthatják a házirenddel hozzáadott fiókokat.
+
+          Ha a házirend engedélyezett, a házirend által meghatározott fiókok listáját hozzáadja a rendszer a Kerberos-fiókbeállításokhoz.
+
+          Ha a házirend le van tiltva, vagy nincs beállítva, a rendszer nem ad hozzá fiókokat a Kerberos-fiókbeállításokhoz, és eltávolítja az ezzel a házirenddel korábban hozzáadott fiókokat. Ha engedélyezve van „A felhasználók hozzáadhatnak Kerberos-fiókokat” házirend, a felhasználók manuálisan továbbra is hozzáadhatnak fiókokat.</translation>
 <translation id="7458437477941640506">Ne állítsa vissza a célverziót, ha az operációs rendszer verziója újabb a célverziónál. A frissítések is le vannak tiltva.</translation>
 <translation id="7464991223784276288">Cookie-k korlátozása egyező URL-ekről az aktuális munkamenetre</translation>
 <translation id="7469554574977894907">Keresési javaslatok engedélyezése</translation>
@@ -3528,6 +3576,11 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
 <translation id="7687943045976362719">Ha be van állítva ez a házirend, a megadott tartalomtípusokat a <ph name="PRODUCT_FRAME_NAME" /> kezeli.
 
           Ha nincs beállítva a házirend, akkor a böngésző az alapértelmezett megjelenítőt használja az összes webhely esetében. (Az alapértelmezett megjelenítőt a <ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" /> házirenddel lehet beállítani.)</translation>
+<translation id="7694245791806617022">Azt vezérli, hogy engedélyezve van-e a „Jelszómegjegyzés” funkció a Kerberos-hitelesítési párbeszédpanelban. A rendszer a lemezen, titkosítva tárolja a jelszavakat, amelyekhez csak a Kerberos rendszerdémonon keresztül, csak felhasználói munkamenet során lehet hozzáférni.
+
+          Ha a házirend engedélyezett, vagy nincs beállítva, a felhasználók dönthetnek arról, hogy szeretnék-e megjegyeztetni a Kerberos-jelszavakat, hogy ne kelljen őket újra beírniuk. A rendszer automatikusan lekéri a Kerberos-jegyeket, kivéve ha további hitelesítésre van szükség (kétlépcsős azonosítás).
+
+          Ha a házirend le van tiltva, a rendszer sosem jegyzi meg a jelszavakat, és eltávolítja az összes, korábban eltárolt jelszót. A felhasználóknak minden alkalommal be kell írniuk jelszavukat, amikor a Kerberos rendszeren keresztüli hitelesítésre van szükség. A szerver beállításaitól függően erre általában nyolc órától több hónapig terjedő időszakonként kerül sor.</translation>
 <translation id="7694807474048279351">Automatikus újraindítás ütemezése egy <ph name="PRODUCT_OS_NAME" />-frissítés alkalmazása után.
 
       Ha a házirend értéke igaz, akkor a rendszer automatikus újraindítást ütemez be egy <ph name="PRODUCT_OS_NAME" />-frissítés alkalmazása után, és az újraindítást végre kell hajtani a frissítési folyamat befejezéséhez. Az újraindítás azonnal megtörténik, ám ha a felhasználó éppen használja az eszközt, akkor legfeljebb 24 órával késleltethető.
@@ -3561,6 +3614,15 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
       A házirend célja, hogy lehetőséget adjon a vállalatoknak arra, hogy a  meglévő szervereiket áttelepítsék HTTP/0.9-ről. A házirendet a jövőben eltávolítjuk.
 
       Ha nem állítja be ezt a házirendet, akkor a HTTP/0.9 le lesz tiltva a nem alapértelmezett portokon.</translation>
+<translation id="7726421241038987229">
+      Ez a SitePerProcess beállítás használható annak letiltására, hogy a felhasználók kikapcsolhassák az összes webhelyet izoláló alapértelmezett viselkedést. Ne feledje, hogy az IsolateOrigins házirend is hasznos lehet további, pontosabb eredetek izolálására.
+      Ha a házirend engedélyezett, a felhasználók nem tudják kikapcsolni az alapértelmezett viselkedést, amelynél minden webhely saját folyamatként fut.
+      Ha a házirend nincs beállítva, vagy le van tiltva, a felhasználók kikapcsolhatják a webhely-elszigetelést
+      (pl. a chrome://flags oldalon található „Disable site isolation” [Webhely-elszigetelés letiltása] beállítás használatával).  A házirend letiltása és/vagy beállításának mellőzése nem kapcsolja ki a webhely-elszigetelést.
+      A <ph name="PRODUCT_OS_NAME" /> rendszeren ajánlott a <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> eszközházirendet is ugyanerre az értékre állítani. Ha a két házirend által megadott értékek nem egyeznek, az késést okozhat a felhasználói munkamenetbe való belépés során, miközben a böngésző éppen alkalmazni próbálja a felhasználói házirend által meghatározott értéket.
+
+      MEGJEGYZÉS: Ez a házirend nem alkalmazható Android rendszeren. Ha engedélyezni szeretné a SitePerProcess házirendet Androidon, használja a SitePerProcessAndroid házirend-beállítást.
+      </translation>
 <translation id="7747447585227954402"><ph name="PLUGIN_VM_NAME" /> használatának engedélyezése az eszközök számára <ph name="PRODUCT_OS_NAME" /> rendszeren</translation>
 <translation id="7749402620209366169">Engedélyezi a kétlépcsős azonosítást a távoli hozzáférésű gazdagépekhez a felhasználóspecifikus PIN-kód helyett.
 
@@ -3626,6 +3688,11 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
       Meghatározza a bejelentkezési képernyőn képernyőkímélőként használni kívánt bővítmény azonosítóját. A bővítménynek abban az alkalmazáscsomagban kell lennie, amely meg van határozva ennél a domainnél az DeviceAppPack házirend használatával.</translation>
 <translation id="7882857838942884046">A Google Sync szolgáltatása esetén az Android Backup és az Android Restore szolgáltatás nem fog megfelelően működni.</translation>
 <translation id="7882890448959833986">A nem támogatott operációs rendszerre vonatkozó figyelmeztetés elrejtése</translation>
+<translation id="7889788745439330797">Azt vezérli, hogy a felhasználók hozzáadhatnak-e Kerberos-fiókokat.
+
+          Ha a házirend engedélyezett, vagy nincs beállítva, a felhasználók hozzáadhatnak Kerberos-fiókokat a beállítások Személy szakaszában, a Kerberos-fiókbeállításokon keresztül. A felhasználók teljeskörűen dönthetnek az általuk hozzáadott fiókokkal kapcsolatban, módosíthatják és eltávolíthatják őket.
+
+          Ha a házirend le van tiltva, a felhasználók nem adhatnak hozzá Kerberos-fiókokat. Ebben az esetben fiókokat csak a „Kerberos-fiókok konfigurálása” házirenden keresztül lehet hozzáadni. Ez hatékony módja a fiókok lezárásának.</translation>
 <translation id="7895553628261067384">Távoli hozzáférés</translation>
 <translation id="7902255855035461275">A listában szereplő mintákat a böngésző egyezteti a kérelmező URL
       biztonsági eredetével. Egyezés esetén a videorögzítő

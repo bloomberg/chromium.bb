@@ -60,6 +60,7 @@
 <translation id="2908441821576996758">הזן רשימה של כתובות אימייל המופרדות באמצעות פסיקים.</translation>
 <translation id="2940813599313844715">אובייקט</translation>
 <translation id="2942448076852699108">תוכן מודגש</translation>
+<translation id="2983835398644161987">יציאה ממצב 'תמונה בתוך תמונה'</translation>
 <translation id="3040011195152428237">קישור</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3075154866155599887">הזן ערך חוקי. השדה ריק או שהוא מכיל תאריך לא חוקי.</translation>
@@ -79,6 +80,7 @@
 <translation id="3822383571486410024">הארך טקסט זה ל-<ph name="MIN_CHARACTERS" /> תווים או יותר (אתה משתמש כרגע ב-<ph name="CURRENT_LENGTH" /> תווים).</translation>
 <translation id="383465348367842624">חלק ולאחריו '<ph name="ATSIGN" />' לא אמור לכלול את הסמל '<ph name="INVALIDCHARACTER" />'.</translation>
 <translation id="3846214748874656680">צא ממסך מלא</translation>
+<translation id="3904511540324382638">יציאה ממצב 'תמונה בתוך תמונה'</translation>
 <translation id="3920932319529768807">סיכום</translation>
 <translation id="3924558731517983934">יישום</translation>
 <translation id="3944740393230681990">פרולוג</translation>

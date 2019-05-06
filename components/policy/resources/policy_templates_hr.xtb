@@ -346,6 +346,11 @@
       Ako se pravilo postavi na False, ne prikupljaju se podaci proširenja i dodataka.
 
       To se pravilo primjenjuje samo kada je omogućeno proširenje <ph name="CHROME_REPORTING_EXTENSION_NAME" />, a računalo je prijavljeno tokenom <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="1560205870554624777">Upravlja time je li omogućena funkcija Kerberos. Kerberos je protokol za autentifikaciju koji se može koristiti za autentifikaciju za web-aplikacije i dijeljenje datoteka.
+
+          Ako se to pravilo omogući, omogućena je funkcija Kerberos. Kerberos računi mogu se dodati pravilom "Konfiguriraj Kerberos račune" ili pomoću postavki Kerberos računa na stranici postavki za Osobe.
+
+          Ako se to pravilo onemogući ili ne postavi, postavke Kerberos računa nisu omogućene. Ne može se dodati nijedan Kerberos račun i ne može se koristiti autentifikacija koju pruža Kerberos. Brišu se svi postojeći Kerberos računi i sve pohranjene zaporke.</translation>
 <translation id="1561424797596341174">Nadjačavanja pravila za međuverzije za otklanjanje pogrešaka hosta daljinskog pristupa</translation>
 <translation id="1561967320164410511">U2F i proširenja za pojedinačno atestiranje</translation>
 <translation id="1574554504290354326">Ta je postavka obustavljena, upotrijebite SafeBrowsingExtendedReportingEnabled. Omogućivanje ili onemogućivanje postavke SafeBrowsingExtendedReportingEnabled ekvivalentno je postavljanju SafeBrowsingExtendedReportingOptInAllowed na False.
@@ -432,6 +437,12 @@
 
       Pravilo treba biti postavljeno na URL s kojeg <ph name="PRODUCT_OS_NAME" /> može preuzeti Uvjete pružanja usluge. Uvjeti pružanja usluge moraju biti običan tekst, poslužen kao vrsta "text/plain" protokola MIME. Jezik za označavanje nije dopušten.</translation>
 <translation id="1750315445671978749">Blokiranje svih preuzimanja</translation>
+<translation id="1762072363876276024">
+      To se pravilo primjenjuje na zaslon za prijavu. Pogledajte i pravilo <ph name="SITE_PER_PROCESS_POLICY_NAME" /> koje se primjenjuje na korisničku sesiju. Preporučuje se postaviti oba pravila na istu vrijednost. Ako se vrijednosti ne podudaraju, može doći do kašnjenja prilikom pokretanja korisničke sesije dok se primjenjuje vrijednost navedena korisničkim pravilima.
+      Ova postavka, DeviceLoginScreenSitePerProcess, može se koristiti kako bi se korisnicima onemogućilo da se isključe iz zadanog ponašanja izolacije svih web-lokacija. Napominjemo da pravilo DeviceLoginScreenIsolateOrigins također može biti korisno za izolaciju dodatnih, preciznije određenih izvora.
+      Ako se to pravilo omogući, korisnici se neće moći isključiti iz zadanog ponašanja pri kojem se svaka web-lokacija izvodi u svojem procesu.
+      Ako se to pravilo ne konfigurira ili se onemogući, korisnik će moći promijeniti tu postavku (na primjer pomoću unosa "Disable site isolation" (Onemogući izolaciju web-lokacije) na stranici chrome://flags).
+      </translation>
 <translation id="1781356041596378058">To pravilo kontrolira i pristup Opcijama za razvojne programere Androida. Ako to pravilo postavite na True, korisnici ne mogu pristupiti Opcijama za razvojne programere. Ako to pravilo postavite na False ili ga ne postavite, korisnici mogu pristupiti Opcijama za razvojne programere tako što će sedam puta dodirnuti broj međuverzije u aplikaciji postavki Androida.</translation>
 <translation id="1793346220873697538">Onemogući ispis s PIN-om prema zadanim postavkama</translation>
 <translation id="1797233582739332495">Prikaži korisniku ponavljajuću obavijest o obaveznom ponovnom pokretanju</translation>
@@ -853,6 +864,11 @@
 
       Ako se to pravilo ne postavi, korisnici će moći odlučivati hoće li upotrebljavati značajku proxyja za kompresiju podataka.</translation>
 <translation id="257788512393330403">Zaporku treba unijeti svakih šest sati</translation>
+<translation id="2586162458524426376">
+      To se pravilo primjenjuje na zaslon za prijavu. Pogledajte i pravilo <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> koje se primjenjuje na korisničku sesiju.
+      Ako se to pravilo omogući, svaki izvor naveden na popisu odijeljenom zarezima izvodit će se u vlastitom procesu. Time će se također izolirati izvori navedeni prema poddomenama, npr. ako se navede https://example.com/, izolirat će se i https://foo.example.com/ kao dio web-lokacije https://example.com/.
+      Ako se pravilo ne konfigurira ili se onemogući, za zaslon za prijavu koristit će se postavke izolacije web-lokacije zadane za platformu.
+      </translation>
 <translation id="2587719089023392205">Postavi <ph name="PRODUCT_NAME" /> kao zadani preglednik</translation>
 <translation id="2592091433672667839">Trajanje neaktivnosti prije nego što se čuvar zaslona prikaže na zaslonu prijave u prodajnom načinu</translation>
 <translation id="2592162121850992309">Ako se to pravilo postavi na true ili se ne postavi, hardversko će ubrzanje biti omogućeno ako se određena značajka GPU-a ne nalazi na popisu nedopuštenih.
@@ -863,6 +879,7 @@
           Sve novije verzije poslužitelja Samba i Windows podržavaju NTLMv2. To treba biti onemogućeno samo za kompatibilnost sa starijim verzijama i smanjuje sigurnost autentifikacije.
 
           Ako to pravilo nije postavljeno, zadana je vrijednost True i NTLMv2 je omogućen.</translation>
+<translation id="26023406105317310">Konfiguriraj Kerberos račune</translation>
 <translation id="2604182581880595781">Konfiguriranje pravila povezanih s mrežnim dijeljenjem datoteka.</translation>
 <translation id="2623014935069176671">Pričekaj početnu aktivnost korisnika</translation>
 <translation id="262740370354162807">Omogući slanje dokumenata na uslugu <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1189,6 +1206,7 @@
 <translation id="3159375329008977062">Korisniku omogućuje izvoz/uvoz spremnika za Crostini putem korisničkog sučelja</translation>
 <translation id="3165808775394012744">Ta su pravila uključena ovdje radi jednostavnijeg uklanjanja.</translation>
 <translation id="316778957754360075">To se pravilo ne upotrebljava od verzije 29 sustava <ph name="PRODUCT_NAME" />. Preporučuje se da se pri postavljanju zbirki proširenja ili aplikacija koje hostira određena organizacija web-lokacija koja hostira CRX pakete uključi u pravilo ExtensionInstallSources te da se u pakete na web-stanici postave izravne veze za preuzimanje. Pokretač za tu web-stranicu može se izraditi pomoću pravila ExtensionInstallForcelist.</translation>
+<translation id="3168968618972302728">Pravila povezana s autentifikacijom koju pruža Kerberos.</translation>
 <translation id="3171369832001535378">Predložak mrežnog naziva hosta uređaja</translation>
 <translation id="3172512016079904926">Omogućuje instalaciju hostova za lokalno slanje poruka na razini korisnika.
 
@@ -1379,6 +1397,7 @@
 <translation id="3631099945620529777">Ako se postavi na false, onemogućuje se gumb "Završi proces" u Upravitelju zadataka.
 
       Ako se postavi na true ili se ne konfigurira, korisnici mogu završavati postupke u Upravitelju zadataka.</translation>
+<translation id="3643284063603988867">Omogući značajku "Zapamti zaporku"</translation>
 <translation id="3646859102161347133">Postavljanje vrste povećala</translation>
 <translation id="3653237928288822292">Ikona zadanog davatelja usluga pretraživanja</translation>
 <translation id="3660510274595679517">
@@ -1730,6 +1749,15 @@
           Ta će postavka nadjačati postavku RemoteAccessHostClientDomain ako je prisutna.
 
           Pogledajte i RemoteAccessHostDomainList.</translation>
+<translation id="4164601239783385546">Omogući značajku pristupačnosti "ljepljive tipke".
+
+          Ako se to pravilo postavi na true, ljepljive tipke uvijek će biti omogućene.
+
+          Ako se pravilo postavi na false, ljepljive tipke uvijek će biti onemogućene.
+
+          Ako postavite to pravilo, korisnici ga neće moći promijeniti niti nadjačati.
+
+          Ako se pravilo ne postavi, ljepljive tipke u početku su onemogućene, ali ih korisnici mogu omogućiti kad god žele.</translation>
 <translation id="4183229833636799228">Zadana postavka za dodatak <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">URL za validaciju tokena za autentifikaciju klijenta za daljinski pristup</translation>
 <translation id="4197038214024763371">Ako se pravilo ne postavi ili se omogući, korisniku će biti dopuštena upotreba provjere pravopisa.
@@ -1916,6 +1944,7 @@
 <translation id="4578912515887794133">Ako se ta postavka omogući, host daljinskog pristupa uspoređuje ime lokalnog korisnika (s kojim je taj host povezan) i naziv Google računa koji je registriran kao vlasnik hosta (tj., "johndoe" ako je vlasnik hosta Google račun "johndoe@example.com").  Host daljinskog pristupa neće se pokrenuti ako se vlasnik hosta razlikuje od imena lokalnog korisnika s kojim je host povezan.  Pravilo RemoteAccessHostMatchUsername treba se upotrebljavati zajedno s pravilom RemoteAccessHostDomain kako bi se primijenilo i to da je Google račun vlasnika hosta povezan s određenom domenom (tj., "example.com").
 
           Ako se ta postavka onemogući ili ne postavi, host daljinskog pristupa može se povezati s bilo kojim lokalnim korisnikom.</translation>
+<translation id="4591366717022345234">Pruži korisnicima međuverziju za brzi popravak</translation>
 <translation id="4600786265870346112">Omogućivanje velikog pokazivača</translation>
 <translation id="4604931264910482931">Konfiguriraj popis nedopuštenih za lokalno slanje poruka</translation>
 <translation id="4613508646038788144">Ako je pravilo postavljeno na False, softver treće strane moći će ubaciti izvršni kôd u Chromeove procese. Ako pravilo nije postavljeno ili je postavljeno na True, softver treće strane neće moći ubaciti izvršni kôd u Chromeove procese.</translation>
@@ -2002,6 +2031,7 @@
 <translation id="487460824085252184">Migrira automatski, bez traženja pristanka korisnika.</translation>
 <translation id="4874982543810021567">Blokiraj WebUSB na ovim web-lokacijama</translation>
 <translation id="4876805738539874299">Maksimalna verzija SSL-a omogućena</translation>
+<translation id="4887274746092315609">Omogućuje stranicu za promjenu zaporke unutar sesije za korisnike SAML-a</translation>
 <translation id="4897928009230106190">Određuje parametre koji se upotrebljavaju prilikom pretraživanja prijedloga pomoću POST metode. Sastoji se od zarezom odvojenih parova naziv/vrijednost. Ako je vrijednost parametar predloška, primjerice {searchTerms} u gornjem primjeru, zamijenit će se podacima stvarnih pojmova za pretraživanje.
 
           To je pravilo izborno. Ako nije postavljeno, zahtjev za predloženo pretraživanje poslat će se pomoću GET metode.
@@ -2214,6 +2244,7 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
       Ako se pravilo postavi na "Naslijeđeno", dopuštena je samo RC4 enkripcija. Ta opcija nije sigurna i potrebna je samo u vrlo specifičnim okolnostima.
 
       Pročitajte i https://wiki.samba.org/index.php/Samba_4.6_Features_added/changed#Kerberos_client_encryption_types.</translation>
+<translation id="5249453807420671499">Korisnici mogu dodati Kerberos račune</translation>
 <translation id="5255162913209987122">Može se preporučiti</translation>
 <translation id="527237119693897329">Omogućuje vam da odredite koji se hostovi za lokalno slanje poruka ne bi smjeli učitavati.
 
@@ -2349,6 +2380,7 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
       Kada je vrijednost tog pravila postavljena i nije 0, trenutačno prijavljeni korisnik demo verzije automatski će biti odjavljen nakon isteka razdoblja neaktivnosti određenog trajanja.
 
       Vrijednost pravila treba odrediti u milisekundama.</translation>
+<translation id="5508307164752647432">Omogući funkciju Kerberos</translation>
 <translation id="5511702823008968136">Omogući traku Knjižne oznake</translation>
 <translation id="5512418063782665071">URL početne stranice</translation>
 <translation id="551639594034811656">Pravilom se definira popis postotaka kojim će se definirati udio <ph name="PRODUCT_OS_NAME" /> uređaja u organizacijskoj jedinici za dnevno ažuriranje počevši od dana otkrivanja ažuriranja. Vrijeme otkrivanja kasnije je od vremena objavljivanja ažuriranja jer nakon objavljivanja ažuriranja može proći neko vrijeme dok uređaj ne potraži ažuriranja.
@@ -2370,6 +2402,7 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
       Ako platforma podržava obavijesti o pravilima, odgoda osvježavanja postavit će se na 24 sata (sve zadane postavke i vrijednost ovog pravila zanemarit će se) jer se očekuje da će obavijesti o pravilima automatski nametnuti osvježavanje nakon svake promjene pravila, zbog čega su češća osvježavanja nepotrebna.</translation>
 <translation id="5530347722229944744">Blokiraj potencijalno opasna preuzimanja</translation>
 <translation id="5535973522252703021">Bijela lista Kerberos poslužitelja za ovlašćivanje</translation>
+<translation id="554903022911579950">Kerberos</translation>
 <translation id="555077880566103058">Dopusti svim web-lokacijama pokretanje dodatka <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="5559079916187891399">To pravilo nema utjecaja na Android aplikacije.</translation>
 <translation id="5560039246134246593">Dodavanje parametra dohvaćanju vrijednosti varijacija u proizvodu <ph name="PRODUCT_NAME" />.
@@ -2477,6 +2510,16 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 
       Ako se pravilo postavi, korisnik ga ne može promijeniti niti nadjačati.</translation>
 <translation id="5708969689202733975">Konfiguriraj dopuštene načine brzog otključavanja</translation>
+<translation id="5711016543513883877">
+      Ako se to pravilo omogući, svaki od navedenih izvora na
+      popisu odijeljenom zarezima izvodit će se u vlastitom procesu. Time će se također izolirati
+      izvori navedeni prema poddomenama. Na primjer, ako se navede https://example.com/,
+      izolirat će se i https://foo.example.com/ kao dio web-lokacije
+      https://example.com/.
+      Ako se pravilo ne konfigurira ili se onemogući, korisnik će moći promijeniti tu postavku.
+
+      NAPOMENA: To se pravilo ne primjenjuje na Androidu. Da biste omogućili IsolateOrigins na Androidu, postavite pravilo IsolateOriginsAndroid.
+      </translation>
 <translation id="572155275267014074">Postavke Androida</translation>
 <translation id="5722934961007828462">Kada je ta postavka omogućena, <ph name="PRODUCT_NAME" /> uvijek vrši provjeru opoziva za certifikate poslužitelja koji uspješno potvrđuju lokalno instalirane CA certifikate kojima su potpisani.
 
@@ -3382,6 +3425,11 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
 <translation id="7433714841194914373">Omogući Instant</translation>
 <translation id="7434202861148928348">Konfiguriraj tražene nazive domena za klijente daljinskog pristupa</translation>
 <translation id="7443616896860707393">Zahtjevi za Cross-origin HTTP Basic Auth</translation>
+<translation id="7454519673779830548">Dodaje unaprijed unesene Kerberos račune. Ako se vjerodajnice za Kerberos podudaraju s vjerodajnicama za prijavu, račun se može konfigurirati da ponovo koristi vjerodajnice za prijavu tako da se za principal navede "${{LOGIN_EMAIL}}", a za zaporku "${{PASSWORD}}" kako bi se Kerberosova karta mogla dohvatiti automatski osim ako je konfigurirana dvostruka autentifikacija. Korisnici ne mogu izmijeniti račune dodane tim pravilom.
+
+          Ako se to pravilo omogući, popis računa definiranih pravilom dodaje se u postavke Kerberos računa.
+
+          Ako se to pravilo onemogući ili ne postavi, u postavke Kerberos računa ne dodaje se nijedan račun i uklanjaju se svi računi prethodno dodani tim pravilom. Korisnici još uvijek mogu dodavati račune ručno ako je omogućeno pravilo "Korisnici mogu dodati Kerberos račune".</translation>
 <translation id="7458437477941640506">Nemoj se vratiti na ciljnu verziju ako je verzija OS-a novija od ciljne. Ažuriranja su također onemogućena.</translation>
 <translation id="7464991223784276288">Ograničavanje kolačića iz podudarnih URL-ova na trenutačnu sesiju</translation>
 <translation id="7469554574977894907">Omogući prijedloge pretraživanja</translation>
@@ -3514,6 +3562,11 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
 <translation id="7687943045976362719">Ako se to pravilo postavi, navedenim vrstama sadržaja rukovat će <ph name="PRODUCT_FRAME_NAME" />.
 
           Ako se to pravilo ne postavi, za sve web-lokacije upotrebljavat će se zadani ispunjivač. (Zadani ispunjivač može se konfigurirati pomoću pravila <ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" />.)</translation>
+<translation id="7694245791806617022">Upravlja time je li značajka "Zapamti zaporku" omogućena u dijaloškom okviru za autentifikaciju koju pruža Kerberos. Zaporke se pohranjuju kriptirane na disku, a dostupne su samo demonu sustava Kerberos i tijekom korisničke sesije.
+
+          Ako se to pravilo omogući ili ne postavi, korisnici mogu odlučiti hoće li se zaporke Kerberosa zapamtiti kako ih se više ne bi trebalo unositi. Kerberosove karte dohvaćaju se automatski osim ako je potrebna dodatna autentifikacija (dvostruka autentifikacija).
+
+          Ako se to pravilo onemogući, zaporke se ne pamte i sve se prethodno pohranjene zaporke uklanjaju. Korisnici moraju unijeti zaporku svaki put kad je potrebna provjera autentičnosti u sustavu Kerberos. Ovisno o postavkama poslužitelja vremenski intervali u kojima se to događa obično se kreću od svakih osam sati do nekoliko mjeseci.</translation>
 <translation id="7694807474048279351">Odredi vrijeme automatskog ponovnog pokretanja nakon primjene ažuriranja sustava <ph name="PRODUCT_OS_NAME" />.
 
       Kada se to pravilo postavi na točno, određuje se vrijeme automatskog ponovnog pokretanja kada se primijeni ažuriranje sustava <ph name="PRODUCT_OS_NAME" /> za čije je dovršavanje potrebno ponovno pokretanje. Ponovno je pokretanje postavljeno na trenutak dovršavanja ažuriranja, ali može se odgoditi na uređaju do 24 sata ako korisnik trenutačno upotrebljava taj uređaj.
@@ -3547,6 +3600,15 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
       Tim se pravilom organizacijama želi pružiti prilika da premjeste postojeće poslužitelje s HTTP-a/0.9. Pravilo će se ukloniti u budućnosti.
 
       Ako se to pravilo ne postavi, HTTP/0.9 onemogućit će se na priključcima koji nisu zadani.</translation>
+<translation id="7726421241038987229">
+      Ova postavka, SitePerProcess, može se koristiti kako bi se korisnicima onemogućilo da se isključe iz zadanog ponašanja izolacije svih web-lokacija. Napominjemo da pravilo IsolateOrigins također može biti korisno za izolaciju dodatnih, preciznije određenih izvora.
+      Ako se to pravilo omogući, korisnici se neće moći isključiti iz zadanog ponašanja pri kojem se svaka web-lokacija izvodi u svojem procesu.
+      Ako se pravilo ne konfigurira ili se onemogući, korisnik će se moći isključiti iz izolacije web-lokacije
+      (na primjer pomoću unosa "Disable site isolation" (Onemogući izolaciju web-lokacije) na stranici chrome://flags).  Ako se to pravilo postavi na onemogućeno i/ili ne konfigurira, ono ne isključuje izolaciju web-lokacije.
+      Na proizvodu <ph name="PRODUCT_OS_NAME" /> preporučuje se postaviti pravila za uređaje <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> na istu vrijednost. Ako se vrijednosti koje navode ta dva pravila ne podudaraju, može doći do kašnjenja prilikom pokretanja korisničke sesije dok se primjenjuje vrijednost koju navode korisnička pravila.
+
+      NAPOMENA: To se pravilo ne primjenjuje na Androidu. Da biste omogućili SitePerProcess na Androidu, postavite pravilo SitePerProcessAndroid.
+      </translation>
 <translation id="7747447585227954402">Dopusti uređajima da upotrebljavaju <ph name="PLUGIN_VM_NAME" /> na proizvodu <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="7749402620209366169">Omogućuje autentifikaciju s dva čimbenika za hostove daljinskog pristupa umjesto PIN-a koji određuje korisnik.
 
@@ -3612,6 +3674,11 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
       Određuje ID proširenja koje će se upotrebljavati kao čuvar zaslona na zaslonu prijave. To proširenje mora biti dijelom paketa AppPack koji se konfigurira za ovu domenu pravilom DeviceAppPack.</translation>
 <translation id="7882857838942884046">Onemogućivanje Google sinkronizacije uzrokovat će nepravilno funkcioniranje izrade sigurnosnih kopija i vraćanja na Androidu.</translation>
 <translation id="7882890448959833986">Spriječi upozorenje o nepodržanom OS-u</translation>
+<translation id="7889788745439330797">Upravlja time mogu li korisnici dodati Kerberos račune.
+
+          Ako se to pravilo omogući ili ne postavi, korisnici mogu dodati Kerberos račune putem postavki Kerberos računa na stranici postavki za Osobe. Korisnici imaju potpunu kontrolu nad računima koje su dodali i mogu ih izmijeniti ili ukloniti.
+
+          Ako se pravilo onemogući, korisnici ne mogu dodati Kerberos račune. Računi se mogu dodati samo pravilom "Konfiguriraj Kerberos račune". To je učinkovit način zaključavanja računa.</translation>
 <translation id="7895553628261067384">Daljinski pristup</translation>
 <translation id="7902255855035461275">Uzorci na tom popisu usporedit će se sa sigurnosnim izvorištem
       URL-a koji šalje zahtjev. Ako se pronađe podudaranje, pristup uređajima

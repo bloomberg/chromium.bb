@@ -93,7 +93,7 @@ Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/S
 • Pada perangkat iOS, buka aplikasi dan tap komputer online mana pun agar terhubung.</translation>
 <translation id="2894654864775534701">Saat ini komputer ini dibagikan dengan akun lain.</translation>
 <translation id="2919669478609886916">Saat ini Anda sedang berbagi mesin ini dengan pengguna lain. Apakah Anda ingin terus berbagi?</translation>
-<translation id="2921543551052660690">Sebelumnya, Anda telah masuk sebagai <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Untuk mengakses komputer menggunakan akun tersebut, <ph name="LINK_BEGIN" />masuk ke Chromium<ph name="LINK_END" /> dengan akun tersebut dan instal kembali Chromoting.</translation>
+<translation id="2921543551052660690">Sebelumnya, Anda telah login sebagai <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Untuk mengakses komputer menggunakan akun tersebut, <ph name="LINK_BEGIN" />masuk ke Chromium<ph name="LINK_END" /> dengan akun tersebut dan instal kembali Chromoting.</translation>
 <translation id="2926340305933667314">Gagal menonaktifkan akses jarak jauh ke komputer ini. Coba lagi nanti.</translation>
 <translation id="2930135165929238380">Beberapa komponen yang diperlukan tidak ada. Buka chrome://plugins dan pastikan Native Client diaktifkan.</translation>
 <translation id="2939145106548231838">Autentikasi untuk menghosting</translation>
@@ -335,7 +335,7 @@ PC</translation>
 <translation id="8509907436388546015">Proses Integrasi Desktop</translation>
 <translation id="8513093439376855948">Hosting perpesanan asli untuk pengelolaan hosting jarak jauh</translation>
 <translation id="8525306231823319788">Layar penuh</translation>
-<translation id="8548209692293300397">Sebelumnya, Anda telah masuk sebagai <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Untuk mengakses komputer menggunakan akun tersebut, <ph name="LINK_BEGIN" />masuk ke Google Chrome<ph name="LINK_END" /> dengan akun tersebut dan instal kembali Chrome Desktop Jarak Jauh.</translation>
+<translation id="8548209692293300397">Sebelumnya, Anda telah login sebagai <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Untuk mengakses komputer menggunakan akun tersebut, <ph name="LINK_BEGIN" />masuk ke Google Chrome<ph name="LINK_END" /> dengan akun tersebut dan instal kembali Chrome Desktop Jarak Jauh.</translation>
 <translation id="8642984861538780905">Sedang</translation>
 <translation id="8705151241155781642">• Dukungan tambahan untuk Android 9.0 Pie.
 • Dukungan untuk mengubah ukuran resolusi desktop jarak jauh agar cocok dengan layar perangkat Android Anda.</translation>

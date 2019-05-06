@@ -361,6 +361,11 @@
       Če je ta pravilnik onemogočen, se podatki o razširitvah in vtičnikih ne zbirajo.
 
       Ta pravilnik se uporablja samo, če je omogočena razširitev <ph name="CHROME_REPORTING_EXTENSION_NAME" />, računalnik pa je včlanjen v pravilnik <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="1560205870554624777">Nadzira, ali je omogočena funkcija Kerberos. Kerberos je protokol za preverjanje pristnosti, ki ga je mogoče uporabiti za preverjanje pristnosti spletnih aplikacij in deljenih datotek.
+
+          Če je ta pravilnik omogočen, je funkcija Kerberos omogočena. Račune za Kerberos je mogoče dodati s pravilnikom »Configure Kerberos accounts« (Konfiguriranje računov za Kerberos) ali z nastavitvami računov za Kerberos na strani nastavitev za osebe.
+
+          Če je ta pravilnik onemogočen ali ni nastavljen, so nastavitve računov za Kerberos onemogočene. Računov za Kerberos ni mogoče dodati in preverjanja pristnosti Kerberos ni mogoče uporabljati. Vsi obstoječi računi za Kerberos so izbrisani in enako velja za vsa shranjena gesla.</translation>
 <translation id="1561424797596341174">Preglasitve pravilnika za delovne različice gostitelja za oddaljeni dostop, namenjene odpravljanju napak</translation>
 <translation id="1561967320164410511">U2F in razširitve za posamezno potrditev</translation>
 <translation id="1574554504290354326">Ta nastavitev je zastarela, uporabite SafeBrowsingExtendedReportingEnabled. Če omogočite ali onemogočite SafeBrowsingExtendedReportingEnabled, je to enakovredno, kot če nastavite SafeBrowsingExtendedReportingOptInAllowed na »false«.
@@ -447,6 +452,12 @@
 
       Pravilnik naj bo nastavljen na URL, s katerega lahko <ph name="PRODUCT_OS_NAME" /> prenese pogoje storitve. Ti morajo biti v obliki navadnega besedila vrste MIME in brez označevanja.</translation>
 <translation id="1750315445671978749">Blokiraj vse prenose</translation>
+<translation id="1762072363876276024">
+      Ta pravilnik se nanaša na zaslon za prijavo. Oglejte si tudi pravilnik <ph name="SITE_PER_PROCESS_POLICY_NAME" />, ki se nanaša na uporabniško sejo. Priporočljivo je, da za oba pravilnika nastavite enako vrednost. Če se vrednosti ne ujemata, lahko pride do zakasnitve pri odpiranju uporabniške seje, medtem ko se uveljavlja vrednost, ki jo določa uporabniški pravilnik.
+      To nastavitev, DeviceLoginScreenSitePerProcess, je mogoče uporabljati, da se uporabnikom ne dovoli onemogočanja privzetega delovanja osamitve vseh spletnih mest. Upoštevajte, da je lahko pravilnik DeviceLoginScreenIsolateOrigins uporaben tudi za osamitev dodatnih, podrobnejših izvorov.
+      Če je pravilnik omogočen, uporabniki ne bodo mogli onemogočiti privzetega delovanja, pri katerem se vsako spletno mesto izvaja v svojem procesu.
+      Če pravilnik ni konfiguriran ali je onemogočen, bo uporabnik lahko spremenil to nastavitev (lahko bo na primer uporabil vnos »Disable site isolation« (onemogoči osamitev spletnih mest) v chrome://flags).
+      </translation>
 <translation id="1781356041596378058">Ta pravilnik prav tako nadzira dostop do možnosti za razvijalce za Android. Če ta pravilnik omogočite, uporabniki ne morejo dostopati do možnosti za razvijalce. Če ta pravilnik onemogočite ali ga ne nastavite, uporabniki lahko dostopajo do možnosti za razvijalce, tako da se v aplikaciji Nastavitve za Android sedemkrat dotaknejo številke gradnje.</translation>
 <translation id="1793346220873697538">Onemogočanje, da je privzeto tiskanje s kodo PIN</translation>
 <translation id="1797233582739332495">Uporabniku prikaži ponavljajoč se poziv, ki obvešča, da je potreben vnovičen zagon</translation>
@@ -882,6 +893,11 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
       Če ta pravilnik ni nastavljen, bo lahko uporabnik sam izbiral, ali želi uporabiti funkcijo strežnika proxy za stiskanje podatkov.</translation>
 <translation id="257788512393330403">Vnos gesla je obvezen vsakih 6 ur</translation>
+<translation id="2586162458524426376">
+      Ta pravilnik se nanaša na zaslon za prijavo. Oglejte si tudi pravilnik <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, ki se nanaša na uporabniško sejo.
+      Če je pravilnik omogočen, se bo vsak naveden izvor s seznama, ločenega z vejicami, izvajal v svojem procesu. S tem bodo osamljeni tudi izvori, ki jih navedejo poddomene; če na primer navedete https://example.com/, bo kot del spletnega mesta https://example.com/ osamljeno tudi spletno mesto https://foo.example.com/.
+      Če pravilnik ni konfiguriran ali je onemogočen, se bodo za zaslon za prijavo uporabljale privzete nastavitve okolja glede osamitve spletnih mest.
+      </translation>
 <translation id="2587719089023392205">Nastavi <ph name="PRODUCT_NAME" /> za privzeti brskalnik</translation>
 <translation id="2592091433672667839">Trajanje nedejavnosti, preden se v maloprodajnem načinu na zaslonu za prijavo pokaže ohranjevalnik zaslona</translation>
 <translation id="2592162121850992309">Če je ta pravilnik omogočen ali ni nastavljen, bo strojno pospeševanje omogočeno, razen če je določena funkcija GPE-ja na seznamu blokiranih.
@@ -892,6 +908,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
           Vse novejše različice strežnikov Samba in Windows podpirajo NTLMv2. To onemogočite samo za združljivost s prejšnjimi različicami, saj je v tem primeru zmanjšana varnost preverjanja pristnosti.
 
           Če ta pravilnik ni nastavljen, se uporabi privzeta vrednost in je preverjanje pristnosti NTLMv2 omogočeno.</translation>
+<translation id="26023406105317310">Konfiguriranje računov za Kerberos</translation>
 <translation id="2604182581880595781">Konfiguriranje pravilnikov, povezanih z omrežnimi napravami za skupno rabo datotek.</translation>
 <translation id="2623014935069176671">Čakanje na začetno dejavnost uporabnika</translation>
 <translation id="262740370354162807">Omogoča pošiljanje dokumentov v storitev <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1226,6 +1243,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="3159375329008977062">Uporabniku je omogočen izvoz/uvoz vsebnikov za Crostini prek uporabniškega vmesnika</translation>
 <translation id="3165808775394012744">Ti pravilniki so vključeni tukaj, da jih je mogoče lažje odstraniti.</translation>
 <translation id="316778957754360075">Ta nastavitev se ne uporablja od uveljavitve različice brskalnika <ph name="PRODUCT_NAME" /> 29. Za nastavitev zbirk razširitev/aplikacij, ki gostujejo v organizaciji, se priporoča, da se spletno mesto, na katerem gostujejo paketi CRX, vključi na seznam ExtensionInstallSources in da se na spletno mesto dodajo povezave za neposreden prenos paketov. Zaganjalnik za to stran se lahko ustvari s pravilnikom ExtensionInstallForcelist.</translation>
+<translation id="3168968618972302728">Pravilniki, povezani s preverjanjem pristnosti Kerberos.</translation>
 <translation id="3171369832001535378">Predloga za ime gostitelja omrežja naprave</translation>
 <translation id="3172512016079904926">Omogoči nameščanje gostiteljev izvornega pošiljanja sporočil na uporabniški ravni.
 
@@ -1423,6 +1441,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="3631099945620529777">Če je pravilnik onemogočen, je gumb za končanje procesa v upravitelju opravil onemogočen.
 
       Če je pravilnik omogočen ali ni konfiguriran, lahko uporabnik konča procese v upravitelju opravil.</translation>
+<translation id="3643284063603988867">Omogočanje funkcije »Zapomni si geslo«</translation>
 <translation id="3646859102161347133">Nastavitev vrste lupe</translation>
 <translation id="3653237928288822292">Privzeta ikona iskalnika</translation>
 <translation id="3660510274595679517">
@@ -1778,6 +1797,15 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
           Ta nastavitev preglasi pravilnik RemoteAccessHostClientDomain, če je na voljo.
 
           Glejte tudi RemoteAccessHostDomainList.</translation>
+<translation id="4164601239783385546">Omogočanje funkcije za ljudi s posebnimi potrebami za zaklepanje tipk.
+
+          Če ta je pravilnik nastavljen na »true«, bo zaklepanje tipk vedno omogočeno.
+
+          Če je ta pravilnik nastavljen na »false«, bo zaklepanje tipk vedno onemogočeno.
+
+          Če nastavite ta pravilnik, ga uporabniki ne morejo spremeniti ali preglasiti.
+
+          Če tega pravilnika ne nastavite, je zaklepanje tipk prvotno onemogočeno, vendar ga lahko uporabnik kadar koli omogoči.</translation>
 <translation id="4183229833636799228">Privzeta nastavitev za <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">URL za preverjanje žetona za preverjanje pristnosti odjemalca za oddaljeni dostop</translation>
 <translation id="4197038214024763371">Če ta pravilnik ni nastavljen ali omogočen, uporabnik lahko uporablja preverjanje črkovanja.
@@ -1972,6 +2000,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="4578912515887794133">Če je ta nastavitev omogočena, gostitelj za oddaljeni dostop primerja ime lokalnega uporabnika (s katerim je povezan gostitelj) in ime računa za Google, ki je registriran kot lastnik gostitelja (tj. »janeznovak«, če je lastnik gostitelja račun za Google »janeznovak@example.com«).  Gostitelj za oddaljeni dostop se ne bo zagnal, če se ime lastnika gostitelja razlikuje od imena lokalnega uporabnika, s katerim je povezan gostitelj.  Pravilnik RemoteAccessHostMatchUsername se mora uporabljati skupaj s pravilnikom RemoteAccessHostDomain, da se prav tako uveljavi, da je račun za Google lastnika gostitelja povezan s točno določeno domeno (tj. »example.com«).
 
           Če je ta nastavitev onemogočena ali ni nastavljena, je mogoče gostitelja za oddaljeni dostop povezati s poljubnim lokalnim uporabnikom.</translation>
+<translation id="4591366717022345234">Posredovanje delovne različice Quick Fixa uporabnikom</translation>
 <translation id="4600786265870346112">Omogoči velik kazalec</translation>
 <translation id="4604931264910482931">Konfiguracija seznama blokiranih za izvorno pošiljanje sporočil</translation>
 <translation id="4613508646038788144">Če je pravilnik onemogočen, lahko programska oprema tretjih oseb vstavlja izvedljivo kodo v Chromove procese. Če pravilnik ni nastavljen ali je omogočen, programska oprema tretjih oseb ne more vstavljati izvedljive kode v Chromove procese.</translation>
@@ -2058,6 +2087,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="487460824085252184">Samodejna selitev brez spraševanja za privolitev uporabnika.</translation>
 <translation id="4874982543810021567">Blokiranje WebUSB-ja na teh spletnih mestih</translation>
 <translation id="4876805738539874299">Najvišja omogočena različica protokola SSL</translation>
+<translation id="4887274746092315609">Omogoča stran za spremembo gesla med sejo za uporabnike prijave SAML</translation>
 <translation id="4897928009230106190">Določa parametre, uporabljene pri iskanju predlogov z metodo POST. Sestavljena je iz parov ime/vrednost, ločenih z vejico. Če je vrednost parameter predloge, kot je v zgornjih primerih {searchTerms}, bo zamenjana s pravimi podatki iskalnih izrazov.
 
           Ta pravilnik je izbiren. Če ni nastavljen, bo zahteva za iskanje predlogov poslana z metodo GET.
@@ -2281,6 +2311,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       Če je pravilnik nastavljen na »Starejše«, je dovoljena samo vrsta šifriranja RC4. Ta možnost ni varna in jo uporabite samo v zelo posebnih okoliščinah.
 
       Glejte tudi: https://wiki.samba.org/index.php/Samba_4.6_Features_added/changed#Kerberos_client_encryption_types.</translation>
+<translation id="5249453807420671499">Uporabniki lahko dodajo račune za Kerberos</translation>
 <translation id="5255162913209987122">Lahko se priporoča</translation>
 <translation id="527237119693897329">Omogoča, da določite, kateri gostitelji izvornega pošiljanja sporočil se ne naložijo.
 
@@ -2423,6 +2454,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       Ko je vrednost tega pravilnika nastavljena in ni 0, bo trenutno prijavljen uporabnik predstavitvenega načina samodejno odjavljen po določenem času nedejavnosti.
 
       Vrednost pravilnika mora biti v milisekundah.</translation>
+<translation id="5508307164752647432">Omogočanje funkcije Kerberos</translation>
 <translation id="5511702823008968136">Omogoči vrstico z zaznamki</translation>
 <translation id="5512418063782665071">URL domače strani</translation>
 <translation id="551639594034811656">Ta pravilnik opredeljuje seznam odstotkov, ki določajo delež naprav s sistemom <ph name="PRODUCT_OS_NAME" /> v organizacijski enoti, ki prejmejo posodobitev dnevno od dneva, ko je posodobitev prvič odkrita. Čas odkrivanja je poznejši od časa objave posodobitve, saj lahko po objavi posodobitve preteče nekaj časa, preden naprava preveri, ali je na voljo posodobitev.
@@ -2444,6 +2476,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       Če okolje podpira obvestila pravilnika, je zakasnitev osvežitve nastavljena na 24 ur (prezrejo se vse privzete nastavitve in vrednost tega pravilnika), ker je pričakovano, da obvestila pravilnika ob vsakokratni zamenjavi pravilnika samodejno vsilijo osvežitev, zaradi česar so pogostejše osvežitve nepotrebne.</translation>
 <translation id="5530347722229944744">Blokiraj morebitne nevarne prenose</translation>
 <translation id="5535973522252703021">Seznam dovoljenih delegacijskih strežnikov za Kerberos</translation>
+<translation id="554903022911579950">Kerberos</translation>
 <translation id="555077880566103058">Omogoči vsem spletnim mestom samodejno izvajanje vtičnika <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="5559079916187891399">Ta pravilnik ne vpliva na aplikacije za Android.</translation>
 <translation id="5560039246134246593">Dodajanje parametra prejemanju semen različic v izdelku <ph name="PRODUCT_NAME" />.
@@ -2555,6 +2588,16 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
       Če je ta pravilnik nastavljen, ga uporabniki ne morejo spremeniti ali preglasiti.</translation>
 <translation id="5708969689202733975">Konfiguriranje dovoljenih načinov hitrega odklepanja</translation>
+<translation id="5711016543513883877">
+      Če je pravilnik omogočen, se bo vsak naveden izvor s
+      seznama, ločenega z vejicami, izvajal v svojem procesu. S tem bodo osamljeni tudi
+      izvori, ki jih navedejo poddomene; če na primer navedete https://example.com/, bo
+      kot del spletnega mesta https://example.com/ osamljeno tudi spletno mesto
+      https://foo.example.com/.
+      Če pravilnik ni konfiguriran ali je onemogočen, bo uporabnik lahko spremenil to nastavitev.
+
+      OPOMBA: Ta pravilnik se ne uporablja v sistemu Android. Če želite omogočiti pravilnik IsolateOrigins v Androida, uporabite nastavitev pravilnika IsolateOriginsAndroid.
+      </translation>
 <translation id="572155275267014074">Nastavitve za Android</translation>
 <translation id="5722934961007828462">Ko je omogočena ta nastavitev, <ph name="PRODUCT_NAME" /> vedno izvede preverjanje preklica strežniških potrdil, ki se uspešno potrdijo in so podpisana s potrdili lokalno nameščenega overitelja.
 
@@ -2741,7 +2784,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="6034341625190551415">Nadzira vrste računov za javne seje in kiosk.</translation>
 <translation id="6034603289689965535">Strani med razkladanjem dovoli prikazovanje pojavnih oken</translation>
 <translation id="6036523166753287175">Omogoči prehod skozi požarni zid iz gostitelja za oddaljeni dostop</translation>
-<translation id="605475635122964053">Omejuje način tiskanja s kodo PIN. Če pravilnik ni nastavljen, ni omejitve. Če način ni na voljo, je ta pravilnik prezrt. Upoštevajte, da je funkcija tiskanja s kodo PIN omogočena samo za tiskalnike, ki uporablja enega od teh protokolov: IPPS, USB ali IPP prek USB-ja </translation>
+<translation id="605475635122964053">Omejuje način tiskanja s kodo PIN. Če pravilnik ni nastavljen, ni omejitve. Če način ni na voljo, je ta pravilnik prezrt. Upoštevajte, da je funkcija tiskanja s kodo PIN omogočena samo za tiskalnike, ki uporabljajo enega od teh protokolov: IPPS, USB ali IPP prek USB-ja </translation>
 <translation id="6070667616071269965">Postavitve tipkovnice na zaslonu za prijavo v napravi</translation>
 <translation id="6074963268421707432">Nobenemu spletnemu mestu ne dovoli, da pokaže namizna obvestila</translation>
 <translation id="6074964551275531965">Nastavitev časovnega obdobja za obvestila o posodobitvah</translation>
@@ -3493,6 +3536,11 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="7433714841194914373">Omogoči Dinamično iskanje</translation>
 <translation id="7434202861148928348">Konfiguriranje imen domene, potrebnih za odjemalce za oddaljeni dostop</translation>
 <translation id="7443616896860707393">Ukazni pozivi HTTP Basic Auth iz več izvorov</translation>
+<translation id="7454519673779830548">Doda vnaprej izpolnjene račune za Kerberos. Če se poverilnice za Kerberos ujemajo s poverilnicami za prijavo, je mogoče konfigurirati račun, da znova uporabi poverilnice za prijavo. To storite tako, da za glavno ime in geslo navedete »${{LOGIN_EMAIL}}« in »${{PASSWORD}}«, da je mogoče pridobiti vstopnico za Kerberos samodejno, če ni konfigurirano preverjanje pristnosti v dveh korakih. Uporabniki ne morejo spreminjati računov, dodanih prek tega pravilnika.
+
+          Če je ta pravilnik omogočen, je seznam računov, ki jih določa pravilnik, dodan v nastavitve računov za Kerberos.
+
+          Če je ta pravilnik onemogočen ali ni nastavljen, ni v nastavitve računov za Kerberos dodan noben račun in vsi prej dodani računi s tem pravilnikom so odstranjeni. Uporabniki lahko še vedno ročno dodajo račune, če je omogočen pravilnik »Uporabniki lahko dodajo račune za Kerberos«.</translation>
 <translation id="7458437477941640506">Brez povrnitve na ciljno različico, če je različica operacijskega sistema novejša kot ciljna. Onemogočene so tudi posodobitve.</translation>
 <translation id="7464991223784276288">Omejitev piškotkov z ujemajočih se URL-jev na trenutno sejo</translation>
 <translation id="7469554574977894907">Omogoči predloge za iskanje</translation>
@@ -3631,6 +3679,11 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="7687943045976362719">Če je ta pravilnik nastavljen, določene vrste vsebine upravlja <ph name="PRODUCT_FRAME_NAME" />.
 
          Če ta pravilnik ni nastavljen, se za vsa spletna mesta uporabi privzeti upodabljalnik. (Za konfiguriranje privzetega upodabljalnika se morda uporabi pravilnik <ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" />.)</translation>
+<translation id="7694245791806617022">Nadzira, ali je v pogovornem oknu preverjanja pristnosti Kerberos omogočena funkcija »Zapomni si geslo«. Gesla so shranjena šifrirana na disku, do njih pa lahko dostopa samo strežniška storitev sistema Kerberos, in sicer med uporabniško sejo.
+
+          Če je ta pravilnik omogočen ali ni nastavljen, se lahko uporabniki odločijo, ali naj se gesla za Kerberos zapomnijo, da jih ni treba znova vnašati. Vstopnice za Kerberos so pridobljene samodejno, razen če je potrebno dodatno preverjanje pristnosti (preverjanje pristnosti v dveh korakih).
+
+          Če je ta pravilnik onemogočen, se gesla nikoli ne zapomnijo in vsa prej shranjena gesla so odstranjena. Uporabniki morajo vnesti geslo, vsakič ko želijo opraviti preverjanje pristnosti s sistemom Kerberos. Glede na nastavitve strežnika se to običajno zgodi v obdobju med 8 urami in več meseci.</translation>
 <translation id="7694807474048279351">Načrtovanje samodejnega vnovičnega zagona po namestitvi posodobitve za <ph name="PRODUCT_OS_NAME" />.
 
       Če je ta pravilnik vklopljen, se načrtuje samodejni vnovični zagon, kadar je potreben za dokončanje postopka posodobitve za <ph name="PRODUCT_OS_NAME" />. Samodejni vnovični zagon se v napravi načrtuje za določeno uro, vendar se lahko odloži do 24 ur, če nekdo trenutno uporablja napravo.
@@ -3664,6 +3717,15 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Namen tega pravilnika je omogočiti podjetjem, da v obstoječih strežnikih prenehajo uporabljati protokol HTTP/0.9. Pravilnik bo v prihodnosti odstranjen.
 
       Če ta pravilnik ni nastavljen, bo protokol HTTP/0.9 za vrata, ki niso privzeta, onemogočen.</translation>
+<translation id="7726421241038987229">
+      To nastavitev, SitePerProcess, je mogoče uporabljati, da se uporabnikom ne dovoli onemogočanja privzetega delovanja osamitve vseh spletnih mest. Upoštevajte, da je lahko pravilnik IsolateOrigins uporaben tudi za osamitev dodatnih, podrobnejših izvorov.
+      Če je pravilnik omogočen, uporabniki ne bodo mogli onemogočiti privzetega delovanja, pri katerem se vsako spletno mesto izvaja v svojem procesu.
+      Če pravilnik ni konfiguriran ali je onemogočen, bo uporabnik lahko onemogočil osamitev spletnih mest
+      (lahko bo na primer uporabil vnos »Disable site isolation« (onemogoči osamitev spletnih mest) v chrome://flags).  Če nastavite, da je pravilnik onemogočen, in/ali ga ne konfigurirate, osamitve spletnih mest ne izklopite.
+      V sistemu <ph name="PRODUCT_OS_NAME" /> je priporočljivo, da tudi pravilnik za naprave <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> nastavite na enako vrednost. Če se vrednosti, navedene v teh dveh pravilnikih, ne ujemajo, lahko pri vstopu v uporabniško sejo pride do zakasnitve, medtem ko se uveljavlja vrednost, ki jo določa uporabniški pravilnik.
+
+      OPOMBA: Ta pravilnik se ne uporablja v sistemu Android. Če želite omogočiti pravilnik SitePerProcess v Androidu, uporabite nastavitev pravilnika SitePerProcessAndroid.
+      </translation>
 <translation id="7747447585227954402">Omogočanje napravam, da uporabljajo vtičnik <ph name="PLUGIN_VM_NAME" /> v sistemu <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="7749402620209366169">Za gostitelje oddaljenega dostopa omogoča preverjanje pristnosti v dveh korakih namesto z uporabniško določenim PIN-om.
 
@@ -3728,6 +3790,11 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Določa ID razširitve, ki se uporabi kot ohranjevalnik zaslona na zaslonu za prijavo. Razširitev mora biti del paketa AppPack, ki je za to domeno nastavljen s pravilnikom »DeviceAppPack«.</translation>
 <translation id="7882857838942884046">Če onemogočite storitev Google Sync, Androidovi storitvi varnostnega kopiranja in obnovitve ne bosta pravilno delovali.</translation>
 <translation id="7882890448959833986">Onemogočanje opozorila glede nepodprtega operacijskega sistema</translation>
+<translation id="7889788745439330797">Nadzira, ali smejo uporabniki dodajati račune za Kerberos.
+
+          Če je ta pravilnik omogočen ali ni nastavljen, uporabniki smejo dodati račune za Kerberos prek nastavitev računov za Kerberos na strani nastavitev za osebe. Uporabniki imajo popoln nadzor nad računi, ki jih dodajo, in jih lahko spreminjajo ali odstranijo.
+
+          Če je ta pravilnik onemogočen, uporabniki ne smejo dodati računov za Kerberos. Račune je mogoče dodati samo prek pravilnika »Konfiguriranje računov za Kerberos«. To je učinkovit način za zaklepanje računov.</translation>
 <translation id="7895553628261067384">Oddaljeni dostop</translation>
 <translation id="7902255855035461275">Vzorci na tem seznamu se bodo primerjali z varnostnim
       izvorom zahtevajočega URL-ja. Če je najdeno ujemanje, bo dostop do naprav

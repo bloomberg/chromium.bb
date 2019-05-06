@@ -60,6 +60,7 @@
 <translation id="2908441821576996758">请输入用逗号分隔的电子邮件地址的列表。</translation>
 <translation id="2940813599313844715">对象</translation>
 <translation id="2942448076852699108">突出显示的内容</translation>
+<translation id="2983835398644161987">退出“画中画”模式</translation>
 <translation id="3040011195152428237">链接</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3075154866155599887">请输入一个有效值。该字段不完整或存在无效日期。</translation>
@@ -79,6 +80,7 @@
 <translation id="3822383571486410024">请将该文本增加为 <ph name="MIN_CHARACTERS" /> 个字符或更多（您当前使用的是 <ph name="CURRENT_LENGTH" /> 个字符）。</translation>
 <translation id="383465348367842624">“<ph name="ATSIGN" />”前面的内容不应包含符号“<ph name="INVALIDCHARACTER" />”。</translation>
 <translation id="3846214748874656680">退出全屏模式</translation>
+<translation id="3904511540324382638">退出“画中画”模式</translation>
 <translation id="3920932319529768807">总结</translation>
 <translation id="3924558731517983934">应用</translation>
 <translation id="3944740393230681990">序言</translation>

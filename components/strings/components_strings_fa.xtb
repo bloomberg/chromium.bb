@@ -223,6 +223,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">کارت</translation>
 <translation id="2114841414352855701">نادیده گرفته شد زیرا <ph name="POLICY_NAME" /> آن را لغو می‌کند.</translation>
+<translation id="2129079103035905234">حسگرهای حرکتی</translation>
 <translation id="213826338245044447">نشانک‌های تلفن‌ همراه</translation>
 <translation id="214556005048008348">لغو پرداخت</translation>
 <translation id="2147827593068025794">همگام‌سازی پس‌زمینه</translation>
@@ -617,7 +618,7 @@
 <translation id="4265872034478892965">توسط سرپرست مجاز شده است</translation>
 <translation id="4275830172053184480">راه‌اندازی دستگاه خود</translation>
 <translation id="4277028893293644418">بازنشانی گذرواژه</translation>
-<translation id="4279811152705618813"><ph name="DEVICE_TYPE" /> شما توسط <ph name="ENROLLMENT_DOMAIN" /> مدیریت می‌شد.</translation>
+<translation id="4279811152705618813"><ph name="DEVICE_TYPE" /> شما توسط <ph name="ENROLLMENT_DOMAIN" /> مدیریت می‌شود.</translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{‏این کارت در حساب Google ذخیره شده است}one{‏این کارت‌ها در حساب Google ذخیره شده‌اند}other{‏این کارت‌ها در حساب Google ذخیره شده‌اند}}</translation>
 <translation id="42981349822642051">بزرگ کردن</translation>
 <translation id="4302965934281694568">Chou3 (Envelope)</translation>
@@ -723,7 +724,7 @@
 <translation id="4926159001844873046"><ph name="SITE" /> می‌گوید</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">نتیجه‌ای پیدا نشد</translation>
-<translation id="4945672369594656571">‏نحوه پردازش داده‌های دستگاه و حسابتان را کنترل می‌کند. Google داده‌های دستگاه و حسابتان را منحصراً تحت هدایت مدیر دستگاه و حسابتان و صرفاً برای اهداف مشخص‌شده توسط مدیر دستگاه و حساب پردازش می‌کند.</translation>
+<translation id="4945672369594656571">‏نحوه مدیریت داده‌های دستگاه و حسابتان را کنترل می‌کند. Google داده‌های دستگاه و حسابتان را منحصراً تحت هدایت مدیر دستگاه و حسابتان و صرفاً برای اهداف مشخص‌شده توسط مدیر دستگاه و حساب پردازش می‌کند.</translation>
 <translation id="4950898438188848926">‏دکمه جابه‌جایی برگه، برای جابه‌جایی به برگه باز، کلید Enter را فشار دهید، <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">کنش‌ها</translation>
 <translation id="4955242332710481440">A5-Extra</translation>

@@ -9,6 +9,8 @@
 <translation id="2805756323405976993">Aplikacje</translation>
 <translation id="2872961005593481000">Wyłącz</translation>
 <translation id="3147142846278915599">Menu z aplikacjami (synchronizuję aplikacje...)</translation>
+<translation id="3442261357327209537">Kliknij tutaj, aby wybrać nowe hasło</translation>
+<translation id="3506732833599356229">Hasło wygasło</translation>
 <translation id="4731797938093519117">Dostęp rodzica</translation>
 <translation id="5212543919916444558">Na Twoim ekranie nie ma nic, w czym mogę pomóc.
 Kliknij mikrofon i zadaj pytanie.</translation>
@@ -17,6 +19,8 @@ Kliknij mikrofon i zadaj pytanie.</translation>
 <translation id="54609108002486618">Zarządzany</translation>
 <translation id="5832805196449965646">Dodaj osobę</translation>
 <translation id="5895138241574237353">Uruchom ponownie</translation>
+<translation id="7467001599725918325">Hasło wkrótce straci ważność</translation>
+<translation id="7505377169174526985">{NUM_DAYS,plural, =0{Twoje obecne hasło wygasło.}=1{Twoje obecne hasło wygasa za mniej niż dzień.}few{Twoje obecne hasło wygasa za mniej niż # dni.}many{Twoje obecne hasło wygasa za mniej niż # dni.}other{Twoje obecne hasło wygasa za mniej niż # dni.}}</translation>
 <translation id="7658239707568436148">Anuluj</translation>
 <translation id="9111102763498581341">Odblokuj</translation>
 </translationbundle>

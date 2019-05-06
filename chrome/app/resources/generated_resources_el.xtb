@@ -174,7 +174,6 @@
 <translation id="1241753985463165747">Ανάγνωση και αλλαγή όλων των δεδομένων σας στον τρέχοντα ιστότοπο κατά την κλήση</translation>
 <translation id="1242633766021457174">Το <ph name="THIRD_PARTY_TOOL_NAME" /> θέλει να επαναφέρει τις ρυθμίσεις σας.</translation>
 <translation id="1243314992276662751">Μεταφόρτωση</translation>
-<translation id="1244147615850840081">Εταιρεία κινητής τηλεφωνίας</translation>
 <translation id="1244303850296295656">Σφάλμα επέκτασης</translation>
 <translation id="1249643471736608405">Το πρόσθετο <ph name="PLUGIN_NAME" /> αποκλείστηκε γιατί έχει καταργηθεί</translation>
 <translation id="1252987234827889034">Προέκυψε σφάλμα προφίλ</translation>
@@ -195,6 +194,7 @@
 <translation id="1285484354230578868">Αποθήκευση δεδομένων στο λογαριασμό σας στο Google Drive</translation>
 <translation id="1288037062697528143">Ο Νυχτερινός φωτισμός θα ενεργοποιηθεί αυτόματα.</translation>
 <translation id="1288300545283011870">Ιδιότητες ομιλίας</translation>
+<translation id="1289513325360489062">Χωρίς πρόσβαση στα δεδομένα αυτού του ιστοτόπου</translation>
 <translation id="1293264513303784526">Συσκευή USB-C (αριστερή θύρα)</translation>
 <translation id="1293556467332435079">Αρχεία</translation>
 <translation id="1296497012903089238">Τύπος πιστοποιητικού</translation>
@@ -464,6 +464,7 @@
 <translation id="1711401317189798723">Δημιουργία εφεδρικού αντιγράφου ασφαλείας σε εξέλιξη για <ph name="CONTAINER_ID" /></translation>
 <translation id="1712349894969001173">Λήψη αυτού του κωδικού πρόσβασης στο iPhone σας</translation>
 <translation id="1712552549805331520">Ο ιστότοπος <ph name="URL" /> θέλει να αποθηκεύσει μόνιμα δεδομένα στον τοπικό υπολογιστή σας</translation>
+<translation id="1717218214683051432">Αισθητήρες κίνησης</translation>
 <translation id="1718835860248848330">Τελευταία ώρα</translation>
 <translation id="1719312230114180055">Σημείωση: Το δακτυλικό σας αποτύπωμα μπορεί να είναι λιγότερο ασφαλές από έναν δυνατό κωδικό πρόσβασης ή αριθμό PIN.</translation>
 <translation id="1720318856472900922">Έλεγχος ταυτότητας διακομιστή TLS WWW</translation>
@@ -810,6 +811,7 @@
 <translation id="2256115617011615191">Άμεση επανεκκίνηση</translation>
 <translation id="225614027745146050">Καλώς ορίσατε</translation>
 <translation id="225692081236532131">Κατάσταση ενεργοποίησης</translation>
+<translation id="2258855745387252834">Για κοινή χρήση, κάντε δεξί κλικ σε έναν φάκελο στην εφαρμογή Αρχεία και, στη συνέχεια, επιλέξτε "Κοινή χρήση με την προσθήκη VM".</translation>
 <translation id="2261323523305321874">Ο διαχειριστής σας έκανε μια αλλαγή σε ολόκληρο το σύστημα που απενεργοποιεί ορισμένα παλιά προφίλ.</translation>
 <translation id="2262332168014443534">Η λειτουργία Lite επιταχύνει πλέον την περιήγηση σε όλες τις σελίδες, συμπεριλαμβανομένων των HTTPS.</translation>
 <translation id="2262477216570151239">Καθυστέρηση πριν από την επανάληψη</translation>
@@ -1306,6 +1308,7 @@
 <translation id="3020183492814296499">Συντομεύσεις</translation>
 <translation id="3020990233660977256">Σειριακός αριθμός: <ph name="SERIAL_NUMBER" /></translation>
 <translation id="3021066826692793094">Πεταλούδα</translation>
+<translation id="3021426244864538700">Με πρόσβαση στα δεδομένα αυτού του ιστοτόπου</translation>
 <translation id="3021678814754966447">&amp;Προβολή Πηγαίου Κώδικα Πλαισίου</translation>
 <translation id="3022978424994383087">Δεν έγινε κατανοητό.</translation>
 <translation id="3023464535986383522">Επιλέξτε για αυτόματη ανάγνωση</translation>
@@ -1431,6 +1434,7 @@
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" /> - Σφάλμα δικτύου</translation>
 <translation id="3249950116250264636"><ph name="APP_NAME" /> (<ph name="APP_URL" />)</translation>
 <translation id="3251759466064201842">&lt;Δεν είναι μέρος πιστοποιητικού&gt;</translation>
+<translation id="3253448572569133955">Άγνωστος λογαριασμός</translation>
 <translation id="3254516606912442756">Ο αυτόματος εντοπισμός ζώνης ώρας είναι απενεργοποιημένος</translation>
 <translation id="3255355328033513170">Όλα τα δεδομένα που αποθηκεύτηκαν από τον ιστότοπο <ph name="SITE_GROUP_NAME" /> και όλοι οι ιστότοποι που περιλαμβάνονται σε αυτόν θα διαγραφούν. Συμπεριλαμβανομένων των cookie. Θα αποσυνδεθείτε από αυτούς τους ιστοτόπους, συμπεριλαμβανομένων όσων εμφανίζονται σε ανοικτές καρτέλες.</translation>
 <translation id="3259723213051400722">Δοκιμάστε ξανά.</translation>
@@ -1457,6 +1461,7 @@
 <translation id="3285322247471302225">Νέα &amp;Καρτέλα</translation>
 <translation id="3288047731229977326">Οι επεκτάσεις που εκτελούνται σε λειτουργία προγραμματιστή μπορούν να βλάψουν τον υπολογιστή σας. Εάν δεν είστε προγραμματιστής, θα πρέπει να απενεργοποιήσετε αυτές τις επεκτάσεις που εκτελούνται σε λειτουργία προγραμματιστή για να διατηρήσετε την ασφάλειά σας.</translation>
 <translation id="3289856944988573801">Για να ελέγξετε για ενημερώσεις, χρησιμοποιήστε δίκτυο Ethernet ή Wi-Fi.</translation>
+<translation id="3293644607209440645">Αποστολή αυτής της σελίδας</translation>
 <translation id="32939749466444286">Το κοντέινερ Linux δεν εκκινήθηκε. Δοκιμάστε ξανά.</translation>
 <translation id="3294437725009624529">Επισκέπτης</translation>
 <translation id="329703603001918157">Δεν είναι δυνατή η επεξεργασία της συντόμευσης</translation>
@@ -2048,6 +2053,7 @@
 <translation id="4146026355784316281">Άνοιγμα πάντα με πρόγραμμα προβολής συστήματος</translation>
 <translation id="4146785383423576110">Επαναφορά και διαγραφή επιβλαβούς λογισμικού</translation>
 <translation id="4147911968024186208">Δοκιμάστε ξανά. Εάν εμφανιστεί ξανά αυτό το σφάλμα, επικοινωνήστε με τον αντιπρόσωπο υποστήριξης.</translation>
+<translation id="4150125039112138020">|</translation>
 <translation id="4150201353443180367">Οθόνη</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 καρτέλα}other{# καρτέλες}}</translation>
 <translation id="4154664944169082762">Αποτυπώματα</translation>
@@ -2301,6 +2307,7 @@
 <translation id="4610162781778310380">Η προσθήκη <ph name="PLUGIN_NAME" /> παρουσίασε κάποιο σφάλμα</translation>
 <translation id="4610637590575890427">Μήπως θέλετε να μεταβείτε στο <ph name="SITE" />;</translation>
 <translation id="4611114513649582138">Διαθέσιμα δεδομένα σύνδεσης</translation>
+<translation id="4613144866899789710">Ακύρωση εγκατάστασης Linux…</translation>
 <translation id="4613271546271159013">Κάποια επέκταση άλλαξε το περιεχόμενο της σελίδας όταν ανοίγετε μια νέα καρτέλα.</translation>
 <translation id="4615586811063744755">δεν έχουν επιλεγεί cookie</translation>
 <translation id="4617270414136722281">Επιλογές επεκτάσεων</translation>
@@ -3217,7 +3224,6 @@
     <ph name="BEGIN_PARAGRAPH2" />Μπορείτε να απενεργοποιήσετε την Τοποθεσία απενεργοποιώντας τη βασική ρύθμιση "Τοποθεσία" στη συσκευή σας. Μπορείτε επίσης να απενεργοποιήσετε τη χρήση δικτύων Wi-Fi και κινητής τηλεφωνίας και των αισθητήρων για την τοποθεσία στις ρυθμίσεις τοποθεσίας.<ph name="END_PARAGRAPH2" /></translation>
 <translation id="6041155700700864984">Έξοδος από πλήρη οθόνη</translation>
 <translation id="604124094241169006">Αυτόματη</translation>
-<translation id="6042169520002885235">Επιλέξτε έναν κατασκευαστή και ένα μοντέλο εκτυπωτή</translation>
 <translation id="6042308850641462728">Περισσότερα</translation>
 <translation id="6043317578411397101">Η εφαρμογή <ph name="APP_NAME" /> μοιράζεται μια καρτέλα Chrome με το <ph name="TAB_NAME" />.</translation>
 <translation id="6044805581023976844">Η εφαρμογή <ph name="APP_NAME" /> μοιράζεται μια καρτέλα Chrome και ήχο με το <ph name="TAB_NAME" />.</translation>
@@ -3413,6 +3419,7 @@
 <translation id="6339668969738228384">Δημιουργία νέου προφίλ για τη διεύθυνση <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6340017061976355871">Δεν ήταν δυνατή η σύνδεση με τον διακομιστή. Ελέγξτε τη σύνδεση δικτύου και δοκιμάστε ξανά. Εάν το πρόβλημα παραμένει, επανεκκινήστε το Chromebook.</translation>
 <translation id="6340071272923955280">Πρωτόκολλο εκτύπωσης στο διαδίκτυο (IPPS)</translation>
+<translation id="6340526405444716530">Εξατομίκευση</translation>
 <translation id="6341850831632289108">Εντοπισμός της φυσικής σας τοποθεσίας</translation>
 <translation id="6344170822609224263">Λίστα πρόσβασης για συνδέσεις δικτύου</translation>
 <translation id="6349101878882523185">Εγκατάσταση εφαρμογής <ph name="APP_NAME" /></translation>
@@ -4015,6 +4022,7 @@
 <translation id="7282992757463864530">Γραμμή πληροφοριών</translation>
 <translation id="7287143125007575591">Δεν επιτρέπεται η πρόσβαση.</translation>
 <translation id="7287411021188441799">Επαναφορά προεπιλεγμένου φόντου</translation>
+<translation id="7288013116963835700">Κατάργηση Linux για <ph name="DEVICE_TYPE" /></translation>
 <translation id="7288676996127329262"><ph name="HORIZONTAL_DPI" />x<ph name="VERTICAL_DPI" /> dpi</translation>
 <translation id="7289225569524511578">Ανοίξτε την εφαρμογή ταπετσαρίας</translation>
 <translation id="7290242001003353852">Η υπηρεσία σύνδεσης που φιλοξενείται από τον τομέα <ph name="SAML_DOMAIN" />, έχει πρόσβαση στην κάμερά σας.</translation>
@@ -4440,6 +4448,7 @@
 <translation id="7931318309563332511">Άγνωστη</translation>
 <translation id="7932969338829957666">Οι κοινόχρηστοι φάκελοι είναι διαθέσιμοι στο Linux στη θέση <ph name="BASE_DIR" />.</translation>
 <translation id="7933314993013528982">{NUM_TABS,plural, =1{Κατάργηση σίγασης ιστοτόπου}other{Κατάργηση σίγασης ιστοτόπων}}</translation>
+<translation id="7933634003144813719">Διαχείριση κοινόχρηστων φακέλων</translation>
 <translation id="7934414805353235750">Το <ph name="URL" /> θέλει να κάνει αναπαραγωγή προστατευόμενου περιεχομένου. η ταυτότητα της συσκευής σας θα επικυρωθεί από την Google.</translation>
 <translation id="793531125873261495">Σφάλμα λήψης του εικονικού μηχανήματος. Δοκιμάστε ξανά.</translation>
 <translation id="7938594894617528435">Αυτήν τη στιγμή εκτός σύνδεσης</translation>
@@ -4627,6 +4636,7 @@
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{Λήψη σε εξέλιξη}other{Λήψεις σε εξέλιξη}}</translation>
 <translation id="8213449224684199188">Έγινε είσοδος στη λειτουργία φωτογραφίας</translation>
 <translation id="8213577208796878755">Μία ακόμα διαθέσιμη συσκευή.</translation>
+<translation id="8213996900880218548">Επιθυμούν πρόσβαση στα δεδομένα αυτού του ιστοτόπου</translation>
 <translation id="8214489666383623925">Άνοιγμα Αρχείου...</translation>
 <translation id="8214962590150211830">Κατάργηση αυτού του ατόμου</translation>
 <translation id="8217399928341212914">Συνέχιση αποκλεισμού λήψεων πολλών αρχείων</translation>
@@ -4652,6 +4662,7 @@
 <translation id="8252569384384439529">Μεταφόρτωση…</translation>
 <translation id="8253198102038551905">Κάντε κλικ στο "+" για να δείτε τις ιδιότητες δικτύου</translation>
 <translation id="825483282309623688">Για να επαναφέρετε τα δεδομένα σας, θα χρειαστείτε μια σύνδεση στο διαδίκτυο.</translation>
+<translation id="8254954272268479918">Τερματισμός Linux (beta)</translation>
 <translation id="8256319818471787266">Ζωηρός</translation>
 <translation id="8257950718085972371">Να συνεχιστεί ο αποκλεισμός πρόσβασης στην κάμερα</translation>
 <translation id="8259239505248583312">Ας ξεκινήσουμε</translation>
@@ -5194,6 +5205,7 @@
 <translation id="9115675100829699941">&amp;Σελιδοδείκτες</translation>
 <translation id="9116465289595958864">Τελευταία τροποποίηση</translation>
 <translation id="9116799625073598554">Εφαρμογή σημειώσεων</translation>
+<translation id="9117030152748022724">Διαχείριση των εφαρμογών σας</translation>
 <translation id="9121814364785106365">Άνοιγμα ως καρφιτσωμένης καρτέλας</translation>
 <translation id="9124003689441359348">Οι αποθηκευμένοι κωδικοί πρόσβασής σας θα εμφανίζονται εδώ</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (απομένουν <ph name="LICENSE_COUNT" />)</translation>
@@ -5282,6 +5294,7 @@
 <translation id="971774202801778802">URL σελιδοδείκτη</translation>
 <translation id="973473557718930265">Έξοδος</translation>
 <translation id="974555521953189084">Εισαγάγετε τη φράση πρόσβασης για να ξεκινήσετε τον συγχρονισμό.</translation>
+<translation id="97905529126098460">Αυτό το παράθυρο θα κλείσει μετά την ολοκλήρωση της ακύρωσης.</translation>
 <translation id="981121421437150478">Εκτός σύνδεσης</translation>
 <translation id="983511809958454316">Αυτή η λειτουργία δεν υποστηρίζεται σε VR</translation>
 <translation id="984275831282074731">Τρόποι πληρωμής</translation>

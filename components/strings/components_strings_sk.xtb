@@ -218,6 +218,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">Karta</translation>
 <translation id="2114841414352855701">Ignorované, pretože bolo prepísané pravidlom <ph name="POLICY_NAME" />.</translation>
+<translation id="2129079103035905234">Senzory pohybu</translation>
 <translation id="213826338245044447">Mobilné záložky</translation>
 <translation id="214556005048008348">Zrušiť platbu</translation>
 <translation id="2147827593068025794">Synchronizácia na pozadí</translation>
@@ -903,7 +904,7 @@
 <translation id="5975083100439434680">Oddialiť</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">Nie je možné otvoriť platobnú aplikáciu</translation>
-<translation id="5988826871883769516">Vaše zariadenie spravuje organizácia <ph name="ENROLLMENT_DOMAIN" />.</translation>
+<translation id="5988826871883769516">Vaše zariadenie spravuje <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="5989320800837274978">Nie sú určené pevne dané servery proxy ani skript PAC webovej adresy.</translation>
 <translation id="5990559369517809815">Žiadosti odoslané serveru boli zablokované rozšírením.</translation>
 <translation id="6008256403891681546">JCB</translation>

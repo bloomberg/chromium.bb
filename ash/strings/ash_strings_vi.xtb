@@ -271,7 +271,7 @@
 <translation id="5168181903108465623">Có thiết bị truyền</translation>
 <translation id="5207949376430453814">Đánh dấu điểm chèn văn bản</translation>
 <translation id="5222676887888702881">Đăng xuất</translation>
-<translation id="523505283826916779">Cài đặt trợ năng</translation>
+<translation id="523505283826916779">Hỗ trợ tiếp cận</translation>
 <translation id="5260676007519551770">Không gian làm việc 4</translation>
 <translation id="5283198616748585639">Thêm 1 phút</translation>
 <translation id="5302048478445481009">Ngôn ngữ</translation>
@@ -377,7 +377,7 @@
 <translation id="6910714959251846841">Bản cập nhật này yêu cầu phải powerwash (đặt lại toàn bộ) thiết bị của bạn. Hãy tìm hiểu thêm về bản cập nhật <ph name="SYSTEM_APP_NAME" /> mới nhất.</translation>
 <translation id="6911468394164995108">Tham gia mạng khác...</translation>
 <translation id="6972754398087986839">Bắt đầu</translation>
-<translation id="6981982820502123353">Truy cập</translation>
+<translation id="6981982820502123353">Hỗ trợ tiếp cận</translation>
 <translation id="698231206551913481">Tất cả các tệp và dữ liệu cục bộ liên quan tới người dùng này sẽ bị xóa vĩnh viễn sau khi người dùng này bị xóa.</translation>
 <translation id="7015766095477679451">Quay lại lúc <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7025533177575372252">Kết nối <ph name="DEVICE_NAME" /> với điện thoại của bạn</translation>
@@ -509,7 +509,7 @@
 <translation id="8938800817013097409">Thiết bị USB-C (cổng bên phải ở phía sau)</translation>
 <translation id="8940956008527784070">Pin yếu (<ph name="PERCENTAGE" />%)</translation>
 <translation id="8983038754672563810">HSPA</translation>
-<translation id="8990809378771970590">Đang sử dụng <ph name="IME_NAME" /></translation>
+<translation id="8990809378771970590">Đang dùng <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">Mở khóa thiết bị bằng <ph name="LOGIN_ID" /> để thực hiện hành động thông báo</translation>
 <translation id="8995603266996330174">Được quản lý bởi <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Đã có bản cập nhật Adobe Flash Player</translation>

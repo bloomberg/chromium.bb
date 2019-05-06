@@ -78,7 +78,7 @@
 <translation id="2068952045031577364">За прошлую неделю</translation>
 <translation id="2074131957428911366">Вы всегда можете выбрать, что синхронизировать, в <ph name="BEGIN_LINK" />настройках<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Отмена</translation>
-<translation id="209018056901015185">Полная версия</translation>
+<translation id="209018056901015185">Версия для ПК</translation>
 <translation id="2096012225669085171">Синхронизация и персонализация данных на всех устройствах.</translation>
 <translation id="2103075008456228677">Открыть history.google.com</translation>
 <translation id="2116625576999540962">Перемещено закладок: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
@@ -128,6 +128,7 @@
 <translation id="2800683595868705743">Закрыть переключатель вкладок</translation>
 <translation id="2830972654601096923">Управление адресами</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
+<translation id="2840687315230832938">Синхронизация не настроена</translation>
 <translation id="2843803966603263712">Сбросить настройки перевода</translation>
 <translation id="2858204748079866344">Чтобы обеспечить конфиденциальность ваших данных, мы просим вас ввести пароль вручную.</translation>
 <translation id="285960592395650245">Повторить скачивание</translation>
@@ -379,7 +380,7 @@
 <translation id="6797885426782475225">Голосовой поиск</translation>
 <translation id="6807889908376551050">Показать все…</translation>
 <translation id="681368974849482173">Сохранено</translation>
-<translation id="6851516051005285358">Полная версия</translation>
+<translation id="6851516051005285358">Версия для ПК</translation>
 <translation id="6896758677409633944">Копировать</translation>
 <translation id="6903907808598579934">Включить</translation>
 <translation id="6914583639806229067">Поиск по скопированному изображению</translation>
@@ -407,10 +408,12 @@
 <translation id="7192050974311852563">Начать запись журнала</translation>
 <translation id="7203585745079012652">Озвучивать результаты поиска</translation>
 <translation id="722055596168483966">Персонализация сервисов Google</translation>
+<translation id="7265758999917665941">Никогда для этого сайта</translation>
 <translation id="7272437679830969316">Не удалось пройти проверку. Пароль не скопирован.</translation>
 <translation id="7280856130494094142">Чтобы включить синхронизацию, введите кодовую фразу</translation>
 <translation id="7285236536143823449">ОК</translation>
 <translation id="7291368939935408496">Подготовка паролей…</translation>
+<translation id="7293171162284876153">Чтобы начать ее, нажмите "Синхронизировать данные Chrome".</translation>
 <translation id="7336264872878993241">Скачивается: <ph name="PERCENT" />%</translation>
 <translation id="7346909386216857016">ОК</translation>
 <translation id="7348502496356775519">Закладка</translation>
@@ -514,6 +517,7 @@
 <translation id="9081058212938299310">Обновить пароль для аккаунта <ph name="USERNAME" />?</translation>
 <translation id="9083392325882095631">Закладок: 1</translation>
 <translation id="9083838294503912307">Чтобы синхронизировать и персонализировать данные на всех устройствах, включите синхронизацию.</translation>
+<translation id="9087108903408689779">Сгенерированный в Chrome пароль:</translation>
 <translation id="9094033019050270033">Обновить пароль</translation>
 <translation id="9100610230175265781">Необходима кодовая фраза</translation>
 <translation id="9148126808321036104">Повторите вход</translation>

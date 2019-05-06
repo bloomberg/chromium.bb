@@ -25,7 +25,7 @@
 <translation id="1585657529869845941">अगर <ph name="BEGIN_BOLD" />फिर भी बदलें<ph name="END_BOLD" /> बटन दिखाई देता है, तो उस पर क्लिक करें</translation>
 <translation id="1587223624401073077">Google Chrome आपके कैमरे का उपयोग कर रहा है.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> खरतरनाक है, इसलिए Chrome ने उसे अवरोधित कर दिया है.</translation>
-<translation id="1590588151039584890">अपडेट करने के लिए, Chrome को इस कंप्यूटर पर बंद करना होगा. इससे इस कंप्यूटर में लॉगिन करने वाले अन्य उपयोगकर्ता सेव नहीं किया गया डेटा खो सकते हैं.</translation>
+<translation id="1590588151039584890">अपडेट करने के लिए, Chrome को इस कंप्यूटर पर बंद करना होगा. इससे कंप्यूटर में लॉगिन करने वाले अन्य उपयोगकर्ता वह डेटा खो सकते हैं जिसे सेव नहीं किया गया है.</translation>
 <translation id="1619887657840448962">Chrome को ज़्यादा सुरक्षित बनाने के लिए, हमने निम्न एक्सटेंशन को अक्षम कर दिया है जो <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> में सूचीबद्ध नहीं है और आपकी जानकारी के बिना जोड़ा गया हो सकता है.</translation>
 <translation id="1628000112320670027">Chrome में सहायता प्राप्त करें</translation>
 <translation id="1662639173275167396">Chrome OS को <ph name="BEGIN_LINK_LINUX_OSS" />Linux (बीटा)<ph name="END_LINK_LINUX_OSS" /> की तरह ही, अतिरिक्त <ph name="BEGIN_LINK_CROS_OSS" />ओपन सोर्स सॉफ़्टवेयर<ph name="END_LINK_CROS_OSS" /> के ज़रिए कारगर बनाया गया है.</translation>

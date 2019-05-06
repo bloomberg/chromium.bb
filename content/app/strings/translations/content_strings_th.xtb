@@ -60,6 +60,7 @@
 <translation id="2908441821576996758">โปรดป้อนรายการที่อยู่อีเมลโดยคั่นด้วยเครื่องหมายจุลภาค</translation>
 <translation id="2940813599313844715">ออบเจ็กต์</translation>
 <translation id="2942448076852699108">เนื้อหาที่ไฮไลต์</translation>
+<translation id="2983835398644161987">ออกจากโหมดการแสดงภาพซ้อนภาพ</translation>
 <translation id="3040011195152428237">ลิงก์</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3075154866155599887">โปรดป้อนค่าที่ถูกต้อง ฟิลด์นี้ไม่สมบูรณ์หรือมีวันที่ที่ไม่ถูกต้อง</translation>
@@ -79,6 +80,7 @@
 <translation id="3822383571486410024">โปรดกรอกข้อความนี้ให้มีอักขระอย่างน้อย <ph name="MIN_CHARACTERS" /> ตัว (ตอนนี้คุณมี <ph name="CURRENT_LENGTH" /> ตัว)</translation>
 <translation id="383465348367842624">ส่วนที่ตามด้วย "<ph name="ATSIGN" />" ต้องไม่มีสัญลักษณ์ "<ph name="INVALIDCHARACTER" />"</translation>
 <translation id="3846214748874656680">ออกจากการแสดงเต็มหน้าจอ</translation>
+<translation id="3904511540324382638">ออกจากโหมดการแสดงภาพซ้อนภาพ</translation>
 <translation id="3920932319529768807">บทสรุป</translation>
 <translation id="3924558731517983934">แอปพลิเคชัน</translation>
 <translation id="3944740393230681990">อารัมภบท</translation>

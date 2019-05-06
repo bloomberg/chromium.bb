@@ -128,6 +128,7 @@
 <translation id="2800683595868705743">टॅब स्विचर सोडा</translation>
 <translation id="2830972654601096923">पत्ते व्यवस्थापित करा...</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
+<translation id="2840687315230832938">सुरुवातीचे सिंक सेट करणे पूर्ण झाले नाही</translation>
 <translation id="2843803966603263712">भाषांतर सेटिंग्‍ज रीसेट करा</translation>
 <translation id="2858204748079866344">तुमच्या गोपनीयतेचे संरक्षण करण्‍यासाठी, Chrome या भागामध्ये तुमचा पासवर्ड ऑटोफिल करणार नाही.</translation>
 <translation id="285960592395650245">पुन्हा डाउनलोड करण्याचा प्रयत्न करा</translation>
@@ -408,10 +409,11 @@
 <translation id="7192050974311852563">लॉग इन करणे सुरू करा</translation>
 <translation id="7203585745079012652">उत्तरे वाचून सांगा</translation>
 <translation id="722055596168483966">Google सेवा पर्सनलाइझ करा</translation>
-<translation id="7272437679830969316">तुमच्या ओळखीची पडताळणी करू शकत नाही. पासवर्ड कॉपी केला नाही.</translation>
+<translation id="7272437679830969316">तुमच्या ओळखीची पडताळणी करता आली नाही. पासवर्ड कॉपी केला नाही.</translation>
 <translation id="7280856130494094142">सिंक सुरू करण्यासाठी पासफ्रेझ एंटर करा</translation>
 <translation id="7285236536143823449">होय, मी तयार आहे</translation>
 <translation id="7291368939935408496">पासवर्ड तयार करत आहे…</translation>
+<translation id="7293171162284876153">सिंक सुरू करण्यासाठी, "तुमचा Chrome डेटा सिंक करा" सुरू करा.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> टक्के डाउनलोड केले</translation>
 <translation id="7346909386216857016">ठीक आहे, समजले</translation>
 <translation id="7348502496356775519">बुकमार्क करा</translation>
@@ -478,7 +480,7 @@
 <translation id="8487700953926739672">ऑफलाइन उपलब्ध</translation>
 <translation id="8503813439785031346">वापरकर्तानाव</translation>
 <translation id="850600235656508448">गुप्त प्रकारात उघडा</translation>
-<translation id="8517375800490286174">मुक्त स्त्रोत परवाने</translation>
+<translation id="8517375800490286174">मुक्त स्रोत परवाने</translation>
 <translation id="8524799873541103884"><ph name="NUMBER_OF_OPEN_TABS" /> पैकी <ph name="LAST_VISIBLE_TAB" /> ते <ph name="FIRST_VISIBLE_TAB" /> <ph name="INCOGNITO" /> टॅब</translation>
 <translation id="8529767659511976195">नवीन</translation>
 <translation id="8532105204136943229">कालबाह्य होण्याचे वर्ष</translation>

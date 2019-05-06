@@ -223,7 +223,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">Thẻ</translation>
 <translation id="2114841414352855701">Bỏ qua vì đã bị <ph name="POLICY_NAME" /> ghi đè.</translation>
-<translation id="213826338245044447">Dấu trang di động</translation>
+<translation id="213826338245044447">Dấu trang trên thiết bị di động</translation>
 <translation id="214556005048008348">Hủy thanh toán</translation>
 <translation id="2147827593068025794">Đồng bộ hóa dưới nền</translation>
 <translation id="2148613324460538318">Thêm thẻ</translation>
@@ -550,7 +550,7 @@
 <translation id="3949601375789751990">Lịch sử duyệt web của bạn xuất hiện ở đây</translation>
 <translation id="3950820424414687140">Đăng nhập</translation>
 <translation id="3963837677003247395">Bạn muốn tiếp tục theo cách thủ công?</translation>
-<translation id="3964661563329879394">{COUNT,plural, =0{Không có}=1{Từ 1 trang web }other{Từ # trang web }}</translation>
+<translation id="3964661563329879394">{COUNT,plural, =0{Không có}=1{Của 1 trang web }other{Của # trang web }}</translation>
 <translation id="397105322502079400">Đang tính...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> bị chặn</translation>
 <translation id="3987940399970879459">Dưới 1 MB</translation>
@@ -744,10 +744,10 @@
 <translation id="5031870354684148875">Giới thiệu về Google Dịch</translation>
 <translation id="5034369478845443529">Ngữ cảnh cục bộ <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="5039804452771397117">Cho phép</translation>
-<translation id="5040262127954254034">Bảo mật</translation>
+<translation id="5040262127954254034">Quyền riêng tư</translation>
 <translation id="5043480802608081735">Liên kết bạn đã sao chép</translation>
 <translation id="5045550434625856497">Mật khẩu sai</translation>
-<translation id="5056549851600133418">Bài viết dành cho bạn</translation>
+<translation id="5056549851600133418">Tin bài dành cho bạn</translation>
 <translation id="5068524481479508725">A10</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Kiểm tra địa chỉ proxy<ph name="END_LINK" /></translation>
 <translation id="5087286274860437796">Chứng chỉ của máy chủ không hợp lệ tại thời điểm này.</translation>
@@ -1021,7 +1021,7 @@
 <translation id="6630809736994426279">Những kẻ tấn công hiện ở trên <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> có thể cố gắng cài đặt các chương trình nguy hiểm vào máy Mac của bạn. Các chương trình này sẽ đánh cắp hoặc xóa thông tin của bạn (ví dụ: ảnh, mật khẩu, thư và thẻ tín dụng). <ph name="BEGIN_LEARN_MORE_LINK" />Tìm hiểu thêm<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6643016212128521049">Xóa</translation>
 <translation id="6644283850729428850">Chính sách này không được chấp thuận.</translation>
-<translation id="6646269444027925224">{COUNT,plural, =0{Không có trang web nào}=1{Từ 1 trang web (bạn sẽ không bị đăng xuất khỏi Tài khoản Google của mình)}other{Từ # trang web (bạn sẽ không bị đăng xuất khỏi Tài khoản Google của mình)}}</translation>
+<translation id="6646269444027925224">{COUNT,plural, =0{Không có}=1{Của 1 trang web (bạn sẽ không bị đăng xuất khỏi Tài khoản Google của mình)}other{Của # trang web (bạn sẽ không bị đăng xuất khỏi Tài khoản Google của mình)}}</translation>
 <translation id="6657585470893396449">Mật khẩu</translation>
 <translation id="6670613747977017428">Quay lại trang an toàn.</translation>
 <translation id="6671697161687535275">Bạn muốn xóa đề xuất biểu mẫu khỏi Chromium?</translation>
@@ -1032,7 +1032,7 @@
 <translation id="6711464428925977395">Đã xảy ra sự cố với máy chủ proxy hoặc địa chỉ không chính xác.</translation>
 <translation id="6738516213925468394">Dữ liệu của bạn đã được mã hóa bằng <ph name="BEGIN_LINK" />cụm mật khẩu đồng bộ hóa<ph name="END_LINK" /> vào <ph name="TIME" />. Hãy nhập cụm mật khẩu đó để bắt đầu đồng bộ hóa.</translation>
 <translation id="674375294223700098">Lỗi chứng chỉ máy chủ không xác định.</translation>
-<translation id="6744009308914054259">Trong khi chờ kết nối, bạn có thể chuyển đến phần Tài nguyên đã tải xuống để đọc các bài viết ngoại tuyến.</translation>
+<translation id="6744009308914054259">Trong khi chờ kết nối, bạn có thể chuyển đến phần Tệp đã tải xuống để đọc các tin bài khi không có mạng.</translation>
 <translation id="6753269504797312559">Giá trị chính sách</translation>
 <translation id="6757797048963528358">Thiết bị của bạn đã chuyển sang chế độ ngủ.</translation>
 <translation id="6768213884286397650">Hagaki (Bưu thiếp)</translation>
@@ -1272,7 +1272,7 @@ Thông tin chi tiết bổ sung:
 <translation id="7942349550061667556">Đỏ</translation>
 <translation id="7947285636476623132">Kiểm tra năm hết hạn của bạn và thử lại</translation>
 <translation id="7951415247503192394">(32 bit)</translation>
-<translation id="7956713633345437162">Dấu trang di động</translation>
+<translation id="7956713633345437162">Dấu trang trên thiết bị di động</translation>
 <translation id="7961015016161918242">Không bao giờ</translation>
 <translation id="7977894662897852582">Edp</translation>
 <translation id="7995512525968007366">Không chỉ định</translation>

@@ -347,6 +347,11 @@
       如果將這項政策設定為 False，則系統不會收集擴充功能和外掛程式資料。
 
       只有在已啟用 <ph name="CHROME_REPORTING_EXTENSION_NAME" /> 且已透過 <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> 註冊電腦的情況下，這項政策才有作用。</translation>
+<translation id="1560205870554624777">控管是否要啟用 Kerberos 功能。Kerberos 是一種驗證通訊協定，可用於驗證網頁應用程式和檔案共用。
+
+          如果啟用這項政策，系統會啟用 Kerberos 功能。你可以透過「設定 Kerberos 帳戶」政策或「使用者」設定頁面中的「Kerberos 帳戶」設定來新增 Kerberos 帳戶。
+
+          如果停用或不設定這項政策，系統會停用 Kerberos 帳戶設定。使用者無法新增 Kerberos 帳戶，也無法使用 Kerberos 驗證。系統會刪除所有現有的 Kerberos 帳戶和所有已儲存的密碼。</translation>
 <translation id="1561424797596341174">針對遠端存取主機的偵錯版本覆寫政策</translation>
 <translation id="1561967320164410511">用於個人認證的 U2F 和擴充功能</translation>
 <translation id="1574554504290354326">這項設定已遭淘汰，請改用 SafeBrowsingExtendedReportingEnabled。啟用或停用 SafeBrowsingExtendedReportingEnabled 等同於將 SafeBrowsingExtendedReportingOptInAllowed 設為 False。
@@ -433,6 +438,12 @@
 
       你需將政策設為可供 <ph name="PRODUCT_OS_NAME" /> 下載《服務條款》的網址。《服務條款》需為純文字內容，以 MIME 類型 text/plain 提供。不允許任何標記。</translation>
 <translation id="1750315445671978749">封鎖所有下載作業</translation>
+<translation id="1762072363876276024">
+      這項政策適用於登入畫面。另請查看適用於使用者工作階段的 <ph name="SITE_PER_PROCESS_POLICY_NAME" /> 政策。建議你為這兩項政策設定相同的值。如果兩者的值不相符，進入使用者工作階段時，系統可能會因為套用使用者政策指定的值而發生延遲。
+      這項 DeviceLoginScreenSitePerProcess 設定可在系統預設隔離所有網站時，禁止使用者停用這項行為。請注意，DeviceLoginScreenIsolateOrigins 政策也可用於隔離其他更精細的來源。
+      如果啟用這項政策，當系統預設為以獨立程序執行每個網站時，使用者將無法停用這項行為。
+      如果不設定或停用這項政策，使用者可以變更這項設定 (例如使用 chrome://flags 中的「停用網站隔離」選項)。
+      </translation>
 <translation id="1781356041596378058">這項政策也可以控制 Android 開發人員選項的存取權。如果將這項政策設為 true，使用者將無法存取開發人員選項。如果將這項政策設為 false 或不予設定，使用者只要在 Android 設定應用程式中輕觸版本號碼 7 次，即可存取開發人員選項。</translation>
 <translation id="1793346220873697538">預設為停用 PIN 碼列印模式</translation>
 <translation id="1797233582739332495">顯示週期性提示，要求使用者重新啟動瀏覽器</translation>
@@ -854,6 +865,11 @@
 
       如果你未設定這項政策，使用者將可以自行決定是否要使用資料壓縮 Proxy 功能。</translation>
 <translation id="257788512393330403">每 6 小時需輸入密碼</translation>
+<translation id="2586162458524426376">
+      這項政策適用於登入畫面。另請查看適用於使用者工作階段的 <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> 政策。
+      如果啟用這項政策，系統會以獨立程序分別執行逗號分隔清單中指定的每個來源。這也會讓系統隔離以子網域命名的來源，例如指定 https://example.com/ 也會導致 https://foo.example.com/ 遭到隔離，因為後者屬於 https://example.com/ 網站的一部分。
+      如果不設定或停用這項政策，系統會將平台預設的網站隔離設定套用至登入畫面。
+      </translation>
 <translation id="2587719089023392205">將 <ph name="PRODUCT_NAME" /> 設為預設瀏覽器</translation>
 <translation id="2592091433672667839">螢幕保護程式顯示前的閒置時間會顯示在零售模式下的登入畫面上</translation>
 <translation id="2592162121850992309">如果將這項政策設為 True 或不設定，系統會啟用硬體加速功能 (惟特定 GPU 功能遭禁用時除外)。
@@ -864,6 +880,7 @@
           近期的所有 Samba 和 Windows 伺服器版本均支援 NTLMv2。除非是為了回溯相容性的緣故，否則請勿停用這項功能 (驗證功能的安全性會因此下降)。
 
           如果未設定這項政策，則預設值為 true 且系統將啟用 NTLMv2。</translation>
+<translation id="26023406105317310">設定 Kerberos 帳戶</translation>
 <translation id="2604182581880595781">設定網路檔案共用功能相關政策。</translation>
 <translation id="2623014935069176671">等待初始使用者活動</translation>
 <translation id="262740370354162807">啟用「<ph name="CLOUD_PRINT_NAME" />」文件提交功能</translation>
@@ -1188,6 +1205,7 @@
 <translation id="3159375329008977062">允許使用者透過 UI 匯出/匯入 Crostini 容器</translation>
 <translation id="3165808775394012744">這些政策全部集中在這個資料夾裡，方便輕鬆移除。</translation>
 <translation id="316778957754360075">我們已於 <ph name="PRODUCT_NAME" /> 版本 29 移除這項設定。如要設定機構代管的擴充功能/應用程式系列，建議你將代管 CRX 封裝檔的網站加入 ExtensionInstallSources 中，並在網頁上提供該封裝檔的直接下載連結。你可以透過 ExtensionInstallForcelist 政策建立該網頁專用的啟動器。</translation>
+<translation id="3168968618972302728">與 Kerberos 驗證相關的政策。</translation>
 <translation id="3171369832001535378">裝置網路主機名稱範本</translation>
 <translation id="3172512016079904926">這項政策可讓你在使用者層級安裝內建訊息傳遞主機。
 
@@ -1379,6 +1397,7 @@
 <translation id="3631099945620529777">如果設為 False，工作管理員中的「結束處理程序」按鈕隨即會停用。
 
       如果設為 True 或不設定，使用者將可以在工作管理員中結束處理程序。</translation>
+<translation id="3643284063603988867">啟用「記住密碼」功能</translation>
 <translation id="3646859102161347133">設定螢幕放大鏡類型</translation>
 <translation id="3653237928288822292">預設搜尋引擎圖示</translation>
 <translation id="3660510274595679517">
@@ -1586,13 +1605,13 @@
       如果將這項政策設為 True 或未設定這項政策，使用者將可透過註冊 Chrome 作業系統來兌換優惠。
 
       如果將這項政策設為 False，使用者將無法兌換優惠。</translation>
-<translation id="4008233182078913897">指定要以無訊息方式 (使用者無需操作) 安裝的應用程式和擴充功能清單；使用者無法解除安裝或停用這些應用程式和擴充功能。系統會直接授予這些應用程式/擴充功能要求的所有權限 (使用者無需操作)，包括日後新版應用程式/擴充功能要求的任何其他權限。此外，系統已將權限授予 enterprise.deviceAttributes 和 enterprise.platformKeys 擴充功能 API (這兩個 API 不適用於非強制安裝的應用程式/擴充功能)。
+<translation id="4008233182078913897">指定要以無訊息方式 (使用者無需操作) 安裝的應用程式和擴充功能清單；使用者無法解除安裝或停用這些應用程式和擴充功能。系統會直接授予這些應用程式/擴充功能要求的所有權限 (使用者無需操作)，包括日後新版應用程式/擴充功能要求的任何其他權限。系統會直接授予這些應用程式/擴充功能要求的所有權限 (使用者無需操作)，包括日後新版應用程式/擴充功能要求的任何其他權限(這兩個 API 不適用於非強制安裝的應用程式/擴充功能)。
 
           這項政策的優先順序高於可能發生衝突的 <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> 政策。如果從這份清單移除先前強制安裝的應用程式或擴充功能，<ph name="PRODUCT_NAME" /> 就會自動將其解除安裝。
 
           如果 Windows 執行個體未加入 <ph name="MS_AD_NAME" /> 網域，系統只會強制安裝 Chrome 線上應用程式商店列出的應用程式和擴充功能。
 
-          請注意，使用者可能透過開發人員工具變更擴充功能的原始碼 (或許會造成擴充功能無法正常運作)，如果你對此有所顧慮，建議你設定 <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> 政策。
+          請注意，使用者可透過開發人員工具變更擴充功能的原始碼 (這或許會造成擴充功能無法正常運作)。如果你對此有所顧慮，建議你設定 <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> 政策。
 
           這項政策的每個清單項目都是一行字串，其中包含以分號 (<ph name="SEMICOLON" />) 區隔的擴充功能 ID 和「更新」網址 (選用)。擴充功能 ID 為 32 個字母的字串，如需查看範例，請在開發人員模式下前往 <ph name="CHROME_EXTENSIONS_LINK" />。「更新」網址 (如有指定) 應指向更新資訊清單 XML 文件，如 <ph name="LINK_TO_EXTENSION_DOC1" /> 所述。根據預設，系統會使用 Chrome 線上應用程式商店的更新網址 (目前為「https://clients2.google.com/service/update2/crx」)。請注意，這項政策設定的「更新」網址僅適用於初次安裝，後續的擴充功能更新將採用擴充功能資訊清單指定的更新網址。另請注意，自 67 版起，你必須在 <ph name="PRODUCT_NAME" /> 中明確指定「更新」網址。
 
@@ -1712,6 +1731,15 @@
           這項設定會覆寫 RemoteAccessHostClientDomain 設定 (如已設定)。
 
           另請參閱 RemoteAccessHostDomainList。</translation>
+<translation id="4164601239783385546">啟用相黏鍵無障礙功能。
+
+          如果將這項政策設為 True，系統將一律啟用相黏鍵功能。
+
+          如果將這項政策設為 False，系統將一律停用相黏鍵功能。
+
+          設定這項政策後，使用者即無法變更或覆寫。
+
+          如果不設定這項政策，系統預設會停用相黏鍵，但使用者可以隨時啟用這項功能。</translation>
 <translation id="4183229833636799228"><ph name="FLASH_PLUGIN_NAME" /> 預設設定</translation>
 <translation id="4192388905594723944">用於驗證遠端存取用戶端驗證憑證的網址</translation>
 <translation id="4197038214024763371">如果不設定或啟用這項政策，使用者將可使用拼字檢查。
@@ -1896,6 +1924,7 @@
 <translation id="4578912515887794133">如果啟用這項設定，遠端存取主機會比對與主機相關聯的本機使用者名稱，以及註冊為主機擁有者的 Google 帳戶名稱 (例如，如果 Google 帳戶「johndoe@example.com」是主機的擁有者，則帳戶名稱為「johndoe」)。如果主機擁有者的名稱與主機相關聯的本機使用者名稱不同，系統將不會啟動遠端存取主機。RemoteAccessHostMatchUsername 政策應搭配 RemoteAccessHostDomain 政策使用，以強制將主機擁有者的 Google 帳戶與特定網域 (例如「example.com」) 建立關聯。
 
           如果停用這項政策或不設定，則遠端存取主機可以與任何本機使用者建立關聯。</translation>
+<translation id="4591366717022345234">提供「快速修復版本」給使用者</translation>
 <translation id="4600786265870346112">啟用大型游標</translation>
 <translation id="4604931264910482931">設定內建訊息傳遞黑名單</translation>
 <translation id="4613508646038788144">如果將這項政策設為 false，第三方軟體將可在 Chrome 的處理程序中置入可執行的程式碼。如果將這項政策設為 true 或不予設定，第三方軟體將無法在 Chrome 的處理程序中置入可執行的程式碼。</translation>
@@ -1982,6 +2011,7 @@
 <translation id="487460824085252184">自動遷移，不要求使用者同意。</translation>
 <translation id="4874982543810021567">在這些網站上封鎖 WebUSB</translation>
 <translation id="4876805738539874299">已啟用 SSL 最高版本</translation>
+<translation id="4887274746092315609">為 SAML 使用者啟用可在工作階段中變更密碼的頁面</translation>
 <translation id="4897928009230106190">指定使用 POST 提供搜尋建議時所用的參數，其包含以逗號分隔的名稱/數值配對。如果數值為範本參數 (例如上例中的 {searchTerms})，系統將會以實際的搜尋字詞資料替代這個數值。
 
           這項政策是選擇性的，如果未設定，系統將使用 GET 方法傳送搜尋建議要求。
@@ -2187,6 +2217,7 @@
       如果將這項政策設為「Legacy」，則只能使用 RC4 加密類型。這個選項並不安全，只有在非常特殊的情況下才需要使用。
 
       另請參閱 https://wiki.samba.org/index.php/Samba_4.6_Features_added/changed#Kerberos_client_encryption_types。</translation>
+<translation id="5249453807420671499">使用者可以新增 Kerberos 帳戶</translation>
 <translation id="5255162913209987122">建議使用</translation>
 <translation id="527237119693897329">讓你指定不應載入的內建訊息傳遞主機。
 
@@ -2320,6 +2351,7 @@
       如果這項政策設為 0 以外的值，則系統會在指定的閒置時間過後，自動登出目前登入示範模式的使用者。
 
       該政策的指定值單位為毫秒。</translation>
+<translation id="5508307164752647432">啟用 Kerberos 功能</translation>
 <translation id="5511702823008968136">啟用書籤列</translation>
 <translation id="5512418063782665071">首頁網址</translation>
 <translation id="551639594034811656">這項政策是用來定義一份百分比清單，藉此指定首次偵測到更新的當天開始起算的各天內，機構單位中應安裝更新的 <ph name="PRODUCT_OS_NAME" />裝置百分比。偵測到更新的時間會晚於更新發佈時間，因為更新發佈後，裝置可能要經過一段時間才會檢查是否有更新。
@@ -2341,6 +2373,7 @@
       請注意，如果平台支援政策通知，由於政策通知通常會在政策變更時自動強制更新 (不需更高的更新頻率)，所以更新延遲時間會設為 24 小時 (忽略所有預設值和這項政策的值)。</translation>
 <translation id="5530347722229944744">封鎖有安全疑慮的下載作業</translation>
 <translation id="5535973522252703021">Kerberos 委派伺服器許可清單</translation>
+<translation id="554903022911579950">Kerberos</translation>
 <translation id="555077880566103058">允許所有網站自動執行 <ph name="FLASH_PLUGIN_NAME" /> 外掛程式</translation>
 <translation id="5559079916187891399">這項政策對 Android 應用程式沒有影響。</translation>
 <translation id="5560039246134246593">在 <ph name="PRODUCT_NAME" /> 中擷取變異版本種子時新增參數。
@@ -2449,6 +2482,12 @@
 
       設定這項政策後，使用者無法變更或覆寫此政策。</translation>
 <translation id="5708969689202733975">設定允許的快速解鎖模式</translation>
+<translation id="5711016543513883877">
+      如果啟用這項政策，系統會以獨立程序分別執行逗號分隔清單中指定的每個來源。這也會讓系統隔離以子網域命名的來源，例如指定 https://example.com/ 也會導致 https://foo.example.com/ 遭到隔離，因為後者屬於 https://example.com/ 網站的一部分。
+      如果不設定或停用這項政策，使用者可以變更這項設定。
+
+      注意：這項政策不適用於 Android。如果要在 Android 上啟用 IsolateOrigins，請使用 IsolateOriginsAndroid 政策設定。
+      </translation>
 <translation id="572155275267014074">Android 設定</translation>
 <translation id="5722934961007828462">啟用這項設定時，<ph name="PRODUCT_NAME" /> 一律會針對通過驗證、並且由本機安裝 CA 憑證所簽署的伺服器憑證執行撤銷檢查。
 
@@ -3333,6 +3372,11 @@
 <translation id="7433714841194914373">啟用互動智慧搜尋</translation>
 <translation id="7434202861148928348">為遠端存取用戶端設定必要的網域名稱</translation>
 <translation id="7443616896860707393">跨原始來源的 HTTP 基本驗證提示</translation>
+<translation id="7454519673779830548">新增預先填寫的 Kerberos 帳戶。如果 Kerberos 憑證與登入憑證相符，只要將主體與密碼分別指定為「${{LOGIN_EMAIL}}」和「${{PASSWORD}}」，即可將帳戶設定為重複使用登入憑證。設定完成後，除非你為帳戶設定雙重驗證，否則系統會自動擷取 Kerberos 票證。使用者無法修改透過這項政策新增的帳戶。
+
+          如果啟用這項政策，系統會將這項政策定義的帳戶清單加入 Kerberos 帳戶設定。
+
+          如果停用或不設定這項政策，系統不會將任何帳戶加入 Kerberos 帳戶設定，並會移除先前透過這項政策新增的所有帳戶。如果啟用「使用者可以新增 Kerberos 帳戶」政策，則使用者仍可以手動新增帳戶。</translation>
 <translation id="7458437477941640506">如果作業系統版本比目標版本還新，則不復原至目標版本，且一併停用更新。</translation>
 <translation id="7464991223784276288">將來自相符網址的 Cookie 限制在目前的工作階段中</translation>
 <translation id="7469554574977894907">啟用搜尋建議</translation>
@@ -3458,6 +3502,11 @@
 <translation id="7687943045976362719">如果設定這項政策，指定的內容類型會由 <ph name="PRODUCT_FRAME_NAME" />處理。
 
           如果不設定這項政策，所有網站都會使用預設轉譯器。(你可透過 <ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" /> 政策設定預設轉譯器)。</translation>
+<translation id="7694245791806617022">控管是否在 Kerberos 驗證對話方塊中啟用「記住密碼」功能。密碼會加密儲存在磁碟上，且只能在使用者工作階段中透過 Kerberos 系統精靈存取。
+
+          如果啟用或不設定這項政策，使用者可以決定系統是否要記住 Kerberos 密碼，這樣日後就不必再輸入密碼。除非使用者需要進行其他驗證 (雙重驗證)，否則系統會自動擷取 Kerberos 票證。
+
+          如果停用這項政策，系統不會記住任何密碼，並會移除先前儲存的所有密碼。每次使用者需要透過 Kerberos 系統進行驗證時，都必須輸入密碼。根據伺服器的設定而定，通常是每 8 小時到數個月需要輸入一次密碼。</translation>
 <translation id="7694807474048279351">在系統已套用 <ph name="PRODUCT_OS_NAME" />更新之後安排自動重新啟動。
 
       如果你將這項政策設為 True，當系統已套用 <ph name="PRODUCT_OS_NAME" />更新且必須重新啟動以完成更新程序時，即會安排自動重新啟動。系統會立即排定重新啟動，但如果使用者正在使用裝置，最多可能會延遲 24 小時才會重新啟動。
@@ -3491,6 +3540,15 @@
       這項政策的用意是讓企業自行遷移目前使用 HTTP/0.9 的伺服器，日後我們會移除這項政策。
 
       如果未設定這項政策，則會在非預設通訊埠停用 HTTP/0.9。</translation>
+<translation id="7726421241038987229">
+      這項 SitePerProcess 設定可在系統預設為隔離所有網站時，禁止使用者停用這項行為。請注意，IsolateOrigins 政策也可用於隔離其他更精細的來源。
+      如果啟用這項政策，當系統預設為以獨立程序執行每個網站時，使用者將無法停用這項行為。
+      如果不設定或停用這項政策，使用者可以選擇停用網站隔離功能
+      (例如，使用 chrome://flags 中的「停用網站隔離」選項)。即使將這項政策設為停用和/或不設定，也不會關閉網站隔離功能。
+      在「<ph name="PRODUCT_OS_NAME" />」上，建議你將 <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> 裝置政策也設定為相同的值。如果兩個政策指定的值不相符，進入使用者工作階段時，系統可能會因為套用使用者政策指定的值而發生延遲。
+
+      注意：這項政策不適用於 Android。如果要在 Android 上啟用 SitePerProcess，請使用 SitePerProcessAndroid 政策設定。
+      </translation>
 <translation id="7747447585227954402">允許裝置在 <ph name="PRODUCT_OS_NAME" /> 使用 <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="7749402620209366169">為遠端存取主機啟用雙重驗證機制，而不採用使用者指定的 PIN。
 
@@ -3556,6 +3614,11 @@
       決定使用擴充程式 ID 當做登入畫面的螢幕保護程式。該擴充功能必須屬於你透過 DeviceAppPack 政策為這個網域設定的 AppPack。</translation>
 <translation id="7882857838942884046">停用 Google Sync 會造成 Android 備份與還原功能無法正常運作。</translation>
 <translation id="7882890448959833986">偵測到不支援的作業系統時不顯示警告</translation>
+<translation id="7889788745439330797">控管使用者是否可以新增 Kerberos 帳戶。
+
+          如果啟用或不設定這項政策，使用者可以透過「使用者」設定頁面中的「Kerberos 帳戶」設定來新增 Kerberos 帳戶。使用者可以完全控管自己新增的帳戶，也可以修改或移除帳戶。
+
+          如果停用這項政策，使用者就無法新增 Kerberos 帳戶，只能透過「設定 Kerberos 帳戶」政策新增帳戶。這個方法可以有效地鎖定帳戶。</translation>
 <translation id="7895553628261067384">遠端存取</translation>
 <translation id="7902255855035461275">系統會將這份清單中的模式與要求網址的安全性
       來源進行比對。如果找到相符的結果，系統就會授權存取

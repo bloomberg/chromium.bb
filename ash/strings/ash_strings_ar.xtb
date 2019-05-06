@@ -217,7 +217,7 @@
 <translation id="4279490309300973883">النسخ المطابق</translation>
 <translation id="4281007048406351813">إضافة دقيقة واحدة إلى الموقِّت</translation>
 <translation id="4292681942966152062">جارٍ تفعيل <ph name="NETWORK_NAME" /></translation>
-<translation id="4296136865091727875">محو جميع<ph name="COUNT" /> من الإشعارات</translation>
+<translation id="4296136865091727875">محو جميع الإشعارات التي يبلغ عددها <ph name="COUNT" /></translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">لقد ضغطت على اختصار لوحة المفاتيح للتباين العالي. هل ترغب في تفعيله؟</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -527,7 +527,7 @@
 <translation id="9193626018745640770">إرسال إلى مستلم غير معروف</translation>
 <translation id="9194617393863864469">تسجيل دخول مستخدم آخر...</translation>
 <translation id="9210037371811586452">جارٍ الخروج من وضع سطح المكتب الموحد</translation>
-<translation id="9211681782751733685"><ph name="TIME_REMAINING" /> متبقٍ حتى يتم شحن البطارية بالكامل.</translation>
+<translation id="9211681782751733685">الوقت المتبقي حتى يتم شحن البطارية بالكامل<ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">تعيين خلفية</translation>
 <translation id="921989828232331238">قفّل أحد الوالدين جهازك لليوم</translation>
 <translation id="923686485342484400">‏للخروج اضغط على Ctrl Shift Q مرتين.</translation>

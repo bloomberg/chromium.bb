@@ -346,6 +346,11 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Când această politică este dezactivată, nu se colectează datele privind extensiile și pluginurile.
 
       Politica se aplică doar când este activată extensia <ph name="CHROME_REPORTING_EXTENSION_NAME" />, iar dispozitivul este înregistrat cu politica <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="1560205870554624777">Stabilește dacă funcționalitatea Kerberos este activată. Kerberos este un protocol de autentificare ce poate fi folosit pentru autentificarea în aplicații web și dispozitive de stocare în rețea.
+
+          Dacă politica este activată, funcționalitatea Kerberos este activată. Conturile Kerberos pot fi adăugat fie prin politica „Configurează conturile Kerberos”, fie prin setările contului Kerberos din pagina Setări pentru persoane.
+
+          Dacă politica este dezactivată sau nu este setată, setările contului Kerberos sunt dezactivate. Nu poate fi adăugat niciun cont Kerberos, iar autentificarea Kerberos nu paote fi folosită. Toate conturile Kerberos existente și toate parolele stocate sunt șterse.</translation>
 <translation id="1561424797596341174">Suprascrieri de politici pentru versiunile de depanare ale gazdei de acces la distanță</translation>
 <translation id="1561967320164410511">U2F și extensii pentru atestarea individuală</translation>
 <translation id="1574554504290354326">Această setare este învechită; folosește SafeBrowsingExtendedReportingEnabled. Activarea sau dezactivarea SafeBrowsingExtendedReportingEnabled este echivalentă cu dezactivarea SafeBrowsingExtendedReportingOptInAllowed.
@@ -432,6 +437,12 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Politica trebuie setată la o adresă URL de la care <ph name="PRODUCT_OS_NAME" /> poate descărca Termenii și condițiile. Termenii și condițiile trebuie să fie în format de text simplu, de tip MIME text/plain. Nu se permite limbajul de markup.</translation>
 <translation id="1750315445671978749">Blochează toate descărcările</translation>
+<translation id="1762072363876276024">
+      Această politică este valabilă pentru ecranul de conectare. Consultă și politica <ph name="SITE_PER_PROCESS_POLICY_NAME" />, care este valabilă pentru sesiunea de utilizator. Se recomandă să setezi ambele politici la aceeași valoare. Dacă valorile nu se potrivesc, poate apărea o întârziere când intri într-o sesiune de utilizator în timp ce este aplicată valoarea indicată de politica de utilizator.
+      Setarea DeviceLoginScreenSitePerProcess poate fi folosită pentru a nu mai permite utilizatorilor să renunțe la comportamentul prestabilit de izolare a tuturor site-urilor. Reține că politica DeviceLoginScreenIsolateOrigins poate fi utilă și pentru izolarea unor origini suplimentare, mai exacte.
+      Dacă politica este activată, utilizatorii nu vor putea să renunța la comportamentul prestabilit, în care fiecare site rulează procesul propriu.
+      Dacă politica nu este configurată sau este dezactivată, utilizatorul va putea să modifice această setare (de exemplu, folosind intrarea „Dezactivează izolarea site-ului” în chrome://flags).
+      </translation>
 <translation id="1781356041596378058">Această politică controlează și accesul la Opțiunile pentru dezvoltatori Android. Dacă această politică este activată, utilizatorii nu pot accesa Opțiunile pentru dezvoltatori. Dacă această politică este dezactivată sau nu este configurată, utilizatorii pot accesa Opțiunile pentru dezvoltatori atingând de șapte ori numărul versiunii din aplicația Setări Android.</translation>
 <translation id="1793346220873697538">Dezactivează printarea cu PIN prestabilită</translation>
 <translation id="1797233582739332495">Afișează utilizatorului o solicitare recurentă prin care se indică faptul că relansarea este obligatorie</translation>
@@ -853,6 +864,11 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Dacă lăsați politica neconfigurată, utilizatorii vor avea posibilitatea de a alege dacă folosesc sau nu funcția serverului proxy pentru comprimarea datelor.</translation>
 <translation id="257788512393330403">Introducerea parolei este necesară o dată la șase ore</translation>
+<translation id="2586162458524426376">
+      Această politică este valabilă pentru ecranul de conectare. Consultă și politica <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, care este valabilă pentru sesiunea de utilizator.
+      Dacă politica este activată, fiecare dintre originile numite într-o listă de valori separate prin virgulă va rula propriul proces. Aceasta va izola și originile numite după subdomenii; de exemplu, dacă specifici https://example.com/, se va izola și https://foo.example.com/ ca parte a site-ului https://example.com/.
+      Dacă politica nu este configurată sau este dezactivată, setarea prestabilită a platformei privind izolarea site-ului va fi folosită pentru ecranul de conectare.
+      </translation>
 <translation id="2587719089023392205">Setează <ph name="PRODUCT_NAME" /> ca browser prestabilit</translation>
 <translation id="2592091433672667839">Durata de inactivitate înainte ca screen saverul să fie afișat pe ecranul de conectare în modul Vânzare</translation>
 <translation id="2592162121850992309">Dacă această politică este activată sau nu este configurată, accelerarea hardware va fi activată doar dacă o anumită funcție GPU este pe lista neagră.
@@ -863,6 +879,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
           Toate versiunile recente de servere Samba și Windows acceptă autentificarea NTLMv2. Aceasta trebuie dezactivată doar pentru compatibilitate inversă, iar prin dezactivare se reduce siguranța autentificării.
 
           Dacă această politică nu este setată, valoarea standard este „true”, iar autentificarea NTLMv2 este activată.</translation>
+<translation id="26023406105317310">Configurează conturile Kerberos</translation>
 <translation id="2604182581880595781">Configurează politicile pentru Dispozitive de stocare în rețea.</translation>
 <translation id="2623014935069176671">Se așteaptă prima activitate a utilizatorului</translation>
 <translation id="262740370354162807">Activează trimiterea documentelor la <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1189,6 +1206,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="3159375329008977062">Utilizatorul are permisiunea de a exporta/importa containere Crostini prin IU</translation>
 <translation id="3165808775394012744">Aceste politici sunt incluse aici pentru a fi mai ușor de eliminat.</translation>
 <translation id="316778957754360075">Această politică a fost retrasă începând cu <ph name="PRODUCT_NAME" /> versiunea 29. Pentru a crea colecții de extensii/aplicații găzduite la nivel de organizație, se recomandă să includeți site-ul care găzduiește pachetele CRX în ExtensionInstallSources și să afișați pe o pagină web linkuri de descărcare directă spre pachete. Puteți crea un lansator pentru respectiva pagină web utilizând politica ExtensionInstallForcelist.</translation>
+<translation id="3168968618972302728">Politicile asociate cu autentificarea Kerberos.</translation>
 <translation id="3171369832001535378">Șablon pentru numele de gazdă al dispozitivului din rețea</translation>
 <translation id="3172512016079904926">Activează instalarea la nivel de utilizator a gazdelor de mesagerie nativă.
 
@@ -1382,6 +1400,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="3631099945620529777">Dacă politica este dezactivată, butonul „Oprește procesul” este dezactivat în Managerul de activități.
 
       Dacă politica este activată sau nu este configurată, utilizatorul poate opri procesele în Managerul de activități.</translation>
+<translation id="3643284063603988867">Activează funcția „Reține parola”</translation>
 <translation id="3646859102161347133">Setați tipul lupei pentru ecran</translation>
 <translation id="3653237928288822292">Pictogramă pentru furnizorul de căutare prestabilit</translation>
 <translation id="3660510274595679517">
@@ -1571,7 +1590,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
           Politica este folosită numai dacă valoarea DeviceBatteryChargeMode este personalizată.
 
-          Dacă această politică nu este configurată sau setată, se va aplica modul standard de încărcare a bateriei.</translation>
+          Dacă politica nu este configurată sau setată, se va aplica modul standard de încărcare a bateriei.</translation>
 <translation id="3925377537407648234">Setează rezoluția ecranului și factorul de scalare</translation>
 <translation id="3939893074578116847">Trimite pachete din rețea serverului de gestionare, pentru a monitoriza starea
        online, permițând astfel serverului să detecteze dacă dispozitivul este offline.
@@ -1733,6 +1752,15 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
           Această setare va anula politica RemoteAccessHostClientDomain, dacă este prezentă.
 
           Vezi și RemoteAccessHostDomainList.</translation>
+<translation id="4164601239783385546">Activează funcția de accesibilitate taste adezive.
+
+          Dacă politica este activată, tastele adezive vor fi activate întotdeauna.
+
+          Dacă politica este dezactivată, tastele adezive vor fi mereu dezactivate.
+
+          Dacă setezi această politică, utilizatorii nu pot să o modifice sau să o anuleze.
+
+          Dacă această politică nu este configurată, tastele adezive vor fi dezactivate inițial, dar pot fi activate oricând de utilizator.</translation>
 <translation id="4183229833636799228">Setarea prestabilită pentru <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">Adresa URL pentru validarea indicativului de autentificare al clientului cu acces la distanță</translation>
 <translation id="4197038214024763371">Dacă politica nu este configurată sau activată, utilizatorului i se permite să folosească verificarea ortografică.
@@ -1919,6 +1947,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="4578912515887794133">Dacă această setare este activată, gazda de acces la distanță compară numele utilizatorului local (cu care este asociată gazda) și numele Contului Google înregistrat ca proprietar al gazdei (adică „johndoe” dacă proprietarul gazdei este Contul Google „johndoe@example.com”).  Gazda de acces la distanță nu va porni dacă numele proprietarului gazdei este diferit de numele utilizatorului local cu care este asociată gazda.  Politica RemoteAccessHostMatchUsername trebuie să fie folosită împreună cu politica RemoteAccessHostDomain pentru a impune și asocierea Contului Google cu un anumit domeniu (adică „example.com”).
 
           Dacă această setare este dezactivată sau nu este configurată, gazda de acces poate fi asociată oricărui utilizator local.</translation>
+<translation id="4591366717022345234">Oferă utilizatorilor versiunea de Quick Fix</translation>
 <translation id="4600786265870346112">Activați cursorul mare</translation>
 <translation id="4604931264910482931">Configurați lista neagră a mesageriei native</translation>
 <translation id="4613508646038788144">Dacă politica este setată la false, atunci software-ului de la o terță parte i se va permite să introducă un cod executabil în procesele Chrome. Dacă politica nu este configurată sau este setată la true, atunci software-ul de la o terță parte va fi împiedicat să introducă codul executabil în procesele Chrome.</translation>
@@ -2005,6 +2034,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="487460824085252184">Migrează automat, nu cere consimțământul utilizatorului.</translation>
 <translation id="4874982543810021567">Blochează WebUSB de pe aceste site-uri</translation>
 <translation id="4876805738539874299">Versiunea maximă SSL a fost activată</translation>
+<translation id="4887274746092315609">Activează o pagină pentru modificarea parolei în timpul sesiunii pentru utilizatorii SAML.</translation>
 <translation id="4897928009230106190">Specifică parametrii utilizați la căutarea sugestiilor cu POST. Politica este alcătuită din perechi nume/valoare separate prin virgulă. Dacă o valoare este un parametru șablon, precum {searchTerms} din exemplul de mai sus, acesta va fi înlocuit cu datele termenilor de căutare reali.
 
           Această politică este opțională. Dacă nu este setată, solicitarea de căutare a sugestiilor va fi trimisă prin metoda GET.
@@ -2216,6 +2246,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Dacă politica este setată la „Vechi”, se acceptă numai tipul de criptare RC4. Această opțiune nu este sigură și trebuie folosită numai în circumstanțe foarte specifice.
 
       Consultă și https://wiki.samba.org/index.php/Samba_4.6_Features_added/changed#Kerberos_client_encryption_types.</translation>
+<translation id="5249453807420671499">Utilizatorii pot adăuga conturi Kerberos</translation>
 <translation id="5255162913209987122">Poate fi recomandată</translation>
 <translation id="527237119693897329">Vă permite să specificați gazdele de mesagerie nativă care nu trebuie să fie încărcate.
 
@@ -2351,6 +2382,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Dacă valoarea acestei politici este configurată și diferă de 0, atunci utilizatorul demonstrativ conectat în prezent va fi deconectat automat după o perioadă de inactivitate specificată.
 
       Valoarea pentru politică trebuie specificată în milisecunde.</translation>
+<translation id="5508307164752647432">Activează funcționalitatea Kerberos</translation>
 <translation id="5511702823008968136">Activează bara de marcaje</translation>
 <translation id="5512418063782665071">Adresa URL a paginii de pornire</translation>
 <translation id="551639594034811656">Această politică definește o listă de procente care vor defini proporția de dispozitive <ph name="PRODUCT_OS_NAME" /> din UO de actualizat pe zi, începând din ziua în care se descoperă actualizarea. Momentul descoperirii apare după momentul publicării actualizării, deoarece este posibil să treacă un timp după publicare până când dispozitivul va căuta actualizări.
@@ -2372,6 +2404,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Reține că dacă platforma acceptă notificări privind politica, întârzierea actualizării va fi setată la 24 de ore (vor fi ignorate valorile prestabilite și valoarea acestei politici), deoarece se așteaptă ca notificările privind politica să forțeze automat o actualizare ori de câte ori politica se modifică, actualizările mai frecvente fiind inutile.</translation>
 <translation id="5530347722229944744">Blochează descărcările potențial periculoase</translation>
 <translation id="5535973522252703021">Lista albă a serverelor pentru delegare în protocolul Kerberos</translation>
+<translation id="554903022911579950">Kerberos</translation>
 <translation id="555077880566103058">Permite tuturor site-urilor să ruleze automat pluginul <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="5559079916187891399">Această politică nu afectează aplicațiile Android.</translation>
 <translation id="5560039246134246593">Adaugă un parametru la preluarea valorii de bază pentru variante în <ph name="PRODUCT_NAME" />.
@@ -2483,6 +2516,16 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Dacă această politică este setată, utilizatorul nu poate să o modifice sau să o ignore.</translation>
 <translation id="5708969689202733975">Configurează modurile permise pentru deblocare rapidă</translation>
+<translation id="5711016543513883877">
+      Dacă politica este activată, fiecare dintre originile denumite într-o
+      listă de valori separate prin virgulă va rula propriul proces. Aceasta va izola și
+      originele numite de subdomenii; de exemplu, dacă specifici https://example.com/, va fi
+      izolat și https://foo.example.com/ ca parte a
+      site-ului https://example.com/.
+      Dacă politica nu este configurată sau este dezactivată, utilizatorul va putea să modifice această setare.
+
+      NOTĂ: Această politică nu se aplică în Android. Pentru a activa IsolateOrigins în Android, folosește setarea politicii IsolateOriginsAndroid.
+      </translation>
 <translation id="572155275267014074">Setări Android</translation>
 <translation id="5722934961007828462">Când această setare este activată, <ph name="PRODUCT_NAME" /> va efectua întotdeauna verificarea revocării certificatelor de server care au fost validate și care sunt semnate de certificate CA instalate local.
 
@@ -3393,6 +3436,11 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="7433714841194914373">Activează Instant</translation>
 <translation id="7434202861148928348">Configurează numele de domenii necesare pentru clienții cu acces la distanță</translation>
 <translation id="7443616896860707393">Mesaje de solicitare pentru autentificarea HTTP de bază indiferent de sursă</translation>
+<translation id="7454519673779830548">Adaugă conturi Kerberos precompletate. Dacă datele de conectare Kerberos se potrivesc cu datele de conectare, un cont poate fi configurat pentru a reutiliza datele de conectare indicând „${{LOGIN_EMAIL}}” și „${{PASSWORD}}” pentru principal și, respectiv, parolă, astfel încât tichetul Kerberos să fie preluat automat dacă autentificarea cu doi factori nu este configurată. Utilizatorii nu pot să modifice conturile adăugate prin această politică.
+
+          Dacă politica este activată, lista conturilor definite de politică este adăugată la setările conturilor Kerberos.
+
+          Dacă politica este dezactivată sau nu este setată, niciun cont nu este adăugat la setările conturilor Kerberos, și toate conturile adăugate anterior cu această politică sunt eliminate. Utilizatorii pot încă să adauge conturi manual dacă politica „Utilizatorii pot adăuga conturi Kerberos” este activată.</translation>
 <translation id="7458437477941640506">Nu reveni la versiunea țintă dacă versiunea SO este mai nouă decât ținta. Actualizările sunt, de asemenea, dezactivate.</translation>
 <translation id="7464991223784276288">Limitează cookie-urile de la adresele URL corespunzătoare la sesiunea curentă</translation>
 <translation id="7469554574977894907">Activează sugestiile de căutare</translation>
@@ -3466,7 +3514,7 @@ nu poate fi stabilit de utilizator din setările browserului.
 
           Politica este folosită numai dacă valoarea DeviceBatteryChargeMode este personalizată.
 
-          Dacă această politică nu este configurată sau setată, se va aplica modul standard de încărcare a bateriei.</translation>
+          Dacă politica nu este configurată sau setată, se va aplica modul standard de încărcare a bateriei.</translation>
 <translation id="759957074386651883">Setări de Navigare sigură</translation>
 <translation id="7604169113182304895">Aplicațiile Android pot alege în mod voluntar să respecte această listă. Nu le poți forța să o respecte.</translation>
 <translation id="7612157962821894603">Marcaje la nivel de sistem de aplicat când pornește <ph name="PRODUCT_NAME" /></translation>
@@ -3524,6 +3572,11 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="7687943045976362719">Dacă politica este setată, tipurile de conținut specificate sunt gestionate de <ph name="PRODUCT_FRAME_NAME" />.
 
           Dacă politica nu este setată, dispozitivul de redare este folosit pentru toate site-urile. (Politica <ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" /> poate fi folosită pentru a configura dispozitivul de redare prestabilit.)</translation>
+<translation id="7694245791806617022">Stabilește dacă funcția „Reține parola” este activată în dialogul de autentificare Kerberos. Parolele sunt stocate criptate pe hard disk și sunt accesibile numai pentru daemonul sistemului Kerberos și în timpul unei sesiuni de utilizator.
+
+          Dacă politica este activată sau nu este setată, utilizatorii pot decide dacă parolele Kerberos sunt reținute, astfel încât să nu trebuiască să fie introduse din nou. Tichetele Kerberos sunt preluate automat dacă nu este necesară autentificarea suplimentară (autentificare cu doi factori).
+
+          Dacă politica este dezactivată, parolele nu sunt reținute niciodată și toate parolele stocate anterior sunt eliminate. Utilizatorii trebuie să introducă parola de fiecare dată când trebuie să se autentifice în sistemul Kerberos. În funcție de setările serverului, acest lucru are loc, de obicei, o dată la 8 ore până la câteva luni.</translation>
 <translation id="7694807474048279351">Programați o repornire automată după aplicarea unei actualizări <ph name="PRODUCT_OS_NAME" />.
 
       Dacă această politică este activată, se programează o repornire automată după aplicarea unei actualizări <ph name="PRODUCT_OS_NAME" /> și repornirea este obligatorie pentru a finaliza procesul de instalare. Repornirea este programată imediat, dar poate fi amânată pe dispozitiv cu până la 24 de ore dacă dispozitivul este folosit în acel moment de un utilizator.
@@ -3557,6 +3610,15 @@ nu poate fi stabilit de utilizator din setările browserului.
       Această politică a fost concepută pentru a oferi companiilor ocazia de a migra serverele existente de la HTTP/0.9 și va fi eliminată în viitor.
 
       Dacă politica nu este configurată, HTTP/0.9 se va dezactiva pentru porturile care nu sunt prestabilite.</translation>
+<translation id="7726421241038987229">
+      Această setare, SitePerProcess, poate fi folosită pentru a nu permite utilizatorilor să renunțe la comportamentul prestabilit de a izola toate site-urile. Reține că politica IsolateOrigins poate fi utilă și pentru a izola origini suplimentare, mai exacte.
+      Dacă politica este activată, utilizatorii nu vor putea să renunța la comportamentul prestabilit, în care fiecare site rulează procesul propriu.
+      Dacă politica nu este configurată sau este dezactivată, utilizatorul va putea să renunțe la izolarea site-ului
+      (de exemplu, să folosească intrarea „Dezactivează izolarea site-ului” în in chrome://flags).  Dacă dezactivezi și/sau nu configurezi politica, izolarea site-ului nu va fi dezactivată.
+      În <ph name="PRODUCT_OS_NAME" />, se recomandă să setezi și politica privind dispozitivele <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> la aceeași valoare. Dacă valorile specificate de cele două politici nu se potrivesc, poate avea loc o întârziere când intri într-o sesiune de utilizator în timp ce se aplică valoarea specificată de politica privind utilizatorii.
+
+      NOTĂ: Această politică nu se aplică în Android. Pentru a activa SitePerProcess în Android, folosește setarea politicii SitePerProcessAndroid.
+      </translation>
 <translation id="7747447585227954402">Permite dispozitivelor să folosească un <ph name="PLUGIN_VM_NAME" /> pe <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="7749402620209366169">Activează autentificarea cu doi factori pentru gazdele de acces la distanță, în locul unui PIN specificat de utilizator.
 
@@ -3622,6 +3684,11 @@ nu poate fi stabilit de utilizator din setările browserului.
       Politica stabilește codul extensiei de utilizat ca screen saver pentru ecranul de conectare. Extensia trebuie să facă parte din pachetul de aplicații care este configurat pentru acest domeniu prin intermediul politicii DeviceAppPack.</translation>
 <translation id="7882857838942884046">Dacă dezactivezi Google Sync, funcția Android „Backup și restabilire” nu va funcționa corespunzător.</translation>
 <translation id="7882890448959833986">Elimină avertismentul privind sistemul de operare neacceptat</translation>
+<translation id="7889788745439330797">Stabilește dacă utilizatorii pot adăuga conturi Kerberos.
+
+          Dacă politica este activată sau nu este setată, utilizatorii pot adăuga conturi Kerberos din setările contului Kerberos, pe pagina Setări pentru persoane. Utilizatorii au control total asupra conturilor pe care le-au adăugat și pot să le modifice sau să le elimine.
+
+          Dacă politica este dezactivată, utilizatorii nu pot adăuga conturi Kerberos. Conturile pot fi adăugate numai prin politica „Configurează conturile Kerberos”. Este o modalitate eficientă de a bloca conturile.</translation>
 <translation id="7895553628261067384">Acces la distanță</translation>
 <translation id="7902255855035461275">Șabloanele din această listă vor fi comparate cu originea
       de securitate a adresei URL solicitante. Dacă este identificată o potrivire,

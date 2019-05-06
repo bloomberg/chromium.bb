@@ -429,7 +429,7 @@
 <translation id="4242533952199664413">सेटिंग्ज उघडा</translation>
 <translation id="4243710787042215766">खाजगी टॅबमध्ये उघडा</translation>
 <translation id="424864128008805179">Chrome मधून साइन आउट करायचे?</translation>
-<translation id="4256782883801055595">मुक्त स्त्रोत परवाने</translation>
+<translation id="4256782883801055595">मुक्त स्रोत परवाने</translation>
 <translation id="4259722352634471385">नेव्हिगेशन अवरोधित केले आहे: <ph name="URL" /></translation>
 <translation id="4262028915562328938">सिंक एरर आली, तपशील मिळविण्‍यासाठी टॅप करा.</translation>
 <translation id="4269820728363426813">दुव्याचा पत्ता कॉपी करा</translation>
@@ -469,7 +469,7 @@
 तुमच्या Google खात्यात <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> येथील इतर Google सेवांवरील शोध आणि अ‍ॅक्टिव्हिटी यांसारखा इतर स्वरूपातील ब्राउझिंग इतिहास असू शकतो.</translation>
 <translation id="4532845899244822526">फोल्डर निवडा</translation>
 <translation id="4538018662093857852">लाइट मोड सुरू करा</translation>
-<translation id="4550003330909367850">तुमचा पासवर्ड येथे पाहण्यासाठी किंवा कॉपी करण्यासाठी या डिव्हाइसवर स्क्रीन लॉक सेट करा.</translation>
+<translation id="4550003330909367850">तुमचा पासवर्ड येथे पाहण्यासाठी किंवा कॉपी करण्यासाठी या डीव्हाइसवर स्क्रीन लॉक सेट करा.</translation>
 <translation id="4558311620361989323">वेबपेज शॉर्टकट</translation>
 <translation id="4561979708150884304">कनेक्शन नाही</translation>
 <translation id="4565377596337484307">पासवर्ड लपवा</translation>
@@ -906,7 +906,7 @@
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> फाइल डाउनलोड केली}other{<ph name="FILES_DOWNLOADED_MANY" /> फायली डाउनलोड केल्या}}</translation>
 <translation id="7588219262685291874">तुमच्या डिव्हाइसचे बॅटरी सेव्हर सुरू असेल तेव्हा गडद थीम सुरू करा</translation>
 <translation id="7589445247086920869">वर्तमान शोध इंजिनसाठी अवरोधित करा</translation>
-<translation id="7593557518625677601">Chrome सिंक सुरू करण्यासाठी Android सेटिंग्ज उघडा आणि Android सिस्टम सिंक पुन्हा सक्षम करा</translation>
+<translation id="7593557518625677601">Chrome संकालन सुरू करण्यासाठी Android सेटिंग्ज उघडा आणि Android सिस्टम संकालन पुन्हा सुरू करा</translation>
 <translation id="7596558890252710462">ऑपरेटिंग सिस्टम</translation>
 <translation id="7605594153474022051">संकालन कार्य करत नाही</translation>
 <translation id="7606077192958116810">लाइट मोड सुरू आहे. ते सेटिंग्जमध्ये व्यवस्थापित करा.</translation>

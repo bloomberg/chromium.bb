@@ -1356,7 +1356,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hvis denne politik er indstillet til "DeveloperToolsAllowed" (værdi 1), kan Udviklerværktøjer og JavaScript-konsollen åbnes og bruges i alle sammenhænge – også i forbindelse med udvidelser, der er installeret af en virksomhedspolitik.
       Hvis denne politik er indstillet til "DeveloperToolsDisallowed" (værdi 2), kan der ikke opnås adgang til Udviklerværktøjer, og elementer på websites kan ikke længere inspiceres. Alle tastaturgenveje samt menuer eller genvejsmenuer, der åbner Udviklerværktøjer eller JavaScript-konsollen, deaktiveres.</translation>
 <translation id="3547954654003013442">Proxyindstillinger</translation>
-<translation id="3550875587920006460">Tillader, at der angives en tilpasset tidsplan for søgning efter opdateringer. Politikken gælder for alle brugere og på alle enhedens grænseflader. Når den er angivet, søger enheden efter opdateringer i overensstemmelse med tidsplanen. Hvis du vil annullere planlagte søgninger efter opdateringer, er du nødt til at fjerne politikken.</translation>
+<translation id="3550875587920006460">Tillader, at der fastsættes en tidsplan for søgning efter opdateringer. Denne indstilling gælder for alle brugere og på alle grænseflader på enheden. Når den er angivet, søger enheden efter opdateringer i overensstemmelse med tidsplanen. Hvis du vil annullere planlagte søgninger efter opdateringer, er du nødt til at fjerne politikken.</translation>
 <translation id="355118380775352753">Websites, der skal åbnes i en alternativ browser</translation>
 <translation id="3554984410014457319">Giv Google Assistent tilladelse til at lytte efter den stemmestyrede aktiveringssætning</translation>
 <translation id="356579196325389849">Brugerne kan konfigurere udgivelseskanalen for Chrome OS</translation>
@@ -1607,7 +1607,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 
           Bemærk, at kildekoden i alle udvidelser kan ændres af brugere via Udviklerværktøjer (hvilket kan medføre, at udvidelsen ikke fungerer). Hvis du vil undgå dette, skal politikken <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> angives.
 
-          Hvert listepunkt i politikken er en streng, som indeholder et udvidelses-id og en "opdateringswebadresse" adskilt af et semikolon (<ph name="SEMICOLON" />). Udvidelses-id'et er den streng på 32 bogstaver, som f.eks. kan findes på <ph name="CHROME_EXTENSIONS_LINK" />, når udviklertilstanden bruges. Hvis den er angivet, skal "opdateringswebadressen" pege på et XML-dokument med et opdateringsmanifest som beskrevet i <ph name="LINK_TO_EXTENSION_DOC1" />. Som standard anvendes Chrome Webshops opdateringswebadresse (som i øjeblikket er "https://clients2.google.com/service/update2/crx") Bemærk, at "Opdateringswebadressen", der angives i denne politik, kun bruges til den første installation. Efterfølgende opdateringer af udvidelsen anvender den opdateringswebadresse, som er angivet i udvidelsens manifest. Bemærk også, at det var påkrævet eksplicit at angive "opdateringswebadressen" i <ph name="PRODUCT_NAME" />-versioner op til og med 67.
+          Hvert listepunkt i politikken er en streng, som indeholder et udvidelses-id og en "opdateringswebadresse" adskilt af et semikolon (<ph name="SEMICOLON" />). Udvidelses-id'et er den streng på 32 bogstaver, som f.eks. kan findes på <ph name="CHROME_EXTENSIONS_LINK" />, når udviklertilstanden bruges. Hvis den er angivet, skal "opdateringswebadressen" pege på et XML-dokument med et opdateringsmanifest som beskrevet i <ph name="LINK_TO_EXTENSION_DOC1" />. Som standard anvendes Chrome Webshops opdateringswebadresse (som i øjeblikket er "https://clients2.google.com/service/update2/crx"). Bemærk, at "opdateringswebadressen", der angives i denne politik, kun bruges til den første installation. Efterfølgende opdateringer af udvidelsen anvender den opdateringswebadresse, som er angivet i udvidelsens manifest. Bemærk også, at det var påkrævet eksplicit at angive "opdateringswebadressen" i <ph name="PRODUCT_NAME" />-versioner op til og med 67.
 
           <ph name="EXTENSION_POLICY_EXAMPLE" /> installerer f.eks. udvidelsen med id'et <ph name="EXTENSION_ID_SAMPLE" /> fra "standardopdateringswebadressen" fra Chrome Webshop. Du kan få flere oplysninger om hosting af udvidelser her: <ph name="LINK_TO_EXTENSION_DOC2" />.
 
@@ -2547,7 +2547,7 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
       Hvis politikken er angivet som sand, har skypolitikken forrang, hvis den ikke stemmer overens med platformspolitikken.
       Hvis politikken er angivet som falsk eller ikke er konfigureret, har platformspolitikken forrang, hvis den ikke stemmer overens med skypolitikken.
 
-      Denne politik er kun tilgængelig som en obligatorisk platformspolitik for computere, og den påvirker kun cloud-politikker vedrørende omfang for computere.
+      Denne politik er kun tilgængelig som en obligatorisk platformspolitik for computere, og den påvirker kun skypolitikker vedrørende omfang for computere.
       </translation>
 <translation id="5905473632148429217">Aktivér online OCSP/CRL-kontrol</translation>
 <translation id="5906199912611534122">Gør det muligt at aktivere eller deaktivere netværksbegrænsning.
@@ -2575,7 +2575,7 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 
       Hvis du deaktiverer denne indstilling eller ikke konfigurerer en værdi, håndhæves Beskyttet søgning i Google Søgning ikke.</translation>
 <translation id="5946082169633555022">Betakanal</translation>
-<translation id="5946329690214660966">Angiv en tilpasset tidsplan for søgning efter opdateringer</translation>
+<translation id="5946329690214660966">Fastsæt en tidsplan for søgning efter opdateringer</translation>
 <translation id="5950205771952201658">Set i lyset af, at ikke-omfattende tilbagekaldskontroller på nettet ikke giver nogen effektiv form for sikkerhed, er disse deaktiveret som standard i <ph name="PRODUCT_NAME" /> version 19 og nyere. Ved at angive denne politik til Sand gendannes de tidligere indstillinger, så der udføres OCSP/CRL-kontroller på nettet.
 
       Hvis politikken ikke er angivet eller er angivet til Falsk, udfører <ph name="PRODUCT_NAME" /> ikke tilbagekaldskontroller på nettet i <ph name="PRODUCT_NAME" /> 19 og nyere.</translation>
@@ -2642,7 +2642,7 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 <translation id="6034341625190551415">Styrer offentlige kontotyper og terminalkontotyper.</translation>
 <translation id="6034603289689965535">Tillader, at en side viser pop op-vinduer under indlæsning</translation>
 <translation id="6036523166753287175">Aktiver gennemgang af firewall fra vært for fjernadgang</translation>
-<translation id="605475635122964053">Begrænser tilstanden for udskrivning med pinkode En ikke-angivet politik behandles som ingen begrænsning. Hvis tilstanden ikke er tilgængelig, ignoreres politikken. Bemærk! Funktionen til udskrivning med pinkode kun er aktiveret for printere, som anvender en af protokollerne IPPS, USB eller IPP-over-USB </translation>
+<translation id="605475635122964053">Begrænser tilstanden for udskrivning med pinkode. En politik uden konfiguration behandles som ingen begrænsning. Hvis tilstanden ikke er tilgængelig, ignoreres politikken. Bemærk! Funktionen til udskrivning med pinkode kun er aktiveret for printere, som anvender en af protokollerne IPPS, USB eller IPP-over-USB </translation>
 <translation id="6070667616071269965">Tastaturlayouts for loginskærme på enheder</translation>
 <translation id="6074963268421707432">Tillad ikke, at websites viser skrivebordsunderretninger</translation>
 <translation id="6074964551275531965">Angiv tidsrummet for notifikationer om opdateringer</translation>

@@ -174,7 +174,6 @@
 <translation id="1241753985463165747">Leer y modificar todos los datos del sitio web actual cuando se invoca</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> quiere restablecer la configuración.</translation>
 <translation id="1243314992276662751">Cargar</translation>
-<translation id="1244147615850840081">Proveedor de servicio celular</translation>
 <translation id="1244303850296295656">Error de extensión</translation>
 <translation id="1249643471736608405">Se bloqueó <ph name="PLUGIN_NAME" /> porque dejó de estar disponible</translation>
 <translation id="1252987234827889034">Se produjo un error en el perfil</translation>
@@ -1213,7 +1212,7 @@
 <translation id="2874939134665556319">Pista anterior</translation>
 <translation id="2875698561019555027">(Páginas de error de Chrome)</translation>
 <translation id="2876336351874743617">Dedo 2</translation>
-<translation id="2876369937070532032">Enviar a Google las URL de algunas páginas que visitas, cuando tu seguridad está en riesgo</translation>
+<translation id="2876369937070532032">Enviar a Google las URL de algunas páginas que visitas, cuando tu seguridad esté en riesgo</translation>
 <translation id="288042212351694283">Accede a tus dispositivos U2F (Universal 2nd Factor).</translation>
 <translation id="2881076733170862447">Cuando haces clic en la extensión</translation>
 <translation id="2881966438216424900">Último acceso:</translation>
@@ -1396,7 +1395,7 @@
 <translation id="3170072451822350649">También puedes omitir el acceso y <ph name="LINK_START" />navegar como invitado<ph name="LINK_END" />.</translation>
 <translation id="3172045848207518317">Un sitio está accediendo a la entrada de video</translation>
 <translation id="3177909033752230686">Idioma de la página:</translation>
-<translation id="3181954750937456830">Navegación segura (te protege a ti a y tu dispositivo de sitios peligrosos)</translation>
+<translation id="3181954750937456830">Navegación segura (te protege a ti y tu dispositivo de sitios peligrosos)</translation>
 <translation id="3182749001423093222">Corrector ortográfico</translation>
 <translation id="3183139917765991655">Importador de perfiles</translation>
 <translation id="3188465121994729530">Promedio móvil</translation>
@@ -1842,7 +1841,7 @@
 <translation id="385051799172605136">Atrás</translation>
 <translation id="3851428669031642514">Cargar secuencias de comandos inseguras</translation>
 <translation id="3854599674806204102">Elige una opción</translation>
-<translation id="3855441664322950881">Extensión de empaque</translation>
+<translation id="3855441664322950881">Empaquetar extensión</translation>
 <translation id="3855676282923585394">Importar favoritos y configuración...</translation>
 <translation id="3856800405688283469">Seleccionar zona horaria</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
@@ -2245,6 +2244,7 @@
 <translation id="4524832533047962394">El modo de inscripción proporcionado no es compatible con esta versión del sistema operativo. Asegúrate de que estás ejecutando la versión más reciente.</translation>
 <translation id="4525382759303819021">Obtener las actualizaciones y recomendaciones más recientes para las apps de Play Store</translation>
 <translation id="4530494379350999373">Origen</translation>
+<translation id="4532646538815530781">Este sitio está usando los sensores de movimiento.</translation>
 <translation id="4533846798469727141">Ahora di "Ok Google"</translation>
 <translation id="4533985347672295764">Tiempo de CPU</translation>
 <translation id="4534661889221639075">Vuelve a intentarlo.</translation>
@@ -2479,6 +2479,7 @@
 <translation id="4892229439761351791">El sitio puede usar la conexión Bluetooth</translation>
 <translation id="4893336867552636863">Esta acción borrará permanentemente los datos de navegación de este dispositivo.</translation>
 <translation id="4893522937062257019">En la pantalla bloqueada</translation>
+<translation id="489454699928748701">Permitir que los sitios usen los sensores de movimiento</translation>
 <translation id="4898011734382862273">El certificado "<ph name="CERTIFICATE_NAME" />" representa a una entidad de certificación</translation>
 <translation id="489985760463306091">Para terminar de quitar software dañino, reinicia la computadora</translation>
 <translation id="4900392736118574277">Tu página de inicio se cambió a <ph name="URL" />.</translation>
@@ -2942,6 +2943,7 @@
 <translation id="5620568081365989559">DevTools solicita acceso completo a <ph name="FOLDER_PATH" />. Asegúrate de no revelar información confidencial.</translation>
 <translation id="5620612546311710611">estadísticas de uso</translation>
 <translation id="5620655347161642930">Exportar contraseñas…</translation>
+<translation id="5623282979409330487">Este sitio accede a tus sensores de movimiento.</translation>
 <translation id="5623842676595125836">Registro</translation>
 <translation id="5624120631404540903">Administrar contraseñas</translation>
 <translation id="5626134646977739690">Nombre:</translation>
@@ -3210,7 +3212,6 @@
     <ph name="BEGIN_PARAGRAPH2" />Para inhabilitar la Ubicación, desactiva la configuración de la ubicación principal de tu dispositivo. También puedes desactivar el uso de redes Wi-Fi, redes móviles y sensores para obtener la ubicación en la configuración de la ubicación.<ph name="END_PARAGRAPH2" /></translation>
 <translation id="6041155700700864984">Salir de la pantalla completa</translation>
 <translation id="604124094241169006">Automático</translation>
-<translation id="6042169520002885235">Seleccionar un fabricante y un modelo de impresora</translation>
 <translation id="6042308850641462728">Más</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" /> comparte una pestaña de Chrome con <ph name="TAB_NAME" />.</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> comparte una pestaña de Chrome y audio con <ph name="TAB_NAME" />.</translation>
@@ -3435,6 +3436,7 @@
 <translation id="6390994422085833176">Después de establecer la configuración, revisa las funciones de sincronización y personalización</translation>
 <translation id="6393156038355142111">Sugerir contraseña segura</translation>
 <translation id="6395423953133416962">Enviar <ph name="BEGIN_LINK1" />información del sistema<ph name="END_LINK1" /> y <ph name="BEGIN_LINK2" />métricas<ph name="END_LINK2" /></translation>
+<translation id="6396988158856674517">Impedir que los sitios usen los sensores de movimiento</translation>
 <translation id="6397094776139756010">Opciones de personalización y sincronización</translation>
 <translation id="6398715114293939307">Quitar Google Play Store</translation>
 <translation id="6398765197997659313">Salir de pantalla completa</translation>
@@ -3529,6 +3531,7 @@
 <translation id="6531282281159901044">Conservar archivo peligroso</translation>
 <translation id="6532101170117367231">Guardar en Google Drive</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Nota:<ph name="END_BOLD" /> Solo debes habilitar esta opción si sabes lo que estás haciendo o si alguien te lo solicitó, ya que la recopilación de datos puede reducir el rendimiento.</translation>
+<translation id="6541638731489116978">Este sitio no tiene permiso para acceder a tus sensores de movimiento.</translation>
 <translation id="654233263479157500">Utilizar un servicio web para ayudar a resolver errores de navegación</translation>
 <translation id="6544215763872433504">El navegador web de Google, perfecto para ti</translation>
 <translation id="6545665334409411530">Frecuencia de repetición</translation>
@@ -4267,6 +4270,7 @@
 <translation id="7704628569466676326">Sincroniza la llave de seguridad con este dispositivo y podrás usarla para acceder a tu cuenta</translation>
 <translation id="7705276765467986571">No se pudo cargar el modelo de favoritos.</translation>
 <translation id="7705524343798198388">VPN</translation>
+<translation id="7707108266051544351">Este sitio no tiene permiso para usar los sensores de movimiento.</translation>
 <translation id="7707922173985738739">Usa los datos móviles.</translation>
 <translation id="7709152031285164251">Error: <ph name="INTERRUPT_REASON" /></translation>
 <translation id="7710568461918838723">&amp;Transmitir…</translation>

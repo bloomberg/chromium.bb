@@ -343,6 +343,11 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Hvis denne regelen er angitt som «false» (usant), innhentes ikke data om utvidelser og programtillegg.
 
       Denne regelen gjelder bare når <ph name="CHROME_REPORTING_EXTENSION_NAME" /> er slått på og maskinen er registrert med <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="1560205870554624777">Styrer om Kerberos-funksjonalitet er slått på. Kerberos er en autentiseringsprotokoll som kan brukes til autentisering med nettprogrammer og delte nettverksressurser.
+
+          Hvis denne regelen er slått på, er Kerberos-funksjonalitet slått på. Kerberos-kontoer kan legges til enten gjennom «Konfigurer Kerberos-kontoer»-regelen eller gjennom Kerberos-kontoinnstillingene på Personer-innstillingssiden.
+
+          Hvis denne regelen er slått av eller ikke er angitt, er Kerberos-kontoinnstillingene slått av. Ingen Kerberos-kontoer kan legges til, og Kerberos-autentisering kan ikke brukes. Alle eksisterende Kerberos-kontoer og alle lagrede passord slettes.</translation>
 <translation id="1561424797596341174">Overstyring av regler for delversjoner for feilsøking på fjerntilgangsverten</translation>
 <translation id="1561967320164410511">U2F samt utvidelser for individuell attestering</translation>
 <translation id="1574554504290354326">Denne innstillingen er avviklet. Bruk SafeBrowsingExtendedReportingEnabled i stedet. Å aktivere eller deaktivere SafeBrowsingExtendedReportingEnabled tilsvarer å angi SafeBrowsingExtendedReportingOptInAllowed som «false» (usann).
@@ -429,6 +434,12 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 
       Denne innnstillingen må konfigureres med en nettadresse der <ph name="PRODUCT_OS_NAME" /> kan laste ned vilkårene. Vilkårene må være i ren tekst, levert som MIME-typen tekst/ren. Det er ikke tillatt med koding.</translation>
 <translation id="1750315445671978749">Blokkér alle nedlastinger</translation>
+<translation id="1762072363876276024">
+      Denne regelen gjelder påloggingsskjermen. Se også <ph name="SITE_PER_PROCESS_POLICY_NAME" />-regelen, som gjelder brukerøkten. Det anbefales å sette begge reglene til samme verdi. Hvis reglene har ulike verdier, kan det medføre at oppstart av brukerøkter blir forsinket mens verdien som spesifiseres av brukerregelen, tas i bruk.
+      Denne innstillingen (DeviceLoginScreenSitePerProcess) kan brukes til å nekte brukere å velge bort standardatferden, som er å isolere alle nettsteder. Merk at DeviceLoginScreenIsolateOrigins-regelen også kan være nyttig for å isolere flere, mer finkornede opprinnelser.
+      Hvis regelen er slått på, kan brukerne ikke velge bort standardatferden, der alle nettsteder kjører i sine egne prosesser.
+      Hvis regelen er slått av eller ikke er konfigurert, kan brukeren velge bort nettstedsisolering (f.eks. ved å bruke «Slå av nettstedsisolering»-oppføringen i chrome://flags).
+      </translation>
 <translation id="1781356041596378058">Denne regelen kontrollerer også tilgangen til utvikleralternativene for Android. Hvis du angir denne regelen som «true» (sann), fjerner du brukernes tilgang til utvikleralternativene. Hvis du angir denne regelen som «false» (usann) eller ikke angir den, kan brukere få tilgang til utvikleralternativene ved å trykke sju ganger på delversjonsnummeret i appen for Android-innstillinger.</translation>
 <translation id="1793346220873697538">Deaktiver utskrift med PIN-kode som standard</translation>
 <translation id="1797233582739332495">Vis brukeren en gjentakende melding om at omstart kreves</translation>
@@ -855,6 +866,11 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 
       Hvis innstillingen ikke angis, blir proxy-tjenerfunksjonen for datakomprimering tilgjengelig for brukere som velger om de vil bruke den eller ikke.</translation>
 <translation id="257788512393330403">Passordet må skrives inn hver 6. time</translation>
+<translation id="2586162458524426376">
+      Denne regelen gjelder påloggingsskjermen. Se også <ph name="ISOLATE_ORIGINS_POLICY_NAME" />-regelen, som gjelder brukerøkten.
+      Hvis regelen er slått på, kommer alle navngitte opprinnelser i en kommadelt liste til å kjøre i sine egne prosesser. Da isoleres også opprinnelser som har navn basert på underdomener. Hvis for eksempel https://example.com/ angis, isoleres også https://foo.example.com/ som en del av nettstedet https://example.com/.
+      Hvis regelen er slått av eller ikke er konfigurert, brukes plattformens standardinnstillinger for nettstedsisolering på påloggingsskjermen.
+      </translation>
 <translation id="2587719089023392205">Angi <ph name="PRODUCT_NAME" /> som standard nettleser</translation>
 <translation id="2592091433672667839">Varighet av inaktivitet før skjermspareren vises på påloggingssiden i detaljistmodus</translation>
 <translation id="2592162121850992309">Hvis denne retningslinjen er satt til «true» (sann) eller ikke er angitt, blir maskinvareakselerasjon slått på – med mindre en bestemt GPU-funksjon er svartelistet.
@@ -865,6 +881,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
           Alle nylige versjoner av Samba- og Windows-tjenere støtter NTLMv2. Dette bør bare slås av for bakoverkompatibilitet og reduserer sikkerheten for autentisering.
 
           Når denne regelen ikke er definert, er standardverdien «true» (sann) og NTLMv2 er slått på.</translation>
+<translation id="26023406105317310">Konfigurer Kerberos-kontoer</translation>
 <translation id="2604182581880595781">Konfigurer retningslinjer knyttet til delte nettverksresurser.</translation>
 <translation id="2623014935069176671">Vent på første brukeraktivitet</translation>
 <translation id="262740370354162807">Aktiver sending av dokumenter til <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1197,6 +1214,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="3159375329008977062">Brukeren har tillatelse til å eksportere og importere Crostini-beholdere via UI-et</translation>
 <translation id="3165808775394012744">Disse reglene er tatt med her for å gjøre det lett å fjerne dem.</translation>
 <translation id="316778957754360075">Denne innstillingen ble trukket tilbake fra og med <ph name="PRODUCT_NAME" /> versjon 29. Den anbefalte måten å konfigurere utvidelses- og appsamlinger fra organisasjoner på, er å inkludere nettstedet som leverer CRX-pakkene i ExtensionInstallSources, og legge direktenedlastingslinkene til pakkene på en nettside. En appvelger for denne nettsiden kan opprettes ved hjelp av innstillingen for ExtensionInstallForcelist.</translation>
+<translation id="3168968618972302728">Regler knyttet til Kerberos-autentisering.</translation>
 <translation id="3171369832001535378">Mal for nettverkets vertsnavn på enheter</translation>
 <translation id="3172512016079904926">Aktiverer installasjon av integrerte meldingsverter på brukernivå.
 
@@ -1368,7 +1386,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Hvis denne regelen er angitt som «DeveloperToolsAllowed» (verdi 1), kan utviklerverktøyene og JavaScript-konsollen brukes i alle kontekster, inkludert konteksten til utvidelser installert av bedriftens retningslinjer.
       Hvis denne regelen er angitt som «DeveloperToolsDisallowed» (verdi 2), kan ikke utviklerverktøyene brukes, og elementer på nettsteder kan ikke inspiseres lenger. Alle hurtigtaster og alle oppføringer for menyer eller kontekstuelle menyer for å åpne utviklerverktøy eller JavaScript-konsollen deaktiveres.</translation>
 <translation id="3547954654003013442">Innstillinger for proxy-tjener</translation>
-<translation id="3550875587920006460">Gjør det mulig å sette opp en egendefinert tidsplan for når enheten skal se etter oppdateringer. Denne gjelder alle brukere og alle grensesnitt på enheten. Når regelen er angitt, ser enheten etter oppdateringer i henhold til tidsplanen. Regelen må fjernes for å avbryte eventuelle andre oppdateringssjekker som er planlagt.</translation>
+<translation id="3550875587920006460">Gjør det mulig å sette opp en egendefinert tidsplan for når enheten skal se etter oppdateringer. Denne planen gjelder for alle brukere og alle grensesnitt på enheten. Når regelen er angitt, ser enheten etter oppdateringer i henhold til tidsplanen. Regelen må fjernes for å avbryte eventuelle andre oppdateringssjekker som er planlagt.</translation>
 <translation id="355118380775352753">Nettsteder som skal åpnes i en alternativ nettleser</translation>
 <translation id="3554984410014457319">La Google-assistenten lytte etter frasen for taleaktivering</translation>
 <translation id="356579196325389849">Brukere kan konfigurere utgivelseskanalen for Chrome OS</translation>
@@ -1385,6 +1403,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="3631099945620529777">Hvis denne regelen er satt til «false» (usann), er «Avslutt prosessen»-knappen deaktivert i oppgavebehandlingen.
 
       Hvis denne regelen er satt til «true» (sann) eller ikke er konfigurert, kan brukeren avslutte prosesser i oppgavebehandlingen.</translation>
+<translation id="3643284063603988867">Slå på «Husk passord»-funksjonen.</translation>
 <translation id="3646859102161347133">Angi skjermforstørrelsestype</translation>
 <translation id="3653237928288822292">Ikon for standard søkeleverandør</translation>
 <translation id="3660510274595679517">
@@ -1611,8 +1630,8 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
           også eventuelle tillatelser fremtidige versjoner av appen/utvidelsen
           ber om. Tillatelser gis også for utvidelses-API-ene
           enterprise.deviceAttributes og enterprise.platformKeys.
-          (Disse to API-ene er ikke tilgjengelig for apper/utvidelser som ikke er
-          administratorinstallert.)
+          (Disse to API-ene er ikke tilgjengelige for apper/utvidelser som
+          ikke er administratorinstallert.)
 
           Denne regelen prioriteres foran eventuelle regler for <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> hvis de er i konflikt med hverandre. Hvis apper eller utvidelser som tidligere var administratorinstallert, blir fjernet fra listen, blir de automatisk avinstallert av <ph name="PRODUCT_NAME" />.
 
@@ -1620,9 +1639,9 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 
          Vær oppmerksom på at kildekoden for utvidelsene kan endres av brukere via utviklerverktøy (noe som potensielt kan føre til at utvidelsene ikke fungerer). Hvis dette kan bli et problem, bør du angi regelen <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
 
-          Hvert av elementene i listen er en streng som inneholder en utvidelses-ID og eventuelt (valgfritt) en «oppdatering»-nettadresse, atskilt med semikolon (<ph name="SEMICOLON" />). Utvidelses-ID-en er strengen på 32 tegn du for eksempel finner i <ph name="CHROME_EXTENSIONS_LINK" /> når du er i utviklermodus. «Oppdatering»-nettadressen peker til et oppdateringsmanifest i XML-format, som beskrevet her: <ph name="LINK_TO_EXTENSION_DOC1" />. Oppdateringsnettadressen for Chrome Nettmarked brukes som standard (og for øyeblikket er den «https://clients2.google.com/service/update2/crx»). Vær oppmerksom på at «oppdatering»-nettadressen som angis i denne regelen, bare brukes for den første installasjonen. Påfølgende oppdateringer av utvidelsen bruker oppdateringsnettadressen som er beskrevet i utvidelsens manifest. Vær også oppmerksom på at det var uttrykkelig påkrevd å angi «oppdatering»-nettadressen i <ph name="PRODUCT_NAME" />-versjoner opptil og inkludert 67.
+          Hvert av elementene i listen er en streng som inneholder en utvidelses-ID og eventuelt (valgfritt) en oppdateringsadresse, atskilt med semikolon (<ph name="SEMICOLON" />). Utvidelses-ID-en er strengen på 32 tegn du for eksempel finner i <ph name="CHROME_EXTENSIONS_LINK" /> når du er i utviklermodus. Oppdateringsadressen skal være til et oppdateringsmanifest i XML-format, som beskrevet her: <ph name="LINK_TO_EXTENSION_DOC1" />. Oppdateringsadressen for Chrome Nettmarked brukes som standard (og for øyeblikket er den «https://clients2.google.com/service/update2/crx»). Vær oppmerksom på at oppdateringsadressen som angis i denne regelen, bare brukes for den første installasjonen. Påfølgende oppdateringer av utvidelsen bruker oppdateringsadressen som er beskrevet i utvidelsens manifest. Vær også oppmerksom på at det var uttrykkelig påkrevd å angi oppdateringsadressen i <ph name="PRODUCT_NAME" />-versjoner opptil og inkludert 67.
 
-          For eksempel installerer <ph name="EXTENSION_POLICY_EXAMPLE" /> utvidelsen med ID-en <ph name="EXTENSION_ID_SAMPLE" /> fra «oppdatering»-nettadressen som er standard for Chrome Nettmarked. Gå til <ph name="LINK_TO_EXTENSION_DOC2" /> for å finne ut mer om å være vert for utvidelser.
+          For eksempel installerer <ph name="EXTENSION_POLICY_EXAMPLE" /> utvidelsen med ID-en <ph name="EXTENSION_ID_SAMPLE" /> fra den oppdateringsadressen som er standard for Chrome Nettmarked. Gå til <ph name="LINK_TO_EXTENSION_DOC2" /> for å finne ut mer om verter for utvidelser.
 
           Hvis denne regelen ikke er angitt, blir ingen apper eller utvidelser installert automatisk, og brukere kan avinstallere hvilke som helst apper og utvidelser i <ph name="PRODUCT_NAME" />.
 
@@ -1739,6 +1758,15 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
           Denne innstillingen overstyrer RemoteAccessHostClientDomain – hvis den er i bruk
 
           Se også RemoteAccessHostDomainList.</translation>
+<translation id="4164601239783385546">Slå på tilgjengelighetsfunksjonen for trege taster.
+
+          Hvis regelen er satt til «true» (sann), er trege taster alltid slått på.
+
+          Hvis regelen er satt til «false» (usann), er trege taster alltid slått av.
+
+          Hvis du angir denne regelen, kan ikke brukerne endre eller overstyre den.
+
+          Hvis regelen ikke er angitt, er trege taster i utgangspunktet slått av, men brukerne kan når som helst slå på funksjonen.</translation>
 <translation id="4183229833636799228">Standard <ph name="FLASH_PLUGIN_NAME" />-innstilling</translation>
 <translation id="4192388905594723944">Nettadressen for validering av autentiseringstokenet for klienten for ekstern tilgang</translation>
 <translation id="4197038214024763371">Hvis regelen er slått på eller ikke er angitt, kan brukerne bruke stavekontroll.
@@ -1933,6 +1961,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="4578912515887794133">Hvis denne innstillingen er slått på, sammenligner verten for ekstern tilgang navnet til den lokale brukeren (som verten er tilknyttet) med navnet til eieren av Google-kontoen som er registrert som eier av verten (dvs. «olanordmann» hvis verten er eid av Google-kontoen «olanordmann@example.com»).  Verten for ekstern tilgang starter ikke hvis eieren av verten har et annet navn enn den lokale brukeren verten er tilknyttet.  Regelen RemoteAccessHostMatchUsername bør brukes sammen med RemoteAccessHostDomain for også å kreve at Google-kontoen til eieren av verten er tilknyttet et spesifikt domene (f.eks. «example.com»).
 
           Hvis denne innstillingen er slått av eller ikke er angitt, kan verten for ekstern tilgang tilknyttes alle lokale brukere.</translation>
+<translation id="4591366717022345234">Gi brukere en hurtigfiks-delversjon</translation>
 <translation id="4600786265870346112">Aktiver stor markør</translation>
 <translation id="4604931264910482931">Konfigurer svarteliste for innebygde meldinger</translation>
 <translation id="4613508646038788144">Hvis regelen er satt til «usann», kan tredjepartsprogramvare sette inn kjørbar kode i Chromes prosesser. Hvis regelen ikke er spesifisert eller er satt til «sann», forhindres tredjepartsprogramvare fra å sette inn kjørbar kode i Chromes prosesser.</translation>
@@ -2020,6 +2049,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="487460824085252184">Overfør automatisk. Ikke be om brukersamtykke.</translation>
 <translation id="4874982543810021567">Blokkér WebUSB på disse nettstedene</translation>
 <translation id="4876805738539874299">Høyeste SSL-versjon er slått på</translation>
+<translation id="4887274746092315609">Slår på en side som SAML-brukere kan bruke til å endre passord mens de er i en økt</translation>
 <translation id="4897928009230106190">Angir parameterene som brukes når du utfører et forslagssøk med POST. De består av kommainndelte navn og verdi-par. Hvis en verdi er et malparameter, som {searchTerms} i eksempelet ovenfor, blir den erstattet med virkelige søkeordsdata.
 
           Denne innstillingen er valgfri. Hvis den ikke er angitt, blir forespørsler om søkeforslag sendt via GET-metoden.
@@ -2233,6 +2263,7 @@ I motsetning til <ph name="URL_LIST_POLICY_NAME" /> gjelder denne regelen begge 
       Hvis regelen er angitt som «Legacy» (eldre), tillates bare RC4-kryptering. Dette alternativet er usikkert og bør bare være nødvendig under svært spesielle omstendigheter.
 
       Se også https://wiki.samba.org/index.php/Samba_4.6_Features_added/changed#Kerberos_client_encryption_types.</translation>
+<translation id="5249453807420671499">Brukere kan legge til Kerberos-kontoer</translation>
 <translation id="5255162913209987122">Kan anbefales</translation>
 <translation id="527237119693897329">Lar deg spesifisere hvilke innebygde meldingsverter som ikke skal lastes inn.
 
@@ -2372,6 +2403,7 @@ I motsetning til <ph name="URL_LIST_POLICY_NAME" /> gjelder denne regelen begge 
       Når verdien for denne retningslinjen er angitt og ikke er 0, blir demo-brukeren som for tiden er pålogget, automatisk logget av etter at angitt periode for inaktivitet er passert.
 
       Retningslinjeverdien må spesifiseres i millisekunder.</translation>
+<translation id="5508307164752647432">Slå på Kerberos-funksjonalitet</translation>
 <translation id="5511702823008968136">Aktiver bokmerkerad</translation>
 <translation id="5512418063782665071">Nettadresse for startside</translation>
 <translation id="551639594034811656">Denne regelen angir en liste med prosentverdier som definerer hvor stor andel av <ph name="PRODUCT_OS_NAME" />-enheter i OE som må oppdateres per dag, fra og med den dagen oppdateringen ble oppdaget. Oppdagelsestidspunktet er senere enn tidspunktet for utgivelsen av oppdateringen, siden det kan ta litt tid før enheten sjekker etter oppdateringer.
@@ -2393,6 +2425,7 @@ I motsetning til <ph name="URL_LIST_POLICY_NAME" /> gjelder denne regelen begge 
       Merk: Hvis plattformen støtter varsler om brudd på reglene, angis forsinkelsen for ny innlasting til 24 timer (dette ignorerer alle standarder og verdien denne regelen er satt til), fordi det forventes at varsler om brudd på reglene fremtvinger ny innlasting automatisk når regelen endres. Dette gjør at det ikke er nødvendig med hyppige nye innlastinger.</translation>
 <translation id="5530347722229944744">Blokkér potensielt farlige nedlastinger</translation>
 <translation id="5535973522252703021">Godkjenningsliste for delegasjonstjener for Kerberos</translation>
+<translation id="554903022911579950">Kerberos</translation>
 <translation id="555077880566103058">Tillat at <ph name="FLASH_PLUGIN_NAME" />-programtillegget kan kjøres automatisk på alle nettsteder</translation>
 <translation id="5559079916187891399">Denne regelen har ingen innvirkning på Android-apper.</translation>
 <translation id="5560039246134246593">Legg til et parameter for hentingen av startverdien for variasjoner i <ph name="PRODUCT_NAME" />.
@@ -2504,6 +2537,12 @@ I motsetning til <ph name="URL_LIST_POLICY_NAME" /> gjelder denne regelen begge 
 
       Hvis denne regelen er angitt, kan ikke brukeren endre eller overstyre den.</translation>
 <translation id="5708969689202733975">Konfigurer hvilke moduser for hurtigopplåsing som tillates</translation>
+<translation id="5711016543513883877">
+      Hvis regelen er slått på, kommer alle navngitte opprinnelser i en kommadelt liste til å kjøre i sine egne prosesser. Da isoleres også opprinnelser som har navn basert på underdomener. Hvis for eksempel https://example.com/ angis, isoleres også https://foo.example.com/ som en del av nettstedet https://example.com/.
+      Hvis regelen er slått av eller ikke er konfigurert, kan brukeren endre denne innstillingen.
+
+      MERK: Denne regelen gjelder ikke på Android. For å slå på IsolateOrigins på Android, bruk IsolateOriginsAndroid-regelinnstillingen.
+      </translation>
 <translation id="572155275267014074">Android-innstillinger</translation>
 <translation id="5722934961007828462">Når denne regelen er på, utfører alltid <ph name="PRODUCT_NAME" /> opphevelsessjekker for tjenersertifikater som blir godkjent og er signert av CA-sertifikater som er installert lokalt.
 
@@ -3431,6 +3470,11 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="7433714841194914373">Aktiver Instant</translation>
 <translation id="7434202861148928348">Konfigurer de obligatoriske domenenavnene for klienter for ekstern tilgang</translation>
 <translation id="7443616896860707393">Opphavsuavhengig HTTP Basic Auth-forespørsler</translation>
+<translation id="7454519673779830548">Legger til forhåndsutfylte Kerberos-kontoer. Hvis Kerberos-legitimasjonen samsvarer med på påloggingslegitimasjonen, kan kontoer konfigureres til å bruke påloggingslegitimasjonen på nytt ved å angi «${{LOGIN_EMAIL}}» som hovednavn og «${{PASSWORD}}» som passord, slik at Kerberos-saken kan hentes automatisk, med mindre totrinnsbekreftelse er konfigurert. Brukere kan ikke endre kontoer som er lagt til via denne regelen.
+
+          Hvis denne regelen er slått på, blir listen over kontoer som defineres av regelen, lagt til i Kerberos-kontoinnstillingene.
+
+          Hvis denne regelen er slått av eller ikke er angitt, blir ingen kontoer lagt til i Kerberos-kontoinnstillingene, og alle kontoer som tidligere er lagt til med denne regelen, fjernes. Brukere kan fremdeles legge til kontoer manuelt hvis «Brukere kan legge til Kerberos-kontoer»-regelen er slått på.</translation>
 <translation id="7458437477941640506">Ikke utfør rollback til målversjonen hvis OS-versjonen er nyere. Oppdateringer er også slått av.</translation>
 <translation id="7464991223784276288">Begrens informasjonkapsler fra samsvarende nettadresser til den gjeldende økten</translation>
 <translation id="7469554574977894907">Aktiver søkeforslag</translation>
@@ -3569,6 +3613,11 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="7687943045976362719">Hvis denne regelen er angitt, håndteres de spesifiserte innholdstypene av <ph name="PRODUCT_FRAME_NAME" />.
 
           Hvis denne regelen ikke er angitt, brukes standardgjengivelsen for alle nettsteder. (Regelen <ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" /> kan brukes til å konfigurere standardgjengivelsen.)</translation>
+<translation id="7694245791806617022">Styrer om «Husk passord»-funksjonen er slått på i dialogboksen for Kerberos-autentisering. Passordene lagres i kryptert form på disken og er kun tilgjengelige for Kerberos-systemdaemonen og i løpet av brukerøkter.
+
+          Hvis denne regelen er slått på eller ikke er angitt, kan brukerne velge om Kerberos-passord skal huskes, slik at de ikke trenger å skrive dem inn på nytt. Kerberos-saker hentes automatisk, med mindre det kreves ytterligere autentisering (totrinnsbekreftelse).
+
+          Hvis denne regelen er slått av, blir passord aldri husket, og alle passord som tidligere er lagret, fjernes. Brukerne må skrive inn passordene sine hver gang de skal autentisere seg med Kerberos-systemet. Avhengig av tjenerinnstillingene skjer dette vanligvis med alt fra åtte timers til flere måneders mellomrom.</translation>
 <translation id="7694807474048279351">Angi en automatisk omstart etter en oppdatering for <ph name="PRODUCT_OS_NAME" /> er lagt til.
 
       Når denne innstillingen angis til «true», angis automatisk omstart når en oppdatering for <ph name="PRODUCT_OS_NAME" /> er lagt til og omstart påkreves for å fullføre oppdateringsprosessen. Omstarten trer i kraft umiddelbart, men kan forsinkes med opptil 24 timer hvis brukeren er i gang med enheten på det gitte tidspunktet.
@@ -3602,6 +3651,14 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Denne regelen åpner for at bedrifter kan migrere eksisterende tjenere fra HTTP/0.9, og kommer til å bli fjernet i fremtiden.
 
       Hvis regelen ikke er angitt, slås HTTP/0.9 av for andre porter enn standardportene.</translation>
+<translation id="7726421241038987229">
+      Denne innstillingen (SitePerProcess) kan brukes til å nekte brukere å velge bort standardatferden, som er å isolere alle nettsteder. Merk at IsolateOrigins-regelen også kan være nyttig for å isolere flere, mer finkornede opprinnelser.
+      Hvis regelen er slått på, kan brukerne ikke velge bort standardatferden, der alle nettsteder kjører i sine egne prosesser.
+      Hvis regelen er slått av eller ikke er konfigurert, kan brukeren velge bort nettstedsisolering (f.eks. ved å bruke «Slå av nettstedsisolering»-oppføringen i chrome://flags).  Nettstedsisolering slås ikke av selv om du slår av regelen og/eller ikke konfigurerer den.
+      På <ph name="PRODUCT_OS_NAME" /> anbefales det også å sette <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />-enhetsregelen til samme verdi. Hvis disse to reglene har ulike verdier, kan det medføre at oppstart av brukerøkter blir forsinket mens verdien som spesifiseres av brukerregelen, tas i bruk.
+
+      MERK: Denne regelen gjelder ikke på Android. For å slå på SitePerProcess på Android, bruk SitePerProcessAndroid-regelinnstillingen.
+      </translation>
 <translation id="7747447585227954402">La enheter bruke en <ph name="PLUGIN_VM_NAME" /> på <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="7749402620209366169">Aktiverer to-delt autentisering for verter med ekstern adgang i stedet for brukerangitt PIN-kode.
 
@@ -3667,6 +3724,11 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Bestemmer ID-en for utvidelsen som skal brukes som skjermsparer på påloggingssiden. Utvidelsen må være del av AppPack-elementet som er konfigurert for dette domenet gjennom DeviceAppPack-retningslinjene.</translation>
 <translation id="7882857838942884046">Hvis du slår av Google-synkronisering, fungerer ikke funksjonen for sikkerhetskopiering og gjenoppretting for Android som den skal.</translation>
 <translation id="7882890448959833986">Ignorer advarselen om at operativsystemet ikke støttes</translation>
+<translation id="7889788745439330797">Styrer om brukere kan legge til Kerberos-kontoer.
+
+          Hvis denne regelen er slått på eller ikke er angitt, kan brukere legge til Kerberos-kontoer via Kerberos-kontoinnstillingene på Personer-innstillingssiden. Brukerne har full kontroll over kontoene de legger til, og kan endre eller fjerne dem.
+
+          Hvis denne regelen er slått av, kan brukere ikke legge til Kerberos-kontoer. Kontoer kan bare legges til via «Konfigurer Kerberos-kontoer»-regelen. Dette er en effektiv måte å låse kontoer på.</translation>
 <translation id="7895553628261067384">Ekstern tilgang</translation>
 <translation id="7902255855035461275">Mønstrene i denne listen sammenlignes med sikkerhetskilden til nettadressen forespørselen kommer fra. Hvis det finnes samsvar, blir tilgang til videoopptaksenheter gitt uten forespørsel på forhånd.
 

@@ -171,7 +171,6 @@
 <translation id="1241753985463165747">அனுமதித்தால், தற்போதைய இணையதளத்தில் உங்கள் எல்லாத் தரவையும் படிக்கும், மாற்றும்</translation>
 <translation id="1242633766021457174">உங்கள் அமைப்புகளை மீட்டமைக்க <ph name="THIRD_PARTY_TOOL_NAME" /> விரும்புகிறது.</translation>
 <translation id="1243314992276662751">பதிவேற்று</translation>
-<translation id="1244147615850840081">சேவை வழங்குநர்</translation>
 <translation id="1244303850296295656">நீட்டிப்புப் பிழை</translation>
 <translation id="1249643471736608405">தடுக்கப்பட்டுள்ளதன் காரணமாக <ph name="PLUGIN_NAME" /> தடைசெய்யப்பட்டுள்ளது.</translation>
 <translation id="1252987234827889034">சுயவிவரப் பிழை ஏற்பட்டது</translation>
@@ -1267,7 +1266,7 @@
 <translation id="2989474696604907455">இணைக்கப்படவில்லை</translation>
 <translation id="2989786307324390836">DER-குறியேற்றப்பட்ட பைனரி, ஒற்றைச் சான்றிதழ்</translation>
 <translation id="2992931425024192067">எல்லா அறிவிப்பு விவரத்தையும் காட்டு</translation>
-<translation id="2993517869960930405">பயன்பாட்டுத் தகவல்</translation>
+<translation id="2993517869960930405">ஆப்ஸ் தகவல்</translation>
 <translation id="299483336428448530">பெற்றோரால் நிறுவப்பட்டது.</translation>
 <translation id="2996286169319737844">உங்கள் ஒத்திசைவுக் கடவுச்சொற்றொடர் மூலம் தரவு என்கிரிப்ட் செய்யப்பட்டது. இதில் Google Payயிலுள்ள கட்டண முறைகளும் முகவரிகளும் சேர்க்கப்படவில்லை.</translation>
 <translation id="2996722619877761919">நீண்ட முனையில் மடக்கு</translation>
@@ -1470,7 +1469,7 @@
 <translation id="3319048459796106952">புதிய &amp;மறைநிலை சாளரம்</translation>
 <translation id="3325910708063135066">Mac சிஸ்டம் விருப்பத்தேர்வுகளில் மைக்ரோஃபோன் மற்றும் கேமரா முடக்கப்பட்டுள்ளது</translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET" />) <ph name="LONGTZNAME" /> (<ph name="EXEMPLARCITY" />)</translation>
-<translation id="3331974543021145906">பயன்பாட்டுத் தகவல்</translation>
+<translation id="3331974543021145906">ஆப்ஸ் தகவல்</translation>
 <translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> - பிக்ச்சர்-இன்-பிக்ச்சர் பயன்முறையில் வீடியோவை இயக்குகிறது</translation>
 <translation id="3335947283844343239">மூடப்பட்ட தாவலை மீண்டும் திற</translation>
 <translation id="3336664756920573711"><ph name="DEVICE_TYPE" /> சாதனத்தை உங்கள் Android ஃபோனைப் பயன்படுத்தித் திறக்கலாம்</translation>
@@ -1868,7 +1867,7 @@
 <translation id="3911824782900911339">புதிய தாவல் பக்கம்</translation>
 <translation id="3915280005470252504">குரலினால் தேடு</translation>
 <translation id="3916445069167113093">இவ்வகையான கோப்பு உங்கள் கம்ப்யூட்டரைப் பாதிக்கக்கூடும். இருப்பினும் <ph name="FILE_NAME" /> ஐ வைத்திருக்க வேண்டுமா?</translation>
-<translation id="3918972485393593704">Googleக்கு விவரங்களை அனுப்பு</translation>
+<translation id="3918972485393593704">Googleளுக்கு விவரங்களை அனுப்பு</translation>
 <translation id="3919145445993746351">உங்கள் அனைத்துக் கணிணிகளிலும் நீட்டிப்புகளைப் பெற, ஒத்திசைவை இயக்கவும்</translation>
 <translation id="3920504717067627103">சான்றிதழ் கொள்கைகள்</translation>
 <translation id="392089482157167418">ChromeVox (பேச்சுவடிவ கருத்து) ஐ இயக்கு</translation>
@@ -3068,7 +3067,7 @@
 <translation id="5863445608433396414">பிழைதிருத்த அம்சங்களை இயக்கவும்</translation>
 <translation id="5864471791310927901">DHCP பார்வையிடுதல் தோல்வி</translation>
 <translation id="586567932979200359"><ph name="PRODUCT_NAME" /> ஐ அதன் டிஸ்க் இமேஜில் இருந்து நீங்கள் இயக்குகிறீர்கள். உங்கள் கம்ப்யூட்டரில் இதை நிறுவுவதால் டிஸ்க் இமேஜ் இல்லாமல் இதை இயக்கலாம், மேலும் புதுப்பிக்கப்பட்டதாகவும் வைத்திருக்கலாம்.</translation>
-<translation id="5865733239029070421">பயன்பாட்டுப் புள்ளிவிவரங்களையும் சிதைவு அறிக்கைகளையும் தானாகவே Googleக்கு அனுப்பும்</translation>
+<translation id="5865733239029070421">பயன்பாட்டுப் புள்ளிவிவரங்களையும் சிதைவு அறிக்கைகளையும் தானாகவே Googleளுக்கு அனுப்பும்</translation>
 <translation id="5866557323934807206">எதிர்கால வருகைகளுக்கு இந்த அமைப்புகளை அழி</translation>
 <translation id="5866840822086176774">மிக வலிமையானது</translation>
 <translation id="5867841422488265304">தேடவும் அல்லது இணைய முகவரியை உள்ளிடவும்</translation>
@@ -3184,7 +3183,6 @@
     <ph name="BEGIN_PARAGRAPH2" />உங்கள் சாதனத்தில் முதன்மை இருப்பிட அமைப்பை முடக்குவதன் மூலம் ‘இருப்பிடச் சேவையை’ முடக்கலாம். இருப்பிடத்திற்கு வைஃபை, மொபைல் நெட்வொர்க்குகள் மற்றும் சென்சார்களைப் பயன்படுத்துவதையும் இருப்பிட அமைப்புகளில் முடக்கலாம்.<ph name="END_PARAGRAPH2" /></translation>
 <translation id="6041155700700864984">முழுத்திரையிலிருந்து வெளியேறு</translation>
 <translation id="604124094241169006">தானியங்கு</translation>
-<translation id="6042169520002885235">பிரிண்டர் உற்பத்தியாளரையும் மாடலையும் தேர்ந்தெடுக்கவும்</translation>
 <translation id="6042308850641462728">மேலும்</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" /> <ph name="TAB_NAME" /> உடன் Chrome தாவலைப் பகிர்கிறது.</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> <ph name="TAB_NAME" /> உடன் Chrome தாவலையும் ஆடியோவையும் பகிர்கிறது.</translation>
@@ -3335,7 +3333,7 @@
 <translation id="6264365405983206840">அ&amp;னைத்தையும் தேர்ந்தெடு</translation>
 <translation id="6267166720438879315"><ph name="HOST_NAME" /> க்கு உங்களை அங்கீகரிக்க ஒரு சான்றிதழைத் தேர்ந்தெடுங்கள்</translation>
 <translation id="6268252012308737255"><ph name="APP" /> இல் திற</translation>
-<translation id="6270770586500173387"><ph name="BEGIN_LINK1" />சாதனம் மற்றும் பயன்பாட்டுத் தகவல்<ph name="END_LINK1" />, <ph name="BEGIN_LINK2" />அளவீடுகள்<ph name="END_LINK2" /> ஆகியவற்றை அனுப்பு</translation>
+<translation id="6270770586500173387"><ph name="BEGIN_LINK1" />சாதனம் மற்றும் ஆப்ஸ் தகவல்<ph name="END_LINK1" />, <ph name="BEGIN_LINK2" />அளவீடுகள்<ph name="END_LINK2" /> ஆகியவற்றை அனுப்பு</translation>
 <translation id="6272643420381259437">செருகுநிரலைப் பதிவிறக்கும் போது, பிழை (<ph name="ERROR" />) ஏற்பட்டது</translation>
 <translation id="6273677812470008672">தரம்</translation>
 <translation id="6277105963844135994">நெட்வொர்க் டைம்அவுட்</translation>
@@ -3388,7 +3386,7 @@
 <translation id="6352773953037195952">மிக அதிகமானது</translation>
 <translation id="6354918092619878358">SECG நீள்வட்ட வளைவான secp256r1 (ANSI X9.62 prime256v1 எனவும் அறியப்படும், NIST P-256)</translation>
 <translation id="635609604405270300">சாதனத்தை இயக்கத்தில் வைத்திருக்கவும்</translation>
-<translation id="63566973648609420">உங்கள் கடவுச்சொற்றொடரை அறிந்தவரால் மட்டுமே என்கிரிப்ட் செய்யப்பட்ட உங்கள் தரவைப் படிக்க முடியும். கடவுச்சொற்றொடரானது Googleக்கு அனுப்பப்படுவதில்லை அல்லது Google அதைச் சேமிப்பதில்லை. கடவுச்சொற்றொடரை மறந்துவிட்டால் அல்லது இந்த அமைப்பை மாற்ற விரும்பினால், நீங்கள் <ph name="BEGIN_LINK" />ஒத்திசைவை மீட்டமைக்க வேண்டும்<ph name="END_LINK" />.</translation>
+<translation id="63566973648609420">உங்கள் கடவுச்சொற்றொடரை அறிந்தவரால் மட்டுமே என்கிரிப்ட் செய்யப்பட்ட உங்கள் தரவைப் படிக்க முடியும். கடவுச்சொற்றொடரானது Googleளுக்கு அனுப்பப்படுவதில்லை அல்லது Google அதைச் சேமிப்பதில்லை. கடவுச்சொற்றொடரை மறந்துவிட்டால் அல்லது இந்த அமைப்பை மாற்ற விரும்பினால், நீங்கள் <ph name="BEGIN_LINK" />ஒத்திசைவை மீட்டமைக்க வேண்டும்<ph name="END_LINK" />.</translation>
 <translation id="6357619544108132570"><ph name="SHORT_PRODUCT_NAME" /> குடும்பத்திற்கு வரவேற்கிறோம். இது சாதாரணக் கம்ப்யூட்டர் அல்ல.</translation>
 <translation id="6358884629796491903">டிராகன்</translation>
 <translation id="6361850914223837199">பிழை விவரங்கள்:</translation>
@@ -4459,7 +4457,7 @@
 <translation id="8013993649590906847">ஒரு படத்திற்குப் பயனுள்ள விளக்கம் இல்லாதபட்சத்தில் Chrome உங்களுக்காக அதை வழங்க முயலும். விளக்கங்களை உருவாக்குவதற்காக படங்கள் Googleளுக்கு அனுப்பப்படும்.</translation>
 <translation id="8014154204619229810">தற்போது புதுப்பிப்பான் இயங்குகிறது. மீண்டும் சரிபார்க்க ஒரு நிமிடத்தில் புதுப்பிக்கவும்.</translation>
 <translation id="8014206674403687691"><ph name="IDS_SHORT_PRODUCT_NAME" /> ஆல் ஏற்கனவே நிறுவப்பட்ட பதிப்பிற்கு மாற்றியமைக்க முடியவில்லை. உங்கள் சாதனத்தை பவர்வாஷ் செய்ய, மீண்டும் முயலவும்.</translation>
-<translation id="8014210335923519270">சாதனத் தகவலையும் உபயோகத்தையும் Googleக்கு அனுப்புவதன் மூலம், <ph name="IDS_SHORT_PRODUCT_NAME" />ஐயும் அதன் பாதுகாப்பையும் மேம்படுத்தவும்</translation>
+<translation id="8014210335923519270">சாதனத் தகவலையும் உபயோகத்தையும் Googleளுக்கு அனுப்புவதன் மூலம், <ph name="IDS_SHORT_PRODUCT_NAME" />ஐயும் அதன் பாதுகாப்பையும் மேம்படுத்தவும்</translation>
 <translation id="8016266267177410919">தற்காலிகச் சேமிப்பகம்</translation>
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">ஷார்ட்கட் திருத்தப்பட்டது</translation>
@@ -5104,7 +5102,7 @@
 <translation id="9042893549633094279">தனியுரிமை மற்றும் பாதுகாப்பு</translation>
 <translation id="904451693890288097">"<ph name="DEVICE_NAME" />" க்கான கடவுக்குறியீட்டை உள்ளிடுக:</translation>
 <translation id="9044646465488564462">நெட்வொர்க்குடன் இணைப்பதில் தோல்வி: <ph name="DETAILS" /></translation>
-<translation id="9045430190527754450">நீங்கள் செல்ல முயற்சிக்கும் பக்கத்தின் இணைய முகவரியை Googleக்கு அனுப்பும்</translation>
+<translation id="9045430190527754450">நீங்கள் செல்ல முயற்சிக்கும் பக்கத்தின் இணைய முகவரியை Googleளுக்கு அனுப்பும்</translation>
 <translation id="9046895021617826162">இணைப்பு தோல்வியடைந்தது</translation>
 <translation id="9050666287014529139">கடவுச்சொற்றொடர்</translation>
 <translation id="9052208328806230490"><ph name="CLOUD_PRINT_NAME" /> உடன் <ph name="EMAIL" /> கணக்கைப் பயன்படுத்தி உங்கள் பிரிண்டர்களைப் பதிவு செய்துள்ளீர்கள்</translation>

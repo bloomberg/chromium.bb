@@ -60,6 +60,7 @@
 <translation id="2908441821576996758">يُرجى إدخال قائمة مفصولة بفواصل لعناوين البريد الإلكتروني.</translation>
 <translation id="2940813599313844715">كائن</translation>
 <translation id="2942448076852699108">المحتوى المميز</translation>
+<translation id="2983835398644161987">الخروج من وضع "نافذة ضمن نافذة"</translation>
 <translation id="3040011195152428237">رابط</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> ميغابايت</translation>
 <translation id="3075154866155599887">يرجى إدخال قيمة صالحة. الحقل غير مكتمل أو أن التاريخ غير صالح.</translation>
@@ -79,6 +80,7 @@
 <translation id="3822383571486410024">يُرجى إطالة هذا النص إلى <ph name="MIN_CHARACTERS" /> من الحروف أو أكثر (أنت تستخدم حاليًا <ph name="CURRENT_LENGTH" /> من الحروف).</translation>
 <translation id="383465348367842624">الجزء المتبوع بالعلامة "<ph name="ATSIGN" />" يجب ألا يشتمل على الرمز "<ph name="INVALIDCHARACTER" />".</translation>
 <translation id="3846214748874656680">خروج من عرض ملء الشاشة</translation>
+<translation id="3904511540324382638">الخروج من وضع "نافذة ضمن نافذة"</translation>
 <translation id="3920932319529768807">خاتمة</translation>
 <translation id="3924558731517983934">التطبيق</translation>
 <translation id="3944740393230681990">فاتحة</translation>

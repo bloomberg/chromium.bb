@@ -199,7 +199,7 @@
 <translation id="394485226368336402">הגדרות אודיו</translation>
 <translation id="3962859241508114581">הטראק הקודם</translation>
 <translation id="397105322502079400">מחשב...</translation>
-<translation id="3977512764614765090">‏הסוללה עומדת על ‎<ph name="PERCENTAGE" />%‎ והטעינה נמשכת.</translation>
+<translation id="3977512764614765090">‏שיעור הטעינה של הסוללה הוא ‎<ph name="PERCENTAGE" />%‎ והטעינה נמשכת.</translation>
 <translation id="3995138139523574647">‏מכשיר עם יציאת USB-C (יציאה ימנית-אחורית)</translation>
 <translation id="4017989525502048489">סמן לייזר</translation>
 <translation id="4042660782729322247">המסך שלך משותף</translation>
@@ -217,7 +217,7 @@
 <translation id="4279490309300973883">שיקוף</translation>
 <translation id="4281007048406351813">הוספת דקה לטיימר</translation>
 <translation id="4292681942966152062">המערכת מפעילה את <ph name="NETWORK_NAME" /></translation>
-<translation id="4296136865091727875">ניקוי כל <ph name="COUNT" /> ההודעות</translation>
+<translation id="4296136865091727875">ניקוי כל <ph name="COUNT" /> ההתראות</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">הקשת על מקש הקיצור של ניגודיות גבוהה. להפעיל אותה?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -504,7 +504,7 @@
 <translation id="8877788021141246043">הגדרת תזכורת</translation>
 <translation id="8878886163241303700">מסך מתרחב</translation>
 <translation id="890616557918890486">שינוי המקור</translation>
-<translation id="8909138438987180327">מצב טעינת הסוללת הוא <ph name="PERCENTAGE" /> אחוזים.</translation>
+<translation id="8909138438987180327">שיעור הטעינה של הסוללה הוא <ph name="PERCENTAGE" /> אחוזים.</translation>
 <translation id="8921554779039049422">+H</translation>
 <translation id="8921624153894383499">‏Google Assistant לא מדבר בשפה הזאת.</translation>
 <translation id="8938800817013097409">‏מכשיר עם יציאת USB-C (יציאה ימנית מאחור)</translation>
@@ -530,7 +530,7 @@
 <translation id="9193626018745640770">מתבצעת העברה במכשיר לא ידוע</translation>
 <translation id="9194617393863864469">הוסף משתמש אחר...</translation>
 <translation id="9210037371811586452">‏יציאה ממצב Unified Desktop</translation>
-<translation id="9211681782751733685"><ph name="TIME_REMAINING" /> עד לסיום טעינת הסוללה.</translation>
+<translation id="9211681782751733685"><ph name="TIME_REMAINING" /> עד לטעינה מלאה של הסוללה.</translation>
 <translation id="9215934040295798075">הגדר טפט</translation>
 <translation id="921989828232331238">הורה נעל את המכשיר שלך להיום</translation>
 <translation id="923686485342484400">‏הקש פעמיים על Control Shift Q כדי לצאת.</translation>

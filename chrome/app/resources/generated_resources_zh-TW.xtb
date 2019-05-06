@@ -174,7 +174,6 @@
 <translation id="1241753985463165747">叫用時讀取及變更你在目前網站上的所有資料</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> 要求重設您的設定。</translation>
 <translation id="1243314992276662751">上傳</translation>
-<translation id="1244147615850840081">電信業者</translation>
 <translation id="1244303850296295656">擴充功能錯誤</translation>
 <translation id="1249643471736608405">「<ph name="PLUGIN_NAME" />」因已淘汰而遭封鎖</translation>
 <translation id="1252987234827889034">設定檔發生錯誤</translation>
@@ -195,6 +194,7 @@
 <translation id="1285484354230578868">將資料儲存在 Google 雲端硬碟帳戶中</translation>
 <translation id="1288037062697528143">夜燈功能將於日落時自動開啟</translation>
 <translation id="1288300545283011870">語音屬性</translation>
+<translation id="1289513325360489062">無法存取這個網站的資料</translation>
 <translation id="1293264513303784526">USB-C 裝置 (左側連接埠)</translation>
 <translation id="1293556467332435079">檔案</translation>
 <translation id="1296497012903089238">憑證類型</translation>
@@ -464,6 +464,7 @@
 <translation id="1711401317189798723">目前正在執行 <ph name="CONTAINER_ID" /> 備份</translation>
 <translation id="1712349894969001173">在 iPhone 上取得這個密碼</translation>
 <translation id="1712552549805331520"><ph name="URL" /> 要求在你的本機電腦上永久儲存資料</translation>
+<translation id="1717218214683051432">動作感應器</translation>
 <translation id="1718835860248848330">過去 1 小時</translation>
 <translation id="1719312230114180055">注意：使用高強度的密碼或 PIN 碼會比感應指紋來得安全。</translation>
 <translation id="1720318856472900922">TLS WWW 伺服器驗證</translation>
@@ -799,7 +800,7 @@
 <translation id="2241053333139545397">讀取及變更你在多個網站上的資料</translation>
 <translation id="2241634353105152135">只有這一次</translation>
 <translation id="2242687258748107519">檔案資訊</translation>
-<translation id="2246549592927364792">要從 Google 取得圖片說明嗎？</translation>
+<translation id="2246549592927364792">要取得 Google 提供的圖片說明嗎？</translation>
 <translation id="224940702122312781">這個網頁會耗用許多數據流量。</translation>
 <translation id="2249605167705922988">例如：1-5、8、11-13</translation>
 <translation id="2251218783371366160">使用系統檢視器開啟</translation>
@@ -810,6 +811,7 @@
 <translation id="2256115617011615191">立即重新啟動</translation>
 <translation id="225614027745146050">歡迎使用</translation>
 <translation id="225692081236532131">啟用狀態</translation>
+<translation id="2258855745387252834">如要共用資料夾，請在「檔案」應用程式中的資料夾上按一下滑鼠右鍵，然後選取 [與外掛程式 VM 共用]。</translation>
 <translation id="2261323523305321874">你的管理員變更了系統設定，部分舊的設定檔因此遭到停用。</translation>
 <translation id="2262332168014443534">精簡模式現在可讓你更快速地瀏覽所有網頁，包括 HTTPS 網頁。</translation>
 <translation id="2262477216570151239">重複前延遲時間</translation>
@@ -1305,6 +1307,7 @@
 <translation id="3020183492814296499">快速鍵</translation>
 <translation id="3020990233660977256">序號：<ph name="SERIAL_NUMBER" /></translation>
 <translation id="3021066826692793094">蝴蝶</translation>
+<translation id="3021426244864538700">正在存取這個網站的資料</translation>
 <translation id="3021678814754966447">檢視頁框原始碼(&amp;V)</translation>
 <translation id="3022978424994383087">無法辨識語音內容。</translation>
 <translation id="3023464535986383522">隨選朗讀</translation>
@@ -1430,6 +1433,7 @@
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" /> - 網路錯誤</translation>
 <translation id="3249950116250264636"><ph name="APP_NAME" /> (<ph name="APP_URL" />)</translation>
 <translation id="3251759466064201842">&lt;不是憑證的一部分&gt;</translation>
+<translation id="3253448572569133955">未知的帳戶</translation>
 <translation id="3254516606912442756">自動偵測時區功能已停用</translation>
 <translation id="3255355328033513170">這樣做會刪除 <ph name="SITE_GROUP_NAME" /> 所儲存的所有資料，和這個群組中的所有網站。Cookie 也包括在內。系統會將你登出這些網站，包括在開啟的分頁中也一樣。</translation>
 <translation id="3259723213051400722">請再試一次。</translation>
@@ -1456,6 +1460,7 @@
 <translation id="3285322247471302225">新增分頁(&amp;T)</translation>
 <translation id="3288047731229977326">在開發人員模式中執行擴充功能可能會損害你的電腦。如果你不是開發人員，最好在開發人員模式中停用這些擴充功能，以策安全。</translation>
 <translation id="3289856944988573801">如要檢查更新，請使用乙太網路或 Wi-Fi。</translation>
+<translation id="3293644607209440645">傳送這個頁面</translation>
 <translation id="32939749466444286">無法啟動 Linux 容器，請再試一次。</translation>
 <translation id="3294437725009624529">訪客</translation>
 <translation id="329703603001918157">無法編輯捷徑</translation>
@@ -2046,6 +2051,7 @@
 <translation id="4146026355784316281">一律使用系統檢視器開啟</translation>
 <translation id="4146785383423576110">重設與清理</translation>
 <translation id="4147911968024186208">請再試一次。如果這個錯誤再次發生，請與你的產品支援代表聯絡。</translation>
+<translation id="4150125039112138020">|</translation>
 <translation id="4150201353443180367">顯示設定</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 個分頁}other{# 個分頁}}</translation>
 <translation id="4154664944169082762">指紋</translation>
@@ -2246,6 +2252,7 @@
 <translation id="4524832533047962394">這個版本的作業系統不支援目前提供的註冊模式。請確認你使用的是最新版本。</translation>
 <translation id="4525382759303819021">取得 Play 商店應用程式的最新更新和推薦項目</translation>
 <translation id="4530494379350999373">來源</translation>
+<translation id="4532646538815530781">這個網站正在使用動作感應器。</translation>
 <translation id="4533846798469727141">現在說出「Hey Google」</translation>
 <translation id="4533985347672295764">CPU 時間</translation>
 <translation id="4534661889221639075">請再試一次。</translation>
@@ -2298,6 +2305,7 @@
 <translation id="4610162781778310380">「<ph name="PLUGIN_NAME" />」發生錯誤</translation>
 <translation id="4610637590575890427">你的意思是想瀏覽 <ph name="SITE" /> 嗎?</translation>
 <translation id="4611114513649582138">可使用數據連線</translation>
+<translation id="4613144866899789710">正在取消安裝 Linux...</translation>
 <translation id="4613271546271159013">擴充功能已變更開啟新分頁時所顯示的頁面。</translation>
 <translation id="4615586811063744755">未選取任何 Cookie</translation>
 <translation id="4617270414136722281">擴充功能選項</translation>
@@ -2480,6 +2488,7 @@
 <translation id="4892229439761351791">網站可以使用藍牙</translation>
 <translation id="4893336867552636863">這會將您的瀏覽資料從這個裝置上永久刪除。</translation>
 <translation id="4893522937062257019">螢幕鎖定時</translation>
+<translation id="489454699928748701">允許網站使用動作感應器</translation>
 <translation id="4898011734382862273">憑證「<ph name="CERTIFICATE_NAME" />」代表憑證授權單位</translation>
 <translation id="489985760463306091">如要完成有害軟體清除程序，請重新開機。</translation>
 <translation id="4900392736118574277">你的起始網頁已變更為 <ph name="URL" />。</translation>
@@ -2943,6 +2952,7 @@
 <translation id="5620568081365989559">DevTools 要求取得 <ph name="FOLDER_PATH" /> 的完整權限。請務必小心，不要透露任何機密資訊。</translation>
 <translation id="5620612546311710611">使用統計資料</translation>
 <translation id="5620655347161642930">匯出密碼...</translation>
+<translation id="5623282979409330487">這個網站正在存取你的動作感應器。</translation>
 <translation id="5623842676595125836">記錄</translation>
 <translation id="5624120631404540903">管理密碼</translation>
 <translation id="5626134646977739690">名稱：</translation>
@@ -3211,7 +3221,6 @@
     <ph name="BEGIN_PARAGRAPH2" />關閉裝置的主要「定位」設定即可關閉「定位」服務。你也可以前往位置資訊設定，將使用 Wi‑Fi、行動網路和感應器的定位功能關閉。<ph name="END_PARAGRAPH2" /></translation>
 <translation id="6041155700700864984">結束全螢幕</translation>
 <translation id="604124094241169006">自動</translation>
-<translation id="6042169520002885235">選取印表機製造商和型號</translation>
 <translation id="6042308850641462728">更多</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" /> 正在與 <ph name="TAB_NAME" /> 共用 Chrome 分頁。</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> 正在與 <ph name="TAB_NAME" /> 共用 Chrome 分頁和音訊。</translation>
@@ -3407,6 +3416,7 @@
 <translation id="6339668969738228384">為 <ph name="USER_EMAIL_ADDRESS" /> 建立新的個人資料</translation>
 <translation id="6340017061976355871">無法連上伺服器。請檢查網路連線狀態，然後再試一次。如果問題持續發生，請重新啟動 Chromebook。</translation>
 <translation id="6340071272923955280">網際網路列印通訊協定 (IPPS)</translation>
+<translation id="6340526405444716530">個人化</translation>
 <translation id="6341850831632289108">偵測你的實際位置</translation>
 <translation id="6344170822609224263">存取網路連線清單</translation>
 <translation id="6349101878882523185">安裝 <ph name="APP_NAME" /></translation>
@@ -3436,6 +3446,7 @@
 <translation id="6390994422085833176">在設定完成後檢閱同步處理和個人化功能</translation>
 <translation id="6393156038355142111">建議高強度密碼</translation>
 <translation id="6395423953133416962">傳送<ph name="BEGIN_LINK1" />系統資訊<ph name="END_LINK1" />和<ph name="BEGIN_LINK2" />指標<ph name="END_LINK2" /></translation>
+<translation id="6396988158856674517">禁止網站使用動作感應器</translation>
 <translation id="6397094776139756010">同步處理與個人化選項</translation>
 <translation id="6398715114293939307">移除 Google Play 商店</translation>
 <translation id="6398765197997659313">退出全螢幕模式</translation>
@@ -3530,6 +3541,7 @@
 <translation id="6531282281159901044">保留不安全的檔案</translation>
 <translation id="6532101170117367231">儲存至 Google 雲端硬碟</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />注意：<ph name="END_BOLD" />除非你瞭解這項功能的用途或是收到相關指示，否則請不要啟用這項功能，因為收集資料可能會導致系統效能降低。</translation>
+<translation id="6541638731489116978">這個網站無法存取你的動作感應器。</translation>
 <translation id="654233263479157500">使用網路服務來協助解決瀏覽錯誤</translation>
 <translation id="6544215763872433504">Google 提供的網路瀏覽器，滿足你的需求</translation>
 <translation id="6545665334409411530">重複頻率</translation>
@@ -4007,6 +4019,7 @@
 <translation id="7282992757463864530">資訊列</translation>
 <translation id="7287143125007575591">存取遭拒。</translation>
 <translation id="7287411021188441799">還原預設背景</translation>
+<translation id="7288013116963835700">移除 <ph name="DEVICE_TYPE" /> 上的 Linux</translation>
 <translation id="7288676996127329262"><ph name="HORIZONTAL_DPI" />x<ph name="VERTICAL_DPI" /> dpi</translation>
 <translation id="7289225569524511578">開啟桌布應用程式</translation>
 <translation id="7290242001003353852">這項登入服務 (由 <ph name="SAML_DOMAIN" /> 代管) 正在存取您的攝影機。</translation>
@@ -4267,6 +4280,7 @@
 <translation id="7704628569466676326">將你的安全金鑰與這個裝置配對，即可透過金鑰登入你的帳戶</translation>
 <translation id="7705276765467986571">無法載入書籤模型。</translation>
 <translation id="7705524343798198388">VPN</translation>
+<translation id="7707108266051544351">這個網站無法使用動作感應器。</translation>
 <translation id="7707922173985738739">使用行動數據</translation>
 <translation id="7709152031285164251">失敗 - <ph name="INTERRUPT_REASON" /></translation>
 <translation id="7710568461918838723">投放(&amp;C)...</translation>
@@ -4430,6 +4444,7 @@
 <translation id="7931318309563332511">不明</translation>
 <translation id="7932969338829957666">在 Linux 中，你可以前往 <ph name="BASE_DIR" /> 存取共用資料夾。</translation>
 <translation id="7933314993013528982">{NUM_TABS,plural, =1{開啟網站音訊}other{開啟多個網站的音訊}}</translation>
+<translation id="7933634003144813719">管理共用資料夾</translation>
 <translation id="7934414805353235750"><ph name="URL" /> 要求播放受保護的內容。Google 會驗證你裝置的識別資訊。</translation>
 <translation id="793531125873261495">下載虛擬機器時發生錯誤，請再試一次。</translation>
 <translation id="7938594894617528435">目前離線</translation>
@@ -4616,6 +4631,7 @@
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{正在執行一項下載作業}other{正在執行多項下載作業}}</translation>
 <translation id="8213449224684199188">已進入相片模式</translation>
 <translation id="8213577208796878755">有一個可用裝置。</translation>
+<translation id="8213996900880218548">要求存取這個網站的資料</translation>
 <translation id="8214489666383623925">開啟檔案...</translation>
 <translation id="8214962590150211830">移除這個使用者</translation>
 <translation id="8217399928341212914">繼續禁止自動下載多個檔案</translation>
@@ -4641,6 +4657,7 @@
 <translation id="8252569384384439529">上傳中...</translation>
 <translation id="8253198102038551905">按一下 [+] 即可查看網路屬性</translation>
 <translation id="825483282309623688">您必須連上網際網路，才能還原資料。</translation>
+<translation id="8254954272268479918">關閉 Linux (Beta 版)</translation>
 <translation id="8256319818471787266">小黃</translation>
 <translation id="8257950718085972371">繼續封鎖存取攝影機</translation>
 <translation id="8259239505248583312">開始使用</translation>
@@ -5185,6 +5202,7 @@
 <translation id="9115675100829699941">書籤(&amp;B)</translation>
 <translation id="9116465289595958864">上次修改時間</translation>
 <translation id="9116799625073598554">筆記應用程式</translation>
+<translation id="9117030152748022724">管理應用程式</translation>
 <translation id="9121814364785106365">在固定分頁中開啟</translation>
 <translation id="9124003689441359348">你所儲存的密碼會顯示在這裡</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (還剩 <ph name="LICENSE_COUNT" /> 個)</translation>
@@ -5273,6 +5291,7 @@
 <translation id="971774202801778802">書籤網址</translation>
 <translation id="973473557718930265">結束</translation>
 <translation id="974555521953189084">如要開始同步處理，請輸入你的通關密語</translation>
+<translation id="97905529126098460">此視窗將在完成取消作業後關閉。</translation>
 <translation id="981121421437150478">離線</translation>
 <translation id="983511809958454316">無法在 VR 狀態下使用這項功能</translation>
 <translation id="984275831282074731">付款方式</translation>

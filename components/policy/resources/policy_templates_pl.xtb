@@ -352,6 +352,11 @@ Każdy element na liście tej zasady jest ciągiem zawierającym identyfikator r
       Gdy ta zasada ma wartość Fałsz, informacje o rozszerzeniach i wtyczkach nie są zbierane.
 
       Ta zasada jest stosowana tylko wtedy, gdy włączone jest <ph name="CHROME_REPORTING_EXTENSION_NAME" />, a komputer jest zarejestrowany w: <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="1560205870554624777">Określa, czy są włączone funkcje Kerberos. Kerberos to protokół uwierzytelniania, który umożliwia uwierzytelnianie aplikacji internetowych i udziałów plików.
+
+          Jeśli ta zasada jest włączona, funkcje Kerberos są włączone. Aby dodawać konta Kerberos, użyj zasady „Konfigurowanie kont Kerberos” lub ustawień Konta Kerberos na stronie ustawień Osoby.
+
+          Jeśli ta zasada jest wyłączona lub nieskonfigurowana, sekcja ustawień Konta Kerberos jest wyłączona. Nie można dodawać kont Kerberos ani korzystać z uwierzytelniania Kerberos. Istniejące konta Kerberos oraz wszystkie zapisane hasła zostają usunięte.</translation>
 <translation id="1561424797596341174">Zasada zastępuje kompilacje hosta dostępu zdalnego w trybie debugowania</translation>
 <translation id="1561967320164410511">U2F i rozszerzenia do indywidualnego poświadczania</translation>
 <translation id="1574554504290354326">To ustawienie zostało wycofane. Zamiast niego użyj ustawienia SafeBrowsingExtendedReportingEnabled. Włączenie lub wyłączenie zasady SafeBrowsingExtendedReportingEnabled działa tak samo jak ustawienie wartości false w zasadzie SafeBrowsingExtendedReportingOptInAllowed.
@@ -438,6 +443,12 @@ Każdy element na liście tej zasady jest ciągiem zawierającym identyfikator r
 
       Zasada powinna określać URL, z którego <ph name="PRODUCT_OS_NAME" /> może pobrać Warunki korzystania z usługi. Dokument ten musi mieć postać zwykłego tekstu (MIME) bez żadnych znaczników.</translation>
 <translation id="1750315445671978749">Blokuj pobieranie wszystkich plików</translation>
+<translation id="1762072363876276024">
+      Ta zasada dotyczy ekranu logowania. Zobacz też zasadę <ph name="SITE_PER_PROCESS_POLICY_NAME" />, która dotyczy sesji użytkownika. Zalecane jest, by obie zasady miały tę samą wartość. Jeśli wartości są niezgodne, możliwe są opóźnienia przy uruchamianiu sesji użytkownika spowodowane stosowaniem wartości określonej w zasadach dotyczących użytkowników.
+      To ustawienie, DeviceLoginScreenSitePerProcess, pozwala uniemożliwić użytkownikowi wyłączenie domyślnego zachowania, czyli izolacji wszystkich witryn. Możesz też skorzystać z zasady DeviceLoginScreenIsolateOrigins, by dodatkowo izolować źródła według bardziej szczegółowych kryteriów.
+      Jeśli ta zasada jest włączona, użytkownik nie może wyłączyć domyślnego zachowania, przy którym każda witryna działa w obrębie własnego procesu.
+      Jeśli zasada jest wyłączona lub nieskonfigurowana, użytkownik może zmieniać to ustawienie (np. przez zmianę ustawienia „Wyłącz izolację witryn” na stronie chrome://flags).
+      </translation>
 <translation id="1781356041596378058">Ta zasada kontroluje też dostęp do Opcji dewelopera Androida. Jej włączenie powoduje odebranie użytkownikom dostępu do Opcji dewelopera. Gdy jest wyłączona lub nieskonfigurowana, użytkownicy mogą uzyskać dostęp do Opcji dewelopera, klikając siedem razy numer kompilacji w aplikacji Ustawienia Androida.</translation>
 <translation id="1793346220873697538">Wyłącz drukowanie domyślnie z kodem PIN</translation>
 <translation id="1797233582739332495">Wyświetlaj cyklicznie komunikat o tym, że wymagane jest ponowne uruchomienie</translation>
@@ -857,6 +868,11 @@ Jeśli pozostanie ona nieskonfigurowana, użytkownik może sam zdecydować, czy 
 
       Jeśli nie skonfigurujesz tej zasady, użytkownicy będą mogli sami wybrać, czy chcą używać serwera proxy kompresowania danych czy nie.</translation>
 <translation id="257788512393330403">Podanie hasła jest wymagane co sześć godzin</translation>
+<translation id="2586162458524426376">
+      Ta zasada dotyczy ekranu logowania. Zobacz też zasadę <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, która dotyczy sesji użytkownika.
+      Jeśli ta zasada jest włączona, każde nazwane źródło na liście oddzielonej przecinkami będzie działać w obrębie własnego procesu. Powoduje to też izolację źródeł z nazwami subdomen, np. określenie https://example.com/ spowoduje, że także adres https://foo.example.com/ będzie izolowany jako część witryny https://example.com/.
+      Jeśli ta zasada jest wyłączona lub nie jest skonfigurowana, na ekranie logowania działają domyślne ustawienia izolacji witryn platformy.
+      </translation>
 <translation id="2587719089023392205">Ustaw <ph name="PRODUCT_NAME" /> jako przeglądarkę domyślną</translation>
 <translation id="2592091433672667839">Czas bezczynności, po upływie którego w trybie sklepu na ekranie logowania jest wyświetlany wygaszacz ekranu</translation>
 <translation id="2592162121850992309">Gdy ta zasada ma wartość Prawda lub nie jest skonfigurowana, akceleracja sprzętowa jest włączona, o ile dana funkcja GPU nie znajduje się na czarnej liście.
@@ -867,6 +883,7 @@ Jeśli pozostanie ona nieskonfigurowana, użytkownik może sam zdecydować, czy 
           Wszystkie nowsze wersje serwerów Samba i Windows obsługują uwierzytelnianie NTLMv2. Należy je wyłączyć tylko w celu zapewnienia wstecznej zgodności. Wyłączenie zmniejsza bezpieczeństwo uwierzytelniania.
 
           Jeśli ta zasada jest nieskonfigurowana, wartością domyślną jest prawda i NTLMv2 jest włączone.</translation>
+<translation id="26023406105317310">Konfigurowanie kont Kerberos</translation>
 <translation id="2604182581880595781">Umożliwia skonfigurowanie zasad związanych z sieciowymi udziałami plików.</translation>
 <translation id="2623014935069176671">Poczekaj na początkową aktywność użytkownika</translation>
 <translation id="262740370354162807">Włącz wysyłanie dokumentów do <ph name="CLOUD_PRINT_NAME" />.</translation>
@@ -1190,6 +1207,7 @@ Jeśli pozostanie ona nieskonfigurowana, użytkownik może sam zdecydować, czy 
 <translation id="3159375329008977062">Użytkownik może eksportować i importować kontenery Crostini za pomocą UI</translation>
 <translation id="3165808775394012744">Te zasady umieszczono tu, by ułatwić ich usunięcie.</translation>
 <translation id="316778957754360075">To ustawienie zostało wycofane w <ph name="PRODUCT_NAME" /> w wersji 29. Zalecany sposób konfigurowania kolekcji rozszerzeń lub aplikacji udostępnianych przez organizację polega na tym, że witrynę z pakietami CRX umieszcza się w zasadzie ExtensionInstallSources, a na stronie internetowej udostępnia się bezpośrednie linki do pakietów do pobrania. Program uruchamiający tę stronę internetową można utworzyć, korzystając z zasady ExtensionInstallForcelist.</translation>
+<translation id="3168968618972302728">Zasady związane z uwierzytelnianiem Kerberos.</translation>
 <translation id="3171369832001535378">Szablon sieciowej nazwy hosta urządzenia</translation>
 <translation id="3172512016079904926">Umożliwia instalację hostów Wiadomości natywnych na poziomie użytkownika.
 
@@ -1323,7 +1341,7 @@ Jeśli nie podasz wartości albo wybierzesz ustawienie „Wyłącz”, stosowani
 
          Jeśli ta zasada będzie wyłączona lub nieustawiona, odliczanie opóźnień związanych z zarządzaniem energią oraz czasu związanego z limitem długości sesji będzie rozpoczynane od razu po rozpoczęciu sesji.</translation>
 <translation id="3478024346823118645">Wyczyść dane użytkownika przy wylogowaniu</translation>
-<translation id="3480961938508521469">Naładuj baterię całkowicie ze standardową szybkością.</translation>
+<translation id="3480961938508521469">Naładuj baterię do pełna ze standardową szybkością.</translation>
 <translation id="348495353354674884">Włącz wirtualną klawiaturę</translation>
 <translation id="3487623755010328395">
         Jeśli ta zasada jest włączona, usługa <ph name="PRODUCT_NAME" /> podejmie próbę zarejestrowania samej siebie i zastosowania powiązanych zasad dotyczących chmury we wszystkich profilach.
@@ -1382,6 +1400,7 @@ Jeśli nie podasz wartości albo wybierzesz ustawienie „Wyłącz”, stosowani
 <translation id="3631099945620529777">Jeśli ta zasada ma wartość Fałsz, przycisk „Zakończ proces” w Menedżerze zadań jest nieaktywny.
 
       Jeśli ma wartość Prawda lub nie jest skonfigurowana, użytkownik może kończyć działanie procesów w Menedżerze zadań.</translation>
+<translation id="3643284063603988867">Włącz funkcję „Zapamiętaj hasło”</translation>
 <translation id="3646859102161347133">Ustaw typ lupy</translation>
 <translation id="3653237928288822292">Ikona domyślnego dostawcy wyszukiwania</translation>
 <translation id="3660510274595679517">
@@ -1724,6 +1743,15 @@ Jeśli wartość |IdleAction| nie będzie określona, zostanie wykonane działan
           Ta zasada zastępuje zasadę RemoteAccessHostClientDomain, jeśli ona występuje.
 
           Zobacz też RemoteAccessHostDomainList.</translation>
+<translation id="4164601239783385546">Włącza funkcję klawiszy trwałych.
+
+          Jeśli zasada ma wartość Prawda, klawisze trwałe są zawsze włączone.
+
+          Jeśli zasada ma wartość Fałsz, klawisze trwałe są zawsze wyłączone.
+
+          Jeśli skonfigurujesz tę zasadę, użytkownicy nie będą mogli jej zmienić ani zastąpić.
+
+          Jeśli ta zasada jest nieskonfigurowana, klawisze trwałe są początkowo wyłączone, ale użytkownik może je swobodnie włączyć.</translation>
 <translation id="4183229833636799228">Domyślne ustawienie wtyczki <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">URL pozwalający zweryfikować token uwierzytelniania klienta dostępu zdalnego</translation>
 <translation id="4197038214024763371">Jeśli ta zasada jest włączona lub nieskonfigurowana, użytkownik może korzystać ze sprawdzania pisowni.
@@ -1918,6 +1946,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="4578912515887794133">Po włączeniu tej zasady host dostępu zdalnego porównuje nazwę użytkownika lokalnego (z którym host jest skojarzony) z nazwą konta Google zarejestrowaną jako właściciel hosta (np. „jankowalski”, jeśli właścicielem jest konto Google „jankowalski@example.com”).  Host dostępu zdalnego nie uruchomi się, jeśli nazwa właściciela hosta będzie się różniła od nazwy użytkownika lokalnego, z którym host jest skojarzony.  Zasadę RemoteAccessHostMatchUsername należy stosować w połączeniu z zasadą RemoteAccessHostDomain, by wymusić też weryfikowanie, czy konto Google właściciela hosta jest skojarzone z wybraną domeną (np. „example.com”).
 
           Jeśli wyłączysz tę zasadę lub jej nie skonfigurujesz, host dostępu zdalnego będzie mógł być skojarzony z dowolnym użytkownikiem lokalnym.</translation>
+<translation id="4591366717022345234">Udostępnia użytkownikom kompilację Quick Fix</translation>
 <translation id="4600786265870346112">Włącz duży kursor</translation>
 <translation id="4604931264910482931">Skonfiguruj czarną listę wiadomości natywnych</translation>
 <translation id="4613508646038788144">Jeśli ta zasada ma ustawienie „fałsz”, oprogramowanie innych firm będzie mogło wstrzykiwać kod wykonywalny do procesów Chrome. Jeśli ta zasada jest nieskonfigurowana lub ma ustawienie „prawda”, oprogramowanie innych firm nie będzie mogło wstrzykiwać takiego kodu do procesów Chrome.</translation>
@@ -2000,6 +2029,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="487460824085252184">Przenoś automatycznie bez pytania o zgodę użytkownika.</translation>
 <translation id="4874982543810021567">Blokuj WebUSB w tych witrynach</translation>
 <translation id="4876805738539874299">Najwyższa włączona wersja protokołu SSL</translation>
+<translation id="4887274746092315609">Włącz stronę umożliwiającą zmianę hasła w trakcie sesji dla użytkowników SAML.</translation>
 <translation id="4897928009230106190">Określa parametry używane przy sugerowaniu haseł z użyciem POST. Składa się z rozdzielonych przecinkami par nazwy i wartości. Jeśli wartość jest parametrem szablonu, tak jak w przykładzie powyżej {searchTerms}, zostanie ona zastąpiona rzeczywistymi danymi wyszukiwanych słów.
 
           Ta zasada jest opcjonalna. Jeśli nie jest ustawiona, żądania sugerowanych wyszukiwań są wysyłane przy użyciu metody GET.
@@ -2204,6 +2234,7 @@ Jeśli ta zasada pozostanie nieskonfigurowana, użytkownik może wyłączyć ka�
       Jeśli zasada ma ustawioną opcję „Starszy typ”, dozwolony jest tylko typ szyfrowania RC4. Ta opcja nie zapewnia bezpieczeństwa i może być potrzebna jedynie w bardzo szczególnych sytuacjach.
 
       Zobacz też https://wiki.samba.org/index.php/Samba_4.6_Features_added/changed#Kerberos_client_encryption_types</translation>
+<translation id="5249453807420671499">Użytkownicy mogą dodawać konta Kerberos</translation>
 <translation id="5255162913209987122">Może być zalecana</translation>
 <translation id="527237119693897329">Pozwala określić, które hosty wiadomości natywnych nie powinny być wczytywane.
 
@@ -2335,6 +2366,7 @@ Do odwzorowania sekwencji dowolnych znaków można używać symboli wieloznaczny
       Gdy ta zasada zostanie ustawiona na wartość różną od 0, aktualnie zalogowany użytkownik demonstracyjny zostanie automatycznie wylogowany po upływie podanego okresu bezczynności.
 
       Wartość zasady należy określić w milisekundach.</translation>
+<translation id="5508307164752647432">Włącz funkcje Kerberos</translation>
 <translation id="5511702823008968136">Włącz pasek zakładek</translation>
 <translation id="5512418063782665071">Adres URL strony głównej</translation>
 <translation id="551639594034811656">Ta zasada zawiera listę wartości procentowych określających, jaki odsetek urządzeń z systemem <ph name="PRODUCT_OS_NAME" /> w OU ma być aktualizowany dziennie, począwszy od dnia wykrycia aktualizacji. Moment wykrycia jest późniejszy niż moment opublikowania, ponieważ może minąć trochę czasu między opublikowaniem aktualizacji a sprawdzeniem jej dostępności przez urządzenie.
@@ -2356,6 +2388,7 @@ Do odwzorowania sekwencji dowolnych znaków można używać symboli wieloznaczny
       Uwaga: jeśli platforma obsługuje powiadomienia o zasadach, czas odświeżania będzie ustawiony na 24 godziny (wartości domyślne i wartość tej zasady będą ignorowane), ponieważ powiadomienia te powinny automatycznie wymuszać odświeżenie po każdej zmianie zasad, przez co częstsze odświeżanie jest niepotrzebne.</translation>
 <translation id="5530347722229944744">Blokuj pobieranie potencjalnie niebezpiecznych plików</translation>
 <translation id="5535973522252703021">Biała lista serwerów przekazywania poświadczeń w protokole Kerberos</translation>
+<translation id="554903022911579950">Kerberos</translation>
 <translation id="555077880566103058">Pozwala wszystkim witrynom na automatyczne uruchamianie wtyczki <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="5559079916187891399">Ta zasada nie ma żadnego wpływu na aplikacje na Androida.</translation>
 <translation id="5560039246134246593">Dodaj parametr do pobierania odmian w <ph name="PRODUCT_NAME" />.
@@ -2467,6 +2500,16 @@ Do odwzorowania sekwencji dowolnych znaków można używać symboli wieloznaczny
 
       Jeśli ta zasada jest ustawiona, użytkownik nie może jej zmienić ani zastąpić.</translation>
 <translation id="5708969689202733975">Konfigurowanie dozwolonych trybów szybkiego odblokowania</translation>
+<translation id="5711016543513883877">
+      Jeśli ta zasada jest włączona, każde nazwane źródło na liście
+      oddzielonej przecinkami będzie działać w obrębie własnego procesu. Powoduje to też izolację
+      źródeł z nazwami subdomen, np. określenie
+      https://example.com/ spowoduje, że także adres https://foo.example.com/
+      będzie izolowany jako część witryny https://example.com/
+      Jeśli ta zasada jest wyłączona lub nieskonfigurowana, użytkownik może zmienić to ustawienie.
+
+      UWAGA: Ta zasada nie działa w Androidzie. Aby włączyć zasadę IsolateOrigins w Androidzie, użyj zasady IsolateOriginsAndroid.
+      </translation>
 <translation id="572155275267014074">Ustawienia Androida</translation>
 <translation id="5722934961007828462">Gdy to ustawienie jest włączone, <ph name="PRODUCT_NAME" /> zawsze sprawdza, czy zweryfikowane certyfikaty serwera podpisane lokalnie zainstalowanymi certyfikatami CA nie zostały unieważnione.
 
@@ -3366,6 +3409,11 @@ Jeśli ta zasada nie zostanie skonfigurowana, nie będą obowiązywały żadne o
 <translation id="7433714841194914373">Włącz wyszukiwanie dynamiczne</translation>
 <translation id="7434202861148928348">Konfiguracja wymaganych nazw domen dla klientów dostępu zdalnego</translation>
 <translation id="7443616896860707393">Monity o podstawowe uwierzytelnienie HTTP pochodzące z innych witryn</translation>
+<translation id="7454519673779830548">Dodaje wstępnie skonfigurowane konta Kerberos. Jeśli dane logowania Kerberos odpowiadają danym logowania konta, można skonfigurować korzystanie z tych danych logowania, ustawiając wartości podmiotu zabezpieczeń i hasła odpowiednio jako „${{LOGIN_EMAIL}}” i „{{PASSWORD}}”. W ten sposób bilety Kerberos będą wywoływane automatycznie, chyba że jest skonfigurowane uwierzytelnianie dwuskładnikowe. Użytkownicy nie mogą modyfikować kont dodanych za pomocą tej zasady.
+
+          Jeśli ta zasada jest włączona, lista kont zdefiniowanych przez zasadę jest dodana do ustawień Konta Kerberos.
+
+          Jeśli ta zasada jest wyłączona lub nieskonfigurowana, do ustawień Konta Kerberos nie są dodawane żadne konta, a konta dodane wcześniej przez tę zasadę zostają usunięte. Jeśli zasada „Użytkownicy mogą dodawać konta Kerberos” jest włączona, użytkownicy nadal mogą dodawać konta ręcznie.</translation>
 <translation id="7458437477941640506">Nie cofaj do docelowej wersji systemu operacyjnego, jeśli zainstalowana jest wersja nowsza niż docelowa. Aktualizacje też są wyłączone.</translation>
 <translation id="7464991223784276288">Ogranicz pliki cookie z odpowiednich adresów URL tylko do bieżącej sesji</translation>
 <translation id="7469554574977894907">Włącz propozycje wyszukiwania</translation>
@@ -3498,6 +3546,11 @@ Jeśli ta zasada nie zostanie skonfigurowana, nie będą obowiązywały żadne o
 <translation id="7687943045976362719">Jeśli ta zasada jest skonfigurowana, <ph name="PRODUCT_FRAME_NAME" /> obsługuje rodzaje treści wskazane w jej ustawieniach.
 
 Jeśli zasada nie jest skonfigurowana, na wszystkich stronach używany jest domyślny mechanizm renderowania. (Do skonfigurowania domyślnego mechanizmu renderowania można użyć zasady <ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" />).</translation>
+<translation id="7694245791806617022">Określa, czy funkcja „Zapamiętaj hasło” jest widoczna w oknie uwierzytelniania Kerberos. Zaszyfrowane hasła są zapisane na dysku i dostępne tylko dla demona Kerberos, tylko w czasie sesji użytkownika.
+
+          Jeśli ta zasada jest włączona lub nieskonfigurowana, użytkownik może ustalić, czy hasła Kerberos będą zapamiętywane, by nie trzeba było ich znowu wpisywać. Bilety Kerberos są automatycznie pobierane, chyba że wymagane jest dodatkowe uwierzytelnienie (uwierzytelnianie dwuskładnikowe).
+
+          Jeśli ta zasada jest wyłączona, hasła nigdy nie są zapamiętywane, a wcześniej zapisane hasła zostają usunięte. Użytkownik musi wypisywać hasło za każdym razem, gdy wymagane jest uwierzytelnienie w systemie Kerberos. Zależnie od ustawień serwera okres między wymaganym uwierzytelnianiem wynosi zwykle od 8 godzin do kilku miesięcy.</translation>
 <translation id="7694807474048279351">Planuje automatyczne ponowne uruchomienie po zastosowaniu aktualizacji <ph name="PRODUCT_OS_NAME" />.
 
       Jeśli ta zasada ma wartość „prawda”, po zastosowaniu aktualizacji <ph name="PRODUCT_OS_NAME" /> następuje zaplanowane automatyczne ponowne uruchomienie, które jest wymagane do zakończenia procesu aktualizacji. Ponowne uruchomienie jest zaplanowane do wykonania od razu, ale może zostać opóźnione nawet o 24 godziny, gdy użytkownik akurat korzysta z urządzenia.
@@ -3522,7 +3575,7 @@ Jeśli zasada nie jest skonfigurowana, na wszystkich stronach używany jest domy
 
           Uwaga: wartość <ph name="CHARGE_START_TIME_FIELD_NAME" /> musi być mniejsza niż <ph name="CHARGE_END_TIME_FIELD_NAME" />.
 
-          Uwaga: dozwolone wartości w polu <ph name="MINUTE_FIELD_NAME" /> w opcjach <ph name="CHARGE_START_TIME_FIELD_NAME" /> i <ph name="CHARGE_END_TIME_FIELD_NAME" /> to 0, 15, 30, 45.</translation>
+Uwaga: dozwolone wartości w polu <ph name="MINUTE_FIELD_NAME" /> w opcjach <ph name="CHARGE_START_TIME_FIELD_NAME" /> i <ph name="CHARGE_END_TIME_FIELD_NAME" /> to: 0, 15, 30 i 45.</translation>
 <translation id="7717938661004793600">Skonfiguruj ułatwienia dostępu w <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7724994675283793633">Ta zasada włącza HTTP/0.9 w portach innych niż 80 dla HTTP i 443 dla HTTPS.
 
@@ -3531,6 +3584,15 @@ Jeśli zasada nie jest skonfigurowana, na wszystkich stronach używany jest domy
       Ta zasada ma umożliwić firmom migrację istniejących serwerów z HTTP/0.9 i w przyszłości zostanie usunięta.
 
       Jeśli zasada nie jest skonfigurowana, w portach innych niż domyślne protokół HTTP/0.9 jest wyłączony.</translation>
+<translation id="7726421241038987229">
+      Ustawienie SitePerProcess pozwala uniemożliwić użytkownikowi wyłączenie domyślnego zachowania, czyli izolowania wszystkich witryn. Możesz jednocześnie użyć zasady IsolateOrigins, aby dodatkowo izolować źródła według bardziej szczegółowych kryteriów.
+      Jeśli ta zasada jest włączona, użytkownik nie może wyłączyć domyślnego zachowania, przy którym każda witryna działa w obrębie własnego procesu.
+      Jeśli zasada jest wyłączona lub nie jest skonfigurowana, użytkownik może wyłączyć izolację witryn
+      (np. przez zmianę ustawienia „Wyłącz izolację witryn” na stronie chrome://flags).  Wyłączenie lub nieskonfigurowanie tej zasady nie wyłącza ustawienia Izolacja witryn.
+      W systemie <ph name="PRODUCT_OS_NAME" /> zalecane jest również ustawienie tej samej wartości dla zasady dotyczącej urządzeń <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Jeśli wartości tych dwóch zasad są niezgodne, możliwe są opóźnienia przy uruchamianiu sesji użytkownika spowodowane stosowaniem wartości określonej w zasadach dotyczących użytkowników.
+
+      UWAGA: Ta zasada nie działa w Androidzie. Aby włączyć zasadę SitePerProcess w Androidzie, użyj ustawienia zasady SitePerProcessAndroid.
+      </translation>
 <translation id="7747447585227954402">Zezwól urządzeniom na korzystanie z wtyczki <ph name="PLUGIN_VM_NAME" /> w systemie <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7749402620209366169">Pozwala włączyć uwierzytelnianie dwuskładnikowe dla hostów zdalnego dostępu zamiast stosowania PIN-u określanego przez użytkownika.
 
@@ -3596,6 +3658,11 @@ Jeśli zasada nie jest skonfigurowana, na wszystkich stronach używany jest domy
       Określa identyfikator rozszerzenia używanego jako wygaszacz ekranu na ekranie logowania. Rozszerzenie musi być częścią pakietu aplikacji skonfigurowanego dla tej domeny przez zasadę DeviceAppPack.</translation>
 <translation id="7882857838942884046">Wyłączenie Google Sync spowoduje, że tworzenie i przywracanie kopii zapasowej Androida nie będzie działać prawidłowo.</translation>
 <translation id="7882890448959833986">Ukryj ostrzeżenie o nieobsługiwanym systemie operacyjnym</translation>
+<translation id="7889788745439330797">Określa, czy użytkownicy mogą dodawać konta Kerberos.
+
+          Jeśli ta zasada jest włączona lub nieskonfigurowana, użytkownicy mogą dodawać konta Kerberos w ustawieniach Konta Kerberos na stronie ustawień Osoby. Użytkownicy mają pełną kontrolę nad dodanymi przez siebie kontami i mogą je modyfikować oraz usuwać.
+
+          Jeśli ta zasada jest wyłączona, użytkownicy nie mogą dodawać kont Kerberos. Konta można dodawać tylko za pomocą zasady „Konfigurowanie kont Kerberos”. To skuteczny sposób blokowania kont.</translation>
 <translation id="7895553628261067384">Dostęp zdalny</translation>
 <translation id="7902255855035461275">Wzorce na tej liście są porównywane ze źródłem zabezpieczeń adresu URL,
       z którego pochodzi żądanie. Jeśli URL będzie pasować do któregoś wzorca,

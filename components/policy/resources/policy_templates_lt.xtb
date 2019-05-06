@@ -361,6 +361,11 @@
       Kai ši politika nustatyta kaip „Netiesa“, plėtinių ir papildinių duomenys nerenkami.
 
       Ši politika galioja, tik kai įgalintas „<ph name="CHROME_REPORTING_EXTENSION_NAME" />“ ir įrenginyje užregistruota „<ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />“.</translation>
+<translation id="1560205870554624777">Galima kontroliuoti, ar turi būti įgalinta funkcija „Kerberos“. „Kerberos“ yra autentifikavimo protokolas, kurį galima naudoti žiniatinklio programoms ir failų bendrinimo įrenginiams autentifikuoti.
+
+          Jei ši politika įgalinta, funkcija „Kerberos“ įgalinama. „Kerberos“ paskyras galima pridėti naudojant politiką „Konfigūruoti „Kerberos“ paskyras“ arba „Kerberos“ paskyrų nustatymuose, kuriuos galima rasti Žmonių nustatymų puslapyje.
+
+          Jei ši politika išjungta ar nenustatyta, „Kerberos“ paskyros nustatymai išjungiami. Nebus galima pridėti „Kerberos“ paskyrų ir naudoti „Kerberos“ autentifikavimo. Visos esamos „Kerberos“ paskyros ir saugomi slaptažodžiai bus ištrinti.</translation>
 <translation id="1561424797596341174">Nuotolinės prieigos prieglobos derinimo versijų politikos pakeitimai</translation>
 <translation id="1561967320164410511">Papildomi U2F asmeninės atestacijos plėtiniai</translation>
 <translation id="1574554504290354326">Šis nustatymas nebenaudojamas. Vietoje jo naudokite „SafeBrowsingExtendedReportingEnabled“. „SafeBrowsingExtendedReportingEnabled“ įgalinimas arba išjungimas atitinka „SafeBrowsingExtendedReportingOptInAllowed“ nustatymą į „False“.
@@ -447,6 +452,12 @@
 
       Politika turėtų būti nustatyta į URL, kuriuo „<ph name="PRODUCT_OS_NAME" />“ gali atsisiųsti paslaugų teikimo sąlygas. Paslaugų teikimo sąlygas turi sudaryti paprastasis tekstas, pateiktas kaip MIME tipo tekstas / paprastasis tekstas. Neleidžiamas joks žymėjimas.</translation>
 <translation id="1750315445671978749">Blokuoti visus atsisiuntimus</translation>
+<translation id="1762072363876276024">
+      Ši politika taikoma prisijungimo ekranui. Taip pat peržiūrėkite politiką „<ph name="SITE_PER_PROCESS_POLICY_NAME" />“, taikomą naudotojo seansui. Rekomenduojama nustatyti vienodas abiejų politikos nuostatų vertes. Jei vertės nesutaps, pradedant naudotojo seansą galima delsa, kol bus pritaikyta naudotojo politikos nurodyta vertė.
+      Šis nustatymas („DeviceLoginScreenSitePerProcess“) gali būti naudojamas norint neleisti naudotojams atsisakyti numatytosios elgsenos – izoliuoti visas svetaines. Atminkite, kad politika „DeviceLoginScreenSitePerProcess“ taip pat gali būti naudinga, jei reikia izoliuoti papildomus smulkesnius šaltinius.
+      Jei politika įgalinta, naudotojai negalės atsisakyti numatytosios elgsenos, kai vykdomi atskiri kiekvienos svetainės procesai.
+      Jei politika nesukonfigūruota ar išjungta, naudotojai galės pakeisti šį nustatymą (pvz., įrašydami „Išjungti svetainių izoliavimą“ adresu chrome://flags).
+      </translation>
 <translation id="1781356041596378058">Ši politika taip pat valdo galimybę pasiekti „Android“ kūrėjo parinktis. Jei šią politiką nustatysite į „Tiesa“, naudotojai negalės pasiekti kūrėjo parinkčių. Jei šią politiką nustatysite į „Netiesa“ arba jos nenustatysite, naudotojai galės pasiekti kūrėjo parinktis palietę versijos numerį septynis kartus „Android“ nustatymų programoje.</translation>
 <translation id="1793346220873697538">Išjungti spausdinimą naudojant PIN kodą pagal numatytuosius nustatymus</translation>
 <translation id="1797233582739332495">Pasikartojančio raginimo, kuriame nurodoma, kad būtina paleisti iš naujo, rodymas naudotojui</translation>
@@ -882,6 +893,11 @@
 
       Jei ši politika bus nenustatyta, duomenų glaudinimo tarpinio serverio funkcija bus pasiekiama, kad naudotojas pasirinktų, ar ją naudoti.</translation>
 <translation id="257788512393330403">Slaptažodį reikia įvesti kas šešias valandas</translation>
+<translation id="2586162458524426376">
+      Ši politika taikoma prisijungimo ekranui. Taip pat peržiūrėkite politiką „<ph name="ISOLATE_ORIGINS_POLICY_NAME" />“, taikomą naudotojo seansui.
+      Jei politika įgalinta, visi įvardyti šaltiniai iš kableliais atskirtų verčių sąrašo bus paleisti per atskirus procesus. Taip pat bus izoliuoti šaltiniai, įvardyti pagal padomenius. Pvz., nurodžius https://example.com/, https://foo.example.com/ taip pat bus izoliuotas kaip svetainės https://example.com/ dalis.
+      Jei politika nesukonfigūruota arba išjungta, prisijungimo ekrane bus naudojami platformos numatytieji svetainės izoliavimo nustatymai.
+      </translation>
 <translation id="2587719089023392205">Nustatyti „<ph name="PRODUCT_NAME" />“ kaip numatytąją naršyklę</translation>
 <translation id="2592091433672667839">Neveikos iki parodant ekrano užsklandą prisijungimo ekrane, dirbant mažmeninės prekybos režimu, trukmė</translation>
 <translation id="2592162121850992309">Jei ši politika bus nustatyta kaip „Tiesa“ arba išvis nebus nustatyta, bus įgalintas aparatinės įrangos spartinimas, nebent tam tikra GPU funkcija bus įtraukta į juodąjį sąrašą.
@@ -892,6 +908,7 @@
           Visų naujausių versijų „Samba“ ir „Windows“ serveriai palaiko NTLMv2. Tai turėtų būti išjungta tik atgalinio suderinamumo tikslais, nes suprastėja autentifikavimo sauga.
 
           Jei ši politika nenustatyta, numatytasis nustatymas yra „true“ ir NTLMv2 yra įgalinta.</translation>
+<translation id="26023406105317310">Konfigūruoti „Kerberos“ paskyras</translation>
 <translation id="2604182581880595781">Konfigūruojama su tinklo failų bendrinimo įrenginiu susijusi politika.</translation>
 <translation id="2623014935069176671">Laukti pradinės naudotojo veiklos</translation>
 <translation id="262740370354162807">Įgalinti dokumentų pateikimą „<ph name="CLOUD_PRINT_NAME" />“</translation>
@@ -1224,6 +1241,7 @@
 <translation id="3159375329008977062">Naudotojai gali importuoti / eksportuoti „Crostini“ sudėtinius rodinius naudodami NS</translation>
 <translation id="3165808775394012744">Šios politikos nuostatos pateikiamos čia, kad būtų galima lengvai jas pašalinti.</translation>
 <translation id="316778957754360075">Šis nustatymas nebenaudojamas 29 ir naujesnėse „<ph name="PRODUCT_NAME" />“ versijose. Rekomenduojamas būdas nustatyti organizacijos valdomą plėtinių / programų rinkinius yra įtraukti svetaines priglobiančius CRX paketus į politiką „ExtensionInstallSources“ ir nuorodas įdėti tiesiogiai į tinklalapio paketus. Tam tinklalapiui skirtą paleidimo priemonę galima sukurti naudojant politiką „ExtensionInstallForcelist“.</translation>
+<translation id="3168968618972302728">Politika, susijusi su „Kerberos“ autentifikavimu.</translation>
 <translation id="3171369832001535378">Įrenginio tinklo prieglobos serverio pavadinimo šablonas</translation>
 <translation id="3172512016079904926">Įgalinamas savosios susirašinėjimo pranešimais programos prieglobos įdiegimas naudotojo lygiu.
 
@@ -1421,6 +1439,7 @@
 <translation id="3631099945620529777">Jei nustatyta kaip „Netiesa“, nebus galima naudoti užduočių tvarkytuvės mygtuko „Užbaigti procesą“.
 
       Jei nustatyta kaip „Tiesa“ arba nesukonfigūruota, naudotojas galės užbaigti procesus užduočių tvarkytuvėje.</translation>
+<translation id="3643284063603988867">Įgalinti funkciją „Atsiminti slaptažodį“</translation>
 <translation id="3646859102161347133">Nustatyti ekrano didinimo tipą</translation>
 <translation id="3653237928288822292">Numatytojo paieškos teikėjo piktograma</translation>
 <translation id="3660510274595679517">
@@ -1776,6 +1795,15 @@
           Taikant šį nustatymą nepaisoma „RemoteAccessHostClientDomain“, jei naudojama.
 
           Taip pat žr. „RemoteAccessHostDomainList“.</translation>
+<translation id="4164601239783385546">Įgalinkite atmeniųjų klavišų pritaikymo neįgaliesiems funkciją.
+
+          Jei ši politika nustatyta kaip „Tiesa“, atmenieji klavišai visada bus įgalinti.
+
+          Jei ši politika nustatyta kaip „Netiesa“, atmenieji klavišai visada bus išjungti.
+
+          Jums nustačius šią politiką naudotojai negalės jos pakeisti ar nepaisyti.
+
+          Jei ši politika nenustatyta, atmenieji klavišai iš pradžių bus išjungti, bet naudotojas bet kada galės juos įgalinti.</translation>
 <translation id="4183229833636799228">Numatytasis „<ph name="FLASH_PLUGIN_NAME" />“ nustatymas</translation>
 <translation id="4192388905594723944">URL, skirtas nuotolinio prisijungimo kliento autentifikavimo prieigos raktui patvirtinti</translation>
 <translation id="4197038214024763371">Jei ši politika nenustatyta arba neįgalinta, naudotojui leidžiama naudoti rašybos tikrinimą.
@@ -1970,6 +1998,7 @@
 <translation id="4578912515887794133">Įgalinus šį nustatymą, nuotolinės prieigos priegloba palygina vietinio naudotojo (su kuriuo susieta priegloba) vardą ir „Google“ paskyros, kuri užregistruota kaip prieglobos savininko paskyra (pvz., „vardenispavardenis“, jei priegloba priklauso „vardenispavardenis@example.com“ „Google“ paskyrai), pavadinimą.  Nuotolinės prieigos priegloba nebus paleista, jei prieglobos savininko vardas skirsis nuo vietinio naudotojo, su kuriuo susieta priegloba, vardo.  Politiką „RemoteAccessHostMatchUsername“ reikia naudoti su „RemoteAccessHostDomain“, kad prieglobos savininko „Google“ paskyra taip pat būtų susieta su konkrečiu domenu (pvz., „example.com“).
 
           Jei šį nustatymą išjungsite arba jo nenustatysite, nuotolinės prieigos prieglobą bus galima susieti su bet kuriuo vietiniu naudotoju.</translation>
+<translation id="4591366717022345234">Suteikite naudotojams „Quick Fix Build“</translation>
 <translation id="4600786265870346112">Įgalinti didelį žymeklį</translation>
 <translation id="4604931264910482931">Savosios susirašinėjimo pranešimais programos juodojo sąrašo konfigūravimas</translation>
 <translation id="4613508646038788144">Jei politika nustatyta į „false“, trečiosios šalies programinei įrangai bus leidžiama įdėti vykdomąjį kodą į „Chrome“ procesus. Jei politika nenustatyta arba nustatyta į „true“, trečiosios šalies programinei įrangai nebus leidžiama įdėti vykdomojo kodo į „Chrome“ procesus.</translation>
@@ -2055,6 +2084,7 @@
 <translation id="487460824085252184">Perkeliama automatiškai, neprašant naudotojo sutikimo.</translation>
 <translation id="4874982543810021567">„WebUSB“ blokavimas šiose svetainėse</translation>
 <translation id="4876805738539874299">Maksimali SSL versija įgalinta</translation>
+<translation id="4887274746092315609">Įgalinamas SAML naudotojų slaptažodžio keitimo per sesiją puslapis</translation>
 <translation id="4897928009230106190">Nurodomi parametrai, naudojami atliekant pasiūlymų paiešką naudojant POST. Jie sudaryti iš kableliais atskirtų pavadinimų / verčių porų. Jei vertė yra šablono parametras, pvz., {searchTerms} anksčiau pateiktame pavyzdyje, ji pakeičiama realiais paieškos terminų duomenimis.
 
           Ši politika pasirenkama. Jei nenustatyta, siūlomos paieškos užklausa siunčiama naudojant GET metodą.
@@ -2280,6 +2310,7 @@
       Jei politika nustatyta kaip „Pasenusi“, leidžiamas tik RC4 šifruotės tipas. Ši parinktis nesaugi ir turėtų būti naudojama tik labai konkrečiomis aplinkybėmis.
 
       Taip pat žr. https://wiki.samba.org/index.php/Samba_4.6_Features_added/changed#Kerberos_client_encryption_types.</translation>
+<translation id="5249453807420671499">Naudotojai gali pridėti „Kerberos“ paskyras</translation>
 <translation id="5255162913209987122">Gali būti rekomenduojama</translation>
 <translation id="527237119693897329">Leidžiama nurodyti, kurios savųjų susirašinėjimo pranešimais programų prieglobos neturėtų būti įkeliamos.
 
@@ -2422,6 +2453,7 @@
       Kai šios politikos vertė nustatyta ir nėra 0, dabartinis prisijungęs demonstracinės versijos naudotojas (-a) automatiškai atjungiamas (-a) pasibaigus nurodytos trukmės neveiklos laikotarpiui.
 
       Politikos vertę reikia nurodyti milisekundėmis.</translation>
+<translation id="5508307164752647432">Įgalinti „Kerberos“ funkciją</translation>
 <translation id="5511702823008968136">Įgalinti žymių juostą</translation>
 <translation id="5512418063782665071">Pagrindinio puslapio URL</translation>
 <translation id="551639594034811656">Ši politika apibrėžia procentinių verčių sąrašą, kur nurodoma OV įrenginių dalis („<ph name="PRODUCT_OS_NAME" />“), kurie bus atnaujinti per savaitę nuo pirmos naujinio aptikimo dienos. Aptikimo laikas yra vėlesnis nei naujinio paskelbimo laikas, nes paskelbus naujinį įrenginys gali tikrinti, ar yra naujinių, tik po tam tikro laiko
@@ -2443,6 +2475,7 @@
       Atminkite, kad jei platformoje palaikomi politikos pranešimai, atnaujinimo delsa bus nustatyta į 24 val. (bus nepaisoma visų numatytųjų nustatymų ir šios politikos vertės), nes tikimasi, kad politikos pranešimai automatiškai suaktyvins atnaujinimą kaskart, kai politika bus pakeista, todėl nereikės dažniau atnaujinti.</translation>
 <translation id="5530347722229944744">Blokuoti potencialiai pavojingus atsisiuntimus</translation>
 <translation id="5535973522252703021">„Kerberos“ nukreipimo serverio baltasis sąrašas</translation>
+<translation id="554903022911579950">Kerberos</translation>
 <translation id="555077880566103058">Leisti visoms svetainėms automatiškai paleisti papildinį „<ph name="FLASH_PLUGIN_NAME" />“</translation>
 <translation id="5559079916187891399">Ši politika neturi įtakos „Android“ programoms.</translation>
 <translation id="5560039246134246593">Pridėkite variantų pirminės reikšmės pateikimo apribojimą „<ph name="PRODUCT_NAME" />“.
@@ -2554,6 +2587,16 @@
 
       Jei ši politika nustatyta, naudotojas negali jos keisti ar nepaisyti.</translation>
 <translation id="5708969689202733975">Leidžiamų sparčiojo atrakinimo režimų konfigūravimas</translation>
+<translation id="5711016543513883877">
+      Jei politika įgalinta, visi įvardyti šaltiniai
+      iš kableliais atskirtų verčių sąrašo bus paleisti per atskirus procesus. Taip pat bus izoliuoti šaltiniai,
+      įvardyti pagal padomenius. Pvz., nurodžius https://example.com/,
+      https://foo.example.com/ taip pat bus izoliuotas kaip svetainės
+      https://example.com/ dalis.
+      Jei politika nesukonfigūruota ar išjungta, naudotojas galės pakeisti šį nustatymą.
+
+      PASTABA: ši politika netaikoma „Android“. Norėdami įgalinti „IsolateOrigins“ sistemoje „Android“, naudokite politikos nustatymą „IsolateOriginsAndroid“.
+      </translation>
 <translation id="572155275267014074">„Android“ nustatymai</translation>
 <translation id="5722934961007828462">Kai šis nustatymas bus įgalintas, „<ph name="PRODUCT_NAME" />“ visada atliks serverio sertifikatų, kurie galioja ir yra pasirašyti vietoje įdiegtų CA sertifikatų, panaikinimo tikrinimą.
 
@@ -3489,6 +3532,11 @@
 <translation id="7433714841194914373">Įgalinti intuityviąją paiešką</translation>
 <translation id="7434202861148928348">Būtinų nuotolinės prieigos klientų domenų pavadinimų konfigūravimas</translation>
 <translation id="7443616896860707393">Mišrios kilmės HTTP pagrindinio autentifikavimo raginimai</translation>
+<translation id="7454519673779830548">Pridedamos iš anksto užpildytos „Kerberos“ paskyros. Jei „Kerberos“ prisijungimo duomenys sutampa su prisijungimo duomenimis, galima sukonfigūruoti paskyrą, kad joje būtų pakartotinai panaudoti prisijungimo duomenys: reikia nurodyti ${{LOGIN_EMAIL}} ir ${{PASSWORD}} (narį ir slaptažodį), kad būtų galima automatiškai gauti „Kerberos“ bilietą, jei nesukonfigūruotas dviejų veiksnių autentifikavimas. Naudotojai negali keisti paskyrų, pridėtų naudojant šią politiką.
+
+          Jei ši politika įgalinta, jos apibrėžtas paskyrų sąrašas pridedamas prie „Kerberos“ paskyrų nustatymų.
+
+          Jei ši politika išjungta arba nenustatyta, prie „Kerberos“ paskyrų nustatymų nepridedama jokių paskyrų, o anksčiau pagal šią politiką pridėtos paskyros yra pašalinamos. Jei įgalinta politika „Naudotojai gali pridėti „Kerberos“ paskyras“, naudotojai vis tiek galės neautomatiškai pridėti paskyras.</translation>
 <translation id="7458437477941640506">Negrąžinti tikslinės versijos, jei OS versija naujesnė nei tikslinė. Naujiniai taip pat išjungiami.</translation>
 <translation id="7464991223784276288">Ribojami slapukai, kad URL nesutaptų su dabartine sesija</translation>
 <translation id="7469554574977894907">Įgalinti paieškos pasiūlymus</translation>
@@ -3627,6 +3675,11 @@
 <translation id="7687943045976362719">Jei ši politika nustatyta, „<ph name="PRODUCT_FRAME_NAME" />“ apdoroja nurodytų tipų turinį.
 
           Jei ši politika nenustatyta, visose svetainėse naudojamas numatytasis pateikėjas. (Politika „<ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" />“ gali būti naudojama numatytajam pateikėjui konfigūruoti.)</translation>
+<translation id="7694245791806617022">Galima kontroliuoti, ar „Kerberos“ autentifikavimo dialogo lange turi būti įgalinta funkcija „Atsiminti slaptažodį“. Slaptažodžiai saugomi diske užšifruoti ir juos galima pasiekti tik per „Kerberos“ sistemos tarnybą bei naudotojo seansą.
+
+          Jei ši politika įgalinta arba nenustatyta, naudotojai gali nuspręsti, ar „Kerberos“ slaptažodžiai turi būti įsimenami, kad jų nereikėtų pakartotinai įvesti. „Kerberos“ bilietai bus automatiškai gaunami, jei neprireiks papildomai autentifikuoti (dviejų veiksnių autentifikavimo).
+
+          Jei ši politika išjungta, slaptažodžiai niekada neįsimenami ir visi anksčiau išsaugoti slaptažodžiai pašalinami. Naudotojai turės įvesti slaptažodį kiekvieną kartą, kai reikės autentifikuoti per „Kerberos“ sistemą. Atsižvelgiant į serverio nustatymus, to paprastai prireikia reguliariai laikotarpyje nuo 8 valandų iki kelių mėnesių.</translation>
 <translation id="7694807474048279351">Suplanuoti automatinį operacinės sistemos įkėlimą, kai pritaikytas „<ph name="PRODUCT_OS_NAME" />“ naujinys.
 
       Jei ši politika nustatyta, automatinis operacinės sistemos įkėlimas iš naujo suplanuojamas, kai pritaikomas „<ph name="PRODUCT_OS_NAME" />“ naujinys ir būtina įkelti operacinę sistemą iš naujo, kad būtų užbaigtas atnaujinimas. Operacinės sistemos įkėlimas suplanuojamas nedelsiant, bet gali būti atidėtas iki 24 val., jei naudotojas šiuo metu naudoja įrenginį.
@@ -3660,6 +3713,15 @@
       Politikos tikslas – suteikti įmonėms galimybę perkelti esamus serverius, naudojančius HTTP/0.9 protokolą, ir ateityje ji bus pašalintą.
 
       Jei politika nenustatyta, nenumatytuose prievaduose HTTP/0.9 protokolas bus išjungtas.</translation>
+<translation id="7726421241038987229">
+      Šis nustatymas („SitePerProcess“) gali būti naudojamas norint neleisti naudotojams atsisakyti numatytosios elgsenos – izoliuoti visas svetaines. Atminkite, kad politika „IsolateOrigins“ taip pat gali būti naudinga, jei reikia izoliuoti papildomus smulkesnius šaltinius.
+      Jei politika įgalinta, naudotojai negalės atsisakyti numatytosios elgsenos, kai vykdomi atskiri kiekvienos svetainės procesai.
+      Jei politika nesukonfigūruota ar išjungta, naudotojai galės atsisakyti svetainių izoliavimo
+      (pvz., įrašydami „Išjungti svetainių izoliavimą“ adresu chrome://flags).  Nustačius politiką kaip išjungtą ir (arba) jos nesukonfigūravus, svetainių izoliavimas neišjungiamas.
+      Sistemoje „<ph name="PRODUCT_OS_NAME" />“ rekomenduojama taip pat nustatyti tokią pačią „<ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />“ įrenginio politikos vertę. Jei abiejų politikos nuostatų nurodytos vertės nesutampa, pradedant naudotojo seansą galima delsa, kol pritaikoma naudotojo politikos vertė.
+
+      PASTABA: ši politika netaikoma „Android“. Norėdami įgalinti „SitePerProcess“ sistemoje „Android“, naudokite politikos nustatymą „SitePerProcessAndroid“.
+      </translation>
 <translation id="7747447585227954402">Leidimas įrenginiams naudoti „<ph name="PLUGIN_VM_NAME" />“ sistemoje „<ph name="PRODUCT_OS_NAME" />“</translation>
 <translation id="7749402620209366169">Įgalinamas nuotolinės prieigos prieglobų autentifikavimas dviem veiksniais vietoje naudotojo (-os) nurodyto PIN kodo naudojimo.
 
@@ -3725,6 +3787,11 @@
       Nustatomas plėtinio, kuris turėtų būti naudojamas kaip ekrano užsklanda prisijungimo ekrane, ID. Plėtinys turi būti „AppPack“ (programų paketo), kuris sukonfigūruotas šiam domenui taikant politiką „DeviceAppPack“ (įrenginio programų paketas), dalis.</translation>
 <translation id="7882857838942884046">Išjungus „Google“ sinchronizavimą „Android“ atsarginė kopija ir atkūrimas neveiks tinkamai.</translation>
 <translation id="7882890448959833986">Nerodyti nepalaikomos OS įspėjimo</translation>
+<translation id="7889788745439330797">Galima kontroliuoti, ar naudotojams leidžiama pridėti „Kerberos“ paskyras.
+
+          Jei ši politika įgalinta arba nenustatyta, naudotojai gali pridėti „Kerberos“ paskyras „Kerberos“ paskyrų nustatymuose, kuriuos galima rasti Žmonių nustatymų puslapyje. Naudotojai gali visiškai kontroliuoti paskyras, kurias pridėjo, ir jas keisti arba pašalinti.
+
+          Jei ši politika išjungta, naudotojams neleidžiama pridėti „Kerberos“ paskyrų. Paskyras galima pridėti tik naudojant politiką „Konfigūruoti „Kerberos“ paskyras“. Tai efektyvus būdas užrakinti paskyras.</translation>
 <translation id="7895553628261067384">Nuotolinė prieiga</translation>
 <translation id="7902255855035461275">Šiame sąraše pateikti šablonai bus palyginti su užklausą pateikusio
       URL saugos šaltiniu. Jei bus rasta atitiktis, galimybė pasiekti vaizdo įrašą

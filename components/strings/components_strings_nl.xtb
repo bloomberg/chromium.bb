@@ -218,6 +218,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">Pas</translation>
 <translation id="2114841414352855701">Genegeerd omdat het werd overschreven door <ph name="POLICY_NAME" />.</translation>
+<translation id="2129079103035905234">Bewegingssensoren</translation>
 <translation id="213826338245044447">Mobiele bladwijzers</translation>
 <translation id="214556005048008348">Betaling annuleren</translation>
 <translation id="2147827593068025794">Synchronisatie op de achtergrond</translation>
@@ -351,7 +352,7 @@
 <translation id="2878424575911748999">A1</translation>
 <translation id="2881276955470682203">Pas opslaan?</translation>
 <translation id="2903493209154104877">Adressen</translation>
-<translation id="290376772003165898">Pagina is niet in het <ph name="LANGUAGE" />?</translation>
+<translation id="290376772003165898">Is deze pagina niet in het <ph name="LANGUAGE" />?</translation>
 <translation id="2909946352844186028">Er is een netwerkwijziging gedetecteerd.</translation>
 <translation id="2910133103376701357">Je apparaat en account worden beheerd door <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="2916038427272391327">Andere programma's sluiten</translation>

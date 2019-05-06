@@ -360,6 +360,11 @@
       Apabila dasar ini ditetapkan kepada Palsu, data sambungan dan pemalam tidak akan dikumpulkan.
 
       Dasar ini hanya dikuatkuasakan apabila <ph name="CHROME_REPORTING_EXTENSION_NAME" /> didayakan dan peranti didaftarkan dengan <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="1560205870554624777">Mengawal sama ada fungsi Kerberos didayakan. Kerberos merupakan protokol pengesahan yang boleh digunakan untuk mengesahkan ke apl web dan perkongsian fail.
+
+          Jika dasar ini didayakan, fungsi Kerberos didayakan. Akaun Kerberos boleh ditambahkan sama ada melalui dasar 'Konfigurasikan akaun Kerberos' atau melalui tetapan Akaun Kerberos dalam halaman tetapan Orang.
+
+          Jika dasar ini dilumpuhkan atau tidak ditetapkan, tetapan Akaun Kerberos akan dilumpuhkan. Tiada akaun Kerberos boleh ditambahkan dan pengesahan Kerberos tidak boleh digunakan. Semua akaun Kerberos yang sedia ada akan dipadamkan dan semua kata laluan yang disimpan akan dipadamkan.</translation>
 <translation id="1561424797596341174">Pembatalan dasar untuk binaan Nyahpepijat bagi hos akses jauh</translation>
 <translation id="1561967320164410511">Sambungan U2F tambah untuk pembuktian individu</translation>
 <translation id="1574554504290354326">Tetapan ini sudah ditamatkan, gunakan SafeBrowsingExtendedReportingEnabled sebagai ganti. Tindakan mendayakan atau melumpuhkan SafeBrowsingExtendedReportingEnabled adalah sama seperti menetapkan SafeBrowsingExtendedReportingOptInAllowed kepada Palsu.
@@ -446,6 +451,12 @@
 
       Dasar ini harus ditetapkan kepada URL yang <ph name="PRODUCT_OS_NAME" /> boleh gunakan untuk memuat turun Syarat Perkhidmatan. Syarat Perkhidmatan mestilah dalam teks biasa, bertindak sebagai teks jenis MIME/biasa. Penanda tidak dibenarkan.</translation>
 <translation id="1750315445671978749">Sekat semua muat turun</translation>
+<translation id="1762072363876276024">
+      Dasar ini terpakai kepada skrin log masuk. Sila lihat juga dasar <ph name="SITE_PER_PROCESS_POLICY_NAME" /> yang terpakai kepada sesi pengguna. Anda disyorkan agar menetapkan kedua-dua dasar kepada nilai yang sama. Jika nilai tidak sepadan, kelewatan mungkin berlaku apabila memasuki sesi pengguna semasa nilai yang ditentukan oleh dasar pengguna sedang digunakan.
+      Tetapan ini, DeviceLoginScreenSitePerProcess, boleh digunakan untuk menghalang pengguna menarik diri daripada gelagat lalai yang mengasingkan semua tapak. Sila ambil perhatian bahawa dasar DeviceLoginScreenIsolateOrigins mungkin turut berguna untuk mengasingkan asalan tambahan yang lebih terperinci.
+      Jika dasar ini didayakan, pengguna tidak akan dapat menarik diri daripada gelagat lalai, iaitu setiap tapak berjalan dalam prosesnya sendiri.
+      Jika dasar ini tidak dikonfigurasikan atau dilumpuhkan, pengguna akan dapat menukar tetapan ini (mis. menggunakan masukan "Lumpuhkan pengasingan tapak" dalam chrome://flags).
+      </translation>
 <translation id="1781356041596378058">Dasar ini turut mengawal akses ke Pilihan Pembangun Android. Jika anda menetapkan dasar ini kepada benar, pengguna tidak dapat mengakses Pilihan Pembangun. Jika anda menetapkan dasar ini kepada palsu atau membiarkannya tidak ditetapkan, pengguna dapat mengakses Pilihan Pembangun dengan mengetik nombor binaan sebanyak tujuh kali dalam apl tetapan Android.</translation>
 <translation id="1793346220873697538">Lumpuhkan pencetakan PIN secara lalai</translation>
 <translation id="1797233582739332495">Tunjukkan gesaan berulang kepada pengguna yang menunjukkan pelancaran semula diperlukan</translation>
@@ -880,6 +891,11 @@
 
       Jika dasar ini dibiarkan tanpa ditetapkan, ciri proksi pemampatan data akan disediakan supaya pengguna boleh memilih sama ada untuk menggunakannya atau tidak.</translation>
 <translation id="257788512393330403">Masukan kata laluan diperlukan setiap enam jam</translation>
+<translation id="2586162458524426376">
+      Dasar ini terpakai kepada skrin log masuk. Sila lihat juga dasar <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> yang terpakai kepada sesi pengguna.
+      Jika dasar ini didayakan, setiap asalan yang dinamakan dalam senarai yang dipisahkan koma akan berjalan dalam prosesnya sendiri. Proses ini turut akan mengasingkan asalan yang dinamakan mengikut subdomain; mis., menyatakan https://example.com/ akan turut menyebabkan https://foo.example.com/ diasingkan sebagai sebahagian daripada tapak https://example.com/.
+      Jika dasar itu tidak dikonfigurasikan atau dilumpuhkan, tetapan pengasingan tapak lalai platform akan digunakan untuk skrin log masuk.
+      </translation>
 <translation id="2587719089023392205">Tetapkan <ph name="PRODUCT_NAME" /> sebagai Penyemak Imbas Lalai</translation>
 <translation id="2592091433672667839">Tempoh tidak aktif sebelum penyelamat skrin dipaparkan pada skrin log masuk dalam mod runcit</translation>
 <translation id="2592162121850992309">Jika dasar ini ditetapkan kepada benar atau dibiarkan tanpa ditetapkan, pecutan perkakasan akan didayakan melainkan ciri GPU tertentu disenaraihitamkan.
@@ -890,6 +906,7 @@
           Semua versi terbaru pelayan Samba dan Windows menyokong NTLMv2. Ciri ini harus dilumpuhkan untuk keserasian mundur sahaja dan mengurangkan keselamatan pengesahan.
 
           Jika dasar ini tidak ditetapkan, nilai lalainya ialah benar dan NTLMv2 didayakan.</translation>
+<translation id="26023406105317310">Konfigurasikan akaun Kerberos</translation>
 <translation id="2604182581880595781">Konfigurasikan dasar yang berkaitan dengan Perkongsian Fail Rangkaian.</translation>
 <translation id="2623014935069176671">Tunggu aktiviti pengguna awal</translation>
 <translation id="262740370354162807">Dayakan penyerahan dokumen pada <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1222,6 +1239,7 @@
 <translation id="3159375329008977062">Pengguna dibolehkan untuk mengeksport/mengimport bekas Crostini melalui UI</translation>
 <translation id="3165808775394012744">Dasar ini disertakan di sini supaya mudah untuk dialih keluar.</translation>
 <translation id="316778957754360075">Penetapan ini telah dihentikan bermula pada <ph name="PRODUCT_NAME" /> versi 29. Cara yang disyorkan untuk menyediakan koleksi sambungan/apl yang dihoskan organisasi ialah dengan memasukkan tapak yang mengehoskan pakej CRX dalam ExtensionInstallSources dan meletakkan pautan muat turun terus kepada pakej tersebut di halaman web. Pelancar untuk halaman web tersebut boleh dihasilkan menggunakan dasar ExtensionInstallForcelist.</translation>
+<translation id="3168968618972302728">Dasar berkaitan pengesahan Kerberos.</translation>
 <translation id="3171369832001535378">Templat nama hos rangkaian peranti</translation>
 <translation id="3172512016079904926">Mendayakan pemasangan hos Pemesejan Asli tahap pengguna.
 
@@ -1402,7 +1420,7 @@
       Jika dasar ini ditetapkan kepada 'DeveloperToolsAllowed' (nilai 1), Alat Pembangun dan konsol JavaScript boleh diakses dan digunakan dalam semua konteks, termasuk konteks sambungan yang dipasang oleh dasar perusahaan.
       Jika dasar ini ditetapkan kepada 'DeveloperToolsDisallowed' (nilai 2), Alat Pembangun tidak boleh diakses dan unsur tapak web tidak boleh disemak lagi. Sebarang pintasan papan kekunci dan mana-mana menu atau masukan menu konteks untuk membuka Alat Pembangun atau Konsol JavaScript akan dilumpuhkan.</translation>
 <translation id="3547954654003013442">Tetapan proksi</translation>
-<translation id="3550875587920006460">Membolehkan penetapan jadual tersuai untuk menyemak kemas kini. Dasar ini digunakan pada semua pengguna dan semua antara muka pada peranti. Setelah ditetapkan, peranti akan menyemak kemas kini mengikut jadual tersebut. Dasar ini mesti dialih keluar untuk membatalkan sebarang semakan kemas kini berjadual lagi.</translation>
+<translation id="3550875587920006460">Membolehkan penetapan jadual tersuai untuk menyemak kemas kini. Dasar ini digunakan pada semua pengguna dan semua antara muka pada peranti. Apabila ditetapkan, peranti akan menyemak kemas kini mengikut jadual tersebut. Dasar ini mesti dialih keluar untuk membatalkan sebarang semakan kemas kini berjadual lagi.</translation>
 <translation id="355118380775352753">Tapak web untuk dibuka dalam penyemak imbas alternatif</translation>
 <translation id="3554984410014457319">Benarkan Google Assistant mendengar ungkapan pengaktifan suara</translation>
 <translation id="356579196325389849">Pengguna boleh mengkonfigurasi saluran keluaran OS Chrome</translation>
@@ -1419,6 +1437,7 @@
 <translation id="3631099945620529777">Jika ditetapkan kepada palsu, butang 'Tamatkan proses' dilumpuhkan dalam Pengurus Tugas.
 
       Jika ditetapkan kepada benar atau tidak dikonfigurasikan, pengguna boleh menamatkan proses dalam Pengurus Tugas.</translation>
+<translation id="3643284063603988867">Dayakan ciri 'Ingat kata laluan'</translation>
 <translation id="3646859102161347133">Tetapkan jenis penggadang skrin</translation>
 <translation id="3653237928288822292">Ikon pembekal carian lalai</translation>
 <translation id="3660510274595679517">
@@ -1652,9 +1671,9 @@
 
           Untuk tika Windows yang tidak dihubungkan ke domain <ph name="MS_AD_NAME" />, pemasangan paksa adalah terhad kepada apl dan sambungan yang disenaraikan di Gedung Web Chrome.
 
-          Sila ambil perhatian bahawa kod sumber mana-mana sambungan mungkin diubah oleh pengguna melalui Alatan Pembangun (berkemungkinan menyebabkan disfungsi pada sambungan). Jika perkara ini menimbulkan kebimbangan, maka dasar <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> harus ditetapkan.
+          Sila ambil perhatian bahawa kod sumber mana-mana sambungan mungkin diubah oleh pengguna melalui Alatan Pembangun (berkemungkinan menyebabkan disfungsi pada sambungan). Jika perkara ini menimbulkan kebimbangan, maka dasar  <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> harus ditetapkan.
 
-          Setiap item senarai dasar ini ialah rentetan yang mengandungi ID sambungan dan, sebagai pilihan, URL "kemas kini" yang dipisahkan oleh koma bertitik (<ph name="SEMICOLON" />). ID sambungan ialah rentetan 32 huruf yang didapati, contohnya, pada <ph name="CHROME_EXTENSIONS_LINK" /> apabila dalam mod pembangun. URL "kemas kini", jika dinyatakan, harus menunjuk kepada dokumen XML Manifes Kemas Kini seperti yang dihuraikan di <ph name="LINK_TO_EXTENSION_DOC1" />. Secara lalai, URL kemas kini Gedung Web Chrome digunakan (pada masa ini ialah "https://clients2.google.com/service/update2/crx"). Sila ambil perhatian bahawa URL "kemas kini" yang ditetapkan dalam dasar ini hanya digunakan untuk pemasangan awal; kemas kini sambungan yang berikutnya menggunakan URL kemas kini yang ditunjukkan dalam manifes sambungan tersebut. Sila ambil perhatian juga bahawa menyatakan URL "kemas kini" secara jelas adalah mandatori dalam <ph name="PRODUCT_NAME" /> sehingga dan merangkumi versi 67.
+          Setiap item senarai dasar ini ialah rentetan yang mengandungi ID sambungan dan, sebagai pilihan, URL "kemas kini" yang dipisahkan oleh koma bertitik (<ph name="SEMICOLON" />). ID sambungan ialah rentetan 32 huruf yang didapati, contohnya, pada <ph name="CHROME_EXTENSIONS_LINK" /> apabila dalam mod pembangun. URL "kemas kini", jika dinyatakan, harus menunjuk kepada dokumen XML Manifes Kemas Kini seperti yang dihuraikan di  <ph name="LINK_TO_EXTENSION_DOC1" />. Secara lalai, URL kemas kini Gedung Web Chrome digunakan (pada masa ini ialah "https://clients2.google.com/service/update2/crx"). Sila ambil perhatian bahawa URL "kemas kini" yang ditetapkan dalam dasar ini hanya digunakan untuk pemasangan awal; kemas kini sambungan yang berikutnya menggunakan URL kemas kini yang ditunjukkan dalam manifes sambungan tersebut. Sila ambil perhatian juga bahawa menyatakan URL "kemas kini" secara jelas adalah mandatori dalam <ph name="PRODUCT_NAME" /> sehingga dan merangkumi versi 67.
 
           Contohnya, <ph name="EXTENSION_POLICY_EXAMPLE" /> memasang sambungan dengan id <ph name="EXTENSION_ID_SAMPLE" /> daripada URL "kemas kini" standard Gedung Web Chrome. Untuk mendapatkan maklumat lanjut tentang mengehoskan sambungan, lihat: <ph name="LINK_TO_EXTENSION_DOC2" />.
 
@@ -1773,6 +1792,15 @@ Apabila |IdleAction| tidak ditetapkan, tindakan lalai akan diambil, iaitu gantun
           Tetapan ini akan membatalkan RemoteAccessHostClientDomain, jika ada.
 
           Lihat juga RemoteAccessHostDomainList.</translation>
+<translation id="4164601239783385546">Dayakan ciri kebolehaksesan kekunci lekit.
+
+          Jika dasar ini ditetapkan kepada benar, kekunci lekit akan sentiasa didayakan.
+
+          Jika dasar ini ditetapkan kepada palsu, kekunci lekit akan sentiasa dilumpuhkan.
+
+          Jika anda menetapkan dasar ini, pengguna tidak boleh menukar atau membatalkannya.
+
+          Jika dasar ini dibiarkan tanpa ditetapkan, kekunci lekit dilumpuhkan pada mulanya tetapi boleh didayakan oleh pengguna pada bila-bila masa.</translation>
 <translation id="4183229833636799228">Tetapan <ph name="FLASH_PLUGIN_NAME" /> lalai</translation>
 <translation id="4192388905594723944">URL untuk mengesahkan token pengesahan pelanggan akses jauh</translation>
 <translation id="4197038214024763371">Jika dasar ini tidak ditetapkan atau didayakan, pengguna dibenarkan untuk menggunakan semakan ejaan.
@@ -1967,6 +1995,7 @@ Apabila |IdleAction| tidak ditetapkan, tindakan lalai akan diambil, iaitu gantun
 <translation id="4578912515887794133">Jika tetapan ini didayakan, maka hos akses jauh membandingkan nama pengguna setempat (yang berkaitan dengan hos) dan nama akaun Google yang didaftarkan sebagai pemilik hos (iaitu "johandolah" jika hos dimiliki oleh akaun Google "johandolah@contoh.com").  Hos akses jauh tidak akan bermula jika nama pemilik hos berbeza daripada nama pengguna setempat yang dikaitkan dengan hos tersebut.  Dasar RemoteAccessHostMatchUsername harus digunakan bersama-sama dengan RemoteAccessHostDomain untuk turut menguatkuasakan bahawa akaun Google pemilik hos dikaitkan dengan domain tertentu (iaitu "contoh.com").
 
           Jika tetapan ini dillumpuhkan atau tidak ditetapkan, maka hos akses jauh boleh dikaitkan dengan mana-mana pengguna setempat.</translation>
+<translation id="4591366717022345234">Memberi pengguna Quick Fix Build</translation>
 <translation id="4600786265870346112">Dayakan kursor besar</translation>
 <translation id="4604931264910482931">Konfigurasi senarai hitam pemesejan natif</translation>
 <translation id="4613508646038788144">Jika dasar ditetapkan kepada palsu, maka perisian pihak ketiga akan dibenarkan untuk menyuntik kod boleh laku ke dalam proses Chrome. Jika dasar tidak ditetapkan atau ditetapkan kepada benar, maka perisian pihak ketiga akan dihalang daripada menyuntik kod boleh laku ke dalam proses Chrome.</translation>
@@ -2053,6 +2082,7 @@ Apabila |IdleAction| tidak ditetapkan, tindakan lalai akan diambil, iaitu gantun
 <translation id="487460824085252184">Pindahkan secara automatik, jangan minta persetujuan pengguna.</translation>
 <translation id="4874982543810021567">Sekat WebUSB di tapak ini</translation>
 <translation id="4876805738539874299">Versi SSL maksimum didayakan</translation>
+<translation id="4887274746092315609">Mendayakan halaman untuk penukaran kata laluan dalam sesi bagi pengguna SAML</translation>
 <translation id="4897928009230106190">Menentukan parameter yang digunakan apabila melakukan carian cadangan dengan POST. Parameter ini mengandungi pasangan nama/nilai yang dipisahkan koma. Jika nilai merupakan parameter templat, seperti {searchTerms} dalam contoh di atas, nilai ini akan digantikan dengan data istilah carian sebenar.
 
           Dasar ini tidak wajib. Jika tidak ditetapkan, cadangan permintaan carian akan dihantar menggunakan kaedah GET.
@@ -2273,6 +2303,7 @@ Tidak seperti <ph name="URL_LIST_POLICY_NAME" />, peraturan dikenakan pada kedua
       Jika dasar ini ditetapkan kepada 'Legasi', hanya jenis penyulitan RC4 dibenarkan. Pilihan ini tidak selamat dan sepatutnya hanya diperlukan dalam keadaan yang sangat tertentu.
 
       Lihat juga https://wiki.samba.org/index.php/Samba_4.6_Features_added/changed#Kerberos_client_encryption_types.</translation>
+<translation id="5249453807420671499">Pengguna boleh menambahkan akaun Kerberos</translation>
 <translation id="5255162913209987122">Boleh Disyorkan</translation>
 <translation id="527237119693897329">Membolehkan anda menentukan hos pemesejan natif yang tidak seharusnya disekat.
 
@@ -2415,6 +2446,7 @@ Tidak seperti <ph name="URL_LIST_POLICY_NAME" />, peraturan dikenakan pada kedua
       Apabila nilai dasar ini ditetapkan dan bukan 0, maka pengguna tunjuk cara yang log masuk pada masa ini akan dilog keluar secara automatik selepas berlalunya tempoh tidak aktif yang ditentukan.
 
       Nilai dasar ini harus ditetapkan dalam milisaat.</translation>
+<translation id="5508307164752647432">Dayakan fungsi Kerberos</translation>
 <translation id="5511702823008968136">Dayakan Bar Penanda Halaman</translation>
 <translation id="5512418063782665071">URL halaman utama</translation>
 <translation id="551639594034811656">Dasar ini mentakrifkan senarai peratusan yang akan menentukan pecahan peranti <ph name="PRODUCT_OS_NAME" /> dalam OU yang akan dikemas kini setiap hari bermula dari hari kemas kini itu mula-mula ditemui. Masa penemuan adalah lebih kemudian daripada masa kemas kini diterbitkan memandangkan peranti menyemak kemas kini beberapa ketika selepas kemas kini itu diterbitkan.
@@ -2436,6 +2468,7 @@ Tidak seperti <ph name="URL_LIST_POLICY_NAME" />, peraturan dikenakan pada kedua
       Ambil perhatian bahawa jika platform menyokong pemberitahuan dasar, lengahan muat semula akan ditetapkan kepada 24 jam (mengabaikan semua nilai lalai dan nilai dasar ini) kerana pemberitahuan dasar dijangka akan memaksa muat semula secara automatik apabila dasar berubah, melakukan muat semula yang tidak diperlukan dengan lebih kerap.</translation>
 <translation id="5530347722229944744">Sekat muat turun yang mungkin berbahaya</translation>
 <translation id="5535973522252703021">Senarai putih pelayan penugasan Kerberos</translation>
+<translation id="554903022911579950">Kerberos</translation>
 <translation id="555077880566103058">Benarkan semua tapak menjalankan pemalam <ph name="FLASH_PLUGIN_NAME" /> secara automatik</translation>
 <translation id="5559079916187891399">Dasar ini tidak berkesan terhadap apl Android.</translation>
 <translation id="5560039246134246593">Tambahkan parameter kepada pengambilan benih Variasi dalam <ph name="PRODUCT_NAME" />.
@@ -2548,6 +2581,16 @@ Tidak seperti <ph name="URL_LIST_POLICY_NAME" />, peraturan dikenakan pada kedua
 
       Jika dasar ini ditetapkan, pengguna tidak dapat mengubah atau mengatasinya.</translation>
 <translation id="5708969689202733975">Konfigurasikan mod buka kunci pantas yang dibenarkan</translation>
+<translation id="5711016543513883877">
+      Jika dasar ini didayakan, setiap tempat asal yang dinamakan dalam
+      senarai yang dipisahkan koma akan berjalan dalam prosesnya sendiri. Tindakan ini turut mengasingkan
+      asalan yang dinamakan mengikut subdomain; mis. menyatakan https://example.com/ akan
+      turut menyebabkan https://foo.example.com/ diasingkan sebagai sebahagian daripada tapak
+      https://example.com/.
+      Jika dasar ini tidak dikonfigurasikan atau dilumpuhkan, pengguna akan dapat menukar tetapan ini.
+
+      NOTA: Dasar ini tidak terpakai kepada Android. Untuk mendayakan IsolateOrigins pada Android, gunakan tetapan dasar IsolateOriginsAndroid.
+      </translation>
 <translation id="572155275267014074">Tetapan Android</translation>
 <translation id="5722934961007828462">Apabila tetapan ini didayakan, <ph name="PRODUCT_NAME" /> akan sentiasa melaksanakan semakan pembatalan sijil pelayan yang berjaya disahkan dan ditandatangani oleh sijil CA yang dipasang setempat.
 
@@ -2734,7 +2777,7 @@ Tidak seperti <ph name="URL_LIST_POLICY_NAME" />, peraturan dikenakan pada kedua
 <translation id="6034341625190551415">Mengawal jenis akaun sesi awam dan kios.</translation>
 <translation id="6034603289689965535">Membenarkan halaman memaparkan tetingkap timbul semasa penyahmuatannya</translation>
 <translation id="6036523166753287175">Dayakan penyusuran tembok api daripada hos akses jauh</translation>
-<translation id="605475635122964053">Sekat mod pencetakan PIN. Dasar yang tidak ditetapkan akan dianggap sebagai tiada sekatan. Jika mod tidak tersedia, dasar ini akan diabaikan. Sila ambil perhatian bahawa ciri pencetakan PIN didayakan hanya untuk pencetak yang menggunakan salah satu protokol IPPS, USB atau IPP melalui USB </translation>
+<translation id="605475635122964053">Mengehadkan mod pencetakan PIN. Dasar yang tidak ditetapkan akan dianggap sebagai tiada sekatan. Jika mod tidak tersedia, dasar ini akan diabaikan. Sila ambil perhatian bahawa ciri pencetakan PIN didayakan hanya untuk pencetak yang menggunakan salah satu protokol IPPS, USB atau IPP melalui USB </translation>
 <translation id="6070667616071269965">Reka letak papan kekunci skrin log masuk peranti</translation>
 <translation id="6074963268421707432">Jangan benarkan mana-mana tapak untuk memaparkan pemberitahuan desktop</translation>
 <translation id="6074964551275531965">Tetapkan tempoh waktu untuk pemberitahuan kemas kini</translation>
@@ -3485,6 +3528,11 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="7433714841194914373">Dayakan Semerta</translation>
 <translation id="7434202861148928348">Konfigurasikan nama domain yang diperlukan untuk pelanggan akses jauh</translation>
 <translation id="7443616896860707393">Gesaan Pengesahan Asas HTTP Asas Silang</translation>
+<translation id="7454519673779830548">Menambahkan akaun Kerberos yang dipraisi. Jika bukti kelayakan Kerberos sepadan dengan bukti kelayakan log masuk, akaun boleh dikonfigurasikan untuk menggunakan semula bukti kelayakan log masuk dengan menyatakan '${{LOGIN_EMAIL}}' dan '${{PASSWORD}}' untuk prinsipal dan kata laluan, masing-masing, supaya tiket Kerberos dapat diambil semula secara automatik melainkan pengesahan dua faktor dikonfigurasikan. Pengguna tidak boleh mengubah suai akaun yang ditambahkan melalui dasar ini.
+
+          Jika dasar ini didayakan, senarai akaun yang ditakrifkan oleh dasar akan ditambahkan pada tetapan Akaun Kerberos.
+
+          Jika dasar ini dilumpuhkan atau tidak ditetapkan, tiada akaun akan ditambahkan pada tetapan Akaun Kerberos dan semua akaun yang ditambahkan dengan dasar ini sebelum ini akan dialih keluar. Pengguna masih boleh menambahkan akaun secara manual jika dasar 'Pengguna boleh menambahkan akaun Kerberos' didayakan.</translation>
 <translation id="7458437477941640506">Jangan undur kepada versi sasaran jika versi OS lebih baharu daripada sasaran. Kemas kini juga dilumpuhkan.</translation>
 <translation id="7464991223784276288">Hadkan kuki daripada URL yang sepadan pada sesi semasa</translation>
 <translation id="7469554574977894907">Dayakan cadangan carian</translation>
@@ -3623,6 +3671,11 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="7687943045976362719">Jika dasar ini ditetapkan, jenis kandungan yang dinyatakan akan dikendalikan oleh <ph name="PRODUCT_FRAME_NAME" />.
 
           Jika dasar ini tidak ditetapkan, pemapar lalai akan digunakan untuk semua tapak. (Dasar <ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" /> mungkin digunakan untuk mengkonfigurasi pemapar lalai.)</translation>
+<translation id="7694245791806617022">Mengawal sama ada ciri 'Ingat kata laluan' didayakan dalam dialog pengesahan Kerberos. Kata laluan disulitkan dan disimpan pada cakera dan hanya boleh diakses oleh daemon sistem Kerberos dan semasa sesi pengguna.
+
+          Jika dasar ini didayakan atau tidak ditetapkan, pengguna boleh menentukan sama ada kata laluan Kerberos diingati, supaya tidak perlu dimasukkan lagi. Tiket Kerberos diambil secara automatik melainkan pengesahan tambahan diperlukan (pengesahan dua faktor).
+
+          Sekiranya dasar ini dilumpuhkan, kata laluan tidak akan diingati dan semua kata laluan yang disimpan sebelum ini akan dipadamkan. Pengguna perlu memasukkan kata laluan setiap kali mereka perlu melakukan pengesahan dengan sistem Kerberos. Bergantung pada tetapan pelayan, hal ini biasanya berlaku antara setiap 8 jam hingga beberapa bulan.</translation>
 <translation id="7694807474048279351">Jadualkan but semula automatik selepas kemas kini <ph name="PRODUCT_OS_NAME" /> telah dilaksanakan.
 
       Apabila dasar ini ditetapkan kepada benar, but semula automatik dijadualkan apabila kemas kini <ph name="PRODUCT_OS_NAME" /> telah dilaksanakan dan but semula diperlukan untuk menyelesaikan proses kemas kini. But semula ini dijadualkan serta-merta tetapi boleh ditangguhkan pada peranti sehingga 24 jam jika pengguna sedang menggunakan peranti.
@@ -3656,6 +3709,15 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Dasar ini bertujuan untuk memberikan pihak syarikat peluang memindahkan pelayan sedia ada yang menggunakan HTTP/0.9 dan akan dialih keluar pada masa hadapan.
 
       Jika dasar ini tidak ditetapkan, HTTP/0.9 akan dilumpuhkan pada port bukan lalai.</translation>
+<translation id="7726421241038987229">
+      Tetapan ini, SitePerProcess, boleh digunakan untuk melarang pengguna menarik diri daripada gelagat lalai yang mengasingkan semua tapak Sila ambil perhatian bahawa dasar IsolateOrigins juga mungkin berguna untuk mengasingkan asalan tambahan yang lebih terperinci.
+      Jika dasar ini didayakan, pengguna tidak akan dapat menarik diri daripada gelagat lalai, iaitu setiap tapak berjalan dalam prosesnya sendiri.
+      Jika dasar ini tidak dikonfigurasikan atau dilumpuhkan, pengguna akan dapat menarik diri daripada pengasingan tapak
+      (mis. menggunakan masukan "Lumpuhkan pengasingan tapak" dalam chrome://flags).  Tindakan menetapkan dasar ini kepada dilumpuhkan dan/atau tidak mengkonfigurasikan dasar ini tidak akan mematikan Pengasingan Tapak.
+      Pada <ph name="PRODUCT_OS_NAME" />, anda juga disyorkan agar menetapkan dasar peranti <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> kepada nilai yang sama. Jika nilai yang ditetapkan oleh dua dasar tersebut tidak sepadan, kelewatan mungkin berlaku apabila memasuki sesi pengguna semasa nilai yang ditentukan oleh dasar pengguna sedang digunakan.
+
+      NOTA: Dasar ini tidak terpakai kepada Android. Untuk mendayakan SitePerProcess pada Android, gunakan tetapan dasar SitePerProcessAndroid.
+      </translation>
 <translation id="7747447585227954402">Benarkan peranti menggunakan <ph name="PLUGIN_VM_NAME" /> pada <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="7749402620209366169">Mendayakan pengesahan dua faktor untuk hos akses jauh dan bukan PIN yang ditentukan pengguna.
 
@@ -3721,6 +3783,11 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Menentukan id sambungan untuk digunakan sebagai penyelamat skrin pada skrin log masuk. Sambungan mestilah sebahagian daripada AppPack yang dikonfigurasikan untuk domain ini melalui dasar DeviceAppPack.</translation>
 <translation id="7882857838942884046">Melumpuhkan Google Sync akan menyebabkan ciri Sandaran dan Pemulihan Android tidak berfungsi dengan betul.</translation>
 <translation id="7882890448959833986">Sekat amaran OS yang tidak disokong</translation>
+<translation id="7889788745439330797">Mengawal sama ada pengguna boleh menambahkan akaun Kerberos.
+
+          Jika dasar ini didayakan atau tidak ditetapkan, pengguna boleh menambahkan akaun Kerberos melalui tetapan Akaun Kerberos dalam halaman tetapan Orang. Pengguna mempunyai kawalan penuh terhadap akaun yang mereka tambahkan dan boleh mengubah suai atau mengalihnya keluar.
+
+          Jika dasar ini dilumpuhkan, pengguna tidak boleh menambahkan akaun Kerberos. Akaun hanya boleh ditambahkan melalui dasar 'Konfigurasikan akaun Kerberos'. Ini merupakan cara yang berkesan untuk mengunci akaun.</translation>
 <translation id="7895553628261067384">Akses jauh</translation>
 <translation id="7902255855035461275">Pola dalam senarai ini akan dipadankan dengan keselamatan
       asal URL yang meminta.  Jika padanan ditemui, akses kepada peranti

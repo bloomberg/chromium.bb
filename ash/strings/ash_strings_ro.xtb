@@ -199,7 +199,7 @@
 <translation id="394485226368336402">Setări audio</translation>
 <translation id="3962859241508114581">Melodia anterioară</translation>
 <translation id="397105322502079400">Se calculează...</translation>
-<translation id="3977512764614765090">Nivelul bateriei este de <ph name="PERCENTAGE" />% și se încarcă.</translation>
+<translation id="3977512764614765090">Nivelul bateriei este <ph name="PERCENTAGE" /> % și se încarcă.</translation>
 <translation id="3995138139523574647">Dispozitiv USB-C (portul din dreapta spate)</translation>
 <translation id="4017989525502048489">Indicator laser</translation>
 <translation id="4042660782729322247">Permiți accesul la ecran</translation>
@@ -502,7 +502,7 @@
 <translation id="8877788021141246043">Setează un memento</translation>
 <translation id="8878886163241303700">Ecran extins</translation>
 <translation id="890616557918890486">Schimbă sursa</translation>
-<translation id="8909138438987180327">Nivelul bateriei este de <ph name="PERCENTAGE" />%.</translation>
+<translation id="8909138438987180327">Nivelul bateriei este <ph name="PERCENTAGE" /> %.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Asistentul Google nu vorbește în această limbă.</translation>
 <translation id="8938800817013097409">Dispozitiv USB-C (portul din dreapta în spate)</translation>

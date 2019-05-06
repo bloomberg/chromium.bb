@@ -128,6 +128,7 @@
 <translation id="2800683595868705743">탭 전환 종료</translation>
 <translation id="2830972654601096923">주소 관리...</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
+<translation id="2840687315230832938">초기 동기화 설정이 완료되지 않음</translation>
 <translation id="2843803966603263712">번역 설정 재설정</translation>
 <translation id="2858204748079866344">Chrome에서는 개인정보 보호를 위해 이 입력란의 비밀번호를 자동 완성하지 않습니다.</translation>
 <translation id="285960592395650245">다운로드 다시 시도</translation>
@@ -411,6 +412,7 @@
 <translation id="7280856130494094142">암호를 입력하여 동기화 시작</translation>
 <translation id="7285236536143823449">예</translation>
 <translation id="7291368939935408496">비밀번호 준비 중...</translation>
+<translation id="7293171162284876153">동기화를 시작하려면 'Chrome 데이터 동기화'를 사용 설정하세요.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" />% 다운로드됨</translation>
 <translation id="7346909386216857016">확인</translation>
 <translation id="7348502496356775519">북마크</translation>
