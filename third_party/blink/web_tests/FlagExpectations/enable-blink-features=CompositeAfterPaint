@@ -16,8 +16,6 @@ Bug(none) virtual/exotic-color-space/images/ [ Skip ]
 Bug(none) virtual/gpu-rasterization/images/ [ Skip ]
 Bug(none) virtual/mouseevent_fractional/fast/events/touch/ [ Skip ]
 Bug(none) virtual/scroll_customization/fast/events/touch/ [ Skip ]
-Bug(none) virtual/user-activation-v2/fast/events/touch/ [ Skip ]
-Bug(none) virtual/user-activation-v2/fullscreen/ [ Skip ]
 Bug(none) virtual/threaded/printing/ [ Skip ]
 Bug(none) virtual/threaded/http/tests/devtools/tracing/ [ Skip ]
 

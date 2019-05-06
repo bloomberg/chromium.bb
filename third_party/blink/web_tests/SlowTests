@@ -805,14 +805,6 @@ crbug.com/874695 virtual/threaded/printing/webgl-oversized-printing.html [ Slow 
 crbug.com/874695 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchpad-zoom-in-slow.html [ Slow ]
 crbug.com/874695 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-in-slow-desktop.html [ Slow ]
 crbug.com/874695 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-in-slow.html [ Slow ]
-crbug.com/874695 virtual/user-activation-v2/fast/events/drag-svg-image-crash.html [ Slow ]
-crbug.com/874695 virtual/user-activation-v2/fast/events/middleClickAutoscroll-drag.html [ Slow ]
-crbug.com/874695 virtual/user-activation-v2/fast/events/middleClickAutoscroll-event-fired.html [ Slow ]
-crbug.com/874695 virtual/user-activation-v2/fast/events/popup-blocking-timers6.html [ Slow ]
-crbug.com/874695 virtual/user-activation-v2/fast/events/touch/touch-slider-no-js-touch-listener.html [ Slow ]
-crbug.com/874695 virtual/user-activation-v2/fullscreen/full-screen-restrictions.html [ Slow ]
-crbug.com/874695 virtual/user-activation-v2/fullscreen/model/fully-exit-fullscreen-nested-iframe.html [ Slow ]
-crbug.com/874695 virtual/user-activation-v2/fullscreen/rendering/overflow.html [ Slow ]
 
 crbug.com/868956 virtual/gpu/fast/canvas/canvas-composite-video-shadow.html [ Slow ]
 
@@ -836,7 +828,6 @@ crbug.com/893015 [ Linux ] virtual/streaming-preload/http/tests/fetch/chromium/r
 crbug.com/893015 [ Linux ] virtual/streaming-preload/http/tests/fetch/chromium/response-json-gc-crash.html [ Slow ]
 crbug.com/893015 [ Linux ] virtual/streaming-preload/http/tests/fetch/chromium/response-text-gc-crash.html [ Slow ]
 
-crbug.com/912364 [ Mac ] virtual/user-activation-v2/fast/events/no-fake-mousemove.html [ Slow ]
 crbug.com/914981 [ Mac ] media/controls/overflow-menu-pointer-selection.html [ Slow ]
 crbug.com/914981 [ Mac ] virtual/mouseevent_fractional/fast/events/no-fake-mousemove.html [ Slow ]
 crbug.com/914981 [ Mac ] fast/events/no-fake-mousemove.html [ Slow ]

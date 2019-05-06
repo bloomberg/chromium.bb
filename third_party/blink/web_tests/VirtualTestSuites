@@ -713,31 +713,6 @@
     "args": ["--disable-features=RTCUnifiedPlanByDefault"]
   },
   {
-    "prefix": "user-activation-v2",
-    "base": "fast/dom/Window",
-    "args": ["--enable-features=UserActivationV2"]
-  },
-  {
-    "prefix": "user-activation-v2",
-    "base": "fast/events",
-    "args": ["--enable-features=UserActivationV2"]
-  },
-  {
-    "prefix": "user-activation-v2",
-    "base": "fullscreen",
-    "args": ["--enable-features=UserActivationV2"]
-  },
-  {
-    "prefix": "user-activation-v2",
-    "base": "gamepad",
-    "args": ["--enable-features=UserActivationV2"]
-  },
-  {
-    "prefix": "user-activation-v2",
-    "base": "http/tests/media/autoplay",
-    "args": ["--enable-features=UserActivationV2"]
-  },
-  {
     "prefix": "display-compositor-pixel-dump",
     "base": "fast/canvas/display-compositor-pixel-dump",
     "args": ["--enable-display-compositor-pixel-dump",

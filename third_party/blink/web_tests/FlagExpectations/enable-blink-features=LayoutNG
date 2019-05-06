@@ -405,7 +405,4 @@ crbug.com/591099 virtual/streams-native/external/wpt/fetch/api/basic/error-after
 crbug.com/591099 virtual/streams-native/external/wpt/fetch/api/request/request-cache-default-conditional.html [ Pass ]
 crbug.com/591099 virtual/streams-native/external/wpt/fetch/api/request/request-keepalive-quota.html?include=slow-2 [ Pass ]
 crbug.com/591099 virtual/threaded/ [ Skip ]
-crbug.com/591099 virtual/user-activation-v2/fast/events/touch/compositor-touch-hit-rects-continuation.html [ Failure ]
-crbug.com/591099 virtual/user-activation-v2/fast/events/touch/compositor-touch-hit-rects-list-translate.html [ Failure ]
-crbug.com/591099 virtual/user-activation-v2/fast/events/touch/compositor-touch-hit-rects.html [ Failure ]
 crbug.com/591099 vr/getFrameData_oneframeupdate.html [ Failure Pass ]

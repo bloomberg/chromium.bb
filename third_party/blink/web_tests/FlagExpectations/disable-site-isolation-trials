@@ -1,8 +1,6 @@
 # The following tests fail with UserActivationSameOriginVisibility plus UAv2.
 crbug.com/922725 http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-disabled.html [ Failure ]
 crbug.com/922725 http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-header.html [ Failure ]
-crbug.com/922725 virtual/user-activation-v2/http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-disabled.html [ Failure ]
-crbug.com/922725 virtual/user-activation-v2/http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-header.html [ Failure ]
 
 # Resultant images are different because LocalFrameRoot is not the main frame.
 crbug.com/910979 http/tests/html/validation-bubble-oopif-clip.html [ Failure ]

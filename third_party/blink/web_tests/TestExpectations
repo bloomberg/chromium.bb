@@ -29,7 +29,6 @@ crbug.com/922725 external/wpt/fullscreen/api/element-ready-check-containing-ifra
 crbug.com/922725 external/wpt/html/user-activation/activation-api-iframe-no-activate.tenative.html [ Failure ]
 crbug.com/922725 fullscreen/full-screen-iframe-zIndex.html [ Timeout ]
 crbug.com/922725 virtual/android/fullscreen/full-screen-iframe-zIndex.html [ Timeout ]
-crbug.com/922725 virtual/user-activation-v2/fullscreen/full-screen-iframe-zIndex.html [ Timeout ]
 
 # The following tests would pass with User Activation Delegation.
 crbug.com/928838 external/wpt/html/user-activation/activation-transfer-with-click.tentative.html [ Failure ]
@@ -91,7 +90,6 @@ crbug.com/819800 external/wpt/payment-request/allowpaymentrequest/setting-allowp
 crbug.com/872952 http/tests/media/autoplay/document-user-activation-feature-policy-iframe-no-gesture.html [ Failure Pass Timeout ]
 crbug.com/895001 external/wpt/html/user-activation/message-event-activation-api-iframe-cross-origin.sub.tentative.html [ Timeout Pass ]
 crbug.com/895001 http/tests/media/autoplay/webaudio-autoplay-iframe-with-gesture.html [ Timeout Pass ]
-crbug.com/895001 virtual/user-activation-v2/http/tests/media/autoplay/webaudio-autoplay-iframe-with-gesture.html [ Timeout Pass ]
 crbug.com/901502 http/tests/devtools/oopif/oopif-storage.js [ Pass Failure ]
 crbug.com/906879 http/tests/inspector-protocol/network/navigation-blocking-xorigin-iframe.js [ Pass Failure ]
 crbug.com/949003 http/tests/printing/cross-site-frame-scrolled.html [ Pass Failure ]
@@ -218,7 +216,6 @@ crbug.com/841567 virtual/threaded/fast/scrolling/same-page-navigate.html [ Failu
 crbug.com/915926 fast/events/touch/multi-touch-user-gesture.html [ Failure Pass ]
 crbug.com/915926 virtual/mouseevent_fractional/fast/events/touch/multi-touch-user-gesture.html [ Failure Pass ]
 crbug.com/915926 virtual/scroll_customization/fast/events/touch/multi-touch-user-gesture.html [ Failure Pass ]
-crbug.com/915926 virtual/user-activation-v2/fast/events/touch/multi-touch-user-gesture.html [ Failure Pass ]
 
 crbug.com/736052 compositing/overflow/composited-scroll-with-fractional-translation.html [ Failure ]
 crbug.com/736052 virtual/prefer_compositing_to_lcd_text/compositing/overflow/composited-scroll-with-fractional-translation.html [ Failure ]
@@ -242,11 +239,6 @@ crbug.com/857490 virtual/scroll_customization/fast/events/touch/gesture/pad-gest
 crbug.com/857490 virtual/scroll_customization/fast/events/touch/gesture/pad-gesture-fling.html [ Skip ]
 crbug.com/857490 virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-fling-with-page-scale.html [ Skip ]
 crbug.com/857490 virtual/scroll_customization/fast/scroll-behavior/scroll-customization/touch-scroll-customization.html [ Skip ]
-crbug.com/857490 virtual/user-activation-v2/fast/events/touch/gesture/pad-gesture-cancel.html [ Skip ]
-crbug.com/857490 virtual/user-activation-v2/fast/events/touch/gesture/pad-gesture-fling.html [ Skip ]
-crbug.com/857490 virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-fling-with-page-scale.html [ Skip ]
-crbug.com/857490 virtual/user-activation-v2/fast/events/wheel/mainthread-touchpad-fling-latching.html [ Skip ]
-crbug.com/857490 virtual/user-activation-v2/fast/events/wheel/wheel-fling-cancel.html [ Skip ]
 
 # Currently on main thread scrolling path, scrollend gets fired without waiting for scroll/fling snap animation. (The virtual/threaded version of the test passes.)
 crbug.com/907601 fast/scrolling/events/scrollend-event-fired-after-snap.html [ Skip ]
@@ -1736,9 +1728,7 @@ crbug.com/891427 virtual/threaded/http/tests/devtools/tracing/timeline-paint/tim
 # The following fail only on Mac.
 crbug.com/891427 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Pass Failure Timeout Crash ]
 crbug.com/891427 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Pass Failure Timeout Crash ]
-crbug.com/891427 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Pass Failure Timeout Crash ]
 crbug.com/891427 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-input-field.html [ Pass Failure Timeout Crash ]
-crbug.com/891427 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-scroll-input-field.html [ Pass Failure Timeout Crash ]
 
 # The following fail only on Android.
 crbug.com/891427 [ Android ] virtual/threaded/synthetic_gestures/smooth-scroll-tiny-delta.html [ Pass Failure Timeout Crash ]
@@ -1873,11 +1863,9 @@ crbug.com/613672 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoo
 crbug.com/522648 fast/events/touch/compositor-touch-hit-rects-iframes.html [ Crash Failure Pass ]
 crbug.com/522648 virtual/mouseevent_fractional/fast/events/touch/compositor-touch-hit-rects-iframes.html [ Crash Failure Pass ]
 crbug.com/522648 virtual/scroll_customization/fast/events/touch/compositor-touch-hit-rects-iframes.html [ Skip ]
-crbug.com/522648 virtual/user-activation-v2/fast/events/touch/compositor-touch-hit-rects-iframes.html [ Skip ]
 crbug.com/520170 fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]
 crbug.com/652536 fast/events/mouse-cursor-change-after-image-load.html [ Failure Pass Crash ]
 crbug.com/652536 virtual/mouseevent_fractional/fast/events/mouse-cursor-change-after-image-load.html [ Failure Pass Crash ]
-crbug.com/652536 virtual/user-activation-v2/fast/events/mouse-cursor-change-after-image-load.html [ Failure Pass Crash ]
 crbug.com/520188 [ Win ] http/tests/local/fileapi/file-last-modified-after-delete.html [ Failure Pass ]
 crbug.com/520611 [ Debug ] fast/filesystem/workers/file-writer-events-shared-worker.html [ Failure Pass ]
 crbug.com/520194 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-overridesexpires.html [ Failure Pass ]
@@ -1903,7 +1891,6 @@ crbug.com/779170 virtual/mouseevent_fractional/fast/events/zoom-dblclick.html [ 
 
 crbug.com/892032 fast/events/wheel/wheel-latched-scroll-node-removed.html [ Pass Failure ]
 crbug.com/892032 virtual/mouseevent_fractional/fast/events/wheel/wheel-latched-scroll-node-removed.html [ Pass Failure ]
-crbug.com/892032 virtual/user-activation-v2/fast/events/wheel/wheel-latched-scroll-node-removed.html [ Pass Failure ]
 
 crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/scrollstate-basic.html [ Pass Failure ]
 crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas.html [ Pass Failure ]
@@ -1963,7 +1950,6 @@ crbug.com/936891 virtual/scroll_customization/fast/scrolling/document-level-whee
 crbug.com/936891 virtual/fractional_scrolling/fast/scrolling/document-level-wheel-event-listener-passive-by-default.html [ Skip ]
 
 crbug.com/597221 fast/dom/Window/window-postmessage-clone-deep-array.html [ Failure ]
-crbug.com/597221 virtual/user-activation-v2/fast/dom/Window/window-postmessage-clone-deep-array.html [ Failure ]
 
 crbug.com/498539 http/tests/devtools/tracing/timeline-misc/timeline-bound-function.js [ Pass Failure ]
 crbug.com/498539 virtual/threaded/http/tests/devtools/tracing/timeline-misc/timeline-bound-function.js [ Pass Failure ]
@@ -2016,7 +2002,6 @@ crbug.com/688613 virtual/feature-policy-permissions/external/wpt/mediacapture-st
 crbug.com/542660 fast/css/absolute-inline-alignment-2.html [ Failure ]
 
 crbug.com/766135 fast/dom/Window/redirect-with-timer.html [ Timeout Pass ]
-crbug.com/766135 virtual/user-activation-v2/fast/dom/Window/redirect-with-timer.html [ Timeout Pass ]
 
 # Ref tests that needs investigation.
 crbug.com/404597 [ Mac ] fast/css3-text/css3-text-justify/text-justify-crash.html [ Failure ]
@@ -2363,7 +2348,6 @@ crbug.com/813697 vr/getFrameData_oneframeupdate.html [ Pass Failure ]
 
 crbug.com/346473  fast/events/drag-on-mouse-move-cancelled.html [ Failure ]
 crbug.com/346473  virtual/mouseevent_fractional/fast/events/drag-on-mouse-move-cancelled.html [ Failure ]
-crbug.com/346473  virtual/user-activation-v2/fast/events/drag-on-mouse-move-cancelled.html [ Failure ]
 
 # About to land a change which will imperceptibly change the rendering of this test
 skbug.com/8250 svg/W3C-SVG-1.1/filters-turb-01-f.svg [ Pass Failure ]
@@ -2373,10 +2357,8 @@ crbug.com/613672 [ Mac ] external/wpt/feature-policy/experimental-features/verti
 crbug.com/613672 [ Mac ] virtual/unified-autoplay/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Skip ]
 crbug.com/613672 [ Mac ] fast/events/pointerevents/multi-pointer-event-in-slop-region.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/pointerevents/multi-pointer-event-in-slop-region.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/pointerevents/multi-pointer-event-in-slop-region.html [ Skip ]
 crbug.com/613672 [ Mac ] fast/events/pointerevents/pointer-event-in-slop-region.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/pointerevents/pointer-event-in-slop-region.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/pointerevents/pointer-event-in-slop-region.html [ Skip ]
 # In addition to having no support on Mac, the following test times out
 # regularly on Windows.
 crbug.com/613672 [ Mac ] virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Skip ]
@@ -2434,30 +2416,11 @@ crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/
 crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-page-past-extent.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-page-zoomed.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-page.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/gesture-scroll.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/gesture-scroll-by-page.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/gesture-scrollbar-touchpad-fling.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/gesture-scrollbar-touchscreen-fling.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/gesture-scrollbar-mainframe.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/gesture-scrollbar.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-noscroll-body-xhidden.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-noscroll-body-yhidden.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-scroll-div-past-extent-diagonally.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-scroll-div-scaled.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-scroll-div-zoomed.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-scroll-div.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-scroll-iframe-editable.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-scroll-iframe.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-scroll-page-past-extent.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-scroll-page-zoomed.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-scroll-page.html [ Skip ]
 ### See crbug.com/891427 comment near the top of this file:
 ####crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Skip ]
 ####crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Skip ]
 ####crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-input-field.html [ Skip ]
 ####crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Skip ]
-####crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-scroll-input-field.html [ Skip ]
-####crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Skip ]
 
 crbug.com/802067 [ Mac ] external/wpt/pointerlock/movementX_Y_basic.html [ Failure ]
 crbug.com/802067 [ Mac ] external/wpt/pointerevents/pointerlock/pointerevent_movementxy-manual.html [ Failure ]
@@ -2846,8 +2809,6 @@ crbug.com/828506 [ Linux ] virtual/mouseevent_fractional/fast/events/touch/scrol
 crbug.com/828506 [ Win ] virtual/mouseevent_fractional/fast/events/touch/scroll-without-mouse-lacks-mousemove-events.html [ Pass Failure ]
 crbug.com/828506 [ Linux ] virtual/scroll_customization/fast/events/touch/scroll-without-mouse-lacks-mousemove-events.html [ Pass Failure ]
 crbug.com/828506 [ Win ] virtual/scroll_customization/fast/events/touch/scroll-without-mouse-lacks-mousemove-events.html [ Pass Failure ]
-crbug.com/828506 [ Linux ] virtual/user-activation-v2/fast/events/touch/scroll-without-mouse-lacks-mousemove-events.html [ Pass Failure ]
-crbug.com/828506 [ Win ] virtual/user-activation-v2/fast/events/touch/scroll-without-mouse-lacks-mousemove-events.html [ Pass Failure ]
 
 # Failure messages are unstable so we cannot create baselines.
 crbug.com/832071 external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]
@@ -4679,7 +4640,6 @@ crbug.com/724027 virtual/outofblink-cors/http/tests/security/contentSecurityPoli
 # Sheriff failures 2017-05-16
 crbug.com/722212 fast/events/pointerevents/mouse-pointer-event-properties.html [ Failure Timeout Pass ]
 crbug.com/722212 virtual/mouseevent_fractional/fast/events/pointerevents/mouse-pointer-event-properties.html [ Failure Timeout Pass ]
-crbug.com/722212 virtual/user-activation-v2/fast/events/pointerevents/mouse-pointer-event-properties.html [ Failure Timeout Pass ]
 # Crashes on win
 crbug.com/722943 media/audio-repaint.html [ Skip ]
 
@@ -4711,8 +4671,6 @@ crbug.com/718155 fullscreen/full-screen-restrictions.html [ Failure Timeout ]
 crbug.com/718155 media/video-controls-fullscreen-iframe-not-allowed.html [ Failure ]
 crbug.com/718155 virtual/android/fullscreen/full-screen-iframe-not-allowed.html [ Failure ]
 crbug.com/718155 virtual/android/fullscreen/full-screen-restrictions.html [ Failure Timeout ]
-crbug.com/718155 virtual/user-activation-v2/fullscreen/full-screen-iframe-not-allowed.html [ Failure ]
-crbug.com/718155 virtual/user-activation-v2/fullscreen/full-screen-restrictions.html [ Failure Timeout ]
 
 # Feature Policy changes same-origin allowpaymentrequest behaviour, tests need updating
 crbug.com/718155 payments/payment-request-in-iframe.html [ Failure ]
@@ -5160,8 +5118,6 @@ crbug.com/827209 [ Win ] fast/events/middleClickAutoscroll-latching.html [ Pass 
 crbug.com/827209 [ Linux ] fast/events/middleClickAutoscroll-latching.html [ Pass Timeout Failure ]
 crbug.com/827209 [ Win ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-latching.html [ Pass Timeout Failure ]
 crbug.com/827209 [ Linux ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-latching.html [ Pass Timeout Failure ]
-crbug.com/827209 [ Win ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-latching.html [ Pass Timeout Failure ]
-crbug.com/827209 [ Linux ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-latching.html [ Pass Timeout Failure ]
 
 # Utility for manual testing, not intended to be run as part of layout tests.
 crbug.com/785955 http/tests/credentialmanager/tools/virtual-authenticator-environment-manual.html [ Skip ]
@@ -5528,48 +5484,34 @@ crbug.com/862589 [ Win ] virtual/threaded/fast/idle-callback/long_idle_periods.h
 # fast/events/middleClickAutoscroll-* are failing on Mac
 crbug.com/874162 [ Mac ] fast/events/autoscroll-iframe-no-scrolling.html [ Skip ]
 crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/autoscroll-iframe-no-scrolling.html [ Skip ]
-crbug.com/874162 [ Mac ] virtual/user-activation-v2/fast/events/autoscroll-iframe-no-scrolling.html [ Skip ]
 crbug.com/874162 [ Mac ] fast/events/autoscroll-in-overflow-hidden-html.html [ Skip ]
 crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/autoscroll-in-overflow-hidden-html.html [ Skip ]
-crbug.com/874162 [ Mac ] virtual/user-activation-v2/fast/events/autoscroll-in-overflow-hidden-html.html [ Skip ]
 crbug.com/874162 [ Mac ] fast/events/autoscroll-in-textarea.html [ Skip ]
 crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/autoscroll-in-textarea.html [ Skip ]
-crbug.com/874162 [ Mac ] virtual/user-activation-v2/fast/events/autoscroll-in-textarea.html [ Skip ]
 crbug.com/874162 [ Mac ] fast/events/autoscroll-over-scrollbar.html [ Skip ]
 crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/autoscroll-over-scrollbar.html [ Skip ]
-crbug.com/874162 [ Mac ] virtual/user-activation-v2/fast/events/autoscroll-over-scrollbar.html [ Skip ]
 crbug.com/874162 [ Mac ] fast/events/autoscroll-should-not-stop-on-keypress.html [ Skip ]
 crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/autoscroll-should-not-stop-on-keypress.html [ Skip ]
-crbug.com/874162 [ Mac ] virtual/user-activation-v2/fast/events/autoscroll-should-not-stop-on-keypress.html [ Skip ]
 crbug.com/874162 [ Mac ] fast/events/middleClickAutoscroll-click-hyperlink.html [ Skip ]
 crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-click-hyperlink.html [ Skip ]
-crbug.com/874162 [ Mac ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-click-hyperlink.html [ Skip ]
 crbug.com/874162 [ Mac ] fast/events/middleClickAutoscroll-click.html [ Skip ]
 crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-click.html [ Skip ]
-crbug.com/874162 [ Mac ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-click.html [ Skip ]
 crbug.com/874162 [ Mac ] fast/events/middleClickAutoscroll-drag.html [ Skip ]
 crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-drag.html [ Skip ]
-crbug.com/874162 [ Mac ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-drag.html [ Skip ]
 crbug.com/874162 [ Mac ] fast/events/middleClickAutoscroll-event-fired.html [ Skip ]
 crbug.com/874162 [ Mac ] fast/events/middleClickAutoscroll-in-iframe.html [ Skip ]
 crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-in-iframe.html [ Skip ]
-crbug.com/874162 [ Mac ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-in-iframe.html [ Skip ]
 crbug.com/874162 [ Mac ] fast/events/middleClickAutoscroll-latching.html [ Skip ]
 crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-latching.html [ Skip ]
-crbug.com/874162 [ Mac ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-latching.html [ Skip ]
 crbug.com/874162 [ Mac ] fast/events/middleClickAutoscroll-modal-scrollable-iframe-div.html [ Skip ]
 crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-modal-scrollable-iframe-div.html [ Skip ]
-crbug.com/874162 [ Mac ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-modal-scrollable-iframe-div.html [ Skip ]
 crbug.com/874162 [ Mac ] fast/events/middleClickAutoscroll-nested-divs-forbidden.html [ Skip ]
 # The next also fails due to crbug.com/891427, thus disabled on all platforms.
 crbug.com/874162 virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-nested-divs-forbidden.html [ Skip ]
-crbug.com/874162 [ Mac ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-nested-divs-forbidden.html [ Skip ]
 crbug.com/874162 [ Mac ] fast/events/middleClickAutoscroll-nested-divs.html [ Skip ]
 crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-nested-divs.html [ Skip ]
-crbug.com/874162 [ Mac ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-nested-divs.html [ Skip ]
 crbug.com/874162 [ Mac ] fast/events/selection-autoscroll-borderbelt.html [ Skip ]
 crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/selection-autoscroll-borderbelt.html [ Skip ]
-crbug.com/874162 [ Mac ] virtual/user-activation-v2/fast/events/selection-autoscroll-borderbelt.html [ Skip ]
 
 # Flaky
 crbug.com/894077 virtual/android/fullscreen/video-fixed-background.html [ Pass Failure ]
@@ -5632,8 +5574,6 @@ crbug.com/893869 [ Mac ] css3/masking/mask-repeat-space-padding.html [ Failure P
 # Sheriff 2018-10-12
 crbug.com/891155 [ Linux ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-drag.html [ Failure Pass ]
 crbug.com/891155 [ Win ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-drag.html [ Failure Pass ]
-crbug.com/891155 [ Linux ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-drag.html [ Failure Pass ]
-crbug.com/891155 [ Win ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-drag.html [ Failure Pass ]
 
 # Sheriff 2018-10-15
 crbug.com/895257 [ Mac ] external/wpt/css/css-fonts/variations/at-font-face-font-matching.html [ Failure Pass ]
@@ -5658,8 +5598,6 @@ crbug.com/898378 [ Mac10.13 ] virtual/scroll_customization/fast/scroll-behavior/
 # Sheriff 2018-10-26
 ### See crbug.com/891427 comment near the top of this file:
 ####crbug.com/899087 [ Linux ] virtual/android/fullscreen/full-screen-iframe-allowed-video.html [ Failure Pass ]
-crbug.com/899222 [ Linux ] virtual/user-activation-v2/fast/events/touch/gesture/gesture-scrollbar-touchpad-fling.html [ Failure Pass ]
-crbug.com/899222 [ Win ] virtual/user-activation-v2/fast/events/touch/gesture/gesture-scrollbar-touchpad-fling.html [ Failure Pass ]
 
 
 # Sheriff 2018-10-29
@@ -5669,12 +5607,8 @@ crbug.com/766357 [ Mac ] virtual/threaded/fast/scroll-behavior/wheel-and-touch-s
 crbug.com/766357 [ Win ] virtual/threaded/fast/scroll-behavior/wheel-and-touch-scroll-use-count.html [ Failure Pass ]
 
 # Sheriff 2018-10-30
-crbug.com/867668 [ Linux ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-click-hyperlink.html [ Failure Pass ]
-crbug.com/867668 [ Linux ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-nested-divs-forbidden.html [ Failure Pass ]
 crbug.com/899222 [ Linux ] virtual/mouseevent_fractional/fast/events/touch/gesture/gesture-scrollbar-touchpad-fling.html [ Failure Pass ]
 crbug.com/899222 [ Win ] virtual/mouseevent_fractional/fast/events/touch/gesture/gesture-scrollbar-touchpad-fling.html [ Failure Pass ]
-crbug.com/899222 [ Linux ] virtual/user-activation-v2/fast/events/touch/gesture/gesture-scrollbar-touchscreen-fling.html [ Failure Pass ]
-crbug.com/899222 [ Win ] virtual/user-activation-v2/fast/events/touch/gesture/gesture-scrollbar-touchscreen-fling.html [ Failure Pass ]
 crbug.com/899222 [ Linux ] virtual/scroll_customization/fast/events/touch/gesture/gesture-scrollbar-touchscreen-fling.html [ Failure Pass ]
 crbug.com/899222 [ Win ] virtual/scroll_customization/fast/events/touch/gesture/gesture-scrollbar-touchscreen-fling.html [ Failure Pass ]
 
@@ -5704,7 +5638,6 @@ crbug.com/905827 fast/dom/StyleSheet/stylesheet-move-between-documents-crash.htm
 crbug.com/906952 editing/pasteboard/file-drag-to-editable.html [ Pass Crash ]
 crbug.com/906952 fast/events/before-unload-return-value-from-listener.html [ Pass Crash Timeout ]
 crbug.com/906952 virtual/mouseevent_fractional/fast/events/before-unload-return-value-from-listener.html [ Pass Crash Timeout ]
-crbug.com/906952 virtual/user-activation-v2/fast/events/before-unload-return-value-from-listener.html [ Pass Crash Timeout ]
 
 #Sheriff 2018-11-21
 
@@ -5713,7 +5646,6 @@ crbug.com/667560 http/tests/devtools/console-cross-origin-iframe-logging.js [ Pa
 crbug.com/907412 [ Mac10.13 ] external/wpt/domxpath/xml_xpath_runner.html [ Pass Timeout ]
 
 #Sheriff 2018-11-22
-crbug.com/907862 [ Mac10.13 ] virtual/user-activation-v2/gamepad/multiple-event-listeners.html [ Pass Failure ]
 crbug.com/907862 [ Mac10.13 ] gamepad/multiple-event-listeners.html [ Pass Failure ]
 
 # Sheriff 2018-11-23
@@ -5748,7 +5680,6 @@ crbug.com/914782 [ Linux ] fast/scrolling/no-hover-during-scroll.html [ Pass Fai
 # Sheriff 2018-12-14
 crbug.com/914782 [ Linux ] virtual/fractional_scrolling/fast/scrolling/no-hover-during-scroll.html [ Pass Failure ]
 crbug.com/914782 [ Linux ] virtual/scroll_customization/fast/scrolling/no-hover-during-scroll.html [ Pass Failure ]
-crbug.com/891155 virtual/user-activation-v2/fast/events/middleClickAutoscroll-event-fired.html [ Skip ]
 crbug.com/913931 [ Mac10.11 ] external/wpt/css/css-layout-api/auto-block-size-absolute.https.html [ Pass Failure ]
 
 # Sheriff 2018-12-19
@@ -5880,7 +5811,6 @@ crbug.com/922951 virtual/threaded/http/tests/devtools/tracing/timeline-layout/ti
 crbug.com/922951 virtual/threaded/http/tests/devtools/tracing/timeline-layout/timeline-layout-with-invalidations.js [ Skip ]
 crbug.com/922951 virtual/threaded/http/tests/devtools/tracing/timeline-misc/timeline-record-reload.js [ Skip ]
 crbug.com/922951 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-image.js [ Skip ]
-crbug.com/922951 virtual/user-activation-v2/fast/events/synthetic-events/tap-on-scaled-screen.html [ Skip ]
 
 # Race: The RTCIceConnectionState can become "connected" before getStats()
 # returns candidate-pair whose state is "succeeded", this sounds like a
@@ -5912,8 +5842,6 @@ crbug.com/925325 [ Mac ] storage/indexeddb/index-population.html [ Pass Failure 
 # Sheriff 2019-02-01, 2019-02-19
 # These are crashy on Win10, and seem to leave processes lying around, causing the swarming
 # task to hang.
-crbug.com/927860 [ Win10 ] virtual/user-activation-v2/ [ Skip ]
-crbug.com/927862 virtual/user-activation-v2/fast/events/autoscroll-in-textfield.html [ Skip ]
 
 # Recently became flaky on multiple platforms (Linux and Windows primarily)
 crbug.com/927769 fast/webgl/OffscreenCanvas-webgl-preserveDrawingBuffer.html [ Skip ]
@@ -6075,7 +6003,6 @@ crbug.com/919789 fast/autoresize/turn-off-autoresize.html [ Pass Timeout ]
 crbug.com/919789 fast/autoresize/basic.html [ Pass Timeout ]
 crbug.com/919789 fast/dom/viewport/resize-event-fired-window-resized.html [ Pass Timeout ]
 crbug.com/919789 fast/dom/Window/window-resize-contents.html [ Pass Timeout ]
-crbug.com/919789 virtual/user-activation-v2/fast/dom/Window/window-resize-contents.html [ Pass Timeout ]
 crbug.com/919789 fast/dom/rtl-scroll-to-leftmost-and-resize.html [ Pass Timeout ]
 crbug.com/919789 fast/dynamic/window-resize-scrollbars-test.html [ Pass Timeout ]
 crbug.com/919789 fast/events/resize-events-count.html [ Pass Timeout ]
@@ -6093,7 +6020,6 @@ crbug.com/919789 paint/invalidation/window-resize/ [ Pass Timeout ]
 # Sheriff 2019-03-27
 crbug.com/835943 [ Release ] http/tests/appcache/non-html.xhtml [ Crash Pass Failure Timeout ]
 crbug.com/946323 [ Mac ] editing/caret/caret-painting-low-dpi.html [ Failure Pass ]
-crbug.com/946624 virtual/user-activation-v2/http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-header.html [ Failure Pass ]
 
 # Sheriff 2019-03-28
 crbug.com/946890 external/wpt/html/semantics/embedded-content/media-elements/location-of-the-media-resource/currentSrc.html [ Failure Pass Crash ]
@@ -6116,7 +6042,6 @@ crbug.com/947023 external/wpt/fetch/sec-metadata/xslt.tentative.https.sub.html [
 
 # Sheriff 2019-04-02
 crbug.com/947690 [ Debug ] http/tests/history/back-during-beforeunload.html [ Pass Failure ]
-crbug.com/948785 [ Debug ] virtual/user-activation-v2/fast/events/pointerevents/pointer-event-consumed-touchstart-in-slop-region.html [ Pass Failure ]
 
 # Sheriff 2019-04-03
 crbug.com/949167 external/wpt/html/semantics/links/links-created-by-a-and-area-elements/target_blank_implicit_noopener.html [ Pass Timeout ]
@@ -6128,7 +6053,6 @@ crbug.com/949442 [ Mac10.13 Debug ] external/wpt/orientation-sensor/AbsoluteOrie
 crbug.com/949443 [ Mac10.13 Debug ] fast/block/inline-children-root-linebox-crash.html [ Pass Crash ]
 crbug.com/949444 [ Mac10.13 Debug ] fast/events/sequential-focus-navigation-starting-point.html [ Pass Crash ]
 crbug.com/949444 [ Mac10.13 Debug ] virtual/mouseevent_fractional/fast/events/sequential-focus-navigation-starting-point.html [ Pass Crash ]
-crbug.com/949444 [ Mac10.13 Debug ] virtual/user-activation-v2/fast/events/sequential-focus-navigation-starting-point.html [ Pass Crash ]
 crbug.com/949445 [ Mac ] fast/forms/text/input-text-scroll-left-on-blur.html [ Failure ]
 
 # Sheriff 2019-04-05
