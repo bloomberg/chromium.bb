@@ -307,10 +307,6 @@ bool RequiresContentFilterBlockingWorkaround() {
   // Referrer for the current page; does not include the fragment.
   NSString* _currentReferrerString;
 
-  // Holds all WKNavigation objects and their states which are currently in
-  // flight.
-  CRWWKNavigationStates* _navigationStates;
-
   // The WKNavigation captured when |stopLoading| was called. Used for reporting
   // WebController.EmptyNavigationManagerCausedByStopLoading UMA metric which
   // helps with diagnosing a navigation related crash (crbug.com/565457).
@@ -621,7 +617,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     _certVerificationErrors =
         std::make_unique<CertVerificationErrorsCacheType>(kMaxCertErrorsCount);
     web::BrowsingDataRemover::FromBrowserState(browserState)->AddObserver(self);
-    _navigationStates = [[CRWWKNavigationStates alloc] init];
     web::WebFramesManagerImpl::CreateForWebState(_webStateImpl);
     web::FindInPageManagerImpl::CreateForWebState(_webStateImpl);
     [[NSNotificationCenter defaultCenter]
@@ -967,11 +962,12 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
 - (web::NavigationItemImpl*)lastPendingItemForNewNavigation {
   WKNavigation* navigation =
-      [_navigationStates lastNavigationWithPendingItemInNavigationContext];
+      [self.navigationHandler.navigationStates
+              lastNavigationWithPendingItemInNavigationContext];
   if (!navigation)
     return nullptr;
   web::NavigationContextImpl* context =
-      [_navigationStates contextForNavigation:navigation];
+      [self.navigationHandler.navigationStates contextForNavigation:navigation];
   return context->GetItem();
 }
 
@@ -1137,8 +1133,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
         // for non-app-specific URLs. The necessary navigation states will be
         // updated in WKNavigationDelegate callbacks.
         WKNavigation* navigation = [self.webView reload];
-        [_navigationStates setState:web::WKNavigationState::REQUESTED
-                      forNavigation:navigation];
+        [self.navigationHandler.navigationStates
+                 setState:web::WKNavigationState::REQUESTED
+            forNavigation:navigation];
         std::unique_ptr<web::NavigationContextImpl> navigationContext = [self
             registerLoadRequestForURL:URL
                              referrer:self.currentNavItemReferrer
@@ -1147,8 +1144,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
                        hasUserGesture:YES
                     rendererInitiated:rendererInitiated
                 placeholderNavigation:NO];
-        [_navigationStates setContext:std::move(navigationContext)
-                        forNavigation:navigation];
+        [self.navigationHandler.navigationStates
+               setContext:std::move(navigationContext)
+            forNavigation:navigation];
       } else {
         [self loadCurrentURLWithRendererInitiatedNavigation:rendererInitiated];
       }
@@ -1157,7 +1155,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 }
 
 - (void)stopLoading {
-  _stoppedWKNavigation = [_navigationStates lastAddedNavigation];
+  _stoppedWKNavigation =
+      [self.navigationHandler.navigationStates lastAddedNavigation];
 
   base::RecordAction(base::UserMetricsAction("Stop"));
   // Discard the pending and transient entried before notifying the tab model
@@ -1290,10 +1289,12 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
           characterEncodingName:base::SysUTF8ToNSString(base::kCodepageUTF8)
                         baseURL:net::NSURLWithGURL(URL)];
 
-  [_navigationStates setContext:std::move(navigationContext)
-                  forNavigation:navigation];
-  [_navigationStates setState:web::WKNavigationState::REQUESTED
-                forNavigation:navigation];
+  [self.navigationHandler.navigationStates
+         setContext:std::move(navigationContext)
+      forNavigation:navigation];
+  [self.navigationHandler.navigationStates
+           setState:web::WKNavigationState::REQUESTED
+      forNavigation:navigation];
 }
 
 // Loads the HTML into the page at the given URL. Only for testing purpose.
@@ -1311,8 +1312,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   }
   WKNavigation* navigation =
       [self.webView loadHTMLString:HTML baseURL:net::NSURLWithGURL(URL)];
-  [_navigationStates setState:web::WKNavigationState::REQUESTED
-                forNavigation:navigation];
+  [self.navigationHandler.navigationStates
+           setState:web::WKNavigationState::REQUESTED
+      forNavigation:navigation];
   std::unique_ptr<web::NavigationContextImpl> context;
   const ui::PageTransition loadHTMLTransition =
       ui::PageTransition::PAGE_TRANSITION_TYPED;
@@ -1341,7 +1343,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   }
   context->SetLoadingHtmlString(true);
   context->SetMimeType(@"text/html");
-  [_navigationStates setContext:std::move(context) forNavigation:navigation];
+  [self.navigationHandler.navigationStates setContext:std::move(context)
+                                        forNavigation:navigation];
 }
 
 - (void)executeUserJavaScript:(NSString*)script
@@ -1477,9 +1480,11 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     context->SetMimeType(holder->mime_type());
   }
 
-  [_navigationStates setContext:std::move(context) forNavigation:navigation];
-  [_navigationStates setState:web::WKNavigationState::REQUESTED
-                forNavigation:navigation];
+  [self.navigationHandler.navigationStates setContext:std::move(context)
+                                        forNavigation:navigation];
+  [self.navigationHandler.navigationStates
+           setState:web::WKNavigationState::REQUESTED
+      forNavigation:navigation];
 }
 
 - (void)takeSnapshotWithRect:(CGRect)rect
@@ -1986,10 +1991,12 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     } else {
       navigation = [self.webView loadRequest:request];
     }
-    [_navigationStates setState:web::WKNavigationState::REQUESTED
-                  forNavigation:navigation];
-    [_navigationStates setContext:std::move(navigationContext)
-                    forNavigation:navigation];
+    [self.navigationHandler.navigationStates
+             setState:web::WKNavigationState::REQUESTED
+        forNavigation:navigation];
+    [self.navigationHandler.navigationStates
+           setContext:std::move(navigationContext)
+        forNavigation:navigation];
     [self reportBackForwardNavigationTypeForFastNavigation:NO];
   };
 
@@ -2044,10 +2051,12 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
           goToBackForwardListItem:holder->back_forward_list_item()];
       [self reportBackForwardNavigationTypeForFastNavigation:YES];
     }
-    [_navigationStates setState:web::WKNavigationState::REQUESTED
-                  forNavigation:navigation];
-    [_navigationStates setContext:std::move(navigationContext)
-                    forNavigation:navigation];
+    [self.navigationHandler.navigationStates
+             setState:web::WKNavigationState::REQUESTED
+        forNavigation:navigation];
+    [self.navigationHandler.navigationStates
+           setContext:std::move(navigationContext)
+        forNavigation:navigation];
   };
 
   // If the request is not a form submission or resubmission, or the user
@@ -2153,8 +2162,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     }
   }
 
-  [_navigationStates setState:web::WKNavigationState::REQUESTED
-                forNavigation:navigation];
+  [self.navigationHandler.navigationStates
+           setState:web::WKNavigationState::REQUESTED
+      forNavigation:navigation];
   std::unique_ptr<web::NavigationContextImpl> navigationContext;
   if (originalContext) {
     navigationContext = std::move(originalContext);
@@ -2166,9 +2176,11 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
                                       rendererInitiated:rendererInitiated
                                   placeholderNavigation:YES];
   }
-  [_navigationStates setContext:std::move(navigationContext)
-                  forNavigation:navigation];
-  return [_navigationStates contextForNavigation:navigation];
+  [self.navigationHandler.navigationStates
+         setContext:std::move(navigationContext)
+      forNavigation:navigation];
+  return
+      [self.navigationHandler.navigationStates contextForNavigation:navigation];
 }
 
 #pragma mark - End of loading
@@ -2263,7 +2275,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     return;
   }
 
-  if (![_navigationStates lastNavigationWithPendingItemInNavigationContext] ||
+  if (![self.navigationHandler.navigationStates
+              lastNavigationWithPendingItemInNavigationContext] ||
       !web::features::StorePendingItemInContext()) {
     self.webStateImpl->SetIsLoading(false);
   } else {
@@ -2311,10 +2324,11 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   loadHTMLContext->SetLoadingErrorPage(true);
   loadHTMLContext->SetNavigationItemUniqueID(item->GetUniqueID());
 
-  [_navigationStates setContext:std::move(loadHTMLContext)
-                  forNavigation:navigation];
-  [_navigationStates setState:web::WKNavigationState::REQUESTED
-                forNavigation:navigation];
+  [self.navigationHandler.navigationStates setContext:std::move(loadHTMLContext)
+                                        forNavigation:navigation];
+  [self.navigationHandler.navigationStates
+           setState:web::WKNavigationState::REQUESTED
+      forNavigation:navigation];
 
   // TODO(crbug.com/803503): only call these for placeholder navigation because
   // they should have already been triggered during navigation commit for
@@ -2356,7 +2370,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
       // navigation. Disassociate the navigation context from the original
       // request and resuse it for the placeholder navigation.
       std::unique_ptr<web::NavigationContextImpl> originalContext =
-          [_navigationStates removeNavigation:originalNavigation];
+          [self.navigationHandler.navigationStates
+              removeNavigation:originalNavigation];
       [self loadPlaceholderInWebViewForURL:item->GetURL()
                          rendererInitiated:context->IsRendererInitiated()
                                 forContext:std::move(originalContext)];
@@ -2382,8 +2397,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
                                baseURL:net::NSURLWithGURL(item->GetURL())];
       navigationContext->SetError(context->GetError());
       navigationContext->SetIsPost(context->IsPost());
-      [_navigationStates setContext:std::move(navigationContext)
-                      forNavigation:navigation];
+      [self.navigationHandler.navigationStates
+             setContext:std::move(navigationContext)
+          forNavigation:navigation];
     } break;
 
     case web::ErrorRetryCommand::kDoNothing:
@@ -3638,7 +3654,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   // make sure subsequent back/forward navigation to this item starts with the
   // correct error retry state.
   web::NavigationContextImpl* context =
-      [_navigationStates contextForNavigation:navigation];
+      [self.navigationHandler.navigationStates contextForNavigation:navigation];
   if (context) {
     if (web::features::StorePendingItemInContext()) {
       // This NavigationContext will be destroyed, so return pending item
@@ -3813,8 +3829,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   if (web::features::StorePendingItemInContext()) {
     // webView:didFailProvisionalNavigation:withError: may never be called after
     // resetting WKWebView, so it is important to clear pending navigations now.
-    for (__strong id navigation in [_navigationStates pendingNavigations]) {
-      [_navigationStates removeNavigation:navigation];
+    for (__strong id navigation in
+         [self.navigationHandler.navigationStates pendingNavigations]) {
+      [self.navigationHandler.navigationStates removeNavigation:navigation];
     }
   }
 }
@@ -4393,8 +4410,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
   GURL webViewURL = net::GURLWithNSURL(webView.URL);
 
-  [_navigationStates setState:web::WKNavigationState::STARTED
-                forNavigation:navigation];
+  [self.navigationHandler.navigationStates
+           setState:web::WKNavigationState::STARTED
+      forNavigation:navigation];
 
   if (webViewURL.is_empty()) {
     // May happen on iOS9, however in didCommitNavigation: callback the URL
@@ -4403,7 +4421,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   }
 
   web::NavigationContextImpl* context =
-      [_navigationStates contextForNavigation:navigation];
+      [self.navigationHandler.navigationStates contextForNavigation:navigation];
 
   if (context) {
     // This is already seen and registered navigation.
@@ -4497,8 +4515,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   web::NavigationContextImpl* navigationContextPtr = navigationContext.get();
   // GetPendingItem which may be called inside OnNavigationStarted relies on
   // association between NavigationContextImpl and WKNavigation.
-  [_navigationStates setContext:std::move(navigationContext)
-                  forNavigation:navigation];
+  [self.navigationHandler.navigationStates
+         setContext:std::move(navigationContext)
+      forNavigation:navigation];
   self.webStateImpl->OnNavigationStarted(navigationContextPtr);
   DCHECK_EQ(web::WKNavigationState::REQUESTED, self.navigationState);
 }
@@ -4513,11 +4532,12 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   DCHECK(!(web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
            IsPlaceholderUrl(webViewURL)));
 
-  [_navigationStates setState:web::WKNavigationState::REDIRECTED
-                forNavigation:navigation];
+  [self.navigationHandler.navigationStates
+           setState:web::WKNavigationState::REDIRECTED
+      forNavigation:navigation];
 
   web::NavigationContextImpl* context =
-      [_navigationStates contextForNavigation:navigation];
+      [self.navigationHandler.navigationStates contextForNavigation:navigation];
   [self didReceiveRedirectForNavigation:context withURL:webViewURL];
 }
 
@@ -4525,13 +4545,15 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     didFailProvisionalNavigation:(WKNavigation*)navigation
                        withError:(NSError*)error {
   [self didReceiveWebViewNavigationDelegateCallback];
-  [_navigationStates setState:web::WKNavigationState::PROVISIONALY_FAILED
-                forNavigation:navigation];
+  [self.navigationHandler.navigationStates
+           setState:web::WKNavigationState::PROVISIONALY_FAILED
+      forNavigation:navigation];
 
   // Ignore provisional navigation failure if a new navigation has been started,
   // for example, if a page is reloaded after the start of the provisional
   // load but before the load has been committed.
-  if (![[_navigationStates lastAddedNavigation] isEqual:navigation]) {
+  if (![[self.navigationHandler.navigationStates lastAddedNavigation]
+          isEqual:navigation]) {
     return;
   }
 
@@ -4579,9 +4601,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   _certVerificationErrors->Clear();
   if (web::features::StorePendingItemInContext()) {
     // Remove the navigation to immediately get rid of pending item.
-    if (web::WKNavigationState::NONE !=
-        [_navigationStates stateForNavigation:navigation]) {
-      [_navigationStates removeNavigation:navigation];
+    if (web::WKNavigationState::NONE != [self.navigationHandler.navigationStates
+                                            stateForNavigation:navigation]) {
+      [self.navigationHandler.navigationStates removeNavigation:navigation];
     }
   } else {
     [self forgetNullWKNavigation:navigation];
@@ -4596,16 +4618,17 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   // |webView:didFinishNavigation| before |webView:didCommitNavigation|. If a
   // navigation is already finished, stop processing
   // (https://crbug.com/818796#c2).
-  if ([_navigationStates stateForNavigation:navigation] ==
+  if ([self.navigationHandler.navigationStates stateForNavigation:navigation] ==
       web::WKNavigationState::FINISHED)
     return;
 
-  BOOL committedNavigation =
-      [_navigationStates isCommittedNavigation:navigation];
+  BOOL committedNavigation = [self.navigationHandler.navigationStates
+      isCommittedNavigation:navigation];
   if (!web::features::StorePendingItemInContext()) {
     // Code in this method relies on existance of pending item.
-    [_navigationStates setState:web::WKNavigationState::COMMITTED
-                  forNavigation:navigation];
+    [self.navigationHandler.navigationStates
+             setState:web::WKNavigationState::COMMITTED
+        forNavigation:navigation];
   }
 
   DCHECK_EQ(self.webView, webView);
@@ -4618,7 +4641,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   // TODO(crbug.com/864769): Remove nullptr checks on |context| in this method
   // once the root cause of the invariant violation is found.
   web::NavigationContextImpl* context =
-      [_navigationStates contextForNavigation:navigation];
+      [self.navigationHandler.navigationStates contextForNavigation:navigation];
   DCHECK(context);
   UMA_HISTOGRAM_BOOLEAN("IOS.CommittedNavigationHasContext", context);
 
@@ -4752,7 +4775,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     // should be the first and the only pending navigation.
     BOOL isLastNavigation =
         !navigation ||
-        [[_navigationStates lastAddedNavigation] isEqual:navigation];
+        [[self.navigationHandler.navigationStates lastAddedNavigation]
+            isEqual:navigation];
     if (isLastNavigation ||
         (web::features::StorePendingItemInContext() &&
          self.webState->GetNavigationManager()->GetPendingItemIndex() == -1)) {
@@ -4773,8 +4797,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   if (web::features::StorePendingItemInContext()) {
     // No further code relies an existance of pending item, so this navigation
     // can be marked as "committed".
-    [_navigationStates setState:web::WKNavigationState::COMMITTED
-                  forNavigation:navigation];
+    [self.navigationHandler.navigationStates
+             setState:web::WKNavigationState::COMMITTED
+        forNavigation:navigation];
   }
 
   // This is the point where the document's URL has actually changed.
@@ -4814,19 +4839,20 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   // Sometimes |webView:didFinishNavigation| arrives before
   // |webView:didCommitNavigation|. Explicitly trigger post-commit processing.
   bool navigationCommitted =
-      [_navigationStates stateForNavigation:navigation] ==
+      [self.navigationHandler.navigationStates stateForNavigation:navigation] ==
       web::WKNavigationState::COMMITTED;
   UMA_HISTOGRAM_BOOLEAN("IOS.WKWebViewFinishBeforeCommit",
                         !navigationCommitted);
   if (!navigationCommitted) {
     [self webView:webView didCommitNavigation:navigation];
     DCHECK_EQ(web::WKNavigationState::COMMITTED,
-              [_navigationStates stateForNavigation:navigation]);
+              [self.navigationHandler.navigationStates
+                  stateForNavigation:navigation]);
   }
 
   // Sometimes |didFinishNavigation| callback arrives after |stopLoading| has
   // been called. Abort in this case.
-  if ([_navigationStates stateForNavigation:navigation] ==
+  if ([self.navigationHandler.navigationStates stateForNavigation:navigation] ==
       web::WKNavigationState::NONE) {
     return;
   }
@@ -4838,7 +4864,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
                         webViewURL == currentWKItemURL);
 
   web::NavigationContextImpl* context =
-      [_navigationStates contextForNavigation:navigation];
+      [self.navigationHandler.navigationStates contextForNavigation:navigation];
   web::NavigationItemImpl* item =
       context ? web::GetItemWithUniqueID(self.navigationManagerImpl, context)
               : nullptr;
@@ -4934,8 +4960,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
                originalNavigation:navigation];
   }
 
-  [_navigationStates setState:web::WKNavigationState::FINISHED
-                forNavigation:navigation];
+  [self.navigationHandler.navigationStates
+           setState:web::WKNavigationState::FINISHED
+      forNavigation:navigation];
 
   DCHECK(!_isHalted);
   // Trigger JavaScript driven post-document-load-completion tasks.
@@ -4947,9 +4974,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
   if (web::features::StorePendingItemInContext()) {
     // Remove the navigation to immediately get rid of pending item.
-    if (web::WKNavigationState::NONE !=
-        [_navigationStates stateForNavigation:navigation]) {
-      [_navigationStates removeNavigation:navigation];
+    if (web::WKNavigationState::NONE != [self.navigationHandler.navigationStates
+                                            stateForNavigation:navigation]) {
+      [self.navigationHandler.navigationStates removeNavigation:navigation];
     }
   } else {
     [self forgetNullWKNavigation:navigation];
@@ -4961,8 +4988,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
             withError:(NSError*)error {
   [self didReceiveWebViewNavigationDelegateCallback];
 
-  [_navigationStates setState:web::WKNavigationState::FAILED
-                forNavigation:navigation];
+  [self.navigationHandler.navigationStates
+           setState:web::WKNavigationState::FAILED
+      forNavigation:navigation];
 
   [self handleLoadError:error forNavigation:navigation provisionalLoad:NO];
 
@@ -5201,7 +5229,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   }
 
   web::NavigationContextImpl* navigationContext =
-      [_navigationStates contextForNavigation:navigation];
+      [self.navigationHandler.navigationStates contextForNavigation:navigation];
   navigationContext->SetError(error);
   navigationContext->SetIsPost([self isCurrentNavigationItemPOST]);
   // TODO(crbug.com/803631) DCHECK that self.currentNavItem is the navigation
@@ -5310,7 +5338,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   if ([self shouldCancelLoadForCancelledError:error
                               provisionalLoad:provisionalLoad]) {
     web::NavigationContextImpl* navigationContext =
-        [_navigationStates contextForNavigation:navigation];
+        [self.navigationHandler.navigationStates
+            contextForNavigation:navigation];
     [self loadCancelled];
     self.navigationManagerImpl->DiscardNonCommittedItems();
     // If discarding the non-committed entries results in native content URL,
@@ -5504,7 +5533,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     (const GURL&)URL {
   // Here the enumeration variable |navigation| is __strong to allow setting it
   // to nil.
-  for (__strong id navigation in [_navigationStates pendingNavigations]) {
+  for (__strong id navigation in
+       [self.navigationHandler.navigationStates pendingNavigations]) {
     if (navigation == [NSNull null]) {
       // null is a valid navigation object passed to WKNavigationDelegate
       // callbacks and represents window opening action.
@@ -5512,7 +5542,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     }
 
     web::NavigationContextImpl* context =
-        [_navigationStates contextForNavigation:navigation];
+        [self.navigationHandler.navigationStates
+            contextForNavigation:navigation];
     if (context && context->GetUrl() == URL) {
       return context;
     }
@@ -5561,7 +5592,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // cleaned up manually by calling this method.
 - (void)forgetNullWKNavigation:(WKNavigation*)navigation {
   if (!navigation)
-    [_navigationStates removeNavigation:navigation];
+    [self.navigationHandler.navigationStates removeNavigation:navigation];
 }
 
 #pragma mark - CRWSSLStatusUpdaterDataSource
@@ -5762,7 +5793,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   }
 
   web::WKNavigationState lastNavigationState =
-      [_navigationStates lastAddedNavigationState];
+      [self.navigationHandler.navigationStates lastAddedNavigationState];
   bool hasPendingNavigation =
       lastNavigationState == web::WKNavigationState::REQUESTED ||
       lastNavigationState == web::WKNavigationState::STARTED ||
@@ -5886,7 +5917,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
     [self URLDidChangeWithoutDocumentChange:URL];
   } else if ([self isKVOChangePotentialSameDocumentNavigationToURL:URL]) {
-    WKNavigation* navigation = [_navigationStates lastAddedNavigation];
+    WKNavigation* navigation =
+        [self.navigationHandler.navigationStates lastAddedNavigation];
     [self.webView
         evaluateJavaScript:@"window.location.href"
          completionHandler:^(id result, NSError* error) {
@@ -5919,14 +5951,15 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
            // completion block fires. Check WKNavigationState to make sure this
            // navigation has started in WKWebView. If so, don't run the block to
            // avoid clobbering global states. See crbug.com/788452.
-           // TODO(crbug.com/788465): simplify history state handling to avoid
+           // TODO(crbug.com/788465): simplify hisgtory state handling to avoid
            // this hack.
            WKNavigation* last_added_navigation =
-              [_navigationStates lastAddedNavigation];
+               [self.navigationHandler.navigationStates lastAddedNavigation];
            BOOL differentDocumentNavigationStarted =
-             navigation != last_added_navigation &&
-             [_navigationStates stateForNavigation:last_added_navigation] >=
-             web::WKNavigationState::STARTED;
+               navigation != last_added_navigation &&
+               [self.navigationHandler.navigationStates
+                   stateForNavigation:last_added_navigation] >=
+                   web::WKNavigationState::STARTED;
            if (windowLocationMatchesNewURL &&
                newURLOriginMatchesDocumentURLOrigin &&
                webViewURLMatchesNewURL && URLDidChangeFromDocumentURL &&

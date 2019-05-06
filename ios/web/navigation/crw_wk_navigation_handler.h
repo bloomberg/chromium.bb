@@ -9,6 +9,7 @@
 #import <WebKit/WebKit.h>
 
 @class CRWPendingNavigationInfo;
+@class CRWWKNavigationStates;
 
 // CRWWKNavigationHandler uses this protocol to interact with its owner.
 @protocol CRWWKNavigationHandlerDelegate <NSObject>
@@ -24,6 +25,10 @@
 // extracted from the request, and ends at either |didCommitNavigation| or
 // |didFailProvisionalNavigation|.
 @property(nonatomic, strong) CRWPendingNavigationInfo* pendingNavigationInfo;
+
+// Holds all WKNavigation objects and their states which are currently in
+// flight.
+@property(nonatomic, readonly, strong) CRWWKNavigationStates* navigationStates;
 
 @end
 
