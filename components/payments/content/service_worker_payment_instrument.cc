@@ -284,6 +284,8 @@ ServiceWorkerPaymentInstrument::CreatePaymentRequestEventData() {
     }
   }
 
+  event_data->payment_handler_host = std::move(payment_handler_host_);
+
   return event_data;
 }
 
@@ -351,7 +353,7 @@ bool ServiceWorkerPaymentInstrument::IsValidForModifier(
   if (needs_installation_)
     return installable_enabled_method_ == method;
 
-  if (!base::ContainsValue(stored_payment_app_info_->enabled_methods, method))
+  if (!IsValidForPaymentMethodIdentifier(method))
     return false;
 
   // Return true if 'basic-card' is not the only matched payment method. This
@@ -407,6 +409,13 @@ bool ServiceWorkerPaymentInstrument::IsValidForModifier(
   // i >= stored_payment_app_info_->capabilities.size() indicates no matched
   // capabilities.
   return i < stored_payment_app_info_->capabilities.size();
+}
+
+bool ServiceWorkerPaymentInstrument::IsValidForPaymentMethodIdentifier(
+    const std::string& payment_method_identifier) const {
+  DCHECK(!needs_installation_);
+  return base::ContainsValue(stored_payment_app_info_->enabled_methods,
+                             payment_method_identifier);
 }
 
 gfx::ImageSkia ServiceWorkerPaymentInstrument::icon_image_skia() const {

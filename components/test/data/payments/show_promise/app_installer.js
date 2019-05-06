@@ -5,25 +5,6 @@
  */
 
 /**
- * Prints output.
- * @param {String} src - Where the message is coming from.
- * @param {String} txt - The text to print.
- */
-function output(src, txt) {
-  // Handle DOMException:
-  if (txt.message) {
-    txt = txt.message;
-  }
-  txt = src + ': ' + txt;
-  if (window.domAutomationController) {
-    window.domAutomationController.send(txt);
-  } else {
-    txt += ' window.domAutomationController not found.';
-  }
-  console.log(txt);
-}
-
-/**
  * Installs the payment handler.
  */
 function install() {  // eslint-disable-line no-unused-vars

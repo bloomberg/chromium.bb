@@ -182,7 +182,7 @@ class MockWebServiceWorkerContextProxy
   }
   void DispatchPaymentRequestEvent(
       int event_id,
-      const blink::WebPaymentRequestEventData&) override {
+      std::unique_ptr<blink::WebPaymentRequestEventData>) override {
     NOTREACHED();
   }
   void OnNavigationPreloadResponse(

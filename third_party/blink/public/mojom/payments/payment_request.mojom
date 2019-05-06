@@ -161,6 +161,8 @@ struct PaymentDetails {
   // by PaymentDetailsUpdate (next to PaymentDetailsInit) but
   // PaymentDetailsUpdate has no id.
   string? id;
+
+  string? stringified_payment_method_errors;
 };
 
 enum PaymentShippingType {

@@ -36,9 +36,11 @@
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/blink/public/mojom/notifications/notification.mojom-blink.h"
+#include "third_party/blink/public/mojom/payments/payment_handler_host.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/notifications/web_notification_data.h"
+#include "third_party/blink/public/platform/modules/payments/web_payment_request_event_data.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_error.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_request.h"
 #include "third_party/blink/public/web/modules/service_worker/web_service_worker_context_client.h"
@@ -566,19 +568,21 @@ void ServiceWorkerGlobalScopeProxy::DispatchCanMakePaymentEvent(
 
 void ServiceWorkerGlobalScopeProxy::DispatchPaymentRequestEvent(
     int event_id,
-    const WebPaymentRequestEventData& web_app_request) {
+    std::unique_ptr<WebPaymentRequestEventData> web_app_request) {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   WaitUntilObserver* wait_until_observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kPaymentRequest, event_id);
   PaymentRequestRespondWithObserver* respond_with_observer =
       PaymentRequestRespondWithObserver::Create(WorkerGlobalScope(), event_id,
                                                 wait_until_observer);
-
   Event* event = PaymentRequestEvent::Create(
       event_type_names::kPaymentrequest,
       PaymentEventDataConversion::ToPaymentRequestEventInit(
           WorkerGlobalScope()->ScriptController()->GetScriptState(),
-          web_app_request),
+          *web_app_request),
+      payments::mojom::blink::PaymentHandlerHostPtrInfo(
+          std::move(web_app_request->payment_handler_host_handle),
+          payments::mojom::blink::PaymentHandlerHost::Version_),
       respond_with_observer, wait_until_observer);
 
   WorkerGlobalScope()->DispatchExtendableEventWithRespondWith(

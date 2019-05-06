@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PAYMENTS_WEB_PAYMENT_REQUEST_EVENT_DATA_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PAYMENTS_WEB_PAYMENT_REQUEST_EVENT_DATA_H_
 
+#include "mojo/public/cpp/system/message_pipe.h"
 #include "third_party/blink/public/platform/modules/payments/web_can_make_payment_event_data.h"
 #include "third_party/blink/public/platform/modules/payments/web_payment_currency_amount.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -15,6 +16,8 @@ struct WebPaymentRequestEventData : public WebCanMakePaymentEventData {
   WebString payment_request_id;
   WebString instrument_key;
   WebPaymentCurrencyAmount total;
+  // For payments::mojom::blink::PaymentHandlerHost.
+  mojo::ScopedMessagePipeHandle payment_handler_host_handle;
 };
 
 }  // namespace blink

@@ -129,8 +129,9 @@ class ServiceWorkerGlobalScopeProxy final
   void DispatchAbortPaymentEvent(int) override;
   void DispatchCanMakePaymentEvent(int,
                                    const WebCanMakePaymentEventData&) override;
-  void DispatchPaymentRequestEvent(int,
-                                   const WebPaymentRequestEventData&) override;
+  void DispatchPaymentRequestEvent(
+      int,
+      std::unique_ptr<WebPaymentRequestEventData>) override;
   bool HasFetchEventHandler() override;
   void OnNavigationPreloadResponse(
       int fetch_event_id,

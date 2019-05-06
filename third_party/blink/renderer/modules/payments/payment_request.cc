@@ -399,25 +399,10 @@ void StringifyAndParseMethodSpecificData(ExecutionContext& execution_context,
                                          const ScriptValue& input,
                                          PaymentMethodDataPtr& output,
                                          ExceptionState& exception_state) {
-  DCHECK(!input.IsEmpty());
-  v8::Local<v8::String> value;
-  if (!input.V8Value()->IsObject() ||
-      !v8::JSON::Stringify(input.GetContext(), input.V8Value().As<v8::Object>())
-           .ToLocal(&value)) {
-    exception_state.ThrowTypeError(
-        "Payment method data should be a JSON-serializable object");
+  PaymentsValidators::ValidateAndStringifyObject(
+      "Payment method data", input, output->stringified_data, exception_state);
+  if (exception_state.HadException())
     return;
-  }
-
-  output->stringified_data = ToBlinkString<String>(value, kDoNotExternalize);
-
-  if (output->stringified_data.length() >
-      PaymentRequest::kMaxJSONStringLength) {
-    exception_state.ThrowTypeError(
-        "JSON serialization of payment method data should be no longer than "
-        "1048576 characters");
-    return;
-  }
 
   // Serialize payment method specific data to be sent to the payment apps. The
   // payment apps are responsible for validating and processing their method
@@ -593,6 +578,12 @@ void ValidateAndConvertPaymentDetailsUpdate(const PaymentDetailsUpdate* input,
     output->shipping_address_errors =
         payments::mojom::blink::AddressErrors::From(
             input->shippingAddressErrors());
+  }
+
+  if (input->hasPaymentMethodErrors()) {
+    PaymentsValidators::ValidateAndStringifyObject(
+        "Payment method errors", input->paymentMethodErrors(),
+        output->stringified_payment_method_errors, exception_state);
   }
 }
 

@@ -17,6 +17,7 @@
 #include "components/payments/core/journey_logger.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "third_party/blink/public/mojom/payments/payment_handler_host.mojom.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 #include "url/gurl.h"
 
@@ -37,6 +38,7 @@ class PaymentRequestWebContentsManager;
 // PaymentRequestSpec, and the current user selection state (and related data)
 // is stored in PaymentRequestSpec.
 class PaymentRequest : public mojom::PaymentRequest,
+                       public mojom::PaymentHandlerHost,
                        public PaymentRequestSpec::Observer,
                        public PaymentRequestState::Delegate {
  public:
@@ -76,6 +78,11 @@ class PaymentRequest : public mojom::PaymentRequest,
   void Complete(mojom::PaymentComplete result) override;
   void CanMakePayment(bool legacy_mode) override;
   void HasEnrolledInstrument(bool per_method_quota) override;
+
+  // mojom::PaymentHandlerHost
+  void ChangePaymentMethod(
+      mojom::PaymentHandlerMethodDataPtr method_data,
+      mojom::PaymentHandlerHost::ChangePaymentMethodCallback callback) override;
 
   // PaymentRequestSpec::Observer:
   void OnSpecUpdated() override {}
@@ -129,6 +136,13 @@ class PaymentRequest : public mojom::PaymentRequest,
   }
 
  private:
+  // Binds itself as the payment handler host for the selected service worker
+  // payment instrument.
+  void BindPaymentHandlerHost();
+
+  // Called when the mojo pipe to the payment handler closed.
+  void OnPaymentHandlerConnectionTerminated();
+
   // Returns true after init() has been called and the mojo connection has been
   // established. If the mojo connection gets later disconnected, this will
   // returns false.
@@ -181,6 +195,15 @@ class PaymentRequest : public mojom::PaymentRequest,
 
   std::unique_ptr<PaymentRequestSpec> spec_;
   std::unique_ptr<PaymentRequestState> state_;
+
+  // The end-point for the payment handler renderer process to call into the
+  // browser process.
+  mojo::Binding<mojom::PaymentHandlerHost> payment_handler_host_binding_;
+
+  // Payment handler's callback to invoke after merchant responds to the
+  // "payment method change" event.
+  mojom::PaymentHandlerHost::ChangePaymentMethodCallback
+      change_payment_method_callback_;
 
   // The RFC 6454 origin of the top level frame that has invoked PaymentRequest
   // API. This is what the user sees in the address bar.

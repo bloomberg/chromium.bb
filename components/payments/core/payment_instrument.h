@@ -64,7 +64,11 @@ class PaymentInstrument {
   virtual gfx::ImageSkia icon_image_skia() const;
 
   // Returns true if this payment instrument can be used to fulfill a request
-  // specifying |method| as supported method of payment, false otherwise.
+  // specifying |method| as supported method of payment, false otherwise. The
+  // parsed basic-card specific data (supported_networks, supported_types, etc)
+  // is relevant only for the AutofillPaymentInstrument, which runs inside of
+  // the browser process and thus should not be parsing untrusted JSON strings
+  // from the renderer.
   virtual bool IsValidForModifier(
       const std::string& method,
       bool supported_networks_specified,
@@ -72,6 +76,11 @@ class PaymentInstrument {
       bool supported_types_specified,
       const std::set<autofill::CreditCard::CardType>& supported_types)
       const = 0;
+
+  // Returns true if this payment instrument can handle payments for the given
+  // |payment_method_identifier|.
+  virtual bool IsValidForPaymentMethodIdentifier(
+      const std::string& payment_method_identifier) const = 0;
 
   int icon_resource_id() const { return icon_resource_id_; }
   Type type() { return type_; }

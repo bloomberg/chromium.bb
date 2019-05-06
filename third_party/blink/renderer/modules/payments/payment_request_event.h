@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_REQUEST_EVENT_H_
 
 #include "base/macros.h"
+#include "third_party/blink/public/mojom/payments/payment_handler_host.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/modules/event_modules.h"
 #include "third_party/blink/renderer/modules/payments/payment_request_event_init.h"
@@ -19,7 +20,9 @@ class AtomicString;
 namespace blink {
 
 class RespondWithObserver;
+class ScriptPromiseResolver;
 class ScriptState;
+class ScriptValue;
 
 class MODULES_EXPORT PaymentRequestEvent final : public ExtendableEvent {
   DEFINE_WRAPPERTYPEINFO();
@@ -27,15 +30,19 @@ class MODULES_EXPORT PaymentRequestEvent final : public ExtendableEvent {
  public:
   static PaymentRequestEvent* Create(const AtomicString& type,
                                      const PaymentRequestEventInit*);
-  static PaymentRequestEvent* Create(const AtomicString& type,
-                                     const PaymentRequestEventInit*,
-                                     RespondWithObserver*,
-                                     WaitUntilObserver*);
+  static PaymentRequestEvent* Create(
+      const AtomicString& type,
+      const PaymentRequestEventInit*,
+      payments::mojom::blink::PaymentHandlerHostPtrInfo host_info,
+      RespondWithObserver*,
+      WaitUntilObserver*);
 
-  PaymentRequestEvent(const AtomicString& type,
-                      const PaymentRequestEventInit*,
-                      RespondWithObserver*,
-                      WaitUntilObserver*);
+  PaymentRequestEvent(
+      const AtomicString& type,
+      const PaymentRequestEventInit*,
+      payments::mojom::blink::PaymentHandlerHostPtrInfo host_info,
+      RespondWithObserver*,
+      WaitUntilObserver*);
   ~PaymentRequestEvent() override;
 
   const AtomicString& InterfaceName() const override;
@@ -49,11 +56,22 @@ class MODULES_EXPORT PaymentRequestEvent final : public ExtendableEvent {
   const String& instrumentKey() const;
 
   ScriptPromise openWindow(ScriptState*, const String& url);
+  ScriptPromise changePaymentMethod(ScriptState*,
+                                    const String& method_name,
+                                    ExceptionState& exception_state);
+  ScriptPromise changePaymentMethod(ScriptState*,
+                                    const String& method_name,
+                                    const ScriptValue& method_details,
+                                    ExceptionState& exception_state);
   void respondWith(ScriptState*, ScriptPromise, ExceptionState&);
 
   void Trace(blink::Visitor*) override;
 
  private:
+  void OnChangePaymentMethodResponse(
+      payments::mojom::blink::PaymentMethodChangeResponsePtr);
+  void OnHostConnectionError();
+
   String top_origin_;
   String payment_request_origin_;
   String payment_request_id_;
@@ -62,7 +80,9 @@ class MODULES_EXPORT PaymentRequestEvent final : public ExtendableEvent {
   HeapVector<Member<PaymentDetailsModifier>> modifiers_;
   String instrument_key_;
 
+  Member<ScriptPromiseResolver> change_payment_method_resolver_;
   Member<RespondWithObserver> observer_;
+  payments::mojom::blink::PaymentHandlerHostPtr payment_handler_host_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestEvent);
 };

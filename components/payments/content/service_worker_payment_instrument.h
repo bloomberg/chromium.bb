@@ -10,6 +10,7 @@
 #include "components/payments/core/payment_instrument.h"
 #include "content/public/browser/stored_payment_app.h"
 #include "third_party/blink/public/mojom/payments/payment_app.mojom.h"
+#include "third_party/blink/public/mojom/payments/payment_handler_host.mojom.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 
 namespace content {
@@ -76,7 +77,14 @@ class ServiceWorkerPaymentInstrument : public PaymentInstrument {
                           bool supported_types_specified,
                           const std::set<autofill::CreditCard::CardType>&
                               supported_types) const override;
+  bool IsValidForPaymentMethodIdentifier(
+      const std::string& payment_method_identifier) const override;
   gfx::ImageSkia icon_image_skia() const override;
+
+  void set_payment_handler_host(
+      mojom::PaymentHandlerHostPtrInfo payment_handler_host) {
+    payment_handler_host_ = std::move(payment_handler_host);
+  }
 
  private:
   friend class ServiceWorkerPaymentInstrumentTest;
@@ -102,6 +110,8 @@ class ServiceWorkerPaymentInstrument : public PaymentInstrument {
 
   // Weak pointer that must outlive this object.
   PaymentRequestDelegate* payment_request_delegate_;
+
+  mojom::PaymentHandlerHostPtrInfo payment_handler_host_;
 
   // PaymentAppProvider::CanMakePayment result of this payment instrument.
   bool can_make_payment_result_;

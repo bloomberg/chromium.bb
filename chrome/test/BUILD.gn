@@ -1670,6 +1670,7 @@ test("browser_tests") {
         "../browser/ui/views/payments/error_message_view_controller_browsertest.cc",
         "../browser/ui/views/payments/modifiers_browsertest.cc",
         "../browser/ui/views/payments/order_summary_view_controller_browsertest.cc",
+        "../browser/ui/views/payments/payment_handler_change_payment_method_browsertest.cc",
         "../browser/ui/views/payments/payment_method_view_controller_browsertest.cc",
         "../browser/ui/views/payments/payment_request_blob_url_browsertest.cc",
         "../browser/ui/views/payments/payment_request_browsertest.cc",

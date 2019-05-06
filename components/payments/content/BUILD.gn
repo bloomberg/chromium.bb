@@ -37,6 +37,7 @@ jumbo_static_library("content") {
     "//components/keyed_service/content",
     "//components/payments/content/utility",
     "//components/payments/core",
+    "//components/payments/core:error_strings",
     "//components/payments/mojom",
     "//components/prefs",
     "//components/strings:components_strings_grit",

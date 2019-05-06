@@ -982,6 +982,7 @@ interface PaymentRequestEvent : ExtendableEvent
     getter paymentRequestOrigin
     getter topOrigin
     getter total
+    method changePaymentMethod
     method constructor
     method openWindow
     method respondWith

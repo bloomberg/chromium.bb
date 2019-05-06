@@ -1058,6 +1058,10 @@
       status: "experimental",
     },
     {
+      name: "PaymentHandlerChangePaymentMethod",
+      status: "experimental",
+    },
+    {
       name: "PaymentMethodChangeEvent",
       status: "experimental",
     },

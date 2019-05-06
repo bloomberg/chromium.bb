@@ -37,35 +37,38 @@ TypeConverter<blink::WebCanMakePaymentEventData,
   return output;
 }
 
-blink::WebPaymentRequestEventData
-TypeConverter<blink::WebPaymentRequestEventData,
+std::unique_ptr<blink::WebPaymentRequestEventData>
+TypeConverter<std::unique_ptr<blink::WebPaymentRequestEventData>,
               payments::mojom::PaymentRequestEventDataPtr>::
     Convert(const payments::mojom::PaymentRequestEventDataPtr& input) {
-  blink::WebPaymentRequestEventData output;
+  auto output = std::make_unique<blink::WebPaymentRequestEventData>();
 
-  output.top_origin = blink::WebString::FromUTF8(input->top_origin.spec());
-  output.payment_request_origin =
+  output->top_origin = blink::WebString::FromUTF8(input->top_origin.spec());
+  output->payment_request_origin =
       blink::WebString::FromUTF8(input->payment_request_origin.spec());
-  output.payment_request_id =
+  output->payment_request_id =
       blink::WebString::FromUTF8(input->payment_request_id);
 
-  output.method_data =
+  output->method_data =
       blink::WebVector<blink::WebPaymentMethodData>(input->method_data.size());
   for (size_t i = 0; i < input->method_data.size(); i++) {
-    output.method_data[i] = mojo::ConvertTo<blink::WebPaymentMethodData>(
+    output->method_data[i] = mojo::ConvertTo<blink::WebPaymentMethodData>(
         std::move(input->method_data[i]));
   }
 
-  output.total = mojo::ConvertTo<blink::WebPaymentCurrencyAmount>(input->total);
+  output->total =
+      mojo::ConvertTo<blink::WebPaymentCurrencyAmount>(input->total);
 
-  output.modifiers = blink::WebVector<blink::WebPaymentDetailsModifier>(
+  output->modifiers = blink::WebVector<blink::WebPaymentDetailsModifier>(
       input->modifiers.size());
   for (size_t i = 0; i < input->modifiers.size(); i++) {
-    output.modifiers[i] =
+    output->modifiers[i] =
         mojo::ConvertTo<blink::WebPaymentDetailsModifier>(input->modifiers[i]);
   }
 
-  output.instrument_key = blink::WebString::FromUTF8(input->instrument_key);
+  output->instrument_key = blink::WebString::FromUTF8(input->instrument_key);
+  output->payment_handler_host_handle =
+      input->payment_handler_host.PassHandle();
 
   return output;
 }

@@ -86,6 +86,13 @@ jumbo_static_library("core") {
   ]
 }
 
+jumbo_static_library("error_strings") {
+  sources = [
+    "error_strings.cc",
+    "error_strings.h",
+  ]
+}
+
 jumbo_static_library("test_support") {
   testonly = true
   sources = [

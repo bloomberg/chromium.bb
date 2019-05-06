@@ -126,7 +126,7 @@ class WebServiceWorkerContextProxy {
 
   virtual void DispatchPaymentRequestEvent(
       int event_id,
-      const WebPaymentRequestEventData&) = 0;
+      std::unique_ptr<WebPaymentRequestEventData>) = 0;
 
   virtual void OnNavigationPreloadResponse(
       int fetch_event_id,

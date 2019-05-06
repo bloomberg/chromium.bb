@@ -1190,9 +1190,10 @@ void ServiceWorkerContextClient::DispatchPaymentRequestEvent(
                           TRACE_ID_LOCAL(event_id)),
       TRACE_EVENT_FLAG_FLOW_OUT);
 
-  blink::WebPaymentRequestEventData webEventData =
-      mojo::ConvertTo<blink::WebPaymentRequestEventData>(std::move(eventData));
-  proxy_->DispatchPaymentRequestEvent(event_id, webEventData);
+  auto webEventData =
+      mojo::ConvertTo<std::unique_ptr<blink::WebPaymentRequestEventData>>(
+          std::move(eventData));
+  proxy_->DispatchPaymentRequestEvent(event_id, std::move(webEventData));
 }
 
 void ServiceWorkerContextClient::OnNavigationPreloadResponse(
