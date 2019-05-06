@@ -208,7 +208,7 @@ static const wedge_code_type wedge_codebook_16_heqw[16] = {
   { WEDGE_OBLIQUE117, 2, 4 }, { WEDGE_OBLIQUE117, 6, 4 },
 };
 
-const wedge_params_type wedge_params_lookup[BLOCK_SIZES_ALL] = {
+const wedge_params_type av1_wedge_params_lookup[BLOCK_SIZES_ALL] = {
   { 0, NULL, NULL, NULL },
   { 0, NULL, NULL, NULL },
   { 0, NULL, NULL, NULL },
@@ -248,9 +248,10 @@ static const uint8_t *get_wedge_mask_inplace(int wedge_index, int neg,
   const int bh = block_size_high[sb_type];
   const int bw = block_size_wide[sb_type];
   const wedge_code_type *a =
-      wedge_params_lookup[sb_type].codebook + wedge_index;
+      av1_wedge_params_lookup[sb_type].codebook + wedge_index;
   int woff, hoff;
-  const uint8_t wsignflip = wedge_params_lookup[sb_type].signflip[wedge_index];
+  const uint8_t wsignflip =
+      av1_wedge_params_lookup[sb_type].signflip[wedge_index];
 
   assert(wedge_index >= 0 &&
          wedge_index < (1 << get_wedge_bits_lookup(sb_type)));
@@ -490,7 +491,7 @@ static void init_wedge_signs() {
   for (sb_type = BLOCK_4X4; sb_type < BLOCK_SIZES_ALL; ++sb_type) {
     const int bw = block_size_wide[sb_type];
     const int bh = block_size_high[sb_type];
-    const wedge_params_type wedge_params = wedge_params_lookup[sb_type];
+    const wedge_params_type wedge_params = av1_wedge_params_lookup[sb_type];
     const int wbits = wedge_params.bits;
     const int wtypes = 1 << wbits;
     int i, w;
@@ -526,7 +527,7 @@ static void init_wedge_masks() {
     const uint8_t *mask;
     const int bw = block_size_wide[bsize];
     const int bh = block_size_high[bsize];
-    const wedge_params_type *wedge_params = &wedge_params_lookup[bsize];
+    const wedge_params_type *wedge_params = &av1_wedge_params_lookup[bsize];
     const int wbits = wedge_params->bits;
     const int wtypes = 1 << wbits;
     int w;
