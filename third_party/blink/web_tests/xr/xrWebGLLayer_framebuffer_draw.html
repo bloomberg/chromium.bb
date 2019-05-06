@@ -14,7 +14,7 @@ let testName =
 
 let fakeDeviceInitParams = { supportsImmersive: true };
 
-let requestSessionOptions =  ['immersive-vr'];
+let requestSessionModes =  ['immersive-vr'];
 
 // Very simple program setup with no error checking.
 function setupProgram(gl, vertexSrc, fragmentSrc) {
@@ -94,6 +94,6 @@ let testFunction =
 });
 
 xr_session_promise_test(
-  testFunction, fakeDeviceInitParams, requestSessionOptions, testName);
+  testFunction, fakeDeviceInitParams, requestSessionModes, testName);
 
 </script>

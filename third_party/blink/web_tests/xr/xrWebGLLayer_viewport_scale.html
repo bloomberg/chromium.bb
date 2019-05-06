@@ -15,7 +15,7 @@ let testName = "Ensure viewport scale changes only take effect on the next "
 
 let fakeDeviceInitParams = { supportsImmersive: true };
 
-let requestSessionOptions =  ['immersive-vr'];
+let requestSessionModes =  ['immersive-vr'];
 
 let testFunction = function(session, t, fakeDeviceController) {
   // Session must have a baseLayer or else frame requests will be ignored.
@@ -103,6 +103,6 @@ let testFunction = function(session, t, fakeDeviceController) {
 };
 
 xr_session_promise_test(
-  testFunction, fakeDeviceInitParams, requestSessionOptions, testName);
+  testFunction, fakeDeviceInitParams, requestSessionModes, testName);
 
 </script>

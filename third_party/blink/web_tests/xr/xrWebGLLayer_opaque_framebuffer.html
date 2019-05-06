@@ -12,7 +12,7 @@ let testName = "Ensure that the framebuffer given by the WebGL layer is opaque";
 
 let fakeDeviceInitParams = { supportsImmersive: true };
 
-let requestSessionOptions = [
+let requestSessionModes = [
   'immersive-vr',
   'inline'
 ];
@@ -110,6 +110,6 @@ let testFunction =
 });
 
 xr_session_promise_test(
-  testFunction, fakeDeviceInitParams, requestSessionOptions, testName);
+  testFunction, fakeDeviceInitParams, requestSessionModes, testName);
 
 </script>

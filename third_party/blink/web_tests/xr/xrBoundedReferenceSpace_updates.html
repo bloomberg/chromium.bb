@@ -15,7 +15,7 @@ let testName =
 
 let fakeDeviceInitParams = { supportsImmersive:true };
 
-let requestSessionOptions = [
+let requestSessionModes = [
   'immersive-vr',
 ];
 
@@ -95,6 +95,6 @@ let testFunction = function(session, t, fakeDeviceController) {
 };
 
 xr_session_promise_test(
-  testFunction, fakeDeviceInitParams, requestSessionOptions, testName);
+  testFunction, fakeDeviceInitParams, requestSessionModes, testName);
 
 </script>

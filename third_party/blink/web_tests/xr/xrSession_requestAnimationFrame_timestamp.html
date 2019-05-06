@@ -16,7 +16,7 @@ let testName = "XRFrame getViewerPose updates on the next frame";
 
 let fakeDeviceInitParams = { supportsImmersive:true };
 
-let requestSessionOptions = [
+let requestSessionModes = [
   'inline',
   'immersive-vr',
 ];
@@ -110,6 +110,6 @@ let testFunction = function(session, t, fakeDeviceController) {
 };
 
 xr_session_promise_test(
-  testFunction, fakeDeviceInitParams, requestSessionOptions, testName);
+  testFunction, fakeDeviceInitParams, requestSessionModes, testName);
 
 </script>

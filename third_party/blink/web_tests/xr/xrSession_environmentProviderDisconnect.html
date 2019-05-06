@@ -16,7 +16,7 @@ let testName = "Outstanding promises get rejected if environmentProvider discone
 let fakeDeviceInitParams = { supportsImmersive: true,
                              supportsEnvironmentIntegration: true };
 
-let requestSessionOptions = ['immersive-ar'];
+let requestSessionModes = ['immersive-ar'];
 let refSpace = undefined;
 
 let ray = new XRRay({x : 0.0, y : 0.0, z : 0.0}, {x : 1.0, y : 0.0, z: 0.0});
@@ -61,6 +61,6 @@ let testFunction = function(session, t, controller) {
 };
 
 xr_session_promise_test(
-  testFunction, fakeDeviceInitParams, requestSessionOptions, testName);
+  testFunction, fakeDeviceInitParams, requestSessionModes, testName);
 
 </script>
