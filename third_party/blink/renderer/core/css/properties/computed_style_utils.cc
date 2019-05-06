@@ -2116,11 +2116,10 @@ CSSValue* ComputedStyleUtils::ValueForPageBreakBetween(
     case EBreakBetween::kColumn:
     case EBreakBetween::kRecto:
     case EBreakBetween::kVerso:
-      return CSSIdentifierValue::Create(CSSValueID::kAuto);
+    case EBreakBetween::kAvoidPage:
+      return nullptr;
     case EBreakBetween::kPage:
       return CSSIdentifierValue::Create(CSSValueID::kAlways);
-    case EBreakBetween::kAvoidPage:
-      return CSSIdentifierValue::Create(CSSValueID::kAvoid);
     default:
       return CSSIdentifierValue::Create(break_value);
   }
@@ -2138,7 +2137,7 @@ CSSValue* ComputedStyleUtils::ValueForWebkitColumnBreakBetween(
     case EBreakBetween::kRecto:
     case EBreakBetween::kRight:
     case EBreakBetween::kVerso:
-      return CSSIdentifierValue::Create(CSSValueID::kAuto);
+      return nullptr;
     case EBreakBetween::kColumn:
       return CSSIdentifierValue::Create(CSSValueID::kAlways);
     case EBreakBetween::kAvoidColumn:
@@ -2154,7 +2153,7 @@ CSSValue* ComputedStyleUtils::ValueForPageBreakInside(
     EBreakInside break_value) {
   switch (break_value) {
     case EBreakInside::kAvoidColumn:
-      return CSSIdentifierValue::Create(CSSValueID::kAuto);
+      return nullptr;
     case EBreakInside::kAvoidPage:
       return CSSIdentifierValue::Create(CSSValueID::kAvoid);
     default:
@@ -2168,7 +2167,7 @@ CSSValue* ComputedStyleUtils::ValueForWebkitColumnBreakInside(
     EBreakInside break_value) {
   switch (break_value) {
     case EBreakInside::kAvoidPage:
-      return CSSIdentifierValue::Create(CSSValueID::kAuto);
+      return nullptr;
     case EBreakInside::kAvoidColumn:
       return CSSIdentifierValue::Create(CSSValueID::kAvoid);
     default:
