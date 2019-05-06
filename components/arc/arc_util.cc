@@ -198,7 +198,9 @@ void SetArcCpuRestriction(bool do_restrict) {
     return;
   }
 
-  if (chromeos::switches::IsArcCpuRestrictionDisabled())
+  // Ignore any calls to restrict the ARC container if the specified command
+  // line flag is set.
+  if (chromeos::switches::IsArcCpuRestrictionDisabled() && do_restrict)
     return;
 
   const login_manager::ContainerCpuRestrictionState state =
