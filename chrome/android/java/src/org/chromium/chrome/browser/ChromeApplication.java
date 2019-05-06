@@ -117,6 +117,8 @@ public class ChromeApplication extends Application {
             ApplicationStatus.registerApplicationStateListener(
                     ChromeApplication::updateMemoryPressurePolling);
 
+            AppHooks.get().initTouchlessLifecycleTracker();
+
             // Not losing much to not cover the below conditional since it just has simple setters.
             TraceEvent.end("ChromeApplication.attachBaseContext");
         }
