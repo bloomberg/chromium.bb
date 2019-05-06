@@ -14,22 +14,6 @@
 
 namespace autofill {
 
-// Returns true if kName is set in |groups|.
-bool ContainsName(uint32_t groups);
-
-// Returns true if kAddress is set in |groups|.
-bool ContainsAddress(uint32_t groups);
-
-// Returns true if kEmail is set in |groups|.
-bool ContainsEmail(uint32_t groups);
-
-// Returns true if kPhone is set in |groups|.
-bool ContainsPhone(uint32_t groups);
-
-// Returns a bitmask indicating whether the NAME, ADDRESS_HOME, EMAIL, and
-// PHONE_HOME FieldTypeGroups are associated with the given |field_types|.
-uint32_t DetermineGroups(const std::vector<ServerFieldType>& types);
-
 // Returns true if |type| is a component of a street address.
 bool IsStreetAddressPart(ServerFieldType type);
 
