@@ -600,10 +600,7 @@ void AppListControllerImpl::OnOverviewModeStarting() {
 }
 
 void AppListControllerImpl::OnTabletModeStarted() {
-  if (presenter_.GetTargetVisibility()) {
-    DCHECK(IsVisible());
-    presenter_.GetView()->OnTabletModeChanged(true);
-  }
+  presenter_.OnTabletModeChanged(true);
 
   // Show the app list if the tablet mode starts.
   Shell::Get()->home_screen_controller()->Show();
@@ -619,8 +616,7 @@ void AppListControllerImpl::OnTabletModeEnded() {
                     ->HasVisibleWindow()) {
     dismiss_animation_disabler.emplace(presenter());
   }
-  if (IsVisible())
-    presenter_.GetView()->OnTabletModeChanged(false);
+  presenter_.OnTabletModeChanged(false);
 
   // Dismiss the app list if the tablet mode ends.
   DismissAppList();
@@ -850,11 +846,13 @@ void AppListControllerImpl::SetStateTransitionAnimationCallback(
 }
 
 void AppListControllerImpl::RecordShelfAppLaunched(
-    base::Optional<mojom::AppListViewState> recorded_app_list_view_state) {
+    base::Optional<mojom::AppListViewState> recorded_app_list_view_state,
+    base::Optional<bool> recorded_home_launcher_shown) {
   app_list::RecordAppListAppLaunched(
       mojom::AppListLaunchedFrom::kLaunchedFromShelf,
       recorded_app_list_view_state.value_or(GetAppListViewState()),
-      IsTabletMode(), presenter_.home_launcher_shown());
+      IsTabletMode(),
+      recorded_home_launcher_shown.value_or(presenter_.home_launcher_shown()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -63,7 +63,8 @@ void ShelfApplicationMenuModel::ExecuteCommand(int command_id,
       // Record app launch when selecting window to open from disambiguation
       // menu.
       Shell::Get()->app_list_controller()->RecordShelfAppLaunched(
-          base::nullopt);
+          base::nullopt /* recorded_app_list_view_state */,
+          base::nullopt /* recorded_home_launcher_shown */);
     }
 
     // The display hosting the menu is irrelevant, windows activate in-place.

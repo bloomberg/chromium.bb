@@ -131,6 +131,9 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
   // Show/hide the expand arrow view button.
   void SetExpandArrowViewVisibility(bool show);
 
+  // Called when tablet mode starts and ends.
+  void OnTabletModeChanged(bool started);
+
   // Returns whether home launcher is currently shown.
   bool home_launcher_shown() const { return home_launcher_shown_; }
 
