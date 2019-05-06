@@ -237,6 +237,10 @@ public class TabModalPresenter
 
         mDialogContainer = (ViewGroup) dialogContainerStub.inflate();
         mDialogContainer.setVisibility(View.GONE);
+
+        // Make sure clicks are not consumed by content beneath the container view.
+        mDialogContainer.setClickable(true);
+
         mContainerParent = (ViewGroup) mDialogContainer.getParent();
         // The default sibling view is the next view of the dialog container stub in main.xml and
         // should not be removed from its parent.
