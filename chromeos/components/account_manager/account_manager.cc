@@ -22,6 +22,7 @@
 #include "components/prefs/pref_service.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
 #include "google_apis/gaia/oauth2_token_service_delegate.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -321,6 +322,27 @@ void AccountManager::RemoveAccountInternal(const AccountKey& account_key) {
   accounts_.erase(it);
   PersistAccountsAsync();
   NotifyAccountRemovalObservers(Account{account_key, raw_email});
+}
+
+void AccountManager::RemoveAccount(const std::string& email) {
+  DCHECK_NE(init_state_, InitializationState::kNotStarted);
+
+  base::OnceClosure closure =
+      base::BindOnce(&AccountManager::RemoveAccountByEmailInternal,
+                     weak_factory_.GetWeakPtr(), email);
+  RunOnInitialization(std::move(closure));
+}
+
+void AccountManager::RemoveAccountByEmailInternal(const std::string& email) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_EQ(init_state_, InitializationState::kInitialized);
+
+  for (const std::pair<AccountKey, AccountInfo> account : accounts_) {
+    if (gaia::AreEmailsSame(account.second.raw_email, email)) {
+      RemoveAccountInternal(account.first /* account_key */);
+      return;
+    }
+  }
 }
 
 void AccountManager::UpsertAccount(const AccountKey& account_key,

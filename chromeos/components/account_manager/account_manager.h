@@ -157,6 +157,11 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER) AccountManager {
   // with GAIA fails, AccountManager will forget the account.
   void RemoveAccount(const AccountKey& account_key);
 
+  // Similar to |RemoveAccount(AccountKey)| except that it accepts |email| as
+  // the account identifier instead of |account_key|. |email| can be the raw
+  // email or the canonical email.
+  void RemoveAccount(const std::string& email);
+
   // Updates or inserts an account. |raw_email| is the raw, un-canonicalized
   // email id for |account_key|. |raw_email| must not be empty. Use
   // |AccountManager::kActiveDirectoryDummyToken| as the |token| for Active
@@ -274,6 +279,11 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER) AccountManager {
   // Does the actual work of removing an account. Assumes that
   // |AccountManager| initialization (|init_state_|) is complete.
   void RemoveAccountInternal(const AccountKey& account_key);
+
+  // Does the actual work of removing an account. Assumes that |AccountManager|
+  // initialization (|init_state_|) is complete. |email| can be the raw email or
+  // the canonical email.
+  void RemoveAccountByEmailInternal(const std::string& email);
 
   // Assumes that |AccountManager| initialization (|init_state_|) is complete.
   void UpdateTokenInternal(const AccountKey& account_key,

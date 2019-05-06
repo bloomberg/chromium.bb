@@ -319,9 +319,24 @@ TEST_F(AccountManagerTest, RemovedAccountsAreImmediatelyUnavailable) {
   account_manager_->UpsertAccount(kGaiaAccountKey_, kRawUserEmail, kGaiaToken);
 
   account_manager_->RemoveAccount(kGaiaAccountKey_);
-  std::vector<AccountManager::Account> accounts = GetAccountsBlocking();
+  EXPECT_TRUE(GetAccountsBlocking().empty());
+}
 
-  EXPECT_TRUE(accounts.empty());
+TEST_F(AccountManagerTest, AccountsCanBeRemovedByRawEmail) {
+  account_manager_->UpsertAccount(kGaiaAccountKey_, kRawUserEmail, kGaiaToken);
+
+  account_manager_->RemoveAccount(kRawUserEmail);
+  EXPECT_TRUE(GetAccountsBlocking().empty());
+}
+
+TEST_F(AccountManagerTest, AccountsCanBeRemovedByCanonicalEmail) {
+  const std::string raw_email = "abc.123.456@gmail.com";
+  const std::string canonical_email = "abc123456@gmail.com";
+
+  account_manager_->UpsertAccount(kGaiaAccountKey_, raw_email, kGaiaToken);
+
+  account_manager_->RemoveAccount(canonical_email);
+  EXPECT_TRUE(GetAccountsBlocking().empty());
 }
 
 TEST_F(AccountManagerTest, AccountRemovalIsPersistedToDisk) {
@@ -330,10 +345,7 @@ TEST_F(AccountManagerTest, AccountRemovalIsPersistedToDisk) {
   scoped_task_environment_.RunUntilIdle();
 
   ResetAndInitializeAccountManager();
-
-  std::vector<AccountManager::Account> accounts = GetAccountsBlocking();
-
-  EXPECT_TRUE(accounts.empty());
+  EXPECT_TRUE(GetAccountsBlocking().empty());
 }
 
 TEST_F(AccountManagerTest, ObserversAreNotifiedOnAccountRemoval) {
@@ -412,8 +424,8 @@ TEST_F(AccountManagerTest,
                                   AccountManager::kActiveDirectoryDummyToken);
   scoped_task_environment_.RunUntilIdle();
   EXPECT_FALSE(account_manager_->IsTokenAvailable(kActiveDirectoryAccountKey_));
-  std::vector<AccountManager::Account> accounts = GetAccountsBlocking();
-  EXPECT_TRUE(IsAccountKeyPresent(accounts, kActiveDirectoryAccountKey_));
+  EXPECT_TRUE(
+      IsAccountKeyPresent(GetAccountsBlocking(), kActiveDirectoryAccountKey_));
 }
 
 TEST_F(AccountManagerTest, IsTokenAvailableReturnsTrueForInvalidTokens) {
@@ -422,8 +434,7 @@ TEST_F(AccountManagerTest, IsTokenAvailableReturnsTrueForInvalidTokens) {
                                   AccountManager::kInvalidToken);
   scoped_task_environment_.RunUntilIdle();
   EXPECT_TRUE(account_manager_->IsTokenAvailable(kGaiaAccountKey_));
-  std::vector<AccountManager::Account> accounts = GetAccountsBlocking();
-  EXPECT_TRUE(IsAccountKeyPresent(accounts, kGaiaAccountKey_));
+  EXPECT_TRUE(IsAccountKeyPresent(GetAccountsBlocking(), kGaiaAccountKey_));
 }
 
 }  // namespace chromeos
