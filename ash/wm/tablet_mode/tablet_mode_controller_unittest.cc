@@ -1559,12 +1559,13 @@ TEST_F(TabletModeControllerTest, TabletModeTransitionHistogramsNotLogged) {
   {
     SCOPED_TRACE("Window is maximized");
     wm::GetWindowState(window.get())->Maximize();
-    tablet_mode_controller()->EnableTabletModeWindowManager(true);
     window->layer()->GetAnimator()->StopAnimating();
+    tablet_mode_controller()->EnableTabletModeWindowManager(true);
+    EXPECT_FALSE(window->layer()->GetAnimator()->is_animating());
     histogram_tester.ExpectTotalCount(kEnterHistogram, 0);
     histogram_tester.ExpectTotalCount(kExitHistogram, 0);
     tablet_mode_controller()->EnableTabletModeWindowManager(false);
-    window->layer()->GetAnimator()->StopAnimating();
+    EXPECT_FALSE(window->layer()->GetAnimator()->is_animating());
     histogram_tester.ExpectTotalCount(kEnterHistogram, 0);
     histogram_tester.ExpectTotalCount(kExitHistogram, 0);
   }
@@ -1598,6 +1599,32 @@ TEST_F(TabletModeControllerTest, TabletModeTransitionHistogramsLogged) {
   window2->layer()->GetAnimator()->StopAnimating();
   histogram_tester.ExpectTotalCount(kEnterHistogram, 1);
   histogram_tester.ExpectTotalCount(kExitHistogram, 1);
+}
+
+TEST_F(TabletModeControllerTest, TabletModeTransitionHistogramsSnappedWindows) {
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+  base::HistogramTester histogram_tester;
+
+  // Snap a window on either side.
+  auto window = CreateDesktopWindowSnappedLeft();
+  auto window2 = CreateDesktopWindowSnappedRight();
+  window->layer()->GetAnimator()->StopAnimating();
+  window2->layer()->GetAnimator()->StopAnimating();
+
+  // Tests that we have no logged metrics since nothing animates.
+  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  EXPECT_FALSE(window->layer()->GetAnimator()->is_animating());
+  EXPECT_FALSE(window2->layer()->GetAnimator()->is_animating());
+  histogram_tester.ExpectTotalCount(kEnterHistogram, 0);
+  histogram_tester.ExpectTotalCount(kExitHistogram, 0);
+
+  tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  EXPECT_FALSE(window->layer()->GetAnimator()->is_animating());
+  EXPECT_FALSE(window2->layer()->GetAnimator()->is_animating());
+  window2->layer()->GetAnimator()->StopAnimating();
+  histogram_tester.ExpectTotalCount(kEnterHistogram, 0);
+  histogram_tester.ExpectTotalCount(kExitHistogram, 0);
 }
 
 }  // namespace ash

@@ -370,16 +370,6 @@ void TabletModeController::MaybeObserveBoundsAnimation(aura::Window* window) {
     return;
   }
 
-  // When leaving tablet mode, DefaultState will get reattached. DefaultState
-  // does not skip animations to maximized mode unlike TabletModeWindowState, so
-  // manually check here.
-  // TODO(sammiequon): Make sure the maximize to maximize state is not animated
-  // in DefaultState.
-  if (!entering_tablet_mode &&
-      wm::GetWindowState(window)->IsMaximizedOrFullscreenOrPinned()) {
-    return;
-  }
-
   if (!window->layer()->GetAnimator()->is_animating())
     return;
 
