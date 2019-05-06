@@ -26,6 +26,7 @@
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_metrics.h"
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/interfaces/app_list_view.mojom.h"
 #include "ash/root_window_controller.h"
@@ -43,6 +44,9 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "extensions/common/constants.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/manager/display_manager.h"
@@ -90,6 +94,29 @@ app_list::TabletModeAnimationTransition CalculateAnimationTransitionForMetrics(
   }
 }
 
+int GetAssistantPrivacyInfoShownCount() {
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  return prefs->GetInteger(prefs::kAssistantPrivacyInfoShownInLauncher);
+}
+
+void SetAssistantPrivacyInfoShownCount(int count) {
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  prefs->SetInteger(prefs::kAssistantPrivacyInfoShownInLauncher, count);
+}
+
+bool IsAssistantPrivacyInfoDismissed() {
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  return prefs->GetBoolean(prefs::kAssistantPrivacyInfoDismissedInLauncher);
+}
+
+void SetAssistantPrivacyInfoDismissed() {
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  prefs->SetBoolean(prefs::kAssistantPrivacyInfoDismissedInLauncher, true);
+}
 }  // namespace
 
 AppListControllerImpl::AppListControllerImpl()
@@ -125,6 +152,14 @@ AppListControllerImpl::~AppListControllerImpl() {
   // remove this from objects it's observing.
   if (!is_shutdown_)
     Shutdown();
+}
+
+// static
+void AppListControllerImpl::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+  registry->RegisterIntegerPref(prefs::kAssistantPrivacyInfoShownInLauncher, 0);
+  registry->RegisterBooleanPref(
+      prefs::kAssistantPrivacyInfoDismissedInLauncher, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 void AppListControllerImpl::SetClient(mojom::AppListClientPtr client_ptr) {
@@ -1123,6 +1158,35 @@ bool AppListControllerImpl::IsAssistantAllowedAndEnabled() const {
          controller->voice_interaction_state().value_or(
              mojom::VoiceInteractionState::NOT_READY) !=
              mojom::VoiceInteractionState::NOT_READY;
+}
+
+bool AppListControllerImpl::ShouldShowAssistantPrivacyInfo() const {
+  if (!IsAssistantAllowedAndEnabled())
+    return false;
+
+  if (!app_list_features::IsEmbeddedAssistantUIEnabled())
+    return false;
+
+  const bool dismissed = IsAssistantPrivacyInfoDismissed();
+  if (dismissed)
+    return false;
+
+  const int count = GetAssistantPrivacyInfoShownCount();
+  constexpr int kThresholdToShow = 6;
+  return count >= 0 && count <= kThresholdToShow;
+}
+
+void AppListControllerImpl::MaybeIncreaseAssistantPrivacyInfoShownCount() {
+  const bool should_show = ShouldShowAssistantPrivacyInfo();
+  if (should_show) {
+    const int count = GetAssistantPrivacyInfoShownCount();
+    SetAssistantPrivacyInfoShownCount(count + 1);
+  }
+}
+
+void AppListControllerImpl::MarkAssistantPrivacyInfoDismissed() {
+  // User dismissed the privacy info view. Will not show the view again.
+  SetAssistantPrivacyInfoDismissed();
 }
 
 void AppListControllerImpl::OnStateTransitionAnimationCompleted(

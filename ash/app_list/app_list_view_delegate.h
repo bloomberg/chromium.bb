@@ -176,12 +176,23 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   virtual void OnSearchResultVisibilityChanged(const std::string& id,
                                                bool visibility) = 0;
 
-  // Returns if the Assistant feature is allowed and enabled.
+  // Returns true if the Assistant feature is allowed and enabled.
   virtual bool IsAssistantAllowedAndEnabled() const = 0;
 
   // Called when the app list view animation is completed.
   virtual void OnStateTransitionAnimationCompleted(
       ash::mojom::AppListViewState state) = 0;
+
+  // Returns true if the Assistant privacy info view should be shown.
+  virtual bool ShouldShowAssistantPrivacyInfo() const = 0;
+
+  // If the |prefs::kAssistantPrivacyInfoShownInLauncher| value is in the range
+  // of allowed, we will increment this value.
+  virtual void MaybeIncreaseAssistantPrivacyInfoShownCount() = 0;
+
+  // Called when close button in the Assistant privacy info view is pressed to
+  // indicate not to show the view any more.
+  virtual void MarkAssistantPrivacyInfoDismissed() = 0;
 };
 
 }  // namespace app_list

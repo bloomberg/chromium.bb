@@ -37,6 +37,8 @@
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 
+class PrefRegistrySimple;
+
 namespace ui {
 class MouseWheelEvent;
 }  // namespace ui
@@ -69,6 +71,8 @@ class ASH_EXPORT AppListControllerImpl
   using SearchResultMetadataPtr = mojom::SearchResultMetadataPtr;
   AppListControllerImpl();
   ~AppListControllerImpl() override;
+
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // Binds the mojom::AppListController interface request to this object.
   void BindRequest(mojom::AppListControllerRequest request);
@@ -207,6 +211,9 @@ class ASH_EXPORT AppListControllerImpl
   void OnSearchResultVisibilityChanged(const std::string& id,
                                        bool visibility) override;
   bool IsAssistantAllowedAndEnabled() const override;
+  bool ShouldShowAssistantPrivacyInfo() const override;
+  void MaybeIncreaseAssistantPrivacyInfoShownCount() override;
+  void MarkAssistantPrivacyInfoDismissed() override;
   void OnStateTransitionAnimationCompleted(
       ash::mojom::AppListViewState state) override;
 

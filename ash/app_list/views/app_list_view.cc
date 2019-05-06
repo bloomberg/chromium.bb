@@ -1056,6 +1056,20 @@ void AppListView::ConvertAppListStateToFullscreenEquivalent(
   }
 }
 
+void AppListView::MaybeIncreaseAssistantPrivacyInfoRowShownCount(
+    ash::mojom::AppListViewState new_state) {
+  AppListStateTransitionSource transition =
+      GetAppListStateTransitionSource(new_state);
+  switch (transition) {
+    case kPeekingToHalf:
+    case kFullscreenAllAppsToFullscreenSearch:
+      delegate_->MaybeIncreaseAssistantPrivacyInfoShownCount();
+      break;
+    default:
+      break;
+  }
+}
+
 void AppListView::RecordStateTransitionForUma(
     ash::mojom::AppListViewState new_state) {
   AppListStateTransitionSource transition =
@@ -1427,6 +1441,7 @@ void AppListView::SetState(ash::mojom::AppListViewState new_state) {
   MaybeCreateAccessibilityEvent(new_state_override);
   SetChildViewsForStateTransition(new_state_override);
   StartAnimationForState(new_state_override);
+  MaybeIncreaseAssistantPrivacyInfoRowShownCount(new_state_override);
   RecordStateTransitionForUma(new_state_override);
   model_->SetStateFullscreen(new_state_override);
   app_list_state_ = new_state_override;

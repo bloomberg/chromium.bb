@@ -154,6 +154,9 @@ ASH_PUBLIC_EXPORT extern const char kBatteryChargeCustomStopCharging[];
 
 ASH_PUBLIC_EXPORT extern const char kUsbPowerShareEnabled[];
 
+ASH_PUBLIC_EXPORT extern const char kAssistantPrivacyInfoShownInLauncher[];
+ASH_PUBLIC_EXPORT extern const char kAssistantPrivacyInfoDismissedInLauncher[];
+
 }  // namespace prefs
 
 }  // namespace ash

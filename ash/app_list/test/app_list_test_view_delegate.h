@@ -111,6 +111,9 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   bool IsAssistantAllowedAndEnabled() const override;
   void OnStateTransitionAnimationCompleted(
       ash::mojom::AppListViewState state) override;
+  bool ShouldShowAssistantPrivacyInfo() const override;
+  void MaybeIncreaseAssistantPrivacyInfoShownCount() override;
+  void MarkAssistantPrivacyInfoDismissed() override;
 
   // Do a bulk replacement of the items in the model.
   void ReplaceTestModel(int item_count);

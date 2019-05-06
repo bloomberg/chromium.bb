@@ -373,6 +373,9 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // in progress it will be interrupted.
   void StartAnimationForState(ash::mojom::AppListViewState new_state);
 
+  void MaybeIncreaseAssistantPrivacyInfoRowShownCount(
+      ash::mojom::AppListViewState new_state);
+
   // Records the state transition for UMA.
   void RecordStateTransitionForUma(ash::mojom::AppListViewState new_state);
 

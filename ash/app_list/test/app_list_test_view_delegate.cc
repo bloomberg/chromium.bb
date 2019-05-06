@@ -159,6 +159,14 @@ bool AppListTestViewDelegate::IsAssistantAllowedAndEnabled() const {
 void AppListTestViewDelegate::OnStateTransitionAnimationCompleted(
     ash::mojom::AppListViewState state) {}
 
+bool AppListTestViewDelegate::ShouldShowAssistantPrivacyInfo() const {
+  return false;
+}
+
+void AppListTestViewDelegate::MaybeIncreaseAssistantPrivacyInfoShownCount() {}
+
+void AppListTestViewDelegate::MarkAssistantPrivacyInfoDismissed() {}
+
 void AppListTestViewDelegate::RecordAppLaunched(
     ash::mojom::AppListLaunchedFrom launched_from) {
   app_list::RecordAppListAppLaunched(launched_from, model_->state_fullscreen(),

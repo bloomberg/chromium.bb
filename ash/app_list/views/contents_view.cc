@@ -79,7 +79,7 @@ void ContentsView::Init(AppListModel* model) {
   AddLauncherPage(horizontal_page_container_, ash::AppListState::kStateApps);
 
   // Search results UI.
-  search_results_page_view_ = new SearchResultPageView();
+  search_results_page_view_ = new SearchResultPageView(view_delegate);
 
   // Search result containers.
   SearchModel::SearchResults* results =
