@@ -40,8 +40,9 @@ std::string GetSuperdomain(const std::string& domain) {
 
 }  // namespace
 
-ReportingCacheImpl::ReportingCacheImpl(ReportingContext* context)
-    : context_(context) {
+ReportingCacheImpl::ReportingCacheImpl(ReportingContext* context,
+                                       PersistentReportingStore* store)
+    : context_(context), store_(store) {
   DCHECK(context_);
 }
 
@@ -555,6 +556,14 @@ ReportingCacheImpl::OriginClient::OriginClient(const OriginClient& other) =
 ReportingCacheImpl::OriginClient::OriginClient(OriginClient&& other) = default;
 
 ReportingCacheImpl::OriginClient::~OriginClient() = default;
+
+bool ReportingCacheImpl::IsReportDataPersisted() const {
+  return store_ && context_->policy().persist_reports_across_restarts;
+}
+
+bool ReportingCacheImpl::IsClientDataPersisted() const {
+  return store_ && context_->policy().persist_clients_across_restarts;
+}
 
 void ReportingCacheImpl::RemoveReportInternal(const ReportingReport* report) {
   reports_[report]->RecordOutcome(tick_clock()->NowTicks());

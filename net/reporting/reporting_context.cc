@@ -16,7 +16,6 @@
 #include "base/time/time.h"
 #include "net/base/backoff_entry.h"
 #include "net/base/rand_callback.h"
-#include "net/reporting/reporting_cache.h"
 #include "net/reporting/reporting_cache_observer.h"
 #include "net/reporting/reporting_delegate.h"
 #include "net/reporting/reporting_delivery_agent.h"
@@ -35,13 +34,15 @@ namespace {
 class ReportingContextImpl : public ReportingContext {
  public:
   ReportingContextImpl(const ReportingPolicy& policy,
-                       URLRequestContext* request_context)
+                       URLRequestContext* request_context,
+                       ReportingCache::PersistentReportingStore* store)
       : ReportingContext(policy,
                          base::DefaultClock::GetInstance(),
                          base::DefaultTickClock::GetInstance(),
                          base::BindRepeating(&base::RandInt),
                          ReportingUploader::Create(request_context),
-                         ReportingDelegate::Create(request_context)) {}
+                         ReportingDelegate::Create(request_context),
+                         store) {}
 };
 
 }  // namespace
@@ -49,8 +50,9 @@ class ReportingContextImpl : public ReportingContext {
 // static
 std::unique_ptr<ReportingContext> ReportingContext::Create(
     const ReportingPolicy& policy,
-    URLRequestContext* request_context) {
-  return std::make_unique<ReportingContextImpl>(policy, request_context);
+    URLRequestContext* request_context,
+    ReportingCache::PersistentReportingStore* store) {
+  return std::make_unique<ReportingContextImpl>(policy, request_context, store);
 }
 
 ReportingContext::~ReportingContext() = default;
@@ -79,18 +81,20 @@ void ReportingContext::OnShutdown() {
   uploader_->OnShutdown();
 }
 
-ReportingContext::ReportingContext(const ReportingPolicy& policy,
-                                   base::Clock* clock,
-                                   const base::TickClock* tick_clock,
-                                   const RandIntCallback& rand_callback,
-                                   std::unique_ptr<ReportingUploader> uploader,
-                                   std::unique_ptr<ReportingDelegate> delegate)
+ReportingContext::ReportingContext(
+    const ReportingPolicy& policy,
+    base::Clock* clock,
+    const base::TickClock* tick_clock,
+    const RandIntCallback& rand_callback,
+    std::unique_ptr<ReportingUploader> uploader,
+    std::unique_ptr<ReportingDelegate> delegate,
+    ReportingCache::PersistentReportingStore* store)
     : policy_(policy),
       clock_(clock),
       tick_clock_(tick_clock),
       uploader_(std::move(uploader)),
       delegate_(std::move(delegate)),
-      cache_(ReportingCache::Create(this)),
+      cache_(ReportingCache::Create(this, store)),
       endpoint_manager_(ReportingEndpointManager::Create(this, rand_callback)),
       delivery_agent_(ReportingDeliveryAgent::Create(this)),
       garbage_collector_(ReportingGarbageCollector::Create(this)),

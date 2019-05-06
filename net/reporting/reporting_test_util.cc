@@ -152,9 +152,11 @@ bool TestReportingDelegate::CanUseClient(const url::Origin& origin,
   return true;
 }
 
-TestReportingContext::TestReportingContext(base::Clock* clock,
-                                           const base::TickClock* tick_clock,
-                                           const ReportingPolicy& policy)
+TestReportingContext::TestReportingContext(
+    base::Clock* clock,
+    const base::TickClock* tick_clock,
+    const ReportingPolicy& policy,
+    ReportingCache::PersistentReportingStore* store)
     : ReportingContext(
           policy,
           clock,
@@ -162,7 +164,8 @@ TestReportingContext::TestReportingContext(base::Clock* clock,
           base::BindRepeating(&TestReportingContext::RandIntCallback,
                               base::Unretained(this)),
           std::make_unique<TestReportingUploader>(),
-          std::make_unique<TestReportingDelegate>()),
+          std::make_unique<TestReportingDelegate>(),
+          store),
       rand_counter_(0),
       delivery_timer_(new base::MockOneShotTimer()),
       garbage_collection_timer_(new base::MockOneShotTimer()) {
@@ -181,7 +184,7 @@ int TestReportingContext::RandIntCallback(int min, int max) {
   return min + (rand_counter_++ % (max - min + 1));
 }
 
-ReportingTestBase::ReportingTestBase() {
+ReportingTestBase::ReportingTestBase() : store_(nullptr) {
   // For tests, disable jitter.
   ReportingPolicy policy;
   policy.endpoint_backoff_policy.jitter_factor = 0.0;
@@ -193,6 +196,12 @@ ReportingTestBase::~ReportingTestBase() = default;
 
 void ReportingTestBase::UsePolicy(const ReportingPolicy& new_policy) {
   CreateContext(new_policy, clock()->Now(), tick_clock()->NowTicks());
+}
+
+void ReportingTestBase::UseStore(
+    ReportingCache::PersistentReportingStore* store) {
+  store_ = store;
+  CreateContext(policy(), clock()->Now(), tick_clock()->NowTicks());
 }
 
 const ReportingClient ReportingTestBase::FindEndpointInCache(
@@ -265,8 +274,8 @@ void ReportingTestBase::SimulateRestart(base::TimeDelta delta,
 void ReportingTestBase::CreateContext(const ReportingPolicy& policy,
                                       base::Time now,
                                       base::TimeTicks now_ticks) {
-  context_ =
-      std::make_unique<TestReportingContext>(&clock_, &tick_clock_, policy);
+  context_ = std::make_unique<TestReportingContext>(&clock_, &tick_clock_,
+                                                    policy, store_);
   clock()->SetNow(now);
   tick_clock()->SetNowTicks(now_ticks);
 }

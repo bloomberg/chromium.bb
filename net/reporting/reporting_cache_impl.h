@@ -31,7 +31,8 @@ namespace net {
 
 class ReportingCacheImpl : public ReportingCache {
  public:
-  explicit ReportingCacheImpl(ReportingContext* context);
+  ReportingCacheImpl(ReportingContext* context,
+                     PersistentReportingStore* store);
 
   ~ReportingCacheImpl() override;
 
@@ -126,6 +127,11 @@ class ReportingCacheImpl : public ReportingCache {
   using EndpointGroupMap =
       std::map<ReportingEndpointGroupKey, CachedReportingEndpointGroup>;
   using EndpointMap = std::multimap<ReportingEndpointGroupKey, ReportingClient>;
+
+  // Returns whether the cached data is persisted across restarts in the
+  // PersistentReportingStore.
+  bool IsReportDataPersisted() const;
+  bool IsClientDataPersisted() const;
 
   void RemoveReportInternal(const ReportingReport* report);
 
@@ -284,6 +290,11 @@ class ReportingCacheImpl : public ReportingCache {
   const base::TickClock* tick_clock() const { return context_->tick_clock(); }
 
   ReportingContext* context_;
+
+  // Stores cached data persistently, if not null. If |store_| is null, then the
+  // ReportingCache will store data in memory only.
+  // TODO(chlily): Implement.
+  PersistentReportingStore* const store_;
 
   // Owns all reports, keyed by const raw pointer for easier lookup.
   std::unordered_map<const ReportingReport*, std::unique_ptr<ReportingReport>>

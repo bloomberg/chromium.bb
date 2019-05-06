@@ -15,13 +15,14 @@
 #include "base/values.h"
 #include "net/base/net_export.h"
 #include "net/reporting/reporting_client.h"
-#include "net/reporting/reporting_context.h"
 #include "net/reporting/reporting_header_parser.h"
 #include "net/reporting/reporting_report.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
 namespace net {
+
+class ReportingContext;
 
 // The cache holds undelivered reports and clients (per-origin endpoint
 // configurations) in memory. (It is not responsible for persisting them.)
@@ -47,7 +48,10 @@ class NET_EXPORT ReportingCache {
  public:
   class PersistentReportingStore;
 
-  static std::unique_ptr<ReportingCache> Create(ReportingContext* context);
+  // |store| should outlive the ReportingCache.
+  static std::unique_ptr<ReportingCache> Create(
+      ReportingContext* context,
+      PersistentReportingStore* store);
 
   virtual ~ReportingCache();
 

@@ -143,9 +143,11 @@ class TestReportingDelegate : public ReportingDelegate {
 // Clock, TickClock, Timer, and ReportingUploader.
 class TestReportingContext : public ReportingContext {
  public:
-  TestReportingContext(base::Clock* clock,
-                       const base::TickClock* tick_clock,
-                       const ReportingPolicy& policy);
+  TestReportingContext(
+      base::Clock* clock,
+      const base::TickClock* tick_clock,
+      const ReportingPolicy& policy,
+      ReportingCache::PersistentReportingStore* store = nullptr);
   ~TestReportingContext();
 
   base::MockOneShotTimer* test_delivery_timer() { return delivery_timer_; }
@@ -181,6 +183,7 @@ class ReportingTestBase : public TestWithScopedTaskEnvironment {
   ~ReportingTestBase() override;
 
   void UsePolicy(const ReportingPolicy& policy);
+  void UseStore(ReportingCache::PersistentReportingStore* store);
 
   // Finds a particular endpoint (by origin, group, url) in the cache and
   // returns it (or ReportingClient with invalid url, if not found).
@@ -256,6 +259,7 @@ class ReportingTestBase : public TestWithScopedTaskEnvironment {
   ReportingGarbageCollector* garbage_collector() {
     return context_->garbage_collector();
   }
+  ReportingCache::PersistentReportingStore* store() { return store_; }
 
   base::TimeTicks yesterday();
   base::TimeTicks now();
@@ -274,6 +278,7 @@ class ReportingTestBase : public TestWithScopedTaskEnvironment {
   base::SimpleTestClock clock_;
   base::SimpleTestTickClock tick_clock_;
   std::unique_ptr<TestReportingContext> context_;
+  ReportingCache::PersistentReportingStore* store_;
 
   DISALLOW_COPY_AND_ASSIGN(ReportingTestBase);
 };
