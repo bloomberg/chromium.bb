@@ -4945,6 +4945,7 @@ interface RTCDtlsTransport : EventTarget
     getter onstatechange
     getter state
     method constructor
+    method getRemoteCertificates
     setter onerror
     setter onstatechange
 interface RTCError : DOMException

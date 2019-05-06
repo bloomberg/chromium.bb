@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 506 tests; 442 PASS, 64 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 506 tests; 444 PASS, 62 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Test driver for asyncInitCertificate
 PASS Test driver for asyncInitTransports
@@ -312,14 +312,14 @@ PASS RTCDtlsTransport interface: existence and properties of interface prototype
 PASS RTCDtlsTransport interface: existence and properties of interface prototype object's @@unscopables property
 PASS RTCDtlsTransport interface: attribute iceTransport
 PASS RTCDtlsTransport interface: attribute state
-FAIL RTCDtlsTransport interface: operation getRemoteCertificates() assert_own_property: interface prototype object missing non-static operation expected property "getRemoteCertificates" missing
+PASS RTCDtlsTransport interface: operation getRemoteCertificates()
 PASS RTCDtlsTransport interface: attribute onstatechange
 PASS RTCDtlsTransport interface: attribute onerror
 PASS RTCDtlsTransport must be primary interface of idlTestObjects.dtlsTransport
 PASS Stringification of idlTestObjects.dtlsTransport
 PASS RTCDtlsTransport interface: idlTestObjects.dtlsTransport must inherit property "iceTransport" with the proper type
 PASS RTCDtlsTransport interface: idlTestObjects.dtlsTransport must inherit property "state" with the proper type
-FAIL RTCDtlsTransport interface: idlTestObjects.dtlsTransport must inherit property "getRemoteCertificates()" with the proper type assert_inherits: property "getRemoteCertificates" not found in prototype chain
+PASS RTCDtlsTransport interface: idlTestObjects.dtlsTransport must inherit property "getRemoteCertificates()" with the proper type
 PASS RTCDtlsTransport interface: idlTestObjects.dtlsTransport must inherit property "onstatechange" with the proper type
 PASS RTCDtlsTransport interface: idlTestObjects.dtlsTransport must inherit property "onerror" with the proper type
 FAIL RTCIceTransport interface: existence and properties of interface object assert_throws: interface object didn't throw TypeError when called as a constructor function "function() {

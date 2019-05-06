@@ -80,6 +80,11 @@ String RTCDtlsTransport::state() const {
   return TransportStateToString(current_state_.state());
 }
 
+const HeapVector<Member<DOMArrayBuffer>>&
+RTCDtlsTransport::getRemoteCertificates() const {
+  return remote_certificates_;
+}
+
 RTCIceTransport* RTCDtlsTransport::iceTransport() const {
   return ice_transport_;
 }
@@ -110,6 +115,40 @@ void RTCDtlsTransport::OnStateChange(webrtc::DtlsTransportInformation info) {
   // We depend on closed only happening once for safe garbage collection.
   DCHECK(current_state_.state() != webrtc::DtlsTransportState::kClosed);
   current_state_ = info;
+  // If the certificates have changed, copy them as DOMArrayBuffers.
+  // This makes sure that getRemoteCertificates() == getRemoteCertificates()
+  if (current_state_.remote_ssl_certificates()) {
+    const rtc::SSLCertChain* certs = current_state_.remote_ssl_certificates();
+    if (certs->GetSize() != remote_certificates_.size()) {
+      remote_certificates_.clear();
+      for (size_t i = 0; i < certs->GetSize(); i++) {
+        auto& cert = certs->Get(i);
+        rtc::Buffer der_cert;
+        cert.ToDER(&der_cert);
+        DOMArrayBuffer* dab_cert = DOMArrayBuffer::Create(
+            der_cert.data(), static_cast<unsigned int>(der_cert.size()));
+        remote_certificates_.push_back(dab_cert);
+      }
+    } else {
+      // Replace certificates that have changed, if any
+      for (WTF::wtf_size_t i = 0; i < certs->GetSize(); i++) {
+        auto& cert = certs->Get(i);
+        rtc::Buffer der_cert;
+        cert.ToDER(&der_cert);
+        DOMArrayBuffer* dab_cert = DOMArrayBuffer::Create(
+            der_cert.data(), static_cast<unsigned int>(der_cert.size()));
+        // Don't replace the certificate if it's unchanged.
+        // Should have been "if (*dab_cert != *remote_certificates_[i])"
+        if (dab_cert->ByteLength() != remote_certificates_[i]->ByteLength() ||
+            memcmp(dab_cert->Data(), remote_certificates_[i]->Data(),
+                   dab_cert->ByteLength()) != 0) {
+          remote_certificates_[i] = dab_cert;
+        }
+      }
+    }
+  } else {
+    remote_certificates_.clear();
+  }
   if (!closed_from_owner_) {
     DispatchEvent(*Event::Create(event_type_names::kStatechange));
   }
@@ -124,6 +163,7 @@ ExecutionContext* RTCDtlsTransport::GetExecutionContext() const {
 }
 
 void RTCDtlsTransport::Trace(Visitor* visitor) {
+  visitor->Trace(remote_certificates_);
   visitor->Trace(ice_transport_);
   DtlsTransportProxy::Delegate::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);

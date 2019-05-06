@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 506 tests; 377 PASS, 129 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 506 tests; 378 PASS, 128 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Test driver for asyncInitCertificate
 FAIL Test driver for asyncInitTransports assert_unreached: Failed to run asyncInitTransports: Error: assert_true: Expect pc.sctp to be instance of RTCSctpTransport expected true got false Reached unreachable code
@@ -312,7 +312,7 @@ PASS RTCDtlsTransport interface: existence and properties of interface prototype
 PASS RTCDtlsTransport interface: existence and properties of interface prototype object's @@unscopables property
 PASS RTCDtlsTransport interface: attribute iceTransport
 PASS RTCDtlsTransport interface: attribute state
-FAIL RTCDtlsTransport interface: operation getRemoteCertificates() assert_own_property: interface prototype object missing non-static operation expected property "getRemoteCertificates" missing
+PASS RTCDtlsTransport interface: operation getRemoteCertificates()
 PASS RTCDtlsTransport interface: attribute onstatechange
 PASS RTCDtlsTransport interface: attribute onerror
 FAIL RTCDtlsTransport must be primary interface of idlTestObjects.dtlsTransport assert_equals: wrong typeof object expected "object" but got "undefined"
