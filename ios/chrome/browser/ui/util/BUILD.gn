@@ -7,6 +7,8 @@ source_set("util") {
   sources = [
     "CRUILabel+AttributeUtils.h",
     "CRUILabel+AttributeUtils.mm",
+    "accessibility_close_menu_button.h",
+    "accessibility_close_menu_button.mm",
     "animation_util.h",
     "animation_util.mm",
     "core_text_util.h",
@@ -63,6 +65,7 @@ source_set("util") {
     "//base",
     "//base:i18n",
     "//ios/chrome/app:tests_hook",
+    "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser",
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/toolbar/public:feature_flags",
