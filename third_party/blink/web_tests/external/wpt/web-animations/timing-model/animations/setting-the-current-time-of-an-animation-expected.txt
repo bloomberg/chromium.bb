@@ -2,6 +2,6 @@ This is a testharness.js-based test.
 PASS Setting the current time of a pending animation to unresolved does not throw a TypeError
 PASS Setting the current time of a playing animation to unresolved throws a TypeError
 PASS Setting the current time of a paused animation to unresolved throws a TypeError
-FAIL Setting the current time of a pausing animation applies a pending playback rate assert_true: expected true got undefined
+FAIL Setting the current time of a pausing animation applies a pending playback rate promise_test: Unhandled rejection with value: object "TypeError: anim.updatePlaybackRate is not a function"
 Harness: the test ran to completion.
 

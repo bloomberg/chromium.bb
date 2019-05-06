@@ -127,8 +127,9 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
                               TimingUpdateReason = kTimingUpdateOnDemand);
   bool Paused() const { return paused_ && !is_paused_for_testing_; }
   static const char* PlayStateString(AnimationPlayState);
-  String playState() const { return PlayStateString(PlayStateInternal()); }
+  String playState() const { return PlayStateString(animation_play_state_); }
   AnimationPlayState PlayStateInternal() const;
+  bool pending() const;
 
   void pause(ExceptionState& = ASSERT_NO_EXCEPTION);
   void play(ExceptionState& = ASSERT_NO_EXCEPTION);
@@ -240,7 +241,19 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   double EffectEnd() const;
   bool Limited(double current_time) const;
 
+  // https://drafts.csswg.org/web-animations/#play-states
+  // Per spec the viable states are: idle, running, paused and finished.
+  // Our implementation has an additional state called 'pending' which serves a
+  // similar purpose to micro-tasks in the spec. This additional state is for
+  // internal flow control only and should not be reported via
+  // animation.playState.
+  // TODO(crbug.com/958433): Cleanup implementation to better align with the
+  // spec.
   AnimationPlayState CalculatePlayState() const;
+  // Spec compliant variant of play state calculation that is reported via
+  // animation.playState.
+  AnimationPlayState CalculateAnimationPlayState() const;
+
   base::Optional<double> CalculateStartTime(double current_time) const;
   double CalculateCurrentTime() const;
 
@@ -274,9 +287,15 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
 
   void QueueFinishedEvent();
 
+  void ResetPendingTasks();
+
   String id_;
 
-  AnimationPlayState play_state_;
+  // Extended play state with additional pending state for managing timing of
+  // micro-tasks.
+  AnimationPlayState internal_play_state_;
+  // Web exposed play state, which does not have pending state.
+  AnimationPlayState animation_play_state_;
   double playback_rate_;
   base::Optional<double> start_time_;
   base::Optional<double> hold_time_;
@@ -293,6 +312,12 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   bool paused_;
   bool is_paused_for_testing_;
   bool is_composited_animation_disabled_for_testing_;
+
+  // Pending micro-tasks. These flags are used for tracking purposes only for
+  // the Animation.pending attribute, and do not otherwise affect internal flow
+  // control.
+  bool pending_pause_;
+  bool pending_play_;
 
   // This indicates timing information relevant to the animation's effect
   // has changed by means other than the ordinary progression of time

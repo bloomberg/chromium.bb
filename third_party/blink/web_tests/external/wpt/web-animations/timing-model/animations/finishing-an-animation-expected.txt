@@ -6,9 +6,9 @@ PASS Finishing an animation with a current time past the effect end jumps back t
 PASS Finishing a reversed animation jumps to zero time
 PASS Finishing a reversed animation with a current time less than zero makes it jump back to zero
 PASS Finishing a paused animation resolves the start time
-FAIL Finishing a pause-pending animation resolves the pending task immediately and update the start time assert_false: expected false got undefined
-FAIL Finishing a pause-pending animation with negative playback rate resolves the pending task immediately assert_false: expected false got undefined
-FAIL Finishing an animation while play-pending resolves the pending task immediately assert_false: expected false got undefined
+PASS Finishing a pause-pending animation resolves the pending task immediately and update the start time
+PASS Finishing a pause-pending animation with negative playback rate resolves the pending task immediately
+PASS Finishing an animation while play-pending resolves the pending task immediately
 PASS Finishing an animation during an aborted pause makes it finished immediately
 PASS Finishing an animation resolves the finished promise synchronously
 PASS Finishing an animation without a target resolves the finished promise synchronously

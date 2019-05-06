@@ -46,6 +46,7 @@ enum AnimationPlayState { "idle", "pending", "running", "paused", "finished" };
     [Measure, RaisesException=Setter] attribute double?    currentTime;
     [Measure] attribute double     playbackRate;
     [Measure] readonly attribute AnimationPlayState playState;
+    [Measure] readonly attribute boolean pending;
     [Measure, RaisesException] void finish();
     [Measure, RaisesException] void play();
     [Measure, RaisesException] void pause();
