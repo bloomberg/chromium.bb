@@ -11,7 +11,8 @@ declare_args() {
   # Don't check in changes that set this to false for more platforms; doing so
   # is not supported.
   use_custom_libcxx =
-      is_fuchsia || is_android || is_mac || is_ios || (is_win && is_clang) ||
+      is_fuchsia || is_android || is_mac || (is_ios && !use_xcode_clang) ||
+      (is_win && is_clang) ||
       (is_linux &&
        (!is_chromeos || default_toolchain != "//build/toolchain/cros:target"))
 
