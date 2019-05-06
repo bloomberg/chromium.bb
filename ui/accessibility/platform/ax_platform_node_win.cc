@@ -4112,6 +4112,34 @@ HRESULT AXPlatformNodeWin::GetTextAttributeValue(TEXTATTRIBUTEID attribute_id,
       V_VT(result) = VT_BOOL;
       V_BOOL(result) = IsInvisibleOrIgnored() ? VARIANT_TRUE : VARIANT_FALSE;
       break;
+    case UIA_IsItalicAttributeId:
+      V_VT(result) = VT_BOOL;
+      V_BOOL(result) = GetData().HasTextStyle(ax::mojom::TextStyle::kItalic)
+                           ? VARIANT_TRUE
+                           : VARIANT_FALSE;
+      break;
+    case UIA_IsReadOnlyAttributeId:
+      V_VT(result) = VT_BOOL;
+      V_BOOL(result) =
+          (GetData().GetRestriction() == ax::mojom::Restriction::kReadOnly ||
+           !GetData().HasState(ax::mojom::State::kEditable))
+              ? VARIANT_TRUE
+              : VARIANT_FALSE;
+      break;
+    case UIA_IsSubscriptAttributeId:
+      V_VT(result) = VT_BOOL;
+      V_BOOL(result) =
+          (GetData().GetTextPosition() == ax::mojom::TextPosition::kSubscript)
+              ? VARIANT_TRUE
+              : VARIANT_FALSE;
+      break;
+    case UIA_IsSuperscriptAttributeId:
+      V_VT(result) = VT_BOOL;
+      V_BOOL(result) =
+          (GetData().GetTextPosition() == ax::mojom::TextPosition::kSuperscript)
+              ? VARIANT_TRUE
+              : VARIANT_FALSE;
+      break;
     case UIA_OverlineStyleAttributeId:
       V_VT(result) = VT_I4;
       V_I4(result) = GetUIATextDecorationStyle(

@@ -2206,6 +2206,9 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   text_data.AddIntAttribute(ax::mojom::IntAttribute::kColor, 0xDEADC0DEU);
   text_data.AddStringAttribute(ax::mojom::StringAttribute::kLanguage, "fr-CA");
   text_data.SetTextDirection(ax::mojom::TextDirection::kRtl);
+  text_data.AddTextStyle(ax::mojom::TextStyle::kItalic);
+  text_data.SetTextPosition(ax::mojom::TextPosition::kSubscript);
+  text_data.SetRestriction(ax::mojom::Restriction::kReadOnly);
   text_data.SetName("some text");
 
   ui::AXNodeData heading_data;
@@ -2223,6 +2226,8 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   heading_text_data.AddIntAttribute(ax::mojom::IntAttribute::kColor,
                                     0xDEADC0DEU);
   heading_text_data.SetTextDirection(ax::mojom::TextDirection::kRtl);
+  heading_text_data.SetTextPosition(ax::mojom::TextPosition::kSuperscript);
+  heading_text_data.AddState(ax::mojom::State::kEditable);
   heading_text_data.SetName("more text");
 
   ui::AXNodeData mark_data;
@@ -2404,6 +2409,46 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
 
   EXPECT_UIA_TEXTATTRIBUTE_EQ(document_range_provider, UIA_IsHiddenAttributeId,
                               expected_mixed_variant);
+
+  expected_variant.Set(true);
+  EXPECT_UIA_TEXTATTRIBUTE_EQ(text_range_provider, UIA_IsItalicAttributeId,
+                              expected_variant);
+  expected_variant.Reset();
+
+  expected_variant.Set(false);
+  EXPECT_UIA_TEXTATTRIBUTE_EQ(heading_text_range_provider,
+                              UIA_IsItalicAttributeId, expected_variant);
+  expected_variant.Reset();
+
+  expected_variant.Set(true);
+  EXPECT_UIA_TEXTATTRIBUTE_EQ(text_range_provider, UIA_IsReadOnlyAttributeId,
+                              expected_variant);
+  expected_variant.Reset();
+
+  expected_variant.Set(false);
+  EXPECT_UIA_TEXTATTRIBUTE_EQ(heading_text_range_provider,
+                              UIA_IsReadOnlyAttributeId, expected_variant);
+  expected_variant.Reset();
+
+  expected_variant.Set(true);
+  EXPECT_UIA_TEXTATTRIBUTE_EQ(text_range_provider, UIA_IsSubscriptAttributeId,
+                              expected_variant);
+  expected_variant.Reset();
+
+  expected_variant.Set(false);
+  EXPECT_UIA_TEXTATTRIBUTE_EQ(heading_text_range_provider,
+                              UIA_IsSubscriptAttributeId, expected_variant);
+  expected_variant.Reset();
+
+  expected_variant.Set(false);
+  EXPECT_UIA_TEXTATTRIBUTE_EQ(text_range_provider, UIA_IsSuperscriptAttributeId,
+                              expected_variant);
+  expected_variant.Reset();
+
+  expected_variant.Set(true);
+  EXPECT_UIA_TEXTATTRIBUTE_EQ(heading_text_range_provider,
+                              UIA_IsSuperscriptAttributeId, expected_variant);
+  expected_variant.Reset();
 
   expected_variant.Set(TextDecorationLineStyle::TextDecorationLineStyle_Dot);
   EXPECT_UIA_TEXTATTRIBUTE_EQ(text_range_provider, UIA_OverlineStyleAttributeId,
