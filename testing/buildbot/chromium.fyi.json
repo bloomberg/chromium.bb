@@ -2540,6 +2540,16 @@
         "swarming": {
           "can_use_on_swarming_builders": false
         },
+        "test": "chrome_elf_import_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
         "test": "chrome_elf_unittests"
       },
       {
@@ -2666,16 +2676,6 @@
           "can_use_on_swarming_builders": false
         },
         "test": "crypto_unittests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
-        "test": "delayloads_unittests"
       },
       {
         "merge": {

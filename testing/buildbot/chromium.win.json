@@ -237,6 +237,16 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "chrome_elf_import_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "chrome_elf_unittests"
       },
       {
@@ -364,16 +374,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "crypto_unittests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "delayloads_unittests"
       },
       {
         "merge": {
@@ -1509,6 +1509,22 @@
             }
           ]
         },
+        "test": "chrome_elf_import_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ]
+        },
         "test": "chrome_elf_unittests"
       },
       {
@@ -1711,22 +1727,6 @@
           ]
         },
         "test": "crypto_unittests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-15063"
-            }
-          ]
-        },
-        "test": "delayloads_unittests"
       },
       {
         "merge": {
@@ -3221,6 +3221,22 @@
             }
           ]
         },
+        "test": "chrome_elf_import_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ]
+        },
         "test": "chrome_elf_unittests"
       },
       {
@@ -3424,22 +3440,6 @@
           ]
         },
         "test": "crypto_unittests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-15063"
-            }
-          ]
-        },
-        "test": "delayloads_unittests"
       },
       {
         "merge": {
@@ -4947,6 +4947,16 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "chrome_elf_import_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "chrome_elf_unittests"
       },
       {
@@ -5074,16 +5084,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "crypto_unittests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "delayloads_unittests"
       },
       {
         "merge": {
@@ -6103,6 +6103,16 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "chrome_elf_import_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "chrome_elf_unittests"
       },
       {
@@ -6230,16 +6240,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "crypto_unittests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "delayloads_unittests"
       },
       {
         "merge": {
