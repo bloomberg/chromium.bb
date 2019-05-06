@@ -45,7 +45,10 @@ using Microsoft::WRL::ComPtr;
 
 class MixedRealityWindow : public gfx::WindowImpl {
  public:
-  MixedRealityWindow() : gfx::WindowImpl() { set_window_style(WS_OVERLAPPED); }
+  MixedRealityWindow(base::OnceCallback<void()> on_destroyed)
+      : gfx::WindowImpl(), on_destroyed_(std::move(on_destroyed)) {
+    set_window_style(WS_OVERLAPPED);
+  }
 
   BOOL ProcessWindowMessage(HWND window,
                             UINT message,
@@ -53,6 +56,9 @@ class MixedRealityWindow : public gfx::WindowImpl {
                             LPARAM l_param,
                             LRESULT& result,
                             DWORD msg_map_id) override;
+
+ private:
+  base::OnceCallback<void()> on_destroyed_;
 };
 
 BOOL MixedRealityWindow::ProcessWindowMessage(HWND window,
@@ -61,7 +67,12 @@ BOOL MixedRealityWindow::ProcessWindowMessage(HWND window,
                                               LPARAM l_param,
                                               LRESULT& result,
                                               DWORD msg_map_id) {
-  return false;  // We don't currently handle any messages ourselves.
+  if (message == WM_DESTROY) {
+    // Despite handling WM_DESTROY, we still return false so the base class can
+    // also process this message.
+    std::move(on_destroyed_).Run();
+  }
+  return false;  // Base class should handle all messages.
 }
 
 namespace {
@@ -368,9 +379,17 @@ void MixedRealityRenderLoop::OnSessionStart() {
   StartPresenting();
 }
 
+void MixedRealityRenderLoop::OnWindowDestroyed() {
+  window_ = nullptr;
+  ExitPresent();
+  StopRuntime();
+}
+
 void MixedRealityRenderLoop::InitializeSpace() {
   // Create a Window, which is required to get an IHolographicSpace.
-  window_ = std::make_unique<MixedRealityWindow>();
+  // base::Unretained is safe because 'this' outlives our window.
+  window_ = std::make_unique<MixedRealityWindow>(base::BindOnce(
+      &MixedRealityRenderLoop::OnWindowDestroyed, base::Unretained(this)));
 
   // A small arbitrary size that keeps the window from being distracting.
   window_->Init(NULL, gfx::Rect(25, 10));

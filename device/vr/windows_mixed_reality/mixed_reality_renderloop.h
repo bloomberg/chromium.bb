@@ -84,6 +84,8 @@ class MixedRealityRenderLoop : public XRCompositorCommon {
   // 3) The current bounds array is empty.
   void EnsureStageBounds();
 
+  void OnWindowDestroyed();
+
   std::unique_ptr<base::win::ScopedWinrtInitializer> initializer_;
 
   std::unique_ptr<WMRHolographicSpace> holographic_space_;
