@@ -77,7 +77,9 @@ class NGInlineNodeForTest : public NGInlineNode {
   void ShapeText() { NGInlineNode::ShapeText(MutableData()); }
 
   bool MarkLineBoxesDirty() {
-    return NGInlineNode::MarkLineBoxesDirty(GetLayoutBlockFlow());
+    LayoutBlockFlow* block_flow = GetLayoutBlockFlow();
+    return NGInlineNode::MarkLineBoxesDirty(block_flow,
+                                            block_flow->PaintFragment());
   }
 };
 
@@ -1077,6 +1079,38 @@ TEST_P(NodeParameterTest, MarkLineBoxesDirtyOnRemoveAfterBR) {
   EXPECT_TRUE(lines[0]->IsDirty());
   // Currently, only the first dirty line is marked.
   EXPECT_FALSE(lines[1]->IsDirty());
+
+  ForceLayout();  // Ensure running layout does not crash.
+}
+
+TEST_F(NGInlineNodeTest, MarkLineBoxesDirtyOnEndSpaceCollapsed) {
+  SetupHtml("container", R"HTML(
+    <style>
+    div {
+      font-size: 10px;
+      width: 8ch;
+    }
+    #empty {
+      background: yellow; /* ensure fragment is created */
+    }
+    #target {
+      display: inline-block;
+    }
+    </style>
+    <div id=container>
+      1234567890
+      1234567890
+      <span id=empty> </span>
+      <span id=target></span></div>
+  )HTML");
+
+  // Removing #target makes the spaces before it to be collapsed.
+  Element* target = GetElementById("target");
+  target->remove();
+
+  auto lines = MarkLineBoxesDirty();
+  EXPECT_FALSE(lines[0]->IsDirty());
+  EXPECT_TRUE(lines[1]->IsDirty());
 
   ForceLayout();  // Ensure running layout does not crash.
 }

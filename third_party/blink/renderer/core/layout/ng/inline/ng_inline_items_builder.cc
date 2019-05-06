@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_dirty_lines.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping_builder.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -406,6 +407,30 @@ bool NGInlineItemsBuilderTemplate<NGOffsetMappingBuilder>::AppendTextReusing(
 
 template <typename OffsetMappingBuilder>
 void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendText(
+    LayoutText* layout_text,
+    const String* previous_text) {
+  // Mark dirty lines. Clear if marked, only the first dirty line is relevant.
+  if (dirty_lines_ && dirty_lines_->HandleText(layout_text))
+    dirty_lines_ = nullptr;
+
+  // If the LayoutText element hasn't changed, reuse the existing items.
+  if (previous_text && layout_text->HasValidInlineItems()) {
+    if (AppendTextReusing(*previous_text, layout_text)) {
+      return;
+    }
+  }
+
+  // If not create a new item as needed.
+  if (UNLIKELY(layout_text->IsWordBreak())) {
+    AppendBreakOpportunity(layout_text);
+    return;
+  }
+
+  AppendText(layout_text->GetText(), layout_text);
+}
+
+template <typename OffsetMappingBuilder>
+void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendText(
     const String& string,
     LayoutText* layout_object) {
   DCHECK(layout_object);
@@ -773,6 +798,11 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendAtomicInline(
   Append(NGInlineItem::kAtomicInline, kObjectReplacementCharacter,
          layout_object);
 
+  // Mark dirty lines. Clear if marked, only the first dirty line is relevant.
+  if (dirty_lines_ &&
+      dirty_lines_->HandleAtomicInline(ToLayoutBox(layout_object)))
+    dirty_lines_ = nullptr;
+
   // When this atomic inline is inside of an inline box, the height of the
   // inline box can be different from the height of the atomic inline. Ensure
   // the inline box creates a box fragment so that its height is available in
@@ -854,6 +884,12 @@ void NGInlineItemsBuilderTemplate<
   DCHECK_EQ(text_[space_offset], kSpaceCharacter);
   text_.erase(space_offset);
   mapping_builder_.CollapseTrailingSpace(space_offset);
+
+  // Mark dirty lines. Clear if marked, only the first dirty line is relevant.
+  if (dirty_lines_) {
+    dirty_lines_->MarkAtTextOffset(space_offset);
+    dirty_lines_ = nullptr;
+  }
 
   // Keep the item even if the length became zero. This is not needed for
   // the layout purposes, but needed to maintain LayoutObject states. See
@@ -970,7 +1006,7 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::EnterBlock(
 
 template <typename OffsetMappingBuilder>
 void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::EnterInline(
-    LayoutObject* node) {
+    LayoutInline* node) {
   DCHECK(node);
 
   // https://drafts.csswg.org/css-writing-modes-3/#bidi-control-codes-injection-table
@@ -1010,6 +1046,10 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::EnterInline(
   }
 
   AppendOpaque(NGInlineItem::kOpenTag, node);
+
+  // Mark dirty lines. Clear if marked, only the first dirty line is relevant.
+  if (dirty_lines_ && dirty_lines_->HandleInlineBox(node))
+    dirty_lines_ = nullptr;
 
   if (!NeedsBoxInfo())
     return;
@@ -1070,7 +1110,8 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::SetIsSymbolMarker(
 template <typename OffsetMappingBuilder>
 void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::ClearInlineFragment(
     LayoutObject* object) {
-  NGInlineNode::ClearInlineFragment(object);
+  object->SetIsInLayoutNGInlineFormattingContext(true);
+  object->SetFirstInlineFragment(nullptr);
 }
 
 template <typename OffsetMappingBuilder>

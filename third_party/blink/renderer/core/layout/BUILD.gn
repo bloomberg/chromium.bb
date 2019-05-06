@@ -335,6 +335,8 @@ blink_core_sources("layout") {
     "ng/inline/ng_caret_position.h",
     "ng/inline/ng_caret_rect.cc",
     "ng/inline/ng_caret_rect.h",
+    "ng/inline/ng_dirty_lines.cc",
+    "ng/inline/ng_dirty_lines.h",
     "ng/inline/ng_inline_box_state.cc",
     "ng/inline/ng_inline_box_state.h",
     "ng/inline/ng_inline_break_token.cc",
