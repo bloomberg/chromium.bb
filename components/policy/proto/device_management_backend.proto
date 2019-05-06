@@ -1982,6 +1982,21 @@ message RefreshAccountRequest {
 // account.
 message RefreshAccountResponse {}
 
+// Request from device to upload RSU lookup key.
+message RsuLookupKeyUploadRequest {
+  // Google brand code for the given device SKU.
+  optional bytes board_id = 1;
+
+  // Hashed Cr50 device ID.
+  optional bytes cr50_hashed_device_id = 2;
+}
+
+// Response to {@code RsuLookupKeyUploadRequest}.
+message RsuLookupKeyUploadResponse {
+  // Whether RSU lookup key was received.
+  optional bool rsu_lookup_key_updated = 1;
+}
+
 // Models a window for screen time.
 message ScreenTimeSpan {
   optional TimePeriod time_period = 1;
@@ -2218,7 +2233,10 @@ message DeviceManagementRequest {
   // Request from device to wipe an old account and get a new account.
   optional RefreshAccountRequest refresh_account_request = 29;
 
-  // Next id: 31.
+  // Request from device to upload RSU lookup key.
+  optional RsuLookupKeyUploadRequest rsu_lookup_key_upload_request = 31;
+
+  // Next id: 32.
 }
 
 // Response from server to device.
@@ -2334,5 +2352,8 @@ message DeviceManagementResponse {
   // Response to refresh account request.
   optional RefreshAccountResponse refresh_account_response = 28;
 
-  // Next id: 30.
+  // Response to RSU lookup key upload request.
+  optional RsuLookupKeyUploadResponse rsu_lookup_key_upload_response = 30;
+
+  // Next id: 31.
 }
