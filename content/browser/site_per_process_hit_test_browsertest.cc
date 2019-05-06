@@ -6680,8 +6680,6 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
 static const int kHitTestOption[] = {0, 1, 2};
 static const float kOneScale[] = {1.f};
 
-// All tests are flaky on MSAN. https://crbug.com/959924
-#if !defined(MEMORY_SANITIZER)
 INSTANTIATE_TEST_SUITE_P(/* no prefix */,
                          SitePerProcessHitTestBrowserTest,
                          testing::Combine(testing::ValuesIn(kHitTestOption),
@@ -6722,7 +6720,6 @@ INSTANTIATE_TEST_SUITE_P(/* no prefix */,
                          SitePerProcessGestureHitTestBrowserTest,
                          testing::Combine(testing::ValuesIn(kHitTestOption),
                                           testing::ValuesIn(kOneScale)));
-#endif  // defined(USE_AURA)
-#endif  // defined(MEMORY_SANITIZER)
+#endif
 
 }  // namespace content
