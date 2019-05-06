@@ -3138,6 +3138,11 @@ const FeatureEntry kFeatureEntries[] = {
          network::switches::kUnsafelyTreatInsecureOriginAsSecure,
          "")},
 
+    {"treat-unsafe-downloads-as-active-content",
+     flag_descriptions::kTreatUnsafeDownloadsAsActiveName,
+     flag_descriptions::kTreatUnsafeDownloadsAsActiveDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kTreatUnsafeDownloadsAsActive)},
+
 #if defined(OS_CHROMEOS)
     {"enable-play-store-search", flag_descriptions::kEnablePlayStoreSearchName,
      flag_descriptions::kEnablePlayStoreSearchDescription, kOsCrOS,

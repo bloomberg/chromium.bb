@@ -2897,6 +2897,11 @@
     "expiry_milestone": 82
   },
   {
+    "name": "treat-unsafe-downloads-as-active-content",
+    "owners": [ "jdeblasio", "cthomp" ],
+    "expiry_milestone": 79
+  },
+  {
     "name": "scrollable-tabstrip",
     "owners": ["chrome-desktop-ui-seattle@google.com", "tbergquist"],
     "expiry_milestone": 82

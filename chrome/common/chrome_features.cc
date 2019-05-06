@@ -641,6 +641,12 @@ const base::Feature kAppManagement{"AppManagement",
 const base::Feature kTopSitesFromSiteEngagement{
     "TopSitesFromSiteEngagement", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Disable downloads of unsafe file types over insecure transports if initiated
+// from a secure page
+const base::Feature kTreatUnsafeDownloadsAsActive{
+    "TreatUnsafeDownloadsAsActive", base::FEATURE_DISABLED_BY_DEFAULT};
+const char kTreatUnsafeDownloadsAsActiveParamName[] = "MimeTypeList";
+
 #if defined(OS_CHROMEOS)
 // Enables or disables usage time state notifier for supervised accounts on
 // Chrome OS.

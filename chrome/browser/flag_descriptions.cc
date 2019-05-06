@@ -1907,6 +1907,13 @@ const char kTreatInsecureOriginAsSecureDescription[] =
     "contexts, "
     "see https://w3c.github.io/webappsec-secure-contexts/";
 
+const char kTreatUnsafeDownloadsAsActiveName[] =
+    "Treat risky downloads over insecure connections as active mixed content";
+const char kTreatUnsafeDownloadsAsActiveDescription[] =
+    "Disallows downloads of unsafe files (files that can potentially execute "
+    "code), where the final download origin or any origin in the redirect "
+    "chain is insecure if the originating page is secure.";
+
 const char kTrySupportedChannelLayoutsName[] =
     "Causes audio output streams to check if channel layouts other than the "
     "default hardware layout are available.";

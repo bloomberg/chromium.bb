@@ -1144,6 +1144,9 @@ extern const char kTranslateForceTriggerOnEnglishDescription[];
 extern const char kTreatInsecureOriginAsSecureName[];
 extern const char kTreatInsecureOriginAsSecureDescription[];
 
+extern const char kTreatUnsafeDownloadsAsActiveName[];
+extern const char kTreatUnsafeDownloadsAsActiveDescription[];
+
 extern const char kTrySupportedChannelLayoutsName[];
 extern const char kTrySupportedChannelLayoutsDescription[];
 
