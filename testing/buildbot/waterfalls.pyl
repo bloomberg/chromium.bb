@@ -950,7 +950,7 @@
       'ToTMac': {
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests',
-          'isolated_scripts': 'chromium_rel_isolated_scripts',
+          'isolated_scripts': 'chromium_mac_rel_isolated_scripts',
         },
       },
       'ToTMacASan': {
@@ -965,7 +965,7 @@
       'ToTMacOfficial': {
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests',
-          'isolated_scripts': 'chromium_rel_isolated_scripts',
+          'isolated_scripts': 'chromium_mac_rel_isolated_scripts',
         },
       },
       'ToTWin': {
@@ -1335,7 +1335,7 @@
       'Chromium Mac 10.13': {
         'test_suites': {
           'gtest_tests': 'chromium_mac_fyi_gtests',
-          'isolated_scripts': 'chromium_rel_isolated_scripts',
+          'isolated_scripts': 'chromium_mac_rel_isolated_scripts',
         },
       },
       'Jumbo Linux x64': {
@@ -1901,7 +1901,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'chromium_mac_fyi_gtests',
-          'isolated_scripts': 'chromium_rel_isolated_scripts',
+          'isolated_scripts': 'chromium_mac_rel_isolated_scripts',
         },
       },
       'mac10.10-blink-rel-dummy': {
@@ -3612,7 +3612,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests',
-          'isolated_scripts': 'chromium_rel_isolated_scripts',
+          'isolated_scripts': 'chromium_mac_rel_isolated_scripts',
         },
       },
       'Mac10.11 Tests': {
@@ -3622,7 +3622,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests',
-          'isolated_scripts': 'chromium_rel_isolated_scripts',
+          'isolated_scripts': 'chromium_mac_rel_isolated_scripts',
         },
       },
       'Mac10.12 Tests': {
@@ -3631,7 +3631,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests',
-          'isolated_scripts': 'chromium_rel_isolated_scripts',
+          'isolated_scripts': 'chromium_mac_rel_isolated_scripts',
         },
       },
       'Mac10.13 Tests': {
@@ -3641,7 +3641,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests',
-          'isolated_scripts': 'chromium_rel_isolated_scripts',
+          'isolated_scripts': 'chromium_mac_rel_isolated_scripts',
           'scripts': 'chromium_mac_scripts',
         },
       },
@@ -3678,7 +3678,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests',
-          'isolated_scripts': 'chromium_rel_isolated_scripts',
+          'isolated_scripts': 'chromium_mac_rel_isolated_scripts',
           'scripts': 'chromium_mac_scripts',
         },
       },

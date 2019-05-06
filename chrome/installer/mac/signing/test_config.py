@@ -3,8 +3,12 @@
 # found in the LICENSE file.
 
 import imp
+import os
 
-config = imp.load_source('signing.config', './signing/config.py.in')
+THIS_DIR = os.path.abspath(os.path.dirname(__file__))
+
+config = imp.load_source('signing.config', os.path.join(THIS_DIR,
+                                                        'config.py.in'))
 
 
 class TestConfig(config.CodeSignConfig):

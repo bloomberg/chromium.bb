@@ -20237,6 +20237,13 @@
         }
       },
       {
+        "isolate_name": "mac_signing_tests",
+        "name": "mac_signing_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      {
         "isolate_name": "metrics_python_tests",
         "name": "metrics_python_tests",
         "swarming": {
@@ -22186,6 +22193,13 @@
       {
         "isolate_name": "flatbuffers_unittests",
         "name": "flatbuffers_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      {
+        "isolate_name": "mac_signing_tests",
+        "name": "mac_signing_tests",
         "swarming": {
           "can_use_on_swarming_builders": true
         }

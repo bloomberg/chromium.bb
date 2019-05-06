@@ -1436,6 +1436,14 @@
     "label": "//components/password_manager/core/browser:lookup_affiliation_response_parser_fuzzer",
     "type": "fuzzer",
   },
+  "mac_signing_tests": {
+    "args": [
+      "../../chrome/installer/mac/signing/run_mac_signing_tests.py",
+    ],
+    "label": "//chrome/installer/mac:mac_signing_tests",
+    "script": "//testing/scripts/run_isolated_script_test.py",
+    "type": "script",
+  },
   "mdns_parser_fuzzer": {
     "label": "//third_party/webrtc/test/fuzzers:mdns_parser_fuzzer",
     "type": "fuzzer",

@@ -871,6 +871,13 @@
         }
       },
       {
+        "isolate_name": "mac_signing_tests",
+        "name": "mac_signing_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      {
         "isolate_name": "metrics_python_tests",
         "name": "metrics_python_tests",
         "swarming": {
@@ -20657,6 +20664,20 @@
       {
         "isolate_name": "flatbuffers_unittests",
         "name": "flatbuffers_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0a2e",
+              "os": "Mac-10.14.5"
+            }
+          ],
+          "expiration": 21600
+        }
+      },
+      {
+        "isolate_name": "mac_signing_tests",
+        "name": "mac_signing_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [

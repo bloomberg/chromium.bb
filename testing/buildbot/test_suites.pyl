@@ -3697,6 +3697,9 @@
       'sandbox_mac_unittests': {},
     },
 
+    'mac_specific_isolated_scripts': {
+      'mac_signing_tests': {},
+    },
 
     'memory_infra_isolated_scripts': {
       'heap_profiling.mobile': {
@@ -4498,10 +4501,11 @@
       'non_linux_chromium_gtests',
     ],
 
-    'chromium_rel_isolated_scripts': [
+    'chromium_mac_rel_isolated_scripts': [
       'chromedriver_py_tests_isolated_scripts',
       'components_perftests_isolated_scripts',
       'desktop_chromium_isolated_scripts',
+      'mac_specific_isolated_scripts',
       'telemetry_perf_unittests_isolated_scripts',
     ],
 

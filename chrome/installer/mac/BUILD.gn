@@ -113,3 +113,21 @@ copy("copies") {
     "$_packaging_dir/{{source_file_part}}",
   ]
 }
+
+group("mac_signing_tests") {
+  data = [
+    "signing/__init__.py",
+    "signing/config.py.in",
+    "signing/model.py",
+    "signing/run_mac_signing_tests.py",
+    "signing/test_config.py",
+    "signing/test_model.py",
+
+    # The run_isolated_script_test.py script and its dependencies.
+    "//testing/scripts/run_isolated_script_test.py",
+    "//testing/scripts/common.py",
+    "//testing/xvfb.py",
+    "//testing/test_env.py",
+    "//third_party/catapult/third_party/typ/",
+  ]
+}
