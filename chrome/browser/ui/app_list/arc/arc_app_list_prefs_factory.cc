@@ -71,10 +71,9 @@ KeyedService* ArcAppListPrefsFactory::BuildServiceInstanceFor(
 
   auto* arc_service_manager = arc::ArcServiceManager::Get();
   if (!arc_service_manager)
-    return nullptr;
+    return nullptr;  // ARC is not supported
 
-  return ArcAppListPrefs::Create(
-      profile, arc_service_manager->arc_bridge_service()->app());
+  return ArcAppListPrefs::Create(profile);
 }
 
 content::BrowserContext* ArcAppListPrefsFactory::GetBrowserContextToUse(

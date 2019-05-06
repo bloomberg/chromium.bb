@@ -199,10 +199,11 @@ class ArcAppListPrefs : public KeyedService,
     virtual ~Observer() {}
   };
 
+  static ArcAppListPrefs* Create(Profile* profile);
   static ArcAppListPrefs* Create(
       Profile* profile,
       arc::ConnectionHolder<arc::mojom::AppInstance, arc::mojom::AppHost>*
-          app_connection_holder);
+          app_connection_holder_for_testing);
 
   // Convenience function to get the ArcAppListPrefs for a BrowserContext. It
   // will only return non-null pointer for the primary user.
@@ -297,9 +298,7 @@ class ArcAppListPrefs : public KeyedService,
   void RemoveApp(const std::string& app_id);
 
   arc::ConnectionHolder<arc::mojom::AppInstance, arc::mojom::AppHost>*
-  app_connection_holder() {
-    return app_connection_holder_;
-  }
+  app_connection_holder();
 
   bool package_list_initial_refreshed() const {
     return package_list_initial_refreshed_;
@@ -339,7 +338,7 @@ class ArcAppListPrefs : public KeyedService,
   ArcAppListPrefs(
       Profile* profile,
       arc::ConnectionHolder<arc::mojom::AppInstance, arc::mojom::AppHost>*
-          app_connection_holder);
+          app_connection_holder_for_testing);
 
   // arc::ConnectionObserver<arc::mojom::AppInstance>:
   void OnConnectionReady() override;
@@ -509,7 +508,7 @@ class ArcAppListPrefs : public KeyedService,
   PrefService* const prefs_;
 
   arc::ConnectionHolder<arc::mojom::AppInstance, arc::mojom::AppHost>* const
-      app_connection_holder_;
+      app_connection_holder_for_testing_;
 
   // List of observers.
   base::ObserverList<Observer>::Unchecked observer_list_;

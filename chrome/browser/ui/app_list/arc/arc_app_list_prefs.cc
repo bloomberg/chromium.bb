@@ -36,6 +36,7 @@
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
+#include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/session/connection_holder.h"
 #include "components/crx_file/id_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -212,11 +213,17 @@ bool ignore_compare_app_info_install_time = false;
 }  // namespace
 
 // static
+ArcAppListPrefs* ArcAppListPrefs::Create(Profile* profile) {
+  return new ArcAppListPrefs(profile, nullptr);
+}
+
+// static
 ArcAppListPrefs* ArcAppListPrefs::Create(
     Profile* profile,
     arc::ConnectionHolder<arc::mojom::AppInstance, arc::mojom::AppHost>*
-        app_connection_holder) {
-  return new ArcAppListPrefs(profile, app_connection_holder);
+        app_connection_holder_for_testing) {
+  DCHECK(app_connection_holder_for_testing);
+  return new ArcAppListPrefs(profile, app_connection_holder_for_testing);
 }
 
 // static
@@ -339,14 +346,13 @@ class ArcAppListPrefs::ResizeRequest : public ImageDecoder::ImageRequest {
 ArcAppListPrefs::ArcAppListPrefs(
     Profile* profile,
     arc::ConnectionHolder<arc::mojom::AppInstance, arc::mojom::AppHost>*
-        app_connection_holder)
+        app_connection_holder_for_testing)
     : profile_(profile),
       prefs_(profile->GetPrefs()),
-      app_connection_holder_(app_connection_holder),
+      app_connection_holder_for_testing_(app_connection_holder_for_testing),
       weak_ptr_factory_(this) {
   VLOG(1) << "ARC app list prefs created";
   DCHECK(profile);
-  DCHECK(app_connection_holder);
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   const base::FilePath& base_path = profile->GetPath();
   base_path_ = base_path.AppendASCII(arc::prefs::kArcApps);
@@ -380,7 +386,7 @@ ArcAppListPrefs::~ArcAppListPrefs() {
     return;
   DCHECK(arc::ArcServiceManager::Get());
   arc_session_manager->RemoveObserver(this);
-  app_connection_holder_->RemoveObserver(this);
+  app_connection_holder()->RemoveObserver(this);
 }
 
 void ArcAppListPrefs::StartPrefs() {
@@ -404,9 +410,9 @@ void ArcAppListPrefs::StartPrefs() {
 
   VLOG(1) << "Registering host...";
 
-  app_connection_holder_->SetHost(this);
-  app_connection_holder_->AddObserver(this);
-  if (!app_connection_holder_->IsConnected())
+  app_connection_holder()->SetHost(this);
+  app_connection_holder()->AddObserver(this);
+  if (!app_connection_holder()->IsConnected())
     OnConnectionClosed();
 }
 
@@ -474,7 +480,7 @@ void ArcAppListPrefs::RequestIcon(const std::string& app_id,
   if (!ready_apps_.count(app_id))
     return;
 
-  if (!app_connection_holder_->IsConnected()) {
+  if (!app_connection_holder()->IsConnected()) {
     // AppInstance should be ready since we have app_id in ready_apps_. This
     // can happen in browser_tests.
     return;
@@ -498,14 +504,14 @@ void ArcAppListPrefs::SendIconRequest(const std::string& app_id,
                          weak_ptr_factory_.GetWeakPtr(), app_id, descriptor);
   if (app_info.icon_resource_id.empty()) {
     auto* app_instance =
-        ARC_GET_INSTANCE_FOR_METHOD(app_connection_holder_, RequestAppIcon);
+        ARC_GET_INSTANCE_FOR_METHOD(app_connection_holder(), RequestAppIcon);
     if (!app_instance)
       return;  // Error is logged in macro.
     app_instance->RequestAppIcon(app_info.package_name, app_info.activity,
                                  descriptor.GetSizeInPixels(),
                                  std::move(callback));
   } else {
-    auto* app_instance = ARC_GET_INSTANCE_FOR_METHOD(app_connection_holder_,
+    auto* app_instance = ARC_GET_INSTANCE_FOR_METHOD(app_connection_holder(),
                                                      RequestShortcutIcon);
     if (!app_instance)
       return;  // Error is logged in macro.
@@ -543,7 +549,7 @@ void ArcAppListPrefs::SetNotificationsEnabled(const std::string& app_id,
     return;
   }
 
-  auto* app_instance = ARC_GET_INSTANCE_FOR_METHOD(app_connection_holder_,
+  auto* app_instance = ARC_GET_INSTANCE_FOR_METHOD(app_connection_holder(),
                                                    SetNotificationsEnabled);
   if (!app_instance)
     return;
@@ -1195,6 +1201,19 @@ void ArcAppListPrefs::RemoveApp(const std::string& app_id) {
   tracked_apps_.erase(app_id);
 }
 
+arc::ConnectionHolder<arc::mojom::AppInstance, arc::mojom::AppHost>*
+ArcAppListPrefs::app_connection_holder() {
+  // Some tests set their own holder. If it's set, return the holder.
+  if (app_connection_holder_for_testing_)
+    return app_connection_holder_for_testing_;
+  auto* arc_service_manager = arc::ArcServiceManager::Get();
+  // The null check is for unit tests. On production, |arc_service_manager| is
+  // always non-null.
+  if (!arc_service_manager)
+    return nullptr;
+  return arc_service_manager->arc_bridge_service()->app();
+}
+
 void ArcAppListPrefs::AddOrUpdatePackagePrefs(
     const arc::mojom::ArcPackageInfo& package) {
   DCHECK(IsArcAndroidEnabledForProfile(profile_));
@@ -1252,7 +1271,7 @@ void ArcAppListPrefs::RemovePackageFromPrefs(const std::string& package_name) {
 void ArcAppListPrefs::OnAppListRefreshed(
     std::vector<arc::mojom::AppInfoPtr> apps) {
   DCHECK(app_list_refreshed_callback_.is_null());
-  if (!app_connection_holder_->IsConnected()) {
+  if (!app_connection_holder()->IsConnected()) {
     LOG(ERROR) << "App instance is not connected. Delaying app list refresh. "
                << "See b/70566216.";
     app_list_refreshed_callback_ =
