@@ -26,7 +26,7 @@ import java.util.Map;
  * This mainly a bridge to autofill_assistant::ClientAndroid.
  */
 @JNINamespace("autofill_assistant")
-class AutofillAssistantClient {
+class AutofillAssistantClient implements AutofillAssistantModuleEntry {
     /** OAuth2 scope that RPCs require. */
     private static final String AUTH_TOKEN_TYPE =
             "oauth2:https://www.googleapis.com/auth/userinfo.profile";
@@ -66,9 +66,7 @@ class AutofillAssistantClient {
         mNativeClientAndroid = nativeClientAndroid;
     }
 
-    /**
-     * Show the onboarding screen and run {@code onAccept} if user agreed to proceed.
-     */
+    @Override
     public void showOnboarding(String experimentIds, Runnable onAccept) {
         checkNativeClientIsAliveOrThrow();
         nativeShowOnboarding(mNativeClientAndroid, experimentIds, onAccept);
@@ -80,9 +78,7 @@ class AutofillAssistantClient {
         }
     }
 
-    /**
-     * Launches Autofill Assistant on the current web contents, expecting autostart.
-     */
+    @Override
     public void start(String initialUrl, Map<String, String> parameters, String experimentIds,
             Bundle intentExtras) {
         checkNativeClientIsAliveOrThrow();
