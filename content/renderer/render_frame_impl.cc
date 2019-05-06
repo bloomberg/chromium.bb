@@ -5547,14 +5547,7 @@ blink::WebString RenderFrameImpl::UserAgentOverride() {
   WebLocalFrame* main_frame =
       render_view_->webview()->MainFrame()->ToWebLocalFrame();
 
-  // If we're in the middle of committing a load, the data source we need
-  // will still be provisional.
-  WebDocumentLoader* document_loader = nullptr;
-  if (main_frame->GetProvisionalDocumentLoader())
-    document_loader = main_frame->GetProvisionalDocumentLoader();
-  else
-    document_loader = main_frame->GetDocumentLoader();
-
+  WebDocumentLoader* document_loader = main_frame->GetDocumentLoader();
   InternalDocumentStateData* internal_data =
       document_loader
           ? InternalDocumentStateData::FromDocumentLoader(document_loader)
