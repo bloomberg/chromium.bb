@@ -17,6 +17,9 @@
 #error "This file requires ARC support."
 #endif
 
+NSString* const kFormSuggestionsViewAccessibilityIdentifier =
+    @"kFormSuggestionsViewAccessibilityIdentifier";
+
 namespace {
 
 // Vertical margin between suggestions and the edge of the suggestion content
@@ -131,6 +134,8 @@ const CGFloat kSuggestionHorizontalMargin = 6;
   }
   self.stackView = stackView;
   [self createAndInsertArrangedSubviews];
+
+  self.accessibilityIdentifier = kFormSuggestionsViewAccessibilityIdentifier;
 }
 
 - (void)createAndInsertArrangedSubviews {

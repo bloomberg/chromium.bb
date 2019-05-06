@@ -17,6 +17,7 @@
 #include "components/autofill/ios/browser/autofill_switches.h"
 #include "ios/chrome/browser/application_context.h"
 #import "ios/chrome/browser/autofill/form_suggestion_label.h"
+#import "ios/chrome/browser/autofill/form_suggestion_view.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/address_view_controller.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_accessory_view_controller.h"
@@ -48,6 +49,11 @@ constexpr char kFormHTMLFile[] = "/profile_form.html";
 // EarlGrey fails to detect undocked keyboards on screen, so this help check
 // for them.
 static std::atomic_bool gCHRIsKeyboardShown(false);
+
+// Returns a matcher for the scroll view in keyboard accessory bar.
+id<GREYMatcher> FormSuggestionViewMatcher() {
+  return grey_accessibilityID(kFormSuggestionsViewAccessibilityIdentifier);
+}
 
 // Returns a matcher for the profiles icon in the keyboard accessory bar.
 id<GREYMatcher> ProfilesIconMatcher() {
@@ -569,10 +575,6 @@ void DockKeyboard() {
 
 // Tests that the manual fallback view is present in incognito.
 - (void)testIncognitoManualFallbackMenu {
-  // TODO(crbug.com/958015): reenable test.
-  if (UIScreen.mainScreen.bounds.size.height == 568) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPhone 5S.");
-  }
   // Add the profile to use for verification.
   AddAutofillProfile(_personalDataManager);
 
@@ -582,6 +584,8 @@ void DockKeyboard() {
       performAction:chrome_test_util::TapWebElement(kFormElementCity)];
 
   // Verify the profiles icon is visible.
+  [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
   [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
 
@@ -599,6 +603,8 @@ void DockKeyboard() {
       performAction:chrome_test_util::TapWebElement(kFormElementCity)];
 
   // Verify the profiles icon is visible.
+  [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
   [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
 }

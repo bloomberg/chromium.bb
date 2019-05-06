@@ -7,6 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
+extern NSString* const kFormSuggestionsViewAccessibilityIdentifier;
+
 @class FormSuggestion;
 @protocol FormSuggestionClient;
 @class FormSuggestionView;
