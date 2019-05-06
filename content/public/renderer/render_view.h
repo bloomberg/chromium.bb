@@ -19,7 +19,6 @@
 
 namespace blink {
 class WebElement;
-class WebFrameWidget;
 class WebView;
 struct WebRect;
 }  // namespace blink
@@ -82,9 +81,6 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
 
   // Returns the associated WebView. May return NULL when the view is closing.
   virtual blink::WebView* GetWebView() = 0;
-
-  // Returns the associated WebFrameWidget.
-  virtual blink::WebFrameWidget* GetWebFrameWidget() = 0;
 
   // Whether content state (such as form state, scroll position and page
   // contents) should be sent to the browser immediately. This is normally

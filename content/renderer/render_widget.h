@@ -826,11 +826,6 @@ class CONTENT_EXPORT RenderWidget
   // GetWindowRect() we'll use this pending window rect as the size.
   void SetPendingWindowRect(const blink::WebRect& r);
 
-  // TODO(ekaramad): This method should not be confused with its RenderView
-  // variant, GetWebFrameWidget(). Currently Cast and AndroidWebview's
-  // ContentRendererClients are the only users of the public variant. The public
-  // method will eventually be removed from RenderView and uses of the method
-  // will obtain WebFrameWidget from WebLocalFrame.
   // Returns the WebFrameWidget associated with this RenderWidget if any.
   // Returns nullptr if GetWebWidget() returns nullptr or returns a WebWidget
   // that is not a WebFrameWidget. A WebFrameWidget only makes sense when there

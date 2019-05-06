@@ -281,7 +281,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   const WebPreferences& GetWebkitPreferences() override;
   void SetWebkitPreferences(const WebPreferences& preferences) override;
   blink::WebView* GetWebView() override;
-  blink::WebFrameWidget* GetWebFrameWidget() override;
   bool GetContentStateImmediately() override;
   void SetEditCommandForNextKeyEvent(const std::string& name,
                                      const std::string& value) override;

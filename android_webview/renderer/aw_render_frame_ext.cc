@@ -368,10 +368,9 @@ blink::WebView* AwRenderFrameExt::GetWebView() {
 }
 
 blink::WebFrameWidget* AwRenderFrameExt::GetWebFrameWidget() {
-  if (!render_frame() || !render_frame()->GetRenderView())
-    return nullptr;
-
-  return render_frame()->GetRenderView()->GetWebFrameWidget();
+  return render_frame()
+             ? render_frame()->GetWebFrame()->LocalRoot()->FrameWidget()
+             : nullptr;
 }
 
 void AwRenderFrameExt::OnDestruct() {

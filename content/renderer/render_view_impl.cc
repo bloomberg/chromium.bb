@@ -1910,10 +1910,6 @@ blink::WebView* RenderViewImpl::GetWebView() {
   return webview();
 }
 
-blink::WebFrameWidget* RenderViewImpl::GetWebFrameWidget() {
-  return frame_widget_;
-}
-
 bool RenderViewImpl::GetContentStateImmediately() {
   return send_content_state_immediately_;
 }
