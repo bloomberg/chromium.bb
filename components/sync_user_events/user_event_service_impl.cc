@@ -2,16 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/user_events/user_event_service_impl.h"
+#include "components/sync_user_events/user_event_service_impl.h"
 
 #include <utility>
 
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
-#include "components/sync/driver/sync_driver_switches.h"
-#include "components/sync/driver/sync_user_settings.h"
-#include "components/sync/user_events/user_event_sync_bridge.h"
+#include "components/sync_user_events/user_event_sync_bridge.h"
 
 using sync_pb::UserEventSpecifics;
 

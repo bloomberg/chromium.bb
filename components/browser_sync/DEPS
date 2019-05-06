@@ -13,6 +13,7 @@ include_rules = [
   "+components/sync_bookmarks",
   "+components/sync_preferences",
   "+components/sync_sessions",
+  "+components/sync_user_events",
   "+components/version_info",
   "+components/webdata/common",
   "+components/webdata_services",

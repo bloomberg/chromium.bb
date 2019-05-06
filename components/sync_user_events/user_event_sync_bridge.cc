@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/user_events/user_event_sync_bridge.h"
+#include "components/sync_user_events/user_event_sync_bridge.h"
 
 #include <set>
 #include <utility>
@@ -16,7 +16,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
-#include "components/signin/core/browser/account_info.h"
 #include "components/sync/model/data_type_activation_request.h"
 #include "components/sync/model/entity_change.h"
 #include "components/sync/model/metadata_batch.h"
@@ -25,8 +24,8 @@
 
 namespace syncer {
 
-using sync_pb::UserEventSpecifics;
 using sync_pb::ModelTypeState;
+using sync_pb::UserEventSpecifics;
 using IdList = ModelTypeStore::IdList;
 using Record = ModelTypeStore::Record;
 using RecordList = ModelTypeStore::RecordList;
@@ -73,8 +72,8 @@ UserEventSyncBridge::UserEventSyncBridge(
       .Run(USER_EVENTS, base::BindOnce(&UserEventSyncBridge::OnStoreCreated,
                                        weak_ptr_factory_.GetWeakPtr()));
   global_id_mapper_->AddGlobalIdChangeObserver(
-      base::Bind(&UserEventSyncBridge::HandleGlobalIdChange,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindRepeating(&UserEventSyncBridge::HandleGlobalIdChange,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 UserEventSyncBridge::~UserEventSyncBridge() = default;

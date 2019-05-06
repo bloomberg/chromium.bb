@@ -6,6 +6,7 @@ include_rules = [
   "+components/prefs",
   "+components/sessions",
   "+components/sync",
+  "+components/sync_user_events",
   "+components/variations",
   "+components/version_info",
   "+google_apis",

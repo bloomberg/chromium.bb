@@ -31,6 +31,7 @@ include_rules = [
   "+components/strings/grit",
   "+components/sync",
   "+components/sync_sessions",
+  "+components/sync_user_events",
   "+components/translate/core",
   "+components/translate/ios",
   "+components/language/ios",

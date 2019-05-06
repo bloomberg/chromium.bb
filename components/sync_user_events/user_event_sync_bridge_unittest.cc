@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/user_events/user_event_sync_bridge.h"
+#include "components/sync_user_events/user_event_sync_bridge.h"
 
 #include <map>
 #include <set>

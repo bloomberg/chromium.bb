@@ -40,7 +40,6 @@
 #include "components/sync/model/model_type_store_service.h"
 #include "components/sync/model_impl/forwarding_model_type_controller_delegate.h"
 #include "components/sync/model_impl/proxy_model_type_controller_delegate.h"
-#include "components/sync/user_events/user_event_model_type_controller.h"
 #include "components/sync_bookmarks/bookmark_change_processor.h"
 #include "components/sync_bookmarks/bookmark_data_type_controller.h"
 #include "components/sync_bookmarks/bookmark_model_associator.h"
@@ -48,6 +47,7 @@
 #include "components/sync_sessions/proxy_tabs_data_type_controller.h"
 #include "components/sync_sessions/session_model_type_controller.h"
 #include "components/sync_sessions/session_sync_service.h"
+#include "components/sync_user_events/user_event_model_type_controller.h"
 
 using base::FeatureList;
 using bookmarks::BookmarkModel;

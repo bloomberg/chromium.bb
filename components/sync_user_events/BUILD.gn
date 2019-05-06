@@ -6,8 +6,9 @@ import("//build/buildflag_header.gni")
 import("//build/config/features.gni")
 import("//build/config/jumbo.gni")
 
-jumbo_static_library("user_events") {
+jumbo_static_library("sync_user_events") {
   sources = [
+    "global_id_mapper.h",
     "no_op_user_event_service.cc",
     "no_op_user_event_service.h",
     "user_event_model_type_controller.cc",
@@ -27,5 +28,34 @@ jumbo_static_library("user_events") {
   ]
   deps = [
     "//components/signin/core/browser:shared",
+  ]
+}
+
+static_library("test_support") {
+  testonly = true
+  sources = [
+    "fake_user_event_service.cc",
+    "fake_user_event_service.h",
+  ]
+
+  public_deps = [
+    ":sync_user_events",
+    "//components/sync:test_support",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "user_event_service_impl_unittest.cc",
+    "user_event_sync_bridge_unittest.cc",
+  ]
+
+  configs += [ "//build/config:precompiled_headers" ]
+
+  deps = [
+    ":sync_user_events",
+    ":test_support",
+    "//base/test:test_support",
   ]
 }

@@ -17,7 +17,7 @@
 #include "components/sync/driver/fake_sync_service.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/js/js_test_util.h"
-#include "components/sync/user_events/fake_user_event_service.h"
+#include "components/sync_user_events/fake_user_event_service.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_web_ui.h"

@@ -16,9 +16,7 @@ group("sync") {
 }
 
 # Note: This target intentionally doesn't include test_support_fake_server -
-# targets that need the fake server should depend on it explicitly. It also
-# doesn't include test_support_user_events, which should be moved out of
-# components/sync entirely.
+# targets that need the fake server should depend on it explicitly.
 group("test_support") {
   testonly = true
   public_deps = [
@@ -433,24 +431,6 @@ jumbo_static_library("rest_of_sync") {
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
-static_library("test_support_user_events") {
-  testonly = true
-  sources = [
-    "user_events/fake_user_event_service.cc",
-    "user_events/fake_user_event_service.h",
-  ]
-
-  public_deps = [
-    "//components/sync/base:test_support",
-  ]
-
-  deps = [
-    ":sync",
-    ":test_support_model",
-    "//components/sync/user_events",
-  ]
-}
-
 static_library("test_support_engine") {
   testonly = true
   sources = [
@@ -672,8 +652,6 @@ source_set("unit_tests") {
     "syncable/syncable_enum_conversions_unittest.cc",
     "syncable/syncable_id_unittest.cc",
     "syncable/syncable_unittest.cc",
-    "user_events/user_event_service_impl_unittest.cc",
-    "user_events/user_event_sync_bridge_unittest.cc",
   ]
 
   configs += [ "//build/config:precompiled_headers" ]
@@ -681,16 +659,12 @@ source_set("unit_tests") {
   data = [
     "//chrome/test/data/sync/",
     "//net/tools/testserver/",
-    "//third_party/pyftpdlib/",
-    "//third_party/pywebsocket/src/mod_pywebsocket/",
-    "//third_party/tlslite/",
   ]
 
   deps = [
     ":sync",
     ":test_support_engine",
     ":test_support_model",
-    ":test_support_user_events",
     "//base",
     "//base/test:test_support",
     "//components/invalidation/impl",
@@ -701,7 +675,6 @@ source_set("unit_tests") {
     "//components/sync/device_info:unit_tests",
     "//components/sync/driver:test_support",
     "//components/sync/js:test_support",
-    "//components/sync/user_events",
     "//components/sync_preferences",
     "//components/sync_preferences:test_support",
     "//components/version_info",

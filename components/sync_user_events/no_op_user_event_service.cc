@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/user_events/no_op_user_event_service.h"
+#include "components/sync_user_events/no_op_user_event_service.h"
 
 #include "base/memory/weak_ptr.h"
 

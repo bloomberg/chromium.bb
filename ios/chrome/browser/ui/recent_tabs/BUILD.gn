@@ -101,6 +101,7 @@ source_set("unit_tests") {
     "//components/browser_sync",
     "//components/sync:test_support_model",
     "//components/sync_sessions",
+    "//components/sync_user_events",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/sync",

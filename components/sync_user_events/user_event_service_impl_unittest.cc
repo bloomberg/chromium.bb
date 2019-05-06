@@ -2,19 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/user_events/user_event_service_impl.h"
+#include "components/sync_user_events/user_event_service_impl.h"
 
 #include <utility>
 #include <vector>
 
 #include "base/test/scoped_task_environment.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/test_sync_service.h"
 #include "components/sync/model/mock_model_type_change_processor.h"
 #include "components/sync/model/model_type_store_test_util.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "components/sync/user_events/user_event_sync_bridge.h"
+#include "components/sync_user_events/user_event_sync_bridge.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using sync_pb::UserEventSpecifics;

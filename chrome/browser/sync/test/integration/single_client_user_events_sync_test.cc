@@ -20,7 +20,7 @@
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/model/model_type_sync_bridge.h"
 #include "components/sync/protocol/user_event_specifics.pb.h"
-#include "components/sync/user_events/user_event_service.h"
+#include "components/sync_user_events/user_event_service.h"
 #include "components/variations/variations_associated_data.h"
 
 using fake_server::FakeServer;

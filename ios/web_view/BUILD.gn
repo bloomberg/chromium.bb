@@ -292,7 +292,7 @@ ios_web_view_deps = [
   "//components/strings:components_strings_grit",
   "//components/sync",
   "//components/sync/device_info",
-  "//components/sync/user_events",
+  "//components/sync_user_events",
   "//components/language/ios/browser",
   "//components/sync_sessions",
   "//components/translate/core/browser",

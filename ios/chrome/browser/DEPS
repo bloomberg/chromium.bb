@@ -86,6 +86,7 @@ include_rules = [
   "+components/sync_bookmarks",
   "+components/sync_preferences",
   "+components/sync_sessions",
+  "+components/sync_user_events",
   "+components/thread_pool_util",
   "+components/translate",
   "+components/ui_metrics",

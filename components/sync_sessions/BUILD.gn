@@ -61,6 +61,7 @@ static_library("sync_sessions") {
     "//components/history/core/browser",
     "//components/keyed_service/core",
     "//components/prefs",
+    "//components/sync_user_events",
     "//components/variations",
     "//components/version_info",
     "//google_apis",

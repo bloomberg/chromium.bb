@@ -361,7 +361,7 @@ jumbo_split_static_library("ui") {
   public_deps = [
     "//components/dom_distiller/core",
     "//components/sync",
-    "//components/sync/user_events",
+    "//components/sync_user_events",
     "//components/translate/content/browser",
     "//content/public/browser",
   ]

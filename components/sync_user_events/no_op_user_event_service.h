@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "components/sync/user_events/user_event_service.h"
+#include "components/sync_user_events/user_event_service.h"
 
 namespace syncer {
 
