@@ -11,7 +11,7 @@ from __future__ import print_function
 import base64
 import collections
 import errno
-import md5
+import hashlib
 import optparse
 import os
 import re
@@ -70,7 +70,7 @@ _WRAPPERS_BY_INDENT = [
                          replace_whitespace=False,
                          subsequent_indent=' ' * (indent + 4),
                          break_long_words=False)
-    for indent in xrange(50)]  # 50 chosen experimentally.
+    for indent in range(50)]  # 50 chosen experimentally.
 
 JAVA_POD_TYPE_MAP = {
     'int': 'jint',
@@ -450,7 +450,7 @@ class JniParams(object):
     if not self._implicit_imports:
       # This file was generated from android.jar and lists
       # all classes that are implicitly imported.
-      with file(os.path.join(os.path.dirname(sys.argv[0]),
+      with open(os.path.join(os.path.dirname(__file__),
                              'android_jar.classes'), 'r') as f:
         self._implicit_imports = f.readlines()
     for implicit_import in self._implicit_imports:
@@ -844,7 +844,8 @@ class JNIFromJavaP(object):
                                '-s', class_name],
                          cwd=os.path.dirname(class_file),
                          stdout=subprocess.PIPE,
-                         stderr=subprocess.PIPE)
+                         stderr=subprocess.PIPE,
+                         universal_newlines=True)
     stdout, _ = p.communicate()
     jni_from_javap = JNIFromJavaP(stdout.split('\n'), options)
     return jni_from_javap
@@ -882,12 +883,16 @@ class ProxyHelpers(object):
 
   @staticmethod
   def CreateHashedMethodName(fully_qualified_class_name, method_name):
-    m = md5.new()
     descriptor = EscapeClassName(fully_qualified_class_name + '/' + method_name)
 
-    m.update(descriptor)
-    hash = m.digest()
-    hashed_name = ('M' + base64.b64encode(hash, altchars='$_')).rstrip('=')
+    if not isinstance(descriptor, bytes):
+      descriptor = descriptor.encode()
+    hash = hashlib.md5(descriptor).digest()
+    hash_b64 = base64.b64encode(hash, altchars=b'$_')
+    if not isinstance(hash_b64, str):
+      hash_b64 = hash_b64.decode()
+
+    hashed_name = ('M' + hash_b64).rstrip('=')
     return hashed_name[0:ProxyHelpers.MAX_CHARS_FOR_HASHED_NATIVE_METHODS]
 
   @staticmethod
@@ -965,7 +970,8 @@ class JNIFromJavaSource(object):
 
   @staticmethod
   def CreateFromFile(java_file_name, options):
-    contents = file(java_file_name).read()
+    with open(java_file_name) as f:
+      contents = f.read()
     fully_qualified_class = ExtractFullyQualifiedJavaClassName(java_file_name,
                                                                contents)
     return JNIFromJavaSource(contents, fully_qualified_class, options)
@@ -1033,7 +1039,7 @@ const char kClassPath_${JAVA_CLASS}[] = \
 "${JNI_CLASS_PATH}";
 """)
 
-    for full_clazz in classes.itervalues():
+    for full_clazz in classes.values():
       values = {
           'JAVA_CLASS': EscapeClassName(full_clazz),
           'JNI_CLASS_PATH': full_clazz,
@@ -1062,7 +1068,7 @@ extern std::atomic<jclass> g_${JAVA_CLASS}_clazz;
 JNI_REGISTRATION_EXPORT std::atomic<jclass> g_${JAVA_CLASS}_clazz(nullptr);
 """ + class_getter)
 
-    for full_clazz in classes.itervalues():
+    for full_clazz in classes.values():
       values = {
           'JAVA_CLASS': EscapeClassName(full_clazz),
       }
@@ -1520,7 +1526,7 @@ def ExtractJarInputFile(jar_file, input_file, out_dir):
     if e.errno != errno.EEXIST:
       raise
   extracted_file_name = os.path.join(out_dir, os.path.basename(input_file))
-  with open(extracted_file_name, 'w') as outfile:
+  with open(extracted_file_name, 'wb') as outfile:
     outfile.write(jar_file.read(input_file))
 
   return extracted_file_name
@@ -1535,18 +1541,18 @@ def GenerateJNIHeader(input_file, output_file, options):
       jni_from_java_source = JNIFromJavaSource.CreateFromFile(
           input_file, options)
       content = jni_from_java_source.GetContent()
-  except ParseError, e:
+  except ParseError as e:
     print(e)
     sys.exit(1)
   if output_file:
-    with build_utils.AtomicOutput(output_file) as f:
+    with build_utils.AtomicOutput(output_file, mode='w') as f:
       f.write(content)
   else:
     print(content)
 
 
 def GetScriptName():
-  script_components = os.path.abspath(sys.argv[0]).split(os.path.sep)
+  script_components = os.path.abspath(__file__).split(os.path.sep)
   base_index = 0
   for idx, value in enumerate(script_components):
     if value == 'base' or value == 'third_party':

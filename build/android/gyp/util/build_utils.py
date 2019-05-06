@@ -38,6 +38,12 @@ HERMETIC_TIMESTAMP = (2001, 1, 1, 0, 0, 0)
 _HERMETIC_FILE_ATTR = (0o644 << 16)
 
 
+try:
+  string_types = basestring
+except NameError:
+  string_types = (str, bytes)
+
+
 @contextlib.contextmanager
 def TempDir():
   dirname = tempfile.mkdtemp()
@@ -133,13 +139,14 @@ def WriteJson(obj, path, only_if_changed=False):
 
 
 @contextlib.contextmanager
-def AtomicOutput(path, only_if_changed=True):
+def AtomicOutput(path, only_if_changed=True, mode='w+b'):
   """Helper to prevent half-written outputs.
 
   Args:
     path: Path to the final output file, which will be written atomically.
     only_if_changed: If True (the default), do not touch the filesystem
       if the content has not changed.
+    mode: The mode to open the file in (str).
   Returns:
     A python context manager that yelds a NamedTemporaryFile instance
     that must be used by clients to write the data to. On exit, the
@@ -155,7 +162,7 @@ def AtomicOutput(path, only_if_changed=True):
   if not os.path.exists(dirname):
     MakeDirectory(dirname)
   with tempfile.NamedTemporaryFile(
-      suffix=os.path.basename(path), dir=dirname, delete=False) as f:
+      mode, suffix=os.path.basename(path), dir=dirname, delete=False) as f:
     try:
       yield f
 
@@ -374,7 +381,7 @@ def DoZip(inputs, output, base_dir=None, compress_fn=None,
     base_dir = '.'
   input_tuples = []
   for tup in inputs:
-    if isinstance(tup, basestring):
+    if isinstance(tup, string_types):
       tup = (os.path.relpath(tup, base_dir), tup)
     input_tuples.append(tup)
 
@@ -539,7 +546,7 @@ def AddDepfileOption(parser):
 
 def WriteDepfile(depfile_path, first_gn_output, inputs=None, add_pydeps=True):
   assert depfile_path != first_gn_output  # http://crbug.com/646165
-  assert not isinstance(inputs, basestring)  # Easy mistake to make
+  assert not isinstance(inputs, string_types)  # Easy mistake to make
   inputs = inputs or []
   if add_pydeps:
     inputs = _ComputePythonDependencies() + inputs

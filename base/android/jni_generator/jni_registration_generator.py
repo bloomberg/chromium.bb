@@ -78,7 +78,7 @@ def _Generate(java_file_paths,
         os.path.splitext(header_path)[0].replace('/', '_').upper() + '_'
     combined_dict['NAMESPACE'] = namespace
     header_content = CreateFromDict(combined_dict, proxy_opts.use_hash)
-    with build_utils.AtomicOutput(header_path) as f:
+    with build_utils.AtomicOutput(header_path, mode='w') as f:
       f.write(header_content)
 
   with build_utils.AtomicOutput(srcjar_path) as f:
@@ -431,7 +431,7 @@ ${KMETHODS}
     all_classes = self.helper.GetUniqueClasses(self.natives)
     all_classes[self.class_name] = self.fully_qualified_class
 
-    for clazz, full_clazz in all_classes.iteritems():
+    for clazz, full_clazz in all_classes.items():
       if not sub_proxy:
         if clazz == jni_generator.ProxyHelpers.GetClass(self.use_proxy_hash):
           continue

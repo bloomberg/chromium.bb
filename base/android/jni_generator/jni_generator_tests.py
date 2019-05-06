@@ -83,11 +83,12 @@ class BaseTest(unittest.TestCase):
     golden_file_name = self._JoinGoldenPath(golden_file_name)
     if not os.path.exists(golden_file_name):
       return None
-    with file(golden_file_name, 'r') as f:
+    with open(golden_file_name, 'r') as f:
       return f.read()
 
   def _CreateJniHeaderFromFile(self, fname, qualified_clazz, options=None):
-    content = file(self._JoinScriptDir(fname)).read()
+    with open(self._JoinScriptDir(fname)) as f:
+      content = f.read()
     opts = options
     if opts is None:
       opts = TestOptions()
@@ -98,26 +99,26 @@ class BaseTest(unittest.TestCase):
 
   def AssertObjEquals(self, first, second):
     if isinstance(first, str):
-      return self.assertEquals(first,second)
+      return self.assertEqual(first,second)
     dict_first = first.__dict__
     dict_second = second.__dict__
-    self.assertEquals(dict_first.keys(), dict_second.keys())
-    for key, value in dict_first.iteritems():
+    self.assertEqual(dict_first.keys(), dict_second.keys())
+    for key, value in dict_first.items():
       if (type(value) is list and len(value) and
           isinstance(type(value[0]), object)):
         self.AssertListEquals(value, second.__getattribute__(key))
       else:
         actual = second.__getattribute__(key)
-        self.assertEquals(value, actual,
-                          'Key ' + key + ': ' + str(value) + '!=' + str(actual))
+        self.assertEqual(value, actual,
+                         'Key ' + key + ': ' + str(value) + '!=' + str(actual))
 
   def AssertListEquals(self, first, second):
-    self.assertEquals(len(first), len(second))
-    for i in xrange(len(first)):
+    self.assertEqual(len(first), len(second))
+    for i in range(len(first)):
       if isinstance(first[i], object):
         self.AssertObjEquals(first[i], second[i])
       else:
-        self.assertEquals(first[i], second[i])
+        self.assertEqual(first[i], second[i])
 
   def AssertTextEquals(self, golden_text, generated_text):
     if not self.CompareText(golden_text, generated_text):
@@ -165,7 +166,7 @@ class BaseTest(unittest.TestCase):
     golden_text = self._ReadGoldenFile(golden_file)
     if os.environ.get(REBASELINE_ENV):
       if golden_text != generated_text:
-        with file(self._JoinGoldenPath(golden_file), 'w') as f:
+        with open(self._JoinGoldenPath(golden_file), 'w') as f:
           f.write(generated_text)
       return
     # golden_text is None if no file is found. Better to fail than in
@@ -794,8 +795,8 @@ public static int foo(); // This one is fine
 scooby doo
 """, always_mangle=False)
       self.fail('Expected a ParseError')
-    except jni_generator.ParseError, e:
-      self.assertEquals(('@CalledByNative', 'scooby doo'), e.context_lines)
+    except jni_generator.ParseError as e:
+      self.assertEqual(('@CalledByNative', 'scooby doo'), e.context_lines)
 
   def testFullyQualifiedClassName(self):
     contents = """
@@ -807,21 +808,21 @@ package org.chromium.content.browser;
 
 import org.chromium.base.BuildInfo;
 """
-    self.assertEquals('org/chromium/content/browser/Foo',
-                      jni_generator.ExtractFullyQualifiedJavaClassName(
-                          'org/chromium/content/browser/Foo.java', contents))
-    self.assertEquals('org/chromium/content/browser/Foo',
-                      jni_generator.ExtractFullyQualifiedJavaClassName(
-                          'frameworks/Foo.java', contents))
+    self.assertEqual('org/chromium/content/browser/Foo',
+                     jni_generator.ExtractFullyQualifiedJavaClassName(
+                         'org/chromium/content/browser/Foo.java', contents))
+    self.assertEqual('org/chromium/content/browser/Foo',
+                     jni_generator.ExtractFullyQualifiedJavaClassName(
+                         'frameworks/Foo.java', contents))
     self.assertRaises(SyntaxError,
                       jni_generator.ExtractFullyQualifiedJavaClassName,
                       'com/foo/Bar', 'no PACKAGE line')
 
   def testMethodNameMangling(self):
     jni_params = jni_generator.JniParams('')
-    self.assertEquals('closeV',
+    self.assertEqual('closeV',
         jni_generator.GetMangledMethodName(jni_params, 'close', [], 'void'))
-    self.assertEquals('readI_AB_I_I',
+    self.assertEqual('readI_AB_I_I',
         jni_generator.GetMangledMethodName(jni_params, 'read',
             [Param(name='p1',
                    datatype='byte[]'),
@@ -830,7 +831,7 @@ import org.chromium.base.BuildInfo;
              Param(name='p3',
                    datatype='int'),],
              'int'))
-    self.assertEquals('openJIIS_JLS',
+    self.assertEqual('openJIIS_JLS',
         jni_generator.GetMangledMethodName(jni_params, 'open',
             [Param(name='p1',
                    datatype='java/lang/String'),],
@@ -853,9 +854,9 @@ import org.chromium.base.BuildInfo;
     called_by_natives = jni_generator.ExtractCalledByNatives(jni_params,
                                                              test_data,
                                                              always_mangle=True)
-    self.assertEquals(1, len(called_by_natives))
+    self.assertEqual(1, len(called_by_natives))
     method = called_by_natives[0]
-    self.assertEquals('methodzFOOB_FOOB', method.method_id_var_name)
+    self.assertEqual('methodzFOOB_FOOB', method.method_id_var_name)
 
   def testFromJavaPGenerics(self):
     contents = """
@@ -869,7 +870,7 @@ public abstract class java.util.HashSet<T> extends java.util.AbstractSet<E>
 """
     jni_from_javap = jni_generator.JNIFromJavaP(contents.split('\n'),
                                                 TestOptions())
-    self.assertEquals(2, len(jni_from_javap.called_by_natives))
+    self.assertEqual(2, len(jni_from_javap.called_by_natives))
     self.AssertGoldenTextEquals(jni_from_javap.GetContent())
 
   def testSnippnetJavap6_7_8(self):
@@ -915,7 +916,7 @@ public class java.util.HashSet {
     contents = self._ReadGoldenFile('testInputStream.javap')
     jni_from_javap = jni_generator.JNIFromJavaP(contents.split('\n'),
                                                 TestOptions())
-    self.assertEquals(10, len(jni_from_javap.called_by_natives))
+    self.assertEqual(10, len(jni_from_javap.called_by_natives))
     self.AssertGoldenTextEquals(jni_from_javap.GetContent())
 
   def testConstantsFromJavaP(self):
@@ -923,7 +924,7 @@ public class java.util.HashSet {
       contents = self._ReadGoldenFile(f)
       jni_from_javap = jni_generator.JNIFromJavaP(contents.split('\n'),
                                                   TestOptions())
-      self.assertEquals(86, len(jni_from_javap.called_by_natives))
+      self.assertEqual(86, len(jni_from_javap.called_by_natives))
       self.AssertGoldenTextEquals(jni_from_javap.GetContent())
 
   def testREForNatives(self):
@@ -977,8 +978,8 @@ public class java.util.HashSet {
                     'icankeepthisupallday/ReallyLongClassNamesAreAllTheRage'),
         TestOptions())
     jni_lines = jni_from_java.GetContent().split('\n')
-    line = filter(lambda line: line.lstrip().startswith('#ifndef'),
-                  jni_lines)[0]
+    line = next(line for line in jni_lines
+                if line.lstrip().startswith('#ifndef'))
     self.assertTrue(len(line) > 80,
                     ('Expected #ifndef line to be > 80 chars: ', line))
 
@@ -1032,8 +1033,8 @@ class Foo {
                     jni_params._inner_classes)
     self.assertTrue('Lorg/chromium/content/app/Foo$PasswordListObserver' in
                     jni_params._inner_classes)
-    self.assertEquals('Lorg/chromium/content/app/ContentMain$Inner;',
-                      jni_params.JavaToJni('ContentMain.Inner'))
+    self.assertEqual('Lorg/chromium/content/app/ContentMain$Inner;',
+                     jni_params.JavaToJni('ContentMain.Inner'))
     self.assertRaises(SyntaxError,
                       jni_params.JavaToJni, 'AnException')
 
@@ -1098,7 +1099,7 @@ class Foo {
       """,
     ]
     for entry in mainDexEntries:
-      self.assertEquals(True, IsMainDexJavaClass(entry), entry)
+      self.assertEqual(True, IsMainDexJavaClass(entry), entry)
 
   def testNoMainDexAnnotation(self):
     noMainDexEntries = [
@@ -1111,7 +1112,7 @@ class Foo {
       'public class Test extends BaseTest {'
     ]
     for entry in noMainDexEntries:
-      self.assertEquals(False, IsMainDexJavaClass(entry))
+      self.assertEqual(False, IsMainDexJavaClass(entry))
 
   def testNativeExportsOnlyOption(self):
     test_data = """
