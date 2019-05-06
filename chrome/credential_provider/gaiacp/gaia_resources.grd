@@ -133,6 +133,9 @@
       <message name="IDS_FORCED_PASSWORD_CHANGE_FAILURE" desc="">
         Unable to continue without entering the current Windows password. Please contact a system administrator.
       </message>
+      <message name="IDS_WINDOWS_PASSWORD_FIELD_LABEL" desc="">
+        Windows Password
+      </message>
     </messages>
   </release>
 </grit>

@@ -727,7 +727,14 @@ HRESULT CGaiaCredentialProvider::GetFieldDescriptorAt(
         ::CoTaskMemAlloc(sizeof(**ppcpfd)));
     if (*ppcpfd) {
       **ppcpfd = g_field_desc[index];
-      if ((*ppcpfd)->pszLabel) {
+      // The password field has special greyed out text that is not set through
+      // calls to ICredentialProviderCredential::GetStringValue so we need to
+      // localize it manually here.
+      if (index == FID_CURRENT_PASSWORD_FIELD) {
+        base::string16 password_label(
+            GetStringResource(IDS_WINDOWS_PASSWORD_FIELD_LABEL_BASE));
+        hr = ::SHStrDupW(password_label.c_str(), &(*ppcpfd)->pszLabel);
+      } else if ((*ppcpfd)->pszLabel) {
         hr = ::SHStrDupW((*ppcpfd)->pszLabel, &(*ppcpfd)->pszLabel);
       } else {
         (*ppcpfd)->pszLabel = nullptr;
