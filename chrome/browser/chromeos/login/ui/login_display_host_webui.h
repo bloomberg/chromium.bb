@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/public/cpp/multi_user_window_manager_observer.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
@@ -53,7 +54,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
                               public ui::InputDeviceEventObserver,
                               public views::WidgetRemovalsObserver,
                               public views::WidgetObserver,
-                              public MultiUserWindowManagerClient::Observer {
+                              public ash::MultiUserWindowManagerObserver {
  public:
   LoginDisplayHostWebUI();
   ~LoginDisplayHostWebUI() override;
@@ -133,7 +134,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   // views::WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;
 
-  // MultiUserWindowManagerClient::Observer:
+  // ash::MultiUserWindowManagerObserver:
   void OnUserSwitchAnimationFinished() override;
 
  private:

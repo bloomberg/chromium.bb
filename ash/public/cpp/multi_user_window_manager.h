@@ -19,6 +19,7 @@ class Window;
 namespace ash {
 
 class MultiUserWindowManagerDelegate;
+class MultiUserWindowManagerObserver;
 
 // Used to assign windows to user accounts so that ash shows the appropriate set
 // of windows based on the active user.
@@ -32,11 +33,11 @@ class ASH_EXPORT MultiUserWindowManager {
 
   // Associates a window with a particular account. This may result in hiding
   // |window|. This should *not* be called more than once with a different
-  // account. If |show_for_current_user| is true, this sets the 'shown'
-  // account to the current account.
+  // account. If |window| was created by a user gesture
+  // (aura::client::kCreatedByUserGesture), then the 'shown' account is set to
+  // the current account.
   virtual void SetWindowOwner(aura::Window* window,
-                              const AccountId& account_id,
-                              bool show_for_current_user) = 0;
+                              const AccountId& account_id) = 0;
 
   // Shows a previously registered window for the specified account.
   virtual void ShowWindowForUser(aura::Window* window,
@@ -59,6 +60,9 @@ class ASH_EXPORT MultiUserWindowManager {
 
   // Returns the id of the currently active user.
   virtual const AccountId& CurrentAccountId() const = 0;
+
+  virtual void AddObserver(MultiUserWindowManagerObserver* observer) = 0;
+  virtual void RemoveObserver(MultiUserWindowManagerObserver* observer) = 0;
 
  protected:
   MultiUserWindowManager() {}

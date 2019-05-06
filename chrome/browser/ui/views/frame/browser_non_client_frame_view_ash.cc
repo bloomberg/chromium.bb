@@ -769,7 +769,7 @@ bool BrowserNonClientFrameViewAsh::ShouldShowProfileIndicatorIcon() const {
   if (!browser->is_type_tabbed() && !browser->is_app())
     return false;
 
-  return MultiUserWindowManagerClient::ShouldShowAvatar(
+  return MultiUserWindowManagerHelper::ShouldShowAvatar(
       browser_view()->GetNativeWindow());
 }
 

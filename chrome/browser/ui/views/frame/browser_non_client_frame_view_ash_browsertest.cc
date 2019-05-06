@@ -37,6 +37,7 @@
 #include "chrome/browser/sessions/session_service_test_helper.h"
 #include "chrome/browser/ssl/chrome_mock_cert_verifier.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client.h"
 #include "chrome/browser/ui/ash/multi_user/test_multi_user_window_manager_client.h"
 #include "chrome/browser/ui/ash/tablet_mode_client_test_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -316,23 +317,23 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   BrowserNonClientFrameViewAsh* frame_view = GetFrameViewAsh(browser_view);
   aura::Window* window = browser()->window()->GetNativeWindow();
 
-  EXPECT_FALSE(MultiUserWindowManagerClient::ShouldShowAvatar(window));
+  EXPECT_FALSE(MultiUserWindowManagerHelper::ShouldShowAvatar(window));
   EXPECT_FALSE(frame_view->profile_indicator_icon_);
 
   const AccountId account_id1 =
       multi_user_util::GetAccountIdFromProfile(browser()->profile());
-  TestMultiUserWindowManagerClient* client =
-      new TestMultiUserWindowManagerClient(browser(), account_id1);
+  TestMultiUserWindowManager* window_manager =
+      TestMultiUserWindowManager::Create(browser(), account_id1);
 
   // Teleport the window to another desktop.
   const AccountId account_id2(AccountId::FromUserEmail("user2"));
-  client->ShowWindowForUser(window, account_id2);
-  EXPECT_TRUE(MultiUserWindowManagerClient::ShouldShowAvatar(window));
+  window_manager->ShowWindowForUser(window, account_id2);
+  EXPECT_TRUE(MultiUserWindowManagerHelper::ShouldShowAvatar(window));
   EXPECT_TRUE(frame_view->profile_indicator_icon_);
 
   // Teleport the window back to owner desktop.
-  client->ShowWindowForUser(window, account_id1);
-  EXPECT_FALSE(MultiUserWindowManagerClient::ShouldShowAvatar(window));
+  window_manager->ShowWindowForUser(window, account_id1);
+  EXPECT_FALSE(MultiUserWindowManagerHelper::ShouldShowAvatar(window));
   EXPECT_FALSE(frame_view->profile_indicator_icon_);
 }
 

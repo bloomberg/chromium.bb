@@ -49,6 +49,7 @@
 #include "url/url_constants.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/public/cpp/multi_user_window_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client.h"
 #include "components/account_id/account_id.h"
 #endif
@@ -525,20 +526,20 @@ void Navigate(NavigateParams* params) {
     // When the newly created browser was spawned by a browser which visits
     // another user's desktop, it should be shown on the same desktop as the
     // originating one. (This is part of the desktop separation per profile).
-    MultiUserWindowManagerClient* client =
-        MultiUserWindowManagerClient::GetInstance();
+    auto* window_manager = MultiUserWindowManagerHelper::GetWindowManager();
     // Some unit tests have no client instantiated.
-    if (client) {
+    if (window_manager) {
       aura::Window* src_window = source_browser->window()->GetNativeWindow();
       aura::Window* new_window = params->browser->window()->GetNativeWindow();
       const AccountId& src_account_id =
-          client->GetUserPresentingWindow(src_window);
-      if (src_account_id != client->GetUserPresentingWindow(new_window)) {
+          window_manager->GetUserPresentingWindow(src_window);
+      if (src_account_id !=
+          window_manager->GetUserPresentingWindow(new_window)) {
         // Once the window gets presented, it should be shown on the same
         // desktop as the desktop of the creating browser. Note that this
         // command will not show the window if it wasn't shown yet by the
         // browser creation.
-        client->ShowWindowForUser(new_window, src_account_id);
+        window_manager->ShowWindowForUser(new_window, src_account_id);
       }
     }
   }

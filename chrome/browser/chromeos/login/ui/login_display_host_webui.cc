@@ -9,6 +9,7 @@
 
 #include "ash/accessibility/focus_ring_controller.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/multi_user_window_manager.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "base/bind.h"
@@ -456,12 +457,12 @@ LoginDisplayHostWebUI::~LoginDisplayHostWebUI() {
   if (login_view_ && login_window_)
     login_window_->RemoveRemovalsObserver(this);
 
-  MultiUserWindowManagerClient* window_manager_client =
-      MultiUserWindowManagerClient::GetInstance();
-  // MultiUserWindowManagerClient instance might be null if no user is logged
+  ash::MultiUserWindowManager* window_manager =
+      MultiUserWindowManagerHelper::GetWindowManager();
+  // MultiUserWindowManagerHelper instance might be null if no user is logged
   // in - or in a unit test.
-  if (window_manager_client)
-    window_manager_client->RemoveObserver(this);
+  if (window_manager)
+    window_manager->RemoveObserver(this);
 
   ResetKeyboardOverscrollBehavior();
 
@@ -587,11 +588,11 @@ void LoginDisplayHostWebUI::OnStartUserAdding() {
 
   // Observe the user switch animation and defer the deletion of itself only
   // after the animation is finished.
-  MultiUserWindowManagerClient* window_manager_client =
-      MultiUserWindowManagerClient::GetInstance();
-  // MultiUserWindowManagerClient instance might be nullptr in a unit test.
-  if (window_manager_client)
-    window_manager_client->AddObserver(this);
+  ash::MultiUserWindowManager* window_manager =
+      MultiUserWindowManagerHelper::GetWindowManager();
+  // MultiUserWindowManagerHelper instance might be nullptr in a unit test.
+  if (window_manager)
+    window_manager->AddObserver(this);
 
   VLOG(1) << "Login WebUI >> user adding";
   if (!login_window_)
@@ -869,7 +870,7 @@ void LoginDisplayHostWebUI::OnWidgetDestroying(views::Widget* widget) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// LoginDisplayHostWebUI, MultiUserWindowManagerClient::Observer:
+// LoginDisplayHostWebUI, ash::MultiUserWindowManagerObserver:
 void LoginDisplayHostWebUI::OnUserSwitchAnimationFinished() {
   ShutdownDisplayHost();
 }

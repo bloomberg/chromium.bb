@@ -14,6 +14,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "components/account_id/account_id.h"
 #include "ui/aura/window_observer.h"
@@ -63,10 +64,12 @@ class ASH_EXPORT MultiUserWindowManagerImpl
 
   static MultiUserWindowManagerImpl* Get();
 
+  // Called when the active account change is complete.
+  void OnDidSwitchActiveAccount();
+
   // MultiUserWindowManager:
   void SetWindowOwner(aura::Window* window,
-                      const AccountId& account_id,
-                      bool show_for_current_user) override;
+                      const AccountId& account_id) override;
   void ShowWindowForUser(aura::Window* window,
                          const AccountId& account_id) override;
   const AccountId& GetWindowOwner(const aura::Window* window) const override;
@@ -75,6 +78,8 @@ class ASH_EXPORT MultiUserWindowManagerImpl
   const AccountId& GetUserPresentingWindow(
       const aura::Window* window) const override;
   const AccountId& CurrentAccountId() const override;
+  void AddObserver(MultiUserWindowManagerObserver* observer) override;
+  void RemoveObserver(MultiUserWindowManagerObserver* observer) override;
 
   // SessionObserver:
   void OnActiveUserSessionChanged(const AccountId& account_id) override;
@@ -103,7 +108,7 @@ class ASH_EXPORT MultiUserWindowManagerImpl
   const AccountId& GetCurrentUserForTest() const;
 
  private:
-  friend class MultiUserWindowManagerClientImplTest;
+  friend class MultiProfileSupportTest;
   friend class UserSwitchAnimator;
 
   class WindowEntry {
@@ -222,6 +227,8 @@ class ASH_EXPORT MultiUserWindowManagerImpl
 
   // The animation between users.
   std::unique_ptr<UserSwitchAnimator> animation_;
+
+  base::ObserverList<ash::MultiUserWindowManagerObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiUserWindowManagerImpl);
 };

@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/public/cpp/multi_user_window_manager.h"
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -411,15 +412,14 @@ ExtensionFunction::ResponseAction FileManagerPrivateGetProfilesFunction::Run() {
 
   // Obtains the display profile ID.
   AppWindow* const app_window = GetCurrentAppWindow(this);
-  MultiUserWindowManagerClient* const window_manager_client =
-      MultiUserWindowManagerClient::GetInstance();
+  ash::MultiUserWindowManager* const window_manager =
+      MultiUserWindowManagerHelper::GetWindowManager();
   const AccountId current_profile_id = multi_user_util::GetAccountIdFromProfile(
       Profile::FromBrowserContext(browser_context()));
   const AccountId display_profile_id =
-      window_manager_client && app_window
-          ? window_manager_client->GetUserPresentingWindow(
-                app_window->GetNativeWindow())
-          : EmptyAccountId();
+      window_manager && app_window ? window_manager->GetUserPresentingWindow(
+                                         app_window->GetNativeWindow())
+                                   : EmptyAccountId();
 
   return RespondNow(
       ArgumentList(api::file_manager_private::GetProfiles::Results::Create(

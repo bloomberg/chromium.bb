@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/session_util.h"
 
+#include "ash/public/cpp/multi_user_window_manager.h"
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -27,14 +28,14 @@ const content::BrowserContext* GetBrowserContextForWindow(
     const aura::Window* window,
     bool presenting) {
   DCHECK(window);
-  auto* client = MultiUserWindowManagerClient::GetInstance();
+  auto* window_manager = MultiUserWindowManagerHelper::GetWindowManager();
   // Speculative fix for multi-profile crash. crbug.com/661821
-  if (!client)
+  if (!window_manager)
     return nullptr;
 
-  const AccountId& account_id = presenting
-                                    ? client->GetUserPresentingWindow(window)
-                                    : client->GetWindowOwner(window);
+  const AccountId& account_id =
+      presenting ? window_manager->GetUserPresentingWindow(window)
+                 : window_manager->GetWindowOwner(window);
   return account_id.is_valid()
              ? multi_user_util::GetProfileFromAccountId(account_id)
              : nullptr;

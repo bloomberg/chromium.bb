@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "ash/public/cpp/multi_user_window_manager.h"
 #include "ash/test/ash_test_helper.h"
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
@@ -51,16 +52,11 @@ class MultiUserContextMenuChromeOSTest : public ChromeAshTestBase {
   }
 
   aura::Window* window() { return window_; }
-  MultiUserWindowManagerClientImpl* multi_user_window_manager_client() {
-    return multi_user_window_manager_client_;
-  }
 
  private:
   // A window which can be used for testing.
   aura::Window* window_;
 
-  // The instance of the MultiUserWindowManager.
-  MultiUserWindowManagerClientImpl* multi_user_window_manager_client_ = nullptr;
   // Owned by |user_manager_enabler_|.
   chromeos::FakeChromeUserManager* fake_user_manager_ = nullptr;
   user_manager::ScopedUserManager user_manager_enabler_;
@@ -79,18 +75,14 @@ void MultiUserContextMenuChromeOSTest::SetUp() {
   window_ = CreateTestWindowInShellWithId(0);
   window_->Show();
 
-  multi_user_window_manager_client_ =
-      new MultiUserWindowManagerClientImpl(AccountId::FromUserEmail("A"));
-  multi_user_window_manager_client_->Init();
-  ::MultiUserWindowManagerClient::SetInstanceForTest(
-      multi_user_window_manager_client_);
-  ASSERT_TRUE(multi_user_window_manager_client_);
+  MultiUserWindowManagerHelper::CreateInstanceForTest(
+      AccountId::FromUserEmail("A"));
 }
 
 void MultiUserContextMenuChromeOSTest::TearDown() {
   delete window_;
 
-  ::MultiUserWindowManagerClient::DeleteInstance();
+  MultiUserWindowManagerHelper::DeleteInstance();
   ChromeAshTestBase::TearDown();
 }
 
@@ -107,7 +99,7 @@ TEST_F(MultiUserContextMenuChromeOSTest, UnownedWindow) {
 TEST_F(MultiUserContextMenuChromeOSTest, OwnedWindow) {
   // Make the window owned and check that there is no menu (since only a single
   // user exists).
-  multi_user_window_manager_client()->SetWindowOwner(
+  MultiUserWindowManagerHelper::GetWindowManager()->SetWindowOwner(
       window(), AccountId::FromUserEmail("A"));
   EXPECT_EQ(nullptr, CreateMultiUserContextMenu(window()).get());
 

@@ -10,12 +10,14 @@
 #include "ash/media/media_controller.h"
 #include "ash/multi_user/user_switch_animator.h"
 #include "ash/public/cpp/multi_user_window_manager_delegate.h"
+#include "ash/public/cpp/multi_user_window_manager_observer.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/auto_reset.h"
 #include "base/macros.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/events/event.h"
@@ -155,9 +157,13 @@ MultiUserWindowManagerImpl* MultiUserWindowManagerImpl::Get() {
   return g_instance;
 }
 
+void MultiUserWindowManagerImpl::OnDidSwitchActiveAccount() {
+  for (MultiUserWindowManagerObserver& observer : observers_)
+    observer.OnUserSwitchAnimationFinished();
+}
+
 void MultiUserWindowManagerImpl::SetWindowOwner(aura::Window* window,
-                                                const AccountId& account_id,
-                                                bool show_for_current_user) {
+                                                const AccountId& account_id) {
   // Make sure the window is valid and there was no owner yet.
   DCHECK(window);
   DCHECK(account_id.is_valid());
@@ -184,6 +190,8 @@ void MultiUserWindowManagerImpl::SetWindowOwner(aura::Window* window,
 
   // Check if this window was created due to a user interaction. If it was,
   // transfer it to the current user.
+  const bool show_for_current_user =
+      window->GetProperty(aura::client::kCreatedByUserGesture);
   if (show_for_current_user)
     window_entry->set_show_for_user(current_account_id_);
 
@@ -198,6 +206,9 @@ void MultiUserWindowManagerImpl::SetWindowOwner(aura::Window* window,
 void MultiUserWindowManagerImpl::ShowWindowForUser(
     aura::Window* window,
     const AccountId& account_id) {
+  if (!window)
+    return;
+
   const AccountId previous_owner(GetUserPresentingWindow(window));
   if (!ShowWindowForUserIntern(window, account_id))
     return;
@@ -247,6 +258,16 @@ const AccountId& MultiUserWindowManagerImpl::GetUserPresentingWindow(
 
 const AccountId& MultiUserWindowManagerImpl::CurrentAccountId() const {
   return current_account_id_;
+}
+
+void MultiUserWindowManagerImpl::AddObserver(
+    MultiUserWindowManagerObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void MultiUserWindowManagerImpl::RemoveObserver(
+    MultiUserWindowManagerObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 bool MultiUserWindowManagerImpl::IsWindowOnDesktopOfUser(

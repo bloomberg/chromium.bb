@@ -6,10 +6,18 @@
 #define CHROME_BROWSER_UI_ASH_MULTI_USER_MULTI_USER_WINDOW_MANAGER_CLIENT_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 
+#include "base/macros.h"
+
 class AccountId;
+class MultiProfileSupport;
+
+namespace ash {
+class MultiUserWindowManager;
+}
 
 namespace content {
 class BrowserContext;
@@ -19,38 +27,19 @@ namespace aura {
 class Window;
 }
 
-// MultiUserWindowManagerClient acts as a client of ash's
-// MultiUserWindowManager. In addition to acting as a client,
-// MultiUserWindowManagerClient forwards calls to ash::MultiUserWindowManager
-// and maintains a cache so that it can synchronously provide information about
-// Windows.
-//
-// See ash::MultiUserWindowManager for more details on the API provided here.
-//
-// TODO(sky): this name is confusing. Maybe it should be
-// ChromeMultiUserWindowManager.
-class MultiUserWindowManagerClient {
+// MultiUserWindowManagerHelper is responsible for creating and owning the
+// right ash::MultiUserWindowManager implementation. If multi-profile is not
+// enabled it creates a stub implementation, otherwise MultiProfileSupport,
+// which internally owns the real ash::MultiUserWindowManager implementation.
+class MultiUserWindowManagerHelper {
  public:
-  // Observer to notify of any window owner changes.
-  class Observer {
-   public:
-    // Invoked when the new window is created and the manager start to track its
-    // owner.
-    virtual void OnOwnerEntryAdded(aura::Window* window) {}
-    // Invoked when the owner of the window tracked by the manager is changed.
-    virtual void OnOwnerEntryChanged(aura::Window* window) {}
-    // Invoked when the user switch animation is finished.
-    virtual void OnUserSwitchAnimationFinished() {}
-
-   protected:
-    virtual ~Observer() {}
-  };
-
-  // Creates an instance of the MultiUserWindowManagerClient.
-  static MultiUserWindowManagerClient* CreateInstance();
+  // Creates an instance of the MultiUserWindowManagerHelper.
+  static MultiUserWindowManagerHelper* CreateInstance();
 
   // Gets the instance of the object.
-  static MultiUserWindowManagerClient* GetInstance();
+  static MultiUserWindowManagerHelper* GetInstance();
+
+  static ash::MultiUserWindowManager* GetWindowManager();
 
   // Whether or not the window's title should show the avatar. On chromeos,
   // this is true when the owner of the window is different from the owner of
@@ -60,60 +49,48 @@ class MultiUserWindowManagerClient {
   // Removes the instance.
   static void DeleteInstance();
 
-  // Sets the singleton instance to |instance| and enables multi-user-mode.
-  static void SetInstanceForTest(MultiUserWindowManagerClient* instance);
+  // Used in tests to create an instance with MultiProfileSupport configured for
+  // |account_id|.
+  static void CreateInstanceForTest(const AccountId& account_id);
 
-  // Assigns an owner to a passed window. Note that this window's parent should
-  // be a direct child of the root window.
-  // A user switch will automatically change the visibility - and - if the
-  // current user is not the owner it will immediately hidden. If the window
-  // had already be registered this function will run into a DCHECK violation.
-  virtual void SetWindowOwner(aura::Window* window,
-                              const AccountId& account_id) = 0;
-
-  // See who owns this window. The return value is the user account id or an
-  // empty AccountId if not assigned yet.
-  virtual const AccountId& GetWindowOwner(const aura::Window* window) const = 0;
-
-  // Allows to show an owned window for another users. If the window is not
-  // owned, this call will return immediately. (The FileManager for example
-  // might be available for every user and not belong explicitly to one).
-  // Note that a window can only be shown on one desktop at a time. Note that
-  // when the window gets minimized, it will automatically fall back to the
-  // owner's desktop.
-  virtual void ShowWindowForUser(aura::Window* window,
-                                 const AccountId& account_id) = 0;
-
-  // Returns true when windows are shared among users.
-  virtual bool AreWindowsSharedAmongUsers() const = 0;
-
-  // Get the owners for the visible windows and set them to |account_ids|.
-  virtual void GetOwnersOfVisibleWindows(
-      std::set<AccountId>* account_ids) const = 0;
-
-  // A query call for a given window to see if it is on the given user's
-  // desktop.
-  virtual bool IsWindowOnDesktopOfUser(aura::Window* window,
-                                       const AccountId& account_id) const = 0;
-
-  // Get the user on which the window is currently shown. If an empty string is
-  // passed back the window will be presented for every user.
-  virtual const AccountId& GetUserPresentingWindow(
-      const aura::Window* window) const = 0;
+  // Used in tests that want to supply a specific ash::MultiUserWindowManager
+  // implementation.
+  static void CreateInstanceForTest(
+      std::unique_ptr<ash::MultiUserWindowManager> window_manager);
 
   // Adds user to monitor starting and running V1/V2 application windows.
   // Returns immediately if the user (identified by a |profile|) is already
   // known to the manager. Note: This function is not implemented as a
   // SessionStateObserver to coordinate the timing of the addition with other
   // modules.
-  virtual void AddUser(content::BrowserContext* profile) = 0;
+  void AddUser(content::BrowserContext* profile);
 
-  // Manages observers.
-  virtual void AddObserver(Observer* observer) = 0;
-  virtual void RemoveObserver(Observer* observer) = 0;
+  // A query call for a given window to see if it is on the given user's
+  // desktop.
+  bool IsWindowOnDesktopOfUser(aura::Window* window,
+                               const AccountId& account_id) const;
 
- protected:
-  virtual ~MultiUserWindowManagerClient() {}
+ private:
+  explicit MultiUserWindowManagerHelper(const AccountId& account_id);
+  explicit MultiUserWindowManagerHelper(
+      std::unique_ptr<ash::MultiUserWindowManager> window_manager);
+  ~MultiUserWindowManagerHelper();
+
+  ash::MultiUserWindowManager* GetWindowManagerImpl() {
+    return const_cast<ash::MultiUserWindowManager*>(
+        const_cast<const MultiUserWindowManagerHelper*>(this)
+            ->GetWindowManagerImpl());
+  }
+  const ash::MultiUserWindowManager* GetWindowManagerImpl() const;
+
+  // Used in multi-profile support.
+  std::unique_ptr<MultiProfileSupport> multi_profile_support_;
+
+  // The MultiUserWindowManager implementation to use. If null, the
+  // MultiUserWindowManager comes from |multi_profile_support_|.
+  std::unique_ptr<ash::MultiUserWindowManager> multi_user_window_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(MultiUserWindowManagerHelper);
 };
 
 #endif  // CHROME_BROWSER_UI_ASH_MULTI_USER_MULTI_USER_WINDOW_MANAGER_CLIENT_H_

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/public/cpp/app_types.h"
+#include "ash/public/cpp/multi_user_window_manager.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
@@ -140,7 +141,7 @@ ash::ShelfID CrostiniAppWindowShelfController::RemoveFromShelf(
 void CrostiniAppWindowShelfController::ActiveUserChanged(
     const std::string& user_email) {
   for (auto& w : aura_window_to_app_window_) {
-    if (MultiUserWindowManagerClient::GetInstance()
+    if (MultiUserWindowManagerHelper::GetWindowManager()
             ->GetWindowOwner(w.first)
             .GetUserEmail() == user_email) {
       AddToShelf(w.first, w.second.get());
@@ -240,7 +241,7 @@ void CrostiniAppWindowShelfController::OnWindowVisibilityChanging(
   }
 
   // Prevent Crostini window from showing up after user switch.
-  MultiUserWindowManagerClient::GetInstance()->SetWindowOwner(
+  MultiUserWindowManagerHelper::GetWindowManager()->SetWindowOwner(
       window, primary_account_id);
 
   RegisterAppWindow(window, shelf_app_id);
@@ -276,7 +277,8 @@ void CrostiniAppWindowShelfController::RegisterAppWindow(
   // user (which should always be the primary user at this time).
   if (SessionControllerClient::IsMultiProfileAvailable() &&
       user_manager::UserManager::Get()->GetActiveUser()->GetAccountId() !=
-          MultiUserWindowManagerClient::GetInstance()->GetWindowOwner(window))
+          MultiUserWindowManagerHelper::GetWindowManager()->GetWindowOwner(
+              window))
     return;
   AddToShelf(window, app_window);
 }

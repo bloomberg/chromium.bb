@@ -23,6 +23,7 @@
 #include "base/bind.h"
 #include "base/optional.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace ash {
@@ -329,10 +330,11 @@ void AssistantUiController::OnUiVisibilityChanged(
         const mojom::UserSession* user_session =
             Shell::Get()->session_controller()->GetUserSession(0);
         if (user_session) {
+          container_view_->GetWidget()->GetNativeWindow()->SetProperty(
+              aura::client::kCreatedByUserGesture, true);
           window_manager->SetWindowOwner(
               container_view_->GetWidget()->GetNativeWindow(),
-              user_session->user_info->account_id,
-              /*show_for_current_user=*/true);
+              user_session->user_info->account_id);
         }
       }
       break;

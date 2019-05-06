@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/multi_user/multi_user_context_menu.h"
 
+#include "ash/public/cpp/multi_user_window_manager.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
@@ -63,8 +64,8 @@ void OnAcceptTeleportWarning(const AccountId& account_id,
   PrefService* pref = ProfileManager::GetActiveUserProfile()->GetPrefs();
   pref->SetBoolean(prefs::kMultiProfileWarningShowDismissed, no_show_again);
 
-  MultiUserWindowManagerClient::GetInstance()->ShowWindowForUser(window_,
-                                                                 account_id);
+  MultiUserWindowManagerHelper::GetWindowManager()->ShowWindowForUser(
+      window_, account_id);
 }
 
 }  // namespace
@@ -77,9 +78,8 @@ std::unique_ptr<ui::MenuModel> CreateMultiUserContextMenu(
 
   if (logged_in_users.size() > 1u) {
     // If this window is not owned, we don't show the menu addition.
-    MultiUserWindowManagerClient* client =
-        MultiUserWindowManagerClient::GetInstance();
-    const AccountId& account_id = client->GetWindowOwner(window);
+    auto* window_manager = MultiUserWindowManagerHelper::GetWindowManager();
+    const AccountId& account_id = window_manager->GetWindowOwner(window);
     if (!account_id.is_valid() || !window)
       return model;
     auto* menu = new MultiUserContextMenuChromeos(window);

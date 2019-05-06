@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/cpp/multi_user_window_manager.h"
 #include "ash/public/cpp/remote_shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/shelf_model.h"
@@ -187,7 +188,7 @@ void ChromeLauncherControllerUserSwitchObserver::OnUserProfileReadyToSwitch(
 }
 
 void ChromeLauncherControllerUserSwitchObserver::AddUser(Profile* profile) {
-  MultiUserWindowManagerClient::GetInstance()->AddUser(profile);
+  MultiUserWindowManagerHelper::GetInstance()->AddUser(profile);
   controller_->AdditionalUserAddedToSession(profile->GetOriginalProfile());
 }
 
@@ -241,7 +242,7 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
   shelf_spinner_controller_.reset(new ShelfSpinnerController(this));
 
   // Create either the real window manager or a stub.
-  MultiUserWindowManagerClient::CreateInstance();
+  MultiUserWindowManagerHelper::CreateInstance();
 
   // On Chrome OS using multi profile we want to switch the content of the shelf
   // with a user change. Note that for unit tests the instance can be NULL.
@@ -300,7 +301,7 @@ ChromeLauncherController::~ChromeLauncherController() {
   ReleaseProfile();
 
   // Get rid of the multi user window manager instance.
-  MultiUserWindowManagerClient::DeleteInstance();
+  MultiUserWindowManagerHelper::DeleteInstance();
 
   if (instance_ == this)
     instance_ = nullptr;
@@ -538,10 +539,10 @@ ash::ShelfAction ChromeLauncherController::ActivateWindowOrMinimizeIfActive(
   aura::Window* native_window = window->GetNativeWindow();
   const AccountId& current_account_id =
       multi_user_util::GetAccountIdFromProfile(profile());
-  MultiUserWindowManagerClient* client =
-      MultiUserWindowManagerClient::GetInstance();
-  if (!client->IsWindowOnDesktopOfUser(native_window, current_account_id)) {
-    client->ShowWindowForUser(native_window, current_account_id);
+  if (!MultiUserWindowManagerHelper::GetInstance()->IsWindowOnDesktopOfUser(
+          native_window, current_account_id)) {
+    MultiUserWindowManagerHelper::GetWindowManager()->ShowWindowForUser(
+        native_window, current_account_id);
     window->Activate();
     return ash::SHELF_ACTION_WINDOW_ACTIVATED;
   }

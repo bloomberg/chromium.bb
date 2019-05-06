@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/chromeos/login/chrome_restart_request.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client.h"
 #include "chrome/browser/ui/ash/multi_user/test_multi_user_window_manager_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -153,8 +154,8 @@ IN_PROC_BROWSER_TEST_F(BrowserGuestSessionNavigatorTest,
   {
     const AccountId desktop_account_id(
         AccountId::FromUserEmail("desktop_user_id@fake.com"));
-    TestMultiUserWindowManagerClient* client =
-        new TestMultiUserWindowManagerClient(browser(), desktop_account_id);
+    TestMultiUserWindowManager* window_manager =
+        TestMultiUserWindowManager::Create(browser(), desktop_account_id);
 
     EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
 
@@ -169,18 +170,19 @@ IN_PROC_BROWSER_TEST_F(BrowserGuestSessionNavigatorTest,
 
     EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
 
-    aura::Window* created_window = client->created_window();
+    aura::Window* created_window = window_manager->created_window();
     ASSERT_TRUE(created_window);
     EXPECT_TRUE(
-        client->IsWindowOnDesktopOfUser(created_window, desktop_account_id));
+        MultiUserWindowManagerHelper::GetInstance()->IsWindowOnDesktopOfUser(
+            created_window, desktop_account_id));
   }
   // Test 2: Test that a window which is not visiting does not cause an owner
   // assignment of a newly created browser.
   {
     const AccountId browser_owner =
         multi_user_util::GetAccountIdFromProfile(browser()->profile());
-    TestMultiUserWindowManagerClient* client =
-        new TestMultiUserWindowManagerClient(browser(), browser_owner);
+    TestMultiUserWindowManager* window_manager =
+        TestMultiUserWindowManager::Create(browser(), browser_owner);
 
     // Navigate to the settings page.
     NavigateParams params(MakeNavigateParams(browser()));
@@ -195,7 +197,7 @@ IN_PROC_BROWSER_TEST_F(BrowserGuestSessionNavigatorTest,
 
     // The ShowWindowForUser should not have been called since the window is
     // already on the correct desktop.
-    ASSERT_FALSE(client->created_window());
+    ASSERT_FALSE(window_manager->created_window());
   }
 }
 

@@ -5,21 +5,15 @@
 #ifndef CHROME_BROWSER_UI_ASH_MULTI_USER_MULTI_USER_WINDOW_MANAGER_CLIENT_STUB_H_
 #define CHROME_BROWSER_UI_ASH_MULTI_USER_MULTI_USER_WINDOW_MANAGER_CLIENT_STUB_H_
 
-#include <map>
-#include <string>
-
-#include "base/compiler_specific.h"
+#include "ash/public/cpp/multi_user_window_manager.h"
 #include "base/macros.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client.h"
 
-class AccountId;
-
-// This is the implementation of MultiUserWindowManagerClient for single user
-// mode.
-class MultiUserWindowManagerClientStub : public MultiUserWindowManagerClient {
+// Stub implementation of ash::MultiUserWindowManager. This is used for single
+// user mode.
+class MultiUserWindowManagerStub : public ash::MultiUserWindowManager {
  public:
-  MultiUserWindowManagerClientStub();
-  ~MultiUserWindowManagerClientStub() override;
+  MultiUserWindowManagerStub();
+  ~MultiUserWindowManagerStub() override;
 
   // MultiUserWindowManager overrides:
   void SetWindowOwner(aura::Window* window,
@@ -28,18 +22,15 @@ class MultiUserWindowManagerClientStub : public MultiUserWindowManagerClient {
   void ShowWindowForUser(aura::Window* window,
                          const AccountId& account_id) override;
   bool AreWindowsSharedAmongUsers() const override;
-  void GetOwnersOfVisibleWindows(
-      std::set<AccountId>* account_ids) const override;
-  bool IsWindowOnDesktopOfUser(aura::Window* window,
-                               const AccountId& account_id) const override;
+  std::set<AccountId> GetOwnersOfVisibleWindows() const override;
   const AccountId& GetUserPresentingWindow(
       const aura::Window* window) const override;
-  void AddUser(content::BrowserContext* context) override;
-  void AddObserver(Observer* observer) override;
-  void RemoveObserver(Observer* observer) override;
+  void AddObserver(ash::MultiUserWindowManagerObserver* observer) override;
+  void RemoveObserver(ash::MultiUserWindowManagerObserver* observer) override;
+  const AccountId& CurrentAccountId() const override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MultiUserWindowManagerClientStub);
+  DISALLOW_COPY_AND_ASSIGN(MultiUserWindowManagerStub);
 };
 
 #endif  // CHROME_BROWSER_UI_ASH_MULTI_USER_MULTI_USER_WINDOW_MANAGER_CLIENT_STUB_H_

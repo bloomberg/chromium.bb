@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ash/public/cpp/multi_user_window_manager.h"
+#include "ash/public/cpp/multi_user_window_manager_observer.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
@@ -95,7 +96,7 @@ class AppObserver : public extensions::AppWindowRegistry::Observer {
   void OnAppWindowAdded(extensions::AppWindow* app_window) override {
     aura::Window* window = app_window->GetNativeWindow();
     DCHECK(window);
-    MultiUserWindowManagerClientImpl::GetInstance()->SetWindowOwner(
+    MultiUserWindowManagerHelper::GetWindowManager()->SetWindowOwner(
         window, AccountId::FromUserEmail(user_id_));
   }
 
@@ -106,23 +107,21 @@ class AppObserver : public extensions::AppWindowRegistry::Observer {
 };
 
 // static
-MultiUserWindowManagerClientImpl* MultiUserWindowManagerClientImpl::instance_ =
-    nullptr;
+MultiProfileSupport* MultiProfileSupport::instance_ = nullptr;
 
-MultiUserWindowManagerClientImpl::MultiUserWindowManagerClientImpl(
-    const AccountId& current_account_id) {
+MultiProfileSupport::MultiProfileSupport(const AccountId& current_account_id) {
   DCHECK(!instance_);
   instance_ = this;
-  ash_multi_user_window_manager_ =
+  multi_user_window_manager_ =
       ash::MultiUserWindowManager::Create(this, current_account_id);
 }
 
-MultiUserWindowManagerClientImpl::~MultiUserWindowManagerClientImpl() {
+MultiProfileSupport::~MultiProfileSupport() {
   DCHECK_EQ(instance_, this);
   instance_ = nullptr;
 
   // This may trigger callbacks to us, delete it early on.
-  ash_multi_user_window_manager_.reset();
+  multi_user_window_manager_.reset();
 
   // Remove all app observers.
   ProfileManager* profile_manager = g_browser_process->profile_manager();
@@ -144,10 +143,10 @@ MultiUserWindowManagerClientImpl::~MultiUserWindowManagerClientImpl() {
   }
 }
 
-void MultiUserWindowManagerClientImpl::Init() {
+void MultiProfileSupport::Init() {
   // Since we are setting the SessionStateObserver and adding the user, this
   // function should get called only once.
-  auto current_account_id = ash_multi_user_window_manager_->CurrentAccountId();
+  auto current_account_id = multi_user_window_manager_->CurrentAccountId();
   DCHECK(account_id_to_app_observer_.find(current_account_id) ==
          account_id_to_app_observer_.end());
 
@@ -163,65 +162,7 @@ void MultiUserWindowManagerClientImpl::Init() {
     AddUser(profile);
 }
 
-void MultiUserWindowManagerClientImpl::SetWindowOwner(
-    aura::Window* window,
-    const AccountId& account_id) {
-  // Make sure the window is valid and there was no owner yet.
-  DCHECK(window);
-  DCHECK(account_id.is_valid());
-  if (GetWindowOwner(window) == account_id)
-    return;
-
-  // Check if this window was created due to a user interaction. If it was,
-  // transfer it to the current user.
-  // TODO: get rid of aura::client::kCreatedByUserGesture.
-  const bool show_for_current_user =
-      window->GetProperty(aura::client::kCreatedByUserGesture);
-  ash_multi_user_window_manager_->SetWindowOwner(window, account_id,
-                                                 show_for_current_user);
-
-  // Notify entry adding.
-  for (Observer& observer : observers_)
-    observer.OnOwnerEntryAdded(window);
-}
-
-const AccountId& MultiUserWindowManagerClientImpl::GetWindowOwner(
-    const aura::Window* window) const {
-  return ash_multi_user_window_manager_->GetWindowOwner(window);
-}
-
-void MultiUserWindowManagerClientImpl::ShowWindowForUser(
-    aura::Window* window,
-    const AccountId& account_id) {
-  if (!window)
-    return;
-
-  ash_multi_user_window_manager_->ShowWindowForUser(window, account_id);
-}
-
-bool MultiUserWindowManagerClientImpl::AreWindowsSharedAmongUsers() const {
-  return ash_multi_user_window_manager_->AreWindowsSharedAmongUsers();
-}
-
-void MultiUserWindowManagerClientImpl::GetOwnersOfVisibleWindows(
-    std::set<AccountId>* account_ids) const {
-  *account_ids = ash_multi_user_window_manager_->GetOwnersOfVisibleWindows();
-}
-
-bool MultiUserWindowManagerClientImpl::IsWindowOnDesktopOfUser(
-    aura::Window* window,
-    const AccountId& account_id) const {
-  const AccountId& presenting_user = GetUserPresentingWindow(window);
-  return (!presenting_user.is_valid()) || presenting_user == account_id;
-}
-
-const AccountId& MultiUserWindowManagerClientImpl::GetUserPresentingWindow(
-    const aura::Window* window) const {
-  return ash_multi_user_window_manager_->GetUserPresentingWindow(window);
-}
-
-void MultiUserWindowManagerClientImpl::AddUser(
-    content::BrowserContext* context) {
+void MultiProfileSupport::AddUser(content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
   const AccountId& account_id(
       multi_user_util::GetAccountIdFromProfile(profile));
@@ -251,31 +192,21 @@ void MultiUserWindowManagerClientImpl::AddUser(
   }
 }
 
-void MultiUserWindowManagerClientImpl::AddObserver(Observer* observer) {
-  observers_.AddObserver(observer);
-}
-
-void MultiUserWindowManagerClientImpl::RemoveObserver(Observer* observer) {
-  observers_.RemoveObserver(observer);
-}
-
-void MultiUserWindowManagerClientImpl::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
+void MultiProfileSupport::Observe(int type,
+                                  const content::NotificationSource& source,
+                                  const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_BROWSER_OPENED, type);
   AddBrowserWindow(content::Source<Browser>(source).ptr());
 }
 
-void MultiUserWindowManagerClientImpl::OnWindowOwnerEntryChanged(
-    aura::Window* window,
-    const AccountId& account_id,
-    bool was_minimized,
-    bool teleported) {
+void MultiProfileSupport::OnWindowOwnerEntryChanged(aura::Window* window,
+                                                    const AccountId& account_id,
+                                                    bool was_minimized,
+                                                    bool teleported) {
   if (was_minimized)
     RecordUMAForTransferredWindowType(window);
 
-  const AccountId& owner = GetWindowOwner(window);
+  const AccountId& owner = multi_user_window_manager_->GetWindowOwner(window);
   // Browser windows don't use kAvatarIconKey. See
   // BrowserNonClientFrameViewAsh::UpdateProfileIcons().
   if (owner.is_valid() && !chrome::FindBrowserWithWindow(window)) {
@@ -291,36 +222,24 @@ void MultiUserWindowManagerClientImpl::OnWindowOwnerEntryChanged(
       window->ClearProperty(aura::client::kAvatarIconKey);
     }
   }
-
-  for (Observer& observer : observers_)
-    observer.OnOwnerEntryChanged(window);
 }
 
-void MultiUserWindowManagerClientImpl::OnTransitionUserShelfToNewAccount() {
+void MultiProfileSupport::OnTransitionUserShelfToNewAccount() {
   ChromeLauncherController* chrome_launcher_controller =
       ChromeLauncherController::instance();
   // Some unit tests have no ChromeLauncherController.
   if (!chrome_launcher_controller)
     return;
   chrome_launcher_controller->ActiveUserChanged(
-      ash_multi_user_window_manager_->CurrentAccountId());
+      multi_user_window_manager_->CurrentAccountId());
 }
 
-void MultiUserWindowManagerClientImpl::OnDidSwitchActiveAccount() {
-  for (Observer& observer : observers_)
-    observer.OnUserSwitchAnimationFinished();
-}
-
-const AccountId& MultiUserWindowManagerClientImpl::GetCurrentUserForTest()
-    const {
-  return ash_multi_user_window_manager_->CurrentAccountId();
-}
-
-void MultiUserWindowManagerClientImpl::AddBrowserWindow(Browser* browser) {
+void MultiProfileSupport::AddBrowserWindow(Browser* browser) {
   // A unit test (e.g. CrashRestoreComplexTest.RestoreSessionForThreeUsers) can
   // come here with no valid window.
   if (!browser->window() || !browser->window()->GetNativeWindow())
     return;
-  SetWindowOwner(browser->window()->GetNativeWindow(),
-                 multi_user_util::GetAccountIdFromProfile(browser->profile()));
+  multi_user_window_manager_->SetWindowOwner(
+      browser->window()->GetNativeWindow(),
+      multi_user_util::GetAccountIdFromProfile(browser->profile()));
 }

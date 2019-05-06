@@ -5,57 +5,52 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client_stub.h"
 
 #include "base/logging.h"
-#include "base/strings/string_util.h"
 #include "components/account_id/account_id.h"
 
-MultiUserWindowManagerClientStub::MultiUserWindowManagerClientStub() {}
+MultiUserWindowManagerStub::MultiUserWindowManagerStub() {}
 
-MultiUserWindowManagerClientStub::~MultiUserWindowManagerClientStub() {}
+MultiUserWindowManagerStub::~MultiUserWindowManagerStub() {}
 
-void MultiUserWindowManagerClientStub::SetWindowOwner(
-    aura::Window* window,
-    const AccountId& account_id) {
+void MultiUserWindowManagerStub::SetWindowOwner(aura::Window* window,
+                                                const AccountId& account_id) {
   NOTIMPLEMENTED();
 }
 
-const AccountId& MultiUserWindowManagerClientStub::GetWindowOwner(
+const AccountId& MultiUserWindowManagerStub::GetWindowOwner(
     const aura::Window* window) const {
   return EmptyAccountId();
 }
 
-void MultiUserWindowManagerClientStub::ShowWindowForUser(
+void MultiUserWindowManagerStub::ShowWindowForUser(
     aura::Window* window,
     const AccountId& account_id) {
   NOTIMPLEMENTED();
 }
 
-bool MultiUserWindowManagerClientStub::AreWindowsSharedAmongUsers() const {
+bool MultiUserWindowManagerStub::AreWindowsSharedAmongUsers() const {
   return false;
 }
 
-void MultiUserWindowManagerClientStub::GetOwnersOfVisibleWindows(
-    std::set<AccountId>* account_ids) const {}
-
-bool MultiUserWindowManagerClientStub::IsWindowOnDesktopOfUser(
-    aura::Window* window,
-    const AccountId& account_id) const {
-  return true;
+std::set<AccountId> MultiUserWindowManagerStub::GetOwnersOfVisibleWindows()
+    const {
+  return {};
 }
 
-const AccountId& MultiUserWindowManagerClientStub::GetUserPresentingWindow(
+const AccountId& MultiUserWindowManagerStub::GetUserPresentingWindow(
     const aura::Window* window) const {
   return EmptyAccountId();
 }
 
-void MultiUserWindowManagerClientStub::AddUser(
-    content::BrowserContext* context) {
+void MultiUserWindowManagerStub::AddObserver(
+    ash::MultiUserWindowManagerObserver* observer) {
   NOTIMPLEMENTED();
 }
 
-void MultiUserWindowManagerClientStub::AddObserver(Observer* observer) {
+void MultiUserWindowManagerStub::RemoveObserver(
+    ash::MultiUserWindowManagerObserver* observer) {
   NOTIMPLEMENTED();
 }
 
-void MultiUserWindowManagerClientStub::RemoveObserver(Observer* observer) {
-  NOTIMPLEMENTED();
+const AccountId& MultiUserWindowManagerStub::CurrentAccountId() const {
+  return EmptyAccountId();
 }

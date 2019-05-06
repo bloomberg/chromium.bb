@@ -9,6 +9,7 @@
 
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "ash/public/cpp/app_types.h"
+#include "ash/public/cpp/multi_user_window_manager.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
@@ -178,7 +179,7 @@ void ArcAppWindowLauncherController::OnWindowVisibilityChanged(
   // Attach window to multi-user manager now to let it manage visibility state
   // of the ARC window correctly.
   if (task_id != arc::kSystemWindowTaskId) {
-    MultiUserWindowManagerClient::GetInstance()->SetWindowOwner(
+    MultiUserWindowManagerHelper::GetWindowManager()->SetWindowOwner(
         window,
         user_manager::UserManager::Get()->GetPrimaryUser()->GetAccountId());
   }

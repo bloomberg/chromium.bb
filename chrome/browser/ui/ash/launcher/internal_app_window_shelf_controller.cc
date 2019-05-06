@@ -1,9 +1,11 @@
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include "chrome/browser/ui/ash/launcher/internal_app_window_shelf_controller.h"
 
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
+#include "ash/public/cpp/multi_user_window_manager.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
@@ -51,7 +53,7 @@ void InternalAppWindowShelfController::ActiveUserChanged(
       continue;
     }
 
-    if (MultiUserWindowManagerClient::GetInstance()
+    if (MultiUserWindowManagerHelper::GetWindowManager()
             ->GetWindowOwner(w.first)
             .GetUserEmail() == user_email) {
       AddToShelf(app_window);
@@ -145,7 +147,7 @@ void InternalAppWindowShelfController::RegisterAppWindow(
   // Keyboard Shortcut Viewer has a global instance so it can be shared with
   // different users.
   if (shelf_id.app_id != app_list::kInternalAppIdKeyboardShortcutViewer) {
-    MultiUserWindowManagerClient::GetInstance()->SetWindowOwner(
+    MultiUserWindowManagerHelper::GetWindowManager()->SetWindowOwner(
         window,
         user_manager::UserManager::Get()->GetActiveUser()->GetAccountId());
   }

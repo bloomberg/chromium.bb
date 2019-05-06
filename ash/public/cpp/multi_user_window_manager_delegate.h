@@ -29,9 +29,6 @@ class ASH_PUBLIC_EXPORT MultiUserWindowManagerDelegate {
   // supplied to OnWillSwitchActiveAccount().
   virtual void OnTransitionUserShelfToNewAccount() = 0;
 
-  // Called when the active account change is complete.
-  virtual void OnDidSwitchActiveAccount() = 0;
-
  protected:
   virtual ~MultiUserWindowManagerDelegate() {}
 };
