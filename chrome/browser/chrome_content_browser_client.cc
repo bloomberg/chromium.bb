@@ -5721,7 +5721,7 @@ ChromeContentBrowserClient::DetermineCommittedPreviewsWithoutHoldback(
            : previews::PreviewsEligibilityReason::COMMITTED),
       navigation_handle->GetURL(), base::Time::Now(),
       previews_user_data->committed_previews_type(), std::move(passed_reasons),
-      previews_user_data->page_id());
+      previews_user_data);
 
   return committed_state;
 }

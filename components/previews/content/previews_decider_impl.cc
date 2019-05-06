@@ -170,11 +170,12 @@ void PreviewsDeciderImpl::LogPreviewDecisionMade(
     base::Time time,
     PreviewsType type,
     std::vector<PreviewsEligibilityReason>&& passed_reasons,
-    uint64_t page_id) const {
+    PreviewsUserData* user_data) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   LogPreviewsEligibilityReason(reason, type);
+  user_data->SetEligibilityReasonForPreview(type, reason);
   previews_ui_service_->LogPreviewDecisionMade(
-      reason, url, time, type, std::move(passed_reasons), page_id);
+      reason, url, time, type, std::move(passed_reasons), user_data->page_id());
 }
 
 void PreviewsDeciderImpl::AddPreviewNavigation(const GURL& url,
@@ -217,7 +218,7 @@ bool PreviewsDeciderImpl::ShouldAllowPreviewAtNavigationStart(
       DeterminePreviewEligibility(previews_data, url, is_reload, type,
                                   is_drp_server_preview, &passed_reasons);
   LogPreviewDecisionMade(eligibility, url, clock_->Now(), type,
-                         std::move(passed_reasons), previews_data->page_id());
+                         std::move(passed_reasons), previews_data);
   return eligibility == PreviewsEligibilityReason::ALLOWED;
 }
 
@@ -372,8 +373,7 @@ bool PreviewsDeciderImpl::ShouldCommitPreview(PreviewsUserData* previews_data,
         committed_url, type, false, &passed_reasons);
     if (status != PreviewsEligibilityReason::ALLOWED) {
       LogPreviewDecisionMade(status, committed_url, clock_->Now(), type,
-                             std::move(passed_reasons),
-                             previews_data->page_id());
+                             std::move(passed_reasons), previews_data);
       return false;
     }
   }
@@ -386,8 +386,7 @@ bool PreviewsDeciderImpl::ShouldCommitPreview(PreviewsUserData* previews_data,
         previews_data, committed_url, type, &passed_reasons);
     if (status != PreviewsEligibilityReason::ALLOWED) {
       LogPreviewDecisionMade(status, committed_url, clock_->Now(), type,
-                             std::move(passed_reasons),
-                             previews_data->page_id());
+                             std::move(passed_reasons), previews_data);
       return false;
     }
   }

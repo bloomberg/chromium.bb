@@ -8,9 +8,12 @@
 #include <stdint.h>
 #include <memory>
 #include <string>
+#include <unordered_map>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/time/time.h"
+#include "components/previews/core/previews_black_list.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_lite_page_redirect.h"
 #include "content/public/common/previews_state.h"
@@ -54,6 +57,16 @@ class PreviewsUserData {
 
   // The bool that is used in the coin flip holdback logic.
   bool CoinFlipForNavigation() const;
+
+  // Sets the |reason| that the given |preview| was or was not shown in
+  // |previews_eligibility_reasons_|.
+  void SetEligibilityReasonForPreview(PreviewsType preview,
+                                      PreviewsEligibilityReason reason);
+
+  // Returns the reason that the given |preview| was or was not shown from
+  // |previews_eligibility_reasons_|, if one exists.
+  base::Optional<PreviewsEligibilityReason> EligibilityReasonForPreview(
+      PreviewsType preview);
 
   // The effective connection type value for the navigation.
   net::EffectiveConnectionType navigation_ect() const {
@@ -203,6 +216,11 @@ class PreviewsUserData {
   // Metadata for an attempted or committed Lite Page Redirect preview. See
   // struct comments for more detail.
   std::unique_ptr<ServerLitePageInfo> server_lite_page_info_;
+
+  // A mapping from PreviewType to the last known reason why that preview type
+  // was or was not triggered for this navigation. Used only for metrics.
+  std::unordered_map<PreviewsType, PreviewsEligibilityReason>
+      preview_eligibility_reasons_ = {};
 
   DISALLOW_ASSIGN(PreviewsUserData);
 };

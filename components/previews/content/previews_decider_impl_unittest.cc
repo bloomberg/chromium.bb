@@ -1469,9 +1469,10 @@ TEST_F(PreviewsDeciderImplTest, LogPreviewDecisionMadePassInCorrectParams) {
   const std::vector<PreviewsEligibilityReason> expected_passed_reasons(
       passed_reasons);
   const uint64_t page_id = 1234;
+  PreviewsUserData data(page_id);
 
   previews_decider_impl()->LogPreviewDecisionMade(
-      reason, url, time, type, std::move(passed_reasons), page_id);
+      reason, url, time, type, std::move(passed_reasons), &data);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_THAT(ui_service()->decision_reasons(), ::testing::ElementsAre(reason));
@@ -1480,6 +1481,7 @@ TEST_F(PreviewsDeciderImplTest, LogPreviewDecisionMadePassInCorrectParams) {
   EXPECT_THAT(ui_service()->decision_times(), ::testing::ElementsAre(time));
   EXPECT_THAT(ui_service()->decision_ids(), ::testing::ElementsAre(page_id));
 
+  EXPECT_EQ(data.EligibilityReasonForPreview(type).value(), reason);
   auto actual_passed_reasons = ui_service()->decision_passed_reasons();
   EXPECT_EQ(1UL, actual_passed_reasons.size());
   EXPECT_EQ(expected_passed_reasons.size(), actual_passed_reasons[0].size());

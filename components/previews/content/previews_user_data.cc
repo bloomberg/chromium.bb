@@ -29,7 +29,8 @@ PreviewsUserData::PreviewsUserData(const PreviewsUserData& other)
       committed_previews_type_(other.committed_previews_type_),
       allowed_previews_state_(other.allowed_previews_state_),
       committed_previews_state_(other.committed_previews_state_),
-      coin_flip_holdback_result_(other.coin_flip_holdback_result_) {
+      coin_flip_holdback_result_(other.coin_flip_holdback_result_),
+      preview_eligibility_reasons_(other.preview_eligibility_reasons_) {
   if (other.server_lite_page_info_) {
     server_lite_page_info_ =
         std::make_unique<ServerLitePageInfo>(*other.server_lite_page_info_);
@@ -55,6 +56,20 @@ bool PreviewsUserData::CoinFlipForNavigation() const {
     return false;
 
   return random_coin_flip_for_navigation_;
+}
+
+void PreviewsUserData::SetEligibilityReasonForPreview(
+    PreviewsType preview,
+    PreviewsEligibilityReason reason) {
+  preview_eligibility_reasons_[preview] = reason;
+}
+
+base::Optional<PreviewsEligibilityReason>
+PreviewsUserData::EligibilityReasonForPreview(PreviewsType preview) {
+  auto iter = preview_eligibility_reasons_.find(preview);
+  if (iter == preview_eligibility_reasons_.end())
+    return base::nullopt;
+  return iter->second;
 }
 
 }  // namespace previews

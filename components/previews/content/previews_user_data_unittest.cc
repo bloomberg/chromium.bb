@@ -17,6 +17,23 @@ TEST(PreviewsUserDataTest, TestConstructor) {
   EXPECT_EQ(id, data->page_id());
 }
 
+TEST(PreviewsUserDataTest, TestSetEligibilityReason) {
+  PreviewsUserData data(1u);
+  EXPECT_EQ(base::nullopt,
+            data.EligibilityReasonForPreview(PreviewsType::OFFLINE));
+
+  data.SetEligibilityReasonForPreview(
+      PreviewsType::NOSCRIPT, PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE);
+  data.SetEligibilityReasonForPreview(
+      PreviewsType::NOSCRIPT,
+      PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED);
+
+  EXPECT_EQ(base::nullopt,
+            data.EligibilityReasonForPreview(PreviewsType::OFFLINE));
+  EXPECT_EQ(PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED,
+            data.EligibilityReasonForPreview(PreviewsType::NOSCRIPT));
+}
+
 TEST(PreviewsUserDataTest, DeepCopy) {
   uint64_t id = 4u;
   std::unique_ptr<PreviewsUserData> data =
