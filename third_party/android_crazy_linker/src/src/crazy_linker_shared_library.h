@@ -13,7 +13,6 @@
 #include "crazy_linker_elf_symbols.h"
 #include "crazy_linker_elf_view.h"
 #include "crazy_linker_error.h"
-#include "crazy_linker_load_params.h"
 #include "crazy_linker_memory_mapping.h"
 #include "crazy_linker_rdebug.h"
 #include "crazy_linker_util.h"
@@ -51,13 +50,17 @@ class SharedLibrary {
   // Load a library (without its dependents) from an ELF file.
   // Note: This does not apply relocations, nor runs constructors.
   // |full_path| if the file full path.
-  // |params| are the load parameters for this operation.
+  // |load_address| is the page-aligned load address in memory, or 0.
+  // |file_offset| is the page-aligned file offset.
   // On failure, return false and set |error| message.
   //
   // After this, the caller should load all library dependencies,
   // Then call Relocate() and CallConstructors() to complete the
   // operation.
-  bool Load(const LoadParams& params, Error* error);
+  bool Load(const char* full_path,
+            size_t load_address,
+            size_t file_offset,
+            Error* error);
 
   // Relocate this library, assuming all its dependencies are already
   // loaded in |lib_list|. On failure, return false and set |error|

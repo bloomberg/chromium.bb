@@ -15,7 +15,6 @@
 #include "crazy_linker_globals.h"
 #include "crazy_linker_library_list.h"
 #include "crazy_linker_library_view.h"
-#include "crazy_linker_load_params.h"
 #include "crazy_linker_memory_mapping.h"
 #include "crazy_linker_system_linker.h"
 #include "crazy_linker_thread_data.h"
@@ -226,9 +225,11 @@ SharedLibrary::SharedLibrary() {
 
 SharedLibrary::~SharedLibrary() = default;
 
-bool SharedLibrary::Load(const LoadParams& params, Error* error) {
+bool SharedLibrary::Load(const char* full_path,
+                         size_t load_address,
+                         size_t file_offset,
+                         Error* error) {
   // First, record the path.
-  const char* full_path = params.library_path.c_str();
   LOG("full path '%s'", full_path);
 
   size_t full_path_len = strlen(full_path);
@@ -251,7 +252,8 @@ bool SharedLibrary::Load(const LoadParams& params, Error* error) {
   LOG("Loading ELF segments for %s", base_name_);
 
   {
-    ElfLoader::Result ret = ElfLoader::LoadAt(params, error);
+    ElfLoader::Result ret =
+        ElfLoader::LoadAt(full_path_, file_offset, load_address, error);
     if (!ret.IsValid() ||
         !view_.InitUnmapped(ret.load_start, ret.phdr, ret.phdr_count, error)) {
       return false;

@@ -89,26 +89,17 @@ char* WrapDlerror() {
 
 void* WrapDlopen(const char* path, int mode) {
   ScopedLockedGlobals globals;
-  LibraryList* libs = globals->libraries();
 
   // NOTE: If |path| is NULL, the wrapper should return a handle
   // corresponding to the current executable. This can't be a crazy
   // library, so don't try to handle it with the crazy linker.
   if (path) {
     Error error;
-    LibraryView* view = libs->FindKnownLibrary(path);
-    if (!view) {
-      LoadParams params;
-      if (libs->LocateLibraryFile(path, *globals->search_path_list(), &params,
-                                  &error)) {
-        view = libs->LoadLibraryInternal(params, &error);
-        if (!view) {
-          SetLinkerError("%s: %s", "dlopen", error.c_str());
-          return nullptr;
-        }
-        globals->valid_handles()->Add(view);
-        return view;
-      }
+    LibraryView* wrap = globals->libraries()->LoadLibrary(
+        path, 0U /* load_address */, globals->search_path_list(), &error);
+    if (wrap) {
+      globals->valid_handles()->Add(wrap);
+      return wrap;
     }
   }
 
@@ -119,10 +110,10 @@ void* WrapDlopen(const char* path, int mode) {
     return nullptr;
   }
 
-  auto* view = new LibraryView(system_lib, path ? path : "<executable>");
-  libs->AddLibrary(view);
-  globals->valid_handles()->Add(view);
-  return view;
+  auto* wrap_lib = new LibraryView(system_lib, path ? path : "<executable>");
+  globals->libraries()->AddLibrary(wrap_lib);
+  globals->valid_handles()->Add(wrap_lib);
+  return wrap_lib;
 }
 
 void* WrapDlsym(void* lib_handle, const char* symbol_name) {
