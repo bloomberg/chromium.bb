@@ -166,6 +166,10 @@ var valueAttributes = {
   5: {color: '#3d5afe', name: 'geom. objects', scale: 1.0, width: 1.0},
   // kGemSize.
   6: {color: '#7c4dff', name: 'geom. size mb', scale: 1.0 / 1024.0, width: 1.0},
+  // kGpuFreq.
+  7: {color: '#01579b', name: 'GPU frequency mhz', scale: 1.0, width: 1.0},
+  // kCpuTemp.
+  8: {color: '#ff3d00', name: 'CPU celsius.', scale: 1.0 / 1000.0, width: 1.0},
 };
 
 /**
@@ -431,6 +435,15 @@ class EventBands {
     this.setTooltip_();
     title.addContolledItems(this.svg);
     title.parent.appendChild(this.svg);
+
+    // Set of constants, used for rendering content.
+    this.fontSize = 12;
+    this.verticalGap = 5;
+    this.horizontalGap = 10;
+    this.lineHeight = 16;
+    this.iconOffset = 24;
+    this.iconRadius = 4;
+    this.textOffset = 32;
   }
 
   /**
@@ -549,13 +562,26 @@ class EventBands {
   }
 
   /**
+   * This adds new chart into existing area.
+   * @param {number} top position of chart.
+   * @param {number} bottom position of chart.
+   */
+  addChartToExistingArea(top, bottom) {
+    this.charts.push({sourcesWithBounds: [], top: top, bottom: bottom});
+  }
+
+
+  /**
    * This adds sources of events to the last chart.
    *
    * @param {Events[]} sources is array of groupped source of events to add.
    *     These events are logically linked to each other and represented as a
    *     separate line.
+   * @param {boolean} smooth if set to true then indicates that chart should
+   *                  display value interpolated, otherwise values are changed
+   *                  discretely.
    */
-  addChartSources(sources) {
+  addChartSources(sources, smooth) {
     var chart = this.charts[this.charts.length - 1];
 
     // Calculate min/max for sources and event indices.
@@ -608,18 +634,24 @@ class EventBands {
       var attributes = valueAttributes[eventType];
 
       var points = [];
+      var lastY = 0;
       for (var j = 0; j < eventIndices.length; ++j) {
         var event = source.events[eventIndices[j]];
         var x = this.timestampToOffset(event[1]);
         var y = height * (maxValue - event[2]) * divider;
+        if (!smooth && j != 0) {
+          points.push([x, lastY]);
+        }
         points.push([x, y]);
+        lastY = y;
       }
 
       chart.sourcesWithBounds.push({
         attributes: attributes,
         minValue: minValue,
         maxValue: maxValue,
-        source: source
+        source: source,
+        smooth: smooth
       });
 
       SVG.addPolyline(this.svg, points, attributes.color, attributes.width);
@@ -758,29 +790,49 @@ class EventBands {
 
     var eventTimestamp = this.offsetToTime(eventX - this.bandOffsetX);
 
-    // Try global events fist.
-    if (this.updateToolTipForGlobalEvents_(event, svg, eventTimestamp)) {
-      return;
-    }
+    var updated = false;
+    var width = 220;
+    var yOffset = this.verticalGap;
 
-    // Find band for this mouse event.
-    for (var i = 0; i < this.bands.length; ++i) {
-      if (this.bands[i].top <= eventY && this.bands[i].bottom > eventY) {
-        this.updateToolTipForBand_(
-            event, svg, eventTimestamp, this.bands[i].band);
-        return;
+    // In case of global events are not available, render tooltip for band and
+    // chart.
+    yOffset =
+        this.updateToolTipForGlobalEvents_(event, svg, eventTimestamp, yOffset);
+    if (yOffset == this.verticalGap) {
+      // Find band for this mouse event.
+      for (var i = 0; i < this.bands.length; ++i) {
+        if (this.bands[i].top <= eventY && this.bands[i].bottom > eventY) {
+          yOffset = this.updateToolTipForBand_(
+              event, svg, eventTimestamp, this.bands[i].band, yOffset);
+          break;
+        }
+      }
+
+      // Find chart for this mouse event.
+      for (var i = 0; i < this.charts.length; ++i) {
+        if (this.charts[i].top <= eventY && this.charts[i].bottom > eventY) {
+          yOffset = this.updateToolTipForChart_(
+              event, svg, eventTimestamp, this.charts[i], yOffset);
+          break;
+        }
       }
     }
 
-    // Find chart for this mouse event.
-    for (var i = 0; i < this.charts.length; ++i) {
-      if (this.charts[i].top <= eventY && this.charts[i].bottom > eventY) {
-        this.updateToolTipForChart_(event, svg, eventTimestamp, this.charts[i]);
-        return;
+    if (yOffset > this.verticalGap) {
+      // Content was added.
+      if (this.canShowDetailedInfo()) {
+        yOffset += this.lineHeight;
+        SVG.addText(
+            svg, this.horizontalGap, yOffset, this.fontSize,
+            'Click for detailed info');
       }
-    }
 
-    this.tooltip.classList.remove('active');
+      yOffset += this.verticalGap;
+
+      this.showTooltipForEvent_(event, svg, yOffset, width);
+    } else {
+      this.tooltip.classList.remove('active');
+    }
   }
 
   /**
@@ -812,25 +864,16 @@ class EventBands {
    * @returns {number} vertical position of the next element.
    */
   addTimeInfoToTooltip_(svg, yOffset, eventTimestamp) {
-    var horizontalGap = 10;
-    var fontSize = 12;
-    var lineHeight = 16;
-
-    yOffset += lineHeight;
-
     var vsyncTimestamp = this.getVSyncTimestamp_(eventTimestamp);
 
-    SVG.addText(
-        svg, horizontalGap, yOffset, fontSize,
-        timestampToMsText(eventTimestamp) + ' ms');
-    yOffset += lineHeight;
+    var text = timestampToMsText(eventTimestamp) + ' ms';
     if (vsyncTimestamp) {
-      SVG.addText(
-          svg, horizontalGap, yOffset, fontSize,
-          '+' + timestampToMsText(eventTimestamp - vsyncTimestamp) +
-              ' since last vsync ms');
-      yOffset += lineHeight;
+      text += ', +' + timestampToMsText(eventTimestamp - vsyncTimestamp) +
+          ' since last vsync';
     }
+
+    yOffset += this.lineHeight;
+    SVG.addText(svg, this.horizontalGap, yOffset, this.fontSize, text);
 
     return yOffset;
   }
@@ -842,28 +885,20 @@ class EventBands {
    * @param {Object} mouse event.
    * @param {Object} svg tooltip content.
    * @param (number} eventTimestamp timestamp of event.
-   * @returns {boolean} True in case global events where found and displayed.
+   * @param {number} yOffset starting vertical position to fill this content.
+   * @returns {number} next vertical position to fill the next content.
    */
-  updateToolTipForGlobalEvents_(event, svg, eventTimestamp) {
-    var verticalGap = 5;
-    var horizontalGap = 10;
-    var textOffset = 16;
-    var intentOffset = 12;
-    var lineHeight = 16;
-    var fontSize = 12;
-    var width = 220;
-
+  updateToolTipForGlobalEvents_(event, svg, eventTimestamp, yOffset) {
     // Try to find closest global events in the range -3..3 pixels. Several
     // events may stick close each other so let diplay up to 3 closest events.
     var distanceMcs = 3 * this.resolution;
     var globalEvents = this.findGlobalEvents_(eventTimestamp, distanceMcs);
     if (globalEvents.length == 0) {
-      return false;
+      return yOffset;
     }
 
     // Show the global events info.
     var globalEventCnt = Math.min(globalEvents.length, 3);
-    var yOffset = verticalGap;
     for (var i = 0; i < globalEventCnt; ++i) {
       var globalEvent = globalEvents[i];
       var globalEventType = globalEvent[0];
@@ -877,26 +912,25 @@ class EventBands {
       yOffset = this.addTimeInfoToTooltip_(svg, yOffset, globalEventTimestamp);
 
       var attributes = eventAttributes[globalEventType];
-      SVG.addText(svg, textOffset, yOffset, fontSize, attributes.name);
-      yOffset += lineHeight;
+      yOffset += this.lineHeight;
+      SVG.addCircle(
+          svg, this.iconOffset, yOffset - this.iconRadius, this.iconRadius, 1,
+          attributes.color, 'black');
+      SVG.addText(
+          svg, this.textOffset, yOffset, this.fontSize, attributes.name);
+
       // Render content if exists.
       if (globalEvent.length > 2) {
+        yOffset += this.lineHeight;
         SVG.addText(
-            svg, textOffset + intentOffset, yOffset, fontSize, globalEvent[2]);
-        yOffset += lineHeight;
+            svg, this.textOffset + this.horizontalGap, yOffset, this.fontSize,
+            globalEvent[2]);
       }
     }
 
-    if (this.canShowDetailedInfo()) {
-      yOffset += lineHeight;
-      SVG.addText(
-          svg, horizontalGap, yOffset, fontSize, 'Click for detailed info');
-    }
-    yOffset += verticalGap;
+    yOffset += this.verticalGap;
 
-    this.showTooltipForEvent_(event, svg, yOffset, width);
-
-    return true;
+    return yOffset;
   }
 
   /**
@@ -906,18 +940,10 @@ class EventBands {
    * @param {Object} svg tooltip content.
    * @param (number} eventTimestamp timestamp of event.
    * @param {Object} active event band.
+   * @param {number} yOffset starting vertical position to fill this content.
+   * @returns {number} next vertical position to fill the next content.
    */
-  updateToolTipForBand_(event, svg, eventTimestamp, eventBand) {
-    var horizontalGap = 10;
-    var eventIconOffset = 24;
-    var eventIconRadius = 4;
-    var eventNameOffset = 32;
-    var verticalGap = 5;
-    var intentOffset = 12;
-    var lineHeight = 16;
-    var fontSize = 12;
-    var width = 220;
-
+  updateToolTipForBand_(event, svg, eventTimestamp, eventBand, yOffset) {
     // Find the event under the cursor. |index| points to the current event
     // and |nextIndex| points to the next event.
     var nextIndex = eventBand.getFirstEvent();
@@ -931,15 +957,14 @@ class EventBands {
 
     if (index < 0 || eventBand.isEndOfSequence(index)) {
       // In case cursor points to idle event, show its interval.
-      var yOffset = verticalGap + lineHeight;
+      yOffset += this.lineHeight;
       var startIdle = index < 0 ? 0 : eventBand.events[index][1];
       var endIdle =
           nextIndex < 0 ? this.maxTimestamp : eventBand.events[nextIndex][1];
       SVG.addText(
-          svg, horizontalGap, yOffset, fontSize,
+          svg, this.horizontalGap, yOffset, this.fontSize,
           'Idle ' + timestampToMsText(startIdle) + '...' +
               timestampToMsText(endIdle) + ' chart time ms.');
-      yOffset += lineHeight;
     } else {
       // Show the sequence of non-idle events.
       // Find the start of the non-idle sequence.
@@ -952,8 +977,7 @@ class EventBands {
       }
 
       var sequenceTimestamp = eventBand.events[index][1];
-      var yOffset =
-          this.addTimeInfoToTooltip_(svg, verticalGap, sequenceTimestamp);
+      yOffset = this.addTimeInfoToTooltip_(svg, yOffset, sequenceTimestamp);
 
       var lastTimestamp = sequenceTimestamp;
       // Scan for the entries to show.
@@ -982,21 +1006,18 @@ class EventBands {
       }
       for (var i = 0; i < entriesToShow.length; ++i) {
         var entryToShow = entriesToShow[i];
+        yOffset += this.lineHeight;
         SVG.addCircle(
-            svg, eventIconOffset, yOffset - eventIconRadius, eventIconRadius, 1,
+            svg, this.iconOffset, yOffset - this.iconRadius, this.iconRadius, 1,
             entryToShow.color, 'black');
-        SVG.addText(svg, eventNameOffset, yOffset, fontSize, entryToShow.text);
-        yOffset += lineHeight;
+        SVG.addText(
+            svg, this.textOffset, yOffset, this.fontSize, entryToShow.text);
       }
     }
-    if (this.canShowDetailedInfo()) {
-      yOffset += lineHeight;
-      SVG.addText(
-          svg, horizontalGap, yOffset, fontSize, 'Click for detailed info');
-    }
-    yOffset += verticalGap;
 
-    this.showTooltipForEvent_(event, svg, yOffset, width);
+    yOffset += this.verticalGap;
+
+    return yOffset;
   }
 
   /**
@@ -1006,19 +1027,13 @@ class EventBands {
    * @param {Object} svg tooltip content.
    * @param (number} eventTimestamp timestamp of event.
    * @param {Object} active event chart.
+   * @param {number} yOffset starting vertical position to fill this content.
+   * @returns {number} next vertical position to fill the next content.
    */
-  updateToolTipForChart_(event, svg, eventTimestamp, chart) {
-    var horizontalGap = 10;
-    var iconRadius = 4;
-    var iconOffset = 24;
+  updateToolTipForChart_(event, svg, eventTimestamp, chart, yOffset) {
     var valueOffset = 32;
-    var verticalGap = 5;
-    var lineHeight = 16;
-    var fontSize = 12;
-    var width = 150;
-    var iconRadius = 4;
 
-    var yOffset = this.addTimeInfoToTooltip_(svg, verticalGap, eventTimestamp);
+    var contentAdded = false;
 
     for (var i = 0; i < chart.sourcesWithBounds.length; ++i) {
       var sourceWithBounds = chart.sourcesWithBounds[i];
@@ -1037,16 +1052,26 @@ class EventBands {
       var factor =
           (eventTimestamp - eventBefore[1]) / (eventAfter[1] - eventBefore[1]);
       var value = factor * eventAfter[2] + (1.0 - factor) * eventBefore[2];
+
+      if (!contentAdded) {
+        yOffset = this.addTimeInfoToTooltip_(svg, yOffset, eventTimestamp);
+        contentAdded = true;
+      }
+
+      yOffset += this.lineHeight;
       SVG.addCircle(
-          svg, iconOffset, yOffset - iconRadius, iconRadius, 1,
+          svg, this.iconOffset, yOffset - this.iconRadius, this.iconRadius, 1,
           sourceWithBounds.attributes.color, 'black');
       var text = (value * sourceWithBounds.attributes.scale).toFixed(1) + ' ' +
           sourceWithBounds.attributes.name;
-      SVG.addText(svg, valueOffset, yOffset, fontSize, text);
-      yOffset += lineHeight;
+      SVG.addText(svg, valueOffset, yOffset, this.fontSize, text);
     }
 
-    this.showTooltipForEvent_(event, svg, yOffset, width);
+    if (contentAdded) {
+      yOffset += this.verticalGap;
+    }
+
+    return yOffset;
   }
 
   /**
@@ -1537,7 +1562,6 @@ function setGraphicBuffersModel(model) {
   var innerBandPadding = 2;
   var innerLastBandPadding = 12;
   var chartHeight = 48;
-  var fontSize = 12;
 
   var vsyncEvents = new Events(
       model.android.global_events, 400 /* kVsync */, 400 /* kVsync */);
@@ -1547,6 +1571,10 @@ function setGraphicBuffersModel(model) {
       cpusTitle, 'arc-events-band', resolution, 0, model.duration);
   cpusBands.setWidth(cpusBands.timestampToOffset(model.duration));
   cpusBands.setModel(model);
+  cpusBands.addChartToExistingArea(0 /* top */, cpusBands.height);
+  cpusBands.addChartSources(
+      [new Events(model.system.memory, 8 /* kCpuTemp */, 8 /* kCpuTemp */)],
+      true /* smooth */);
   cpusBands.setVSync(vsyncEvents);
 
   var memoryTitle =
@@ -1557,17 +1585,24 @@ function setGraphicBuffersModel(model) {
   memoryBands.addChart(chartHeight, topBandPadding);
   // Used memory chart.
   memoryBands.addChartSources(
-      [new Events(model.system.memory, 1 /* kMemUsed */, 1 /* kMemUsed */)]);
+      [new Events(model.system.memory, 1 /* kMemUsed */, 1 /* kMemUsed */)],
+      true /* smooth */);
   // Swap memory chart.
-  memoryBands.addChartSources([
-    new Events(model.system.memory, 2 /* kSwapRead */, 2 /* kSwapRead */),
-    new Events(model.system.memory, 3 /* kSwapWrite */, 3 /* kSwapWrite */)
-  ]);
-  // Geom objects and size.
-  memoryBands.addChartSources([new Events(
-      model.system.memory, 5 /* kGemObjects */, 5 /* kGemObjects */)]);
   memoryBands.addChartSources(
-      [new Events(model.system.memory, 6 /* kGemSize */, 6 /* kGemSize */)]);
+      [
+        new Events(model.system.memory, 2 /* kSwapRead */, 2 /* kSwapRead */),
+        new Events(
+            model.system.memory, 3 /* kSwapWrite */, 3 /* kSwapWrite */)
+      ],
+      true /* smooth */);
+  // Geom objects and size.
+  memoryBands.addChartSources(
+      [new Events(
+          model.system.memory, 5 /* kGemObjects */, 5 /* kGemObjects */)],
+      true /* smooth */);
+  memoryBands.addChartSources(
+      [new Events(model.system.memory, 6 /* kGemSize */, 6 /* kGemSize */)],
+      true /* smooth */);
   memoryBands.setVSync(vsyncEvents);
 
   var chromeTitle =
@@ -1586,6 +1621,12 @@ function setGraphicBuffersModel(model) {
       model.chrome.global_events, 505 /* kChromeOSJank */,
       505 /* kChromeOSJank */);
   chromeBands.addGlobal(chromeJanks);
+
+  chromeBands.addChartToExistingArea(0 /* top */, chromeBands.height);
+  chromeBands.addChartSources(
+      [new Events(model.system.memory, 7 /* kGpuFreq */, 7 /* kGpuFreq */)],
+      false /* smooth */);
+
 
   var androidTitle =
       new EventBandTitle(parent, 'Android graphics', 'arc-events-band-title');
@@ -1701,11 +1742,12 @@ function setGraphicBuffersModel(model) {
   while (timeTick < model.duration) {
     SVG.addText(
         timeRulerBands.svg, timeRulerBands.timestampToOffset(timeTick),
-        timeRulerEventHeight, fontSize, timestampToMsText(timeTick));
+        timeRulerEventHeight, timeRulerBands.fontSize,
+        timestampToMsText(timeTick));
     timeTick += timeTickOffset;
   }
   // Add janks and custom events labels.
-  var rotationY = timeRulerEventHeight + fontSize;
+  var rotationY = timeRulerEventHeight + timeRulerBands.fontSize;
   for (var i = 0; i < timeRulerBands.globalEvents.length; ++i) {
     var globalEvents = timeRulerBands.globalEvents[i];
     if (globalEvents == timeMarkEvents ||
@@ -1724,10 +1766,11 @@ function setGraphicBuffersModel(model) {
       } else {
         text = attributes.name;
       }
-      var x = timeRulerBands.timestampToOffset(event[1]) - fontSize;
+      var x =
+          timeRulerBands.timestampToOffset(event[1]) - timeRulerBands.fontSize;
       SVG.addText(
-          timeRulerBands.svg, x, timeRulerEventHeight, fontSize, text,
-          'start' /* anchor */,
+          timeRulerBands.svg, x, timeRulerEventHeight, timeRulerBands.fontSize,
+          text, 'start' /* anchor */,
           'rotate(45 ' + x + ', ' + rotationY + ')' /* transform */);
     }
   }

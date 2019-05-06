@@ -19,6 +19,8 @@ constexpr char kTracingMarkWrite[] = ": tracing_mark_write: ";
 constexpr int kTracingMarkWriteLength = sizeof(kTracingMarkWrite) - 1;
 constexpr char kCpuIdle[] = ": cpu_idle: ";
 constexpr int kCpuIdleLength = sizeof(kCpuIdle) - 1;
+constexpr char kIntelGpuFreqChange[] = ": intel_gpu_freq_change: ";
+constexpr int kIntelGpuFreqChangeLength = sizeof(kIntelGpuFreqChange) - 1;
 constexpr char kSchedWakeUp[] = ": sched_wakeup: ";
 constexpr int kSchedWakeUpLength = sizeof(kSchedWakeUp) - 1;
 constexpr char kSchedSwitch[] = ": sched_switch: ";
@@ -256,6 +258,21 @@ bool HandleSchedSwitch(AllCpuEvents* all_cpu_events,
 
   return AddAllCpuEvent(all_cpu_events, cpu_id, timestamp,
                         ArcCpuEvent::Type::kActive, next_tid);
+}
+
+bool HandleGpuFreq(ValueEvents* value_events,
+                   double timestamp,
+                   const std::string& line,
+                   size_t event_position) {
+  int new_freq = -1;
+  if (sscanf(&line[event_position], "new_freq=%d", &new_freq) != 1) {
+    LOG(ERROR) << "Failed to parse GPU freq event: " << line;
+    return false;
+  }
+
+  value_events->emplace_back(timestamp, ArcValueEvent::Type::kGpuFreq,
+                             new_freq);
+  return true;
 }
 
 }  // namespace
@@ -506,6 +523,12 @@ bool ArcTracingModel::ConvertSysTraces(const std::string& sys_traces) {
       if (!HandleSchedSwitch(&system_model_.all_cpu_events(), timestamp, cpu_id,
                              tid, line,
                              separator_position + kSchedSwitchLength)) {
+        return false;
+      }
+    } else if (!strncmp(&line[separator_position], kIntelGpuFreqChange,
+                        kIntelGpuFreqChangeLength)) {
+      if (!HandleGpuFreq(&system_model_.memory_events(), timestamp, line,
+                         separator_position + kIntelGpuFreqChangeLength)) {
         return false;
       }
     }
