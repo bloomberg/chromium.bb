@@ -113,9 +113,8 @@ declare_args() {
   enable_video_capture_service = false
 
   # Set to true to enable external Mojo services to communicate with services
-  # within cast_shell. Enable for desktop builds to ensure that Chromium CQ
-  # builds the external Mojo broker code.
-  enable_external_mojo_services = is_cast_desktop_build
+  # within cast_shell.
+  enable_external_mojo_services = true
 
   # Recording happens at this sample rate. Must be 16000, 48000 or 96000 Hz.
   audio_input_sample_rate = 16000
