@@ -62,6 +62,7 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_WIN)
+#include "base/win/windows_version.h"
 #include "ui/aura/window_tree_host.h"
 #endif
 
@@ -1564,6 +1565,14 @@ class BookmarkBarViewTest17 : public BookmarkBarViewEventTestBase {
 
  protected:
   void DoTestOnMessageLoop() override {
+#if defined(OS_WIN)
+    // TODO(crbug.com/453796): Flaky on Windows7.
+    if (base::win::GetVersion() <= base::win::Version::WIN7) {
+      Done();
+      return;
+    }
+#endif
+
     // Move the mouse to the other folder on the bookmark bar and press the
     // left mouse button.
     views::LabelButton* button = bb_view_->other_bookmarks_button();
