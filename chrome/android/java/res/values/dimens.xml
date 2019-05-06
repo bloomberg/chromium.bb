@@ -347,7 +347,6 @@
          (matches toolbar_height_no_shadow). -->
     <dimen name="ntp_search_box_bounds_vertical_inset_modern">-4dp</dimen>
     <dimen name="ntp_wide_card_lateral_margins">48dp</dimen>
-    <dimen name="ntp_shadow_height">9dp</dimen>
     <dimen name="ntp_progress_indicator_diameter">56dp</dimen>
     <dimen name="snippets_thumbnail_size">124dp</dimen>
     <dimen name="snippets_thumbnail_size_small">72dp</dimen>
