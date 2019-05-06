@@ -14,30 +14,11 @@
 #include <sstream>
 #include <string>
 
-#include "base/logging.h"
-#include "base/strings/utf_string_conversions.h"
-#include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#include "encoding_test_helper.h"
 
 using testing::ElementsAreArray;
 
 namespace inspector_protocol_encoding {
-
-std::string UTF16ToUTF8(span<uint16_t> in) {
-  std::string out;
-  bool success = base::UTF16ToUTF8(
-      reinterpret_cast<const base::char16*>(in.data()), in.size(), &out);
-  CHECK(success);
-  return out;
-}
-
-std::vector<uint16_t> UTF8ToUTF16(span<uint8_t> in) {
-  base::string16 tmp;
-  bool success = base::UTF8ToUTF16(reinterpret_cast<const char*>(in.data()),
-                                   in.size(), &tmp);
-  CHECK(success);
-  return std::vector<uint16_t>(tmp.begin(), tmp.end());
-}
 
 class TestPlatform : public json::Platform {
   bool StrToD(const char* str, double* result) const override {
@@ -1783,15 +1764,22 @@ TEST_F(JsonParserTest, ValueExpectedError) {
   EXPECT_EQ("", log_.str());
 }
 
-TEST(ConvertJSONToCBOR, RoundTripValidJson) {
-  std::string json = "{\"msg\":\"Hello, world.\"}";
-  std::string cbor;
+template <typename T>
+class ConvertJSONToCBORTest : public ::testing::Test {};
+
+using ContainerTestTypes = ::testing::Types<std::vector<uint8_t>, std::string>;
+TYPED_TEST_SUITE(ConvertJSONToCBORTest, ContainerTestTypes);
+
+TYPED_TEST(ConvertJSONToCBORTest, RoundTripValidJson) {
+  std::string json_in = "{\"msg\":\"Hello, world.\",\"lst\":[1,2,3]}";
+  TypeParam json(json_in.begin(), json_in.end());
+  TypeParam cbor;
   {
     Status status = ConvertJSONToCBOR(GetTestPlatform(), SpanFrom(json), &cbor);
     EXPECT_EQ(Error::OK, status.error);
     EXPECT_EQ(Status::npos(), status.pos);
   }
-  std::string roundtrip_json;
+  TypeParam roundtrip_json;
   {
     Status status =
         ConvertCBORToJSON(GetTestPlatform(), SpanFrom(cbor), &roundtrip_json);
